@@ -402,7 +402,7 @@ cr.define('options', function() {
         itemsShown++;
       }
 
-      if (extension.enabled && !extension.wantsFileAccess) {
+      if (extension.enabled) {
         // The 'allow in incognito' checkbox.
         var label = this.ownerDocument.createElement('label');
         label.classList.add('extension-checkbox-label');
@@ -423,7 +423,7 @@ cr.define('options', function() {
         itemsShown++;
       }
 
-      if (extension.enabled && !extension.wantsFileAccess) {
+      if (extension.enabled && extension.wantsFileAccess) {
         // The 'allow access to file URLs' checkbox.
         label = this.ownerDocument.createElement('label');
         label.classList.add('extension-checkbox-label');
