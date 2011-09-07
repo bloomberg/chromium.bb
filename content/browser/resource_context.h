@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
+#include "content/browser/download/download_manager.h"
 
 class ChromeAppCacheService;
 class ChromeBlobStorageContext;
@@ -75,6 +76,11 @@ class ResourceContext {
   MediaObserver* media_observer() const;
   void set_media_observer(MediaObserver* media_observer);
 
+  // TODO(benjhayden): Promote GetNextIdThunkType to a separate object.
+  const DownloadManager::GetNextIdThunkType& next_download_id_thunk() const;
+  void set_next_download_id_thunk(
+      const DownloadManager::GetNextIdThunkType& thunk);
+
   // =======================================================================
   // TODO(willchan): These don't belong in content/. Remove them eventually.
 
@@ -100,6 +106,7 @@ class ResourceContext {
   quota::QuotaManager* quota_manager_;
   HostZoomMap* host_zoom_map_;
   MediaObserver* media_observer_;
+  DownloadManager::GetNextIdThunkType next_download_id_thunk_;
 
   // Externally-defined data accessible by key.
   typedef std::map<const void*, void*> UserDataMap;

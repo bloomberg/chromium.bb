@@ -34,6 +34,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/hash_tables.h"
@@ -41,6 +42,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/synchronization/lock.h"
 #include "base/time.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/download/download_item.h"
@@ -106,6 +108,24 @@ class DownloadManager
   // Returns all non-temporary downloads matching |query|. Empty query matches
   // everything.
   void SearchDownloads(const string16& query, DownloadVector* result);
+
+  // Returns the next download id in a DownloadId and increments the counter.
+  // May be called on any thread. The incremented counter is not persisted, but
+  // the base counter for this accessor is initialized from the largest id
+  // actually saved to the download history database.
+  DownloadId GetNextId();
+
+  // Instead of passing a DownloadManager* between threads and hoping users only
+  // call GetNextId(), you can pass this thunk around instead. Pass the thunk
+  // around by const ref and store it by copy per the base::Callback interface.
+  // The thunk may be copied, including between threads.  If you change
+  // GetNextIdThunkType from base::Callback, then you should think about how
+  // you're changing the ref-count of DownloadManager. Use it like:
+  //   const DownloadManager::GetNextIdThunkType& next_id_thunk =
+  //       download_manager->GetNextIdThunk();
+  //   id = next_id_thunk.Run();
+  typedef base::Callback<DownloadId(void)> GetNextIdThunkType;
+  GetNextIdThunkType GetNextIdThunk();
 
   // Returns true if initialized properly.
   bool Init(content::BrowserContext* browser_context);
@@ -195,6 +215,11 @@ class DownloadManager
 
   // Remove a download observer from ourself.
   void RemoveObserver(Observer* observer);
+
+  // Called by the embedder after creating the download manager to inform it of
+  // the next available download id.
+  // TODO(benjhayden): Separate this functionality out into a separate object.
+  void OnPersistentStoreGetNextId(int next_id);
 
   // Called by the embedder, after creating the download manager, to let it know
   // about downloads from previous runs of the browser.
@@ -383,6 +408,9 @@ class DownloadManager
 
   // The current active browser context.
   content::BrowserContext* browser_context_;
+
+  base::Lock next_id_lock_;
+  int next_id_;
 
   // Non-owning pointer for handling file writing on the download_thread_.
   DownloadFileManager* file_manager_;

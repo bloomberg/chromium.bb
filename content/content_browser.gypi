@@ -119,6 +119,8 @@
         'browser/download/download_file.h',
         'browser/download/download_file_manager.cc',
         'browser/download/download_file_manager.h',
+        'browser/download/download_id.cc',
+        'browser/download/download_id.h',
         'browser/download/download_item.cc',
         'browser/download/download_item.h',
         'browser/download/download_manager.cc',
