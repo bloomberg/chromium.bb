@@ -18,7 +18,6 @@
 #include "base/string_util.h"
 #include "base/sys_info.h"
 #include "base/sys_string_conversions.h"
-#include "chrome/browser/browser_trial.h"
 #include "chrome/browser/mac/closure_blocks_leopard_compat.h"
 #import "chrome/browser/renderer_host/accelerated_plugin_view_mac.h"
 #import "chrome/browser/renderer_host/text_input_client_mac.h"
