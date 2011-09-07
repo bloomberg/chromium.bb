@@ -135,6 +135,7 @@ RenderText::~RenderText() {
 }
 
 void RenderText::SetText(const string16& text) {
+  DCHECK(!composition_range_.IsValid());
   size_t old_text_length = text_.length();
   text_ = text;
 
@@ -162,6 +163,10 @@ void RenderText::SetText(const string16& text) {
   CheckStyleRanges(style_ranges_, text_.length());
 #endif
   cached_bounds_and_offset_valid_ = false;
+
+  // Reset selection model. SetText should always followed by SetSelectionModel
+  // or SetCursorPosition in upper layer.
+  SetSelectionModel(SelectionModel(0, 0, SelectionModel::LEADING));
 }
 
 void RenderText::ToggleInsertMode() {
@@ -188,10 +193,9 @@ void RenderText::MoveCursorLeft(BreakType break_type, bool select) {
   // Cancelling a selection moves to the edge of the selection.
   if (break_type != LINE_BREAK && !EmptySelection() && !select) {
     // Use the selection start if it is left of the selection end.
-    SelectionModel selection_start(GetSelectionStart(), GetSelectionStart(),
-                                   SelectionModel::LEADING);
-    if (GetCursorBounds(selection_start, false).x() <
-        GetCursorBounds(position, false).x())
+    SelectionModel selection_start = GetSelectionModelForSelectionStart();
+    if (GetCursorBounds(selection_start, true).x() <
+        GetCursorBounds(position, true).x())
       position = selection_start;
     // For word breaks, use the nearest word boundary left of the selection.
     if (break_type == WORD_BREAK)
@@ -210,10 +214,9 @@ void RenderText::MoveCursorRight(BreakType break_type, bool select) {
   // Cancelling a selection moves to the edge of the selection.
   if (break_type != LINE_BREAK && !EmptySelection() && !select) {
     // Use the selection start if it is right of the selection end.
-    SelectionModel selection_start(GetSelectionStart(), GetSelectionStart(),
-                                   SelectionModel::LEADING);
-    if (GetCursorBounds(selection_start, false).x() >
-        GetCursorBounds(position, false).x())
+    SelectionModel selection_start = GetSelectionModelForSelectionStart();
+    if (GetCursorBounds(selection_start, true).x() >
+        GetCursorBounds(position, true).x())
       position = selection_start;
     // For word breaks, use the nearest word boundary right of the selection.
     if (break_type == WORD_BREAK)
@@ -353,7 +356,7 @@ void RenderText::ApplyDefaultStyle() {
   cached_bounds_and_offset_valid_ = false;
 }
 
-base::i18n::TextDirection RenderText::GetTextDirection() const {
+base::i18n::TextDirection RenderText::GetTextDirection() {
   if (base::i18n::IsRTL())
     return base::i18n::RIGHT_TO_LEFT;
   return base::i18n::LEFT_TO_RIGHT;
@@ -430,7 +433,7 @@ SelectionModel RenderText::FindCursorPosition(const Point& point) {
   if (x >= right) return SelectionModel(right_pos);
   // binary searching the cursor position.
   // TODO(oshima): use the center of character instead of edge.
-  // Binary search may not work for language like arabic.
+  // Binary search may not work for language like Arabic.
   while (std::abs(static_cast<long>(right_pos - left_pos)) > 1) {
     int pivot_pos = left_pos + (right_pos - left_pos) / 2;
     int pivot = font.GetStringWidth(text().substr(0, pivot_pos));
@@ -465,7 +468,7 @@ RenderText::RenderText()
       cursor_bounds_(),
       cursor_visible_(false),
       insert_mode_(true),
-      composition_range_(),
+      composition_range_(ui::Range::InvalidRange()),
       style_ranges_(),
       default_style_(),
       display_rect_(),
@@ -487,7 +490,7 @@ SelectionModel RenderText::GetLeftSelectionModel(const SelectionModel& current,
   if (break_type == CHARACTER_BREAK)
     return SelectionModel(pos, pos, SelectionModel::LEADING);
 
-  // Notes: We always iterate words from the begining.
+  // Notes: We always iterate words from the beginning.
   // This is probably fast enough for our usage, but we may
   // want to modify WordIterator so that it can start from the
   // middle of string and advance backwards.
@@ -519,6 +522,8 @@ SelectionModel RenderText::GetLeftSelectionModel(const SelectionModel& current,
 
 SelectionModel RenderText::GetRightSelectionModel(const SelectionModel& current,
                                                   BreakType break_type) {
+  if (text_.empty())
+    return SelectionModel(0, 0, SelectionModel::LEADING);
   if (break_type == LINE_BREAK)
     return SelectionModel(text().length(),
         GetIndexOfPreviousGrapheme(text().length()), SelectionModel::TRAILING);
@@ -652,14 +657,35 @@ void RenderText::UpdateCachedBoundsAndOffset() {
     // Show all text whenever the text fits to the size.
     delta_offset = -display_offset_.x();
   } else if (cursor_bounds_.right() > display_rect_.right()) {
+    // TODO(xji): when the character overflow is a RTL character, currently, if
+    // we pan cursor at the rightmost position, the entered RTL character is not
+    // displayed. Should pan cursor to show the last logical characters.
+    //
     // Pan to show the cursor when it overflows to the right,
     delta_offset = display_rect_.right() - cursor_bounds_.right();
   } else if (cursor_bounds_.x() < display_rect_.x()) {
+    // TODO(xji): have similar problem as above when overflow character is a
+    // LTR character.
+    //
     // Pan to show the cursor when it overflows to the left.
     delta_offset = display_rect_.x() - cursor_bounds_.x();
   }
   display_offset_.Offset(delta_offset, 0);
   cursor_bounds_.Offset(delta_offset, 0);
+}
+
+SelectionModel RenderText::GetSelectionModelForSelectionStart() {
+  size_t selection_start = GetSelectionStart();
+  size_t selection_end = GetCursorPosition();
+  if (selection_start < selection_end)
+    return SelectionModel(selection_start,
+                          selection_start,
+                          SelectionModel::LEADING);
+  else if (selection_start > selection_end)
+    return SelectionModel(selection_start,
+                          GetIndexOfPreviousGrapheme(selection_start),
+                          SelectionModel::TRAILING);
+  return selection_model_;
 }
 
 }  // namespace gfx

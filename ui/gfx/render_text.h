@@ -121,9 +121,12 @@ class UI_EXPORT SelectionModel {
  private:
   void Init(size_t start, size_t end, size_t pos, CaretPlacement status);
 
-  // Logical selection start. If there is non-empty selection, the selection
-  // always starts visually at the leading edge of the selection_start. So, we
-  // do not need extra information for visual selection bounding.
+  // Logical selection start. If there is non-empty selection, if
+  // selection_start_ is less than selection_end_, the selection starts visually
+  // at the leading edge of the selection_start_. If selection_start_ is greater
+  // than selection_end_, the selection starts visually at the trailing edge of
+  // selection_start_'s previous grapheme. So, we do not need extra information
+  // for visual bounding.
   size_t selection_start_;
 
   // The logical cursor position that next character will be inserted into.
@@ -190,6 +193,7 @@ class UI_EXPORT RenderText {
   // Set the selection_model_ to the value of |selection|.
   // The selection model components are modified if invalid.
   // Returns true if the cursor position or selection range changed.
+  // TODO(xji): need to check the cursor is set at grapheme boundary.
   bool MoveCursorTo(const SelectionModel& selection_model);
 
   // Move the cursor to the position associated with the clicked point.
@@ -219,7 +223,7 @@ class UI_EXPORT RenderText {
   void SelectWord();
 
   const ui::Range& GetCompositionRange() const;
-  void SetCompositionRange(const ui::Range& composition_range);
+  virtual void SetCompositionRange(const ui::Range& composition_range);
 
   // Apply |style_range| to the internal style model.
   virtual void ApplyStyleRange(StyleRange style_range);
@@ -227,7 +231,7 @@ class UI_EXPORT RenderText {
   // Apply |default_style_| over the entire text range.
   virtual void ApplyDefaultStyle();
 
-  base::i18n::TextDirection GetTextDirection() const;
+  virtual base::i18n::TextDirection GetTextDirection();
 
   // Get the width of the entire string.
   virtual int GetStringWidth();
@@ -314,6 +318,10 @@ class UI_EXPORT RenderText {
   // Update the cached bounds and display offset to ensure that the current
   // cursor is within the visible display area.
   void UpdateCachedBoundsAndOffset();
+
+  // Returns the selection model of selection_start_.
+  // The returned value represents a cursor/caret position without a selection.
+  SelectionModel GetSelectionModelForSelectionStart();
 
   // Logical UTF-16 string data to be drawn.
   string16 text_;

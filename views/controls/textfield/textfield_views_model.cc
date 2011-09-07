@@ -606,10 +606,10 @@ void TextfieldViewsModel::ConfirmCompositionText() {
 void TextfieldViewsModel::CancelCompositionText() {
   DCHECK(HasCompositionText());
   ui::Range range = render_text_->GetCompositionRange();
+  ClearComposition();
   string16 new_text = GetText();
   render_text_->SetText(new_text.erase(range.start(), range.length()));
   render_text_->SetCursorPosition(range.start());
-  ClearComposition();
   if (delegate_)
     delegate_->OnCompositionTextConfirmedOrCleared();
 }
@@ -767,6 +767,7 @@ void TextfieldViewsModel::ModifyText(size_t delete_from,
                                      size_t new_cursor_pos) {
   DCHECK_LE(delete_from, delete_to);
   string16 text = GetText();
+  ClearComposition();
   if (delete_from != delete_to)
     render_text_->SetText(text.erase(delete_from, delete_to - delete_from));
   if (!new_text.empty())
