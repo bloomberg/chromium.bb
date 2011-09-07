@@ -117,6 +117,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_TabOnRemoved) {
   ASSERT_TRUE(RunExtensionTest("tabs/on_removed")) << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TabReload) {
+  ASSERT_TRUE(StartTestServer());
+  ASSERT_TRUE(RunExtensionTest("tabs/reload")) << message_;
+}
+
 // Test is timing out on linux and cros and flaky on others.
 // See http://crbug.com/83876
 #if defined(OS_LINUX)

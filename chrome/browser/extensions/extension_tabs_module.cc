@@ -144,7 +144,7 @@ int ExtensionTabUtil::GetWindowId(const Browser* browser) {
   return browser->session_id().id();
 }
 
-// TODO: this function should really take a TabContentsWrapper.
+// TODO(sky): this function should really take a TabContentsWrapper.
 int ExtensionTabUtil::GetTabId(const TabContents* tab_contents) {
   const TabContentsWrapper* tab =
       TabContentsWrapper::GetCurrentWrapperForContents(tab_contents);
@@ -155,7 +155,7 @@ std::string ExtensionTabUtil::GetTabStatusText(bool is_loading) {
   return is_loading ? keys::kStatusValueLoading : keys::kStatusValueComplete;
 }
 
-// TODO: this function should really take a TabContentsWrapper.
+// TODO(sky): this function should really take a TabContentsWrapper.
 int ExtensionTabUtil::GetWindowIdOfTab(const TabContents* tab_contents) {
   const TabContentsWrapper* tab =
       TabContentsWrapper::GetCurrentWrapperForContents(tab_contents);
@@ -279,7 +279,6 @@ bool ExtensionTabUtil::GetDefaultTab(Browser* browser,
                                      int* tab_id) {
   DCHECK(browser);
   DCHECK(contents);
-  DCHECK(tab_id);
 
   *contents = browser->GetSelectedTabContentsWrapper();
   if (*contents) {
@@ -1119,6 +1118,60 @@ bool MoveTabFunction::RunImpl() {
   return true;
 }
 
+bool ReloadTabFunction::RunImpl() {
+  bool bypass_cache = false;
+  if (HasOptionalArgument(1)) {
+      DictionaryValue* reload_props = NULL;
+      EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(1, &reload_props));
+
+      if (reload_props->HasKey(keys::kBypassCache)) {
+        EXTENSION_FUNCTION_VALIDATE(reload_props->GetBoolean(
+            keys::kBypassCache,
+            &bypass_cache));
+      }
+  }
+
+  TabContentsWrapper* contents = NULL;
+
+  // If |tab_id| is specified, look for it. Otherwise default to selected tab
+  // in the current window.
+  Value* tab_value = NULL;
+  if (HasOptionalArgument(0))
+    EXTENSION_FUNCTION_VALIDATE(args_->Get(0, &tab_value));
+
+  if (tab_value == NULL || tab_value->IsType(Value::TYPE_NULL)) {
+    Browser* browser = GetCurrentBrowser();
+    if (!browser) {
+      error_ = keys::kNoCurrentWindowError;
+      return false;
+    }
+
+    if (!ExtensionTabUtil::GetDefaultTab(browser, &contents, NULL))
+      return false;
+  } else {
+    int tab_id;
+    EXTENSION_FUNCTION_VALIDATE(tab_value->GetAsInteger(&tab_id));
+
+    Browser* browser = NULL;
+    if (!GetTabById(tab_id, profile(), include_incognito(),
+                    &browser, NULL, &contents, NULL, &error_))
+    return false;
+  }
+
+  TabContents* tab_contents = contents->tab_contents();
+  if (tab_contents->showing_interstitial_page()) {
+    // This does as same as Browser::ReloadInternal.
+    NavigationEntry* entry = tab_contents->controller().GetActiveEntry();
+    GetCurrentBrowser()->OpenURL(entry->url(), GURL(), CURRENT_TAB,
+                                 PageTransition::RELOAD);
+  } else if (bypass_cache) {
+    tab_contents->controller().ReloadIgnoringCache(true);
+  } else {
+    tab_contents->controller().Reload(true);
+  }
+
+  return true;
+}
 
 bool RemoveTabFunction::RunImpl() {
   int tab_id;

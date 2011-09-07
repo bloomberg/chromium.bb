@@ -1607,6 +1607,27 @@
         ]
       },
       {
+        "name": "reload",
+        "type": "function",
+        "description": "Reload a tab.",
+        "parameters": [
+          {"type": "integer", "name": "tabId", "optional": true, "description": "The ID of the tab to reload; defaults to the selected tab of the current window."},
+          {
+            "type": "object",
+            "name": "reloadProperties",
+            "optional": true,
+            "properties": {
+              "bypassCache": {
+                "type": "boolean",
+                "optional": true,
+                "description": "Whether using any local cache. Default is false."
+              }
+            }
+          },
+          {"type": "function", "name": "callback", "optional": true, "parameters": []}
+        ]
+      },
+      {
         "name": "remove",
         "type": "function",
         "description": "Closes a tab. Note: This function can be used without requesting the 'tabs' permission in the manifest.",

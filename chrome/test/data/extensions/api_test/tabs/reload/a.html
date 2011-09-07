@@ -1,0 +1,13 @@
+<html>
+  <head>
+    <script>
+window.onload = function() {
+  var href = window.location.href;
+  chrome.extension.getBackgroundPage().onTabLoad(href);
+};
+    </script>
+  </head>
+  <body>
+    <h1>A</h1>
+  </body>
+</html>

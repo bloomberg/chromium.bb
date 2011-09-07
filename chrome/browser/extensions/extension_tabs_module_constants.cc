@@ -7,6 +7,7 @@
 namespace extension_tabs_module_constants {
 
 const char kAllFramesKey[] = "allFrames";
+const char kBypassCache[] = "bypassCache";
 const char kCodeKey[] = "code";
 const char kDrawAttentionKey[] = "drawAttention";
 const char kFaviconUrlKey[] = "favIconUrl";

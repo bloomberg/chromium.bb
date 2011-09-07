@@ -138,6 +138,11 @@ class MoveTabFunction : public SyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("tabs.move")
 };
+class ReloadTabFunction : public SyncExtensionFunction {
+  virtual ~ReloadTabFunction() {}
+  virtual bool RunImpl();
+  DECLARE_EXTENSION_FUNCTION_NAME("tabs.reload")
+};
 class RemoveTabFunction : public SyncExtensionFunction {
   virtual ~RemoveTabFunction() {}
   virtual bool RunImpl() OVERRIDE;
