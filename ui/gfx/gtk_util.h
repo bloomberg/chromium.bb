@@ -64,13 +64,13 @@ UI_EXPORT std::string RemoveWindowsStyleAccelerators(const std::string& label);
 // Makes a copy of |pixels| with the ordering changed from BGRA to RGBA.
 // The caller is responsible for free()ing the data. If |stride| is 0, it's
 // assumed to be 4 * |width|.
-UI_EXPORT uint8_t* BGRAToRGBA(const uint8_t* pixels,
+uint8_t* BGRAToRGBA(const uint8_t* pixels,
                               int width,
                               int height,
                               int stride);
 
 // Initialize some GTK settings so that our dialogs are consistent.
-void InitRCStyles();
+UI_EXPORT void InitRCStyles();
 
 }  // namespace gfx
 
