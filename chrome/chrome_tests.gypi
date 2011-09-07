@@ -1420,6 +1420,7 @@
         'browser/extensions/apps_promo_unittest.cc',
         'browser/extensions/convert_user_script_unittest.cc',
         'browser/extensions/convert_web_app_unittest.cc',
+        'browser/extensions/extension_creator_filter_unittest.cc',
         'browser/extensions/extension_event_router_forwarder_unittest.cc',
         'browser/extensions/extension_icon_manager_unittest.cc',
         'browser/extensions/extension_info_map_unittest.cc',

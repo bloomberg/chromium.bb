@@ -7,10 +7,13 @@
 #include <string>
 #include <vector>
 
+#include "base/bind.h"
+#include "base/callback.h"
 #include "base/file_util.h"
 #include "base/memory/scoped_handle.h"
 #include "base/scoped_temp_dir.h"
 #include "base/string_util.h"
+#include "chrome/browser/extensions/extension_creator_filter.h"
 #include "chrome/browser/extensions/sandboxed_extension_unpacker.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_file_util.h"
@@ -153,7 +156,10 @@ bool ExtensionCreator::CreateZip(const FilePath& extension_dir,
                                  FilePath* zip_path) {
   *zip_path = temp_path.Append(FILE_PATH_LITERAL("extension.zip"));
 
-  if (!Zip(extension_dir, *zip_path, false)) {  // no hidden files
+  scoped_refptr<ExtensionCreatorFilter> filter = new ExtensionCreatorFilter();
+  const base::Callback<bool(const FilePath&)>& filter_cb =
+    base::Bind(&ExtensionCreatorFilter::ShouldPackageFile, filter.get());
+  if (!Zip(extension_dir, *zip_path, filter_cb)) {
     error_message_ =
         l10n_util::GetStringUTF8(IDS_EXTENSION_FAILED_DURING_PACKAGING);
     return false;

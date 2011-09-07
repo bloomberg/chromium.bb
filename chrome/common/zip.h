@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,11 +6,19 @@
 #define CHROME_COMMON_ZIP_H_
 #pragma once
 
+#include "base/callback.h"
+
 class FilePath;
 
 // Zip the contents of src_dir into dest_file. src_path must be a directory.
 // An entry will *not* be created in the zip for the root folder -- children
-// of src_dir will be at the root level of the created zip.
+// of src_dir will be at the root level of the created zip. For each file in
+// src_dir, include it only if the callback |filter_cb| returns true. Otherwise
+// omit it.
+bool Zip(const FilePath& src_dir, const FilePath& dest_file,
+         const base::Callback<bool(const FilePath&)>& filter_cb);
+
+// Convenience method for callers who don't need to set up the filter callback.
 // If |include_hidden_files| is true, files starting with "." are included.
 // Otherwise they are omitted.
 bool Zip(const FilePath& src_dir, const FilePath& dest_file,

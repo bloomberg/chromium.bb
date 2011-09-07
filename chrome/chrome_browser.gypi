@@ -940,6 +940,8 @@
         'browser/extensions/extension_cookies_helpers.h',
         'browser/extensions/extension_creator.cc',
         'browser/extensions/extension_creator.h',
+        'browser/extensions/extension_creator_filter.cc',
+        'browser/extensions/extension_creator_filter.h',
         'browser/extensions/extension_data_deleter.cc',
         'browser/extensions/extension_data_deleter.h',
         'browser/extensions/extension_debugger_api.cc',
