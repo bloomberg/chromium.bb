@@ -85,7 +85,6 @@ void FastConvertRGB32ToYUVRow(const uint8* rgb_buf_1,
 #define SIMD_ALIGNED(var) var __attribute__((aligned(16)))
 #endif
 extern SIMD_ALIGNED(int16 kCoefficientsRgbY[768][4]);
-extern SIMD_ALIGNED(int16 kCoefficientsYuvR[768][4]);
 
 // Method to force C version.
 //#define USE_MMX 0
