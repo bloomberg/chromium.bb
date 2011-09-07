@@ -46,6 +46,7 @@ RESERVE_TOP = 1 << 30;
  */
 PHDRS {
   text PT_LOAD FILEHDR PHDRS;
+  data PT_LOAD;
   reserve PT_LOAD FLAGS(0);
   stack PT_GNU_STACK FLAGS(6);	/* RW, no E */
 }
@@ -64,6 +65,21 @@ SECTIONS {
     *(.eh_frame*)
   } :text
   etext = .;
+
+  /*
+   * Adjust the address for the data segment.  We want to adjust up to
+   * the same address within the page on the next page up.
+   */
+  . = (ALIGN(CONSTANT(MAXPAGESIZE)) -
+       ((CONSTANT(MAXPAGESIZE) - .) & (CONSTANT(MAXPAGESIZE) - 1)));
+  . = DATA_SEGMENT_ALIGN(CONSTANT(MAXPAGESIZE), CONSTANT(COMMONPAGESIZE));
+
+  .data : {
+    *(.data*)
+  } :data
+  .bss : {
+    *(.bss*)
+  }
 
   /*
    * Now we move up to the next p_align increment, and place the dummy
