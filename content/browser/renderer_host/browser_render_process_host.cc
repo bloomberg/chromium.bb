@@ -583,7 +583,7 @@ void BrowserRenderProcessHost::PropagateBrowserCommandLineToRenderer(
     switches::kInProcessWebGL,
     switches::kJavaScriptFlags,
     switches::kLoggingLevel,
-    switches::kHighLatencyAudio,
+    switches::kLowLatencyAudio,
     switches::kNoJsRandomness,
     switches::kNoReferrers,
     switches::kNoSandbox,
