@@ -431,6 +431,95 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, AutofillFormWithRepeatedField) {
   ExpectFieldValue(L"state_freeform", "");
 }
 
+// Test that we can Autofill dynamically generated forms.
+IN_PROC_BROWSER_TEST_F(AutofillTest, DynamicFormFill) {
+  CreateTestProfile();
+
+  // Load the test page.
+  ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
+  ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(browser(),
+      GURL(std::string(kDataURIPrefix) +
+           "<form id=\"form\" action=\"http://www.example.com/\""
+           "      method=\"POST\"></form>"
+           "<script>"
+           "function AddElement(name, label) {"
+           "  var form = document.getElementById('form');"
+           ""
+           "  var label_text = document.createTextNode(label);"
+           "  var label_element = document.createElement('label');"
+           "  label_element.setAttribute('for', name);"
+           "  label_element.appendChild(label_text);"
+           "  form.appendChild(label_element);"
+           ""
+           "  if (name === 'state' || name === 'country') {"
+           "    var select_element = document.createElement('select');"
+           "    select_element.setAttribute('id', name);"
+           "    select_element.setAttribute('name', name);"
+           ""
+           "    /* Add an empty selected option. */"
+           "    var default_option = new Option('--', '', true);"
+           "    select_element.appendChild(default_option);"
+           ""
+           "    /* Add the other options. */"
+           "    if (name == 'state') {"
+           "      var option1 = new Option('California', 'CA');"
+           "      select_element.appendChild(option1);"
+           "      var option2 = new Option('Texas', 'TX');"
+           "      select_element.appendChild(option2);"
+           "    } else {"
+           "      var option1 = new Option('Canada', 'CA');"
+           "      select_element.appendChild(option1);"
+           "      var option2 = new Option('United States', 'US');"
+           "      select_element.appendChild(option2);"
+           "    }"
+           ""
+           "    form.appendChild(select_element);"
+           "  } else {"
+           "    var input_element = document.createElement('input');"
+           "    input_element.setAttribute('id', name);"
+           "    input_element.setAttribute('name', name);"
+           ""
+           "    /* Add the onFocus listener to the 'firstname' field. */"
+           "    if (name === 'firstname') {"
+           "      input_element.setAttribute("
+           "          'onFocus', 'domAutomationController.send(true)');"
+           "    }"
+           ""
+           "    form.appendChild(input_element);"
+           "  }"
+           ""
+           "  form.appendChild(document.createElement('br'));"
+           "};"
+           ""
+           "function BuildForm() {"
+           "  var elements = ["
+           "    ['firstname', 'First name:'],"
+           "    ['lastname', 'Last name:'],"
+           "    ['address1', 'Address line 1:'],"
+           "    ['address2', 'Address line 2:'],"
+           "    ['city', 'City:'],"
+           "    ['state', 'State:'],"
+           "    ['zip', 'ZIP code:'],"
+           "    ['country', 'Country:'],"
+           "    ['phone', 'Phone number:'],"
+           "  ];"
+           ""
+           "  for (var i = 0; i < elements.length; i++) {"
+           "    var name = elements[i][0];"
+           "    var label = elements[i][1];"
+           "    AddElement(name, label);"
+           "  }"
+           "};"
+           "</script>")));
+
+  // Dynamically construct the form.
+  ASSERT_TRUE(ui_test_utils::ExecuteJavaScript(render_view_host(), L"",
+                                               L"BuildForm();"));
+
+  // Invoke Autofill.
+  TryBasicFormFill();
+}
+
 // Test that form filling works after reloading the current page.
 // This test brought to you by http://crbug.com/69204
 #if defined(OS_MACOSX)

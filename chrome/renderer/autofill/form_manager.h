@@ -7,6 +7,7 @@
 #pragma once
 
 #include <map>
+#include <set>
 #include <vector>
 
 #include "base/callback_old.h"
@@ -23,6 +24,8 @@ struct FormField;
 namespace WebKit {
 class WebFormControlElement;
 class WebFrame;
+class WebInputElement;
+class WebSelectElement;
 }  // namespace WebKit
 
 namespace autofill {
@@ -61,43 +64,62 @@ class FormManager {
       ExtractMask extract_mask,
       webkit_glue::FormField* field);
 
-  // Returns the corresponding label for |element|.  WARNING: This method can
-  // potentially be very slow.  Do not use during any code paths where the page
-  // is loading.
-  // TODO(isherman): Refactor autofill_agent.cc not to require this method to be
-  // exposed.
-  static string16 LabelForElement(const WebKit::WebFormControlElement& element);
+  // Fills |form| with the FormData object corresponding to the |form_element|.
+  // If |field| is non-NULL, also fills |field| with the FormField object
+  // corresponding to the |form_control_element|.
+  // |extract_mask| controls what data is extracted.
+  // Returns true if |form| is filled out; it's possible that the |form_element|
+  // won't meet the |requirements|.  Also returns false if there are no fields
+  // in the |form|.
+  static bool WebFormElementToFormData(
+      const WebKit::WebFormElement& form_element,
+      const WebKit::WebFormControlElement& form_control_element,
+      RequirementsMask requirements,
+      ExtractMask extract_mask,
+      webkit_glue::FormData* form,
+      webkit_glue::FormField* field);
 
-  // Fills out a FormData object from a given WebFormElement. If |get_values|
-  // is true, the fields in |form| will have the values filled out. If
-  // |get_options| is true, the fields in |form will have select options filled
-  // out. Returns true if |form| is filled out; it's possible that |element|
-  // won't meet the requirements in |requirements|. This also returns false if
-  // there are no fields in |form|.
-  static bool WebFormElementToFormData(const WebKit::WebFormElement& element,
-                                       RequirementsMask requirements,
-                                       ExtractMask extract_mask,
-                                       webkit_glue::FormData* form);
+  // Finds the form that contains |element| and returns it in |form|.  Fills
+  // |field| with the |FormField| representation for element.
+  // Returns false if the form is not found.
+  static bool FindFormAndFieldForFormControlElement(
+      const WebKit::WebFormControlElement& element,
+      webkit_glue::FormData* form,
+      webkit_glue::FormField* field);
+
+  // Fills the form represented by |form|.  |element| is the input element that
+  // initiated the auto-fill process.
+  static void FillForm(const webkit_glue::FormData& form,
+                       const WebKit::WebInputElement& element);
+
+  // Previews the form represented by |form|.  |element| is the input element
+  // that initiated the preview process.
+  static void PreviewForm(const webkit_glue::FormData& form,
+                          const WebKit::WebInputElement& element);
+
+  // Clears the placeholder values and the auto-filled background for any fields
+  // in the form containing |node| that have been previewed. Resets the
+  // autofilled state of |node| to |was_autofilled|. Returns false if the form
+  // is not found.
+  static bool ClearPreviewedFormWithElement(
+      const WebKit::WebInputElement& element,
+      bool was_autofilled);
+
+  // Returns true if |form| has any auto-filled fields.
+  static bool FormWithElementIsAutofilled(
+      const WebKit::WebInputElement& element);
 
   // Scans the DOM in |frame| extracting and storing forms.
   // Returns a vector of the extracted forms.
-  void ExtractForms(const WebKit::WebFrame* frame,
+  void ExtractForms(const WebKit::WebFrame& frame,
                     std::vector<webkit_glue::FormData>* forms);
 
-  // Finds the form that contains |element| and returns it in |form|. Returns
-  // false if the form is not found.
-  bool FindFormWithFormControlElement(
-      const WebKit::WebFormControlElement& element,
-      webkit_glue::FormData* form);
+  // Resets the forms for the specified |frame|.
+  void ResetFrame(const WebKit::WebFrame& frame);
 
-  // Fills the form represented by |form|. |node| is the input element that
-  // initiated the auto-fill process.
-  void FillForm(const webkit_glue::FormData& form, const WebKit::WebNode& node);
-
-  // Previews the form represented by |form|. |node| is the input element that
-  // initiated the preview process.
-  void PreviewForm(const webkit_glue::FormData& form,
-                   const WebKit::WebNode &node);
+  // Clears the values of all input elements in the form that contains
+  // |element|.  Returns false if the form is not found.
+  bool ClearFormWithElement(const WebKit::WebInputElement& element);
 
   // For each field in the |form|, sets the field's placeholder text to the
   // field's overall predicted type.  Also sets the title to include the field's
@@ -105,42 +127,12 @@ class FormManager {
   // and the experiment id for the server predictions.
   bool ShowPredictions(const webkit_glue::FormDataPredictions& form);
 
-  // Clears the values of all input elements in the form that contains |node|.
-  // Returns false if the form is not found.
-  bool ClearFormWithNode(const WebKit::WebNode& node);
-
-  // Clears the placeholder values and the auto-filled background for any fields
-  // in the form containing |node| that have been previewed. Resets the
-  // autofilled state of |node| to |was_autofilled|. Returns false if the form
-  // is not found.
-  bool ClearPreviewedFormWithNode(const WebKit::WebNode& node,
-                                  bool was_autofilled);
-
-  // Resets the forms for the specified |frame|.
-  void ResetFrame(const WebKit::WebFrame* frame);
-
-  // Returns true if |form| has any auto-filled fields.
-  bool FormWithNodeIsAutofilled(const WebKit::WebNode& node);
-
  private:
-  // Stores the WebFormElement and the form control elements for a form.
-  // Original form values are stored so when we clear a form we can reset
-  // <select> elements to their original value.
-  struct FormElement;
+  // The cached web frames.
+  std::set<const WebKit::WebFrame*> web_frames_;
 
-  // Type for cache of FormElement objects.
-  typedef ScopedVector<FormElement> FormElementList;
-
-  // Finds the cached FormElement that contains |node|.
-  bool FindCachedFormElementWithNode(const WebKit::WebNode& node,
-                                     FormElement** form_element);
-
-  // Uses the data in |form| to find the cached FormElement.
-  bool FindCachedFormElement(const webkit_glue::FormData& form,
-                             FormElement** form_element);
-
-  // The cached FormElement objects.
-  FormElementList form_elements_;
+  // The cached initial values for <select> elements.
+  std::map<const WebKit::WebSelectElement, string16> initial_select_values_;
 
   DISALLOW_COPY_AND_ASSIGN(FormManager);
 };

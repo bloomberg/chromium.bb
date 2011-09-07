@@ -457,35 +457,62 @@ typedef void (*Callback)(WebKit::WebFormControlElement*,
                          const webkit_glue::FormField*,
                          bool);
 
+// Fills |autofillable_elements| with all the auto-fillable form control
+// elements in |form_element|.
+void ExtractAutofillableElements(
+    const WebFormElement& form_element,
+    std::vector<WebFormControlElement>* autofillable_elements) {
+  WebVector<WebFormControlElement> control_elements;
+  form_element.getFormControlElements(control_elements);
+
+  autofillable_elements->clear();
+  for (size_t i = 0; i < control_elements.size(); ++i) {
+    WebFormControlElement element = control_elements[i];
+    if (!IsAutofillableElement(element))
+      continue;
+
+    autofillable_elements->push_back(element);
+  }
+}
+
 // For each autofillable field in |data| that matches a field in the |form|,
 // the |callback| is invoked with the corresponding |form| field data.
-void ForEachMatchingFormField(
-    std::vector<WebKit::WebFormControlElement>* control_elements,
-    const WebNode& node,
-    const FormData& data,
-    Callback callback) {
+void ForEachMatchingFormField(const WebFormElement& form_element,
+                              const WebElement& initiating_element,
+                              const FormData& data,
+                              Callback callback) {
+  std::vector<WebFormControlElement> control_elements;
+  ExtractAutofillableElements(form_element, &control_elements);
+
+  if (control_elements.size() != data.fields.size()) {
+    // This case should be reachable only for pathological websites, which add
+    // or remove form fields while the user is interacting with the Autofill
+    // popup.  I (isherman) am not aware of any such websites, and so am
+    // optimistically including a NOTREACHED().  If you ever trip this check,
+    // please file a bug against me.
+    NOTREACHED();
+    return;
+  }
+
   // It's possible that the site has injected fields into the form after the
   // page has loaded, so we can't assert that the size of the cached control
   // elements is equal to the size of the fields in |form|.  Fortunately, the
   // one case in the wild where this happens, paypal.com signup form, the fields
   // are appended to the end of the form and are not visible.
-  for (size_t i = 0, j = 0;
-       i < control_elements->size() && j < data.fields.size();
-       ++i) {
-    WebFormControlElement* element = &(*control_elements)[i];
-    string16 element_name(element->nameForAutofill());
+  for (size_t i = 0; i < control_elements.size(); ++i) {
+    WebFormControlElement* element = &control_elements[i];
 
-    // Search forward in the |form| for a corresponding field.
-    size_t k = j;
-    while (k < data.fields.size() && element_name != data.fields[k].name)
-      k++;
-
-    if (k >= data.fields.size())
+    if (string16(element->nameForAutofill()) != data.fields[i].name) {
+      // This case should be reachable only for pathological websites, which
+      // rename form fields while the user is interacting with the Autofill
+      // popup.  I (isherman) am not aware of any such websites, and so am
+      // optimistically including a NOTREACHED().  If you ever trip this check,
+      // please file a bug against me.
+      NOTREACHED();
       continue;
+    }
 
-    DCHECK_EQ(data.fields[k].name, element_name);
-
-    bool is_initiating_node = false;
+    bool is_initiating_element = (*element == initiating_element);
 
     const WebInputElement* input_element = toWebInputElement(element);
     if (IsTextInput(input_element)) {
@@ -494,11 +521,9 @@ void ForEachMatchingFormField(
       if (!input_element->autoComplete())
         continue;
 
-      is_initiating_node = (*input_element == node);
-
       // Only autofill empty fields and the field that initiated the filling,
       // i.e. the field the user is currently editing and interacting with.
-      if (!is_initiating_node && !input_element->value().isEmpty())
+      if (!is_initiating_element && !input_element->value().isEmpty())
         continue;
     }
 
@@ -506,10 +531,7 @@ void ForEachMatchingFormField(
         !element->isFocusable())
       continue;
 
-    callback(element, &data.fields[k], is_initiating_node);
-
-    // We found a matching form field so move on to the next.
-    ++j;
+    callback(element, &data.fields[i], is_initiating_element);
   }
 }
 
@@ -572,12 +594,6 @@ void PreviewFormField(WebKit::WebFormControlElement* field,
 }  // namespace
 
 namespace autofill {
-
-struct FormManager::FormElement {
-  WebKit::WebFormElement form_element;
-  std::vector<WebKit::WebFormControlElement> control_elements;
-  std::vector<string16> control_values;
-};
 
 FormManager::FormManager() {
 }
@@ -659,50 +675,30 @@ void FormManager::WebFormControlElementToFormField(
 }
 
 // static
-string16 FormManager::LabelForElement(const WebFormControlElement& element) {
-  // Don't scrape labels for elements we can't possibly autofill anyway.
-  if (!IsAutofillableElement(element))
-    return string16();
-
-  WebNodeList labels = element.document().getElementsByTagName("label");
-  for (unsigned i = 0; i < labels.length(); ++i) {
-    WebLabelElement label = labels.item(i).to<WebLabelElement>();
-    WebElement corresponding_control = label.correspondingControl();
-    if (corresponding_control == element ||
-        (corresponding_control.isNull() &&
-         label.getAttribute("for") == element.nameForAutofill())) {
-      return FindChildText(label);
-    }
-  }
-
-  // Infer the label from context if not found in label element.
-  return InferLabelForElement(element);
-}
-
-// static
-bool FormManager::WebFormElementToFormData(const WebFormElement& element,
-                                           RequirementsMask requirements,
-                                           ExtractMask extract_mask,
-                                           FormData* form) {
-  DCHECK(form);
-
-  const WebFrame* frame = element.document().frame();
+bool FormManager::WebFormElementToFormData(
+    const WebKit::WebFormElement& form_element,
+    const WebKit::WebFormControlElement& form_control_element,
+    RequirementsMask requirements,
+    ExtractMask extract_mask,
+    webkit_glue::FormData* form,
+    webkit_glue::FormField* field) {
+  const WebFrame* frame = form_element.document().frame();
   if (!frame)
     return false;
 
-  if (requirements & REQUIRE_AUTOCOMPLETE && !element.autoComplete())
+  if (requirements & REQUIRE_AUTOCOMPLETE && !form_element.autoComplete())
     return false;
 
-  form->name = GetFormIdentifier(element);
-  form->method = element.method();
+  form->name = GetFormIdentifier(form_element);
+  form->method = form_element.method();
   form->origin = frame->document().url();
-  form->action = frame->document().completeURL(element.action());
-  form->user_submitted = element.wasUserSubmitted();
+  form->action = frame->document().completeURL(form_element.action());
+  form->user_submitted = form_element.wasUserSubmitted();
 
   // If the completed URL is not valid, just use the action we get from
   // WebKit.
   if (!form->action.is_valid())
-    form->action = GURL(element.action());
+    form->action = GURL(form_element.action());
 
   // A map from a FormField's name to the FormField itself.
   std::map<string16, FormField*> name_map;
@@ -712,7 +708,7 @@ bool FormManager::WebFormElementToFormData(const WebFormElement& element,
   ScopedVector<FormField> form_fields;
 
   WebVector<WebFormControlElement> control_elements;
-  element.getFormControlElements(control_elements);
+  form_element.getFormControlElements(control_elements);
 
   // A vector of bools that indicate whether each field in the form meets the
   // requirements and thus will be in the resulting |form|.
@@ -733,13 +729,13 @@ bool FormManager::WebFormElementToFormData(const WebFormElement& element,
       continue;
 
     // Create a new FormField, fill it out and map it to the field's name.
-    FormField* field = new FormField;
-    WebFormControlElementToFormField(control_element, extract_mask, field);
-    form_fields.push_back(field);
+    FormField* form_field = new FormField;
+    WebFormControlElementToFormField(control_element, extract_mask, form_field);
+    form_fields.push_back(form_field);
     // TODO(jhawkins): A label element is mapped to a form control element's id.
     // field->name() will contain the id only if the name does not exist.  Add
     // an id() method to WebFormControlElement and use that here.
-    name_map[field->name] = field;
+    name_map[form_field->name] = form_field;
     fields_extracted[i] = true;
   }
 
@@ -752,7 +748,7 @@ bool FormManager::WebFormElementToFormData(const WebFormElement& element,
   // element's name as a key into the <name, FormField> map to find the
   // previously created FormField and set the FormField's label to the
   // label.firstChild().nodeValue() of the label element.
-  WebNodeList labels = element.getElementsByTagName("label");
+  WebNodeList labels = form_element.getElementsByTagName("label");
   for (unsigned i = 0; i < labels.length(); ++i) {
     WebLabelElement label = labels.item(i).to<WebLabelElement>();
     WebFormControlElement field_element =
@@ -798,6 +794,9 @@ bool FormManager::WebFormElementToFormData(const WebFormElement& element,
     if (form_fields[field_idx]->label.empty())
       form_fields[field_idx]->label = InferLabelForElement(control_element);
 
+    if (field && form_control_element == control_element)
+      *field = *form_fields[field_idx];
+
     ++field_idx;
   }
 
@@ -810,213 +809,74 @@ bool FormManager::WebFormElementToFormData(const WebFormElement& element,
   return true;
 }
 
-void FormManager::ExtractForms(const WebFrame* frame,
-                               std::vector<FormData>* forms) {
-  // Reset the vector of FormElements for this frame.
-  ResetFrame(frame);
-
-  WebVector<WebFormElement> web_forms;
-  frame->document().forms(web_forms);
-
-  size_t num_fields_seen = 0;
-  for (size_t i = 0; i < web_forms.size(); ++i) {
-    // Owned by |form_elements_|.
-    FormElement* form_element = new FormElement;
-    form_element->form_element = web_forms[i];
-
-    WebVector<WebFormControlElement> control_elements;
-    form_element->form_element.getFormControlElements(control_elements);
-    for (size_t j = 0; j < control_elements.size(); ++j) {
-      WebFormControlElement element = control_elements[j];
-      if (!IsAutofillableElement(element))
-        continue;
-
-      form_element->control_elements.push_back(element);
-
-      // Save original values of <select> elements so we can restore them
-      // when |ClearFormWithNode()| is invoked.
-      if (IsSelectElement(element)) {
-        form_element->control_values.push_back(
-            element.toConst<WebSelectElement>().value());
-      } else {
-        form_element->control_values.push_back(string16());
-      }
-    }
-
-    form_elements_.push_back(form_element);
-
-    // To avoid overly expensive computation, we impose both a minimum and a
-    // maximum number of allowable fields.
-    if (form_element->control_elements.size() < kRequiredAutofillFields ||
-        form_element->control_elements.size() > kMaxParseableFields)
-      continue;
-
-    FormData form;
-    WebFormElementToFormData(
-        form_element->form_element, REQUIRE_NONE, EXTRACT_VALUE, &form);
-
-    num_fields_seen += form.fields.size();
-    if (num_fields_seen > kMaxParseableFields)
-      break;
-
-    if (form.fields.size() >= kRequiredAutofillFields)
-      forms->push_back(form);
-  }
-}
-
-bool FormManager::FindFormWithFormControlElement(
+// static
+bool FormManager::FindFormAndFieldForFormControlElement(
     const WebFormControlElement& element,
-    FormData* form) {
-  DCHECK(form);
-
-  const WebFrame* frame = element.document().frame();
-  if (!frame)
+    FormData* form,
+    webkit_glue::FormField* field) {
+  const WebFormElement form_element = element.form();
+  if (form_element.isNull())
     return false;
 
-  for (FormElementList::const_iterator iter = form_elements_.begin();
-       iter != form_elements_.end(); ++iter) {
-    const FormElement* form_element = *iter;
-
-    if (form_element->form_element.document().frame() != frame)
-      continue;
-
-    for (std::vector<WebFormControlElement>::const_iterator iter =
-             form_element->control_elements.begin();
-         iter != form_element->control_elements.end(); ++iter) {
-      if (iter->nameForAutofill() == element.nameForAutofill()) {
-        ExtractMask extract_mask =
-            static_cast<ExtractMask>(EXTRACT_VALUE | EXTRACT_OPTIONS);
-        return WebFormElementToFormData(form_element->form_element,
-                                        REQUIRE_NONE,
-                                        extract_mask,
-                                        form);
-      }
-    }
-  }
-
-  return false;
+  ExtractMask extract_mask =
+      static_cast<ExtractMask>(EXTRACT_VALUE | EXTRACT_OPTIONS);
+  return WebFormElementToFormData(form_element,
+                                  element,
+                                  REQUIRE_NONE,
+                                  extract_mask,
+                                  form,
+                                  field);
 }
 
-void FormManager::FillForm(const FormData& form, const WebNode& node) {
-  FormElement* form_element = NULL;
-  if (!FindCachedFormElement(form, &form_element))
+// static
+void FormManager::FillForm(const FormData& form,
+                           const WebInputElement& element) {
+  WebFormElement form_element = element.form();
+  if (form_element.isNull())
     return;
 
-  ForEachMatchingFormField(&form_element->control_elements,
-                           node,
+  ForEachMatchingFormField(form_element,
+                           element,
                            form,
                            &FillFormField);
 }
 
-void FormManager::PreviewForm(const FormData& form, const WebNode& node) {
-  FormElement* form_element = NULL;
-  if (!FindCachedFormElement(form, &form_element))
+// static
+void FormManager::PreviewForm(const FormData& form,
+                              const WebInputElement& element) {
+  WebFormElement form_element = element.form();
+  if (form_element.isNull())
     return;
 
-  ForEachMatchingFormField(&form_element->control_elements,
-                           node,
+  ForEachMatchingFormField(form_element,
+                           element,
                            form,
                            &PreviewFormField);
 }
 
-bool FormManager::ShowPredictions(const FormDataPredictions& form) {
-  FormElement* form_element = NULL;
-  if (!FindCachedFormElement(form.data, &form_element))
+// static
+bool FormManager::ClearPreviewedFormWithElement(const WebInputElement& element,
+                                                bool was_autofilled) {
+  WebFormElement form_element = element.form();
+  if (form_element.isNull())
     return false;
 
-  DCHECK_EQ(form.data.fields.size(), form.fields.size());
-  for (size_t i = 0, j = 0;
-       i < form_element->control_elements.size() && j < form.fields.size();
-       ++i) {
-    WebFormControlElement* element = &form_element->control_elements[i];
-    string16 element_name(element->nameForAutofill());
-
-    // Search forward in the |form| for a corresponding field.
-    size_t k = j;
-    while (k < form.fields.size() && element_name != form.data.fields[k].name)
-      k++;
-
-    if (k >= form.fields.size())
-      continue;
-
-    DCHECK_EQ(form.data.fields[k].name, element_name);
-
-    std::string placeholder = form.fields[k].overall_type;
-    string16 title = l10n_util::GetStringFUTF16(
-        IDS_AUTOFILL_SHOW_PREDICTIONS_TITLE,
-        UTF8ToUTF16(form.fields[k].heuristic_type),
-        UTF8ToUTF16(form.fields[k].server_type),
-        UTF8ToUTF16(form.fields[k].signature),
-        UTF8ToUTF16(form.signature),
-        UTF8ToUTF16(form.experiment_id));
-    if (!element->hasAttribute("placeholder"))
-      element->setAttribute("placeholder", WebString(UTF8ToUTF16(placeholder)));
-    element->setAttribute("title", WebString(title));
-
-    // We found a matching form field so move on to the next.
-    ++j;
-  }
-
-  return true;
-}
-
-bool FormManager::ClearFormWithNode(const WebNode& node) {
-  FormElement* form_element = NULL;
-  if (!FindCachedFormElementWithNode(node, &form_element))
-    return false;
-
-  for (size_t i = 0; i < form_element->control_elements.size(); ++i) {
-    WebFormControlElement element = form_element->control_elements[i];
-    WebInputElement* input_element = toWebInputElement(&element);
-    if (IsTextInput(input_element)) {
-
-      // We don't modify the value of disabled fields.
-      if (!input_element->isEnabled())
-        continue;
-
-      input_element->setValue(string16(), true);
-      input_element->setAutofilled(false);
-
-      // Clearing the value in the focused node (above) can cause selection
-      // to be lost. We force selection range to restore the text cursor.
-      if (node == *input_element) {
-        int length = input_element->value().length();
-        input_element->setSelectionRange(length, length);
-      }
-    } else {
-      DCHECK(IsSelectElement(element));
-      WebSelectElement select_element = element.to<WebSelectElement>();
-      if (select_element.value() != form_element->control_values[i]) {
-        select_element.setValue(form_element->control_values[i]);
-        select_element.dispatchFormControlChangeEvent();
-      }
-    }
-  }
-
-  return true;
-}
-
-bool FormManager::ClearPreviewedFormWithNode(const WebNode& node,
-                                             bool was_autofilled) {
-  FormElement* form_element = NULL;
-  if (!FindCachedFormElementWithNode(node, &form_element))
-    return false;
-
-  for (size_t i = 0; i < form_element->control_elements.size(); ++i) {
-    WebInputElement* input_element =
-        toWebInputElement(&form_element->control_elements[i]);
+  std::vector<WebFormControlElement> control_elements;
+  ExtractAutofillableElements(form_element, &control_elements);
+  for (size_t i = 0; i < control_elements.size(); ++i) {
     // Only text input elements can be previewed.
+    WebInputElement* input_element = toWebInputElement(&control_elements[i]);
     if (!IsTextInput(input_element))
       continue;
 
-    // If the input element has not been auto-filled, FormManager has not
-    // previewed this field, so we have nothing to reset.
+    // If the input element is not auto-filled, we did not preview it, so there
+    // is nothing to reset.
     if (!input_element->isAutofilled())
       continue;
 
     // There might be unrelated elements in this form which have already been
-    // auto-filled. For example, the user might have already filled the address
-    // part of a form and now be dealing with the credit card section. We only
+    // auto-filled.  For example, the user might have already filled the address
+    // part of a form and now be dealing with the credit card section.  We only
     // want to reset the auto-filled status for fields that were previewed.
     if (input_element->suggestedValue().isEmpty())
       continue;
@@ -1024,7 +884,7 @@ bool FormManager::ClearPreviewedFormWithNode(const WebNode& node,
     // Clear the suggested value. For the initiating node, also restore the
     // original value.
     input_element->setSuggestedValue(WebString());
-    bool is_initiating_node = (node == *input_element);
+    bool is_initiating_node = (element == *input_element);
     if (is_initiating_node)
       input_element->setAutofilled(was_autofilled);
     else
@@ -1042,24 +902,16 @@ bool FormManager::ClearPreviewedFormWithNode(const WebNode& node,
   return true;
 }
 
-void FormManager::ResetFrame(const WebFrame* frame) {
-  FormElementList::iterator iter = form_elements_.begin();
-  while (iter != form_elements_.end()) {
-    if ((*iter)->form_element.document().frame() == frame)
-      iter = form_elements_.erase(iter);
-    else
-      ++iter;
-  }
-}
-
-bool FormManager::FormWithNodeIsAutofilled(const WebNode& node) {
-  FormElement* form_element = NULL;
-  if (!FindCachedFormElementWithNode(node, &form_element))
+// static
+bool FormManager::FormWithElementIsAutofilled(const WebInputElement& element) {
+  WebFormElement form_element = element.form();
+  if (form_element.isNull())
     return false;
 
-  for (size_t i = 0; i < form_element->control_elements.size(); ++i) {
-    WebInputElement* input_element =
-        toWebInputElement(&form_element->control_elements[i]);
+  std::vector<WebFormControlElement> control_elements;
+  ExtractAutofillableElements(form_element, &control_elements);
+  for (size_t i = 0; i < control_elements.size(); ++i) {
+    WebInputElement* input_element = toWebInputElement(&control_elements[i]);
     if (!IsTextInput(input_element))
       continue;
 
@@ -1070,47 +922,178 @@ bool FormManager::FormWithNodeIsAutofilled(const WebNode& node) {
   return false;
 }
 
-bool FormManager::FindCachedFormElementWithNode(const WebNode& node,
-                                                FormElement** form_element) {
-  for (FormElementList::const_iterator form_iter = form_elements_.begin();
-       form_iter != form_elements_.end(); ++form_iter) {
-    for (std::vector<WebFormControlElement>::const_iterator iter =
-             (*form_iter)->control_elements.begin();
-         iter != (*form_iter)->control_elements.end(); ++iter) {
-      if (*iter == node) {
-        *form_element = *form_iter;
-        return true;
+void FormManager::ExtractForms(const WebFrame& frame,
+                               std::vector<FormData>* forms) {
+  // Reset the vector of FormElements for this frame.
+  ResetFrame(frame);
+  web_frames_.insert(&frame);
+
+  WebVector<WebFormElement> web_forms;
+  frame.document().forms(web_forms);
+
+  size_t num_fields_seen = 0;
+  for (size_t i = 0; i < web_forms.size(); ++i) {
+    WebFormElement form_element = web_forms[i];
+
+    std::vector<WebFormControlElement> control_elements;
+    ExtractAutofillableElements(form_element, &control_elements);
+    for (size_t j = 0; j < control_elements.size(); ++j) {
+      WebFormControlElement element = control_elements[j];
+
+      // Save original values of <select> elements so we can restore them
+      // when |ClearFormWithNode()| is invoked.
+      if (IsSelectElement(element)) {
+        const WebSelectElement select_element =
+            element.toConst<WebSelectElement>();
+        initial_select_values_.insert(std::make_pair(select_element,
+                                                     select_element.value()));
+      }
+    }
+
+    // To avoid overly expensive computation, we impose both a minimum and a
+    // maximum number of allowable fields.
+    if (control_elements.size() < kRequiredAutofillFields ||
+        control_elements.size() > kMaxParseableFields)
+      continue;
+
+    FormData form;
+    WebFormElementToFormData(form_element, WebFormControlElement(),
+                             REQUIRE_NONE, EXTRACT_VALUE, &form, NULL);
+
+    num_fields_seen += form.fields.size();
+    if (num_fields_seen > kMaxParseableFields)
+      break;
+
+    if (form.fields.size() >= kRequiredAutofillFields)
+      forms->push_back(form);
+  }
+}
+
+void FormManager::ResetFrame(const WebFrame& frame) {
+  web_frames_.erase(&frame);
+
+  std::vector<WebSelectElement> to_delete;
+  for (std::map<const WebSelectElement, string16>::const_iterator it =
+           initial_select_values_.begin();
+       it != initial_select_values_.end(); ++it) {
+    WebFormElement form_element = it->first.form();
+    if (form_element.isNull() || form_element.document().frame() == &frame)
+      to_delete.push_back(it->first);
+  }
+
+  for (std::vector<WebSelectElement>::const_iterator it =
+           to_delete.begin();
+       it != to_delete.end(); ++it) {
+    initial_select_values_.erase(*it);
+  }
+}
+
+bool FormManager::ClearFormWithElement(const WebInputElement& element) {
+  WebFormElement form_element = element.form();
+  if (form_element.isNull())
+    return false;
+
+  std::vector<WebFormControlElement> control_elements;
+  ExtractAutofillableElements(form_element, &control_elements);
+  for (size_t i = 0; i < control_elements.size(); ++i) {
+    WebFormControlElement control_element = control_elements[i];
+    WebInputElement* input_element = toWebInputElement(&control_element);
+    if (IsTextInput(input_element)) {
+      // We don't modify the value of disabled fields.
+      if (!input_element->isEnabled())
+        continue;
+
+      input_element->setValue(string16(), true);
+      input_element->setAutofilled(false);
+
+      // Clearing the value in the focused node (above) can cause selection
+      // to be lost. We force selection range to restore the text cursor.
+      if (element == *input_element) {
+        int length = input_element->value().length();
+        input_element->setSelectionRange(length, length);
+      }
+    } else {
+      DCHECK(IsSelectElement(control_element));
+      WebSelectElement select_element = control_element.to<WebSelectElement>();
+
+      std::map<const WebSelectElement, string16>::const_iterator
+          initial_value_iter = initial_select_values_.find(select_element);
+      if (initial_value_iter != initial_select_values_.end() &&
+          select_element.value() != initial_value_iter->second) {
+        select_element.setValue(initial_value_iter->second);
+        select_element.dispatchFormControlChangeEvent();
       }
     }
   }
 
-  return false;
+  return true;
 }
 
-bool FormManager::FindCachedFormElement(const FormData& form,
-                                        FormElement** form_element) {
-  for (FormElementList::iterator form_iter = form_elements_.begin();
-       form_iter != form_elements_.end(); ++form_iter) {
-    // TODO(dhollowa): matching on form name here which is not guaranteed to
-    // be unique for the page, nor is it guaranteed to be non-empty.  Need to
-    // find a way to uniquely identify the form cross-process.  For now we'll
-    // check form name and form action for identity.
-    // http://crbug.com/37990 test file sample8.html.
-    // Also note that WebString() == WebString(string16()) does not evaluate to
-    // |true| -- WebKit distinguishes between a "null" string (lhs) and an
-    // "empty" string (rhs).  We don't want that distinction, so forcing to
-    // string16.
-    string16 element_name = GetFormIdentifier((*form_iter)->form_element);
-    GURL action(
-        (*form_iter)->form_element.document().completeURL(
-            (*form_iter)->form_element.action()));
-    if (element_name == form.name && action == form.action) {
-      *form_element = *form_iter;
-      return true;
+bool FormManager::ShowPredictions(const FormDataPredictions& form) {
+  DCHECK_EQ(form.data.fields.size(), form.fields.size());
+
+  // Find the form.
+  bool found_form = false;
+  WebFormElement form_element;
+  for (std::set<const WebFrame*>::const_iterator it = web_frames_.begin();
+       it != web_frames_.end() && !found_form; ++it) {
+    WebVector<WebFormElement> web_forms;
+    (*it)->document().forms(web_forms);
+
+    for (size_t i = 0; i < web_forms.size(); ++i) {
+      form_element = web_forms[i];
+
+      // Note: matching on the form name here which is not guaranteed to be
+      // unique for the page, nor is it guaranteed to be non-empty.  Ideally, we
+      // would have a way to uniquely identify the form cross-process.  For now,
+      // we'll check form name and form action for identity.
+      // Also note that WebString() == WebString(string16()) does not evaluate
+      // to |true| -- WebKit distinguishes between a "null" string (lhs) and an
+      // "empty" string (rhs).  We don't want that distinction, so forcing to
+      // string16.
+      string16 element_name = GetFormIdentifier(form_element);
+      GURL action(form_element.document().completeURL(form_element.action()));
+      if (element_name == form.data.name && action == form.data.action) {
+        found_form = true;
+        break;
+      }
     }
   }
 
-  return false;
+  if (!found_form)
+    return false;
+
+  std::vector<WebFormControlElement> control_elements;
+  ExtractAutofillableElements(form_element, &control_elements);
+  if (control_elements.size() != form.fields.size()) {
+    // Keep things simple.  Don't show predictions for forms that were modified
+    // between page load and the server's response to our query.
+    return false;
+  }
+
+  for (size_t i = 0; i < control_elements.size(); ++i) {
+    WebFormControlElement* element = &control_elements[i];
+
+    if (string16(element->nameForAutofill()) != form.data.fields[i].name) {
+      // Keep things simple.  Don't show predictions for elements whose names
+      // were modified between page load and the server's response to our query.
+      continue;
+    }
+
+    std::string placeholder = form.fields[i].overall_type;
+    string16 title = l10n_util::GetStringFUTF16(
+        IDS_AUTOFILL_SHOW_PREDICTIONS_TITLE,
+        UTF8ToUTF16(form.fields[i].heuristic_type),
+        UTF8ToUTF16(form.fields[i].server_type),
+        UTF8ToUTF16(form.fields[i].signature),
+        UTF8ToUTF16(form.signature),
+        UTF8ToUTF16(form.experiment_id));
+    if (!element->hasAttribute("placeholder"))
+      element->setAttribute("placeholder", WebString(UTF8ToUTF16(placeholder)));
+    element->setAttribute("title", WebString(title));
+  }
+
+  return true;
 }
 
 }  // namespace autofill

@@ -442,7 +442,7 @@ class TestAutofillManager : public AutofillManager {
     return PackGUIDs(IDToGUID(credit_card_id), GUIDPair(std::string(), 0));
   }
 
-  virtual int GUIDToID(const GUIDPair& guid) OVERRIDE {
+  virtual int GUIDToID(const GUIDPair& guid) const OVERRIDE {
     if (guid.first.empty())
       return 0;
 
@@ -452,7 +452,7 @@ class TestAutofillManager : public AutofillManager {
     return id;
   }
 
-  virtual const GUIDPair IDToGUID(int id) OVERRIDE {
+  virtual const GUIDPair IDToGUID(int id) const OVERRIDE {
     EXPECT_TRUE(id >= 0);
     if (id <= 0)
       return GUIDPair(std::string(), 0);

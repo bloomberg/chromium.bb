@@ -279,8 +279,9 @@ FormStructure::FormStructure(const FormData& form)
       server_experiment_id_("no server response"),
       has_author_specified_types_(false) {
   // Copy the form fields.
-  std::vector<webkit_glue::FormField>::const_iterator field;
-  for (field = form.fields.begin();
+  std::map<string16, size_t> unique_names;
+  for (std::vector<webkit_glue::FormField>::const_iterator field =
+           form.fields.begin();
        field != form.fields.end(); field++) {
     // Add all supported form fields (including with empty names) to the
     // signature.  This is a requirement for Autofill servers.
@@ -288,8 +289,14 @@ FormStructure::FormStructure(const FormData& form)
     form_signature_field_names_.append(UTF16ToUTF8(field->name));
 
     // Generate a unique name for this field by appending a counter to the name.
-    string16 unique_name = field->name +
-        base::IntToString16(fields_.size() + 1);
+    // Make sure to prepend the counter with a non-numeric digit so that we are
+    // guaranteed to avoid collisions.
+    if (!unique_names.count(field->name))
+      unique_names[field->name] = 1;
+    else
+      ++unique_names[field->name];
+    string16 unique_name = field->name + ASCIIToUTF16("_") +
+        base::IntToString16(unique_names[field->name]);
     fields_.push_back(new AutofillField(*field, unique_name));
   }
 
