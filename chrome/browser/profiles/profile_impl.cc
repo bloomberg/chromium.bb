@@ -55,7 +55,7 @@
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/prefs/pref_value_store.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
-#include "chrome/browser/prerender/prerender_manager_factory.h"
+#include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/search_engines/template_url_fetcher.h"
@@ -920,9 +920,8 @@ void ProfileImpl::OnPrefsLoaded(bool success) {
   ProfileDependencyManager::GetInstance()->CreateProfileServices(this, false);
 
   DCHECK(!net_pref_observer_.get());
-  net_pref_observer_.reset(new NetPrefObserver(
-      prefs_.get(),
-      prerender::PrerenderManagerFactory::GetForProfile(this)));
+  net_pref_observer_.reset(
+      new NetPrefObserver(prefs_.get(), GetPrerenderManager()));
 
   DoFinalInit();
 }
@@ -1720,6 +1719,23 @@ PrefProxyConfigTracker* ProfileImpl::GetProxyConfigTracker() {
     pref_proxy_config_tracker_ = new PrefProxyConfigTracker(GetPrefs());
 
   return pref_proxy_config_tracker_;
+}
+
+prerender::PrerenderManager* ProfileImpl::GetPrerenderManager() {
+  if (!prerender::PrerenderManager::IsPrerenderingPossible())
+    return NULL;
+  if (!prerender_manager_.get()) {
+    CHECK(g_browser_process->prerender_tracker());
+    prerender_manager_.reset(
+        new prerender::PrerenderManager(
+            this, g_browser_process->prerender_tracker()));
+#if defined(OS_CHROMEOS)
+    prerender_manager_->AddCondition(
+        new chromeos::PrerenderConditionNetwork(
+            chromeos::CrosLibrary::Get()->GetNetworkLibrary()));
+#endif
+  }
+  return prerender_manager_.get();
 }
 
 SpellCheckProfile* ProfileImpl::GetSpellCheckProfile() {

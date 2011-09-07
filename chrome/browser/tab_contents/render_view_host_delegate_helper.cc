@@ -16,7 +16,6 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/prerender/prerender_manager.h"
-#include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/background_contents.h"
 #include "chrome/browser/user_style_sheet_watcher.h"
@@ -152,7 +151,7 @@ TabContents* RenderViewHostDelegateViewHelper::CreateNewWindow(
 
   // Do not create the new TabContents if the opener is a prerender TabContents.
   prerender::PrerenderManager* prerender_manager =
-      prerender::PrerenderManagerFactory::GetForProfile(profile);
+      profile->GetPrerenderManager();
   if (prerender_manager &&
       prerender_manager->IsTabContentsPrerendering(base_tab_contents)) {
     return NULL;

@@ -30,7 +30,6 @@
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/prerender/prerender_manager.h"
-#include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
@@ -483,7 +482,7 @@ WebUIMessageHandler* NetInternalsMessageHandler::Attach(WebUI* web_ui) {
       proxy_->CreateCallback(&IOThreadImpl::OnRendererReady));
 
   prerender::PrerenderManager* prerender_manager =
-      prerender::PrerenderManagerFactory::GetForProfile(profile);
+      profile->GetPrerenderManager();
   if (prerender_manager) {
     prerender_manager_ = prerender_manager->AsWeakPtr();
   } else {

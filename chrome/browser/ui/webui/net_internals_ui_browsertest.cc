@@ -7,7 +7,6 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/prerender/prerender_final_status.h"
 #include "chrome/browser/prerender/prerender_manager.h"
-#include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
@@ -121,7 +120,7 @@ void NetInternalsTest::SetUpOnMainThread() {
   // as debug builds use more memory and often go over the usual limit.
   Profile* profile = browser()->GetSelectedTabContentsWrapper()->profile();
   prerender::PrerenderManager* prerender_manager =
-      prerender::PrerenderManagerFactory::GetForProfile(profile);
+      profile->GetPrerenderManager();
   prerender_manager->mutable_config().max_bytes = 1000 * 1024 * 1024;
 }
 

@@ -8,7 +8,6 @@
 #include "base/string_number_conversions.h"
 #include "base/time.h"
 #include "chrome/browser/prerender/prerender_manager.h"
-#include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -241,8 +240,11 @@ void PrerenderTabHelper::DidStartProvisionalLoadForFrame(
 }
 
 PrerenderManager* PrerenderTabHelper::MaybeGetPrerenderManager() const {
-  return PrerenderManagerFactory::GetForProfile(
-      Profile::FromBrowserContext(tab_contents()->browser_context()));
+  Profile* profile =
+      Profile::FromBrowserContext(tab_contents()->browser_context());
+  if (!profile)
+    return NULL;
+  return profile->GetPrerenderManager();
 }
 
 bool PrerenderTabHelper::MaybeUsePrerenderedPage(const GURL& url,

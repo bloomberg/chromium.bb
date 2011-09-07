@@ -1793,8 +1793,6 @@
         'browser/prerender/prerender_history.h',
         'browser/prerender/prerender_manager.cc',
         'browser/prerender/prerender_manager.h',
-        'browser/prerender/prerender_manager_factory.cc',
-        'browser/prerender/prerender_manager_factory.h',
         'browser/prerender/prerender_origin.cc',
         'browser/prerender/prerender_origin.h',
         'browser/prerender/prerender_render_view_host_observer.cc',
