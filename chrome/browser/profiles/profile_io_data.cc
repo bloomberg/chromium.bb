@@ -55,9 +55,9 @@
 #include "net/url_request/url_request.h"
 #include "webkit/blob/blob_data.h"
 #include "webkit/blob/blob_url_request_job_factory.h"
-#include "webkit/database/database_tracker.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_url_request_job_factory.h"
+#include "webkit/database/database_tracker.h"
 #include "webkit/quota/quota_manager.h"
 
 #if defined(OS_CHROMEOS)
@@ -192,8 +192,6 @@ prerender::PrerenderManager* GetPrerenderManagerOnUI(
 void ProfileIOData::InitializeOnUIThread(Profile* profile) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   PrefService* pref_service = profile->GetPrefs();
-
-  next_download_id_thunk_ = profile->GetDownloadManager()->GetNextIdThunk();
 
   scoped_ptr<ProfileParams> params(new ProfileParams);
   params->is_incognito = profile->IsOffTheRecord();
@@ -499,7 +497,6 @@ void ProfileIOData::LazyInitialize() const {
   resource_context_.SetUserData(NULL, const_cast<ProfileIOData*>(this));
   resource_context_.set_media_observer(
       io_thread_globals->media.media_internals.get());
-  resource_context_.set_next_download_id_thunk(next_download_id_thunk_);
 
   LazyInitializeInternal(profile_params_.get());
 

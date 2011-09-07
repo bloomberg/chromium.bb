@@ -7,7 +7,6 @@
 #pragma once
 
 #include "chrome/browser/history/history_types.h"
-#include "sql/meta_table.h"
 
 struct DownloadPersistentStoreInfo;
 class FilePath;
@@ -24,8 +23,6 @@ class DownloadDatabase {
   // Must call InitDownloadTable before using any other functions.
   DownloadDatabase();
   virtual ~DownloadDatabase();
-
-  int next_download_id() const { return next_id_; }
 
   // Get all the downloads from the database.
   void QueryDownloads(std::vector<DownloadPersistentStoreInfo>* results);
@@ -66,9 +63,6 @@ class DownloadDatabase {
   bool DropDownloadTable();
 
  private:
-  int next_id_;
-  sql::MetaTable meta_table_;
-
   DISALLOW_COPY_AND_ASSIGN(DownloadDatabase);
 };
 

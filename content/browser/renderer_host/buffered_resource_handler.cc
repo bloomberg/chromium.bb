@@ -17,7 +17,6 @@
 #include "content/browser/renderer_host/resource_dispatcher_host_delegate.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
 #include "content/browser/renderer_host/x509_user_cert_resource_handler.h"
-#include "content/browser/resource_context.h"
 #include "content/common/resource_response.h"
 #include "net/base/io_buffer.h"
 #include "net/base/mime_sniffer.h"
@@ -310,15 +309,12 @@ bool BufferedResourceHandler::CompleteResponseStarted(int request_id,
 
     info->set_is_download(true);
 
-    DownloadId dl_id = info->context()->next_download_id_thunk().Run();
-
     scoped_refptr<ResourceHandler> handler(
       new DownloadResourceHandler(host_,
                                   info->child_id(),
                                   info->route_id(),
                                   info->request_id(),
                                   request_->url(),
-                                  dl_id,
                                   host_->download_file_manager(),
                                   request_,
                                   false,

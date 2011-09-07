@@ -6,13 +6,11 @@
 
 #include <vector>
 
-#include "base/bind.h"
 #include "base/file_path.h"
 #include "base/message_loop.h"
 #include "base/process_util.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/child_process_security_policy.h"
-#include "content/browser/download/download_id.h"
 #include "content/browser/mock_resource_context.h"
 #include "content/browser/renderer_host/dummy_resource_handler.h"
 #include "content/browser/renderer_host/global_request_id.h"
@@ -1135,12 +1133,6 @@ TEST_F(ResourceDispatcherHostTest, ForbiddenDownload) {
   EXPECT_EQ(net::ERR_FILE_NOT_FOUND, status.os_error());
 }
 
-namespace {
-DownloadId MockNextDownloadId() {
-  return DownloadId(reinterpret_cast<DownloadManager*>(0xFFFFFFFF), 0);
-}
-}
-
 // Test for http://crbug.com/76202 .  We don't want to destroy a
 // download request prematurely when processing a cancellation from
 // the renderer.
@@ -1161,8 +1153,6 @@ TEST_F(ResourceDispatcherHostTest, IgnoreCancelForDownloads) {
   HandleScheme("http");
 
   MakeTestRequest(render_view_id, request_id, GURL("http://example.com/blah"));
-  content::MockResourceContext::GetInstance()->set_next_download_id_thunk(
-      base::Bind(&MockNextDownloadId));
   // Return some data so that the request is identified as a download
   // and the proper resource handlers are created.
   EXPECT_TRUE(net::URLRequestTestJob::ProcessOnePendingMessage());
@@ -1198,8 +1188,6 @@ TEST_F(ResourceDispatcherHostTest, CancelRequestsForContext) {
   HandleScheme("http");
 
   MakeTestRequest(render_view_id, request_id, GURL("http://example.com/blah"));
-  content::MockResourceContext::GetInstance()->set_next_download_id_thunk(
-      base::Bind(&MockNextDownloadId));
   // Return some data so that the request is identified as a download
   // and the proper resource handlers are created.
   EXPECT_TRUE(net::URLRequestTestJob::ProcessOnePendingMessage());

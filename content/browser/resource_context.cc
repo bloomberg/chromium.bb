@@ -145,18 +145,6 @@ void ResourceContext::set_media_observer(MediaObserver* media_observer) {
   media_observer_ = media_observer;
 }
 
-const DownloadManager::GetNextIdThunkType&
-ResourceContext::next_download_id_thunk() const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  EnsureInitialized();
-  return next_download_id_thunk_;
-}
-void ResourceContext::set_next_download_id_thunk(
-    const DownloadManager::GetNextIdThunkType& thunk) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  next_download_id_thunk_ = thunk;
-}
-
 const base::Callback<prerender::PrerenderManager*(void)>&
 ResourceContext::prerender_manager_getter() const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
