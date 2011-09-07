@@ -18,6 +18,25 @@ import rietveld
 
 # Access to a protected member XX of a client class
 # pylint: disable=W0212
+GIT_COPY_FULL = (
+    'diff --git a/PRESUBMIT.py b/file_a\n'
+    'similarity index 100%\n'
+    'copy from PRESUBMIT.py\n'
+    'copy to file_a\n')
+
+
+NORMAL_DIFF = (
+    '--- file_a\n'
+    '+++ file_a\n'
+    '@@ -80,10 +80,13 @@\n'
+    ' // Foo\n'
+    ' // Bar\n'
+    ' void foo() {\n'
+    '-   return bar;\n'
+    '+   return foo;\n'
+    ' }\n'
+    ' \n'
+    ' \n')
 
 
 def _api(files):
@@ -137,19 +156,63 @@ class RietveldTest(unittest.TestCase):
     except patch.UnsupportedPatchFormat, e:
       self.assertEquals('file_a', e.filename)
 
-  def test_add_plus(self):
+  def test_add_plus_merge(self):
+    # svn:mergeinfo is dropped.
+    diff = GIT_COPY_FULL
     properties = (
         '\nAdded: svn:mergeinfo\n'
         '   Merged /branches/funky/file_b:r69-2775\n')
     self.requests = [
         ('/api/123/456',
           _api({'file_a': _file('A+', property_changes=properties)})),
+        ('/download/issue123_456_789.diff', diff),
     ]
-    try:
-      self.rietveld.get_patch(123, 456)
-      self.fail()
-    except patch.UnsupportedPatchFormat, e:
-      self.assertEquals('file_a', e.filename)
+    patches = self.rietveld.get_patch(123, 456)
+    self.assertEquals(1, len(patches.patches))
+    self._check_patch(
+        patches.patches[0],
+        'file_a',
+        diff,
+        is_git_diff=True,
+        is_new=True,
+        patchlevel=1)
+
+  def test_add_plus_eol_style(self):
+    diff = GIT_COPY_FULL
+    properties = '\nAdded: svn:eol-style\n   + LF\n'
+    self.requests = [
+        ('/api/123/456',
+          _api({'file_a': _file('A+', property_changes=properties)})),
+        ('/download/issue123_456_789.diff', diff),
+    ]
+    patches = self.rietveld.get_patch(123, 456)
+    self.assertEquals(1, len(patches.patches))
+    self._check_patch(
+        patches.patches[0],
+        'file_a',
+        diff,
+        is_git_diff=True,
+        is_new=True,
+        patchlevel=1,
+        svn_properties=[('svn:eol-style', 'LF')])
+
+  def test_add_empty(self):
+    # http://codereview.chromium.org/api/7530007/5001
+    # http://codereview.chromium.org/download/issue7530007_5001_4011.diff
+    diff = (
+        'Index: scripts/master/factory/skia/__init__.py\n'
+        '===================================================================\n')
+    self.requests = [
+        ('/api/123/456', _api({'__init__.py': _file('A    ', num_chunks=0)})),
+        ('/download/issue123_456_789.diff', diff),
+    ]
+    patches = self.rietveld.get_patch(123, 456)
+    self.assertEquals(1, len(patches.patches))
+    self._check_patch(
+        patches.patches[0],
+        '__init__.py',
+        diff,
+        is_new=True)
 
   def test_delete(self):
     self.requests = [
@@ -160,7 +223,23 @@ class RietveldTest(unittest.TestCase):
     self._check_patch(patches.patches[0], 'file_a', None, is_delete=True)
 
   def test_m_plus(self):
+    diff = NORMAL_DIFF
     properties = '\nAdded: svn:eol-style\n   + LF\n'
+    self.requests = [
+        ('/api/123/456',
+          _api({'file_a': _file('M+', property_changes=properties)})),
+        ('/download/issue123_456_789.diff', diff),
+    ]
+    patches = self.rietveld.get_patch(123, 456)
+    self.assertEquals(1, len(patches.patches))
+    self._check_patch(
+        patches.patches[0],
+        'file_a',
+        diff,
+        svn_properties=[('svn:eol-style', 'LF')])
+
+  def test_m_plus_unknown_prop(self):
+    properties = '\nAdded: svn:foobar\n   + stuff\n'
     self.requests = [
         ('/api/123/456',
           _api({'file_a': _file('M+', property_changes=properties)})),

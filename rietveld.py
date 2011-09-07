@@ -125,13 +125,13 @@ class Rietveld(object):
         raise patch.UnsupportedPatchFormat(
             filename, 'File\'s status is None, patchset upload is incomplete.')
 
-      # TODO(maruel): That's bad, it confuses property change.
-      status = status.strip()
-
-      if status == 'D':
+      if status[0] == 'D':
+        if status[0] != status.strip():
+          raise patch.UnsupportedPatchFormat(
+              filename, 'Deleted file shouldn\'t have property change.')
         # Ignore the diff.
         out.append(patch.FilePatchDelete(filename, state['is_binary']))
-      elif status in ('A', 'M'):
+      elif status[0] in ('A', 'M'):
         svn_props = self.parse_svn_properties(
             state.get('property_changes', ''), filename)
         if state['is_binary']:
@@ -142,20 +142,27 @@ class Rietveld(object):
               is_new=(status[0] == 'A')))
         else:
           # Ignores num_chunks since it may only contain an header.
+          diff = None
           try:
             diff = self.get_file_diff(issue, patchset, state['id'])
           except urllib2.HTTPError, e:
             if e.code == 404:
               raise patch.UnsupportedPatchFormat(
                   filename, 'File doesn\'t have a diff.')
+            raise
+          # It may happen on property-only change or svn copy without diff.
+          if not diff:
+            # Support this use case if it ever happen.
+            raise patch.UnsupportedPatchFormat(
+                filename, 'Empty diff is not supported yet.\n')
           out.append(patch.FilePatchDiff(filename, diff, svn_props))
           if status[0] == 'A':
             # It won't be set for empty file.
             out[-1].is_new = True
       else:
-        # TODO(maruel): Add support for MM, A+, etc. Rietveld removes the svn
-        # properties from the diff.
-        raise patch.UnsupportedPatchFormat(filename, status)
+        raise patch.UnsupportedPatchFormat(
+            filename, 'Change with status \'%s\' is not supported.' % status)
+
     return patch.PatchSet(out)
 
   @staticmethod
