@@ -5373,6 +5373,20 @@
    fun:_ZN24ExtensionSettingsHandler7ObserveEiRK18NotificationSourceRK19NotificationDetails
    fun:_ZN19NotificationService6NotifyEiRK18NotificationSourceRK19NotificationDetails
 }
+# TODO(dhollowa): Create matching bug once crbug.com comes online.
+{
+   bug_tbd
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN21BrowserMainPartsPosix24PostMainMessageLoopStartEv
+   fun:_ZN24BrowserMainPartsChromeos24PostMainMessageLoopStartEv
+   fun:_ZN7content16BrowserMainParts20MainMessageLoopStartEv
+   fun:_Z11BrowserMainRK18MainFunctionParams
+   fun:_ZN12_GLOBAL__N_123RunNamedProcessTypeMainERKSsRK18MainFunctionParamsPN7content19ContentMainDelegateE
+   fun:_ZN7content11ContentMainEiPPcPNS_19ContentMainDelegateE
+   fun:ChromeMain
+   fun:main
+}
 
 
 #-----------------------------------------------------------------------
