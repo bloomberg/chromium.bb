@@ -697,10 +697,7 @@ void FlagsState::ConvertFlagsToSwitches(
     }
   }
 
-// TODO(thakis): Reenable.
-#if 0
   command_line->AppendSwitch(switches::kFlagSwitchesBegin);
-#endif
   flags_switches_.insert(
       std::pair<std::string, std::string>(switches::kFlagSwitchesBegin,
                                           std::string()));
@@ -718,17 +715,11 @@ void FlagsState::ConvertFlagsToSwitches(
     const std::pair<std::string, std::string>&
         switch_and_value_pair = name_to_switch_it->second;
 
-// TODO(thakis): Reenable.
-#if 0
     command_line->AppendSwitchASCII(switch_and_value_pair.first,
                                     switch_and_value_pair.second);
-#endif
     flags_switches_[switch_and_value_pair.first] = switch_and_value_pair.second;
   }
-// TODO(thakis): Reenable.
-#if 0
   command_line->AppendSwitch(switches::kFlagSwitchesEnd);
-#endif
   flags_switches_.insert(
       std::pair<std::string, std::string>(switches::kFlagSwitchesEnd,
                                           std::string()));

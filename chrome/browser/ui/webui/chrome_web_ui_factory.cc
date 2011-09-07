@@ -180,9 +180,8 @@ static WebUIFactoryFunction GetWebUIFactoryFunction(Profile* profile,
     return &NewWebUI<HistoryUI>;
   if (url.host() == chrome::kChromeUIHistory2Host)
     return &NewWebUI<HistoryUI2>;
-  // TODO(thakis): Reenable.
-  //if (url.host() == chrome::kChromeUIFlagsHost)
-  //  return &NewWebUI<FlagsUI>;
+  if (url.host() == chrome::kChromeUIFlagsHost)
+    return &NewWebUI<FlagsUI>;
   if (url.host() == chrome::kChromeUIFlashHost)
     return &NewWebUI<FlashUI>;
 #if defined(TOUCH_UI)
@@ -388,9 +387,8 @@ RefCountedMemory* ChromeWebUIFactory::GetFaviconResourceBytes(
   if (page_url.host() == chrome::kChromeUIHistory2Host)
     return HistoryUI2::GetFaviconResourceBytes();
 
-  // TODO(thakis): Reenable.
-  //if (page_url.host() == chrome::kChromeUIFlagsHost)
-  //  return FlagsUI::GetFaviconResourceBytes();
+  if (page_url.host() == chrome::kChromeUIFlagsHost)
+    return FlagsUI::GetFaviconResourceBytes();
 
   if (page_url.host() == chrome::kChromeUISessionsHost)
     return SessionsUI::GetFaviconResourceBytes();

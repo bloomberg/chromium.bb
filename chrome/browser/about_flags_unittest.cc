@@ -183,8 +183,7 @@ TEST_F(AboutFlagsTest, ConvertFlagsToSwitches) {
   ConvertFlagsToSwitches(&prefs_, &command_line);
 
   EXPECT_TRUE(command_line.HasSwitch("foo"));
-  // TODO(thakis): Undo
-  EXPECT_FALSE(command_line.HasSwitch(kSwitch1));
+  EXPECT_TRUE(command_line.HasSwitch(kSwitch1));
 }
 
 TEST_F(AboutFlagsTest, RemoveFlagSwitches) {
@@ -229,8 +228,7 @@ TEST_F(AboutFlagsTest, PersistAndPrune) {
   // Convert the flags to switches. Experiment 3 shouldn't be among the switches
   // as it is not applicable to the current platform.
   ConvertFlagsToSwitches(&prefs_, &command_line);
-  // TODO(thakis): undo.
-  EXPECT_FALSE(command_line.HasSwitch(kSwitch1));
+  EXPECT_TRUE(command_line.HasSwitch(kSwitch1));
   EXPECT_FALSE(command_line.HasSwitch(kSwitch3));
 
   // Experiment 3 should show still be persisted in preferences though.
@@ -246,18 +244,15 @@ TEST_F(AboutFlagsTest, CheckValues) {
   SetExperimentEnabled(&prefs_, kFlags1, true);
   SetExperimentEnabled(&prefs_, kFlags2, true);
   CommandLine command_line(CommandLine::NO_PROGRAM);
-  // TODO(thakis): undo.
   EXPECT_FALSE(command_line.HasSwitch(kSwitch1));
   EXPECT_FALSE(command_line.HasSwitch(kSwitch2));
 
   // Convert the flags to switches.
   ConvertFlagsToSwitches(&prefs_, &command_line);
-  EXPECT_FALSE(command_line.HasSwitch(kSwitch1));
+  EXPECT_TRUE(command_line.HasSwitch(kSwitch1));
   EXPECT_EQ(std::string(""), command_line.GetSwitchValueASCII(kSwitch1));
-  // TODO(thakis): undo.
-  EXPECT_FALSE(command_line.HasSwitch(kSwitch2));
-  // TODO(thakis): undo.
-  EXPECT_EQ("",
+  EXPECT_TRUE(command_line.HasSwitch(kSwitch2));
+  EXPECT_EQ(std::string(kValueForSwitch2),
             command_line.GetSwitchValueASCII(kSwitch2));
 
   // Confirm that there is no '=' in the command line for simple switches.
@@ -278,13 +273,11 @@ TEST_F(AboutFlagsTest, CheckValues) {
                                     std::string(kSwitch2) +
                                     std::string("=");
 #if defined(OS_WIN)            
-  // TODO(thakis): undo.
-  EXPECT_EQ(std::wstring::npos,
+  EXPECT_NE(std::wstring::npos,
             command_line.GetCommandLineString().find(
                 ASCIIToWide(switch2_with_equals)));
 #else
-  // TODO(thakis): undo.
-  EXPECT_EQ(std::string::npos,
+  EXPECT_NE(std::string::npos,
             command_line.GetCommandLineString().find(switch2_with_equals));
 #endif
 
@@ -313,10 +306,8 @@ TEST_F(AboutFlagsTest, MultiValues) {
     CommandLine command_line(CommandLine::NO_PROGRAM);
     ConvertFlagsToSwitches(&prefs_, &command_line);
     EXPECT_FALSE(command_line.HasSwitch(kMultiSwitch1));
-    // TODO(thakis): undo.
-    EXPECT_FALSE(command_line.HasSwitch(kMultiSwitch2));
-    // TODO(thakis): undo.
-    EXPECT_EQ("",
+    EXPECT_TRUE(command_line.HasSwitch(kMultiSwitch2));
+    EXPECT_EQ(std::string(kValueForMultiSwitch2),
               command_line.GetSwitchValueASCII(kMultiSwitch2));
   }
 

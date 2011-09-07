@@ -120,8 +120,7 @@ const char* const kChromePaths[] = {
   chrome::kChromeUIDNSHost,
   chrome::kChromeUIDownloadsHost,
   chrome::kChromeUIExtensionsHost,
-  // TODO(thakis): Reenable.
-  //chrome::kChromeUIFlagsHost,
+  chrome::kChromeUIFlagsHost,
   chrome::kChromeUIFlashHost,
   chrome::kChromeUIGpuInternalsHost,
   chrome::kChromeUIHistogramsHost,
