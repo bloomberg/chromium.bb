@@ -26,6 +26,7 @@ def CommonChecks(input_api, output_api, tests_to_black_list):
   results.extend(input_api.canned_checks.CheckOwners(input_api, output_api))
   black_list = list(input_api.DEFAULT_BLACK_LIST) + [
       r'^cpplint\.py$',
+      r'^cpplint_chromium\.py$',
       r'^python_bin[\/\\].+',
       r'^svn_bin[\/\\].+',
       r'^tests[\/\\]\w+?[\/\\].+']
