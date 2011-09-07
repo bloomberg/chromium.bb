@@ -10,3 +10,4 @@
 // rebaselined upstream already!
 BUG_LEVIN : http/tests/eventsource/existent-eventsource-status-error-iframe-crash.html = FAIL
 BUG_LOISLO WIN GPU : fast/canvas/canvas-text-alignment.html = IMAGE
+BUG_LOISLO WIN LINUX : inspector/debugger/scripts-sorting.html = TEXT
