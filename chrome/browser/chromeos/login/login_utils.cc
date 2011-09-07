@@ -935,8 +935,19 @@ bool LoginUtilsImpl::ReadOAuth1AccessToken(Profile* user_profile,
 
   std::string decoded_token = authenticator_->DecryptToken(encoded_token);
   std::string decoded_secret = authenticator_->DecryptToken(encoded_secret);
-  if (!decoded_token.length() || !decoded_secret.length())
-    return false;
+  if (!decoded_token.length() || !decoded_secret.length()) {
+    // TODO(zelidrag): Remove legacy encryption support in R16.
+    // Check if tokens were encoded with the legacy encryption instead.
+    decoded_token = authenticator_->DecryptLegacyToken(encoded_token);
+    decoded_secret = authenticator_->DecryptLegacyToken(encoded_secret);
+    if (!decoded_token.length() || !decoded_secret.length())
+      return false;
+
+    pref_service->SetString(prefs::kOAuth1Token,
+                            authenticator_->EncryptToken(decoded_token));
+    pref_service->SetString(prefs::kOAuth1Secret,
+                            authenticator_->EncryptToken(decoded_secret));
+  }
 
   *token = decoded_token;
   *secret = decoded_secret;

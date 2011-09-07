@@ -16,6 +16,7 @@
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/synchronization/lock.h"
+#include "chrome/browser/chromeos/cros/cert_library.h"
 #include "chrome/browser/chromeos/cros/cryptohome_library.h"
 #include "chrome/browser/chromeos/login/auth_response_handler.h"
 #include "chrome/browser/chromeos/login/authentication_notification_details.h"
@@ -46,6 +47,37 @@ using file_util::PathExists;
 using file_util::ReadFile;
 using file_util::ReadFileToString;
 
+namespace {
+
+const int kPassHashLen = 32;
+const size_t kKeySize = 16;
+
+// Decrypts (AES) hex encoded encrypted token given |key| and |salt|.
+std::string DecryptTokenWithKey(
+    crypto::SymmetricKey* key,
+    const std::string& salt,
+    const std::string& encrypted_token_hex) {
+  std::vector<uint8> encrypted_token_bytes;
+  if (!base::HexStringToBytes(encrypted_token_hex, &encrypted_token_bytes))
+    return std::string();
+
+  std::string encrypted_token(
+      reinterpret_cast<char*>(encrypted_token_bytes.data()),
+      encrypted_token_bytes.size());
+  crypto::Encryptor encryptor;
+  if (!encryptor.Init(key, crypto::Encryptor::CTR, std::string()))
+    return std::string();
+
+  std::string nonce = salt.substr(0, kKeySize);
+  std::string token;
+  CHECK(encryptor.SetCounter(nonce));
+  if (!encryptor.Decrypt(encrypted_token, &token))
+    return std::string();
+  return token;
+}
+
+}   // namespace
+
 namespace chromeos {
 
 // static
@@ -55,9 +87,6 @@ const char ParallelAuthenticator::kLocalaccountFile[] = "localaccount";
 const int ParallelAuthenticator::kClientLoginTimeoutMs = 10000;
 // static
 const int ParallelAuthenticator::kLocalaccountRetryIntervalMs = 20;
-
-const int kPassHashLen = 32;
-const size_t kKeySize = 16;
 
 ParallelAuthenticator::ParallelAuthenticator(LoginStatusConsumer* consumer)
     : Authenticator(consumer),
@@ -673,6 +702,15 @@ void ParallelAuthenticator::LoadSystemSalt() {
   CHECK_EQ(system_salt_.size() % 2, 0U);
 }
 
+bool ParallelAuthenticator::LoadSupplementalUserKey() {
+  if (!supplemental_user_key_.get()) {
+    supplemental_user_key_.reset(
+        CrosLibrary::Get()->GetCertLibrary()->GetSupplementalUserKey());
+  }
+  return supplemental_user_key_.get() != NULL;
+}
+
+
 void ParallelAuthenticator::LoadLocalaccount(const std::string& filename) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   {
@@ -704,13 +742,11 @@ void ParallelAuthenticator::SetLocalaccount(const std::string& new_name) {
 }
 
 std::string ParallelAuthenticator::EncryptToken(const std::string& token) {
-  // TODO(zelidrag): Replace salt with
-  scoped_ptr<crypto::SymmetricKey> key(
-      crypto::SymmetricKey::DeriveKeyFromPassword(
-          crypto::SymmetricKey::AES, UserSupplementalKeyAsAscii(),
-          SaltAsAscii(), 1000, 256));
+  if (!LoadSupplementalUserKey())
+    return std::string();
   crypto::Encryptor encryptor;
-  if (!encryptor.Init(key.get(), crypto::Encryptor::CTR, std::string()))
+  if (!encryptor.Init(supplemental_user_key_.get(), crypto::Encryptor::CTR,
+                      std::string()))
     return std::string();
 
   std::string nonce = SaltAsAscii().substr(0, kKeySize);
@@ -723,32 +759,23 @@ std::string ParallelAuthenticator::EncryptToken(const std::string& token) {
       reinterpret_cast<const void*>(encoded_token.data()),
       encoded_token.size()));
 }
-
 std::string ParallelAuthenticator::DecryptToken(
     const std::string& encrypted_token_hex) {
-  std::vector<uint8> encrypted_token_bytes;
-  if (!base::HexStringToBytes(encrypted_token_hex, &encrypted_token_bytes))
+  if (!LoadSupplementalUserKey())
     return std::string();
+  return DecryptTokenWithKey(supplemental_user_key_.get(),
+                             SaltAsAscii(),
+                             encrypted_token_hex);
+}
 
-  std::string encrypted_token(
-      reinterpret_cast<char*>(encrypted_token_bytes.data()),
-                              encrypted_token_bytes.size());
+std::string ParallelAuthenticator::DecryptLegacyToken(
+    const std::string& encrypted_token_hex) {
   scoped_ptr<crypto::SymmetricKey> key(
       crypto::SymmetricKey::DeriveKeyFromPassword(
           crypto::SymmetricKey::AES, UserSupplementalKeyAsAscii(),
           SaltAsAscii(), 1000, 256));
-  crypto::Encryptor encryptor;
-  if (!encryptor.Init(key.get(), crypto::Encryptor::CTR, std::string()))
-    return std::string();
-
-  std::string nonce = SaltAsAscii().substr(0, kKeySize);
-  std::string token;
-  CHECK(encryptor.SetCounter(nonce));
-  if (!encryptor.Decrypt(encrypted_token, &token))
-    return std::string();
-  return token;
+  return DecryptTokenWithKey(key.get(), SaltAsAscii(), encrypted_token_hex);
 }
-
 
 std::string ParallelAuthenticator::HashPassword(const std::string& password) {
   // Get salt, ascii encode, update sha with that, then update with ascii

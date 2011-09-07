@@ -12,6 +12,10 @@
 #include "net/base/cert_database.h"
 #include "net/base/x509_certificate.h"
 
+namespace crypto {
+class SymmetricKey;
+}
+
 namespace chromeos {
 
 class CertLibrary {
@@ -96,6 +100,9 @@ class CertLibrary {
 
   // Returns the current list of server CA certificates.
   virtual const CertList& GetCACertificates() const = 0;
+
+  // Returns the supplemental user key.
+  virtual crypto::SymmetricKey* GetSupplementalUserKey() const = 0;
 };
 
 }  // namespace chromeos

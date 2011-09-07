@@ -176,6 +176,10 @@ class CertLibraryImpl
     return server_ca_certs_;
   }
 
+  virtual crypto::SymmetricKey* GetSupplementalUserKey() const {
+    return crypto::GetSupplementalUserKey();
+  }
+
   // net::CertDatabase::Observer implementation. Observer added on UI thread.
   virtual void OnCertTrustChanged(const net::X509Certificate* cert) OVERRIDE {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));

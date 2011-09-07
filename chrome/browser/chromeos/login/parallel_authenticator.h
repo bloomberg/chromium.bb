@@ -32,6 +32,10 @@ namespace base {
 class Lock;
 }
 
+namespace crypto {
+class SymmetricKey;
+}
+
 namespace chromeos {
 
 class LoginStatusConsumer;
@@ -149,6 +153,8 @@ class ParallelAuthenticator : public Authenticator,
       const std::string& oauth1_secret) OVERRIDE;
   virtual std::string EncryptToken(const std::string& token) OVERRIDE;
   virtual std::string DecryptToken(const std::string& encrypted_token) OVERRIDE;
+  virtual std::string DecryptLegacyToken(
+      const std::string& encrypted_token) OVERRIDE;
 
   // AuthAttemptStateResolver overrides.
   // Attempts to make a decision and call back |consumer_| based on
@@ -220,6 +226,9 @@ class ParallelAuthenticator : public Authenticator,
 
   // If we don't have the system salt yet, loads it from the CryptohomeLibrary.
   void LoadSystemSalt();
+  // If we don't have supplemental_user_key_ yet, loads it from the NSS DB.
+  // Returns false if the key can not be loaded/created.
+  bool LoadSupplementalUserKey();
 
   // If we haven't already, looks in a file called |filename| next to
   // the browser executable for a "localaccount" name, and retrieves it
@@ -275,6 +284,7 @@ class ParallelAuthenticator : public Authenticator,
 
   std::string ascii_hash_;
   chromeos::CryptohomeBlob system_salt_;
+  scoped_ptr<crypto::SymmetricKey> supplemental_user_key_;
 
   // When the user has changed her password, but gives us the old one, we will
   // be able to mount her cryptohome, but online authentication will fail.

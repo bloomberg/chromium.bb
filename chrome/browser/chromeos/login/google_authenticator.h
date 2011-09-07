@@ -120,6 +120,8 @@ class GoogleAuthenticator : public Authenticator, public GaiaAuthConsumer {
       const std::string& oauth1_secret) OVERRIDE;
   virtual std::string EncryptToken(const std::string& token) OVERRIDE;
   virtual std::string DecryptToken(const std::string& encrypted_token) OVERRIDE;
+  virtual std::string DecryptLegacyToken(
+      const std::string& encrypted_token) OVERRIDE;
 
   // Callbacks from GaiaAuthFetcher
   virtual void OnClientLoginFailure(

@@ -100,6 +100,9 @@ class Authenticator : public base::RefCountedThreadSafe<Authenticator> {
   // OAuth token encryption helpers.
   virtual std::string EncryptToken(const std::string& token) = 0;
   virtual std::string DecryptToken(const std::string& encrypted_token) = 0;
+  // TODO(zelidrag): Remove legacy encryption support in R16.
+  virtual std::string DecryptLegacyToken(
+      const std::string& encrypted_token) = 0;
 
   // Profile (usually off the record ) that was used to perform the last
   // authentication process.
