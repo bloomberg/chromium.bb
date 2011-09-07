@@ -19,6 +19,11 @@ namespace content {
 MockContentBrowserClient::~MockContentBrowserClient() {
 }
 
+BrowserMainParts* MockContentBrowserClient::CreateBrowserMainParts(
+    const MainFunctionParams& parameters) {
+  return NULL;
+}
+
 TabContentsView* MockContentBrowserClient::CreateTabContentsView(
     TabContents* tab_contents) {
   return new TestTabContentsView;

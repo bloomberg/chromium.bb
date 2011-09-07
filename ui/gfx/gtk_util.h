@@ -66,6 +66,9 @@ UI_EXPORT std::string RemoveWindowsStyleAccelerators(const std::string& label);
 // assumed to be 4 * |width|.
 uint8_t* BGRAToRGBA(const uint8_t* pixels, int width, int height, int stride);
 
+// Initialize some GTK settings so that our dialogs are consistent.
+void InitRCStyles();
+
 }  // namespace gfx
 
 // It's not legal C++ to have a templatized typedefs, so we wrap it in a

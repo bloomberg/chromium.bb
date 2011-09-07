@@ -4,8 +4,15 @@
 
 #include "chrome/browser/chromeos/browser_main_chromeos.h"
 
+#include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/message_loop.h"
+#include "chrome/browser/chromeos/boot_times_loader.h"
+#include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/net/cros_network_change_notifier_factory.h"
+#include "chrome/common/chrome_switches.h"
+#include "content/common/main_function_params.h"
+#include "net/base/network_change_notifier.h"
 
 #include <gtk/gtk.h>
 
@@ -41,14 +48,36 @@ class MessageLoopObserver : public MessageLoopForUI::Observer {
 static base::LazyInstance<MessageLoopObserver> g_message_loop_observer(
     base::LINKER_INITIALIZED);
 
+BrowserMainPartsChromeos::BrowserMainPartsChromeos(
+    const MainFunctionParams& parameters)
+    : BrowserMainPartsGtk(parameters) {
+}
+BrowserMainPartsChromeos::~BrowserMainPartsChromeos() {
+  if (!parameters().ui_task && chromeos::CrosLibrary::Get())
+    chromeos::CrosLibrary::Shutdown();
+
+  // To be precise, logout (browser shutdown) is not yet done, but the
+  // remaining work is negligible, hence we say LogoutDone here.
+  chromeos::BootTimesLoader::Get()->AddLogoutTimeMarker("LogoutDone",
+                                                        false);
+  chromeos::BootTimesLoader::Get()->WriteLogoutTimes();
+}
+
+void BrowserMainPartsChromeos::PreMainMessageLoopStart() {
+  // Initialize CrosLibrary only for the browser, unless running tests
+  // (which do their own CrosLibrary setup).
+  if (!parameters().ui_task) {
+    bool use_stub = parameters().command_line_.HasSwitch(switches::kStubCros);
+    chromeos::CrosLibrary::Initialize(use_stub);
+  }
+  // Replace the default NetworkChangeNotifierFactory with ChromeOS specific
+  // implementation.
+  net::NetworkChangeNotifier::SetFactory(
+      new chromeos::CrosNetworkChangeNotifierFactory());
+}
+
 void BrowserMainPartsChromeos::PostMainMessageLoopStart() {
   BrowserMainPartsPosix::PostMainMessageLoopStart();
   MessageLoopForUI* message_loop = MessageLoopForUI::current();
   message_loop->AddObserver(g_message_loop_observer.Pointer());
-}
-
-// static
-BrowserMainParts* BrowserMainParts::CreateBrowserMainParts(
-    const MainFunctionParams& parameters) {
-  return new BrowserMainPartsChromeos(parameters);
 }

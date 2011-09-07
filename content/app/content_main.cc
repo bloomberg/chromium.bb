@@ -12,15 +12,19 @@
 #include "base/logging.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/metrics/stats_table.h"
 #include "base/process_util.h"
 #include "base/stringprintf.h"
+#include "base/string_number_conversions.h"
 #include "content/app/content_main_delegate.h"
+#include "content/common/content_constants.h"
 #include "content/common/content_paths.h"
 #include "content/common/content_switches.h"
 #include "content/common/main_function_params.h"
 #include "content/common/sandbox_init_wrapper.h"
 #include "content/common/set_process_title.h"
 #include "crypto/nss_util.h"
+#include "ipc/ipc_switches.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/base/ui_base_paths.h"
 
@@ -53,6 +57,7 @@ int tc_set_new_mode(int mode);
 }
 #endif
 
+extern int BrowserMain(const MainFunctionParams&);
 extern int RendererMain(const MainFunctionParams&);
 extern int GpuMain(const MainFunctionParams&);
 extern int PluginMain(const MainFunctionParams&);
@@ -184,6 +189,27 @@ void CommonSubprocessInit(const std::string& process_type) {
 #endif
 }
 
+void InitializeStatsTable(base::ProcessId browser_pid,
+                          const CommandLine& command_line) {
+  // Initialize the Stats Counters table.  With this initialized,
+  // the StatsViewer can be utilized to read counters outside of
+  // Chrome.  These lines can be commented out to effectively turn
+  // counters 'off'.  The table is created and exists for the life
+  // of the process.  It is not cleaned up.
+  if (command_line.HasSwitch(switches::kEnableStatsTable) ||
+      command_line.HasSwitch(switches::kEnableBenchmarking)) {
+    // NOTIMPLEMENTED: we probably need to shut this down correctly to avoid
+    // leaking shared memory regions on posix platforms.
+    std::string statsfile =
+        base::StringPrintf("%s-%u",
+                           content::kStatsFilename,
+                           static_cast<unsigned int>(browser_pid));
+    base::StatsTable* stats_table = new base::StatsTable(statsfile,
+        content::kStatsMaxThreads, content::kStatsMaxCounters);
+    base::StatsTable::set_current(stats_table);
+  }
+}
+
 // We dispatch to a process-type-specific FooMain() based on a command-line
 // flag.  This struct is used to build a table of (flag, main function) pairs.
 struct MainFunction {
@@ -217,6 +243,13 @@ int RunZygote(const MainFunctionParams& main_function_params,
   // line so update it here with the new version.
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
 
+  // The StatsTable must be initialized in each process; we already
+  // initialized for the browser process, now we need to initialize
+  // within the new processes as well.
+  pid_t browser_pid = base::GetParentProcessId(
+      base::GetParentProcessId(base::GetCurrentProcId()));
+  InitializeStatsTable(browser_pid, command_line);
+
   MainFunctionParams main_params(command_line,
                                  main_function_params.sandbox_info_,
                                  main_function_params.autorelease_pool_);
@@ -244,6 +277,7 @@ int RunNamedProcessTypeMain(const std::string& process_type,
                             const MainFunctionParams& main_function_params,
                             content::ContentMainDelegate* delegate) {
   static const MainFunction kMainFunctions[] = {
+    { "",                            BrowserMain },
     { switches::kRendererProcess,    RendererMain },
     { switches::kPluginProcess,      PluginMain },
     { switches::kWorkerProcess,      WorkerMain },
@@ -388,6 +422,24 @@ int ContentMain(int argc,
   content::RegisterPathProvider();
 
   CHECK(icu_util::Initialize());
+
+  base::ProcessId browser_pid = base::GetCurrentProcId();
+  if (command_line.HasSwitch(switches::kProcessChannelID)) {
+#if defined(OS_WIN) || defined(OS_MACOSX)
+    std::string channel_name =
+        command_line.GetSwitchValueASCII(switches::kProcessChannelID);
+
+    int browser_pid_int;
+    base::StringToInt(channel_name, &browser_pid_int);
+    browser_pid = static_cast<base::ProcessId>(browser_pid_int);
+    DCHECK_NE(browser_pid_int, 0);
+#elif defined(OS_POSIX)
+    // On linux, we're in the zygote here; so we need the parent process' id.
+    browser_pid = base::GetParentProcessId(base::GetCurrentProcId());
+#endif
+  }
+
+  InitializeStatsTable(browser_pid, command_line);
 
   if (delegate) delegate->PreSandboxStartup();
 

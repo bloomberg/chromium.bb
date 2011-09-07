@@ -73,6 +73,7 @@
 
 #if defined(OS_LINUX)
 #include "base/linux_util.h"
+#include "chrome/browser/browser_main_gtk.h"
 #include "chrome/browser/crash_handler_host_linux.h"
 #endif
 
@@ -84,6 +85,13 @@
 #include "chrome/browser/tab_contents/tab_contents_view_gtk.h"
 #elif defined(OS_MACOSX)
 #include "chrome/browser/tab_contents/tab_contents_view_mac.h"
+#include "chrome/browser/browser_main_mac.h"
+#endif
+
+#if defined(OS_WIN)
+#include "chrome/browser/browser_main_win.h"
+#elif defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/browser_main_chromeos.h"
 #endif
 
 #if defined(USE_NSS)
@@ -112,6 +120,21 @@ static bool HandleWebUI(GURL* url, content::BrowserContext* browser_context) {
 }  // namespace
 
 namespace chrome {
+
+content::BrowserMainParts* ChromeContentBrowserClient::CreateBrowserMainParts(
+    const MainFunctionParams& parameters) {
+#if defined(OS_WIN)
+  return new BrowserMainPartsWin(parameters);
+#elif defined(OS_MACOSX)
+  return new BrowserMainPartsMac(parameters);
+#elif defined(OS_CHROMEOS)
+  return new BrowserMainPartsChromeos(parameters);
+#elif defined(OS_LINUX)
+  return new BrowserMainPartsGtk(parameters);
+#else
+  return NULL;
+#endif
+}
 
 TabContentsView* ChromeContentBrowserClient::CreateTabContentsView(
     TabContents* tab_contents) {

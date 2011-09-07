@@ -46,7 +46,6 @@ extern const wchar_t kCrashReportLog[];
 extern const wchar_t kTestingInterfaceDLL[];
 extern const char    kInitialProfile[];
 extern const char    kMultiProfileDirPrefix[];
-extern const char    kStatsFilename[];
 extern const wchar_t kBrowserResourcesDll[];
 extern const wchar_t kNaClAppName[];
 extern const FilePath::CharType kExtensionFileExtension[];
@@ -83,9 +82,6 @@ extern const FilePath::CharType kLoginDataFileName[];
 extern const FilePath::CharType kJumpListIconDirname[];
 extern const FilePath::CharType kWebAppDirname[];
 extern const FilePath::CharType kServiceStateFileName[];
-
-extern const int kStatsMaxThreads;
-extern const int kStatsMaxCounters;
 
 extern const bool kRecordModeEnabled;
 

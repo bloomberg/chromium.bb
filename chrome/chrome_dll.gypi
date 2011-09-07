@@ -719,6 +719,7 @@
             '../content/common/child_process.cc',
             '../content/common/child_thread.cc',
             '../content/common/content_client.cc',
+            '../content/common/content_constants.cc',
             '../content/common/content_counters.cc',
             '../content/common/content_message_generator.cc',
             '../content/common/content_paths.cc',

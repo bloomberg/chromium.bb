@@ -17,6 +17,12 @@ const char kAllowRunningInsecureContent[]   = "allow-running-insecure-content";
 // Allows debugging of sandboxed processes (see zygote_main_linux.cc).
 const char kAllowSandboxDebugging[]         = "allow-sandbox-debugging";
 
+// Causes the browser process to throw an assertion on startup.
+const char kBrowserAssertTest[]             = "assert-test";
+
+// Causes the browser process to crash on startup.
+const char kBrowserCrashTest[]              = "crash-test";
+
 // Path to the exe to run for the renderer and plugin subprocesses.
 const char kBrowserSubprocessPath[]         = "browser-subprocess-path";
 
@@ -117,9 +123,6 @@ const char kDisableLocalStorage[]           = "disable-local-storage";
 // builds.
 const char kDisableLogging[]                = "disable-logging";
 
-// Disable smooth scrolling for testing.
-const char kDisableSmoothScrolling[]        = "disable-smooth-scrolling";
-
 // Prevent plugins from running.
 const char kDisablePlugins[]                = "disable-plugins";
 
@@ -128,6 +131,12 @@ const char kDisablePopupBlocking[]          = "disable-popup-blocking";
 
 // Turns off the accessibility in the renderer.
 const char kDisableRendererAccessibility[]  = "disable-renderer-accessibility";
+
+// Disable False Start in SSL and TLS connections.
+const char kDisableSSLFalseStart[]          = "disable-ssl-false-start";
+
+// Disable smooth scrolling for testing.
+const char kDisableSmoothScrolling[]        = "disable-smooth-scrolling";
 
 // Disable the seccomp sandbox (Linux only)
 const char kDisableSeccompSandbox[]         = "disable-seccomp-sandbox";
@@ -168,6 +177,11 @@ const char kEnableAccessibilityLogging[]    = "enable-accessibility-logging";
 // Enables the benchmarking extensions.
 const char kEnableBenchmarking[]            = "enable-benchmarking";
 
+// Enable DNS side checking of certificates. Still experimental, should only
+// be used by developers at the current time.
+const char kEnableDNSCertProvenanceChecking[] =
+     "enable-dns-cert-provenance-checking";
+
 // Enables device motion events.
 const char kEnableDeviceMotion[]            = "enable-device-motion";
 
@@ -190,8 +204,14 @@ const char kEnableMediaStream[]             = "enable-media-stream";
 // assumed to be sRGB.
 const char kEnableMonitorProfile[]          = "enable-monitor-profile";
 
+// Enables TLS origin bound certificate extension.
+const char kEnableOriginBoundCerts[]  = "enable-origin-bound-certs";
+
 // Enable caching of pre-parsed JS script data.  See http://crbug.com/32407.
 const char kEnablePreparsedJsCaching[]      = "enable-preparsed-js-caching";
+
+// Enables TLS cached info extension.
+const char kEnableSSLCachedInfo[]  = "enable-ssl-cached-info";
 
 // Cause the OS X sandbox write to syslog every time an access to a resource
 // is denied by the sandbox.
@@ -202,6 +222,10 @@ const char kEnableSeccompSandbox[]          = "enable-seccomp-sandbox";
 
 // Enables StatsTable, logging statistics to a global named shared memory table.
 const char kEnableStatsTable[]              = "enable-stats-table";
+
+// Enable use of experimental TCP sockets API for sending data in the
+// SYN packet.
+const char kEnableTcpFastOpen[]             = "enable-tcp-fastopen";
 
 // Enables support for fullscreen video. Current implementation is
 // incomplete and this flag is used for development and testing.

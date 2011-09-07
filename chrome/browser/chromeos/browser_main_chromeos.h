@@ -9,11 +9,14 @@
 
 class BrowserMainPartsChromeos : public BrowserMainPartsGtk {
  public:
-  explicit BrowserMainPartsChromeos(const MainFunctionParams& parameters)
-      : BrowserMainPartsGtk(parameters) {}
+  explicit BrowserMainPartsChromeos(const MainFunctionParams& parameters);
 
- protected:
-  virtual void PostMainMessageLoopStart();
+  ~BrowserMainPartsChromeos();
+
+  virtual void PreMainMessageLoopStart() OVERRIDE;
+  virtual void PostMainMessageLoopStart() OVERRIDE;
+
+ private:
   DISALLOW_COPY_AND_ASSIGN(BrowserMainPartsChromeos);
 };
 

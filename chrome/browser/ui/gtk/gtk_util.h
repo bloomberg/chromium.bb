@@ -127,9 +127,6 @@ gfx::Size GetWidgetSize(GtkWidget* widget);
 // relative to the widget's top-left origin.
 void ConvertWidgetPointToScreen(GtkWidget* widget, gfx::Point* p);
 
-// Initialize some GTK settings so that our dialogs are consistent.
-void InitRCStyles();
-
 // Stick the widget in the given hbox without expanding vertically. The widget
 // is packed at the start of the hbox. This is useful for widgets that would
 // otherwise expand to fill the vertical space of the hbox

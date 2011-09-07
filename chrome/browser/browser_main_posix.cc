@@ -186,6 +186,11 @@ void SetFileDescriptorLimit(unsigned int max_descriptors) {
 
 // BrowserMainPartsPosix -------------------------------------------------------
 
+BrowserMainPartsPosix::BrowserMainPartsPosix(
+    const MainFunctionParams& parameters)
+    : ChromeBrowserMainParts(parameters) {
+}
+
 void BrowserMainPartsPosix::PreEarlyInitialization() {
   // We need to accept SIGCHLD, even though our handler is a no-op because
   // otherwise we cannot wait on children. (According to POSIX 2001.)

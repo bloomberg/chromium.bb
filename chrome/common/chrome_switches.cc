@@ -101,12 +101,6 @@ const char kAutomationReinitializeOnChannelError[] =
 const char kBlockReadingThirdPartyCookies[] =
     "block-reading-third-party-cookies";
 
-// Causes the browser process to throw an assertion on startup.
-const char kBrowserAssertTest[]             = "assert-test";
-
-// Causes the browser process to crash on startup.
-const char kBrowserCrashTest[]              = "crash-test";
-
 // How often (in seconds) to check for updates. Should only be used for
 // testing purposes.
 const char kCheckForUpdateIntervalSec[]     = "check-for-update-interval";
@@ -303,9 +297,6 @@ const char kDisableSanitizedClientSidePhishingDetection[] =
 // Disable site-specific tailoring to compatibility issues in WebKit.
 const char kDisableSiteSpecificQuirks[]     = "disable-site-specific-quirks";
 
-// Disable False Start in SSL and TLS connections.
-const char kDisableSSLFalseStart[]          = "disable-ssl-false-start";
-
 // Disable SSL v3 (usually for testing purposes).
 const char kDisableSSL3[]                   = "disable-ssl3";
 
@@ -441,11 +432,6 @@ const char kEnableConnectBackupJobs[]       = "enable-connect-backup-jobs";
 // Enables web developers to create apps for Chrome without using crx packages.
 const char kEnableCrxlessWebApps[]          = "enable-crxless-web-apps";
 
-// Enable DNS side checking of certificates. Still experimental, should only
-// be used by developers at the current time.
-const char kEnableDNSCertProvenanceChecking[] =
-     "enable-dns-cert-provenance-checking";
-
 // Enables extension APIs that are in development.
 const char kEnableExperimentalExtensionApis[] =
     "enable-experimental-extension-apis";
@@ -502,9 +488,6 @@ const char kEnableNaCl[]                    = "enable-nacl";
 // Enables debugging via RSP over a socket.
 const char kEnableNaClDebug[]               = "enable-nacl-debug";
 
-// Enables TLS origin bound certificate extension.
-const char kEnableOriginBoundCerts[]  = "enable-origin-bound-certs";
-
 // Enable content settings based on host *and* plug-in.
 const char kEnableResourceContentSettings[] =
     "enable-resource-content-settings";
@@ -524,10 +507,6 @@ const char kEnableShortcutsProvider[]       = "enable-shortcuts-provider";
 
 // On platforms that support it, enable smooth scroll animation.
 const char kEnableSmoothScrolling[]         = "enable-smooth-scrolling";
-
-// Enables TLS cached info extension.
-const char kEnableSSLCachedInfo[]  = "enable-ssl-cached-info";
-
 // Enable OAuth sign-in for sync.
 const char kEnableSyncOAuth[]               = "enable-sync-oauth";
 
@@ -546,10 +525,6 @@ const char kEnableTabGroupsContextMenu[]     = "enable-tab-groups-context-menu";
 
 // Enable the "synced bookmarks" folder.
 const char kEnableSyncedBookmarksFolder[]   = "enable-synced-bookmarks-folder";
-
-// Enable use of experimental TCP sockets API for sending data in the
-// SYN packet.
-const char kEnableTcpFastOpen[]             = "enable-tcp-fastopen";
 
 // Enables the option to show tabs as a vertical stack down the side of the
 // browser window.

@@ -8,6 +8,8 @@
 #define CHROME_BROWSER_BROWSER_MAIN_WIN_H_
 #pragma once
 
+#include "chrome/browser/browser_main.h"
+
 class CommandLine;
 
 // Handle uninstallation when given the appropriate the command-line switch.
@@ -36,5 +38,14 @@ int HandleIconsCommands(const CommandLine& parsed_command_line);
 // allow the user level Chrome to run. So we notify the user and uninstall
 // user level Chrome.
 bool CheckMachineLevelInstall();
+
+class BrowserMainPartsWin : public ChromeBrowserMainParts {
+ public:
+  explicit BrowserMainPartsWin(const MainFunctionParams& parameters);
+
+  virtual void PreEarlyInitialization() OVERRIDE;
+  virtual void PreMainMessageLoopStart() OVERRIDE;
+  virtual void InitializeSSL() OVERRIDE;
+};
 
 #endif  // CHROME_BROWSER_BROWSER_MAIN_WIN_H_

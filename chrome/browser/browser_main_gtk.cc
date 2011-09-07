@@ -81,6 +81,10 @@ int BrowserX11IOErrorHandler(Display* d) {
 
 }  // namespace
 
+BrowserMainPartsGtk::BrowserMainPartsGtk(const MainFunctionParams& parameters)
+    : BrowserMainPartsPosix(parameters) {
+}
+
 void BrowserMainPartsGtk::PreEarlyInitialization() {
   DetectRunningAsRoot();
 
@@ -163,7 +167,11 @@ void BrowserMainPartsGtk::SetupSandbox() {
   zhost->Init(sandbox_cmd);
 }
 
+namespace content {
+
 void DidEndMainMessageLoop() {
+}
+
 }
 
 void RecordBreakpadStatusUMA(MetricsService* metrics) {
@@ -221,11 +229,3 @@ void SetBrowserX11ErrorHandlers() {
   // goes away.
   ui::SetX11ErrorHandlers(BrowserX11ErrorHandler, BrowserX11IOErrorHandler);
 }
-
-#if !defined(OS_CHROMEOS)
-// static
-BrowserMainParts* BrowserMainParts::CreateBrowserMainParts(
-    const MainFunctionParams& parameters) {
-  return new BrowserMainPartsGtk(parameters);
-}
-#endif

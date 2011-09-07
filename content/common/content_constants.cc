@@ -16,6 +16,15 @@ const size_t kMaxURLDisplayChars = 32 * 1024;
 const char kDefaultPluginRenderViewId[] = "PluginRenderViewId";
 const char kDefaultPluginRenderProcessId[] = "PluginRenderProcessId";
 
-}  // namespace content
+#if defined(GOOGLE_CHROME_BUILD)
+const wchar_t kBrowserAppName[] = L"Chrome";
+const char    kStatsFilename[] = "ChromeStats2";
+#else
+const wchar_t kBrowserAppName[] = L"Chromium";
+const char    kStatsFilename[] = "ChromiumStats2";
+#endif
 
-#undef FPL
+const int kStatsMaxThreads = 32;
+const int kStatsMaxCounters = 3000;
+
+}  // namespace content

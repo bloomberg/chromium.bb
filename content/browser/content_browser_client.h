@@ -32,7 +32,12 @@ class TabContents;
 class TabContentsView;
 class WorkerProcessHost;
 struct DesktopNotificationHostMsg_Show_Params;
+struct MainFunctionParams;
 struct WebPreferences;
+
+namespace content {
+class BrowserMainParts;
+}
 
 namespace crypto {
 class CryptoModuleBlockingPasswordDelegate;
@@ -59,6 +64,7 @@ class Clipboard;
 namespace content {
 
 class BrowserContext;
+class BrowserMainParts;
 class ResourceContext;
 class WebUIFactory;
 
@@ -73,6 +79,12 @@ class WebUIFactory;
 class ContentBrowserClient {
  public:
   virtual ~ContentBrowserClient() {}
+
+  // Allows the embedder to return a customed BrowserMainParts implementation
+  // for the browser staratup code. Can return NULL, in which case the default
+  // is used.
+  virtual BrowserMainParts* CreateBrowserMainParts(
+      const MainFunctionParams& parameters) = 0;
 
   virtual TabContentsView* CreateTabContentsView(TabContents* tab_contents) = 0;
 

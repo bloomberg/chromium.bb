@@ -496,35 +496,6 @@ void ConvertWidgetPointToScreen(GtkWidget* widget, gfx::Point* p) {
   p->SetPoint(p->x() + position.x(), p->y() + position.y());
 }
 
-void InitRCStyles() {
-  static const char kRCText[] =
-      // Make our dialogs styled like the GNOME HIG.
-      //
-      // TODO(evanm): content-area-spacing was introduced in a later
-      // version of GTK, so we need to set that manually on all dialogs.
-      // Perhaps it would make sense to have a shared FixupDialog() function.
-      "style \"gnome-dialog\" {\n"
-      "  xthickness = 12\n"
-      "  GtkDialog::action-area-border = 0\n"
-      "  GtkDialog::button-spacing = 6\n"
-      "  GtkDialog::content-area-spacing = 18\n"
-      "  GtkDialog::content-area-border = 12\n"
-      "}\n"
-      // Note we set it at the "application" priority, so users can override.
-      "widget \"GtkDialog\" style : application \"gnome-dialog\"\n"
-
-      // Make our about dialog special, so the image is flush with the edge.
-      "style \"about-dialog\" {\n"
-      "  GtkDialog::action-area-border = 12\n"
-      "  GtkDialog::button-spacing = 6\n"
-      "  GtkDialog::content-area-spacing = 18\n"
-      "  GtkDialog::content-area-border = 0\n"
-      "}\n"
-      "widget \"about-dialog\" style : application \"about-dialog\"\n";
-
-  gtk_rc_parse_string(kRCText);
-}
-
 GtkWidget* CenterWidgetInHBox(GtkWidget* hbox, GtkWidget* widget,
                               bool pack_at_end, int padding) {
   GtkWidget* centering_vbox = gtk_vbox_new(FALSE, 0);

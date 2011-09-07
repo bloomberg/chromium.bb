@@ -35,6 +35,10 @@ extern const size_t kMaxURLDisplayChars;
 extern const char kDefaultPluginRenderViewId[];
 extern const char kDefaultPluginRenderProcessId[];
 
+extern const char kStatsFilename[];
+extern const int kStatsMaxThreads;
+extern const int kStatsMaxCounters;
+
 }  // namespace content
 
 #endif  // CONTENT_COMMON_CHROME_CONSTANTS_H_

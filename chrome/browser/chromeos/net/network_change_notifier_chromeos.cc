@@ -81,6 +81,8 @@ NetworkChangeNotifierChromeos::~NetworkChangeNotifierChromeos() {
     online_notification_task_->Cancel();
     online_notification_task_ = NULL;
   }
+  if (!chromeos::CrosLibrary::Get())
+    return;
   chromeos::NetworkLibrary* lib =
       chromeos::CrosLibrary::Get()->GetNetworkLibrary();
   lib->RemoveNetworkManagerObserver(this);

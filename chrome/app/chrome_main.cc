@@ -6,13 +6,12 @@
 #include "base/lazy_instance.h"
 #include "base/message_loop.h"
 #include "base/metrics/stats_counters.h"
-#include "base/metrics/stats_table.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
 #include "base/stringprintf.h"
-#include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/diagnostics/diagnostics_main.h"
 #include "chrome/common/chrome_constants.h"
@@ -33,7 +32,6 @@
 #include "content/common/content_client.h"
 #include "content/common/content_counters.h"
 #include "content/common/content_paths.h"
-#include "ipc/ipc_switches.h"
 #include "media/base/media.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_switches.h"
@@ -92,6 +90,8 @@
 #endif
 
 #if !defined(NACL_WIN64)  // We don't build the this code on win nacl64.
+base::LazyInstance<chrome::ChromeContentBrowserClient>
+    g_chrome_content_browser_client(base::LINKER_INITIALIZED);
 base::LazyInstance<chrome::ChromeContentRendererClient>
     g_chrome_content_renderer_client(base::LINKER_INITIALIZED);
 base::LazyInstance<chrome::ChromeContentUtilityClient>
@@ -101,7 +101,6 @@ base::LazyInstance<chrome::ChromeContentUtilityClient>
 base::LazyInstance<chrome::ChromeContentPluginClient>
     g_chrome_content_plugin_client(base::LINKER_INITIALIZED);
 
-extern int BrowserMain(const MainFunctionParams&);
 extern int RendererMain(const MainFunctionParams&);
 extern int NaClMain(const MainFunctionParams&);
 extern int ProfileImportMain(const MainFunctionParams&);
@@ -279,7 +278,12 @@ void InitializeChromeContentRendererClient() {
 }
 
 void InitializeChromeContentClient(const std::string& process_type) {
-  if (process_type == switches::kPluginProcess) {
+  if (process_type.empty()) {
+#if !defined(NACL_WIN64)  // We don't build the this code on win nacl64.
+    content::GetContentClient()->set_browser(
+        &g_chrome_content_browser_client.Get());
+#endif
+  } else if (process_type == switches::kPluginProcess) {
     content::GetContentClient()->set_plugin(
         &g_chrome_content_plugin_client.Get());
   } else if (process_type == switches::kRendererProcess ||
@@ -338,27 +342,6 @@ void SetMacProcessName(const std::string& process_type) {
 }
 
 #endif  // defined(OS_MACOSX)
-
-void InitializeStatsTable(base::ProcessId browser_pid,
-                          const CommandLine& command_line) {
-  // Initialize the Stats Counters table.  With this initialized,
-  // the StatsViewer can be utilized to read counters outside of
-  // Chrome.  These lines can be commented out to effectively turn
-  // counters 'off'.  The table is created and exists for the life
-  // of the process.  It is not cleaned up.
-  if (command_line.HasSwitch(switches::kEnableStatsTable) ||
-      command_line.HasSwitch(switches::kEnableBenchmarking)) {
-    // NOTIMPLEMENTED: we probably need to shut this down correctly to avoid
-    // leaking shared memory regions on posix platforms.
-    std::string statsfile =
-        base::StringPrintf("%s-%u",
-                           chrome::kStatsFilename,
-                           static_cast<unsigned int>(browser_pid));
-    base::StatsTable *stats_table = new base::StatsTable(statsfile,
-        chrome::kStatsMaxThreads, chrome::kStatsMaxCounters);
-    base::StatsTable::set_current(stats_table);
-  }
-}
 
 #if defined(OS_POSIX)
 // Check for --version and --product-version; return true if we encountered
@@ -570,27 +553,6 @@ class ChromeMainDelegate : public content::ContentMainDelegate {
     if (!user_data_dir.empty())
       CHECK(PathService::Override(chrome::DIR_USER_DATA, user_data_dir));
 
-    base::ProcessId browser_pid = base::GetCurrentProcId();
-    if (!process_type.empty() &&
-#if defined(OS_MACOSX)
-        process_type != switches::kRelauncherProcess &&
-#endif
-        process_type != switches::kServiceProcess) {
-#if defined(OS_WIN) || defined(OS_MACOSX)
-      std::string channel_name =
-          command_line.GetSwitchValueASCII(switches::kProcessChannelID);
-
-      int browser_pid_int;
-      base::StringToInt(channel_name, &browser_pid_int);
-      browser_pid = static_cast<base::ProcessId>(browser_pid_int);
-      DCHECK_NE(browser_pid_int, 0);
-#elif defined(OS_POSIX)
-      // On linux, we're in the zygote here; so we need the parent process' id.
-      browser_pid = base::GetParentProcessId(base::GetCurrentProcId());
-#endif
-    }
-    InitializeStatsTable(browser_pid, command_line);
-
     startup_timer_.reset(new base::StatsScope<base::StatsCounterTimer>
         (content::Counters::chrome_main()));
 
@@ -694,7 +656,6 @@ class ChromeMainDelegate : public content::ContentMainDelegate {
       const std::string& process_type,
       const MainFunctionParams& main_function_params) OVERRIDE {
     static const MainFunction kMainFunctions[] = {
-      { "",                            BrowserMain },
       // An extension process is just a renderer process. We use a different
       // command line argument to differentiate crash reports.
       { switches::kExtensionProcess,   RendererMain },
@@ -774,13 +735,6 @@ class ChromeMainDelegate : public content::ContentMainDelegate {
     const CommandLine& command_line = *CommandLine::ForCurrentProcess();
     std::string process_type =
         command_line.GetSwitchValueASCII(switches::kProcessType);
-
-    // The StatsTable must be initialized in each process; we already
-    // initialized for the browser process, now we need to initialize
-    // within the new processes as well.
-    pid_t browser_pid = base::GetParentProcessId(
-        base::GetParentProcessId(base::GetCurrentProcId()));
-    InitializeStatsTable(browser_pid, command_line);
 
 #if defined(USE_LINUX_BREAKPAD)
     // Needs to be called after we have chrome::DIR_USER_DATA.  BrowserMain sets

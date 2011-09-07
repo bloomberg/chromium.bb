@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/browser_main.h"
 #include "chrome/browser/browser_main_win.h"
 
 #include <windows.h>
@@ -62,8 +61,12 @@ void InitializeWindowProcExceptions() {
 }
 }  // namespace
 
+namespace content {
+
 void DidEndMainMessageLoop() {
   OleUninitialize();
+}
+
 }
 
 void RecordBreakpadStatusUMA(MetricsService* metrics) {
@@ -280,47 +283,37 @@ bool CheckMachineLevelInstall() {
 
 // BrowserMainPartsWin ---------------------------------------------------------
 
-class BrowserMainPartsWin : public BrowserMainParts {
- public:
-  explicit BrowserMainPartsWin(const MainFunctionParams& parameters)
-      : BrowserMainParts(parameters) {}
+BrowserMainPartsWin::BrowserMainPartsWin(const MainFunctionParams& parameters)
+    : ChromeBrowserMainParts(parameters) {
+}
 
- protected:
-  virtual void PreEarlyInitialization() {
-    // Initialize Winsock.
-    net::EnsureWinsockInit();
+void BrowserMainPartsWin::PreEarlyInitialization() {
+  // Initialize Winsock.
+  net::EnsureWinsockInit();
+}
+
+void BrowserMainPartsWin::PreMainMessageLoopStart() {
+  OleInitialize(NULL);
+
+  // If we're running tests (ui_task is non-null), then the ResourceBundle
+  // has already been initialized.
+  if (!parameters().ui_task) {
+    // Override the configured locale with the user's preferred UI language.
+    l10n_util::OverrideLocaleWithUILanguageList();
+
+    // Make sure that we know how to handle exceptions from the message loop.
+    InitializeWindowProcExceptions();
   }
+}
 
-  virtual void PreMainMessageLoopStart() {
-    OleInitialize(NULL);
-
-    // If we're running tests (ui_task is non-null), then the ResourceBundle
-    // has already been initialized.
-    if (!parameters().ui_task) {
-      // Override the configured locale with the user's preferred UI language.
-      l10n_util::OverrideLocaleWithUILanguageList();
-
-      // Make sure that we know how to handle exceptions from the message loop.
-      InitializeWindowProcExceptions();
-    }
+void BrowserMainPartsWin::InitializeSSL() {
+  // Use NSS for SSL by default.
+  // The default client socket factory uses NSS for SSL by default on
+  // Windows.
+  if (parsed_command_line().HasSwitch(switches::kUseSystemSSL)) {
+    net::ClientSocketFactory::UseSystemSSL();
+  } else {
+    // We want to be sure to init NSPR on the main thread.
+    crypto::EnsureNSPRInit();
   }
-
- private:
-  virtual void InitializeSSL() {
-    // Use NSS for SSL by default.
-    // The default client socket factory uses NSS for SSL by default on
-    // Windows.
-    if (parsed_command_line().HasSwitch(switches::kUseSystemSSL)) {
-      net::ClientSocketFactory::UseSystemSSL();
-    } else {
-      // We want to be sure to init NSPR on the main thread.
-      crypto::EnsureNSPRInit();
-    }
-  }
-};
-
-// static
-BrowserMainParts* BrowserMainParts::CreateBrowserMainParts(
-    const MainFunctionParams& parameters) {
-  return new BrowserMainPartsWin(parameters);
 }

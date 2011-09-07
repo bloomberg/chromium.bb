@@ -104,10 +104,8 @@ const char* const kHelperFlavorSuffixes[] = {
 const wchar_t kNaClAppName[] = L"nacl64";
 #if defined(GOOGLE_CHROME_BUILD)
 const wchar_t kBrowserAppName[] = L"Chrome";
-const char    kStatsFilename[] = "ChromeStats2";
 #else
 const wchar_t kBrowserAppName[] = L"Chromium";
-const char    kStatsFilename[] = "ChromiumStats2";
 #endif
 
 #if defined(OS_WIN)
@@ -157,9 +155,6 @@ const FilePath::CharType kLoginDataFileName[] = FPL("Login Data");
 const FilePath::CharType kJumpListIconDirname[] = FPL("JumpListIcons");
 const FilePath::CharType kWebAppDirname[] = FPL("Web Applications");
 const FilePath::CharType kServiceStateFileName[] = FPL("Service State");
-
-const int kStatsMaxThreads = 32;
-const int kStatsMaxCounters = 3000;
 
 // We don't enable record mode in the released product because users could
 // potentially be tricked into running a product in record mode without

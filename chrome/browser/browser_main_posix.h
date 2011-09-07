@@ -7,14 +7,12 @@
 
 #include "chrome/browser/browser_main.h"
 
-class BrowserMainPartsPosix : public BrowserMainParts {
+class BrowserMainPartsPosix : public ChromeBrowserMainParts {
  public:
-  explicit BrowserMainPartsPosix(const MainFunctionParams& parameters)
-      : BrowserMainParts(parameters) {}
+  explicit BrowserMainPartsPosix(const MainFunctionParams& parameters);
 
- protected:
-  virtual void PreEarlyInitialization();
-  virtual void PostMainMessageLoopStart();
+  virtual void PreEarlyInitialization() OVERRIDE;
+  virtual void PostMainMessageLoopStart() OVERRIDE;
 
  private:
 #if !defined(OS_MACOSX)

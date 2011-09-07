@@ -13,8 +13,7 @@
 
 class BrowserMainPartsGtk : public BrowserMainPartsPosix {
  public:
-  explicit BrowserMainPartsGtk(const MainFunctionParams& parameters)
-      : BrowserMainPartsPosix(parameters) {}
+  explicit BrowserMainPartsGtk(const MainFunctionParams& parameters);
 
   virtual void PreEarlyInitialization() OVERRIDE;
 
