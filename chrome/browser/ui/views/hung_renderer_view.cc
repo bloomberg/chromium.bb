@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/browser_dialogs.h"
 
 #include "base/i18n/rtl.h"
+#include "base/memory/scoped_vector.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -43,10 +44,27 @@ HungRendererDialogView* g_instance = NULL;
 
 class HungPagesTableModel : public views::GroupTableModel {
  public:
-  HungPagesTableModel();
+  // The Delegate is notified any time a TabContents the model is listening to
+  // is destroyed.
+  class Delegate {
+   public:
+    virtual void TabDestroyed() = 0;
+
+   protected:
+    virtual ~Delegate() {}
+  };
+
+  explicit HungPagesTableModel(Delegate* delegate);
   virtual ~HungPagesTableModel();
 
   void InitForTabContents(TabContents* hung_contents);
+
+  // Returns the first RenderProcessHost, or NULL if there aren't any
+  // TabContents.
+  RenderProcessHost* GetRenderProcessHost();
+
+  // Returns the first RenderViewHost, or NULL if there aren't any TabContents.
+  RenderViewHost* GetRenderViewHost();
 
   // Overridden from views::GroupTableModel:
   virtual int RowCount();
@@ -56,10 +74,41 @@ class HungPagesTableModel : public views::GroupTableModel {
   virtual void GetGroupRangeForItem(int item, views::GroupRange* range);
 
  private:
-  typedef std::vector<TabContentsWrapper*> TabContentsVector;
-  TabContentsVector tab_contentses_;
+  // Used to track a single TabContents. If the TabContents is destroyed
+  // TabDestroyed() is invoked on the model.
+  class TabContentsObserverImpl : public TabContentsObserver {
+   public:
+    TabContentsObserverImpl(HungPagesTableModel* model,
+                            TabContentsWrapper* tab);
+
+    TabContents* tab_contents() const {
+      return TabContentsObserver::tab_contents();
+    }
+
+    FaviconTabHelper* favicon_tab_helper() {
+      return tab_->favicon_tab_helper();
+    }
+
+    // TabContentsObserver overrides:
+    virtual void RenderViewGone() OVERRIDE;
+    virtual void TabContentsDestroyed(TabContents* tab) OVERRIDE;
+
+   private:
+    HungPagesTableModel* model_;
+    TabContentsWrapper* tab_;
+
+    DISALLOW_COPY_AND_ASSIGN(TabContentsObserverImpl);
+  };
+
+  // Invoked when a TabContents is destroyed. Cleans up |tab_observers_| and
+  // notifies the observer and delegate.
+  void TabDestroyed(TabContentsObserverImpl* tab);
+
+  typedef ScopedVector<TabContentsObserverImpl> TabObservers;
+  TabObservers tab_observers_;
 
   ui::TableModelObserver* observer_;
+  Delegate* delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(HungPagesTableModel);
 };
@@ -67,18 +116,38 @@ class HungPagesTableModel : public views::GroupTableModel {
 ///////////////////////////////////////////////////////////////////////////////
 // HungPagesTableModel, public:
 
-HungPagesTableModel::HungPagesTableModel() : observer_(NULL) {
+HungPagesTableModel::HungPagesTableModel(Delegate* delegate)
+    : observer_(NULL),
+      delegate_(delegate) {
 }
 
 HungPagesTableModel::~HungPagesTableModel() {
 }
 
+RenderProcessHost* HungPagesTableModel::GetRenderProcessHost() {
+  return tab_observers_.empty() ? NULL :
+      tab_observers_[0]->tab_contents()->GetRenderProcessHost();
+}
+
+RenderViewHost* HungPagesTableModel::GetRenderViewHost() {
+  return tab_observers_.empty() ? NULL :
+      tab_observers_[0]->tab_contents()->render_view_host();
+}
+
 void HungPagesTableModel::InitForTabContents(TabContents* hung_contents) {
-  tab_contentses_.clear();
-  for (TabContentsIterator it; !it.done(); ++it) {
-    if (it->tab_contents()->GetRenderProcessHost() ==
-        hung_contents->GetRenderProcessHost())
-      tab_contentses_.push_back(*it);
+  tab_observers_.reset();
+  if (hung_contents) {
+    // Force hung_contents to be first.
+    TabContentsWrapper* hung_wrapper =
+        TabContentsWrapper::GetCurrentWrapperForContents(hung_contents);
+    if (hung_wrapper)
+      tab_observers_.push_back(new TabContentsObserverImpl(this, hung_wrapper));
+    for (TabContentsIterator it; !it.done(); ++it) {
+      if (*it != hung_wrapper &&
+          it->tab_contents()->GetRenderProcessHost() ==
+          hung_contents->GetRenderProcessHost())
+        tab_observers_.push_back(new TabContentsObserverImpl(this, *it));
+    }
   }
   // The world is different.
   if (observer_)
@@ -89,12 +158,12 @@ void HungPagesTableModel::InitForTabContents(TabContents* hung_contents) {
 // HungPagesTableModel, views::GroupTableModel implementation:
 
 int HungPagesTableModel::RowCount() {
-  return static_cast<int>(tab_contentses_.size());
+  return static_cast<int>(tab_observers_.size());
 }
 
 string16 HungPagesTableModel::GetText(int row, int column_id) {
   DCHECK(row >= 0 && row < RowCount());
-  string16 title = tab_contentses_[row]->tab_contents()->GetTitle();
+  string16 title = tab_observers_[row]->tab_contents()->GetTitle();
   if (title.empty())
     title = TabContentsWrapper::GetDefaultTitle();
   // TODO(xji): Consider adding a special case if the title text is a URL,
@@ -106,7 +175,7 @@ string16 HungPagesTableModel::GetText(int row, int column_id) {
 
 SkBitmap HungPagesTableModel::GetIcon(int row) {
   DCHECK(row >= 0 && row < RowCount());
-  return tab_contentses_.at(row)->favicon_tab_helper()->GetFavicon();
+  return tab_observers_[row]->favicon_tab_helper()->GetFavicon();
 }
 
 void HungPagesTableModel::SetObserver(ui::TableModelObserver* observer) {
@@ -120,12 +189,44 @@ void HungPagesTableModel::GetGroupRangeForItem(int item,
   range->length = RowCount();
 }
 
+void HungPagesTableModel::TabDestroyed(TabContentsObserverImpl* tab) {
+  // Clean up tab_observers_ and notify our observer.
+  TabObservers::iterator i = std::find(
+      tab_observers_.begin(), tab_observers_.end(), tab);
+  DCHECK(i != tab_observers_.end());
+  int index = static_cast<int>(i - tab_observers_.begin());
+  tab_observers_.erase(i);
+  if (observer_)
+    observer_->OnItemsRemoved(index, 1);
+
+  // Notify the delegate.
+  delegate_->TabDestroyed();
+  // WARNING: we've likely been deleted.
+}
+
+HungPagesTableModel::TabContentsObserverImpl::TabContentsObserverImpl(
+    HungPagesTableModel* model,
+    TabContentsWrapper* tab)
+    : TabContentsObserver(tab->tab_contents()),
+      model_(model),
+      tab_(tab) {
+}
+
+void HungPagesTableModel::TabContentsObserverImpl::RenderViewGone() {
+  model_->TabDestroyed(this);
+}
+
+void HungPagesTableModel::TabContentsObserverImpl::TabContentsDestroyed(
+    TabContents* tab) {
+  model_->TabDestroyed(this);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // HungRendererDialogView
 
 class HungRendererDialogView : public views::DialogDelegateView,
                                public views::ButtonListener,
-                               public TabContentsObserver {
+                               public HungPagesTableModel::Delegate {
  public:
   HungRendererDialogView();
   ~HungRendererDialogView();
@@ -134,27 +235,27 @@ class HungRendererDialogView : public views::DialogDelegateView,
   void EndForTabContents(TabContents* contents);
 
   // views::WindowDelegate overrides:
-  virtual std::wstring GetWindowTitle() const;
-  virtual void WindowClosing();
-  virtual int GetDialogButtons() const;
+  virtual std::wstring GetWindowTitle() const OVERRIDE;
+  virtual void WindowClosing() OVERRIDE;
+  virtual int GetDialogButtons() const OVERRIDE;
   virtual std::wstring GetDialogButtonLabel(
-      MessageBoxFlags::DialogButton button) const;
-  virtual views::View* GetExtraView();
-  virtual bool Accept(bool window_closing);
-  virtual views::View* GetContentsView();
+      MessageBoxFlags::DialogButton button) const OVERRIDE;
+  virtual views::View* GetExtraView() OVERRIDE;
+  virtual bool Accept(bool window_closing)  OVERRIDE;
+  virtual views::View* GetContentsView()  OVERRIDE;
 
   // views::ButtonListener overrides:
-  virtual void ButtonPressed(views::Button* sender, const views::Event& event);
+  virtual void ButtonPressed(views::Button* sender,
+                             const views::Event& event) OVERRIDE;
+
+  // HungPagesTableModel::Delegate overrides:
+  virtual void TabDestroyed() OVERRIDE;
 
  protected:
   // views::View overrides:
   virtual void ViewHierarchyChanged(bool is_add,
                                     views::View* parent,
-                                    views::View* child);
-
-  // TabContentsObserver overrides:
-  virtual void RenderViewGone() OVERRIDE;
-  virtual void TabContentsDestroyed(TabContents* tab) OVERRIDE;
+                                    views::View* child) OVERRIDE;
 
  private:
   // Initialize the controls in this dialog.
@@ -176,22 +277,11 @@ class HungRendererDialogView : public views::DialogDelegateView,
   // is parented to a container view that uses a grid layout to align it
   // properly.
   views::TextButton* kill_button_;
-  class ButtonContainer : public views::View {
-   public:
-    ButtonContainer() {}
-    virtual ~ButtonContainer() {}
-   private:
-    DISALLOW_COPY_AND_ASSIGN(ButtonContainer);
-  };
-  ButtonContainer* kill_button_container_;
+  views::View* kill_button_container_;
 
   // The model that provides the contents of the table that shows a list of
   // pages affected by the hang.
   scoped_ptr<HungPagesTableModel> hung_pages_table_model_;
-
-  // The TabContents that we detected had hung in the first place resulting in
-  // the display of this view.
-  TabContents* contents_;
 
   // Whether or not we've created controls for ourself.
   bool initialized_;
@@ -222,7 +312,6 @@ HungRendererDialogView::HungRendererDialogView()
       hung_pages_table_(NULL),
       kill_button_(NULL),
       kill_button_container_(NULL),
-      contents_(NULL),
       initialized_(false) {
   InitClass();
 }
@@ -233,8 +322,6 @@ HungRendererDialogView::~HungRendererDialogView() {
 
 void HungRendererDialogView::ShowForTabContents(TabContents* contents) {
   DCHECK(contents && GetWidget());
-  contents_ = contents;
-  Observe(contents);
 
   // Don't show the warning unless the foreground window is the frame, or this
   // window (but still invisible). If the user has another window or
@@ -247,9 +334,6 @@ void HungRendererDialogView::ShowForTabContents(TabContents* contents) {
   }
 
   if (!GetWidget()->IsActive()) {
-    volatile TabContents* passed_c = contents;
-    volatile TabContents* this_contents = contents_;
-
     gfx::Rect bounds = GetDisplayBounds(contents);
     views::Widget* insert_after =
         views::Widget::GetWidgetForNativeView(frame_hwnd);
@@ -270,12 +354,13 @@ void HungRendererDialogView::ShowForTabContents(TabContents* contents) {
 
 void HungRendererDialogView::EndForTabContents(TabContents* contents) {
   DCHECK(contents);
-  if (contents_ && contents_->GetRenderProcessHost() ==
+  if (hung_pages_table_model_->RowCount() == 0 ||
+      hung_pages_table_model_->GetRenderProcessHost() ==
       contents->GetRenderProcessHost()) {
     GetWidget()->Close();
-    // Since we're closing, we no longer need this TabContents.
-    contents_ = NULL;
-    Observe(NULL);
+    // Close is async, make sure we drop our references to the tab immediately
+    // (it may be going away).
+    hung_pages_table_model_->InitForTabContents(NULL);
   }
 }
 
@@ -321,8 +406,8 @@ bool HungRendererDialogView::Accept(bool window_closing) {
     return true;
 
   // Start waiting again for responsiveness.
-  if (contents_ && contents_->render_view_host())
-    contents_->render_view_host()->RestartHangMonitorTimeout();
+  if (hung_pages_table_model_->GetRenderViewHost())
+    hung_pages_table_model_->GetRenderViewHost()->RestartHangMonitorTimeout();
   return true;
 }
 
@@ -336,12 +421,20 @@ views::View* HungRendererDialogView::GetContentsView() {
 void HungRendererDialogView::ButtonPressed(
     views::Button* sender, const views::Event& event) {
   if (sender == kill_button_) {
-    if (contents_ && contents_->GetRenderProcessHost()) {
+    if (hung_pages_table_model_->GetRenderProcessHost()) {
       // Kill the process.
-      TerminateProcess(contents_->GetRenderProcessHost()->GetHandle(),
-                       content::RESULT_CODE_HUNG);
+      TerminateProcess(
+          hung_pages_table_model_->GetRenderProcessHost()->GetHandle(),
+          content::RESULT_CODE_HUNG);
     }
   }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// HungRendererDialogView, HungPagesTableModel::Delegate overrides:
+
+void HungRendererDialogView::TabDestroyed() {
+  GetWidget()->Close();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -352,18 +445,6 @@ void HungRendererDialogView::ViewHierarchyChanged(bool is_add,
                                                   views::View* child) {
   if (!initialized_ && is_add && child == this && GetWidget())
     Init();
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// HungRendererDialogView, TabContentsObserver overrides:
-
-void HungRendererDialogView::RenderViewGone() {
-  // Hide any visible hung renderer warning for this tab contents' process.
-  EndForTabContents(contents_);
-}
-
-void HungRendererDialogView::TabContentsDestroyed(TabContents* tab) {
-  EndForTabContents(tab);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -378,7 +459,7 @@ void HungRendererDialogView::Init() {
   info_label_->SetMultiLine(true);
   info_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
 
-  hung_pages_table_model_.reset(new HungPagesTableModel);
+  hung_pages_table_model_.reset(new HungPagesTableModel(this));
   std::vector<ui::TableColumn> columns;
   columns.push_back(ui::TableColumn());
   hung_pages_table_ = new views::GroupTableView(
@@ -421,7 +502,7 @@ void HungRendererDialogView::CreateKillButtonView() {
   kill_button_ = new views::NativeTextButton(this, UTF16ToWide(
       l10n_util::GetStringUTF16(IDS_BROWSER_HANGMONITOR_RENDERER_END)));
 
-  kill_button_container_ = new ButtonContainer;
+  kill_button_container_ = new View;
 
   using views::GridLayout;
   using views::ColumnSet;
