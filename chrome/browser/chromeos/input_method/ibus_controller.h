@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_CHROMEOS_INPUT_METHOD_IBUS_CONTROLLER_H_
 #define CHROME_BROWSER_CHROMEOS_INPUT_METHOD_IBUS_CONTROLLER_H_
 
-#include <sstream>
 #include <string>
 #include <utility>
 #include <vector>
@@ -33,14 +32,7 @@ class InputMethodDescriptor {
   }
 
   // Debug print function.
-  std::string ToString() const {
-    std::stringstream stream;
-    stream << "id=" << id()
-           << ", keyboard_layout=" << keyboard_layout()
-           << ", virtual_keyboard_layouts=" << virtual_keyboard_layouts_.size()
-           << ", language_code=" << language_code();
-    return stream.str();
-  }
+  std::string ToString() const;
 
   const std::string& id() const { return id_; }
   const std::string& keyboard_layout() const { return keyboard_layout_; }
@@ -86,15 +78,7 @@ struct ImeProperty {
   ~ImeProperty();
 
   // Debug print function.
-  std::string ToString() const {
-    std::stringstream stream;
-    stream << "key=" << key
-           << ", label=" << label
-           << ", is_selection_item=" << is_selection_item
-           << ", is_selection_item_checked=" << is_selection_item_checked
-           << ", selection_item_id=" << selection_item_id;
-    return stream.str();
-  }
+  std::string ToString() const;
 
   std::string key;  // A key which identifies the property. Non-empty string.
                     // (e.g. "InputMode.HalfWidthKatakana")
@@ -120,31 +104,7 @@ struct ImeConfigValue {
   ~ImeConfigValue();
 
   // Debug print function.
-  std::string ToString() const {
-    std::stringstream stream;
-    stream << "type=" << type;
-    switch (type) {
-      case kValueTypeString:
-        stream << ", string_value=" << string_value;
-        break;
-      case kValueTypeInt:
-        stream << ", int_value=" << int_value;
-        break;
-      case kValueTypeBool:
-        stream << ", bool_value=" << (bool_value ? "true" : "false");
-        break;
-      case kValueTypeStringList:
-        stream << ", string_list_value=";
-        for (size_t i = 0; i < string_list_value.size(); ++i) {
-          if (i) {
-            stream << ",";
-          }
-          stream << string_list_value[i];
-        }
-        break;
-    }
-    return stream.str();
-  }
+  std::string ToString() const;
 
   enum ValueType {
     kValueTypeString = 0,

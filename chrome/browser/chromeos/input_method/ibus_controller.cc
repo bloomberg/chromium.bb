@@ -45,6 +45,15 @@ InputMethodDescriptor::InputMethodDescriptor(
 InputMethodDescriptor::~InputMethodDescriptor() {
 }
 
+std::string InputMethodDescriptor::ToString() const {
+  std::stringstream stream;
+  stream << "id=" << id()
+         << ", keyboard_layout=" << keyboard_layout()
+         << ", virtual_keyboard_layouts=" << virtual_keyboard_layouts_.size()
+         << ", language_code=" << language_code();
+  return stream.str();
+}
+
 ImeProperty::ImeProperty(const std::string& in_key,
                          const std::string& in_label,
                          bool in_is_selection_item,
@@ -67,6 +76,16 @@ ImeProperty::ImeProperty()
 ImeProperty::~ImeProperty() {
 }
 
+std::string ImeProperty::ToString() const {
+  std::stringstream stream;
+  stream << "key=" << key
+         << ", label=" << label
+         << ", is_selection_item=" << is_selection_item
+         << ", is_selection_item_checked=" << is_selection_item_checked
+         << ", selection_item_id=" << selection_item_id;
+  return stream.str();
+}
+
 ImeConfigValue::ImeConfigValue()
     : type(kValueTypeString),
       int_value(0),
@@ -74,6 +93,32 @@ ImeConfigValue::ImeConfigValue()
 }
 
 ImeConfigValue::~ImeConfigValue() {
+}
+
+std::string ImeConfigValue::ToString() const {
+  std::stringstream stream;
+  stream << "type=" << type;
+  switch (type) {
+    case kValueTypeString:
+      stream << ", string_value=" << string_value;
+      break;
+    case kValueTypeInt:
+      stream << ", int_value=" << int_value;
+      break;
+    case kValueTypeBool:
+      stream << ", bool_value=" << (bool_value ? "true" : "false");
+      break;
+    case kValueTypeStringList:
+      stream << ", string_list_value=";
+      for (size_t i = 0; i < string_list_value.size(); ++i) {
+        if (i) {
+          stream << ",";
+        }
+        stream << string_list_value[i];
+      }
+      break;
+  }
+  return stream.str();
 }
 
 // Returns true if |input_method_id| is whitelisted.

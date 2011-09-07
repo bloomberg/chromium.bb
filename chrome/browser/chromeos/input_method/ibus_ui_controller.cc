@@ -8,6 +8,7 @@
 #include <ibus.h>
 #endif
 
+#include <sstream>
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
@@ -24,6 +25,23 @@ InputMethodLookupTable::InputMethodLookupTable()
 }
 
 InputMethodLookupTable::~InputMethodLookupTable() {
+}
+
+std::string InputMethodLookupTable::ToString() const {
+  std::stringstream stream;
+  stream << "visible: " << visible << "\n";
+  stream << "cursor_absolute_index: " << cursor_absolute_index << "\n";
+  stream << "page_size: " << page_size << "\n";
+  stream << "orientation: " << orientation << "\n";
+  stream << "candidates:";
+  for (size_t i = 0; i < candidates.size(); ++i) {
+    stream << " [" << candidates[i] << "]";
+  }
+  stream << "\nlabels:";
+  for (size_t i = 0; i < labels.size(); ++i) {
+    stream << " [" << labels[i] << "]";
+  }
+  return stream.str();
 }
 
 #if defined(HAVE_IBUS)

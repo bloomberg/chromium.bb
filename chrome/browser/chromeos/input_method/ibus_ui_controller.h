@@ -10,7 +10,6 @@
 #define CHROME_BROWSER_CHROMEOS_INPUT_METHOD_IBUS_UI_CONTROLLER_H_
 #pragma once
 
-#include <sstream>
 #include <string>
 #include <vector>
 
@@ -36,28 +35,8 @@ struct InputMethodLookupTable {
 
   ~InputMethodLookupTable();
 
-  // Returns a string representation of the class. Used for debugging.
-  // The function has to be defined here rather than in the .cc file.  If
-  // it's defined in the .cc file, the code will be part of libcros.so,
-  // which cannot be accessed from clients directly. libcros.so is loaded
-  // by dlopen() so all functions are unbound unless explicitly bound by
-  // dlsym().
-  std::string ToString() const {
-    std::stringstream stream;
-    stream << "visible: " << visible << "\n";
-    stream << "cursor_absolute_index: " << cursor_absolute_index << "\n";
-    stream << "page_size: " << page_size << "\n";
-    stream << "orientation: " << orientation << "\n";
-    stream << "candidates:";
-    for (size_t i = 0; i < candidates.size(); ++i) {
-      stream << " [" << candidates[i] << "]";
-    }
-    stream << "\nlabels:";
-    for (size_t i = 0; i < labels.size(); ++i) {
-      stream << " [" << labels[i] << "]";
-    }
-    return stream.str();
-  }
+  // Debug print function.
+  std::string ToString() const;
 
   // True if the lookup table is visible.
   bool visible;
