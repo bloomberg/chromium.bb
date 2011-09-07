@@ -61,15 +61,21 @@ ui::EventType EventTypeFromNative(NativeEvent native_event) {
     case WM_NCMBUTTONDOWN:
     case WM_NCRBUTTONDBLCLK:
     case WM_NCRBUTTONDOWN:
+    case WM_NCXBUTTONDBLCLK:
+    case WM_NCXBUTTONDOWN:
     case WM_RBUTTONDBLCLK:
     case WM_RBUTTONDOWN:
+    case WM_XBUTTONDBLCLK:
+    case WM_XBUTTONDOWN:
       return ui::ET_MOUSE_PRESSED;
     case WM_LBUTTONUP:
     case WM_MBUTTONUP:
     case WM_NCLBUTTONUP:
     case WM_NCMBUTTONUP:
     case WM_NCRBUTTONUP:
+    case WM_NCXBUTTONUP:
     case WM_RBUTTONUP:
+    case WM_XBUTTONUP:
       return ui::ET_MOUSE_RELEASED;
     case WM_MOUSEMOVE:
       return IsButtonDown(native_event) ? ui::ET_MOUSE_DRAGGED :
@@ -121,20 +127,30 @@ int EventFlagsFromNative(NativeEvent native_event) {
     case WM_NCRBUTTONUP:
       native_event.wParam |= MK_RBUTTON;
       break;
+    case WM_NCXBUTTONDBLCLK:
+    case WM_NCXBUTTONDOWN:
+    case WM_NCXBUTTONUP:
+    case WM_XBUTTONDBLCLK:
+    case WM_XBUTTONDOWN:
+    case WM_XBUTTONUP:
+      native_event.wParam |= MK_XBUTTON1;
+      break;
   }
 
   // Check if the event occurred in the non-client area.
   if (IsNonClientMouseEvent(native_event))
     flags |= ui::EF_IS_NON_CLIENT;
 
-    // Check for double click events.
+  // Check for double click events.
   switch (native_event.message) {
     case WM_NCLBUTTONDBLCLK:
     case WM_NCMBUTTONDBLCLK:
     case WM_NCRBUTTONDBLCLK:
+    case WM_NCXBUTTONDBLCLK:
     case WM_LBUTTONDBLCLK:
     case WM_MBUTTONDBLCLK:
     case WM_RBUTTONDBLCLK:
+    case WM_XBUTTONDBLCLK:
       flags |= ui::EF_IS_DOUBLE_CLICK;
       break;
   }
