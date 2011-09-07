@@ -127,7 +127,6 @@ SetupGccX8664Opt() {
 ######################################################################
 
 SetupNaclX8632Common() {
-  basic-setup-nacl x86-32
   SetupSelLdr x86-32
 }
 
@@ -148,7 +147,6 @@ SetupNaclX8632Opt() {
 }
 
 SetupNaclX8664Common() {
-  basic-setup-nacl x86-64
   SetupSelLdr x86-64
 }
 
@@ -169,7 +167,6 @@ SetupNaclX8664Opt() {
 }
 
 SetupNaclDynX8632Common() {
-  basic-setup-nacl x86-32
   SetupSelLdr x86-32 "" "-s" "${RUNNABLE_LD_X8632}"
 }
 
@@ -190,7 +187,6 @@ SetupNaclDynX8632Opt() {
 }
 
 SetupNaclDynX8664Common() {
-  basic-setup-nacl x86-64
   SetupSelLdr x86-64 "" "-s" "${RUNNABLE_LD_X8664}"
 }
 
@@ -213,7 +209,6 @@ SetupNaclDynX8664Opt() {
 ######################################################################
 
 SetupPnaclX8664Common() {
-  basic-setup-pnacl x86-64
   SetupSelLdr x86-64
 }
 
@@ -250,7 +245,6 @@ SetupPnaclTranslatorX8664Opt() {
 }
 
 SetupPnaclX8632Common() {
-  basic-setup-pnacl x86-32
   SetupSelLdr x86-32
 }
 
@@ -297,9 +291,7 @@ SetupGccArm() {
 
 
 SetupPnaclArmCommon() {
-  basic-setup-pnacl arm
   SetupSelLdr arm "${QEMU_TOOL} run" "-Q"
-  SUFFIX=pnacl.arm
 }
 
 #@
@@ -336,7 +328,6 @@ SetupPnaclTranslatorArmOpt() {
 
 SetupPnaclArmCommonHW() {
   SetupSelLdr arm
-  SUFFIX=pnacl.arm
 }
 
 #@
@@ -460,42 +451,6 @@ SetupSelLdr() {
   CheckFileBuilt "IRT image" "${IRT_IMAGE}"
 
   PREFIX="${prefix} ${SEL_LDR} -B ${IRT_IMAGE} -a ${extra_flags} -f ${preload}"
-}
-
-# Flag to allow skipping building pre-requisite pieces if they were already
-# built in a previous run. Be careful that different platforms and
-# compilers have different prerequisites, so only set this to be "true"
-# If you are sure that the prerequisites are available.
-SPEC2K_PREREQS_BUILT=${SPEC2K_PREREQS_BUILT:-false}
-
-basic-setup-nacl() {
-  if ${SPEC2K_PREREQS_BUILT}; then
-    return 0
-  fi
-
-  local platforms=$1
-  build-runtime "${platforms}" "sel_ldr irt_core"
-  # libs may be unnecessary for the glibc build, but build it just in case.
-  build-libs-nacl "${platforms}"
-  # Set to true, assuming this is used via BuildAndRun() w/ the same
-  # platform and compiler setup.
-  SPEC2K_PREREQS_BUILT=true
-}
-
-basic-setup-pnacl() {
-  if ${SPEC2K_PREREQS_BUILT}; then
-    return 0
-  fi
-
-  local platforms=$1
-  # Sel universal is only used for the pnacl sandboxed translator,
-  # but prepare it just in case.
-  # IRT is used both to run the tests and to run the pnacl sandboxed translator.
-  build-runtime "${platforms}" "sel_ldr sel_universal irt_core"
-  build-libs-pnacl
-  # Set to true, assuming this is used via BuildAndRun() w/ the same
-  # platform and compiler setup.
-  SPEC2K_PREREQS_BUILT=true
 }
 
 SCONS_COMMON="./scons --mode=opt-host,nacl -j8 --verbose"
@@ -763,6 +718,51 @@ PopulateFromSpecHarness() {
   done
 }
 
+#@
+#@ BuildPrerequisites <platform> <bitcode>
+#@
+#@   Invoke scons to build some potentially missing  components, e.g.
+#@   sel_ldr, sel_universal, irt, some untrusted libraries.
+#@   Those compoents should be present in the SDK but are not in the
+#@   standard toolchain tarballs.
+BuildPrerequisites() {
+  local platforms=$1
+  local bitcode=$2
+  shift 2
+  # Sel universal is only used for the pnacl sandboxed translator,
+  # but prepare it just in case.
+  # IRT is used both to run the tests and to run the pnacl sandboxed translator.
+  build-runtime "${platforms}" "sel_ldr sel_universal irt_core"
+  if [ ${bitcode} == "bitcode" ] ; then
+     build-libs-pnacl
+  else
+    # libs may be unnecessary for the glibc build, but build it just in case.
+    build-libs-nacl "${platforms}"
+  fi
+}
+
+#@
+#@ BuildPrerequisitesSetupBased <setup>
+#@
+#@   Convenience wrapper for BuildPrerequisites
+BuildPrerequisitesSetupBased() {
+  local platforms=""
+  local bitcode=""
+  if [ "$1" == SetupPnacl* ] ; then
+    bitcode="bitcode"
+  fi
+  if [ "$1" == Setup*Arm* ] ; then
+    platforms="arm"
+  elif [ "$1" == Setup*X8632* ] ; then
+    platforms="x86-32"
+  elif [ "$1" == Setup*X8664* ] ; then
+    platforms="x86-64"
+  else
+    echo "Bad setup $2"
+    exit -1
+  fi
+  BuildPrerequisites "${platforms}" "${bitcode}"
+}
 ######################################################################
 # Main
 ######################################################################

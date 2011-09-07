@@ -258,6 +258,7 @@ test-spec() {
   setup=$2
   shift 2
   spushd tests/spec2k
+  ./run_all.sh BuildPrerequisitesSetupBased ${setup}
   ./run_all.sh CleanBenchmarks "$@"
   ./run_all.sh PopulateFromSpecHarness ${official} "$@"
   ./run_all.sh BuildAndRunBenchmarks ${setup} "$@"
@@ -313,6 +314,7 @@ timed-test-spec() {
   setup=$3
   shift 3
   spushd tests/spec2k
+  ./run_all.sh BuildPrerequisitesSetupBased ${setup}
   ./run_all.sh CleanBenchmarks "$@"
   ./run_all.sh PopulateFromSpecHarness ${official} "$@"
   ./run_all.sh TimedBuildAndRunBenchmarks ${setup} "$@"
