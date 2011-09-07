@@ -108,7 +108,6 @@ class BackgroundContents : public RenderViewHostDelegate,
   virtual void UpdateDragCursor(WebKit::WebDragOperation operation) {}
   virtual void GotFocus() {}
   virtual void TakeFocus(bool reverse) {}
-  virtual void UpdatePreferredSize(const gfx::Size& new_size) {}
 
   // NotificationObserver
   virtual void Observe(int type,

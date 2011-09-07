@@ -13,7 +13,9 @@
 #include "chrome/browser/ui/panels/panel_manager.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/tab_contents/test_tab_contents.h"
+#include "content/common/url_constants.h"
 
 #if defined(OS_MACOSX)
 #include "chrome/browser/ui/cocoa/find_bar/find_bar_bridge.h"
@@ -158,6 +160,7 @@ BasePanelBrowserTest::~BasePanelBrowserTest() {
 }
 
 void BasePanelBrowserTest::SetUpCommandLine(CommandLine* command_line) {
+  EnableDOMAutomation();
   command_line->AppendSwitch(switches::kEnablePanels);
 }
 
@@ -171,6 +174,7 @@ void BasePanelBrowserTest::SetUpOnMainThread() {
       panel_manager);
   panel_manager->set_auto_hiding_desktop_bar(mock_auto_hiding_desktop_bar_);
   panel_manager->SetWorkAreaForTesting(testing_work_area_);
+  panel_manager->enable_auto_sizing(false);
 }
 
 Panel* BasePanelBrowserTest::CreatePanelWithParams(
@@ -189,9 +193,16 @@ Panel* BasePanelBrowserTest::CreatePanelWithParams(
                                                  browser()->profile());
   EXPECT_TRUE(panel_browser->is_type_panel());
 
-  TabContentsWrapper* tab_contents =
-      new TabContentsWrapper(new TestTabContents(browser()->profile(), NULL));
-  panel_browser->AddTab(tab_contents, PageTransition::LINK);
+  if (params.url.is_empty()) {
+    TabContentsWrapper* tab_contents =
+        new TabContentsWrapper(new TestTabContents(browser()->profile(), NULL));
+    panel_browser->AddTab(tab_contents, PageTransition::LINK);
+  } else {
+    panel_browser->AddSelectedTabWithURL(params.url,
+                                         PageTransition::START_PAGE);
+    ui_test_utils::WaitForNavigation(
+        &panel_browser->GetSelectedTabContents()->controller());
+  }
 
   Panel* panel = static_cast<Panel*>(panel_browser->window());
   if (params.show_flag == SHOW_AS_ACTIVE)

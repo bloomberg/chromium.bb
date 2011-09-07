@@ -17,8 +17,10 @@ namespace {
 const size_t kInvalidPanelIndex = static_cast<size_t>(-1);
 
 // Minimum width and height of a panel.
-const int kPanelMinWidthPixels = 64;
-const int kPanelMinHeightPixels = 24;
+// Note: The minimum size of a widget (see widget.cc) is fixed to 100x100.
+// TODO(jianli): Need to fix this to support smaller panel.
+const int kPanelMinWidthPixels = 100;
+const int kPanelMinHeightPixels = 100;
 
 // Default width and height of a panel.
 const int kPanelDefaultWidthPixels = 240;
@@ -50,7 +52,8 @@ PanelManager::PanelManager()
     : dragging_panel_index_(kInvalidPanelIndex),
       dragging_panel_original_x_(0),
       delayed_titlebar_action_(NO_ACTION),
-      ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
+      auto_sizing_enabled_(true) {
   auto_hiding_desktop_bar_ = AutoHidingDesktopBar::Create(this);
   OnDisplayChanged();
 }
@@ -107,10 +110,8 @@ Panel* PanelManager::CreatePanel(Browser* browser) {
     height = kPanelDefaultHeightPixels;
   }
 
-  int max_panel_width =
-      static_cast<int>(adjusted_work_area_.width() * kPanelMaxWidthFactor);
-  int max_panel_height =
-      static_cast<int>(adjusted_work_area_.height() * kPanelMaxHeightFactor);
+  int max_panel_width = GetMaxPanelWidth();
+  int max_panel_height = GetMaxPanelHeight();
 
   if (width < kPanelMinWidthPixels)
     width = kPanelMinWidthPixels;
@@ -139,7 +140,17 @@ Panel* PanelManager::CreatePanel(Browser* browser) {
   Panel* panel = new Panel(browser, gfx::Rect(x, y, width, height));
   panels_.push_back(panel);
 
+  UpdateMaxSizeForAllPanels();
+
   return panel;
+}
+
+int PanelManager::GetMaxPanelWidth() const {
+  return static_cast<int>(adjusted_work_area_.width() * kPanelMaxWidthFactor);
+}
+
+int PanelManager::GetMaxPanelHeight() const {
+  return static_cast<int>(adjusted_work_area_.height() * kPanelMaxHeightFactor);
 }
 
 int PanelManager::GetRightMostAvaialblePosition() const {
@@ -303,6 +314,74 @@ void PanelManager::EndDragging(bool cancelled) {
   DelayedRemove();
 }
 
+void PanelManager::OnPreferredWindowSizeChanged(
+    Panel* panel, const gfx::Size& preferred_window_size) {
+  if (!auto_sizing_enabled_)
+    return;
+
+  gfx::Rect bounds = panel->GetBounds();
+  int restored_height = panel->GetRestoredHeight();
+
+  // The panel width:
+  // * cannot grow or shrink to go beyond [min_width, max_width]
+  // * cannot grow to take more than the available space and go beyond the left
+  //   of the work area.
+  int new_width = preferred_window_size.width();
+  if (new_width > panel->max_size().width())
+    new_width = panel->max_size().width();
+  if (new_width < panel->min_size().width())
+    new_width = panel->min_size().width();
+
+  int right_most_available_position = GetRightMostAvaialblePosition();
+  if (new_width - bounds.width() > right_most_available_position)
+    new_width = bounds.width() + right_most_available_position;
+
+  if (new_width != bounds.width()) {
+    int delta = bounds.width() - new_width;
+    bounds.set_x(bounds.x() + delta);
+    bounds.set_width(new_width);
+
+    // Reposition all the panels on the left.
+    int panel_index = -1;
+    for (int i = 0; i < static_cast<int>(panels_.size()); ++i) {
+      if (panels_[i] == panel) {
+        panel_index = i;
+        break;
+      }
+    }
+    DCHECK(panel_index >= 0);
+    for (int i = static_cast<int>(panels_.size()) -1; i > panel_index;
+         --i) {
+      gfx::Rect this_bounds = panels_[i]->GetBounds();
+      this_bounds.set_x(this_bounds.x() + delta);
+      panels_[i]->SetPanelBounds(this_bounds);
+    }
+  }
+
+  // The panel height:
+  // * cannot grow or shrink to go beyond [min_height, max_height]
+  int new_height = preferred_window_size.height();
+  if (new_height > panel->max_size().height())
+    new_height = panel->max_size().height();
+  if (new_height < panel->min_size().height())
+    new_height = panel->min_size().height();
+
+  if (new_height != restored_height) {
+    // If the panel is not expanded, we only need to save the new restored
+    // height.
+    if (panel->expansion_state() == Panel::EXPANDED) {
+      bounds.set_y(bounds.y() - new_height + bounds.height());
+      bounds.set_height(new_height);
+    } else {
+      panel->SetRestoredHeight(new_height);
+    }
+  }
+
+  panel->SetPanelBounds(bounds);
+
+  UpdateMaxSizeForAllPanels();
+}
+
 bool PanelManager::ShouldBringUpTitlebars(int mouse_x, int mouse_y) const {
   // We should always bring up the titlebar if the mouse is over the
   // visible auto-hiding bottom bar.
@@ -410,6 +489,7 @@ int PanelManager::GetBottomPositionForExpansionState(
     bottom += auto_hiding_desktop_bar_->GetThickness(
         AutoHidingDesktopBar::ALIGN_BOTTOM);
   }
+
   return bottom;
 }
 
@@ -450,6 +530,8 @@ void PanelManager::Rearrange(Panels::iterator iter_to_start,
 
     rightmost_position = new_bounds.x() - kPanelsHorizontalSpacing;
   }
+
+  UpdateMaxSizeForAllPanels();
 }
 
 void PanelManager::RemoveAll() {
@@ -467,4 +549,21 @@ void PanelManager::RemoveAll() {
 
 bool PanelManager::is_dragging_panel() const {
   return dragging_panel_index_ != kInvalidPanelIndex;
+}
+
+void PanelManager::UpdateMaxSizeForAllPanels() {
+  if (!auto_sizing_enabled_)
+    return;
+
+  for (Panels::const_iterator iter = panels_.begin();
+       iter != panels_.end(); ++iter) {
+    Panel* panel = *iter;
+    // A panel can at most grow to take over all the avaialble space that is
+    // returned by GetRightMostAvaialblePosition.
+    int width_can_grow_to =
+        panel->GetBounds().width() + GetRightMostAvaialblePosition();
+    panel->SetMaxSize(gfx::Size(
+        std::min(width_can_grow_to, GetMaxPanelWidth()),
+        GetMaxPanelHeight()));
+  }
 }

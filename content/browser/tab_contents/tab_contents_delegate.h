@@ -352,6 +352,10 @@ class TabContentsDelegate {
   // Notification that a plugin has crashed.
   virtual void CrashedPlugin(TabContents* tab, const FilePath& plugin_path);
 
+  // Invoked when the preferred size of the contents has been changed.
+  virtual void UpdatePreferredSize(TabContents* source,
+                                   const gfx::Size& pref_size);
+
  protected:
   virtual ~TabContentsDelegate();
 

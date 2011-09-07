@@ -234,10 +234,6 @@ void TabContentsViewMac::RestoreFocus() {
   focus_tracker_.reset(nil);
 }
 
-void TabContentsViewMac::UpdatePreferredSize(const gfx::Size& pref_size) {
-  preferred_width_ = pref_size.width();
-}
-
 bool TabContentsViewMac::IsDoingDrag() const {
   return false;
 }

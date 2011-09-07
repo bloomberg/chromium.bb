@@ -33,6 +33,7 @@ struct NativeWebKeyboardEvent;
 
 namespace gfx {
 class Rect;
+class Size;
 }
 
 class Extension;
@@ -343,6 +344,13 @@ class BrowserWindow {
   // Shows the keyboard overlay dialog box.
   virtual void ShowKeyboardOverlay(gfx::NativeWindow owning_window) = 0;
 #endif
+
+  // Invoked when the preferred size of the contents in current tab has been
+  // changed. We might choose to update the window size to accomodate this
+  // change.
+  // Note that this won't be fired if we change tabs.
+  virtual void UpdatePreferredSize(TabContents* tab_contents,
+                                   const gfx::Size& pref_size) {}
 
   // Construct a BrowserWindow implementation for the specified |browser|.
   static BrowserWindow* CreateBrowserWindow(Browser* browser);

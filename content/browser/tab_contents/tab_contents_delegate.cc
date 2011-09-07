@@ -329,6 +329,10 @@ void TabContentsDelegate::CrashedPlugin(TabContents* tab,
                                         const FilePath& plugin_path) {
 }
 
+void TabContentsDelegate::UpdatePreferredSize(TabContents* source,
+                                              const gfx::Size& pref_size) {
+}
+
 TabContentsDelegate::~TabContentsDelegate() {
   while (!attached_contents_.empty()) {
     TabContents* tab_contents = *attached_contents_.begin();

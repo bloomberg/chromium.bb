@@ -64,6 +64,9 @@ class PanelBrowserWindowGtk : public BrowserWindowGtk,
       const NativeWebKeyboardEvent& event) OVERRIDE;
   virtual Browser* GetPanelBrowser() const OVERRIDE;
   virtual void DestroyPanelBrowser() OVERRIDE;
+  virtual gfx::Size GetNonClientAreaExtent() const OVERRIDE;
+  virtual int GetRestoredHeight() const OVERRIDE;
+  virtual void SetRestoredHeight(int height) OVERRIDE;
 
  private:
   void SetBoundsImpl();

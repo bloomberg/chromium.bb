@@ -981,6 +981,8 @@ class Browser : public TabHandlerDelegate,
                                  const string16& type,
                                  const string16& data,
                                  int intent_id) OVERRIDE;
+  virtual void UpdatePreferredSize(TabContents* source,
+                                   const gfx::Size& pref_size) OVERRIDE;
 
   virtual void FindReply(TabContents* tab,
                          int request_id,

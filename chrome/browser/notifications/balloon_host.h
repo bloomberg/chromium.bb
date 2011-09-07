@@ -63,6 +63,7 @@ class BalloonHost : public RenderViewHostDelegate,
   virtual void HandleMouseDown() OVERRIDE;
   virtual RendererPreferences GetRendererPrefs(
       content::BrowserContext* browser_context) const OVERRIDE;
+  virtual void UpdatePreferredSize(const gfx::Size& pref_size) OVERRIDE;
 
   // RenderViewHostDelegate::View methods. Only the ones for opening new
   // windows are currently implemented.
@@ -93,7 +94,6 @@ class BalloonHost : public RenderViewHostDelegate,
   virtual void UpdateDragCursor(WebKit::WebDragOperation operation) OVERRIDE {}
   virtual void GotFocus() OVERRIDE {}
   virtual void TakeFocus(bool reverse) OVERRIDE {}
-  virtual void UpdatePreferredSize(const gfx::Size& pref_size) OVERRIDE;
 
   // Enable Web UI. This has to be called before renderer is created.
   void EnableWebUI();

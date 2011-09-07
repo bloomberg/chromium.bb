@@ -8,12 +8,16 @@
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "content/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/panels/native_panel.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
 #include "chrome/browser/ui/window_sizer.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/extensions/extension.h"
+#include "content/browser/tab_contents/tab_contents.h"
+#include "content/common/content_notification_types.h"
+#include "content/common/view_messages.h"
 #include "ui/gfx/rect.h"
 
 // static
@@ -27,9 +31,15 @@ const Extension* Panel::GetExtension(Browser* browser) {
 }
 
 Panel::Panel(Browser* browser, const gfx::Rect& bounds)
-    : native_panel_(NULL),
+    : min_size_(bounds.size()),
+      max_size_(bounds.size()),
+      native_panel_(NULL),
       expansion_state_(EXPANDED) {
   native_panel_ = CreateNativePanel(browser, this, bounds);
+
+  registrar_.Add(this,
+                 content::NOTIFICATION_TAB_ADDED,
+                 Source<TabContentsDelegate>(browser));
 }
 
 Panel::~Panel() {
@@ -42,6 +52,18 @@ PanelManager* Panel::manager() const {
 
 void Panel::SetPanelBounds(const gfx::Rect& bounds) {
   native_panel_->SetPanelBounds(bounds);
+}
+
+void Panel::SetMaxSize(const gfx::Size& max_size) {
+  if (max_size_ == max_size)
+    return;
+  max_size_ = max_size;
+
+  // Note: |render_view_host| might be NULL if the tab has not been created.
+  // If so, we will do it when NOTIFICATION_TAB_ADDED is received.
+  RenderViewHost* render_view_host = GetRenderViewHost();
+  if (render_view_host)
+    RequestRenderViewHostToDisableScrollbars(render_view_host);
 }
 
 void Panel::SetExpansionState(ExpansionState new_expansion_state) {
@@ -73,6 +95,14 @@ bool Panel::ShouldBringUpTitlebar(int mouse_x, int mouse_y) const {
 
 bool Panel::IsDrawingAttention() const {
   return native_panel_->IsDrawingAttention();
+}
+
+int Panel::GetRestoredHeight() const {
+  return native_panel_->GetRestoredHeight();
+}
+
+void Panel::SetRestoredHeight(int height) {
+  native_panel_->SetRestoredHeight(height);
 }
 
 void Panel::Show() {
@@ -444,6 +474,52 @@ void Panel::ShowKeyboardOverlay(gfx::NativeWindow owning_window) {
   NOTIMPLEMENTED();
 }
 #endif
+
+void Panel::UpdatePreferredSize(TabContents* tab_contents,
+                                const gfx::Size& pref_size) {
+  gfx::Size non_client_size = native_panel_->GetNonClientAreaExtent();
+  return manager()->OnPreferredWindowSizeChanged(this,
+      gfx::Size(pref_size.width() + non_client_size.width(),
+                pref_size.height() + non_client_size.height()));
+}
+
+void Panel::Observe(int type,
+                    const NotificationSource& source,
+                    const NotificationDetails& details) {
+  switch (type) {
+    case content::NOTIFICATION_TAB_ADDED:
+    case content::NOTIFICATION_TAB_CONTENTS_SWAPPED: {
+      RenderViewHost* render_view_host = GetRenderViewHost();
+      DCHECK(render_view_host);
+      render_view_host->Send(new ViewMsg_EnablePreferredSizeChangedMode(
+          render_view_host->routing_id(),
+          kPreferredSizeWidth | kPreferredSizeHeightThisIsSlow));
+      RequestRenderViewHostToDisableScrollbars(render_view_host);
+      break;
+    }
+    default:
+      NOTREACHED() << "Got a notification we didn't register for!";
+      break;
+  }
+}
+
+RenderViewHost* Panel::GetRenderViewHost() const {
+  TabContents* tab_contents = browser()->GetSelectedTabContents();
+  if (!tab_contents)
+    return NULL;
+  return tab_contents->render_view_host();
+}
+
+void Panel::RequestRenderViewHostToDisableScrollbars(
+    RenderViewHost* render_view_host) {
+  DCHECK(render_view_host);
+
+  gfx::Size non_client_size = native_panel_->GetNonClientAreaExtent();
+  render_view_host->Send(new ViewMsg_DisableScrollbarsForSmallWindows(
+      render_view_host->routing_id(),
+      gfx::Size(max_size_.width() - non_client_size.width(),
+                max_size_.height() - non_client_size.height())));
+}
 
 Browser* Panel::browser() const {
   return native_panel_->GetPanelBrowser();

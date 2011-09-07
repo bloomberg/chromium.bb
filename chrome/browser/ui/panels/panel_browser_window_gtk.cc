@@ -192,6 +192,20 @@ void PanelBrowserWindowGtk::DestroyPanelBrowser() {
   DestroyBrowser();
 }
 
+gfx::Size PanelBrowserWindowGtk::GetNonClientAreaExtent() const {
+  NOTIMPLEMENTED();
+  return gfx::Size();
+}
+
+int PanelBrowserWindowGtk::GetRestoredHeight() const {
+  NOTIMPLEMENTED();
+  return 0;
+}
+
+void PanelBrowserWindowGtk::SetRestoredHeight(int height) {
+  NOTIMPLEMENTED();
+}
+
 void PanelBrowserWindowGtk::SetBoundsImpl() {
   gtk_window_move(window_, bounds_.x(), bounds_.y());
   gtk_window_resize(window(), bounds_.width(), bounds_.height());

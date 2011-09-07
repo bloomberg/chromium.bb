@@ -220,9 +220,6 @@ void TabContentsViewViews::RestoreFocus() {
   }
 }
 
-void TabContentsViewViews::UpdatePreferredSize(const gfx::Size& pref_size) {
-}
-
 bool TabContentsViewViews::IsDoingDrag() const {
   return native_tab_contents_view_->IsDoingDrag();
 }

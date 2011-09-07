@@ -222,9 +222,6 @@ void TabContentsViewTouch::RestoreFocus() {
   }
 }
 
-void TabContentsViewTouch::UpdatePreferredSize(const gfx::Size& pref_size) {
-}
-
 bool TabContentsViewTouch::IsDoingDrag() const {
   return false;
 }

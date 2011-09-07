@@ -560,6 +560,11 @@ int PanelBrowserFrameView::MinimizedPanelHeight() {
   return kMinimizedPanelHeight;
 }
 
+gfx::Size PanelBrowserFrameView::NonClientAreaSize() const {
+  return gfx::Size(NonClientBorderThickness() * 2,
+                   NonClientTopBorderHeight() + NonClientBorderThickness());
+}
+
 SkColor PanelBrowserFrameView::GetTitleColor(PaintState paint_state) const {
   switch (paint_state) {
     case PAINT_AS_INACTIVE:

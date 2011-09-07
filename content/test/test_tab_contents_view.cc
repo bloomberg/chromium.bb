@@ -62,9 +62,6 @@ void TestTabContentsView::GotFocus() {
 void TestTabContentsView::TakeFocus(bool reverse) {
 }
 
-void TestTabContentsView::UpdatePreferredSize(const gfx::Size& pref_size) {
-}
-
 void TestTabContentsView::CreateView(const gfx::Size& initial_size) {
 }
 

@@ -197,6 +197,20 @@ void PanelBrowserWindowCocoa::didCloseNativeWindow() {
   panel_->manager()->Remove(panel_.get());
   controller_ = NULL;
 }
+gfx::Size PanelBrowserWindowCocoa::GetNonClientAreaExtent() const {
+  NOTIMPLEMENTED();
+  return gfx::Size();
+}
+
+int PanelBrowserWindowCocoa::GetRestoredHeight() const {
+  NOTIMPLEMENTED();
+  return 0;
+}
+
+void PanelBrowserWindowCocoa::SetRestoredHeight(int height) {
+  NOTIMPLEMENTED();
+}
+
 // NativePanelTesting implementation.
 
 // static

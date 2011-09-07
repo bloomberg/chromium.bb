@@ -9,10 +9,13 @@
 #include "chrome/browser/ui/browser_window.h"
 
 #include "base/memory/scoped_ptr.h"
+#include "content/common/notification_observer.h"
+#include "content/common/notification_registrar.h"
 #include "ui/gfx/rect.h"
 
 class NativePanel;
 class PanelManager;
+class RenderViewHost;
 
 // A platform independent implementation of BrowserWindow for Panels.  This
 // class would get the first crack at all the BrowserWindow calls for Panels and
@@ -24,7 +27,7 @@ class PanelManager;
 //   Panel size is restricted to certain limits.
 // - Invoke an appropriate PanelManager function to do stuff that might affect
 //   other Panels.  For example deleting a panel would rearrange other panels.
-class Panel : public BrowserWindow {
+class Panel : public BrowserWindow, public NotificationObserver {
  public:
   enum ExpansionState {
    // The panel is fully expanded with both title-bar and the client-area.
@@ -45,6 +48,11 @@ class Panel : public BrowserWindow {
   bool ShouldBringUpTitlebar(int mouse_x, int mouse_y) const;
 
   bool IsDrawingAttention() const;
+
+  // Gets or sets the restored height, which is the full height of the panel
+  // when it is expanded.
+  int GetRestoredHeight() const;
+  void SetRestoredHeight(int height);
 
   // BrowserWindow overrides.
   virtual void Show() OVERRIDE;
@@ -146,6 +154,13 @@ class Panel : public BrowserWindow {
 #if defined(OS_CHROMEOS)
   virtual void ShowKeyboardOverlay(gfx::NativeWindow owning_window) OVERRIDE;
 #endif
+  virtual void UpdatePreferredSize(TabContents* tab_contents,
+                                   const gfx::Size& pref_size) OVERRIDE;
+
+  // NotificationObserver overrides.
+  virtual void Observe(int type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details) OVERRIDE;
 
   // Construct a native panel BrowserWindow implementation for the specified
   // |browser|.
@@ -157,12 +172,11 @@ class Panel : public BrowserWindow {
   // Returns NULL if it cannot be found.
   static const Extension* GetExtension(Browser* browser);
 
-#ifdef UNIT_TEST
   NativePanel* native_panel() { return native_panel_; }
-#endif
-
   Browser* browser() const;
   ExpansionState expansion_state() const { return expansion_state_; }
+  const gfx::Size& min_size() const { return min_size_; }
+  const gfx::Size& max_size() const { return max_size_; }
 
  protected:
   virtual void DestroyBrowser() OVERRIDE;
@@ -179,11 +193,31 @@ class Panel : public BrowserWindow {
   //   not allowed for Panel.
   void SetPanelBounds(const gfx::Rect& bounds);
 
+  // Updates the maximum size.
+  void SetMaxSize(const gfx::Size& max_size);
+
+  // NULL might be returned if the tab has not been added.
+  RenderViewHost* GetRenderViewHost() const;
+
+  // Requests RenderViewHost not to show the scrollbars till |max_size_| since
+  // the panel can grow to |max_size_|.
+  void RequestRenderViewHostToDisableScrollbars(
+      RenderViewHost* render_view_host);
+
+  // This is the minimum size that the panel can shrink to.
+  gfx::Size min_size_;
+
+  // This is the size beyond which the panel is not going to grow to accomodate
+  // the growing content and WebKit would add the scrollbars in such case.
+  gfx::Size max_size_;
+
   // Platform specifc implementation for panels.  It'd be one of
   // PanelBrowserWindowGtk/PanelBrowserView/PanelBrowserWindowCocoa.
   NativePanel* native_panel_;  // Weak, owns us.
 
   ExpansionState expansion_state_;
+
+  NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(Panel);
 };

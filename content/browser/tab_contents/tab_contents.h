@@ -725,6 +725,7 @@ class TabContents : public PageNavigator,
   virtual void RunFileChooser(RenderViewHost* render_view_host,
                               const ViewHostMsg_RunFileChooser_Params& params);
   virtual void ToggleFullscreenMode(bool enter_fullscreen) OVERRIDE;
+  virtual void UpdatePreferredSize(const gfx::Size& pref_size) OVERRIDE;
 
   // RenderViewHostManager::Delegate -------------------------------------------
 

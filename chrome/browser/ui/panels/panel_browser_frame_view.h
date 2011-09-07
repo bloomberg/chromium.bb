@@ -47,6 +47,10 @@ class PanelBrowserFrameView : public BrowserNonClientFrameView,
   // Returns the height of the panel in minimized state.
   static int MinimizedPanelHeight();
 
+  // Returns the size of the non-client area, that is, the window size minus
+  // the size of the client area.
+  gfx::Size NonClientAreaSize() const;
+
  protected:
   // Overridden from BrowserNonClientFrameView:
   virtual gfx::Rect GetBoundsForTabStrip(views::View* tabstrip) const OVERRIDE;

@@ -37,7 +37,7 @@ PanelBrowserView::PanelBrowserView(Browser* browser, Panel* panel,
   : BrowserView(browser),
     panel_(panel),
     bounds_(bounds),
-    original_height_(bounds.height()),
+    restored_height_(bounds.height()),
     closed_(false),
     focused_(false),
     mouse_pressed_(false),
@@ -82,7 +82,12 @@ bool PanelBrowserView::CanMaximize() const {
 }
 
 void PanelBrowserView::SetBounds(const gfx::Rect& bounds) {
+  if (bounds_ == bounds)
+    return;
   bounds_ = bounds;
+
+  if (panel_->expansion_state() == Panel::EXPANDED)
+    restored_height_ = bounds.height();
 
   // No animation if the panel is being dragged.
   if (mouse_dragging_) {
@@ -194,7 +199,7 @@ void PanelBrowserView::OnPanelExpansionStateChanged(
   int height;
   switch (expansion_state) {
     case Panel::EXPANDED:
-      height = original_height_;
+      height = restored_height_;
       break;
     case Panel::TITLE_ONLY:
       height = GetFrameView()->NonClientTopBorderHeight();
@@ -210,7 +215,7 @@ void PanelBrowserView::OnPanelExpansionStateChanged(
       break;
     default:
       NOTREACHED();
-      height = original_height_;
+      height = restored_height_;
       break;
   }
 
@@ -316,6 +321,18 @@ bool PanelBrowserView::PreHandlePanelKeyboardEvent(
 void PanelBrowserView::HandlePanelKeyboardEvent(
     const NativeWebKeyboardEvent& event) {
   HandleKeyboardEvent(event);
+}
+
+gfx::Size PanelBrowserView::GetNonClientAreaExtent() const {
+  return GetFrameView()->NonClientAreaSize();
+}
+
+int PanelBrowserView::GetRestoredHeight() const {
+  return restored_height_;
+}
+
+void PanelBrowserView::SetRestoredHeight(int height) {
+  restored_height_ = height;
 }
 
 Browser* PanelBrowserView::GetPanelBrowser() const {

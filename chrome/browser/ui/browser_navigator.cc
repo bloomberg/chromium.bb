@@ -533,6 +533,13 @@ void Navigate(NavigateParams* params) {
     if (params->source_contents != params->target_contents)
       params->browser->ActivateTabAt(singleton_index, user_initiated);
   }
+
+  if (params->disposition != CURRENT_TAB) {
+    NotificationService::current()->Notify(
+        content::NOTIFICATION_TAB_ADDED,
+        Source<TabContentsDelegate>(params->browser),
+        Details<TabContents>(params->target_contents->tab_contents()));
+  }
 }
 
 // Returns the index of an existing singleton tab in |params->browser| matching

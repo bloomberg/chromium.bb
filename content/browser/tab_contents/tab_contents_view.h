@@ -98,9 +98,6 @@ class TabContentsView : public RenderViewHostDelegate::View {
   // invoked, SetInitialFocus is invoked.
   virtual void RestoreFocus() = 0;
 
-  // Notification that the preferred size of the contents has changed.
-  virtual void UpdatePreferredSize(const gfx::Size& pref_size) = 0;
-
   // If we try to close the tab while a drag is in progress, we crash.  These
   // methods allow the tab contents to determine if a drag is in progress and
   // postpone the tab closing.

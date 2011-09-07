@@ -150,9 +150,6 @@ class RenderViewHostDelegate : public IPC::Channel::Listener {
     // retrieved by doing a Shift-Tab.
     virtual void TakeFocus(bool reverse) = 0;
 
-    // The contents' preferred size changed.
-    virtual void UpdatePreferredSize(const gfx::Size& pref_size) = 0;
-
    protected:
     virtual ~View() {}
   };
@@ -374,6 +371,9 @@ class RenderViewHostDelegate : public IPC::Channel::Listener {
 
   // Notification that the page wants to go into or out of fullscreen mode.
   virtual void ToggleFullscreenMode(bool enter_fullscreen) {}
+
+  // The contents' preferred size changed.
+  virtual void UpdatePreferredSize(const gfx::Size& pref_size) {}
 
  protected:
   virtual ~RenderViewHostDelegate() {}

@@ -1003,10 +1003,7 @@ void RenderViewHost::OnMsgOpenURL(const GURL& url,
 
 void RenderViewHost::OnMsgDidContentsPreferredSizeChange(
     const gfx::Size& new_size) {
-  RenderViewHostDelegate::View* view = delegate_->GetViewDelegate();
-  if (!view)
-    return;
-  view->UpdatePreferredSize(new_size);
+  delegate_->UpdatePreferredSize(new_size);
 }
 
 void RenderViewHost::OnMsgDidChangeScrollbarsForMainFrame(

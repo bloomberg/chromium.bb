@@ -45,6 +45,11 @@ class PanelManager : public AutoHidingDesktopBar::Observer,
   void Drag(int delta_x);
   void EndDragging(bool cancelled);
 
+  // Invoked when the preferred window size of the given panel might need to
+  // get changed.
+  void OnPreferredWindowSizeChanged(
+      Panel* panel, const gfx::Size& preferred_window_size);
+
   // Returns true if we should bring up the titlebars, given the current mouse
   // point.
   bool ShouldBringUpTitlebars(int mouse_x, int mouse_y) const;
@@ -72,6 +77,10 @@ class PanelManager : public AutoHidingDesktopBar::Observer,
   void set_auto_hiding_desktop_bar(
       AutoHidingDesktopBar* auto_hiding_desktop_bar) {
     auto_hiding_desktop_bar_ = auto_hiding_desktop_bar;
+  }
+
+  void enable_auto_sizing(bool enabled) {
+    auto_sizing_enabled_ = enabled;
   }
 
   void SetWorkAreaForTesting(const gfx::Rect& work_area) {
@@ -128,7 +137,13 @@ class PanelManager : public AutoHidingDesktopBar::Observer,
   // Does the real job of bringing up or down the titlebars.
   void DoBringUpOrDownTitlebars(bool bring_up);
 
+  int GetMaxPanelWidth() const;
+  int GetMaxPanelHeight() const;
   int GetRightMostAvaialblePosition() const;
+
+  // Updates the maximum size of each panel as the result of adding, removing,
+  // or sizing panels.
+  void UpdateMaxSizeForAllPanels();
 
   Panels panels_;
 
@@ -163,6 +178,11 @@ class PanelManager : public AutoHidingDesktopBar::Observer,
   TitlebarAction delayed_titlebar_action_;
 
   ScopedRunnableMethodFactory<PanelManager> method_factory_;
+
+  // Whether or not bounds will be updated when the preferred content size is
+  // changed. The testing code could set this flag to false so that other tests
+  // will not be affected.
+  bool auto_sizing_enabled_;
 
   static const int kPanelsHorizontalSpacing = 4;
 

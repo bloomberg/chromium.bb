@@ -150,6 +150,7 @@ class ExtensionHost : public RenderViewHostDelegate,
   virtual void HandleMouseActivate() OVERRIDE;
   virtual void RunFileChooser(RenderViewHost* render_view_host,
                               const ViewHostMsg_RunFileChooser_Params& params);
+  virtual void UpdatePreferredSize(const gfx::Size& new_size);
 
   // RenderViewHostDelegate::View
   virtual void CreateNewWindow(
@@ -179,7 +180,6 @@ class ExtensionHost : public RenderViewHostDelegate,
   virtual void UpdateDragCursor(WebKit::WebDragOperation operation) OVERRIDE;
   virtual void GotFocus() OVERRIDE;
   virtual void TakeFocus(bool reverse) OVERRIDE;
-  virtual void UpdatePreferredSize(const gfx::Size& new_size) OVERRIDE;
 
   // NotificationObserver
   virtual void Observe(int type,

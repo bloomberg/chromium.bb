@@ -67,6 +67,15 @@ class NativePanel {
 
   virtual Browser* GetPanelBrowser() const = 0;
   virtual void DestroyPanelBrowser() = 0;
+
+  // Returns the extent of the non-client area, that is, the window size minus
+  // the size of the client area.
+  virtual gfx::Size GetNonClientAreaExtent() const = 0;
+
+  // Gets or sets the restored height, which is the full height of the panel
+  // when it is expanded.
+  virtual int GetRestoredHeight() const = 0;
+  virtual void SetRestoredHeight(int height) = 0;
 };
 
 // A NativePanel utility interface used for accessing elements of the

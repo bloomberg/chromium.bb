@@ -52,6 +52,9 @@ class PanelBrowserWindowCocoa : public NativePanel {
       const NativeWebKeyboardEvent& event) OVERRIDE;
   virtual Browser* GetPanelBrowser() const OVERRIDE;
   virtual void DestroyPanelBrowser() OVERRIDE;
+  virtual gfx::Size GetNonClientAreaExtent() const OVERRIDE;
+  virtual int GetRestoredHeight() const OVERRIDE;
+  virtual void SetRestoredHeight(int height) OVERRIDE;
 
   Panel* panel() { return panel_.get(); }
   Browser* browser() const { return browser_.get(); }

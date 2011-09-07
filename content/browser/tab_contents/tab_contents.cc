@@ -516,6 +516,11 @@ void TabContents::ToggleFullscreenMode(bool enter_fullscreen) {
     delegate_->ToggleFullscreenModeForTab(this, enter_fullscreen);
 }
 
+void TabContents::UpdatePreferredSize(const gfx::Size& pref_size) {
+  if (delegate_)
+    delegate_->UpdatePreferredSize(this, pref_size);
+}
+
 void TabContents::ShowContents() {
   RenderWidgetHostView* rwhv = GetRenderWidgetHostView();
   if (rwhv)

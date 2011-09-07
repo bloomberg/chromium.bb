@@ -247,9 +247,6 @@ void TabContentsViewGtk::RestoreFocus() {
     SetInitialFocus();
 }
 
-void TabContentsViewGtk::UpdatePreferredSize(const gfx::Size& pref_size) {
-}
-
 bool TabContentsViewGtk::IsDoingDrag() const {
   return false;
 }

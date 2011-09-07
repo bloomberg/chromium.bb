@@ -3438,11 +3438,6 @@ void Browser::AddNewContents(TabContents* source,
   params.window_action = browser::NavigateParams::SHOW_WINDOW;
   params.user_gesture = user_gesture;
   browser::Navigate(&params);
-
-  NotificationService::current()->Notify(
-    content::NOTIFICATION_TAB_ADDED,
-    Source<TabContentsDelegate>(this),
-    Details<TabContents>(new_contents));
 }
 
 void Browser::ActivateContents(TabContents* contents) {
@@ -3879,6 +3874,11 @@ void Browser::ExitTabbedFullscreenModeIfNecessary() {
     ToggleFullscreenMode();
   else
     NotifyTabOfFullscreenExitIfNecessary();
+}
+
+void Browser::UpdatePreferredSize(TabContents* source,
+                                  const gfx::Size& pref_size) {
+  window_->UpdatePreferredSize(source, pref_size);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

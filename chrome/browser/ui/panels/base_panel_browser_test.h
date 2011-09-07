@@ -42,6 +42,7 @@ class BasePanelBrowserTest : public InProcessBrowserTest {
     std::string name;
     gfx::Rect bounds;
     ShowFlag show_flag;
+    GURL url;
 
     CreatePanelParams(const std::string& name,
                       const gfx::Rect& bounds,

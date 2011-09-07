@@ -42,7 +42,6 @@ class TestTabContentsView : public TabContentsView {
   virtual void UpdateDragCursor(WebKit::WebDragOperation operation) OVERRIDE;
   virtual void GotFocus() OVERRIDE;
   virtual void TakeFocus(bool reverse) OVERRIDE;
-  virtual void UpdatePreferredSize(const gfx::Size& pref_size) OVERRIDE;
 
   // TabContentsView:
   virtual void CreateView(const gfx::Size& initial_size) OVERRIDE;

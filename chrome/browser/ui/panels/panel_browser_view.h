@@ -96,6 +96,9 @@ class PanelBrowserView : public BrowserView,
       bool* is_keyboard_shortcut) OVERRIDE;
   virtual void HandlePanelKeyboardEvent(
       const NativeWebKeyboardEvent& event) OVERRIDE;
+  virtual gfx::Size GetNonClientAreaExtent() const OVERRIDE;
+  virtual int GetRestoredHeight() const OVERRIDE;
+  virtual void SetRestoredHeight(int height) OVERRIDE;
   virtual Browser* GetPanelBrowser() const OVERRIDE;
   virtual void DestroyPanelBrowser() OVERRIDE;
 
@@ -109,9 +112,9 @@ class PanelBrowserView : public BrowserView,
   scoped_ptr<Panel> panel_;
   gfx::Rect bounds_;
 
-  // Stores the original height of the panel so we can restore it after it's
+  // Stores the full height of the panel so we can restore it after it's
   // been minimized.
-  int original_height_;
+  int restored_height_;
 
   // Is the panel being closed? Do not use it when it is closed.
   bool closed_;
