@@ -745,7 +745,7 @@ void URLFetcher::Core::RetryOrCompleteUrlFetch() {
   } else {
     backoff_delay = base::TimeDelta();
   }
-
+  request_context_getter_ = NULL;
   bool posted = delegate_loop_proxy_->PostTask(
       FROM_HERE,
       NewRunnableMethod(this,
@@ -755,7 +755,6 @@ void URLFetcher::Core::RetryOrCompleteUrlFetch() {
   // If the delegate message loop does not exist any more, then the delegate
   // should be gone too.
   DCHECK(posted || !delegate_);
-  request_context_getter_ = NULL;
 }
 
 void URLFetcher::Core::ReadResponse() {
