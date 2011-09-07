@@ -8,8 +8,6 @@
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 #include "native_client/src/trusted/validator/ncvalidate.h"
 
-#include "native_client/src/include/nacl_assert.h"
-
 /* Translate validation status to values wanted by sel_ldr. */
 static int NaClValidateStatus(NaClValidationStatus status) {
   switch (status) {
@@ -30,7 +28,6 @@ static int NaClValidateStatus(NaClValidationStatus status) {
 int NaClValidateCode(struct NaClApp *nap, uintptr_t guest_addr,
                      uint8_t *data, size_t size) {
   NaClValidationStatus status = NaClValidationSucceeded;
-  enum NaClSBKind sb_kind = NACL_SB_DEFAULT;
   if (nap->validator_stub_out_mode) {
     /* In stub out mode, we do two passes.  The second pass acts as a
        sanity check that bad instructions were indeed overwritten with
@@ -38,7 +35,6 @@ int NaClValidateCode(struct NaClApp *nap, uintptr_t guest_addr,
     status = NACL_SUBARCH_NAME(ApplyValidator,
                                NACL_TARGET_ARCH,
                                NACL_TARGET_SUBARCH)(
-                                   sb_kind,
                                    NaClApplyValidationDoStubout,
                                    guest_addr, data, size,
                                    nap->bundle_size, TRUE);
@@ -47,7 +43,6 @@ int NaClValidateCode(struct NaClApp *nap, uintptr_t guest_addr,
     status = NACL_SUBARCH_NAME(ApplyValidator,
                                NACL_TARGET_ARCH,
                                NACL_TARGET_SUBARCH)(
-                                   sb_kind,
                                    NaClApplyCodeValidation,
                                    guest_addr, data, size,
                                    nap->bundle_size, TRUE);
@@ -58,7 +53,6 @@ int NaClValidateCode(struct NaClApp *nap, uintptr_t guest_addr,
 int NaClValidateCodeReplacement(struct NaClApp *nap, uintptr_t guest_addr,
                                 uint8_t *data_old, uint8_t *data_new,
                                 size_t size) {
-  enum NaClSBKind sb_kind = NACL_SB_DEFAULT;
   if (nap->validator_stub_out_mode) return LOAD_BAD_FILE;
 
   if ((guest_addr % nap->bundle_size) != 0 ||
@@ -70,18 +64,17 @@ int NaClValidateCodeReplacement(struct NaClApp *nap, uintptr_t guest_addr,
       NACL_SUBARCH_NAME(ApplyValidatorCodeReplacement,
                         NACL_TARGET_ARCH,
                         NACL_TARGET_SUBARCH)
-      (sb_kind, guest_addr, data_old, data_new, size, nap->bundle_size));
+      (guest_addr, data_old, data_new, size, nap->bundle_size));
 }
 
 int NaClCopyCode(struct NaClApp *nap, uintptr_t guest_addr,
                  uint8_t *data_old, uint8_t *data_new,
                  size_t size) {
-  enum NaClSBKind sb_kind = NACL_SB_DEFAULT;
   return NaClValidateStatus(
       NACL_SUBARCH_NAME(ApplyValidatorCopy,
                         NACL_TARGET_ARCH,
                         NACL_TARGET_SUBARCH)
-      (sb_kind, guest_addr, data_old, data_new, size, nap->bundle_size));
+      (guest_addr, data_old, data_new, size, nap->bundle_size));
 }
 
 NaClErrorCode NaClValidateImage(struct NaClApp  *nap) {
