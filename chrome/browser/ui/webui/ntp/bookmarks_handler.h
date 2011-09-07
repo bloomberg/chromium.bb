@@ -70,6 +70,12 @@ class BookmarksHandler : public WebUIMessageHandler,
   // (can be either a bookmark or a folder).
   void HandleRemoveBookmark(const base::ListValue* args);
 
+  // Convert a BookMark node into a DictionaryValue representation.
+  base::DictionaryValue* GetNodeDictionary(const BookmarkNode* node);
+
+  // Add a dictionary representation of |node| to the ListValue.
+  void AddNode(const BookmarkNode* node, base::ListValue* list);
+
   // Register NTP preferences.
   static void RegisterUserPrefs(PrefService* prefs);
 
