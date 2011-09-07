@@ -71,6 +71,9 @@ struct SyncProtocolError {
   ~SyncProtocolError();
   DictionaryValue* ToValue() const;
 };
+
+const char* GetSyncErrorTypeString(SyncProtocolErrorType type);
+const char* GetClientActionString(ClientAction action);
 }  // namespace browser_sync
 #endif  // CHROME_BROWSER_SYNC_PROTOCOL_SYNC_PROTOCOL_ERROR_H_
 

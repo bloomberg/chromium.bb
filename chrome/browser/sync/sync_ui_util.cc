@@ -12,6 +12,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/protocol/proto_enum_conversions.h"
+#include "chrome/browser/sync/protocol/sync_protocol_error.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/sessions/session_state.h"
 #include "chrome/browser/ui/browser.h"
@@ -513,6 +514,20 @@ void ConstructAboutInformation(ProfileSyncService* service,
       sync_ui_util::AddBoolSyncDetail(details, "Throttled",
                                       snapshot->is_silenced);
     }
+
+    // Now set the actionable errors.
+    ListValue* actionable_error = new ListValue();
+    strings->Set("actionable_error", actionable_error);
+    sync_ui_util::AddStringSyncDetails(actionable_error, "Error Type",
+        browser_sync::GetSyncErrorTypeString(
+            full_status.sync_protocol_error.error_type));
+    sync_ui_util::AddStringSyncDetails(actionable_error, "Action",
+        browser_sync::GetClientActionString(
+            full_status.sync_protocol_error.action));
+    sync_ui_util::AddStringSyncDetails(actionable_error, "url",
+        full_status.sync_protocol_error.url);
+    sync_ui_util::AddStringSyncDetails(actionable_error, "Error Description",
+        full_status.sync_protocol_error.error_description);
 
     if (service->unrecoverable_error_detected()) {
       strings->Set("unrecoverable_error_detected",
