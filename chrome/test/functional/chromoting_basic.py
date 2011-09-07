@@ -19,15 +19,10 @@ class ChromotingBasic(chromoting.ChromotingMixIn, pyauto.PyUITest):
     Installs the Chromoting app, launches it, and authenticates
     using the default Chromoting test account.
     """
-    credentials_file = os.path.join(pyauto.PyUITest.DataDir(),
-                                   'pyauto_private', 'private_tests_info.txt')
-    assert os.path.exists(credentials_file), \
-        'Credentials file does not exist: %s' % credentials_file
-    account = self.EvalDataFrom(credentials_file)['test_chromoting_account']
-
     super(ChromotingBasic, self).setUp()
     app = self.InstallApp(self.GetIT2MeAppPath())
     self.LaunchApp(app)
+    account = self.GetPrivateInfo()['test_chromoting_account']
     self.Authenticate(account['username'], account['password'])
 
   def testChromoting(self):

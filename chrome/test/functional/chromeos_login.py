@@ -29,10 +29,7 @@ class ChromeosLogin(pyauto.PyUITest):
     Returns:
       A dictionary with the keys 'username' and 'password'
     """
-    credentials_file = os.path.join(pyauto.PyUITest.DataDir(),
-                                   'pyauto_private', 'private_tests_info.txt')
-    assert os.path.exists(credentials_file), 'Credentials file does not exist.'
-    return pyauto.PyUITest.EvalDataFrom(credentials_file)[account_type]
+    return self.GetPrivateInfo()[account_type]
 
   def testGoodLogin(self):
     """Test that login is successful with valid credentials."""
