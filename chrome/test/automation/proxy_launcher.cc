@@ -78,6 +78,8 @@ ProxyLauncher::ProxyLauncher()
                       switches::kNoSandbox)),
       full_memory_dump_(CommandLine::ForCurrentProcess()->HasSwitch(
                             switches::kFullMemoryCrashReport)),
+      show_error_dialogs_(CommandLine::ForCurrentProcess()->HasSwitch(
+                              switches::kEnableErrorDialogs)),
       dump_histograms_on_exit_(CommandLine::ForCurrentProcess()->HasSwitch(
                                    switches::kDumpHistogramsOnExit)),
       enable_dcheck_(CommandLine::ForCurrentProcess()->HasSwitch(
@@ -388,11 +390,8 @@ void ProxyLauncher::PrepareTestCommandline(CommandLine* command_line,
     command_line->AppendSwitchASCII(switches::kTestingChannelID,
                                     PrefixedChannelID());
 
-  if (!show_error_dialogs_ &&
-      !CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableErrorDialogs)) {
+  if (!show_error_dialogs_)
     command_line->AppendSwitch(switches::kNoErrorDialogs);
-  }
   if (no_sandbox_)
     command_line->AppendSwitch(switches::kNoSandbox);
   if (full_memory_dump_)
