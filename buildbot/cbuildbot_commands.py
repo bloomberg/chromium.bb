@@ -413,16 +413,19 @@ def GenerateMinidumpStackTraces(buildroot, board, gzipped_test_tarball):
   if not tar_cmd.returncode:
     symbol_dir = os.path.join('/build', board, 'usr', 'lib', 'debug',
                               'breakpad')
-    for dir, subdirs, files in os.walk(temp_dir):
-      for file in files:
-        minidump = cros_lib.ReinterpretPathForChroot(os.path.join(dir, file))
+    for curr_dir, subdirs, files in os.walk(temp_dir):
+      for curr_file in files:
+        full_file_path = os.path.join(curr_dir, curr_file)
+        minidump = cros_lib.ReinterpretPathForChroot(full_file_path)
         cwd = os.path.join(buildroot, 'src', 'scripts')
-        cros_lib.RunCommand('minidump_stackwalk %s %s > %s.txt 2> /dev/null' %
-                            (minidump, symbol_dir, minidump),
+        cros_lib.RunCommand(['minidump_stackwalk',
+                             minidump,
+                             symbol_dir],
                             cwd=cwd,
                             enter_chroot=True,
                             error_ok=True,
-                            shell=True)
+                            redirect_stderr=True,
+                            log_stdout_to_file='%s.txt' % full_file_path)
     cros_lib.RunCommand(['tar',
                          'uf',
                          test_tarball,

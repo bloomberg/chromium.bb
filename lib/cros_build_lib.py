@@ -52,7 +52,7 @@ def RunCommand(cmd, print_cmd=True, error_ok=False, error_message=None,
                exit_code=False, redirect_stdout=False, redirect_stderr=False,
                cwd=None, input=None, enter_chroot=False, shell=False,
                env=None, extra_env=None, ignore_sigint=False,
-               combine_stdout_stderr=False):
+               combine_stdout_stderr=False, log_stdout_to_file=None):
   """Runs a command.
 
   Args:
@@ -83,6 +83,9 @@ def RunCommand(cmd, print_cmd=True, error_ok=False, error_message=None,
       Ctrl-C.  If we don't do this, I think we and the child will both get
       Ctrl-C at the same time, which means we'll forcefully kill the child.
     combine_stdout_stderr: Combines stdout and stdin streams into stdout.
+    log_stdout_to_file: If set, redirects stdout to file specified by this path.
+      If combine_stdout_stderr is set to True, then stderr will also be logged
+      to the specified file.
 
   Returns:
     A CommandResult object.
@@ -94,12 +97,21 @@ def RunCommand(cmd, print_cmd=True, error_ok=False, error_message=None,
   stdout = None
   stderr = None
   stdin = None
+  file_handle = None
   cmd_result = CommandResult()
 
   # Modify defaults based on parameters.
-  if redirect_stdout: stdout = subprocess.PIPE
-  if redirect_stderr: stderr = subprocess.PIPE
-  if combine_stdout_stderr: stderr = subprocess.STDOUT
+  if log_stdout_to_file:
+    file_handle = open(log_stdout_to_file, 'w+')
+    stdout = file_handle
+    if combine_stdout_stderr:
+      stderr = file_handle
+    elif redirect_stderr:
+      stderr = subprocess.PIPE
+  else:
+    if redirect_stdout: stdout = subprocess.PIPE
+    if redirect_stderr: stderr = subprocess.PIPE
+    if combine_stdout_stderr: stderr = subprocess.STDOUT
   # TODO(sosa): gpylint complains about redefining built-in 'input'.
   #   Can we rename this variable?
   if input: stdin = subprocess.PIPE
@@ -167,6 +179,9 @@ def RunCommand(cmd, print_cmd=True, error_ok=False, error_message=None,
       raise
     else:
       Warning(str(e))
+  finally:
+    if file_handle:
+      file_handle.close()
 
   return cmd_result
 
