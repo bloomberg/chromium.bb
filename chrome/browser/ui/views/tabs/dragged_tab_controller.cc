@@ -1311,6 +1311,7 @@ void DraggedTabController::ResetDelegates() {
 void DraggedTabController::CreateDraggedView(
     const std::vector<TabRendererData>& data,
     const std::vector<gfx::Rect>& renderer_bounds) {
+#if !defined(USE_AURA)
   DCHECK(!view_.get());
   DCHECK_EQ(data.size(), drag_data_.size());
 
@@ -1333,6 +1334,10 @@ void DraggedTabController::CreateDraggedView(
   // DraggedTabView takes ownership of the renderers.
   view_.reset(new DraggedTabView(renderers, renderer_bounds, mouse_offset_,
                                  content_bounds.size(), photobooth));
+#else
+  // TODO(beng):
+  NOTIMPLEMENTED();
+#endif
 }
 
 gfx::Point DraggedTabController::GetCursorScreenPoint() const {

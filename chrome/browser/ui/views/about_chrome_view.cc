@@ -105,7 +105,7 @@ AboutChromeView::AboutChromeView(Profile* profile)
 
   Init();
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
   google_updater_ = new GoogleUpdate();
   google_updater_->set_status_listener(this);
 #endif
@@ -117,7 +117,7 @@ AboutChromeView::AboutChromeView(Profile* profile)
 }
 
 AboutChromeView::~AboutChromeView() {
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
   // The Google Updater will hold a pointer to us until it reports status, so we
   // need to let it know that we will no longer be listening.
   if (google_updater_)
@@ -472,7 +472,7 @@ void AboutChromeView::ViewHierarchyChanged(bool is_add,
       parent->AddChildView(&timeout_indicator_);
       timeout_indicator_.SetVisible(false);
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
       // On-demand updates for Chrome don't work in Vista RTM when UAC is turned
       // off. So, in this case we just want the About box to not mention
       // on-demand updates. Silent updates (in the background) should still
@@ -592,7 +592,7 @@ void AboutChromeView::LinkClicked(views::Link* source, int event_flags) {
   browser->OpenURL(url, GURL(), NEW_WINDOW, PageTransition::LINK);
 }
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
 ////////////////////////////////////////////////////////////////////////////////
 // AboutChromeView, GoogleUpdateStatusListener implementation:
 

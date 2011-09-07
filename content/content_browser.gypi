@@ -376,6 +376,7 @@
         'browser/renderer_host/redirect_to_file_resource_handler.h',
         'browser/renderer_host/render_message_filter.cc',
         'browser/renderer_host/render_message_filter.h',
+        'browser/renderer_host/render_message_filter_aura.cc',
         'browser/renderer_host/render_message_filter_win.cc',
         'browser/renderer_host/render_process_host.cc',
         'browser/renderer_host/render_process_host.h',

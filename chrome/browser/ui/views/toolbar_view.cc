@@ -40,7 +40,9 @@
 
 #if defined(OS_WIN)
 #include "chrome/browser/enumerate_modules_model_win.h"
+#if !defined(USE_AURA)
 #include "chrome/browser/ui/views/app_menu_button_win.h"
+#endif
 #endif
 
 // static
@@ -167,7 +169,7 @@ void ToolbarView::Init() {
 
   browser_actions_ = new BrowserActionsContainer(browser_, this);
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
   app_menu_ = new AppMenuButtonWin(this);
 #else
   app_menu_ = new views::MenuButton(NULL, std::wstring(), this, false);

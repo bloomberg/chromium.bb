@@ -190,7 +190,7 @@ class LocationBarView : public LocationBar,
   // in the toolbar in full keyboard accessibility mode.
   virtual void SelectAll();
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
   // Event Handlers
   virtual bool OnMousePressed(const views::MouseEvent& event) OVERRIDE;
   virtual bool OnMouseDragged(const views::MouseEvent& event) OVERRIDE;
@@ -321,15 +321,19 @@ class LocationBarView : public LocationBar,
   void ToggleVisibility(bool new_vis, views::View* view);
 
 #if defined(OS_WIN)
+#if !defined(USE_AURA)
   // Helper for the Mouse event handlers that does all the real work.
   void OnMouseEvent(const views::MouseEvent& event, UINT msg);
+#endif
 
   // Returns true if the suggest text is valid.
   bool HasValidSuggestText() const;
 
+#if !defined(USE_AURA)
   // Returns |location_entry_| cast to OmniboxViewWin, or NULL if
   // |location_entry_| is of a different type.
   OmniboxViewWin* GetOmniboxViewWin();
+#endif
 #endif
 
   // Helper to show the first run info bubble.

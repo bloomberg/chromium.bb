@@ -88,7 +88,7 @@ class VIEWS_EXPORT Event {
            type_ == ui::ET_TOUCH_CANCELLED;
   }
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
   // Returns the EventFlags in terms of windows flags.
   int GetWindowsFlags() const;
 #elif defined(OS_LINUX)

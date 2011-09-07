@@ -201,6 +201,7 @@ void PrintingContextWin::AskUserForSettings(gfx::NativeView view,
                                             int max_pages,
                                             bool has_selection,
                                             PrintSettingsCallback* callback) {
+#if !defined(USE_AURA)
   DCHECK(!in_print_job_);
   dialog_box_dismissed_ = false;
 
@@ -255,6 +256,7 @@ void PrintingContextWin::AskUserForSettings(gfx::NativeView view,
 
   // TODO(maruel):  Support PD_PRINTTOFILE.
   callback->Run(ParseDialogResultEx(dialog_options));
+#endif
 }
 
 PrintingContext::Result PrintingContextWin::UseDefaultSettings() {

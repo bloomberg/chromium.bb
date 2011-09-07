@@ -16,7 +16,7 @@
 #include "views/view.h"
 #include "views/window/dialog_delegate.h"
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
 #include "chrome/browser/google/google_update.h"
 #endif
 
@@ -36,7 +36,7 @@ class Profile;
 ////////////////////////////////////////////////////////////////////////////////
 class AboutChromeView : public views::DialogDelegateView,
                         public views::LinkListener
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
                         , public GoogleUpdateStatusListener
 #endif
                         {
@@ -75,7 +75,7 @@ class AboutChromeView : public views::DialogDelegateView,
   // Overridden from views::LinkListener:
   virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
   // Overridden from GoogleUpdateStatusListener:
   virtual void OnReportResults(GoogleUpdateUpgradeResult result,
                                GoogleUpdateErrorCode error_code,
@@ -83,7 +83,7 @@ class AboutChromeView : public views::DialogDelegateView,
 #endif
 
  private:
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
   // Update the UI to show the status of the upgrade.
   void UpdateStatus(GoogleUpdateUpgradeResult result,
                     GoogleUpdateErrorCode error_code);
@@ -128,7 +128,7 @@ class AboutChromeView : public views::DialogDelegateView,
   // Determines the order of the two links we draw in the main label.
   bool chromium_url_appears_first_;
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
   // The class that communicates with Google Update to find out if an update is
   // available and asks it to start an upgrade.
   scoped_refptr<GoogleUpdate> google_updater_;

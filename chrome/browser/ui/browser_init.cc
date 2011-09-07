@@ -1419,9 +1419,11 @@ bool BrowserInit::ProcessCmdLineImpl(const CommandLine& command_line,
       silent_launch = true;
 
     if (command_line.HasSwitch(switches::kChromeFrame)) {
+#if !defined(USE_AURA)
       if (!CreateAutomationProvider<ChromeFrameAutomationProvider>(
           automation_channel_id, profile, expected_tabs))
         return false;
+#endif
     } else {
       if (!CreateAutomationProvider<AutomationProvider>(
           automation_channel_id, profile, expected_tabs))

@@ -474,7 +474,7 @@ class WebPluginDelegateImpl : public WebPluginDelegate {
   // The url with which the plugin was instantiated.
   std::string plugin_url_;
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
   // Indicates the end of a user gesture period.
   void OnUserGestureEnd();
 

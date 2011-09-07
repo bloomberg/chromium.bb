@@ -449,6 +449,10 @@ Profile* CreateProfile(const MainFunctionParams& parameters,
     return profile;
 
 #if defined(OS_WIN)
+#if defined(USE_AURA)
+  // TODO(beng):
+  NOTIMPLEMENTED();
+#else
   // Ideally, we should be able to run w/o access to disk.  For now, we
   // prompt the user to pick a different user-data-dir and restart chrome
   // with the new dir.
@@ -472,6 +476,7 @@ Profile* CreateProfile(const MainFunctionParams& parameters,
                                       new_user_data_dir);
     base::LaunchProcess(new_command_line, base::LaunchOptions(), NULL);
   }
+#endif
 #else
   // TODO(port): fix this.  See comments near the definition of
   // user_data_dir.  It is better to CHECK-fail here than it is to
@@ -1208,7 +1213,7 @@ int ChromeBrowserMainParts::TemporaryContinue() {
   std::string try_chrome =
       parsed_command_line().GetSwitchValueASCII(switches::kTryChromeAgain);
   if (!try_chrome.empty()) {
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
     // Setup.exe has determined that we need to run a retention experiment
     // and has lauched chrome to show the experiment UI.
     if (process_singleton.FoundOtherProcessWindow()) {

@@ -41,12 +41,6 @@
         'plugin_main.h',
       ],
       'conditions': [
-        ['use_aura==1', {
-          'sources/': [
-            ['exclude', '^plugin_impl_win.cc'],
-            ['exclude', '^plugin_impl_win.h'],
-          ],
-        }],
         ['OS=="win"', {
           'link_settings': {
             'libraries': ['-lurlmon.lib'],

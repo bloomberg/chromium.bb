@@ -175,6 +175,7 @@
         '../plugins/npapi/webplugin_delegate.h',
         '../plugins/npapi/webplugin_delegate_impl.cc',
         '../plugins/npapi/webplugin_delegate_impl.h',
+        '../plugins/npapi/webplugin_delegate_impl_aura.cc',
         '../plugins/npapi/webplugin_delegate_impl_gtk.cc',
         '../plugins/npapi/webplugin_delegate_impl_mac.mm',
         '../plugins/npapi/webplugin_delegate_impl_win.cc',

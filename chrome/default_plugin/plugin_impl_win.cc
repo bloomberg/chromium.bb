@@ -346,8 +346,10 @@ void PluginInstallerImpl::DownloadPlugin() {
   DisplayStatus(IDS_DEFAULT_PLUGIN_DOWNLOADING_PLUGIN_MSG);
 
   if (!plugin_download_url_for_display_) {
+#if !defined(USE_AURA)
     ChildThread::current()->Send(new ChromePluginProcessHostMsg_DownloadUrl(
         plugin_download_url_, hwnd()));
+#endif
   } else {
     default_plugin::g_browser->geturl(instance(),
                                       plugin_download_url_.c_str(),
@@ -666,10 +668,12 @@ bool PluginInstallerImpl::InitializeResources(HINSTANCE module_handle) {
 }
 
 void PluginInstallerImpl::NotifyPluginStatus(int status) {
+#if !defined(USE_AURA)
   ChildThread::current()->Send(
       new ChromePluginProcessHostMsg_MissingPluginStatus(
           status,
           renderer_process_id(),
           render_view_id(),
           hwnd()));
+#endif
 }

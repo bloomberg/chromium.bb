@@ -27,7 +27,7 @@ class ChromePluginMessageFilter : public IPC::ChannelProxy::MessageFilter,
  private:
   virtual ~ChromePluginMessageFilter();
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
   void OnDownloadUrl(const std::string& url,
                      gfx::NativeWindow caller_window);
   // Helper function to issue the download request on the file thread.

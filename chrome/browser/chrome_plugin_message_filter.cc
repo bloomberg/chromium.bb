@@ -32,7 +32,7 @@ ChromePluginMessageFilter::~ChromePluginMessageFilter() {
 bool ChromePluginMessageFilter::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ChromePluginMessageFilter, message)
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
     IPC_MESSAGE_HANDLER(ChromePluginProcessHostMsg_DownloadUrl, OnDownloadUrl)
 #endif
     IPC_MESSAGE_HANDLER(ChromePluginProcessHostMsg_GetPluginFinderUrl,
@@ -49,7 +49,7 @@ bool ChromePluginMessageFilter::Send(IPC::Message* message) {
   return process_->Send(message);
 }
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
 void ChromePluginMessageFilter::OnDownloadUrl(const std::string& url,
                                               gfx::NativeWindow caller_window) {
   BrowserThread::PostTask(

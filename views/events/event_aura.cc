@@ -26,6 +26,14 @@ int EventFlagsFromNative(NativeEvent native_event) {
 
 }
 
+bool IsClientMouseEvent(const views::NativeEvent& native_event) {
+  return true;
+}
+
+bool IsNonClientMouseEvent(const views::NativeEvent& native_event) {
+  return false;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Event, private:
 
