@@ -932,6 +932,22 @@
    fun:mach_override_ptr
    fun:_ZN4base33EnableTerminationOnHeapCorruptionEv
 }
+{
+   # Intentional - data is stored in thread-local storage for an unjoined 
+   # worker thread, and so can occasionally leak. See crbug.com/89553 for
+   # additional info
+   bug_89553
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN12_GLOBAL__N_111DnsReloader11MaybeReloadEv
+   fun:_ZN3net22DnsReloaderMaybeReloadEv	
+   fun:_ZN3net22SystemHostResolverProcERKSsNS_13AddressFamilyEiPNS_11AddressListEPi	
+   ...
+   fun:_ZN3net*15ResolveAddrInfoEPNS_16HostResolverProc*	
+   fun:_ZN3net16HostResolverImpl3Job8DoLookup*	
+   fun:_Z16DispatchToMethodIN3net16HostResolverImpl*	
+   fun:_ZN14RunnableMethodIN3net16HostResolverImpl*
+}
 
 #-----------------------------------------------------------------------
 # 3. Suppressions for real chromium bugs that are not yet fixed.
@@ -4747,19 +4763,6 @@
    fun:_ZN3net16HttpStreamParser22DoParseResponseHeadersEi
    fun:_ZN3net16HttpStreamParser20ParseResponseHeadersEv
    fun:_ZN3net16HttpStreamParser21DoReadHeadersCompleteEi
-}
-{
-   bug_89553
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN12_GLOBAL__N_111DnsReloader11MaybeReloadEv
-   fun:_ZN3net22DnsReloaderMaybeReloadEv
-   fun:_ZN3net22SystemHostResolverProcERKSsNS_13AddressFamilyEiPNS_11AddressListEPi
-   ...
-   fun:_ZN3net*15ResolveAddrInfoEPNS_16HostResolverProc*
-   fun:_ZN3net16HostResolverImpl3Job8DoLookup*
-   fun:_Z16DispatchToMethodIN3net16HostResolverImpl*
-   fun:_ZN14RunnableMethodIN3net16HostResolverImpl*
 }
 {
    bug_89677
