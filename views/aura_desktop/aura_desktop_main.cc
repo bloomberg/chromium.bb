@@ -46,6 +46,8 @@ class DemoWindowDelegate : public aura::WindowDelegate {
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
     canvas->AsCanvasSkia()->drawColor(color_, SkXfermode::kSrc_Mode);
   }
+  virtual void OnWindowDestroying() OVERRIDE {
+  }
   virtual void OnWindowDestroyed() OVERRIDE {
   }
 
@@ -132,42 +134,45 @@ int main(int argc, char** argv) {
 
   // Create a hierarchy of test windows.
   DemoWindowDelegate window_delegate1(SK_ColorBLUE);
-  aura::Window window1(&window_delegate1);
-  window1.set_id(1);
-  window1.Init();
-  window1.SetBounds(gfx::Rect(100, 100, 400, 400), 0);
-  window1.SetVisibility(aura::Window::VISIBILITY_SHOWN);
-  window1.SetParent(NULL);
+  aura::Window* window1 = new aura::Window(&window_delegate1);
+  window1->set_id(1);
+  window1->Init();
+  window1->SetBounds(gfx::Rect(100, 100, 400, 400), 0);
+  window1->SetVisibility(aura::Window::VISIBILITY_SHOWN);
+  window1->SetParent(NULL);
 
   DemoWindowDelegate window_delegate2(SK_ColorRED);
-  aura::Window window2(&window_delegate2);
-  window2.set_id(2);
-  window2.Init();
-  window2.SetBounds(gfx::Rect(200, 200, 350, 350), 0);
-  window2.SetVisibility(aura::Window::VISIBILITY_SHOWN);
-  window2.SetParent(NULL);
+  aura::Window* window2 = new aura::Window(&window_delegate2);
+  window2->set_id(2);
+  window2->Init();
+  window2->SetBounds(gfx::Rect(200, 200, 350, 350), 0);
+  window2->SetVisibility(aura::Window::VISIBILITY_SHOWN);
+  window2->SetParent(NULL);
 
   DemoWindowDelegate window_delegate3(SK_ColorGREEN);
-  aura::Window window3(&window_delegate3);
-  window3.set_id(3);
-  window3.Init();
-  window3.SetBounds(gfx::Rect(10, 10, 50, 50), 0);
-  window3.SetVisibility(aura::Window::VISIBILITY_SHOWN);
-  window3.SetParent(&window2);
+  aura::Window* window3 = new aura::Window(&window_delegate3);
+  window3->set_id(3);
+  window3->Init();
+  window3->SetBounds(gfx::Rect(10, 10, 50, 50), 0);
+  window3->SetVisibility(aura::Window::VISIBILITY_SHOWN);
+  window3->SetParent(window2);
 
-  views::Widget widget;
+  views::Widget* widget = new views::Widget;
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_CONTROL);
   params.bounds = gfx::Rect(75, 75, 80, 80);
-  params.parent = &window2;
-  widget.Init(params);
-  widget.SetContentsView(new TestView);
+  params.parent = window2;
+  widget->Init(params);
+  widget->SetContentsView(new TestView);
 
   TestWindowContents* contents = new TestWindowContents;
   views::Widget* views_window = views::Widget::CreateWindowWithParentAndBounds(
-      contents, &window2, gfx::Rect(120, 150, 200, 200));
+      contents, window2, gfx::Rect(120, 150, 200, 200));
   views_window->Show();
 
   aura::Desktop::GetInstance()->Run();
+
+  delete aura::Desktop::GetInstance();
+
   return 0;
 }
 

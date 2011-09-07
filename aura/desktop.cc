@@ -29,6 +29,8 @@ Desktop::Desktop()
 }
 
 Desktop::~Desktop() {
+  if (instance_ == this)
+    instance_ = NULL;
 }
 
 void Desktop::Show() {
@@ -41,7 +43,7 @@ void Desktop::SetSize(const gfx::Size& size) {
 
 void Desktop::Run() {
   Show();
-  MessageLoopForUI::current()->Run(host_);
+  MessageLoopForUI::current()->Run(host_.get());
 }
 
 void Desktop::Draw() {

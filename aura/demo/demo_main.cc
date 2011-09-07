@@ -47,8 +47,8 @@ class DemoWindowDelegate : public aura::WindowDelegate {
     canvas->AsCanvasSkia()->drawColor(color_, SkXfermode::kSrc_Mode);
   }
 
-  virtual void OnWindowDestroyed() OVERRIDE {
-  }
+  virtual void OnWindowDestroying() OVERRIDE {}
+  virtual void OnWindowDestroyed() OVERRIDE {}
 
  private:
   SkColor color_;

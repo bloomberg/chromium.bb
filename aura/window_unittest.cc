@@ -23,9 +23,89 @@ namespace internal {
 
 namespace {
 
+// WindowDelegate implementation with all methods stubbed out.
+class WindowDelegateImpl : public WindowDelegate {
+ public:
+  WindowDelegateImpl() {}
+  virtual ~WindowDelegateImpl() {}
+
+  // Overriden from WindowDelegate:
+  virtual void OnFocus() OVERRIDE {}
+  virtual void OnBlur() OVERRIDE {}
+  virtual bool OnKeyEvent(KeyEvent* event) OVERRIDE {
+    return false;
+  }
+  virtual int GetNonClientComponent(const gfx::Point& point) const OVERRIDE {
+    return HTCLIENT;
+  }
+  virtual bool OnMouseEvent(MouseEvent* event) OVERRIDE { return false; }
+  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {}
+  virtual void OnWindowDestroying() OVERRIDE {}
+  virtual void OnWindowDestroyed() OVERRIDE {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(WindowDelegateImpl);
+};
+
+// Used for verifying destruction methods are invoked.
+class DestroyTrackingDelegateImpl : public WindowDelegateImpl {
+ public:
+  DestroyTrackingDelegateImpl()
+      : destroying_count_(0),
+        destroyed_count_(0),
+        in_destroying_(false) {}
+
+  void clear_destroying_count() { destroying_count_ = 0; }
+  int destroying_count() const { return destroying_count_; }
+
+  void clear_destroyed_count() { destroyed_count_ = 0; }
+  int destroyed_count() const { return destroyed_count_; }
+
+  bool in_destroying() const { return in_destroying_; }
+
+  virtual void OnWindowDestroying() OVERRIDE {
+    EXPECT_FALSE(in_destroying_);
+    in_destroying_ = true;
+    destroying_count_++;
+  }
+
+  virtual void OnWindowDestroyed() OVERRIDE {
+    EXPECT_TRUE(in_destroying_);
+    in_destroying_ = false;
+    destroyed_count_++;
+  }
+
+ private:
+  bool in_destroying_;
+  int destroying_count_;
+  int destroyed_count_;
+
+  DISALLOW_COPY_AND_ASSIGN(DestroyTrackingDelegateImpl);
+};
+
+// Used to verify that when OnWindowDestroying is invoked the parent is also
+// is in the process of being destroyed.
+class ChildWindowDelegateImpl : public DestroyTrackingDelegateImpl {
+ public:
+  explicit ChildWindowDelegateImpl(
+      DestroyTrackingDelegateImpl* parent_delegate)
+      : parent_delegate_(parent_delegate) {
+  }
+
+  virtual void OnWindowDestroying() OVERRIDE {
+    EXPECT_TRUE(parent_delegate_->in_destroying());
+    DestroyTrackingDelegateImpl::OnWindowDestroying();
+  }
+
+ private:
+  DestroyTrackingDelegateImpl* parent_delegate_;
+
+  DISALLOW_COPY_AND_ASSIGN(ChildWindowDelegateImpl);
+};
+
 // A simple WindowDelegate implementation for these tests. It owns itself
 // (deletes itself when the Window it is attached to is destroyed).
-class TestWindowDelegate : public WindowDelegate {
+class TestWindowDelegate : public WindowDelegateImpl {
  public:
   TestWindowDelegate(SkColor color)
       : color_(color),
@@ -35,22 +115,16 @@ class TestWindowDelegate : public WindowDelegate {
 
   ui::KeyboardCode last_key_code() const { return last_key_code_; }
 
-  // Overridden from WindowDelegate:
-  virtual void OnFocus() OVERRIDE {}
-  virtual void OnBlur() OVERRIDE {}
+  // Overridden from WindowDelegateImpl:
   virtual bool OnKeyEvent(KeyEvent* event) OVERRIDE {
     last_key_code_ = event->key_code();
     return true;
   }
-  virtual int GetNonClientComponent(const gfx::Point& point) const OVERRIDE {
-    return HTCLIENT;
-  }
-  virtual bool OnMouseEvent(MouseEvent* event) OVERRIDE { return false; }
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
-    canvas->AsCanvasSkia()->drawColor(color_, SkXfermode::kSrc_Mode);
-  }
   virtual void OnWindowDestroyed() OVERRIDE {
     delete this;
+  }
+  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
+    canvas->AsCanvasSkia()->drawColor(color_, SkXfermode::kSrc_Mode);
   }
 
  private:
@@ -183,6 +257,23 @@ TEST_F(WindowTest, Focus) {
   // The key press should be sent to the focused sub-window.
   desktop->OnKeyEvent(KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_E, 0));
   EXPECT_EQ(ui::VKEY_E, w121delegate->last_key_code());
+}
+
+// Various destruction assertions.
+TEST_F(WindowTest, DestroyTest) {
+  DestroyTrackingDelegateImpl parent_delegate;
+  ChildWindowDelegateImpl child_delegate(&parent_delegate);
+  {
+    scoped_ptr<Window> parent(
+        CreateTestWindowWithDelegate(&parent_delegate, 0, gfx::Rect(), NULL));
+    Window* child = CreateTestWindowWithDelegate(&child_delegate, 0,
+                                                 gfx::Rect(), parent.get());
+  }
+  // Both the parent and child should have been destroyed.
+  EXPECT_EQ(1, parent_delegate.destroying_count());
+  EXPECT_EQ(1, parent_delegate.destroyed_count());
+  EXPECT_EQ(1, child_delegate.destroying_count());
+  EXPECT_EQ(1, child_delegate.destroyed_count());
 }
 
 }  // namespace internal

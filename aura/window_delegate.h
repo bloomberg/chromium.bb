@@ -34,7 +34,13 @@ class WindowDelegate {
   // Asks the delegate to paint window contents into the supplied canvas.
   virtual void OnPaint(gfx::Canvas* canvas) = 0;
 
-  // Called when the Window has been destroyed (i.e. from its destructor).
+  // Called from Window's destructor before OnWindowDestroyed and before the
+  // children have been destroyed.
+  virtual void OnWindowDestroying() = 0;
+
+  // Called when the Window has been destroyed (i.e. from its destructor). This
+  // is called after OnWindowDestroying and after the children have been
+  // deleted.
   // The delegate can use this as an opportunity to delete itself if necessary.
   virtual void OnWindowDestroyed() = 0;
 

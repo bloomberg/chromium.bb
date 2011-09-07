@@ -74,6 +74,7 @@
       'type': 'executable',
       'dependencies': [
         '<(DEPTH)/base/base.gyp:test_support_base',
+        '../chrome/chrome.gyp:packed_resources',
         '<(DEPTH)/skia/skia.gyp:skia',
         '<(DEPTH)/testing/gtest.gyp:gtest',
         '<(DEPTH)/ui/ui.gyp:gfx_resources',

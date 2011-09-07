@@ -24,11 +24,15 @@ namespace views {
 
 NativeWidgetAura::NativeWidgetAura(internal::NativeWidgetDelegate* delegate)
     : delegate_(delegate),
-      ALLOW_THIS_IN_INITIALIZER_LIST(window_(new aura::Window(this))) {
-  window_->set_id(1200);
+      ALLOW_THIS_IN_INITIALIZER_LIST(window_(new aura::Window(this))),
+      ownership_(Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET) {
 }
 
 NativeWidgetAura::~NativeWidgetAura() {
+  if (ownership_ == Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET)
+    delete delegate_;
+  else
+    CloseNow();
 }
 
 // static
@@ -48,6 +52,7 @@ gfx::Font NativeWidgetAura::GetWindowTitleFont() {
 // NativeWidgetAura, internal::NativeWidgetPrivate implementation:
 
 void NativeWidgetAura::InitNativeWidget(const Widget::InitParams& params) {
+  ownership_ = params.ownership;
   window_->set_user_data(this);
   window_->Init();
   delegate_->OnNativeWidgetCreated();
@@ -389,8 +394,14 @@ void NativeWidgetAura::OnPaint(gfx::Canvas* canvas) {
   delegate_->OnNativeWidgetPaint(canvas);
 }
 
+void NativeWidgetAura::OnWindowDestroying() {
+  delegate_->OnNativeWidgetDestroying();
+}
+
 void NativeWidgetAura::OnWindowDestroyed() {
-  delete this;
+  delegate_->OnNativeWidgetDestroyed();
+  if (ownership_ == Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET)
+    delete this;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

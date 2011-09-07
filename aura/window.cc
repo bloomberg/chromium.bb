@@ -26,6 +26,18 @@ Window::Window(WindowDelegate* delegate)
 }
 
 Window::~Window() {
+  // Let the delegate know we're in the processing of destroying.
+  if (delegate_)
+    delegate_->OnWindowDestroying();
+  // Then destroy the children.
+  while (!children_.empty()) {
+    Window* child = children_[0];
+    delete child;
+    // Deleting the child so remove it from out children_ list.
+    DCHECK(std::find(children_.begin(), children_.end(), child) ==
+           children_.end());
+  }
+  // And let the delegate do any post cleanup.
   if (delegate_)
     delegate_->OnWindowDestroyed();
   if (parent_)

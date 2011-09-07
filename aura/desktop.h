@@ -62,7 +62,7 @@ class AURA_EXPORT Desktop : public ui::CompositorDelegate {
 
   scoped_ptr<internal::RootWindow> window_;
 
-  DesktopHost* host_;
+  scoped_ptr<DesktopHost> host_;
 
   static Desktop* instance_;
 

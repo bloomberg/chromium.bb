@@ -115,12 +115,16 @@ class NativeWidgetAura : public internal::NativeWidgetPrivate,
   virtual int GetNonClientComponent(const gfx::Point& point) const OVERRIDE;
   virtual bool OnMouseEvent(aura::MouseEvent* event) OVERRIDE;
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
+  virtual void OnWindowDestroying() OVERRIDE;
   virtual void OnWindowDestroyed() OVERRIDE;
 
  private:
   internal::NativeWidgetDelegate* delegate_;
 
   aura::Window* window_;
+
+  // See class documentation for Widget in widget.h for a note about ownership.
+  Widget::InitParams::Ownership ownership_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeWidgetAura);
 };
