@@ -156,9 +156,6 @@ class ProfileIOData {
     // because on linux it relies on initializing things through gconf,
     // and needs to be on the main thread.
     scoped_ptr<net::ProxyConfigService> proxy_config_service;
-    // Initialized on the UI thread because it needs to reference the
-    // Profile's PrefService.
-    scoped_ptr<policy::URLBlacklistManager> url_blacklist_manager;
     // The profile this struct was populated from. It's passed as a void* to
     // ensure it's not accidently used on the IO thread. Before using it on the
     // UI thread, call ProfileManager::IsValidProfile to ensure it's alive.
@@ -168,7 +165,7 @@ class ProfileIOData {
 
   explicit ProfileIOData(bool is_incognito);
 
-  void InitializeProfileParams(Profile* profile);
+  void InitializeOnUIThread(Profile* profile);
   void ApplyProfileParamsToContext(ChromeURLRequestContext* context) const;
 
   // Lazy initializes the ProfileIOData object the first time a request context

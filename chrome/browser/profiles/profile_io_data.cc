@@ -189,7 +189,7 @@ prerender::PrerenderManager* GetPrerenderManagerOnUI(
 
 }  // namespace
 
-void ProfileIOData::InitializeProfileParams(Profile* profile) {
+void ProfileIOData::InitializeOnUIThread(Profile* profile) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   PrefService* pref_service = profile->GetPrefs();
 
@@ -244,16 +244,20 @@ void ProfileIOData::InitializeProfileParams(Profile* profile) {
       base::Bind(&GetPrerenderManagerOnUI, profile_getter);
   params->protocol_handler_registry = profile->GetProtocolHandlerRegistry();
 
-#if defined(ENABLE_CONFIGURATION_POLICY)
-  params->url_blacklist_manager.reset(
-      new policy::URLBlacklistManager(pref_service));
-#endif
-
   params->proxy_config_service.reset(
       ProxyServiceFactory::CreateProxyConfigService(
           profile->GetProxyConfigTracker()));
   params->profile = profile;
   profile_params_.reset(params.release());
+
+  // The URLBlacklistManager has to be created on the UI thread to register
+  // observers of |pref_service|, and it also has to clean up on
+  // ShutdownOnUIThread to release these observers on the right thread.
+  // Don't pass it in |profile_params_| to make sure it is correctly cleaned up,
+  // in particular when this ProfileIOData isn't |initialized_| during deletion.
+#if defined(ENABLE_CONFIGURATION_POLICY)
+  url_blacklist_manager_.reset(new policy::URLBlacklistManager(pref_service));
+#endif
 }
 
 ProfileIOData::AppRequestContext::AppRequestContext() {}
@@ -410,7 +414,7 @@ void ProfileIOData::LazyInitialize() const {
   network_delegate_.reset(new ChromeNetworkDelegate(
         io_thread_globals->extension_event_router_forwarder.get(),
         profile_params_->extension_info_map,
-        profile_params_->url_blacklist_manager.get(),
+        url_blacklist_manager_.get(),
         profile_params_->profile,
         &enable_referrers_));
 
@@ -480,7 +484,6 @@ void ProfileIOData::LazyInitialize() const {
   notification_service_ = profile_params_->notification_service;
   extension_info_map_ = profile_params_->extension_info_map;
   prerender_manager_getter_ = profile_params_->prerender_manager_getter;
-  url_blacklist_manager_.swap(profile_params_->url_blacklist_manager);
 
   resource_context_.set_host_resolver(io_thread_globals->host_resolver.get());
   resource_context_.set_request_context(main_request_context_);

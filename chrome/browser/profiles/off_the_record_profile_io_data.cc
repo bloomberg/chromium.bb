@@ -119,7 +119,7 @@ OffTheRecordProfileIOData::Handle::GetIsolatedAppRequestContextGetter(
 
 void OffTheRecordProfileIOData::Handle::LazyInitialize() const {
   if (!initialized_) {
-    io_data_->InitializeProfileParams(profile_);
+    io_data_->InitializeOnUIThread(profile_);
     ChromeNetworkDelegate::InitializeReferrersEnabled(
         io_data_->enable_referrers(), profile_->GetPrefs());
 #if defined(ENABLE_SAFE_BROWSING)
