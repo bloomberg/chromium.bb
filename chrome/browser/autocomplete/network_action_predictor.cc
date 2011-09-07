@@ -52,9 +52,9 @@ NetworkActionPredictor::Action
 
   const double base_score = 1.0;
 
-  // This constant is ln(1/0.8) so we end up decaying to 80% of the base score
+  // This constant is ln(1/0.65) so we end up decaying to 65% of the base score
   // for each week that passes.
-  const double kLnDecayPercent = 0.2231435513142097;
+  const double kLnDecayPercent = 0.43078291609245;
   base::TimeDelta time_passed = base::Time::Now() - url_row.last_visit();
 
   // Clamp to 0.
@@ -63,13 +63,12 @@ NetworkActionPredictor::Action
           base::Time::kMicrosecondsPerWeek);
 
   const double kMaxDecaySpeedDivisor = 5.0;
-  const double kNumUsesPerDecaySpeedDivisorIncrement = 1.0;
+  const double kNumUsesPerDecaySpeedDivisorIncrement = 2.0;
   const double decay_divisor = std::min(kMaxDecaySpeedDivisor,
       (url_row.typed_count() + kNumUsesPerDecaySpeedDivisorIncrement - 1) /
           kNumUsesPerDecaySpeedDivisorIncrement);
 
   const double confidence = base_score / exp(decay_exponent / decay_divisor);
-
   CHECK(confidence >= 0.0 && confidence <= 1.0);
 
   UMA_HISTOGRAM_COUNTS_100("NetworkActionPredictor.Confidence",
