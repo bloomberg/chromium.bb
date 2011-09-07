@@ -734,6 +734,12 @@ void ShutdownWatcherHelper::Arm(const base::TimeDelta& duration) {
   } else if (channel == chrome::VersionInfo::CHANNEL_BETA ||
              channel == chrome::VersionInfo::CHANNEL_DEV) {
     actual_duration *= 25;
+  } else {
+    // In Canary, for Windows XP, give twice the time for shutdown.
+#if defined(OS_WIN)
+    if (base::win::GetVersion() <= base::win::VERSION_XP)
+      actual_duration *= 2;
+#endif
   }
   shutdown_watchdog_ = new ShutdownWatchDogThread(actual_duration);
   shutdown_watchdog_->Arm();
