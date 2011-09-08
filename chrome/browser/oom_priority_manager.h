@@ -7,11 +7,15 @@
 
 #include <vector>
 
+#include "base/memory/singleton.h"
+#include "base/process.h"
 #include "base/string16.h"
+#include "base/synchronization/lock.h"
+#include "base/task.h"
+#include "base/time.h"
+#include "base/timer.h"
 
 namespace browser {
-
-class OomPriorityManagerImpl;
 
 // The OomPriorityManager periodically checks (see
 // ADJUSTMENT_INTERVAL_SECONDS in the source) the status of renderers
@@ -27,18 +31,51 @@ class OomPriorityManagerImpl;
 // them, as no two tabs will have exactly the same idle time.
 class OomPriorityManager {
  public:
-  // We need to explicitly manage our destruction, so don't use Singleton.
-  static void Create();
-  static void Destroy();
+  static OomPriorityManager* GetInstance();
+
+  void Start();
+  void Stop();
 
   // Returns list of tab titles sorted from most interesting (don't kill)
   // to least interesting (OK to kill).
-  static std::vector<string16> GetTabTitles();
+  std::vector<string16> GetTabTitles();
 
  private:
-  static OomPriorityManagerImpl* impl_;
+  OomPriorityManager();
+  ~OomPriorityManager();
+  friend struct DefaultSingletonTraits<OomPriorityManager>;
+
+  struct RendererStats {
+    RendererStats();
+    ~RendererStats();
+    bool is_pinned;
+    bool is_selected;
+    base::TimeTicks last_selected;
+    size_t memory_used;
+    base::ProcessHandle renderer_handle;
+    string16 title;
+  };
+  typedef std::vector<RendererStats> StatsList;
+
+  // Posts DoAdjustOomPriorities task to the file thread.  Called when
+  // the timer fires.
+  void AdjustOomPriorities();
+
+  // Called by AdjustOomPriorities.  Runs on the file thread.
+  void DoAdjustOomPriorities();
+
+  static bool CompareRendererStats(RendererStats first, RendererStats second);
+
+  base::RepeatingTimer<OomPriorityManager> timer_;
+  // renderer_stats_ is used on both UI and file threads.
+  base::Lock renderer_stats_lock_;
+  StatsList renderer_stats_;
+
+  DISALLOW_COPY_AND_ASSIGN(OomPriorityManager);
 };
 
 }  // namespace browser
+
+DISABLE_RUNNABLE_METHOD_REFCOUNT(browser::OomPriorityManager);
 
 #endif  // CHROME_BROWSER_OOM_PRIORITY_MANAGER_H_
