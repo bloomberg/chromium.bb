@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2011 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -20,7 +20,7 @@ namespace plugin {
 class ModulePpapi : public pp::Module {
  public:
   ModulePpapi() : pp::Module(), init_was_successful_(false) {
-    PLUGIN_PRINTF(("ModulePpapi::ModulePpapi (this=%p)\n",
+    MODULE_PRINTF(("ModulePpapi::ModulePpapi (this=%p)\n",
                    static_cast<void*>(this)));
   }
 
@@ -28,7 +28,7 @@ class ModulePpapi : public pp::Module {
     if (init_was_successful_) {
       NaClNrdAllModulesFini();
     }
-    PLUGIN_PRINTF(("ModulePpapi::~ModulePpapi (this=%p)\n",
+    MODULE_PRINTF(("ModulePpapi::~ModulePpapi (this=%p)\n",
                    static_cast<void*>(this)));
   }
 
@@ -38,7 +38,7 @@ class ModulePpapi : public pp::Module {
         GetBrowserInterface(PPB_NACL_PRIVATE_INTERFACE));
 
     if (NULL == ptr) {
-      PLUGIN_PRINTF(("ModulePpapi::Init failed: "
+      MODULE_PRINTF(("ModulePpapi::Init failed: "
                      "GetBrowserInterface returned NULL\n"));
       return false;
     }
@@ -59,10 +59,10 @@ class ModulePpapi : public pp::Module {
   }
 
   virtual pp::Instance* CreateInstance(PP_Instance pp_instance) {
-    PLUGIN_PRINTF(("ModulePpapi::CreateInstance (pp_instance=%"NACL_PRId32")\n",
+    MODULE_PRINTF(("ModulePpapi::CreateInstance (pp_instance=%"NACL_PRId32")\n",
                    pp_instance));
     Plugin* plugin = Plugin::New(pp_instance);
-    PLUGIN_PRINTF(("ModulePpapi::CreateInstance (return %p)\n",
+    MODULE_PRINTF(("ModulePpapi::CreateInstance (return %p)\n",
                    static_cast<void* >(plugin)));
     return plugin;
   }
@@ -77,7 +77,7 @@ class ModulePpapi : public pp::Module {
 namespace pp {
 
 Module* CreateModule() {
-  PLUGIN_PRINTF(("CreateModule ()\n"));
+  MODULE_PRINTF(("CreateModule ()\n"));
   return new plugin::ModulePpapi();
 }
 
