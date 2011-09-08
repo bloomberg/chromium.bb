@@ -57,13 +57,13 @@ install-lkgr-toolchains() {
 push-data-to-archive-server() {
   buildbot/gsutil.sh -h Cache-Control:no-cache cp -a public-read \
     $1 \
-    gs://nativeclient-archive2/$2
+    gs://$2
 }
 
 # copy data from well known archive server
 pull-data-from-archive-server() {
   curl -L \
-     http://commondatastorage.googleapis.com/nativeclient-archive2/$1\
+     http://commondatastorage.googleapis.com/$1\
      -o $2
 }
 
@@ -286,17 +286,20 @@ mode-buildbot-arm() {
 
 mode-buildbot-arm-dbg() {
   mode-buildbot-arm "--mode=dbg-host,nacl"
-  archive-for-hw-bots between_builders/$(NAME_ARM_DBG)/build.tgz
+  archive-for-hw-bots \
+      nativeclient-archive2/between_builders/$(NAME_ARM_DBG)/build.tgz
 }
 
 mode-buildbot-arm-opt() {
   mode-buildbot-arm "--mode=opt-host,nacl"
-  archive-for-hw-bots between_builders/$(NAME_ARM_OPT)/build.tgz
+  archive-for-hw-bots \
+      nativeclient-archive2/between_builders/$(NAME_ARM_OPT)/build.tgz
 }
 
 mode-buildbot-arm-try() {
   mode-buildbot-arm "--mode=opt-host,nacl"
-  archive-for-hw-bots between_builders/${NAME_ARM_TRY}/build.tgz
+  archive-for-hw-bots \
+      nativeclient-trybot/between_builders/${NAME_ARM_TRY}/build.tgz
 }
 
 mode-buildbot-arm-hw() {
@@ -311,17 +314,20 @@ mode-buildbot-arm-hw() {
 # NOTE: the hw bots are too slow to build stuff on so we just
 #       use pre-built executables
 mode-buildbot-arm-hw-dbg() {
-  unarchive-for-hw-bots between_builders/$(NAME_ARM_DBG)/build.tgz
+  unarchive-for-hw-bots \
+      nativeclient-archive2/between_builders/$(NAME_ARM_DBG)/build.tgz
   mode-buildbot-arm-hw "--mode=dbg-host,nacl"
 }
 
 mode-buildbot-arm-hw-opt() {
-  unarchive-for-hw-bots between_builders/$(NAME_ARM_OPT)/build.tgz
+  unarchive-for-hw-bots \
+      nativeclient-archive2/between_builders/$(NAME_ARM_OPT)/build.tgz
   mode-buildbot-arm-hw "--mode=opt-host,nacl"
 }
 
 mode-buildbot-arm-hw-try() {
-  unarchive-for-hw-bots between_builders/${NAME_ARM_TRY}/build.tgz
+  unarchive-for-hw-bots \
+      nativeclient-trybot/between_builders/${NAME_ARM_TRY}/build.tgz
   mode-buildbot-arm-hw "--mode=opt-host,nacl"
 }
 
