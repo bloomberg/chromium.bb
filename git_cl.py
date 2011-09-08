@@ -7,12 +7,10 @@
 
 """A git-command for integrating reviews on Rietveld."""
 
-import errno
 import logging
 import optparse
 import os
 import re
-import subprocess
 import sys
 import tempfile
 import textwrap
@@ -41,8 +39,8 @@ import fix_encoding
 import presubmit_support
 import rietveld
 import scm
+import subprocess2
 import watchlists
-
 
 
 DEFAULT_SERVER = 'http://codereview.appspot.com'
@@ -55,47 +53,26 @@ def DieWithError(message):
   sys.exit(1)
 
 
-def Popen(cmd, **kwargs):
-  """Wrapper for subprocess.Popen() that logs and watch for cygwin issues"""
-  logging.debug('Popen: ' + ' '.join(cmd))
+def RunCommand(args, error_ok=False, error_message=None, **kwargs):
   try:
-    return subprocess.Popen(cmd, **kwargs)
-  except OSError, e:
-    if e.errno == errno.EAGAIN and sys.platform == 'cygwin':
+    return subprocess2.check_output(args, **kwargs)
+  except subprocess2.CalledProcessError, e:
+    if not error_ok:
       DieWithError(
-          'Visit '
-          'http://code.google.com/p/chromium/wiki/CygwinDllRemappingFailure to '
-          'learn how to fix this error; you need to rebase your cygwin dlls')
-    raise
-
-
-def RunCommand(cmd, error_ok=False, error_message=None,
-               redirect_stdout=True, swallow_stderr=False, **kwargs):
-  if redirect_stdout:
-    stdout = subprocess.PIPE
-  else:
-    stdout = None
-  if swallow_stderr:
-    stderr = subprocess.PIPE
-  else:
-    stderr = None
-  proc = Popen(cmd, stdout=stdout, stderr=stderr, **kwargs)
-  output = proc.communicate()[0]
-  if not error_ok and proc.returncode != 0:
-    DieWithError('Command "%s" failed.\n' % (' '.join(cmd)) +
-                 (error_message or output or ''))
-  return output
+          'Command "%s" failed.\n%s' % (
+            ' '.join(args), error_message or e.stdout or ''))
+    return e.stdout
 
 
 def RunGit(args, **kwargs):
-  cmd = ['git'] + args
-  return RunCommand(cmd, **kwargs)
+  """Returns stdout."""
+  return RunCommand(['git'] + args, **kwargs)
 
 
 def RunGitWithCode(args):
-  proc = Popen(['git'] + args, stdout=subprocess.PIPE)
-  output = proc.communicate()[0]
-  return proc.returncode, output
+  """Returns return code and stdout."""
+  out, code = subprocess2.communicate(['git'] + args, stdout=subprocess2.PIPE)
+  return code, out[0]
 
 
 def usage(more):
@@ -163,6 +140,7 @@ def MatchSvnGlob(url, base_url, glob_spec, allow_wildcards):
     return as_ref
   return None
 
+
 class Settings(object):
   def __init__(self):
     self.default_server = None
@@ -226,7 +204,7 @@ class Settings(object):
       # pipe at a time.
       # The -100 is an arbitrary limit so we don't search forever.
       cmd = ['git', 'log', '-100', '--pretty=medium']
-      proc = Popen(cmd, stdout=subprocess.PIPE)
+      proc = subprocess2.Popen(cmd, stdout=subprocess2.PIPE)
       url = None
       for line in proc.stdout:
         match = git_svn_re.match(line)
@@ -490,7 +468,7 @@ or verify this branch is set up to track another (via the --track argument to
       RunGit(['config', self._PatchsetSetting(), str(patchset)])
     else:
       RunGit(['config', '--unset', self._PatchsetSetting()],
-             swallow_stderr=True, error_ok=True)
+             stderr=subprocess2.PIPE, error_ok=True)
     self.has_patchset = False
 
   def GetPatchSetDiff(self, issue):
@@ -851,8 +829,8 @@ def UserEditedLog(starting_text):
       cmd = 'env ' + cmd
     # shell=True to allow the shell to handle all forms of quotes in $EDITOR.
     try:
-      subprocess.check_call(cmd, shell=True)
-    except subprocess.CalledProcessError, e:
+      subprocess2.check_call(cmd, shell=True)
+    except subprocess2.CalledProcessError, e:
       DieWithError('Editor returned %d' % e.returncode)
     fileobj = open(filename)
     text = fileobj.read()
@@ -955,8 +933,8 @@ def CMDupload(parser, args):
   env = os.environ.copy()
   if 'GIT_EXTERNAL_DIFF' in env:
     del env['GIT_EXTERNAL_DIFF']
-  subprocess.call(['git', 'diff', '--no-ext-diff', '--stat', '-M'] + args,
-                  env=env)
+  subprocess2.call(
+      ['git', 'diff', '--no-ext-diff', '--stat', '-M'] + args, env=env)
 
   upload_args = ['--assume_yes']  # Don't ask about untracked files.
   upload_args.extend(['--server', cl.GetRietveldServer()])
@@ -1136,7 +1114,7 @@ def SendUpstream(parser, args, cmd):
 
   branches = [base_branch, cl.GetBranchRef()]
   if not options.force:
-    subprocess.call(['git', 'diff', '--stat'] + branches)
+    subprocess2.call(['git', 'diff', '--stat'] + branches)
     ask_for_data('About to commit; enter to confirm.')
 
   # We want to squash all this branch's commits into one commit with the
@@ -1273,7 +1251,7 @@ def CMDpatch(parser, args):
   if options.newbranch:
     if options.force:
       RunGit(['branch', '-D', options.newbranch],
-         swallow_stderr=True, error_ok=True)
+          stderr=subprocess2.PIPE, error_ok=True)
     RunGit(['checkout', '-b', options.newbranch,
             Changelist().GetUpstreamBranch()])
 
@@ -1287,10 +1265,11 @@ def CMDpatch(parser, args):
   # with a sed script rather than the -p flag to patch so we can feed either
   # Git or svn-style patches into the same apply command.
   # re.sub() should be used but flags=re.MULTILINE is only in python 2.7.
-  sed_proc = Popen(['sed', '-e', 's|^--- a/|--- |; s|^+++ b/|+++ |'],
-      stdin=subprocess.PIPE, stdout=subprocess.PIPE)
-  patch_data = sed_proc.communicate(patch_data)[0]
-  if sed_proc.returncode:
+  try:
+    patch_data = subprocess2.check_output(
+        ['sed', '-e', 's|^--- a/|--- |; s|^+++ b/|+++ |'],
+        stdin=patch_data)
+  except subprocess2.CalledProcessError:
     DieWithError('Git patch mungling failed.')
   logging.info(patch_data)
   # We use "git apply" to apply the patch instead of "patch" so that we can
@@ -1299,9 +1278,9 @@ def CMDpatch(parser, args):
   cmd = ['git', 'apply', '--index', '-p0']
   if options.reject:
     cmd.append('--reject')
-  patch_proc = Popen(cmd, stdin=subprocess.PIPE)
-  patch_proc.communicate(patch_data)
-  if patch_proc.returncode:
+  try:
+    subprocess2.check_call(cmd, stdin=patch_data)
+  except subprocess2.CalledProcessError:
     DieWithError('Failed to apply the patch')
 
   # If we had an issue, commit the current state and register the issue.
@@ -1321,7 +1300,7 @@ def CMDrebase(parser, args):
   # git svn dcommit.
   # It's the only command that doesn't use parser at all since we just defer
   # execution to git-svn.
-  RunGit(['svn', 'rebase'] + args, redirect_stdout=False)
+  subprocess2.check_call(['git', 'svn', 'rebase'] + args)
   return 0
 
 
