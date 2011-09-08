@@ -320,10 +320,10 @@ def CheckCallAndFilter(args, stdout=None, filter_fn=None,
                        **kwargs):
   """Runs a command and calls back a filter function if needed.
 
-  Accepts all subprocess.Popen() parameters plus:
+  Accepts all subprocess2.Popen() parameters plus:
     print_stdout: If True, the command's stdout is forwarded to stdout.
     filter_fn: A function taking a single string argument called with each line
-               of the subprocess's output. Each line has the trailing newline
+               of the subprocess2's output. Each line has the trailing newline
                character trimmed.
     stdout: Can be any bufferable output.
 
@@ -337,7 +337,7 @@ def CheckCallAndFilter(args, stdout=None, filter_fn=None,
       args, bufsize=0, stdout=subprocess2.PIPE, stderr=subprocess2.STDOUT,
       **kwargs)
 
-  # Do a flush of stdout before we begin reading from the subprocess's stdout
+  # Do a flush of stdout before we begin reading from the subprocess2's stdout
   stdout.flush()
 
   # Also, we need to forward stdout to prevent weird re-ordering of output.
