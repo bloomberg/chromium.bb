@@ -242,6 +242,7 @@ bool ChromeRenderViewObserver::OnMessageReceived(const IPC::Message& message) {
 #if defined(OS_CHROMEOS)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_StartFrameSniffer, OnStartFrameSniffer)
 #endif
+    IPC_MESSAGE_HANDLER(ChromeViewMsg_GetFPS, OnGetFPS)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -347,6 +348,12 @@ void ChromeRenderViewObserver::OnSetClientSidePhishingDetection(
 
 void ChromeRenderViewObserver::OnStartFrameSniffer(const string16& frame_name) {
   new FrameSniffer(render_view(), frame_name);
+}
+
+void ChromeRenderViewObserver::OnGetFPS() {
+  float fps = (render_view()->filtered_time_per_frame() > 0.0f)?
+      1.0f / render_view()->filtered_time_per_frame() : 0.0f;
+  Send(new ChromeViewHostMsg_FPS(routing_id(), fps));
 }
 
 bool ChromeRenderViewObserver::allowDatabase(

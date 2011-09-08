@@ -41,7 +41,6 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_service.h"
 #include "content/common/url_constants.h"
-#include "content/common/view_messages.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "grit/theme_resources_standard.h"
@@ -116,7 +115,7 @@ void TaskManagerRendererResource::Refresh() {
   }
   if (!pending_fps_update_) {
     render_view_host_->Send(
-        new ViewMsg_GetFPS(render_view_host_->routing_id()));
+        new ChromeViewMsg_GetFPS(render_view_host_->routing_id()));
     pending_fps_update_ = true;
   }
   if (!pending_v8_memory_allocated_update_) {

@@ -301,6 +301,9 @@ IPC_MESSAGE_ROUTED2(ChromeViewMsg_JavaScriptStressTestControl,
                     int /* cmd */,
                     int /* param */)
 
+// Asks the renderer to send back FPS.
+IPC_MESSAGE_ROUTED0(ChromeViewMsg_GetFPS)
+
 //-----------------------------------------------------------------------------
 // TabContents messages
 // These are messages sent from the renderer to the browser process.
@@ -555,3 +558,8 @@ IPC_SYNC_MESSAGE_ROUTED2_1(ChromeViewHostMsg_GetCookies,
                            GURL /* url */,
                            GURL /* first_party_for_cookies */,
                            std::string /* cookies */)
+
+// Provide the browser process with current renderer framerate.
+IPC_MESSAGE_CONTROL2(ChromeViewHostMsg_FPS,
+                     int /* routing id */,
+                     float /* frames per second */)

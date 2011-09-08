@@ -128,6 +128,10 @@ class RenderWidget : public IPC::Channel::Listener,
   // Close the underlying WebWidget.
   virtual void Close();
 
+  float filtered_time_per_frame() const {
+    return filtered_time_per_frame_;
+  }
+
  protected:
   // Friend RefCounted so that the dtor can be non-public. Using this class
   // without ref-counting is an error.

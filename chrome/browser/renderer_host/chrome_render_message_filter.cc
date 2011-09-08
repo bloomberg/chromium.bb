@@ -109,7 +109,7 @@ bool ChromeRenderMessageFilter::OnMessageReceived(const IPC::Message& message,
                         OnResourceTypeStats)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_UpdatedCacheStats,
                         OnUpdatedCacheStats)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_FPS, OnFPS)
+    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_FPS, OnFPS)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_V8HeapStats, OnV8HeapStats)
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_OpenChannelToExtension,
                         OnOpenChannelToExtension)

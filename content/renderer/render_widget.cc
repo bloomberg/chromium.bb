@@ -205,7 +205,6 @@ bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_Repaint, OnMsgRepaint)
     IPC_MESSAGE_HANDLER(ViewMsg_SetTextDirection, OnSetTextDirection)
     IPC_MESSAGE_HANDLER(ViewMsg_Move_ACK, OnRequestMoveAck)
-    IPC_MESSAGE_HANDLER(ViewMsg_GetFPS, OnGetFPS)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -1226,12 +1225,6 @@ void RenderWidget::OnSetTextDirection(WebTextDirection direction) {
   if (!webwidget_)
     return;
   webwidget_->setTextDirection(direction);
-}
-
-void RenderWidget::OnGetFPS() {
-  float fps = (filtered_time_per_frame_ > 0.0f)?
-      1.0f / filtered_time_per_frame_ : 0.0f;
-  Send(new ViewHostMsg_FPS(routing_id_, fps));
 }
 
 webkit::ppapi::PluginInstance* RenderWidget::GetBitmapForOptimizedPluginPaint(

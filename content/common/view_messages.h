@@ -1278,9 +1278,6 @@ IPC_MESSAGE_CONTROL1(ViewMsg_PurgePluginListCache,
 // into a full window).
 IPC_MESSAGE_ROUTED0(ViewMsg_DisassociateFromPopupCount)
 
-// Asks the renderer to send back FPS.
-IPC_MESSAGE_ROUTED0(ViewMsg_GetFPS)
-
 // Used to instruct the RenderView to go into "view source" mode.
 IPC_MESSAGE_ROUTED0(ViewMsg_EnableViewSourceMode)
 
@@ -2111,11 +2108,6 @@ IPC_MESSAGE_ROUTED1(ViewHostMsg_ToggleFullscreen,
 // Send back a string to be recorded by UserMetrics.
 IPC_MESSAGE_CONTROL1(ViewHostMsg_UserMetricsRecordAction,
                      std::string /* action */)
-
-// Provide the browser process with current renderer framerate.
-IPC_MESSAGE_CONTROL2(ViewHostMsg_FPS,
-                     int /* routing id */,
-                     float /* frames per second */)
 
 // Notifies the browser that the page was or was not saved as MHTML.
 IPC_MESSAGE_CONTROL2(ViewHostMsg_SavedPageAsMHTML,
