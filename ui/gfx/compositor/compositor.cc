@@ -7,6 +7,14 @@
 
 namespace ui {
 
+Compositor::Compositor(CompositorDelegate* delegate, const gfx::Size& size)
+    : delegate_(delegate),
+      size_(size) {
+}
+
+Compositor::~Compositor() {
+}
+
 void Compositor::NotifyStart() {
   OnNotifyStart();
 }

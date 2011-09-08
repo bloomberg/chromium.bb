@@ -118,10 +118,8 @@ class COMPOSITOR_EXPORT Compositor : public base::RefCounted<Compositor> {
   void RemoveObserver(CompositorObserver* observer);
 
  protected:
-  Compositor(CompositorDelegate* delegate, const gfx::Size& size)
-      : delegate_(delegate),
-        size_(size) {}
-  virtual ~Compositor() {}
+  Compositor(CompositorDelegate* delegate, const gfx::Size& size);
+  virtual ~Compositor();
 
   // Notifies the compositor that compositing is about to start.
   virtual void OnNotifyStart() = 0;
