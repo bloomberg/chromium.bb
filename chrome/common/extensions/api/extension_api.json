@@ -5212,7 +5212,7 @@
       {
         "name": "getFrame",
         "type": "function",
-        "description": "Retrieves information about the given frame.",
+        "description": "Retrieves information about the given frame. A frame refers to an <iframe> or a <frame> of a web page and is identified by a tab ID and a frame ID.",
         "parameters": [
           {
             "type": "object",
@@ -5318,7 +5318,7 @@
       {
         "name": "onErrorOccurred",
         "type": "function",
-        "description": "Fired when an error occurs.",
+        "description": "Fired when an error occurs and the navigation is aborted. This can happen if either a network error occurred, or the user aborted the navigation.",
         "parameters": [
           {
             "type": "object",
