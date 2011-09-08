@@ -129,19 +129,10 @@ void ChromotingHost::Shutdown(Task* shutdown_task) {
     state_ = kStopping;
   }
 
-  // Make sure ScreenRecorder doesn't write to the connection.
-  if (recorder_.get()) {
-    recorder_->RemoveAllConnections();
+  // Disconnect all of the clients, implicitly stopping the ScreenRecorder.
+  while (!clients_.empty()) {
+    OnClientDisconnected(clients_.front()->connection());
   }
-
-  // Stop all desktop interaction.
-  desktop_environment_->OnLastDisconnect();
-
-  // Disconnect the clients.
-  for (size_t i = 0; i < clients_.size(); i++) {
-    clients_[i]->Disconnect();
-  }
-  clients_.clear();
 
   ShutdownNetwork();
 }
@@ -233,10 +224,6 @@ void ChromotingHost::OnStateChange(
          it != status_observers_.end(); ++it) {
       (*it)->OnSignallingDisconnected();
     }
-    // TODO(sergeyu): Don't shutdown the host and let the upper level
-    // decide what needs to be done when signalling channel is
-    // disconnected.
-    Shutdown(NULL);
   }
 }
 
@@ -262,13 +249,6 @@ void ChromotingHost::OnIncomingSession(
     return;
   }
 
-  // If we are running Me2Mom and already have an authenticated client then
-  // reject the connection immediately.
-  if (is_it2me_ && AuthenticatedClientsCount() > 0) {
-    *response = protocol::SessionManager::DECLINE;
-    return;
-  }
-
   // Check that the client has access to the host.
   if (!access_verifier_->VerifyPermissions(session->jid(),
                                            session->initiator_token())) {
@@ -279,6 +259,16 @@ void ChromotingHost::OnIncomingSession(
          it != status_observers_.end(); ++it) {
       (*it)->OnAccessDenied();
     }
+    return;
+  }
+
+  // If we are running Me2Mom and already have an authenticated client then
+  // one of the connections may be an attacker, so both are suspect.
+  if (is_it2me_ && AuthenticatedClientsCount() > 0) {
+    *response = protocol::SessionManager::DECLINE;
+
+    // Close existing sessions and shutdown the host.
+    Shutdown(NULL);
     return;
   }
 
