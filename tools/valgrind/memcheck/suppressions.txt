@@ -3093,47 +3093,6 @@
    fun:_ZN12_GLOBAL__N_141FormStructureTest_EncodeQueryRequest_Test8TestBodyEv
 }
 {
-   bug_61753/Addr2
-   Memcheck:Addr2
-   ...
-   fun:pkix_*
-   ...
-   fun:CERT_PKIXVerifyCert
-}
-{
-   bug_61753/Addr4
-   Memcheck:Addr4
-   ...
-   fun:pkix_*
-   ...
-   fun:CERT_PKIXVerifyCert
-}
-{
-   bug_61753/Leak (a)
-   Memcheck:Leak
-   ...
-   fun:PR_*alloc
-   ...
-   fun:*nss*
-   fun:*Singleton*
-}
-{
-   bug_61753/Leak (b)
-   Memcheck:Leak
-   ...
-   fun:pkix_*
-   ...
-   fun:CERT_PKIXVerifyCert
-}
-{
-   bug_61753/Param
-   Memcheck:Param
-   ...
-   fun:pkix_*
-   ...
-   fun:CERT_PKIXVerifyCert
-}
-{
    bug_63015
    Memcheck:Addr2
    fun:_ZN7WebCore18stringToLengthTypeERPKtS1_
