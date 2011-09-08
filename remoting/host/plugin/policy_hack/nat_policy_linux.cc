@@ -32,13 +32,8 @@ namespace policy_hack {
 
 namespace {
 
-#if defined(GOOGLE_CHROME_BUILD)
 const FilePath::CharType kPolicyDir[] =
     FILE_PATH_LITERAL("/etc/opt/chrome/policies/managed");
-#else
-const FilePath::CharType kPolicyDir[] =
-    FILE_PATH_LITERAL("/etc/chromium/policies/managed");
-#endif
 
 // Amount of time we wait for the files on disk to settle before trying to load
 // them. This alleviates the problem of reading partially written files and

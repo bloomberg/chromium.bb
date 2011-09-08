@@ -34,13 +34,7 @@ namespace policy_hack {
 
 namespace {
 
-#if defined(OS_WIN)
-#if defined(GOOGLE_CHROME_BUILD)
 const wchar_t kRegistrySubKey[] = L"SOFTWARE\\Policies\\Google\\Chrome";
-#else
-const wchar_t kRegistrySubKey[] = L"SOFTWARE\\Policies\\Chromium";
-#endif
-#endif
 
 }  // namespace
 
