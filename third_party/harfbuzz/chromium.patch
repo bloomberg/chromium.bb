@@ -134,3 +134,16 @@ index ab5c07a..72c9aa3 100644
  } HB_ShaperFlag;
  
  /* 
+diff --git a/src/harfbuzz-tibetan.c b/src/harfbuzz-tibetan.c
+index bfa31b1..847ac52 100644
+--- a/src/harfbuzz-tibetan.c
++++ b/src/harfbuzz-tibetan.c
+@@ -90,7 +90,7 @@ static const unsigned char tibetanForm[0x80] = {
+ 
+ 
+ #define tibetan_form(c) \
+-    (TibetanForm)tibetanForm[c - 0x0f40]
++    ((c) >= 0x0f40 && (c) <= 0x0fc0 ? (TibetanForm)tibetanForm[(c) - 0x0f40] : TibetanOther)
+ 
+ static const HB_OpenTypeFeature tibetan_features[] = {
+     { HB_MAKE_TAG('c', 'c', 'm', 'p'), CcmpProperty },
