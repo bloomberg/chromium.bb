@@ -721,23 +721,8 @@ class AutofillTest(pyauto.PyUITest):
       self.SubmitAutofillForm(js, tab_index=0, windex=0)
     return len(list_of_dict)
 
-  class AutoFillSettingsPage(object):
-    ADDRESS_URL = 'chrome://settings/autofillEditAddress'
-    CC_URL = 'chrome://settings/autofillEditCreditCard'
-
-    def FillAddressFields(self, full_name, address_line1, address_line2, city,
-                          state, postal_code, country, phone, email,
-                          company_name):
-      driver.find_element_by_id('full-name-list').find_element_by_tag_name(
-          'input').send_keys(full_name)
-      driver.find_element_by_id('addr-line-1').send_keys(address_line1)
-      driver.find_element_by_id('addr-line-2').send_keys(address_line2)
-      driver.find_element_by_id('city').send_keys(city)
-
-
   def _SelectOptionXpath(self, value):
     """Returns an xpath query used to select an item from a dropdown list.
-
     Args:
       value: Option selected for the drop-down list field.
 
@@ -768,14 +753,16 @@ class AutofillTest(pyauto.PyUITest):
           'postal-code-label').text
       expected_postal_label = test_data[country_code]['postalCodeLabel']
       self.assertEqual(
-          expected_postal_label, actual_postal_labels,
-          msg='Postal code label does not match Country "%s"' % country_code)
+          expected_postal_label, actual_postal_label,
+          msg=('Postal code label "%s" does not match Country "%s"' %
+               (actual_postal_label, country_code)))
       # Compare state labels.
       actual_state_label = driver.find_element_by_id('state-label').text
       expected_state_label = test_data[country_code]['stateLabel']
       self.assertEqual(
-          expected_state_label, actual_postal_labels,
-          msg='State label does not match Country "%s"' % country_code)
+          expected_state_label, actual_state_label,
+          msg=('State label "%s" does not match Country "%s"' %
+               (actual_state_label, country_code)))
 
   def testNoDuplicatePhoneNumsInPrefs(self):
     """Test duplicate phone numbers entered in prefs are removed."""
