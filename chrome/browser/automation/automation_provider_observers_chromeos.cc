@@ -365,9 +365,10 @@ void EnrollmentObserver::OnEnrollmentComplete(
       AutomationJSONReply(automation_,
                           reply_message_.release()).SendSuccess(NULL);
     } else {
-      AutomationJSONReply(automation_,
-                          reply_message_.release()).SendError(
-                              "Enrollment failed.");
+      scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
+      return_value->SetString("error_string", "Enrollment failed.");
+      AutomationJSONReply(automation_, reply_message_.release())
+          .SendSuccess(return_value.get());
     }
   }
   delete this;

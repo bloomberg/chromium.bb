@@ -3674,8 +3674,12 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     equivalent to pressing Ctrl-Alt-e to enroll the device from the login
     screen.
 
+    Returns:
+      An error string if the enrollment fails.
+      None otherwise.
+
     Raises:
-      pyauto_errors.JSONInterfaceError if the enrollment fails.
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
     """
     cmd_dict = {
         'command': 'EnrollEnterpriseDevice',
@@ -3683,7 +3687,8 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
         'password': password,
     }
     time.sleep(5) # TODO(craigdh): Block until Install Attributes is ready.
-    return self._GetResultFromJSONRequest(cmd_dict, windex=-1)
+    result = self._GetResultFromJSONRequest(cmd_dict, windex=-1)
+    return result.get('error_string')
 
   def GetUpdateInfo(self):
     """Gets the status of the ChromeOS updater.
