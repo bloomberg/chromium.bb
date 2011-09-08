@@ -352,12 +352,6 @@
   fun:ExtensionAPIClientTest_*_Test::TestBody
 }
 {
-  bug_43779
-  Heapcheck:Leak
-  fun:ActiveNotificationTracker::RegisterNotification
-  fun:ActiveNotificationTrackerTest_TestLookupAndClear_Test::TestBody
-}
-{
   bug_43387
   Heapcheck:Leak
   ...

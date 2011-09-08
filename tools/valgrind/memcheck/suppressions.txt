@@ -1992,13 +1992,6 @@
    fun:_ZN16ExtensionService4InitEv
 }
 {
-   bug_40877
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN25ActiveNotificationTracker20RegisterNotificationERKN6WebKit15WebNotificationE
-   fun:_ZN53ActiveNotificationTrackerTest_TestLookupAndClear_Test8TestBodyEv
-}
-{
    bug_42389
    Memcheck:Leak
    ...

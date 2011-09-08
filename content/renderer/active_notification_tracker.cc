@@ -37,10 +37,15 @@ bool ActiveNotificationTracker::GetNotification(
 
 int ActiveNotificationTracker::RegisterNotification(
     const WebKit::WebNotification& proxy) {
-  WebNotification* notification = new WebNotification(proxy);
-  int id = notification_table_.Add(notification);
-  reverse_notification_table_[proxy] = id;
-  return id;
+  if (reverse_notification_table_.find(proxy)
+      != reverse_notification_table_.end()) {
+    return reverse_notification_table_[proxy];
+  } else {
+    WebNotification* notification = new WebNotification(proxy);
+    int id = notification_table_.Add(notification);
+    reverse_notification_table_[proxy] = id;
+    return id;
+  }
 }
 
 void ActiveNotificationTracker::UnregisterNotification(int id) {
