@@ -11,14 +11,11 @@
 ######################################################################
 # Directory Layout Description
 ######################################################################
+#
 # All directories are relative to BASE which is
 # On Linux X86-64: native_client/toolchain/pnacl_linux_x86_64/
 # On Linux X86-32: native_client/toolchain/pnacl_linux_i686/
 # On Mac X86-32  : native_client/toolchain/pnacl_darwin_i386/
-#
-# /x86-32sfi-lib   [experimental] x86 sandboxed libraries and object files
-# /x86-32sfi-tools [experimental] x86-32 crosstool binaries for building
-#                  and linking  x86-32 nexes
 #
 ######################################################################
 # Config
