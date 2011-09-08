@@ -58,7 +58,8 @@ cr.define('oobe', function() {
       { name: 'error',
         button: 'cancel' },
       { name: 'success',
-        button: 'done' }
+        button: 'done',
+        focusButton: true },
     ],
 
     /** @inheritDoc */
@@ -119,18 +120,22 @@ cr.define('oobe', function() {
 
     /**
      * Switches between the different steps in the enrollment flow.
-     * @param screen {string} the steps to show, one of "signin", "working",
+     * @param step {string} the steps to show, one of "signin", "working",
      * "error", "success".
      */
     showStep: function(step) {
       $('oauth-enroll-cancel-button').hidden = true;
       $('oauth-enroll-done-button').hidden = true;
       for (var i = 0; i < this.steps_.length; i++) {
-        var the_step = this.steps_[i];
-        var active = (the_step.name == step);
-        $('oauth-enroll-step-' + the_step.name).hidden = !active;
-        if (active)
-          $('oauth-enroll-' + the_step.button + '-button').hidden = false;
+        var theStep = this.steps_[i];
+        var active = (theStep.name == step);
+        $('oauth-enroll-step-' + theStep.name).hidden = !active;
+        if (active) {
+          var button = $('oauth-enroll-' + theStep.button + '-button');
+          button.hidden = false;
+          if (theStep.focusButton)
+            button.focus();
+        }
       }
     },
 
