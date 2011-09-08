@@ -62,6 +62,7 @@
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prerender/prerender_tab_helper.h"
+#include "chrome/browser/printing/background_printing_manager.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_setup_flow.h"
 #include "chrome/browser/printing/print_preview_tab_controller.h"
 #include "chrome/browser/printing/print_view_manager.h"
@@ -3484,6 +3485,19 @@ void Browser::CloseContents(TabContents* source) {
     // will go down the slow shutdown path instead of the fast path of killing
     // all the renderer processes.
     ClearUnloadState(source, true);
+    return;
+  }
+
+  // Various sites have a pattern which open a new window with output formatted
+  // for printing, then include a print button, which does window.print();
+  // window.close(); An example is printing Virgin America boarding
+  // pass. Instead of closing, when a print tab is associated with this tab,
+  // tell the BackgroundPrintingManager to own it, which causes it to be
+  // hidden and eventually closed when the print window is closed.
+  TabContentsWrapper* source_wrapper =
+      TabContentsWrapper::GetCurrentWrapperForContents(source);
+  if (g_browser_process->background_printing_manager()->
+          OwnInitiatorTab(source_wrapper)) {
     return;
   }
 
