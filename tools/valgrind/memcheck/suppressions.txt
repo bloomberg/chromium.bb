@@ -2080,18 +2080,6 @@
    fun:_ZN11MessageLoop22AddDestructionObserverEPNS_19DestructionObserverE
 }
 {
-   bug_43914a
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN17FilebrowseHandler4InitEv
-   fun:_ZN12FileBrowseUIC1EP11TabContents
-   fun:_Z8NewDOMUII12FileBrowseUIEP5DOMUIP11TabContentsRK4GURL
-   fun:_ZN12WebUIFactory17CreateWebUIForURLEP11TabContentsRK4GURL
-   fun:_ZN11TabContents27CreateDOMUIForRenderManagerERK4GURL
-   fun:_ZN21RenderViewHostManager30UpdateRendererStateForNavigateERK15NavigationEntry
-   fun:_ZN21RenderViewHostManager8NavigateERK15NavigationEntry
-}
-{
    bug_44341b
    Memcheck:Cond
    fun:memcpy
@@ -5271,6 +5259,29 @@
    fun:_ZNK3net8MimeUtil19GetMimeTypeFromFileERK8FilePathPSs
    fun:_ZN3net19GetMimeTypeFromFileERK8FilePathPSs
    fun:_ZNK25SharedResourcesDataSource11GetMimeTypeERKSs
+}
+{
+   bug_95931a
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN16UserScriptMaster9StartLoadEv
+   fun:_ZN16UserScriptMaster7ObserveEiRK18NotificationSourceRK19NotificationDetails
+   fun:_ZN19NotificationService6NotifyEiRK18NotificationSourceRK19NotificationDetails
+   fun:_ZN16ExtensionService27OnLoadedInstalledExtensionsEv
+   fun:_ZN16ExtensionService17LoadAllExtensionsEv
+   fun:_ZN16ExtensionService4InitEv
+   fun:_ZN11ProfileImpl14InitExtensionsEb
+   ...
+   fun:_ZN14ProfileManager17GetDefaultProfileEv
+   fun:_ZN16browser_shutdown8ShutdownEv
+}
+{
+   bug_95931b
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZL9SerializeRKSt6vectorI10UserScriptSaIS0_EE
+   fun:_ZN16UserScriptMaster14ScriptReloader7RunLoadERKSt6vectorI10UserScriptSaIS2_EE
+   fun:_Z16DispatchToMethodIN16UserScriptMaster14ScriptReloaderEMS1_FvRKSt6vectorI10UserScriptSaIS3_EEES5_EvPT_T0_RK6Tuple1IT1_E
 }
 
 
