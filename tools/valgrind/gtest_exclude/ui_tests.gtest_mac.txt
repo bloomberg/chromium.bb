@@ -121,8 +121,6 @@ HistoryTester.VerifyHistoryLength3
 HostRulesTest.TestMap
 IFrameTest.Crash
 IFrameTest.InEmptyFrame
-LocaleTestsDa.TestStart
-LocaleTestsZhTw.TestStart
 LoginPromptTest.SupplyRedundantAuths
 LoginPromptTest.TestCancelAuth
 MetricsServiceTest.CrashRenderers

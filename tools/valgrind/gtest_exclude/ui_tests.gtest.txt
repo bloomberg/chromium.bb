@@ -126,3 +126,9 @@ OptionsUITest.NavBarCheck
 # These tests fail due to timeouts, see http://crbug.com/64619 and
 # http://crbug.com/51387
 OptionsUITest.LoadOptionsByURL
+
+# These tests fail due to timeouts and hang the UI test runner,
+# http://crbug.com/61579
+LocaleTestsDa.TestStart
+LocaleTestsHe.TestStart
+LocaleTestsZhTw.TestStart
