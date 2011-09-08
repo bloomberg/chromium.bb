@@ -27,6 +27,26 @@ SelfRegWorkItem::SelfRegWorkItem(const std::wstring& dll_path,
 SelfRegWorkItem::~SelfRegWorkItem() {
 }
 
+// This is designed to unmux error codes that may be shoe-horned in to HRESULT
+// return codes by ORing a number into the top four bits of the facility code
+// Any number thus found will be returned in |error_code|. The "cleaned"
+// HRESULT is then returned.
+//
+// This only has an effect if the customer bit is set in the HRESULT, if it is
+// not set then *error_code will be unchanged and the original HRESULT is
+// returned.
+//
+// Note that this will do the wrong thing for high-valued facility codes.
+HRESULT UnMuxHRESULTErrorCode(HRESULT hr, int* error_code) {
+  DCHECK(error_code);
+  if (hr & (1 << 29)) {
+    *error_code = (hr & 0x07800000) >> 23;
+    return hr & 0xF87FFFFF;
+  }
+
+  return hr;
+}
+
 bool SelfRegWorkItem::RegisterDll(bool do_register) {
   VLOG(1) << "COM " << (do_register ? "registration of " : "unregistration of ")
           << dll_path_;
@@ -52,9 +72,12 @@ bool SelfRegWorkItem::RegisterDll(bool do_register) {
       HRESULT hr = register_server_func();
       success = SUCCEEDED(hr);
       if (!success) {
-        PLOG(ERROR) << "Failed to " << (do_register ? "register" : "unregister")
-                    << " DLL at " << dll_path_.c_str() <<
-                    base::StringPrintf(" 0x%08X", hr);
+        int error_code = 0;
+        HRESULT unmuxed_hr = UnMuxHRESULTErrorCode(hr, &error_code);
+        LOG(ERROR) << "Failed to " << (do_register ? "register" : "unregister")
+                   << " DLL at " << dll_path_.c_str() << ", hr="
+                   << base::StringPrintf(" 0x%08X", unmuxed_hr) << ", code="
+                   << error_code;
       }
     } else {
       LOG(ERROR) << "COM registration export function not found";
