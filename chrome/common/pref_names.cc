@@ -1560,6 +1560,10 @@ const char kManagedPopupsAllowedForUrls[] =
     "profile.managed_popups_allowed_for_urls";
 const char kManagedPopupsBlockedForUrls[] =
     "profile.managed_popups_blocked_for_urls";
+const char kManagedNotificationsAllowedForUrls[] =
+    "profile.managed_notifications_allowed_for_urls";
+const char kManagedNotificationsBlockedForUrls[] =
+    "profile.managed_notifications_blocked_for_urls";
 const char kManagedAutoSelectCertificateForUrls[] =
     "profile.managed_auto_select_certificate_for_urls";
 

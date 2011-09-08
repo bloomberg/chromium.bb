@@ -94,7 +94,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 104
+#   For your editing convenience: highest ID currently used: 106
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -1390,6 +1390,26 @@
           'id': 76,
           'caption': '''Block popups on these sites''',
           'desc': '''Allows you to set a list of url patterns that specify sites which are not allowed to open popups.''',
+        },
+        {
+          'name': 'NotificationsAllowedForUrls',
+          'type': 'list',
+          'supported_on': ['chrome.*:16-', 'chrome_os:0.16-'],
+          'features': {'dynamic_refresh': 1},
+          'example_value': ['http://www.example.com', '[*.]example.edu'],
+          'id': 105,
+          'caption': '''Allow notifications on these sites''',
+          'desc': '''Allows you to set a list of url patterns that specify sites which are allowed to display notifications.''',
+        },
+        {
+          'name': 'NotificationsBlockedForUrls',
+          'type': 'list',
+          'supported_on': ['chrome.*:16-', 'chrome_os:0.16-'],
+          'features': {'dynamic_refresh': 1},
+          'example_value': ['http://www.example.com', '[*.]example.edu'],
+          'id': 106,
+          'caption': '''Block notifications on these sites''',
+          'desc': '''Allows you to set a list of url patterns that specify sites which are not allowed to display notifications.''',
         }
       ],
     },

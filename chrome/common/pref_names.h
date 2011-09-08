@@ -557,6 +557,8 @@ extern const char kManagedPluginsAllowedForUrls[];
 extern const char kManagedPluginsBlockedForUrls[];
 extern const char kManagedPopupsAllowedForUrls[];
 extern const char kManagedPopupsBlockedForUrls[];
+extern const char kManagedNotificationsAllowedForUrls[];
+extern const char kManagedNotificationsBlockedForUrls[];
 extern const char kManagedAutoSelectCertificateForUrls[];
 
 #if defined(OS_CHROMEOS)

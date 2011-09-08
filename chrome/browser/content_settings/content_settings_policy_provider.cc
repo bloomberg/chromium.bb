@@ -89,6 +89,14 @@ const PrefsForManagedContentSettingsMapEntry
     prefs::kManagedPopupsBlockedForUrls,
     CONTENT_SETTINGS_TYPE_POPUPS,
     CONTENT_SETTING_BLOCK
+  }, {
+    prefs::kManagedNotificationsAllowedForUrls,
+    CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+    CONTENT_SETTING_ALLOW
+  }, {
+    prefs::kManagedNotificationsBlockedForUrls,
+    CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+    CONTENT_SETTING_BLOCK
   }
 };
 
@@ -270,6 +278,10 @@ void PolicyProvider::RegisterUserPrefs(PrefService* prefs) {
                           PrefService::UNSYNCABLE_PREF);
   prefs->RegisterListPref(prefs::kManagedPopupsBlockedForUrls,
                           PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterListPref(prefs::kManagedNotificationsAllowedForUrls,
+                          PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterListPref(prefs::kManagedNotificationsBlockedForUrls,
+                          PrefService::UNSYNCABLE_PREF);
 }
 
 PolicyProvider::PolicyProvider(PrefService* prefs,
@@ -291,6 +303,8 @@ PolicyProvider::PolicyProvider(PrefService* prefs,
   pref_change_registrar_.Add(prefs::kManagedPluginsAllowedForUrls, this);
   pref_change_registrar_.Add(prefs::kManagedPopupsBlockedForUrls, this);
   pref_change_registrar_.Add(prefs::kManagedPopupsAllowedForUrls, this);
+  pref_change_registrar_.Add(prefs::kManagedNotificationsAllowedForUrls, this);
+  pref_change_registrar_.Add(prefs::kManagedNotificationsBlockedForUrls, this);
 }
 
 PolicyProvider::~PolicyProvider() {
@@ -534,7 +548,9 @@ void PolicyProvider::Observe(int type,
         *name == prefs::kManagedPluginsAllowedForUrls ||
         *name == prefs::kManagedPluginsBlockedForUrls ||
         *name == prefs::kManagedPopupsAllowedForUrls ||
-        *name == prefs::kManagedPopupsBlockedForUrls) {
+        *name == prefs::kManagedPopupsBlockedForUrls ||
+        *name == prefs::kManagedNotificationsAllowedForUrls ||
+        *name == prefs::kManagedNotificationsBlockedForUrls) {
       ReadManagedContentSettings(true);
       NotifyObservers(ContentSettingsPattern(),
                       ContentSettingsPattern(),
