@@ -28,7 +28,8 @@ namespace {
 const char* kAllowedIds[] = {
     "haiffjcadagjlijoggckpgfnoeiflnem",
     "gnedhmakppccajfpfiihfcdlnpgomkcf",
-    "fjcibdnjlbfnbfdjneajpipnlcppleek"
+    "fjcibdnjlbfnbfdjneajpipnlcppleek",
+    "okddffdblfhhnmhodogpojmfkjmhinfp"
 };
 
 class OriginValidator {
