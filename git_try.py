@@ -9,8 +9,8 @@ import sys
 
 import breakpad  # pylint: disable=W0611
 
-import gclient_utils
 from scm import GIT
+import subprocess2
 import third_party.upload
 import trychange
 
@@ -19,7 +19,7 @@ def GetRietveldIssueNumber():
   try:
     return GIT.Capture(
         ['config', 'branch.%s.rietveldissue' % GIT.GetBranch(None)])
-  except gclient_utils.Error:
+  except subprocess2.CalledProcessError:
     return None
 
 
@@ -27,14 +27,14 @@ def GetRietveldPatchsetNumber():
   try:
     return GIT.Capture(
         ['config', 'branch.%s.rietveldpatchset' % GIT.GetBranch(None)])
-  except gclient_utils.Error:
+  except subprocess2.CalledProcessError:
     return None
 
 
 def GetRietveldServerUrl():
   try:
     return GIT.Capture(['config', 'rietveld.server']).strip()
-  except gclient_utils.Error:
+  except subprocess2.CalledProcessError:
     return None
 
 
