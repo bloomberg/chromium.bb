@@ -66,7 +66,6 @@ cr.define('ntp4', function() {
             'activate', this.onCreateShortcut_.bind(this));
       }
 
-      menu.hidden = true;
       document.body.appendChild(menu);
     },
 
