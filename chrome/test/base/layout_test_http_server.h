@@ -9,6 +9,10 @@
 #include "base/compiler_specific.h"
 #include "base/file_path.h"
 
+#if defined(OS_WIN)
+#include "base/win/scoped_handle.h"
+#endif
+
 // This object bounds the lifetime of an external HTTP server
 // used for layout tests.
 //
@@ -36,6 +40,11 @@ class LayoutTestHttpServer {
   int port_;  // Port on which the server should listen.
 
   bool running_;  // True if the server is currently running.
+
+#if defined(OS_WIN)
+  // JobObject used to clean up orphaned child processes.
+  base::win::ScopedHandle job_handle_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(LayoutTestHttpServer);
 };

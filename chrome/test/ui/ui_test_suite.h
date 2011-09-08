@@ -9,6 +9,10 @@
 #include "base/process.h"
 #include "chrome/test/base/chrome_test_suite.h"
 
+#if defined(OS_WIN)
+#include "base/win/scoped_handle.h"
+#endif
+
 class UITestSuite : public ChromeTestSuite {
  public:
   UITestSuite(int argc, char** argv);
@@ -22,6 +26,9 @@ class UITestSuite : public ChromeTestSuite {
   void LoadCrashService();
 
   base::ProcessHandle crash_service_;
+
+  // JobObject used to clean up orphaned child processes.
+  base::win::ScopedHandle job_handle_;
 #endif
 };
 

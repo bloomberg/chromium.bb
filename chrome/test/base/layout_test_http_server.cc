@@ -74,12 +74,27 @@ bool LayoutTestHttpServer::Start() {
   cmd_line.AppendArgNative(FILE_PATH_LITERAL("--layout_tests_dir=") +
                            layout_tests_dir.value());
 
+#if defined(OS_WIN)
   // For Windows 7, if we start the lighttpd server on the foreground mode,
   // it will mess up with the command window and cause conhost.exe to crash. To
   // work around this, we start the http server on the background mode.
-#if defined(OS_WIN)
   if (base::win::GetVersion() >= base::win::VERSION_WIN7)
     cmd_line.AppendArg("--run_background");
+
+  job_handle_.Set(CreateJobObject(NULL, NULL));
+  if (!job_handle_.IsValid()) {
+    LOG(ERROR) << "Could not create JobObject.";
+    return false;
+  }
+
+  JOBOBJECT_EXTENDED_LIMIT_INFORMATION limit_info = {0};
+  limit_info.BasicLimitInformation.LimitFlags =
+      JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE;
+  if (0 == SetInformationJobObject(job_handle_.Get(),
+    JobObjectExtendedLimitInformation, &limit_info, sizeof(limit_info))) {
+    LOG(ERROR) << "Could not SetInformationJobObject.";
+    return false;
+  }
 #endif
 
   // The Python script waits for the server to start responding to requests,
@@ -87,6 +102,9 @@ bool LayoutTestHttpServer::Start() {
   // continuing.
   base::LaunchOptions options;
   options.wait = true;
+#if defined(OS_WIN)
+  options.job_handle = job_handle_.Get();
+#endif
   running_ = base::LaunchProcess(cmd_line, options, NULL);
   return running_;
 }
@@ -104,8 +122,18 @@ bool LayoutTestHttpServer::Stop() {
 
   base::LaunchOptions options;
   options.wait = true;
+#if defined(OS_WIN)
+  options.job_handle = job_handle_.Get();
+#endif
   bool stopped = base::LaunchProcess(cmd_line, options, NULL);
   running_ = !stopped;
+
+#if defined(OS_WIN)
+  // Close the job object handle now. This should clean up
+  // any orphaned processes.
+  job_handle_.Close();
+#endif
+
   return stopped;
 }
 
