@@ -1000,7 +1000,7 @@ def CMDrecurse(parser, args):
       env['GCLIENT_SCM'] = scm
     if url:
       env['GCLIENT_URL'] = url
-    gclient_utils.Popen(args, cwd=cwd, env=env).communicate()
+    subprocess2.call(args, cwd=cwd, env=env)
   return 0
 
 
