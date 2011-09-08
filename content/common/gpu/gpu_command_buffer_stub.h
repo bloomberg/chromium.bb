@@ -12,6 +12,7 @@
 #include <string>
 #include <vector>
 
+#include "base/id_map.h"
 #include "base/memory/weak_ptr.h"
 #include "base/process.h"
 #include "base/task.h"
@@ -59,9 +60,6 @@ class GpuCommandBufferStub
 
   // Get the GLContext associated with this object.
   gpu::GpuScheduler* scheduler() const { return scheduler_.get(); }
-
-  // Get the GpuChannel associated with this object.
-  GpuChannel* channel() const { return channel_; }
 
   // Identifies the renderer process.
   int32 renderer_id() const { return renderer_id_; }

@@ -44,6 +44,14 @@ void GpuChannelManager::RemoveRoute(int32 routing_id) {
   gpu_child_thread_->RemoveRoute(routing_id);
 }
 
+GpuChannel* GpuChannelManager::LookupChannel(int32 renderer_id) {
+  GpuChannelMap::const_iterator iter = gpu_channels_.find(renderer_id);
+  if (iter == gpu_channels_.end())
+    return NULL;
+  else
+    return iter->second;
+}
+
 bool GpuChannelManager::OnMessageReceived(const IPC::Message& msg) {
   bool msg_is_ok = true;
   bool handled = true;

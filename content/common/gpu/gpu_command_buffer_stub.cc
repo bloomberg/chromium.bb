@@ -153,7 +153,11 @@ void GpuCommandBufferStub::OnInitialize(
 
     scoped_refptr<gfx::GLSurface> surface;
     if (handle_)
-      surface = ImageTransportSurface::CreateSurface(this);
+      surface = ImageTransportSurface::CreateSurface(
+          channel_->gpu_channel_manager(),
+          render_view_id_,
+          renderer_id_,
+          route_id_);
     else
       surface = gfx::GLSurface::CreateOffscreenGLSurface(software_,
                                                          gfx::Size(1, 1));

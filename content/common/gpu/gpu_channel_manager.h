@@ -63,6 +63,8 @@ class GpuChannelManager : public IPC::Channel::Listener,
   void AddRoute(int32 routing_id, IPC::Channel::Listener* listener);
   void RemoveRoute(int32 routing_id);
 
+  GpuChannel* LookupChannel(int32 renderer_id);
+
  private:
   // Message handlers.
   void OnEstablishChannel(int renderer_id);
