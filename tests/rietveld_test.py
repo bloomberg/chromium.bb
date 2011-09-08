@@ -97,7 +97,7 @@ class RietveldTest(unittest.TestCase):
   def test_get_patch_2_files(self):
     self.requests = [
         ('/api/123/456',
-          _api({'foo': _file('A '), 'file_a': _file('M ', chunk_id=790)})),
+          _api({'foo': _file('A'), 'file_a': _file('M', chunk_id=790)})),
         ('/download/issue123_456_789.diff', RAW.NEW),
         ('/download/issue123_456_790.diff', RAW.NEW_NOT_NULL),
     ]
@@ -109,7 +109,7 @@ class RietveldTest(unittest.TestCase):
 
   def test_get_patch_add(self):
     self.requests = [
-        ('/api/123/456', _api({'foo': _file('A ')})),
+        ('/api/123/456', _api({'foo': _file('A')})),
         ('/download/issue123_456_789.diff', RAW.NEW),
     ]
     patches = self.rietveld.get_patch(123, 456)

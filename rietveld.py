@@ -160,7 +160,9 @@ class Rietveld(object):
           if status[0] == 'A':
             # It won't be set for empty file.
             p.is_new = True
-          if status[1] == '+' and not (p.source_filename or p.svn_properties):
+          if (len(status) > 1 and
+              status[1] == '+' and
+              not (p.source_filename or p.svn_properties)):
             raise patch.UnsupportedPatchFormat(
                 filename, 'Failed to process the svn properties')
       else:
