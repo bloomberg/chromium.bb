@@ -60,6 +60,8 @@ PrintPreviewDataSource::PrintPreviewDataSource()
   AddLocalizedString("printButton", IDS_PRINT_PREVIEW_PRINT_BUTTON);
   AddLocalizedString("cancelButton", IDS_PRINT_PREVIEW_CANCEL_BUTTON);
   AddLocalizedString("printing", IDS_PRINT_PREVIEW_PRINTING);
+  AddLocalizedString("printingToPDFInProgress",
+                     IDS_PRINT_PREVIEW_PRINTING_TO_PDF_IN_PROGRESS);
 
   AddLocalizedString("destinationLabel", IDS_PRINT_PREVIEW_DESTINATION_LABEL);
   AddLocalizedString("copiesLabel", IDS_PRINT_PREVIEW_COPIES_LABEL);

@@ -78,15 +78,33 @@ function fadeInOutCleanup(animationName) {
     animEl.parentNode.removeChild(animEl);
 }
 
-function showLoadingAnimation() {
-  $('dancing-dots-text').classList.remove('hidden');
+/**
+ * Displays |message| followed by three dancing dots animation.
+ */
+function showCustomMessage(message) {
+  $('custom-message-with-dots').innerHTML = message +
+      $('dancing-dots-text').innerHTML;
+  $('custom-message-with-dots').hidden = false;
   var pdfViewer = $('pdf-viewer');
   if (pdfViewer)
     pdfViewer.classList.add('invisible');
   $('overlay-layer').classList.remove('invisible');
 }
 
-function hideLoadingAnimation() {
+/**
+ * Displays the "Preview loading..." animation.
+ */
+function showLoadingAnimation() {
+  showCustomMessage(localStrings.getString('loading'));
+}
+
+/**
+ * Hides the |overlay-layer| and any messages currently displayed.
+ */
+function hideOverlayLayer() {
+  if (hasPendingPrintDocumentRequest)
+    return;
+
   var overlayLayer = $('overlay-layer');
   overlayLayer.addEventListener('webkitTransitionEnd', loadingAnimationCleanup);
   var pdfViewer = $('pdf-viewer');
@@ -96,7 +114,7 @@ function hideLoadingAnimation() {
 }
 
 function loadingAnimationCleanup() {
-  $('dancing-dots-text').classList.add('hidden');
+  $('custom-message-with-dots').hidden = true;
   $('overlay-layer').removeEventListener('webkitTransitionEnd',
                                          loadingAnimationCleanup);
 }

@@ -749,7 +749,7 @@ html[dir='rtl'] .messages {
   -webkit-margin-end: -3px;
 }
 
-#dancing-dots-text span span {
+.message-with-dots span span {
   -webkit-animation-duration: 1800ms;
   -webkit-animation-iteration-count: infinite;
   -webkit-animation-name: dancing-dots-jump;
@@ -757,11 +757,11 @@ html[dir='rtl'] .messages {
   position: relative;
 }
 
-#dancing-dots-text span span:nth-child(2) {
+.message-with-dots span span:nth-child(2) {
   -webkit-animation-delay: 100ms;
 }
 
-#dancing-dots-text span span:nth-child(3) {
+.message-with-dots span span:nth-child(3) {
   -webkit-animation-delay: 300ms;
 }
 

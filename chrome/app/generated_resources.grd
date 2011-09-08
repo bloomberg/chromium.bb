@@ -6038,6 +6038,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_PRINT_PREVIEW_PRINTING" desc="Text shown after the user clicks on the print button and before the print preview tab is closed to let him know that printing is in progress.">
         Printing...
       </message>
+      <message name="IDS_PRINT_PREVIEW_PRINTING_TO_PDF_IN_PROGRESS" desc="Text shown after the user clicks on the print button while Print To PDF is selected, but the PDF file is not ready yet.">
+        Printing to PDF in progress
+      </message>
       <message name="IDS_PRINT_PREVIEW_CANCEL_BUTTON" desc="Cancel button.">
         Cancel
       </message>

@@ -436,11 +436,11 @@ function requestToPrintDocument() {
 
   if (hasPendingPrintDocumentRequest) {
     if (printToPDF) {
-      // TODO(thestig) disable controls here.
-     } else {
-       isTabHidden = true;
-       chrome.send('hidePreview');
-     }
+      sendPrintDocumentRequest();
+    } else {
+      isTabHidden = true;
+      chrome.send('hidePreview');
+    }
     return;
   }
 
@@ -537,6 +537,17 @@ function requestPrintPreview() {
  */
 function fileSelectionCancelled() {
   // TODO(thestig) re-enable controls here.
+}
+
+/**
+ * Called from PrintPreviewUI::OnFileSelectionCompleted to notify the print
+ * preview tab regarding the file selection completed event.
+ */
+function fileSelectionCompleted() {
+  // If the file selection is completed and the tab is not already closed it
+  // means that a pending print to pdf request exists.
+  disableInputElementsInSidebar();
+  showCustomMessage(localStrings.getString('printingToPDFInProgress'));
 }
 
 /**
@@ -824,9 +835,12 @@ function setColor(color) {
 function displayErrorMessage(errorMessage) {
   $('print-button').disabled = true;
   $('overlay-layer').classList.remove('invisible');
-  $('dancing-dots-text').classList.add('hidden');
-  $('error-text').innerHTML = errorMessage;
-  $('error-text').classList.remove('hidden');
+  var customMessage = $('custom-message');
+  customMessage.textContent = errorMessage;
+  customMessage.hidden = false;
+  var customMessageWithDots = $('custom-message-with-dots');
+  customMessageWithDots.innerHTML = '';
+  customMessageWithDots.hidden = true;;
   var pdfViewer = $('pdf-viewer');
   if (pdfViewer)
     $('mainview').removeChild(pdfViewer);
@@ -882,7 +896,7 @@ function onPDFLoad() {
   }
   $('pdf-viewer').fitToHeight();
   cr.dispatchSimpleEvent(document, 'PDFLoaded');
-  hideLoadingAnimation();
+  hideOverlayLayer();
 }
 
 function setPluginPreviewPageCount() {
@@ -927,7 +941,7 @@ function reloadPreviewPages(previewUid, previewResponseId) {
   isPrintReadyMetafileReady = true;
 
   cr.dispatchSimpleEvent(document, 'updatePrintButton');
-  hideLoadingAnimation();
+  hideOverlayLayer();
   var pageSet = pageSettings.previouslySelectedPages;
   for (var i = 0; i < pageSet.length; i++)
     $('pdf-viewer').loadPreviewPage(getPageSrcURL(previewUid, pageSet[i]-1), i);

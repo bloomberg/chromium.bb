@@ -629,26 +629,7 @@ void PrintPreviewHandler::HandlePrint(const ListValue* args) {
     args->GetString(1, &print_ticket);
     SendCloudPrintJob(*settings, print_ticket);
   } else if (print_to_pdf) {
-    ReportUserActionHistogram(PRINT_TO_PDF);
-    UMA_HISTOGRAM_COUNTS("PrintPreview.PageCount.PrintToPDF",
-                         GetPageCountFromSettingsDictionary(*settings));
-
-    // Pre-populating select file dialog with print job title.
-    string16 print_job_title_utf16 =
-        preview_tab_wrapper()->print_view_manager()->RenderSourceName();
-
-#if defined(OS_WIN)
-    FilePath::StringType print_job_title(print_job_title_utf16);
-#elif defined(OS_POSIX)
-    FilePath::StringType print_job_title = UTF16ToUTF8(print_job_title_utf16);
-#endif
-
-    file_util::ReplaceIllegalCharactersInPath(&print_job_title, '_');
-    FilePath default_filename(print_job_title);
-    default_filename =
-        default_filename.ReplaceExtension(FILE_PATH_LITERAL("pdf"));
-
-    SelectFile(default_filename);
+    HandlePrintToPdf(*settings);
   } else {
     ReportPrintSettingsStats(*settings);
     ReportUserActionHistogram(PRINT_TO_PRINTER);
@@ -667,6 +648,36 @@ void PrintPreviewHandler::HandlePrint(const ListValue* args) {
     settings->Remove(printing::kSettingPageRange, NULL);
     RenderViewHost* rvh = web_ui_->tab_contents()->render_view_host();
     rvh->Send(new PrintMsg_PrintForPrintPreview(rvh->routing_id(), *settings));
+  }
+}
+
+void PrintPreviewHandler::HandlePrintToPdf(
+    const base::DictionaryValue& settings) {
+  if (print_to_pdf_path_.get()) {
+    // User has already selected a path, no need to show the dialog again.
+    PostPrintToPdfTask();
+  } else if (!select_file_dialog_.get() || !select_file_dialog_->IsRunning(
+        platform_util::GetTopLevel(preview_tab()->GetNativeView()))) {
+    ReportUserActionHistogram(PRINT_TO_PDF);
+    UMA_HISTOGRAM_COUNTS("PrintPreview.PageCount.PrintToPDF",
+                         GetPageCountFromSettingsDictionary(settings));
+
+    // Pre-populating select file dialog with print job title.
+    string16 print_job_title_utf16 =
+        preview_tab_wrapper()->print_view_manager()->RenderSourceName();
+
+#if defined(OS_WIN)
+    FilePath::StringType print_job_title(print_job_title_utf16);
+#elif defined(OS_POSIX)
+    FilePath::StringType print_job_title = UTF16ToUTF8(print_job_title_utf16);
+#endif
+
+    file_util::ReplaceIllegalCharactersInPath(&print_job_title, '_');
+    FilePath default_filename(print_job_title);
+    default_filename =
+        default_filename.ReplaceExtension(FILE_PATH_LITERAL("pdf"));
+
+    SelectFile(default_filename);
   }
 }
 
@@ -981,24 +992,31 @@ void PrintPreviewHandler::ShowSystemDialog() {
 
 void PrintPreviewHandler::FileSelected(const FilePath& path,
                                        int index, void* params) {
+  // Updating last_saved_path_ to the newly selected folder.
+  *last_saved_path_ = path.DirName();
+
+  PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(web_ui_);
+  print_preview_ui->CallJavascriptFunction("fileSelectionCompleted");
+  scoped_refptr<RefCountedBytes> data;
+  print_preview_ui->GetPrintPreviewDataForIndex(
+      printing::COMPLETE_PREVIEW_DOCUMENT_INDEX, &data);
+  print_to_pdf_path_.reset(new FilePath(path));
+  if (data.get())
+    PostPrintToPdfTask();
+}
+
+void PrintPreviewHandler::PostPrintToPdfTask() {
   PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(web_ui_);
   scoped_refptr<RefCountedBytes> data;
   print_preview_ui->GetPrintPreviewDataForIndex(
       printing::COMPLETE_PREVIEW_DOCUMENT_INDEX, &data);
-  if (!data.get()) {
-    NOTREACHED();
-    return;
-  }
-
+  DCHECK(data.get());
   printing::PreviewMetafile* metafile = new printing::PreviewMetafile;
   metafile->InitFromData(static_cast<const void*>(data->front()), data->size());
-
-  // Updating last_saved_path_ to the newly selected folder.
-  *last_saved_path_ = path.DirName();
-
-  PrintToPdfTask* task = new PrintToPdfTask(metafile, path);
+  PrintToPdfTask* task = new PrintToPdfTask(metafile,
+                                            *print_to_pdf_path_);
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE, task);
-
+  print_to_pdf_path_.reset();
   ActivateInitiatorTabAndClosePreviewTab();
 }
 

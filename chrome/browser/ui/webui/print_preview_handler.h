@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/printing/print_view_manager_observer.h"
 #include "chrome/browser/ui/shell_dialogs.h"
@@ -19,6 +20,7 @@ class PrintSystemTaskProxy;
 class TabContentsWrapper;
 
 namespace base {
+class DictionaryValue;
 class FundamentalValue;
 class StringValue;
 }
@@ -79,9 +81,13 @@ class PrintPreviewHandler : public WebUIMessageHandler,
   // is a job settings JSON string.
   void HandleGetPreview(const base::ListValue* args);
 
-  // Gets the job settings from Web UI and initiate printing.  First element of
+  // Gets the job settings from Web UI and initiate printing. First element of
   // |args| is a job settings JSON string.
   void HandlePrint(const base::ListValue* args);
+
+  // Handles printing to PDF. |settings| points to a dictionary containing all
+  // the print request parameters.
+  void HandlePrintToPdf(const base::DictionaryValue& settings);
 
   // Handles the request to hide the preview tab for printing. |args| is unused.
   void HandleHidePreview(const base::ListValue* args);
@@ -161,6 +167,9 @@ class PrintPreviewHandler : public WebUIMessageHandler,
   // Clears initiator tab details for this preview tab.
   void ClearInitiatorTabDetails();
 
+  // Posts a task to save to pdf at |print_to_pdf_path_|.
+  void PostPrintToPdfTask();
+
   // Pointer to current print system.
   scoped_refptr<printing::PrintBackend> print_backend_;
 
@@ -184,6 +193,10 @@ class PrintPreviewHandler : public WebUIMessageHandler,
 
   // Whether we have already logged the number of printers this session.
   bool has_logged_printers_count_;
+
+  // Holds the path to the print to pdf request. It is empty if no such request
+  // exists.
+  scoped_ptr<FilePath> print_to_pdf_path_;
 
   DISALLOW_COPY_AND_ASSIGN(PrintPreviewHandler);
 };
