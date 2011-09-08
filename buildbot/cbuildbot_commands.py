@@ -306,25 +306,16 @@ def RunTestSuite(buildroot, board, image_dir, results_dir, full=True):
   cwd = os.path.join(buildroot, 'src', 'scripts')
   image_path = os.path.join(image_dir, 'chromiumos_test_image.bin')
 
-  if full:
-    cmd = ['bin/ctest',
-           '--board=%s' % board,
-           '--channel=dev-channel',
-           '--zipbase=http://chromeos-images.corp.google.com',
-           '--type=vm',
-           '--no_graphics',
-           '--target_image=%s' % image_path,
-           '--test_results_root=%s' % results_dir_in_chroot, ]
-  else:
-    cmd = ['bin/cros_au_test_harness',
-           '--no_graphics',
-           '--no_delta',
-           '--board=%s' % board,
-           '--test_prefix=SimpleTest',
-           '--verbose',
-           '--base_image=%s' % image_path,
-           '--target_image=%s' % image_path,
-           '--test_results_root=%s' % results_dir_in_chroot, ]
+  cmd = ['bin/ctest',
+         '--board=%s' % board,
+         '--type=vm',
+         '--no_graphics',
+         '--target_image=%s' % image_path,
+         '--test_results_root=%s' % results_dir_in_chroot
+        ]
+
+  if not full:
+    cmd.append('--quick')
 
   cros_lib.OldRunCommand(cmd, cwd=cwd, error_ok=False)
 
@@ -535,7 +526,7 @@ def AddPackagesForPrebuilt(filename):
   """
   try:
     cmd = []
-    package_file = open( filename, 'r')
+    package_file = open(filename, 'r')
     # Get only the package name and category. For example, given
     # "app-arch/xz-utils-4.999.9_beta" get "app-arch/xz-utils".
     reg_ex = re.compile('[\w-]+/[\w-]+[a-zA-Z]+[0-9]*')
@@ -549,7 +540,7 @@ def AddPackagesForPrebuilt(filename):
   except IOError as (errno, strerror):
     cros_lib.Warning('Problem with package file %s' % filename)
     cros_lib.Warning('Skipping uploading of prebuilts.')
-    cros_lib.Warning('ERROR(%d): %s' % (errno, strerror) )
+    cros_lib.Warning('ERROR(%d): %s' % (errno, strerror))
     return None
 
 
@@ -957,7 +948,7 @@ def UpdateLatestFile(bot_archive_root, set_version):
   """
   latest_path = os.path.join(bot_archive_root, 'LATEST')
   latest_file = open(latest_path, 'w')
-  print >>latest_file, set_version
+  print >> latest_file, set_version
   latest_file.close()
 
 
