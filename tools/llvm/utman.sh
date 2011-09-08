@@ -112,11 +112,8 @@ SPECULATIVE_REBUILD_SET=""
 readonly TC_SRC="${NACL_ROOT}/hg"
 readonly TC_BUILD="${TC_ROOT}/hg-build-${LIBMODE}"
 
-# The location of sources (absolute)
-
+# The location of Mercurial sources (absolute)
 readonly TC_SRC_UPSTREAM="${TC_SRC}/upstream"
-readonly TC_SRC_CLANG="${TC_SRC}/clang"
-readonly TC_SRC_DRAGONEGG="${TC_SRC}/dragonegg"
 readonly TC_SRC_LLVM="${TC_SRC_UPSTREAM}/llvm"
 readonly TC_SRC_LLVM_GCC="${TC_SRC_UPSTREAM}/llvm-gcc"
 readonly TC_SRC_BINUTILS="${TC_SRC}/binutils"
@@ -125,6 +122,11 @@ readonly TC_SRC_COMPILER_RT="${TC_SRC}/compiler-rt"
 readonly TC_SRC_LIBSTDCPP="${TC_SRC_LLVM_GCC}/libstdc++-v3"
 readonly TC_SRC_GOOGLE_PERFTOOLS="${TC_SRC}/google-perftools"
 
+# LLVM sources (svn)
+readonly TC_SRC_LLVM_MASTER="${TC_SRC}/llvm-master"
+readonly TC_SRC_LLVM_GCC_MASTER="${TC_SRC}/llvm-gcc-master"
+readonly TC_SRC_CLANG="${TC_SRC}/clang"
+readonly TC_SRC_DRAGONEGG="${TC_SRC}/dragonegg"
 
 # Unfortunately, binutils/configure generates this untracked file
 # in the binutils source directory
@@ -211,25 +213,31 @@ else
 fi
 
 # Current milestones in each repo
-readonly UPSTREAM_REV=fa7a46506093
-
-# Most of the time, these should be the same.
-readonly     CLANG_REV=139099
-readonly DRAGONEGG_REV=139099
+readonly UPSTREAM_REV=${UPSTREAM_REV:-fa7a46506093}
 
 readonly NEWLIB_REV=57d709868c78
 readonly BINUTILS_REV=2f1d9c8ef12d
 readonly COMPILER_RT_REV=1a3a6ffb31ea
 readonly GOOGLE_PERFTOOLS_REV=ad820959663d
 
+readonly LLVM_PROJECT_REV=${LLVM_PROJECT_REV:-139099}
+readonly LLVM_MASTER_REV=${LLVM_PROJECT_REV}
+readonly LLVM_GCC_MASTER_REV=${LLVM_PROJECT_REV}
+readonly CLANG_REV=${LLVM_PROJECT_REV}
+readonly DRAGONEGG_REV=${LLVM_PROJECT_REV}
+
 # Repositories
 readonly REPO_UPSTREAM="nacl-llvm-branches.upstream"
-readonly REPO_CLANG="http://llvm.org/svn/llvm-project/cfe/trunk"
-readonly REPO_DRAGONEGG="http://llvm.org/svn/llvm-project/dragonegg/trunk"
 readonly REPO_NEWLIB="nacl-llvm-branches.newlib"
 readonly REPO_BINUTILS="nacl-llvm-branches.binutils"
 readonly REPO_COMPILER_RT="nacl-llvm-branches.compiler-rt"
 readonly REPO_GOOGLE_PERFTOOLS="nacl-llvm-branches.google-perftools"
+
+# LLVM repos (svn)
+readonly REPO_LLVM_MASTER="http://llvm.org/svn/llvm-project/llvm/trunk"
+readonly REPO_LLVM_GCC_MASTER="http://llvm.org/svn/llvm-project/llvm-gcc-4.2/trunk"
+readonly REPO_CLANG="http://llvm.org/svn/llvm-project/cfe/trunk"
+readonly REPO_DRAGONEGG="http://llvm.org/svn/llvm-project/dragonegg/trunk"
 
 # TODO(espindola): This should be ${CXX:-}, but llvm-gcc's configure has a
 # bug that brakes the build if we do that.
@@ -477,6 +485,15 @@ hg-update-upstream() {
   llvm-link-clang
 }
 
+svn-update-llvm-master() {
+  svn-update-common "llvm-master" ${LLVM_MASTER_REV} "${TC_SRC_LLVM_MASTER}"
+}
+
+svn-update-llvm-gcc-master() {
+  svn-update-common "llvm-gcc-master" ${LLVM_GCC_MASTER_REV} \
+                    "${TC_SRC_LLVM_GCC_MASTER}"
+}
+
 svn-update-clang() {
   svn-update-common "clang" ${CLANG_REV} "${TC_SRC_CLANG}"
 }
@@ -560,6 +577,15 @@ checkout-all() {
 hg-checkout-upstream() {
   hg-checkout ${REPO_UPSTREAM} "${TC_SRC_UPSTREAM}" ${UPSTREAM_REV}
   llvm-link-clang
+}
+
+svn-checkout-llvm-master() {
+  svn-checkout "${REPO_LLVM_MASTER}" "${TC_SRC_LLVM_MASTER}" ${LLVM_MASTER_REV}
+}
+
+svn-checkout-llvm-gcc-master() {
+  svn-checkout "${REPO_LLVM_GCC_MASTER}" "${TC_SRC_LLVM_GCC_MASTER}" \
+               ${LLVM_GCC_MASTER_REV}
 }
 
 svn-checkout-clang() {
