@@ -568,7 +568,7 @@ void AppCacheUpdateJob::HandleUrlFetchCompleted(URLFetcher* fetcher) {
     // being processed, mark the entry as being foreign.
   } else {
     VLOG(1) << "Request status: " << request->status().status()
-            << " os_error: " << request->status().os_error()
+            << " error: " << request->status().error()
             << " response code: " << response_code;
     if (entry.IsExplicit() || entry.IsFallback()) {
       if (response_code == 304 && fetcher->existing_entry().has_response_id()) {
@@ -712,7 +712,7 @@ void AppCacheUpdateJob::HandleManifestRefetchCompleted(
     }
   } else {
     VLOG(1) << "Request status: " << request->status().status()
-            << " os_error: " << request->status().os_error()
+            << " error: " << request->status().error()
             << " response code: " << response_code;
     ScheduleUpdateRetry(kRerunDelayMs);
     HandleCacheFailure("Manifest changed during update, scheduling retry");

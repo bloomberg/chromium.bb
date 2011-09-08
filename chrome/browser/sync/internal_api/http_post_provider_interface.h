@@ -38,8 +38,8 @@ class HttpPostProviderInterface {
                               const char* content) = 0;
 
   // Returns true if the URL request succeeded. If the request failed,
-  // os_error() may be non-zero and hence contain more information.
-  virtual bool MakeSynchronousPost(int* os_error_code, int* response_code) = 0;
+  // error() may be non-zero and hence contain more information.
+  virtual bool MakeSynchronousPost(int* error_code, int* response_code) = 0;
 
   // Get the length of the content returned in the HTTP response.
   // This does not count the trailing null-terminating character returned

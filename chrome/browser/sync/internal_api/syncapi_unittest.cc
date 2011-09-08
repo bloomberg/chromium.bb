@@ -658,7 +658,7 @@ class TestHttpPostProviderInterface : public HttpPostProviderInterface {
   virtual void SetPostPayload(const char* content_type,
                               int content_length,
                               const char* content) OVERRIDE {}
-  virtual bool MakeSynchronousPost(int* os_error_code, int* response_code)
+  virtual bool MakeSynchronousPost(int* error_code, int* response_code)
       OVERRIDE {
     return false;
   }

@@ -56,11 +56,11 @@ bool SyncAPIBridgedConnection::Init(const char* path,
                        payload.data());
 
   // Issue the POST, blocking until it finishes.
-  int os_error_code = 0;
+  int error_code = 0;
   int response_code = 0;
-  if (!http->MakeSynchronousPost(&os_error_code, &response_code)) {
-    VLOG(1) << "Http POST failed, error returns: " << os_error_code;
-    response->server_status = os_error_code == net::ERR_ABORTED ?
+  if (!http->MakeSynchronousPost(&error_code, &response_code)) {
+    VLOG(1) << "Http POST failed, error returns: " << error_code;
+    response->server_status = error_code == net::ERR_ABORTED ?
         HttpResponse::CONNECTION_UNAVAILABLE : HttpResponse::IO_ERROR;
     return false;
   }

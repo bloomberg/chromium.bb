@@ -88,7 +88,7 @@ TEST(URLRequestJobFactoryTest, NoProtocolHandler) {
 
   MessageLoop::current()->Run();
   EXPECT_EQ(URLRequestStatus::FAILED, request.status().status());
-  EXPECT_EQ(ERR_UNKNOWN_URL_SCHEME, request.status().os_error());
+  EXPECT_EQ(ERR_UNKNOWN_URL_SCHEME, request.status().error());
 }
 
 TEST(URLRequestJobFactoryTest, BasicProtocolHandler) {
@@ -103,7 +103,7 @@ TEST(URLRequestJobFactoryTest, BasicProtocolHandler) {
 
   MessageLoop::current()->Run();
   EXPECT_EQ(URLRequestStatus::SUCCESS, request.status().status());
-  EXPECT_EQ(OK, request.status().os_error());
+  EXPECT_EQ(OK, request.status().error());
 }
 
 TEST(URLRequestJobFactoryTest, DeleteProtocolHandler) {
@@ -126,7 +126,7 @@ TEST(URLRequestJobFactoryTest, BasicInterceptor) {
 
   MessageLoop::current()->Run();
   EXPECT_EQ(URLRequestStatus::FAILED, request.status().status());
-  EXPECT_EQ(ERR_FAILED, request.status().os_error());
+  EXPECT_EQ(ERR_FAILED, request.status().error());
 }
 
 TEST(URLRequestJobFactoryTest, InterceptorNeedsValidSchemeStill) {
@@ -141,7 +141,7 @@ TEST(URLRequestJobFactoryTest, InterceptorNeedsValidSchemeStill) {
 
   MessageLoop::current()->Run();
   EXPECT_EQ(URLRequestStatus::FAILED, request.status().status());
-  EXPECT_EQ(ERR_UNKNOWN_URL_SCHEME, request.status().os_error());
+  EXPECT_EQ(ERR_UNKNOWN_URL_SCHEME, request.status().error());
 }
 
 TEST(URLRequestJobFactoryTest, InterceptorOverridesProtocolHandler) {
@@ -157,7 +157,7 @@ TEST(URLRequestJobFactoryTest, InterceptorOverridesProtocolHandler) {
 
   MessageLoop::current()->Run();
   EXPECT_EQ(URLRequestStatus::FAILED, request.status().status());
-  EXPECT_EQ(ERR_FAILED, request.status().os_error());
+  EXPECT_EQ(ERR_FAILED, request.status().error());
 }
 
 TEST(URLRequestJobFactoryTest, InterceptorDoesntInterceptUnknownProtocols) {
@@ -190,7 +190,7 @@ TEST(URLRequestJobFactoryTest, InterceptorInterceptsHandledUnknownProtocols) {
   MessageLoop::current()->Run();
   EXPECT_TRUE(interceptor->did_intercept_);
   EXPECT_EQ(URLRequestStatus::FAILED, request.status().status());
-  EXPECT_EQ(ERR_FAILED, request.status().os_error());
+  EXPECT_EQ(ERR_FAILED, request.status().error());
 }
 
 TEST(URLRequestJobFactoryTest, InterceptorAffectsIsHandledProtocol) {

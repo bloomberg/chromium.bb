@@ -18,10 +18,10 @@
 #include "base/string_util.h"
 #include "base/threading/thread.h"
 #include "googleurl/src/gurl.h"
-#include "net/base/load_flags.h"
-#include "net/base/io_buffer.h"
-#include "net/base/net_errors.h"
 #include "net/base/host_port_pair.h"
+#include "net/base/io_buffer.h"
+#include "net/base/load_flags.h"
+#include "net/base/net_errors.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"
@@ -724,7 +724,7 @@ void URLFetcher::Core::RetryOrCompleteUrlFetch() {
 
   // Checks the response from server.
   if (response_code_ >= 500 ||
-      status_.os_error() == net::ERR_TEMPORARILY_THROTTLED) {
+      status_.error() == net::ERR_TEMPORARILY_THROTTLED) {
     // When encountering a server error, we will send the request again
     // after backoff time.
     ++num_retries_;

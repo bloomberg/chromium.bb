@@ -12,8 +12,8 @@
 #include "base/metrics/histogram.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"
-#include "base/stringprintf.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/task.h"
 #include "base/timer.h"
 #include "chrome/browser/safe_browsing/protocol_parser.h"
@@ -264,7 +264,7 @@ void SafeBrowsingProtocolManager::OnURLFetchComplete(
       HandleGetHashError(Time::Now());
       if (status.status() == net::URLRequestStatus::FAILED) {
         VLOG(1) << "SafeBrowsing GetHash request for: " << source->url()
-                << " failed with os error: " << status.os_error();
+                << " failed with error: " << status.error();
       } else {
         VLOG(1) << "SafeBrowsing GetHash request for: " << source->url()
                 << " failed with error: " << response_code;
@@ -338,7 +338,7 @@ void SafeBrowsingProtocolManager::OnURLFetchComplete(
       UpdateFinished(false);
       if (status.status() == net::URLRequestStatus::FAILED) {
         VLOG(1) << "SafeBrowsing request for: " << source->url()
-                << " failed with os error: " << status.os_error();
+                << " failed with error: " << status.error();
       } else {
         VLOG(1) << "SafeBrowsing request for: " << source->url()
                 << " failed with error: " << response_code;

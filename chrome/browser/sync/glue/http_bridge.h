@@ -103,7 +103,7 @@ class HttpBridge : public base::RefCountedThreadSafe<HttpBridge>,
   virtual void SetURL(const char* url, int port);
   virtual void SetPostPayload(const char* content_type, int content_length,
                               const char* content);
-  virtual bool MakeSynchronousPost(int* os_error_code, int* response_code);
+  virtual bool MakeSynchronousPost(int* error_code, int* response_code);
   virtual void Abort();
 
   // WARNING: these response content methods are used to extract plain old data
@@ -186,7 +186,7 @@ class HttpBridge : public base::RefCountedThreadSafe<HttpBridge>,
     bool request_completed;
     bool request_succeeded;
     int http_response_code;
-    int os_error_code;
+    int error_code;
     std::string response_content;
     scoped_refptr<net::HttpResponseHeaders> response_headers;
   };
@@ -194,7 +194,7 @@ class HttpBridge : public base::RefCountedThreadSafe<HttpBridge>,
   // This lock synchronizes use of state involved in the flow to fetch a URL
   // using URLFetcher.  Because we can Abort() from any thread, for example,
   // this flow needs to be synchronized to gracefully clean up URLFetcher and
-  // return appropriate values in os_error_code.
+  // return appropriate values in |error_code|.
   mutable base::Lock fetch_state_lock_;
   URLFetchState fetch_state_;
 

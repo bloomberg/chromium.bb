@@ -8,9 +8,9 @@
 #include <utility>
 #include <vector>
 
-#include "base/stringprintf.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "chrome/common/net/gaia/gaia_auth_consumer.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/common/net/gaia/gaia_urls.h"
@@ -408,8 +408,8 @@ GoogleServiceAuthError GaiaAuthFetcher::GenerateAuthError(
       return GoogleServiceAuthError(GoogleServiceAuthError::REQUEST_CANCELED);
     } else {
       LOG(WARNING) << "Could not reach Google Accounts servers: errno "
-          << status.os_error();
-      return GoogleServiceAuthError::FromConnectionError(status.os_error());
+          << status.error();
+      return GoogleServiceAuthError::FromConnectionError(status.error());
     }
   } else {
     if (IsSecondFactorSuccess(data)) {
@@ -461,8 +461,8 @@ GoogleServiceAuthError GaiaAuthFetcher::GenerateOAuthLoginError(
       return GoogleServiceAuthError(GoogleServiceAuthError::REQUEST_CANCELED);
     } else {
       LOG(WARNING) << "Could not reach Google Accounts servers: errno "
-          << status.os_error();
-      return GoogleServiceAuthError::FromConnectionError(status.os_error());
+          << status.error();
+      return GoogleServiceAuthError::FromConnectionError(status.error());
     }
   } else {
     if (IsSecondFactorSuccess(data)) {

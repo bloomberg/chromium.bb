@@ -1739,13 +1739,13 @@ void ResourceDispatcherHost::OnResponseCompleted(net::URLRequest* request) {
   // since it will probably cause the user to see an error page.
   if (!request->status().is_success() &&
       info->resource_type() == ResourceType::MAIN_FRAME &&
-      request->status().os_error() != net::ERR_ABORTED) {
+      request->status().error() != net::ERR_ABORTED) {
     // This enumeration has "2" appended to its name to distinguish it from
     // its original version. We changed the buckets at one point (added
     // guard buckets by using CustomHistogram::ArrayToCustomRanges).
     UMA_HISTOGRAM_CUSTOM_ENUMERATION(
         "Net.ErrorCodesForMainFrame2",
-        -request->status().os_error(),
+        -request->status().error(),
         base::CustomHistogram::ArrayToCustomRanges(
             kAllNetErrorCodes, arraysize(kAllNetErrorCodes)));
   }

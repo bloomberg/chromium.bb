@@ -174,9 +174,9 @@ bool DownloadResourceHandler::OnResponseCompleted(
   VLOG(20) << __FUNCTION__ << "()" << DebugString()
            << " request_id = " << request_id
            << " status.status() = " << status.status()
-           << " status.os_error() = " << status.os_error();
+           << " status.error() = " << status.error();
   net::Error error_code = (status.status() == net::URLRequestStatus::FAILED) ?
-      static_cast<net::Error>(status.os_error()) : net::OK;
+      static_cast<net::Error>(status.error()) : net::OK;
   // We transfer ownership to |DownloadFileManager| to delete |buffer_|,
   // so that any functions queued up on the FILE thread are executed
   // before deletion.

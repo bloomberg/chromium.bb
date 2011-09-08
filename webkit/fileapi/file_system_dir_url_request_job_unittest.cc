@@ -264,21 +264,21 @@ TEST_F(FileSystemDirURLRequestJobTest, InvalidURL) {
   ASSERT_FALSE(request_->is_pending());
   EXPECT_TRUE(delegate_->request_failed());
   ASSERT_FALSE(request_->status().is_success());
-  EXPECT_EQ(net::ERR_INVALID_URL, request_->status().os_error());
+  EXPECT_EQ(net::ERR_INVALID_URL, request_->status().error());
 }
 
 TEST_F(FileSystemDirURLRequestJobTest, NoSuchRoot) {
   TestRequest(GURL("filesystem:http://remote/persistent/somedir/"));
   ASSERT_FALSE(request_->is_pending());
   ASSERT_FALSE(request_->status().is_success());
-  EXPECT_EQ(net::ERR_FILE_NOT_FOUND, request_->status().os_error());
+  EXPECT_EQ(net::ERR_FILE_NOT_FOUND, request_->status().error());
 }
 
 TEST_F(FileSystemDirURLRequestJobTest, NoSuchDirectory) {
   TestRequest(CreateFileSystemURL("somedir/"));
   ASSERT_FALSE(request_->is_pending());
   ASSERT_FALSE(request_->status().is_success());
-  EXPECT_EQ(net::ERR_FILE_NOT_FOUND, request_->status().os_error());
+  EXPECT_EQ(net::ERR_FILE_NOT_FOUND, request_->status().error());
 }
 
 class QuitNowTask : public Task {

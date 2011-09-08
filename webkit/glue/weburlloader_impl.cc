@@ -616,7 +616,7 @@ void WebURLLoaderImpl::Context::OnCompletedRequest(
         // to an error page.
         error_code = net::ERR_ABORTED;
       } else {
-        error_code = status.os_error();
+        error_code = status.error();
       }
       WebURLError error;
       if (error_code == net::ERR_ABORTED)
@@ -700,7 +700,7 @@ void WebURLLoaderImpl::loadSynchronously(const WebURLRequest& request,
       status != net::URLRequestStatus::HANDLED_EXTERNALLY) {
     response.setURL(final_url);
     error.domain = WebString::fromUTF8(net::kErrorDomain);
-    error.reason = sync_load_response.status.os_error();
+    error.reason = sync_load_response.status.error();
     error.unreachableURL = final_url;
     return;
   }

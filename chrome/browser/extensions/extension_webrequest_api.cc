@@ -28,13 +28,13 @@
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
+#include "googleurl/src/gurl.h"
+#include "grit/generated_resources.h"
 #include "net/base/auth.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_log.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"
-#include "googleurl/src/gurl.h"
-#include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace keys = extension_webrequest_api_constants;
@@ -822,7 +822,7 @@ void ExtensionWebRequestEventRouter::OnErrorOccurred(
     dict->SetString(keys::kIpKey, response_ip);
   dict->SetBoolean(keys::kFromCache, request->was_cached());
   dict->SetString(keys::kErrorKey,
-                  net::ErrorToString(request->status().os_error()));
+                  net::ErrorToString(request->status().error()));
   dict->SetDouble(keys::kTimeStampKey, time.ToDoubleT() * 1000);
   args.Append(dict);
 

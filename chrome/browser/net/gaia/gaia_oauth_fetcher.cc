@@ -456,8 +456,8 @@ GoogleServiceAuthError GaiaOAuthFetcher::GenerateAuthError(
       return GoogleServiceAuthError(GoogleServiceAuthError::REQUEST_CANCELED);
     } else {
       LOG(WARNING) << "Could not reach Google Accounts servers: errno "
-                   << status.os_error();
-      return GoogleServiceAuthError::FromConnectionError(status.os_error());
+                   << status.error();
+      return GoogleServiceAuthError::FromConnectionError(status.error());
     }
   } else {
     LOG(WARNING) << "Unrecognized response from Google Accounts servers.";

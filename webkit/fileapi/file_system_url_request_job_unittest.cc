@@ -285,7 +285,7 @@ TEST_F(FileSystemURLRequestJobTest, FileTestMultipleRangesNotSupported) {
   TestRequestWithHeaders(CreateFileSystemURL("file1.dat"), &headers);
   EXPECT_TRUE(delegate_->request_failed());
   EXPECT_EQ(net::ERR_REQUEST_RANGE_NOT_SATISFIABLE,
-            request_->status().os_error());
+            request_->status().error());
 }
 
 TEST_F(FileSystemURLRequestJobTest, RangeOutOfBounds) {
@@ -297,7 +297,7 @@ TEST_F(FileSystemURLRequestJobTest, RangeOutOfBounds) {
   ASSERT_FALSE(request_->is_pending());
   EXPECT_TRUE(delegate_->request_failed());
   EXPECT_EQ(net::ERR_REQUEST_RANGE_NOT_SATISFIABLE,
-            request_->status().os_error());
+            request_->status().error());
 }
 
 TEST_F(FileSystemURLRequestJobTest, FileDirRedirect) {
@@ -317,21 +317,21 @@ TEST_F(FileSystemURLRequestJobTest, InvalidURL) {
   TestRequest(GURL("filesystem:/foo/bar/baz"));
   ASSERT_FALSE(request_->is_pending());
   EXPECT_TRUE(delegate_->request_failed());
-  EXPECT_EQ(net::ERR_INVALID_URL, request_->status().os_error());
+  EXPECT_EQ(net::ERR_INVALID_URL, request_->status().error());
 }
 
 TEST_F(FileSystemURLRequestJobTest, NoSuchRoot) {
   TestRequest(GURL("filesystem:http://remote/persistent/somefile"));
   ASSERT_FALSE(request_->is_pending());
   EXPECT_TRUE(delegate_->request_failed());
-  EXPECT_EQ(net::ERR_FILE_NOT_FOUND, request_->status().os_error());
+  EXPECT_EQ(net::ERR_FILE_NOT_FOUND, request_->status().error());
 }
 
 TEST_F(FileSystemURLRequestJobTest, NoSuchFile) {
   TestRequest(CreateFileSystemURL("somefile"));
   ASSERT_FALSE(request_->is_pending());
   EXPECT_TRUE(delegate_->request_failed());
-  EXPECT_EQ(net::ERR_FILE_NOT_FOUND, request_->status().os_error());
+  EXPECT_EQ(net::ERR_FILE_NOT_FOUND, request_->status().error());
 }
 
 class QuitNowTask : public Task {

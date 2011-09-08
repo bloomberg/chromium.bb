@@ -559,7 +559,7 @@ void URLFetcherBadHTTPSTest::OnURLFetchComplete(
   // This part is different from URLFetcherTest::OnURLFetchComplete
   // because this test expects the request to be cancelled.
   EXPECT_EQ(net::URLRequestStatus::CANCELED, status.status());
-  EXPECT_EQ(net::ERR_ABORTED, status.os_error());
+  EXPECT_EQ(net::ERR_ABORTED, status.error());
   EXPECT_EQ(-1, response_code);
   EXPECT_TRUE(cookies.empty());
   EXPECT_TRUE(data.empty());

@@ -328,8 +328,8 @@ void ConnectionTester::TestRunner::OnResponseCompleted(
     net::URLRequest* request) {
   int result = net::OK;
   if (!request->status().is_success()) {
-    DCHECK_NE(net::ERR_IO_PENDING, request->status().os_error());
-    result = request->status().os_error();
+    DCHECK_NE(net::ERR_IO_PENDING, request->status().error());
+    result = request->status().error();
   }
 
   // Post a task to notify the parent rather than handling it right away,

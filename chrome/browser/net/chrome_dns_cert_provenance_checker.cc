@@ -83,7 +83,7 @@ class ChromeDnsCertProvenanceChecker
       if (!status.is_success()) {
         LOG(WARNING) << "Certificate upload failed"
                      << " status:" << status.status()
-                     << " os_error:" << status.os_error();
+                     << " error:" << status.error();
       } else if (request->GetResponseCode() != 200) {
         LOG(WARNING) << "Certificate upload HTTP status: "
                      << request->GetResponseCode();

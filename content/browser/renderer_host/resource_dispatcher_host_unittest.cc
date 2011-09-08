@@ -966,7 +966,7 @@ TEST_F(ResourceDispatcherHostTest, TooManyOutstandingRequests) {
 
     EXPECT_EQ(index + 1, request_id);
     EXPECT_EQ(net::URLRequestStatus::CANCELED, status.status());
-    EXPECT_EQ(net::ERR_INSUFFICIENT_RESOURCES, status.os_error());
+    EXPECT_EQ(net::ERR_INSUFFICIENT_RESOURCES, status.error());
   }
 
   // The final 2 requests should have succeeded.
@@ -1130,7 +1130,7 @@ TEST_F(ResourceDispatcherHostTest, ForbiddenDownload) {
 
   EXPECT_EQ(1, request_id);
   EXPECT_EQ(net::URLRequestStatus::CANCELED, status.status());
-  EXPECT_EQ(net::ERR_FILE_NOT_FOUND, status.os_error());
+  EXPECT_EQ(net::ERR_FILE_NOT_FOUND, status.error());
 }
 
 // Test for http://crbug.com/76202 .  We don't want to destroy a

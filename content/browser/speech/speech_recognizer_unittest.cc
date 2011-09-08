@@ -221,7 +221,7 @@ TEST_F(SpeechRecognizerTest, ConnectionError) {
   // Issue the network callback to complete the process.
   net::URLRequestStatus status;
   status.set_status(net::URLRequestStatus::FAILED);
-  status.set_os_error(net::ERR_CONNECTION_REFUSED);
+  status.set_error(net::ERR_CONNECTION_REFUSED);
   fetcher->delegate()->OnURLFetchComplete(
       fetcher, fetcher->original_url(), status, 0, net::ResponseCookies(), "");
   EXPECT_FALSE(recognition_complete_);

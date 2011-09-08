@@ -33,12 +33,12 @@ void ForwardProxyErrors(net::URLRequest* request,
                         ExtensionEventRouterForwarder* event_router,
                         void* profile) {
   if (request->status().status() == net::URLRequestStatus::FAILED) {
-    switch (request->status().os_error()) {
+    switch (request->status().error()) {
       case net::ERR_PROXY_AUTH_UNSUPPORTED:
       case net::ERR_PROXY_CONNECTION_FAILED:
       case net::ERR_TUNNEL_CONNECTION_FAILED:
         ExtensionProxyEventRouter::GetInstance()->OnProxyError(
-            event_router, profile, request->status().os_error());
+            event_router, profile, request->status().error());
     }
   }
 }

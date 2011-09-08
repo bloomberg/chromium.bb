@@ -141,17 +141,16 @@ void ParamTraits<ResourceType::Type>::Log(const param_type& p, std::string* l) {
 void ParamTraits<net::URLRequestStatus>::Write(Message* m,
                                                const param_type& p) {
   WriteParam(m, static_cast<int>(p.status()));
-  WriteParam(m, p.os_error());
+  WriteParam(m, p.error());
 }
 
 bool ParamTraits<net::URLRequestStatus>::Read(const Message* m, void** iter,
                                               param_type* r) {
-  int status, os_error;
-  if (!ReadParam(m, iter, &status) ||
-      !ReadParam(m, iter, &os_error))
+  int status, error;
+  if (!ReadParam(m, iter, &status) || !ReadParam(m, iter, &error))
     return false;
   r->set_status(static_cast<net::URLRequestStatus::Status>(status));
-  r->set_os_error(os_error);
+  r->set_error(error);
   return true;
 }
 
@@ -185,7 +184,7 @@ void ParamTraits<net::URLRequestStatus>::Log(const param_type& p,
 
   if (p.status() == net::URLRequestStatus::FAILED) {
     l->append(", ");
-    LogParam(p.os_error(), l);
+    LogParam(p.error(), l);
     l->append(")");
   }
 }

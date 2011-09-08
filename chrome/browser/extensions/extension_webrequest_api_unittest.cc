@@ -169,7 +169,7 @@ TEST_F(ExtensionWebRequestTest, BlockingEventPrecedenceRedirect) {
 
     EXPECT_TRUE(!request.is_pending());
     EXPECT_EQ(net::URLRequestStatus::SUCCESS, request.status().status());
-    EXPECT_EQ(0, request.status().os_error());
+    EXPECT_EQ(0, request.status().error());
     EXPECT_EQ(redirect_url, request.url());
     EXPECT_EQ(2U, request.url_chain().size());
     EXPECT_EQ(0U, ipc_sender_.GetNumTasks());
@@ -220,7 +220,7 @@ TEST_F(ExtensionWebRequestTest, BlockingEventPrecedenceRedirect) {
 
     EXPECT_TRUE(!request2.is_pending());
     EXPECT_EQ(net::URLRequestStatus::SUCCESS, request2.status().status());
-    EXPECT_EQ(0, request2.status().os_error());
+    EXPECT_EQ(0, request2.status().error());
     EXPECT_EQ(redirect_url, request2.url());
     EXPECT_EQ(2U, request2.url_chain().size());
     EXPECT_EQ(0U, ipc_sender_.GetNumTasks());
@@ -284,7 +284,7 @@ TEST_F(ExtensionWebRequestTest, BlockingEventPrecedenceCancel) {
 
   EXPECT_TRUE(!request.is_pending());
   EXPECT_EQ(net::URLRequestStatus::FAILED, request.status().status());
-  EXPECT_EQ(net::ERR_EMPTY_RESPONSE, request.status().os_error());
+  EXPECT_EQ(net::ERR_EMPTY_RESPONSE, request.status().error());
   EXPECT_EQ(request_url, request.url());
   EXPECT_EQ(1U, request.url_chain().size());
   EXPECT_EQ(0U, ipc_sender_.GetNumTasks());

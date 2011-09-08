@@ -6,7 +6,7 @@
 
 namespace browser_sync {
 
-bool TestHttpBridge::MakeSynchronousPost(int* os_error_code,
+bool TestHttpBridge::MakeSynchronousPost(int* error_code,
                                          int* response_code) {
   return false;
 }

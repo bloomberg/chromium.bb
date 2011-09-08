@@ -189,7 +189,7 @@ TEST(UrlmonUrlRequestTest, UnreachableUrl) {
     .WillOnce(QUIT_LOOP_SOON(loop, 2));
 
   EXPECT_CALL(mock, OnResponseEnd(1, testing::Property(
-              &net::URLRequestStatus::os_error,
+              &net::URLRequestStatus::error,
               net::ERR_TUNNEL_CONNECTION_FAILED)))
     .Times(testing::AtMost(1));
 

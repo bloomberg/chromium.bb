@@ -32,11 +32,11 @@
 #include "net/base/net_errors.h"
 #include "net/base/net_module.h"
 #include "third_party/sqlite/sqlite3.h"
-#include "third_party/tcmalloc/chromium/src/google/malloc_extension.h"
 #include "third_party/tcmalloc/chromium/src/google/heap-profiler.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
+#include "third_party/tcmalloc/chromium/src/google/malloc_extension.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCache.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCrossOriginPreflightResultCache.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFontCache.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebRuntimeFeatures.h"
@@ -82,13 +82,13 @@ class RendererResourceDelegate : public ResourceDispatcherDelegate {
     }
 
     if (status.status() != net::URLRequestStatus::CANCELED ||
-        status.os_error() == net::ERR_ABORTED) {
+        status.error() == net::ERR_ABORTED) {
       return NULL;
     }
 
     // Resource canceled with a specific error are filtered.
     return SecurityFilterPeer::CreateSecurityFilterPeerForDeniedRequest(
-        resource_type, current_peer, status.os_error());
+        resource_type, current_peer, status.error());
   }
 
   virtual webkit_glue::ResourceLoaderBridge::Peer* OnReceivedResponse(

@@ -17,8 +17,8 @@
 #include "net/base/host_port_pair.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
-#include "net/http/http_response_headers.h"
 #include "net/http/http_request_headers.h"
+#include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
 #include "net/url_request/url_request_context.h"
 
@@ -345,8 +345,8 @@ void URLRequestAutomationJob::OnRequestEnd(
   // so we don't.  We could possibly call OnSSLCertificateError with a NULL
   // certificate, but I'm not sure if all implementations expect it.
   // if (status.status() == net::URLRequestStatus::FAILED &&
-  //    net::IsCertificateError(status.os_error()) && request_->delegate()) {
-  //  request_->delegate()->OnSSLCertificateError(request_, status.os_error());
+  //    net::IsCertificateError(status.error()) && request_->delegate()) {
+  //  request_->delegate()->OnSSLCertificateError(request_, status.error());
   // }
 
   DisconnectFromMessageFilter();
