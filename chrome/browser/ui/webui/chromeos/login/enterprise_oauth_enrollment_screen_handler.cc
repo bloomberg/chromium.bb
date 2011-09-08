@@ -4,13 +4,10 @@
 
 #include "chrome/browser/ui/webui/chromeos/login/enterprise_oauth_enrollment_screen_handler.h"
 
-#include "base/callback.h"
+#include "base/bind.h"
 #include "base/command_line.h"
-#include "base/json/json_reader.h"
-#include "base/json/json_writer.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/browsing_data_remover.h"
 #include "chrome/browser/net/gaia/gaia_oauth_fetcher.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
@@ -46,7 +43,10 @@ namespace chromeos {
 // EnterpriseOAuthEnrollmentScreenHandler, public ------------------------------
 
 EnterpriseOAuthEnrollmentScreenHandler::EnterpriseOAuthEnrollmentScreenHandler()
-    : controller_(NULL), editable_user_(true), show_on_init_(false) {
+    : controller_(NULL),
+      editable_user_(true),
+      show_on_init_(false),
+      browsing_data_remover_(NULL) {
 }
 
 EnterpriseOAuthEnrollmentScreenHandler::
@@ -89,9 +89,11 @@ void EnterpriseOAuthEnrollmentScreenHandler::Show() {
     return;
   }
 
-  DictionaryValue screen_data;
-  screen_data.SetString("signin_url", kGaiaExtStartPage);
-  ShowScreen("oauth-enrollment", &screen_data);
+  // Trigger browsing data removal to make sure we start from a clean slate.
+  action_on_browsing_data_removed_ =
+      base::Bind(&EnterpriseOAuthEnrollmentScreenHandler::DoShow,
+                 base::Unretained(this));
+  ResetAuth();
 }
 
 void EnterpriseOAuthEnrollmentScreenHandler::Hide() {
@@ -184,13 +186,11 @@ void EnterpriseOAuthEnrollmentScreenHandler::GetLocalizedStrings(
 
 void EnterpriseOAuthEnrollmentScreenHandler::OnGetOAuthTokenFailure(
     const GoogleServiceAuthError& error) {
-  ResetAuth();
   ShowFatalAuthError();
 }
 
 void EnterpriseOAuthEnrollmentScreenHandler::OnOAuthGetAccessTokenFailure(
     const GoogleServiceAuthError& error) {
-  ResetAuth();
   ShowAuthError(error);
 }
 
@@ -199,7 +199,6 @@ void EnterpriseOAuthEnrollmentScreenHandler::OnOAuthWrapBridgeSuccess(
     const std::string& token,
     const std::string& expires_in) {
   DCHECK_EQ(service_scope, GaiaConstants::kDeviceManagementServiceOAuth);
-  ResetAuth();
 
   if (!controller_ || user_.empty()) {
     NOTREACHED();
@@ -212,20 +211,27 @@ void EnterpriseOAuthEnrollmentScreenHandler::OnOAuthWrapBridgeSuccess(
 void EnterpriseOAuthEnrollmentScreenHandler::OnOAuthWrapBridgeFailure(
     const std::string& service_scope,
     const GoogleServiceAuthError& error) {
-  ResetAuth();
   ShowAuthError(error);
 }
 
 void EnterpriseOAuthEnrollmentScreenHandler::OnUserInfoSuccess(
     const std::string& email) {
-  ResetAuth();
   NOTREACHED();
 }
 
 void EnterpriseOAuthEnrollmentScreenHandler::OnUserInfoFailure(
     const GoogleServiceAuthError& error) {
-  ResetAuth();
   NOTREACHED();
+}
+
+void EnterpriseOAuthEnrollmentScreenHandler::OnBrowsingDataRemoverDone() {
+  browsing_data_remover_->RemoveObserver(this);
+  browsing_data_remover_ = NULL;
+
+  if (!action_on_browsing_data_removed_.is_null()) {
+    action_on_browsing_data_removed_.Run();
+    action_on_browsing_data_removed_.Reset();
+  }
 }
 
 void EnterpriseOAuthEnrollmentScreenHandler::Initialize() {
@@ -239,14 +245,10 @@ void EnterpriseOAuthEnrollmentScreenHandler::Initialize() {
 
 void EnterpriseOAuthEnrollmentScreenHandler::HandleClose(
     const base::ListValue* value) {
+  action_on_browsing_data_removed_ =
+      base::Bind(&EnterpriseOAuthEnrollmentScreenHandler::DoClose,
+                 base::Unretained(this));
   ResetAuth();
-
-  if (!controller_) {
-    NOTREACHED();
-    return;
-  }
-
-  controller_->OnConfirmationClosed();
 }
 
 void EnterpriseOAuthEnrollmentScreenHandler::HandleCompleteLogin(
@@ -299,12 +301,30 @@ void EnterpriseOAuthEnrollmentScreenHandler::ShowError(int message_id,
 void EnterpriseOAuthEnrollmentScreenHandler::ResetAuth() {
   oauth_fetcher_.reset();
 
-  // Clear page state.
-  (new BrowsingDataRemover(
+  if (browsing_data_remover_)
+    return;
+
+  browsing_data_remover_ = new BrowsingDataRemover(
       Profile::FromBrowserContext(web_ui_->tab_contents()->browser_context()),
       BrowsingDataRemover::EVERYTHING,
-      base::Time()))->Remove(BrowsingDataRemover::REMOVE_SITE_DATA);
+      base::Time());
+  browsing_data_remover_->AddObserver(this);
+  browsing_data_remover_->Remove(BrowsingDataRemover::REMOVE_SITE_DATA);
 }
 
+void EnterpriseOAuthEnrollmentScreenHandler::DoShow() {
+  DictionaryValue screen_data;
+  screen_data.SetString("signin_url", kGaiaExtStartPage);
+  ShowScreen("oauth-enrollment", &screen_data);
+}
+
+void EnterpriseOAuthEnrollmentScreenHandler::DoClose() {
+  if (!controller_) {
+    NOTREACHED();
+    return;
+  }
+
+  controller_->OnConfirmationClosed();
+}
 
 }  // namespace chromeos
