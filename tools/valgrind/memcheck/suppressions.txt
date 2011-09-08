@@ -1637,25 +1637,6 @@
    fun:__cxa_atexit
 }
 {
-   bug_29069a
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN16UserScriptMaster9StartScanEv
-   fun:_ZN16UserScriptMaster7ObserveEiRK18NotificationSourceRK19NotificationDetails
-   fun:_ZN19NotificationService6NotifyEiRK18NotificationSourceRK19NotificationDetails
-   fun:_ZN16ExtensionService27OnLoadedInstalledExtensionsEv
-   ...
-   fun:_ZN16ExtensionService17LoadAllExtensionsEv
-   fun:_ZN16ExtensionService4InitEv
-}
-{
-   bug_29069b
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_Z9SerializeRKSt6vectorI10UserScriptSaIS0_EE
-   fun:_ZN16UserScriptMaster14ScriptReloader7RunScanE8FilePathSt6vectorI10UserScriptSaIS3_EE
-}
-{
    bug_29675
    Memcheck:Leak
    fun:_Znw*
