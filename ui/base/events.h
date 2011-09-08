@@ -25,7 +25,8 @@ enum EventType {
   ET_TOUCH_MOVED,
   ET_TOUCH_STATIONARY,
   ET_TOUCH_CANCELLED,
-  ET_DROP_TARGET_EVENT
+  ET_DROP_TARGET_EVENT,
+  ET_FOCUS_CHANGE,
 };
 
 // Event flags currently supported.  Although this is a "views"

@@ -6,11 +6,7 @@
 #define UI_VIEWS_EVENTS_ACCELERATOR_H_
 #pragma once
 
-#include <string>
-
-#include "base/string16.h"
 #include "ui/base/models/accelerator.h"
-#include "ui/views/events/event.h"
 
 namespace ui {
 

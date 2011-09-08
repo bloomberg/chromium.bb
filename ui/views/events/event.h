@@ -7,6 +7,7 @@
 #pragma once
 
 #include "base/basictypes.h"
+#include "ui/base/events.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/gfx/point.h"
 #include "ui/views/native_types.h"
@@ -19,34 +20,6 @@ class View;
 
 class Event {
  public:
-  // Event types.
-  enum EventType { ET_UNKNOWN = 0,
-                   ET_MOUSE_PRESSED,
-                   ET_MOUSE_DRAGGED,
-                   ET_MOUSE_RELEASED,
-                   ET_MOUSE_MOVED,
-                   ET_MOUSE_ENTERED,
-                   ET_MOUSE_EXITED,
-                   ET_KEY_PRESSED,
-                   ET_KEY_RELEASED,
-                   ET_MOUSEWHEEL,
-                   ET_DROP_TARGET_EVENT,
-                   ET_FOCUS_CHANGE };
-
-  // Event flags currently supported.  Although this is a "views"
-  // file, this header is used on non-views platforms (e.g. OSX).  For
-  // example, these EventFlags are used by the automation provider for
-  // all platforms.
-  enum EventFlags { EF_CAPS_LOCK_DOWN     = 1 << 0,
-                    EF_SHIFT_DOWN         = 1 << 1,
-                    EF_CONTROL_DOWN       = 1 << 2,
-                    EF_ALT_DOWN           = 1 << 3,
-                    EF_LEFT_BUTTON_DOWN   = 1 << 4,
-                    EF_MIDDLE_BUTTON_DOWN = 1 << 5,
-                    EF_RIGHT_BUTTON_DOWN  = 1 << 6,
-                    EF_COMMAND_DOWN       = 1 << 7,  // Only useful on OSX
-  };
-
   EventType type() const { return type_; }
   int flags() const { return flags_; }
   void set_flags(int flags) { flags_ = flags; }
@@ -109,12 +82,6 @@ class LocatedEvent : public Event {
 
 class MouseEvent : public LocatedEvent {
  public:
-  // Flags specific to mouse events
-  enum MouseEventFlags {
-    EF_IS_DOUBLE_CLICK = 1 << 16,
-    EF_IS_NON_CLIENT = 1 << 17
-  };
-
   explicit MouseEvent(NativeEvent native_event);
 
   MouseEvent(const MouseEvent& other, View* source, View* target);
