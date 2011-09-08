@@ -155,6 +155,84 @@
         Papyrus
       </message>
 
+      <!-- The default value for |WebPreference::standard_font_family_map| for
+           Japanese script on Windows. -->
+      <message name="IDS_STANDARD_FONT_FAMILY_JAPANESE" use_name_for_id="true">
+        Hiragino Kaku Gothic Pro
+      </message>
+
+      <!-- The default value for |WebPreference::fixed_font_family_map| for
+           Japanese script. -->
+      <message name="IDS_FIXED_FONT_FAMILY_JAPANESE" use_name_for_id="true">
+        Osaka-Mono
+      </message>
+
+      <!-- The default value for |WebPreference::serif_font_family_map| for
+           Japanese script. -->
+      <message name="IDS_SERIF_FONT_FAMILY_JAPANESE" use_name_for_id="true">
+        Hiragino Mincho Pro
+      </message>
+
+      <!-- The default value for |WebPreference::sans_serif_font_family_map| for
+           Japanese script.  -->
+      <message name="IDS_SANS_SERIF_FONT_FAMILY_JAPANESE" use_name_for_id="true">
+        Hiragino Kaku Gothic Pro
+      </message>
+
+      <!-- The default value for |WebPreference::standard_font_family_map| for
+           Korean script. -->
+      <message name="IDS_STANDARD_FONT_FAMILY_KOREAN" use_name_for_id="true">
+        AppleGothic
+      </message>
+
+      <!-- The default value for |WebPreference::serif_font_family_map| for
+           Korean script. -->
+      <message name="IDS_SERIF_FONT_FAMILY_KOREAN" use_name_for_id="true">
+        AppleMyungjo
+      </message>
+
+      <!-- The default value for |WebPreference::sans_serif_font_family_map| for
+           Korean script.  -->
+      <message name="IDS_SANS_SERIF_FONT_FAMILY_KOREAN" use_name_for_id="true">
+        AppleGothic
+      </message>
+
+      <!-- The default value for |WebPreference::standard_font_family_map| for
+           Simplified Chinese script. -->
+      <message name="IDS_STANDARD_FONT_FAMILY_SIMPLIFIED_HAN" use_name_for_id="true">
+        STHeiti
+      </message>
+
+      <!-- The default value for |WebPreference::serif_font_family_map| for
+           Simplified Chinese script. -->
+      <message name="IDS_SERIF_FONT_FAMILY_SIMPLIFIED_HAN" use_name_for_id="true">
+        STSong
+      </message>
+
+      <!-- The default value for |WebPreference::sans_serif_font_family_map| for
+           Simplified Chinese script.  -->
+      <message name="IDS_SANS_SERIF_FONT_FAMILY_SIMPLIFIED_HAN" use_name_for_id="true">
+        STHeiti
+      </message>
+
+      <!-- The default value for |WebPreference::standard_font_family_map| for
+           Traditional Chinese script. -->
+      <message name="IDS_STANDARD_FONT_FAMILY_TRADITIONAL_HAN" use_name_for_id="true">
+        LiHei Pro
+      </message>
+
+      <!-- The default value for |WebPreference::serif_font_family_map| for
+           Traditional Chinese script. -->
+      <message name="IDS_SERIF_FONT_FAMILY_TRADITIONAL_HAN" use_name_for_id="true">
+        LiSong Pro
+      </message>
+
+      <!-- The default value for |WebPreference::sans_serif_font_family_map| for
+           Traditional Chinese script.  -->
+      <message name="IDS_SANS_SERIF_FONT_FAMILY_TRADITIONAL_HAN" use_name_for_id="true">
+        LiHei Pro
+      </message>
+
       <!-- The default value for |WebPreference::default_font_size| -->
       <message name="IDS_DEFAULT_FONT_SIZE" use_name_for_id="true">
         16
