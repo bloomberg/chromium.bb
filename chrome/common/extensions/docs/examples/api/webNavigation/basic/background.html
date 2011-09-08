@@ -15,7 +15,7 @@
 
       var eventList = ['onBeforeNavigate', 'onBeforeCreateNavigationTarget',
           'onCommitted', 'onCompleted', 'onDOMContentLoaded',
-          'onErrorOccurred'];
+          'onErrorOccurred', 'onReferenceFragmentUpdated'];
 
       eventList.forEach(function(e) {
         chrome.experimental.webNavigation[e].addListener(function(data) {

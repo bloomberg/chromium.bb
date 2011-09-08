@@ -25,5 +25,7 @@ const char kOnCompleted[] = "experimental.webNavigation.onCompleted";
 const char kOnDOMContentLoaded[] =
     "experimental.webNavigation.onDOMContentLoaded";
 const char kOnErrorOccurred[] = "experimental.webNavigation.onErrorOccurred";
+const char kOnReferenceFragmentUpdated[] =
+    "experimental.webNavigation.onReferenceFragmentUpdated";
 
 }  // namespace extension_webnavigation_api_constants

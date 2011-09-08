@@ -58,6 +58,8 @@ function NavigationCollector() {
       this.onCommittedListener_.bind(this));
   chrome.experimental.webNavigation.onErrorOccurred.addListener(
       this.onErrorOccurredListener_.bind(this));
+  chrome.experimental.webNavigation.onReferenceFragmentUpdated.addListener(
+      this.onReferenceFragmentUpdatedListener_.bind(this));
 
   // Bind handler to extension messages for communication from popup.
   chrome.extension.onRequest.addListener(this.onRequestListener_.bind(this));
@@ -210,6 +212,40 @@ NavigationCollector.prototype = {
           chrome.i18n.getMessage('errorCommittedWithoutPending'),
           data.url,
           data);
+    } else {
+      this.prepareDataStorage_(id, data.url);
+      this.pending_[id].transitionType = data.transitionType;
+      this.pending_[id].transitionQualifiers =
+          data.transitionQualifiers;
+    }
+  },
+
+
+  /**
+   * Handler for the 'onReferenceFragmentUpdated' event. Updates the pending
+   * request with transition information.
+   *
+   * Pushes the request onto the
+   * 'pending_' object, and stores it for later use.
+   *
+   * @param {!Object} data The event data generated for this request.
+   * @private
+   */
+  onReferenceFragmentUpdatedListener_: function(data) {
+    var id = this.parseId_(data);
+    if (!this.pending_[id]) {
+      this.completed_[data.url] = this.completed_[data.url] || [];
+      this.completed_[data.url].push({
+        duration: 0,
+        openedInNewWindow: false,
+        source: {
+          frameId: null,
+          tabId: null
+        },
+        transitionQualifiers: data.transitionQualifiers,
+        transitionType: data.transitionType,
+        url: data.url
+      });
     } else {
       this.prepareDataStorage_(id, data.url);
       this.pending_[id].transitionType = data.transitionType;

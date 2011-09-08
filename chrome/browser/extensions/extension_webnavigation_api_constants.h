@@ -29,6 +29,7 @@ extern const char kOnCommitted[];
 extern const char kOnCompleted[];
 extern const char kOnDOMContentLoaded[];
 extern const char kOnErrorOccurred[];
+extern const char kOnReferenceFragmentUpdated[];
 
 }  // namespace extension_webnavigation_api_constants
 

@@ -144,12 +144,6 @@ class ExtensionWebNavigationTabObserver : public TabContentsObserver {
   // navigation.
   bool IsReferenceFragmentNavigation(int64 frame_id, const GURL& url);
 
-  // Simulates a complete series of events for reference fragment navigations.
-  void NavigatedReferenceFragment(int64 frame_id,
-                                  bool is_main_frame,
-                                  const GURL& url,
-                                  PageTransition::Type transition_type);
-
   // Tracks the state of the frames we are sending events for.
   FrameNavigationState navigation_state_;
 

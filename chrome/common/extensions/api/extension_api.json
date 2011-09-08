@@ -5350,6 +5350,25 @@
             }
           }
         ]
+      },
+      {
+        "name": "onReferenceFragmentUpdated",
+        "type": "function",
+        "description": "Fired when the reference fragment of a frame was updated. All future events for that frame will use the updated URL.",
+        "parameters": [
+          {
+            "type": "object",
+            "name": "details",
+            "properties": {
+              "tabId": {"type": "integer", "description": "The ID of the tab in which the navigation occurs."},
+              "url": {"type": "string"},
+              "frameId": {"type": "integer", "description": "0 indicates the navigation happens in the tab content window; a positive value indicates navigation in a subframe. Frame IDs are unique within a tab."},
+              "transitionType": {"type": "string", "enum": ["link", "typed", "auto_bookmark", "auto_subframe", "manual_subframe", "generated", "start_page", "form_submit", "reload", "keyword", "keyword_generated"], "description": "Cause of the navigation. The same transition types as defined in the history API are used."},
+              "transitionQualifiers": {"type": "array", "description": "A list of transition qualifiers.", "items:": {"type": "string", "enum": ["client_redirect", "server_redirect", "forward_back", "from_address_bar"]}},
+              "timeStamp": {"type": "number", "description": "The time when the navigation was committed, in milliseconds since the epoch."}
+            }
+          }
+        ]
       }
     ]
   },

@@ -87,8 +87,10 @@ void DispatchOnBeforeNavigate(TabContents* tab_contents,
                 json_args);
 }
 
-// Constructs and dispatches an onCommitted event.
-void DispatchOnCommitted(TabContents* tab_contents,
+// Constructs and dispatches an onCommitted or onReferenceFragmentUpdated
+// event.
+void DispatchOnCommitted(const char* event_name,
+                         TabContents* tab_contents,
                          int64 frame_id,
                          bool is_main_frame,
                          const GURL& url,
@@ -116,7 +118,7 @@ void DispatchOnCommitted(TabContents* tab_contents,
 
   std::string json_args;
   base::JSONWriter::Write(&args, false, &json_args);
-  DispatchEvent(tab_contents->browser_context(), keys::kOnCommitted, json_args);
+  DispatchEvent(tab_contents->browser_context(), event_name, json_args);
 }
 
 // Constructs and dispatches an onDOMContentLoaded event.
@@ -493,15 +495,24 @@ void ExtensionWebNavigationTabObserver::DidCommitProvisionalLoadForFrame(
                                is_main_frame,
                                false);
 
-  // On reference fragment navigations, only a new navigation state is
-  // committed. We need to catch this case and generate a full sequence
-  // of events.
   if (is_reference_fragment_navigation) {
-    NavigatedReferenceFragment(frame_id, is_main_frame, url, transition_type);
-    return;
+    DispatchOnCommitted(
+        keys::kOnReferenceFragmentUpdated,
+        tab_contents(),
+        frame_id,
+        is_main_frame,
+        url,
+        transition_type);
+    navigation_state_.SetNavigationCompleted(frame_id);
+  } else {
+    DispatchOnCommitted(
+        keys::kOnCommitted,
+        tab_contents(),
+        frame_id,
+        is_main_frame,
+        url,
+        transition_type);
   }
-  DispatchOnCommitted(
-      tab_contents(), frame_id, is_main_frame, url, transition_type);
 }
 
 void ExtensionWebNavigationTabObserver::DidFailProvisionalLoad(
@@ -566,31 +577,6 @@ bool ExtensionWebNavigationTabObserver::IsReferenceFragmentNavigation(
   replacements.ClearRef();
   return existing_url.ReplaceComponents(replacements) ==
       url.ReplaceComponents(replacements);
-}
-
-void ExtensionWebNavigationTabObserver::NavigatedReferenceFragment(
-    int64 frame_id,
-    bool is_main_frame,
-    const GURL& url,
-    PageTransition::Type transition_type) {
-  DispatchOnBeforeNavigate(tab_contents(),
-                           frame_id,
-                           is_main_frame,
-                           url);
-  DispatchOnCommitted(tab_contents(),
-                      frame_id,
-                      is_main_frame,
-                      url,
-                      transition_type);
-  DispatchOnDOMContentLoaded(tab_contents(),
-                             url,
-                             is_main_frame,
-                             frame_id);
-  navigation_state_.SetNavigationCompleted(frame_id);
-  DispatchOnCompleted(tab_contents(),
-                      url,
-                      is_main_frame,
-                      frame_id);
 }
 
 bool GetFrameFunction::RunImpl() {

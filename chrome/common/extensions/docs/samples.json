@@ -77,6 +77,7 @@
     "chrome.experimental.webNavigation.onCompleted": "experimental.webNavigation.html#event-onCompleted",
     "chrome.experimental.webNavigation.onDOMContentLoaded": "experimental.webNavigation.html#event-onDOMContentLoaded",
     "chrome.experimental.webNavigation.onErrorOccurred": "experimental.webNavigation.html#event-onErrorOccurred",
+    "chrome.experimental.webNavigation.onReferenceFragmentUpdated": "experimental.webNavigation.html#event-onReferenceFragmentUpdated",
     "chrome.experimental.webRequest.addEventListener": "experimental.webRequest.html#method-addEventListener",
     "chrome.experimental.webRequest.eventHandled": "experimental.webRequest.html#method-eventHandled",
     "chrome.experimental.webRequest.onAuthRequired": "experimental.webRequest.html#event-onAuthRequired",
@@ -1898,6 +1899,7 @@
         "chrome.experimental.webNavigation.onCommitted",
         "chrome.experimental.webNavigation.onCompleted",
         "chrome.experimental.webNavigation.onErrorOccurred",
+        "chrome.experimental.webNavigation.onReferenceFragmentUpdated",
         "chrome.extension.onRequest",
         "chrome.extension.sendRequest",
         "chrome.i18n.getMessage"
@@ -1916,7 +1918,7 @@
       "name": "WebNavigation Tech Demo",
       "path": "examples\/api\/webNavigation\/basic\/",
       "protocols": [],
-      "search_string": "WEBNAVIGATION TECH DEMO DEMONSTRATION OF THE WEBNAVIGATION EXTENSION API. BACKGROUND_PAGE BROWSER_ACTION EXPERIMENTAL EXTENSION POPUP WEBNAVIGATION CHROME.EXPERIMENTAL.WEBNAVIGATION.ONBEFORECREATENAVIGATIONTARGET CHROME.EXPERIMENTAL.WEBNAVIGATION.ONBEFORENAVIGATE CHROME.EXPERIMENTAL.WEBNAVIGATION.ONCOMMITTED CHROME.EXPERIMENTAL.WEBNAVIGATION.ONCOMPLETED CHROME.EXPERIMENTAL.WEBNAVIGATION.ONERROROCCURRED CHROME.EXTENSION.ONREQUEST CHROME.EXTENSION.SENDREQUEST CHROME.I18N.GETMESSAGE",
+      "search_string": "WEBNAVIGATION TECH DEMO DEMONSTRATION OF THE WEBNAVIGATION EXTENSION API. BACKGROUND_PAGE BROWSER_ACTION EXPERIMENTAL EXTENSION POPUP WEBNAVIGATION CHROME.EXPERIMENTAL.WEBNAVIGATION.ONBEFORECREATENAVIGATIONTARGET CHROME.EXPERIMENTAL.WEBNAVIGATION.ONBEFORENAVIGATE CHROME.EXPERIMENTAL.WEBNAVIGATION.ONCOMMITTED CHROME.EXPERIMENTAL.WEBNAVIGATION.ONCOMPLETED CHROME.EXPERIMENTAL.WEBNAVIGATION.ONERROROCCURRED CHROME.EXPERIMENTAL.WEBNAVIGATION.ONREFERENCEFRAGMENTUPDATED CHROME.EXTENSION.ONREQUEST CHROME.EXTENSION.SENDREQUEST CHROME.I18N.GETMESSAGE",
       "source_files": [
         "_locales\/en\/messages.json",
         "background.html",
@@ -1924,7 +1926,7 @@
         "navigation_collector.js",
         "popup.html"
       ],
-      "source_hash": "7a5020bb7e6f9fc7e1403e422bf34cf62e753f6d",
+      "source_hash": "50be7822552107893f729ab7912ec6a9b8a82fbd",
       "zip_path": "examples\/api\/webNavigation\/basic.zip"
     },
     {
