@@ -286,11 +286,12 @@ cr.define('ntp4', function() {
   /**
    * Gives the proportion of the row width that is devoted to a single icon.
    * @param {number} rowTileCount The number of tiles in a row.
+   * @param {number} tileSpacingFraction The proportion of the tile width which
+   *     will be used as spacing between tiles.
    * @return {number} The ratio between icon width and row width.
    */
-  function tileWidthFraction(rowTileCount) {
-    return rowTileCount +
-        (rowTileCount - 1) * TILE_SPACING_FRACTION;
+  function tileWidthFraction(rowTileCount, tileSpacingFraction) {
+    return rowTileCount + (rowTileCount - 1) * tileSpacingFraction;
   }
 
   /**
@@ -298,11 +299,13 @@ cr.define('ntp4', function() {
    * given dimensions.
    * @param {number} width The pixel width of the grid.
    * @param {number} numRowTiles The number of tiles in a row.
+   * @param {number} tileSpacingFraction The proportion of the tile width which
+   *     will be used as spacing between tiles.
    * @return {Object} A mapping of pixel values.
    */
-  function tileValuesForGrid(width, numRowTiles) {
-    var tileWidth = width / tileWidthFraction(numRowTiles);
-    var offsetX = tileWidth * (1 + TILE_SPACING_FRACTION);
+  function tileValuesForGrid(width, numRowTiles, tileSpacingFraction) {
+    var tileWidth = width / tileWidthFraction(numRowTiles, tileSpacingFraction);
+    var offsetX = tileWidth * (1 + tileSpacingFraction);
     var interTileSpacing = offsetX - tileWidth;
 
     return {
@@ -311,10 +314,6 @@ cr.define('ntp4', function() {
       interTileSpacing: interTileSpacing,
     };
   }
-
-  // The proportion of the tile width which will be used as spacing between
-  // tiles.
-  var TILE_SPACING_FRACTION = 1 / 8;
 
   // The smallest amount of horizontal blank space to display on the sides when
   // displaying a wide arrangement. There is an additional 26px of margin from
@@ -347,19 +346,24 @@ cr.define('ntp4', function() {
     // The amount of space we need to display a narrow grid (all narrow grids
     // are this size).
     grid.narrowWidth =
-        grid.minTileWidth * tileWidthFraction(grid.minColCount);
+        grid.minTileWidth * tileWidthFraction(grid.minColCount,
+                                              grid.tileSpacingFraction);
     // The minimum amount of space we need to display a wide grid.
     grid.minWideWidth =
-        grid.minTileWidth * tileWidthFraction(grid.maxColCount);
+        grid.minTileWidth * tileWidthFraction(grid.maxColCount,
+                                              grid.tileSpacingFraction);
     // The largest we will ever display a wide grid.
     grid.maxWideWidth =
-        grid.maxTileWidth * tileWidthFraction(grid.maxColCount);
+        grid.maxTileWidth * tileWidthFraction(grid.maxColCount,
+                                              grid.tileSpacingFraction);
     // Tile-related pixel values for the narrow display.
     grid.narrowTileValues = tileValuesForGrid(grid.narrowWidth,
-                                              grid.minColCount);
+                                              grid.minColCount,
+                                              grid.tileSpacingFraction);
     // Tile-related pixel values for the minimum narrow display.
     grid.wideTileValues = tileValuesForGrid(grid.minWideWidth,
-                                            grid.maxColCount);
+                                            grid.maxColCount,
+                                            grid.tileSpacingFraction);
   };
 
   TilePage.prototype = {
@@ -392,8 +396,7 @@ cr.define('ntp4', function() {
       // Div that holds the tiles.
       this.tileGrid_ = this.ownerDocument.createElement('div');
       this.tileGrid_.className = 'tile-grid';
-      this.tileGrid_.style.minWidth = (this.gridValues_.minColCount *
-          tileWidthFraction(this.gridValues_.minTileWidth)) + 'px';
+      this.tileGrid_.style.minWidth = this.gridValues_.narrowWidth + 'px';
       this.content_.appendChild(this.tileGrid_);
 
       // Ordered list of our tiles.
@@ -543,7 +546,8 @@ cr.define('ntp4', function() {
           Math.min(Math.max(availableSpace, grid.minWideWidth),
                    grid.maxWideWidth) :
           grid.narrowWidth;
-      var realTileValues = tileValuesForGrid(effectiveGridWidth, numRowTiles);
+      var realTileValues = tileValuesForGrid(effectiveGridWidth, numRowTiles,
+                                             grid.tileSpacingFraction);
 
       // leftMargin centers the grid within the avaiable space.
       var minMargin = wide ? MIN_WIDE_MARGIN : 0;

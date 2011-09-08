@@ -545,6 +545,9 @@ cr.define('ntp4', function() {
     minTileWidth: 64 / APP_IMG_SIZE_FRACTION,
     // The biggest a tile can be.
     maxTileWidth: 128 / APP_IMG_SIZE_FRACTION,
+
+    // The padding between tiles, as a fraction of the tile width.
+    tileSpacingFraction: 1 / 8,
   };
   TilePage.initGridValues(appsPageGridValues);
 

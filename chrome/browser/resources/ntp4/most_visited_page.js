@@ -252,6 +252,9 @@ cr.define('ntp4', function() {
     minTileWidth: 122,
     // The biggest a tile can be. 212 (max thumbnail width) + 2.
     maxTileWidth: 214,
+
+    // The padding between tiles, as a fraction of the tile width.
+    tileSpacingFraction: 1 / 8,
   };
   TilePage.initGridValues(mostVisitedPageGridValues);
 

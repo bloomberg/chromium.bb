@@ -18,12 +18,11 @@ body {
   overflow: auto;
 }
 
-#attribution, .link-color {
+#attribution, a.link-color {
   color: $9; /* COLOR_NTP_LINK */
 }
 
-.app span,
-.link span {
+.app span {
   color: $8; /* COLOR_NTP_TEXT */
 }
 

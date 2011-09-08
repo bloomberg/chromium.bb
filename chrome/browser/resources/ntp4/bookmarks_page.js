@@ -214,6 +214,9 @@ cr.define('ntp4', function() {
     minTileWidth: 64,
     // The biggest a tile can be.
     maxTileWidth: 96,
+
+    // The padding between tiles, as a fraction of the tile width.
+    tileSpacingFraction: 1 / 2,
   };
   TilePage.initGridValues(bookmarksPageGridValues);
 
