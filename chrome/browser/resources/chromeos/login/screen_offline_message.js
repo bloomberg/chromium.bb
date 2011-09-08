@@ -87,10 +87,6 @@ cr.define('login', function() {
 
           currentScreen.classList.remove('hidden');
           currentScreen.classList.remove('faded');
-
-          // Triggers refresh for Gaia sign-in screen.
-          if (currentScreen.id == 'gaia-signin')
-            chrome.send('showAddUser');
         }
       }
     },
