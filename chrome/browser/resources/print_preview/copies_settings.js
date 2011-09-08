@@ -22,13 +22,6 @@ cr.define('print_preview', function() {
     this.collateCheckbox_ = $('collate');
     this.hint_ = $('copies-hint');
     this.twoSidedCheckbox_ = $('two-sided');
-    this.twoSidedOption_ = $('two-sided-div');
-
-    // Constant values matches printing::DuplexMode enum. Not using const
-    // keyword because it is not allowed by JS strict mode.
-    this.SIMPLEX = 0;
-    this.LONG_EDGE = 1;
-    this.UNKNOWN_DUPLEX_MODE = -1;
   }
 
   cr.addSingletonGetter(CopiesSettings);
@@ -63,16 +56,15 @@ cr.define('print_preview', function() {
     },
 
     /**
-     * Gets the duplex mode information for printing.
+     * Gets the duplex mode for printing.
      * @return {number} duplex mode.
      */
-    get duplexMode() {
-      if (this.twoSidedOption_.hidden)
-        return this.UNKNOWN_DUPLEX_MODE;
-      else if (this.twoSidedCheckbox_.checked)
-        return this.LONG_EDGE;
-      else
-        return this.SIMPLEX;
+     get duplexMode() {
+      // Constant values matches printing::DuplexMode enum. Not using const
+      // keyword because it is not allowed by JS strict mode.
+      var SIMPLEX = 0;
+      var LONG_EDGE = 1;
+      return !this.twoSidedCheckbox_.checked ? SIMPLEX : LONG_EDGE;
     },
 
     /**
@@ -166,8 +158,7 @@ cr.define('print_preview', function() {
         fadeInElement(this.copiesOption_);
         $('hr-before-copies').classList.add('invisible');
       }
-      this.updateTwoSidedOption_(
-          e.printerCapabilities.printerDefaultDuplexValue);
+      this.twoSidedCheckbox_.checked = e.printerCapabilities.setDuplexAsDefault;
     },
 
     /**
@@ -198,25 +189,6 @@ cr.define('print_preview', function() {
       this.collateOption_.setAttribute('aria-hidden',
                                        this.collateOption_.hidden);
     },
-
-    /*
-     * Takes care of showing/hiding the two sided option and also updates the
-     * default state of the checkbox.
-     * @param {number} defaultDuplexValue Specifies the default duplex value.
-     * @private
-     */
-     updateTwoSidedOption_: function(defaultDuplexValue) {
-      // On Windows, some printers don't specify their duplex values in the
-      // printer schema. If the printer duplex value is UNKNOWN_DUPLEX_MODE,
-      // hide the two sided option in preview tab UI.
-      // Ref bug: http://crbug.com/89204
-      this.twoSidedOption_.hidden =
-          (defaultDuplexValue == this.UNKNOWN_DUPLEX_MODE);
-      this.twoSidedOption_.setAttribute('aria-hidden',
-                                        this.twoSidedOption_.hidden);
-      if (!this.twoSidedOption_.hidden)
-        this.twoSidedCheckbox_.checked = !!defaultDuplexValue;
-     },
 
     /**
      * Updates the state of the increment/decrement buttons based on the current

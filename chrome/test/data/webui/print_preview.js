@@ -68,7 +68,6 @@ PrintPreviewWebUITest.prototype = {
             disableColorOption: true,
             setColorAsDefault: true,
             disableCopiesOption: true,
-            printerDefaultDuplexValue: copiesSettings.SIMPLEX,
           });
         }));
     var savedArgs = new SaveMockArguments();
@@ -299,7 +298,6 @@ TEST_F('PrintPreviewWebUITest', 'TestSectionsDisabled', function() {
           setColorAsDefault: true,
           disableCopiesOption: true,
           disableLandscapeOption: true,
-          printerDefaultDuplexValue: copiesSettings.SIMPLEX,
         });
       }));
 
@@ -319,7 +317,6 @@ TEST_F('PrintPreviewWebUITest', 'TestColorSettings', function() {
           setColorAsDefault: true,
           disableCopiesOption: false,
           disableLandscapeOption: false,
-          printerDefaultDuplexValue: copiesSettings.SIMPLEX,
         });
       }));
 
@@ -334,63 +331,12 @@ TEST_F('PrintPreviewWebUITest', 'TestColorSettings', function() {
           setColorAsDefault: false,
           disableCopiesOption: false,
           disableLandscapeOption: false,
-          printerDefaultDuplexValue: copiesSettings.SIMPLEX,
         });
       }));
 
   updateControlsWithSelectedPrinterCapabilities();
   expectFalse(colorSettings.colorRadioButton.checked);
   expectTrue(colorSettings.bwRadioButton.checked);
-});
-
-// Test to verify that duplex settings are set according to the printer
-// capabilities.
-TEST_F('PrintPreviewWebUITest', 'TestDuplexSettings', function() {
-  this.mockHandler.expects(once()).getPrinterCapabilities('FooDevice').
-      will(callFunction(function() {
-        updateWithPrinterCapabilities({
-          disableColorOption: false,
-          setColorAsDefault: false,
-          disableCopiesOption: false,
-          disableLandscapeOption: false,
-          printerDefaultDuplexValue: copiesSettings.SIMPLEX,
-        });
-      }));
-  updateControlsWithSelectedPrinterCapabilities();
-  expectEquals(copiesSettings.duplexMode, copiesSettings.SIMPLEX);
-  expectEquals(copiesSettings.twoSidedOption_.hidden, false);
-
-  // If the printer default duplex value is UNKNOWN_DUPLEX_MODE, hide the
-  // two sided option.
-  this.mockHandler.expects(once()).getPrinterCapabilities('FooDevice').
-      will(callFunction(function() {
-        updateWithPrinterCapabilities({
-          disableColorOption: false,
-          setColorAsDefault: false,
-          disableCopiesOption: false,
-          disableLandscapeOption: false,
-          printerDefaultDuplexValue: copiesSettings.UNKNOWN_DUPLEX_MODE,
-        });
-      }));
-  updateControlsWithSelectedPrinterCapabilities();
-  expectEquals(copiesSettings.duplexMode, copiesSettings.UNKNOWN_DUPLEX_MODE);
-  expectEquals(copiesSettings.twoSidedOption_.hidden, true);
-
-  this.mockHandler.expects(once()).getPrinterCapabilities('FooDevice').
-      will(callFunction(function() {
-        updateWithPrinterCapabilities({
-          disableColorOption: false,
-          setColorAsDefault: false,
-          disableCopiesOption: false,
-          disableLandscapeOption: false,
-          printerDefaultDuplexValue: copiesSettings.SIMPLEX,
-        });
-      }));
-  updateControlsWithSelectedPrinterCapabilities();
-  expectEquals(copiesSettings.twoSidedOption_.hidden, false);
-  expectEquals(copiesSettings.duplexMode, copiesSettings.SIMPLEX);
-  copiesSettings.twoSidedCheckbox.checked = true;
-  expectEquals(copiesSettings.duplexMode, copiesSettings.LONG_EDGE);
 });
 
 // Test that changing the selected printer updates the preview.

@@ -49,7 +49,6 @@ PRINTING_EXPORT extern const int COMPLETE_PREVIEW_DOCUMENT_INDEX;
 
 // Print job duplex mode values.
 enum DuplexMode {
-  UNKNOWN_DUPLEX_MODE = -1,
   SIMPLEX,
   LONG_EDGE,
   SHORT_EDGE,

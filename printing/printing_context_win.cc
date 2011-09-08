@@ -383,10 +383,8 @@ PrintingContext::Result PrintingContextWin::UpdatePrinterSettings(
     case SHORT_EDGE:
       dev_mode->dmDuplex = DMDUP_HORIZONTAL;
       break;
-    case SIMPLEX:
+    default:  // simplex
       dev_mode->dmDuplex = DMDUP_SIMPLEX;
-      break;
-    default:  // UNKNOWN_DUPLEX_MODE
       break;
   }
   dev_mode->dmOrientation = landscape ? DMORIENT_LANDSCAPE : DMORIENT_PORTRAIT;

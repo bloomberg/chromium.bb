@@ -236,11 +236,9 @@ bool PrintingContextMac::SetDuplexModeInPrintSettings(DuplexMode mode) {
     case SHORT_EDGE:
       duplexSetting = kPMDuplexTumble;
       break;
-    case SIMPLEX:
+    default:
       duplexSetting = kPMDuplexNone;
       break;
-    default:  // UNKNOWN_DUPLEX_MODE
-      return true;
   }
 
   PMPrintSettings pmPrintSettings =
