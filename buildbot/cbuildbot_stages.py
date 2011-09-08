@@ -466,6 +466,12 @@ class CommitQueueSyncStage(LKGMCandidateSyncStage):
     internal = cbuildbot_config._IsInternalBuild(self._build_config['git_url'])
     if self._build_config['master']:
       try:
+        # In order to acquire a pool, we need an initialized buildroot.
+        if not repository.InARepoRepository(self._build_root):
+          repository.RepoRepository(
+              self._build_config['git_url'], self._build_root,
+              self._tracking_branch).Initialize()
+
         pool = validation_pool.ValidationPool.AcquirePool(
             self._tracking_branch, internal, self._build_root,
             self._options.debug)
