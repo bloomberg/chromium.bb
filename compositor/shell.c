@@ -80,8 +80,6 @@ wlsc_surface_move(struct wlsc_surface *es,
 {
 	struct wlsc_move_grab *move;
 
-	/* FIXME: Reject if fullscreen */
-
 	move = malloc(sizeof *move);
 	if (!move)
 		return -1;
@@ -831,7 +829,8 @@ move_binding(struct wl_input_device *device, uint32_t time,
 	struct wlsc_surface *surface =
 		(struct wlsc_surface *) device->pointer_focus;
 
-	if (surface == NULL)
+	if (surface == NULL ||
+	    surface->map_type == WLSC_SURFACE_MAP_FULLSCREEN)
 		return;
 	if (surface == shell->panel)
 		return;
@@ -852,8 +851,8 @@ resize_binding(struct wl_input_device *device, uint32_t time,
 	uint32_t edges = 0;
 	int32_t x, y;
 
-	if (surface == NULL)
-		return;
+	if (surface == NULL ||
+	    surface->map_type == WLSC_SURFACE_MAP_FULLSCREEN)
 	if (surface == shell->panel)
 		return;
 	if (surface == shell->background)
