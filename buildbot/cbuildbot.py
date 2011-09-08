@@ -574,6 +574,9 @@ def _CreateParser():
                     help='Run tests on remote machine')
   group.add_option('--lkgm', action='store_true', dest='lkgm', default=False,
                     help='Sync to last known good manifest blessed by PFQ')
+  group.add_option('--maxarchives', dest='max_archive_builds',
+                    default=3, type='int',
+                    help="Change the local saved build count limit.")
   group.add_option('--noarchive', action='store_false', dest='archive',
                     default=True,
                     help="Don't run archive stage.")

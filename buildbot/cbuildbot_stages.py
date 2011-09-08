@@ -32,7 +32,6 @@ _PORTAGE_BINHOST = 'PORTAGE_BINHOST'
 PUBLIC_OVERLAY = '%(buildroot)s/src/third_party/chromiumos-overlay'
 _CROS_ARCHIVE_URL = 'CROS_ARCHIVE_URL'
 OVERLAY_LIST_CMD = '%(buildroot)s/src/platform/dev/host/cros_overlay_list'
-_MAX_ARCHIVED_BUILDS = 3
 _PRINT_INTERVAL = 1
 
 class BuildException(Exception):
@@ -1126,7 +1125,9 @@ class ArchiveStage(NonHaltingBuilderStage):
                           branch_name='master',
                           archive_dir=archive_path)
 
-    commands.RemoveOldArchives(self._bot_archive_root, _MAX_ARCHIVED_BUILDS)
+
+    commands.RemoveOldArchives(self._bot_archive_root,
+                               self._options.max_archive_builds)
 
 
 class UploadPrebuiltsStage(NonHaltingBuilderStage):
