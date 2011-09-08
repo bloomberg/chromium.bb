@@ -22,8 +22,7 @@ def _CheckNoInterfacesInBase(input_api, output_api):
   pattern = input_api.re.compile(r'^\s*@interface', input_api.re.MULTILINE)
   files = []
   for f in input_api.AffectedSourceFiles(input_api.FilterSourceFile):
-    if (f.LocalPath().find('base/') != -1 and
-        f.LocalPath().find('base/test/') == -1 and
+    if (f.LocalPath().startswith('base/') and
         not f.LocalPath().endswith('_unittest.mm')):
       contents = input_api.ReadFile(f)
       if pattern.search(contents):
