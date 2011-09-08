@@ -32,26 +32,29 @@ static const int kStartGpuBlacklistFetchDelay = 6000;
 static const int kCacheUpdateDelay = 48 * 60 * 60 * 1000;
 
 std::string GetChromeVersionString() {
+  static std::string cr_version;
+  if (!cr_version.empty())
+    return cr_version;
   chrome::VersionInfo version_info;
-  std::string rt =  version_info.is_valid() ? version_info.Version() : "0";
+  cr_version =  version_info.is_valid() ? version_info.Version() : "0";
   switch (version_info.GetChannel()) {
     case chrome::VersionInfo::CHANNEL_STABLE:
-      rt += " stable";
+      cr_version += " stable";
       break;
     case chrome::VersionInfo::CHANNEL_BETA:
-      rt += " beta";
+      cr_version += " beta";
       break;
     case chrome::VersionInfo::CHANNEL_DEV:
-      rt += " dev";
+      cr_version += " dev";
       break;
     case chrome::VersionInfo::CHANNEL_CANARY:
-      rt += " canary";
+      cr_version += " canary";
       break;
     default:
-      rt += " unknown";
+      cr_version += " unknown";
       break;
   }
-  return rt;
+  return cr_version;
 }
 
 }  // namespace anonymous
@@ -86,6 +89,10 @@ void GpuBlacklistUpdater::SetupOnFileThread() {
   if ((command_line.GetSwitchValueASCII(switches::kUseGL) ==
       gfx::kGLImplementationOSMesaName))
     return;
+
+  // Cache the chrome version string.  This has to happen on FILE thread
+  // because of chrome::VersionInfo::GetChannel().
+  GetChromeVersionString();
 
   // Post GpuBlacklistUpdate task on UI thread.  This has to happen
   // after GpuDataManager is initialized, otherwise it might be
