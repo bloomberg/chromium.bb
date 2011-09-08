@@ -6,11 +6,15 @@
 #define CHROME_BROWSER_CHROMEOS_CROS_POWER_LIBRARY_H_
 #pragma once
 
+#include "base/callback.h"
+
 namespace base {
 class TimeDelta;
 }
 
 namespace chromeos {
+
+typedef base::Callback<void(int64_t)> CalculateIdleTimeCallback;
 
 // This interface defines interaction with the ChromeOS power library APIs.
 // Classes can add themselves as observers. Users can get an instance of this
@@ -50,6 +54,10 @@ class PowerLibrary {
 
   // The amount of time until battery is full.
   virtual base::TimeDelta battery_time_to_full() const = 0;
+
+  // Calculates idle time asynchronously. If it encounters some error,
+  // it returns -1.
+  virtual void CalculateIdleTime(CalculateIdleTimeCallback* callback) = 0;
 
   // Enable/disable screen lock for current session.
   virtual void EnableScreenLock(bool enable) = 0;
