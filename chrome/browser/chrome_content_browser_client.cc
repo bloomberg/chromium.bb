@@ -126,9 +126,9 @@ content::BrowserMainParts* ChromeContentBrowserClient::CreateBrowserMainParts(
 #if defined(OS_WIN)
   return new ChromeBrowserMainPartsWin(parameters);
 #elif defined(OS_MACOSX)
-  return new BrowserMainPartsMac(parameters);
+  return new ChromeBrowserMainPartsMac(parameters);
 #elif defined(OS_CHROMEOS)
-  return new BrowserMainPartsChromeos(parameters);
+  return new ChromeBrowserMainPartsChromeos(parameters);
 #elif defined(OS_LINUX)
   return new ChromeBrowserMainPartsGtk(parameters);
 #else
