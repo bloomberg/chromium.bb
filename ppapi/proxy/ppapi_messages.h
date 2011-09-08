@@ -374,6 +374,10 @@ IPC_MESSAGE_ROUTED2(PpapiMsg_PPPMessaging_HandleMessage,
                     PP_Instance /* instance */,
                     ppapi::proxy::SerializedVar /* message */)
 
+// PPP_MouseLock_Dev.
+IPC_MESSAGE_ROUTED1(PpapiMsg_PPPMouseLock_MouseLockLost,
+                    PP_Instance /* instance */)
+
 // PPB_URLLoader
 // (Messages from browser to plugin to notify it of changes in state.)
 IPC_MESSAGE_ROUTED1(
@@ -838,6 +842,11 @@ IPC_MESSAGE_ROUTED2(PpapiHostMsg_PPBInstance_ClearInputEvents,
 IPC_MESSAGE_ROUTED2(PpapiHostMsg_PPBInstance_PostMessage,
                     PP_Instance /* instance */,
                     ppapi::proxy::SerializedVar /* message */)
+IPC_MESSAGE_ROUTED2(PpapiHostMsg_PPBInstance_LockMouse,
+                    PP_Instance /* instance */,
+                    uint32_t /* serialized_callback */)
+IPC_MESSAGE_ROUTED1(PpapiHostMsg_PPBInstance_UnlockMouse,
+                    PP_Instance /* instance */)
 
 IPC_SYNC_MESSAGE_ROUTED3_1(
     PpapiHostMsg_PPBPDF_GetFontFileWithFallback,

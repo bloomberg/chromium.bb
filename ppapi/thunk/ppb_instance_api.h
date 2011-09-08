@@ -5,6 +5,7 @@
 #ifndef PPAPI_THUNK_INSTANCE_API_H_
 #define PPAPI_THUNK_INSTANCE_API_H_
 
+#include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/ppb_instance.h"
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_size.h"
@@ -43,6 +44,11 @@ class PPB_Instance_FunctionAPI {
 
   // Messaging.
   virtual void PostMessage(PP_Instance instance, PP_Var message) = 0;
+
+  // MouseLock.
+  virtual int32_t LockMouse(PP_Instance instance,
+                            PP_CompletionCallback callback) = 0;
+  virtual void UnlockMouse(PP_Instance instance) = 0;
 
   // Zoom.
   virtual void ZoomChanged(PP_Instance instance, double factor) = 0;

@@ -53,6 +53,7 @@
 #include "native_client/src/trusted/service_runtime/nacl_error_code.h"
 
 #include "ppapi/c/dev/ppp_find_dev.h"
+#include "ppapi/c/dev/ppp_mouse_lock_dev.h"
 #include "ppapi/c/dev/ppp_printing_dev.h"
 #include "ppapi/c/dev/ppp_scrollbar_dev.h"
 #include "ppapi/c/dev/ppp_selection_dev.h"
@@ -63,6 +64,7 @@
 #include "ppapi/c/ppp_instance.h"
 #include "ppapi/c/private/ppb_uma_private.h"
 #include "ppapi/cpp/dev/find_dev.h"
+#include "ppapi/cpp/dev/mouse_lock_dev.h"
 #include "ppapi/cpp/dev/printing_dev.h"
 #include "ppapi/cpp/dev/scrollbar_dev.h"
 #include "ppapi/cpp/dev/selection_dev.h"
@@ -292,6 +294,32 @@ class FindAdapter : public pp::Find_Dev {
   const PPP_Find_Dev* ppp_find_;
 
   NACL_DISALLOW_COPY_AND_ASSIGN(FindAdapter);
+};
+
+
+// Derive a class from pp::MouseLock_Dev to forward PPP_MouseLock_Dev calls to
+// the plugin.
+class MouseLockAdapter : public pp::MouseLock_Dev {
+ public:
+  explicit MouseLockAdapter(Plugin* plugin)
+    : pp::MouseLock_Dev(plugin),
+      plugin_(plugin) {
+    BrowserPpp* proxy = plugin_->ppapi_proxy();
+    CHECK(proxy != NULL);
+    ppp_mouse_lock_ = static_cast<const PPP_MouseLock_Dev*>(
+        proxy->GetPluginInterface(PPP_MOUSELOCK_DEV_INTERFACE));
+  }
+
+  void MouseLockLost() {
+    if (ppp_mouse_lock_ != NULL)
+      ppp_mouse_lock_->MouseLockLost(plugin_->pp_instance());
+  }
+
+ private:
+  Plugin* plugin_;
+  const PPP_MouseLock_Dev* ppp_mouse_lock_;
+
+  NACL_DISALLOW_COPY_AND_ASSIGN(MouseLockAdapter);
 };
 
 
@@ -1273,6 +1301,7 @@ bool Plugin::StartProxiedExecution(NaClSrpcChannel* srpc_channel,
 
   // Create PPP* interface adapters to forward calls to .nexe.
   find_adapter_.reset(new(std::nothrow) FindAdapter(this));
+  mouse_lock_adapter_.reset(new(std::nothrow) MouseLockAdapter(this));
   printing_adapter_.reset(new(std::nothrow) PrintingAdapter(this));
   selection_adapter_.reset(new(std::nothrow) SelectionAdapter(this));
   widget_client_adapter_.reset(new(std::nothrow) WidgetClientAdapter(this));

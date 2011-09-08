@@ -88,6 +88,7 @@
 #include "ppapi/proxy/ppp_instance_private_proxy.h"
 #include "ppapi/proxy/ppp_instance_proxy.h"
 #include "ppapi/proxy/ppp_messaging_proxy.h"
+#include "ppapi/proxy/ppp_mouse_lock_proxy.h"
 #include "ppapi/proxy/ppp_video_decoder_proxy.h"
 #include "ppapi/proxy/var_serialization_rules.h"
 
@@ -154,6 +155,7 @@ InterfaceList::InterfaceList() {
   AddPPB(PPB_Instance_Proxy::GetInfo1_0());
   AddPPB(PPB_Instance_Proxy::GetInfoFullscreen());
   AddPPB(PPB_Instance_Proxy::GetInfoMessaging());
+  AddPPB(PPB_Instance_Proxy::GetInfoMouseLock());
   AddPPB(PPB_Instance_Proxy::GetInfoPrivate());
   AddPPB(PPB_Memory_Proxy::GetInfo());
   AddPPB(PPB_OpenGLES2_Proxy::GetInfo());
@@ -180,6 +182,7 @@ InterfaceList::InterfaceList() {
   AddPPP(PPP_Instance_Private_Proxy::GetInfo());
   AddPPP(PPP_Instance_Proxy::GetInfo1_0());
   AddPPP(PPP_Messaging_Proxy::GetInfo());
+  AddPPP(PPP_MouseLock_Proxy::GetInfo());
   AddPPP(PPP_VideoCapture_Proxy::GetInfo());
   AddPPP(PPP_VideoDecoder_Proxy::GetInfo());
 }

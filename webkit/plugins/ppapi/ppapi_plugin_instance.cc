@@ -14,6 +14,7 @@
 #include "ppapi/c/dev/ppb_memory_dev.h"
 #include "ppapi/c/dev/ppb_zoom_dev.h"
 #include "ppapi/c/dev/ppp_find_dev.h"
+#include "ppapi/c/dev/ppp_mouse_lock_dev.h"
 #include "ppapi/c/dev/ppp_policy_update_dev.h"
 #include "ppapi/c/dev/ppp_selection_dev.h"
 #include "ppapi/c/dev/ppp_zoom_dev.h"
@@ -223,6 +224,7 @@ PluginInstance::PluginInstance(
       find_identifier_(-1),
       plugin_find_interface_(NULL),
       plugin_messaging_interface_(NULL),
+      plugin_mouse_lock_interface_(NULL),
       plugin_input_event_interface_(NULL),
       plugin_private_interface_(NULL),
       plugin_pdf_interface_(NULL),
@@ -239,7 +241,8 @@ PluginInstance::PluginInstance(
       message_channel_(NULL),
       sad_plugin_(NULL),
       input_event_mask_(0),
-      filtered_input_event_mask_(0) {
+      filtered_input_event_mask_(0),
+      lock_mouse_callback_(PP_BlockUntilComplete()) {
   pp_instance_ = ResourceTracker::Get()->AddInstance(this);
 
   memset(&current_print_settings_, 0, sizeof(current_print_settings_));
@@ -260,6 +263,9 @@ PluginInstance::~PluginInstance() {
   for (PluginObjectSet::iterator i = plugin_object_copy.begin();
        i != plugin_object_copy.end(); ++i)
     delete *i;
+
+  if (lock_mouse_callback_.func)
+    PP_RunAndClearCompletionCallback(&lock_mouse_callback_, PP_ERROR_ABORTED);
 
   delegate_->InstanceDeleted(this);
   module_->InstanceDeleted(this);
@@ -707,6 +713,16 @@ bool PluginInstance::LoadMessagingInterface() {
             PPP_MESSAGING_INTERFACE_1_0));
   }
   return !!plugin_messaging_interface_;
+}
+
+bool PluginInstance::LoadMouseLockInterface() {
+  if (!plugin_mouse_lock_interface_) {
+    plugin_mouse_lock_interface_ =
+        static_cast<const PPP_MouseLock_Dev*>(module_->GetPluginInterface(
+            PPP_MOUSELOCK_DEV_INTERFACE));
+  }
+
+  return !!plugin_mouse_lock_interface_;
 }
 
 bool PluginInstance::LoadPdfInterface() {
@@ -1272,6 +1288,20 @@ bool PluginInstance::IsFullPagePlugin() const {
   return frame->view()->mainFrame()->document().isPluginDocument();
 }
 
+void PluginInstance::OnLockMouseACK(int32_t result) {
+  if (!lock_mouse_callback_.func) {
+    NOTREACHED();
+    return;
+  }
+
+  PP_RunAndClearCompletionCallback(&lock_mouse_callback_, result);
+}
+
+void PluginInstance::OnMouseLockLost() {
+  if (LoadMouseLockInterface())
+    plugin_mouse_lock_interface_->MouseLockLost(pp_instance());
+}
+
 PPB_Instance_FunctionAPI* PluginInstance::AsPPB_Instance_FunctionAPI() {
   return this;
 }
@@ -1479,6 +1509,31 @@ void PluginInstance::ZoomLimitsChanged(PP_Instance instance,
 
 void PluginInstance::PostMessage(PP_Instance instance, PP_Var message) {
   message_channel_->PostMessageToJavaScript(message);
+}
+
+int32_t PluginInstance::LockMouse(PP_Instance instance,
+                                  PP_CompletionCallback callback) {
+  if (!callback.func) {
+    // Don't support synchronous call.
+    return PP_ERROR_BADARGUMENT;
+  }
+  if (lock_mouse_callback_.func)
+    return PP_ERROR_INPROGRESS;
+
+  // TODO(yzshen): Uncomment the following lines after adding implementation in
+  // the delegate.
+  // lock_mouse_callback_ = callback;
+  // We will be notified on completion via OnLockMouseACK(), either
+  // synchronously or asynchronously.
+  // delegate()->LockMouse(this);
+  // return PP_OK_COMPLETIONPENDING;
+  return PP_ERROR_FAILED;
+}
+
+void PluginInstance::UnlockMouse(PP_Instance instance) {
+  // TODO(yzshen): Uncomment the following after adding implementation in the
+  // delegate.
+  // delegate()->UnlockMouse(this);
 }
 
 void PluginInstance::SubscribeToPolicyUpdates(PP_Instance instance) {

@@ -27,6 +27,7 @@
 #include "ppapi/c/dev/ppb_gles_chromium_texture_mapping_dev.h"
 #include "ppapi/c/dev/ppb_layer_compositor_dev.h"
 #include "ppapi/c/dev/ppb_memory_dev.h"
+#include "ppapi/c/dev/ppb_mouse_lock_dev.h"
 #include "ppapi/c/dev/ppb_query_policy_dev.h"
 #include "ppapi/c/dev/ppb_scrollbar_dev.h"
 #include "ppapi/c/dev/ppb_surface_3d_dev.h"
@@ -305,6 +306,8 @@ const void* GetInterface(const char* name) {
     return ::ppapi::thunk::GetPPB_MouseInputEvent_1_0_Thunk();
   if (strcmp(name, PPB_MOUSE_INPUT_EVENT_INTERFACE_1_1) == 0)
     return ::ppapi::thunk::GetPPB_MouseInputEvent_1_1_Thunk();
+  if (strcmp(name, PPB_MOUSELOCK_DEV_INTERFACE) == 0)
+    return ::ppapi::thunk::GetPPB_MouseLock_Thunk();
   if (strcmp(name, PPB_PROXY_PRIVATE_INTERFACE) == 0)
     return PPB_Proxy_Impl::GetInterface();
   if (strcmp(name, PPB_QUERY_POLICY_DEV_INTERFACE_0_1) == 0)

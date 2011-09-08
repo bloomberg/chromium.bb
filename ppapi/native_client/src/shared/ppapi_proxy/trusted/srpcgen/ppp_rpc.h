@@ -155,6 +155,18 @@ class PppMessagingRpcClient {
   void operator=(const PppMessagingRpcClient);
 };  // class PppMessagingRpcClient
 
+class PppMouseLockRpcClient {
+ public:
+  static NaClSrpcError PPP_MouseLock_MouseLockLost(
+      NaClSrpcChannel* channel,
+      PP_Instance instance);
+
+ private:
+  PppMouseLockRpcClient();
+  PppMouseLockRpcClient(const PppMouseLockRpcClient&);
+  void operator=(const PppMouseLockRpcClient);
+};  // class PppMouseLockRpcClient
+
 class PppPrintingRpcClient {
  public:
   static NaClSrpcError PPP_Printing_QuerySupportedFormats(

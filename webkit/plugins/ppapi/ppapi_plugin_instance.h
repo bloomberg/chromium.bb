@@ -18,6 +18,7 @@
 #include "googleurl/src/gurl.h"
 #include "ppapi/c/dev/pp_cursor_type_dev.h"
 #include "ppapi/c/dev/ppp_printing_dev.h"
+#include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_var.h"
@@ -38,6 +39,7 @@ struct PPP_Find_Dev;
 struct PPP_InputEvent;
 struct PPP_Instance_Private;
 struct PPP_Messaging;
+struct PPP_MouseLock_Dev;
 struct PPP_Pdf;
 struct PPP_PolicyUpdate_Dev;
 struct PPP_Selection_Dev;
@@ -246,6 +248,9 @@ class PluginInstance : public base::RefCounted<PluginInstance>,
     return fullscreen_container_;
   }
 
+  void OnLockMouseACK(int32_t result);
+  void OnMouseLockLost();
+
   // FunctionGroupBase overrides.
   virtual ::ppapi::thunk::PPB_Instance_FunctionAPI* AsPPB_Instance_FunctionAPI()
       OVERRIDE;
@@ -274,6 +279,9 @@ class PluginInstance : public base::RefCounted<PluginInstance>,
                                  double minimum_factor,
                                  double maximium_factor) OVERRIDE;
   virtual void PostMessage(PP_Instance instance, PP_Var message) OVERRIDE;
+  virtual int32_t LockMouse(PP_Instance instance,
+                            PP_CompletionCallback callback) OVERRIDE;
+  virtual void UnlockMouse(PP_Instance instance) OVERRIDE;
   virtual void SubscribeToPolicyUpdates(PP_Instance instance) OVERRIDE;
 
  private:
@@ -288,6 +296,7 @@ class PluginInstance : public base::RefCounted<PluginInstance>,
   bool LoadFindInterface();
   bool LoadInputEventInterface();
   bool LoadMessagingInterface();
+  bool LoadMouseLockInterface();
   bool LoadPdfInterface();
   bool LoadPolicyUpdateInterface();
   bool LoadPrintInterface();
@@ -392,6 +401,7 @@ class PluginInstance : public base::RefCounted<PluginInstance>,
   // The plugin-provided interfaces.
   const PPP_Find_Dev* plugin_find_interface_;
   const PPP_Messaging* plugin_messaging_interface_;
+  const PPP_MouseLock_Dev* plugin_mouse_lock_interface_;
   const PPP_InputEvent* plugin_input_event_interface_;
   const PPP_Instance_Private* plugin_private_interface_;
   const PPP_Pdf* plugin_pdf_interface_;
@@ -463,6 +473,8 @@ class PluginInstance : public base::RefCounted<PluginInstance>,
   // and not. The bits are PP_INPUTEVENT_CLASS_*.
   uint32_t input_event_mask_;
   uint32_t filtered_input_event_mask_;
+
+  PP_CompletionCallback lock_mouse_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(PluginInstance);
 };

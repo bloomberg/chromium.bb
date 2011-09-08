@@ -1515,6 +1515,35 @@ static void PPB_Messaging_PostMessageDispatcher(
   );
 }
 
+static void PPB_MouseLock_LockMouseDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbMouseLockRpcServer::PPB_MouseLock_LockMouse(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      inputs[1]->u.ival,
+      &(outputs[0]->u.ival)
+  );
+}
+
+static void PPB_MouseLock_UnlockMouseDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  UNREFERENCED_PARAMETER(outputs);
+  PpbMouseLockRpcServer::PPB_MouseLock_UnlockMouse(
+      rpc,
+      done,
+      inputs[0]->u.ival
+  );
+}
+
 static void PPB_PDF_GetLocalizedStringDispatcher(
     NaClSrpcRpc* rpc,
     NaClSrpcArg** inputs,
@@ -2363,6 +2392,8 @@ NaClSrpcHandlerDesc PpbRpcs::srpc_methods[] = {
   { "PPB_Instance_BindGraphics:ii:i", PPB_Instance_BindGraphicsDispatcher },
   { "PPB_Instance_IsFullFrame:i:i", PPB_Instance_IsFullFrameDispatcher },
   { "PPB_Messaging_PostMessage:iC:", PPB_Messaging_PostMessageDispatcher },
+  { "PPB_MouseLock_LockMouse:ii:i", PPB_MouseLock_LockMouseDispatcher },
+  { "PPB_MouseLock_UnlockMouse:i:", PPB_MouseLock_UnlockMouseDispatcher },
   { "PPB_PDF_GetLocalizedString:ii:C", PPB_PDF_GetLocalizedStringDispatcher },
   { "PPB_PDF_GetResourceImage:ii:i", PPB_PDF_GetResourceImageDispatcher },
   { "PPB_PDF_GetFontFileWithFallback:iCCi:i", PPB_PDF_GetFontFileWithFallbackDispatcher },

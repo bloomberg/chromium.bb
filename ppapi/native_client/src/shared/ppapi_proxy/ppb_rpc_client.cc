@@ -1899,6 +1899,40 @@ NaClSrpcError PpbMessagingRpcClient::PPB_Messaging_PostMessage(
   return retval;
 }
 
+NaClSrpcError PpbMouseLockRpcClient::PPB_MouseLock_LockMouse(
+    NaClSrpcChannel* channel,
+    PP_Instance instance,
+    int32_t callback_id,
+    int32_t* pp_error)  {
+  VCHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread(),
+         ("%s: PPAPI calls are not supported off the main thread\n",
+          __FUNCTION__));
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_MouseLock_LockMouse:ii:i",
+      instance,
+      callback_id,
+      pp_error
+  );
+  return retval;
+}
+
+NaClSrpcError PpbMouseLockRpcClient::PPB_MouseLock_UnlockMouse(
+    NaClSrpcChannel* channel,
+    PP_Instance instance)  {
+  VCHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread(),
+         ("%s: PPAPI calls are not supported off the main thread\n",
+          __FUNCTION__));
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_MouseLock_UnlockMouse:i:",
+      instance
+  );
+  return retval;
+}
+
 NaClSrpcError PpbPdfRpcClient::PPB_PDF_GetLocalizedString(
     NaClSrpcChannel* channel,
     PP_Instance instance,

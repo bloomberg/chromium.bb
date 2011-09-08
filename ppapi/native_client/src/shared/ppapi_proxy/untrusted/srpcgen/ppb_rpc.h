@@ -685,6 +685,23 @@ class PpbMessagingRpcClient {
   void operator=(const PpbMessagingRpcClient);
 };  // class PpbMessagingRpcClient
 
+class PpbMouseLockRpcClient {
+ public:
+  static NaClSrpcError PPB_MouseLock_LockMouse(
+      NaClSrpcChannel* channel,
+      PP_Instance instance,
+      int32_t callback_id,
+      int32_t* pp_error);
+  static NaClSrpcError PPB_MouseLock_UnlockMouse(
+      NaClSrpcChannel* channel,
+      PP_Instance instance);
+
+ private:
+  PpbMouseLockRpcClient();
+  PpbMouseLockRpcClient(const PpbMouseLockRpcClient&);
+  void operator=(const PpbMouseLockRpcClient);
+};  // class PpbMouseLockRpcClient
+
 class PpbPdfRpcClient {
  public:
   static NaClSrpcError PPB_PDF_GetLocalizedString(

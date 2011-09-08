@@ -280,6 +280,20 @@ NaClSrpcError PppMessagingRpcClient::PPP_Messaging_HandleMessage(
   return retval;
 }
 
+NaClSrpcError PppMouseLockRpcClient::PPP_MouseLock_MouseLockLost(
+    NaClSrpcChannel* channel,
+    PP_Instance instance)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPP_MouseLock_MouseLockLost:i:",
+      instance
+  );
+  if (retval == NACL_SRPC_RESULT_INTERNAL)
+    ppapi_proxy::CleanUpAfterDeadNexe(instance);
+  return retval;
+}
+
 NaClSrpcError PppPrintingRpcClient::PPP_Printing_QuerySupportedFormats(
     NaClSrpcChannel* channel,
     PP_Instance instance,

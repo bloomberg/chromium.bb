@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Native Client Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -120,6 +120,11 @@ const PPP_Instance* PPPInstanceInterface() {
 const PPP_Messaging* PPPMessagingInterface() {
   static const void* ppp = GetPluginInterfaceSafe(PPP_MESSAGING_INTERFACE);
   return static_cast<const PPP_Messaging*>(ppp);
+}
+
+const PPP_MouseLock_Dev* PPPMouseLockInterface() {
+  static const void* ppp = GetPluginInterfaceSafe(PPP_MOUSELOCK_DEV_INTERFACE);
+  return static_cast<const PPP_MouseLock_Dev*>(ppp);
 }
 
 const PPP_Printing_Dev* PPPPrintingInterface() {

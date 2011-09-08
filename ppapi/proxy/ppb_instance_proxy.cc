@@ -5,6 +5,8 @@
 #include "ppapi/proxy/ppb_instance_proxy.h"
 
 #include "ppapi/c/dev/ppb_fullscreen_dev.h"
+#include "ppapi/c/dev/ppb_mouse_lock_dev.h"
+#include "ppapi/c/pp_errors.h"
 #include "ppapi/c/pp_var.h"
 #include "ppapi/c/ppb_instance.h"
 #include "ppapi/c/ppb_messaging.h"
@@ -82,6 +84,18 @@ const InterfaceProxy::Info* PPB_Instance_Proxy::GetInfoMessaging() {
 }
 
 // static
+const InterfaceProxy::Info* PPB_Instance_Proxy::GetInfoMouseLock() {
+  static const Info info = {
+    ppapi::thunk::GetPPB_MouseLock_Thunk(),
+    PPB_MOUSELOCK_DEV_INTERFACE,
+    INTERFACE_ID_NONE,  // 1_0 is the canonical one.
+    false,
+    &CreateInstanceProxy,
+  };
+  return &info;
+}
+
+// static
 const InterfaceProxy::Info* PPB_Instance_Proxy::GetInfoPrivate() {
   static const Info info = {
     ppapi::thunk::GetPPB_Instance_Private_Thunk(),
@@ -134,6 +148,10 @@ bool PPB_Instance_Proxy::OnMessageReceived(const IPC::Message& msg) {
                         OnMsgRequestInputEvents)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_ClearInputEvents,
                         OnMsgClearInputEvents)
+    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_LockMouse,
+                        OnMsgLockMouse)
+    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_UnlockMouse,
+                        OnMsgUnlockMouse)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -269,6 +287,21 @@ void PPB_Instance_Proxy::PostMessage(PP_Instance instance,
       instance, SerializedVarSendInput(dispatcher(), message)));
 }
 
+int32_t PPB_Instance_Proxy::LockMouse(PP_Instance instance,
+                                      PP_CompletionCallback callback) {
+  if (!callback.func)
+    return PP_ERROR_BADARGUMENT;
+
+  dispatcher()->Send(new PpapiHostMsg_PPBInstance_LockMouse(
+      INTERFACE_ID_PPB_INSTANCE, instance, SendCallback(callback)));
+  return PP_OK_COMPLETIONPENDING;
+}
+
+void PPB_Instance_Proxy::UnlockMouse(PP_Instance instance) {
+  dispatcher()->Send(new PpapiHostMsg_PPBInstance_UnlockMouse(
+      INTERFACE_ID_PPB_INSTANCE, instance));
+}
+
 void PPB_Instance_Proxy::OnMsgGetWindowObject(
     PP_Instance instance,
     SerializedVarReturnValue result) {
@@ -364,6 +397,23 @@ void PPB_Instance_Proxy::OnMsgPostMessage(PP_Instance instance,
   EnterFunctionNoLock<PPB_Instance_FunctionAPI> enter(instance, false);
   if (enter.succeeded())
     enter.functions()->PostMessage(instance, message.Get(dispatcher()));
+}
+
+void PPB_Instance_Proxy::OnMsgLockMouse(PP_Instance instance,
+                                        uint32_t serialized_callback) {
+  EnterFunctionNoLock<PPB_Instance_FunctionAPI> enter(instance, true);
+  if (enter.failed())
+    return;
+  PP_CompletionCallback callback = ReceiveCallback(serialized_callback);
+  int32_t result = enter.functions()->LockMouse(instance, callback);
+  if (result != PP_OK_COMPLETIONPENDING)
+    PP_RunCompletionCallback(&callback, result);
+}
+
+void PPB_Instance_Proxy::OnMsgUnlockMouse(PP_Instance instance) {
+  EnterFunctionNoLock<PPB_Instance_FunctionAPI> enter(instance, true);
+  if (enter.succeeded())
+    enter.functions()->UnlockMouse(instance);
 }
 
 }  // namespace proxy

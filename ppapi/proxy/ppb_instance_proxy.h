@@ -32,6 +32,7 @@ class PPB_Instance_Proxy : public InterfaceProxy,
   static const Info* GetInfo0_5();
   static const Info* GetInfo1_0();
   static const Info* GetInfoMessaging();
+  static const Info* GetInfoMouseLock();
   static const Info* GetInfoPrivate();
   static const Info* GetInfoFullscreen();
 
@@ -66,6 +67,9 @@ class PPB_Instance_Proxy : public InterfaceProxy,
                                  double maximium_factor) OVERRIDE;
   virtual void SubscribeToPolicyUpdates(PP_Instance instance) OVERRIDE;
   virtual void PostMessage(PP_Instance instance, PP_Var message) OVERRIDE;
+  virtual int32_t LockMouse(PP_Instance instance,
+                            PP_CompletionCallback callback) OVERRIDE;
+  virtual void UnlockMouse(PP_Instance instance) OVERRIDE;
 
  private:
   // Message handlers.
@@ -94,6 +98,9 @@ class PPB_Instance_Proxy : public InterfaceProxy,
                              uint32_t event_classes);
   void OnMsgPostMessage(PP_Instance instance,
                         SerializedVarReceiveInput message);
+  void OnMsgLockMouse(PP_Instance instance,
+                      uint32_t serialized_callback);
+  void OnMsgUnlockMouse(PP_Instance instance);
 };
 
 }  // namespace proxy

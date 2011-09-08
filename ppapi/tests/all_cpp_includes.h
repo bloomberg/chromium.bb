@@ -21,6 +21,7 @@
 #include "ppapi/cpp/dev/font_dev.h"
 #include "ppapi/cpp/dev/fullscreen_dev.h"
 #include "ppapi/cpp/dev/memory_dev.h"
+#include "ppapi/cpp/dev/mouse_lock_dev.h"
 #include "ppapi/cpp/dev/printing_dev.h"
 #include "ppapi/cpp/dev/scriptable_object_deprecated.h"
 #include "ppapi/cpp/dev/scrollbar_dev.h"

@@ -31,6 +31,7 @@
 #include "ppapi/c/dev/ppb_gles_chromium_texture_mapping_dev.h"
 #include "ppapi/c/dev/ppb_layer_compositor_dev.h"
 #include "ppapi/c/dev/ppb_memory_dev.h"
+#include "ppapi/c/dev/ppb_mouse_lock_dev.h"
 #include "ppapi/c/dev/ppb_scrollbar_dev.h"
 #include "ppapi/c/dev/ppb_surface_3d_dev.h"
 #include "ppapi/c/dev/ppb_testing_dev.h"
@@ -67,6 +68,7 @@ void TestGetDevInterfaces() {
       PPB_GLES_CHROMIUM_TEXTURE_MAPPING_DEV_INTERFACE) == NULL);
   CHECK(GetBrowserInterface(PPB_LAYER_COMPOSITOR_DEV_INTERFACE) == NULL);
   CHECK(GetBrowserInterface(PPB_MEMORY_DEV_INTERFACE) == NULL);
+  CHECK(GetBrowserInterface(PPB_MOUSELOCK_DEV_INTERFACE) == NULL);
   CHECK(GetBrowserInterface(PPB_SCROLLBAR_DEV_INTERFACE) == NULL);
   CHECK(GetBrowserInterface(PPB_SURFACE_3D_DEV_INTERFACE) == NULL);
   CHECK(GetBrowserInterface(PPB_TESTING_DEV_INTERFACE) == NULL);

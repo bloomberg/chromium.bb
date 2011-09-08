@@ -25,6 +25,7 @@
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_instance.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_memory.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_messaging.h"
+#include "native_client/src/shared/ppapi_proxy/plugin_ppb_mouse_lock.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_pdf.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_scrollbar.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_testing.h"
@@ -73,6 +74,7 @@ InterfaceMapElement interface_map[] = {
     PluginInputEvent::GetMouseInterface1_0(), true },
   { PPB_MOUSE_INPUT_EVENT_INTERFACE_1_1,
     PluginInputEvent::GetMouseInterface1_1(), true },
+  { PPB_MOUSELOCK_DEV_INTERFACE, PluginMouseLock::GetInterface(), true },
   { PPB_OPENGLES2_INTERFACE, PluginGraphics3D::GetOpenGLESInterface(),
     true },
   { PPB_PDF_INTERFACE, PluginPDF::GetInterface(), true },

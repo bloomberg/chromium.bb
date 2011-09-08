@@ -42,6 +42,7 @@ class DescWrapperFactory;
 
 namespace pp {
 class Find_Dev;
+class MouseLock_Dev;
 class Printing_Dev;
 class Selection_Dev;
 class URLLoader;
@@ -494,6 +495,7 @@ class Plugin : public pp::InstancePrivate {
   // Adapter class constructors require a reference to 'this', so we can't
   // contain them directly.
   nacl::scoped_ptr<pp::Find_Dev> find_adapter_;
+  nacl::scoped_ptr<pp::MouseLock_Dev> mouse_lock_adapter_;
   nacl::scoped_ptr<pp::Printing_Dev> printing_adapter_;
   nacl::scoped_ptr<pp::Selection_Dev> selection_adapter_;
   nacl::scoped_ptr<pp::WidgetClient_Dev> widget_client_adapter_;
