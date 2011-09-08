@@ -38,7 +38,7 @@
     "description": "Text shown when the app first starts, or if the access token is invalidated, explaining the need to authorize the Chromoting app before use."
   },
   "DESCRIPTION_CONNECT": {
-    "message": "Ask the user whose computer you wish to access to click ‘Share This Computer’ and then provide you with the access code.",
+    "message": "Ask the user whose computer you wish to access to click \u2018Share This Computer\u2019 and then provide you with the access code.",
     "description": "Description for the client app. This is shown to the client user above the access code entry box before the connection is started. Note that the 'Share This Computer' quote should be copied verbatim from the corresponding translation."
   },
   "DESCRIPTION_SHARE": {
@@ -54,7 +54,7 @@
     "description": "Label for the disconnect button including the Linux keyboard shortcut."
   },
   "DISCONNECT_BUTTON_PLUS_SHORTCUT_MAC_OS_X": {
-    "message": "Disconnect (⌥⌃⎋)",
+    "message": "Disconnect (\u2325\u2303\u238b)",
     "description": "Label for the disconnect button including the Mac OS X keyboard shortcut."
   },
   "DISCONNECT_BUTTON_PLUS_SHORTCUT_WINDOWS": {
@@ -118,7 +118,7 @@
     }
   },
   "FOOTER_WAITING": {
-    "message": "waiting for connection…",
+    "message": "waiting for connection\u2026",
     "description": "Footer text displayed at the host after an access code has been generated, but before a client connects."
   },
   "HELP": {
@@ -142,7 +142,7 @@
     "description": "Sign out button, visible if the user has authenticated. Clicking this clears authentication credentials and returns the web-app to the initial 'unauthenticated' state."
   },
   "MESSAGE_GENERATING": {
-    "message": "Generating access code…",
+    "message": "Generating access code\u2026",
     "description": "Text shown while generating an access code."
   },
   "MESSAGE_SESSION_FINISHED": {
@@ -210,7 +210,7 @@
     "description": "The tool-tip shown when the user hovers over the scale to fit button. Clicking this button toggles between scaling down the remote desktop to fit it inside the Chromium browser window and displaying it at 1:1 scale."
   },
   "VERIFYING_CODE": {
-    "message": "Verifying access code…",
+    "message": "Verifying access code\u2026",
     "description": "Message displayed on the client while the access code is verified."
   }
 }
