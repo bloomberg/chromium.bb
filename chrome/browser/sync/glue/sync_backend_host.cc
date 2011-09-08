@@ -738,7 +738,8 @@ void SyncBackendHost::Core::HandleActionableErrorEventOnFrontendLoop(
 }
 
 void SyncBackendHost::Core::OnInitializationComplete(
-    const WeakHandle<JsBackend>& js_backend) {
+    const WeakHandle<JsBackend>& js_backend,
+    bool success) {
   if (!host_ || !host_->frontend_)
     return;  // We may have been told to Shutdown before initialization
              // completed.
@@ -748,7 +749,7 @@ void SyncBackendHost::Core::OnInitializationComplete(
   host_->frontend_loop_->PostTask(FROM_HERE,
       NewRunnableMethod(this,
                         &Core::HandleInitializationCompletedOnFrontendLoop,
-                        js_backend, true));
+                        js_backend, success));
 
   // Initialization is complete, so we can schedule recurring SaveChanges.
   host_->sync_thread_.message_loop()->PostTask(FROM_HERE,

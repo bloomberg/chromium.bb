@@ -696,8 +696,8 @@ class SyncManagerObserverMock : public SyncManager::Observer {
   MOCK_METHOD1(OnChangesComplete, void(ModelType));  // NOLINT
   MOCK_METHOD1(OnSyncCycleCompleted,
                void(const SyncSessionSnapshot*));  // NOLINT
-  MOCK_METHOD1(OnInitializationComplete,
-               void(const WeakHandle<JsBackend>&));  // NOLINT
+  MOCK_METHOD2(OnInitializationComplete,
+               void(const WeakHandle<JsBackend>&, bool));  // NOLINT
   MOCK_METHOD1(OnAuthError, void(const GoogleServiceAuthError&));  // NOLINT
   MOCK_METHOD1(OnPassphraseRequired,
                void(sync_api::PassphraseRequiredReason));  // NOLINT
@@ -762,7 +762,7 @@ class SyncManagerTest : public testing::Test,
         WillOnce(Invoke(this, &SyncManagerTest::SyncNotifierRemoveObserver));
 
     sync_manager_.AddObserver(&observer_);
-    EXPECT_CALL(observer_, OnInitializationComplete(_)).
+    EXPECT_CALL(observer_, OnInitializationComplete(_, _)).
         WillOnce(SaveArg<0>(&js_backend_));
 
     EXPECT_FALSE(sync_notifier_observer_);

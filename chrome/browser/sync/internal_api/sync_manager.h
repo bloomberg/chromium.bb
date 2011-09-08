@@ -365,7 +365,7 @@ class SyncManager {
 
     virtual void OnInitializationComplete(
         const browser_sync::WeakHandle<browser_sync::JsBackend>&
-            js_backend) = 0;
+            js_backend, bool success) = 0;
 
     // We are no longer permitted to communicate with the server. Sync should
     // be disabled and state cleaned up at once.  This can happen for a number

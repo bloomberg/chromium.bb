@@ -67,7 +67,8 @@ TEST_F(JsSyncManagerObserverTest, NoArgNotifiations) {
               HandleJsEvent("onClearServerDataFailed",
                             HasDetails(JsEventDetails())));
 
-  js_sync_manager_observer_.OnInitializationComplete(WeakHandle<JsBackend>());
+  js_sync_manager_observer_.OnInitializationComplete(WeakHandle<JsBackend>(),
+      true);
   js_sync_manager_observer_.OnStopSyncingPermanently();
   js_sync_manager_observer_.OnClearServerDataSucceeded();
   js_sync_manager_observer_.OnClearServerDataFailed();

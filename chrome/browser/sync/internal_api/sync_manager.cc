@@ -813,22 +813,32 @@ bool SyncManager::SyncInternal::Init(
 
   bool signed_in = SignIn(credentials);
 
-  if (signed_in && scheduler()) {
-    scheduler()->Start(
-        browser_sync::SyncScheduler::CONFIGURATION_MODE, NULL);
+  if (signed_in || setup_for_test_mode_) {
+    if (scheduler()) {
+      scheduler()->Start(
+          browser_sync::SyncScheduler::CONFIGURATION_MODE, NULL);
+    }
+
+    initialized_ = true;
+
+    // The following calls check that initialized_ is true.
+    BootstrapEncryption(restored_key_for_bootstrapping);
   }
 
-  initialized_ = true;
-
-  // The following calls check that initialized_ is true.
-  BootstrapEncryption(restored_key_for_bootstrapping);
-
-  // Notify that initialization is complete.
+  // Notify that initialization is complete. Note: This should be the last to
+  // execute if |signed_in| is false. Reason being in that case we would
+  // post a task to shutdown sync. But if this function posts any other tasks
+  // on the UI thread and if shutdown wins then that tasks would execute on
+  // a freed pointer. This is because UI thread is not shut down.
   ObserverList<SyncManager::Observer> temp_obs_list;
   CopyObservers(&temp_obs_list);
   FOR_EACH_OBSERVER(SyncManager::Observer, temp_obs_list,
                     OnInitializationComplete(
-                        WeakHandle<JsBackend>(weak_ptr_factory_.GetWeakPtr())));
+                        WeakHandle<JsBackend>(weak_ptr_factory_.GetWeakPtr()),
+                        signed_in));
+
+  if (!signed_in && !setup_for_test_mode_)
+    return false;
 
   sync_notifier_->AddObserver(this);
 
@@ -894,11 +904,6 @@ bool SyncManager::SyncInternal::OpenDirectory() {
   bool share_opened = dir_manager()->Open(username_for_share(), this);
   DCHECK(share_opened);
   if (!share_opened) {
-    ObserverList<SyncManager::Observer> temp_obs_list;
-    CopyObservers(&temp_obs_list);
-    FOR_EACH_OBSERVER(SyncManager::Observer, temp_obs_list,
-                      OnStopSyncingPermanently());
-
     LOG(ERROR) << "Could not open share for:" << username_for_share();
     return false;
   }

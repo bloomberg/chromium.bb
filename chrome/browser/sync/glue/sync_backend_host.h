@@ -268,7 +268,8 @@ class SyncBackendHost {
     virtual void OnSyncCycleCompleted(
         const sessions::SyncSessionSnapshot* snapshot) OVERRIDE;
     virtual void OnInitializationComplete(
-        const WeakHandle<JsBackend>& js_backend) OVERRIDE;
+        const WeakHandle<JsBackend>& js_backend,
+        bool success) OVERRIDE;
     virtual void OnAuthError(
         const GoogleServiceAuthError& auth_error) OVERRIDE;
     virtual void OnPassphraseRequired(

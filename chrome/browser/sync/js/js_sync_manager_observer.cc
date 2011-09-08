@@ -140,7 +140,8 @@ void JsSyncManagerObserver::OnActionableError(
 }
 
 void JsSyncManagerObserver::OnInitializationComplete(
-    const WeakHandle<JsBackend>& js_backend) {
+    const WeakHandle<JsBackend>& js_backend,
+    bool success) {
   if (!event_handler_.IsInitialized()) {
     return;
   }
