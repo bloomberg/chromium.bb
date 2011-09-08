@@ -25,11 +25,13 @@ void MockPersistentCookieStore::SetLoadExpectation(
   load_result_ = result;
 }
 
-bool MockPersistentCookieStore::Load(
-    std::vector<CookieMonster::CanonicalCookie*>* out_cookies) {
+bool MockPersistentCookieStore::Load(const LoadedCallback& loaded_callback) {
   bool ok = load_return_value_;
-  if (ok)
-    *out_cookies = load_result_;
+  std::vector<CookieMonster::CanonicalCookie*> out_cookies;
+  if (ok) {
+    out_cookies = load_result_;
+  }
+  loaded_callback.Run(out_cookies);
   return ok;
 }
 
@@ -108,11 +110,13 @@ MockSimplePersistentCookieStore::MockSimplePersistentCookieStore() {}
 MockSimplePersistentCookieStore::~MockSimplePersistentCookieStore() {}
 
 bool MockSimplePersistentCookieStore::Load(
-    std::vector<CookieMonster::CanonicalCookie*>* out_cookies) {
+    const LoadedCallback& loaded_callback) {
+  std::vector<CookieMonster::CanonicalCookie*> out_cookies;
   for (CanonicalCookieMap::const_iterator it = cookies_.begin();
        it != cookies_.end(); it++)
-    out_cookies->push_back(
+    out_cookies.push_back(
         new CookieMonster::CanonicalCookie(it->second));
+  loaded_callback.Run(out_cookies);
   return true;
 }
 

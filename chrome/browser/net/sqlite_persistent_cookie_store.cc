@@ -7,6 +7,7 @@
 #include <list>
 
 #include "base/basictypes.h"
+#include "base/bind.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/logging.h"
@@ -27,6 +28,12 @@ using base::Time;
 
 // This class is designed to be shared between any calling threads and the
 // database thread.  It batches operations and commits them on a timer.
+// This class expects to be Load()'ed once on any thread. Loading occurs
+// asynchronously on the DB thread and the caller will be notified on the IO
+// thread. Subsequent to loading, mutations may be queued by any thread using
+// AddCookie, UpdateCookieAccessTime, and DeleteCookie. These are flushed to
+// disk on the DB thread every 30 seconds, 512 operations, or call to Flush(),
+// whichever occurs first.
 class SQLitePersistentCookieStore::Backend
     : public base::RefCountedThreadSafe<SQLitePersistentCookieStore::Backend> {
  public:
@@ -38,7 +45,7 @@ class SQLitePersistentCookieStore::Backend
   }
 
   // Creates or load the SQLite database.
-  bool Load(std::vector<net::CookieMonster::CanonicalCookie*>* cookies);
+  bool Load(const LoadedCallback& loaded_callback);
 
   // Batch a cookie addition.
   void AddCookie(const net::CookieMonster::CanonicalCookie& cc);
@@ -91,6 +98,18 @@ class SQLitePersistentCookieStore::Backend
   };
 
  private:
+  // Creates or load the SQLite database on DB thread.
+  void LoadAndNotifyOnDBThread(const LoadedCallback& loaded_callback);
+  // Notify the CookieMonster when loading complete.
+  void NotifyOnIOThread(
+      const LoadedCallback& loaded_callback,
+      bool load_success,
+      const std::vector<net::CookieMonster::CanonicalCookie*>& cookies);
+  // Initialize the data base.
+  bool InitializeDatabase();
+  // Load cookies to the data base, and read cookies.
+  bool LoadInternal(std::vector<net::CookieMonster::CanonicalCookie*>* cookies);
+
   // Batch a cookie operation (add or delete)
   void BatchOperation(PendingOperation::OperationType op,
                       const net::CookieMonster::CanonicalCookie& cc);
@@ -154,19 +173,40 @@ bool InitTable(sql::Connection* db) {
 }  // namespace
 
 bool SQLitePersistentCookieStore::Backend::Load(
-    std::vector<net::CookieMonster::CanonicalCookie*>* cookies) {
+    const LoadedCallback& loaded_callback) {
   // This function should be called only once per instance.
   DCHECK(!db_.get());
+  BrowserThread::PostTask(
+      BrowserThread::DB, FROM_HERE,
+      base::Bind(&Backend::LoadAndNotifyOnDBThread, base::Unretained(this),
+                 loaded_callback));
+  return true;
+}
 
-  // Ensure the parent directory for storing cookies is created before reading
-  // from it.  We make an exception to allow IO on the UI thread here because
-  // we are going to disk anyway in db_->Open.  (This code will be moved to the
-  // DB thread as part of http://crbug.com/52909.)
-  {
-    base::ThreadRestrictions::ScopedAllowIO allow_io;
-    const FilePath dir = path_.DirName();
-    if (!file_util::PathExists(dir) && !file_util::CreateDirectory(dir))
-      return false;
+void SQLitePersistentCookieStore::Backend::LoadAndNotifyOnDBThread(
+    const LoadedCallback& loaded_callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
+  std::vector<net::CookieMonster::CanonicalCookie*> cookies;
+
+  bool load_success = LoadInternal(&cookies);
+
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, base::Bind(
+      &SQLitePersistentCookieStore::Backend::NotifyOnIOThread,
+      base::Unretained(this), loaded_callback, load_success, cookies));
+}
+
+void SQLitePersistentCookieStore::Backend::NotifyOnIOThread(
+    const LoadedCallback& loaded_callback,
+    bool load_success,
+    const std::vector<net::CookieMonster::CanonicalCookie*>& cookies) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  loaded_callback.Run(cookies);
+}
+
+bool SQLitePersistentCookieStore::Backend::InitializeDatabase() {
+  const FilePath dir = path_.DirName();
+  if (!file_util::PathExists(dir) && !file_util::CreateDirectory(dir)) {
+    return false;
   }
 
   db_.reset(new sql::Connection);
@@ -185,6 +225,14 @@ bool SQLitePersistentCookieStore::Backend::Load(
   }
 
   db_->Preload();
+  return true;
+}
+
+bool SQLitePersistentCookieStore::Backend::LoadInternal(
+    std::vector<net::CookieMonster::CanonicalCookie*>* cookies) {
+  if (!InitializeDatabase()) {
+    return false;
+  }
 
   // Slurp all the cookies into the out-vector.
   sql::Statement smt(db_->GetUniqueStatement(
@@ -447,11 +495,14 @@ void SQLitePersistentCookieStore::Backend::Flush(Task* completion_task) {
 // pending commit timer that will be holding a reference on us, but if/when
 // this fires we will already have been cleaned up and it will be ignored.
 void SQLitePersistentCookieStore::Backend::Close() {
-  DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::DB));
-  // Must close the backend on the background thread.
-  BrowserThread::PostTask(
-      BrowserThread::DB, FROM_HERE,
-      NewRunnableMethod(this, &Backend::InternalBackgroundClose));
+  if (BrowserThread::CurrentlyOn(BrowserThread::DB)) {
+    InternalBackgroundClose();
+  } else {
+    // Must close the backend on the background thread.
+    BrowserThread::PostTask(
+        BrowserThread::DB, FROM_HERE,
+        NewRunnableMethod(this, &Backend::InternalBackgroundClose));
+  }
 }
 
 void SQLitePersistentCookieStore::Backend::InternalBackgroundClose() {
@@ -483,9 +534,8 @@ SQLitePersistentCookieStore::~SQLitePersistentCookieStore() {
   }
 }
 
-bool SQLitePersistentCookieStore::Load(
-    std::vector<net::CookieMonster::CanonicalCookie*>* cookies) {
-  return backend_->Load(cookies);
+bool SQLitePersistentCookieStore::Load(const LoadedCallback& loaded_callback) {
+  return backend_->Load(loaded_callback);
 }
 
 void SQLitePersistentCookieStore::AddCookie(

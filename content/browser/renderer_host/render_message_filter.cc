@@ -893,9 +893,10 @@ void RenderMessageFilter::CheckPolicyForCookies(
           url, first_party_for_cookies, cookie_list, resource_context_,
           render_process_id_, reply_msg->routing_id())) {
     // Gets the cookies from cookie store if allowed.
-    context->cookie_store()->GetCookiesAsync(
-        url, base::Bind(&RenderMessageFilter::SendGetCookiesResponse,
-                        this, reply_msg));
+    context->cookie_store()->GetCookiesWithOptionsAsync(
+        url, net::CookieOptions(),
+        base::Bind(&RenderMessageFilter::SendGetCookiesResponse,
+                   this, reply_msg));
   } else {
     SendGetCookiesResponse(reply_msg, std::string());
   }

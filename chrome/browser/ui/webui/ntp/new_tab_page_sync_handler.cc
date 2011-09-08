@@ -26,52 +26,6 @@
 // configurable.
 static const char kSyncDefaultViewOnlineUrl[] = "http://docs.google.com";
 
-// TODO(idana): the following code was originally copied from
-// toolbar_importer.h/cc and it needs to be moved to a common Google Accounts
-// utility.
-
-// A simple pair of fields that identify a set of Google cookies, used to
-// filter from a larger set.
-struct GoogleCookieFilter {
-  // The generalized, fully qualified URL of pages where
-  // cookies with id |cookie_id| are obtained / accessed.
-  const char* url;
-  // The id of the cookie this filter is selecting,
-  // with name/value delimiter (i.e '=').
-  const char* cookie_id;
-};
-
-// Filters to select Google GAIA cookies.
-static const GoogleCookieFilter kGAIACookieFilters[] = {
-  { "http://.google.com/",       "SID=" },     // Gmail.
-  // Add filters here for other interesting cookies that should result in
-  // showing the promotions (e.g ASIDAS for dasher accounts).
-};
-
-bool IsGoogleGAIACookieInstalled() {
-  for (size_t i = 0; i < arraysize(kGAIACookieFilters); ++i) {
-    // Since we are running on the UI thread don't call GetURLRequestContext().
-    net::CookieStore* store =
-        Profile::Deprecated::GetDefaultRequestContext()->
-        DONTUSEME_GetCookieStore();
-    GURL url(kGAIACookieFilters[i].url);
-    net::CookieOptions options;
-    options.set_include_httponly();  // The SID cookie might be httponly.
-    std::string cookies = store->GetCookiesWithOptions(url, options);
-    std::vector<std::string> cookie_list;
-    base::SplitString(cookies, ';', &cookie_list);
-    for (std::vector<std::string>::iterator current = cookie_list.begin();
-         current != cookie_list.end();
-         ++current) {
-      size_t position =
-          current->find(kGAIACookieFilters[i].cookie_id);
-      if (0 == position)
-        return true;
-    }
-  }
-  return false;
-}
-
 NewTabPageSyncHandler::NewTabPageSyncHandler() : sync_service_(NULL),
   waiting_for_initial_page_load_(true) {
 }
