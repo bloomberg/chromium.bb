@@ -401,8 +401,8 @@ def _SendChangeSVN(options):
       if scm.SVN.AssertVersion("1.5")[0]:
         command.append('--no-ignore')
 
-      gclient_utils.CheckCall(command)
-    except gclient_utils.CheckCallError, e:
+      subprocess2.check_output(command, stdout=subprocess2.VOID)
+    except subprocess2.CalledProcessError, e:
       out = e.stdout
       if e.stderr:
         out += e.stderr
@@ -443,10 +443,11 @@ def GuessVCS(options, path):
   # Git has a command to test if you're in a git tree.
   # Try running it, but don't die if we don't have git installed.
   try:
-    gclient_utils.CheckCall(['git', 'rev-parse', '--is-inside-work-tree'],
-                            cwd=real_path)
+    subprocess2.check_output(
+        ['git', 'rev-parse', '--is-inside-work-tree'], cwd=real_path,
+        stdout=subprocess2.VOID)
     return GIT(options, path)
-  except gclient_utils.CheckCallError, e:
+  except subprocess2.CalledProcessError, e:
     if e.returncode != errno.ENOENT and e.returncode != 128:
       # ENOENT == 2 = they don't have git installed.
       # 128 = git error code when not in a repo.
