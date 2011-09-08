@@ -1,4 +1,4 @@
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -15,6 +15,8 @@ import sys
 import threading
 import time
 
+import subprocess2
+
 
 def hack_subprocess():
   """subprocess functions may throw exceptions when used in multiple threads.
@@ -29,28 +31,15 @@ class Error(Exception):
   pass
 
 
-class CheckCallError(OSError, Error):
+class CheckCallError(subprocess2.CalledProcessError, Error):
   """CheckCall() returned non-0."""
-  def __init__(self, command, cwd, returncode, stdout, stderr=None):
-    OSError.__init__(self, command, cwd, returncode)
-    Error.__init__(self, command)
-    self.command = command
-    self.cwd = cwd
-    self.returncode = returncode
-    self.stdout = stdout
-    self.stderr = stderr
+  def __init__(self, cmd, cwd, returncode, stdout, stderr=None):
+    subprocess2.CalledProcessError.__init__(
+        self, returncode, cmd, cwd, stdout, stderr)
+    Error.__init__(self, cmd)
 
   def __str__(self):
-    out = ' '.join(self.command)
-    if self.cwd:
-      out += ' in ' + self.cwd
-    if self.returncode is not None:
-      out += ' returned %d' % self.returncode
-    if self.stdout is not None:
-      out += '\nstdout: %s\n' % self.stdout
-    if self.stderr is not None:
-      out += '\nstderr: %s\n' % self.stderr
-    return out
+    return subprocess2.CalledProcessError.__str__(self)
 
 
 def Popen(args, **kwargs):
