@@ -256,6 +256,7 @@ void PrintingContextWin::AskUserForSettings(gfx::NativeView view,
 
   // TODO(maruel):  Support PD_PRINTTOFILE.
   callback->Run(ParseDialogResultEx(dialog_options));
+  delete callback;
 #endif
 }
 

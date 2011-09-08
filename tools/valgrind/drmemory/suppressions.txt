@@ -746,12 +746,6 @@ LEAK
 *!net::SSL*SocketNSS::DoHandshake
 *!net::SSL*SocketNSS::DoHandshakeLoop
 
-# http://crbug.com/70388
-LEAK
-*!operator new
-*!NewCallback<PrintingContextTest,enum printing::PrintingContext::Result>
-*!PrintingContextTest_PrintAll_Test::TestBody
-
 # http://crbug.com/73744
 LEAK
 *!operator new
