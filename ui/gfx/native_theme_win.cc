@@ -367,7 +367,22 @@ HRESULT NativeThemeWin::PaintScrollbarArrow(
       NOTREACHED() << "Invalid part: " << part;
       break;
   }
-
+  switch(state) {
+    case kDisabled:
+      classic_state |= DFCS_INACTIVE;
+      break;
+    case kHovered:
+      classic_state |= DFCS_HOT;
+      break;
+    case kNormal:
+      break;
+    case kPressed:
+      classic_state |= DFCS_PUSHED;
+      break;
+    default:
+      NOTREACHED() << "Invalid state: " << state;
+      break;
+  }
   DrawFrameControl(hdc, &rect_win, DFC_SCROLL, classic_state);
   return S_OK;
 }
