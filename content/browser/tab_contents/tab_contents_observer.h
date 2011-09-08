@@ -62,6 +62,8 @@ class TabContentsObserver : public IPC::Channel::Listener,
                           WindowOpenDisposition disposition,
                           PageTransition::Type transition);
 
+  virtual void AppCacheAccessed(const GURL& manifest_url,
+                                bool blocked_by_policy);
 #if 0
   // For unifying with delegate...
 

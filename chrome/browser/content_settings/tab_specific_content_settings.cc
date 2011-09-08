@@ -314,17 +314,6 @@ void TabSpecificContentSettings::OnWebDatabaseAccessed(
   }
 }
 
-void TabSpecificContentSettings::OnAppCacheAccessed(
-    const GURL& manifest_url, bool blocked_by_policy) {
-  if (blocked_by_policy) {
-    blocked_local_shared_objects_.appcaches()->AddAppCache(manifest_url);
-    OnContentBlocked(CONTENT_SETTINGS_TYPE_COOKIES, std::string());
-  } else {
-    allowed_local_shared_objects_.appcaches()->AddAppCache(manifest_url);
-    OnContentAccessed(CONTENT_SETTINGS_TYPE_COOKIES);
-  }
-}
-
 void TabSpecificContentSettings::OnFileSystemAccessed(
     const GURL& url,
     bool blocked_by_policy) {
@@ -408,7 +397,6 @@ bool TabSpecificContentSettings::OnMessageReceived(
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(TabSpecificContentSettings, message)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_ContentBlocked, OnContentBlocked)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_AppCacheAccessed, OnAppCacheAccessed)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -448,6 +436,17 @@ void TabSpecificContentSettings::DidStartProvisionalLoadForFrame(
   if (!is_error_page)
     ClearCookieSpecificContentSettings();
   ClearGeolocationContentSettings();
+}
+
+void TabSpecificContentSettings::AppCacheAccessed(const GURL& manifest_url,
+                                                  bool blocked_by_policy) {
+  if (blocked_by_policy) {
+    blocked_local_shared_objects_.appcaches()->AddAppCache(manifest_url);
+    OnContentBlocked(CONTENT_SETTINGS_TYPE_COOKIES, std::string());
+  } else {
+    allowed_local_shared_objects_.appcaches()->AddAppCache(manifest_url);
+    OnContentAccessed(CONTENT_SETTINGS_TYPE_COOKIES);
+  }
 }
 
 void TabSpecificContentSettings::Observe(int type,

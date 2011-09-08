@@ -169,11 +169,12 @@ class TabSpecificContentSettings : public TabContentsObserver,
       const GURL& validated_url,
       bool is_error_page,
       RenderViewHost* render_view_host) OVERRIDE;
+  virtual void AppCacheAccessed(const GURL& manifest_url,
+                                bool blocked_by_policy) OVERRIDE;
 
   // Message handlers. Public for testing.
   void OnContentBlocked(ContentSettingsType type,
                         const std::string& resource_identifier);
-  void OnAppCacheAccessed(const GURL& manifest_url, bool blocked_by_policy);
 
   // These methods are invoked on the UI thread by the static functions above.
   // Public for testing.

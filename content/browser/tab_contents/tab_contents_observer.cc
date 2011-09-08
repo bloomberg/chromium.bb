@@ -82,6 +82,10 @@ void TabContentsObserver::DidOpenURL(const GURL& url,
                                      PageTransition::Type transition) {
 }
 
+void TabContentsObserver::AppCacheAccessed(const GURL& manifest_url,
+                                           bool blocked_by_policy) {
+}
+
 TabContentsObserver::TabContentsObserver(TabContents* tab_contents)
     : tab_contents_(NULL), routing_id_(MSG_ROUTING_NONE) {
   Observe(tab_contents);

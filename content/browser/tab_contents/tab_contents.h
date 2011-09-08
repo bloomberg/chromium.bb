@@ -581,6 +581,7 @@ class TabContents : public PageNavigator,
                    const gfx::Rect& selection_rect, int active_match_ordinal,
                    bool final_update);
   void OnCrashedPlugin(const FilePath& plugin_path);
+  void OnAppCacheAccessed(const GURL& manifest_url, bool blocked_by_policy);
 
   // Changes the IsLoading state and notifies delegate as needed
   // |details| is used to provide details on the load that just finished

@@ -308,6 +308,7 @@ bool TabContents::OnMessageReceived(const IPC::Message& message) {
                         OnWebIntentDispatch)
     IPC_MESSAGE_HANDLER(ViewHostMsg_Find_Reply, OnFindReply)
     IPC_MESSAGE_HANDLER(ViewHostMsg_CrashedPlugin, OnCrashedPlugin)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_AppCacheAccessed, OnAppCacheAccessed)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
 
@@ -1154,6 +1155,13 @@ void TabContents::OnFindReply(int request_id,
 
 void TabContents::OnCrashedPlugin(const FilePath& plugin_path) {
   delegate()->CrashedPlugin(this, plugin_path);
+}
+
+void TabContents::OnAppCacheAccessed(const GURL& manifest_url,
+                                     bool blocked_by_policy) {
+  // Notify observers about navigation.
+  FOR_EACH_OBSERVER(TabContentsObserver, observers_,
+                    AppCacheAccessed(manifest_url, blocked_by_policy));
 }
 
 // Notifies the RenderWidgetHost instance about the fact that the page is
