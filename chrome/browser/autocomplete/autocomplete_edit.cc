@@ -217,8 +217,9 @@ void AutocompleteEditModel::OnChanged() {
       network_action_predictor_.RecommendAction(user_text_, current_match);
   UMA_HISTOGRAM_ENUMERATION("NetworkActionPredictor.Action", recommended_action,
                             NetworkActionPredictor::LAST_PREDICT_ACTION);
-  if (!DoInstant(current_match, &suggested_text)) {
-    // Ignore the recommended action if the flag is not set.
+  bool might_support_instant = false;
+  if (!DoInstant(current_match, &suggested_text, &might_support_instant)) {
+    // Ignore the recommended action if Omnibox prerendering is not enabled.
     if (!CommandLine::ForCurrentProcess()->HasSwitch(
         switches::kPrerenderFromOmnibox)) {
       recommended_action = NetworkActionPredictor::ACTION_NONE;
@@ -237,7 +238,9 @@ void AutocompleteEditModel::OnChanged() {
         NOTREACHED() << "Unexpected recommended action: " << recommended_action;
         break;
     }
+  }
 
+  if (!might_support_instant) {
     // Hide any suggestions we might be showing.
     view_->SetInstantSuggestion(string16(), false);
 
@@ -978,8 +981,12 @@ bool AutocompleteEditModel::ShouldAllowExactKeywordMatch(
 }
 
 bool AutocompleteEditModel::DoInstant(const AutocompleteMatch& match,
-                                      string16* suggested_text) {
+                                      string16* suggested_text,
+                                      bool* might_support_instant) {
   DCHECK(suggested_text);
+  DCHECK(might_support_instant);
+
+  *might_support_instant = false;
 
   if (in_revert_)
     return false;
@@ -991,6 +998,7 @@ bool AutocompleteEditModel::DoInstant(const AutocompleteMatch& match,
 
   TabContentsWrapper* tab = controller_->GetTabContentsWrapper();
 
+  bool instant_is_active = false;
   if (user_input_in_progress() && popup_->IsOpen()) {
     if (match.destination_url == PermanentURL()) {
       // The destination is the same as the current url. This typically
@@ -998,25 +1006,28 @@ bool AutocompleteEditModel::DoInstant(const AutocompleteMatch& match,
       // case we don't want to load a preview.
       instant->DestroyPreviewContentsAndLeaveActive();
     } else {
-      instant->Update(tab, match, view_->GetText(), UseVerbatimInstant(),
-                      suggested_text);
+      instant_is_active = instant->Update(tab, match, view_->GetText(),
+                                          UseVerbatimInstant(), suggested_text);
     }
   } else {
     instant->DestroyPreviewContents();
   }
 
-  return instant->MightSupportInstant();
+  *might_support_instant = instant->MightSupportInstant();
+  return instant_is_active;
 }
 
 void AutocompleteEditModel::DoPrerender(const AutocompleteMatch& match) {
   // Do not prerender if the destination URL is the same as the current URL.
   if (match.destination_url == PermanentURL())
     return;
-  TabContentsWrapper* tab = controller_->GetTabContentsWrapper();
-  prerender::PrerenderManager* prerender_manager =
-      tab->profile()->GetPrerenderManager();
-  if (prerender_manager)
-    prerender_manager->AddPrerenderFromOmnibox(match.destination_url);
+  if (user_input_in_progress() && popup_->IsOpen()) {
+    TabContentsWrapper* tab = controller_->GetTabContentsWrapper();
+    prerender::PrerenderManager* prerender_manager =
+        tab->profile()->GetPrerenderManager();
+    if (prerender_manager)
+      prerender_manager->AddPrerenderFromOmnibox(match.destination_url);
+  }
 }
 
 void AutocompleteEditModel::DoPreconnect(const AutocompleteMatch& match) {

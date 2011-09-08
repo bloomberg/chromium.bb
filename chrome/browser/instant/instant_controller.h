@@ -78,8 +78,9 @@ class InstantController : public InstantLoaderDelegate {
   // created. If |verbatim| is true search results are shown for |user_text|
   // rather than the best guess as to what the search thought the user meant.
   // |verbatim| only matters if the AutocompleteMatch is for a search engine
-  // that supports instant.
-  void Update(TabContentsWrapper* tab_contents,
+  // that supports instant. Returns true if the attempt to update does not
+  // result in the preview TabContents being destroyed.
+  bool Update(TabContentsWrapper* tab_contents,
               const AutocompleteMatch& match,
               const string16& user_text,
               bool verbatim,

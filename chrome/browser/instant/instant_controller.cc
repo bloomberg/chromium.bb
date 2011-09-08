@@ -17,7 +17,6 @@
 #include "chrome/browser/instant/promo_counter.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/prefs/pref_service.h"
-#include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_service.h"
@@ -176,7 +175,7 @@ bool InstantController::CommitIfCurrent(InstantController* controller) {
   return false;
 }
 
-void InstantController::Update(TabContentsWrapper* tab_contents,
+bool InstantController::Update(TabContentsWrapper* tab_contents,
                                const AutocompleteMatch& match,
                                const string16& user_text,
                                bool verbatim,
@@ -195,26 +194,15 @@ void InstantController::Update(TabContentsWrapper* tab_contents,
   if (url.is_empty() || !url.is_valid()) {
     // Assume we were invoked with GURL() and should destroy all.
     DestroyPreviewContents();
-    return;
+    return false;
   }
 
   PreviewCondition preview_condition = GetPreviewConditionFor(match,
                                                               &template_url);
-  if (preview_condition == PREVIEW_CONDITION_SUCCESS) {
-    // Do nothing if we should show it.
-  } else if (preview_condition == PREVIEW_CONDITION_INSTANT_SEARCH_ONLY) {
-    // Start Prerender of this page instead.
-    prerender::PrerenderManager* prerender_manager =
-        tab_contents_->profile()->GetPrerenderManager();
-    if (prerender_manager)
-      prerender_manager->AddPrerenderFromOmnibox(match.destination_url);
-
-    DestroyPreviewContentsAndLeaveActive();
-    return;
-  } else {
+  if (preview_condition != PREVIEW_CONDITION_SUCCESS) {
     // Just destroy the preview and cancel the update.
     DestroyPreviewContentsAndLeaveActive();
-    return;
+    return false;
   }
 
   if (!loader_manager_.get())
@@ -240,6 +228,7 @@ void InstantController::Update(TabContentsWrapper* tab_contents,
       chrome::NOTIFICATION_INSTANT_CONTROLLER_UPDATED,
       Source<InstantController>(this),
       NotificationService::NoDetails());
+  return true;
 }
 
 void InstantController::SetOmniboxBounds(const gfx::Rect& bounds) {

@@ -423,8 +423,11 @@ class AutocompleteEditModel : public AutocompleteControllerDelegate {
                                     size_t caret_position);
 
   // Tries to start an instant preview for |match|. Returns true if instant is
-  // supported. |suggested_text| must be non-NULL.
-  bool DoInstant(const AutocompleteMatch& match, string16* suggested_text);
+  // showing and sets |might_support_instant| to true if instant is supported.
+  // |suggested_text| and |might_support_instant| must be non-NULL.
+  bool DoInstant(const AutocompleteMatch& match,
+                 string16* suggested_text,
+                 bool* might_support_instant);
 
   // Starts a prerender for the given |match|.
   void DoPrerender(const AutocompleteMatch& match);
