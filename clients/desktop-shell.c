@@ -349,6 +349,10 @@ static const struct {
 		"/usr/bin/gnome-terminal"
 	},
 	{
+		"/usr/share/icons/gnome/24x24/apps/utilities-terminal.png",
+		"./clients/terminal"
+	},
+	{
 		"/usr/share/icons/hicolor/24x24/apps/google-chrome.png",
 		"/usr/bin/google-chrome"
 	},
