@@ -69,7 +69,7 @@ void PpbFullscreenRpcServer::PPB_Fullscreen_GetScreenSize(
   PP_Bool pp_success = PPBFullscreenInterface()->GetScreenSize(
       instance,
       reinterpret_cast<struct PP_Size*>(size));
-  DebugPrintf("PPB_Fullscreen::SetFullscreen: pp_success=%d\n", pp_success);
+  DebugPrintf("PPB_Fullscreen::GetScreenSize: pp_success=%d\n", pp_success);
 
   *success = (pp_success == PP_TRUE);
   rpc->result = NACL_SRPC_RESULT_OK;
