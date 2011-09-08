@@ -50,65 +50,34 @@ class DrMemoryAnalyze:
         "chromium\\src\\",
         "crt_bld\\self_x86\\",
     ]
-    CUT_STACK_BELOW = ".*testing.*Test.*Run.*|testing::internal.*"
+    BORING_CALLERS = [
+        "BaseThreadInitThunk",
+        "testing.*Test.*Run.*",
+        "testing::internal.*",
+        "MessageLoop::Run",
+        "RunnableMethod.*"
+    ]
+    CUT_STACK_BELOW = (r"\.(exe|dll|DLL)!(" + "|".join(BORING_CALLERS) +
+                       r")(\s+\[.*\]$|\s*$)")
+    # TODO(timurrrr): whitespaces needed in "\s*$" due to
+    # http://code.google.com/p/drmemory/issues/detail?id=584
 
     result = [self.line_]
     self.ReadLine()
-    cnt = 1
+    skip_following_frames = False
     while len(self.line_.strip()) > 0:
-      tmp_line = self.line_
-      match_syscall = re.search("system call (.*)\n", tmp_line)
-      if match_syscall:
-        syscall_name = match_syscall.groups()[0]
-        result.append(" #%2i <sys.call> %s\n" % (cnt, syscall_name))
-        cnt = cnt + 1
-        self.ReadLine() # skip "<system call> line
-        self.ReadLine()
-        continue
-
-      # Dr. Memory sometimes prints adjacent malloc'ed regions next to the
-      # access address in the UNADDRESSABLE ACCESS reports like this:
-      # Note: next higher malloc: <address range>
-      # Note: prev lower malloc:  <address range>
-      # Note: 0x1234-0x5678 overlaps freed memory 0x1000-0x6000
-      if tmp_line.startswith("Note: "):
-        result.append(tmp_line)
-        self.ReadLine()
-        continue
-
-      match_binary_fname = re.search("0x[0-9a-fA-F]+ <(.*)> .*!([^+]*)"
-                                     "(?:\+0x[0-9a-fA-F]+)?\n", tmp_line)
-      if match_binary_fname:
-        self.ReadLine()
-        match_src_line = re.search("\s*(.*):([0-9]+)(?:\+0x[0-9a-fA-F]+)?",
-                                 self.line_)
-        if match_src_line:
-          binary, fname = match_binary_fname.groups()
-          if re.search(CUT_STACK_BELOW, fname):
-            break
-          report_line = (" #%2i %-50s" % (cnt, fname))
-          if (not re.search("\.exe\+0x", binary) and
-              not re.search("chrome\.dll", binary)):
-            # Print the DLL name
-            report_line += " " + binary
-          src, lineno = match_src_line.groups()
-          if src != "??":
-            for pat in FILE_PREFIXES_TO_CUT:
-              idx = src.rfind(pat)
-              if idx != -1:
-                src = src[idx+len(pat):]
-            report_line += " " + src
-            if int(lineno) != 0:
-              report_line += ":%i" % int(lineno)
-          result.append(report_line + "\n")
-          cnt = cnt + 1
-      else:
-        match_other = re.search("0x[0-9a-fA-F]+ (<.*>)(.*)\n", tmp_line)
-        if match_other:
-          module, other = match_other.groups()
-          result.append(" #%2i %-50s %s\n" % (cnt, module, other))
-          cnt = cnt + 1
+      cur_line = self.line_
       self.ReadLine()
+      if skip_following_frames or re.search(CUT_STACK_BELOW, cur_line):
+        skip_following_frames = True
+        continue
+      for prefix in FILE_PREFIXES_TO_CUT:
+        regexp = "([^\[\]]+" + re.escape(prefix) + ").*"
+        m = re.search(regexp, cur_line)
+        if m:
+          assert len(m.groups()) == 1
+          cur_line = cur_line.replace(m.groups()[0], "")
+      result.append(cur_line)
     return result
 
   def ParseReportFile(self, filename):
