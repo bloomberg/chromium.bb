@@ -2138,10 +2138,15 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
           modules.append(filename[len(prefix):-len(suffix)])
       return modules
 
+    # Retrieve the default value of 'SHARED_LIB_SUFFIX'
+    params = {'flavor': 'linux'}
+    default_variables = {}
+    CalculateVariables(default_variables, params)
+
     self.WriteList(
         DepsToModules(link_deps,
                       generator_default_variables['SHARED_LIB_PREFIX'],
-                      generator_default_variables['SHARED_LIB_SUFFIX']),
+                      default_variables['SHARED_LIB_SUFFIX']),
         'LOCAL_SHARED_LIBRARIES')
     self.WriteList(
         DepsToModules(link_deps,
