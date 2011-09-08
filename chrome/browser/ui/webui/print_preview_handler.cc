@@ -59,6 +59,7 @@ const char kDisableColorOption[] = "disableColorOption";
 const char kSetColorAsDefault[] = "setColorAsDefault";
 const char kSetDuplexAsDefault[] = "setDuplexAsDefault";
 const char kPrinterColorModelForColor[] = "printerColorModelForColor";
+const char kPrinterDefaultDuplexValue[] = "printerDefaultDuplexValue";
 
 #if defined(USE_CUPS)
 const char kColorDevice[] = "ColorDevice";
@@ -281,6 +282,7 @@ class PrintSystemTaskProxy
     bool supports_color = true;
     bool set_duplex_as_default = false;
     int printer_color_space = printing::GRAY;
+    int default_duplex_setting_value = printing::UNKNOWN_DUPLEX_MODE;
     if (!print_backend_->GetPrinterCapsAndDefaults(printer_name,
                                                    &printer_info)) {
       return;
@@ -306,15 +308,23 @@ class PrintSystemTaskProxy
       if (attr && attr->value)
         supports_color = ppd->color_device;
 
-      ppd_choice_t* ch = ppdFindMarkedChoice(ppd, kDuplex);
-      if (ch == NULL) {
+      ppd_choice_t* duplex_choice = ppdFindMarkedChoice(ppd, kDuplex);
+      if (duplex_choice == NULL) {
         ppd_option_t* option = ppdFindOption(ppd, kDuplex);
         if (option != NULL)
-          ch = ppdFindChoice(option, option->defchoice);
+          duplex_choice = ppdFindChoice(option, option->defchoice);
       }
 
-      if (ch != NULL && strcmp(ch->choice, kDuplexNone) != 0)
+      if (duplex_choice != NULL &&
+          strcmp(duplex_choice->choice, kDuplexNone) != 0)
         set_duplex_as_default = true;
+
+      if (duplex_choice != NULL) {
+        if (strcmp(duplex_choice->choice, kDuplexNone) != 0)
+          default_duplex_setting_value = printing::LONG_EDGE;
+        else
+          default_duplex_setting_value = printing::SIMPLEX;
+      }
 
       if (supports_color) {
         // Identify the color space (COLOR/CMYK) for this printer.
@@ -326,7 +336,6 @@ class PrintSystemTaskProxy
             printer_color_space = printing::CMYK;
         }
       }
-
       ppdClose(ppd);
     }
     file_util::Delete(ppd_file_path, false);
@@ -345,6 +354,16 @@ class PrintSystemTaskProxy
             std::string::npos) &&
         (printer_info.printer_defaults.find(kPskTwoSided) !=
             std::string::npos);
+
+    if (printer_info.printer_defaults.find(kPskDuplexFeature) !=
+            std::string::npos) {
+        if (printer_info.printer_defaults.find(kPskTwoSided) !=
+                std::string::npos) {
+          default_duplex_setting_value = printing::LONG_EDGE;
+        } else {
+          default_duplex_setting_value = printing::SIMPLEX;
+        }
+    }
 #else
   NOTIMPLEMENTED();
 #endif
@@ -359,6 +378,8 @@ class PrintSystemTaskProxy
     }
     settings_info.SetBoolean(kSetDuplexAsDefault, set_duplex_as_default);
     settings_info.SetInteger(kPrinterColorModelForColor, printer_color_space);
+    settings_info.SetInteger(kPrinterDefaultDuplexValue,
+                             default_duplex_setting_value);
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         NewRunnableMethod(this,
