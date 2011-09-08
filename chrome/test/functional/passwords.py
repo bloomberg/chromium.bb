@@ -101,16 +101,16 @@ class PasswordTest(pyauto.PyUITest):
     self.assertEqual(infobar[0]['type'], 'confirm_infobar')
     self.PerformActionOnInfobar('accept', infobar_index=0)
     self.NavigateToURL(url_logout)
-    self.AppendTab(pyauto.GURL(url_https))  # New tab to avoid bug 70694
+    self.NavigateToURL(url_https)
     # Wait until username is filled by the Password manager on the login page.
     self.assertTrue(self.WaitUntil(
         lambda: self.GetDOMValue('document.getElementById("Email").value',
                                  0, 0) != ''))
     test_utils.VerifyGoogleAccountCredsFilled(self, username, password,
-                                              tab_index=1, windex=0)
+                                              tab_index=0, windex=0)
     self.ExecuteJavascript('document.getElementById("gaia_loginform").submit();'
                            'window.domAutomationController.send("done")',
-                           0, 1)
+                           0, 0)
     test_utils.ClearPasswords(self)
 
   def testNeverSavePasswords(self):
