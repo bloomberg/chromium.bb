@@ -321,10 +321,12 @@ html[dir=rtl] #user-image-preview {
 
 #security-info {
   bottom: 10px;
+  left: 0;
   position: absolute;
   text-align: center;
   visibility: hidden;
-  width: 98%;
+  width: 100%;
+  z-index: 10;
 }
 
 #security-info a {
