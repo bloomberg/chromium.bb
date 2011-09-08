@@ -13108,6 +13108,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_KEYBOARD_OVERLAY_TOGGLE_BOOKMARK_BAR" desc="The text in the keyboard overlay to explain the shortcut.">
         Toggle bookmark bar
       </message>
+      <message name="IDS_KEYBOARD_OVERLAY_TOGGLE_SPEECH_INPUT" desc="The text in the keyboard overlay to explain the shortcut (start or stop speech input).">
+        Toggle speech input
+      </message>
       <message name="IDS_KEYBOARD_OVERLAY_UNDO" desc="The text in the keyboard overlay to explain the shortcut.">
         Undo
       </message>

@@ -156,6 +156,8 @@ struct I18nContentToMessage {
     IDS_KEYBOARD_OVERLAY_TOGGLE_ACCESSIBILITY_FEATURES },
   { "keyboardOverlayToggleBookmarkBar",
     IDS_KEYBOARD_OVERLAY_TOGGLE_BOOKMARK_BAR },
+  { "keyboardOverlayToggleSpeechInput",
+    IDS_KEYBOARD_OVERLAY_TOGGLE_SPEECH_INPUT },
   { "keyboardOverlayUndo", IDS_KEYBOARD_OVERLAY_UNDO },
   { "keyboardOverlayViewKeyboardOverlay",
     IDS_KEYBOARD_OVERLAY_VIEW_KEYBOARD_OVERLAY },
