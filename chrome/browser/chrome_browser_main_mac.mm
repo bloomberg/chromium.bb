@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/browser_main_mac.h"
+#include "chrome/browser/chrome_browser_main_mac.h"
 
 #import <Cocoa/Cocoa.h>
 
@@ -14,7 +14,6 @@
 #include "base/path_service.h"
 #include "chrome/app/breakpad_mac.h"
 #import "chrome/browser/app_controller_mac.h"
-#include "chrome/browser/browser_main_win.h"
 #import "chrome/browser/chrome_browser_application_mac.h"
 #import "chrome/browser/mac/keystone_glue.h"
 #include "chrome/browser/metrics/metrics_service.h"
@@ -68,13 +67,14 @@ bool CheckMachineLevelInstall() {
 void PrepareRestartOnCrashEnviroment(const CommandLine& parsed_command_line) {
 }
 
-// BrowserMainPartsMac ---------------------------------------------------------
+// ChromeBrowserMainPartsMac ---------------------------------------------------
 
-BrowserMainPartsMac::BrowserMainPartsMac(const MainFunctionParams& parameters)
-    : BrowserMainPartsPosix(parameters) {
+ChromeBrowserMainPartsMac::ChromeBrowserMainPartsMac(
+    const MainFunctionParams& parameters)
+    : ChromeBrowserMainPartsPosix(parameters) {
 }
 
-void BrowserMainPartsMac::PreEarlyInitialization() {
+void ChromeBrowserMainPartsMac::PreEarlyInitialization() {
   BrowserMainPartsPosix::PreEarlyInitialization();
 
   if (base::mac::WasLaunchedAsHiddenLoginItem()) {
@@ -83,7 +83,7 @@ void BrowserMainPartsMac::PreEarlyInitialization() {
   }
 }
 
-void BrowserMainPartsMac::PreMainMessageLoopStart() {
+void ChromeBrowserMainPartsMac::PreMainMessageLoopStart() {
   BrowserMainPartsPosix::PreMainMessageLoopStart();
 
   // Tell Cooca to finish its initialization, which we want to do manually

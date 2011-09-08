@@ -4,16 +4,16 @@
 
 // Contains functions used by BrowserMain() that are gtk-specific.
 
-#ifndef CHROME_BROWSER_BROWSER_MAIN_GTK_H_
-#define CHROME_BROWSER_BROWSER_MAIN_GTK_H_
+#ifndef CHROME_BROWSER_CHROME_BROWSER_MAIN_GTK_H_
+#define CHROME_BROWSER_CHROME_BROWSER_MAIN_GTK_H_
 #pragma once
 
 #include "base/compiler_specific.h"
-#include "chrome/browser/browser_main_posix.h"
+#include "chrome/browser/chrome_browser_main_posix.h"
 
-class BrowserMainPartsGtk : public BrowserMainPartsPosix {
+class ChromeBrowserMainPartsGtk : public ChromeBrowserMainPartsPosix {
  public:
-  explicit BrowserMainPartsGtk(const MainFunctionParams& parameters);
+  explicit ChromeBrowserMainPartsGtk(const MainFunctionParams& parameters);
 
   virtual void PreEarlyInitialization() OVERRIDE;
 
@@ -25,4 +25,4 @@ class BrowserMainPartsGtk : public BrowserMainPartsPosix {
 // allow us to exit cleanly if X exits before us.
 void SetBrowserX11ErrorHandlers();
 
-#endif  // CHROME_BROWSER_BROWSER_MAIN_GTK_H_
+#endif  // CHROME_BROWSER_CHROME_BROWSER_MAIN_GTK_H_

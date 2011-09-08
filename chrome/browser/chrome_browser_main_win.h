@@ -4,11 +4,11 @@
 
 // Contains functions used by BrowserMain() that are win32-specific.
 
-#ifndef CHROME_BROWSER_BROWSER_MAIN_WIN_H_
-#define CHROME_BROWSER_BROWSER_MAIN_WIN_H_
+#ifndef CHROME_BROWSER_CHROME_BROWSER_MAIN_WIN_H_
+#define CHROME_BROWSER_CHROME_BROWSER_MAIN_WIN_H_
 #pragma once
 
-#include "chrome/browser/browser_main.h"
+#include "chrome/browser/chrome_browser_main.h"
 
 class CommandLine;
 
@@ -39,11 +39,11 @@ int HandleIconsCommands(const CommandLine& parsed_command_line);
 // user level Chrome.
 bool CheckMachineLevelInstall();
 
-class BrowserMainPartsWin : public ChromeBrowserMainParts {
+class ChromeBrowserMainPartsWin : public ChromeBrowserMainParts {
  public:
-  explicit BrowserMainPartsWin(const MainFunctionParams& parameters);
+  explicit ChromeBrowserMainPartsWin(const MainFunctionParams& parameters);
 
   virtual void PreMainMessageLoopStart() OVERRIDE;
 };
 
-#endif  // CHROME_BROWSER_BROWSER_MAIN_WIN_H_
+#endif  // CHROME_BROWSER_CHROME_BROWSER_MAIN_WIN_H_

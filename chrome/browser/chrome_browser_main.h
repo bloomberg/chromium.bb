@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_BROWSER_MAIN_H_
-#define CHROME_BROWSER_BROWSER_MAIN_H_
+#ifndef CHROME_BROWSER_CHROME_BROWSER_MAIN_H_
+#define CHROME_BROWSER_CHROME_BROWSER_MAIN_H_
 #pragma once
 
 #include "base/basictypes.h"
@@ -145,4 +145,4 @@ void RecordBrowserStartupTime();
 // sub-histogram (_PreRead(Enabled|Disabled)).
 void RecordPreReadExperimentTime(const char* name, base::TimeDelta time);
 
-#endif  // CHROME_BROWSER_BROWSER_MAIN_H_
+#endif  // CHROME_BROWSER_CHROME_BROWSER_MAIN_H_

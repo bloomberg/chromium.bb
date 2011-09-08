@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/browser_main_chromeos.h"
+#include "chrome/browser/chromeos/chrome_browser_main_chromeos.h"
 
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
@@ -49,11 +49,11 @@ class MessageLoopObserver : public MessageLoopForUI::Observer {
 static base::LazyInstance<MessageLoopObserver> g_message_loop_observer(
     base::LINKER_INITIALIZED);
 
-BrowserMainPartsChromeos::BrowserMainPartsChromeos(
+ChromeBrowserMainPartsChromeos::ChromeBrowserMainPartsChromeos(
     const MainFunctionParams& parameters)
-    : BrowserMainPartsGtk(parameters) {
+    : ChromeBrowserMainPartsGtk(parameters) {
 }
-BrowserMainPartsChromeos::~BrowserMainPartsChromeos() {
+ChromeBrowserMainPartsChromeos::~ChromeBrowserMainPartsChromeos() {
   if (!parameters().ui_task && chromeos::CrosLibrary::Get())
     chromeos::CrosLibrary::Shutdown();
 
@@ -64,8 +64,8 @@ BrowserMainPartsChromeos::~BrowserMainPartsChromeos() {
   chromeos::BootTimesLoader::Get()->WriteLogoutTimes();
 }
 
-void BrowserMainPartsChromeos::PreEarlyInitialization() {
-  BrowserMainPartsGtk::PreEarlyInitialization();
+void ChromeBrowserMainPartsChromeos::PreEarlyInitialization() {
+  ChromeBrowserMainPartsGtk::PreEarlyInitialization();
   if (parsed_command_line().HasSwitch(switches::kGuestSession)) {
     // Disable sync and extensions if we're in "browse without sign-in" mode.
     CommandLine* singleton_command_line = CommandLine::ForCurrentProcess();
@@ -75,8 +75,8 @@ void BrowserMainPartsChromeos::PreEarlyInitialization() {
   }
 }
 
-void BrowserMainPartsChromeos::PreMainMessageLoopStart() {
-  BrowserMainPartsGtk::PreMainMessageLoopStart();
+void ChromeBrowserMainPartsChromeos::PreMainMessageLoopStart() {
+  ChromeBrowserMainPartsGtk::PreMainMessageLoopStart();
   // Initialize CrosLibrary only for the browser, unless running tests
   // (which do their own CrosLibrary setup).
   if (!parameters().ui_task) {
@@ -89,8 +89,8 @@ void BrowserMainPartsChromeos::PreMainMessageLoopStart() {
       new chromeos::CrosNetworkChangeNotifierFactory());
 }
 
-void BrowserMainPartsChromeos::PostMainMessageLoopStart() {
-  BrowserMainPartsPosix::PostMainMessageLoopStart();
+void ChromeBrowserMainPartsChromeos::PostMainMessageLoopStart() {
+  ChromeBrowserMainPartsPosix::PostMainMessageLoopStart();
   MessageLoopForUI* message_loop = MessageLoopForUI::current();
   message_loop->AddObserver(g_message_loop_observer.Pointer());
 }

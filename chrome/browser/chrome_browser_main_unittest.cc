@@ -2,12 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/browser_main.h"
-
 #include <string>
 #include <vector>
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/chrome_browser_main.h"
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/testing_pref_service.h"

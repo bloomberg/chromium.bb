@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/browser_main_posix.h"
+#include "chrome/browser/chrome_browser_main_posix.h"
 
 #include <errno.h>
 #include <limits.h>
@@ -183,14 +183,14 @@ void SetFileDescriptorLimit(unsigned int max_descriptors) {
 
 }  // namespace
 
-// BrowserMainPartsPosix -------------------------------------------------------
+// ChromeBrowserMainPartsPosix -------------------------------------------------
 
-BrowserMainPartsPosix::BrowserMainPartsPosix(
+ChromeBrowserMainPartsPosix::ChromeBrowserMainPartsPosix(
     const MainFunctionParams& parameters)
     : ChromeBrowserMainParts(parameters) {
 }
 
-void BrowserMainPartsPosix::PreEarlyInitialization() {
+void ChromeBrowserMainPartsPosix::PreEarlyInitialization() {
   // We need to accept SIGCHLD, even though our handler is a no-op because
   // otherwise we cannot wait on children. (According to POSIX 2001.)
   struct sigaction action;
@@ -234,7 +234,7 @@ void BrowserMainPartsPosix::PreEarlyInitialization() {
     SetFileDescriptorLimit(fd_limit);
 }
 
-void BrowserMainPartsPosix::PostMainMessageLoopStart() {
+void ChromeBrowserMainPartsPosix::PostMainMessageLoopStart() {
   int pipefd[2];
   int ret = pipe(pipefd);
   if (ret < 0) {

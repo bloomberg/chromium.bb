@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/browser_main.h"
+#include "chrome/browser/chrome_browser_main.h"
 
 #include <algorithm>
 #include <string>
@@ -29,9 +29,10 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/about_flags.h"
-#include "chrome/browser/browser_main_win.h"
 #include "chrome/browser/browser_process_impl.h"
 #include "chrome/browser/browser_shutdown.h"
+#include "chrome/browser/chrome_browser_main_gtk.h"
+#include "chrome/browser/chrome_browser_main_win.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/extensions/extension_protocols.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -116,7 +117,6 @@
 #endif
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
-#include "chrome/browser/browser_main_gtk.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #endif
 

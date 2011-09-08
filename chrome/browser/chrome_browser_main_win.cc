@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/browser_main_win.h"
+#include "chrome/browser/chrome_browser_main_win.h"
 
 #include <windows.h>
 #include <shellapi.h>
@@ -277,13 +277,14 @@ bool CheckMachineLevelInstall() {
   return false;
 }
 
-// BrowserMainPartsWin ---------------------------------------------------------
+// ChromeBrowserMainPartsWin ---------------------------------------------------
 
-BrowserMainPartsWin::BrowserMainPartsWin(const MainFunctionParams& parameters)
+ChromeBrowserMainPartsWin::ChromeBrowserMainPartsWin(
+    const MainFunctionParams& parameters)
     : ChromeBrowserMainParts(parameters) {
 }
 
-void BrowserMainPartsWin::PreMainMessageLoopStart() {
+void ChromeBrowserMainPartsWin::PreMainMessageLoopStart() {
   if (!parameters().ui_task) {
     // Make sure that we know how to handle exceptions from the message loop.
     InitializeWindowProcExceptions();

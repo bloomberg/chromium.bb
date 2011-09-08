@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/browser_main_gtk.h"
+#include "chrome/browser/chrome_browser_main_gtk.h"
 
 #include <gtk/gtk.h>
 #include <sys/stat.h>
@@ -11,7 +11,6 @@
 
 #include "base/command_line.h"
 #include "base/debug/debugger.h"
-#include "chrome/browser/browser_main_win.h"
 #include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/chrome_switches.h"
@@ -75,17 +74,18 @@ int BrowserX11IOErrorHandler(Display* d) {
 
 }  // namespace
 
-BrowserMainPartsGtk::BrowserMainPartsGtk(const MainFunctionParams& parameters)
-    : BrowserMainPartsPosix(parameters) {
+ChromeBrowserMainPartsGtk::ChromeBrowserMainPartsGtk(
+    const MainFunctionParams& parameters)
+    : ChromeBrowserMainPartsPosix(parameters) {
 }
 
-void BrowserMainPartsGtk::PreEarlyInitialization() {
+void ChromeBrowserMainPartsGtk::PreEarlyInitialization() {
   DetectRunningAsRoot();
 
-  BrowserMainPartsPosix::PreEarlyInitialization();
+  ChromeBrowserMainPartsPosix::PreEarlyInitialization();
 }
 
-void BrowserMainPartsGtk::DetectRunningAsRoot() {
+void ChromeBrowserMainPartsGtk::DetectRunningAsRoot() {
   if (geteuid() == 0) {
     const CommandLine& command_line = *CommandLine::ForCurrentProcess();
     if (parsed_command_line().HasSwitch(switches::kUserDataDir))
