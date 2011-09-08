@@ -193,7 +193,7 @@ class AutofillTest(pyauto.PyUITest):
     Args:
       number: the credit card number being validated, as a string.
 
-    Return:
+    Returns:
       boolean whether the credit card number is valid or not.
     """
     # Filters out non-digit characters.
@@ -720,6 +720,102 @@ class AutofillTest(pyauto.PyUITest):
       js += 'document.getElementById("testform").submit();'
       self.SubmitAutofillForm(js, tab_index=0, windex=0)
     return len(list_of_dict)
+
+  class AutoFillSettingsPage(object):
+    ADDRESS_URL = 'chrome://settings/autofillEditAddress'
+    CC_URL = 'chrome://settings/autofillEditCreditCard'
+
+    def FillAddressFields(self, full_name, address_line1, address_line2, city,
+                          state, postal_code, country, phone, email,
+                          company_name):
+      driver.find_element_by_id('full-name-list').find_element_by_tag_name(
+          'input').send_keys(full_name)
+      driver.find_element_by_id('addr-line-1').send_keys(address_line1)
+      driver.find_element_by_id('addr-line-2').send_keys(address_line2)
+      driver.find_element_by_id('city').send_keys(city)
+
+
+  def _SelectOptionXpath(self, value):
+    """Returns an xpath query used to select an item from a dropdown list.
+
+    Args:
+      value: Option selected for the drop-down list field.
+
+    Returns:
+      The value of the xpath query.
+    """
+    return '//option[@value="%s"]' % value
+
+  def testPostalCodeAndStateLabelsBasedOnCountry(self):
+    """Verify postal code and state labels based on selected country."""
+    data_file = os.path.join(self.DataDir(), 'autofill', 'functional',
+                             'state_zip_labels.txt')
+    import simplejson
+    test_data = simplejson.loads(open(data_file).read())
+
+    driver = self.NewWebDriver()
+    self.NavigateToURL('chrome://settings/autofillEditAddress')
+    # Initial check of State and ZIP labels.
+    self.assertEqual('State', driver.find_element_by_id('state-label').text)
+    self.assertEqual('ZIP code',
+                     driver.find_element_by_id('postal-code-label').text)
+
+    for country_code in test_data:
+      query = self._SelectOptionXpath(country_code)
+      driver.find_element_by_id('country').find_element_by_xpath(query).click()
+      # Compare postal labels.
+      actual_postal_label = driver.find_element_by_id(
+          'postal-code-label').text
+      expected_postal_label = test_data[country_code]['postalCodeLabel']
+      self.assertEqual(
+          expected_postal_label, actual_postal_labels,
+          msg='Postal code label does not match Country "%s"' % country_code)
+      # Compare state labels.
+      actual_state_label = driver.find_element_by_id('state-label').text
+      expected_state_label = test_data[country_code]['stateLabel']
+      self.assertEqual(
+          expected_state_label, actual_postal_labels,
+          msg='State label does not match Country "%s"' % country_code)
+
+  def testNoDuplicatePhoneNumsInPrefs(self):
+    """Test duplicate phone numbers entered in prefs are removed."""
+    driver = self.NewWebDriver()
+    self.NavigateToURL('chrome://settings/autofillEditAddress')
+    driver.find_element_by_id('full-name-list').find_element_by_tag_name(
+        'input').send_keys('John Doe')
+    driver.find_element_by_id('addr-line-1').send_keys('123 Cherry St')
+    driver.find_element_by_id('city').send_keys('Mountain View')
+    driver.find_element_by_id('state').send_keys('CA')
+    driver.find_element_by_id('postal-code').send_keys('94043')
+    query = self._SelectOptionXpath('US')
+    driver.find_element_by_id('country').find_element_by_xpath(query).click()
+    driver.find_element_by_id('phone-list').find_elements_by_tag_name(
+        'input')[0].send_keys('650-555-1234\n')  # Press Enter key after phone.
+    phone_field2 = driver.find_element_by_id(
+        'phone-list').find_elements_by_tag_name('input')[1]
+    phone_field2.send_keys('650-555-1234\n')
+    self.assertEqual(phone_field2.get_attribute('value'), '',
+        msg='Duplicate phone number in prefs unexpectedly saved.')
+
+  def testDisplayLineItemForEntriesWithNoCCNum(self):
+    """Verify Autofill creates a line item for CC entries with no CC number."""
+    driver = self.NewWebDriver()
+    self.NavigateToURL('chrome://settings/autofillEditCreditCard')
+    driver.find_element_by_id('name-on-card').send_keys('Jane Doe')
+    query_month = self._SelectOptionXpath('12')
+    query_year = self._SelectOptionXpath('2014')
+    driver.find_element_by_id('expiration-month').find_element_by_xpath(
+        query_month).click()
+    driver.find_element_by_id('expiration-year').find_element_by_xpath(
+        query_year).click()
+    driver.find_element_by_id(
+        'autofill-edit-credit-card-apply-button').click()
+    # Refresh the page to ensure the UI is up-to-date.
+    driver.refresh()
+    list_entry = driver.find_element_by_class_name('autofill-list-item')
+    self.assertTrue(list_entry.is_displayed)
+    self.assertEqual('Jane Doe', list_entry.text,
+                     msg='Saved CC line item not same as what was entered.')
 
 
 if __name__ == '__main__':

@@ -418,6 +418,10 @@
     ],
 
     'chromeos': [
+      # These tests fail due to crosbug.com/19556
+      '-autofill.AutofillTest.testPostalCodeAndStateLabelsBasedOnCountry',
+      '-autofill.AutofillTest.testDisplayLineItemForEntriesWithNoCCNum',
+      '-autofill.AutofillTest.testNoDuplicatePhoneNumsInPrefs',
     ],
   },
 
