@@ -397,7 +397,8 @@ class SVN(object):
 
     Throws an exception if non-0 is returned.
     """
-    return subprocess2.check_output(['svn'] + args, **kwargs)
+    return subprocess2.check_output(
+        ['svn'] + args, stderr=subprocess2.PIPE, **kwargs)
 
   @staticmethod
   def RunAndGetFileList(verbose, args, cwd, file_list, stdout=None):
