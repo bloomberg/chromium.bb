@@ -340,8 +340,8 @@ void PolicyProvider::GetContentSettingsFromPreferences(
           secondary_pattern,
           content_type,
           ResourceIdentifier(NO_RESOURCE_IDENTIFIER),
-          static_cast<Value*>(Value::CreateIntegerValue(
-              kPrefsForManagedContentSettingsMap[i].setting)));
+          Value::CreateIntegerValue(
+              kPrefsForManagedContentSettingsMap[i].setting));
     }
   }
 }
@@ -388,7 +388,7 @@ void PolicyProvider::GetAutoSelectCertificateSettingsFromPreferences(
     scoped_ptr<Value> value(base::JSONReader::Read(pattern_filter_json, true));
     if (!value.get()) {
       VLOG(1) << "Ignoring invalid certificate auto select setting. Reason:"
-              << " Invalid JSON format: " << pattern_filter_json;
+                 " Invalid JSON format: " << pattern_filter_json;
       continue;
     }
 
@@ -401,7 +401,7 @@ void PolicyProvider::GetAutoSelectCertificateSettingsFromPreferences(
     scoped_ptr<Value> cert_filter(cert_filter_ptr);
     if (!pattern_read || !filter_read) {
       VLOG(1) << "Ignoring invalid certificate auto select setting. Reason:"
-              << " Missing pattern or filtern.";
+                 " Missing pattern or filter.";
       continue;
     }
 
@@ -410,7 +410,7 @@ void PolicyProvider::GetAutoSelectCertificateSettingsFromPreferences(
     // Ignore invalid patterns.
     if (!pattern.IsValid()) {
       VLOG(1) << "Ignoring invalid certificate auto select setting:"
-              << " Invalid content settings pattern: " << pattern;
+                 " Invalid content settings pattern: " << pattern;
       continue;
     }
 
@@ -424,13 +424,11 @@ void PolicyProvider::GetAutoSelectCertificateSettingsFromPreferences(
 }
 
 void PolicyProvider::ReadManagedContentSettings(bool overwrite) {
-  {
-    base::AutoLock auto_lock(lock_);
-    if (overwrite)
-      value_map_.clear();
-    GetContentSettingsFromPreferences(&value_map_);
-    GetAutoSelectCertificateSettingsFromPreferences(&value_map_);
-  }
+  base::AutoLock auto_lock(lock_);
+  if (overwrite)
+    value_map_.clear();
+  GetContentSettingsFromPreferences(&value_map_);
+  GetAutoSelectCertificateSettingsFromPreferences(&value_map_);
 }
 
 // Since the PolicyProvider is a read only content settings provider, all

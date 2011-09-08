@@ -189,7 +189,7 @@ ContentSettings HostContentSettingsMap::GetDefaultContentSettings() const {
   ContentSettings output(CONTENT_SETTING_DEFAULT);
   for (int i = 0; i < CONTENT_SETTINGS_NUM_TYPES; ++i) {
     if (!ContentTypeHasCompoundValue(ContentSettingsType(i)))
-        output.settings[i] = GetDefaultContentSetting(ContentSettingsType(i));
+      output.settings[i] = GetDefaultContentSetting(ContentSettingsType(i));
   }
   return output;
 }
