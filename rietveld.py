@@ -121,53 +121,49 @@ class Rietveld(object):
     for filename, state in props.get('files', {}).iteritems():
       logging.debug('%s' % filename)
       status = state.get('status')
-      if status is None:
+      if not status:
         raise patch.UnsupportedPatchFormat(
             filename, 'File\'s status is None, patchset upload is incomplete.')
+      if status[0] not in ('A', 'D', 'M'):
+        raise patch.UnsupportedPatchFormat(
+            filename, 'Change with status \'%s\' is not supported.' % status)
 
-      if status[0] == 'D':
-        if status[0] != status.strip():
-          raise patch.UnsupportedPatchFormat(
-              filename, 'Deleted file shouldn\'t have property change.')
-        # Ignore the diff.
-        out.append(patch.FilePatchDelete(filename, state['is_binary']))
-      elif status[0] in ('A', 'M'):
-        svn_props = self.parse_svn_properties(
-            state.get('property_changes', ''), filename)
-        if state['is_binary']:
+      svn_props = self.parse_svn_properties(
+          state.get('property_changes', ''), filename)
+
+      if state.get('is_binary'):
+        if status[0] == 'D':
+          if status[0] != status.strip():
+            raise patch.UnsupportedPatchFormat(
+                filename, 'Deleted file shouldn\'t have property change.')
+          out.append(patch.FilePatchDelete(filename, state['is_binary']))
+        else:
           out.append(patch.FilePatchBinary(
               filename,
               self.get_file_content(issue, patchset, state['id']),
               svn_props,
               is_new=(status[0] == 'A')))
-        else:
-          # Ignores num_chunks since it may only contain an header.
-          diff = None
-          try:
-            diff = self.get_file_diff(issue, patchset, state['id'])
-          except urllib2.HTTPError, e:
-            if e.code == 404:
-              raise patch.UnsupportedPatchFormat(
-                  filename, 'File doesn\'t have a diff.')
-            raise
-          # It may happen on property-only change or svn copy without diff.
-          if not diff:
-            # Support this use case if it ever happen.
-            raise patch.UnsupportedPatchFormat(
-                filename, 'Empty diff is not supported yet.\n')
-          p = patch.FilePatchDiff(filename, diff, svn_props)
-          out.append(p)
-          if status[0] == 'A':
-            # It won't be set for empty file.
-            p.is_new = True
-          if (len(status) > 1 and
-              status[1] == '+' and
-              not (p.source_filename or p.svn_properties)):
-            raise patch.UnsupportedPatchFormat(
-                filename, 'Failed to process the svn properties')
-      else:
+        continue
+
+      try:
+        diff = self.get_file_diff(issue, patchset, state['id'])
+      except urllib2.HTTPError, e:
+        if e.code == 404:
+          raise patch.UnsupportedPatchFormat(
+              filename, 'File doesn\'t have a diff.')
+        raise
+
+      # FilePatchDiff() will detect file deletion automatically.
+      p = patch.FilePatchDiff(filename, diff, svn_props)
+      out.append(p)
+      if status[0] == 'A':
+        # It won't be set for empty file.
+        p.is_new = True
+      if (len(status) > 1 and
+          status[1] == '+' and
+          not (p.source_filename or p.svn_properties)):
         raise patch.UnsupportedPatchFormat(
-            filename, 'Change with status \'%s\' is not supported.' % status)
+            filename, 'Failed to process the svn properties')
 
     return patch.PatchSet(out)
 

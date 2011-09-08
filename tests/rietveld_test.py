@@ -180,12 +180,14 @@ class RietveldTest(unittest.TestCase):
         is_new=True)
 
   def test_delete(self):
+    name = 'tools/clang_check/README.chromium'
     self.requests = [
-        ('/api/123/456', _api({'file_a': _file('D')})),
+        ('/api/123/456', _api({name: _file('D')})),
+        ('/download/issue123_456_789.diff', RAW.DELETE),
     ]
     patches = self.rietveld.get_patch(123, 456)
     self.assertEquals(1, len(patches.patches))
-    self._check_patch(patches.patches[0], 'file_a', None, is_delete=True)
+    self._check_patch(patches.patches[0], name, None, is_delete=True)
 
   def test_m_plus(self):
     properties = '\nAdded: svn:eol-style\n   + LF\n'
