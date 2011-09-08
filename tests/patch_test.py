@@ -170,20 +170,10 @@ class PatchTest(unittest.TestCase):
   def testFilePatchDelete(self):
     p = patch.FilePatchDelete('foo', False)
     self._check_patch(p, 'foo', None, is_delete=True)
-    try:
-      p.get()
-      self.fail()
-    except NotImplementedError:
-      pass
 
   def testFilePatchDeleteBin(self):
     p = patch.FilePatchDelete('foo', True)
     self._check_patch(p, 'foo', None, is_delete=True, is_binary=True)
-    try:
-      p.get()
-      self.fail()
-    except NotImplementedError:
-      pass
 
   def testFilePatchBinary(self):
     p = patch.FilePatchBinary('foo', 'data', [], is_new=False)
@@ -228,6 +218,203 @@ class PatchTest(unittest.TestCase):
     p = patch.FilePatchDiff('foo', GIT_NEW, [])
     self._check_patch(
         p, 'foo', GIT_NEW, is_new=True, is_git_diff=True, patchlevel=1)
+
+  def testValidSvn(self):
+    # pylint: disable=R0201
+    # Method could be a function
+    # Should not throw.
+    p = patch.FilePatchDiff('chrome/file.cc', SVN_PATCH, [])
+    lines = SVN_PATCH.splitlines(True)
+    header = ''.join(lines[:4])
+    hunks = ''.join(lines[4:])
+    self.assertEquals(header, p.diff_header)
+    self.assertEquals(hunks, p.diff_hunks)
+    self.assertEquals(SVN_PATCH, p.get())
+
+  def testValidSvnNew(self):
+    text = '--- /dev/null\t2\n+++ chrome/file.cc\tfoo\n'
+    p = patch.FilePatchDiff('chrome/file.cc', text, [])
+    self.assertEquals(text, p.diff_header)
+    self.assertEquals('', p.diff_hunks)
+    self.assertEquals(text, p.get())
+
+  def testValidSvnDelete(self):
+    text = '--- chrome/file.cc\tbar\n+++ /dev/null\tfoo\n'
+    p = patch.FilePatchDiff('chrome/file.cc', text, [])
+    self.assertEquals(text, p.diff_header)
+    self.assertEquals('', p.diff_hunks)
+    self.assertEquals(text, p.get())
+
+  def testRelPath(self):
+    patches = patch.PatchSet([
+        patch.FilePatchDiff('chrome/file.cc', SVN_PATCH, []),
+        patch.FilePatchDiff(
+            'tools\\clang_check/README.chromium', GIT_DELETE, []),
+        patch.FilePatchDiff('tools/run_local_server.sh', GIT_RENAME, []),
+        patch.FilePatchDiff(
+            'chromeos\\views/webui_menu_widget.h', GIT_RENAME_PARTIAL, []),
+        patch.FilePatchDiff('pp', GIT_COPY, []),
+        patch.FilePatchDiff('foo', GIT_NEW, []),
+        patch.FilePatchDelete('other/place/foo', True),
+        patch.FilePatchBinary('bar', 'data', [], is_new=False),
+    ])
+    expected = [
+        'chrome/file.cc', 'tools/clang_check/README.chromium',
+        'tools/run_local_server.sh',
+        'chromeos/views/webui_menu_widget.h', 'pp', 'foo',
+        'other/place/foo', 'bar']
+    self.assertEquals(expected, patches.filenames)
+    orig_name = patches.patches[0].filename
+    orig_source_name = patches.patches[0].source_filename or orig_name
+    patches.set_relpath(os.path.join('a', 'bb'))
+    expected = [os.path.join('a', 'bb', x) for x in expected]
+    self.assertEquals(expected, patches.filenames)
+    # Make sure each header is updated accordingly.
+    header = []
+    new_name = os.path.join('a', 'bb', orig_name)
+    new_source_name = os.path.join('a', 'bb', orig_source_name)
+    for line in SVN_PATCH.splitlines(True):
+      if line.startswith('@@'):
+        break
+      if line[:3] == '---':
+        line = line.replace(orig_source_name, new_source_name)
+      if line[:3] == '+++':
+        line = line.replace(orig_name, new_name)
+      header.append(line)
+    header = ''.join(header)
+    self.assertEquals(header, patches.patches[0].diff_header)
+
+  def testRelPathEmpty(self):
+    patches = patch.PatchSet([
+        patch.FilePatchDiff('chrome\\file.cc', SVN_PATCH, []),
+        patch.FilePatchDelete('other\\place\\foo', True),
+    ])
+    patches.set_relpath('')
+    self.assertEquals(
+        ['chrome/file.cc', 'other/place/foo'],
+        [f.filename for f in patches])
+    self.assertEquals([None, None], [f.source_filename for f in patches])
+
+  def testBackSlash(self):
+    mangled_patch = SVN_PATCH.replace('chrome/', 'chrome\\')
+    patches = patch.PatchSet([
+        patch.FilePatchDiff('chrome\\file.cc', mangled_patch, []),
+        patch.FilePatchDelete('other\\place\\foo', True),
+    ])
+    expected = ['chrome/file.cc', 'other/place/foo']
+    self.assertEquals(expected, patches.filenames)
+    self.assertEquals(SVN_PATCH, patches.patches[0].get())
+
+  def testDelete(self):
+    p = patch.FilePatchDiff('tools/clang_check/README.chromium', DELETE, [])
+    self._check_patch(
+        p, 'tools/clang_check/README.chromium', DELETE, is_delete=True)
+
+  def testGitDelete(self):
+    p = patch.FilePatchDiff('tools/clang_check/README.chromium', GIT_DELETE, [])
+    self._check_patch(
+        p, 'tools/clang_check/README.chromium', GIT_DELETE, is_delete=True,
+        is_git_diff=True, patchlevel=1)
+
+  def testGitRename(self):
+    p = patch.FilePatchDiff('tools/run_local_server.sh', GIT_RENAME, [])
+    self._check_patch(p, 'tools/run_local_server.sh', GIT_RENAME,
+        is_git_diff=True, patchlevel=1,
+        source_filename='tools/run_local_server.PY', is_new=True)
+
+  def testGitRenamePartial(self):
+    p = patch.FilePatchDiff(
+        'chromeos/views/webui_menu_widget.h', GIT_RENAME_PARTIAL, [])
+    self._check_patch(
+        p, 'chromeos/views/webui_menu_widget.h', GIT_RENAME_PARTIAL,
+        source_filename='chromeos/views/DOMui_menu_widget.h', is_git_diff=True,
+        patchlevel=1, is_new=True)
+
+  def testGitCopy(self):
+    p = patch.FilePatchDiff('pp', GIT_COPY, [])
+    self._check_patch(p, 'pp', GIT_COPY, is_git_diff=True, patchlevel=1,
+        source_filename='PRESUBMIT.py', is_new=True)
+
+  def testOnlyHeader(self):
+    diff = '--- file_a\n+++ file_a\n'
+    p = patch.FilePatchDiff('file_a', diff, [])
+    self._check_patch(p, 'file_a', diff)
+
+  def testSmallest(self):
+    diff = '--- file_a\n+++ file_a\n@@ -0,0 +1 @@\n+foo\n'
+    p = patch.FilePatchDiff('file_a', diff, [])
+    self._check_patch(p, 'file_a', diff)
+
+  def testRenameOnlyHeader(self):
+    diff = '--- file_a\n+++ file_b\n'
+    p = patch.FilePatchDiff('file_b', diff, [])
+    # Should it be marked as new?
+    self._check_patch(p, 'file_b', diff, source_filename='file_a', is_new=True)
+
+  def testGitCopyPartial(self):
+    diff = (
+        'diff --git a/wtf b/wtf2\n'
+        'similarity index 98%\n'
+        'copy from wtf\n'
+        'copy to wtf2\n'
+        'index 79fbaf3..3560689 100755\n'
+        '--- a/wtf\n'
+        '+++ b/wtf2\n'
+        '@@ -1,4 +1,4 @@\n'
+        '-#!/usr/bin/env python\n'
+        '+#!/usr/bin/env python1.3\n'
+        ' # Copyright (c) 2010 The Chromium Authors. All rights reserved.\n'
+        ' # blah blah blah as\n'
+        ' # found in the LICENSE file.\n')
+    p = patch.FilePatchDiff('wtf2', diff, [])
+    # Should it be marked as new?
+    self._check_patch(
+        p, 'wtf2', diff, source_filename='wtf', is_git_diff=True, patchlevel=1,
+        is_new=True)
+
+  def testGitExe(self):
+    diff = (
+        'diff --git a/natsort_test.py b/natsort_test.py\n'
+        'new file mode 100755\n'
+        '--- /dev/null\n'
+        '+++ b/natsort_test.py\n'
+        '@@ -0,0 +1,1 @@\n'
+        '+#!/usr/bin/env python\n')
+    p = patch.FilePatchDiff('natsort_test.py', diff, [])
+    self._check_patch(
+        p, 'natsort_test.py', diff, is_new=True, is_git_diff=True, patchlevel=1,
+        svn_properties=[('svn:executable', '*')])
+
+  def testGitExe2(self):
+    diff = (
+        'diff --git a/natsort_test.py b/natsort_test.py\n'
+        'new file mode 100644\n'
+        '--- /dev/null\n'
+        '+++ b/natsort_test.py\n'
+        '@@ -0,0 +1,1 @@\n'
+        '+#!/usr/bin/env python\n')
+    p = patch.FilePatchDiff('natsort_test.py', diff, [])
+    self._check_patch(
+        p, 'natsort_test.py', diff, is_new=True, is_git_diff=True, patchlevel=1)
+
+
+class PatchTestFail(unittest.TestCase):
+  # All patches that should throw.
+  def testFilePatchDelete(self):
+    p = patch.FilePatchDelete('foo', False)
+    try:
+      p.get()
+      self.fail()
+    except NotImplementedError:
+      pass
+
+  def testFilePatchDeleteBin(self):
+    p = patch.FilePatchDelete('foo', True)
+    try:
+      p.get()
+      self.fail()
+    except NotImplementedError:
+      pass
 
   def testFilePatchDiffBad(self):
     try:
@@ -347,71 +534,6 @@ class PatchTest(unittest.TestCase):
     except patch.UnsupportedPatchFormat:
       pass
 
-  def testValidSvn(self):
-    # pylint: disable=R0201
-    # Method could be a function
-    # Should not throw.
-    p = patch.FilePatchDiff('chrome/file.cc', SVN_PATCH, [])
-    lines = SVN_PATCH.splitlines(True)
-    header = ''.join(lines[:4])
-    hunks = ''.join(lines[4:])
-    self.assertEquals(header, p.diff_header)
-    self.assertEquals(hunks, p.diff_hunks)
-    self.assertEquals(SVN_PATCH, p.get())
-
-  def testValidSvnNew(self):
-    text = '--- /dev/null\t2\n+++ chrome/file.cc\tfoo\n'
-    p = patch.FilePatchDiff('chrome/file.cc', text, [])
-    self.assertEquals(text, p.diff_header)
-    self.assertEquals('', p.diff_hunks)
-    self.assertEquals(text, p.get())
-
-  def testValidSvnDelete(self):
-    text = '--- chrome/file.cc\tbar\n+++ /dev/null\tfoo\n'
-    p = patch.FilePatchDiff('chrome/file.cc', text, [])
-    self.assertEquals(text, p.diff_header)
-    self.assertEquals('', p.diff_hunks)
-    self.assertEquals(text, p.get())
-
-  def testRelPath(self):
-    patches = patch.PatchSet([
-        patch.FilePatchDiff('chrome/file.cc', SVN_PATCH, []),
-        patch.FilePatchDiff(
-            'tools\\clang_check/README.chromium', GIT_DELETE, []),
-        patch.FilePatchDiff('tools/run_local_server.sh', GIT_RENAME, []),
-        patch.FilePatchDiff(
-            'chromeos\\views/webui_menu_widget.h', GIT_RENAME_PARTIAL, []),
-        patch.FilePatchDiff('pp', GIT_COPY, []),
-        patch.FilePatchDiff('foo', GIT_NEW, []),
-        patch.FilePatchDelete('other/place/foo', True),
-        patch.FilePatchBinary('bar', 'data', [], is_new=False),
-    ])
-    expected = [
-        'chrome/file.cc', 'tools/clang_check/README.chromium',
-        'tools/run_local_server.sh',
-        'chromeos/views/webui_menu_widget.h', 'pp', 'foo',
-        'other/place/foo', 'bar']
-    self.assertEquals(expected, patches.filenames)
-    orig_name = patches.patches[0].filename
-    orig_source_name = patches.patches[0].source_filename or orig_name
-    patches.set_relpath(os.path.join('a', 'bb'))
-    expected = [os.path.join('a', 'bb', x) for x in expected]
-    self.assertEquals(expected, patches.filenames)
-    # Make sure each header is updated accordingly.
-    header = []
-    new_name = os.path.join('a', 'bb', orig_name)
-    new_source_name = os.path.join('a', 'bb', orig_source_name)
-    for line in SVN_PATCH.splitlines(True):
-      if line.startswith('@@'):
-        break
-      if line[:3] == '---':
-        line = line.replace(orig_source_name, new_source_name)
-      if line[:3] == '+++':
-        line = line.replace(orig_name, new_name)
-      header.append(line)
-    header = ''.join(header)
-    self.assertEquals(header, patches.patches[0].diff_header)
-
   def testRelPathBad(self):
     patches = patch.PatchSet([
         patch.FilePatchDiff('chrome\\file.cc', SVN_PATCH, []),
@@ -422,67 +544,6 @@ class PatchTest(unittest.TestCase):
       self.fail()
     except patch.UnsupportedPatchFormat:
       pass
-
-  def testRelPathEmpty(self):
-    patches = patch.PatchSet([
-        patch.FilePatchDiff('chrome\\file.cc', SVN_PATCH, []),
-        patch.FilePatchDelete('other\\place\\foo', True),
-    ])
-    patches.set_relpath('')
-    self.assertEquals(
-        ['chrome/file.cc', 'other/place/foo'],
-        [f.filename for f in patches])
-    self.assertEquals([None, None], [f.source_filename for f in patches])
-
-  def testBackSlash(self):
-    mangled_patch = SVN_PATCH.replace('chrome/', 'chrome\\')
-    patches = patch.PatchSet([
-        patch.FilePatchDiff('chrome\\file.cc', mangled_patch, []),
-        patch.FilePatchDelete('other\\place\\foo', True),
-    ])
-    expected = ['chrome/file.cc', 'other/place/foo']
-    self.assertEquals(expected, patches.filenames)
-    self.assertEquals(SVN_PATCH, patches.patches[0].get())
-
-  def testDelete(self):
-    p = patch.FilePatchDiff('tools/clang_check/README.chromium', DELETE, [])
-    self._check_patch(
-        p, 'tools/clang_check/README.chromium', DELETE, is_delete=True)
-
-  def testGitDelete(self):
-    p = patch.FilePatchDiff('tools/clang_check/README.chromium', GIT_DELETE, [])
-    self._check_patch(
-        p, 'tools/clang_check/README.chromium', GIT_DELETE, is_delete=True,
-        is_git_diff=True, patchlevel=1)
-
-  def testGitRename(self):
-    p = patch.FilePatchDiff('tools/run_local_server.sh', GIT_RENAME, [])
-    self._check_patch(p, 'tools/run_local_server.sh', GIT_RENAME,
-        is_git_diff=True, patchlevel=1,
-        source_filename='tools/run_local_server.PY', is_new=True)
-
-  def testGitRenamePartial(self):
-    p = patch.FilePatchDiff(
-        'chromeos/views/webui_menu_widget.h', GIT_RENAME_PARTIAL, [])
-    self._check_patch(
-        p, 'chromeos/views/webui_menu_widget.h', GIT_RENAME_PARTIAL,
-        source_filename='chromeos/views/DOMui_menu_widget.h', is_git_diff=True,
-        patchlevel=1, is_new=True)
-
-  def testGitCopy(self):
-    p = patch.FilePatchDiff('pp', GIT_COPY, [])
-    self._check_patch(p, 'pp', GIT_COPY, is_git_diff=True, patchlevel=1,
-        source_filename='PRESUBMIT.py', is_new=True)
-
-  def testOnlyHeader(self):
-    diff = '--- file_a\n+++ file_a\n'
-    p = patch.FilePatchDiff('file_a', diff, [])
-    self._check_patch(p, 'file_a', diff)
-
-  def testSmallest(self):
-    diff = '--- file_a\n+++ file_a\n@@ -0,0 +1 @@\n+foo\n'
-    p = patch.FilePatchDiff('file_a', diff, [])
-    self._check_patch(p, 'file_a', diff)
 
   def testInverted(self):
     try:
@@ -498,58 +559,6 @@ class PatchTest(unittest.TestCase):
       self.fail()
     except patch.UnsupportedPatchFormat:
       pass
-
-  def testRenameOnlyHeader(self):
-    diff = '--- file_a\n+++ file_b\n'
-    p = patch.FilePatchDiff('file_b', diff, [])
-    # Should it be marked as new?
-    self._check_patch(p, 'file_b', diff, source_filename='file_a', is_new=True)
-
-  def testGitCopyPartial(self):
-    diff = (
-        'diff --git a/wtf b/wtf2\n'
-        'similarity index 98%\n'
-        'copy from wtf\n'
-        'copy to wtf2\n'
-        'index 79fbaf3..3560689 100755\n'
-        '--- a/wtf\n'
-        '+++ b/wtf2\n'
-        '@@ -1,4 +1,4 @@\n'
-        '-#!/usr/bin/env python\n'
-        '+#!/usr/bin/env python1.3\n'
-        ' # Copyright (c) 2010 The Chromium Authors. All rights reserved.\n'
-        ' # blah blah blah as\n'
-        ' # found in the LICENSE file.\n')
-    p = patch.FilePatchDiff('wtf2', diff, [])
-    # Should it be marked as new?
-    self._check_patch(
-        p, 'wtf2', diff, source_filename='wtf', is_git_diff=True, patchlevel=1,
-        is_new=True)
-
-  def testGitExe(self):
-    diff = (
-        'diff --git a/natsort_test.py b/natsort_test.py\n'
-        'new file mode 100755\n'
-        '--- /dev/null\n'
-        '+++ b/natsort_test.py\n'
-        '@@ -0,0 +1,1 @@\n'
-        '+#!/usr/bin/env python\n')
-    p = patch.FilePatchDiff('natsort_test.py', diff, [])
-    self._check_patch(
-        p, 'natsort_test.py', diff, is_new=True, is_git_diff=True, patchlevel=1,
-        svn_properties=[('svn:executable', '*')])
-
-  def testGitExe2(self):
-    diff = (
-        'diff --git a/natsort_test.py b/natsort_test.py\n'
-        'new file mode 100644\n'
-        '--- /dev/null\n'
-        '+++ b/natsort_test.py\n'
-        '@@ -0,0 +1,1 @@\n'
-        '+#!/usr/bin/env python\n')
-    p = patch.FilePatchDiff('natsort_test.py', diff, [])
-    self._check_patch(
-        p, 'natsort_test.py', diff, is_new=True, is_git_diff=True, patchlevel=1)
 
 
 if __name__ == '__main__':
