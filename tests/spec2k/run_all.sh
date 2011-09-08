@@ -748,17 +748,17 @@ BuildPrerequisites() {
 BuildPrerequisitesSetupBased() {
   local platforms=""
   local bitcode=""
-  if [ "$1" == SetupPnacl* ] ; then
+  if [[ "$1" == SetupPnacl* ]] ; then
     bitcode="bitcode"
   fi
-  if [ "$1" == Setup*Arm* ] ; then
+  if [[ "$1" == Setup*Arm* ]] ; then
     platforms="arm"
-  elif [ "$1" == Setup*X8632* ] ; then
+  elif [[ "$1" == Setup*X8632* ]] ; then
     platforms="x86-32"
-  elif [ "$1" == Setup*X8664* ] ; then
+  elif [[ "$1" == Setup*X8664* ]] ; then
     platforms="x86-64"
   else
-    echo "Bad setup $2"
+    echo "Bad setup [$1]"
     exit -1
   fi
   BuildPrerequisites "${platforms}" "${bitcode}"
