@@ -4,14 +4,12 @@
 
 #include "chrome/browser/ui/panels/panel_browser_frame_view.h"
 
-#include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_browser_view.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
+#include "chrome/browser/ui/panels/panel_settings_menu_model.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/url_constants.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -25,6 +23,9 @@
 #include "ui/gfx/screen.h"
 #include "views/controls/button/image_button.h"
 #include "views/controls/button/menu_button.h"
+#include "views/controls/menu/menu_item_view.h"
+#include "views/controls/menu/menu_model_adapter.h"
+#include "views/controls/menu/menu_runner.h"
 #include "views/controls/label.h"
 #include "views/painter.h"
 #include "views/widget/widget_delegate.h"
@@ -211,11 +212,7 @@ PanelBrowserFrameView::PanelBrowserFrameView(BrowserFrame* frame,
       is_settings_button_visible_(false),
       close_button_(NULL),
       title_icon_(NULL),
-      title_label_(NULL),
-      ALLOW_THIS_IN_INITIALIZER_LIST(settings_menu_contents_(this)),
-      settings_menu_adapter_(&settings_menu_contents_),
-      settings_menu_(new views::MenuItemView(&settings_menu_adapter_)),
-      settings_menu_runner_(settings_menu_) {
+      title_label_(NULL) {
   EnsureResourcesInitialized();
   frame_->set_frame_type(views::Widget::FRAME_TYPE_FORCE_CUSTOM);
 
@@ -444,86 +441,11 @@ void PanelBrowserFrameView::RunMenu(View* source, const gfx::Point& pt) {
   DCHECK_EQ(settings_button_, source);
   gfx::Point screen_point;
   views::View::ConvertPointToScreen(source, &screen_point);
-  if (settings_menu_runner_.RunMenuAt(source->GetWidget(),
+  if (settings_menu_runner_->RunMenuAt(source->GetWidget(),
           settings_button_, gfx::Rect(screen_point, source->size()),
           views::MenuItemView::TOPRIGHT, views::MenuRunner::HAS_MNEMONICS) ==
       views::MenuRunner::MENU_DELETED)
     return;
-}
-
-bool PanelBrowserFrameView::IsCommandIdChecked(int command_id) const {
-  // Nothing in the menu is checked.
-  return false;
-}
-
-bool PanelBrowserFrameView::IsCommandIdEnabled(int command_id) const {
-  const Extension* extension = GetExtension();
-  if (!extension)
-    return false;
-
-  switch (command_id) {
-    case COMMAND_NAME:
-      // The NAME links to the Homepage URL. If the extension doesn't have a
-      // homepage, we just disable this menu item.
-      return extension->GetHomepageURL().is_valid();
-    case COMMAND_CONFIGURE:
-      return extension->options_url().spec().length() > 0;
-    case COMMAND_DISABLE:
-    case COMMAND_UNINSTALL:
-      // Some extension types can not be disabled or uninstalled.
-      return Extension::UserMayDisable(extension->location());
-    case COMMAND_MANAGE:
-      return true;
-    default:
-      NOTREACHED();
-      return false;
-  }
-}
-
-bool PanelBrowserFrameView::GetAcceleratorForCommandId(
-    int command_id, ui::Accelerator* accelerator) {
-  return false;
-}
-
-void PanelBrowserFrameView::ExecuteCommand(int command_id) {
-  const Extension* extension = GetExtension();
-  if (!extension)
-    return;
-
-  Browser* browser = browser_view_->browser();
-  switch (command_id) {
-    case COMMAND_NAME:
-     browser->OpenURL(extension->GetHomepageURL(),
-                      GURL(),
-                      NEW_FOREGROUND_TAB,
-                      PageTransition::LINK);
-      break;
-    case COMMAND_CONFIGURE:
-      DCHECK(!extension->options_url().is_empty());
-      browser->GetProfile()->GetExtensionProcessManager()->OpenOptionsPage(
-          extension, browser);
-      break;
-    case COMMAND_DISABLE:
-      browser->GetProfile()->GetExtensionService()->DisableExtension(
-          extension->id());
-      break;
-    case COMMAND_UNINSTALL:
-      // TODO(jianli): Need to handle the case that the extension API requests
-      // the panel to be closed when the uninstall dialog is still showing.
-      extension_uninstall_dialog_.reset(new ExtensionUninstallDialog(
-          browser->GetProfile()));
-      extension_uninstall_dialog_->ConfirmUninstall(this, extension);
-      break;
-    case COMMAND_MANAGE:
-      browser->OpenURL(GURL(chrome::kChromeUIExtensionsURL),
-                            GURL(),
-                            SINGLETON_TAB,
-                            PageTransition::LINK);
-      break;
-    default:
-      NOTREACHED();
-      break;
-  }
 }
 
 bool PanelBrowserFrameView::ShouldTabIconViewAnimate() const {
@@ -536,17 +458,6 @@ bool PanelBrowserFrameView::ShouldTabIconViewAnimate() const {
 
 SkBitmap PanelBrowserFrameView::GetFaviconForTabIconView() {
   return frame_->widget_delegate()->GetWindowIcon();
-}
-
-void PanelBrowserFrameView::ExtensionDialogAccepted() {
-  const Extension* extension = GetExtension();
-  if (extension) {
-    browser_view_->browser()->GetProfile()->GetExtensionService()->
-        UninstallExtension(extension->id(), false, NULL);
-  }
-}
-
-void PanelBrowserFrameView::ExtensionDialogCanceled() {
 }
 
 int PanelBrowserFrameView::NonClientBorderThickness() const {
@@ -734,31 +645,20 @@ void PanelBrowserFrameView::UpdateSettingsButtonVisibility(
   settings_button_->SetVisible(is_settings_button_visible_);
 }
 
-const Extension* PanelBrowserFrameView::GetExtension() const {
-  return Panel::GetExtension(browser_view_->browser());
-}
-
 bool PanelBrowserFrameView::EnsureSettingsMenuCreated() {
-  if (settings_menu_contents_.GetItemCount())
+  if (settings_menu_runner_.get())
     return true;
 
-  const Extension* extension = GetExtension();
+  const Extension* extension = browser_view_->panel()->GetExtension();
   if (!extension)
     return false;
 
-  settings_menu_contents_.AddItem(
-      COMMAND_NAME, UTF8ToUTF16(extension->name()));
-  settings_menu_contents_.AddSeparator();
-  settings_menu_contents_.AddItem(
-      COMMAND_CONFIGURE, l10n_util::GetStringUTF16(IDS_EXTENSIONS_OPTIONS));
-  settings_menu_contents_.AddItem(
-      COMMAND_DISABLE, l10n_util::GetStringUTF16(IDS_EXTENSIONS_DISABLE));
-  settings_menu_contents_.AddItem(
-      COMMAND_UNINSTALL, l10n_util::GetStringUTF16(IDS_EXTENSIONS_UNINSTALL));
-  settings_menu_contents_.AddSeparator();
-  settings_menu_contents_.AddItem(
-      COMMAND_MANAGE, l10n_util::GetStringUTF16(IDS_MANAGE_EXTENSIONS));
-
-  settings_menu_adapter_.BuildMenu(settings_menu_);
+  settings_menu_model_.reset(
+      new PanelSettingsMenuModel(browser_view_->panel()));
+  settings_menu_adapter_.reset(
+      new views::MenuModelAdapter(settings_menu_model_.get()));
+  settings_menu_ = new views::MenuItemView(settings_menu_adapter_.get());
+  settings_menu_adapter_->BuildMenu(settings_menu_);
+  settings_menu_runner_.reset(new views::MenuRunner(settings_menu_));
   return true;
 }

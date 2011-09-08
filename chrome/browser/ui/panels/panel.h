@@ -43,6 +43,10 @@ class Panel : public BrowserWindow, public NotificationObserver {
   // Returns the PanelManager associated with this panel.
   PanelManager* manager() const;
 
+  // Gets the extension that a panel is created from.
+  // Returns NULL if it cannot be found.
+  const Extension* GetExtension() const;
+
   void SetExpansionState(ExpansionState new_expansion_state);
 
   bool ShouldBringUpTitlebar(int mouse_x, int mouse_y) const;
@@ -170,7 +174,7 @@ class Panel : public BrowserWindow, public NotificationObserver {
 
   // Gets the extension from the browser that a panel is created from.
   // Returns NULL if it cannot be found.
-  static const Extension* GetExtension(Browser* browser);
+  static const Extension* GetExtensionFromBrowser(Browser* browser);
 
   NativePanel* native_panel() { return native_panel_; }
   Browser* browser() const;

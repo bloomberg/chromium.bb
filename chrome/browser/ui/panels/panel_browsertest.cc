@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/panels/native_panel.h"
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
+#include "chrome/browser/ui/panels/panel_settings_menu_model.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
@@ -219,6 +220,79 @@ class PanelBrowserTest : public BasePanelBrowserTest {
       CheckPanelBoundsWithDeltas(panels, test_begin_bounds,
                                  expected_delta_x_after_finish);
     }
+  }
+
+  struct MenuItem {
+    int id;
+    bool enabled;
+  };
+
+  void ValidateSettingsMenuItems(ui::SimpleMenuModel* settings_menu_contents,
+                                 size_t num_expected_menu_items,
+                                 const MenuItem* expected_menu_items) {
+    ASSERT_TRUE(settings_menu_contents);
+    EXPECT_EQ(static_cast<int>(num_expected_menu_items),
+              settings_menu_contents->GetItemCount());
+    for (size_t i = 0; i < num_expected_menu_items; ++i) {
+      if (expected_menu_items[i].id == -1) {
+        EXPECT_EQ(ui::MenuModel::TYPE_SEPARATOR,
+                  settings_menu_contents->GetTypeAt(i));
+      } else {
+        EXPECT_EQ(expected_menu_items[i].id,
+                  settings_menu_contents->GetCommandIdAt(i));
+        EXPECT_EQ(expected_menu_items[i].enabled,
+                  settings_menu_contents->IsEnabledAt(i));
+      }
+    }
+  }
+
+  void TestCreateSettingsMenuForExtension(const FilePath::StringType& path,
+                                          Extension::Location location,
+                                          const std::string& homepage_url,
+                                          const std::string& options_page) {
+    // Creates a testing extension.
+    DictionaryValue extra_value;
+    if (!homepage_url.empty()) {
+      extra_value.SetString(extension_manifest_keys::kHomepageURL,
+                            homepage_url);
+    }
+    if (!options_page.empty()) {
+      extra_value.SetString(extension_manifest_keys::kOptionsPage,
+                            options_page);
+    }
+    scoped_refptr<Extension> extension = CreateExtension(
+        path, location, extra_value);
+
+    // Creates a panel with the app name that comes from the extension ID.
+    Panel* panel = CreatePanel(
+        web_app::GenerateApplicationNameFromExtensionId(extension->id()));
+
+    scoped_ptr<PanelSettingsMenuModel> settings_menu_model(
+        new PanelSettingsMenuModel(panel));
+
+    // Validates the settings menu items.
+    MenuItem expected_panel_menu_items[] = {
+        { PanelSettingsMenuModel::COMMAND_NAME, false },
+        { -1, false },  // Separator
+        { PanelSettingsMenuModel::COMMAND_CONFIGURE, false },
+        { PanelSettingsMenuModel::COMMAND_DISABLE, false },
+        { PanelSettingsMenuModel::COMMAND_UNINSTALL, false },
+        { -1, false },  // Separator
+        { PanelSettingsMenuModel::COMMAND_MANAGE, true }
+    };
+    if (!homepage_url.empty())
+      expected_panel_menu_items[0].enabled = true;
+    if (!options_page.empty())
+      expected_panel_menu_items[2].enabled = true;
+    if (location != Extension::EXTERNAL_POLICY_DOWNLOAD) {
+      expected_panel_menu_items[3].enabled = true;
+      expected_panel_menu_items[4].enabled = true;
+    }
+    ValidateSettingsMenuItems(settings_menu_model.get(),
+                              arraysize(expected_panel_menu_items),
+                              expected_panel_menu_items);
+
+    panel->Close();
   }
 };
 
@@ -544,6 +618,15 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MAYBE_DragPanels) {
   }
 
   PanelManager::GetInstance()->RemoveAll();
+}
+
+IN_PROC_BROWSER_TEST_F(PanelBrowserTest, CreateSettingsMenu) {
+  TestCreateSettingsMenuForExtension(
+      FILE_PATH_LITERAL("extension1"), Extension::EXTERNAL_POLICY_DOWNLOAD,
+      "", "");
+  TestCreateSettingsMenuForExtension(
+      FILE_PATH_LITERAL("extension2"), Extension::INVALID,
+      "http://home", "options.html");
 }
 
 class PanelDownloadTest : public PanelBrowserTest {

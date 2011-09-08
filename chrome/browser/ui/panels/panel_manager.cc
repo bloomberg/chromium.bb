@@ -87,7 +87,7 @@ void PanelManager::FindAndClosePanelOnOverflow(const Extension* extension) {
   // it.
   for (Panels::reverse_iterator iter = panels_.rbegin();
        iter != panels_.rend(); ++iter) {
-    if (extension == Panel::GetExtension((*iter)->browser())) {
+    if (extension == (*iter)->GetExtension()) {
       panel_to_close = *iter;
       break;
     }
@@ -132,7 +132,7 @@ Panel* PanelManager::CreatePanel(Browser* browser) {
   while ((x = GetRightMostAvaialblePosition() - width) <
          adjusted_work_area_.x() ) {
     if (!extension)
-      extension = Panel::GetExtension(browser);
+      extension = Panel::GetExtensionFromBrowser(browser);
     FindAndClosePanelOnOverflow(extension);
   }
 
@@ -558,7 +558,7 @@ void PanelManager::UpdateMaxSizeForAllPanels() {
   for (Panels::const_iterator iter = panels_.begin();
        iter != panels_.end(); ++iter) {
     Panel* panel = *iter;
-    // A panel can at most grow to take over all the avaialble space that is
+    // A panel can at most grow to take over all the available space that is
     // returned by GetRightMostAvaialblePosition.
     int width_can_grow_to =
         panel->GetBounds().width() + GetRightMostAvaialblePosition();

@@ -9,30 +9,31 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
-#include "chrome/browser/extensions/extension_uninstall_dialog.h"
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
 #include "chrome/browser/ui/views/tab_icon_view.h"
-#include "ui/base/models/simple_menu_model.h"
 #include "views/controls/button/button.h"
-#include "views/controls/menu/menu_item_view.h"
-#include "views/controls/menu/menu_model_adapter.h"
-#include "views/controls/menu/menu_runner.h"
 #include "views/controls/menu/view_menu_delegate.h"
 
 class Extension;
+class ExtensionUninstallDialog;
 class PanelBrowserView;
+class PanelSettingsMenuModel;
+namespace gfx {
+class Font;
+}
 namespace views {
 class ImageButton;
 class Label;
 class MenuButton;
+class MenuItemView;
+class MenuModelAdapter;
+class MenuRunner;
 }
 
 class PanelBrowserFrameView : public BrowserNonClientFrameView,
                               public views::ButtonListener,
                               public views::ViewMenuDelegate,
-                              public ui::SimpleMenuModel::Delegate,
-                              public TabIconView::TabIconViewModel,
-                              public ExtensionUninstallDialog::Delegate {
+                              public TabIconView::TabIconViewModel {
  public:
   PanelBrowserFrameView(BrowserFrame* frame, PanelBrowserView* browser_view);
   virtual ~PanelBrowserFrameView();
@@ -86,20 +87,9 @@ class PanelBrowserFrameView : public BrowserNonClientFrameView,
   // Overridden from views::ViewMenuDelegate:
   virtual void RunMenu(View* source, const gfx::Point& pt) OVERRIDE;
 
-  // Overridden from ui::SimpleMenuModel::Delegate:
-  virtual bool IsCommandIdChecked(int command_id) const OVERRIDE;
-  virtual bool IsCommandIdEnabled(int command_id) const OVERRIDE;
-  virtual bool GetAcceleratorForCommandId(
-      int command_id, ui::Accelerator* accelerator) OVERRIDE;
-  virtual void ExecuteCommand(int command_id) OVERRIDE;
-
   // Overridden from TabIconView::TabIconViewModel:
   virtual bool ShouldTabIconViewAnimate() const OVERRIDE;
   virtual SkBitmap GetFaviconForTabIconView() OVERRIDE;
-
-  // ExtensionUninstallDialog::Delegate:
-  virtual void ExtensionDialogAccepted() OVERRIDE;
-  virtual void ExtensionDialogCanceled() OVERRIDE;
 
  private:
   friend class PanelBrowserViewTest;
@@ -111,14 +101,6 @@ class PanelBrowserFrameView : public BrowserNonClientFrameView,
     PAINT_AS_INACTIVE,
     PAINT_AS_ACTIVE,
     PAINT_FOR_ATTENTION
-  };
-
-  enum {
-    COMMAND_NAME = 0,
-    COMMAND_CONFIGURE,
-    COMMAND_DISABLE,
-    COMMAND_UNINSTALL,
-    COMMAND_MANAGE
   };
 
   class MouseWatcher : public MessageLoopForUI::Observer {
@@ -174,6 +156,10 @@ class PanelBrowserFrameView : public BrowserNonClientFrameView,
   bool EnsureSettingsMenuCreated();
 
 #ifdef UNIT_TEST
+  PanelSettingsMenuModel* settings_menu_model() const {
+    return settings_menu_model_.get();
+  }
+
   void set_mouse_watcher(MouseWatcher* mouse_watcher) {
     mouse_watcher_.reset(mouse_watcher);
   }
@@ -196,11 +182,10 @@ class PanelBrowserFrameView : public BrowserNonClientFrameView,
   views::Label* title_label_;
   gfx::Rect client_view_bounds_;
   scoped_ptr<MouseWatcher> mouse_watcher_;
-  ui::SimpleMenuModel settings_menu_contents_;
-  views::MenuModelAdapter settings_menu_adapter_;
-  // Owned by |settings_menu_runner_|.
-  views::MenuItemView* settings_menu_;
-  views::MenuRunner settings_menu_runner_;
+  scoped_ptr<PanelSettingsMenuModel> settings_menu_model_;
+  scoped_ptr<views::MenuModelAdapter> settings_menu_adapter_;
+  views::MenuItemView* settings_menu_;  // Owned by |settings_menu_runner_|.
+  scoped_ptr<views::MenuRunner> settings_menu_runner_;
   scoped_ptr<ExtensionUninstallDialog> extension_uninstall_dialog_;
 
   DISALLOW_COPY_AND_ASSIGN(PanelBrowserFrameView);

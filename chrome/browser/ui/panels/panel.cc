@@ -21,7 +21,7 @@
 #include "ui/gfx/rect.h"
 
 // static
-const Extension* Panel::GetExtension(Browser* browser) {
+const Extension* Panel::GetExtensionFromBrowser(Browser* browser) {
   // Find the extension. When we create a panel from an extension, the extension
   // ID is passed as the app name to the Browser.
   ExtensionService* extension_service =
@@ -48,6 +48,11 @@ Panel::~Panel() {
 
 PanelManager* Panel::manager() const {
   return PanelManager::GetInstance();
+}
+
+
+const Extension* Panel::GetExtension() const {
+  return GetExtensionFromBrowser(browser());
 }
 
 void Panel::SetPanelBounds(const gfx::Rect& bounds) {
