@@ -18,18 +18,17 @@ namespace WebKit {
 class WebFrame;
 }
 
-class ExtensionRendererContext;
+class ExtensionDispatcher;
 class GURL;
 class RenderView;
 
 // A v8 context that contains extension bindings.
 class ExtensionBindingsContext {
  public:
-  static void HandleV8ContextCreated(
-      WebKit::WebFrame* frame,
-      const v8::Handle<v8::Context>& v8_context,
-      ExtensionRendererContext* extension_renderer_context,
-      int isolated_world_id);
+  static void HandleV8ContextCreated(WebKit::WebFrame* frame,
+                                     const v8::Handle<v8::Context>& v8_context,
+                                     ExtensionDispatcher* extension_dispatcher,
+                                     int isolated_world_id);
 
   static void HandleV8ContextDestroyed(WebKit::WebFrame* frame);
 

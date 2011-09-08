@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_RENDERER_EXTENSIONS_EXTENSION_RENDERER_CONTEXT_H_
-#define CHROME_RENDERER_EXTENSIONS_EXTENSION_RENDERER_CONTEXT_H_
+#ifndef CHROME_RENDERER_EXTENSIONS_EXTENSION_DISPATCHER_H_
+#define CHROME_RENDERER_EXTENSIONS_EXTENSION_DISPATCHER_H_
 #pragma once
 
 #include <set>
@@ -12,8 +12,8 @@
 
 #include "base/shared_memory.h"
 #include "base/timer.h"
-#include "chrome/common/extensions/extension_set.h"
 #include "content/renderer/render_process_observer.h"
+#include "chrome/common/extensions/extension_set.h"
 
 class GURL;
 class RenderThread;
@@ -34,12 +34,12 @@ namespace v8 {
 class Extension;
 }
 
-// Render-process level context for the extension system. Stores process-level
-// state and routes process-level IPC mesages.
-class ExtensionRendererContext : public RenderProcessObserver {
+// Dispatches extension control messages sent to the renderer and stores
+// renderer extension related state.
+class ExtensionDispatcher : public RenderProcessObserver {
  public:
-  ExtensionRendererContext();
-  virtual ~ExtensionRendererContext();
+  ExtensionDispatcher();
+  virtual ~ExtensionDispatcher();
 
   const std::set<std::string>& function_names() const {
     return function_names_;
@@ -127,7 +127,7 @@ class ExtensionRendererContext : public RenderProcessObserver {
   // True once WebKit has been initialized (and it is therefore safe to poke).
   bool is_webkit_initialized_;
 
-  DISALLOW_COPY_AND_ASSIGN(ExtensionRendererContext);
+  DISALLOW_COPY_AND_ASSIGN(ExtensionDispatcher);
 };
 
-#endif  // CHROME_RENDERER_EXTENSIONS_EXTENSION_RENDERER_CONTEXT_H_
+#endif  // CHROME_RENDERER_EXTENSIONS_EXTENSION_DISPATCHER_H_

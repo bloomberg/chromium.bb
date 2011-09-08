@@ -7,7 +7,7 @@
 #include "base/lazy_instance.h"
 #include "base/string_util.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/renderer/extensions/extension_render_view_helper.h"
+#include "chrome/renderer/extensions/extension_helper.h"
 #include "content/renderer/render_view.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
@@ -162,8 +162,7 @@ class ExtensionImpl : public v8::Extension {
       }
     }
 
-    ExtensionRenderViewHelper* helper =
-        ExtensionRenderViewHelper::Get(render_view);
+    ExtensionHelper* helper = ExtensionHelper::Get(render_view);
     helper->InlineWebstoreInstall(
         install_id, webstore_item_id, frame->document().url());
     return v8::Undefined();

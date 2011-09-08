@@ -6,7 +6,7 @@
 #define CHROME_RENDERER_EXTENSIONS_EVENT_BINDINGS_H_
 #pragma once
 
-class ExtensionRendererContext;
+class ExtensionDispatcher;
 class RenderThreadBase;
 
 namespace v8 {
@@ -18,7 +18,7 @@ class EventBindings {
  public:
   static const char* kName;  // The v8::Extension name, for dependencies.
 
-  static v8::Extension* Get(ExtensionRendererContext* context);
+  static v8::Extension* Get(ExtensionDispatcher* dispatcher);
 
   // Allow RenderThread to be mocked out.
   static void SetRenderThread(RenderThreadBase* thread);

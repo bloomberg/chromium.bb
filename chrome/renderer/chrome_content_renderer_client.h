@@ -13,7 +13,7 @@
 #include "content/renderer/content_renderer_client.h"
 
 class ChromeRenderProcessObserver;
-class ExtensionRendererContext;
+class ExtensionDispatcher;
 class RendererHistogramSnapshots;
 class RendererNetPredictor;
 class SpellCheck;
@@ -85,8 +85,7 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
                                       const std::string& value) OVERRIDE;
 
   // For testing.
-  void SetExtensionRendererContext(
-      ExtensionRendererContext* extension_renderer_context);
+  void SetExtensionDispatcher(ExtensionDispatcher* extension_dispatcher);
 
   // Called in low-memory conditions to dump the memory used by the spellchecker
   // and start over.
@@ -116,7 +115,7 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
                                bool is_initial_navigation);
 
   scoped_ptr<ChromeRenderProcessObserver> chrome_observer_;
-  scoped_ptr<ExtensionRendererContext> extension_renderer_context_;
+  scoped_ptr<ExtensionDispatcher> extension_dispatcher_;
   scoped_ptr<RendererHistogramSnapshots> histogram_snapshots_;
   scoped_ptr<RendererNetPredictor> net_predictor_;
   scoped_ptr<SpellCheck> spellcheck_;

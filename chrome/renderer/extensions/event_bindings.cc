@@ -15,8 +15,8 @@
 #include "chrome/renderer/extensions/event_bindings.h"
 #include "chrome/renderer/extensions/extension_base.h"
 #include "chrome/renderer/extensions/extension_bindings_context.h"
+#include "chrome/renderer/extensions/extension_dispatcher.h"
 #include "chrome/renderer/extensions/extension_process_bindings.h"
-#include "chrome/renderer/extensions/extension_renderer_context.h"
 #include "chrome/renderer/extensions/js_only_v8_extensions.h"
 #include "chrome/renderer/extensions/user_script_slave.h"
 #include "content/renderer/render_thread.h"
@@ -59,10 +59,10 @@ static EventListenerCounts& GetListenerCounts(const std::string& extension_id) {
 
 class ExtensionImpl : public ExtensionBase {
  public:
-  explicit ExtensionImpl(ExtensionRendererContext* context)
+  explicit ExtensionImpl(ExtensionDispatcher* dispatcher)
       : ExtensionBase(EventBindings::kName,
                       GetStringResource(IDR_EVENT_BINDINGS_JS),
-                      0, NULL, context) {
+                      0, NULL, dispatcher) {
   }
   ~ExtensionImpl() {}
 
@@ -167,8 +167,8 @@ class ExtensionImpl : public ExtensionBase {
 
 const char* EventBindings::kName = "chrome/EventBindings";
 
-v8::Extension* EventBindings::Get(ExtensionRendererContext* context) {
-  static v8::Extension* extension = new ExtensionImpl(context);
+v8::Extension* EventBindings::Get(ExtensionDispatcher* dispatcher) {
+  static v8::Extension* extension = new ExtensionImpl(dispatcher);
   return extension;
 }
 

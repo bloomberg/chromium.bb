@@ -17,7 +17,7 @@
 #include "chrome/renderer/about_handler.h"
 #include "chrome/renderer/automation/dom_automation_controller.h"
 #include "chrome/renderer/content_settings_observer.h"
-#include "chrome/renderer/extensions/extension_renderer_context.h"
+#include "chrome/renderer/extensions/extension_dispatcher.h"
 #include "chrome/renderer/external_host_bindings.h"
 #include "chrome/renderer/frame_sniffer.h"
 #include "chrome/renderer/prerender/prerender_helper.h"
@@ -198,11 +198,11 @@ GURL StripRef(const GURL& url) {
 ChromeRenderViewObserver::ChromeRenderViewObserver(
     RenderView* render_view,
     ContentSettingsObserver* content_settings,
-    ExtensionRendererContext* extension_renderer_context,
+    ExtensionDispatcher* extension_dispatcher,
     TranslateHelper* translate_helper)
     : RenderViewObserver(render_view),
       content_settings_(content_settings),
-      extension_renderer_context_(extension_renderer_context),
+      extension_dispatcher_(extension_dispatcher),
       translate_helper_(translate_helper),
       phishing_classifier_(NULL),
       last_indexed_page_id_(-1),
@@ -385,7 +385,7 @@ bool ChromeRenderViewObserver::allowScript(WebFrame* frame,
 
 bool ChromeRenderViewObserver::allowScriptExtension(
     WebFrame* frame, const WebString& extension_name, int extension_group) {
-  return extension_renderer_context_->AllowScriptExtension(
+  return extension_dispatcher_->AllowScriptExtension(
       frame, extension_name.utf8(), extension_group);
 }
 

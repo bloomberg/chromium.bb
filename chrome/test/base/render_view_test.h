@@ -28,7 +28,7 @@ class AutofillAgent;
 class PasswordAutofillManager;
 }
 
-class ExtensionRendererContext;
+class ExtensionDispatcher;
 class MockRenderProcess;
 class RendererMainPlatformDelegate;
 
@@ -95,7 +95,7 @@ class RenderViewTest : public testing::Test {
 
   MessageLoop msg_loop_;
   chrome::ChromeContentRendererClient chrome_content_renderer_client_;
-  ExtensionRendererContext* extension_dispatcher_;
+  ExtensionDispatcher* extension_dispatcher_;
   MockRenderThread render_thread_;
   scoped_ptr<MockRenderProcess> mock_process_;
   scoped_refptr<RenderView> view_;

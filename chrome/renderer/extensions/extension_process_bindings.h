@@ -12,7 +12,7 @@
 #include <string>
 #include <vector>
 
-class ExtensionRendererContext;
+class ExtensionDispatcher;
 class GURL;
 class URLPattern;
 
@@ -26,8 +26,7 @@ class Extension;
 
 class ExtensionProcessBindings {
  public:
-  static v8::Extension* Get(
-      ExtensionRendererContext* extension_renderer_context);
+  static v8::Extension* Get(ExtensionDispatcher* extension_dispatcher);
 
   // Handles a response to an API request.
   static void HandleResponse(int request_id, bool success,

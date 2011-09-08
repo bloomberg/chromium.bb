@@ -18,7 +18,7 @@
 
 class ContentSettingsObserver;
 class DomAutomationController;
-class ExtensionRendererContext;
+class ExtensionDispatcher;
 class ExternalHostBindings;
 class FilePath;
 class SkBitmap;
@@ -43,7 +43,7 @@ class ChromeRenderViewObserver : public RenderViewObserver,
   ChromeRenderViewObserver(
       RenderView* render_view,
       ContentSettingsObserver* content_settings,
-      ExtensionRendererContext* extension_renderer_context,
+      ExtensionDispatcher* extension_dispatcher,
       TranslateHelper* translate_helper);
   virtual ~ChromeRenderViewObserver();
 
@@ -171,7 +171,7 @@ class ChromeRenderViewObserver : public RenderViewObserver,
 
   // Have the same lifetime as us.
   ContentSettingsObserver* content_settings_;
-  ExtensionRendererContext* extension_renderer_context_;
+  ExtensionDispatcher* extension_dispatcher_;
   TranslateHelper* translate_helper_;
   safe_browsing::PhishingClassifierDelegate* phishing_classifier_;
 

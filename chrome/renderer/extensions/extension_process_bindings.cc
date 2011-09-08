@@ -26,10 +26,10 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/renderer/chrome_render_process_observer.h"
 #include "chrome/renderer/extensions/event_bindings.h"
-#include "chrome/renderer/extensions/extension_base.h"
 #include "chrome/renderer/extensions/extension_bindings_context.h"
-#include "chrome/renderer/extensions/extension_render_view_helper.h"
-#include "chrome/renderer/extensions/extension_renderer_context.h"
+#include "chrome/renderer/extensions/extension_base.h"
+#include "chrome/renderer/extensions/extension_dispatcher.h"
+#include "chrome/renderer/extensions/extension_helper.h"
 #include "chrome/renderer/extensions/js_only_v8_extensions.h"
 #include "chrome/renderer/extensions/renderer_extension_bindings.h"
 #include "chrome/renderer/extensions/user_script_slave.h"
@@ -91,8 +91,7 @@ class ExtensionViewAccumulator : public RenderViewVisitor {
   v8::Local<v8::Array> views() { return views_; }
 
   virtual bool Visit(RenderView* render_view) {
-    ExtensionRenderViewHelper* helper =
-        ExtensionRenderViewHelper::Get(render_view);
+    ExtensionHelper* helper = ExtensionHelper::Get(render_view);
     if (!ViewTypeMatches(helper->view_type(), view_type_))
       return true;
 
@@ -154,12 +153,12 @@ class ExtensionViewAccumulator : public RenderViewVisitor {
 
 class ExtensionImpl : public ExtensionBase {
  public:
-  explicit ExtensionImpl(ExtensionRendererContext* extension_renderer_context)
+  explicit ExtensionImpl(ExtensionDispatcher* extension_dispatcher)
     : ExtensionBase(kExtensionName,
                     GetStringResource(IDR_EXTENSION_PROCESS_BINDINGS_JS),
                     arraysize(kExtensionDeps),
                     kExtensionDeps,
-                    extension_renderer_context) {
+                    extension_dispatcher) {
   }
   ~ExtensionImpl() {}
 
@@ -392,7 +391,7 @@ class ExtensionImpl : public ExtensionBase {
     ExtensionImpl* v8_extension = GetFromArguments<ExtensionImpl>(args);
     std::string extension_id = *v8::String::Utf8Value(args[0]->ToString());
     const ::Extension* extension =
-        v8_extension->extension_renderer_context_->extensions()->GetByID(
+        v8_extension->extension_dispatcher_->extensions()->GetByID(
             extension_id);
     CHECK(!extension_id.empty());
     if (!extension)
@@ -423,7 +422,7 @@ class ExtensionImpl : public ExtensionBase {
 
     std::string name = *v8::String::AsciiValue(args[0]);
     const std::set<std::string>& function_names =
-        v8_extension->extension_renderer_context_->function_names();
+        v8_extension->extension_dispatcher_->function_names();
     if (function_names.find(name) == function_names.end()) {
       NOTREACHED() << "Unexpected function " << name;
       return v8::Undefined();
@@ -564,12 +563,10 @@ class ExtensionImpl : public ExtensionBase {
 }  // namespace
 
 v8::Extension* ExtensionProcessBindings::Get(
-    ExtensionRendererContext* extension_renderer_context) {
-  static v8::Extension* extension =
-      new ExtensionImpl(extension_renderer_context);
-  CHECK_EQ(
-      extension_renderer_context,
-      static_cast<ExtensionImpl*>(extension)->extension_renderer_context());
+    ExtensionDispatcher* extension_dispatcher) {
+  static v8::Extension* extension = new ExtensionImpl(extension_dispatcher);
+  CHECK_EQ(extension_dispatcher,
+           static_cast<ExtensionImpl*>(extension)->extension_dispatcher());
   return extension;
 }
 

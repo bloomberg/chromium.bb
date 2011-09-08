@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_RENDERER_EXTENSIONS_EXTENSION_RENDER_VIEW_HELPER_H_
-#define CHROME_RENDERER_EXTENSIONS_EXTENSION_RENDER_VIEW_HELPER_H_
+#ifndef CHROME_RENDERER_EXTENSIONS_EXTENSION_HELPER_H_
+#define CHROME_RENDERER_EXTENSIONS_EXTENSION_HELPER_H_
 #pragma once
 
 #include <map>
@@ -13,7 +13,7 @@
 #include "content/renderer/render_view_observer.h"
 #include "content/renderer/render_view_observer_tracker.h"
 
-class ExtensionRendererContext;
+class ExtensionDispatcher;
 class GURL;
 struct ExtensionMsg_ExecuteCode_Params;
 struct WebApplicationInfo;
@@ -27,13 +27,12 @@ class ResourceFetcher;
 }
 
 // RenderView-level plumbing for extension features.
-class ExtensionRenderViewHelper
-    : public RenderViewObserver,
-      public RenderViewObserverTracker<ExtensionRenderViewHelper> {
+class ExtensionHelper : public RenderViewObserver,
+                        public RenderViewObserverTracker<ExtensionHelper> {
  public:
-  ExtensionRenderViewHelper(RenderView* render_view,
-                  ExtensionRendererContext* extension_renderer_context);
-  virtual ~ExtensionRenderViewHelper();
+  ExtensionHelper(RenderView* render_view,
+                  ExtensionDispatcher* extension_dispatcher);
+  virtual ~ExtensionHelper();
 
   // Starts installation of the page in the specified frame as a web app. The
   // page must link to an external 'definition file'. This is different from
@@ -87,7 +86,7 @@ class ExtensionRenderViewHelper
   // Helper to add an error message to the root frame's console.
   void AddErrorToRootConsole(const string16& message);
 
-  ExtensionRendererContext* extension_renderer_context_;
+  ExtensionDispatcher* extension_dispatcher_;
 
   // The app info that we are processing. This is used when installing an app
   // via application definition. The in-progress web app is stored here while
@@ -110,7 +109,7 @@ class ExtensionRenderViewHelper
   // Id number of browser window which RenderView is attached to.
   int browser_window_id_;
 
-  DISALLOW_COPY_AND_ASSIGN(ExtensionRenderViewHelper);
+  DISALLOW_COPY_AND_ASSIGN(ExtensionHelper);
 };
 
-#endif  // CHROME_RENDERER_EXTENSIONS_EXTENSION_RENDER_VIEW_HELPER_H_
+#endif  // CHROME_RENDERER_EXTENSIONS_EXTENSION_HELPER_H_
