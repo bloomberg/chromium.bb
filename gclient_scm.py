@@ -1,4 +1,4 @@
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -291,7 +291,7 @@ class GitWrapper(SCMWrapper):
             ['remote'] + verbose + ['update'],
             cwd=self.checkout_path)
         break
-      except gclient_utils.CheckCallError, e:
+      except subprocess2.CalledProcessError, e:
         # Hackish but at that point, git is known to work so just checking for
         # 502 in stderr should be fine.
         if '502' in e.stderr:
@@ -360,7 +360,7 @@ class GitWrapper(SCMWrapper):
           merge_args.append('--ff-only')
         merge_args.append(upstream_branch)
         merge_output = scm.GIT.Capture(merge_args, cwd=self.checkout_path)
-      except gclient_utils.CheckCallError, e:
+      except subprocess2.CalledProcessError, e:
         if re.match('fatal: Not possible to fast-forward, aborting.', e.stderr):
           if not printed_path:
             print('\n_____ %s%s' % (self.relpath, rev_str))
@@ -508,7 +508,7 @@ class GitWrapper(SCMWrapper):
         break
       except (gclient_utils.Error, subprocess2.CalledProcessError), e:
         # TODO(maruel): Hackish, should be fixed by moving _Run() to
-        # CheckCall().
+        # subprocess2.check_output().
         # Too bad we don't have access to the actual output.
         # We should check for "transfer closed with NNN bytes remaining to
         # read". In the meantime, just make sure .git exists.
@@ -555,7 +555,7 @@ class GitWrapper(SCMWrapper):
 
     try:
       rebase_output = scm.GIT.Capture(rebase_cmd, cwd=self.checkout_path)
-    except gclient_utils.CheckCallError, e:
+    except subprocess2.CalledProcessError, e:
       if (re.match(r'cannot rebase: you have unstaged changes', e.stderr) or
           re.match(r'cannot rebase: your index contains uncommitted changes',
                    e.stderr)):
@@ -619,7 +619,7 @@ class GitWrapper(SCMWrapper):
     try:
       scm.GIT.Capture(['update-index', '--ignore-submodules', '--refresh'],
                       cwd=self.checkout_path)
-    except gclient_utils.CheckCallError:
+    except subprocess2.CalledProcessError:
       raise gclient_utils.Error('\n____ %s%s\n'
                                 '\tYou have unstaged changes.\n'
                                 '\tPlease commit, stash, or reset.\n'
@@ -628,7 +628,7 @@ class GitWrapper(SCMWrapper):
       scm.GIT.Capture(['diff-index', '--cached', '--name-status', '-r',
                        '--ignore-submodules', 'HEAD', '--'],
                        cwd=self.checkout_path)
-    except gclient_utils.CheckCallError:
+    except subprocess2.CalledProcessError:
       raise gclient_utils.Error('\n____ %s%s\n'
                                 '\tYour index contains uncommitted changes\n'
                                 '\tPlease commit, stash, or reset.\n'
@@ -641,7 +641,7 @@ class GitWrapper(SCMWrapper):
     try:
       scm.GIT.Capture(['name-rev', '--no-undefined', 'HEAD'],
           cwd=self.checkout_path)
-    except gclient_utils.CheckCallError:
+    except subprocess2.CalledProcessError:
       # Commit is not contained by any rev. See if the user is rebasing:
       if self._IsRebasing():
         # Punt to the user
@@ -666,8 +666,8 @@ class GitWrapper(SCMWrapper):
     return branch
 
   def _Capture(self, args):
-    return gclient_utils.CheckCall(
-        ['git'] + args, cwd=self.checkout_path, print_error=False)[0].strip()
+    return subprocess2.check_output(
+        ['git'] + args, cwd=self.checkout_path).strip()
 
   def _Run(self, args, options, **kwargs):
     kwargs.setdefault('cwd', self.checkout_path)
