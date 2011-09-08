@@ -32,13 +32,9 @@
 #include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/shell_util.h"
 #include "content/common/main_function_params.h"
-#include "crypto/nss_util.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
-#include "net/base/winsock_init.h"
-#include "net/socket/client_socket_factory.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/l10n/l10n_util_win.h"
 #include "ui/base/message_box_win.h"
 #include "views/focus/accelerator_handler.h"
 #include "views/widget/widget.h"
@@ -287,33 +283,9 @@ BrowserMainPartsWin::BrowserMainPartsWin(const MainFunctionParams& parameters)
     : ChromeBrowserMainParts(parameters) {
 }
 
-void BrowserMainPartsWin::PreEarlyInitialization() {
-  // Initialize Winsock.
-  net::EnsureWinsockInit();
-}
-
 void BrowserMainPartsWin::PreMainMessageLoopStart() {
-  OleInitialize(NULL);
-
-  // If we're running tests (ui_task is non-null), then the ResourceBundle
-  // has already been initialized.
   if (!parameters().ui_task) {
-    // Override the configured locale with the user's preferred UI language.
-    l10n_util::OverrideLocaleWithUILanguageList();
-
     // Make sure that we know how to handle exceptions from the message loop.
     InitializeWindowProcExceptions();
-  }
-}
-
-void BrowserMainPartsWin::InitializeSSL() {
-  // Use NSS for SSL by default.
-  // The default client socket factory uses NSS for SSL by default on
-  // Windows.
-  if (parsed_command_line().HasSwitch(switches::kUseSystemSSL)) {
-    net::ClientSocketFactory::UseSystemSSL();
-  } else {
-    // We want to be sure to init NSPR on the main thread.
-    crypto::EnsureNSPRInit();
   }
 }

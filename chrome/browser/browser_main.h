@@ -10,13 +10,18 @@
 #include "base/gtest_prod_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/tracked_objects.h"
+#include "chrome/browser/first_run/first_run.h"
 #include "content/browser/browser_main.h"
 
+class BrowserProcessImpl;
 class FieldTrialSynchronizer;
 class HistogramSynchronizer;
 class MetricsService;
 class PrefService;
+class ProcessSingleton;
+class Profile;
 class ShutdownWatcherHelper;
+class TranslateManager;
 
 namespace chrome_browser {
 // For use by ShowMissingLocaleMessageBox.
@@ -27,10 +32,6 @@ extern const char kMissingLocaleDataMessage[];
 class ChromeBrowserMainParts : public content::BrowserMainParts {
  public:
   virtual ~ChromeBrowserMainParts();
-
-  // Constructs HistogramSynchronizer which gets released early (before
-  // main_message_loop_).
-  void SetupHistogramSynchronizer();
 
   // Constructs metrics service and does related initialization, including
   // creation of field trials. Call only after labs have been converted to
@@ -43,9 +44,11 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
   explicit ChromeBrowserMainParts(const MainFunctionParams& parameters);
 
   virtual void PostMainMessageLoopStart() OVERRIDE;
+  virtual void PreMainMessageLoopRun() OVERRIDE;
+  int PreMainMessageLoopRunInternal();
+  virtual void MainMessageLoopRun() OVERRIDE;
+  virtual void PostMainMessageLoopRun() OVERRIDE;
   virtual void ToolkitInitialized() OVERRIDE;
-
-  virtual int TemporaryContinue() OVERRIDE;
 
  private:
   // Methods for |EarlyInitialization()| ---------------------------------------
@@ -102,8 +105,14 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
 
   // Members initialized after / released before main_message_loop_ ------------
 
-  // Initialized in SetupHistogramSynchronizer.
+  scoped_ptr<BrowserProcessImpl> browser_process_;
   scoped_refptr<HistogramSynchronizer> histogram_synchronizer_;
+  scoped_ptr<ProcessSingleton> process_singleton_;
+  scoped_ptr<FirstRun::MasterPrefs> master_prefs_;
+  bool record_search_engine_;
+  TranslateManager* translate_manager_;
+  Profile* profile_;
+  bool run_message_loop_;
 
   // Initialized in SetupMetricsAndFieldTrials.
   scoped_refptr<FieldTrialSynchronizer> field_trial_synchronizer_;

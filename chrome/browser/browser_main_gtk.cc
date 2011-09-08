@@ -16,8 +16,6 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_result_codes.h"
-#include "content/browser/renderer_host/render_sandbox_host_linux.h"
-#include "content/browser/zygote_host_linux.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -25,10 +23,6 @@
 #include "ui/base/x/x11_util.h"
 #include "ui/base/x/x11_util_internal.h"
 #include "ui/gfx/gtk_util.h"
-
-#if defined(USE_NSS)
-#include "crypto/nss_util.h"
-#endif
 
 #if defined(USE_LINUX_BREAKPAD)
 #include "chrome/app/breakpad_linux.h"
@@ -89,13 +83,6 @@ void BrowserMainPartsGtk::PreEarlyInitialization() {
   DetectRunningAsRoot();
 
   BrowserMainPartsPosix::PreEarlyInitialization();
-
-  SetupSandbox();
-
-#if defined(USE_NSS)
-  // We want to be sure to init NSPR on the main thread.
-  crypto::EnsureNSPRInit();
-#endif
 }
 
 void BrowserMainPartsGtk::DetectRunningAsRoot() {
@@ -137,34 +124,6 @@ void BrowserMainPartsGtk::DetectRunningAsRoot() {
     gtk_widget_destroy(dialog);
     exit(EXIT_FAILURE);
   }
-}
-
-void BrowserMainPartsGtk::SetupSandbox() {
-  // TODO(evanm): move this into SandboxWrapper; I'm just trying to move this
-  // code en masse out of chrome_main for now.
-  const char* sandbox_binary = NULL;
-  struct stat st;
-
-  // In Chromium branded builds, developers can set an environment variable to
-  // use the development sandbox. See
-  // http://code.google.com/p/chromium/wiki/LinuxSUIDSandboxDevelopment
-  if (stat("/proc/self/exe", &st) == 0 && st.st_uid == getuid())
-    sandbox_binary = getenv("CHROME_DEVEL_SANDBOX");
-
-#if defined(LINUX_SANDBOX_PATH)
-  if (!sandbox_binary)
-    sandbox_binary = LINUX_SANDBOX_PATH;
-#endif
-
-  std::string sandbox_cmd;
-  if (sandbox_binary && !parsed_command_line().HasSwitch(switches::kNoSandbox))
-    sandbox_cmd = sandbox_binary;
-
-  // Tickle the sandbox host and zygote host so they fork now.
-  RenderSandboxHostLinux* shost = RenderSandboxHostLinux::GetInstance();
-  shost->Init(sandbox_cmd);
-  ZygoteHost* zhost = ZygoteHost::GetInstance();
-  zhost->Init(sandbox_cmd);
 }
 
 namespace content {

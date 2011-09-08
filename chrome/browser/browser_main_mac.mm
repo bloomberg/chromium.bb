@@ -12,7 +12,6 @@
 #include "base/mac/mac_util.h"
 #include "base/memory/scoped_nsobject.h"
 #include "base/path_service.h"
-#include "crypto/nss_util.h"
 #include "chrome/app/breakpad_mac.h"
 #import "chrome/browser/app_controller_mac.h"
 #include "chrome/browser/browser_main_win.h"
@@ -23,7 +22,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "content/common/main_function_params.h"
 #include "content/common/result_codes.h"
-#include "net/socket/client_socket_factory.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -137,15 +135,4 @@ void BrowserMainPartsMac::PreMainMessageLoopStart() {
   // |-application:openFiles:|, since we already handle them directly.
   [[NSUserDefaults standardUserDefaults]
       setObject:@"NO" forKey:@"NSTreatUnknownArgumentsAsOpen"];
-}
-
- void BrowserMainPartsMac::InitializeSSL() {
-  // Use NSS for SSL by default.
-  // The default client socket factory uses NSS for SSL by default on Mac.
-  if (parsed_command_line().HasSwitch(switches::kUseSystemSSL)) {
-    net::ClientSocketFactory::UseSystemSSL();
-  } else {
-    // We want to be sure to init NSPR on the main thread.
-    crypto::EnsureNSPRInit();
-  }
 }

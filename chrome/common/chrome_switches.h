@@ -311,10 +311,6 @@ extern const char kFileManagerExtensionPath[];
 #endif
 #endif
 
-#if defined(OS_MACOSX) || defined(OS_WIN)
-extern const char kUseSystemSSL[];
-#endif
-
 #if defined(OS_POSIX)
 extern const char kEnableCrashReporter[];
 extern const char kNoProcessSingletonDialog[];

@@ -503,6 +503,12 @@ const char kAuditAllHandles[]               = "enable-handle-auditing-all";
 const char kScrollPixels[]                  = "scroll-pixels";
 #endif
 
+#if defined(OS_MACOSX) || defined(OS_WIN)
+// Use the system SSL library (Secure Transport on Mac, SChannel on Windows)
+// instead of NSS for SSL.
+const char kUseSystemSSL[]                  = "use-system-ssl";
+#endif
+
 #if !defined(OFFICIAL_BUILD)
 // Causes the renderer process to throw an assertion on launch.
 const char kRendererCheckFalseTest[]        = "renderer-check-false-test";

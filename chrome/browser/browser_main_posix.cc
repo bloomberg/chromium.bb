@@ -16,7 +16,6 @@
 #include "base/eintr_wrapper.h"
 #include "base/logging.h"
 #include "base/string_number_conversions.h"
-#include "chrome/browser/defaults.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/browser/browser_thread.h"
@@ -233,16 +232,6 @@ void BrowserMainPartsPosix::PreEarlyInitialization() {
 #endif  // OS_MACOSX
   if (fd_limit > 0)
     SetFileDescriptorLimit(fd_limit);
-
-#if defined(OS_CHROMEOS)
-  if (parsed_command_line().HasSwitch(switches::kGuestSession)) {
-    // Disable sync and extensions if we're in "browse without sign-in" mode.
-    CommandLine* singleton_command_line = CommandLine::ForCurrentProcess();
-    singleton_command_line->AppendSwitch(switches::kDisableSync);
-    singleton_command_line->AppendSwitch(switches::kDisableExtensions);
-    browser_defaults::bookmarks_enabled = false;
-  }
-#endif
 }
 
 void BrowserMainPartsPosix::PostMainMessageLoopStart() {

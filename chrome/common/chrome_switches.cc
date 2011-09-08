@@ -1122,12 +1122,6 @@ const char kFileManagerExtensionPath[]      = "filemgr-ext-path";
 #endif
 #endif
 
-#if defined(OS_MACOSX) || defined(OS_WIN)
-// Use the system SSL library (Secure Transport on Mac, SChannel on Windows)
-// instead of NSS for SSL.
-const char kUseSystemSSL[]                  = "use-system-ssl";
-#endif
-
 #if defined(OS_POSIX)
 // A flag, generated internally by Chrome for renderer and other helper process
 // command lines on Linux and Mac.  It tells the helper process to enable crash

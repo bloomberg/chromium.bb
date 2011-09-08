@@ -10,6 +10,7 @@
 #include "chrome/browser/chromeos/boot_times_loader.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/net/cros_network_change_notifier_factory.h"
+#include "chrome/browser/defaults.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/common/main_function_params.h"
 #include "net/base/network_change_notifier.h"
@@ -63,7 +64,19 @@ BrowserMainPartsChromeos::~BrowserMainPartsChromeos() {
   chromeos::BootTimesLoader::Get()->WriteLogoutTimes();
 }
 
+void BrowserMainPartsChromeos::PreEarlyInitialization() {
+  BrowserMainPartsGtk::PreEarlyInitialization();
+  if (parsed_command_line().HasSwitch(switches::kGuestSession)) {
+    // Disable sync and extensions if we're in "browse without sign-in" mode.
+    CommandLine* singleton_command_line = CommandLine::ForCurrentProcess();
+    singleton_command_line->AppendSwitch(switches::kDisableSync);
+    singleton_command_line->AppendSwitch(switches::kDisableExtensions);
+    browser_defaults::bookmarks_enabled = false;
+  }
+}
+
 void BrowserMainPartsChromeos::PreMainMessageLoopStart() {
+  BrowserMainPartsGtk::PreMainMessageLoopStart();
   // Initialize CrosLibrary only for the browser, unless running tests
   // (which do their own CrosLibrary setup).
   if (!parameters().ui_task) {

@@ -13,11 +13,6 @@ class BrowserMainPartsPosix : public ChromeBrowserMainParts {
 
   virtual void PreEarlyInitialization() OVERRIDE;
   virtual void PostMainMessageLoopStart() OVERRIDE;
-
- private:
-#if !defined(OS_MACOSX)
-  virtual void InitializeSSL() {}
-#endif
 };
 
 #endif  // CHROME_BROWSER_BROWSER_MAIN_POSIX_H_

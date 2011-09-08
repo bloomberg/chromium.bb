@@ -570,6 +570,13 @@
             '../build/linux/system.gyp:x11',
             '../dbus/dbus.gyp:dbus',
           ],
+          'conditions': [
+            ['linux_sandbox_path != ""', {
+              'defines': [
+                'LINUX_SANDBOX_PATH="<(linux_sandbox_path)"',
+              ],
+            }],
+          ],
         }],
         ['OS=="linux" and toolkit_views==1',{
           'dependencies': [

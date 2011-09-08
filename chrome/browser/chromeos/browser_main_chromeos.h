@@ -13,6 +13,7 @@ class BrowserMainPartsChromeos : public BrowserMainPartsGtk {
 
   virtual ~BrowserMainPartsChromeos();
 
+  virtual void PreEarlyInitialization() OVERRIDE;
   virtual void PreMainMessageLoopStart() OVERRIDE;
   virtual void PostMainMessageLoopStart() OVERRIDE;
 

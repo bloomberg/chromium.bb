@@ -162,6 +162,10 @@ extern const char kAuditAllHandles[];
 extern const char kScrollPixels[];
 #endif
 
+#if defined(OS_MACOSX) || defined(OS_WIN)
+extern const char kUseSystemSSL[];
+#endif
+
 #if !defined(OFFICIAL_BUILD)
 extern const char kRendererCheckFalseTest[];
 #endif

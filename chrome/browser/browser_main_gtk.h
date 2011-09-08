@@ -19,7 +19,6 @@ class BrowserMainPartsGtk : public BrowserMainPartsPosix {
 
  private:
   void DetectRunningAsRoot();
-  void SetupSandbox();
 };
 
 // Installs the X11 error handlers for the browser process. This will

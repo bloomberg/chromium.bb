@@ -4163,11 +4163,6 @@
                 'third_party/mozilla_security_manager/nsUsageArrayHelper.h',
               ],
             }],
-            ['linux_sandbox_path != ""', {
-              'defines': [
-                'LINUX_SANDBOX_PATH="<(linux_sandbox_path)"',
-              ],
-            }],
           ],
         }, {  # toolkit_uses_gtk != 1
           'sources!': [

@@ -14,7 +14,6 @@ class BrowserMainPartsMac : public BrowserMainPartsPosix {
 
   virtual void PreEarlyInitialization() OVERRIDE;
   virtual void PreMainMessageLoopStart() OVERRIDE;
-  virtual void InitializeSSL() OVERRIDE;
 };
 
 #endif  // CHROME_BROWSER_BROWSER_MAIN_WIN_H_

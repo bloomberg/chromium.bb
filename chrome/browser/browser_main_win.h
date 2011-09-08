@@ -43,9 +43,7 @@ class BrowserMainPartsWin : public ChromeBrowserMainParts {
  public:
   explicit BrowserMainPartsWin(const MainFunctionParams& parameters);
 
-  virtual void PreEarlyInitialization() OVERRIDE;
   virtual void PreMainMessageLoopStart() OVERRIDE;
-  virtual void InitializeSSL() OVERRIDE;
 };
 
 #endif  // CHROME_BROWSER_BROWSER_MAIN_WIN_H_

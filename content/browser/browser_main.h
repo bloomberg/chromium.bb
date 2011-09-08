@@ -73,11 +73,11 @@ class BrowserMainParts {
 
   // Parts to be called by |BrowserMain()|.
   void EarlyInitialization();
-  void MainMessageLoopStart();
   void InitializeToolkit();
+  void MainMessageLoopStart();
+  void RunMainMessageLoopParts();
 
-  // Temporary function since not all the code from chrome is moved over yet.
-  virtual int TemporaryContinue();
+  int result_code() const { return result_code_; }
 
  protected:
   // Methods to be overridden to provide platform-specific code; these
@@ -86,9 +86,9 @@ class BrowserMainParts {
   virtual void PostEarlyInitialization();
   virtual void PreMainMessageLoopStart();
   virtual void PostMainMessageLoopStart();
-
-  // Used to initialize NSPR where appropriate.
-  virtual void InitializeSSL();
+  virtual void PreMainMessageLoopRun();
+  virtual void MainMessageLoopRun();
+  virtual void PostMainMessageLoopRun();
 
   // Allows an embedder to do any extra toolkit initialization.
   virtual void ToolkitInitialized();
@@ -103,6 +103,7 @@ class BrowserMainParts {
   MessageLoop& main_message_loop() const {
     return *main_message_loop_;
   }
+  void set_result_code(int result_code) { result_code_ = result_code; }
 
  private:
   void InitializeMainThread();
@@ -111,6 +112,7 @@ class BrowserMainParts {
 
   const MainFunctionParams& parameters_;
   const CommandLine& parsed_command_line_;
+  int result_code_;
 
   // Members initialized in |MainMessageLoopStart()| ---------------------------
   scoped_ptr<MessageLoop> main_message_loop_;
