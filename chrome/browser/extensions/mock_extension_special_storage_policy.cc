@@ -26,3 +26,7 @@ bool MockExtensionSpecialStoragePolicy::IsFileHandler(
     const std::string& extension_id) {
   return file_handlers_.find(extension_id) != file_handlers_.end();
 }
+
+bool MockExtensionSpecialStoragePolicy::HasSessionOnlyOrigins() {
+  return !session_only_.empty();
+}

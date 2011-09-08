@@ -30,6 +30,7 @@ class ExtensionSpecialStoragePolicy : public quota::SpecialStoragePolicy {
   virtual bool IsStorageUnlimited(const GURL& origin);
   virtual bool IsStorageSessionOnly(const GURL& origin);
   virtual bool IsFileHandler(const std::string& extension_id);
+  virtual bool HasSessionOnlyOrigins();
 
   // Methods used by the ExtensionService to populate this class.
   void GrantRightsForExtension(const Extension* extension);

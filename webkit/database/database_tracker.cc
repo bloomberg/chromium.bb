@@ -797,17 +797,33 @@ void DatabaseTracker::DeleteIncognitoDBDirectory() {
     file_util::Delete(incognito_db_dir, true);
 }
 
-void DatabaseTracker::ClearLocalState() {
+void DatabaseTracker::ClearLocalState(bool clear_all_databases) {
   shutting_down_ = true;
+
+  bool has_session_only_databases =
+      special_storage_policy_.get() &&
+      special_storage_policy_->HasSessionOnlyOrigins();
+
+  // Clearning only session-only databases, and there are none.
+  if (!clear_all_databases && !has_session_only_databases)
+    return;
+
+  if (!LazyInit())
+    return;
 
   std::vector<string16> origin_identifiers;
   GetAllOriginIdentifiers(&origin_identifiers);
 
   for (std::vector<string16>::iterator origin = origin_identifiers.begin();
        origin != origin_identifiers.end(); ++origin) {
+    GURL origin_url =
+        webkit_database::DatabaseUtil::GetOriginFromIdentifier(*origin);
+    if (!clear_all_databases &&
+        !special_storage_policy_->IsStorageSessionOnly(origin_url)) {
+      continue;
+    }
     if (special_storage_policy_.get() &&
-        special_storage_policy_->IsStorageProtected(
-            webkit_database::DatabaseUtil::GetOriginFromIdentifier(*origin))) {
+        special_storage_policy_->IsStorageProtected(origin_url)) {
       continue;
     }
     webkit_database::OriginInfo origin_info;
@@ -840,8 +856,8 @@ void DatabaseTracker::Shutdown() {
   }
   if (is_incognito_)
     DeleteIncognitoDBDirectory();
-  else if (clear_local_state_on_exit_ && LazyInit())
-    ClearLocalState();
+  else
+    ClearLocalState(clear_local_state_on_exit_);
 }
 
 void DatabaseTracker::SetClearLocalStateOnExit(bool clear_local_state_on_exit) {

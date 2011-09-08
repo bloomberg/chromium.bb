@@ -608,6 +608,85 @@ class DatabaseTracker_TestHelper_Test {
     EXPECT_FALSE(file_util::PathExists(origin1_db_dir));
   }
 
+  static void DatabaseTrackerClearSessionOnlyDatabasesOnExit() {
+    int64 database_size = 0;
+    const string16 kOrigin1 =
+        DatabaseUtil::GetOriginIdentifier(GURL(kOrigin1Url));
+    const string16 kOrigin2 =
+        DatabaseUtil::GetOriginIdentifier(GURL(kOrigin2Url));
+    const string16 kDB1 = ASCIIToUTF16("db1");
+    const string16 kDB2 = ASCIIToUTF16("db2");
+    const string16 kDescription = ASCIIToUTF16("database_description");
+
+    // Initialize the tracker database.
+    ScopedTempDir temp_dir;
+    ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+    FilePath origin1_db_dir;
+    FilePath origin2_db_dir;
+    {
+      scoped_refptr<quota::MockSpecialStoragePolicy> special_storage_policy =
+          new quota::MockSpecialStoragePolicy;
+      special_storage_policy->AddSessionOnly(GURL(kOrigin2Url));
+      scoped_refptr<DatabaseTracker> tracker(
+          new DatabaseTracker(
+              temp_dir.path(), false, false /*clear_local_state_on_exit*/,
+              special_storage_policy, NULL,
+              base::MessageLoopProxy::current()));
+
+      // Open two new databases.
+      tracker->DatabaseOpened(kOrigin1, kDB1, kDescription, 0,
+                              &database_size);
+      EXPECT_EQ(0, database_size);
+      tracker->DatabaseOpened(kOrigin2, kDB2, kDescription, 0,
+                              &database_size);
+      EXPECT_EQ(0, database_size);
+
+      // Write some data to each file.
+      FilePath db_file;
+      db_file = tracker->GetFullDBFilePath(kOrigin1, kDB1);
+      EXPECT_TRUE(file_util::CreateDirectory(db_file.DirName()));
+      EXPECT_TRUE(EnsureFileOfSize(db_file, 1));
+
+      db_file = tracker->GetFullDBFilePath(kOrigin2, kDB2);
+      EXPECT_TRUE(file_util::CreateDirectory(db_file.DirName()));
+      EXPECT_TRUE(EnsureFileOfSize(db_file, 2));
+
+      // Store the origin database directories as long as they still exist.
+      origin1_db_dir = tracker->GetFullDBFilePath(kOrigin1, kDB1).DirName();
+      origin2_db_dir = tracker->GetFullDBFilePath(kOrigin2, kDB2).DirName();
+
+      tracker->DatabaseModified(kOrigin1, kDB1);
+      tracker->DatabaseModified(kOrigin2, kDB2);
+
+      // Close all databases.
+      tracker->DatabaseClosed(kOrigin1, kDB1);
+      tracker->DatabaseClosed(kOrigin2, kDB2);
+
+      tracker->Shutdown();
+    }
+
+    // At this point, the database tracker should be gone. Create a new one.
+    scoped_refptr<DatabaseTracker> tracker(
+        new DatabaseTracker(temp_dir.path(), false, false,
+                            NULL, NULL, NULL));
+
+    // Get all data for all origins.
+    std::vector<OriginInfo> origins_info;
+    EXPECT_TRUE(tracker->GetAllOriginsInfo(&origins_info));
+    // kOrigin1 was not session-only, so it survived. kOrigin2 was session-only
+    // and it got deleted.
+    EXPECT_EQ(size_t(1), origins_info.size());
+    EXPECT_EQ(kOrigin1, origins_info[0].GetOrigin());
+    EXPECT_TRUE(
+        file_util::PathExists(tracker->GetFullDBFilePath(kOrigin1, kDB1)));
+    EXPECT_EQ(FilePath(), tracker->GetFullDBFilePath(kOrigin2, kDB2));
+
+    // The origin directory of kOrigin1 remains, but the origin directory of
+    // kOrigin2 is deleted.
+    EXPECT_TRUE(file_util::PathExists(origin1_db_dir));
+    EXPECT_FALSE(file_util::PathExists(origin2_db_dir));
+  }
+
   static void EmptyDatabaseNameIsValid() {
     const GURL kOrigin(kOrigin1Url);
     const string16 kOriginId = DatabaseUtil::GetOriginIdentifier(kOrigin);
@@ -679,6 +758,12 @@ TEST(DatabaseTrackerTest, DatabaseTrackerQuotaIntegration) {
 TEST(DatabaseTrackerTest, DatabaseTrackerClearLocalStateOnExit) {
   // Only works for regular mode.
   DatabaseTracker_TestHelper_Test::DatabaseTrackerClearLocalStateOnExit();
+}
+
+TEST(DatabaseTrackerTest, DatabaseTrackerClearSessionOnlyDatabasesOnExit) {
+  // Only works for regular mode.
+  DatabaseTracker_TestHelper_Test::
+      DatabaseTrackerClearSessionOnlyDatabasesOnExit();
 }
 
 TEST(DatabaseTrackerTest, EmptyDatabaseNameIsValid) {

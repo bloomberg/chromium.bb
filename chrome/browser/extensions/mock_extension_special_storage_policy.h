@@ -24,6 +24,7 @@ class MockExtensionSpecialStoragePolicy : public ExtensionSpecialStoragePolicy {
   virtual bool IsStorageUnlimited(const GURL& origin);
   virtual bool IsStorageSessionOnly(const GURL& origin);
   virtual bool IsFileHandler(const std::string& extension_id);
+  virtual bool HasSessionOnlyOrigins();
 
   void AddProtected(const GURL& origin) {
     protected_.insert(origin);

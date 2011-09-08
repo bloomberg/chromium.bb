@@ -29,4 +29,8 @@ bool MockSpecialStoragePolicy::IsFileHandler(const std::string& extension_id) {
   return file_handlers_.find(extension_id) != file_handlers_.end();
 }
 
+bool MockSpecialStoragePolicy::HasSessionOnlyOrigins() {
+  return !session_only_.empty();
+}
+
 }  // namespace quota

@@ -3,9 +3,13 @@
 // found in the LICENSE file.
 
 #include "base/values.h"
+#include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/extensions/extension_special_storage_policy.h"
+#include "chrome/common/content_settings.h"
+#include "chrome/common/content_settings_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "chrome/test/base/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace keys = extension_manifest_keys;
@@ -209,4 +213,43 @@ TEST_F(ExtensionSpecialStoragePolicyTest, OverlappingApps) {
   EXPECT_FALSE(policy->IsStorageProtected(GURL("http://explicit/")));
   EXPECT_FALSE(policy->IsStorageProtected(GURL("http://foo.wildcards/")));
   EXPECT_FALSE(policy->IsStorageProtected(GURL("https://bar.wildcards/")));
+}
+
+TEST_F(ExtensionSpecialStoragePolicyTest, HasSessionOnlyOrigins) {
+  MessageLoop message_loop;
+  BrowserThread ui_thread(BrowserThread::UI, &message_loop);
+
+  TestingProfile profile;
+  HostContentSettingsMap* host_content_settings_map =
+      profile.GetHostContentSettingsMap();
+  scoped_refptr<ExtensionSpecialStoragePolicy> policy(
+      new ExtensionSpecialStoragePolicy(host_content_settings_map));
+
+  EXPECT_FALSE(policy->HasSessionOnlyOrigins());
+
+  // The default setting can be session-only.
+  host_content_settings_map->SetDefaultContentSetting(
+      CONTENT_SETTINGS_TYPE_COOKIES, CONTENT_SETTING_SESSION_ONLY);
+  EXPECT_TRUE(policy->HasSessionOnlyOrigins());
+
+  host_content_settings_map->SetDefaultContentSetting(
+      CONTENT_SETTINGS_TYPE_COOKIES, CONTENT_SETTING_ALLOW);
+  EXPECT_FALSE(policy->HasSessionOnlyOrigins());
+
+  // Or the session-onlyness can affect individual origins.
+  ContentSettingsPattern pattern =
+      ContentSettingsPattern::FromString("pattern.com");
+
+  host_content_settings_map->SetContentSetting(
+      pattern, ContentSettingsPattern::Wildcard(),
+      CONTENT_SETTINGS_TYPE_COOKIES, "", CONTENT_SETTING_SESSION_ONLY);
+
+  EXPECT_TRUE(policy->HasSessionOnlyOrigins());
+
+  // Clearing an origin-spesific rule.
+  host_content_settings_map->SetContentSetting(
+      pattern, ContentSettingsPattern::Wildcard(),
+      CONTENT_SETTINGS_TYPE_COOKIES, "", CONTENT_SETTING_DEFAULT);
+
+  EXPECT_FALSE(policy->HasSessionOnlyOrigins());
 }

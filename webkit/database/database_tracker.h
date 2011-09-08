@@ -198,10 +198,10 @@ class DatabaseTracker
   // Deletes the directory that stores all DBs in incognito mode, if it exists.
   void DeleteIncognitoDBDirectory();
 
-  // Deletes databases not protected by the special storage policy if
-  // |clear_local_state_on_exit_| is true and blocks databases from being
-  // created/opened.
-  void ClearLocalState();
+  // If clear_all_databases is true, deletes all databases not protected by
+  // special storage policy. Otherwise deletes session-only databases. Blocks
+  // databases from being created/opened.
+  void ClearLocalState(bool clear_all_databases);
 
   bool DeleteClosedDatabase(const string16& origin_identifier,
                             const string16& database_name);

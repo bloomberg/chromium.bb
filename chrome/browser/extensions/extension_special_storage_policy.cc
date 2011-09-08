@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/common/content_settings.h"
+#include "chrome/common/content_settings_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/browser_thread.h"
@@ -35,6 +36,22 @@ bool ExtensionSpecialStoragePolicy::IsStorageSessionOnly(const GURL& origin) {
   ContentSetting content_setting = host_content_settings_map_->
       GetCookieContentSetting(origin, origin, true);
   return (content_setting == CONTENT_SETTING_SESSION_ONLY);
+}
+
+bool ExtensionSpecialStoragePolicy::HasSessionOnlyOrigins() {
+  if (host_content_settings_map_ == NULL)
+    return false;
+  if (host_content_settings_map_->GetDefaultContentSetting(
+          CONTENT_SETTINGS_TYPE_COOKIES) == CONTENT_SETTING_SESSION_ONLY)
+    return true;
+  HostContentSettingsMap::SettingsForOneType entries;
+  host_content_settings_map_->GetSettingsForOneType(
+      CONTENT_SETTINGS_TYPE_COOKIES, "", &entries);
+  for (size_t i = 0; i < entries.size(); ++i) {
+    if (entries[i].c == CONTENT_SETTING_SESSION_ONLY)
+      return true;
+  }
+  return false;
 }
 
 bool ExtensionSpecialStoragePolicy::IsFileHandler(

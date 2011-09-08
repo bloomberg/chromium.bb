@@ -46,6 +46,9 @@ class SpecialStoragePolicy
   // when the session ends.
   virtual bool IsStorageSessionOnly(const GURL& origin) = 0;
 
+  // Returns true if some origins are only allowed session-only storage.
+  virtual bool HasSessionOnlyOrigins() = 0;
+
   // Adds/removes an observer, the policy does not take
   // ownership of the observer. Should only be called on the IO thread.
   void AddObserver(Observer* observer);
