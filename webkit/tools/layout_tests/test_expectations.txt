@@ -9,8 +9,12 @@
 
 // rebaselined upstream already!
 BUG_LEVIN : http/tests/eventsource/existent-eventsource-status-error-iframe-crash.html = FAIL
+
 BUG_LOISLO WIN GPU : fast/canvas/canvas-text-alignment.html = IMAGE
 BUG_LOISLO WIN LINUX : inspector/debugger/scripts-sorting.html = TEXT
+BUG_LOISLO LINUX : fast/css/line-after-floating-div.html = IMAGE+TEXT
+BUG_LOISLO LINUX : fast/text/hyphenate-limit-lines.html = IMAGE+TEXT
+BUG_LOISLO LINUX : svg/W3C-SVG-1.1-SE/filters-image-05-f.svg = TEXT
 
 BUG_REED : compositing/overflow/overflow-positioning.html = IMAGE
 BUG_REED : fast/canvas/canvas-text-baseline.html = IMAGE
