@@ -5,7 +5,11 @@
 </head>
 <body>
 <script>
+  console.log('Page loaded');
+
   function runTest(galleryUrl) {
+    console.log('In runTest');
+
     // Link URL has to be generated dynamically in order to include the right
     // port number. The ID corresponds to the data in the "extension" directory.
     document.getElementsByTagName('link')[0].href =
@@ -15,13 +19,16 @@
       chrome.webstore.install(
           undefined,
           function() {
+            console.log('Ran test, sending response');
             window.domAutomationController.send(true);
+            console.log('Test complete');
           },
           function(error) {
             console.log('Unexpected error: ' + error);
             window.domAutomationController.send(false);
           });
     } catch (e) {
+      console.log('Unexpected exception: ' + e);
       window.domAutomationController.send(false);
       throw e;
     }

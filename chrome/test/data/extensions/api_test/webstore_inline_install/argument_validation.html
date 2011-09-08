@@ -5,7 +5,11 @@
 </head>
 <body>
 <script>
+  console.log('Page loaded');
+
   function runTest(galleryUrl) {
+    console.log('In runTest');
+
     var storeUrl = galleryUrl + '/detail/ecglahbcnmdpdciemllbhojghbkagdje';
     // Link URL has to be generated dynamically in order to include the right
     // port number. The ID corresponds to the data in the "extension" directory.
@@ -14,17 +18,18 @@
     function runTests(tests) {
       var failed = false;
       tests.forEach(function(test) {
+        console.log('Testing ' + test.func);
         if (test.shouldPass) {
           try {
             test.func();
           } catch (e) {
-            alert('unexpected exception: ' + e);
+            console.log('unexpected exception: ' + e);
             failed = true;
           }
         } else {
           try {
             test.func();
-            alert('unexpected pass: ' + func);
+            console.log('unexpected pass: ' + func);
             failed = true;
           } catch (e) {
             // Expected exception
@@ -32,7 +37,9 @@
         }
       });
 
+      console.log('Ran test, sending response');
       window.domAutomationController.send(!failed);
+      console.log('Test complete');
     }
 
     function shouldPass(func) {

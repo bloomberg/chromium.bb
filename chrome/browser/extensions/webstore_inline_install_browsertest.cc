@@ -82,7 +82,7 @@ class WebstoreInlineInstallTest : public InProcessBrowserTest {
 
 // Flakily fails on linux.  http://crbug.com/95246
 #if defined(OS_LINUX)
-#define MAYBE_Install DISABLED_Install
+#define MAYBE_Install FLAKY_Install
 #else
 #define MAYBE_Install Install
 #endif
@@ -108,7 +108,7 @@ IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallTest, MAYBE_Install) {
 
 // Flakily fails on Linux.  http://crbug.com/95246
 #if defined(OS_LINUX)
-#define MAYBE_InstallNotAllowedFromNonVerifiedDomains DISABLED_InstallNotAllowedFromNonVerifiedDomains
+#define MAYBE_InstallNotAllowedFromNonVerifiedDomains FLAKY_InstallNotAllowedFromNonVerifiedDomains
 #else
 #define MAYBE_InstallNotAllowedFromNonVerifiedDomains InstallNotAllowedFromNonVerifiedDomains
 #endif
@@ -125,7 +125,7 @@ IN_PROC_BROWSER_TEST_F(
 
 // Flakily fails on Linux.  http://crbug.com/95246
 #if defined(OS_LINUX)
-#define MAYBE_FindLink DISABLED_FindLink
+#define MAYBE_FindLink FLAKY_FindLink
 #else
 #define MAYBE_FindLink FindLink
 #endif
@@ -137,7 +137,14 @@ IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallTest, MAYBE_FindLink) {
   RunInlineInstallTest();
 }
 
-IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallTest, ArgumentValidation) {
+// Flakily fails on Linux and Mac.  http://crbug.com/95246
+#if defined(OS_LINUX) || defined(OS_MACOSX)
+#define MAYBE_ArgumentValidation FLAKY_ArgumentValidation
+#else
+#define MAYBE_ArgumentValidation ArgumentValidation
+#endif
+
+IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallTest, MAYBE_ArgumentValidation) {
   SetExtensionInstallDialogForManifestAutoConfirmForTests(false);
   ui_test_utils::NavigateToURL(
       browser(), GenerateTestServerUrl(kAppDomain, "argument_validation.html"));
