@@ -557,25 +557,16 @@
   fun:ProcessSingleton::LinuxWatcher::HandleMessage
 }
 {
-  bug_89295_a
+  bug_89141
   ThreadSanitizer:Race
-  fun:base::internal::WeakReference::Flag::~Flag
-  ...
-  fun:ProfileIOData::~ProfileIOData
-  fun:ProfileImplIOData::~ProfileImplIOData
-  ...
-  fun:scoped_refptr::~scoped_refptr
-  fun:ChromeURLRequestContextGetter::~ChromeURLRequestContextGetter
-  fun:DeleteTask::Run
+  fun:base::Thread::message_loop
+  fun:BrowserThread::IsMessageLoopValid
+  fun:ThreadWatcherList::StartWatching
+  fun:ThreadWatcherList::InitializeAndStartWatching
 }
-{
-  bug_89295_b
-  ThreadSanitizer:Race
-  fun:base::internal::WeakReference::Flag::Invalidate
-  ...
-  fun:base::SupportsWeakPtr::~SupportsWeakPtr
-  fun:prerender::PrerenderManager::~PrerenderManager
-}
+
+############################
+# TSan false positives
 {
   bug_93708_a
   ThreadSanitizer:Race
