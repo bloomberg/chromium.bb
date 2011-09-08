@@ -1713,7 +1713,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunInternal() {
   // until here to start so that we give the most amount of time for
   // the other services to start up before we start adjusting the oom
   // priority.
-  browser::OomPriorityManager::GetInstance()->Start();
+  browser::OomPriorityManager::Create();
 #endif
 
   // Create the instance of the cloud print proxy service so that it can launch
@@ -1871,7 +1871,7 @@ void ChromeBrowserMainParts::PostMainMessageLoopRun() {
 #endif
 
 #if defined(OS_CHROMEOS)
-  browser::OomPriorityManager::GetInstance()->Stop();
+  browser::OomPriorityManager::Destroy();
 #endif
 
   // Some tests don't set parameters.ui_task, so they started translate

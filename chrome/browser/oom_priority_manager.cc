@@ -42,34 +42,72 @@ namespace browser {
 // "equal".
 #define BUCKET_INTERVAL_MINUTES 10
 
+class OomPriorityManagerImpl {
+ public:
+  OomPriorityManagerImpl();
+  ~OomPriorityManagerImpl();
 
-// static
-OomPriorityManager* OomPriorityManager::GetInstance() {
-  return Singleton<OomPriorityManager>::get();
-}
+  void StartTimer();
+  void StopTimer();
 
-OomPriorityManager::OomPriorityManager() {
+  std::vector<string16> GetTabTitles();
+
+  struct RendererStats {
+    bool is_pinned;
+    bool is_selected;
+    base::TimeTicks last_selected;
+    size_t memory_used;
+    base::ProcessHandle renderer_handle;
+    string16 title;
+  };
+  typedef std::vector<RendererStats> StatsList;
+
+  // Posts DoAdjustOomPriorities task to the file thread.  Called when
+  // the timer fires.
+  void AdjustOomPriorities();
+
+  // Called by AdjustOomPriorities.  Runs on the file thread.
+  void DoAdjustOomPriorities();
+
+  static bool CompareRendererStats(RendererStats first, RendererStats second);
+
+  base::RepeatingTimer<OomPriorityManagerImpl> timer_;
+  // renderer_stats_ is used on both UI and file threads.
+  base::Lock renderer_stats_lock_;
+  StatsList renderer_stats_;
+
+  DISALLOW_COPY_AND_ASSIGN(OomPriorityManagerImpl);
+};
+
+}  // namespace browser
+
+DISABLE_RUNNABLE_METHOD_REFCOUNT(browser::OomPriorityManagerImpl);
+
+namespace browser {
+
+OomPriorityManagerImpl::OomPriorityManagerImpl() {
   renderer_stats_.reserve(32);  // 99% of users have < 30 tabs open
+  StartTimer();
 }
 
-OomPriorityManager::~OomPriorityManager() {
-  Stop();
+OomPriorityManagerImpl::~OomPriorityManagerImpl() {
+  StopTimer();
 }
 
-void OomPriorityManager::Start() {
+void OomPriorityManagerImpl::StartTimer() {
   if (!timer_.IsRunning()) {
     timer_.Start(FROM_HERE,
                  TimeDelta::FromSeconds(ADJUSTMENT_INTERVAL_SECONDS),
                  this,
-                 &OomPriorityManager::AdjustOomPriorities);
+                 &OomPriorityManagerImpl::AdjustOomPriorities);
   }
 }
 
-void OomPriorityManager::Stop() {
+void OomPriorityManagerImpl::StopTimer() {
   timer_.Stop();
 }
 
-std::vector<string16> OomPriorityManager::GetTabTitles() {
+std::vector<string16> OomPriorityManagerImpl::GetTabTitles() {
   base::AutoLock renderer_stats_autolock(renderer_stats_lock_);
   std::vector<string16> titles;
   titles.reserve(renderer_stats_.size());
@@ -82,7 +120,7 @@ std::vector<string16> OomPriorityManager::GetTabTitles() {
 
 // Returns true if |first| is considered less desirable to be killed
 // than |second|.
-bool OomPriorityManager::CompareRendererStats(RendererStats first,
+bool OomPriorityManagerImpl::CompareRendererStats(RendererStats first,
                                                   RendererStats second) {
   // The size of the slop in comparing activation times.  [This is
   // allocated here to avoid static initialization at startup time.]
@@ -122,7 +160,7 @@ bool OomPriorityManager::CompareRendererStats(RendererStats first,
 // 4) size in memory of a tab
 // But we do that in DoAdjustOomPriorities on the FILE thread so that
 // we avoid jank, because it accesses /proc.
-void OomPriorityManager::AdjustOomPriorities() {
+void OomPriorityManagerImpl::AdjustOomPriorities() {
   if (BrowserList::size() == 0)
     return;
 
@@ -149,10 +187,10 @@ void OomPriorityManager::AdjustOomPriorities() {
 
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      NewRunnableMethod(this, &OomPriorityManager::DoAdjustOomPriorities));
+      NewRunnableMethod(this, &OomPriorityManagerImpl::DoAdjustOomPriorities));
 }
 
-void OomPriorityManager::DoAdjustOomPriorities() {
+void OomPriorityManagerImpl::DoAdjustOomPriorities() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   base::AutoLock renderer_stats_autolock(renderer_stats_lock_);
   for (StatsList::iterator stats_iter = renderer_stats_.begin();
@@ -178,7 +216,7 @@ void OomPriorityManager::DoAdjustOomPriorities() {
   // killed is first, most desirable is last.
   std::sort(renderer_stats_.begin(),
             renderer_stats_.end(),
-            OomPriorityManager::CompareRendererStats);
+            OomPriorityManagerImpl::CompareRendererStats);
 
   // Now we assign priorities based on the sorted list.  We're
   // assigning priorities in the range of kLowestRendererOomScore to
@@ -210,6 +248,29 @@ void OomPriorityManager::DoAdjustOomPriorities() {
       priority += priority_increment;
     }
   }
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// Pointer-to-impl glue
+
+OomPriorityManagerImpl* OomPriorityManager::impl_ = NULL;
+
+// static
+void OomPriorityManager::Create() {
+  impl_ = new OomPriorityManagerImpl();
+}
+
+// static
+void OomPriorityManager::Destroy() {
+  delete impl_;
+  impl_ = NULL;
+}
+
+// static
+std::vector<string16> OomPriorityManager::GetTabTitles() {
+  if (!impl_)
+    return std::vector<string16>();
+  return impl_->GetTabTitles();
 }
 
 }  // namespace browser
