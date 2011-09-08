@@ -129,6 +129,16 @@ void CollectedCookiesSource::StartDataRequest(const std::string& path,
 
 }  // namespace
 
+namespace browser {
+
+// Declared in browser_dialogs.h so others don't have to depend on our header.
+void ShowCollectedCookiesDialog(gfx::NativeWindow parent_window,
+                                TabContentsWrapper* wrapper) {
+  CollectedCookiesUIDelegate::Show(wrapper);
+}
+
+}  // namespace browser
+
 // static
 void CollectedCookiesUIDelegate::Show(TabContentsWrapper* wrapper) {
   CollectedCookiesUIDelegate* delegate =

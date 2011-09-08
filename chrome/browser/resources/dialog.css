@@ -1,0 +1,7 @@
+/* TODO(derat): This should ideally be happening by default, but at least on
+ * Chrome OS, focused input buttons in WebUI dialogs don't have any sort of
+ * decoration.  Perhaps there's an issue with the dialog thinking that it
+ * doesn't have the focus (with the page underneath instead having it). */
+input:focus {
+  outline: medium auto #507ad5;
+}

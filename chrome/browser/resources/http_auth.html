@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <html i18n-values="dir:textdirection">
 <head>
-  <style type="text/css">
+  <link rel="stylesheet" href="dialog.css">
+  <style>
     body {
       margin: 10px 10px 0 10px;
       -webkit-user-select: none;
@@ -86,7 +87,6 @@
       $('explanation').textContent = chrome.dialogArguments;
       $('form').onsubmit = handleSubmit;
       $('cancel').onclick = cancel;
-      $('username').focus();
 
       chrome.send('GetAutofill', ['']);
     }
@@ -103,7 +103,7 @@
           <label for="username" i18n-content="username"></label>
         </td>
         <td>
-          <input id="username" type="text">
+          <input id="username" type="text" autofocus>
         </td>
       </tr>
       <tr>
@@ -116,7 +116,7 @@
       </tr>
     </table>
     <div id="buttons">
-      <input id="cancel" type="button" i18n-values="value:cancel">
+      <input id="cancel" type="reset" i18n-values="value:cancel">
       <input id="login" type="submit" i18n-values="value:signin">
     </div>
   </form>

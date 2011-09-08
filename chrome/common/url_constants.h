@@ -71,21 +71,22 @@ extern const char kChromeUIActiveDownloadsURL[];
 extern const char kChromeUIChooseMobileNetworkURL[];
 extern const char kChromeUICollectedCookiesURL[];
 extern const char kChromeUIDiscardsURL[];
+extern const char kChromeUIEnterpriseEnrollmentURL[];
 extern const char kChromeUIHttpAuthURL[];
 extern const char kChromeUIImageBurnerURL[];
 extern const char kChromeUIKeyboardOverlayURL[];
 extern const char kChromeUIMediaplayerURL[];
 extern const char kChromeUIMobileSetupURL[];
-extern const char kChromeUIOobeURL[];
 extern const char kChromeUIOSCreditsURL[];
+extern const char kChromeUIOobeURL[];
 extern const char kChromeUIProxySettingsURL[];
 extern const char kChromeUIRegisterPageURL[];
-extern const char kChromeUISlideshowURL[];
+extern const char kChromeUIRepostFormWarningURL[];
 extern const char kChromeUISimUnlockURL[];
+extern const char kChromeUISlideshowURL[];
 extern const char kChromeUISystemInfoURL[];
 extern const char kChromeUITermsOemURL[];
 extern const char kChromeUIUserImageURL[];
-extern const char kChromeUIEnterpriseEnrollmentURL[];
 #endif
 
 #if defined(FILE_MANAGER_EXTENSION)
@@ -185,13 +186,14 @@ extern const char kChromeUILoginHost[];
 extern const char kChromeUIMediaplayerHost[];
 extern const char kChromeUIMobileSetupHost[];
 extern const char kChromeUINetworkHost[];
-extern const char kChromeUIOobeHost[];
 extern const char kChromeUIOSCreditsHost[];
+extern const char kChromeUIOobeHost[];
 extern const char kChromeUIProxySettingsHost[];
 extern const char kChromeUIRegisterPageHost[];
+extern const char kChromeUIRepostFormWarningHost[];
 extern const char kChromeUIRotateHost[];
-extern const char kChromeUISlideshowHost[];
 extern const char kChromeUISimUnlockHost[];
+extern const char kChromeUISlideshowHost[];
 extern const char kChromeUISystemInfoHost[];
 extern const char kChromeUIUserImageHost[];
 

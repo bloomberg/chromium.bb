@@ -217,7 +217,8 @@ static WebUIFactoryFunction GetWebUIFactoryFunction(Profile* profile,
   if (url.host() == chrome::kChromeUIChooseMobileNetworkHost)
     return &NewWebUI<chromeos::ChooseMobileNetworkUI>;
   if (url.host() == chrome::kChromeUICollectedCookiesHost ||
-      url.host() == chrome::kChromeUIHttpAuthHost) {
+      url.host() == chrome::kChromeUIHttpAuthHost ||
+      url.host() == chrome::kChromeUIRepostFormWarningHost) {
     return &NewWebUI<ConstrainedHtmlUI>;
   }
   if (url.host() == chrome::kChromeUIActiveDownloadsHost)

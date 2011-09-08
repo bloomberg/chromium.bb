@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html i18n-values="dir:textdirection">
+<head>
+  <link rel="stylesheet" href="dialog.css">
+  <style>
+    body {
+      -webkit-user-select: none;
+      margin: 10px 10px 0 10px;
+    }
+
+    form {
+      margin: 0;
+    }
+
+    #explanation {
+      cursor: default;
+    }
+
+    #buttons {
+      padding: 10px 0;
+      text-align: end;
+    }
+
+  </style>
+  <script>
+    function $(o) {
+      return document.getElementById(o);
+    }
+
+    function disableControls() {
+      $('cancel').disabled = true;
+      $('resend').disabled = true;
+    }
+
+    function cancel() {
+      disableControls();
+      chrome.send('DialogClose', [JSON.stringify(false)]);
+    }
+
+    function handleSubmit(e) {
+      disableControls();
+      e.preventDefault();
+      chrome.send('DialogClose', [JSON.stringify(true)]);
+    }
+
+    function handleKeyDown(e) {
+      if (e.keyCode == 27) {  // Escape
+        e.preventDefault();
+        cancel();
+      }
+    }
+
+    function load() {
+      document.addEventListener('keydown', handleKeyDown);
+      $('form').onsubmit = handleSubmit;
+      $('cancel').onclick = cancel;
+      $('cancel').focus();
+    }
+
+    document.addEventListener('DOMContentLoaded', load);
+  </script>
+</head>
+<body i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize">
+  <div id="explanation" i18n-content="explanation"></div>
+  <form id="form">
+    <div id="buttons">
+      <input id="cancel" type="reset" i18n-values="value:cancel" autofocus>
+      <input id="resend" type="submit" i18n-values="value:resend">
+    </div>
+  </form>
+</body>
+</html>

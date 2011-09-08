@@ -3743,6 +3743,8 @@
         'browser/ui/webui/quota_internals_types.h',
         'browser/ui/webui/quota_internals_ui.cc',
         'browser/ui/webui/quota_internals_ui.h',
+        'browser/ui/webui/repost_form_warning_ui.cc',
+        'browser/ui/webui/repost_form_warning_ui.h',
         'browser/ui/webui/screenshot_source.cc',
         'browser/ui/webui/screenshot_source.h',
         'browser/ui/webui/sessions_ui.cc',
@@ -3873,12 +3875,12 @@
         ['chromeos==0', {
           'sources/': [
             ['exclude', '^browser/chromeos'],
-            ['exclude', '^browser/extensions/extension_input_ui_api.cc'],
-            ['exclude', '^browser/extensions/extension_input_ui_api.h'],
             ['exclude', '^browser/ui/webui/chromeos'],
             ['exclude', '^browser/ui/webui/options/chromeos'],
             ['exclude', 'browser/extensions/extension_input_method_api.cc'],
             ['exclude', 'browser/extensions/extension_input_method_api.h'],
+            ['exclude', 'browser/extensions/extension_input_ui_api.cc'],
+            ['exclude', 'browser/extensions/extension_input_ui_api.h'],
             ['exclude', 'browser/extensions/extension_tts_api_chromeos.cc'],
             ['exclude', 'browser/oom_priority_manager.cc'],
             ['exclude', 'browser/oom_priority_manager.h'],
@@ -3899,6 +3901,8 @@
             ['exclude', 'browser/ui/webui/cookies_tree_model_adapter.h'],
             ['exclude', 'browser/ui/webui/fileicon_source_chromeos.cc'],
             ['exclude', 'browser/ui/webui/fileicon_source_chromeos.h'],
+            ['exclude', 'browser/ui/webui/repost_form_warning_ui.cc'],
+            ['exclude', 'browser/ui/webui/repost_form_warning_ui.h'],
           ],
         }],
         ['chromeos==1', {
@@ -3919,6 +3923,8 @@
             'browser/platform_util_linux.cc',
             'browser/printing/print_dialog_gtk.cc',
             'browser/printing/print_dialog_gtk.h',
+            'browser/ui/gtk/repost_form_warning_gtk.cc',
+            'browser/ui/gtk/repost_form_warning_gtk.h',
             'browser/upgrade_detector_impl.cc',
             'browser/upgrade_detector_impl.h',
           ],
@@ -4824,12 +4830,11 @@
                 ['exclude', '^browser/ui/views/tab_contents/native_tab_contents_view_gtk.*'],
               ],
             }],
-            ['OS=="linux" and chromeos==1',{
+            ['chromeos==1',{
               'sources/': [
                 ['include', '^browser/ui/gtk/omnibox/omnibox_view_gtk.cc'],
                 ['include', '^browser/ui/gtk/omnibox/omnibox_view_gtk.h'],
                 ['include', '^browser/ui/gtk/simple_message_box_gtk.cc'],
-                ['include', '^browser/ui/login/login_prompt_ui.cc'],
                 ['include', '^browser/ui/views/omnibox/omnibox_view_views.cc'],
                 ['include', '^browser/ui/views/omnibox/omnibox_view_views.h'],
                 ['exclude', '^browser/download/download_shelf.h'],
