@@ -78,12 +78,6 @@ class PowerLibraryImpl : public PowerLibrary {
     return base::TimeDelta::FromSeconds(status_.battery_time_to_full);
   }
 
-  virtual void CalculateIdleTime(CalculateIdleTimeCallback* callback) OVERRIDE {
-    // TODO(sidor): Examine if it's really a good idea to use void* as a second
-    // argument.
-    chromeos::GetIdleTime(&GetIdleTimeCallback, callback);
-  }
-
   virtual void EnableScreenLock(bool enable) OVERRIDE {
     if (!CrosLibrary::Get()->EnsureLoaded())
       return;
@@ -112,21 +106,6 @@ class PowerLibraryImpl : public PowerLibrary {
   // End PowerLibrary implementation.
 
  private:
-  static void GetIdleTimeCallback(void* object,
-                                 int64_t time_idle_ms,
-                                 bool success) {
-    DCHECK(object);
-    CalculateIdleTimeCallback* notify =
-        static_cast<CalculateIdleTimeCallback*>(object);
-    if (success) {
-      notify->Run(time_idle_ms/1000);
-    } else {
-      LOG(ERROR) << "Power manager failed to calculate idle time.";
-      notify->Run(-1);
-    }
-    delete notify;
-  }
-
   static void PowerStatusChangedHandler(void* object,
                                         const chromeos::PowerStatus& status) {
     PowerLibraryImpl* power = static_cast<PowerLibraryImpl*>(object);
@@ -241,9 +220,6 @@ class PowerLibraryStubImpl : public PowerLibrary {
       return base::TimeDelta::FromHours(3) - battery_time_to_empty();
   }
 
-  virtual void CalculateIdleTime(CalculateIdleTimeCallback* callback) OVERRIDE {
-    callback->Run(0);
-  }
   virtual void EnableScreenLock(bool enable) OVERRIDE {}
   virtual void RequestRestart() OVERRIDE {}
   virtual void RequestShutdown() OVERRIDE {}

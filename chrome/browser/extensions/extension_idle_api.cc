@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -169,7 +169,8 @@ bool ExtensionIdleQueryStateFunction::RunImpl() {
   polling_data.state = IDLE_STATE_UNKNOWN;
   CalculateIdleState(threshold,
       base::Bind(&ExtensionIdleQueryStateFunction::IdleStateCallback,
-                 this, threshold));
+                 base::Unretained(this), threshold));
+
   // Don't send the response, it'll be sent by our callback
   return true;
 }
