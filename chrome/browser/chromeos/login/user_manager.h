@@ -169,6 +169,9 @@ class UserManager : public UserImageLoader::Delegate,
 
   bool user_is_logged_in() const { return user_is_logged_in_; }
 
+  void set_offline_login(bool value) { offline_login_ = value; }
+  bool offline_login() { return offline_login_; }
+
   // Returns true if we're logged in as a Guest.
   bool IsLoggedInAsGuest() const;
 
@@ -212,6 +215,9 @@ class UserManager : public UserImageLoader::Delegate,
 
   // The logged-in user.
   User logged_in_user_;
+
+  // Current user is logged in offline. Valid only for WebUI login flow.
+  bool offline_login_;
 
   // Cached flag of whether currently logged-in user is owner or not.
   // May be accessed on different threads, requires locking.

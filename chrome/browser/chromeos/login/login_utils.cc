@@ -192,9 +192,11 @@ class OAuthLoginVerifier : public GaiaOAuthConsumer {
                                    const std::string& auth) OVERRIDE {
     GaiaAuthConsumer::ClientLoginResult credentials(sid,
       lsid, auth, std::string());
+    UserManager::Get()->set_offline_login(false);
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                             new StartSyncOnUIThreadTask(credentials));
   }
+
   virtual void OnOAuthLoginFailure(
       const GoogleServiceAuthError& error) OVERRIDE {
     LOG(WARNING) << "Failed to verify OAuth1 access tokens,"
@@ -205,6 +207,8 @@ class OAuthLoginVerifier : public GaiaOAuthConsumer {
     if (error.state() != GoogleServiceAuthError::CONNECTION_FAILED) {
       UserManager::Get()->SaveUserOAuthStatus(username_,
             UserManager::OAUTH_TOKEN_STATUS_INVALID);
+    } else {
+      UserManager::Get()->set_offline_login(true);
     }
   }
 
@@ -267,7 +271,8 @@ class PolicyOAuthFetcher : public GaiaOAuthConsumer {
 
 class LoginUtilsImpl : public LoginUtils,
                        public ProfileManagerObserver,
-                       public GaiaOAuthConsumer {
+                       public GaiaOAuthConsumer,
+                       public net::NetworkChangeNotifier::OnlineStateObserver {
  public:
   LoginUtilsImpl()
       : background_view_(NULL),
@@ -275,6 +280,11 @@ class LoginUtilsImpl : public LoginUtils,
         using_oauth_(false),
         has_cookies_(false),
         delegate_(NULL) {
+    net::NetworkChangeNotifier::AddOnlineStateObserver(this);
+  }
+
+  virtual ~LoginUtilsImpl() {
+    net::NetworkChangeNotifier::RemoveOnlineStateObserver(this);
   }
 
   virtual void PrepareProfile(
@@ -347,6 +357,9 @@ class LoginUtilsImpl : public LoginUtils,
                                             const std::string& secret) OVERRIDE;
   virtual void OnOAuthGetAccessTokenFailure(
       const GoogleServiceAuthError& error) OVERRIDE;
+
+  // net::NetworkChangeNotifier::OnlineStateObserver overrides.
+  virtual void OnOnlineStateChanged(bool online) OVERRIDE;
 
  protected:
   virtual std::string GetOffTheRecordCommandLine(
@@ -933,6 +946,7 @@ bool LoginUtilsImpl::ReadOAuth1AccessToken(Profile* user_profile,
   if (!encoded_token.length() || !encoded_secret.length())
     return false;
 
+  DCHECK(authenticator_.get());
   std::string decoded_token = authenticator_->DecryptToken(encoded_token);
   std::string decoded_secret = authenticator_->DecryptToken(encoded_secret);
   if (!decoded_token.length() || !decoded_secret.length()) {
@@ -1015,6 +1029,22 @@ void LoginUtilsImpl::OnOAuthGetAccessTokenFailure(
     const GoogleServiceAuthError& error) {
   // TODO(zelidrag): Pop up sync setup UI here?
   LOG(WARNING) << "Failed fetching OAuth v1 token, error: " << error.state();
+}
+
+void LoginUtilsImpl::OnOnlineStateChanged(bool online) {
+  // If we come online for the first time after successful offline login,
+  // we need to kick of OAuth token verification process again.
+  if (UserManager::Get()->user_is_logged_in() &&
+      UserManager::Get()->offline_login() && online) {
+    if (!authenticator_.get())
+      CreateAuthenticator(NULL);
+    std::string oauth1_token;
+    std::string oauth1_secret;
+    Profile* user_profile = ProfileManager::GetDefaultProfile();
+    if (ReadOAuth1AccessToken(user_profile, &oauth1_token, &oauth1_secret))
+      VerifyOAuth1AccessToken(user_profile, oauth1_token, oauth1_secret);
+    authenticator_ = NULL;
+  }
 }
 
 LoginUtils* LoginUtils::Get() {

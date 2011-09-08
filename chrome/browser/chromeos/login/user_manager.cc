@@ -601,6 +601,7 @@ bool UserManager::IsLoggedInAsGuest() const {
 // Private constructor and destructor. Do nothing.
 UserManager::UserManager()
     : ALLOW_THIS_IN_INITIALIZER_LIST(image_loader_(new UserImageLoader(this))),
+      offline_login_(false),
       current_user_is_owner_(false),
       current_user_is_new_(false),
       user_is_logged_in_(false) {
