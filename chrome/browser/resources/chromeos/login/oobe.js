@@ -119,6 +119,9 @@ cr.define('cr.ui', function() {
       var newStep = $(nextStepId);
       var newHeader = $('header-' + nextStepId);
 
+      if (oldStep.onBeforeHide)
+        oldStep.onBeforeHide();
+
       if (newStep.onBeforeShow)
         newStep.onBeforeShow(screenData);
 

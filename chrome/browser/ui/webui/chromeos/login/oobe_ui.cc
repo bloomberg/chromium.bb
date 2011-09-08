@@ -20,6 +20,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/enterprise_enrollment_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/enterprise_oauth_enrollment_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/eula_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/network_dropdown_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/update_screen_handler.h"
@@ -100,6 +101,8 @@ OobeUI::OobeUI(TabContents* contents)
       user_image_screen_actor_(NULL) {
   core_handler_ = new CoreOobeHandler(this);
   AddScreenHandler(core_handler_);
+
+  AddScreenHandler(new NetworkDropdownHandler);
 
   NetworkScreenHandler* network_screen_handler = new NetworkScreenHandler();
   network_screen_actor_ = network_screen_handler;

@@ -48,7 +48,7 @@ void NetworkMenuWebUI::UpdateMenu() {
   NetworkMenu::UpdateMenu();
   if (web_ui_) {
     scoped_ptr<base::ListValue> list(ConvertMenuModel(GetMenuModel()));
-    web_ui_->CallJavascriptFunction("oobe.NetworkScreen.updateNetworks", *list);
+    web_ui_->CallJavascriptFunction("cr.ui.DropDown.updateNetworks", *list);
   }
 }
 
@@ -150,7 +150,7 @@ void NetworkDropdown::SetNetworkIconAndText() {
       icon_bitmap ? web_ui_util::GetImageDataUrl(*icon_bitmap) : std::string();
   base::StringValue title(text);
   base::StringValue icon(icon_str);
-  web_ui_->CallJavascriptFunction("oobe.NetworkScreen.updateNetworkTitle",
+  web_ui_->CallJavascriptFunction("cr.ui.DropDown.updateNetworkTitle",
                                   title, icon);
 }
 

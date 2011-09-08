@@ -37,6 +37,15 @@ cr.define('login', function() {
                               this.handleNetworkStateChange_.bind(this));
       window.addEventListener('offline',
                               this.handleNetworkStateChange_.bind(this));
+      cr.ui.DropDown.decorate($('offline-networks-list'));
+    },
+
+    onBeforeShow: function() {
+      cr.ui.DropDown.setActive('offline-networks-list', true);
+    },
+
+    onBeforeHide: function() {
+      cr.ui.DropDown.setActive('offline-networks-list', false);
     },
 
     /**
@@ -49,6 +58,8 @@ cr.define('login', function() {
       var shouldOverlay = MANAGED_SCREENS.indexOf(currentScreen.id) != -1;
 
       if (isOffline && shouldOverlay) {
+        offlineMessage.onBeforeShow();
+
         $('offline-message-text').hidden = false;
         $('captive-portal-message-text').hidden = true;
 
@@ -65,6 +76,8 @@ cr.define('login', function() {
         }
       } else {
         if (!offlineMessage.classList.contains('faded')) {
+          offlineMessage.onBeforeHide();
+
           offlineMessage.classList.add('faded');
           offlineMessage.addEventListener('webkitTransitionEnd',
             function f(e) {
@@ -110,6 +123,8 @@ cr.define('login', function() {
     }
 
     if (!currentScreen.classList.contains('faded')) {
+      offlineMessage.onBeforeShow();
+
       offlineMessage.classList.remove('hidden');
       offlineMessage.classList.remove('faded');
 

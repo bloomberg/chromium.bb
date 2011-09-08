@@ -9,7 +9,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/login/network_screen_actor.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
-#include "content/browser/webui/web_ui.h"
 #include "ui/gfx/point.h"
 
 namespace base {
@@ -21,8 +20,6 @@ class Widget;
 }
 
 namespace chromeos {
-
-class NetworkDropdown;
 
 // WebUI implementation of NetworkScreenActor. It is used to interact with
 // the welcome screen (part of the page) of the OOBE.
@@ -51,9 +48,6 @@ class NetworkScreenHandler : public NetworkScreenActor,
   virtual void RegisterMessages();
 
  private:
-  // Handles change of the network control position.
-  void HandleNetworkControlPosition(const base::ListValue* args);
-
   // Handles moving off the screen.
   void HandleOnExit(const base::ListValue* args);
 
@@ -63,9 +57,6 @@ class NetworkScreenHandler : public NetworkScreenActor,
   // Handles change of the input method.
   void HandleOnInputMethodChanged(const base::ListValue* args);
 
-  // Handle choosing of the network menu item.
-  void HandleNetworkItemChosen(const base::ListValue* args);
-
   // Returns available languages. Caller gets the ownership. Note, it does
   // depend on the current locale.
   static base::ListValue* GetLanguageList();
@@ -73,8 +64,6 @@ class NetworkScreenHandler : public NetworkScreenActor,
   // Returns available input methods. Caller gets the ownership. Note, it does
   // depend on the current locale.
   static base::ListValue* GetInputMethods();
-
-  scoped_ptr<NetworkDropdown> dropdown_;
 
   NetworkScreenActor::Delegate* screen_;
 

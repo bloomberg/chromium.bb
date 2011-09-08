@@ -7,15 +7,14 @@
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "content/browser/webui/web_ui.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/login/language_switch_menu.h"
-#include "chrome/browser/chromeos/login/webui_login_display.h"
 #include "chrome/browser/chromeos/status/input_method_menu.h"
 #include "chrome/browser/chromeos/wm_ipc.h"
-#include "chrome/browser/ui/webui/chromeos/login/network_dropdown.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/browser/ui/webui/options/chromeos/cros_language_options_handler.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -36,7 +35,6 @@ const char kNetworkScreen[] = "connect";
 const char kJsApiNetworkOnExit[] = "networkOnExit";
 const char kJsApiNetworkOnLanguageChanged[] = "networkOnLanguageChanged";
 const char kJsApiNetworkOnInputMethodChanged[] = "networkOnInputMethodChanged";
-const char kJsApiNetworkItemChosen[] = "networkItemChosen";
 
 }  // namespace
 
@@ -68,15 +66,10 @@ void NetworkScreenHandler::Show() {
     return;
   }
 
-  DCHECK(!dropdown_.get());
-  dropdown_.reset(new NetworkDropdown(
-      web_ui_, WebUILoginDisplay::GetLoginWindow()->GetNativeWindow()));
-
   ShowScreen(kNetworkScreen, NULL);
 }
 
 void NetworkScreenHandler::Hide() {
-  dropdown_.reset();
 }
 
 void NetworkScreenHandler::ShowError(const string16& message) {
@@ -125,8 +118,6 @@ void NetworkScreenHandler::GetLocalizedStrings(
       l10n_util::GetStringUTF16(IDS_LANGUAGE_SELECTION_SELECT));
   localized_strings->SetString("selectKeyboard",
       l10n_util::GetStringUTF16(IDS_KEYBOARD_SELECTION_SELECT));
-  localized_strings->SetString("selectNetwork",
-      l10n_util::GetStringUTF16(IDS_NETWORK_SELECTION_SELECT));
   localized_strings->SetString("proxySettings",
       l10n_util::GetStringUTF16(IDS_OPTIONS_PROXIES_CONFIGURE_BUTTON));
   localized_strings->SetString("continueButton",
@@ -152,9 +143,6 @@ void NetworkScreenHandler::RegisterMessages() {
       NewCallback(this, &NetworkScreenHandler::HandleOnLanguageChanged));
   web_ui_->RegisterMessageCallback(kJsApiNetworkOnInputMethodChanged,
       NewCallback(this, &NetworkScreenHandler::HandleOnInputMethodChanged));
-  web_ui_->RegisterMessageCallback(kJsApiNetworkItemChosen,
-        NewCallback(this, &NetworkScreenHandler::HandleNetworkItemChosen));
-
 }
 
 // NetworkScreenHandler, private: ----------------------------------------------
@@ -185,16 +173,6 @@ void NetworkScreenHandler::HandleOnInputMethodChanged(const ListValue* args) {
   if (!args->GetString(0, &id))
     NOTREACHED();
   input_method::InputMethodManager::GetInstance()->ChangeInputMethod(id);
-}
-
-void NetworkScreenHandler::HandleNetworkItemChosen(
-    const base::ListValue* args) {
-  DCHECK(args->GetSize() == 1);
-  double id;
-  if (!args->GetDouble(0, &id))
-    NOTREACHED();
-  DCHECK(dropdown_.get());
-  dropdown_->OnItemChosen(static_cast<int>(id));
 }
 
 ListValue* NetworkScreenHandler::GetLanguageList() {

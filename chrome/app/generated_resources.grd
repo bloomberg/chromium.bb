@@ -13387,7 +13387,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         You are currently offline
       </message>
       <message name="IDS_LOGIN_OFFLINE_MESSAGE" desc="An offline message that shows up in OOBE sign-in screen.">
-        Please use the network menu (above right) to connect to the Internet to complete setup of your Chromebook.
+        Please connect to the Internet to complete setup of your Chromebook.
       </message>
       <message name="IDS_GUEST" desc="Shown in login panel for users that would like to browse without signing in.">
         Guest
