@@ -24,6 +24,7 @@
 #include "native_client/src/trusted/validator/x86/nc_segment.h"
 #include "native_client/src/trusted/validator/x86/ncval_reg_sfi/ncvalidate_iter_internal.h"
 #include "native_client/src/trusted/validator/x86/ncval_reg_sfi/ncvalidator_registry.h"
+#include "native_client/src/trusted/validator/x86/ncval_reg_sfi/ncval_decode_tables.h"
 #include "native_client/src/trusted/validator/x86/ncval_reg_sfi/nc_jumps.h"
 #include "native_client/src/trusted/validator_x86/ncdis_decode_tables.h"
 
@@ -428,7 +429,7 @@ NaClValidatorState *NaClValidatorStateCreate(const NaClPcAddress vbase,
   state = (NaClValidatorState*) malloc(sizeof(NaClValidatorState));
   if (state != NULL) {
     return_value = state;
-    state->decoder_tables = kNaClDecoderTables;
+    state->decoder_tables = kNaClValDecoderTables;
     state->vbase = vbase;
     state->alignment = alignment;
     state->vlimit = vlimit;
@@ -578,6 +579,15 @@ void NaClValidateSegment(uint8_t *mbase, NaClPcAddress vbase,
     NaClValidatorStatePrintStats(state);
   }
   NaClValidatorStateCleanUpValidators(state);
+}
+
+void NaClValidateSegmentUsingTables(uint8_t* mbase,
+                                    NaClPcAddress vbase,
+                                    NaClMemorySize sz,
+                                    NaClValidatorState* state,
+                                    const struct NaClDecodeTables* tables) {
+  state->decoder_tables = tables;
+  NaClValidateSegment(mbase, vbase, sz, state);
 }
 
 Bool NaClValidatesOk(NaClValidatorState *state) {

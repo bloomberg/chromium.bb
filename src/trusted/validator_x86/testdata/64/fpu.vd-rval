@@ -1,0 +1,6 @@
+VALIDATOR: Checking jump targets: 0 to 6a
+VALIDATOR: Checking that basic blocks are aligned
+VALIDATOR: ERROR: 20: Bad basic block alignment.
+VALIDATOR: ERROR: 40: Bad basic block alignment.
+VALIDATOR: ERROR: 60: Bad basic block alignment.
+*** <input> IS UNSAFE ***

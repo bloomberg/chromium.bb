@@ -1,0 +1,16 @@
+VALIDATOR: 0000000000000000: 48 0f b3 00                                  [P] dontcare(illegal)
+VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
+VALIDATOR: 0000000000000004: 48 0f ab 00                                  [P] dontcare(illegal)
+VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
+VALIDATOR: 0000000000000008: 48 0f bb 00                                  [P] dontcare(illegal)
+VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
+VALIDATOR: 000000000000000c: 0f ba 30 01                                  [P] dontcare [%rax] (su), 0x1 (u)
+VALIDATOR: ERROR: Invalid base register in memory offset
+VALIDATOR: 0000000000000010: 0f ba 28 01                                  [P] dontcare [%rax] (su), 0x1 (u)
+VALIDATOR: ERROR: Invalid base register in memory offset
+VALIDATOR: 0000000000000014: 0f ba 38 01                                  [P] dontcare [%rax] (su), 0x1 (u)
+VALIDATOR: ERROR: Invalid base register in memory offset
+VALIDATOR: Checking jump targets: 0 to 38
+VALIDATOR: Checking that basic blocks are aligned
+VALIDATOR: ERROR: 20: Bad basic block alignment.
+*** <input> IS UNSAFE ***

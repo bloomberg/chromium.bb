@@ -250,7 +250,6 @@ def __AddTest(test, test_env, base, ext, command, groups):
 # of both x86-32 and x86-64 validators.
 test_env.ComponentLibrary(test_env.NaClTargetArchSuffix('ncdis_util'),
                           ['ncdis_segments.c',
-                           'ncval_decode_tables.c',
                            'nc_read_segment.c',
                            'ncenuminsts.c'])
 
@@ -324,8 +323,8 @@ ncdis = test_env.ComponentProgram(
     force_cpp_o,
   ],
   EXTRA_LIBS=[test_env.NaClTargetArchSuffix('ncdis_util'),
-              #test_env.NaClTargetArchSuffix('ncdis_seg_sfi_verbose'),
               test_env.NaClTargetArchSuffix('ncfileutils'),
+              test_env.NaClTargetArchSuffix('ncdis_decode_tables'),
               'utils',
               ])
 
@@ -415,6 +414,7 @@ ncval = test_env.ComponentProgram(
   EXTRA_LIBS=[test_env.NaClTargetArchSuffix('ncdis_util'),
               test_env.NaClTargetArchSuffix('ncval_seg_sfi'),
               test_env.NaClTargetArchSuffix('ncfileutils'),
+              test_env.NaClTargetArchSuffix('ncdis_decode_tables'),
               'utils',
               ])
 
@@ -463,7 +463,8 @@ for validator_decoder in [False, True]:
 # tests use extension 'val' while read/write sandbox tests use extension
 # 'rval'. Assumes that a suffix of 0 on the extension implies no CPUID flags
 # set. Otherwise, assume that test is run with all CPUID flags set.
-def __AddNcvalSfiTests(test_readwrite, test_cpuid_all, test_annotate):
+def __AddNcvalSfiTests(test_readwrite, test_cpuid_all, test_annotate,
+                       validator_decoder):
   if env.Bit('target_x86_64'):
     test = 'ncval64_hex'
     options = ['--hex_text=-', '--max_errors=-1']
@@ -483,6 +484,9 @@ def __AddNcvalSfiTests(test_readwrite, test_cpuid_all, test_annotate):
       options.append('--annotate');
     else:
       options.append('--annotate=false');
+    if validator_decoder:
+      ext = "vd-" + ext
+      options.append('--validator_decoder')
     for base in __GoldenBases(ext):
       command = [ncval] + options
       node_val = test_env.CommandTest(
@@ -496,7 +500,9 @@ def __AddNcvalSfiTests(test_readwrite, test_cpuid_all, test_annotate):
 for read_write in [False, True]:
   for cpu_features_all in [False, True]:
     for annotate in [False, True]:
-      __AddNcvalSfiTests(read_write, cpu_features_all, annotate)
+      for validator_decoder in [False, True]:
+        __AddNcvalSfiTests(read_write, cpu_features_all, annotate,
+                           validator_decoder)
 
 # Run segment sandboxing tests using ncval on test files.
 def __AddNcvalSegmentTests(test_cpuid_all, test_stats, detailed, align_16):
@@ -593,6 +599,6 @@ def __AddNegMaxErrors():
         stdin = __BaseTestFile(base, 'hex'),
         stdout_golden = __BaseTestFile(base, ext))
     __AddTest(test, test_env, base, ext, node_val,
-              ['small_tests', 'validator_tests'])
+              STANDARD_TESTS)
 
 __AddNegMaxErrors()

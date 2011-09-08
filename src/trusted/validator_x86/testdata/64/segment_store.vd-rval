@@ -1,0 +1,5 @@
+VALIDATOR: 0000000000000000: 6d                                           [P] dontcare(illegal)
+VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
+VALIDATOR: Checking jump targets: 0 to 1
+VALIDATOR: Checking that basic blocks are aligned
+*** <input> IS UNSAFE ***

@@ -51,8 +51,6 @@
           'nc_inst_state.c',
           'nc_inst_trans.c',
           'ncop_exps.c',
-          # TODO(karl): Find a better spot for ncdis_decode_tables.c"
-          'ncdis_decode_tables.c',
         ],
         'cflags!': [
           '-Wextra',

@@ -36,6 +36,7 @@
 
 EXTERN_C_BEGIN
 
+struct NaClDecodeTables;
 struct NaClInstIter;
 struct NaClInstState;
 struct NaClValidatorState;
@@ -243,6 +244,15 @@ void NaClValidateSegment(uint8_t* mbase,
                          NaClPcAddress vbase,
                          NaClMemorySize sz,
                          NaClValidatorState* state);
+
+/* Same as NaClValidateSegment, except that the given decoder table is used
+ * instead.
+ */
+void NaClValidateSegmentUsingTables(uint8_t* mbase,
+                                    NaClPcAddress vbase,
+                                    NaClMemorySize sz,
+                                    NaClValidatorState* state,
+                                    const struct NaClDecodeTables* tables);
 
 /*
  * Validate a segment for dynamic code replacement

@@ -1,0 +1,7 @@
+VALIDATOR: 0000000000000000: 48 89 cd                                     mov %rbp, %rcx
+VALIDATOR: ERROR: Illegal change to register RBP
+VALIDATOR: 0000000000000003: 4a 8d 2c 3c                                  lea %rbp, [%rsp+%r15*1]
+VALIDATOR: ERROR: Illegal change to register RBP
+VALIDATOR: Checking jump targets: 0 to 7
+VALIDATOR: Checking that basic blocks are aligned
+*** <input> IS UNSAFE ***

@@ -40,6 +40,12 @@
 #include "native_client/src/trusted/validator_x86/nc_read_segment.h"
 #include "native_client/src/trusted/validator_x86/ncdis_segments.h"
 
+#if NACL_TARGET_SUBARCH == 64
+#include "native_client/src/trusted/validator/x86/decoder/nc_decode_tables.h"
+#include "native_client/src/trusted/validator/x86/ncval_reg_sfi/ncval_decode_tables.h"
+#include "native_client/src/trusted/validator_x86/ncdis_decode_tables.h"
+#endif
+
 /* Forward declarations. */
 static void usage(int exit_code);
 
@@ -91,6 +97,12 @@ static Bool NACL_FLAGS_fatal = FALSE;
  * disassembled code.
  */
 static Bool NACL_FLAGS_stubout_memory = FALSE;
+
+#if NACL_TARGET_SUBARCH == 64
+/* Flag that allows validator decoder to be used in place of full decoder.
+ */
+static Bool NACL_FLAGS_validator_decoder = FALSE;
+#endif
 
 /* Generates NaClErrorMapping for error level suffix. */
 #define NaClError(s) { #s , LOG_## s}
@@ -352,6 +364,13 @@ static Bool AnalyzeSegmentCodeSegments(ncfile *ncf, const char *fname) {
 static NaClOpKind nacl_base_register =
     (64 == NACL_TARGET_SUBARCH ? RegR15 : RegUnknown);
 
+/* Returns the decoder tables to use. */
+static const NaClDecodeTables* NaClGetDecoderTables() {
+  return NACL_FLAGS_validator_decoder
+      ? kNaClValDecoderTables
+      : kNaClDecoderTables;
+}
+
 /* Analyze each section in the given elf file, using the given validator
  * state.
  */
@@ -381,8 +400,9 @@ static void AnalyzeSfiSections(ncfile *ncf, struct NaClValidatorState *vstate) {
         (0 == (phdr[ii].p_flags & PF_X)))
       continue;
     NaClValidatorMessage(LOG_INFO, vstate, "parsing segment %d\n", ii);
-    NaClValidateSegment(ncf->data + (phdr[ii].p_vaddr - ncf->vbase),
-                        phdr[ii].p_vaddr, phdr[ii].p_memsz, vstate);
+    NaClValidateSegmentUsingTables(ncf->data + (phdr[ii].p_vaddr - ncf->vbase),
+                                   phdr[ii].p_vaddr, phdr[ii].p_memsz, vstate,
+                                   NaClGetDecoderTables());
   }
 }
 
@@ -399,8 +419,9 @@ static void AnalyzeSfiSegments(ncfile *ncf, NaClValidatorState *state) {
     if ((shdr[ii].sh_flags & SHF_EXECINSTR) != SHF_EXECINSTR)
       continue;
     NaClValidatorMessage(LOG_INFO, state, "parsing section %d\n", ii);
-    NaClValidateSegment(ncf->data + (shdr[ii].sh_addr - ncf->vbase),
-                        shdr[ii].sh_addr, shdr[ii].sh_size, state);
+    NaClValidateSegmentUsingTables(ncf->data + (shdr[ii].sh_addr - ncf->vbase),
+                                   shdr[ii].sh_addr, shdr[ii].sh_size, state,
+                                   NaClGetDecoderTables());
   }
 }
 
@@ -487,7 +508,8 @@ static Bool NaClValidateAnalyzeBytes(NaClValidateBytes* data) {
     NaClValidatorStateSetDoStubOut(state, TRUE);
   }
   NaClValidatorStateSetErrorReporter(state, &kNaClVerboseErrorReporter);
-  NaClValidateSegment(data->bytes, data->base, data->num_bytes, state);
+  NaClValidateSegmentUsingTables(data->bytes, data->base, data->num_bytes,
+                                 state, NaClGetDecoderTables());
   return_value = NaClValidatesOk(state);
   NaClValidatorStateDestroy(state);
   NaClReportSafety(return_value, "");
@@ -639,6 +661,10 @@ static void usage(int exit_code) {
       "\tModel a CPU that supports the rdtsc instruction.\n"
       "--x87\n"
       "\tModel a CPU that supports x87 instructions.\n"
+#if NACL_TARGET_SUBARCH == 64
+      "--validator_decoder\n"
+      "\tUse validator (partial) decoder instead of full decoder.\n"
+#endif
       "--VMX\n"
       "\tModel a CPU that supports VMX instructions.\n"
       "--3DNOW\n"
@@ -727,6 +753,7 @@ static Bool GrokABoolFlag(const char *arg) {
     { "--warnings", &NACL_FLAGS_warnings },
     { "--errors" , &NACL_FLAGS_errors },
     { "--fatal"  , &NACL_FLAGS_fatal },
+    { "--validator_decoder", &NACL_FLAGS_validator_decoder },
 #endif
     { "--identity_mask", &NACL_FLAGS_identity_mask },
   };

@@ -23,6 +23,7 @@
                      'nc_protect_base.c',
                      'nc_memory_protect.c',
                      'ncvalidate_utils.c',
+                     'ncval_decode_tables.c',
          ],
         'cflags!': [
           '-Wextra',

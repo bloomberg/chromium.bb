@@ -1,0 +1,27 @@
+VALIDATOR: 000000000000000c: 64 66 41 89 c0                               mov %r8w, %ax
+VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+VALIDATOR: 000000000000000c: 64 66 41 89 c0                               mov %r8w, %ax
+VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
+VALIDATOR: 0000000000000011: 66 64 41 89 c0                               mov %r8w, %ax
+VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+VALIDATOR: 0000000000000011: 66 64 41 89 c0                               mov %r8w, %ax
+VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
+VALIDATOR: 000000000000001c: 66 f3 48 ab                                  [P] dontcare %es:%rdi (s), %rax (u)
+VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+VALIDATOR: 000000000000001c: 66 f3 48 ab                                  [P] dontcare %es:%rdi (s), %rax (u)
+VALIDATOR: ERROR: Use of DATA16 (66) prefix for instruction not allowed by Native Client
+VALIDATOR: 0000000000000026: f3 66 48 ab                                  [P] dontcare %es:%rdi (s), %rax (u)
+VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+VALIDATOR: 0000000000000026: f3 66 48 ab                                  [P] dontcare %es:%rdi (s), %rax (u)
+VALIDATOR: ERROR: Use of DATA16 (66) prefix for instruction not allowed by Native Client
+VALIDATOR: 000000000000002c: 66 66 90                                     [P] dontcare %ax (suz), %ax (suz)
+VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+VALIDATOR: 000000000000002c: 66 66 90                                     [P] dontcare %ax (suz), %ax (suz)
+VALIDATOR: ERROR: Duplicating a prefix byte is not allowed by Native Client
+VALIDATOR: 000000000000002f: 66 66 66 90                                  [P] dontcare %ax (suz), %ax (suz)
+VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+VALIDATOR: 000000000000002f: 66 66 66 90                                  [P] dontcare %ax (suz), %ax (suz)
+VALIDATOR: ERROR: Duplicating a prefix byte is not allowed by Native Client
+VALIDATOR: Checking jump targets: 0 to 3f
+VALIDATOR: Checking that basic blocks are aligned
+*** <input> IS UNSAFE ***

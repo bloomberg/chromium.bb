@@ -1,0 +1,9 @@
+VALIDATOR: 0000000000000000: 66 29 c4                                     sub %sp, %ax
+VALIDATOR: ERROR: Changing RegSP changes the value of RegRSP
+VALIDATOR: 0000000000000003: 66 29 c5                                     sub %bp, %ax
+VALIDATOR: ERROR: Changing RegBP changes the value of RegRBP
+VALIDATOR: 0000000000000006: 47 29 c7                                     sub %r15d, %r8d
+VALIDATOR: ERROR: Changing RegR15D changes the value of RegR15
+VALIDATOR: Checking jump targets: 0 to 9
+VALIDATOR: Checking that basic blocks are aligned
+*** <input> IS UNSAFE ***

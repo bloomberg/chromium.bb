@@ -4,7 +4,7 @@
  * found in the LICENSE file.
  */
 
-#include "native_client/src/trusted/validator_x86/ncval_decode_tables.h"
+#include "native_client/src/trusted/validator/x86/ncval_reg_sfi/ncval_decode_tables.h"
 
 #include "native_client/src/trusted/validator/x86/decoder/ncopcode_desc.h"
 #include "native_client/src/trusted/validator/x86/decoder/nc_decode_tables.h"

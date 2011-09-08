@@ -1,0 +1,5 @@
+VALIDATOR: 0000000000000000: 4c 01 fc                                     add %rsp, %r15
+VALIDATOR: ERROR: Illegal assignment to RSP
+VALIDATOR: Checking jump targets: 0 to 3
+VALIDATOR: Checking that basic blocks are aligned
+*** <input> IS UNSAFE ***

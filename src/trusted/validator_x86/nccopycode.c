@@ -37,8 +37,8 @@
 #  include "native_client/src/trusted/validator/x86/decoder/nc_inst_iter.h"
 #  include "native_client/src/trusted/validator/x86/decoder/nc_inst_state_internal.h"
 #  include "native_client/src/trusted/validator/x86/nacl_cpuid.h"
+#  include "native_client/src/trusted/validator/x86/ncval_reg_sfi/ncval_decode_tables.h"
 #  include "native_client/src/trusted/validator/x86/nc_segment.h"
-#  include "native_client/src/trusted/validator_x86/ncdis_decode_tables.h"
 # else
 #  error "Unknown Platform"
 # endif
@@ -316,9 +316,9 @@ int NaClCopyCodeIter(uint8_t *dst, uint8_t *src,
   NaClSegmentInitialize(dst, vbase, size, &segment_old);
   NaClSegmentInitialize(src, vbase, size, &segment_new);
 
-  iter_old = NaClInstIterCreate(kNaClDecoderTables, &segment_old);
+  iter_old = NaClInstIterCreate(kNaClValDecoderTables, &segment_old);
   if (NULL == iter_old) return 0;
-  iter_new = NaClInstIterCreate(kNaClDecoderTables, &segment_new);
+  iter_new = NaClInstIterCreate(kNaClValDecoderTables, &segment_new);
   if (NULL == iter_new) {
     NaClInstIterDestroy(iter_old);
     return 0;

@@ -1,0 +1,5 @@
+VALIDATOR: 0000000000000000: 48 29 c4                                     sub %rsp, %rax
+VALIDATOR: ERROR: Illegal assignment to RSP
+VALIDATOR: Checking jump targets: 0 to 3
+VALIDATOR: Checking that basic blocks are aligned
+*** <input> IS UNSAFE ***
