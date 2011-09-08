@@ -2267,19 +2267,6 @@
    fun:*IOJankObserver21AttachToCurrentThreadEv
 }
 {
-   bug_46420a
-   Memcheck:Addr4
-   fun:_Z25WillHandleBrowserAboutURLP4GURLP7Profile
-   fun:_ZN54BrowserAboutHandlerTest_WillHandleBrowserAboutURL_Test8TestBodyEv
-}
-{
-   bug_46420b
-   Memcheck:Addr4
-   fun:*StackDumpSignalHandler*
-   ...
-   fun:_ZN54BrowserAboutHandlerTest_WillHandleBrowserAboutURL_Test8TestBodyEv
-}
-{
    bug_47950
    Memcheck:Leak
    fun:_Znw*
