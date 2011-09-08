@@ -84,8 +84,8 @@ struct display {
 };
 
 enum {
-	TYPE_FULLSCREEN,
 	TYPE_TOPLEVEL,
+	TYPE_FULLSCREEN,
 	TYPE_TRANSIENT,
 	TYPE_CUSTOM
 };
