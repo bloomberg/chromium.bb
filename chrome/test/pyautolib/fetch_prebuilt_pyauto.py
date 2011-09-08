@@ -78,6 +78,7 @@ class FetchPrebuilt(object):
 
     # Setup urls to download.
     self._chrome_zip_url = '%s/%s.zip' % (self._url, self._chrome_zip_name)
+    self._it2me_zip_url = self._url + '/' + 'remoting-it2me.zip'
     chrome_test_url = '%s/%s.test' % (self._url, self._chrome_zip_name)
     self._pyautolib_py_url = '%s/pyautolib.py' % chrome_test_url
     if self._options.platform == 'win':
@@ -94,7 +95,10 @@ class FetchPrebuilt(object):
     parsed = urlparse.urlparse(url)
     conn = httplib.HTTPConnection(parsed.netloc)
     conn.request('HEAD', parsed.path)
-    return conn.getresponse().status == 200
+    response = conn.getresponse()
+    if response.status == 302:  # Redirect; follow it.
+      return self._DoesURLExist(response.getheader('location'))
+    return response.status == 200
 
   def Cleanup(self):
     """Remove old binaries, if any."""
@@ -108,10 +112,12 @@ class FetchPrebuilt(object):
     # Fetch chrome & pyauto binaries
     print 'Fetching'
     print self._chrome_zip_url
+    print self._it2me_zip_url
     print self._pyautolib_py_url
     print self._pyautolib_so_url
     print self._chromedriver_url
     chrome_zip = urllib.urlretrieve(self._chrome_zip_url)[0]
+    it2me_zip = urllib.urlretrieve(self._it2me_zip_url)[0]
     pyautolib_py = urllib.urlretrieve(self._pyautolib_py_url)[0]
     pyautolib_so = urllib.urlretrieve(self._pyautolib_so_url)[0]
     chromedriver = urllib.urlretrieve(self._chromedriver_url)[0]
@@ -120,6 +126,9 @@ class FetchPrebuilt(object):
       print 'Cleaning', chrome_unzip_dir
       pyauto_utils.RemovePath(chrome_unzip_dir)
     pyauto_utils.UnzipFilenameToDir(chrome_zip, self._outdir)
+    pyauto_utils.UnzipFilenameToDir(it2me_zip, self._outdir)
+    shutil.move(self._outdir + '/remoting-it2me',
+                self._outdir + '/remoting/it2me.webapp')
 
     # Copy over the binaries to outdir
     items_to_copy = {
