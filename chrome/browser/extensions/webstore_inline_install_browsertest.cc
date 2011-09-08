@@ -137,14 +137,7 @@ IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallTest, MAYBE_FindLink) {
   RunInlineInstallTest();
 }
 
-// Flakily fails on Linux and Mac.  http://crbug.com/95246
-#if defined(OS_LINUX) || defined(OS_MACOSX)
-#define MAYBE_ArgumentValidation DISABLED_ArgumentValidation
-#else
-#define MAYBE_ArgumentValidation ArgumentValidation
-#endif
-
-IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallTest, MAYBE_ArgumentValidation) {
+IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallTest, ArgumentValidation) {
   SetExtensionInstallDialogForManifestAutoConfirmForTests(false);
   ui_test_utils::NavigateToURL(
       browser(), GenerateTestServerUrl(kAppDomain, "argument_validation.html"));

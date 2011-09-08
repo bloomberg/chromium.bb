@@ -75,7 +75,7 @@ class ExtensionTabHelper : public TabContentsObserver,
   }
 
   TabContents* tab_contents() const {
-      return TabContentsObserver::tab_contents();
+    return TabContentsObserver::tab_contents();
   }
 
   // Sets a non-extension app icon associated with TabContents and fires an

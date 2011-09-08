@@ -13,6 +13,7 @@
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_install_ui.h"
 #include "chrome/browser/extensions/webstore_install_helper.h"
+#include "content/browser/tab_contents/tab_contents_observer.h"
 #include "content/common/url_fetcher.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -24,10 +25,12 @@ class SafeWebstoreResponseParser;
 // from the webstore, shows the install UI, starts the download once the user
 // confirms).  Clients must implement the WebstoreInlineInstaller::Delegate
 // interface to be notified when the inline install completes (successfully or
-// not).
+// not). The client will not be notified if the TabContents that this install
+// request is attached to goes away.
 class WebstoreInlineInstaller
     : public base::RefCountedThreadSafe<WebstoreInlineInstaller>,
       public ExtensionInstallUI::Delegate,
+      public TabContentsObserver,
       public URLFetcher::Delegate,
       public WebstoreInstallHelper::Delegate {
  public:
@@ -83,9 +86,11 @@ class WebstoreInlineInstaller
   virtual void InstallUIProceed() OVERRIDE;
   virtual void InstallUIAbort(bool user_initiated) OVERRIDE;
 
+  // TabContentsObserver interface implementation.
+  virtual void TabContentsDestroyed(TabContents* tab_contents) OVERRIDE;
+
   void CompleteInstall(const std::string& error);
 
-  TabContents* tab_contents_;
   int install_id_;
   std::string id_;
   GURL requestor_url_;

@@ -136,7 +136,7 @@ WebstoreInlineInstaller::WebstoreInlineInstaller(TabContents* tab_contents,
                                                  std::string webstore_item_id,
                                                  GURL requestor_url,
                                                  Delegate* delegate)
-    : tab_contents_(tab_contents),
+    : TabContentsObserver(tab_contents),
       install_id_(install_id),
       id_(webstore_item_id),
       requestor_url_(requestor_url),
@@ -146,7 +146,7 @@ WebstoreInlineInstaller::~WebstoreInlineInstaller() {
 }
 
 void WebstoreInlineInstaller::BeginInstall() {
-  AddRef(); // Balanced in CompleteInstall.
+  AddRef(); // Balanced in CompleteInstall or TabContentsDestroyed.
 
   if (!Extension::IdIsValid(id_)) {
     CompleteInstall(kInvalidWebstoreItemId);
@@ -158,7 +158,7 @@ void WebstoreInlineInstaller::BeginInstall() {
   webstore_data_url_fetcher_.reset(
       new URLFetcher(webstore_data_url, URLFetcher::GET, this));
   Profile* profile = Profile::FromBrowserContext(
-      tab_contents_->browser_context());
+      tab_contents()->browser_context());
   webstore_data_url_fetcher_->set_request_context(
       profile->GetRequestContext());
   webstore_data_url_fetcher_->Start();
@@ -166,6 +166,9 @@ void WebstoreInlineInstaller::BeginInstall() {
 
 void WebstoreInlineInstaller::OnURLFetchComplete(const URLFetcher* source) {
   CHECK_EQ(webstore_data_url_fetcher_.get(), source);
+  // We shouldn't be getting UrlFetcher callbacks if the TabContents has gone
+  // away; we stop any in in-progress fetches in TabContentsDestroyed.
+  CHECK(tab_contents());
 
   if (!webstore_data_url_fetcher_->status().is_success() ||
       webstore_data_url_fetcher_->response_code() != 200) {
@@ -259,7 +262,7 @@ void WebstoreInlineInstaller::OnWebstoreResponseParseSuccess(
       manifest,
       "", // We don't have any icon data.
       icon_url,
-      Profile::FromBrowserContext(tab_contents_->browser_context())->
+      Profile::FromBrowserContext(tab_contents()->browser_context())->
           GetRequestContext());
   // The helper will call us back via OnWebstoreParseSucces or
   // OnWebstoreParseFailure.
@@ -274,11 +277,17 @@ void WebstoreInlineInstaller::OnWebstoreResponseParseFailure(
 void WebstoreInlineInstaller::OnWebstoreParseSuccess(
     const SkBitmap& icon,
     base::DictionaryValue* manifest) {
+  // Check if the tab has gone away in the meantime.
+  if (!tab_contents()) {
+    CompleteInstall("");
+    return;
+  }
+
   manifest_.reset(manifest);
   icon_ = icon;
 
   Profile* profile = Profile::FromBrowserContext(
-      tab_contents_->browser_context());
+      tab_contents()->browser_context());
 
   ExtensionInstallUI::Prompt prompt(ExtensionInstallUI::INLINE_INSTALL_PROMPT);
   prompt.SetInlineInstallWebstoreData(localized_user_count_,
@@ -310,6 +319,12 @@ void WebstoreInlineInstaller::OnWebstoreParseFailure(
 }
 
 void WebstoreInlineInstaller::InstallUIProceed() {
+  // Check if the tab has gone away in the meantime.
+  if (!tab_contents()) {
+    CompleteInstall("");
+    return;
+  }
+
   CrxInstaller::WhitelistEntry* entry = new CrxInstaller::WhitelistEntry;
 
   entry->parsed_manifest.reset(manifest_.get()->DeepCopy());
@@ -320,7 +335,7 @@ void WebstoreInlineInstaller::InstallUIProceed() {
   GURL install_url(extension_urls::GetWebstoreInstallUrl(
       id_, g_browser_process->GetApplicationLocale()));
 
-  NavigationController& controller = tab_contents_->controller();
+  NavigationController& controller = tab_contents()->controller();
   // TODO(mihaip): we pretend like the referrer is the gallery in order to pass
   // the checks in ExtensionService::IsDownloadFromGallery. We should instead
   // pass the real referrer, track that this is an inline install in the
@@ -339,11 +354,24 @@ void WebstoreInlineInstaller::InstallUIAbort(bool user_initiated) {
   CompleteInstall(kUserCancelledError);
 }
 
-void WebstoreInlineInstaller::CompleteInstall(const std::string& error) {
-  if (error.empty()) {
-    delegate_->OnInlineInstallSuccess(install_id_);
-  } else {
-    delegate_->OnInlineInstallFailure(install_id_, error);
+void WebstoreInlineInstaller::TabContentsDestroyed(TabContents* tab_contents) {
+  // Abort any in-progress fetches.
+  if (webstore_data_url_fetcher_.get()) {
+    webstore_data_url_fetcher_.reset();
+    Release(); // Matches the AddRef in BeginInstall.
   }
+}
+
+void WebstoreInlineInstaller::CompleteInstall(const std::string& error) {
+  // Only bother responding if there's still a tab contents to send back the
+  // response to.
+  if (tab_contents()) {
+    if (error.empty()) {
+      delegate_->OnInlineInstallSuccess(install_id_);
+    } else {
+      delegate_->OnInlineInstallFailure(install_id_, error);
+    }
+  }
+
   Release(); // Matches the AddRef in BeginInstall.
 }
