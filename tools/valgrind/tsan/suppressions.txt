@@ -564,9 +564,6 @@
   fun:ThreadWatcherList::StartWatching
   fun:ThreadWatcherList::InitializeAndStartWatching
 }
-
-############################
-# TSan false positives
 {
   bug_93708_a
   ThreadSanitizer:Race
