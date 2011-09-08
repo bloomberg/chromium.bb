@@ -1376,6 +1376,10 @@ class NetworkLibraryImplBase : public NetworkLibrary  {
   virtual void CallEnableNetworkDeviceType(
       ConnectionType device, bool enable) = 0;
 
+  // Called from DeleteRememberedNetwork for VPN services.
+  // Asynchronously disconnects and removes the service.
+  virtual void CallRemoveNetwork(const Network* network) = 0;
+
   //////////////////////////////////////////////////////////////////////////////
   // NetworkLibrary implementation.
 
@@ -2785,12 +2789,8 @@ void NetworkLibraryImplBase::DeleteRememberedNetwork(
     network->EraseCredentials();
     SetProfileType(network, PROFILE_NONE);
     // Remove VPN from list of networks.
-    if (network->type() == TYPE_VPN) {
-      const char* service_path = network->service_path().c_str();
-      if (network->connected())
-        chromeos::RequestNetworkServiceDisconnect(service_path);
-      chromeos::RequestRemoveNetworkService(service_path);
-    }
+    if (network->type() == TYPE_VPN)
+      CallRemoveNetwork(network);
   } else {
     // Network is not in service list.
     VLOG(2) << "Remembered Network not in service list: "
@@ -2910,7 +2910,7 @@ void NetworkLibraryImplBase::SetProfileTypeFromPath(Network* network) {
       return;
     }
   }
-  NOTREACHED() << "Profile path not found: " << network->profile_path();
+  LOG(WARNING) << "Profile path not found: " << network->profile_path();
   network->set_profile_type(PROFILE_NONE);
 }
 
@@ -3121,6 +3121,8 @@ class NetworkLibraryImplCros : public NetworkLibraryImplBase  {
   virtual void DisconnectFromNetwork(const Network* network) OVERRIDE;
   virtual void CallEnableNetworkDeviceType(
       ConnectionType device, bool enable) OVERRIDE;
+  virtual void CallRemoveNetwork(const Network* network) OVERRIDE;
+
   virtual void EnableOfflineMode(bool enable) OVERRIDE;
 
   virtual NetworkIPConfigVector GetIPConfigs(
@@ -3323,6 +3325,7 @@ void NetworkLibraryImplCros::MonitorNetworkDeviceStop(
 // static callback
 void NetworkLibraryImplCros::NetworkStatusChangedHandler(
     void* object, const char* path, const char* key, const GValue* gvalue) {
+  DCHECK(CrosLibrary::Get()->libcros_loaded());
   NetworkLibraryImplCros* networklib =
       static_cast<NetworkLibraryImplCros*>(object);
   DCHECK(networklib);
@@ -3355,6 +3358,7 @@ void NetworkLibraryImplCros::UpdateNetworkStatus(
 // static callback
 void NetworkLibraryImplCros::NetworkDevicePropertyChangedHandler(
     void* object, const char* path, const char* key, const GValue* gvalue) {
+  DCHECK(CrosLibrary::Get()->libcros_loaded());
   NetworkLibraryImplCros* networklib =
       static_cast<NetworkLibraryImplCros*>(object);
   DCHECK(networklib);
@@ -3410,6 +3414,7 @@ void NetworkLibraryImplCros::NetworkConnectCallback(
     const char* service_path,
     NetworkMethodErrorType error,
     const char* error_message) {
+  DCHECK(CrosLibrary::Get()->libcros_loaded());
   NetworkConnectStatus status;
   if (error == NETWORK_METHOD_ERROR_NONE) {
     status = CONNECT_SUCCESS;
@@ -3443,6 +3448,7 @@ void NetworkLibraryImplCros::CallConnectToNetwork(Network* network) {
 // static callback
 void NetworkLibraryImplCros::WifiServiceUpdateAndConnect(
     void* object, const char* service_path, GHashTable* ghash) {
+  DCHECK(CrosLibrary::Get()->libcros_loaded());
   NetworkLibraryImplCros* networklib =
       static_cast<NetworkLibraryImplCros*>(object);
   DCHECK(networklib);
@@ -3470,6 +3476,7 @@ void NetworkLibraryImplCros::CallRequestWifiNetworkAndConnect(
 // static callback
 void NetworkLibraryImplCros::VPNServiceUpdateAndConnect(
     void* object, const char* service_path, GHashTable* ghash) {
+  DCHECK(CrosLibrary::Get()->libcros_loaded());
   NetworkLibraryImplCros* networklib =
       static_cast<NetworkLibraryImplCros*>(object);
   DCHECK(networklib);
@@ -3567,6 +3574,7 @@ void NetworkLibraryImplCros::PinOperationCallback(
     const char* path,
     NetworkMethodErrorType error,
     const char* error_message) {
+  DCHECK(CrosLibrary::Get()->libcros_loaded());
   NetworkLibraryImplCros* networklib =
       static_cast<NetworkLibraryImplCros*>(object);
   DCHECK(networklib);
@@ -3624,6 +3632,7 @@ void NetworkLibraryImplCros::CellularRegisterCallback(
     const char* path,
     NetworkMethodErrorType error,
     const char* error_message) {
+  DCHECK(CrosLibrary::Get()->libcros_loaded());
   NetworkLibraryImplCros* networklib =
       static_cast<NetworkLibraryImplCros*>(object);
   DCHECK(networklib);
@@ -3707,6 +3716,13 @@ void NetworkLibraryImplCros::CallEnableNetworkDeviceType(
     ConnectionType device, bool enable) {
   chromeos::RequestNetworkDeviceEnable(
       ConnectionTypeToString(device), enable);
+}
+
+void NetworkLibraryImplCros::CallRemoveNetwork(const Network* network) {
+  const char* service_path = network->service_path().c_str();
+  if (network->connected())
+    chromeos::RequestNetworkServiceDisconnect(service_path);
+  chromeos::RequestRemoveNetworkService(service_path);
 }
 
 void NetworkLibraryImplCros::EnableOfflineMode(bool enable) {
@@ -3845,6 +3861,7 @@ void NetworkLibraryImplCros::SetIPConfig(const NetworkIPConfig& ipconfig) {
 // static
 void NetworkLibraryImplCros::NetworkManagerStatusChangedHandler(
     void* object, const char* path, const char* key, const GValue* gvalue) {
+  DCHECK(CrosLibrary::Get()->libcros_loaded());
   NetworkLibraryImplCros* networklib =
       static_cast<NetworkLibraryImplCros*>(object);
   DCHECK(networklib);
@@ -3946,6 +3963,7 @@ void NetworkLibraryImplCros::NetworkManagerStatusChanged(
 // static
 void NetworkLibraryImplCros::NetworkManagerUpdate(
     void* object, const char* manager_path, GHashTable* ghash) {
+  DCHECK(CrosLibrary::Get()->libcros_loaded());
   NetworkLibraryImplCros* networklib =
       static_cast<NetworkLibraryImplCros*>(object);
   DCHECK(networklib);
@@ -3977,6 +3995,7 @@ void NetworkLibraryImplCros::DataPlanUpdateHandler(
     void* object,
     const char* modem_service_path,
     const CellularDataPlanList* dataplan) {
+  DCHECK(CrosLibrary::Get()->libcros_loaded());
   NetworkLibraryImplCros* networklib =
       static_cast<NetworkLibraryImplCros*>(object);
   DCHECK(networklib);
@@ -4123,6 +4142,7 @@ void NetworkLibraryImplCros::UpdateWatchedNetworkServiceList(
 // static
 void NetworkLibraryImplCros::NetworkServiceUpdate(
     void* object, const char* service_path, GHashTable* ghash) {
+  DCHECK(CrosLibrary::Get()->libcros_loaded());
   NetworkLibraryImplCros* networklib =
       static_cast<NetworkLibraryImplCros*>(object);
   DCHECK(networklib);
@@ -4243,6 +4263,7 @@ void NetworkLibraryImplCros::RequestRememberedNetworksUpdate() {
 // static
 void NetworkLibraryImplCros::ProfileUpdate(
     void* object, const char* profile_path, GHashTable* ghash) {
+  DCHECK(CrosLibrary::Get()->libcros_loaded());
   NetworkLibraryImplCros* networklib =
       static_cast<NetworkLibraryImplCros*>(object);
   DCHECK(networklib);
@@ -4297,6 +4318,7 @@ void NetworkLibraryImplCros::UpdateRememberedServiceList(
 // static
 void NetworkLibraryImplCros::RememberedNetworkServiceUpdate(
     void* object, const char* service_path, GHashTable* ghash) {
+  DCHECK(CrosLibrary::Get()->libcros_loaded());
   NetworkLibraryImplCros* networklib =
       static_cast<NetworkLibraryImplCros*>(object);
   DCHECK(networklib);
@@ -4400,6 +4422,7 @@ void NetworkLibraryImplCros::UpdateNetworkDeviceList(const ListValue* devices) {
 // static
 void NetworkLibraryImplCros::NetworkDeviceUpdate(
     void* object, const char* device_path, GHashTable* ghash) {
+  DCHECK(CrosLibrary::Get()->libcros_loaded());
   NetworkLibraryImplCros* networklib =
       static_cast<NetworkLibraryImplCros*>(object);
   DCHECK(networklib);
@@ -4501,6 +4524,9 @@ class NetworkLibraryImplStub : public NetworkLibraryImplBase {
 
   virtual void CallEnableNetworkDeviceType(
       ConnectionType device, bool enable) OVERRIDE {}
+
+  virtual void CallRemoveNetwork(const Network* network) OVERRIDE {}
+
   virtual void EnableOfflineMode(bool enable) OVERRIDE {
     offline_mode_ = enable;
   }
