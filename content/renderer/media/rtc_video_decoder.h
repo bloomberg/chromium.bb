@@ -14,6 +14,11 @@
 #include "media/base/video_frame.h"
 #include "media/filters/decoder_base.h"
 #include "third_party/libjingle/source/talk/session/phone/mediachannel.h"
+#include "third_party/libjingle/source/talk/session/phone/videorenderer.h"
+
+namespace cricket {
+class VideoFrame;
+}  // namespace cricket
 
 class RTCVideoDecoder
     : public media::VideoDecoder,

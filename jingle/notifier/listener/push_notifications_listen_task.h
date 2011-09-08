@@ -32,7 +32,8 @@ class PushNotificationsListenTask : public buzz::XmppTask {
         const Notification& notification) = 0;
   };
 
-  PushNotificationsListenTask(Task* parent, Delegate* delegate);
+  PushNotificationsListenTask(buzz::XmppTaskParentInterface* parent,
+                              Delegate* delegate);
   virtual ~PushNotificationsListenTask();
 
   // Overriden from buzz::XmppTask.
@@ -54,4 +55,3 @@ typedef PushNotificationsListenTask::Delegate
 }  // namespace notifier
 
 #endif  // JINGLE_NOTIFIER_PUSH_NOTIFICATIONS_LISTENER_LISTEN_TASK_H_
-

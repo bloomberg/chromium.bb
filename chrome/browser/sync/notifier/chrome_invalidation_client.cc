@@ -44,7 +44,8 @@ ChromeInvalidationClient::~ChromeInvalidationClient() {
 void ChromeInvalidationClient::Start(
     const std::string& client_id, const std::string& client_info,
     const std::string& state, Listener* listener,
-    StateWriter* state_writer, base::WeakPtr<talk_base::Task> base_task) {
+    StateWriter* state_writer,
+    base::WeakPtr<buzz::XmppTaskParentInterface> base_task) {
   DCHECK(non_thread_safe_.CalledOnValidThread());
   Stop();
 
@@ -79,7 +80,7 @@ void ChromeInvalidationClient::Start(
 }
 
 void ChromeInvalidationClient::ChangeBaseTask(
-    base::WeakPtr<talk_base::Task> base_task) {
+    base::WeakPtr<buzz::XmppTaskParentInterface> base_task) {
   DCHECK(invalidation_client_.get());
   DCHECK(base_task.get());
   cache_invalidation_packet_handler_.reset(

@@ -36,6 +36,7 @@ class MessageLoopProxy;
 
 namespace buzz {
 class XmppClientSettings;
+class XmppTaskParentInterface;
 }  // namespace buzz
 
 namespace talk_base {
@@ -67,7 +68,8 @@ class MediatorThreadImpl : public MediatorThread {
   // Used by unit tests.  Make sure that tests that use this have the
   // IO message loop proxy passed in via |notifier_options| pointing
   // to the current thread.
-  void TriggerOnConnectForTest(base::WeakPtr<talk_base::Task> base_task);
+  void TriggerOnConnectForTest(
+      base::WeakPtr<buzz::XmppTaskParentInterface> base_task);
 
  private:
   // The logic of Logout without the thread check so it can be called in the

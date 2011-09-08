@@ -25,9 +25,9 @@ class PushNotificationsSubscribeTask : public buzz::XmppTask {
      virtual void OnSubscriptionError() = 0;
   };
 
-  PushNotificationsSubscribeTask(TaskParent* parent,
-      const SubscriptionList& subscriptions,
-      Delegate* delegate);
+  PushNotificationsSubscribeTask(buzz::XmppTaskParentInterface* parent,
+                                 const SubscriptionList& subscriptions,
+                                 Delegate* delegate);
   virtual ~PushNotificationsSubscribeTask();
 
   // Overridden from XmppTask.
@@ -57,4 +57,3 @@ typedef PushNotificationsSubscribeTask::Delegate
 }  // namespace notifier
 
 #endif  // JINGLE_NOTIFIER_LISTENER_PUSH_NOTIFICATIONS_SUBSCRIBE_TASK_H_
-

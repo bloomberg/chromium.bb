@@ -49,7 +49,8 @@ SingleLoginAttempt::SingleLoginAttempt(LoginSettings* login_settings,
 
 SingleLoginAttempt::~SingleLoginAttempt() {}
 
-void SingleLoginAttempt::OnConnect(base::WeakPtr<talk_base::Task> base_task) {
+void SingleLoginAttempt::OnConnect(
+    base::WeakPtr<buzz::XmppTaskParentInterface> base_task) {
   delegate_->OnConnect(base_task);
 }
 

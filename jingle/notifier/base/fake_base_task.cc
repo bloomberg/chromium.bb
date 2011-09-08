@@ -45,7 +45,7 @@ FakeBaseTask::FakeBaseTask() {
 
 FakeBaseTask::~FakeBaseTask() {}
 
-base::WeakPtr<talk_base::Task> FakeBaseTask::AsWeakPtr() {
+base::WeakPtr<buzz::XmppTaskParentInterface> FakeBaseTask::AsWeakPtr() {
   return base_task_;
 }
 

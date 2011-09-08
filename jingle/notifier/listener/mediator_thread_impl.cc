@@ -38,7 +38,8 @@ class MediatorThreadImpl::Core
   void RemoveObserver(Observer* observer);
 
   // Login::Delegate implementation. Called on I/O thread.
-  virtual void OnConnect(base::WeakPtr<talk_base::Task> base_task);
+  virtual void OnConnect(
+      base::WeakPtr<buzz::XmppTaskParentInterface> base_task);
   virtual void OnDisconnect();
 
   // PushNotificationsListenTaskDelegate implementation. Called on I/O thread.
@@ -63,7 +64,7 @@ class MediatorThreadImpl::Core
   // Invoked on either the caller thread or the I/O thread.
   virtual ~Core();
   scoped_refptr<ObserverListThreadSafe<Observer> > observers_;
-  base::WeakPtr<talk_base::Task> base_task_;
+  base::WeakPtr<buzz::XmppTaskParentInterface> base_task_;
 
   const NotifierOptions notifier_options_;
 
@@ -187,7 +188,7 @@ void MediatorThreadImpl::Core::UpdateXmppSettings(
 }
 
 void MediatorThreadImpl::Core::OnConnect(
-    base::WeakPtr<talk_base::Task> base_task) {
+    base::WeakPtr<buzz::XmppTaskParentInterface> base_task) {
   DCHECK(notifier_options_.request_context_getter->GetIOMessageLoopProxy()->
       BelongsToCurrentThread());
   base_task_ = base_task;
@@ -291,7 +292,7 @@ void MediatorThreadImpl::UpdateXmppSettings(
 }
 
 void MediatorThreadImpl::TriggerOnConnectForTest(
-    base::WeakPtr<talk_base::Task> base_task) {
+    base::WeakPtr<buzz::XmppTaskParentInterface> base_task) {
     DCHECK(parent_message_loop_proxy_->BelongsToCurrentThread());
   io_message_loop_proxy_->PostTask(
       FROM_HERE,

@@ -95,7 +95,7 @@ void InvalidationNotifier::SendNotification(
 }
 
 void InvalidationNotifier::OnConnect(
-    base::WeakPtr<talk_base::Task> base_task) {
+    base::WeakPtr<buzz::XmppTaskParentInterface> base_task) {
   DCHECK(non_thread_safe_.CalledOnValidThread());
   VLOG(1) << "OnConnect";
   if (state_ >= STARTED) {

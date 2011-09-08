@@ -19,7 +19,7 @@
 namespace notifier {
 
 PushNotificationsSubscribeTask::PushNotificationsSubscribeTask(
-    TaskParent* parent,
+    buzz::XmppTaskParentInterface* parent,
     const SubscriptionList& subscriptions,
     Delegate* delegate)
     : XmppTask(parent, buzz::XmppEngine::HL_SINGLE),
@@ -108,4 +108,3 @@ buzz::XmlElement* PushNotificationsSubscribeTask::MakeSubscriptionMessage(
 }
 
 }  // namespace notifier
-

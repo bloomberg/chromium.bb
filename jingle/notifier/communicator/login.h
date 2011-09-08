@@ -21,16 +21,12 @@ namespace buzz {
 class XmppClient;
 class XmppEngine;
 class XmppClientSettings;
+class XmppTaskParentInterface;
 }  // namespace buzz
 
 namespace net {
 class URLRequestContextGetter;
 }  // namespace net
-
-namespace talk_base {
-class Task;
-class TaskParent;
-}  // namespace talk_base
 
 namespace notifier {
 
@@ -51,7 +47,8 @@ class Login : public net::NetworkChangeNotifier::IPAddressObserver,
    public:
     virtual ~Delegate() {}
 
-    virtual void OnConnect(base::WeakPtr<talk_base::Task> base_task) = 0;
+    virtual void OnConnect(
+        base::WeakPtr<buzz::XmppTaskParentInterface> base_task) = 0;
     virtual void OnDisconnect() = 0;
   };
 
@@ -76,7 +73,8 @@ class Login : public net::NetworkChangeNotifier::IPAddressObserver,
   virtual void OnIPAddressChanged();
 
   // SingleLoginAttempt::Delegate implementation.
-  virtual void OnConnect(base::WeakPtr<talk_base::Task> base_task);
+  virtual void OnConnect(
+      base::WeakPtr<buzz::XmppTaskParentInterface> base_task);
   virtual void OnNeedReconnect();
   virtual void OnRedirect(const std::string& redirect_server,
                           int redirect_port);

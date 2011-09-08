@@ -22,10 +22,7 @@ namespace buzz {
 class PreXmppAuth;
 class XmlElement;
 class XmppClientSettings;
-}  // namespace
-
-namespace talk_base {
-class Task;
+class XmppTaskParentInterface;
 }  // namespace
 
 namespace notifier {
@@ -42,7 +39,8 @@ class XmppConnection : public sigslot::has_slots<> {
     // Called (at most once) when a connection has been established.
     // |base_task| can be used by the client as the parent of any Task
     // it creates as long as it is valid (i.e., non-NULL).
-    virtual void OnConnect(base::WeakPtr<talk_base::Task> base_task) = 0;
+    virtual void OnConnect(
+        base::WeakPtr<buzz::XmppTaskParentInterface> base_task) = 0;
 
     // Called if an error has occurred (either before or after a call
     // to OnConnect()).  No calls to the delegate will be made after

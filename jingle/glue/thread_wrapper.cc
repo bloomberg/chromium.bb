@@ -49,6 +49,8 @@ JingleThreadWrapper::JingleThreadWrapper(MessageLoop* message_loop)
   talk_base::ThreadManager::SetCurrent(this);
   talk_base::MessageQueueManager::Instance()->Add(this);
   message_loop_->AddDestructionObserver(this);
+
+  WrapCurrent();
 }
 
 JingleThreadWrapper::~JingleThreadWrapper() {
@@ -56,6 +58,7 @@ JingleThreadWrapper::~JingleThreadWrapper() {
 
 void JingleThreadWrapper::WillDestroyCurrentMessageLoop() {
   DCHECK_EQ(talk_base::Thread::Current(), current());
+  UnwrapCurrent();
   g_jingle_thread_wrapper.Get().Set(NULL);
   talk_base::ThreadManager::SetCurrent(NULL);
   talk_base::MessageQueueManager::Instance()->Remove(this);

@@ -89,7 +89,7 @@ class MockXmppConnectionDelegate : public XmppConnection::Delegate {
  public:
   virtual ~MockXmppConnectionDelegate() {}
 
-  MOCK_METHOD1(OnConnect, void(base::WeakPtr<talk_base::Task>));
+  MOCK_METHOD1(OnConnect, void(base::WeakPtr<buzz::XmppTaskParentInterface>));
   MOCK_METHOD3(OnError,
                void(buzz::XmppEngine::Error, int, const buzz::XmlElement*));
 };

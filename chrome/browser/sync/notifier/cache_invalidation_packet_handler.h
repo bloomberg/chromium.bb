@@ -19,9 +19,9 @@
 #include "base/threading/non_thread_safe.h"
 #include "google/cacheinvalidation/v2/system-resources.h"
 
-namespace talk_base {
-class Task;
-}  // namespace
+namespace buzz {
+class XmppTaskParentInterface;
+}  // namespace buzz
 
 namespace sync_notifier {
 
@@ -32,7 +32,7 @@ class CacheInvalidationPacketHandler {
   // |invalidation_client| must not already be routing packets through
   // something.  Does not take ownership of |invalidation_client|.
   CacheInvalidationPacketHandler(
-      base::WeakPtr<talk_base::Task> base_task);
+      base::WeakPtr<buzz::XmppTaskParentInterface> base_task);
 
   // Makes the invalidation client passed into the constructor not
   // route packets through the XMPP client passed into the constructor
@@ -55,7 +55,7 @@ class CacheInvalidationPacketHandler {
   base::ScopedCallbackFactory<CacheInvalidationPacketHandler>
       scoped_callback_factory_;
 
-  base::WeakPtr<talk_base::Task> base_task_;
+  base::WeakPtr<buzz::XmppTaskParentInterface> base_task_;
 
   scoped_ptr<invalidation::MessageCallback> incoming_receiver_;
 

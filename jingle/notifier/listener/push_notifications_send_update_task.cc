@@ -20,7 +20,7 @@
 namespace notifier {
 
 PushNotificationsSendUpdateTask::PushNotificationsSendUpdateTask(
-    TaskParent* parent, const Notification& notification)
+    buzz::XmppTaskParentInterface* parent, const Notification& notification)
     : XmppTask(parent), notification_(notification) {}
 
 PushNotificationsSendUpdateTask::~PushNotificationsSendUpdateTask() {}

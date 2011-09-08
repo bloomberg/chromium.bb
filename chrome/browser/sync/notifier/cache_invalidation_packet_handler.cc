@@ -49,7 +49,7 @@ class CacheInvalidationListenTask : public buzz::XmppTask {
  public:
   // Takes ownership of callback.
   CacheInvalidationListenTask(
-      Task* parent,
+      buzz::XmppTaskParentInterface* parent,
       Callback1<const std::string&>::Type* callback,
       Callback1<const std::string&>::Type* context_change_callback)
       : XmppTask(parent, buzz::XmppEngine::HL_TYPE),
@@ -135,7 +135,7 @@ std::string MakeProtocolVersion() {
 // A task that sends a single outbound ClientInvalidation message.
 class CacheInvalidationSendMessageTask : public buzz::XmppTask {
  public:
-  CacheInvalidationSendMessageTask(Task* parent,
+  CacheInvalidationSendMessageTask(buzz::XmppTaskParentInterface* parent,
                                    const buzz::Jid& to_jid,
                                    const std::string& msg,
                                    int seq,
@@ -223,7 +223,7 @@ std::string MakeSid() {
 }  // namespace
 
 CacheInvalidationPacketHandler::CacheInvalidationPacketHandler(
-    base::WeakPtr<talk_base::Task> base_task)
+    base::WeakPtr<buzz::XmppTaskParentInterface> base_task)
     : scoped_callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       base_task_(base_task),
       seq_(0),

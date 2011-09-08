@@ -19,7 +19,7 @@
 namespace notifier {
 
 PushNotificationsListenTask::PushNotificationsListenTask(
-    Task* parent, Delegate* delegate)
+    buzz::XmppTaskParentInterface* parent, Delegate* delegate)
         : buzz::XmppTask(parent, buzz::XmppEngine::HL_TYPE),
           delegate_(delegate) {
   DCHECK(delegate_);
@@ -97,4 +97,3 @@ bool PushNotificationsListenTask::IsValidNotification(
 }
 
 }  // namespace notifier
-

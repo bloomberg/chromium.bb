@@ -116,7 +116,7 @@ TEST_F(MediatorThreadTest, SendNotificationDelayedTwice) {
     mediator_thread_->SendNotification(Notification());
   }
   mediator_thread_->TriggerOnConnectForTest(
-      base::WeakPtr<talk_base::Task>());
+      base::WeakPtr<buzz::XmppTaskParentInterface>());
   mediator_thread_->TriggerOnConnectForTest(fake_base_task_.AsWeakPtr());
 }
 

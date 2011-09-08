@@ -28,9 +28,9 @@
 // file and include that instead of invalidation-client.h (which
 // includes generated protobuf header files).
 
-namespace talk_base {
-class Task;
-}  // namespace
+namespace buzz {
+class XmppTaskParentInterface;
+}  // namespace buzz
 
 namespace sync_notifier {
 
@@ -63,14 +63,15 @@ class ChromeInvalidationClient
   void Start(
       const std::string& client_id, const std::string& client_info,
       const std::string& state, Listener* listener,
-      StateWriter* state_writer, base::WeakPtr<talk_base::Task> base_task);
+      StateWriter* state_writer,
+      base::WeakPtr<buzz::XmppTaskParentInterface> base_task);
 
   void Stop();
 
   // Changes the task used to |base_task|, which must still be
   // non-NULL.  Must only be called between calls to Start() and
   // Stop().
-  void ChangeBaseTask(base::WeakPtr<talk_base::Task> base_task);
+  void ChangeBaseTask(base::WeakPtr<buzz::XmppTaskParentInterface> base_task);
 
   // Register the sync types that we're interested in getting
   // notifications for.  May be called at any time.

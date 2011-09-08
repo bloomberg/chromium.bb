@@ -55,7 +55,8 @@ class InvalidationNotifier
       const syncable::ModelTypeSet& changed_types) OVERRIDE;
 
   // notifier::LoginDelegate implementation.
-  virtual void OnConnect(base::WeakPtr<talk_base::Task> base_task) OVERRIDE;
+  virtual void OnConnect(
+      base::WeakPtr<buzz::XmppTaskParentInterface> base_task) OVERRIDE;
   virtual void OnDisconnect() OVERRIDE;
 
   // ChromeInvalidationClient::Listener implementation.

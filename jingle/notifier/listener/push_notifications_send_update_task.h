@@ -22,7 +22,7 @@ namespace notifier {
 class PushNotificationsSendUpdateTask : public buzz::XmppTask {
  public:
   PushNotificationsSendUpdateTask(
-      TaskParent* parent, const Notification& notification);
+      buzz::XmppTaskParentInterface* parent, const Notification& notification);
   virtual ~PushNotificationsSendUpdateTask();
 
   // Overridden from buzz::XmppTask.

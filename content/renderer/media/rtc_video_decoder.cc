@@ -13,6 +13,7 @@
 #include "media/base/limits.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_util.h"
+#include "third_party/libjingle/source/talk/session/phone/videoframe.h"
 
 using media::CopyUPlane;
 using media::CopyVPlane;

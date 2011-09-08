@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/renderer/media/rtc_video_decoder.h"
+
 #include <deque>
 
 #include "base/bind.h"
 #include "base/memory/singleton.h"
 #include "base/string_util.h"
-#include "content/renderer/media/rtc_video_decoder.h"
 #include "media/base/data_buffer.h"
 #include "media/base/filters.h"
 #include "media/base/limits.h"
@@ -17,6 +18,7 @@
 #include "media/base/mock_task.h"
 #include "media/base/video_frame.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/libjingle/source/talk/session/phone/videoframe.h"
 
 using ::testing::_;
 using ::testing::AnyNumber;
@@ -36,6 +38,69 @@ using media::NewExpectedCallback;
 using media::PipelineStatistics;
 using media::PIPELINE_OK;
 using media::StatisticsCallback;
+
+namespace {
+
+class NullVideoFrame : public cricket::VideoFrame {
+ public:
+  NullVideoFrame() {};
+  virtual ~NullVideoFrame() {};
+
+  virtual size_t GetWidth() const OVERRIDE { return 0; }
+  virtual size_t GetHeight() const OVERRIDE { return 0; }
+  virtual const uint8 *GetYPlane() const OVERRIDE { return NULL; }
+  virtual const uint8 *GetUPlane() const OVERRIDE { return NULL; }
+  virtual const uint8 *GetVPlane() const OVERRIDE { return NULL; }
+  virtual uint8 *GetYPlane() OVERRIDE { return NULL; }
+  virtual uint8 *GetUPlane() OVERRIDE { return NULL; }
+  virtual uint8 *GetVPlane() OVERRIDE { return NULL; }
+  virtual int32 GetYPitch() const OVERRIDE { return 0; }
+  virtual int32 GetUPitch() const OVERRIDE { return 0; }
+  virtual int32 GetVPitch() const OVERRIDE { return 0; }
+
+  virtual size_t GetPixelWidth() const OVERRIDE { return 1; }
+  virtual size_t GetPixelHeight() const OVERRIDE { return 1; }
+  virtual int64 GetElapsedTime() const OVERRIDE { return 0; }
+  virtual int64 GetTimeStamp() const OVERRIDE { return 0; }
+  virtual void SetElapsedTime(int64 elapsed_time) OVERRIDE {}
+  virtual void SetTimeStamp(int64 time_stamp) OVERRIDE {}
+
+  virtual VideoFrame *Copy() const OVERRIDE { return NULL; }
+
+  virtual bool MakeExclusive() OVERRIDE { return true; }
+
+  virtual size_t CopyToBuffer(uint8 *buffer, size_t size) const OVERRIDE {
+    return 0;
+  }
+
+  virtual size_t ConvertToRgbBuffer(uint32 to_fourcc, uint8 *buffer,
+                                    size_t size,
+                                    size_t pitch_rgb) const OVERRIDE {
+    return 0;
+  }
+
+  virtual void StretchToPlanes(uint8 *y, uint8 *u, uint8 *v,
+                               int32 pitchY, int32 pitchU, int32 pitchV,
+                               size_t width, size_t height,
+                               bool interpolate, bool crop) const OVERRIDE {
+  }
+
+  virtual size_t StretchToBuffer(size_t w, size_t h, uint8 *buffer, size_t size,
+                                 bool interpolate, bool crop) const OVERRIDE {
+    return 0;
+  }
+
+  virtual void StretchToFrame(VideoFrame *target, bool interpolate,
+                              bool crop) const OVERRIDE {
+  }
+
+  virtual VideoFrame *Stretch(size_t w, size_t h, bool interpolate,
+                              bool crop) const OVERRIDE {
+    return NULL;
+  }
+};
+
+}  // namespace
 
 class RTCVideoDecoderTest : public testing::Test {
  protected:
@@ -135,7 +200,7 @@ TEST_F(RTCVideoDecoderTest, DoRenderFrame) {
   EXPECT_CALL(*renderer_.get(), ConsumeVideoFrame(_))
       .Times(Limits::kMaxVideoFrames);
 
-  cricket::NullVideoFrame video_frame;
+  NullVideoFrame video_frame;
 
   for (size_t i = 0; i < Limits::kMaxVideoFrames; ++i) {
     decoder_->RenderFrame(&video_frame);
