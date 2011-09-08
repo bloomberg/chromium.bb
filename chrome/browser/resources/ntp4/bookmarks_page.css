@@ -129,8 +129,8 @@ html[dir=rtl] .bookmark .close-button {
   color: #7f7f7f;
   cursor: default;
   font-weight: bold;
-  margin-right: 0;
-  padding-right: 10px;
+  -webkit-margin-end: 0;
+  -webkit-padding-end: 10px;
 }
 
 .section-title {
@@ -138,6 +138,7 @@ html[dir=rtl] .bookmark .close-button {
   left: 0;
   overflow: hidden;
   position: absolute;
+  right: 0;
   top: 0;
   -webkit-box-flex: 1;
   -webkit-box-orient: horizontal;
@@ -157,6 +158,10 @@ html[dir=rtl] .bookmark .close-button {
   height: 44px;
   margin: 2px 0;
   width: 10px;
+}
+
+html[dir="rtl"] .bookmark-separator {
+  -webkit-transform: scale(-1, 1);
 }
 
 #bookmarks-top-link-wrapper {
