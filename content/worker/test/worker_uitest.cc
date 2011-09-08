@@ -341,7 +341,7 @@ TEST_F(WorkerTest, WorkerReplaceSelf) {
 #define WorkerScriptError FLAKY_WorkerScriptError
 #endif
 
-TEST_F(WorkerTest, DISABLED_WorkerScriptError) {
+TEST_F(WorkerTest, WorkerScriptError) {
   RunWorkerFastLayoutTest("worker-script-error.html");
 }
 
