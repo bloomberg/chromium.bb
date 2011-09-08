@@ -93,7 +93,9 @@ def CheckIfInSelLdrRegion(line, cur_range_base):
     #
     # I.e., 10 fields...
     if (len(fields) == 10
-        and (fields[6] == 'sel_ldr' or fields[6] == 'chrome')
+        and (fields[6] == 'sel_ldr'
+          or fields[6] == 'chrome'
+          or fields[6] == 'nacl_helper_bootstrap')
         and ('anon' == fields[3])):
       Debug('Likely starting sel_ldr section: %s %s' % (fields[3], fields[6]))
       range_token = fields[9]
@@ -158,7 +160,8 @@ def CheckTrustedRecord(line, trusted_events, filter_events):
                             or image_name.startswith('llc')
                             or image_name.endswith('.so')
                             or image_name == 'no-vmlinux'
-                            or image_name == 'chrome')):
+                            or image_name == 'chrome'
+                            or image_name == 'nacl_helper_bootstrap')):
     trusted_events['FILTERED'] = trusted_events.get('FILTERED',0) + sample_count
     return False
 
