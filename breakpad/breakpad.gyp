@@ -104,6 +104,12 @@
         {
           'target_name': 'dump_syms',
           'type': 'executable',
+          'variables': {
+            # Turn off PIE because it may interfere with dump_syms' ability to
+            # allocate a contiguous region in memory large enough to mmap the
+            # entire unstripped framework in a 32-bit dump_syms process.
+            'mac_pie': 0,
+          },
           'include_dirs++': [
             # ++ ensures this comes before src brought in from target_defaults.
             'pending/src',
