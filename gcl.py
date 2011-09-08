@@ -1183,6 +1183,7 @@ def CMDlint(change_info, args):
   """
   try:
     import cpplint
+    import cpplint_chromium
   except ImportError:
     ErrorExit("You need to install cpplint.py to lint C++ files.")
   # Change the current working directory before calling lint so that it
@@ -1200,6 +1201,7 @@ def CMDlint(change_info, args):
   if not black_list:
     black_list = DEFAULT_LINT_IGNORE_REGEX
   black_regex = re.compile(black_list)
+  extra_check_functions = [cpplint_chromium.CheckPointerDeclarationWhitespace]
   # Access to a protected member _XX of a client class
   # pylint: disable=W0212
   for filename in filenames:
@@ -1207,7 +1209,8 @@ def CMDlint(change_info, args):
       if black_regex.match(filename):
         print "Ignoring file %s" % filename
       else:
-        cpplint.ProcessFile(filename, cpplint._cpplint_state.verbose_level)
+        cpplint.ProcessFile(filename, cpplint._cpplint_state.verbose_level,
+                            extra_check_functions)
     else:
       print "Skipping file %s" % filename
 
