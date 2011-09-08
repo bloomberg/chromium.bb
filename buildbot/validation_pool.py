@@ -166,8 +166,6 @@ class ValidationPool(object):
   def SubmitPool(self):
     """Commits changes to Gerrit from Pool.
 
-    Returns:
-      True if we were able to do submit the changes.
     Raises:
       TreeIsClosedException: if the tree is closed.
     """
@@ -180,7 +178,6 @@ class ValidationPool(object):
           change.HandleCouldNotSubmit(self.gerrit_helper,
                                       dryrun=self.dryrun)
           # TODO(sosa): Do we re-raise?
-        return True
     else:
       raise TreeIsClosedException()
 
