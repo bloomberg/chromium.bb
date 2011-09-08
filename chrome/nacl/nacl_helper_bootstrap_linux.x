@@ -46,7 +46,9 @@ RESERVE_TOP = 1 << 30;
  */
 PHDRS {
   text PT_LOAD FILEHDR PHDRS;
+  data PT_LOAD;
   reserve PT_LOAD FLAGS(0);
+  note PT_NOTE;
   stack PT_GNU_STACK FLAGS(6);	/* RW, no E */
 }
 
@@ -54,16 +56,44 @@ PHDRS {
  * Now we lay out the sections across those segments.
  */
 SECTIONS {
+  . = TEXT_START + SIZEOF_HEADERS;
+
+  /*
+   * The build ID note usually comes first.
+   * It's both part of the text PT_LOAD segment (like other rodata) and
+   * it's what the PT_NOTE header points to.
+   */
+  .note.gnu.build-id : {
+    *(.note.gnu.build-id)
+  } :text :note
+
   /*
    * Here is the program itself.
    */
-  .text TEXT_START + SIZEOF_HEADERS : {
-    *(.note.gnu.build-id)
+  .text : {
     *(.text*)
+  } :text
+  .rodata : {
     *(.rodata*)
     *(.eh_frame*)
-  } :text
+  }
+
   etext = .;
+
+  /*
+   * Adjust the address for the data segment.  We want to adjust up to
+   * the same address within the page on the next page up.
+   */
+  . = (ALIGN(CONSTANT(MAXPAGESIZE)) -
+       ((CONSTANT(MAXPAGESIZE) - .) & (CONSTANT(MAXPAGESIZE) - 1)));
+  . = DATA_SEGMENT_ALIGN(CONSTANT(MAXPAGESIZE), CONSTANT(COMMONPAGESIZE));
+
+  .data : {
+    *(.data*)
+  } :data
+  .bss : {
+    *(.bss*)
+  }
 
   /*
    * Now we move up to the next p_align increment, and place the dummy

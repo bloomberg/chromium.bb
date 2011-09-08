@@ -302,6 +302,7 @@
               ],
               'action': ['../tools/ld_bfd/ld',
                          '-m', '<(linker_emulation)',
+                         '--build-id',
                          # This program is (almost) entirely standalone.  It
                          # has its own startup code, so no crt1.o for it.  It is
                          # statically linked, and on x86 it does not use
