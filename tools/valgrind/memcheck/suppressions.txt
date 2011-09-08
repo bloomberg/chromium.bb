@@ -1812,17 +1812,6 @@
    fun:_ZN16RenderWidgetHost4SendEPN3IPC7MessageE
 }
 {
-   bug_32356
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN5media18FFmpegVideoDecoder13CreateFactoryEv
-   fun:_ZN11webkit_glue18WebMediaPlayerImpl*
-   fun:_ZN19TestWebViewDelegate17createMediaPlayerEPN6WebKit8WebFrameEPNS0_20WebMediaPlayerClientE
-   fun:_ZN6WebKit20createWebMediaPlayerEPNS_20WebMediaPlayerClientEPN7WebCore5FrameE
-   fun:_ZN6WebKit24WebMediaPlayerClientImpl4load*
-   fun:_ZN7WebCore11MediaPlayer4load*
-}
-{
    bug_32360
    Memcheck:Leak
    fun:memalign
