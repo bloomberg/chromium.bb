@@ -45,16 +45,19 @@ def TarballsAvailableForVersion(base, version):
       A dict mapping toolchain type to the status string 'OK' for success and
       the availability details if an error occurred.  For example:
 
-      {'x86': 'OK', 'arm': 'missing linux_arm-trusted'}
+      {'x86': 'OK', 'pnacl': 'missing linux_arm-trusted'}
   """
   all_flavors = []
   for archs in toolchainbinaries.PLATFORM_MAPPING.itervalues():
     for flavors in archs.itervalues():
       all_flavors.extend(flavors)
-  res = {'x86': 'OK', 'arm': 'OK'}
+  res = {'x86': 'OK', 'pnacl': 'OK'}
   for flavor in set(all_flavors):
-    if toolchainbinaries.IsArmFlavor(flavor):
-      toolchain_type = 'arm'
+    # The linux_arm-trusted set is going away and new ones don't matter now.
+    if toolchainbinaries.IsArmTrustedFlavor(flavor):
+      continue
+    elif toolchainbinaries.IsPnaclFlavor(flavor):
+      toolchain_type = 'pnacl'
     else:
       toolchain_type = 'x86'
     if res[toolchain_type] != 'OK':
@@ -71,7 +74,7 @@ def SearchAvailableToolchains(base_url, rev):
     sys.stdout.write('checking r%d: ' % i)
     sys.stdout.flush()
     avail = TarballsAvailableForVersion(base_url, i)
-    sys.stdout.write('x86: %s, arm: %s\n' % (avail['x86'], avail['arm']))
+    print ', '.join(key + ': ' + value for key, value in avail.iteritems())
 
 
 def Main():
