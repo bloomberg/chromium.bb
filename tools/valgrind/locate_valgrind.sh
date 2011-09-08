@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Copyright (c) 2009 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -27,6 +27,9 @@ then
     PLATFORM="mac"
     ;;
   *Darwin*10.[0-9].[0-9]*i386*)
+    PLATFORM="mac_10.6"
+    ;;
+  *Darwin*10.[0-9].[0-9]*x86_64*)
     PLATFORM="mac_10.6"
     ;;
   *)
