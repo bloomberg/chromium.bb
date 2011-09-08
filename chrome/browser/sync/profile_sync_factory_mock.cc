@@ -14,21 +14,25 @@ using testing::InvokeWithoutArgs;
 ProfileSyncFactoryMock::ProfileSyncFactoryMock() {}
 
 ProfileSyncFactoryMock::ProfileSyncFactoryMock(
-    AssociatorInterface* bookmark_model_associator,
-    ChangeProcessor* bookmark_change_processor)
-    : bookmark_model_associator_(bookmark_model_associator),
-      bookmark_change_processor_(bookmark_change_processor) {
+    AssociatorInterface* model_associator, ChangeProcessor* change_processor)
+    : model_associator_(model_associator),
+      change_processor_(change_processor) {
   ON_CALL(*this, CreateBookmarkSyncComponents(_, _)).
       WillByDefault(
           InvokeWithoutArgs(
               this,
-              &ProfileSyncFactoryMock::MakeBookmarkSyncComponents));
+              &ProfileSyncFactoryMock::MakeSyncComponents));
+  ON_CALL(*this, CreateSearchEngineSyncComponents(_, _)).
+      WillByDefault(
+          InvokeWithoutArgs(
+              this,
+              &ProfileSyncFactoryMock::MakeSyncComponents));
 }
 
 ProfileSyncFactoryMock::~ProfileSyncFactoryMock() {}
 
 ProfileSyncFactory::SyncComponents
-ProfileSyncFactoryMock::MakeBookmarkSyncComponents() {
-  return SyncComponents(bookmark_model_associator_.release(),
-                        bookmark_change_processor_.release());
+ProfileSyncFactoryMock::MakeSyncComponents() {
+  return SyncComponents(model_associator_.release(),
+                        change_processor_.release());
 }

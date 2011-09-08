@@ -20,8 +20,8 @@ class ProfileSyncFactoryMock : public ProfileSyncFactory {
  public:
   ProfileSyncFactoryMock();
   ProfileSyncFactoryMock(
-      browser_sync::AssociatorInterface* bookmark_model_associator,
-      browser_sync::ChangeProcessor* bookmark_change_processor);
+      browser_sync::AssociatorInterface* model_associator,
+      browser_sync::ChangeProcessor* change_processor);
   virtual ~ProfileSyncFactoryMock();
 
   MOCK_METHOD1(CreateProfileSyncService,
@@ -77,10 +77,10 @@ class ProfileSyncFactoryMock : public ProfileSyncFactory {
                    browser_sync::UnrecoverableErrorHandler* error_handler));
 
  private:
-  SyncComponents MakeBookmarkSyncComponents();
+  SyncComponents MakeSyncComponents();
 
-  scoped_ptr<browser_sync::AssociatorInterface> bookmark_model_associator_;
-  scoped_ptr<browser_sync::ChangeProcessor> bookmark_change_processor_;
+  scoped_ptr<browser_sync::AssociatorInterface> model_associator_;
+  scoped_ptr<browser_sync::ChangeProcessor> change_processor_;
 };
 
 #endif  // CHROME_BROWSER_SYNC_PROFILE_SYNC_FACTORY_MOCK_H__

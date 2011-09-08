@@ -1676,6 +1676,7 @@
         'browser/sync/glue/non_frontend_data_type_controller_mock.h',
         'browser/sync/glue/non_frontend_data_type_controller_unittest.cc',
         'browser/sync/glue/preference_data_type_controller_unittest.cc',
+        'browser/sync/glue/search_engine_data_type_controller_unittest.cc',
         'browser/sync/glue/session_model_associator_unittest.cc',
         'browser/sync/glue/sync_backend_host_mock.cc',
         'browser/sync/glue/sync_backend_host_mock.h',
