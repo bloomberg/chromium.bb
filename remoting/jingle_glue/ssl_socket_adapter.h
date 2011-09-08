@@ -135,8 +135,12 @@ class SSLSocketAdapter : public talk_base::SSLAdapter {
   bool ignore_bad_cert_;
   std::string hostname_;
   TransportSocket* transport_socket_;
-  scoped_ptr<net::SSLClientSocket> ssl_socket_;
+
+  // |cert_verifier_| must be defined before |ssl_socket_|, so that
+  // it's destroyed after |ssl_socket_|.
   scoped_ptr<net::CertVerifier> cert_verifier_;
+  scoped_ptr<net::SSLClientSocket> ssl_socket_;
+
   net::CompletionCallbackImpl<SSLSocketAdapter> connected_callback_;
   net::CompletionCallbackImpl<SSLSocketAdapter> read_callback_;
   net::CompletionCallbackImpl<SSLSocketAdapter> write_callback_;
