@@ -315,6 +315,8 @@ void FactoryRegistry::ResetFunctions() {
   RegisterFunction<SetCursorPositionFunction>();
   RegisterFunction<SetMenuItemsFunction>();
   RegisterFunction<UpdateMenuItemsFunction>();
+
+  RegisterFunction<InputEventHandled>();
 #if defined(TOUCH_UI)
   RegisterFunction<CandidateClickedInputUiFunction>();
   RegisterFunction<CursorUpInputUiFunction>();

@@ -11,6 +11,10 @@
 
 namespace chromeos {
 
+namespace input_method {
+struct KeyEventHandle;
+}  // namespace input_method
+
 extern const char* kExtensionImePrefix;
 
 // InputMethodEngine is used to translate from the Chrome IME API to the native
@@ -87,7 +91,8 @@ class InputMethodEngine {
 
     // Called when the user pressed a key with a text field focused.
     virtual void OnKeyEvent(const std::string& engine_id,
-                            const KeyboardEvent& event) = 0;
+                            const KeyboardEvent& event,
+                            input_method::KeyEventHandle* key_data) = 0;
 
     // Called when the user clicks on an item in the candidate list.
     virtual void OnCandidateClicked(const std::string& engine_id,
@@ -171,6 +176,10 @@ class InputMethodEngine {
 
   // Returns true if this IME is active, false if not.
   virtual bool IsActive() const = 0;
+
+  // Inform the engine that a key event has been processed.
+  virtual void KeyEventDone(input_method::KeyEventHandle* key_data,
+                            bool handled) = 0;
 
   // Create an IME engine.
   static InputMethodEngine* CreateEngine(

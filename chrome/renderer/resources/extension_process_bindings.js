@@ -415,6 +415,35 @@ var chrome = chrome || {};
     customBindings['ContentSetting'] = ContentSetting;
   }
 
+  function setupInputEvents() {
+    chrome.experimental.input.onKeyEvent.dispatch =
+        function(engineID, keyData) {
+      var args = Array.prototype.slice.call(arguments);
+      if (this.validate_) {
+        var validationErrors = this.validate_(args);
+        if (validationErrors) {
+          chrome.experimental.input.eventHandled(requestId, false);
+          return validationErrors;
+        }
+      }
+      if (this.listeners_.length > 1) {
+        console.error("Too many listeners for 'onKeyEvent': " + e.stack);
+        chrome.experimental.input.eventHandled(requestId, false);
+        return;
+      }
+      for (var i = 0; i < this.listeners_.length; i++) {
+        try {
+          var requestId = keyData.requestId;
+          var result = this.listeners_[i].apply(null, args);
+          chrome.experimental.input.eventHandled(requestId, result);
+        } catch (e) {
+          console.error("Error in event handler for 'onKeyEvent': " + e.stack);
+          chrome.experimental.input.eventHandled(requestId, false);
+        }
+      }
+    };
+  }
+
   // Page action events send (pageActionId, {tabId, tabUrl}).
   function setupPageActionEvents(extensionId) {
     var pageActions = GetCurrentPageActions(extensionId);
@@ -1021,6 +1050,7 @@ var chrome = chrome || {};
     setupPageActionEvents(extensionId);
     setupToolstripEvents(GetRenderViewId());
     setupHiddenContextMenuEvent(extensionId);
+    setupInputEvents();
     setupOmniboxEvents();
     setupTtsEvents();
   });

@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/extension_input_ime_api.h"
 
 #include "base/json/json_writer.h"
+#include "base/string_number_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/input_method/input_method_engine.h"
 #include "chrome/browser/extensions/extension_event_router.h"
@@ -115,12 +116,18 @@ class ImeObserver : public chromeos::InputMethodEngine::Observer {
   }
 
   virtual void OnKeyEvent(const std::string& engine_id,
-                          const InputMethodEngine::KeyboardEvent& event) {
+                          const InputMethodEngine::KeyboardEvent& event,
+                          chromeos::input_method::KeyEventHandle* key_data) {
     if (profile_ == NULL || extension_id_.empty())
       return;
 
+    std::string request_id =
+        ExtensionInputImeEventRouter::GetInstance()->AddRequest(engine_id,
+                                                                key_data);
+
     DictionaryValue* dict = new DictionaryValue();
     dict->SetString("type", event.type);
+    dict->SetString("requestId", request_id);
     dict->SetString("key", event.key);
     dict->SetString("keyCode", event.key_code);
     dict->SetBoolean("altKey", event.alt_key);
@@ -200,7 +207,8 @@ ExtensionInputImeEventRouter::GetInstance() {
   return Singleton<ExtensionInputImeEventRouter>::get();
 }
 
-ExtensionInputImeEventRouter::ExtensionInputImeEventRouter() {
+ExtensionInputImeEventRouter::ExtensionInputImeEventRouter()
+  : next_request_id_(1) {
 }
 
 ExtensionInputImeEventRouter::~ExtensionInputImeEventRouter() {
@@ -294,6 +302,40 @@ chromeos::InputMethodEngine* ExtensionInputImeEventRouter::GetActiveEngine(
     }
   }
   return NULL;
+}
+
+void ExtensionInputImeEventRouter::OnEventHandled(
+    const std::string& extension_id,
+    const std::string& request_id,
+    bool handled) {
+  RequestMap::iterator request = request_map_.find(request_id);
+  if (request == request_map_.end()) {
+    LOG(ERROR) << "Request ID not found: " << request_id;
+    return;
+  }
+
+  std::string engine_id = request->second.first;
+  chromeos::input_method::KeyEventHandle* key_data = request->second.second;
+  request_map_.erase(request);
+
+  chromeos::InputMethodEngine* engine = GetEngine(extension_id, engine_id);
+  if (!engine) {
+    LOG(ERROR) << "Engine does not exist: " << engine_id;
+    return;
+  }
+
+  engine->KeyEventDone(key_data, handled);
+}
+
+std::string ExtensionInputImeEventRouter::AddRequest(
+    const std::string& engine_id,
+    chromeos::input_method::KeyEventHandle* key_data) {
+  std::string request_id = base::IntToString(next_request_id_);
+  ++next_request_id_;
+
+  request_map_[request_id] = std::make_pair(engine_id, key_data);
+
+  return request_id;
 }
 
 bool SetCompositionFunction::RunImpl() {
@@ -629,6 +671,19 @@ bool SetMenuItemsFunction::RunImpl() {
 
 bool UpdateMenuItemsFunction::RunImpl() {
   // TODO
+  return true;
+}
+
+bool InputEventHandled::RunImpl() {
+  std::string request_id_str;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &request_id_str));
+
+  bool handled = false;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetBoolean(1, &handled));
+
+  ExtensionInputImeEventRouter::GetInstance()->OnEventHandled(
+      extension_id(), request_id_str, handled);
+
   return true;
 }
 #endif

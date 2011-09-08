@@ -14,6 +14,8 @@
 namespace chromeos {
 namespace input_method {
 
+struct KeyEventHandle;
+
 // IBusEngineController is used to encapsulate an ibus engine.
 class IBusEngineController {
  public:
@@ -22,7 +24,8 @@ class IBusEngineController {
     // Called when a key is pressed or released.
     virtual void OnKeyEvent(bool key_press, unsigned int keyval,
                             unsigned int keycode, bool alt_key,
-                            bool ctrl_key, bool shift_key) = 0;
+                            bool ctrl_key, bool shift_key,
+                            KeyEventHandle* key_data) = 0;
 
     // Called when the engine should reset its internal state.
     virtual void OnReset() = 0;
@@ -114,6 +117,9 @@ class IBusEngineController {
 
   // Set the posistion of the cursor in the candidate window.
   virtual void SetCursorPosition(unsigned int position) = 0;
+
+  // Inform the engine that a key event has been processed.
+  virtual void KeyEventDone(KeyEventHandle* key_data, bool handled) = 0;
 };
 
 }  // namespace input_method

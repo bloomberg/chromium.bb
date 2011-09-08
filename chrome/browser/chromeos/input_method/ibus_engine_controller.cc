@@ -32,7 +32,7 @@ namespace input_method {
   (G_TYPE_CHECK_CLASS_TYPE((klass), IBUS_TYPE_CHROMEOS_ENGINE))
 #define IBUS_CHROMEOS_ENGINE_GET_CLASS(obj)                      \
   (G_TYPE_INSTANCE_GET_CLASS((obj), IBUS_TYPE_CHROMEOS_ENGINE,   \
-                             IBusChromeOSEngine))
+                             IBusChromeOSEngineClass))
 
 class IBusEngineControllerImpl;
 struct IBusChromeOSEngine {
@@ -332,6 +332,15 @@ class IBusEngineControllerImpl : public IBusEngineController {
     }
   }
 
+  virtual void KeyEventDone(KeyEventHandle* key_data, bool handled) {
+    GDBusMethodInvocation* invocation =
+        reinterpret_cast<GDBusMethodInvocation*>(key_data);
+
+    g_dbus_method_invocation_return_value(invocation,
+                                          g_variant_new("(b)", handled));
+  }
+
+
   static void InitEngineClass(IBusChromeOSEngineClass *klass) {
     GObjectClass *object_class = G_OBJECT_CLASS(klass);
     IBusObjectClass *ibus_object_class = IBUS_OBJECT_CLASS(klass);
@@ -340,7 +349,9 @@ class IBusEngineControllerImpl : public IBusEngineController {
     object_class->constructor = EngineConstructor;
     ibus_object_class->destroy = (IBusObjectDestroyFunc) OnDestroy;
 
-    engine_class->process_key_event = OnProcessKeyEvent;
+    IBUS_SERVICE_CLASS(klass)->service_method_call = OnServiceMethodCall;
+
+    engine_class->process_key_event = NULL;
     engine_class->reset = OnReset;
     engine_class->enable = OnEnable;
     engine_class->disable = OnDisable;
@@ -439,17 +450,51 @@ class IBusEngineControllerImpl : public IBusEngineController {
     return true;
   }
 
-  static gboolean OnProcessKeyEvent(IBusEngine* ibus_engine, guint keyval,
-                                    guint keycode, guint modifiers) {
+  static void OnServiceMethodCall(IBusService* service,
+                                  GDBusConnection* connection,
+                                  const gchar* sender,
+                                  const gchar* object_path,
+                                  const gchar* interface_name,
+                                  const gchar* method_name,
+                                  GVariant* parameters,
+                                  GDBusMethodInvocation* invocation) {
+    if (g_strcmp0(method_name, "ProcessKeyEvent") == 0) {
+      // Override the default ProcessKeyEvent handler so that we can send the
+      // response asynchronously.
+      IBusEngine *engine = IBUS_ENGINE(service);
+
+      guint keyval;
+      guint keycode;
+      guint state;
+      g_variant_get(parameters, "(uuu)", &keyval, &keycode, &state);
+
+      OnProcessKeyEvent(engine, keyval, keycode, state, invocation);
+    } else {
+      IBUS_SERVICE_CLASS(
+          ibus_chromeos_engine_parent_class)->service_method_call(
+              service,
+              connection,
+              sender,
+              object_path,
+              interface_name,
+              method_name,
+              parameters,
+              invocation);
+    }
+  }
+
+  static void OnProcessKeyEvent(IBusEngine* ibus_engine, guint keyval,
+                                guint keycode, guint modifiers,
+                                GDBusMethodInvocation* key_data) {
     VLOG(1) << "OnProcessKeyEvent";
-    // TODO: Use async version.
     IBusChromeOSEngine* engine = IBUS_CHROMEOS_ENGINE(ibus_engine);
-    engine->connection->observer_->OnKeyEvent(!(modifiers & IBUS_RELEASE_MASK),
-                                              keyval, keycode,
-                                              modifiers & IBUS_MOD1_MASK,
-                                              modifiers & IBUS_CONTROL_MASK,
-                                              modifiers & IBUS_SHIFT_MASK);
-    return true;
+    engine->connection->observer_->OnKeyEvent(
+        !(modifiers & IBUS_RELEASE_MASK),
+        keyval, keycode,
+        modifiers & IBUS_MOD1_MASK,
+        modifiers & IBUS_CONTROL_MASK,
+        modifiers & IBUS_SHIFT_MASK,
+        reinterpret_cast<KeyEventHandle*>(key_data));
   }
 
   static void OnReset(IBusEngine* ibus_engine) {

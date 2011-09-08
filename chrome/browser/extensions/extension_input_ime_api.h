@@ -37,8 +37,18 @@ class ExtensionInputImeEventRouter {
   chromeos::InputMethodEngine* GetActiveEngine(const std::string& extension_id);
 
 
+  // Called when a key event was handled.
+  void OnEventHandled(const std::string& extension_id,
+                      const std::string& request_id,
+                      bool handled);
+
+  std::string AddRequest(const std::string& engine_id,
+                         chromeos::input_method::KeyEventHandle* key_data);
+
  private:
   friend struct DefaultSingletonTraits<ExtensionInputImeEventRouter>;
+  typedef std::map<std::string, std::pair<std::string,
+          chromeos::input_method::KeyEventHandle*> > RequestMap;
 
   ExtensionInputImeEventRouter();
   ~ExtensionInputImeEventRouter();
@@ -47,6 +57,9 @@ class ExtensionInputImeEventRouter {
       engines_;
   std::map<std::string, std::map<std::string, chromeos::ImeObserver*> >
       observers_;
+
+  unsigned int next_request_id_;
+  RequestMap request_map_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionInputImeEventRouter);
 };
@@ -109,6 +122,12 @@ class UpdateMenuItemsFunction : public AsyncExtensionFunction {
   virtual bool RunImpl();
   DECLARE_EXTENSION_FUNCTION_NAME(
       "experimental.input.updateMenuItems");
+};
+
+class InputEventHandled : public AsyncExtensionFunction {
+ public:
+  virtual bool RunImpl();
+  DECLARE_EXTENSION_FUNCTION_NAME("experimental.input.eventHandled");
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_INPUT_IME_API_H_

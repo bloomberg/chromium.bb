@@ -2823,6 +2823,7 @@
         "description": "See http://www.w3.org/TR/DOM-Level-3-Events/#events-KeyboardEvent",
         "properties": {
           "type": {"type": "string", "description": "One of keyup or keydown.", "enum": ["keyup", "keydown"]},
+          "requestId": {"type": "string", "description": "The ID of the request."},
           "key": {"type": "string", "description": "Value of the key being pressed"},
           "keyCode": {"type": "string", "description": "Value of the key being press, unmodified by control keys."},
           "altKey": {"type": "boolean", "optional": true, "description": "Whether or not the ALT key is pressed."},
@@ -3324,6 +3325,16 @@
             "type": "integer",
             "minimum": 0
           }
+        ]
+      },
+      {
+        "name": "eventHandled",
+        "nodoc": true,
+        "type": "function",
+        "description": "Used internally to send a response for onKeyEvent.",
+        "parameters": [
+          {"type": "string", "name": "requestId"},
+          {"type": "boolean", "name": "response"}
         ]
       }
     ],

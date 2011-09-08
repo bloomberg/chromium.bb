@@ -90,6 +90,8 @@ class InputMethodEngineImpl
   virtual bool IsActive() const {
     return active_;
   }
+  virtual void KeyEventDone(input_method::KeyEventHandle* key_data,
+                            bool handled);
 
   virtual void OnReset();
   virtual void OnEnable();
@@ -97,8 +99,9 @@ class InputMethodEngineImpl
   virtual void OnFocusIn();
   virtual void OnFocusOut();
   virtual void OnKeyEvent(bool key_press, unsigned int keyval,
-                          unsigned int keycode, bool alt_key,
-                          bool ctrl_key, bool shift_key);
+                          unsigned int keycode, bool alt_key, bool ctrl_key,
+                          bool shift_key,
+                          input_method::KeyEventHandle* key_data);
   virtual void OnPropertyActivate(const char* name, unsigned int state);
   virtual void OnCandidateClicked(unsigned int index, unsigned int button,
                                   unsigned int state);
@@ -359,6 +362,11 @@ void InputMethodEngineImpl::UpdateMenuItems(
   // TODO(zork): Implement this function
 }
 
+void InputMethodEngineImpl::KeyEventDone(input_method::KeyEventHandle* key_data,
+                                         bool handled) {
+  connection_->KeyEventDone(key_data, handled);
+}
+
 void InputMethodEngineImpl::OnReset() {
   // Ignored
 }
@@ -393,7 +401,8 @@ void InputMethodEngineImpl::OnFocusOut() {
 
 void InputMethodEngineImpl::OnKeyEvent(bool key_press, unsigned int keyval,
                                        unsigned int keycode, bool alt_key,
-                                       bool ctrl_key, bool shift_key) {
+                                       bool ctrl_key, bool shift_key,
+                                       input_method::KeyEventHandle* key_data) {
   KeyboardEvent event;
   event.type = key_press ? "keydown" : "keyup";
   event.key = input_method::GetIBusKey(keyval);
@@ -401,7 +410,7 @@ void InputMethodEngineImpl::OnKeyEvent(bool key_press, unsigned int keyval,
   event.alt_key = alt_key;
   event.ctrl_key = ctrl_key;
   event.shift_key = shift_key;
-  observer_->OnKeyEvent(engine_id_, event);
+  observer_->OnKeyEvent(engine_id_, event, key_data);
 }
 
 void InputMethodEngineImpl::OnPropertyActivate(const char* name,
