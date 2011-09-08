@@ -2900,6 +2900,11 @@ FileManager.prototype = {
         event.preventDefault();
         break;
     }
+
+    // Do not move selection in list during rename.
+    if (event.keyIdentifier == 'Up' || event.keyIdentifier == 'Down') {
+      event.stopPropagation();
+    }
   };
 
   FileManager.prototype.onRenameInputBlur_ = function(event) {
