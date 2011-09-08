@@ -187,6 +187,7 @@ extern const char kChromeUIOobeHost[];
 extern const char kChromeUIOSCreditsHost[];
 extern const char kChromeUIProxySettingsHost[];
 extern const char kChromeUIRegisterPageHost[];
+extern const char kChromeUIRotateHost[];
 extern const char kChromeUISlideshowHost[];
 extern const char kChromeUISimUnlockHost[];
 extern const char kChromeUISystemInfoHost[];

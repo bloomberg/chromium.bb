@@ -1104,6 +1104,7 @@ class VIEWS_EXPORT View : public AcceleratorTarget {
   friend class FocusManager;
   friend class ViewStorage;
   friend class Widget;
+  friend class PaintLock;
 
   // Used to track a drag. RootView passes this into
   // ProcessMousePressed/Dragged.
@@ -1229,6 +1230,11 @@ class VIEWS_EXPORT View : public AcceleratorTarget {
 
   // Accelerated painting ------------------------------------------------------
 
+  // Disables painting during time critical operations. Used by PaintLock.
+  // TODO(vollick) Ideally, the widget would not dispatch paints into the
+  // hierarchy during time critical operations and this would not be needed.
+  void set_painting_enabled(bool enabled) { painting_enabled_ = enabled; }
+
   // Returns true if this view should paint to layer.
   bool ShouldPaintToLayer() const;
 
@@ -1352,6 +1358,9 @@ class VIEWS_EXPORT View : public AcceleratorTarget {
 
   // Whether this view is enabled.
   bool enabled_;
+
+  // Whether this view is painting.
+  bool painting_enabled_;
 
   // Whether or not RegisterViewForVisibleBoundsNotification on the RootView
   // has been invoked.

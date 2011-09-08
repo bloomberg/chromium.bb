@@ -470,7 +470,7 @@ Texture* CompositorGL::CreateTexture() {
   return texture;
 }
 
-void CompositorGL::NotifyStart() {
+void CompositorGL::OnNotifyStart() {
   started_ = true;
   gl_context_->MakeCurrent(gl_surface_.get());
   glViewport(0, 0, size().width(), size().height());
@@ -484,7 +484,7 @@ void CompositorGL::NotifyStart() {
   // Do not clear in release: root layer is responsible for drawing every pixel.
 }
 
-void CompositorGL::NotifyEnd() {
+void CompositorGL::OnNotifyEnd() {
   DCHECK(started_);
   gl_surface_->SwapBuffers();
   started_ = false;

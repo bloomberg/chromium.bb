@@ -102,11 +102,11 @@ class CompositorWin : public Compositor {
 
   // Compositor:
   virtual Texture* CreateTexture() OVERRIDE;
-  virtual void NotifyStart() OVERRIDE;
-  virtual void NotifyEnd() OVERRIDE;
   virtual void Blur(const gfx::Rect& bounds) OVERRIDE;
 
  protected:
+  virtual void OnNotifyStart() OVERRIDE;
+  virtual void OnNotifyEnd() OVERRIDE;
   virtual void OnWidgetSizeChanged() OVERRIDE;
 
  private:
@@ -387,7 +387,7 @@ Texture* CompositorWin::CreateTexture() {
   return new ViewTexture(this, device_.get(), fx_.get());
 }
 
-void CompositorWin::NotifyStart() {
+void CompositorWin::OnNotifyStart() {
   ID3D10RenderTargetView* target_view = main_render_target_view_.get();
   device_->OMSetRenderTargets(1, &target_view, depth_stencil_view_.get());
 
@@ -406,7 +406,7 @@ void CompositorWin::NotifyStart() {
   device_->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 }
 
-void CompositorWin::NotifyEnd() {
+void CompositorWin::OnNotifyEnd() {
   // Copy from main_render_target_view_| (where all are rendering was done) back
   // to |dest_render_target_view_|.
   ID3D10RenderTargetView* target_view = dest_render_target_view_.get();

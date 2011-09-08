@@ -48,6 +48,7 @@
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
+#include "content/browser/sensors/sensors_provider.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "crypto/nss_util.h"
 #include "googleurl/src/gurl.h"
@@ -1491,6 +1492,26 @@ bool WillHandleBrowserAboutURL(GURL* url,
   } else if (host == chrome::kChromeUIGpuHangHost) {
     GpuProcessHost::SendOnIO(
         0, content::CAUSE_FOR_GPU_LAUNCH_ABOUT_GPUHANG, new GpuMsg_Hang());
+#if defined(OS_CHROMEOS)
+  } else if (host == chrome::kChromeUIRotateHost) {
+    sensors::ScreenOrientation change;
+    std::string query(url->query());
+    if (query == "left") {
+      change.upward = sensors::ScreenOrientation::LEFT;
+    } else if (query == "right") {
+      change.upward = sensors::ScreenOrientation::RIGHT;
+    } else if (query == "top") {
+      change.upward = sensors::ScreenOrientation::TOP;
+    } else if (query == "bottom") {
+      change.upward = sensors::ScreenOrientation::BOTTOM;
+    } else {
+      NOTREACHED() << "Unknown orientation";
+    }
+    sensors::Provider::GetInstance()->ScreenOrientationChanged(change);
+    // Nothing to communicate to the user, so show a blank page.
+    host = chrome::kChromeUIBlankHost;
+    *url = GURL(chrome::kChromeUIBlankHost);
+#endif
   }
 
   // Initialize any potentially corresponding AboutSource handler.

@@ -7,6 +7,7 @@
 #pragma once
 
 #include "base/memory/ref_counted.h"
+#include "base/observer_list.h"
 #include "ui/gfx/compositor/compositor_export.h"
 #include "ui/gfx/transform.h"
 #include "ui/gfx/native_widget_types.h"
@@ -19,6 +20,8 @@ class Rect;
 }
 
 namespace ui {
+
+class CompositorObserver;
 
 struct TextureDrawParams {
   TextureDrawParams() : transform(), blend(false), compositor_size() {}
@@ -86,10 +89,10 @@ class COMPOSITOR_EXPORT Compositor : public base::RefCounted<Compositor> {
   virtual Texture* CreateTexture() = 0;
 
   // Notifies the compositor that compositing is about to start.
-  virtual void NotifyStart() = 0;
+  void NotifyStart();
 
   // Notifies the compositor that compositing is complete.
-  virtual void NotifyEnd() = 0;
+  void NotifyEnd();
 
   // Blurs the specific region in the compositor.
   virtual void Blur(const gfx::Rect& bounds) = 0;
@@ -109,11 +112,22 @@ class COMPOSITOR_EXPORT Compositor : public base::RefCounted<Compositor> {
   // Returns the size of the widget that is being drawn to.
   const gfx::Size& size() { return size_; }
 
+  // Layers do not own observers. It is the responsibility of the observer to
+  // remove itself when it is done observing.
+  void AddObserver(CompositorObserver* observer);
+  void RemoveObserver(CompositorObserver* observer);
+
  protected:
   Compositor(CompositorDelegate* delegate, const gfx::Size& size)
       : delegate_(delegate),
         size_(size) {}
   virtual ~Compositor() {}
+
+  // Notifies the compositor that compositing is about to start.
+  virtual void OnNotifyStart() = 0;
+
+  // Notifies the compositor that compositing is complete.
+  virtual void OnNotifyEnd() = 0;
 
   virtual void OnWidgetSizeChanged() = 0;
 
@@ -122,6 +136,8 @@ class COMPOSITOR_EXPORT Compositor : public base::RefCounted<Compositor> {
  private:
   CompositorDelegate* delegate_;
   gfx::Size size_;
+
+  ObserverList<CompositorObserver> observer_list_;
 
   friend class base::RefCounted<Compositor>;
 };

@@ -9,6 +9,7 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/gfx/point.h"
+#include "ui/gfx/point3.h"
 #include "ui/gfx/transform.h"
 
 namespace ui {
@@ -41,6 +42,11 @@ class UI_EXPORT InterpolatedTransform {
   // This function takes ownership of the passed InterpolatedTransform.
   void SetChild(InterpolatedTransform* child);
 
+  static bool FactorTRS(const ui::Transform& transform,
+                        gfx::Point* translation,
+                        float* rotation,
+                        gfx::Point3f* scale);
+
  protected:
   // Calculates the interpolated transform without considering our child.
   virtual ui::Transform InterpolateButDoNotCompose(float t) const = 0;
@@ -52,6 +58,9 @@ class UI_EXPORT InterpolatedTransform {
   // If time < start_time_ it returns start_value, and if time >= end_time_
   // it returns end_value.
   float ValueBetween(float time, float start_value, float end_value) const;
+
+  float start_time() const { return start_time_; }
+  float end_time() const { return end_time_; }
 
  private:
   const float start_time_;
@@ -100,8 +109,12 @@ class UI_EXPORT InterpolatedRotation : public InterpolatedTransform {
 class UI_EXPORT InterpolatedScale : public InterpolatedTransform {
  public:
   InterpolatedScale(float start_scale, float end_scale);
-  InterpolatedScale(float start_scale,
-                    float end_scale,
+  InterpolatedScale(float start_scale, float end_scale,
+                    float start_time, float end_time);
+  InterpolatedScale(const gfx::Point3f& start_scale,
+                    const gfx::Point3f& end_scale);
+  InterpolatedScale(const gfx::Point3f& start_scale,
+                    const gfx::Point3f& end_scale,
                     float start_time,
                     float end_time);
   virtual ~InterpolatedScale();
@@ -110,8 +123,8 @@ class UI_EXPORT InterpolatedScale : public InterpolatedTransform {
   virtual ui::Transform InterpolateButDoNotCompose(float t) const OVERRIDE;
 
  private:
-  const float start_scale_;
-  const float end_scale_;
+  const gfx::Point3f start_scale_;
+  const gfx::Point3f end_scale_;
 
   DISALLOW_COPY_AND_ASSIGN(InterpolatedScale);
 };
@@ -181,7 +194,7 @@ class UI_EXPORT InterpolatedTransformAboutPivot : public InterpolatedTransform {
   virtual ~InterpolatedTransformAboutPivot();
 
  protected:
-  virtual ui::Transform InterpolateButDoNotCompose(float t) const OVERRIDE;
+  virtual Transform InterpolateButDoNotCompose(float t) const OVERRIDE;
 
  private:
   void Init(const gfx::Point& pivot, InterpolatedTransform* transform);
@@ -189,6 +202,28 @@ class UI_EXPORT InterpolatedTransformAboutPivot : public InterpolatedTransform {
   scoped_ptr<InterpolatedTransform> transform_;
 
   DISALLOW_COPY_AND_ASSIGN(InterpolatedTransformAboutPivot);
+};
+
+class UI_EXPORT InterpolatedTRSTransform : public InterpolatedTransform {
+ public:
+  InterpolatedTRSTransform(const Transform& start_transform,
+                           const Transform& end_transform);
+
+  InterpolatedTRSTransform(const Transform& start_transform,
+                           const Transform& end_transform,
+                           float start_time,
+                           float end_time);
+
+  virtual ~InterpolatedTRSTransform();
+
+ protected:
+  virtual Transform InterpolateButDoNotCompose(float t) const OVERRIDE;
+
+ private:
+  void Init(const ui::Transform& start_transform,
+            const ui::Transform& end_transform);
+
+  scoped_ptr<InterpolatedTransform> transform_;
 };
 
 } // namespace ui

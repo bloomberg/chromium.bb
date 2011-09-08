@@ -3,14 +3,28 @@
 // found in the LICENSE file.
 
 #include "ui/gfx/compositor/compositor.h"
+#include "ui/gfx/compositor/compositor_observer.h"
 
 namespace ui {
 
-// static
-Compositor* Compositor::Create(CompositorDelegate* delegate,
-                               gfx::AcceleratedWidget widget,
-                               const gfx::Size& size) {
-  return NULL;
+void Compositor::NotifyStart() {
+  OnNotifyStart();
 }
+
+void Compositor::NotifyEnd() {
+  OnNotifyEnd();
+  FOR_EACH_OBSERVER(CompositorObserver,
+                    observer_list_,
+                    OnCompositingEnded());
+}
+
+void Compositor::AddObserver(CompositorObserver* observer) {
+  observer_list_.AddObserver(observer);
+}
+
+void Compositor::RemoveObserver(CompositorObserver* observer) {
+  observer_list_.RemoveObserver(observer);
+}
+
 
 }  // namespace ui

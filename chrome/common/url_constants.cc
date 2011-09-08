@@ -189,6 +189,7 @@ const char kChromeUIOobeHost[] = "oobe";
 const char kChromeUIOSCreditsHost[] = "os-credits";
 const char kChromeUIProxySettingsHost[] = "proxy-settings";
 const char kChromeUIRegisterPageHost[] = "register";
+const char kChromeUIRotateHost[] = "rotate";
 const char kChromeUISlideshowHost[] = "slideshow";
 const char kChromeUISimUnlockHost[] = "sim-unlock";
 const char kChromeUISystemInfoHost[] = "system";

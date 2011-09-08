@@ -4,8 +4,20 @@
 
 #include "ui/gfx/interpolated_transform.h"
 
+#include <cmath>
+
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
+
 #include "base/logging.h"
 #include "ui/base/animation/tween.h"
+
+namespace {
+
+static const float EPSILON = 1e-6f;
+
+} // namespace
 
 namespace ui {
 
@@ -36,6 +48,61 @@ ui::Transform InterpolatedTransform::Interpolate(float t) const {
 
 void InterpolatedTransform::SetChild(InterpolatedTransform* child) {
   child_.reset(child);
+}
+
+bool InterpolatedTransform::FactorTRS(const ui::Transform& transform,
+                                      gfx::Point* translation,
+                                      float* rotation,
+                                      gfx::Point3f* scale) {
+  const SkMatrix44& m = transform.matrix();
+  float m00 = m.get(0, 0);
+  float m01 = m.get(0, 1);
+  float m10 = m.get(1, 0);
+  float m11 = m.get(1, 1);
+
+  // A factorable 2D TRS matrix must be of the form:
+  //    [ sx*cos_theta -(sy*sin_theta) 0 tx ]
+  //    [ sx*sin_theta   sy*cos_theta  0 ty ]
+  //    [ 0              0             1 0  ]
+  //    [ 0              0             0 1  ]
+  if (m.get(0, 2) != 0 ||
+      m.get(1, 2) != 0 ||
+      m.get(2, 0) != 0 ||
+      m.get(2, 1) != 0 ||
+      m.get(2, 2) != 1 ||
+      m.get(2, 3) != 0 ||
+      m.get(3, 0) != 0 ||
+      m.get(3, 1) != 0 ||
+      m.get(3, 2) != 0 ||
+      m.get(3, 3) != 1) {
+    return false;
+  }
+
+  float scale_x = sqrt(m00 * m00 + m10 * m10);
+  float scale_y = sqrt(m01 * m01 + m11 * m11);
+
+  if (scale_x == 0 || scale_y == 0)
+    return false;
+
+  float cos_theta = m00 / scale_x;
+  float sin_theta = m10 / scale_x;
+
+  if ((fabs(cos_theta - (m11 / scale_y))) > EPSILON ||
+      (fabs(sin_theta + (m01 / scale_y))) > EPSILON ||
+      (fabs(cos_theta*cos_theta + sin_theta*sin_theta - 1.0f) > EPSILON)) {
+    return false;
+  }
+
+  float radians = atan2(sin_theta, cos_theta);
+
+  if (translation)
+    *translation = gfx::Point(m.get(0, 3), m.get(1, 3));
+  if (rotation)
+    *rotation = radians * 180 / M_PI;
+  if (scale)
+    *scale = gfx::Point3f(scale_x, scale_y, 1.0f);
+
+  return true;
 }
 
 inline float InterpolatedTransform::ValueBetween(float time,
@@ -94,15 +161,28 @@ ui::Transform InterpolatedRotation::InterpolateButDoNotCompose(float t) const {
 // InterpolatedScale
 //
 
-InterpolatedScale::InterpolatedScale(float start_scale,
-                                     float end_scale)
+InterpolatedScale::InterpolatedScale(float start_scale, float end_scale)
+    : InterpolatedTransform(),
+      start_scale_(gfx::Point3f(start_scale, start_scale, start_scale)),
+      end_scale_(gfx::Point3f(end_scale, end_scale, end_scale)) {
+}
+
+InterpolatedScale::InterpolatedScale(float start_scale, float end_scale,
+                                     float start_time, float end_time)
+    : InterpolatedTransform(start_time, end_time),
+      start_scale_(gfx::Point3f(start_scale, start_scale, start_scale)),
+      end_scale_(gfx::Point3f(end_scale, end_scale, end_scale)) {
+}
+
+InterpolatedScale::InterpolatedScale(const gfx::Point3f& start_scale,
+                                     const gfx::Point3f& end_scale)
     : InterpolatedTransform(),
       start_scale_(start_scale),
       end_scale_(end_scale) {
 }
 
-InterpolatedScale::InterpolatedScale(float start_scale,
-                                     float end_scale,
+InterpolatedScale::InterpolatedScale(const gfx::Point3f& start_scale,
+                                     const gfx::Point3f& end_scale,
                                      float start_time,
                                      float end_time)
     : InterpolatedTransform(start_time, end_time),
@@ -114,9 +194,10 @@ InterpolatedScale::~InterpolatedScale() {}
 
 ui::Transform InterpolatedScale::InterpolateButDoNotCompose(float t) const {
   ui::Transform result;
-  float interpolated_scale = ValueBetween(t, start_scale_, end_scale_);
+  float scale_x = ValueBetween(t, start_scale_.x(), end_scale_.x());
+  float scale_y = ValueBetween(t, start_scale_.y(), end_scale_.y());
   // TODO(vollick) 3d xforms.
-  result.SetScale(interpolated_scale, interpolated_scale);
+  result.SetScale(scale_x, scale_y);
   return result;
 }
 
@@ -196,7 +277,7 @@ InterpolatedTransformAboutPivot::InterpolateButDoNotCompose(float t) const {
   if (transform_.get()) {
     return transform_->Interpolate(t);
   }
-  return ui::Transform();
+  return Transform();
 }
 
 void InterpolatedTransformAboutPivot::Init(const gfx::Point& pivot,
@@ -214,6 +295,65 @@ void InterpolatedTransformAboutPivot::Init(const gfx::Point& pivot,
   pre_transform->SetChild(xform);
   xform->SetChild(post_transform.release());
   transform_.reset(pre_transform.release());
+}
+
+InterpolatedTRSTransform::InterpolatedTRSTransform(
+    const ui::Transform& start_transform,
+    const ui::Transform& end_transform)
+    : InterpolatedTransform() {
+  Init(start_transform, end_transform);
+}
+
+InterpolatedTRSTransform::InterpolatedTRSTransform(
+    const ui::Transform& start_transform,
+    const ui::Transform& end_transform,
+    float start_time,
+    float end_time)
+    : InterpolatedTransform() {
+  Init(start_transform, end_transform);
+}
+
+InterpolatedTRSTransform::~InterpolatedTRSTransform() {}
+
+ui::Transform
+InterpolatedTRSTransform::InterpolateButDoNotCompose(float t) const {
+  if (transform_.get()) {
+    return transform_->Interpolate(t);
+  }
+  return Transform();
+}
+
+void InterpolatedTRSTransform::Init(const Transform& start_transform,
+                                    const Transform& end_transform) {
+  gfx::Point start_translation, end_translation;
+  gfx::Point3f start_scale, end_scale;
+  float start_degrees, end_degrees;
+  if (FactorTRS(start_transform,
+                &start_translation,
+                &start_degrees,
+                &start_scale) &&
+      FactorTRS(end_transform,
+                &end_translation,
+                &end_degrees,
+                &end_scale)) {
+    scoped_ptr<InterpolatedTranslation> translation(
+        new InterpolatedTranslation(start_translation, end_translation,
+                                    start_time(), end_time()));
+
+    scoped_ptr<InterpolatedScale> scale(
+        new InterpolatedScale(start_scale, end_scale,
+                              start_time(), end_time()));
+
+    scoped_ptr<InterpolatedRotation> rotation(
+        new InterpolatedRotation(start_degrees, end_degrees,
+                                 start_time(), end_time()));
+
+    rotation->SetChild(translation.release());
+    scale->SetChild(rotation.release());
+    transform_.reset(scale.release());
+  } else {
+    transform_.reset(new InterpolatedConstantTransform(end_transform));
+  }
 }
 
 } // namespace ui

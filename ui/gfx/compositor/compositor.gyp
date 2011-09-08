@@ -39,6 +39,8 @@
         'compositor_export.h',
         'compositor_gl.cc',
         'compositor_gl.h',
+        'compositor_observer.h',
+        'compositor_stub.cc',
         'compositor_win.cc',
         'layer.cc',
         'layer.h',
@@ -48,12 +50,12 @@
       'conditions': [
         ['os_posix == 1 and OS != "mac"', {
           'sources!': [
-            'compositor.cc',
+            'compositor_stub.cc',
           ],
         }],
         ['OS == "win" and views_compositor == 1', {
           'sources!': [
-            'compositor.cc',
+            'compositor_stub.cc',
           ],
           # TODO(sky): before we make this real need to remove
           # IDR_BITMAP_BRUSH_IMAGE.

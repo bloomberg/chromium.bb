@@ -18,6 +18,16 @@ void CheckApproximatelyEqual(const ui::Transform& lhs,
   }
 }
 
+float NormalizeAngle(float angle) {
+  while (angle < 0.0f) {
+    angle += 360.0f;
+  }
+  while (angle > 360.0f) {
+    angle -= 360.0f;
+  }
+  return angle;
+}
+
 } // namespace
 
 TEST(InterpolatedTransformTest, InterpolatedRotation) {
@@ -36,9 +46,10 @@ TEST(InterpolatedTransformTest, InterpolatedRotation) {
 }
 
 TEST(InterpolatedTransformTest, InterpolatedScale) {
-  ui::InterpolatedScale interpolated_scale(0, 100);
+  ui::InterpolatedScale interpolated_scale(gfx::Point3f(0, 0, 0),
+                                           gfx::Point3f(100, 100, 100));
   ui::InterpolatedScale interpolated_scale_diff_start_end(
-      0, 100, 100, 200);
+      gfx::Point3f(0, 0, 0), gfx::Point3f(100, 100, 100), 100, 200);
 
   for (int i = 0; i <= 100; ++i) {
     ui::Transform scale;
@@ -90,7 +101,7 @@ TEST(InterpolatedTransformTest, InterpolatedScaleAboutPivot) {
   gfx::Point above_pivot(100, 200);
   ui::InterpolatedTransformAboutPivot interpolated_xform(
       pivot,
-      new ui::InterpolatedScale(1, 2));
+      new ui::InterpolatedScale(gfx::Point3f(1, 1, 1), gfx::Point3f(2, 2, 2)));
   ui::Transform result = interpolated_xform.Interpolate(0.0f);
   CheckApproximatelyEqual(ui::Transform(), result);
   result = interpolated_xform.Interpolate(1.0f);
@@ -100,4 +111,29 @@ TEST(InterpolatedTransformTest, InterpolatedScaleAboutPivot) {
   expected_result = gfx::Point(100, 300);
   result.TransformPoint(above_pivot);
   EXPECT_EQ(expected_result, above_pivot);
+}
+
+TEST(InterpolatedTransformTest, FactorTRS) {
+  for (int degrees = 0; degrees < 360; ++degrees) {
+    // build a transformation matrix.
+    ui::Transform transform;
+    transform.SetScale(degrees + 1, 2 * degrees + 1);
+    transform.ConcatRotate(degrees);
+    transform.ConcatTranslate(degrees * 2, -degrees * 3);
+
+    // factor the matrix
+    gfx::Point translation;
+    float rotation;
+    gfx::Point3f scale;
+    bool success = ui::InterpolatedTransform::FactorTRS(transform,
+                                                        &translation,
+                                                        &rotation,
+                                                        &scale);
+    EXPECT_TRUE(success);
+    EXPECT_FLOAT_EQ(translation.x(), degrees * 2);
+    EXPECT_FLOAT_EQ(translation.y(), -degrees * 3);
+    EXPECT_FLOAT_EQ(NormalizeAngle(rotation), degrees);
+    EXPECT_FLOAT_EQ(scale.x(), degrees + 1);
+    EXPECT_FLOAT_EQ(scale.y(), 2 * degrees + 1);
+  }
 }

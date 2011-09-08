@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
@@ -104,6 +105,7 @@ View::View()
       parent_(NULL),
       visible_(true),
       enabled_(true),
+      painting_enabled_(true),
       registered_for_visible_bounds_notification_(false),
       clip_x_(0.0),
       clip_y_(0.0),
@@ -680,7 +682,7 @@ void View::SchedulePaint() {
 }
 
 void View::SchedulePaintInRect(const gfx::Rect& rect) {
-  if (!IsVisible())
+  if (!IsVisible() || !painting_enabled_)
     return;
 
   MarkLayerDirty();
@@ -688,7 +690,8 @@ void View::SchedulePaintInRect(const gfx::Rect& rect) {
 }
 
 void View::Paint(gfx::Canvas* canvas) {
-  if (!IsVisible())
+  TRACE_EVENT0("View", "Paint");
+  if (!IsVisible() || !painting_enabled_)
     return;
 
   ScopedCanvas scoped_canvas(NULL);
@@ -1168,7 +1171,7 @@ void View::PaintComposite() {
 }
 
 void View::SchedulePaintInternal(const gfx::Rect& rect) {
-  if (parent_ && parent_->IsVisible()) {
+  if (parent_ && parent_->IsVisible() && painting_enabled_) {
     // Translate the requested paint rect to the parent's coordinate system
     // then pass this notification up to the parent.
     parent_->SchedulePaintInternal(ConvertRectToParent(rect));
