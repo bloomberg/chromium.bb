@@ -1313,6 +1313,8 @@ void Browser::WindowFullscreenStateChanged() {
   MessageLoop::current()->PostTask(
       FROM_HERE, method_factory_.NewRunnableMethod(
       &Browser::NotifyFullscreenChange));
+  if (!window_->IsFullscreen())
+    NotifyTabOfFullscreenExitIfNecessary();
 }
 
 void Browser::NotifyFullscreenChange() {
@@ -1669,8 +1671,6 @@ void Browser::ConvertPopupToTabbedBrowser() {
 }
 
 void Browser::ToggleFullscreenMode() {
-  bool entering_fullscreen = !window_->IsFullscreen();
-
 #if !defined(OS_MACOSX)
   // In kiosk mode, we always want to be fullscreen. When the browser first
   // starts we're not yet fullscreen, so let the initial toggle go through.
@@ -1680,7 +1680,7 @@ void Browser::ToggleFullscreenMode() {
 #endif
 
   UserMetrics::RecordAction(UserMetricsAction("ToggleFullscreen"));
-  window_->SetFullscreen(entering_fullscreen);
+  window_->SetFullscreen(!window_->IsFullscreen());
 
   // Once the window has become fullscreen it'll call back to
   // WindowFullscreenStateChanged(). We don't do this immediately as
@@ -1692,9 +1692,6 @@ void Browser::ToggleFullscreenMode() {
 #if defined(OS_MACOSX)
   WindowFullscreenStateChanged();
 #endif
-
-  if (!entering_fullscreen)
-    NotifyTabOfFullscreenExitIfNecessary();
 }
 
 void Browser::NotifyTabOfFullscreenExitIfNecessary() {
