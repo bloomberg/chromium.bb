@@ -1,4 +1,4 @@
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -9,8 +9,6 @@ import glob
 import logging
 import os
 import re
-import shutil
-import subprocess
 import sys
 import tempfile
 import time
@@ -90,8 +88,8 @@ def determine_scm(root):
 class GIT(object):
   @staticmethod
   def Capture(args, **kwargs):
-    return gclient_utils.CheckCall(['git'] + args, print_error=False,
-        **kwargs)[0]
+    return subprocess2.check_output(
+        ['git'] + args, stderr=subprocess2.VOID, **kwargs)
 
   @staticmethod
   def CaptureStatus(files, upstream_branch=None):
@@ -133,7 +131,7 @@ class GIT(object):
     # should be fine for now, users should simply configure their git settings.
     try:
       return GIT.Capture(['config', 'user.email'], cwd=cwd).strip()
-    except gclient_utils.CheckCallError:
+    except subprocess2.CalledProcessError:
       return ''
 
   @staticmethod
@@ -158,7 +156,7 @@ class GIT(object):
     try:
       GIT.Capture(['config', '--get-regexp', r'^svn-remote\.'], cwd=cwd)
       return True
-    except gclient_utils.CheckCallError:
+    except subprocess2.CalledProcessError:
       return False
 
   @staticmethod
@@ -218,7 +216,7 @@ class GIT(object):
     # pipe at a time.
     # The -100 is an arbitrary limit so we don't search forever.
     cmd = ['git', 'log', '-100', '--pretty=medium']
-    proc = gclient_utils.Popen(cmd, stdout=subprocess.PIPE)
+    proc = subprocess2.Popen(cmd, stdout=subprocess2.PIPE)
     url = None
     for line in proc.stdout:
       match = git_svn_re.match(line)
@@ -241,7 +239,7 @@ class GIT(object):
                 ['config', 'svn-remote.%s.fetch' % remote],
                 cwd=cwd).strip()
             branch = GIT.MatchSvnGlob(url, base_url, fetch_spec, False)
-          except gclient_utils.CheckCallError:
+          except subprocess2.CalledProcessError:
             branch = None
           if branch:
             return branch
@@ -250,7 +248,7 @@ class GIT(object):
                 ['config', 'svn-remote.%s.branches' % remote],
                 cwd=cwd).strip()
             branch = GIT.MatchSvnGlob(url, base_url, branch_spec, True)
-          except gclient_utils.CheckCallError:
+          except subprocess2.CalledProcessError:
             branch = None
           if branch:
             return branch
@@ -259,7 +257,7 @@ class GIT(object):
                 ['config', 'svn-remote.%s.tags' % remote],
                 cwd=cwd).strip()
             branch = GIT.MatchSvnGlob(url, base_url, tag_spec, True)
-          except gclient_utils.CheckCallError:
+          except subprocess2.CalledProcessError:
             branch = None
           if branch:
             return branch
@@ -275,25 +273,25 @@ class GIT(object):
     try:
       upstream_branch = GIT.Capture(
           ['config', 'branch.%s.merge' % branch], cwd=cwd).strip()
-    except (gclient_utils.Error, subprocess2.CalledProcessError):
+    except subprocess2.CalledProcessError:
       upstream_branch = None
     if upstream_branch:
       try:
         remote = GIT.Capture(
             ['config', 'branch.%s.remote' % branch], cwd=cwd).strip()
-      except (gclient_utils.Error, subprocess2.CalledProcessError):
+      except subprocess2.CalledProcessError:
         pass
     else:
       try:
         upstream_branch = GIT.Capture(
             ['config', 'rietveld.upstream-branch'], cwd=cwd).strip()
-      except (gclient_utils.Error, subprocess2.CalledProcessError):
+      except subprocess2.CalledProcessError:
         upstream_branch = None
       if upstream_branch:
         try:
           remote = GIT.Capture(
               ['config', 'rietveld.upstream-remote'], cwd=cwd).strip()
-        except (gclient_utils.Error, subprocess2.CalledProcessError):
+        except subprocess2.CalledProcessError:
           pass
       else:
         # Fall back on trying a git-svn upstream branch.
@@ -397,9 +395,9 @@ class SVN(object):
   def Capture(args, **kwargs):
     """Always redirect stderr.
 
-    Throws an exception if non-0 is returned."""
-    return gclient_utils.CheckCall(['svn'] + args, print_error=False,
-        **kwargs)[0]
+    Throws an exception if non-0 is returned.
+    """
+    return subprocess2.check_output(['svn'] + args, **kwargs)
 
   @staticmethod
   def RunAndGetFileList(verbose, args, cwd, file_list, stdout=None):
@@ -464,7 +462,7 @@ class SVN(object):
             always=verbose,
             filter_fn=CaptureMatchingLines,
             stdout=stdout)
-      except (gclient_utils.Error, subprocess2.CalledProcessError):
+      except subprocess2.CalledProcessError:
         def IsKnownFailure():
           for x in failure:
             if (x.startswith('svn: OPTIONS of') or
@@ -665,7 +663,7 @@ class SVN(object):
     """
     try:
       return SVN.Capture(['propget', property_name, filename])
-    except (gclient_utils.Error, subprocess2.CalledProcessError):
+    except subprocess2.CalledProcessError:
       return ''
 
   @staticmethod
@@ -691,7 +689,7 @@ class SVN(object):
                                    bogus_dir,
                                    full_move=full_move, revision=revision)
     finally:
-      shutil.rmtree(bogus_dir)
+      gclient_utils.RemoveDirectory(bogus_dir)
 
   @staticmethod
   def _DiffItemInternal(filename, info, bogus_dir, full_move=False,
@@ -741,7 +739,7 @@ class SVN(object):
         # Normal simple case.
         try:
           data = SVN.Capture(command)
-        except gclient_utils.CheckCallError:
+        except subprocess2.CalledProcessError:
           if revision:
             data = GenFakeDiff(filename)
           else:
@@ -805,7 +803,7 @@ class SVN(object):
             src = srcurl[len(root)+1:]
             try:
               srcinfo = SVN.CaptureInfo(srcurl)
-            except gclient_utils.CheckCallError, e:
+            except subprocess2.CalledProcessError, e:
               if not 'Not a valid URL' in e.stderr:
                 raise
               # Assume the file was deleted. No idea how to figure out at which
@@ -839,14 +837,14 @@ class SVN(object):
       return result
     finally:
       os.chdir(previous_cwd)
-      shutil.rmtree(bogus_dir)
+      gclient_utils.RemoveDirectory(bogus_dir)
 
   @staticmethod
   def GetEmail(repo_root):
     """Retrieves the svn account which we assume is an email address."""
     try:
       infos = SVN.CaptureInfo(repo_root)
-    except (gclient_utils.Error, subprocess2.CalledProcessError):
+    except subprocess2.CalledProcessError:
       return None
 
     # Should check for uuid but it is incorrectly saved for https creds.
@@ -908,7 +906,7 @@ class SVN(object):
       info = SVN.CaptureInfo(directory)
       cur_dir_repo_root = info['Repository Root']
       url = info['URL']
-    except (gclient_utils.Error, subprocess2.CalledProcessError):
+    except subprocess2.CalledProcessError:
       return None
     while True:
       parent = os.path.dirname(directory)
@@ -918,7 +916,7 @@ class SVN(object):
             info['URL'] != os.path.dirname(url)):
           break
         url = info['URL']
-      except (gclient_utils.Error, subprocess2.CalledProcessError):
+      except subprocess2.CalledProcessError:
         break
       directory = parent
     return GetCasedPath(directory)
@@ -973,7 +971,7 @@ class SVN(object):
           logging.info('os.remove(%s)' % file_path)
           os.remove(file_path)
         elif os.path.isdir(file_path):
-          logging.info('gclient_utils.RemoveDirectory(%s)' % file_path)
+          logging.info('RemoveDirectory(%s)' % file_path)
           gclient_utils.RemoveDirectory(file_path)
         else:
           logging.critical(
@@ -986,7 +984,7 @@ class SVN(object):
         # revert, like for properties.
         try:
           SVN.Capture(['revert', file_status[1]], cwd=repo_root)
-        except gclient_utils.CheckCallError:
+        except subprocess2.CalledProcessError:
           if not os.path.exists(file_path):
             continue
           raise
