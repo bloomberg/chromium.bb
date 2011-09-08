@@ -20,7 +20,6 @@
 #include "webkit/appcache/appcache_entry.h"
 #include "webkit/appcache/appcache_group.h"
 #include "webkit/appcache/appcache_histograms.h"
-#include "webkit/appcache/appcache_policy.h"
 #include "webkit/appcache/appcache_quota_client.h"
 #include "webkit/appcache/appcache_response.h"
 #include "webkit/appcache/appcache_service.h"
@@ -950,7 +949,7 @@ FindMainResponseTask::FindFirstValidFallback(
 }
 
 void AppCacheStorageImpl::FindMainResponseTask::RunCompleted() {
-  storage_->CheckPolicyAndCallOnMainResponseFound(
+  storage_->CallOnMainResponseFound(
       &delegates_, url_, entry_, fallback_url_, fallback_entry_,
       cache_id_, manifest_url_);
 }
@@ -1372,7 +1371,7 @@ void AppCacheStorageImpl::DeliverShortCircuitedFindMainResponse(
     scoped_refptr<DelegateReference> delegate_ref) {
   if (delegate_ref->delegate) {
     DelegateReferenceVector delegates(1, delegate_ref);
-    CheckPolicyAndCallOnMainResponseFound(
+    CallOnMainResponseFound(
         &delegates, url, found_entry,
         GURL(), AppCacheEntry(),
         cache.get() ? cache->cache_id() : kNoCacheId,
@@ -1380,29 +1379,16 @@ void AppCacheStorageImpl::DeliverShortCircuitedFindMainResponse(
   }
 }
 
-void AppCacheStorageImpl::CheckPolicyAndCallOnMainResponseFound(
+void AppCacheStorageImpl::CallOnMainResponseFound(
     DelegateReferenceVector* delegates,
     const GURL& url, const AppCacheEntry& entry,
     const GURL& fallback_url, const AppCacheEntry& fallback_entry,
     int64 cache_id, const GURL& manifest_url) {
-  if (!manifest_url.is_empty()) {
-    // Check the policy prior to returning a main resource from the appcache.
-    AppCachePolicy* policy = service()->appcache_policy();
-    if (policy && !policy->CanLoadAppCache(manifest_url)) {
-      FOR_EACH_DELEGATE(
-          (*delegates),
-          OnMainResponseFound(url, AppCacheEntry(),
-                              GURL(), AppCacheEntry(),
-                              kNoCacheId, manifest_url, true));
-      return;
-    }
-  }
-
   FOR_EACH_DELEGATE(
       (*delegates),
       OnMainResponseFound(url, entry,
                           fallback_url, fallback_entry,
-                          cache_id, manifest_url, false));
+                          cache_id, manifest_url));
 }
 
 void AppCacheStorageImpl::FindResponseForSubRequest(

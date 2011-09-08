@@ -14,7 +14,6 @@
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
 #include "webkit/appcache/appcache_group.h"
-#include "webkit/appcache/appcache_policy.h"
 
 namespace appcache {
 
@@ -300,10 +299,7 @@ AppCacheUpdateJob::AppCacheUpdateJob(AppCacheService* service,
       ALLOW_THIS_IN_INITIALIZER_LIST(manifest_data_write_callback_(
           this, &AppCacheUpdateJob::OnManifestDataWriteComplete)),
       ALLOW_THIS_IN_INITIALIZER_LIST(manifest_data_read_callback_(
-          this, &AppCacheUpdateJob::OnManifestDataReadComplete)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(policy_callback_(
-          new net::CancelableCompletionCallback<AppCacheUpdateJob>(
-              this, &AppCacheUpdateJob::OnPolicyCheckComplete))) {
+          this, &AppCacheUpdateJob::OnManifestDataReadComplete)) {
   DCHECK(group_);
   manifest_url_ = group_->manifest_url();
 }
@@ -320,8 +316,6 @@ AppCacheUpdateJob::~AppCacheUpdateJob() {
 
   if (group_)
     group_->SetUpdateStatus(AppCacheGroup::IDLE);
-
-  policy_callback_->Cancel();
 }
 
 void AppCacheUpdateJob::StartUpdate(AppCacheHost* host,
@@ -383,39 +377,7 @@ void AppCacheUpdateJob::StartUpdate(AppCacheHost* host,
                               is_new_pending_master_entry);
   }
 
-  if (update_type_ == CACHE_ATTEMPT)
-    CheckPolicy();
-  else
-    FetchManifest(true);
-}
-
-void AppCacheUpdateJob::CheckPolicy() {
-  int rv = net::OK;
-  policy_callback_->AddRef();  // Balanced in OnPolicyCheckComplete.
-  AppCachePolicy* policy = service_->appcache_policy();
-  if (policy) {
-    rv = policy->CanCreateAppCache(manifest_url_, policy_callback_);
-    if (rv == net::ERR_IO_PENDING)
-      return;
-  }
-  OnPolicyCheckComplete(rv);
-}
-
-void AppCacheUpdateJob::OnPolicyCheckComplete(int rv) {
-  policy_callback_->Release();  // Balanced in CheckPolicy.
-  if (rv == net::OK) {
-    FetchManifest(true);
-    return;
-  }
-
-  group_->NotifyContentBlocked();
-
-  const char* kErrorMessage =
-      "Cache creation was blocked by the content policy";
-  MessageLoop::current()->PostTask(FROM_HERE,
-      method_factory_.NewRunnableMethod(
-          &AppCacheUpdateJob::HandleCacheFailure,
-          kErrorMessage));
+  FetchManifest(true);
 }
 
 AppCacheResponseWriter* AppCacheUpdateJob::CreateResponseWriter() {
@@ -1306,8 +1268,6 @@ void AppCacheUpdateJob::Cancel() {
     manifest_response_writer_.reset();
 
   service_->storage()->CancelDelegateCallbacks(this);
-
-  policy_callback_->Cancel();
 }
 
 void AppCacheUpdateJob::ClearPendingMasterEntries() {

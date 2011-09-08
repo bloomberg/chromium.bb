@@ -112,7 +112,8 @@ bool OfflineResourceHandler::OnWillStart(int request_id,
         new net::CancelableCompletionCallback<OfflineResourceHandler>(
             this, &OfflineResourceHandler::OnCanHandleOfflineComplete);
     appcache_service_->CanHandleMainResourceOffline(
-        url, appcache_completion_callback_);
+        url, request_->first_party_for_cookies(),
+        appcache_completion_callback_);
 
     *defer = true;
     return true;

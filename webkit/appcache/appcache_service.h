@@ -68,6 +68,7 @@ class AppCacheService {
   // Determines if a request for 'url' can be satisfied while offline.
   // This method always completes asynchronously.
   void CanHandleMainResourceOffline(const GURL& url,
+                                    const GURL& first_party,
                                     net::CompletionCallback* callback);
 
   // Populates 'collection' with info about all of the appcaches stored

@@ -248,7 +248,7 @@ void MockAppCacheStorage::ProcessFindResponseForMainRequest(
       delegate_ref->delegate->OnMainResponseFound(
           url, simulated_found_entry_,
           simulated_found_fallback_url_, simulated_found_fallback_entry_,
-          simulated_found_cache_id_, simulated_found_manifest_url_, false);
+          simulated_found_cache_id_, simulated_found_manifest_url_);
     }
     return;
   }
@@ -348,7 +348,7 @@ void MockAppCacheStorage::ProcessFindResponseForMainRequest(
   if (found_candidate.entry.has_response_id()) {
     delegate_ref->delegate->OnMainResponseFound(
         url, found_candidate.entry, GURL(), AppCacheEntry(),
-        found_candidate.cache_id, found_candidate.manifest_url, false);
+        found_candidate.cache_id, found_candidate.manifest_url);
     return;
   }
 
@@ -359,13 +359,13 @@ void MockAppCacheStorage::ProcessFindResponseForMainRequest(
         found_fallback_candidate.url,
         found_fallback_candidate.entry,
         found_fallback_candidate.cache_id,
-        found_fallback_candidate.manifest_url, false);
+        found_fallback_candidate.manifest_url);
     return;
   }
 
   // Didn't find anything.
   delegate_ref->delegate->OnMainResponseFound(
-      url, AppCacheEntry(), GURL(), AppCacheEntry(), kNoCacheId, GURL(), false);
+      url, AppCacheEntry(), GURL(), AppCacheEntry(), kNoCacheId, GURL());
 }
 
 void MockAppCacheStorage::ProcessMakeGroupObsolete(

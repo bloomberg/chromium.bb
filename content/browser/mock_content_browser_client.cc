@@ -87,7 +87,8 @@ SkBitmap* MockContentBrowserClient::GetDefaultFavicon() {
 }
 
 bool MockContentBrowserClient::AllowAppCache(
-    const GURL& manifest_url, const content::ResourceContext& context) {
+    const GURL& manifest_url, const GURL& first_party,
+    const content::ResourceContext& context) {
   return true;
 }
 

@@ -12,6 +12,7 @@
 #include "webkit/appcache/appcache_backend_impl.h"
 #include "webkit/appcache/appcache_entry.h"
 #include "webkit/appcache/appcache_histograms.h"
+#include "webkit/appcache/appcache_policy.h"
 #include "webkit/appcache/appcache_quota_client.h"
 #include "webkit/appcache/appcache_response.h"
 #include "webkit/appcache/appcache_storage_impl.h"
@@ -77,11 +78,17 @@ class AppCacheService::CanHandleOfflineHelper : AsyncHelper {
  public:
   CanHandleOfflineHelper(
       AppCacheService* service, const GURL& url,
-      net::CompletionCallback* callback)
-      : AsyncHelper(service, callback), url_(url) {
+      const GURL& first_party, net::CompletionCallback* callback)
+      : AsyncHelper(service, callback), url_(url), first_party_(first_party) {
   }
 
   virtual void Start() {
+    AppCachePolicy* policy = service_->appcache_policy();
+    if (policy && !policy->CanLoadAppCache(url_, first_party_)) {
+      CallCallback(net::ERR_FAILED);
+      delete this;
+      return;
+    }
     service_->storage()->FindResponseForMainRequest(url_, GURL(), this);
   }
 
@@ -90,20 +97,18 @@ class AppCacheService::CanHandleOfflineHelper : AsyncHelper {
   virtual void OnMainResponseFound(
       const GURL& url, const AppCacheEntry& entry,
       const GURL& fallback_url, const AppCacheEntry& fallback_entry,
-      int64 cache_id, const GURL& mainfest_url,
-      bool was_blocked_by_policy);
+      int64 cache_id, const GURL& mainfest_url);
 
   GURL url_;
+  GURL first_party_;
   DISALLOW_COPY_AND_ASSIGN(CanHandleOfflineHelper);
 };
 
 void AppCacheService::CanHandleOfflineHelper::OnMainResponseFound(
       const GURL& url, const AppCacheEntry& entry,
       const GURL& fallback_url, const AppCacheEntry& fallback_entry,
-      int64 cache_id, const GURL& mainfest_url,
-      bool was_blocked_by_policy) {
-  bool can = !was_blocked_by_policy &&
-             (entry.has_response_id() || fallback_entry.has_response_id());
+      int64 cache_id, const GURL& manifest_url) {
+  bool can = (entry.has_response_id() || fallback_entry.has_response_id());
   CallCallback(can ? net::OK : net::ERR_FAILED);
   delete this;
 }
@@ -438,9 +443,10 @@ void AppCacheService::Initialize(const FilePath& cache_directory,
 
 void AppCacheService::CanHandleMainResourceOffline(
     const GURL& url,
+    const GURL& first_party,
     net::CompletionCallback* callback) {
   CanHandleOfflineHelper* helper =
-      new CanHandleOfflineHelper(this, url, callback);
+      new CanHandleOfflineHelper(this, url, first_party, callback);
   helper->Start();
 }
 

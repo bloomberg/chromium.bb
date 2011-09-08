@@ -49,9 +49,10 @@ class ChromeAppCacheService
   virtual ~ChromeAppCacheService();
 
   // AppCachePolicy overrides
-  virtual bool CanLoadAppCache(const GURL& manifest_url);
-  virtual int CanCreateAppCache(const GURL& manifest_url,
-                                net::CompletionCallback* callback);
+  virtual bool CanLoadAppCache(const GURL& manifest_url,
+                               const GURL& first_party);
+  virtual bool CanCreateAppCache(const GURL& manifest_url,
+                                 const GURL& first_party);
 
   // NotificationObserver override
   virtual void Observe(int type,

@@ -146,6 +146,7 @@ class ContentBrowserClient {
   // Allow the embedder to control if an AppCache can be used for the given url.
   // This is called on the IO thread.
   virtual bool AllowAppCache(const GURL& manifest_url,
+                             const GURL& first_party,
                              const content::ResourceContext& context) = 0;
 
   // Allow the embedder to control if the given cookie can be read.

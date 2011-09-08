@@ -30,9 +30,6 @@ class AppCacheGroup : public base::RefCounted<AppCacheGroup> {
 
   class UpdateObserver {
     public:
-      // Called if access to the appcache was blocked by a policy.
-      virtual void OnContentBlocked(AppCacheGroup* group) = 0;
-
       // Called just after an appcache update has completed.
       virtual void OnUpdateComplete(AppCacheGroup* group) = 0;
       virtual ~UpdateObserver() {}

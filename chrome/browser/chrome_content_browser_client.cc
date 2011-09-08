@@ -385,13 +385,13 @@ SkBitmap* ChromeContentBrowserClient::GetDefaultFavicon() {
 
 bool ChromeContentBrowserClient::AllowAppCache(
     const GURL& manifest_url,
+    const GURL& first_party,
     const content::ResourceContext& context) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   ProfileIOData* io_data =
       reinterpret_cast<ProfileIOData*>(context.GetUserData(NULL));
-  // FIXME(jochen): get the correct top-level origin.
   ContentSetting setting = io_data->GetHostContentSettingsMap()->
-      GetCookieContentSetting(manifest_url, manifest_url, true);
+      GetCookieContentSetting(manifest_url, first_party, true);
   DCHECK(setting != CONTENT_SETTING_DEFAULT);
   return setting != CONTENT_SETTING_BLOCK;
 }

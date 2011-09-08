@@ -42,6 +42,7 @@ class MockContentBrowserClient : public ContentBrowserClient {
   virtual std::string GetAcceptLangs(const TabContents* tab) OVERRIDE;
   virtual SkBitmap* GetDefaultFavicon() OVERRIDE;
   virtual bool AllowAppCache(const GURL& manifest_url,
+                             const GURL& first_party,
                              const content::ResourceContext& context) OVERRIDE;
   virtual bool AllowGetCookie(const GURL& url,
                               const GURL& first_party,

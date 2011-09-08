@@ -112,7 +112,7 @@ class AppCacheStorageImpl : public AppCacheStorage {
       scoped_refptr<AppCache> newest_cache,
       scoped_refptr<DelegateReference> delegate_ref);
 
-  void CheckPolicyAndCallOnMainResponseFound(
+  void CallOnMainResponseFound(
       DelegateReferenceVector* delegates,
       const GURL& url, const AppCacheEntry& entry,
       const GURL& fallback_url, const AppCacheEntry& fallback_entry,

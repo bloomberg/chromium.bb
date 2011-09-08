@@ -9,6 +9,7 @@
 #include "base/stringprintf.h"
 #include "webkit/appcache/appcache.h"
 #include "webkit/appcache/appcache_backend_impl.h"
+#include "webkit/appcache/appcache_policy.h"
 #include "webkit/appcache/appcache_request_handler.h"
 #include "webkit/quota/quota_manager.h"
 
@@ -95,6 +96,19 @@ void AppCacheHost::SelectCache(const GURL& document_url,
 
   if (!manifest_url.is_empty() &&
       (manifest_url.GetOrigin() == document_url.GetOrigin())) {
+    DCHECK(!first_party_url_.is_empty());
+    AppCachePolicy* policy = service()->appcache_policy();
+    if (policy &&
+        !policy->CanCreateAppCache(manifest_url, first_party_url_)) {
+      FinishCacheSelection(NULL, NULL);
+      std::vector<int> host_ids(1, host_id_);
+      frontend_->OnEventRaised(host_ids, CHECKING_EVENT);
+      frontend_->OnErrorEventRaised(
+          host_ids, "Cache creation was blocked by the content policy");
+      frontend_->OnContentBlocked(host_id_, manifest_url);
+      return;
+    }
+
     // Note: The client detects if the document was not loaded using HTTP GET
     // and invokes SelectCache without a manifest url, so that detection step
     // is also skipped here. See WebApplicationCacheHostImpl.cc
@@ -267,8 +281,12 @@ AppCacheRequestHandler* AppCacheHost::CreateRequestHandler(
     return NULL;
   }
 
-  if (AppCacheRequestHandler::IsMainResourceType(resource_type))
+  if (AppCacheRequestHandler::IsMainResourceType(resource_type)) {
+    // Store the first party origin so that it can be used later in SelectCache
+    // for checking whether the creation of the appcache is allowed.
+    first_party_url_ = request->first_party_for_cookies();
     return new AppCacheRequestHandler(this, resource_type);
+  }
 
   if ((associated_cache() && associated_cache()->is_complete()) ||
       is_selection_pending()) {
@@ -419,10 +437,6 @@ void AppCacheHost::OnUpdateComplete(AppCacheGroup* group) {
     associated_cache_info_pending_ = false;
     frontend_->OnCacheSelected(host_id_, info);
   }
-}
-
-void AppCacheHost::OnContentBlocked(AppCacheGroup* group) {
-  frontend_->OnContentBlocked(host_id_, group->manifest_url());
 }
 
 void AppCacheHost::SetSwappableCache(AppCacheGroup* group) {

@@ -65,8 +65,7 @@ class AppCacheStorage {
     virtual void OnMainResponseFound(
         const GURL& url, const AppCacheEntry& entry,
         const GURL& fallback_url, const AppCacheEntry& fallback_entry,
-        int64 cache_id, const GURL& mainfest_url,
-        bool was_blocked_by_policy) {}
+        int64 cache_id, const GURL& mainfest_url) {}
   };
 
   explicit AppCacheStorage(AppCacheService* service);

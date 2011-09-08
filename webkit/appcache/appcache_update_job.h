@@ -160,9 +160,6 @@ class AppCacheUpdateJob : public AppCacheStorage::Delegate,
   virtual void OnCacheSelectionComplete(AppCacheHost* host) {}  // N/A
   virtual void OnDestructionImminent(AppCacheHost* host);
 
-  void CheckPolicy();
-  void OnPolicyCheckComplete(int rv);
-
   void HandleCacheFailure(const std::string& error_message);
 
   void FetchManifest(bool is_first_fetch);
@@ -309,9 +306,6 @@ class AppCacheUpdateJob : public AppCacheStorage::Delegate,
   net::CompletionCallbackImpl<AppCacheUpdateJob> manifest_info_write_callback_;
   net::CompletionCallbackImpl<AppCacheUpdateJob> manifest_data_write_callback_;
   net::CompletionCallbackImpl<AppCacheUpdateJob> manifest_data_read_callback_;
-
-  scoped_refptr<net::CancelableCompletionCallback<AppCacheUpdateJob> >
-      policy_callback_;
 
   FRIEND_TEST_ALL_PREFIXES(AppCacheGroupTest, QueueUpdate);
 

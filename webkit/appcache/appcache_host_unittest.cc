@@ -10,6 +10,7 @@
 #include "webkit/appcache/appcache_backend_impl.h"
 #include "webkit/appcache/appcache_group.h"
 #include "webkit/appcache/appcache_host.h"
+#include "webkit/appcache/mock_appcache_policy.h"
 #include "webkit/appcache/mock_appcache_service.h"
 #include "webkit/quota/quota_manager.h"
 
@@ -32,7 +33,8 @@ class AppCacheHostTest : public testing::Test {
         : last_host_id_(-222), last_cache_id_(-222),
           last_status_(appcache::OBSOLETE),
           last_status_changed_(appcache::OBSOLETE),
-          last_event_id_(appcache::OBSOLETE_EVENT) {
+          last_event_id_(appcache::OBSOLETE_EVENT),
+          content_blocked_(false) {
     }
 
     virtual void OnCacheSelected(
@@ -68,6 +70,7 @@ class AppCacheHostTest : public testing::Test {
     }
 
     virtual void OnContentBlocked(int host_id, const GURL& manifest_url) {
+      content_blocked_ = true;
     }
 
     int last_host_id_;
@@ -75,6 +78,7 @@ class AppCacheHostTest : public testing::Test {
     appcache::Status last_status_;
     appcache::Status last_status_changed_;
     appcache::EventID last_event_id_;
+    bool content_blocked_;
   };
 
   class MockQuotaManagerProxy : public quota::QuotaManagerProxy {
@@ -432,5 +436,86 @@ TEST_F(AppCacheHostTest, ForDedicatedWorker) {
   EXPECT_EQ(NULL, worker_host->GetParentAppCacheHost());
 }
 
-}  // namespace appcache
+TEST_F(AppCacheHostTest, SelectCacheAllowed) {
+  scoped_refptr<MockQuotaManagerProxy> mock_quota_proxy(
+      new MockQuotaManagerProxy);
+  MockAppCachePolicy mock_appcache_policy;
+  mock_appcache_policy.can_create_return_value_ = true;
+  service_.set_quota_manager_proxy(mock_quota_proxy);
+  service_.set_appcache_policy(&mock_appcache_policy);
 
+  // Reset our mock frontend
+  mock_frontend_.last_cache_id_ = -333;
+  mock_frontend_.last_host_id_ = -333;
+  mock_frontend_.last_status_ = OBSOLETE;
+  mock_frontend_.last_event_id_ = OBSOLETE_EVENT;
+  mock_frontend_.content_blocked_ = false;
+
+  const GURL kDocAndOriginUrl(GURL("http://whatever/").GetOrigin());
+  const GURL kManifestUrl(GURL("http://whatever/cache.manifest"));
+  {
+    AppCacheHost host(1, &mock_frontend_, &service_);
+    host.first_party_url_ = kDocAndOriginUrl;
+    host.SelectCache(kDocAndOriginUrl, kNoCacheId, kManifestUrl);
+    EXPECT_EQ(1, mock_quota_proxy->GetInUseCount(kDocAndOriginUrl));
+
+    // MockAppCacheService::LoadOrCreateGroup is asynchronous, so we shouldn't
+    // have received an OnCacheSelected msg yet.
+    EXPECT_EQ(-333, mock_frontend_.last_host_id_);
+    EXPECT_EQ(-333, mock_frontend_.last_cache_id_);
+    EXPECT_EQ(OBSOLETE, mock_frontend_.last_status_);
+    // No error events either
+    EXPECT_EQ(OBSOLETE_EVENT, mock_frontend_.last_event_id_);
+    EXPECT_FALSE(mock_frontend_.content_blocked_);
+
+    EXPECT_TRUE(host.is_selection_pending());
+  }
+  EXPECT_EQ(0, mock_quota_proxy->GetInUseCount(kDocAndOriginUrl));
+  service_.set_quota_manager_proxy(NULL);
+}
+
+TEST_F(AppCacheHostTest, SelectCacheBlocked) {
+  scoped_refptr<MockQuotaManagerProxy> mock_quota_proxy(
+      new MockQuotaManagerProxy);
+  MockAppCachePolicy mock_appcache_policy;
+  mock_appcache_policy.can_create_return_value_ = false;
+  service_.set_quota_manager_proxy(mock_quota_proxy);
+  service_.set_appcache_policy(&mock_appcache_policy);
+
+  // Reset our mock frontend
+  mock_frontend_.last_cache_id_ = -333;
+  mock_frontend_.last_host_id_ = -333;
+  mock_frontend_.last_status_ = OBSOLETE;
+  mock_frontend_.last_event_id_ = OBSOLETE_EVENT;
+  mock_frontend_.content_blocked_ = false;
+
+  const GURL kDocAndOriginUrl(GURL("http://whatever/").GetOrigin());
+  const GURL kManifestUrl(GURL("http://whatever/cache.manifest"));
+  {
+    AppCacheHost host(1, &mock_frontend_, &service_);
+    host.first_party_url_ = kDocAndOriginUrl;
+    host.SelectCache(kDocAndOriginUrl, kNoCacheId, kManifestUrl);
+    EXPECT_EQ(1, mock_quota_proxy->GetInUseCount(kDocAndOriginUrl));
+
+    // We should have received an OnCacheSelected msg
+    EXPECT_EQ(1, mock_frontend_.last_host_id_);
+    EXPECT_EQ(kNoCacheId, mock_frontend_.last_cache_id_);
+    EXPECT_EQ(UNCACHED, mock_frontend_.last_status_);
+
+    // Also, an error event was raised
+    EXPECT_EQ(ERROR_EVENT, mock_frontend_.last_event_id_);
+    EXPECT_TRUE(mock_frontend_.content_blocked_);
+
+    // Otherwise, see that it respond as if there is no cache selected.
+    EXPECT_EQ(1, host.host_id());
+    EXPECT_EQ(&service_, host.service());
+    EXPECT_EQ(&mock_frontend_, host.frontend());
+    EXPECT_EQ(NULL, host.associated_cache());
+    EXPECT_FALSE(host.is_selection_pending());
+    EXPECT_TRUE(host.preferred_manifest_url().is_empty());
+  }
+  EXPECT_EQ(0, mock_quota_proxy->GetInUseCount(kDocAndOriginUrl));
+  service_.set_quota_manager_proxy(NULL);
+}
+
+}  // namespace appcache

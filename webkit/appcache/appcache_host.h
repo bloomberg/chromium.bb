@@ -132,6 +132,8 @@ class AppCacheHost : public AppCacheStorage::Delegate,
            !pending_selected_manifest_url_.is_empty();
   }
 
+  const GURL& first_party_url() const { return first_party_url_; }
+
  private:
   Status GetStatus();
   void LoadSelectedCache(int64 cache_id);
@@ -150,7 +152,6 @@ class AppCacheHost : public AppCacheStorage::Delegate,
   void ObserveGroupBeingUpdated(AppCacheGroup* group);
 
   // AppCacheGroup::UpdateObserver methods.
-  virtual void OnContentBlocked(AppCacheGroup* group);
   virtual void OnUpdateComplete(AppCacheGroup* group);
 
   // Returns true if this host is for a dedicated worker context.
@@ -245,6 +246,9 @@ class AppCacheHost : public AppCacheStorage::Delegate,
   // Used to inform the QuotaManager of what origins are currently in use.
   GURL origin_in_use_;
 
+  // First party url to be used in policy checks.
+  GURL first_party_url_;
+
   friend class AppCacheRequestHandlerTest;
   friend class AppCacheUpdateJobTest;
   FRIEND_TEST_ALL_PREFIXES(AppCacheTest, CleanupUnusedCache);
@@ -256,6 +260,8 @@ class AppCacheHost : public AppCacheStorage::Delegate,
   FRIEND_TEST_ALL_PREFIXES(AppCacheHostTest, FailedGroupLoad);
   FRIEND_TEST_ALL_PREFIXES(AppCacheHostTest, SetSwappableCache);
   FRIEND_TEST_ALL_PREFIXES(AppCacheHostTest, ForDedicatedWorker);
+  FRIEND_TEST_ALL_PREFIXES(AppCacheHostTest, SelectCacheAllowed);
+  FRIEND_TEST_ALL_PREFIXES(AppCacheHostTest, SelectCacheBlocked);
   FRIEND_TEST_ALL_PREFIXES(AppCacheGroupTest, QueueUpdate);
 
   DISALLOW_COPY_AND_ASSIGN(AppCacheHost);

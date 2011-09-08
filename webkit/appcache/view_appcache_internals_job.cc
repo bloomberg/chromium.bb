@@ -112,7 +112,7 @@ void EmitAppCacheInfo(const GURL& base_url,
   EmitAnchor(info->manifest_url.spec(), info->manifest_url.spec(), out);
   out->append("<br/>\n");
   if (!service->appcache_policy()->CanLoadAppCache(
-          info->manifest_url)) {
+          info->manifest_url, info->manifest_url)) {
     out->append(kFormattedDisabledAppCacheMsg);
   }
   out->append("\n<br/>\n");

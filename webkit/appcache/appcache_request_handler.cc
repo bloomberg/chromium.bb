@@ -7,6 +7,7 @@
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_job.h"
 #include "webkit/appcache/appcache.h"
+#include "webkit/appcache/appcache_policy.h"
 #include "webkit/appcache/appcache_url_request_job.h"
 
 namespace appcache {
@@ -217,8 +218,7 @@ void AppCacheRequestHandler::MaybeLoadMainResource(net::URLRequest* request) {
 void AppCacheRequestHandler::OnMainResponseFound(
     const GURL& url, const AppCacheEntry& entry,
     const GURL& fallback_url, const AppCacheEntry& fallback_entry,
-    int64 cache_id, const GURL& manifest_url,
-    bool was_blocked_by_policy) {
+    int64 cache_id, const GURL& manifest_url) {
   DCHECK(job_);
   DCHECK(host_);
   DCHECK(is_main_resource());
@@ -229,22 +229,28 @@ void AppCacheRequestHandler::OnMainResponseFound(
   if (!job_)
     return;
 
-  if (ResourceType::IsFrame(resource_type_)) {
-    if (was_blocked_by_policy)
-      host_->NotifyMainResourceBlocked(manifest_url);
+  AppCachePolicy* policy = host_->service()->appcache_policy();
+  bool was_blocked_by_policy = !manifest_url.is_empty() && policy &&
+      !policy->CanLoadAppCache(manifest_url, host_->first_party_url());
 
-    if (cache_id != kNoCacheId) {
-      // AppCacheHost loads and holds a reference to the main resource cache
-      // for two reasons, firstly to preload the cache into the working set
-      // in advance of subresource loads happening, secondly to prevent the
-      // AppCache from falling out of the working set on frame navigations.
-      host_->LoadMainResourceCache(cache_id);
-      host_->set_preferred_manifest_url(manifest_url);
-    }
-  } else {
-    DCHECK(ResourceType::IsSharedWorker(resource_type_));
-    if (was_blocked_by_policy)
+  if (was_blocked_by_policy) {
+    if (ResourceType::IsFrame(resource_type_)) {
+      host_->NotifyMainResourceBlocked(manifest_url);
+    } else {
+      DCHECK(ResourceType::IsSharedWorker(resource_type_));
       host_->frontend()->OnContentBlocked(host_->host_id(), manifest_url);
+    }
+    DeliverNetworkResponse();
+    return;
+  }
+
+  if (ResourceType::IsFrame(resource_type_) && cache_id != kNoCacheId) {
+    // AppCacheHost loads and holds a reference to the main resource cache
+    // for two reasons, firstly to preload the cache into the working set
+    // in advance of subresource loads happening, secondly to prevent the
+    // AppCache from falling out of the working set on frame navigations.
+    host_->LoadMainResourceCache(cache_id);
+    host_->set_preferred_manifest_url(manifest_url);
   }
 
   // 6.11.1 Navigating across documents, steps 10 and 14.

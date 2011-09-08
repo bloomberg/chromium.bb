@@ -18,6 +18,7 @@
 #include "webkit/appcache/appcache_backend_impl.h"
 #include "webkit/appcache/appcache_request_handler.h"
 #include "webkit/appcache/appcache_url_request_job.h"
+#include "webkit/appcache/mock_appcache_policy.h"
 #include "webkit/appcache/mock_appcache_service.h"
 
 namespace appcache {
@@ -172,6 +173,8 @@ class AppCacheRequestHandlerTest : public testing::Test {
     orig_http_factory_ = net::URLRequest::Deprecated::RegisterProtocolFactory(
         "http", MockHttpJobFactory);
     mock_service_.reset(new MockAppCacheService);
+    mock_policy_.reset(new MockAppCachePolicy);
+    mock_service_->set_appcache_policy(mock_policy_.get());
     mock_frontend_.reset(new MockFrontend);
     backend_impl_.reset(new AppCacheBackendImpl);
     backend_impl_->Initialize(mock_service_.get(), mock_frontend_.get(),
@@ -193,6 +196,7 @@ class AppCacheRequestHandlerTest : public testing::Test {
     backend_impl_.reset();
     mock_frontend_.reset();
     mock_service_.reset();
+    mock_policy_.reset();
     host_ = NULL;
   }
 
@@ -736,6 +740,44 @@ class AppCacheRequestHandlerTest : public testing::Test {
     TestFinished();
   }
 
+  // MainResource_Blocked --------------------------------------------------
+
+  void MainResource_Blocked() {
+    PushNextTask(NewRunnableMethod(
+       this, &AppCacheRequestHandlerTest::Verify_MainResource_Blocked));
+
+    request_.reset(new MockURLRequest(GURL("http://blah/")));
+    handler_.reset(host_->CreateRequestHandler(request_.get(),
+                                               ResourceType::MAIN_FRAME));
+    EXPECT_TRUE(handler_.get());
+
+    mock_policy_->can_load_return_value_ = false;
+    mock_storage()->SimulateFindMainResource(
+        AppCacheEntry(AppCacheEntry::EXPLICIT, 1),
+        GURL(), AppCacheEntry(),
+        1, GURL("http://blah/manifest/"));
+
+    job_ = handler_->MaybeLoadResource(request_.get());
+    EXPECT_TRUE(job_.get());
+    EXPECT_TRUE(job_->is_waiting());
+
+    // We have to wait for completion of storage->FindResponseForMainRequest.
+    ScheduleNextTask();
+  }
+
+  void Verify_MainResource_Blocked() {
+    EXPECT_FALSE(job_->is_waiting());
+    EXPECT_FALSE(job_->is_delivering_appcache_response());
+
+    EXPECT_EQ(0, handler_->found_cache_id_);
+    EXPECT_TRUE(handler_->found_manifest_url_.is_empty());
+    EXPECT_TRUE(host_->preferred_manifest_url().is_empty());
+    EXPECT_TRUE(host_->main_resource_blocked_);
+    EXPECT_TRUE(host_->blocked_manifest_url_ == GURL("http://blah/manifest/"));
+
+    TestFinished();
+  }
+
   // Test case helpers --------------------------------------------------
 
   AppCache* MakeNewCache() {
@@ -760,6 +802,7 @@ class AppCacheRequestHandlerTest : public testing::Test {
   scoped_ptr<MockAppCacheService> mock_service_;
   scoped_ptr<AppCacheBackendImpl> backend_impl_;
   scoped_ptr<MockFrontend> mock_frontend_;
+  scoped_ptr<MockAppCachePolicy> mock_policy_;
   AppCacheHost* host_;
   scoped_ptr<MockURLRequest> request_;
   scoped_ptr<AppCacheRequestHandler> handler_;
@@ -842,6 +885,10 @@ TEST_F(AppCacheRequestHandlerTest, CanceledRequest) {
 
 TEST_F(AppCacheRequestHandlerTest, WorkerRequest) {
   RunTestOnIOThread(&AppCacheRequestHandlerTest::WorkerRequest);
+}
+
+TEST_F(AppCacheRequestHandlerTest, MainResource_Blocked) {
+  RunTestOnIOThread(&AppCacheRequestHandlerTest::MainResource_Blocked);
 }
 
 }  // namespace appcache

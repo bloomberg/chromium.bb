@@ -15,7 +15,6 @@
 #include "net/url_request/url_request_test_util.h"
 #include "webkit/appcache/appcache_group.h"
 #include "webkit/appcache/appcache_host.h"
-#include "webkit/appcache/appcache_policy.h"
 #include "webkit/appcache/appcache_response.h"
 #include "webkit/appcache/appcache_update_job.h"
 #include "webkit/appcache/mock_appcache_service.h"
@@ -551,40 +550,6 @@ class IOThread : public base::Thread {
 class AppCacheUpdateJobTest : public testing::Test,
                               public AppCacheGroup::UpdateObserver {
  public:
-  class MockAppCachePolicy : public AppCachePolicy {
-   public:
-    MockAppCachePolicy()
-        : can_create_return_value_(net::OK), return_immediately_(true),
-          callback_(NULL) {
-    }
-
-    virtual bool CanLoadAppCache(const GURL& manifest_url) {
-      return true;
-    }
-
-    virtual int CanCreateAppCache(const GURL& manifest_url,
-                                  net::CompletionCallback* callback) {
-      requested_manifest_url_ = manifest_url;
-      callback_ = callback;
-      if (return_immediately_)
-        return can_create_return_value_;
-
-      MessageLoop::current()->PostTask(FROM_HERE, NewRunnableMethod(
-              this, &MockAppCachePolicy::CompleteCanCreateAppCache));
-      return net::ERR_IO_PENDING;
-    }
-
-    void CompleteCanCreateAppCache() {
-      callback_->Run(can_create_return_value_);
-    }
-
-    int can_create_return_value_;
-    bool return_immediately_;
-    GURL requested_manifest_url_;
-    net::CompletionCallback* callback_;
-  };
-
-
   AppCacheUpdateJobTest()
       : do_checks_after_update_finished_(false),
         expect_group_obsolete_(false),
@@ -642,52 +607,6 @@ class AppCacheUpdateJobTest : public testing::Test,
     // Abort as we're not testing actual URL fetches in this test.
     delete update;
     UpdateFinished();
-  }
-
-  void ImmediatelyBlockCacheAttemptTest() {
-    BlockCacheAttemptTest(true);
-  }
-
-  void DelayedBlockCacheAttemptTest() {
-    BlockCacheAttemptTest(false);
-  }
-
-  void BlockCacheAttemptTest(bool immediately) {
-    ASSERT_EQ(MessageLoop::TYPE_IO, MessageLoop::current()->type());
-
-    GURL manifest_url = GURL("http://failme");
-
-    // Setup to block the cache attempt immediately.
-    policy_.return_immediately_ = immediately;
-    policy_.can_create_return_value_ = net::ERR_ACCESS_DENIED;
-
-    MakeService();
-    group_ = new AppCacheGroup(service_.get(), manifest_url,
-                               service_->storage()->NewGroupId());
-
-    AppCacheUpdateJob* update = new AppCacheUpdateJob(service_.get(), group_);
-    group_->update_job_ = update;
-
-    MockFrontend mock_frontend;
-    AppCacheHost host(1, &mock_frontend, service_.get());
-
-    update->StartUpdate(&host, GURL());
-    EXPECT_EQ(manifest_url, policy_.requested_manifest_url_);
-
-    // Verify state.
-    EXPECT_EQ(AppCacheUpdateJob::CACHE_ATTEMPT, update->update_type_);
-    EXPECT_EQ(AppCacheUpdateJob::FETCH_MANIFEST, update->internal_state_);
-    EXPECT_EQ(AppCacheGroup::CHECKING, group_->update_status());
-
-    // Verify notifications.
-    MockFrontend::RaisedEvents& events = mock_frontend.raised_events_;
-    size_t expected = 1;
-    EXPECT_EQ(expected, events.size());
-    EXPECT_EQ(1U, events[0].first.size());
-    EXPECT_EQ(host.host_id(), events[0].first[0]);
-    EXPECT_EQ(CHECKING_EVENT, events[0].second);
-
-    WaitForUpdateToFinish();
   }
 
   void StartUpgradeAttemptTest() {
@@ -1058,10 +977,6 @@ class AppCacheUpdateJobTest : public testing::Test,
 
     GURL manifest_url = MockHttpServer::GetMockUrl("files/manifest1");
 
-    // We also test the async AppCachePolicy return path in this test case.
-    policy_.return_immediately_ = false;
-    policy_.can_create_return_value_ = net::OK;
-
     MakeService();
     group_ = new AppCacheGroup(
         service_.get(), manifest_url,
@@ -1072,7 +987,6 @@ class AppCacheUpdateJobTest : public testing::Test,
     MockFrontend* frontend = MakeMockFrontend();
     AppCacheHost* host = MakeHost(1, frontend);
     update->StartUpdate(host, GURL());
-    EXPECT_EQ(manifest_url, policy_.requested_manifest_url_);;
 
     // Set up checks for when update job finishes.
     do_checks_after_update_finished_ = true;
@@ -1868,6 +1782,7 @@ class AppCacheUpdateJobTest : public testing::Test,
 
     MockFrontend* frontend = MakeMockFrontend();
     AppCacheHost* host = MakeHost(1, frontend);
+    host->first_party_url_ = kManifestUrl;
     host->SelectCache(MockHttpServer::GetMockUrl("files/empty1"),
                       kNoCacheId, kManifestUrl);
 
@@ -2843,7 +2758,6 @@ class AppCacheUpdateJobTest : public testing::Test,
     MockFrontend* frontend = MakeMockFrontend();
     AppCacheHost* host = MakeHost(1, frontend);
     update->StartUpdate(host, GURL());
-    EXPECT_EQ(manifest_url, policy_.requested_manifest_url_);
 
     // Set up checks for when update job finishes.
     do_checks_after_update_finished_ = true;
@@ -2872,7 +2786,6 @@ class AppCacheUpdateJobTest : public testing::Test,
     MockFrontend* frontend = MakeMockFrontend();
     AppCacheHost* host = MakeHost(1, frontend);
     update->StartUpdate(host, GURL());
-    EXPECT_EQ(manifest_url, policy_.requested_manifest_url_);
 
     // Set up checks for when update job finishes.
     do_checks_after_update_finished_ = true;
@@ -2896,9 +2809,6 @@ class AppCacheUpdateJobTest : public testing::Test,
     ASSERT_EQ(group_, group);
     protect_newest_cache_ = group->newest_complete_cache();
     UpdateFinished();
-  }
-
-  void OnContentBlocked(AppCacheGroup* group) {
   }
 
   void UpdateFinished() {
@@ -2928,7 +2838,6 @@ class AppCacheUpdateJobTest : public testing::Test,
   void MakeService() {
     service_.reset(new MockAppCacheService());
     service_->set_request_context(io_thread_->request_context());
-    service_->set_appcache_policy(&policy_);
   }
 
   AppCache* MakeCacheForGroup(int64 cache_id, int64 manifest_response_id) {
@@ -3241,7 +3150,6 @@ class AppCacheUpdateJobTest : public testing::Test,
   scoped_refptr<AppCacheGroup> group_;
   scoped_refptr<AppCache> protect_newest_cache_;
   scoped_ptr<base::WaitableEvent> event_;
-  MockAppCachePolicy policy_;
 
   scoped_ptr<AppCacheResponseWriter> response_writer_;
   scoped_ptr<net::CompletionCallbackImpl<AppCacheUpdateJobTest> >
@@ -3333,14 +3241,6 @@ TEST_F(AppCacheUpdateJobTest, AlreadyDownloading) {
 
 TEST_F(AppCacheUpdateJobTest, StartCacheAttempt) {
   RunTestOnIOThread(&AppCacheUpdateJobTest::StartCacheAttemptTest);
-}
-
-TEST_F(AppCacheUpdateJobTest, ImmediatelyBlockCacheAttemptTest) {
-  RunTestOnIOThread(&AppCacheUpdateJobTest::ImmediatelyBlockCacheAttemptTest);
-}
-
-TEST_F(AppCacheUpdateJobTest, DelayedBlockCacheAttemptTest) {
-  RunTestOnIOThread(&AppCacheUpdateJobTest::DelayedBlockCacheAttemptTest);
 }
 
 TEST_F(AppCacheUpdateJobTest, StartUpgradeAttempt) {
@@ -3550,5 +3450,3 @@ TEST_F(AppCacheUpdateJobTest, CrossOriginHttpsDenied) {
 // AppCacheUpdateJobTest is expected to always live longer than the
 // runnable methods.  This lets us call NewRunnableMethod on its instances.
 DISABLE_RUNNABLE_METHOD_REFCOUNT(appcache::AppCacheUpdateJobTest);
-DISABLE_RUNNABLE_METHOD_REFCOUNT(
-    appcache::AppCacheUpdateJobTest::MockAppCachePolicy);

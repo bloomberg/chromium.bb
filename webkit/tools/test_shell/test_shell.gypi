@@ -378,6 +378,8 @@
         '../../appcache/appcache_storage_impl_unittest.cc',
         '../../appcache/appcache_update_job_unittest.cc',
         '../../appcache/appcache_url_request_job_unittest.cc',
+        '../../appcache/mock_appcache_policy.h',
+        '../../appcache/mock_appcache_policy.cc',
         '../../appcache/mock_appcache_service.cc',
         '../../appcache/mock_appcache_service.h',
         '../../appcache/mock_appcache_storage.cc',
