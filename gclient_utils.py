@@ -10,7 +10,6 @@ import os
 import Queue
 import re
 import stat
-import subprocess
 import sys
 import threading
 import time
@@ -18,74 +17,9 @@ import time
 import subprocess2
 
 
-def hack_subprocess():
-  """subprocess functions may throw exceptions when used in multiple threads.
-
-  See http://bugs.python.org/issue1731717 for more information.
-  """
-  subprocess._cleanup = lambda: None
-
-
 class Error(Exception):
   """gclient exception class."""
   pass
-
-
-class CheckCallError(subprocess2.CalledProcessError, Error):
-  """CheckCall() returned non-0."""
-  def __init__(self, cmd, cwd, returncode, stdout, stderr=None):
-    subprocess2.CalledProcessError.__init__(
-        self, returncode, cmd, cwd, stdout, stderr)
-    Error.__init__(self, cmd)
-
-  def __str__(self):
-    return subprocess2.CalledProcessError.__str__(self)
-
-
-def Popen(args, **kwargs):
-  """Calls subprocess.Popen() with hacks to work around certain behaviors.
-
-  Ensure English outpout for svn and make it work reliably on Windows.
-  """
-  logging.debug(u'%s, cwd=%s' % (u' '.join(args), kwargs.get('cwd', '')))
-  if not 'env' in kwargs:
-    # It's easier to parse the stdout if it is always in English.
-    kwargs['env'] = os.environ.copy()
-    kwargs['env']['LANGUAGE'] = 'en'
-  if not 'shell' in kwargs:
-    # *Sigh*:  Windows needs shell=True, or else it won't search %PATH% for the
-    # executable, but shell=True makes subprocess on Linux fail when it's called
-    # with a list because it only tries to execute the first item in the list.
-    kwargs['shell'] = (sys.platform=='win32')
-  try:
-    return subprocess.Popen(args, **kwargs)
-  except OSError, e:
-    if e.errno == errno.EAGAIN and sys.platform == 'cygwin':
-      raise Error(
-          'Visit '
-          'http://code.google.com/p/chromium/wiki/CygwinDllRemappingFailure to '
-          'learn how to fix this error; you need to rebase your cygwin dlls')
-    raise
-
-
-def CheckCall(command, print_error=True, **kwargs):
-  """Similar subprocess.check_call() but redirects stdout and
-  returns (stdout, stderr).
-
-  Works on python 2.4
-  """
-  try:
-    stderr = None
-    if not print_error:
-      stderr = subprocess.PIPE
-    process = Popen(command, stdout=subprocess.PIPE, stderr=stderr, **kwargs)
-    std_out, std_err = process.communicate()
-  except OSError, e:
-    raise CheckCallError(command, kwargs.get('cwd', None), e.errno, None)
-  if process.returncode:
-    raise CheckCallError(command, kwargs.get('cwd', None), process.returncode,
-        std_out, std_err)
-  return std_out, std_err
 
 
 def SplitUrlRevision(url):
@@ -399,9 +333,9 @@ def CheckCallAndFilter(args, stdout=None, filter_fn=None,
   stdout = stdout or sys.stdout
   filter_fn = filter_fn or (lambda x: None)
   assert not 'stderr' in kwargs
-  kid = Popen(args, bufsize=0,
-              stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-              **kwargs)
+  kid = subprocess2.Popen(
+      args, bufsize=0, stdout=subprocess2.PIPE, stderr=subprocess2.STDOUT,
+      **kwargs)
 
   # Do a flush of stdout before we begin reading from the subprocess's stdout
   stdout.flush()
@@ -431,7 +365,8 @@ def CheckCallAndFilter(args, stdout=None, filter_fn=None,
       filter_fn(in_line)
   rv = kid.wait()
   if rv:
-    raise CheckCallError(args, kwargs.get('cwd', None), rv, None)
+    raise subprocess2.CalledProcessError(
+        rv, args, kwargs.get('cwd', None), None, None)
   return 0
 
 
@@ -543,7 +478,6 @@ class ExecutionQueue(object):
   def __init__(self, jobs, progress):
     """jobs specifies the number of concurrent tasks to allow. progress is a
     Progress instance."""
-    hack_subprocess()
     # Set when a thread is done or a new item is enqueued.
     self.ready_cond = threading.Condition()
     # Maximum number of concurrent tasks.
