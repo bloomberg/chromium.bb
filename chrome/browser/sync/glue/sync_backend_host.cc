@@ -198,12 +198,6 @@ void SyncBackendHost::SetPassphrase(const std::string& passphrase,
 
   // This should only be called by the frontend.
   DCHECK_EQ(MessageLoop::current(), frontend_loop_);
-  if (core_->processing_passphrase()) {
-    SVLOG(1) << "Attempted to call SetPassphrase while already waiting for "
-             << " result from previous SetPassphrase call. Silently dropping.";
-    return;
-  }
-  core_->set_processing_passphrase();
 
   // If encryption is enabled and we've got a SetPassphrase
   sync_thread_.message_loop()->PostTask(FROM_HERE,
@@ -414,16 +408,6 @@ void SyncBackendHost::Core::NotifyPassphraseRequired(
 
   DCHECK_EQ(MessageLoop::current(), host_->frontend_loop_);
 
-  // When setting a passphrase fails, unset our waiting flag.
-  if (reason == sync_api::REASON_SET_PASSPHRASE_FAILED)
-    processing_passphrase_ = false;
-
-  if (processing_passphrase_) {
-    SVLOG(1) << "Core received OnPassphraseRequired while processing a "
-             << "passphrase. Silently dropping.";
-    return;
-  }
-
   host_->frontend_->OnPassphraseRequired(reason);
 }
 
@@ -434,7 +418,6 @@ void SyncBackendHost::Core::NotifyPassphraseAccepted(
 
   DCHECK_EQ(MessageLoop::current(), host_->frontend_loop_);
 
-  processing_passphrase_ = false;
   host_->PersistEncryptionBootstrapToken(bootstrap_token);
   host_->frontend_->OnPassphraseAccepted();
 }
@@ -532,8 +515,7 @@ SyncBackendHost::Core::Core(const std::string& name,
                             SyncBackendHost* backend)
     : name_(name),
       host_(backend),
-      registrar_(NULL),
-      processing_passphrase_(false) {
+      registrar_(NULL) {
   DCHECK(host_);
 }
 
@@ -569,7 +551,6 @@ std::string MakeUserAgentForSyncApi() {
 
 void SyncBackendHost::Core::DoInitialize(const DoInitializeOptions& options) {
   DCHECK(MessageLoop::current() == host_->sync_thread_.message_loop());
-  processing_passphrase_ = false;
 
   // Blow away the partial or corrupt sync data folder before doing any more
   // initialization, if necessary.
@@ -625,16 +606,6 @@ void SyncBackendHost::Core::DoSetPassphrase(const std::string& passphrase,
                                             bool is_explicit) {
   DCHECK(MessageLoop::current() == host_->sync_thread_.message_loop());
   sync_manager_->SetPassphrase(passphrase, is_explicit);
-}
-
-bool SyncBackendHost::Core::processing_passphrase() const {
-  DCHECK(MessageLoop::current() == host_->frontend_loop_);
-  return processing_passphrase_;
-}
-
-void SyncBackendHost::Core::set_processing_passphrase() {
-  DCHECK(MessageLoop::current() == host_->frontend_loop_);
-  processing_passphrase_ = true;
 }
 
 void SyncBackendHost::Core::DoEncryptDataTypes(

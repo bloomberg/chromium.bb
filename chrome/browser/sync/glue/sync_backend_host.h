@@ -341,12 +341,6 @@ class SyncBackendHost {
     // on behalf of SyncBackendHost::SupplyPassphrase.
     void DoSetPassphrase(const std::string& passphrase, bool is_explicit);
 
-    // Getter/setter for whether we are waiting on SetPassphrase to process a
-    // passphrase. Set by SetPassphrase, cleared by OnPassphraseRequired or
-    // OnPassphraseAccepted.
-    bool processing_passphrase() const;
-    void set_processing_passphrase();
-
     // Called on SyncBackendHost's |sync_thread_| to set the datatypes we need
     // to encrypt as well as encrypt all local data of that type.
     void DoEncryptDataTypes(const syncable::ModelTypeSet& encrypted_types);
@@ -463,12 +457,6 @@ class SyncBackendHost {
 
     // The top-level syncapi entry point.  Lives on the sync thread.
     scoped_ptr<sync_api::SyncManager> sync_manager_;
-
-    // Denotes if the core is currently attempting to set a passphrase. While
-    // this is true, OnPassphraseRequired calls are dropped.
-    // Note: after initialization, this variable should only ever be accessed or
-    // modified from within the frontend_loop_ (UI thread).
-    bool processing_passphrase_;
 
     DISALLOW_COPY_AND_ASSIGN(Core);
   };
