@@ -18,6 +18,8 @@
 
 namespace {
 
+// The UTF-8 version of these regular expressions are in
+// regular_expressions.txt.
 const char kAttentionIgnoredRe[] = "attention|attn";
 const char kRegionIgnoredRe[] =
     "province|region|other"
@@ -31,171 +33,171 @@ const char kCompanyRe[] =
     "|firma|firmenname"
     // es
     "|empresa"
-    // fr-FR: |societe|société
+    // fr-FR
     "|societe|soci\xc3\xa9t\xc3\xa9"
     // it-IT
     "|ragione.?sociale"
-    // ja-JP: 会社
+    // ja-JP
     "|\xe4\xbc\x9a\xe7\xa4\xbe"
-    // ru: название.?компании
+    // ru
     "|\xd0\xbd\xd0\xb0\xd0\xb7\xd0\xb2\xd0\xb0\xd0\xbd\xd0\xb8\xd0\xb5.?\xd0"
         "\xba\xd0\xbe\xd0\xbc\xd0\xbf\xd0\xb0\xd0\xbd\xd0\xb8\xd0\xb8"
-    // zh-CN: 单位|公司
+    // zh-CN
     "|\xe5\x8d\x95\xe4\xbd\x8d|\xe5\x85\xac\xe5\x8f\xb8"
-    // ko-KR: 회사|직장
+    // ko-KR
     "|\xed\x9a\x8c\xec\x82\xac|\xec\xa7\x81\xec\x9e\xa5";
 const char kAddressLine1Re[] =
     "address.*line|address1|addr1|street"
-    // de-DE: |strasse|straße|hausnummer|housenumber
+    // de-DE
     "|strasse|stra\xc3\x9f""e|hausnummer|housenumber"
     // en-GB
     "|house.?name"
-    // es: |direccion|dirección
+    // es
     "|direccion|direcci\xc3\xb3n"
     // fr-FR
     "|adresse"
     // it-IT
     "|indirizzo"
-    // ja-JP: 住所1
+    // ja-JP
     "|\xe4\xbd\x8f\xe6\x89\x80""1"
-    // pt-BR, pt-PT: morada|endereço
+    // pt-BR, pt-PT
     "|morada|endere\xc3\xa7o"
-    // ru: Адрес
+    // ru
     "|\xd0\x90\xd0\xb4\xd1\x80\xd0\xb5\xd1\x81"
-    // zh-CN: 地址
+    // zh-CN
     "|\xe5\x9c\xb0\xe5\x9d\x80"
-    // ko-KR: 주소.?1
+    // ko-KR
     "|\xec\xa3\xbc\xec\x86\x8c.?1";
 const char kAddressLine1LabelRe[] =
     "address"
-    // fr-FR: |adresse
+    // fr-FR
     "|adresse"
-    // it-IT: |indirizzo
+    // it-IT
     "|indirizzo"
-    // ja-JP: |住所
+    // ja-JP
     "|\xe4\xbd\x8f\xe6\x89\x80"
-    // zh-CN: |地址
+    // zh-CN
     "|\xe5\x9c\xb0\xe5\x9d\x80"
-    // ko-KR: |주소
+    // ko-KR
     "|\xec\xa3\xbc\xec\x86\x8c";
 const char kAddressLine2Re[] =
     "address.*line2|address2|addr2|street|suite|unit"
-    // de-DE: |adresszusatz|ergänzende.?angaben
+    // de-DE
     "|adresszusatz|erg\xc3\xa4nzende.?angaben"
-    // es: |direccion2|colonia|adicional
+    // es
     "|direccion2|colonia|adicional"
-    // fr-FR: |addresssuppl|complementnom|appartement
+    // fr-FR
     "|addresssuppl|complementnom|appartement"
-    // it-IT: |indirizzo2
+    // it-IT
     "|indirizzo2"
-    // ja-JP: |住所2
+    // ja-JP
     "|\xe4\xbd\x8f\xe6\x89\x80""2"
-    // pt-BR, pt-PT: |complemento|addrcomplement
+    // pt-BR, pt-PT
     "|complemento|addrcomplement"
-    // ru: |Улица
+    // ru
     "|\xd0\xa3\xd0\xbb\xd0\xb8\xd1\x86\xd0\xb0"
-    // zh-CN: |地址2
+    // zh-CN
     "|\xe5\x9c\xb0\xe5\x9d\x80""2"
-    // ko-KR: |주소.?2
+    // ko-KR
     "|\xec\xa3\xbc\xec\x86\x8c.?2";
 const char kAddressLine2LabelRe[] =
     "address"
-    // fr-FR: |adresse
+    // fr-FR
     "|adresse"
-    // it-IT: |indirizzo
+    // it-IT
     "|indirizzo"
-    // zh-CN: |地址
+    // zh-CN
     "|\xe5\x9c\xb0\xe5\x9d\x80"
-    // ko-KR: |주소
+    // ko-KR
     "|\xec\xa3\xbc\xec\x86\x8c";
 const char kAddressLine3Re[] =
     "address.*line3|address3|addr3|street|line3"
-    // es: |municipio
+    // es
     "|municipio"
-    // fr-FR: |batiment|residence
+    // fr-FR
     "|batiment|residence"
-    // it-IT: |indirizzo3
+    // it-IT
     "|indirizzo3";
 const char kCountryRe[] =
     "country|countries|location"
-    // es: |país|pais
+    // es
     "|pa\xc3\xads|pais"
-    // ja-JP: |国
+    // ja-JP
     "|\xe5\x9b\xbd"
-    // zh-CN: |国家
+    // zh-CN
     "|\xe5\x9b\xbd\xe5\xae\xb6"
-    // ko-KR: |국가|나라
+    // ko-KR
     "|\xea\xb5\xad\xea\xb0\x80|\xeb\x82\x98\xeb\x9d\xbc";
 const char kZipCodeRe[] =
     "zip|postal|post.*code|pcode|^1z$"
-    // de-DE: |postleitzahl
+    // de-DE
     "|postleitzahl"
-    // es: |\bcp\b
+    // es
     "|\\bcp\\b"
-    // fr-FR: |\bcdp\b
+    // fr-FR
     "|\\bcdp\\b"
-    // it-IT: |\bcap\b
+    // it-IT
     "|\\bcap\\b"
-    // ja-JP: |郵便番号
+    // ja-JP
     "|\xe9\x83\xb5\xe4\xbe\xbf\xe7\x95\xaa\xe5\x8f\xb7"
-    // pt-BR, pt-PT: |codigo|codpos|\bcep\b
+    // pt-BR, pt-PT
     "|codigo|codpos|\\bcep\\b"
-    // ru: |Почтовый.?Индекс
+    // ru
     "|\xd0\x9f\xd0\xbe\xd1\x87\xd1\x82\xd0\xbe\xd0\xb2\xd1\x8b\xd0\xb9.?\xd0"
         "\x98\xd0\xbd\xd0\xb4\xd0\xb5\xd0\xba\xd1\x81"
-    // zh-CN: |邮政编码|邮编
+    // zh-CN
     "|\xe9\x82\xae\xe6\x94\xbf\xe7\xbc\x96\xe7\xa0\x81|\xe9\x82\xae\xe7\xbc"
         "\x96"
-    // zh-TW: |郵遞區號
+    // zh-TW
     "|\xe9\x83\xb5\xe9\x81\x9e\xe5\x8d\x80\xe8\x99\x9f"
-    // ko-KR: |우편.?번호
+    // ko-KR
     "|\xec\x9a\xb0\xed\x8e\xb8.?\xeb\xb2\x88\xed\x98\xb8";
 const char kZip4Re[] =
     "zip|^-$|post2"
-    // pt-BR, pt-PT: |codpos2
+    // pt-BR, pt-PT
     "|codpos2";
 const char kCityRe[] =
     "city|town"
-    // de-DE: |\bort\b|stadt
+    // de-DE
     "|\\bort\\b|stadt"
-    // en-AU: |suburb
+    // en-AU
     "|suburb"
-    // es: |ciudad|provincia|localidad|poblacion
+    // es
     "|ciudad|provincia|localidad|poblacion"
-    // fr-FR: |ville|commune
+    // fr-FR
     "|ville|commune"
-    // it-IT: |localita
+    // it-IT
     "|localita"
-    // ja-JP: |市区町村
+    // ja-JP
     "|\xe5\xb8\x82\xe5\x8c\xba\xe7\x94\xba\xe6\x9d\x91"
-    // pt-BR, pt-PT: |cidade
+    // pt-BR, pt-PT
     "|cidade"
-    // ru: |Город
+    // ru
     "|\xd0\x93\xd0\xbe\xd1\x80\xd0\xbe\xd0\xb4"
-    // zh-CN: |市
+    // zh-CN
     "|\xe5\xb8\x82"
-    // zh-TW: |分區
+    // zh-TW
     "|\xe5\x88\x86\xe5\x8d\x80"
-    // ko-KR: |^시[^도·・]|시[·・]?군[·・]?구
+    // ko-KR
     "|^\xec\x8b\x9c[^\xeb\x8f\x84\xc2\xb7\xe3\x83\xbb]|\xec\x8b\x9c[\xc2\xb7"
         "\xe3\x83\xbb]?\xea\xb5\xb0[\xc2\xb7\xe3\x83\xbb]?\xea\xb5\xac";
 const char kStateRe[] =
     "(?<!united )state|county|region|province"
-    // de-DE: |land
+    // de-DE
     "|land"
-    // en-UK: |county|principality
+    // en-UK
     "|county|principality"
-    // ja-JP: |都道府県
+    // ja-JP
     "|\xe9\x83\xbd\xe9\x81\x93\xe5\xba\x9c\xe7\x9c\x8c"
-    // pt-BR, pt-PT: |estado|provincia
+    // pt-BR, pt-PT
     "|estado|provincia"
-    // ru: |область
+    // ru
     "|\xd0\xbe\xd0\xb1\xd0\xbb\xd0\xb0\xd1\x81\xd1\x82\xd1\x8c"
-    // zh-CN: |省
+    // zh-CN
     "|\xe7\x9c\x81"
-    // zh-TW: |地區
+    // zh-TW
     "|\xe5\x9c\xb0\xe5\x8d\x80"
-    // ko-KR: |^시[·・]?도
+    // ko-KR
     "|^\xec\x8b\x9c[\xc2\xb7\xe3\x83\xbb]?\xeb\x8f\x84";
 const char kAddressTypeSameAsRe[] = "same as";
 const char kAddressTypeUseMyRe[] = "use my";

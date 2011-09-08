@@ -18,47 +18,49 @@
 
 namespace {
 
+// The UTF-8 version of these regular expressions are in
+// regular_expressions.txt.
 const char kNameOnCardRe[] =
     "card.?holder|name.?on.?card|ccname|ccfullname|owner"
-    // de-DE: |karteninhaber
+    // de-DE
     "|karteninhaber"
-    // es: |nombre.*tarjeta
+    // es
     "|nombre.*tarjeta"
-    // fr-FR: |nom.*carte
+    // fr-FR
     "|nom.*carte"
-    // it-IT: |nome.*cart
+    // it-IT
     "|nome.*cart"
-    // ja-JP: |名前
+    // ja-JP
     "|\xe5\x90\x8d\xe5\x89\x8d"
-    // ru: |Имя.*карты
+    // ru
     "|\xd0\x98\xd0\xbc\xd1\x8f.*\xd0\xba\xd0\xb0\xd1\x80\xd1\x82\xd1\x8b"
-    // zh-CN: |信用卡开户名|开户名|持卡人姓名
+    // zh-CN
     "|\xe4\xbf\xa1\xe7\x94\xa8\xe5\x8d\xa1\xe5\xbc\x80\xe6\x88\xb7\xe5\x90\x8d"
         "|\xe5\xbc\x80\xe6\x88\xb7\xe5\x90\x8d|\xe6\x8c\x81\xe5\x8d\xa1\xe4"
         "\xba\xba\xe5\xa7\x93\xe5\x90\x8d"
-    // zh-TW: |持卡人姓名
+    // zh-TW
     "|\xe6\x8c\x81\xe5\x8d\xa1\xe4\xba\xba\xe5\xa7\x93\xe5\x90\x8d";
 const char kNameOnCardContextualRe[] =
     "name";
 const char kCardNumberRe[] =
     "card.?number|card.?#|card.?no|ccnum|acctnum"
-    // de-DE: |nummer
+    // de-DE
     "|nummer"
-    // es: |credito|numero|número
+    // es
     "|credito|numero|n\xc3\xbamero"
-    // fr-FR: |numéro
+    // fr-FR
     "|num\xc3\xa9ro"
-    // ja-JP: |カード番号
+    // ja-JP
     "|\xe3\x82\xab\xe3\x83\xbc\xe3\x83\x89\xe7\x95\xaa\xe5\x8f\xb7"
-    // ru: |Номер.*карты
+    // ru
     "|\xd0\x9d\xd0\xbe\xd0\xbc\xd0\xb5\xd1\x80.*\xd0\xba\xd0\xb0\xd1\x80\xd1"
         "\x82\xd1\x8b"
-    // zh-CN: |信用卡号|信用卡号码
+    // zh-CN
     "|\xe4\xbf\xa1\xe7\x94\xa8\xe5\x8d\xa1\xe5\x8f\xb7|\xe4\xbf\xa1\xe7\x94"
         "\xa8\xe5\x8d\xa1\xe5\x8f\xb7\xe7\xa0\x81"
-    // zh-TW: |信用卡卡號
+    // zh-TW
     "|\xe4\xbf\xa1\xe7\x94\xa8\xe5\x8d\xa1\xe5\x8d\xa1\xe8\x99\x9f"
-    // ko-KR: |카드
+    // ko-KR
     "|\xec\xb9\xb4\xeb\x93\x9c";
 const char kCardCvcRe[] =
     "verification|card identification|security code|cvn|cvv|cvc|csc";
@@ -77,39 +79,39 @@ const char kCardCvcRe[] =
 // Instead, we match only words beginning with "month".
 const char kExpirationMonthRe[] =
     "expir|exp.*mo|exp.*date|ccmonth"
-    // de-DE: |gueltig|gültig|monat
+    // de-DE
     "|gueltig|g\xc3\xbcltig|monat"
-    // es: |fecha
+    // es
     "|fecha"
-    // fr-FR: |date.*exp
+    // fr-FR
     "|date.*exp"
-    // it-IT: |scadenza
+    // it-IT
     "|scadenza"
-    // ja-JP: |有効期限
+    // ja-JP
     "|\xe6\x9c\x89\xe5\x8a\xb9\xe6\x9c\x9f\xe9\x99\x90"
-    // pt-BR, pt-PT: |validade
+    // pt-BR, pt-PT
     "|validade"
-    // ru: |Срок действия карты
+    // ru
     "|\xd0\xa1\xd1\x80\xd0\xbe\xd0\xba \xd0\xb4\xd0\xb5\xd0\xb9\xd1\x81\xd1"
         "\x82\xd0\xb2\xd0\xb8\xd1\x8f \xd0\xba\xd0\xb0\xd1\x80\xd1\x82\xd1\x8b"
-    // zh-CN: |月
+    // zh-CN
     "|\xe6\x9c\x88";
 const char kExpirationYearRe[] =
     "exp|^/|year"
-    // de-DE: |ablaufdatum|gueltig|gültig|yahr
+    // de-DE
     "|ablaufdatum|gueltig|g\xc3\xbcltig|yahr"
-    // es: |fecha
+    // es
     "|fecha"
-    // it-IT: |scadenza
+    // it-IT
     "|scadenza"
-    // ja-JP: |有効期限
+    // ja-JP
     "|\xe6\x9c\x89\xe5\x8a\xb9\xe6\x9c\x9f\xe9\x99\x90"
-    // pt-BR, pt-PT: |validade
+    // pt-BR, pt-PT
     "|validade"
-    // ru: |Срок действия карты
+    // ru
     "|\xd0\xa1\xd1\x80\xd0\xbe\xd0\xba \xd0\xb4\xd0\xb5\xd0\xb9\xd1\x81\xd1"
         "\x82\xd0\xb2\xd0\xb8\xd1\x8f \xd0\xba\xd0\xb0\xd1\x80\xd1\x82\xd1\x8b"
-    // zh-CN: |年|有效期
+    // zh-CN
     "|\xe5\xb9\xb4|\xe6\x9c\x89\xe6\x95\x88\xe6\x9c\x9f";
 
 // This regex is a little bit nasty, but it is simply requiring exactly two
@@ -118,19 +120,19 @@ const char kExpirationDate2DigitYearRe[] =
     "exp.*date.*[^y]yy([^y]|$)";
 const char kExpirationDateRe[] =
     "expir|exp.*date"
-    // de-DE: |gueltig|gültig
+    // de-DE
     "|gueltig|g\xc3\xbcltig"
-    // es: |fecha
+    // es
     "|fecha"
-    // fr-FR: |date.*exp
+    // fr-FR
     "|date.*exp"
-    // it-IT: |scadenza
+    // it-IT
     "|scadenza"
-    // ja-JP: |有効期限
+    // ja-JP
     "|\xe6\x9c\x89\xe5\x8a\xb9\xe6\x9c\x9f\xe9\x99\x90"
-    // pt-BR, pt-PT: |validade
+    // pt-BR, pt-PT
     "|validade"
-    // ru: |Срок действия карты
+    // ru
     "|\xd0\xa1\xd1\x80\xd0\xbe\xd0\xba \xd0\xb4\xd0\xb5\xd0\xb9\xd1\x81\xd1"
         "\x82\xd0\xb2\xd0\xb8\xd1\x8f\xd0\xba\xd0\xb0\xd1\x80\xd1\x82\xd1\x8b";
 const char kCardIgnoredRe[] =

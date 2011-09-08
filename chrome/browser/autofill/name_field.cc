@@ -14,74 +14,76 @@
 
 namespace {
 
+// The UTF-8 version of these regular expressions are in
+// regular_expressions.txt.
 const char kNameIgnoredRe[] =
     "user.?name|user.?id|nickname|maiden name|title|prefix|suffix"
-    // de-DE: |vollständiger.?name
+    // de-DE
     "|vollst\xc3\xa4ndiger.?name"
-    // zh-CN: |用户名
+    // zh-CN
     "|\xe7\x94\xa8\xe6\x88\xb7\xe5\x90\x8d"
-    // ko-KR: |(사용자.?)?아이디|사용자.?ID
+    // ko-KR
     "|(\xec\x82\xac\xec\x9a\xa9\xec\x9e\x90.?)?\xec\x95\x84\xec\x9d\xb4\xeb"
         "\x94\x94|\xec\x82\xac\xec\x9a\xa9\xec\x9e\x90.?ID";
 const char kNameRe[] =
     "^name|full.?name|your.?name|customer.?name|firstandlastname|bill.?name"
         "|ship.?name"
-    // es: |nombre.*y.*apellidos
+    // es
     "|nombre.*y.*apellidos"
-    // fr-FR: |^nom
+    // fr-FR
     "|^nom"
-    // ja-JP: |お名前|氏名
+    // ja-JP
     "|\xe3\x81\x8a\xe5\x90\x8d\xe5\x89\x8d|\xe6\xb0\x8f\xe5\x90\x8d"
-    // pt-BR, pt-PT: |^nome
+    // pt-BR, pt-PT
     "|^nome"
-    // zh-CN: |姓名
+    // zh-CN
     "|\xe5\xa7\x93\xe5\x90\x8d"
-    // ko-KR: |성명
+    // ko-KR
     "|\xec\x84\xb1\xeb\xaa\x85";
 const char kNameSpecificRe[] =
     "^name"
-    // fr-FR: |^nom
+    // fr-FR
     "|^nom"
-    // pt-BR, pt-PT: |^nome
+    // pt-BR, pt-PT
     "|^nome";
 const char kFirstNameRe[] =
     "first.*name|initials|fname|first$"
-    // de-DE: |vorname
+    // de-DE
     "|vorname"
-    // es: |nombre
+    // es
     "|nombre"
-    // fr-FR: |forename|prénom|prenom
+    // fr-FR
     "|forename|pr\xc3\xa9nom|prenom"
-    // ja-JP: |名
+    // ja-JP
     "|\xe5\x90\x8d"
-    // pt-BR, pt-PT: |nome
+    // pt-BR, pt-PT
     "|nome"
-    // ru: |Имя
+    // ru
     "|\xd0\x98\xd0\xbc\xd1\x8f"
-    // ko-KR: |이름
+    // ko-KR
     "|\xec\x9d\xb4\xeb\xa6\x84";
 const char kMiddleInitialRe[] = "middle.*initial|m\\.i\\.|mi$|\\bmi\\b";
 const char kMiddleNameRe[] =
     "middle.*name|mname|middle$"
-    // es: |apellido.?materno|lastlastname
+    // es
     "|apellido.?materno|lastlastname";
 const char kLastNameRe[] =
     "last.*name|lname|surname|last$|secondname"
-    // de-DE: |nachname
+    // de-DE
     "|nachname"
-    // es: |apellido
+    // es
     "|apellido"
-    // fr-FR: |famille|^nom
+    // fr-FR
     "|famille|^nom"
-    // it-IT: |cognome
+    // it-IT
     "|cognome"
-    // ja-JP: |姓
+    // ja-JP
     "|\xe5\xa7\x93"
-    // pt-BR, pt-PT: |morada|apelidos|surename|sobrenome
+    // pt-BR, pt-PT
     "|morada|apelidos|surename|sobrenome"
-    // ru: |Фамилия
+    // ru
     "|\xd0\xa4\xd0\xb0\xd0\xbc\xd0\xb8\xd0\xbb\xd0\xb8\xd1\x8f"
-    // ko-KR: |성[^명]?
+    // ko-KR
     "|\xec\x84\xb1[^\xeb\xaa\x85]?";
 
 // A form field that can parse a full name field.
