@@ -52,10 +52,10 @@ namespace ppapi_proxy {
 // channel used to talk to the instance.
 class BrowserPpp;
 
-// Returns true if the PPAPI Developer interface is enabled.
+// Returns true if the PPAPI Developer interfaces are enabled.
 // To enable, set the environment variable NACL_ENABLE_PPAPI_DEV=1
 // Note: Developer interfaces are _not_ enabled by default.
-bool DevInterfaceEnabled();
+bool AreDevInterfacesEnabled();
 
 // Associate a particular BrowserPpp with a PP_Instance value.  This allows the
 // browser side to look up information it needs to communicate with the stub.
@@ -91,7 +91,8 @@ void CleanUpAfterDeadNexe(PP_Instance instance);
 // Support for getting PPB_ browser interfaces.
 // Safe version CHECK's for NULL.
 void SetPPBGetInterface(PPB_GetInterface get_interface_function,
-                        bool dev_interface);
+                        bool allow_dev_interfaces,
+                        bool allow_3d_interfaces);
 const void* GetBrowserInterface(const char* interface_name);
 const void* GetBrowserInterfaceSafe(const char* interface_name);
 // Functions marked "shared" are to be provided by both the browser and the

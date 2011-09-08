@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
 #include <map>
 
 #include "native_client/src/include/nacl_macros.h"
@@ -15,6 +16,14 @@
 #include "native_client/src/shared/ppapi_proxy/utility.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 #include "native_client/src/trusted/plugin/plugin.h"
+#include "ppapi/c/dev/ppb_context_3d_dev.h"
+#include "ppapi/c/dev/ppb_context_3d_trusted_dev.h"
+#include "ppapi/c/dev/ppb_gles_chromium_texture_mapping_dev.h"
+#include "ppapi/c/dev/ppb_layer_compositor_dev.h"
+#include "ppapi/c/dev/ppb_surface_3d_dev.h"
+#include "ppapi/c/ppb_graphics_3d.h"
+#include "ppapi/c/ppb_opengles.h"
+#include "ppapi/c/trusted/ppb_graphics_3d_trusted.h"
 
 namespace ppapi_proxy {
 
@@ -39,14 +48,17 @@ std::map<NaClSrpcChannel*, PP_Instance>* channel_to_instance_id_map = NULL;
 // is requesting PPAPI Dev interfaces to be available.
 // Set by SetPPBGetInterface().
 PPB_GetInterface get_interface = NULL;
-bool plugin_requests_dev_interface = false;
+bool enable_dev_interfaces = false;
+
+// Whether Pepper 3D interfaces should be enabled.
+bool enable_3d_interfaces = true;
 
 }  // namespace
 
 // By default, disable developer (Dev) interfaces.  To enable developer
 // interfaces, set the environment variable NACL_ENABLE_PPAPI_DEV to 1.
 // Also, the plugin can request whether or not to enable dev interfaces.
-bool DevInterfaceEnabled() {
+bool AreDevInterfacesEnabled() {
   static bool first = true;
   static bool env_dev_enabled = false;
   if (first) {
@@ -59,7 +71,7 @@ bool DevInterfaceEnabled() {
     }
     first = false;
   }
-  return env_dev_enabled || plugin_requests_dev_interface;
+  return env_dev_enabled || enable_dev_interfaces;
 }
 
 
@@ -175,9 +187,11 @@ void CleanUpAfterDeadNexe(PP_Instance instance) {
 }
 
 void SetPPBGetInterface(PPB_GetInterface get_interface_function,
-                        bool dev_interface) {
+                        bool allow_dev_interfaces,
+                        bool allow_3d_interfaces) {
   get_interface = get_interface_function;
-  plugin_requests_dev_interface = dev_interface;
+  enable_dev_interfaces = allow_dev_interfaces;
+  enable_3d_interfaces = allow_3d_interfaces;
 }
 
 const void* GetBrowserInterface(const char* interface_name) {
@@ -187,8 +201,24 @@ const void* GetBrowserInterface(const char* interface_name) {
     return NULL;
   }
   // If dev interface is not enabled, reject interfaces containing "(Dev)"
-  if (!DevInterfaceEnabled() && strstr(interface_name, "(Dev)") != NULL) {
+  if (!AreDevInterfacesEnabled() && strstr(interface_name, "(Dev)") != NULL) {
     return NULL;
+  }
+  if (!enable_3d_interfaces) {
+    static const char* disabled_interface_names[] = {
+      PPB_GRAPHICS_3D_INTERFACE,
+      PPB_GRAPHICS_3D_TRUSTED_INTERFACE,
+      PPB_CONTEXT_3D_DEV_INTERFACE,
+      PPB_CONTEXT_3D_TRUSTED_DEV_INTERFACE,
+      PPB_GLES_CHROMIUM_TEXTURE_MAPPING_DEV_INTERFACE,
+      PPB_OPENGLES2_INTERFACE,
+      PPB_SURFACE_3D_DEV_INTERFACE,
+      PPB_LAYER_COMPOSITOR_DEV_INTERFACE
+    };
+    for (int i = 0; i < NACL_ARRAY_SIZE(disabled_interface_names); i++) {
+      if (strcmp(interface_name, disabled_interface_names[i]) == 0)
+        return NULL;
+    }
   }
   return (*get_interface)(interface_name);
 }

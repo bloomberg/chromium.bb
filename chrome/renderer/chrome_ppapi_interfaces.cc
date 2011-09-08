@@ -4,11 +4,13 @@
 
 #include "chrome/renderer/chrome_ppapi_interfaces.h"
 
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/rand_util_c.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/chrome_ppb_pdf_impl.h"
+#include "content/common/content_switches.h"
 #include "content/renderer/render_thread.h"
 #include "ppapi/c/private/ppb_nacl_private.h"
 #include "ppapi/c/private/ppb_pdf.h"
@@ -57,9 +59,14 @@ int UrandomFD(void) {
 #endif
 }
 
+bool Are3DInterfacesDisabled() {
+  return CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisable3DAPIs);
+}
+
 const PPB_NaCl_Private ppb_nacl = {
   &LaunchSelLdr,
   &UrandomFD,
+  &Are3DInterfacesDisabled,
 };
 
 class PPB_NaCl_Impl {
@@ -92,4 +99,3 @@ void UninitializePPAPI() {
 }
 
 }  // namespace chrome
-

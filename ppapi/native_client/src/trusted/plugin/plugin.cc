@@ -16,8 +16,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/types.h>
 
 #include <algorithm>
 #include <deque>
@@ -879,7 +879,7 @@ bool Plugin::Init(uint32_t argc, const char* argn[], const char* argv[]) {
     // and 'nacl' will be the URL for the manifest.
     if (IsForeignMIMEType()) {
       manifest_url = LookupArgument(kNaClManifestAttribute);
-      enable_dev_interface_ = RequiresDevInterface(manifest_url);
+      enable_dev_interfaces_ = RequiresDevInterfaces(manifest_url);
     }
     // Use the document URL as the base for resolving relative URLs to find the
     // manifest.  This takes into account the setting of <base> tags that
@@ -928,7 +928,7 @@ Plugin::Plugin(PP_Instance pp_instance)
       wrapper_factory_(NULL),
       last_error_string_(""),
       ppapi_proxy_(NULL),
-      enable_dev_interface_(false),
+      enable_dev_interfaces_(false),
       replayDidChangeView(false),
       replayHandleDocumentLoad(false),
       init_time_(0),
@@ -1219,7 +1219,7 @@ void Plugin::BitcodeDidTranslateContinuation(int32_t pp_error) {
 // Check manifest_url and return whether or not to enable PPAPI Dev interfaces.
 // Returning true here will enable the PPAPI Dev interfaces regardless of
 // the environment variable NACL_ENABLE_PPAPI_DEV.
-bool Plugin::RequiresDevInterface(const nacl::string& manifest_url) {
+bool Plugin::RequiresDevInterfaces(const nacl::string& manifest_url) {
   const char* extensions[] = {
       "chrome-extension://acadkphlmlegjaadjagenfimbpphcgnh/",  // PDF
   };

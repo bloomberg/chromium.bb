@@ -26,7 +26,6 @@
 #include "native_client/src/shared/ppapi_proxy/utility.h"
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
 #include "native_client/src/trusted/plugin/plugin.h"
-#include "ppapi/c/ppp_input_event.h"
 #include "ppapi/c/dev/ppp_find_dev.h"
 #include "ppapi/c/dev/ppp_mouse_lock_dev.h"
 #include "ppapi/c/dev/ppp_printing_dev.h"
@@ -36,6 +35,8 @@
 #include "ppapi/c/dev/ppp_zoom_dev.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppp.h"
+#include "ppapi/c/ppp_input_event.h"
+#include "ppapi/c/private/ppb_nacl_private.h"
 
 namespace ppapi_proxy {
 
@@ -58,7 +59,16 @@ void PPBGetInterfaces() {
 int32_t BrowserPpp::InitializeModule(PP_Module module_id,
                                      PPB_GetInterface get_browser_interface) {
   DebugPrintf("PPP_InitializeModule: module=%"NACL_PRIu32"\n", module_id);
-  SetPPBGetInterface(get_browser_interface, plugin_->enable_dev_interface());
+  // Ask the browser for an interface which provides missing functions
+  const PPB_NaCl_Private* ppb_nacl = reinterpret_cast<const PPB_NaCl_Private*>(
+      get_browser_interface(PPB_NACL_PRIVATE_INTERFACE));
+  if (ppb_nacl == NULL) {
+    DebugPrintf("PPP_InitializeModule: NaCl private interface missing!\n");
+    return PP_ERROR_FAILED;
+  }
+  SetPPBGetInterface(get_browser_interface,
+                     plugin_->enable_dev_interfaces(),
+                     !ppb_nacl->Are3DInterfacesDisabled());
   PPBGetInterfaces();
 
   SetBrowserPppForInstance(plugin_->pp_instance(), this);

@@ -16,10 +16,10 @@
 #include "ppapi/c/pp_completion_callback.h"
 #include "srpcgen/ppb_rpc.h"
 
-using ppapi_proxy::MakeRemoteCompletionCallback;
-using ppapi_proxy::LookupBrowserPppForInstance;
+using ppapi_proxy::AreDevInterfacesEnabled;
 using ppapi_proxy::DebugPrintf;
-using ppapi_proxy::DevInterfaceEnabled;
+using ppapi_proxy::LookupBrowserPppForInstance;
+using ppapi_proxy::MakeRemoteCompletionCallback;
 
 void NaClFileRpcServer::StreamAsFile(
     NaClSrpcRpc* rpc,
@@ -45,8 +45,8 @@ void NaClFileRpcServer::StreamAsFile(
 }
 
 // GetFileDesc() will only provide file descriptors if the PPAPI Dev interface
-// is enabled. By default, it is _not_ enabled. See DevInterfaceEnabled() for
-// information on how to enable.
+// is enabled. By default, it is _not_ enabled. See AreDevInterfacesEnabled()
+// for information on how to enable.
 void NaClFileRpcServer::GetFileDesc(
     NaClSrpcRpc* rpc,
     NaClSrpcClosure* done,
@@ -63,7 +63,7 @@ void NaClFileRpcServer::GetFileDesc(
   NaClSrpcClosureRunner runner(done);
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
 
-  if (DevInterfaceEnabled()) {
+  if (AreDevInterfacesEnabled()) {
     plugin::Plugin* plugin = LookupBrowserPppForInstance(instance)->plugin();
     int32_t posix_file_desc = plugin->GetPOSIXFileDesc(url);
     DebugPrintf("NaClFile::GetFileDesc: posix_file_desc=%"NACL_PRId32"\n",
