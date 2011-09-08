@@ -459,7 +459,7 @@ class PatchTest(unittest.TestCase):
     p = patch.FilePatchDiff('tools/run_local_server.sh', GIT_RENAME, [])
     self._check_patch(p, 'tools/run_local_server.sh', GIT_RENAME,
         is_git_diff=True, patchlevel=1,
-        source_filename='tools/run_local_server.PY')
+        source_filename='tools/run_local_server.PY', is_new=True)
 
   def testGitRenamePartial(self):
     p = patch.FilePatchDiff(
@@ -467,12 +467,12 @@ class PatchTest(unittest.TestCase):
     self._check_patch(
         p, 'chromeos/views/webui_menu_widget.h', GIT_RENAME_PARTIAL,
         source_filename='chromeos/views/DOMui_menu_widget.h', is_git_diff=True,
-        patchlevel=1)
+        patchlevel=1, is_new=True)
 
   def testGitCopy(self):
     p = patch.FilePatchDiff('pp', GIT_COPY, [])
     self._check_patch(p, 'pp', GIT_COPY, is_git_diff=True, patchlevel=1,
-        source_filename='PRESUBMIT.py')
+        source_filename='PRESUBMIT.py', is_new=True)
 
   def testOnlyHeader(self):
     diff = '--- file_a\n+++ file_a\n'
@@ -503,7 +503,7 @@ class PatchTest(unittest.TestCase):
     diff = '--- file_a\n+++ file_b\n'
     p = patch.FilePatchDiff('file_b', diff, [])
     # Should it be marked as new?
-    self._check_patch(p, 'file_b', diff, source_filename='file_a')
+    self._check_patch(p, 'file_b', diff, source_filename='file_a', is_new=True)
 
   def testGitCopyPartial(self):
     diff = (
@@ -523,7 +523,8 @@ class PatchTest(unittest.TestCase):
     p = patch.FilePatchDiff('wtf2', diff, [])
     # Should it be marked as new?
     self._check_patch(
-        p, 'wtf2', diff, source_filename='wtf', is_git_diff=True, patchlevel=1)
+        p, 'wtf2', diff, source_filename='wtf', is_git_diff=True, patchlevel=1,
+        is_new=True)
 
   def testGitExe(self):
     diff = (

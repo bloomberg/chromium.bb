@@ -221,6 +221,7 @@ class FilePatchDiff(FilePatchBase):
     if old not in (self.filename, 'dev/null'):
       # Copy or rename.
       self.source_filename = old
+      self.is_new = True
 
     last_line = ''
 
@@ -275,9 +276,10 @@ class FilePatchDiff(FilePatchBase):
     if match:
       if last_line[:3] in ('---', '+++'):
         self._fail('--- and +++ are reversed')
-      self.is_new = match.group(1) == '/dev/null'
-      # TODO(maruel): Use self.source_file.
-      if self.mangle(match.group(1)) not in (old, 'dev/null'):
+      if match.group(1) == '/dev/null':
+        self.is_new = True
+      elif self.mangle(match.group(1)) != old:
+        # git patches are always well formatted, do not allow random filenames.
         self._fail('Unexpected git diff: %s != %s.' % (old, match.group(1)))
       if not lines or not lines[0].startswith('+++'):
         self._fail('Missing git diff output name.')
@@ -287,7 +289,6 @@ class FilePatchDiff(FilePatchBase):
     if match:
       if not last_line.startswith('---'):
         self._fail('Unexpected git diff: --- not following +++.')
-      # TODO(maruel): new == self.filename.
       if '/dev/null' == match.group(1):
         self.is_delete = True
       elif self.filename != self.mangle(match.group(1)):
@@ -327,10 +328,12 @@ class FilePatchDiff(FilePatchBase):
     if match:
       if last_line[:3] in ('---', '+++'):
         self._fail('--- and +++ are reversed')
-      self.is_new = match.group(1) == '/dev/null'
-      if (self.mangle(match.group(1)) != self.filename and
-           match.group(1) != '/dev/null'):
+      if match.group(1) == '/dev/null':
+        self.is_new = True
+      elif self.mangle(match.group(1)) != self.filename:
+        # guess the source filename.
         self.source_filename = match.group(1)
+        self.is_new = True
       if not lines or not lines[0].startswith('+++'):
         self._fail('Nothing after header.')
       return
