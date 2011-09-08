@@ -436,7 +436,7 @@ class Bus : public base::RefCountedThreadSafe<Bus> {
   base::WaitableEvent on_shutdown_;
   DBusConnection* connection_;
 
-  MessageLoop* origin_loop_;
+  scoped_refptr<base::MessageLoopProxy> origin_message_loop_proxy_;
   base::PlatformThreadId origin_thread_id_;
 
   std::set<std::string> owned_service_names_;

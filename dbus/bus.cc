@@ -180,7 +180,6 @@ Bus::Bus(const Options& options)
       dbus_thread_message_loop_proxy_(options.dbus_thread_message_loop_proxy),
       on_shutdown_(false /* manual_reset */, false /* initially_signaled */),
       connection_(NULL),
-      origin_loop_(MessageLoop::current()),
       origin_thread_id_(base::PlatformThread::CurrentId()),
       async_operations_set_up_(false),
       shutdown_completed_(false),
@@ -188,6 +187,10 @@ Bus::Bus(const Options& options)
       num_pending_timeouts_(0) {
   // This is safe to call multiple times.
   dbus_threads_init_default();
+  // The origin message loop is unnecessary if the client uses synchronous
+  // functions only.
+  if (MessageLoop::current())
+    origin_message_loop_proxy_ =  MessageLoop::current()->message_loop_proxy();
 }
 
 Bus::~Bus() {
@@ -560,25 +563,42 @@ void Bus::ProcessAllIncomingDataIfAny() {
 
 void Bus::PostTaskToOriginThread(const tracked_objects::Location& from_here,
                                  const base::Closure& task) {
-  origin_loop_->PostTask(from_here, task);
+  DCHECK(origin_message_loop_proxy_.get());
+  if (!origin_message_loop_proxy_->PostTask(from_here, task)) {
+    LOG(WARNING) << "Failed to post a task to the origin message loop";
+  }
 }
 
 void Bus::PostTaskToDBusThread(const tracked_objects::Location& from_here,
                                const base::Closure& task) {
-  if (dbus_thread_message_loop_proxy_.get())
-    dbus_thread_message_loop_proxy_->PostTask(from_here, task);
-  else
-    origin_loop_->PostTask(from_here, task);
+  if (dbus_thread_message_loop_proxy_.get()) {
+    if (!dbus_thread_message_loop_proxy_->PostTask(from_here, task)) {
+      LOG(WARNING) << "Failed to post a task to the D-Bus thread message loop";
+    }
+  } else {
+    DCHECK(origin_message_loop_proxy_.get());
+    if (!origin_message_loop_proxy_->PostTask(from_here, task)) {
+      LOG(WARNING) << "Failed to post a task to the origin message loop";
+    }
+  }
 }
 
 void Bus::PostDelayedTaskToDBusThread(
     const tracked_objects::Location& from_here,
     const base::Closure& task,
     int delay_ms) {
-  if (dbus_thread_message_loop_proxy_.get())
-    dbus_thread_message_loop_proxy_->PostDelayedTask(from_here, task, delay_ms);
-  else
-    origin_loop_->PostDelayedTask(from_here, task, delay_ms);
+  if (dbus_thread_message_loop_proxy_.get()) {
+    if (!dbus_thread_message_loop_proxy_->PostDelayedTask(
+            from_here, task, delay_ms)) {
+      LOG(WARNING) << "Failed to post a task to the D-Bus thread message loop";
+    }
+  } else {
+    DCHECK(origin_message_loop_proxy_.get());
+    if (!origin_message_loop_proxy_->PostDelayedTask(
+            from_here, task, delay_ms)) {
+      LOG(WARNING) << "Failed to post a task to the origin message loop";
+    }
+  }
 }
 
 bool Bus::HasDBusThread() {
