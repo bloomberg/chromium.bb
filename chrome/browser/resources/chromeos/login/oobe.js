@@ -51,6 +51,14 @@ cr.define('cr.ui', function() {
     },
 
     /**
+     * Hides/shows header (Shutdown/Add User/Cancel buttons).
+     * @param {bool} hidden Whether header is hidden.
+     */
+    set headerHidden(hidden) {
+      $('login-header-bar').hidden = hidden;
+    },
+
+    /**
      * Handle accelerators.
      * @param {string} name Accelerator name.
      */
@@ -438,7 +446,7 @@ cr.define('cr.ui', function() {
     }
 
     // Don't show header bar for OOBE.
-    $('login-header-bar').hidden = showOobe;
+    Oobe.getInstance().headerHidden = showOobe;
   };
 
   /**

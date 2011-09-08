@@ -60,8 +60,15 @@ cr.define('oobe', function() {
         chrome.send('onUserImageAccepted');
       });
       return [ okButton ];
-    }
+    },
 
+    /**
+     * Event handler that is invoked just before the screen is shown.
+     * @param {object} data Screen init payload.
+     */
+    onBeforeShow: function(data) {
+      Oobe.getInstance().headerHidden = true;
+    }
   };
 
   /**

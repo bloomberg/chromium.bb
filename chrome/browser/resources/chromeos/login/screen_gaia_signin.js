@@ -143,6 +143,8 @@ cr.define('login', function() {
       if (msg.method == 'completeLogin' && this.isAuthExtMessage_(e)) {
         chrome.send('completeLogin', [msg.email, msg.password] );
         this.loading = true;
+        // Now that we're in logged in state header should be hidden.
+        Oobe.getInstance().headerHidden = true;
       } else if (msg.method == 'loginUILoaded' && this.isAuthExtMessage_(e)) {
         $('offline-message').update();
         this.loading = false;
