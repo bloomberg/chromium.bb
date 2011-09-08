@@ -22,6 +22,7 @@ _CHROME_BINHOST = 'CHROME_BINHOST'
 _CROS_ARCHIVE_URL = 'CROS_ARCHIVE_URL'
 _FACTORY_SHIM = 'factory_shim'
 _FACTORY_TEST = 'factory_test'
+_FACTORY_HWID = 'hwid'
 _FULL_BINHOST = 'FULL_BINHOST'
 _PRIVATE_BINHOST_CONF_DIR = ('src/private-overlays/chromeos-overlay/'
                              'chromeos/binhost')
@@ -886,10 +887,17 @@ def BuildFactoryZip(archive_dir, image_root):
   Returns the basename of the zipfile.
   """
   filename = 'factory_image.zip'
+
+  # Prepare and renew HWID folder from _FACTORY_TEST/hwid if available.
+  if os.path.exists(os.path.join(image_root, _FACTORY_TEST, _FACTORY_HWID)):
+    cros_lib.RunCommand(['ln', '-sf', '%s/hwid' % _FACTORY_TEST, _FACTORY_HWID],
+                        cwd=image_root)
+
   zipfile = os.path.join(archive_dir, filename)
   patterns = ['factory_image', 'factory_install', 'partition', 'netboot',
               'hwid']
-  cmd = ['zip', zipfile, '-r', _FACTORY_SHIM, _FACTORY_TEST]
+  cmd = ['zip', zipfile, '-r', _FACTORY_SHIM, _FACTORY_TEST, _FACTORY_HWID]
+  cmd.extend(['--exclude', '%s/hwid/*' % _FACTORY_TEST])
   for pattern in patterns:
     cmd.extend(['--include', '*%s*' % pattern])
   cros_lib.RunCommand(cmd, cwd=image_root)
