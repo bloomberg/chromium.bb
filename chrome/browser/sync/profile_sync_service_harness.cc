@@ -1002,8 +1002,8 @@ bool ProfileSyncServiceHarness::EnableEncryptionForType(
 
 bool ProfileSyncServiceHarness::WaitForTypeEncryption(
     syncable::ModelType type) {
-  if (IsSynced() &&
-      IsTypeEncrypted(type) &&
+  if (IsTypeEncrypted(type) &&
+      IsSynced() &&
       GetLastSessionSnapshot()->num_conflicting_updates == 0) {
     // Encryption is already complete for |type|; do not wait.
     return true;
