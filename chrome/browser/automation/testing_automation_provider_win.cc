@@ -25,10 +25,12 @@ void TestingAutomationProvider::IsWindowMaximized(int handle,
 
   HWND hwnd = window_tracker_->GetResource(handle);
   if (hwnd) {
-    *success = true;
     WINDOWPLACEMENT window_placement;
-    GetWindowPlacement(hwnd, &window_placement);
-    *is_maximized = (window_placement.showCmd == SW_MAXIMIZE);
+    window_placement.length = sizeof(window_placement);
+    if (GetWindowPlacement(hwnd, &window_placement)) {
+      *success = true;
+      *is_maximized = (window_placement.showCmd == SW_MAXIMIZE);
+    }
   }
 }
 
@@ -48,10 +50,12 @@ void TestingAutomationProvider::GetWindowBounds(int handle,
   *success = false;
   HWND hwnd = window_tracker_->GetResource(handle);
   if (hwnd) {
-    *success = true;
     WINDOWPLACEMENT window_placement;
-    GetWindowPlacement(hwnd, &window_placement);
-    *bounds = window_placement.rcNormalPosition;
+    window_placement.length = sizeof(window_placement);
+    if (GetWindowPlacement(hwnd, &window_placement)) {
+      *success = true;
+      *bounds = window_placement.rcNormalPosition;
+    }
   }
 }
 
