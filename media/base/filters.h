@@ -154,6 +154,10 @@ class MEDIA_EXPORT DataSource : public Filter {
 
   // Alert the DataSource that the video preload value has been changed.
   virtual void SetPreload(Preload preload) = 0;
+
+  // Notify the DataSource of the bitrate of the media.
+  // Values of |bitrate| <= 0 are invalid and should be ignored.
+  virtual void SetBitrate(int bitrate) = 0;
 };
 
 class MEDIA_EXPORT DemuxerStream

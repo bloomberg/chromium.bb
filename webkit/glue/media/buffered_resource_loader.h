@@ -156,12 +156,23 @@ class BufferedResourceLoader
   // Sets the defer strategy to the given value.
   void UpdateDeferStrategy(DeferStrategy strategy);
 
+  // Sets the playback rate to the given value and updates buffer window
+  // accordingly.
+  void SetPlaybackRate(float playback_rate);
+
+  // Sets the bitrate to the given value and updates buffer window
+  // accordingly.
+  void SetBitrate(int bitrate);
+
  protected:
   friend class base::RefCountedThreadSafe<BufferedResourceLoader>;
   virtual ~BufferedResourceLoader();
 
  private:
   friend class BufferedResourceLoaderTest;
+
+  // Updates the |buffer_|'s forward and backward capacities.
+  void UpdateBufferWindow();
 
   // Toggles whether the resource loading is deferred or not.
   // Returns true if a network event was fired.
@@ -271,6 +282,12 @@ class BufferedResourceLoader
 
   // Used to ensure mocks for unittests are used instead of reset in Start().
   bool keep_test_loader_;
+
+  // Bitrate of the media. Set to 0 if unknown.
+  int bitrate_;
+
+  // Playback rate of the media.
+  float playback_rate_;
 
   scoped_refptr<media::MediaLog> media_log_;
 

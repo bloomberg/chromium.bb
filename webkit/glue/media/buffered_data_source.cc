@@ -149,6 +149,11 @@ void BufferedDataSource::SetPreload(media::Preload preload) {
                         preload));
 }
 
+void BufferedDataSource::SetBitrate(int bitrate) {
+  render_loop_->PostTask(FROM_HERE,
+      NewRunnableMethod(this, &BufferedDataSource::SetBitrateTask, bitrate));
+}
+
 /////////////////////////////////////////////////////////////////////////////
 // media::DataSource implementation.
 void BufferedDataSource::Read(int64 position, size_t size, uint8* data,
@@ -304,6 +309,8 @@ void BufferedDataSource::SetPlaybackRateTask(float playback_rate) {
   DCHECK(MessageLoop::current() == render_loop_);
   DCHECK(loader_.get());
 
+  loader_->SetPlaybackRate(playback_rate);
+
   bool previously_paused = media_is_paused_;
   media_is_paused_ = (playback_rate == 0.0);
 
@@ -317,6 +324,12 @@ void BufferedDataSource::SetPlaybackRateTask(float playback_rate) {
 void BufferedDataSource::SetPreloadTask(media::Preload preload) {
   DCHECK(MessageLoop::current() == render_loop_);
   preload_ = preload;
+}
+
+void BufferedDataSource::SetBitrateTask(int bitrate) {
+  DCHECK(MessageLoop::current() == render_loop_);
+  DCHECK(loader_.get());
+  loader_->SetBitrate(bitrate);
 }
 
 BufferedResourceLoader::DeferStrategy

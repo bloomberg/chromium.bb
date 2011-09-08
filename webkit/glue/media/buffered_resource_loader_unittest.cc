@@ -242,6 +242,44 @@ class BufferedResourceLoaderTest : public testing::Test {
     EXPECT_EQ(loader_->deferred_, expectedVal);
   }
 
+  void CheckBufferWindowIsNotTooBig() {
+    // An arbitrarily chosen, reasonable limit.
+    static const size_t kMaxBufferCapacity = 20 * 1024 * 1024;
+    EXPECT_LE(loader_->buffer_->forward_capacity(), kMaxBufferCapacity);
+    EXPECT_LE(loader_->buffer_->backward_capacity(), kMaxBufferCapacity);
+  }
+
+  void CheckBufferWindowIsNotTooSmall() {
+    EXPECT_GT(loader_->buffer_->forward_capacity(), 0u);
+    EXPECT_GT(loader_->buffer_->backward_capacity(), 0u);
+  }
+
+  // Makes sure the |loader_| buffer window is in a reasonable range.
+  void CheckBufferWindowBounds() {
+    CheckBufferWindowIsNotTooSmall();
+    CheckBufferWindowIsNotTooBig();
+  }
+
+  // Updates the |loader_|'s |playback_rate| and |bitrate|, then returns via the
+  // output parameters the resultant change in the forward and backward capacity
+  // of |loader_|'s buffer window.
+  void InvokeChangeInBufferWindow(float playback_rate, int bitrate,
+                                  int* out_forward_capacity_delta,
+                                  int* out_backward_capacity_delta) {
+    CheckBufferWindowBounds();
+    size_t old_forward_capacity = loader_->buffer_->forward_capacity();
+    size_t old_backward_capacity = loader_->buffer_->backward_capacity();
+
+    loader_->SetPlaybackRate(playback_rate);
+    loader_->SetBitrate(bitrate);
+    CheckBufferWindowBounds();
+
+    *out_forward_capacity_delta =
+        loader_->buffer_->forward_capacity() - old_forward_capacity;
+    *out_backward_capacity_delta =
+        loader_->buffer_->backward_capacity() - old_backward_capacity;
+  }
+
   MOCK_METHOD1(StartCallback, void(int error));
   MOCK_METHOD1(ReadCallback, void(int error));
   MOCK_METHOD0(NetworkCallback, void());
@@ -651,6 +689,162 @@ TEST_F(BufferedResourceLoaderTest, HasSingleOrigin) {
   Redirect(kHttpRedirectToSameDomainUrl1);
   Redirect(kHttpRedirectToDifferentDomainUrl1);
   EXPECT_FALSE(loader_->HasSingleOrigin());
+  StopWhenLoad();
+}
+
+TEST_F(BufferedResourceLoaderTest, BufferWindow_Bitrate_Set) {
+  Initialize(kHttpUrl, -1, -1);
+  Start();
+  loader_->SetBitrate(1024 * 8);
+  CheckBufferWindowBounds();
+  StopWhenLoad();
+}
+
+TEST_F(BufferedResourceLoaderTest, BufferWindow_Bitrate_Increase) {
+  Initialize(kHttpUrl, -1, -1);
+  Start();
+
+  static const int kBitrate = 1024 * 8;
+  static const float kPlaybackRate = 1.0;
+  loader_->SetBitrate(kBitrate);
+  loader_->SetPlaybackRate(kPlaybackRate);
+
+  static const int kNewBitrate = 1024 * 1024 * 8;
+  int forward_capacity_delta;
+  int backward_capacity_delta;
+  InvokeChangeInBufferWindow(kPlaybackRate, kNewBitrate,
+                             &forward_capacity_delta, &backward_capacity_delta);
+
+  EXPECT_GT(forward_capacity_delta, 0);
+  EXPECT_GT(backward_capacity_delta, 0);
+
+  StopWhenLoad();
+}
+
+TEST_F(BufferedResourceLoaderTest, BufferWindow_Bitrate_Decrease) {
+  Initialize(kHttpUrl, -1, -1);
+  Start();
+
+  static const int kBitrate = 1024 * 1024 * 8;
+  static const float kPlaybackRate = 1.0;
+  loader_->SetBitrate(kBitrate);
+  loader_->SetPlaybackRate(kPlaybackRate);
+
+  static const int kNewBitrate = 1024 * 8;
+  int forward_capacity_delta;
+  int backward_capacity_delta;
+  InvokeChangeInBufferWindow(kPlaybackRate, kNewBitrate,
+                             &forward_capacity_delta, &backward_capacity_delta);
+
+  EXPECT_LT(forward_capacity_delta, 0);
+  EXPECT_LT(backward_capacity_delta, 0);
+
+  StopWhenLoad();
+}
+
+TEST_F(BufferedResourceLoaderTest, BufferWindow_SetVeryLarge) {
+  Initialize(kHttpUrl, -1, -1);
+  Start();
+  loader_->SetBitrate(100 * 1024 * 1024);
+  CheckBufferWindowBounds();
+  loader_->SetPlaybackRate(10000.0);
+  CheckBufferWindowBounds();
+  loader_->SetPlaybackRate(-10000.0);
+  CheckBufferWindowBounds();
+  StopWhenLoad();
+}
+
+TEST_F(BufferedResourceLoaderTest, BufferWindow_SetVerySmall) {
+  Initialize(kHttpUrl, -1, -1);
+  Start();
+  loader_->SetBitrate(1);
+  CheckBufferWindowBounds();
+
+  // Only check for too big of buffer size in very small playback case; a buffer
+  // window of 0 is reasonable if playback is crawling.
+  loader_->SetPlaybackRate(-0.01f);
+  CheckBufferWindowIsNotTooBig();
+  loader_->SetPlaybackRate(0.01f);
+  CheckBufferWindowIsNotTooBig();
+  StopWhenLoad();
+}
+
+TEST_F(BufferedResourceLoaderTest, BufferWindow_SetUnknownBitrate) {
+  Initialize(kHttpUrl, -1, -1);
+  Start();
+  loader_->SetBitrate(0);
+  CheckBufferWindowBounds();
+  StopWhenLoad();
+}
+
+TEST_F(BufferedResourceLoaderTest, BufferWindow_PlaybackRate_Increase) {
+  Initialize(kHttpUrl, -1, -1);
+  Start();
+
+  static const int kBitrate = 1024 * 8;
+  static const float kPlaybackRate = 1.0;
+  loader_->SetBitrate(kBitrate);
+  loader_->SetPlaybackRate(kPlaybackRate);
+
+  static const float kNewPlaybackRate = 1.5;
+  int forward_capacity_delta;
+  int backward_capacity_delta;
+  InvokeChangeInBufferWindow(kNewPlaybackRate, kBitrate,
+                             &forward_capacity_delta, &backward_capacity_delta);
+
+  EXPECT_GT(forward_capacity_delta, 0);
+  EXPECT_GT(backward_capacity_delta, 0);
+
+  StopWhenLoad();
+}
+
+TEST_F(BufferedResourceLoaderTest, BufferWindow_PlaybackRate_Decrease) {
+  Initialize(kHttpUrl, -1, -1);
+  Start();
+
+  static const int kBitrate = 1024 * 8;
+  static const float kPlaybackRate = 1.0;
+  loader_->SetBitrate(kBitrate);
+  loader_->SetPlaybackRate(kPlaybackRate);
+
+  static const float kNewPlaybackRate = 0.5;
+  int forward_capacity_delta;
+  int backward_capacity_delta;
+  InvokeChangeInBufferWindow(kNewPlaybackRate, kBitrate,
+                             &forward_capacity_delta, &backward_capacity_delta);
+
+  EXPECT_LT(forward_capacity_delta, 0);
+  EXPECT_LT(backward_capacity_delta, 0);
+
+  StopWhenLoad();
+}
+
+TEST_F(BufferedResourceLoaderTest, BufferWindow_PlaybackRate_Backwards) {
+  Initialize(kHttpUrl, -1, -1);
+  Start();
+  loader_->SetPlaybackRate(-1.0);
+  CheckBufferWindowBounds();
+  StopWhenLoad();
+}
+
+TEST_F(BufferedResourceLoaderTest, BufferWindow_PlayPause) {
+  Initialize(kHttpUrl, -1, -1);
+  Start();
+
+  static const int kBitrate = 1024 * 8;
+  static const float kPlaybackRate = 1.0;
+  loader_->SetBitrate(kBitrate);
+  loader_->SetPlaybackRate(kPlaybackRate);
+
+  static const float kPausedPlaybackRate = 0.0;
+  int forward_capacity_delta;
+  int backward_capacity_delta;
+  InvokeChangeInBufferWindow(kPausedPlaybackRate, kBitrate,
+                             &forward_capacity_delta, &backward_capacity_delta);
+
+  EXPECT_EQ(forward_capacity_delta, 0);
+  EXPECT_EQ(backward_capacity_delta, 0);
+
   StopWhenLoad();
 }
 

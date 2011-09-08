@@ -57,6 +57,7 @@ class SimpleDataSource
   virtual bool GetSize(int64* size_out);
   virtual bool IsStreaming();
   virtual void SetPreload(media::Preload preload);
+  virtual void SetBitrate(int bitrate);
 
   // Used to inject a mock used for unittests.
   virtual void SetURLLoaderForTest(WebKit::WebURLLoader* mock_loader);

@@ -144,7 +144,11 @@ bool SimpleDataSource::IsStreaming() {
   return false;
 }
 
-void SimpleDataSource::SetPreload(media::Preload preload) {}
+void SimpleDataSource::SetPreload(media::Preload preload) {
+}
+
+void SimpleDataSource::SetBitrate(int bitrate) {
+}
 
 void SimpleDataSource::SetURLLoaderForTest(WebKit::WebURLLoader* mock_loader) {
   url_loader_.reset(mock_loader);
