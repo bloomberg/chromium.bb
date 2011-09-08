@@ -100,8 +100,6 @@ class WebUILoginView : public views::View,
 
   StatusAreaView* status_area_;
 
-  Profile* profile_;
-
   // DOMView for rendering a webpage as a webui login.
   DOMView* webui_login_;
 

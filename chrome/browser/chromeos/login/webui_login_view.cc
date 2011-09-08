@@ -101,7 +101,6 @@ const int WebUILoginView::kStatusAreaCornerPadding = 5;
 
 WebUILoginView::WebUILoginView()
     : status_area_(NULL),
-      profile_(NULL),
       webui_login_(NULL),
       status_window_(NULL),
       host_window_frozen_(false),
@@ -126,11 +125,10 @@ WebUILoginView::~WebUILoginView() {
 }
 
 void WebUILoginView::Init() {
-  profile_ = ProfileManager::GetDefaultProfile();
 
   webui_login_ = new DOMView();
   AddChildView(webui_login_);
-  webui_login_->Init(profile_, NULL);
+  webui_login_->Init(ProfileManager::GetDefaultProfile(), NULL);
   webui_login_->SetVisible(true);
   webui_login_->tab_contents()->set_delegate(this);
 
@@ -213,7 +211,7 @@ void WebUILoginView::ChildPreferredSizeChanged(View* child) {
 }
 
 Profile* WebUILoginView::GetProfile() const {
-  return profile_;
+  return ProfileManager::GetDefaultProfile();
 }
 
 void WebUILoginView::ExecuteBrowserCommand(int id) const {
