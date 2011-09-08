@@ -62,6 +62,8 @@ class DevToolsClientHost {
  protected:
   DevToolsClientHost();
 
+  void ForwardToDevToolsAgent(const IPC::Message& message);
+
   // Should be called when the devtools client is going to die and this
   // DevToolsClientHost should not be used anymore.
   void NotifyCloseListener();

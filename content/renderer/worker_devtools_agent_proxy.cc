@@ -44,11 +44,11 @@ bool WorkerDevToolsAgentProxy::OnMessageReceived(const IPC::Message& message) {
 }
 
 void WorkerDevToolsAgentProxy::AttachDevTools() {
-  Send(new WorkerDevToolsAgentMsg_Attach(route_id_));
+  Send(new DevToolsAgentMsg_Attach(route_id_, DevToolsRuntimeProperties()));
 }
 
 void WorkerDevToolsAgentProxy::DetachDevTools() {
-  Send(new WorkerDevToolsAgentMsg_Detach(route_id_));
+  Send(new DevToolsAgentMsg_Detach(route_id_));
 }
 
 void WorkerDevToolsAgentProxy::SendDevToolsMessage(

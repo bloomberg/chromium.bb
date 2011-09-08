@@ -156,6 +156,3 @@ IPC_MESSAGE_ROUTED0(DevToolsHostMsg_ClearBrowserCookies)
 //-----------------------------------------------------------------------------
 // These are messages sent from the inspected page renderer to the worker
 // renderer.
-
-IPC_MESSAGE_ROUTED0(WorkerDevToolsAgentMsg_Attach)
-IPC_MESSAGE_ROUTED0(WorkerDevToolsAgentMsg_Detach)

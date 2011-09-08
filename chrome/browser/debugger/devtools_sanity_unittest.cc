@@ -20,7 +20,7 @@
 #include "content/browser/content_browser_client.h"
 #include "content/browser/debugger/devtools_client_host.h"
 #include "content/browser/debugger/devtools_manager.h"
-#include "content/browser/debugger/worker_devtools_manager_io.h"
+#include "content/browser/debugger/worker_devtools_manager.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/worker_host/worker_process_host.h"
@@ -322,11 +322,13 @@ class WorkerDevToolsSanityTest : public InProcessBrowserTest {
     Profile* profile = browser()->profile();
     window_ = DevToolsWindow::CreateDevToolsWindowForWorker(profile);
     window_->Show(DEVTOOLS_TOGGLE_ACTION_NONE);
-    WorkerDevToolsManagerIO::RegisterDevToolsClientForWorkerOnUIThread(
-        window_,
-        worker_data->worker_process_id,
-        worker_data->worker_route_id);
-
+    DevToolsAgentHost* agent_host =
+        WorkerDevToolsManager::GetDevToolsAgentHostForWorker(
+            worker_data->worker_process_id,
+            worker_data->worker_route_id);
+    DevToolsManager::GetInstance()->RegisterDevToolsClientHostFor(
+        agent_host,
+        window_);
     RenderViewHost* client_rvh = window_->GetRenderViewHost();
     TabContents* client_contents = client_rvh->delegate()->GetAsTabContents();
     if (client_contents->IsLoading()) {

@@ -14,7 +14,8 @@
 #include "chrome/browser/ui/webui/chrome_url_data_manager_backend.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/debugger/worker_devtools_manager_io.h"
+#include "content/browser/debugger/devtools_manager.h"
+#include "content/browser/debugger/worker_devtools_manager.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/worker_host/worker_process_host.h"
 #include "content/common/devtools_messages.h"
@@ -121,19 +122,20 @@ void WorkersDOMHandler::HandleOpenDevTools(const ListValue* args) {
                           &worker_process_host_id));
   CHECK(base::StringToInt(worker_route_id_str, &worker_route_id));
 
-  if (WorkerDevToolsManagerIO::HasDevToolsClient(worker_process_host_id,
-                                                 worker_route_id))
-    return;
   Profile* profile = Profile::FromWebUI(web_ui_);
   if (!profile)
+    return;
+  DevToolsAgentHost* agent_host =
+      WorkerDevToolsManager::GetDevToolsAgentHostForWorker(
+          worker_process_host_id,
+          worker_route_id);
+  if (DevToolsManager::GetInstance()->GetDevToolsClientHostFor(agent_host))
     return;
   DevToolsWindow* window = DevToolsWindow::CreateDevToolsWindowForWorker(
       profile);
   window->Show(DEVTOOLS_TOGGLE_ACTION_NONE);
-  WorkerDevToolsManagerIO::RegisterDevToolsClientForWorkerOnUIThread(
-      window,
-      worker_process_host_id,
-      worker_route_id);
+  DevToolsManager::GetInstance()->RegisterDevToolsClientHostFor(agent_host,
+                                                                window);
 }
 
 }  // namespace

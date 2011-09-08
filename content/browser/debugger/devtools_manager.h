@@ -84,6 +84,8 @@ class DevToolsManager : public DevToolsClientHost::CloseListener,
   void CloseAllClientHosts();
 
   DevToolsClientHost* GetDevToolsClientHostFor(DevToolsAgentHost* agent_host);
+  void RegisterDevToolsClientHostFor(DevToolsAgentHost* agent_host,
+                                     DevToolsClientHost* client_host);
   void UnregisterDevToolsClientHostFor(DevToolsAgentHost* agent_host);
 
  private:

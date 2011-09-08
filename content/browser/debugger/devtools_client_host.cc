@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "content/browser/debugger/devtools_client_host.h"
+#include "content/browser/debugger/devtools_manager.h"
 
 DevToolsClientHost::DevToolsClientHostList DevToolsClientHost::instances_;
 
@@ -34,6 +35,10 @@ RenderViewHost* DevToolsClientHost::GetClientRenderViewHost() {
 
 DevToolsClientHost::DevToolsClientHost() : close_listener_(NULL) {
   instances_.push_back(this);
+}
+
+void DevToolsClientHost::ForwardToDevToolsAgent(const IPC::Message& message) {
+  DevToolsManager::GetInstance()->ForwardToDevToolsAgent(this, message);
 }
 
 void DevToolsClientHost::NotifyCloseListener() {

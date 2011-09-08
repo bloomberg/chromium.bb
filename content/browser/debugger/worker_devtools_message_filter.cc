@@ -4,7 +4,7 @@
 
 #include "content/browser/debugger/worker_devtools_message_filter.h"
 
-#include "content/browser/debugger/worker_devtools_manager_io.h"
+#include "content/browser/debugger/worker_devtools_manager.h"
 #include "content/browser/worker_host/worker_service.h"
 #include "content/common/devtools_messages.h"
 #include "content/common/worker_messages.h"
@@ -19,7 +19,7 @@ WorkerDevToolsMessageFilter::~WorkerDevToolsMessageFilter() {
 
 void WorkerDevToolsMessageFilter::OnChannelClosing() {
   BrowserMessageFilter::OnChannelClosing();
-  WorkerDevToolsManagerIO::GetInstance()->WorkerProcessDestroying(
+  WorkerDevToolsManager::GetInstance()->WorkerProcessDestroying(
       worker_process_host_id_);
 }
 
@@ -37,6 +37,6 @@ bool WorkerDevToolsMessageFilter::OnMessageReceived(
 
 void WorkerDevToolsMessageFilter::OnForwardToClient(
     const IPC::Message& message) {
-  WorkerDevToolsManagerIO::GetInstance()->ForwardToDevToolsClient(
+  WorkerDevToolsManager::GetInstance()->ForwardToDevToolsClient(
       worker_process_host_id_, message.routing_id(), message);
 }

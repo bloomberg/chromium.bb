@@ -32,7 +32,6 @@
 #include "content/browser/browsing_instance.h"
 #include "content/browser/content_browser_client.h"
 #include "content/browser/debugger/devtools_manager.h"
-#include "content/browser/debugger/worker_devtools_manager_io.h"
 #include "content/browser/in_process_webkit/session_storage_namespace.h"
 #include "content/browser/load_notification_details.h"
 #include "content/browser/renderer_host/render_view_host.h"
@@ -621,7 +620,7 @@ void DevToolsWindow::RenderViewHostDestroyed() {
 bool DevToolsWindow::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(DevToolsWindow, message)
-    IPC_MESSAGE_HANDLER(DevToolsHostMsg_ForwardToAgent, OnForwardToAgent)
+    IPC_MESSAGE_HANDLER(DevToolsHostMsg_ForwardToAgent, ForwardToDevToolsAgent)
     IPC_MESSAGE_HANDLER(DevToolsHostMsg_ActivateWindow, OnActivateWindow)
     IPC_MESSAGE_HANDLER(DevToolsHostMsg_CloseWindow, OnCloseWindow)
     IPC_MESSAGE_HANDLER(DevToolsHostMsg_RequestDockWindow, OnRequestDockWindow)
@@ -632,14 +631,6 @@ bool DevToolsWindow::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
-}
-
-void DevToolsWindow::OnForwardToAgent(const IPC::Message& message) {
-  if (DevToolsManager::GetInstance()->
-          ForwardToDevToolsAgent(this, message))
-    return;
-  WorkerDevToolsManagerIO::ForwardToWorkerDevToolsAgentOnUIThread(
-      this, message);
 }
 
 void DevToolsWindow::OnRequestDockWindow() {

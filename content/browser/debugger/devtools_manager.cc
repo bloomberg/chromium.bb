@@ -56,10 +56,15 @@ void DevToolsManager::RegisterDevToolsClientHostFor(
     RenderViewHost* inspected_rvh,
     DevToolsClientHost* client_host) {
   DCHECK(!GetDevToolsClientHostFor(inspected_rvh));
-
-  DevToolsRuntimeProperties initial_properties;
   DevToolsAgentHost* agent_host = RenderViewDevToolsAgentHost::FindFor(
       inspected_rvh);
+  RegisterDevToolsClientHostFor(agent_host, client_host);
+}
+
+void DevToolsManager::RegisterDevToolsClientHostFor(
+    DevToolsAgentHost* agent_host,
+    DevToolsClientHost* client_host) {
+  DevToolsRuntimeProperties initial_properties;
   BindClientHost(agent_host, client_host, initial_properties);
   client_host->set_close_listener(this);
   SendAttachToAgent(agent_host);

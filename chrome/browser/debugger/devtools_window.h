@@ -124,7 +124,6 @@ class DevToolsWindow
   virtual void RenderViewHostDestroyed() OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
-  void OnForwardToAgent(const IPC::Message& message);
   void OnActivateWindow();
   void OnCloseWindow();
   void OnRequestDockWindow();
