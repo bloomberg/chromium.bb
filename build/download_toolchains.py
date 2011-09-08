@@ -72,8 +72,8 @@ def SyncFlavor(flavor, url, dst, hash, save_downloads_dir=None):
     download_utils.RemoveDir(dst_tmp)
   else:
     dst_tmp = os.path.join(parent_dir, 'toolchain', '.tmp')
-    sync_tgz.SyncTgz(url, dst_tmp, maindir='toolchain', verbose=False,
-                     hash=hash, save_path=save_archive)
+    sync_tgz.SyncTgz(url, dst_tmp, verbose=False, hash=hash,
+                     save_path=save_archive)
     subdir = os.path.join(dst_tmp, 'toolchain', flavor)
     download_utils.MoveDirCleanly(subdir, dst)
     download_utils.RemoveDir(dst_tmp)

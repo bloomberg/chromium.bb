@@ -76,8 +76,7 @@ class HashError(Exception):
         self.actual_hash, self.expected_hash, self.download_url)
 
 
-def SyncTgz(url, target, maindir='sdk',
-            username=None, password=None, verbose=True, hash=None,
+def SyncTgz(url, target, username=None, password=None, verbose=True, hash=None,
             save_path=None):
   """Download a file from a remote server.
 
@@ -132,15 +131,6 @@ def SyncTgz(url, target, maindir='sdk',
         [os.path.join('tmptar', 'tar.exe'),
          '--use-compress-program', '/tmptar/' + compress,
          '-xS' + verbosechar + 'opf', '../.tgz'], env=env)
-    # Convert symlinks to hard links.
-    subprocess.check_call(
-        [os.path.join('tmptar', 'bash.exe'),
-         '-c',
-         '/tmptar/find -L ' + maindir + ' -type f -xtype l -print0 | ' +
-         'while IFS="" read -r -d "" name; do ' +
-         'if [[ -L "$name" ]];' +
-         'then /tmptar/ln -Tf "$(/tmptar/readlink -f "$name")" ' +
-         '"$name" ; fi ; done'], env=env)
     os.chdir(saveddir)
     # Some antivirus software can prevent the removal - print message, but
     # don't stop.

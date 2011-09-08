@@ -24,18 +24,6 @@ export INST_GLIBC_PROGRAM="$PWD/tools/glibc_download.sh"
 # More info here: http://cygwin.com/ml/cygwin/2011-03/msg00596.html
 export ac_cv_func_mmap_fixed_mapped=yes
 
-function convert_symlinks_to_hardlinks
-{
-  find -L "$1" -type f -xtype l -print0 |
-  while IFS="" read -r -d "" name ; do
-    # Find gives us some files twice because there are symlinks.  Second time
-    # ‘ln’ will fail with ln: “‘xxx’ and ‘yyy’ are the same file” despite ‘-f’.
-    if [[ -L "$name" ]]; then
-      ln -Tf "$(readlink -f "$name")" "$name"
-    fi
-  done
-}
-
 echo @@@BUILD_STEP clobber@@@
 rm -rf scons-out tools/SRC/* tools/BUILD/* tools/out tools/toolchain \
   tools/glibc tools/glibc.tar tools/toolchain.t* "${this_toolchain}" .tmp ||
@@ -72,7 +60,6 @@ if [[ "${BUILDBOT_SLAVE_TYPE:-Trybot}" == "Trybot" ]]; then
   mkdir -p "$TOOLCHAINLOC"
   rm -rf "$TOOLCHAINLOC/$TOOLCHAINNAME"
   cp -a {tools/,}"$TOOLCHAINLOC/$TOOLCHAINNAME"
-  convert_symlinks_to_hardlinks "$TOOLCHAINLOC/$TOOLCHAINNAME"
 else
   echo @@@BUILD_STEP tar_toolchain@@@
   (
@@ -93,7 +80,6 @@ else
     mkdir -p .tmp
     cd .tmp
     tar JSxf ../tools/toolchain.tar.xz
-    convert_symlinks_to_hardlinks "${this_toolchain}"
     mv "${this_toolchain}" ../toolchain
   )
 fi

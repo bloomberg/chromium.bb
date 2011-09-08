@@ -23,10 +23,10 @@ int main() {
   void *handle;
   dl_union f;
 
-  handle = dlopen("libm.so", RTLD_LAZY);
+  handle = dlopen("libstdc++.so.6", RTLD_LAZY);
   assert(NULL != handle);
   dlerror();
-  f.pvoid = dlsym(handle, "sin");
+  f.pvoid = dlsym(handle, "__atomic_flag_for_address");
   assert(NULL == dlerror());
   assert(-1 != (*f.pfunc)(NULL));
   assert(0 == dlclose(handle));
