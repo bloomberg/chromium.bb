@@ -136,6 +136,12 @@ ImmediateInterpreter::ImmediateInterpreter()
       tap_move_dist_prop_(NULL),
       palm_pressure_(200.0),
       palm_pressure_prop_(NULL),
+      palm_edge_width_(7.0),
+      palm_edge_width_prop_(NULL),
+      palm_edge_point_speed_(100.0),
+      palm_edge_point_speed_prop_(NULL),
+      palm_min_distance_(50.0),
+      palm_min_distance_prop_(NULL),
       change_timeout_(0.04),
       change_timeout_prop_(NULL),
       evaluation_timeout_(0.2),
@@ -173,6 +179,12 @@ ImmediateInterpreter::~ImmediateInterpreter() {
     Err("tap_move_dist_prop_ not freed?");
   if (palm_pressure_prop_ != NULL)
     Err("palm_pressure_prop_ not freed?");
+  if (palm_edge_width_prop_ != NULL)
+    Err("palm_edge_width_prop_ not freed?");
+  if (palm_edge_point_speed_prop_ != NULL)
+    Err("palm_edge_point_speed_prop_ not freed?");
+  if (palm_min_distance_prop_ != NULL)
+    Err("palm_min_distance_prop_ not freed?");
   if (change_timeout_prop_ != NULL)
     Err("change_timeout_prop_ not freed?");
   if (evaluation_timeout_prop_ != NULL)
@@ -249,33 +261,74 @@ bool ImmediateInterpreter::SameFingers(const HardwareState& hwstate) const {
 
 void ImmediateInterpreter::ResetSameFingersState(stime_t now) {
   palm_.clear();
-  pending_palm_.clear();
   pointing_.clear();
   start_positions_.clear();
   changed_time_ = now;
 }
 
+bool ImmediateInterpreter::FingerNearOtherFinger(const HardwareState& hwstate,
+                                                 size_t finger_idx) {
+  const FingerState& fs = hwstate.fingers[finger_idx];
+  for (int i = 0; i < hwstate.finger_cnt; ++i) {
+    const FingerState& other_fs = hwstate.fingers[i];
+    if (other_fs.tracking_id == fs.tracking_id)
+      continue;
+    float dx = fs.position_x - other_fs.position_x;
+    float dy = fs.position_y - other_fs.position_y;
+    bool too_close_to_other_finger =
+        (dx * dx + dy * dy) < (palm_min_distance_ * palm_min_distance_) &&
+        !SetContainsValue(palm_, other_fs.tracking_id);
+    if (too_close_to_other_finger)
+      return true;
+  }
+  return false;
+}
+
+bool ImmediateInterpreter::FingerInPalmEdgeZone(const FingerState& fs) {
+  return fs.position_x < palm_edge_width_ ||
+      fs.position_x > (hw_props_.right - palm_edge_width_) ||
+      fs.position_y < palm_edge_width_ ||
+      fs.position_y > (hw_props_.bottom - palm_edge_width_);
+}
+
+bool ImmediateInterpreter::PossiblePalmMovingQuickly(const FingerState& fs,
+                                                     stime_t now) {
+  const FingerState* prev_fs = prev_state_.GetFingerState(fs.tracking_id);
+  if (!prev_fs)
+    return false;
+  float dx = fs.position_x - prev_fs->position_x;
+  float dy = fs.position_y - prev_fs->position_y;
+  float dt = now - prev_state_.timestamp;
+  float dist_sq = dx * dx + dy * dy;
+  float limit_dist_sq = palm_edge_point_speed_ *
+      palm_edge_point_speed_ *
+      dt * dt;
+  return dist_sq > limit_dist_sq;
+}
+
 void ImmediateInterpreter::UpdatePalmState(const HardwareState& hwstate) {
   for (short i = 0; i < hwstate.finger_cnt; i++) {
     const FingerState& fs = hwstate.fingers[i];
-    bool prev_palm = palm_.find(fs.tracking_id) != palm_.end();
-    bool prev_pointing = pointing_.find(fs.tracking_id) != pointing_.end();
-
-    // Lock onto palm permanently.
-    if (prev_palm)
-      continue;
-
-    // TODO(adlr): handle low-pressure palms at edge of pad by inserting them
-    // into pending_palm_
+    // Mark anything over the palm thresh as a palm
     if (fs.pressure >= palm_pressure_) {
       palm_.insert(fs.tracking_id);
       pointing_.erase(fs.tracking_id);
-      pending_palm_.erase(fs.tracking_id);
       continue;
     }
-    if (prev_pointing)
+  }
+
+  for (short i = 0; i < hwstate.finger_cnt; i++) {
+    const FingerState& fs = hwstate.fingers[i];
+    bool prev_palm = SetContainsValue(palm_, fs.tracking_id);
+    bool prev_pointing = SetContainsValue(pointing_, fs.tracking_id);
+
+    // Lock onto palm/pointing
+    if (prev_palm || prev_pointing)
       continue;
-    pointing_.insert(fs.tracking_id);
+    // If another finger is close by, let this be pointing
+    if (FingerNearOtherFinger(hwstate, i) || !FingerInPalmEdgeZone(fs) ||
+        PossiblePalmMovingQuickly(fs, hwstate.timestamp))
+      pointing_.insert(fs.tracking_id);
   }
 }
 
@@ -909,6 +962,18 @@ void ImmediateInterpreter::Configure(GesturesPropProvider* pp, void* data) {
                                            &tap_move_dist_, tap_move_dist_);
   palm_pressure_prop_ = pp->create_real_fn(data, "Palm Pressure",
                                            &palm_pressure_, palm_pressure_);
+  palm_edge_width_prop_ =
+      pp->create_real_fn(data, "Palm Ambiguous Zone Width",
+                         &palm_edge_width_,
+                         palm_edge_width_);
+  palm_edge_point_speed_prop_ =
+      pp->create_real_fn(data, "Palm Ambiguous Zone Min Point Speed",
+                         &palm_edge_point_speed_,
+                         palm_edge_point_speed_);
+  palm_min_distance_prop_ =
+      pp->create_real_fn(data, "Palm Min Distance",
+                         &palm_min_distance_,
+                         palm_min_distance_);
   change_timeout_prop_ = pp->create_real_fn(data, "Change Timeout",
                                             &change_timeout_, change_timeout_);
   evaluation_timeout_prop_ = pp->create_real_fn(data, "Evaluation Timeout",
@@ -956,6 +1021,12 @@ void ImmediateInterpreter::Deconfigure(GesturesPropProvider* pp, void* data) {
   tap_move_dist_prop_ = NULL;
   pp->free_fn(data, palm_pressure_prop_);
   palm_pressure_prop_ = NULL;
+  pp->free_fn(data, palm_edge_width_prop_);
+  palm_edge_width_prop_ = NULL;
+  pp->free_fn(data, palm_edge_point_speed_prop_);
+  palm_edge_point_speed_prop_ = NULL;
+  pp->free_fn(data, palm_min_distance_prop_);
+  palm_min_distance_prop_ = NULL;
   pp->free_fn(data, change_timeout_prop_);
   change_timeout_prop_ = NULL;
   pp->free_fn(data, evaluation_timeout_prop_);

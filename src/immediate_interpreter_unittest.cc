@@ -289,7 +289,7 @@ TEST(ImmediateInterpreterTest, PalmTest) {
         break;
       case 3:  // fallthrough
       case 4:
-        EXPECT_TRUE(SetContainsValue(ii.pointing_, 3));
+        EXPECT_TRUE(SetContainsValue(ii.pointing_, 3)) << "i=" << i;
         EXPECT_FALSE(SetContainsValue(ii.pending_palm_, 3));
         EXPECT_FALSE(SetContainsValue(ii.palm_, 3));
         EXPECT_FALSE(SetContainsValue(ii.pointing_, 4));
@@ -303,6 +303,83 @@ TEST(ImmediateInterpreterTest, PalmTest) {
   EXPECT_TRUE(ii.pointing_.empty());
   EXPECT_TRUE(ii.pending_palm_.empty());
   EXPECT_TRUE(ii.palm_.empty());
+}
+
+TEST(ImmediateInterpreterTest, PalmAtEdgeTest) {
+  scoped_ptr<ImmediateInterpreter> ii(new ImmediateInterpreter);
+  HardwareProperties hwprops = {
+    0,  // left edge
+    0,  // top edge
+    100,  // right edge
+    100,  // bottom edge
+    1,  // x pixels/mm
+    1,  // y pixels/mm
+    1,  // x screen px/mm
+    1,  // y screen px/mm
+    5,  // max fingers
+    5,  // max touch
+    0,  // t5r2
+    0,  // semi-mt
+    1  // is button pad
+  };
+
+  const float kBig = ii->palm_pressure_ + 1.0;  // palm pressure
+  const float kSml = ii->palm_pressure_ - 1.0;  // small, low pressure
+
+  FingerState finger_states[] = {
+    // TM, Tm, WM, Wm, Press, Orientation, X, Y, TrID
+    // small contact movement in edge
+    {0, 0, 0, 0, kSml, 0, 1, 40, 1},
+    {0, 0, 0, 0, kSml, 0, 1, 50, 1},
+    // small contact movement in middle
+    {0, 0, 0, 0, kSml, 0, 50, 40, 1},
+    {0, 0, 0, 0, kSml, 0, 50, 50, 1},
+    // large contact movment in middle
+    {0, 0, 0, 0, kBig, 0, 50, 40, 1},
+    {0, 0, 0, 0, kBig, 0, 50, 50, 1}
+  };
+  HardwareState hardware_state[] = {
+    // time, buttons, finger count, touch count, finger states pointer
+    // quick movement at edge
+    { 0.000, 0, 1, 1, &finger_states[0] },
+    { 0.001, 0, 1, 1, &finger_states[1] },
+    // slow movement at edge
+    { 0.0, 0, 1, 1, &finger_states[0] },
+    { 1.0, 0, 1, 1, &finger_states[1] },
+    // slow small contact movement in middle
+    { 0.0, 0, 1, 1, &finger_states[2] },
+    { 1.0, 0, 1, 1, &finger_states[3] },
+    // slow large contact movement in middle
+    { 0.0, 0, 1, 1, &finger_states[4] },
+    { 1.0, 0, 1, 1, &finger_states[5] },
+  };
+
+  for (size_t i = 0; i < arraysize(hardware_state); ++i) {
+    if ((i % 2) == 0) {
+      ii.reset(new ImmediateInterpreter);
+      ii->SetHardwareProperties(hwprops);
+      ii->change_timeout_ = 0.0;
+    }
+    Gesture* result = ii->SyncInterpret(&hardware_state[i], NULL);
+    if ((i % 2) == 0) {
+      EXPECT_FALSE(result);
+      continue;
+    }
+    switch (i) {
+      case 1:  // fallthrough
+      case 5:
+        ASSERT_TRUE(result);
+        EXPECT_EQ(kGestureTypeMove, result->type);
+        break;
+      case 3:  // fallthrough
+      case 7:
+        EXPECT_FALSE(result);
+        break;
+      default:
+        ADD_FAILURE() << "Should be unreached.";
+        break;
+    }
+  }
 }
 
 TEST(ImmediateInterpreterTest, PressureChangeMoveTest) {
@@ -379,10 +456,10 @@ TEST(ImmediateInterpreterTest, GetGesturingFingersTest) {
 
   FingerState finger_states[] = {
     // TM, Tm, WM, Wm, Press, Orientation, X, Y, TrID
-    {0, 0, 0, 0, 1, 0, 1, 10, 91},
-    {0, 0, 0, 0, 1, 0, 2, 5,  92},
-    {0, 0, 0, 0, 1, 0, 2, 9,  93},
-    {0, 0, 0, 0, 1, 0, 2, 1,  94}
+    {0, 0, 0, 0, 1, 0, 61, 70, 91},
+    {0, 0, 0, 0, 1, 0, 62, 65,  92},
+    {0, 0, 0, 0, 1, 0, 62, 69,  93},
+    {0, 0, 0, 0, 1, 0, 62, 61,  94}
   };
   HardwareState hardware_state[] = {
     // time, buttons, finger count, finger states pointer

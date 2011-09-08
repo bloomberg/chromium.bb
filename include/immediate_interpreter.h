@@ -48,6 +48,7 @@ class TapRecord {
 class ImmediateInterpreter : public Interpreter {
   FRIEND_TEST(ImmediateInterpreterTest, SameFingersTest);
   FRIEND_TEST(ImmediateInterpreterTest, PalmTest);
+  FRIEND_TEST(ImmediateInterpreterTest, PalmAtEdgeTest);
   FRIEND_TEST(ImmediateInterpreterTest, GetGesturingFingersTest);
   FRIEND_TEST(ImmediateInterpreterTest, TapToClickStateMachineTest);
   FRIEND_TEST(ImmediateInterpreterTest, TapToClickEnableTest);
@@ -89,6 +90,20 @@ class ImmediateInterpreter : public Interpreter {
   // Reset the member variables corresponding to same-finger state and
   // updates changed_time_ to |now|.
   void ResetSameFingersState(stime_t now);
+
+  // Part of palm detection. Returns true if the finger indicated by
+  // |finger_idx| is near another finger, which must not be a palm, in the
+  // hwstate.
+  bool FingerNearOtherFinger(const HardwareState& hwstate,
+                             size_t finger_idx);
+
+  // Part of palm detection. Returns true if the finger is in the ambiguous edge
+  // around the outside of the touchpad.
+  bool FingerInPalmEdgeZone(const FingerState& fs);
+
+  // Part of palm detection. Returns true if the finger is moving so quickly
+  // that even if it's in the edge, we still consider it to be a finger.
+  bool PossiblePalmMovingQuickly(const FingerState& fs, stime_t now);
 
   // Updates *palm_, pointing_ below.
   void UpdatePalmState(const HardwareState& hwstate);
@@ -219,6 +234,15 @@ class ImmediateInterpreter : public Interpreter {
   // Maximum pressure above which a finger is considered a palm
   double palm_pressure_;
   GesturesProp* palm_pressure_prop_;
+  // Palms are expected to hit palm pressure within this amount of border
+  double palm_edge_width_;
+  GesturesProp* palm_edge_width_prop_;
+  // Palms in edge are allowed to point if they move fast enough
+  double palm_edge_point_speed_;
+  GesturesProp* palm_edge_point_speed_prop_;
+  // Fingers within this distance of each other aren't palms
+  double palm_min_distance_;
+  GesturesProp* palm_min_distance_prop_;
   // Time [s] to block movement after number or identify of fingers change
   stime_t change_timeout_;
   GesturesProp* change_timeout_prop_;
