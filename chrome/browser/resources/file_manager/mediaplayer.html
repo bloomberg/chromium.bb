@@ -59,6 +59,7 @@ body {
 
 .videocontrols {
   top: 0;
+  -webkit-transition: top 0.5s ease-out;
   left: 0;
   z-index: 999;
   height: 100%;
@@ -527,10 +528,8 @@ function getPathAndFilenameForPath(path) {
 
 var hidingControlsAnimation = null;
 
-const INACTIVITY_TIMEOUT = 5000;
+const INACTIVITY_TIMEOUT = 3000;
 const INACTIVITY_CHECK_INTERVAL = 1000;
-const ANIMATION_DURATION = 1500;
-const ANIMATION_STEP = 50;
 
 function HidingControlsAnimation() {
   this.offsetPercent = 0;
@@ -548,7 +547,6 @@ function HidingControlsAnimation() {
 HidingControlsAnimation.prototype = {
 
     cleanup: function () {
-      this.stopAnimation();
       clearInterval(this.inactivityInterval);
       document.body.removeEventListener('mousemove', this.onActivityClosure);
       document.body.removeEventListener('mousedown', this.onActivityClosure);
@@ -557,50 +555,12 @@ HidingControlsAnimation.prototype = {
 
     onActivity: function() {
       this.recentActivity = Date.now();
-      // If not fully visible, start sliding up (or reverse sliding down).
-      if (this.offsetPercent != 0)
-        this.startAnimation(-1);
+      $('playercontrols').style.top = '0%';
     },
 
     checkInactivity: function() {
       if ((Date.now() - this.recentActivity) > INACTIVITY_TIMEOUT) {
-      // If fully visible start sliding down.
-      if (this.offsetPercent == 0)
-          this.startAnimation(1);
-      }
-    },
-
-    startAnimation: function (direction) {
-      this.direction = direction;
-      this.startOffset = this.offsetPercent;
-      this.startTime = Date.now();
-      if (!this.animationInterval)
-        this.animationInterval = setInterval(this.doAnimation.bind(this),
-                                             ANIMATION_STEP);
-    },
-
-    doAnimation: function () {
-      var phase = (Date.now() - this.startTime) / ANIMATION_DURATION;
-
-      var newOffsetPercent = this.startOffset + this.direction * phase * 100;
-
-      if (newOffsetPercent <= 0) {
-        this.offsetPercent = 0;
-        this.stopAnimation();
-      } else if (newOffsetPercent >= 100){
-        this.offsetPercent = 100;
-        this.stopAnimation();
-      } else {
-        this.offsetPercent = Math.round(newOffsetPercent);
-      }
-
-      $('playercontrols').style.top = this.offsetPercent + '%';
-    },
-
-    stopAnimation: function () {
-      if (this.animationInterval) {
-        clearInterval(this.animationInterval);
-        this.animationInterval = null;
+        $('playercontrols').style.top = '100%';
       }
     }
 };
