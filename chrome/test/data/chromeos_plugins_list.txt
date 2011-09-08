@@ -24,7 +24,7 @@
     u'boards': ['x86-mario', 'x86-alex', 'x86-zgb'],
     u'enabled': 1,
     u'name': 'Netflix',
-    u'version': u'1.2.2'
+    u'version': u'1.2.3'
   }, {
     u'boards': ['x86-mario', 'x86-alex', 'x86-zgb'],
     u'enabled': 1,
