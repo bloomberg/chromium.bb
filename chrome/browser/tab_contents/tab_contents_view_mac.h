@@ -16,10 +16,10 @@
 #include "base/memory/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/tab_contents/render_view_host_delegate_helper.h"
-#include "chrome/browser/ui/cocoa/base_view.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
+#include "ui/base/cocoa/base_view.h"
 #include "ui/gfx/size.h"
 
 @class FocusTracker;

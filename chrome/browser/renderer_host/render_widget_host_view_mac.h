@@ -12,13 +12,13 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/task.h"
 #include "base/time.h"
-#include "chrome/browser/ui/cocoa/base_view.h"
 #include "content/browser/accessibility/browser_accessibility_delegate_mac.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/renderer_host/accelerated_surface_container_manager_mac.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/common/edit_command.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCompositionUnderline.h"
+#include "ui/base/cocoa/base_view.h"
 #include "webkit/glue/webcursor.h"
 
 @class AcceleratedPluginView;

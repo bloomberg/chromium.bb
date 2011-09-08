@@ -8,7 +8,7 @@
 
 #include "base/mac/cocoa_protocols.h"
 #include "base/memory/scoped_nsobject.h"
-#include "chrome/browser/ui/cocoa/base_view.h"
+#include "ui/base/cocoa/base_view.h"
 
 #import <Cocoa/Cocoa.h>
 

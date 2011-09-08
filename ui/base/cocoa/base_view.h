@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_COCOA_BASE_VIEW_H_
-#define CHROME_BROWSER_UI_COCOA_BASE_VIEW_H_
+#ifndef UI_BASE_COCOA_BASE_VIEW_H_
+#define UI_BASE_COCOA_BASE_VIEW_H_
 #pragma once
 
 #import <Cocoa/Cocoa.h>
@@ -42,4 +42,4 @@
 extern NSString* kViewDidBecomeFirstResponder;
 extern NSString* kSelectionDirection;
 
-#endif  // CHROME_BROWSER_UI_COCOA_BASE_VIEW_H_
+#endif  // UI_BASE_COCOA_BASE_VIEW_H_

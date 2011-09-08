@@ -5,6 +5,27 @@
 {
   'targets': [
     {
+      'target_name': 'ui_test_support',
+      'dependencies': [
+        '../base/base.gyp:base',
+        '../testing/gtest.gyp:gtest',
+      ],
+      'sources': [
+        'base/test/ui_cocoa_test_helper.h',
+        'base/test/ui_cocoa_test_helper.mm',
+      ],
+      'include_dirs': [
+        '../',
+      ],
+      'conditions': [
+        ['OS=="mac"', {
+          'type': 'static_library',
+        }, { # OS != "mac"
+          'type': 'none',
+        }],
+      ],
+    },
+    {
       'target_name': 'ui_unittests',
       'type': 'executable',
       'dependencies': [
@@ -16,8 +37,9 @@
         '../testing/gtest.gyp:gtest',
         '../third_party/icu/icu.gyp:icui18n',
         '../third_party/icu/icu.gyp:icuuc',
-        'ui',
         'gfx_resources',
+        'ui',
+        'ui_test_support',
       ],
       'sources': [
         'base/animation/animation_container_unittest.cc',
@@ -25,6 +47,7 @@
         'base/animation/multi_animation_unittest.cc',
         'base/animation/slide_animation_unittest.cc',
         'base/clipboard/clipboard_unittest.cc',
+        'base/cocoa/base_view_unittest.mm',
         'base/gtk/gtk_expanded_container_unittest.cc',
         'base/gtk/gtk_im_context_util_unittest.cc',
         'base/l10n/l10n_util_mac_unittest.mm',

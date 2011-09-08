@@ -7,6 +7,7 @@
 #include "base/compiler_specific.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
+#import "base/memory/scoped_nsobject.h"
 #include "base/path_service.h"
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"

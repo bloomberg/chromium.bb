@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/mac/scoped_nsautorelease_pool.h"
+#import "base/memory/scoped_nsobject.h"
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"

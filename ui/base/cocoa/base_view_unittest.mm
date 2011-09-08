@@ -5,14 +5,14 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/memory/scoped_nsobject.h"
-#import "chrome/browser/ui/cocoa/base_view.h"
-#import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
+#include "ui/base/cocoa/base_view.h"
+#import "ui/base/test/ui_cocoa_test_helper.h"
 
 namespace {
 
-class BaseViewTest : public CocoaTest {
+class BaseViewTest : public ui::CocoaTest {
  public:
   BaseViewTest() {
     NSRect frame = NSMakeRect(0, 0, 100, 100);

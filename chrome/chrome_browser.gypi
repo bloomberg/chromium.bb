@@ -2346,8 +2346,6 @@
         'browser/ui/cocoa/background_tile_view.mm',
         'browser/ui/cocoa/base_bubble_controller.h',
         'browser/ui/cocoa/base_bubble_controller.mm',
-        'browser/ui/cocoa/base_view.h',
-        'browser/ui/cocoa/base_view.mm',
         'browser/ui/cocoa/bookmarks/bookmark_all_tabs_controller.h',
         'browser/ui/cocoa/bookmarks/bookmark_all_tabs_controller.mm',
         'browser/ui/cocoa/bookmarks/bookmark_bar_bridge.h',

@@ -1,8 +1,8 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/cocoa/base_view.h"
+#include "ui/base/cocoa/base_view.h"
 
 NSString* kViewDidBecomeFirstResponder =
     @"Chromium.kViewDidBecomeFirstResponder";
@@ -33,28 +33,28 @@ NSString* kSelectionDirection = @"Chromium.kSelectionDirection";
   [super dealloc];
 }
 
-- (void)mouseEvent:(NSEvent *)theEvent {
+- (void)mouseEvent:(NSEvent*)theEvent {
   // This method left intentionally blank.
 }
 
-- (void)keyEvent:(NSEvent *)theEvent {
+- (void)keyEvent:(NSEvent*)theEvent {
   // This method left intentionally blank.
 }
 
-- (void)mouseDown:(NSEvent *)theEvent {
+- (void)mouseDown:(NSEvent*)theEvent {
   dragging_ = YES;
   [self mouseEvent:theEvent];
 }
 
-- (void)rightMouseDown:(NSEvent *)theEvent {
+- (void)rightMouseDown:(NSEvent*)theEvent {
   [self mouseEvent:theEvent];
 }
 
-- (void)otherMouseDown:(NSEvent *)theEvent {
+- (void)otherMouseDown:(NSEvent*)theEvent {
   [self mouseEvent:theEvent];
 }
 
-- (void)mouseUp:(NSEvent *)theEvent {
+- (void)mouseUp:(NSEvent*)theEvent {
   [self mouseEvent:theEvent];
 
   dragging_ = NO;
@@ -74,31 +74,31 @@ NSString* kSelectionDirection = @"Chromium.kSelectionDirection";
   }
 }
 
-- (void)rightMouseUp:(NSEvent *)theEvent {
+- (void)rightMouseUp:(NSEvent*)theEvent {
   [self mouseEvent:theEvent];
 }
 
-- (void)otherMouseUp:(NSEvent *)theEvent {
+- (void)otherMouseUp:(NSEvent*)theEvent {
   [self mouseEvent:theEvent];
 }
 
-- (void)mouseMoved:(NSEvent *)theEvent {
+- (void)mouseMoved:(NSEvent*)theEvent {
   [self mouseEvent:theEvent];
 }
 
-- (void)mouseDragged:(NSEvent *)theEvent {
+- (void)mouseDragged:(NSEvent*)theEvent {
   [self mouseEvent:theEvent];
 }
 
-- (void)rightMouseDragged:(NSEvent *)theEvent {
+- (void)rightMouseDragged:(NSEvent*)theEvent {
   [self mouseEvent:theEvent];
 }
 
-- (void)otherMouseDragged:(NSEvent *)theEvent {
+- (void)otherMouseDragged:(NSEvent*)theEvent {
   [self mouseEvent:theEvent];
 }
 
-- (void)mouseEntered:(NSEvent *)theEvent {
+- (void)mouseEntered:(NSEvent*)theEvent {
   if (pendingExitEvent_.get()) {
     pendingExitEvent_.reset();
     return;
@@ -107,7 +107,7 @@ NSString* kSelectionDirection = @"Chromium.kSelectionDirection";
   [self mouseEvent:theEvent];
 }
 
-- (void)mouseExited:(NSEvent *)theEvent {
+- (void)mouseExited:(NSEvent*)theEvent {
   // The tracking area will send an exit event even during a drag, which isn't
   // how the event flow for drags should work. This stores the exit event, and
   // sends it when the drag completes instead.
@@ -119,15 +119,15 @@ NSString* kSelectionDirection = @"Chromium.kSelectionDirection";
   [self mouseEvent:theEvent];
 }
 
-- (void)keyDown:(NSEvent *)theEvent {
+- (void)keyDown:(NSEvent*)theEvent {
   [self keyEvent:theEvent];
 }
 
-- (void)keyUp:(NSEvent *)theEvent {
+- (void)keyUp:(NSEvent*)theEvent {
   [self keyEvent:theEvent];
 }
 
-- (void)flagsChanged:(NSEvent *)theEvent {
+- (void)flagsChanged:(NSEvent*)theEvent {
   [self keyEvent:theEvent];
 }
 
