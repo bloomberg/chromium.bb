@@ -60,9 +60,16 @@ void XmppSignalStrategy::Init(StatusObserver* observer) {
 void XmppSignalStrategy::Close() {
   if (xmpp_client_) {
     xmpp_client_->engine()->RemoveStanzaHandler(this);
+
+    // TODO(sergeyu): XmppClient::Disconnect() should call
+    // Abort(). Remove this line when it's fixed in libjingle.
+    xmpp_client_->Abort();
+
     xmpp_client_->Disconnect();
-    // Client is deleted by TaskRunner.
-    xmpp_client_ = NULL;
+
+    // |xmpp_client_| should be set to NULL in OnConnectionStateChanged()
+    // in response to Disconnect() call above.
+    DCHECK(xmpp_client_ == NULL);
   }
 }
 
