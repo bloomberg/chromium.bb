@@ -37,6 +37,10 @@ class TemplateURL;
 // loaded as is.
 class InstantLoader : public NotificationObserver {
  public:
+  // Header and value set on loads that originate from instant.
+  static const char* const kInstantHeader;
+  static const char* const kInstantHeaderValue;
+
   InstantLoader(InstantLoaderDelegate* delegate, TemplateURLID id);
   virtual ~InstantLoader();
 
