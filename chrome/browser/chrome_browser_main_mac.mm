@@ -75,7 +75,7 @@ ChromeBrowserMainPartsMac::ChromeBrowserMainPartsMac(
 }
 
 void ChromeBrowserMainPartsMac::PreEarlyInitialization() {
-  BrowserMainPartsPosix::PreEarlyInitialization();
+  ChromeBrowserMainPartsPosix::PreEarlyInitialization();
 
   if (base::mac::WasLaunchedAsHiddenLoginItem()) {
     CommandLine* singleton_command_line = CommandLine::ForCurrentProcess();
@@ -84,7 +84,7 @@ void ChromeBrowserMainPartsMac::PreEarlyInitialization() {
 }
 
 void ChromeBrowserMainPartsMac::PreMainMessageLoopStart() {
-  BrowserMainPartsPosix::PreMainMessageLoopStart();
+  ChromeBrowserMainPartsPosix::PreMainMessageLoopStart();
 
   // Tell Cooca to finish its initialization, which we want to do manually
   // instead of calling NSApplicationMain(). The primary reason is that NSAM()
