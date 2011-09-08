@@ -933,19 +933,19 @@
    fun:_ZN4base33EnableTerminationOnHeapCorruptionEv
 }
 {
-   # Intentional - data is stored in thread-local storage for an unjoined 
+   # Intentional - data is stored in thread-local storage for an unjoined
    # worker thread, and so can occasionally leak. See crbug.com/89553 for
    # additional info
    bug_89553
    Memcheck:Leak
    fun:_Znw*
    fun:_ZN12_GLOBAL__N_111DnsReloader11MaybeReloadEv
-   fun:_ZN3net22DnsReloaderMaybeReloadEv	
-   fun:_ZN3net22SystemHostResolverProcERKSsNS_13AddressFamilyEiPNS_11AddressListEPi	
+   fun:_ZN3net22DnsReloaderMaybeReloadEv
+   fun:_ZN3net22SystemHostResolverProcERKSsNS_13AddressFamilyEiPNS_11AddressListEPi
    ...
-   fun:_ZN3net*15ResolveAddrInfoEPNS_16HostResolverProc*	
-   fun:_ZN3net16HostResolverImpl3Job8DoLookup*	
-   fun:_Z16DispatchToMethodIN3net16HostResolverImpl*	
+   fun:_ZN3net*15ResolveAddrInfoEPNS_16HostResolverProc*
+   fun:_ZN3net16HostResolverImpl3Job8DoLookup*
+   fun:_Z16DispatchToMethodIN3net16HostResolverImpl*
    fun:_ZN14RunnableMethodIN3net16HostResolverImpl*
 }
 
@@ -4778,14 +4778,14 @@
    Memcheck:Leak
    ...
    fun:_ZN10ZygoteHost11ForkRequestERKSt6vectorISsSaISsEERKS0_ISt4pairIjiESaIS6_EERKSs
-   fun:_ZN20ChildProcessLauncher7Context14LaunchInternalEbRKSt6vectorISt4pairISsSsESaIS3_EEiP11CommandLine
+   fun:_ZN20ChildProcessLauncher7Context14LaunchInternalE13scoped_refptrIS0_EN13BrowserThread2IDEbRKSt6vectorISt4pairISsSsESaIS7_EEiP11CommandLine
 }
 {
    bug_89942_b
    Memcheck:Leak
    ...
    fun:_ZNSt6vectorISt4pairIjiESaIS1_EE9push_backERKS1_
-   fun:_ZN20ChildProcessLauncher7Context14LaunchInternalEbRKSt6vectorISt4pairISsSsESaIS3_EEiP11CommandLine
+   fun:_ZN20ChildProcessLauncher7Context14LaunchInternalE13scoped_refptrIS0_EN13BrowserThread2IDEbRKSt6vectorISt4pairISsSsESaIS7_EEiP11CommandLine
 }
 {
    bug_90057a
@@ -5362,54 +5362,6 @@
    fun:_ZN7content11ContentMainEiPPcPNS_19ContentMainDelegateE
    fun:ChromeMain
    fun:main
-}
-{
-   bug_95760_a
-   Memcheck:Leak
-   fun:realloc
-   fun:_ZN6Pickle6ResizeEj
-   fun:_ZN6Pickle10BeginWriteEj
-   fun:_ZN6Pickle10WriteBytesEPKvi
-   fun:_ZN6Pickle11WriteStringERKSs
-   fun:_ZN10ZygoteHost11ForkRequestERKSt6vectorISsSaISsEERKS0_ISt4pairIjiESaIS6_EERKSs
-   fun:_ZN20ChildProcessLauncher7Context14LaunchInternalE13scoped_refptrIS0_EN13BrowserThread2IDEbRKSt6vectorISt4pairISsSsESaIS7_EEiP11CommandLine
-   fun:_Z18DispatchToFunctionIPFv13scoped_refptrIN20ChildProcessLauncher7ContextEEN13BrowserThread2IDEbRKSt6vectorISt4pairISsSsESaIS8_EEiP11CommandLineES3_S5_bSA_iSE_EvT_RK6Tuple6IT0_T1_T2_T3_T4_T5_E
-   fun:_ZN16RunnableFunctionIPFv13scoped_refptrIN20ChildProcessLauncher7ContextEEN13BrowserThread2IDEbRKSt6vectorISt4pairISsSsESaIS8_EEiP11CommandLineE6Tuple6IS3_S5_bSA_iSE_EE3RunEv
-}
-{
-   bug_95760_b
-   Memcheck:Leak
-   fun:_Zna*
-   fun:_ZN16UnixDomainSocket7SendMsgEiPKvjRKSt6vectorIiSaIiEE
-   fun:_ZN10ZygoteHost11ForkRequestERKSt6vectorISsSaISsEERKS0_ISt4pairIjiESaIS6_EERKSs
-   fun:_ZN20ChildProcessLauncher7Context14LaunchInternalE13scoped_refptrIS0_EN13BrowserThread2IDEbRKSt6vectorISt4pairISsSsESaIS7_EEiP11CommandLine
-   fun:_Z18DispatchToFunctionIPFv13scoped_refptrIN20ChildProcessLauncher7ContextEEN13BrowserThread2IDEbRKSt6vectorISt4pairISsSsESaIS8_EEiP11CommandLineES3_S5_bSA_iSE_EvT_RK6Tuple6IT0_T1_T2_T3_T4_T5_E
-   fun:_ZN16RunnableFunctionIPFv13scoped_refptrIN20ChildProcessLauncher7ContextEEN13BrowserThread2IDEbRKSt6vectorISt4pairISsSsESaIS8_EEiP11CommandLineE6Tuple6IS3_S5_bSA_iSE_EE3RunEv
-}
-{
-   bug_95760_c
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN9__gnu_cxx13new_allocatorISt4pairIjiEE8allocateEjPKv
-   fun:_ZNSt12_Vector_baseISt4pairIjiESaIS1_EE11_M_allocateEj
-   fun:_ZNSt6vectorISt4pairIjiESaIS1_EE13_M_insert_auxEN9__gnu_cxx17__normal_iteratorIPS1_S3_EERKS1_
-   fun:_ZNSt6vectorISt4pairIjiESaIS1_EE9push_backERKS1_
-   fun:_ZN20ChildProcessLauncher7Context14LaunchInternalE13scoped_refptrIS0_EN13BrowserThread2IDEbRKSt6vectorISt4pairISsSsESaIS7_EEiP11CommandLine
-   fun:_Z18DispatchToFunctionIPFv13scoped_refptrIN20ChildProcessLauncher7ContextEEN13BrowserThread2IDEbRKSt6vectorISt4pairISsSsESaIS8_EEiP11CommandLineES3_S5_bSA_iSE_EvT_RK6Tuple6IT0_T1_T2_T3_T4_T5_E
-   fun:_ZN16RunnableFunctionIPFv13scoped_refptrIN20ChildProcessLauncher7ContextEEN13BrowserThread2IDEbRKSt6vectorISt4pairISsSsESaIS8_EEiP11CommandLineE6Tuple6IS3_S5_bSA_iSE_EE3RunEv
-}
-{
-   bug_95760_d
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN9__gnu_cxx13new_allocatorIiE8allocateEjPKv
-   fun:_ZNSt12_Vector_baseIiSaIiEE11_M_allocateEj
-   fun:_ZNSt6vectorIiSaIiEE13_M_insert_auxEN9__gnu_cxx17__normal_iteratorIPiS1_EERKi
-   fun:_ZNSt6vectorIiSaIiEE9push_backERKi
-   fun:_ZN10ZygoteHost11ForkRequestERKSt6vectorISsSaISsEERKS0_ISt4pairIjiESaIS6_EERKSs
-   fun:_ZN20ChildProcessLauncher7Context14LaunchInternalE13scoped_refptrIS0_EN13BrowserThread2IDEbRKSt6vectorISt4pairISsSsESaIS7_EEiP11CommandLine
-   fun:_Z18DispatchToFunctionIPFv13scoped_refptrIN20ChildProcessLauncher7ContextEEN13BrowserThread2IDEbRKSt6vectorISt4pairISsSsESaIS8_EEiP11CommandLineES3_S5_bSA_iSE_EvT_RK6Tuple6IT0_T1_T2_T3_T4_T5_E
-   fun:_ZN16RunnableFunctionIPFv13scoped_refptrIN20ChildProcessLauncher7ContextEEN13BrowserThread2IDEbRKSt6vectorISt4pairISsSsESaIS8_EEiP11CommandLineE6Tuple6IS3_S5_bSA_iSE_EE3RunEv
 }
 
 
