@@ -330,6 +330,26 @@ void PpbGraphics3DRpcServer::PPB_Graphics3DTrusted_FlushSync(
   rpc->result = NACL_SRPC_RESULT_OK;
 }
 
+void PpbGraphics3DRpcServer::PPB_Graphics3DTrusted_FlushSyncFast(
+    NaClSrpcRpc* rpc,
+    NaClSrpcClosure* done,
+    PP_Resource resource_id,
+    int32_t put_offset,
+    int32_t last_known_get,
+    nacl_abi_size_t* state_size, char* state) {
+  DebugPrintf("PPB_Graphics3DTrusted_FlushSyncFast\n");
+  NaClSrpcClosureRunner runner(done);
+  rpc->result = NACL_SRPC_RESULT_APP_ERROR;
+  if (*state_size != sizeof(PP_Graphics3DTrustedState))
+    return;
+  PP_Graphics3DTrustedState trusted_state =
+      ppapi_proxy::PPBGraphics3DTrustedInterface()->FlushSyncFast(
+          resource_id, put_offset, last_known_get);
+  *reinterpret_cast<PP_Graphics3DTrustedState*>(state) = trusted_state;
+  *state_size = sizeof(trusted_state);
+  rpc->result = NACL_SRPC_RESULT_OK;
+}
+
 void PpbGraphics3DRpcServer::PPB_Graphics3DTrusted_CreateTransferBuffer(
     NaClSrpcRpc* rpc,
     NaClSrpcClosure* done,

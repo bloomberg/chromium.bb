@@ -1540,6 +1540,27 @@ NaClSrpcError PpbGraphics3DRpcClient::PPB_Graphics3DTrusted_FlushSync(
   return retval;
 }
 
+NaClSrpcError PpbGraphics3DRpcClient::PPB_Graphics3DTrusted_FlushSyncFast(
+    NaClSrpcChannel* channel,
+    PP_Resource resource_id,
+    int32_t put_offset,
+    int32_t last_known_offset,
+    nacl_abi_size_t* state_bytes, char* state)  {
+  VCHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread(),
+         ("%s: PPAPI calls are not supported off the main thread\n",
+          __FUNCTION__));
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_Graphics3DTrusted_FlushSyncFast:iii:C",
+      resource_id,
+      put_offset,
+      last_known_offset,
+      state_bytes, state
+  );
+  return retval;
+}
+
 NaClSrpcError PpbGraphics3DRpcClient::PPB_Graphics3DTrusted_CreateTransferBuffer(
     NaClSrpcChannel* channel,
     PP_Resource resource_id,

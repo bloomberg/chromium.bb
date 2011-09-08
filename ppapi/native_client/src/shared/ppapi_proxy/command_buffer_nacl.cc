@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Native Client Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -94,10 +94,11 @@ gpu::CommandBuffer::State CommandBufferNacl::FlushSync(int32 put_offset,
 
   NaClSrpcChannel* channel = ppapi_proxy::GetMainSrpcChannel();
   NaClSrpcError retval =
-      PpbGraphics3DRpcClient::PPB_Graphics3DTrusted_FlushSync(
+      PpbGraphics3DRpcClient::PPB_Graphics3DTrusted_FlushSyncFast(
           channel,
           graphics_3d_,
           put_offset,
+          last_known_get,
           &state_size,
           reinterpret_cast<char*>(&state));
   if (NACL_SRPC_RESULT_OK != retval

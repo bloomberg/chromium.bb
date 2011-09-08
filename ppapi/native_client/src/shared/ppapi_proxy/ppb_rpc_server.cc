@@ -1238,6 +1238,22 @@ static void PPB_Graphics3DTrusted_FlushSyncDispatcher(
   );
 }
 
+static void PPB_Graphics3DTrusted_FlushSyncFastDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbGraphics3DRpcServer::PPB_Graphics3DTrusted_FlushSyncFast(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      inputs[1]->u.ival,
+      inputs[2]->u.ival,
+      &(outputs[0]->u.count), outputs[0]->arrays.carr
+  );
+}
+
 static void PPB_Graphics3DTrusted_CreateTransferBufferDispatcher(
     NaClSrpcRpc* rpc,
     NaClSrpcArg** inputs,
@@ -2330,6 +2346,7 @@ NaClSrpcHandlerDesc PpbRpcs::srpc_methods[] = {
   { "PPB_Graphics3DTrusted_GetState:i:C", PPB_Graphics3DTrusted_GetStateDispatcher },
   { "PPB_Graphics3DTrusted_Flush:ii:", PPB_Graphics3DTrusted_FlushDispatcher },
   { "PPB_Graphics3DTrusted_FlushSync:ii:C", PPB_Graphics3DTrusted_FlushSyncDispatcher },
+  { "PPB_Graphics3DTrusted_FlushSyncFast:iii:C", PPB_Graphics3DTrusted_FlushSyncFastDispatcher },
   { "PPB_Graphics3DTrusted_CreateTransferBuffer:iii:i", PPB_Graphics3DTrusted_CreateTransferBufferDispatcher },
   { "PPB_Graphics3DTrusted_DestroyTransferBuffer:ii:", PPB_Graphics3DTrusted_DestroyTransferBufferDispatcher },
   { "PPB_Graphics3DTrusted_GetTransferBuffer:ii:hi", PPB_Graphics3DTrusted_GetTransferBufferDispatcher },

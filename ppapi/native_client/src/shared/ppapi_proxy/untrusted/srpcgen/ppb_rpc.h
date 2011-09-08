@@ -539,6 +539,12 @@ class PpbGraphics3DRpcClient {
       PP_Resource resource_id,
       int32_t put_offset,
       nacl_abi_size_t* state_bytes, char* state);
+  static NaClSrpcError PPB_Graphics3DTrusted_FlushSyncFast(
+      NaClSrpcChannel* channel,
+      PP_Resource resource_id,
+      int32_t put_offset,
+      int32_t last_known_offset,
+      nacl_abi_size_t* state_bytes, char* state);
   static NaClSrpcError PPB_Graphics3DTrusted_CreateTransferBuffer(
       NaClSrpcChannel* channel,
       PP_Resource resource_id,

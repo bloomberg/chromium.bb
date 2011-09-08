@@ -10,10 +10,10 @@
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_stdint.h"
 
-#define PPB_GRAPHICS_3D_TRUSTED_INTERFACE_0_1 \
-    "PPB_Graphics3DTrusted;0.1"
+#define PPB_GRAPHICS_3D_TRUSTED_INTERFACE_1_0 \
+    "PPB_Graphics3DTrusted;1.0"
 #define PPB_GRAPHICS_3D_TRUSTED_INTERFACE \
-    PPB_GRAPHICS_3D_TRUSTED_INTERFACE_0_1
+    PPB_GRAPHICS_3D_TRUSTED_INTERFACE_1_0
 
 typedef enum {
   PPB_GRAPHICS3D_TRUSTED_ERROR_OK,
@@ -88,6 +88,8 @@ struct PPB_Graphics3DTrusted {
   // The writer calls this to update its put offset. This function returns the
   // reader's most recent get offset. Does not return until after the put offset
   // change callback has been invoked.
+  // Note: This function remains for backwards compatibility; FlushSyncFast
+  // is now the preferred way to sync.
   struct PP_Graphics3DTrustedState (*FlushSync)(PP_Resource context,
                                                 int32_t put_offset);
 

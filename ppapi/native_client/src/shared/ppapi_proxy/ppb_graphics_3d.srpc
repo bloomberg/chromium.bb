@@ -109,6 +109,15 @@
            'outputs': [['state', 'char[]'],          # PP_Graphics3DTrustedState
                       ]
           },
+          # Flush sync fast.
+          {'name': 'PPB_Graphics3DTrusted_FlushSyncFast',
+           'inputs': [['resource_id', 'PP_Resource'],
+                      ['put_offset', 'int32_t'],
+                      ['last_known_offset', 'int32_t']
+                      ],
+           'outputs': [['state', 'char[]'],          # PP_Graphics3DTrustedState
+                      ]
+          },
           # Create a shared memory transfer buffer.
           {'name': 'PPB_Graphics3DTrusted_CreateTransferBuffer',
            'inputs': [['resource_id', 'PP_Resource'],
