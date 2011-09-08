@@ -288,6 +288,38 @@ class RietveldTest(unittest.TestCase):
     # TODO(maruel): Change with no diff, only svn property change:
     # http://codereview.chromium.org/6462019/
 
+  def test_get_patch_moved(self):
+    output = (
+        '{\n'
+        '  "files":\n'
+        '    {\n'
+        '      "file_a":\n'
+        '        {\n'
+        '          "status": "A+",\n'
+        '          "is_binary": false,\n'
+        '          "num_chunks": 1,\n'
+        '          "id": 789\n'
+        '        }\n'
+        '    }\n'
+        '}\n')
+    diff = (
+        '--- /dev/null\n'
+        '+++ file_a\n'
+        '@@ -0,0 +1 @@\n'
+        '+foo\n')
+    r = rietveld.Rietveld('url', 'email', 'password')
+    def _send(args, **kwargs):
+      if args == '/api/123/456':
+        return output
+      elif args == '/download/issue123_456_789.diff':
+        return diff
+      else:
+        self.fail()
+    r._send = _send
+    patches = r.get_patch(123, 456)
+    self.assertEquals(diff, patches.patches[0].get())
+    self.assertEquals([], patches.patches[0].svn_properties)
+
 
 if __name__ == '__main__':
   logging.basicConfig(level=logging.ERROR)

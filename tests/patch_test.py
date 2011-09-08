@@ -74,16 +74,16 @@ GIT_DELETE = (
 
 # http://codereview.chromium.org/download/issue6250123_3013_6010.diff
 GIT_RENAME_PARTIAL = (
-    'Index: chrome/browser/chromeos/views/webui_menu_widget.h\n'
-    'diff --git a/chrome/browser/chromeos/views/domui_menu_widget.h '
-        'b/chrome/browser/chromeos/views/webui_menu_widget.h\n'
+    'Index: chromeos/views/webui_menu_widget.h\n'
+    'diff --git a/chromeos/views/DOMui_menu_widget.h '
+        'b/chromeos/views/webui_menu_widget.h\n'
     'similarity index 79%\n'
-    'rename from chrome/browser/chromeos/views/domui_menu_widget.h\n'
-    'rename to chrome/browser/chromeos/views/webui_menu_widget.h\n'
+    'rename from chromeos/views/DOMui_menu_widget.h\n'
+    'rename to chromeos/views/webui_menu_widget.h\n'
     'index 095d4c474fd9718f5aebfa41a1ccb2d951356d41..'
         '157925075434b590e8acaaf605a64f24978ba08b 100644\n'
-    '--- a/chrome/browser/chromeos/views/domui_menu_widget.h\n'
-    '+++ b/chrome/browser/chromeos/views/webui_menu_widget.h\n'
+    '--- a/chromeos/views/DOMui_menu_widget.h\n'
+    '+++ b/chromeos/views/webui_menu_widget.h\n'
     '@@ -1,9 +1,9 @@\n'
     '-// Copyright (c) 2010 The Chromium Authors. All rights reserved.\n'
     '+// Copyright (c) 2011 The Chromium Authors. All rights reserved.\n'
@@ -103,9 +103,9 @@ GIT_RENAME_PARTIAL = (
 # http://codereview.chromium.org/download/issue6287022_3001_4010.diff
 GIT_RENAME = (
     'Index: tools/run_local_server.sh\n'
-    'diff --git a/tools/run_local_server.py b/tools/run_local_server.sh\n'
+    'diff --git a/tools/run_local_server.PY b/tools/run_local_server.sh\n'
     'similarity index 100%\n'
-    'rename from tools/run_local_server.py\n'
+    'rename from tools/run_local_server.PY\n'
     'rename to tools/run_local_server.sh\n')
 
 
@@ -145,6 +145,7 @@ class PatchTest(unittest.TestCase):
       p,
       filename,
       diff,
+      source_filename=None,
       is_binary=False,
       is_delete=False,
       is_git_diff=False,
@@ -153,6 +154,7 @@ class PatchTest(unittest.TestCase):
       svn_properties=None):
     svn_properties = svn_properties or []
     self.assertEquals(p.filename, filename)
+    self.assertEquals(p.source_filename, source_filename)
     self.assertEquals(p.is_binary, is_binary)
     self.assertEquals(p.is_delete, is_delete)
     if hasattr(p, 'is_git_diff'):
@@ -378,8 +380,7 @@ class PatchTest(unittest.TestCase):
             'tools\\clang_check/README.chromium', GIT_DELETE, []),
         patch.FilePatchDiff('tools/run_local_server.sh', GIT_RENAME, []),
         patch.FilePatchDiff(
-            'chrome\\browser/chromeos/views/webui_menu_widget.h',
-            GIT_RENAME_PARTIAL, []),
+            'chromeos\\views/webui_menu_widget.h', GIT_RENAME_PARTIAL, []),
         patch.FilePatchDiff('pp', GIT_COPY, []),
         patch.FilePatchDiff('foo', GIT_NEW, []),
         patch.FilePatchDelete('other/place/foo', True),
@@ -388,20 +389,24 @@ class PatchTest(unittest.TestCase):
     expected = [
         'chrome/file.cc', 'tools/clang_check/README.chromium',
         'tools/run_local_server.sh',
-        'chrome/browser/chromeos/views/webui_menu_widget.h', 'pp', 'foo',
+        'chromeos/views/webui_menu_widget.h', 'pp', 'foo',
         'other/place/foo', 'bar']
     self.assertEquals(expected, patches.filenames)
     orig_name = patches.patches[0].filename
+    orig_source_name = patches.patches[0].source_filename or orig_name
     patches.set_relpath(os.path.join('a', 'bb'))
     expected = [os.path.join('a', 'bb', x) for x in expected]
     self.assertEquals(expected, patches.filenames)
     # Make sure each header is updated accordingly.
     header = []
     new_name = os.path.join('a', 'bb', orig_name)
+    new_source_name = os.path.join('a', 'bb', orig_source_name)
     for line in SVN_PATCH.splitlines(True):
       if line.startswith('@@'):
         break
-      if line[:3] in ('---', '+++', 'Ind'):
+      if line[:3] == '---':
+        line = line.replace(orig_source_name, new_source_name)
+      if line[:3] == '+++':
         line = line.replace(orig_name, new_name)
       header.append(line)
     header = ''.join(header)
@@ -427,6 +432,7 @@ class PatchTest(unittest.TestCase):
     self.assertEquals(
         ['chrome/file.cc', 'other/place/foo'],
         [f.filename for f in patches])
+    self.assertEquals([None, None], [f.source_filename for f in patches])
 
   def testBackSlash(self):
     mangled_patch = SVN_PATCH.replace('chrome/', 'chrome\\')
@@ -452,19 +458,21 @@ class PatchTest(unittest.TestCase):
   def testGitRename(self):
     p = patch.FilePatchDiff('tools/run_local_server.sh', GIT_RENAME, [])
     self._check_patch(p, 'tools/run_local_server.sh', GIT_RENAME,
-        is_git_diff=True, patchlevel=1)
+        is_git_diff=True, patchlevel=1,
+        source_filename='tools/run_local_server.PY')
 
   def testGitRenamePartial(self):
     p = patch.FilePatchDiff(
-        'chrome/browser/chromeos/views/webui_menu_widget.h',
-        GIT_RENAME_PARTIAL, [])
+        'chromeos/views/webui_menu_widget.h', GIT_RENAME_PARTIAL, [])
     self._check_patch(
-        p, 'chrome/browser/chromeos/views/webui_menu_widget.h',
-        GIT_RENAME_PARTIAL, is_git_diff=True, patchlevel=1)
+        p, 'chromeos/views/webui_menu_widget.h', GIT_RENAME_PARTIAL,
+        source_filename='chromeos/views/DOMui_menu_widget.h', is_git_diff=True,
+        patchlevel=1)
 
   def testGitCopy(self):
     p = patch.FilePatchDiff('pp', GIT_COPY, [])
-    self._check_patch(p, 'pp', GIT_COPY, is_git_diff=True, patchlevel=1)
+    self._check_patch(p, 'pp', GIT_COPY, is_git_diff=True, patchlevel=1,
+        source_filename='PRESUBMIT.py')
 
   def testOnlyHeader(self):
     diff = '--- file_a\n+++ file_a\n'
@@ -495,7 +503,7 @@ class PatchTest(unittest.TestCase):
     diff = '--- file_a\n+++ file_b\n'
     p = patch.FilePatchDiff('file_b', diff, [])
     # Should it be marked as new?
-    self._check_patch(p, 'file_b', diff)
+    self._check_patch(p, 'file_b', diff, source_filename='file_a')
 
   def testGitCopyPartial(self):
     diff = (
@@ -514,7 +522,8 @@ class PatchTest(unittest.TestCase):
         ' # found in the LICENSE file.\n')
     p = patch.FilePatchDiff('wtf2', diff, [])
     # Should it be marked as new?
-    self._check_patch(p, 'wtf2', diff, is_git_diff=True, patchlevel=1)
+    self._check_patch(
+        p, 'wtf2', diff, source_filename='wtf', is_git_diff=True, patchlevel=1)
 
   def testGitExe(self):
     diff = (

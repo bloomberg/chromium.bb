@@ -155,10 +155,14 @@ class Rietveld(object):
             # Support this use case if it ever happen.
             raise patch.UnsupportedPatchFormat(
                 filename, 'Empty diff is not supported yet.\n')
-          out.append(patch.FilePatchDiff(filename, diff, svn_props))
+          p = patch.FilePatchDiff(filename, diff, svn_props)
+          out.append(p)
           if status[0] == 'A':
             # It won't be set for empty file.
-            out[-1].is_new = True
+            p.is_new = True
+          if status[1] == '+' and not (p.source_filename or p.svn_properties):
+            raise patch.UnsupportedPatchFormat(
+                filename, 'Failed to process the svn properties')
       else:
         raise patch.UnsupportedPatchFormat(
             filename, 'Change with status \'%s\' is not supported.' % status)
