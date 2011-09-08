@@ -88,12 +88,12 @@ ui::TouchStatus RenderWidgetHostViewViews::OnTouchEvent(
   switch (event.type()) {
     case ui::ET_TOUCH_PRESSED:
       // Add a new touch point.
-      if (touch_event_.touchPointsLength <
-          WebTouchEvent::touchPointsLengthCap) {
-        point = &touch_event_.touchPoints[touch_event_.touchPointsLength++];
+      if (touch_event_.touchesLength <
+          WebTouchEvent::touchesLengthCap) {
+        point = &touch_event_.touches[touch_event_.touchesLength++];
         point->id = event.identity();
 
-        if (touch_event_.touchPointsLength == 1) {
+        if (touch_event_.touchesLength == 1) {
           // A new touch sequence has started.
           status = ui::TOUCH_STATUS_START;
 
@@ -114,8 +114,8 @@ ui::TouchStatus RenderWidgetHostViewViews::OnTouchEvent(
       // _PRESSED event. So find that.
       // At the moment, only a maximum of 4 touch-points are allowed. So a
       // simple loop should be sufficient.
-      for (int i = 0; i < touch_event_.touchPointsLength; ++i) {
-        point = touch_event_.touchPoints + i;
+      for (int i = 0; i < touch_event_.touchesLength; ++i) {
+        point = touch_event_.touches + i;
         if (point->id == event.identity()) {
           break;
         }
@@ -149,8 +149,8 @@ ui::TouchStatus RenderWidgetHostViewViews::OnTouchEvent(
   UpdateTouchPointPosition(&event, GetMirroredPosition(), point);
 
   // Mark the rest of the points as stationary.
-  for (int i = 0; i < touch_event_.touchPointsLength; ++i) {
-    WebKit::WebTouchPoint* iter = touch_event_.touchPoints + i;
+  for (int i = 0; i < touch_event_.touchesLength; ++i) {
+    WebKit::WebTouchPoint* iter = touch_event_.touches + i;
     if (iter != point) {
       iter->state = WebKit::WebTouchPoint::StateStationary;
     }
@@ -165,13 +165,13 @@ ui::TouchStatus RenderWidgetHostViewViews::OnTouchEvent(
 
   // If the touch was released, then remove it from the list of touch points.
   if (event.type() == ui::ET_TOUCH_RELEASED) {
-    --touch_event_.touchPointsLength;
-    for (int i = point - touch_event_.touchPoints;
-         i < touch_event_.touchPointsLength;
+    --touch_event_.touchesLength;
+    for (int i = point - touch_event_.touches;
+         i < touch_event_.touchesLength;
          ++i) {
-      touch_event_.touchPoints[i] = touch_event_.touchPoints[i + 1];
+      touch_event_.touches[i] = touch_event_.touches[i + 1];
     }
-    if (touch_event_.touchPointsLength == 0)
+    if (touch_event_.touchesLength == 0)
       status = ui::TOUCH_STATUS_END;
   } else if (event.type() == ui::ET_TOUCH_CANCELLED) {
     status = ui::TOUCH_STATUS_CANCEL;
