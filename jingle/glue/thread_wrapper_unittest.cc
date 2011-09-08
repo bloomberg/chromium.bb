@@ -25,6 +25,8 @@ static const int kTestDelayMs3 = 30;
 static const int kTestDelayMs4 = 40;
 static const int kMaxTestDelay = 40;
 
+namespace {
+
 class MockMessageHandler : public talk_base::MessageHandler {
  public:
   MOCK_METHOD1(OnMessage, void(talk_base::Message* msg));
@@ -39,6 +41,24 @@ MATCHER_P3(MatchMessage, handler, message_id, data, "") {
 ACTION(DeleteMessageData) {
   delete arg0->pdata;
 }
+
+// Helper class used in the Dispose test.
+class DeletableObject {
+ public:
+  DeletableObject(bool* deleted)
+      : deleted_(deleted) {
+    *deleted = false;
+  }
+
+  ~DeletableObject() {
+    *deleted_ = true;
+  }
+
+ private:
+  bool* deleted_;
+};
+
+}  // namespace
 
 class ThreadWrapperTest : public testing::Test {
  public:
@@ -270,6 +290,14 @@ TEST_F(ThreadWrapperTest, SendDuringSend) {
   target->Send(&handler1_, kTestMessage1, data);
 
   Mock::VerifyAndClearExpectations(&handler1_);
+}
+
+TEST_F(ThreadWrapperTest, Dispose) {
+  bool deleted_;
+  thread_->Dispose(new DeletableObject(&deleted_));
+  EXPECT_FALSE(deleted_);
+  message_loop_.RunAllPending();
+  EXPECT_TRUE(deleted_);
 }
 
 }  // namespace jingle_glue

@@ -224,8 +224,14 @@ void JingleThreadWrapper::RunTask(int task_id) {
     }
   }
 
-  if (have_message)
-    message.phandler->OnMessage(&message);
+  if (have_message) {
+    if (message.message_id == talk_base::MQID_DISPOSE) {
+      DCHECK(message.phandler == NULL);
+      delete message.pdata;
+    } else {
+      message.phandler->OnMessage(&message);
+    }
+  }
 }
 
 // All methods below are marked as not reached. See comments in the
