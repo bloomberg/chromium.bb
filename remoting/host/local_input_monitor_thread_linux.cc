@@ -87,71 +87,77 @@ void LocalInputMonitorThread::Run() {
   if (wakeup_pipe_[0] == -1)
     return;
 
-  scoped_x_record_context scoper;
-
   // TODO(jamiewalch): We should pass the display in. At that point, since
   // XRecord needs a private connection to the X Server for its data channel
   // and both channels are used from a separate thread, we'll need to duplicate
   // them with something like the following:
   //   XOpenDisplay(DisplayString(display));
   display_ = XOpenDisplay(NULL);
-  scoper.data_channel = XOpenDisplay(NULL);
-  if (!display_ || !scoper.data_channel) {
-    LOG(ERROR) << "Couldn't open X display";
-    return;
-  }
 
-  int xr_opcode, xr_event, xr_error;
-  if (!XQueryExtension(display_, "RECORD", &xr_opcode, &xr_event, &xr_error)) {
-    LOG(ERROR) << "X Record extension not available.";
-    return;
-  }
-
-  scoper.range[0] = XRecordAllocRange();
-  scoper.range[1] = XRecordAllocRange();
-  if (!scoper.range[0] || !scoper.range[1]) {
-    LOG(ERROR) << "XRecordAllocRange failed.";
-    return;
-  }
-  scoper.range[0]->device_events.first = MotionNotify;
-  scoper.range[0]->device_events.last = MotionNotify;
-  scoper.range[1]->device_events.first = KeyPress;
-  scoper.range[1]->device_events.last = KeyRelease;
-  XRecordClientSpec client_spec = XRecordAllClients;
-
-  scoper.context = XRecordCreateContext(
-      scoper.data_channel, 0, &client_spec, 1, scoper.range,
-      arraysize(scoper.range));
-  if (!scoper.context) {
-    LOG(ERROR) << "XRecordCreateContext failed.";
-    return;
-  }
-
-  if (!XRecordEnableContextAsync(scoper.data_channel, scoper.context,
-                                 ProcessReply,
-                                 reinterpret_cast<XPointer>(this))) {
-    LOG(ERROR) << "XRecordEnableContextAsync failed.";
-    return;
-  }
-
-  bool stopped = false;
-  while (!stopped) {
-    while (XPending(scoper.data_channel)) {
-      XEvent ev;
-      XNextEvent(scoper.data_channel, &ev);
+  // Inner scope needed here, because the |scoper| destructor may call into
+  // LocalKeyPressed() which needs |display_| to be still open.
+  {
+    scoped_x_record_context scoper;
+    scoper.data_channel = XOpenDisplay(NULL);
+    if (!display_ || !scoper.data_channel) {
+      LOG(ERROR) << "Couldn't open X display";
+      return;
     }
-    fd_set read_fs;
-    FD_ZERO(&read_fs);
-    FD_SET(ConnectionNumber(scoper.data_channel), &read_fs);
-    FD_SET(wakeup_pipe_[0], &read_fs);
-    select(FD_SETSIZE, &read_fs, NULL, NULL, NULL);
-    stopped = FD_ISSET(wakeup_pipe_[0], &read_fs);
+
+    int xr_opcode, xr_event, xr_error;
+    if (!XQueryExtension(display_, "RECORD", &xr_opcode, &xr_event,
+                         &xr_error)) {
+      LOG(ERROR) << "X Record extension not available.";
+      return;
+    }
+
+    scoper.range[0] = XRecordAllocRange();
+    scoper.range[1] = XRecordAllocRange();
+    if (!scoper.range[0] || !scoper.range[1]) {
+      LOG(ERROR) << "XRecordAllocRange failed.";
+      return;
+    }
+    scoper.range[0]->device_events.first = MotionNotify;
+    scoper.range[0]->device_events.last = MotionNotify;
+    scoper.range[1]->device_events.first = KeyPress;
+    scoper.range[1]->device_events.last = KeyRelease;
+    XRecordClientSpec client_spec = XRecordAllClients;
+
+    scoper.context = XRecordCreateContext(
+        scoper.data_channel, 0, &client_spec, 1, scoper.range,
+        arraysize(scoper.range));
+    if (!scoper.context) {
+      LOG(ERROR) << "XRecordCreateContext failed.";
+      return;
+    }
+
+    if (!XRecordEnableContextAsync(scoper.data_channel, scoper.context,
+                                   ProcessReply,
+                                   reinterpret_cast<XPointer>(this))) {
+      LOG(ERROR) << "XRecordEnableContextAsync failed.";
+      return;
+    }
+
+    bool stopped = false;
+    while (!stopped) {
+      while (XPending(scoper.data_channel)) {
+        XEvent ev;
+        XNextEvent(scoper.data_channel, &ev);
+      }
+      fd_set read_fs;
+      FD_ZERO(&read_fs);
+      FD_SET(ConnectionNumber(scoper.data_channel), &read_fs);
+      FD_SET(wakeup_pipe_[0], &read_fs);
+      select(FD_SETSIZE, &read_fs, NULL, NULL, NULL);
+      stopped = FD_ISSET(wakeup_pipe_[0], &read_fs);
+    }
+
+    // Context must be disabled via the control channel because we can't send
+    // any X protocol traffic over the data channel while it's recording.
+    XRecordDisableContext(display_, scoper.context);
+    XFlush(display_);
   }
 
-  // Context must be disabled via the control channel because we can't send any
-  // X protocol traffic over the data channel while it's recording.
-  XRecordDisableContext(display_, scoper.context);
-  XFlush(display_);
   XCloseDisplay(display_);
   display_ = NULL;
 }
