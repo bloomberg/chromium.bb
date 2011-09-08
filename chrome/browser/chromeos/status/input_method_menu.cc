@@ -161,7 +161,8 @@ InputMethodMenu::InputMethodMenu(PrefService* pref_service,
   InputMethodManager* manager = InputMethodManager::GetInstance();
   manager->AddObserver(this);  // FirstObserverIsAdded() might be called back.
 
-  if (screen_mode_ == StatusAreaHost::kLoginMode) {
+  if (screen_mode_ == StatusAreaHost::kViewsLoginMode ||
+      screen_mode_ == StatusAreaHost::kWebUILoginMode) {
     // This button is for the login screen.
     registrar_.Add(this,
                    chrome::NOTIFICATION_LOGIN_USER_CHANGED,
@@ -417,7 +418,8 @@ void InputMethodMenu::PreferenceUpdateNeeded(
       current_input_method_pref_.SetValue(current_input_method.id());
       pref_service_->ScheduleSavePersistentPrefs();
     }
-  } else if (screen_mode_ == StatusAreaHost::kLoginMode) {
+  } else if (screen_mode_ == StatusAreaHost::kViewsLoginMode ||
+      screen_mode_ == StatusAreaHost::kWebUILoginMode) {
     if (g_browser_process && g_browser_process->local_state()) {
       g_browser_process->local_state()->SetString(
           language_prefs::kPreferredKeyboardLayout, current_input_method.id());

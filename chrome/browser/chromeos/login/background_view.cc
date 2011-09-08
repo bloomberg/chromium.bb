@@ -288,7 +288,7 @@ void BackgroundView::OpenButtonOptions(const views::View* button_view) {
 }
 
 StatusAreaHost::ScreenMode BackgroundView::GetScreenMode() const {
-  return kLoginMode;
+  return kViewsLoginMode;
 }
 
 StatusAreaHost::TextStyle BackgroundView::GetTextStyle() const {

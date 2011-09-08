@@ -23,13 +23,15 @@ class StatusAreaHost {
   // Different text styles for different types of backgrounds.
   enum TextStyle {
     kWhitePlain,
+    kGrayPlain,
     kWhiteHaloed,
     kGrayEmbossed
   };
 
   // The type of screen the host window is on.
   enum ScreenMode {
-    kLoginMode,  // The host is for the OOBE/login screens.
+    kViewsLoginMode,  // The host is for the views-based OOBE/login screens.
+    kWebUILoginMode,  // The host is for the WebUI OOBE/login screens.
     kBrowserMode,  // The host is for browser.
     kScreenLockerMode,  // The host is for screen locker.
   };

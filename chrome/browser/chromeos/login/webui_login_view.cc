@@ -240,11 +240,11 @@ void WebUILoginView::OpenButtonOptions(const views::View* button_view) {
 }
 
 StatusAreaHost::ScreenMode WebUILoginView::GetScreenMode() const {
-  return kLoginMode;
+  return kWebUILoginMode;
 }
 
 StatusAreaHost::TextStyle WebUILoginView::GetTextStyle() const {
-  return kWhitePlain;
+  return kGrayPlain;
 }
 
 void WebUILoginView::ButtonVisibilityChanged(views::View* button_view) {

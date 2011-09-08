@@ -18,7 +18,7 @@ namespace chromeos {
 
 KeyboardSwitchMenu::KeyboardSwitchMenu()
     : InputMethodMenu(NULL /* pref_service */,
-                      StatusAreaHost::kLoginMode,
+                      StatusAreaHost::kViewsLoginMode,
                       true /* for_out_of_box_experience_dialog */) {
 }
 
