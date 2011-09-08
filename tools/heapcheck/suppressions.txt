@@ -1293,18 +1293,6 @@
    fun:browser_sync::*
 }
 {
-   bug_79377
-   Heapcheck:Leak
-   ...
-   fun:WebCore::CSSStyleApplyProperty::sharedCSSStyleApplyProperty
-   ...
-   fun:CSSStyleSelector
-   ...
-   fun:WebCore::HTMLConstructionSite::*
-   ...
-   fun:WebCore::HTMLTreeBuilder::*
-}
-{
    bug_79568
    Heapcheck:Leak
    ...
@@ -1776,5 +1764,3 @@
    fun:remoting::ClientSession::UnpressKeys
    fun:remoting::ClientSessionTest_UnpressKeys_Test::TestBody
 }
-
-
