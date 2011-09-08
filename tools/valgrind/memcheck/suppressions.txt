@@ -4862,7 +4862,6 @@
    fun:_ZN22OfflineResourceHandler10OnWillReadEiPPN3net8IOBufferEPii
    fun:_ZN22ResourceDispatcherHost4ReadEPN3net10URLRequestEPi
    fun:_ZN22ResourceDispatcherHost12StartReadingEPN3net10URLRequestE
-   fun:_ZN22ResourceDispatcherHost13ResumeRequestERK15GlobalRequestID
 }
 {
    bug_90521_a
@@ -5270,6 +5269,20 @@
    fun:_ZN7content11ContentMainEiPPcPNS_19ContentMainDelegateE
    fun:ChromeMain
    fun:main
+}
+{
+   bug_95902
+   Memcheck:Leak
+   ...
+   fun:xdg_mime_init
+   fun:xdg_mime_get_mime_type_from_file_name
+   fun:_ZN9mime_util15GetFileMimeTypeERK8FilePath
+   fun:_ZNK3net16PlatformMimeUtil32GetPlatformMimeTypeFromExtensionERKSsPSs
+   fun:_ZNK3net8MimeUtil30GetMimeTypeFromExtensionHelperERKSsbPSs
+   fun:_ZNK3net8MimeUtil24GetMimeTypeFromExtensionERKSsPSs
+   fun:_ZNK3net8MimeUtil19GetMimeTypeFromFileERK8FilePathPSs
+   fun:_ZN3net19GetMimeTypeFromFileERK8FilePathPSs
+   fun:_ZNK25SharedResourcesDataSource11GetMimeTypeERKSs
 }
 
 
