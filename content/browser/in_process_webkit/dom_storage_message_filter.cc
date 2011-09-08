@@ -46,15 +46,14 @@ DOMStorageMessageFilter::DOMStorageMessageFilter(
 }
 
 DOMStorageMessageFilter::~DOMStorageMessageFilter() {
-  // This is not always true during testing.
   if (peer_handle())
     Context()->UnregisterMessageFilter(this);
 }
 
 void DOMStorageMessageFilter::OnChannelConnected(int32 peer_pid) {
   BrowserMessageFilter::OnChannelConnected(peer_pid);
-
-  Context()->RegisterMessageFilter(this);
+  if (peer_handle())
+    Context()->RegisterMessageFilter(this);
 }
 
 /* static */
