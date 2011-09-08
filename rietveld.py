@@ -187,14 +187,15 @@ class Rietveld(object):
     # \n
     # Added: svn:ignore\n
     #    + LF\n
-    while rietveld_svn_props:
-      spacer = rietveld_svn_props.pop(0)
-      if spacer or not rietveld_svn_props:
-        # svn diff always put a spacer between the unified diff and property
-        # diff
-        raise patch.UnsupportedPatchFormat(
-            filename, 'Failed to parse svn properties.')
 
+    spacer = rietveld_svn_props.pop(0)
+    if spacer or not rietveld_svn_props:
+      # svn diff always put a spacer between the unified diff and property
+      # diff
+      raise patch.UnsupportedPatchFormat(
+          filename, 'Failed to parse svn properties.')
+
+    while rietveld_svn_props:
       # Something like 'Added: svn:eol-style'. Note the action is localized.
       # *sigh*.
       action = rietveld_svn_props.pop(0)

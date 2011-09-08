@@ -258,6 +258,19 @@ class RietveldTest(unittest.TestCase):
         [],
         rietveld.Rietveld.parse_svn_properties(u'', 'foo'))
 
+
+    # http://codereview.chromium.org/api/7834045/15001
+    self.assertEquals(
+        [('svn:executable', '*'), ('svn:eol-style', 'LF')],
+        rietveld.Rietveld.parse_svn_properties(
+          '\n'
+          'Added: svn:executable\n'
+          '   + *\n'
+          'Added: svn:eol-style\n'
+          '   + LF\n',
+          'foo'))
+
+  def test_bad_svn_properties(self):
     try:
       rietveld.Rietveld.parse_svn_properties(u'\n', 'foo')
       self.fail()
