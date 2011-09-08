@@ -186,7 +186,7 @@ const char kEnableDNSCertProvenanceChecking[] =
 const char kEnableDeviceMotion[]            = "enable-device-motion";
 
 // Enable the JavaScript Full Screen API.
-const char kEnableFullScreen[]              = "enable-fullscreen";
+const char kDisableFullScreen[]             = "disable-fullscreen";
 
 // Enable the GPU plugin and Pepper 3D rendering.
 const char kEnableGPUPlugin[]               = "enable-gpu-plugin";

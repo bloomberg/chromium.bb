@@ -455,7 +455,7 @@ WebPreferences RenderViewHostDelegateHelper::GetWebkitPrefs(
     web_prefs.interactive_form_validation_enabled =
         !command_line.HasSwitch(switches::kDisableInteractiveFormValidation);
     web_prefs.fullscreen_enabled =
-        command_line.HasSwitch(switches::kEnableFullScreen);
+        !command_line.HasSwitch(switches::kDisableFullScreen);
     web_prefs.allow_displaying_insecure_content =
         prefs->GetBoolean(prefs::kWebKitAllowDisplayingInsecureContent);
     web_prefs.allow_running_insecure_content =

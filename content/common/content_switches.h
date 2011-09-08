@@ -67,7 +67,7 @@ extern const char kEnableAccessibilityLogging[];
 extern const char kEnableBenchmarking[];
 extern const char kEnableDNSCertProvenanceChecking[];
 extern const char kEnableDeviceMotion[];
-extern const char kEnableFullScreen[];
+extern const char kDisableFullScreen[];
 extern const char kEnableGPUPlugin[];
 extern const char kEnableLogging[];
 extern const char kEnableMediaStream[];
