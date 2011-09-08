@@ -79,7 +79,7 @@ void SessionChangeProcessor::Observe(int type,
   switch (type) {
     case chrome::NOTIFICATION_BROWSER_OPENED: {
       Browser* browser = Source<Browser>(source).ptr();
-      if (browser->profile() != profile_) {
+      if (!browser || browser->profile() != profile_) {
         return;
       }
       VLOG(1) << "Received BROWSER_OPENED for profile " << profile_;
@@ -88,7 +88,7 @@ void SessionChangeProcessor::Observe(int type,
 
     case content::NOTIFICATION_TAB_PARENTED: {
       SyncedTabDelegate* tab = Source<SyncedTabDelegate>(source).ptr();
-      if (tab->profile() != profile_) {
+      if (!tab || tab->profile() != profile_) {
         return;
       }
       modified_tabs.push_back(tab);
@@ -97,10 +97,14 @@ void SessionChangeProcessor::Observe(int type,
     }
 
     case content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME: {
-      SyncedTabDelegate* tab =
+      TabContentsWrapper* tab_contents_wrapper =
           TabContentsWrapper::GetCurrentWrapperForContents(
-              Source<TabContents>(source).ptr())->synced_tab_delegate();
-      if (tab->profile() != profile_) {
+              Source<TabContents>(source).ptr());
+      if (!tab_contents_wrapper) {
+        return;
+      }
+      SyncedTabDelegate* tab = tab_contents_wrapper->synced_tab_delegate();
+      if (!tab || tab->profile() != profile_) {
         return;
       }
       modified_tabs.push_back(tab);
@@ -151,7 +155,8 @@ void SessionChangeProcessor::Observe(int type,
     case chrome::NOTIFICATION_TAB_CONTENTS_APPLICATION_EXTENSION_CHANGED: {
       ExtensionTabHelper* extension_tab_helper =
           Source<ExtensionTabHelper>(source).ptr();
-      if (extension_tab_helper->tab_contents()->browser_context() != profile_) {
+      if (!extension_tab_helper ||
+          extension_tab_helper->tab_contents()->browser_context() != profile_) {
         return;
       }
       if (extension_tab_helper->extension_app()) {
