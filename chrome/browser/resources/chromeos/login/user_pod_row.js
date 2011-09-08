@@ -42,7 +42,7 @@ cr.define('login', function() {
       if (!this.hasAttribute('tabindex'))
         this.tabIndex = 0;
 
-      this.addEventListener('mousedown', this.handleMouseDown_.bind(this));
+      this.addEventListener('click', this.handleClick_.bind(this));
 
       this.enterButtonElement.addEventListener('click',
           this.activate.bind(this));
@@ -209,9 +209,9 @@ cr.define('login', function() {
     },
 
     /**
-     * Handles mousedown on remove user button.
+     * Handles a click event on remove user button.
      */
-    handleRemoevButtonMouseDown_: function(e) {
+    handleRemoveButtonClick_: function(e) {
       if (this.activeRemoveButton)
         chrome.send('removeUser', [this.user.emailAddress]);
       else
@@ -219,11 +219,11 @@ cr.define('login', function() {
     },
 
     /**
-     * Handles mousedown event.
+     * Handles click event.
      */
-    handleMouseDown_: function(e) {
+    handleClick_: function(e) {
       if (e.target == this.removeUserButtonElement) {
-        this.handleRemoevButtonMouseDown_(e);
+        this.handleRemoveButtonClick_(e);
 
         // Prevent default so that we don't trigger 'focus' event.
         e.preventDefault();
