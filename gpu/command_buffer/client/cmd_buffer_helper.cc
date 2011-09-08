@@ -52,14 +52,14 @@ CommandBufferHelper::~CommandBufferHelper() {
 }
 
 bool CommandBufferHelper::FlushSync() {
-  time(&last_flush_time_);
+  last_flush_time_ = clock();
   last_put_sent_ = put_;
   CommandBuffer::State state = command_buffer_->FlushSync(put_, get_offset());
   return state.error == error::kNoError;
 }
 
 void CommandBufferHelper::Flush() {
-  time(&last_flush_time_);
+  last_flush_time_ = clock();
   last_put_sent_ = put_;
   command_buffer_->Flush(put_);
 }
@@ -152,11 +152,19 @@ void CommandBufferHelper::WaitForAvailableEntries(int32 count) {
         return;
     }
   }
-  // Allow this command buffer to be pre-empted by another if a "reasonable"
-  // amount of work has been done.
-  if (commands_issued_ % kCommandsPerFlushCheck == 0) {
-    clock_t current_time = time(NULL);
-    if (difftime(current_time, last_flush_time_) > kFlushDelay)
+  // Force a flush if the buffer is getting half full, or even earlier if the
+  // reader is known to be idle.
+  int32 pending =
+      (put_ + usable_entry_count_ - last_put_sent_) % usable_entry_count_;
+  int32 limit = usable_entry_count_ /
+      ((get_offset() == last_put_sent_) ? 16 : 2);
+  if (pending > limit) {
+    Flush();
+  } else if (commands_issued_ % kCommandsPerFlushCheck == 0) {
+    // Allow this command buffer to be pre-empted by another if a "reasonable"
+    // amount of work has been done.
+    clock_t current_time = clock();
+    if (current_time - last_flush_time_ > kFlushDelay * CLOCKS_PER_SEC)
       Flush();
   }
 }

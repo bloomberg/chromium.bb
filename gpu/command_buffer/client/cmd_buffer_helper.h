@@ -235,7 +235,7 @@ class CommandBufferHelper {
   int commands_issued_;
 
   // Using C runtime instead of base because this file cannot depend on base.
-  time_t last_flush_time_;
+  clock_t last_flush_time_;
 
   friend class CommandBufferHelperTest;
   DISALLOW_COPY_AND_ASSIGN(CommandBufferHelper);
