@@ -4967,11 +4967,6 @@
    fun:_ZN3net9HttpCache11Transaction12OnIOCompleteEi
 }
 {
-   bug_91179
-   Memcheck:Addr1
-   fun:_ZN8chromeos21ParallelAuthenticator7ResolveEv
-}
-{
    bug_91199
    Memcheck:Leak
    fun:_Znw*
