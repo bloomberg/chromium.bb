@@ -11,6 +11,7 @@
 
 #include "base/message_loop.h"
 #include "base/string_util.h"
+#include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/notifications/balloon_collection_impl.h"
 #include "chrome/browser/notifications/balloon.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
@@ -109,6 +110,9 @@ class DesktopNotificationsTest : public testing::Test {
 
   // Contains the cumulative output of the unit test.
   static std::string log_output_;
+
+  // Initializes / shuts down a stub CrosLibrary.
+  chromeos::ScopedStubCrosEnabler stub_cros_enabler_;
 };
 
 }  // namespace chromeos
