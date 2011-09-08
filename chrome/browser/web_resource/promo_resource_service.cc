@@ -316,13 +316,9 @@ void PromoResourceService::UnpackWebStoreSignal(
 
   bool is_webstore_active = false;
   bool signal_found = false;
-  std::string promo_id = "";
-  std::string promo_header = "";
-  std::string promo_button = "";
+  AppsPromo::PromoData promo_data;
   std::string promo_link = "";
-  std::string promo_expire = "";
   std::string promo_logo = "";
-  int maximize_setting = 0;
   int target_builds = 0;
 
   if (!parsed_json.GetDictionary("topic", &topic_dict) ||
@@ -362,24 +358,26 @@ void PromoResourceService::UnpackWebStoreSignal(
     name = name.substr(split+1);
     split = name.find(':');
     if (split == std::string::npos ||
-        !base::StringToInt(name.substr(0, split), &maximize_setting))
+        !base::StringToInt(name.substr(0, split), &promo_data.user_group))
       continue;
 
     // (4) optional text that specifies a URL of a logo image
     promo_logo = name.substr(split+1);
 
-    if (!a_dic->GetString(kAnswerIdProperty, &promo_id) ||
-        !a_dic->GetString(kWebStoreHeaderProperty, &promo_header) ||
-        !a_dic->GetString(kWebStoreButtonProperty, &promo_button) ||
+    if (!a_dic->GetString(kAnswerIdProperty, &promo_data.id) ||
+        !a_dic->GetString(kWebStoreHeaderProperty, &promo_data.header) ||
+        !a_dic->GetString(kWebStoreButtonProperty, &promo_data.button) ||
         !a_dic->GetString(kWebStoreLinkProperty, &promo_link) ||
-        !a_dic->GetString(kWebStoreExpireProperty, &promo_expire))
+        !a_dic->GetString(kWebStoreExpireProperty, &promo_data.expire))
       continue;
 
     if (IsThisBuildTargeted(target_builds)) {
-      // Store the first web store promo that targets the current build.
-      AppsPromo::SetPromo(promo_id, promo_header, promo_button,
-                          GURL(promo_link), promo_expire, GURL(promo_logo),
-                          maximize_setting);
+      // The downloader will set the promo prefs and send the
+      // NOTIFICATION_WEB_STORE_PROMO_LOADED notification.
+      promo_data.link = GURL(promo_link);
+      promo_data.logo = GURL(promo_logo);
+      apps_promo_logo_fetcher_.reset(
+          new AppsPromoLogoFetcher(profile_, promo_data));
       signal_found = true;
       break;
     }
@@ -391,11 +389,6 @@ void PromoResourceService::UnpackWebStoreSignal(
   }
 
   AppsPromo::SetWebStoreSupportedForLocale(is_webstore_active);
-
-  NotificationService::current()->Notify(
-      chrome::NOTIFICATION_WEB_STORE_PROMO_LOADED,
-      Source<Profile>(profile_),
-      NotificationService::NoDetails());
 
   return;
 }

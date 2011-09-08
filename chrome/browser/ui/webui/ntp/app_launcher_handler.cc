@@ -452,11 +452,12 @@ DictionaryValue* AppLauncherHandler::GetAppInfo(const Extension* extension) {
 }
 
 void AppLauncherHandler::FillPromoDictionary(DictionaryValue* dictionary) {
-  dictionary->SetString("promoHeader", AppsPromo::GetPromoHeaderText());
-  dictionary->SetString("promoButton", AppsPromo::GetPromoButtonText());
-  dictionary->SetString("promoLink", AppsPromo::GetPromoLink().spec());
-  dictionary->SetString("promoLogo", AppsPromo::GetPromoLogo().spec());
-  dictionary->SetString("promoExpire", AppsPromo::GetPromoExpireText());
+  AppsPromo::PromoData data = AppsPromo::GetPromo();
+  dictionary->SetString("promoHeader", data.header);
+  dictionary->SetString("promoButton", data.button);
+  dictionary->SetString("promoLink", data.link.spec());
+  dictionary->SetString("promoLogo", data.logo.spec());
+  dictionary->SetString("promoExpire", data.expire);
 }
 
 void AppLauncherHandler::HandleGetApps(const ListValue* args) {

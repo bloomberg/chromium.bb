@@ -210,7 +210,7 @@ class FakeURLFetcherFactory : public URLFetcher::Factory,
 
   // Clear all the fake responses that were previously set via
   // SetFakeResponse().
-  void ClearFakeReponses();
+  void ClearFakeResponses();
 
  private:
   typedef std::map<GURL, std::pair<std::string, bool> > FakeResponseMap;
