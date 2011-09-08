@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/crypto_module_password_dialog.h"
 #include "chrome/browser/ui/gtk/constrained_window_gtk.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/net/x509_certificate_model.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/ssl/ssl_client_auth_handler.h"
@@ -41,7 +42,7 @@ class SSLClientCertificateSelector : public SSLClientAuthObserver,
                                      public ConstrainedWindowGtkDelegate {
  public:
   explicit SSLClientCertificateSelector(
-      TabContents* parent,
+      TabContentsWrapper* parent,
       net::SSLCertRequestInfo* cert_request_info,
       SSLClientAuthHandler* delegate);
   ~SSLClientCertificateSelector();
@@ -90,20 +91,20 @@ class SSLClientCertificateSelector : public SSLClientAuthObserver,
   // Hold on to the select button to focus it.
   GtkWidget* select_button_;
 
-  TabContents* parent_;
+  TabContentsWrapper* wrapper_;
   ConstrainedWindow* window_;
 
   DISALLOW_COPY_AND_ASSIGN(SSLClientCertificateSelector);
 };
 
 SSLClientCertificateSelector::SSLClientCertificateSelector(
-    TabContents* parent,
+    TabContentsWrapper* wrapper,
     net::SSLCertRequestInfo* cert_request_info,
     SSLClientAuthHandler* delegate)
     : SSLClientAuthObserver(cert_request_info, delegate),
       cert_request_info_(cert_request_info),
       delegate_(delegate),
-      parent_(parent),
+      wrapper_(wrapper),
       window_(NULL) {
   root_widget_.Own(gtk_vbox_new(FALSE, ui::kControlSpacing));
 
@@ -196,7 +197,7 @@ SSLClientCertificateSelector::~SSLClientCertificateSelector() {
 
 void SSLClientCertificateSelector::Show() {
   DCHECK(!window_);
-  window_ = new ConstrainedWindowGtk(parent_, this);
+  window_ = new ConstrainedWindowGtk(wrapper_->tab_contents(), this);
 }
 
 void SSLClientCertificateSelector::OnCertSelectedByNotification() {
@@ -392,11 +393,11 @@ void SSLClientCertificateSelector::OnPromptShown(GtkWidget* widget,
 namespace browser {
 
 void ShowSSLClientCertificateSelector(
-    TabContents* parent,
+    TabContentsWrapper* wrapper,
     net::SSLCertRequestInfo* cert_request_info,
     SSLClientAuthHandler* delegate) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  (new SSLClientCertificateSelector(parent,
+  (new SSLClientCertificateSelector(wrapper,
                                     cert_request_info,
                                     delegate))->Show();
 }

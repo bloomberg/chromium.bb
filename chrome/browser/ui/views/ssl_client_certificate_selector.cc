@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/certificate_viewer.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/views/constrained_window_views.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -83,14 +84,14 @@ void CertificateSelectorTableModel::SetObserver(
 // SSLClientCertificateSelector:
 
 SSLClientCertificateSelector::SSLClientCertificateSelector(
-    TabContents* parent,
+    TabContentsWrapper* wrapper,
     net::SSLCertRequestInfo* cert_request_info,
     SSLClientAuthHandler* delegate)
     : SSLClientAuthObserver(cert_request_info, delegate),
       cert_request_info_(cert_request_info),
       delegate_(delegate),
       model_(new CertificateSelectorTableModel(cert_request_info)),
-      tab_contents_(parent),
+      wrapper_(wrapper),
       window_(NULL) {
   DVLOG(1) << __FUNCTION__;
 }
@@ -131,7 +132,7 @@ void SSLClientCertificateSelector::Init() {
 
   StartObserving();
 
-  window_ = new ConstrainedWindowViews(tab_contents_, this);
+  window_ = new ConstrainedWindowViews(wrapper_->tab_contents(), this);
 
   // Select the first row automatically.  This must be done after the dialog has
   // been created.
@@ -225,7 +226,8 @@ void SSLClientCertificateSelector::ButtonPressed(
   if (sender == view_cert_button_) {
     net::X509Certificate* cert = GetSelectedCert();
     if (cert)
-      ShowCertificateViewer(tab_contents_->GetDialogRootWindow(), cert);
+      ShowCertificateViewer(wrapper_->tab_contents()->GetDialogRootWindow(),
+                            cert);
   }
 }
 
@@ -280,12 +282,12 @@ void SSLClientCertificateSelector::CreateViewCertButton() {
 namespace browser {
 
 void ShowSSLClientCertificateSelector(
-    TabContents* parent,
+    TabContentsWrapper* wrapper,
     net::SSLCertRequestInfo* cert_request_info,
     SSLClientAuthHandler* delegate) {
-  DVLOG(1) << __FUNCTION__ << " " << parent;
+  DVLOG(1) << __FUNCTION__ << " " << wrapper;
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  (new SSLClientCertificateSelector(parent,
+  (new SSLClientCertificateSelector(wrapper,
                                    cert_request_info,
                                    delegate))->Init();
 }

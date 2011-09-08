@@ -243,7 +243,7 @@ void TabContentsSSLHelper::SelectClientCertificate(
 void TabContentsSSLHelper::ShowClientCertificateRequestDialog(
     scoped_refptr<SSLClientAuthHandler> handler) {
   browser::ShowSSLClientCertificateSelector(
-      tab_contents_->tab_contents(), handler->cert_request_info(), handler);
+      tab_contents_, handler->cert_request_info(), handler);
 }
 
 void TabContentsSSLHelper::OnVerifyClientCertificateError(

@@ -30,7 +30,7 @@ class TextButton;
 }
 
 class CertificateSelectorTableModel;
-class TabContents;
+class TabContentsWrapper;
 
 class SSLClientCertificateSelector : public SSLClientAuthObserver,
                                      public views::DialogDelegateView,
@@ -38,7 +38,7 @@ class SSLClientCertificateSelector : public SSLClientAuthObserver,
                                      public views::TableViewObserver {
  public:
   SSLClientCertificateSelector(
-      TabContents* parent,
+      TabContentsWrapper* wrapper,
       net::SSLCertRequestInfo* cert_request_info,
       SSLClientAuthHandler* delegate);
   virtual ~SSLClientCertificateSelector();
@@ -80,7 +80,7 @@ class SSLClientCertificateSelector : public SSLClientAuthObserver,
 
   scoped_ptr<CertificateSelectorTableModel> model_;
 
-  TabContents* tab_contents_;
+  TabContentsWrapper* wrapper_;
 
   ConstrainedWindow* window_;
   views::TableView* table_;

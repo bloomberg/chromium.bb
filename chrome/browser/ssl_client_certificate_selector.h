@@ -7,7 +7,7 @@
 #pragma once
 
 class SSLClientAuthHandler;
-class TabContents;
+class TabContentsWrapper;
 
 namespace net {
 class SSLCertRequestInfo;
@@ -21,7 +21,7 @@ namespace browser {
 // when the dialog closes in call cases; if the user cancels the dialog, we call
 // with a NULL certificate.
 void ShowSSLClientCertificateSelector(
-    TabContents* parent,
+    TabContentsWrapper* wrapper,
     net::SSLCertRequestInfo* cert_request_info,
     SSLClientAuthHandler* delegate);
 

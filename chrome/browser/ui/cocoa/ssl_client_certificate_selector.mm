@@ -15,6 +15,7 @@
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
 #import "chrome/browser/ui/cocoa/constrained_window_mac.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/ssl/ssl_client_auth_handler.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -88,13 +89,13 @@ class ConstrainedSFChooseIdentityPanel
 
 - (id)initWithHandler:(SSLClientAuthHandler*)handler
       certRequestInfo:(net::SSLCertRequestInfo*)certRequestInfo;
-- (void)displayDialog:(TabContents*)parent;
+- (void)displayDialog:(TabContentsWrapper*)wrapper;
 @end
 
 namespace browser {
 
 void ShowSSLClientCertificateSelector(
-    TabContents* parent,
+    TabContentsWrapper* wrapper,
     net::SSLCertRequestInfo* cert_request_info,
     SSLClientAuthHandler* delegate) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -102,7 +103,7 @@ void ShowSSLClientCertificateSelector(
       [[[SSLClientCertificateSelectorCocoa alloc]
           initWithHandler:delegate
           certRequestInfo:cert_request_info] autorelease];
-  [selector displayDialog:parent];
+  [selector displayDialog:wrapper];
 }
 
 }  // namespace browser
@@ -148,7 +149,7 @@ void ShowSSLClientCertificateSelector(
   [panel autorelease];
 }
 
-- (void)displayDialog:(TabContents*)parent {
+- (void)displayDialog:(TabContentsWrapper*)wrapper {
   DCHECK(!window_);
   // Create an array of CFIdentityRefs for the certificates:
   size_t numCerts = certRequestInfo_->client_certs.size();
@@ -182,7 +183,7 @@ void ShowSSLClientCertificateSelector(
   }
 
   window_ = new ConstrainedWindowMac(
-      parent,
+      wrapper->tab_contents(),
       new ConstrainedSFChooseIdentityPanel(
           panel, self,
           @selector(sheetDidEnd:returnCode:context:),

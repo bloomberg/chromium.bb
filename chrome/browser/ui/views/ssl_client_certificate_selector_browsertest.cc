@@ -45,7 +45,7 @@ class SSLClientCertificateSelectorTest : public InProcessBrowserTest {
 
     ui_test_utils::WaitForLoadStop(browser()->GetSelectedTabContents());
     selector_ = new SSLClientCertificateSelector(
-        browser()->GetSelectedTabContents(),
+        browser()->GetSelectedTabContentsWrapper(),
         cert_request_info_,
         auth_handler_);
     selector_->Init();
@@ -102,12 +102,12 @@ class SSLClientCertificateSelectorMultiTabTest
     ui_test_utils::WaitForLoadStop(browser()->GetTabContentsAt(2));
 
     selector_1_ = new SSLClientCertificateSelector(
-        browser()->GetTabContentsAt(1),
+        browser()->GetTabContentsWrapperAt(1),
         cert_request_info_1_,
         auth_handler_1_);
     selector_1_->Init();
     selector_2_ = new SSLClientCertificateSelector(
-        browser()->GetTabContentsAt(2),
+        browser()->GetTabContentsWrapperAt(2),
         cert_request_info_2_,
         auth_handler_2_);
     selector_2_->Init();
