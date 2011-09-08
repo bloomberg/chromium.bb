@@ -114,7 +114,7 @@ ui::TouchStatus RenderWidgetHostViewViews::OnTouchEvent(
       // _PRESSED event. So find that.
       // At the moment, only a maximum of 4 touch-points are allowed. So a
       // simple loop should be sufficient.
-      for (int i = 0; i < touch_event_.touchesLength; ++i) {
+      for (unsigned i = 0; i < touch_event_.touchesLength; ++i) {
         point = touch_event_.touches + i;
         if (point->id == event.identity()) {
           break;
@@ -149,7 +149,7 @@ ui::TouchStatus RenderWidgetHostViewViews::OnTouchEvent(
   UpdateTouchPointPosition(&event, GetMirroredPosition(), point);
 
   // Mark the rest of the points as stationary.
-  for (int i = 0; i < touch_event_.touchesLength; ++i) {
+  for (unsigned i = 0; i < touch_event_.touchesLength; ++i) {
     WebKit::WebTouchPoint* iter = touch_event_.touches + i;
     if (iter != point) {
       iter->state = WebKit::WebTouchPoint::StateStationary;
@@ -166,7 +166,7 @@ ui::TouchStatus RenderWidgetHostViewViews::OnTouchEvent(
   // If the touch was released, then remove it from the list of touch points.
   if (event.type() == ui::ET_TOUCH_RELEASED) {
     --touch_event_.touchesLength;
-    for (int i = point - touch_event_.touches;
+    for (unsigned i = point - touch_event_.touches;
          i < touch_event_.touchesLength;
          ++i) {
       touch_event_.touches[i] = touch_event_.touches[i + 1];
