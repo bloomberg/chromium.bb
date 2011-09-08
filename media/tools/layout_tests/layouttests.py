@@ -3,7 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Layout tests module that is necessary for tha layout analyzer.
+"""Layout tests module that is necessary for the layout analyzer.
 
 Layout tests are stored in Webkit SVN and LayoutTestCaseManager collects these
 layout test cases (including description).
@@ -256,4 +256,5 @@ class LayoutTests(object):
       resp = urllib2.urlopen(url)
       if resp.code == 200:
         return LayoutTests.ExtractTestDescription(resp.read())
-      raise URLError('Fail to get layout test HTML file from %s.' % url)
+      raise urllib2.URLError(
+          'Fail to get layout test HTML file from %s.' % url)

@@ -3,7 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""A Module for the history of the test expectation file."""
+"""A module for the history of the test expectation file."""
 
 import re
 import sys

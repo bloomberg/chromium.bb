@@ -9,8 +9,6 @@ import csv
 from datetime import datetime
 import optparse
 import os
-import pickle
-import time
 
 
 from layouttests import LayoutTests

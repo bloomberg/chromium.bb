@@ -3,12 +3,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+"""A module for manipulating trend graph with analyzer result history."""
+
 import fileinput
 import os
 import sys
 
-
-"""A Module for manipulating trend graph with analyzer result history."""
 
 DEFAULT_TREND_GRAPH_PATH = os.path.join('graph', 'graph.html')
 
@@ -80,9 +80,7 @@ class TrendGraph(object):
         search_exp: search expression to find a line to be replaced.
         replace_line: the new line.
     """
-    replaced = False
     for line in fileinput.input(self._location, inplace=1):
       if search_exp in line:
-        replaced = True
         line = replace_line
       sys.stdout.write(line)

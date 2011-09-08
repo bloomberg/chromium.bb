@@ -5,7 +5,6 @@
 
 """Helper functions for the layout test analyzer."""
 
-import copy
 from datetime import datetime
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
@@ -55,13 +54,13 @@ class AnalyzerResultMap:
     self.result_map['skip'] = {}
     self.result_map['nonskip'] = {}
     if test_info_map:
-      for (k, v) in test_info_map.iteritems():
-        self.result_map['whole'][k] = v
-        if 'te_info' in v:
-          if any([True for x in v['te_info'] if 'SKIP' in x]):
-            self.result_map['skip'][k] = v
+      for (k, value) in test_info_map.iteritems():
+        self.result_map['whole'][k] = value
+        if 'te_info' in value:
+          if any([True for x in value['te_info'] if 'SKIP' in x]):
+            self.result_map['skip'][k] = value
           else:
-            self.result_map['nonskip'][k] = v
+            self.result_map['nonskip'][k] = value
 
   @staticmethod
   def GetDiffString(diff_map_element, type_str):
@@ -97,22 +96,22 @@ class AnalyzerResultMap:
     diff_sign = ''
     if diff > 0:
       diff_sign = '+'
-    str = '<font color="%s">%s%d</font>' % (color, diff_sign, diff)
+    whole_str = '<font color="%s">%s%d</font>' % (color, diff_sign, diff)
     str1 = ''
-    for (name, v) in diff_map_element[0]:
+    for (name, _) in diff_map_element[0]:
       str1 += name + ','
     str1 = str1[:-1]
     str2 = ''
-    for (name, v) in diff_map_element[1]:
+    for (name, _) in diff_map_element[1]:
       str2 += name + ','
     str2 = str2[:-1]
     if str1 or str2:
-      str += ':'
+      whole_str += ':'
     if str1:
-      str += '<font color="%s">%s</font> ' % (color, str1)
+      whole_str += '<font color="%s">%s</font> ' % (color, str1)
     if str2:
-      str += '<font color="%s">%s</font>' % (color, str2)
-    return str
+      whole_str += '<font color="%s">%s</font>' % (color, str2)
+    return whole_str
 
   def GetPassingRate(self):
     """Get passing rate.
@@ -124,12 +123,12 @@ class AnalyzerResultMap:
       ValueEror when the number of tests in test group "whole" is equal or less
           than that of "skip".
     """
-    d = len(self.result_map['whole'].keys()) - (
+    delta = len(self.result_map['whole'].keys()) - (
         len(self.result_map['skip'].keys()))
-    if d <= 0:
+    if delta <= 0:
       raise ValueError('The number of tests in test group "whole" is equal or '
                        'less than that of "skip"')
-    return 100 - len(self.result_map['nonskip'].keys()) * 100 / d
+    return 100 - len(self.result_map['nonskip'].keys()) * 100 / delta
 
   def ConvertToString(self, prev_time, diff_map, bug_anno_map):
     """Convert this result to HTML display for email.
@@ -143,26 +142,25 @@ class AnalyzerResultMap:
     Returns:
       a analyzer result string in HTML format.
     """
-
-    str = ('<b>Statistics (Diff Compared to %s):</b><ul>'
+    return_str = ('<b>Statistics (Diff Compared to %s):</b><ul>'
            '<li>The number of tests: %d (%s)</li>'
            '<li>The number of failing skipped tests: %d (%s)</li>'
            '<li>The number of failing non-skipped tests: %d (%s)</li>'
            '<li>Passing rate: %d %%</li></ul>') % (
-        prev_time,
-        len(self.result_map['whole'].keys()),
-        AnalyzerResultMap.GetDiffString(diff_map['whole'], 'whole'),
-        len(self.result_map['skip'].keys()),
-        AnalyzerResultMap.GetDiffString(diff_map['skip'], 'skip'),
-        len(self.result_map['nonskip'].keys()),
-        AnalyzerResultMap.GetDiffString(diff_map['nonskip'], 'nonskip'),
-        self.GetPassingRate())
-    str += '<b>Current issues about failing non-skipped tests:</b>'
+               prev_time, len(self.result_map['whole'].keys()),
+               AnalyzerResultMap.GetDiffString(diff_map['whole'], 'whole'),
+               len(self.result_map['skip'].keys()),
+               AnalyzerResultMap.GetDiffString(diff_map['skip'], 'skip'),
+               len(self.result_map['nonskip'].keys()),
+               AnalyzerResultMap.GetDiffString(diff_map['nonskip'],
+                                               'nonskip'),
+               self.GetPassingRate())
+    return_str += '<b>Current issues about failing non-skipped tests:</b>'
     for (bug_txt, test_info_list) in (
         self.GetListOfBugsForNonSkippedTests().iteritems()):
       if not bug_txt in bug_anno_map:
         bug_anno_map[bug_txt] = '<font color="red">Needs investigation!</font>'
-      str += '<ul>%s (%s)' % (Bug(bug_txt), bug_anno_map[bug_txt])
+      return_str += '<ul>%s (%s)' % (Bug(bug_txt), bug_anno_map[bug_txt])
       for test_info in test_info_list:
         (test_name, te_info) = test_info
         gpu_link = ''
@@ -171,10 +169,10 @@ class AnalyzerResultMap:
         dashboard_link = ('http://test-results.appspot.com/dashboards/'
                           'flakiness_dashboard.html#%stests=%s') % (
                               gpu_link, test_name)
-        str += '<li><a href="%s">%s</a> (%s) </li>' % (
+        return_str += '<li><a href="%s">%s</a> (%s) </li>' % (
             dashboard_link, test_name, ' '.join(te_info.keys()))
-      str += '</ul>\n'
-    return str
+      return_str += '</ul>\n'
+    return return_str
 
   def CompareToOtherResultMap(self, other_result_map):
     """Compare this result map with the other to see if there are any diff.
@@ -250,8 +248,8 @@ class AnalyzerResultMap:
           is used for grouping test names by bug.
     """
     bug_map = {}
-    for (name, v) in self.result_map['nonskip'].iteritems():
-      for te_info in v['te_info']:
+    for (name, value) in self.result_map['nonskip'].iteritems():
+      for te_info in value['te_info']:
         main_te_info = {}
         for k in te_info.keys():
           if k != 'Comments' and k != 'Bugs':
@@ -284,61 +282,53 @@ def SendStatusEmail(prev_time, analyzer_result_map, prev_analyzer_result_map,
   """
   diff_map = analyzer_result_map.CompareToOtherResultMap(
       prev_analyzer_result_map)
-  str = analyzer_result_map.ConvertToString(prev_time, diff_map, bug_anno_map)
+  output_str = analyzer_result_map.ConvertToString(prev_time,
+                                                   diff_map, bug_anno_map)
   # Add diff info about skipped/non-skipped test.
   prev_time = datetime.strptime(prev_time, '%Y-%m-%d-%H')
   prev_time = time.mktime(prev_time.timetuple())
   testname_map = {}
-  for type in ['skip', 'nonskip']:
+  for test_group in ['skip', 'nonskip']:
     for i in range(2):
-      for (k, _) in diff_map[type][i]:
+      for (k, _) in diff_map[test_group][i]:
         testname_map[k] = True
   now = time.time()
 
   rev_infos = TestExpectationsHistory.GetDiffBetweenTimes(now, prev_time,
                                                           testname_map.keys())
   if rev_infos:
-    str += '<br><b>Revision Information:</b>'
+    output_str += '<br><b>Revision Information:</b>'
     for rev_info in rev_infos:
-      (old_rev, new_rev, author, date, message, target_lines) = rev_info
+      (old_rev, new_rev, author, date, _, target_lines) = rev_info
       link = urllib.unquote('http://trac.webkit.org/changeset?new=%d%40trunk'
                             '%2FLayoutTests%2Fplatform%2Fchromium%2F'
                             'test_expectations.txt&old=%d%40trunk%2F'
                             'LayoutTests%2Fplatform%2Fchromium%2F'
                             'test_expectations.txt') % (new_rev, old_rev)
-      str += '<ul><a href="%s">%s->%s</a>\n' % (link, old_rev, new_rev)
-      str += '<li>%s</li>\n' % author
-      str += '<li>%s</li>\n<ul>' % date
+      output_str += '<ul><a href="%s">%s->%s</a>\n' % (link, old_rev, new_rev)
+      output_str += '<li>%s</li>\n' % author
+      output_str += '<li>%s</li>\n<ul>' % date
       for line in target_lines:
-        str += '<li>%s</li>\n' % line
-      str += '</ul></ul>'
+        output_str += '<li>%s</li>\n' % line
+      output_str += '</ul></ul>'
   localtime = time.asctime(time.localtime(time.time()))
   # TODO(imasaki): remove my name from here.
   subject = 'Layout Test Analyzer Result (%s): %s' % (test_group_name,
                                                       localtime)
-  SendEmail('imasaki@chromium.org', 'Kenji Imasaki',
-            [receiver_email_address], ['Layout Test Analyzer Result'], subject,
-            str + appended_text_to_email)
+  SendEmail('imasaki@chromium.org', [receiver_email_address],
+            subject, output_str + appended_text_to_email)
 
 
-def SendEmail(sender_email_address, sender_name, receivers_email_addresses,
-              receivers_names, subject, message):
+def SendEmail(sender_email_address, receivers_email_addresses, subject,
+              message):
     """Send email using localhost's mail server.
 
     Args:
         sender_email_address: sender's email address.
-        sender_name: sender's name.
         receivers_email_addresses: receiver's email addresses.
-        receivers_names:  receiver's names.
         subject: subject string.
         message: email message.
     """
-    whole_message = ''.join([
-        'From: %s<%s>\n' % (sender_name, sender_email_address),
-        'To: %s<%s>\n' % (receivers_names[0],
-                          receivers_email_addresses[0]),
-        'Subject: %s\n' % subject, message])
-
     try:
       html_top = """
         <html>
@@ -355,16 +345,16 @@ def SendEmail(sender_email_address, sender_name, receivers_email_addresses,
       msg['From'] = sender_email_address
       msg['To'] = receivers_email_addresses[0]
       part1 = MIMEText(html, 'html')
-      smtpObj = smtplib.SMTP('localhost')
+      smtp_obj = smtplib.SMTP('localhost')
       msg.attach(part1)
-      smtpObj.sendmail(sender_email_address, receivers_email_addresses,
-                       msg.as_string())
+      smtp_obj.sendmail(sender_email_address, receivers_email_addresses,
+                        msg.as_string())
       print 'Successfully sent email'
-    except smtplib.SMTPException, e:
-      print 'Authentication failed:', e
+    except smtplib.SMTPException, ex:
+      print 'Authentication failed:', ex
       print 'Error: unable to send email'
-    except (socket.gaierror, socket.error, socket.herror), e:
-      print e
+    except (socket.gaierror, socket.error, socket.herror), ex:
+      print ex
       print 'Error: unable to send email'
 
 
@@ -385,9 +375,9 @@ def FindLatestTime(time_list):
   if not time_list:
     return None
   latest_date = None
-  for t in time_list:
+  for time_element in time_list:
     try:
-      item_date = datetime.strptime(t, '%Y-%m-%d-%H')
+      item_date = datetime.strptime(time_element, '%Y-%m-%d-%H')
       if latest_date == None or latest_date < item_date:
         latest_date = item_date
     except ValueError:
@@ -411,8 +401,8 @@ def FindLatestResult(result_dir):
   Returns:
     a tuple of filename (latest_time) of the and the latest analyzer result.
   """
-  dirList = os.listdir(result_dir)
-  file_name = FindLatestTime(dirList)
+  dir_list = os.listdir(result_dir)
+  file_name = FindLatestTime(dir_list)
   file_path = os.path.join(result_dir, file_name)
   return (file_name, AnalyzerResultMap.Load(file_path))
 
@@ -434,17 +424,28 @@ def GetDiffBetweenMaps(map1, map2, lookIntoTestExpectationInfo=False):
   """
 
   def GetDiffBetweenMapsHelper(map1, map2, lookIntoTestExpectationInfo):
+    """A helper function for GetDiffBetweenMaps.
+
+    Args:
+      map1: analyzer result map to be compared.
+      map2: analyzer result map to be compared.
+      lookIntoTestExpectationInfo: a boolean to indicate whether to compare
+        test expectation information in addition to just the test case names.
+
+    Returns:
+      a list of tuples (name, te_info) that are in |map1| but not in |map2|.
+    """
     name_list = []
-    for (name, v1) in map1.iteritems():
+    for (name, value1) in map1.iteritems():
       if name in map2:
-        if lookIntoTestExpectationInfo and 'te_info' in v1:
-          list1 = v1['te_info']
+        if lookIntoTestExpectationInfo and 'te_info' in value1:
+          list1 = value1['te_info']
           list2 = map2[name]['te_info']
           te_diff = [item for item in list1 if not item in list2]
           if te_diff:
               name_list.append((name, te_diff))
       else:
-        name_list.append((name, v1))
+        name_list.append((name, value1))
     return name_list
 
   return (GetDiffBetweenMapsHelper(map1, map2, lookIntoTestExpectationInfo),
