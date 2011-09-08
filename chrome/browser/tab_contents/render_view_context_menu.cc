@@ -82,6 +82,18 @@ using WebKit::WebString;
 
 namespace {
 
+// Usually a new tab is expected where this function is used,
+// however users should be able to open a tab in background
+// or in a new window.
+WindowOpenDisposition ForceNewTabDispositionFromEventFventFlags(
+    int event_flags) {
+  WindowOpenDisposition disposition =
+      browser::DispositionFromEventFlags(event_flags);
+  if (disposition == CURRENT_TAB)
+    return NEW_FOREGROUND_TAB;
+  return disposition;
+}
+
 bool IsCustomItemEnabled(const std::vector<WebMenuItem>& items, int id) {
   DCHECK(id >= IDC_CONTENT_CONTEXT_CUSTOM_FIRST &&
          id <= IDC_CONTENT_CONTEXT_CUSTOM_LAST);
@@ -1381,6 +1393,10 @@ bool RenderViewContextMenu::IsCommandIdChecked(int id) const {
 }
 
 void RenderViewContextMenu::ExecuteCommand(int id) {
+  return ExecuteCommand(id, 0);
+}
+
+void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
   // If this command is is added by one of our observers, we dispatch it to the
   // observer.
   ObserverListBase<RenderViewContextMenuObserver>::Iterator it(observers_);
@@ -1440,11 +1456,13 @@ void RenderViewContextMenu::ExecuteCommand(int id) {
     UserMetrics::RecordAction(
         UserMetricsAction("RegisterProtocolHandler.ContextMenu_Open"));
     int handlerIndex = id - IDC_CONTENT_CONTEXT_PROTOCOL_HANDLER_FIRST;
+    WindowOpenDisposition disposition =
+        ForceNewTabDispositionFromEventFventFlags(event_flags);
     OpenURL(
         handlers[handlerIndex].TranslateUrl(params_.link_url),
         params_.frame_url.is_empty() ? params_.page_url : params_.frame_url,
         params_.frame_id,
-        NEW_FOREGROUND_TAB,
+        disposition,
         PageTransition::LINK);
     return;
   }
@@ -1693,10 +1711,12 @@ void RenderViewContextMenu::ExecuteCommand(int id) {
 
     case IDC_CONTENT_CONTEXT_SEARCHWEBFOR:
     case IDC_CONTENT_CONTEXT_GOTOURL: {
+      WindowOpenDisposition disposition =
+          ForceNewTabDispositionFromEventFventFlags(event_flags);
       OpenURL(selection_navigation_url_,
               GURL(),
               params_.frame_id,
-              NEW_FOREGROUND_TAB,
+              disposition,
               PageTransition::LINK);
       break;
     }
@@ -1730,9 +1750,11 @@ void RenderViewContextMenu::ExecuteCommand(int id) {
     }
 
     case IDC_CONTENT_CONTEXT_LANGUAGE_SETTINGS: {
+      WindowOpenDisposition disposition =
+          ForceNewTabDispositionFromEventFventFlags(event_flags);
       std::string url = std::string(chrome::kChromeUISettingsURL) +
           chrome::kLanguageOptionsSubPage;
-      OpenURL(GURL(url), GURL(), 0, NEW_FOREGROUND_TAB, PageTransition::LINK);
+      OpenURL(GURL(url), GURL(), 0, disposition, PageTransition::LINK);
       break;
     }
 
@@ -1763,9 +1785,11 @@ void RenderViewContextMenu::ExecuteCommand(int id) {
     case IDC_CONTENT_CONTEXT_PROTOCOL_HANDLER_SETTINGS: {
       UserMetrics::RecordAction(
           UserMetricsAction("RegisterProtocolHandler.ContextMenu_Settings"));
+      WindowOpenDisposition disposition =
+          ForceNewTabDispositionFromEventFventFlags(event_flags);
       std::string url = std::string(chrome::kChromeUISettingsURL) +
           chrome::kHandlerSettingsSubPage;
-      OpenURL(GURL(url), GURL(), 0, NEW_FOREGROUND_TAB, PageTransition::LINK);
+      OpenURL(GURL(url), GURL(), 0, disposition, PageTransition::LINK);
       break;
     }
 
