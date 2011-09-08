@@ -2525,6 +2525,15 @@ bool GLES2DecoderImpl::ResizeOffscreenFrameBuffer(const gfx::Size& size) {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
     RestoreClearState();
   }
+
+  // Destroy the offscreen resolved framebuffers.
+  if (offscreen_resolved_frame_buffer_.get())
+    offscreen_resolved_frame_buffer_->Destroy();
+  if (offscreen_resolved_color_texture_.get())
+    offscreen_resolved_color_texture_->Destroy();
+  offscreen_resolved_color_texture_.reset();
+  offscreen_resolved_frame_buffer_.reset();
+
   return true;
 }
 
@@ -6544,14 +6553,6 @@ error::Error GLES2DecoderImpl::HandleSwapBuffers(
                    << "because offscreen saved FBO was incomplete.";
         return error::kLostContext;
       }
-
-      // Destroy the offscreen resolved framebuffers.
-      if (offscreen_resolved_frame_buffer_.get())
-        offscreen_resolved_frame_buffer_->Destroy();
-      if (offscreen_resolved_color_texture_.get())
-        offscreen_resolved_color_texture_->Destroy();
-      offscreen_resolved_color_texture_.reset();
-      offscreen_resolved_frame_buffer_.reset();
 
       // Clear the offscreen color texture.
       // TODO(piman): Is this still necessary?
