@@ -1,8 +1,9 @@
 vars = {
   # These two should be updated to the same revision whenever possible.
-  "arm_toolchain_version": "6632",
   "x86_toolchain_version": "6632",
-  # Keep them separate from the rest of the list.
+  "pnacl_toolchain_version": "6632",
+  # ARM trusted toolchain version cannot be changed for now.
+  "arm_trusted_toolchain_version": "6645",
 
   # When possible, keep chrome_rev and chromebinaries_rev at the same
   # value.  chromebinaries_rev should match LKGR so that we can download
@@ -113,7 +114,8 @@ hooks = [
     "pattern": ".",
     "action": ["python", "native_client/build/download_toolchains.py",
                "--x86-version", Var("x86_toolchain_version"),
-               "--arm-version", Var("arm_toolchain_version")],
+               "--arm-trusted-version", Var("arm_trusted_toolchain_version"),
+               "--pnacl-version", Var("pnacl_toolchain_version")],
   },
   {
     "pattern": ".",

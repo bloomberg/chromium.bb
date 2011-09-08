@@ -66,8 +66,12 @@ def EncodeToolchainUrl(base_url, version, flavor):
       base_url, version, flavor)
 
 
-def IsArmFlavor(flavor):
-  return 'arm' in flavor or 'pnacl' in flavor
+def IsArmTrustedFlavor(flavor):
+  return 'arm' in flavor
+
+
+def IsPnaclFlavor(flavor):
+  return 'pnacl' in flavor
 
 
 def IsNaClNewlibFlavor(flavor):

@@ -94,9 +94,13 @@ def Main(args):
       default='latest',
       help='which version of the toolchain to download for x86')
   parser.add_option(
-      '--arm-version', dest='arm_version',
+      '--arm-trusted-version', dest='arm_trusted_version',
       default='latest',
-      help='which version of the toolchain to download for arm')
+      help='which version of the trusted toolchain to download for arm')
+  parser.add_option(
+      '--pnacl-version', dest='pnacl_version',
+      default='latest',
+      help='which version of the toolchain to download for pnacl')
   parser.add_option(
       '--toolchain-dir', dest='toolchain_dir',
       default=os.path.join(parent_dir, 'toolchain'),
@@ -126,8 +130,10 @@ def Main(args):
   if options.nacl_newlib_only:
     flavors = [f for f in flavors if toolchainbinaries.IsNaClNewlibFlavor(f)]
   for flavor in flavors:
-    if toolchainbinaries.IsArmFlavor(flavor):
-      version = options.arm_version
+    if toolchainbinaries.IsArmTrustedFlavor(flavor):
+      version = options.arm_trusted_version
+    elif toolchainbinaries.IsPnaclFlavor(flavor):
+      version = options.pnacl_version
     else:
       version = options.x86_version
     url = toolchainbinaries.EncodeToolchainUrl(options.base_url, version,
