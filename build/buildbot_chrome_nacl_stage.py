@@ -97,6 +97,15 @@ def CleanTempDir():
     print
 
 
+def RunCommand(cmd, cwd, env):
+  sys.stdout.write('\nRunning %s\n\n' % ' '.join(cmd))
+  sys.stdout.flush()
+  retcode = subprocess.call(cmd, cwd=cwd, env=env)
+  if retcode != 0:
+    sys.stdout.write('\nFailed: %s\n\n' % ' '.join(cmd))
+    sys.exit(retcode)
+
+
 def BuildAndTest(options):
   # Refuse to run under cygwin.
   if sys.platform == 'cygwin':
@@ -112,13 +121,12 @@ def BuildAndTest(options):
 
   # Get out the toolchain revs.
   x86_rev = deps['vars']['x86_toolchain_version']
-  arm_rev = deps['vars']['arm_toolchain_version']
 
   # Download the toolchain.
   subprocess.check_call([sys.executable,
                          os.path.join(script_dir, 'download_toolchains.py'),
                          '--x86-version', x86_rev,
-                         '--arm-version', arm_rev])
+                         '--nacl-newlib-only'])
 
   # Decide platform specifics.
   env = dict(os.environ)
@@ -211,11 +219,10 @@ def BuildAndTest(options):
 
   CleanTempDir()
 
-  sys.stdout.write('\nRunning %s\n\n' % ' '.join(cmd))
-  sys.stdout.flush()
-  retcode = subprocess.call(cmd, cwd=nacl_dir, env=env)
-  if retcode != 0:
-    sys.exit(retcode)
+  sys.stdout.write('\n\nBuilding files needed for testing...\n\n')
+  RunCommand(cmd + ['do_not_run_tests=1', '-j8'], nacl_dir, env)
+  sys.stdout.write('\n\nRunning tests...\n\n')
+  RunCommand(cmd, nacl_dir, env)
 
 
 def MakeCommandLineParser():

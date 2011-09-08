@@ -329,6 +329,11 @@ def SetUpArgumentBits(env):
       'into hangs on Buildbot, and our test suite includes various crash '
       'tests.')
 
+  BitFromArgument(env, 'do_not_run_tests', default=False,
+    desc='Prevents tests from running.  This lets SCons build the files needed '
+      'to run the specified test(s) without actually running them.  This '
+      'argument is a counterpart to built_elsewhere.')
+
 
 def CheckArguments():
   for key in ARGUMENTS:
@@ -1832,9 +1837,11 @@ def CommandTest(env, name, command, size='small', direct_emulation=True,
   test_script = env.File('${SCONSTRUCT_DIR}/tools/command_tester.py')
   command = ['${PYTHON}', test_script] + script_flags + command
   return AutoDepsCommand(env, name, command,
-                         extra_deps=extra_deps, posix_path=posix_path)
+                         extra_deps=extra_deps, posix_path=posix_path,
+                         disabled=env.Bit('do_not_run_tests'))
 
 pre_base_env.AddMethod(CommandTest)
+
 
 def FileSizeTest(env, name, envFile, max_size=None):
   """FileSizeTest() returns a scons node like the other XYZTest generators.
@@ -1884,7 +1891,16 @@ def StripExecutable(env, name, exe):
 
 pre_base_env.AddMethod(StripExecutable)
 
-def AutoDepsCommand(env, name, command, extra_deps=[], posix_path=False):
+
+# TODO(ncbray): pretty up the log output when running this builder.
+def DisabledCommand(target, source, env):
+  pass
+
+pre_base_env['BUILDERS']['DisabledCommand'] = Builder(action=DisabledCommand)
+
+
+def AutoDepsCommand(env, name, command, extra_deps=[], posix_path=False,
+                    disabled=False):
   """AutoDepsCommand() takes a command as an array of arguments.  Each
   argument may either be:
 
@@ -1917,7 +1933,11 @@ def AutoDepsCommand(env, name, command, extra_deps=[], posix_path=False):
   else:
     env.Depends(name, extra_deps)
 
-  return env.Command(name, deps, ' '.join(command))
+  if disabled:
+    return env.DisabledCommand(name, deps)
+  else:
+    return env.Command(name, deps, ' '.join(command))
+
 
 pre_base_env.AddMethod(AutoDepsCommand)
 
