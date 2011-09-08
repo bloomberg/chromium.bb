@@ -103,6 +103,16 @@ def SyncTgz(url, target, username=None, password=None, verbose=True, hash=None,
   if hash and hash != tgz_hash:
     raise HashError(actual_hash=tgz_hash, expected_hash=hash, download_url=url)
 
+  # If saving the tarball, also produce a manifest file that can be parsed by
+  # the SDK installer generator script.  Save this manifest file as
+  # |save_path|.manifest.  Do this because the 'xz' compression format is not
+  # supported by the scripts used in the SDK.
+  save_manifest = None
+  if save_path:
+    if not os.path.exists(os.path.dirname(save_path)):
+      os.makedirs(os.path.dirname(save_path))
+    save_manifest = os.path.abspath(os.path.normpath(save_path + '.manifest'))
+
   if verbose:
     print 'Extracting from %s...' % tgz_filename
   if verbose:
@@ -131,6 +141,15 @@ def SyncTgz(url, target, username=None, password=None, verbose=True, hash=None,
         [os.path.join('tmptar', 'tar.exe'),
          '--use-compress-program', '/tmptar/' + compress,
          '-xS' + verbosechar + 'opf', '../.tgz'], env=env)
+    if save_manifest:
+      # Save the manifest file.  Use 'wb' as the open mode so that python on
+      # Windows doesn't add spurious CRLF line endings.
+      manifest = open(save_manifest, 'wb')
+      subprocess.check_call(
+        [os.path.join('tmptar', 'tar.exe'),
+         '--use-compress-program', '/tmptar/' + compress,
+         '-tSvopf', '../.tgz'], env=env, stdout=manifest)
+      manifest.close()
     os.chdir(saveddir)
     # Some antivirus software can prevent the removal - print message, but
     # don't stop.
@@ -157,6 +176,12 @@ def SyncTgz(url, target, username=None, password=None, verbose=True, hash=None,
       compression_char = 'J'
     subprocess.check_call(['tar', '-xS' + verbosechar + compression_char + 'pf',
                            tgz_filename, '-C', target])
+    if save_manifest:
+      # Save the manifest file.
+      manifest = open(save_manifest, 'w')
+      subprocess.check_call(['tar', '-tSv' + compression_char + 'pf',
+                             tgz_filename], stdout=manifest)
+      manifest.close()
   elif sys.platform == 'darwin':
     # TODO(khim): Replace with --warning=no-unknown-keyword when gnutar 1.23+
     # will be available.
@@ -164,21 +189,29 @@ def SyncTgz(url, target, username=None, password=None, verbose=True, hash=None,
         ['bash', '-c',
          '/usr/bin/gnutar -xS' + verbosechar + 'pf ' + tgz_filename +
          ' -C ' + target + ' 2> /dev/null'])
+    if save_manifest:
+      # Save the manifest file.
+      manifest = open(save_manifest, 'w')
+      subprocess.check_call(
+          ['bash', '-c',
+           '/usr/bin/gnutar -tSvpf ' + tgz_filename + ' 2> /dev/null'],
+          stdout=manifest)
+      manifest.close()
   else:
     tgz = tarfile.open(tgz_filename, 'r')
     for m in tgz:
       if verbose:
         print m.name
       tgz.extract(m, target)
+    # Note: tarballs that can be processed with the tarfile module do not
+    # require a special manifest file.  No need to create one in this case.
     tgz.close()
   # If the tarball is supposed to be saved, move into place.  Otherwise, delete
-  # it.  Note that the files is moved like this because the CygWin-based
+  # it.  Note that the file is moved like this because the CygWin-based
   # Windows code above expects the tarball to be in a specific hard-coded
   # location and have a specific name.
   if save_path:
     download_utils.RemoveFile(save_path)
-    if not os.path.exists(os.path.dirname(save_path)):
-      os.makedirs(os.path.dirname(save_path))
     shutil.move(tgz_filename, save_path)
   else:
     os.remove(tgz_filename)
