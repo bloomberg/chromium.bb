@@ -995,6 +995,10 @@ void ProfileSyncService::ShowErrorUI() {
 }
 
 void ProfileSyncService::ShowConfigure(bool sync_everything) {
+  if (!sync_initialized()) {
+    LOG(ERROR) << "Attempted to show sync configure before backend ready.";
+    return;
+  }
   if (WizardIsVisible()) {
     wizard_.Focus();
     return;
@@ -1058,6 +1062,10 @@ std::string ProfileSyncService::BuildSyncStatusSummaryText(
     return "UNKNOWN";
   }
   return strings[summary];
+}
+
+bool ProfileSyncService::sync_initialized() const {
+  return backend_initialized_;
 }
 
 bool ProfileSyncService::unrecoverable_error_detected() const {

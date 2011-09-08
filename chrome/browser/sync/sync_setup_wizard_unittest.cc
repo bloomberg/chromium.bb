@@ -124,6 +124,10 @@ class ProfileSyncServiceForWizardTest : public ProfileSyncService {
     passphrase_required_reason_ = reason;
   }
 
+  virtual bool sync_initialized() const {
+    return true;
+  }
+
   void ResetTestStats() {
     username_.clear();
     password_.clear();

@@ -78,6 +78,16 @@ SyncSetupFlow* SyncSetupFlow::Run(ProfileSyncService* service,
                                   SyncSetupWizard::State end) {
   if (start == SyncSetupWizard::NONFATAL_ERROR)
     start = GetStepForNonFatalError(service);
+  if ((start == SyncSetupWizard::CONFIGURE ||
+       start == SyncSetupWizard::SYNC_EVERYTHING ||
+       start == SyncSetupWizard::ENTER_PASSPHRASE) &&
+      !service->sync_initialized()) {
+    // We are trying to open configuration window, but the backend isn't ready.
+    // We just return NULL. This has the effect of the flow getting reset, and
+    // the user's action has no effect.
+    LOG(ERROR) << "Attempted to show sync configure before backend ready.";
+    return NULL;
+  }
   return new SyncSetupFlow(start, end, container, service);
 }
 
