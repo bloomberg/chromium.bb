@@ -9241,6 +9241,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Format device
       </message>
 
+      <message name="IDS_FILE_BROWSER_GALLERY" desc="Title of the action to open gallery.">
+        Gallery
+      </message>
+
       <message name="IDS_FILE_BROWSER_CONFIRM_OVERWRITE_FILE" desc="Asks the user if they are sure they want to overwrite an existing file with another one.">
         A file named "$1" already exists. Do you want to replace it?
       </message>

@@ -225,6 +225,8 @@ chrome.fileBrowserPrivate = {
       UNMOUNT_ARCHIVE: 'Close archive',
       FORMAT_DEVICE: 'Format device',
 
+      GALLERY: 'Gallery',
+
       CONFIRM_OVERWRITE_FILE: 'A file named "$1" already exists. Do you want to replace it?',
       FILE_ALREADY_EXISTS: 'The file named "$1" already exists. Please choose a different name.',
       DIRECTORY_ALREADY_EXISTS: 'The directory named "$1" already exists. Please choose a different name.',

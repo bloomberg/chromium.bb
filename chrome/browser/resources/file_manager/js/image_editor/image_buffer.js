@@ -20,7 +20,7 @@ function ImageBuffer(screenCanvas) {
   this.overlays_ = [];
   this.addOverlay(new ImageBuffer.Margin(this.viewport_));
   this.addOverlay(this.content_);
-  this.addOverlay(new ImageBuffer.Overview(this.viewport_, this.content_));
+  // TODO(dgozman): consider adding overview in v2.
 }
 
 ImageBuffer.prototype.getViewport = function() { return this.viewport_ };
@@ -186,7 +186,7 @@ ImageBuffer.Margin.prototype.getZIndex = function() { return -2 };
 
 ImageBuffer.Margin.prototype.draw = function(context) {
   context.save();
-  context.fillStyle = '#F0F0F0';
+  context.fillStyle = '#000000';
   context.strokeStyle = '#000000';
   Rect.fillBetween(context,
       this.viewport_.getImageBoundsOnScreen(),
@@ -302,11 +302,19 @@ ImageBuffer.Content.prototype.load = function(image) {
   this.canvas_.width = image.width;
   this.canvas_.height = image.height;
 
+  this.clear();
   Rect.drawImage(this.canvas_.getContext("2d"), image);
   this.invalidateCaches();
 
   this.viewport_.setImageSize(image.width, image.height);
   this.viewport_.fitImage();
+};
+
+ImageBuffer.Content.prototype.clear = function() {
+  var context = this.canvas_.getContext("2d");
+  context.globalAlpha = 1;
+  context.fillStyle = '#FFFFFF';
+  Rect.fill(context, new Rect(this.canvas_));
 };
 
 /**

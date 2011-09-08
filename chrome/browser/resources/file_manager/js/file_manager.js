@@ -9,7 +9,7 @@ const EMPTY_IMAGE_URI = 'data:image/gif;base64,'
 
 var g_slideshow_data = null;
 
-const IMAGE_EDITOR_ENABLED = false;
+const GALLERY_ENABLED = true;
 
 /**
  * FileManager constructor.
@@ -1670,11 +1670,6 @@ FileManager.prototype = {
           task.iconUrl =
               chrome.extension.getURL('images/icon_preview_16x16.png');
           task.title = str('PREVIEW_IMAGE');
-        } else if (task_parts[1] == 'edit') {
-          task.iconUrl =
-              chrome.extension.getURL('images/icon_preview_16x16.png');
-          task.title = 'Edit';
-          if (!IMAGE_EDITOR_ENABLED) continue;  // Skip the button creation.
         } else if (task_parts[1] == 'play') {
           task.iconUrl =
               chrome.extension.getURL('images/icon_play_16x16.png');
@@ -1689,6 +1684,11 @@ FileManager.prototype = {
           task.title = str('MOUNT_ARCHIVE');
           if (str('ENABLE_ARCHIVES') != 'true')
             continue;
+        } else if (task_parts[1] == 'gallery') {
+          task.iconUrl =
+              chrome.extension.getURL('images/icon_preview_16x16.png');
+          task.title = str('GALLERY');
+          if (!GALLERY_ENABLED) continue;  // Skip the button creation.
         }
       }
       this.renderTaskButton_(task);
@@ -1875,8 +1875,6 @@ FileManager.prototype = {
     if (id == 'preview') {
       g_slideshow_data = urls;
       chrome.tabs.create({url: "slideshow.html"});
-    } else if (id == 'edit') {
-      this.openImageEditor_(details.entries[0]);
     } else if (id == 'play' || id == 'enqueue') {
       chrome.fileBrowserPrivate.viewFiles(urls, id);
     } else if (id == 'mount-archive') {
@@ -1892,6 +1890,8 @@ FileManager.prototype = {
       this.confirm.show(str('FORMATTING_WARNING'), function() {
         chrome.fileBrowserPrivate.formatDevice(urls[0]);
       });
+    } else if (id == 'gallery') {
+      this.openGallery_(details.entries);
     }
   };
 
@@ -1906,33 +1906,23 @@ FileManager.prototype = {
     return undefined;
   }
 
-  FileManager.prototype.openImageEditor_ = function(entry) {
+  FileManager.prototype.openGallery_ = function(entries) {
     var self = this;
 
-    var editorFrame = this.document_.createElement('iframe');
-    editorFrame.className = 'overlay-pane';
-    editorFrame.scrolling = 'no';
+    var galleryFrame = this.document_.createElement('iframe');
+    galleryFrame.className = 'overlay-pane';
+    galleryFrame.scrolling = 'no';
 
-    editorFrame.onload = function() {
-      self.cacheMetadata_(entry, function(metadata) {
-        editorFrame.contentWindow.ImageEditor.open(
-            self.onImageEditorSave_.bind(self, entry),
-            function () { self.dialogDom_.removeChild(editorFrame) },
-            entry.toURL(),
-            metadata);
-      });
+    // TODO(dgozman): pass metadata to gallery.
+    galleryFrame.onload = function() {
+      galleryFrame.contentWindow.Gallery.open(
+          self.currentDirEntry_,
+          entries,
+          function () { self.dialogDom_.removeChild(galleryFrame) });
     };
 
-    editorFrame.src = 'js/image_editor/image_editor.html';
-
-    this.dialogDom_.appendChild(editorFrame);
-  };
-
-  FileManager.prototype.onImageEditorSave_ = function(entry, blob) {
-    // TODO(kaznacheev): Notify user properly about write failures.
-    util.writeBlobToFile(entry, blob, function(){},
-        util.flog('Error writing to ' + entry.fullPath));
-    this.updatePreview_();  // Metadata may have changed.
+    galleryFrame.src = 'js/image_editor/gallery.html';
+    this.dialogDom_.appendChild(galleryFrame);
   };
 
   /**

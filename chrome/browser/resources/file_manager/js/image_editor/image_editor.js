@@ -8,8 +8,9 @@
  * @param {HTMLElement} container
  * @param {function(Blob)} saveCallback
  * @param {function()} closeCallback
+ * @param {HTMLElement} toolbarContainer
  */
-function ImageEditor(container, saveCallback, closeCallback) {
+function ImageEditor(container, toolbarContainer, saveCallback, closeCallback) {
   this.container_ = container;
   this.saveCallback_ = saveCallback;
   this.closeCallback_ = closeCallback;
@@ -29,13 +30,12 @@ function ImageEditor(container, saveCallback, closeCallback) {
 
   this.buffer_ = new ImageBuffer(canvas);
 
-  this.scaleControl_ = new ImageEditor.ScaleControl(
-      this.canvasWrapper_, this.getBuffer().getViewport());
+  // TODO(dgozman): consider adding a ScaleControl in v2.
 
   this.panControl_ = new ImageEditor.MouseControl(canvas, this.getBuffer());
 
-  this.toolbar_ =
-      new ImageEditor.Toolbar(container, this.onOptionsChange.bind(this));
+  this.toolbar_ = new ImageEditor.Toolbar(toolbarContainer,
+      this.onOptionsChange.bind(this));
   this.initToolbar();
 }
 
@@ -52,7 +52,8 @@ function ImageEditor(container, saveCallback, closeCallback) {
  */
 ImageEditor.open = function(saveCallback, closeCallback, source, opt_metadata) {
   var container = document.getElementsByClassName('image-editor')[0];
-  var editor = new ImageEditor(container, saveCallback, closeCallback);
+  var toolbar = document.getElementsByClassName('toolbar-container')[0];
+  var editor = new ImageEditor(container, toolbar, saveCallback, closeCallback);
   if (ImageEditor.resizeListener) {
     // Make sure we do not leak the previous instance.
     window.removeEventListener('resize', ImageEditor.resizeListener, false);
@@ -117,7 +118,6 @@ ImageEditor.prototype.initToolbar = function() {
 
   this.createModeButtons();
   this.toolbar_.addButton('Save', this.save.bind(this, true));
-  this.toolbar_.addButton('Close', this.close.bind(this, false));
 };
 
 /**

@@ -1,0 +1,134 @@
+/*
+ * Copyright (c) 2011 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+body {
+  margin: 0;
+}
+
+.gallery {
+  background: black;
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.gallery > .close {
+  position: absolute;
+  right: 10px;
+  top: 10px;
+  height: 20px;
+  color: white;
+  cursor: pointer;
+}
+
+.gallery > .image-container {
+  position: absolute;
+  top: 30px;
+  bottom: 80px;
+  width: 100%;
+  background-color: rgba(0,0,0,1);
+}
+
+.gallery > .toolbar {
+  position: absolute;
+  bottom: 0px;
+  width: 100%;
+  height: 80px;
+  padding: 3px;
+  display: -webkit-box;
+  -webkit-box-orient: horizontal;
+  -webkit-box-pack: start;
+  -webkit-box-align: stretch;
+}
+
+.gallery .ribbon {
+  -webkit-box-flex: 1;
+  border: solid 1px white;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: horizontal;
+  -webkit-box-pack: left;
+}
+
+.gallery .ribbon-left,
+.gallery .ribbon-right {
+  width: 20px;
+  height: 100%;
+  background-color: red;
+  cursor: pointer;
+}
+
+.gallery .ribbon-image {
+  display: -webkit-box;
+  -webkit-box-orient: horizontal;
+  -webkit-box-pack: center;
+  -webkit-box-align: center;
+  overflow: hidden;
+  cursor: pointer;
+  width: 70px;
+  height: 70px;
+  margin: 4px;
+  border: 1px solid rgba(255,255,255,0); /* transparent white */
+}
+
+.gallery .ribbon-image[selected] {
+  border: 1px solid rgba(255,255,0,1);
+}
+
+.gallery .ribbon-image > img {
+  max-width: 70px;
+  max-height: 70px;
+}
+
+.gallery .ribbon-spacer {
+  -webkit-box-flex: 1;
+  height: 100%;
+}
+
+.gallery .edit-bar {
+  -webkit-box-flex: 0;
+  width: 60%;
+  color: white;
+  display: -webkit-box;
+  -webkit-box-orient: horizontal;
+}
+
+.gallery .edit-bar[hidden] {
+  display: none;
+}
+
+.gallery .toolbar > .button {
+  -webkit-box-flex: 0;
+  padding: 10px;
+  cursor: pointer;
+  margin: 8px 3px;
+  width: 80px;
+
+  display: -webkit-box;
+  -webkit-box-orient: horizontal;
+  -webkit-box-align: center;
+}
+
+.gallery .button {
+  background-color: rgba(0,0,0,1);
+  color: white;
+}
+
+.gallery .button:hover {
+  background-color: rgba(127,127,127,1);
+  color: white;
+}
+
+.gallery .button[pressed] {
+  background-color: rgba(255,255,255,1);
+  color: black;
+}
+
+.gallery .button[pressed]:hover {
+  background-color: rgba(127,127,127,1);
+  color: black;
+}

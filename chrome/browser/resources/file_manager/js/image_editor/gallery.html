@@ -5,14 +5,14 @@
   -->
 
 <!--
-  Load this page into a tab or an iframe, then set the editor up like this:
+  Load this page into a tab or an iframe, then set the gallery up like this:
 
-    iframe.contentWindow.ImageEditor.load(
-        saveCallback, closeCallback, source, opt_metadata);
+    iframe.contentWindow.Gallery.open(parentDirEntry, entries, closeCallback);
   -->
 <html>
 <head>
   <link rel="stylesheet" type="text/css" href="image_editor.css"/>
+  <link rel="stylesheet" type="text/css" href="gallery.css"/>
 
   <script type="text/javascript" src="image_util.js"></script>
   <script type="text/javascript" src="viewport.js"></script>
@@ -21,13 +21,13 @@
   <script type="text/javascript" src="image_transform.js"></script>
   <script type="text/javascript" src="image_adjust.js"></script>
   <script type="text/javascript" src="filter.js"></script>
+  <script type="text/javascript" src="gallery.js"></script>
 
   <script type="text/javascript" src="image_encoder.js"></script>
   <script type="text/javascript" src="exif_encoder.js"></script>
 
 </head>
-<body style="margin:0">
-  <div style="height:90%;"><div class="image-editor"></div></div>
-  <div style="height:10%;background-color:black;color:white;" class="toolbar-container"></div>
+<body>
+  <div class="gallery"></div>
 </body>
 </html>

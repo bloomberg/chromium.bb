@@ -38,15 +38,6 @@
       ]
     },
     {
-      "id": "edit",
-      "default_title": "__MSG_PREVIEW_IMAGE__",
-      "default_icon": "images/icon_preview_16x16.png",
-      "file_filters": [
-        "filesystem:*.jpg",
-        "filesystem:*.jpeg"
-      ]
-    },
-    {
       "id": "play",
       "default_title": "__MSG_PLAY_MEDIA__",
       "default_icon": "images/icon_play_16x16.png",
@@ -102,6 +93,19 @@
       "default_icon": "images/icon_unmount_archive_16x16.png",
       "file_filters": [
         "filesystem:*.mounted_zip"
+      ]
+    },
+    {
+      "id": "gallery",
+      "default_title": "__MSG_GALLERY__",
+      "default_icon": "images/icon_preview_16x16.png",
+      "file_filters": [
+        "filesystem:*.bmp",
+        "filesystem:*.gif",
+        "filesystem:*.jpg",
+        "filesystem:*.jpeg",
+        "filesystem:*.webp",
+        "filesystem:*.png"
       ]
     }
   ],
