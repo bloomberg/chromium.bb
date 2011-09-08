@@ -1029,7 +1029,7 @@ class TestServer(object):
       response.store_birthday = self.account.store_birthday
       response.error_code = sync_pb2.ClientToServerResponse.NOT_MY_BIRTHDAY
       return (200, response.SerializeToString())
-    except TransientError as error:
+    except TransientError, error:
       print_context('<-')
       print 'TRANSIENT_ERROR'
       response.store_birthday = self.account.store_birthday
