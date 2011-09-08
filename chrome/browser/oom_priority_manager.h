@@ -5,12 +5,13 @@
 #ifndef CHROME_BROWSER_OOM_PRIORITY_MANAGER_H_
 #define CHROME_BROWSER_OOM_PRIORITY_MANAGER_H_
 
-#include <list>
+#include <vector>
 
-#include "base/timer.h"
-#include "base/process.h"
+#include "base/string16.h"
 
 namespace browser {
+
+class OomPriorityManagerImpl;
 
 // The OomPriorityManager periodically checks (see
 // ADJUSTMENT_INTERVAL_SECONDS in the source) the status of renderers
@@ -26,37 +27,18 @@ namespace browser {
 // them, as no two tabs will have exactly the same idle time.
 class OomPriorityManager {
  public:
-  OomPriorityManager();
-  ~OomPriorityManager();
+  // We need to explicitly manage our destruction, so don't use Singleton.
+  static void Create();
+  static void Destroy();
+
+  // Returns list of tab titles sorted from most interesting (don't kill)
+  // to least interesting (OK to kill).
+  static std::vector<string16> GetTabTitles();
 
  private:
-  struct RendererStats {
-    bool is_pinned;
-    bool is_selected;
-    base::TimeTicks last_selected;
-    size_t memory_used;
-    base::ProcessHandle renderer_handle;
-  };
-  typedef std::list<RendererStats> StatsList;
-
-  void StartTimer();
-  void StopTimer();
-
-  // Posts DoAdjustOomPriorities task to the file thread.  Called when
-  // the timer fires.
-  void AdjustOomPriorities();
-
-  // Called by AdjustOomPriorities.  Runs on the file thread.
-  void DoAdjustOomPriorities(StatsList list);
-
-  static bool CompareRendererStats(RendererStats first, RendererStats second);
-
-  base::RepeatingTimer<OomPriorityManager> timer_;
-
-  DISALLOW_COPY_AND_ASSIGN(OomPriorityManager);
+  static OomPriorityManagerImpl* impl_;
 };
-}  // namespace browser
 
-DISABLE_RUNNABLE_METHOD_REFCOUNT(browser::OomPriorityManager);
+}  // namespace browser
 
 #endif  // CHROME_BROWSER_OOM_PRIORITY_MANAGER_H_

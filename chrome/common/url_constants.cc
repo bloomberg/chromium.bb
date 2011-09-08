@@ -69,6 +69,7 @@ const char kChromeUIActiveDownloadsURL[] = "chrome://active-downloads/";
 const char kChromeUIChooseMobileNetworkURL[] =
     "chrome://choose-mobile-network/";
 const char kChromeUICollectedCookiesURL[] = "chrome://collected-cookies/";
+const char kChromeUIDiscardsURL[] = "chrome://discards/";
 const char kChromeUIEnterpriseEnrollmentURL[] =
     "chrome://enterprise-enrollment/";
 const char kChromeUIHttpAuthURL[] = "chrome://http-auth/";
@@ -176,6 +177,7 @@ const char kChromeUIActiveDownloadsHost[] = "active-downloads";
 const char kChromeUIChooseMobileNetworkHost[] = "choose-mobile-network";
 const char kChromeUICollectedCookiesHost[] = "collected-cookies";
 const char kChromeUICryptohomeHost[] = "cryptohome";
+const char kChromeUIDiscardsHost[] = "discards";
 const char kChromeUIEnterpriseEnrollmentHost[] = "enterprise-enrollment";
 const char kChromeUIHttpAuthHost[] = "http-auth";
 const char kChromeUIImageBurnerHost[] = "imageburner";

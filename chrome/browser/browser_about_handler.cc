@@ -77,6 +77,7 @@
 #include "chrome/browser/chromeos/customization_document.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/version_loader.h"
+#include "chrome/browser/oom_priority_manager.h"
 #include "content/browser/zygote_host_linux.h"
 #elif defined(OS_LINUX)
 #include "content/browser/zygote_host_linux.h"
@@ -158,6 +159,7 @@ const char* const kChromePaths[] = {
   chrome::kChromeUIActiveDownloadsHost,
   chrome::kChromeUIChooseMobileNetworkHost,
   chrome::kChromeUICryptohomeHost,
+  chrome::kChromeUIDiscardsHost,
   chrome::kChromeUIImageBurnerHost,
   chrome::kChromeUIKeyboardOverlayHost,
   chrome::kChromeUILoginHost,
@@ -191,8 +193,9 @@ const char* const kAboutSourceNames[] = {
   chrome::kChromeUISandboxHost,
 #endif
 #if defined(OS_CHROMEOS)
-  chrome::kChromeUINetworkHost,
   chrome::kChromeUICryptohomeHost,
+  chrome::kChromeUIDiscardsHost,
+  chrome::kChromeUINetworkHost,
   chrome::kChromeUIOSCreditsHost,
 #endif
 };
@@ -255,7 +258,7 @@ class AboutMemoryHandler : public MemoryDetails {
         request_id_(request_id) {
   }
 
-  virtual void OnDetailsAvailable();
+  virtual void OnDetailsAvailable() OVERRIDE;
 
  private:
   ~AboutMemoryHandler() {}
@@ -442,6 +445,11 @@ std::string ChromeURLs() {
 
 // Html output helper functions
 // TODO(stevenjb): L10N this.
+
+// Helper function to wrap HTML with a tag.
+std::string WrapWithTag(const std::string& tag, const std::string& text) {
+  return "<" + tag + ">" + text + "</" + tag + ">";
+}
 
 // Helper function to wrap Html with <th> tag.
 std::string WrapWithTH(const std::string& text) {
@@ -668,6 +676,31 @@ std::string AboutCryptohome(const std::string& query) {
   int refresh;
   base::StringToInt(query, &refresh);
   return GetCryptohomeHtmlInfo(refresh);
+}
+
+std::string AboutDiscards() {
+  std::string output;
+  AppendHeader(&output, 0, "About discards");
+  AppendBody(&output);
+  output.append("<h3>About discards</h3>");
+  output.append(
+      "<p>Tabs sorted from most interesting to least interesting. The least "
+      "interesting tab may be discarded if we run out of physical memory.</p>");
+
+  std::vector<string16> titles = browser::OomPriorityManager::GetTabTitles();
+  if (!titles.empty()) {
+    output.append("<ol>");
+    std::vector<string16>::iterator it = titles.begin();
+    for ( ; it != titles.end(); ++it) {
+      std::string title = UTF16ToUTF8(*it);
+      output.append(WrapWithTag("li", title));
+    }
+    output.append("</ol>");
+  } else {
+    output.append("<p>None found.  Wait 10 seconds, then refresh.</p>");
+  }
+  AppendFooter(&output);
+  return output;
 }
 
 #endif  // OS_CHROMEOS
@@ -1346,25 +1379,61 @@ void AboutSource::StartDataRequest(const std::string& path,
                                    int request_id) {
   std::string response;
   std::string host = source_name();
-  if (host == chrome::kChromeUIDNSHost) {
+  // Add your data source here, in alphabetical order.
+  if (host == chrome::kChromeUIChromeURLsHost) {
+    response = ChromeURLs();
+  } else if (host == chrome::kChromeUICreditsHost) {
+    int idr = (path == kCreditsJsPath) ? IDR_CREDITS_JS : IDR_CREDITS_HTML;
+    response = ResourceBundle::GetSharedInstance().GetRawDataResource(
+        idr).as_string();
+#if defined(OS_CHROMEOS)
+  } else if (host == chrome::kChromeUICryptohomeHost) {
+    response = AboutCryptohome(path);
+  } else if (host == chrome::kChromeUIDiscardsHost) {
+    response = AboutDiscards();
+#endif
+  } else if (host == chrome::kChromeUIDNSHost) {
     AboutDnsHandler::Start(this, request_id);
     return;
   } else if (host == chrome::kChromeUIHistogramsHost) {
     response = AboutHistograms(path);
+#if defined(OS_LINUX)
+  } else if (host == chrome::kChromeUILinuxProxyConfigHost) {
+    response = AboutLinuxProxyConfig();
+#endif
   } else if (host == chrome::kChromeUIMemoryHost) {
     response = GetAboutMemoryRedirectResponse(profile());
   } else if (host == chrome::kChromeUIMemoryRedirectHost) {
     AboutMemory(path, this, request_id);
     return;
+#if defined(OS_CHROMEOS)
+  } else if (host == chrome::kChromeUINetworkHost) {
+    response = AboutNetwork(path);
+  } else if (host == chrome::kChromeUIOSCreditsHost) {
+    response = ResourceBundle::GetSharedInstance().GetRawDataResource(
+        IDR_OS_CREDITS_HTML).as_string();
+#endif
+#if defined(OS_LINUX)
+  } else if (host == chrome::kChromeUISandboxHost) {
+    response = AboutSandbox();
+#endif
+  } else if (host == chrome::kChromeUIStatsHost) {
+    response = AboutStats(path);
 #ifdef TRACK_ALL_TASK_OBJECTS
   } else if (host == chrome::kChromeUITaskManagerHost) {
     response = AboutObjects(path);
 #endif
-  } else if (host == chrome::kChromeUIStatsHost) {
-    response = AboutStats(path);
 #if defined(USE_TCMALLOC)
   } else if (host == chrome::kChromeUITCMallocHost) {
     response = AboutTcmalloc();
+#endif
+  } else if (host == chrome::kChromeUITermsHost) {
+#if defined(OS_CHROMEOS)
+    ChromeOSTermsHandler::Start(this, path, request_id);
+    return;
+#else
+    response = ResourceBundle::GetSharedInstance().GetRawDataResource(
+        IDR_TERMS_HTML).as_string();
 #endif
   } else if (host == chrome::kChromeUIVersionHost) {
     if (path == kStringsJsPath) {
@@ -1379,35 +1448,6 @@ void AboutSource::StartDataRequest(const std::string& path,
     } else {
       response = AboutVersionStaticContent(path);
     }
-  } else if (host == chrome::kChromeUICreditsHost) {
-    int idr = (path == kCreditsJsPath) ? IDR_CREDITS_JS : IDR_CREDITS_HTML;
-    response = ResourceBundle::GetSharedInstance().GetRawDataResource(
-        idr).as_string();
-  } else if (host == chrome::kChromeUIChromeURLsHost) {
-    response = ChromeURLs();
-#if defined(OS_CHROMEOS)
-  } else if (host == chrome::kChromeUIOSCreditsHost) {
-    response = ResourceBundle::GetSharedInstance().GetRawDataResource(
-        IDR_OS_CREDITS_HTML).as_string();
-  } else if (host == chrome::kChromeUINetworkHost) {
-    response = AboutNetwork(path);
-  } else if (host == chrome::kChromeUICryptohomeHost) {
-    response = AboutCryptohome(path);
-#endif
-  } else if (host == chrome::kChromeUITermsHost) {
-#if defined(OS_CHROMEOS)
-    ChromeOSTermsHandler::Start(this, path, request_id);
-    return;
-#else
-    response = ResourceBundle::GetSharedInstance().GetRawDataResource(
-        IDR_TERMS_HTML).as_string();
-#endif
-#if defined(OS_LINUX)
-  } else if (host == chrome::kChromeUILinuxProxyConfigHost) {
-    response = AboutLinuxProxyConfig();
-  } else if (host == chrome::kChromeUISandboxHost) {
-    response = AboutSandbox();
-#endif
   }
 
   FinishDataRequest(response, request_id);

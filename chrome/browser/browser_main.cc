@@ -701,7 +701,7 @@ ChromeBrowserMainParts::ChromeBrowserMainParts(
       shutdown_watcher_(new ShutdownWatcherHelper()) {
   // If we're running tests (ui_task is non-null).
   if (parameters.ui_task)
-    browser_defaults::enable_help_app = false;  
+    browser_defaults::enable_help_app = false;
 }
 
 ChromeBrowserMainParts::~ChromeBrowserMainParts() {
@@ -1765,11 +1765,8 @@ int ChromeBrowserMainParts::TemporaryContinue() {
   // Run the Out of Memory priority manager while in this scope.  Wait
   // until here to start so that we give the most amount of time for
   // the other services to start up before we start adjusting the oom
-  // priority.  In reality, it doesn't matter much where in this scope
-  // this is started, but it must be started in this scope so it will
-  // also be terminated when this scope exits.
-  scoped_ptr<browser::OomPriorityManager> oom_priority_manager(
-      new browser::OomPriorityManager);
+  // priority.
+  browser::OomPriorityManager::Create();
 #endif
 
   // Create the instance of the cloud print proxy service so that it can launch
@@ -1899,12 +1896,15 @@ int ChromeBrowserMainParts::TemporaryContinue() {
   }
 #endif
 
+#if defined(OS_CHROMEOS)
+  browser::OomPriorityManager::Destroy();
+#endif
+
   // Some tests don't set parameters.ui_task, so they started translate
   // language fetch that was never completed so we need to cleanup here
   // otherwise it will be done by the destructor in a wrong thread.
   if (parameters().ui_task == NULL && translate_manager != NULL)
     translate_manager->CleanupPendingUlrFetcher();
-
 
   process_singleton.Cleanup();
 
