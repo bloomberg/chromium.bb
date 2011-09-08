@@ -2567,18 +2567,6 @@
    fun:_ZN18CoreOptionsHandler18HandleObservePrefs*Value*
 }
 {
-   bug_52825
-   Memcheck:Addr4
-   fun:_ZNKSt8_Rb_treeIjSt4pairIKjP12ObserverListI20NotificationObserverLb0EEESt10_Select1stIS6_ESt4lessIjESaIS6_EE8_M_beginEv
-   fun:_ZNKSt8_Rb_treeIjSt4pairIKjP12ObserverListI20NotificationObserverLb0EEESt10_Select1stIS6_ESt4lessIjESaIS6_EE4findERS1_
-   fun:_ZNKSt3mapIjP12ObserverListI20NotificationObserverLb0EESt4lessIjESaISt4pairIKjS3_EEE4findERS7_
-   fun:_ZN19NotificationService6HasKeyERKSt3mapIjP12ObserverListI20NotificationObserverLb0EESt4lessIjESaISt4pairIKjS4_EEERK18NotificationSource
-   fun:_ZN19NotificationService6NotifyEiRK18NotificationSourceRK19NotificationDetails
-   fun:_ZN23ChromeURLRequestContextD0Ev
-   ...
-   fun:_ZN17URLRequestHttpJobD0Ev
-}
-{
    bug_52831
    Memcheck:Leak
    fun:_Znw*
