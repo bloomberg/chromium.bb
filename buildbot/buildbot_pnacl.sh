@@ -8,7 +8,7 @@ set -o nounset
 set -o errexit
 
 # If true, terminate script when first scons error is encountered.
-FAIL_FAST=1
+FAIL_FAST=${FAIL_FAST:-true}
 # This remembers when any build steps failed, but we ended up continuing.
 RETCODE=0
 
@@ -32,7 +32,7 @@ relevant() {
 handle-error() {
   RETCODE=1
   echo "@@@STEP_FAILURE@@@"
-  if [ ${FAIL_FAST} == "1" ] ; then
+  if ${FAIL_FAST} ; then
     echo "FAIL_FAST enabled"
     exit 1
   fi
@@ -194,7 +194,7 @@ browser-tests() {
 # NOTE: these trybots are expected to diverge some more hence the code
 #       duplication
 mode-trybot-arm() {
-  FAIL_FAST=0
+  FAIL_FAST=false
   clobber
   install-lkgr-toolchains
   scons-tests "arm" "--mode=opt-host,nacl -j8 -k" "smoke_tests"
@@ -205,7 +205,7 @@ mode-trybot-arm() {
 }
 
 mode-trybot-x8632() {
-  FAIL_FAST=0
+  FAIL_FAST=false
   clobber
   install-lkgr-toolchains
   scons-tests "x86-32" "--mode=opt-host,nacl -j8 -k" "smoke_tests"
@@ -214,7 +214,7 @@ mode-trybot-x8632() {
 }
 
 mode-trybot-x8664() {
-  FAIL_FAST=0
+  FAIL_FAST=false
   clobber
   install-lkgr-toolchains
   scons-tests "x86-64" "--mode=opt-host,nacl -j8 -k" "smoke_tests"
@@ -224,7 +224,7 @@ mode-trybot-x8664() {
 
 # TODO(bradnelson): remove after sharding is complete
 mode-trybot() {
-  FAIL_FAST=0
+  FAIL_FAST=false
   clobber
   install-lkgr-toolchains
   scons-tests "arm x86-32 x86-64" "--mode=opt-host,nacl -j8 -k" "smoke_tests"
@@ -234,7 +234,7 @@ mode-trybot() {
 
 
 mode-buildbot-x8632() {
-  FAIL_FAST=0
+  FAIL_FAST=false
   clobber
   install-lkgr-toolchains
   # First build everything
@@ -246,7 +246,7 @@ mode-buildbot-x8632() {
 }
 
 mode-buildbot-x8664() {
-  FAIL_FAST=0
+  FAIL_FAST=false
   clobber
   install-lkgr-toolchains
   # First build everything
@@ -268,7 +268,7 @@ NAME_ARM_DBG() {
 readonly NAME_ARM_TRY="nacl-arm_opt/None"
 
 mode-buildbot-arm() {
-  FAIL_FAST=0
+  FAIL_FAST=false
   local mode=$1
 
   clobber
@@ -303,7 +303,7 @@ mode-buildbot-arm-try() {
 }
 
 mode-buildbot-arm-hw() {
-  FAIL_FAST=0
+  FAIL_FAST=false
   local flags="naclsdk_validate=0 built_elsewhere=1 $1"
   scons-tests "arm" "${flags} -k" "small_tests"
   scons-tests "arm" "${flags} -k" "medium_tests"
@@ -334,7 +334,7 @@ mode-buildbot-arm-hw-try() {
 # NOTE: clobber and toolchain setup to be done manually, since this is for
 # testing a locally built toolchain.
 # This runs tests concurrently, so may be more difficult to parse logs.
-mode-test-all-fast() {
+mode-test-all() {
   local concur=$1
 
   # turn verbose mode off

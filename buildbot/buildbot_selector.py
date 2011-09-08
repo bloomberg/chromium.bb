@@ -217,10 +217,8 @@ BOT_ASSIGNMENT = {
         'bash buildbot/buildbot_toolchain_arm_untrusted.sh mac 32 newlib',
 
     # PNaCl LLVM Merging bots
-    'pnacl-merge-slow':
-        'bash buildbot/buildbot_pnacl_merge.sh slow-bot',
-    'pnacl-merge-fast':
-        'bash buildbot/buildbot_pnacl_merge.sh fast-bot',
+    'llvm':
+        'bash buildbot/buildbot_pnacl_merge.sh merge-bot',
 }
 
 

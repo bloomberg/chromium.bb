@@ -355,18 +355,25 @@ hg-assert-no-untracked() {
   fi
 }
 
-hg-assert-no-outgoing() {
+hg-has-outgoing() {
   local dir=$1
   spushd "${dir}"
   if hg outgoing | grep -q "^no changes found$" ; then
     spopd
-    return
+    return 1
   fi
-  local REPONAME=$(basename $(pwd))
   spopd
-  msg="ERROR: Repository ${REPONAME} has outgoing commits. Clean first."
-  Banner "${msg}"
-  exit -1
+  return 0
+}
+
+hg-assert-no-outgoing() {
+  local dir=$1
+  if hg-has-outgoing "${dir}" ; then
+    local REPONAME=$(basename $(pwd))
+    msg="ERROR: Repository ${REPONAME} has outgoing commits. Clean first."
+    Banner "${msg}"
+    exit -1
+  fi
 }
 
 #+ hg-commit <dir> <msg>

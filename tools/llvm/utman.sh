@@ -43,6 +43,7 @@ SetLogDirectory "${NACL_ROOT}/toolchain/hg-log"
 
 # For different levels of make parallelism change this in your env
 readonly UTMAN_CONCURRENCY=${UTMAN_CONCURRENCY:-8}
+readonly UTMAN_MERGE_TESTING=${UTMAN_MERGE_TESTING:-false}
 UTMAN_PRUNE=${UTMAN_PRUNE:-false}
 UTMAN_BUILD_ARM=true
 
@@ -481,7 +482,9 @@ svn-update-common() {
 
 hg-update-upstream() {
   llvm-unlink-clang
-  hg-update-common "upstream" ${UPSTREAM_REV} "${TC_SRC_UPSTREAM}"
+  if ! ${UTMAN_MERGE_TESTING} ; then
+    hg-update-common "upstream" ${UPSTREAM_REV} "${TC_SRC_UPSTREAM}"
+  fi
   llvm-link-clang
 }
 
@@ -575,7 +578,9 @@ checkout-all() {
 }
 
 hg-checkout-upstream() {
-  hg-checkout ${REPO_UPSTREAM} "${TC_SRC_UPSTREAM}" ${UPSTREAM_REV}
+  if ! ${UTMAN_MERGE_TESTING} ; then
+    hg-checkout ${REPO_UPSTREAM} "${TC_SRC_UPSTREAM}" ${UPSTREAM_REV}
+  fi
   llvm-link-clang
 }
 

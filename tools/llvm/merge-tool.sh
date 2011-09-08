@@ -1,5 +1,5 @@
 #!/bin/bash
-# Copyright 2011 The Native Client Authors.  All rights reserved.
+# Copyright (c) 2011 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 #
@@ -23,57 +23,80 @@ readonly NACL_ROOT="$(pwd)"
 SetScriptPath "${NACL_ROOT}/tools/llvm/merge-tool.sh"
 SetLogDirectory "${NACL_ROOT}/toolchain/hg-log"
 readonly SCRIPT_PATH="$0"
+readonly MERGE_LOG_FILE="${NACL_ROOT}/merge.log"
 ######################################################################
 
-# Location of the mercurial repositories
+# Location of the sources
 # These should match the values in utman.sh
 readonly TC_SRC="$(pwd)/hg"
 readonly TC_SRC_UPSTREAM="${TC_SRC}/upstream"
+readonly TC_SRC_LLVM_MASTER="${TC_SRC}/llvm-master"
+readonly TC_SRC_LLVM_GCC_MASTER="${TC_SRC}/llvm-gcc-master"
 
 readonly PREDIFF="${TC_SRC}/prediff"
 readonly POSTDIFF="${TC_SRC}/postdiff"
 
+readonly UPSTREAM_BRANCH=pnacl-sfi
 
-# These variables should be set to the directories containing svn checkouts
-# of the upstream LLVM and LLVM-GCC repositories, respectively. These variables
-# must be specified in the environment to this script.
-readonly MASTER_LLVM=${MASTER_LLVM:-}
-readonly MASTER_LLVM_GCC=${MASTER_LLVM_GCC:-}
+readonly HG_CONFIG_AUTO=(--config ui.merge=internal:merge)
+
+readonly HG_CONFIG_MANUAL=(
+  --config kdiff3.executable=/usr/bin/diff3
+  --config kdiff3.args="--auto --base \$base \$local \$other -o \$output")
 
 # TODO(pdox): Refactor repository checkout into a separate script
 #             so that we don't need to invoke utman.
 utman() {
-  UTMAN_UPSTREAM=true "${NACL_ROOT}"/tools/llvm/utman.sh "$@"
-}
-hg-checkout-upstream() { utman hg-checkout-upstream "$@" ; }
-
-check-svn-repos() {
-  if [ -z "${MASTER_LLVM}" ] ||
-     [ -z "${MASTER_LLVM_GCC}" ]; then
-    Fatal "You must set environmental variables MASTER_LLVM and MASTER_LLVM_GCC"
-  fi
-  MERGE_REVISION=$(get-merge-revision)
-  Banner "MERGE REVISION: ${MERGE_REVISION}"
+  "${NACL_ROOT}"/tools/llvm/utman.sh "$@"
 }
 
-#@ auto                  - Non-interactive merge
+#@ auto [rev]            - Non-interactive merge
 auto() {
   INTERACTIVE_MERGE=false
   export DISPLAY=""
-  merge-all
+  HG_CONFIG=("${HG_CONFIG_AUTO[@]}")
+  merge-all "$@"
 }
 
-#@ manual                - Interactive merge
+#@ manual [rev]          - Interactive merge
 manual() {
   INTERACTIVE_MERGE=true
-  merge-all
+  HG_CONFIG=("${HG_CONFIG_MANUAL[@]}")
+  merge-all "$@"
 }
 
-#+ merge-all             - Merge all the things
+set-master-revision() {
+  echo "@@@BUILD_STEP Set LLVM revision: ${MERGE_REVISION}@@@"
+  echo "MERGE REVISION: ${MERGE_REVISION}"
+
+  # Set environmental variable for utman
+  export LLVM_PROJECT_REV=${MERGE_REVISION}
+  utman svn-checkout-llvm-master
+  utman svn-update-llvm-master
+  utman svn-checkout-llvm-gcc-master
+  utman svn-update-llvm-gcc-master
+
+  check-revisions
+}
+
+set-upstream-revision() {
+  echo "@@@BUILD_STEP Get mercurial source@@@"
+  export UPSTREAM_REV=${UPSTREAM_BRANCH}
+  utman hg-checkout-upstream
+  utman hg-update-upstream
+}
+
+#+ merge-all             - Merge everything
 merge-all() {
-  hg-checkout-upstream
+  if [ $# -ne 1 ]; then
+    Fatal "Please specify revision"
+  fi
+  MERGE_REVISION=$1
+
+  set-master-revision
+  set-upstream-revision
+
   assert-clean
-  setup-hgrc
 
   generate-pre-diff
 
@@ -93,20 +116,13 @@ merge-all() {
   echo "Before you commit and push, you should build PNaCl and run all tests."
   echo ""
   echo "Expect lots of bugs. You may need to fix and rebuild several times."
-  echo "When you are confident all tests are passing, you can commit and push"
-  echo "the merged working directory with:"
-  echo "  tools/llvm/merge-tool.sh final-commit"
+  echo "When you are confident all tests are passing, you can commit and push."
   echo "********************************************************************"
 }
 
-setup-hgrc() {
-  cp "${NACL_ROOT}/tools/llvm/hgrc" \
-     "${TC_SRC_UPSTREAM}/.hg/hgrc"
-}
-
 assert-clean() {
-  svn-assert-no-changes "${MASTER_LLVM}"
-  svn-assert-no-changes "${MASTER_LLVM_GCC}"
+  svn-assert-no-changes "${TC_SRC_LLVM_MASTER}"
+  svn-assert-no-changes "${TC_SRC_LLVM_GCC_MASTER}"
 
   hg-assert-no-changes "${TC_SRC_UPSTREAM}"
   hg-assert-no-outgoing "${TC_SRC_UPSTREAM}"
@@ -118,33 +134,49 @@ clean() {
   clean-upstream
 }
 
-#+ clean-upstream
+#+ clean-upstream       - Clean the hg/upstream repository
 clean-upstream() {
   StepBanner "CLEAN" "Cleaning hg upstream repository"
-  rm -rf "${TC_SRC_UPSTREAM}"
-}
 
-#+ get-merge-revision    - Get the current SVN revision
-get-merge-revision() {
-  local llvm_rev=$(svn-get-revision "${MASTER_LLVM}")
-  local llvm_gcc_rev=$(svn-get-revision "${MASTER_LLVM_GCC}")
-
-  if [ "${llvm_rev}" -ne "${llvm_gcc_rev}" ]; then
-    echo -n "Error: Unexpected mismatch between " 1>&2
-    echo    "SVN revisions of llvm and llvm-gcc" 1>&2
-    exit -1
+  if ! [ -d "${TC_SRC_UPSTREAM}" ]; then
+    return 0
   fi
-  echo "${llvm_rev}"
+
+  # This is kind of silly, but a lot faster than
+  # checking out the repository from scratch again.
+  spushd "${TC_SRC_UPSTREAM}"
+  if hg-has-outgoing "${TC_SRC_UPSTREAM}"; then
+    hg rollback
+  fi
+  rm -rf llvm
+  rm -rf llvm-gcc
+  hg update -C ${UPSTREAM_BRANCH}
+  spopd
+
+  hg-assert-no-outgoing "${TC_SRC_UPSTREAM}"
+  hg-assert-no-changes "${TC_SRC_UPSTREAM}"
 }
 
-#+ generate-pre-diff     - Generate vendor:pnacl-sfi diff prior to merge
+#+ check-revisions       - Make sure the repostiory revision is set correctly.
+check-revisions() {
+  local llvm_rev=$(svn-get-revision "${TC_SRC_LLVM_MASTER}")
+  local llvm_gcc_rev=$(svn-get-revision "${TC_SRC_LLVM_GCC_MASTER}")
+  if [ "${llvm_rev}" -ne "${MERGE_REVISION}" ]; then
+    Fatal "llvm-master revision does not match"
+  fi
+  if [ "${llvm_gcc_rev}" -ne "${MERGE_REVISION}" ]; then
+    Fatal "llvm-gcc-master revision does not match"
+  fi
+}
+
+#+ generate-pre-diff     - Generate vendor:pnacl diff prior to merge
 generate-pre-diff() {
   spushd "${TC_SRC_UPSTREAM}"
-  hg diff -r vendor:pnacl-sfi &> "${PREDIFF}"
+  hg diff -r vendor:${UPSTREAM_BRANCH} &> "${PREDIFF}"
   spopd
 }
 
-#+ generate-post-diff    - Generate vendor:pnacl-sfi diff after merge
+#+ generate-post-diff    - Generate vendor:pnacl diff after merge
 generate-post-diff() {
   spushd "${TC_SRC_UPSTREAM}"
   hg diff -r vendor &> "${POSTDIFF}"
@@ -153,27 +185,31 @@ generate-post-diff() {
 
 #@ commit-vendor         - Apply new commit to vendor branch
 commit-vendor() {
-  local stepid="commit-vendor"
   StepBanner "Committing vendor"
 
-  StepBanner "${stepid}" "Switching to hg vendor branch"
+  StepBanner "Switching to hg vendor branch"
 
   hg-update "${TC_SRC_UPSTREAM}" vendor
 
-  StepBanner "${stepid}" "Exporting svn to hg"
+  StepBanner "Exporting svn to hg"
   rm -rf "${TC_SRC_UPSTREAM}/llvm"
-  svn export "${MASTER_LLVM}" "${TC_SRC_UPSTREAM}/llvm"
+  svn export "${TC_SRC_LLVM_MASTER}" "${TC_SRC_UPSTREAM}/llvm"
 
   rm -rf "${TC_SRC_UPSTREAM}/llvm-gcc"
-  svn export "${MASTER_LLVM_GCC}" "${TC_SRC_UPSTREAM}/llvm-gcc"
+  svn export "${TC_SRC_LLVM_GCC_MASTER}" "${TC_SRC_UPSTREAM}/llvm-gcc"
 
-  StepBanner "${stepid}" "Updating hg file list"
+  StepBanner "Updating hg file list"
   spushd "${TC_SRC_UPSTREAM}"
   hg add
-  hg remove -A
+  hg remove -A 2>&1 | (grep -v "not removing" || true)
   spopd
 
-  StepBanner "${stepid}" "Committing vendor branch"
+  if ! hg-has-changes "${TC_SRC_UPSTREAM}" ; then
+    Banner "Trivial merge, no changes recorded"
+    exit 55
+  fi
+
+  StepBanner "Committing vendor branch"
   hg-commit "${TC_SRC_UPSTREAM}" "Updating vendor to r${MERGE_REVISION}"
 }
 
@@ -181,13 +217,19 @@ commit-vendor() {
 hg-merge() {
   StepBanner "hg-merge - Merge and resolve conflicts"
 
-  StepBanner "hg-merge" "Switching to pnacl-sfi branch"
-  hg-update "${TC_SRC_UPSTREAM}" pnacl-sfi
+  StepBanner "hg-merge" "Switching to ${UPSTREAM_BRANCH} branch"
+  hg-update "${TC_SRC_UPSTREAM}" ${UPSTREAM_BRANCH}
   hg-assert-no-changes "${TC_SRC_UPSTREAM}"
 
-  StepBanner "hg-merge" "Merging vendor into pnacl-sfi"
+  StepBanner "hg-merge" "Merging vendor into ${UPSTREAM_BRANCH}"
   spushd "${TC_SRC_UPSTREAM}"
-  hg merge -r vendor
+  hg "${HG_CONFIG[@]}" -y merge -r vendor 2>&1 | tee "${MERGE_LOG_FILE}"
+  local hgret=${PIPESTATUS[0]}
+  if [ ${hgret} -ne 0 ] ||
+     grep -q "remote deleted\|local deleted\|conflicting flags" \
+             "${MERGE_LOG_FILE}" ; then
+    Fatal "MERGE FAILED"
+  fi
   spopd
 }
 
@@ -198,32 +240,7 @@ vim-diff-diff() {
 
 #@ dump-diff-diff        - Review diff-diff
 dump-diff-diff() {
-  diff "${PREDIFF}" "${POSTDIFF}"
-}
-
-final-commit() {
-  StepBanner "final-commit" "Committing and pushing merge"
-  hg-assert-is-merge "${TC_SRC_UPSTREAM}"
-  hg-assert-branch "${TC_SRC_UPSTREAM}" pnacl-sfi
-
-  if ${INTERACTIVE_MERGE}; then
-    Banner "CAUTION: This step will COMMIT and PUSH changes to the repository."
-    echo
-    if ! confirm-yes "Is the merged working directory passing all tests?" ; then
-      echo "Cancelled"
-      exit -1
-    fi
-    if ! confirm-yes "Are you really sure you want to do this?" ; then
-      echo "Cancelled"
-      exit -1
-    fi
-  fi
-
-  StepBanner "final-commit" "Committing pnacl-sfi branch"
-  hg-commit "${TC_SRC_UPSTREAM}" "Merged up to r${MERGE_REVISION}"
-
-  StepBanner "final-commit" "Pushing to hg/upstream"
-  hg-push "${TC_SRC_UPSTREAM}"
+  diff "${PREDIFF}" "${POSTDIFF}" || true
 }
 
 #@ help                  - Usage information.
@@ -239,5 +256,4 @@ if [ "$(type -t $1)" != "function" ]; then
   exit 1
 fi
 
-check-svn-repos
 "$@"

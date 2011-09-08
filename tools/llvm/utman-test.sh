@@ -240,7 +240,7 @@ test-all() {
     exit -1
   fi
 
-  ${OTHER_TEST_SCRIPT} mode-test-all-fast ${UTMAN_CONCURRENCY}
+  FAIL_FAST=true ${OTHER_TEST_SCRIPT} mode-test-all ${UTMAN_CONCURRENCY}
 }
 
 #####
