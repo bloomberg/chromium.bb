@@ -284,7 +284,10 @@ static void
 background_draw(struct window *window, int width, int height, const char *path)
 {
 	cairo_surface_t *surface, *image;
+	cairo_pattern_t *pattern;
+	cairo_matrix_t matrix;
 	cairo_t *cr;
+	double sx, sy;
 
 	window_set_child_size(window, width, height);
 	window_draw(window);
@@ -297,7 +300,13 @@ background_draw(struct window *window, int width, int height, const char *path)
 
 	if (path) {
 		image = cairo_image_surface_create_from_png(path);
-		cairo_set_source_surface(cr, image, 0, 0);
+		pattern = cairo_pattern_create_for_surface(image);
+		sx = (double) cairo_image_surface_get_width(image) / width;
+		sy = (double) cairo_image_surface_get_height(image) / height;
+		cairo_matrix_init_scale(&matrix, sx, sy);
+		cairo_pattern_set_matrix(pattern, &matrix);
+		cairo_set_source(cr, pattern);
+		cairo_pattern_destroy (pattern);
 		cairo_paint(cr);
 	}
 
