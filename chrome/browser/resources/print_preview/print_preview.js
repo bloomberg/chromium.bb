@@ -239,6 +239,7 @@ function updateControlsWithSelectedPrinterCapabilities() {
         'setColorAsDefault': true,
         'setDuplexAsDefault': false,
         'printerColorModelForColor': colorSettings.COLOR,
+        'printerDefaultDuplexValue': copiesSettings.UNKNOWN_DUPLEX_MODE,
         'disableCopiesOption': true});
   } else {
     // This message will call back to 'updateWithPrinterCapabilities'

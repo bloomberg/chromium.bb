@@ -200,19 +200,24 @@ bool PrintDialogGtk::UpdateSettings(const DictionaryValue& settings,
     }
     gtk_print_settings_set(gtk_settings_, kCUPSColorModel, color_mode);
 
-    const char* cups_duplex_mode;
-    switch (duplex_mode) {
-      case printing::LONG_EDGE:
-        cups_duplex_mode = kDuplexNoTumble;
-        break;
-      case printing::SHORT_EDGE:
-        cups_duplex_mode = kDuplexTumble;
-        break;
-      default:
-        cups_duplex_mode = kDuplexNone;
-        break;
+    if (duplex_mode != printing::UNKNOWN_DUPLEX_MODE) {
+      const char* cups_duplex_mode;
+      switch (duplex_mode) {
+        case printing::LONG_EDGE:
+          cups_duplex_mode = kDuplexNoTumble;
+          break;
+        case printing::SHORT_EDGE:
+          cups_duplex_mode = kDuplexTumble;
+          break;
+        case printing::SIMPLEX:
+          cups_duplex_mode = kDuplexNone;
+          break;
+        default:  // UNKNOWN_DUPLEX_MODE
+          NOTREACHED();
+          break;
+      }
+      gtk_print_settings_set(gtk_settings_, kCUPSDuplex, cups_duplex_mode);
     }
-    gtk_print_settings_set(gtk_settings_, kCUPSDuplex, cups_duplex_mode);
   }
 
   gtk_print_settings_set_orientation(
