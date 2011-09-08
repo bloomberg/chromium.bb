@@ -9,12 +9,13 @@
 #include <string>
 
 #include "base/memory/ref_counted.h"
+#include "base/task.h"
 #include "chrome/browser/browsing_data_remover.h"
 #include "chrome/browser/chromeos/login/help_app_launcher.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 #include "content/browser/webui/web_ui.h"
 
-class IOThread;
+class BrowsingDataRemover;
 
 namespace base {
 class DictionaryValue;
@@ -174,11 +175,20 @@ class SigninScreenHandler : public BaseScreenHandler,
   // True if new user sign in flow is driven by the extension.
   bool extension_driven_;
 
-  std::string email_;
   // Help application used for help dialogs.
   scoped_refptr<HelpAppLauncher> help_app_;
 
+  // Email to pre-populate with.
+  std::string email_;
+
+  // Test credentials.
+  std::string test_user_;
+  std::string test_pass_;
+
   CancelableTask* clear_dns_task_;
+  BrowsingDataRemover* cookie_remover_;
+
+  ScopedRunnableMethodFactory<SigninScreenHandler> method_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SigninScreenHandler);
 };

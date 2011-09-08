@@ -64,33 +64,11 @@ std::string SanitizeEmail(const std::string& email) {
 
 namespace chromeos {
 
-// TODO(zelidrag): Make this notification task cancelable and controlled by
-// SigninScreenHandler.
-class ReportDnsCacheClearedOnUIThread : public Task {
- public:
-  explicit ReportDnsCacheClearedOnUIThread(SigninScreenHandler* handler)
-      : handler_(handler)  {
-  }
-  virtual ~ReportDnsCacheClearedOnUIThread() {}
-
-  // CancelableTask overrides.
-  virtual void Run() OVERRIDE {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-    if (handler_)
-      handler_->OnDnsCleared();
-  }
-
- private:
-  SigninScreenHandler* handler_;
-  DISALLOW_COPY_AND_ASSIGN(ReportDnsCacheClearedOnUIThread);
-};
-
 // Clears DNS cache on IO thread.
 class ClearDnsCacheTaskOnIOThread : public CancelableTask {
  public:
-  ClearDnsCacheTaskOnIOThread(SigninScreenHandler* handler,
-                              IOThread* io_thread)
-      : handler_(handler), io_thread_(io_thread), should_run_(true)  {
+  ClearDnsCacheTaskOnIOThread(Task* callback, IOThread* io_thread)
+      : callback_(callback), io_thread_(io_thread), should_run_(true)  {
   }
   virtual ~ClearDnsCacheTaskOnIOThread() {}
 
@@ -101,9 +79,7 @@ class ClearDnsCacheTaskOnIOThread : public CancelableTask {
       return;
 
     io_thread_->globals()->dnsrr_resolver.get()->OnIPAddressChanged();
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        new ReportDnsCacheClearedOnUIThread(handler_));
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, callback_);
   }
 
   virtual void Cancel() OVERRIDE {
@@ -111,7 +87,7 @@ class ClearDnsCacheTaskOnIOThread : public CancelableTask {
   }
 
  private:
-  SigninScreenHandler* handler_;
+  Task* callback_;
   IOThread* io_thread_;
   bool should_run_;
   DISALLOW_COPY_AND_ASSIGN(ClearDnsCacheTaskOnIOThread);
@@ -127,13 +103,17 @@ SigninScreenHandler::SigninScreenHandler()
       extension_driven_(
           CommandLine::ForCurrentProcess()->HasSwitch(
               switches::kWebUILogin)),
-      clear_dns_task_(NULL) {
+      clear_dns_task_(NULL),
+      cookie_remover_(NULL),
+      ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
   delegate_->SetWebUIHandler(this);
 }
 
 SigninScreenHandler::~SigninScreenHandler() {
   if (clear_dns_task_)
     clear_dns_task_->Cancel();
+  if (cookie_remover_)
+    cookie_remover_->RemoveObserver(this);
 }
 
 void SigninScreenHandler::GetLocalizedStrings(
@@ -262,6 +242,7 @@ void SigninScreenHandler::ShowError(int login_attempts,
 
 void SigninScreenHandler::OnBrowsingDataRemoverDone() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  cookie_remover_ = NULL;
   cookies_cleared_ = true;
   ShowSigninScreenIfReady();
 }
@@ -277,13 +258,6 @@ void SigninScreenHandler::OnDnsCleared() {
 void SigninScreenHandler::ShowSigninScreenIfReady() {
   if (!dns_cleared_ || !cookies_cleared_)
     return;
-  ShowSigninScreenForCreds("", "");
-}
-
-void SigninScreenHandler::ShowSigninScreenForCreds(
-    const std::string& username,
-    const std::string& password) {
-  VLOG(2) << "ShowSigninScreenForCreds " << username << " " << password;
 
   DictionaryValue params;
   params.SetString("startUrl", kGaiaExtStartPage);
@@ -302,12 +276,26 @@ void SigninScreenHandler::ShowSigninScreenForCreds(
   // Test automation data:
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kAuthExtensionPath)) {
-    if (!username.empty())
-      params.SetString("test_email", username);
-    if (!password.empty())
-      params.SetString("test_password", password);
+    if (!test_user_.empty()) {
+      params.SetString("test_email", test_user_);
+      test_user_.clear();
+    }
+    if (!test_pass_.empty()) {
+      params.SetString("test_password", test_pass_);
+      test_pass_.clear();
+    }
   }
   ShowScreen(kGaiaSigninScreen, &params);
+}
+
+void SigninScreenHandler::ShowSigninScreenForCreds(
+    const std::string& username,
+    const std::string& password) {
+  VLOG(2) << "ShowSigninScreenForCreds " << username << " " << password;
+
+  test_user_ = username;
+  test_pass_ = password;
+  HandleShowAddUser(NULL);
 }
 
 void SigninScreenHandler::HandleCompleteLogin(const base::ListValue* args) {
@@ -474,19 +462,25 @@ void SigninScreenHandler::StartClearingDnsCache() {
   dns_cleared_ = false;
   if (clear_dns_task_)
     clear_dns_task_->Cancel();
+  method_factory_.RevokeAll();
+
   clear_dns_task_ = new ClearDnsCacheTaskOnIOThread(
-      this, g_browser_process->io_thread());
+      method_factory_.NewRunnableMethod(&SigninScreenHandler::OnDnsCleared),
+      g_browser_process->io_thread());
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, clear_dns_task_);
 }
 
 void SigninScreenHandler::StartClearingCookies() {
   cookies_cleared_ = false;
-  BrowsingDataRemover* remover = new BrowsingDataRemover(
+  if (cookie_remover_)
+    cookie_remover_->RemoveObserver(this);
+
+  cookie_remover_ = new BrowsingDataRemover(
       Profile::FromBrowserContext(web_ui_->tab_contents()->browser_context()),
       BrowsingDataRemover::EVERYTHING,
       base::Time());
-  remover->AddObserver(this);
-  remover->Remove(BrowsingDataRemover::REMOVE_SITE_DATA);
+  cookie_remover_->AddObserver(this);
+  cookie_remover_->Remove(BrowsingDataRemover::REMOVE_SITE_DATA);
 }
 
 }  // namespace chromeos
