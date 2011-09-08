@@ -9,8 +9,6 @@
 #include "printing/emf_win.h"
 #elif defined(OS_MACOSX)
 #include "printing/pdf_metafile_cg_mac.h"
-#elif defined(OS_POSIX)
-#include "printing/pdf_metafile_cairo_linux.h"
 #endif
 
 #if !defined(OS_MACOSX) || defined(USE_SKIA)
