@@ -56,8 +56,8 @@ const int kCloseButtonLeftPadding = 8;
 
 - (void)attach {
   // Interface Builder can not put a view as a sibling of contentView,
-  // so need to do it here. Placing the titleView as a last child of
-  // internal view allows it to draw on top of the titlebar.
+  // so need to do it here. Placing ourself as the last child of the
+  // internal view allows us to draw on top of the titlebar.
   [[[[controller_ window] contentView] superview] addSubview:self];
 
   // Figure out the rectangle of the titlebar and set us on top of it.
@@ -82,10 +82,18 @@ const int kCloseButtonLeftPadding = 8;
 
   // Set autoresizing behavior: glued to edges on left, top and right.
   [self setAutoresizingMask:(NSViewMinYMargin | NSViewWidthSizable)];
+
+  // TODO(dcheng): We need to have a notification handler for theme changes.
+  // We might be able to move this logic there as well.
+  ui::ThemeProvider* theme = [[controller_ window] themeProvider];
+  NSColor* titleColor = theme
+      ? theme->GetNSColor(ThemeService::COLOR_TAB_TEXT, true)
+      : [NSColor textColor];
+  [title_ setTextColor:titleColor];
 }
 
 - (void)setTitle:(NSString*)newTitle {
-  // TODO(dcheng): Implement.
+  [title_ setStringValue:newTitle];
 }
 
 - (void)updateCloseButtonLayout {

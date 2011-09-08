@@ -24,7 +24,9 @@
 // the standard titlebar.
 
 @interface PanelTitlebarViewCocoa : BackgroundGradientView {
+ @private
   IBOutlet PanelWindowControllerCocoa* controller_;
+  IBOutlet NSTextField* title_;
   NSButton* closeButton_;  // Created explicitly, not from NIB. Weak, destroyed
                            // when view is destroyed, as a subview.
   ScopedCrTrackingArea closeButtonTrackingArea_;
