@@ -923,20 +923,19 @@ def SetNiceness(foreground):
     that the process will be scheduled more often when accessing resources
     (e.g. cpu and disk).
   """
+  # Note: -c 2 means best effort priority.
   pid_str = str(os.getpid())
-  ionice_cmd = ['ionice', '-p', pid_str]
+  ionice_cmd = ['ionice', '-p', pid_str, '-c', '2']
   renice_cmd = ['sudo', 'renice']
   if foreground:
     # Set this program to foreground priority. ionice and negative niceness
     # is honored by sudo and passed to subprocesses.
-    # Note: -c 2 means best effort.
-    ionice_cmd.extend(['-c', '2', '-n', '0'])
+    ionice_cmd.extend(['-n', '0'])
     renice_cmd.extend(['-n', '-20', '-p', pid_str])
   else:
     # Set this program to background priority. Positive niceness isn't
     # inherited by sudo, so we just set to zero.
-    # Note: -c 3 means idle priority.
-    ionice_cmd.extend(['-c', '3'])
+    ionice_cmd.extend(['-n', '7'])
     renice_cmd.extend(['-n', '0', '-p', pid_str])
   cros_lib.RunCommand(ionice_cmd, print_cmd=False)
   cros_lib.RunCommand(renice_cmd, print_cmd=False, redirect_stdout=True)
