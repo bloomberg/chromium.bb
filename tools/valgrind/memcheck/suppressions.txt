@@ -5364,16 +5364,6 @@
    fun:_Z16DispatchToMethodI11PluginPrefsMS0_FvSt6vectorIN6webkit13WebPluginInfoESaIS3_EES1_INS2_5npapi11PluginGroupESaIS7_EEES5_S9_EvPT_T0_RK6Tuple2IT1_T2_E
 }
 {
-   bug_95502
-   Memcheck:Leak
-   fun:_Znw*
-   ...
-   fun:_ZN24ExtensionSettingsHandler27HandleRequestExtensionsDataEPKN4base9ListValueE
-   fun:_ZN24ExtensionSettingsHandler28MaybeUpdateAfterNotificationEv
-   fun:_ZN24ExtensionSettingsHandler7ObserveEiRK18NotificationSourceRK19NotificationDetails
-   fun:_ZN19NotificationService6NotifyEiRK18NotificationSourceRK19NotificationDetails
-}
-{
    bug_95721
    Memcheck:Leak
    fun:_Znw*
