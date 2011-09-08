@@ -185,6 +185,20 @@ class ExtensionsTest(pyauto.PyUITest):
     extension = self._GetExtensionInfoById(self.GetExtensionsInfo(), ext_id)
     self.assertFalse(extension['allowed_in_incognito'])
 
+  def testAdblockExtensionCrash(self):
+    """Test AdBlock extension successfully installed and enabled, and do not
+    cause browser crash.
+    """
+    crx_file_path = os.path.abspath(
+        os.path.join(self.DataDir(), 'extensions', 'adblock.crx'))
+    ext_id = self.InstallExtension(crx_file_path, False)
+    self.assertTrue(ext_id, msg='Failed to install extension.')
+
+    self.RestartBrowser(clear_profile=False)
+    extension = self._GetExtensionInfoById(self.GetExtensionsInfo(), ext_id)
+    self.assertTrue(extension['is_enabled'])
+    self.assertFalse(extension['allowed_in_incognito'])
+
 
 if __name__ == '__main__':
   pyauto_functional.Main()
