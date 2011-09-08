@@ -179,12 +179,18 @@ bool GpuChannelHost::Send(IPC::Message* message) {
   // preserve order.
   message->set_unblock(false);
 
-  // Unfortunately a sync filter cannot be used on the main (listener) thread.
-  // TODO: Is that true even when we don't install a listener?
+  // Currently we need to choose between two different mechanisms for sending.
+  // On the main thread we use the regular channel Send() method, on another
+  // thread we use SyncMessageFilter. We also have to be careful interpreting
+  // RenderThread::current() since it might return NULL during shutdown, while
+  // we are actually calling from the main thread (discard message then).
+  //
+  // TODO: Can we just always use sync_filter_ since we setup the channel
+  //       without a main listener?
   if (RenderThread::current()) {
     if (channel_.get())
       return channel_->Send(message);
-  } else {
+  } else if (MessageLoop::current()) {
     return sync_filter_->Send(message);
   }
 
