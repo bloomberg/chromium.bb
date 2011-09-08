@@ -92,29 +92,21 @@ bool g_fullscreen_pending = false;
 void TestSetFullscreenTrue() {
   printf("--- TestSetFullscreenTrue\n");
   const PPB_Fullscreen_Dev* ppb = PPBFullscreenDev();
-  printf("--- 1\n");
   if (ppb->IsFullscreen(pp_instance()) == PP_FALSE) {
     EXPECT(CreateGraphics2D(&g_graphics2d));
-    printf("--- 2\n");
     // The transition is asynchronous and ends at the next DidChangeView().
     g_fullscreen_pending = true;
     EXPECT(ppb->SetFullscreen(pp_instance(), PP_TRUE) == PP_TRUE);
-    printf("--- 3\n");
     EXPECT(ppb->IsFullscreen(pp_instance()) == PP_FALSE);
-    printf("--- 4\n");
     // No 2D or 3D device can be bound during transition.
     EXPECT(PPBGraphics2D()->IsGraphics2D(g_graphics2d) == PP_TRUE);
-    printf("--- 5\n");
     EXPECT(PPBInstance()->BindGraphics(pp_instance(), g_graphics2d) ==
            PP_FALSE);
-    printf("--- 6\n");
     // The transition ends at the next DidChangeView().
   } else {
     // No change.
     EXPECT(ppb->SetFullscreen(pp_instance(), PP_TRUE) == PP_TRUE);
-    printf("--- 22\n");
     EXPECT(ppb->IsFullscreen(pp_instance()) == PP_TRUE);
-    printf("--- 33\n");
     TEST_PASSED;
   }
 }
