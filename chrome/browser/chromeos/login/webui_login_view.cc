@@ -35,6 +35,7 @@ const char kViewClassName[] = "browser/chromeos/login/WebUILoginView";
 
 // These strings must be kept in sync with handleAccelerator() in oobe.js.
 const char kAccelNameAccessibility[] = "accessibility";
+const char kAccelNameCancel[] = "cancel";
 const char kAccelNameEnrollment[] = "enrollment";
 
 // Observes IPC messages from the FrameSniffer and notifies JS if error
@@ -111,6 +112,8 @@ WebUILoginView::WebUILoginView()
 #endif
   accel_map_[views::Accelerator(ui::VKEY_Z, false, true, true)] =
       kAccelNameAccessibility;
+  accel_map_[views::Accelerator(ui::VKEY_ESCAPE, false, false, false)] =
+      kAccelNameCancel;
   accel_map_[views::Accelerator(ui::VKEY_E, false, true, true)] =
       kAccelNameEnrollment;
 

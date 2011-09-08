@@ -119,6 +119,13 @@ cr.define('oobe', function() {
     },
 
     /**
+     * Cancels enrollment and drops the user back to the login screen.
+     */
+    cancel: function() {
+      chrome.send('oauthEnrollClose', []);
+    },
+
+    /**
      * Switches between the different steps in the enrollment flow.
      * @param step {string} the steps to show, one of "signin", "working",
      * "error", "success".

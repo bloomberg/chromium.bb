@@ -17,6 +17,7 @@ cr.define('cr.ui', function() {
 
   /* Accelerator identifiers. Must be kept in sync with webui_login_view.cc. */
   const ACCELERATOR_ACCESSIBILITY = 'accessibility';
+  const ACCELERATOR_CANCEL = 'cancel';
   const ACCELERATOR_ENROLLMENT = 'enrollment';
 
   /**
@@ -65,6 +66,10 @@ cr.define('cr.ui', function() {
     handleAccelerator: function(name) {
       if (name == ACCELERATOR_ACCESSIBILITY) {
         chrome.send('toggleAccessibility', []);
+      } else if (name == ACCELERATOR_CANCEL) {
+        if (this.currentScreen.cancel) {
+          this.currentScreen.cancel();
+        }
       } else if (ACCELERATOR_ENROLLMENT) {
         var currentStepId = this.screens_[this.currentStep_];
         if (currentStepId == SCREEN_SIGNIN ||

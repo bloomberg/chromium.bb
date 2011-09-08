@@ -44,23 +44,26 @@ cr.define('oobe', function() {
      */
     get buttons() {
       return null;
+    },
+
+    /**
+     * Cancels the screen.
+     */
+    cancel: function() {
+      // It's safe to act on the accelerator even if it's disabled on official
+      // builds, since Chrome will just ignore the message in that case.
+      var updateCancelHint = $('update-cancel-hint').firstElementChild;
+      updateCancelHint.textContent =
+          localStrings.getString('cancelledUpdateMessage');
+      chrome.send('cancelUpdate');
     }
   };
 
   /**
-   * Registers Escape accelerator to cancel update and
-   * makes 'press Escape to cancel update' hint visible.
+   * Makes 'press Escape to cancel update' hint visible.
    */
   UpdateScreen.enableUpdateCancel = function() {
     $('update-cancel-hint').hidden = false;
-    document.addEventListener('keydown', function(e) {
-      if (e.keyCode == 27) {  // Escape
-        var updateCancelHint = $('update-cancel-hint').children[0];
-        updateCancelHint.textContent =
-            localStrings.getString('cancelledUpdateMessage');
-        chrome.send('cancelUpdate');
-      }
-    });
   };
 
   return {
