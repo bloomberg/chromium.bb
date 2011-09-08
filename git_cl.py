@@ -55,7 +55,7 @@ def DieWithError(message):
 
 def RunCommand(args, error_ok=False, error_message=None, **kwargs):
   try:
-    return subprocess2.check_output(args, **kwargs)
+    return subprocess2.check_output(args, shell=False, **kwargs)
   except subprocess2.CalledProcessError, e:
     if not error_ok:
       DieWithError(
