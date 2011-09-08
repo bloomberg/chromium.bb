@@ -13,12 +13,12 @@ import os
 import random
 import re
 import string
-import subprocess
 import sys
 import tempfile
 import time
-from third_party import upload
 import urllib2
+
+import breakpad  # pylint: disable=W0611
 
 try:
   import simplejson as json  # pylint: disable=F0401
@@ -30,16 +30,13 @@ except ImportError:
     sys.path.append(os.path.join(os.path.dirname(__file__), 'third_party'))
     import simplejson as json  # pylint: disable=F0401
 
-import breakpad  # pylint: disable=W0611
-
-# gcl now depends on gclient.
-from scm import SVN
-
 import fix_encoding
 import gclient_utils
 import presubmit_support
 import rietveld
+from scm import SVN
 import subprocess2
+from third_party import upload
 
 __version__ = '1.2.1'
 
@@ -232,8 +229,9 @@ def ErrorExit(msg):
 
 def RunShellWithReturnCode(command, print_output=False):
   """Executes a command and returns the output and the return code."""
-  p = gclient_utils.Popen(command, stdout=subprocess.PIPE,
-                          stderr=subprocess.STDOUT, universal_newlines=True)
+  p = subprocess2.Popen(
+      command, stdout=subprocess2.PIPE,
+      stderr=subprocess2.STDOUT, universal_newlines=True)
   if print_output:
     output_array = []
     while True:
@@ -1122,8 +1120,8 @@ def CMDchange(args):
       try:
         # shell=True to allow the shell to handle all forms of quotes in
         # $EDITOR.
-        subprocess.check_call(cmd, shell=True)
-      except subprocess.CalledProcessError, e:
+        subprocess2.check_call(cmd, shell=True)
+      except subprocess2.CalledProcessError, e:
         ErrorExit('Editor returned %d' % e.returncode)
     result = gclient_utils.FileRead(filename, 'r')
   finally:
