@@ -600,7 +600,6 @@
             # their various targets (net.gyp:net_resources, etc.),
             # but that causes errors in other targets when
             # resulting .res files get referenced multiple times.
-            '<(SHARED_INTERMEDIATE_DIR)/chrome/autofill_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/chrome/browser_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/chrome/common_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/chrome/renderer_resources.rc',
@@ -2059,7 +2058,6 @@
             # their various targets (net.gyp:net_resources, etc.),
             # but that causes errors in other targets when
             # resulting .res files get referenced multiple times.
-            '<(SHARED_INTERMEDIATE_DIR)/chrome/autofill_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/chrome/browser_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/chrome/common_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/chrome/renderer_resources.rc',
@@ -2523,7 +2521,6 @@
         }],
         ['OS=="win"', {
           'sources': [
-            '<(SHARED_INTERMEDIATE_DIR)/chrome/autofill_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/chrome/browser_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/chrome/common_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/chrome/renderer_resources.rc',
@@ -2716,7 +2713,6 @@
             '../sandbox/sandbox.gyp:sandbox',
           ],
           'sources': [
-            '<(SHARED_INTERMEDIATE_DIR)/chrome/autofill_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/chrome/browser_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/chrome/common_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/chrome/renderer_resources.rc',
@@ -3170,7 +3166,6 @@
         }],
         ['OS=="win"', {
           'sources': [
-            '<(SHARED_INTERMEDIATE_DIR)/chrome/autofill_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/chrome/browser_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/chrome/common_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/chrome/theme_resources.rc',
@@ -3292,7 +3287,6 @@
         }],
         ['OS=="win"', {
           'sources': [
-            '<(SHARED_INTERMEDIATE_DIR)/chrome/autofill_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/chrome/browser_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/chrome/common_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/chrome/theme_resources.rc',
@@ -3413,7 +3407,6 @@
             'app/chrome_dll.rc',
             'app/chrome_dll_resource.h',
             'app/chrome_version.rc.version',
-            '<(SHARED_INTERMEDIATE_DIR)/chrome/autofill_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/chrome/browser_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/chrome/common_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/chrome/renderer_resources.rc',

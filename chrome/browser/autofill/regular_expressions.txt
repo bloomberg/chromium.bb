@@ -1,7 +1,6 @@
 /////////////////////////////////////////////////////////////////////////////
 // address_field.cc
 /////////////////////////////////////////////////////////////////////////////
-
 const char kAttentionIgnoredRe[] = "attention|attn";
 const char kRegionIgnoredRe[] =
     "province|region|other"
@@ -309,6 +308,26 @@ const char kCardIgnoredRe[] =
 
 
 /////////////////////////////////////////////////////////////////////////////
+// email_field.cc
+/////////////////////////////////////////////////////////////////////////////
+const char kEmailRe[] =
+    "e.?mail"
+    // ja-JP: |メールアドレス
+    "|\xe3\x83\xa1\xe3\x83\xbc\xe3\x83\xab\xe3\x82\xa2\xe3\x83\x89\xe3\x83\xac"
+        "\xe3\x82\xb9"
+    // ru: |Электронной.?Почты
+    "|\xd0\xad\xd0\xbb\xd0\xb5\xd0\xba\xd1\x82\xd1\x80\xd0\xbe\xd0\xbd\xd0\xbd"
+        "\xd0\xbe\xd0\xb9.?\xd0\x9f\xd0\xbe\xd1\x87\xd1\x82\xd1\x8b"
+    // zh-CN: |邮件|邮箱
+    "|\xe9\x82\xae\xe4\xbb\xb6|\xe9\x82\xae\xe7\xae\xb1"
+    // zh-TW: |電郵地址
+    "|\xe9\x9b\xbb\xe9\x83\xb5\xe5\x9c\xb0\xe5\x9d\x80"
+    // ko-KR: |(이메일|전자.?우편|[Ee]-?mail)(.?주소)?
+    "|(\xec\x9d\xb4\xeb\xa9\x94\xec\x9d\xbc|\xec\xa0\x84\xec\x9e\x90.?\xec\x9a"
+        "\xb0\xed\x8e\xb8|[Ee]-?mail)(.?\xec\xa3\xbc\xec\x86\x8c)?";
+
+
+/////////////////////////////////////////////////////////////////////////////
 // name_field.cc
 /////////////////////////////////////////////////////////////////////////////
 const char kNameIgnoredRe[] =
@@ -380,3 +399,65 @@ const char kLastNameRe[] =
     "|\xd0\xa4\xd0\xb0\xd0\xbc\xd0\xb8\xd0\xbb\xd0\xb8\xd1\x8f"
     // ko-KR: |성[^명]?
     "|\xec\x84\xb1[^\xeb\xaa\x85]?";
+
+/////////////////////////////////////////////////////////////////////////////
+// phone_field.cc
+/////////////////////////////////////////////////////////////////////////////
+const char kPhoneRe[] =
+    "phone|mobile"
+    // de-DE: |telefonnummer
+    "|telefonnummer"
+    // es: |telefono|teléfono
+    "|telefono|tel\xc3\xa9""fono"
+    // fr-FR: |telfixe
+    "|telfixe"
+    // ja-JP: |電話
+    "|\xe9\x9b\xbb\xe8\xa9\xb1"
+    // pt-BR, pt-PT: |telefone|telemovel
+    "|telefone|telemovel"
+    // ru: |телефон
+    "|\xd1\x82\xd0\xb5\xd0\xbb\xd0\xb5\xd1\x84\xd0\xbe\xd0\xbd"
+    // zh-CN: |电话
+    "|\xe7\x94\xb5\xe8\xaf\x9d"
+    // ko-KR: |(전화|핸드폰|휴대폰|휴대전화)(.?번호)?
+    "|(\xec\xa0\x84\xed\x99\x94|\xed\x95\xb8\xeb\x93\x9c\xed\x8f\xb0|\xed\x9c"
+        "\xb4\xeb\x8c\x80\xed\x8f\xb0|\xed\x9c\xb4\xeb\x8c\x80\xec\xa0\x84\xed"
+        "\x99\x94)(.?\xeb\xb2\x88\xed\x98\xb8)?";
+const char kCountryCodeRe[] =
+    "country.*code|ccode|_cc";
+const char kAreaCodeNotextRe[] =
+    "^\\($";
+const char kAreaCodeRe[] =
+    "area.*code|acode|area"
+    // ko-KR: |지역.?번호
+    "|\xec\xa7\x80\xec\x97\xad.?\xeb\xb2\x88\xed\x98\xb8";
+const char kFaxRe[] =
+    "fax"
+    // fr-FR: |télécopie|telecopie
+    "|t\xc3\xa9l\xc3\xa9""copie|telecopie"
+    // ja-JP: |ファックス
+    "|\xe3\x83\x95\xe3\x82\xa1\xe3\x83\x83\xe3\x82\xaf\xe3\x82\xb9"
+    // ru: |факс
+    "|\xd1\x84\xd0\xb0\xd0\xba\xd1\x81"
+    // zh-CN: |传真
+    "|\xe4\xbc\xa0\xe7\x9c\x9f"
+    // zh-TW: |傳真
+    "|\xe5\x82\xb3\xe7\x9c\x9f"
+    // ko-KR: |팩스(.?번호)?
+    "|\xed\x8c\xa9\xec\x8a\xa4(.?\xeb\xb2\x88\xed\x98\xb8)?";
+const char kPhonePrefixSeparatorRe[] =
+    "^-$|^\\)$";
+const char kPhoneSuffixSeparatorRe[] =
+    "^-$";
+const char kPhonePrefixRe[] =
+    "prefix|exchange"
+    // fr-FR: |preselection
+    "|preselection"
+    // pt-BR, pt-PT: |ddd
+    "|ddd";
+const char kPhoneSuffixRe[] =
+    "suffix";
+const char kPhoneExtensionRe[] =
+    "\\bext|ext\\b|extension"
+    // pt-BR, pt-PT: |ramal
+    "|ramal";

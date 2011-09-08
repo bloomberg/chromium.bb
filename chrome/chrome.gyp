@@ -150,13 +150,6 @@
       'actions': [
         # Data resources.
         {
-          'action_name': 'autofill_resources',
-          'variables': {
-            'grit_grd_file': 'browser/autofill/autofill_resources.grd',
-          },
-          'includes': [ '../build/grit_action.gypi' ],
-        },
-        {
           'action_name': 'browser_resources',
           'variables': {
             'grit_grd_file': 'browser/browser_resources.grd',
@@ -1627,7 +1620,6 @@
             'action_name': 'repack_chrome',
             'variables': {
               'pak_inputs': [
-                '<(grit_out_dir)/autofill_resources.pak',
                 '<(grit_out_dir)/browser_resources.pak',
                 '<(grit_out_dir)/common_resources.pak',
                 '<(grit_out_dir)/default_plugin_resources/default_plugin_resources.pak',
