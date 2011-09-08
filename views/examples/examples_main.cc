@@ -14,6 +14,7 @@
 #include "views/controls/button/text_button.h"
 #include "views/controls/label.h"
 #include "views/controls/tabbed_pane/tabbed_pane.h"
+#include "views/examples/bubble_example.h"
 #include "views/examples/button_example.h"
 #include "views/examples/combobox_example.h"
 #include "views/examples/link_example.h"
@@ -123,6 +124,10 @@ void ExamplesMain::Run() {
   examples::TextfieldExample textfield_example(this);
   tabbed_pane->AddTab(textfield_example.GetExampleTitle(),
                       textfield_example.GetExampleView());
+
+  examples::BubbleExample bubble_example(this);
+  tabbed_pane->AddTab(bubble_example.GetExampleTitle(),
+                      bubble_example.GetExampleView());
 
   examples::ButtonExample button_example(this);
   tabbed_pane->AddTab(button_example.GetExampleTitle(),

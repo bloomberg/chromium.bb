@@ -119,6 +119,7 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
       TYPE_MENU,        // An undecorated Window, with transient properties
                         // specialized to menus.
       TYPE_TOOLTIP,
+      TYPE_BUBBLE,
     };
     enum Ownership {
       // Default. Creator is not responsible for managing the lifetime of the
@@ -560,8 +561,8 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   virtual View* GetChildViewParent();
 
   // True if the widget is considered top level widget. Top level widget
-  // is a widget of TYPE_WINDOW, TYPE_WINDOW_FRAMELESS, POPUP or MENU, and
-  // has a focus manager and input method object associated with it.
+  // is a widget of TYPE_WINDOW, TYPE_WINDOW_FRAMELESS, BUBBLE, POPUP or MENU,
+  // and has a focus manager and input method object associated with it.
   // TYPE_CONTROL and TYPE_TOOLTIP is not considered top level.
   bool is_top_level() const { return is_top_level_; }
 
@@ -723,7 +724,7 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
 
   scoped_ptr<InputMethod> input_method_;
 
-  // See |is_top_leve()| accessor.
+  // See |is_top_level()| accessor.
   bool is_top_level_;
 
   // Factory used to create Compositors. Settable by tests.
