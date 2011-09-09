@@ -270,11 +270,6 @@ def RunBuildStages(bot_id, options, build_config):
     if options.build:
       stages.BuildTargetStage(bot_id, options, build_config).Run()
 
-    if prebuilts:
-      upload_prebuilts_stage = stages.UploadPrebuiltsStage(
-          bot_id, options, build_config)
-      bg.AddStep(upload_prebuilts_stage.Run)
-
     if options.archive:
       archive_stage = stages.ArchiveStage(bot_id, options, build_config)
       archive_url = archive_stage.GetDownloadUrl()
@@ -292,7 +287,15 @@ def RunBuildStages(bot_id, options, build_config):
         bg.start()
         bg_started = True
 
-      background.RunParallelSteps([vm_test_stage.Run, unit_test_stage.Run])
+      steps = [vm_test_stage.Run, unit_test_stage.Run]
+      if prebuilts:
+        upload_prebuilts_stage = stages.UploadPrebuiltsStage(
+            bot_id, options, build_config)
+        steps.append(upload_prebuilts_stage.Run)
+
+      # Run the steps in parallel. If any exceptions occur, RunParallelSteps
+      # will combine them into a single BackgroundException and throw it.
+      background.RunParallelSteps(steps)
     finally:
       if archive_stage:
         # Tell the archive_stage not to wait for any more data from the test
@@ -300,17 +303,15 @@ def RunBuildStages(bot_id, options, build_config):
         # that the archive stage doesn't sit around waiting for data.
         archive_stage.TestStageExited()
 
+    # Run hardware tests. Since HWTestStage is a NonHaltingBuilderStage,
+    # exceptions are ignored here.
     if options.hw_tests:
       stages.HWTestStage(bot_id, options, build_config).Run()
 
     if options.remote_test_status:
       stages.RemoteTestStatusStage(bot_id, options, build_config).Run()
 
-    # Wait for prebuilts to finish uploading.
-    if prebuilts:
-      build_and_test_success = not bg.WaitForStep()
-    else:
-      build_and_test_success = True
+    build_and_test_success = True
 
   except (bs.NonBacktraceBuildException, background.BackgroundException):
     # We skipped out of this build block early, all we need to do.
@@ -335,14 +336,14 @@ def RunBuildStages(bot_id, options, build_config):
     if not results_lib.Results.WasStageSuccessfulOrSkipped(name):
       publish_changes = False
 
+  if publish_changes:
+    stages.PublishUprevChangesStage(bot_id, options, build_config).Run()
+
   # Wait for remaining stages to finish. Ignore any errors.
   if bg_started:
     while not bg.Empty():
       bg.WaitForStep()
     bg.join()
-
-  if publish_changes:
-    stages.PublishUprevChangesStage(bot_id, options, build_config).Run()
 
   if os.path.exists(options.buildroot):
     with open(completed_stages_file, 'w+') as save_file:
