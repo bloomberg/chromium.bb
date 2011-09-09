@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/cros/update_library.h"
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/observer_list.h"
@@ -24,7 +25,8 @@ class UpdateLibraryImpl : public UpdateLibrary {
     }
   }
 
-  void Init() {
+  // Begin UpdateLibrary implementation.
+  virtual void Init() OVERRIDE {
     if (CrosLibrary::Get()->EnsureLoaded()) {
       CHECK(!status_connection_) << "Already initialized";
       status_connection_ =
@@ -34,40 +36,42 @@ class UpdateLibraryImpl : public UpdateLibrary {
     }
   }
 
-  void AddObserver(Observer* observer) {
+  virtual void AddObserver(Observer* observer) OVERRIDE {
     observers_.AddObserver(observer);
   }
 
-  void RemoveObserver(Observer* observer) {
+  virtual void RemoveObserver(Observer* observer) OVERRIDE {
     observers_.RemoveObserver(observer);
   }
 
-  bool HasObserver(Observer* observer) {
+  virtual bool HasObserver(Observer* observer) OVERRIDE {
     return observers_.HasObserver(observer);
   }
 
-  void RequestUpdateCheck(chromeos::UpdateCallback callback, void* user_data) {
+  virtual void RequestUpdateCheck(chromeos::UpdateCallback callback,
+                                  void* user_data) OVERRIDE {
     if (CrosLibrary::Get()->EnsureLoaded())
       chromeos::RequestUpdateCheck(callback, user_data);
   }
 
-  bool RebootAfterUpdate() {
+  virtual bool RebootAfterUpdate() OVERRIDE {
     if (!CrosLibrary::Get()->EnsureLoaded())
       return false;
 
     return RebootIfUpdated();
   }
 
-  void SetReleaseTrack(const std::string& track) {
+  virtual void SetReleaseTrack(const std::string& track) OVERRIDE {
     if (CrosLibrary::Get()->EnsureLoaded())
       chromeos::SetUpdateTrack(track);
   }
 
-  void GetReleaseTrack(chromeos::UpdateTrackCallback callback,
-                       void* user_data) {
+  virtual void GetReleaseTrack(chromeos::UpdateTrackCallback callback,
+                               void* user_data) OVERRIDE {
     if (CrosLibrary::Get()->EnsureLoaded())
       chromeos::RequestUpdateTrack(callback, user_data);
   }
+  // End UpdateLibrary implementation.
 
   const UpdateLibrary::Status& status() const {
     return status_;
@@ -108,21 +112,26 @@ class UpdateLibraryStubImpl : public UpdateLibrary {
  public:
   UpdateLibraryStubImpl() {}
   virtual ~UpdateLibraryStubImpl() {}
-  void Init() {}
-  void AddObserver(Observer* observer) {}
-  void RemoveObserver(Observer* observer) {}
-  bool HasObserver(Observer* observer) { return false; }
-  void RequestUpdateCheck(chromeos::UpdateCallback callback, void* user_data) {
+
+  // Begin UpdateLibrary implementation.
+  virtual void Init() OVERRIDE {}
+  virtual void AddObserver(Observer* observer) OVERRIDE {}
+  virtual void RemoveObserver(Observer* observer) OVERRIDE {}
+  virtual bool HasObserver(Observer* observer) OVERRIDE { return false; }
+  virtual void RequestUpdateCheck(chromeos::UpdateCallback callback,
+                                  void* user_data) OVERRIDE {
     if (callback)
       callback(user_data, UPDATE_RESULT_FAILED, "stub update");
   }
-  bool RebootAfterUpdate() { return false; }
-  void SetReleaseTrack(const std::string& track) { }
-  void GetReleaseTrack(chromeos::UpdateTrackCallback callback,
-                       void* user_data) {
+  virtual bool RebootAfterUpdate() OVERRIDE { return false; }
+  virtual void SetReleaseTrack(const std::string& track) OVERRIDE {}
+  virtual void GetReleaseTrack(chromeos::UpdateTrackCallback callback,
+                               void* user_data) OVERRIDE {
     if (callback)
       callback(user_data, "beta-channel");
   }
+  // End UpdateLibrary implementation.
+
   const UpdateLibrary::Status& status() const { return status_; }
 
  private:
