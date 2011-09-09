@@ -275,6 +275,9 @@ void SyncSetupHandler::GetStaticLocalizedValues(
     { "encryptSensitiveOption", IDS_SYNC_ENCRYPT_SENSITIVE_DATA },
     { "encryptAllOption", IDS_SYNC_ENCRYPT_ALL_DATA },
     { "encryptAllOption", IDS_SYNC_ENCRYPT_ALL_DATA },
+    { "aspWarningText", IDS_SYNC_ASP_PASSWORD_WARNING_TEXT },
+    { "aspWarningHint", IDS_SYNC_ASP_PASSWORD_WARNING_HINT },
+    { "confirmASPPassword", IDS_SYNC_ASP_PASSWORD_CONFIRM_TEXT },
   };
 
   RegisterStrings(localized_strings, resources, arraysize(resources));
