@@ -11,7 +11,7 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/ui/cocoa/bookmarks/bookmark_menu_bridge.h"
-#include "chrome/browser/ui/cocoa/browser_test_helper.h"
+#include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #include "grit/generated_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
@@ -38,13 +38,15 @@ class TestBookmarkMenuBridge : public BookmarkMenuBridge {
 };
 
 // TODO(jrg): see refactor comment in bookmark_bar_state_controller_unittest.mm
-class BookmarkMenuBridgeTest : public PlatformTest {
+class BookmarkMenuBridgeTest : public CocoaProfileTest {
  public:
 
-   void SetUp() {
+   virtual void SetUp() {
+     CocoaProfileTest::SetUp();
+     ASSERT_TRUE(profile());
+
      NSMenu* menu = [[NSMenu alloc] initWithTitle:@"test"];
-     bridge_.reset(new TestBookmarkMenuBridge(browser_test_helper_.profile(),
-                   menu));
+     bridge_.reset(new TestBookmarkMenuBridge(profile(), menu));
      EXPECT_TRUE(bridge_.get());
    }
 
@@ -87,7 +89,6 @@ class BookmarkMenuBridgeTest : public PlatformTest {
     [menu addItem:item];
     return item;
   }
-  BrowserTestHelper browser_test_helper_;
   scoped_ptr<TestBookmarkMenuBridge> bridge_;
 };
 

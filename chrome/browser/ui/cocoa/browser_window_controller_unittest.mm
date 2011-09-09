@@ -10,9 +10,8 @@
 #include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/cocoa/browser_test_helper.h"
 #include "chrome/browser/ui/cocoa/browser_window_controller.h"
-#include "chrome/browser/ui/cocoa/cocoa_test_helper.h"
+#include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #include "chrome/browser/ui/cocoa/find_bar/find_bar_bridge.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
@@ -63,27 +62,27 @@
 }
 @end
 
-class BrowserWindowControllerTest : public CocoaTest {
+class BrowserWindowControllerTest : public CocoaProfileTest {
  public:
   virtual void SetUp() {
-    CocoaTest::SetUp();
-    Browser* browser = browser_helper_.browser();
-    controller_ = [[BrowserWindowController alloc] initWithBrowser:browser
+    CocoaProfileTest::SetUp();
+    ASSERT_TRUE(browser());
+
+    controller_ = [[BrowserWindowController alloc] initWithBrowser:browser()
                                                      takeOwnership:NO];
   }
 
   virtual void TearDown() {
     [controller_ close];
-    CocoaTest::TearDown();
+    CocoaProfileTest::TearDown();
   }
 
  public:
-  BrowserTestHelper browser_helper_;
   BrowserWindowController* controller_;
 };
 
 TEST_F(BrowserWindowControllerTest, TestSaveWindowPosition) {
-  PrefService* prefs = browser_helper_.profile()->GetPrefs();
+  PrefService* prefs = profile()->GetPrefs();
   ASSERT_TRUE(prefs != NULL);
 
   // Check to make sure there is no existing pref for window placement.
@@ -94,7 +93,7 @@ TEST_F(BrowserWindowControllerTest, TestSaveWindowPosition) {
 
   // Ask the window to save its position, then check that a preference
   // exists.
-  BrowserList::SetLastActive(browser_helper_.browser());
+  BrowserList::SetLastActive(browser());
   [controller_ saveWindowPositionIfNeeded];
   browser_window_placement =
       prefs->GetDictionary(prefs::kBrowserWindowPlacement);
@@ -110,7 +109,7 @@ TEST_F(BrowserWindowControllerTest, TestFullScreenWindow) {
 
 TEST_F(BrowserWindowControllerTest, TestNormal) {
   // Force the bookmark bar to be shown.
-  browser_helper_.profile()->GetPrefs()->
+  profile()->GetPrefs()->
       SetBoolean(prefs::kShowBookmarkBar, true);
   [controller_ updateBookmarkBarVisibilityWithAnimation:NO];
 
@@ -123,7 +122,7 @@ TEST_F(BrowserWindowControllerTest, TestNormal) {
   // And make sure a controller for a pop-up window is not normal.
   // popup_browser will be owned by its window.
   Browser *popup_browser(Browser::CreateForType(Browser::TYPE_POPUP,
-                                                browser_helper_.profile()));
+                                                profile()));
   NSWindow *cocoaWindow = popup_browser->window()->GetNativeHandle();
   BrowserWindowController* controller =
       static_cast<BrowserWindowController*>([cocoaWindow windowController]);
@@ -137,7 +136,7 @@ TEST_F(BrowserWindowControllerTest, TestNormal) {
 
 TEST_F(BrowserWindowControllerTest, TestSetBounds) {
   // Create a normal browser with bounds smaller than the minimum.
-  Browser::CreateParams params(Browser::TYPE_TABBED, browser_helper_.profile());
+  Browser::CreateParams params(Browser::TYPE_TABBED, profile());
   params.initial_bounds = gfx::Rect(0, 0, 50, 50);
   Browser* browser = Browser::CreateWithParams(params);
   NSWindow *cocoaWindow = browser->window()->GetNativeHandle();
@@ -162,7 +161,7 @@ TEST_F(BrowserWindowControllerTest, TestSetBounds) {
 
 TEST_F(BrowserWindowControllerTest, TestSetBoundsPopup) {
   // Create a popup with bounds smaller than the minimum.
-  Browser::CreateParams params(Browser::TYPE_POPUP, browser_helper_.profile());
+  Browser::CreateParams params(Browser::TYPE_POPUP, profile());
   params.initial_bounds = gfx::Rect(0, 0, 50, 50);
   Browser* browser = Browser::CreateWithParams(params);
   NSWindow *cocoaWindow = browser->window()->GetNativeHandle();
@@ -194,7 +193,7 @@ TEST_F(BrowserWindowControllerTest, BookmarkBarControllerIndirection) {
 
   // Explicitly show the bar. Can't use bookmark_utils::ToggleWhenVisible()
   // because of the notification issues.
-  browser_helper_.profile()->GetPrefs()->
+  profile()->GetPrefs()->
       SetBoolean(prefs::kShowBookmarkBar, true);
 
   [controller_ updateBookmarkBarVisibilityWithAnimation:NO];
@@ -426,7 +425,7 @@ TEST_F(BrowserWindowControllerTest, TestResizeViews) {
 
 TEST_F(BrowserWindowControllerTest, TestResizeViewsWithBookmarkBar) {
   // Force a display of the bookmark bar.
-  browser_helper_.profile()->GetPrefs()->
+  profile()->GetPrefs()->
       SetBoolean(prefs::kShowBookmarkBar, true);
   [controller_ updateBookmarkBarVisibilityWithAnimation:NO];
 
@@ -472,7 +471,7 @@ TEST_F(BrowserWindowControllerTest, TestResizeViewsWithBookmarkBar) {
   CheckViewPositions(controller_);
 
   // Remove the bookmark bar and recheck
-  browser_helper_.profile()->GetPrefs()->
+  profile()->GetPrefs()->
       SetBoolean(prefs::kShowBookmarkBar, false);
   [controller_ resizeView:bookmark newHeight:0];
   CheckViewPositions(controller_);
@@ -487,8 +486,7 @@ TEST_F(BrowserWindowControllerTest, TestResizeViewsWithBookmarkBar) {
 TEST_F(BrowserWindowControllerTest, BookmarkBarIsSameWidth) {
   // Set the pref to the bookmark bar is visible when the toolbar is
   // first created.
-  browser_helper_.profile()->GetPrefs()->SetBoolean(
-      prefs::kShowBookmarkBar, true);
+  profile()->GetPrefs()->SetBoolean(prefs::kShowBookmarkBar, true);
 
   // Make sure the bookmark bar is the same width as the toolbar
   NSView* bookmarkBarView = [controller_ bookmarkView];
@@ -651,10 +649,11 @@ TEST_F(BrowserWindowControllerTest, TestStatusBubblePositioning) {
 }
 @end
 
-class BrowserWindowFullScreenControllerTest : public CocoaTest {
+class BrowserWindowFullScreenControllerTest : public CocoaProfileTest {
  public:
   virtual void SetUp() {
-    CocoaTest::SetUp();
+    CocoaProfileTest::SetUp();
+    ASSERT_TRUE(browser());
 
     // This test case crashes when run on Lion. Fail early.
     if (base::mac::IsOSLionOrLater()) {
@@ -662,19 +661,17 @@ class BrowserWindowFullScreenControllerTest : public CocoaTest {
       FAIL() << "This test crashes on Lion; http://crbug.com/93925";
     }
 
-    Browser* browser = browser_helper_.browser();
     controller_ =
-        [[BrowserWindowControllerFakeFullscreen alloc] initWithBrowser:browser
+        [[BrowserWindowControllerFakeFullscreen alloc] initWithBrowser:browser()
                                                          takeOwnership:NO];
   }
 
   virtual void TearDown() {
     [controller_ close];
-    CocoaTest::TearDown();
+    CocoaProfileTest::TearDown();
   }
 
  public:
-  BrowserTestHelper browser_helper_;
   BrowserWindowController* controller_;
 };
 

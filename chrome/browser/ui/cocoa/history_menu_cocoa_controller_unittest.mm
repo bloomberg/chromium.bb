@@ -7,8 +7,7 @@
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
-#include "chrome/browser/ui/cocoa/browser_test_helper.h"
-#include "chrome/browser/ui/cocoa/cocoa_test_helper.h"
+#include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #include "chrome/browser/ui/cocoa/history_menu_bridge.h"
 #include "chrome/browser/ui/cocoa/history_menu_cocoa_controller.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -35,12 +34,14 @@
 
 @end  // FakeHistoryMenuController
 
-class HistoryMenuCocoaControllerTest : public CocoaTest {
+class HistoryMenuCocoaControllerTest : public CocoaProfileTest {
  public:
 
   virtual void SetUp() {
-    CocoaTest::SetUp();
-    bridge_.reset(new HistoryMenuBridge(browser_test_helper_.profile()));
+    CocoaProfileTest::SetUp();
+    ASSERT_TRUE(profile());
+
+    bridge_.reset(new HistoryMenuBridge(profile()));
     bridge_->controller_.reset(
         [[FakeHistoryMenuController alloc] initWithBridge:bridge_.get()]);
     [controller() initTest];
@@ -67,7 +68,6 @@ class HistoryMenuCocoaControllerTest : public CocoaTest {
   }
 
  private:
-  BrowserTestHelper browser_test_helper_;
   scoped_ptr<HistoryMenuBridge> bridge_;
 };
 

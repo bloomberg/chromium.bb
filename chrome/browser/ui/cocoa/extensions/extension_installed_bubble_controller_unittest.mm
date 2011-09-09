@@ -11,8 +11,7 @@
 #include "base/path_service.h"
 #include "base/values.h"
 #import "chrome/browser/ui/browser_window.h"
-#import "chrome/browser/ui/cocoa/browser_test_helper.h"
-#import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
+#include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #import "chrome/browser/ui/cocoa/extensions/extension_installed_bubble_controller.h"
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
 #include "chrome/common/chrome_paths.h"
@@ -42,19 +41,14 @@
 
 namespace keys = extension_manifest_keys;
 
-class ExtensionInstalledBubbleControllerTest : public CocoaTest {
+class ExtensionInstalledBubbleControllerTest : public CocoaProfileTest {
 
  public:
   virtual void SetUp() {
-    CocoaTest::SetUp();
-    browser_ = helper_.browser();
-    window_ = helper_.CreateBrowserWindow()->GetNativeHandle();
+    CocoaProfileTest::SetUp();
+    ASSERT_TRUE(browser());
+    window_ = CreateBrowserWindow()->GetNativeHandle();
     icon_ = LoadTestIcon();
-  }
-
-  virtual void TearDown() {
-    helper_.CloseBrowserWindow();
-    CocoaTest::TearDown();
   }
 
   // Load test icon from extension test directory.
@@ -107,14 +101,8 @@ class ExtensionInstalledBubbleControllerTest : public CocoaTest {
                              Extension::STRICT_ERROR_CHECKS, &error);
   }
 
-  // Allows us to create the window and browser for testing.
-  BrowserTestHelper helper_;
-
   // Required to initialize the extension installed bubble.
-  NSWindow* window_;  // weak, owned by BrowserTestHelper.
-
-  // Required to initialize the extension installed bubble.
-  Browser* browser_;  // weak, owned by BrowserTestHelper.
+  NSWindow* window_;  // weak, owned by CocoaProfileTest.
 
   // Skeleton extension to be tested; reinitialized for each test.
   scoped_refptr<Extension> extension_;
@@ -130,7 +118,7 @@ TEST_F(ExtensionInstalledBubbleControllerTest, PageActionTest) {
       [[ExtensionInstalledBubbleControllerForTest alloc]
           initWithParentWindow:window_
                      extension:extension_.get()
-                       browser:browser_
+                       browser:browser()
                           icon:icon_];
   EXPECT_TRUE(controller);
 
@@ -173,7 +161,7 @@ TEST_F(ExtensionInstalledBubbleControllerTest, BrowserActionTest) {
       [[ExtensionInstalledBubbleControllerForTest alloc]
           initWithParentWindow:window_
                      extension:extension_.get()
-                       browser:browser_
+                       browser:browser()
                           icon:icon_];
   EXPECT_TRUE(controller);
 
@@ -210,7 +198,7 @@ TEST_F(ExtensionInstalledBubbleControllerTest, ParentClose) {
       [[ExtensionInstalledBubbleControllerForTest alloc]
           initWithParentWindow:window_
                      extension:extension_.get()
-                       browser:browser_
+                       browser:browser()
                           icon:icon_];
   EXPECT_TRUE(controller);
 

@@ -6,35 +6,35 @@
 
 #include "chrome/browser/tabs/tab_strip_model.h"
 #import "chrome/browser/ui/browser_window.h"
-#import "chrome/browser/ui/cocoa/browser_test_helper.h"
-#import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
+#include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "content/browser/site_instance.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-class TabposeWindowTest : public CocoaTest {
+class TabposeWindowTest : public CocoaProfileTest {
  public:
-  TabposeWindowTest() {
-    site_instance_ =
-        SiteInstance::CreateSiteInstance(browser_helper_.profile());
+  virtual void SetUp() {
+    CocoaProfileTest::SetUp();
+    ASSERT_TRUE(profile());
+
+    site_instance_ = SiteInstance::CreateSiteInstance(profile());
   }
 
   void AppendTabToStrip() {
     TabContentsWrapper* tab_contents = Browser::TabContentsFactory(
-        browser_helper_.profile(), site_instance_, MSG_ROUTING_NONE,
+        profile(), site_instance_, MSG_ROUTING_NONE,
         NULL, NULL);
-    browser_helper_.browser()->tabstrip_model()->AppendTabContents(
+    browser()->tabstrip_model()->AppendTabContents(
         tab_contents, /*foreground=*/true);
   }
 
-  BrowserTestHelper browser_helper_;
   scoped_refptr<SiteInstance> site_instance_;
 };
 
 // Check that this doesn't leak.
 TEST_F(TabposeWindowTest, TestShow) {
-  BrowserWindow* browser_window = browser_helper_.CreateBrowserWindow();
+  BrowserWindow* browser_window = CreateBrowserWindow();
   NSWindow* parent = browser_window->GetNativeHandle();
 
   [parent orderFront:nil];
@@ -49,16 +49,14 @@ TEST_F(TabposeWindowTest, TestShow) {
       [TabposeWindow openTabposeFor:parent
                                rect:NSMakeRect(10, 20, 250, 160)
                               slomo:NO
-                     tabStripModel:browser_helper_.browser()->tabstrip_model()];
+                      tabStripModel:browser()->tabstrip_model()];
 
   // Should release the window.
   [window mouseDown:nil];
-
-  browser_helper_.CloseBrowserWindow();
 }
 
 TEST_F(TabposeWindowTest, TestModelObserver) {
-  BrowserWindow* browser_window = browser_helper_.CreateBrowserWindow();
+  BrowserWindow* browser_window = CreateBrowserWindow();
   NSWindow* parent = browser_window->GetNativeHandle();
   [parent orderFront:nil];
 
@@ -71,10 +69,10 @@ TEST_F(TabposeWindowTest, TestModelObserver) {
       [TabposeWindow openTabposeFor:parent
                                rect:NSMakeRect(10, 20, 250, 160)
                               slomo:NO
-                     tabStripModel:browser_helper_.browser()->tabstrip_model()];
+                      tabStripModel:browser()->tabstrip_model()];
 
   // Exercise all the model change events.
-  TabStripModel* model = browser_helper_.browser()->tabstrip_model();
+  TabStripModel* model = browser()->tabstrip_model();
   DCHECK_EQ([window thumbnailLayerCount], 3u);
   DCHECK_EQ([window selectedIndex], 2);
 
@@ -114,6 +112,4 @@ TEST_F(TabposeWindowTest, TestModelObserver) {
 
   // Should release the window.
   [window mouseDown:nil];
-
-  browser_helper_.CloseBrowserWindow();
 }

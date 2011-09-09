@@ -13,8 +13,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #import "chrome/browser/extensions/extension_install_ui.h"
-#include "chrome/browser/ui/cocoa/browser_test_helper.h"
-#import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
+#include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #import "chrome/browser/ui/cocoa/extensions/extension_install_dialog_controller.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension.h"
@@ -27,7 +26,7 @@
 
 
 // Base class for our tests.
-class ExtensionInstallDialogControllerTest : public CocoaTest {
+class ExtensionInstallDialogControllerTest : public CocoaProfileTest {
 public:
   ExtensionInstallDialogControllerTest() {
     PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir_);
@@ -70,7 +69,6 @@ public:
     }
   }
 
-  BrowserTestHelper helper_;
   FilePath test_data_dir_;
   SkBitmap icon_;
   scoped_refptr<Extension> extension_;
@@ -115,7 +113,7 @@ TEST_F(ExtensionInstallDialogControllerTest, BasicsNormalCancel) {
   scoped_nsobject<ExtensionInstallDialogController>
     controller([[ExtensionInstallDialogController alloc]
                  initWithParentWindow:test_window()
-                              profile:helper_.profile()
+                              profile:profile()
                             extension:extension_.get()
                             delegate:&delegate
                                 icon:&icon_
@@ -170,7 +168,7 @@ TEST_F(ExtensionInstallDialogControllerTest, BasicsNormalOK) {
   scoped_nsobject<ExtensionInstallDialogController>
   controller([[ExtensionInstallDialogController alloc]
                initWithParentWindow:test_window()
-                            profile:helper_.profile()
+                            profile:profile()
                           extension:extension_.get()
                            delegate:&delegate
                                icon:&icon_
@@ -203,7 +201,7 @@ TEST_F(ExtensionInstallDialogControllerTest, MultipleWarnings) {
   scoped_nsobject<ExtensionInstallDialogController>
   controller1([[ExtensionInstallDialogController alloc]
                 initWithParentWindow:test_window()
-                             profile:helper_.profile()
+                             profile:profile()
                            extension:extension_.get()
                             delegate:&delegate1
                                 icon:&icon_
@@ -214,7 +212,7 @@ TEST_F(ExtensionInstallDialogControllerTest, MultipleWarnings) {
   scoped_nsobject<ExtensionInstallDialogController>
   controller2([[ExtensionInstallDialogController alloc]
                 initWithParentWindow:test_window()
-                             profile:helper_.profile()
+                             profile:profile()
                            extension:extension_.get()
                             delegate:&delegate2
                                 icon:&icon_
@@ -250,7 +248,7 @@ TEST_F(ExtensionInstallDialogControllerTest, BasicsSkinny) {
   scoped_nsobject<ExtensionInstallDialogController>
   controller([[ExtensionInstallDialogController alloc]
                initWithParentWindow:test_window()
-                            profile:helper_.profile()
+                            profile:profile()
                           extension:extension_.get()
                            delegate:&delegate
                                icon:&icon_
@@ -296,7 +294,7 @@ TEST_F(ExtensionInstallDialogControllerTest, BasicsInline) {
   scoped_nsobject<ExtensionInstallDialogController>
   controller([[ExtensionInstallDialogController alloc]
                initWithParentWindow:test_window()
-                            profile:helper_.profile()
+                            profile:profile()
                           extension:extension_.get()
                            delegate:&delegate
                                icon:&icon_

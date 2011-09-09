@@ -3,13 +3,14 @@
 // found in the LICENSE file.
 
 #include "base/memory/scoped_nsobject.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "chrome/browser/extensions/extension_pref_value_map.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_settings.h"
-#include "chrome/browser/ui/cocoa/browser_test_helper.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #include "chrome/browser/ui/cocoa/extensions/extension_popup_controller.h"
 #include "chrome/test/base/testing_profile.h"

@@ -7,8 +7,7 @@
 #include "base/memory/scoped_nsobject.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/search_engines/template_url.h"
-#include "chrome/browser/ui/cocoa/browser_test_helper.h"
-#include "chrome/browser/ui/cocoa/cocoa_test_helper.h"
+#include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -52,15 +51,15 @@
 
 namespace {
 
-class EditSearchEngineControllerTest : public CocoaTest {
+class EditSearchEngineControllerTest : public CocoaProfileTest {
  public:
    virtual void SetUp() {
-     CocoaTest::SetUp();
-     TestingProfile* profile =
-          static_cast<TestingProfile*>(browser_helper_.profile());
-     profile->CreateTemplateURLService();
+     CocoaProfileTest::SetUp();
+     ASSERT_TRUE(profile());
+
+     profile()->CreateTemplateURLService();
      controller_ =
-        [[FakeEditSearchEngineController alloc] initWithProfile:profile
+        [[FakeEditSearchEngineController alloc] initWithProfile:profile()
                                                        delegate:nil
                                                     templateURL:nil];
    }
@@ -72,10 +71,9 @@ class EditSearchEngineControllerTest : public CocoaTest {
     ASSERT_TRUE([controller_ window]);
 
     [controller_ close];
-    CocoaTest::TearDown();
+    CocoaProfileTest::TearDown();
   }
 
-  BrowserTestHelper browser_helper_;
   FakeEditSearchEngineController* controller_;
 };
 
@@ -214,9 +212,8 @@ TEST_F(EditSearchEngineControllerTest, EditTemplateURL) {
   std::string urlString = TemplateURLRef::DisplayURLToURLRef(
       ASCIIToUTF16("http://foo-bar.com"));
   url.SetURL(urlString, 0, 1);
-  TestingProfile* profile = browser_helper_.profile();
   FakeEditSearchEngineController *controller =
-      [[FakeEditSearchEngineController alloc] initWithProfile:profile
+      [[FakeEditSearchEngineController alloc] initWithProfile:profile()
                                                      delegate:nil
                                                   templateURL:&url];
   EXPECT_TRUE([controller window]);

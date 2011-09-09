@@ -3,41 +3,36 @@
 // found in the LICENSE file.
 
 #include "base/string16.h"
+#import "base/memory/scoped_nsobject.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/ui/browser.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_menu_cocoa_controller.h"
-#include "chrome/browser/ui/cocoa/browser_test_helper.h"
+#include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 @interface FakeBookmarkMenuController : BookmarkMenuCocoaController {
  @public
-  BrowserTestHelper* helper_;
   const BookmarkNode* nodes_[2];
   BOOL opened_[2];
   BOOL opened_new_foreground_tab;
   BOOL opened_new_window;
   BOOL opened_off_the_record;
 }
+- (id)initWithProfile:(Profile*)profile;
 @end
 
 @implementation FakeBookmarkMenuController
 
-- (id)init {
+- (id)initWithProfile:(Profile*)profile {
   if ((self = [super init])) {
     string16 empty;
-    helper_ = new BrowserTestHelper();
-    BookmarkModel* model = helper_->browser()->profile()->GetBookmarkModel();
+    BookmarkModel* model = profile->GetBookmarkModel();
     const BookmarkNode* bookmark_bar = model->bookmark_bar_node();
     nodes_[0] = model->AddURL(bookmark_bar, 0, empty, GURL("http://0.com"));
     nodes_[1] = model->AddURL(bookmark_bar, 1, empty, GURL("http://1.com"));
   }
   return self;
-}
-
-- (void)dealloc {
-  delete helper_;
-  [super dealloc];
 }
 
 - (const BookmarkNode*)nodeForIdentifier:(int)identifier {
@@ -67,9 +62,24 @@
 
 @end  // FakeBookmarkMenuController
 
+class BookmarkMenuCocoaControllerTest : public CocoaProfileTest {
+ public:
+  virtual void SetUp() {
+    CocoaProfileTest::SetUp();
+    ASSERT_TRUE(profile());
 
-TEST(BookmarkMenuCocoaControllerTest, TestOpenItem) {
-  FakeBookmarkMenuController *c = [[FakeBookmarkMenuController alloc] init];
+    controller_.reset(
+        [[FakeBookmarkMenuController alloc] initWithProfile:profile()]);
+  }
+
+  FakeBookmarkMenuController* controller() { return controller_.get(); }
+
+ private:
+  scoped_nsobject<FakeBookmarkMenuController> controller_;
+};
+
+TEST_F(BookmarkMenuCocoaControllerTest, TestOpenItem) {
+  FakeBookmarkMenuController* c = controller();
   NSMenuItem *item = [[[NSMenuItem alloc] init] autorelease];
   for (int i = 0; i < 2; i++) {
     [item setTag:i];
@@ -92,6 +102,4 @@ TEST(BookmarkMenuCocoaControllerTest, TestOpenItem) {
   EXPECT_EQ(c->opened_off_the_record, NO);
   [c openAllBookmarksIncognitoWindow:item];
   EXPECT_NE(c->opened_off_the_record, NO);
-
-  [c release];
 }

@@ -8,15 +8,12 @@
 
 #include "base/debug/debugger.h"
 #include "base/memory/scoped_nsobject.h"
-#include "chrome/browser/ui/cocoa/browser_test_helper.h"
-#import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
+#include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
 
-class FirstRunBubbleControllerTest : public CocoaTest {
- public:
-  BrowserTestHelper helper_;
+class FirstRunBubbleControllerTest : public CocoaProfileTest {
 };
 
 // Check that the bubble doesn't crash or leak.
@@ -35,7 +32,7 @@ TEST_F(FirstRunBubbleControllerTest, Init) {
   FirstRunBubbleController* controller = [FirstRunBubbleController
       showForView:[parent.get() contentView]
            offset:NSMakePoint(300, 300)
-          profile:helper_.profile()];
+          profile:profile()];
   EXPECT_TRUE(controller != nil);
   EXPECT_TRUE([[controller window] isVisible]);
   [parent.get() close];

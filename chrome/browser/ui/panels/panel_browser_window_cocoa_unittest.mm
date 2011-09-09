@@ -14,9 +14,8 @@
 #include "chrome/app/chrome_command_ids.h"  // IDC_*
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
-#import "chrome/browser/ui/cocoa/browser_test_helper.h"
 #import "chrome/browser/ui/cocoa/browser_window_utils.h"
-#import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
+#include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #import "chrome/browser/ui/cocoa/run_loop_testing.h"
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
@@ -31,10 +30,10 @@
 #include "testing/gtest_mac.h"
 
 // Main test class.
-class PanelBrowserWindowCocoaTest : public CocoaTest {
+class PanelBrowserWindowCocoaTest : public CocoaProfileTest {
  public:
   virtual void SetUp() {
-    CocoaTest::SetUp();
+    CocoaProfileTest::SetUp();
     CommandLine::ForCurrentProcess()->AppendSwitch(switches::kEnablePanels);
   }
 
@@ -50,10 +49,10 @@ class PanelBrowserWindowCocoaTest : public CocoaTest {
     Browser* panel_browser = Browser::CreateForApp(Browser::TYPE_PANEL,
                                                    panel_name,
                                                    gfx::Rect(),
-                                                   browser_helper_.profile());
+                                                   profile());
 
     TabContentsWrapper* tab_contents = new TabContentsWrapper(
-        new TestTabContents(browser_helper_.profile(), NULL));
+        new TestTabContents(profile(), NULL));
     panel_browser->AddTab(tab_contents, PageTransition::LINK);
 
     // We just created one new panel.
@@ -111,9 +110,6 @@ class PanelBrowserWindowCocoaTest : public CocoaTest {
     [item setTag:command_id];
     return item;
   }
-
- private:
-  BrowserTestHelper browser_helper_;
 };
 
 TEST_F(PanelBrowserWindowCocoaTest, CreateClose) {

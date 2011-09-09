@@ -9,8 +9,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_all_tabs_controller.h"
-#include "chrome/browser/ui/cocoa/browser_test_helper.h"
-#import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
+#include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
@@ -33,15 +32,14 @@
 
 @end
 
-class BookmarkAllTabsControllerTest : public CocoaTest {
+class BookmarkAllTabsControllerTest : public CocoaProfileTest {
  public:
-  BrowserTestHelper helper_;
   const BookmarkNode* parent_node_;
   BookmarkAllTabsControllerOverride* controller_;
   const BookmarkNode* folder_a_;
 
-  BookmarkAllTabsControllerTest() {
-    BookmarkModel& model(*(helper_.profile()->GetBookmarkModel()));
+  void CreateModel() {
+    BookmarkModel& model(*(profile()->GetBookmarkModel()));
     const BookmarkNode* root = model.bookmark_bar_node();
     folder_a_ = model.AddFolder(root, 0, ASCIIToUTF16("a"));
     model.AddURL(folder_a_, 0, ASCIIToUTF16("a-0"), GURL("http://a-0.com"));
@@ -52,20 +50,23 @@ class BookmarkAllTabsControllerTest : public CocoaTest {
   virtual BookmarkAllTabsControllerOverride* CreateController() {
     return [[BookmarkAllTabsControllerOverride alloc]
             initWithParentWindow:test_window()
-                         profile:helper_.profile()
+                         profile:profile()
                           parent:folder_a_
                    configuration:BookmarkEditor::SHOW_TREE];
   }
 
   virtual void SetUp() {
-    CocoaTest::SetUp();
+    CocoaProfileTest::SetUp();
+    ASSERT_TRUE(profile());
+
+    CreateModel();
     controller_ = CreateController();
     [controller_ runAsModalSheet];
   }
 
   virtual void TearDown() {
     controller_ = NULL;
-    CocoaTest::TearDown();
+    CocoaProfileTest::TearDown();
   }
 };
 

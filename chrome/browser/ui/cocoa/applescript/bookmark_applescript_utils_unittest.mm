@@ -8,12 +8,12 @@
 
 @implementation FakeAppDelegate
 
-@synthesize helper = helper_;
+@synthesize test = test_;
 
 - (Profile*)lastProfile {
-  if (!helper_)
+  if (!test_)
     return NULL;
-  return helper_->profile();
+  return test_->profile();
 }
 @end
 
@@ -47,8 +47,18 @@ static FakeScriptCommand* kFakeCurrentCommand;
 @end
 
 BookmarkAppleScriptTest::BookmarkAppleScriptTest() {
+}
+
+BookmarkAppleScriptTest::~BookmarkAppleScriptTest() {
+  [NSApp setDelegate:nil];
+}
+
+void BookmarkAppleScriptTest::SetUp() {
+  CocoaProfileTest::SetUp();
+  ASSERT_TRUE(profile());
+
   appDelegate_.reset([[FakeAppDelegate alloc] init]);
-  [appDelegate_.get() setHelper:&helper_];
+  [appDelegate_.get() setTest:this];
   DCHECK([NSApp delegate] == nil);
   [NSApp setDelegate:appDelegate_];
   const BookmarkNode* root = model().bookmark_bar_node();
@@ -58,10 +68,6 @@ BookmarkAppleScriptTest::BookmarkAppleScriptTest() {
       initWithBookmarkNode:model().bookmark_bar_node()]);
 }
 
-BookmarkAppleScriptTest::~BookmarkAppleScriptTest() {
-  [NSApp setDelegate:nil];
-}
-
 BookmarkModel& BookmarkAppleScriptTest::model() {
-  return *helper_.profile()->GetBookmarkModel();
+  return *profile()->GetBookmarkModel();
 }

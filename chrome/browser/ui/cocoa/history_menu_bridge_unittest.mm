@@ -12,8 +12,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
-#include "chrome/browser/ui/cocoa/browser_test_helper.h"
-#include "chrome/browser/ui/cocoa/cocoa_test_helper.h"
+#include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #include "chrome/browser/ui/cocoa/history_menu_bridge.h"
 #include "content/browser/cancelable_request.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -43,13 +42,13 @@ class MockBridge : public HistoryMenuBridge {
   scoped_nsobject<NSMenu> menu_;
 };
 
-class HistoryMenuBridgeTest : public CocoaTest {
+class HistoryMenuBridgeTest : public CocoaProfileTest {
  public:
 
   virtual void SetUp() {
-    CocoaTest::SetUp();
-    browser_test_helper_.profile()->CreateFaviconService();
-    bridge_.reset(new MockBridge(browser_test_helper_.profile()));
+    CocoaProfileTest::SetUp();
+    profile()->CreateFaviconService();
+    bridge_.reset(new MockBridge(profile()));
   }
 
   // We are a friend of HistoryMenuBridge (and have access to
@@ -113,7 +112,6 @@ class HistoryMenuBridgeTest : public CocoaTest {
     return bridge_->favicon_consumer_;
   }
 
-  BrowserTestHelper browser_test_helper_;
   scoped_ptr<MockBridge> bridge_;
 };
 
@@ -210,7 +208,7 @@ TEST_F(HistoryMenuBridgeTest, AddItemToMenu) {
 
 // Test that the menu is created for a set of simple tabs.
 TEST_F(HistoryMenuBridgeTest, RecentlyClosedTabs) {
-  scoped_ptr<MockTRS> trs(new MockTRS(browser_test_helper_.profile()));
+  scoped_ptr<MockTRS> trs(new MockTRS(profile()));
   MockTRS::Entries entries;
 
   MockTRS::Tab tab1 = CreateSessionTab(GURL("http://google.com"),
@@ -246,7 +244,7 @@ TEST_F(HistoryMenuBridgeTest, RecentlyClosedTabs) {
 
 // Test that the menu is created for a mix of windows and tabs.
 TEST_F(HistoryMenuBridgeTest, RecentlyClosedTabsAndWindows) {
-  scoped_ptr<MockTRS> trs(new MockTRS(browser_test_helper_.profile()));
+  scoped_ptr<MockTRS> trs(new MockTRS(profile()));
   MockTRS::Entries entries;
 
   MockTRS::Tab tab1 = CreateSessionTab(GURL("http://google.com"),

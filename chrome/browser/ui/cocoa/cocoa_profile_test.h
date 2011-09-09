@@ -2,13 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_COCOA_BROWSER_TEST_HELPER_H_
-#define CHROME_BROWSER_UI_COCOA_BROWSER_TEST_HELPER_H_
+#ifndef CHROME_BROWSER_UI_COCOA_PROFILE_TEST_H_
+#define CHROME_BROWSER_UI_COCOA_PROFILE_TEST_H_
 #pragma once
 
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chrome/test/base/testing_profile_manager.h"
+#import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #include "content/browser/browser_thread.h"
 
 // Base class which contains a valid Browser*.  Lots of boilerplate to
@@ -25,29 +28,44 @@
 // chrome/browser), and use in non-Mac unit tests such as
 // back_forward_menu_model_unittest.cc,
 // navigation_controller_unittest.cc, ..
-class BrowserTestHelper {
+class CocoaProfileTest : public CocoaTest {
  public:
-  BrowserTestHelper();
-  virtual ~BrowserTestHelper();
+  CocoaProfileTest();
+  virtual ~CocoaProfileTest();
 
-  virtual TestingProfile* profile() const;
-  Browser* browser() const { return browser_.get(); }
+  // This constructs a a Browser and a TestingProfile. It is guaranteed to
+  // succeed, else it will ASSERT and cause the test to fail. Subclasses that
+  // do work in SetUp should ASSERT that either browser() or profile() are
+  // non-NULL before proceeding after the call to super (this).
+  virtual void SetUp();
+
+  virtual void TearDown();
+
+  TestingProfileManager* testing_profile_manager() {
+    return &profile_manager_;
+  }
+  TestingProfile* profile() { return profile_; }
+  Browser* browser() { return browser_.get(); }
 
   // Creates the browser window. To close this window call |CloseBrowserWindow|.
   // Do NOT call close directly on the window.
   BrowserWindow* CreateBrowserWindow();
 
   // Closes the window for this browser. This must only be called after
-  // CreateBrowserWindow().
+  // CreateBrowserWindow(). This will automatically be called as part of
+  // TearDown() if it's not been done already.
   void CloseBrowserWindow();
 
  private:
-  scoped_ptr<TestingProfile> profile_;
-  scoped_ptr<Browser> browser_;
   MessageLoopForUI message_loop_;
   BrowserThread ui_thread_;
+
+  TestingProfileManager profile_manager_;
+  TestingProfile* profile_;  // Weak; owned by profile_manager_.
+  scoped_ptr<Browser> browser_;
+
   scoped_ptr<BrowserThread> file_thread_;
   scoped_ptr<BrowserThread> io_thread_;
 };
 
-#endif  // CHROME_BROWSER_UI_COCOA_BROWSER_TEST_HELPER_H_
+#endif  // CHROME_BROWSER_UI_COCOA_PROFILE_TEST_H_

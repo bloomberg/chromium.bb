@@ -14,7 +14,7 @@
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_button_cell.h"
 #include "chrome/browser/ui/cocoa/bookmarks/bookmark_menu_bridge.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_unittest_helper.h"
-#include "chrome/browser/ui/cocoa/browser_test_helper.h"
+#include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #import "chrome/browser/ui/cocoa/view_resizer_pong.h"
 #include "chrome/test/base/model_test_utils.h"
@@ -26,10 +26,10 @@ namespace {
 const int kLotsOfNodesCount = 150;
 };
 
-class BookmarkBarFolderControllerTest : public CocoaTest {
+class BookmarkBarFolderControllerTest : public CocoaProfileTest {
  public:
   BookmarkModel* GetModel() {
-    return helper_.profile()->GetBookmarkModel();
+    return profile()->GetBookmarkModel();
   }
 
   BookmarkBarFolderController* CreateController(const BookmarkNode* node) {
@@ -50,9 +50,6 @@ class BookmarkBarFolderControllerTest : public CocoaTest {
   NSMenu* GetMenu(BookmarkBarFolderController* controller) {
     return [[controller menuBridge]->controller() menu];
   }
-
- private:
-  BrowserTestHelper helper_;
 };
 
 TEST_F(BookmarkBarFolderControllerTest, SimpleFolder) {

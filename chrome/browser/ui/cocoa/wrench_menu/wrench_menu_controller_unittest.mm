@@ -4,8 +4,7 @@
 
 #include "base/memory/scoped_nsobject.h"
 #include "chrome/app/chrome_command_ids.h"
-#include "chrome/browser/ui/cocoa/browser_test_helper.h"
-#import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
+#include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
 #include "chrome/browser/ui/cocoa/run_loop_testing.h"
 #import "chrome/browser/ui/cocoa/view_resizer_pong.h"
@@ -32,16 +31,18 @@ class MockWrenchMenuModel : public WrenchMenuModel {
   MOCK_METHOD1(ExecuteCommand, void(int command_id));
 };
 
-class WrenchMenuControllerTest : public CocoaTest {
+class WrenchMenuControllerTest : public CocoaProfileTest {
  public:
-  void SetUp() {
-    Browser* browser = helper_.browser();
+  virtual void SetUp() {
+    CocoaProfileTest::SetUp();
+    ASSERT_TRUE(browser());
+
     resize_delegate_.reset([[ViewResizerPong alloc] init]);
     toolbar_controller_.reset(
-        [[ToolbarController alloc] initWithModel:browser->toolbar_model()
-                                        commands:browser->command_updater()
-                                         profile:helper_.profile()
-                                         browser:browser
+        [[ToolbarController alloc] initWithModel:browser()->toolbar_model()
+                                        commands:browser()->command_updater()
+                                         profile:profile()
+                                         browser:browser()
                                   resizeDelegate:resize_delegate_.get()]);
     EXPECT_TRUE([toolbar_controller_ view]);
     NSView* parent = [test_window() contentView];
@@ -52,7 +53,6 @@ class WrenchMenuControllerTest : public CocoaTest {
     return [toolbar_controller_ wrenchMenuController];
   }
 
-  BrowserTestHelper helper_;
   scoped_nsobject<ViewResizerPong> resize_delegate_;
   MockWrenchMenuModel fake_model_;
   scoped_nsobject<ToolbarController> toolbar_controller_;

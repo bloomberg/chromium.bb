@@ -8,9 +8,8 @@
 #include "base/memory/scoped_nsobject.h"
 #include "base/utf_string_conversions.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bubble_controller.h"
-#include "chrome/browser/ui/cocoa/browser_test_helper.h"
 #include "chrome/browser/ui/cocoa/browser_window_controller.h"
-#import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
+#include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
 #include "content/common/notification_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -54,10 +53,9 @@
 
 namespace {
 
-class BookmarkBubbleControllerTest : public CocoaTest {
+class BookmarkBubbleControllerTest : public CocoaProfileTest {
  public:
   static int edits_;
-  BrowserTestHelper helper_;
   BookmarkBubbleController* controller_;
 
   BookmarkBubbleControllerTest() : controller_(nil) {
@@ -66,7 +64,7 @@ class BookmarkBubbleControllerTest : public CocoaTest {
 
   virtual void TearDown() {
     [controller_ close];
-    CocoaTest::TearDown();
+    CocoaProfileTest::TearDown();
   }
 
   // Returns a controller but ownership not transferred.
@@ -78,7 +76,7 @@ class BookmarkBubbleControllerTest : public CocoaTest {
     }
     controller_ = [[BookmarkBubbleController alloc]
                       initWithParentWindow:test_window()
-                                     model:helper_.profile()->GetBookmarkModel()
+                                     model:profile()->GetBookmarkModel()
                                       node:node
                          alreadyBookmarked:YES];
     EXPECT_TRUE([controller_ window]);
@@ -89,7 +87,7 @@ class BookmarkBubbleControllerTest : public CocoaTest {
   }
 
   BookmarkModel* GetBookmarkModel() {
-    return helper_.profile()->GetBookmarkModel();
+    return profile()->GetBookmarkModel();
   }
 
   bool IsWindowClosing() {
@@ -394,7 +392,7 @@ TEST_F(BookmarkBubbleControllerTest, EscapeRemovesNewBookmark) {
   BookmarkBubbleController* controller =
       [[BookmarkBubbleController alloc]
           initWithParentWindow:test_window()
-                         model:helper_.profile()->GetBookmarkModel()
+                         model:profile()->GetBookmarkModel()
                           node:node
              alreadyBookmarked:NO];  // The last param is the key difference.
   EXPECT_TRUE([controller window]);
@@ -469,7 +467,7 @@ TEST_F(BookmarkBubbleControllerTest, BubbleGoesAwayOnNewTab) {
   EXPECT_FALSE(IsWindowClosing());
 
   // We can't actually create a new tab here, e.g.
-  //   helper_.browser()->AddTabWithURL(...);
+  //   browser()->AddTabWithURL(...);
   // Many of our browser objects (Browser, Profile, RequestContext)
   // are "just enough" to run tests without being complete.  Instead
   // we fake the notification that would be triggered by a tab

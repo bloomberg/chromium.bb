@@ -8,8 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/utf_string_conversions.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_model_observer_for_cocoa.h"
-#import "chrome/browser/ui/cocoa/browser_test_helper.h"
-#import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
+#import "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 
 // Keep track of bookmark pings.
 @interface ObserverPingTracker : NSObject {
@@ -26,19 +25,12 @@
 
 namespace {
 
-class BookmarkModelObserverForCocoaTest : public CocoaTest {
- public:
-  BrowserTestHelper helper_;
-
-  BookmarkModelObserverForCocoaTest() {}
-  virtual ~BookmarkModelObserverForCocoaTest() {}
- private:
-  DISALLOW_COPY_AND_ASSIGN(BookmarkModelObserverForCocoaTest);
+class BookmarkModelObserverForCocoaTest : public CocoaProfileTest {
 };
 
 
 TEST_F(BookmarkModelObserverForCocoaTest, TestCallback) {
-  BookmarkModel* model = helper_.profile()->GetBookmarkModel();
+  BookmarkModel* model = profile()->GetBookmarkModel();
   const BookmarkNode* node = model->AddURL(model->bookmark_bar_node(),
                                            0, ASCIIToUTF16("super"),
                                            GURL("http://www.google.com"));

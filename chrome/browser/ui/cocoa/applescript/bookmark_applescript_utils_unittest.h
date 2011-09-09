@@ -11,8 +11,7 @@
 #include "base/memory/scoped_nsobject.h"
 #import "chrome/browser/app_controller_mac.h"
 #import "chrome/browser/ui/cocoa/applescript/bookmark_folder_applescript.h"
-#include "chrome/browser/ui/cocoa/browser_test_helper.h"
-#include "chrome/browser/ui/cocoa/cocoa_test_helper.h"
+#include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #include "chrome/test/base/model_test_utils.h"
 #include "testing/platform_test.h"
 
@@ -21,9 +20,9 @@ class BookmarkModel;
 // The fake object that acts as our app's delegate, useful for testing purposes.
 @interface FakeAppDelegate : AppController {
  @public
-  BrowserTestHelper* helper_;  // weak.
+  CocoaProfileTest* test_;  // weak.
 }
-@property(nonatomic) BrowserTestHelper* helper;
+@property(nonatomic) CocoaProfileTest* test;
 // Return the |TestingProfile*| which is used for testing.
 - (Profile*)lastProfile;
 @end
@@ -38,12 +37,12 @@ class BookmarkModel;
 
 
 // The base class for all our bookmark releated unit tests.
-class BookmarkAppleScriptTest : public CocoaTest {
+class BookmarkAppleScriptTest : public CocoaProfileTest {
  public:
   BookmarkAppleScriptTest();
   virtual ~BookmarkAppleScriptTest();
+  virtual void SetUp();
  private:
-  BrowserTestHelper helper_;
   scoped_nsobject<FakeAppDelegate> appDelegate_;
  protected:
   scoped_nsobject<BookmarkFolderAppleScript> bookmarkBar_;

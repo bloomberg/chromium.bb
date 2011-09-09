@@ -9,8 +9,7 @@
 #include "base/utf_string_conversions.h"
 #import "chrome/app/chrome_command_ids.h"  // For translate menu command ids.
 #import "chrome/browser/translate/translate_infobar_delegate.h"
-#import "chrome/browser/ui/cocoa/browser_test_helper.h"
-#import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
+#include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #import "chrome/browser/ui/cocoa/infobars/infobar.h"
 #import "chrome/browser/ui/cocoa/translate/translate_infobar_base.h"
 #import "chrome/browser/ui/cocoa/translate/before_translate_infobar_controller.h"
@@ -66,9 +65,8 @@ class MockTranslateInfoBarDelegate : public TranslateInfoBarDelegate {
   MOCK_METHOD0(ToggleAlwaysTranslate, void());
 };
 
-class TranslationInfoBarTest : public CocoaTest {
+class TranslationInfoBarTest : public CocoaProfileTest {
  public:
-  BrowserTestHelper browser_helper_;
   scoped_ptr<TabContentsWrapper> tab_contents;
   scoped_ptr<MockTranslateInfoBarDelegate> infobar_delegate;
   scoped_nsobject<TranslateInfoBarControllerBase> infobar_controller;
@@ -77,9 +75,9 @@ class TranslationInfoBarTest : public CocoaTest {
   // Each test gets a single Mock translate delegate for the lifetime of
   // the test.
   virtual void SetUp() {
-    CocoaTest::SetUp();
-   tab_contents.reset(new TabContentsWrapper(new TabContents(
-       browser_helper_.profile(), NULL, MSG_ROUTING_NONE, NULL, NULL)));
+    CocoaProfileTest::SetUp();
+    tab_contents.reset(new TabContentsWrapper(new TabContents(
+       profile(), NULL, MSG_ROUTING_NONE, NULL, NULL)));
     CreateInfoBar();
   }
 
@@ -223,7 +221,7 @@ TEST_F(TranslationInfoBarTest, Bug36895) {
 // Verify that the infobar shows the "Always translate this language" button
 // after doing 3 translations.
 TEST_F(TranslationInfoBarTest, TriggerShowAlwaysTranslateButton) {
-  TranslatePrefs translate_prefs(browser_helper_.profile()->GetPrefs());
+  TranslatePrefs translate_prefs(profile()->GetPrefs());
   translate_prefs.ResetTranslationAcceptedCount("en");
   for (int i = 0; i < 4; ++i) {
     translate_prefs.IncrementTranslationAcceptedCount("en");
@@ -238,7 +236,7 @@ TEST_F(TranslationInfoBarTest, TriggerShowAlwaysTranslateButton) {
 // Verify that the infobar shows the "Never translate this language" button
 // after denying 3 translations.
 TEST_F(TranslationInfoBarTest, TriggerShowNeverTranslateButton) {
-  TranslatePrefs translate_prefs(browser_helper_.profile()->GetPrefs());
+  TranslatePrefs translate_prefs(profile()->GetPrefs());
   translate_prefs.ResetTranslationDeniedCount("en");
   for (int i = 0; i < 4; ++i) {
     translate_prefs.IncrementTranslationDeniedCount("en");

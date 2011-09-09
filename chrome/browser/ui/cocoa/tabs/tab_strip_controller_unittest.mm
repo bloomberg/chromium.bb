@@ -7,8 +7,7 @@
 #include <vector>
 
 #import "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/cocoa/browser_test_helper.h"
-#import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
+#include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #import "chrome/browser/ui/cocoa/new_tab_button.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_controller.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_view.h"
@@ -99,11 +98,13 @@ class TestTabStripDelegate : public TabStripModelDelegate {
   virtual bool LargeIconsPermitted() const { return true; }
 };
 
-class TabStripControllerTest : public CocoaTest {
+class TabStripControllerTest : public CocoaProfileTest {
  public:
-  TabStripControllerTest() {
-    Browser* browser = browser_helper_.browser();
-    BrowserWindow* browser_window = browser_helper_.CreateBrowserWindow();
+  virtual void SetUp() {
+    CocoaProfileTest::SetUp();
+    ASSERT_TRUE(browser());
+
+    BrowserWindow* browser_window = CreateBrowserWindow();
     NSWindow* window = browser_window->GetNativeHandle();
     NSView* parent = [window contentView];
     NSRect content_frame = [parent frame];
@@ -129,25 +130,23 @@ class TabStripControllerTest : public CocoaTest {
     [tab_strip setNewTabButton:new_tab_button.get()];
 
     delegate_.reset(new TestTabStripDelegate());
-    model_ = browser->tabstrip_model();
+    model_ = browser()->tabstrip_model();
     controller_delegate_.reset([TestTabStripControllerDelegate alloc]);
     controller_.reset([[TabStripController alloc]
                         initWithView:static_cast<TabStripView*>(tab_strip.get())
                           switchView:switch_view.get()
-                             browser:browser
+                             browser:browser()
                             delegate:controller_delegate_.get()]);
   }
 
   virtual void TearDown() {
-    browser_helper_.CloseBrowserWindow();
     // The call to CocoaTest::TearDown() deletes the Browser and TabStripModel
     // objects, so we first have to delete the controller, which refers to them.
     controller_.reset();
     model_ = NULL;
-    CocoaTest::TearDown();
+    CocoaProfileTest::TearDown();
   }
 
-  BrowserTestHelper browser_helper_;
   scoped_ptr<TestTabStripDelegate> delegate_;
   TabStripModel* model_;
   scoped_nsobject<TestTabStripControllerDelegate> controller_delegate_;
@@ -158,10 +157,9 @@ class TabStripControllerTest : public CocoaTest {
 // the tab strip.
 TEST_F(TabStripControllerTest, AddRemoveTabs) {
   EXPECT_TRUE(model_->empty());
-  SiteInstance* instance =
-      SiteInstance::CreateSiteInstance(browser_helper_.profile());
+  SiteInstance* instance = SiteInstance::CreateSiteInstance(profile());
   TabContentsWrapper* tab_contents =
-      Browser::TabContentsFactory(browser_helper_.profile(), instance,
+      Browser::TabContentsFactory(profile(), instance,
           MSG_ROUTING_NONE, NULL, NULL);
   model_->AppendTabContents(tab_contents, true);
   EXPECT_EQ(model_->count(), 1);

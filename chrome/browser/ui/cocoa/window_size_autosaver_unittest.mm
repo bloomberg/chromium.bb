@@ -9,16 +9,15 @@
 #include "base/memory/scoped_nsobject.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
-#include "chrome/browser/ui/cocoa/browser_test_helper.h"
-#import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
+#include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
 namespace {
 
-class WindowSizeAutosaverTest : public CocoaTest {
+class WindowSizeAutosaverTest : public CocoaProfileTest {
   virtual void SetUp() {
-    CocoaTest::SetUp();
+    CocoaProfileTest::SetUp();
     path_ = "WindowSizeAutosaverTest";
     window_ =
         [[NSWindow alloc] initWithContentRect:NSMakeRect(100, 101, 150, 151)
@@ -26,24 +25,23 @@ class WindowSizeAutosaverTest : public CocoaTest {
                                               NSResizableWindowMask
                                       backing:NSBackingStoreBuffered
                                         defer:NO];
-    browser_helper_.profile()->GetPrefs()->RegisterDictionaryPref(
+    profile()->GetPrefs()->RegisterDictionaryPref(
         path_,
         PrefService::UNSYNCABLE_PREF);
   }
 
   virtual void TearDown() {
     [window_ close];
-    CocoaTest::TearDown();
+    CocoaProfileTest::TearDown();
   }
 
  public:
-  BrowserTestHelper browser_helper_;
   NSWindow* window_;
   const char* path_;
 };
 
 TEST_F(WindowSizeAutosaverTest, RestoresAndSavesPos) {
-  PrefService* pref = browser_helper_.profile()->GetPrefs();
+  PrefService* pref = profile()->GetPrefs();
   ASSERT_TRUE(pref != NULL);
 
   // Check to make sure there is no existing pref for window placement.
@@ -110,7 +108,7 @@ TEST_F(WindowSizeAutosaverTest, RestoresAndSavesPos) {
 }
 
 TEST_F(WindowSizeAutosaverTest, RestoresAndSavesRect) {
-  PrefService* pref = browser_helper_.profile()->GetPrefs();
+  PrefService* pref = profile()->GetPrefs();
   ASSERT_TRUE(pref != NULL);
 
   // Check to make sure there is no existing pref for window placement.
@@ -172,7 +170,7 @@ TEST_F(WindowSizeAutosaverTest, RestoresAndSavesRect) {
 
 // http://crbug.com/39625
 TEST_F(WindowSizeAutosaverTest, DoesNotRestoreButClearsEmptyRect) {
-  PrefService* pref = browser_helper_.profile()->GetPrefs();
+  PrefService* pref = profile()->GetPrefs();
   ASSERT_TRUE(pref != NULL);
 
   DictionaryPrefUpdate update(pref, path_);
