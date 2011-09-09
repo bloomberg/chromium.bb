@@ -239,6 +239,9 @@ class ChromeTests:
   def TestNet(self):
     return self.SimpleTest("net", "net_unittests")
 
+  def TestPPAPI(self):
+    return self.SimpleTest("chrome", "ppapi_unittests")
+
   def TestPrinting(self):
     return self.SimpleTest("chrome", "printing_unittests")
 
@@ -429,6 +432,7 @@ class ChromeTests:
     "media": TestMedia,          "media_unittests": TestMedia,
     "net": TestNet,              "net_unittests": TestNet,
     "jingle": TestJingle,        "jingle_unittests": TestJingle,
+    "ppapi": TestPPAPI,          "ppapi_unittests": TestPPAPI,
     "printing": TestPrinting,    "printing_unittests": TestPrinting,
     "reliability": TestReliability, "reliability_tests": TestReliability,
     "remoting": TestRemoting,    "remoting_unittests": TestRemoting,

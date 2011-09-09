@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -40,11 +40,12 @@ SyncMessage::SyncMessage(
   WriteSyncHeader(this, header);
 }
 
+SyncMessage::~SyncMessage() {
+}
+
 MessageReplyDeserializer* SyncMessage::GetReplyDeserializer() {
-  MessageReplyDeserializer* rv = deserializer_;
-  DCHECK(rv);
-  deserializer_ = NULL;
-  return rv;
+  DCHECK(deserializer_.get());
+  return deserializer_.release();
 }
 
 void SyncMessage::EnableMessagePumping() {

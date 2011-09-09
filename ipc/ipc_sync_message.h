@@ -11,6 +11,7 @@
 #endif
 #include <string>
 #include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
 #include "ipc/ipc_message.h"
 
 namespace base {
@@ -25,6 +26,7 @@ class IPC_EXPORT SyncMessage : public Message {
  public:
   SyncMessage(int32 routing_id, uint32 type, PriorityValue priority,
               MessageReplyDeserializer* deserializer);
+  virtual ~SyncMessage();
 
   // Call this to get a deserializer for the output parameters.
   // Note that this can only be called once, and the caller is responsible
@@ -76,7 +78,7 @@ class IPC_EXPORT SyncMessage : public Message {
   static bool ReadSyncHeader(const Message& msg, SyncHeader* header);
   static bool WriteSyncHeader(Message* msg, const SyncHeader& header);
 
-  MessageReplyDeserializer* deserializer_;
+  scoped_ptr<MessageReplyDeserializer> deserializer_;
   base::WaitableEvent* pump_messages_event_;
 };
 

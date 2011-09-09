@@ -267,7 +267,6 @@ void PluginDispatcher::ForceFreeAllInstances() {
       // plugin and also remove it from our list of tracked plugins.
       PpapiMsg_PPPInstance_DidDestroy msg(INTERFACE_ID_PPP_INSTANCE, i->first);
       OnMessageReceived(msg);
-      delete msg.GetReplyDeserializer();
     }
   }
 }
