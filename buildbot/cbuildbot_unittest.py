@@ -7,6 +7,7 @@
 """Unittests for build stages."""
 
 import mox
+import optparse
 import os
 import shutil
 import sys
@@ -194,6 +195,96 @@ class InterfaceTest(mox.MoxTestBase):
     self.mox.ReplayAll()
     self.assertRaises(Exception, commands.ValidateClobber, buildroot)
     self.mox.VerifyAll()
+
+  def testBuildBotWithBadChromeRevOption(self):
+    """chrome_rev can't be passed an invalid option after chrome_root."""
+    args = [
+        '--buildroot=/tmp',
+        '--chrome_root=.',
+        '--chrome_rev=%s' % constants.CHROME_REV_TOT,
+        self._X86_PREFLIGHT]
+    self.mox.StubOutWithMock(cros_lib, 'Die')
+    cros_lib.Die(mox.IgnoreArg()).AndRaise(Exception)
+    self.mox.ReplayAll()
+    (options, args) = self.parser.parse_args(args=args)
+    self.assertRaises(Exception, cbuildbot._PostParseCheck, options)
+    self.mox.VerifyAll()
+
+  def testBuildBotWithBadChromeRootOption(self):
+    """chrome_root can't get passed after non-local chrome_rev."""
+    args = [
+        '--buildroot=/tmp',
+        '--chrome_rev=%s' % constants.CHROME_REV_TOT,
+        '--chrome_root=.',
+        self._X86_PREFLIGHT]
+    self.mox.StubOutWithMock(cros_lib, 'Die')
+    cros_lib.Die(mox.IgnoreArg()).AndRaise(Exception)
+    self.mox.ReplayAll()
+    (options, args) = self.parser.parse_args(args=args)
+    self.assertRaises(Exception, cbuildbot._PostParseCheck, options)
+    self.mox.VerifyAll()
+
+  def testBuildBotWithBadChromeRevOption(self):
+    """chrome_rev can't get passed an invalid option."""
+    args = [
+        '--buildroot=/tmp',
+        '--chrome_rev=TERRIBLEOPTION',
+        self._X86_PREFLIGHT]
+    self.mox.StubOutWithMock(optparse, 'OptionValueError')
+    optparse.OptionValueError(mox.IgnoreArg()).AndRaise(Exception)
+    self.mox.ReplayAll()
+    self.assertRaises(Exception, self.parser.parse_args, args)
+    self.mox.VerifyAll()
+
+  def testBuildBotWithBadChromeRevOptionLocal(self):
+    """chrome_rev can't be local without chrome_root."""
+    args = [
+        '--buildroot=/tmp',
+        '--chrome_rev=%s' % constants.CHROME_REV_LOCAL,
+        self._X86_PREFLIGHT]
+    self.mox.StubOutWithMock(cros_lib, 'Die')
+    cros_lib.Die(mox.IgnoreArg()).AndRaise(Exception)
+    self.mox.ReplayAll()
+    (options, args) = self.parser.parse_args(args=args)
+    self.assertRaises(Exception, cbuildbot._PostParseCheck, options)
+    self.mox.VerifyAll()
+
+  def testBuildBotWithGoodChromeRootOption(self):
+    """chrome_root can be set without chrome_rev."""
+    args = [
+        '--buildroot=/tmp',
+        '--chrome_root=.',
+        self._X86_PREFLIGHT]
+    self.mox.StubOutWithMock(cros_lib, 'Die')
+    self.mox.ReplayAll()
+    (options, args) = self.parser.parse_args(args=args)
+    cbuildbot._PostParseCheck(options)
+    self.mox.VerifyAll()
+    self.assertEquals(options.chrome_rev, constants.CHROME_REV_LOCAL)
+    self.assertNotEquals(options.chrome_root, None)
+
+  def testBuildBotWithGoodChromeRevAndRootOption(self):
+    """chrome_rev can get reset around chrome_root."""
+    args = [
+        '--buildroot=/tmp',
+        '--chrome_rev=%s' % constants.CHROME_REV_LATEST,
+        '--chrome_rev=%s' % constants.CHROME_REV_STICKY,
+        '--chrome_rev=%s' % constants.CHROME_REV_TOT,
+        '--chrome_rev=%s' % constants.CHROME_REV_TOT,
+        '--chrome_rev=%s' % constants.CHROME_REV_STICKY,
+        '--chrome_rev=%s' % constants.CHROME_REV_LATEST,
+        '--chrome_rev=%s' % constants.CHROME_REV_LOCAL,
+        '--chrome_root=.',
+        '--chrome_rev=%s' % constants.CHROME_REV_TOT,
+        '--chrome_rev=%s' % constants.CHROME_REV_LOCAL,
+        self._X86_PREFLIGHT]
+    self.mox.StubOutWithMock(cros_lib, 'Die')
+    self.mox.ReplayAll()
+    (options, args) = self.parser.parse_args(args=args)
+    cbuildbot._PostParseCheck(options)
+    self.mox.VerifyAll()
+    self.assertEquals(options.chrome_rev, constants.CHROME_REV_LOCAL)
+    self.assertNotEquals(options.chrome_root, None)
 
 
 class FullInterfaceTest(unittest.TestCase):

@@ -52,7 +52,8 @@ def RunCommand(cmd, print_cmd=True, error_ok=False, error_message=None,
                exit_code=False, redirect_stdout=False, redirect_stderr=False,
                cwd=None, input=None, enter_chroot=False, shell=False,
                env=None, extra_env=None, ignore_sigint=False,
-               combine_stdout_stderr=False, log_stdout_to_file=None):
+               combine_stdout_stderr=False, log_stdout_to_file=None,
+               chroot_args=None):
   """Runs a command.
 
   Args:
@@ -86,6 +87,7 @@ def RunCommand(cmd, print_cmd=True, error_ok=False, error_message=None,
     log_stdout_to_file: If set, redirects stdout to file specified by this path.
       If combine_stdout_stderr is set to True, then stderr will also be logged
       to the specified file.
+    chroot_args: An array of arguments for the chroot environment wrapper.
 
   Returns:
     A CommandResult object.
@@ -127,11 +129,16 @@ def RunCommand(cmd, print_cmd=True, error_ok=False, error_message=None,
   # If we are using enter_chroot we need to use enterchroot pass env through
   # to the final command.
   if enter_chroot:
-    cmd = ['cros_sdk', '--'] + cmd
+    wrapper = ['cros_sdk']
+
+    if chroot_args:
+      wrapper += chroot_args
 
     if extra_env:
       for (key, value) in extra_env.items():
-        cmd.insert(1, '%s=%s' % (key, value))
+        wrapper.append('%s=%s' % (key, value))
+
+    cmd = wrapper + ['--'] + cmd
 
   elif extra_env:
     if env is not None:

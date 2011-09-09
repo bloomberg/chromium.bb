@@ -198,6 +198,7 @@ class CBuildBotTest(mox.MoxTestBase):
                                    '--board=x86-generic'])
     cros_lib.RunCommand(arg_test,
                         cwd=mox.StrContains(buildroot),
+                        chroot_args=[],
                         enter_chroot=True,
                         extra_env={})
     self.mox.ReplayAll()
@@ -221,6 +222,7 @@ class CBuildBotTest(mox.MoxTestBase):
                                    '--nowithdebug'])
     cros_lib.RunCommand(arg_test,
                         cwd=mox.StrContains(buildroot),
+                        chroot_args=[],
                         enter_chroot=True,
                         extra_env={})
     self.mox.ReplayAll()
@@ -241,6 +243,7 @@ class CBuildBotTest(mox.MoxTestBase):
     cros_lib.RunCommand(
       mox.IgnoreArg(),
       cwd=mox.StrContains(buildroot),
+      chroot_args=[],
       enter_chroot=True,
       extra_env=mox.And(
         mox.ContainsKeyValue('A', 'Av'), mox.ContainsKeyValue('B', 'Bv')))

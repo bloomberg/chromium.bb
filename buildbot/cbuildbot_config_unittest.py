@@ -91,6 +91,9 @@ class CBuildBotTest(mox.MoxTestBase):
       self.assertTrue(
           config['chrome_rev'] in constants.VALID_CHROME_REVISIONS + [None],
           'Config %s: has unexpected chrome_rev value.' % build_name)
+      self.assertFalse(
+          config['chrome_rev'] == constants.CHROME_REV_LOCAL,
+          'Config %s: has unexpected chrome_rev value.' % build_name)
 
   def testBuildType(self):
     """Verifies that all configs use valid build types."""

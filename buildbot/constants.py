@@ -45,8 +45,12 @@ CHROME_REV_LATEST = 'latest_release'
 # Builds and validates the latest Chromium release for a specific Chromium
 # branch that we want to watch.  These ebuilds are suffixed with rc.
 CHROME_REV_STICKY = 'stable_release'
+
+# Builds and validates Chromium for a pre-populated directory.
+# Also uses _alpha, since portage doesn't have anything lower.
+CHROME_REV_LOCAL = 'local'
 VALID_CHROME_REVISIONS = [CHROME_REV_TOT, CHROME_REV_LATEST,
-                          CHROME_REV_STICKY]
+                          CHROME_REV_STICKY, CHROME_REV_LOCAL]
 
 # Build types supported.
 

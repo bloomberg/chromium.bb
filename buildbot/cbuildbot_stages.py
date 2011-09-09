@@ -652,10 +652,12 @@ class UprevStage(BuilderStage):
   def _PerformStage(self):
     # Perform chrome uprev.
     chrome_atom_to_build = None
+    chrome_root=self._options.chrome_root
     if self._chrome_rev:
       chrome_atom_to_build = commands.MarkChromeAsStable(
           self._build_root, self._tracking_branch,
-          self._chrome_rev, self._build_config['board'])
+          self._chrome_rev, self._build_config['board'],
+          chrome_root=chrome_root)
 
     # Perform other uprevs.
     if self._build_config['uprev']:

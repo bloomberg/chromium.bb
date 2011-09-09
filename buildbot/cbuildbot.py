@@ -214,7 +214,7 @@ def RunBuildStages(bot_id, options, build_config):
   if options.lkgm or (options.buildbot and build_config['use_lkgm']):
     sync_stage_class = stages.LKGMSyncStage
   elif (options.buildbot and build_config['manifest_version']
-        and chrome_rev != 'tot'):
+        and chrome_rev != constants.CHROME_REV_TOT):
     # TODO(sosa): Fix temporary hack for chrome_rev tot.
     if build_config['build_type'] in (constants.PFQ_TYPE,
                                       constants.CHROME_PFQ_TYPE):
@@ -489,6 +489,9 @@ def _CheckChromeRootOption(option, opt_str, value, parser):
   if not value or value == '/':
     raise optparse.OptionValueError('Invalid chrome_root specified')
 
+  if parser.values.chrome_rev is None:
+    parser.values.chrome_rev = constants.CHROME_REV_LOCAL
+
   parser.values.chrome_root = os.path.realpath(os.path.expanduser(value))
 
 
@@ -639,6 +642,15 @@ def _PostParseCheck(options):
   """
   if cros_lib.IsInsideChroot():
     cros_lib.Die('Please run cbuildbot from outside the chroot.')
+
+  if options.chrome_root:
+    if options.chrome_rev != constants.CHROME_REV_LOCAL:
+      cros_lib.Die('Chrome rev must be %s if chrome_root is set.' %
+                   constants.CHROME_REV_LOCAL)
+  else:
+    if options.chrome_rev == constants.CHROME_REV_LOCAL:
+      cros_lib.Die('Chrome root must be set if chrome_rev is %s.' %
+                   constants.CHROME_REV_LOCAL)
 
 
 def main(argv=None):

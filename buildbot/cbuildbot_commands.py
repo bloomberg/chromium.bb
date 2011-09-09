@@ -159,11 +159,15 @@ def MakeChroot(buildroot, replace, use_sdk, chrome_root=None):
   cros_lib.OldRunCommand(cmd, cwd=buildroot)
 
 
-def RunChrootUpgradeHooks(buildroot):
+def RunChrootUpgradeHooks(buildroot, chrome_root=None):
   """Run the chroot upgrade hooks in the chroot."""
   cwd = os.path.join(buildroot, 'src', 'scripts')
+  chroot_args=[]
+  if chrome_root:
+    chroot_args.append('--chrome_root=%s' % chrome_root)
+
   cros_lib.RunCommand(['./run_chroot_version_hooks'], cwd=cwd,
-                      enter_chroot=True)
+                      enter_chroot=True, chroot_args=chroot_args)
 
 
 def RefreshPackageStatus(buildroot, boards, debug):
@@ -206,7 +210,7 @@ def SetupBoard(buildroot, board, fast, usepkg, latest_toolchain,
 
 
 def Build(buildroot, board, build_autotest, fast, usepkg, skip_toolchain_update,
-          nowithdebug, extra_env=None):
+          nowithdebug, extra_env=None, chrome_root=None):
   """Wrapper around build_packages."""
   cwd = os.path.join(buildroot, 'src', 'scripts')
   cmd = ['./build_packages', '--board=%s' % board]
@@ -230,7 +234,12 @@ def Build(buildroot, board, build_autotest, fast, usepkg, skip_toolchain_update,
   if nowithdebug:
     cmd.append('--nowithdebug')
 
-  cros_lib.RunCommand(cmd, cwd=cwd, enter_chroot=True, extra_env=env)
+  chroot_args=[]
+  if chrome_root:
+    chroot_args.append('--chrome_root=%s' % chrome_root)
+
+  cros_lib.RunCommand(cmd, cwd=cwd, enter_chroot=True, extra_env=env,
+                      chroot_args=chroot_args)
 
 
 def BuildImage(buildroot, board, mod_for_test, extra_env=None):
@@ -461,15 +470,30 @@ def ArchiveTestTarball(test_tarball, archive_dir):
   return filename
 
 
-def MarkChromeAsStable(buildroot, tracking_branch, chrome_rev, board):
+def MarkChromeAsStable(buildroot,
+                       tracking_branch,
+                       chrome_rev,
+                       board,
+                       chrome_root=None):
   """Returns the portage atom for the revved chrome ebuild - see man emerge."""
   cwd = os.path.join(buildroot, 'src', 'scripts')
-  portage_atom_string = cros_lib.OldRunCommand(
+  extra_env=None
+  chroot_args=None
+  if chrome_root:
+    chroot_args=['--chrome_root=%s' % chrome_root]
+    assert chrome_rev == constants.CHROME_REV_LOCAL, (
+        'Cannot rev non-local with a chrome_root')
+
+  portage_atom_string = cros_lib.RunCommand(
       ['../../chromite/buildbot/cros_mark_chrome_as_stable',
        '--tracking_branch=%s' % tracking_branch,
        '--board=%s' % board,
        chrome_rev],
-      cwd=cwd, redirect_stdout=True, enter_chroot=True).rstrip()
+      cwd=cwd,
+      redirect_stdout=True,
+      enter_chroot=True,
+      chroot_args=chroot_args,
+      extra_env=extra_env).output.rstrip()
   if not portage_atom_string:
     cros_lib.Info('Found nothing to rev.')
     return None
