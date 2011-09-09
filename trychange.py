@@ -401,12 +401,10 @@ def _SendChangeSVN(options):
       if scm.SVN.AssertVersion("1.5")[0]:
         command.append('--no-ignore')
 
-      subprocess2.check_output(command, stdout=subprocess2.VOID)
+      subprocess2.check_output(
+          command, stdout=subprocess2.PIPE, stderr=subprocess2.STDOUT)
     except subprocess2.CalledProcessError, e:
-      out = e.stdout
-      if e.stderr:
-        out += e.stderr
-      raise NoTryServerAccess(' '.join(e.command) + '\nOuput:\n' + out)
+      raise NoTryServerAccess(' '.join(e.cmd) + '\nOuput:\n' + e.stdout)
   finally:
     temp_file.close()
     shutil.rmtree(temp_dir, True)
