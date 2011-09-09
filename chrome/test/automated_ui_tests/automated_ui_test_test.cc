@@ -237,7 +237,16 @@ TEST_F(AutomatedUITestBase, IncognitoWindow) {
   ASSERT_EQ(1, num_browser_windows);
 }
 
-TEST_F(AutomatedUITestBase, OpenCloseBrowserWindowWithAccelerator) {
+// Flaky, see http://crbug.com/96039.
+#if defined(OS_WIN)
+#define MAYBE_OpenCloseBrowserWindowWithAccelerator \
+        FLAKY_OpenCloseBrowserWindowWithAccelerator
+#else
+#define MAYBE_OpenCloseBrowserWindowWithAccelerator \
+        OpenCloseBrowserWindowWithAccelerator
+#endif
+
+TEST_F(AutomatedUITestBase, MAYBE_OpenCloseBrowserWindowWithAccelerator) {
   // Note: we don't use RunCommand(IDC_OPEN/CLOSE_WINDOW) to open/close
   // browser window in automated ui tests. Instead we use
   // OpenAndActivateNewBrowserWindow and CloseActiveWindow.
