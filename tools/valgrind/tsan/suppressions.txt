@@ -228,23 +228,6 @@
 }
 
 {
-  bug_53192
-  ThreadSanitizer:UnlockNonLocked
-  fun:pthread_mutex_unlock
-  fun:talk_base::CriticalSection::Leave*
-  fun:talk_base::CritScope::~CritScope*
-  fun:talk_base::PosixSignalDeliveryDispatcher::ClearOwner*
-  fun:talk_base::PhysicalSocketServer::~PhysicalSocketServer*
-  fun:scoped_ptr*::~scoped_ptr*
-  fun:talk_base::MessageQueue::~MessageQueue*
-  fun:talk_base::Thread::~Thread*
-  fun:talk_base::ThreadManager::UnwrapCurrentThread*
-  fun:talk_base::ThreadManager::~ThreadManager*
-  fun:__tcf_0
-  fun:exit
-}
-
-{
   bug_70938
   ThreadSanitizer:Race
   ...
