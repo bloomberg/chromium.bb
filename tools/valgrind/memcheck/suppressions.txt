@@ -1848,6 +1848,22 @@
    fun:_ZN3net18CertVerifierWorker3RunEv
 }
 {
+   bug_32624_f
+   Memcheck:Leak
+   ...
+   fun:CERT_PKIXVerifyCert
+   fun:_ZN3net12_GLOBAL__N_114PKIXVerifyCertEP18CERTCertificateStrbPK9SECOidTagiP15CERTValOutParam
+}
+{
+   bug_32624_g
+   Memcheck:Leak
+   ...
+   fun:CERT_VerifySignedData
+   fun:cert_VerifyCertChain
+   fun:CERT_VerifyCertChain
+   fun:CERT_VerifyCert
+}
+{
   bug_34554_a
   Memcheck:Leak
   fun:malloc
