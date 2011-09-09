@@ -498,13 +498,6 @@
 }
 
 {
-  bug_87062a
-  ThreadSanitizer:Race
-  fun:net::SdchManager::SdchManager
-  fun:BrowserMain
-}
-
-{
   bug_87062b
   ThreadSanitizer:Race
   ...
@@ -515,6 +508,21 @@
   fun:net::URLRequest::Start
   fun:URLFetcher::Core::StartURLRequest
   fun:URLFetcher::Core::StartURLRequestWhenAppropriate
+}
+{
+  bug_87062c
+  ThreadSanitizer:Race
+  fun:net::SdchManager::~SdchManager
+  fun:ChromeBrowserMainParts::PreMainMessageLoopRunInternal
+  fun:ChromeBrowserMainParts::PreMainMessageLoopRun
+  fun:content::BrowserMainParts::RunMainMessageLoopParts
+}
+{
+  bug_87062d
+  ThreadSanitizer:Race
+  ...
+  fun:ChromeBrowserMainParts::MainMessageLoopRun
+  fun:content::BrowserMainParts::RunMainMessageLoopParts
 }
 {
   bug_87747
