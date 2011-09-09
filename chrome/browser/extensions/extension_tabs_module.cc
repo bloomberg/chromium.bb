@@ -479,11 +479,16 @@ bool CreateWindowFunction::RunImpl() {
                                       GetCurrentBrowser(), &window_bounds,
                                       &maximized);
 
-  // Calculate popup bounds separately. In ChromiumOS the default is 0x0 which
-  // indicates default window sizes in PanelBrowserView. In other OSs popups
-  // use the same default bounds as windows.
+  // Calculate popup and panels bounds separately.
   gfx::Rect popup_bounds;
-#if !defined(OS_CHROMEOS)
+  gfx::Rect panel_bounds;  // Use 0x0 for panels. Panel manager sizes them.
+
+  // In ChromiumOS the default popup bounds is 0x0 which indicates default
+  // window sizes in PanelBrowserView. In other OSs use the same default
+  // bounds as windows.
+#if defined(OS_CHROMEOS)
+  popup_bounds = panel_bounds;
+#else
   popup_bounds = window_bounds;  // Use window size as default for popups
 #endif
 
@@ -500,6 +505,7 @@ bool CreateWindowFunction::RunImpl() {
                                                    &bounds_val));
       window_bounds.set_x(bounds_val);
       popup_bounds.set_x(bounds_val);
+      panel_bounds.set_x(bounds_val);
     }
 
     if (args->HasKey(keys::kTopKey)) {
@@ -507,6 +513,7 @@ bool CreateWindowFunction::RunImpl() {
                                                    &bounds_val));
       window_bounds.set_y(bounds_val);
       popup_bounds.set_y(bounds_val);
+      panel_bounds.set_y(bounds_val);
     }
 
     if (args->HasKey(keys::kWidthKey)) {
@@ -514,6 +521,7 @@ bool CreateWindowFunction::RunImpl() {
                                                    &bounds_val));
       window_bounds.set_width(bounds_val);
       popup_bounds.set_width(bounds_val);
+      panel_bounds.set_width(bounds_val);
     }
 
     if (args->HasKey(keys::kHeightKey)) {
@@ -521,6 +529,7 @@ bool CreateWindowFunction::RunImpl() {
                                                    &bounds_val));
       window_bounds.set_height(bounds_val);
       popup_bounds.set_height(bounds_val);
+      panel_bounds.set_height(bounds_val);
     }
 
     bool incognito = false;
@@ -568,8 +577,10 @@ bool CreateWindowFunction::RunImpl() {
     new_window = Browser::CreateForType(window_type, window_profile);
     new_window->window()->SetBounds(window_bounds);
   } else {
-    new_window = Browser::CreateForApp(window_type, app_name, popup_bounds,
-                                       window_profile);
+    new_window = Browser::CreateForApp(
+        window_type, app_name,
+        (window_type == Browser::TYPE_PANEL ? panel_bounds : popup_bounds),
+        window_profile);
   }
   for (std::vector<GURL>::iterator i = urls.begin(); i != urls.end(); ++i)
     new_window->AddSelectedTabWithURL(*i, PageTransition::LINK);
