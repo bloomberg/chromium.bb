@@ -80,13 +80,6 @@ void AddCookieToList(
     const std::string& cookie_line,
     const base::Time& creation_time,
     std::vector<CookieMonster::CanonicalCookie*>* out_list) {
-  out_list->push_back(BuildCanonicalCookie(key, cookie_line, creation_time));
-}
-
-CookieMonster::CanonicalCookie* BuildCanonicalCookie(
-    const std::string& key,
-    const std::string& cookie_line,
-    const base::Time& creation_time) {
 
   // Parse the cookie line.
   CookieMonster::ParsedCookie pc(cookie_line);
@@ -101,11 +94,15 @@ CookieMonster::CanonicalCookie* BuildCanonicalCookie(
       CookieMonster::ParseCookieTime(pc.Expires()) : base::Time();
   std::string cookie_path = pc.Path();
 
-  return CookieMonster::CanonicalCookie::Create(
-      GURL(), pc.Name(), pc.Value(), key, cookie_path,
-      pc.MACKey(), pc.MACAlgorithm(),
-      creation_time, cookie_expires,
-      pc.IsSecure(), pc.IsHttpOnly());
+  scoped_ptr<CookieMonster::CanonicalCookie> cookie(
+      new CookieMonster::CanonicalCookie(
+          GURL(), pc.Name(), pc.Value(), key, cookie_path,
+          pc.MACKey(), pc.MACAlgorithm(),
+          creation_time, creation_time, cookie_expires,
+          pc.IsSecure(), pc.IsHttpOnly(),
+          !cookie_expires.is_null()));
+
+  out_list->push_back(cookie.release());
 }
 
 MockSimplePersistentCookieStore::MockSimplePersistentCookieStore() {}

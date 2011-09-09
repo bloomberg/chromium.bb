@@ -109,12 +109,6 @@ class MockCookieMonsterDelegate : public CookieMonster::Delegate {
   DISALLOW_COPY_AND_ASSIGN(MockCookieMonsterDelegate);
 };
 
-// Helper to build a single CanonicalCookie.
-CookieMonster::CanonicalCookie* BuildCanonicalCookie(
-    const std::string& key,
-    const std::string& cookie_line,
-    const base::Time& creation_time);
-
 // Helper to build a list of CanonicalCookie*s.
 void AddCookieToList(
     const std::string& key,
