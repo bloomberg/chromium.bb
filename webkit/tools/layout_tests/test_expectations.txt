@@ -7,11 +7,5 @@
 
 // PLEASE DO NOT LEAVE ENTRIES IN THIS FILE FOR MORE THAN 24 HRS.
 
-BUG_LOISLO WIN GPU : fast/canvas/canvas-text-alignment.html = IMAGE
 BUG_LOISLO WIN LINUX : inspector/debugger/scripts-sorting.html = TEXT
-BUG_LOISLO WIN LINUX : fast/css/line-after-floating-div.html = IMAGE+TEXT
-BUG_LOISLO WIN LINUX : fast/text/hyphenate-limit-lines.html = IMAGE+TEXT
 
-BUG_LOISLO WIN : tables/mozilla_expected_failures/bugs/bug2479-5.html = TEXT
-BUG_LOISLO MAC : fast/text/hyphenate-limit-lines.html = IMAGE
-BUG_LOISLO MAC : svg/custom/feComponentTransfer-Table.svg = IMAGE
