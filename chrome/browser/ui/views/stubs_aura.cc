@@ -43,7 +43,7 @@ void ShowCollectedCookiesDialog(gfx::NativeWindow parent_window,
 }
 
 void ShowSSLClientCertificateSelector(
-    TabContents* parent,
+    TabContentsWrapper* parent,
     net::SSLCertRequestInfo* cert_request_info,
     SSLClientAuthHandler* delegate) {
   // TODO(beng):
