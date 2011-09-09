@@ -3489,17 +3489,6 @@
    fun:_ZN12CallbackImplI14SessionServiceMS0_Fvi13scoped_refptrIN18BaseSessionService26InternalGetCommandsRequestEEE6Tuple2IiS4_EE13RunWithParamsERKS8_
 }
 {
-   bug_71486
-   Memcheck:Leak
-   fun:malloc
-   fun:_xcb_in_read
-   fun:_xcb_conn_wait
-   fun:xcb_wait_for_reply
-   fun:_XReply
-   fun:XGetGeometry
-   fun:_ZN2ui17GetWindowGeometryEPiS0_PjS1_m
-}
-{
    bug_71728
    Memcheck:Leak
    fun:_Znw*
