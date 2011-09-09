@@ -1,0 +1,12 @@
+Name: SMHasher
+URL: http://code.google.com/p/smhasher/
+Version: 0
+Revision: 136
+License: MIT (SMHasher), Public Domain (MurmurHash)
+License File: LICENSE
+Security Critical: yes
+
+Description:
+This is a library containing the MurmurHash3 function, and a hashing function
+test suite.
+
