@@ -336,7 +336,7 @@ struct CellularApn {
   CellularApn(const std::string& apn, const std::string& network_id,
       const std::string& username, const std::string& password);
   ~CellularApn();
-  void Set(const DictionaryValue& dict);
+  void Set(const base::DictionaryValue& dict);
 };
 typedef std::vector<CellularApn> CellularApnList;
 
@@ -413,7 +413,7 @@ class NetworkDevice {
   // PropertyIndex that was updated in |index|.  |index| may be NULL
   // if not needed.
   bool UpdateStatus(const std::string& key,
-                    const Value& value,
+                    const base::Value& value,
                     PropertyIndex *index);
 
   NativeNetworkDeviceParser* device_parser() { return device_parser_.get(); }
@@ -635,7 +635,7 @@ class Network {
   }
 
   virtual bool UpdateStatus(const std::string& key,
-                            const Value& value,
+                            const base::Value& value,
                             PropertyIndex* index);
 
  protected:
@@ -996,8 +996,8 @@ class CellularNetwork : public WirelessNetwork {
   }
   void set_usage_url(const std::string& usage_url) { usage_url_ = usage_url; }
   void set_data_left(DataLeft data_left) { data_left_ = data_left; }
-  void set_apn(const DictionaryValue& apn) { apn_.Set(apn); }
-  void set_last_good_apn(const DictionaryValue& last_good_apn) {
+  void set_apn(const base::DictionaryValue& apn) { apn_.Set(apn); }
+  void set_last_good_apn(const base::DictionaryValue& last_good_apn) {
     last_good_apn_.Set(last_good_apn);
   }
 

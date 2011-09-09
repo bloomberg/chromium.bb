@@ -78,12 +78,13 @@ class EnumMapper {
 // policy or setup file import depending on the EnumMapper supplied.
 class NetworkDeviceParser {
  public:
-  virtual NetworkDevice* CreateDeviceFromInfo(const std::string& device_path,
-                                              const DictionaryValue& info);
-  virtual bool UpdateDeviceFromInfo(const DictionaryValue& info,
+  virtual NetworkDevice* CreateDeviceFromInfo(
+      const std::string& device_path,
+      const base::DictionaryValue& info);
+  virtual bool UpdateDeviceFromInfo(const base::DictionaryValue& info,
                                     NetworkDevice* device);
   virtual bool UpdateStatus(const std::string& key,
-                            const Value& value,
+                            const base::Value& value,
                             NetworkDevice* device,
                             PropertyIndex* index);
  protected:
@@ -92,7 +93,7 @@ class NetworkDeviceParser {
   virtual ~NetworkDeviceParser();
 
   virtual bool ParseValue(PropertyIndex index,
-                          const Value& value,
+                          const base::Value& value,
                           NetworkDevice* device) = 0;
   virtual ConnectionType ParseType(const std::string& type) = 0;
 
@@ -113,11 +114,11 @@ class NetworkParser {
  public:
   // Called when a new network is encountered.  Returns NULL upon failure.
   virtual Network* CreateNetworkFromInfo(const std::string& service_path,
-                                         const DictionaryValue& info);
+                                         const base::DictionaryValue& info);
 
   // Called when an existing network is has new information that needs
   // to be updated.  Returns false upon failure.
-  virtual bool UpdateNetworkFromInfo(const DictionaryValue& info,
+  virtual bool UpdateNetworkFromInfo(const base::DictionaryValue& info,
                                      Network* network);
 
   // Called when an individual attribute of an existing network has
@@ -125,7 +126,7 @@ class NetworkParser {
   // property index for the given key.  |index| is filled in even if
   // the update fails.  Returns false upon failure.
   virtual bool UpdateStatus(const std::string& key,
-                            const Value& value,
+                            const base::Value& value,
                             Network* network,
                             PropertyIndex* index);
  protected:
@@ -134,11 +135,11 @@ class NetworkParser {
   virtual ~NetworkParser();
 
   virtual bool ParseValue(PropertyIndex index,
-                          const Value& value,
+                          const base::Value& value,
                           Network* network) = 0;
   virtual ConnectionType ParseType(const std::string& type) = 0;
   virtual ConnectionType ParseTypeFromDictionary(
-      const DictionaryValue& info) = 0;
+      const base::DictionaryValue& info) = 0;
   virtual ConnectionMode ParseMode(const std::string& mode) = 0;
   virtual ConnectionState ParseState(const std::string& state) = 0;
   virtual ConnectionError ParseError(const std::string& error) = 0;

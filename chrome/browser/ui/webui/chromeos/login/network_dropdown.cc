@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/values.h"
 #include "content/browser/webui/web_ui.h"
 #include "chrome/browser/chromeos/login/proxy_settings_dialog.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
