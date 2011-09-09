@@ -721,6 +721,28 @@ window_get_resize_dx_dy(struct window *window, int *x, int *y)
 }
 
 static void
+window_set_type(struct window *window)
+{
+	struct display *display = window->display;
+
+	switch (window->type) {
+	case TYPE_FULLSCREEN:
+		wl_shell_set_fullscreen(display->shell, window->surface);
+		break;
+	case TYPE_TOPLEVEL:
+		wl_shell_set_toplevel(display->shell, window->surface);
+		break;
+	case TYPE_TRANSIENT:
+		wl_shell_set_transient(display->shell, window->surface,
+				       window->parent->surface,
+				       window->x, window->y, 0);
+		break;
+	case TYPE_CUSTOM:
+		break;
+	}
+}
+
+static void
 window_attach_surface(struct window *window)
 {
 	struct display *display = window->display;
@@ -730,6 +752,9 @@ window_attach_surface(struct window *window)
 	struct egl_window_surface_data *data;
 #endif
 	int32_t x, y;
+
+	if (display->shell)
+		window_set_type(window);
 
 	switch (window->buffer_type) {
 #ifdef HAVE_CAIRO_EGL
@@ -764,22 +789,6 @@ window_attach_surface(struct window *window)
 		break;
 	default:
 		return;
-	}
-
-	switch (window->type) {
-	case TYPE_FULLSCREEN:
-		wl_shell_set_fullscreen(display->shell, window->surface);
-		break;
-	case TYPE_TOPLEVEL:
-		wl_shell_set_toplevel(display->shell, window->surface);
-		break;
-	case TYPE_TRANSIENT:
-		wl_shell_set_transient(display->shell, window->surface,
-				       window->parent->surface,
-				       window->x, window->y, 0);
-		break;
-	case TYPE_CUSTOM:
-		break;
 	}
 
 	wl_surface_damage(window->surface, 0, 0,
@@ -1213,7 +1222,8 @@ window_handle_button(void *data,
 
 	location = get_pointer_location(window, input->sx, input->sy);
 
-	if (button == BTN_LEFT && state == 1) {
+	if (window->display->shell &&
+	    button == BTN_LEFT && state == 1) {
 		switch (location) {
 		case WINDOW_TITLEBAR:
 			wl_shell_move(window->display->shell,
@@ -1407,8 +1417,9 @@ window_create_drag(struct window *window)
 void
 window_move(struct window *window, struct input *input, uint32_t time)
 {
-	wl_shell_move(window->display->shell,
-		      window->surface, input->input_device, time);
+	if (window->display->shell)
+		wl_shell_move(window->display->shell,
+			      window->surface, input->input_device, time);
 }
 
 void
