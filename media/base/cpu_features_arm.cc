@@ -10,4 +10,8 @@ bool hasSSE2() {
   return false;
 }
 
+bool hasSSSE3() {
+  return false;
+}
+
 }  // namespace media

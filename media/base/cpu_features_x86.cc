@@ -12,12 +12,6 @@
 
 namespace media {
 
-#if defined(ARCH_CPU_X86_64)
-/* All x86_64 machines have SSE2, so don't even bother checking. */
-bool hasSSE2() {
-  return true;
-}
-#else
 #ifdef _MSC_VER
 static inline void getcpuid(int info_type, int info[4]) {
   __asm {
@@ -33,6 +27,7 @@ static inline void getcpuid(int info_type, int info[4]) {
 #else
 static inline void getcpuid(int info_type, int info[4]) {
   // We save and restore ebx, so this code can be compatible with -fPIC
+#if defined(__i386__)
   asm volatile (
         "pushl %%ebx      \n\t"
         "cpuid            \n\t"
@@ -41,14 +36,34 @@ static inline void getcpuid(int info_type, int info[4]) {
         : "=a"(info[0]), "=r"(info[1]), "=c"(info[2]), "=d"(info[3])
         : "a"(info_type)
                 );
+#else
+  // We can use cpuid instruction without saving ebx on gcc x86-64 because it
+  // does not use ebx (or rbx) as a GOT register.
+  asm volatile (
+      "cpuid            \n\t"
+      : "=a"(info[0]), "=r"(info[1]), "=c"(info[2]), "=d"(info[3])
+      : "a"(info_type)
+  );
+#endif
 }
 #endif
 
 bool hasSSE2() {
+#if defined(ARCH_CPU_X86_64)
+  /* All x86_64 machines have SSE2, so don't even bother checking. */
+  return true;
+#else
   int cpu_info[4] = { 0 };
   getcpuid(1, cpu_info);
   return (cpu_info[3] & (1<<26)) != 0;
-}
 #endif
+}
+
+bool hasSSSE3() {
+  int cpu_info[4] = { 0 };
+  getcpuid(1, cpu_info);
+  return (cpu_info[3] & 0x04000000) != 0 && (cpu_info[2] & 0x00000001) != 0 &&
+      (cpu_info[2] & 0x00000200) != 0;
+}
 
 }  // namespace media
