@@ -84,7 +84,8 @@ TEST_F(BrowserEncodingTest, TestEncodingAliasMapping) {
     { "UTF-8.html", "UTF-8" },
     { "UTF-16LE.html", "UTF-16LE" },
     { "windows-874.html", "windows-874" },
-    { "windows-949.html", "windows-949" },
+    // http://crbug.com/95963
+    // { "windows-949.html", "windows-949" },
     { "windows-1250.html", "windows-1250" },
     { "windows-1251.html", "windows-1251" },
     { "windows-1252.html", "windows-1252" },
@@ -110,7 +111,7 @@ TEST_F(BrowserEncodingTest, TestEncodingAliasMapping) {
 
     std::string encoding;
     EXPECT_TRUE(tab_proxy->GetPageCurrentEncoding(&encoding));
-    EXPECT_EQ(encoding, kEncodingTestDatas[i].encoding_name);
+    EXPECT_EQ(kEncodingTestDatas[i].encoding_name, encoding);
   }
 }
 
