@@ -78,7 +78,14 @@ TEST_F(AutomatedUITestBase, RestoreTab) {
   ASSERT_EQ(2, tab_count);
 }
 
-TEST_F(AutomatedUITestBase, CloseTab) {
+// crbug.com/96049
+#if defined(OS_WIN)
+#define MAYBE_CloseTab FLAKY_CloseTab
+#else
+#define MAYBE_CloseTab CloseTab
+#endif
+
+TEST_F(AutomatedUITestBase, MAYBE_CloseTab) {
   int num_browser_windows;
   int tab_count;
   NewTab();
@@ -122,7 +129,14 @@ TEST_F(AutomatedUITestBase, CloseTab) {
   ASSERT_EQ(1, tab_count);
 }
 
-TEST_F(AutomatedUITestBase, OpenBrowserWindow) {
+// crbug.com/96049
+#if defined(OS_WIN)
+#define MAYBE_OpenBrowserWindow FLAKY_OpenBrowserWindow
+#else
+#define MAYBE_OpenBrowserWindow OpenBrowserWindow
+#endif
+
+TEST_F(AutomatedUITestBase, MAYBE_OpenBrowserWindow) {
   int num_browser_windows;
   int tab_count;
   ASSERT_TRUE(automation()->GetBrowserWindowCount(&num_browser_windows));
