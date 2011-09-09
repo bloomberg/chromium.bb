@@ -243,10 +243,12 @@
             </a>
           </div>
           <div id="confirm-everything-throbber" class="throbber"></div>
-          <input id="confirm-everything-ok" type="button"
-              i18n-values="value:syncEverything">
-          <input id="confirm-everything-cancel" type="button"
-              i18n-values="value:cancel">
+          <div class="button-strip">
+            <input id="confirm-everything-cancel" type="button"
+                i18n-values="value:cancel">
+            <input id="confirm-everything-ok" type="button"
+                i18n-values="value:syncEverything">
+          </div>
         </div>
       </div>
     </div>
@@ -426,9 +428,12 @@
             </a>
           </div>
           <div id="choose-datatypes-throbber" class="throbber"></div>
-          <input id="choose-datatypes-ok" type="submit" i18n-values="value:ok">
-          <input id="choose-datatypes-cancel" type="button"
-              i18n-values="value:cancel">
+          <div class="button-strip">
+            <input id="choose-datatypes-cancel" type="button"
+                i18n-values="value:cancel">
+            <input id="choose-datatypes-ok" type="submit"
+                i18n-values="value:ok">
+          </div>
         </div>
       </form>
     </div>
@@ -438,11 +443,11 @@
     <div class="content-area">
       <span i18n-content="stopSyncingExplanation"></span>
     </div>
-    <div class="action-area">
-      <input id="stop-syncing-ok" type="button"
-        i18n-values="value:stopSyncingConfirm">
+    <div class="action-area button-strip">
       <input id="stop-syncing-cancel" type="button"
-        i18n-values="value:cancel">
+          i18n-values="value:cancel">
+      <input id="stop-syncing-ok" type="button"
+          i18n-values="value:stopSyncingConfirm">
     </div>
   </div>
 </div>
