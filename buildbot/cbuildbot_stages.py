@@ -687,16 +687,12 @@ class BuildTargetStage(BuilderStage):
     # the toolchain during build_packages.
     skip_toolchain_update = self._build_config['latest_toolchain']
 
-    usepkg = self._build_config['usepkg_build_packages']
-    if self._options.clobber:
-      usepkg = False
-
     commands.Build(self._build_root,
                    self._build_config['board'],
                    build_autotest=build_autotest,
                    skip_toolchain_update=skip_toolchain_update,
                    fast=self._build_config['fast'],
-                   usepkg=usepkg,
+                   usepkg=self._build_config['usepkg_build_packages'],
                    nowithdebug=self._build_config['nowithdebug'],
                    extra_env=env)
 
