@@ -744,7 +744,7 @@
           'sources!': [
             'test/automation/automation_proxy_uitest.cc',
           ],
-        }],          
+        }],
         ['OS=="mac"', {
           # See the comment in this section of the unit_tests target for an
           # explanation (crbug.com/43791 - libwebcore.a is too large to mmap).
@@ -2768,9 +2768,6 @@
       ],
       'sources': [
         'test/reliability/page_load_test.cc',
-        'test/reliability/page_load_test.h',
-        'test/reliability/reliability_test_suite.h',
-        'test/reliability/run_all_unittests.cc',
       ],
       'conditions': [
         ['OS=="win" and buildtype=="Official"', {
