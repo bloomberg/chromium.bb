@@ -195,9 +195,9 @@ class AnalyzerResultMap:
            simplicity),
              comp_result_map['whole'][0] = ['foo1.html']
              comp_result_map['whole'][1] = ['foo2.html']
-           This means that current result has 'foo1.html' but NOT in the
+           This means that current result has 'foo1.html' but it is NOT in the
            previous result. This also means the previous result has 'foo2.html'
-           but it is NOT the current result.
+           but it is NOT in the current result.
     """
     comp_result_map = {}
     for name in ['whole', 'skip', 'nonskip']:
@@ -281,9 +281,9 @@ def SendStatusEmail(prev_time, analyzer_result_map, diff_map,
          simplicity),
            comp_result_map['whole'][0] = ['foo1.html']
            comp_result_map['whole'][1] = ['foo2.html']
-         This means that current result has 'foo1.html' but NOT in the
+         This means that current result has 'foo1.html' but it is NOT in the
          previous result. This also means the previous result has 'foo2.html'
-         but it is NOT the current result.
+         but it is NOT in the current result.
     bug_anno_map: bug annotation map where bug name and annotations are
         stored.
     receiver_email_address: receiver's email address.

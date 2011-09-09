@@ -144,8 +144,8 @@ def main():
       prev_analyzer_result_map)
   result_change = (any(diff_map['whole']) or any(diff_map['skip']) or
                       any(diff_map['nonskip']))
-  # Do not email when |email_only_change_mode| is true and there is no change
-  # in the result compared to the last result.
+  # Email only when |email_only_change_mode| is False or there
+  # is a change in the result compared to the last result.
   if not options.email_only_change_mode or result_change:
     layouttest_analyzer_helpers.SendStatusEmail(
         prev_time, analyzer_result_map, diff_map, anno_map,
