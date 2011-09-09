@@ -152,8 +152,14 @@ class TestPrerenderContents : public PrerenderContents {
     // before the PrerenderManager is destroyed.  As a result, it's possible to
     // get either FINAL_STATUS_APP_TERMINATING or FINAL_STATUS_RENDERER_CRASHED
     // on quit.
-    if (expected_final_status_ == FINAL_STATUS_APP_TERMINATING)
+    //
+    // It's also possible for this to be called after we've been notified of
+    // app termination, but before we've been deleted, which is why the second
+    // check is needed.
+    if (expected_final_status_ == FINAL_STATUS_APP_TERMINATING &&
+        final_status() != expected_final_status_) {
       expected_final_status_ = FINAL_STATUS_RENDERER_CRASHED;
+    }
 
     PrerenderContents::RenderViewGone();
   }
