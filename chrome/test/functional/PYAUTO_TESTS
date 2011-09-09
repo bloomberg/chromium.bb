@@ -358,9 +358,6 @@
 
       # crosbug.com/16977
       '-chromeos_wifi_sanity.ChromeosWifiSanity.testConnectToHiddenWiFiNonExistent',
-
-      # crosbug.com/20025
-      '-chromeos_browser.ChromeosBrowserTest.testFullScreen',
     ],
   },
 
