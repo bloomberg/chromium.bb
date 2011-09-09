@@ -36,7 +36,7 @@ def Banner(message):
   print('=' * 70)
 
 
-def DifferentFromGolden(actual, golden, output_type, fail_msg):
+def DifferentFromGolden(actual, golden, output_type):
   """Compares actual output against golden output.
 
   If there are any differences, output an error message (to stdout) with
@@ -52,8 +52,6 @@ def DifferentFromGolden(actual, golden, output_type, fail_msg):
     output_type: the name / title for the output type being compared.
       Used in banner output.
 
-    fail_msg:  additional failure output message, printed at the end.
-
   Returns:
     True when there is a difference, False otherwise.
   """
@@ -65,7 +63,6 @@ def DifferentFromGolden(actual, golden, output_type, fail_msg):
     Print(diff)
     Banner('Potential New Golden Output')
     Print(actual)
-    Print(fail_msg)
     return True
   return False
 
@@ -125,11 +122,21 @@ def DestringifyList(lst):
   # value.
   return lst.split(',')
 
-def FailureMessage():
-  return '%s: FAILED' % os.path.basename(GlobalSettings['name'])
+# The following messages match gtest's formatting.  This improves log
+# greppability for people who primarily work on Chrome.  It also allows
+# gtest-specific hooks on the buildbots to fire.
+# The buildbots expect test names in the format "suite_name.test_name", so we
+# prefix the test name with a bogus suite name (nacl).
+def RunMessage():
+  return '[ RUN      ] nacl.%s' % GlobalSettings['name']
 
-def SuccessMessage():
-  return '%s: PASSED' % os.path.basename(GlobalSettings['name'])
+def FailureMessage(total_time):
+  return '[  FAILED  ] nacl.%s (%d ms)' % (GlobalSettings['name'],
+                                           total_time * 1000.0)
+
+def SuccessMessage(total_time):
+  return '[       OK ] nacl.%s (%d ms)' % (GlobalSettings['name'],
+                                           total_time * 1000.0)
 
 def LogPerfResult(graph_name, trace_name, value, units):
   # NOTE: This RESULT message is parsed by Chrome's perf graph generator.
@@ -138,12 +145,10 @@ def LogPerfResult(graph_name, trace_name, value, units):
 
 def PrintTotalTime(total_time):
   if int(GlobalSettings['track_cmdtime']):
-    LogPerfResult(os.path.basename(GlobalSettings['name']),
+    LogPerfResult(GlobalSettings['name'],
                   'TOTAL_' + GlobalSettings['perf_env_description'],
                   '%f' % total_time,
                   'secs')
-  else:
-    Print('Test %s took %f secs' % (GlobalSettings['name'], total_time))
 
 
 # On POSIX systems, exit() codes are 8-bit.  You cannot use exit() to
@@ -368,7 +373,6 @@ def CheckExitStatus(failed, req_status, using_nacl_signal_handler,
       Print(stdout)
       Banner('Stderr')
       Print(stderr)
-    Print(FailureMessage())
   return not failed
 
 def CheckTimeBounds(total_time):
@@ -376,7 +380,6 @@ def CheckTimeBounds(total_time):
     if total_time > GlobalSettings['time_error']:
       Print('ERROR: should have taken less than %f secs' %
             (GlobalSettings['time_error']))
-      Print(FailureMessage())
       return False
 
   if GlobalSettings['time_warning']:
@@ -400,8 +403,7 @@ def CheckGoldenOutput(stdout, stderr):
                                             GlobalSettings['filter_inverse'],
                                             GlobalSettings['filter_group_only'],
                                             actual)
-      if DifferentFromGolden(actual, golden_data, stream,
-                             FailureMessage()):
+      if DifferentFromGolden(actual, golden_data, stream):
         return False
   return True
 
@@ -414,7 +416,6 @@ def ProcessLogOutput(stdout, stderr):
     # Assume the log processor does not care about the order of the lines.
     all_output = log_output + stdout + stderr
     if not test_lib.RunCmdWithInput(output_processor_cmd, all_output):
-      Print(FailureMessage())
       return False
   return True
 
@@ -428,6 +429,9 @@ def main(argv):
 
   if not GlobalSettings['name']:
     GlobalSettings['name'] = command[0]
+  GlobalSettings['name'] = os.path.basename(GlobalSettings['name'])
+
+  Print(RunMessage())
 
   if GlobalSettings['osenv']:
     Banner('setting environment')
@@ -477,6 +481,7 @@ def main(argv):
                            GlobalSettings['exit_status'],
                            GlobalSettings['using_nacl_signal_handler'],
                            exit_status, None, None):
+      Print(FailureMessage(total_time))
       return -1
   else:
     (total_time, exit_status,
@@ -487,16 +492,20 @@ def main(argv):
                            GlobalSettings['exit_status'],
                            GlobalSettings['using_nacl_signal_handler'],
                            exit_status, stdout, stderr):
+      Print(FailureMessage(total_time))
       return -1
     if not CheckGoldenOutput(stdout, stderr):
+      Print(FailureMessage(total_time))
       return -1
     if not ProcessLogOutput(stdout, stderr):
+      Print(FailureMessage(total_time))
       return -1
 
   if not CheckTimeBounds(total_time):
+    Print(FailureMessage(total_time))
     return -1
 
-  Print(SuccessMessage())
+  Print(SuccessMessage(total_time))
   return 0
 
 

@@ -104,6 +104,7 @@ def PopenBufSize():
 
 def RunCmdWithInput(cmd, input_data):
   try:
+    sys.stdout.flush() # Make sure stdout stays in sync on the bots.
     p = subprocess.Popen(cmd,
                          bufsize=PopenBufSize(),
                          stdin=subprocess.PIPE)
@@ -125,6 +126,7 @@ def RunTestWithInput(cmd, input_data):
   timer = SubprocessCpuTimer()
   p = None
   try:
+    sys.stdout.flush() # Make sure stdout stays in sync on the bots.
     if type(input_data) == str:
       p = subprocess.Popen(cmd,
                            bufsize=PopenBufSize(),

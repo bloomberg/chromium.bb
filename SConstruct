@@ -74,7 +74,12 @@ def PrintFinalReport():
   print '*' * 70
   print
   for f in failures:
-    print "%s failed: %s\n" % (f.node, f.errstr)
+    test_name = GetTestName(f.node)
+    raw_name = str(f.node.path)
+    # If this wasn't a test, "GetTestName" will return raw_name.
+    if test_name != raw_name:
+      test_name = '%s (%s)' % (test_name, raw_name)
+    print "%s failed: %s\n" % (test_name, f.errstr)
 
 atexit.register(PrintFinalReport)
 
@@ -712,6 +717,17 @@ def AddNodeToTestSuite(env, node, suite_name, node_name=None, is_broken=False,
 
   if node_name:
     env.ComponentTestOutput(node_name, node)
+    test_name = node_name
+  else:
+    # This is rather shady, but the tests need a name without dots so they match
+    # what gtest does.
+    # TODO(ncbray) node_name should not be optional.
+    test_name = os.path.basename(str(node[0].path))
+    if test_name.endswith('.out'):
+      test_name = test_name[:-4]
+    test_name = test_name.replace('.', '_')
+  SetTestName(node, test_name)
+
 
 pre_base_env.AddMethod(AddNodeToTestSuite)
 
@@ -1771,6 +1787,21 @@ def GetPerfEnvDescription(env):
 
 pre_base_env.AddMethod(GetPerfEnvDescription)
 
+
+TEST_NAME_MAP = {}
+
+def GetTestName(target):
+  key = str(target.path)
+  return TEST_NAME_MAP.get(key, key)
+
+pre_base_env['GetTestName'] = GetTestName
+
+
+def SetTestName(node, name):
+  for target in Flatten(node):
+    TEST_NAME_MAP[str(target.path)] = name
+
+
 def CommandTest(env, name, command, size='small', direct_emulation=True,
                 extra_deps=[], posix_path=False, capture_output=True,
                 **extra):
@@ -1788,7 +1819,7 @@ def CommandTest(env, name, command, size='small', direct_emulation=True,
   if 'scale_timeout' in ARGUMENTS:
     max_time = max_time * int(ARGUMENTS['scale_timeout'])
 
-  script_flags = ['--name', name,
+  script_flags = ['--name', '${GetTestName(TARGET)}',
                   '--report', name,
                   '--time_warning', str(max_time),
                   '--time_error', str(10 * max_time),
