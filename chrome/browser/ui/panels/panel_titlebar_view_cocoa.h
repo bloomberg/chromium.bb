@@ -46,6 +46,9 @@
   // Accessor to Panel's controller.
 - (PanelWindowControllerCocoa*)controller;
 
+// We need to respond to main window changes so we can update our look.
+- (void)didChangeMainWindow:(NSNotification*)notification;
+
 @end  // @interface PanelTitlebarView
 
 // Methods which are either only for testing, or only public for testing.

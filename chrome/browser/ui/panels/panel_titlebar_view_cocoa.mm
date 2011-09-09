@@ -52,6 +52,16 @@ const int kCloseButtonLeftPadding = 8;
   NSPoint phase = [[self window] themePatternPhase];
   [[NSGraphicsContext currentContext] setPatternPhase:phase];
   [self drawBackgroundWithOpaque:YES];
+
+  ui::ThemeProvider* theme = [[self window] themeProvider];
+  NSColor* titleColor = nil;
+  if (theme)
+    titleColor = [[self window] isMainWindow]
+        ? theme->GetNSColor(ThemeService::COLOR_TAB_TEXT, true)
+        : theme->GetNSColor(ThemeService::COLOR_BACKGROUND_TAB_TEXT, true);
+  else
+    titleColor = [NSColor textColor];
+  [title_ setTextColor:titleColor];
 }
 
 - (void)attach {
@@ -83,13 +93,18 @@ const int kCloseButtonLeftPadding = 8;
   // Set autoresizing behavior: glued to edges on left, top and right.
   [self setAutoresizingMask:(NSViewMinYMargin | NSViewWidthSizable)];
 
-  // TODO(dcheng): We need to have a notification handler for theme changes.
-  // We might be able to move this logic there as well.
-  ui::ThemeProvider* theme = [[controller_ window] themeProvider];
-  NSColor* titleColor = theme
-      ? theme->GetNSColor(ThemeService::COLOR_TAB_TEXT, true)
-      : [NSColor textColor];
-  [title_ setTextColor:titleColor];
+  // Register for various window focus changes, so we can update our custom
+  // titlebar appropriately.
+  [[NSNotificationCenter defaultCenter]
+      addObserver:self
+         selector:@selector(didChangeMainWindow:)
+             name:NSWindowDidBecomeMainNotification
+           object:[self window]];
+  [[NSNotificationCenter defaultCenter]
+      addObserver:self
+         selector:@selector(didChangeMainWindow:)
+             name:NSWindowDidResignMainNotification
+           object:[self window]];
 }
 
 - (void)setTitle:(NSString*)newTitle {
@@ -135,6 +150,10 @@ const int kCloseButtonLeftPadding = 8;
 
 - (PanelWindowControllerCocoa*)controller {
   return controller_;
+}
+
+- (void)didChangeMainWindow:(NSNotification*)notification {
+  [self setNeedsDisplay:YES];
 }
 
 // (Private/TestingAPI)

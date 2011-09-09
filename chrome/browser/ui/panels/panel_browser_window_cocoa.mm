@@ -117,8 +117,13 @@ void PanelBrowserWindowCocoa::DeactivatePanel() {
 }
 
 bool PanelBrowserWindowCocoa::IsPanelActive() const {
-  NOTIMPLEMENTED();
-  return false;
+  // TODO(dcheng): It seems like a lot of these methods can be called before
+  // our NSWindow is created. Do we really need to check in every one of these
+  // methods if the NSWindow is created, or is there a better way to
+  // gracefully handle this?
+  if (!is_shown_)
+    return false;
+  return [[controller_ window] isMainWindow];
 }
 
 gfx::NativeWindow PanelBrowserWindowCocoa::GetNativePanelHandle() {
