@@ -38,7 +38,8 @@ readonly POSTDIFF="${TC_SRC}/postdiff"
 
 readonly UPSTREAM_BRANCH=pnacl-sfi
 
-readonly HG_CONFIG_AUTO=(--config ui.merge=internal:merge)
+readonly HG_CONFIG_AUTO=(--config ui.merge=internal:merge
+                         --config ui.username=chromebot1@gmail.com)
 
 readonly HG_CONFIG_MANUAL=(
   --config kdiff3.executable=/usr/bin/diff3
