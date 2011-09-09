@@ -3801,19 +3801,6 @@
    fun:_ZN7WebCore15GraphicsContext*EN3WTF10PassRefPtrINS_8GradientEEE
 }
 {
-   bug_77258_b
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN6webkit5ppapi*22MessageChannelAllocateEP4_NPPP7NPClass
-   fun:_NPN_CreateObject
-   fun:_ZN6WebKit11WebBindings12createObjectEP4_NPPP7NPClass
-   ...
-   fun:_ZN6webkit5ppapi14MessageChannelC1EPNS0_14PluginInstanceE
-   ...
-   fun:_ZN6webkit5ppapi14PluginInstanceC1EPNS0_14PluginDelegateEPNS0_12PluginModuleEPK12PPP_Instance
-   fun:_ZN6webkit5ppapi13PpapiUnittest5SetUpEv
-}
-{
    bug_77990
    Memcheck:Leak
    fun:calloc
