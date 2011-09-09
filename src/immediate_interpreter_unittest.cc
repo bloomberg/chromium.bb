@@ -707,6 +707,7 @@ TEST(ImmediateInterpreterTest, TapToClickStateMachineTest) {
       ii->SetHardwareProperties(hwprops);
       ii->set_tap_timeout(0.05);
       ii->set_tap_drag_timeout(0.05);
+      ii->tap_move_dist_ = 1.0;
       EXPECT_EQ(kIdl, ii->tap_to_click_state_);
     } else {
       same_fingers = ii->SameFingers(hwsgs_full[i].hws);
@@ -808,6 +809,7 @@ TEST(ImmediateInterpreterTest, TapToClickEnableTest) {
         ii->SetHardwareProperties(hwprops);
         ii->set_tap_timeout(0.05);
         ii->set_tap_drag_timeout(0.05);
+        ii->tap_move_dist_ = 1.0;
         EXPECT_EQ(kIdl, ii->tap_to_click_state_);
         EXPECT_TRUE(ii->tap_enable_);
       } else {
