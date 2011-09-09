@@ -5144,6 +5144,15 @@
    fun:_ZN16UserScriptMaster14ScriptReloader7RunLoadERKSt6vectorI10UserScriptSaIS2_EE
    fun:_Z16DispatchToMethodIN16UserScriptMaster14ScriptReloaderEMS1_FvRKSt6vectorI10UserScriptSaIS3_EEES5_EvPT_T0_RK6Tuple1IT1_E
 }
+{
+   bug_96069
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN3net9HttpCache13CreateBackendEPPN10disk_cache7BackendEP14CallbackRunnerI6Tuple1IiEE
+   fun:_ZN3net9HttpCache17CreateTransactionEP10scoped_ptrINS_15HttpTransactionEE
+   ...
+   fun:_ZN3net13CookieMonster17CookieMonsterTask14InvokeCallbackEN4base8CallbackIFvvEEE
+}
 
 
 #-----------------------------------------------------------------------

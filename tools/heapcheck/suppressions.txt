@@ -1331,7 +1331,7 @@
    Heapcheck:Leak
    ...
    fun:URLFetcher::Core::StartURLRequest
-   fun:URLFetcher::Core::StartURLRequestWhenAppropriate
+   fun:URLFetcher::Core::StartURLRequestWhen*
 }
 {
    bug_80666
@@ -1695,4 +1695,16 @@
    Heapcheck:Leak
    fun:remoting::ClientSession::UnpressKeys
    fun:remoting::ClientSessionTest_UnpressKeys_Test::TestBody
+}
+{
+   bug_96069
+   Heapcheck:Leak
+   fun:__gnu_cxx::new_allocator::allocate
+   ...
+   fun:disk_cache::MemBackendImpl::CreateBackend
+   ...
+   fun:net::HttpCache::CreateBackend
+   fun:net::HttpCache::CreateTransaction
+   ...
+   fun:net::CookieMonster::CookieMonsterTask::InvokeCallback
 }
