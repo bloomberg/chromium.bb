@@ -64,6 +64,9 @@ static const InvariantCheckLevel kInvariantCheckLevel = VERIFY_IN_MEMORY;
 
 // Max number of milliseconds to spend checking syncable entry invariants
 static const int kInvariantCheckMaxMs = 50;
+
+// Max number of mutations in a mutation set we permit passing to observers.
+static const size_t kMutationObserverLimit = 1000;
 }  // namespace
 
 using std::string;
@@ -1257,9 +1260,21 @@ ModelTypeBitSet WriteTransaction::NotifyTransactionChangingAndEnding(
   ModelTypeBitSet models_with_changes =
       delegate->HandleTransactionEndingChangeEvent(this);
 
-  dirkernel_->observers->Notify(
-      &TransactionObserver::OnTransactionMutate,
-      from_here_, writer_, mutations, models_with_changes);
+  // These notifications pass the mutation list around by value, which when we
+  // rewrite all sync data can be extremely large and result in out of memory
+  // errors (see crbug.com/90169). As a result, when there are more than
+  // kMutationObserverLimit mutations, we pass around an empty mutation set.
+  if (mutations.size() < kMutationObserverLimit) {
+    dirkernel_->observers->Notify(
+        &TransactionObserver::OnTransactionMutate,
+        from_here_, writer_, mutations, models_with_changes);
+  } else {
+    EntryKernelMutationSet dummy_mutations;  // Empty set.
+    dirkernel_->observers->Notify(
+        &TransactionObserver::OnTransactionMutate,
+        from_here_, writer_, dummy_mutations, models_with_changes);
+  }
+
   return models_with_changes;
 }
 
