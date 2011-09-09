@@ -4451,18 +4451,6 @@
    fun:_ZN3net73HttpNetworkTransactionTest_ErrorResponseTofHttpsConnectViaHttpsProxy_Test8TestBodyEv
 }
 {
-   bug_87477
-   Memcheck:Leak
-   fun:_Znw*
-   ...
-   fun:_ZN14WebDataService14GenericRequestI11TemplateURLE11GetArgumentEv
-   fun:_ZN14WebDataService14AddKeywordImplEPNS_14GenericRequestI11TemplateURLEE
-   fun:_Z16DispatchToMethodI14WebDataServiceMS0_FvPNS0_14GenericRequestI11TemplateURLEEES4_EvPT_T0_RK6Tuple1IT1_E
-   fun:_ZN14RunnableMethodI14WebDataServiceMS0_FvPNS0_14GenericRequestI11TemplateURLEEE6Tuple1IS4_EE3RunEv
-   fun:_ZN12_GLOBAL__N_118TaskClosureAdapter3RunEv
-   fun:_ZN4base8internal8Invoker1ILb0ENS0_15InvokerStorage1IMN12_GLOBAL__N_118TaskClosureAdapterEFvvEPS4_EES6_E8DoInvokeEPNS0_18InvokerStorageBaseE
-}
-{
    bug_87997
    Memcheck:Leak
    fun:_Znw*
