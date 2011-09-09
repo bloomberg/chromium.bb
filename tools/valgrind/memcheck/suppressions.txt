@@ -4125,6 +4125,13 @@
    fun:_ZN13BrowserThread8PostTaskENS_2IDERKN15tracked_objects8LocationEP4Task
 }
 {
+   bug_83609b
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN4base4Bind*TaskClosureAdapterEFvvEPS2_EENS_8internal20InvokerStorageHolderINS6_15InvokerStorage1IT_T0_EEEES9_RKSA_
+   fun:_ZN11MessageLoop8PostTaskERKN15tracked_objects8LocationEP4Task
+}
+{
    bug_83835
    Memcheck:Leak
    fun:_Znw*
@@ -5078,6 +5085,19 @@
    fun:_ZN3net9HttpCache17CreateTransactionEP10scoped_ptrINS_15HttpTransactionEE
    ...
    fun:_ZN3net13CookieMonster17CookieMonsterTask14InvokeCallbackEN4base8CallbackIFvvEEE
+}
+{
+   bug_96090
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN9__gnu_cxx13new_allocatorIN3net18HttpRequestHeaders18HeaderKeyValuePairEE8allocateEjPKv
+   fun:_ZNSt12_Vector_baseIN3net18HttpRequestHeaders18HeaderKeyValuePairESaIS2_EE11_M_allocateEj
+   fun:_ZNSt6vectorIN3net18HttpRequestHeaders18HeaderKeyValuePairESaIS2_EE13_M_insert_auxEN9__gnu_cxx17__normal_iteratorIPS2_S4_EERKS2_
+   fun:_ZNSt6vectorIN3net18HttpRequestHeaders18HeaderKeyValuePairESaIS2_EE9push_backERKS2_
+   fun:_ZN3net18HttpRequestHeaders9SetHeaderERKN4base11StringPieceES4_
+   fun:_ZN3net18HttpRequestHeaders19AddHeaderFromStringERKN4base11StringPieceE
+   fun:_ZN3net18HttpRequestHeaders20AddHeadersFromStringERKN4base11StringPieceE
+   fun:_ZN22ResourceDispatcherHost12BeginRequestEiRK23ResourceHostMsg_RequestPN3IPC7MessageEi
 }
 
 
