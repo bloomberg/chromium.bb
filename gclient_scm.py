@@ -506,13 +506,11 @@ class GitWrapper(SCMWrapper):
       try:
         self._Run(clone_cmd, options, cwd=self._root_dir)
         break
-      except (gclient_utils.Error, subprocess2.CalledProcessError), e:
-        # TODO(maruel): Hackish, should be fixed by moving _Run() to
-        # subprocess2.check_output().
-        # Too bad we don't have access to the actual output.
+      except subprocess2.CalledProcessError, e:
+        # Too bad we don't have access to the actual output yet.
         # We should check for "transfer closed with NNN bytes remaining to
         # read". In the meantime, just make sure .git exists.
-        if (e.args[0] == 'git command clone returned 128' and
+        if (e.returncode == 128 and
             os.path.exists(os.path.join(self.checkout_path, '.git'))):
           print(str(e))
           print('Retrying...')
