@@ -65,6 +65,7 @@ int NCValidateSegment(uint8_t *mbase, uint32_t vbase, size_t size) {
 }
 
 NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidator, arm, 32) (
+    enum NaClSBKind sb_kind,
     NaClApplyValidationKind kind,
     uintptr_t guest_addr,
     uint8_t *data,
@@ -73,6 +74,7 @@ NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidator, arm, 32) (
     Bool local_cpu) {
   NaClValidationStatus status = NaClValidationFailedNotImplemented;
   UNREFERENCED_PARAMETER(local_cpu);
+  UNREFERENCED_PARAMETER(sb_kind);
   if (bundle_size == 16) {
     if (kind == NaClApplyCodeValidation) {
         status = ((0 == NCValidateSegment(data, guest_addr, size))
@@ -83,11 +85,13 @@ NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidator, arm, 32) (
 }
 
 NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidatorCodeReplacement, arm, 32)
-    (uintptr_t guest_addr,
+    (enum NaClSBKind sb_kind,
+     uintptr_t guest_addr,
      uint8_t *data_old,
      uint8_t *data_new,
      size_t size,
      int bundle_size) {
+  UNREFERENCED_PARAMETER(sb_kind);
   UNREFERENCED_PARAMETER(guest_addr);
   UNREFERENCED_PARAMETER(data_old);
   UNREFERENCED_PARAMETER(data_new);
@@ -97,11 +101,13 @@ NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidatorCodeReplacement, arm, 32)
 }
 
 NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidatorCopy, arm, 32)
-    (uintptr_t guest_addr,
+    (enum NaClSBKind sb_kind,
+     uintptr_t guest_addr,
      uint8_t *data_old,
      uint8_t *data_new,
      size_t size,
      int bundle_size) {
+  UNREFERENCED_PARAMETER(sb_kind);
   UNREFERENCED_PARAMETER(guest_addr);
   UNREFERENCED_PARAMETER(data_old);
   UNREFERENCED_PARAMETER(data_new);

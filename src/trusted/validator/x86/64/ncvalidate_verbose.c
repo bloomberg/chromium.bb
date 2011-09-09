@@ -12,6 +12,7 @@
 #include "native_client/src/trusted/validator/x86/ncval_reg_sfi/ncvalidate_iter.h"
 #include "native_client/src/trusted/validator/x86/ncval_seg_sfi/ncdecode_verbose.h"
 #include "native_client/src/trusted/validator/x86/64/ncvalidate.h"
+#include <assert.h>
 
 /* Be sure the correct compile flags are defined for this. */
 #if NACL_ARCH(NACL_TARGET_ARCH) != NACL_x86
@@ -46,14 +47,15 @@ static NaClValidationStatus NaClApplyValidatorVerbosely_x86_64(
 }
 
 NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidatorVerbosely, x86, 64)
-    (NaClApplyValidationKind kind,
+    (enum NaClSBKind sb_kind,
+     NaClApplyValidationKind kind,
      uintptr_t guest_addr,
      uint8_t *data,
      size_t size,
      int bundle_size,
      Bool local_cpu) {
   NaClValidationStatus status = NaClValidationFailedNotImplemented;
-
+  assert(NACL_SB_DEFAULT == sb_kind);
   if (bundle_size == 16 || bundle_size == 32) {
     if (local_cpu) {
       NaClCPUData cpu_data;

@@ -284,12 +284,14 @@ int NCCopyCode(uint8_t *dst, uint8_t *src, NaClPcAddress vbase,
 NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidatorCopy,
                                        NACL_TARGET_ARCH,
                                        NACL_TARGET_SUBARCH)
-    (uintptr_t guest_addr,
+    (enum NaClSBKind sb_kind,
+     uintptr_t guest_addr,
      uint8_t *data_old,
      uint8_t *data_new,
      size_t size,
      int bundle_size) {
   NaClValidationStatus status = NaClValidationFailedNotImplemented;
+  assert(NACL_SB_DEFAULT == sb_kind);
   if (bundle_size == 16 || bundle_size == 32) {
     NaClCPUData cpu_data;
     NaClCPUDataGet(&cpu_data);
@@ -375,12 +377,14 @@ int NaClCopyCodeIter(uint8_t *dst, uint8_t *src,
 NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidatorCopy,
                                        NACL_TARGET_ARCH,
                                        NACL_TARGET_SUBARCH)
-    (uintptr_t guest_addr,
+    (enum NaClSBKind sb_kind,
+     uintptr_t guest_addr,
      uint8_t *data_old,
      uint8_t *data_new,
      size_t size,
      int bundle_size) {
   NaClValidationStatus status = NaClValidationFailedNotImplemented;
+  assert(NACL_SB_DEFAULT == sb_kind);
   if (bundle_size == 16 || bundle_size == 32) {
     NaClCPUData cpu_data;
     NaClCPUDataGet(&cpu_data);
