@@ -2665,19 +2665,6 @@
    fun:_ZN11MessageLoop7RunTaskERKNS_11PendingTaskE
 }
 {
-   bug_57539
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN9__gnu_cxx13new_allocatorISt13_Rb_tree_nodeISsEE8allocateEjPKv
-   fun:_ZNSt8_Rb_treeISsSsSt9_IdentityISsESt4lessISsESaISsEE11_M_get_nodeEv
-   fun:_ZNSt8_Rb_treeISsSsSt9_IdentityISsESt4lessISsESaISsEE14_M_create_nodeERKSs
-   fun:_ZNSt8_Rb_treeISsSsSt9_IdentityISsESt4lessISsESaISsEE9_M_insertEPSt18_Rb_tree_node_baseS7_RKSs
-   fun:_ZNSt8_Rb_treeISsSsSt9_IdentityISsESt4lessISsESaISsEE16_M_insert_uniqueERKSs
-   fun:_ZNSt3setISsSt4lessISsESaISsEE6insertERKSs
-   fun:*13ExtensionImpl16SetFunctionNamesERKSt6vectorISsSaISsEE
-   fun:_ZN24ExtensionProcessBindings16SetFunctionNamesERKSt6vectorISsSaISsEE
-}
-{
    bug_57949
    Memcheck:Addr4
    fun:_ZNK22OpaqueBrowserFrameView24NonClientTopBorderHeightEbb
