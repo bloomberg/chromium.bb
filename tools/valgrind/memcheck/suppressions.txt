@@ -621,6 +621,14 @@
    obj:/bin/bash
 }
 {
+   bug_73000_fixed_upstream_in_gtk
+   Memcheck:Cond
+   fun:clipboard_clipboard_buffer_received
+   ...
+   fun:gtk_text_view_key_press_event
+   fun:_ZN14OmniboxViewGtk14HandleKeyPressEP10_GtkWidgetP12_GdkEventKey
+}
+{
    bug_76386a
    Memcheck:Leak
    fun:_Znw*
@@ -641,6 +649,16 @@
    fun:_Znw*
    fun:_ZNSs4_Rep9_S_createE*RKSaIcE
    fun:_ZNSs9_M_mutateEjjj
+}
+{
+   bug_80378_fixed_upstream_for_next_gtk
+   Memcheck:Leak
+   fun:malloc
+   fun:g_malloc
+   fun:g_slice_alloc
+   ...
+   fun:gtk_window_group_list_windows
+   fun:_ZN8gtk_util*AppModal*
 }
 
 #-----------------------------------------------------------------------
@@ -1942,16 +1960,6 @@
    fun:_ZN18BrowserProcessImpl28CreateResourceDispatcherHostEv
    fun:_ZN18BrowserProcessImpl24resource_dispatcher_hostEv
    fun:_ZN16ExtensionService4InitEv
-}
-{
-   bug_42389
-   Memcheck:Leak
-   ...
-   fun:malloc
-   fun:g_malloc
-   ...
-   fun:gdk_pixbuf_loader_write
-   fun:_ZN10IconLoader9ParseIconEv
 }
 {
    bug_42842
@@ -3524,14 +3532,6 @@
    fun:_ZNK13ProfileIOData14LazyInitializeEv
 }
 {
-   bug_73000
-   Memcheck:Cond
-   fun:clipboard_clipboard_buffer_received
-   ...
-   fun:gtk_text_view_key_press_event
-   fun:_ZN14OmniboxViewGtk14HandleKeyPressEP10_GtkWidgetP12_GdkEventKey
-}
-{
    bug_73132
    Memcheck:Leak
    fun:_Znw*
@@ -4019,16 +4019,6 @@
    fun:_ZN3net10FileStream5WriteEPKciP14CallbackRunnerI6Tuple1IiEE
    fun:_ZN7fileapi18FileWriterDelegate5WriteEv
    fun:_ZN7fileapi18FileWriterDelegate14OnDataReceivedEi
-}
-{
-   bug_80378
-   Memcheck:Leak
-   fun:malloc
-   fun:g_malloc
-   fun:g_slice_alloc
-   ...
-   fun:gtk_window_group_list_windows
-   fun:_ZN8gtk_util*AppModal*
 }
 {
    bug_80458_b
