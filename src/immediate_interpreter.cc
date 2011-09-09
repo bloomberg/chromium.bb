@@ -132,7 +132,7 @@ ImmediateInterpreter::ImmediateInterpreter()
       tap_timeout_prop_(NULL),
       tap_drag_timeout_(0.7),
       tap_drag_timeout_prop_(NULL),
-      tap_move_dist_(1.0),
+      tap_move_dist_(2.0),
       tap_move_dist_prop_(NULL),
       palm_pressure_(100.0),
       palm_pressure_prop_(NULL),
