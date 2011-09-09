@@ -835,6 +835,22 @@
    fun:_ZN7WebCore8XMLNames4initEv
 }
 {
+   # This is WebKit wide theading initialization which is intentionally kept
+   # around (not freed) while the process is running.
+   intentional_WTF_ThreadIdentifierData_initialize_leak
+   Memcheck:Leak
+   ...
+   fun:_ZN3WTF20ThreadIdentifierData10initializeEj
+}
+{
+   # This is WebKit wide theading initialization which is intentionally kept
+   # around (not freed) while the process is running.
+   intentional_WTF_wtfThreadData_leak
+   Memcheck:Leak
+   ...
+   fun:_ZN3WTF13wtfThreadDataEv
+}
+{
    # Intentional crash test
    intentional_RendererCrashTest
    Memcheck:Addr4
@@ -2113,43 +2129,12 @@
    fun:_ZN11MessageLoop7RunTaskERKNS_11PendingTaskE
 }
 {
-   bug_46144
-   Memcheck:Leak
-   ...
-   fun:malloc
-   fun:_ZN3WTF10fastMallocEj
-   fun:_ZN3WTF13FastAllocBasenwEj
-   fun:_ZN3WTF20ThreadIdentifierData10initializeEj
-}
-# This might be the replacement for the bug_46144 signature above.
-{
-   bug_46144b
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN3WTF20ThreadIdentifierData10initializeEj
-   fun:_ZN3WTF31initializeCurrentThreadInternalEPKc
-   fun:_ZN3WTFL16threadEntryPointEPv
-}
-{
    bug_46163
    Memcheck:Leak
    fun:_Znw*
    fun:_ZN4base19MessagePumpLibevent3RunEPNS_11MessagePump8DelegateE
    fun:_ZN11MessageLoop11RunInternalEv
    fun:_ZN11MessageLoop10RunHandlerEv
-}
-{
-   bug_46162
-   Memcheck:Leak
-   ...
-   fun:malloc
-   ...
-   fun:_ZN3WTF13wtfThreadDataEv
-   fun:_ZN3WTF11stringTableEv
-   ...
-   fun:_ZN6WebKit10initializeEPNS_12WebKitClientE
-   fun:_ZN12WebKitThread20InternalWebKitThread4InitEv
-   fun:_ZN4base6Thread10ThreadMainEv
 }
 {
    bug_46250
@@ -3407,26 +3392,6 @@
    fun:_ZNK7WebCore26CSSMutableStyleDeclaration15propertiesEqualEPKS0_
    fun:_ZNK7WebCore12NamedNodeMap20mappedMapsEquivalentEPKS0_
    fun:_ZNK7WebCore16CSSStyleSelector24canShareStyleWithElementEPNS_4NodeE
-}
-{
-   bug_70924_a
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN3WTF20ThreadIdentifierData10initializeEj
-   fun:_ZN3WTF13currentThreadEv
-   fun:_ZN3WTF20initializeMainThreadEv
-   fun:_ZN6WebKit10initializeEPNS_12WebKitClientE
-}
-{
-   bug_70924_b
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN3WTF14ThreadSpecificINS_13WTFThreadDataEE3setEPS1_
-   fun:_ZN3WTF14ThreadSpecificINS_13WTFThreadDataEEcvPS1_Ev
-   fun:_ZN3WTF14ThreadSpecificINS_13WTFThreadDataEEdeEv
-   fun:_ZN3WTF13wtfThreadDataEv
-   ...
-   fun:_ZN6WebKit10initializeEPNS_12WebKitClientE
 }
 {
    bug_70782
@@ -5049,32 +5014,6 @@
    fun:_Znw*
    fun:_ZN8remoting13ClientSession11UnpressKeysEv
    fun:_ZN8remoting34ClientSessionTest_UnpressKeys_Test8TestBodyEv
-}
-{
-   bug_95106_a
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN3WTF20ThreadIdentifierData10initializeEj
-   fun:_ZN3WTF13currentThreadEv
-   fun:_ZN3WTF20initializeMainThreadEv
-   fun:_ZN6WebKit10initializeEPNS_21WebKitPlatformSupportE
-   fun:_ZN12WebKitThread20InternalWebKitThread4InitEv
-   fun:_ZN4base6Thread10ThreadMainEv
-   fun:_ZN4base12_GLOBAL__N_110ThreadFuncEPv
-}
-{
-   bug_95106_b
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN3WTF14ThreadSpecificINS_13WTFThreadDataEE3setEPS1_
-   fun:_ZN3WTF14ThreadSpecificINS_13WTFThreadDataEEcvPS1_Ev
-   fun:_ZN3WTF14ThreadSpecificINS_13WTFThreadDataEEdeEv
-   fun:_ZN3WTF13wtfThreadDataEv
-   fun:_ZN3WTF19initializeThreadingEv
-   fun:_ZN6WebKit10initializeEPNS_21WebKitPlatformSupportE
-   fun:_ZN12WebKitThread20InternalWebKitThread4InitEv
-   fun:_ZN4base6Thread10ThreadMainEv
-   fun:_ZN4base12_GLOBAL__N_110ThreadFuncEPv
 }
 {
    bug_95448
