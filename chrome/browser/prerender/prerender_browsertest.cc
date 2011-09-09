@@ -152,8 +152,14 @@ class TestPrerenderContents : public PrerenderContents {
     // before the PrerenderManager is destroyed.  As a result, it's possible to
     // get either FINAL_STATUS_APP_TERMINATING or FINAL_STATUS_RENDERER_CRASHED
     // on quit.
-    if (expected_final_status_ == FINAL_STATUS_APP_TERMINATING)
+    //
+    // It's also possible for this to be called after we've been notified of
+    // app termination, but before we've been deleted, which is why the second
+    // check is needed.
+    if (expected_final_status_ == FINAL_STATUS_APP_TERMINATING &&
+        final_status() != expected_final_status_) {
       expected_final_status_ = FINAL_STATUS_RENDERER_CRASHED;
+    }
 
     PrerenderContents::RenderViewGone();
   }
@@ -1089,8 +1095,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderInfiniteLoop) {
 // Checks that we don't prerender in an infinite loop and multiple links are
 // handled correctly.
 // Flaky, http://crbug.com/77323, but failing in a CHECK so disabled.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
-                       DISABLED_PrerenderInfiniteLoopMultiple) {
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderInfiniteLoopMultiple) {
   const char* const kHtmlFileA =
       "files/prerender/prerender_infinite_a_multiple.html";
   const char* const kHtmlFileB =
