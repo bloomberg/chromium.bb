@@ -404,7 +404,24 @@ int32_t NaClSysClock(struct NaClAppThread *natp) {
           (uintptr_t) natp);
 
   NaClSysCommonThreadSyscallEnter(natp);
-  retval = clock();
+  retval = 1000 * clock();
+  /*
+   * Windows CLOCKS_PER_SEC is 1000, but XSI requires it to be
+   * 1000000L and that's the ABI that we are sticking with.
+   *
+   * NB: 1000 \cdot n \bmod 2^{32} when n is a 32-bit counter is fine
+   * -- user code has to deal with \pmod{2^{32}} wraparound anyway,
+   * and time differences will work out fine:
+   *
+   * \begin{align*}
+   * (1000 \cdot \Delta n) \bmod 2^{32}
+   *  &\equiv ((1000 \bmod 2^{32}) \cdot (\Delta n \bmod 2^{32}) \bmod 2^{32}\\
+   *  &\equiv (1000 \cdot (\Delta n \bmod 2^{32})) \bmod 2^{32}.
+   * \end{align*}
+   *
+   * so when $\Delta n$ is small, the time difference is going to be a
+   * small multiple of $1000$, regardless of wraparound.
+   */
   NaClSysCommonThreadSyscallLeave(natp);
   return retval;
 }
