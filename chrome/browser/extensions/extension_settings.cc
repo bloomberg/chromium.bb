@@ -17,13 +17,12 @@
 #include "third_party/leveldatabase/src/include/leveldb/write_batch.h"
 
 ExtensionSettings::ExtensionSettings(const FilePath& base_path)
-    : base_path_(base_path) {
-}
+    : base_path_(base_path) {}
 
 ExtensionSettings::~ExtensionSettings() {
   std::map<std::string, ExtensionSettingsStorage*>::iterator it;
   for (it = storage_objs_.begin(); it != storage_objs_.end(); ++it) {
-    it->second->DeleteSoon();
+    BrowserThread::DeleteSoon(BrowserThread::FILE, FROM_HERE, it->second);
   }
 }
 
@@ -154,7 +153,7 @@ void ExtensionSettings::EndCreationOfStorage(
   if (existing == storage_objs_.end()) {
     storage_objs_[extension_id] = storage;
   } else {
-    storage->DeleteSoon();
+    BrowserThread::DeleteSoon(BrowserThread::FILE, FROM_HERE, storage);
     storage = existing->second;
     DCHECK(storage != NULL);
   }

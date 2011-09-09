@@ -7,101 +7,107 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_settings_api.h"
 #include "chrome/browser/profiles/profile.h"
+#include "content/browser/browser_thread.h"
 
 namespace {
 const char* kUnsupportedArgumentType = "Unsupported argument type";
 }  // namespace
-
-// StorageResultCallback
-
-SettingsFunction::StorageResultCallback::StorageResultCallback(
-    SettingsFunction* settings_function)
-    : settings_function_(settings_function) {
-}
-
-SettingsFunction::StorageResultCallback::~StorageResultCallback() {
-}
-
-void SettingsFunction::StorageResultCallback::OnSuccess(
-    DictionaryValue* settings) {
-  settings_function_->result_.reset(settings);
-  settings_function_->SendResponse(true);
-}
-
-void SettingsFunction::StorageResultCallback::OnFailure(
-    const std::string& message) {
-  settings_function_->error_ = message;
-  settings_function_->SendResponse(false);
-}
 
 // SettingsFunction
 
 bool SettingsFunction::RunImpl() {
   profile()->GetExtensionService()->extension_settings()->GetStorage(
       extension_id(),
-      base::Bind(&SettingsFunction::RunWithStorage, this));
+      base::Bind(&SettingsFunction::RunOnUIThreadWithStorage, this));
   return true;
 }
 
-void SettingsFunction::RunWithStorage(ExtensionSettingsStorage* storage) {
-  // Mimic how RunImpl() is handled in extensions code.
-  if (!RunWithStorageImpl(storage)) {
-    SendResponse(false);
+void SettingsFunction::RunOnUIThreadWithStorage(
+    ExtensionSettingsStorage* storage) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  BrowserThread::PostTask(
+      BrowserThread::FILE,
+      FROM_HERE,
+      base::Bind(&SettingsFunction::RunOnFileThreadWithStorage, this, storage));
+}
+
+void SettingsFunction::RunOnFileThreadWithStorage(
+    ExtensionSettingsStorage* storage) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  bool success = RunOnFileThreadImpl(storage);
+  BrowserThread::PostTask(
+      BrowserThread::UI,
+      FROM_HERE,
+      base::Bind(&SettingsFunction::SendResponse, this, success));
+}
+
+bool SettingsFunction::UseResult(
+    const ExtensionSettingsStorage::Result& storage_result) {
+  if (storage_result.HasError()) {
+    error_ = storage_result.GetError();
+    return false;
   }
+  DictionaryValue* settings = storage_result.GetSettings();
+  result_.reset(settings == NULL ? NULL : settings->DeepCopy());
+  return true;
 }
 
 // Concrete settings functions
 
-bool GetSettingsFunction::RunWithStorageImpl(
+// Adds all StringValues from a ListValue to a vector of strings.
+static void AddAllStringValues(
+    const ListValue& from, std::vector<std::string>* to) {
+  DCHECK(to->empty());
+  std::string as_string;
+  for (ListValue::const_iterator it = from.begin(); it != from.end(); ++it) {
+    if ((*it)->GetAsString(&as_string)) {
+      to->push_back(as_string);
+    }
+  }
+}
+
+bool GetSettingsFunction::RunOnFileThreadImpl(
     ExtensionSettingsStorage* storage) {
   Value *input;
   EXTENSION_FUNCTION_VALIDATE(args_->Get(0, &input));
-
   std::string as_string;
   ListValue* as_list;
   if (input->IsType(Value::TYPE_NULL)) {
-    storage->Get(new StorageResultCallback(this));
+    return UseResult(storage->Get());
   } else if (input->GetAsString(&as_string)) {
-    storage->Get(as_string, new StorageResultCallback(this));
+    return UseResult(storage->Get(as_string));
   } else if (input->GetAsList(&as_list)) {
-    storage->Get(*as_list, new StorageResultCallback(this));
-  } else {
-    error_ = kUnsupportedArgumentType;
-    return false;
+    std::vector<std::string> string_list;
+    AddAllStringValues(*as_list, &string_list);
+    return UseResult(storage->Get(string_list));
   }
-
-  return true;
+  return UseResult(ExtensionSettingsStorage::Result(kUnsupportedArgumentType));
 }
 
-bool SetSettingsFunction::RunWithStorageImpl(
+bool SetSettingsFunction::RunOnFileThreadImpl(
     ExtensionSettingsStorage* storage) {
   DictionaryValue *input;
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &input));
-  storage->Set(*input, new StorageResultCallback(this));
-  return true;
+  return UseResult(storage->Set(*input));
 }
 
-bool RemoveSettingsFunction::RunWithStorageImpl(
+bool RemoveSettingsFunction::RunOnFileThreadImpl(
     ExtensionSettingsStorage* storage) {
   Value *input;
   EXTENSION_FUNCTION_VALIDATE(args_->Get(0, &input));
-
   std::string as_string;
   ListValue* as_list;
   if (input->GetAsString(&as_string)) {
-    storage->Remove(as_string, new StorageResultCallback(this));
+    return UseResult(storage->Remove(as_string));
   } else if (input->GetAsList(&as_list)) {
-    storage->Remove(*as_list, new StorageResultCallback(this));
-  } else {
-    error_ = kUnsupportedArgumentType;
-    return false;
+    std::vector<std::string> string_list;
+    AddAllStringValues(*as_list, &string_list);
+    return UseResult(storage->Remove(string_list));
   }
-
-  return true;
+  return UseResult(ExtensionSettingsStorage::Result(kUnsupportedArgumentType));
 }
 
-bool ClearSettingsFunction::RunWithStorageImpl(
+bool ClearSettingsFunction::RunOnFileThreadImpl(
     ExtensionSettingsStorage* storage) {
-  storage->Clear(new StorageResultCallback(this));
-  return true;
+  return UseResult(storage->Clear());
 }

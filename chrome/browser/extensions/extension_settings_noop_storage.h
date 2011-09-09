@@ -16,16 +16,15 @@ class ExtensionSettingsNoopStorage : public ExtensionSettingsStorage {
  public:
   ExtensionSettingsNoopStorage() {}
 
-  virtual void DeleteSoon() OVERRIDE;
-  virtual void Get(const std::string& key, Callback* callback) OVERRIDE;
-  virtual void Get(const ListValue& keys, Callback* callback) OVERRIDE;
-  virtual void Get(Callback* callback) OVERRIDE;
-  virtual void Set(
-      const std::string& key, const Value& value, Callback* callback) OVERRIDE;
-  virtual void Set(const DictionaryValue& values, Callback* callback) OVERRIDE;
-  virtual void Remove(const std::string& key, Callback* callback) OVERRIDE;
-  virtual void Remove(const ListValue& keys, Callback* callback) OVERRIDE;
-  virtual void Clear(Callback *callback) OVERRIDE;
+  // ExtensionSettingsStorage implementation.
+  virtual Result Get(const std::string& key) OVERRIDE;
+  virtual Result Get(const std::vector<std::string>& keys) OVERRIDE;
+  virtual Result Get() OVERRIDE;
+  virtual Result Set(const std::string& key, const Value& value) OVERRIDE;
+  virtual Result Set(const DictionaryValue& values) OVERRIDE;
+  virtual Result Remove(const std::string& key) OVERRIDE;
+  virtual Result Remove(const std::vector<std::string>& keys) OVERRIDE;
+  virtual Result Clear() OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ExtensionSettingsNoopStorage);

@@ -6,30 +6,16 @@
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_SETTINGS_STORAGE_H_
 #pragma once
 
+#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 
 // Interface for extension settings storage classes.
 //
-// All asynchrous methods *must* run in a message loop, i.e. the callbacks may
-// not be run from the calling method, but must be PostTask'ed (whether to
-// one's own thread or to e.g. the FILE thread).
+// All methods *must* be run on the FILE thread, inclusing construction and
+// destructions.
 class ExtensionSettingsStorage {
  public:
-  // Asynchronous results of Set/Get/Remove.  Exactly one of OnSuccess or
-  // OnFailure will eventually be called.
-  // Callback objects will be deleted after running.
-  class Callback {
-   public:
-    virtual ~Callback() {}
-
-    // Indicates the storage operation was successful.  Settings value will be
-    // non-NULL.  Ownership is passed to the callback.
-    virtual void OnSuccess(DictionaryValue* settings) = 0;
-
-    // Indicates the storage operation failed.  Messages describes the failure.
-    virtual void OnFailure(const std::string& message) = 0;
-  };
-
   // The different types of extension settings storage.
   enum Type {
     NONE,
@@ -37,47 +23,74 @@ class ExtensionSettingsStorage {
     LEVELDB
   };
 
+  // The result of an operation.
+  //
+  // Supports lightweight copying.
+  class Result {
+   public:
+    // Ownership of settings taken.
+    explicit Result(DictionaryValue* settings);
+    explicit Result(const std::string& error);
+    ~Result();
+
+    // The dictionary result of the computation.  NULL does not imply invalid;
+    // HasError() should be used to test this.
+    // Wwnership remains with with the Result.
+    DictionaryValue* GetSettings() const;
+
+    // Whether there was an error in the computation.  If so, the results of
+    // GetSettings and ReleaseSettings are not valid.
+    bool HasError() const;
+
+    // Gets the error message, if any.
+    const std::string& GetError() const;
+
+   private:
+    struct Inner : public base::RefCountedThreadSafe<Inner> {
+      // Empty error implies no error.
+      Inner(DictionaryValue* settings, const std::string& error);
+      ~Inner();
+
+      const scoped_ptr<DictionaryValue> settings_;
+      const std::string error_;
+    };
+
+    const scoped_refptr<Inner> inner_;
+  };
+
   virtual ~ExtensionSettingsStorage() {}
 
-  // Destroys this settings storage object.  This is needed as a separate
-  // interface method as opposed to just using the destructor, since
-  // destruction may need to be done asynchronously (e.g. on the FILE thread).
-  virtual void DeleteSoon() = 0;
+  // Gets a single value from storage.
+  // If successful, result maps the key to its value.
+  virtual Result Get(const std::string& key) = 0;
 
-  // Gets a single value from storage.  Callback with a dictionary mapping the
-  // key to its value, if any.
-  virtual void Get(const std::string& key, Callback* callback) = 0;
+  // Gets multiple values from storage.
+  // If successful, result maps each key to its value.
+  virtual Result Get(const std::vector<std::string>& keys) = 0;
 
-  // Gets multiple values from storage.  Callback with a dictionary mapping
-  // each key to its value, if any.
-  virtual void Get(const ListValue& keys, Callback* callback) = 0;
+  // Gets all values from storage.
+  // If successful, result maps every key to its value.
+  virtual Result Get() = 0;
 
-  // Gets all values from storage.  Callback with a dictionary mapping every
-  // key to its value.
-  virtual void Get(Callback* callback) = 0;
+  // Sets a single key to a new value.
+  // If successful, result maps the key to the given value.
+  virtual Result Set(const std::string& key, const Value& value) = 0;
 
-  // Sets a single key to a new value.  Callback with a dictionary mapping the
-  // key to its new value; on success, this is guaranteed to be the given key
-  // to the given new value.
-  virtual void Set(const std::string& key, const Value& value,
-      Callback* callback) = 0;
+  // Sets multiple keys to new values.
+  // If successful, result is identical to the given dictionary.
+  virtual Result Set(const DictionaryValue& values) = 0;
 
-  // Sets multiple keys to new values. Callback with a dictionary mapping each
-  // key to its new value; on success, this is guaranteed to be each given key
-  // to its given new value.
-  virtual void Set(const DictionaryValue& values, Callback* callback) = 0;
+  // Removes a key from the storage.
+  // If successful, result value is NULL.
+  virtual Result Remove(const std::string& key) = 0;
 
-  // Removes a key from the map.  Callback with a dictionary mapping the key
-  // to its new value; on success, this will be an empty map.
-  virtual void Remove(const std::string& key, Callback* callback) = 0;
+  // Removes multiple keys from the storage.
+  // If successful, result value is NULL.
+  virtual Result Remove(const std::vector<std::string>& keys) = 0;
 
-  // Removes multiple keys from the map.  Callback with a dictionary mapping
-  // each key to its new value; on success, this will be an empty map.
-  virtual void Remove(const ListValue& keys, Callback* callback) = 0;
-
-  // Clears the storage.  Callback with a dictionary mapping every key in
-  // storage to its value; on success, this will be an empty map.
-  virtual void Clear(Callback *callback) = 0;
+  // Clears the storage.
+  // If successful, result value is NULL.
+  virtual Result Clear() = 0;
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_SETTINGS_STORAGE_H_

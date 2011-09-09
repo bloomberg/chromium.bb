@@ -7,6 +7,7 @@
 #pragma once
 
 #include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/extensions/extension_settings_storage.h"
 
@@ -15,38 +16,34 @@
 //
 // Calls to Get() will return from the cache if an entry is present, or be
 // passed to the delegate and the result cached if not.
-//
 // Calls to Set() / Clear() / Remove() are written through to the delegate,
 // then stored in the cache if successful.
 class ExtensionSettingsStorageCache : public ExtensionSettingsStorage {
  public:
-  // Creates a cache around a delegate.  Ownership of the delegate is taken.
+  // Ownership of delegate taken.
   explicit ExtensionSettingsStorageCache(ExtensionSettingsStorage* delegate);
-
-  virtual void DeleteSoon() OVERRIDE;
-
-  virtual void Get(const std::string& key, Callback* callback) OVERRIDE;
-  virtual void Get(const ListValue& keys, Callback* callback) OVERRIDE;
-  virtual void Get(Callback* callback) OVERRIDE;
-  virtual void Set(
-      const std::string& key, const Value& value, Callback* callback) OVERRIDE;
-  virtual void Set(const DictionaryValue& values, Callback* callback) OVERRIDE;
-  virtual void Remove(const std::string& key, Callback* callback) OVERRIDE;
-  virtual void Remove(const ListValue& keys, Callback* callback) OVERRIDE;
-  virtual void Clear(Callback *callback) OVERRIDE;
-
- private:
-  // Delete with DeleteSoon().
   virtual ~ExtensionSettingsStorageCache();
 
+  // ExtensionSettingsStorage implementation.
+  virtual Result Get(const std::string& key) OVERRIDE;
+  virtual Result Get(const std::vector<std::string>& keys) OVERRIDE;
+  virtual Result Get() OVERRIDE;
+  virtual Result Set(const std::string& key, const Value& value) OVERRIDE;
+  virtual Result Set(const DictionaryValue& settings) OVERRIDE;
+  virtual Result Remove(const std::string& key) OVERRIDE;
+  virtual Result Remove(const std::vector<std::string>& keys) OVERRIDE;
+  virtual Result Clear() OVERRIDE;
+
+ private:
   // Returns whether the value was found in the cache.
   // Ownership of value is released to the caller and placed in value.
   bool GetFromCache(const std::string& key, Value** value);
 
-  // Deleted in DeleteSoon().
-  ExtensionSettingsStorage* delegate_;
+  // Storage that the cache is wrapping.
+  scoped_ptr<ExtensionSettingsStorage> delegate_;
+
+  // The in-memory cache of settings from the delegate.
   DictionaryValue cache_;
-  base::WeakPtrFactory<DictionaryValue> cache_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionSettingsStorageCache);
 };

@@ -1073,6 +1073,7 @@
         'browser/extensions/extension_settings_api.h',
         'browser/extensions/extension_settings_noop_storage.cc',
         'browser/extensions/extension_settings_noop_storage.h',
+        'browser/extensions/extension_settings_storage.cc',
         'browser/extensions/extension_settings_storage.h',
         'browser/extensions/extension_settings_storage_cache.cc',
         'browser/extensions/extension_settings_storage_cache.h',

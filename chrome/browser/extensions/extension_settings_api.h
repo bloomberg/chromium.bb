@@ -14,33 +14,27 @@
 // Superclass of all settings functions.
 class SettingsFunction : public AsyncExtensionFunction {
  public:
-  // Extension settings function implementations should do their work here, and
-  // either run a StorageResultCallback or fill the function result / call
-  // SendResponse themselves.
-  // The exception is that implementations can return false to immediately
-  // call SendResponse(false), for compliance with EXTENSION_FUNCTION_VALIDATE.
-  virtual bool RunWithStorageImpl(ExtensionSettingsStorage* storage) = 0;
+  // Extension settings function implementations should do their work here.
+  // This runs on the FILE thread.
+  //
+  // Implementations should fill in args themselves, though (like RunImpl)
+  // may return false to imply failure.
+  virtual bool RunOnFileThreadImpl(ExtensionSettingsStorage* storage) = 0;
 
+ protected:
   virtual bool RunImpl() OVERRIDE;
 
-  // Callback from all storage methods (Get/Set/Remove/Clear) which sets the
-  // appropriate fields of the extension function (result/error) and sends a
-  // response.
-  // Declared here to access to the protected members of ExtensionFunction.
-  class StorageResultCallback : public ExtensionSettingsStorage::Callback {
-   public:
-    explicit StorageResultCallback(SettingsFunction* settings_function);
-    virtual ~StorageResultCallback();
-    virtual void OnSuccess(DictionaryValue* settings) OVERRIDE;
-    virtual void OnFailure(const std::string& message) OVERRIDE;
-
-   private:
-    scoped_refptr<SettingsFunction> settings_function_;
-  };
+  // Sets error_ or result_ depending on the value of a storage Result, and
+  // returns whether the Result implies success (i.e. !error).
+  bool UseResult(const ExtensionSettingsStorage::Result& storage_result);
 
  private:
-  // Callback method from GetStorage(); delegates to RunWithStorageImpl.
-  void RunWithStorage(ExtensionSettingsStorage* storage);
+  // Callback from GetStorage.
+  void RunOnUIThreadWithStorage(ExtensionSettingsStorage* storage);
+
+  // Called from RunOnUIThreadWithStorage.  Runs RunOnFileThreadImpl and sends
+  // a response (on the UI thread) with its return value.
+  void RunOnFileThreadWithStorage(ExtensionSettingsStorage* storage);
 };
 
 class GetSettingsFunction : public SettingsFunction {
@@ -48,7 +42,7 @@ class GetSettingsFunction : public SettingsFunction {
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.settings.get");
 
  protected:
-  virtual bool RunWithStorageImpl(ExtensionSettingsStorage* storage) OVERRIDE;
+  virtual bool RunOnFileThreadImpl(ExtensionSettingsStorage* storage) OVERRIDE;
 };
 
 class SetSettingsFunction : public SettingsFunction {
@@ -56,7 +50,7 @@ class SetSettingsFunction : public SettingsFunction {
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.settings.set");
 
  protected:
-  virtual bool RunWithStorageImpl(ExtensionSettingsStorage* storage) OVERRIDE;
+  virtual bool RunOnFileThreadImpl(ExtensionSettingsStorage* storage) OVERRIDE;
 };
 
 class RemoveSettingsFunction : public SettingsFunction {
@@ -64,7 +58,7 @@ class RemoveSettingsFunction : public SettingsFunction {
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.settings.remove");
 
  protected:
-  virtual bool RunWithStorageImpl(ExtensionSettingsStorage* storage) OVERRIDE;
+  virtual bool RunOnFileThreadImpl(ExtensionSettingsStorage* storage) OVERRIDE;
 };
 
 class ClearSettingsFunction : public SettingsFunction {
@@ -72,7 +66,7 @@ class ClearSettingsFunction : public SettingsFunction {
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.settings.clear");
 
  protected:
-  virtual bool RunWithStorageImpl(ExtensionSettingsStorage* storage) OVERRIDE;
+  virtual bool RunOnFileThreadImpl(ExtensionSettingsStorage* storage) OVERRIDE;
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_SETTINGS_API_H_

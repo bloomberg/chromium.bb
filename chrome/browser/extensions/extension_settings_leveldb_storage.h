@@ -17,43 +17,45 @@
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
 
 // Extension settings storage object, backed by a leveldb database.
+//
 // No caching is done; that should be handled by wrapping with an
 // ExtensionSettingsStorageCache.
+// All methods must be run on the FILE thread.
 class ExtensionSettingsLeveldbStorage : public ExtensionSettingsStorage {
  public:
   // Tries to create a leveldb storage area for an extension at a base path.
   // Returns NULL if creation fails.
-  // Must be run on the FILE thread.
   static ExtensionSettingsLeveldbStorage* Create(
       const FilePath& base_path, const std::string& extension_id);
 
-  // Can be run on any thread.
-  virtual void DeleteSoon() OVERRIDE;
+  // Must be deleted on the FILE thread.
+  virtual ~ExtensionSettingsLeveldbStorage();
 
-  virtual void Get(const std::string& key, Callback* callback) OVERRIDE;
-  virtual void Get(const ListValue& keys, Callback* callback) OVERRIDE;
-  virtual void Get(Callback* callback) OVERRIDE;
-  virtual void Set(
-      const std::string& key, const Value& value, Callback* callback) OVERRIDE;
-  virtual void Set(const DictionaryValue& values, Callback* callback) OVERRIDE;
-  virtual void Remove(const std::string& key, Callback* callback) OVERRIDE;
-  virtual void Remove(const ListValue& keys, Callback* callback) OVERRIDE;
-  virtual void Clear(Callback *callback) OVERRIDE;
+  // ExtensionSettingsStorage implementation.
+  virtual Result Get(const std::string& key) OVERRIDE;
+  virtual Result Get(const std::vector<std::string>& keys) OVERRIDE;
+  virtual Result Get() OVERRIDE;
+  virtual Result Set(const std::string& key, const Value& value) OVERRIDE;
+  virtual Result Set(const DictionaryValue& settings) OVERRIDE;
+  virtual Result Remove(const std::string& key) OVERRIDE;
+  virtual Result Remove(const std::vector<std::string>& keys) OVERRIDE;
+  virtual Result Clear() OVERRIDE;
 
  private:
   // Ownership of db is taken.
   explicit ExtensionSettingsLeveldbStorage(leveldb::DB* db);
 
-  // This must only be deleted on the FILE thread.
-  friend class DeleteTask<ExtensionSettingsLeveldbStorage>;
-  virtual ~ExtensionSettingsLeveldbStorage();
+  // Reads a key from the database, settings the resulting key/value pair in
+  // a given settings object if successful.
+  // Returns whether the get was successful.
+  bool ReadFromDb(
+      leveldb::ReadOptions options,
+      const std::string& key,
+      // Ownership NOT taken.
+      DictionaryValue* settings);
 
   // leveldb backend.
   scoped_ptr<leveldb::DB> db_;
-
-  // Whether this has or is about to be deleted on the FILE thread.
-  // Used to prevent any use of this after DeleteSoon() is called.
-  bool marked_for_deletion_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionSettingsLeveldbStorage);
 };

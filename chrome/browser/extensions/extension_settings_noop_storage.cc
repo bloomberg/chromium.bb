@@ -4,69 +4,42 @@
 
 #include "chrome/browser/extensions/extension_settings_noop_storage.h"
 
-#include "base/bind.h"
-#include "base/memory/scoped_ptr.h"
-#include "base/message_loop.h"
-#include "base/task.h"
-
-static void CallOnSuccess(
-    ExtensionSettingsStorage::Callback* callback, DictionaryValue* settings) {
-  callback->OnSuccess(settings);
-  delete callback;
+ExtensionSettingsStorage::Result ExtensionSettingsNoopStorage::Get(
+    const std::string& key) {
+  return Result(new DictionaryValue());
 }
 
-static void Succeed(
-    ExtensionSettingsStorage::Callback* callback, DictionaryValue* settings) {
-  MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&CallOnSuccess, callback, settings));
+ExtensionSettingsStorage::Result ExtensionSettingsNoopStorage::Get(
+    const std::vector<std::string>& keys) {
+  return Result(new DictionaryValue());
 }
 
-void ExtensionSettingsNoopStorage::DeleteSoon() {
-  delete this;
+ExtensionSettingsStorage::Result ExtensionSettingsNoopStorage::Get() {
+  return Result(new DictionaryValue());
 }
 
-void ExtensionSettingsNoopStorage::Get(
-    const std::string& key, ExtensionSettingsStorage::Callback* callback) {
-  Succeed(callback, new DictionaryValue());
-}
-
-void ExtensionSettingsNoopStorage::Get(
-    const ListValue& keys, ExtensionSettingsStorage::Callback* callback) {
-  Succeed(callback, new DictionaryValue());
-}
-
-void ExtensionSettingsNoopStorage::Get(
-    ExtensionSettingsStorage::Callback* callback) {
-  Succeed(callback, new DictionaryValue());
-}
-
-void ExtensionSettingsNoopStorage::Set(
-    const std::string& key,
-    const Value& value,
-    ExtensionSettingsStorage::Callback* callback) {
+ExtensionSettingsStorage::Result ExtensionSettingsNoopStorage::Set(
+    const std::string& key, const Value& value) {
   DictionaryValue* settings = new DictionaryValue();
   settings->SetWithoutPathExpansion(key, value.DeepCopy());
-  Succeed(callback, settings);
+  return Result(settings);
 }
 
-void ExtensionSettingsNoopStorage::Set(
-    const DictionaryValue& values,
-    ExtensionSettingsStorage::Callback* callback) {
-  Succeed(callback, values.DeepCopy());
+ExtensionSettingsStorage::Result ExtensionSettingsNoopStorage::Set(
+    const DictionaryValue& settings) {
+  return Result(settings.DeepCopy());
 }
 
-void ExtensionSettingsNoopStorage::Remove(
-    const std::string& key, ExtensionSettingsStorage::Callback *callback) {
-  Succeed(callback, NULL);
+ExtensionSettingsStorage::Result ExtensionSettingsNoopStorage::Remove(
+    const std::string& key) {
+  return Result(NULL);
 }
 
-void ExtensionSettingsNoopStorage::Remove(
-    const ListValue& keys, ExtensionSettingsStorage::Callback *callback) {
-  Succeed(callback, NULL);
+ExtensionSettingsStorage::Result ExtensionSettingsNoopStorage::Remove(
+    const std::vector<std::string>& keys) {
+  return Result(NULL);
 }
 
-void ExtensionSettingsNoopStorage::Clear(
-    ExtensionSettingsStorage::Callback* callback) {
-  Succeed(callback, NULL);
+ExtensionSettingsStorage::Result ExtensionSettingsNoopStorage::Clear() {
+  return Result(NULL);
 }
