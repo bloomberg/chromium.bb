@@ -40,7 +40,7 @@ const int kCloseButtonLeftPadding = 8;
 }
 
 - (void)onCloseButtonClick:(id)sender {
-  [[self controller] closePanel];
+  [controller_ closePanel];
 }
 
 - (void)onSettingsButtonClick:(id)sender {
@@ -74,6 +74,8 @@ const int kCloseButtonLeftPadding = 8;
   // Interface Builder can not put a view as a sibling of contentView,
   // so need to do it here. Placing ourself as the last child of the
   // internal view allows us to draw on top of the titlebar.
+  // Note we must use [controller_ window] here since we have not been added
+  // to the view hierarchy yet.
   [[[[controller_ window] contentView] superview] addSubview:self];
 
   // Figure out the rectangle of the titlebar and set us on top of it.
@@ -85,7 +87,7 @@ const int kCloseButtonLeftPadding = 8;
   //     |            |
   // contentView  titlebar
   NSRect rootViewBounds = [[self superview] bounds];
-  NSRect contentFrame = [[[controller_ window] contentView] frame];
+  NSRect contentFrame = [[[self window] contentView] frame];
   NSRect titlebarFrame =
       NSMakeRect(NSMinX(contentFrame),
                  NSMaxY(contentFrame),
@@ -146,7 +148,7 @@ const int kCloseButtonLeftPadding = 8;
                                             NSTrackingActiveAlways)
                               proxiedOwner:self
                                   userInfo:nil]);
-  NSWindow* panelWindow = [controller_ window];
+  NSWindow* panelWindow = [self window];
   [closeButtonTrackingArea_.get() clearOwnerWhenWindowWillClose:panelWindow];
   [self addTrackingArea:closeButtonTrackingArea_.get()];
 }
@@ -164,15 +166,15 @@ const int kCloseButtonLeftPadding = 8;
   [[closeButton_ cell] setHighlighted:NO];
 }
 
-- (PanelWindowControllerCocoa*)controller {
-  return controller_;
-}
-
 - (void)didChangeMainWindow:(NSNotification*)notification {
   [self setNeedsDisplay:YES];
 }
 
 // (Private/TestingAPI)
+- (PanelWindowControllerCocoa*)controller {
+  return controller_;
+}
+
 - (void)simulateCloseButtonClick {
   [[closeButton_ cell] performClick:closeButton_];
 }

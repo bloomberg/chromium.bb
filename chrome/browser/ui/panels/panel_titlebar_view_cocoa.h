@@ -48,9 +48,6 @@
   // Should be called when size of the titlebar changes.
 - (void)updateCloseButtonLayout;
 
-  // Accessor to Panel's controller.
-- (PanelWindowControllerCocoa*)controller;
-
 // We need to respond to main window changes so we can update our look.
 - (void)didChangeMainWindow:(NSNotification*)notification;
 
@@ -58,6 +55,8 @@
 
 // Methods which are either only for testing, or only public for testing.
 @interface PanelTitlebarViewCocoa(TestingAPI)
+
+- (PanelWindowControllerCocoa*)controller;
 
 // Simulates click on a close button. Used to test panel closing.
 - (void)simulateCloseButtonClick;
