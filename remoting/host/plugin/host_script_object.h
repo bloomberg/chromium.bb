@@ -88,10 +88,11 @@ class HostNPScriptObject : public HostStatusObserver {
  private:
   enum State {
     kDisconnected,
+    kStarting,
     kRequestedAccessCode,
     kReceivedAccessCode,
     kConnected,
-    kAffirmingConnection,
+    kDisconnecting,
     kError
   };
 
@@ -109,8 +110,11 @@ class HostNPScriptObject : public HostStatusObserver {
   // No result.
   bool Localize(const NPVariant* args, uint32_t argCount, NPVariant* result);
 
-  // Call OnStateChanged handler if there is one.
-  void OnStateChanged(State state);
+  // Updates state of the host. Can be called only on the main thread.
+  void SetState(State state);
+
+  // Notifies OnStateChanged handler of a state change.
+  void NotifyStateChanged(State state);
 
   // Call LogDebugInfo handler if there is one.
   // This must be called on the correct thread.
@@ -121,6 +125,7 @@ class HostNPScriptObject : public HostStatusObserver {
                            bool success,
                            const std::string& support_id,
                            const base::TimeDelta& lifetime);
+  void NotifyAccessCode(bool success);
 
   // Helper functions that run on main thread. Can be called on any
   // other thread.
@@ -158,10 +163,13 @@ class HostNPScriptObject : public HostStatusObserver {
 
   NPP plugin_;
   NPObject* parent_;
-  int state_;
+  State state_;
+
+  base::Lock access_code_lock_;
   std::string access_code_;
-  std::string client_username_;
   base::TimeDelta access_code_lifetime_;
+
+  std::string client_username_;
   ScopedRefNPObject log_debug_info_func_;
   ScopedRefNPObject on_state_changed_func_;
   base::PlatformThreadId np_thread_id_;

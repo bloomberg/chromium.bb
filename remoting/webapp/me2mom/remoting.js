@@ -304,7 +304,10 @@ function onStateChanged_() {
   var plugin = /** @type {remoting.HostPlugin} */
       document.getElementById(remoting.HOST_PLUGIN_ID);
   var state = plugin.state;
-  if (state == plugin.REQUESTED_ACCESS_CODE) {
+  if (state == plugin.STARTING) {
+    // Nothing to do here.
+    remoting.debug.log('Host plugin state: STARTING');
+  } else if (state == plugin.REQUESTED_ACCESS_CODE) {
     // Nothing to do here.
     remoting.debug.log('Host plugin state: REQUESTED_ACCESS_CODE');
   } else if (state == plugin.RECEIVED_ACCESS_CODE) {
@@ -340,6 +343,8 @@ function onStateChanged_() {
     l10n.localizeElement(element, client);
     remoting.setMode(remoting.AppMode.HOST_SHARED);
     disableTimeoutCountdown_();
+  } else if (state == plugin.DISCONNECTING) {
+    remoting.debug.log('Host plugin state: DISCONNECTING');
   } else if (state == plugin.DISCONNECTED) {
     remoting.debug.log('Host plugin state: DISCONNECTED');
     if (remoting.currentMode != remoting.AppMode.HOST_SHARE_FAILED) {

@@ -32,10 +32,11 @@ namespace remoting {
 //
 // state: {
 //     DISCONNECTED,
+//     STARTING,
 //     REQUESTED_ACCESS_CODE,
 //     RECEIVED_ACCESS_CODE,
 //     CONNECTED,
-//     AFFIRMING_CONNECTION,
+//     DISCONNECTING,
 //     ERROR,
 // }
 //
@@ -62,10 +63,11 @@ const char* kFuncNameLocalize = "localize";
 
 // States.
 const char* kAttrNameDisconnected = "DISCONNECTED";
+const char* kAttrNameStarting = "STARTING";
 const char* kAttrNameRequestedAccessCode = "REQUESTED_ACCESS_CODE";
 const char* kAttrNameReceivedAccessCode = "RECEIVED_ACCESS_CODE";
 const char* kAttrNameConnected = "CONNECTED";
-const char* kAttrNameAffirmingConnection = "AFFIRMING_CONNECTION";
+const char* kAttrNameDisconnecting = "DISCONNECTING";
 const char* kAttrNameError = "ERROR";
 
 const int kMaxLoginAttempts = 5;
@@ -95,7 +97,9 @@ HostNPScriptObject::~HostNPScriptObject() {
 
   // Shutdown DesktopEnvironment first so that it doesn't try to post
   // tasks on the UI thread while we are stopping the host.
-  desktop_environment_->Shutdown();
+  if (desktop_environment_.get()) {
+    desktop_environment_->Shutdown();
+  }
 
   HostLogHandler::UnregisterLoggingScriptObject(this);
 
@@ -178,10 +182,11 @@ bool HostNPScriptObject::HasProperty(const std::string& property_name) {
           property_name == kAttrNameLogDebugInfo ||
           property_name == kAttrNameOnStateChanged ||
           property_name == kAttrNameDisconnected ||
+          property_name == kAttrNameStarting ||
           property_name == kAttrNameRequestedAccessCode ||
           property_name == kAttrNameReceivedAccessCode ||
           property_name == kAttrNameConnected ||
-          property_name == kAttrNameAffirmingConnection ||
+          property_name == kAttrNameDisconnecting ||
           property_name == kAttrNameError);
 }
 
@@ -204,9 +209,11 @@ bool HostNPScriptObject::GetProperty(const std::string& property_name,
     INT32_TO_NPVARIANT(state_, *result);
     return true;
   } else if (property_name == kAttrNameAccessCode) {
+    base::AutoLock auto_lock(access_code_lock_);
     *result = NPVariantFromString(access_code_);
     return true;
   } else if (property_name == kAttrNameAccessCodeLifetime) {
+    base::AutoLock auto_lock(access_code_lock_);
     INT32_TO_NPVARIANT(access_code_lifetime_.InSeconds(), *result);
     return true;
   } else if (property_name == kAttrNameClient) {
@@ -214,6 +221,9 @@ bool HostNPScriptObject::GetProperty(const std::string& property_name,
     return true;
   } else if (property_name == kAttrNameDisconnected) {
     INT32_TO_NPVARIANT(kDisconnected, *result);
+    return true;
+  } else if (property_name == kAttrNameStarting) {
+    INT32_TO_NPVARIANT(kStarting, *result);
     return true;
   } else if (property_name == kAttrNameRequestedAccessCode) {
     INT32_TO_NPVARIANT(kRequestedAccessCode, *result);
@@ -224,8 +234,8 @@ bool HostNPScriptObject::GetProperty(const std::string& property_name,
   } else if (property_name == kAttrNameConnected) {
     INT32_TO_NPVARIANT(kConnected, *result);
     return true;
-  } else if (property_name == kAttrNameAffirmingConnection) {
-    INT32_TO_NPVARIANT(kAffirmingConnection, *result);
+  } else if (property_name == kAttrNameDisconnecting) {
+    INT32_TO_NPVARIANT(kDisconnecting, *result);
     return true;
   } else if (property_name == kAttrNameError) {
     INT32_TO_NPVARIANT(kError, *result);
@@ -285,10 +295,11 @@ bool HostNPScriptObject::Enumerate(std::vector<std::string>* values) {
     kFuncNameDisconnect,
     kFuncNameLocalize,
     kAttrNameDisconnected,
+    kAttrNameStarting,
     kAttrNameRequestedAccessCode,
     kAttrNameReceivedAccessCode,
     kAttrNameConnected,
-    kAttrNameAffirmingConnection,
+    kAttrNameDisconnecting,
     kAttrNameError
   };
   for (size_t i = 0; i < arraysize(entries); ++i) {
@@ -314,25 +325,38 @@ void HostNPScriptObject::OnAccessDenied() {
 
 void HostNPScriptObject::OnClientAuthenticated(
     remoting::protocol::ConnectionToClient* client) {
-  DCHECK_NE(base::PlatformThread::CurrentId(), np_thread_id_);
+  DCHECK_EQ(MessageLoop::current(), host_context_.main_message_loop());
+
+  if (state_ == kDisconnecting) {
+    // Ignore the new connection if we are disconnecting.
+    return;
+  }
+
   client_username_ = client->session()->jid();
   size_t pos = client_username_.find('/');
   if (pos != std::string::npos)
     client_username_.replace(pos, std::string::npos, "");
   LOG(INFO) << "Client " << client_username_ << " connected.";
-  OnStateChanged(kConnected);
+  SetState(kConnected);
 }
 
 void HostNPScriptObject::OnClientDisconnected(
     remoting::protocol::ConnectionToClient* client) {
+  DCHECK_EQ(MessageLoop::current(), host_context_.main_message_loop());
+
   client_username_.clear();
-  OnStateChanged(kDisconnected);
+
+  // Disconnect the host when a client disconnects.
+  DisconnectInternal();
 }
 
 void HostNPScriptObject::OnShutdown() {
   DCHECK_EQ(MessageLoop::current(), host_context_.main_message_loop());
 
-  OnStateChanged(kDisconnected);
+  host_ = NULL;
+  if (state_ != kDisconnected) {
+    SetState(kDisconnected);
+  }
 }
 
 // string uid, string auth_token
@@ -345,6 +369,11 @@ bool HostNPScriptObject::Connect(const NPVariant* args,
 
   if (arg_count != 2) {
     SetException("connect: bad number of arguments");
+    return false;
+  }
+
+  if (state_ != kDisconnected) {
+    SetException("connect: can be called only when disconnected");
     return false;
   }
 
@@ -380,6 +409,8 @@ void HostNPScriptObject::ReadPolicyAndConnect(const std::string& uid,
     return;
   }
 
+  SetState(kStarting);
+
   // Only proceed to FinishConnect() if at least one policy update has been
   // received.
   if (policy_received_) {
@@ -396,13 +427,13 @@ void HostNPScriptObject::FinishConnect(
     const std::string& uid,
     const std::string& auth_token,
     const std::string& auth_service) {
-  if (MessageLoop::current() != host_context_.main_message_loop()) {
-    host_context_.main_message_loop()->PostTask(
-        FROM_HERE, base::Bind(
-            &HostNPScriptObject::FinishConnect, base::Unretained(this),
-            uid, auth_token, auth_service));
+  DCHECK_EQ(MessageLoop::current(), host_context_.main_message_loop());
+
+  if (state_ != kStarting) {
+    // Host has been stopped while we were fetching policy.
     return;
   }
+
   // Store the supplied user ID and token to the Host configuration.
   scoped_refptr<MutableHostConfig> host_config = new InMemoryHostConfig();
   host_config->SetString(kXmppLoginConfigPath, uid);
@@ -427,14 +458,14 @@ void HostNPScriptObject::FinishConnect(
           base::Bind(&HostNPScriptObject::OnReceivedSupportID,
                      base::Unretained(this),
                      access_verifier.get()))) {
-    OnStateChanged(kError);
+    SetState(kError);
     return;
   }
 
   // Create DesktopEnvironment.
   desktop_environment_.reset(DesktopEnvironment::Create(&host_context_));
   if (desktop_environment_.get() == NULL) {
-    OnStateChanged(kError);
+    SetState(kError);
     return;
   }
 
@@ -459,7 +490,7 @@ void HostNPScriptObject::FinishConnect(
   // Start the Host.
   host_->Start();
 
-  OnStateChanged(kRequestedAccessCode);
+  SetState(kRequestedAccessCode);
   return;
 }
 
@@ -504,21 +535,31 @@ void HostNPScriptObject::DisconnectInternal() {
     return;
   }
 
-  if (!host_) {
-    disconnected_event_.Signal();
-    return;
-  }
+  switch (state_) {
+    case kDisconnected:
+      disconnected_event_.Signal();
+      return;
 
-  host_->Shutdown(
-      NewRunnableMethod(this, &HostNPScriptObject::OnShutdownFinished));
+    case kStarting:
+      SetState(kDisconnecting);
+      SetState(kDisconnected);
+      disconnected_event_.Signal();
+      return;
+
+    case kDisconnecting:
+      return;
+
+    default:
+      DCHECK(host_);
+      SetState(kDisconnecting);
+      host_->Shutdown(
+          NewRunnableMethod(this, &HostNPScriptObject::OnShutdownFinished));
+  }
 }
 
 void HostNPScriptObject::OnShutdownFinished() {
   DCHECK_EQ(MessageLoop::current(), host_context_.main_message_loop());
 
-  host_ = NULL;
-  register_request_.reset();
-  host_config_ = NULL;
   disconnected_event_.Signal();
 }
 
@@ -553,41 +594,85 @@ void HostNPScriptObject::OnReceivedSupportID(
     bool success,
     const std::string& support_id,
     const base::TimeDelta& lifetime) {
-  CHECK_NE(base::PlatformThread::CurrentId(), np_thread_id_);
+  DCHECK(host_context_.network_message_loop()->BelongsToCurrentThread());
 
   if (!success) {
-    // TODO(wez): Replace the success/fail flag with full error reporting.
-    OnStateChanged(kError);
+    host_context_.main_message_loop()->PostTask(FROM_HERE, base::Bind(
+        &HostNPScriptObject::NotifyAccessCode, base::Unretained(this), false));
     DisconnectInternal();
     return;
   }
 
-  // Inform the AccessVerifier of our Support-Id, for authentication.
   access_verifier->OnIT2MeHostRegistered(success, support_id);
+  std::string access_code = support_id + access_verifier->host_secret();
+  host_->set_access_code(access_code);
 
-  // Combine the Support Id with the Host Id to make the Access Code.
-  // TODO(wez): Locking, anyone?
-  access_code_ = support_id + access_verifier->host_secret();
-  access_code_lifetime_ = lifetime;
+  {
+    base::AutoLock lock(access_code_lock_);
+    access_code_ = access_code;
+    access_code_lifetime_ = lifetime;
+  }
 
-  // Tell the ChromotingHost the access code, to use as shared-secret.
-  host_->set_access_code(access_code_);
-
-  // Let the caller know that life is good.
-  OnStateChanged(kReceivedAccessCode);
+  host_context_.main_message_loop()->PostTask(FROM_HERE, base::Bind(
+      &HostNPScriptObject::NotifyAccessCode, base::Unretained(this), true));
 }
 
-void HostNPScriptObject::OnStateChanged(State state) {
+void HostNPScriptObject::NotifyAccessCode(bool success) {
+  DCHECK_EQ(MessageLoop::current(), host_context_.main_message_loop());
+  if (state_ == kRequestedAccessCode) {
+    SetState(success ? kReceivedAccessCode : kError);
+  }
+}
+
+void HostNPScriptObject::SetState(State state) {
+  DCHECK_EQ(MessageLoop::current(), host_context_.main_message_loop());
+  switch (state_) {
+    case kDisconnected:
+      DCHECK(state == kStarting ||
+             state == kError) << state;
+      break;
+    case kStarting:
+      DCHECK(state == kRequestedAccessCode ||
+             state == kDisconnecting ||
+             state == kError) << state;
+      break;
+    case kRequestedAccessCode:
+      DCHECK(state == kReceivedAccessCode ||
+             state == kDisconnecting ||
+             state == kError) << state;
+      break;
+    case kReceivedAccessCode:
+      DCHECK(state == kConnected ||
+             state == kDisconnecting ||
+             state == kError) << state;
+      break;
+    case kConnected:
+      DCHECK(state == kDisconnecting ||
+             state == kDisconnected ||
+             state == kError) << state;
+      break;
+    case kDisconnecting:
+      DCHECK(state == kDisconnected) << state;
+      break;
+    case kError:
+      DCHECK(state == kDisconnecting) << state;
+      break;
+  };
+  state_ = state;
+  NotifyStateChanged(state);
+}
+
+void HostNPScriptObject::NotifyStateChanged(State state) {
   if (!plugin_message_loop_proxy_->BelongsToCurrentThread()) {
     plugin_message_loop_proxy_->PostTask(
-        FROM_HERE, base::Bind(&HostNPScriptObject::OnStateChanged,
+        FROM_HERE, base::Bind(&HostNPScriptObject::NotifyStateChanged,
                               base::Unretained(this), state));
     return;
   }
-  state_ = state;
   if (on_state_changed_func_.get()) {
     VLOG(2) << "Calling state changed " << state;
-    bool is_good = InvokeAndIgnoreResult(on_state_changed_func_.get(), NULL, 0);
+    bool is_good = InvokeAndIgnoreResult(on_state_changed_func_.get(),
+                                         NULL, 0);
     LOG_IF(ERROR, !is_good) << "OnStateChanged failed";
   }
 }

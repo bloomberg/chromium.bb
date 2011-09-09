@@ -27,11 +27,12 @@ remoting.HostPlugin.prototype.localize = function(callback) {};
 
 /** @type {number} */ remoting.HostPlugin.prototype.state;
 
+/** @type {number} */ remoting.HostPlugin.prototype.STARTING;
 /** @type {number} */ remoting.HostPlugin.prototype.REQUESTED_ACCESS_CODE;
 /** @type {number} */ remoting.HostPlugin.prototype.RECEIVED_ACCESS_CODE;
 /** @type {number} */ remoting.HostPlugin.prototype.CONNECTED;
 /** @type {number} */ remoting.HostPlugin.prototype.DISCONNECTED;
-/** @type {number} */ remoting.HostPlugin.prototype.AFFIRMING_CONNECTION;
+/** @type {number} */ remoting.HostPlugin.prototype.DISCONNECTING;
 /** @type {number} */ remoting.HostPlugin.prototype.ERROR;
 
 /** @type {number} */ remoting.HostPlugin.prototype.accessCodeLifetime;

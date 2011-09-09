@@ -617,6 +617,10 @@ void ChromotingHost::ShutdownFinish() {
     state_ = kStopped;
   }
 
+  // Keep reference to |this|, so that we don't get destroyed while
+  // sending notifications.
+  scoped_refptr<ChromotingHost> self(this);
+
   // Notify observers.
   for (StatusObserverList::iterator it = status_observers_.begin();
        it != status_observers_.end(); ++it) {
