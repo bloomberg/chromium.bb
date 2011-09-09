@@ -33,7 +33,7 @@ class MediaEventSimpleActionTest(MediaEventTestBase):
     # data/media/html/media_event.html. It performs these actions
     # based on query strings.
     os.environ[MediaTestEnvNames.TEST_SCENARIO_ENV_NAME] = (
-        '500|pause|0|1000|play|0|1500|seek|0')
+        '300|pause|0|400|play|0|500|seek|0')
     MediaEventTestBase.PreAllRunsProcess(self)
 
   def testHTML5MediaTag(self):
