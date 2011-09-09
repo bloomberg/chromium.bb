@@ -455,6 +455,7 @@ NaClValidatorState *NaClValidatorStateCreate(const NaClPcAddress vbase,
     state->cur_inst_vector = NULL;
     state->quit = NaClValidatorQuit(return_value);
     state->do_stub_out = FALSE;
+    state->rules_init_fn = NaClValidatorRulesInit;
   }
   return return_value;
 }
@@ -471,7 +472,7 @@ Bool NaClValidatorStateInitializeValidators(NaClValidatorState *state) {
   Bool success = TRUE;  /* until proven otherwise. */
   if (0 == state->number_validators) {
     int i;
-    NaClValidatorRulesInit(state);
+    (state->rules_init_fn)(state);
     for (i = 0; i < state->number_validators; ++i) {
       NaClValidatorDefinition *defn = &state->validators[i];
       if (defn->create_memory == NULL) {

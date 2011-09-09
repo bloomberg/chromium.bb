@@ -463,8 +463,8 @@ for validator_decoder in [False, True]:
 # tests use extension 'val' while read/write sandbox tests use extension
 # 'rval'. Assumes that a suffix of 0 on the extension implies no CPUID flags
 # set. Otherwise, assume that test is run with all CPUID flags set.
-def __AddNcvalSfiTests(test_readwrite, test_cpuid_all, test_annotate,
-                       validator_decoder):
+def __AddNcvalSfiTests(test_readwrite, test_cpuid_all, detailed,
+                       test_annotate, validator_decoder):
   if env.Bit('target_x86_64'):
     test = 'ncval64_hex'
     options = ['--hex_text=-', '--max_errors=-1']
@@ -474,6 +474,11 @@ def __AddNcvalSfiTests(test_readwrite, test_cpuid_all, test_annotate,
     else:
       ext = 'val'
       options.append('--write_sfi')
+    if (detailed):
+      ext += 'd'
+      options.append('--detailed')
+    else:
+      options.append('--detailed=false')
     if test_cpuid_all:
       options.append('--cpuid-all')
     else:
@@ -495,14 +500,15 @@ def __AddNcvalSfiTests(test_readwrite, test_cpuid_all, test_annotate,
           stdin = __BaseTestFile(base, 'hex'),
           stdout_golden = __BaseTestFile(base, ext))
       __AddTest(test, test_env, base, ext, node_val,
-                STANDARD_TESTS)
+                STANDARD_TESTS + ['validator_tests'])
 
 for read_write in [False, True]:
   for cpu_features_all in [False, True]:
-    for annotate in [False, True]:
-      for validator_decoder in [False, True]:
-        __AddNcvalSfiTests(read_write, cpu_features_all, annotate,
-                           validator_decoder)
+    for detailed in [False, True]:
+      for annotate in [False, True]:
+        for validator_decoder in [False, True]:
+          __AddNcvalSfiTests(read_write, cpu_features_all, detailed,
+                             annotate, validator_decoder)
 
 # Run segment sandboxing tests using ncval on test files.
 def __AddNcvalSegmentTests(test_cpuid_all, test_stats, detailed, align_16):

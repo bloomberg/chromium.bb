@@ -1,0 +1,32 @@
+VALIDATOR: 0000000000000078: 66 66 90                                     xchg %ax, %ax
+VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+VALIDATOR: 0000000000000078: 66 66 90                                     xchg %ax, %ax
+VALIDATOR: ERROR: Duplicating a prefix byte is not allowed by Native Client
+VALIDATOR: 000000000000007b: 66 66 66 90                                  xchg %ax, %ax
+VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+VALIDATOR: 000000000000007b: 66 66 66 90                                  xchg %ax, %ax
+VALIDATOR: ERROR: Duplicating a prefix byte is not allowed by Native Client
+VALIDATOR: 000000000000007f: 3e 0f 1f 84 00 00 00 00 00                   nop
+VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
+VALIDATOR: 0000000000000088: 66 3e 0f 1f 84 00 00 00 00 00                nop
+VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+VALIDATOR: 0000000000000088: 66 3e 0f 1f 84 00 00 00 00 00                nop
+VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
+VALIDATOR: 0000000000000088: 66 3e 0f 1f 84 00 00 00 00 00                nop
+VALIDATOR: ERROR: Use of DATA16 (66) prefix for instruction not allowed by Native Client
+VALIDATOR: 0000000000000092: 66 66 0f 1f 84 00 00 00 00 00                nop
+VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+VALIDATOR: 0000000000000092: 66 66 0f 1f 84 00 00 00 00 00                nop
+VALIDATOR: ERROR: Use of DATA16 (66) prefix for instruction not allowed by Native Client
+VALIDATOR: 0000000000000092: 66 66 0f 1f 84 00 00 00 00 00                nop
+VALIDATOR: ERROR: Duplicating a prefix byte is not allowed by Native Client
+VALIDATOR: Checking block alignment and jump targets: 0 to 9c
+VALIDATOR: 000000000000001c: 0f 1f 84 00 00 00 00 00                      nop
+VALIDATOR: ERROR: Instruction crosses basic block alignment
+VALIDATOR: 0000000000000037: 66 66 2e 0f 1f 84 00 00 00 00 00             nop
+VALIDATOR: ERROR: Instruction crosses basic block alignment
+VALIDATOR: 000000000000005b: 66 66 66 66 66 2e 0f 1f 84 00 00 00 00 00    nop
+VALIDATOR: ERROR: Instruction crosses basic block alignment
+VALIDATOR: 000000000000007f: 3e 0f 1f 84 00 00 00 00 00                   nop
+VALIDATOR: ERROR: Instruction crosses basic block alignment
+*** <input> IS UNSAFE ***

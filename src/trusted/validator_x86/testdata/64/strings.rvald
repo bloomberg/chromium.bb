@@ -1,0 +1,18 @@
+VALIDATOR: 0000000000000013: ae                                           scasb
+VALIDATOR: ERROR: Segment memory reference not allowed
+VALIDATOR: 000000000000001a: ae                                           scasb
+VALIDATOR: ERROR: Segment memory reference not allowed
+VALIDATOR: 0000000000000025: a5                                           movsd
+VALIDATOR: ERROR: Segment memory reference not allowed
+VALIDATOR: 0000000000000025: a5                                           movsd
+VALIDATOR: ERROR: Segment memory reference not allowed
+VALIDATOR: 0000000000000030: a7                                           cmpsd
+VALIDATOR: ERROR: Segment memory reference not allowed
+VALIDATOR: 0000000000000030: a7                                           cmpsd
+VALIDATOR: ERROR: Segment memory reference not allowed
+VALIDATOR: 000000000000004a: a7                                           cmpsd
+VALIDATOR: ERROR: Segment memory reference not allowed
+VALIDATOR: 000000000000004a: a7                                           cmpsd
+VALIDATOR: ERROR: Segment memory reference not allowed
+VALIDATOR: Checking block alignment and jump targets: 0 to 58
+*** <input> IS UNSAFE ***

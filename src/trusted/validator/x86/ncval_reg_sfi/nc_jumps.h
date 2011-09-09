@@ -21,7 +21,7 @@
 #include <stdio.h>
 
 #include "native_client/src/shared/utils/types.h"
-#include "native_client/src/trusted/validator/types_memory_model.h"
+#include "native_client/src/trusted/validator/x86/ncval_reg_sfi/address_sets.h"
 
 /* The model of a validator state. */
 struct NaClValidatorState;
@@ -32,8 +32,30 @@ struct NaClInstIter;
 /* The model of a parsed instruction. */
 struct NaClInstState;
 
-/* Implements the possible/actual sets of jumps. */
-struct NaClJumpSets;
+/* Holds information collected about each instruction, and the
+ * targets of possible jumps. Then, after the code has been processed,
+ * this information is processed to see if there are any invalid jumps.
+ */
+typedef struct NaClJumpSets {
+  /* Holds the set of possible target addresses that can be the result of
+   * a jump.
+   */
+  NaClAddressSet actual_targets;
+  /* Holds the set of valid instruction entry points (whenever a pattern of
+   * multiple instructions are used, the sequence will be treated as atomic,
+   * only having the first address in the set).
+   */
+  NaClAddressSet possible_targets;
+  /* Removed targets, due to instruction being in the middle of an atomic
+   * sequence. Note: This is needed so that we can allow validators to
+   * run in any order. If we didn't do this, then we are very timing dependent
+   * on calls to NaClMarkInstructionJumpIllegal, which must appear after
+   * the call to NaClJumpValidator.
+   */
+  NaClAddressSet removed_targets;
+  /* Holds the (array) size of each set above. */
+  size_t set_array_size;
+} NaClJumpSets;
 
 /* When true, changes the behaviour of NcAddJump to use mask 0xFF for
  * indirect jumps (which is a nop). This allows performance tests for
@@ -71,7 +93,7 @@ void NaClJumpValidatorSummarize(struct NaClValidatorState* state,
 void NaClJumpValidatorDestroy(struct NaClValidatorState* state,
                               struct NaClJumpSets* jump_sets);
 
-/* Record that the given instruciton can't be a possible target of a jump,
+/* Record that the given instruction can't be a possible target of a jump,
  * because it appears as the non-first
  * instruciton in a NACL pattern. This should be called on all such non-first
  * instructions (for NACL patterns) so that the instuction sequence is

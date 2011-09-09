@@ -10,7 +10,11 @@
 /*
  * ncvalidate_iter.h: Validator for the register-based SFI sandbox.
  *
- * This is the interface to the iterator form of the NaCL validator.
+ * This is the primary library interface to the x86-64 validator for the
+ * register-based sandbox. This version should be used when performance
+ * is important. See ncvalidate_iter_detailed.h for a secondary API which
+ * provides more details when reporting errors.
+ *
  * Basic usage:
  *   -- base is initial address of ELF file.
  *   -- limit is the size of the ELF file.
@@ -92,12 +96,12 @@ typedef struct NaClValidatorState NaClValidatorState;
  */
 void NaClValidateSetCPUFeatures(CPUFeatures *features);
 
-/* Create a validator state to validate the ELF file with the given parameters.
+/* Create a validator state to validate the code segment.
  * Note: Messages (if any) produced by the validator are sent to the stream
  * defined by native_client/src/shared/platform/nacl_log.h.
  * Parameters.
- *   vbase - The virtual address for the contents of the ELF file.
- *   sz - The number of bytes in the ELF file.
+ *   vbase - The virtual address for the contents of the code segment.
+ *   sz - The number of bytes in the code segment.
  *   alignment: 16 or 32, specifying alignment.
  *   base_register - OperandKind defining value for base register (or
  *     RegUnknown if not defined).

@@ -30,6 +30,7 @@
 #include "native_client/src/trusted/validator/ncfileutil.h"
 #include "native_client/src/trusted/validator/x86/nacl_cpuid.h"
 #include "native_client/src/trusted/validator/x86/ncval_reg_sfi/ncvalidate_iter.h"
+#include "native_client/src/trusted/validator/x86/ncval_reg_sfi/ncvalidate_iter_detailed.h"
 #include "native_client/src/trusted/validator/x86/ncval_reg_sfi/ncvalidator_registry.h"
 #include "native_client/src/trusted/validator/x86/ncval_reg_sfi/nc_jumps.h"
 #include "native_client/src/trusted/validator/x86/ncval_reg_sfi/nc_memory_protect.h"
@@ -54,12 +55,12 @@ static void usage(int exit_code);
  * model.
  */
 static Bool NACL_FLAGS_stats_print = FALSE;
+#endif
 
 /* Flag defining if detailed error messages should be generated. When
  * false, runs performance model as used by sel_ldr.
  */
 static Bool NACL_FLAGS_detailed_errors = TRUE;
-#endif
 
 /* Flag defining the name of a hex text to be used as the code segment.
  */
@@ -364,6 +365,19 @@ static Bool AnalyzeSegmentCodeSegments(ncfile *ncf, const char *fname) {
 static NaClOpKind nacl_base_register =
     (64 == NACL_TARGET_SUBARCH ? RegR15 : RegUnknown);
 
+/* Create validator state using detailed (summary) error messages
+ * if selected.
+ */
+struct NaClValidatorState* NaClValStateCreate(
+    const NaClPcAddress vbase,
+    const NaClMemorySize sz,
+    const uint8_t alignment,
+    const NaClOpKind base_register) {
+  return NACL_FLAGS_detailed_errors
+      ? NaClValidatorStateCreateDetailed(vbase, sz, alignment, base_register)
+      : NaClValidatorStateCreate(vbase, sz, alignment, base_register);
+}
+
 /* Returns the decoder tables to use. */
 static const NaClDecodeTables* NaClGetDecoderTables() {
   return NACL_FLAGS_validator_decoder
@@ -435,8 +449,8 @@ static Bool AnalyzeSfiCodeSegments(ncfile *ncf, const char *fname) {
   Bool return_value = TRUE;
 
   GetVBaseAndLimit(ncf, &vbase, &vlimit);
-  vstate = NaClValidatorStateCreate(vbase, vlimit - vbase,
-                                    ncf->ncalign, nacl_base_register);
+  vstate = NaClValStateCreate(vbase, vlimit - vbase,
+                              ncf->ncalign, nacl_base_register);
   if (vstate == NULL) {
     NaClValidatorMessage(LOG_ERROR, vstate, "Unable to create validator state");
     return FALSE;
@@ -496,10 +510,10 @@ static Bool NaClValidateAnalyzeBytes(NaClValidateBytes* data) {
   Bool return_value = FALSE;
 #if NACL_TARGET_SUBARCH == 64
   NaClValidatorState* state;
-  state = NaClValidatorStateCreate(data->base,
-                                   data->num_bytes,
-                                   (uint8_t) NACL_FLAGS_block_alignment,
-                                   nacl_base_register);
+  state = NaClValStateCreate(data->base,
+                             data->num_bytes,
+                             (uint8_t) NACL_FLAGS_block_alignment,
+                             nacl_base_register);
   if (NULL == state) {
     NaClValidatorMessage(LOG_ERROR, NULL, "Unable to create validator state");
     return FALSE;
@@ -584,11 +598,9 @@ static void usage(int exit_code) {
       "\tModel a CPU that supports no avaliable features.\n"
       "--CX8\n"
       "\tModel a CPU that supports the cmpxchg8b instruction.\n"
-#if NACL_TARGET_SUBARCH == 32
       "--detailed\n"
       "\tPrint out detailed error messages, rather than use performant\n"
       "\tcode used by sel_ldr\n"
-#endif
       "--errors\n"
       "\tPrint out error and fatal error messages, but not\n"
       "\tinformative and warning messages\n"
@@ -705,9 +717,7 @@ static Bool GrokABoolFlag(const char *arg) {
     Bool *flag_ptr;
   } flags[] = {
     { "--segments" , &NACL_FLAGS_analyze_segments },
-#if NACL_TARGET_SUBARCH == 32
     { "--detailed", &NACL_FLAGS_detailed_errors },
-#endif
     { "--stubout", &NACL_FLAGS_stubout_memory },
 #if NACL_TARGET_SUBARCH == 64
     { "--trace_insts", &NACL_FLAGS_validator_trace_instructions },

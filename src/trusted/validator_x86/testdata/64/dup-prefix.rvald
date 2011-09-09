@@ -1,0 +1,8 @@
+VALIDATOR: 0000000000000000: 64 64 00 c0                                  add %al, %al
+VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+VALIDATOR: 0000000000000000: 64 64 00 c0                                  add %al, %al
+VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
+VALIDATOR: 0000000000000000: 64 64 00 c0                                  add %al, %al
+VALIDATOR: ERROR: Duplicating a prefix byte is not allowed by Native Client
+VALIDATOR: Checking block alignment and jump targets: 0 to 4
+*** <input> IS UNSAFE ***

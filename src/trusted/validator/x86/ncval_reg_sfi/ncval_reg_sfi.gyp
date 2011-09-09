@@ -15,10 +15,14 @@
       ['target_base=="ncval_reg_sfi"', {
         # we depend on ncvalidate build to generate the headers
         'sources': [ 'ncvalidate_iter.c',
+                     'ncvalidate_iter_detailed.c',
                      'ncvalidator_registry.c',
+                     'ncvalidator_registry_detailed.c',
                      'nc_cpu_checks.c',
                      'nc_illegal.c',
                      'nc_jumps.c',
+                     'address_sets.c',
+                     'nc_jumps_detailed.c',
                      'nc_opcode_histogram.c',
                      'nc_protect_base.c',
                      'nc_memory_protect.c',

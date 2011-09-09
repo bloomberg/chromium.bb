@@ -1,0 +1,6 @@
+VALIDATOR: 0000000000000000: 67 ab                                        stosd
+VALIDATOR: ERROR: Use of 67 (ADDR16) prefix not allowed by Native Client
+VALIDATOR: 0000000000000000: 67 ab                                        stosd
+VALIDATOR: ERROR: Assignment to non-64 bit segment address
+VALIDATOR: Checking block alignment and jump targets: 0 to 2
+*** <input> IS UNSAFE ***

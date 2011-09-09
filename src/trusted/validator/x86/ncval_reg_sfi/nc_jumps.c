@@ -18,6 +18,7 @@
 #include "native_client/src/trusted/validator/x86/decoder/nc_inst_iter.h"
 #include "native_client/src/trusted/validator/x86/decoder/nc_inst_state_internal.h"
 #include "native_client/src/trusted/validator/x86/decoder/nc_inst_trans.h"
+#include "native_client/src/trusted/validator/x86/ncval_reg_sfi/address_sets.h"
 #include "native_client/src/trusted/validator/x86/ncval_reg_sfi/ncvalidate_iter.h"
 #include "native_client/src/trusted/validator/x86/ncval_reg_sfi/ncvalidate_iter_internal.h"
 
@@ -28,49 +29,6 @@
 
 #include "native_client/src/shared/utils/debugging.h"
 
-/* Models a set of addresses using an an array of possible addresses,
- * where the last 3 bits are unioned together using a bit mask. This cuts
- * down on the memory footprint of the address table.
- */
-typedef uint8_t* NaClAddressSet;
-
-/* Model the set of possible 3-bit tails of possible PcAddresses. */
-static const uint8_t nacl_pc_address_masks[8] = {
-  0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80 };
-
-/* Model the offset created by removing the bottom three bits of a PcAddress. */
-typedef NaClPcAddress NaClPcOffset;
-
-/* Convert an address into the corresponding offset in an address table.
- * That is, strip off the last three bits, since these remaining bits
- * will be encoded using the union of address masks in the address table.
- */
-static INLINE NaClPcOffset NaClPcAddressToOffset(NaClPcAddress address) {
-  return address >> 3;
-}
-
-/* Convert the 3 lower bits of an address into the corresponding address mask
- * to use.
- */
-static INLINE uint8_t NaClPcAddressToMask(NaClPcAddress address) {
-  return nacl_pc_address_masks[(int) (address & (NaClPcAddress)0x7)];
-}
-
-static Bool NaClCheckAddressRange(NaClPcAddress address,
-                                  NaClValidatorState* state) {
-  if (address < state->vbase) {
-    NaClValidatorPcAddressMessage(LOG_ERROR, state, address,
-                                  "Jump to address before code block.\n");
-    return FALSE;
-  }
-  if (address >= state->vlimit) {
-    NaClValidatorPcAddressMessage(LOG_ERROR, state, address,
-                                  "Jump to address beyond code block limit.\n");
-    return FALSE;
-  }
-  return TRUE;
-}
-
 Bool NACL_FLAGS_identity_mask = FALSE;
 
 static INLINE uint8_t NaClGetJumpMask(NaClValidatorState* state) {
@@ -78,75 +36,6 @@ static INLINE uint8_t NaClGetJumpMask(NaClValidatorState* state) {
       ? (uint8_t) 0xFF
       : (uint8_t) (~state->alignment_mask);
 }
-
-/* Return true if the corresponding address is in the given address set. */
-static INLINE uint8_t NaClAddressSetContains(NaClAddressSet set,
-                                             NaClPcAddress address,
-                                             NaClValidatorState* state) {
-  if (NaClCheckAddressRange(address, state)) {
-    NaClPcAddress offset = address - state->vbase;
-    return set[NaClPcAddressToOffset(offset)] & NaClPcAddressToMask(offset);
-  } else {
-    return FALSE;
-  }
-}
-
-/* Adds the given address to the given address set. */
-static void NaClAddressSetAdd(NaClAddressSet set, NaClPcAddress address,
-                              NaClValidatorState* state) {
-  if (NaClCheckAddressRange(address, state)) {
-    NaClPcAddress offset = address - state->vbase;
-    DEBUG(NaClLog(LOG_INFO,
-                  "Address set add: %"NACL_PRIxNaClPcAddress"\n", address));
-    set[NaClPcAddressToOffset(offset)] |= NaClPcAddressToMask(offset);
-  }
-}
-
-/* Returns the array size to use for the given memory size. */
-static size_t NaClAddressSetArraySize(NaClMemorySize size) {
-  /* Be sure to add an element for partial overlaps. */
-  /* TODO(karl) The cast to size_t for the number of elements may
-   * cause loss of data. We need to fix this. This is a security
-   * issue when doing cross-platform (32-64 bit) generation.
-   */
-  return (size_t) NaClPcAddressToOffset(size) + 1;
-}
-
-/* Create an address set for the range 0..Size. */
-static NaClAddressSet NaClAddressSetCreate(NaClMemorySize size) {
-  return (NaClAddressSet) calloc(NaClAddressSetArraySize(size),
-                                 sizeof(uint8_t));
-}
-
-/* frees the memory of the address set back to the system. */
-static INLINE void NaClAddressSetDestroy(NaClAddressSet set) {
-  free(set);
-}
-
-/* Holds information collected about each instruction, and the
- * targets of possible jumps. Then, after the code has been processed,
- * this information is processed to see if there are any invalid jumps.
- */
-typedef struct NaClJumpSets {
-  /* Holds the set of possible target addresses that can be the result of
-   * a jump.
-   */
-  NaClAddressSet actual_targets;
-  /* Holds the set of valid instruction entry points (whenever a pattern of
-   * multiple instructions are used, the sequence will be treated as atomic,
-   * only having the first address in the set).
-   */
-  NaClAddressSet possible_targets;
-  /* Removed targets, due to instruction being in the middle of an atomic
-   * sequence. Note: This is needed so that we can allow validators to
-   * run in any order. If we didn't do this, then we are very timing dependent
-   * on calls to NaClMarkInstructionJumpIllegal, which must appear after
-   * the call to NaClJumpValidator.
-   */
-  NaClAddressSet removed_targets;
-  /* Holds the (array) size of each set above. */
-  size_t set_array_size;
-} NaClJumpSets;
 
 /* Generates a jump validator. */
 NaClJumpSets* NaClJumpValidatorCreate(NaClValidatorState* state) {

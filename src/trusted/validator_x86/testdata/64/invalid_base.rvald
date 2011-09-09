@@ -1,0 +1,4 @@
+VALIDATOR: 0000000000000000: 48 89 43 36                                  mov [%rbx+0x36], %rax
+VALIDATOR: ERROR: Invalid base register in memory offset
+VALIDATOR: Checking block alignment and jump targets: 0 to 4
+*** <input> IS UNSAFE ***

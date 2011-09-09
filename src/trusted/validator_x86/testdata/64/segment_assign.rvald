@@ -1,0 +1,8 @@
+VALIDATOR: 0000000000000000: 8e 00                                        mov %es, [%rax]
+VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
+VALIDATOR: 0000000000000000: 8e 00                                        mov %es, [%rax]
+VALIDATOR: ERROR: Illegal assignment to segment register RegES
+VALIDATOR: 0000000000000000: 8e 00                                        mov %es, [%rax]
+VALIDATOR: ERROR: Invalid base register in memory offset
+VALIDATOR: Checking block alignment and jump targets: 0 to 2
+*** <input> IS UNSAFE ***

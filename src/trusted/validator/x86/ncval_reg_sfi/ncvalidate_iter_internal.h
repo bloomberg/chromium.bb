@@ -45,6 +45,13 @@ typedef struct NaClValidatorDefinition {
   NaClValidatorMemoryDestroy destroy_memory;
 } NaClValidatorDefinition;
 
+/* Defines a function that implements validator summary rules. When in sel_ldr,
+ * this will be the minimal code needed to detect problems. When in ncval,
+ * this will expend more effort by walking the code a second time and
+ * generate more readable error messages.
+ */
+typedef void (*NaClValidatorRulesInitFn)(struct NaClValidatorState *state);
+
 struct NaClValidatorState {
   /* Holds the decoder tables to use. */
   const struct NaClDecodeTables* decoder_tables;
@@ -112,6 +119,11 @@ struct NaClValidatorState {
    * if they are found to be illegal.
    */
   Bool do_stub_out;
+  /* Defines the function to call to apply summary validator rules. Defaults to
+   * NaClValidatorRules which applies the post validators functions
+   * for sel_ldr (i.e. non-detailed).
+   */
+  NaClValidatorRulesInitFn rules_init_fn;
 };
 
 /* Add validators to validator state if missing. Assumed to be called just

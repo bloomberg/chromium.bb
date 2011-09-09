@@ -1,0 +1,8 @@
+VALIDATOR: Checking block alignment and jump targets: 0 to 6a
+VALIDATOR: 0000000000000020: 41 d9 14 07                                  fst [%r15+%rax*1], %st0
+VALIDATOR: ERROR: Instruction begins basic block, but in middle of nacl pattern
+VALIDATOR: 000000000000003e: 41 df 14 07                                  fist [%r15+%rax*1], %st0
+VALIDATOR: ERROR: Instruction crosses basic block alignment
+VALIDATOR: 0000000000000060: 41 d8 04 07                                  fadd %st0, [%r15+%rax*1]
+VALIDATOR: ERROR: Instruction begins basic block, but in middle of nacl pattern
+*** <input> IS UNSAFE ***
