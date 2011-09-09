@@ -79,7 +79,6 @@ gfx::NativeCursor NativeWidgetView::GetCursor(const MouseEvent& event) {
 }
 
 bool NativeWidgetView::OnMousePressed(const MouseEvent& event) {
-  MouseEvent e(event, this);
   Widget* hosting_widget = GetAssociatedWidget();
   if (hosting_widget->non_client_view()) {
     int hittest_code = hosting_widget->non_client_view()->NonClientHitTest(
@@ -115,12 +114,10 @@ bool NativeWidgetView::OnMousePressed(const MouseEvent& event) {
 }
 
 bool NativeWidgetView::OnMouseDragged(const MouseEvent& event) {
-  MouseEvent e(event, this);
   return delegate()->OnMouseEvent(event);
 }
 
 void NativeWidgetView::OnMouseReleased(const MouseEvent& event) {
-  MouseEvent e(event, this);
   delegate()->OnMouseEvent(event);
 }
 
@@ -129,23 +126,19 @@ void NativeWidgetView::OnMouseCaptureLost() {
 }
 
 void NativeWidgetView::OnMouseMoved(const MouseEvent& event) {
-  MouseEvent e(event, this);
   delegate()->OnMouseEvent(event);
 }
 
 void NativeWidgetView::OnMouseEntered(const MouseEvent& event) {
-  MouseEvent e(event, this);
   delegate()->OnMouseEvent(event);
 }
 
 void NativeWidgetView::OnMouseExited(const MouseEvent& event) {
-  MouseEvent e(event, this);
   delegate()->OnMouseEvent(event);
 }
 
 ui::TouchStatus NativeWidgetView::OnTouchEvent(const TouchEvent& event) {
-  TouchEvent e(event, this);
-  return delegate()->OnTouchEvent(e);
+  return delegate()->OnTouchEvent(event);
 }
 
 bool NativeWidgetView::OnKeyPressed(const KeyEvent& event) {
@@ -157,7 +150,6 @@ bool NativeWidgetView::OnKeyReleased(const KeyEvent& event) {
 }
 
 bool NativeWidgetView::OnMouseWheel(const MouseWheelEvent& event) {
-  MouseWheelEvent e(event, this);
   return delegate()->OnMouseEvent(event);
 }
 
