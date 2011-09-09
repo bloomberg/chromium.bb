@@ -180,6 +180,31 @@ quiet_cmd_solink_module = SOLINK_MODULE($(TOOLSET)) $@
 cmd_solink_module = $(LINK.$(TOOLSET)) -shared $(GYP_LDFLAGS) $(LDFLAGS.$(TOOLSET)) -o $@ $(filter-out FORCE_DO_CMD, $^) $(LIBS)
 """
 
+LINK_COMMANDS_ANDROID = """\
+quiet_cmd_alink = AR($(TOOLSET)) $@
+cmd_alink = rm -f $@ && $(AR.$(TOOLSET)) $(ARFLAGS.$(TOOLSET)) $@ $(filter %.o,$^)
+
+# Due to circular dependencies between libraries :(, we wrap the
+# special "figure out circular dependencies" flags around the entire
+# input list during linking.
+quiet_cmd_link = LINK($(TOOLSET)) $@
+quiet_cmd_link_host = LINK($(TOOLSET)) $@
+cmd_link = $(LINK.$(TOOLSET)) $(GYP_LDFLAGS) $(LDFLAGS.$(TOOLSET)) -o $@ -Wl,--start-group $(LD_INPUTS) -Wl,--end-group $(LIBS)
+cmd_link_host = $(LINK.$(TOOLSET)) $(GYP_LDFLAGS) $(LDFLAGS.$(TOOLSET)) -o $@ $(LD_INPUTS) $(LIBS)
+
+# Other shared-object link notes:
+# - Set SONAME to the library filename so our binaries don't reference
+# the local, absolute paths used on the link command-line.
+quiet_cmd_solink = SOLINK($(TOOLSET)) $@
+cmd_solink = $(LINK.$(TOOLSET)) -shared $(GYP_LDFLAGS) $(LDFLAGS.$(TOOLSET)) -Wl,-soname=$(@F) -o $@ -Wl,--whole-archive $(LD_INPUTS) -Wl,--no-whole-archive $(LIBS)
+
+quiet_cmd_solink_module = SOLINK_MODULE($(TOOLSET)) $@
+cmd_solink_module = $(LINK.$(TOOLSET)) -shared $(GYP_LDFLAGS) $(LDFLAGS.$(TOOLSET)) -Wl,-soname=$(@F) -o $@ -Wl,--start-group $(filter-out FORCE_DO_CMD, $^) -Wl,--end-group $(LIBS)
+quiet_cmd_solink_module_host = SOLINK_MODULE($(TOOLSET)) $@
+cmd_solink_module_host = $(LINK.$(TOOLSET)) -shared $(GYP_LDFLAGS) $(LDFLAGS.$(TOOLSET)) -Wl,-soname=$(@F) -o $@ $(filter-out FORCE_DO_CMD, $^) $(LIBS)
+"""
+
+
 # Header of toplevel Makefile.
 # This should go into the build tree, but it's easier to keep it here for now.
 SHARED_HEADER = ("""\
@@ -1905,8 +1930,13 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
     if self.type == 'executable':
       self.WriteLn(
           '%s: LD_INPUTS := %s' % (self.output_binary, ' '.join(link_deps)))
-      self.WriteDoCmd([self.output_binary], link_deps, 'link', part_of_all,
-                      postbuilds=postbuilds)
+      if self.toolset == 'host' and self.flavor == 'android':
+        self.WriteDoCmd([self.output_binary], link_deps, 'link_host',
+                        part_of_all, postbuilds=postbuilds)
+      else:
+        self.WriteDoCmd([self.output_binary], link_deps, 'link', part_of_all,
+                        postbuilds=postbuilds)
+
     elif self.type == 'static_library':
       for link_dep in link_deps:
         assert ' ' not in link_dep, (
@@ -1922,9 +1952,13 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
       for link_dep in link_deps:
         assert ' ' not in link_dep, (
             "Spaces in module input filenames not supported (%s)"  % link_dep)
-      self.WriteDoCmd(
-          [self.output_binary], link_deps, 'solink_module', part_of_all,
-          postbuilds=postbuilds)
+      if self.toolset == 'host' and self.flavor == 'android':
+        self.WriteDoCmd([self.output_binary], link_deps, 'solink_module_host',
+                        part_of_all, postbuilds=postbuilds)
+      else:
+        self.WriteDoCmd(
+            [self.output_binary], link_deps, 'solink_module', part_of_all,
+            postbuilds=postbuilds)
     elif self.type == 'none':
       # Write a stamp line.
       self.WriteDoCmd([self.output_binary], deps, 'touch', part_of_all,
@@ -2455,6 +2489,10 @@ def GenerateOutput(target_list, target_dicts, data, params):
         'flock_index': 2,
         'link_commands': LINK_COMMANDS_MAC,
         'mac_commands': SHARED_HEADER_MAC_COMMANDS,
+    })
+  if flavor == 'android':
+    header_params.update({
+        'link_commands': LINK_COMMANDS_ANDROID,
     })
   header_params.update(RunSystemTests(flavor))
 
