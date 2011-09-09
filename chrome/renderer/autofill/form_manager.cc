@@ -814,6 +814,9 @@ bool FormManager::FindFormAndFieldForFormControlElement(
     const WebFormControlElement& element,
     FormData* form,
     webkit_glue::FormField* field) {
+  if (!IsAutofillableElement(element))
+    return false;
+
   const WebFormElement form_element = element.form();
   if (form_element.isNull())
     return false;
