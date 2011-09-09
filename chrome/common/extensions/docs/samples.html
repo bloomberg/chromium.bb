@@ -337,7 +337,7 @@
   "0bf0930a32829dfb77170535ecb27adc2de3998a": "ENABLE/DISABLE REFERRERS API EXAMPLE EXTENSION SAMPLE EXTENSION WHICH DEMONSTRATES HOW TO ACCESS A PREFERENCE. BROWSER_ACTION CONTENTSETTINGS EXPERIMENTAL POPUP CHROME.EXTENSION.ISALLOWEDINCOGNITOACCESS",
   "763a08e9b06595d785568a8d392b95a2f3700258": "EVENT TRACKING WITH GOOGLE ANALYTICS A SAMPLE EXTENSION WHICH USES GOOGLE ANALYTICS TO TRACK USAGE. BACKGROUND_PAGE BROWSER_ACTION POPUP",
   "e3df888a89e35bdeb9c8bc8d03be5e1851b97c68": "EXTENSION DOCS SEARCH SEARCH THE CHROME EXTENSIONS DOCUMENTATION.  TO USE, TYPE CRDOC PLUS A SEARCH TERM INTO THE OMNIBOX. BACKGROUND_PAGE TABS CHROME.OMNIBOX.ONINPUTCHANGED CHROME.OMNIBOX.ONINPUTENTERED CHROME.TABS.CREATE CHROME.TABS.GET CHROME.TABS.ONREMOVED CHROME.TABS.UPDATE",
-  "81c9aeb77827013f15a8fdff0cf6e07332816614": "FIREPHP FOR CHROME EXTENDS THE DEVELOPER TOOLS, ADDING SUPPORT FOR PARSING FIREPHP MESSAGES FROM SERVER BACKGROUND_PAGE DEVTOOLS_PAGE EXPERIMENTAL TABS CHROME.EXPERIMENTAL.DEVTOOLS.RESOURCES.GETHAR CHROME.EXPERIMENTAL.DEVTOOLS.RESOURCES.ONFINISHED CHROME.EXTENSION.ONREQUEST CHROME.EXTENSION.SENDREQUEST CHROME.TABS.EXECUTESCRIPT",
+  "4efa12eaaa442b6b7c880e7a38ceeb0cff7e8b77": "FIREPHP FOR CHROME EXTENDS THE DEVELOPER TOOLS, ADDING SUPPORT FOR PARSING FIREPHP MESSAGES FROM SERVER BACKGROUND_PAGE DEVTOOLS_PAGE EXPERIMENTAL TABS CHROME.EXPERIMENTAL.DEVTOOLS.NETWORK.GETHAR CHROME.EXPERIMENTAL.DEVTOOLS.NETWORK.ONREQUESTFINISHED CHROME.EXTENSION.ONREQUEST CHROME.EXTENSION.SENDREQUEST CHROME.TABS.EXECUTESCRIPT",
   "8b0dd31216235941bdd8eb33fda915ef5cf79a82": "GOOGLE CALENDAR CHECKER (BY GOOGLE) QUICKLY SEE THE TIME UNTIL YOUR NEXT MEETING FROM ANY OF YOUR CALENDARS. CLICK ON THE BUTTON TO BE TAKEN TO YOUR CALENDAR. BACKGROUND_PAGE BROWSER_ACTION OPTIONS_PAGE TABS CHROME.BROWSERACTION.ONCLICKED CHROME.BROWSERACTION.SETBADGEBACKGROUNDCOLOR CHROME.BROWSERACTION.SETBADGETEXT CHROME.BROWSERACTION.SETICON CHROME.BROWSERACTION.SETTITLE CHROME.EXTENSION.GETBACKGROUNDPAGE CHROME.EXTENSION.ONREQUEST CHROME.EXTENSION.SENDREQUEST CHROME.I18N.GETMESSAGE CHROME.TABS.CREATE CHROME.TABS.GET CHROME.TABS.GETALLINWINDOW CHROME.TABS.ONUPDATED CHROME.TABS.UPDATE",
   "4e35caa9742fb82dbd628892d23a781614f6eff6": "GOOGLE DOCUMENT LIST VIEWER DEMONSTRATES HOW TO USE OAUTH TO CONNECT THE GOOGLE DOCUMENTS LIST DATA API. BACKGROUND_PAGE BROWSER_ACTION OPTIONS_PAGE POPUP TABS CHROME.BROWSERACTION.SETBADGETEXT CHROME.EXTENSION.GETBACKGROUNDPAGE CHROME.EXTENSION.GETURL CHROME.TABS.CREATE CHROME.TABS.GET CHROME.TABS.GETSELECTED CHROME.TABS.ONUPDATED CHROME.TABS.REMOVE",
   "bb57f7a0132cbeb36ad7e7bb0ab75c21704234ca": "GOOGLE MAIL CHECKER DISPLAYS THE NUMBER OF UNREAD MESSAGES IN YOUR GOOGLE MAIL INBOX. YOU CAN ALSO CLICK THE BUTTON TO OPEN YOUR INBOX. BACKGROUND_PAGE BROWSER_ACTION OPTIONS_PAGE TABS CHROME.BROWSERACTION.ONCLICKED CHROME.BROWSERACTION.SETBADGEBACKGROUNDCOLOR CHROME.BROWSERACTION.SETBADGETEXT CHROME.BROWSERACTION.SETICON CHROME.EXTENSION.GETBACKGROUNDPAGE CHROME.I18N.GETMESSAGE CHROME.TABS.CREATE CHROME.TABS.GET CHROME.TABS.GETALLINWINDOW CHROME.TABS.ONUPDATED CHROME.TABS.UPDATE",
@@ -1503,11 +1503,11 @@
     <a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/omnibox/extension-docs/">Browse source</a>
     - <a href="examples/api/omnibox/extension-docs.zip">Download source</a>
   </div>
-</div><div class="sample" id="81c9aeb77827013f15a8fdff0cf6e07332816614">
+</div><div class="sample" id="4efa12eaaa442b6b7c880e7a38ceeb0cff7e8b77">
   <img class="icon" style="display: none; ">
   <img class="icon" src="images/sample-default-icon.png">
   <h2 class="name">
-    <a href="#81c9aeb77827013f15a8fdff0cf6e07332816614">FirePHP for Chrome</a>
+    <a href="#4efa12eaaa442b6b7c880e7a38ceeb0cff7e8b77">FirePHP for Chrome</a>
   </h2>
   <p class="metadata features">Uses
     <span>
@@ -1528,9 +1528,9 @@
   <div class="apicalls"><strong>Calls:</strong>
     <ul>
       <li>
-        <code><a href="experimental.devtools.resources.html#method-getHAR">chrome.experimental.devtools.resources.getHAR</a></code>
+        <code><a href="experimental.devtools.network.html#method-getHAR">chrome.experimental.devtools.network.getHAR</a></code>
       </li><li>
-        <code><a href="experimental.devtools.resources.html#event-onFinished">chrome.experimental.devtools.resources.onFinished</a></code>
+        <code><a href="experimental.devtools.network.html#event-onRequestFinished">chrome.experimental.devtools.network.onRequestFinished</a></code>
       </li><li>
         <code><a href="extension.html#event-onRequest">chrome.extension.onRequest</a></code>
       </li><li>
@@ -1543,19 +1543,19 @@
   <div class="sourcefiles"><strong>Source files:</strong>
     <ul>
       <li>
-        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/devtools/resources/chrome-firephp/background.html?content-type=text/plain">background.html</a></code>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/devtools/network/chrome-firephp/background.html?content-type=text/plain">background.html</a></code>
       </li><li>
-        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/devtools/resources/chrome-firephp/devtools.html?content-type=text/plain">devtools.html</a></code>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/devtools/network/chrome-firephp/devtools.html?content-type=text/plain">devtools.html</a></code>
       </li><li>
-        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/devtools/resources/chrome-firephp/devtools.js?content-type=text/plain">devtools.js</a></code>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/devtools/network/chrome-firephp/devtools.js?content-type=text/plain">devtools.js</a></code>
       </li><li>
-        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/devtools/resources/chrome-firephp/manifest.json?content-type=text/plain">manifest.json</a></code>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/devtools/network/chrome-firephp/manifest.json?content-type=text/plain">manifest.json</a></code>
       </li>
     </ul>
   </div>
   <div>
-    <a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/devtools/resources/chrome-firephp/">Browse source</a>
-    - <a href="examples/api/devtools/resources/chrome-firephp.zip">Download source</a>
+    <a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/devtools/network/chrome-firephp/">Browse source</a>
+    - <a href="examples/api/devtools/network/chrome-firephp.zip">Download source</a>
   </div>
 </div><div class="sample" id="8b0dd31216235941bdd8eb33fda915ef5cf79a82">
   <img class="icon" src="examples/extensions/calendar/images/icon-128.gif">

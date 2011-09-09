@@ -55,10 +55,10 @@
     "chrome.experimental.devtools.audits.addCategory": "experimental.devtools.audits.html#method-addCategory",
     "chrome.experimental.devtools.inspectedWindow.eval": "experimental.devtools.inspectedWindow.html#method-eval",
     "chrome.experimental.devtools.inspectedWindow.reload": "experimental.devtools.inspectedWindow.html#method-reload",
+    "chrome.experimental.devtools.network.getHAR": "experimental.devtools.network.html#method-getHAR",
+    "chrome.experimental.devtools.network.onNavigated": "experimental.devtools.network.html#event-onNavigated",
+    "chrome.experimental.devtools.network.onRequestFinished": "experimental.devtools.network.html#event-onRequestFinished",
     "chrome.experimental.devtools.panels.create": "experimental.devtools.panels.html#method-create",
-    "chrome.experimental.devtools.resources.getHAR": "experimental.devtools.resources.html#method-getHAR",
-    "chrome.experimental.devtools.resources.onFinished": "experimental.devtools.resources.html#event-onFinished",
-    "chrome.experimental.devtools.resources.onNavigated": "experimental.devtools.resources.html#event-onNavigated",
     "chrome.experimental.infobars.show": "experimental.infobars.html#method-show",
     "chrome.experimental.permissions.contains": "experimental.permissions.html#method-contains",
     "chrome.experimental.permissions.getAll": "experimental.permissions.html#method-getAll",
@@ -820,8 +820,8 @@
     },
     {
       "api_calls": [
-        "chrome.experimental.devtools.resources.getHAR",
-        "chrome.experimental.devtools.resources.onFinished",
+        "chrome.experimental.devtools.network.getHAR",
+        "chrome.experimental.devtools.network.onRequestFinished",
         "chrome.extension.onRequest",
         "chrome.extension.sendRequest",
         "chrome.tabs.executeScript"
@@ -834,22 +834,22 @@
         "tabs"
       ],
       "icon": null,
-      "id": "81c9aeb77827013f15a8fdff0cf6e07332816614",
+      "id": "4efa12eaaa442b6b7c880e7a38ceeb0cff7e8b77",
       "name": "FirePHP for Chrome",
-      "path": "examples\/api\/devtools\/resources\/chrome-firephp\/",
+      "path": "examples\/api\/devtools\/network\/chrome-firephp\/",
       "protocols": [
         "http:\/\/",
         "https:\/\/"
       ],
-      "search_string": "FIREPHP FOR CHROME EXTENDS THE DEVELOPER TOOLS, ADDING SUPPORT FOR PARSING FIREPHP MESSAGES FROM SERVER BACKGROUND_PAGE DEVTOOLS_PAGE EXPERIMENTAL TABS CHROME.EXPERIMENTAL.DEVTOOLS.RESOURCES.GETHAR CHROME.EXPERIMENTAL.DEVTOOLS.RESOURCES.ONFINISHED CHROME.EXTENSION.ONREQUEST CHROME.EXTENSION.SENDREQUEST CHROME.TABS.EXECUTESCRIPT",
+      "search_string": "FIREPHP FOR CHROME EXTENDS THE DEVELOPER TOOLS, ADDING SUPPORT FOR PARSING FIREPHP MESSAGES FROM SERVER BACKGROUND_PAGE DEVTOOLS_PAGE EXPERIMENTAL TABS CHROME.EXPERIMENTAL.DEVTOOLS.NETWORK.GETHAR CHROME.EXPERIMENTAL.DEVTOOLS.NETWORK.ONREQUESTFINISHED CHROME.EXTENSION.ONREQUEST CHROME.EXTENSION.SENDREQUEST CHROME.TABS.EXECUTESCRIPT",
       "source_files": [
         "background.html",
         "devtools.html",
         "devtools.js",
         "manifest.json"
       ],
-      "source_hash": "46b426df9ae054648e56756d19e15094f63a0776",
-      "zip_path": "examples\/api\/devtools\/resources\/chrome-firephp.zip"
+      "source_hash": "b607f6ca8f1ccf4343766b480ae21bb220dd949c",
+      "zip_path": "examples\/api\/devtools\/network\/chrome-firephp.zip"
     },
     {
       "api_calls": [

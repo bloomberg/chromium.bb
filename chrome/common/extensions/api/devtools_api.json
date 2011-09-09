@@ -236,17 +236,17 @@
     ]
   },
   {
-    "namespace": "experimental.devtools.resources",
+    "namespace": "experimental.devtools.network",
     "types": [
       {
-        "id": "Resource",
+        "id": "Request",
         "type": "object",
-        "description": "Represents a resource (document, script, image etc). See HAR Specification for reference.",
+        "description": "Represents a network request for a document resource (script, image etc). See HAR Specification for reference.",
         "functions": [
           {
             "name": "getContent",
             "type": "function",
-            "description": "Returns resource content.",
+            "description": "Returns content of the response body.",
             "parameters": [
               {
                 "name": "callback",
@@ -256,7 +256,7 @@
                   {
                     "name": "content",
                     "type": "string",
-                    "description": "Resource content (potentially encoded)."
+                    "description": "Content of the response body (potentially encoded)."
                   },
                   {
                     "name": "encoding",
@@ -274,7 +274,7 @@
       {
         "name": "getHAR",
         "type": "function",
-        "description": "Returns HAR archive that contains all known resource objects.",
+        "description": "Returns HAR archive that contains all known network requests.",
         "parameters": [
           {
             "name": "callback",
@@ -284,7 +284,7 @@
               {
                 "name": "har",
                 "type": "object",
-                "description": "A HAR archieve. See HAR specification for details."
+                "description": "A HAR archive. See HAR specification for details."
               }
             ]
           }
@@ -293,11 +293,11 @@
     ],
     "events": [
       {
-        "name": "onFinished",
+        "name": "onRequestFinished",
         "type": "function",
-        "description": "Fired when a resource request is finished and all resource data are available.",
+        "description": "Fired when a network request is finished and all request data are available.",
         "parameters": [
-          { "name": "resource", "$ref": "Resource", "description": "Description of a newly finished resource in the form of a HAR entry. See HAR specification for details." }
+          { "name": "request", "$ref": "Request", "description": "Description of a network request in the form of a HAR entry. See HAR specification for details." }
         ]
       },
       {

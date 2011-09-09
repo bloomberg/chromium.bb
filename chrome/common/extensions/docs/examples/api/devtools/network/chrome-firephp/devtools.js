@@ -163,19 +163,19 @@ ChromeFirePHP._checkProtoVersion = function(proto_header) {
   return true;
 };
 
-chrome.experimental.devtools.resources.addRequestHeaders({
+chrome.experimental.devtools.network.addRequestHeaders({
     "X-FirePHP-Version": "0.0.6"
 });
 
-chrome.experimental.devtools.resources.getHAR(function(result) {
+chrome.experimental.devtools.network.getHAR(function(result) {
   var entries = result.entries;
   if (!entries.length) {
     Console.warn("ChromeFirePHP suggests that you reload the page to track" +
-        " FirePHP messages for all the resources");
+        " FirePHP messages for all the requests");
   }
   for (var i = 0; i < entries.length; ++i)
     ChromeFirePHP.handleFirePhp_headers(entries[i]);
 
-  chrome.experimental.devtools.resources.onFinished.addListener(
+  chrome.experimental.devtools.network.onRequestFinished.addListener(
       ChromeFirePHP.handleFirePhpHeaders.bind(ChromeFirePHP));
 });

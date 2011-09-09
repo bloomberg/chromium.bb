@@ -1,52 +1,9 @@
 <!-- BEGIN AUTHORED CONTENT -->
-<p id="classSummary">
-Use the <code>chrome.experimental.devtools.resources</code> module to retrieve
-the information about network resources displayed by DevTools' Network panel.
-</p><p>
-See <a href="experimental.devtools.html">DevTools APIs summary</a> for
-general introduction to using Developer Tools APIs</a>.
-</p>
-
-<h2>Notes</h2>
-
+<div id="pageData-name" class="pageData">chrome.experimental.devtools.resources
+API</div>
 <p>
-Network resource information is represented in HTTP Archive format
-(<em>HAR</em>). The description of HAR is outside of scope of this document,
-please refer to <a href=
-"http://groups.google.com/group/http-archive-specification/web/har-1-2-spec">
-HAR v1.2 Specification</a>.
-</p><p>
-In terms of HAR, the
-<code>chrome.experimental.devtools.resources.getHAR()</code> method returns
-entire <em>HAR log</em>, while
-<code>chrome.experimental.devtools.resources.onFinish</code> event provides
-<em>HAR entry</em> as an argument to the event callback.
+The <code>experimental.devtools.resources</code> module is deprecated, use
+<a href="experimental.devtools.network.html"
+><code>experimental.devtools.network</code></a> instead.
 </p>
-<p>Note that resource content is not provided as part of HAR for efficieny
-reasons. You may call resource's <code>getContent()</code> method to retrieve
-content.
-<p>Some resources may be missing in the array of entries returned by <code>
-getHAR()</code> in case Developer Tools window was opened after the page was
-loaded &mdash; reload the page to get all resources. In general, the list of
-resources returned by <code>getHAR()</code> should match that displayed by
-the Network panel.
-<h2 id="overview-examples">Examples</h2>
-
-<p>The following code logs URLs of all images larger than 40KB as they are
-loaded:</p>
-
-<pre>
-chrome.experimental.devtools.resources.onFinished.addListener(function(resource) {
-  if (resource.response.bodySize > 40*1024)
-    experimental.chrome.devtools.log("Large image: " + resource.request.url);
-});
-</pre>
-
-<h2 id="examples">Examples</h2>
-
-<p>
-You can find examples that use this API in
-<a href="samples.html#devtools.resources">Samples</a>.
-</p>
-
 <!-- END AUTHORED CONTENT -->
