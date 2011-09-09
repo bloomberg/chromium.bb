@@ -5,6 +5,9 @@
 
 """A simple utility function to produce data pack files.
 See base/pack_file* for details.
+
+TOOD(adriansc): Remove this file once the dependency has been updated in WebKit
+to point to grit scripts.
 """
 
 import struct

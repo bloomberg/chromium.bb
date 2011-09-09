@@ -1224,7 +1224,7 @@
           'target_name': 'packed_extra_resources',
           'type': 'none',
           'variables': {
-            'repack_path': '../tools/data_pack/repack.py',
+            'repack_path': '../tools/grit/grit/format/repack.py',
           },
           'dependencies': [
             'chrome_extra_resources',
@@ -1588,7 +1588,7 @@
         'target_name': 'packed_resources',
         'type': 'none',
         'variables': {
-          'repack_path': '../tools/data_pack/repack.py',
+          'repack_path': '../tools/grit/grit/format/repack.py',
         },
         'dependencies': [
           # MSVS needs the dependencies explictly named, Make is able to

@@ -338,7 +338,7 @@
                     'theme_dir_name': 'chromium',
                   }],
                 ],
-                'repack_path': '../tools/data_pack/repack.py',
+                'repack_path': '../tools/grit/grit/format/repack.py',
               },
               'actions': [
                 # TODO(mark): These actions are duplicated for Linux and

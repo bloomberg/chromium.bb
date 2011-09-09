@@ -24,10 +24,9 @@ class FormatDataPackUnittest(unittest.TestCase):
         '\x00\x00\x3e\x00\x00\x00'          # extra entry for the size of last
         'this is id 4this is id 6')         # data
     input = { 1: "", 4: "this is id 4", 6: "this is id 6", 10: "" }
-    output = data_pack.DataPack.WriteDataPack(input)
+    output = data_pack.DataPack.WriteDataPackToString(input)
     self.failUnless(output == expected)
 
 
 if __name__ == '__main__':
   unittest.main()
-

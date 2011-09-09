@@ -15,8 +15,8 @@ import os
 import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', '..',
-                             'tools', 'data_pack'))
-import repack
+                             'tools', 'grit'))
+from grit.format import data_pack
 
 # The gyp "branding" variable.
 BRANDING = None
@@ -119,7 +119,7 @@ def repack_locales(locales):
     inputs = []
     inputs += calc_inputs(locale)
     output = calc_output(locale)
-    repack.RePack(output, inputs)
+    data_pack.DataPack.RePack(output, inputs)
 
 
 def DoMain(argv):

@@ -1,10 +1,13 @@
 #!/usr/bin/python
-# Copyright (c) 2008 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
 """A simple utility function to merge data pack files into a single data pack.
 See base/pack_file* for details about the file format.
+
+TODO(adriansc): Remove this file once the dependency has been updated in WebKit
+to point to grit scripts.
 """
 
 import exceptions

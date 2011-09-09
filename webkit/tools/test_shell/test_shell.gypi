@@ -156,7 +156,7 @@
       'target_name': 'test_shell_pak',
       'type': 'none',
       'variables': {
-        'repack_path': '../../../tools/data_pack/repack.py',
+        'repack_path': '../../../tools/grit/grit/format/repack.py',
         'pak_path': '<(INTERMEDIATE_DIR)/repack/test_shell.pak',
       },
       'conditions': [
@@ -284,7 +284,7 @@
             '<(DEPTH)/third_party/mesa/mesa.gyp:osmesa',
           ],
           'variables': {
-            'repack_path': '../../../tools/data_pack/repack.py',
+            'repack_path': '../../../tools/grit/grit/format/repack.py',
           },
           'actions': [
             {
