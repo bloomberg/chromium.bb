@@ -438,7 +438,11 @@
       # ==================================================
       # Disable pyauto+webdriver tests on 'Google Chrome' bots until next
       # build is generated. 8/15/2011. Remove tomorrow.
+      # crbug.com/95974
       '-pyauto_webdriver',
+      '-autofill.AutofillTest.testDisplayLineItemForEntriesWithNoCCNum',
+      '-autofill.AutofillTest.testNoDuplicatePhoneNumsInPrefs',
+      '-autofill.AutofillTest.testPostalCodeAndStateLabelsBasedOnCountry',
       # This test fails due to crbug.com/35485
       '-translate.TranslateTest.testBarNotVisibleOnSSLErrorPage',
       # This test fails due to crbug.com/50706
