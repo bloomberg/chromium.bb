@@ -71,8 +71,12 @@ ResultCode TargetServicesBase::Init() {
 
 // Failure here is a breach of security so the process is terminated.
 void TargetServicesBase::LowerToken() {
-  if (ERROR_SUCCESS !=
-      SetProcessIntegrityLevel(g_shared_delayed_integrity_level))
+  DWORD error_code = SetProcessIntegrityLevel(g_shared_delayed_integrity_level);
+  // Here we don't terminate the process if the error is ERROR_INVALID_HANDLE,
+  // this is because this error is not possible in normal circumstances, unless
+  // it is hooked by sftldr_wow64.dll, in which case we prefer to keep running.
+  // See http://crbug.com/95888.
+  if (ERROR_SUCCESS != error_code && ERROR_INVALID_HANDLE != error_code)
     ::TerminateProcess(::GetCurrentProcess(), SBOX_FATAL_INTEGRITY);
   process_state_.SetRevertedToSelf();
   // If the client code as called RegOpenKey, advapi32.dll has cached some
