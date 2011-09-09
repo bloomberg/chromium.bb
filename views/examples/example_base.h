@@ -40,8 +40,8 @@ class ExampleBase {
   // Prints a message in the status area, at the bottom of the window.
   void PrintStatus(const char* format, ...);
 
-  // Converts an integer/boolean to wchat "on"/"off".
-  static const wchar_t* IntToOnOff(int value) {
+  // Converts an boolean value to "on" or "off".
+  const wchar_t* BoolToOnOff(bool value) {
     return value ? L"on" : L"off";
   }
 

@@ -56,7 +56,7 @@ void MessageBoxExample::ButtonPressed(views::Button* sender,
                                       const views::Event& event) {
   if (sender == status_) {
     message_box_view_->SetCheckBoxLabel(
-        IntToOnOff(message_box_view_->IsCheckBoxSelected()));
+        BoolToOnOff(message_box_view_->IsCheckBoxSelected()));
     PrintStatus(message_box_view_->IsCheckBoxSelected() ?
        "Check Box Selected" : "Check Box Not Selected");
   } else if (sender == toggle_) {
