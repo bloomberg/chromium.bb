@@ -140,34 +140,40 @@ def main():
       appended_text_to_email = ''.join(file_object.readlines())
       file_object.close()
 
-
-  layouttest_analyzer_helpers.SendStatusEmail(prev_time, analyzer_result_map,
-                                              prev_analyzer_result_map,
-                                              anno_map,
-                                              options.receiver_email_address,
-                                              options.test_group_name,
-                                              appended_text_to_email,
-                                              options.email_only_change_mode)
+  diff_map = analyzer_result_map.CompareToOtherResultMap(
+      prev_analyzer_result_map)
+  result_change = (any(diff_map['whole']) or any(diff_map['skip']) or
+                      any(diff_map['nonskip']))
+  # Do not email when |email_only_change_mode| is true and there is no change
+  # in the result compared to the last result.
+  if not options.email_only_change_mode or result_change:
+    layouttest_analyzer_helpers.SendStatusEmail(
+        prev_time, analyzer_result_map, diff_map, anno_map,
+        options.receiver_email_address, options.test_group_name,
+        appended_text_to_email)
   if not options.debug:
     # Save the current result.
     date = start_time.strftime('%Y-%m-%d-%H')
     file_path = os.path.join(options.result_directory_location, date)
     analyzer_result_map.Save(file_path)
 
-  # Trend graph update (if specified in the command-line argument).
-  trend_graph = TrendGraph(options.trend_graph_location)
-  datetime_string = start_time.strftime('%Y,%m,%d,%H,%M,%S')
-  # TODO(imasaki): add correct title and text instead of 'undefined'.
-  data_map = (
-      {'whole': (str(len(analyzer_result_map.result_map['whole'].keys())),
-                 'undefined', 'undefined'),
-       'skip': (str(len(analyzer_result_map.result_map['skip'].keys())),
-                'undefined', 'undefined'),
-       'nonskip': (str(len(analyzer_result_map.result_map['nonskip'].keys())),
+  if result_change:
+    # Trend graph update (if specified in the command-line argument) when
+    # there is change from the last result.
+    trend_graph = TrendGraph(options.trend_graph_location)
+    datetime_string = start_time.strftime('%Y,%m,%d,%H,%M,%S')
+    # TODO(imasaki): add correct title and text instead of 'undefined'.
+    data_map = (
+        {'whole': (str(len(analyzer_result_map.result_map['whole'].keys())),
                    'undefined', 'undefined'),
-       'passingrate': (str(analyzer_result_map.GetPassingRate()),
-                       'undefined', 'undefined')})
-  trend_graph.Update(datetime_string, data_map)
+         'skip': (str(len(analyzer_result_map.result_map['skip'].keys())),
+                  'undefined', 'undefined'),
+         'nonskip': (
+             str(len(analyzer_result_map.result_map['nonskip'].keys())),
+             'undefined', 'undefined'),
+         'passingrate': (str(analyzer_result_map.GetPassingRate()),
+                         'undefined', 'undefined')})
+    trend_graph.Update(datetime_string, data_map)
 
 
 if '__main__' == __name__:

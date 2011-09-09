@@ -262,37 +262,37 @@ class AnalyzerResultMap:
     return bug_map
 
 
-def SendStatusEmail(prev_time, analyzer_result_map, prev_analyzer_result_map,
+def SendStatusEmail(prev_time, analyzer_result_map, diff_map,
                     bug_anno_map, receiver_email_address, test_group_name,
-                    appended_text_to_email, email_only_change_mode):
+                    appended_text_to_email):
   """Send status email.
 
   Args:
     prev_time: the date string such as '2011-10-09-11'. This format has been
         used in this analyzer.
     analyzer_result_map: current analyzer result.
-    prev_analyzer_result_map: previous analyzer result, which is read from
-        a file.
+    diff_map: a map that has 'whole', 'skip' and 'nonskip' as keys.
+          The values of the map are the result of |GetDiffBetweenMaps()|.
+          The element has two lists of test cases. One (with index 0) is for
+          test names that are in the current result but NOT in the previous
+          result. The other (with index 1) is for test names that are in the
+          previous results but NOT in the current result.
+           For example (test expectation information is omitted for
+           simplicity),
+             comp_result_map['whole'][0] = ['foo1.html']
+             comp_result_map['whole'][1] = ['foo2.html']
+           This means that current result has 'foo1.html' but NOT in the
+           previous result. This also means the previous result has 'foo2.html'
+           but it is NOT the current result.
     bug_anno_map: bug annotation map where bug name and annotations are
         stored.
     receiver_email_address: receiver's email address.
     test_group_name: string representing the test group name (e.g., 'media').
     appended_text_to_email: a text which is appended at the end of the status
         email.
-    email_only_change_mode: when this is true, the analyzer sends out the
-        status email only when there is change in the analyzer result compared
-        to the last result. When this is false, it sends the email out every
-        time it runs.
   """
-  diff_map = analyzer_result_map.CompareToOtherResultMap(
-      prev_analyzer_result_map)
-  # Do not email when |email_only_change_mode| is true and there is no change
-  # in the result compared to the last result.
-  if (email_only_change_mode and not any(diff_map['whole']) and
-      not any(diff_map['skip']) and not any(diff_map['nonskip'])):
-    return
-  output_str = analyzer_result_map.ConvertToString(prev_time,
-                                                   diff_map, bug_anno_map)
+  output_str = analyzer_result_map.ConvertToString(prev_time, diff_map,
+                                                   bug_anno_map)
   # Add diff info about skipped/non-skipped test.
   prev_time = datetime.strptime(prev_time, '%Y-%m-%d-%H')
   prev_time = time.mktime(prev_time.timetuple())
