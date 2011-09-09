@@ -86,9 +86,9 @@ function initListeners() {
       function(details) {
     captureEvent("onCompleted", details);
   });
-  chrome.experimental.webNavigation.onBeforeCreateNavigationTarget.addListener(
+  chrome.experimental.webNavigation.onCreatedNavigationTarget.addListener(
       function(details) {
-    captureEvent("onBeforeCreateNavigationTarget", details);
+    captureEvent("onCreatedNavigationTarget", details);
   });
   chrome.experimental.webNavigation.onReferenceFragmentUpdated.addListener(
       function(details) {

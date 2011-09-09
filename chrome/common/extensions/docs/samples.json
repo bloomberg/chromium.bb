@@ -72,10 +72,10 @@
     "chrome.experimental.settings.set": "experimental.settings.html#method-set",
     "chrome.experimental.webNavigation.getAllFrames": "experimental.webNavigation.html#method-getAllFrames",
     "chrome.experimental.webNavigation.getFrame": "experimental.webNavigation.html#method-getFrame",
-    "chrome.experimental.webNavigation.onBeforeCreateNavigationTarget": "experimental.webNavigation.html#event-onBeforeCreateNavigationTarget",
     "chrome.experimental.webNavigation.onBeforeNavigate": "experimental.webNavigation.html#event-onBeforeNavigate",
     "chrome.experimental.webNavigation.onCommitted": "experimental.webNavigation.html#event-onCommitted",
     "chrome.experimental.webNavigation.onCompleted": "experimental.webNavigation.html#event-onCompleted",
+    "chrome.experimental.webNavigation.onCreatedNavigationTarget": "experimental.webNavigation.html#event-onCreatedNavigationTarget",
     "chrome.experimental.webNavigation.onDOMContentLoaded": "experimental.webNavigation.html#event-onDOMContentLoaded",
     "chrome.experimental.webNavigation.onErrorOccurred": "experimental.webNavigation.html#event-onErrorOccurred",
     "chrome.experimental.webNavigation.onReferenceFragmentUpdated": "experimental.webNavigation.html#event-onReferenceFragmentUpdated",
@@ -158,6 +158,7 @@
     "chrome.tabs.onRemoved": "tabs.html#event-onRemoved",
     "chrome.tabs.onSelectionChanged": "tabs.html#event-onSelectionChanged",
     "chrome.tabs.onUpdated": "tabs.html#event-onUpdated",
+    "chrome.tabs.reload": "tabs.html#method-reload",
     "chrome.tabs.remove": "tabs.html#method-remove",
     "chrome.tabs.sendRequest": "tabs.html#method-sendRequest",
     "chrome.tabs.update": "tabs.html#method-update",
@@ -1895,10 +1896,10 @@
     },
     {
       "api_calls": [
-        "chrome.experimental.webNavigation.onBeforeCreateNavigationTarget",
         "chrome.experimental.webNavigation.onBeforeNavigate",
         "chrome.experimental.webNavigation.onCommitted",
         "chrome.experimental.webNavigation.onCompleted",
+        "chrome.experimental.webNavigation.onCreatedNavigationTarget",
         "chrome.experimental.webNavigation.onErrorOccurred",
         "chrome.experimental.webNavigation.onReferenceFragmentUpdated",
         "chrome.extension.onRequest",
@@ -1919,7 +1920,7 @@
       "name": "WebNavigation Tech Demo",
       "path": "examples\/api\/webNavigation\/basic\/",
       "protocols": [],
-      "search_string": "WEBNAVIGATION TECH DEMO DEMONSTRATION OF THE WEBNAVIGATION EXTENSION API. BACKGROUND_PAGE BROWSER_ACTION EXPERIMENTAL EXTENSION POPUP WEBNAVIGATION CHROME.EXPERIMENTAL.WEBNAVIGATION.ONBEFORECREATENAVIGATIONTARGET CHROME.EXPERIMENTAL.WEBNAVIGATION.ONBEFORENAVIGATE CHROME.EXPERIMENTAL.WEBNAVIGATION.ONCOMMITTED CHROME.EXPERIMENTAL.WEBNAVIGATION.ONCOMPLETED CHROME.EXPERIMENTAL.WEBNAVIGATION.ONERROROCCURRED CHROME.EXPERIMENTAL.WEBNAVIGATION.ONREFERENCEFRAGMENTUPDATED CHROME.EXTENSION.ONREQUEST CHROME.EXTENSION.SENDREQUEST CHROME.I18N.GETMESSAGE",
+      "search_string": "WEBNAVIGATION TECH DEMO DEMONSTRATION OF THE WEBNAVIGATION EXTENSION API. BACKGROUND_PAGE BROWSER_ACTION EXPERIMENTAL EXTENSION POPUP WEBNAVIGATION CHROME.EXPERIMENTAL.WEBNAVIGATION.ONBEFORENAVIGATE CHROME.EXPERIMENTAL.WEBNAVIGATION.ONCOMMITTED CHROME.EXPERIMENTAL.WEBNAVIGATION.ONCOMPLETED CHROME.EXPERIMENTAL.WEBNAVIGATION.ONCREATEDNAVIGATIONTARGET CHROME.EXPERIMENTAL.WEBNAVIGATION.ONERROROCCURRED CHROME.EXPERIMENTAL.WEBNAVIGATION.ONREFERENCEFRAGMENTUPDATED CHROME.EXTENSION.ONREQUEST CHROME.EXTENSION.SENDREQUEST CHROME.I18N.GETMESSAGE",
       "source_files": [
         "_locales\/en\/messages.json",
         "background.html",
@@ -1927,7 +1928,7 @@
         "navigation_collector.js",
         "popup.html"
       ],
-      "source_hash": "50be7822552107893f729ab7912ec6a9b8a82fbd",
+      "source_hash": "457f91b9f0a9d41ee9a16aee6be2a194cef558c5",
       "zip_path": "examples\/api\/webNavigation\/basic.zip"
     },
     {

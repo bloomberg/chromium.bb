@@ -33,7 +33,7 @@ function runTests() {
               tabId: 0,
               timeStamp: 0,
               url: getURL('userAction/a.html') }],
-          [ "onBeforeCreateNavigationTarget",
+          [ "onCreatedNavigationTarget",
             { sourceFrameId: 0,
               sourceTabId: 0,
               tabId: 1,

@@ -161,8 +161,8 @@ void DispatchOnCompleted(TabContents* tab_contents,
   DispatchEvent(tab_contents->browser_context(), keys::kOnCompleted, json_args);
 }
 
-// Constructs and dispatches an onBeforeCreateNavigationTarget event.
-void DispatchOnBeforeCreateNavigationTarget(
+// Constructs and dispatches an onCreatedNavigationTarget event.
+void DispatchOnCreatedNavigationTarget(
     TabContents* tab_contents,
     content::BrowserContext* browser_context,
     int64 source_frame_id,
@@ -184,7 +184,7 @@ void DispatchOnBeforeCreateNavigationTarget(
   std::string json_args;
   base::JSONWriter::Write(&args, false, &json_args);
   DispatchEvent(
-      browser_context, keys::kOnBeforeCreateNavigationTarget, json_args);
+      browser_context, keys::kOnCreatedNavigationTarget, json_args);
 }
 
 // Constructs and dispatches an onErrorOccurred event.
@@ -420,7 +420,7 @@ void ExtensionWebNavigationEventRouter::Retargeting(
             details->target_tab_contents,
             details->target_url);
   } else {
-    DispatchOnBeforeCreateNavigationTarget(
+    DispatchOnCreatedNavigationTarget(
         details->source_tab_contents,
         details->target_tab_contents->browser_context(),
         details->source_frame_id,
@@ -436,7 +436,7 @@ void ExtensionWebNavigationEventRouter::TabAdded(TabContents* tab_contents) {
   if (iter == pending_tab_contents_.end())
     return;
 
-  DispatchOnBeforeCreateNavigationTarget(
+  DispatchOnCreatedNavigationTarget(
       iter->second.source_tab_contents,
       iter->second.target_tab_contents->browser_context(),
       iter->second.source_frame_id,
