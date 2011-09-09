@@ -42,6 +42,7 @@ class ContinueWindowWin : public ContinueWindow {
   BOOL OnDialogMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
   void EndDialog();
+  void SetStrings(const UiStrings& strings);
 
   remoting::ChromotingHost* host_;
   HWND hwnd_;
@@ -77,28 +78,6 @@ BOOL CALLBACK ContinueWindowWin::DialogProc(HWND hwnd, UINT msg,
 BOOL ContinueWindowWin::OnDialogMessage(HWND hwnd, UINT msg,
                                         WPARAM wParam, LPARAM lParam) {
   switch (msg) {
-    case WM_INITDIALOG:
-      {
-        // Update UI string placeholders with actual strings.
-        std::wstring w_title = UTF8ToWide(kTitle);
-        SetWindowText(hwnd, w_title.c_str());
-
-        HWND hwndMessage = GetDlgItem(hwnd, IDC_CONTINUE_MESSAGE);
-        CHECK(hwndMessage);
-        std::wstring w_message = UTF8ToWide(kMessage);
-        SetWindowText(hwndMessage, w_message.c_str());
-
-        HWND hwndDefault = GetDlgItem(hwnd, IDC_CONTINUE_DEFAULT);
-        CHECK(hwndDefault);
-        std::wstring w_default = UTF8ToWide(kDefaultButtonText);
-        SetWindowText(hwndDefault, w_default.c_str());
-
-        HWND hwndCancel = GetDlgItem(hwnd, IDC_CONTINUE_CANCEL);
-        CHECK(hwndCancel);
-        std::wstring w_cancel = UTF8ToWide(kCancelButtonText);
-        SetWindowText(hwndCancel, w_cancel.c_str());
-      }
-      return TRUE;
     case WM_CLOSE:
       // Ignore close messages.
       return TRUE;
@@ -109,20 +88,16 @@ BOOL ContinueWindowWin::OnDialogMessage(HWND hwnd, UINT msg,
     case WM_COMMAND:
       switch (LOWORD(wParam)) {
         case IDC_CONTINUE_DEFAULT:
-          {
-            CHECK(host_);
-            host_->PauseSession(false);
-            ::EndDialog(hwnd, LOWORD(wParam));
-            hwnd_ = NULL;
-          }
+          CHECK(host_);
+          host_->PauseSession(false);
+          ::EndDialog(hwnd, LOWORD(wParam));
+          hwnd_ = NULL;
           return TRUE;
         case IDC_CONTINUE_CANCEL:
-          {
-            CHECK(host_);
-            host_->Shutdown(NULL);
-            ::EndDialog(hwnd, LOWORD(wParam));
-            hwnd_ = NULL;
-          }
+          CHECK(host_);
+          host_->Shutdown(NULL);
+          ::EndDialog(hwnd, LOWORD(wParam));
+          hwnd_ = NULL;
           return TRUE;
       }
   }
@@ -140,6 +115,7 @@ void ContinueWindowWin::Show(ChromotingHost* host) {
     return;
   }
 
+  SetStrings(host->ui_strings());
   ShowWindow(hwnd_, SW_SHOW);
 }
 
@@ -152,6 +128,22 @@ void ContinueWindowWin::EndDialog() {
     ::EndDialog(hwnd_, 0);
     hwnd_ = NULL;
   }
+}
+
+void ContinueWindowWin::SetStrings(const UiStrings& strings) {
+  SetWindowText(hwnd_, strings.product_name.c_str());
+
+  HWND hwndMessage = GetDlgItem(hwnd_, IDC_CONTINUE_MESSAGE);
+  CHECK(hwndMessage);
+  SetWindowText(hwndMessage, strings.continue_prompt.c_str());
+
+  HWND hwndDefault = GetDlgItem(hwnd_, IDC_CONTINUE_DEFAULT);
+  CHECK(hwndDefault);
+  SetWindowText(hwndDefault, strings.continue_button_text.c_str());
+
+  HWND hwndCancel = GetDlgItem(hwnd_, IDC_CONTINUE_CANCEL);
+  CHECK(hwndCancel);
+  SetWindowText(hwndCancel, strings.stop_sharing_button_text.c_str());
 }
 
 ContinueWindow* ContinueWindow::Create() {

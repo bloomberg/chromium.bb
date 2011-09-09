@@ -8,11 +8,13 @@
 
 #include "base/compiler_specific.h"
 #include "base/logging.h"
+#include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "remoting/host/chromoting_host.h"
 // TODO(wez): The DisconnectWindow isn't plugin-specific, so shouldn't have
 // a dependency on the plugin's resource header.
 #include "remoting/host/plugin/host_plugin_resource.h"
+#include "remoting/host/ui_strings.h"
 
 // TODO(garykac): Lots of duplicated code in this file and
 // continue_window_win.cc. These global floating windows are temporary so
@@ -45,11 +47,10 @@ private:
   BOOL OnDialogMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
   void ShutdownHost();
-  void SetDisconnectButtonText(HWND hwnd);
   void EndDialog(int result);
+  void SetStrings(const UiStrings& strings, const std::string& username);
 
   remoting::ChromotingHost* host_;
-  std::string username_;
   HWND hwnd_;
   bool has_hotkey_;
 
@@ -58,7 +59,6 @@ private:
 
 DisconnectWindowWin::DisconnectWindowWin()
     : host_(NULL),
-      username_(""),
       hwnd_(NULL),
       has_hotkey_(false) {
 }
@@ -86,31 +86,9 @@ BOOL CALLBACK DisconnectWindowWin::DialogProc(HWND hwnd, UINT msg,
 BOOL DisconnectWindowWin::OnDialogMessage(HWND hwnd, UINT msg,
                                           WPARAM wParam, LPARAM lParam) {
   switch (msg) {
-    case WM_INITDIALOG:
-      {
-        // Update UI string placeholders with actual strings.
-        std::wstring w_title = UTF8ToWide(kTitle);
-        SetWindowText(hwnd, w_title.c_str());
-
-        SetDisconnectButtonText(hwnd);
-
-        HWND hwndSharingWith = GetDlgItem(hwnd, IDC_DISCONNECT_SHARINGWITH);
-        CHECK(hwndSharingWith);
-        std::wstring w_sharing = UTF8ToWide(kSharingWith);
-        SetWindowText(hwndSharingWith, w_sharing.c_str());
-
-        // Update username in dialog.
-        HWND hwndUsername = GetDlgItem(hwnd, IDC_DISCONNECT_USERNAME);
-        CHECK(hwndUsername);
-        std::wstring w_username = UTF8ToWide(username_);
-        SetWindowText(hwndUsername, w_username.c_str());
-      }
-      return TRUE;
     case WM_HOTKEY:
-      {
-        ShutdownHost();
-        EndDialog(0);
-      }
+      ShutdownHost();
+      EndDialog(0);
       return TRUE;
     case WM_CLOSE:
       // Ignore close messages.
@@ -122,10 +100,8 @@ BOOL DisconnectWindowWin::OnDialogMessage(HWND hwnd, UINT msg,
     case WM_COMMAND:
       switch (LOWORD(wParam)) {
         case IDC_DISCONNECT:
-          {
-            ShutdownHost();
-            EndDialog(LOWORD(wParam));
-          }
+          ShutdownHost();
+          EndDialog(LOWORD(wParam));
           return TRUE;
       }
   }
@@ -135,7 +111,6 @@ BOOL DisconnectWindowWin::OnDialogMessage(HWND hwnd, UINT msg,
 void DisconnectWindowWin::Show(ChromotingHost* host,
                                const std::string& username) {
   host_ = host;
-  username_ = username;
 
   CHECK(!hwnd_);
   hwnd_ = CreateDialogParam(g_hModule, MAKEINTRESOURCE(IDD_DISCONNECT), NULL,
@@ -145,14 +120,14 @@ void DisconnectWindowWin::Show(ChromotingHost* host,
     return;
   }
 
-  ShowWindow(hwnd_, SW_SHOW);
-
   // Set up handler for Ctrl-Alt-Esc shortcut.
   if (!has_hotkey_ && RegisterHotKey(hwnd_, DISCONNECT_HOTKEY_ID,
                                      MOD_ALT | MOD_CONTROL, VK_ESCAPE)) {
     has_hotkey_ = true;
   }
-  SetDisconnectButtonText(hwnd_);
+
+  SetStrings(host->ui_strings(), username);
+  ShowWindow(hwnd_, SW_SHOW);
 }
 
 void DisconnectWindowWin::ShutdownHost() {
@@ -160,13 +135,22 @@ void DisconnectWindowWin::ShutdownHost() {
   host_->Shutdown(NULL);
 }
 
-void DisconnectWindowWin::SetDisconnectButtonText(HWND hwnd) {
-  HWND hwndButton = GetDlgItem(hwnd, IDC_DISCONNECT);
+void DisconnectWindowWin::SetStrings(const UiStrings& strings,
+                                          const std::string& username) {
+  SetWindowText(hwnd_, strings.product_name.c_str());
+
+  HWND hwndButton = GetDlgItem(hwnd_, IDC_DISCONNECT);
   CHECK(hwndButton);
-  std::wstring w_button = UTF8ToWide(kDisconnectButton);
-  if (has_hotkey_)
-    w_button += UTF8ToWide(kDisconnectKeysWin);
-  SetWindowText(hwndButton, w_button.c_str());
+  const WCHAR* label =
+    has_hotkey_ ? strings.disconnect_button_text_plus_shortcut.c_str()
+                : strings.disconnect_button_text.c_str();
+  SetWindowText(hwndButton, label);
+
+  HWND hwndSharingWith = GetDlgItem(hwnd_, IDC_DISCONNECT_SHARINGWITH);
+  CHECK(hwndSharingWith);
+  string16 text = ReplaceStringPlaceholders(
+      strings.disconnect_message, UTF8ToUTF16(username), NULL);
+  SetWindowText(hwndSharingWith, text.c_str());
 }
 
 void DisconnectWindowWin::Hide() {
