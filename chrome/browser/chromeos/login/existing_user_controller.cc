@@ -519,6 +519,8 @@ gfx::NativeWindow ExistingUserController::GetNativeWindow() const {
 }
 
 void ExistingUserController::SetStatusAreaEnabled(bool enable) {
+  if (!host_)
+    return;
   host_->SetStatusAreaEnabled(enable);
 }
 
