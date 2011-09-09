@@ -3281,21 +3281,7 @@
    fun:_Z16DispatchToMethodI16ExtensionInfoMapMS0_FvPK9ExtensionES3_EvPT_T0_RK6Tuple1IT1_E
 }
 {
-   bug_67676_a
-   Memcheck:Leak
-   fun:_Znw*
-   ...
-   fun:_ZNSt3mapISsP5ValueSt4lessISsESaISt4pairIKSsS1_EEEixERS5_
-   fun:_ZN15DictionaryValue23SetWithoutPathExpansionERKSsP5Value
-   ...
-   fun:_ZNK15DictionaryValue8DeepCopyEv
-   fun:_ZN9Extension13InitFromValueERK15DictionaryValuebPSs
-   fun:_ZN9Extension6CreateERK8FilePathNS_8LocationERK15DictionaryValuebPSs
-   fun:_ZN19extension_file_util13LoadExtensionERK8FilePathN9Extension8LocationEbPSs
-   fun:_ZN23ExtensionServiceBackend19LoadSingleExtensionERK8FilePath13scoped_refptrI16ExtensionServiceE
-}
-{
-   bug_67676_b
+   bug_67676
    Memcheck:Leak
    fun:_Znw*
    ...
