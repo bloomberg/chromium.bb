@@ -4,7 +4,11 @@
 
 #include "ui/base/models/simple_menu_model.h"
 
+#include <string>
+
+#include "base/debug/alias.h"
 #include "base/message_loop.h"
+#include "base/utf_string_conversions.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -13,6 +17,20 @@ namespace ui {
 const int kSeparatorId = -1;
 
 struct SimpleMenuModel::Item {
+  // TODO(sky): remove me. Used in debugging 95851.
+  ~Item() {
+    int id = command_id;
+    base::debug::Alias(&id);
+
+    // Copy the first 64 bytes of the string into the stack
+    const size_t kMaxBufferLen = 64;
+    char buffer[kMaxBufferLen];
+    std::string debug_label(UTF16ToUTF8(label));
+    strncpy(buffer, debug_label.c_str(), kMaxBufferLen - 1);
+    buffer[kMaxBufferLen - 1] = '\0';
+    base::debug::Alias(buffer);
+  }
+
   int command_id;
   string16 label;
   SkBitmap icon;
