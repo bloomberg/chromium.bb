@@ -129,7 +129,8 @@ void FaviconWebUIHandler::NotifyAppIconReady(const std::string& extension_id) {
   // cache the color there. Then call back to this method with the ext id
   // and the color.
   std::vector<unsigned char> bits;
-  CHECK(gfx::PNGCodec::EncodeBGRASkBitmap(bitmap, true, &bits));
+  if (!gfx::PNGCodec::EncodeBGRASkBitmap(bitmap, true, &bits))
+    return;
   scoped_refptr<RefCountedStaticMemory> bits_mem(
       new RefCountedStaticMemory(&bits.front(), bits.size()));
   scoped_ptr<StringValue> color_value(GetDominantColorCssString(bits_mem));
