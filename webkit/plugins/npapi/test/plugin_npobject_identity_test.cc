@@ -77,6 +77,8 @@ NPError NPObjectIdentityTest::SetWindow(NPWindow* pNPWindow) {
   if (!were_the_same)
     SetError("Identity was lost in passing from NPAPI into JavaScript.");
 
+  HostFunctions()->releaseobject(thingy);
+
   // If this test failed, then we'd have crashed by now.
   SignalTestCompleted();
 

@@ -4191,22 +4191,6 @@
    fun:_ZN4base12_GLOBAL__N_112WorkerThread10ThreadMainEv
 }
 {
-   bug_84223
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN12_GLOBAL__N_18NPThingy8AllocateEP4_NPPP7NPClass
-   fun:_NPN_CreateObject
-   fun:_ZN6WebKit11WebBindings12createObjectEP4_NPPP7NPClass
-   fun:_ZN11NPAPIClient20NPObjectIdentityTest9SetWindowEP9_NPWindow
-   fun:NPP_SetWindow
-   fun:_ZN6webkit5npapi14PluginInstance13NPP_SetWindowEP9_NPWindow
-   fun:_ZN6webkit5npapi21WebPluginDelegateImpl17WindowedSetWindowEv
-   fun:_ZN6webkit5npapi21WebPluginDelegateImpl22WindowedUpdateGeometryERKN3gfx4RectES5_
-   fun:_ZN6webkit5npapi21WebPluginDelegateImpl14UpdateGeometryERKN3gfx4RectES5_
-   fun:_ZN14WebPluginProxy14UpdateGeometry*
-   fun:_ZN21WebPluginDelegateStub16OnUpdateGeometryERK30PluginMsg_UpdateGeometry_Param
-}
-{
    bug_84224_a
    Memcheck:Leak
    fun:_Znw*
