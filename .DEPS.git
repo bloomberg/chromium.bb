@@ -78,6 +78,8 @@ deps = {
         Var('git_url') + '/external/skia/src.git@69eb2dedd1a5ef593f2c37c2cf3e23e37b38fa6a',
     'src/third_party/skia/third_party/glu':
         Var('git_url') + '/external/skia/third_party/glu.git@c988402115946ed3cb7fb347f6eef4a8cec543e2',
+    'src/third_party/smhasher/src':
+        Var('git_url') + '/external/smhasher.git@b35e562e2d80bc47a51b53ec92a305eb9a3383b4',
     'src/third_party/snappy/src':
         Var('git_url') + '/external/snappy.git@5258607248a000affb2f72b87b9bbd044806677d',
     'src/third_party/speex':
@@ -99,7 +101,7 @@ deps = {
     'src/tools/page_cycler/acid3':
         Var('git_url') + '/chromium/deps/acid3.git@59c6ae4c476750845a529cd407454378ebaaa347',
     'src/v8':
-        Var('git_url') + '/external/v8.git@80c42ed5ace766a3a02b30a53a25e5e81e234723',
+        Var('git_url') + '/external/v8.git@55ee80713569ab0324fc8dcedcb5518501daa6a6',
 }
 
 deps_os = {
