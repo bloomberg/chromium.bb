@@ -4050,16 +4050,6 @@
    fun:_ZN9talk_base10TaskRunner8RunTasksEv
 }
 {
-   bug_80150
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_Z11NewCallbackIN12browser_sync15SyncBackendHost4CoreEEP14CallbackRunnerI6Tuple0EPT_MS7_FvvE
-   fun:_ZN12browser_sync15SyncBackendHost18ConfigureDataTypesERKSt3mapIN8syncable9ModelTypeE13scoped_refptrINS_18DataTypeControllerEESt4lessIS3_ESaISt4pairIKS3_S6_EEERKSt3setIS3_S8_SaIS3_EEP14CancelableTask
-   fun:_ZN12browser_sync33SyncBackendHostForProfileSyncTest18ConfigureDataTypesERKSt3mapIN8syncable9ModelTypeE13scoped_refptrINS_18DataTypeControllerEESt4lessIS3_ESaISt4pairIKS3_S6_EEERKSt3setIS3_S8_SaIS3_EEP14CancelableTask
-   fun:_ZN12browser_sync19DataTypeManagerImpl7RestartEv
-   fun:_ZN12browser_sync19DataTypeManagerImpl9ConfigureERKSt3setIN8syncable9ModelTypeESt4lessIS3_ESaIS3_EE
-}
-{
    bug_80174
    Memcheck:Leak
    fun:_Znw*
