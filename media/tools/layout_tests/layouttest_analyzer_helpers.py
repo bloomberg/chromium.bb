@@ -272,18 +272,18 @@ def SendStatusEmail(prev_time, analyzer_result_map, diff_map,
         used in this analyzer.
     analyzer_result_map: current analyzer result.
     diff_map: a map that has 'whole', 'skip' and 'nonskip' as keys.
-          The values of the map are the result of |GetDiffBetweenMaps()|.
-          The element has two lists of test cases. One (with index 0) is for
-          test names that are in the current result but NOT in the previous
-          result. The other (with index 1) is for test names that are in the
-          previous results but NOT in the current result.
-           For example (test expectation information is omitted for
-           simplicity),
-             comp_result_map['whole'][0] = ['foo1.html']
-             comp_result_map['whole'][1] = ['foo2.html']
-           This means that current result has 'foo1.html' but NOT in the
-           previous result. This also means the previous result has 'foo2.html'
-           but it is NOT the current result.
+        The values of the map are the result of |GetDiffBetweenMaps()|.
+        The element has two lists of test cases. One (with index 0) is for
+        test names that are in the current result but NOT in the previous
+        result. The other (with index 1) is for test names that are in the
+        previous results but NOT in the current result.
+         For example (test expectation information is omitted for
+         simplicity),
+           comp_result_map['whole'][0] = ['foo1.html']
+           comp_result_map['whole'][1] = ['foo2.html']
+         This means that current result has 'foo1.html' but NOT in the
+         previous result. This also means the previous result has 'foo2.html'
+         but it is NOT the current result.
     bug_anno_map: bug annotation map where bug name and annotations are
         stored.
     receiver_email_address: receiver's email address.
