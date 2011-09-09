@@ -13,13 +13,23 @@ That value can optionally be tweaked by setting an environment variable
 to run.
 """
 
+import BaseHTTPServer
 import logging
 import math
 import os
+import posixpath
+import SimpleHTTPServer
+import SocketServer
+import tempfile
+import threading
 import timeit
+import urllib
+import urllib2
+import urlparse
 
 import pyauto_functional  # Must be imported before pyauto.
 import pyauto
+import pyauto_utils
 import test_utils
 
 
@@ -43,7 +53,7 @@ class BasePerfTest(pyauto.PyUITest):
         self.fail('Error processing environment variable: %s' % e)
     pyauto.PyUITest.setUp(self)
 
-  def _MeasureElapsedTime(self, python_command, num_invocations):
+  def _MeasureElapsedTime(self, python_command, num_invocations=1):
     """Measures time (in msec) to execute a python command one or more times.
 
     Args:
@@ -130,7 +140,8 @@ class BasePerfTest(pyauto.PyUITest):
 
     timings = []
     for _ in range(self._num_iterations):
-      timings.append(self._MeasureElapsedTime(open_tab_command, num_tabs))
+      timings.append(self._MeasureElapsedTime(open_tab_command,
+                                              num_invocations=num_tabs))
       self.assertEqual(1 + num_tabs, self.GetTabCount(),
                        msg='Did not open %d new tab(s).' % num_tabs)
       for _ in range(num_tabs):
@@ -196,7 +207,7 @@ class BenchmarkPerfTest(BasePerfTest):
     self.assertTrue(
         self.WaitUntil(
             lambda: 'Score:' in self.ExecuteJavascript(js, 0, 1), timeout=300,
-            expect_retval=True),
+            expect_retval=True, retry_sleep=0.10),
         msg='Timed out when waiting for v8 benchmark score.')
     val = self.ExecuteJavascript(js, 0, 1)  # Window index 0, tab index 1.
     score = int(val.split(':')[1].strip())
@@ -244,7 +255,7 @@ class LiveWebappLoadTest(BasePerfTest):
       self.assertTrue(self.AppendTab(pyauto.GURL('http://www.gmail.com')),
                       msg='Failed to append tab for Gmail.')
       self.assertTrue(self.WaitUntil(_SubstringExistsOnPage, timeout=120,
-                                     expect_retval='true'),
+                                     expect_retval='true', retry_sleep=0.10),
                       msg='Timed out waiting for expected Gmail string.')
 
     self._LoginToGoogleAccount()
@@ -274,7 +285,7 @@ class LiveWebappLoadTest(BasePerfTest):
       self.assertTrue(self.AppendTab(pyauto.GURL('http://calendar.google.com')),
                       msg='Failed to append tab for Calendar.')
       self.assertTrue(self.WaitUntil(_DivTitleStartsWith, timeout=120,
-                                     expect_retval='true'),
+                                     expect_retval='true', retry_sleep=0.10),
                       msg='Timed out waiting for expected Calendar string.')
 
     self._LoginToGoogleAccount()
@@ -286,7 +297,6 @@ class LiveWebappLoadTest(BasePerfTest):
     Timing starts right before the new tab is opened, and stops as soon as the
     webpage displays the expected substring 'No item selected'.
     """
-
     EXPECTED_SUBSTRING = 'No item selected'
 
     def _SubstringExistsOnPage():
@@ -304,11 +314,368 @@ class LiveWebappLoadTest(BasePerfTest):
       self.assertTrue(self.AppendTab(pyauto.GURL('http://docs.google.com')),
                       msg='Failed to append tab for Docs.')
       self.assertTrue(self.WaitUntil(_SubstringExistsOnPage, timeout=120,
-                                     expect_retval='true'),
+                                     expect_retval='true', retry_sleep=0.10),
                       msg='Timed out waiting for expected Docs string.')
 
     self._LoginToGoogleAccount()
     self._RunNewTabTest('NewTabDocs', _RunSingleDocsTabOpen)
+
+
+class FileUploadDownloadTest(BasePerfTest):
+  """Tests that involve measuring performance of upload and download."""
+
+  def setUp(self):
+    """Performs necessary setup work before running each test in this class."""
+    self._temp_dir = tempfile.mkdtemp()
+    self._test_server = PerfTestServer(self._temp_dir)
+    self._test_server_port = self._test_server.GetPort()
+    self._test_server.Run()
+    self.assertTrue(self.WaitUntil(self._IsTestServerRunning),
+                    msg='Failed to start local performance test server.')
+    BasePerfTest.setUp(self)
+
+  def tearDown(self):
+    """Performs necessary cleanup work after running each test in this class."""
+    BasePerfTest.tearDown(self)
+    self._test_server.ShutDown()
+    pyauto_utils.RemovePath(self._temp_dir)
+
+  def _IsTestServerRunning(self):
+    """Determines whether the local test server is ready to accept connections.
+
+    Returns:
+      True, if a connection can be made to the local performance test server, or
+      False otherwise.
+    """
+    conn = None
+    try:
+      conn = urllib2.urlopen('http://localhost:%d' % self._test_server_port)
+      return True
+    except IOError, e:
+      return False
+    finally:
+      if conn:
+        conn.close()
+
+  def testDownload100MBFile(self):
+    """Measures the time to download a 100 MB file from a local server."""
+    CREATE_100MB_URL = (
+        'http://localhost:%d/create_file_of_size?filename=data&mb=100' %
+        self._test_server_port)
+    DOWNLOAD_100MB_URL = 'http://localhost:%d/data' % self._test_server_port
+    DELETE_100MB_URL = ('http://localhost:%d/delete_file?filename=data' %
+                        self._test_server_port)
+
+    # Tell the local server to create a 100 MB file.
+    self.NavigateToURL(CREATE_100MB_URL)
+
+    # Cleaning up downloaded files is done in the same way as in downloads.py.
+    # We first identify all existing downloaded files, then remove only those
+    # new downloaded files that appear during the course of this test.
+    download_dir = self.GetDownloadDirectory().value()
+    orig_downloads = []
+    if os.path.isdir(download_dir):
+      orig_downloads = os.listdir(download_dir)
+
+    def _CleanupAdditionalFilesInDir(directory, orig_files):
+      """Removes the additional files in the specified directory.
+
+      This function will remove all files from |directory| that are not
+      specified in |orig_files|.
+
+      Args:
+        directory: A string directory path.
+        orig_files: A list of strings representing the original set of files in
+                    the specified directory.
+      """
+      downloads_to_remove = []
+      if os.path.isdir(directory):
+        downloads_to_remove = [os.path.join(directory, name)
+                               for name in os.listdir(directory)
+                               if name not in orig_files]
+      for file_name in downloads_to_remove:
+        pyauto_utils.RemovePath(file_name)
+
+    def _DownloadFile(url):
+      self.DownloadAndWaitForStart(url)
+      self.WaitForAllDownloadsToComplete(timeout=2 * 60 * 1000)  # 2 minutes.
+
+    timings = []
+    for _ in range(self._num_iterations):
+      timings.append(
+          self._MeasureElapsedTime(
+              lambda: _DownloadFile(DOWNLOAD_100MB_URL), num_invocations=1))
+      self.SetDownloadShelfVisible(False)
+      _CleanupAdditionalFilesInDir(download_dir, orig_downloads)
+
+    self._PrintSummaryResults('Download100MBFile', timings, 'milliseconds')
+
+    # Tell the local server to delete the 100 MB file.
+    self.NavigateToURL(DELETE_100MB_URL)
+
+  def testUpload50MBFile(self):
+    """Measures the time to upload a 50 MB file to a local server."""
+    # TODO(dennisjeffrey): Replace the use of XMLHttpRequest in this test with
+    # FileManager automation to select the upload file when crosbug.com/17903
+    # is complete.
+    START_UPLOAD_URL = (
+        'http://localhost:%d/start_upload?mb=50' % self._test_server_port)
+
+    EXPECTED_SUBSTRING = 'Upload complete'
+
+    def _IsUploadComplete():
+      js = """
+          result = "";
+          var div = document.getElementById("upload_result");
+          if (div)
+            result = div.innerHTML;
+          window.domAutomationController.send(result);
+      """
+      return self.ExecuteJavascript(js, 0, 0).find(EXPECTED_SUBSTRING) >= 0
+
+    def _RunSingleUpload():
+      self.NavigateToURL(START_UPLOAD_URL)
+      self.assertTrue(
+          self.WaitUntil(_IsUploadComplete, timeout=120, expect_retval=True,
+                         retry_sleep=0.10),
+          msg='Upload failed to complete before the timeout was hit.')
+
+    timings = []
+    for _ in range(self._num_iterations):
+      timings.append(self._MeasureElapsedTime(_RunSingleUpload))
+
+    self._PrintSummaryResults('Upload50MBFile', timings, 'milliseconds')
+
+
+class PerfTestServerRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
+  """Request handler for the local performance test server."""
+
+  def _IgnoreHandler(self, unused_args):
+    """A GET request handler that simply replies with status code 200.
+
+    Args:
+      unused_args: A dictionary of arguments for the current GET request.
+                   The arguments are ignored.
+    """
+    self.send_response(200)
+    self.end_headers()
+
+  def _CreateFileOfSizeHandler(self, args):
+    """A GET handler that creates a local file with the specified size.
+
+    Args:
+      args: A dictionary of arguments for the current GET request.  Must
+            contain 'filename' and 'mb' keys that refer to the name of the
+            file to create and its desired size, respectively.
+    """
+    megabytes = None
+    filename = None
+    try:
+      megabytes = int(args['mb'][0])
+      filename = args['filename'][0]
+    except (ValueError, KeyError, IndexError), e:
+      logging.exception('Server error creating file: %s' % e)
+    assert megabytes and filename
+    with open(os.path.join(self.server.docroot, filename), 'wb') as f:
+      f.write('X' * 1024 * 1024 * megabytes)
+    self.send_response(200)
+    self.end_headers()
+
+  def _DeleteFileHandler(self, args):
+    """A GET handler that deletes the specified local file.
+
+    Args:
+      args: A dictionary of arguments for the current GET request.  Must
+            contain a 'filename' key that refers to the name of the file
+            to delete, relative to the server's document root.
+    """
+    filename = None
+    try:
+      filename = args['filename'][0]
+    except (KeyError, IndexError), e:
+      logging.exception('Server error deleting file: %s' % e)
+    assert filename
+    try:
+      os.remove(os.path.join(self.server.docroot, filename))
+    except OSError, e:
+      logging.warning('OS error removing file: %s' % e)
+    self.send_response(200)
+    self.end_headers()
+
+  def _StartUploadHandler(self, args):
+    """A GET handler to serve a page that uploads the given amount of data.
+
+    When the page loads, the specified amount of data is automatically
+    uploaded to the same local server that is handling the current request.
+
+    Args:
+      args: A dictionary of arguments for the current GET request.  Must
+            contain an 'mb' key that refers to the size of the data to
+            upload.
+    """
+    megabytes = None
+    try:
+      megabytes = int(args['mb'][0])
+    except (ValueError, KeyError, IndexError), e:
+      logging.exception('Server error starting upload: %s' % e)
+    assert megabytes
+    script = """
+        <html>
+          <head>
+            <script type='text/javascript'>
+              function startUpload() {
+                var megabytes = %s;
+                var data = Array((1024 * 1024 * megabytes) + 1).join('X');
+                var boundary = '***BOUNDARY***';
+                var xhr = new XMLHttpRequest();
+
+                xhr.open('POST', 'process_upload', true);
+                xhr.setRequestHeader(
+                    'Content-Type',
+                    'multipart/form-data; boundary="' + boundary + '"');
+                xhr.setRequestHeader('Content-Length', data.length);
+                xhr.onreadystatechange = function() {
+                  if (xhr.readyState == 4 && xhr.status == 200) {
+                    document.getElementById('upload_result').innerHTML =
+                        xhr.responseText;
+                  }
+                };
+                var body = '--' + boundary + '\\r\\n';
+                body += 'Content-Disposition: form-data;' +
+                        'file_contents=' + data;
+                xhr.send(body);
+              }
+            </script>
+          </head>
+
+          <body onload="startUpload();">
+            <div id='upload_result'>Uploading...</div>
+          </body>
+        </html>
+    """ % megabytes
+    self.send_response(200)
+    self.end_headers()
+    self.wfile.write(script)
+
+  def _ProcessUploadHandler(self, form):
+    """A POST handler that discards uploaded data and sends a response.
+
+    Args:
+      form: A dictionary containing posted form data, as returned by
+            urlparse.parse_qs().
+    """
+    upload_processed = False
+    file_size = 0
+    if 'file_contents' in form:
+      file_size = len(form['file_contents'][0])
+      upload_processed = True
+    self.send_response(200)
+    self.end_headers()
+    if upload_processed:
+      self.wfile.write('Upload complete (%d bytes)' % file_size)
+    else:
+      self.wfile.write('No file contents uploaded')
+
+  GET_REQUEST_HANDLERS = {
+    'create_file_of_size': _CreateFileOfSizeHandler,
+    'delete_file': _DeleteFileHandler,
+    'start_upload': _StartUploadHandler,
+    'favicon.ico': _IgnoreHandler,
+  }
+
+  POST_REQUEST_HANDLERS = {
+    'process_upload': _ProcessUploadHandler,
+  }
+
+  def translate_path(self, path):
+    """Ensures files are served from the given document root.
+
+    Overridden from SimpleHTTPServer.SimpleHTTPRequestHandler.
+    """
+    path = urlparse.urlparse(path)[2]
+    path = posixpath.normpath(urllib.unquote(path))
+    words = path.split('/')
+    words = filter(None, words)  # Remove empty strings from |words|.
+    path = self.server.docroot
+    for word in words:
+      _, word = os.path.splitdrive(word)
+      _, word = os.path.split(word)
+      if word in (os.curdir, os.pardir):
+        continue
+      path = os.path.join(path, word)
+    return path
+
+  def do_GET(self):
+    """Processes a GET request to the local server.
+
+    Overridden from SimpleHTTPServer.SimpleHTTPRequestHandler.
+    """
+    split_url = urlparse.urlsplit(self.path)
+    base_path = split_url[2]
+    if base_path.startswith('/'):
+      base_path = base_path[1:]
+    args = urlparse.parse_qs(split_url[3])
+    if base_path in self.GET_REQUEST_HANDLERS:
+      self.GET_REQUEST_HANDLERS[base_path](self, args)
+    else:
+      SimpleHTTPServer.SimpleHTTPRequestHandler.do_GET(self)
+
+  def do_POST(self):
+    """Processes a POST request to the local server.
+
+    Overridden from SimpleHTTPServer.SimpleHTTPRequestHandler.
+    """
+    form = urlparse.parse_qs(
+        self.rfile.read(int(self.headers.getheader('Content-Length'))))
+    path = urlparse.urlparse(self.path)[2]
+    if path.startswith('/'):
+      path = path[1:]
+    if path in self.POST_REQUEST_HANDLERS:
+      self.POST_REQUEST_HANDLERS[path](self, form)
+    else:
+      self.send_response(200)
+      self.send_header('Content-Type', 'text/plain')
+      self.end_headers()
+      self.wfile.write('No handler for POST request "%s".' % path)
+
+
+class ThreadedHTTPServer(SocketServer.ThreadingMixIn,
+                         BaseHTTPServer.HTTPServer):
+  def __init__(self, server_address, handler_class):
+    BaseHTTPServer.HTTPServer.__init__(self, server_address, handler_class)
+
+
+class PerfTestServer(object):
+  """Local server for use by performance tests."""
+
+  def __init__(self, docroot):
+    """Initializes the performance test server.
+
+    Args:
+      docroot: The directory from which to serve files.
+    """
+    # The use of 0 means to start the server on an arbitrary available port.
+    self._server = ThreadedHTTPServer(('', 0),
+                                      PerfTestServerRequestHandler)
+    self._server.docroot = docroot
+    self._server_thread = threading.Thread(target=self._server.serve_forever)
+
+  def Run(self):
+    """Starts the server thread."""
+    self._server_thread.start()
+
+  def ShutDown(self):
+    """Shuts down the server."""
+    self._server.shutdown()
+    self._server_thread.join()
+
+  def GetPort(self):
+    """Identifies the port number to which the server is currently bound.
+
+    Returns:
+      The numeric port number to which the server is currently bound.
+    """
+    return self._server.server_address[1]
 
 
 if __name__ == '__main__':

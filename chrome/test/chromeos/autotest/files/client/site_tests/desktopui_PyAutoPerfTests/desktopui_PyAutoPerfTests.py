@@ -85,14 +85,14 @@ class desktopui_PyAutoPerfTests(chrome_test.ChromeTestBase):
         output = proc.communicate()[0]
         print output  # Ensure pyauto test output is stored in autotest logs.
         if proc.returncode != 0:
-          raise error.TestFail(
-              'Unexpected return code from pyauto_functional.py when running '
-              'with the CHROMEOS_PERF suite: %d' % proc.returncode)
+            raise error.TestFail(
+                'Unexpected return code from pyauto_functional.py when running '
+                'with the CHROMEOS_PERF suite: %d' % proc.returncode)
         re_compiled = re.compile('%s(.+)%s' % (self._PERF_MARKER_PRE,
                                                self._PERF_MARKER_POST))
         perf_lines = [line for line in output.split('\n')
                       if re_compiled.match(line)]
         if perf_lines:
-          perf_dict = dict([eval(re_compiled.match(line).group(1))
-                            for line in perf_lines])
-          self.write_perf_keyval(perf_dict)
+            perf_dict = dict([eval(re_compiled.match(line).group(1))
+                              for line in perf_lines])
+            self.write_perf_keyval(perf_dict)
