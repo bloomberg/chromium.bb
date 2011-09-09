@@ -89,7 +89,7 @@ class GIT(object):
   @staticmethod
   def Capture(args, **kwargs):
     return subprocess2.check_output(
-        ['git'] + args, stderr=subprocess2.VOID, **kwargs)
+        ['git'] + args, stderr=subprocess2.PIPE, **kwargs)
 
   @staticmethod
   def CaptureStatus(files, upstream_branch=None):
