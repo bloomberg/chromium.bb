@@ -2908,19 +2908,6 @@
    fun:_ZN2v88internal19HandleApiCallHelperILb0EEEPNS0_6ObjectENS0_47_GLOBAL__N_v8_src_builtins.cc_00000000_03DBA2A116BuiltinArgumentsILNS0_21BuiltinExtraArgumentsE1EEE
 }
 {
-   bug_60662
-   Memcheck:Leak
-   fun:calloc
-   ...
-   fun:_ZN6WebKit31WebGraphicsContext3DDefaultImpl7reshapeEii
-   fun:_ZN7WebCore25GraphicsContext3DInternal7reshapeEii
-   fun:_ZN7WebCore17GraphicsContext3D7reshapeEii
-   fun:_ZN7WebCore21WebGLRenderingContextC1EPNS_17HTMLCanvasElementEN3WTF10PassRefPtrINS_17GraphicsContext3DEEE
-   fun:_ZN7WebCore21WebGLRenderingContext6createEPNS_17HTMLCanvasElementEPNS_22WebGLContextAttributesE
-   fun:_ZN7WebCore17HTMLCanvasElement10getContextERKN3WTF6StringEPNS_23CanvasContextAttributesE
-   fun:_ZN7WebCore19V8HTMLCanvasElement18getContextCallbackERKN2v89ArgumentsE
-}
-{
    bug_60667
    Memcheck:Leak
    fun:malloc
