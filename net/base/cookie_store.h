@@ -47,20 +47,17 @@ class NET_EXPORT CookieStore : public base::RefCountedThreadSafe<CookieStore> {
     std::string mac_algorithm;
   };
 
-  // Callback definitions.
-  typedef base::Callback <void(
-      const std::string& cookie_line,
-      const std::vector<CookieInfo>& cookie_infos)> GetCookieInfoCallback;
-  typedef base::Callback<void(const std::string& cookie)>
-      GetCookiesCallback;
-  typedef base::Callback<void(bool)> SetCookiesCallback;
-
-
   // Sets a single cookie.  Expects a cookie line, like "a=1; domain=b.com".
   //
   // Fails either if the cookie is invalid or if this is a non-HTTPONLY cookie
   // and it would overwrite an existing HTTPONLY cookie.
   // Returns true if the cookie is successfully set.
+  virtual bool SetCookieWithOptions(const GURL& url,
+                                    const std::string& cookie_line,
+                                    const CookieOptions& options) = 0;
+
+  typedef base::Callback<void(bool)> SetCookiesCallback;
+
   virtual void SetCookieWithOptionsAsync(
       const GURL& url,
       const std::string& cookie_line,
@@ -73,6 +70,12 @@ class NET_EXPORT CookieStore : public base::RefCountedThreadSafe<CookieStore> {
   //
   // Simple interface, gets a cookie string "a=b; c=d" for the given URL.
   // Use options to access httponly cookies.
+  virtual std::string GetCookiesWithOptions(const GURL& url,
+                                            const CookieOptions& options) = 0;
+
+  typedef base::Callback<void(const std::string& cookie)>
+      GetCookiesCallback;
+
   virtual void GetCookiesWithOptionsAsync(
       const GURL& url, const CookieOptions& options,
       const GetCookiesCallback& callback) = 0;
@@ -81,18 +84,49 @@ class NET_EXPORT CookieStore : public base::RefCountedThreadSafe<CookieStore> {
   // GetCookiesWithOptions except that it additionaly provides detailed
   // information about the cookie contained in the cookie line.  See |struct
   // CookieInfo| above for details.
+  virtual void GetCookiesWithInfo(const GURL& url,
+                                  const CookieOptions& options,
+                                  std::string* cookie_line,
+                                  std::vector<CookieInfo>* cookie_info) = 0;
+
+  // Using for complete the asyn interface
+  typedef base::Callback <void(
+      std::string* cookie_line,
+      std::vector<CookieInfo>* cookie_infos)> GetCookieInfoCallback;
+
   virtual void GetCookiesWithInfoAsync(
       const GURL& url,
       const CookieOptions& options,
       const GetCookieInfoCallback& callback) = 0;
 
   // Deletes the passed in cookie for the specified URL.
+  virtual void DeleteCookie(const GURL& url,
+                            const std::string& cookie_name) = 0;
   virtual void DeleteCookieAsync(const GURL& url,
                                  const std::string& cookie_name,
                                  const base::Closure& callback) = 0;
 
   // Returns the underlying CookieMonster.
   virtual CookieMonster* GetCookieMonster() = 0;
+
+
+  // --------------------------------------------------------------------------
+  // Helpers to make the above interface simpler for some cases.
+
+  // Sets a cookie for the given URL using default options.
+  bool SetCookie(const GURL& url, const std::string& cookie_line);
+
+  // Gets cookies for the given URL using default options.
+  std::string GetCookies(const GURL& url);
+  void GetCookiesAsync(const GURL& url,
+                       const GetCookiesCallback& callback);
+
+  // Sets a vector of response cookie values for the same URL.
+  void SetCookiesWithOptions(const GURL& url,
+                             const std::vector<std::string>& cookie_lines,
+                             const CookieOptions& options);
+  void SetCookies(const GURL& url,
+                  const std::vector<std::string>& cookie_lines);
 
  protected:
   friend class base::RefCountedThreadSafe<CookieStore>;

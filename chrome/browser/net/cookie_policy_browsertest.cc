@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/bind.h"
 #include "base/task.h"
 #include "base/synchronization/waitable_event.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
@@ -30,19 +29,10 @@ class GetCookiesTask : public Task {
         cookies_(cookies) {}
 
   virtual void Run() {
-    net::CookieOptions options;
-    context_getter_->GetURLRequestContext()->cookie_store()
-        ->GetCookiesWithOptionsAsync(
-            url_, options, base::Bind(&GetCookiesTask::GetCookiesCallback,
-                                      base::Unretained(cookies_),
-                                      base::Unretained(event_)));
-  }
-
-  static void GetCookiesCallback(std::string* cookies_out,
-                                 base::WaitableEvent* event,
-                                 const std::string& cookies) {
-    *cookies_out = cookies;
-    event->Signal();
+    *cookies_ =
+        context_getter_->GetURLRequestContext()->cookie_store()->
+        GetCookies(url_);
+    event_->Signal();
   }
 
  private:

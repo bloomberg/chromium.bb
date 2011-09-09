@@ -32,7 +32,6 @@
 
 #include "webkit/tools/test_shell/simple_resource_loader_bridge.h"
 
-#include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
@@ -746,13 +745,10 @@ class CookieSetter : public base::RefCountedThreadSafe<CookieSetter> {
  public:
   void Set(const GURL& url, const std::string& cookie) {
     DCHECK(MessageLoop::current() == g_io_thread->message_loop());
-    g_request_context->cookie_store()->SetCookieWithOptionsAsync(
-        url, cookie, net::CookieOptions(),
-        net::CookieStore::SetCookiesCallback());
+    g_request_context->cookie_store()->SetCookie(url, cookie);
   }
 
  private:
-
   friend class base::RefCountedThreadSafe<CookieSetter>;
 
   ~CookieSetter() {}
@@ -764,9 +760,8 @@ class CookieGetter : public base::RefCountedThreadSafe<CookieGetter> {
   }
 
   void Get(const GURL& url) {
-    g_request_context->cookie_store()->GetCookiesWithOptionsAsync(
-        url, net::CookieOptions(),
-        base::Bind(&CookieGetter::OnGetCookies, this));
+    result_ = g_request_context->cookie_store()->GetCookies(url);
+    event_.Signal();
   }
 
   std::string GetResult() {
@@ -776,10 +771,6 @@ class CookieGetter : public base::RefCountedThreadSafe<CookieGetter> {
   }
 
  private:
-  void OnGetCookies(const std::string& cookie_line) {
-    result_ = cookie_line;
-    event_.Signal();
-  }
   friend class base::RefCountedThreadSafe<CookieGetter>;
 
   ~CookieGetter() {}
