@@ -1123,6 +1123,11 @@ bool PrintWebViewHelper::UpdatePrintSettings(
       return false;
     }
 
+    if (settings.params.is_first_request &&
+        !print_preview_context_.IsModifiable()) {
+      settings.params.display_header_footer = false;
+    }
+
     // Margins: Send default page layout to browser process.
     PageSizeMargins default_page_layout;
     GetPageSizeAndMarginsInPoints(NULL, -1, settings.params,

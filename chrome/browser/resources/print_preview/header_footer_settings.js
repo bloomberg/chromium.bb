@@ -57,8 +57,10 @@ cr.define('print_preview', function() {
      * @private
      */
     onPDFLoaded_: function() {
-      if (!previewModifiable)
+      if (!previewModifiable) {
         fadeOutElement(this.headerFooterOption_);
+        this.headerFooterCheckbox_.checked = false;
+      }
     },
   };
 
