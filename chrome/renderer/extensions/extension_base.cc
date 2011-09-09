@@ -23,16 +23,16 @@ using WebKit::WebView;
 
 namespace {
 
-const char* kChromeHidden = "chromeHidden";
+const char kChromeHidden[] = "chromeHidden";
 
 #ifndef NDEBUG
-const char* kValidateCallbacks = "validateCallbacks";
+const char kValidateCallbacks[] = "validateCallbacks";
 #endif
 
 typedef std::map<int, std::string> StringMap;
 static base::LazyInstance<StringMap> g_string_map(base::LINKER_INITIALIZED);
 
-}
+}  // namespace
 
 // static
 const char* ExtensionBase::GetStringResource(int resource_id) {

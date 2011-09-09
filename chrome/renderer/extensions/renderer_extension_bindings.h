@@ -6,11 +6,7 @@
 #define CHROME_RENDERER_EXTENSIONS_RENDERER_EXTENSION_BINDINGS_H_
 #pragma once
 
-#include <string>
-
 class ExtensionDispatcher;
-class GURL;
-class RenderView;
 
 namespace v8 {
 class Extension;

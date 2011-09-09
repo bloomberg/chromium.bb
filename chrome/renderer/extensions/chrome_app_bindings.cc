@@ -51,31 +51,32 @@ bool CheckAccessToAppDetails() {
   return true;
 }
 
-}
+}  // namespace
+
+const char kAppExtensionName[] = "v8/ChromeApp";
 
 namespace extensions_v8 {
 
-static const char* const kAppExtensionName = "v8/ChromeApp";
-
 class ChromeAppExtensionWrapper : public v8::Extension {
  public:
-  explicit ChromeAppExtensionWrapper(ExtensionDispatcher* extension_dispatcher) :
-    v8::Extension(kAppExtensionName,
-      "var chrome;"
-      "if (!chrome)"
-      "  chrome = {};"
-      "if (!chrome.app) {"
-      "  chrome.app = new function() {"
-      "    native function GetIsInstalled();"
-      "    native function Install();"
-      "    native function GetDetails();"
-      "    native function GetDetailsForFrame();"
-      "    this.__defineGetter__('isInstalled', GetIsInstalled);"
-      "    this.install = Install;"
-      "    this.getDetails = GetDetails;"
-      "    this.getDetailsForFrame = GetDetailsForFrame;"
-      "  };"
-      "}") {
+  explicit ChromeAppExtensionWrapper(ExtensionDispatcher* extension_dispatcher)
+      : v8::Extension(
+            kAppExtensionName,
+            "var chrome;"
+            "if (!chrome)"
+            "  chrome = {};"
+            "if (!chrome.app) {"
+            "  chrome.app = new function() {"
+            "    native function GetIsInstalled();"
+            "    native function Install();"
+            "    native function GetDetails();"
+            "    native function GetDetailsForFrame();"
+            "    this.__defineGetter__('isInstalled', GetIsInstalled);"
+            "    this.install = Install;"
+            "    this.getDetails = GetDetails;"
+            "    this.getDetailsForFrame = GetDetailsForFrame;"
+            "  };"
+            "}") {
     extension_dispatcher_ = extension_dispatcher;
   }
 
