@@ -71,7 +71,8 @@ cr.define('login', function() {
           currentScreen.addEventListener('webkitTransitionEnd',
             function f(e) {
               currentScreen.removeEventListener('webkitTransitionEnd', f);
-              currentScreen.classList.add('hidden');
+              if (currentScreen.classList.contains('faded'))
+                currentScreen.classList.add('hidden');
             });
         }
       } else {
@@ -82,7 +83,8 @@ cr.define('login', function() {
           offlineMessage.addEventListener('webkitTransitionEnd',
             function f(e) {
               offlineMessage.removeEventListener('webkitTransitionEnd', f);
-              offlineMessage.classList.add('hidden');
+              if (offlineMessage.classList.contains('faded'))
+                offlineMessage.classList.add('hidden');
             });
 
           currentScreen.classList.remove('hidden');
@@ -128,7 +130,8 @@ cr.define('login', function() {
       currentScreen.addEventListener('webkitTransitionEnd',
         function f(e) {
           currentScreen.removeEventListener('webkitTransitionEnd', f);
-          currentScreen.classList.add('hidden');
+          if (currentScreen.classList.contains('faded'))
+            currentScreen.classList.add('hidden');
         });
     }
   };

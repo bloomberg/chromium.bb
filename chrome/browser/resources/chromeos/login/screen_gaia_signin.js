@@ -95,11 +95,6 @@ cr.define('login', function() {
       console.log('Opening extension: ' + data.startUrl +
                   ', opt_email=' + data.email);
 
-      var frame = $('signin-frame');
-      frame.addEventListener('load', function(e) {
-        console.log('Frame loaded: ' + data.startUrl);
-      });
-
       var params = [];
       if (data.hl)
         params.push('hl=' + encodeURIComponent(data.hl));
@@ -114,7 +109,7 @@ cr.define('login', function() {
       if (params.length)
         url += '?' + params.join('&');
 
-      frame.contentWindow.location.href = url;
+      $('signin-frame').src = url;
       this.extension_url_ = url;
 
       $('createAccount').hidden = !data.createAccount;
