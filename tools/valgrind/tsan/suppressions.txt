@@ -542,41 +542,6 @@
   fun:ThreadWatcherList::InitializeAndStartWatching
 }
 {
-  bug_93708_a
-  ThreadSanitizer:Race
-  fun:WTF::StringImplBase::ref
-  fun:WTF::String::String
-  fun:WebCore::KURLGooglePrivate::KURLGooglePrivate
-  fun:WebCore::KURL::KURL
-  fun:WebCore::WorkerContext::WorkerContext
-  fun:WebCore::DedicatedWorkerContext::DedicatedWorkerContext
-  fun:WebCore::DedicatedWorkerContext::create
-  fun:WebCore::DedicatedWorkerThread::createWorkerContext
-  fun:WebCore::WorkerThread::workerThread
-  fun:WebCore::WorkerThread::workerThreadStart
-  fun:WTF::threadEntryPoint
-}
-{
-  bug_93708_b
-  ThreadSanitizer:Race
-  fun:WebCore::KURLGooglePrivate::~KURLGooglePrivate
-  fun:WebCore::KURL::~KURL
-  fun:WebCore::WorkerScriptLoader::~WorkerScriptLoader
-  fun:WTF::RefCounted::deref
-  fun:WTF::RefPtr::clear
-  fun:WTF::RefPtr::operator=
-  fun:WebCore::Worker::notifyFinished
-  fun:WebCore::WorkerScriptLoader::notifyFinished
-  fun:WebCore::WorkerScriptLoader::didFinishLoading
-  fun:WebCore::DocumentThreadableLoader::didFinishLoading
-  fun:WebCore::DocumentThreadableLoader::didFinishLoading
-  fun:WebCore::SubresourceLoader::didFinishLoading
-  fun:WebCore::ResourceLoader::didFinishLoading
-  fun:WebCore::ResourceHandleInternal::didFinishLoading
-  fun:webkit_glue::WebURLLoaderImpl::Context::OnCompletedRequest
-  fun:ResourceDispatcher::OnRequestComplete
-}
-{
   bug_93757
   ThreadSanitizer:Race
   fun:__memset_sse2
