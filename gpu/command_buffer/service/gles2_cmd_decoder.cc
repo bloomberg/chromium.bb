@@ -1064,8 +1064,9 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   // Checks if the current program and vertex attributes are valid for drawing.
   bool IsDrawValid(GLuint max_vertex_accessed);
 
-  // Returns true if attrib0 was simulated.
-  bool SimulateAttrib0(GLuint max_vertex_accessed);
+  // Returns true if successful, simulated will be true if attrib0 was
+  // simulated.
+  bool SimulateAttrib0(GLuint max_vertex_accessed, bool* simulated);
   void RestoreStateForSimulatedAttrib0();
 
   // Returns true if textures were set.
@@ -4262,30 +4263,46 @@ bool GLES2DecoderImpl::IsDrawValid(GLuint max_vertex_accessed) {
   return true;
 }
 
-bool GLES2DecoderImpl::SimulateAttrib0(GLuint max_vertex_accessed) {
+bool GLES2DecoderImpl::SimulateAttrib0(
+    GLuint max_vertex_accessed, bool* simulated) {
+  DCHECK(simulated);
+  *simulated = false;
+
   if (gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2)
-    return false;
+    return true;
 
   const VertexAttribManager::VertexAttribInfo* info =
       vertex_attrib_manager_.GetVertexAttribInfo(0);
   // If it's enabled or it's not used then we don't need to do anything.
   bool attrib_0_used = current_program_->GetAttribInfoByLocation(0) != NULL;
   if (info->enabled() && attrib_0_used) {
-    return false;
+    return true;
   }
-
-  typedef VertexAttribManager::VertexAttribInfo::Vec4 Vec4;
-
-  glBindBuffer(GL_ARRAY_BUFFER, attrib_0_buffer_id_);
 
   // Make a buffer with a single repeated vec4 value enough to
   // simulate the constant value that is supposed to be here.
   // This is required to emulate GLES2 on GL.
+  typedef VertexAttribManager::VertexAttribInfo::Vec4 Vec4;
+
   GLsizei num_vertices = max_vertex_accessed + 1;
-  GLsizei size_needed = num_vertices * sizeof(Vec4);  // NOLINT
+  GLsizei size_needed = 0;
+
+  if (num_vertices < 0 || !SafeMultiply(
+      num_vertices, static_cast<GLsizei>(sizeof(Vec4)), &size_needed)) {
+    SetGLError(GL_OUT_OF_MEMORY, "glDrawXXX: Simulating attrib 0");
+    return false;
+  }
+
+  CopyRealGLErrorsToWrapper();
+  glBindBuffer(GL_ARRAY_BUFFER, attrib_0_buffer_id_);
+
   if (size_needed > attrib_0_size_) {
     glBufferData(GL_ARRAY_BUFFER, size_needed, NULL, GL_DYNAMIC_DRAW);
-    // TODO(gman): check for error here?
+    GLenum error = glGetError();
+    if (error != GL_NO_ERROR) {
+      SetGLError(GL_OUT_OF_MEMORY, "glDrawXXX: Simulating attrib 0");
+      return false;
+    }
     attrib_0_buffer_matches_value_ = false;
   }
   if (attrib_0_used &&
@@ -4303,6 +4320,7 @@ bool GLES2DecoderImpl::SimulateAttrib0(GLuint max_vertex_accessed) {
 
   glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, NULL);
 
+  *simulated = true;
   return true;
 }
 
@@ -4337,7 +4355,12 @@ bool GLES2DecoderImpl::SimulateFixedAttribs(
   // tests so we just add to the buffer attrib used.
 
   // Compute the number of elements needed.
-  int num_vertices = max_vertex_accessed + 1;
+  GLsizei num_vertices = max_vertex_accessed + 1;
+  if (num_vertices < 0) {
+    SetGLError(GL_OUT_OF_MEMORY, "glDrawXXX: Simulating attrib 0");
+    return false;
+  }
+
   int elements_needed = 0;
   const VertexAttribManager::VertexAttribInfoList& infos =
       vertex_attrib_manager_.GetEnabledVertexAttribInfos();
@@ -4367,10 +4390,16 @@ bool GLES2DecoderImpl::SimulateFixedAttribs(
     return false;
   }
 
+  CopyRealGLErrorsToWrapper();
 
   glBindBuffer(GL_ARRAY_BUFFER, fixed_attrib_buffer_id_);
   if (size_needed > fixed_attrib_buffer_size_) {
     glBufferData(GL_ARRAY_BUFFER, size_needed, NULL, GL_DYNAMIC_DRAW);
+    GLenum error = glGetError();
+    if (error != GL_NO_ERROR) {
+      SetGLError(GL_OUT_OF_MEMORY, "glDrawXXX: simulating GL_FIXED attribs");
+      return false;
+    }
   }
 
   // Copy the elements and convert to float
@@ -4440,7 +4469,10 @@ error::Error GLES2DecoderImpl::HandleDrawArrays(
 
   GLuint max_vertex_accessed = first + count - 1;
   if (IsDrawValid(max_vertex_accessed)) {
-    bool simulated_attrib_0 = SimulateAttrib0(max_vertex_accessed);
+    bool simulated_attrib_0 = false;
+    if (!SimulateAttrib0(max_vertex_accessed, &simulated_attrib_0)) {
+      return error::kNoError;
+    }
     bool simulated_fixed_attribs = false;
     if (SimulateFixedAttribs(max_vertex_accessed, &simulated_fixed_attribs)) {
       bool textures_set = SetBlackTextureForNonRenderableTextures();
@@ -4511,7 +4543,10 @@ error::Error GLES2DecoderImpl::HandleDrawElements(
   }
 
   if (IsDrawValid(max_vertex_accessed)) {
-    bool simulated_attrib_0 = SimulateAttrib0(max_vertex_accessed);
+    bool simulated_attrib_0 = false;
+    if (!SimulateAttrib0(max_vertex_accessed, &simulated_attrib_0)) {
+      return error::kNoError;
+    }
     bool simulated_fixed_attribs = false;
     if (SimulateFixedAttribs(max_vertex_accessed, &simulated_fixed_attribs)) {
       bool textures_set = SetBlackTextureForNonRenderableTextures();
