@@ -66,6 +66,12 @@ manual() {
   merge-all "$@"
 }
 
+get-tip-revision() {
+  svn info "http://llvm.org/svn/llvm-project/" \
+    | grep Revision \
+    | awk '{print $2}'
+}
+
 set-master-revision() {
   echo "@@@BUILD_STEP Set LLVM revision: ${MERGE_REVISION}@@@"
   echo "MERGE REVISION: ${MERGE_REVISION}"

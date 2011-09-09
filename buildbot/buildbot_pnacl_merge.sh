@@ -39,7 +39,13 @@ clobber() {
 # and can safely be used in the PNaCl toolchain.
 merge-bot() {
   clobber
-  # Sanity check for BUILDBOT_REVISION
+
+  # If BUILDBOT_REVISION is blank, use LLVM tip of tree
+  if [ -z "${BUILDBOT_REVISION}" ]; then
+    export BUILDBOT_REVISION=$(${MERGE_TOOL} get-tip-revision)
+  fi
+
+  # Sanity check BUILDBOT_REVISION
   if [ ${BUILDBOT_REVISION} -lt 139000 ]; then
      echo 'ERROR: BUILDBOT_REVISION is invalid'
      exit 1
