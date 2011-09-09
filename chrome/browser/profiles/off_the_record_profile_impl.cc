@@ -254,9 +254,10 @@ class OffTheRecordProfileImpl : public Profile,
           CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
               switches::kHstsHosts));
       transport_security_loader_ =
-          new TransportSecurityPersister(true /* readonly */);
-      transport_security_loader_->Initialize(transport_security_state_.get(),
-                                             GetOriginalProfile()->GetPath());
+          new TransportSecurityPersister(transport_security_state_.get(),
+                                         GetPath(),
+                                         true /* readonly */);
+      transport_security_loader_->Init();
     }
 
     return transport_security_state_.get();
