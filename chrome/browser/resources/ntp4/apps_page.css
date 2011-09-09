@@ -14,7 +14,9 @@
 .drag-representation .app {
   /* Don't animate the initial scaling.  */
   -webkit-transition-duration: 0;
-  -webkit-transform: scale(1.1);
+  /* We need to specify both scale and rotate because the transform in
+     .tile.drag-representation.deleting specifies scale and rotate. */
+  -webkit-transform: scale(1.1) rotate(0);
 }
 
 /* Active gets applied right before .suppress-active, so to avoid flicker

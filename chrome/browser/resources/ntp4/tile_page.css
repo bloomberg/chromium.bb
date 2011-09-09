@@ -88,7 +88,7 @@
 /* When a drag finishes while we're not showing the page where the tile
  * belongs, the tile shrinks to a dot. */
 .tile.drag-representation.dropped-on-other-page > * {
-   -webkit-transform: scale(0);
+   -webkit-transform: scale(0) rotate(0);
 }
 
 .tile.drag-representation.deleting > * {
