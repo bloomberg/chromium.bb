@@ -29,12 +29,23 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
 
+class PanelAnimatedBoundsObserver :
+    public ui_test_utils::WindowedNotificationObserver {
+ public:
+  PanelAnimatedBoundsObserver(Panel* panel)
+    : ui_test_utils::WindowedNotificationObserver(
+        chrome::NOTIFICATION_PANEL_BOUNDS_ANIMATIONS_FINISHED,
+        Source<Panel>(panel)) { }
+  virtual ~PanelAnimatedBoundsObserver() { }
+};
+
 // Main test class.
 class PanelBrowserWindowCocoaTest : public CocoaProfileTest {
  public:
   virtual void SetUp() {
     CocoaProfileTest::SetUp();
     CommandLine::ForCurrentProcess()->AppendSwitch(switches::kEnablePanels);
+    [PanelWindowControllerCocoa enableBoundsAnimationNotifications];
   }
 
   Panel* CreateTestPanel(const std::string& panel_name) {
@@ -185,21 +196,29 @@ TEST_F(PanelBrowserWindowCocoaTest, NativeBounds) {
   EXPECT_EQ(bounds1.origin.y, bounds2.origin.y);
   EXPECT_EQ(bounds2.origin.y, bounds3.origin.y);
 
-  // After panel2 is closed, panel3 should take its place.
-  ClosePanelAndWait(panel2->browser());
-  bounds3 = [[native_window3->controller_ window] frame];
-  EXPECT_EQ(bounds2.origin.x, bounds3.origin.x);
-  EXPECT_EQ(bounds2.origin.y, bounds3.origin.y);
-  EXPECT_EQ(bounds2.size.width, bounds3.size.width);
-  EXPECT_EQ(bounds2.size.height, bounds3.size.height);
+  {
+    // After panel2 is closed, panel3 should take its place.
+    PanelAnimatedBoundsObserver bounds_observer(panel3);
+    ClosePanelAndWait(panel2->browser());
+    bounds_observer.Wait();
+    bounds3 = [[native_window3->controller_ window] frame];
+    EXPECT_EQ(bounds2.origin.x, bounds3.origin.x);
+    EXPECT_EQ(bounds2.origin.y, bounds3.origin.y);
+    EXPECT_EQ(bounds2.size.width, bounds3.size.width);
+    EXPECT_EQ(bounds2.size.height, bounds3.size.height);
+  }
 
-  // After panel1 is closed, panel3 should take its place.
-  ClosePanelAndWait(panel1->browser());
-  bounds3 = [[native_window3->controller_ window] frame];
-  EXPECT_EQ(bounds1.origin.x, bounds3.origin.x);
-  EXPECT_EQ(bounds1.origin.y, bounds3.origin.y);
-  EXPECT_EQ(bounds1.size.width, bounds3.size.width);
-  EXPECT_EQ(bounds1.size.height, bounds3.size.height);
+  {
+    // After panel1 is closed, panel3 should take its place.
+    PanelAnimatedBoundsObserver bounds_observer(panel3);
+    ClosePanelAndWait(panel1->browser());
+    bounds_observer.Wait();
+    bounds3 = [[native_window3->controller_ window] frame];
+    EXPECT_EQ(bounds1.origin.x, bounds3.origin.x);
+    EXPECT_EQ(bounds1.origin.y, bounds3.origin.y);
+    EXPECT_EQ(bounds1.size.width, bounds3.size.width);
+    EXPECT_EQ(bounds1.size.height, bounds3.size.height);
+  }
 
   ClosePanelAndWait(panel3->browser());
 }
@@ -241,7 +260,10 @@ TEST_F(PanelBrowserWindowCocoaTest, TitlebarViewSizing) {
   bounds.set_y(bounds.y() - kDelta);
   bounds.set_width(bounds.width() + kDelta);
   bounds.set_height(bounds.height() + kDelta);
+
+  PanelAnimatedBoundsObserver bounds_observer(panel);
   native_window->SetPanelBounds(bounds);
+  bounds_observer.Wait();
 
   // Verify the panel resized.
   NSRect window_frame = [[native_window->controller_ window] frame];

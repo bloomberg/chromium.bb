@@ -66,6 +66,7 @@ class PanelBrowserWindowCocoa : public NativePanel {
 
  private:
   friend class PanelBrowserWindowCocoaTest;
+  friend class NativePanelTestingCocoa;
   FRIEND_TEST_ALL_PREFIXES(PanelBrowserWindowCocoaTest, CreateClose);
   FRIEND_TEST_ALL_PREFIXES(PanelBrowserWindowCocoaTest, NativeBounds);
   FRIEND_TEST_ALL_PREFIXES(PanelBrowserWindowCocoaTest, TitlebarViewCreate);
