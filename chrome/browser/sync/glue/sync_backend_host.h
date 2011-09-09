@@ -175,14 +175,15 @@ class SyncBackendHost {
   // syncer will call us back on FinishConfigureDataTypes.
   virtual void StartConfiguration(Callback0::Type* callback);
 
-  // Encrypts the specified datatypes and marks them as needing encryption on
-  // other machines. This affects all machines synced to this account and all
-  // data belonging to the specified types.
-  // Note: actual work is done on sync_thread_'s message loop.
-  virtual void EncryptDataTypes(
-      const syncable::ModelTypeSet& encrypted_types);
+  // Turns on encryption of all present and future sync data.
+  virtual void EnableEncryptEverything();
 
-  syncable::ModelTypeSet GetEncryptedDataTypes() const;
+  // Returns true if we have enabled encrypt everything, false if we only
+  // encrypt the sensitive types.
+  virtual bool EncryptEverythingEnabled() const;
+
+  // Returns the set of encrypted data types.
+  virtual syncable::ModelTypeSet GetEncryptedDataTypes() const;
 
   // Activates change processing for the given data type.  This must
   // be called synchronously with the data type's model association so
@@ -342,9 +343,9 @@ class SyncBackendHost {
     // on behalf of SyncBackendHost::SupplyPassphrase.
     void DoSetPassphrase(const std::string& passphrase, bool is_explicit);
 
-    // Called on SyncBackendHost's |sync_thread_| to set the datatypes we need
-    // to encrypt as well as encrypt all local data of that type.
-    void DoEncryptDataTypes(const syncable::ModelTypeSet& encrypted_types);
+    // Called on SyncBackendHost's |sync_thread_| to turn on encryption of all
+    // sync data as well as reencrypt everything.
+    void DoEnableEncryptEverything();
 
     // The shutdown order is a bit complicated:
     // 1) From |sync_thread_|, invoke the syncapi Shutdown call to do

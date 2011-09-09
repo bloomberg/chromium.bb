@@ -67,6 +67,7 @@ using browser_sync::ModelSafeWorker;
 using browser_sync::ModelSafeWorkerRegistrar;
 using browser_sync::sessions::SyncSessionSnapshot;
 using browser_sync::WeakHandle;
+using syncable::GetAllRealModelTypes;
 using syncable::ModelType;
 using syncable::ModelTypeSet;
 using test::ExpectDictDictionaryValue;
@@ -1271,6 +1272,7 @@ TEST_F(SyncManagerTest, RefreshEncryptionReady) {
   syncable::ModelTypeSet encrypted_types =
       sync_manager_.GetEncryptedDataTypes();
   EXPECT_EQ(1U, encrypted_types.count(syncable::PASSWORDS));
+  EXPECT_FALSE(sync_manager_.EncryptEverythingEnabled());
 }
 
 // Attempt to refresh encryption when nigori not downloaded.
@@ -1280,23 +1282,14 @@ TEST_F(SyncManagerTest, RefreshEncryptionNotReady) {
   syncable::ModelTypeSet encrypted_types =
       sync_manager_.GetEncryptedDataTypes();
   EXPECT_EQ(1U, encrypted_types.count(syncable::PASSWORDS));  // Hardcoded.
+  EXPECT_FALSE(sync_manager_.EncryptEverythingEnabled());
 }
 
 TEST_F(SyncManagerTest, EncryptDataTypesWithNoData) {
   EXPECT_TRUE(SetUpEncryption());
-  ModelTypeSet encrypted_types;
-  encrypted_types.insert(syncable::BOOKMARKS);
-  // Even though Passwords isn't marked for encryption, it's enabled, so it
-  // should automatically be added to the response of OnEncryptionComplete.
-  ModelTypeSet expected_types = encrypted_types;
-  expected_types.insert(syncable::PASSWORDS);
-  EXPECT_CALL(observer_, OnEncryptionComplete(expected_types));
-  sync_manager_.EncryptDataTypes(encrypted_types);
-  {
-    ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
-    EXPECT_EQ(expected_types,
-              GetEncryptedTypes(&trans));
-  }
+  EXPECT_CALL(observer_, OnEncryptionComplete(GetAllRealModelTypes()));
+  sync_manager_.EnableEncryptEverything();
+  EXPECT_TRUE(sync_manager_.EncryptEverythingEnabled());
 }
 
 TEST_F(SyncManagerTest, EncryptDataTypesWithData) {
@@ -1329,6 +1322,7 @@ TEST_F(SyncManagerTest, EncryptDataTypesWithData) {
 
   {
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
+    EXPECT_EQ(Cryptographer::SensitiveTypes(), GetEncryptedTypes(&trans));
     EXPECT_TRUE(syncable::VerifyDataTypeEncryption(trans.GetWrappedTrans(),
                                                    trans.GetCryptographer(),
                                                    syncable::BOOKMARKS,
@@ -1343,16 +1337,12 @@ TEST_F(SyncManagerTest, EncryptDataTypesWithData) {
                                                    false /* not encrypted */));
   }
 
-  ModelTypeSet encrypted_types;
-  encrypted_types.insert(syncable::BOOKMARKS);
-  encrypted_types.insert(syncable::SESSIONS);
-  encrypted_types.insert(syncable::PASSWORDS);
-  EXPECT_CALL(observer_, OnEncryptionComplete(encrypted_types));
-  sync_manager_.EncryptDataTypes(encrypted_types);
-
+  EXPECT_CALL(observer_, OnEncryptionComplete(GetAllRealModelTypes()));
+  sync_manager_.EnableEncryptEverything();
+  EXPECT_TRUE(sync_manager_.EncryptEverythingEnabled());
   {
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
-    EXPECT_EQ(encrypted_types, GetEncryptedTypes(&trans));
+    EXPECT_EQ(GetAllRealModelTypes(), GetEncryptedTypes(&trans));
     EXPECT_TRUE(syncable::VerifyDataTypeEncryption(trans.GetWrappedTrans(),
                                                    trans.GetCryptographer(),
                                                    syncable::BOOKMARKS,
@@ -1364,17 +1354,18 @@ TEST_F(SyncManagerTest, EncryptDataTypesWithData) {
     EXPECT_TRUE(syncable::VerifyDataTypeEncryption(trans.GetWrappedTrans(),
                                                    trans.GetCryptographer(),
                                                    syncable::THEMES,
-                                                   false /* not encrypted */));
+                                                   true /* is encrypted */));
   }
 
   // Trigger's a ReEncryptEverything with new passphrase.
   testing::Mock::VerifyAndClearExpectations(&observer_);
   EXPECT_CALL(observer_, OnPassphraseAccepted(_)).Times(1);
-  EXPECT_CALL(observer_, OnEncryptionComplete(encrypted_types)).Times(1);
+  EXPECT_CALL(observer_, OnEncryptionComplete(GetAllRealModelTypes())).Times(1);
   sync_manager_.SetPassphrase("new_passphrase", true);
+  EXPECT_TRUE(sync_manager_.EncryptEverythingEnabled());
   {
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
-    EXPECT_EQ(encrypted_types, GetEncryptedTypes(&trans));
+    EXPECT_EQ(GetAllRealModelTypes(), GetEncryptedTypes(&trans));
     EXPECT_TRUE(syncable::VerifyDataTypeEncryption(trans.GetWrappedTrans(),
                                                    trans.GetCryptographer(),
                                                    syncable::BOOKMARKS,
@@ -1386,15 +1377,15 @@ TEST_F(SyncManagerTest, EncryptDataTypesWithData) {
     EXPECT_TRUE(syncable::VerifyDataTypeEncryption(trans.GetWrappedTrans(),
                                                    trans.GetCryptographer(),
                                                    syncable::THEMES,
-                                                   false /* not encrypted */));
+                                                   true /* is encrypted */));
   }
   // Calling EncryptDataTypes with an empty encrypted types should not trigger
   // a reencryption and should just notify immediately.
   // TODO(zea): add logic to ensure nothing was written.
   testing::Mock::VerifyAndClearExpectations(&observer_);
   EXPECT_CALL(observer_, OnPassphraseAccepted(_)).Times(0);
-  EXPECT_CALL(observer_, OnEncryptionComplete(encrypted_types)).Times(1);
-  sync_manager_.EncryptDataTypes(encrypted_types);
+  EXPECT_CALL(observer_, OnEncryptionComplete(GetAllRealModelTypes())).Times(1);
+  sync_manager_.EnableEncryptEverything();
 }
 
 TEST_F(SyncManagerTest, SetPassphraseWithPassword) {
@@ -1414,6 +1405,7 @@ TEST_F(SyncManagerTest, SetPassphraseWithPassword) {
   EXPECT_CALL(observer_, OnPassphraseAccepted(_));
   EXPECT_CALL(observer_, OnEncryptionComplete(_));
   sync_manager_.SetPassphrase("new_passphrase", true);
+  EXPECT_FALSE(sync_manager_.EncryptEverythingEnabled());
   {
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
     ReadNode password_node(&trans);
@@ -1442,6 +1434,7 @@ TEST_F(SyncManagerTest, SetPassphraseWithEmptyPasswordNode) {
   EXPECT_CALL(observer_, OnPassphraseAccepted(_));
   EXPECT_CALL(observer_, OnEncryptionComplete(_));
   sync_manager_.SetPassphrase("new_passphrase", true);
+  EXPECT_FALSE(sync_manager_.EncryptEverythingEnabled());
   {
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
     ReadNode password_node(&trans);
@@ -1499,15 +1492,13 @@ TEST_F(SyncManagerTest, EncryptBookmarksWithLegacyData) {
                                                    false /* not encrypted */));
   }
 
-  ModelTypeSet encrypted_types;
-  encrypted_types.insert(syncable::BOOKMARKS);
-  encrypted_types.insert(syncable::PASSWORDS);  // Always there.
-  EXPECT_CALL(observer_, OnEncryptionComplete(encrypted_types));
-  sync_manager_.EncryptDataTypes(encrypted_types);
+  EXPECT_CALL(observer_, OnEncryptionComplete(GetAllRealModelTypes()));
+  sync_manager_.EnableEncryptEverything();
+  EXPECT_TRUE(sync_manager_.EncryptEverythingEnabled());
 
   {
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
-    EXPECT_EQ(encrypted_types, GetEncryptedTypes(&trans));
+    EXPECT_EQ(GetAllRealModelTypes(), GetEncryptedTypes(&trans));
     EXPECT_TRUE(syncable::VerifyDataTypeEncryption(trans.GetWrappedTrans(),
                                                    trans.GetCryptographer(),
                                                    syncable::BOOKMARKS,

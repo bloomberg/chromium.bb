@@ -241,6 +241,7 @@ DictionaryValue* NigoriSpecificsToValue(
   SET_BOOL(encrypt_apps);
   SET_BOOL(encrypt_search_engines);
   SET_BOOL(sync_tabs);
+  SET_BOOL(encrypt_everything);
   return value;
 }
 

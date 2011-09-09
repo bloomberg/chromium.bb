@@ -26,6 +26,7 @@ namespace browser_sync {
 using sessions::SyncSession;
 using std::string;
 using syncable::Entry;
+using syncable::GetAllRealModelTypes;
 using syncable::Id;
 using syncable::MutableEntry;
 using syncable::ReadTransaction;
@@ -386,6 +387,7 @@ TEST_F(ApplyUpdatesCommandTest, NigoriUpdate) {
   Cryptographer* cryptographer;
   syncable::ModelTypeSet encrypted_types;
   encrypted_types.insert(syncable::PASSWORDS);
+  encrypted_types.insert(syncable::NIGORI);
   {
     ScopedDirLookup dir(syncdb()->manager(), syncdb()->name());
     ASSERT_TRUE(dir.good());
@@ -423,7 +425,7 @@ TEST_F(ApplyUpdatesCommandTest, NigoriUpdate) {
 
   EXPECT_FALSE(cryptographer->is_ready());
   EXPECT_TRUE(cryptographer->has_pending_keys());
-  EXPECT_EQ(encrypted_types, cryptographer->GetEncryptedTypes());
+  EXPECT_EQ(GetAllRealModelTypes(), cryptographer->GetEncryptedTypes());
 }
 
 TEST_F(ApplyUpdatesCommandTest, NigoriUpdateForDisabledTypes) {
@@ -432,6 +434,7 @@ TEST_F(ApplyUpdatesCommandTest, NigoriUpdateForDisabledTypes) {
   Cryptographer* cryptographer;
   syncable::ModelTypeSet encrypted_types;
   encrypted_types.insert(syncable::PASSWORDS);
+  encrypted_types.insert(syncable::NIGORI);
   {
     ScopedDirLookup dir(syncdb()->manager(), syncdb()->name());
     ASSERT_TRUE(dir.good());
@@ -471,7 +474,7 @@ TEST_F(ApplyUpdatesCommandTest, NigoriUpdateForDisabledTypes) {
 
   EXPECT_FALSE(cryptographer->is_ready());
   EXPECT_TRUE(cryptographer->has_pending_keys());
-  EXPECT_EQ(encrypted_types, cryptographer->GetEncryptedTypes());
+  EXPECT_EQ(GetAllRealModelTypes(), cryptographer->GetEncryptedTypes());
 }
 
 TEST_F(ApplyUpdatesCommandTest, EncryptUnsyncedChanges) {
@@ -480,6 +483,7 @@ TEST_F(ApplyUpdatesCommandTest, EncryptUnsyncedChanges) {
   Cryptographer* cryptographer;
   syncable::ModelTypeSet encrypted_types;
   encrypted_types.insert(syncable::PASSWORDS);
+  encrypted_types.insert(syncable::NIGORI);
   {
     ScopedDirLookup dir(syncdb()->manager(), syncdb()->name());
     ASSERT_TRUE(dir.good());
@@ -563,7 +567,7 @@ TEST_F(ApplyUpdatesCommandTest, EncryptUnsyncedChanges) {
 
     // If ProcessUnsyncedChangesForEncryption worked, all our unsynced changes
     // should be encrypted now.
-    EXPECT_EQ(encrypted_types, cryptographer->GetEncryptedTypes());
+    EXPECT_EQ(GetAllRealModelTypes(), cryptographer->GetEncryptedTypes());
     EXPECT_TRUE(VerifyUnsyncedChangesAreEncrypted(&trans, encrypted_types));
 
     Syncer::UnsyncedMetaHandles handles;
@@ -578,6 +582,7 @@ TEST_F(ApplyUpdatesCommandTest, CannotEncryptUnsyncedChanges) {
   Cryptographer* cryptographer;
   syncable::ModelTypeSet encrypted_types;
   encrypted_types.insert(syncable::PASSWORDS);
+  encrypted_types.insert(syncable::NIGORI);
   {
     ScopedDirLookup dir(syncdb()->manager(), syncdb()->name());
     ASSERT_TRUE(dir.good());
@@ -669,7 +674,7 @@ TEST_F(ApplyUpdatesCommandTest, CannotEncryptUnsyncedChanges) {
     encrypted_types.clear();
     encrypted_types.insert(syncable::PASSWORDS);
     encrypted_types.insert(syncable::BOOKMARKS);
-    EXPECT_EQ(encrypted_types, cryptographer->GetEncryptedTypes());
+    EXPECT_EQ(GetAllRealModelTypes(), cryptographer->GetEncryptedTypes());
 
     Syncer::UnsyncedMetaHandles handles;
     SyncerUtil::GetUnsyncedEntries(&trans, &handles);

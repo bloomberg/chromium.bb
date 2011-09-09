@@ -461,11 +461,6 @@ class SyncManager {
   // *not* override an explicit passphrase set previously.
   void SetPassphrase(const std::string& passphrase, bool is_explicit);
 
-  // Set the datatypes we want to encrypt and encrypt any nodes as necessary.
-  // Note: |encrypted_types| will be unioned with the current set of encrypted
-  // types, as we do not currently support decrypting datatypes.
-  void EncryptDataTypes(const syncable::ModelTypeSet& encrypted_types);
-
   // Puts the SyncScheduler into a mode where no normal nudge or poll traffic
   // will occur, but calls to RequestConfig will be supported.  If |callback|
   // is provided, it will be invoked (from the internal SyncScheduler) when
@@ -522,6 +517,13 @@ class SyncManager {
   // Note: opens a transaction and can trigger ON_PASSPHRASE_REQUIRED, so must
   // only be called after syncapi has been initialized.
   void RefreshEncryption();
+
+  // Enable encryption of all sync data. Once enabled, it can never be disabled
+  // without clearing the server data.
+  void EnableEncryptEverything();
+
+  // Returns true if we are currently encrypting all sync data.
+  bool EncryptEverythingEnabled() const;
 
   // Gets the set of encrypted types from the cryptographer
   // Note: opens a transaction.

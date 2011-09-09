@@ -447,22 +447,24 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   virtual void SetPassphrase(const std::string& passphrase,
                              bool is_explicit);
 
-  // Sets the set of datatypes that are waiting for encryption
-  // (pending_types_for_encryption_).
-  // Note that this does not trigger the actual encryption. The encryption call
-  // is kicked off automatically the next time the datatype manager is
-  // reconfigured.
-  virtual void set_pending_types_for_encryption(
-      const syncable::ModelTypeSet& encrypted_types);
+  // If |encrypt_all| is true, turns on encryption for all sync data. Else, only
+  // sensitive types are encrypted (see cryptographer.h for the list of
+  // sensitive types). Passwords is always considered a sensitive type.
+  virtual void SetEncryptEverything(bool encrypt_all);
 
-  // Get the currently encrypted data types.
-  // Note: this can include types that this client is not syncing. Passwords
-  // will always be in this list.
+  // Returns true if we are currently set to encrypt all the sync data. Note:
+  // this is based on the cryptographer's settings, so if the user has recently
+  // requested encryption to be turned on, this may not be true yet. For that,
+  // encryption_pending() must be checked.
+  virtual bool EncryptEverythingEnabled() const;
+
+  // Fills |encrypted_types| with the set of currently encrypted types. Does
+  // not account for types pending encryption.
   virtual void GetEncryptedDataTypes(
       syncable::ModelTypeSet* encrypted_types) const;
 
   // Returns true if the syncer is waiting for new datatypes to be encrypted.
-  virtual bool HasPendingEncryptedTypes() const;
+  virtual bool encryption_pending() const;
 
   // Returns whether processing changes is allowed.  Check this before doing
   // any model-modifying operations.
@@ -649,11 +651,10 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // is reworked to allow one-shot commands like clearing server data.
   base::OneShotTimer<ProfileSyncService> clear_server_data_timer_;
 
-  // The most recently requested set of types to encrypt. Set by the user,
-  // and cached until the syncer either finishes encryption
-  // (OnEncryptionComplete) or the user cancels.
-  syncable::ModelTypeSet pending_types_for_encryption_;
-  bool set_backend_encrypted_types_;
+  // Whether we're waiting for an attempt to encryption all sync data to
+  // complete. We track this at this layer in order to allow the user to cancel
+  // if they e.g. don't remember their explicit passphrase.
+  bool encryption_pending_;
 
   // If true, we want to automatically start sync signin whenever we have
   // credentials (user doesn't need to go through the startup flow). This is

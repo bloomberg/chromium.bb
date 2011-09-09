@@ -978,14 +978,15 @@ std::string ProfileSyncServiceHarness::GetClientInfoString(
   return os.str();
 }
 
+// TODO(zea): Rename this EnableEncryption, since we no longer turn on
+// encryption for individual types but for all.
 bool ProfileSyncServiceHarness::EnableEncryptionForType(
     syncable::ModelType type) {
   syncable::ModelTypeSet encrypted_types;
   service_->GetEncryptedDataTypes(&encrypted_types);
   if (encrypted_types.count(type) > 0)
     return true;
-  encrypted_types.insert(type);
-  service_->set_pending_types_for_encryption(encrypted_types);
+  service_->SetEncryptEverything(true);
 
   // In order to kick off the encryption we have to reconfigure. Just grab the
   // currently synced types and use them.

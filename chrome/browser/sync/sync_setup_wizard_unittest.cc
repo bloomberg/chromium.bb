@@ -61,7 +61,8 @@ class ProfileSyncServiceForWizardTest : public ProfileSyncService {
   ProfileSyncServiceForWizardTest(ProfileSyncFactory* factory, Profile* profile)
       : ProfileSyncService(factory, profile, new SigninManager(), ""),
         user_cancelled_dialog_(false),
-        is_using_secondary_passphrase_(false) {
+        is_using_secondary_passphrase_(false),
+        encrypt_everything_(false) {
     RegisterPreferences();
     ResetTestStats();
   }
@@ -128,6 +129,14 @@ class ProfileSyncServiceForWizardTest : public ProfileSyncService {
     return true;
   }
 
+  virtual bool EncryptEverythingEnabled() const {
+    return encrypt_everything_;
+  }
+
+  void set_encrypt_everything(bool encrypt_everything) {
+    encrypt_everything_ = encrypt_everything;
+  }
+
   void ResetTestStats() {
     username_.clear();
     password_.clear();
@@ -150,6 +159,7 @@ class ProfileSyncServiceForWizardTest : public ProfileSyncService {
   bool user_chose_data_types_;
   bool keep_everything_synced_;
   bool is_using_secondary_passphrase_;
+  bool encrypt_everything_;
   syncable::ModelTypeSet chosen_data_types_;
 
   std::string passphrase_;

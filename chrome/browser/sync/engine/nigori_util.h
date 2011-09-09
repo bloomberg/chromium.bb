@@ -28,10 +28,6 @@ class Entry;
 class ReadTransaction;
 class WriteTransaction;
 
-// Set the encrypted datatypes on the nigori node.
-void FillNigoriEncryptedTypes(const ModelTypeSet& types,
-    sync_pb::NigoriSpecifics* nigori);
-
 // Check if our unsyced changes are encrypted if they need to be based on
 // |encrypted_types|.
 // Returns: true if all unsynced data that should be encrypted is.

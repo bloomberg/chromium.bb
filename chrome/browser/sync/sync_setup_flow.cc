@@ -163,11 +163,8 @@ void SyncSetupFlow::GetArgsForConfigure(ProfileSyncService* service,
       !CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableSyncEncryption));
 
-  syncable::ModelTypeSet encrypted_types;
-  service->GetEncryptedDataTypes(&encrypted_types);
-  bool encrypt_all =
-      encrypted_types.upper_bound(syncable::PASSWORDS) != encrypted_types.end();
-  if (service->HasPendingEncryptedTypes())
+  bool encrypt_all = service->EncryptEverythingEnabled();
+  if (service->encryption_pending())
     encrypt_all = true;
   args->SetBoolean("encryptAllData", encrypt_all);
 
@@ -278,12 +275,7 @@ void SyncSetupFlow::OnUserConfigured(const SyncConfiguration& configuration) {
   Advance(SyncSetupWizard::SETTING_UP);
 
   // Note: encryption will not occur until OnUserChoseDatatypes is called.
-  syncable::ModelTypeSet encrypted_types;
-  if (configuration.encrypt_all) {
-    // Encrypt all registered types.
-    service_->GetRegisteredDataTypes(&encrypted_types);
-  }  // Else we clear the pending types for encryption.
-  service_->set_pending_types_for_encryption(encrypted_types);
+  service_->SetEncryptEverything(configuration.encrypt_all);
 
   if (!configuration.gaia_passphrase.empty()) {
     // Caller passed a gaia passphrase. This is illegal if we are currently

@@ -62,6 +62,9 @@ message NigoriSpecifics {
   optional bool encrypt_search_engines = 22;
   
   optional bool sync_tabs = 23;
+  
+  // If true, all current and future datatypes will be encrypted.
+  optional bool encrypt_everything = 24;
 }
 
 extend EntitySpecifics {

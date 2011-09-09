@@ -126,8 +126,34 @@ class Cryptographer {
   // can't be created (i.e. if this Cryptograhper doesn't have valid keys).
   bool GetBootstrapToken(std::string* token) const;
 
+  // Update the cryptographer based on the contents of the nigori specifics.
+  // This updates both the encryption keys and the set of encrypted types.
+  // Returns NEEDS_PASSPHRASE if was unable to decrypt the pending keys,
+  // SUCCESS otherwise.
   UpdateResult Update(const sync_pb::NigoriSpecifics& nigori);
-  void SetEncryptedTypes(const sync_pb::NigoriSpecifics& nigori);
+
+  // The set of types that are always encrypted.
+  static syncable::ModelTypeSet SensitiveTypes();
+
+  // Reset our set of encrypted types based on the contents of the nigori
+  // specifics.
+  void UpdateEncryptedTypesFromNigori(const sync_pb::NigoriSpecifics& nigori);
+
+  // Update the nigori to reflect the current set of encrypted types.
+  void UpdateNigoriFromEncryptedTypes(sync_pb::NigoriSpecifics* nigori) const;
+
+  // Setter/getter for whether all current and future datatypes should be
+  // encrypted. Once set you cannot unset without reading from a new nigori
+  // node.
+  void set_encrypt_everything();
+  bool encrypt_everything() const;
+
+  // Set all types in |new_types| as requiring encryption (in addition to the
+  // currently encrypted types). Note: once a type requires encryption it can
+  // never stop requiring encryption without clearing the server data.
+  void SetEncryptedTypes(syncable::ModelTypeSet new_types);
+
+  // Return the set of encrypted types.
   syncable::ModelTypeSet GetEncryptedTypes() const;
 
  private:
@@ -153,6 +179,7 @@ class Cryptographer {
   scoped_ptr<sync_pb::EncryptedData> pending_keys_;
 
   syncable::ModelTypeSet encrypted_types_;
+  bool encrypt_everything_;
 
   DISALLOW_COPY_AND_ASSIGN(Cryptographer);
 };

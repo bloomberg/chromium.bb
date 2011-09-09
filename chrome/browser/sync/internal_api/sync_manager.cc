@@ -702,9 +702,26 @@ void SyncManager::SetPassphrase(const std::string& passphrase,
   data_->SetPassphrase(passphrase, is_explicit);
 }
 
-void SyncManager::EncryptDataTypes(
-    const syncable::ModelTypeSet& encrypted_types) {
-  data_->EncryptDataTypes(encrypted_types);
+void SyncManager::EnableEncryptEverything() {
+  {
+    // Update the cryptographer to know we're now encrypting everything.
+    WriteTransaction trans(FROM_HERE, GetUserShare());
+    Cryptographer* cryptographer = trans.GetCryptographer();
+    // Only set encrypt everything if we know we can encrypt. This allows the
+    // user to cancel encryption if they have forgotten their passphrase.
+    if (cryptographer->is_ready())
+      cryptographer->set_encrypt_everything();
+  }
+
+  // Call with empty set. Reads from cryptographer so will automatically encrypt
+  // all datatypes and update the nigori node as necessary. Will trigger
+  // OnPassphraseRequired if necessary.
+  data_->EncryptDataTypes(syncable::ModelTypeSet());
+}
+
+bool SyncManager::EncryptEverythingEnabled() const {
+  ReadTransaction trans(FROM_HERE, GetUserShare());
+  return trans.GetCryptographer()->encrypt_everything();
 }
 
 bool SyncManager::IsUsingExplicitPassphrase() {
@@ -866,22 +883,27 @@ bool SyncManager::SyncInternal::UpdateCryptographerFromNigori() {
   if (!lookup->initial_sync_ended_for_type(syncable::NIGORI))
     return false;  // Should only happen during first time sync.
 
-  ReadTransaction trans(FROM_HERE, GetUserShare());
+  WriteTransaction trans(FROM_HERE, GetUserShare());
   Cryptographer* cryptographer = trans.GetCryptographer();
 
-  ReadNode node(&trans);
+  WriteNode node(&trans);
   if (!node.InitByTagLookup(kNigoriTag)) {
     NOTREACHED();
     return false;
   }
-  Cryptographer::UpdateResult result =
-      cryptographer->Update(node.GetNigoriSpecifics());
+  sync_pb::NigoriSpecifics nigori(node.GetNigoriSpecifics());
+  Cryptographer::UpdateResult result = cryptographer->Update(nigori);
   if (result == Cryptographer::NEEDS_PASSPHRASE) {
     ObserverList<SyncManager::Observer> temp_obs_list;
     CopyObservers(&temp_obs_list);
     FOR_EACH_OBSERVER(SyncManager::Observer, temp_obs_list,
                       OnPassphraseRequired(sync_api::REASON_DECRYPTION));
   }
+
+  // Ensure the nigori node reflects the most recent set of sensitive types
+  // and properly sets encrypt_everything. This is a no-op if nothing changes.
+  cryptographer->UpdateNigoriFromEncryptedTypes(&nigori);
+  node.SetNigoriSpecifics(nigori);
 
   allstatus_.SetCryptographerReady(cryptographer->is_ready());
   allstatus_.SetCryptoHasPendingKeys(cryptographer->has_pending_keys());
@@ -1039,7 +1061,7 @@ void SyncManager::SyncInternal::SetPassphrase(
   }
 
   if (cryptographer->has_pending_keys()) {
-    bool suceeded = false;
+    bool succeeded = false;
 
     // See if the explicit flag matches what is set in nigori. If not we dont
     // even try the passphrase. Note: This could mean that we wont try setting
@@ -1047,7 +1069,7 @@ void SyncManager::SyncInternal::SetPassphrase(
     // is fine because nigori node has all the old passwords in it.
     if (node.GetNigoriSpecifics().using_explicit_passphrase() == is_explicit) {
       if (cryptographer->DecryptPendingKeys(params)) {
-        suceeded = true;
+        succeeded = true;
       } else {
         VLOG(1) << "Passphrase failed to decrypt pending keys.";
       }
@@ -1057,7 +1079,7 @@ void SyncManager::SyncInternal::SetPassphrase(
               << node.GetNigoriSpecifics().using_explicit_passphrase();
     }
 
-    if (!suceeded) {
+    if (!succeeded) {
       ObserverList<SyncManager::Observer> temp_obs_list;
       CopyObservers(&temp_obs_list);
       FOR_EACH_OBSERVER(SyncManager::Observer, temp_obs_list,
@@ -1145,18 +1167,12 @@ void SyncManager::SyncInternal::EncryptDataTypes(
   // Update the Nigori node's set of encrypted datatypes.
   // Note, we merge the current encrypted types with those requested. Once a
   // datatypes is marked as needing encryption, it is never unmarked.
+  cryptographer->SetEncryptedTypes(encrypted_types);
   sync_pb::NigoriSpecifics nigori;
   nigori.CopyFrom(node.GetNigoriSpecifics());
-  syncable::ModelTypeSet current_encrypted_types = GetEncryptedTypes(&trans);
-  syncable::ModelTypeSet newly_encrypted_types;
-  std::set_union(current_encrypted_types.begin(), current_encrypted_types.end(),
-                 encrypted_types.begin(), encrypted_types.end(),
-                 std::inserter(newly_encrypted_types,
-                               newly_encrypted_types.begin()));
-  allstatus_.SetEncryptedTypes(newly_encrypted_types);
-  syncable::FillNigoriEncryptedTypes(newly_encrypted_types, &nigori);
+  cryptographer->UpdateNigoriFromEncryptedTypes(&nigori);
   node.SetNigoriSpecifics(nigori);
-  cryptographer->SetEncryptedTypes(nigori);
+  allstatus_.SetEncryptedTypes(cryptographer->GetEncryptedTypes());
 
   // We reencrypt everything regardless of whether the set of encrypted
   // types changed to ensure that any stray unencrypted entries are overwritten.
@@ -1176,7 +1192,9 @@ void SyncManager::SyncInternal::ReEncryptEverything(WriteTransaction* trans) {
   std::string tag;
   for (syncable::ModelTypeSet::iterator iter = encrypted_types.begin();
        iter != encrypted_types.end(); ++iter) {
-    if (*iter == syncable::PASSWORDS || routes.count(*iter) == 0)
+    if (*iter == syncable::PASSWORDS ||
+        *iter == syncable::NIGORI ||
+        routes.count(*iter) == 0)
       continue;
     ReadNode type_root(trans);
     tag = syncable::ModelTypeToRootTag(*iter);

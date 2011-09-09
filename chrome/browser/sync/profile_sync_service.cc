@@ -39,6 +39,7 @@
 #include "chrome/browser/sync/js/js_event_details.h"
 #include "chrome/browser/sync/profile_sync_factory.h"
 #include "chrome/browser/sync/signin_manager.h"
+#include "chrome/browser/sync/util/cryptographer.h"
 #include "chrome/browser/sync/util/oauth.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -103,7 +104,7 @@ ProfileSyncService::ProfileSyncService(ProfileSyncFactory* factory,
       scoped_runnable_method_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       expect_sync_configuration_aborted_(false),
       clear_server_data_state_(CLEAR_NOT_STARTED),
-      set_backend_encrypted_types_(false),
+      encryption_pending_(false),
       auto_start_enabled_(false) {
   // By default, dev, canary, and unbranded Chromium users will go to the
   // development servers. Development servers have more features than standard
@@ -414,7 +415,7 @@ void ProfileSyncService::CreateBackend() {
 }
 
 bool ProfileSyncService::IsEncryptedDatatypeEnabled() const {
-  if (HasPendingEncryptedTypes())
+  if (encryption_pending())
     return true;
   syncable::ModelTypeSet preferred_types;
   GetPreferredDataTypes(&preferred_types);
@@ -485,8 +486,7 @@ void ProfileSyncService::Shutdown(bool sync_disabled) {
   is_auth_in_progress_ = false;
   backend_initialized_ = false;
   cached_passphrases_ = CachedPassphrases();
-  pending_types_for_encryption_.clear();
-  set_backend_encrypted_types_ = false;
+  encryption_pending_ = false;
   passphrase_required_reason_ = sync_api::REASON_PASSPHRASE_NOT_REQUIRED;
   last_attempted_user_email_.clear();
   last_auth_error_ = GoogleServiceAuthError::None();
@@ -894,15 +894,12 @@ void ProfileSyncService::OnPassphraseAccepted() {
 
 void ProfileSyncService::OnEncryptionComplete(
     const syncable::ModelTypeSet& encrypted_types) {
-  if (set_backend_encrypted_types_) {
-    DCHECK(!pending_types_for_encryption_.empty());
-    // See if all our pending types are now encrypted - it's possible that this
-    // is a delayed notification from a previous attempt to encrypt a subset
-    // of the requested types.
+  if (encryption_pending_) {
+    syncable::ModelTypeSet registered_types;
+    GetRegisteredDataTypes(&registered_types);
     bool encryption_complete = true;
-    for (syncable::ModelTypeSet::const_iterator it =
-             pending_types_for_encryption_.begin();
-         it != pending_types_for_encryption_.end();
+    for (syncable::ModelTypeSet::const_iterator it = registered_types.begin();
+         it != registered_types.end();
          ++it) {
       if (encrypted_types.count(*it) == 0) {
         // One of our types is not yet encrypted - keep waiting.
@@ -911,8 +908,7 @@ void ProfileSyncService::OnEncryptionComplete(
       }
     }
     if (encryption_complete) {
-      pending_types_for_encryption_.clear();
-      set_backend_encrypted_types_ = false;
+      encryption_pending_ = false;
       // The user had chosen to encrypt datatypes. This is the last thing to
       // complete, so now that we're done notify the UI.
       wizard_.Step(SyncSetupWizard::DONE);
@@ -1151,6 +1147,10 @@ void ProfileSyncService::OnUserCancelledDialog() {
     expect_sync_configuration_aborted_ = true;
     DisableForUser();
   }
+
+  // If the user attempted to encrypt datatypes, but was unable to do so, we
+  // allow them to cancel out.
+  encryption_pending_ = false;
 
   // Though an auth could still be in progress, once the dialog is closed we
   // don't want the UI to stay stuck in the "waiting for authentication" state
@@ -1405,19 +1405,20 @@ void ProfileSyncService::SetPassphrase(const std::string& passphrase,
   }
 }
 
-void ProfileSyncService::set_pending_types_for_encryption(
-    const syncable::ModelTypeSet& encrypted_types) {
-  set_backend_encrypted_types_ = false;
-  if (encrypted_types.empty()) {
-    // We can't unencrypt types.
-    VLOG(1) << "No datatypes set for encryption, dropping encryption request.";
-    pending_types_for_encryption_.clear();
-    return;
+void ProfileSyncService::SetEncryptEverything(bool encrypt_everything) {
+  encryption_pending_ = encrypt_everything;
+}
+
+bool ProfileSyncService::encryption_pending() const {
+  return encryption_pending_;
+}
+
+bool ProfileSyncService::EncryptEverythingEnabled() const {
+  if (!backend_.get() || !backend_initialized_) {
+    NOTREACHED() << "Cannot check encryption without initialized backend.";
+    return false;
   }
-  // Setting the pending types for encryption doesn't actually trigger
-  // encryption. The actual encryption will occur after the datatype manager
-  // is reconfigured.
-  pending_types_for_encryption_ = encrypted_types;
+  return backend_->EncryptEverythingEnabled();
 }
 
 // This will open a transaction to get the encrypted types. Do not call this
@@ -1430,15 +1431,12 @@ void ProfileSyncService::GetEncryptedDataTypes(
     DCHECK(encrypted_types->count(syncable::PASSWORDS));
   } else {
     // Either we are in an unrecoverable error or the sync is not yet done
-    // initializing. In either case just return the password type. During
+    // initializing. In either case just return the sensitive types. During
     // sync initialization the UI might need to know what our encrypted
     // types are.
-    (*encrypted_types).insert(syncable::PASSWORDS);
+    *encrypted_types = browser_sync::Cryptographer::SensitiveTypes();
+    DCHECK(encrypted_types->count(syncable::PASSWORDS));
   }
-}
-
-bool ProfileSyncService::HasPendingEncryptedTypes() const {
-  return !pending_types_for_encryption_.empty();
 }
 
 void ProfileSyncService::Observe(int type,
@@ -1483,16 +1481,11 @@ void ProfileSyncService::Observe(int type,
       // normal operation.
       backend_->StartSyncingWithServer();
 
-      if (pending_types_for_encryption_.empty()) {
+      if (!encryption_pending_) {
         wizard_.Step(SyncSetupWizard::DONE);
         NotifyObservers();
       } else {
-        // Will clear pending_types_for_encryption_ on success (via
-        // OnEncryptionComplete). Has no effect if pending_types_for_encryption_
-        // matches the encrypted types (and will clear
-        // pending_types_for_encryption_).
-        set_backend_encrypted_types_ = true;
-        backend_->EncryptDataTypes(pending_types_for_encryption_);
+        backend_->EnableEncryptEverything();
       }
       break;
     }

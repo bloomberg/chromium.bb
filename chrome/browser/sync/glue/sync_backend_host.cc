@@ -367,12 +367,19 @@ void SyncBackendHost::FinishConfigureDataTypesOnFrontendLoop() {
                         &SyncBackendHost::Core::DoUpdateEnabledTypes));
 }
 
-void SyncBackendHost::EncryptDataTypes(
-    const syncable::ModelTypeSet& encrypted_types) {
+void SyncBackendHost::EnableEncryptEverything() {
   sync_thread_.message_loop()->PostTask(FROM_HERE,
      NewRunnableMethod(core_.get(),
-                       &SyncBackendHost::Core::DoEncryptDataTypes,
-                       encrypted_types));
+                       &SyncBackendHost::Core::DoEnableEncryptEverything));
+}
+
+bool SyncBackendHost::EncryptEverythingEnabled() const {
+  if (initialization_state_ == NOT_INITIALIZED) {
+    NOTREACHED() << "Cannot check encryption status without first "
+                 << "initializing backend.";
+    return false;
+  }
+  return core_->sync_manager()->EncryptEverythingEnabled();
 }
 
 syncable::ModelTypeSet SyncBackendHost::GetEncryptedDataTypes() const {
@@ -608,10 +615,9 @@ void SyncBackendHost::Core::DoSetPassphrase(const std::string& passphrase,
   sync_manager_->SetPassphrase(passphrase, is_explicit);
 }
 
-void SyncBackendHost::Core::DoEncryptDataTypes(
-    const syncable::ModelTypeSet& encrypted_types) {
+void SyncBackendHost::Core::DoEnableEncryptEverything() {
   DCHECK(MessageLoop::current() == host_->sync_thread_.message_loop());
-  sync_manager_->EncryptDataTypes(encrypted_types);
+  sync_manager_->EnableEncryptEverything();
 }
 
 void SyncBackendHost::Core::DoRequestConfig(

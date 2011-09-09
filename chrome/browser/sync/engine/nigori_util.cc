@@ -14,20 +14,6 @@
 #include "chrome/browser/sync/util/cryptographer.h"
 
 namespace syncable {
-void FillNigoriEncryptedTypes(const ModelTypeSet& types,
-    sync_pb::NigoriSpecifics* nigori) {
-  DCHECK(nigori);
-  nigori->set_encrypt_bookmarks(types.count(BOOKMARKS) > 0);
-  nigori->set_encrypt_preferences(types.count(PREFERENCES) > 0);
-  nigori->set_encrypt_autofill_profile(types.count(AUTOFILL_PROFILE) > 0);
-  nigori->set_encrypt_autofill(types.count(AUTOFILL) > 0);
-  nigori->set_encrypt_themes(types.count(THEMES) > 0);
-  nigori->set_encrypt_typed_urls(types.count(TYPED_URLS) > 0);
-  nigori->set_encrypt_extensions(types.count(EXTENSIONS) > 0);
-  nigori->set_encrypt_search_engines(types.count(SEARCH_ENGINES) > 0);
-  nigori->set_encrypt_sessions(types.count(SESSIONS) > 0);
-  nigori->set_encrypt_apps(types.count(APPS) > 0);
-}
 
 bool ProcessUnsyncedChangesForEncryption(
     WriteTransaction* const trans,

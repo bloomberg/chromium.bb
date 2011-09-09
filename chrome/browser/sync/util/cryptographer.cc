@@ -16,8 +16,11 @@ const char kNigoriTag[] = "google_chrome_nigori";
 // assign the same name to a particular triplet.
 const char kNigoriKeyName[] = "nigori-key";
 
-Cryptographer::Cryptographer() : default_nigori_(NULL) {
-  encrypted_types_.insert(syncable::PASSWORDS);
+Cryptographer::Cryptographer()
+    : default_nigori_(NULL),
+      encrypt_everything_(false) {
+  syncable::ModelTypeSet sensitive_types = SensitiveTypes();
+  encrypted_types_.insert(sensitive_types.begin(), sensitive_types.end());
 }
 
 Cryptographer::~Cryptographer() {}
@@ -246,7 +249,7 @@ Nigori* Cryptographer::UnpackBootstrapToken(const std::string& token) const {
 
 Cryptographer::UpdateResult Cryptographer::Update(
     const sync_pb::NigoriSpecifics& nigori) {
-  SetEncryptedTypes(nigori);
+  UpdateEncryptedTypesFromNigori(nigori);
   if (!nigori.encrypted().blob().empty()) {
     if (CanDecrypt(nigori.encrypted())) {
       SetKeys(nigori.encrypted());
@@ -259,8 +262,23 @@ Cryptographer::UpdateResult Cryptographer::Update(
   return Cryptographer::SUCCESS;
 }
 
-void Cryptographer::SetEncryptedTypes(const sync_pb::NigoriSpecifics& nigori) {
+// Static
+syncable::ModelTypeSet Cryptographer::SensitiveTypes() {
+  syncable::ModelTypeSet types;
+  // Both of these have their own encryption schemes, but we include them
+  // anyways.
+  types.insert(syncable::PASSWORDS);
+  types.insert(syncable::NIGORI);
+  return types;
+}
+
+void Cryptographer::UpdateEncryptedTypesFromNigori(
+    const sync_pb::NigoriSpecifics& nigori) {
   encrypted_types_.clear();
+  if (nigori.encrypt_everything()) {
+    set_encrypt_everything();
+    return;
+  }
   if (nigori.encrypt_bookmarks())
     encrypted_types_.insert(syncable::BOOKMARKS);
   if (nigori.encrypt_preferences())
@@ -281,7 +299,50 @@ void Cryptographer::SetEncryptedTypes(const sync_pb::NigoriSpecifics& nigori) {
     encrypted_types_.insert(syncable::SESSIONS);
   if (nigori.encrypt_apps())
     encrypted_types_.insert(syncable::APPS);
-  encrypted_types_.insert(syncable::PASSWORDS);
+
+  // Note: the initial version with encryption did not support the
+  // encrypt_everything field. If anything more than the sensitive types were
+  // encrypted, it meant we were encrypting everything.
+  syncable::ModelTypeSet sensitive_types = SensitiveTypes();
+  encrypted_types_.insert(sensitive_types.begin(), sensitive_types.end());
+  if (!nigori.has_encrypt_everything() &&
+      encrypted_types_.size() > sensitive_types.size()) {
+    set_encrypt_everything();
+  }
+}
+
+void Cryptographer::UpdateNigoriFromEncryptedTypes(
+    sync_pb::NigoriSpecifics* nigori) const {
+  nigori->set_encrypt_everything(encrypt_everything_);
+  nigori->set_encrypt_bookmarks(
+      encrypted_types_.count(syncable::BOOKMARKS) > 0);
+  nigori->set_encrypt_preferences(
+      encrypted_types_.count(syncable::PREFERENCES) > 0);
+  nigori->set_encrypt_autofill_profile(
+      encrypted_types_.count(syncable::AUTOFILL_PROFILE) > 0);
+  nigori->set_encrypt_autofill(encrypted_types_.count(syncable::AUTOFILL) > 0);
+  nigori->set_encrypt_themes(encrypted_types_.count(syncable::THEMES) > 0);
+  nigori->set_encrypt_typed_urls(
+      encrypted_types_.count(syncable::TYPED_URLS) > 0);
+  nigori->set_encrypt_extensions(
+      encrypted_types_.count(syncable::EXTENSIONS) > 0);
+  nigori->set_encrypt_search_engines(
+      encrypted_types_.count(syncable::SEARCH_ENGINES) > 0);
+  nigori->set_encrypt_sessions(encrypted_types_.count(syncable::SESSIONS) > 0);
+  nigori->set_encrypt_apps(encrypted_types_.count(syncable::APPS) > 0);
+}
+
+void Cryptographer::set_encrypt_everything() {
+  encrypt_everything_ = true;
+  encrypted_types_ = syncable::GetAllRealModelTypes();
+}
+
+bool Cryptographer::encrypt_everything() const {
+  return encrypt_everything_;
+}
+
+void Cryptographer::SetEncryptedTypes(syncable::ModelTypeSet new_types) {
+  encrypted_types_.insert(new_types.begin(), new_types.end());
 }
 
 syncable::ModelTypeSet Cryptographer::GetEncryptedTypes() const {
