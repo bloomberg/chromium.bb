@@ -8,9 +8,9 @@
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_button.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_button_cell.h"
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
-#import "chrome/browser/ui/cocoa/test_event_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
+#import "ui/base/test/cocoa_test_event_utils.h"
 
 // Fake BookmarkButton delegate to get a pong on mouse entered/exited
 @interface FakeButtonDelegate : NSObject<BookmarkButtonDelegate> {
@@ -82,7 +82,7 @@ TEST_F(BookmarkButtonTest, FolderAndEmptyOrNot) {
   EXPECT_FALSE([button bookmarkNode]);
 
   NSEvent* downEvent =
-      test_event_utils::LeftMouseDownAtPoint(NSMakePoint(10,10));
+      cocoa_test_event_utils::LeftMouseDownAtPoint(NSMakePoint(10,10));
   // Since this returns (does not actually begin a modal drag), success!
   [button beginDrag:downEvent];
 
@@ -103,7 +103,9 @@ TEST_F(BookmarkButtonTest, FolderAndEmptyOrNot) {
 
 TEST_F(BookmarkButtonTest, MouseEnterExitRedirect) {
   NSEvent* moveEvent =
-      test_event_utils::MouseEventAtPoint(NSMakePoint(10,10), NSMouseMoved, 0);
+      cocoa_test_event_utils::MouseEventAtPoint(NSMakePoint(10,10),
+                                                NSMouseMoved,
+                                                0);
   scoped_nsobject<BookmarkButton> button;
   scoped_nsobject<BookmarkButtonCell> cell;
   scoped_nsobject<FakeButtonDelegate>

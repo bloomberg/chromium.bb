@@ -24,7 +24,6 @@
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_menu.h"
 #include "chrome/browser/ui/cocoa/bookmarks/bookmark_menu_bridge.h"
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
-#include "chrome/browser/ui/cocoa/test_event_utils.h"
 #import "chrome/browser/ui/cocoa/view_resizer_pong.h"
 #include "chrome/test/base/model_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -32,6 +31,7 @@
 #include "testing/platform_test.h"
 #include "third_party/ocmock/gtest_support.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
+#include "ui/base/test/cocoa_test_event_utils.h"
 #include "ui/base/theme_provider.h"
 
 // Unit tests don't need time-consuming asynchronous animations.
@@ -912,7 +912,8 @@ TEST_F(BookmarkBarControllerTest, MiddleClick) {
   NSButton* first = [[bar_ buttons] objectAtIndex:0];
   EXPECT_TRUE(first);
 
-  [first otherMouseUp:test_event_utils::MakeMouseEvent(NSOtherMouseUp, 0)];
+  [first otherMouseUp:
+      cocoa_test_event_utils::MakeMouseEvent(NSOtherMouseUp, 0)];
   EXPECT_EQ(noOpenBar()->urls_.size(), 1U);
 }
 
@@ -1483,9 +1484,10 @@ TEST_F(BookmarkBarControllerOpenAllTest, CommandClickOnFolder) {
 
   // Create the right kind of event; mock NSApp so [NSApp
   // currentEvent] finds it.
-  NSEvent* commandClick = test_event_utils::MouseEventAtPoint(NSZeroPoint,
-                                                              NSLeftMouseDown,
-                                                              NSCommandKeyMask);
+  NSEvent* commandClick =
+      cocoa_test_event_utils::MouseEventAtPoint(NSZeroPoint,
+                                                NSLeftMouseDown,
+                                                NSCommandKeyMask);
   id fakeApp = [OCMockObject partialMockForObject:NSApp];
   [[[fakeApp stub] andReturn:commandClick] currentEvent];
   id oldApp = NSApp;

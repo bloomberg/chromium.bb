@@ -7,9 +7,9 @@
 #include "base/memory/scoped_nsobject.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #import "chrome/browser/ui/cocoa/find_bar/find_bar_view.h"
-#include "chrome/browser/ui/cocoa/test_event_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
+#include "ui/base/test/cocoa_test_event_utils.h"
 
 @interface MouseDownViewPong : NSView {
   BOOL pong_;
@@ -61,8 +61,8 @@ TEST_F(FindBarViewTest, FindBarEatsMouseClicksInBackgroundArea) {
   // placed in the center of the find bar.
   NSPoint pointInCenterOfFindBar = NSMakePoint(100, 100);
   [pongView setPong:NO];
-  [test_window()
-      sendEvent:test_event_utils::LeftMouseDownAtPoint(pointInCenterOfFindBar)];
+  [test_window() sendEvent:
+      cocoa_test_event_utils::LeftMouseDownAtPoint(pointInCenterOfFindBar)];
   // Click gets eaten by findbar, not passed through to underlying view.
   EXPECT_FALSE([pongView pong]);
 }
@@ -82,8 +82,8 @@ TEST_F(FindBarViewTest, FindBarPassesThroughClicksInTransparentArea) {
   // the transparent area surrounding the findbar.
   NSPoint pointInTransparentArea = NSMakePoint(2, 2);
   [pongView setPong:NO];
-  [test_window()
-      sendEvent:test_event_utils::LeftMouseDownAtPoint(pointInTransparentArea)];
+  [test_window() sendEvent:
+      cocoa_test_event_utils::LeftMouseDownAtPoint(pointInTransparentArea)];
   // Click is ignored by findbar, passed through to underlying view.
   EXPECT_TRUE([pongView pong]);
 }

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_TEST_BASE_UI_COCOA_TEST_HELPER_H_
-#define UI_BASE_TEST_BASE_UI_COCOA_TEST_HELPER_H_
+#ifndef UI_BASE_TEST_UI_COCOA_TEST_HELPER_H_
+#define UI_BASE_TEST_UI_COCOA_TEST_HELPER_H_
 #pragma once
 
 #include <set>
@@ -146,4 +146,4 @@ class CocoaTest : public PlatformTest {
                 [NSStringFromRect(expected) UTF8String] << \
                 " != " << [NSStringFromRect(actual) UTF8String]
 
-#endif  // UI_BASE_TEST_BASE_UI_COCOA_TEST_HELPER_H_
+#endif  // UI_BASE_TEST_UI_COCOA_TEST_HELPER_H_

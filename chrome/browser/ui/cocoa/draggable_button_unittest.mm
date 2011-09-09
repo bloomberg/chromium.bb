@@ -5,9 +5,9 @@
 #include "base/memory/scoped_nsobject.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #import "chrome/browser/ui/cocoa/draggable_button.h"
-#import "chrome/browser/ui/cocoa/test_event_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
+#import "ui/base/test/cocoa_test_event_utils.h"
 
 @interface TestableDraggableButton : DraggableButton {
   NSUInteger dragCount_;
@@ -54,11 +54,13 @@ TEST_F(DraggableButtonTest, DownUp) {
   [button setAction:@selector(trigger:)];
   EXPECT_FALSE([button wasTriggered]);
   NSEvent* downEvent =
-      test_event_utils::MouseEventAtPoint(NSMakePoint(10,10),
-                                          NSLeftMouseDown, 0);
+      cocoa_test_event_utils::MouseEventAtPoint(NSMakePoint(10,10),
+                                                NSLeftMouseDown,
+                                                0);
   NSEvent* upEvent =
-      test_event_utils::MouseEventAtPoint(NSMakePoint(10,10),
-                                          NSLeftMouseUp, 0);
+      cocoa_test_event_utils::MouseEventAtPoint(NSMakePoint(10,10),
+                                                NSLeftMouseUp,
+                                                0);
   [NSApp postEvent:upEvent atStart:YES];
   [test_window() sendEvent:downEvent];
   EXPECT_TRUE([button wasTriggered]);  // confirms target/action fired
@@ -69,25 +71,25 @@ TEST_F(DraggableButtonTest, DraggableHysteresis) {
       [[TestableDraggableButton alloc] initWithFrame:NSMakeRect(0,0,500,500)]);
   [[test_window() contentView] addSubview:button.get()];
   NSEvent* downEvent =
-      test_event_utils::MouseEventAtPoint(NSMakePoint(10,10),
-                                          NSLeftMouseDown,
-                                          0);
+      cocoa_test_event_utils::MouseEventAtPoint(NSMakePoint(10,10),
+                                                NSLeftMouseDown,
+                                                0);
   NSEvent* firstMove =
-      test_event_utils::MouseEventAtPoint(NSMakePoint(11,11),
-                                          NSLeftMouseDragged,
-                                          0);
+      cocoa_test_event_utils::MouseEventAtPoint(NSMakePoint(11,11),
+                                                NSLeftMouseDragged,
+                                                0);
   NSEvent* firstUpEvent =
-      test_event_utils::MouseEventAtPoint(NSMakePoint(11,11),
-                                          NSLeftMouseUp,
-                                          0);
+      cocoa_test_event_utils::MouseEventAtPoint(NSMakePoint(11,11),
+                                                NSLeftMouseUp,
+                                                0);
   NSEvent* secondMove =
-      test_event_utils::MouseEventAtPoint(NSMakePoint(100,100),
-                                          NSLeftMouseDragged,
-                                          0);
+      cocoa_test_event_utils::MouseEventAtPoint(NSMakePoint(100,100),
+                                                NSLeftMouseDragged,
+                                                0);
   NSEvent* secondUpEvent =
-      test_event_utils::MouseEventAtPoint(NSMakePoint(100,100),
-                                          NSLeftMouseUp,
-                                          0);
+      cocoa_test_event_utils::MouseEventAtPoint(NSMakePoint(100,100),
+                                                NSLeftMouseUp,
+                                                0);
   // If the mouse only moves one pixel in each direction
   // it should not cause a drag.
   [NSApp postEvent:firstUpEvent atStart:YES];
@@ -108,17 +110,17 @@ TEST_F(DraggableButtonTest, ResetState) {
       [[TestableDraggableButton alloc] initWithFrame:NSMakeRect(0,0,500,500)]);
   [[test_window() contentView] addSubview:button.get()];
   NSEvent* downEvent =
-      test_event_utils::MouseEventAtPoint(NSMakePoint(10,10),
-                                          NSLeftMouseDown,
-                                          0);
+      cocoa_test_event_utils::MouseEventAtPoint(NSMakePoint(10,10),
+                                                NSLeftMouseDown,
+                                                0);
   NSEvent* moveEvent =
-      test_event_utils::MouseEventAtPoint(NSMakePoint(100,100),
-                                          NSLeftMouseDragged,
-                                          0);
+      cocoa_test_event_utils::MouseEventAtPoint(NSMakePoint(100,100),
+                                                NSLeftMouseDragged,
+                                                0);
   NSEvent* upEvent =
-      test_event_utils::MouseEventAtPoint(NSMakePoint(100,100),
-                                          NSLeftMouseUp,
-                                          0);
+      cocoa_test_event_utils::MouseEventAtPoint(NSMakePoint(100,100),
+                                                NSLeftMouseUp,
+                                                0);
   // If the mouse moves > 5 pixels in either direciton it should cause a drag.
   [NSApp postEvent:upEvent atStart:YES];
   [NSApp postEvent:moveEvent atStart:YES];

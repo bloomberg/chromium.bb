@@ -7,9 +7,9 @@
 #import "base/memory/scoped_nsobject.h"
 #include "chrome/app/chrome_command_ids.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
-#import "chrome/browser/ui/cocoa/test_event_utils.h"
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_button.h"
 #import "testing/gtest_mac.h"
+#import "ui/base/test/cocoa_test_event_utils.h"
 
 @interface TestableToolbarButton : ToolbarButton {
  @private
@@ -68,25 +68,45 @@ class ToolbarButtonTest : public CocoaTest {
     NSPoint out_point = NSMakePoint(bounds.origin.x - 10,
                                     bounds.origin.y - 10);
     left_down_in_view =
-        test_event_utils::MouseEventAtPoint(mid_point, NSLeftMouseDown, 0);
+        cocoa_test_event_utils::MouseEventAtPoint(mid_point,
+                                                  NSLeftMouseDown,
+                                                  0);
     left_up_in_view =
-        test_event_utils::MouseEventAtPoint(mid_point, NSLeftMouseUp, 0);
+        cocoa_test_event_utils::MouseEventAtPoint(mid_point,
+                                                  NSLeftMouseUp,
+                                                  0);
     right_down_in_view =
-        test_event_utils::MouseEventAtPoint(mid_point, NSRightMouseDown, 0);
+        cocoa_test_event_utils::MouseEventAtPoint(mid_point,
+                                                  NSRightMouseDown,
+                                                  0);
     right_up_in_view =
-        test_event_utils::MouseEventAtPoint(mid_point, NSRightMouseUp, 0);
+        cocoa_test_event_utils::MouseEventAtPoint(mid_point,
+                                                  NSRightMouseUp,
+                                                  0);
     other_down_in_view =
-        test_event_utils::MouseEventAtPoint(mid_point, NSOtherMouseDown, 0);
+        cocoa_test_event_utils::MouseEventAtPoint(mid_point,
+                                                  NSOtherMouseDown,
+                                                  0);
     other_dragged_in_view =
-        test_event_utils::MouseEventAtPoint(mid_point, NSOtherMouseDragged, 0);
+        cocoa_test_event_utils::MouseEventAtPoint(mid_point,
+                                                  NSOtherMouseDragged,
+                                                  0);
     other_up_in_view =
-        test_event_utils::MouseEventAtPoint(mid_point, NSOtherMouseUp, 0);
+        cocoa_test_event_utils::MouseEventAtPoint(mid_point,
+                                                  NSOtherMouseUp,
+                                                  0);
     other_down_out_view =
-        test_event_utils::MouseEventAtPoint(out_point, NSOtherMouseDown, 0);
+        cocoa_test_event_utils::MouseEventAtPoint(out_point,
+                                                  NSOtherMouseDown,
+                                                  0);
     other_dragged_out_view =
-        test_event_utils::MouseEventAtPoint(out_point, NSOtherMouseDragged, 0);
+        cocoa_test_event_utils::MouseEventAtPoint(out_point,
+                                                  NSOtherMouseDragged,
+                                                  0);
     other_up_out_view =
-        test_event_utils::MouseEventAtPoint(out_point, NSOtherMouseUp, 0);
+        cocoa_test_event_utils::MouseEventAtPoint(out_point,
+                                                  NSOtherMouseUp,
+                                                  0);
   }
 
   TestableToolbarButton* button_;

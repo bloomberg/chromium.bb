@@ -6,10 +6,10 @@
 
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #include "chrome/browser/ui/cocoa/event_utils.h"
-#include "chrome/browser/ui/cocoa/test_event_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 #include "ui/base/events.h"
+#include "ui/base/test/cocoa_test_event_utils.h"
 
 // We provide a donor class with a specially modified |modifierFlags|
 // implementation that we swap with NSEvent's. This is because we can't create a
@@ -27,11 +27,11 @@ class EventUtilsTest : public CocoaTest {
 
 TEST_F(EventUtilsTest, TestWindowOpenDispositionFromNSEvent) {
   // Left Click = same tab.
-  NSEvent* me = test_event_utils::MakeMouseEvent(NSLeftMouseUp, 0);
+  NSEvent* me = cocoa_test_event_utils::MakeMouseEvent(NSLeftMouseUp, 0);
   EXPECT_EQ(CURRENT_TAB, event_utils::WindowOpenDispositionFromNSEvent(me));
 
   // Middle Click = new background tab.
-  me = test_event_utils::MakeMouseEvent(NSOtherMouseUp, 0);
+  me = cocoa_test_event_utils::MakeMouseEvent(NSOtherMouseUp, 0);
   EXPECT_EQ(NEW_BACKGROUND_TAB,
             event_utils::WindowOpenDispositionFromNSEvent(me));
 
@@ -39,82 +39,86 @@ TEST_F(EventUtilsTest, TestWindowOpenDispositionFromNSEvent) {
   {
     ScopedClassSwizzler swizzler([NSEvent class], [TestEvent class],
                                  @selector(modifierFlags));
-    me = test_event_utils::MakeMouseEvent(NSOtherMouseUp, NSShiftKeyMask);
+    me = cocoa_test_event_utils::MakeMouseEvent(NSOtherMouseUp, NSShiftKeyMask);
     EXPECT_EQ(NEW_FOREGROUND_TAB,
               event_utils::WindowOpenDispositionFromNSEvent(me));
   }
 
   // Cmd+Left Click = new background tab.
-  me = test_event_utils::MakeMouseEvent(NSLeftMouseUp, NSCommandKeyMask);
+  me = cocoa_test_event_utils::MakeMouseEvent(NSLeftMouseUp, NSCommandKeyMask);
   EXPECT_EQ(NEW_BACKGROUND_TAB,
             event_utils::WindowOpenDispositionFromNSEvent(me));
 
   // Cmd+Shift+Left Click = new foreground tab.
-  me = test_event_utils::MakeMouseEvent(NSLeftMouseUp, NSCommandKeyMask | NSShiftKeyMask);
+  me = cocoa_test_event_utils::MakeMouseEvent(NSLeftMouseUp,
+                                              NSCommandKeyMask |
+                                              NSShiftKeyMask);
   EXPECT_EQ(NEW_FOREGROUND_TAB,
             event_utils::WindowOpenDispositionFromNSEvent(me));
 
   // Shift+Left Click = new window
-  me = test_event_utils::MakeMouseEvent(NSLeftMouseUp, NSShiftKeyMask);
+  me = cocoa_test_event_utils::MakeMouseEvent(NSLeftMouseUp, NSShiftKeyMask);
   EXPECT_EQ(NEW_WINDOW, event_utils::WindowOpenDispositionFromNSEvent(me));
 }
 
 
 TEST_F(EventUtilsTest, TestEventFlagsFromNSEvent) {
   // Left click.
-  NSEvent* left = test_event_utils::MakeMouseEvent(NSLeftMouseUp, 0);
+  NSEvent* left = cocoa_test_event_utils::MakeMouseEvent(NSLeftMouseUp, 0);
   EXPECT_EQ(ui::EF_LEFT_BUTTON_DOWN,
             event_utils::EventFlagsFromNSEvent(left));
 
   // Right click.
-  NSEvent* right = test_event_utils::MakeMouseEvent(NSRightMouseUp, 0);
+  NSEvent* right = cocoa_test_event_utils::MakeMouseEvent(NSRightMouseUp, 0);
   EXPECT_EQ(ui::EF_RIGHT_BUTTON_DOWN,
             event_utils::EventFlagsFromNSEvent(right));
 
   // Middle click.
-  NSEvent* middle = test_event_utils::MakeMouseEvent(NSOtherMouseUp, 0);
+  NSEvent* middle = cocoa_test_event_utils::MakeMouseEvent(NSOtherMouseUp, 0);
   EXPECT_EQ(ui::EF_MIDDLE_BUTTON_DOWN,
             event_utils::EventFlagsFromNSEvent(middle));
 
   // Caps + Left
-  NSEvent* caps = test_event_utils::MakeMouseEvent(
-    NSLeftMouseUp, NSAlphaShiftKeyMask);
+  NSEvent* caps = cocoa_test_event_utils::MakeMouseEvent(NSLeftMouseUp,
+                                                         NSAlphaShiftKeyMask);
   EXPECT_EQ(ui::EF_LEFT_BUTTON_DOWN | ui::EF_CAPS_LOCK_DOWN,
             event_utils::EventFlagsFromNSEvent(caps));
 
   // Shift + Left
-  NSEvent* shift = test_event_utils::MakeMouseEvent(
-    NSLeftMouseUp, NSShiftKeyMask);
+  NSEvent* shift = cocoa_test_event_utils::MakeMouseEvent(NSLeftMouseUp,
+                                                          NSShiftKeyMask);
   EXPECT_EQ(ui::EF_LEFT_BUTTON_DOWN | ui::EF_SHIFT_DOWN,
             event_utils::EventFlagsFromNSEvent(shift));
 
   // Ctrl + Left
-  NSEvent* ctrl = test_event_utils::MakeMouseEvent(
-    NSLeftMouseUp, NSControlKeyMask);
+  NSEvent* ctrl = cocoa_test_event_utils::MakeMouseEvent(NSLeftMouseUp,
+                                                         NSControlKeyMask);
   EXPECT_EQ(ui::EF_LEFT_BUTTON_DOWN | ui::EF_CONTROL_DOWN,
             event_utils::EventFlagsFromNSEvent(ctrl));
 
   // Alt + Left
-  NSEvent* alt = test_event_utils::MakeMouseEvent(
-    NSLeftMouseUp, NSAlternateKeyMask);
+  NSEvent* alt = cocoa_test_event_utils::MakeMouseEvent(NSLeftMouseUp,
+                                                        NSAlternateKeyMask);
   EXPECT_EQ(ui::EF_LEFT_BUTTON_DOWN | ui::EF_ALT_DOWN,
             event_utils::EventFlagsFromNSEvent(alt));
 
   // Cmd + Left
-  NSEvent* cmd = test_event_utils::MakeMouseEvent(
-    NSLeftMouseUp, NSCommandKeyMask);
+  NSEvent* cmd = cocoa_test_event_utils::MakeMouseEvent(NSLeftMouseUp,
+                                                        NSCommandKeyMask);
   EXPECT_EQ(ui::EF_LEFT_BUTTON_DOWN | ui::EF_COMMAND_DOWN,
             event_utils::EventFlagsFromNSEvent(cmd));
 
   // Shift + Ctrl + Left
-  NSEvent* shiftctrl = test_event_utils::MakeMouseEvent(
-    NSLeftMouseUp, NSShiftKeyMask | NSControlKeyMask);
+  NSEvent* shiftctrl = cocoa_test_event_utils::MakeMouseEvent(NSLeftMouseUp,
+                                                              NSShiftKeyMask |
+                                                              NSControlKeyMask);
   EXPECT_EQ(ui::EF_LEFT_BUTTON_DOWN | ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN,
             event_utils::EventFlagsFromNSEvent(shiftctrl));
 
   // Cmd + Alt + Right
-  NSEvent* cmdalt = test_event_utils::MakeMouseEvent(
-    NSLeftMouseUp, NSCommandKeyMask | NSAlternateKeyMask);
+  NSEvent* cmdalt = cocoa_test_event_utils::MakeMouseEvent(NSLeftMouseUp,
+                                                           NSCommandKeyMask |
+                                                           NSAlternateKeyMask);
   EXPECT_EQ(ui::EF_LEFT_BUTTON_DOWN | ui::EF_COMMAND_DOWN | ui::EF_ALT_DOWN,
             event_utils::EventFlagsFromNSEvent(cmdalt));
 }

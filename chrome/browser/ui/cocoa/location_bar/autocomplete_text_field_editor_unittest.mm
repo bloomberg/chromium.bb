@@ -10,7 +10,6 @@
 #include "chrome/app/chrome_command_ids.h"  // IDC_*
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #import "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field_unittest_helper.h"
-#import "chrome/browser/ui/cocoa/test_event_utils.h"
 #include "grit/generated_resources.h"
 #include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -19,6 +18,7 @@
 #include "third_party/ocmock/gtest_support.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 #import "third_party/ocmock/ocmock_extensions.h"
+#import "ui/base/test/cocoa_test_event_utils.h"
 
 using ::testing::Return;
 using ::testing::ReturnArg;
@@ -101,8 +101,9 @@ TEST_F(AutocompleteTextFieldEditorTest, InsertStripsControlChars) {
 // Test that |delegate| can provide page action menus.
 TEST_F(AutocompleteTextFieldEditorTest, PageActionMenus) {
   // The event just needs to be something the mock can recognize.
-  NSEvent* event =
-      test_event_utils::MouseEventAtPoint(NSZeroPoint, NSRightMouseDown, 0);
+  NSEvent* event = cocoa_test_event_utils::MouseEventAtPoint(NSZeroPoint,
+                                                             NSRightMouseDown,
+                                                             0);
 
   // Trivial menu which we can recognize and which doesn't look like
   // the default editor context menu.

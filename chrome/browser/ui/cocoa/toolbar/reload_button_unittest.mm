@@ -10,10 +10,10 @@
 #include "chrome/app/chrome_command_ids.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #import "chrome/browser/ui/cocoa/image_button_cell.h"
-#import "chrome/browser/ui/cocoa/test_event_utils.h"
 #import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
+#import "ui/base/test/cocoa_test_event_utils.h"
 
 @interface ReloadButton (Testing)
 + (void)setPendingReloadTimeout:(NSTimeInterval)seconds;
@@ -76,9 +76,9 @@ TEST_F(ReloadButtonTest, IgnoredMultiClick) {
   [[mock_target expect] anAction:button_];
 
   const std::pair<NSEvent*,NSEvent*> click_one =
-      test_event_utils::MouseClickInView(button_, 1);
+      cocoa_test_event_utils::MouseClickInView(button_, 1);
   const std::pair<NSEvent*,NSEvent*> click_two =
-      test_event_utils::MouseClickInView(button_, 2);
+      cocoa_test_event_utils::MouseClickInView(button_, 2);
   [NSApp postEvent:click_one.second atStart:YES];
   [button_ mouseDown:click_one.first];
   [NSApp postEvent:click_two.second atStart:YES];
@@ -242,7 +242,7 @@ TEST_F(ReloadButtonTest, StopAfterReloadSet) {
   // Clicking in stop mode should send the action and transition to
   // reload mode.
   const std::pair<NSEvent*,NSEvent*> click =
-      test_event_utils::MouseClickInView(button_, 1);
+      cocoa_test_event_utils::MouseClickInView(button_, 1);
   [NSApp postEvent:click.second atStart:YES];
   [button_ mouseDown:click.first];
   EXPECT_EQ(IDC_RELOAD, [button_ tag]);

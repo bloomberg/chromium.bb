@@ -600,7 +600,7 @@ TEST_F(AutocompleteTextFieldTest, RightDecorationMouseDown) {
 // TODO(shess): Really, this should test that things are forwarded to
 // the cell, and the cell tests should test that the right things are
 // selected.  It's easier to mock the event here, though.  This code's
-// event-mockers might be worth promoting to |test_event_utils.h| or
+// event-mockers might be worth promoting to |cocoa_test_event_utils.h| or
 // |cocoa_test_helper.h|.
 TEST_F(AutocompleteTextFieldTest, DecorationMenu) {
   AutocompleteTextFieldCell* cell = [field_ cell];

@@ -1,10 +1,10 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import <Cocoa/Cocoa.h>
 
-#include "chrome/browser/ui/cocoa/test_event_utils.h"
+#include "ui/base/test/cocoa_test_event_utils.h"
 
 ScopedClassSwizzler::ScopedClassSwizzler(Class target, Class source,
                                          SEL selector) {
@@ -17,7 +17,7 @@ ScopedClassSwizzler::~ScopedClassSwizzler() {
   method_exchangeImplementations(old_selector_impl_, new_selector_impl_);
 }
 
-namespace test_event_utils {
+namespace cocoa_test_event_utils {
 
 NSEvent* MouseEventAtPoint(NSPoint point, NSEventType type,
                            NSUInteger modifiers) {
@@ -83,4 +83,4 @@ std::pair<NSEvent*,NSEvent*> MouseClickInView(NSView* view,
   return std::make_pair(down, up);
 }
 
-}  // namespace test_event_utils
+}  // namespace cocoa_test_event_utils

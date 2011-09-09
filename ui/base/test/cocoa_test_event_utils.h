@@ -1,9 +1,9 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_COCOA_TEST_EVENT_UTILS_H_
-#define CHROME_BROWSER_UI_COCOA_TEST_EVENT_UTILS_H_
+#ifndef UI_BASE_TEST_COCOA_TEST_EVENT_UTILS_H_
+#define UI_BASE_TEST_COCOA_TEST_EVENT_UTILS_H_
 #pragma once
 
 #include <utility>
@@ -26,7 +26,7 @@ class ScopedClassSwizzler {
   DISALLOW_COPY_AND_ASSIGN(ScopedClassSwizzler);
 };
 
-namespace test_event_utils {
+namespace cocoa_test_event_utils {
 
 // Create synthetic mouse events for testing. Currently these are very
 // basic, flesh out as needed.  Points are all in window coordinates;
@@ -43,6 +43,6 @@ NSEvent* LeftMouseDownAtPointInWindow(NSPoint point, NSWindow* window);
 std::pair<NSEvent*, NSEvent*> MouseClickInView(NSView* view,
                                                NSUInteger clickCount);
 
-}  // namespace test_event_utils
+}  // namespace cocoa_test_event_utils
 
-#endif  // CHROME_BROWSER_UI_COCOA_TEST_EVENT_UTILS_H_
+#endif  // UI_BASE_TEST_COCOA_TEST_EVENT_UTILS_H_

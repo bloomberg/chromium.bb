@@ -6,10 +6,10 @@
 
 #include "base/mac/scoped_nsautorelease_pool.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
-#include "chrome/browser/ui/cocoa/test_event_utils.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/test_render_view_host.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/test/cocoa_test_event_utils.h"
 #include "webkit/plugins/npapi/webplugin.h"
 
 class RenderWidgetHostViewMacTest : public RenderViewHostTestHarness {
@@ -152,7 +152,7 @@ TEST_F(RenderWidgetHostViewMacTest, TakesFocusOnMouseDown) {
   EXPECT_FALSE([rwhv_cocoa_.get() acceptsFirstResponder]);
 
   std::pair<NSEvent*, NSEvent*> clicks =
-      test_event_utils::MouseClickInView(rwhv_cocoa_.get(), 1);
+      cocoa_test_event_utils::MouseClickInView(rwhv_cocoa_.get(), 1);
   [rwhv_cocoa_.get() mouseDown:clicks.first];
   EXPECT_EQ(rwhv_cocoa_.get(), [window firstResponder]);
 }
@@ -185,7 +185,7 @@ TEST_F(RenderWidgetHostViewMacTest, TakesFocusOnMouseDownWithAcceleratedView) {
 
   // A click on the accelerated view should focus the RWHVCocoa.
   std::pair<NSEvent*, NSEvent*> clicks =
-      test_event_utils::MouseClickInView(accelerated_view, 1);
+      cocoa_test_event_utils::MouseClickInView(accelerated_view, 1);
   [rwhv_cocoa_.get() mouseDown:clicks.first];
   EXPECT_EQ(rwhv_cocoa_.get(), [window firstResponder]);
 
