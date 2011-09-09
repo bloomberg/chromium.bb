@@ -2264,17 +2264,6 @@
    fun:_ZN30ChromeURLRequestContextFactoryC2EP7Profile
 }
 {
-   bug_50056
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_Z11NewCallbackI22ContentSettingsHandlerPK5ValueEPN9Callback1IT0_E4TypeEPT_MS9_FvS5_E
-   fun:_ZN22ContentSettingsHandler16RegisterMessagesEv
-   fun:_ZN17DOMMessageHandler6AttachEP5DOMUI
-   fun:_ZN9OptionsUI23AddOptionsPageUIHandlerEP15DictionaryValueP20OptionsPageUIHandler
-   fun:_ZN9OptionsUIC1EP11TabContents
-   fun:_Z8NewDOMUII9OptionsUIEP5DOMUIP11TabContentsRK4GURL
-}
-{
    bug_50252
    Memcheck:Leak
    fun:malloc

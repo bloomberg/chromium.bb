@@ -64,7 +64,9 @@ class WebUI : public IPC::Channel::Listener {
   // won't be run in that case.
   virtual void DidBecomeActiveForReusedRenderView() {}
 
-  // Used by WebUIMessageHandlers.
+  // Used by WebUIMessageHandlers. RegisterMessageCallback takes ownership of
+  // the passed callback. If the given message is already registered, the call
+  // has no effect unless |register_callback_overwrites_| is set to true.
   typedef Callback1<const base::ListValue*>::Type MessageCallback;
   void RegisterMessageCallback(const std::string& message,
                                MessageCallback* callback);
@@ -110,7 +112,7 @@ class WebUI : public IPC::Channel::Listener {
     return register_callback_overwrites_;
   }
 
-  void register_callback_overwrites(bool value) {
+  void set_register_callback_overwrites(bool value) {
     register_callback_overwrites_ = value;
   }
 

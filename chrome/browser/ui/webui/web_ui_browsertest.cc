@@ -366,7 +366,7 @@ void WebUIBrowserTest::SetupHandlers() {
   WebUI* web_ui_instance =
       browser()->GetSelectedTabContents()->web_ui();
   ASSERT_TRUE(web_ui_instance != NULL);
-  web_ui_instance->register_callback_overwrites(true);
+  web_ui_instance->set_register_callback_overwrites(true);
   test_handler_->Attach(web_ui_instance);
 
   if (GetMockMessageHandler())

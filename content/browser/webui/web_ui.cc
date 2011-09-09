@@ -152,8 +152,14 @@ void WebUI::RegisterMessageCallback(const std::string &message,
       message_callbacks_.insert(std::make_pair(message, callback));
 
   // Overwrite preexisting message callback mappings.
-  if (register_callback_overwrites() && !result.second)
-    result.first->second = callback;
+  if (!result.second) {
+    if (register_callback_overwrites()) {
+      delete result.first->second;
+      result.first->second = callback;
+    } else {
+      delete callback;
+    }
+  }
 }
 
 bool WebUI::IsLoading() const {
