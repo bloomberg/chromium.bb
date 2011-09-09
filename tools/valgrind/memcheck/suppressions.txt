@@ -1576,9 +1576,9 @@
    bug_29675
    Memcheck:Leak
    fun:_Znw*
-   fun:_ZN21BrowserMainPartsPosix24PostMainMessageLoopStartEv
+   fun:_ZN27ChromeBrowserMainPartsPosix24PostMainMessageLoopStartEv
    ...
-   fun:_ZN16BrowserMainParts20MainMessageLoopStartEv
+   fun:_ZN7content16BrowserMainParts20MainMessageLoopStartEv
    fun:_Z11BrowserMainRK18MainFunctionParams
 }
 {
@@ -5229,19 +5229,6 @@
    fun:_ZN11PluginPrefs23CreatePluginFileSummaryERKN6webkit13WebPluginInfoE
    fun:_ZN11PluginPrefs19OnUpdatePreferencesESt6vectorIN6webkit13WebPluginInfoESaIS2_EES0_INS1_5npapi11PluginGroupESaIS6_EE
    fun:_Z16DispatchToMethodI11PluginPrefsMS0_FvSt6vectorIN6webkit13WebPluginInfoESaIS3_EES1_INS2_5npapi11PluginGroupESaIS7_EEES5_S9_EvPT_T0_RK6Tuple2IT1_T2_E
-}
-{
-   bug_95721
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN21BrowserMainPartsPosix24PostMainMessageLoopStartEv
-   fun:_ZN24BrowserMainPartsChromeos24PostMainMessageLoopStartEv
-   fun:_ZN7content16BrowserMainParts20MainMessageLoopStartEv
-   fun:_Z11BrowserMainRK18MainFunctionParams
-   fun:_ZN12_GLOBAL__N_123RunNamedProcessTypeMainERKSsRK18MainFunctionParamsPN7content19ContentMainDelegateE
-   fun:_ZN7content11ContentMainEiPPcPNS_19ContentMainDelegateE
-   fun:ChromeMain
-   fun:main
 }
 {
    bug_95902
