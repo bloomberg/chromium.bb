@@ -376,15 +376,6 @@ hg-assert-no-outgoing() {
   fi
 }
 
-#+ hg-commit <dir> <msg>
-hg-commit() {
-  local dir="$1"
-  local msg="$2"
-  spushd "${dir}"
-  hg commit -m "${msg}"
-  spopd
-}
-
 ######################################################################
 # Subversion repository tools
 ######################################################################

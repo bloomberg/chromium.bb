@@ -211,7 +211,9 @@ commit-vendor() {
   fi
 
   StepBanner "Committing vendor branch"
-  hg-commit "${TC_SRC_UPSTREAM}" "Updating vendor to r${MERGE_REVISION}"
+  spushd "${TC_SRC_UPSTREAM}"
+  hg "${HG_CONFIG[@]}" commit -m "Updating vendor to r${MERGE_REVISION}"
+  spopd
 }
 
 #@ hg-merge              - Merge and resolve conflicts for llvm
