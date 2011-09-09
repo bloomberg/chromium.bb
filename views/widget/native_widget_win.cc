@@ -2493,6 +2493,16 @@ NativeWidgetPrivate* NativeWidgetPrivate::GetTopLevelNativeWidget(
 
   // Second, try to locate the last Widget window in the parent hierarchy.
   HWND parent_hwnd = native_view;
+  // If we fail to find the native widget pointer for the root then it probably
+  // means that the root belongs to a different process in which case we walk up
+  // the native view chain looking for a parent window which corresponds to a
+  // valid native widget. We only do this if we fail to find the native widget
+  // for the current native view which means it is being destroyed.
+  if (!widget && !GetNativeWidgetForNativeView(native_view)) {
+    parent_hwnd = ::GetAncestor(parent_hwnd, GA_PARENT);
+    if (!parent_hwnd)
+      return NULL;
+  }
   NativeWidgetPrivate* parent_widget;
   do {
     parent_widget = GetNativeWidgetForNativeView(parent_hwnd);
