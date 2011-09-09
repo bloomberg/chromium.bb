@@ -745,10 +745,15 @@ TEST_F(BufferedResourceLoaderTest, BufferWindow_Bitrate_Decrease) {
 TEST_F(BufferedResourceLoaderTest, BufferWindow_SetVeryLarge) {
   Initialize(kHttpUrl, -1, -1);
   Start();
+
+  loader_->SetPlaybackRate(1.0);
   loader_->SetBitrate(100 * 1024 * 1024);
   CheckBufferWindowBounds();
+
+  loader_->SetBitrate(1024 * 1024 * 8);
   loader_->SetPlaybackRate(10000.0);
   CheckBufferWindowBounds();
+
   loader_->SetPlaybackRate(-10000.0);
   CheckBufferWindowBounds();
   StopWhenLoad();

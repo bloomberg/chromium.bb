@@ -519,6 +519,8 @@ static void ComputeTargetBufferWindow(float playback_rate, int bitrate,
   DCHECK_GE(bitrate, 0);
   DCHECK_NE(playback_rate, 0.0);
   static const size_t kDefaultBitrate = kMegabyte;
+  static const size_t kMaxBitrate = 50 * kMegabyte;
+  static const float kMaxPlaybackRate = 25.0;
   static const size_t kTargetSecondsBufferedAhead = 10;
   static const size_t kTargetSecondsBufferedBehind = 2;
 
@@ -528,6 +530,10 @@ static void ComputeTargetBufferWindow(float playback_rate, int bitrate,
   bool backward_playback = playback_rate < 0.0;
   if (backward_playback)
     playback_rate *= -1.0;
+
+  // Cap playback rate and bitrate to prevent overflow.
+  playback_rate = std::min(kMaxPlaybackRate, playback_rate);
+  bitrate  = std::min(kMaxBitrate, static_cast<size_t>(bitrate));
 
   size_t bytes_per_second = static_cast<size_t>(playback_rate * bitrate / 8.0);
 

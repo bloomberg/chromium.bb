@@ -1,2 +1,0 @@
-# bug 95957
-BufferedResourceLoaderTest.BufferWindow_SetVeryLarge
