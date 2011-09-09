@@ -263,7 +263,7 @@ int RunZygote(const MainFunctionParams& main_function_params,
   }
 
   if (delegate)
-    return delegate->RunProcess(process_type, main_function_params);
+    return delegate->RunProcess(process_type, main_params);
 
   NOTREACHED() << "Unknown zygote process type: " << process_type;
   return 1;
