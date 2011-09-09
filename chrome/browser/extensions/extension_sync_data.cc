@@ -87,11 +87,9 @@ void ExtensionSyncData::PopulateFromExtensionSpecifics(
     LOG(FATAL) << "Attempt to sync bad ExtensionSpecifics.";
   }
 
-  scoped_ptr<Version> specifics_version(
-      Version::GetVersionFromString(specifics.version()));
-  if (!specifics_version.get()) {
+  Version specifics_version(specifics.version());
+  if (!specifics_version.IsValid())
     LOG(FATAL) << "Attempt to sync bad ExtensionSpecifics.";
-  }
 
   // The update URL must be either empty or valid.
   GURL specifics_update_url(specifics.update_url());
@@ -101,7 +99,7 @@ void ExtensionSyncData::PopulateFromExtensionSpecifics(
 
   id_ = specifics.id();
   update_url_ = specifics_update_url;
-  version_ = *specifics_version;
+  version_ = specifics_version;
   enabled_ = specifics.enabled();
   incognito_enabled_ = specifics.incognito_enabled();
   name_ = specifics.name();
