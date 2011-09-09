@@ -6,12 +6,16 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/threading/thread_local.h"
 #include "ui/gfx/gl/gl_context.h"
 #include "ui/gfx/gl/gl_bindings.h"
 #include "ui/gfx/gl/gl_implementation.h"
+#include "ui/gfx/gl/gl_surface.h"
 #include "ui/gfx/gl/gl_switches.h"
 
 namespace gfx {
+
+static base::ThreadLocalPointer<GLContext> current_context_;
 
 GLContext::GLContext(GLShareGroup* share_group) : share_group_(share_group) {
   if (!share_group_.get())
@@ -22,6 +26,9 @@ GLContext::GLContext(GLShareGroup* share_group) : share_group_(share_group) {
 
 GLContext::~GLContext() {
   share_group_->RemoveContext(this);
+  if (GetCurrent() == this) {
+    SetCurrent(NULL, NULL);
+  }
 }
 
 std::string GLContext::GetExtensions() {
@@ -59,6 +66,15 @@ bool GLContext::LosesAllContextsOnContextLost()
       NOTREACHED();
       return true;
   }
+}
+
+GLContext* GLContext::GetCurrent() {
+  return current_context_.Get();
+}
+
+void GLContext::SetCurrent(GLContext* context, GLSurface* surface) {
+  current_context_.Set(context);
+  GLSurface::SetCurrent(surface);
 }
 
 bool GLContext::WasAllocatedUsingARBRobustness() {

@@ -95,6 +95,7 @@ bool GLContextEGL::MakeCurrent(GLSurface* surface) {
     return false;
   }
 
+  SetCurrent(this, surface);
   surface->OnMakeCurrent(this);
   return true;
 }
@@ -103,6 +104,7 @@ void GLContextEGL::ReleaseCurrent(GLSurface* surface) {
   if (!IsCurrent(surface))
     return;
 
+  SetCurrent(NULL, NULL);
   eglMakeCurrent(display_,
                  EGL_NO_SURFACE,
                  EGL_NO_SURFACE,
@@ -111,7 +113,12 @@ void GLContextEGL::ReleaseCurrent(GLSurface* surface) {
 
 bool GLContextEGL::IsCurrent(GLSurface* surface) {
   DCHECK(context_);
-  if (context_ != eglGetCurrentContext())
+
+  bool native_context_is_current = context_ == eglGetCurrentContext();
+
+  DCHECK(native_context_is_current == (GetCurrent() == this));
+
+  if (!native_context_is_current)
     return false;
 
   if (surface) {

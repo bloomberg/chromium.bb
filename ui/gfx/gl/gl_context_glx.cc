@@ -171,6 +171,7 @@ bool GLContextGLX::MakeCurrent(GLSurface* surface) {
     return false;
   }
 
+  SetCurrent(this, surface);
   surface->OnMakeCurrent(this);
   return true;
 }
@@ -179,11 +180,17 @@ void GLContextGLX::ReleaseCurrent(GLSurface* surface) {
   if (!IsCurrent(surface))
     return;
 
+  SetCurrent(NULL, NULL);
   glXMakeContextCurrent(GLSurfaceGLX::GetDisplay(), 0, 0, NULL);
 }
 
 bool GLContextGLX::IsCurrent(GLSurface* surface) {
-  if (glXGetCurrentContext() != static_cast<GLXContext>(context_))
+  bool native_context_is_current =
+      glXGetCurrentContext() == static_cast<GLXContext>(context_);
+
+  DCHECK(native_context_is_current == (GetCurrent() == this));
+
+  if (!native_context_is_current)
     return false;
 
   if (surface) {

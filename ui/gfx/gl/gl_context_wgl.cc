@@ -82,6 +82,7 @@ bool GLContextWGL::MakeCurrent(GLSurface* surface) {
     return false;
   }
 
+  SetCurrent(this, surface);
   surface->OnMakeCurrent(this);
   return true;
 }
@@ -90,11 +91,17 @@ void GLContextWGL::ReleaseCurrent(GLSurface* surface) {
   if (!IsCurrent(surface))
     return;
 
+  SetCurrent(NULL, NULL);
   wglMakeCurrent(NULL, NULL);
 }
 
 bool GLContextWGL::IsCurrent(GLSurface* surface) {
-  if (wglGetCurrentContext() != context_)
+  bool native_context_is_current =
+      wglGetCurrentContext() == context_;
+
+  DCHECK(native_context_is_current == (GetCurrent() == this));
+
+  if (!native_context_is_current)
     return false;
 
   if (surface) {

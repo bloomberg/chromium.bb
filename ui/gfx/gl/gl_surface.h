@@ -65,11 +65,15 @@ class GL_EXPORT GLSurface : public base::RefCounted<GLSurface> {
       bool software,
       const gfx::Size& size);
 
+  static GLSurface* GetCurrent();
+
  protected:
   virtual ~GLSurface();
+  static void SetCurrent(GLSurface* surface);
 
  private:
   friend class base::RefCounted<GLSurface>;
+  friend class GLContext;
   DISALLOW_COPY_AND_ASSIGN(GLSurface);
 };
 

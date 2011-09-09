@@ -67,6 +67,7 @@ bool GLContextOSMesa::MakeCurrent(GLSurface* surface) {
   // Row 0 is at the top.
   OSMesaPixelStore(OSMESA_Y_UP, 0);
 
+  SetCurrent(this, surface);
   surface->OnMakeCurrent(this);
   return true;
 }
@@ -75,12 +76,19 @@ void GLContextOSMesa::ReleaseCurrent(GLSurface* surface) {
   if (!IsCurrent(surface))
     return;
 
+  SetCurrent(NULL, NULL);
   OSMesaMakeCurrent(NULL, NULL, GL_UNSIGNED_BYTE, 0, 0);
 }
 
 bool GLContextOSMesa::IsCurrent(GLSurface* surface) {
   DCHECK(context_);
-  if (context_ != OSMesaGetCurrentContext())
+
+  bool native_context_is_current =
+      context_ == OSMesaGetCurrentContext();
+
+  DCHECK(native_context_is_current == (GetCurrent() == this));
+
+  if (!native_context_is_current)
     return false;
 
   if (surface) {

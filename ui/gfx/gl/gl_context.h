@@ -64,10 +64,13 @@ class GL_EXPORT GLContext : public base::RefCounted<GLContext> {
 
   static bool LosesAllContextsOnContextLost();
 
+  static GLContext* GetCurrent();
+
   virtual bool WasAllocatedUsingARBRobustness();
 
  protected:
   virtual ~GLContext();
+  static void SetCurrent(GLContext* context, GLSurface* surface);
 
  private:
   scoped_refptr<GLShareGroup> share_group_;

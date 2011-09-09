@@ -10,6 +10,7 @@
 #include "ui/gfx/gl/gl_context.h"
 #include "ui/gfx/gl/gl_implementation.h"
 #include "ui/gfx/gl/gl_surface.h"
+#include "ui/gfx/gl/scoped_make_current.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/surface/io_surface_support_mac.h"
 
@@ -237,7 +238,8 @@ uint64 AcceleratedSurface::SetSurfaceSize(const gfx::Size& size) {
   if (!io_surface_support)
     return 0;  // Caller can try using SetWindowSizeForTransportDIB().
 
-  if (!MakeCurrent())
+  gfx::ScopedMakeCurrent make_current(gl_context_.get(), gl_surface_.get());
+  if (!make_current.Succeeded())
     return 0;
 
   gfx::Size clamped_size = ClampToValidDimensions(size);
