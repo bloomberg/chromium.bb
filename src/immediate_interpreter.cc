@@ -809,10 +809,8 @@ void ImmediateInterpreter::FillResultGesture(
     const set<short, kMaxGesturingFingers>& fingers) {
   switch (current_gesture_type_) {
     case kGestureTypeMove: {
-      if (fingers.empty()) {
-        Err("No gesturing fingers!");
+      if (fingers.empty())
         return;
-      }
       // Use highest finger (the one closes to the keyboard), excluding
       // palms, to compute motion. First, need to find out which finger that is.
       const FingerState* current = NULL;
