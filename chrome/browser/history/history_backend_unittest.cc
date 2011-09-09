@@ -740,6 +740,33 @@ TEST_F(HistoryBackendTest, AddVisitsSource) {
     EXPECT_EQ(history::SOURCE_SYNCED, visit_sources[visits[i].visit_id]);
 }
 
+TEST_F(HistoryBackendTest, GetMostRecentVisits) {
+  ASSERT_TRUE(backend_.get());
+
+  GURL url1("http://www.cnn.com");
+  std::vector<VisitInfo> visits1;
+  visits1.push_back(VisitInfo(
+      Time::Now() - base::TimeDelta::FromDays(5), PageTransition::LINK));
+  visits1.push_back(VisitInfo(
+      Time::Now() - base::TimeDelta::FromDays(1), PageTransition::LINK));
+  visits1.push_back(VisitInfo(
+      Time::Now(), PageTransition::LINK));
+
+  // Clear all history.
+  backend_->DeleteAllHistory();
+
+  // Add the visits.
+  backend_->AddVisits(url1, visits1, history::SOURCE_IE_IMPORTED);
+
+  // Verify the visits were added with their sources.
+  VisitVector visits;
+  URLRow row;
+  URLID id = backend_->db()->GetRowForURL(url1, &row);
+  ASSERT_TRUE(backend_->db()->GetMostRecentVisitsForURL(id, 1, &visits));
+  ASSERT_EQ(1U, visits.size());
+  EXPECT_EQ(visits1[2].first, visits[0].visit_time);
+}
+
 TEST_F(HistoryBackendTest, RemoveVisitsTransitions) {
   ASSERT_TRUE(backend_.get());
 

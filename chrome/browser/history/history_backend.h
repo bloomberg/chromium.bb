@@ -278,6 +278,11 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
 
   virtual bool GetVisitsForURL(URLID id, VisitVector* visits);
 
+  // Fetches up to |max_visits| most recent visits for the passed URL.
+  virtual bool GetMostRecentVisitsForURL(URLID id,
+                                         int max_visits,
+                                         VisitVector* visits);
+
   virtual bool UpdateURL(URLID id, const history::URLRow& url);
 
   // While adding visits in batch, the source needs to be provided.
@@ -349,6 +354,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, MigrationIconMapping);
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, SetFaviconMapping);
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, AddOrUpdateIconMapping);
+  FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, GetMostRecentVisits);
 
   friend class ::TestingProfile;
 

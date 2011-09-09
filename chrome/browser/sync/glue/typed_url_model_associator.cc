@@ -25,6 +25,13 @@ namespace browser_sync {
 // the size under control we limit the visit array.
 static const int kMaxTypedUrlVisits = 100;
 
+// There's no limit on how many visits the history DB could have for a given
+// typed URL, so we limit how many we fetch from the DB to avoid crashes due to
+// running out of memory (http://crbug.com/89793). This value is different
+// from kMaxTypedUrlVisits, as some of the visits fetched from the DB may be
+// RELOAD visits, which will be stripped.
+static const int kMaxVisitsToFetch = 1000;
+
 const char kTypedUrlTag[] = "google_chrome_typed_urls";
 
 static bool CheckVisitOrdering(const history::VisitVector& visits) {
@@ -77,8 +84,8 @@ bool TypedUrlModelAssociator::AssociateModels(SyncError* error) {
   std::map<history::URLID, history::VisitVector> visit_vectors;
   for (std::vector<history::URLRow>::iterator ix = typed_urls.begin();
        ix != typed_urls.end(); ++ix) {
-    if (!history_backend_->GetVisitsForURL(ix->id(),
-                                           &(visit_vectors[ix->id()]))) {
+    if (!history_backend_->GetMostRecentVisitsForURL(
+            ix->id(), kMaxVisitsToFetch, &(visit_vectors[ix->id()]))) {
       error->Reset(FROM_HERE, "Could not get the url's visits.", model_type());
       return false;
     }

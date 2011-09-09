@@ -920,6 +920,14 @@ bool HistoryBackend::GetVisitsForURL(URLID id, VisitVector* visits) {
   return false;
 }
 
+bool HistoryBackend::GetMostRecentVisitsForURL(URLID id,
+                                               int max_visits,
+                                               VisitVector* visits) {
+  if (db_.get())
+    return db_->GetMostRecentVisitsForURL(id, max_visits, visits);
+  return false;
+}
+
 bool HistoryBackend::UpdateURL(URLID id, const history::URLRow& url) {
   if (db_.get())
     return db_->UpdateURLRow(id, url);
