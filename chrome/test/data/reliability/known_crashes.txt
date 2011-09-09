@@ -213,3 +213,12 @@ PREFIX: net::networkdelegate::notifycompleted___net::urlrequest::docancel___net:
 
 # 95506
 PREFIX: base::debug::breakdebugger___`anonymous namespace'::silentruntimeasserthandler___logging::logmessage::~logmessage___`anonymous namespace'::shutdownwatchdogthread::alarm___base::watchdog::threaddelegate::threadmain
+
+# 95951
+PREFIX: net::sdchmanager::getavaildictionarylist___net::urlrequesthttpjob::addextraheaders___net::urlrequesthttpjob::start___net::urlrequest::startjob___net::urlrequest::start___urlfetcher::core::startoniothread
+
+# 95953
+REGEX: std::_tree<std::_tmap_traits<std::basic_string.*,remoting::javascriptiqrequest *,std::less.*,remoting::javascriptiqrequest *> >,0> >::_lbound___std::_tree<std::_tmap_traits.*basic_string.*,extensioncontentsettingsstore::extensionentry *,std::less.*,extensioncontentsettingsstore::extensionentry *> >,0> >::find___net::sdchmanager::isinsupporteddomain___net::urlrequesthttpjob::addextraheaders
+
+# 95954
+PREFIX: net::sdchmanager::isinsupporteddomain___net::urlrequesthttpjob::addextraheaders___net::urlrequesthttpjob::start___net::urlrequest::startjob___net::urlrequest::start___urlfetcher::core::startoniothread
