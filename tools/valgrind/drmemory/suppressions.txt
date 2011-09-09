@@ -659,6 +659,23 @@ base_unittests.exe!base::ToolsSanityTest_AccessesToNewMemory_Test::TestBody
 UNADDRESSABLE ACCESS
 base_unittests.exe!base::ToolsSanityTest_AccessesToNewMemory_Test::TestBody
 
+UNADDRESSABLE ACCESS
+name=AboutHandler::AboutCrash deliberate crash
+# TODO(bruening): switch to annotation once have support for that
+chrome.dll!AboutHandler::AboutCrash
+
+UNADDRESSABLE ACCESS
+name=RendererCrashTest.Crash deliberate crash
+# function is small, little risk for false negative in rest of it
+# TODO(bruening): switch to annotation once have support for that
+chrome.dll!HandleRendererErrorTestParameters
+
+UNADDRESSABLE ACCESS
+name=NPAPITesterBase.NoHangIfInitCrashes deliberate crash
+# function is small, little risk for false negative in rest of it
+# TODO(bruening): switch to annotation once have support for that
+npapi_test_plugin.dll!NPAPIClient::PluginClient::Initialize
+
 ############################
 # Benign issues in Chromium
 
@@ -704,8 +721,26 @@ LEAK
 ...
 *!BrowserThreadTest_NotReleasedIfTargetThreadNonExistent_Test::TestBody
 
+WARNING
+# http://code.google.com/p/chromium/issues/detail?id=72463
+name=Ci#72463: prefetches in generated MemCopy
+instruction=prefetch*
+<not in a module>                  
+chrome.dll!v8::internal::CopyChars*
+
+UNADDRESSABLE ACCESS
+# http://code.google.com/p/drmemory/issues/detail?id=582
+name=bizarre cl-generated read-beyond-TOS
+instruction=mov    0xfffffffc(%esp) -> %eax
+chrome.dll!WebCore::RenderStyle::resetBorder*
+
 ############################
 # Real issues in Chromium
+
+# http://crbug.com/32085
+LEAK
+...
+chrome.dll!NotificationRegistrar::Add
 
 # http://crbug.com/32623
 LEAK
@@ -757,8 +792,8 @@ LEAK
 # http://crbug.com/74413
 LEAK
 ...
-*!operator new
-*!net::HttpAuthHandlerFactory::CreateDefault
+*!operator new*
+*!net::HttpAuthHandler*Factory::Create*
 
 # http://crbug.com/74417
 LEAK
