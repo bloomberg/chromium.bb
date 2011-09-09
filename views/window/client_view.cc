@@ -37,14 +37,6 @@ const DialogClientView* ClientView::AsDialogClientView() const {
   return NULL;
 }
 
-BubbleView* ClientView::AsBubbleView() {
-  return NULL;
-}
-
-const BubbleView* ClientView::AsBubbleView() const {
-  return NULL;
-}
-
 bool ClientView::CanClose() {
   return true;
 }
@@ -66,9 +58,8 @@ gfx::Size ClientView::GetPreferredSize() {
 void ClientView::Layout() {
   // |contents_view_| is allowed to be NULL up until the point where this view
   // is attached to a Container.
-  if (contents_view_) {
+  if (contents_view_)
     contents_view_->SetBounds(0, 0, width(), height());
-  }
 }
 
 std::string ClientView::GetClassName() const {

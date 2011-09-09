@@ -121,7 +121,7 @@ Widget::InitParams::InitParams(Type type)
     : type(type),
       delegate(NULL),
       child(type == TYPE_CONTROL),
-      transient(type == TYPE_BUBBLE || type == TYPE_POPUP || type == TYPE_MENU),
+      transient(type == TYPE_POPUP || type == TYPE_MENU),
       transparent(false),
       accept_events(true),
       can_activate(type != TYPE_POPUP && type != TYPE_MENU),
@@ -304,8 +304,7 @@ void Widget::Init(const InitParams& params) {
         internal::NativeWidgetPrivate::IsMouseButtonDown();
   }
   native_widget_->InitNativeWidget(params);
-  if (params.type == InitParams::TYPE_WINDOW ||
-      params.type == InitParams::TYPE_BUBBLE) {
+  if (params.type == InitParams::TYPE_WINDOW) {
     non_client_view_ = new NonClientView;
     non_client_view_->SetFrameView(CreateNonClientFrameView());
     // Create the ClientView, add it to the NonClientView and add the

@@ -181,7 +181,6 @@ void RemoveExposeHandlerIfExists(GtkWidget* widget) {
 
 GtkWindowType WindowTypeToGtkWindowType(Widget::InitParams::Type type) {
   switch (type) {
-    case Widget::InitParams::TYPE_BUBBLE:
     case Widget::InitParams::TYPE_WINDOW:
     case Widget::InitParams::TYPE_WINDOW_FRAMELESS:
       return GTK_WINDOW_TOPLEVEL;

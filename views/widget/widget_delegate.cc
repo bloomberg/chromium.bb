@@ -35,10 +35,6 @@ DialogDelegate* WidgetDelegate::AsDialogDelegate() {
   return NULL;
 }
 
-BubbleDelegate* WidgetDelegate::AsBubbleDelegate() {
-  return NULL;
-}
-
 bool WidgetDelegate::CanResize() const {
   return false;
 }
@@ -162,3 +158,4 @@ const Widget* WidgetDelegateView::GetWidget() const {
 }
 
 }  // namespace views
+
