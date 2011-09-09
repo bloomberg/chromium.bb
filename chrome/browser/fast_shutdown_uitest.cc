@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/bind.h"
 #include "base/file_path.h"
 #include "base/stl_util.h"
 #include "base/test/thread_test_helper.h"
@@ -19,7 +18,6 @@ class FastShutdown : public UITest {
  protected:
   FastShutdown()
       : db_thread_(BrowserThread::DB),
-        io_thread_(BrowserThread::IO),
         thread_helper_(new base::ThreadTestHelper(
             BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB))) {
     dom_automation_enabled_ = true;
@@ -27,7 +25,7 @@ class FastShutdown : public UITest {
 
   void Init() {
     ASSERT_TRUE(db_thread_.Start());
-    ASSERT_TRUE(io_thread_.Start());
+
     // Cache this, so that we can still access it after the browser exits.
     user_data_dir_ = user_data_dir();
   }
@@ -38,17 +36,11 @@ class FastShutdown : public UITest {
   void GetCookie(const net::CookieMonster::CanonicalCookie& cookie,
                  bool* has_cookie, std::string* cookie_value) {
     scoped_refptr<SQLitePersistentCookieStore> cookie_store(
-       new SQLitePersistentCookieStore(
-           user_data_dir_.AppendASCII(chrome::kInitialProfile)
-                         .Append(chrome::kCookieFilename)));
+        new SQLitePersistentCookieStore(
+            user_data_dir_.AppendASCII(chrome::kInitialProfile)
+                          .Append(chrome::kCookieFilename)));
     std::vector<net::CookieMonster::CanonicalCookie*> cookies;
-    ASSERT_TRUE(cookie_store->Load(
-        base::Bind(&FastShutdown::LoadCookiesCallback,
-                   base::Unretained(this),
-                   MessageLoop::current(),
-                   base::Unretained(&cookies))));
-    // Will receive a QuitTask when LoadCookiesCallback is invoked.
-    MessageLoop::current()->Run();
+    ASSERT_TRUE(cookie_store->Load(&cookies));
     *has_cookie = false;
     for (size_t i = 0; i < cookies.size(); ++i) {
       if (cookies[i]->IsEquivalent(cookie)) {
@@ -62,16 +54,7 @@ class FastShutdown : public UITest {
   }
 
  private:
-  void LoadCookiesCallback(
-      MessageLoop* to_notify,
-      std::vector<net::CookieMonster::CanonicalCookie*>* cookies,
-      const std::vector<net::CookieMonster::CanonicalCookie*>& cookies_get) {
-    *cookies = cookies_get;
-    to_notify->PostTask(FROM_HERE, new MessageLoop::QuitTask());
-  }
-
-  BrowserThread db_thread_;
-  BrowserThread io_thread_;
+  BrowserThread db_thread_;  // Used by the cookie store during its clean up.
   scoped_refptr<base::ThreadTestHelper> thread_helper_;
   FilePath user_data_dir_;
 
@@ -100,6 +83,14 @@ TEST_F(FastShutdown, SlowTermination) {
       false,         // httponly
       false);        // has_expires
 
+  bool has_cookie = false;
+  std::string cookie_value;
+
+  // Check that the cookie (to be set during unload) doesn't exist already.
+  GetCookie(cookie, &has_cookie, &cookie_value);
+  EXPECT_FALSE(has_cookie);
+  EXPECT_EQ("", cookie_value);
+
   // This page has an unload handler.
   const FilePath dir(FILE_PATH_LITERAL("fast_shutdown"));
   const FilePath file(FILE_PATH_LITERAL("on_unloader.html"));
@@ -120,8 +111,6 @@ TEST_F(FastShutdown, SlowTermination) {
   // cookie that's stored to disk.
   QuitBrowser();
 
-  bool has_cookie = false;
-  std::string cookie_value;
   // Read the cookie and check that it has the expected value.
   GetCookie(cookie, &has_cookie, &cookie_value);
   EXPECT_TRUE(has_cookie);

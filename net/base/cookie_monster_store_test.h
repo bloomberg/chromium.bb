@@ -7,14 +7,6 @@
 // that need to test out CookieMonster interactions with the backing store.
 // It should only be included by test code.
 
-#ifndef NET_BASE_COOKIE_MONSTER_STORE_TEST_H_
-#define NET_BASE_COOKIE_MONSTER_STORE_TEST_H_
-#pragma once
-
-#include <map>
-#include <utility>
-#include <string>
-#include <vector>
 #include "net/base/cookie_monster.h"
 
 namespace base {
@@ -59,20 +51,21 @@ class MockPersistentCookieStore
     return commands_;
   }
 
-  virtual bool Load(const LoadedCallback& loaded_callback) OVERRIDE;
+  virtual bool Load(
+      std::vector<CookieMonster::CanonicalCookie*>* out_cookies);
 
-  virtual void AddCookie(const CookieMonster::CanonicalCookie& cookie) OVERRIDE;
+  virtual void AddCookie(const CookieMonster::CanonicalCookie& cookie);
 
   virtual void UpdateCookieAccessTime(
-      const CookieMonster::CanonicalCookie& cookie) OVERRIDE;
+      const CookieMonster::CanonicalCookie& cookie);
 
   virtual void DeleteCookie(
-      const CookieMonster::CanonicalCookie& cookie) OVERRIDE;
+      const CookieMonster::CanonicalCookie& cookie);
 
-  virtual void Flush(Task* completion_task) OVERRIDE;
+  virtual void Flush(Task* completion_task);
 
   // No files are created so nothing to clear either
-  virtual void SetClearLocalStateOnExit(bool clear_local_state) OVERRIDE;
+  virtual void SetClearLocalStateOnExit(bool clear_local_state);
 
  private:
   CommandList commands_;
@@ -109,12 +102,6 @@ class MockCookieMonsterDelegate : public CookieMonster::Delegate {
   DISALLOW_COPY_AND_ASSIGN(MockCookieMonsterDelegate);
 };
 
-// Helper to build a single CanonicalCookie.
-CookieMonster::CanonicalCookie BuildCanonicalCookie(
-    const std::string& key,
-    const std::string& cookie_line,
-    const base::Time& creation_time);
-
 // Helper to build a list of CanonicalCookie*s.
 void AddCookieToList(
     const std::string& key,
@@ -130,7 +117,8 @@ class MockSimplePersistentCookieStore
   MockSimplePersistentCookieStore();
   virtual ~MockSimplePersistentCookieStore();
 
-  virtual bool Load(const LoadedCallback& loaded_callback);
+  virtual bool Load(
+      std::vector<CookieMonster::CanonicalCookie*>* out_cookies);
 
   virtual void AddCookie(
       const CookieMonster::CanonicalCookie& cookie);
@@ -166,5 +154,3 @@ CookieMonster* CreateMonsterFromStoreForGC(
     int days_old);
 
 }  // namespace net
-
-#endif  // NET_BASE_COOKIE_MONSTER_STORE_TEST_H_
