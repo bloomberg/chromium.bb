@@ -266,7 +266,10 @@ void SyncSetupFlow::OnUserSubmittedAuth(const std::string& username,
                                         const std::string& password,
                                         const std::string& captcha,
                                         const std::string& access_code) {
-  cached_passphrase_ = password;
+  // It's possible to receive an empty password (e.g. for ASP's), in which case
+  // we don't want to overwrite any previously cached password.
+  if (!password.empty())
+    cached_passphrase_ = password;
   service_->OnUserSubmittedAuth(username, password, captcha, access_code);
 }
 
