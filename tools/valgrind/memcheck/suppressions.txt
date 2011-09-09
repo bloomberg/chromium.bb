@@ -4101,15 +4101,6 @@
    fun:_ZN6WebKit11WebBindings15makeStringArrayERKNS_9WebVectorINS_9WebStringEEE
 }
 {
-   bug_80527
-   Memcheck:Leak
-   fun:_Znw*
-   ...
-   fun:_ZN8chromeos22CrosMountPointProviderC1E13scoped_refptrIN5quota20SpecialStoragePolicyEE
-   fun:_ZN7fileapi21FileSystemPathManagerC1E13scoped_refptrIN4base16MessageLoopProxyEERK8FilePathS1_IN5quota20SpecialStoragePolicyEEbb
-   fun:_ZN7fileapi87_GLOBAL__N_webkit_fileapi_file_system_dir_url_request_job_unittest.cc_00000000_61D9D1F530FileSystemDirURLRequestJobTest5SetUpEv
-}
-{
    bug_80537_a
    Memcheck:Leak
    fun:calloc
