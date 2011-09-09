@@ -3954,24 +3954,6 @@
    fun:_ZN7WebCore15HTMLTreeBuilder*
 }
 {
-   bug_79568a
-   Memcheck:Leak
-   ...
-   fun:_ZN12browser_sync2s312SyncerThread34HandleConsecutiveContinuationErrorERKNS1_14SyncSessionJobE
-   fun:_ZN12browser_sync2s312SyncerThread16ScheduleNextSyncERKNS1_14SyncSessionJobE
-   fun:_ZN12browser_sync2s312SyncerThread20FinishSyncSessionJobERKNS1_14SyncSessionJobE
-   fun:_ZN12browser_sync2s312SyncerThread16DoSyncSessionJobERKNS1_14SyncSessionJobE
-}
-{
-   bug_79568b
-   Memcheck:Leak
-   ...
-   fun:_ZN12browser_sync12SyncerThread34HandleConsecutiveContinuationErrorERKNS0_14SyncSessionJobE
-   fun:_ZN12browser_sync12SyncerThread16ScheduleNextSyncERKNS0_14SyncSessionJobE
-   fun:_ZN12browser_sync12SyncerThread20FinishSyncSessionJobERKNS0_14SyncSessionJobE
-   fun:_ZN12browser_sync12SyncerThread16DoSyncSessionJobERKNS0_14SyncSessionJobE
-}
-{
    bug_79651
    Memcheck:Leak
    ...
