@@ -19,8 +19,10 @@
 #import "chrome/browser/ui/cocoa/event_utils.h"
 #import "chrome/browser/ui/cocoa/find_bar/find_bar_bridge.h"
 #import "chrome/browser/ui/cocoa/find_bar/find_bar_cocoa_controller.h"
+#import "chrome/browser/ui/cocoa/menu_controller.h"
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_browser_window_cocoa.h"
+#include "chrome/browser/ui/panels/panel_settings_menu_model.h"
 #import "chrome/browser/ui/panels/panel_titlebar_view_cocoa.h"
 #include "chrome/browser/ui/toolbar/encoding_menu_controller.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -260,6 +262,21 @@ enum {
 
   windowShim_->didCloseNativeWindow();
   [self autorelease];
+}
+
+- (void)runSettingsMenu:(NSView*)button {
+  Panel* panel = windowShim_->panel();
+  DCHECK(panel->GetExtension());
+
+  scoped_ptr<PanelSettingsMenuModel> settingsMenuModel(
+      new PanelSettingsMenuModel(panel));
+  scoped_nsobject<MenuController> settingsMenuController(
+      [[MenuController alloc] initWithModel:settingsMenuModel.get()
+                     useWithPopUpButtonCell:NO]);
+
+  [NSMenu popUpContextMenu:[settingsMenuController menu]
+                 withEvent:[NSApp currentEvent]
+                   forView:button];
 }
 
 @end

@@ -8,11 +8,13 @@
 
 #include "base/logging.h"
 #include "chrome/browser/themes/theme_service.h"
+#import "chrome/browser/ui/cocoa/hover_image_button.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
 #import "chrome/browser/ui/cocoa/tracking_area.h"
 #import "chrome/browser/ui/panels/panel_window_controller_cocoa.h"
 #import "third_party/GTM/AppKit/GTMNSBezierPath+RoundRect.h"
 #include "ui/base/theme_provider.h"
+#include "ui/gfx/mac/nsimage_cache.h"
 
 const int kRoundedCornerSize = 6;
 const int kCloseButtonLeftPadding = 8;
@@ -39,6 +41,10 @@ const int kCloseButtonLeftPadding = 8;
 
 - (void)onCloseButtonClick:(id)sender {
   [[self controller] closePanel];
+}
+
+- (void)onSettingsButtonClick:(id)sender {
+  [controller_ runSettingsMenu:settingsButton_];
 }
 
 - (void)drawRect:(NSRect)rect {
@@ -86,6 +92,16 @@ const int kCloseButtonLeftPadding = 8;
                  NSWidth(contentFrame),
                  NSMaxY(rootViewBounds) - NSMaxY(contentFrame));
   [self setFrame:titlebarFrame];
+
+  // Initialize the settings button.
+  NSImage* image = gfx::GetCachedImageWithName(@"balloon_wrench.pdf");
+  [settingsButton_ setDefaultImage:image];
+  [settingsButton_ setDefaultOpacity:0.6];
+  [settingsButton_ setHoverImage:image];
+  [settingsButton_ setHoverOpacity:0.9];
+  [settingsButton_ setPressedImage:image];
+  [settingsButton_ setPressedOpacity:1.0];
+  [[settingsButton_ cell] setHighlightsBy:NSNoCellMask];
 
   // Update layout of controls in the titlebar.
   [self updateCloseButtonLayout];

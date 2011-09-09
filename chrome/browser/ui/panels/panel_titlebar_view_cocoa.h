@@ -11,6 +11,7 @@
 #import "chrome/browser/ui/cocoa/tracking_area.h"
 
 @class CrTrackingArea;
+@class HoverImageButton;
 @class PanelWindowControllerCocoa;
 
 // A class that works as a custom titlebar for Panels. It is placed on top of
@@ -27,6 +28,7 @@
  @private
   IBOutlet PanelWindowControllerCocoa* controller_;
   IBOutlet NSTextField* title_;
+  IBOutlet HoverImageButton* settingsButton_;
   NSButton* closeButton_;  // Created explicitly, not from NIB. Weak, destroyed
                            // when view is destroyed, as a subview.
   ScopedCrTrackingArea closeButtonTrackingArea_;
@@ -34,6 +36,9 @@
 
   // Callback from Close button.
 - (void)onCloseButtonClick:(id)sender;
+
+  // Callback from Settings button.
+- (void)onSettingsButtonClick:(id)sender;
 
   // Attaches this view to the controller_'s window as a titlebar.
 - (void)attach;

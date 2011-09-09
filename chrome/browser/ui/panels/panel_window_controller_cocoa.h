@@ -68,6 +68,9 @@ class PanelBrowserWindowCocoa;
 // "chrome/app/chrome_command_ids.h" file.
 - (void)executeCommand:(int)command;
 
+// Invokes the settings menu when the settings button is pressed.
+- (void)runSettingsMenu:(NSView*)button;
+
 @end  // @interface PanelWindowController
 
 #endif  // CHROME_BROWSER_UI_PANELS_PANEL_WINDOW_CONTROLLER_COCOA_H_
