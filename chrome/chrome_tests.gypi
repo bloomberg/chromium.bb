@@ -1786,7 +1786,6 @@
         'common/json_schema_validator_unittest_base.h',
         'common/json_value_serializer_unittest.cc',
         'common/multi_process_lock_unittest.cc',
-        'common/mac/attributed_string_coder_unittest.mm',
         'common/mac/objc_method_swizzle_unittest.mm',
         'common/mac/objc_zombie_unittest.mm',
         'common/net/gaia/gaia_auth_fetcher_unittest.cc',

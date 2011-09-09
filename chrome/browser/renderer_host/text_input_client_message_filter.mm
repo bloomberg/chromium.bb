@@ -7,7 +7,6 @@
 #include "base/memory/scoped_nsobject.h"
 #include "base/string16.h"
 #include "chrome/browser/renderer_host/text_input_client_mac.h"
-#include "chrome/common/mac/attributed_string_coder.h"
 #include "chrome/common/text_input_client_messages.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/render_view_host.h"

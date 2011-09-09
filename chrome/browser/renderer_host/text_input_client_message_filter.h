@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_RENDERER_HOST_TEXT_INPUT_CLIENT_MESSAGE_FILTER_H_
 #pragma once
 
-#include "chrome/common/mac/attributed_string_coder.h"
 #include "content/browser/browser_message_filter.h"
+#include "content/common/mac/attributed_string_coder.h"
 
 namespace gfx {
 class Rect;

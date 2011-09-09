@@ -40,7 +40,7 @@
 #include "webkit/plugins/webplugininfo.h"
 
 #if defined(OS_MACOSX)
-#include "content/common/font_descriptor_mac.h"
+#include "content/common/mac/font_descriptor.h"
 #endif
 
 // Define enums used in this file inside an include-guard.

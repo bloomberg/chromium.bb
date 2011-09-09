@@ -51,8 +51,8 @@
 #endif
 
 #if defined(OS_MACOSX)
-#include "content/common/font_descriptor_mac.h"
-#include "content/common/font_loader_mac.h"
+#include "content/common/mac/font_descriptor.h"
+#include "content/common/mac/font_loader.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/mac/WebSandboxSupport.h"
 #endif
 

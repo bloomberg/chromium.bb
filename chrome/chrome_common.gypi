@@ -202,8 +202,6 @@
         'common/jstemplate_builder.h',
         'common/mac/app_mode_common.h',
         'common/mac/app_mode_common.mm',
-        'common/mac/attributed_string_coder.h',
-        'common/mac/attributed_string_coder.mm',
         'common/mac/cfbundle_blocker.h',
         'common/mac/cfbundle_blocker.mm',
         'common/mac/launchd.h',

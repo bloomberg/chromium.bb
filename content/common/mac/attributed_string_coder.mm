@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/mac/attributed_string_coder.h"
+#include "content/common/mac/attributed_string_coder.h"
 
 #include <AppKit/AppKit.h>
 

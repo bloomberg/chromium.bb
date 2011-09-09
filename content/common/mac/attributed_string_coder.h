@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_MAC_ATTRIBUTED_STRING_CODER_H_
-#define CHROME_COMMON_MAC_ATTRIBUTED_STRING_CODER_H_
+#ifndef CONTENT_COMMON_MAC_ATTRIBUTED_STRING_CODER_H_
+#define CONTENT_COMMON_MAC_ATTRIBUTED_STRING_CODER_H_
 #pragma once
 
 #include <set>
 
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
-#include "content/common/font_descriptor_mac.h"
+#include "content/common/mac/font_descriptor.h"
 #include "ipc/ipc_message_utils.h"
 #include "ui/base/range/range.h"
 
@@ -116,4 +116,4 @@ struct ParamTraits<mac::AttributedStringCoder::FontAttribute> {
 
 }  // namespace IPC
 
-#endif  // CHROME_COMMON_MAC_ATTRIBUTED_STRING_CODER_H_
+#endif  // CONTENT_COMMON_MAC_ATTRIBUTED_STRING_CODER_H_

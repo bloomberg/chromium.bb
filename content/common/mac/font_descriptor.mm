@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/font_descriptor_mac.h"
+#include "content/common/mac/font_descriptor.h"
 
 #include <Cocoa/Cocoa.h>
 

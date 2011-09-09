@@ -9,7 +9,7 @@
 #include "base/mac/scoped_cftyperef.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/shared_memory.h"
-#include "content/common/font_loader_mac.h"
+#include "content/common/mac/font_loader.h"
 #include "content/common/sandbox_mac_unittest_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

@@ -9,7 +9,7 @@
 #include "ui/gfx/rect.h"
 
 #if defined(OS_MACOSX)
-#include "chrome/common/mac/attributed_string_coder.h"
+#include "content/common/mac/attributed_string_coder.h"
 #endif
 
 #define IPC_MESSAGE_START TextInputClientMsgStart

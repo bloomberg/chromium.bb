@@ -59,8 +59,8 @@
 #include "webkit/plugins/webplugininfo.h"
 
 #if defined(OS_MACOSX)
-#include "content/common/font_descriptor_mac.h"
-#include "content/common/font_loader_mac.h"
+#include "content/common/mac/font_descriptor.h"
+#include "content/common/mac/font_loader.h"
 #endif
 #if defined(OS_POSIX)
 #include "base/file_descriptor_posix.h"

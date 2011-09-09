@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/font_descriptor_mac.h"
+#include "content/common/mac/font_descriptor.h"
 
 #include <Cocoa/Cocoa.h>
 
@@ -24,7 +24,7 @@ const std::string kCourierFontName("Courier");
 bool CompareFonts(NSFont* font1, NSFont* font2) {
   ATSFontRef id1 = CTFontGetPlatformFont(reinterpret_cast<CTFontRef>(font1), 0);
   ATSFontRef id2 = CTFontGetPlatformFont(reinterpret_cast<CTFontRef>(font2), 0);
-  
+
   if (id1 != id2) {
     LOG(ERROR) << "ATSFontRefs for "
         << [[font1 fontName] UTF8String]
@@ -33,7 +33,7 @@ bool CompareFonts(NSFont* font1, NSFont* font2) {
         << " are different";
     return false;
   }
-  
+
   CGFloat size1 = [font1 pointSize];
   CGFloat size2 = [font2 pointSize];
   if (size1 != size2) {
@@ -49,12 +49,12 @@ bool CompareFonts(NSFont* font1, NSFont* font2) {
                                 traitsOfFont:font1];
   NSFontTraitMask traits2 = [[NSFontManager sharedFontManager]
                                 traitsOfFont:font2];
-  
+
   bool is_bold1 = traits1 & NSBoldFontMask;
   bool is_bold2 = traits2 & NSBoldFontMask;
   bool is_italic1 = traits1 & NSItalicFontMask;
   bool is_italic2 = traits2 & NSItalicFontMask;
-  
+
   if (is_bold1 != is_bold2 || is_italic1 != is_italic2) {
     LOG(ERROR) << "Style information for "
         << [[font1 fontName] UTF8String]
@@ -63,7 +63,7 @@ bool CompareFonts(NSFont* font1, NSFont* font2) {
         << " are different";
         return false;
   }
-  
+
   return true;
 }
 
@@ -82,12 +82,12 @@ TEST_F(FontSerializationTest, StyledFonts) {
   ASSERT_TRUE(plain_font != nil);
   FontDescriptor desc_plain(plain_font);
   EXPECT_TRUE(CompareFonts(plain_font, desc_plain.ToNSFont()));
-  
+
   NSFont* bold_font = [NSFont boldSystemFontOfSize:30.0];
   ASSERT_TRUE(bold_font != nil);
   FontDescriptor desc_bold(bold_font);
   EXPECT_TRUE(CompareFonts(bold_font, desc_bold.ToNSFont()));
-  
+
   NSFont* italic_bold_font =
       [[NSFontManager sharedFontManager]
           fontWithFamily:base::SysUTF8ToNSString(kCourierFontName)
