@@ -353,6 +353,7 @@ void FactoryRegistry::ResetFunctions() {
 
   // WebNavigation.
   RegisterFunction<GetFrameFunction>();
+  RegisterFunction<GetAllFramesFunction>();
 
   // WebRequest.
   RegisterFunction<WebRequestAddEventListener>();

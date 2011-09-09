@@ -5228,6 +5228,7 @@
               {
                 "type": "object",
                 "name": "details",
+                "optional": true,
                 "properties": {
                   "errorOccurred": {
                     "type": "boolean",
@@ -5236,6 +5237,47 @@
                   "url": {
                     "type": "string",
                     "description": "The URL currently associated with this frame, if the frame identified by the frameId existed at one point in the given tab. The fact that an URL is associated with a given frameId does not imply that the corresponding frame still exists."
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "getAllFrames",
+        "type": "function",
+        "description": "Retrieves information about all frames of a given tab.",
+        "parameters": [
+          {
+            "type": "object",
+            "name": "details",
+            "description": "Information about the tab to retrieve all frames from.",
+            "properties": {
+              "tabId": { "type": "integer", "minimum": 0, "description": "The ID of the tab." }
+            }
+          },
+          {
+            "type": "function", "name": "callback", "parameters": [
+              {
+                "type": "array",
+                "description": "A list of frames in the given tab.",
+                "optional": true,
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "errorOccurred": {
+                      "type": "boolean",
+                      "description": "True if the last navigation in this frame was interrupted by an error, i.e. the onErrorOccurred event fired."
+                    },
+                    "frameId": {
+                      "type": "integer",
+                      "description": "The ID of the frame. 0 indicates that this is the main frame; a positive value indicates the ID of a subframe."
+                    },
+                    "url": {
+                      "type": "string",
+                      "description": "The URL currently associated with this frame, if the frame identified by the frameId existed at one point in the given tab. The fact that an URL is associated with a given frameId does not imply that the corresponding frame still exists."
+                    }
                   }
                 }
               }

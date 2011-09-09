@@ -1,21 +1,47 @@
 <script>
 var URL = chrome.extension.getURL("getFrame/a.html");
+var tabId = -1;
 
-chrome.tabs.create({"url": "about:blank"}, function(tab) {
-  var tabId = tab.id;
-  chrome.experimental.webNavigation.onBeforeNavigate.addListener(function (details) {
-    if (details.tabId != tabId)
-      return;
-    if (details.url != URL)
-      return;
-    chrome.experimental.webNavigation.getFrame(
-        {tabId: tabId, frameId: 0},
-        function(details) {
-      chrome.test.assertEq({errorOccurred: false, url: URL},
-                           details);
-      chrome.test.succeed();
+chrome.test.runTests([
+  function testGetFrame() {
+    chrome.tabs.create({"url": "about:blank"}, function(tab) {
+      tabId = tab.id;
+      var done = chrome.test.listenForever(
+        chrome.experimental.webNavigation.onBeforeNavigate,
+        function (details) {
+          if (details.tabId != tabId)
+            return;
+          if (details.url != URL)
+            return;
+          chrome.experimental.webNavigation.getFrame(
+              {tabId: tabId, frameId: 0},
+              function(details) {
+            chrome.test.assertEq({errorOccurred: false, url: URL},
+                                 details);
+            done();
+          });
+      });
+      chrome.tabs.update(tabId, {url: URL});
     });
-  });
-  chrome.tabs.update(tabId, {url: URL});
-});
+  },
+
+  function testGetInvalidFrame() {
+    chrome.experimental.webNavigation.getFrame(
+        {tabId: 23, frameId: -1},
+      function (details) {
+        chrome.test.assertEq(null, details);
+        chrome.test.succeed();
+    });
+  },
+
+  function testGetAllFrames() {
+    chrome.experimental.webNavigation.getAllFrames(
+        {tabId: tabId},
+      function (details) {
+        chrome.test.assertEq([{errorOccurred: false, frameId: 0, url: URL}],
+                             details);
+        chrome.test.succeed();
+    });
+  }
+]);
 </script>

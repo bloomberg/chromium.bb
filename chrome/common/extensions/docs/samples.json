@@ -70,6 +70,7 @@
     "chrome.experimental.settings.get": "experimental.settings.html#method-get",
     "chrome.experimental.settings.remove": "experimental.settings.html#method-remove",
     "chrome.experimental.settings.set": "experimental.settings.html#method-set",
+    "chrome.experimental.webNavigation.getAllFrames": "experimental.webNavigation.html#method-getAllFrames",
     "chrome.experimental.webNavigation.getFrame": "experimental.webNavigation.html#method-getFrame",
     "chrome.experimental.webNavigation.onBeforeCreateNavigationTarget": "experimental.webNavigation.html#event-onBeforeCreateNavigationTarget",
     "chrome.experimental.webNavigation.onBeforeNavigate": "experimental.webNavigation.html#event-onBeforeNavigate",

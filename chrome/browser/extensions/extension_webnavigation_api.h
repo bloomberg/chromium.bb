@@ -217,4 +217,11 @@ class GetFrameFunction : public SyncExtensionFunction {
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.webNavigation.getFrame")
 };
 
+// API function that returns the states of all frames in a given tab.
+class GetAllFramesFunction : public SyncExtensionFunction {
+  virtual ~GetAllFramesFunction() {}
+  virtual bool RunImpl() OVERRIDE;
+  DECLARE_EXTENSION_FUNCTION_NAME("experimental.webNavigation.getAllFrames")
+};
+
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_WEBNAVIGATION_API_H_

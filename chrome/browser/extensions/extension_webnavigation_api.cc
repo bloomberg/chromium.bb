@@ -622,3 +622,47 @@ bool GetFrameFunction::RunImpl() {
   result_.reset(resultDict);
   return true;
 }
+
+bool GetAllFramesFunction::RunImpl() {
+  DictionaryValue* details;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &details));
+  DCHECK(details);
+
+  int tab_id;
+  EXTENSION_FUNCTION_VALIDATE(details->GetInteger(keys::kTabIdKey, &tab_id));
+
+  result_.reset(Value::CreateNullValue());
+
+  TabContentsWrapper* wrapper;
+  if (!ExtensionTabUtil::GetTabById(
+        tab_id, profile(), include_incognito(), NULL, NULL, &wrapper, NULL) ||
+      !wrapper) {
+    return true;
+  }
+
+  TabContents* tab_contents = wrapper->tab_contents();
+  ExtensionWebNavigationTabObserver* observer =
+      ExtensionWebNavigationTabObserver::Get(tab_contents);
+  DCHECK(observer);
+
+  const FrameNavigationState& navigation_state =
+      observer->frame_navigation_state();
+
+  ListValue* resultList = new ListValue();
+  for (FrameNavigationState::const_iterator frame = navigation_state.begin();
+       frame != navigation_state.end(); ++frame) {
+    DictionaryValue* frameDict = new DictionaryValue();
+    frameDict->SetString(
+        keys::kUrlKey,
+        navigation_state.GetUrl(*frame).spec());
+    frameDict->SetInteger(
+        keys::kFrameIdKey,
+        GetFrameId(navigation_state.IsMainFrame(*frame), *frame));
+    frameDict->SetBoolean(
+        keys::kErrorOccurredKey,
+        navigation_state.GetErrorOccurredInFrame(*frame));
+    resultList->Append(frameDict);
+  }
+  result_.reset(resultList);
+  return true;
+}
