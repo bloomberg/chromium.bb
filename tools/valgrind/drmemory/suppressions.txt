@@ -682,14 +682,15 @@ npapi_test_plugin.dll!NPAPIClient::PluginClient::Initialize
 # We deliberately leak different kinds of Histograms to avoid data races.
 LEAK
 ...
-*!operator new
+*!operator new*
 ...
 *!*::*Histogram::FactoryGet
 
 # Deliberate LazyInstance leaks
 LEAK
 ...
-*!base::LeakyLazyInstanceTraits*::New
+*!*base::LeakyLazyInstanceTraits*::*
+...
 *!base::LazyInstance*::Pointer
 
 # Deliberate NULL deref to crash the child process
