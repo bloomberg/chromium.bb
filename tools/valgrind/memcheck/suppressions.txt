@@ -4090,14 +4090,6 @@
    fun:_ZN16RenderWidgetHost9WasHiddenEv
 }
 {
-   bug_81438
-   Memcheck:Leak
-   ...
-   fun:*base16MessageLoopProxy22current*
-   ...
-   fun:*BrowserInit*
-}
-{
    bug_80663
    Memcheck:Leak
    fun:_Znw*

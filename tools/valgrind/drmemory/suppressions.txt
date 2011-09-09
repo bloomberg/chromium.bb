@@ -836,14 +836,6 @@ LEAK
 ...
 *!RenderWidgetHost::WasRestored
 
-# http://crbug.com/81522
-LEAK
-*!operator new
-*!base::MessageLoopProxy::current
-*!IPC::ChannelProxy::Context::Context
-*!IPC::ChannelProxy::ChannelProxy
-*!IPCChannelTest_ChannelProxyTest_Test::TestBody
-
 # http://crbug.com/81753
 UNINITIALIZED READ
 ...
