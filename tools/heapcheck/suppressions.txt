@@ -269,13 +269,6 @@
    fun:v8::Function::Call
 }
 {
-  bug_39021
-  Heapcheck:Leak
-  ...
-  fun:RenderViewTest::ExecuteJavaScript
-  fun:ExtensionAPIClientTest_CallbackDispatching_Test::TestBody
-}
-{
   bug_39016
   Heapcheck:Leak
   ...
@@ -290,12 +283,6 @@
   fun:Syncer::SyncShare
   fun:FakeSyncShareTask::Run
   fun:MessageLoop::RunTask
-}
-{
-  bug_39007
-  Heapcheck:Leak
-  ...
-  fun:RenderViewTest::TearDown
 }
 {
   bug_38487
@@ -322,34 +309,6 @@
   fun:AutoFillProfile
   fun:AutoFillProfile::Clone
   fun:browser_sync::AutofillChangeProcessor::ObserveAutofillProfileChanged
-}
-# ExpectJs*Internal = ExpectJs{Pass,Fail}Internal
-# ExtensionAPIClientTest_*_Test =
-#   ExtensionAPIClientTest_{CollapseToolstrip_Test,GetAcceptLanguages}_Test
-{
-  bug_43775_a
-  Heapcheck:Leak
-  fun:WebCore::makeExternalString
-  fun:WebCore::v8ExternalString
-  fun:WebCore::V8Proxy::evaluate
-  fun:WebCore::ScriptController::evaluate
-  fun:WebCore::ScriptController::executeScript
-  fun:WebKit::WebFrameImpl::executeScript
-  fun:RenderViewTest::ExecuteJavaScript
-  fun:ExtensionAPIClientTest::ExpectJs*Internal
-  fun:ExtensionAPIClientTest_*_Test::TestBody
-}
-{
-  bug_43775_b
-  Heapcheck:Leak
-  fun:WTF::fastMalloc
-  fun:WebCore::StringImpl::createUninitialized
-  fun:WebCore::String::fromUTF8
-  fun:WebCore::String::fromUTF8
-  fun:WebKit::WebString::fromUTF8
-  fun:RenderViewTest::ExecuteJavaScript
-  fun:ExtensionAPIClientTest::ExpectJs*Internal
-  fun:ExtensionAPIClientTest_*_Test::TestBody
 }
 {
   bug_43387
@@ -849,34 +808,6 @@
    fun:*DispatchToMethod
    fun:RunnableMethod::Run
    fun:MessageLoop::RunTask
-}
-{
-   bug_54689
-   Heapcheck:Leak
-   fun:WTF::fastMalloc
-   fun:WTF::StringImpl::createUninitialized
-   fun:WTF::String::fromUTF8
-   fun:WebKit::WebString::fromUTF8
-   fun:WebKit::WebString::fromUTF8
-   fun:RenderViewTest::GetElementBounds
-   fun:RenderViewTest::SimulateElementClick
-   fun:RenderViewTest_PageClickTracker_Test::TestBody
-}
-{
-   bug_54689_b
-   Heapcheck:Leak
-   fun:WTF::fastMalloc
-   fun:WTF::FastAllocBase::operator new
-   fun:WebCore::MouseEvent::create
-   fun:WebCore::Node::dispatchMouseEvent
-   fun:WebCore::Node::dispatchMouseEvent
-   fun:WebCore::EventHandler::dispatchMouseEvent
-   fun:WebCore::EventHandler::handleMousePressEvent
-   fun:WebKit::WebViewImpl::mouseDown
-   fun:WebKit::WebViewImpl::handleInputEvent
-   fun:RenderWidget::OnHandleInputEvent
-   fun:RenderViewTest::SimulateElementClick
-   fun:RenderViewTest_PageClickTracker_Test::TestBody
 }
 {
    bug_56676_a
