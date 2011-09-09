@@ -1294,18 +1294,19 @@ TEST_F(DeferredCookieTaskTest, DeferredDeleteAllForHostCookies) {
 
 TEST_F(DeferredCookieTaskTest, DeferredDeleteCanonicalCookie) {
   std::vector<CookieMonster::CanonicalCookie*> cookies;
-  AddCookieToList("www.google.com", "X=1; path=/", base::Time::Now(), &cookies);
+  scoped_ptr<CookieMonster::CanonicalCookie> cookie(BuildCanonicalCookie(
+      "www.google.com", "X=1; path=/", base::Time::Now()));
 
   MockDeleteCookieCallback delete_cookie_callback;
 
   BeginWith(DeleteCanonicalCookieAction(
-      &cookie_monster(), *cookies[0], &delete_cookie_callback));
+      &cookie_monster(), *cookie, &delete_cookie_callback));
 
   WaitForLoadCall();
 
   EXPECT_CALL(delete_cookie_callback, Invoke(false)).WillOnce(
       DeleteCanonicalCookieAction(
-      &cookie_monster(), *cookies[0], &delete_cookie_callback));
+      &cookie_monster(), *cookie, &delete_cookie_callback));
   EXPECT_CALL(delete_cookie_callback, Invoke(false)).WillOnce(
       QuitCurrentMessageLoop());
 
