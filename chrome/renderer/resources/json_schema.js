@@ -405,10 +405,10 @@ chromeHidden.JSONSchemaValidator.prototype.validateNumber = function(
       instance == Number.NEGATIVE_INFINITY )
     this.addError(path, "numberFiniteNotNan", [instance]);
 
-  if (schema.minimum && instance < schema.minimum)
+  if (schema.minimum !== undefined && instance < schema.minimum)
     this.addError(path, "numberMinValue", [schema.minimum]);
 
-  if (schema.maximum && instance > schema.maximum)
+  if (schema.maximum !== undefined && instance > schema.maximum)
     this.addError(path, "numberMaxValue", [schema.maximum]);
 
   // Check for integer values outside of -2^31..2^31-1.
