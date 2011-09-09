@@ -85,7 +85,7 @@ class PasswordTest(pyauto.PyUITest):
   def testDisplayAndSavePasswordInfobar(self):
     """Verify password infobar displays and able to save password."""
     test_utils.ClearPasswords(self)
-    url_https = 'https://www.google.com/accounts/'
+    url_https = 'https://www.google.com/accounts/Login'
     url_logout = 'https://www.google.com/accounts/Logout'
     creds = self.GetPrivateInfo()['test_google_account']
     username = creds['username']
@@ -108,9 +108,6 @@ class PasswordTest(pyauto.PyUITest):
                                  0, 0) != ''))
     test_utils.VerifyGoogleAccountCredsFilled(self, username, password,
                                               tab_index=0, windex=0)
-    self.ExecuteJavascript('document.getElementById("gaia_loginform").submit();'
-                           'window.domAutomationController.send("done")',
-                           0, 0)
     test_utils.ClearPasswords(self)
 
   def testNeverSavePasswords(self):
