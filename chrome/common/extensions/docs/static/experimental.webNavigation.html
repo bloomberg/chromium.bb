@@ -9,6 +9,46 @@ experimental APIs, see the <a href="experimental.html">chrome.experimental.*
 APIs</a> page.
 </p>
 
+<h2>Event order</h2>
+<p>
+For a navigation that is successfully completed, events are fired in the
+following order:
+<pre>
+onBeforeNavigate -&gt; onCommitted -&gt; onDOMContentLoaded -&gt; onCompleted
+</pre>
+</p>
+<p>
+Any error that occurs during the process results in an
+<code>onErrorOccurred</code> event. For a specific navigation, there are no
+further events fired after <code>onErrorOccurred</code>.
+</p>
+<p>
+If a navigating frame contains subframes, its <code>onCommitted</code> is fired
+before any of its children's <code>onBeforeNavigate</code>; while
+<code>onCompleted</code> is fired after all of its children's
+<code>onCompleted</code>.
+</p>
+<p>
+If the reference fragment of a frame is changed, a
+<code>onReferenceFragmentUpdated</code> event is fired. This event can fire any
+time after <code>onDOMContentLoaded</code>, even after
+<code>onCompleted</code>.
+</p>
+
+<h2>Relation to webRequest events</h2>
+<p>
+There is no defined ordering between events of the <a
+href="experimental.webRequest.html">webRequest API</a> and the events of the
+webNavigation API. It is possible that webRequest events are still received for
+frames that already started a new navigation, or that a navigation only
+proceeds after the network resources are already fully loaded.
+</p>
+<p>
+In general, the webNavigation events are closely related to the navigation
+state that is displayed in the UI, while the webRequest events correspond to
+the state of the network stack which is generally opaque to the user.
+</p>
+
 <h2>A note about timestamps</h2>
 <p>
 It's important to note that some technical oddities in the OS's handling
