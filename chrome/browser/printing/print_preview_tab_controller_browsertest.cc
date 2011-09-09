@@ -171,4 +171,71 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewTabControllerBrowserTest,
   EXPECT_EQ(newest_preview_tab, preview_tab);
 }
 
+// Test that print preview tabs are placed correctly.
+IN_PROC_BROWSER_TEST_F(PrintPreviewTabControllerBrowserTest,
+                       OpenPreviewTabInCorrectPosition) {
+  const int kTabCount = 4;
+  // Create kTabCount - 1 tabs since we start with 1 tab already.
+  for (int i = 0; i < kTabCount - 1; ++i) {
+    browser::NavigateParams p(browser(), GURL(), PageTransition::LINK);
+    p.disposition = NEW_FOREGROUND_TAB;
+    browser::Navigate(&p);
+  }
+  EXPECT_EQ(kTabCount, browser()->tab_count());
+
+  // Create a print preview tab.
+  scoped_refptr<printing::PrintPreviewTabController>
+     tab_controller(new printing::PrintPreviewTabController());
+  ASSERT_TRUE(tab_controller);
+
+  const int kInitiatorTabIndex = 1;
+  TabContentsWrapper* initiator_tab =
+      browser()->GetTabContentsWrapperAt(kInitiatorTabIndex);
+  ASSERT_TRUE(initiator_tab);
+  TabContentsWrapper* preview_tab =
+    tab_controller->GetOrCreatePreviewTab(initiator_tab);
+  EXPECT_TRUE(preview_tab);
+
+  // Check the preview tab's location.
+  EXPECT_EQ(preview_tab,
+            browser()->GetTabContentsWrapperAt(kInitiatorTabIndex + 1));
+  EXPECT_EQ(preview_tab, browser()->GetSelectedTabContentsWrapper());
+}
+
+// Test that print preview tabs created by pop-up windows are placed correctly.
+IN_PROC_BROWSER_TEST_F(PrintPreviewTabControllerBrowserTest,
+                       OpenPreviewTabFromPopupInCorrectPosition) {
+  const int kTabCount = 4;
+  // Create kTabCount - 1 tabs since we start with 1 tab already.
+  for (int i = 0; i < kTabCount - 1; ++i) {
+    browser::NavigateParams p(browser(), GURL(), PageTransition::LINK);
+    p.disposition = NEW_FOREGROUND_TAB;
+    browser::Navigate(&p);
+  }
+  EXPECT_EQ(kTabCount, browser()->tab_count());
+
+  // Create a popup
+  browser::NavigateParams p(browser(), GURL(), PageTransition::LINK);
+  p.disposition = NEW_POPUP;
+  ui_test_utils::NavigateToURL(&p);
+
+  // Navigate() should have opened a new popup window.
+  EXPECT_NE(browser(), p.browser);
+  EXPECT_EQ(Browser::TYPE_POPUP, p.browser->type());
+  ASSERT_TRUE(p.target_contents);
+
+  // Create a print preview tab.
+  scoped_refptr<printing::PrintPreviewTabController>
+     tab_controller(new printing::PrintPreviewTabController());
+  ASSERT_TRUE(tab_controller);
+
+  TabContentsWrapper* preview_tab =
+    tab_controller->GetOrCreatePreviewTab(p.target_contents);
+  EXPECT_TRUE(preview_tab);
+
+  // Check the preview tab's location.
+  EXPECT_EQ(preview_tab, browser()->GetTabContentsWrapperAt(kTabCount));
+  EXPECT_EQ(preview_tab, browser()->GetSelectedTabContentsWrapper());
+}
+
 }  // namespace

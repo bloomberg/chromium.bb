@@ -91,8 +91,7 @@ void PrintPreviewTabController::PrintPreview(TabContentsWrapper* tab) {
   if (tab->tab_contents()->showing_interstitial_page())
     return;
 
-  PrintPreviewTabController* tab_controller =
-      PrintPreviewTabController::GetInstance();
+  PrintPreviewTabController* tab_controller = GetInstance();
   if (!tab_controller)
     return;
   tab_controller->GetOrCreatePreviewTab(tab);
@@ -167,9 +166,10 @@ void PrintPreviewTabController::OnRendererProcessClosed(
     RenderProcessHost* rph) {
   for (PrintPreviewTabMap::iterator iter = preview_tab_map_.begin();
        iter != preview_tab_map_.end(); ++iter) {
-    if (iter->second != NULL &&
-        iter->second->render_view_host()->process() == rph) {
-      TabContentsWrapper* preview_tab = GetPrintPreviewForTab(iter->second);
+    TabContentsWrapper* initiator_tab = iter->second;
+    if (initiator_tab &&
+        initiator_tab->render_view_host()->process() == rph) {
+      TabContentsWrapper* preview_tab = iter->first;
       PrintPreviewUI* print_preview_ui =
           static_cast<PrintPreviewUI*>(preview_tab->web_ui());
       print_preview_ui->OnInitiatorTabCrashed();
@@ -320,8 +320,14 @@ TabContentsWrapper* PrintPreviewTabController::CreatePrintPreviewTab(
   params.disposition = NEW_FOREGROUND_TAB;
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kChromeFrame))
     params.disposition = NEW_POPUP;
-  params.tabstrip_index = current_browser->tabstrip_model()->
-      GetIndexOfTabContents(initiator_tab) + 1;
+
+  // For normal tabs, set the position as immediately to the right,
+  // otherwise let the tab strip decide.
+  if (current_browser->is_type_tabbed()) {
+    params.tabstrip_index = current_browser->tabstrip_model()->
+        GetIndexOfTabContents(initiator_tab) + 1;
+  }
+
   browser::Navigate(&params);
   TabContentsWrapper* preview_tab = params.target_contents;
   EnableInternalPDFPluginForTab(preview_tab);
