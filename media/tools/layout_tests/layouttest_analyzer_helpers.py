@@ -264,7 +264,7 @@ class AnalyzerResultMap:
 
 def SendStatusEmail(prev_time, analyzer_result_map, prev_analyzer_result_map,
                     bug_anno_map, receiver_email_address, test_group_name,
-                    appended_text_to_email):
+                    appended_text_to_email, email_only_change_mode):
   """Send status email.
 
   Args:
@@ -279,9 +279,18 @@ def SendStatusEmail(prev_time, analyzer_result_map, prev_analyzer_result_map,
     test_group_name: string representing the test group name (e.g., 'media').
     appended_text_to_email: a text which is appended at the end of the status
         email.
+    email_only_change_mode: when this is true, the analyzer sends out the
+        status email only when there is change in the analyzer result compared
+        to the last result. When this is false, it sends the email out every
+        time it runs.
   """
   diff_map = analyzer_result_map.CompareToOtherResultMap(
       prev_analyzer_result_map)
+  # Do not email when |email_only_change_mode| is true and there is no change
+  # in the result compared to the last result.
+  if (email_only_change_mode and not any(diff_map['whole']) and
+      not any(diff_map['skip']) and not any(diff_map['nonskip'])):
+    return
   output_str = analyzer_result_map.ConvertToString(prev_time,
                                                    diff_map, bug_anno_map)
   # Add diff info about skipped/non-skipped test.

@@ -84,6 +84,13 @@ def parse_option():
                                    '(default to %default and no text is '
                                    'appended in that case.)'),
                              default=None)
+    option_parser.add_option('-c', '--email-only-change-mode',
+                             dest='email_only_change_mode',
+                             help=('With this mode, email is sent out '
+                                   'only when there is a change in the '
+                                   'analyzer result compared to the previous '
+                                   'result (off by default)'),
+                             action='store_true', default=False)
     return option_parser.parse_args()[0]
 
 
@@ -139,7 +146,8 @@ def main():
                                               anno_map,
                                               options.receiver_email_address,
                                               options.test_group_name,
-                                              appended_text_to_email)
+                                              appended_text_to_email,
+                                              options.email_only_change_mode)
   if not options.debug:
     # Save the current result.
     date = start_time.strftime('%Y-%m-%d-%H')
