@@ -188,8 +188,18 @@ WebPreferences BackgroundContents::GetWebkitPrefs() {
   // apps.
   Profile* profile = Profile::FromBrowserContext(
       render_view_host_->process()->browser_context());
-  return RenderViewHostDelegateHelper::GetWebkitPrefs(profile,
-                                                      false);  // is_web_ui
+  WebPreferences prefs = RenderViewHostDelegateHelper::GetWebkitPrefs(profile,
+                                                                      false);
+  // Disable all kinds of acceleration for background pages.
+  // See http://crbug.com/96005 and http://crbug.com/96006
+  prefs.force_compositing_mode = false;
+  prefs.accelerated_compositing_enabled = false;
+  prefs.accelerated_2d_canvas_enabled = false;
+  prefs.accelerated_video_enabled = false;
+  prefs.accelerated_drawing_enabled = false;
+  prefs.accelerated_plugins_enabled = false;
+
+  return prefs;
 }
 
 void BackgroundContents::CreateNewWindow(
