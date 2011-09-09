@@ -43,6 +43,9 @@ class FrameNavigationState {
   // True if navigation events for the given frame can be sent.
   bool CanSendEvents(int64 frame_id) const;
 
+  // True if in general webNavigation events may be sent for the given URL.
+  bool IsValidUrl(const GURL& url) const;
+
   // Starts to track a frame identified by its |frame_id| showing the URL |url|.
   void TrackFrame(int64 frame_id,
                   const GURL& url,

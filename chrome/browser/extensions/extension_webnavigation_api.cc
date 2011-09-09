@@ -231,15 +231,18 @@ bool FrameNavigationState::CanSendEvents(int64 frame_id) const {
       frame_state->second.error_occurred) {
     return false;
   }
-  const std::string& scheme = frame_state->second.url.scheme();
+  return IsValidUrl(frame_state->second.url);
+}
+
+bool FrameNavigationState::IsValidUrl(const GURL& url) const {
   for (unsigned i = 0; i < arraysize(kValidSchemes); ++i) {
-    if (scheme == kValidSchemes[i])
+    if (url.scheme() == kValidSchemes[i])
       return true;
   }
   // Allow about:blank.
-  if (frame_state->second.url.spec() == chrome::kAboutBlankURL)
+  if (url.spec() == chrome::kAboutBlankURL)
     return true;
-  if (allow_extension_scheme_ && scheme == chrome::kExtensionScheme)
+  if (allow_extension_scheme_ && url.scheme() == chrome::kExtensionScheme)
     return true;
   return false;
 }
@@ -637,10 +640,12 @@ bool GetFrameFunction::RunImpl() {
   if (!frame_navigation_state.IsValidFrame(frame_id))
     return true;
 
+  GURL frame_url = frame_navigation_state.GetUrl(frame_id);
+  if (!frame_navigation_state.IsValidUrl(frame_url))
+    return true;
+
   DictionaryValue* resultDict = new DictionaryValue();
-  resultDict->SetString(
-      keys::kUrlKey,
-      frame_navigation_state.GetUrl(frame_id).spec());
+  resultDict->SetString(keys::kUrlKey, frame_url.spec());
   resultDict->SetBoolean(
       keys::kErrorOccurredKey,
       frame_navigation_state.GetErrorOccurredInFrame(frame_id));
@@ -676,10 +681,11 @@ bool GetAllFramesFunction::RunImpl() {
   ListValue* resultList = new ListValue();
   for (FrameNavigationState::const_iterator frame = navigation_state.begin();
        frame != navigation_state.end(); ++frame) {
+    GURL frame_url = navigation_state.GetUrl(*frame);
+    if (!navigation_state.IsValidUrl(frame_url))
+      continue;
     DictionaryValue* frameDict = new DictionaryValue();
-    frameDict->SetString(
-        keys::kUrlKey,
-        navigation_state.GetUrl(*frame).spec());
+    frameDict->SetString(keys::kUrlKey, frame_url.spec());
     frameDict->SetInteger(
         keys::kFrameIdKey,
         GetFrameId(navigation_state.IsMainFrame(*frame), *frame));
