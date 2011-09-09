@@ -3220,14 +3220,6 @@
    fun:_ZN13ResourcesUtil18GetThemeResourceIdERKSs
 }
 {
-   bug_65932
-   Memcheck:Value4
-   ...
-   fun:_ZN7WebCore13InlineFlowBox26placeBoxesInBlockDirectionEiiibRiS1_RbS1_S1_S2_NS_12FontBaselineE
-   fun:_ZN7WebCore13RootInlineBox26alignBoxesInBlockDirectionEiRN3WTF7HashMapIPKNS_13InlineTextBoxESt4pairINS1_6VectorIPKNS_14SimpleFontDataELj0EEENS_13GlyphOverflowEENS1_7PtrHashIS5_EENS1_10HashTraitsIS5_EENSG_ISD_EEEERNS_21VerticalPositionCacheE
-   fun:_ZN7WebCore11RenderBlock37computeBlockDirectionPositionsForLineEPNS_13RootInlineBoxEPNS_7BidiRunERN3WTF7HashMapIPKNS_13InlineTextBoxESt4pairINS5_6VectorIPKNS_14SimpleFontDataELj0EEENS_13GlyphOverflowEENS5_7PtrHashIS9_EENS5_10HashTraitsIS9_EENSK_ISH_EEEERNS_21VerticalPositionCacheE
-}
-{
    bug_66853_a
    Memcheck:Leak
    fun:_Znw*
