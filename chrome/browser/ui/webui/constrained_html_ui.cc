@@ -49,7 +49,7 @@ void ConstrainedHtmlUI::OnDialogCloseMessage(const ListValue* args) {
     return;
 
   std::string json_retval;
-  if (!args->GetString(0, &json_retval))
+  if (!args->empty() && !args->GetString(0, &json_retval))
     NOTREACHED() << "Could not read JSON argument";
   delegate->GetHtmlDialogUIDelegate()->OnDialogClosed(json_retval);
   delegate->OnDialogCloseFromWebUI();
