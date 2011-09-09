@@ -2552,8 +2552,16 @@ error::Error GLES2DecoderImpl::HandleResizeCHROMIUM(
       return error::kLostContext;
   }
 
-  if (resize_callback_.get())
+  if (resize_callback_.get()) {
     resize_callback_->Run(gfx::Size(width, height));
+#if defined(OS_MACOSX)
+    // On OSX, the resize callback clobbers the currently-active GL context.
+    // TODO(kbr): remove this MakeCurrent once the AcceleratedSurface code
+    // becomes able to restore its context.
+    if (!context_->MakeCurrent(surface_.get()))
+      return error::kLostContext;
+#endif
+  }
 
   return error::kNoError;
 }

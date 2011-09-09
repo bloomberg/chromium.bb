@@ -2486,9 +2486,6 @@ void GLES2Implementation::ResizeCHROMIUM(GLuint width, GLuint height) {
   GPU_CLIENT_LOG("[" << this << "] glResizeCHROMIUM("
                  << width << ", " << height << ")");
   helper_->ResizeCHROMIUM(width, height);
-  // This flush is a workaround for http://crbug.com/95492. We don't understand
-  // the crash or why this fixes it.
-  Flush();
 }
 
 const GLchar* GLES2Implementation::GetRequestableExtensionsCHROMIUM() {
