@@ -537,6 +537,13 @@
     ],
   },
 
+  # ChromeOS volume tests.
+  'CHROMEOS_VOLUME': {
+    'chromeos': [
+      'chromeos_volume',
+    ],
+  },
+
   # ChromeOS performance tests.
   'CHROMEOS_PERF': {
     'chromeos': [
