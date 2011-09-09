@@ -257,6 +257,7 @@ void FrameNavigationState::TrackFrame(int64 frame_id,
   frame_state.url = url;
   frame_state.is_main_frame = is_main_frame;
   frame_state.is_navigating = true;
+  frame_state.is_committed = false;
   if (is_main_frame) {
     main_frame_id_ = frame_id;
   }
@@ -309,6 +310,18 @@ bool FrameNavigationState::GetNavigationCompleted(int64 frame_id) const {
       frame_state_map_.find(frame_id);
   return (frame_state == frame_state_map_.end() ||
           !frame_state->second.is_navigating);
+}
+
+void FrameNavigationState::SetNavigationCommitted(int64 frame_id) {
+  DCHECK(frame_state_map_.find(frame_id) != frame_state_map_.end());
+  frame_state_map_[frame_id].is_committed = true;
+}
+
+bool FrameNavigationState::GetNavigationCommitted(int64 frame_id) const {
+  FrameIdToStateMap::const_iterator frame_state =
+      frame_state_map_.find(frame_id);
+  return (frame_state != frame_state_map_.end() &&
+          frame_state->second.is_committed);
 }
 
 
@@ -468,6 +481,17 @@ void ExtensionWebNavigationTabObserver::DidStartProvisionalLoadForFrame(
     const GURL& validated_url,
     bool is_error_page,
     RenderViewHost* render_view_host) {
+  // Ignore navigations of sub frames, if the main frame isn't committed yet.
+  // This might happen if a sub frame triggers a navigation for both the main
+  // frame and itself. Since the sub frame is about to be deleted, and there's
+  // no way for an extension to tell that these navigations belong to an old
+  // frame, we just suppress the events here.
+  int64 main_frame_id = navigation_state_.GetMainFrameID();
+  if (!is_main_frame &&
+      !navigation_state_.GetNavigationCommitted(main_frame_id)) {
+    return;
+  }
+
   navigation_state_.TrackFrame(frame_id,
                                validated_url,
                                is_main_frame,
@@ -494,6 +518,7 @@ void ExtensionWebNavigationTabObserver::DidCommitProvisionalLoadForFrame(
                                url,
                                is_main_frame,
                                false);
+  navigation_state_.SetNavigationCommitted(frame_id);
 
   if (is_reference_fragment_navigation) {
     DispatchOnCommitted(

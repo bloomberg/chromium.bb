@@ -76,6 +76,13 @@ class FrameNavigationState {
   // True if the frame is currently not navigating.
   bool GetNavigationCompleted(int64 frame_id) const;
 
+  // Marks a frame as having committed its navigation, i.e. the onCommitted
+  // event was fired for this frame.
+  void SetNavigationCommitted(int64 frame_id);
+
+  // True if the frame has committed its navigation.
+  bool GetNavigationCommitted(int64 frame_id) const;
+
 #ifdef UNIT_TEST
   static void set_allow_extension_scheme(bool allow_extension_scheme) {
     allow_extension_scheme_ = allow_extension_scheme;
@@ -87,6 +94,7 @@ class FrameNavigationState {
     bool error_occurred;  // True if an error has occurred in this frame.
     bool is_main_frame;  // True if this is a main frame.
     bool is_navigating;  // True if there is a navigation going on.
+    bool is_committed;  // True if the navigation is already committed.
     GURL url;  // URL of this frame.
   };
   typedef std::map<int64, FrameState> FrameIdToStateMap;
