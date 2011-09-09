@@ -497,11 +497,6 @@
   fun:JSC::Yarr::Interpreter::interpret*
   fun:JSC::Yarr::interpret*
 }
-{
-  bug_86507
-  ThreadSanitizer:Race
-  fun:VideoCaptureController::OnDeviceStopped
-}
 
 {
   bug_86916

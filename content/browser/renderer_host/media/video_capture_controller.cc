@@ -59,9 +59,10 @@ void VideoCaptureController::ReturnBuffer(int buffer_id) {
   {
     base::AutoLock lock(lock_);
     free_dibs_.push_back(buffer_id);
-    ready_to_delete = (free_dibs_.size() == owned_dibs_.size());
+    ready_to_delete = (free_dibs_.size() == owned_dibs_.size()) &&
+        report_ready_to_delete_;
   }
-  if (report_ready_to_delete_ && ready_to_delete) {
+  if (ready_to_delete) {
     event_handler_->OnReadyToDelete(id_);
   }
 }
@@ -198,10 +199,10 @@ void VideoCaptureController::OnFrameInfo(
 void VideoCaptureController::OnDeviceStopped(Task* stopped_task) {
   bool ready_to_delete_now;
 
-  // Set flag to indicate we need to report when all DIBs have been returned.
-  report_ready_to_delete_ = true;
   {
     base::AutoLock lock(lock_);
+    // Set flag to indicate we need to report when all DIBs have been returned.
+    report_ready_to_delete_ = true;
     ready_to_delete_now = (free_dibs_.size() == owned_dibs_.size());
   }
 
