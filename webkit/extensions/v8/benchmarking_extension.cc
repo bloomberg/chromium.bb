@@ -1,21 +1,20 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "webkit/extensions/v8/benchmarking_extension.h"
 
-#include "base/command_line.h"
 #include "base/metrics/stats_table.h"
 #include "base/time.h"
-#include "net/http/http_network_layer.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCache.h"
+#include "v8/include/v8.h"
 #include "webkit/glue/webkit_glue.h"
 
 using WebKit::WebCache;
 
-namespace extensions_v8 {
+const char kBenchmarkingExtensionName[] = "v8/Benchmarking";
 
-const char* kBenchmarkingExtensionName = "v8/Benchmarking";
+namespace extensions_v8 {
 
 class BenchmarkingWrapper : public v8::Extension {
  public:

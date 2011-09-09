@@ -5,14 +5,15 @@
 #include "webkit/extensions/v8/profiler_extension.h"
 
 #include "build/build_config.h"
+#include "v8/include/v8.h"
 
 #if defined(USE_TCMALLOC) && defined(OS_POSIX) && !defined(OS_MACOSX)
 #include "third_party/tcmalloc/chromium/src/google/profiler.h"
 #endif
 
-namespace extensions_v8 {
-
 const char kProfilerExtensionName[] = "v8/Profiler";
+
+namespace extensions_v8 {
 
 class ProfilerWrapper : public v8::Extension {
  public:
@@ -46,49 +47,44 @@ class ProfilerWrapper : public v8::Extension {
 
   virtual v8::Handle<v8::FunctionTemplate> GetNativeFunction(
       v8::Handle<v8::String> name) {
-    if (name->Equals(v8::String::New("ProfilerStart"))) {
+    if (name->Equals(v8::String::New("ProfilerStart")))
       return v8::FunctionTemplate::New(ProfilerStart);
-    } else if (name->Equals(v8::String::New("ProfilerStop"))) {
+    else if (name->Equals(v8::String::New("ProfilerStop")))
       return v8::FunctionTemplate::New(ProfilerStop);
-    } else if (name->Equals(v8::String::New("ProfilerClearData"))) {
+    else if (name->Equals(v8::String::New("ProfilerClearData")))
       return v8::FunctionTemplate::New(ProfilerClearData);
-    } else if (name->Equals(v8::String::New("ProfilerFlush"))) {
+    else if (name->Equals(v8::String::New("ProfilerFlush")))
       return v8::FunctionTemplate::New(ProfilerFlush);
-    } else if (name->Equals(v8::String::New("ProfilerSetThreadName"))) {
+    else if (name->Equals(v8::String::New("ProfilerSetThreadName")))
       return v8::FunctionTemplate::New(ProfilerSetThreadName);
-    }
+
     return v8::Handle<v8::FunctionTemplate>();
   }
 
-  static v8::Handle<v8::Value> ProfilerStart(
-      const v8::Arguments& args) {
+  static v8::Handle<v8::Value> ProfilerStart(const v8::Arguments& args) {
 #if defined(USE_TCMALLOC) && defined(OS_POSIX) && !defined(OS_MACOSX)
     ::ProfilerStart("chrome-profile");
 #endif
     return v8::Undefined();
   }
 
-  static v8::Handle<v8::Value> ProfilerStop(
-      const v8::Arguments& args) {
+  static v8::Handle<v8::Value> ProfilerStop(const v8::Arguments& args) {
 #if defined(USE_TCMALLOC) && defined(OS_POSIX) && !defined(OS_MACOSX)
     ::ProfilerStop();
 #endif
     return v8::Undefined();
   }
 
-  static v8::Handle<v8::Value> ProfilerClearData(
-      const v8::Arguments& args) {
+  static v8::Handle<v8::Value> ProfilerClearData(const v8::Arguments& args) {
     return v8::Undefined();
   }
 
-  static v8::Handle<v8::Value> ProfilerFlush(
-      const v8::Arguments& args) {
+  static v8::Handle<v8::Value> ProfilerFlush(const v8::Arguments& args) {
 #if defined(USE_TCMALLOC) && defined(OS_POSIX) && !defined(OS_MACOSX)
     ::ProfilerFlush();
 #endif
     return v8::Undefined();
   }
-
 
   static v8::Handle<v8::Value> ProfilerSetThreadName(
       const v8::Arguments& args) {

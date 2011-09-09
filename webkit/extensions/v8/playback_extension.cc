@@ -1,12 +1,14 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "webkit/extensions/v8/playback_extension.h"
 
-namespace extensions_v8 {
+#include "v8/include/v8.h"
 
-const char* kPlaybackExtensionName = "v8/PlaybackMode";
+const char kPlaybackExtensionName[] = "v8/PlaybackMode";
+
+namespace extensions_v8 {
 
 v8::Extension* PlaybackExtension::Get() {
   v8::Extension* extension = new v8::Extension(
