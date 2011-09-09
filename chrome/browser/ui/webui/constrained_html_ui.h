@@ -16,7 +16,6 @@ class HtmlDialogUIDelegate;
 class Profile;
 class RenderViewHost;
 class TabContents;
-class TabContentsWrapper;
 
 class ConstrainedHtmlUIDelegate {
  public:
@@ -46,7 +45,7 @@ class ConstrainedHtmlUI : public ChromeWebUI {
   static ConstrainedWindow* CreateConstrainedHtmlDialog(
       Profile* profile,
       HtmlDialogUIDelegate* delegate,
-      TabContentsWrapper* overshadowed);
+      TabContents* overshadowed);
 
   // Returns a property accessor that can be used to set the
   // ConstrainedHtmlUIDelegate property on a TabContents.

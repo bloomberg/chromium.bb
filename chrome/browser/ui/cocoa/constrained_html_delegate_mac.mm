@@ -9,7 +9,6 @@
 #include "base/memory/scoped_nsobject.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/cocoa/constrained_window_mac.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/webui/html_dialog_ui.h"
 #include "chrome/browser/ui/webui/html_dialog_tab_contents_delegate.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -133,13 +132,13 @@ void ConstrainedHtmlDelegateMac::OnDialogCloseFromWebUI() {
 ConstrainedWindow* ConstrainedHtmlUI::CreateConstrainedHtmlDialog(
     Profile* profile,
     HtmlDialogUIDelegate* delegate,
-    TabContentsWrapper* wrapper) {
+    TabContents* overshadowed) {
   // Deleted when ConstrainedHtmlDelegateMac::DeleteDelegate() runs.
   ConstrainedHtmlDelegateMac* constrained_delegate =
       new ConstrainedHtmlDelegateMac(profile, delegate);
   // Deleted when ConstrainedHtmlDelegateMac::OnDialogCloseFromWebUI() runs.
   ConstrainedWindow* constrained_window =
-      new ConstrainedWindowMac(wrapper->tab_contents(), constrained_delegate);
+      new ConstrainedWindowMac(overshadowed, constrained_delegate);
   constrained_delegate->set_window(constrained_window);
   return constrained_window;
 }

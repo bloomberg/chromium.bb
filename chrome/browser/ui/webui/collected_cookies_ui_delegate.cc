@@ -146,7 +146,7 @@ void CollectedCookiesUIDelegate::Show(TabContentsWrapper* wrapper) {
   Profile* profile = wrapper->profile();
   ConstrainedHtmlUI::CreateConstrainedHtmlDialog(profile,
                                                  delegate,
-                                                 wrapper);
+                                                 wrapper->tab_contents());
 }
 
 CollectedCookiesUIDelegate::CollectedCookiesUIDelegate(

@@ -6,7 +6,6 @@
 
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/views/constrained_window_views.h"
 #include "chrome/browser/ui/views/tab_contents/tab_contents_container.h"
 #include "chrome/browser/ui/webui/html_dialog_tab_contents_delegate.h"
@@ -120,12 +119,11 @@ void ConstrainedHtmlDelegateViews::OnDialogCloseFromWebUI() {
 ConstrainedWindow* ConstrainedHtmlUI::CreateConstrainedHtmlDialog(
     Profile* profile,
     HtmlDialogUIDelegate* delegate,
-    TabContentsWrapper* container) {
+    TabContents* container) {
   ConstrainedHtmlDelegateViews* constrained_delegate =
       new ConstrainedHtmlDelegateViews(profile, delegate);
   ConstrainedWindow* constrained_window =
-      new ConstrainedWindowViews(container->tab_contents(),
-                                 constrained_delegate);
+      new ConstrainedWindowViews(container, constrained_delegate);
   constrained_delegate->set_window(constrained_window);
   return constrained_window;
 }
