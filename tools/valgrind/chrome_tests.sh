@@ -8,19 +8,42 @@
 
 export THISDIR=`dirname $0`
 
+TOOL_OPTION=0
 NEEDS_VALGRIND=0
 
-# We need to set CHROME_VALGRIND iff using Memcheck or TSan-Valgrind.
+# We need to set CHROME_VALGRIND iff using Memcheck or TSan-Valgrind:
+#   tools/valgrind/chrome_tests.sh --tool memcheck
+# or
+#   tools/valgrind/chrome_tests.sh --tool=memcheck
+# (same for "--tool=tsan")
 for flag in $@
 do
-  if [ "$flag" == "--tool=tsan" ]
+  if [ "$flag" == "--tool" ]
+  then
+    TOOL_OPTION=1
+    continue
+  elif [ "$flag" == "--tool=tsan" ]
+  then
+    NEEDS_VALGRIND=1
+    break
+  elif [ "$flag" == "--tool=memcheck" ]
   then
     NEEDS_VALGRIND=1
     break
   fi
-  if [ "$flag" == "--tool=memcheck" ]
+  if [ "$TOOL_OPTION" == "1" ]
   then
-    NEEDS_VALGRIND=1
+    if [ "$flag" == "memcheck" ]
+    then
+      NEEDS_VALGRIND=1
+      break
+    elif [ "$flag" == "tsan" ]
+    then
+      NEEDS_VALGRIND=1
+      break
+    else
+      TOOL_OPTION=0
+    fi
   fi
 done
 
