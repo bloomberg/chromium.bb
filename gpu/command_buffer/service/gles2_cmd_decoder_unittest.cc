@@ -55,17 +55,8 @@ class GLES2DecoderWithShaderTest : public GLES2DecoderWithShaderTestBase {
       : GLES2DecoderWithShaderTestBase() {
   }
 
-
-  void AddExpectationsForSimulatedAttrib0WithError(
-      GLsizei num_vertices, GLuint buffer_id, GLenum error) {
-    if (gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2) {
-      return;
-    }
-
-    EXPECT_CALL(*gl_, GetError())
-        .WillOnce(Return(GL_NO_ERROR))
-        .WillOnce(Return(error))
-        .RetiresOnSaturation();
+  void AddExpectationsForSimulatedAttrib0(
+      GLsizei num_vertices, GLuint buffer_id) {
     EXPECT_CALL(*gl_, BindBuffer(GL_ARRAY_BUFFER, kServiceAttrib0BufferId))
         .Times(1)
         .RetiresOnSaturation();
@@ -74,30 +65,22 @@ class GLES2DecoderWithShaderTest : public GLES2DecoderWithShaderTestBase {
                                  _, GL_DYNAMIC_DRAW))
         .Times(1)
         .RetiresOnSaturation();
-    if (error == GL_NO_ERROR) {
-      EXPECT_CALL(*gl_, BufferSubData(
-          GL_ARRAY_BUFFER, 0, num_vertices * sizeof(GLfloat) * 4, _))
-          .Times(1)
-          .RetiresOnSaturation();
-      EXPECT_CALL(*gl_, VertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, NULL))
-          .Times(1)
-          .RetiresOnSaturation();
-      EXPECT_CALL(*gl_, BindBuffer(GL_ARRAY_BUFFER, 0))
-          .Times(1)
-          .RetiresOnSaturation();
-      EXPECT_CALL(*gl_, VertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, NULL))
-          .Times(1)
-          .RetiresOnSaturation();
-      EXPECT_CALL(*gl_, BindBuffer(GL_ARRAY_BUFFER, buffer_id))
-          .Times(1)
-          .RetiresOnSaturation();
-    }
-  }
-
-  void AddExpectationsForSimulatedAttrib0(
-      GLsizei num_vertices, GLuint buffer_id) {
-    AddExpectationsForSimulatedAttrib0WithError(
-        num_vertices, buffer_id, GL_NO_ERROR);
+    EXPECT_CALL(*gl_, BufferSubData(
+        GL_ARRAY_BUFFER, 0, num_vertices * sizeof(GLfloat) * 4, _))
+        .Times(1)
+        .RetiresOnSaturation();
+    EXPECT_CALL(*gl_, VertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, NULL))
+        .Times(1)
+        .RetiresOnSaturation();
+    EXPECT_CALL(*gl_, BindBuffer(GL_ARRAY_BUFFER, 0))
+        .Times(1)
+        .RetiresOnSaturation();
+    EXPECT_CALL(*gl_, VertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, NULL))
+        .Times(1)
+        .RetiresOnSaturation();
+    EXPECT_CALL(*gl_, BindBuffer(GL_ARRAY_BUFFER, buffer_id))
+        .Times(1)
+        .RetiresOnSaturation();
   }
 };
 
@@ -140,47 +123,6 @@ TEST_F(GLES2DecoderWithShaderTest, DrawArraysNoAttributesSucceeds) {
   cmd.Init(GL_TRIANGLES, 0, kNumVertices);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
-}
-
-// Tests when the math overflows (0x40000000 * sizeof GLfloat)
-TEST_F(GLES2DecoderWithShaderTest, DrawArraysSimulatedAttrib0OverflowFails) {
-  const GLsizei kLargeCount = 0x40000000;
-  SetupTexture();
-  EXPECT_CALL(*gl_, DrawArrays(_, _, _))
-      .Times(0)
-      .RetiresOnSaturation();
-  DrawArrays cmd;
-  cmd.Init(GL_TRIANGLES, 0, kLargeCount);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(GL_OUT_OF_MEMORY, GetGLError());
-}
-
-// Tests when the math overflows (0x7FFFFFFF + 1 = 0x8000000 verts)
-TEST_F(GLES2DecoderWithShaderTest, DrawArraysSimulatedAttrib0PosToNegFails) {
-  const GLsizei kLargeCount = 0x7FFFFFFF;
-  SetupTexture();
-  EXPECT_CALL(*gl_, DrawArrays(_, _, _))
-      .Times(0)
-      .RetiresOnSaturation();
-  DrawArrays cmd;
-  cmd.Init(GL_TRIANGLES, 0, kLargeCount);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(GL_OUT_OF_MEMORY, GetGLError());
-}
-
-// Tests when the driver returns an error
-TEST_F(GLES2DecoderWithShaderTest, DrawArraysSimulatedAttrib0OOMFails) {
-  const GLsizei kFakeLargeCount = 0x1234;
-  SetupTexture();
-  AddExpectationsForSimulatedAttrib0WithError(
-      kFakeLargeCount, 0, GL_OUT_OF_MEMORY);
-  EXPECT_CALL(*gl_, DrawArrays(_, _, _))
-      .Times(0)
-      .RetiresOnSaturation();
-  DrawArrays cmd;
-  cmd.Init(GL_TRIANGLES, 0, kFakeLargeCount);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(GL_OUT_OF_MEMORY, GetGLError());
 }
 
 TEST_F(GLES2DecoderWithShaderTest, DrawArraysBadTextureUsesBlack) {
