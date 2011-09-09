@@ -189,6 +189,12 @@ void WebstoreInlineInstaller::OnURLFetchComplete(const URLFetcher* source) {
 
 void WebstoreInlineInstaller::OnWebstoreResponseParseSuccess(
     DictionaryValue* webstore_data) {
+  // Check if the tab has gone away in the meantime.
+  if (!tab_contents()) {
+    CompleteInstall("");
+    return;
+  }
+
   webstore_data_.reset(webstore_data);
 
   std::string manifest;
