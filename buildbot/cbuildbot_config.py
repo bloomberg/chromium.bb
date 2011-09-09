@@ -556,6 +556,7 @@ add_config('arm-tegra2_arthur-private-bin', [internal, arm, binary, {
 
 add_config('arm-tegra2_asymptote-private-bin', [internal, arm, binary, {
   'board' : 'tegra2_asymptote',
+  'prebuilts': False,
 }])
 
 add_config('arm-tegra2_dev-board-private-bin', [internal, arm, binary, {
