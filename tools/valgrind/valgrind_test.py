@@ -693,12 +693,13 @@ class DrMemory(BaseTool):
   """Dr.Memory
   Dynamic memory error detector for Windows.
 
-  http://dynamorio.org/drmemory.html
+  http://dev.chromium.org/developers/how-tos/using-valgrind/dr-memory
   It is not very mature at the moment, some things might not work properly.
   """
 
-  def __init__(self):
+  def __init__(self, handle_uninits_and_leaks):
     super(DrMemory, self).__init__()
+    self.handle_uninits_and_leaks = handle_uninits_and_leaks
     self.RegisterOptionParserHook(DrMemory.ExtendOptionParser)
 
   def ToolName(self):
@@ -780,8 +781,6 @@ class DrMemory(BaseTool):
     for suppression_file in self._options.suppressions:
       if os.path.exists(suppression_file):
         suppression_count += 1
-        # DrMemory doesn't support multiple suppressions file... oh well
-        assert suppression_count <= 1
         proc += ["-suppress", suppression_file]
 
     if not suppression_count:
@@ -799,15 +798,10 @@ class DrMemory(BaseTool):
     proc += ["-logdir", self.log_dir]
     proc += ["-batch", "-quiet"]
 
-    # Increase some Dr. Memory constants
-    proc += ["-redzone_size", "16"]
     proc += ["-callstack_max_frames", "40"]
 
-    # Un-comment to ignore uninitialized accesses
-    #proc += ["-no_check_uninitialized"]
-
-    # Un-comment to ignore leaks
-    #proc += ["-no_check_leaks", "-no_count_leaks"]
+    if not self.handle_uninits_and_leaks:
+      proc += ["-no_check_uninitialized", "-no_count_leaks"]
 
     proc += self._tool_flags
 
@@ -970,8 +964,13 @@ class ToolFactory:
         return ThreadSanitizerWindows()
       else:
         return ThreadSanitizerPosix()
-    if tool_name == "drmemory":
-      return DrMemory()
+    if tool_name == "drmemory" or tool_name == "drmemory_light":
+      # TODO(timurrrr): remove support for "drmemory" when buildbots are
+      # switched to drmemory_light OR make this the default when the tool is
+      # mature enough.
+      return DrMemory(False)
+    if tool_name == "drmemory_full":
+      return DrMemory(True)
     if tool_name == "tsan_rv":
       return RaceVerifier()
     try:

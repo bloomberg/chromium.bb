@@ -1,5 +1,5 @@
 @echo off
-:: Copyright (c) 2010 The Chromium Authors. All rights reserved.
+:: Copyright (c) 2011 The Chromium Authors. All rights reserved.
 :: Use of this source code is governed by a BSD-style license that can be
 :: found in the LICENSE file.
 
@@ -23,7 +23,9 @@ goto :EOF
 SHIFT
 set TOOL_NAME=%1
 :: }}}
-if %TOOL_NAME% == drmemory GOTO :SETUP_DRMEMORY
+if %TOOL_NAME% == drmemory       GOTO :SETUP_DRMEMORY
+if %TOOL_NAME% == drmemory_light GOTO :SETUP_DRMEMORY
+if %TOOL_NAME% == drmemory_full  GOTO :SETUP_DRMEMORY
 if %TOOL_NAME% == tsan     GOTO :SETUP_TSAN
 echo "Unknown tool: %TOOL_NAME%! Only tsan and drmemory are supported right now"
 set %ERRORLEVEL% 1
