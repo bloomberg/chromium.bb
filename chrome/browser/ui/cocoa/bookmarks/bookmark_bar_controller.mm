@@ -383,7 +383,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
                            name:NSWindowWillCloseNotification
                          object:nil];
   [defaultCenter removeObserver:self
-                           name:NSWindowDidResignKeyNotification
+                           name:NSWindowDidResignMainNotification
                          object:nil];
 
   [defaultCenter addObserver:self
