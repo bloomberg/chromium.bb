@@ -27,7 +27,7 @@ chrome.test.runTests([
 
   function testGetInvalidFrame() {
     chrome.experimental.webNavigation.getFrame(
-        {tabId: 23, frameId: -1},
+        {tabId: tabId, frameId: 1},
       function (details) {
         chrome.test.assertEq(null, details);
         chrome.test.succeed();
