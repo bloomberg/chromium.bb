@@ -182,10 +182,6 @@ class BrowserProcessImpl : public BrowserProcess,
 
   bool created_io_thread_;
   scoped_ptr<IOThread> io_thread_;
-#if defined(USE_X11)
-  // This shares a created flag with the IO thread.
-  scoped_ptr<base::Thread> background_x11_thread_;
-#endif
 
   bool created_file_thread_;
   scoped_ptr<base::Thread> file_thread_;
