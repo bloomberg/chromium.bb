@@ -41,6 +41,8 @@
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_view.h"
 #import "chrome/browser/ui/cocoa/view_id_util.h"
 #import "chrome/browser/ui/cocoa/wrench_menu/wrench_menu_controller.h"
+#include "chrome/browser/ui/global_error_service.h"
+#include "chrome/browser/ui/global_error_service_factory.h"
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
 #include "chrome/browser/ui/toolbar/wrench_menu_model.h"
@@ -564,9 +566,12 @@ class NotificationBridge : public NotificationObserver {
     [[wrenchButton_ cell]
         setOverlayImageID:UpgradeDetector::GetInstance()->GetIconResourceID(
             UpgradeDetector::UPGRADE_ICON_TYPE_BADGE)];
-  } else {
-    [[wrenchButton_ cell] setOverlayImageID:0];
+    return;
   }
+
+  int error_badge_id = GlobalErrorServiceFactory::GetForProfile(
+      browser_->profile())->GetFirstBadgeResourceID();
+  [[wrenchButton_ cell] setOverlayImageID:error_badge_id];
 }
 
 - (void)prefChanged:(std::string*)prefName {

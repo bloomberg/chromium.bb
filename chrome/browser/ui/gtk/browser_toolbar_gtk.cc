@@ -20,6 +20,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/global_error_service.h"
+#include "chrome/browser/ui/global_error_service_factory.h"
 #include "chrome/browser/ui/gtk/accelerators_gtk.h"
 #include "chrome/browser/ui/gtk/back_forward_button_gtk.h"
 #include "chrome/browser/ui/gtk/browser_actions_toolbar_gtk.h"
@@ -619,16 +621,20 @@ bool BrowserToolbarGtk::ShouldOnlyShowLocation() const {
 
 gboolean BrowserToolbarGtk::OnWrenchMenuButtonExpose(GtkWidget* sender,
                                                      GdkEventExpose* expose) {
-  const SkBitmap* badge = NULL;
+  int resource_id = 0;
   if (UpgradeDetector::GetInstance()->notify_upgrade()) {
-    badge = theme_service_->GetBitmapNamed(
-        UpgradeDetector::GetInstance()->GetIconResourceID(
-            UpgradeDetector::UPGRADE_ICON_TYPE_BADGE));
+    resource_id = UpgradeDetector::GetInstance()->GetIconResourceID(
+            UpgradeDetector::UPGRADE_ICON_TYPE_BADGE);
   } else {
-    return FALSE;
+    resource_id = GlobalErrorServiceFactory::GetForProfile(
+        browser_->profile())->GetFirstBadgeResourceID();
   }
 
+  if (!resource_id)
+    return FALSE;
+
   // Draw the chrome app menu icon onto the canvas.
+  const SkBitmap* badge = theme_service_->GetBitmapNamed(resource_id);
   gfx::CanvasSkiaPaint canvas(expose, false);
   int x_offset = base::i18n::IsRTL() ? 0 :
       sender->allocation.width - badge->width();

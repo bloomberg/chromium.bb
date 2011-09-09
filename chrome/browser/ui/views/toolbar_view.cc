@@ -17,6 +17,8 @@
 #include "chrome/browser/ui/views/event_utils.h"
 #include "chrome/browser/ui/views/wrench_menu.h"
 #include "chrome/browser/upgrade_detector.h"
+#include "chrome/browser/ui/global_error_service.h"
+#include "chrome/browser/ui/global_error_service_factory.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/accessibility/browser_accessibility_state.h"
@@ -266,7 +268,11 @@ SkBitmap ToolbarView::GetAppMenuIcon(views::CustomButton::ButtonState state) {
   incompatibility_badge_showing = false;
 #endif
 
-  bool add_badge = IsUpgradeRecommended() || ShouldShowIncompatibilityWarning();
+  int error_badge_id = GlobalErrorServiceFactory::GetForProfile(
+      browser_->profile())->GetFirstBadgeResourceID();
+
+  bool add_badge = IsUpgradeRecommended() ||
+                   ShouldShowIncompatibilityWarning() || error_badge_id;
   if (!add_badge)
     return icon;
 
@@ -291,6 +297,8 @@ SkBitmap ToolbarView::GetAppMenuIcon(views::CustomButton::ButtonState state) {
 #else
     NOTREACHED();
 #endif
+  } else if (error_badge_id) {
+    badge = *tp->GetBitmapNamed(error_badge_id);
   } else {
     NOTREACHED();
   }
