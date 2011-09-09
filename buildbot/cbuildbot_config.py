@@ -498,6 +498,13 @@ add_config('amd64-generic-full', [full, {
   'prebuilts' : False,
 }])
 
+add_config('x86-generic-asan', [{
+  'board' : 'x86-generic',
+  'profile' : 'asan',
+  'prebuilts' : False,
+  'useflags' : ['asan'],
+}])
+
 #
 # Internal Builds
 #
