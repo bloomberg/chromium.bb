@@ -34,6 +34,8 @@ class Subprocess2Test(unittest.TestCase):
     for module, names in self.TO_SAVE.iteritems():
       self.saved[module] = dict(
           (name, getattr(module, name)) for name in names)
+    # TODO(maruel): Do a reopen() on sys.__stdout__ and sys.__stderr__ so they
+    # can be trapped in the child process for better coverage.
 
   def tearDown(self):
     for module, saved in self.saved.iteritems():
@@ -89,6 +91,18 @@ class Subprocess2Test(unittest.TestCase):
     }
     self.assertEquals(expected, results)
 
+  def test_capture_defaults(self):
+    results = self._fake_communicate()
+    self.assertEquals(
+        'stdout', subprocess2.capture(['foo'], a=True))
+    expected = {
+        'args': ['foo'],
+        'a':True,
+        'stdin': subprocess2.VOID,
+        'stdout': subprocess2.PIPE,
+    }
+    self.assertEquals(expected, results)
+
   def test_communicate_defaults(self):
     results = self._fake_Popen()
     self.assertEquals(
@@ -129,7 +143,6 @@ class Subprocess2Test(unittest.TestCase):
         'a':True,
         'stdin': subprocess2.VOID,
         'stdout': subprocess2.PIPE,
-        'stderr': subprocess2.STDOUT,
     }
     self.assertEquals(expected, results)
 
@@ -142,21 +155,68 @@ class Subprocess2Test(unittest.TestCase):
     self.assertEquals(subprocess2.TIMED_OUT, returncode)
     self.assertEquals(['', None], out)
 
-  def test_void(self):
-    out = subprocess2.check_output(
+  def test_check_output_no_stdout(self):
+    try:
+      subprocess2.check_output(self.exe, stdout=subprocess2.PIPE)
+      self.fail()
+    except TypeError:
+      pass
+
+  def test_stdout_void(self):
+    (out, err), code = subprocess2.communicate(
          self.exe + ['--stdout', '--stderr'],
-         stdout=subprocess2.VOID)
+         stdout=subprocess2.VOID,
+         stderr=subprocess2.PIPE)
     self.assertEquals(None, out)
-    out = subprocess2.check_output(
+    self.assertEquals('a\nbb\nccc\n', err)
+    self.assertEquals(0, code)
+
+  def test_stderr_void(self):
+    (out, err), code = subprocess2.communicate(
          self.exe + ['--stdout', '--stderr'],
-          universal_newlines=True,
+         universal_newlines=True,
+         stdout=subprocess2.PIPE,
          stderr=subprocess2.VOID)
     self.assertEquals('A\nBB\nCCC\n', out)
+    self.assertEquals(None, err)
+    self.assertEquals(0, code)
 
-  def test_check_output_throw(self):
+  def test_check_output_throw_stdout(self):
+    try:
+      subprocess2.check_output(
+          self.exe + ['--fail', '--stdout'], universal_newlines=True)
+      self.fail()
+    except subprocess2.CalledProcessError, e:
+      self.assertEquals('A\nBB\nCCC\n', e.stdout)
+      self.assertEquals(None, e.stderr)
+      self.assertEquals(64, e.returncode)
+
+  def test_check_output_throw_no_stderr(self):
     try:
       subprocess2.check_output(
           self.exe + ['--fail', '--stderr'], universal_newlines=True)
+      self.fail()
+    except subprocess2.CalledProcessError, e:
+      self.assertEquals('', e.stdout)
+      self.assertEquals(None, e.stderr)
+      self.assertEquals(64, e.returncode)
+
+  def test_check_output_throw_stderr(self):
+    try:
+      subprocess2.check_output(
+          self.exe + ['--fail', '--stderr'], stderr=subprocess2.PIPE,
+          universal_newlines=True)
+      self.fail()
+    except subprocess2.CalledProcessError, e:
+      self.assertEquals('', e.stdout)
+      self.assertEquals('a\nbb\nccc\n', e.stderr)
+      self.assertEquals(64, e.returncode)
+
+  def test_check_output_throw_stderr_stdout(self):
+    try:
+      subprocess2.check_output(
+          self.exe + ['--fail', '--stderr'], stderr=subprocess2.STDOUT,
+          universal_newlines=True)
       self.fail()
     except subprocess2.CalledProcessError, e:
       self.assertEquals('a\nbb\nccc\n', e.stdout)

@@ -249,6 +249,8 @@ def call(args, **kwargs):
   """Emulates subprocess.call().
 
   Automatically convert stdout=PIPE or stderr=PIPE to VOID.
+  In no case they can be returned since no code path raises
+  subprocess2.CalledProcessError.
   """
   if kwargs.get('stdout') == PIPE:
     kwargs['stdout'] = VOID
@@ -281,16 +283,12 @@ def capture(args, **kwargs):
   Returns stdout.
 
   - Discards returncode.
-  - Discards stderr. By default sets stderr=STDOUT.
-  - Blocks stdin by default since no output will be visible.
+  - Blocks stdin by default if not specified since no output will be visible.
   """
-  if kwargs.get('stdin') is None:
-    kwargs['stdin'] = VOID
-  if kwargs.get('stdout') is None:
-    kwargs['stdout'] = PIPE
-  if kwargs.get('stderr') is None:
-    kwargs['stderr'] = STDOUT
-  return communicate(args, **kwargs)[0][0]
+  kwargs.setdefault('stdin', VOID)
+
+  # Like check_output, deny the caller from using stdout arg.
+  return communicate(args, stdout=PIPE, **kwargs)[0][0]
 
 
 def check_output(args, **kwargs):
@@ -298,15 +296,10 @@ def check_output(args, **kwargs):
 
   Captures stdout of a process call and returns stdout only.
 
-  - Discards stderr. By default sets stderr=STDOUT.
   - Throws if return code is not 0.
   - Works even prior to python 2.7.
-  - Blocks stdin by default since no output will be visible.
+  - Blocks stdin by default if not specified since no output will be visible.
+  - As per doc, "The stdout argument is not allowed as it is used internally."
   """
-  if kwargs.get('stdin') is None:
-    kwargs['stdin'] = VOID
-  if kwargs.get('stdout') is None:
-    kwargs['stdout'] = PIPE
-  if kwargs.get('stderr') is None:
-    kwargs['stderr'] = STDOUT
-  return check_call_out(args, **kwargs)[0]
+  kwargs.setdefault('stdin', VOID)
+  return check_call_out(args, stdout=PIPE, **kwargs)[0]

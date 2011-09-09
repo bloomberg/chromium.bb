@@ -515,7 +515,9 @@ def RunUnitTests(input_api, output_api, unit_tests):
         input_api.subprocess.check_call(cmd, cwd=input_api.PresubmitLocalPath())
       else:
         input_api.subprocess.check_output(
-            cmd, cwd=input_api.PresubmitLocalPath())
+            cmd,
+            stderr=input_api.subprocess.STDOUT,
+            cwd=input_api.PresubmitLocalPath())
     except (OSError, input_api.subprocess.CalledProcessError), e:
       results.append(message_type('%s failed!\n%s' % (unit_test, e)))
   return results
@@ -558,7 +560,8 @@ def RunPythonUnitTests(input_api, output_api, unit_tests):
       env['PYTHONPATH'] = input_api.os_path.pathsep.join((backpath))
     cmd = [input_api.python_executable, '-m', '%s' % unit_test]
     try:
-      input_api.subprocess.check_output(cmd, cwd=cwd, env=env)
+      input_api.subprocess.check_output(
+          cmd, stderr=input_api.subprocess.STDOUT, cwd=cwd, env=env)
     except (OSError, input_api.subprocess.CalledProcessError), e:
       results.append(message_type('%s failed!\n%s' % (unit_test_name, e)))
   return results

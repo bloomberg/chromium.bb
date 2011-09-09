@@ -79,6 +79,7 @@ def determine_scm(root):
       subprocess2.check_output(
           ['git', 'rev-parse', '--show-cdup'],
           stdout=subprocess2.VOID,
+          stderr=subprocess2.VOID,
           cwd=root)
       return 'git'
     except (OSError, subprocess2.CalledProcessError):

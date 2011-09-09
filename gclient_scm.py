@@ -665,7 +665,9 @@ class GitWrapper(SCMWrapper):
 
   def _Capture(self, args):
     return subprocess2.check_output(
-        ['git'] + args, cwd=self.checkout_path).strip()
+        ['git'] + args,
+        stderr=subprocess2.PIPE,
+        cwd=self.checkout_path).strip()
 
   def _Run(self, args, options, **kwargs):
     kwargs.setdefault('cwd', self.checkout_path)

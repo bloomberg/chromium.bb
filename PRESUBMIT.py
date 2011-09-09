@@ -85,7 +85,8 @@ def RunGitClTests(input_api, output_api):
               [input_api.os_path.join(test_path, test)], cwd=test_path)
         else:
           input_api.subprocess.check_output(
-              [input_api.os_path.join(test_path, test)], cwd=test_path)
+              [input_api.os_path.join(test_path, test)], cwd=test_path,
+              stderr=input_api.subprocess.STDOUT)
       except (OSError, input_api.subprocess.CalledProcessError), e:
         results.append(output_api.PresubmitError('%s failed\n%s' % (test, e)))
   except local_rietveld.Failure, e:

@@ -140,6 +140,7 @@ class RawCheckout(CheckoutBase):
               stdout = subprocess2.check_output(
                   ['patch', '-p%s' % p.patchlevel],
                   stdin=p.get(),
+                  stderr=subprocess2.STDOUT,
                   cwd=self.project_path)
             elif p.is_new and not os.path.exists(filepath):
               # There is only a header. Just create the file.
@@ -218,7 +219,9 @@ class SvnMixIn(object):
     """
     kwargs.setdefault('cwd', self.project_path)
     return subprocess2.check_output(
-        self._add_svn_flags(args, True, credentials), **kwargs)
+        self._add_svn_flags(args, True, credentials),
+        stderr=subprocess2.STDOUT,
+        **kwargs)
 
   @staticmethod
   def _parse_svn_info(output, key):
@@ -496,7 +499,8 @@ class GitCheckoutBase(CheckoutBase):
 
   def _check_output_git(self, args, **kwargs):
     kwargs.setdefault('cwd', self.project_path)
-    return subprocess2.check_output(['git'] + args, **kwargs)
+    return subprocess2.check_output(
+        ['git'] + args, stderr=subprocess2.STDOUT, **kwargs)
 
   def _branches(self):
     """Returns the list of branches and the active one."""
