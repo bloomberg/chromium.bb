@@ -230,6 +230,9 @@ struct WebAccessibility {
     ATTR_CONTAINER_LIVE_BUSY,
     ATTR_LIVE_ATOMIC,
     ATTR_LIVE_BUSY,
+
+    // ARIA readonly flag.
+    ATTR_ARIA_READONLY,
   };
 
   // Empty constructor, for serialization.

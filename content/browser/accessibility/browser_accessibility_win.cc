@@ -2435,8 +2435,6 @@ void BrowserAccessibilityWin::InitRoleAndState() {
     ia_state_|= STATE_SYSTEM_PRESSED;
   if ((state_ >> WebAccessibility::STATE_PROTECTED) & 1)
     ia_state_|= STATE_SYSTEM_PROTECTED;
-  if ((state_ >> WebAccessibility::STATE_READONLY) & 1)
-    ia_state_|= STATE_SYSTEM_READONLY;
   if ((state_ >> WebAccessibility::STATE_REQUIRED) & 1)
     ia2_state_|= IA2_STATE_REQUIRED;
   if ((state_ >> WebAccessibility::STATE_SELECTABLE) & 1)
@@ -2454,6 +2452,16 @@ void BrowserAccessibilityWin::InitRoleAndState() {
   }
   if ((state_ >> WebAccessibility::STATE_VISITED) & 1)
     ia_state_|= STATE_SYSTEM_TRAVERSED;
+
+  // The meaning of the readonly state on Windows is very different from
+  // the meaning of the readonly state in WebKit, so we ignore
+  // WebAccessibility::STATE_READONLY, and instead just check the
+  // aria readonly value, then there's additional logic below to set
+  // the readonly state based on other criteria.
+  bool aria_readonly = false;
+  GetBoolAttribute(WebAccessibility::ATTR_ARIA_READONLY, &aria_readonly);
+  if (aria_readonly)
+    ia_state_|= STATE_SYSTEM_READONLY;
 
   string16 invalid;
   if (GetHtmlAttribute("aria-invalid", &invalid))

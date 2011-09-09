@@ -292,7 +292,7 @@ uint32 ConvertState(const WebAccessibilityObject& o) {
   if (o.isPasswordField())
     state |= (1 << WebAccessibility::STATE_PROTECTED);
 
-  if (o.isAriaReadOnly())
+  if (o.isReadOnly())
     state |= (1 << WebAccessibility::STATE_READONLY);
 
   if (o.isRequired())
@@ -653,6 +653,9 @@ std::string WebAccessibility::DebugString(bool recursive) {
       case ATTR_CONTAINER_LIVE_BUSY:
         result += " container_busy=" + value;
         break;
+      case ATTR_ARIA_READONLY:
+        result += " aria_readonly=" + value;
+        break;
     }
   }
 
@@ -697,6 +700,8 @@ void WebAccessibility::Init(const WebKit::WebAccessibilityObject& src,
     string_attributes[ATTR_ACCESS_KEY] = src.accessKey();
   if (src.actionVerb().length())
     string_attributes[ATTR_ACTION] = src.actionVerb();
+  if (src.isAriaReadOnly())
+    bool_attributes[ATTR_ARIA_READONLY] = true;
   if (src.isButtonStateMixed())
     bool_attributes[ATTR_BUTTON_MIXED] = true;
   if (src.accessibilityDescription().length())
