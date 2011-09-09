@@ -1307,70 +1307,6 @@
    fun:yy_reduce
 }
 {
-   bug_60556a
-   Memcheck:Addr1
-   ...
-   fun:sqlite3_exec
-   fun:_ZN3sql10Connection7ExecuteEPKc
-   fun:_ZN11WebDatabase*
-}
-{
-   bug_60556b
-   Memcheck:Addr4
-   ...
-   fun:sqlite3_exec
-   fun:_ZN3sql10Connection7ExecuteEPKc
-   fun:_ZN11WebDatabase*
-}
-{
-   bug_60556c
-   Memcheck:Addr1
-   ...
-   fun:sqlite3_step
-   fun:_ZN3sql9Statement3RunEv
-   fun:_ZN3sql10Connection17CommitTransactionEv
-   fun:_ZN3sql11Transaction6CommitEv
-   fun:_ZN11WebDatabase*
-}
-{
-   bug_60556d
-   Memcheck:Addr4
-   ...
-   fun:sqlite3_step
-   fun:_ZN3sql9Statement3RunEv
-   fun:_ZN3sql10Connection17CommitTransactionEv
-   fun:_ZN3sql11Transaction6CommitEv
-   fun:_ZN11WebDatabase*
-}
-{
-   bug_60556e
-   Memcheck:Param
-   read(buf)
-   ...
-   fun:sqlite3_exec
-   fun:_ZN3sql10Connection7ExecuteEPKc
-   fun:_ZN11WebDatabase*
-}
-{
-   bug_60556f
-   Memcheck:Addr4
-   ...
-   fun:sqlite3_close
-   fun:_ZN3sql10Connection5CloseEv
-   fun:_ZN3sql10ConnectionD2Ev
-   fun:_ZN3sql10ConnectionD1Ev
-   fun:_ZN11WebDatabase*
-}
-{
-   bug_60556g
-   Memcheck:Addr4
-   ...
-   fun:sqlite3_step
-   fun:_ZN3sql9Statement4StepEv
-   fun:_ZN7history11URLDatabase12GetRowForURLERK4GURLPNS_6URLRowE
-   fun:_ZN7history14HistoryBackend12AddPageVisitERK4GURLN4base4TimeExjNS_11VisitSourceE
-}
-{
    bug_20581
    Memcheck:Leak
    ...
@@ -2854,6 +2790,70 @@
    fun:_ZN3IPC11SyncChannel11SyncContext16DispatchMessagesEv
 }
 {
+   bug_60556a
+   Memcheck:Addr1
+   ...
+   fun:sqlite3_exec
+   fun:_ZN3sql10Connection7ExecuteEPKc
+   fun:_ZN11WebDatabase*
+}
+{
+   bug_60556b
+   Memcheck:Addr4
+   ...
+   fun:sqlite3_exec
+   fun:_ZN3sql10Connection7ExecuteEPKc
+   fun:_ZN11WebDatabase*
+}
+{
+   bug_60556c
+   Memcheck:Addr1
+   ...
+   fun:sqlite3_step
+   fun:_ZN3sql9Statement3RunEv
+   fun:_ZN3sql10Connection17CommitTransactionEv
+   fun:_ZN3sql11Transaction6CommitEv
+   fun:_ZN11WebDatabase*
+}
+{
+   bug_60556d
+   Memcheck:Addr4
+   ...
+   fun:sqlite3_step
+   fun:_ZN3sql9Statement3RunEv
+   fun:_ZN3sql10Connection17CommitTransactionEv
+   fun:_ZN3sql11Transaction6CommitEv
+   fun:_ZN11WebDatabase*
+}
+{
+   bug_60556e
+   Memcheck:Param
+   read(buf)
+   ...
+   fun:sqlite3_exec
+   fun:_ZN3sql10Connection7ExecuteEPKc
+   fun:_ZN11WebDatabase*
+}
+{
+   bug_60556f
+   Memcheck:Addr4
+   ...
+   fun:sqlite3_close
+   fun:_ZN3sql10Connection5CloseEv
+   fun:_ZN3sql10ConnectionD2Ev
+   fun:_ZN3sql10ConnectionD1Ev
+   fun:_ZN11WebDatabase*
+}
+{
+   bug_60556g
+   Memcheck:Addr4
+   ...
+   fun:sqlite3_step
+   fun:_ZN3sql9Statement4StepEv
+   fun:_ZN7history11URLDatabase12GetRowForURLERK4GURLPNS_6URLRowE
+   fun:_ZN7history14HistoryBackend12AddPageVisitERK4GURLN4base4TimeExjNS_11VisitSourceE
+}
+{
    bug_60612
    Memcheck:Leak
    fun:_Znw*
@@ -3626,6 +3626,31 @@
    Memcheck:Leak
    ...
    fun:_ZN20GpuProcessHostUIShim14GetForRendererEi
+}
+{
+   bug_74383a
+   Memcheck:Cond
+   fun:gtk_widget_set_size_request
+   fun:_ZN15StatusBubbleGtk22UpdateLabelSizeRequestEv
+   fun:_ZN15StatusBubbleGtk19AnimationProgressedEPKN2ui9AnimationE
+   fun:_ZN2ui15LinearAnimation4StepEN4base9TimeTicksE
+   fun:_ZN2ui18AnimationContainer3RunEv
+   fun:_Z16DispatchToMethodIN2ui18AnimationContainerEMS1_FvvEEvPT_T0_RK6Tuple0
+   fun:_ZN4base9BaseTimerIN2ui18AnimationContainerELb1EE9TimerTask3RunEv
+   ...
+   fun:_ZN11MessageLoop7RunTaskERKNS_11PendingTaskE
+}
+{
+   bug_74383b
+   Memcheck:Cond
+   fun:gtk_widget_set_usize_internal
+   fun:_ZN15StatusBubbleGtk22UpdateLabelSizeRequestEv
+   ...
+   fun:_ZN2ui18AnimationContainer3RunEv
+   fun:_Z16DispatchToMethodIN2ui18AnimationContainerEMS1_FvvEEvPT_T0_RK6Tuple0
+   fun:_ZN4base9BaseTimerIN2ui18AnimationContainerELb1EE9TimerTask3RunEv
+   ...
+   fun:_ZN11MessageLoop7RunTaskERKNS_11PendingTaskE
 }
 {
    bug_75019
