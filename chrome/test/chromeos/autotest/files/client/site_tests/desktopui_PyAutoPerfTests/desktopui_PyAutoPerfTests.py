@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import optparse
 import os
 import pwd
 import re
@@ -63,8 +64,20 @@ class desktopui_PyAutoPerfTests(chrome_test.ChromeTestBase):
             open(constants.DISABLE_BROWSER_RESTART_MAGIC_FILE, 'w').close()
         assert os.path.exists(constants.DISABLE_BROWSER_RESTART_MAGIC_FILE)
 
-    def run_once(self):
+    def parse_args(self, args):
+        """Parses input arguments to this autotest."""
+        parser = optparse.OptionParser()
+        parser.add_option('-i', '--num_iterations', dest='num_iterations',
+                          type='int', default=0,
+                          help='Number of iterations for perf measurements. '
+                               'Defaults to the value given in perf.py.')
+        return parser.parse_args(args)
+
+    def run_once(self, args=[]):
         """Runs the PyAuto performance tests."""
+        options, test_args = self.parse_args(args)
+        test_args = ' '.join(test_args)
+
         # Enable Chrome testing interface and login to a default account.
         deps_dir = os.path.join(self.autodir, 'deps')
         pyautolib_dir = os.path.join(self.cr_source_dir,
@@ -78,10 +91,14 @@ class desktopui_PyAutoPerfTests(chrome_test.ChromeTestBase):
         # Run the PyAuto performance tests.
         functional_cmd = cros_ui.xcommand_as(
             '%s/chrome_test/test_src/chrome/test/functional/'
-            'pyauto_functional.py --suite=CHROMEOS_PERF -v' % deps_dir)
+            'pyauto_functional.py --suite=CHROMEOS_PERF -v %s' % (
+                deps_dir, test_args))
+        environment = os.environ.copy()
+        if options.num_iterations:
+          environment['NUM_ITERATIONS'] = str(options.num_iterations)
         proc = subprocess.Popen(
             functional_cmd, shell=True, stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT)
+            stderr=subprocess.STDOUT, env=environment)
         output = proc.communicate()[0]
         print output  # Ensure pyauto test output is stored in autotest logs.
         if proc.returncode != 0:

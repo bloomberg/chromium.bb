@@ -16,4 +16,4 @@ This is a wrapper test for Chrome pyauto-based performance tests.
 http://dev.chromium.org/developers/testing/pyauto
 """
 
-job.run_test('desktopui_PyAutoPerfTests')
+job.run_test('desktopui_PyAutoPerfTests', args=args)
