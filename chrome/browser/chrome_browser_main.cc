@@ -1823,7 +1823,7 @@ void ChromeBrowserMainParts::MainMessageLoopRun() {
 void ChromeBrowserMainParts::PostMainMessageLoopRun() {
   // Start watching for jank during shutdown. It gets disarmed when
   // |shutdown_watcher_| object is destructed.
-  shutdown_watcher_->Arm(base::TimeDelta::FromSeconds(45));
+  shutdown_watcher_->Arm(base::TimeDelta::FromSeconds(90));
 
 #if defined(OS_WIN)
   // If it's the first run, log the search engine chosen.  We wait until
