@@ -7,6 +7,7 @@
 #pragma once
 
 #include "base/basictypes.h"
+#include "views/views_export.h"
 
 namespace views {
 
@@ -17,7 +18,7 @@ class View;
 // re-enabled. This can be useful during operations like animations, that are
 // sensitive to costly paints, and during which only composting, not painting,
 // is required.
-class PaintLock {
+class VIEWS_EXPORT PaintLock {
  public:
   // The paint lock does not own the view. It is an error for the view to be
   // destroyed before the lock.
