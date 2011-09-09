@@ -41,10 +41,10 @@ generator_default_variables = {
   # Special variables that may be used by gyp 'rule' targets.
   # We generate definitions for these variables on the fly when processing a
   # rule.
-  'RULE_INPUT_ROOT': '$root',
-  'RULE_INPUT_PATH': '$source',
-  'RULE_INPUT_EXT': '$ext',
-  'RULE_INPUT_NAME': '$name',
+  'RULE_INPUT_ROOT': '${root}',
+  'RULE_INPUT_PATH': '${source}',
+  'RULE_INPUT_EXT': '${ext}',
+  'RULE_INPUT_NAME': '${name}',
 }
 
 # TODO: enable cross compiling once we figure out:
@@ -322,9 +322,10 @@ class NinjaWriter:
       # First write out a rule for the rule action.
       name = rule['rule_name']
       args = rule['action']
-      description = self.GenerateDescription('RULE',
-                                             rule.get('message', None),
-                                             '%s $source' % name)
+      description = self.GenerateDescription(
+          'RULE',
+          rule.get('message', None),
+          ('%s ' + generator_default_variables['RULE_INPUT_PATH']) % name)
       rule_name = self.WriteNewNinjaRule(name, args, description)
 
       # TODO: if the command references the outputs directly, we should
@@ -337,7 +338,7 @@ class NinjaWriter:
       needed_variables = set(['source'])
       for argument in args:
         for var in special_locals:
-          if '$' + var in argument:
+          if ('${%s}' % var) in argument:
             needed_variables.add(var)
 
       # For each source file, write an edge that generates all the outputs.
@@ -348,7 +349,8 @@ class NinjaWriter:
         # Gather the list of outputs, expanding $vars if possible.
         outputs = []
         for output in rule['outputs']:
-          outputs.append(output.replace('$root', root))
+          outputs.append(output.replace(
+              generator_default_variables['RULE_INPUT_ROOT'], root))
 
         if int(rule.get('process_outputs_as_sources', False)):
           extra_sources += outputs
