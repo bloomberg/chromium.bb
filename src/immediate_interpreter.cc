@@ -146,6 +146,8 @@ ImmediateInterpreter::ImmediateInterpreter()
       two_finger_close_distance_thresh_prop_(NULL),
       two_finger_scroll_distance_thresh_(2.0),
       two_finger_scroll_distance_thresh_prop_(NULL),
+      max_pressure_change_(8.0),
+      max_pressure_change_prop_(NULL),
       scroll_stationary_finger_max_distance_(1.0),
       scroll_stationary_finger_max_distance_prop_(NULL),
       bottom_zone_size_(10.0),
@@ -181,6 +183,8 @@ ImmediateInterpreter::~ImmediateInterpreter() {
     Err("two_finger_close_distance_thresh_prop_ not freed?");
   if (two_finger_scroll_distance_thresh_prop_ != NULL)
     Err("two_finger_scroll_distance_thresh_prop_ not freed?");
+  if (max_pressure_change_prop_ != NULL)
+    Err("max_pressure_change_prop_ not freed?");
   if (scroll_stationary_finger_max_distance_prop_ != NULL)
     Err("scroll_stationary_finger_max_distance_prop_ not freed?");
   if (bottom_zone_size_prop_ != NULL)
@@ -827,6 +831,9 @@ void ImmediateInterpreter::FillResultGesture(
         Err("No previous state!");
         return;
       }
+      if (fabsf(current->pressure - prev->pressure) >
+          max_pressure_change_)
+        break;
       result_ = Gesture(kGestureMove,
                         prev_state_.timestamp,
                         hwstate.timestamp,
@@ -845,6 +852,8 @@ void ImmediateInterpreter::FillResultGesture(
                fingers.begin(), e = fingers.end(); it != e; ++it) {
         const FingerState* fs = hwstate.GetFingerState(*it);
         const FingerState* prev = prev_state_.GetFingerState(*it);
+        if (fabsf(fs->pressure - prev->pressure) > max_pressure_change_)
+          return;
         float local_dx = fs->position_x - prev->position_x;
         float local_dy = fs->position_y - prev->position_y;
         float local_max_mag_sq = local_dx * local_dx + local_dy * local_dy;
@@ -890,37 +899,48 @@ void ImmediateInterpreter::SetHardwareProperties(
 
 void ImmediateInterpreter::Configure(GesturesPropProvider* pp, void* data) {
   tap_enable_prop_ = pp->create_bool_fn(data, "Tap Enable",
-    &tap_enable_, tap_enable_);
+                                        &tap_enable_, tap_enable_);
   tap_timeout_prop_ = pp->create_real_fn(data, "Tap Timeout",
-    &tap_timeout_, tap_timeout_);
+                                         &tap_timeout_, tap_timeout_);
   tap_drag_timeout_prop_ = pp->create_real_fn(data, "Tap Drag Timeout",
-    &tap_drag_timeout_, tap_drag_timeout_);
+                                              &tap_drag_timeout_,
+                                              tap_drag_timeout_);
   tap_move_dist_prop_ = pp->create_real_fn(data, "Tap Move Distance",
-    &tap_move_dist_, tap_move_dist_);
+                                           &tap_move_dist_, tap_move_dist_);
   palm_pressure_prop_ = pp->create_real_fn(data, "Palm Pressure",
-    &palm_pressure_, palm_pressure_);
+                                           &palm_pressure_, palm_pressure_);
   change_timeout_prop_ = pp->create_real_fn(data, "Change Timeout",
-    &change_timeout_, change_timeout_);
+                                            &change_timeout_, change_timeout_);
   evaluation_timeout_prop_ = pp->create_real_fn(data, "Evaluation Timeout",
-    &evaluation_timeout_, evaluation_timeout_);
-  two_finger_pressure_diff_thresh_prop_ = pp->create_real_fn(data,
-    "Two Finger Pressure Diff Thresh", &two_finger_pressure_diff_thresh_,
-    two_finger_pressure_diff_thresh_);
-  two_finger_close_distance_thresh_prop_ = pp->create_real_fn(data,
-    "Two Finger Close Distance Thresh", &two_finger_close_distance_thresh_,
-    two_finger_close_distance_thresh_);
-  two_finger_scroll_distance_thresh_prop_ = pp->create_real_fn(data,
-    "Two Finger Scroll Distance Thresh", &two_finger_scroll_distance_thresh_,
-    two_finger_scroll_distance_thresh_);
-  scroll_stationary_finger_max_distance_prop_ = pp->create_real_fn(data,
-    "Scroll Stationary Finger Max Distance",
-    &scroll_stationary_finger_max_distance_,
-    scroll_stationary_finger_max_distance_);
+                                                &evaluation_timeout_,
+                                                evaluation_timeout_);
+  two_finger_pressure_diff_thresh_prop_ =
+      pp->create_real_fn(data, "Two Finger Pressure Diff Thresh",
+                         &two_finger_pressure_diff_thresh_,
+                         two_finger_pressure_diff_thresh_);
+  two_finger_close_distance_thresh_prop_ =
+      pp->create_real_fn(data, "Two Finger Close Distance Thresh",
+                         &two_finger_close_distance_thresh_,
+                         two_finger_close_distance_thresh_);
+  two_finger_scroll_distance_thresh_prop_ =
+      pp->create_real_fn(data, "Two Finger Scroll Distance Thresh",
+                         &two_finger_scroll_distance_thresh_,
+                         two_finger_scroll_distance_thresh_);
+  max_pressure_change_prop_ =
+      pp->create_real_fn(data, "Max Allowed Pressure Change",
+                         &max_pressure_change_,
+                         max_pressure_change_);
+  scroll_stationary_finger_max_distance_prop_ =
+      pp->create_real_fn(data, "Scroll Stationary Finger Max Distance",
+                         &scroll_stationary_finger_max_distance_,
+                         scroll_stationary_finger_max_distance_);
   bottom_zone_size_prop_ = pp->create_real_fn(data, "Bottom Zone Size",
-    &bottom_zone_size_, bottom_zone_size_);
-  button_evaluation_timeout_prop_ = pp->create_real_fn(data,
-    "Button Evaluation Timeout", &button_evaluation_timeout_,
-    button_evaluation_timeout_);
+                                              &bottom_zone_size_,
+                                              bottom_zone_size_);
+  button_evaluation_timeout_prop_ =
+      pp->create_real_fn(data, "Button Evaluation Timeout",
+                         &button_evaluation_timeout_,
+                         button_evaluation_timeout_);
 }
 
 void ImmediateInterpreter::Deconfigure(GesturesPropProvider* pp, void* data) {
@@ -946,6 +966,8 @@ void ImmediateInterpreter::Deconfigure(GesturesPropProvider* pp, void* data) {
   two_finger_close_distance_thresh_prop_ = NULL;
   pp->free_fn(data, two_finger_scroll_distance_thresh_prop_);
   two_finger_scroll_distance_thresh_prop_ = NULL;
+  pp->free_fn(data, max_pressure_change_prop_);
+  max_pressure_change_prop_ = NULL;
   pp->free_fn(data, scroll_stationary_finger_max_distance_prop_);
   scroll_stationary_finger_max_distance_prop_ = NULL;
   pp->free_fn(data, bottom_zone_size_prop_);

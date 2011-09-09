@@ -305,6 +305,59 @@ TEST(ImmediateInterpreterTest, PalmTest) {
   EXPECT_TRUE(ii.palm_.empty());
 }
 
+TEST(ImmediateInterpreterTest, PressureChangeMoveTest) {
+  ImmediateInterpreter ii;
+  HardwareProperties hwprops = {
+    0,  // left edge
+    0,  // top edge
+    1000,  // right edge
+    1000,  // bottom edge
+    500,  // x pixels/TP width
+    500,  // y pixels/TP height
+    96,  // x screen DPI
+    96,  // y screen DPI
+    2,  // max fingers
+    5,  // max touch
+    0,  // t5r2
+    0,  // semi-mt
+    1  // is button pad
+  };
+  ii.SetHardwareProperties(hwprops);
+
+  const int kBig = 70;  // large pressure
+  const int kSml = 50;  // small pressure
+
+  FingerState finger_states[] = {
+    // TM, Tm, WM, Wm, Press, Orientation, X, Y, TrID
+    {0, 0, 0, 0, kSml, 0, 600, 300, 1},
+    {0, 0, 0, 0, kSml, 0, 600, 400, 1},
+    {0, 0, 0, 0, kBig, 0, 600, 500, 1},
+    {0, 0, 0, 0, kBig, 0, 600, 600, 1},
+  };
+  HardwareState hardware_state[] = {
+    // time, buttons, finger count, touch count, finger states pointer
+    { 200000, 0, 1, 1, &finger_states[0] },
+    { 200001, 0, 1, 1, &finger_states[1] },
+    { 200002, 0, 1, 1, &finger_states[2] },
+    { 200003, 0, 1, 1, &finger_states[3] },
+  };
+
+  for (size_t i = 0; i < arraysize(hardware_state); ++i) {
+    Gesture* result = ii.SyncInterpret(&hardware_state[i], NULL);
+    switch (i) {
+      case 0:
+      case 2:
+        EXPECT_FALSE(result);
+        break;
+      case 1:  // fallthrough
+      case 3:
+        ASSERT_TRUE(result);
+        EXPECT_EQ(kGestureTypeMove, result->type);
+        break;
+    }
+  }
+}
+
 TEST(ImmediateInterpreterTest, GetGesturingFingersTest) {
   ImmediateInterpreter ii;
   HardwareProperties hwprops = {

@@ -236,6 +236,9 @@ class ImmediateInterpreter : public Interpreter {
   // Consider scroll vs pointing if finger moves at least this distance [mm]
   double two_finger_scroll_distance_thresh_;
   GesturesProp* two_finger_scroll_distance_thresh_prop_;
+  // A finger must change in pressure by less than this amount to trigger motion
+  double max_pressure_change_;
+  GesturesProp* max_pressure_change_prop_;
   // During a scroll one finger determines scroll speed and direction.
   // Maximum distance [mm] the other finger can move in opposite direction
   double scroll_stationary_finger_max_distance_;
