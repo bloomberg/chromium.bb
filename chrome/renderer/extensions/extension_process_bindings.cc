@@ -4,7 +4,6 @@
 
 #include "chrome/renderer/extensions/extension_process_bindings.h"
 
-#include <map>
 #include <set>
 #include <string>
 #include <vector>
@@ -12,7 +11,6 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/json/json_reader.h"
-#include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
@@ -25,8 +23,8 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/renderer/chrome_render_process_observer.h"
+#include "chrome/renderer/extensions/bindings_utils.h"
 #include "chrome/renderer/extensions/event_bindings.h"
-#include "chrome/renderer/extensions/extension_bindings_context.h"
 #include "chrome/renderer/extensions/extension_base.h"
 #include "chrome/renderer/extensions/extension_dispatcher.h"
 #include "chrome/renderer/extensions/extension_helper.h"
@@ -45,6 +43,9 @@
 #include "v8/include/v8.h"
 #include "webkit/glue/webkit_glue.h"
 
+using bindings_utils::GetPendingRequestMap;
+using bindings_utils::PendingRequest;
+using bindings_utils::PendingRequestMap;
 using WebKit::WebFrame;
 using WebKit::WebView;
 
@@ -57,20 +58,6 @@ const char* kExtensionDeps[] = {
   RendererExtensionBindings::kName,
   ExtensionApiTestV8Extension::kName,
 };
-
-// Contains info relevant to a pending API request.
-struct PendingRequest {
- public :
-  PendingRequest(v8::Persistent<v8::Context> context, const std::string& name)
-      : context(context), name(name) {
-  }
-  v8::Persistent<v8::Context> context;
-  std::string name;
-};
-typedef std::map<int, linked_ptr<PendingRequest> > PendingRequestMap;
-
-base::LazyInstance<PendingRequestMap> g_pending_requests(
-    base::LINKER_INITIALIZED);
 
 // A RenderViewVisitor class that iterates through the set of available
 // views, looking for a view of the given type, in the given browser window
@@ -443,7 +430,7 @@ class ExtensionImpl : public ExtensionBase {
     v8::Persistent<v8::Context> current_context =
         v8::Persistent<v8::Context>::New(v8::Context::GetCurrent());
     DCHECK(!current_context.IsEmpty());
-    g_pending_requests.Get()[request_id].reset(new PendingRequest(
+    GetPendingRequestMap()[request_id].reset(new PendingRequest(
         current_context, name));
 
     ExtensionHostMsg_Request_Params params;
@@ -574,9 +561,9 @@ v8::Extension* ExtensionProcessBindings::Get(
 void ExtensionProcessBindings::HandleResponse(int request_id, bool success,
                                               const std::string& response,
                                               const std::string& error) {
-  PendingRequestMap::iterator request =
-      g_pending_requests.Get().find(request_id);
-  if (request == g_pending_requests.Get().end())
+  PendingRequestMap& pending_requests = GetPendingRequestMap();
+  PendingRequestMap::iterator request = pending_requests.find(request_id);
+  if (request == pending_requests.end())
     return;  // The frame went away.
 
   v8::HandleScope handle_scope;
@@ -586,12 +573,8 @@ void ExtensionProcessBindings::HandleResponse(int request_id, bool success,
   argv[2] = v8::Boolean::New(success);
   argv[3] = v8::String::New(response.c_str());
   argv[4] = v8::String::New(error.c_str());
-  ExtensionBindingsContext* bindings_context =
-      ExtensionBindingsContext::GetByV8Context(request->second->context);
-  v8::Handle<v8::Value> retval =
-      bindings_context->CallChromeHiddenMethod("handleResponse",
-                                               arraysize(argv),
-                                               argv);
+  v8::Handle<v8::Value> retval = bindings_utils::CallFunctionInContext(
+      request->second->context, "handleResponse", arraysize(argv), argv);
   // In debug, the js will validate the callback parameters and return a
   // string if a validation error has occured.
 #ifndef NDEBUG
@@ -603,5 +586,5 @@ void ExtensionProcessBindings::HandleResponse(int request_id, bool success,
 
   request->second->context.Dispose();
   request->second->context.Clear();
-  g_pending_requests.Get().erase(request);
+  pending_requests.erase(request);
 }

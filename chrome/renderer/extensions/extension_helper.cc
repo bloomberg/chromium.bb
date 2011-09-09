@@ -14,7 +14,6 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/renderer/extensions/chrome_webstore_bindings.h"
 #include "chrome/renderer/extensions/event_bindings.h"
-#include "chrome/renderer/extensions/extension_bindings_context.h"
 #include "chrome/renderer/extensions/extension_dispatcher.h"
 #include "chrome/renderer/extensions/extension_process_bindings.h"
 #include "chrome/renderer/extensions/user_script_idle_scheduler.h"
@@ -201,7 +200,7 @@ void ExtensionHelper::OnExtensionMessageInvoke(const std::string& extension_id,
                                                const std::string& function_name,
                                                const ListValue& args,
                                                const GURL& event_url) {
-  ExtensionBindingsContext::DispatchChromeHiddenMethod(
+  EventBindings::CallFunction(
       extension_id, function_name, args, render_view(), event_url);
 }
 
