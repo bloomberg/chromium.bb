@@ -17,9 +17,13 @@
 #include "base/threading/thread.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/web_socket_proxy.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/browser/browser_thread.h"
+#include "content/common/notification_observer.h"
+#include "content/common/notification_registrar.h"
+#include "content/common/notification_service.h"
 #include "content/common/url_constants.h"
 #include "googleurl/src/gurl.h"
 
@@ -98,20 +102,35 @@ class ProxyTask : public Task {
   virtual void Run() OVERRIDE;
 };
 
-struct ProxyLifetime {
-  ProxyLifetime() : delay_ms(1000), shutdown_requested(false) {
+class ProxyLifetime : public NotificationObserver {
+ public:
+  ProxyLifetime() : delay_ms_(1000), shutdown_requested_(false) {
     BrowserThread::PostTask(
         BrowserThread::WEB_SOCKET_PROXY, FROM_HERE, new ProxyTask());
+    registrar_.Add(this, chrome::NOTIFICATION_NETWORK_STATE_CHANGED,
+                   NotificationService::AllSources());
+  }
+
+ private:
+  virtual void Observe(int type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details) {
+    DCHECK_EQ(type, chrome::NOTIFICATION_NETWORK_STATE_CHANGED);
+    DCHECK(chromeos::WebSocketProxyController::IsInitiated());
+    base::AutoLock alk(lock_);
+    if (server_)
+      server_->OnNetworkChange();
   }
 
   // Delay between next attempt to run proxy.
-  int delay_ms;
+  int delay_ms_;
 
-  chromeos::WebSocketProxy* volatile server;
-
-  volatile bool shutdown_requested;
-
-  base::Lock lock;
+  chromeos::WebSocketProxy* volatile server_;
+  volatile bool shutdown_requested_;
+  base::Lock lock_;
+  NotificationRegistrar registrar_;
+  friend class ProxyTask;
+  friend class chromeos::WebSocketProxyController;
 };
 
 base::LazyInstance<ProxyLifetime> g_proxy_lifetime(base::LINKER_INITIALIZED);
@@ -130,25 +149,25 @@ void ProxyTask::Run() {
       g_validator.Get().allowed_origins(),
       reinterpret_cast<sockaddr*>(&sa), sizeof(sa));
   {
-    base::AutoLock alk(g_proxy_lifetime.Get().lock);
-    if (g_proxy_lifetime.Get().shutdown_requested)
+    base::AutoLock alk(g_proxy_lifetime.Get().lock_);
+    if (g_proxy_lifetime.Get().shutdown_requested_)
       return;
-    delete g_proxy_lifetime.Get().server;
-    g_proxy_lifetime.Get().server = server;
+    delete g_proxy_lifetime.Get().server_;
+    g_proxy_lifetime.Get().server_ = server;
   }
   server->Run();
   {
-    base::AutoLock alk(g_proxy_lifetime.Get().lock);
+    base::AutoLock alk(g_proxy_lifetime.Get().lock_);
     delete server;
-    g_proxy_lifetime.Get().server = NULL;
-    if (!g_proxy_lifetime.Get().shutdown_requested) {
+    g_proxy_lifetime.Get().server_ = NULL;
+    if (!g_proxy_lifetime.Get().shutdown_requested_) {
       // Proxy terminated unexpectedly or failed to start (it can happen due to
       // a network problem). Keep trying.
-      if (g_proxy_lifetime.Get().delay_ms < 100 * 1000)
-        (g_proxy_lifetime.Get().delay_ms *= 3) /= 2;
+      if (g_proxy_lifetime.Get().delay_ms_ < 100 * 1000)
+        (g_proxy_lifetime.Get().delay_ms_ *= 3) /= 2;
       BrowserThread::PostDelayedTask(
           BrowserThread::WEB_SOCKET_PROXY, FROM_HERE, new ProxyTask(),
-          g_proxy_lifetime.Get().delay_ms);
+          g_proxy_lifetime.Get().delay_ms_);
     }
   }
 }
@@ -178,10 +197,10 @@ bool WebSocketProxyController::IsInitiated() {
 void WebSocketProxyController::Shutdown() {
   if (IsInitiated()) {
     LOG(INFO) << "WebSocketProxyController shutdown";
-    base::AutoLock alk(g_proxy_lifetime.Get().lock);
-    g_proxy_lifetime.Get().shutdown_requested = true;
-    if (g_proxy_lifetime.Get().server)
-      g_proxy_lifetime.Get().server->Shutdown();
+    base::AutoLock alk(g_proxy_lifetime.Get().lock_);
+    g_proxy_lifetime.Get().shutdown_requested_ = true;
+    if (g_proxy_lifetime.Get().server_)
+      g_proxy_lifetime.Get().server_->Shutdown();
   }
 }
 
@@ -196,4 +215,3 @@ bool WebSocketProxyController::CheckCredentials(
 }
 
 }  // namespace chromeos
-

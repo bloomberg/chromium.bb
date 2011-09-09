@@ -36,6 +36,9 @@ class WebSocketProxy {
   // Terminates running server (should be called on a different thread).
   void Shutdown();
 
+  // Call this on network change.
+  void OnNetworkChange();
+
  private:
   void* impl_;
 

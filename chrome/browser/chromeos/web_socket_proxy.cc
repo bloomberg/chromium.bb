@@ -68,6 +68,10 @@ enum WebSocketFrameOpcode {
   WS_OPCODE_CLOSE = 8
 };
 
+// Fixed-size (one-byte) messages communicated via control pipe.
+const char kControlMessageShutdown[] = { '.' };
+const char kControlMessageNetworkChange[] = { ':' };
+
 // Returns true on success.
 bool SetNonBlock(int fd) {
   int flags = fcntl(fd, F_GETFL, 0);
@@ -212,6 +216,8 @@ class Serv {
 
   // Terminates running server (should be called on a different thread).
   void Shutdown();
+  // Called on network change.  Reinitializes DNS resolution service.
+  void OnNetworkChange();
 
   void ZapConn(Conn*);
   void MarkConnImportance(Conn*, bool important);
@@ -221,7 +227,7 @@ class Serv {
   void CloseAll();
 
   static void OnConnect(int listening_sock, short event, void*);
-  static void OnShutdownRequest(int fd, short event, void*);
+  static void OnControlRequest(int fd, short event, void*);
 
   struct event_base* evbase() { return evbase_; }
 
@@ -239,8 +245,9 @@ class Serv {
   // Socket to listen incoming websocket connections.
   int listening_sock_;
 
-  // Event on this descriptor triggers server shutdown.
-  int shutdown_descriptor_[2];
+  // Used to communicate control requests: either shutdown request or network
+  // change notification.
+  int control_descriptor_[2];
 
   // Flag whether shutdown has been requested.
   bool shutdown_requested_;
@@ -255,7 +262,7 @@ class Serv {
   RevMap rev_map_;
 
   scoped_ptr<struct event> connection_event_;
-  scoped_ptr<struct event> shutdown_event_;
+  scoped_ptr<struct event> control_event_;
 
   DISALLOW_COPY_AND_ASSIGN(Serv);
 };
@@ -436,8 +443,8 @@ Serv::Serv(
       listening_sock_(-1),
       shutdown_requested_(false) {
   std::sort(allowed_origins_.begin(), allowed_origins_.end());
-  shutdown_descriptor_[0] = -1;
-  shutdown_descriptor_[1] = -1;
+  control_descriptor_[0] = -1;
+  control_descriptor_[1] = -1;
 }
 
 Serv::~Serv() {
@@ -454,8 +461,8 @@ void Serv::Run() {
     return;
   }
 
-  if (pipe(shutdown_descriptor_)) {
-    LOG(ERROR) << "WebSocketProxy: Failed to create shutdown pipe";
+  if (pipe(control_descriptor_)) {
+    LOG(ERROR) << "WebSocketProxy: Failed to create control pipe";
     return;
   }
 
@@ -490,19 +497,17 @@ void Serv::Run() {
     return;
   }
 
-  shutdown_event_.reset(new struct event);
-  event_set(shutdown_event_.get(), shutdown_descriptor_[0], EV_READ,
-            &OnShutdownRequest, this);
-  event_base_set(evbase_, shutdown_event_.get());
-  if (event_add(shutdown_event_.get(), NULL)) {
-    LOG(ERROR) << "WebSocketProxy: Failed to add shutdown event";
+  control_event_.reset(new struct event);
+  event_set(control_event_.get(), control_descriptor_[0], EV_READ | EV_PERSIST,
+            &OnControlRequest, this);
+  event_base_set(evbase_, control_event_.get());
+  if (event_add(control_event_.get(), NULL)) {
+    LOG(ERROR) << "WebSocketProxy: Failed to add control event";
     return;
   }
 
-  if (evdns_init()) {
-    LOG(ERROR) << "WebSocketProxy: Failed to initialize evDNS";
-    return;
-  }
+  if (evdns_init())
+    LOG(WARNING) << "WebSocketProxy: Failed to initialize evDNS";
   if (!IgnoreSigPipe()) {
     LOG(ERROR) << "WebSocketProxy: Failed to ignore SIGPIPE";
     return;
@@ -522,8 +527,13 @@ void Serv::Run() {
 }
 
 void Serv::Shutdown() {
-  if (1 != write(shutdown_descriptor_[1], ".", 1))
-    NOTREACHED();
+  int r ALLOW_UNUSED =
+      write(control_descriptor_[1], kControlMessageShutdown, 1);
+}
+
+void Serv::OnNetworkChange() {
+  int r ALLOW_UNUSED =
+      write(control_descriptor_[1], kControlMessageNetworkChange, 1);
 }
 
 void Serv::CloseAll() {
@@ -534,14 +544,14 @@ void Serv::CloseAll() {
     close(listening_sock_);
   }
   for (int i = 0; i < 2; ++i) {
-    if (shutdown_descriptor_[i] >= 0) {
-      shutdown_descriptor_[i] = -1;
-      close(shutdown_descriptor_[i]);
+    if (control_descriptor_[i] >= 0) {
+      control_descriptor_[i] = -1;
+      close(control_descriptor_[i]);
     }
   }
-  if (shutdown_event_.get()) {
-    event_del(shutdown_event_.get());
-    shutdown_event_.reset();
+  if (control_event_.get()) {
+    event_del(control_event_.get());
+    control_event_.reset();
   }
   if (connection_event_.get()) {
     event_del(connection_event_.get());
@@ -649,10 +659,19 @@ void Serv::OnConnect(int listening_sock, short event, void* ctx) {
 }
 
 // static
-void Serv::OnShutdownRequest(int fd, short event, void* ctx) {
+void Serv::OnControlRequest(int fd, short event, void* ctx) {
   Serv* self = static_cast<Serv*>(ctx);
-  self->shutdown_requested_ = true;
-  event_base_loopbreak(self->evbase_);
+
+  char c;
+  if (1 == read(fd, &c, 1) && c == *kControlMessageNetworkChange) {
+    // OnNetworkChange request.
+    evdns_clear_nameservers_and_suspend();
+    evdns_init();
+    evdns_resume();
+  } else if (c == *kControlMessageShutdown) {
+    self->shutdown_requested_ = true;
+    event_base_loopbreak(self->evbase_);
+  }
 }
 
 Conn::Conn(Serv* master)
@@ -1041,6 +1060,13 @@ void Conn::OnPrimchanRead(struct bufferevent* bev, EventKey evkey) {
         switch (cs->ConsumeDestframe(EVBUFFER_INPUT(bev))) {
           case STATUS_OK: {
             {
+              // Unfortunately libevent as of 1.4 does not look into /etc/hosts.
+              // There seems to be no easy API to perform only "local" part of
+              // getaddrinfo resolution.  Hence this hack for "localhost".
+              if (cs->destname_ == "localhost")
+                cs->destname_ = "127.0.0.1";
+            }
+            {
               struct sockaddr_in sa;
               memset(&sa, 0, sizeof(sa));
               sa.sin_port = htons(cs->destport_);
@@ -1075,7 +1101,12 @@ void Conn::OnPrimchanRead(struct bufferevent* bev, EventKey evkey) {
                 }
               }
             }
-            // Try to asynchronously perform DNS resolution.
+            // Asynchronous DNS resolution.
+            if (evdns_count_nameservers() < 1) {
+              evdns_clear_nameservers_and_suspend();
+              evdns_init();
+              evdns_resume();
+            }
             evdns_resolve_ipv4(cs->destname_.c_str(), 0,
                                &OnDestResolutionIPv4, evkey);
             evdns_resolve_ipv6(cs->destname_.c_str(), 0,
@@ -1359,6 +1390,10 @@ void WebSocketProxy::Run() {
 
 void WebSocketProxy::Shutdown() {
   static_cast<Serv*>(impl_)->Shutdown();
+}
+
+void WebSocketProxy::OnNetworkChange() {
+  static_cast<Serv*>(impl_)->OnNetworkChange();
 }
 
 }  // namespace chromeos
