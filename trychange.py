@@ -442,7 +442,7 @@ def GuessVCS(options, path):
   try:
     subprocess2.check_output(
         ['git', 'rev-parse', '--is-inside-work-tree'], cwd=real_path,
-        stdout=subprocess2.VOID)
+        stderr=subprocess2.VOID)
     return GIT(options, path)
   except subprocess2.CalledProcessError, e:
     if e.returncode != errno.ENOENT and e.returncode != 128:
