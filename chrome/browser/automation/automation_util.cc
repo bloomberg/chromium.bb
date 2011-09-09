@@ -42,7 +42,7 @@ void GetCookiesOnIOThread(
     base::WaitableEvent* event,
     std::string* cookies) {
   context_getter->GetURLRequestContext()->cookie_store()->
-      GetCookiesAsync(url,
+      GetCookiesWithOptionsAsync(url, net::CookieOptions(),
                       base::Bind(&GetCookiesCallback, event, cookies));
 }
 

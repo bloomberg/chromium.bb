@@ -65,8 +65,8 @@ class DelayedCookieMonster : public CookieStore {
   // Be called immediately from CookieMonster.
 
   void GetCookiesInternalCallback(
-      std::string* cookie_line,
-      std::vector<CookieStore::CookieInfo>* cookie_info);
+      const std::string& cookie_line,
+      const std::vector<CookieStore::CookieInfo>& cookie_info);
 
   void SetCookiesInternalCallback(bool result);
 

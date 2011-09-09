@@ -577,7 +577,7 @@ void BrowsingDataRemover::ClearCookiesOnIOThread(
       GetURLRequestContext()->cookie_store()->GetCookieMonster();
   if (cookie_monster) {
       cookie_monster->DeleteAllCreatedBetweenAsync(
-          delete_begin_, delete_end_, true,
+          delete_begin_, delete_end_,
           base::Bind(&BrowsingDataRemover::OnClearedCookies,
                      base::Unretained(this)));
   } else {
