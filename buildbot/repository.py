@@ -126,6 +126,12 @@ class RepoRepository(object):
       os.unlink(manifest_path)
       shutil.copyfile(local_manifest, manifest_path)
 
+  def _FixRepoToolUrl(self):
+    """Point the repo source url to our internal mirror."""
+    cros_lib.RunCommand(['git', 'remote', 'set-url', 'origin',
+                         constants.REPO_URL],
+                         cwd=os.path.join(self.directory, '.repo/repo'))
+
   def Sync(self, local_manifest=None):
     """Sync/update the source.  Changes manifest if specified.
 
@@ -135,6 +141,11 @@ class RepoRepository(object):
     try:
       if not InARepoRepository(self.directory):
         self.Initialize()
+
+      # For existing repositories, point the repo source url to our internal
+      # mirror.  Take out once builders/trybot users run through this code.
+      # TODO(rcui): Remove by Oct. 8, 2011
+      self._FixRepoToolUrl()
 
       self._ReinitializeIfNecessary(local_manifest)
       cros_lib.OldRunCommand(['repo', 'sync', '--jobs', '4'],
