@@ -87,12 +87,6 @@ AppCacheUITest.AppCacheLayoutTests_NoPHP
 # Flakily times out, http://crbug.com/85866
 MetricsServiceTest.CloseRenderersNormally
 
-# Flakily times out, http://crbug.com/85867
-LoginPromptTest.TestTwoAuths
-
-# Flakily times out, http://crbug.com/85868
-SessionHistoryTest.FragmentBackForward
-
 # Fails flakily, http://crbug.com/46783
 SessionHistoryTest.FrameBackForward
 SessionHistoryTest.JavascriptHistory
