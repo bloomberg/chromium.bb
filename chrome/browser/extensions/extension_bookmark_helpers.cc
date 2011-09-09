@@ -11,13 +11,27 @@
 
 namespace keys = extension_bookmarks_module_constants;
 
-// Helper functions.
+namespace {
+
+void AddNode(const BookmarkNode* node,
+             base::ListValue* list,
+             bool recurse,
+             bool only_folders) {
+  if (node->IsVisible()) {
+    base::DictionaryValue* dict = extension_bookmark_helpers::GetNodeDictionary(
+        node, recurse, only_folders);
+    list->Append(dict);
+  }
+}
+
+}  // namespace
+
 namespace extension_bookmark_helpers {
 
-DictionaryValue* GetNodeDictionary(const BookmarkNode* node,
-                                   bool recurse,
-                                   bool only_folders) {
-  DictionaryValue* dict = new DictionaryValue();
+base::DictionaryValue* GetNodeDictionary(const BookmarkNode* node,
+                                         bool recurse,
+                                         bool only_folders) {
+  base::DictionaryValue* dict = new base::DictionaryValue;
   dict->SetString(keys::kIdKey, base::Int64ToString(node->id()));
 
   const BookmarkNode* parent = node->parent();
@@ -29,8 +43,7 @@ DictionaryValue* GetNodeDictionary(const BookmarkNode* node,
   if (!node->is_folder()) {
     dict->SetString(keys::kUrlKey, node->url().spec());
   } else {
-    // Javascript Date wants milliseconds since the epoch, ToDoubleT is
-    // seconds.
+    // Javascript Date wants milliseconds since the epoch, ToDoubleT is seconds.
     base::Time t = node->date_folder_modified();
     if (!t.is_null())
       dict->SetDouble(keys::kDateFolderModifiedKey,
@@ -39,16 +52,14 @@ DictionaryValue* GetNodeDictionary(const BookmarkNode* node,
 
   dict->SetString(keys::kTitleKey, node->GetTitle());
   if (!node->date_added().is_null()) {
-    // Javascript Date wants milliseconds since the epoch, ToDoubleT is
-    // seconds.
+    // Javascript Date wants milliseconds since the epoch, ToDoubleT is seconds.
     dict->SetDouble(keys::kDateAddedKey,
                     floor(node->date_added().ToDoubleT() * 1000));
   }
 
   if (recurse && node->is_folder()) {
-    int childCount = node->child_count();
-    ListValue* children = new ListValue();
-    for (int i = 0; i < childCount; ++i) {
+    base::ListValue* children = new base::ListValue;
+    for (int i = 0; i < node->child_count(); ++i) {
       const BookmarkNode* child = node->GetChild(i);
       if (child->IsVisible() && (!only_folders || child->is_folder())) {
         DictionaryValue* dict = GetNodeDictionary(child, true, only_folders);
@@ -60,27 +71,14 @@ DictionaryValue* GetNodeDictionary(const BookmarkNode* node,
   return dict;
 }
 
-void AddNode(const BookmarkNode* node,
-             ListValue* list,
-             bool recurse,
-             bool only_folders) {
-  if (node->IsVisible()) {
-    DictionaryValue* dict = GetNodeDictionary(node, recurse, only_folders);
-    list->Append(dict);
-  }
-}
-
-// Add a JSON representation of |node| to the JSON |list|.
-void AddNode(const BookmarkNode* node,
-             ListValue* list,
-             bool recurse) {
-  return AddNode(node, list, recurse, false);
+void AddNode(const BookmarkNode* node, base::ListValue* list, bool recurse) {
+  return ::AddNode(node, list, recurse, false);
 }
 
 void AddNodeFoldersOnly(const BookmarkNode* node,
-                        ListValue* list,
+                        base::ListValue* list,
                         bool recurse) {
-  return AddNode(node, list, recurse, true);
+  return ::AddNode(node, list, recurse, true);
 }
 
 bool RemoveNode(BookmarkModel* model,
@@ -92,10 +90,7 @@ bool RemoveNode(BookmarkModel* model,
     *error = keys::kNoNodeError;
     return false;
   }
-  if (node == model->root_node() ||
-      node == model->bookmark_bar_node() ||
-      node == model->other_node() ||
-      node == model->synced_node()) {
+  if (model->is_permanent_node(node)) {
     *error = keys::kModifySpecialError;
     return false;
   }
@@ -105,8 +100,7 @@ bool RemoveNode(BookmarkModel* model,
   }
 
   const BookmarkNode* parent = node->parent();
-  int index = parent->GetIndexOf(node);
-  model->Remove(parent, index);
+  model->Remove(parent, parent->GetIndexOf(node));
   return true;
 }
 
