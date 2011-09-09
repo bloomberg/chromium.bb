@@ -394,7 +394,7 @@
    fun:-[NSIBObjectData nibInstantiateWithOwner:topLevelObjects:]
    fun:-[NSNib instantiateNibWithExternalNameTable:]
    fun:-[NSNib instantiateNibWithOwner:topLevelObjects:]
-   fun:_ZN19BrowserMainPartsMac23PreMainMessageLoopStartEv
+   fun:_ZN25ChromeBrowserMainPartsMac23PreMainMessageLoopStartEv
 }
 {
    bug_20582

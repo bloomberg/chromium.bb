@@ -545,7 +545,6 @@
   fun:net::URLRequest::Start
   fun:URLFetcher::Core::StartURLRequest
   fun:URLFetcher::Core::StartURLRequestWhenAppropriate
-  fun:DispatchToMethod
 }
 {
   bug_87747
