@@ -552,10 +552,6 @@ nacl_glibc_skiplist = set([
     'run_syscall_test',
     # GetPid is no longer supplied by IRT so does not work in GLibC.
     'run_getpid_test',
-    # POSIX-over-IMC-hack is completely broken with IRT. We plan to remove it
-    # soon anyway.
-    'run_posix_over_imc_test',
-    'run_startup_message_test',
     ])
 
 
@@ -2851,7 +2847,6 @@ nacl_env.Append(
     'src/shared/ppapi/nacl.scons',
     'src/shared/ppapi_proxy/nacl.scons',
     'src/shared/srpc/nacl.scons',
-    'src/tools/posix_over_imc/nacl.scons',
     'src/trusted/service_runtime/nacl.scons',
     'src/trusted/validator_x86/nacl.scons',
     'src/trusted/weak_ref/nacl.scons',
@@ -2919,7 +2914,6 @@ irt_variant_tests = [
     'tests/srpc_hw/nacl.scons',
     'tests/srpc_message/nacl.scons',
     'tests/stack_alignment/nacl.scons',
-    'tests/startup_message/nacl.scons',
     'tests/stubout_mode/nacl.scons',
     'tests/sysbasic/nacl.scons',
     'tests/syscall_return_sandboxing/nacl.scons',
