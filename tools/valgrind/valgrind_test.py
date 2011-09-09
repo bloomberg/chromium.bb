@@ -966,8 +966,8 @@ class ToolFactory:
         return ThreadSanitizerPosix()
     if tool_name == "drmemory" or tool_name == "drmemory_light":
       # TODO(timurrrr): remove support for "drmemory" when buildbots are
-      # switched to drmemory_light OR make this the default when the tool is
-      # mature enough.
+      # switched to drmemory_light OR make drmemory==drmemory_full the default
+      # mode when the tool is mature enough.
       return DrMemory(False)
     if tool_name == "drmemory_full":
       return DrMemory(True)
