@@ -2338,18 +2338,6 @@
    fun:_ZN11MessageLoop10RunHandlerEv
 }
 {
-   bug_51218
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN3IPC11SyncMessage13GenerateReplyEPKNS_7MessageE
-   fun:_ZN3IPC16MessageWithReplyI6Tuple2I4GURLSsES1_IRNS_13ChannelHandleER13WebPluginInfoEE18DispatchDelayReplyI19RenderMessageFilterMSB_FvRKS2_RKSsPNS_7MessageEEEEbPKSG_PT_T0_
-   fun:_ZN19RenderMessageFilter17OnMessageReceivedERKN3IPC7MessageE
-   fun:_ZN3IPC12ChannelProxy7Context10TryFiltersERKNS_7MessageE
-   fun:_ZN3IPC11SyncChannel11SyncContext17OnMessageReceivedERKNS_7MessageE
-   fun:_ZN3IPC7Channel11ChannelImpl23ProcessIncomingMessagesEv
-   fun:_ZN3IPC7Channel11ChannelImpl28OnFileCanReadWithoutBlockingEi
-}
-{
    bug_51379
    Memcheck:Leak
    fun:malloc
@@ -2604,35 +2592,6 @@
    fun:_ZN14CallbackRunnerI6Tuple2IN4base17PlatformFileErrorERKSt6vectorINS1_15file_util_proxy5EntryESaIS5_EEEE3RunIS2_S7_EEvRKT_RKT0_
 }
 {
-   bug_57464
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN3IPC11SyncMessage13GenerateReplyEPKNS_7MessageE
-   fun:_ZN3IPC16MessageWithReplyI6Tuple06Tuple2IRbRiEE8DispatchI25TestingAutomationProviderMS8_FvPbPiEEEbPKNS_7MessageEPT_T0_
-   fun:_ZN25TestingAutomationProvider17OnMessageReceivedERKN3IPC7MessageE
-   fun:_ZN3IPC12ChannelProxy7Context17OnDispatchMessageERKNS_7MessageE
-   fun:_ZN3IPC11SyncChannel20ReceivedSyncMsgQueue16DispatchMessagesEv
-   fun:_ZN3IPC11SyncChannel11SyncContext16DispatchMessagesEv
-   fun:_ZN3IPC11SyncChannel23OnWaitableEventSignaledEPN4base13WaitableEventE
-   fun:_ZN4base17AsyncCallbackTask3RunEv
-   fun:_ZN11MessageLoop7RunTaskERKNS_11PendingTaskE
-}
-{
-   bug_57465
-   Memcheck:Addr4
-   fun:_ZNK14AppModalDialog13native_dialogEv
-   fun:_ZN25TestingAutomationProvider24GetShowingAppModalDialogEPbPi
-   fun:_Z16DispatchToMethodI25TestingAutomationProviderMS0_FvPbPiEbiEvPT_T0_RK6Tuple0P6Tuple2IT1_T2_E
-   fun:_ZN3IPC16MessageWithReplyI6Tuple06Tuple2IRbRiEE8DispatchI25TestingAutomationProviderMS8_FvPbPiEEEbPKNS_7MessageEPT_T0_
-   fun:_ZN25TestingAutomationProvider17OnMessageReceivedERKN3IPC7MessageE
-   fun:_ZN3IPC12ChannelProxy7Context17OnDispatchMessageERKNS_7MessageE
-   fun:_ZN3IPC11SyncChannel20ReceivedSyncMsgQueue16DispatchMessagesEv
-   fun:_ZN3IPC11SyncChannel11SyncContext16DispatchMessagesEv
-   fun:_ZN3IPC11SyncChannel23OnWaitableEventSignaledEPN4base13WaitableEventE
-   fun:_ZN4base17AsyncCallbackTask3RunEv
-   fun:_ZN11MessageLoop7RunTaskERKNS_11PendingTaskE
-}
-{
    bug_57949
    Memcheck:Addr4
    fun:_ZNK22OpaqueBrowserFrameView24NonClientTopBorderHeightEbb
@@ -2748,17 +2707,6 @@
    fun:_Z16DispatchToMethodIN3net12CertVerifier7RequestEMS2_FvvEEvPT_T0_RK6Tuple0
    fun:_ZN14RunnableMethodIN3net12CertVerifier7RequestEMS2_FvvE6Tuple0E3RunEv
    fun:_ZN54_GLOBAL__N_base_worker_pool_linux.cc_00000000_*12WorkerThread10ThreadMainEv
-}
-{
-   bug_59670
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN3IPC11SyncMessage13GenerateReplyEPKNS_7MessageE
-   fun:_ZN3IPC16MessageWithReplyI6Tuple3IiSbIwSt11char_traitsIwESaIwEES5_E6Tuple1IRSsEE18DispatchDelayReplyI25TestingAutomationProviderMSC_FviRKS5_SE_PNS_7MessageEEEEbPKSF_PT_T0_
-   fun:_ZN25TestingAutomationProvider17OnMessageReceivedERKN3IPC7MessageE
-   fun:_ZN3IPC12ChannelProxy7Context17OnDispatchMessageERKNS_7MessageE
-   fun:_ZN3IPC11SyncChannel20ReceivedSyncMsgQueue16DispatchMessagesEv
-   fun:_ZN3IPC11SyncChannel11SyncContext16DispatchMessagesEv
 }
 {
    bug_60556a
@@ -3260,16 +3208,6 @@
    fun:*23RunNamedProcessTypeMainERKSsRK18MainFunctionParams
    fun:ChromeMain
    fun:main
-}
-{
-   bug_68292
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN29ExecuteBrowserCommandObserver25CreateAndRegisterObserverEP18AutomationProviderP7BrowseriPN3IPC7MessageE
-   fun:_ZN25TestingAutomationProvider21ExecuteBrowserCommandEiiPN3IPC7MessageE
-   fun:_Z16DispatchToMethodI25TestingAutomationProviderMS0_FviiPN3IPC7MessageEEiiRS2_EvPT_T0_RK6Tuple2IT1_T2_EP6Tuple1IT3_E
-   fun:_ZN3IPC16MessageWithReplyI6Tuple2IiiE6Tuple1IRbEE18DispatchDelayReplyI25TestingAutomationProviderMS8_FviiPNS_7MessageEEEEbPKS9_PT_T0_
-   fun:_ZN25TestingAutomationProvider17OnMessageReceivedERKN3IPC7MessageE
 }
 {
    bug_68553
@@ -4556,23 +4494,6 @@
    ...
    fun:_ZN2pp5proxy26PPP_Instance_Private_Proxy22OnMsgGetInstanceObjectEiNS0_24SerializedVarReturnValueE
    fun:_Z16DispatchToMethodIN2pp5proxy26PPP_Instance_Private_ProxyEMS2_FviNS1_24SerializedVarReturnValueEEiNS1_13SerializedVarEEvPT_T0_RK6Tuple1IT1_EPSA_IT2_E
-}
-{
-   bug_90376
-   Memcheck:Cond
-   fun:_ZN5views6Widget16SetInitialBoundsERKN3gfx4RectE
-   fun:_ZN5views6Widget4InitERKNS0_10InitParamsE
-   fun:_ZN12BrowserFrame16InitBrowserFrameEv
-   fun:_ZN13BrowserWindow19CreateBrowserWindowEP7Browser
-   fun:_ZN7Browser19CreateBrowserWindowEv
-   fun:_ZN7Browser17InitBrowserWindowEv
-   fun:_ZN25TestingAutomationProvider26OpenNewBrowserWindowOfTypeEibPN3IPC7MessageE
-   fun:_Z16DispatchToMethodI25TestingAutomationProviderMS0_FvibPN3IPC7MessageEEibRS2_EvPT_T0_RK6Tuple2IT1_T2_EP6Tuple1IT3_E
-   fun:_ZN3IPC16MessageWithReplyI6Tuple2IibE6Tuple0E18DispatchDelayReplyI25TestingAutomationProviderMS6_FvibPNS_7MessageEEEEbPKS7_PT_T0_
-   fun:_ZN25TestingAutomationProvider17OnMessageReceivedERKN3IPC7MessageE
-   fun:_ZN3IPC12ChannelProxy7Context17OnDispatchMessageERKNS_7MessageE
-   fun:_Z16DispatchToMethodIN3IPC12ChannelProxy7ContextEMS2_FvRKNS0_7MessageEES3_EvPT_T0_RK6Tuple1IT1_E
-   fun:_ZN14RunnableMethodIN3IPC12ChannelProxy7ContextEMS2_FvRKNS0_7MessageEE6Tuple1IS3_EE3RunEv
 }
 {
    bug_90400

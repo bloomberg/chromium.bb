@@ -812,14 +812,6 @@ LEAK
 *!operator new
 *!AutofillDownloadTestHelper::AutofillDownloadTestHelper
 
-# http://crbug.com/76354
-LEAK
-...
-*!IPC::MessageWithReply*
-*!ChildProcessHostMsg_ResolveProxy::ChildProcessHostMsg_ResolveProxy
-*!ResolveProxyMsgHelperTest::GenerateReply
-*!ResolveProxyMsgHelperTest_*_Test::TestBody
-
 # http://crbug.com/78784
 LEAK
 *!generic_cpp_alloc
