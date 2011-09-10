@@ -102,14 +102,13 @@ void GlobalBookmarkMenu::AddBookmarkMenuItem(GtkWidget* menu,
 
 void GlobalBookmarkMenu::AddNodeToMenu(const BookmarkNode* node,
                                        GtkWidget* menu) {
-  int child_count = node->child_count();
-  if (!child_count) {
+  if (node->empty()) {
     GtkWidget* item = gtk_menu_item_new_with_label(
         l10n_util::GetStringUTF8(IDS_MENU_EMPTY_SUBMENU).c_str());
     gtk_widget_set_sensitive(item, FALSE);
     AddBookmarkMenuItem(menu, item);
   } else {
-    for (int i = 0; i < child_count; i++) {
+    for (int i = 0; i < node->child_count(); ++i) {
       const BookmarkNode* child = node->GetChild(i);
       GtkWidget* item = gtk_image_menu_item_new();
       ConfigureMenuItem(child, item);
