@@ -159,6 +159,9 @@ class WrenchMenuModel;
 // Return the BrowserActionsController for this toolbar.
 - (BrowserActionsController*)browserActionsController;
 
+// Returns the wrench button.
+- (NSView*)wrenchButton;
+
 @end
 
 // A set of private methods used by subclasses. Do not call these directly

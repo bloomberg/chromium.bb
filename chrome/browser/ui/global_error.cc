@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/global_error.h"
 
+#include "base/logging.h"
 #include "grit/theme_resources.h"
 #include "grit/theme_resources_standard.h"
 
@@ -22,9 +23,16 @@ int GlobalError::MenuItemIconResourceID() {
 }
 
 void GlobalError::ShowBubbleView(Browser* browser) {
-  // TODO(sail) Need to implement this.
+  ShowBubbleView(browser, this);
 }
 
 int GlobalError::GetBubbleViewIconResourceID() {
   return IDR_INPUT_ALERT;
 }
+
+#if !defined(OS_MACOSX)
+// static
+void GlobalError::ShowBubbleView(Browser* browser, GlobalError* error) {
+  NOTREACHED();
+}
+#endif

@@ -749,6 +749,10 @@ class NotificationBridge : public NotificationObserver {
   return browserActionsController_.get();
 }
 
+- (NSView*)wrenchButton {
+  return wrenchButton_;
+}
+
 // (URLDropTargetController protocol)
 - (void)dropURLs:(NSArray*)urls inView:(NSView*)view at:(NSPoint)point {
   // TODO(viettrungluu): This code is more or less copied from the code in

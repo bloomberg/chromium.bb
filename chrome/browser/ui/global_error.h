@@ -58,6 +58,8 @@ class GlobalError {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(GlobalError);
+
+  static void ShowBubbleView(Browser* browser, GlobalError* error);
 };
 
 #endif  // CHROME_BROWSER_UI_GLOBAL_ERROR_H_
