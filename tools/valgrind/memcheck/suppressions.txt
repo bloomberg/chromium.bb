@@ -5079,6 +5079,35 @@
    fun:_ZN3net18HttpRequestHeaders20AddHeadersFromStringERKN4base11StringPieceE
    fun:_ZN22ResourceDispatcherHost12BeginRequestEiRK23ResourceHostMsg_RequestPN3IPC7MessageEi
 }
+{
+   bug_96101
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN3net16UploadDataStream6CreateEPNS_10UploadDataEPi
+   fun:_ZN3net22HttpNetworkTransaction14DoBuildRequestEv
+   fun:_ZN3net22HttpNetworkTransaction6DoLoopEi
+   fun:_ZN3net22HttpNetworkTransaction12OnIOCompleteEi
+   fun:_ZN3net22HttpNetworkTransaction13OnStreamReadyERKNS_9SSLConfigERKNS_9ProxyInfoEPNS_10HttpStreamE
+   fun:_ZN3net21HttpStreamFactoryImpl7Request13OnStreamReadyEPNS0_3JobERKNS_9SSLConfigERKNS_9ProxyInfoEPNS_10HttpStreamE
+   fun:_ZN3net21HttpStreamFactoryImpl3Job21OnStreamReadyCallbackEv
+   fun:_Z16DispatchToMethodIN3net21HttpStreamFactoryImpl3JobEMS2_FvvEEvPT_T0_RK6Tuple0
+   fun:_ZN27ScopedRunnableMethodFactoryIN3net21HttpStreamFactoryImpl3JobEE14RunnableMethodIMS2_FvvE6Tuple0E3RunEv
+}
+{
+   bug_96103
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN9__gnu_cxx13new_allocatorIN3net11ProxyServerEE8allocateEjPKv
+   fun:_ZNSt12_Vector_baseIN3net11ProxyServerESaIS1_EE11_M_allocateEj
+   fun:_ZNSt12_Vector_baseIN3net11ProxyServerESaIS1_EEC2EjRKS2_
+   fun:_ZNSt6vectorIN3net11ProxyServerESaIS1_EEC1ERKS3_
+   fun:_ZN3net9ProxyListC1ERKS0_
+   fun:_ZN3net9ProxyInfoC1ERKS0_
+   fun:_ZN3net21HttpStreamFactoryImpl7Request18OnSpdySessionReadyEPNS0_3JobE13scoped_refptrINS_11SpdySessionEEb
+   fun:_ZN3net21HttpStreamFactoryImpl3Job26OnSpdySessionReadyCallbackEv
+   fun:_Z16DispatchToMethodIN3net21HttpStreamFactoryImpl3JobEMS2_FvvEEvPT_T0_RK6Tuple0
+   fun:_ZN27ScopedRunnableMethodFactoryIN3net21HttpStreamFactoryImpl3JobEE14RunnableMethodIMS2_FvvE6Tuple0E3RunEv
+}
 
 
 #-----------------------------------------------------------------------
