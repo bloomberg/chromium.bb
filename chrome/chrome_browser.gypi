@@ -2832,8 +2832,6 @@
         'browser/ui/gtk/custom_button.h',
         'browser/ui/gtk/custom_drag.cc',
         'browser/ui/gtk/custom_drag.h',
-        'browser/ui/gtk/dialogs_common.cc',
-        'browser/ui/gtk/dialogs_common.h',
         'browser/ui/gtk/dialogs_gtk.cc',
         'browser/ui/gtk/download/download_in_progress_dialog_gtk.cc',
         'browser/ui/gtk/download/download_in_progress_dialog_gtk.h',
