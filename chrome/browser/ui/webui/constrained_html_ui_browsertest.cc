@@ -8,6 +8,7 @@
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/webui/constrained_html_ui.h"
 #include "chrome/browser/ui/webui/html_dialog_ui.h"
 #include "chrome/common/url_constants.h"
@@ -66,12 +67,12 @@ class ConstrainedHtmlDialogBrowserTest : public InProcessBrowserTest {
 IN_PROC_BROWSER_TEST_F(ConstrainedHtmlDialogBrowserTest, BasicTest) {
   // The delegate deletes itself.
   HtmlDialogUIDelegate* delegate = new TestHtmlDialogUIDelegate();
-  TabContents* tab_contents = browser()->GetSelectedTabContents();
-  ASSERT_TRUE(tab_contents != NULL);
+  TabContentsWrapper* wrapper = browser()->GetSelectedTabContentsWrapper();
+  ASSERT_TRUE(wrapper != NULL);
 
   ConstrainedHtmlUI::CreateConstrainedHtmlDialog(browser()->profile(),
                                                  delegate,
-                                                 tab_contents);
+                                                 wrapper);
 
-  ASSERT_EQ(1U, tab_contents->constrained_window_count());
+  ASSERT_EQ(1U, wrapper->tab_contents()->constrained_window_count());
 }

@@ -13,6 +13,7 @@
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/repost_form_warning_controller.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/constrained_html_ui.h"
 #include "chrome/browser/ui/webui/html_dialog_ui.h"
@@ -140,13 +141,13 @@ class RepostFormWarningHtmlDelegate : public HtmlDialogUIDelegate {
 RepostFormWarningUI::RepostFormWarningUI(gfx::NativeWindow parent_window,
                                          TabContents* tab_contents)
     : controller_(new RepostFormWarningController(tab_contents)) {
-  Profile* profile =
-      Profile::FromBrowserContext(tab_contents->browser_context());
+  TabContentsWrapper* wrapper =
+      TabContentsWrapper::GetCurrentWrapperForContents(tab_contents);
+  Profile* profile = wrapper->profile();
   RepostFormWarningSource::RegisterDataSource(profile);
   RepostFormWarningHtmlDelegate* delegate =
       new RepostFormWarningHtmlDelegate(this);
-  ConstrainedHtmlUI::CreateConstrainedHtmlDialog(
-      profile, delegate, tab_contents);
+  ConstrainedHtmlUI::CreateConstrainedHtmlDialog(profile, delegate, wrapper);
 }
 
 RepostFormWarningUI::~RepostFormWarningUI() {}

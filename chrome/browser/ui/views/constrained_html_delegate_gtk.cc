@@ -6,6 +6,7 @@
 
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/gtk/constrained_window_gtk.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/views/tab_contents/tab_contents_container.h"
 #include "chrome/browser/ui/webui/html_dialog_tab_contents_delegate.h"
 #include "chrome/browser/ui/webui/html_dialog_ui.h"
@@ -122,11 +123,11 @@ void ConstrainedHtmlDelegateGtk::OnDialogCloseFromWebUI() {
 ConstrainedWindow* ConstrainedHtmlUI::CreateConstrainedHtmlDialog(
     Profile* profile,
     HtmlDialogUIDelegate* delegate,
-    TabContents* container) {
+    TabContentsWrapper* wrapper) {
   ConstrainedHtmlDelegateGtk* constrained_delegate =
       new ConstrainedHtmlDelegateGtk(profile, delegate);
   ConstrainedWindow* constrained_window =
-      new ConstrainedWindowGtk(container, constrained_delegate);
+      new ConstrainedWindowGtk(wrapper->tab_contents(), constrained_delegate);
   constrained_delegate->set_window(constrained_window);
   return constrained_window;
 }

@@ -10,6 +10,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/constrained_html_ui.h"
 #include "chrome/browser/ui/webui/html_dialog_ui.h"
@@ -236,12 +237,13 @@ void LoginHandlerHtml::BuildViewForPasswordManager(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   TabContents* tab_contents = GetTabContentsForLogin();
-  Profile* profile =
-      Profile::FromBrowserContext(tab_contents->browser_context());
+  TabContentsWrapper* wrapper =
+      TabContentsWrapper::GetCurrentWrapperForContents(tab_contents);
+  Profile* profile = wrapper->profile();
   LoginHandlerSource::RegisterDataSource(profile);
   delegate_ = new LoginHandlerHtmlDelegate(this, explanation);
   ConstrainedWindow* dialog = ConstrainedHtmlUI::CreateConstrainedHtmlDialog(
-      profile, delegate_, tab_contents);
+      profile, delegate_, wrapper);
 
   SetModel(manager);
   SetDialog(dialog);

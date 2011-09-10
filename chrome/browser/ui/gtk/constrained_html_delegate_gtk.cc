@@ -115,11 +115,12 @@ void ConstrainedHtmlDelegateGtk::OnDialogCloseFromWebUI() {
 ConstrainedWindow* ConstrainedHtmlUI::CreateConstrainedHtmlDialog(
     Profile* profile,
     HtmlDialogUIDelegate* delegate,
-    TabContents* overshadowed) {
+    TabContentsWrapper* overshadowed) {
   ConstrainedHtmlDelegateGtk* constrained_delegate =
       new ConstrainedHtmlDelegateGtk(profile, delegate);
   ConstrainedWindow* constrained_window =
-      new ConstrainedWindowGtk(overshadowed, constrained_delegate);
+      new ConstrainedWindowGtk(overshadowed->tab_contents(),
+                               constrained_delegate);
   constrained_delegate->set_window(constrained_window);
   return constrained_window;
 }
