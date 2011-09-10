@@ -52,6 +52,7 @@ static NSEvent* MakeMouseEvent(NSEventType type, NSPoint point) {
 - (void)dealloc {
   if (closeButtonTrackingArea_.get())
     [self removeTrackingArea:closeButtonTrackingArea_.get()];
+  [[NSNotificationCenter defaultCenter] removeObserver:self];
   [super dealloc];
 }
 
@@ -127,6 +128,11 @@ static NSEvent* MakeMouseEvent(NSEventType type, NSPoint point) {
   // Set autoresizing behavior: glued to edges on left, top and right.
   [self setAutoresizingMask:(NSViewMinYMargin | NSViewWidthSizable)];
 
+  [[NSNotificationCenter defaultCenter]
+      addObserver:self
+         selector:@selector(didChangeTheme:)
+             name:kBrowserThemeDidChangeNotification
+           object:nil];
   // Register for various window focus changes, so we can update our custom
   // titlebar appropriately.
   [[NSNotificationCenter defaultCenter]
@@ -184,6 +190,10 @@ static NSEvent* MakeMouseEvent(NSEventType type, NSPoint point) {
 
 - (void)mouseExited:(NSEvent*)event {
   [[closeButton_ cell] setHighlighted:NO];
+}
+
+- (void)didChangeTheme:(NSNotification*)notification {
+  [self setNeedsDisplay:YES];
 }
 
 - (void)didChangeMainWindow:(NSNotification*)notification {

@@ -58,7 +58,9 @@ enum PanelDragState {
   // Should be called when size of the titlebar changes.
 - (void)updateCloseButtonLayout;
 
-// We need to respond to main window changes so we can update our look.
+// We need to update our look when the Chrome theme changes or window focus
+// changes.
+- (void)didChangeTheme:(NSNotification*)notification;
 - (void)didChangeMainWindow:(NSNotification*)notification;
 
 // Helpers to control title drag operation, called from more then one place.
