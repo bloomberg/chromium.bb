@@ -4,6 +4,7 @@
 
 #include "native_client/src/shared/ppapi_proxy/browser_globals.h"
 
+#include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -215,7 +216,7 @@ const void* GetBrowserInterface(const char* interface_name) {
       PPB_SURFACE_3D_DEV_INTERFACE,
       PPB_LAYER_COMPOSITOR_DEV_INTERFACE
     };
-    for (int i = 0; i < NACL_ARRAY_SIZE(disabled_interface_names); i++) {
+    for (size_t i = 0; i < NACL_ARRAY_SIZE(disabled_interface_names); i++) {
       if (strcmp(interface_name, disabled_interface_names[i]) == 0)
         return NULL;
     }
