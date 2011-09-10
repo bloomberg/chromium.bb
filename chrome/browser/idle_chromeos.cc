@@ -22,9 +22,18 @@ void CalculateIdleStateNotifier(unsigned int idle_treshold,
 }
 
 void CalculateIdleState(unsigned int idle_threshold, IdleCallback notify) {
+  if (CheckIdleStateIsLocked()) {
+    notify.Run(IDLE_STATE_LOCKED);
+    return;
+  }
   chromeos::CalculateIdleTimeCallback* callback =
       new base::Callback<void(int64_t)>(base::Bind(&CalculateIdleStateNotifier,
                                         idle_threshold,
                                         notify));
   chromeos::CrosLibrary::Get()->GetPowerLibrary()->CalculateIdleTime(callback);
+}
+
+bool CheckIdleStateIsLocked() {
+  // TODO(sidor): Make it work.
+  return false;
 }

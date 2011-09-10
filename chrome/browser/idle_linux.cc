@@ -64,20 +64,23 @@ bool ScreensaverWindowExists() {
 }
 
 void CalculateIdleState(unsigned int idle_threshold, IdleCallback notify) {
-  // Usually the screensaver is used to lock the screen, so we do not need to
-  // check if the workstation is locked.
-  gdk_error_trap_push();
-  bool result = ScreensaverWindowExists();
-  bool got_error = gdk_error_trap_pop();
-  if (result && !got_error) {
+  if (CheckIdleStateIsLocked()) {
     notify.Run(IDLE_STATE_LOCKED);
     return;
   }
-
   browser::IdleQueryLinux idle_query;
   unsigned int idle_time = idle_query.IdleTime();
   if (idle_time >= idle_threshold)
     notify.Run(IDLE_STATE_IDLE);
   else
     notify.Run(IDLE_STATE_ACTIVE);
+}
+
+bool CheckIdleStateIsLocked() {
+  // Usually the screensaver is used to lock the screen, so we do not need to
+  // check if the workstation is locked.
+  gdk_error_trap_push();
+  bool result = ScreensaverWindowExists();
+  bool got_error = gdk_error_trap_pop();
+  return result && !got_error;
 }

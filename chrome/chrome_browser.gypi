@@ -1311,7 +1311,6 @@
         'browser/icon_manager_linux.cc',
         'browser/icon_manager_mac.mm',
         'browser/icon_manager_win.cc',
-        'browser/idle.cc',
         'browser/idle_chromeos.cc',
         'browser/idle_linux.cc',
         'browser/idle_mac.mm',

@@ -11,7 +11,7 @@ static bool IsScreensaverRunning();
 static bool IsWorkstationLocked();
 
 void CalculateIdleState(unsigned int idle_threshold, IdleCallback notify) {
-  if (IsScreensaverRunning() || IsWorkstationLocked()) {
+  if (CheckIdleStateIsLocked()) {
     notify.Run(IDLE_STATE_LOCKED);
     return;
   }
@@ -66,4 +66,8 @@ bool IsWorkstationLocked() {
     ::CloseDesktop(input_desk);
   }
   return is_locked;
+}
+
+bool CheckIdleStateIsLocked() {
+  return IsWorkstationLocked() || IsScreensaverRunning();
 }

@@ -152,8 +152,7 @@ void NotificationUIManager::CheckAndShowNotifications() {
 
 void NotificationUIManager::CheckUserState() {
   bool is_user_active_previously = is_user_active_;
-  is_user_active_ = CalculateIdleStateSync(0) != IDLE_STATE_LOCKED &&
-                    !IsFullScreenMode();
+  is_user_active_ = !CheckIdleStateIsLocked() && !IsFullScreenMode();
   if (is_user_active_ == is_user_active_previously)
     return;
 

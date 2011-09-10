@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -27,7 +27,7 @@ typedef base::Callback<void(IdleState)> IdleCallback;
 
 // Calculate the Idle state and notify the callback.
 void CalculateIdleState(unsigned int idle_threshold, IdleCallback notify);
-// Calculate the Idle state synchronously and return the state.
-IdleState CalculateIdleStateSync(unsigned int idle_threshold);
 
+// Checks synchronously if Idle state is IDLE_STATE_LOCKED.
+bool CheckIdleStateIsLocked();
 #endif  // CHROME_BROWSER_IDLE_H_

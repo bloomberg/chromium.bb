@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -85,8 +85,7 @@ void StopIdleMonitor() {
 }
 
 void CalculateIdleState(unsigned int idle_threshold, IdleCallback notify) {
-  if ([g_screenMonitor isScreensaverRunning] ||
-      [g_screenMonitor isScreenLocked]) {
+  if (CheckIdleStateIsLocked()) {
     notify.Run(IDLE_STATE_LOCKED);
     return;
   }
@@ -98,4 +97,9 @@ void CalculateIdleState(unsigned int idle_threshold, IdleCallback notify) {
     notify.Run(IDLE_STATE_IDLE);
   else
     notify.Run(IDLE_STATE_ACTIVE);
+}
+
+bool CheckIdleStateIsLocked() {
+  return [g_screenMonitor isScreensaverRunning] ||
+      [g_screenMonitor isScreenLocked];
 }
