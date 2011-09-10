@@ -136,12 +136,27 @@ bool GetConfiguration(const std::string& json, SyncConfiguration* config) {
     return false;
 
   // Passphrase settings.
-  if (!result->GetBoolean("usePassphrase", &config->use_secondary_passphrase))
-    return false;
-  if (config->use_secondary_passphrase &&
-      !result->GetString("passphrase", &config->secondary_passphrase))
+  bool have_passphrase;
+  if (!result->GetBoolean("usePassphrase", &have_passphrase))
     return false;
 
+  if (have_passphrase) {
+    bool is_gaia;
+    if (!result->GetBoolean("isGooglePassphrase", &is_gaia))
+      return false;
+    std::string passphrase;
+    if (!result->GetString("passphrase", &passphrase))
+      return false;
+    // The user provided a passphrase - pass it off to SyncSetupFlow as either
+    // the secondary or GAIA passphrase as appropriate.
+    if (is_gaia) {
+      config->set_gaia_passphrase = true;
+      config->gaia_passphrase = passphrase;
+    } else {
+      config->set_secondary_passphrase = true;
+      config->secondary_passphrase = passphrase;
+    }
+  }
   return true;
 }
 
@@ -261,6 +276,7 @@ void SyncSetupHandler::GetStaticLocalizedValues(
     { "enterPassphraseTitle", IDS_SYNC_ENTER_PASSPHRASE_TITLE },
     { "enterPassphraseBody", IDS_SYNC_ENTER_PASSPHRASE_BODY },
     { "enterOtherPassphraseBody", IDS_SYNC_ENTER_OTHER_PASSPHRASE_BODY },
+    { "enterGooglePassphraseBody", IDS_SYNC_ENTER_GOOGLE_PASSPHRASE_BODY },
     { "passphraseLabel", IDS_SYNC_PASSPHRASE_LABEL },
     { "incorrectPassphrase", IDS_SYNC_INCORRECT_PASSPHRASE },
     { "passphraseWarning", IDS_SYNC_PASSPHRASE_WARNING },

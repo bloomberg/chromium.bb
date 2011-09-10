@@ -62,7 +62,8 @@ SyncSetupWizard::State GetStepForNonFatalError(ProfileSyncService* service) {
 SyncConfiguration::SyncConfiguration()
     : encrypt_all(false),
       sync_everything(false),
-      use_secondary_passphrase(false) {
+      set_secondary_passphrase(false),
+      set_gaia_passphrase(false) {
 }
 
 SyncConfiguration::~SyncConfiguration() {}
@@ -177,11 +178,14 @@ void SyncSetupFlow::GetArgsForConfigure(ProfileSyncService* service,
     // We need a passphrase, and either it's an explicit passphrase, or we
     // don't have a cached gaia passphrase, so we have to prompt the user.
     args->SetBoolean("show_passphrase", true);
+    // Tell the UI layer what kind of passphrase we need.
+    args->SetBoolean("need_google_passphrase",
+                     !service->IsUsingSecondaryPassphrase());
+    args->SetBoolean("passphrase_creation_rejected",
+                     tried_creating_explicit_passphrase_);
+    args->SetBoolean("passphrase_setting_rejected",
+                     tried_setting_passphrase_);
   }
-  args->SetBoolean("passphrase_creation_rejected",
-                   tried_creating_explicit_passphrase_);
-  args->SetBoolean("passphrase_setting_rejected",
-                   tried_setting_explicit_passphrase_);
 }
 
 bool SyncSetupFlow::AttachSyncSetupHandler(SyncSetupFlowHandler* handler) {
@@ -277,36 +281,37 @@ void SyncSetupFlow::OnUserConfigured(const SyncConfiguration& configuration) {
   // Note: encryption will not occur until OnUserChoseDatatypes is called.
   service_->SetEncryptEverything(configuration.encrypt_all);
 
-  if (!configuration.gaia_passphrase.empty()) {
+  if (configuration.set_gaia_passphrase) {
     // Caller passed a gaia passphrase. This is illegal if we are currently
     // using a secondary passphrase.
     DCHECK(!service_->IsUsingSecondaryPassphrase());
     service_->SetPassphrase(configuration.gaia_passphrase, false);
+    // Since the user entered the passphrase manually, set this flag so we can
+    // report an error if the passphrase setting failed.
+    tried_setting_passphrase_ = true;
   } else if (!service_->IsUsingSecondaryPassphrase() &&
              !cached_passphrase_.empty()) {
     // Service needs a GAIA passphrase and we have one cached, so try it.
     service_->SetPassphrase(cached_passphrase_, false);
     cached_passphrase_.clear();
   } else {
+    // We can get here if the user changes their GAIA passphrase but still has
+    // data encrypted with the old passphrase. The UI prompts the user for their
+    // passphrase, but they might just leave it blank/disable the encrypted
+    // types.
     // No gaia passphrase cached or set, so make sure the ProfileSyncService
     // wasn't expecting one.
-    DCHECK(!service_->IsPassphraseRequiredForDecryption() ||
-           service_->IsUsingSecondaryPassphrase());
+    DLOG_IF(WARNING, !service_->IsUsingSecondaryPassphrase() &&
+            service_->IsPassphraseRequiredForDecryption()) <<
+        "Google passphrase required but not provided by UI";
   }
 
-  // It's possible the user has to provide a secondary passphrase even when
-  // they have not set one previously. This occurs when the user has changed
-  // their gaia password and then sign in to a new machine for the first time.
-  // The new machine will download data encrypted with their old gaia password,
-  // which their current gaia password will not be able to decrypt, triggering
-  // a prompt for a passphrase. At this point, the user must enter their old
-  // password, which we store as a new secondary passphrase.
-  // TODO(zea): eventually use the above gaia_passphrase instead of the
-  // secondary passphrase in this case.
-  if (configuration.use_secondary_passphrase) {
+  // Set the secondary passphrase, either as a decryption passphrase, or
+  // as an attempt to encrypt the user's data using this new passphrase.
+  if (configuration.set_secondary_passphrase) {
     service_->SetPassphrase(configuration.secondary_passphrase, true);
     if (service_->IsUsingSecondaryPassphrase())
-      tried_setting_explicit_passphrase_ = true;
+      tried_setting_passphrase_ = true;
     else
       tried_creating_explicit_passphrase_ = true;
   }
@@ -318,7 +323,7 @@ void SyncSetupFlow::OnUserConfigured(const SyncConfiguration& configuration) {
 void SyncSetupFlow::OnPassphraseEntry(const std::string& passphrase) {
   Advance(SyncSetupWizard::SETTING_UP);
   service_->SetPassphrase(passphrase, true);
-  tried_setting_explicit_passphrase_ = true;
+  tried_setting_passphrase_ = true;
 }
 
 void SyncSetupFlow::OnPassphraseCancel() {
@@ -342,7 +347,7 @@ SyncSetupFlow::SyncSetupFlow(SyncSetupWizard::State start_state,
       flow_handler_(NULL),
       service_(service),
       tried_creating_explicit_passphrase_(false),
-      tried_setting_explicit_passphrase_(false) {
+      tried_setting_passphrase_(false) {
 }
 
 // Returns true if the flow should advance to |state| based on |current_state_|.

@@ -31,8 +31,18 @@ struct SyncConfiguration {
   bool encrypt_all;
   bool sync_everything;
   syncable::ModelTypeSet data_types;
-  bool use_secondary_passphrase;
+  // We pass a separate |set_xxxxx_passphrase| flag because sometimes the UI
+  // wants to set an empty gaia/secondary passphrase (for example, when the user
+  // doesn't enter a passphrase, but we still want the ProfileSyncService to
+  // generate a new passphrase error if there are still encrypted types
+  // enabled).
+  // TODO(atwilson): Need to change SyncSetupFlow::OnUserConfigured() to
+  // check for the presence of encrypted types itself, rather than relying on
+  // the hack of passing an empty passphrase/waiting for ProfileSyncService to
+  // receive a new PassphraseRequired (http://crbug.com/95939).
+  bool set_secondary_passphrase;
   std::string secondary_passphrase;
+  bool set_gaia_passphrase;
   std::string gaia_passphrase;
 };
 
@@ -132,10 +142,13 @@ class SyncSetupFlow {
   // We need this to propagate back all user settings changes. Weak reference.
   ProfileSyncService* service_;
 
-  // Set to true if we've tried creating/setting an explicit passphrase, so we
+  // Set to true if we've tried creating an explicit passphrase, so we
   // can appropriately reflect this in the UI.
   bool tried_creating_explicit_passphrase_;
-  bool tried_setting_explicit_passphrase_;
+
+  // Set to true if the user entered a passphrase, so we can appropriately
+  // reflect this in the UI.
+  bool tried_setting_passphrase_;
 
   // We track the passphrase the user entered so we can set it when configuring
   // the ProfileSyncService.

@@ -9955,6 +9955,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_SYNC_ENTER_OTHER_PASSPHRASE_BODY" desc="Instructions for the dialog where the user needs to enter a different passphrase.">
         The passphrase you entered can't be used because you already have data encrypted with a passphrase. Please enter your existing sync passphrase below.
       </message>
+      <message name="IDS_SYNC_ENTER_GOOGLE_PASSPHRASE_BODY" desc="Instructions for the dialog where the user needs to enter their previous google passphrase.">
+        You already have data that is encrypted using a different version of your Google Account password. Please enter your previous Google Account password below.
+      </message>
       <message name="IDS_SYNC_PASSPHRASE_LABEL" desc="Label for the passphrase field.">
         Passphrase
       </message>
