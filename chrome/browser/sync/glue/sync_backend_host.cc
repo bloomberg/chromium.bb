@@ -210,8 +210,7 @@ void SyncBackendHost::Shutdown(bool sync_disabled) {
   // - Sync Thread
   // - UI Thread (stops some time after we return from this call).
   if (sync_thread_.IsRunning()) {  // Not running in tests.
-    // TODO(akalin): Remove the need for this.
-    if (initialization_state_ > NOT_INITIALIZED) {
+    if (core_->sync_manager()) {
       core_->sync_manager()->RequestEarlyExit();
     }
     sync_thread_.message_loop()->PostTask(FROM_HERE,
