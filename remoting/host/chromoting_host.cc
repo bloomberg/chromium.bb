@@ -277,10 +277,9 @@ void ChromotingHost::OnIncomingSession(
   *protocol_config_->mutable_initial_resolution() =
       protocol::ScreenResolution(2048, 2048);
   // TODO(sergeyu): Respect resolution requested by the client if supported.
-  protocol::SessionConfig* config = protocol_config_->Select(
-      session->candidate_config(), true /* force_host_resolution */);
-
-  if (!config) {
+  protocol::SessionConfig config;
+  if (!protocol_config_->Select(session->candidate_config(),
+                                true /* force_host_resolution */, &config)) {
     LOG(WARNING) << "Rejecting connection from " << session->jid()
                  << " because no compatible configuration has been found.";
     *response = protocol::SessionManager::INCOMPATIBLE;
@@ -406,8 +405,8 @@ void ChromotingHost::OnClientDisconnected(ConnectionToClient* connection) {
 }
 
 // TODO(sergeyu): Move this to SessionManager?
-Encoder* ChromotingHost::CreateEncoder(const protocol::SessionConfig* config) {
-  const protocol::ChannelConfig& video_config = config->video_config();
+Encoder* ChromotingHost::CreateEncoder(const protocol::SessionConfig& config) {
+  const protocol::ChannelConfig& video_config = config.video_config();
 
   if (video_config.codec == protocol::ChannelConfig::CODEC_VERBATIM) {
     return EncoderRowBased::CreateVerbatimEncoder();

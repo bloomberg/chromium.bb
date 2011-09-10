@@ -95,7 +95,7 @@ class ConnectionToHost : public SignalStrategy::StatusObserver,
 
   virtual void Disconnect(const base::Closure& shutdown_task);
 
-  virtual const SessionConfig* config();
+  virtual const SessionConfig& config();
 
   virtual InputStub* input_stub();
 

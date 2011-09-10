@@ -177,7 +177,7 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
   void OnClientDisconnected(protocol::ConnectionToClient* client);
 
   // Creates encoder for the specified configuration.
-  Encoder* CreateEncoder(const protocol::SessionConfig* config);
+  Encoder* CreateEncoder(const protocol::SessionConfig& config);
 
   std::string GenerateHostAuthToken(const std::string& encoded_client_token);
 

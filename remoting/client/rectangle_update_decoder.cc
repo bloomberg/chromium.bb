@@ -52,12 +52,12 @@ RectangleUpdateDecoder::RectangleUpdateDecoder(MessageLoop* message_loop,
 RectangleUpdateDecoder::~RectangleUpdateDecoder() {
 }
 
-void RectangleUpdateDecoder::Initialize(const SessionConfig* config) {
-  initial_screen_size_ = gfx::Size(config->initial_resolution().width,
-                                   config->initial_resolution().height);
+void RectangleUpdateDecoder::Initialize(const SessionConfig& config) {
+  initial_screen_size_ = gfx::Size(config.initial_resolution().width,
+                                   config.initial_resolution().height);
 
   // Initialize decoder based on the selected codec.
-  ChannelConfig::Codec codec = config->video_config().codec;
+  ChannelConfig::Codec codec = config.video_config().codec;
   if (codec == ChannelConfig::CODEC_VERBATIM) {
     TraceContext::tracer()->PrintString("Creating Verbatim decoder.");
     decoder_.reset(DecoderRowBased::CreateVerbatimDecoder());

@@ -87,13 +87,12 @@ class Session : public base::NonThreadSafe {
 
   // Protocol configuration. Can be called only after session has been accepted.
   // Returned pointer is valid until connection is closed.
-  virtual const SessionConfig* config() = 0;
+  virtual const SessionConfig& config() = 0;
 
-  // Set protocol configuration for an incoming session. Must be called
-  // on the host before the connection is accepted, from
-  // ChromotocolServer::IncomingConnectionCallback. Ownership of |config| is
-  // given to the connection.
-  virtual void set_config(const SessionConfig* config) = 0;
+  // Set protocol configuration for an incoming session. Must be
+  // called on the host before the connection is accepted, from
+  // ChromotocolServer::IncomingConnectionCallback.
+  virtual void set_config(const SessionConfig& config) = 0;
 
   // The raw auth tokens from the session-initiate, or session-accept stanzas.
   virtual const std::string& initiator_token() = 0;

@@ -238,10 +238,8 @@ void ChromotingClient::Initialize() {
 
   TraceContext::tracer()->PrintString("Initializing client.");
 
-  const protocol::SessionConfig* config = connection_->config();
-
   // Initialize the decoder.
-  rectangle_decoder_->Initialize(config);
+  rectangle_decoder_->Initialize(connection_->config());
 
   // Schedule the input handler to process the event queue.
   input_handler_->Initialize();

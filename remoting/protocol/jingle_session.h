@@ -38,8 +38,8 @@ class JingleSession : public protocol::Session,
   virtual net::Socket* event_channel() OVERRIDE;
   virtual const std::string& jid() OVERRIDE;
   virtual const CandidateSessionConfig* candidate_config() OVERRIDE;
-  virtual const SessionConfig* config() OVERRIDE;
-  virtual void set_config(const SessionConfig* config) OVERRIDE;
+  virtual const SessionConfig& config() OVERRIDE;
+  virtual void set_config(const SessionConfig& config) OVERRIDE;
   virtual const std::string& initiator_token() OVERRIDE;
   virtual void set_initiator_token(const std::string& initiator_token) OVERRIDE;
   virtual const std::string& receiver_token() OVERRIDE;
@@ -159,7 +159,8 @@ class JingleSession : public protocol::Session,
   // The corresponding libjingle session.
   cricket::Session* cricket_session_;
 
-  scoped_ptr<const SessionConfig> config_;
+  SessionConfig config_;
+  bool config_set_;
 
   std::string initiator_token_;
   std::string receiver_token_;

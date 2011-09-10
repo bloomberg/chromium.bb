@@ -124,7 +124,7 @@ class JingleSessionTest : public testing::Test {
         NewCallback(&host_connection_callback_,
                     &MockSessionCallback::OnStateChange));
 
-    session->set_config(SessionConfig::CreateDefault());
+    session->set_config(SessionConfig::GetDefault());
     session->set_shared_secret(kTestSharedSecret);
   }
 

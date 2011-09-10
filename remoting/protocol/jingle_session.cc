@@ -57,6 +57,7 @@ JingleSession::JingleSession(
       state_(INITIALIZING),
       closing_(false),
       cricket_session_(NULL),
+      config_set_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(task_factory_(this)) {
   // TODO(hclam): Need a better way to clone a key.
   if (local_private_key) {
@@ -190,20 +191,20 @@ const std::string& JingleSession::local_certificate() const {
   return local_cert_;
 }
 
-const SessionConfig* JingleSession::config() {
+const SessionConfig& JingleSession::config() {
   // TODO(sergeyu): Fix ChromotingHost so that it doesn't call this
   // method on invalid thread and uncomment this DCHECK.
   // See crbug.com/88600 .
   // DCHECK(CalledOnValidThread());
-  DCHECK(config_.get());
-  return config_.get();
+  DCHECK(config_set_);
+  return config_;
 }
 
-void JingleSession::set_config(const SessionConfig* config) {
+void JingleSession::set_config(const SessionConfig& config) {
   DCHECK(CalledOnValidThread());
-  DCHECK(!config_.get());
-  DCHECK(config);
-  config_.reset(config);
+  DCHECK(!config_set_);
+  config_ = config;
+  config_set_ = true;
 }
 
 const std::string& JingleSession::initiator_token() {
@@ -339,18 +340,17 @@ bool JingleSession::InitializeConfigFromDescription(
     return false;
   }
 
-  scoped_ptr<SessionConfig> config(
-      content_description->config()->GetFinalConfig());
-  if (!config.get()) {
+  SessionConfig config;
+  if (!content_description->config()->GetFinalConfig(&config)) {
     LOG(ERROR) << "Connection response does not specify configuration";
     return false;
   }
-  if (!candidate_config()->IsSupported(config.get())) {
+  if (!candidate_config()->IsSupported(config)) {
     LOG(ERROR) << "Connection response specifies an invalid configuration";
     return false;
   }
 
-  set_config(config.release());
+  set_config(config);
   return true;
 }
 

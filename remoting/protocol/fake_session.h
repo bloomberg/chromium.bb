@@ -149,8 +149,8 @@ class FakeSession : public Session {
   virtual const std::string& jid();
 
   virtual const CandidateSessionConfig* candidate_config();
-  virtual const SessionConfig* config();
-  virtual void set_config(const SessionConfig* config);
+  virtual const SessionConfig& config();
+  virtual void set_config(const SessionConfig& config);
 
   virtual const std::string& initiator_token();
   virtual void set_initiator_token(const std::string& initiator_token);
@@ -165,7 +165,7 @@ class FakeSession : public Session {
  public:
   scoped_ptr<StateChangeCallback> callback_;
   scoped_ptr<const CandidateSessionConfig> candidate_config_;
-  scoped_ptr<const SessionConfig> config_;
+  SessionConfig config_;
   MessageLoop* message_loop_;
   FakeSocket control_channel_;
   FakeSocket event_channel_;

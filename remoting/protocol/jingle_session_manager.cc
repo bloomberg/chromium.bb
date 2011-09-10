@@ -248,7 +248,6 @@ bool JingleSessionManager::AcceptConnection(
   switch (response) {
     case protocol::SessionManager::ACCEPT: {
       // Connection must be configured by the callback.
-      DCHECK(jingle_session->config());
       CandidateSessionConfig* candidate_config =
           CandidateSessionConfig::CreateFrom(jingle_session->config());
       cricket_session->Accept(

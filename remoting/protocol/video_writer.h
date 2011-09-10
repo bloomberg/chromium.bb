@@ -33,7 +33,7 @@ class VideoWriter : public VideoStub {
   typedef base::Callback<void(bool)> InitializedCallback;
 
   static VideoWriter* Create(base::MessageLoopProxy* message_loop,
-                             const SessionConfig* config);
+                             const SessionConfig& config);
 
   // Initializes the writer.
   virtual void Init(Session* session, const InitializedCallback& callback) = 0;

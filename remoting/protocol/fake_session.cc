@@ -203,7 +203,7 @@ bool FakeUdpSocket::SetSendBufferSize(int32 size) {
 
 FakeSession::FakeSession()
     : candidate_config_(CandidateSessionConfig::CreateDefault()),
-      config_(SessionConfig::CreateDefault()),
+      config_(SessionConfig::GetDefault()),
       message_loop_(NULL),
       jid_(kTestJid) {
 }
@@ -252,13 +252,12 @@ const CandidateSessionConfig* FakeSession::candidate_config() {
   return candidate_config_.get();
 }
 
-const SessionConfig* FakeSession::config() {
-  CHECK(config_.get());
-  return config_.get();
+const SessionConfig& FakeSession::config() {
+  return config_;
 }
 
-void FakeSession::set_config(const SessionConfig* config) {
-  config_.reset(config);
+void FakeSession::set_config(const SessionConfig& config) {
+  config_ = config;
 }
 
 const std::string& FakeSession::initiator_token() {

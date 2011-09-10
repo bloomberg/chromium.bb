@@ -34,7 +34,7 @@ class RectangleUpdateDecoder :
                          FrameConsumer* consumer);
 
   // Initializes decoder with the infromation from the protocol config.
-  void Initialize(const protocol::SessionConfig* config);
+  void Initialize(const protocol::SessionConfig& config);
 
   // Decodes the contents of |packet| calling OnPartialFrameOutput() in the
   // regsitered as data is avaialable. DecodePacket may keep a reference to

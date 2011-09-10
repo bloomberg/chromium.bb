@@ -28,7 +28,7 @@ class SessionConfig;
 class VideoReader {
  public:
   static VideoReader* Create(base::MessageLoopProxy* message_loop,
-                             const SessionConfig* config);
+                             const SessionConfig& config);
 
   // The callback is called when initialization is finished. The
   // parameter is set to true on success.

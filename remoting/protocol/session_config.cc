@@ -52,13 +52,6 @@ bool ScreenResolution::IsValid() const {
 
 SessionConfig::SessionConfig() { }
 
-SessionConfig::SessionConfig(const SessionConfig& config)
-    : control_config_(config.control_config_),
-      event_config_(config.event_config_),
-      video_config_(config.video_config_),
-      initial_resolution_(config.initial_resolution_) {
-}
-
 SessionConfig::~SessionConfig() { }
 
 void SessionConfig::SetControlConfig(const ChannelConfig& control_config) {
@@ -74,20 +67,16 @@ void SessionConfig::SetInitialResolution(const ScreenResolution& resolution) {
   initial_resolution_ = resolution;
 }
 
-SessionConfig* SessionConfig::Clone() const {
-  return new SessionConfig(*this);
-}
-
 // static
-SessionConfig* SessionConfig::CreateDefault() {
-  SessionConfig* result = new SessionConfig();
-  result->SetControlConfig(ChannelConfig(ChannelConfig::TRANSPORT_STREAM,
+SessionConfig SessionConfig::GetDefault() {
+  SessionConfig result;
+  result.SetControlConfig(ChannelConfig(ChannelConfig::TRANSPORT_STREAM,
                                          kDefaultStreamVersion,
                                          ChannelConfig::CODEC_UNDEFINED));
-  result->SetEventConfig(ChannelConfig(ChannelConfig::TRANSPORT_STREAM,
+  result.SetEventConfig(ChannelConfig(ChannelConfig::TRANSPORT_STREAM,
                                        kDefaultStreamVersion,
                                        ChannelConfig::CODEC_UNDEFINED));
-  result->SetVideoConfig(ChannelConfig(ChannelConfig::TRANSPORT_STREAM,
+  result.SetVideoConfig(ChannelConfig(ChannelConfig::TRANSPORT_STREAM,
                                        kDefaultStreamVersion,
                                        ChannelConfig::CODEC_VP8));
   return result;
@@ -105,9 +94,10 @@ CandidateSessionConfig::CandidateSessionConfig(
 
 CandidateSessionConfig::~CandidateSessionConfig() { }
 
-SessionConfig* CandidateSessionConfig::Select(
+bool CandidateSessionConfig::Select(
     const CandidateSessionConfig* client_config,
-    bool force_host_resolution) {
+    bool force_host_resolution,
+    SessionConfig* result) {
   ChannelConfig control_config;
   ChannelConfig event_config;
   ChannelConfig video_config;
@@ -118,10 +108,9 @@ SessionConfig* CandidateSessionConfig::Select(
           event_configs_, client_config->event_configs_, &event_config) ||
       !SelectCommonChannelConfig(
           video_configs_, client_config->video_configs_, &video_config)) {
-    return NULL;
+    return false;
   }
 
-  SessionConfig* result = SessionConfig::CreateDefault();
   result->SetControlConfig(control_config);
   result->SetEventConfig(event_config);
   result->SetVideoConfig(video_config);
@@ -132,31 +121,31 @@ SessionConfig* CandidateSessionConfig::Select(
     result->SetInitialResolution(client_config->initial_resolution());
   }
 
-  return result;
+  return true;
 }
 
 bool CandidateSessionConfig::IsSupported(
-    const SessionConfig* config) const {
+    const SessionConfig& config) const {
   return
-      IsChannelConfigSupported(control_configs_, config->control_config()) &&
-      IsChannelConfigSupported(event_configs_, config->event_config()) &&
-      IsChannelConfigSupported(video_configs_, config->video_config()) &&
-      config->initial_resolution().IsValid();
+      IsChannelConfigSupported(control_configs_, config.control_config()) &&
+      IsChannelConfigSupported(event_configs_, config.event_config()) &&
+      IsChannelConfigSupported(video_configs_, config.video_config()) &&
+      config.initial_resolution().IsValid();
 }
 
-SessionConfig* CandidateSessionConfig::GetFinalConfig() const {
+bool CandidateSessionConfig::GetFinalConfig(SessionConfig* result) const {
   if (control_configs_.size() != 1 ||
       event_configs_.size() != 1 ||
       video_configs_.size() != 1) {
-    return NULL;
+    return false;
   }
 
-  SessionConfig* result = SessionConfig::CreateDefault();
   result->SetControlConfig(control_configs_.front());
   result->SetEventConfig(event_configs_.front());
   result->SetVideoConfig(video_configs_.front());
   result->SetInitialResolution(initial_resolution_);
-  return result;
+
+  return true;
 }
 
 // static
@@ -194,12 +183,12 @@ CandidateSessionConfig* CandidateSessionConfig::CreateEmpty() {
 
 // static
 CandidateSessionConfig* CandidateSessionConfig::CreateFrom(
-    const SessionConfig* config) {
+    const SessionConfig& config) {
   CandidateSessionConfig* result = CreateEmpty();
-  result->mutable_control_configs()->push_back(config->control_config());
-  result->mutable_event_configs()->push_back(config->event_config());
-  result->mutable_video_configs()->push_back(config->video_config());
-  *result->mutable_initial_resolution() = (config->initial_resolution());
+  result->mutable_control_configs()->push_back(config.control_config());
+  result->mutable_event_configs()->push_back(config.event_config());
+  result->mutable_video_configs()->push_back(config.video_config());
+  *result->mutable_initial_resolution() = config.initial_resolution();
   return result;
 }
 

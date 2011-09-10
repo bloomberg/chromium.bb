@@ -15,8 +15,8 @@ VideoReader::~VideoReader() { }
 
 // static
 VideoReader* VideoReader::Create(base::MessageLoopProxy* message_loop,
-                                 const SessionConfig* config) {
-  const ChannelConfig& video_config = config->video_config();
+                                 const SessionConfig& config) {
+  const ChannelConfig& video_config = config.video_config();
   if (video_config.transport == ChannelConfig::TRANSPORT_SRTP) {
     return new RtpVideoReader(message_loop);
   } else if (video_config.transport == ChannelConfig::TRANSPORT_STREAM) {

@@ -61,6 +61,7 @@ struct ScreenResolution {
 // chromotocol configuration.
 class SessionConfig {
  public:
+  SessionConfig();
   ~SessionConfig();
 
   const ChannelConfig& control_config() const { return control_config_; }
@@ -75,15 +76,9 @@ class SessionConfig {
   void SetVideoConfig(const ChannelConfig& video_config);
   void SetInitialResolution(const ScreenResolution& initial_resolution);
 
-  SessionConfig* Clone() const;
-
-  static SessionConfig* CreateDefault();
+  static SessionConfig GetDefault();
 
  private:
-  SessionConfig();
-  explicit SessionConfig(const SessionConfig& config);
-  SessionConfig& operator=(const SessionConfig& b);
-
   ChannelConfig control_config_;
   ChannelConfig event_config_;
   ChannelConfig video_config_;
@@ -133,22 +128,23 @@ class CandidateSessionConfig {
   // NULL is returned if such configuration doesn't exist. When selecting
   // channel configuration priority is given to the configs listed first
   // in |client_config|.
-  SessionConfig* Select(const CandidateSessionConfig* client_config,
-                        bool force_host_resolution);
+  bool Select(const CandidateSessionConfig* client_config,
+              bool force_host_resolution,
+              SessionConfig* result);
 
   // Returns true if |config| is supported.
-  bool IsSupported(const SessionConfig* config) const;
+  bool IsSupported(const SessionConfig& config) const;
 
   // Extracts final protocol configuration. Must be used for the description
   // received in the session-accept stanza. If the selection is ambiguous
   // (e.g. there is more than one configuration for one of the channel)
   // or undefined (e.g. no configurations for a channel) then NULL is returned.
-  SessionConfig* GetFinalConfig() const;
+  bool GetFinalConfig(SessionConfig* result) const;
 
   CandidateSessionConfig* Clone() const;
 
   static CandidateSessionConfig* CreateEmpty();
-  static CandidateSessionConfig* CreateFrom(const SessionConfig* config);
+  static CandidateSessionConfig* CreateFrom(const SessionConfig& config);
   static CandidateSessionConfig* CreateDefault();
 
  private:

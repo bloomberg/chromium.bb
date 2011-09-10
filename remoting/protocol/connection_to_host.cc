@@ -123,7 +123,7 @@ void ConnectionToHost::InitSession() {
       local_jid_, signal_strategy_.get(), this, NULL, "", allow_nat_traversal_);
 }
 
-const SessionConfig* ConnectionToHost::config() {
+const SessionConfig& ConnectionToHost::config() {
   return session_->config();
 }
 

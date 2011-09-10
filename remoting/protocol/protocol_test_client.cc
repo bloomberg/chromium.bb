@@ -306,7 +306,7 @@ void ProtocolTestClient::OnIncomingSession(
     SessionManager::IncomingSessionResponse* response) {
   std::cerr << "Accepting connection from " << session->jid() << std::endl;
 
-  session->set_config(SessionConfig::CreateDefault());
+  session->set_config(SessionConfig::GetDefault());
   *response = SessionManager::ACCEPT;
 
   ProtocolTestConnection* test_connection = new ProtocolTestConnection(this);
