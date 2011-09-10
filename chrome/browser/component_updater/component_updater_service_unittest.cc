@@ -118,11 +118,20 @@ const char header_ok_reply[] =
     "HTTP/1.1 200 OK\0"
     "Content-type: text/html\0"
     "\0";
+
+const char expected_crx_url[] =
+    "http://localhost/download/jebgalgnebhfojomionfpkfelancnnkf.crx";
+
 }  // namespace
 
 // Common fixture for all the component updater tests.
 class ComponentUpdaterTest : public testing::Test {
  public:
+  enum TestComponents {
+    kTestComponent_abag,
+    kTestComponent_jebg
+  };
+
   ComponentUpdaterTest() : component_updater_(NULL), test_config_(NULL) {
     // The component updater instance under test.
     test_config_ = new TestConfigurator;
@@ -165,6 +174,21 @@ class ComponentUpdaterTest : public testing::Test {
 
   TestConfigurator* test_configurator() {
     return test_config_;
+  }
+
+  void RegisterComponent(CrxComponent* com, 
+                       TestComponents component,
+                       const Version& version) {
+    if (component == kTestComponent_abag) {
+      com->name = "test_abag";
+      com->pk_hash.assign(abag_hash, abag_hash + arraysize(abag_hash));
+    } else {
+      com->name = "test_jebg";
+      com->pk_hash.assign(jebg_hash, jebg_hash + arraysize(jebg_hash));
+    }
+    com->version = version;
+    com->installer = new TestInstaller;
+    component_updater_->RegisterComponent(*com);
   }
 
  private:
@@ -211,12 +235,7 @@ TEST_F(ComponentUpdaterTest, CheckCrxSleep) {
       interceptor(new ComponentUpdateInterceptor());
 
   CrxComponent com;
-  com.name = "test_abag";
-  com.pk_hash.assign(abag_hash, abag_hash + arraysize(abag_hash));
-  com.version = Version("1.1");
-  com.installer = new TestInstaller;
-
-  component_updater()->RegisterComponent(com);
+  RegisterComponent(&com, kTestComponent_abag, Version("1.1"));
 
   const char expected_update_url[] =
       "http://localhost/upd?x=id%3D"
@@ -300,20 +319,10 @@ TEST_F(ComponentUpdaterTest, InstallCrx) {
       interceptor(new ComponentUpdateInterceptor());
 
   CrxComponent com1;
-  com1.name = "test_jebg";
-  com1.pk_hash.assign(jebg_hash, jebg_hash + arraysize(jebg_hash));
-  com1.version = Version("0.9");
-  com1.installer = new TestInstaller;
-
+  RegisterComponent(&com1, kTestComponent_jebg, Version("0.9"));
   CrxComponent com2;
-  com2.name = "test_abag";
-  com2.pk_hash.assign(abag_hash, abag_hash + arraysize(abag_hash));
-  com2.version = Version("2.2");
-  com2.installer = new TestInstaller;
-
-  component_updater()->RegisterComponent(com1);
-  component_updater()->RegisterComponent(com2);
-
+  RegisterComponent(&com2, kTestComponent_abag, Version("2.2"));
+  
   const char expected_update_url_1[] =
       "http://localhost/upd?x=id%3D"
       "jebgalgnebhfojomionfpkfelancnnkf%26v%3D0.9%26uc&x=id%3D"
@@ -323,9 +332,6 @@ TEST_F(ComponentUpdaterTest, InstallCrx) {
       "http://localhost/upd?x=id%3D"
       "abagagagagagagagagagagagagagagag%26v%3D2.2%26uc&x=id%3D"
       "jebgalgnebhfojomionfpkfelancnnkf%26v%3D1.0%26uc";
-
-  const char expected_crx_url[] =
-      "http://localhost/download/jebgalgnebhfojomionfpkfelancnnkf.crx";
 
   interceptor->SetResponse(expected_update_url_1, header_ok_reply,
                            test_file("updatecheck_reply_1.xml"));
@@ -361,4 +367,43 @@ TEST_F(ComponentUpdaterTest, InstallCrx) {
   delete com1.installer;
   delete com2.installer;
   xmlCleanupGlobals();
+}
+
+// This test checks that the "prodversionmin" value is handled correctly. In
+// particular there should not be an install because the minimun product
+// version is much higher than of chrome.
+TEST_F(ComponentUpdaterTest, ProdVersionCheck) {
+  MessageLoop message_loop;
+  BrowserThread ui_thread(BrowserThread::UI, &message_loop);
+  BrowserThread file_thread(BrowserThread::FILE);
+  BrowserThread io_thread(BrowserThread::IO);
+
+  io_thread.StartWithOptions(base::Thread::Options(MessageLoop::TYPE_IO, 0));
+  file_thread.Start();
+
+  scoped_refptr<ComponentUpdateInterceptor>
+      interceptor(new ComponentUpdateInterceptor());
+
+  CrxComponent com;
+  RegisterComponent(&com, kTestComponent_jebg, Version("0.9"));
+
+  const char expected_update_url[] =
+      "http://localhost/upd?x=id%3D"
+      "jebgalgnebhfojomionfpkfelancnnkf%26v%3D0.9%26uc";
+
+  interceptor->SetResponse(expected_update_url,
+                           header_ok_reply,
+                           test_file("updatecheck_reply_2.xml"));
+  interceptor->SetResponse(expected_crx_url, header_ok_reply,
+                           test_file("jebgalgnebhfojomionfpkfelancnnkf.crx"));
+
+  test_configurator()->SetLoopCount(1);
+  component_updater()->Start();
+  message_loop.Run();
+
+  EXPECT_EQ(1, interceptor->hit_count());
+  EXPECT_EQ(0, static_cast<TestInstaller*>(com.installer)->error());
+  EXPECT_EQ(0, static_cast<TestInstaller*>(com.installer)->install_count());
+
+  component_updater()->Stop();
 }
