@@ -28,9 +28,9 @@
 #include "chrome/browser/ui/gtk/browser_window_gtk.h"
 #endif
 
-// Basic test is flaky on ChromeOS.
+// Basic test is flaky on ChromeOS and Linux.
 // http://crbug.com/52929
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) || defined(OS_LINUX)
 #define MAYBE_Basic FLAKY_Basic
 #else
 #define MAYBE_Basic Basic
