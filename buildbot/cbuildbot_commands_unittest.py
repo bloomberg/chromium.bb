@@ -108,12 +108,14 @@ class CBuildBotTest(mox.MoxTestBase):
          error_ok=True,
          exit_code=True,
          redirect_stderr=True).AndReturn(cros_lib.CommandResult())
-    cros_lib.RunCommand('minidump_stackwalk %s %s > %s.txt 2> /dev/null' %
-                        (dump_file, symbol_dir, dump_file),
+    cros_lib.RunCommand(['minidump_stackwalk',
+                         dump_file,
+                         symbol_dir, ],
                         cwd=cwd,
                         enter_chroot=True,
                         error_ok=True,
-                        shell=True)
+                        log_stdout_to_file='%s.txt' % dump_file,
+                        redirect_stderr=True)
     cros_lib.RunCommand(['tar',
                          'uf',
                          test_tarball,
