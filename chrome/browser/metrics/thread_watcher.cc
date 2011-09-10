@@ -423,20 +423,22 @@ void ThreadWatcherList::ParseCommandLine(
   // Determine |unresponsive_threshold| based on switches::kCrashOnHangSeconds.
   *unresponsive_threshold = kUnresponsiveCount;
 
-  if (chrome::VersionInfo::GetChannel() == chrome::VersionInfo::CHANNEL_BETA) {
-    // Increase the unresponsive_threshold in Beta channel to reduce the number
-    // of crashes due to ThreadWatcher.
+  // Increase the unresponsive_threshold on the Stable and Beta channels to
+  // reduce the number of crashes due to ThreadWatcher.
+  chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
+  if (channel == chrome::VersionInfo::CHANNEL_STABLE) {
+    *unresponsive_threshold *= 4;
+  } else if (channel == chrome::VersionInfo::CHANNEL_BETA) {
     *unresponsive_threshold *= 2;
-  } else {
-    // In Canary and Dev channels, for Windows XP (old systems), double the
-    // unresponsive_threshold to give OS a chance to schedule UI/IO threads a
-    // time slice to respond with a pong message (to get around limitations with
-    // the OS).
-#if defined(OS_WIN)
-    if (base::win::GetVersion() <= base::win::VERSION_XP)
-      *unresponsive_threshold *= 2;
-#endif
   }
+
+#if defined(OS_WIN)
+  // For Windows XP (old systems), double the unresponsive_threshold to give
+  // the OS a chance to schedule UI/IO threads a time slice to respond with a
+  // pong message (to get around limitations with the OS).
+  if (base::win::GetVersion() <= base::win::VERSION_XP)
+    *unresponsive_threshold *= 2;
+#endif
 
   std::string crash_on_hang_seconds =
       command_line.GetSwitchValueASCII(switches::kCrashOnHangSeconds);
@@ -452,7 +454,7 @@ void ThreadWatcherList::ParseCommandLine(
 
   // Default to crashing the browser if UI or IO threads are not responsive
   // except in stable channel.
-  if (chrome::VersionInfo::GetChannel() == chrome::VersionInfo::CHANNEL_STABLE)
+  if (channel == chrome::VersionInfo::CHANNEL_STABLE)
     crash_on_hang_threads = "";
   else
     crash_on_hang_threads = "UI,IO";
@@ -728,19 +730,21 @@ ShutdownWatcherHelper::~ShutdownWatcherHelper() {
 void ShutdownWatcherHelper::Arm(const base::TimeDelta& duration) {
   DCHECK(!shutdown_watchdog_);
   base::TimeDelta actual_duration = duration;
+
   chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
   if (channel == chrome::VersionInfo::CHANNEL_STABLE) {
     actual_duration *= 50;
   } else if (channel == chrome::VersionInfo::CHANNEL_BETA ||
              channel == chrome::VersionInfo::CHANNEL_DEV) {
     actual_duration *= 25;
-  } else {
-    // In Canary, for Windows XP, give twice the time for shutdown.
-#if defined(OS_WIN)
-    if (base::win::GetVersion() <= base::win::VERSION_XP)
-      actual_duration *= 2;
-#endif
   }
+
+#if defined(OS_WIN)
+  // On Windows XP, give twice the time for shutdown.
+  if (base::win::GetVersion() <= base::win::VERSION_XP)
+    actual_duration *= 2;
+#endif
+
   shutdown_watchdog_ = new ShutdownWatchDogThread(actual_duration);
   shutdown_watchdog_->Arm();
 }
