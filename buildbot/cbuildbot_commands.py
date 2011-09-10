@@ -562,7 +562,7 @@ def AddPackagesForPrebuilt(filename):
   """
   try:
     cmd = []
-    package_file = open( filename, 'r')
+    package_file = open(filename, 'r')
     # Get only the package name and category. For example, given
     # "app-arch/xz-utils-4.999.9_beta" get "app-arch/xz-utils".
     reg_ex = re.compile('[\w-]+/[\w-]+[a-zA-Z]+[0-9]*')
@@ -576,7 +576,7 @@ def AddPackagesForPrebuilt(filename):
   except IOError as (errno, strerror):
     cros_lib.Warning('Problem with package file %s' % filename)
     cros_lib.Warning('Skipping uploading of prebuilts.')
-    cros_lib.Warning('ERROR(%d): %s' % (errno, strerror) )
+    cros_lib.Warning('ERROR(%d): %s' % (errno, strerror))
     return None
 
 
