@@ -3,6 +3,7 @@
 0xe93a6d5909da6a5a	AboutFlags_StartupTick
 0xbfdd432b8d9d4ad6	AboutFlags_background-webapps
 0x439284a07fb851bb	AboutFlags_click-to-play
+0x10ffe0a8b323b586	AboutFlags_cloud-print
 0x4da52e00bdfac86a	AboutFlags_cloud-print-proxy
 0xc5ec36aaa32ceff4	AboutFlags_confirm-to-quit
 0x4e8fe1c674de45dd	AboutFlags_conflicting-modules-check
@@ -1115,6 +1116,9 @@
 0x3d0170d09a816e7f	ShowDownloads
 0xf530f742ba5b2683	ShowExtensions
 0xa0118397d83c34d0	ShowFileBrowserFullTab
+0xb1abf919e7eea1ad	ShowHelpTab
+0x12391b25bf32b0de	ShowHelpTabViaF1
+0xb2a3954e828f87c9	ShowHelpTabViaWrenchMenu
 0xb04b2eea6e26ebef	ShowHistory
 0x404c3c24f3091fd7	ShowJSConsole
 0x658963e1a47a5018	ShowOptions

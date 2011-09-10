@@ -2561,10 +2561,13 @@ void BrowserView::InitHangMonitor() {
 
 void BrowserView::UpdateAcceleratorMetrics(
     const views::Accelerator& accelerator, int command_id) {
+  const ui::KeyboardCode key_code = accelerator.key_code();
+  if (command_id == IDC_HELP_PAGE && key_code == ui::VKEY_F1)
+    UserMetrics::RecordAction(UserMetricsAction("ShowHelpTabViaF1"));
+
 #if defined(OS_CHROMEOS)
   // Collect information about the relative popularity of various accelerators
   // on Chrome OS.
-  const ui::KeyboardCode key_code = accelerator.key_code();
   switch (command_id) {
     case IDC_BACK:
       if (key_code == ui::VKEY_BACK)

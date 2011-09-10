@@ -33,6 +33,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/profiling.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/browser/user_metrics.h"
 #include "content/common/content_notification_types.h"
 #include "content/common/notification_service.h"
 #include "content/common/notification_source.h"
@@ -329,6 +330,9 @@ void WrenchMenuModel::ExecuteCommand(int command_id) {
     error->ExecuteMenuItem(browser_);
     return;
   }
+
+  if (command_id == IDC_HELP_PAGE)
+    UserMetrics::RecordAction(UserMetricsAction("ShowHelpTabViaWrenchMenu"));
 
   browser_->ExecuteCommand(command_id);
 }
