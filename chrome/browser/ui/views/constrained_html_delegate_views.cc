@@ -100,7 +100,8 @@ ConstrainedHtmlDelegateViews::ConstrainedHtmlDelegateViews(
       html_tab_contents_.property_bag(), this);
   html_tab_contents_.controller().LoadURL(delegate->GetDialogContentURL(),
                                           GURL(),
-                                          PageTransition::START_PAGE);
+                                          PageTransition::START_PAGE,
+                                          std::string());
 }
 
 ConstrainedHtmlDelegateViews::~ConstrainedHtmlDelegateViews() {

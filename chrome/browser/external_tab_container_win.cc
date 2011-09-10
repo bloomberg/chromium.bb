@@ -1075,7 +1075,8 @@ void ExternalTabContainer::Navigate(const GURL& url, const GURL& referrer) {
   TRACE_EVENT_BEGIN_ETW("ExternalTabContainer::Navigate", 0, url.spec());
 
   tab_contents_->controller().LoadURL(url, referrer,
-                                      PageTransition::START_PAGE);
+                                      PageTransition::START_PAGE,
+                                      std::string());
 }
 
 bool ExternalTabContainer::OnGoToEntryOffset(int offset) {

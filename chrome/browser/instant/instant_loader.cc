@@ -661,7 +661,8 @@ bool InstantLoader::Update(TabContentsWrapper* tab_contents,
     DCHECK(template_url_id_ == 0);
     preview_tab_contents_delegate_->PrepareForNewLoad();
     frame_load_observer_.reset(NULL);
-    preview_contents_->controller().LoadURL(url_, GURL(), transition_type);
+    preview_contents_->controller().LoadURL(url_, GURL(), transition_type,
+                                            std::string());
   }
   return true;
 }
@@ -1034,7 +1035,8 @@ void InstantLoader::LoadInstantURL(TabContentsWrapper* tab_contents,
   CommandLine* cl = CommandLine::ForCurrentProcess();
   if (cl->HasSwitch(switches::kInstantURL))
     instant_url = GURL(cl->GetSwitchValueASCII(switches::kInstantURL));
-  preview_contents_->controller().LoadURL(instant_url, GURL(), transition_type);
+  preview_contents_->controller().LoadURL(instant_url, GURL(), transition_type,
+                                          std::string());
   RenderViewHost* host = preview_contents_->render_view_host();
   host->Send(new ChromeViewMsg_SearchBoxChange(
       host->routing_id(), user_text, verbatim, 0, 0));

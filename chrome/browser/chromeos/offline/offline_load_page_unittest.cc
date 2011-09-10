@@ -95,7 +95,8 @@ TEST_F(OfflineLoadPageTest, OfflinePaeProceed) {
   // Start a load.
   Navigate(kURL1, 1);
   // Load next page.
-  controller().LoadURL(GURL(kURL2), GURL(), PageTransition::TYPED);
+  controller().LoadURL(GURL(kURL2), GURL(), PageTransition::TYPED,
+                       std::string());
 
   // Simulate the load causing an offline browsing interstitial page
   // to be shown.
@@ -122,7 +123,8 @@ TEST_F(OfflineLoadPageTest, OfflinePaeProceed) {
 TEST_F(OfflineLoadPageTest, OfflinePageDontProceed) {
   // Start a load.
   Navigate(kURL1, 1);
-  controller().LoadURL(GURL(kURL2), GURL(), PageTransition::TYPED);
+  controller().LoadURL(GURL(kURL2), GURL(), PageTransition::TYPED,
+                       std::string());
 
   // Simulate the load causing an offline interstitial page to be shown.
   ShowInterstitial(kURL2);

@@ -3005,7 +3005,7 @@ TabContentsWrapper* Browser::CreateTabContentsForURL(
   if (!defer_load) {
     // Load the initial URL before adding the new tab contents to the tab strip
     // so that the tab contents has navigation state.
-    contents->controller().LoadURL(url, referrer, transition);
+    contents->controller().LoadURL(url, referrer, transition, std::string());
   }
 
   return contents;

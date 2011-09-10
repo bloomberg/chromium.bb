@@ -48,7 +48,7 @@ TEST_F(RenderViewHostTest, ResetUnloadOnReload) {
   //     fires the tab gets closed.
 
   NavigateAndCommit(url1);
-  controller().LoadURL(url2, GURL(), PageTransition::LINK);
+  controller().LoadURL(url2, GURL(), PageTransition::LINK, std::string());
   // Simulate the ClosePage call which is normally sent by the net::URLRequest.
   rvh()->ClosePage();
   // Needed so that navigations are not suspended on the RVH.

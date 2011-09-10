@@ -377,7 +377,8 @@ void BugReportUtil::ReportPhishing(TabContents* currentTab,
           kReportPhishingUrl, phishing_url,
           false /* not client-side detection */),
       GURL(),
-      PageTransition::LINK);
+      PageTransition::LINK,
+      std::string());
 }
 #endif
 

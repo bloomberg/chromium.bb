@@ -348,7 +348,8 @@ void WebstoreInlineInstaller::InstallUIProceed() {
   // whitelist entry and look that up when checking that this is a valid
   // download.
   GURL referrer(extension_urls::GetWebstoreItemDetailURLPrefix() + id_);
-  controller.LoadURL(install_url, referrer, PageTransition::LINK);
+  controller.LoadURL(install_url, referrer, PageTransition::LINK,
+                     std::string());
 
   // TODO(mihaip): the success message should happen later, when the extension
   // is actually downloaded and installed (when NOTIFICATION_EXTENSION_INSTALLED

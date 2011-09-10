@@ -372,7 +372,8 @@ bool CompleteInstallFunction::RunImpl() {
   // normal permissions install dialog.
   NavigationController& controller =
       dispatcher()->delegate()->GetAssociatedTabContents()->controller();
-  controller.LoadURL(install_url, source_url(), PageTransition::LINK);
+  controller.LoadURL(install_url, source_url(), PageTransition::LINK,
+                     std::string());
 
   return true;
 }

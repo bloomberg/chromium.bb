@@ -273,7 +273,8 @@ void HtmlDialogWindowDelegateBridge::HandleKeyboardEvent(
                                                   delegate_.get());
 
   tabContents_->controller().LoadURL(delegate_->GetDialogContentURL(),
-                                      GURL(), PageTransition::START_PAGE);
+                                      GURL(), PageTransition::START_PAGE,
+                                      std::string());
 
   // TODO(akalin): add accelerator for ESC to close the dialog box.
   //

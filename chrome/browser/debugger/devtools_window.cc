@@ -122,7 +122,8 @@ DevToolsWindow* DevToolsWindow::Create(
   tab_contents->controller().LoadURL(
       GetDevToolsUrl(profile, docked, shared_worker_frontend),
       GURL(),
-      PageTransition::START_PAGE);
+      PageTransition::START_PAGE,
+      std::string());
   return new DevToolsWindow(tab_contents, profile, inspected_rvh, docked);
 }
 

@@ -171,7 +171,8 @@ class TabStripModelTest : public RenderViewHostTestHarness {
   // Forwards a URL "load" request through to our dummy TabContents
   // implementation.
   void LoadURL(TabContents* con, const std::wstring& url) {
-    controller().LoadURL(GURL(WideToUTF16(url)), GURL(), PageTransition::LINK);
+    controller().LoadURL(GURL(WideToUTF16(url)), GURL(), PageTransition::LINK,
+                         std::string());
   }
 
   void GoBack(TabContents* contents) {

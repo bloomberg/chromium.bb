@@ -85,7 +85,8 @@ ConstrainedHtmlDelegateGtk::ConstrainedHtmlDelegateGtk(
       tab_.tab_contents()->property_bag(), this);
 
   tab_.tab_contents()->controller().LoadURL(
-      delegate->GetDialogContentURL(), GURL(), PageTransition::START_PAGE);
+      delegate->GetDialogContentURL(), GURL(), PageTransition::START_PAGE,
+      std::string());
   tab_contents_container_.SetTab(&tab_);
 
   gfx::Size dialog_size;

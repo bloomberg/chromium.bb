@@ -131,7 +131,7 @@ void AutoLoginRedirector::RedirectToMergeSession(const std::string& token) {
 
   // TODO(rogerta): what is the correct page transition?
   tab_contents_wrapper_->tab_contents()->controller().LoadURL(GURL(url),
-      GURL(), PageTransition::AUTO_BOOKMARK);
+      GURL(), PageTransition::AUTO_BOOKMARK, std::string());
 }
 
 // static

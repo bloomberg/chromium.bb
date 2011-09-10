@@ -172,16 +172,12 @@ class NavigationController {
 
   // New navigations -----------------------------------------------------------
 
-  // Loads the specified URL.
-  void LoadURL(const GURL& url, const GURL& referrer,
-               PageTransition::Type type);
-
   // Loads the specified URL, specifying extra http headers to add to the
   // request.  Extra headers are separated by \n.
-  void LoadURLWithHeaders(const GURL& url,
-                          const GURL& referrer,
-                          PageTransition::Type type,
-                          const std::string& extra_headers);
+  void LoadURL(const GURL& url,
+               const GURL& referrer,
+               PageTransition::Type type,
+               const std::string& extra_headers);
 
   // Loads the current page if this NavigationController was restored from
   // history and the current page has not loaded yet.

@@ -280,7 +280,8 @@ void PrerenderContents::StartPrerendering(
   load_start_time_ = base::TimeTicks::Now();
 
   new_contents->controller().LoadURL(prerender_url_,
-                                     referrer_, PageTransition::LINK);
+                                     referrer_, PageTransition::LINK,
+                                     std::string());
 }
 
 bool PrerenderContents::GetChildId(int* child_id) const {

@@ -458,7 +458,7 @@ void NavigationController::RemoveEntryAtIndex(int index,
     } else {
       // If there is nothing to show, show a default page.
       LoadURL(default_url.is_empty() ? GURL("about:blank") : default_url,
-              GURL(), PageTransition::START_PAGE);
+              GURL(), PageTransition::START_PAGE, std::string());
     }
   }
 }
@@ -483,14 +483,7 @@ void NavigationController::AddTransientEntry(NavigationEntry* entry) {
   tab_contents_->NotifyNavigationStateChanged(kInvalidateAll);
 }
 
-void NavigationController::LoadURL(const GURL& url, const GURL& referrer,
-                                   PageTransition::Type transition) {
-  LoadURLWithHeaders(url, referrer, transition, std::string());
-}
-
-// TODO(rogerta): Remove this call and put the extra_headers argument directly
-// in LoadURL().
-void NavigationController::LoadURLWithHeaders(
+void NavigationController::LoadURL(
     const GURL& url,
     const GURL& referrer,
     PageTransition::Type transition,

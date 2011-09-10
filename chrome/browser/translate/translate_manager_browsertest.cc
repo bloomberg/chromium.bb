@@ -689,7 +689,8 @@ TEST_F(TranslateManagerTest, ReloadFromLocationBar) {
   // Create a pending navigation and simulate a page load.  That should be the
   // equivalent of typing the URL again in the location bar.
   NavEntryCommittedObserver nav_observer(contents());
-  contents()->controller().LoadURL(url, GURL(), PageTransition::TYPED);
+  contents()->controller().LoadURL(url, GURL(), PageTransition::TYPED,
+                                   std::string());
   rvh()->SendNavigate(0, url);
 
   // Test that we are really getting a same page navigation, the test would be

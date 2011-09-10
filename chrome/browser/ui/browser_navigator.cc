@@ -476,7 +476,7 @@ void Navigate(NavigateParams* params) {
     // should not actually navigate.
     if (!HandleNonNavigationAboutURL(url)) {
       // Perform the actual navigation.
-      params->target_contents->controller().LoadURLWithHeaders(
+      params->target_contents->controller().LoadURL(
           url, params->referrer, params->transition, extra_headers);
     }
   } else {
@@ -525,7 +525,7 @@ void Navigate(NavigateParams* params) {
     } else if (params->path_behavior == NavigateParams::IGNORE_AND_NAVIGATE &&
         target->GetURL() != params->url) {
       InitializeExtraHeaders(params, NULL, &extra_headers);
-      target->controller().LoadURLWithHeaders(
+      target->controller().LoadURL(
           params->url, params->referrer, params->transition, extra_headers);
     }
 

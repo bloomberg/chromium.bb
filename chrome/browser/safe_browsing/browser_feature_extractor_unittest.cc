@@ -74,7 +74,7 @@ class BrowserFeatureExtractorTest : public RenderViewHostTestHarness {
   void NavigateAndCommit(const GURL& url,
                          const GURL& referrer,
                          PageTransition::Type type) {
-    contents()->controller().LoadURL(url, referrer, type);
+    contents()->controller().LoadURL(url, referrer, type, std::string());
 
     static int page_id = 0;
     ViewHostMsg_FrameNavigate_Params params;

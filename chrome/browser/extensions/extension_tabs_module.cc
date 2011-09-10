@@ -957,7 +957,7 @@ bool UpdateTabFunction::RunImpl() {
       return true;
     }
 
-    controller.LoadURL(url, GURL(), PageTransition::LINK);
+    controller.LoadURL(url, GURL(), PageTransition::LINK, std::string());
 
     // The URL of a tab contents never actually changes to a JavaScript URL, so
     // this check only makes sense in other cases.

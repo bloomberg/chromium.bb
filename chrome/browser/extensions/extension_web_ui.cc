@@ -353,7 +353,8 @@ void ExtensionWebUI::UnregisterAndReplaceOverride(const std::string& page,
 
       // Don't use Reload() since |url| isn't the same as the internal URL
       // that NavigationController has.
-      tab->controller().LoadURL(url, url, PageTransition::RELOAD);
+      tab->controller().LoadURL(url, url, PageTransition::RELOAD,
+                                std::string());
     }
   }
 }

@@ -90,7 +90,7 @@ void SidebarContainer::Navigate(const GURL& url) {
   // TODO(alekseys): add a progress UI.
   navigate_to_default_page_on_expand_ = false;
   sidebar_contents_->controller().LoadURL(
-      url, GURL(), PageTransition::START_PAGE);
+      url, GURL(), PageTransition::START_PAGE, std::string());
 }
 
 void SidebarContainer::SetBadgeText(const string16& badge_text) {
