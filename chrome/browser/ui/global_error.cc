@@ -30,7 +30,7 @@ int GlobalError::GetBubbleViewIconResourceID() {
   return IDR_INPUT_ALERT;
 }
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_MACOSX) && !defined(TOOLKIT_VIEWS)
 // static
 void GlobalError::ShowBubbleView(Browser* browser, GlobalError* error) {
   NOTREACHED();
