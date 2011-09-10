@@ -699,7 +699,7 @@ void NativeTextfieldViews::InsertChar(char16 ch, int flags) {
   OnAfterUserAction();
 }
 
-ui::TextInputType NativeTextfieldViews::GetTextInputType() {
+ui::TextInputType NativeTextfieldViews::GetTextInputType() const {
   return textfield_->GetTextInputType();
 }
 

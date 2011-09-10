@@ -20,14 +20,17 @@
 #include "content/browser/renderer_host/render_widget_host.h"
 #include "content/common/result_codes.h"
 #include "content/common/view_messages.h"
+#include "grit/ui_strings.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/gtk/WebInputEventFactory.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/x11/WebScreenInfoFactory.h"
+#include "ui/base/clipboard/clipboard.h"
 #include "ui/base/text/text_elider.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/canvas_skia.h"
 #include "views/events/event.h"
 #include "views/ime/input_method.h"
+#include "views/views_delegate.h"
 #include "views/widget/tooltip_manager.h"
 #include "views/widget/widget.h"
 
@@ -157,8 +160,6 @@ void RenderWidgetHostViewViews::DidBecomeSelected() {
   is_hidden_ = false;
   if (host_)
     host_->WasRestored();
-
-  UpdateTouchSelectionController();
 }
 
 void RenderWidgetHostViewViews::WasHidden() {
@@ -177,9 +178,6 @@ void RenderWidgetHostViewViews::WasHidden() {
 
   if (!update_touch_selection_.empty())
     update_touch_selection_.RevokeAll();
-
-  if (touch_selection_controller_.get())
-    touch_selection_controller_->ClientViewLostFocus();
 }
 
 void RenderWidgetHostViewViews::SetSize(const gfx::Size& size) {
@@ -409,8 +407,26 @@ bool RenderWidgetHostViewViews::IsCommandIdChecked(int command_id) const {
 }
 
 bool RenderWidgetHostViewViews::IsCommandIdEnabled(int command_id) const {
-  // TODO(varunjain): implement this.
-  NOTIMPLEMENTED();
+  bool editable = GetTextInputType() != ui::TEXT_INPUT_TYPE_NONE;
+  bool has_selection = selection_start_ != selection_end_;
+  string16 result;
+  switch (command_id) {
+    case IDS_APP_CUT:
+      return editable && has_selection;
+    case IDS_APP_COPY:
+      return has_selection;
+    case IDS_APP_PASTE:
+      views::ViewsDelegate::views_delegate->GetClipboard()->
+          ReadText(ui::Clipboard::BUFFER_STANDARD, &result);
+      return editable && !result.empty();
+    case IDS_APP_DELETE:
+      return editable && has_selection;
+    case IDS_APP_SELECT_ALL:
+      return true;
+    default:
+      NOTREACHED();
+      return false;
+  }
   return true;
 }
 
@@ -422,8 +438,25 @@ bool RenderWidgetHostViewViews::GetAcceleratorForCommandId(
 }
 
 void RenderWidgetHostViewViews::ExecuteCommand(int command_id) {
-  // TODO(varunjain): implement this.
-  NOTIMPLEMENTED();
+  switch (command_id) {
+    case IDS_APP_CUT:
+      host_->Send(new ViewMsg_Cut(host_->routing_id()));
+      break;
+    case IDS_APP_COPY:
+      host_->Send(new ViewMsg_Copy(host_->routing_id()));
+      break;
+    case IDS_APP_PASTE:
+      host_->Send(new ViewMsg_Paste(host_->routing_id()));
+      break;
+    case IDS_APP_DELETE:
+      host_->Send(new ViewMsg_Delete(host_->routing_id()));
+      break;
+    case IDS_APP_SELECT_ALL:
+      host_->Send(new ViewMsg_SelectAll(host_->routing_id()));
+      break;
+    default:
+      NOTREACHED();
+  }
 }
 
 std::string RenderWidgetHostViewViews::GetClassName() const {
@@ -606,7 +639,7 @@ void RenderWidgetHostViewViews::InsertChar(char16 ch, int flags) {
   }
 }
 
-ui::TextInputType RenderWidgetHostViewViews::GetTextInputType() {
+ui::TextInputType RenderWidgetHostViewViews::GetTextInputType() const {
   return text_input_type_;
 }
 
@@ -778,6 +811,8 @@ void RenderWidgetHostViewViews::OnFocus() {
   ShowCurrentCursor();
   host_->GotFocus();
   host_->SetInputMethodActive(GetInputMethod()->IsActive());
+
+  UpdateTouchSelectionController();
 }
 
 void RenderWidgetHostViewViews::OnBlur() {
@@ -789,6 +824,9 @@ void RenderWidgetHostViewViews::OnBlur() {
   if (!is_showing_context_menu_ && !is_hidden_)
     host_->Blur();
   host_->SetInputMethodActive(false);
+
+  if (touch_selection_controller_.get())
+    touch_selection_controller_->ClientViewLostFocus();
 }
 
 bool RenderWidgetHostViewViews::NeedsInputGrab() {

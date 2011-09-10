@@ -150,7 +150,7 @@ class RenderWidgetHostViewViews : public RenderWidgetHostView,
   virtual void ClearCompositionText() OVERRIDE;
   virtual void InsertText(const string16& text) OVERRIDE;
   virtual void InsertChar(char16 ch, int flags) OVERRIDE;
-  virtual ui::TextInputType GetTextInputType() OVERRIDE;
+  virtual ui::TextInputType GetTextInputType() const OVERRIDE;
   virtual gfx::Rect GetCaretBounds() OVERRIDE;
   virtual bool HasCompositionText() OVERRIDE;
   virtual bool GetTextRange(ui::Range* range) OVERRIDE;

@@ -62,7 +62,7 @@ class VIEWS_EXPORT TextInputClient {
 
   // Returns current text input type. It could be changed and even becomes
   // TEXT_INPUT_TYPE_NONE at runtime.
-  virtual ui::TextInputType GetTextInputType() = 0;
+  virtual ui::TextInputType GetTextInputType() const = 0;
 
   // Returns current caret (insertion point) bounds relative to the View’s
   // coordinates. If there is selection, then the selection bounds will be
