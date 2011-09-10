@@ -853,16 +853,6 @@ UNINITIALIZED READ
 *!i18n::phonenumbers::RegExp::FullMatch
 *!i18n::phonenumbers::PhoneNumberUtil::IsViablePhoneNumber
 
-# http://crbug.com/82716
-LEAK
-*!generic_cpp_alloc
-*!operator new
-*!base::MessageLoopProxy::current
-*!IPC::SyncChannel::ReceivedSyncMsgQueue::ReceivedSyncMsgQueue
-*!IPC::SyncChannel::ReceivedSyncMsgQueue::AddContext
-*!IPC::SyncChannel::SyncContext::SyncContext
-*!IPC::SyncChannel::SyncChannel
-
 # http://crbug.com/87612
 LEAK
 ...

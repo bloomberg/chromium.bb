@@ -4068,26 +4068,6 @@
    fun:_ZN9FormField5MatchEPK13AutofillFieldRKSbItN4base20string16_char_traitsESaItEEi
 }
 {
-   bug_82716a
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN4base16MessageLoopProxy22currentEv
-   fun:_ZN3IPC12ChannelProxy7ContextC2EPNS_7Channel8ListenerEPN4base16MessageLoopProxyE
-}
-{
-   bug_82716b
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN4base16MessageLoopProxy22currentEv
-   ...
-   fun:_ZN3IPC11SyncChannel20ReceivedSyncMsgQueueC1Ev
-   fun:_ZN3IPC11SyncChannel20ReceivedSyncMsgQueue10AddContextEv
-   ...
-   fun:_ZN3IPC11SyncChannel11SyncContextC1EPNS_7Channel8ListenerEPN4base16MessageLoopProxyEPNS5_13WaitableEventE
-   ...
-   fun:_ZN3IPC11SyncChannelC1ERKNS_13ChannelHandleENS_7Channel4ModeEPNS4_8ListenerEPN4base16MessageLoopProxyEbPNS8_13WaitableEventE
-}
-{
    bug_82717
    Memcheck:Leak
    fun:_Znw*
