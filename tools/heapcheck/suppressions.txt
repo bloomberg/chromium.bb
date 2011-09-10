@@ -1070,19 +1070,6 @@
    fun:WebCore::parseUASheet
 }
 {
-   bug_78505
-   Heapcheck:Leak
-   fun:__gnu_cxx::new_allocator::allocate
-   fun:std::string::_Rep::_S_create
-   fun:std::string::_S_construct
-   fun:std::string::_S_construct_aux
-   fun:std::string::_S_construct
-   fun:*basic_string*
-   fun:RendererMessageLoopObserver
-   fun:RendererMain
-   fun:SimpleRenderer
-}
-{
    bug_79322a
    Heapcheck:Leak
    fun:__gnu_cxx::new_allocator::allocate
