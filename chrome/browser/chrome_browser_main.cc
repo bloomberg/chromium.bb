@@ -1196,29 +1196,6 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunInternal() {
   RegisterTranslateableItems();
 #endif
 
-#if defined(TOOLKIT_VIEWS)
-  views::Widget::SetPureViews(
-      CommandLine::ForCurrentProcess()->HasSwitch(switches::kUsePureViews));
-  // Launch the views desktop shell window and register it as the default parent
-  // for all unparented views widgets.
-  if (parsed_command_line().HasSwitch(switches::kViewsDesktop)) {
-    std::string desktop_type_cmd =
-        parsed_command_line().GetSwitchValueASCII(switches::kViewsDesktop);
-    views::desktop::DesktopWindowView::DesktopType desktop_type;
-    if (desktop_type_cmd == "netbook")
-      desktop_type = views::desktop::DesktopWindowView::DESKTOP_NETBOOK;
-    else if (desktop_type_cmd == "other")
-      desktop_type = views::desktop::DesktopWindowView::DESKTOP_OTHER;
-    else
-      desktop_type = views::desktop::DesktopWindowView::DESKTOP_DEFAULT;
-    views::desktop::DesktopWindowView::CreateDesktopWindow(desktop_type);
-    ChromeViewsDelegate* chrome_views_delegate =
-        static_cast<ChromeViewsDelegate*>(views::ViewsDelegate::views_delegate);
-    chrome_views_delegate->default_parent_view =
-        views::desktop::DesktopWindowView::desktop_window_view;
-  }
-#endif
-
   BrowserInit browser_init;
 
   // On first run, we need to process the predictor preferences before the
@@ -1255,9 +1232,42 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunInternal() {
   }
 #endif
 
+#if defined(TOUCH_UI)
+  // Always add the --views-desktop flag. If the user disabled the flag from
+  // about:flags, it will get unset bt the call to ConvertFlagsToSwitches in the
+  // following line.
+  CommandLine::ForCurrentProcess()->AppendSwitchASCII(switches::kViewsDesktop,
+                                                      "other");
+#endif
+
   // Convert active labs into switches. Modifies the current command line.
   about_flags::ConvertFlagsToSwitches(local_state,
                                       CommandLine::ForCurrentProcess());
+
+#if defined(TOOLKIT_VIEWS)
+  views::Widget::SetPureViews(
+      CommandLine::ForCurrentProcess()->HasSwitch(switches::kUsePureViews));
+  // Launch the views desktop shell window and register it as the default parent
+  // for all unparented views widgets.
+  if (parsed_command_line().HasSwitch(switches::kViewsDesktop)) {
+    std::string desktop_type_cmd =
+        parsed_command_line().GetSwitchValueASCII(switches::kViewsDesktop);
+    if (desktop_type_cmd != "disabled") {
+      views::desktop::DesktopWindowView::DesktopType desktop_type;
+      if (desktop_type_cmd == "netbook")
+        desktop_type = views::desktop::DesktopWindowView::DESKTOP_NETBOOK;
+      else if (desktop_type_cmd == "other")
+        desktop_type = views::desktop::DesktopWindowView::DESKTOP_OTHER;
+      else
+        desktop_type = views::desktop::DesktopWindowView::DESKTOP_DEFAULT;
+      views::desktop::DesktopWindowView::CreateDesktopWindow(desktop_type);
+      ChromeViewsDelegate* chrome_views_delegate = static_cast
+          <ChromeViewsDelegate*>(views::ViewsDelegate::views_delegate);
+      chrome_views_delegate->default_parent_view =
+        views::desktop::DesktopWindowView::desktop_window_view;
+    }
+  }
+#endif
 
   InitializeNetworkOptions(parsed_command_line());
   InitializeURLRequestThrottlerManager(browser_process_->net_log());
