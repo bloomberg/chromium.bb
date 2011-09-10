@@ -23,7 +23,7 @@
 #include "chrome/browser/automation/testing_automation_provider.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/component_updater/component_updater_service.h"
-#include "chrome/browser/component_updater/pepper_flash_component_installer.h"
+#include "chrome/browser/component_updater/flash_component_installer.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/extensions/extension_creator.h"

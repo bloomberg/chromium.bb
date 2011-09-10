@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_COMPONENT_UPDATER_PEPPER_FLASH_COMPONENT_INSTALLER_H_
-#define CHROME_BROWSER_COMPONENT_UPDATER_PEPPER_FLASH_COMPONENT_INSTALLER_H_
+#ifndef CHROME_BROWSER_COMPONENT_UPDATER_FLASH_COMPONENT_INSTALLER_H_
+#define CHROME_BROWSER_COMPONENT_UPDATER_FLASH_COMPONENT_INSTALLER_H_
 #pragma once
 
 class ComponentUpdateService;
@@ -14,4 +14,4 @@ class FilePath;
 // The first part is IO intensive so we do it asynchronously in the file thread.
 void RegisterPepperFlashComponent(ComponentUpdateService* cus);
 
-#endif  // CHROME_BROWSER_COMPONENT_UPDATER_PEPPER_FLASH_COMPONENT_INSTALLER_H_
+#endif  // CHROME_BROWSER_COMPONENT_UPDATER_FLASH_COMPONENT_INSTALLER_H_
