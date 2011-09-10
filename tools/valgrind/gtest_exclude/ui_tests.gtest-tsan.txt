@@ -18,9 +18,6 @@ ErrorPageTest.DNSError_Basic
 ErrorPageTest.DNSError_GoBack1
 ErrorPageTest.DNSError_GoBack2
 
-# These tests fail due to timeouts, see http://crbug.com/64619
-OptionsUITest.CommandOpensOptionsTab
-
 # Tests timing out, see http://crbug.com/92717
 NewTabUIProcessPerTabTest.NavBeforeNTPCommits
 NewTabUITest.ChromeHangInNTP

@@ -200,10 +200,6 @@ DomStorageEmptyDatabaseTest.EmptyDirAfterGet
 # Hangs; See http://crbug.com/58569
 SearchProviderTest.TestIsSearchProviderInstalled
 
-# Following tests crash with LOG(FATAL) on valgrind mac; See http://crbug.com/60036
-OptionsUITest.TwoCommandsOneTab
-OptionsUITest.CommandAgainGoesBackToOptionsTab
-
 # Times out, see http://crbug.com/50297
 DOMStorageTest.RootLayoutTests
 
