@@ -16,10 +16,8 @@
 #include "content/browser/browser_thread.h"
 
 // Parameter type for the value-parameterized tests.
-typedef void (*ExtensionSettingsStorageTestParam)(
-    ExtensionSettings* settings,
-    const std::string& extension_id,
-    const ExtensionSettings::Callback& callback);
+typedef ExtensionSettingsStorage* (*ExtensionSettingsStorageTestParam)(
+    ExtensionSettings* settings, const std::string& extension_id);
 
 // Test fixture for ExtensionSettingsStorage tests.  Tests are defined in
 // extension_settings_storage_unittest.cc with configurations for both cached
@@ -56,9 +54,9 @@ class ExtensionSettingsStorageTest
   scoped_ptr<DictionaryValue> dict123_;
 
  private:
-  void SetStorage(ExtensionSettingsStorage* storage);
-
   scoped_refptr<ExtensionSettings> settings_;
+
+  // Need these so that the DCHECKs for running on FILE or UI threads pass.
   scoped_ptr<MessageLoopForUI> ui_message_loop_;
   scoped_ptr<BrowserThread> ui_thread_;
   scoped_ptr<BrowserThread> file_thread_;

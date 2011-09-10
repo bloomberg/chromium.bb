@@ -26,96 +26,47 @@ ExtensionSettings::~ExtensionSettings() {
   }
 }
 
-void ExtensionSettings::GetStorage(
-    const std::string& extension_id,
-    const Callback& callback) {
-  if (!GetExistingStorage(extension_id, callback)) {
-    StartCreationOfStorage(
-        extension_id,
-        ExtensionSettingsStorage::LEVELDB,
-        ExtensionSettingsStorage::NOOP,
-        true,
-        callback);
-  }
-}
+ExtensionSettingsStorage* ExtensionSettings::GetStorage(
+    const std::string& extension_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
-void ExtensionSettings::GetStorageForTesting(
-    ExtensionSettingsStorage::Type type,
-    bool cached,
-    const std::string& extension_id,
-    const Callback& callback) {
-  if (!GetExistingStorage(extension_id, callback)) {
-    StartCreationOfStorage(extension_id, type, type, cached, callback);
-  }
-}
-
-bool ExtensionSettings::GetExistingStorage(
-    const std::string& extension_id, const Callback& callback) {
   std::map<std::string, ExtensionSettingsStorage*>::iterator existing =
       storage_objs_.find(extension_id);
-  if (existing == storage_objs_.end()) {
-    // No existing storage.
-    return false;
+  if (existing != storage_objs_.end()) {
+    return existing->second;
   }
-  // Existing storage.  Reply with that.
-  ExtensionSettingsStorage* storage = existing->second;
-  DCHECK(storage != NULL);
-  MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(
-          &ExtensionSettings::RunWithStorage,
-          this,
-          new Callback(callback),
-          storage));
-  return true;
+
+  ExtensionSettingsStorage* new_storage =
+      CreateStorage(extension_id, ExtensionSettingsStorage::LEVELDB, true);
+  if (new_storage == NULL) {
+    // Failed to create a leveldb storage for some reason.  Use an in memory
+    // storage area (no-op wrapped in a cache) instead.
+    new_storage =
+        CreateStorage(extension_id, ExtensionSettingsStorage::NOOP, true);
+    DCHECK(new_storage != NULL);
+  }
+
+  storage_objs_[extension_id] = new_storage;
+  return new_storage;
 }
 
-void ExtensionSettings::RunWithStorage(
-    Callback* callback, ExtensionSettingsStorage* storage) {
-  callback->Run(storage);
-  delete callback;
-}
-
-void ExtensionSettings::StartCreationOfStorage(
-    const std::string& extension_id,
+ExtensionSettingsStorage* ExtensionSettings::GetStorageForTesting(
     ExtensionSettingsStorage::Type type,
-    ExtensionSettingsStorage::Type fallback_type,
     bool cached,
-    const Callback& callback) {
-  BrowserThread::PostTask(
-      BrowserThread::FILE,
-      FROM_HERE,
-      base::Bind(
-          &ExtensionSettings::CreateStorageOnFileThread,
-          this,
-          extension_id,
-          type,
-          fallback_type,
-          cached,
-          callback));
-}
-
-void ExtensionSettings::CreateStorageOnFileThread(
-    const std::string& extension_id,
-    ExtensionSettingsStorage::Type type,
-    ExtensionSettingsStorage::Type fallback_type,
-    bool cached,
-    const Callback& callback) {
+    const std::string& extension_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  ExtensionSettingsStorage* storage = CreateStorage(extension_id, type, cached);
-  if (storage == NULL && fallback_type != type) {
-    storage = CreateStorage(extension_id, fallback_type, cached);
+
+  std::map<std::string, ExtensionSettingsStorage*>::iterator existing =
+      storage_objs_.find(extension_id);
+  if (existing != storage_objs_.end()) {
+    return existing->second;
   }
-  DCHECK(storage != NULL);
-  BrowserThread::PostTask(
-      BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(
-          &ExtensionSettings::EndCreationOfStorage,
-          this,
-          extension_id,
-          storage,
-          callback));
+
+  ExtensionSettingsStorage* new_storage =
+      CreateStorage(extension_id, type, cached);
+  DCHECK(new_storage != NULL);
+  storage_objs_[extension_id] = new_storage;
+  return new_storage;
 }
 
 ExtensionSettingsStorage* ExtensionSettings::CreateStorage(
@@ -139,23 +90,4 @@ ExtensionSettingsStorage* ExtensionSettings::CreateStorage(
     storage = new ExtensionSettingsStorageCache(storage);
   }
   return storage;
-}
-
-void ExtensionSettings::EndCreationOfStorage(
-    const std::string& extension_id,
-    ExtensionSettingsStorage* storage,
-    const Callback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  // Cache the result now.  To avoid a race condition, check again to see
-  // whether a storage has been created already; if so, use that one.
-  std::map<std::string, ExtensionSettingsStorage*>::iterator existing =
-      storage_objs_.find(extension_id);
-  if (existing == storage_objs_.end()) {
-    storage_objs_[extension_id] = storage;
-  } else {
-    BrowserThread::DeleteSoon(BrowserThread::FILE, FROM_HERE, storage);
-    storage = existing->second;
-    DCHECK(storage != NULL);
-  }
-  callback.Run(storage);
 }

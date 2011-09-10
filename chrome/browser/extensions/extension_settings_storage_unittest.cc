@@ -4,14 +4,10 @@
 
 #include "chrome/browser/extensions/extension_settings_storage_unittest.h"
 
-#include "base/bind.h"
 #include "base/json/json_writer.h"
 #include "base/file_util.h"
-#include "base/memory/scoped_ptr.h"
-#include "base/message_loop.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_settings.h"
-#include "content/browser/browser_thread.h"
 
 // Gets the pretty-printed JSON for a value.
 static std::string GetJSON(const Value& value) {
@@ -90,21 +86,8 @@ void ExtensionSettingsStorageTest::SetUp() {
   FilePath temp_dir;
   file_util::CreateNewTempDirectory(FilePath::StringType(), &temp_dir);
   settings_ = new ExtensionSettings(temp_dir);
-
-  storage_ = NULL;
-  (GetParam())(
-      settings_,
-      "fakeExtension",
-      base::Bind(
-          &ExtensionSettingsStorageTest::SetStorage,
-          base::Unretained(this)));
-  MessageLoop::current()->RunAllPending();
+  storage_ = (GetParam())(settings_.get(), "fakeExtension");
   DCHECK(storage_ != NULL);
-}
-
-void ExtensionSettingsStorageTest::SetStorage(
-    ExtensionSettingsStorage* storage) {
-  storage_ = storage;
 }
 
 TEST_P(ExtensionSettingsStorageTest, GetWhenEmpty) {

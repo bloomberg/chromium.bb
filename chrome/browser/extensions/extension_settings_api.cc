@@ -16,25 +16,18 @@ const char* kUnsupportedArgumentType = "Unsupported argument type";
 // SettingsFunction
 
 bool SettingsFunction::RunImpl() {
-  profile()->GetExtensionService()->extension_settings()->GetStorage(
-      extension_id(),
-      base::Bind(&SettingsFunction::RunOnUIThreadWithStorage, this));
-  return true;
-}
-
-void SettingsFunction::RunOnUIThreadWithStorage(
-    ExtensionSettingsStorage* storage) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   BrowserThread::PostTask(
       BrowserThread::FILE,
       FROM_HERE,
-      base::Bind(&SettingsFunction::RunOnFileThreadWithStorage, this, storage));
+      base::Bind(&SettingsFunction::RunOnFileThread, this));
+  return true;
 }
 
-void SettingsFunction::RunOnFileThreadWithStorage(
-    ExtensionSettingsStorage* storage) {
+void SettingsFunction::RunOnFileThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  bool success = RunOnFileThreadImpl(storage);
+  ExtensionSettings* settings =
+      profile()->GetExtensionService()->extension_settings();
+  bool success = RunWithStorage(settings->GetStorage(extension_id()));
   BrowserThread::PostTask(
       BrowserThread::UI,
       FROM_HERE,
@@ -66,7 +59,7 @@ static void AddAllStringValues(
   }
 }
 
-bool GetSettingsFunction::RunOnFileThreadImpl(
+bool GetSettingsFunction::RunWithStorage(
     ExtensionSettingsStorage* storage) {
   Value *input;
   EXTENSION_FUNCTION_VALIDATE(args_->Get(0, &input));
@@ -84,14 +77,14 @@ bool GetSettingsFunction::RunOnFileThreadImpl(
   return UseResult(ExtensionSettingsStorage::Result(kUnsupportedArgumentType));
 }
 
-bool SetSettingsFunction::RunOnFileThreadImpl(
+bool SetSettingsFunction::RunWithStorage(
     ExtensionSettingsStorage* storage) {
   DictionaryValue *input;
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &input));
   return UseResult(storage->Set(*input));
 }
 
-bool RemoveSettingsFunction::RunOnFileThreadImpl(
+bool RemoveSettingsFunction::RunWithStorage(
     ExtensionSettingsStorage* storage) {
   Value *input;
   EXTENSION_FUNCTION_VALIDATE(args_->Get(0, &input));
@@ -107,7 +100,7 @@ bool RemoveSettingsFunction::RunOnFileThreadImpl(
   return UseResult(ExtensionSettingsStorage::Result(kUnsupportedArgumentType));
 }
 
-bool ClearSettingsFunction::RunOnFileThreadImpl(
+bool ClearSettingsFunction::RunWithStorage(
     ExtensionSettingsStorage* storage) {
   return UseResult(storage->Clear());
 }

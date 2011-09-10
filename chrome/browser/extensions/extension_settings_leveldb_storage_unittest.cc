@@ -6,15 +6,11 @@
 
 namespace {
 
-void Param(
+ExtensionSettingsStorage* Param(
     ExtensionSettings* settings,
-    const std::string& extension_id,
-    const ExtensionSettings::Callback& callback) {
-  settings->GetStorageForTesting(
-      ExtensionSettingsStorage::LEVELDB,
-      false,
-      extension_id,
-      callback);
+    const std::string& extension_id) {
+  return settings->GetStorageForTesting(
+      ExtensionSettingsStorage::LEVELDB, false, extension_id);
 }
 
 }  // namespace
