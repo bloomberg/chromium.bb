@@ -43,7 +43,6 @@ class InvalidationNotifierTest : public testing::Test {
   virtual void TearDown() {
     invalidation_notifier_->RemoveObserver(&mock_observer_);
     invalidation_notifier_.reset();
-    message_loop_.RunAllPending();
   }
 
   MessageLoop message_loop_;
