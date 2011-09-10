@@ -661,16 +661,16 @@ void AboutChromeView::UpdateStatus(GoogleUpdateUpgradeResult result,
       BrowserDistribution* dist = BrowserDistribution::GetDistribution();
       base::ThreadRestrictions::ScopedAllowIO allow_io;
       chrome::VersionInfo version_info;
-      scoped_ptr<Version> installed_version(
-          InstallUtil::GetChromeVersion(dist, false));
-      if (!installed_version.get()) {
+      Version installed_version(
+          InstallUtil::GetChromeVersion(dist, false)->GetString());
+      if (!installed_version.IsValid()) {
         // User-level Chrome is not installed, check system-level.
-        installed_version.reset(InstallUtil::GetChromeVersion(dist, true));
+        installed_version =
+            Version(InstallUtil::GetChromeVersion(dist, true)->GetString());
       }
-      scoped_ptr<Version> running_version(
-          Version::GetVersionFromString(version_info.Version()));
-      if (!installed_version.get() ||
-          (installed_version->CompareTo(*running_version) <= 0)) {
+      Version running_version(version_info.Version());
+      if (!installed_version.IsValid() ||
+          (installed_version.CompareTo(running_version) <= 0)) {
         UserMetrics::RecordAction(
             UserMetricsAction("UpgradeCheck_AlreadyUpToDate"));
         std::wstring update_label_text = l10n_util::GetStringFUTF16(
