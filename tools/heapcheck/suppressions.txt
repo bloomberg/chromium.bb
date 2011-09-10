@@ -1165,20 +1165,6 @@
    fun:browser_sync::SyncerThread::DoSyncSessionJob
 }
 {
-   bug_79651_a
-   Heapcheck:Leak
-   ...
-   fun:sync_notifier::InvalidationNotifier::UpdateCredentials
-   fun:sync_notifier::::InvalidationNotifierTest_Basic_Test::TestBody
-}
-{
-   bug_79651_b
-   Heapcheck:Leak
-   ...
-   fun:*basic_string*
-   fun:sync_notifier::::InvalidationNotifierTest_Basic_Test::TestBody
-}
-{
    bug_80196
    Heapcheck:Leak
    fun:CallbackRunner* NewCallback
@@ -1186,12 +1172,6 @@
    fun:browser_sync::SyncBackendHostForProfileSyncTest::ConfigureDataTypes
    fun:browser_sync::DataTypeManagerImpl::Restart
    fun:browser_sync::DataTypeManagerImpl::Configure
-}
-{
-    bug_80238
-    Heapcheck:Leak
-    ...
-    fun:sync_notifier::::InvalidationNotifierTest::SetUp
 }
 {
    bug_80467
@@ -1222,17 +1202,6 @@
    Heapcheck:Leak
    ...
    fun:RenderWidgetHost::WasHidden
-}
-{
-   bug_79651
-   Heapcheck:Leak
-   ...
-   fun:TestURLRequestContextGetter::GetURLRequestContext
-   fun:*SingleLoginAttempt
-   fun:notifier::Login::StartConnection
-   fun:sync_notifier::InvalidationNotifier::UpdateCredentials
-   fun:sync_notifier::NonBlockingInvalidationNotifier::Core::UpdateCredentials
-   fun:void DispatchToMethod
 }
 {
    bug_80654
