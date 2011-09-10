@@ -614,7 +614,8 @@ void AppLauncherHandler::HandleSetLaunchType(const ListValue* args) {
 
   const Extension* extension =
       extension_service_->GetExtensionById(extension_id, true);
-  CHECK(extension);
+  if (!extension)
+    return;
 
   // Don't update the page; it already knows about the launch type change.
   scoped_ptr<AutoReset<bool> > auto_reset;
@@ -681,14 +682,12 @@ void AppLauncherHandler::HandleHideAppsPromo(const ListValue* args) {
 
 void AppLauncherHandler::HandleCreateAppShortcut(const ListValue* args) {
   std::string extension_id;
-  if (!args->GetString(0, &extension_id)) {
-    NOTREACHED();
-    return;
-  }
+  CHECK(args->GetString(0, &extension_id));
 
   const Extension* extension =
       extension_service_->GetExtensionById(extension_id, true);
-  CHECK(extension);
+  if (!extension)
+    return;
 
   Browser* browser = BrowserList::GetLastActive();
   if (!browser)
@@ -895,7 +894,10 @@ void AppLauncherHandler::PromptToEnableApp(const std::string& extension_id) {
       extension_service_->GetExtensionById(extension_id, true);
   if (!extension) {
     extension = extension_service_->GetTerminatedExtension(extension_id);
-    CHECK(extension);
+    // It's possible (though unlikely) the app could have been uninstalled since
+    // the user clicked on it.
+    if (!extension)
+      return;
     // If the app was terminated, reload it first. (This reallocates the
     // Extension object.)
     extension_service_->ReloadExtension(extension_id);
