@@ -6,6 +6,7 @@
 
 #include "base/time.h"
 #include "grit/ui_strings.h"
+#include "third_party/skia/include/effects/SkGradientShader.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
@@ -17,7 +18,9 @@
 #include "ui/gfx/transform.h"
 #include "views/background.h"
 #include "views/controls/button/button.h"
+#include "views/controls/button/custom_button.h"
 #include "views/controls/button/text_button.h"
+#include "views/controls/menu/menu_config.h"
 #include "views/controls/label.h"
 #include "views/layout/box_layout.h"
 #include "views/widget/widget.h"
@@ -43,7 +46,7 @@ const int kContextMenuCommands[] = {IDS_APP_CUT,
                                     IDS_APP_SELECT_ALL};
 const int kContextMenuPadding = 2;
 const int kContextMenuTimoutMs = 1000;
-const int kContextMenuVerticalOffset = 10;
+const int kContextMenuVerticalOffset = 25;
 
 // Convenience struct to represent a circle shape.
 struct Circle {
@@ -171,6 +174,37 @@ class TouchSelectionControllerImpl::SelectionHandleView : public View {
   DISALLOW_COPY_AND_ASSIGN(SelectionHandleView);
 };
 
+class ContextMenuButtonBackground : public Background {
+ public:
+  ContextMenuButtonBackground() {}
+
+  virtual void Paint(gfx::Canvas* canvas, View* view) const OVERRIDE {
+    CustomButton::ButtonState state = static_cast<CustomButton*>(view)->state();
+    SkColor background_color, border_color;
+    if (state == CustomButton::BS_NORMAL) {
+      background_color = SkColorSetARGB(102, 255, 255, 255);
+      border_color = SkColorSetARGB(36, 0, 0, 0);
+    } else {
+      background_color = SkColorSetARGB(13, 0, 0, 0);
+      border_color = SkColorSetARGB(72, 0, 0, 0);
+    }
+    int w = view->width();
+    int h = view->height();
+    canvas->FillRectInt(background_color, 1, 1, w - 2, h - 2);
+    canvas->FillRectInt(border_color, 2, 0, w - 4, 1);
+    canvas->FillRectInt(border_color, 1, 1, 1, 1);
+    canvas->FillRectInt(border_color, 0, 2, 1, h - 4);
+    canvas->FillRectInt(border_color, 1, h - 2, 1, 1);
+    canvas->FillRectInt(border_color, 2, h - 1, w - 4, 1);
+    canvas->FillRectInt(border_color, w - 2, 1, 1, 1);
+    canvas->FillRectInt(border_color, w - 1, 2, 1, h - 4);
+    canvas->FillRectInt(border_color, w - 2, h - 2, 1, 1);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ContextMenuButtonBackground);
+};
+
 // A View that displays the touch context menu.
 class TouchSelectionControllerImpl::TouchContextMenuView
     : public ButtonListener,
@@ -210,6 +244,45 @@ class TouchSelectionControllerImpl::TouchContextMenuView
     return widget_->GetClientAreaScreenBounds().origin();
   }
 
+  void OnPaintBackground(gfx::Canvas* canvas) OVERRIDE {
+    // TODO(varunjain): the following color scheme is copied from
+    // menu_scroll_view_container.cc. Figure out how to consolidate the two
+    // pieces of code.
+#if defined(OS_CHROMEOS)
+    static const SkColor kGradientColors[2] = {
+        SK_ColorWHITE,
+        SkColorSetRGB(0xF0, 0xF0, 0xF0)
+    };
+
+    static const SkScalar kGradientPoints[2] = {
+        SkIntToScalar(0),
+        SkIntToScalar(1)
+    };
+
+    SkPoint points[2];
+    points[0].set(SkIntToScalar(0), SkIntToScalar(0));
+    points[1].set(SkIntToScalar(0), SkIntToScalar(height()));
+
+    SkShader* shader = SkGradientShader::CreateLinear(points,
+        kGradientColors, kGradientPoints, arraysize(kGradientPoints),
+        SkShader::kRepeat_TileMode);
+    DCHECK(shader);
+
+    SkPaint paint;
+    paint.setShader(shader);
+    shader->unref();
+
+    paint.setStyle(SkPaint::kFill_Style);
+    paint.setXfermodeMode(SkXfermode::kSrc_Mode);
+
+    canvas->DrawRectInt(0, 0, width(), height(), paint);
+#else
+    // This is the same as COLOR_TOOLBAR.
+    canvas->AsCanvasSkia()->drawColor(SkColorSetRGB(210, 225, 246),
+                                      SkXfermode::kSrc_Mode);
+#endif
+  }
+
   // ButtonListener
   virtual void ButtonPressed(Button* sender, const views::Event& event) {
     controller_->ExecuteCommand(sender->tag());
@@ -230,10 +303,8 @@ class TouchSelectionControllerImpl::TouchContextMenuView
         button->set_focusable(true);
         button->set_request_focus_on_press(false);
         button->set_prefix_type(TextButton::PREFIX_HIDE);
-        button->SetEnabledColor(SK_ColorWHITE);
-        button->SetHoverColor(SK_ColorWHITE);
-        button->set_background(
-            Background::CreateSolidBackground(SK_ColorBLACK));
+        button->SetEnabledColor(MenuConfig::instance().text_color);
+        button->set_background(new ContextMenuButtonBackground());
         button->set_alignment(TextButton::ALIGN_CENTER);
         button->SetFont(ui::ResourceBundle::GetSharedInstance().GetFont(
             ui::ResourceBundle::LargeFont));
