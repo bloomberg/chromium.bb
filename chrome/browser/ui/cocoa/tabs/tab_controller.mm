@@ -67,7 +67,7 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
 + (CGFloat)minTabWidth { return 31; }
 + (CGFloat)minSelectedTabWidth { return 46; }
 + (CGFloat)maxTabWidth { return 220; }
-+ (CGFloat)miniTabWidth { return 53; }
++ (CGFloat)miniTabWidth { return 69; }
 + (CGFloat)appTabWidth { return 66; }
 
 - (TabView*)tabView {
@@ -185,13 +185,16 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
 - (void)setIconView:(NSView*)iconView {
   [iconView_ removeFromSuperview];
   iconView_ = iconView;
-  if ([self app]) {
+  if ([self app] || [self mini]) {
     NSRect appIconFrame = [iconView frame];
     appIconFrame.origin = originalIconFrame_.origin;
+
+    const CGFloat tabWidth = [self app] ? [TabController appTabWidth]
+                                        : [TabController miniTabWidth];
+
     // Center the icon.
-    appIconFrame.origin.x = ([TabController appTabWidth] -
-        NSWidth(appIconFrame)) / 2.0;
-    [iconView setFrame:appIconFrame];
+    appIconFrame.origin.x = (tabWidth - NSWidth(appIconFrame)) / 2.0;
+    [iconView_ setFrame:appIconFrame];
   } else {
     [iconView_ setFrame:originalIconFrame_];
   }
