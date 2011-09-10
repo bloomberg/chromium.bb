@@ -4,11 +4,9 @@
 
 #import "chrome/browser/ui/panels/panel_titlebar_view_cocoa.h"
 
-#include <Carbon/Carbon.h>  // kVK_Escape
 #import <Cocoa/Cocoa.h>
 
 #include "base/logging.h"
-#include "base/mac/scoped_nsautorelease_pool.h"
 #include "chrome/browser/themes/theme_service.h"
 #import "chrome/browser/ui/cocoa/hover_image_button.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
@@ -21,24 +19,10 @@
 const int kRoundedCornerSize = 6;
 const int kCloseButtonLeftPadding = 8;
 
-// Used to implement TestingAPI
-static NSEvent* MakeMouseEvent(NSEventType type, NSPoint point) {
-  return [NSEvent mouseEventWithType:type
-                            location:point
-                       modifierFlags:0
-                           timestamp:0
-                        windowNumber:0
-                             context:nil
-                         eventNumber:0
-                          clickCount:0
-                            pressure:0.0];
-}
-
 @implementation PanelTitlebarViewCocoa
 
 - (id)initWithFrame:(NSRect)frame {
   if ((self = [super initWithFrame:frame])) {
-    dragState_ = PANEL_DRAG_SUPPRESSED;
     // Create standard OSX Close Button.
     closeButton_ = [NSWindow standardWindowButton:NSWindowCloseButton
                                      forStyleMask:NSClosableWindowMask];
@@ -180,10 +164,6 @@ static NSEvent* MakeMouseEvent(NSEventType type, NSPoint point) {
   return NO;
 }
 
-- (BOOL)acceptsFirstMouse:(NSEvent*)event {
-  return YES;
-}
-
 - (void)mouseEntered:(NSEvent*)event {
   [[closeButton_ cell] setHighlighted:YES];
 }
@@ -200,77 +180,6 @@ static NSEvent* MakeMouseEvent(NSEventType type, NSPoint point) {
   [self setNeedsDisplay:YES];
 }
 
-- (void)mouseDown:(NSEvent*)event {
-  dragState_ = PANEL_DRAG_CAN_START;
-}
-
-- (void)mouseDragged:(NSEvent*)event {
-  // In addition to events needed to control the drag operation, fetch the right
-  // mouse click events and key down events and ignore them, to prevent their
-  // accumulation in the queue and "playing out" when the mouse is released.
-  const NSUInteger mask =
-      NSLeftMouseUpMask | NSLeftMouseDraggedMask | NSKeyUpMask |
-      NSRightMouseDownMask | NSKeyDownMask ;
-  BOOL keepGoing = YES;
-
-  while (keepGoing) {
-    base::mac::ScopedNSAutoreleasePool autorelease_pool;
-
-    NSEvent* event = [NSApp nextEventMatchingMask:mask
-                                        untilDate:[NSDate distantFuture]
-                                           inMode:NSDefaultRunLoopMode
-                                          dequeue:YES];
-
-    switch ([event type]) {
-      case NSLeftMouseDragged:
-        if (dragState_ == PANEL_DRAG_CAN_START)
-          [self startDrag];
-        [self dragWithDeltaX:[event deltaX]];
-        break;
-
-      case NSKeyUp:
-        if ([event keyCode] == kVK_Escape) {
-          [self endDrag:YES];
-          keepGoing = NO;
-        }
-        break;
-
-      case NSLeftMouseUp:
-        [self endDrag:NO];
-        keepGoing = NO;
-        break;
-
-      case NSRightMouseDownMask:
-        break;
-
-      default:
-        // Dequeue and ignore other mouse and key events so the Chrome context
-        // menu does not come after right click on a page during Panel
-        // rearrangement, or the keystrokes are not 'accumulated' and entered
-        // at once when the drag ends.
-        break;
-    }
-  }
-}
-
-- (void)startDrag {
-  DCHECK(dragState_ == PANEL_DRAG_CAN_START);
-  dragState_ = PANEL_DRAG_IN_PROGRESS;
-  [controller_ startDrag];
-}
-
-- (void)endDrag:(BOOL)cancelled {
-  if (dragState_ == PANEL_DRAG_IN_PROGRESS)
-    [controller_ endDrag:cancelled];
-  dragState_ = PANEL_DRAG_SUPPRESSED;
-}
-
-- (void)dragWithDeltaX:(int)deltaX {
-  if (dragState_ != PANEL_DRAG_IN_PROGRESS)
-    return;
-  [controller_ dragWithDeltaX:deltaX];
-}
-
 // (Private/TestingAPI)
 - (PanelWindowControllerCocoa*)controller {
   return controller_;
@@ -278,31 +187,6 @@ static NSEvent* MakeMouseEvent(NSEventType type, NSPoint point) {
 
 - (void)simulateCloseButtonClick {
   [[closeButton_ cell] performClick:closeButton_];
-}
-
-- (void)pressLeftMouseButtonTitlebar {
-  NSEvent* event = MakeMouseEvent(NSLeftMouseDown, NSZeroPoint);
-  [self mouseDown:event];
-}
-
-- (void)releaseLeftMouseButtonTitlebar {
-  NSEvent* event = MakeMouseEvent(NSLeftMouseUp, NSZeroPoint);
-  [self mouseUp:event];
-}
-
-- (void)dragTitlebarDeltaX:(double)delta_x
-                    deltaY:(double)delta_y {
-  if (dragState_ == PANEL_DRAG_CAN_START)
-    [self startDrag];
-  [self dragWithDeltaX:delta_x];
-}
-
-- (void)cancelDragTitlebar {
-  [self endDrag:YES];
-}
-
-- (void)finishDragTitlebar {
-  [self endDrag:NO];
 }
 
 @end

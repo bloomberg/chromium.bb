@@ -894,11 +894,6 @@ enum NotificationType {
   // enable/disable status.
   NOTIFICATION_PLUGIN_ENABLE_STATUS_CHANGED,
 
-  // Panels Notifications. The Panels are small browser windows near the bottom
-  // of the screen.
-  // Sent when all nonblocking bounds animations are finished across panels.
-  NOTIFICATION_PANEL_BOUNDS_ANIMATIONS_FINISHED,
-
   // Note:-
   // Currently only Content and Chrome define and use notifications.
   // Custom notifications not belonging to Content and Chrome should start

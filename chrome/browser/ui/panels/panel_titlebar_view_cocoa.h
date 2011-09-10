@@ -24,15 +24,6 @@
 // differently based on being key window) so it appears easier to simply overlay
 // the standard titlebar.
 
-// When Drag is cancelled by hitting ESC key, we may still receive
-// the mouseDragged events but should ignore them until the mouse button is
-// released. Use these simple states to track this condition.
-enum PanelDragState {
-  PANEL_DRAG_CAN_START,  // Mouse key went down, drag may be started.
-  PANEL_DRAG_IN_PROGRESS,
-  PANEL_DRAG_SUPPRESSED  // Ignore drag events until PANEL_DRAG_CAN_START.
-};
-
 @interface PanelTitlebarViewCocoa : BackgroundGradientView {
  @private
   IBOutlet PanelWindowControllerCocoa* controller_;
@@ -41,7 +32,6 @@ enum PanelDragState {
   NSButton* closeButton_;  // Created explicitly, not from NIB. Weak, destroyed
                            // when view is destroyed, as a subview.
   ScopedCrTrackingArea closeButtonTrackingArea_;
-  PanelDragState dragState_;
 }
 
   // Callback from Close button.
@@ -63,13 +53,6 @@ enum PanelDragState {
 - (void)didChangeTheme:(NSNotification*)notification;
 - (void)didChangeMainWindow:(NSNotification*)notification;
 
-// Helpers to control title drag operation, called from more then one place.
-// TODO(dimich): replace BOOL parameter that we have to explicitly specify at
-// callsites with an enum defined in PanelManager.
-- (void)startDrag;
-- (void)endDrag:(BOOL)cancelled;
-- (void)dragWithDeltaX:(int)deltaX;
-
 @end  // @interface PanelTitlebarView
 
 // Methods which are either only for testing, or only public for testing.
@@ -79,14 +62,6 @@ enum PanelDragState {
 
 // Simulates click on a close button. Used to test panel closing.
 - (void)simulateCloseButtonClick;
-
-// NativePanelTesting support.
-- (void)pressLeftMouseButtonTitlebar;
-- (void)releaseLeftMouseButtonTitlebar;
-- (void)dragTitlebarDeltaX:(double)delta_x
-                    deltaY:(double)delta_y;
-- (void)cancelDragTitlebar;
-- (void)finishDragTitlebar;
 
 @end  // @interface PanelTitlebarViewCocoa(TestingAPI)
 

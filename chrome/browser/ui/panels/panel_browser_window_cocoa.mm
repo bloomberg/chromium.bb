@@ -10,7 +10,6 @@
 #import "chrome/browser/ui/cocoa/browser_window_utils.h"
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
-#import "chrome/browser/ui/panels/panel_titlebar_view_cocoa.h"
 #import "chrome/browser/ui/panels/panel_window_controller_cocoa.h"
 #include "content/common/native_web_keyboard_event.h"
 
@@ -87,7 +86,7 @@ gfx::Rect PanelBrowserWindowCocoa::GetPanelBounds() const {
 void PanelBrowserWindowCocoa::SetPanelBounds(const gfx::Rect& bounds) {
   bounds_ = bounds;
   NSRect frame = ConvertCoordinatesToCocoa(bounds);
-  [controller_ setPanelFrame:frame];
+  [[controller_ window] setFrame:frame display:YES animate:YES];
 }
 
 void PanelBrowserWindowCocoa::OnPanelExpansionStateChanged(
@@ -203,7 +202,6 @@ void PanelBrowserWindowCocoa::didCloseNativeWindow() {
   panel_->manager()->Remove(panel_.get());
   controller_ = NULL;
 }
-
 gfx::Size PanelBrowserWindowCocoa::GetNonClientAreaExtent() const {
   NOTIMPLEMENTED();
   return gfx::Size();
@@ -219,53 +217,9 @@ void PanelBrowserWindowCocoa::SetRestoredHeight(int height) {
 }
 
 // NativePanelTesting implementation.
-class NativePanelTestingCocoa : public NativePanelTesting {
- public:
-  NativePanelTestingCocoa(NativePanel* native_panel);
-  virtual ~NativePanelTestingCocoa() { }
-  // Overridden from NativePanelTesting
-  virtual void PressLeftMouseButtonTitlebar(const gfx::Point& point) OVERRIDE;
-  virtual void ReleaseMouseButtonTitlebar() OVERRIDE;
-  virtual void DragTitlebar(int delta_x, int delta_y) OVERRIDE;
-  virtual void CancelDragTitlebar() OVERRIDE;
-  virtual void FinishDragTitlebar() OVERRIDE;
- private:
-  PanelTitlebarViewCocoa* titlebar();
-  // Weak, assumed always to outlive this test API object.
-  PanelBrowserWindowCocoa* native_panel_window_;
-};
 
 // static
 NativePanelTesting* NativePanelTesting::Create(NativePanel* native_panel) {
-  return new NativePanelTestingCocoa(native_panel);
+  NOTIMPLEMENTED();
+  return NULL;
 }
-
-NativePanelTestingCocoa::NativePanelTestingCocoa(NativePanel* native_panel)
-  : native_panel_window_(static_cast<PanelBrowserWindowCocoa*>(native_panel)) {
-}
-
-PanelTitlebarViewCocoa* NativePanelTestingCocoa::titlebar() {
-  return [native_panel_window_->controller_ titlebarView];
-}
-
-void NativePanelTestingCocoa::PressLeftMouseButtonTitlebar(
-  const gfx::Point& point) {
-  [titlebar() pressLeftMouseButtonTitlebar];
-}
-
-void NativePanelTestingCocoa::ReleaseMouseButtonTitlebar() {
-  [titlebar() releaseLeftMouseButtonTitlebar];
-}
-
-void NativePanelTestingCocoa::DragTitlebar(int delta_x, int delta_y) {
-  [titlebar() dragTitlebarDeltaX:delta_x deltaY:delta_y];
-}
-
-void NativePanelTestingCocoa::CancelDragTitlebar() {
-  [titlebar() cancelDragTitlebar];
-}
-
-void NativePanelTestingCocoa::FinishDragTitlebar() {
-  [titlebar() finishDragTitlebar];
-}
-
