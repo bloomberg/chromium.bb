@@ -1774,6 +1774,9 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunInternal() {
     return chrome::RESULT_CODE_UNINSTALL_EXTENSION_ERROR;
   }
 
+  // Start watching for a hang.
+  MetricsService::LogNeedForCleanShutdown();
+
 #if defined(OS_WIN)
   // We check this here because if the profile is OTR (chromeos possibility)
   // it won't still be accessible after browser is destroyed.
@@ -1972,6 +1975,13 @@ void ChromeBrowserMainParts::PostMainMessageLoopRun() {
   browser_shutdown::Shutdown();
   master_prefs_.reset();
   process_singleton_.reset();
+
+  // We need to do this check as late as possible, but due to modularity, this
+  // may be the last point in Chrome.  This would be more effective if done at
+  // a higher level on the stack, so that it is impossible for an early return
+  // to bypass this code.  Perhaps we need a *final* hook that is called on all
+  // paths from content/browser/browser_main.
+  CHECK(MetricsService::UmaMetricsProperlyShutdown());
 }
 
 void ChromeBrowserMainParts::ToolkitInitialized() {

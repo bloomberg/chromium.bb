@@ -266,6 +266,10 @@ static const size_t kMaxOngoingLogsPersisted = 8;
 // checksum of the elements.
 static const size_t kChecksumEntryCount = 2;
 
+// static
+MetricsService::ShutdownCleanliness MetricsService::clean_shutdown_status_ =
+    MetricsService::CLEANLY_SHUTDOWN;
+
 // This is used to quickly log stats from child process related notifications in
 // MetricsService::child_stats_buffer_.  The buffer's contents are transferred
 // out when Local State is periodically saved.  The information is then
@@ -731,10 +735,10 @@ void MetricsService::InitializeMetricsState() {
 
   if (!pref->GetBoolean(prefs::kStabilityExitedCleanly)) {
     IncrementPrefValue(prefs::kStabilityCrashCount);
+    // Reset flag, and wait until we call LogNeedForCleanShutdown() before
+    // monitoring.
+    pref->SetBoolean(prefs::kStabilityExitedCleanly, true);
   }
-
-  // This will be set to 'true' if we exit cleanly.
-  pref->SetBoolean(prefs::kStabilityExitedCleanly, false);
 
   if (!pref->GetBoolean(prefs::kStabilitySessionEndCompleted)) {
     IncrementPrefValue(prefs::kStabilityIncompleteSessionEndCount);
@@ -1479,12 +1483,27 @@ void MetricsService::LogRendererHang() {
   IncrementPrefValue(prefs::kStabilityRendererHangCount);
 }
 
+void MetricsService::LogNeedForCleanShutdown() {
+  PrefService* pref = g_browser_process->local_state();
+  pref->SetBoolean(prefs::kStabilityExitedCleanly, false);
+  // Redundant setting to be sure we call for a clean shutdown.
+  clean_shutdown_status_ = NEED_TO_SHUTDOWN;
+}
+
+bool MetricsService::UmaMetricsProperlyShutdown() {
+  CHECK(clean_shutdown_status_ == CLEANLY_SHUTDOWN ||
+        clean_shutdown_status_ == NEED_TO_SHUTDOWN);
+  return clean_shutdown_status_ == CLEANLY_SHUTDOWN;
+}
+
 void MetricsService::LogCleanShutdown() {
   // Redundant hack to write pref ASAP.
   PrefService* pref = g_browser_process->local_state();
   pref->SetBoolean(prefs::kStabilityExitedCleanly, true);
   pref->SavePersistentPrefs();
-  // End of redundant hack.
+  // Redundant setting to assure that we always reset this value at shutdown
+  // (and that we don't use some alternate path, and not call LogCleanShutdown).
+  clean_shutdown_status_ = CLEANLY_SHUTDOWN;
 
   RecordBooleanPrefValue(prefs::kStabilityExitedCleanly, true);
 }

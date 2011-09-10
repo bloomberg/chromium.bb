@@ -134,6 +134,13 @@ class MetricsService : public NotificationObserver,
   bool recording_active() const;
   bool reporting_active() const;
 
+  // Redundant test to ensure that we are notified of a clean exit.
+  // This value should be true when process has completed shutdown.
+  static bool UmaMetricsProperlyShutdown();
+
+  // Set the dirty flag, which will require a later call to LogCleanShutdown().
+  static void LogNeedForCleanShutdown();
+
  private:
   // The MetricsService has a lifecycle that is stored as a state.
   // See metrics_service.cc for description of this lifecycle.
@@ -145,6 +152,11 @@ class MetricsService : public NotificationObserver,
     SEND_OLD_INITIAL_LOGS,  // Sending unsent logs from previous session.
     SENDING_OLD_LOGS,       // Sending unsent logs from previous session.
     SENDING_CURRENT_LOGS,   // Sending standard current logs as they acrue.
+  };
+
+  enum ShutdownCleanliness {
+    CLEANLY_SHUTDOWN = 0xdeadbeef,
+    NEED_TO_SHUTDOWN = ~CLEANLY_SHUTDOWN
   };
 
   class InitTask;
@@ -419,6 +431,10 @@ class MetricsService : public NotificationObserver,
   // The external metric service is used to log ChromeOS UMA events.
   scoped_refptr<chromeos::ExternalMetrics> external_metrics_;
 #endif
+
+  // Reduntant marker to check that we completed our shutdown, and set the
+  // exited-cleanly bit in the prefs.
+  static ShutdownCleanliness clean_shutdown_status_;
 
   FRIEND_TEST_ALL_PREFIXES(MetricsServiceTest, EmptyLogList);
   FRIEND_TEST_ALL_PREFIXES(MetricsServiceTest, SingleElementLogList);
