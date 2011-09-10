@@ -996,6 +996,8 @@ void PrintWebViewHelper::GetPageSizeAndMarginsInPoints(
   // Invalid page size and/or margins. We just use the default setting.
   if (page_layout_in_points->content_width < 1.0 ||
       page_layout_in_points->content_height < 1.0) {
+    // TODO(vandebo) remove CHECK after debugging crbug.com/96063
+    CHECK(frame != NULL);
     GetPageSizeAndMarginsInPoints(NULL, page_index, default_params,
                                   page_layout_in_points);
     return;
