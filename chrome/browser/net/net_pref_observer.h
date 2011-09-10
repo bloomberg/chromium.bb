@@ -14,6 +14,10 @@
 
 class Profile;
 
+namespace chrome_browser_net {
+class Predictor;
+}
+
 namespace prerender {
 class PrerenderManager;
 }
@@ -27,7 +31,8 @@ class NetPrefObserver : public NotificationObserver {
   // |prerender_manager| may be NULL. If not, |*prerender_manager| must
   // outlive this.
   NetPrefObserver(PrefService* prefs,
-                  prerender::PrerenderManager* prerender_manager);
+                  prerender::PrerenderManager* prerender_manager,
+                  chrome_browser_net::Predictor* predictor);
   virtual ~NetPrefObserver();
 
   // NotificationObserver
@@ -45,6 +50,7 @@ class NetPrefObserver : public NotificationObserver {
   BooleanPrefMember spdy_disabled_;
   BooleanPrefMember http_throttling_enabled_;
   prerender::PrerenderManager* prerender_manager_;
+  chrome_browser_net::Predictor* predictor_;
 
   DISALLOW_COPY_AND_ASSIGN(NetPrefObserver);
 };

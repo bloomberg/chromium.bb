@@ -24,7 +24,6 @@
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/net/connect_interceptor.h"
 #include "chrome/browser/net/passive_log_collector.h"
-#include "chrome/browser/net/predictor_api.h"
 #include "chrome/browser/net/pref_proxy_config_service.h"
 #include "chrome/browser/net/proxy_service_factory.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -344,8 +343,6 @@ IOThread::IOThread(
       net_log_(net_log),
       extension_event_router_forwarder_(extension_event_router_forwarder),
       globals_(NULL),
-      speculative_interceptor_(NULL),
-      predictor_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
   // We call RegisterPrefs() here (instead of inside browser_prefs.cc) to make
   // sure that everything is initialized in the right order.
@@ -387,48 +384,12 @@ ChromeNetLog* IOThread::net_log() {
   return net_log_;
 }
 
-void IOThread::InitNetworkPredictor(
-    bool prefetching_enabled,
-    base::TimeDelta max_dns_queue_delay,
-    size_t max_speculative_parallel_resolves,
-    const chrome_common_net::UrlList& startup_urls,
-    ListValue* referral_list,
-    bool preconnect_enabled) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  message_loop()->PostTask(
-      FROM_HERE,
-      NewRunnableMethod(
-          this,
-          &IOThread::InitNetworkPredictorOnIOThread,
-          prefetching_enabled, max_dns_queue_delay,
-          max_speculative_parallel_resolves,
-          startup_urls, referral_list, preconnect_enabled));
-}
-
-void IOThread::ChangedToOnTheRecord() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  message_loop()->PostTask(
-      FROM_HERE,
-      NewRunnableMethod(
-          this,
-          &IOThread::ChangedToOnTheRecordOnIOThread));
-}
-
 net::URLRequestContextGetter* IOThread::system_url_request_context_getter() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (!system_url_request_context_getter_) {
     InitSystemRequestContext();
   }
   return system_url_request_context_getter_;
-}
-
-void IOThread::ClearNetworkingHistory() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  ClearHostCache();
-  // Discard acrued data used to speculate in the future.
-  chrome_browser_net::DiscardInitialNavigationHistory();
-  if (predictor_)
-    predictor_->DiscardAllResults();
 }
 
 void IOThread::Init() {
@@ -528,21 +489,6 @@ void IOThread::CleanUp() {
   // This must be reset before the ChromeNetLog is destroyed.
   network_change_observer_.reset();
 
-  // Not initialized in Init().  May not be initialized.
-  if (predictor_) {
-    predictor_->Shutdown();
-
-    // TODO(willchan): Stop reference counting Predictor.  It's owned by
-    // IOThread now.
-    predictor_->Release();
-    predictor_ = NULL;
-    chrome_browser_net::FreePredictorResources();
-  }
-
-  // Deletion will unregister this interceptor.
-  delete speculative_interceptor_;
-  speculative_interceptor_ = NULL;
-
   system_proxy_config_service_.reset();
 
   delete globals_;
@@ -597,51 +543,6 @@ net::HttpAuthHandlerFactory* IOThread::CreateDefaultAuthHandlerFactory(
       gssapi_library_name_,
       negotiate_disable_cname_lookup_,
       negotiate_enable_port_);
-}
-
-void IOThread::InitNetworkPredictorOnIOThread(
-    bool prefetching_enabled,
-    base::TimeDelta max_dns_queue_delay,
-    size_t max_speculative_parallel_resolves,
-    const chrome_common_net::UrlList& startup_urls,
-    ListValue* referral_list,
-    bool preconnect_enabled) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  CHECK(!predictor_);
-
-  chrome_browser_net::EnablePredictor(prefetching_enabled);
-
-  predictor_ = new chrome_browser_net::Predictor(
-      globals_->host_resolver.get(),
-      max_dns_queue_delay,
-      max_speculative_parallel_resolves,
-      preconnect_enabled);
-  predictor_->AddRef();
-
-  // Speculative_interceptor_ is used to predict subresource usage.
-  DCHECK(!speculative_interceptor_);
-  speculative_interceptor_ = new chrome_browser_net::ConnectInterceptor;
-
-  FinalizePredictorInitialization(predictor_, startup_urls, referral_list);
-}
-
-void IOThread::ChangedToOnTheRecordOnIOThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-
-  if (predictor_) {
-    // Destroy all evidence of our OTR session.
-    // Note: OTR mode never saves InitialNavigationHistory data.
-    predictor_->Predictor::DiscardAllResults();
-  }
-
-  // Clear the host cache to avoid showing entries from the OTR session
-  // in about:net-internals.
-  ClearHostCache();
-
-  // Clear all of the passively logged data.
-  // TODO(eroman): this is a bit heavy handed, really all we need to do is
-  //               clear the data pertaining to incognito context.
-  net_log_->ClearAllPassivelyCapturedEvents();
 }
 
 void IOThread::ClearHostCache() {

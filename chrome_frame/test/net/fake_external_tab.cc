@@ -269,9 +269,6 @@ void FakeExternalTab::Initialize() {
 
   FilePath profile_path(ProfileManager::GetDefaultProfileDir(user_data()));
 
-  Profile* profile =
-      g_browser_process->profile_manager()->GetProfile(profile_path);
-
   // Initialize the content client which that code uses to talk to Chrome.
   content::SetContentClient(&g_chrome_content_client.Get());
 
@@ -281,7 +278,10 @@ void FakeExternalTab::Initialize() {
 
   content::GetContentClient()->set_renderer(&g_renderer_client.Get());
 
-  // Create the child threads.
+  Profile* profile =
+      g_browser_process->profile_manager()->GetProfile(profile_path);
+
+    // Create the child threads.
   g_browser_process->db_thread();
   g_browser_process->file_thread();
   g_browser_process->io_thread();

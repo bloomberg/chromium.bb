@@ -4,8 +4,9 @@
 
 #include "chrome/browser/net/connect_interceptor.h"
 
-#include "chrome/browser/net/predictor_api.h"
+#include "chrome/browser/net/predictor.h"
 #include "net/base/load_flags.h"
+#include "net/url_request/url_request.h"
 
 namespace chrome_browser_net {
 
@@ -16,24 +17,24 @@ namespace chrome_browser_net {
 // TODO(jar): We should do a persistent field trial to validate/optimize this.
 static const int kMaxUnusedSocketLifetimeSecondsWithoutAGet = 10;
 
-ConnectInterceptor::ConnectInterceptor()
+ConnectInterceptor::ConnectInterceptor(Predictor* predictor)
     : timed_cache_(base::TimeDelta::FromSeconds(
-          kMaxUnusedSocketLifetimeSecondsWithoutAGet)) {
-  net::URLRequest::Deprecated::RegisterRequestInterceptor(this);
+          kMaxUnusedSocketLifetimeSecondsWithoutAGet)),
+      predictor_(predictor) {
+  DCHECK(predictor);
 }
 
 ConnectInterceptor::~ConnectInterceptor() {
-  net::URLRequest::Deprecated::UnregisterRequestInterceptor(this);
 }
 
 net::URLRequestJob* ConnectInterceptor::MaybeIntercept(
-    net::URLRequest* request) {
+    net::URLRequest* request) const {
   GURL request_scheme_host(Predictor::CanonicalizeUrl(request->url()));
   if (request_scheme_host == GURL::EmptyGURL())
     return NULL;
 
   // Learn what URLs are likely to be needed during next startup.
-  LearnAboutInitialNavigation(request_scheme_host);
+  predictor_->LearnAboutInitialNavigation(request_scheme_host);
 
   bool redirected_host = false;
   if (request->referrer().empty()) {
@@ -55,7 +56,8 @@ net::URLRequestJob* ConnectInterceptor::MaybeIntercept(
         if (request->original_url().path().length() <= 1 &&
             timed_cache_.WasRecentlySeen(original_scheme_host)) {
           // TODO(jar): These definite redirects could be learned much faster.
-          LearnFromNavigation(original_scheme_host, request_scheme_host);
+          predictor_->LearnFromNavigation(original_scheme_host,
+                                          request_scheme_host);
         }
       }
     }
@@ -64,7 +66,8 @@ net::URLRequestJob* ConnectInterceptor::MaybeIntercept(
     bool is_subresource = !(request->load_flags() & net::LOAD_MAIN_FRAME);
     // Learn about our referring URL, for use in the future.
     if (is_subresource && timed_cache_.WasRecentlySeen(referring_scheme_host))
-      LearnFromNavigation(referring_scheme_host, request_scheme_host);
+      predictor_->LearnFromNavigation(referring_scheme_host,
+                                      request_scheme_host);
     if (referring_scheme_host == request_scheme_host) {
       // We've already made any/all predictions when we navigated to the
       // referring host, so we can bail out here.
@@ -80,18 +83,18 @@ net::URLRequestJob* ConnectInterceptor::MaybeIntercept(
   // main frame request - way back in RenderViewHost::Navigate.  So only handle
   // predictions now for subresources or for redirected hosts.
   if ((request->load_flags() & net::LOAD_SUB_FRAME) || redirected_host)
-    PredictFrameSubresources(request_scheme_host);
+    predictor_->PredictFrameSubresources(request_scheme_host);
   return NULL;
 }
 
 net::URLRequestJob* ConnectInterceptor::MaybeInterceptResponse(
-    net::URLRequest* request) {
+    net::URLRequest* request) const {
   return NULL;
 }
 
 net::URLRequestJob* ConnectInterceptor::MaybeInterceptRedirect(
-    net::URLRequest* request,
-    const GURL& location) {
+    const GURL& location,
+    net::URLRequest* request) const {
   return NULL;
 }
 
@@ -103,7 +106,7 @@ ConnectInterceptor::TimedCache::TimedCache(const base::TimeDelta& max_duration)
 // Make Clang compilation happy with explicit destructor.
 ConnectInterceptor::TimedCache::~TimedCache() {}
 
-bool ConnectInterceptor::TimedCache::WasRecentlySeen(const GURL& url) {
+bool ConnectInterceptor::TimedCache::WasRecentlySeen(const GURL& url) const {
   DCHECK_EQ(url.GetWithEmptyPath(), url);
   // Evict any overly old entries.
   base::TimeTicks now = base::TimeTicks::Now();
@@ -117,7 +120,7 @@ bool ConnectInterceptor::TimedCache::WasRecentlySeen(const GURL& url) {
   return mru_cache_.end() != mru_cache_.Peek(url);
 }
 
-void ConnectInterceptor::TimedCache::SetRecentlySeen(const GURL& url) {
+void ConnectInterceptor::TimedCache::SetRecentlySeen(const GURL& url) const {
   DCHECK_EQ(url.GetWithEmptyPath(), url);
   mru_cache_.Put(url, base::TimeTicks::Now());
 }

@@ -17,7 +17,7 @@
 #include "chrome/browser/metrics/histogram_synchronizer.h"
 #include "chrome/browser/nacl_host/nacl_process_host.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
-#include "chrome/browser/net/predictor_api.h"
+#include "chrome/browser/net/predictor.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/task_manager/task_manager.h"
@@ -196,7 +196,8 @@ void ChromeRenderMessageFilter::OnLaunchNaCl(
 
 void ChromeRenderMessageFilter::OnDnsPrefetch(
     const std::vector<std::string>& hostnames) {
-  chrome_browser_net::DnsPrefetchList(hostnames);
+  if (profile_->GetNetworkPredictor())
+    profile_->GetNetworkPredictor()->DnsPrefetchList(hostnames);
 }
 
 void ChromeRenderMessageFilter::OnRendererHistograms(
@@ -514,7 +515,9 @@ void ChromeRenderMessageFilter::OnCanTriggerClipboardWrite(const GURL& url,
 void ChromeRenderMessageFilter::OnClearPredictorCache(int* result) {
   // This function is disabled unless the user has enabled
   // benchmarking extensions.
-  chrome_browser_net::ClearPredictorCache();
+  chrome_browser_net::Predictor* predictor = profile_->GetNetworkPredictor();
+  if (predictor)
+    predictor->DiscardAllResults();
   *result = 0;
 }
 

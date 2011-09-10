@@ -27,7 +27,7 @@
 #include <vector>
 
 #include "base/gtest_prod_util.h"
-#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/net/url_info.h"
 #include "chrome/browser/net/referrer.h"
 #include "chrome/common/net/predictor_common.h"
@@ -37,9 +37,17 @@ namespace base {
 class ListValue;
 }
 
+namespace base {
+class WaitableEvent;
+}
+
 namespace net {
 class HostResolver;
 }  // namespace net
+
+class IOThread;
+class PrefService;
+class Profile;
 
 namespace chrome_browser_net {
 
@@ -47,19 +55,79 @@ typedef chrome_common_net::UrlList UrlList;
 typedef chrome_common_net::NameList NameList;
 typedef std::map<GURL, UrlInfo> Results;
 
-// Note that Predictor is not thread safe, and must only be called from
-// the IO thread. Failure to do so will result in a DCHECK at runtime.
-class Predictor : public base::RefCountedThreadSafe<Predictor> {
+// Predictor is constructed during Profile construction (on the UI thread),
+// but it is destroyed on the IO thread when ProfileIOData goes away. All of
+// its core state and functionality happens on the IO thread. The only UI
+// methods are initialization / shutdown related (including preconnect
+// initialization), or convenience methods that internally forward calls to
+// the IO thread.
+class Predictor {
  public:
   // A version number for prefs that are saved. This should be incremented when
   // we change the format so that we discard old data.
   static const int kPredictorReferrerVersion;
 
+  // Given that the underlying Chromium resolver defaults to a total maximum of
+  // 8 paralell resolutions, we will avoid any chance of starving navigational
+  // resolutions by limiting the number of paralell speculative resolutions.
+  // This is used in the field trials and testing.
+  // TODO(jar): Move this limitation into the resolver.
+  static const size_t kMaxSpeculativeParallelResolves;
+
+  // To control the congestion avoidance system, we need an estimate of how
+  // many speculative requests may arrive at once.  Since we currently only
+  // keep 8 subresource names for each frame, we'll use that as our basis.
+  // Note that when scanning search results lists, we might actually get 10 at
+  // a time, and wikipedia can often supply (during a page scan) upwards of 50.
+  // In those odd cases, we may discard some of the later speculative requests
+  // mistakenly assuming that the resolutions took too long.
+  static const int kTypicalSpeculativeGroupSize;
+
+  // The next constant specifies an amount of queueing delay that is
+  // "too large," and indicative of problems with resolutions (perhaps due to
+  // an overloaded router, or such).  When we exceed this delay, congestion
+  // avoidance will kick in and all speculations in the queue will be discarded.
+  static const int kMaxSpeculativeResolveQueueDelayMs;
+
   // |max_concurrent| specifies how many concurrent (parallel) prefetches will
   // be performed. Host lookups will be issued through |host_resolver|.
-  Predictor(net::HostResolver* host_resolver,
-            base::TimeDelta max_queue_delay_ms, size_t max_concurrent,
-            bool preconnect_enabled);
+  explicit Predictor(bool preconnect_enabled);
+
+  virtual ~Predictor();
+
+  // This function is used to create a predictor. For testing, we can create
+  // a version which does a simpler shutdown.
+  static Predictor* CreatePredictor(bool preconnect_enabled,
+                                    bool simple_shutdown);
+
+  static void RegisterUserPrefs(PrefService* user_prefs);
+
+  // ------------- Start UI thread methods.
+
+  virtual void InitNetworkPredictor(PrefService* user_prefs,
+                                    PrefService* local_state,
+                                    IOThread* io_thread);
+
+  // The Omnibox has proposed a given url to the user, and if it is a search
+  // URL, then it also indicates that this is preconnectable (i.e., we could
+  // preconnect to the search server).
+  void AnticipateOmniboxUrl(const GURL& url, bool preconnectable);
+
+  // Preconnect a URL and all of its subresource domains.
+  void PreconnectUrlAndSubresources(const GURL& url);
+
+  static UrlList GetPredictedUrlListAtStartup(PrefService* user_prefs,
+                                              PrefService* local_state);
+
+  static void set_max_queueing_delay(int max_queueing_delay_ms);
+
+  static void set_max_parallel_resolves(size_t max_parallel_resolves);
+
+  virtual void ShutdownOnUIThread(PrefService* user_prefs);
+
+  // ------------- End UI thread methods.
+
+  // ------------- Start IO thread methods.
 
   // Cancel pending requests and prevent new ones from being made.
   void Shutdown();
@@ -74,23 +142,8 @@ class Predictor : public base::RefCountedThreadSafe<Predictor> {
   // Add hostname(s) to the queue for processing.
   void ResolveList(const UrlList& urls,
                    UrlInfo::ResolutionMotivation motivation);
-  void Resolve(const GURL& url,
-               UrlInfo::ResolutionMotivation motivation);
 
-  // Instigate pre-connection to any URLs, or pre-resolution of related host,
-  // that we predict will be needed after this navigation (typically
-  // more-embedded resources on a page).  This method will actually post a task
-  // to do the actual work, so as not to jump ahead of the frame navigation that
-  // instigated this activity.
-  void PredictFrameSubresources(const GURL& url);
-
-  // The Omnibox has proposed a given url to the user, and if it is a search
-  // URL, then it also indicates that this is preconnectable (i.e., we could
-  // preconnect to the search server).
-  void AnticipateOmniboxUrl(const GURL& url, bool preconnectable);
-
-  // Preconnect a URL and all of its subresource domains.
-  void PreconnectUrlAndSubresources(const GURL& url);
+  void Resolve(const GURL& url, UrlInfo::ResolutionMotivation motivation);
 
   // Record details of a navigation so that we can preresolve the host name
   // ahead of time the next time the users navigates to the indicated host.
@@ -98,11 +151,14 @@ class Predictor : public base::RefCountedThreadSafe<Predictor> {
   // canonicalized to not have a path.
   void LearnFromNavigation(const GURL& referring_url, const GURL& target_url);
 
+  // When displaying info in about:dns, the following API is called.
+  static void PredictorGetHtmlInfo(Predictor* predictor, std::string* output);
+
   // Dump HTML table containing list of referrers for about:dns.
   void GetHtmlReferrerLists(std::string* output);
 
   // Dump the list of currently known referrer domains and related prefetchable
-  // domains.
+  // domains for about:dns.
   void GetHtmlInfo(std::string* output);
 
   // Discards any referrer for which all the suggested host names are currently
@@ -124,21 +180,83 @@ class Predictor : public base::RefCountedThreadSafe<Predictor> {
 
   void DeserializeReferrersThenDelete(base::ListValue* referral_list);
 
-  // For unit test code only.
-  size_t max_concurrent_dns_lookups() const {
-    return max_concurrent_dns_lookups_;
-  }
+  void DiscardInitialNavigationHistory();
 
-  // Flag setting to use preconnection instead of just DNS pre-fetching.
-  bool preconnect_enabled() const { return preconnect_enabled_; }
+  void FinalizeInitializationOnIOThread(
+      const std::vector<GURL>& urls_to_prefetch,
+      base::ListValue* referral_list,
+      IOThread* io_thread,
+      bool predictor_enabled);
+
+  // During startup, we learn what the first N urls visited are, and then
+  // resolve the associated hosts ASAP during our next startup.
+  void LearnAboutInitialNavigation(const GURL& url);
+
+  // Renderer bundles up list and sends to this browser API via IPC.
+  // TODO(jar): Use UrlList instead to include port and scheme.
+  void DnsPrefetchList(const NameList& hostnames);
+
+  // May be called from either the IO or UI thread and will PostTask
+  // to the IO thread if necessary.
+  void DnsPrefetchMotivatedList(const UrlList& urls,
+                                UrlInfo::ResolutionMotivation motivation);
+
+  // May be called from either the IO or UI thread and will PostTask
+  // to the IO thread if necessary.
+  void SaveStateForNextStartupAndTrim(PrefService* prefs);
+
+  void SaveDnsPrefetchStateForNextStartupAndTrim(
+      base::ListValue* startup_list,
+      base::ListValue* referral_list,
+      base::WaitableEvent* completion);
+
+  // May be called from either the IO or UI thread and will PostTask
+  // to the IO thread if necessary.
+  void EnablePredictor(bool enable);
+
+  void EnablePredictorOnIOThread(bool enable);
+
+  // ------------- End IO thread methods.
+
+  // The following methods may be called on either the IO or UI threads.
+
+  // Instigate pre-connection to any URLs, or pre-resolution of related host,
+  // that we predict will be needed after this navigation (typically
+  // more-embedded resources on a page).  This method will actually post a task
+  // to do the actual work, so as not to jump ahead of the frame navigation that
+  // instigated this activity.
+  void PredictFrameSubresources(const GURL& url);
 
   // Put URL in canonical form, including a scheme, host, and port.
   // Returns GURL::EmptyGURL() if the scheme is not http/https or if the url
   // cannot be otherwise canonicalized.
   static GURL CanonicalizeUrl(const GURL& url);
 
+  // Used for testing.
+  void SetHostResolver(net::HostResolver* host_resolver) {
+    host_resolver_ = host_resolver;
+  }
+  // Used for testing.
+  size_t max_concurrent_dns_lookups() const {
+    return max_concurrent_dns_lookups_;
+  }
+  // Used for testing.
+  void SetShutdown(bool shutdown) {
+    shutdown_ = shutdown;
+  }
+
+  // Flag setting to use preconnection instead of just DNS pre-fetching.
+  bool preconnect_enabled() const {
+    return preconnect_enabled_;
+  }
+
+  // Flag setting for whether we are prefetching dns lookups.
+  bool predictor_enabled() const {
+    return predictor_enabled_;
+  }
+
+
  private:
-  friend class base::RefCountedThreadSafe<Predictor>;
   FRIEND_TEST_ALL_PREFIXES(PredictorTest, BenefitLookupTest);
   FRIEND_TEST_ALL_PREFIXES(PredictorTest, ShutdownWhenResolutionIsPendingTest);
   FRIEND_TEST_ALL_PREFIXES(PredictorTest, SingleLookupTest);
@@ -178,6 +296,38 @@ class Predictor : public base::RefCountedThreadSafe<Predictor> {
   DISALLOW_COPY_AND_ASSIGN(HostNameQueue);
   };
 
+  // The InitialObserver monitors navigations made by the network stack. This
+  // is only used to identify startup time resolutions (for re-resolution
+  // during our next process startup).
+  // TODO(jar): Consider preconnecting at startup, which may be faster than
+  // waiting for render process to start and request a connection.
+  class InitialObserver {
+   public:
+    InitialObserver();
+    ~InitialObserver();
+    // Recording of when we observed each navigation.
+    typedef std::map<GURL, base::TimeTicks> FirstNavigations;
+
+    // Potentially add a new URL to our startup list.
+    void Append(const GURL& url, Predictor* predictor);
+
+    // Get an HTML version of our current planned first_navigations_.
+    void GetFirstResolutionsHtml(std::string* output);
+
+    // Persist the current first_navigations_ for storage in a list.
+    void GetInitialDnsResolutionList(base::ListValue* startup_list);
+
+    // Discards all initial loading history.
+    void DiscardInitialNavigationHistory() { first_navigations_.clear(); }
+
+   private:
+    // List of the first N URL resolutions observed in this run.
+    FirstNavigations first_navigations_;
+
+    // The number of URLs we'll save for pre-resolving at next startup.
+    static const size_t kStartupResolutionCount = 10;
+  };
+
   // A map that is keyed with the host/port that we've learned were the cause
   // of loading additional URLs.  The list of additional targets is held
   // in a Referrer instance, which is a value in this map.
@@ -206,13 +356,6 @@ class Predictor : public base::RefCountedThreadSafe<Predictor> {
   // Number of referring URLs processed in an incremental trimming.
   static const size_t kUrlsTrimmedPerIncrement;
 
-  ~Predictor();
-
-  // Perform actual resolution or preconnection to subresources now.  This is
-  // an internal worker method that is reached via a post task from
-  // PredictFrameSubresources().
-  void PrepareFrameSubresources(const GURL& url);
-
   // Only for testing. Returns true if hostname has been successfully resolved
   // (name found).
   bool WasFound(const GURL& url) const {
@@ -231,6 +374,13 @@ class Predictor : public base::RefCountedThreadSafe<Predictor> {
 
   // Only for testing;
   size_t peak_pending_lookups() const { return peak_pending_lookups_; }
+
+  // ------------- Start IO thread methods.
+
+  // Perform actual resolution or preconnection to subresources now.  This is
+  // an internal worker method that is reached via a post task from
+  // PredictFrameSubresources().
+  void PrepareFrameSubresources(const GURL& url);
 
   // Access method for use by async lookup request to pass resolution result.
   void OnLookupFinished(LookupRequest* request, const GURL& url, bool found);
@@ -277,6 +427,14 @@ class Predictor : public base::RefCountedThreadSafe<Predictor> {
   // continue with them shortly (i.e., it yeilds and continues).
   void IncrementalTrimReferrers(bool trim_all_now);
 
+  // ------------- End IO thread methods.
+
+  scoped_ptr<InitialObserver> initial_observer_;
+
+  // Status of speculative DNS resolution and speculative TCP/IP connection
+  // feature.
+  bool predictor_enabled_;
+
   // work_queue_ holds a list of names we need to look up.
   HostNameQueue work_queue_;
 
@@ -302,7 +460,7 @@ class Predictor : public base::RefCountedThreadSafe<Predictor> {
   const base::TimeDelta max_dns_queue_delay_;
 
   // The host resolver we warm DNS entries for.
-  net::HostResolver* const host_resolver_;
+  net::HostResolver* host_resolver_;
 
   // Are we currently using preconnection, rather than just DNS resolution, for
   // subresources and omni-box search URLs.
@@ -334,9 +492,21 @@ class Predictor : public base::RefCountedThreadSafe<Predictor> {
   // A time after which we need to do more trimming of referrers.
   base::TimeTicks next_trim_time_;
 
-  ScopedRunnableMethodFactory<Predictor> trim_task_factory_;
+  scoped_ptr<ScopedRunnableMethodFactory<Predictor> > trim_task_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(Predictor);
+};
+
+// This version of the predictor is used for testing.
+class SimplePredictor : public Predictor {
+ public:
+  explicit SimplePredictor(bool preconnect_enabled)
+      : Predictor(preconnect_enabled) {}
+  virtual ~SimplePredictor() {}
+  virtual void InitNetworkPredictor(PrefService* user_prefs,
+                                    PrefService* local_state,
+                                    IOThread* io_thread);
+  virtual void ShutdownOnUIThread(PrefService* user_prefs);
 };
 
 }  // namespace chrome_browser_net

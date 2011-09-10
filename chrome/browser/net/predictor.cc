@@ -9,12 +9,23 @@
 #include <set>
 #include <sstream>
 
+#include "base/bind.h"
+#include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/metrics/histogram.h"
+#include "base/stl_util.h"
 #include "base/stringprintf.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/time.h"
 #include "base/values.h"
+#include "chrome/browser/io_thread.h"
 #include "chrome/browser/net/preconnect.h"
+#include "chrome/browser/prefs/browser_prefs.h"
+#include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/prefs/scoped_user_pref_update.h"
+#include "chrome/browser/prefs/session_startup_pref.h"
+#include "chrome/common/chrome_switches.h"
+#include "chrome/common/pref_names.h"
 #include "content/browser/browser_thread.h"
 #include "net/base/address_list.h"
 #include "net/base/completion_callback.h"
@@ -48,6 +59,22 @@ const TimeDelta Predictor::kDurationBetweenTrimmings = TimeDelta::FromHours(1);
 const TimeDelta Predictor::kDurationBetweenTrimmingIncrements =
     TimeDelta::FromSeconds(15);
 const size_t Predictor::kUrlsTrimmedPerIncrement = 5u;
+const size_t Predictor::kMaxSpeculativeParallelResolves = 3;
+// To control our congestion avoidance system, which discards a queue when
+// resolutions are "taking too long," we need an expected resolution time.
+// Common average is in the range of 300-500ms.
+const int kExpectedResolutionTimeMs = 500;
+const int Predictor::kTypicalSpeculativeGroupSize = 8;
+const int Predictor::kMaxSpeculativeResolveQueueDelayMs =
+    (kExpectedResolutionTimeMs * Predictor::kTypicalSpeculativeGroupSize) /
+    Predictor::kMaxSpeculativeParallelResolves;
+
+static int g_max_queueing_delay_ms = 0;
+static size_t g_max_parallel_resolves = 0u;
+
+// A version number for prefs that are saved. This should be incremented when
+// we change the format so that we discard old data.
+static const int kPredictorStartupFormatVersion = 1;
 
 class Predictor::LookupRequest {
  public:
@@ -94,76 +121,89 @@ class Predictor::LookupRequest {
   DISALLOW_COPY_AND_ASSIGN(LookupRequest);
 };
 
-Predictor::Predictor(net::HostResolver* host_resolver,
-                     TimeDelta max_dns_queue_delay,
-                     size_t max_concurrent,
-                     bool preconnect_enabled)
-    : peak_pending_lookups_(0),
+Predictor::Predictor(bool preconnect_enabled)
+    : initial_observer_(NULL),
+      predictor_enabled_(true),
+      peak_pending_lookups_(0),
       shutdown_(false),
-      max_concurrent_dns_lookups_(max_concurrent),
-      max_dns_queue_delay_(max_dns_queue_delay),
-      host_resolver_(host_resolver),
+      max_concurrent_dns_lookups_(g_max_parallel_resolves),
+      max_dns_queue_delay_(
+          TimeDelta::FromMilliseconds(g_max_queueing_delay_ms)),
+      host_resolver_(NULL),
       preconnect_enabled_(preconnect_enabled),
       consecutive_omnibox_preconnect_count_(0),
-      next_trim_time_(base::TimeTicks::Now() + kDurationBetweenTrimmings),
-      ALLOW_THIS_IN_INITIALIZER_LIST(trim_task_factory_(this)) {
+      next_trim_time_(base::TimeTicks::Now() + kDurationBetweenTrimmings) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
 Predictor::~Predictor() {
+  // TODO(rlp): Add DCHECK for CurrentlyOn(BrowserThread::IO) when the
+  // ProfileManagerTest has been updated with a mock profile.
   DCHECK(shutdown_);
 }
 
-void Predictor::Shutdown() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  DCHECK(!shutdown_);
-  shutdown_ = true;
-
-  std::set<LookupRequest*>::iterator it;
-  for (it = pending_lookups_.begin(); it != pending_lookups_.end(); ++it)
-    delete *it;
+// static
+Predictor* Predictor::CreatePredictor(
+    bool preconnect_enabled, bool simple_shutdown) {
+  if (simple_shutdown)
+    return new SimplePredictor(preconnect_enabled);
+  return new Predictor(preconnect_enabled);
 }
 
-// Overloaded Resolve() to take a vector of names.
-void Predictor::ResolveList(const UrlList& urls,
-                            UrlInfo::ResolutionMotivation motivation) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+void Predictor::RegisterUserPrefs(PrefService* user_prefs) {
+  user_prefs->RegisterListPref(prefs::kDnsPrefetchingStartupList,
+                               PrefService::UNSYNCABLE_PREF);
+  user_prefs->RegisterListPref(prefs::kDnsPrefetchingHostReferralList,
+                               PrefService::UNSYNCABLE_PREF);
+}
 
-  for (UrlList::const_iterator it = urls.begin(); it < urls.end(); ++it) {
-    AppendToResolutionQueue(*it, motivation);
+// --------------------- Start UI methods. ------------------------------------
+
+void Predictor::InitNetworkPredictor(PrefService* user_prefs,
+                                     PrefService* local_state,
+                                     IOThread* io_thread) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  bool predictor_enabled =
+      user_prefs->GetBoolean(prefs::kNetworkPredictionEnabled);
+
+  // Gather the list of hostnames to prefetch on startup.
+  UrlList urls = GetPredictedUrlListAtStartup(user_prefs, local_state);
+
+  base::ListValue* referral_list =
+      static_cast<base::ListValue*>(user_prefs->GetList(
+          prefs::kDnsPrefetchingHostReferralList)->DeepCopy());
+
+  // Remove obsolete preferences from local state if necessary.
+  int current_version =
+      local_state->GetInteger(prefs::kMultipleProfilePrefMigration);
+  if ((current_version & browser::DNS_PREFS) == 0) {
+    local_state->RegisterListPref(prefs::kDnsStartupPrefetchList,
+                                  PrefService::UNSYNCABLE_PREF);
+    local_state->RegisterListPref(prefs::kDnsHostReferralList,
+                                  PrefService::UNSYNCABLE_PREF);
+    local_state->ClearPref(prefs::kDnsStartupPrefetchList);
+    local_state->ClearPref(prefs::kDnsHostReferralList);
+    local_state->SetInteger(prefs::kMultipleProfilePrefMigration,
+        current_version | browser::DNS_PREFS);
   }
+
+  BrowserThread::PostTask(
+      BrowserThread::IO,
+      FROM_HERE,
+      base::Bind(
+          &Predictor::FinalizeInitializationOnIOThread,
+          base::Unretained(this),
+          urls, referral_list,
+          io_thread, predictor_enabled));
 }
-
-// Basic Resolve() takes an invidual name, and adds it
-// to the queue.
-void Predictor::Resolve(const GURL& url,
-                        UrlInfo::ResolutionMotivation motivation) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  if (!url.has_host())
-    return;
-  AppendToResolutionQueue(url, motivation);
-}
-
-void Predictor::LearnFromNavigation(const GURL& referring_url,
-                                    const GURL& target_url) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  DCHECK_EQ(referring_url, Predictor::CanonicalizeUrl(referring_url));
-  DCHECK_NE(referring_url, GURL::EmptyGURL());
-  DCHECK_EQ(target_url, Predictor::CanonicalizeUrl(target_url));
-  DCHECK_NE(target_url, GURL::EmptyGURL());
-
-  referrers_[referring_url].SuggestHost(target_url);
-  // Possibly do some referrer trimming.
-  TrimReferrers();
-}
-
-enum SubresourceValue {
-  PRECONNECTION,
-  PRERESOLUTION,
-  TOO_NEW,
-  SUBRESOURCE_VALUE_MAX
-};
 
 void Predictor::AnticipateOmniboxUrl(const GURL& url, bool preconnectable) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (!predictor_enabled_)
+    return;
+  if (!url.is_valid() || !url.has_host())
+    return;
   std::string host = url.HostNoBrackets();
   bool is_new_host_request = (host != last_omnibox_host_);
   last_omnibox_host_ = host;
@@ -227,11 +267,16 @@ void Predictor::AnticipateOmniboxUrl(const GURL& url, bool preconnectable) {
   BrowserThread::PostTask(
       BrowserThread::IO,
       FROM_HERE,
-      NewRunnableMethod(this, &Predictor::Resolve, CanonicalizeUrl(url),
-                        motivation));
+      base::Bind(&Predictor::Resolve, base::Unretained(this),
+                 CanonicalizeUrl(url), motivation));
 }
 
 void Predictor::PreconnectUrlAndSubresources(const GURL& url) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (!predictor_enabled_)
+    return;
+  if (!url.is_valid() || !url.has_host())
+    return;
   if (preconnect_enabled()) {
     std::string host = url.HostNoBrackets();
     UrlInfo::ResolutionMotivation motivation(UrlInfo::EARLY_LOAD_MOTIVATED);
@@ -242,63 +287,186 @@ void Predictor::PreconnectUrlAndSubresources(const GURL& url) {
   }
 }
 
-void Predictor::PredictFrameSubresources(const GURL& url) {
-  DCHECK_EQ(url.GetWithEmptyPath(), url);
-  // Add one pass through the message loop to allow current navigation to
-  // proceed.
+UrlList Predictor::GetPredictedUrlListAtStartup(
+    PrefService* user_prefs,
+    PrefService* local_state) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  UrlList urls;
+  // Recall list of URLs we learned about during last session.
+  // This may catch secondary hostnames, pulled in by the homepages.  It will
+  // also catch more of the "primary" home pages, since that was (presumably)
+  // rendered first (and will be rendered first this time too).
+  const ListValue* startup_list =
+      user_prefs->GetList(prefs::kDnsPrefetchingStartupList);
+
+  if (startup_list) {
+    base::ListValue::const_iterator it = startup_list->begin();
+    int format_version = -1;
+    if (it != startup_list->end() &&
+        (*it)->GetAsInteger(&format_version) &&
+        format_version == kPredictorStartupFormatVersion) {
+      ++it;
+      for (; it != startup_list->end(); ++it) {
+        std::string url_spec;
+        if (!(*it)->GetAsString(&url_spec)) {
+          LOG(DFATAL);
+          break;  // Format incompatibility.
+        }
+        GURL url(url_spec);
+        if (!url.has_host() || !url.has_scheme()) {
+          LOG(DFATAL);
+          break;  // Format incompatibility.
+        }
+
+        urls.push_back(url);
+      }
+    }
+  }
+
+  // Prepare for any static home page(s) the user has in prefs.  The user may
+  // have a LOT of tab's specified, so we may as well try to warm them all.
+  SessionStartupPref tab_start_pref =
+      SessionStartupPref::GetStartupPref(user_prefs);
+  if (SessionStartupPref::URLS == tab_start_pref.type) {
+    for (size_t i = 0; i < tab_start_pref.urls.size(); i++) {
+      GURL gurl = tab_start_pref.urls[i];
+      if (!gurl.is_valid() || gurl.SchemeIsFile() || gurl.host().empty())
+        continue;
+      if (gurl.SchemeIs("http") || gurl.SchemeIs("https"))
+        urls.push_back(gurl.GetWithEmptyPath());
+    }
+  }
+
+  if (urls.empty())
+    urls.push_back(GURL("http://www.google.com:80"));
+
+  return urls;
+}
+
+void Predictor::set_max_queueing_delay(int max_queueing_delay_ms) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  g_max_queueing_delay_ms = max_queueing_delay_ms;
+}
+
+void Predictor::set_max_parallel_resolves(size_t max_parallel_resolves) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  g_max_parallel_resolves = max_parallel_resolves;
+}
+
+void Predictor::ShutdownOnUIThread(PrefService* user_prefs) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  SaveStateForNextStartupAndTrim(user_prefs);
+
   BrowserThread::PostTask(
       BrowserThread::IO,
       FROM_HERE,
-      NewRunnableMethod(this, &Predictor::PrepareFrameSubresources, url));
+      base::Bind(&Predictor::Shutdown, base::Unretained(this)));
 }
 
-void Predictor::PrepareFrameSubresources(const GURL& url) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  DCHECK_EQ(url.GetWithEmptyPath(), url);
-  Referrers::iterator it = referrers_.find(url);
-  if (referrers_.end() == it) {
-    // Only when we don't know anything about this url, make 2 connections
-    // available.  We could do this completely via learning (by prepopulating
-    // the referrer_ list with this expected value), but it would swell the
-    // size of the list with all the "Leaf" nodes in the tree (nodes that don't
-    // load any subresources).  If we learn about this resource, we will instead
-    // provide a more carefully estimated preconnection count.
-    if (preconnect_enabled_)
-      PreconnectOnIOThread(url, UrlInfo::SELF_REFERAL_MOTIVATED, 2);
-    return;
-  }
+// ---------------------- End UI methods. -------------------------------------
 
-  Referrer* referrer = &(it->second);
-  referrer->IncrementUseCount();
-  const UrlInfo::ResolutionMotivation motivation =
-      UrlInfo::LEARNED_REFERAL_MOTIVATED;
-  for (Referrer::iterator future_url = referrer->begin();
-       future_url != referrer->end(); ++future_url) {
-    SubresourceValue evalution(TOO_NEW);
-    double connection_expectation = future_url->second.subresource_use_rate();
-    UMA_HISTOGRAM_CUSTOM_COUNTS("Net.PreconnectSubresourceExpectation",
-                                static_cast<int>(connection_expectation * 100),
-                                10, 5000, 50);
-    future_url->second.ReferrerWasObserved();
-    if (preconnect_enabled_ &&
-        connection_expectation > kPreconnectWorthyExpectedValue) {
-      evalution = PRECONNECTION;
-      future_url->second.IncrementPreconnectionCount();
-      int count = static_cast<int>(std::ceil(connection_expectation));
-      if (url.host() == future_url->first.host())
-        ++count;
-      PreconnectOnIOThread(future_url->first, motivation, count);
-    } else if (connection_expectation > kDNSPreresolutionWorthyExpectedValue) {
-      evalution = PRERESOLUTION;
-      future_url->second.preresolution_increment();
-      UrlInfo* queued_info = AppendToResolutionQueue(future_url->first,
-                                                     motivation);
-      if (queued_info)
-        queued_info->SetReferringHostname(url);
-    }
-    UMA_HISTOGRAM_ENUMERATION("Net.PreconnectSubresourceEval", evalution,
-                              SUBRESOURCE_VALUE_MAX);
+// --------------------- Start IO methods. ------------------------------------
+
+void Predictor::Shutdown() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(!shutdown_);
+  shutdown_ = true;
+
+  STLDeleteElements(&pending_lookups_);
+}
+
+void Predictor::DiscardAllResults() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  // Delete anything listed so far in this session that shows in about:dns.
+  referrers_.clear();
+
+
+  // Try to delete anything in our work queue.
+  while (!work_queue_.IsEmpty()) {
+    // Emulate processing cycle as though host was not found.
+    GURL url = work_queue_.Pop();
+    UrlInfo* info = &results_[url];
+    DCHECK(info->HasUrl(url));
+    info->SetAssignedState();
+    info->SetNoSuchNameState();
   }
+  // Now every result_ is either resolved, or is being resolved
+  // (see LookupRequest).
+
+  // Step through result_, recording names of all hosts that can't be erased.
+  // We can't erase anything being worked on.
+  Results assignees;
+  for (Results::iterator it = results_.begin(); results_.end() != it; ++it) {
+    GURL url(it->first);
+    UrlInfo* info = &it->second;
+    DCHECK(info->HasUrl(url));
+    if (info->is_assigned()) {
+      info->SetPendingDeleteState();
+      assignees[url] = *info;
+    }
+  }
+  DCHECK_LE(assignees.size(), max_concurrent_dns_lookups_);
+  results_.clear();
+  // Put back in the names being worked on.
+  for (Results::iterator it = assignees.begin(); assignees.end() != it; ++it) {
+    DCHECK(it->second.is_marked_to_delete());
+    results_[it->first] = it->second;
+  }
+}
+
+// Overloaded Resolve() to take a vector of names.
+void Predictor::ResolveList(const UrlList& urls,
+                            UrlInfo::ResolutionMotivation motivation) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  for (UrlList::const_iterator it = urls.begin(); it < urls.end(); ++it) {
+    AppendToResolutionQueue(*it, motivation);
+  }
+}
+
+// Basic Resolve() takes an invidual name, and adds it
+// to the queue.
+void Predictor::Resolve(const GURL& url,
+                        UrlInfo::ResolutionMotivation motivation) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  if (!url.has_host())
+    return;
+  AppendToResolutionQueue(url, motivation);
+}
+
+void Predictor::LearnFromNavigation(const GURL& referring_url,
+                                    const GURL& target_url) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  if (!predictor_enabled_)
+    return;
+  DCHECK_EQ(referring_url, Predictor::CanonicalizeUrl(referring_url));
+  DCHECK_NE(referring_url, GURL::EmptyGURL());
+  DCHECK_EQ(target_url, Predictor::CanonicalizeUrl(target_url));
+  DCHECK_NE(target_url, GURL::EmptyGURL());
+
+  referrers_[referring_url].SuggestHost(target_url);
+  // Possibly do some referrer trimming.
+  TrimReferrers();
+}
+
+//-----------------------------------------------------------------------------
+// This section supports the about:dns page.
+
+void Predictor::PredictorGetHtmlInfo(Predictor* predictor,
+                                     std::string* output) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  output->append("<html><head><title>About DNS</title>"
+                 // We'd like the following no-cache... but it doesn't work.
+                 // "<META HTTP-EQUIV=\"Pragma\" CONTENT=\"no-cache\">"
+                 "</head><body>");
+  if (predictor && predictor->predictor_enabled()) {
+    predictor->GetHtmlInfo(output);
+  } else {
+    output->append("DNS pre-resolution and TCP pre-connection is disabled.");
+  }
+  output->append("</body></html>");
 }
 
 // Provide sort order so all .com's are together, etc.
@@ -413,6 +581,11 @@ void Predictor::GetHtmlReferrerLists(std::string* output) {
 
 void Predictor::GetHtmlInfo(std::string* output) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  if (initial_observer_.get())
+    initial_observer_->GetFirstResolutionsHtml(output);
+  // Show list of subresource predictions and stats.
+  GetHtmlReferrerLists(output);
+
   // Local lists for calling UrlInfo
   UrlInfo::UrlInfoTable name_not_found;
   UrlInfo::UrlInfoTable name_preresolved;
@@ -448,6 +621,336 @@ void Predictor::GetHtmlInfo(std::string* output) {
       "Preresolving DNS records revealed non-existence for ", brief, output);
 }
 
+void Predictor::TrimReferrersNow() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  // Just finish up work if an incremental trim is in progress.
+  if (urls_being_trimmed_.empty())
+    LoadUrlsForTrimming();
+  IncrementalTrimReferrers(true);  // Do everything now.
+}
+
+void Predictor::SerializeReferrers(base::ListValue* referral_list) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  referral_list->Clear();
+  referral_list->Append(new base::FundamentalValue(kPredictorReferrerVersion));
+  for (Referrers::const_iterator it = referrers_.begin();
+       it != referrers_.end(); ++it) {
+    // Serialize the list of subresource names.
+    Value* subresource_list(it->second.Serialize());
+
+    // Create a list for each referer.
+    ListValue* motivator(new ListValue);
+    motivator->Append(new StringValue(it->first.spec()));
+    motivator->Append(subresource_list);
+
+    referral_list->Append(motivator);
+  }
+}
+
+void Predictor::DeserializeReferrers(const base::ListValue& referral_list) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  int format_version = -1;
+  if (referral_list.GetSize() > 0 &&
+      referral_list.GetInteger(0, &format_version) &&
+      format_version == kPredictorReferrerVersion) {
+    for (size_t i = 1; i < referral_list.GetSize(); ++i) {
+      base::ListValue* motivator;
+      if (!referral_list.GetList(i, &motivator)) {
+        NOTREACHED();
+        return;
+      }
+      std::string motivating_url_spec;
+      if (!motivator->GetString(0, &motivating_url_spec)) {
+        NOTREACHED();
+        return;
+      }
+
+      Value* subresource_list;
+      if (!motivator->Get(1, &subresource_list)) {
+        NOTREACHED();
+        return;
+      }
+
+      referrers_[GURL(motivating_url_spec)].Deserialize(*subresource_list);
+    }
+  }
+}
+
+void Predictor::DeserializeReferrersThenDelete(
+    base::ListValue* referral_list) {
+  DeserializeReferrers(*referral_list);
+  delete referral_list;
+}
+
+void Predictor::DiscardInitialNavigationHistory() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  if (initial_observer_.get())
+    initial_observer_->DiscardInitialNavigationHistory();
+}
+
+void Predictor::FinalizeInitializationOnIOThread(
+    const UrlList& startup_urls,
+    base::ListValue* referral_list,
+    IOThread* io_thread,
+    bool predictor_enabled) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  predictor_enabled_ = predictor_enabled;
+  initial_observer_.reset(new InitialObserver());
+  host_resolver_ = io_thread->globals()->host_resolver.get();
+
+  // ScopedRunnableMethodFactory instances need to be created and destroyed
+  // on the same thread. The predictor lives on the IO thread and will die
+  // from there so now that we're on the IO thread we need to properly
+  // initialize the ScopedrunnableMethodFactory.
+  trim_task_factory_.reset(new ScopedRunnableMethodFactory<Predictor>(this));
+
+  // Prefetch these hostnames on startup.
+  DnsPrefetchMotivatedList(startup_urls, UrlInfo::STARTUP_LIST_MOTIVATED);
+  DeserializeReferrersThenDelete(referral_list);
+}
+
+//-----------------------------------------------------------------------------
+// This section intermingles prefetch results with actual browser HTTP
+// network activity.  It supports calculating of the benefit of a prefetch, as
+// well as recording what prefetched hostname resolutions might be potentially
+// helpful during the next chrome-startup.
+//-----------------------------------------------------------------------------
+
+void Predictor::LearnAboutInitialNavigation(const GURL& url) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  if (!predictor_enabled_ || NULL == initial_observer_.get() )
+    return;
+  initial_observer_->Append(url, this);
+}
+
+// This API is only used in the browser process.
+// It is called from an IPC message originating in the renderer.  It currently
+// includes both Page-Scan, and Link-Hover prefetching.
+// TODO(jar): Separate out link-hover prefetching, and page-scan results.
+void Predictor::DnsPrefetchList(const NameList& hostnames) {
+  // TODO(jar): Push GURL transport further back into renderer, but this will
+  // require a Webkit change in the observer :-/.
+  UrlList urls;
+  for (NameList::const_iterator it = hostnames.begin();
+       it < hostnames.end();
+       ++it) {
+    urls.push_back(GURL("http://" + *it + ":80"));
+  }
+
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DnsPrefetchMotivatedList(urls, UrlInfo::PAGE_SCAN_MOTIVATED);
+}
+
+void Predictor::DnsPrefetchMotivatedList(
+    const UrlList& urls,
+    UrlInfo::ResolutionMotivation motivation) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
+         BrowserThread::CurrentlyOn(BrowserThread::IO));
+  if (!predictor_enabled_)
+    return;
+
+  if (BrowserThread::CurrentlyOn(BrowserThread::IO)) {
+    ResolveList(urls, motivation);
+  } else {
+    BrowserThread::PostTask(
+        BrowserThread::IO,
+        FROM_HERE,
+        base::Bind(&Predictor::ResolveList, base::Unretained(this),
+                   urls, motivation));
+  }
+}
+
+//-----------------------------------------------------------------------------
+// Functions to handle saving of hostnames from one session to the next, to
+// expedite startup times.
+
+static void SaveDnsPrefetchStateForNextStartupAndTrimOnIOThread(
+    base::ListValue* startup_list,
+    base::ListValue* referral_list,
+    base::WaitableEvent* completion,
+    Predictor* predictor) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  if (NULL == predictor) {
+    completion->Signal();
+    return;
+  }
+  predictor->SaveDnsPrefetchStateForNextStartupAndTrim(
+      startup_list, referral_list, completion);
+}
+
+void Predictor::SaveStateForNextStartupAndTrim(PrefService* prefs) {
+  if (!predictor_enabled_)
+    return;
+
+  base::WaitableEvent completion(true, false);
+
+  ListPrefUpdate update_startup_list(prefs, prefs::kDnsPrefetchingStartupList);
+  ListPrefUpdate update_referral_list(prefs,
+                                      prefs::kDnsPrefetchingHostReferralList);
+  if (BrowserThread::CurrentlyOn(BrowserThread::IO)) {
+    SaveDnsPrefetchStateForNextStartupAndTrimOnIOThread(
+        update_startup_list.Get(),
+        update_referral_list.Get(),
+        &completion,
+        this);
+  } else {
+    bool posted = BrowserThread::PostTask(
+        BrowserThread::IO,
+        FROM_HERE,
+        base::Bind(
+            SaveDnsPrefetchStateForNextStartupAndTrimOnIOThread,
+            update_startup_list.Get(),
+            update_referral_list.Get(),
+            &completion,
+            this));
+
+    // TODO(jar): Synchronous waiting for the IO thread is a potential source
+    // to deadlocks and should be investigated. See http://crbug.com/78451.
+    DCHECK(posted);
+    if (posted)
+      completion.Wait();
+  }
+}
+
+void Predictor::SaveDnsPrefetchStateForNextStartupAndTrim(
+    base::ListValue* startup_list,
+    base::ListValue* referral_list,
+    base::WaitableEvent* completion) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  if (initial_observer_.get())
+    initial_observer_->GetInitialDnsResolutionList(startup_list);
+
+  // Do at least one trim at shutdown, in case the user wasn't running long
+  // enough to do any regular trimming of referrers.
+  TrimReferrersNow();
+  SerializeReferrers(referral_list);
+
+  completion->Signal();
+}
+
+void Predictor::EnablePredictor(bool enable) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
+         BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  if (BrowserThread::CurrentlyOn(BrowserThread::IO)) {
+    EnablePredictorOnIOThread(enable);
+  } else {
+    BrowserThread::PostTask(
+        BrowserThread::IO,
+        FROM_HERE,
+        base::Bind(&Predictor::EnablePredictorOnIOThread,
+                   base::Unretained(this), enable));
+  }
+}
+
+void Predictor::EnablePredictorOnIOThread(bool enable) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  predictor_enabled_ = enable;
+}
+
+void Predictor::PredictFrameSubresources(const GURL& url) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
+         BrowserThread::CurrentlyOn(BrowserThread::IO));
+  if (!predictor_enabled_)
+    return;
+  DCHECK_EQ(url.GetWithEmptyPath(), url);
+  // Add one pass through the message loop to allow current navigation to
+  // proceed.
+  if (BrowserThread::CurrentlyOn(BrowserThread::IO)) {
+    PrepareFrameSubresources(url);
+  } else {
+    BrowserThread::PostTask(
+        BrowserThread::IO,
+        FROM_HERE,
+        base::Bind(&Predictor::PrepareFrameSubresources,
+                   base::Unretained(this), url));
+  }
+}
+
+enum SubresourceValue {
+  PRECONNECTION,
+  PRERESOLUTION,
+  TOO_NEW,
+  SUBRESOURCE_VALUE_MAX
+};
+
+void Predictor::PrepareFrameSubresources(const GURL& url) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_EQ(url.GetWithEmptyPath(), url);
+  Referrers::iterator it = referrers_.find(url);
+  if (referrers_.end() == it) {
+    // Only when we don't know anything about this url, make 2 connections
+    // available.  We could do this completely via learning (by prepopulating
+    // the referrer_ list with this expected value), but it would swell the
+    // size of the list with all the "Leaf" nodes in the tree (nodes that don't
+    // load any subresources).  If we learn about this resource, we will instead
+    // provide a more carefully estimated preconnection count.
+    if (preconnect_enabled_)
+      PreconnectOnIOThread(url, UrlInfo::SELF_REFERAL_MOTIVATED, 2);
+    return;
+  }
+
+  Referrer* referrer = &(it->second);
+  referrer->IncrementUseCount();
+  const UrlInfo::ResolutionMotivation motivation =
+      UrlInfo::LEARNED_REFERAL_MOTIVATED;
+  for (Referrer::iterator future_url = referrer->begin();
+       future_url != referrer->end(); ++future_url) {
+    SubresourceValue evalution(TOO_NEW);
+    double connection_expectation = future_url->second.subresource_use_rate();
+    UMA_HISTOGRAM_CUSTOM_COUNTS("Net.PreconnectSubresourceExpectation",
+                                static_cast<int>(connection_expectation * 100),
+                                10, 5000, 50);
+    future_url->second.ReferrerWasObserved();
+    if (preconnect_enabled_ &&
+        connection_expectation > kPreconnectWorthyExpectedValue) {
+      evalution = PRECONNECTION;
+      future_url->second.IncrementPreconnectionCount();
+      int count = static_cast<int>(std::ceil(connection_expectation));
+      if (url.host() == future_url->first.host())
+        ++count;
+      PreconnectOnIOThread(future_url->first, motivation, count);
+    } else if (connection_expectation > kDNSPreresolutionWorthyExpectedValue) {
+      evalution = PRERESOLUTION;
+      future_url->second.preresolution_increment();
+      UrlInfo* queued_info = AppendToResolutionQueue(future_url->first,
+                                                     motivation);
+      if (queued_info)
+        queued_info->SetReferringHostname(url);
+    }
+    UMA_HISTOGRAM_ENUMERATION("Net.PreconnectSubresourceEval", evalution,
+                              SUBRESOURCE_VALUE_MAX);
+  }
+}
+
+void Predictor::OnLookupFinished(LookupRequest* request, const GURL& url,
+                                 bool found) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  LookupFinished(request, url, found);
+  pending_lookups_.erase(request);
+  delete request;
+
+  StartSomeQueuedResolutions();
+}
+
+void Predictor::LookupFinished(LookupRequest* request, const GURL& url,
+                               bool found) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  UrlInfo* info = &results_[url];
+  DCHECK(info->HasUrl(url));
+  if (info->is_marked_to_delete()) {
+    results_.erase(url);
+  } else {
+    if (found)
+      info->SetFoundState();
+    else
+      info->SetNoSuchNameState();
+  }
+}
+
 UrlInfo* Predictor::AppendToResolutionQueue(
     const GURL& url,
     UrlInfo::ResolutionMotivation motivation) {
@@ -473,6 +976,24 @@ UrlInfo* Predictor::AppendToResolutionQueue(
   work_queue_.Push(url, motivation);
   StartSomeQueuedResolutions();
   return info;
+}
+
+bool Predictor::CongestionControlPerformed(UrlInfo* info) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  // Note: queue_duration is ONLY valid after we go to assigned state.
+  if (info->queue_duration() < max_dns_queue_delay_)
+    return false;
+  // We need to discard all entries in our queue, as we're keeping them waiting
+  // too long.  By doing this, we'll have a chance to quickly service urgent
+  // resolutions, and not have a bogged down system.
+  while (true) {
+    info->RemoveFromQueue();
+    if (work_queue_.IsEmpty())
+      break;
+    info = &results_[work_queue_.Pop()];
+    info->SetAssignedState();
+  }
+  return true;
 }
 
 void Predictor::StartSomeQueuedResolutions() {
@@ -507,144 +1028,6 @@ void Predictor::StartSomeQueuedResolutions() {
   }
 }
 
-bool Predictor::CongestionControlPerformed(UrlInfo* info) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  // Note: queue_duration is ONLY valid after we go to assigned state.
-  if (info->queue_duration() < max_dns_queue_delay_)
-    return false;
-  // We need to discard all entries in our queue, as we're keeping them waiting
-  // too long.  By doing this, we'll have a chance to quickly service urgent
-  // resolutions, and not have a bogged down system.
-  while (true) {
-    info->RemoveFromQueue();
-    if (work_queue_.IsEmpty())
-      break;
-    info = &results_[work_queue_.Pop()];
-    info->SetAssignedState();
-  }
-  return true;
-}
-
-void Predictor::OnLookupFinished(LookupRequest* request, const GURL& url,
-                                 bool found) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-
-  LookupFinished(request, url, found);
-  pending_lookups_.erase(request);
-  delete request;
-
-  StartSomeQueuedResolutions();
-}
-
-void Predictor::LookupFinished(LookupRequest* request, const GURL& url,
-                               bool found) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  UrlInfo* info = &results_[url];
-  DCHECK(info->HasUrl(url));
-  if (info->is_marked_to_delete()) {
-    results_.erase(url);
-  } else {
-    if (found)
-      info->SetFoundState();
-    else
-      info->SetNoSuchNameState();
-  }
-}
-
-void Predictor::DiscardAllResults() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  // Delete anything listed so far in this session that shows in about:dns.
-  referrers_.clear();
-
-
-  // Try to delete anything in our work queue.
-  while (!work_queue_.IsEmpty()) {
-    // Emulate processing cycle as though host was not found.
-    GURL url = work_queue_.Pop();
-    UrlInfo* info = &results_[url];
-    DCHECK(info->HasUrl(url));
-    info->SetAssignedState();
-    info->SetNoSuchNameState();
-  }
-  // Now every result_ is either resolved, or is being resolved
-  // (see LookupRequest).
-
-  // Step through result_, recording names of all hosts that can't be erased.
-  // We can't erase anything being worked on.
-  Results assignees;
-  for (Results::iterator it = results_.begin(); results_.end() != it; ++it) {
-    GURL url(it->first);
-    UrlInfo* info = &it->second;
-    DCHECK(info->HasUrl(url));
-    if (info->is_assigned()) {
-      info->SetPendingDeleteState();
-      assignees[url] = *info;
-    }
-  }
-  DCHECK(assignees.size() <= max_concurrent_dns_lookups_);
-  results_.clear();
-  // Put back in the names being worked on.
-  for (Results::iterator it = assignees.begin(); assignees.end() != it; ++it) {
-    DCHECK(it->second.is_marked_to_delete());
-    results_[it->first] = it->second;
-  }
-}
-
-void Predictor::TrimReferrersNow() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  // Just finish up work if an incremental trim is in progress.
-  if (urls_being_trimmed_.empty())
-    LoadUrlsForTrimming();
-  IncrementalTrimReferrers(true);  // Do everything now.
-}
-
-void Predictor::SerializeReferrers(ListValue* referral_list) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  referral_list->Clear();
-  referral_list->Append(new base::FundamentalValue(kPredictorReferrerVersion));
-  for (Referrers::const_iterator it = referrers_.begin();
-       it != referrers_.end(); ++it) {
-    // Serialize the list of subresource names.
-    Value* subresource_list(it->second.Serialize());
-
-    // Create a list for each referer.
-    ListValue* motivator(new ListValue);
-    motivator->Append(new StringValue(it->first.spec()));
-    motivator->Append(subresource_list);
-
-    referral_list->Append(motivator);
-  }
-}
-
-void Predictor::DeserializeReferrers(const ListValue& referral_list) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  int format_version = -1;
-  if (referral_list.GetSize() > 0 &&
-      referral_list.GetInteger(0, &format_version) &&
-      format_version == kPredictorReferrerVersion) {
-    for (size_t i = 1; i < referral_list.GetSize(); ++i) {
-      ListValue* motivator;
-      if (!referral_list.GetList(i, &motivator)) {
-        NOTREACHED();
-        return;
-      }
-      std::string motivating_url_spec;
-      if (!motivator->GetString(0, &motivating_url_spec)) {
-        NOTREACHED();
-        return;
-      }
-
-      Value* subresource_list;
-      if (!motivator->Get(1, &subresource_list)) {
-        NOTREACHED();
-        return;
-      }
-
-      referrers_[GURL(motivating_url_spec)].Deserialize(*subresource_list);
-    }
-  }
-}
-
 void Predictor::TrimReferrers() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (!urls_being_trimmed_.empty())
@@ -673,8 +1056,8 @@ void Predictor::PostIncrementalTrimTask() {
     return;
   MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
-      trim_task_factory_.NewRunnableMethod(&Predictor::IncrementalTrimReferrers,
-                                           false),
+      trim_task_factory_->NewRunnableMethod(
+          &Predictor::IncrementalTrimReferrers, false),
       kDurationBetweenTrimmingIncrements.InMilliseconds());
 }
 
@@ -693,7 +1076,9 @@ void Predictor::IncrementalTrimReferrers(bool trim_all_now) {
   PostIncrementalTrimTask();
 }
 
-//------------------------------------------------------------------------------
+// ---------------------- End IO methods. -------------------------------------
+
+//-----------------------------------------------------------------------------
 
 Predictor::HostNameQueue::HostNameQueue() {
 }
@@ -729,15 +1114,69 @@ GURL Predictor::HostNameQueue::Pop() {
   return url;
 }
 
-void Predictor::DeserializeReferrersThenDelete(ListValue* referral_list) {
-    DeserializeReferrers(*referral_list);
-    delete referral_list;
+//-----------------------------------------------------------------------------
+// Member definitions for InitialObserver class.
+
+Predictor::InitialObserver::InitialObserver() {
 }
 
+Predictor::InitialObserver::~InitialObserver() {
+}
 
-//------------------------------------------------------------------------------
+void Predictor::InitialObserver::Append(const GURL& url,
+                                        Predictor* predictor) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  // TODO(rlp): Do we really need the predictor check here?
+  if (NULL == predictor)
+    return;
+  if (kStartupResolutionCount <= first_navigations_.size())
+    return;
+
+  DCHECK(url.SchemeIs("http") || url.SchemeIs("https"));
+  DCHECK_EQ(url, Predictor::CanonicalizeUrl(url));
+  if (first_navigations_.find(url) == first_navigations_.end())
+    first_navigations_[url] = base::TimeTicks::Now();
+}
+
+void Predictor::InitialObserver::GetInitialDnsResolutionList(
+    base::ListValue* startup_list) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(startup_list);
+  startup_list->Clear();
+  DCHECK_EQ(0u, startup_list->GetSize());
+  startup_list->Append(
+      new base::FundamentalValue(kPredictorStartupFormatVersion));
+  for (FirstNavigations::iterator it = first_navigations_.begin();
+       it != first_navigations_.end();
+       ++it) {
+    DCHECK(it->first == Predictor::CanonicalizeUrl(it->first));
+    startup_list->Append(new StringValue(it->first.spec()));
+  }
+}
+
+void Predictor::InitialObserver::GetFirstResolutionsHtml(
+    std::string* output) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  UrlInfo::UrlInfoTable resolution_list;
+  {
+    for (FirstNavigations::iterator it(first_navigations_.begin());
+         it != first_navigations_.end();
+         it++) {
+      UrlInfo info;
+      info.SetUrl(it->first);
+      info.set_time(it->second);
+      resolution_list.push_back(info);
+    }
+  }
+  UrlInfo::GetHtmlTable(resolution_list,
+      "Future startups will prefetch DNS records for ", false, output);
+}
+
+//-----------------------------------------------------------------------------
 // Helper functions
-//------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 
 // static
 GURL Predictor::CanonicalizeUrl(const GURL& url) {
@@ -763,5 +1202,14 @@ GURL Predictor::CanonicalizeUrl(const GURL& url) {
   return GURL(scheme + "://" + url.host() + colon_plus_port);
 }
 
+void SimplePredictor::InitNetworkPredictor(PrefService* user_prefs,
+                                           PrefService* local_state,
+                                           IOThread* io_thread) {
+  // Empty function for unittests.
+}
+
+void SimplePredictor::ShutdownOnUIThread(PrefService* user_prefs) {
+  SetShutdown(true);
+}
 
 }  // namespace chrome_browser_net

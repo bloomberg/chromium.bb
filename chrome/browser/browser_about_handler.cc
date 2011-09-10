@@ -30,7 +30,7 @@
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/memory_details.h"
 #include "chrome/browser/metrics/histogram_synchronizer.h"
-#include "chrome/browser/net/predictor_api.h"
+#include "chrome/browser/net/predictor.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/plugin_prefs.h"
 #include "chrome/browser/profiles/profile.h"
@@ -726,18 +726,20 @@ class AboutDnsHandler : public base::RefCountedThreadSafe<AboutDnsHandler> {
   // Calls FinishOnUIThread() on completion.
   void StartOnUIThread() {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    chrome_browser_net::Predictor* predictor =
+        source_->profile()->GetNetworkPredictor();
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        NewRunnableMethod(this, &AboutDnsHandler::StartOnIOThread));
+        NewRunnableMethod(this, &AboutDnsHandler::StartOnIOThread, predictor));
   }
 
-  void StartOnIOThread() {
+  void StartOnIOThread(chrome_browser_net::Predictor* predictor) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
     std::string data;
     AppendHeader(&data, 0, "About DNS");
     AppendBody(&data);
-    chrome_browser_net::PredictorGetHtmlInfo(&data);
+    chrome_browser_net::Predictor::PredictorGetHtmlInfo(predictor, &data);
     AppendFooter(&data);
 
     BrowserThread::PostTask(

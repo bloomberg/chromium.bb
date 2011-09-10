@@ -31,7 +31,7 @@
 #include "chrome/browser/extensions/pack_extension_job.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
-#include "chrome/browser/net/predictor_api.h"
+#include "chrome/browser/net/predictor.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
@@ -668,8 +668,10 @@ bool BrowserInit::LaunchWithProfile::Launch(
 
   if (command_line_.HasSwitch(switches::kDnsLogDetails))
     chrome_browser_net::EnablePredictorDetailedLog(true);
-  if (command_line_.HasSwitch(switches::kDnsPrefetchDisable))
-    chrome_browser_net::EnablePredictor(false);
+  if (command_line_.HasSwitch(switches::kDnsPrefetchDisable) &&
+      profile->GetNetworkPredictor()) {
+    profile->GetNetworkPredictor()->EnablePredictor(false);
+  }
 
   if (command_line_.HasSwitch(switches::kDumpHistogramsOnExit))
     base::StatisticsRecorder::set_dump_on_exit(true);

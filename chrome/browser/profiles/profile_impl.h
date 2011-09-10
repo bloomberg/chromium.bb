@@ -122,6 +122,7 @@ class ProfileImpl : public Profile,
   virtual ExtensionInfoMap* GetExtensionInfoMap();
   virtual PromoCounter* GetInstantPromoCounter();
   virtual ChromeURLDataManager* GetChromeURLDataManager();
+  virtual chrome_browser_net::Predictor* GetNetworkPredictor();
 
 #if defined(OS_CHROMEOS)
   virtual void ChangeAppLocale(const std::string& locale, AppLocaleChangedVia);
@@ -289,6 +290,8 @@ class ProfileImpl : public Profile,
   scoped_ptr<ChromeURLDataManager> chrome_url_data_manager_;
 
   Profile::Delegate* delegate_;
+
+  chrome_browser_net::Predictor* predictor_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileImpl);
 };

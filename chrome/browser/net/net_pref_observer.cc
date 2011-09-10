@@ -5,7 +5,7 @@
 #include "chrome/browser/net/net_pref_observer.h"
 
 #include "base/task.h"
-#include "chrome/browser/net/predictor_api.h"
+#include "chrome/browser/net/predictor.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/profiles/profile.h"
@@ -28,10 +28,14 @@ void SetEnforceThrottlingOnThrottlerManager(bool enforce) {
 }
 
 NetPrefObserver::NetPrefObserver(PrefService* prefs,
-                                 prerender::PrerenderManager* prerender_manager)
-    : prerender_manager_(prerender_manager) {
+                                 prerender::PrerenderManager* prerender_manager,
+                                 chrome_browser_net::Predictor* predictor)
+    : prerender_manager_(prerender_manager),
+      predictor_(predictor) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(prefs);
+  DCHECK(predictor);
+
   network_prediction_enabled_.Init(prefs::kNetworkPredictionEnabled, prefs,
                                    this);
   spdy_disabled_.Init(prefs::kDisableSpdy, prefs, this);
@@ -56,7 +60,7 @@ void NetPrefObserver::Observe(int type,
 void NetPrefObserver::ApplySettings(const std::string* pref_name) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  chrome_browser_net::EnablePredictor(*network_prediction_enabled_);
+  predictor_->EnablePredictor(*network_prediction_enabled_);
   if (prerender_manager_)
     prerender_manager_->set_enabled(*network_prediction_enabled_);
   net::HttpStreamFactory::set_spdy_enabled(!*spdy_disabled_);

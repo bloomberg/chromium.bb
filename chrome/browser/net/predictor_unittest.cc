@@ -13,7 +13,7 @@
 #include "base/string_number_conversions.h"
 #include "base/timer.h"
 #include "base/values.h"
-#include "chrome/browser/net/predictor_api.h"
+#include "chrome/browser/net/predictor.h"
 #include "chrome/browser/net/url_info.h"
 #include "chrome/common/net/predictor_common.h"
 #include "content/browser/browser_thread.h"
@@ -62,10 +62,9 @@ class WaitForResolutionHelper {
 class PredictorTest : public testing::Test {
  public:
   PredictorTest()
-      : io_thread_(BrowserThread::IO, &loop_),
-        host_resolver_(new net::MockCachingHostResolver()),
-        default_max_queueing_delay_(TimeDelta::FromMilliseconds(
-            PredictorInit::kMaxSpeculativeResolveQueueDelayMs)) {
+      : ui_thread_(BrowserThread::UI, &loop_),
+        io_thread_(BrowserThread::IO, &loop_),
+        host_resolver_(new net::MockCachingHostResolver()) {
   }
 
  protected:
@@ -73,6 +72,10 @@ class PredictorTest : public testing::Test {
 #if defined(OS_WIN)
     net::EnsureWinsockInit();
 #endif
+    Predictor::set_max_parallel_resolves(
+        Predictor::kMaxSpeculativeParallelResolves);
+    Predictor::set_max_queueing_delay(
+        Predictor::kMaxSpeculativeResolveQueueDelayMs);
     // Since we are using a caching HostResolver, the following latencies will
     // only be incurred by the first request, after which the result will be
     // cached internally by |host_resolver_|.
@@ -95,26 +98,19 @@ class PredictorTest : public testing::Test {
   // IMPORTANT: do not move this below |host_resolver_|; the host resolver
   // must not outlive the message loop, otherwise bad things can happen
   // (like posting to a deleted message loop).
-  MessageLoop loop_;
+  MessageLoopForUI loop_;
+  BrowserThread ui_thread_;
   BrowserThread io_thread_;
 
  protected:
   scoped_ptr<net::MockCachingHostResolver> host_resolver_;
-
-  // Shorthand to access TimeDelta of PredictorInit::kMaxQueueingDelayMs.
-  // (It would be a static constant... except style rules preclude that :-/ ).
-  const TimeDelta default_max_queueing_delay_;
 };
 
 //------------------------------------------------------------------------------
 
 TEST_F(PredictorTest, StartupShutdownTest) {
-  scoped_refptr<Predictor> testing_master(
-      new Predictor(host_resolver_.get(),
-                    default_max_queueing_delay_,
-                    PredictorInit::kMaxSpeculativeParallelResolves,
-                    false));
-  testing_master->Shutdown();
+  Predictor testing_master(true);
+  testing_master.Shutdown();
 }
 
 
@@ -123,25 +119,22 @@ TEST_F(PredictorTest, ShutdownWhenResolutionIsPendingTest) {
       new net::WaitingHostResolverProc(NULL));
   host_resolver_->Reset(resolver_proc);
 
-  scoped_refptr<Predictor> testing_master(
-      new Predictor(host_resolver_.get(),
-                    default_max_queueing_delay_,
-                    PredictorInit::kMaxSpeculativeParallelResolves,
-                    false));
+  Predictor testing_master(true);
+  testing_master.SetHostResolver(host_resolver_.get());
 
   GURL localhost("http://localhost:80");
   UrlList names;
   names.push_back(localhost);
 
-  testing_master->ResolveList(names, UrlInfo::PAGE_SCAN_MOTIVATED);
+  testing_master.ResolveList(names, UrlInfo::PAGE_SCAN_MOTIVATED);
 
   MessageLoop::current()->PostDelayedTask(FROM_HERE,
                                           new MessageLoop::QuitTask(), 500);
   MessageLoop::current()->Run();
 
-  EXPECT_FALSE(testing_master->WasFound(localhost));
+  EXPECT_FALSE(testing_master.WasFound(localhost));
 
-  testing_master->Shutdown();
+  testing_master.Shutdown();
 
   // Clean up after ourselves.
   resolver_proc->Signal();
@@ -149,11 +142,8 @@ TEST_F(PredictorTest, ShutdownWhenResolutionIsPendingTest) {
 }
 
 TEST_F(PredictorTest, SingleLookupTest) {
-  scoped_refptr<Predictor> testing_master(
-      new Predictor(host_resolver_.get(),
-                    default_max_queueing_delay_,
-                    PredictorInit::kMaxSpeculativeParallelResolves,
-                    false));
+  Predictor testing_master(true);
+  testing_master.SetHostResolver(host_resolver_.get());
 
   GURL goog("http://www.google.com:80");
 
@@ -162,30 +152,27 @@ TEST_F(PredictorTest, SingleLookupTest) {
 
   // Try to flood the predictor with many concurrent requests.
   for (int i = 0; i < 10; i++)
-    testing_master->ResolveList(names, UrlInfo::PAGE_SCAN_MOTIVATED);
+    testing_master.ResolveList(names, UrlInfo::PAGE_SCAN_MOTIVATED);
 
-  WaitForResolution(testing_master, names);
+  WaitForResolution(&testing_master, names);
 
-  EXPECT_TRUE(testing_master->WasFound(goog));
+  EXPECT_TRUE(testing_master.WasFound(goog));
 
   MessageLoop::current()->RunAllPending();
 
-  EXPECT_GT(testing_master->peak_pending_lookups(), names.size() / 2);
-  EXPECT_LE(testing_master->peak_pending_lookups(), names.size());
-  EXPECT_LE(testing_master->peak_pending_lookups(),
-            testing_master->max_concurrent_dns_lookups());
+  EXPECT_GT(testing_master.peak_pending_lookups(), names.size() / 2);
+  EXPECT_LE(testing_master.peak_pending_lookups(), names.size());
+  EXPECT_LE(testing_master.peak_pending_lookups(),
+            testing_master.max_concurrent_dns_lookups());
 
-  testing_master->Shutdown();
+  testing_master.Shutdown();
 }
 
 TEST_F(PredictorTest, ConcurrentLookupTest) {
   host_resolver_->rules()->AddSimulatedFailure("*.notfound");
 
-  scoped_refptr<Predictor> testing_master(
-      new Predictor(host_resolver_.get(),
-                    default_max_queueing_delay_,
-                    PredictorInit::kMaxSpeculativeParallelResolves,
-                    false));
+  Predictor testing_master(true);
+  testing_master.SetHostResolver(host_resolver_.get());
 
   GURL goog("http://www.google.com:80"),
       goog2("http://gmail.google.com.com:80"),
@@ -205,37 +192,34 @@ TEST_F(PredictorTest, ConcurrentLookupTest) {
 
   // Try to flood the predictor with many concurrent requests.
   for (int i = 0; i < 10; i++)
-    testing_master->ResolveList(names, UrlInfo::PAGE_SCAN_MOTIVATED);
+    testing_master.ResolveList(names, UrlInfo::PAGE_SCAN_MOTIVATED);
 
-  WaitForResolution(testing_master, names);
+  WaitForResolution(&testing_master, names);
 
-  EXPECT_TRUE(testing_master->WasFound(goog));
-  EXPECT_TRUE(testing_master->WasFound(goog3));
-  EXPECT_TRUE(testing_master->WasFound(goog2));
-  EXPECT_TRUE(testing_master->WasFound(goog4));
-  EXPECT_FALSE(testing_master->WasFound(bad1));
-  EXPECT_FALSE(testing_master->WasFound(bad2));
+  EXPECT_TRUE(testing_master.WasFound(goog));
+  EXPECT_TRUE(testing_master.WasFound(goog3));
+  EXPECT_TRUE(testing_master.WasFound(goog2));
+  EXPECT_TRUE(testing_master.WasFound(goog4));
+  EXPECT_FALSE(testing_master.WasFound(bad1));
+  EXPECT_FALSE(testing_master.WasFound(bad2));
 
   MessageLoop::current()->RunAllPending();
 
-  EXPECT_FALSE(testing_master->WasFound(bad1));
-  EXPECT_FALSE(testing_master->WasFound(bad2));
+  EXPECT_FALSE(testing_master.WasFound(bad1));
+  EXPECT_FALSE(testing_master.WasFound(bad2));
 
-  EXPECT_LE(testing_master->peak_pending_lookups(), names.size());
-  EXPECT_LE(testing_master->peak_pending_lookups(),
-            testing_master->max_concurrent_dns_lookups());
+  EXPECT_LE(testing_master.peak_pending_lookups(), names.size());
+  EXPECT_LE(testing_master.peak_pending_lookups(),
+            testing_master.max_concurrent_dns_lookups());
 
-  testing_master->Shutdown();
+  testing_master.Shutdown();
 }
 
 TEST_F(PredictorTest, MassiveConcurrentLookupTest) {
   host_resolver_->rules()->AddSimulatedFailure("*.notfound");
 
-  scoped_refptr<Predictor> testing_master(
-      new Predictor(host_resolver_.get(),
-                    default_max_queueing_delay_,
-                    PredictorInit::kMaxSpeculativeParallelResolves,
-                    false));
+  Predictor testing_master(true);
+  testing_master.SetHostResolver(host_resolver_.get());
 
   UrlList names;
   for (int i = 0; i < 100; i++)
@@ -244,17 +228,17 @@ TEST_F(PredictorTest, MassiveConcurrentLookupTest) {
 
   // Try to flood the predictor with many concurrent requests.
   for (int i = 0; i < 10; i++)
-    testing_master->ResolveList(names, UrlInfo::PAGE_SCAN_MOTIVATED);
+    testing_master.ResolveList(names, UrlInfo::PAGE_SCAN_MOTIVATED);
 
-  WaitForResolution(testing_master, names);
+  WaitForResolution(&testing_master, names);
 
   MessageLoop::current()->RunAllPending();
 
-  EXPECT_LE(testing_master->peak_pending_lookups(), names.size());
-  EXPECT_LE(testing_master->peak_pending_lookups(),
-            testing_master->max_concurrent_dns_lookups());
+  EXPECT_LE(testing_master.peak_pending_lookups(), names.size());
+  EXPECT_LE(testing_master.peak_pending_lookups(),
+            testing_master.max_concurrent_dns_lookups());
 
-  testing_master->Shutdown();
+  testing_master.Shutdown();
 }
 
 //------------------------------------------------------------------------------
@@ -352,30 +336,25 @@ static bool GetDataFromSerialization(const GURL& motivation,
 
 // Make sure nil referral lists really have no entries, and no latency listed.
 TEST_F(PredictorTest, ReferrerSerializationNilTest) {
-  scoped_refptr<Predictor> predictor(
-      new Predictor(host_resolver_.get(),
-                    default_max_queueing_delay_,
-                    PredictorInit::kMaxSpeculativeParallelResolves,
-                    false));
+  Predictor predictor(true);
+  predictor.SetHostResolver(host_resolver_.get());
+
   scoped_ptr<ListValue> referral_list(NewEmptySerializationList());
-  predictor->SerializeReferrers(referral_list.get());
+  predictor.SerializeReferrers(referral_list.get());
   EXPECT_EQ(1U, referral_list->GetSize());
   EXPECT_FALSE(GetDataFromSerialization(
     GURL("http://a.com:79"), GURL("http://b.com:78"),
       *referral_list.get(), NULL));
 
-  predictor->Shutdown();
+  predictor.Shutdown();
 }
 
 // Make sure that when a serialization list includes a value, that it can be
 // deserialized into the database, and can be extracted back out via
 // serialization without being changed.
 TEST_F(PredictorTest, ReferrerSerializationSingleReferrerTest) {
-  scoped_refptr<Predictor> predictor(
-      new Predictor(host_resolver_.get(),
-                    default_max_queueing_delay_,
-                    PredictorInit::kMaxSpeculativeParallelResolves,
-                    false));
+  Predictor predictor(true);
+  predictor.SetHostResolver(host_resolver_.get());
   const GURL motivation_url("http://www.google.com:91");
   const GURL subresource_url("http://icons.google.com:90");
   const double kUseRate = 23.4;
@@ -384,17 +363,17 @@ TEST_F(PredictorTest, ReferrerSerializationSingleReferrerTest) {
   AddToSerializedList(motivation_url, subresource_url,
       kUseRate, referral_list.get());
 
-  predictor->DeserializeReferrers(*referral_list.get());
+  predictor.DeserializeReferrers(*referral_list.get());
 
   ListValue recovered_referral_list;
-  predictor->SerializeReferrers(&recovered_referral_list);
+  predictor.SerializeReferrers(&recovered_referral_list);
   EXPECT_EQ(2U, recovered_referral_list.GetSize());
   double rate;
   EXPECT_TRUE(GetDataFromSerialization(
       motivation_url, subresource_url, recovered_referral_list, &rate));
   EXPECT_EQ(rate, kUseRate);
 
-  predictor->Shutdown();
+  predictor.Shutdown();
 }
 
 // Verify that two floats are within 1% of each other in value.
@@ -409,11 +388,8 @@ TEST_F(PredictorTest, ReferrerSerializationSingleReferrerTest) {
 
 // Make sure the Trim() functionality works as expected.
 TEST_F(PredictorTest, ReferrerSerializationTrimTest) {
-  scoped_refptr<Predictor> predictor(
-      new Predictor(host_resolver_.get(),
-                    default_max_queueing_delay_,
-                    PredictorInit::kMaxSpeculativeParallelResolves,
-                    false));
+  Predictor predictor(true);
+  predictor.SetHostResolver(host_resolver_.get());
   GURL motivation_url("http://www.google.com:110");
 
   GURL icon_subresource_url("http://icons.google.com:111");
@@ -427,10 +403,10 @@ TEST_F(PredictorTest, ReferrerSerializationTrimTest) {
   AddToSerializedList(
       motivation_url, img_subresource_url, kRateImg, referral_list.get());
 
-  predictor->DeserializeReferrers(*referral_list.get());
+  predictor.DeserializeReferrers(*referral_list.get());
 
   ListValue recovered_referral_list;
-  predictor->SerializeReferrers(&recovered_referral_list);
+  predictor.SerializeReferrers(&recovered_referral_list);
   EXPECT_EQ(2U, recovered_referral_list.GetSize());
   double rate;
   EXPECT_TRUE(GetDataFromSerialization(
@@ -445,8 +421,8 @@ TEST_F(PredictorTest, ReferrerSerializationTrimTest) {
   // Each time we Trim 24 times, the user_rate figures should reduce by a factor
   // of two,  until they are small, and then a trim will delete the whole entry.
   for (int i = 0; i < 24; ++i)
-    predictor->TrimReferrersNow();
-  predictor->SerializeReferrers(&recovered_referral_list);
+    predictor.TrimReferrersNow();
+  predictor.SerializeReferrers(&recovered_referral_list);
   EXPECT_EQ(2U, recovered_referral_list.GetSize());
   EXPECT_TRUE(GetDataFromSerialization(
       motivation_url, icon_subresource_url, recovered_referral_list, &rate));
@@ -457,8 +433,8 @@ TEST_F(PredictorTest, ReferrerSerializationTrimTest) {
   EXPECT_SIMILAR(rate, kRateImg / 2);
 
   for (int i = 0; i < 24; ++i)
-    predictor->TrimReferrersNow();
-  predictor->SerializeReferrers(&recovered_referral_list);
+    predictor.TrimReferrersNow();
+  predictor.SerializeReferrers(&recovered_referral_list);
   EXPECT_EQ(2U, recovered_referral_list.GetSize());
   EXPECT_TRUE(GetDataFromSerialization(
       motivation_url, icon_subresource_url, recovered_referral_list, &rate));
@@ -468,8 +444,8 @@ TEST_F(PredictorTest, ReferrerSerializationTrimTest) {
   EXPECT_SIMILAR(rate, kRateImg / 4);
 
   for (int i = 0; i < 24; ++i)
-    predictor->TrimReferrersNow();
-  predictor->SerializeReferrers(&recovered_referral_list);
+    predictor.TrimReferrersNow();
+  predictor.SerializeReferrers(&recovered_referral_list);
   EXPECT_EQ(2U, recovered_referral_list.GetSize());
   EXPECT_TRUE(GetDataFromSerialization(
       motivation_url, icon_subresource_url, recovered_referral_list, &rate));
@@ -480,8 +456,8 @@ TEST_F(PredictorTest, ReferrerSerializationTrimTest) {
       motivation_url, img_subresource_url, recovered_referral_list, &rate));
 
   for (int i = 0; i < 24; ++i)
-    predictor->TrimReferrersNow();
-  predictor->SerializeReferrers(&recovered_referral_list);
+    predictor.TrimReferrersNow();
+  predictor.SerializeReferrers(&recovered_referral_list);
   // Icon is also trimmed away, so entire set gets discarded.
   EXPECT_EQ(1U, recovered_referral_list.GetSize());
   EXPECT_FALSE(GetDataFromSerialization(
@@ -489,7 +465,7 @@ TEST_F(PredictorTest, ReferrerSerializationTrimTest) {
   EXPECT_FALSE(GetDataFromSerialization(
       motivation_url, img_subresource_url, recovered_referral_list, &rate));
 
-  predictor->Shutdown();
+  predictor.Shutdown();
 }
 
 
@@ -601,27 +577,24 @@ TEST_F(PredictorTest, CanonicalizeUrl) {
 }
 
 TEST_F(PredictorTest, DiscardPredictorResults) {
-  scoped_refptr<Predictor> predictor(
-      new Predictor(host_resolver_.get(),
-                    default_max_queueing_delay_,
-                    PredictorInit::kMaxSpeculativeParallelResolves,
-                    false));
+  Predictor predictor(true);
+  predictor.SetHostResolver(host_resolver_.get());
   ListValue referral_list;
-  predictor->SerializeReferrers(&referral_list);
+  predictor.SerializeReferrers(&referral_list);
   EXPECT_EQ(1U, referral_list.GetSize());
 
   GURL host_1("http://test_1");
   GURL host_2("http://test_2");
-  predictor->LearnFromNavigation(host_1, host_2);
+  predictor.LearnFromNavigation(host_1, host_2);
 
-  predictor->SerializeReferrers(&referral_list);
+  predictor.SerializeReferrers(&referral_list);
   EXPECT_EQ(2U, referral_list.GetSize());
 
-  predictor->DiscardAllResults();
-  predictor->SerializeReferrers(&referral_list);
+  predictor.DiscardAllResults();
+  predictor.SerializeReferrers(&referral_list);
   EXPECT_EQ(1U, referral_list.GetSize());
 
-  predictor->Shutdown();
+  predictor.Shutdown();
 }
 
 }  // namespace chrome_browser_net

@@ -225,3 +225,7 @@ bool Profile::IsSyncAccessible() {
   ProfileSyncService* syncService = GetProfileSyncService();
   return syncService && !syncService->IsManaged();
 }
+
+chrome_browser_net::Predictor* Profile::GetNetworkPredictor() {
+  return NULL;
+}

@@ -51,7 +51,7 @@
 #include "chrome/browser/net/chrome_dns_cert_provenance_checker.h"
 #include "chrome/browser/net/chrome_dns_cert_provenance_checker_factory.h"
 #include "chrome/browser/net/chrome_net_log.h"
-#include "chrome/browser/net/predictor_api.h"
+#include "chrome/browser/net/predictor.h"
 #include "chrome/browser/net/sdch_dictionary_fetcher.h"
 #include "chrome/browser/plugin_prefs.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
@@ -974,6 +974,88 @@ void ChromeBrowserMainParts::ConnectBackupJobsFieldTrial() {
   }
 }
 
+void ChromeBrowserMainParts::PredictorFieldTrial() {
+  const base::FieldTrial::Probability kDivisor = 1000;
+  // For each option (i.e., non-default), we have a fixed probability.
+  // 0.1% probability.
+  const base::FieldTrial::Probability kProbabilityPerGroup = 1;
+
+  // After June 30, 2011 builds, it will always be in default group
+  // (default_enabled_prefetch).
+  scoped_refptr<base::FieldTrial> trial(
+      new base::FieldTrial("DnsImpact", kDivisor,
+                           "default_enabled_prefetch", 2011, 10, 30));
+
+  // First option is to disable prefetching completely.
+  int disabled_prefetch = trial->AppendGroup("disabled_prefetch",
+                                              kProbabilityPerGroup);
+
+  // We're running two experiments at the same time.  The first set of trials
+  // modulates the delay-time until we declare a congestion event (and purge
+  // our queue).  The second modulates the number of concurrent resolutions
+  // we do at any time.  Users are in exactly one trial (or the default) during
+  // any one run, and hence only one experiment at a time.
+  // Experiment 1:
+  // Set congestion detection at 250, 500, or 750ms, rather than the 1 second
+  // default.
+  int max_250ms_prefetch = trial->AppendGroup("max_250ms_queue_prefetch",
+                                              kProbabilityPerGroup);
+  int max_500ms_prefetch = trial->AppendGroup("max_500ms_queue_prefetch",
+                                              kProbabilityPerGroup);
+  int max_750ms_prefetch = trial->AppendGroup("max_750ms_queue_prefetch",
+                                              kProbabilityPerGroup);
+  // Set congestion detection at 2 seconds instead of the 1 second default.
+  int max_2s_prefetch = trial->AppendGroup("max_2s_queue_prefetch",
+                                           kProbabilityPerGroup);
+  // Experiment 2:
+  // Set max simultaneous resoultions to 2, 4, or 6, and scale the congestion
+  // limit proportionally (so we don't impact average probability of asserting
+  // congesion very much).
+  int max_2_concurrent_prefetch = trial->AppendGroup(
+      "max_2 concurrent_prefetch", kProbabilityPerGroup);
+  int max_4_concurrent_prefetch = trial->AppendGroup(
+      "max_4 concurrent_prefetch", kProbabilityPerGroup);
+  int max_6_concurrent_prefetch = trial->AppendGroup(
+      "max_6 concurrent_prefetch", kProbabilityPerGroup);
+
+  if (trial->group() != disabled_prefetch) {
+    // Initialize the DNS prefetch system.
+    size_t max_parallel_resolves =
+        chrome_browser_net::Predictor::kMaxSpeculativeParallelResolves;
+    int max_queueing_delay_ms =
+        chrome_browser_net::Predictor::kMaxSpeculativeResolveQueueDelayMs;
+
+    if (trial->group() == max_2_concurrent_prefetch)
+      max_parallel_resolves = 2;
+    else if (trial->group() == max_4_concurrent_prefetch)
+      max_parallel_resolves = 4;
+    else if (trial->group() == max_6_concurrent_prefetch)
+      max_parallel_resolves = 6;
+    chrome_browser_net::Predictor::set_max_parallel_resolves(
+        max_parallel_resolves);
+
+    if (trial->group() == max_250ms_prefetch) {
+      max_queueing_delay_ms =
+         (250 * chrome_browser_net::Predictor::kTypicalSpeculativeGroupSize) /
+         max_parallel_resolves;
+    } else if (trial->group() == max_500ms_prefetch) {
+      max_queueing_delay_ms =
+          (500 * chrome_browser_net::Predictor::kTypicalSpeculativeGroupSize) /
+          max_parallel_resolves;
+    } else if (trial->group() == max_750ms_prefetch) {
+      max_queueing_delay_ms =
+          (750 * chrome_browser_net::Predictor::kTypicalSpeculativeGroupSize) /
+          max_parallel_resolves;
+    } else if (trial->group() == max_2s_prefetch) {
+      max_queueing_delay_ms =
+          (2000 * chrome_browser_net::Predictor::kTypicalSpeculativeGroupSize) /
+          max_parallel_resolves;
+    }
+    chrome_browser_net::Predictor::set_max_queueing_delay(
+        max_queueing_delay_ms);
+  }
+}
+
 // Test the impact on subsequent Google searches of getting suggestions from
 // www.google.TLD instead of clients1.google.TLD.
 void ChromeBrowserMainParts::SuggestPrefixFieldTrial() {
@@ -1045,6 +1127,7 @@ void ChromeBrowserMainParts::SetupFieldTrials(bool metrics_recording_enabled,
   ConnectBackupJobsFieldTrial();
   SuggestPrefixFieldTrial();
   WarmConnectionFieldTrial();
+  PredictorFieldTrial();
 }
 
 // -----------------------------------------------------------------------------
@@ -1558,20 +1641,6 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunInternal() {
   if (base::win::GetVersion() >= base::win::VERSION_VISTA)
     RegisterApplicationRestart(parsed_command_line());
 #endif  // OS_WIN
-
-  // Initialize and maintain network predictor module, which handles DNS
-  // pre-resolution, as well as TCP/IP connection pre-warming.
-  // This also registers an observer to discard data when closing incognito
-  // mode.
-  bool preconnect_enabled = true;  // Default status (easy to change!).
-  if (parsed_command_line().HasSwitch(switches::kDisablePreconnect))
-    preconnect_enabled = false;
-  else if (parsed_command_line().HasSwitch(switches::kEnablePreconnect))
-    preconnect_enabled = true;
-  chrome_browser_net::PredictorInit dns_prefetch(
-      user_prefs,
-      local_state,
-      preconnect_enabled);
 
 #if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
   // Init the RLZ library. This just binds the dll and schedules a task on the

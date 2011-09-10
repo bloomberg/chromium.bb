@@ -12,6 +12,8 @@
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/net/chrome_net_log.h"
 #include "chrome/browser/net/chrome_network_delegate.h"
+#include "chrome/browser/net/connect_interceptor.h"
+#include "chrome/browser/net/predictor.h"
 #include "chrome/browser/net/sqlite_origin_bound_cert_store.h"
 #include "chrome/browser/net/sqlite_persistent_cookie_store.h"
 #include "chrome/browser/prefs/pref_member.h"
@@ -25,6 +27,7 @@
 #include "net/base/origin_bound_cert_service.h"
 #include "net/ftp/ftp_network_layer.h"
 #include "net/http/http_cache.h"
+#include "net/url_request/url_request_job_factory.h"
 
 ProfileImplIOData::Handle::Handle(Profile* profile)
     : io_data_(new ProfileImplIOData),
@@ -43,6 +46,8 @@ ProfileImplIOData::Handle::~Handle() {
   if (extensions_request_context_getter_)
     extensions_request_context_getter_->CleanupOnUIThread();
 
+  io_data_->predictor_->ShutdownOnUIThread(profile_->GetPrefs());
+
   // Clean up all isolated app request contexts.
   for (ChromeURLRequestContextGetterMap::iterator iter =
            app_request_context_getter_map_.begin();
@@ -54,16 +59,22 @@ ProfileImplIOData::Handle::~Handle() {
   io_data_->ShutdownOnUIThread();
 }
 
-void ProfileImplIOData::Handle::Init(const FilePath& cookie_path,
-                                     const FilePath& origin_bound_cert_path,
-                                     const FilePath& cache_path,
-                                     int cache_max_size,
-                                     const FilePath& media_cache_path,
-                                     int media_cache_max_size,
-                                     const FilePath& extensions_cookie_path,
-                                     const FilePath& app_path) {
+void ProfileImplIOData::Handle::Init(
+      const FilePath& cookie_path,
+      const FilePath& origin_bound_cert_path,
+      const FilePath& cache_path,
+      int cache_max_size,
+      const FilePath& media_cache_path,
+      int media_cache_max_size,
+      const FilePath& extensions_cookie_path,
+      const FilePath& app_path,
+      chrome_browser_net::Predictor* predictor,
+      PrefService* local_state,
+      IOThread* io_thread) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!io_data_->lazy_params_.get());
+  DCHECK(predictor);
+
   LazyParams* lazy_params = new LazyParams;
 
   lazy_params->cookie_path = cookie_path;
@@ -78,6 +89,11 @@ void ProfileImplIOData::Handle::Init(const FilePath& cookie_path,
 
   // Keep track of isolated app path separately so we can use it on demand.
   io_data_->app_path_ = app_path;
+
+  io_data_->predictor_.reset(predictor);
+  io_data_->predictor_->InitNetworkPredictor(profile_->GetPrefs(),
+                                             local_state,
+                                             io_thread);
 }
 
 base::Callback<ChromeURLDataManagerBackend*(void)>
@@ -335,6 +351,9 @@ void ProfileImplIOData::LazyInitializeInternal(
   main_context->set_job_factory(job_factory());
   media_request_context_->set_job_factory(job_factory());
   extensions_context->set_job_factory(job_factory());
+
+  job_factory()->AddInterceptor(
+      new chrome_browser_net::ConnectInterceptor(predictor_.get()));
 
   lazy_params_.reset();
 }

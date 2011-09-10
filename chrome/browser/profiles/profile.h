@@ -52,6 +52,10 @@ namespace speech_input {
 class SpeechRecognizer;
 }
 
+namespace chrome_browser_net {
+class Predictor;
+}
+
 class AutocompleteClassifier;
 class BookmarkModel;
 class ChromeAppCacheService;
@@ -542,6 +546,8 @@ class Profile : public content::BrowserContext {
 
   // Creates an OffTheRecordProfile which points to this Profile.
   Profile* CreateOffTheRecordProfile();
+
+  virtual chrome_browser_net::Predictor* GetNetworkPredictor();
 
  protected:
   friend class OffTheRecordProfileImpl;

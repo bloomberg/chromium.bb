@@ -153,7 +153,13 @@ TabContentsView* ChromeContentBrowserClient::CreateTabContentsView(
 
 void ChromeContentBrowserClient::RenderViewHostCreated(
     RenderViewHost* render_view_host) {
-  new ChromeRenderViewHostObserver(render_view_host);
+
+  SiteInstance* site_instance = render_view_host->site_instance();
+  Profile* profile = Profile::FromBrowserContext(
+      site_instance->browsing_instance()->browser_context());
+
+  new ChromeRenderViewHostObserver(render_view_host,
+                                   profile->GetNetworkPredictor());
   new ExtensionMessageHandler(render_view_host);
 }
 
