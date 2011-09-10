@@ -68,10 +68,12 @@ document.documentElement.setAttribute('touchui', true);
 </head>
 
 <body>
-  <div id="notification" class="inactive">
-    <span></span>
-    <div id="notificationLinks"></div>
-    <button class="close-button"></button>
+  <div id="notification-container" class="inactive" hidden>
+    <div id="notification">
+      <span></span>
+      <div id="notificationLinks"></div>
+      <button class="close-button"></button>
+    </div>
   </div>
 
   <div id="card-slider-frame">

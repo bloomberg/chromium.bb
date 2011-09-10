@@ -56,6 +56,12 @@ cr.define('ntp4', function() {
   var dotList;
 
   /**
+   * The 'notification-container' element.
+   * @type {!Element|undefined}
+   */
+  var notificationContainer;
+
+  /**
    * The left and right paging buttons.
    * @type {!Element|undefined}
    */
@@ -154,6 +160,10 @@ cr.define('ntp4', function() {
     ntp4.initializePageSwitcher(pageSwitcherStart);
     pageSwitcherEnd = getRequiredElement('page-switcher-end');
     ntp4.initializePageSwitcher(pageSwitcherEnd);
+
+    notificationContainer = getRequiredElement('notification-container');
+    notificationContainer.addEventListener(
+        'webkitTransitionEnd', onNotificationTransitionEnd);
 
     // Initialize the cardSlider without any cards at the moment
     var sliderFrame = getRequiredElement('card-slider-frame');
@@ -711,7 +721,8 @@ cr.define('ntp4', function() {
     };
 
     var timeout = opt_timeout || 10000;
-    $('notification').classList.remove('inactive');
+    notificationContainer.hidden = false;
+    notificationContainer.classList.remove('inactive');
     notificationTimeout_ = window.setTimeout(hideNotification, timeout);
   }
 
@@ -719,7 +730,16 @@ cr.define('ntp4', function() {
    * Hide the notification bubble.
    */
   function hideNotification() {
-    $('notification').classList.add('inactive');
+    notificationContainer.classList.add('inactive');
+  }
+
+  /**
+   * When done fading out, set hidden to true so the notification can't be
+   * tabbed to or clicked.
+   */
+  function onNotificationTransitionEnd(e) {
+    if (notificationContainer.classList.contains('inactive'));
+      notificationContainer.hidden = true;
   }
 
   function setRecentlyClosedTabs(dataItems) {

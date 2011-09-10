@@ -27,6 +27,21 @@ body {
   display: none !important;
 }
 
+#notification-container {
+  display: block;
+  margin-top: 2px;
+  position: relative;
+  text-align: center;
+  z-index: 100;
+  -webkit-transition-duration: 0.1s;
+  -webkit-transition-property: opacity;
+}
+
+#notification-container.inactive {
+  opacity: 0;
+  -webkit-transition-duration: 0.2s;
+}
+
 #notification {
   background-color: #FFF199;
   border: 1px solid lightGrey;
@@ -34,19 +49,7 @@ body {
   color: black;
   display: inline-block;
   font-weight: bold;
-  margin-top: 2px;
-  opacity: 100%;
   padding: 7px 15px;
-  position: relative;
-  z-index: 100;
-  -webkit-transition-duration: 0.1s;
-  -webkit-transition-property: opacity;
-}
-
-#notification.inactive {
-  display: inline-block;
-  opacity: 0;
-  -webkit-transition-duration: 0.2s;
 }
 
 #notification > div > div,
