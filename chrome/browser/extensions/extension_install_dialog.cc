@@ -17,7 +17,7 @@ enum AutoConfirmForTest {
 };
 AutoConfirmForTest auto_confirm_for_tests = DO_NOT_SKIP;
 
-void ShowExtensionInstallDialogForManifest(
+bool ShowExtensionInstallDialogForManifest(
     Profile *profile,
     ExtensionInstallUI::Delegate* delegate,
     const DictionaryValue* manifest,
@@ -49,7 +49,7 @@ void ShowExtensionInstallDialogForManifest(
       id,
       &init_errors);
   if (!dummy_extension->get()) {
-    return;
+    return false;
   }
 
   if (icon->empty())
@@ -63,7 +63,7 @@ void ShowExtensionInstallDialogForManifest(
       delegate->InstallUIProceed();
     else
       delegate->InstallUIAbort(true);
-    return;
+    return true;
   }
 
   ExtensionInstallUI::Prompt filled_out_prompt = prompt;
@@ -75,6 +75,7 @@ void ShowExtensionInstallDialogForManifest(
                              dummy_extension->get(),
                              icon,
                              filled_out_prompt);
+  return true;
 }
 
 void SetExtensionInstallDialogForManifestAutoConfirmForTests(

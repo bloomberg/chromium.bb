@@ -35,7 +35,9 @@ void ShowExtensionInstallDialog(Profile* profile,
 // that's parsed is returned via |dummy_extension|. |prompt| should be fully
 // populated except for the permissions field, which will be extracted from the
 // extension.
-void ShowExtensionInstallDialogForManifest(
+// Returns true if |dummy_extension| is valid and delegate methods will be
+// called.
+bool ShowExtensionInstallDialogForManifest(
     Profile *profile,
     ExtensionInstallUI::Delegate* delegate,
     const base::DictionaryValue* manifest,

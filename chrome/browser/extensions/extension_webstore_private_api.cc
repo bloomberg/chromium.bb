@@ -258,7 +258,7 @@ void BeginInstallWithManifestFunction::OnWebstoreParseSuccess(
 
   ExtensionInstallUI::Prompt prompt(ExtensionInstallUI::INSTALL_PROMPT);
 
-  ShowExtensionInstallDialogForManifest(
+  if (!ShowExtensionInstallDialogForManifest(
       profile(),
       this,
       parsed_manifest,
@@ -267,8 +267,7 @@ void BeginInstallWithManifestFunction::OnWebstoreParseSuccess(
       "", // no localized description
       &icon_,
       prompt,
-      &dummy_extension_);
-  if (!dummy_extension_.get()) {
+      &dummy_extension_)) {
     OnWebstoreParseFailure(WebstoreInstallHelper::Delegate::MANIFEST_ERROR,
                            kInvalidManifestError);
     return;

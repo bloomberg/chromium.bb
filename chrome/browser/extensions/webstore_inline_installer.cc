@@ -300,17 +300,15 @@ void WebstoreInlineInstaller::OnWebstoreParseSuccess(
                                       average_rating_,
                                       rating_count_);
 
-  ShowExtensionInstallDialogForManifest(profile,
-                                        this,
-                                        manifest,
-                                        id_,
-                                        localized_name_,
-                                        localized_description_,
-                                        &icon_,
-                                        prompt,
-                                        &dummy_extension_);
-
-  if (!dummy_extension_.get()) {
+  if (!ShowExtensionInstallDialogForManifest(profile,
+                                             this,
+                                             manifest,
+                                             id_,
+                                             localized_name_,
+                                             localized_description_,
+                                             &icon_,
+                                             prompt,
+                                             &dummy_extension_)) {
     CompleteInstall(kInvalidManifestError);
     return;
   }
