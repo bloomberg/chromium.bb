@@ -326,13 +326,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, CreatePanelOnOverflow) {
   TestCreatePanelOnOverflow();
 }
 
-#if defined(TOOLKIT_GTK) || defined(OS_WIN)
-#define MAYBE_DragPanels DragPanels
-#else
-#define MAYBE_DragPanels DISABLED_DragPanels
-#endif
-
-IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MAYBE_DragPanels) {
+IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DragPanels) {
   static const int max_panels = 3;
   static const int zero_delta = 0;
   static const int small_delta = 10;

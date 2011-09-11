@@ -22,12 +22,16 @@
 #import "chrome/browser/ui/cocoa/menu_controller.h"
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_browser_window_cocoa.h"
+#include "chrome/browser/ui/panels/panel_manager.h"
 #include "chrome/browser/ui/panels/panel_settings_menu_model.h"
 #import "chrome/browser/ui/panels/panel_titlebar_view_cocoa.h"
 #include "chrome/browser/ui/toolbar/encoding_menu_controller.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/common/notification_service.h"
 
 const int kMinimumWindowSize = 1;
+const double kBoundsChangeAnimationDuration = 0.25;
 
 // Replicate specific 10.6 SDK declarations for building with prior SDKs.
 #if !defined(MAC_OS_X_VERSION_10_6) || \
@@ -39,13 +43,18 @@ enum {
 
 #endif  // MAC_OS_X_VERSION_10_6
 
+// In UNIT_TESTS, this is set to YES to wait on nonblocking animations.
+static BOOL g_reportAnimationStatus = NO;
+
 @implementation PanelWindowControllerCocoa
 
 - (id)initWithBrowserWindow:(PanelBrowserWindowCocoa*)window {
   NSString* nibpath =
       [base::mac::MainAppBundle() pathForResource:@"Panel" ofType:@"nib"];
-  if ((self = [super initWithWindowNibPath:nibpath owner:self]))
+  if ((self = [super initWithWindowNibPath:nibpath owner:self])) {
     windowShim_.reset(window);
+    animateOnBoundsChange_ = YES;
+  }
   return self;
 }
 
@@ -259,7 +268,8 @@ enum {
 // signal), window will be unconditionally closed. Clean up.
 - (void)windowWillClose:(NSNotification*)notification {
   DCHECK(windowShim_->browser()->tabstrip_model()->empty());
-
+  // Avoid callbacks from a nonblocking animation in progress, if any.
+  [self terminateBoundsAnimation];
   windowShim_->didCloseNativeWindow();
   [self autorelease];
 }
@@ -277,6 +287,67 @@ enum {
   [NSMenu popUpContextMenu:[settingsMenuController menu]
                  withEvent:[NSApp currentEvent]
                    forView:button];
+}
+
+- (void)startDrag {
+  animateOnBoundsChange_ = NO;
+  windowShim_->panel()->manager()->StartDragging(windowShim_->panel());
+}
+
+- (void)endDrag:(BOOL)cancelled {
+  animateOnBoundsChange_ = YES;
+  windowShim_->panel()->manager()->EndDragging(cancelled);
+}
+
+- (void)dragWithDeltaX:(int)deltaX {
+  windowShim_->panel()->manager()->Drag(deltaX);
+}
+
+- (void)setPanelFrame:(NSRect)frame {
+  if (!animateOnBoundsChange_) {
+    [[self window] setFrame:frame display:YES animate:NO];
+    return;
+  }
+
+  NSDictionary *windowResize = [NSDictionary dictionaryWithObjectsAndKeys:
+      [self window], NSViewAnimationTargetKey,
+      [NSValue valueWithRect:frame], NSViewAnimationEndFrameKey, nil];
+
+  NSArray *animations = [NSArray arrayWithObjects:windowResize, nil];
+
+  // Terminate previous animation, if it is still playing.
+  [self terminateBoundsAnimation];
+  boundsAnimation_ =
+      [[NSViewAnimation alloc] initWithViewAnimations:animations];
+  [boundsAnimation_ setDelegate:self];
+
+  [boundsAnimation_ setAnimationBlockingMode: NSAnimationNonblocking];
+  [boundsAnimation_ setDuration: kBoundsChangeAnimationDuration];
+  [boundsAnimation_ startAnimation];
+}
+
+- (void)animationDidEnd:(NSAnimation*)animation {
+  if (!g_reportAnimationStatus)
+    return;
+
+  NotificationService::current()->Notify(
+      chrome::NOTIFICATION_PANEL_BOUNDS_ANIMATIONS_FINISHED,
+      Source<Panel>(windowShim_->panel()),
+      NotificationService::NoDetails());
+}
+
+- (void)terminateBoundsAnimation {
+  if (!boundsAnimation_)
+    return;
+  [boundsAnimation_ stopAnimation];
+  [boundsAnimation_ setDelegate:nil];
+  [boundsAnimation_ release];
+}
+
+// TestingAPI interface implementation
+
++ (void)enableBoundsAnimationNotifications {
+  g_reportAnimationStatus = YES;
 }
 
 @end
