@@ -165,7 +165,8 @@ remoting.ClientSession.prototype.createPluginAndConnect =
 remoting.ClientSession.prototype.removePlugin = function() {
   var plugin = document.getElementById(this.PLUGIN_ID);
   if (plugin) {
-    plugin.parentNode.removeChild(plugin);
+    var parentNode = this.plugin.parentNode;
+    parentNode.removeChild(plugin);
     plugin = null;
   }
 }
@@ -357,60 +358,75 @@ remoting.ClientSession.prototype.setState_ = function(state) {
 };
 
 /**
- * This is a callback that gets called when the desktop size contained in the
- * the plugin has changed.
+ * This is a callback that gets called when the window is resized.
+ *
+ * @private
+ * @return {void} Nothing.
+ */
+remoting.ClientSession.prototype.onWindowSizeChanged = function() {
+  remoting.debug.log('window size changed: ' +
+                     window.innerWidth + 'x' +
+                     window.innerHeight);
+  this.updateDimensions();
+};
+
+/**
+ * This is a callback that gets called when the plugin notifies us of a change
+ * in the size of the remote desktop.
  *
  * @private
  * @return {void} Nothing.
  */
 remoting.ClientSession.prototype.onDesktopSizeChanged_ = function() {
-  var width = this.plugin.desktopWidth;
-  var height = this.plugin.desktopHeight;
-  remoting.debug.log('desktop size changed: ' + width + 'x' + height);
-  this.plugin.width = width;
-  this.plugin.height = height;
+  remoting.debug.log('desktop size changed: ' +
+                     this.plugin.desktopWidth + 'x' +
+                     this.plugin.desktopHeight);
+  this.updateDimensions();
 };
 
 /**
- * Informs the plugin that it should scale itself.
+ * Refreshes the plugin's dimensions, taking into account the sizes of the
+ * remote desktop and client window, and the current scale-to-fit setting.
  *
  * @param {boolean} shouldScale If the plugin should scale itself.
  * @return {void} Nothing.
  */
-remoting.ClientSession.prototype.setScaleToFit = function(shouldScale) {
-  if (shouldScale) {
-    if (this.plugin.desktopWidth == 0 ||
-        this.plugin.desktopHeight == 0) {
-      remoting.debug.log('desktop size is not known yet.');
-      return;
-    }
+remoting.ClientSession.prototype.updateDimensions = function() {
+  if (this.plugin.desktopWidth == 0 ||
+      this.plugin.desktopHeight == 0)
+    return;
 
-    // Make sure both width and height are multiples of two.
-    var width = window.innerWidth;
-    var height = window.innerHeight;
-    if (width % 2 == 1)
-      --width;
-    if (height % 2 == 1)
-      --height;
+  var windowWidth = window.innerWidth;
+  var windowHeight = window.innerHeight;
+  var scale = 1.0;
 
-    var scaleFitHeight = 1.0 * height / this.plugin.desktopHeight;
-    var scaleFitWidth = 1.0 * width / this.plugin.desktopWidth;
-    var scale = Math.min(scaleFitHeight, scaleFitWidth);
-    if (scale > 1.0) {
-      remoting.debug.log('scale up is not supported');
-      scale = 1.0;
-    }
-
-    this.plugin.width = this.plugin.desktopWidth * scale;
-    this.plugin.height = this.plugin.desktopHeight * scale;
-  } else {
-    this.plugin.width = this.plugin.desktopWidth;
-    this.plugin.height = this.plugin.desktopHeight;
+  if (remoting.scaleToFit) {
+    var scaleFitHeight = 1.0 * windowHeight / this.plugin.desktopHeight;
+    var scaleFitWidth = 1.0 * windowWidth / this.plugin.desktopWidth;
+    scale = Math.min(1.0, scaleFitHeight, scaleFitWidth);
   }
-  remoting.debug.log('plugin size is now: ' +
-                     this.plugin.width + ' x ' + this.plugin.height + '.');
-  this.plugin.setScaleToFit(shouldScale);
-  remoting.debug.log('scale to fit is now: ' + shouldScale);
+
+  // Resize the plugin if necessary.
+  this.plugin.width = this.plugin.desktopWidth * scale;
+  this.plugin.height = this.plugin.desktopHeight * scale;
+
+  // Position the container.
+  // TODO(wez): We should take into account scrollbars when positioning.
+  var parentNode = this.plugin.parentNode;
+  if (this.plugin.width < windowWidth)
+    parentNode.style.left = (windowWidth - this.plugin.width) / 2 + 'px';
+  else
+    parentNode.style.left = 0;
+  if (this.plugin.height < windowHeight)
+    parentNode.style.top = (windowHeight - this.plugin.height) / 2 + 'px';
+  else
+    parentNode.style.top = 0;
+
+  remoting.debug.log('plugin dimensions: ' +
+                     parentNode.style.left + ',' +
+                     parentNode.style.top + '-' +
+                     this.plugin.width + 'x' + this.plugin.height + '.');
+  this.plugin.setScaleToFit(remoting.scaleToFit);
 };
 
 /**

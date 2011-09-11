@@ -652,7 +652,17 @@ remoting.toggleScaleToFit = function(button) {
   } else {
     removeClass(button, 'toggle-button-active');
   }
-  remoting.session.setScaleToFit(remoting.scaleToFit);
+  remoting.session.updateDimensions();
+}
+
+/**
+ * Update the remoting client layout in response to a resize event.
+ *
+ * @return {void} Nothing.
+ */
+remoting.onResize = function() {
+  if (remoting.session)
+    remoting.session.onWindowSizeChanged();
 }
 
 /**

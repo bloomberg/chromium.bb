@@ -27,6 +27,7 @@ found in the LICENSE file.
 
   <body onBeforeUnload="return remoting.promptClose();"
         onLoad="remoting.init();"
+        onResize="remoting.onResize();"
         onUnload="remoting.disconnect();">
 
     <!-- loading-mode is initially visible, but becomes hidden as soon as an
