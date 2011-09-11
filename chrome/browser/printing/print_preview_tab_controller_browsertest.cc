@@ -203,8 +203,16 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewTabControllerBrowserTest,
 }
 
 // Test that print preview tabs created by pop-up windows are placed correctly.
+#if defined(OS_LINUX) && defined(TOOLKIT_VIEWS)
+// See http://crbug.com/96172.
+#define MAYBE_OpenPreviewTabFromPopupInCorrectPosition \
+    FAILS_OpenPreviewTabFromPopupInCorrectPosition
+#else
+#define MAYBE_OpenPreviewTabFromPopupInCorrectPosition \
+    OpenPreviewTabFromPopupInCorrectPosition
+#endif // defined(OS_LINUX) && defined(TOOLKIT_VIEWS)
 IN_PROC_BROWSER_TEST_F(PrintPreviewTabControllerBrowserTest,
-                       OpenPreviewTabFromPopupInCorrectPosition) {
+                       MAYBE_OpenPreviewTabFromPopupInCorrectPosition) {
   const int kTabCount = 4;
   // Create kTabCount - 1 tabs since we start with 1 tab already.
   for (int i = 0; i < kTabCount - 1; ++i) {
