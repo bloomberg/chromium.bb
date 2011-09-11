@@ -16,6 +16,11 @@
 
 namespace child_process_logging {
 
+using base::mac::SetCrashKeyValueFuncPtr;
+using base::mac::ClearCrashKeyValueFuncPtr;
+using base::mac::SetCrashKeyValue;
+using base::mac::ClearCrashKey;
+
 const int kMaxNumCrashURLChunks = 8;
 const int kMaxNumURLChunkValueLength = 255;
 const char *kUrlChunkFormatStr = "url-chunk-%d";
@@ -30,18 +35,9 @@ const char *kNumberOfViews = "num-views";
 NSString* const kNumExtensionsName = @"num-extensions";
 NSString* const kExtensionNameFormat = @"extension-%d";
 
-static SetCrashKeyValueFuncPtr g_set_key_func;
-static ClearCrashKeyValueFuncPtr g_clear_key_func;
-
 // Account for the terminating null character.
 static const size_t kClientIdSize = 32 + 1;
 static char g_client_id[kClientIdSize];
-
-void SetCrashKeyFunctions(SetCrashKeyValueFuncPtr set_key_func,
-                          ClearCrashKeyValueFuncPtr clear_key_func) {
-  g_set_key_func = set_key_func;
-  g_clear_key_func = clear_key_func;
-}
 
 void SetActiveURLImpl(const GURL& url,
                       SetCrashKeyValueFuncPtr set_key_func,
@@ -94,8 +90,7 @@ void SetClientIdImpl(const std::string& client_id,
 }
 
 void SetActiveURL(const GURL& url) {
-  if (g_set_key_func && g_clear_key_func)
-    SetActiveURLImpl(url, g_set_key_func, g_clear_key_func);
+  SetActiveURLImpl(url, SetCrashKeyValue, ClearCrashKey);
 }
 
 void SetClientId(const std::string& client_id) {
@@ -103,8 +98,7 @@ void SetClientId(const std::string& client_id) {
   ReplaceSubstringsAfterOffset(&str, 0, "-", "");
 
   base::strlcpy(g_client_id, str.c_str(), kClientIdSize);
-  if (g_set_key_func)
-    SetClientIdImpl(str, g_set_key_func);
+    SetClientIdImpl(str, SetCrashKeyValue);
 
   std::wstring wstr = ASCIIToWide(str);
   GoogleUpdateSettings::SetMetricsId(wstr);
@@ -115,12 +109,10 @@ std::string GetClientId() {
 }
 
 void SetActiveExtensions(const std::set<std::string>& extension_ids) {
-  if (!g_set_key_func)
-    return;
-
   // Log the count separately to track heavy users.
   const int count = static_cast<int>(extension_ids.size());
-  g_set_key_func(kNumExtensionsName, [NSString stringWithFormat:@"%i", count]);
+  SetCrashKeyValue(kNumExtensionsName,
+                   [NSString stringWithFormat:@"%i", count]);
 
   // Record up to |kMaxReportedActiveExtensions| extensions, clearing
   // keys if there aren't that many.
@@ -128,10 +120,10 @@ void SetActiveExtensions(const std::set<std::string>& extension_ids) {
   for (int i = 0; i < kMaxReportedActiveExtensions; ++i) {
     NSString* key = [NSString stringWithFormat:kExtensionNameFormat, i];
     if (iter != extension_ids.end()) {
-      g_set_key_func(key, [NSString stringWithUTF8String:iter->c_str()]);
+      SetCrashKeyValue(key, [NSString stringWithUTF8String:iter->c_str()]);
       ++iter;
     } else {
-      g_clear_key_func(key);
+      ClearCrashKey(key);
     }
   }
 }
@@ -166,8 +158,7 @@ void SetGpuInfoImpl(const GPUInfo& gpu_info,
 }
 
 void SetGpuInfo(const GPUInfo& gpu_info) {
-  if (g_set_key_func)
-    SetGpuInfoImpl(gpu_info, g_set_key_func);
+    SetGpuInfoImpl(gpu_info, SetCrashKeyValue);
 }
 
 
@@ -179,8 +170,7 @@ void SetNumberOfViewsImpl(int number_of_views,
 }
 
 void SetNumberOfViews(int number_of_views) {
-  if (g_set_key_func)
-    SetNumberOfViewsImpl(number_of_views, g_set_key_func);
+    SetNumberOfViewsImpl(number_of_views, SetCrashKeyValue);
 }
 
 }  // namespace child_process_logging

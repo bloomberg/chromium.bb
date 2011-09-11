@@ -16,6 +16,7 @@ extern "C" {
 #include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
+#include "base/mac/crash_logging.h"
 #include "base/mac/mac_util.h"
 #include "base/rand_util_c.h"
 #include "base/mac/scoped_cftyperef.h"
@@ -559,6 +560,10 @@ bool Sandbox::EnableSandbox(SandboxProcessType sandbox_type,
 void Sandbox::GetCanonicalSandboxPath(FilePath* path) {
   int fd = HANDLE_EINTR(open(path->value().c_str(), O_RDONLY));
   if (fd < 0) {
+    base::mac::SetCrashKeyValue(
+        @"errno", [NSString stringWithFormat:@"%d", errno]);
+    base::mac::SetCrashKeyValue(@"homedir", NSHomeDirectory());
+
     PLOG(FATAL) << "GetCanonicalSandboxPath() failed for: "
                 << path->value();
     return;

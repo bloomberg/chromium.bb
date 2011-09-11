@@ -5,11 +5,11 @@
 #import "chrome/browser/chrome_browser_application_mac.h"
 
 #import "base/logging.h"
+#include "base/mac/crash_logging.h"
 #import "base/mac/scoped_nsexception_enabler.h"
 #import "base/metrics/histogram.h"
 #import "base/memory/scoped_nsobject.h"
 #import "base/sys_string_conversions.h"
-#import "chrome/app/breakpad_mac.h"
 #import "chrome/browser/app_controller_mac.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
@@ -63,7 +63,7 @@ static IMP gOriginalInitIMP = NULL;
     static NSString* const kNSExceptionKey = @"nsexception";
     NSString* value =
         [NSString stringWithFormat:@"%@ reason %@", aName, aReason];
-    SetCrashKeyValue(kNSExceptionKey, value);
+    base::mac::SetCrashKeyValue(kNSExceptionKey, value);
 
     // Force crash for selected exceptions to generate crash dumps.
     BOOL fatal = NO;
@@ -338,7 +338,7 @@ void SwizzleInit() {
         [NSString stringWithFormat:@"%@ tag %d sending %@ to %p",
                   [sender className], tag, actionString, aTarget];
 
-  ScopedCrashKey key(kActionKey, value);
+  base::mac::ScopedCrashKey key(kActionKey, value);
 
   // Certain third-party code, such as print drivers, can still throw
   // exceptions and Chromium cannot fix them.  This provides a way to
@@ -406,10 +406,10 @@ void SwizzleInit() {
     NSString* value = [NSString stringWithFormat:@"%@ reason %@",
                                 [anException name], [anException reason]];
     if (!trackedFirstException) {
-      SetCrashKeyValue(kFirstExceptionKey, value);
+      base::mac::SetCrashKeyValue(kFirstExceptionKey, value);
       trackedFirstException = YES;
     } else {
-      SetCrashKeyValue(kLastExceptionKey, value);
+      base::mac::SetCrashKeyValue(kLastExceptionKey, value);
     }
 
     reportingException = NO;

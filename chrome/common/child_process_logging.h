@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/mac/crash_logging.h"
 #include "googleurl/src/gurl.h"
 
 struct GPUInfo;
@@ -78,25 +79,20 @@ class ScopedActiveURLSetter {
 
 }  // namespace child_process_logging
 
-#if defined(OS_MACOSX) && __OBJC__
-
-@class NSString;
-
-typedef void (*SetCrashKeyValueFuncPtr)(NSString*, NSString*);
-typedef void (*ClearCrashKeyValueFuncPtr)(NSString*);
+#if defined(OS_MACOSX)
 
 namespace child_process_logging {
-void SetCrashKeyFunctions(SetCrashKeyValueFuncPtr set_key_func,
-                          ClearCrashKeyValueFuncPtr clear_key_func);
+
 void SetActiveURLImpl(const GURL& url,
-                      SetCrashKeyValueFuncPtr set_key_func,
-                      ClearCrashKeyValueFuncPtr clear_key_func);
+                      base::mac::SetCrashKeyValueFuncPtr set_key_func,
+                      base::mac::ClearCrashKeyValueFuncPtr clear_key_func);
 
 extern const int kMaxNumCrashURLChunks;
 extern const int kMaxNumURLChunkValueLength;
 extern const char *kUrlChunkFormatStr;
+
 }  // namespace child_process_logging
 
-#endif  // defined(OS_MACOSX) && __OBJC__
+#endif  // defined(OS_MACOSX)
 
 #endif  // CHROME_COMMON_CHILD_PROCESS_LOGGING_H_

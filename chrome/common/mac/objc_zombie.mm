@@ -16,10 +16,10 @@
 
 #include "base/debug/stack_trace.h"
 #include "base/logging.h"
+#include "base/mac/crash_logging.h"
 #include "base/mac/mac_util.h"
 #include "base/metrics/histogram.h"
 #include "base/synchronization/lock.h"
-#import "chrome/app/breakpad_mac.h"
 #import "chrome/common/mac/objc_method_swizzle.h"
 
 // Deallocated objects are re-classed as |CrZombie|.  No superclass
@@ -284,7 +284,7 @@ void ZombieObjectCrash(id object, SEL aSelector, SEL viaSelector) {
   }
 
   // Set a value for breakpad to report.
-  SetCrashKeyValue(@"zombie", aString);
+  base::mac::SetCrashKeyValue(@"zombie", aString);
 
   // Hex-encode the backtrace and tuck it into a breakpad key.
   NSString* deallocTrace = @"<unknown>";
@@ -300,7 +300,7 @@ void ZombieObjectCrash(id object, SEL aSelector, SEL viaSelector) {
     // Warn someone if this exceeds the breakpad limits.
     DCHECK_LE(strlen([deallocTrace UTF8String]), 255U);
   }
-  SetCrashKeyValue(@"zombie_dealloc_bt", deallocTrace);
+  base::mac::SetCrashKeyValue(@"zombie_dealloc_bt", deallocTrace);
 
   // Log -dealloc backtrace in debug builds then crash with a useful
   // stack trace.

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -29,6 +29,26 @@
 namespace {
 
 BreakpadRef gBreakpadRef = NULL;
+
+void SetCrashKeyValue(NSString* key, NSString* value) {
+  // Comment repeated from header to prevent confusion:
+  // IMPORTANT: On OS X, the key/value pairs are sent to the crash server
+  // out of bounds and not recorded on disk in the minidump, this means
+  // that if you look at the minidump file locally you won't see them!
+  if (gBreakpadRef == NULL) {
+    return;
+  }
+
+  BreakpadAddUploadParameter(gBreakpadRef, key, value);
+}
+
+void ClearCrashKeyValue(NSString* key) {
+  if (gBreakpadRef == NULL) {
+    return;
+  }
+
+  BreakpadRemoveUploadParameter(gBreakpadRef, key);
+}
 
 }  // namespace
 
@@ -155,8 +175,8 @@ void InitCrashReporter() {
 
   // Enable child process crashes to include the page URL.
   // TODO: Should this only be done for certain process types?
-  child_process_logging::SetCrashKeyFunctions(SetCrashKeyValue,
-                                              ClearCrashKeyValue);
+  base::mac::SetCrashKeyFunctions(SetCrashKeyValue,
+                                  ClearCrashKeyValue);
 
   if (!is_browser) {
     // Get the guid from the command line switch.
@@ -182,34 +202,4 @@ void InitCrashProcessInfo() {
 
   // Store process type in crash dump.
   SetCrashKeyValue(@"ptype", process_type);
-}
-
-void SetCrashKeyValue(NSString* key, NSString* value) {
-  // Comment repeated from header to prevent confusion:
-  // IMPORTANT: On OS X, the key/value pairs are sent to the crash server
-  // out of bounds and not recorded on disk in the minidump, this means
-  // that if you look at the minidump file locally you won't see them!
-  if (gBreakpadRef == NULL) {
-    return;
-  }
-
-  BreakpadAddUploadParameter(gBreakpadRef, key, value);
-}
-
-void ClearCrashKeyValue(NSString* key) {
-  if (gBreakpadRef == NULL) {
-    return;
-  }
-
-  BreakpadRemoveUploadParameter(gBreakpadRef, key);
-}
-
-// NOTE(shess): These also exist in breakpad_mac_stubs.mm.
-ScopedCrashKey::ScopedCrashKey(NSString* key, NSString* value)
-    : crash_key_([key retain]) {
-  SetCrashKeyValue(crash_key_.get(), value);
-}
-
-ScopedCrashKey::~ScopedCrashKey() {
-  ClearCrashKeyValue(crash_key_.get());
 }
