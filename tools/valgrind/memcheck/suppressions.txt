@@ -5001,6 +5001,27 @@
    fun:_Z16DispatchToMethodIN3net21HttpStreamFactoryImpl3JobEMS2_FvvEEvPT_T0_RK6Tuple0
    fun:_ZN27ScopedRunnableMethodFactoryIN3net21HttpStreamFactoryImpl3JobEE14RunnableMethodIMS2_FvvE6Tuple0E3RunEv
 }
+{
+   bug_96207_a
+   Memcheck:Addr1
+   ...
+   fun:snd_device_name_hint
+   fun:_ZN11AlsaWrapper14DeviceNameHintEiPKcPPPv
+}
+{
+   bug_96207_b
+   Memcheck:Addr4
+   ...
+   fun:snd_device_name_hint
+   fun:_ZN11AlsaWrapper14DeviceNameHintEiPKcPPPv
+}
+{
+   bug_96207_c
+   Memcheck:Addr4
+   ...
+   fun:snd_config_iterator_next
+   fun:_ZN11AlsaWrapper14DeviceNameHintEiPKcPPPv
+}
 
 
 #-----------------------------------------------------------------------
