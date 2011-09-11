@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -87,9 +87,6 @@ string16 DumpFrameScrollPosition(WebKit::WebFrame* web_frame, bool recursive);
 // dumpBackForwardList command of the layoutTestController.
 string16 DumpHistoryState(const std::string& history_state, int indent,
                           bool is_current);
-
-// Returns the WebKit version (major.minor).
-std::string GetWebKitVersion();
 
 // Called to override the default user agent with a custom one.  Call this
 // before anyone actually asks for the user agent in order to prevent
