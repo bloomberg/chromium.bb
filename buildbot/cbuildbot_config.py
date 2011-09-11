@@ -256,6 +256,7 @@ chrome_pfq_info = {
   'master' : False,
   'chrome_tests' : True,
   'build_tests' : True,
+  'use_lkgm' : True,
 }
 
 internal = {
