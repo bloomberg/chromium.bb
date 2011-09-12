@@ -1218,7 +1218,16 @@ void NativeWidgetGtk::SetAlwaysOnTop(bool on_top) {
 }
 
 void NativeWidgetGtk::Maximize() {
+#if defined(TOUCH_UI)
+  // There may not be a window manager. So maximize ourselves: move to the
+  // top-left corner and resize to the entire bounds of the screen.
+  gfx::Rect screen = gfx::Screen::GetMonitorAreaNearestWindow(GetNativeView());
+  gtk_window_move(GTK_WINDOW(GetNativeWindow()), screen.x(), screen.y());
+  gtk_widget_set_size_request(GTK_WIDGET(GetNativeWindow()),
+                              screen.width(), screen.height());
+#else
   gtk_window_maximize(GetNativeWindow());
+#endif
 }
 
 void NativeWidgetGtk::Minimize() {
