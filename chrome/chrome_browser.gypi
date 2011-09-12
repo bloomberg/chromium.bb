@@ -3912,6 +3912,7 @@
         }],
         ['chromeos==1', {
           'dependencies': [
+            '../build/linux/system.gyp:dbus-glib',
             '../third_party/libevent/libevent.gyp:libevent',
             'browser/chromeos/input_method/input_method.gyp:gencode',
             'browser/chromeos/input_method/input_method.gyp:mozc_commands_proto',
