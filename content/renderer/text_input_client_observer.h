@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_RENDERER_TEXT_INPUT_CLIENT_OBSERVER_H_
-#define CHROME_RENDERER_TEXT_INPUT_CLIENT_OBSERVER_H_
+#ifndef CONTENT_RENDERER_TEXT_INPUT_CLIENT_OBSERVER_H_
+#define CONTENT_RENDERER_TEXT_INPUT_CLIENT_OBSERVER_H_
 
 #include "base/basictypes.h"
 #include "build/build_config.h"
@@ -17,7 +17,7 @@ class WebView;
 
 // This is the renderer-side message filter that generates the replies for the
 // messages sent by the TextInputClientMac. See
-// chrome/browser/renderer_host/text_input_client_mac.h for more information.
+// content/browser/renderer_host/text_input_client_mac.h for more information.
 class TextInputClientObserver : public RenderViewObserver {
  public:
   explicit TextInputClientObserver(RenderView* render_view);
@@ -38,4 +38,4 @@ class TextInputClientObserver : public RenderViewObserver {
   DISALLOW_COPY_AND_ASSIGN(TextInputClientObserver);
 };
 
-#endif  // CHROME_RENDERER_TEXT_INPUT_CLIENT_OBSERVER_H_
+#endif  // CONTENT_RENDERER_TEXT_INPUT_CLIENT_OBSERVER_H_

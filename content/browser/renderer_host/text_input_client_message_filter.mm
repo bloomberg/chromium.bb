@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/renderer_host/text_input_client_message_filter.h"
+#include "content/browser/renderer_host/text_input_client_message_filter.h"
 
 #include "base/memory/scoped_nsobject.h"
 #include "base/string16.h"
-#include "chrome/browser/renderer_host/text_input_client_mac.h"
-#include "chrome/common/text_input_client_messages.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
+#include "content/browser/renderer_host/text_input_client_mac.h"
+#include "content/common/text_input_client_messages.h"
 #include "ipc/ipc_message_macros.h"
 #include "ui/base/range/range.h"
 #include "ui/gfx/rect.h"
@@ -42,7 +42,7 @@ bool TextInputClientMessageFilter::OnMessageReceived(
 
 void TextInputClientMessageFilter::OnGotCharacterIndexForPoint(size_t index) {
   TextInputClientMac* service = TextInputClientMac::GetInstance();
-  // |index| could be WTF::notFound (-1) and it's value is different from
+  // |index| could be WTF::notFound (-1) and its value is different from
   // NSNotFound so we need to convert it.
   if (index == static_cast<size_t>(-1)) {
     index = NSNotFound;

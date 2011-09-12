@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome/browser/renderer_host/text_input_client_mac.h"
+#import "content/browser/renderer_host/text_input_client_mac.h"
 
 #include "base/bind.h"
 #include "base/message_loop.h"
 #include "base/threading/thread.h"
-#include "chrome/browser/renderer_host/text_input_client_message_filter.h"
-#include "chrome/common/text_input_client_messages.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/browser/renderer_host/mock_render_process_host.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_widget_host.h"
+#include "content/browser/renderer_host/text_input_client_message_filter.h"
+#include "content/common/text_input_client_messages.h"
 #include "ipc/ipc_test_sink.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"

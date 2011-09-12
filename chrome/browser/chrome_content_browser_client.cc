@@ -34,7 +34,6 @@
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/browser/renderer_host/chrome_render_message_filter.h"
 #include "chrome/browser/renderer_host/chrome_render_view_host_observer.h"
-#include "chrome/browser/renderer_host/text_input_client_message_filter.h"
 #include "chrome/browser/search_engines/search_provider_install_state_message_filter.h"
 #include "chrome/browser/speech/chrome_speech_input_manager.h"
 #include "chrome/browser/spellchecker/spellcheck_message_filter.h"
@@ -173,9 +172,6 @@ void ChromeContentBrowserClient::BrowserRenderProcessHostCreated(
   host->channel()->AddFilter(
       new SearchProviderInstallStateMessageFilter(id, profile));
   host->channel()->AddFilter(new SpellCheckMessageFilter(id));
-#if defined(OS_MACOSX)
-  host->channel()->AddFilter(new TextInputClientMessageFilter(host->id()));
-#endif
 
   host->Send(new ChromeViewMsg_SetIsIncognitoProcess(
       profile->IsOffTheRecord()));

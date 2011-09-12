@@ -170,8 +170,6 @@
         'renderer/spellchecker/spellcheck_worditerator.h',
         'renderer/translate_helper.cc',
         'renderer/translate_helper.h',
-        'renderer/text_input_client_observer.cc',
-        'renderer/text_input_client_observer.h',
         'renderer/visitedlink_slave.cc',
         'renderer/visitedlink_slave.h',
       ],

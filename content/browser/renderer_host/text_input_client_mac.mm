@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome/browser/renderer_host/text_input_client_mac.h"
+#import "content/browser/renderer_host/text_input_client_mac.h"
 
 #include "base/memory/singleton.h"
 #include "base/metrics/histogram.h"
 #include "base/time.h"
-#include "chrome/common/text_input_client_messages.h"
 #include "content/browser/renderer_host/render_widget_host.h"
+#include "content/common/text_input_client_messages.h"
 
 // The amount of time in milliseconds that the browser process will wait for a
 // response from the renderer.
@@ -78,7 +78,6 @@ NSAttributedString* TextInputClientMac::GetAttributedSubstringFromRange(
   base::TimeDelta delta(base::TimeTicks::Now() - start);
   UMA_HISTOGRAM_TIMES("TextInputClient.Substring",
                       delta * base::Time::kMicrosecondsPerMillisecond);
-
 
   // Lookup.framework calls this method repeatedly and expects that repeated
   // calls don't deallocate previous results immediately. Returning an

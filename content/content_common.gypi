@@ -231,6 +231,7 @@
         'common/speech_input_result.h',
         'common/swapped_out_messages.cc',
         'common/swapped_out_messages.h',
+        'common/text_input_client_messages.h',
         'common/unix_domain_socket_posix.cc',
         'common/unix_domain_socket_posix.h',
         'common/url_constants.cc',

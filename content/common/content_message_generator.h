@@ -33,6 +33,7 @@
 #include "content/common/resource_messages.h"
 #include "content/common/speech_input_messages.h"
 #include "content/common/socket_stream_messages.h"
+#include "content/common/text_input_client_messages.h"
 #include "content/common/utility_messages.h"
 #include "content/common/view_messages.h"
 #include "content/common/webblob_messages.h"

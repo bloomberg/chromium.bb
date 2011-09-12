@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_RENDERER_HOST_TEXT_INPUT_CLIENT_MAC_H_
-#define CHROME_BROWSER_RENDERER_HOST_TEXT_INPUT_CLIENT_MAC_H_
+#ifndef CONTENT_BROWSER_RENDERER_HOST_TEXT_INPUT_CLIENT_MAC_H_
+#define CONTENT_BROWSER_RENDERER_HOST_TEXT_INPUT_CLIENT_MAC_H_
 
 #import <Cocoa/Cocoa.h>
 
@@ -83,4 +83,4 @@ class TextInputClientMac {
   DISALLOW_COPY_AND_ASSIGN(TextInputClientMac);
 };
 
-#endif  // CHROME_BROWSER_RENDERER_HOST_TEXT_INPUT_CLIENT_MAC_H_
+#endif  // CONTENT_BROWSER_RENDERER_HOST_TEXT_INPUT_CLIENT_MAC_H_

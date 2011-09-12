@@ -65,6 +65,7 @@
 #include "content/renderer/renderer_webapplicationcachehost_impl.h"
 #include "content/renderer/renderer_webstoragenamespace_impl.h"
 #include "content/renderer/speech_input_dispatcher.h"
+#include "content/renderer/text_input_client_observer.h"
 #include "content/renderer/v8_value_converter.h"
 #include "content/renderer/web_ui_bindings.h"
 #include "content/renderer/webplugin_delegate_proxy.h"
@@ -443,6 +444,9 @@ RenderView::RenderView(RenderThreadBase* render_thread,
 #endif
 
   new MHTMLGenerator(this);
+#if defined(OS_MACOSX)
+  new TextInputClientObserver(this);
+#endif  // defined(OS_MACOSX)
 
   devtools_agent_ = new DevToolsAgent(this);
 

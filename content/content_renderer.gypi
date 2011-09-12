@@ -162,6 +162,8 @@
         'renderer/renderer_webstoragenamespace_impl.h',
         'renderer/speech_input_dispatcher.cc',
         'renderer/speech_input_dispatcher.h',
+        'renderer/text_input_client_observer.cc',
+        'renderer/text_input_client_observer.h',
         'renderer/v8_value_converter.cc',
         'renderer/v8_value_converter.h',
         'renderer/webplugin_delegate_proxy.cc',

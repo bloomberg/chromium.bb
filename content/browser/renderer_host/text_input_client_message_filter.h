@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_RENDERER_HOST_TEXT_INPUT_CLIENT_MESSAGE_FILTER_H_
-#define CHROME_BROWSER_RENDERER_HOST_TEXT_INPUT_CLIENT_MESSAGE_FILTER_H_
+#ifndef CONTENT_BROWSER_RENDERER_HOST_TEXT_INPUT_CLIENT_MESSAGE_FILTER_H_
+#define CONTENT_BROWSER_RENDERER_HOST_TEXT_INPUT_CLIENT_MESSAGE_FILTER_H_
 #pragma once
 
 #include "content/browser/browser_message_filter.h"
@@ -19,7 +19,7 @@ class Range;
 
 // This is a browser-side message filter that lives on the IO thread to handle
 // replies to messages sent by the TextInputClientMac. See
-// chrome/browser/renderer_host/text_input_client_mac.h for more information.
+// content/browser/renderer_host/text_input_client_mac.h for more information.
 class TextInputClientMessageFilter : public BrowserMessageFilter {
  public:
   explicit TextInputClientMessageFilter(int child_id);
@@ -42,4 +42,4 @@ class TextInputClientMessageFilter : public BrowserMessageFilter {
   DISALLOW_COPY_AND_ASSIGN(TextInputClientMessageFilter);
 };
 
-#endif  // CHROME_BROWSER_RENDERER_HOST_TEXT_INPUT_CLIENT_MESSAGE_FILTER_H_
+#endif  // CONTENT_BROWSER_RENDERER_HOST_TEXT_INPUT_CLIENT_MESSAGE_FILTER_H_

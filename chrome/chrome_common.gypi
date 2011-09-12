@@ -235,7 +235,6 @@
         'common/spellcheck_common.cc',
         'common/spellcheck_common.h',
         'common/spellcheck_messages.h',
-        'common/text_input_client_messages.h',
         'common/thumbnail_score.cc',
         'common/thumbnail_score.h',
         'common/url_constants.cc',

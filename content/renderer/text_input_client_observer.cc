@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/text_input_client_observer.h"
+#include "content/renderer/text_input_client_observer.h"
 
 #include "base/memory/scoped_ptr.h"
-#include "chrome/common/text_input_client_messages.h"
+#include "content/common/text_input_client_messages.h"
 #include "content/renderer/render_view.h"
 #include "ipc/ipc_message_macros.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/mac/WebSubstringUtil.h"
