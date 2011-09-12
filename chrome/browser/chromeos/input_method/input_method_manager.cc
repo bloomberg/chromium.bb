@@ -369,13 +369,18 @@ class InputMethodManagerImpl : public HotkeyManager::Observer,
  private:
   friend struct DefaultSingletonTraits<InputMethodManagerImpl>;
 
-  // Returns true if the given input method config value is a single
-  // element string list that contains an input method ID of a keyboard
-  // layout.
-  bool ContainOnlyOneKeyboardLayout(const ImeConfigValue& value) {
-    return (value.type == ImeConfigValue::kValueTypeStringList &&
-            value.string_list_value.size() == 1 &&
-            IsKeyboardLayout(value.string_list_value[0]));
+  // Returns true if the given input method config value is a string list
+  // that only contains an input method ID of a keyboard layout.
+  bool ContainOnlyKeyboardLayout(const ImeConfigValue& value) {
+    if (value.type != ImeConfigValue::kValueTypeStringList) {
+      return false;
+    }
+    for (size_t i = 0; i < value.string_list_value.size(); ++i) {
+      if (!IsKeyboardLayout(value.string_list_value[i])) {
+        return false;
+      }
+    }
+    return true;
   }
 
   // Starts input method daemon based on the |defer_ime_startup_| flag and
@@ -393,7 +398,7 @@ class InputMethodManagerImpl : public HotkeyManager::Observer,
       // If there is only one input method which is a keyboard layout,
       // we don't start the input method processes.  When
       // |defer_ime_startup_| is true, we don't start it either.
-      if (ContainOnlyOneKeyboardLayout(value) || defer_ime_startup_) {
+      if (ContainOnlyKeyboardLayout(value) || defer_ime_startup_) {
         // Do not start the input method daemon.
         return;
       }
@@ -445,7 +450,7 @@ class InputMethodManagerImpl : public HotkeyManager::Observer,
     // method daemon.
     if (section == language_prefs::kGeneralSectionName &&
         config_name == language_prefs::kPreloadEnginesConfigName &&
-        ContainOnlyOneKeyboardLayout(value) &&
+        ContainOnlyKeyboardLayout(value) &&
         enable_auto_ime_shutdown_) {
       StopInputMethodDaemon();
     }
@@ -461,7 +466,7 @@ class InputMethodManagerImpl : public HotkeyManager::Observer,
     // available.
     if (section == language_prefs::kGeneralSectionName &&
         config_name == language_prefs::kPreloadEnginesConfigName &&
-        ContainOnlyOneKeyboardLayout(value)) {
+        ContainOnlyKeyboardLayout(value)) {
       // We shouldn't use SetCurrentKeyboardLayoutByName() here. See
       // comments at ChangeCurrentInputMethod() for details.
       ChangeCurrentInputMethodFromId(value.string_list_value[0]);
