@@ -39,12 +39,6 @@ namespace net {
 
 namespace {
 
-// Number of connection attempts for tests.
-const int kServerConnectionAttempts = 10;
-
-// Connection timeout in milliseconds for tests.
-const int kServerConnectionTimeoutMs = 1000;
-
 std::string GetHostname(TestServer::Type type,
                         const TestServer::HTTPSOptions& options) {
   if (type == TestServer::TYPE_HTTPS &&

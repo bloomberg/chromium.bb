@@ -467,7 +467,7 @@ class SafeBrowsingServiceTestHelper
       // Wait and try again if last fetch was failed. The loop will hit the
       // timeout in OutOfProcTestRunner if the fetch can not get success
       // response.
-      base::PlatformThread::Sleep(TestTimeouts::action_timeout_ms());
+      base::PlatformThread::Sleep(TestTimeouts::tiny_timeout_ms());
     }
   }
 
@@ -591,7 +591,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, SafeBrowsingSystemTest) {
     do {
       // Periodically pull the status.
       safe_browsing_helper->WaitForStatusUpdate(
-          TestTimeouts::action_timeout_ms());
+          TestTimeouts::tiny_timeout_ms());
     } while (is_update_scheduled() || is_initial_request() ||
              !is_database_ready());
 

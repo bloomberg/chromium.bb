@@ -52,7 +52,7 @@ bool ReadData(HANDLE read_fd, HANDLE write_fd,
   thread.message_loop()->PostDelayedTask(
       FROM_HERE,
       NewRunnableFunction(UnblockPipe, write_fd, bytes_max, &unblocked),
-      TestTimeouts::action_max_timeout_ms());
+      TestTimeouts::action_timeout_ms());
 
   DWORD bytes_read = 0;
   while (bytes_read < bytes_max) {

@@ -136,7 +136,7 @@ bool TestServer::WaitToStart() {
   file_util::ScopedFD child_fd_closer(child_fd_closer_.release());
 
   base::TimeDelta remaining_time = base::TimeDelta::FromMilliseconds(
-      TestTimeouts::action_max_timeout_ms());
+      TestTimeouts::action_timeout_ms());
 
   uint32 server_data_len = 0;
   if (!ReadData(child_fd_, sizeof(server_data_len),
