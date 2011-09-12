@@ -251,7 +251,7 @@ cr.define('options', function() {
       // These values need to be kept in sync with where they are read in
       // SyncSetupFlow::GetDataTypeChoiceData().
       var result = JSON.stringify({
-          "keepEverythingSynced": syncAll,
+          "syncAllDataTypes": syncAll,
           "syncBookmarks": syncAll || $('bookmarks-checkbox').checked,
           "syncPreferences": syncAll || $('preferences-checkbox').checked,
           "syncThemes": syncAll || $('themes-checkbox').checked,
@@ -319,7 +319,7 @@ cr.define('options', function() {
 
     setChooseDataTypesCheckboxes_: function(args) {
       var datatypeSelect = document.getElementById('sync-select-datatypes');
-      datatypeSelect.selectedIndex = args.keepEverythingSynced ? 0 : 1;
+      datatypeSelect.selectedIndex = args.syncAllDataTypes ? 0 : 1;
 
       $('bookmarks-checkbox').checked = args.syncBookmarks;
       $('preferences-checkbox').checked = args.syncPreferences;
@@ -368,7 +368,7 @@ cr.define('options', function() {
         $('sessions-item').className = "sync-item-hide";
       }
 
-      this.setCheckboxesToKeepEverythingSynced_(args.keepEverythingSynced);
+      this.setCheckboxesToKeepEverythingSynced_(args.syncAllDataTypes);
     },
 
     setEncryptionRadios_: function(args) {
@@ -433,11 +433,11 @@ cr.define('options', function() {
 
         // Whether to display the 'Sync everything' confirmation page or the
         // customize data types page.
-        var keepEverythingSynced = args['keepEverythingSynced'];
+        var syncAllDataTypes = args['syncAllDataTypes'];
         this.usePassphrase_ = args['usePassphrase'];
         if (args['showSyncEverythingPage'] == false || this.usePassphrase_ ||
-            keepEverythingSynced == false || args['show_passphrase']) {
-          this.showCustomizePage_(args, keepEverythingSynced);
+            syncAllDataTypes == false || args['show_passphrase']) {
+          this.showCustomizePage_(args, syncAllDataTypes);
         } else {
           this.showSyncEverythingPage_();
         }

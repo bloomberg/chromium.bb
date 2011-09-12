@@ -66,7 +66,7 @@ bool GetConfiguration(const std::string& json, SyncConfiguration* config) {
     return false;
 
   DictionaryValue* result = static_cast<DictionaryValue*>(parsed_value.get());
-  if (!result->GetBoolean("keepEverythingSynced", &config->sync_everything))
+  if (!result->GetBoolean("syncAllDataTypes", &config->sync_everything))
     return false;
 
   // These values need to be kept in sync with where they are written in
@@ -243,7 +243,7 @@ void SyncSetupHandler::GetStaticLocalizedValues(
     { "enterAccessCode", IDS_SYNC_ENTER_ACCESS_CODE_LABEL },
     { "getAccessCodeHelp", IDS_SYNC_ACCESS_CODE_HELP_LABEL },
     { "getAccessCodeURL", IDS_SYNC_GET_ACCESS_CODE_URL },
-    { "keepEverythingSynced", IDS_SYNC_EVERYTHING },
+    { "syncAllDataTypes", IDS_SYNC_EVERYTHING },
     { "chooseDataTypes", IDS_SYNC_CHOOSE_DATATYPES },
     { "bookmarks", IDS_SYNC_DATATYPE_BOOKMARKS },
     { "preferences", IDS_SYNC_DATATYPE_PREFERENCES },

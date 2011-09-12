@@ -329,7 +329,7 @@ TEST_F(SyncSetupWizardTest, ChooseDataTypesSetsPrefs) {
 
   ListValue data_type_choices_value;
   std::string data_type_choices =
-      "{\"keepEverythingSynced\":false,\"syncBookmarks\":true,"
+      "{\"syncAllDataTypes\":false,\"syncBookmarks\":true,"
       "\"syncPreferences\":true,\"syncThemes\":false,\"syncPasswords\":false,"
       "\"syncAutofill\":false,\"syncExtensions\":false,\"syncTypedUrls\":true,"
       "\"syncApps\":true,\"syncSearchEngines\":false,\"syncSessions\":false,"

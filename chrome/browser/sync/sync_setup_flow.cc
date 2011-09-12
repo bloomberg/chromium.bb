@@ -119,7 +119,7 @@ void SyncSetupFlow::GetArgsForConfigure(ProfileSyncService* service,
   // The SYNC_EVERYTHING case will set this to true.
   args->SetBoolean("showSyncEverythingPage", false);
 
-  args->SetBoolean("keepEverythingSynced",
+  args->SetBoolean("syncAllDataTypes",
       service->profile()->GetPrefs()->GetBoolean(prefs::kKeepEverythingSynced));
 
   // Bookmarks, Preferences, and Themes are launched for good, there's no

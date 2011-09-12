@@ -255,9 +255,8 @@ html[os='mac'] input[type='submit'] {
 
       // Whether to display the 'Sync everything' confirmation screen or the
       // customize data types screen.
-      // TODO(jhawkins): Rename |keepEverythingSynced| to |syncAllDataTypes|.
       var syncEverything = args['syncEverything'];
-      var syncAllDataTypes = args['keepEverythingSynced'];
+      var syncAllDataTypes = args['syncAllDataTypes'];
       var usePassphrase = args['usePassphrase'];
       if (syncEverything == false || syncAllDataTypes == false ||
           usePassphrase) {
@@ -320,9 +319,9 @@ html[os='mac'] input[type='submit'] {
     }
 
     var datatypeSelect = document.getElementById('sync-select-datatypes');
-    datatypeSelect.selectedIndex = args.keepEverythingSynced ? 0 : 1;
+    datatypeSelect.selectedIndex = args.syncAllDataTypes ? 0 : 1;
     document.getElementById('chooseDataTypesBody').hidden =
-        args.keepEverythingSynced;
+        args.syncAllDataTypes;
 
     document.getElementById("bookmarksCheckbox").checked = args.syncBookmarks;
     document.getElementById("preferencesCheckbox").checked =
@@ -375,7 +374,7 @@ html[os='mac'] input[type='submit'] {
       document.getElementById("sessionsItem").className = "sync-item-hide";
     }
 
-    setCheckboxesToKeepEverythingSynced(args.keepEverythingSynced);
+    setCheckboxesToKeepEverythingSynced(args.syncAllDataTypes);
   }
 
   function setEncryptionCheckboxes(args) {
@@ -398,7 +397,7 @@ html[os='mac'] input[type='submit'] {
 
     document.getElementById("aborted-text").className = "sync-error-show";
     document.getElementById("okButton").disabled = true;
-    document.getElementById("keepEverythingSyncedRadio").disabled = true;
+    document.getElementById("syncAllDataTypesRadio").disabled = true;
     document.getElementById("chooseDataTypesRadio").disabled = true;
   }
 
@@ -455,7 +454,7 @@ html[os='mac'] input[type='submit'] {
     // These values need to be kept in sync with where they are read in
     // SyncSetupFlow::GetDataTypeChoiceData().
     var result = JSON.stringify({
-        "keepEverythingSynced": syncAll,
+        "syncAllDataTypes": syncAll,
         "syncBookmarks": syncAll || f.bookmarksCheckbox.checked,
         "syncPreferences": syncAll || f.preferencesCheckbox.checked,
         "syncThemes": syncAll || f.themesCheckbox.checked,
