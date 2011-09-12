@@ -349,7 +349,16 @@ class InputMethodManagerImpl : public HotkeyManager::Observer,
   }
 
   virtual void HotkeyPressed(HotkeyManager* manager, int event_id) {
-    // TODO(yusukes): Switch IME.
+    switch (HotkeyEvents(event_id)) {
+      case kPreviousInputMethod:
+        SwitchToPreviousInputMethod();
+        break;
+      case kNextInputMethod:
+        SwitchToNextInputMethod();
+        break;
+    }
+    // TODO(yusukes): handle engine specific hotkeys like Henkan, Muhenkan, and
+    // Hangul.
   }
 
   static InputMethodManagerImpl* GetInstance() {
@@ -444,11 +453,9 @@ class InputMethodManagerImpl : public HotkeyManager::Observer,
 
   // Change the keyboard layout per input method configuration being
   // updated, if necessary. See also: MaybeStartInputMethodDaemon().
-  void MaybeChangeCurrentKeyboardLayout(
-      const std::string& section,
-      const std::string& config_name,
-      const ImeConfigValue& value) {
-
+  void MaybeChangeCurrentKeyboardLayout(const std::string& section,
+                                        const std::string& config_name,
+                                        const ImeConfigValue& value) {
     // If there is only one input method which is a keyboard layout, we'll
     // change the keyboard layout per the only one input method now
     // available.
@@ -474,8 +481,7 @@ class InputMethodManagerImpl : public HotkeyManager::Observer,
       // synced with cloud) and kLanguagePreloadEngines (synced with cloud) are
       // mismatched. e.g. the former is 'xkb:us::eng' and the latter (on the
       // sync server) is 'xkb:jp::jpn,mozc'.
-      scoped_ptr<InputMethodDescriptors> input_methods(
-          GetActiveInputMethods());
+      scoped_ptr<InputMethodDescriptors> input_methods(GetActiveInputMethods());
       DCHECK(!input_methods->empty());
       if (!input_methods->empty()) {
         input_method_id_to_switch = input_methods->at(0).id();
@@ -499,8 +505,7 @@ class InputMethodManagerImpl : public HotkeyManager::Observer,
   // starts.
   void FlushImeConfig() {
     bool active_input_methods_are_changed = false;
-    InputMethodConfigRequests::iterator iter =
-        pending_config_requests_.begin();
+    InputMethodConfigRequests::iterator iter = pending_config_requests_.begin();
     while (iter != pending_config_requests_.end()) {
       const std::string& section = iter->first.first;
       const std::string& config_name = iter->first.second;
@@ -955,6 +960,58 @@ class InputMethodManagerImpl : public HotkeyManager::Observer,
     // TODO(yusukes): Support engine specific hotkeys like XK_Henkan, Muhenkan,
     // and Hangul.
     hotkey_manager_.AddObserver(this);
+  }
+
+  // Handles "Shift+Alt" hotkey.
+  void SwitchToNextInputMethod() {
+    // Sanity checks.
+    if (active_input_method_ids_.empty()) {
+      LOG(ERROR) << "active input method is empty";
+      return;
+    }
+    if (current_input_method_.id().empty()) {
+      LOG(ERROR) << "current_input_method_ is unknown";
+      return;
+    }
+
+    // Find the next input method.
+    std::vector<std::string>::const_iterator iter =
+        std::find(active_input_method_ids_.begin(),
+                  active_input_method_ids_.end(),
+                  current_input_method_.id());
+    if (iter != active_input_method_ids_.end()) {
+      ++iter;
+    }
+    if (iter == active_input_method_ids_.end()) {
+      iter = active_input_method_ids_.begin();
+    }
+    ChangeInputMethod(*iter);
+  }
+
+  // Handles "Control+space" hotkey.
+  void SwitchToPreviousInputMethod() {
+    // Sanity check.
+    if (active_input_method_ids_.empty()) {
+      LOG(ERROR) << "active input method is empty";
+      return;
+    }
+
+    if (previous_input_method_.id().empty() ||
+        previous_input_method_.id() == current_input_method_.id()) {
+      SwitchToNextInputMethod();
+      return;
+    }
+
+    std::vector<std::string>::const_iterator iter =
+        std::find(active_input_method_ids_.begin(),
+                  active_input_method_ids_.end(),
+                  previous_input_method_.id());
+    if (iter == active_input_method_ids_.end()) {
+      // previous_input_method_ is not supported.
+      SwitchToNextInputMethod();
+    } else {
+      ChangeInputMethod(*iter);
+    }
   }
 
   // A reference to the language api, to allow callbacks when the input method
