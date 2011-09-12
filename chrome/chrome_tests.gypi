@@ -556,7 +556,6 @@
             'browser/ui/views/tabs/tab_strip_interactive_uitest.cc',
             'test/base/view_event_test_base.cc',
             'test/base/view_event_test_base.h',
-            '../content/browser/debugger/devtools_sanity_unittest.cc',
           ],
           # See comment about the same line in chrome/chrome_tests.gypi.
           'xcode_settings': {'OTHER_LDFLAGS': ['-Wl,-ObjC']},
