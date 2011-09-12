@@ -79,7 +79,8 @@ cr.define('options', function() {
     handleVisibleChange_: function(e) {
       if (this.visible) {
         this.updateControls_();
-        $('userList').redraw();
+        if (AccountsOptions.currentUserIsOwner())
+          $('userList').redraw();
       }
     },
 
@@ -150,9 +151,8 @@ cr.define('options', function() {
    * @param {string} email Email of the user to update.
    */
   AccountsOptions.updateAccountPicture = function(email) {
-    var userList = $('userList');
-    if (userList)
-      userList.updateAccountPicture(email);
+    if (this.currentUserIsOwner())
+      $('userList').updateAccountPicture(email);
   };
 
   // Export
