@@ -43,6 +43,14 @@ typedef size_t (*TYPE_nacl_irt_query)(const char *interface_ident,
                                       void *table, size_t tablesize);
 
 /*
+ * C libraries expose this function to reach the interface query interface.
+ * If there is no IRT hook available at all, it returns zero.
+ * Otherwise it behaves as described above for TYPE_nacl_irt_query.
+ */
+size_t nacl_interface_query(const char *interface_ident,
+                            void *table, size_t tablesize);
+
+/*
  * All functions in IRT vectors return an int, which is zero for success
  * or a (positive) errno code for errors.  Any values are delivered via
  * result parameters.  The only exceptions exit/thread_exit, which can
