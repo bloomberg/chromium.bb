@@ -5,7 +5,6 @@
 #include "remoting/client/plugin/pepper_view_proxy.h"
 
 #include "base/message_loop.h"
-#include "remoting/base/tracer.h"
 #include "remoting/client/client_context.h"
 #include "remoting/client/plugin/chromoting_instance.h"
 
@@ -31,7 +30,7 @@ bool PepperViewProxy::Initialize() {
 void PepperViewProxy::TearDown() {
   if (instance_ && !plugin_message_loop_->BelongsToCurrentThread()) {
     plugin_message_loop_->PostTask(
-        FROM_HERE, NewTracedMethod(this, &PepperViewProxy::TearDown));
+        FROM_HERE, NewRunnableMethod(this, &PepperViewProxy::TearDown));
     return;
   }
 
@@ -42,7 +41,7 @@ void PepperViewProxy::TearDown() {
 void PepperViewProxy::Paint() {
   if (instance_ && !plugin_message_loop_->BelongsToCurrentThread()) {
     plugin_message_loop_->PostTask(
-        FROM_HERE, NewTracedMethod(this, &PepperViewProxy::Paint));
+        FROM_HERE, NewRunnableMethod(this, &PepperViewProxy::Paint));
     return;
   }
 
@@ -52,7 +51,7 @@ void PepperViewProxy::Paint() {
 
 void PepperViewProxy::SetSolidFill(uint32 color) {
   if (instance_ && !plugin_message_loop_->BelongsToCurrentThread()) {
-    plugin_message_loop_->PostTask(FROM_HERE, NewTracedMethod(
+    plugin_message_loop_->PostTask(FROM_HERE, NewRunnableMethod(
         this, &PepperViewProxy::SetSolidFill, color));
     return;
   }
@@ -64,7 +63,7 @@ void PepperViewProxy::SetSolidFill(uint32 color) {
 void PepperViewProxy::UnsetSolidFill() {
   if (instance_ && !plugin_message_loop_->BelongsToCurrentThread()) {
     plugin_message_loop_->PostTask(
-        FROM_HERE, NewTracedMethod(this, &PepperViewProxy::UnsetSolidFill));
+        FROM_HERE, NewRunnableMethod(this, &PepperViewProxy::UnsetSolidFill));
     return;
   }
 
@@ -85,7 +84,7 @@ void PepperViewProxy::SetConnectionState(ConnectionState state) {
 
 void PepperViewProxy::UpdateLoginStatus(bool success, const std::string& info) {
   if (instance_ && !plugin_message_loop_->BelongsToCurrentThread()) {
-    plugin_message_loop_->PostTask(FROM_HERE, NewTracedMethod(
+    plugin_message_loop_->PostTask(FROM_HERE, NewRunnableMethod(
         this, &PepperViewProxy::UpdateLoginStatus, success, info));
     return;
   }
@@ -123,7 +122,7 @@ void PepperViewProxy::AllocateFrame(
     scoped_refptr<media::VideoFrame>* frame_out,
     Task* done) {
   if (instance_ && !plugin_message_loop_->BelongsToCurrentThread()) {
-    plugin_message_loop_->PostTask(FROM_HERE, NewTracedMethod(
+    plugin_message_loop_->PostTask(FROM_HERE, NewRunnableMethod(
         this, &PepperViewProxy::AllocateFrame, format, width,
         height, timestamp, duration, frame_out, done));
     return;
@@ -137,7 +136,7 @@ void PepperViewProxy::AllocateFrame(
 
 void PepperViewProxy::ReleaseFrame(media::VideoFrame* frame) {
   if (instance_ && !plugin_message_loop_->BelongsToCurrentThread()) {
-    plugin_message_loop_->PostTask(FROM_HERE, NewTracedMethod(
+    plugin_message_loop_->PostTask(FROM_HERE, NewRunnableMethod(
         this, &PepperViewProxy::ReleaseFrame, make_scoped_refptr(frame)));
     return;
   }
@@ -150,7 +149,7 @@ void PepperViewProxy::OnPartialFrameOutput(media::VideoFrame* frame,
                                            UpdatedRects* rects,
                                            Task* done) {
   if (instance_ && !plugin_message_loop_->BelongsToCurrentThread()) {
-    plugin_message_loop_->PostTask(FROM_HERE, NewTracedMethod(
+    plugin_message_loop_->PostTask(FROM_HERE, NewRunnableMethod(
         this, &PepperViewProxy::OnPartialFrameOutput,
         make_scoped_refptr(frame), rects, done));
     return;

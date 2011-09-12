@@ -9,7 +9,6 @@
 #include "remoting/base/decoder.h"
 #include "remoting/base/decoder_row_based.h"
 #include "remoting/base/decoder_vp8.h"
-#include "remoting/base/tracer.h"
 #include "remoting/base/util.h"
 #include "remoting/client/frame_consumer.h"
 #include "remoting/protocol/session_config.h"
@@ -59,13 +58,10 @@ void RectangleUpdateDecoder::Initialize(const SessionConfig& config) {
   // Initialize decoder based on the selected codec.
   ChannelConfig::Codec codec = config.video_config().codec;
   if (codec == ChannelConfig::CODEC_VERBATIM) {
-    TraceContext::tracer()->PrintString("Creating Verbatim decoder.");
     decoder_.reset(DecoderRowBased::CreateVerbatimDecoder());
   } else if (codec == ChannelConfig::CODEC_ZIP) {
-    TraceContext::tracer()->PrintString("Creating Zlib decoder");
     decoder_.reset(DecoderRowBased::CreateZlibDecoder());
   } else if (codec == ChannelConfig::CODEC_VP8) {
-    TraceContext::tracer()->PrintString("Creating VP8 decoder");
     decoder_.reset(new DecoderVp8());
   } else {
     NOTREACHED() << "Invalid Encoding found: " << codec;
@@ -77,14 +73,12 @@ void RectangleUpdateDecoder::DecodePacket(const VideoPacket* packet,
   if (message_loop_ != MessageLoop::current()) {
     message_loop_->PostTask(
         FROM_HERE,
-        NewTracedMethod(this,
-                        &RectangleUpdateDecoder::DecodePacket, packet,
-                        done));
+        NewRunnableMethod(this,
+                          &RectangleUpdateDecoder::DecodePacket, packet,
+                          done));
     return;
   }
   base::ScopedTaskRunner done_runner(done);
-
-  TraceContext::tracer()->PrintString("Decode Packet called.");
 
   AllocateFrame(packet, done_runner.Release());
 }
@@ -94,13 +88,12 @@ void RectangleUpdateDecoder::AllocateFrame(const VideoPacket* packet,
   if (message_loop_ != MessageLoop::current()) {
     message_loop_->PostTask(
         FROM_HERE,
-        NewTracedMethod(this,
-                        &RectangleUpdateDecoder::AllocateFrame, packet, done));
+        NewRunnableMethod(
+            this,
+            &RectangleUpdateDecoder::AllocateFrame, packet, done));
     return;
   }
   base::ScopedTaskRunner done_runner(done);
-
-  TraceContext::tracer()->PrintString("AllocateFrame called.");
 
   // Find the required frame size.
   bool has_screen_size = packet->format().has_screen_width() &&
@@ -119,11 +112,9 @@ void RectangleUpdateDecoder::AllocateFrame(const VideoPacket* packet,
   // Allocate a new frame, if necessary.
   if ((!frame_) || (has_screen_size && (screen_size != frame_size))) {
     if (frame_) {
-      TraceContext::tracer()->PrintString("Releasing old frame.");
       consumer_->ReleaseFrame(frame_);
       frame_ = NULL;
     }
-    TraceContext::tracer()->PrintString("Requesting new frame.");
 
     consumer_->AllocateFrame(media::VideoFrame::RGB32,
                              screen_size.width(), screen_size.height(),
@@ -143,9 +134,9 @@ void RectangleUpdateDecoder::ProcessPacketData(
   if (message_loop_ != MessageLoop::current()) {
     message_loop_->PostTask(
         FROM_HERE,
-        NewTracedMethod(this,
-                        &RectangleUpdateDecoder::ProcessPacketData, packet,
-                        done));
+        NewRunnableMethod(this,
+                          &RectangleUpdateDecoder::ProcessPacketData, packet,
+                          done));
     return;
   }
   base::ScopedTaskRunner done_runner(done);
@@ -162,8 +153,6 @@ void RectangleUpdateDecoder::ProcessPacketData(
     return;
   }
 
-  TraceContext::tracer()->PrintString("Executing Decode.");
-
   if (decoder_->DecodePacket(packet) == Decoder::DECODE_DONE)
     SubmitToConsumer();
 }
@@ -173,10 +162,10 @@ void RectangleUpdateDecoder::SetScaleRatios(double horizontal_ratio,
   if (message_loop_ != MessageLoop::current()) {
     message_loop_->PostTask(
         FROM_HERE,
-        NewTracedMethod(this,
-                        &RectangleUpdateDecoder::SetScaleRatios,
-                        horizontal_ratio,
-                        vertical_ratio));
+        NewRunnableMethod(this,
+                          &RectangleUpdateDecoder::SetScaleRatios,
+                          horizontal_ratio,
+                          vertical_ratio));
     return;
   }
 
@@ -190,7 +179,7 @@ void RectangleUpdateDecoder::UpdateClipRect(const gfx::Rect& new_clip_rect) {
   if (message_loop_ != MessageLoop::current()) {
     message_loop_->PostTask(
         FROM_HERE,
-        NewTracedMethod(
+        NewRunnableMethod(
             this,
             &RectangleUpdateDecoder::UpdateClipRect, new_clip_rect));
     return;
@@ -241,7 +230,7 @@ void RectangleUpdateDecoder::RefreshFullFrame() {
   if (message_loop_ != MessageLoop::current()) {
     message_loop_->PostTask(
         FROM_HERE,
-        NewTracedMethod(this, &RectangleUpdateDecoder::RefreshFullFrame));
+        NewRunnableMethod(this, &RectangleUpdateDecoder::RefreshFullFrame));
     return;
   }
 
@@ -286,7 +275,7 @@ void RectangleUpdateDecoder::OnFrameConsumed() {
   if (message_loop_ != MessageLoop::current()) {
     message_loop_->PostTask(
         FROM_HERE,
-        NewTracedMethod(this, &RectangleUpdateDecoder::OnFrameConsumed));
+        NewRunnableMethod(this, &RectangleUpdateDecoder::OnFrameConsumed));
     return;
   }
 

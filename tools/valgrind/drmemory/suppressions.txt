@@ -782,14 +782,6 @@ LEAK
 *!net::SSL*SocketNSS::DoHandshake
 *!net::SSL*SocketNSS::DoHandshakeLoop
 
-# http://crbug.com/73744
-LEAK
-*!operator new
-*!remoting::TraceContext::Get
-*!remoting::TraceContext::tracer
-*!remoting::ScreenRecorder::DoCapture
-*!remoting::ScreenRecorder::DoStart
-
 # http://crbug.com/74413
 LEAK
 ...

@@ -11,7 +11,6 @@
 #include "ppapi/cpp/point.h"
 #include "ppapi/cpp/rect.h"
 #include "ppapi/cpp/size.h"
-#include "remoting/base/tracer.h"
 #include "remoting/base/util.h"
 #include "remoting/client/chromoting_stats.h"
 #include "remoting/client/client_context.h"
@@ -45,8 +44,6 @@ void PepperView::TearDown() {
 void PepperView::Paint() {
   DCHECK(context_->main_message_loop()->BelongsToCurrentThread());
 
-  TraceContext::tracer()->PrintString("Start Paint.");
-
   if (is_static_fill_) {
     LOG(INFO) << "Static filling " << static_fill_color_;
     pp::ImageData image(instance_, pp::ImageData::GetNativeImageDataFormat(),
@@ -75,7 +72,6 @@ void PepperView::Paint() {
     // that has the data here which can be redrawn.
     return;
   }
-  TraceContext::tracer()->PrintString("End Paint.");
 }
 
 void PepperView::SetHostSize(const gfx::Size& host_size) {
@@ -94,8 +90,6 @@ void PepperView::SetHostSize(const gfx::Size& host_size) {
 void PepperView::PaintFrame(media::VideoFrame* frame, UpdatedRects* rects) {
   DCHECK(context_->main_message_loop()->BelongsToCurrentThread());
 
-  TraceContext::tracer()->PrintString("Start Paint Frame.");
-
   SetHostSize(gfx::Size(frame->width(), frame->height()));
 
   if (!backing_store_.get() || backing_store_->is_null()) {
@@ -112,8 +106,6 @@ void PepperView::PaintFrame(media::VideoFrame* frame, UpdatedRects* rects) {
 
   if (changes_made)
     FlushGraphics(start_time);
-
-  TraceContext::tracer()->PrintString("End Paint Frame.");
 }
 
 bool PepperView::PaintRect(media::VideoFrame* frame, const gfx::Rect& r) {
@@ -325,7 +317,6 @@ void PepperView::OnPartialFrameOutput(media::VideoFrame* frame,
                                       Task* done) {
   DCHECK(context_->main_message_loop()->BelongsToCurrentThread());
 
-  TraceContext::tracer()->PrintString("Calling PaintFrame");
   // TODO(ajwong): Clean up this API to be async so we don't need to use a
   // member variable as a hack.
   PaintFrame(frame, rects);
@@ -335,7 +326,6 @@ void PepperView::OnPartialFrameOutput(media::VideoFrame* frame,
 
 void PepperView::OnPaintDone(base::Time paint_start) {
   DCHECK(context_->main_message_loop()->BelongsToCurrentThread());
-  TraceContext::tracer()->PrintString("Paint flushed");
   instance_->GetStats()->video_paint_ms()->Record(
       (base::Time::Now() - paint_start).InMilliseconds());
 

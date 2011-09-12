@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "jingle/glue/thread_wrapper.h"
-#include "remoting/base/tracer.h"
 #include "remoting/client/chromoting_view.h"
 #include "remoting/client/client_context.h"
 #include "remoting/client/input_handler.h"
@@ -152,8 +151,6 @@ void ChromotingClient::DispatchPacket() {
   const VideoPacket* packet = received_packets_.front().packet;
   packet_being_processed_ = true;
 
-  ScopedTracer tracer("Handle video packet");
-
   // Measure the latency between the last packet being received and presented.
   bool last_packet = (packet->flags() & VideoPacket::LAST_PACKET) != 0;
   base::Time decode_start;
@@ -161,8 +158,8 @@ void ChromotingClient::DispatchPacket() {
     decode_start = base::Time::Now();
 
   rectangle_decoder_->DecodePacket(
-      packet, NewTracedMethod(this, &ChromotingClient::OnPacketDone,
-                              last_packet, decode_start));
+      packet, NewRunnableMethod(this, &ChromotingClient::OnPacketDone,
+                                last_packet, decode_start));
 }
 
 void ChromotingClient::OnConnectionOpened(protocol::ConnectionToHost* conn) {
@@ -204,12 +201,10 @@ void ChromotingClient::OnPacketDone(bool last_packet,
   if (!message_loop()->BelongsToCurrentThread()) {
     message_loop()->PostTask(
         FROM_HERE,
-        NewTracedMethod(this, &ChromotingClient::OnPacketDone,
+        NewRunnableMethod(this, &ChromotingClient::OnPacketDone,
                         last_packet, decode_start));
     return;
   }
-
-  TraceContext::tracer()->PrintString("Packet done");
 
   // Record the latency between the final packet being received and
   // presented.
@@ -232,11 +227,9 @@ void ChromotingClient::Initialize() {
   if (!message_loop()->BelongsToCurrentThread()) {
     message_loop()->PostTask(
         FROM_HERE,
-        NewTracedMethod(this, &ChromotingClient::Initialize));
+        NewRunnableMethod(this, &ChromotingClient::Initialize));
     return;
   }
-
-  TraceContext::tracer()->PrintString("Initializing client.");
 
   // Initialize the decoder.
   rectangle_decoder_->Initialize(connection_->config());

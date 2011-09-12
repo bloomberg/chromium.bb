@@ -412,8 +412,6 @@
         'base/running_average.h',
         'base/task_thread_proxy.cc',
         'base/task_thread_proxy.h',
-        'base/tracer.cc',
-        'base/tracer.h',
         'base/util.cc',
         'base/util.h',
       ],

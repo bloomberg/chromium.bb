@@ -33,7 +33,6 @@
 #include "base/threading/thread.h"
 #include "crypto/nss_util.h"
 #include "remoting/base/constants.h"
-#include "remoting/base/tracer.h"
 #include "remoting/host/capturer_fake.h"
 #include "remoting/host/chromoting_host.h"
 #include "remoting/host/chromoting_host_context.h"

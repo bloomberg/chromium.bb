@@ -3331,18 +3331,6 @@
    fun:*DownloadFileTest5SetUpEv
 }
 {
-   bug_65680
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN8remoting12TraceContext3GetEv
-   fun:_ZN8remoting12TraceContext6tracerEv
-   fun:_ZN8remoting14ScreenRecorder9DoCaptureEv
-   fun:_ZN8remoting14ScreenRecorder7DoStartEv
-   fun:_Z16DispatchToMethodIN8remoting14ScreenRecorderEMS1_FvvEEvPT_T0_RK6Tuple0
-   fun:_ZN14RunnableMethodIN8remoting14ScreenRecorderEMS1_FvvE6Tuple0E3RunEv
-   fun:*18TaskClosureAdapter3RunEv
-}
-{
    bug_72544
    Memcheck:Leak
    fun:malloc
