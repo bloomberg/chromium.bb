@@ -2408,24 +2408,6 @@
    fun:_ZN19TestWebViewDelegate20didClearWindowObjectEPN6WebKit8WebFrameE
 }
 {
-   bug_52371_a
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN5Value17CreateStringValueERKSbItN4base20string16_char_traitsESaItEE
-   fun:_ZNK8chromeos22SystemSettingsProvider3GetERKSsPP5Value
-   fun:_ZNK8chromeos12CrosSettings3GetERKSsPP5Value
-   fun:_ZN8chromeos26CoreChromeOSOptionsHandler9FetchPrefERKSs
-   fun:_ZN18CoreOptionsHandler16HandleFetchPrefs*Value*
-}
-{
-   bug_52371_b
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN8chromeos12CrosSettings19AddSettingsObserverEPKcP20NotificationObserver
-   fun:_ZN8chromeos26CoreChromeOSOptionsHandler11ObservePrefERKSs
-   fun:_ZN18CoreOptionsHandler18HandleObservePrefs*Value*
-}
-{
    bug_52831
    Memcheck:Leak
    fun:_Znw*

@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/cros_settings.h"
 
 #include "base/lazy_instance.h"
+#include "base/stl_util.h"
 #include "base/string_util.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/cros_settings_provider.h"
@@ -207,6 +208,7 @@ CrosSettings::CrosSettings() {
 
 CrosSettings::~CrosSettings() {
   DCHECK(providers_.empty());
+  STLDeleteValues(&settings_observers_);
 }
 
 }  // namespace chromeos
