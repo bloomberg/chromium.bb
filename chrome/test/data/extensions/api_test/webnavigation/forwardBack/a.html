@@ -1,6 +1,14 @@
+<html>
+<head>
 <script>
+function navigate() {
   if (window.sessionStorage['redirected'] != 1) {
     window.sessionStorage['redirected'] = 1;
-    window.setTimeout('document.location = "b.html";', 500);
+    // Required so this results in a history entry being created.
+    window.setTimeout('document.location = "b.html"', 0);
   }
+}
 </script>
+</head>
+<body onload="navigate()"></body>
+</html>
