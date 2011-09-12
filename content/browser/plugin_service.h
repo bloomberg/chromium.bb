@@ -98,6 +98,9 @@ class PluginService
   void OpenChannelToPpapiBroker(const FilePath& path,
                                 PpapiBrokerProcessHost::Client* client);
 
+  // Cancels opening a channel to a NPAPI plugin.
+  void CancelOpenChannelToNpapiPlugin(PluginProcessHost::Client* client);
+
   // Gets the plugin in the list of plugins that matches the given url and mime
   // type. Must be called on the FILE thread if |use_stale| is NULL.
   bool GetPluginInfo(int render_process_id,
@@ -191,6 +194,8 @@ class PluginService
 
   // Weak pointer; outlives us.
   content::PluginServiceFilter* filter_;
+
+  std::set<PluginProcessHost::Client*> pending_plugin_clients_;
 
   DISALLOW_COPY_AND_ASSIGN(PluginService);
 };

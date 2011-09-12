@@ -24,9 +24,9 @@
 
 namespace {
 
-const char* kFlashMimeType = "application/x-shockwave-flash";
+const char kFlashMimeType[] = "application/x-shockwave-flash";
 // The minimum Flash Player version that implements NPP_ClearSiteData.
-const char* kMinFlashVersion = "10.3";
+const char kMinFlashVersion[] = "10.3";
 const int64 kRemovalTimeoutMs = 10000;
 const uint64 kClearAllData = 0;
 
@@ -95,6 +95,10 @@ const content::ResourceContext& PluginDataRemover::GetResourceContext() {
 
 void PluginDataRemover::SetPluginInfo(
     const webkit::WebPluginInfo& info) {
+}
+
+void PluginDataRemover::OnFoundPluginProcessHost(
+    PluginProcessHost* host) {
 }
 
 void PluginDataRemover::OnChannelOpened(const IPC::ChannelHandle& handle) {
