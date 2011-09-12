@@ -55,6 +55,10 @@ struct PPB_Flash_TCPSocket {
   // session cache.
   // When a proxy server is used, |server_name| and |server_port| refer to the
   // destination server.
+  // If the socket is not connected, or there are pending read/write requests,
+  // SSLHandshake() will fail without starting a handshake. Otherwise, any
+  // failure during the handshake process will cause the socket to be
+  // disconnected.
   int32_t (*SSLHandshake)(PP_Resource tcp_socket,
                           const char* server_name,
                           uint16_t server_port,
