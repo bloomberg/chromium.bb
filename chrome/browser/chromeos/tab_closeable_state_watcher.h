@@ -71,7 +71,7 @@ class TabCloseableStateWatcher : public ::TabCloseableStateWatcher,
   // Called by private class TabStripWatcher for TabStripModelObserver
   // notifications.
   // |closing_last_tab| is true if the tab strip is closing the last tab.
-  virtual void OnTabStripChanged(const Browser* browser, bool closing_last_tab);
+  void OnTabStripChanged(const Browser* browser, bool closing_last_tab);
 
   // Utility functions.
 
