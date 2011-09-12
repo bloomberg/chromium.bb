@@ -191,6 +191,60 @@ TEST(HotkeyManagerTest, TestAddTwoHotkeys) {
       XK_a, 0x0, false));
 }
 
+TEST(HotkeyManagerTest, TestRemoveHotkey1) {
+  TestableHotkeyManager manager;
+  EXPECT_TRUE(manager.AddHotkey(0, XK_a, 0x0, true));
+  EXPECT_TRUE(manager.AddHotkey(1, XK_b, 0x0, false));
+  EXPECT_EQ(0, manager.FilterKeyEventInternal(XK_a, 0x0, true));
+  EXPECT_EQ(TestableHotkeyManager::kFiltered, manager.FilterKeyEventInternal(
+      XK_a, 0x0, false));
+
+  // Remove the second hotkey and confirm that it is actually removed.
+  EXPECT_TRUE(manager.RemoveHotkey(1));
+  EXPECT_EQ(TestableHotkeyManager::kNoEvent, manager.FilterKeyEventInternal(
+      XK_b, 0x0, true));
+  EXPECT_EQ(TestableHotkeyManager::kNoEvent, manager.FilterKeyEventInternal(
+      XK_b, 0x0, false));
+  // Remove the first one as well.
+  EXPECT_TRUE(manager.RemoveHotkey(0));
+  EXPECT_EQ(TestableHotkeyManager::kNoEvent, manager.FilterKeyEventInternal(
+      XK_a, 0x0, true));
+  EXPECT_EQ(TestableHotkeyManager::kNoEvent, manager.FilterKeyEventInternal(
+      XK_a, 0x0, false));
+
+  // Can't remove a hotkey twice.
+  EXPECT_FALSE(manager.RemoveHotkey(0));
+  EXPECT_FALSE(manager.RemoveHotkey(1));
+  // "2" is not registered yet.
+  EXPECT_FALSE(manager.RemoveHotkey(2));
+}
+
+TEST(HotkeyManagerTest, TestRemoveHotkey2) {
+  TestableHotkeyManager manager;
+  // Add two hotkeys that have the same id "0".
+  EXPECT_TRUE(manager.AddHotkey(0, XK_a, 0x0, true));
+  EXPECT_TRUE(manager.AddHotkey(0, XK_b, 0x0, false));
+  EXPECT_EQ(0, manager.FilterKeyEventInternal(XK_a, 0x0, true));
+  EXPECT_EQ(TestableHotkeyManager::kFiltered, manager.FilterKeyEventInternal(
+      XK_a, 0x0, false));
+
+  // Remove the hotkey and confirm that it is actually removed.
+  EXPECT_TRUE(manager.RemoveHotkey(0));
+  EXPECT_EQ(TestableHotkeyManager::kNoEvent, manager.FilterKeyEventInternal(
+      XK_b, 0x0, true));
+  EXPECT_EQ(TestableHotkeyManager::kNoEvent, manager.FilterKeyEventInternal(
+      XK_b, 0x0, false));
+  EXPECT_EQ(TestableHotkeyManager::kNoEvent, manager.FilterKeyEventInternal(
+      XK_a, 0x0, true));
+  EXPECT_EQ(TestableHotkeyManager::kNoEvent, manager.FilterKeyEventInternal(
+      XK_a, 0x0, false));
+
+  // Can't remove a hotkey twice.
+  EXPECT_FALSE(manager.RemoveHotkey(0));
+  // "1" is not registered yet.
+  EXPECT_FALSE(manager.RemoveHotkey(1));
+}
+
 // Press Shift, then press Alt. Release Alt first.
 TEST(HotkeyManagerTest, TestAltShift1) {
   scoped_ptr<TestableHotkeyManager> manager(CreateManager());

@@ -40,7 +40,10 @@ class HotkeyManager {
                  uint32 keysym,  // one of XK_* in X11/keysymdef.h.
                  uint32 modifiers,  // set of *Mask flags in X11/X.h, or zero.
                  bool trigger_on_key_press);
-  // TODO(yusukes): Add RemoveHotkey function if we support crosbug.com/6267.
+
+  // Removes all hotkeys whose ID is |event_id|. Returns false if no such hotkey
+  // is registered.
+  bool RemoveHotkey(int event_id);
 
   // Checks if |key_event| is a hotkey. If it is, Observer::HotkeyPressed() is
   // called for each observers. This function returns true if the key_event

@@ -95,6 +95,20 @@ bool HotkeyManager::AddHotkey(int event_id,
       std::make_pair(std::make_pair(keysym, modifiers), event_id)).second;
 }
 
+bool HotkeyManager::RemoveHotkey(int event_id) {
+  bool result = false;
+  std::map<std::pair<uint32, uint32>, int>::iterator iter;
+  for (iter = hotkeys_.begin(); iter != hotkeys_.end();) {
+    if (iter->second == event_id) {
+      hotkeys_.erase(iter++);
+      result = true;
+    } else {
+      ++iter;
+    }
+  }
+  return result;
+}
+
 bool HotkeyManager::FilterKeyEvent(const XEvent& key_event) {
   bool is_key_press = true;
   switch (key_event.type) {
