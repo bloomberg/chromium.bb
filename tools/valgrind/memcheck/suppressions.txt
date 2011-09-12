@@ -4286,14 +4286,6 @@
    fun:_ZN22ViewHostMsg_GetPlugins8DispatchI19RenderMessageFilterS1_MS1_FvbPSt6vectorIN6webkit13WebPluginInfoESaIS4_EEEEEbPKN3IPC7MessageEPT_PT0_T1_
 }
 {
-   bug_88863_b
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN9__gnu_cxx13new_allocatorI13scoped_refptrIN3IPC12ChannelProxy13MessageFilterEEE8allocateEjPKv
-   fun:_ZNSt12_Vector_baseI13scoped_refptrIN3IPC12ChannelProxy13MessageFilterEESaIS4_EE11_M_allocateEj
-   fun:_ZNSt6vectorI13scoped_refptrIN3IPC12ChannelProxy13MessageFilterEESaIS4_EE13_M_insert_auxEN9__gnu_cxx17__normal_iteratorIPS4_S6_EERKS4_
-}
-{
    bug_81796
    Memcheck:Leak
    fun:_Znw*
