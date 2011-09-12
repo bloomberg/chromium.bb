@@ -13,6 +13,7 @@
 #include "content/browser/tab_contents/tab_contents_view.h"
 #include "views/widget/widget.h"
 
+class ConstrainedWindowGtk;
 class NativeTabContentsView;
 class RenderViewContextMenuViews;
 class SadTabView;
@@ -38,6 +39,11 @@ class TabContentsViewViews : public views::Widget,
   // because that's what was easiest when they were split.
   explicit TabContentsViewViews(TabContents* tab_contents);
   virtual ~TabContentsViewViews();
+
+  // Intermediate code to pass comiplation. This will be removed as a
+  // part of ConstraintWindow change (http://codereview.chromium.org/7631049).
+  void AttachConstrainedWindow(ConstrainedWindowGtk* constrained_window);
+  void RemoveConstrainedWindow(ConstrainedWindowGtk* constrained_window);
 
   // Reset the native parent of this view to NULL.  Unparented windows should
   // not receive any messages.

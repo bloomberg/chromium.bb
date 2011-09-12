@@ -604,7 +604,7 @@ ThemeProvider* Widget::GetThemeProvider() const {
 }
 
 FocusManager* Widget::GetFocusManager() {
-  Widget* toplevel_widget = GetTopLevelWidget();
+  const Widget* toplevel_widget = GetTopLevelWidget();
   return toplevel_widget ? toplevel_widget->focus_manager_.get() : NULL;
 }
 
@@ -801,6 +801,10 @@ bool Widget::ConvertPointFromAncestor(
 
 View* Widget::GetChildViewParent() {
   return GetContentsView() ? GetContentsView() : GetRootView();
+}
+
+gfx::Rect Widget::GetWorkAreaBoundsInScreen() const {
+  return native_widget_->GetWorkAreaBoundsInScreen();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -47,7 +47,12 @@ class VIEWS_EXPORT NativeWidgetViews : public internal::NativeWidgetPrivate {
   internal::NativeWidgetDelegate* delegate() const { return delegate_; }
 
  protected:
-  friend class NativeWidgetView;
+  friend class internal::NativeWidgetView;
+
+  // Event handlers that subclass can implmenet custom behavior.
+  virtual void OnBoundsChanged(const gfx::Rect& new_bounds,
+                               const gfx::Rect& old_bounds);
+  virtual bool OnMouseEvent(const MouseEvent& event);
 
   // Overridden from internal::NativeWidgetPrivate:
   virtual void InitNativeWidget(const Widget::InitParams& params) OVERRIDE;
@@ -130,6 +135,7 @@ class VIEWS_EXPORT NativeWidgetViews : public internal::NativeWidgetPrivate {
   virtual void FocusNativeView(gfx::NativeView native_view) OVERRIDE;
   virtual bool ConvertPointFromAncestor(
       const Widget* ancestor, gfx::Point* point) const OVERRIDE;
+  virtual gfx::Rect GetWorkAreaBoundsInScreen() const OVERRIDE;
 
   // Overridden from internal::InputMethodDelegate
   virtual void DispatchKeyEventPostIME(const KeyEvent& key) OVERRIDE;
@@ -140,6 +146,8 @@ class VIEWS_EXPORT NativeWidgetViews : public internal::NativeWidgetPrivate {
   // These functions may return NULL during Widget destruction.
   internal::NativeWidgetPrivate* GetParentNativeWidget();
   const internal::NativeWidgetPrivate* GetParentNativeWidget() const;
+
+  bool HandleWindowOperation(const MouseEvent& event);
 
   internal::NativeWidgetDelegate* delegate_;
 
@@ -158,8 +166,6 @@ class VIEWS_EXPORT NativeWidgetViews : public internal::NativeWidgetPrivate {
 
   gfx::Rect restored_bounds_;
   ui::Transform restored_transform_;
-
-  Widget* hosting_widget_;
 
   // See class documentation for Widget in widget.h for a note about ownership.
   Widget::InitParams::Ownership ownership_;

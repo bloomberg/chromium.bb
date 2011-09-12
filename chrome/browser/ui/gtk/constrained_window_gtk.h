@@ -17,7 +17,7 @@
 class TabContents;
 typedef struct _GdkColor GdkColor;
 #if defined(TOUCH_UI)
-class TabContentsViewTouch;
+class TabContentsViewViews;
 #elif defined(TOOLKIT_VIEWS)
 class NativeTabContentsViewGtk;
 #else
@@ -51,7 +51,7 @@ class ConstrainedWindowGtkDelegate {
 class ConstrainedWindowGtk : public ConstrainedWindow {
  public:
 #if defined(TOUCH_UI)
-   typedef TabContentsViewTouch TabContentsViewType;
+   typedef TabContentsViewViews TabContentsViewType;
 #elif defined(TOOLKIT_VIEWS)
    typedef NativeTabContentsViewGtk TabContentsViewType;
 #else

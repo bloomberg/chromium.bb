@@ -52,10 +52,17 @@ TabContentsViewViews::~TabContentsViewViews() {
     view_storage->RemoveView(last_focused_view_storage_id_);
 }
 
+void TabContentsViewViews::AttachConstrainedWindow(
+    ConstrainedWindowGtk* constrained_window) {
+}
+void TabContentsViewViews::RemoveConstrainedWindow(
+    ConstrainedWindowGtk* constrained_window) {
+}
+
 void TabContentsViewViews::Unparent() {
   // Remember who our FocusManager is, we won't be able to access it once
   // un-parented.
-  focus_manager_ = GetFocusManager();
+  focus_manager_ = Widget::GetFocusManager();
   CHECK(native_tab_contents_view_);
   native_tab_contents_view_->Unparent();
 }
@@ -164,10 +171,15 @@ void TabContentsViewViews::Focus() {
   }
 
   RenderWidgetHostView* rwhv = tab_contents_->GetRenderWidgetHostView();
-  views::FocusManager* focus_manager = GetFocusManager();
-  if (focus_manager)
-    focus_manager->FocusNativeView(rwhv ? rwhv->GetNativeView()
-                                   : GetNativeView());
+  if (rwhv) {
+    rwhv->Focus();
+  } else {
+    views::FocusManager* focus_manager = GetFocusManager();
+    // TODO(oshima): There is no native view for RWHVViews.
+    // Consider Widget::Focus().
+    if (focus_manager)
+      focus_manager->FocusNativeView(GetNativeView());
+  }
 }
 
 void TabContentsViewViews::SetInitialFocus() {
@@ -254,7 +266,8 @@ void TabContentsViewViews::GotFocus() {
 }
 
 void TabContentsViewViews::TakeFocus(bool reverse) {
-  if (!tab_contents_->delegate()->TakeFocus(reverse)) {
+  if (tab_contents_->delegate() &&
+      !tab_contents_->delegate()->TakeFocus(reverse)) {
     views::FocusManager* focus_manager = GetFocusManager();
 
     // We may not have a focus manager if the tab has been switched before this

@@ -174,7 +174,7 @@ class RenderWidgetHostViewViews : public RenderWidgetHostView,
 #endif
 
  protected:
-  // Overridden views::View.
+  // Overridden from views::View.
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
   virtual void OnFocus() OVERRIDE;
   virtual void OnBlur() OVERRIDE;
@@ -210,10 +210,8 @@ class RenderWidgetHostViewViews : public RenderWidgetHostView,
   void UpdateTouchSelectionController();
 
 #if defined(TOOLKIT_USES_GTK)
-  // On some systems, there can be two native views, where an outer native view
-  // contains the inner native view (e.g. when using GTK+). This returns the
-  // inner view. This can return NULL when it's not attached to a view.
-  gfx::NativeView GetInnerNativeView() const;
+  // Returns true if the RWHV is ready to paint the content.
+  bool IsReadyToPaint();
 #endif
 
   // The model object.

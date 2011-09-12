@@ -6,12 +6,10 @@
 
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_preferences_util.h"
+#include "chrome/browser/ui/views/tab_contents/tab_contents_view_views.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "views/focus/focus_manager.h"
-
-#if defined(TOUCH_UI)
-#include "chrome/browser/ui/views/tab_contents/tab_contents_view_touch.h"
-#endif
+#include "views/widget/native_widget_views.h"
 
 // static
 const char DOMView::kViewClassName[] =
@@ -81,9 +79,13 @@ void DOMView::ViewHierarchyChanged(bool is_add, views::View* parent,
 }
 
 void DOMView::AttachTabContents() {
-#if defined(TOUCH_UI)
-  AttachToView(static_cast<TabContentsViewTouch*>(tab_contents_->view()));
-#else
-  Attach(tab_contents_->GetNativeView());
-#endif
+  if (views::Widget::IsPureViews()) {
+    TabContentsViewViews* widget =
+        static_cast<TabContentsViewViews*>(tab_contents_->view());
+    views::NativeWidgetViews* nwv =
+        static_cast<views::NativeWidgetViews*>(widget->native_widget());
+    AttachToView(nwv->GetView());
+  } else {
+    Attach(tab_contents_->GetNativeView());
+  }
 }

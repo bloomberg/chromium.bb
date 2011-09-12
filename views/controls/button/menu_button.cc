@@ -258,9 +258,7 @@ int MenuButton::GetMaximumScreenXCoordinate() {
     return 0;
   }
 
-  gfx::Rect monitor_bounds =
-      gfx::Screen::GetMonitorWorkAreaNearestWindow(
-          GetWidget()->GetTopLevelWidget()->GetNativeView());
+  gfx::Rect monitor_bounds = GetWidget()->GetWorkAreaBoundsInScreen();
   return monitor_bounds.right() - 1;
 }
 
