@@ -79,6 +79,10 @@ class PluginProcessHost : public BrowserChildProcessHost {
   // OnChannelOpened in the client is called.
   void OpenChannelToPlugin(Client* client);
 
+  // Cancels all pending channel requests for the given resource context.
+  static void CancelPendingRequestsForResourceContext(
+      const content::ResourceContext* context);
+
   // This function is called on the IO thread once we receive a reply from the
   // modal HTML dialog (in the form of a JSON string). This function forwards
   // that reply back to the plugin that requested the dialog.

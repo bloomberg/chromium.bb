@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "content/browser/browser_thread.h"
+#include "content/browser/plugin_process_host.h"
 #include "webkit/database/database_tracker.h"
 
 namespace content {
@@ -23,7 +24,13 @@ ResourceContext::ResourceContext()
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
-ResourceContext::~ResourceContext() {}
+ResourceContext::~ResourceContext() {
+  if (BrowserThread::IsMessageLoopValid(BrowserThread::IO)) {
+    // Band-aid for http://crbug.com/94704 until we change plug-in channel
+    // requests to be owned by the ResourceContext.
+    PluginProcessHost::CancelPendingRequestsForResourceContext(this);
+  }
+}
 
 void* ResourceContext::GetUserData(const void* key) const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
