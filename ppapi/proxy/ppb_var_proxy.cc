@@ -46,10 +46,37 @@ const PPB_Var var_interface = {
   &VarToUtf8
 };
 
+InterfaceProxy* CreateVarProxy(Dispatcher* dispatcher,
+                               const void* target_interface) {
+  return new PPB_Var_Proxy(dispatcher, target_interface);
+}
+
 }  // namespace
 
-const PPB_Var* GetPPB_Var_Interface() {
-  return &var_interface;
+PPB_Var_Proxy::PPB_Var_Proxy(Dispatcher* dispatcher,
+                             const void* target_interface)
+    : InterfaceProxy(dispatcher, target_interface) {
+}
+
+PPB_Var_Proxy::~PPB_Var_Proxy() {
+}
+
+// static
+const InterfaceProxy::Info* PPB_Var_Proxy::GetInfo() {
+  static const Info info = {
+    &var_interface,
+    PPB_VAR_INTERFACE,
+    INTERFACE_ID_PPB_VAR,
+    false,
+    &CreateVarProxy,
+  };
+  return &info;
+}
+
+bool PPB_Var_Proxy::OnMessageReceived(const IPC::Message& msg) {
+  // All PPB_Var calls are handled locally; there is no need to send or receive
+  // messages here.
+  return false;
 }
 
 }  // namespace proxy

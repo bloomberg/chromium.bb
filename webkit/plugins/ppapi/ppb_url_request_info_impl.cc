@@ -129,8 +129,7 @@ bool PPB_URLRequestInfo_Impl::ToWebURLRequest(WebFrame* frame,
     return false;
 
   dest->initialize();
-  dest->setURL(frame->document().completeURL(WebString::fromUTF8(
-      data().url)));
+  dest->setURL(frame->document().completeURL(WebString::fromUTF8(data().url)));
   dest->setDownloadToFile(data().stream_to_file);
   dest->setReportUploadProgress(data().record_upload_progress);
 

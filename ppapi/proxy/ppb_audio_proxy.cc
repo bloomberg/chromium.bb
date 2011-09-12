@@ -116,6 +116,11 @@ int32_t Audio::GetSharedMemory(int* shm_handle, uint32_t* shm_size) {
 
 namespace {
 
+InterfaceProxy* CreateAudioProxy(Dispatcher* dispatcher,
+                                 const void* target_interface) {
+  return new PPB_Audio_Proxy(dispatcher, target_interface);
+}
+
 base::PlatformFile IntToPlatformFile(int32_t handle) {
   // TODO(piman/brettw): Change trusted interface to return a PP_FileHandle,
   // those casts are ugly.
@@ -130,12 +135,25 @@ base::PlatformFile IntToPlatformFile(int32_t handle) {
 
 }  // namespace
 
-PPB_Audio_Proxy::PPB_Audio_Proxy(Dispatcher* dispatcher)
-    : InterfaceProxy(dispatcher),
+PPB_Audio_Proxy::PPB_Audio_Proxy(Dispatcher* dispatcher,
+                                 const void* target_interface)
+    : InterfaceProxy(dispatcher, target_interface),
       callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
 }
 
 PPB_Audio_Proxy::~PPB_Audio_Proxy() {
+}
+
+// static
+const InterfaceProxy::Info* PPB_Audio_Proxy::GetInfo() {
+  static const Info info = {
+    thunk::GetPPB_Audio_Thunk(),
+    PPB_AUDIO_INTERFACE,
+    INTERFACE_ID_PPB_AUDIO,
+    false,
+    &CreateAudioProxy,
+  };
+  return &info;
 }
 
 // static
@@ -224,19 +242,16 @@ void PPB_Audio_Proxy::OnMsgCreate(PP_Instance instance_id,
 
   // Clean up the temporary audio config resource we made.
   const PPB_Core* core = static_cast<const PPB_Core*>(
-      dispatcher()->local_get_interface()(PPB_CORE_INTERFACE));
+      dispatcher()->GetLocalInterface(PPB_CORE_INTERFACE));
   core->ReleaseResource(audio_config_res);
 }
 
 void PPB_Audio_Proxy::OnMsgStartOrStop(const HostResource& audio_id,
                                        bool play) {
-  EnterHostFromHostResource<PPB_Audio_API> enter(audio_id);
-  if (enter.failed())
-    return;
   if (play)
-    enter.object()->StartPlayback();
+    ppb_audio_target()->StartPlayback(audio_id.host_resource());
   else
-    enter.object()->StopPlayback();
+    ppb_audio_target()->StopPlayback(audio_id.host_resource());
 }
 
 // Processed in the plugin (message from host).
@@ -292,7 +307,7 @@ int32_t PPB_Audio_Proxy::GetAudioConnectedHandles(
     base::SharedMemoryHandle* foreign_shared_memory_handle,
     uint32_t* shared_memory_length) {
   // Get the audio interface which will give us the handles.
-  EnterHostFromHostResource<PPB_Audio_API> enter(resource);
+  EnterResourceNoLock<PPB_Audio_API> enter(resource.host_resource(), false);
   if (enter.failed())
     return PP_ERROR_NOINTERFACE;
 

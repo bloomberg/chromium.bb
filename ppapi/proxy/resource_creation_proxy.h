@@ -11,8 +11,8 @@
 #include "ipc/ipc_channel.h"
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_instance.h"
-#include "ppapi/proxy/interface_proxy.h"
 #include "ppapi/proxy/serialized_structs.h"
+#include "ppapi/shared_impl/function_group_base.h"
 #include "ppapi/thunk/resource_creation_api.h"
 
 struct PP_Size;
@@ -25,15 +25,13 @@ namespace proxy {
 
 class Dispatcher;
 
-class ResourceCreationProxy : public InterfaceProxy,
-                              public thunk::ResourceCreationAPI {
+class ResourceCreationProxy : public FunctionGroupBase,
+                              public thunk::ResourceCreationAPI,
+                              public IPC::Channel::Listener,
+                              public IPC::Message::Sender {
  public:
   explicit ResourceCreationProxy(Dispatcher* dispatcher);
   virtual ~ResourceCreationProxy();
-
-  // Factory function used for registration (normal code can just use the
-  // constructor).
-  static InterfaceProxy* Create(Dispatcher* dispatcher);
 
   virtual thunk::ResourceCreationAPI* AsResourceCreationAPI() OVERRIDE;
 
@@ -150,6 +148,8 @@ class ResourceCreationProxy : public InterfaceProxy,
                             HostResource* result,
                             std::string* image_data_desc,
                             ImageHandle* result_image_handle);
+
+  Dispatcher* dispatcher_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceCreationProxy);
 };

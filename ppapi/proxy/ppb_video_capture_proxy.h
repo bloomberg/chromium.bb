@@ -21,15 +21,19 @@ namespace proxy {
 
 class PPB_VideoCapture_Proxy : public InterfaceProxy {
  public:
-  PPB_VideoCapture_Proxy(Dispatcher* dispatcher);
+  PPB_VideoCapture_Proxy(Dispatcher* dispatcher, const void* target_interface);
   virtual ~PPB_VideoCapture_Proxy();
+
+  static const Info* GetInfo();
 
   static PP_Resource CreateProxyResource(PP_Instance instance);
 
+  const PPB_VideoCapture_Dev* ppb_video_capture_target() const {
+    return static_cast<const PPB_VideoCapture_Dev*>(target_interface());
+  }
+
   // InterfaceProxy implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg);
-
-  static const InterfaceID kInterfaceID = INTERFACE_ID_PPB_VIDEO_CAPTURE_DEV;
 
  private:
   // Message handlers.
@@ -40,21 +44,21 @@ class PPB_VideoCapture_Proxy : public InterfaceProxy {
   void OnMsgReuseBuffer(const ppapi::HostResource& resource,
                         uint32_t buffer);
   void OnMsgStopCapture(const ppapi::HostResource& resource);
-
-  DISALLOW_COPY_AND_ASSIGN(PPB_VideoCapture_Proxy);
 };
 
 class PPP_VideoCapture_Proxy : public InterfaceProxy {
  public:
-  PPP_VideoCapture_Proxy(Dispatcher* dispatcher);
+  PPP_VideoCapture_Proxy(Dispatcher* dispatcher, const void* target_interface);
   virtual ~PPP_VideoCapture_Proxy();
 
   static const Info* GetInfo();
 
+  const PPP_VideoCapture_Dev* ppp_video_capture_target() const {
+    return static_cast<const PPP_VideoCapture_Dev*>(target_interface());
+  }
+
   // InterfaceProxy implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg);
-
-  static const InterfaceID kInterfaceID = INTERFACE_ID_PPP_VIDEO_CAPTURE_DEV;
 
  private:
   // Message handlers.
@@ -67,13 +71,6 @@ class PPP_VideoCapture_Proxy : public InterfaceProxy {
                     uint32_t error_code);
   void OnMsgOnBufferReady(const ppapi::HostResource& video_capture,
                           uint32_t buffer);
-
-  // When this proxy is in the plugin side, this value caches the interface
-  // pointer so we don't have to retrieve it from the dispatcher each time.
-  // In the host, this value is always NULL.
-  const PPP_VideoCapture_Dev* ppp_video_capture_impl_;
-
-  DISALLOW_COPY_AND_ASSIGN(PPP_VideoCapture_Proxy);
 };
 
 }  // namespace proxy

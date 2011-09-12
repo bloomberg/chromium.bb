@@ -29,15 +29,6 @@ class PPB_Instance_FunctionAPI {
                                PP_Var script,
                                PP_Var* exception) = 0;
 
-  // Console.
-  virtual void Log(PP_Instance instance,
-                   int log_level,
-                   PP_Var value) = 0;
-  virtual void LogWithSource(PP_Instance instance,
-                             int log_level,
-                             PP_Var source,
-                             PP_Var value) = 0;
-
   // Fullscreen.
   virtual PP_Bool IsFullscreen(PP_Instance instance) = 0;
   virtual PP_Bool SetFullscreen(PP_Instance instance, PP_Bool fullscreen) = 0;

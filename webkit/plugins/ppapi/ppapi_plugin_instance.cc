@@ -9,7 +9,6 @@
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/utf_string_conversions.h"
-#include "ppapi/c/dev/ppb_console_dev.h"
 #include "ppapi/c/dev/ppb_find_dev.h"
 #include "ppapi/c/dev/ppb_fullscreen_dev.h"
 #include "ppapi/c/dev/ppb_memory_dev.h"
@@ -39,7 +38,6 @@
 #include "printing/units.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebBindings.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebConsoleMessage.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCursorInfo.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebElement.h"
@@ -106,7 +104,6 @@ using ppapi::thunk::PPB_Surface3D_API;
 using ppapi::Var;
 using WebKit::WebBindings;
 using WebKit::WebCanvas;
-using WebKit::WebConsoleMessage;
 using WebKit::WebCursorInfo;
 using WebKit::WebDocument;
 using WebKit::WebFrame;
@@ -1443,49 +1440,6 @@ PP_Var PluginInstance::ExecuteScript(PP_Instance instance,
   PP_Var ret = NPVariantToPPVar(this, &result);
   WebBindings::releaseVariantValue(&result);
   return ret;
-}
-
-void PluginInstance::Log(PP_Instance instance,
-                         int log_level,
-                         PP_Var value) {
-  // TODO(brettw) get the plugin name and use it as the source.
-  LogWithSource(instance, log_level, PP_MakeUndefined(), value);
-}
-
-void PluginInstance::LogWithSource(PP_Instance instance,
-                                   int log_level,
-                                   PP_Var source,
-                                   PP_Var value) {
-  // Convert the log level, defaulting to error.
-  WebConsoleMessage::Level web_level;
-  switch (log_level) {
-    case PP_LOGLEVEL_TIP:
-      web_level = WebConsoleMessage::LevelTip;
-      break;
-    case PP_LOGLEVEL_LOG:
-      web_level = WebConsoleMessage::LevelLog;
-      break;
-    case PP_LOGLEVEL_WARNING:
-      web_level = WebConsoleMessage::LevelWarning;
-      break;
-    case PP_LOGLEVEL_ERROR:
-    default:
-      web_level = WebConsoleMessage::LevelError;
-      break;
-  }
-
-  // Format is the "<source>: <value>". The source defaults to the module name
-  // if the source isn't a string or is empty.
-  std::string message;
-  if (source.type == PP_VARTYPE_STRING)
-    message = Var::PPVarToLogString(source);
-  if (message.empty())
-    message = module()->name();
-  message.append(": ");
-  message.append(Var::PPVarToLogString(value));
-
-  container()->element().document().frame()->addMessageToConsole(
-      WebConsoleMessage(web_level, WebString(UTF8ToUTF16(message))));
 }
 
 PP_Bool PluginInstance::IsFullscreen(PP_Instance instance) {

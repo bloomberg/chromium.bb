@@ -19,11 +19,14 @@ namespace proxy {
 
 class SerializedVarReturnValue;
 
-class PPB_CharSet_Proxy : public InterfaceProxy,
-                          public ppapi::thunk::PPB_CharSet_FunctionAPI {
+class PPB_CharSet_Proxy : public ppapi::FunctionGroupBase,
+                          public ppapi::thunk::PPB_CharSet_FunctionAPI,
+                          public InterfaceProxy {
  public:
-  PPB_CharSet_Proxy(Dispatcher* dispatcher);
+  PPB_CharSet_Proxy(Dispatcher* dispatcher, const void* target_interface);
   virtual ~PPB_CharSet_Proxy();
+
+  static const Info* GetInfo();
 
   // FunctionGroupBase overrides.
   virtual ppapi::thunk::PPB_CharSet_FunctionAPI* AsPPB_CharSet_FunctionAPI()
@@ -44,8 +47,6 @@ class PPB_CharSet_Proxy : public InterfaceProxy,
 
   // InterfaceProxy implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
-
-  static const InterfaceID kInterfaceID = INTERFACE_ID_PPB_CHAR_SET;
 
  private:
   void OnMsgGetDefaultCharSet(PP_Instance instance,

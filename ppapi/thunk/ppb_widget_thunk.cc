@@ -54,7 +54,7 @@ const PPB_Widget_Dev g_ppb_widget_thunk = {
 
 }  // namespace
 
-const PPB_Widget_Dev* GetPPB_Widget_Dev_Thunk() {
+const PPB_Widget_Dev* GetPPB_Widget_Thunk() {
   return &g_ppb_widget_thunk;
 }
 

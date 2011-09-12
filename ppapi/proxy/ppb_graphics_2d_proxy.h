@@ -26,17 +26,21 @@ namespace proxy {
 
 class PPB_Graphics2D_Proxy : public InterfaceProxy {
  public:
-  PPB_Graphics2D_Proxy(Dispatcher* dispatcher);
+  PPB_Graphics2D_Proxy(Dispatcher* dispatcher, const void* target_interface);
   virtual ~PPB_Graphics2D_Proxy();
+
+  static const Info* GetInfo();
 
   static PP_Resource CreateProxyResource(PP_Instance instance,
                                          const PP_Size& size,
                                          PP_Bool is_always_opaque);
 
+  const PPB_Graphics2D* ppb_graphics_2d_target() const {
+    return static_cast<const PPB_Graphics2D*>(target_interface());
+  }
+
   // InterfaceProxy implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg);
-
-  static const InterfaceID kInterfaceID = INTERFACE_ID_PPB_GRAPHICS_2D;
 
  private:
   // Plugin->renderer message handlers.
@@ -63,8 +67,6 @@ class PPB_Graphics2D_Proxy : public InterfaceProxy {
 
   pp::CompletionCallbackFactory<PPB_Graphics2D_Proxy,
                                 ProxyNonThreadSafeRefCount> callback_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(PPB_Graphics2D_Proxy);
 };
 
 }  // namespace proxy

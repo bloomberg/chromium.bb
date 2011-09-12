@@ -57,7 +57,7 @@ const PPB_Buffer_Dev g_ppb_buffer_thunk = {
 
 }  // namespace
 
-const PPB_Buffer_Dev* GetPPB_Buffer_Dev_Thunk() {
+const PPB_Buffer_Dev* GetPPB_Buffer_Thunk() {
   return &g_ppb_buffer_thunk;
 }
 

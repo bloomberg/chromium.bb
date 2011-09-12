@@ -88,11 +88,8 @@ class PPAPI_PROXY_EXPORT PluginDispatcher : public Dispatcher {
   // object as a convenience. Returns NULL on failure.
   static PluginDispatcher* GetForResource(const Resource* resource);
 
-  // Implements the GetInterface function for the plugin to call to retrieve
-  // a browser interface.
-  static const void* GetBrowserInterface(const char* interface);
-
-  const void* GetPluginInterface(const std::string& interface_name);
+  static const void* GetInterfaceFromDispatcher(
+      const char* dispatcher_interface);
 
   // You must call this function before anything else. Returns true on success.
   // The delegate pointer must outlive this class, ownership is not
@@ -152,12 +149,14 @@ class PPAPI_PROXY_EXPORT PluginDispatcher : public Dispatcher {
 
   PluginDelegate* plugin_delegate_;
 
-  // Contains all the plugin interfaces we've queried. The mapped value will
-  // be the pointer to the interface pointer supplied by the plugin if it's
-  // supported, or NULL if it's not supported. This allows us to cache failures
-  // and not req-query if a plugin doesn't support the interface.
-  typedef base::hash_map<std::string, const void*> InterfaceMap;
-  InterfaceMap plugin_interfaces_;
+  // All target proxies currently created. These are ones that receive
+  // messages.
+  scoped_ptr<InterfaceProxy> target_proxies_[INTERFACE_ID_COUNT];
+
+  // Function proxies created for "new-style" FunctionGroups.
+  // TODO(brettw) this is in progress. It should be merged with the target
+  // proxies so there is one list to consult.
+  scoped_ptr<FunctionGroupBase> function_proxies_[INTERFACE_ID_COUNT];
 
   typedef base::hash_map<PP_Instance, InstanceData> InstanceDataMap;
   InstanceDataMap instance_map_;

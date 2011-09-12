@@ -63,7 +63,7 @@ class Surface3D : public ppapi::Resource,
 
 class PPB_Surface3D_Proxy : public InterfaceProxy {
  public:
-  PPB_Surface3D_Proxy(Dispatcher* dispatcher);
+  PPB_Surface3D_Proxy(Dispatcher* dispatcher, const void* target_interface);
   virtual ~PPB_Surface3D_Proxy();
 
   static const Info* GetInfo();
@@ -74,8 +74,6 @@ class PPB_Surface3D_Proxy : public InterfaceProxy {
 
   // InterfaceProxy implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg);
-
-  static const InterfaceID kInterfaceID = INTERFACE_ID_PPB_SURFACE_3D;
 
  private:
   // Message handlers.

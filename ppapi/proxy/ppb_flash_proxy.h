@@ -29,10 +29,14 @@ class SerializedVarReturnValue;
 
 class PPB_Flash_Proxy : public InterfaceProxy {
  public:
-  PPB_Flash_Proxy(Dispatcher* dispatcher);
+  PPB_Flash_Proxy(Dispatcher* dispatcher, const void* target_interface);
   virtual ~PPB_Flash_Proxy();
 
   static const Info* GetInfo();
+
+  const PPB_Flash* ppb_flash_target() const {
+    return static_cast<const PPB_Flash*>(target_interface());
+  }
 
   // InterfaceProxy implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg);
@@ -55,13 +59,6 @@ class PPB_Flash_Proxy : public InterfaceProxy {
   void OnMsgQuitMessageLoop(PP_Instance instance);
   void OnMsgGetLocalTimeZoneOffset(PP_Instance instance, PP_Time t,
                                    double* result);
-
-  // When this proxy is in the host side, this value caches the interface
-  // pointer so we don't have to retrieve it from the dispatcher each time.
-  // In the plugin, this value is always NULL.
-  const PPB_Flash* ppb_flash_impl_;
-
-  DISALLOW_COPY_AND_ASSIGN(PPB_Flash_Proxy);
 };
 
 }  // namespace proxy

@@ -17,14 +17,16 @@ const PPB_Crypto_Dev crypto_interface = {
   &ppapi::CryptoImpl::GetRandomBytes
 };
 
-InterfaceProxy* CreateCryptoProxy(Dispatcher* dispatcher) {
-  return new PPB_Crypto_Proxy(dispatcher);
+InterfaceProxy* CreateCryptoProxy(Dispatcher* dispatcher,
+                                  const void* target_interface) {
+  return new PPB_Crypto_Proxy(dispatcher, target_interface);
 }
 
 }  // namespace
 
-PPB_Crypto_Proxy::PPB_Crypto_Proxy(Dispatcher* dispatcher)
-    : InterfaceProxy(dispatcher) {
+PPB_Crypto_Proxy::PPB_Crypto_Proxy(Dispatcher* dispatcher,
+                                   const void* target_interface)
+    : InterfaceProxy(dispatcher, target_interface) {
   NOTREACHED();  // See comment in the header file.
 }
 

@@ -13,11 +13,6 @@
 #include "ppapi/thunk/enter.h"
 
 namespace ppapi {
-
-namespace thunk {
-class ResourceCreationAPI;
-}
-
 namespace proxy {
 
 // Wrapper around EnterResourceNoLock that takes a host resource. This is used
@@ -116,21 +111,6 @@ class EnterHostFromHostResourceForceCallback
       : EnterHostFromHostResource<ResourceT>(host_resource),
         needs_running_(true),
         callback_(factory.NewOptionalCallback(method, a)) {
-    if (this->failed())
-      RunCallback(PP_ERROR_BADRESOURCE);
-  }
-
-  // For callbacks that take two extra parameters as a closure.
-  template<class CallbackFactory, typename Method, typename A, typename B>
-  EnterHostFromHostResourceForceCallback(
-      const HostResource& host_resource,
-      CallbackFactory& factory,
-      Method method,
-      const A& a,
-      const B& b)
-      : EnterHostFromHostResource<ResourceT>(host_resource),
-        needs_running_(true),
-        callback_(factory.NewOptionalCallback(method, a, b)) {
     if (this->failed())
       RunCallback(PP_ERROR_BADRESOURCE);
   }

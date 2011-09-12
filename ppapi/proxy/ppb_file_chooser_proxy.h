@@ -28,18 +28,23 @@ class SerializedVarReceiveInput;
 
 class PPB_FileChooser_Proxy : public InterfaceProxy {
  public:
-  PPB_FileChooser_Proxy(Dispatcher* dispatcher);
+  PPB_FileChooser_Proxy(Dispatcher* dispatcher, const void* target_interface);
   virtual ~PPB_FileChooser_Proxy();
+
+  static const Info* GetInfo();
+  static const Info* GetInfo0_4();
 
   static PP_Resource CreateProxyResource(
       PP_Instance instance,
       PP_FileChooserMode_Dev mode,
       const PP_Var& accept_mime_types);
 
+  const PPB_FileChooser_Dev* ppb_file_chooser_target() const {
+    return static_cast<const PPB_FileChooser_Dev*>(target_interface());
+  }
+
   // InterfaceProxy implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg);
-
-  static const InterfaceID kInterfaceID = INTERFACE_ID_PPB_FILE_CHOOSER;
 
  private:
   // Plugin -> host message handlers.

@@ -264,13 +264,6 @@ class PluginInstance : public base::RefCounted<PluginInstance>,
   virtual PP_Var ExecuteScript(PP_Instance instance,
                                PP_Var script,
                                PP_Var* exception) OVERRIDE;
-  virtual void Log(PP_Instance instance,
-                   int log_level,
-                   PP_Var value) OVERRIDE;
-  virtual void LogWithSource(PP_Instance instance,
-                             int log_level,
-                             PP_Var source,
-                             PP_Var value) OVERRIDE;
   virtual PP_Bool IsFullscreen(PP_Instance instance) OVERRIDE;
   virtual PP_Bool SetFullscreen(PP_Instance instance,
                                 PP_Bool fullscreen) OVERRIDE;

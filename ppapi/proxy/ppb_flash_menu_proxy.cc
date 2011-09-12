@@ -77,14 +77,16 @@ void FlashMenu::ShowACK(int32_t selected_id, int32_t result) {
 
 namespace {
 
-InterfaceProxy* CreateFlashMenuProxy(Dispatcher* dispatcher) {
-  return new PPB_Flash_Menu_Proxy(dispatcher);
+InterfaceProxy* CreateFlashMenuProxy(Dispatcher* dispatcher,
+                                     const void* target_interface) {
+  return new PPB_Flash_Menu_Proxy(dispatcher, target_interface);
 }
 
 }  // namespace
 
-PPB_Flash_Menu_Proxy::PPB_Flash_Menu_Proxy(Dispatcher* dispatcher)
-    : InterfaceProxy(dispatcher),
+PPB_Flash_Menu_Proxy::PPB_Flash_Menu_Proxy(Dispatcher* dispatcher,
+                                           const void* target_interface)
+    : InterfaceProxy(dispatcher, target_interface),
       callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
 }
 
@@ -142,7 +144,7 @@ bool PPB_Flash_Menu_Proxy::OnMessageReceived(const IPC::Message& msg) {
 void PPB_Flash_Menu_Proxy::OnMsgCreate(PP_Instance instance,
                                        const SerializedFlashMenu& menu_data,
                                        HostResource* result) {
-  thunk::EnterResourceCreation enter(instance);
+  EnterFunctionNoLock<ResourceCreationAPI> enter(instance, true);
   if (enter.succeeded()) {
     result->SetHostResource(
         instance,

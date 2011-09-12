@@ -21,7 +21,6 @@
 #include "ppapi/thunk/ppb_buffer_api.h"
 #include "ppapi/thunk/ppb_buffer_trusted_api.h"
 #include "ppapi/thunk/ppb_video_capture_api.h"
-#include "ppapi/thunk/resource_creation_api.h"
 #include "ppapi/thunk/thunk.h"
 
 using ppapi::thunk::EnterResourceNoLock;
@@ -34,8 +33,14 @@ namespace proxy {
 
 namespace {
 
-InterfaceProxy* CreatePPPVideoCaptureProxy(Dispatcher* dispatcher) {
-  return new PPP_VideoCapture_Proxy(dispatcher);
+InterfaceProxy* CreatePPBVideoCaptureProxy(Dispatcher* dispatcher,
+                                           const void* target_interface) {
+  return new PPB_VideoCapture_Proxy(dispatcher, target_interface);
+}
+
+InterfaceProxy* CreatePPPVideoCaptureProxy(Dispatcher* dispatcher,
+                                           const void* target_interface) {
+  return new PPP_VideoCapture_Proxy(dispatcher, target_interface);
 }
 
 void OnDeviceInfo(PP_Instance instance,
@@ -52,7 +57,7 @@ void OnDeviceInfo(PP_Instance instance,
   host_resource.SetHostResource(instance, resource);
   std::vector<PPPVideoCapture_Buffer> buffers(buffer_count);
   const PPB_Core* core = static_cast<const PPB_Core*>(
-      dispatcher->local_get_interface()(PPB_CORE_INTERFACE));
+      dispatcher->GetLocalInterface(PPB_CORE_INTERFACE));
   DCHECK(core);
   for (uint32_t i = 0; i < buffer_count; ++i) {
     // We need to take a ref on the resource now. The browser may drop
@@ -260,11 +265,24 @@ ppapi::thunk::PPB_VideoCapture_API* VideoCapture::AsPPB_VideoCapture_API() {
   return this;
 }
 
-PPB_VideoCapture_Proxy::PPB_VideoCapture_Proxy(Dispatcher* dispatcher)
-    : InterfaceProxy(dispatcher) {
+PPB_VideoCapture_Proxy::PPB_VideoCapture_Proxy(Dispatcher* dispatcher,
+                                               const void* target_interface)
+    : InterfaceProxy(dispatcher, target_interface) {
 }
 
 PPB_VideoCapture_Proxy::~PPB_VideoCapture_Proxy() {
+}
+
+// static
+const InterfaceProxy::Info* PPB_VideoCapture_Proxy::GetInfo() {
+  static const Info info = {
+    ppapi::thunk::GetPPB_VideoCapture_Thunk(),
+    PPB_VIDEO_CAPTURE_DEV_INTERFACE,
+    INTERFACE_ID_PPB_VIDEO_CAPTURE_DEV,
+    false,
+    &CreatePPBVideoCaptureProxy,
+  };
+  return &info;
 }
 
 // static
@@ -299,12 +317,11 @@ bool PPB_VideoCapture_Proxy::OnMessageReceived(const IPC::Message& msg) {
 
 void PPB_VideoCapture_Proxy::OnMsgCreate(PP_Instance instance,
                                          HostResource* result_resource) {
-  thunk::EnterResourceCreation enter(instance);
-  if (enter.succeeded()) {
-    result_resource->SetHostResource(
-        instance,
-        enter.functions()->CreateVideoCapture(instance));
-  }
+  HostDispatcher* dispatcher = HostDispatcher::GetForInstance(instance);
+  if (!dispatcher)
+    return;
+  PP_Resource resource = ppb_video_capture_target()->Create(instance);
+  result_resource->SetHostResource(instance, resource);
 }
 
 void PPB_VideoCapture_Proxy::OnMsgStartCapture(
@@ -329,13 +346,9 @@ void PPB_VideoCapture_Proxy::OnMsgStopCapture(const HostResource& resource) {
     enter.object()->StopCapture();
 }
 
-PPP_VideoCapture_Proxy::PPP_VideoCapture_Proxy(Dispatcher* dispatcher)
-    : InterfaceProxy(dispatcher),
-      ppp_video_capture_impl_(NULL) {
-  if (dispatcher->IsPlugin()) {
-    ppp_video_capture_impl_ = static_cast<const PPP_VideoCapture_Dev*>(
-        dispatcher->local_get_interface()(PPP_VIDEO_CAPTURE_DEV_INTERFACE));
-  }
+PPP_VideoCapture_Proxy::PPP_VideoCapture_Proxy(Dispatcher* dispatcher,
+                                               const void* target_interface)
+    : InterfaceProxy(dispatcher, target_interface) {
 }
 
 PPP_VideoCapture_Proxy::~PPP_VideoCapture_Proxy() {
@@ -375,7 +388,7 @@ void PPP_VideoCapture_Proxy::OnMsgOnDeviceInfo(
   EnterPluginFromHostResource<PPB_VideoCapture_API> enter(host_resource);
   PluginResourceTracker* tracker = PluginResourceTracker::GetInstance();
   PP_Resource resource = tracker->PluginResourceForHostResource(host_resource);
-  if (!resource || !ppp_video_capture_impl_ || enter.failed())
+  if (!resource || !ppp_video_capture_target() || enter.failed())
     return;
 
   scoped_array<PP_Resource> resources(new PP_Resource[buffers.size()]);
@@ -387,7 +400,7 @@ void PPP_VideoCapture_Proxy::OnMsgOnDeviceInfo(
                                                       buffers[i].size);
   }
   static_cast<VideoCapture*>(enter.object())->SetBufferCount(buffers.size());
-  ppp_video_capture_impl_->OnDeviceInfo(
+  ppp_video_capture_target()->OnDeviceInfo(
       host_resource.instance(),
       resource,
       &info,
@@ -402,12 +415,12 @@ void PPP_VideoCapture_Proxy::OnMsgOnStatus(const HostResource& host_resource,
   EnterPluginFromHostResource<PPB_VideoCapture_API> enter(host_resource);
   PluginResourceTracker* tracker = PluginResourceTracker::GetInstance();
   PP_Resource resource = tracker->PluginResourceForHostResource(host_resource);
-  if (!resource || !ppp_video_capture_impl_ || enter.failed())
+  if (!resource || !ppp_video_capture_target() || enter.failed())
     return;
 
   if (!static_cast<VideoCapture*>(enter.object())->OnStatus(status))
     return;
-  ppp_video_capture_impl_->OnStatus(
+  ppp_video_capture_target()->OnStatus(
       host_resource.instance(), resource, status);
 }
 
@@ -416,11 +429,11 @@ void PPP_VideoCapture_Proxy::OnMsgOnError(const HostResource& host_resource,
   EnterPluginFromHostResource<PPB_VideoCapture_API> enter(host_resource);
   PluginResourceTracker* tracker = PluginResourceTracker::GetInstance();
   PP_Resource resource = tracker->PluginResourceForHostResource(host_resource);
-  if (!resource || !ppp_video_capture_impl_ || enter.failed())
+  if (!resource || !ppp_video_capture_target() || enter.failed())
     return;
   static_cast<VideoCapture*>(enter.object())->set_status(
       PP_VIDEO_CAPTURE_STATUS_STOPPED);
-  ppp_video_capture_impl_->OnError(
+  ppp_video_capture_target()->OnError(
       host_resource.instance(), resource, error_code);
 }
 
@@ -429,10 +442,10 @@ void PPP_VideoCapture_Proxy::OnMsgOnBufferReady(
   EnterPluginFromHostResource<PPB_VideoCapture_API> enter(host_resource);
   PluginResourceTracker* tracker = PluginResourceTracker::GetInstance();
   PP_Resource resource = tracker->PluginResourceForHostResource(host_resource);
-  if (!resource || !ppp_video_capture_impl_ || enter.failed())
+  if (!resource || !ppp_video_capture_target() || enter.failed())
     return;
   static_cast<VideoCapture*>(enter.object())->SetBufferInUse(buffer);
-  ppp_video_capture_impl_->OnBufferReady(
+  ppp_video_capture_target()->OnBufferReady(
       host_resource.instance(), resource, buffer);
 }
 

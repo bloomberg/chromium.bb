@@ -86,6 +86,7 @@
 #include "webkit/plugins/ppapi/common.h"
 #include "webkit/plugins/ppapi/ppapi_interface_factory.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
+#include "webkit/plugins/ppapi/ppb_console_impl.h"
 #include "webkit/plugins/ppapi/ppb_crypto_impl.h"
 #include "webkit/plugins/ppapi/ppb_directory_reader_impl.h"
 #include "webkit/plugins/ppapi/ppb_flash_clipboard_impl.h"
@@ -227,36 +228,42 @@ const void* GetInterface(const char* name) {
   if (custom_interface)
     return custom_interface;
 
-  // TODO(brettw) put these in a hash map for better performance.
-  #define UNPROXIED_IFACE(api_name, iface_str, iface_struct) \
-      if (strcmp(name, iface_str) == 0) \
-        return ::ppapi::thunk::Get##iface_struct##_Thunk();
-  #define PROXIED_IFACE(api_name, iface_str, iface_struct) \
-      UNPROXIED_IFACE(api_name, iface_str, iface_struct)
-
-  #include "ppapi/thunk/interfaces_ppb_public_stable.h"
-  #include "ppapi/thunk/interfaces_ppb_public_dev.h"
-  #include "ppapi/thunk/interfaces_ppb_private.h"
-
-  #undef UNPROXIED_API
-  #undef PROXIED_IFACE
-
   // Please keep alphabetized by interface macro name with "special" stuff at
   // the bottom.
+  if (strcmp(name, PPB_AUDIO_CONFIG_INTERFACE_1_0) == 0)
+    return ::ppapi::thunk::GetPPB_AudioConfig_Thunk();
+  if (strcmp(name, PPB_AUDIO_INTERFACE_1_0) == 0)
+    return ::ppapi::thunk::GetPPB_Audio_Thunk();
   if (strcmp(name, PPB_AUDIO_TRUSTED_INTERFACE) == 0)
     return ::ppapi::thunk::GetPPB_AudioTrusted_Thunk();
+  if (strcmp(name, PPB_BROKER_TRUSTED_INTERFACE) == 0)
+    return ::ppapi::thunk::GetPPB_Broker_Thunk();
+  if (strcmp(name, PPB_BUFFER_DEV_INTERFACE) == 0)
+    return ::ppapi::thunk::GetPPB_Buffer_Thunk();
   if (strcmp(name, PPB_BUFFER_TRUSTED_INTERFACE) == 0)
     return ::ppapi::thunk::GetPPB_BufferTrusted_Thunk();
-  if (strcmp(name, PPB_CONTEXT_3D_TRUSTED_DEV_INTERFACE) == 0)
-    return ::ppapi::thunk::GetPPB_Context3DTrusted_Thunk();
+  if (strcmp(name, PPB_CHAR_SET_DEV_INTERFACE) == 0)
+    return ::ppapi::thunk::GetPPB_CharSet_Thunk();
+  if (strcmp(name, PPB_CONSOLE_DEV_INTERFACE) == 0)
+    return PPB_Console_Impl::GetInterface();
   if (strcmp(name, PPB_CORE_INTERFACE) == 0)
     return &core_interface;
   if (strcmp(name, PPB_CRYPTO_DEV_INTERFACE) == 0)
     return PPB_Crypto_Impl::GetInterface();
+  if (strcmp(name, PPB_CURSOR_CONTROL_DEV_INTERFACE) == 0)
+    return ::ppapi::thunk::GetPPB_CursorControl_Thunk();
   if (strcmp(name, PPB_DIRECTORYREADER_DEV_INTERFACE) == 0)
-    return ::ppapi::thunk::GetPPB_DirectoryReader_Dev_Thunk();
+    return ::ppapi::thunk::GetPPB_DirectoryReader_Thunk();
+  if (strcmp(name, PPB_FILECHOOSER_DEV_INTERFACE) == 0)
+    return ::ppapi::thunk::GetPPB_FileChooser_Thunk();
+  if (strcmp(name, PPB_FILEIO_INTERFACE_1_0) == 0)
+    return ::ppapi::thunk::GetPPB_FileIO_Thunk();
   if (strcmp(name, PPB_FILEIOTRUSTED_INTERFACE) == 0)
     return ::ppapi::thunk::GetPPB_FileIOTrusted_Thunk();
+  if (strcmp(name, PPB_FILEREF_INTERFACE_1_0) == 0)
+    return ::ppapi::thunk::GetPPB_FileRef_Thunk();
+  if (strcmp(name, PPB_FILESYSTEM_INTERFACE_1_0) == 0)
+    return ::ppapi::thunk::GetPPB_FileSystem_Thunk();
   if (strcmp(name, PPB_FIND_DEV_INTERFACE) == 0)
     return ::ppapi::thunk::GetPPB_Find_Thunk();
   if (strcmp(name, PPB_FLASH_INTERFACE) == 0)
@@ -271,24 +278,36 @@ const void* GetInterface(const char* name) {
     return ::ppapi::thunk::GetPPB_Flash_Menu_Thunk();
   if (strcmp(name, PPB_FLASH_TCPSOCKET_INTERFACE) == 0)
     return ::ppapi::thunk::GetPPB_Flash_TCPSocket_Thunk();
+  if (strcmp(name, PPB_FONT_DEV_INTERFACE) == 0)
+    return ::ppapi::thunk::GetPPB_Font_Thunk();
   if (strcmp(name, PPB_FULLSCREEN_DEV_INTERFACE) == 0)
     return ::ppapi::thunk::GetPPB_Fullscreen_Thunk();
   if (strcmp(name, PPB_GPU_BLACKLIST_INTERFACE) == 0)
     return PPB_GpuBlacklist_Private_Impl::GetInterface();
-  if (strcmp(name, PPB_GRAPHICS_3D_TRUSTED_INTERFACE) == 0)
-    return ::ppapi::thunk::GetPPB_Graphics3DTrusted_Thunk();
+  if (strcmp(name, PPB_GRAPHICS_2D_INTERFACE_1_0) == 0)
+    return ::ppapi::thunk::GetPPB_Graphics2D_Thunk();
+  if (strcmp(name, PPB_IMAGEDATA_INTERFACE_1_0) == 0)
+    return ::ppapi::thunk::GetPPB_ImageData_Thunk();
   if (strcmp(name, PPB_IMAGEDATA_TRUSTED_INTERFACE) == 0)
     return ::ppapi::thunk::GetPPB_ImageDataTrusted_Thunk();
   if (strcmp(name, PPB_INPUT_EVENT_INTERFACE_1_0) == 0)
     return ::ppapi::thunk::GetPPB_InputEvent_Thunk();
+  if (strcmp(name, PPB_INSTANCE_INTERFACE_1_0) == 0)
+    return ::ppapi::thunk::GetPPB_Instance_1_0_Thunk();
   if (strcmp(name, PPB_INSTANCE_PRIVATE_INTERFACE) == 0)
     return ::ppapi::thunk::GetPPB_Instance_Private_Thunk();
-  if (strcmp(name, PPB_LAYER_COMPOSITOR_DEV_INTERFACE) == 0)
-    return ::ppapi::thunk::GetPPB_LayerCompositor_Thunk();
+  if (strcmp(name, PPB_KEYBOARD_INPUT_EVENT_INTERFACE_1_0) == 0)
+    return ::ppapi::thunk::GetPPB_KeyboardInputEvent_Thunk();
   if (strcmp(name, PPB_MEMORY_DEV_INTERFACE) == 0)
     return PPB_Memory_Impl::GetInterface();
-  if (strcmp(name, PPB_OPENGLES2_INTERFACE) == 0)
-    return PPB_OpenGLES_Impl::GetInterface();
+  if (strcmp(name, PPB_MESSAGING_INTERFACE_1_0) == 0)
+    return ::ppapi::thunk::GetPPB_Messaging_Thunk();
+  if (strcmp(name, PPB_MOUSE_INPUT_EVENT_INTERFACE_1_0) == 0)
+    return ::ppapi::thunk::GetPPB_MouseInputEvent_1_0_Thunk();
+  if (strcmp(name, PPB_MOUSE_INPUT_EVENT_INTERFACE_1_1) == 0)
+    return ::ppapi::thunk::GetPPB_MouseInputEvent_1_1_Thunk();
+  if (strcmp(name, PPB_MOUSELOCK_DEV_INTERFACE) == 0)
+    return ::ppapi::thunk::GetPPB_MouseLock_Thunk();
   if (strcmp(name, PPB_PROXY_PRIVATE_INTERFACE) == 0)
     return PPB_Proxy_Impl::GetInterface();
   if (strcmp(name, PPB_QUERY_POLICY_DEV_INTERFACE_0_1) == 0)
@@ -301,20 +320,51 @@ const void* GetInterface(const char* name) {
     return ::ppapi::thunk::GetPPB_Scrollbar_Thunk();
   if (strcmp(name, PPB_UMA_PRIVATE_INTERFACE) == 0)
     return PPB_UMA_Private_Impl::GetInterface();
+  if (strcmp(name, PPB_URLLOADER_INTERFACE_1_0) == 0)
+    return ::ppapi::thunk::GetPPB_URLLoader_Thunk();
   if (strcmp(name, PPB_URLLOADERTRUSTED_INTERFACE) == 0)
     return ::ppapi::thunk::GetPPB_URLLoaderTrusted_Thunk();
+  if (strcmp(name, PPB_URLREQUESTINFO_INTERFACE_1_0) == 0)
+    return ::ppapi::thunk::GetPPB_URLRequestInfo_Thunk();
+  if (strcmp(name, PPB_URLRESPONSEINFO_INTERFACE_1_0) == 0)
+    return ::ppapi::thunk::GetPPB_URLResponseInfo_Thunk();
   if (strcmp(name, PPB_URLUTIL_DEV_INTERFACE) == 0)
     return PPB_URLUtil_Impl::GetInterface();
   if (strcmp(name, PPB_VAR_DEPRECATED_INTERFACE) == 0)
     return PPB_Var_Impl::GetVarDeprecatedInterface();
   if (strcmp(name, PPB_VAR_INTERFACE_1_0) == 0)
     return PPB_Var_Impl::GetVarInterface();
+  if (strcmp(name, PPB_VIDEODECODER_DEV_INTERFACE) == 0)
+    return ::ppapi::thunk::GetPPB_VideoDecoder_Thunk();
+  if (strcmp(name, PPB_VIDEO_CAPTURE_DEV_INTERFACE) == 0)
+    return ::ppapi::thunk::GetPPB_VideoCapture_Thunk();
   if (strcmp(name, PPB_VIDEOLAYER_DEV_INTERFACE) == 0)
-    return ::ppapi::thunk::GetPPB_VideoLayer_Dev_Thunk();
+    return ::ppapi::thunk::GetPPB_VideoLayer_Thunk();
+  if (strcmp(name, PPB_WHEEL_INPUT_EVENT_INTERFACE_1_0) == 0)
+    return ::ppapi::thunk::GetPPB_WheelInputEvent_Thunk();
   if (strcmp(name, PPB_WIDGET_DEV_INTERFACE) == 0)
-    return ::ppapi::thunk::GetPPB_Widget_Dev_Thunk();
+    return ::ppapi::thunk::GetPPB_Widget_Thunk();
   if (strcmp(name, PPB_ZOOM_DEV_INTERFACE) == 0)
     return ::ppapi::thunk::GetPPB_Zoom_Thunk();
+
+#ifdef ENABLE_GPU
+  if (strcmp(name, PPB_GRAPHICS_3D_INTERFACE) == 0)
+    return ::ppapi::thunk::GetPPB_Graphics3D_Thunk();
+  if (strcmp(name, PPB_GRAPHICS_3D_TRUSTED_INTERFACE) == 0)
+    return ::ppapi::thunk::GetPPB_Graphics3DTrusted_Thunk();
+  if (strcmp(name, PPB_CONTEXT_3D_DEV_INTERFACE) == 0)
+    return ::ppapi::thunk::GetPPB_Context3D_Thunk();
+  if (strcmp(name, PPB_CONTEXT_3D_TRUSTED_DEV_INTERFACE) == 0)
+    return ::ppapi::thunk::GetPPB_Context3DTrusted_Thunk();
+  if (strcmp(name, PPB_GLES_CHROMIUM_TEXTURE_MAPPING_DEV_INTERFACE) == 0)
+    return ::ppapi::thunk::GetPPB_GLESChromiumTextureMapping_Thunk();
+  if (strcmp(name, PPB_OPENGLES2_INTERFACE) == 0)
+    return PPB_OpenGLES_Impl::GetInterface();
+  if (strcmp(name, PPB_SURFACE_3D_DEV_INTERFACE) == 0)
+    return ::ppapi::thunk::GetPPB_Surface3D_Thunk();
+  if (strcmp(name, PPB_LAYER_COMPOSITOR_DEV_INTERFACE) == 0)
+    return ::ppapi::thunk::GetPPB_LayerCompositor_Thunk();
+#endif  // ENABLE_GPU
 
 #ifdef ENABLE_FLAPPER_HACKS
   if (strcmp(name, PPB_FLASH_NETCONNECTOR_INTERFACE) == 0)
@@ -323,7 +373,7 @@ const void* GetInterface(const char* name) {
 
 #if defined(ENABLE_P2P_APIS)
   if (strcmp(name, PPB_TRANSPORT_DEV_INTERFACE) == 0)
-    return ::ppapi::thunk::GetPPB_Transport_Dev_Thunk();
+    return ::ppapi::thunk::GetPPB_Transport_Thunk();
 #endif
 
   // Only support the testing interface when the command line switch is

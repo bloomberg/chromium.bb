@@ -88,19 +88,16 @@ const PPB_Flash_Clipboard flash_clipboard_interface = {
   &WritePlainText
 };
 
-InterfaceProxy* CreateFlashClipboardProxy(Dispatcher* dispatcher) {
-  return new PPB_Flash_Clipboard_Proxy(dispatcher);
+InterfaceProxy* CreateFlashClipboardProxy(Dispatcher* dispatcher,
+                                          const void* target_interface) {
+  return new PPB_Flash_Clipboard_Proxy(dispatcher, target_interface);
 }
 
 }  // namespace
 
-PPB_Flash_Clipboard_Proxy::PPB_Flash_Clipboard_Proxy(Dispatcher* dispatcher)
-    : InterfaceProxy(dispatcher),
-      ppb_flash_clipboard_impl_(NULL) {
-  if (!dispatcher->IsPlugin()) {
-    ppb_flash_clipboard_impl_ = static_cast<const PPB_Flash_Clipboard*>(
-        dispatcher->local_get_interface()(PPB_FLASH_CLIPBOARD_INTERFACE));
-  }
+PPB_Flash_Clipboard_Proxy::PPB_Flash_Clipboard_Proxy(
+    Dispatcher* dispatcher, const void* target_interface)
+    : InterfaceProxy(dispatcher, target_interface) {
 }
 
 PPB_Flash_Clipboard_Proxy::~PPB_Flash_Clipboard_Proxy() {
@@ -137,7 +134,7 @@ void PPB_Flash_Clipboard_Proxy::OnMsgIsFormatAvailable(
     int clipboard_type,
     int format,
     bool* result) {
-  *result = PP_ToBool(ppb_flash_clipboard_impl_->IsFormatAvailable(
+  *result = PP_ToBool(ppb_flash_clipboard_target()->IsFormatAvailable(
       instance_id,
       static_cast<PP_Flash_Clipboard_Type>(clipboard_type),
       static_cast<PP_Flash_Clipboard_Format>(format)));
@@ -148,7 +145,7 @@ void PPB_Flash_Clipboard_Proxy::OnMsgReadPlainText(
     int clipboard_type,
     SerializedVarReturnValue result) {
   result.Return(dispatcher(),
-                ppb_flash_clipboard_impl_->ReadPlainText(
+                ppb_flash_clipboard_target()->ReadPlainText(
                     instance_id,
                     static_cast<PP_Flash_Clipboard_Type>(clipboard_type)));
 }
@@ -157,7 +154,7 @@ void PPB_Flash_Clipboard_Proxy::OnMsgWritePlainText(
     PP_Instance instance_id,
     int clipboard_type,
     SerializedVarReceiveInput text) {
-  int32_t result = ppb_flash_clipboard_impl_->WritePlainText(
+  int32_t result = ppb_flash_clipboard_target()->WritePlainText(
       instance_id,
       static_cast<PP_Flash_Clipboard_Type>(clipboard_type),
       text.Get(dispatcher()));

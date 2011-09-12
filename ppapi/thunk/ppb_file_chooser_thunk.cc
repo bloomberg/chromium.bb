@@ -55,7 +55,7 @@ const PPB_FileChooser_Dev g_ppb_file_chooser_thunk = {
 
 }  // namespace
 
-const PPB_FileChooser_Dev* GetPPB_FileChooser_Dev_Thunk() {
+const PPB_FileChooser_Dev* GetPPB_FileChooser_Thunk() {
   return &g_ppb_file_chooser_thunk;
 }
 

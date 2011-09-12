@@ -20,7 +20,6 @@
 #include "ppapi/proxy/serialized_var.h"
 #include "ppapi/shared_impl/resource.h"
 #include "ppapi/shared_impl/scoped_pp_resource.h"
-#include "ppapi/shared_impl/var.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_url_request_info_api.h"
 #include "ppapi/thunk/resource_creation_api.h"
@@ -153,8 +152,12 @@ double GetLocalTimeZoneOffset(PP_Instance instance, PP_Time t) {
 }
 
 PP_Var GetCommandLineArgs(PP_Module pp_module) {
+  const PPB_Var_Deprecated* var_deprecated =
+      static_cast<const PPB_Var_Deprecated*>(
+          PluginDispatcher::GetInterfaceFromDispatcher(
+              PPB_VAR_DEPRECATED_INTERFACE));
   std::string args = ProxyModule::GetInstance()->GetFlashCommandLineArgs();
-  return StringVar::StringToPPVar(pp_module, args);
+  return var_deprecated->VarFromUtf8(pp_module, args.data(), args.length());
 }
 
 const PPB_Flash flash_interface = {
@@ -168,18 +171,16 @@ const PPB_Flash flash_interface = {
   &GetCommandLineArgs
 };
 
-InterfaceProxy* CreateFlashProxy(Dispatcher* dispatcher) {
-  return new PPB_Flash_Proxy(dispatcher);
+InterfaceProxy* CreateFlashProxy(Dispatcher* dispatcher,
+                                 const void* target_interface) {
+  return new PPB_Flash_Proxy(dispatcher, target_interface);
 }
 
 }  // namespace
 
-PPB_Flash_Proxy::PPB_Flash_Proxy(Dispatcher* dispatcher)
-    : InterfaceProxy(dispatcher),
-      ppb_flash_impl_(NULL) {
-  if (!dispatcher->IsPlugin())
-    ppb_flash_impl_ = static_cast<const PPB_Flash*>(
-        dispatcher->local_get_interface()(PPB_FLASH_INTERFACE));
+PPB_Flash_Proxy::PPB_Flash_Proxy(Dispatcher* dispatcher,
+                                 const void* target_interface)
+    : InterfaceProxy(dispatcher, target_interface) {
 }
 
 PPB_Flash_Proxy::~PPB_Flash_Proxy() {
@@ -227,7 +228,7 @@ bool PPB_Flash_Proxy::OnMessageReceived(const IPC::Message& msg) {
 void PPB_Flash_Proxy::OnMsgSetInstanceAlwaysOnTop(
     PP_Instance instance,
     PP_Bool on_top) {
-  ppb_flash_impl_->SetInstanceAlwaysOnTop(instance, on_top);
+  ppb_flash_target()->SetInstanceAlwaysOnTop(instance, on_top);
 }
 
 void PPB_Flash_Proxy::OnMsgDrawGlyphs(const PPBFlash_DrawGlyphs_Params& params,
@@ -241,7 +242,7 @@ void PPB_Flash_Proxy::OnMsgDrawGlyphs(const PPBFlash_DrawGlyphs_Params& params,
       params.glyph_indices.empty())
     return;
 
-  *result = ppb_flash_impl_->DrawGlyphs(
+  *result = ppb_flash_target()->DrawGlyphs(
       0,  // Unused instance param.
       params.image_data.host_resource(), &font_desc,
       params.color, params.position, params.clip,
@@ -254,7 +255,7 @@ void PPB_Flash_Proxy::OnMsgDrawGlyphs(const PPBFlash_DrawGlyphs_Params& params,
 void PPB_Flash_Proxy::OnMsgGetProxyForURL(PP_Instance instance,
                                           const std::string& url,
                                           SerializedVarReturnValue result) {
-  result.Return(dispatcher(), ppb_flash_impl_->GetProxyForURL(
+  result.Return(dispatcher(), ppb_flash_target()->GetProxyForURL(
       instance, url.c_str()));
 }
 
@@ -291,23 +292,23 @@ void PPB_Flash_Proxy::OnMsgNavigate(PP_Instance instance,
       ScopedPPResource::PassRef(),
       enter.functions()->CreateURLRequestInfo(instance, data));
 
-  *result = ppb_flash_impl_->Navigate(request_resource,
-                                      target.c_str(),
-                                      from_user_action);
+  *result = ppb_flash_target()->Navigate(request_resource,
+                                         target.c_str(),
+                                         from_user_action);
 }
 
 void PPB_Flash_Proxy::OnMsgRunMessageLoop(PP_Instance instance) {
-  ppb_flash_impl_->RunMessageLoop(instance);
+  ppb_flash_target()->RunMessageLoop(instance);
 }
 
 void PPB_Flash_Proxy::OnMsgQuitMessageLoop(PP_Instance instance) {
-  ppb_flash_impl_->QuitMessageLoop(instance);
+  ppb_flash_target()->QuitMessageLoop(instance);
 }
 
 void PPB_Flash_Proxy::OnMsgGetLocalTimeZoneOffset(PP_Instance instance,
                                                   PP_Time t,
                                                   double* result) {
-  *result = ppb_flash_impl_->GetLocalTimeZoneOffset(instance, t);
+  *result = ppb_flash_target()->GetLocalTimeZoneOffset(instance, t);
 }
 
 }  // namespace proxy

@@ -24,6 +24,15 @@ using ppapi::thunk::ResourceCreationAPI;
 namespace ppapi {
 namespace proxy {
 
+namespace {
+
+InterfaceProxy* CreateFileRefProxy(Dispatcher* dispatcher,
+                                   const void* target_interface) {
+  return new PPB_FileRef_Proxy(dispatcher, target_interface);
+}
+
+}  // namespace
+
 class FileRef : public FileRefImpl {
  public:
   explicit FileRef(const PPB_FileRef_CreateInfo& info);
@@ -102,11 +111,23 @@ int32_t FileRef::Rename(PP_Resource new_file_ref,
   return PP_OK_COMPLETIONPENDING;
 }
 
-PPB_FileRef_Proxy::PPB_FileRef_Proxy(Dispatcher* dispatcher)
-    : InterfaceProxy(dispatcher) {
+PPB_FileRef_Proxy::PPB_FileRef_Proxy(Dispatcher* dispatcher,
+                                     const void* target_interface)
+    : InterfaceProxy(dispatcher, target_interface) {
 }
 
 PPB_FileRef_Proxy::~PPB_FileRef_Proxy() {
+}
+
+const InterfaceProxy::Info* PPB_FileRef_Proxy::GetInfo() {
+  static const Info info = {
+    thunk::GetPPB_FileRef_Thunk(),
+    PPB_FILEREF_INTERFACE,
+    INTERFACE_ID_PPB_FILE_REF,
+    false,
+    &CreateFileRefProxy,
+  };
+  return &info;
 }
 
 // static
@@ -158,7 +179,7 @@ PP_Resource PPB_FileRef_Proxy::DeserializeFileRef(
 void PPB_FileRef_Proxy::OnMsgCreate(const HostResource& file_system,
                                     const std::string& path,
                                     PPB_FileRef_CreateInfo* result) {
-  thunk::EnterResourceCreation enter(file_system.instance());
+  EnterFunctionNoLock<ResourceCreationAPI> enter(file_system.instance(), true);
   if (enter.failed())
     return;
   PP_Resource resource = enter.functions()->CreateFileRef(

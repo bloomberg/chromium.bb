@@ -108,7 +108,7 @@ const PPB_Transport_Dev g_ppb_transport_thunk = {
 
 }  // namespace
 
-const PPB_Transport_Dev* GetPPB_Transport_Dev_Thunk() {
+const PPB_Transport_Dev* GetPPB_Transport_Thunk() {
   return &g_ppb_transport_thunk;
 }
 

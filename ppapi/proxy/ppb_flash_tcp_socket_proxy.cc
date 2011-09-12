@@ -49,8 +49,9 @@ class AbortCallbackTask : public Task {
   PP_CompletionCallback callback_;
 };
 
-InterfaceProxy* CreateFlashTCPSocketProxy(Dispatcher* dispatcher) {
-  return new PPB_Flash_TCPSocket_Proxy(dispatcher);
+InterfaceProxy* CreateFlashTCPSocketProxy(Dispatcher* dispatcher,
+                                          const void* target_interface) {
+  return new PPB_Flash_TCPSocket_Proxy(dispatcher, target_interface);
 }
 
 }  // namespace
@@ -388,8 +389,10 @@ void FlashTCPSocket::PostAbortAndClearIfNecessary(
   }
 }
 
-PPB_Flash_TCPSocket_Proxy::PPB_Flash_TCPSocket_Proxy(Dispatcher* dispatcher)
-    : InterfaceProxy(dispatcher) {
+PPB_Flash_TCPSocket_Proxy::PPB_Flash_TCPSocket_Proxy(
+    Dispatcher* dispatcher,
+    const void* target_interface)
+    : InterfaceProxy(dispatcher, target_interface) {
 }
 
 PPB_Flash_TCPSocket_Proxy::~PPB_Flash_TCPSocket_Proxy() {

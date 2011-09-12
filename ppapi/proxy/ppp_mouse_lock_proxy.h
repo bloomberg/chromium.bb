@@ -15,10 +15,14 @@ namespace proxy {
 
 class PPP_MouseLock_Proxy : public InterfaceProxy {
  public:
-  PPP_MouseLock_Proxy(Dispatcher* dispatcher);
+  PPP_MouseLock_Proxy(Dispatcher* dispatcher, const void* target_interface);
   virtual ~PPP_MouseLock_Proxy();
 
   static const Info* GetInfo();
+
+  const PPP_MouseLock_Dev* ppp_mouse_lock_target() const {
+    return static_cast<const PPP_MouseLock_Dev*>(target_interface());
+  }
 
   // InterfaceProxy implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
@@ -26,13 +30,6 @@ class PPP_MouseLock_Proxy : public InterfaceProxy {
  private:
   // Message handlers.
   void OnMsgMouseLockLost(PP_Instance instance);
-
-  // When this proxy is in the plugin side, this value caches the interface
-  // pointer so we don't have to retrieve it from the dispatcher each time.
-  // In the host, this value is always NULL.
-  const PPP_MouseLock_Dev* ppp_mouse_lock_impl_;
-
-  DISALLOW_COPY_AND_ASSIGN(PPP_MouseLock_Proxy);
 };
 
 }  // namespace proxy

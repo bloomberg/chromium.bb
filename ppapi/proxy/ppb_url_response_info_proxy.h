@@ -24,8 +24,11 @@ class SerializedVarReturnValue;
 
 class PPB_URLResponseInfo_Proxy : public InterfaceProxy {
  public:
-  PPB_URLResponseInfo_Proxy(Dispatcher* dispatcher);
+  PPB_URLResponseInfo_Proxy(Dispatcher* dispatcher,
+                            const void* target_interface);
   virtual ~PPB_URLResponseInfo_Proxy();
+
+  static const Info* GetInfo();
 
   // URLResponseInfo objects are actually created and returned by the
   // URLLoader. This function allows the URLLoader to convert a new
@@ -37,8 +40,6 @@ class PPB_URLResponseInfo_Proxy : public InterfaceProxy {
 
   // InterfaceProxy implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg);
-
-  static const InterfaceID kInterfaceID = INTERFACE_ID_PPB_URL_RESPONSE_INFO;
 
  private:
   // Message handlers.

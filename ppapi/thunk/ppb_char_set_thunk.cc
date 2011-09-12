@@ -54,7 +54,7 @@ const PPB_CharSet_Dev g_ppb_char_set_thunk = {
 
 }  // namespace
 
-const PPB_CharSet_Dev* GetPPB_CharSet_Dev_Thunk() {
+const PPB_CharSet_Dev* GetPPB_CharSet_Thunk() {
   return &g_ppb_char_set_thunk;
 }
 

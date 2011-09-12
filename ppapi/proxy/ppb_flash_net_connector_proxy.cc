@@ -188,15 +188,16 @@ struct PPB_Flash_NetConnector_Proxy::ConnectCallbackInfo {
 
 namespace {
 
-InterfaceProxy* CreateFlashNetConnectorProxy(Dispatcher* dispatcher) {
-  return new PPB_Flash_NetConnector_Proxy(dispatcher);
+InterfaceProxy* CreateFlashNetConnectorProxy(Dispatcher* dispatcher,
+                                             const void* target_interface) {
+  return new PPB_Flash_NetConnector_Proxy(dispatcher, target_interface);
 }
 
 }  // namespace
 
 PPB_Flash_NetConnector_Proxy::PPB_Flash_NetConnector_Proxy(
-    Dispatcher* dispatcher)
-    : InterfaceProxy(dispatcher),
+    Dispatcher* dispatcher, const void* target_interface)
+    : InterfaceProxy(dispatcher, target_interface),
       callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
 }
 
@@ -248,7 +249,7 @@ bool PPB_Flash_NetConnector_Proxy::OnMessageReceived(const IPC::Message& msg) {
 
 void PPB_Flash_NetConnector_Proxy::OnMsgCreate(PP_Instance instance,
                                                HostResource* result) {
-  thunk::EnterResourceCreation enter(instance);
+  EnterFunctionNoLock<ResourceCreationAPI> enter(instance, true);
   if (enter.succeeded()) {
     result->SetHostResource(
         instance,

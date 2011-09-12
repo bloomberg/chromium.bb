@@ -27,8 +27,9 @@ namespace proxy {
 
 namespace {
 
-InterfaceProxy* CreateFileSystemProxy(Dispatcher* dispatcher) {
-  return new PPB_FileSystem_Proxy(dispatcher);
+InterfaceProxy* CreateFileSystemProxy(Dispatcher* dispatcher,
+                                      const void* target_interface) {
+  return new PPB_FileSystem_Proxy(dispatcher, target_interface);
 }
 
 }  // namespace
@@ -109,8 +110,9 @@ void FileSystem::OpenComplete(int32_t result) {
   PP_RunAndClearCompletionCallback(&current_open_callback_, result);
 }
 
-PPB_FileSystem_Proxy::PPB_FileSystem_Proxy(Dispatcher* dispatcher)
-    : InterfaceProxy(dispatcher),
+PPB_FileSystem_Proxy::PPB_FileSystem_Proxy(Dispatcher* dispatcher,
+                                           const void* target_interface)
+    : InterfaceProxy(dispatcher, target_interface),
       callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
 }
 
@@ -158,7 +160,7 @@ bool PPB_FileSystem_Proxy::OnMessageReceived(const IPC::Message& msg) {
 void PPB_FileSystem_Proxy::OnMsgCreate(PP_Instance instance,
                                        int type,
                                        HostResource* result) {
-  thunk::EnterResourceCreation enter(instance);
+  EnterFunctionNoLock<ResourceCreationAPI> enter(instance, true);
   if (enter.failed())
     return;
   PP_Resource resource = enter.functions()->CreateFileSystem(
