@@ -66,9 +66,6 @@
             'python build_nacl_irt.py --inputs',
       },
       'dependencies': [
-        # TODO(gregoryd): chrome_resources and chrome_strings could be
-        # shared with the 64-bit target, but it does not work due to a gyp
-        #issue
         'chrome_resources',
         'chrome_strings',
         'common',
@@ -149,18 +146,17 @@
             'nacl_target': 1,
           },
           'dependencies': [
-            # TODO(gregoryd): chrome_resources and chrome_strings could be
-            # shared with the 32-bit target, but it does not work due to a gyp
-            #issue
-            'chrome_resources',
-            'chrome_strings',
-            'common_nacl_win64',
             '../native_client/src/trusted/service_runtime/service_runtime.gyp:sel64',
             '../native_client/src/trusted/platform_qualify/platform_qualify.gyp:platform_qual_lib64',
           ],
           'sources': [
-            'nacl/broker_thread.cc',
-            'nacl/broker_thread.h',
+            'common/nacl_cmd_line.cc',
+            'common/nacl_messages.cc',
+            'nacl/nacl_broker_listener.cc',
+            'nacl/nacl_broker_listener.h',
+          ],
+          'include_dirs': [
+            '..',
           ],
           'defines': [
             '<@(nacl_win64_defines)',

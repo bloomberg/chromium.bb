@@ -89,28 +89,21 @@
 #include "chrome/app/breakpad_linux.h"
 #endif
 
-#if !defined(NACL_WIN64)  // We don't build the this code on win nacl64.
 base::LazyInstance<chrome::ChromeContentBrowserClient>
     g_chrome_content_browser_client(base::LINKER_INITIALIZED);
 base::LazyInstance<chrome::ChromeContentRendererClient>
     g_chrome_content_renderer_client(base::LINKER_INITIALIZED);
 base::LazyInstance<chrome::ChromeContentUtilityClient>
     g_chrome_content_utility_client(base::LINKER_INITIALIZED);
-#endif   // NACL_WIN64
-
 base::LazyInstance<chrome::ChromeContentPluginClient>
     g_chrome_content_plugin_client(base::LINKER_INITIALIZED);
 
 extern int RendererMain(const MainFunctionParams&);
 extern int NaClMain(const MainFunctionParams&);
 extern int ProfileImportMain(const MainFunctionParams&);
-#if defined(_WIN64)
-extern int NaClBrokerMain(const MainFunctionParams&);
-#endif
 extern int ServiceProcessMain(const MainFunctionParams&);
 
 #if defined(OS_WIN)
-// TODO(erikkay): isn't this already defined somewhere?
 #define DLLEXPORT __declspec(dllexport)
 
 // We use extern C for the prototype DLLEXPORT to avoid C++ name mangling.
@@ -271,18 +264,14 @@ void EnableHeapProfiler(const CommandLine& command_line) {
 }
 
 void InitializeChromeContentRendererClient() {
-#if !defined(NACL_WIN64)  // We don't build the renderer code on win nacl64.
   content::GetContentClient()->set_renderer(
       &g_chrome_content_renderer_client.Get());
-#endif
 }
 
 void InitializeChromeContentClient(const std::string& process_type) {
   if (process_type.empty()) {
-#if !defined(NACL_WIN64)  // We don't build the this code on win nacl64.
     content::GetContentClient()->set_browser(
         &g_chrome_content_browser_client.Get());
-#endif
   } else if (process_type == switches::kPluginProcess) {
     content::GetContentClient()->set_plugin(
         &g_chrome_content_plugin_client.Get());
@@ -290,10 +279,8 @@ void InitializeChromeContentClient(const std::string& process_type) {
              process_type == switches::kExtensionProcess) {
     InitializeChromeContentRendererClient();
   } else if (process_type == switches::kUtilityProcess) {
-#if !defined(NACL_WIN64)  // We don't build this code on win nacl64.
     content::GetContentClient()->set_utility(
         &g_chrome_content_utility_client.Get());
-#endif
   }
 }
 
@@ -668,9 +655,6 @@ class ChromeMainDelegate : public content::ContentMainDelegate {
 #endif
 #if !defined(DISABLE_NACL)
       { switches::kNaClLoaderProcess, NaClMain },
-#if defined(_WIN64)  // The broker process is used only on Win64.
-      { switches::kNaClBrokerProcess, NaClBrokerMain },
-#endif
 #endif  // DISABLE_NACL
     };
 

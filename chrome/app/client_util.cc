@@ -168,21 +168,7 @@ bool GetPreReadExperimentGroup(DWORD* pre_read) {
 HMODULE LoadChromeWithDirectory(std::wstring* dir) {
   ::SetCurrentDirectoryW(dir->c_str());
   const CommandLine& cmd_line = *CommandLine::ForCurrentProcess();
-#ifdef _WIN64
-  if ((cmd_line.GetSwitchValueASCII(switches::kProcessType) ==
-      switches::kNaClBrokerProcess) ||
-      (cmd_line.GetSwitchValueASCII(switches::kProcessType) ==
-      switches::kNaClLoaderProcess)) {
-    // Load the 64-bit DLL when running in a 64-bit process.
-    dir->append(installer::kChromeNaCl64Dll);
-  } else {
-    // Only NaCl broker and loader can be launched as Win64 processes.
-    NOTREACHED();
-    return NULL;
-  }
-#else
   dir->append(installer::kChromeDll);
-#endif
 
 #ifndef WIN_DISABLE_PREREAD
 #ifdef NDEBUG

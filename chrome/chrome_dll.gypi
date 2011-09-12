@@ -2,69 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 {
-  'target_defaults': {
-    'variables': {
-      'chrome_dll_target': 0,
-    },
-    'target_conditions': [
-      ['chrome_dll_target==1', {
-        'conditions': [
-          ['OS=="win"', {
-            'include_dirs': [
-              '<(DEPTH)/third_party/wtl/include',
-            ],
-            'defines': [
-              'CHROME_DLL',
-              'BROWSER_DLL',
-              'RENDERER_DLL',
-              'PLUGIN_DLL',
-            ],
-            'msvs_settings': {
-              'VCLinkerTool': {
-                'BaseAddress': '0x01c30000',
-                'DelayLoadDLLs': [
-                  'comdlg32.dll',
-                  'crypt32.dll',
-                  'cryptui.dll',
-                  'dhcpcsvc.dll',
-                  'imagehlp.dll',
-                  'imm32.dll',
-                  'iphlpapi.dll',
-                  'setupapi.dll',
-                  'urlmon.dll',
-                  'winhttp.dll',
-                  'wininet.dll',
-                  'winspool.drv',
-                  'ws2_32.dll',
-                  'wsock32.dll',
-                ],
-                # Set /SUBSYSTEM:WINDOWS for chrome.dll (for consistency).
-                'SubSystem': '2',
-              },
-              'VCManifestTool': {
-                'AdditionalManifestFiles': '$(ProjectDir)\\app\\chrome.dll.manifest',
-              },
-            },
-            'configurations': {
-              'Debug_Base': {
-                'msvs_settings': {
-                  'VCLinkerTool': {
-                    'LinkIncremental': '<(msvs_large_module_debug_link_mode)',
-                  },
-                },
-              },
-            },
-          }],  # OS=="win"
-        ],  # conditions
-      }],
-    ],
-  },
   'conditions': [
     ['OS=="mac" or OS=="win"', {
       'targets': [
         {
           'variables': {
-            'chrome_dll_target': 1,
             'conditions' : [
               ['OS=="win" and optimize_with_syzygy==1', {
                 # On Windows we use build chrome_dll as an intermediate target
@@ -142,10 +84,31 @@
                 #'app/check_dependents.bat',
                 #'app/chrome.dll.deps',
               ],
-              'msvs_settings': {
+              'include_dirs': [
+                '<(DEPTH)/third_party/wtl/include',
+              ],
+              'defines': [
+                'CHROME_DLL',
+                'BROWSER_DLL',
+                'RENDERER_DLL',
+                'PLUGIN_DLL',
+              ],
+              'configurations': {
+                'Debug_Base': {
+                  'msvs_settings': {
+                    'VCLinkerTool': {
+                      'LinkIncremental': '<(msvs_large_module_debug_link_mode)',
+                    },
+                  },
+                },
+              },
+              'msvs_settings': {                
                 'VCLinkerTool': {
+                  'BaseAddress': '0x01c30000',
                   'ImportLibrary': '$(OutDir)\\lib\\chrome_dll.lib',
                   'ProgramDatabaseFile': '$(OutDir)\\chrome_dll.pdb',
+                  # Set /SUBSYSTEM:WINDOWS for chrome.dll (for consistency).
+                  'SubSystem': '2',
                   'conditions': [
                     ['optimize_with_syzygy==1', {
                       # When syzygy is enabled we use build chrome_dll as an
@@ -158,6 +121,25 @@
                       'UseLibraryDependencyInputs': "true",
                     }],
                   ],
+                  'DelayLoadDLLs': [
+                    'comdlg32.dll',
+                    'crypt32.dll',
+                    'cryptui.dll',
+                    'dhcpcsvc.dll',
+                    'imagehlp.dll',
+                    'imm32.dll',
+                    'iphlpapi.dll',
+                    'setupapi.dll',
+                    'urlmon.dll',
+                    'winhttp.dll',
+                    'wininet.dll',
+                    'winspool.drv',
+                    'ws2_32.dll',
+                    'wsock32.dll',
+                  ],
+                },
+                'VCManifestTool': {
+                  'AdditionalManifestFiles': '$(ProjectDir)\\app\\chrome.dll.manifest',
                 },
               },
               'conditions': [
@@ -654,104 +636,5 @@
         },  # target chrome_dll
       ],  # targets
     }],  # OS=="mac" or OS=="win"
-    [ 'OS=="win"', {
-      'targets': [
-        {
-          'target_name': 'chrome_dll_nacl_win64',
-          'type': 'shared_library',
-          'product_name': 'nacl64',
-          'variables': {
-            'chrome_dll_target': 1,
-          },
-          'include_dirs': [
-            '..',
-          ],
-          'dependencies': [
-            '<@(nacl_win64_dependencies)',
-            'chrome_version_resources',
-            'nacl_win64',
-            '../base/base.gyp:base_i18n_nacl_win64',
-          ],
-          'defines': [
-            '<@(nacl_win64_defines)',
-            # Required to build gl_switches.cc as part of this binary.
-            'GL_IMPLEMENTATION'
-          ],
-          'sources': [
-            'app/chrome_command_ids.h',
-            'app/chrome_dll_resource.h',
-            'app/chrome_main.cc',
-            # Parsing is needed for the UserDataDir policy which is read much
-            # earlier than the initialization of the policy/pref system.
-            'browser/policy/policy_path_parser_win.cc',
-            'browser/renderer_host/render_process_host_dummy.cc',
-            'common/googleurl_dummy.cc',
-
-            '<(SHARED_INTERMEDIATE_DIR)/chrome_version/nacl64_dll_version.rc',
-
-            # TODO:  It would be nice to have these pulled in
-            # automatically from direct_dependent_settings in
-            # their various targets (net.gyp:net_resources, etc.),
-            # but that causes errors in other targets when
-            # resulting .res files get referenced multiple times.
-            '<(SHARED_INTERMEDIATE_DIR)/chrome/common_resources.rc',
-            '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources.rc',
-
-            # TODO(sgk):  left-over from pre-gyp build, figure out
-            # if we still need them and/or how to update to gyp.
-            #'app/check_dependents.bat',
-            #'app/chrome.dll.deps',
-
-            # Stub entry points for process types that are not supported
-            # by NaCl Win64 executable
-            'app/dummy_main_functions.cc',
-
-            # TODO(bradnelson): once automatic generation of 64 bit targets on
-            # Windows is ready, take this out and add a dependency on
-            # content_common.gypi and common.gypi in nacl_win64_dependencies
-            # and get rid of the common_constants.gypi which was added as a hack
-            # to avoid making common compile on 64 bit on Windows.
-            '../chrome/common/chrome_content_client.cc',
-            '../chrome/common/chrome_content_plugin_client.cc',
-            '../content/app/content_main.cc',
-            '../content/common/child_process.cc',
-            '../content/common/child_thread.cc',
-            '../content/common/content_client.cc',
-            '../content/common/content_constants.cc',
-            '../content/common/content_counters.cc',
-            '../content/common/content_message_generator.cc',
-            '../content/common/content_paths.cc',
-            '../content/common/content_switches.cc',
-            '../content/common/debug_flags.cc',
-            '../content/common/hi_res_timer_manager_win.cc',
-            '../content/common/notification_details.cc',
-            '../content/common/notification_service.cc',
-            '../content/common/notification_source.cc',
-            '../content/common/sandbox_policy.cc',
-            '../content/common/sandbox_init_wrapper_win.cc',
-            '../content/common/url_constants.cc',
-            '../ui/gfx/gl/gl_switches.cc',
-          ],
-          'msvs_settings': {
-            'VCLinkerTool': {
-              'ImportLibrary': '$(OutDir)\\lib\\nacl64_dll.lib',
-              'ProgramDatabaseFile': '$(OutDir)\\nacl64_dll.pdb',
-            },
-          },
-          'configurations': {
-            'Common_Base': {
-              'msvs_target_platform': 'x64',
-            },
-            'Debug_Base': {
-              'msvs_settings': {
-                'VCLinkerTool': {
-                  'LinkIncremental': '<(msvs_debug_link_nonincremental)',
-                },
-              },
-            },
-          },
-        },  # target chrome_dll
-      ],
-    }],
   ],
 }

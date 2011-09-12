@@ -22,8 +22,8 @@
         'app/content_main.cc',
         'app/content_main.h',
         'app/content_main_delegate.h',
-        'app/sandbox_helper_win.cc',
-        'app/sandbox_helper_win.h',
+        'app/startup_helper_win.cc',
+        'app/startup_helper_win.h',
       ],
       'conditions': [
         ['OS=="win"', {

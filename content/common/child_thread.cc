@@ -59,12 +59,7 @@ void ChildThread::Init() {
   sync_message_filter_ =
       new IPC::SyncMessageFilter(ChildProcess::current()->GetShutDownEvent());
   channel_->AddFilter(sync_message_filter_.get());
-
-#if !defined(NACL_WIN64)
-  // This brings in a depenency on gpu, which isn't linked in with NaCl's win64
-  // build.
   channel_->AddFilter(new ChildTraceMessageFilter());
-#endif
 
   // When running in unit tests, there is already a NotificationService object.
   // Since only one can exist at a time per thread, check first.

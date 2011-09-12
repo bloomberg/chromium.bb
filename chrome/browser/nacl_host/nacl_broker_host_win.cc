@@ -11,6 +11,7 @@
 #include "chrome/browser/nacl_host/nacl_process_host.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/logging_chrome.h"
 #include "chrome/common/nacl_cmd_line.h"
 #include "chrome/common/nacl_messages.h"
 
@@ -38,8 +39,9 @@ bool NaClBrokerHost::Init() {
 
   cmd_line->AppendSwitchASCII(switches::kProcessType,
                               switches::kNaClBrokerProcess);
-
   cmd_line->AppendSwitchASCII(switches::kProcessChannelID, channel_id());
+  if (logging::DialogsAreSuppressed())
+    cmd_line->AppendSwitch(switches::kNoErrorDialogs);
 
   BrowserChildProcessHost::Launch(FilePath(), cmd_line);
   return true;

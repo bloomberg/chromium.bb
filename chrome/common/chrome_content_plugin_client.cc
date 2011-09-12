@@ -30,9 +30,7 @@ void ChromeContentPluginClient::PluginProcessStarted(
   base::mac::SetProcessName(process_name);
 #endif
 
-#if !defined(NACL_WIN64)  // We don't link this in the NaCl 64 bit binary.
   chrome::RegisterInternalDefaultPlugin();
-#endif
 }
 
 }  // namespace chrome

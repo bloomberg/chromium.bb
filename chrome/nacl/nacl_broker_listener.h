@@ -2,40 +2,37 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_NACL_BROKER_THREAD_H_
-#define CHROME_NACL_BROKER_THREAD_H_
+#ifndef CHROME_NACL_NACL_BROKER_LISTENER_H_
+#define CHROME_NACL_NACL_BROKER_LISTENER_H_
 #pragma once
 
+#include "base/memory/scoped_ptr.h"
 #include "base/process.h"
 #include "chrome/common/nacl_types.h"
-#include "content/common/child_thread.h"
-
-#if defined(OS_WIN)
-#include "sandbox/src/sandbox.h"
-#endif
+#include "ipc/ipc_channel.h"
 
 // The BrokerThread class represents the thread that handles the messages from
 // the browser process and starts NaCl loader processes.
-class NaClBrokerThread : public ChildThread {
+class NaClBrokerListener : public IPC::Channel::Listener {
  public:
-  NaClBrokerThread();
-  ~NaClBrokerThread();
-  // Returns the one NaCl thread.
-  static NaClBrokerThread* current();
+  NaClBrokerListener();
+  ~NaClBrokerListener();
+
+  void Listen();
 
   // IPC::Channel::Listener implementation.
   virtual void OnChannelConnected(int32 peer_pid) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
 
  private:
-  virtual bool OnControlMessageReceived(const IPC::Message& msg);
   void OnLaunchLoaderThroughBroker(const std::wstring& loader_channel_id);
   void OnShareBrowserHandle(int browser_handle);
   void OnStopBroker();
 
   base::ProcessHandle browser_handle_;
-  sandbox::BrokerServices* broker_services_;
+  scoped_ptr<IPC::Channel> channel_;
 
-  DISALLOW_COPY_AND_ASSIGN(NaClBrokerThread);
+  DISALLOW_COPY_AND_ASSIGN(NaClBrokerListener);
 };
 
-#endif  // CHROME_NACL_BROKER_THREAD_H_
+#endif  // CHROME_NACL_NACL_BROKER_LISTENER_H_

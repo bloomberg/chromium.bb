@@ -278,9 +278,7 @@ class UI_EXPORT ResourceBundle {
   // Handles for data sources.
   DataHandle resources_data_;
   DataHandle large_icon_resources_data_;
-#if !defined(NACL_WIN64)
   scoped_ptr<DataPack> locale_resources_data_;
-#endif
 
   // References to extra data packs loaded via AddDataPackToSharedInstance.
   std::vector<LoadedDataPack*> data_packs_;

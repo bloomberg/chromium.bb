@@ -5,14 +5,11 @@
 #include "base/command_line.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/logging_chrome.h"
 
 namespace nacl {
 
 void CopyNaClCommandLineArguments(CommandLine* cmd_line) {
   const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
-  if (logging::DialogsAreSuppressed())
-    cmd_line->AppendSwitch(switches::kNoErrorDialogs);
 
   // Propagate the following switches to the NaCl loader command line (along
   // with any associated values) if present in the browser command line.
@@ -31,6 +28,7 @@ void CopyNaClCommandLineArguments(CommandLine* cmd_line) {
     switches::kEnableNaClDebug,
     switches::kNaClDebugPorts,
     switches::kNaClDebugIP,
+    switches::kNoErrorDialogs,
   };
   cmd_line->CopySwitchesFrom(browser_command_line, kSwitchNames,
                              arraysize(kSwitchNames));

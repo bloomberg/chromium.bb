@@ -294,6 +294,7 @@ bool AddGenericPolicy(sandbox::TargetPolicy* policy) {
 // TODO(cpu): Lock down the sandbox more if possible.
 // TODO(apatrick): Use D3D9Ex to render windowless.
 bool AddPolicyForGPU(CommandLine* cmd_line, sandbox::TargetPolicy* policy) {
+#if !defined(NACL_WIN64)  // We don't need this code on win nacl64.
   if (base::win::GetVersion() > base::win::VERSION_XP) {
     policy->SetTokenLevel(sandbox::USER_RESTRICTED_SAME_ACCESS,
                           sandbox::USER_LIMITED);
@@ -322,6 +323,7 @@ bool AddPolicyForGPU(CommandLine* cmd_line, sandbox::TargetPolicy* policy) {
   }
 
   AddGenericDllEvictionPolicy(policy);
+#endif
   return true;
 }
 
@@ -459,11 +461,13 @@ base::ProcessHandle StartProcessWithAccess(CommandLine* cmd_line,
   PROCESS_INFORMATION target = {0};
   sandbox::TargetPolicy* policy = g_broker_services->CreatePolicy();
 
+#if !defined(NACL_WIN64)  // We don't need this code on win nacl64.
   if (type == ChildProcessInfo::PLUGIN_PROCESS &&
       !browser_command_line.HasSwitch(switches::kNoSandbox) &&
       content::GetContentClient()->SandboxPlugin(cmd_line, policy)) {
     in_sandbox = true;
   }
+#endif
 
   if (!in_sandbox) {
     policy->Release();

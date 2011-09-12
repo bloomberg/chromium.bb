@@ -169,8 +169,9 @@ bool NaClProcessHost::LaunchSelLdr() {
 
   cmd_line->AppendSwitchASCII(switches::kProcessType,
                               switches::kNaClLoaderProcess);
-
   cmd_line->AppendSwitchASCII(switches::kProcessChannelID, channel_id());
+  if (logging::DialogsAreSuppressed())
+    cmd_line->AppendSwitch(switches::kNoErrorDialogs);
 
   if (!nacl_loader_prefix.empty())
     cmd_line->PrependWrapper(nacl_loader_prefix);

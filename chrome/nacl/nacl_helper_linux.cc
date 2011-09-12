@@ -47,8 +47,8 @@ void BecomeNaClLoader(const std::vector<int>& child_fds) {
   }
 
   MessageLoopForIO main_message_loop;
-  NaClListener *listener = new NaClListener();
-  listener->Listen();
+  NaClListener listener;
+  listener.Listen();
   _exit(0);
 }
 

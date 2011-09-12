@@ -3,80 +3,6 @@
 # found in the LICENSE file.
 
 {
-  'target_defaults': {
-    'variables': {
-      'chrome_common_target': 0,
-    },
-    'target_conditions': [
-      ['chrome_common_target==1', {
-        'include_dirs': [
-          '..',
-        ],
-        'conditions': [
-          ['OS=="win"', {
-            'include_dirs': [
-              '<(DEPTH)/third_party/wtl/include',
-            ],
-          }],
-        ],
-        'sources': [
-          # .cc, .h, and .mm files under chrome/common that are used on all
-          # platforms, including both 32-bit and 64-bit Windows.
-          # Test files are not included.
-          'common/about_handler.cc',
-          'common/about_handler.h',
-          'common/attrition_experiments.h',
-          'common/auto_start_linux.cc',
-          'common/auto_start_linux.h',
-          'common/autofill_messages.h',
-          'common/child_process_logging.h',
-          'common/child_process_logging_linux.cc',
-          'common/child_process_logging_mac.mm',
-          'common/child_process_logging_win.cc',
-          'common/chrome_notification_types.h',
-          'common/chrome_version_info.cc',
-          'common/chrome_version_info_linux.cc',
-          'common/chrome_version_info_mac.mm',
-          'common/chrome_version_info_win.cc',
-          'common/chrome_version_info.h',
-          'common/content_settings.cc',
-          'common/content_settings.h',
-          'common/content_settings_helper.cc',
-          'common/content_settings_helper.h',
-          'common/content_settings_types.h',
-          'common/external_ipc_fuzzer.h',
-          'common/external_ipc_fuzzer.cc',
-          'common/guid.cc',
-          'common/guid.h',
-          'common/guid_posix.cc',
-          'common/guid_win.cc',
-          'common/icon_messages.h',
-          'common/instant_types.h',
-          'common/logging_chrome.cc',
-          'common/logging_chrome.h',
-          'common/metrics_helpers.cc',
-          'common/metrics_helpers.h',
-          'common/multi_process_lock.h',
-          'common/multi_process_lock_linux.cc',
-          'common/multi_process_lock_mac.cc',
-          'common/multi_process_lock_win.cc',
-          'common/nacl_cmd_line.cc',
-          'common/nacl_cmd_line.h',
-          'common/nacl_messages.cc',
-          'common/nacl_messages.h',
-          'common/nacl_types.h',
-          'common/profiling.cc',
-          'common/profiling.h',
-          'common/ref_counted_util.h',
-          'common/safe_browsing/safebrowsing_messages.h',
-          'common/switch_utils.cc',
-          'common/switch_utils.h',
-          'common/time_format.cc',
-          'common/time_format.h',
-        ],
-      }],
-    ],
-  },
   'targets': [
     {
       'target_name': 'common',
@@ -84,8 +10,9 @@
       'variables': {
         'chrome_common_target': 1,
       },
-      # TODO(gregoryd): This could be shared with the 64-bit target, but
-      # it does not work due to a gyp issue.
+      'include_dirs': [
+          '..',
+        ],
       'direct_dependent_settings': {
         'include_dirs': [
           '..',
@@ -123,8 +50,12 @@
         '../webkit/support/webkit_support.gyp:glue',
       ],
       'sources': [
-        # .cc, .h, and .mm files under chrome/common that are not required for
-        # building 64-bit Windows targets. Test files are not included.
+        'common/about_handler.cc',
+        'common/about_handler.h',
+        'common/attrition_experiments.h',
+        'common/auto_start_linux.cc',
+        'common/auto_start_linux.h',
+        'common/autofill_messages.h',
         'common/automation_constants.cc',
         'common/automation_constants.h',
         'common/automation_messages.cc',
@@ -133,11 +64,21 @@
         'common/badge_util.cc',
         'common/badge_util.h',
         'common/bzip2_error_handler.cc',
+        'common/child_process_logging.h',
+        'common/child_process_logging_linux.cc',
+        'common/child_process_logging_mac.mm',
+        'common/child_process_logging_win.cc',
         'common/chrome_content_client.cc',
         'common/chrome_content_client.h',
         'common/chrome_content_plugin_client.cc',
         'common/chrome_content_plugin_client.h',
+        'common/chrome_notification_types.h',
         'common/chrome_plugin_messages.h',
+        'common/chrome_version_info.cc',
+        'common/chrome_version_info_linux.cc',
+        'common/chrome_version_info_mac.mm',
+        'common/chrome_version_info_win.cc',
+        'common/chrome_version_info.h',
         'common/cloud_print/cloud_print_proxy_info.cc',
         'common/cloud_print/cloud_print_proxy_info.h',
         'common/common_api.h',
@@ -145,6 +86,11 @@
         'common/common_message_generator.h',
         'common/common_param_traits.cc',
         'common/common_param_traits.h',
+        'common/content_settings.cc',
+        'common/content_settings.h',
+        'common/content_settings_helper.cc',
+        'common/content_settings_helper.h',
+        'common/content_settings_types.h',
         'common/custom_handlers/protocol_handler.cc',
         'common/custom_handlers/protocol_handler.h',
         'common/default_plugin.cc',
@@ -190,16 +136,26 @@
         'common/extensions/url_pattern_set.h',
         'common/extensions/user_script.cc',
         'common/extensions/user_script.h',
+        'common/external_ipc_fuzzer.h',
+        'common/external_ipc_fuzzer.cc',
         'common/favicon_url.cc',
         'common/favicon_url.h',
+        'common/guid.cc',
+        'common/guid.h',
+        'common/guid_posix.cc',
+        'common/guid_win.cc',
+        'common/icon_messages.h',
         'common/important_file_writer.cc',
         'common/important_file_writer.h',
+        'common/instant_types.h',
         'common/json_pref_store.cc',
         'common/json_pref_store.h',
         'common/json_schema_validator.cc',
         'common/json_schema_validator.h',
         'common/jstemplate_builder.cc',
         'common/jstemplate_builder.h',
+        'common/logging_chrome.cc',
+        'common/logging_chrome.h',
         'common/mac/app_mode_common.h',
         'common/mac/app_mode_common.mm',
         'common/mac/cfbundle_blocker.h',
@@ -210,6 +166,17 @@
         'common/mac/objc_method_swizzle.mm',
         'common/mac/objc_zombie.h',
         'common/mac/objc_zombie.mm',
+        'common/metrics_helpers.cc',
+        'common/metrics_helpers.h',
+        'common/multi_process_lock.h',
+        'common/multi_process_lock_linux.cc',
+        'common/multi_process_lock_mac.cc',
+        'common/multi_process_lock_win.cc',
+        'common/nacl_cmd_line.cc',
+        'common/nacl_cmd_line.h',
+        'common/nacl_messages.cc',
+        'common/nacl_messages.h',
+        'common/nacl_types.h',
         'common/libxml_utils.cc',
         'common/libxml_utils.h',
         'common/native_window_notification_source.h',
@@ -218,10 +185,14 @@
         'common/pref_store.h',
         'common/print_messages.cc',
         'common/print_messages.h',
+        'common/profiling.cc',
+        'common/profiling.h',
         'common/random.cc',
         'common/random.h',
+        'common/ref_counted_util.h',
         'common/render_messages.cc',
         'common/render_messages.h',
+        'common/safe_browsing/safebrowsing_messages.h',
         'common/scoped_co_mem.h',
         'common/search_provider.h',
         'common/service_messages.h',
@@ -235,8 +206,12 @@
         'common/spellcheck_common.cc',
         'common/spellcheck_common.h',
         'common/spellcheck_messages.h',
+        'common/switch_utils.cc',
+        'common/switch_utils.h',
         'common/thumbnail_score.cc',
         'common/thumbnail_score.h',
+        'common/time_format.cc',
+        'common/time_format.h',
         'common/url_constants.cc',
         'common/url_constants.h',
         'common/visitedlink_common.cc',
@@ -251,6 +226,11 @@
         'common/zip.h',
       ],
       'conditions': [
+        ['OS=="win"', {
+          'include_dirs': [
+            '<(DEPTH)/third_party/wtl/include',
+          ],
+        }],
         ['toolkit_uses_gtk == 1', {
           'dependencies': [
             '../build/linux/system.gyp:gtk',
@@ -428,74 +408,5 @@
       },
       'includes': [ '../build/protoc.gypi' ],
     },
-  ],
-  'conditions': [
-    ['OS=="win"', {
-      'targets': [
-        {
-          'target_name': 'common_nacl_win64',
-          'type': 'static_library',
-          'variables': {
-            'chrome_common_target': 1,
-          },
-          'dependencies': [
-            # TODO(gregoryd): chrome_resources and chrome_strings could be
-            #  shared with the 32-bit target, but it does not work due to a gyp
-            # issue.
-            'chrome_resources',
-            'chrome_strings',
-            'common_constants_win64',
-            'app/policy/cloud_policy_codegen.gyp:policy_win64',
-            '../base/base.gyp:base_nacl_win64',
-            '../ipc/ipc.gyp:ipc_win64',
-            '../third_party/libxml/libxml.gyp:libxml',
-            '../ui/ui.gyp:ui_nacl_win64',
-            '../ui/ui.gyp:ui_resources',
-            '../ui/ui.gyp:ui_resources_standard',
-          ],
-          'include_dirs': [
-            '../third_party/icu/public/i18n',
-            '../third_party/icu/public/common',
-            # We usually get these skia directories by adding a dependency on
-            # skia, bu we don't need it for NaCl's 64-bit Windows support. The
-            # directories are required for resolving the includes in any case.
-            '../third_party/skia/include/config',
-            '../third_party/skia/include/core',
-            '../skia/config',
-            '../skia/config/win',
-          ],
-          'defines': [
-            '<@(nacl_win64_defines)',
-          ],
-          'sources': [
-            '../webkit/glue/webkit_glue_dummy.cc',
-            'common/url_constants.cc',
-            # TODO(bradnelson): once automatic generation of 64 bit targets on
-            # Windows is ready, take this out and add a dependency on
-            # content_common.gypi.
-            '../content/common/file_system/file_system_dispatcher_dummy.cc',
-            '../content/common/message_router.cc',
-            '../content/common/quota_dispatcher_dummy.cc',
-            '../content/common/resource_dispatcher_dummy.cc',
-            '../content/common/socket_stream_dispatcher_dummy.cc',
-          ],
-          'export_dependent_settings': [
-            'app/policy/cloud_policy_codegen.gyp:policy_win64',
-          ],
-          # TODO(gregoryd): This could be shared with the 32-bit target, but
-          # it does not work due to a gyp issue.
-          'direct_dependent_settings': {
-            'include_dirs': [
-              '..',
-            ],
-          },
-          'configurations': {
-            'Common_Base': {
-              'msvs_target_platform': 'x64',
-            },
-          },
-        },
-      ],
-    }],
   ],
 }

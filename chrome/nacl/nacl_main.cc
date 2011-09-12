@@ -4,89 +4,28 @@
 
 #include "build/build_config.h"
 
-#if defined(OS_WIN)
-#include <windows.h>
-#endif
-
 #include "base/command_line.h"
 #include "base/message_loop.h"
-#include "base/string_util.h"
 #include "base/system_monitor/system_monitor.h"
-#include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_result_codes.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/nacl/nacl_listener.h"
 #include "chrome/nacl/nacl_main_platform_delegate.h"
 #include "content/common/child_process.h"
-#include "content/common/child_process_info.h"
 #include "content/common/hi_res_timer_manager.h"
 #include "content/common/main_function_params.h"
-#include "content/common/sandbox_policy.h"
-#include "ipc/ipc_switches.h"
-
-#if defined(OS_WIN)
-#include "chrome/nacl/broker_thread.h"
-#include "sandbox/src/sandbox.h"
-#endif
-
-#ifdef _WIN64
-
-// main() routine for the NaCl broker process.
-// This is necessary for supporting NaCl in Chrome on Win64.
-int NaClBrokerMain(const MainFunctionParams& parameters) {
-  // The main thread of the broker.
-  MessageLoopForIO main_message_loop;
-  base::PlatformThread::SetName("CrNaClBrokerMain");
-
-  base::SystemMonitor system_monitor;
-  HighResolutionTimerManager hi_res_timer_manager;
-
-  const CommandLine& parsed_command_line = parameters.command_line_;
-
-  DVLOG(1) << "Started NaCL broker with "
-           << parsed_command_line.GetCommandLineString();
-
-  // NOTE: this code is duplicated from browser_main.cc
-  // IMPORTANT: This piece of code needs to run as early as possible in the
-  // process because it will initialize the sandbox broker, which requires the
-  // process to swap its window station. During this time all the UI will be
-  // broken. This has to run before threads and windows are created.
-  sandbox::BrokerServices* broker_services =
-      parameters.sandbox_info_.BrokerServices();
-  if (broker_services) {
-    sandbox::InitBrokerServices(broker_services);
-    if (!parsed_command_line.HasSwitch(switches::kNoSandbox)) {
-      bool use_winsta = !parsed_command_line.HasSwitch(
-          switches::kDisableAltWinstation);
-      // Precreate the desktop and window station used by the renderers.
-      sandbox::TargetPolicy* policy = broker_services->CreatePolicy();
-      sandbox::ResultCode result = policy->CreateAlternateDesktop(use_winsta);
-      CHECK(sandbox::SBOX_ERROR_FAILED_TO_SWITCH_BACK_WINSTATION != result);
-      policy->Release();
-    }
-  }
-
-  {
-    ChildProcess broker_process;
-    broker_process.set_main_thread(new NaClBrokerThread());
-    MessageLoop::current()->Run();
-  }
-
-  return 0;
-}
-#else
-int NaClBrokerMain(const MainFunctionParams& parameters) {
-  return chrome::RESULT_CODE_BAD_PROCESS_TYPE;
-}
-#endif  // _WIN64
 
 // This function provides some ways to test crash and assertion handling
 // behavior of the renderer.
 static void HandleNaClTestParameters(const CommandLine& command_line) {
+// The message box doesn't work in the 64 bit binaries anyways, so no need to
+// link to it since the 64 bit binary doesn't link with chrome or content.
+#if !defined(NACL_WIN64)
   if (command_line.HasSwitch(switches::kNaClStartupDialog)) {
     ChildProcess::WaitForDebugger("NativeClient");
   }
+#endif
 }
 
 // main() routine for the NaCl loader process.

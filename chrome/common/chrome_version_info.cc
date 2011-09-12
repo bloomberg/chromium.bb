@@ -92,7 +92,6 @@ bool VersionInfo::IsOfficialBuild() const {
 
 std::string VersionInfo::CreateVersionString() const {
   std::string current_version;
-#if !defined(NACL_WIN64)
   if (is_valid()) {
     current_version += Version();
 #if !defined(GOOGLE_CHROME_BUILD)
@@ -108,7 +107,6 @@ std::string VersionInfo::CreateVersionString() const {
     if (!modifier.empty())
       current_version += " " + modifier;
   }
-#endif  // !defined(NACL_WIN64)
   return current_version;
 }
 

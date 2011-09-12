@@ -3,98 +3,42 @@
 # found in the LICENSE file.
 
 {
-  'target_defaults': {
-    'variables': {
-      'chrome_exe_target': 0,
-    },
-    'target_conditions': [
-      ['chrome_exe_target==1', {
-        'sources': [
-          # .cc, .h, and .mm files under app that are used on all
-          # platforms, including both 32-bit and 64-bit Windows.
-          # Test files are not included.
-          'app/breakpad_win.cc',
-          'app/breakpad_win.h',
-          'app/chrome_exe_main_gtk.cc',
-          'app/chrome_exe_main_mac.cc',
-          'app/chrome_exe_main_win.cc',
-          'app/chrome_exe_resource.h',
-          'app/client_util.cc',
-          'app/client_util.h',
-          'app/hard_error_handler_win.cc',
-          'app/hard_error_handler_win.h',
-          'app/scoped_ole_initializer.h',
-          '../content/app/sandbox_helper_win.cc',
-          '../content/common/content_switches.cc',
-        ],
-        'mac_bundle_resources': [
-          'app/app-Info.plist',
-        ],
-        # TODO(mark): Come up with a fancier way to do this.  It should only
-        # be necessary to list app-Info.plist once, not the three times it is
-        # listed here.
-        'mac_bundle_resources!': [
-          'app/app-Info.plist',
-        ],
-        'xcode_settings': {
-          'CHROMIUM_STRIP_SAVE_FILE': 'app/app.saves',
-          'INFOPLIST_FILE': 'app/app-Info.plist',
-        },
-        'conditions': [
-          ['OS=="win"', {
-            'msvs_settings': {
-              'VCLinkerTool': {
-                'DelayLoadDLLs': [
-                  'dbghelp.dll',
-                  'dwmapi.dll',
-                  'uxtheme.dll',
-                  'ole32.dll',
-                  'oleaut32.dll',
-                ],
-                # Set /SUBSYSTEM:WINDOWS for chrome.exe itself.
-                'SubSystem': '2',
-              },
-              'VCManifestTool': {
-                'AdditionalManifestFiles': '$(ProjectDir)\\app\\chrome.exe.manifest',
-              },
-            },
-            'actions': [
-              {
-                'action_name': 'first_run',
-                'inputs': [
-                    'app/FirstRun',
-                ],
-                'outputs': [
-                    '<(PRODUCT_DIR)/First Run',
-                ],
-                'action': ['cp', '-f', '<@(_inputs)', '<@(_outputs)'],
-                'message': 'Copy first run complete sentinel file',
-              },
-            ],
-          }, {  # 'OS!="win"
-            'sources!': [
-              'app/client_util.cc',
-            ]
-          }],
-          ['OS=="mac" and asan==1', {
-            'xcode_settings': {
-              # Override the outer definition of CHROMIUM_STRIP_SAVE_FILE.
-              'CHROMIUM_STRIP_SAVE_FILE': 'app/app_asan.saves',
-            },
-          }],
-        ],
-      }],
-    ],
-  },
   'targets': [
     {
       'target_name': 'chrome',
       'type': 'executable',
       'mac_bundle': 1,
       'variables': {
-        'chrome_exe_target': 1,
         'use_system_xdg_utils%': 0,
         'disable_pie%': 0,
+      },
+      'sources': [
+        'app/breakpad_win.cc',
+        'app/breakpad_win.h',
+        'app/chrome_exe_main_gtk.cc',
+        'app/chrome_exe_main_mac.cc',
+        'app/chrome_exe_main_win.cc',
+        'app/chrome_exe_resource.h',
+        'app/client_util.cc',
+        'app/client_util.h',
+        'app/hard_error_handler_win.cc',
+        'app/hard_error_handler_win.h',
+        'app/scoped_ole_initializer.h',
+        '../content/app/startup_helper_win.cc',
+        '../content/common/content_switches.cc',
+      ],
+      'mac_bundle_resources': [
+        'app/app-Info.plist',
+      ],
+      # TODO(mark): Come up with a fancier way to do this.  It should only
+      # be necessary to list app-Info.plist once, not the three times it is
+      # listed here.
+      'mac_bundle_resources!': [
+        'app/app-Info.plist',
+      ],
+      'xcode_settings': {
+        'CHROMIUM_STRIP_SAVE_FILE': 'app/app.saves',
+        'INFOPLIST_FILE': 'app/app-Info.plist',
       },
       'conditions': [
         ['os_posix == 1 and OS != "mac"', {
@@ -470,6 +414,12 @@
             'chrome_dll',
           ],
         }],
+        ['OS=="mac" and asan==1', {
+          'xcode_settings': {
+            # Override the outer definition of CHROMIUM_STRIP_SAVE_FILE.
+            'CHROMIUM_STRIP_SAVE_FILE': 'app/app_asan.saves',
+          },
+        }],
         ['OS=="win"', {
           'conditions': [
             ['optimize_with_syzygy==1', {
@@ -483,8 +433,6 @@
               'dependencies': ['chrome_dll',]
             }],
           ],
-        }],
-        ['OS=="win"', {
           'dependencies': [
             'chrome_version_resources',
             'installer_util',
@@ -503,8 +451,37 @@
             'VCLinkerTool': {
               'ImportLibrary': '$(OutDir)\\lib\\chrome_exe.lib',
               'ProgramDatabaseFile': '$(OutDir)\\chrome_exe.pdb',
+              'DelayLoadDLLs': [
+                'dbghelp.dll',
+                'dwmapi.dll',
+                'uxtheme.dll',
+                'ole32.dll',
+                'oleaut32.dll',
+              ],
+              # Set /SUBSYSTEM:WINDOWS for chrome.exe itself.
+              'SubSystem': '2',
+            },
+            'VCManifestTool': {
+              'AdditionalManifestFiles': '$(ProjectDir)\\app\\chrome.exe.manifest',
             },
           },
+          'actions': [
+            {
+              'action_name': 'first_run',
+              'inputs': [
+                  'app/FirstRun',
+              ],
+              'outputs': [
+                  '<(PRODUCT_DIR)/First Run',
+              ],
+              'action': ['cp', '-f', '<@(_inputs)', '<@(_outputs)'],
+              'message': 'Copy first run complete sentinel file',
+            },
+          ],            
+        }, {  # 'OS!="win"
+          'sources!': [
+            'app/client_util.cc',
+          ],
         }],
       ],
     },
@@ -516,22 +493,31 @@
           'target_name': 'chrome_nacl_win64',
           'type': 'executable',
           'product_name': 'nacl64',
-          'variables': {
-            'chrome_exe_target': 1,
-          },
+          'sources': [
+            'app/breakpad_win.cc',
+            'app/hard_error_handler_win.cc',
+            'nacl/nacl_exe_win_64.cc',
+            '../content/app/startup_helper_win.cc',
+            '../content/common/content_switches.cc',
+            '../content/common/debug_flags.cc',  # Needed for sandbox_policy.cc
+            '../content/common/hi_res_timer_manager_win.cc',
+            '../content/common/sandbox_policy.cc',
+            '../content/common/sandbox_init_wrapper_win.cc',
+            '<(SHARED_INTERMEDIATE_DIR)/chrome_version/nacl64_exe_version.rc',
+          ],
           'dependencies': [
-            # On Windows make sure we've built Win64 version of chrome_dll,
-            # which contains all of the library code with Chromium
-            # functionality.
+            'app/policy/cloud_policy_codegen.gyp:policy_win64',
             'chrome_version_resources',
-            'chrome_dll_nacl_win64',
             'common_constants_win64',
             'installer_util_nacl_win64',
-            'app/policy/cloud_policy_codegen.gyp:policy_win64',
+            'nacl_win64',
             '../breakpad/breakpad.gyp:breakpad_handler_win64',
             '../breakpad/breakpad.gyp:breakpad_sender_win64',
+            '../base/base.gyp:base_i18n_nacl_win64',
             '../base/base.gyp:base_nacl_win64',
             '../base/base.gyp:base_static_win64',
+            '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations_win64',
+            '../ipc/ipc.gyp:ipc_win64',
             '../sandbox/sandbox.gyp:sandbox_win64',
           ],
           'defines': [
@@ -540,13 +526,11 @@
           'include_dirs': [
             '<(SHARED_INTERMEDIATE_DIR)/chrome',
           ],
-          'sources': [
-            '<(SHARED_INTERMEDIATE_DIR)/chrome_version/nacl64_exe_version.rc',
-          ],
           'msvs_settings': {
             'VCLinkerTool': {
               'ImportLibrary': '$(OutDir)\\lib\\nacl64_exe.lib',
               'ProgramDatabaseFile': '$(OutDir)\\nacl64_exe.pdb',
+              'SubSystem': '2',         # Set /SUBSYSTEM:WINDOWS
             },
           },
           'configurations': {

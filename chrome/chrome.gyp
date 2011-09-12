@@ -36,13 +36,6 @@
       '../printing/printing.gyp:printing',
       '../third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:inspector_resources',
     ],
-    'nacl_win64_dependencies': [
-      'common_nacl_win64',
-      'common_constants_win64',
-      'installer_util_nacl_win64',
-      '../base/base.gyp:base_static_win64',
-      '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations_win64',
-    ],
     'allocator_target': '../base/allocator/allocator.gyp:allocator',
     'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/chrome',
     'protoc_out_dir': '<(SHARED_INTERMEDIATE_DIR)/protoc_out',
@@ -1395,7 +1388,6 @@
             'app/chrome_exe.ver',
             'app/chrome_dll.ver',
             'app/nacl64_exe.ver',
-            'app/nacl64_dll.ver',
             'app/other.ver',
           ],
           'rules': [
@@ -1555,7 +1547,6 @@
           'type': 'executable',
           'product_name': 'crash_service64',
           'dependencies': [
-            'app/policy/cloud_policy_codegen.gyp:policy_win64',
             'common_constants_win64',
             'installer_util_nacl_win64',
             '../base/base.gyp:base_static_win64',

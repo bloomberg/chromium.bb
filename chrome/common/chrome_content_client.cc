@@ -17,6 +17,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
+#include "chrome/common/render_messages.h"
 #include "content/common/pepper_plugin_registry.h"
 #include "remoting/client/plugin/pepper_entrypoints.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -27,10 +28,6 @@
 #if defined(OS_WIN)
 #include "content/common/sandbox_policy.h"
 #include "sandbox/src/sandbox.h"
-#endif
-
-#if !defined(NACL_WIN64)  // The code this needs isn't linked on Win64 builds.
-#include "chrome/common/render_messages.h"
 #endif
 
 namespace {
@@ -61,7 +58,6 @@ const char kRemotingViewerPluginOldMimeType[] =
     "pepper-application/x-chromoting";
 #endif
 
-#if !defined(NACL_WIN64)  // The code this needs isn't linked on Win64 builds.
 // Appends the known built-in plugins to the given vector. Some built-in
 // plugins are "internal" which means they are compiled into the Chrome binary,
 // and some are extra shared libraries distributed with the browser (these are
@@ -190,8 +186,6 @@ void AddOutOfProcessFlash(std::vector<PepperPluginInfo>* plugins) {
   plugins->push_back(plugin);
 }
 
-#endif  // !defined(NACL_WIN64)
-
 #if defined(OS_WIN)
 // Launches the privileged flash broker, used when flash is sandboxed.
 // The broker is the same flash dll, except that it uses a different
@@ -276,14 +270,11 @@ void ChromeContentClient::SetGpuInfo(const GPUInfo& gpu_info) {
 
 void ChromeContentClient::AddPepperPlugins(
     std::vector<PepperPluginInfo>* plugins) {
-#if !defined(NACL_WIN64)  // The code this needs isn't linked on Win64 builds.
   ComputeBuiltInPlugins(plugins);
   AddOutOfProcessFlash(plugins);
-#endif
 }
 
 bool ChromeContentClient::CanSendWhileSwappedOut(const IPC::Message* msg) {
-#if !defined(NACL_WIN64)  // The code this needs isn't linked on Win64 builds.
   // Any Chrome-specific messages that must be allowed to be sent from swapped
   // out renderers.
   switch (msg->type()) {
@@ -292,13 +283,11 @@ bool ChromeContentClient::CanSendWhileSwappedOut(const IPC::Message* msg) {
     default:
       break;
   }
-#endif
   return false;
 }
 
 bool ChromeContentClient::CanHandleWhileSwappedOut(
     const IPC::Message& msg) {
-#if !defined(NACL_WIN64)  // The code this needs isn't linked on Win64 builds.
   // Any Chrome-specific messages (apart from those listed in
   // CanSendWhileSwappedOut) that must be handled by the browser when sent from
   // swapped out renderers.
@@ -308,7 +297,6 @@ bool ChromeContentClient::CanHandleWhileSwappedOut(
     default:
       break;
   }
-#endif
   return false;
 }
 
@@ -321,19 +309,11 @@ std::string ChromeContentClient::GetUserAgent(bool mimic_windows) const {
 }
 
 string16 ChromeContentClient::GetLocalizedString(int message_id) const {
-#if defined(NACL_WIN64)  // The code this needs isn't linked on Win64 builds.
-  return string16();
-#else
   return l10n_util::GetStringUTF16(message_id);
-#endif
 }
 
 base::StringPiece ChromeContentClient::GetDataResource(int resource_id) const {
-#if defined(NACL_WIN64)  // The code this needs isn't linked on Win64 builds.
-  return base::StringPiece();
-#else
   return ResourceBundle::GetSharedInstance().GetRawDataResource(resource_id);
-#endif
 }
 
 #if defined(OS_WIN)

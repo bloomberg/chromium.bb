@@ -33,7 +33,6 @@ wow_helper.exe: %(ChromeDir)s\
 Dictionaries\en-US.bdic: %(ChromeDir)s\Dictionaries
 chrome.dll: %(VersionDir)s\
 nacl64.exe: %(VersionDir)s\
-nacl64.dll: %(VersionDir)s\
 ppGoogleNaClPluginChrome.dll: %(VersionDir)s\
 nacl_irt_x86_32.nexe: %(VersionDir)s\
 nacl_irt_x86_64.nexe: %(VersionDir)s\
