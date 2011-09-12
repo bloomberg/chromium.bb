@@ -475,7 +475,7 @@ class TitleWatcher : public NotificationObserver {
                        const NotificationSource& source,
                        const NotificationDetails& details) OVERRIDE;
 
-  TabContents* expected_tab_;
+  TabContents* tab_contents_;
   std::vector<string16> expected_titles_;
   NotificationRegistrar notification_registrar_;
 

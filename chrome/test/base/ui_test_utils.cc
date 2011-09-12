@@ -811,7 +811,7 @@ void WindowedNotificationObserver::Observe(int type,
 
 TitleWatcher::TitleWatcher(TabContents* tab_contents,
                            const string16& expected_title)
-    : expected_tab_(tab_contents),
+    : tab_contents_(tab_contents),
       expected_title_observed_(false),
       quit_loop_on_observation_(false) {
   EXPECT_TRUE(tab_contents != NULL);
@@ -819,6 +819,16 @@ TitleWatcher::TitleWatcher(TabContents* tab_contents,
   notification_registrar_.Add(this,
                               content::NOTIFICATION_TAB_CONTENTS_TITLE_UPDATED,
                               Source<TabContents>(tab_contents));
+
+  // When navigating through the history, the restored NavigationEntry's title
+  // will be used. If the entry ends up having the same title after we return
+  // to it, as will usually be the case, the
+  // NOTIFICATION_TAB_CONTENTS_TITLE_UPDATED will then be suppressed, since the
+  // NavigationEntry's title hasn't changed.
+  notification_registrar_.Add(
+      this,
+      content::NOTIFICATION_LOAD_STOP,
+      Source<NavigationController>(&tab_contents->controller()));
 }
 
 void TitleWatcher::AlsoWaitForTitle(const string16& expected_title) {
@@ -839,15 +849,21 @@ const string16& TitleWatcher::WaitAndGetTitle() {
 void TitleWatcher::Observe(int type,
                            const NotificationSource& source,
                            const NotificationDetails& details) {
-  if (type != content::NOTIFICATION_TAB_CONTENTS_TITLE_UPDATED)
-    return;
+  if (type == content::NOTIFICATION_TAB_CONTENTS_TITLE_UPDATED) {
+    TabContents* source_contents = Source<TabContents>(source).ptr();
+    ASSERT_EQ(tab_contents_, source_contents);
+  } else if (type == content::NOTIFICATION_LOAD_STOP) {
+    NavigationController* controller =
+        Source<NavigationController>(source).ptr();
+    ASSERT_EQ(&tab_contents_->controller(), controller);
+  } else {
+    FAIL() << "Unexpected notification received.";
+  }
 
-  TabContents* source_contents = Source<TabContents>(source).ptr();
-  ASSERT_EQ(expected_tab_, source_contents);
   std::vector<string16>::const_iterator it =
       std::find(expected_titles_.begin(),
                 expected_titles_.end(),
-                source_contents->GetTitle());
+                tab_contents_->GetTitle());
   if (it == expected_titles_.end())
     return;
   observed_title_ = *it;
