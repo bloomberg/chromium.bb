@@ -250,6 +250,27 @@ GValue* ConvertStringToGValue(const std::string& s) {
   return gvalue;
 }
 
+GValue* ConvertDictionaryValueToGValue(const DictionaryValue* dict) {
+  GHashTable* ghash =
+      g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
+  for (DictionaryValue::key_iterator it = dict->begin_keys();
+       it != dict->end_keys(); ++it) {
+    std::string key = *it;
+    std::string val;
+    if (!dict->GetString(key, &val)) {
+      NOTREACHED() << "Invalid type in dictionary, key: " << key;
+      continue;
+    }
+    g_hash_table_insert(ghash,
+                        g_strdup(const_cast<char*>(key.c_str())),
+                        g_strdup(const_cast<char*>(val.c_str())));
+  }
+  GValue* gvalue = new GValue();
+  g_value_init(gvalue, DBUS_TYPE_G_STRING_STRING_HASHTABLE);
+  g_value_set_boxed(gvalue, ghash);
+  return gvalue;
+}
+
 GValue* ConvertValueToGValue(const Value* value) {
   switch (value->GetType()) {
     case Value::TYPE_BOOLEAN: {
@@ -270,17 +291,20 @@ GValue* ConvertValueToGValue(const Value* value) {
         return ConvertStringToGValue(out);
       break;
     }
+    case Value::TYPE_DICTIONARY: {
+      const DictionaryValue* dict = static_cast<const DictionaryValue*>(value);
+      return ConvertDictionaryValueToGValue(dict);
+    }
     case Value::TYPE_NULL:
     case Value::TYPE_DOUBLE:
     case Value::TYPE_BINARY:
-    case Value::TYPE_DICTIONARY:
     case Value::TYPE_LIST:
       // Other Value types shouldn't be passed through this mechanism.
       NOTREACHED() << "Unconverted Value of type: " << value->GetType();
-      return NULL;
+      return new GValue();
   }
   NOTREACHED() << "Value conversion failed, type: " << value->GetType();
-  return NULL;
+  return new GValue();
 }
 
 }  // namespace
