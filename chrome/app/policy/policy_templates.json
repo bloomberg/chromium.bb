@@ -1276,7 +1276,7 @@
           'type': 'list',
           'supported_on': ['chrome.*:15-', 'chrome_os:0.15-'],
           'features': {'dynamic_refresh': 1},
-          'example_value': ['"{\"pattern\":\"https://www.example.com\",\"filter\":{\"ISSUER\":{\"CN\":\"certificate issuer name\"}}}"'],
+          'example_value': ["{\\\"pattern\\\":\\\"https://www.example.com\\\",\\\"filter\\\":{\\\"ISSUER\\\":{\\\"CN\\\":\\\"certificate issuer name\\\"}}}"],
           'id': 102,
           'caption': '''Automatically select client certificates for these sites''',
           'desc': '''Allows you to specify a list of url patterns that specify sites for which <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> should automatically select a client certificates, if the site requests a certificate.''',
