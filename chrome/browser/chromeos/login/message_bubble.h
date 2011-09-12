@@ -71,10 +71,13 @@ class MessageBubble : public Bubble,
       const std::wstring& help,
       MessageBubbleDelegate* delegate);
 
-  // Overridden from NativeWidgetGtk.
+  // Overridden from NativeWidgetGtk/NativeWidgetViews.
   virtual void Close() OVERRIDE;
 
-  virtual gboolean OnButtonPress(GtkWidget* widget, GdkEventButton* event);
+#if !defined(TOUCH_UI)
+  virtual gboolean OnButtonPress(GtkWidget* widget,
+                                 GdkEventButton* event) OVERRIDE;
+#endif
 
  protected:
   virtual ~MessageBubble();
@@ -86,9 +89,11 @@ class MessageBubble : public Bubble,
   // Overridden from views::LinkListener:
   virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
 
+#if !defined(TOUCH_UI)
   // Overridden from NativeWidgetGtk.
   virtual void OnActiveChanged() OVERRIDE;
   virtual void SetMouseCapture() OVERRIDE;
+#endif
 
  private:
   MessageBubble(views::Widget::InitParams::Type type,

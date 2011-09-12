@@ -132,6 +132,8 @@ Bubble::Bubble()
       views::NativeWidgetAura(new views::Widget),
 #elif defined(OS_WIN)
       views::NativeWidgetWin(new views::Widget),
+#elif defined(TOUCH_UI)
+      views::NativeWidgetViews(new views::Widget),
 #elif defined(TOOLKIT_USES_GTK)
       views::NativeWidgetGtk(new views::Widget),
 #endif
@@ -158,7 +160,11 @@ Bubble::Bubble()
 #if defined(OS_CHROMEOS)
 Bubble::Bubble(views::Widget::InitParams::Type type,
                bool show_while_screen_is_locked)
+#if defined(TOUCH_UI)
+    : views::NativeWidgetViews(new views::Widget),
+#else
     : views::NativeWidgetGtk(new views::Widget),
+#endif
       border_contents_(NULL),
       delegate_(NULL),
       show_status_(kOpen),
@@ -357,6 +363,10 @@ void Bubble::OnActivate(UINT action, BOOL minimized, HWND window) {
     GetWidget()->GetRootView()->child_at(0)->RequestFocus();
   }
 }
+#elif defined(TOUCH_UI)
+void Bubble::Deactivate() {
+  GetWidget()->Close();
+}
 #elif defined(TOOLKIT_USES_GTK)
 void Bubble::OnActiveChanged() {
   if (!GetWidget()->IsActive())
@@ -384,6 +394,8 @@ void Bubble::DoClose(bool closed_by_escape) {
   NOTIMPLEMENTED();
 #elif defined(OS_WIN)
   NativeWidgetWin::Close();
+#elif defined(TOUCH_UI)
+  NativeWidgetViews::Close();
 #elif defined(TOOLKIT_USES_GTK)
   NativeWidgetGtk::Close();
 #endif

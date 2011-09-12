@@ -172,6 +172,7 @@ MessageBubble* MessageBubble::ShowNoGrab(
   return bubble;
 }
 
+#if !defined(TOUCH_UI)
 void MessageBubble::OnActiveChanged() {
   if (parent_ && IsActive()) {
     // Show the parent.
@@ -184,17 +185,20 @@ void MessageBubble::SetMouseCapture() {
   if (grab_enabled_)
     NativeWidgetGtk::SetMouseCapture();
 }
+#endif
 
 void MessageBubble::Close() {
   parent_ = NULL;
   Bubble::Close();
 }
 
+#if !defined(TOUCH_UI)
 gboolean MessageBubble::OnButtonPress(GtkWidget* widget,
                                       GdkEventButton* event) {
   NativeWidgetGtk::OnButtonPress(widget, event);
   // Never propagate event to parent.
   return true;
 }
+#endif
 
 }  // namespace chromeos

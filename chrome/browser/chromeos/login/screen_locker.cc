@@ -1191,12 +1191,14 @@ void ScreenLocker::ShowErrorBubble(
       std::wstring(),  // TODO(nkostylev): Add help link.
       this);
 
+#if !defined(TOUCH_UI)
   if (mouse_event_relay_.get())
     MessageLoopForUI::current()->RemoveObserver(mouse_event_relay_.get());
   mouse_event_relay_.reset(
       new MouseEventRelay(lock_widget_->GetNativeView()->window,
                           error_info_->GetNativeView()->window));
   MessageLoopForUI::current()->AddObserver(mouse_event_relay_.get());
+#endif
 }
 
 void ScreenLocker::StopScreenSaver() {
