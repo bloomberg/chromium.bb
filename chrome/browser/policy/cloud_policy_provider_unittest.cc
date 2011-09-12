@@ -9,7 +9,6 @@
 #include "chrome/browser/policy/cloud_policy_cache_base.h"
 #include "chrome/browser/policy/cloud_policy_provider_impl.h"
 #include "chrome/browser/policy/configuration_policy_pref_store.h"
-#include "chrome/browser/policy/mock_configuration_policy_store.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using testing::AnyNumber;
@@ -63,33 +62,32 @@ class CloudPolicyProviderTest : public testing::Test {
   }
 
   // Appends the caches to a provider and then provides the policies to
-  // |store_|.
+  // |policy_map_|.
   void RunCachesThroughProvider(MockCloudPolicyCache caches[], int n,
                                 CloudPolicyCacheBase::PolicyLevel level) {
-    store_.reset(new MockConfigurationPolicyStore);
     CloudPolicyProviderImpl provider(
         policy::ConfigurationPolicyPrefStore::GetChromePolicyDefinitionList(),
         level);
     for (int i = 0; i < n; i++) {
       provider.AppendCache(&caches[i]);
     }
-    EXPECT_CALL(*store_.get(), Apply(_, _)).Times(AnyNumber());
-    provider.Provide(store_.get());
+    policy_map_.reset(new PolicyMap());
+    provider.Provide(policy_map_.get());
   }
 
-  // Checks a string policy in |store_|.
+  // Checks a string policy in |policy_map_|.
   void ExpectStringPolicy(const std::string& expected,
                           ConfigurationPolicyType type) {
-    const Value* value = store_->Get(type);
+    const Value* value = policy_map_->Get(type);
     std::string string_value;
     ASSERT_TRUE(value != NULL);
     EXPECT_TRUE(value->GetAsString(&string_value));
     EXPECT_EQ(expected, string_value);
   }
 
-  // Checks a boolean policy in |store_|.
+  // Checks a boolean policy in |policy_map_|.
   void ExpectBoolPolicy(bool expected, ConfigurationPolicyType type) {
-    const Value* value = store_->Get(type);
+    const Value* value = policy_map_->Get(type);
     bool bool_value;
     ASSERT_TRUE(value != NULL);
     EXPECT_TRUE(value->GetAsBoolean(&bool_value));
@@ -97,7 +95,7 @@ class CloudPolicyProviderTest : public testing::Test {
   }
 
   void ExpectNoPolicy(ConfigurationPolicyType type) {
-    EXPECT_TRUE(NULL == store_->Get(type));
+    EXPECT_TRUE(NULL == policy_map_->Get(type));
   }
 
   void CombineTwoPolicyMaps(const PolicyMap& base,
@@ -114,7 +112,7 @@ class CloudPolicyProviderTest : public testing::Test {
   static const ConfigurationPolicyType simple_policies[];
 
   scoped_ptr<CloudPolicyProviderImpl> cloud_policy_provider_;
-  scoped_ptr<MockConfigurationPolicyStore> store_;
+  scoped_ptr<PolicyMap> policy_map_;
 };
 
 // Proxy setting distributed over multiple caches.

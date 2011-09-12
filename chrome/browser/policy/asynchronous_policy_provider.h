@@ -39,7 +39,7 @@ class AsynchronousPolicyProvider
   virtual ~AsynchronousPolicyProvider();
 
   // ConfigurationPolicyProvider implementation.
-  virtual bool Provide(ConfigurationPolicyStoreInterface* store);
+  virtual bool Provide(PolicyMap* map);
 
   // For tests to trigger reloads.
   scoped_refptr<AsynchronousPolicyLoader> loader();

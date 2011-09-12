@@ -34,6 +34,7 @@ class PolicyMap {
   void Erase(ConfigurationPolicyType policy);
 
   void Swap(PolicyMap* other);
+  void CopyFrom(const PolicyMap& other);
 
   bool Equals(const PolicyMap& other) const;
   bool empty() const;

@@ -39,6 +39,13 @@ void PolicyMap::Swap(PolicyMap* other) {
   map_.swap(other->map_);
 }
 
+void PolicyMap::CopyFrom(const PolicyMap& other) {
+  Clear();
+  for (const_iterator i = other.begin(); i != other.end(); ++i) {
+    Set(i->first, i->second->DeepCopy());
+  }
+}
+
 bool PolicyMap::Equals(const PolicyMap& other) const {
   return other.map_.size() == map_.size() &&
       std::equal(map_.begin(), map_.end(), other.map_.begin(), MapEntryEquals);

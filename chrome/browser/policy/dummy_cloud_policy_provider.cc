@@ -23,8 +23,7 @@ void DummyCloudPolicyProvider::AppendCache(CloudPolicyCacheBase* cache) {
 void DummyCloudPolicyProvider::PrependCache(CloudPolicyCacheBase* cache) {
 }
 
-bool DummyCloudPolicyProvider::Provide(
-    ConfigurationPolicyStoreInterface* store) {
+bool DummyCloudPolicyProvider::Provide(PolicyMap* map) {
   return true;
 }
 void DummyCloudPolicyProvider::AddObserver(

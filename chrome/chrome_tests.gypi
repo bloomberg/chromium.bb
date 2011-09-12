@@ -1380,8 +1380,6 @@
         'browser/policy/mock_configuration_policy_provider.h',
         'browser/policy/mock_configuration_policy_reader.cc',
         'browser/policy/mock_configuration_policy_reader.h',
-        'browser/policy/mock_configuration_policy_store.cc',
-        'browser/policy/mock_configuration_policy_store.h',
         'browser/policy/mock_device_management_backend.cc',
         'browser/policy/mock_device_management_backend.h',
         'browser/policy/policy_map_unittest.cc',

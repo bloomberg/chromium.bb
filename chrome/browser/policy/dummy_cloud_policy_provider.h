@@ -21,7 +21,7 @@ class DummyCloudPolicyProvider : public CloudPolicyProvider {
   virtual void AppendCache(CloudPolicyCacheBase* cache) OVERRIDE;
   virtual void PrependCache(CloudPolicyCacheBase* cache) OVERRIDE;
 
-  virtual bool Provide(ConfigurationPolicyStoreInterface* store);
+  virtual bool Provide(PolicyMap* map);
 
  private:
   // ConfigurationPolicyProvider overrides:

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,8 +13,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace policy {
-
-class MockConfigurationPolicyStore;
 
 // A delegate for testing that can feed arbitrary information to the loader.
 class ProviderDelegateMock : public AsynchronousPolicyProvider::Delegate {
@@ -42,7 +40,6 @@ class AsynchronousPolicyTestBase : public testing::Test {
 
   // The mocks that are used in the test must outlive the scope of the test
   // because they still get accessed in the RunAllPending of the TearDown.
-  scoped_ptr<MockConfigurationPolicyStore> store_;
   scoped_ptr<ProviderDelegateMock> delegate_;
 
  private:

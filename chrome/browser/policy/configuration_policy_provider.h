@@ -12,7 +12,7 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
-#include "chrome/browser/policy/configuration_policy_store_interface.h"
+#include "chrome/browser/policy/policy_map.h"
 #include "policy/configuration_policy_type.h"
 
 namespace policy {
@@ -49,12 +49,12 @@ class ConfigurationPolicyProvider {
   virtual ~ConfigurationPolicyProvider();
 
   // Must be implemented by provider subclasses to specify the provider-specific
-  // policy decisions. The preference service invokes this |Provide| method when
-  // it needs a policy provider to specify its policy choices. In |Provide|, the
-  // |ConfigurationPolicyProvider| must make calls to the |Apply| method of
-  // |store| to apply specific policies. Returns true if the policy could be
-  // provided, otherwise false.
-  virtual bool Provide(ConfigurationPolicyStoreInterface* store) = 0;
+  // policy decisions. The ConfigurationPolicyPrefStore invokes this |Provide|
+  // method when it needs a policy provider to specify its policy choices. In
+  // |Provide|, the |ConfigurationPolicyProvider| fills the given |result| with
+  // policy values. Returns true if the policy could be provided and false
+  // otherwise.
+  virtual bool Provide(PolicyMap* result) = 0;
 
   // Check whether this provider has completed initialization. This is used to
   // detect whether initialization is done in case providers implementations
@@ -62,14 +62,8 @@ class ConfigurationPolicyProvider {
   virtual bool IsInitializationComplete() const;
 
  protected:
-  // Decodes the value tree and writes the configuration to the given |store|.
-  void ApplyPolicyValueTree(const DictionaryValue* policies,
-                             ConfigurationPolicyStoreInterface* store);
-
-  // Writes the configuration found in the already-decoded map |policies| to
-  // the given |store|.
-  void ApplyPolicyMap(const PolicyMap* policies,
-                      ConfigurationPolicyStoreInterface* store);
+  // Decodes the value tree and writes the configuration to |result|.
+  void ApplyPolicyValueTree(const DictionaryValue* policies, PolicyMap* result);
 
   const PolicyDefinitionList* policy_definition_list() const {
     return policy_definition_list_;

@@ -12,22 +12,18 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/policy/configuration_policy_pref_store.h"
-#include "chrome/browser/policy/configuration_policy_store_interface.h"
+#include "chrome/browser/policy/policy_map.h"
 
 namespace policy {
 
 // This class functions as a container for policy status information used by the
 // ConfigurationPolicyReader class. It obtains policy values from a
 // ConfigurationPolicyProvider and maps them to their status information.
-class ConfigurationPolicyStatusKeeper
-    : public ConfigurationPolicyStoreInterface {
+class ConfigurationPolicyStatusKeeper {
  public:
   ConfigurationPolicyStatusKeeper(ConfigurationPolicyProvider* provider,
                                   PolicyStatusInfo::PolicyLevel policy_level);
   virtual ~ConfigurationPolicyStatusKeeper();
-
-  // ConfigurationPolicyStoreInterface methods.
-  virtual void Apply(ConfigurationPolicyType policy, base::Value* value);
 
   // Returns a pointer to a DictionaryValue containing the status information
   // of the policy |policy|. The caller acquires ownership of the returned
@@ -39,6 +35,9 @@ class ConfigurationPolicyStatusKeeper
   typedef std::map<ConfigurationPolicyType, string16> PolicyNameMap;
   typedef ConfigurationPolicyProvider::PolicyDefinitionList
       PolicyDefinitionList;
+
+  // Calls Provide() on the passed in |provider| to get policy values.
+  void GetPoliciesFromProvider(ConfigurationPolicyProvider* provider);
 
   // Mapping from ConfigurationPolicyType to PolicyStatusInfo.
   PolicyStatusMap policy_map_;
@@ -54,34 +53,12 @@ class ConfigurationPolicyStatusKeeper
 ConfigurationPolicyStatusKeeper::ConfigurationPolicyStatusKeeper(
     ConfigurationPolicyProvider* provider,
     PolicyStatusInfo::PolicyLevel policy_level) : policy_level_(policy_level) {
-
-  if (!provider->Provide(this))
-    LOG(WARNING) << "Failed to get policy from provider.";
+  GetPoliciesFromProvider(provider);
 }
 
 ConfigurationPolicyStatusKeeper::~ConfigurationPolicyStatusKeeper() {
   STLDeleteContainerPairSecondPointers(policy_map_.begin(), policy_map_.end());
   policy_map_.clear();
-}
-
-void ConfigurationPolicyStatusKeeper::Apply(
-    ConfigurationPolicyType policy, base::Value* value) {
-  string16 name = PolicyStatus::GetPolicyName(policy);
-
-  if (name == string16()) {
-    NOTREACHED();
-  }
-
-  // TODO(simo) actually determine whether the policy is a user or a device one
-  // and whether the policy could be enforced or not once this information
-  // is available.
-  PolicyStatusInfo* info = new PolicyStatusInfo(name,
-                                                PolicyStatusInfo::USER,
-                                                policy_level_,
-                                                value,
-                                                PolicyStatusInfo::ENFORCED,
-                                                string16());
-  policy_map_[policy] = info;
 }
 
 DictionaryValue* ConfigurationPolicyStatusKeeper::GetPolicyStatus(
@@ -91,7 +68,47 @@ DictionaryValue* ConfigurationPolicyStatusKeeper::GetPolicyStatus(
       (entry->second)->GetDictionaryValue() : NULL;
 }
 
+void ConfigurationPolicyStatusKeeper::GetPoliciesFromProvider(
+    ConfigurationPolicyProvider* provider) {
+  scoped_ptr<PolicyMap> policies(new PolicyMap());
+  if (!provider->Provide(policies.get()))
+    LOG(WARNING) << "Failed to get policy from provider.";
+
+  PolicyMap::const_iterator policy = policies->begin();
+  for ( ; policy != policies->end(); ++policy) {
+    string16 name = PolicyStatus::GetPolicyName(policy->first);
+
+    if (name == string16()) {
+      NOTREACHED();
+    }
+
+    // TODO(simo) actually determine whether the policy is a user or a device
+    // one and whether the policy could be enforced or not once this information
+    // is available.
+    PolicyStatusInfo* info = new PolicyStatusInfo(name,
+                                                  PolicyStatusInfo::USER,
+                                                  policy_level_,
+                                                  policy->second->DeepCopy(),
+                                                  PolicyStatusInfo::ENFORCED,
+                                                  string16());
+    policy_map_[policy->first] = info;
+  }
+}
+
 // ConfigurationPolicyReader
+ConfigurationPolicyReader::ConfigurationPolicyReader(
+    ConfigurationPolicyProvider* provider,
+    PolicyStatusInfo::PolicyLevel policy_level)
+    : provider_(provider),
+      policy_level_(policy_level) {
+  if (provider_) {
+    // Read initial policy.
+    policy_keeper_.reset(
+        new ConfigurationPolicyStatusKeeper(provider, policy_level));
+    registrar_.Init(provider_, this);
+  }
+}
+
 ConfigurationPolicyReader::~ConfigurationPolicyReader() {
 }
 
@@ -143,19 +160,6 @@ ConfigurationPolicyReader*
 DictionaryValue* ConfigurationPolicyReader::GetPolicyStatus(
     ConfigurationPolicyType policy) const {
   return policy_keeper_->GetPolicyStatus(policy);
-}
-
-ConfigurationPolicyReader::ConfigurationPolicyReader(
-    ConfigurationPolicyProvider* provider,
-    PolicyStatusInfo::PolicyLevel policy_level)
-    : provider_(provider),
-      policy_level_(policy_level) {
-  if (provider_) {
-    // Read initial policy.
-    policy_keeper_.reset(
-        new ConfigurationPolicyStatusKeeper(provider, policy_level));
-    registrar_.Init(provider_, this);
-  }
 }
 
 ConfigurationPolicyReader::ConfigurationPolicyReader()

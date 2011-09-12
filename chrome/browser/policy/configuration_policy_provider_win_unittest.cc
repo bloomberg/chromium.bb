@@ -15,7 +15,6 @@
 #include "chrome/browser/policy/asynchronous_policy_loader.h"
 #include "chrome/browser/policy/configuration_policy_pref_store.h"
 #include "chrome/browser/policy/configuration_policy_provider_win.h"
-#include "chrome/browser/policy/mock_configuration_policy_store.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/browser_thread.h"
 #include "policy/policy_constants.h"
@@ -150,7 +149,6 @@ class ConfigurationPolicyProviderWinTest
   void WriteInvalidValue(HKEY hive, const char* name, const Value* value);
 
  protected:
-  scoped_ptr<MockConfigurationPolicyStore> store_;
   scoped_ptr<ConfigurationPolicyProviderWin> provider_;
 
   // A message loop must be declared and instantiated for these tests,
@@ -193,7 +191,6 @@ void ConfigurationPolicyProviderWinTest::SetUp() {
 
   ActivateOverrides();
 
-  store_.reset(new MockConfigurationPolicyStore);
   provider_.reset(new ConfigurationPolicyProviderWin(
       ConfigurationPolicyPrefStore::GetChromePolicyDefinitionList()));
 }
@@ -296,8 +293,9 @@ void ConfigurationPolicyProviderWinTest::WriteInvalidValue(HKEY hive,
 }
 
 TEST_P(ConfigurationPolicyProviderWinTest, Default) {
-  provider_->Provide(store_.get());
-  EXPECT_TRUE(store_->policy_map().empty());
+  PolicyMap policy_map;
+  provider_->Provide(&policy_map);
+  EXPECT_TRUE(policy_map.empty());
 }
 
 TEST_P(ConfigurationPolicyProviderWinTest, InvalidValue) {
@@ -309,8 +307,9 @@ TEST_P(ConfigurationPolicyProviderWinTest, InvalidValue) {
                     GetParam().hkcu_value());
   provider_->loader()->Reload();
   loop_.RunAllPending();
-  provider_->Provide(store_.get());
-  EXPECT_TRUE(store_->policy_map().empty());
+  PolicyMap policy_map;
+  provider_->Provide(&policy_map);
+  EXPECT_TRUE(policy_map.empty());
 }
 
 TEST_P(ConfigurationPolicyProviderWinTest, HKLM) {
@@ -319,8 +318,9 @@ TEST_P(ConfigurationPolicyProviderWinTest, HKLM) {
              GetParam().hklm_value());
   provider_->loader()->Reload();
   loop_.RunAllPending();
-  provider_->Provide(store_.get());
-  const Value* value = store_->Get(GetParam().type());
+  PolicyMap policy_map;
+  provider_->Provide(&policy_map);
+  const Value* value = policy_map.Get(GetParam().type());
   ASSERT_TRUE(value);
   EXPECT_TRUE(value->Equals(GetParam().hklm_value()));
 }
@@ -331,8 +331,9 @@ TEST_P(ConfigurationPolicyProviderWinTest, HKCU) {
              GetParam().hkcu_value());
   provider_->loader()->Reload();
   loop_.RunAllPending();
-  provider_->Provide(store_.get());
-  const Value* value = store_->Get(GetParam().type());
+  PolicyMap policy_map;
+  provider_->Provide(&policy_map);
+  const Value* value = policy_map.Get(GetParam().type());
   ASSERT_TRUE(value);
   EXPECT_TRUE(value->Equals(GetParam().hkcu_value()));
 }
@@ -346,8 +347,9 @@ TEST_P(ConfigurationPolicyProviderWinTest, HKLMOverHKCU) {
              GetParam().hkcu_value());
   provider_->loader()->Reload();
   loop_.RunAllPending();
-  provider_->Provide(store_.get());
-  const Value* value = store_->Get(GetParam().type());
+  PolicyMap policy_map;
+  provider_->Provide(&policy_map);
+  const Value* value = policy_map.Get(GetParam().type());
   ASSERT_TRUE(value);
   EXPECT_TRUE(value->Equals(GetParam().hklm_value()));
 }

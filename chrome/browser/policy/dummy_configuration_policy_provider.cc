@@ -17,8 +17,7 @@ DummyConfigurationPolicyProvider::~DummyConfigurationPolicyProvider() {
                     OnProviderGoingAway());
 }
 
-bool DummyConfigurationPolicyProvider::Provide(
-    ConfigurationPolicyStoreInterface* store) {
+bool DummyConfigurationPolicyProvider::Provide(PolicyMap* map) {
   return true;
 }
 

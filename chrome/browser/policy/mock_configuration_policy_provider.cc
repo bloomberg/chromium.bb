@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,12 +32,8 @@ void MockConfigurationPolicyProvider::SetInitializationComplete(
   initialization_complete_ = initialization_complete;
 }
 
-bool MockConfigurationPolicyProvider::Provide(
-    ConfigurationPolicyStoreInterface* store) {
-  for (PolicyMap::const_iterator current = policy_map_.begin();
-       current != policy_map_.end(); ++current) {
-    store->Apply(current->first, current->second->DeepCopy());
-  }
+bool MockConfigurationPolicyProvider::Provide(PolicyMap* policies) {
+  policies->CopyFrom(policy_map_);
   return true;
 }
 

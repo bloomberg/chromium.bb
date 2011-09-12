@@ -10,7 +10,6 @@
 #include "base/string_number_conversions.h"
 #include "chrome/browser/policy/config_dir_policy_provider.h"
 #include "chrome/browser/policy/configuration_policy_pref_store.h"
-#include "chrome/browser/policy/mock_configuration_policy_store.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/json_value_serializer.h"
 #include "policy/policy_constants.h"
@@ -179,8 +178,6 @@ class ConfigDirPolicyProviderValueTest
     loop_.RunAllPending();
   }
 
-  MockConfigurationPolicyStore policy_store_;
-
  private:
   MessageLoop loop_;
   BrowserThread ui_thread_;
@@ -191,8 +188,9 @@ TEST_P(ConfigDirPolicyProviderValueTest, Default) {
   ConfigDirPolicyProvider provider(
       ConfigurationPolicyPrefStore::GetChromePolicyDefinitionList(),
       test_dir());
-  EXPECT_TRUE(provider.Provide(&policy_store_));
-  EXPECT_TRUE(policy_store_.policy_map().empty());
+  PolicyMap policy_map;
+  EXPECT_TRUE(provider.Provide(&policy_map));
+  EXPECT_TRUE(policy_map.empty());
 }
 
 TEST_P(ConfigDirPolicyProviderValueTest, NullValue) {
@@ -202,8 +200,9 @@ TEST_P(ConfigDirPolicyProviderValueTest, NullValue) {
   ConfigDirPolicyProvider provider(
       ConfigurationPolicyPrefStore::GetChromePolicyDefinitionList(),
       test_dir());
-  EXPECT_TRUE(provider.Provide(&policy_store_));
-  EXPECT_TRUE(policy_store_.policy_map().empty());
+  PolicyMap policy_map;
+  EXPECT_TRUE(provider.Provide(&policy_map));
+  EXPECT_TRUE(policy_map.empty());
 }
 
 TEST_P(ConfigDirPolicyProviderValueTest, TestValue) {
@@ -213,9 +212,10 @@ TEST_P(ConfigDirPolicyProviderValueTest, TestValue) {
   ConfigDirPolicyProvider provider(
       ConfigurationPolicyPrefStore::GetChromePolicyDefinitionList(),
       test_dir());
-  EXPECT_TRUE(provider.Provide(&policy_store_));
-  EXPECT_EQ(1U, policy_store_.policy_map().size());
-  const Value* value = policy_store_.Get(GetParam().type());
+  PolicyMap policy_map;
+  EXPECT_TRUE(provider.Provide(&policy_map));
+  EXPECT_EQ(1U, policy_map.size());
+  const Value* value = policy_map.Get(GetParam().type());
   ASSERT_TRUE(value);
   EXPECT_TRUE(GetParam().test_value()->Equals(value));
 }

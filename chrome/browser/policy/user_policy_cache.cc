@@ -114,23 +114,6 @@ bool UserPolicyCache::DecodePolicyData(const em::PolicyData& policy_data,
 using google::protobuf::RepeatedField;
 using google::protobuf::RepeatedPtrField;
 
-class PolicyMapProxy : public ConfigurationPolicyStoreInterface {
- public:
-  // Does not take ownership of |policy_map|, and callers need to make sure
-  // that |policy_map| outlives this PolicyMapProxy.
-  explicit PolicyMapProxy(PolicyMap* policy_map)
-      : policy_map_(policy_map) {}
-  virtual ~PolicyMapProxy() {}
-  virtual void Apply(ConfigurationPolicyType policy, Value* value) {
-    policy_map_->Set(policy, value);
-  }
-
- private:
-  PolicyMap* policy_map_;
-
-  DISALLOW_COPY_AND_ASSIGN(PolicyMapProxy);
-};
-
 void UserPolicyCache::MaybeDecodeOldstylePolicy(
     const std::string& policy_data,
     PolicyMap* mandatory,
@@ -160,9 +143,8 @@ void UserPolicyCache::MaybeDecodeOldstylePolicy(
   }
   // Hack: Let one of the providers do the transformation from DictionaryValue
   // to PolicyMap, since they have the required code anyway.
-  PolicyMapProxy map_proxy(mandatory);
   g_browser_process->browser_policy_connector()->GetManagedCloudProvider()->
-      ApplyPolicyValueTree(&result, &map_proxy);
+      ApplyPolicyValueTree(&result, mandatory);
 }
 
 Value* UserPolicyCache::DecodeIntegerValue(

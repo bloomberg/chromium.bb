@@ -9,7 +9,6 @@
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/policy/configuration_policy_pref_store.h"
 #include "chrome/browser/policy/configuration_policy_provider_mac.h"
-#include "chrome/browser/policy/mock_configuration_policy_store.h"
 #include "chrome/browser/preferences_mock_mac.h"
 #include "policy/policy_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -132,19 +131,18 @@ class ConfigurationPolicyProviderMacTest
  public:
   virtual void SetUp() {
     prefs_ = new MockPreferences;
-    store_.reset(new MockConfigurationPolicyStore);
   }
 
  protected:
   MockPreferences* prefs_;
-  scoped_ptr<MockConfigurationPolicyStore> store_;
 };
 
 TEST_P(ConfigurationPolicyProviderMacTest, Default) {
   ConfigurationPolicyProviderMac provider(
       ConfigurationPolicyPrefStore::GetChromePolicyDefinitionList(), prefs_);
-  EXPECT_TRUE(provider.Provide(store_.get()));
-  EXPECT_TRUE(store_->policy_map().empty());
+  PolicyMap policy_map;
+  EXPECT_TRUE(provider.Provide(&policy_map));
+  EXPECT_TRUE(policy_map.empty());
 }
 
 TEST_P(ConfigurationPolicyProviderMacTest, Invalid) {
@@ -157,8 +155,9 @@ TEST_P(ConfigurationPolicyProviderMacTest, Invalid) {
   // Create the provider and have it read |prefs_|.
   ConfigurationPolicyProviderMac provider(
       ConfigurationPolicyPrefStore::GetChromePolicyDefinitionList(), prefs_);
-  EXPECT_TRUE(provider.Provide(store_.get()));
-  EXPECT_TRUE(store_->policy_map().empty());
+  PolicyMap policy_map;
+  EXPECT_TRUE(provider.Provide(&policy_map));
+  EXPECT_TRUE(policy_map.empty());
 }
 
 TEST_P(ConfigurationPolicyProviderMacTest, TestNonForcedValue) {
@@ -172,8 +171,9 @@ TEST_P(ConfigurationPolicyProviderMacTest, TestNonForcedValue) {
   // Create the provider and have it read |prefs_|.
   ConfigurationPolicyProviderMac provider(
       ConfigurationPolicyPrefStore::GetChromePolicyDefinitionList(), prefs_);
-  EXPECT_TRUE(provider.Provide(store_.get()));
-  EXPECT_TRUE(store_->policy_map().empty());
+  PolicyMap policy_map;
+  EXPECT_TRUE(provider.Provide(&policy_map));
+  EXPECT_TRUE(policy_map.empty());
 }
 
 TEST_P(ConfigurationPolicyProviderMacTest, TestValue) {
@@ -187,9 +187,10 @@ TEST_P(ConfigurationPolicyProviderMacTest, TestValue) {
   // Create the provider and have it read |prefs_|.
   ConfigurationPolicyProviderMac provider(
       ConfigurationPolicyPrefStore::GetChromePolicyDefinitionList(), prefs_);
-  EXPECT_TRUE(provider.Provide(store_.get()));
-  ASSERT_EQ(1U, store_->policy_map().size());
-  const Value* value = store_->Get(GetParam().type());
+  PolicyMap policy_map;
+  EXPECT_TRUE(provider.Provide(&policy_map));
+  ASSERT_EQ(1U, policy_map.size());
+  const Value* value = policy_map.Get(GetParam().type());
   ASSERT_TRUE(value);
   EXPECT_TRUE(GetParam().test_value()->Equals(value));
 }

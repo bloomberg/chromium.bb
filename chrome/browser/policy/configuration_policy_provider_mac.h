@@ -7,7 +7,6 @@
 #pragma once
 
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/policy/configuration_policy_store_interface.h"
 #include "chrome/browser/policy/file_based_policy_provider.h"
 #include "chrome/browser/preferences_mac.h"
 

@@ -19,7 +19,7 @@ class DummyConfigurationPolicyProvider : public ConfigurationPolicyProvider {
       const PolicyDefinitionList* policy_list);
   virtual ~DummyConfigurationPolicyProvider();
 
-  virtual bool Provide(ConfigurationPolicyStoreInterface* store);
+  virtual bool Provide(PolicyMap* map);
 
  private:
   // ConfigurationPolicyProvider overrides:

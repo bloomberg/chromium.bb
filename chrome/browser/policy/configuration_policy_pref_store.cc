@@ -35,8 +35,7 @@ namespace policy {
 
 // Accepts policy settings from a ConfigurationPolicyProvider, converts them
 // to preferences and caches the result.
-class ConfigurationPolicyPrefKeeper
-    : private ConfigurationPolicyStoreInterface {
+class ConfigurationPolicyPrefKeeper {
  public:
   explicit ConfigurationPolicyPrefKeeper(ConfigurationPolicyProvider* provider);
   virtual ~ConfigurationPolicyPrefKeeper();
@@ -51,8 +50,8 @@ class ConfigurationPolicyPrefKeeper
                              std::vector<std::string>* differing_prefs) const;
 
  private:
-  // ConfigurationPolicyStore methods:
-  virtual void Apply(ConfigurationPolicyType setting, Value* value);
+  // Apply the policy settings stored in |policies|.
+  void Apply(PolicyMap* policies);
 
   // Policies that map to a single preference are handled
   // by an automated converter. Each one of these policies
@@ -351,8 +350,11 @@ const ConfigurationPolicyPrefKeeper::PolicyToPreferenceMapEntry
 
 ConfigurationPolicyPrefKeeper::ConfigurationPolicyPrefKeeper(
     ConfigurationPolicyProvider* provider) {
-  if (!provider->Provide(this))
+  scoped_ptr<PolicyMap> policies(new PolicyMap());
+  if (!provider->Provide(policies.get()))
     LOG(WARNING) << "Failed to get policy from provider.";
+
+  Apply(policies.get());
   FinalizeProxyPolicySettings();
   FinalizeDefaultSearchPolicySettings();
   FinalizeIncognitoModeSettings();
@@ -385,24 +387,31 @@ void ConfigurationPolicyPrefKeeper::GetDifferingPrefPaths(
   prefs_.GetDifferingKeys(&other->prefs_, differing_prefs);
 }
 
-void ConfigurationPolicyPrefKeeper::Apply(ConfigurationPolicyType policy,
-                                          Value* value) {
-  if (ApplyProxyPolicy(policy, value) ||
-      ApplySyncPolicy(policy, value) ||
-      ApplyAutofillPolicy(policy, value) ||
-      ApplyDownloadDirPolicy(policy, value) ||
-      ApplyDiskCacheDirPolicy(policy, value) ||
-      ApplyFileSelectionDialogsPolicy(policy, value) ||
-      ApplyDefaultSearchPolicy(policy, value) ||
-      ApplyIncognitoModePolicy(policy, value) ||
-      ApplyBookmarksPolicy(policy, value) ||
-      ApplyPolicyFromMap(policy, value, kSimplePolicyMap,
-                         arraysize(kSimplePolicyMap)))
-    return;
+void ConfigurationPolicyPrefKeeper::Apply(PolicyMap* policies) {
+  PolicyMap::const_iterator current = policies->begin();
+  for ( ; current != policies->end(); ++current) {
+    // TODO(simo) Use a separate ConfigurationPolicyHandler class to apply
+    // policy settings.
+    Value* value = current->second->DeepCopy();
+    if (ApplyProxyPolicy(current->first, value) ||
+        ApplySyncPolicy(current->first, value) ||
+        ApplyAutofillPolicy(current->first, value) ||
+        ApplyDownloadDirPolicy(current->first, value) ||
+        ApplyDiskCacheDirPolicy(current->first, value) ||
+        ApplyFileSelectionDialogsPolicy(current->first,
+                                        value) ||
+        ApplyDefaultSearchPolicy(current->first, value) ||
+        ApplyIncognitoModePolicy(current->first, value) ||
+        ApplyBookmarksPolicy(current->first, value) ||
+        ApplyPolicyFromMap(current->first, value,
+                           kSimplePolicyMap, arraysize(kSimplePolicyMap))) {
+      continue;
+    }
+    delete value;
 
-  // Other policy implementations go here.
-  NOTIMPLEMENTED();
-  delete value;
+    // Other policy implementations should go into the conditional above.
+    NOTIMPLEMENTED();
+  }
 }
 
 bool ConfigurationPolicyPrefKeeper::RemovePreferencesOfMap(

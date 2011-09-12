@@ -24,29 +24,17 @@ bool ConfigurationPolicyProvider::IsInitializationComplete() const {
 
 void ConfigurationPolicyProvider::ApplyPolicyValueTree(
     const DictionaryValue* policies,
-    ConfigurationPolicyStoreInterface* store) {
+    PolicyMap* result) {
   const PolicyDefinitionList* policy_list(policy_definition_list());
   for (const PolicyDefinitionList::Entry* i = policy_list->begin;
        i != policy_list->end; ++i) {
     Value* value;
     if (policies->Get(i->name, &value) && value->IsType(i->value_type))
-      store->Apply(i->policy_type, value->DeepCopy());
+      result->Set(i->policy_type, value->DeepCopy());
   }
 
   // TODO(mnissler): Handle preference overrides once |ConfigurationPolicyStore|
   // supports it.
-}
-
-void ConfigurationPolicyProvider::ApplyPolicyMap(
-    const PolicyMap* policies,
-    ConfigurationPolicyStoreInterface* store) {
-  const PolicyDefinitionList* policy_list(policy_definition_list());
-  for (const PolicyDefinitionList::Entry* i = policy_list->begin;
-       i != policy_list->end; ++i) {
-    const Value* value = policies->Get(i->policy_type);
-    if (value && value->IsType(i->value_type))
-      store->Apply(i->policy_type, value->DeepCopy());
-  }
 }
 
 // Class ConfigurationPolicyObserverRegistrar.

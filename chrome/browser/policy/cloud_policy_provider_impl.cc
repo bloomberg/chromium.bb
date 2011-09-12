@@ -26,9 +26,8 @@ CloudPolicyProviderImpl::~CloudPolicyProviderImpl() {
                     observer_list_, OnProviderGoingAway());
 }
 
-bool CloudPolicyProviderImpl::Provide(
-    ConfigurationPolicyStoreInterface* store) {
-  ApplyPolicyMap(&combined_, store);
+bool CloudPolicyProviderImpl::Provide(PolicyMap* result) {
+  result->CopyFrom(combined_);
   return true;
 }
 

@@ -14,12 +14,29 @@
 #include "base/observer_list.h"
 #include "base/values.h"
 #include "chrome/browser/policy/configuration_policy_provider.h"
-#include "chrome/browser/policy/configuration_policy_store_interface.h"
 #include "chrome/common/pref_store.h"
 
 namespace policy {
 
 class ConfigurationPolicyPrefKeeper;
+
+// Constants for the "Proxy Server Mode" defined in the policies.
+// Note that these diverge from internal presentation defined in
+// ProxyPrefs::ProxyMode for legacy reasons. The following four
+// PolicyProxyModeType types were not very precise and had overlapping use
+// cases.
+enum PolicyProxyModeType {
+  // Disable Proxy, connect directly.
+  kPolicyNoProxyServerMode = 0,
+  // Auto detect proxy or use specific PAC script if given.
+  kPolicyAutoDetectProxyServerMode = 1,
+  // Use manually configured proxy servers (fixed servers).
+  kPolicyManuallyConfiguredProxyServerMode = 2,
+  // Use system proxy server.
+  kPolicyUseSystemProxyServerMode = 3,
+
+  MODE_COUNT
+};
 
 // An implementation of PrefStore that bridges policy settings as read from a
 // ConfigurationPolicyProvider to preferences.
