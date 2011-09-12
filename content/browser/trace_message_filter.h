@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_TRACE_MESSAGE_FILTER_H_
 
 #include <string>
+#include <vector>
 
 #include "content/browser/browser_message_filter.h"
 
@@ -25,13 +26,14 @@ class TraceMessageFilter : public BrowserMessageFilter {
   virtual bool OnMessageReceived(const IPC::Message& message,
                                  bool* message_was_ok);
 
-  void SendBeginTracing();
+  void SendBeginTracing(const std::vector<std::string>& included_categories,
+                        const std::vector<std::string>& excluded_categories);
   void SendEndTracing();
   void SendGetTraceBufferPercentFull();
 
  private:
   // Message handlers.
-  void OnEndTracingAck();
+  void OnEndTracingAck(const std::vector<std::string>& known_categories);
   void OnTraceBufferFull();
   void OnTraceBufferPercentFullReply(float percent_full);
   void OnTraceDataCollected(const std::string& data);

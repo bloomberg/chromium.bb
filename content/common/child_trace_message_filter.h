@@ -24,7 +24,8 @@ class ChildTraceMessageFilter : public IPC::ChannelProxy::MessageFilter {
 
  private:
   // Message handlers.
-  void OnBeginTracing();
+  void OnBeginTracing(const std::vector<std::string>& included_categories,
+                      const std::vector<std::string>& excluded_categories);
   void OnEndTracing();
   void OnGetTraceBufferPercentFull();
 

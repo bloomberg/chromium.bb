@@ -26,7 +26,9 @@ IPC_MESSAGE_CONTROL1(ChildProcessMsg_SetIPCLoggingEnabled,
 #endif
 
 // Sent to all child processes to enable trace event recording.
-IPC_MESSAGE_CONTROL0(ChildProcessMsg_BeginTracing)
+IPC_MESSAGE_CONTROL2(ChildProcessMsg_BeginTracing,
+                     std::vector<std::string> /* included_categories */,
+                     std::vector<std::string> /* excluded_categories */)
 
 // Sent to all child processes to disable trace event recording.
 IPC_MESSAGE_CONTROL0(ChildProcessMsg_EndTracing)
@@ -40,7 +42,8 @@ IPC_MESSAGE_CONTROL0(ChildProcessMsg_GetTraceBufferPercentFull)
 IPC_MESSAGE_CONTROL0(ChildProcessHostMsg_ShutdownRequest)
 
 // Reply from child processes acking ChildProcessMsg_TraceChangeStatus(false).
-IPC_MESSAGE_CONTROL0(ChildProcessHostMsg_EndTracingAck)
+IPC_MESSAGE_CONTROL1(ChildProcessHostMsg_EndTracingAck,
+                     std::vector<std::string> /* known_categories */)
 
 // Sent if the trace buffer becomes full.
 IPC_MESSAGE_CONTROL0(ChildProcessHostMsg_TraceBufferFull)
