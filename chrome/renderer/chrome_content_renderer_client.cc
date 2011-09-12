@@ -209,7 +209,10 @@ void ChromeContentRendererClient::RenderThreadStarted() {
   WebSecurityPolicy::registerURLSchemeAsNotAllowingJavascriptURLs(
       chrome_ui_scheme);
 
-  // chrome-extension: resources shouldn't trigger insecure content warnings.
+  // chrome:, and chrome-extension: resources shouldn't trigger insecure
+  // content warnings.
+  WebSecurityPolicy::registerURLSchemeAsSecure(chrome_ui_scheme);
+
   WebString extension_scheme(ASCIIToUTF16(chrome::kExtensionScheme));
   WebSecurityPolicy::registerURLSchemeAsSecure(extension_scheme);
 }
