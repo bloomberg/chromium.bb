@@ -19,6 +19,7 @@
 #include "base/stringprintf.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/input_method/hotkey_manager.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/input_method/virtual_keyboard_selector.h"
 #include "chrome/browser/chromeos/input_method/xkeyboard.h"
@@ -33,9 +34,18 @@
 #include "chrome/browser/chromeos/input_method/candidate_window.h"
 #endif
 
+#include <X11/X.h>  // ShiftMask, ControlMask, etc.
+#include <X11/Xutil.h>  // for XK_* macros.
+
 namespace {
 
 const char kIBusDaemonPath[] = "/usr/bin/ibus-daemon";
+
+// For hotkey handling.
+enum HotkeyEvents {
+  kPreviousInputMethod = 0,
+  kNextInputMethod,
+};
 
 // Finds a property which has |new_prop.key| from |prop_list|, and replaces the
 // property with |new_prop|. Returns true if such a property is found.
@@ -62,7 +72,8 @@ namespace chromeos {
 namespace input_method {
 
 // The implementation of InputMethodManager.
-class InputMethodManagerImpl : public InputMethodManager,
+class InputMethodManagerImpl : public HotkeyManager::Observer,
+                               public InputMethodManager,
                                public NotificationObserver,
                                public IBusController::Observer {
  public:
@@ -92,9 +103,12 @@ class InputMethodManagerImpl : public InputMethodManager,
     // initial connection change.
     ibus_controller_->AddObserver(this);
     ibus_controller_->Connect();
+
+    InitHotkeyManager();
   }
 
   virtual ~InputMethodManagerImpl() {
+    hotkey_manager_.RemoveObserver(this);
     ibus_controller_->RemoveObserver(this);
   }
 
@@ -328,6 +342,14 @@ class InputMethodManagerImpl : public InputMethodManager,
   virtual void ClearAllVirtualKeyboardPreferences() {
     virtual_keyboard_selector_.ClearAllUserPreferences();
     UpdateVirtualKeyboardUI();
+  }
+
+  virtual HotkeyManager* GetHotkeyManager() {
+    return &hotkey_manager_;
+  }
+
+  virtual void HotkeyPressed(HotkeyManager* manager, int event_id) {
+    // TODO(yusukes): Switch IME.
   }
 
   static InputMethodManagerImpl* GetInstance() {
@@ -904,6 +926,37 @@ class InputMethodManagerImpl : public InputMethodManager,
     }
   }
 
+  void InitHotkeyManager() {
+    // Add Ctrl+space.
+    hotkey_manager_.AddHotkey(kPreviousInputMethod,
+                              XK_space,
+                              ControlMask,
+                              true /* trigger on key press */);
+
+    // Add Alt+Shift. For this hotkey, we use "trigger on key release" so that
+    // the current IME is not changed on pressing Alt+Shift+something.
+    hotkey_manager_.AddHotkey(kNextInputMethod,
+                              XK_Shift_L,
+                              ShiftMask | Mod1Mask,
+                              false /* trigger on key release. */);
+    hotkey_manager_.AddHotkey(kNextInputMethod,
+                              XK_Shift_R,
+                              ShiftMask | Mod1Mask,
+                              false);
+    hotkey_manager_.AddHotkey(kNextInputMethod,
+                              XK_Meta_L,
+                              ShiftMask | Mod1Mask,
+                              false);
+    hotkey_manager_.AddHotkey(kNextInputMethod,
+                              XK_Meta_R,
+                              ShiftMask | Mod1Mask,
+                              false);
+
+    // TODO(yusukes): Support engine specific hotkeys like XK_Henkan, Muhenkan,
+    // and Hangul.
+    hotkey_manager_.AddObserver(this);
+  }
+
   // A reference to the language api, to allow callbacks when the input method
   // status changes.
   IBusController* ibus_controller_;
@@ -972,6 +1025,9 @@ class InputMethodManagerImpl : public InputMethodManager,
   // Extra input methods that have been explicitly added to the menu, such as
   // those created by extension.
   std::map<std::string, InputMethodDescriptor> extra_input_method_ids_;
+
+  // An object which detects Control+space and Shift+Alt key presses.
+  HotkeyManager hotkey_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(InputMethodManagerImpl);
 };

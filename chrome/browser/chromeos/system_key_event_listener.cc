@@ -11,6 +11,8 @@
 #include "chrome/browser/accessibility_events.h"
 #include "chrome/browser/chromeos/audio_handler.h"
 #include "chrome/browser/chromeos/brightness_bubble.h"
+#include "chrome/browser/chromeos/input_method/hotkey_manager.h"
+#include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/input_method/xkeyboard.h"
 #include "chrome/browser/chromeos/volume_bubble.h"
 #include "content/browser/user_metrics.h"
@@ -230,6 +232,16 @@ void SystemKeyEventListener::ShowVolumeBubble() {
 }
 
 bool SystemKeyEventListener::ProcessedXEvent(XEvent* xevent) {
+  if (xevent->type == KeyPress || xevent->type == KeyRelease) {
+    // Change the current keyboard layout (or input method) if xevent is one of
+    // the input method hotkeys.
+    input_method::HotkeyManager* hotkey_manager =
+        input_method::InputMethodManager::GetInstance()->GetHotkeyManager();
+    if (hotkey_manager->FilterKeyEvent(*xevent)) {
+      return true;
+    }
+  }
+
   if (xevent->type == xkb_event_base_) {
     XkbEvent* xkey_event = reinterpret_cast<XkbEvent*>(xevent);
     if (xkey_event->any.xkb_type == XkbStateNotify) {

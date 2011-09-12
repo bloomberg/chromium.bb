@@ -25,6 +25,7 @@ class GURL;
 namespace chromeos {
 namespace input_method {
 
+class HotkeyManager;
 class VirtualKeyboard;
 
 // This class manages input methodshandles.  Classes can add themselves as
@@ -186,6 +187,10 @@ class InputMethodManager {
   // Returns a multi map from layout name to virtual keyboard extension.
   virtual const std::multimap<std::string, const VirtualKeyboard*>&
   GetLayoutNameToKeyboardMapping() const = 0;
+
+  // Returns a hotkey manager object which could be used to detect Control+space
+  // and Shift+Alt key presses.
+  virtual HotkeyManager* GetHotkeyManager() = 0;
 
   virtual InputMethodDescriptor previous_input_method() const = 0;
   virtual InputMethodDescriptor current_input_method() const = 0;
