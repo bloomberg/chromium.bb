@@ -1,0 +1,213 @@
+This directory implements the decoder table generator used by
+native_client/src/trusted/validator/x86/decoder. See the README in
+that directory for more information on how instructions are
+modeled. In particular, note the sections on "Modeled Instructions",
+"Opcode Sequences", and "Instruction Arguments".
+
+Modeled instructions specify what assembly instructions are recognized
+by the decoder. The form used is based on the AMD (R) document
+24594-Rev.3.14-September 2007, "AMD64 Architecture Programmer's manual
+Volume 3: General-Purpose and System Instructions", and Intel (R)
+docuements 253666-030US - March 2009, "Intel 654 and IA-32
+Architectures Software Developer's Manual, Volume2A: Instruction Set
+Reference, A-M" and 253667-030US - March 2009, "Intel 654 and IA-32
+Architectures Software Developer's Manual, Volume2B: Instruction Set
+Reference, N-Z".  In particular, it tries to follow the print forms
+defined by AMD's "Appendex section A.1 - Opcode-Syntax Notation", or
+Intel's "Appendix Section A.2 - Key To Abbreviations".
+
+Source files:
+-------------
+
+modeled_nacl_inst.{c,h}
+
+   Defines structures to hold modeled instructions, and a
+   print routine to print these modeled instructions.
+
+ncdecode_tablegen.{h,c}
+
+   Implements the table generator executable. Includes:
+
+       code to add modeled instructions (one by one).
+
+       code to check consistency of the modeled instructions.
+
+       code to print out generated tables that encode the modeled
+       instructions.
+
+       code to print out a human readable form of the modeled
+       instructions, so that it easy to see what instructions are
+       being encoded into the generated tables.
+
+nacl_regsgen.{c,h}
+
+   Implements code that generates header files containing the
+   set of general purpose registers (and thier correlations) for
+   both x86-32 and x86-64.
+
+ncdecode_forms.{h,c}
+
+   Implements code that takes string definitions of modeled
+   instructions, and generates the corresponding appropriate calls to
+   model the instructions, as expected by code in
+   ncdecode_tablegen.h. The modeled instructions define an opcode
+   sequence, an instruction mnemonic, and instruction arguments
+   expected by that instruction.
+
+ncdecode_onebyte.c
+
+   Defines one byte opcodes for 386, return, and system instructions.
+
+ncdecodeX87.c
+
+   Defines the x87 floating point instructions.
+
+ncdecode_0F.c
+
+   Defines the multibyte opcode instructions, which begin with byte
+   0F.  Excludes sse instructions ((except for the Ldmxcse, Stmxcsr,
+   Lfence, and Mfence instructions).
+
+ncdecode_sse.c
+
+   Defines sse instructions (except for the Ldmxcse, Stmxcsr, Lfence,
+   and Mfence instructions, which are defined in ncdecode_0F.c).
+
+defsize64.{c,h}
+
+   Defines instructions (mnemonics) which for x86-64, always have
+   64-bit arguments, and ignores operand size specified by prefix
+   bytes.
+
+lock_insts.{c,h}
+
+   Defines instructions (mnemonics) that can use a lock prefix.
+
+long_mode.{c,h}
+
+   Defines instructions (mnemonics) that are considered LongMode in
+   x86-64.
+
+nacl_illegal.{c,h}
+
+   Defines instructions (mnemonics) that are (apriori) considered
+   illegal in native client.
+
+nc_def_jumps.{c,h}
+
+   Defines instructions (mnemonics) that do either conditional or
+   unconditional jumps.
+
+zero_extends.{c,h}
+
+   Defines instructions (mnemonics) that native client assumes to do
+   zero-extension when assigning a 32-bit value to a 64-bit register.
+
+   Note: This is not the same as specified in the instruction manuals.
+   Rather, it only includes those that have been whitelisted to do
+   this for native client.
+
+nc_rep_prefix.{c,h}
+
+   Defines instructions (mnemonics) that can use the REP/REPE/REPZ
+   (F3) and REPNE/REPNZ (F2) prefix.
+
+nacl_disallows.enum
+
+   Defines an enumerated type of possible reasons why a modeled
+   instruction may not be accepted by the table generator.
+
+ncdecode_st.{c,h}
+
+   Symbol table used to encode names used when defining modeled
+   instructions. This includes common registers (i.e. the stack and
+   ip), as well as functions that convert instruction arguments
+   (strings) into the corresponding modeled instruction data.
+
+nc_compress.{c,h}
+
+   Defines code that compresses the data used to model instructions,
+   so that the corresponding tables generated are smaller.
+
+ncval_simplify.{c,h}
+
+   Code that simplifies (fully) modeled instructions into patterns
+   that can be used by the x86-64 validator to parse the corresponding
+   instructions.
+
+force_cpp.cc
+
+   Dummy file to make scons understand that the corresponding
+   executable contains c++ code.
+
+build.scons
+
+   The scons file to construct the needed tables for the x86 decoders
+   and validators.
+
+   Note: The tables are not automatically rebuilt on each call to
+   scons. Rather, to regenerate the corresponding tables, one must do
+   the following (in the native_client directory):
+
+   .> ./scons --mode=opt-linux platform=x86-64 valclean
+   .> ./scons --mode=opt-linux platform=x86-64 valgen
+
+Generated Tables
+----------------
+
+The following tables are generated by scons (when call with argument
+"valgen"):
+
+gen/nacl_disallows.h
+
+   The generated enumerated type defined by file nacl_disallows.enum
+
+gen/nacl_disallows_impl.h
+
+   The generated implementation of the function NaClDisallowsFlagName.
+
+gen/nc_opcode_table_32.h
+
+   The generated tables for the full decoder for x86-32 instructions.
+
+gen/nc_opcode_table_64.h
+
+   The generated tables for the full decoder for x86-64 instructions.
+
+gen/nc_subregs_64.h
+
+   The generated mapping of all possible registers in x86-64, to the
+   index of the (64-bit) register that is is a subregister of.
+
+gen/nc_subregs_32.h
+
+   The generated mapping of all possible registers in x86-32, to the
+   index of the (32-bit) register that is is a subregister of.
+
+Modeled Instructions
+--------------------
+
+To make it easier to see what instructions are generated, and test
+that changes to the code in this directory has NOT changed that set,
+the following test files exists:
+
+testdata/64/modeled_insts.txt
+
+   The instructions recognized by the full decoder for x86-64.
+
+testdata/32/modeled_insts.txt
+
+   The instructions recognized by the full decoder for x86-32.
+
+testdata/64/ncval_reg_sfi_modeled_insts.txt
+
+   The instruction patterns (generated by ncval_simplify.c) that
+   will be used by the x86-64 register SFI validator.
+
+testdata/32/ncval_reg_sfi_modeled_insts.txt
+
+   The instruction patterns (generated by ncval_simplify.c) that
+   will be used by the x86-32 register SFI validator.
+
+   Note: Deprecated and will be removed, since the x86-32 version
+   of the register SFI validator does not make sense.

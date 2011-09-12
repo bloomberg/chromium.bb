@@ -21,9 +21,9 @@
 #include "native_client/src/trusted/validator/x86/nacl_regs.h"
 
 #if NACL_TARGET_SUBARCH == 64
-# include "native_client/src/trusted/validator_x86/gen/nc_subregs_64.h"
+# include "native_client/src/trusted/validator/x86/decoder/gen/nc_subregs_64.h"
 #else
-# include "native_client/src/trusted/validator_x86/gen/nc_subregs_32.h"
+# include "native_client/src/trusted/validator/x86/decoder/gen/nc_subregs_32.h"
 #endif
 
 /* To turn on debugging of instruction decoding, change value of

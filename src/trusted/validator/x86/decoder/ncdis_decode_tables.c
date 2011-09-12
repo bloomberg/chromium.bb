@@ -9,9 +9,9 @@
 #include "native_client/src/trusted/validator/x86/decoder/nc_decode_tables.h"
 #include "native_client/src/trusted/validator/x86/decoder/ncopcode_desc.h"
 #if NACL_TARGET_SUBARCH == 64
-# include "native_client/src/trusted/validator_x86/gen/nc_opcode_table_64.h"
+# include "native_client/src/trusted/validator/x86/decoder/gen/nc_opcode_table_64.h"
 #else
-# include "native_client/src/trusted/validator_x86/gen/nc_opcode_table_32.h"
+# include "native_client/src/trusted/validator/x86/decoder/gen/nc_opcode_table_32.h"
 #endif
 
 static const NaClDecodeTables kDecoderTables = {

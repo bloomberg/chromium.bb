@@ -1,4 +1,4 @@
-/* native_client/src/trusted/validator_x86/gen/ncdecodetab_64.h
+/* native_client/src/trusted/validator/x86/ncval_seg_sfi/gen/ncdecodetab_64.h
  * THIS FILE IS AUTO-GENERATED. DO NOT EDIT.
  * Compiled for x86-64 bit mode.
  *

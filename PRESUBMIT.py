@@ -19,10 +19,13 @@ EXCLUDE_PROJECT_CHECKS_DIRS = [
     # and do not follow our conventions.
     'src/trusted/validator_x86/testdata/32',
     'src/trusted/validator_x86/testdata/64',
+    'src/trusted/validator/x86/decoder/generator/testdata/32',
+    'src/trusted/validator/x86/decoder/generator/testdata/64',
     # The following directories contains automatically generated source,
     # which may not follow our conventions.
     'src/trusted/validator_x86/gen',
     'src/trusted/validator/x86/decoder/gen',
+    'src/trusted/validator/x86/decoder/generator/gen',
     'src/trusted/validator/x86/ncval_seg_sfi/gen',
     ]
 

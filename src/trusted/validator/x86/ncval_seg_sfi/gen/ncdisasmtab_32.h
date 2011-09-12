@@ -1,4 +1,4 @@
-/* native_client/src/trusted/validator_x86/gen/ncdisasmtab_32.h
+/* native_client/src/trusted/validator/x86/ncval_seg_sfi/gen/ncdisasmtab_32.h
  * THIS FILE IS AUTO-GENERATED. DO NOT EDIT.
  * Compiled for x86-32 bit mode.
  *

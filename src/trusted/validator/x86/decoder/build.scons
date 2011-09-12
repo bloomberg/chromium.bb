@@ -67,7 +67,7 @@ if generate:
     header_prefix = header_prefix[0:header_prefix.rfind('native_client')]
   elif header_prefix.endswith('/native_client/'):
     header_prefix = header_prefix[0:header_prefix.rfind('native_client/')]
-  val_src_dir = '$MAIN_DIR/src/trusted/validator/x86/decoder'
+  decoder_src_dir = '$MAIN_DIR/src/trusted/validator/x86/decoder'
 
   #------------------------------------------------------
   # Generate the needed header files for enumerated types.
@@ -90,12 +90,12 @@ if generate:
   for ncv_enum in ncv_enum_pairs:
     ncv_options = ncv_enum_pairs[ncv_enum]
     ncv_enum_file = gen_env.File(ncv_enum + '.enum')
-    ncv_header_1 = gen_env.File('%s/gen/%s.h' % (val_src_dir, ncv_enum))
-    ncv_header_2 = gen_env.File('%s/gen/%s_impl.h' % (val_src_dir, ncv_enum))
+    ncv_header_1 = gen_env.File('%s/gen/%s.h' % (decoder_src_dir, ncv_enum))
+    ncv_header_2 = gen_env.File('%s/gen/%s_impl.h' % (decoder_src_dir, ncv_enum))
 
     cmd_line = (
         '${PYTHON} %s --header="%s" --source="%s" --path_prefix="%s" %s %s' %
-        (gen_env.File('../../../validator_x86/enum_gen.py'),
+        (gen_env.File('%s/../../../validator_x86/enum_gen.py' % decoder_src_dir),
          ncv_header_1, ncv_header_2, header_prefix,
          ncv_options, ncv_enum_file))
     gen_env.Command([ncv_header_1, ncv_header_2], ncv_enum_file, cmd_line)

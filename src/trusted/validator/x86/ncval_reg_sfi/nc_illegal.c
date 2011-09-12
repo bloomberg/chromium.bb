@@ -15,7 +15,7 @@
 #include "native_client/src/trusted/validator/x86/decoder/nc_inst_state_internal.h"
 #include "native_client/src/trusted/validator/x86/ncval_reg_sfi/ncvalidate_iter.h"
 #include "native_client/src/trusted/validator/x86/ncval_reg_sfi/ncvalidate_iter_internal.h"
-#include "native_client/src/trusted/validator_x86/gen/nacl_disallows.h"
+#include "native_client/src/trusted/validator/x86/decoder/generator/gen/nacl_disallows.h"
 
 /* To turn on debugging of instruction decoding, change value of
  * DEBUGGING to 1.
