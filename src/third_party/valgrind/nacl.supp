@@ -100,3 +100,13 @@
    fun:*
    fun:start_thread
 }
+
+# valgrind fails to recognize that "movaps %xmm7,(%rsp)"
+# initializes the 16 bytes at %rsp.
+# See http://code.google.com/p/nativeclient/issues/detail?id=2251
+{
+   movaps unrecognized
+   Memcheck:Cond
+   fun:infoleak_check_state
+   fun:main
+}

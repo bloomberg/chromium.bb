@@ -23,12 +23,12 @@ static st_reg st_zero;
 typedef struct { uint64_t b[2]; } xmm_reg __attribute__((aligned(16)));
 static const xmm_reg xmm_zero;
 
-static void clear_state(void) {
+static void infoleak_clear_state(void) {
   __asm__ volatile("fninit; fstpt %0" : "=m" (st_zero));
   __asm__ volatile("movaps %0, %%xmm7" :: "m" (xmm_zero));
 }
 
-static int check_state(void) {
+__attribute__((noinline)) static int infoleak_check_state(void) {
   int ok = 1;
   st_reg st0;
   xmm_reg xmm7;
@@ -49,10 +49,10 @@ static int check_state(void) {
 
 #else
 
-static void clear_state(void) {
+static void infoleak_clear_state(void) {
 }
 
-static int check_state(void) {
+static int infoleak_check_state(void) {
   return 1;
 }
 
@@ -64,7 +64,7 @@ int main(void) {
   int result;
   int ok;
 
-  clear_state();
+  infoleak_clear_state();
 
   result = NACL_SYSCALL(test_infoleak)();
   if (result != -ENOSYS) {
@@ -72,7 +72,7 @@ int main(void) {
     return 1;
   }
 
-  ok = check_state();
+  ok = infoleak_check_state();
 
   return ok == EXPECT_OK ? 0 : 1;
 }
