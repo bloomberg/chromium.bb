@@ -221,13 +221,6 @@
 }
 
 {
-  bug_40244
-  ThreadSanitizer:Race
-  fun:*WebDataService*WebDataRequest*Cancel*
-  fun:*WebDataService*
-}
-
-{
   bug_70938
   ThreadSanitizer:Race
   ...

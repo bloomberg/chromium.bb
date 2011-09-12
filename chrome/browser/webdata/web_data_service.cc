@@ -586,12 +586,12 @@ void WebDataService::RequestCompleted(Handle h) {
   pending_lock_.Release();
 
   // Notify the consumer if needed.
-  WebDataServiceConsumer* consumer;
-  if (!request->IsCancelled() && (consumer = request->GetConsumer())) {
+  WebDataServiceConsumer* consumer = NULL;
+  if (!request->IsCancelled(&consumer) && consumer) {
     consumer->OnWebDataServiceRequestDone(request->GetHandle(),
                                           request->GetResult());
   } else {
-    // Nobody is taken ownership of the result, either because it is canceled
+    // Nobody is taken ownership of the result, either because it is cancelled
     // or there is no consumer. Destroy results that require special handling.
     WDTypedResult const *result = request->GetResult();
     if (result) {
@@ -713,7 +713,7 @@ int WebDataService::GetNextRequestHandle() {
 
 void WebDataService::AddKeywordImpl(GenericRequest<TemplateURL>* request) {
   InitializeDatabaseIfNecessary();
-  if (db_ && !request->IsCancelled()) {
+  if (db_ && !request->IsCancelled(NULL)) {
     db_->GetKeywordTable()->AddKeyword(request->arg());
     ScheduleCommit();
   }
@@ -723,7 +723,7 @@ void WebDataService::AddKeywordImpl(GenericRequest<TemplateURL>* request) {
 void WebDataService::RemoveKeywordImpl(
     GenericRequest<TemplateURLID>* request) {
   InitializeDatabaseIfNecessary();
-  if (db_ && !request->IsCancelled()) {
+  if (db_ && !request->IsCancelled(NULL)) {
     DCHECK(request->arg());
     db_->GetKeywordTable()->RemoveKeyword(request->arg());
     ScheduleCommit();
@@ -733,7 +733,7 @@ void WebDataService::RemoveKeywordImpl(
 
 void WebDataService::UpdateKeywordImpl(GenericRequest<TemplateURL>* request) {
   InitializeDatabaseIfNecessary();
-  if (db_ && !request->IsCancelled()) {
+  if (db_ && !request->IsCancelled(NULL)) {
     if (!db_->GetKeywordTable()->UpdateKeyword(request->arg())) {
       NOTREACHED();
       return;
@@ -745,7 +745,7 @@ void WebDataService::UpdateKeywordImpl(GenericRequest<TemplateURL>* request) {
 
 void WebDataService::GetKeywordsImpl(WebDataRequest* request) {
   InitializeDatabaseIfNecessary();
-  if (db_ && !request->IsCancelled()) {
+  if (db_ && !request->IsCancelled(NULL)) {
     WDKeywordsResult result;
     db_->GetKeywordTable()->GetKeywords(&result.keywords);
     result.default_search_provider_id =
@@ -761,7 +761,7 @@ void WebDataService::GetKeywordsImpl(WebDataRequest* request) {
 void WebDataService::SetDefaultSearchProviderImpl(
     GenericRequest<TemplateURLID>* request) {
   InitializeDatabaseIfNecessary();
-  if (db_ && !request->IsCancelled()) {
+  if (db_ && !request->IsCancelled(NULL)) {
     if (!db_->GetKeywordTable()->SetDefaultSearchProviderID(request->arg())) {
       NOTREACHED();
       return;
@@ -774,7 +774,7 @@ void WebDataService::SetDefaultSearchProviderImpl(
 void WebDataService::SetBuiltinKeywordVersionImpl(
     GenericRequest<int>* request) {
   InitializeDatabaseIfNecessary();
-  if (db_ && !request->IsCancelled()) {
+  if (db_ && !request->IsCancelled(NULL)) {
     if (!db_->GetKeywordTable()->SetBuitinKeywordVersion(request->arg())) {
       NOTREACHED();
       return;
@@ -793,7 +793,7 @@ void WebDataService::SetBuiltinKeywordVersionImpl(
 void WebDataService::SetWebAppImageImpl(
     GenericRequest2<GURL, SkBitmap>* request) {
   InitializeDatabaseIfNecessary();
-  if (db_ && !request->IsCancelled()) {
+  if (db_ && !request->IsCancelled(NULL)) {
     db_->GetWebAppsTable()->SetWebAppImage(
         request->arg1(), request->arg2());
     ScheduleCommit();
@@ -804,7 +804,7 @@ void WebDataService::SetWebAppImageImpl(
 void WebDataService::SetWebAppHasAllImagesImpl(
     GenericRequest2<GURL, bool>* request) {
   InitializeDatabaseIfNecessary();
-  if (db_ && !request->IsCancelled()) {
+  if (db_ && !request->IsCancelled(NULL)) {
     db_->GetWebAppsTable()->SetWebAppHasAllImages(request->arg1(),
                                                   request->arg2());
     ScheduleCommit();
@@ -814,7 +814,7 @@ void WebDataService::SetWebAppHasAllImagesImpl(
 
 void WebDataService::RemoveWebAppImpl(GenericRequest<GURL>* request) {
   InitializeDatabaseIfNecessary();
-  if (db_ && !request->IsCancelled()) {
+  if (db_ && !request->IsCancelled(NULL)) {
     db_->GetWebAppsTable()->RemoveWebApp(request->arg());
     ScheduleCommit();
   }
@@ -823,7 +823,7 @@ void WebDataService::RemoveWebAppImpl(GenericRequest<GURL>* request) {
 
 void WebDataService::GetWebAppImagesImpl(GenericRequest<GURL>* request) {
   InitializeDatabaseIfNecessary();
-  if (db_ && !request->IsCancelled()) {
+  if (db_ && !request->IsCancelled(NULL)) {
     WDAppImagesResult result;
     result.has_all_images =
         db_->GetWebAppsTable()->GetWebAppHasAllImages(request->arg());
@@ -843,7 +843,7 @@ void WebDataService::GetWebAppImagesImpl(GenericRequest<GURL>* request) {
 void WebDataService::RemoveWebIntentImpl(
     GenericRequest<WebIntentData>* request) {
   InitializeDatabaseIfNecessary();
-  if (db_ && !request->IsCancelled()) {
+  if (db_ && !request->IsCancelled(NULL)) {
     const WebIntentData& intent = request->arg();
     db_->GetWebIntentsTable()->RemoveWebIntent(intent);
     ScheduleCommit();
@@ -853,7 +853,7 @@ void WebDataService::RemoveWebIntentImpl(
 
 void WebDataService::AddWebIntentImpl(GenericRequest<WebIntentData>* request) {
   InitializeDatabaseIfNecessary();
-  if (db_ && !request->IsCancelled()) {
+  if (db_ && !request->IsCancelled(NULL)) {
     const WebIntentData& intent = request->arg();
     db_->GetWebIntentsTable()->SetWebIntent(intent);
     ScheduleCommit();
@@ -864,7 +864,7 @@ void WebDataService::AddWebIntentImpl(GenericRequest<WebIntentData>* request) {
 
 void WebDataService::GetWebIntentsImpl(GenericRequest<string16>* request) {
   InitializeDatabaseIfNecessary();
-  if (db_ && !request->IsCancelled()) {
+  if (db_ && !request->IsCancelled(NULL)) {
     std::vector<WebIntentData> result;
     db_->GetWebIntentsTable()->GetWebIntents(request->arg(), &result);
     request->SetResult(
@@ -876,7 +876,7 @@ void WebDataService::GetWebIntentsImpl(GenericRequest<string16>* request) {
 void WebDataService::GetAllWebIntentsImpl(
     GenericRequest<std::string>* request) {
   InitializeDatabaseIfNecessary();
-  if (db_ && !request->IsCancelled()) {
+  if (db_ && !request->IsCancelled(NULL)) {
     std::vector<WebIntentData> result;
     db_->GetWebIntentsTable()->GetAllWebIntents(&result);
     request->SetResult(
@@ -895,7 +895,7 @@ void WebDataService::GetAllWebIntentsImpl(
 void WebDataService::RemoveAllTokensImpl(
     GenericRequest<std::string>* request) {
   InitializeDatabaseIfNecessary();
-  if (db_ && !request->IsCancelled()) {
+  if (db_ && !request->IsCancelled(NULL)) {
     if (db_->GetTokenServiceTable()->RemoveAllTokens()) {
       ScheduleCommit();
     }
@@ -906,7 +906,7 @@ void WebDataService::RemoveAllTokensImpl(
 void WebDataService::SetTokenForServiceImpl(
     GenericRequest2<std::string, std::string>* request) {
   InitializeDatabaseIfNecessary();
-  if (db_ && !request->IsCancelled()) {
+  if (db_ && !request->IsCancelled(NULL)) {
     if (db_->GetTokenServiceTable()->SetTokenForService(
             request->arg1(), request->arg2())) {
       ScheduleCommit();
@@ -919,7 +919,7 @@ void WebDataService::SetTokenForServiceImpl(
 void WebDataService::GetAllTokensImpl(
     GenericRequest<std::string>* request) {
   InitializeDatabaseIfNecessary();
-  if (db_ && !request->IsCancelled()) {
+  if (db_ && !request->IsCancelled(NULL)) {
     std::map<std::string, std::string> map;
     db_->GetTokenServiceTable()->GetAllTokens(&map);
     request->SetResult(
@@ -936,7 +936,7 @@ void WebDataService::GetAllTokensImpl(
 
 void WebDataService::AddLoginImpl(GenericRequest<PasswordForm>* request) {
   InitializeDatabaseIfNecessary();
-  if (db_ && !request->IsCancelled()) {
+  if (db_ && !request->IsCancelled(NULL)) {
     if (db_->GetLoginsTable()->AddLogin(request->arg()))
       ScheduleCommit();
   }
@@ -945,7 +945,7 @@ void WebDataService::AddLoginImpl(GenericRequest<PasswordForm>* request) {
 
 void WebDataService::UpdateLoginImpl(GenericRequest<PasswordForm>* request) {
   InitializeDatabaseIfNecessary();
-  if (db_ && !request->IsCancelled()) {
+  if (db_ && !request->IsCancelled(NULL)) {
     if (db_->GetLoginsTable()->UpdateLogin(request->arg()))
       ScheduleCommit();
   }
@@ -954,7 +954,7 @@ void WebDataService::UpdateLoginImpl(GenericRequest<PasswordForm>* request) {
 
 void WebDataService::RemoveLoginImpl(GenericRequest<PasswordForm>* request) {
   InitializeDatabaseIfNecessary();
-  if (db_ && !request->IsCancelled()) {
+  if (db_ && !request->IsCancelled(NULL)) {
     if (db_->GetLoginsTable()->RemoveLogin(request->arg()))
       ScheduleCommit();
   }
@@ -964,7 +964,7 @@ void WebDataService::RemoveLoginImpl(GenericRequest<PasswordForm>* request) {
 void WebDataService::RemoveLoginsCreatedBetweenImpl(
     GenericRequest2<Time, Time>* request) {
   InitializeDatabaseIfNecessary();
-  if (db_ && !request->IsCancelled()) {
+  if (db_ && !request->IsCancelled(NULL)) {
     if (db_->GetLoginsTable()->RemoveLoginsCreatedBetween(
             request->arg1(), request->arg2())) {
       ScheduleCommit();
@@ -975,7 +975,7 @@ void WebDataService::RemoveLoginsCreatedBetweenImpl(
 
 void WebDataService::GetLoginsImpl(GenericRequest<PasswordForm>* request) {
   InitializeDatabaseIfNecessary();
-  if (db_ && !request->IsCancelled()) {
+  if (db_ && !request->IsCancelled(NULL)) {
     std::vector<PasswordForm*> forms;
     db_->GetLoginsTable()->GetLogins(request->arg(), &forms);
     request->SetResult(
@@ -986,7 +986,7 @@ void WebDataService::GetLoginsImpl(GenericRequest<PasswordForm>* request) {
 
 void WebDataService::GetAutofillableLoginsImpl(WebDataRequest* request) {
   InitializeDatabaseIfNecessary();
-  if (db_ && !request->IsCancelled()) {
+  if (db_ && !request->IsCancelled(NULL)) {
     std::vector<PasswordForm*> forms;
     db_->GetLoginsTable()->GetAllLogins(&forms, false);
     request->SetResult(
@@ -997,7 +997,7 @@ void WebDataService::GetAutofillableLoginsImpl(WebDataRequest* request) {
 
 void WebDataService::GetBlacklistLoginsImpl(WebDataRequest* request) {
   InitializeDatabaseIfNecessary();
-  if (db_ && !request->IsCancelled()) {
+  if (db_ && !request->IsCancelled(NULL)) {
     std::vector<PasswordForm*> all_forms;
     db_->GetLoginsTable()->GetAllLogins(&all_forms, true);
     std::vector<PasswordForm*> blacklist_forms;
@@ -1025,7 +1025,7 @@ void WebDataService::GetBlacklistLoginsImpl(WebDataRequest* request) {
 void WebDataService::AddFormElementsImpl(
     GenericRequest<std::vector<FormField> >* request) {
   InitializeDatabaseIfNecessary();
-  if (db_ && !request->IsCancelled()) {
+  if (db_ && !request->IsCancelled(NULL)) {
     AutofillChangeList changes;
     if (!db_->GetAutofillTable()->AddFormFieldValues(
             request->arg(), &changes)) {
@@ -1051,7 +1051,7 @@ void WebDataService::AddFormElementsImpl(
 void WebDataService::GetFormValuesForElementNameImpl(WebDataRequest* request,
     const string16& name, const string16& prefix, int limit) {
   InitializeDatabaseIfNecessary();
-  if (db_ && !request->IsCancelled()) {
+  if (db_ && !request->IsCancelled(NULL)) {
     std::vector<string16> values;
     db_->GetAutofillTable()->GetFormValuesForElementName(
         name, prefix, &values, limit);
@@ -1064,7 +1064,7 @@ void WebDataService::GetFormValuesForElementNameImpl(WebDataRequest* request,
 void WebDataService::RemoveFormElementsAddedBetweenImpl(
     GenericRequest2<Time, Time>* request) {
   InitializeDatabaseIfNecessary();
-  if (db_ && !request->IsCancelled()) {
+  if (db_ && !request->IsCancelled(NULL)) {
     AutofillChangeList changes;
     if (db_->GetAutofillTable()->RemoveFormElementsAddedBetween(
         request->arg1(), request->arg2(), &changes)) {
@@ -1089,7 +1089,7 @@ void WebDataService::RemoveFormElementsAddedBetweenImpl(
 void WebDataService::RemoveFormValueForElementNameImpl(
     GenericRequest2<string16, string16>* request) {
   InitializeDatabaseIfNecessary();
-  if (db_ && !request->IsCancelled()) {
+  if (db_ && !request->IsCancelled(NULL)) {
     const string16& name = request->arg1();
     const string16& value = request->arg2();
 
@@ -1114,7 +1114,7 @@ void WebDataService::RemoveFormValueForElementNameImpl(
 void WebDataService::AddAutofillProfileImpl(
     GenericRequest<AutofillProfile>* request) {
   InitializeDatabaseIfNecessary();
-  if (db_ && !request->IsCancelled()) {
+  if (db_ && !request->IsCancelled(NULL)) {
     const AutofillProfile& profile = request->arg();
     if (!db_->GetAutofillTable()->AddAutofillProfile(profile)) {
       NOTREACHED();
@@ -1136,7 +1136,7 @@ void WebDataService::AddAutofillProfileImpl(
 void WebDataService::UpdateAutofillProfileImpl(
     GenericRequest<AutofillProfile>* request) {
   InitializeDatabaseIfNecessary();
-  if (db_ && !request->IsCancelled()) {
+  if (db_ && !request->IsCancelled(NULL)) {
     const AutofillProfile& profile = request->arg();
 
     // Only perform the update if the profile exists.  It is currently
@@ -1170,7 +1170,7 @@ void WebDataService::UpdateAutofillProfileImpl(
 void WebDataService::RemoveAutofillProfileImpl(
     GenericRequest<std::string>* request) {
   InitializeDatabaseIfNecessary();
-  if (db_ && !request->IsCancelled()) {
+  if (db_ && !request->IsCancelled(NULL)) {
     const std::string& guid = request->arg();
 
     AutofillProfile* profile = NULL;
@@ -1198,7 +1198,7 @@ void WebDataService::RemoveAutofillProfileImpl(
 
 void WebDataService::GetAutofillProfilesImpl(WebDataRequest* request) {
   InitializeDatabaseIfNecessary();
-  if (db_ && !request->IsCancelled()) {
+  if (db_ && !request->IsCancelled(NULL)) {
     std::vector<AutofillProfile*> profiles;
     db_->GetAutofillTable()->GetAutofillProfiles(&profiles);
     request->SetResult(
@@ -1211,7 +1211,7 @@ void WebDataService::GetAutofillProfilesImpl(WebDataRequest* request) {
 void WebDataService::EmptyMigrationTrashImpl(
     GenericRequest<bool>* request) {
   InitializeDatabaseIfNecessary();
-  if (db_ && !request->IsCancelled()) {
+  if (db_ && !request->IsCancelled(NULL)) {
     bool notify_sync = request->arg();
     if (notify_sync) {
       std::vector<std::string> guids;
@@ -1262,7 +1262,7 @@ void WebDataService::EmptyMigrationTrashImpl(
 void WebDataService::AddCreditCardImpl(
     GenericRequest<CreditCard>* request) {
   InitializeDatabaseIfNecessary();
-  if (db_ && !request->IsCancelled()) {
+  if (db_ && !request->IsCancelled(NULL)) {
     const CreditCard& credit_card = request->arg();
     if (!db_->GetAutofillTable()->AddCreditCard(credit_card)) {
       NOTREACHED();
@@ -1284,7 +1284,7 @@ void WebDataService::AddCreditCardImpl(
 void WebDataService::UpdateCreditCardImpl(
     GenericRequest<CreditCard>* request) {
   InitializeDatabaseIfNecessary();
-  if (db_ && !request->IsCancelled()) {
+  if (db_ && !request->IsCancelled(NULL)) {
     const CreditCard& credit_card = request->arg();
 
     // It is currently valid to try to update a missing profile.  We simply drop
@@ -1317,7 +1317,7 @@ void WebDataService::UpdateCreditCardImpl(
 void WebDataService::RemoveCreditCardImpl(
     GenericRequest<std::string>* request) {
   InitializeDatabaseIfNecessary();
-  if (db_ && !request->IsCancelled()) {
+  if (db_ && !request->IsCancelled(NULL)) {
     const std::string& guid = request->arg();
     if (!db_->GetAutofillTable()->RemoveCreditCard(guid)) {
       NOTREACHED();
@@ -1338,7 +1338,7 @@ void WebDataService::RemoveCreditCardImpl(
 
 void WebDataService::GetCreditCardsImpl(WebDataRequest* request) {
   InitializeDatabaseIfNecessary();
-  if (db_ && !request->IsCancelled()) {
+  if (db_ && !request->IsCancelled(NULL)) {
     std::vector<CreditCard*> credit_cards;
     db_->GetAutofillTable()->GetCreditCards(&credit_cards);
     request->SetResult(
@@ -1351,7 +1351,7 @@ void WebDataService::GetCreditCardsImpl(WebDataRequest* request) {
 void WebDataService::RemoveAutofillProfilesAndCreditCardsModifiedBetweenImpl(
     GenericRequest2<Time, Time>* request) {
   InitializeDatabaseIfNecessary();
-  if (db_ && !request->IsCancelled()) {
+  if (db_ && !request->IsCancelled(NULL)) {
     std::vector<std::string> profile_guids;
     std::vector<std::string> credit_card_guids;
     if (db_->GetAutofillTable()->
@@ -1398,7 +1398,7 @@ WebDataService::WebDataRequest::WebDataRequest(WebDataService* service,
                                                WebDataServiceConsumer* consumer)
     : service_(service),
       handle_(handle),
-      canceled_(false),
+      cancelled_(false),
       consumer_(consumer),
       result_(NULL) {
   message_loop_ = MessageLoop::current();
@@ -1412,16 +1412,17 @@ WebDataService::Handle WebDataService::WebDataRequest::GetHandle() const {
   return handle_;
 }
 
-WebDataServiceConsumer* WebDataService::WebDataRequest::GetConsumer() const {
-  return consumer_;
-}
-
-bool WebDataService::WebDataRequest::IsCancelled() const {
-  return canceled_;
+bool WebDataService::WebDataRequest::IsCancelled(
+    WebDataServiceConsumer** consumer) const {
+  base::AutoLock l(cancel_lock_);
+  if (consumer)
+    *consumer = consumer_;
+  return cancelled_;
 }
 
 void WebDataService::WebDataRequest::Cancel() {
-  canceled_ = true;
+  base::AutoLock l(cancel_lock_);
+  cancelled_ = true;
   consumer_ = NULL;
 }
 
