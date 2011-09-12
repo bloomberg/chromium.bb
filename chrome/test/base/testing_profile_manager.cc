@@ -13,6 +13,21 @@
 #include "chrome/test/base/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace testing {
+
+class ProfileManager : public ::ProfileManager {
+ public:
+  explicit ProfileManager(const FilePath& user_data_dir)
+      : ::ProfileManager(user_data_dir) {}
+
+ protected:
+  virtual Profile* CreateProfile(const FilePath& file_path) {
+    return new TestingProfile(file_path);
+  }
+};
+
+}  // namespace testing
+
 TestingProfileManager::TestingProfileManager(TestingBrowserProcess* process)
     : called_set_up_(false),
       browser_process_(process),
@@ -89,7 +104,7 @@ void TestingProfileManager::SetUpInternal() {
   // Set up the directory for profiles.
   ASSERT_TRUE(profiles_dir_.CreateUniqueTempDir());
 
-  profile_manager_ = new ProfileManager(profiles_dir_.path());
+  profile_manager_ = new testing::ProfileManager(profiles_dir_.path());
   browser_process_->SetProfileManager(profile_manager_);  // Takes ownership.
 
   called_set_up_ = true;

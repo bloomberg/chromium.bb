@@ -9,7 +9,6 @@
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
-#include "base/path_service.h"
 #include "base/stl_util.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
@@ -23,7 +22,6 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_constants.h"
-#include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/pref_names.h"
@@ -89,18 +87,14 @@ void ProfileManager::ShutdownSessionServices() {
 
 // static
 Profile* ProfileManager::GetDefaultProfile() {
-  FilePath user_data_dir;
-  PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
   ProfileManager* profile_manager = g_browser_process->profile_manager();
-  return profile_manager->GetDefaultProfile(user_data_dir);
+  return profile_manager->GetDefaultProfile(profile_manager->user_data_dir_);
 }
 
 // static
 Profile* ProfileManager::GetLastUsedProfile() {
-  FilePath user_data_dir;
-  PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
   ProfileManager* profile_manager = g_browser_process->profile_manager();
-  return profile_manager->GetLastUsedProfile(user_data_dir);
+  return profile_manager->GetLastUsedProfile(profile_manager->user_data_dir_);
 }
 
 ProfileManager::ProfileManager(const FilePath& user_data_dir)
@@ -244,7 +238,7 @@ Profile* ProfileManager::GetProfile(const FilePath& profile_dir) {
   if (NULL != profile)
     return profile;
 
-  profile = Profile::CreateProfile(profile_dir);
+  profile = CreateProfile(profile_dir);
   DCHECK(profile);
   if (profile) {
     bool result = AddProfile(profile);
@@ -284,8 +278,7 @@ void ProfileManager::CreateDefaultProfileAsync(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   ProfileManager* profile_manager = g_browser_process->profile_manager();
 
-  FilePath default_profile_dir;
-  PathService::Get(chrome::DIR_USER_DATA, &default_profile_dir);
+  FilePath default_profile_dir = profile_manager->user_data_dir_;
   // TODO(mirandac): current directory will not always be default in the future
   default_profile_dir = default_profile_dir.Append(
       profile_manager->GetInitialProfileDir());
@@ -379,6 +372,10 @@ void ProfileManager::DoFinalInit(Profile* profile, bool go_off_the_record) {
   AddProfileToCache(profile);
 }
 
+Profile* ProfileManager::CreateProfile(const FilePath& path) {
+  return Profile::CreateProfile(path);
+}
+
 void ProfileManager::OnProfileCreated(Profile* profile, bool success) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -431,11 +428,12 @@ void ProfileManager::CreateMultiProfileAsync() {
   PrefService* local_state = g_browser_process->local_state();
   DCHECK(local_state);
 
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+
   int next_directory = local_state->GetInteger(prefs::kProfilesNumCreated);
   std::string profile_name = chrome::kMultiProfileDirPrefix;
   profile_name.append(base::IntToString(next_directory));
-  FilePath new_path;
-  PathService::Get(chrome::DIR_USER_DATA, &new_path);
+  FilePath new_path = profile_manager->user_data_dir_;
 #if defined(OS_WIN)
   new_path = new_path.Append(ASCIIToUTF16(profile_name));
 #else
@@ -443,7 +441,6 @@ void ProfileManager::CreateMultiProfileAsync() {
 #endif
   local_state->SetInteger(prefs::kProfilesNumCreated, ++next_directory);
 
-  ProfileManager* profile_manager = g_browser_process->profile_manager();
   // The launcher is deleted by the manager when profile creation is finished.
   NewProfileLauncher* launcher = new NewProfileLauncher();
   profile_manager->CreateProfileAsync(new_path, launcher);

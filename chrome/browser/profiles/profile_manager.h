@@ -177,6 +177,9 @@ class ProfileManager : public base::NonThreadSafe,
   // Does final initial actions.
   virtual void DoFinalInit(Profile* profile, bool go_off_the_record);
 
+  // Creates a new profile. Virtual so that unittests can return TestingProfile.
+  virtual Profile* CreateProfile(const FilePath& path);
+
  private:
   friend class TestingProfileManager;
 
