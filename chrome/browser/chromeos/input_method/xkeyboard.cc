@@ -250,9 +250,7 @@ class XKeyboard {
       SetCapsLockEnabled(false);
     }
 
-    // TODO(yusukes): Revert to VLOG(1) when crosbug.com/15851 is resolved.
-    LOG(WARNING) << (force ? "Reapply" : "Set")
-                 << " layout: " << layout_to_set;
+    VLOG(1) << (force ? "Reapply" : "Set") << " layout: " << layout_to_set;
 
     const bool start_execution = execute_queue_.empty();
     // If no setxkbmap command is in flight (i.e. start_execution is true),
