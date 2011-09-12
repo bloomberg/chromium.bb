@@ -60,6 +60,10 @@ body {
   color: $8; /* COLOR_NTP_TEXT */
 }
 
+#bookmarks-title-wrapper {
+  border-bottom-color: rgba($22, 0.3); /* COLOR_NTP_SECTION_BORDER */
+}
+
 /* Most Visited ***************************************************************/
 
 .most-visited,

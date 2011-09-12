@@ -107,10 +107,9 @@ html[dir=rtl] .bookmark .close-button {
 /* Bookmark Titles ************************************************************/
 
 #bookmarks-title-wrapper {
-  background: #fff;
-  background-position: left;
-  background-repeat: no-repeat;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  /* this color matches the gradiant end color for the #footer element. */
+  background-color: rgba(242, 242, 242, 0.9);
+  border-bottom: 1px solid;
   color: #777;
   display: -webkit-box;
   font-size: 16px;
@@ -142,14 +141,6 @@ html[dir=rtl] .bookmark .close-button {
   top: 0;
   -webkit-box-flex: 1;
   -webkit-box-orient: horizontal;
-}
-
-.section-title-mask {
-  background: #fff;
-  height: 100%;
-  overflow: hidden;
-  position: relative;
-  -webkit-box-flex: 1;
 }
 
 .bookmark-separator {
