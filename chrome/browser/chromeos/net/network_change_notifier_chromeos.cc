@@ -31,7 +31,7 @@ class OnlineStatusReportThreadTask : public CancelableTask {
 
   // CancelableTask overrides.
   virtual void Cancel() {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    // Normally called from UI thread unless called during shutdown.
     should_report_ = false;
   }
 

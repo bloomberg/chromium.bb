@@ -4289,7 +4289,8 @@ void NetworkLibraryImplCros::UpdateRememberedServiceList(
       break;
   }
   if (iter1 == profile_list_.end()) {
-    NOTREACHED() << "Profile not in list: " << profile_path;
+    // This can happen if flimflam gets restarted while Chrome is running.
+    LOG(WARNING) << "Profile not in list: " << profile_path;
     return;
   }
   NetworkProfile& profile = *iter1;

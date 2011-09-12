@@ -25,22 +25,30 @@ LoginLibrary::~LoginLibrary() {}
 class LoginLibraryImpl : public LoginLibrary {
  public:
   LoginLibraryImpl() : job_restart_request_(NULL) {
-    if (CrosLibrary::Get()->EnsureLoaded())
-      Init();
+    CHECK(CrosLibrary::Get() && CrosLibrary::Get()->libcros_loaded());
+    Init();
   }
 
   virtual ~LoginLibraryImpl() {
     if (session_connection_) {
+      DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
       chromeos::DisconnectSession(session_connection_);
     }
   }
 
-  bool EmitLoginPromptReady() {
-    return chromeos::EmitLoginPromptReady();
+  void EmitLoginPromptReady() {
+    if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+      BrowserThread::PostTask(
+          BrowserThread::UI, FROM_HERE,
+          NewRunnableMethod(this, &LoginLibraryImpl::EmitLoginPromptReady));
+      return;
+    }
+    chromeos::EmitLoginPromptReady();
   }
 
   void RequestRetrievePolicy(RetrievePolicyCallback callback, void* delegate) {
     DCHECK(callback) << "must provide a callback to RequestRetrievePolicy()";
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     chromeos::RetrievePolicy(callback, delegate);
   }
 
@@ -48,21 +56,25 @@ class LoginLibraryImpl : public LoginLibrary {
                           StorePolicyCallback callback,
                           void* delegate) {
     DCHECK(callback) << "must provide a callback to StorePolicy()";
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     chromeos::StorePolicy(policy.c_str(), policy.length(), callback, delegate);
   }
 
   bool StartSession(const std::string& user_email,
                     const std::string& unique_id /* unused */) {
     // only pass unique_id through once we use it for something.
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     return chromeos::StartSession(user_email.c_str(), "");
   }
 
   bool StopSession(const std::string& unique_id /* unused */) {
     // only pass unique_id through once we use it for something.
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     return chromeos::StopSession("");
   }
 
   bool RestartEntd() {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     return chromeos::RestartEntd();
   }
 
@@ -166,6 +178,7 @@ class LoginLibraryImpl : public LoginLibrary {
   }
 
   void Init() {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     session_connection_ = chromeos::MonitorSession(&Handler, this);
   }
 
@@ -213,7 +226,7 @@ class LoginLibraryStubImpl : public LoginLibrary {
   LoginLibraryStubImpl() {}
   virtual ~LoginLibraryStubImpl() {}
 
-  bool EmitLoginPromptReady() { return true; }
+  void EmitLoginPromptReady() { }
   void RequestRetrievePolicy(RetrievePolicyCallback callback, void* delegate) {
     callback(delegate, "", 0);
   }
@@ -241,3 +254,6 @@ LoginLibrary* LoginLibrary::GetImpl(bool stub) {
 }
 
 }  // namespace chromeos
+
+// Needed for NewRunnableMethod() call above.
+DISABLE_RUNNABLE_METHOD_REFCOUNT(chromeos::LoginLibraryImpl);

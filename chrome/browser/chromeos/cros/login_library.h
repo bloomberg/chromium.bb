@@ -18,7 +18,7 @@ class LoginLibrary {
  public:
   virtual ~LoginLibrary();
   // Requests that the Upstart signal login-prompt-ready be emitted.
-  virtual bool EmitLoginPromptReady() = 0;
+  virtual void EmitLoginPromptReady() = 0;
 
   virtual void RequestRetrievePolicy(RetrievePolicyCallback callback,
                                      void* delegate_string) = 0;
