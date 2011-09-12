@@ -212,8 +212,7 @@ cr.define('options', function() {
           link.classList.add('extension-links-trailing');
           link.textContent =
             localStrings.getString('extensionSettingsVisitWebsite');
-          link.href = '#';
-          link.addEventListener('click', this.handleVisitWebsite_.bind(this));
+          link.href = extension.homepageUrl;
           vbox.appendChild(link);
         }
 
@@ -620,17 +619,7 @@ cr.define('options', function() {
       var node = this.findIdNode_(e.target.parentNode);
       var extension = this.getExtensionWithId_(node.id);
       chrome.send('extensionSettingsOptions', [extension.id]);
-    },
-
-    /**
-     * Handles the Visit Extension Website link.
-     * @param {Event} e Change event.
-     * @private
-     */
-    handleVisitWebsite_: function(e) {
-      var node = this.findIdNode_(e.target.parentNode);
-      var extension = this.getExtensionWithId_(node.id);
-      document.location = extension.homepageUrl;
+      e.preventDefault();
     },
 
     /**
