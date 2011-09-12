@@ -60,6 +60,9 @@ class BookmarkMenuBridgeTest : public CocoaProfileTest {
 
   void InvalidateMenu()  { bridge_->InvalidateMenu(); }
   bool menu_is_valid()  { return bridge_->menu_is_valid_; }
+  void set_root_node(const BookmarkNode* node) {
+    bridge_->root_node_ = node;
+  }
 
   void AddNodeToMenu(BookmarkMenuBridge* bridge,
                      const BookmarkNode* root,
@@ -239,6 +242,47 @@ TEST_F(BookmarkMenuBridgeTest, TestAddNodeToMenu) {
   // icon or a favicon, if present).
   EXPECT_TRUE([short_item image]);
   EXPECT_TRUE([long_item image]);
+}
+
+// Test that AddNodeToMenu() properly generates a menu for an off the side
+// button
+TEST_F(BookmarkMenuBridgeTest, TestOffTheSideButtonMenu) {
+  string16 empty;
+  NSMenu* menu = bridge_->menu_;
+
+  BookmarkModel* model = bridge_->GetBookmarkModel();
+  const BookmarkNode* root = model->bookmark_bar_node();
+  ASSERT_TRUE(model && root);
+
+  set_root_node(root);
+
+  // 3 nodes; First node is not in the off the side button. Second node is in
+  // the off the side button. Third node is a folder in the off the side button
+  // and it should have one submenu.
+  model->AddURL(root, 0, ASCIIToUTF16("not in button"), GURL("http://foo"));
+  model->AddURL(root, 1, ASCIIToUTF16("in button"), GURL("http://bar"));
+  const BookmarkNode* node = model->AddFolder(root, 2,
+                                              ASCIIToUTF16("folder in button"));
+  // Add submenu to the folder node.
+  model->AddURL(node, 0, empty, GURL("http://sub"));
+
+  bridge_->set_off_the_side_node_start_index(1);
+  bridge_->UpdateSubMenu(menu);
+  ASSERT_EQ(2, [menu numberOfItems]);
+
+  // Verify that the 1st node is not in the menu.
+  NSMenuItem* item = [menu itemWithTitle:@"not in button"];
+  EXPECT_FALSE(item);
+
+  // Verify the 2nd node is there with the right action.
+  item = [menu itemWithTitle:@"in button"];
+  EXPECT_TRUE(item);
+  EXPECT_EQ(@selector(openBookmarkMenuItem:), [item action]);
+  EXPECT_FALSE([item hasSubmenu]);
+
+  item = [menu itemWithTitle:@"folder in button"];
+  EXPECT_TRUE(item);
+  EXPECT_TRUE([item hasSubmenu]);
 }
 
 // Test that AddItemToMenu() properly added versions of

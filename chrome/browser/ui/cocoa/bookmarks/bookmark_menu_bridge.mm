@@ -261,7 +261,8 @@ void BookmarkMenuBridge::AddNodeToMenuRecursive(const BookmarkNode* node,
         [item setImage:folder_image_];
         NSMenu* submenu = [[[NSMenu alloc] initWithTitle:title] autorelease];
         [menu setSubmenu:submenu forItem:item];
-        AddNodeToMenu(child, submenu, add_extra_items);  // recursive call
+        AddNodeToMenuRecursive(child, submenu, add_extra_items,
+                               recursion_depth + 1);  // Recursive call.
       } else {
         ConfigureMenuItem(child, item, false);
       }
