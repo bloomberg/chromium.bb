@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_WEBUI_EXTENSION_ICON_SOURCE_H_
 #pragma once
 
+#include <map>
 #include <string>
 
 #include "base/basictypes.h"
@@ -78,16 +79,15 @@ class ExtensionIconSource : public ChromeURLDataManager::DataSource,
                                 bool is_incognito,
                                 int request_id);
 
-
  private:
   // Encapsulates the request parameters for |request_id|.
   struct ExtensionIconRequest;
 
   // Returns the bitmap for the default app image.
-  SkBitmap* GetDefaultAppImage();
+  const SkBitmap* GetDefaultAppImage();
 
   // Returns the bitmap for the default extension.
-  SkBitmap* GetDefaultExtensionImage();
+  const SkBitmap* GetDefaultExtensionImage();
 
   // Performs any remaining transformations (like desaturating the |image|),
   // then returns the |image| to the client and clears up any temporary data

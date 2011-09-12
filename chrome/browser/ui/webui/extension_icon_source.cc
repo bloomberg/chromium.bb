@@ -31,7 +31,7 @@
 
 namespace {
 
-scoped_refptr<RefCountedMemory> BitmapToMemory(SkBitmap* image) {
+scoped_refptr<RefCountedMemory> BitmapToMemory(const SkBitmap* image) {
   RefCountedBytes* image_bytes = new RefCountedBytes;
   gfx::PNGCodec::EncodeBGRASkBitmap(*image, false, &image_bytes->data());
   return image_bytes;
@@ -50,7 +50,6 @@ SkBitmap* ToBitmap(const unsigned char* data, size_t size) {
 }
 
 }  // namespace
-
 
 ExtensionIconSource::ExtensionIconSource(Profile* profile)
     : DataSource(chrome::kChromeUIExtensionIconHost, MessageLoop::current()),
@@ -149,17 +148,18 @@ void ExtensionIconSource::LoadIconFailed(int request_id) {
     LoadDefaultImage(request_id);
 }
 
-SkBitmap* ExtensionIconSource::GetDefaultAppImage() {
+const SkBitmap* ExtensionIconSource::GetDefaultAppImage() {
   if (!default_app_data_.get())
     default_app_data_.reset(LoadImageByResourceId(IDR_APP_DEFAULT_ICON));
 
   return default_app_data_.get();
 }
 
-SkBitmap* ExtensionIconSource::GetDefaultExtensionImage() {
-  if (!default_extension_data_.get())
+const SkBitmap* ExtensionIconSource::GetDefaultExtensionImage() {
+  if (!default_extension_data_.get()) {
     default_extension_data_.reset(
         LoadImageByResourceId(IDR_EXTENSION_DEFAULT_ICON));
+  }
 
   return default_extension_data_.get();
 }
@@ -175,18 +175,24 @@ void ExtensionIconSource::FinalizeImage(SkBitmap* image,
 
 void ExtensionIconSource::LoadDefaultImage(int request_id) {
   ExtensionIconRequest* request = GetData(request_id);
-  SkBitmap* decoded = NULL;
+  const SkBitmap* default_image = NULL;
 
   if (request->extension->is_app())
-    decoded = GetDefaultAppImage();
+    default_image = GetDefaultAppImage();
   else
-    decoded = GetDefaultExtensionImage();
+    default_image = GetDefaultExtensionImage();
 
-  *decoded = skia::ImageOperations::Resize(
-      *decoded, skia::ImageOperations::RESIZE_LANCZOS3,
-      request->size, request->size);
+  SkBitmap resized_image(skia::ImageOperations::Resize(
+      *default_image, skia::ImageOperations::RESIZE_LANCZOS3,
+      request->size, request->size));
 
-  FinalizeImage(decoded, request_id);
+  // There are cases where Resize returns an empty bitmap, for example if you
+  // ask for an image too large. In this case it is better to return the default
+  // image than returning nothing at all.
+  if (resized_image.empty())
+    resized_image = *default_image;
+
+  FinalizeImage(&resized_image, request_id);
 }
 
 bool ExtensionIconSource::TryLoadingComponentExtensionImage(
