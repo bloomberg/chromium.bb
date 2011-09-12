@@ -412,6 +412,13 @@ cr.define('ntp4', function() {
     for (var i = 0; i < data.apps.length; ++i) {
       $(data.apps[i].id).appData = data.apps[i];
     }
+
+    // Set the App dot names. Skip the first and last dots (Most Visited and
+    // Bookmarks).
+    var dots = dotList.getElementsByClassName('dot');
+    for (var i = 1; i < dots.length - 2; ++i) {
+      dots[i].displayTitle = data.appPageNames[i - 1] || '';
+    }
   }
 
   /**

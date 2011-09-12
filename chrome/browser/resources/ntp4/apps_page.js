@@ -137,7 +137,7 @@ cr.define('ntp4', function() {
         if (launchTypeButton == pressed) {
           chrome.send('setLaunchType', [app.appId, id]);
           // Manually update the launch type. We will only get
-          // appsPrefChangedCallback calls after changes to other NTP instances.
+          // appsPrefChangeCallback calls after changes to other NTP instances.
           app.appData.launch_type = id;
         }
       });
@@ -734,17 +734,6 @@ cr.define('ntp4', function() {
   };
 
   /**
-   * Callback invoked by chrome whenever an app preference changes.
-   * @param {Object} data An object with all the data on available
-   *     applications.
-   */
-  function appsPrefChangeCallback(data) {
-    for (var i = 0; i < data.apps.length; ++i) {
-      $(data.apps[i].id).appData = data.apps[i];
-    }
-  }
-
-  /**
    * Launches the specified app using the APP_LAUNCH_NTP_APP_RE_ENABLE
    * histogram. This should only be invoked from the AppLauncherHandler.
    * @param {String} appID The ID of the app.
@@ -761,7 +750,6 @@ cr.define('ntp4', function() {
     APP_LAUNCH: APP_LAUNCH,
     appNotificationChanged: appNotificationChanged,
     AppsPage: AppsPage,
-    appsPrefChangeCallback: appsPrefChangeCallback,
     launchAppAfterEnable: launchAppAfterEnable,
   };
 });
@@ -769,5 +757,4 @@ cr.define('ntp4', function() {
 // TODO(estade): update the content handlers to use ntp namespace instead of
 // making these global.
 var appNotificationChanged = ntp4.appNotificationChanged;
-var appsPrefChangeCallback = ntp4.appsPrefChangeCallback;
 var launchAppAfterEnable = ntp4.launchAppAfterEnable;

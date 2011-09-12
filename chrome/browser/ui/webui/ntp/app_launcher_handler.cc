@@ -261,7 +261,7 @@ void AppLauncherHandler::RegisterMessages() {
 void AppLauncherHandler::Observe(int type,
                                  const NotificationSource& source,
                                  const NotificationDetails& details) {
-  if (ignore_changes_)
+  if (ignore_changes_ || !has_loaded_apps_)
     return;
 
   switch (type) {
@@ -289,8 +289,7 @@ void AppLauncherHandler::Observe(int type,
         break;
 
       highlight_app_id_ = *Details<const std::string>(details).ptr();
-      if (has_loaded_apps_)
-        SetAppToBeHighlighted();
+      SetAppToBeHighlighted();
       break;
     }
     case chrome::NOTIFICATION_EXTENSION_LOADED: {
@@ -341,23 +340,13 @@ void AppLauncherHandler::Observe(int type,
     // The promo may not load until a couple seconds after the first NTP view,
     // so we listen for the load notification and notify the NTP when ready.
     case chrome::NOTIFICATION_WEB_STORE_PROMO_LOADED:
-      if (web_ui_->tab_contents())
-        HandleGetApps(NULL);
+      // TODO(estade): try to get rid of this inefficient operation.
+      HandleGetApps(NULL);
       break;
     case chrome::NOTIFICATION_PREF_CHANGED: {
-      if (!web_ui_->tab_contents())
-        break;
-      // Handle app page renames.
-      std::string* pref_name = Details<std::string>(details).ptr();
-      if (*pref_name == prefs::kNTPAppPageNames) {
-        // TODO(estade): this doesn't need to regenerate the entire page.
-        HandleGetApps(NULL);
-      } else {
-        // Default prefs change handling.
-        DictionaryValue dictionary;
-        FillAppDictionary(&dictionary);
-        web_ui_->CallJavascriptFunction("appsPrefChangeCallback", dictionary);
-      }
+      DictionaryValue dictionary;
+      FillAppDictionary(&dictionary);
+      web_ui_->CallJavascriptFunction("appsPrefChangeCallback", dictionary);
       break;
     }
     case chrome::NOTIFICATION_EXTENSION_INSTALL_ERROR: {

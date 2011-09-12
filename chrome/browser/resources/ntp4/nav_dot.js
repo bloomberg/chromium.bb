@@ -37,8 +37,6 @@ cr.define('ntp4', function() {
       this.setAttribute('role', 'button');
 
       this.page_ = page;
-      this.title_ = title;
-      this.titleIsEditable_ = titleIsEditable;
 
       var selectionBar = this.ownerDocument.createElement('div');
       selectionBar.className = 'selection-bar';
@@ -51,6 +49,9 @@ cr.define('ntp4', function() {
       // Take the input out of the tab-traversal focus order.
       this.input_.disabled = true;
       this.appendChild(this.input_);
+
+      this.displayTitle = title;
+      this.titleIsEditable_ = titleIsEditable;
 
       this.addEventListener('click', this.onClick_);
       this.addEventListener('dblclick', this.onDoubleClick_);
@@ -77,6 +78,17 @@ cr.define('ntp4', function() {
      */
     get page() {
       return this.page_;
+    },
+
+    /**
+     * Sets/gets the display title.
+     * @type {String} title The display name for this nav dot.
+     */
+    get displayTitle() {
+      return this.title;
+    },
+    set displayTitle(title) {
+      this.title = this.input_.value = title;
     },
 
     /**
@@ -140,7 +152,7 @@ cr.define('ntp4', function() {
     onInputKeyDown_: function(e) {
       switch (e.keyIdentifier) {
         case 'U+001B':  // Escape cancels edits.
-          this.input_.value = this.title_;
+          this.input_.value = this.displayTitle;
         case 'Enter':  // Fall through.
           this.input_.blur();
           break;
@@ -154,8 +166,8 @@ cr.define('ntp4', function() {
      */
     onInputBlur_: function(e) {
       window.getSelection().removeAllRanges();
-      this.title_ = this.input_.value;
-      ntp4.saveAppPageName(this.page_, this.title_);
+      this.displayTitle = this.input_.value;
+      ntp4.saveAppPageName(this.page_, this.displayTitle);
       this.input_.disabled = true;
     },
 
