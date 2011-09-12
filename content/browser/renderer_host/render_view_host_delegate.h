@@ -14,6 +14,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/process_util.h"
 #include "base/string16.h"
+#include "base/values.h"
 #include "content/common/view_types.h"
 #include "content/common/window_container_type.h"
 #include "ipc/ipc_channel.h"
@@ -375,6 +376,11 @@ class RenderViewHostDelegate : public IPC::Channel::Listener {
   // The contents' preferred size changed.
   virtual void UpdatePreferredSize(const gfx::Size& pref_size) {}
 
+  // Notification message from HTML UI.
+  virtual void WebUISend(RenderViewHost* render_view_host,
+                         const GURL& source_url,
+                         const std::string& name,
+                         const base::ListValue& args) {}
  protected:
   virtual ~RenderViewHostDelegate() {}
 };

@@ -722,6 +722,7 @@ bool RenderViewHost::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_ShowPopup, OnMsgShowPopup)
 #endif
     IPC_MESSAGE_HANDLER(ViewHostMsg_RunFileChooser, OnRunFileChooser)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_WebUISend, OnWebUISend)
     // Have the super handle all other messages.
     IPC_MESSAGE_UNHANDLED(handled = RenderWidgetHost::OnMessageReceived(msg))
   IPC_END_MESSAGE_MAP_EX()
@@ -1368,3 +1369,10 @@ void RenderViewHost::OnRunFileChooser(
     const ViewHostMsg_RunFileChooser_Params& params) {
   delegate_->RunFileChooser(this, params);
 }
+
+void RenderViewHost::OnWebUISend(const GURL& source_url,
+                                 const std::string& name,
+                                 const base::ListValue& args) {
+  delegate_->WebUISend(this, source_url, name, args);
+}
+

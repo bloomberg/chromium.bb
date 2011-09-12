@@ -474,12 +474,14 @@ class RenderViewHost : public RenderWidgetHost {
   void OnShowDesktopNotification(
       const DesktopNotificationHostMsg_Show_Params& params);
   void OnCancelDesktopNotification(int notification_id);
+  void OnRunFileChooser(const ViewHostMsg_RunFileChooser_Params& params);
+
+  void OnWebUISend(const GURL& source_url, const std::string& name,
+                   const base::ListValue& args);
 
 #if defined(OS_MACOSX)
   void OnMsgShowPopup(const ViewHostMsg_ShowPopup_Params& params);
 #endif
-
-  void OnRunFileChooser(const ViewHostMsg_RunFileChooser_Params& params);
 
  private:
   friend class TestRenderViewHost;

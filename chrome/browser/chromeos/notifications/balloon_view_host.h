@@ -39,16 +39,14 @@ class BalloonViewHost : public ::BalloonViewHost {
 
  private:
   // RenderViewHostDelegate
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual void WebUISend(RenderViewHost* render_view_host,
+                         const GURL& source_url,
+                         const std::string& name,
+                         const base::ListValue& args) OVERRIDE;
 
   // A map of message name -> message handling callback.
   typedef std::map<std::string, MessageCallback*> MessageCallbackMap;
   MessageCallbackMap message_callbacks_;
-
-  // Message handlers.
-  virtual void OnWebUISend(const GURL& source_url,
-                           const std::string& name,
-                           const base::ListValue& args);
 
   DISALLOW_COPY_AND_ASSIGN(BalloonViewHost);
 };
