@@ -103,6 +103,11 @@ void SavePathToLocalState(const std::string& username,
   DVLOG(1) << "Saving path to user image in Local State.";
   local_state->SavePersistentPrefs();
   UserManager::Get()->NotifyLocalStateChanged();
+  UserManager* user_manager = UserManager::Get();
+  NotificationService::current()->Notify(
+      chrome::NOTIFICATION_LOGIN_USER_IMAGE_CHANGED,
+      Source<UserManager>(user_manager),
+      Details<const UserManager::User>(&(user_manager->logged_in_user())));
 }
 
 // Saves image to file with specified path. Runs on FILE thread.
@@ -341,7 +346,7 @@ std::vector<UserManager::User> UserManager::GetUsers() const {
               user_images_[email] = user.image();
               image_loader_->Start(email, image_path, false);
             } else {
-              user.SetImage(image_it->second, -1);
+              user.SetImage(image_it->second, User::kExternalImageIndex);
             }
           }
         }
@@ -411,7 +416,7 @@ void UserManager::UserLoggedIn(const std::string& email) {
     SetDefaultUserImage(email);
   } else {
     int metric = kDefaultImagesCount;
-    if (logged_in_user_.default_image_index() != -1)
+    if (logged_in_user_.default_image_index() != User::kExternalImageIndex)
       metric = logged_in_user_.default_image_index();
     UMA_HISTOGRAM_ENUMERATION("UserImage.LoggedIn",
                               metric,
@@ -499,10 +504,22 @@ const UserManager::User& UserManager::logged_in_user() const {
   return logged_in_user_;
 }
 
-void UserManager::SetLoggedInUserImage(const SkBitmap& image) {
+void UserManager::SetLoggedInUserImage(const SkBitmap& image,
+                                       int default_image_index) {
   if (logged_in_user_.email().empty())
     return;
-  OnImageLoaded(logged_in_user_.email(), image, false);
+  SetUserImage(logged_in_user_.email(), image, default_image_index, false);
+}
+
+void UserManager::SetUserImage(const std::string& username,
+                               const SkBitmap& image,
+                               int default_image_index,
+                               bool should_save_image) {
+  user_images_[username] = image;
+  if (logged_in_user_.email() == username)
+    logged_in_user_.SetImage(image, default_image_index);
+  if (should_save_image)
+    SaveUserImage(username, image);
 }
 
 void UserManager::LoadLoggedInUserImage(const FilePath& path) {
@@ -553,26 +570,26 @@ void UserManager::SetDefaultUserImage(const std::string& username) {
       resource_id);
 
   SavePathToLocalState(username, user_image_path);
-  SetLoggedInUserImage(user_image);
+  SetLoggedInUserImage(user_image, image_id);
 }
 
 int UserManager::GetUserDefaultImageIndex(const std::string& username) {
   if (!g_browser_process)
-    return -1;
+    return User::kInvalidImageIndex;
 
   PrefService* local_state = g_browser_process->local_state();
   const DictionaryValue* prefs_images = local_state->GetDictionary(kUserImages);
 
   if (!prefs_images)
-    return -1;
+    return User::kInvalidImageIndex;
 
   std::string image_path;
   if (!prefs_images->GetStringWithoutPathExpansion(username, &image_path))
-    return -1;
+    return User::kInvalidImageIndex;
 
   int image_id = kDefaultImagesCount;
   if (!IsDefaultImagePath(image_path, &image_id))
-    return -1;
+    return User::kInvalidImageIndex;
   return image_id;
 }
 
@@ -580,18 +597,7 @@ void UserManager::OnImageLoaded(const std::string& username,
                                 const SkBitmap& image,
                                 bool should_save_image) {
   DVLOG(1) << "Loaded image for " << username;
-  user_images_[username] = image;
-  User user;
-  user.set_email(username);
-  user.SetImage(image, -1);
-  if (logged_in_user_.email() == username)
-    logged_in_user_.SetImage(image, -1);
-  if (should_save_image)
-    SaveUserImage(username, image);
-  NotificationService::current()->Notify(
-      chrome::NOTIFICATION_LOGIN_USER_IMAGE_CHANGED,
-      Source<UserManager>(this),
-      Details<const User>(&user));
+  SetUserImage(username, image, User::kExternalImageIndex, should_save_image);
 }
 
 bool UserManager::IsLoggedInAsGuest() const {

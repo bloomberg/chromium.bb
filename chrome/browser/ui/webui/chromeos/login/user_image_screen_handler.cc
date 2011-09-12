@@ -29,7 +29,7 @@ namespace chromeos {
 UserImageScreenHandler::UserImageScreenHandler()
     : screen_(NULL),
       show_on_init_(false),
-      selected_image_(-1) {
+      selected_image_(UserManager::User::kInvalidImageIndex) {
 }
 
 UserImageScreenHandler::~UserImageScreenHandler() {
@@ -52,10 +52,10 @@ void UserImageScreenHandler::Initialize() {
   for (int i = 0; i < kDefaultImagesCount; ++i) {
     image_urls.Append(new StringValue(GetDefaultImageUrl(i)));
   }
-  web_ui_->CallJavascriptFunction("oobe.UserImageScreen.addUserImages",
+  web_ui_->CallJavascriptFunction("oobe.UserImageScreen.setUserImages",
                                   image_urls);
 
-  if (selected_image_ != -1)
+  if (selected_image_ != UserManager::User::kInvalidImageIndex)
     SelectImage(selected_image_);
 
   if (show_on_init_) {
@@ -86,11 +86,10 @@ void UserImageScreenHandler::PrepareToShow() {
 void UserImageScreenHandler::SelectImage(int index) {
   selected_image_ = index;
   if (page_is_ready()) {
-    // Skip Take Photo button.
-    base::FundamentalValue index_value(index + 1);
+    base::StringValue image_url(GetDefaultImageUrl(index));
     web_ui_->CallJavascriptFunction(
-        "oobe.UserImageScreen.selectUserImage",
-        index_value);
+        "oobe.UserImageScreen.setSelectedImage",
+        image_url);
   }
 }
 
@@ -121,10 +120,10 @@ void UserImageScreenHandler::RegisterMessages() {
 
 void UserImageScreenHandler::OnPhotoAccepted(const SkBitmap& photo) {
   user_photo_ = photo;
+  selected_image_ = UserManager::User::kExternalImageIndex;
   StringValue data_url(web_ui_util::GetImageDataUrl(user_photo_));
   web_ui_->CallJavascriptFunction("oobe.UserImageScreen.setUserPhoto",
                                   data_url);
-  selected_image_ = -1;
 }
 
 void UserImageScreenHandler::HandleTakePhoto(const base::ListValue* args) {
@@ -146,20 +145,23 @@ void UserImageScreenHandler::HandleSelectImage(const base::ListValue* args) {
     NOTREACHED();
     return;
   }
-  int user_image_index = -1;
-  if (!IsDefaultImageUrl(image_url, &user_image_index))
-    return;
-  SelectImage(user_image_index);
+  int user_image_index = UserManager::User::kInvalidImageIndex;
+  if (IsDefaultImageUrl(image_url, &user_image_index))
+    selected_image_ = user_image_index;
+  else
+    selected_image_ = UserManager::User::kExternalImageIndex;
 }
 
 void UserImageScreenHandler::HandleImageAccepted(const base::ListValue* args) {
   DCHECK(args && args->empty());
   if (!screen_)
     return;
-  if (selected_image_ == -1)
+  if (selected_image_ == UserManager::User::kExternalImageIndex) {
     screen_->OnPhotoTaken(user_photo_);
-  else
+  } else {
+    DCHECK(selected_image_ >= 0);
     screen_->OnDefaultImageSelected(selected_image_);
+  }
 }
 
 }  // namespace chromeos

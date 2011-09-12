@@ -32,6 +32,19 @@ extern const int kDefaultImageResources[];
 // Number of default images.
 extern const int kDefaultImagesCount;
 
+// Image index to be used in histograms when user image is taken from file.
+extern const int kHistogramImageFromFile;
+
+// Image index to be used in histograms when user image is taken from camera.
+extern const int kHistogramImageFromCamera;
+
+// Image index to be used in histograms when user selects a previously used
+// image from camera/file.
+extern const int kHistogramImageOld;
+
+// Number of possible user image indices to be used in histograms.
+extern const int kHistogramImagesCount;
+
 }  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_LOGIN_DEFAULT_USER_IMAGES_H_

@@ -169,4 +169,3 @@ void TakePhotoDialog::InitCamera() {
 }
 
 }  // namespace chromeos
-

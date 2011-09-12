@@ -443,7 +443,8 @@ void PhotoCaptureObserver::OnCapturingStopped(
 
   // Set up an observer for UserManager (it will delete itself).
   user_manager->AddObserver(this);
-  user_manager->SetLoggedInUserImage(photo);
+  user_manager->SetLoggedInUserImage(
+      photo, chromeos::UserManager::User::kExternalImageIndex);
   user_manager->SaveUserImage(user.email(), photo);
 }
 

@@ -44,6 +44,11 @@ class UserManager : public UserImageLoader::Delegate,
   // A class representing information about a previously logged in user.
   class User {
    public:
+    // Returned as default_image_index when user-selected file or photo
+    // is used as user image.
+    static const int kExternalImageIndex = -1;
+    static const int kInvalidImageIndex = -2;
+
     User();
     ~User();
 
@@ -83,8 +88,8 @@ class UserManager : public UserImageLoader::Delegate,
     // Cached flag of whether any users has same display name.
     bool is_displayname_unique_;
 
-    // Index of the default image the user has set. -1 if it's some other
-    // image.
+    // Index of the default image the user has set. |kExternalImageIndex|
+    // if it's some other image.
     int default_image_index_;
   };
 
@@ -122,14 +127,15 @@ class UserManager : public UserImageLoader::Delegate,
   // Returns the logged-in user.
   virtual const User& logged_in_user() const;
 
-  // Sets image for logged-in user and sends LOGIN_USER_IMAGE_CHANGED
-  // notification about the image changed via NotificationService.
-  void SetLoggedInUserImage(const SkBitmap& image);
+  // Sets image for logged-in user.
+  void SetLoggedInUserImage(const SkBitmap& image, int default_image_index);
 
   // Tries to load logged-in user image from disk and sets it for the user.
   void LoadLoggedInUserImage(const FilePath& path);
 
-  // Saves image to file and saves image path in local state preferences.
+  // Saves image to file, saves image path in local state preferences
+  // and sends LOGIN_USER_IMAGE_CHANGED notification about the image
+  // changed via NotificationService.
   void SaveUserImage(const std::string& username,
                      const SkBitmap& image);
 
@@ -141,11 +147,13 @@ class UserManager : public UserImageLoader::Delegate,
   OAuthTokenStatus GetUserOAuthStatus(const std::string& username);
 
   // Saves user image path for the user. Can be used to set default images.
+  // Sends LOGIN_USER_IMAGE_CHANGED notification about the image changed
+  // via NotificationService.
   void SaveUserImagePath(const std::string& username,
                          const std::string& image_path);
 
-  // Returns the index of user's default image or -1 if the image is not
-  // default.
+  // Returns the index of user's default image or |kInvalidImageIndex|
+  // if some error occurs (like Local State corruption).
   int GetUserDefaultImageIndex(const std::string& username);
 
   // chromeos::UserImageLoader::Delegate implementation.
@@ -205,6 +213,12 @@ class UserManager : public UserImageLoader::Delegate,
   // Sets one of the default images to the specified user and saves this
   // setting in local state.
   void SetDefaultUserImage(const std::string& username);
+
+  // Sets image for user |username|.
+  void SetUserImage(const std::string& username,
+                    const SkBitmap& image,
+                    int default_image_index,
+                    bool save_image);
 
   // Loads user image from its file.
   scoped_refptr<UserImageLoader> image_loader_;

@@ -1,23 +1,31 @@
-#images-list {
-  border: 0;
+#images-grid {
+  -webkit-user-drag: none;
+  -webkit-user-select: none;
   margin: 10px;
+  outline: none;
   padding: 10px;
 }
 
-#images-list * {
-  border: 0;
+#images-grid * {
   margin: 0;
   padding: 0;
 }
 
-#images-list .list-element {
-  display: inline;
-  padding: 10px;
-}
-
-#images-list img {
-  border: 1px solid rgba(0, 0, 0, 0.15);
-  width: 64px;
+#images-grid img {
   height: 64px;
+  vertical-align: middle;
+  width: 64px;
 }
 
+#images-grid span[role=listitem] {
+  border-radius: 4px;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  display: inline-block;
+  margin: 10px;
+  padding: 3px;
+}
+
+#images-grid span[selected] {
+  border: 2px solid #06c;
+  padding: 2px;
+}

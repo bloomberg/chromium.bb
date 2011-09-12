@@ -12,6 +12,7 @@
 <include src="options_page.js"></include>
 <if expr="pp_ifdef('chromeos')">
   <include src="about_page.js"></include>
+  <include src="../chromeos/user_images_grid.js"></include>
   <include src="chromeos/cellular_plan_element.js"></include>
   <include src="chromeos/change_picture_options.js"></include>
   <include src="chromeos/internet_detail_ip_config_list.js"></include>

@@ -19,8 +19,10 @@ cr.define('options', function() {
     OptionsPage.call(this, 'personal',
                      templateData.personalPageTabTitle,
                      'personal-page');
-    if (cr.isChromeOS)
+    if (cr.isChromeOS) {
+      // Email of the currently logged in user (or |kGuestUser|).
       this.userEmail_ = localStrings.getString('userEmail');
+    }
   }
 
   cr.addSingletonGetter(PersonalOptions);
@@ -289,6 +291,16 @@ cr.define('options', function() {
   PersonalOptions.disableAutofillManagement = function() {
     return cr.commandLine.options['--bwsi'];
   };
+
+  if (cr.isChromeOS) {
+    /**
+     * Returns email of the user logged in (ChromeOS only).
+     * @return {string} user email.
+     */
+    PersonalOptions.getLoggedInUserEmail = function() {
+      return PersonalOptions.getInstance().userEmail_;
+    };
+  }
 
   // Forward public APIs to private implementations.
   [

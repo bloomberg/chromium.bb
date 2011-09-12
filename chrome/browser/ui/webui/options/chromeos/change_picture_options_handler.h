@@ -42,6 +42,9 @@ class ChangePictureOptionsHandler : public OptionsPageUIHandler,
   // Gets the list of available user images and sends it to the page.
   void HandleGetAvailableImages(const base::ListValue* args);
 
+  // Gets URL of the currently selected image.
+  void HandleGetSelectedImage(const base::ListValue* args);
+
   // Selects one of the available images as user's.
   void HandleSelectImage(const base::ListValue* args);
 
@@ -57,6 +60,7 @@ class ChangePictureOptionsHandler : public OptionsPageUIHandler,
   gfx::NativeWindow GetBrowserWindow() const;
 
   scoped_refptr<SelectFileDialog> select_file_dialog_;
+  SkBitmap previous_image_;
 
   DISALLOW_COPY_AND_ASSIGN(ChangePictureOptionsHandler);
 };

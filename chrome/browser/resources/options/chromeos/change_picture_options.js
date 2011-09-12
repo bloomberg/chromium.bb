@@ -5,6 +5,8 @@
 cr.define('options', function() {
 
   var OptionsPage = options.OptionsPage;
+  var UserImagesGrid = options.UserImagesGrid;
+  var ButtonImages = UserImagesGrid.ButtonImages;
 
   /////////////////////////////////////////////////////////////////////////////
   // ChangePictureOptions class:
@@ -31,88 +33,124 @@ cr.define('options', function() {
      * Initializes ChangePictureOptions page.
      */
     initializePage: function() {
-      // Call base class implementation to starts preference initialization.
+      // Call base class implementation to start preferences initialization.
       OptionsPage.prototype.initializePage.call(this);
+
+      var imageGrid = $('images-grid');
+      UserImagesGrid.decorate(imageGrid);
+
+      imageGrid.addEventListener('change', function(e) {
+        // Button selections will be ignored by Chrome handler.
+        chrome.send('selectImage', [this.selectedItemUrl || '']);
+      });
+      imageGrid.addEventListener('activate',
+                                 this.handleImageActivated_.bind(this));
+
       // Add "Take photo" and "Choose a file" buttons in a uniform way with
       // other buttons.
-      this.addUserImage_(
-          'chrome://theme/IDR_BUTTON_USER_IMAGE_TAKE_PHOTO',
-          localStrings.getString('takePhoto'),
-          this.handleTakePhoto_);
-      this.addUserImage_(
-          'chrome://theme/IDR_BUTTON_USER_IMAGE_CHOOSE_FILE',
-          localStrings.getString('chooseFile'),
-          this.handleChooseFile_);
+      imageGrid.addItem(ButtonImages.CHOOSE_FILE,
+                        localStrings.getString('chooseFile'),
+                        this.handleChooseFile_.bind(this));
+      imageGrid.addItem(ButtonImages.TAKE_PHOTO,
+                        localStrings.getString('takePhoto'),
+                        this.handleTakePhoto_.bind(this));
+
+      // Old user image data (if present).
+      this.oldImage_ = null;
+
       chrome.send('getAvailableImages');
     },
 
     /**
-     * Handler for when the user clicks on "Take photo" button.
-     * @private
-     * @param {Event} e Click Event.
+     * Called right after the page has been shown to user.
      */
-    handleTakePhoto_: function(e) {
+    didShowPage: function() {
+      $('images-grid').updateAndFocus();
+      chrome.send('getSelectedImage');
+    },
+
+    /**
+     * Called right before the page is hidden.
+     */
+    willHidePage: function() {
+      if (this.oldImage_) {
+        $('images-grid').removeItem(this.oldImage_);
+        this.oldImage_ = null;
+      }
+    },
+
+    /**
+     * Handles "Take photo" button activation.
+     * @private
+     */
+    handleTakePhoto_: function() {
       chrome.send('takePhoto');
       OptionsPage.navigateToPage('personal');
     },
 
     /**
-     * Handler for when the user clicks on "Choose a file" button.
+     * Handles "Choose a file" button activation.
      * @private
-     * @param {Event} e Click Event.
      */
-    handleChooseFile_: function(e) {
+    handleChooseFile_: function() {
       chrome.send('chooseFile');
       OptionsPage.navigateToPage('personal');
     },
 
     /**
-     * Handler for when the user clicks on any available user image.
+     * Handles image activation (by pressing Enter).
      * @private
-     * @param {Event} e Click Event.
      */
-    handleImageClick_: function(e) {
-      chrome.send('selectImage', [e.target.src]);
-      OptionsPage.navigateToPage('personal');
+    handleImageActivated_: function() {
+      switch ($('images-grid').selectedItemUrl) {
+        case ButtonImages.TAKE_PHOTO:
+          this.handleTakePhoto_();
+          break;
+        case ButtonImages.CHOOSE_FILE:
+          this.handleChooseFile_();
+          break;
+      }
     },
 
     /**
-     * Appends new image to the end of the image list.
-     * @param {string} src A url for the user image.
-     * @param {string} title A tooltip for the image.
-     * @param {function} clickHandler A handler for click on image.
+     * Adds old user image that isn't one of the default images and selects it.
      * @private
      */
-    addUserImage_: function(src, title, clickHandler) {
-      var imageElement = document.createElement('img');
-      imageElement.src = src;
-      if (title)
-        imageElement.title = title;
-      imageElement.addEventListener('click',
-                                    clickHandler,
-                                    false);
-      var divElement = document.createElement('div');
-      divElement.classList.add('list-element');
-      divElement.appendChild(imageElement);
-      $('images-list').appendChild(divElement);
+    addOldImage_: function() {
+      var imageGrid = $('images-grid');
+      var src = 'chrome://userimage/' + PersonalOptions.getLoggedInUserEmail() +
+                '?id=' + (new Date()).getTime();
+      this.oldImage_ = imageGrid.addItem(src, undefined, undefined, 2);
+      imageGrid.selectedItem = this.oldImage_;
     },
 
     /**
-     * Inserts received images before "Choose file" button.
-     * @param {List} images A list of urls to user images.
+     * Selects user image with the given URL.
+     * @param {string} url URL of the image to select.
      * @private
      */
-    addUserImages_: function(images) {
-      for (var i = 0; i < images.length; i++) {
-        var imageUrl = images[i];
-        this.addUserImage_(imageUrl, "", this.handleImageClick_);
+    setSelectedImage_: function(url) {
+      $('images-grid').selectedItemUrl = url;
+    },
+
+    /**
+     * Appends received images to the image grid.
+     * @param {Array.<string>} images An array of URLs to user images.
+     * @private
+     */
+    setUserImages_: function(images) {
+      var imageGrid = $('images-grid');
+      for (var i = 0, url; url = images[i]; i++) {
+        imageGrid.addItem(url);
       }
     },
   };
 
   // Forward public APIs to private implementations.
   [
-    'addUserImages',
+    'addOldImage',
+    'setSelectedImage',
+    'setUserImages',
   ].forEach(function(name) {
     ChangePictureOptions[name] = function(value) {
       ChangePictureOptions.getInstance()[name + '_'](value);

@@ -7,6 +7,10 @@
  */
 
 cr.define('oobe', function() {
+
+  var UserImagesGrid = options.UserImagesGrid;
+  var ButtonImages = UserImagesGrid.ButtonImages;
+
   /**
    * Creates a new oobe screen div.
    * @constructor
@@ -21,9 +25,6 @@ cr.define('oobe', function() {
     var screen = $('user-image');
     UserImageScreen.decorate(screen);
     Oobe.getInstance().registerScreen(screen);
-    UserImageScreen.addUserImage(
-        'chrome://theme/IDR_BUTTON_USER_IMAGE_TAKE_PHOTO',
-        UserImageScreen.handleTakePhoto);
   };
 
   UserImageScreen.prototype = {
@@ -37,7 +38,21 @@ cr.define('oobe', function() {
     selectedUserImage_: -1,
 
     /** @inheritDoc */
-    decorate: function() {
+    decorate: function(element) {
+      var imageGrid = $('user-image-grid');
+      UserImagesGrid.decorate(imageGrid);
+
+      imageGrid.addEventListener('change',
+                                 this.handleSelection_.bind(this));
+      imageGrid.addEventListener('activate',
+                                 this.handleImageActivated_.bind(this));
+
+      imageGrid.addItem(ButtonImages.TAKE_PHOTO,
+                        undefined,
+                        this.handleTakePhoto_.bind(this));
+
+      // Photo image data (if present).
+      this.photoImage_ = null;
     },
 
     /**
@@ -63,113 +78,83 @@ cr.define('oobe', function() {
     },
 
     /**
+     * Handles "Take photo" button activation.
+     * @private
+     */
+    handleTakePhoto_: function() {
+      chrome.send('takePhoto');
+    },
+
+    /**
+     * Handles image activation (by pressing Enter).
+     * @private
+     */
+    handleImageActivated_: function() {
+      switch ($('user-image-grid').selectedItemUrl) {
+      case ButtonImages.TAKE_PHOTO:
+        this.handleTakePhoto_();
+        break;
+      }
+    },
+
+    /**
+     * Handles selection change.
+     * @private
+     */
+    handleSelection_: function() {
+      var url = $('user-image-grid').selectedItemUrl;
+      if (url)
+        $('user-image-preview').src = url;
+      // Do not send button selections.
+      if (url == ButtonImages.TAKE_PHOTO) {
+        $('ok-button').disabled = true;
+      } else if (url) {
+        $('ok-button').disabled = false;
+        chrome.send('selectImage', [url]);
+      }
+    },
+
+    /**
      * Event handler that is invoked just before the screen is shown.
      * @param {object} data Screen init payload.
      */
     onBeforeShow: function(data) {
       Oobe.getInstance().headerHidden = true;
-    }
+      $('user-image-grid').updateAndFocus();
+    },
   };
 
   /**
-   * Sets user photo as an image for the take photo button and as preview.
-   * @param {string} photoUrl Image encoded as data url.
+   * Adds or updates image with user photo and sets it as preview.
+   * @param {string} photoUrl Image encoded as data URL.
    */
   UserImageScreen.setUserPhoto = function(photoUrl) {
-    var takePhotoButton = $('user-image-list').children[0];
-    takePhotoButton.src = photoUrl;
-    UserImageScreen.selectUserImage(0);
-  };
-
-  /**
-   * Handler for when the user clicks on "Take photo" button.
-   * @param {Event} e Click Event.
-   */
-  UserImageScreen.handleTakePhoto = function(e) {
-    chrome.send('takePhoto');
-  };
-
-  /**
-   * Handler for when the user clicks on any available user image.
-   * @param {Event} e Click Event.
-   */
-  UserImageScreen.handleImageClick = function(e) {
-    chrome.send('selectImage', [e.target.src]);
-  };
-
-  /**
-   * Appends new image to the end of the image list.
-   * @param {string} src A url for the user image.
-   * @param {function} clickHandler A handler for click on image.
-   */
-  UserImageScreen.addUserImage = function(src, clickHandler) {
-    var imageElement = document.createElement('img');
-    imageElement.src = src;
-    imageElement.setAttribute('role', 'option');
-    imageElement.setAttribute('tabindex', '-1');
-    imageElement.setAttribute(
-        'aria-label', src.replace(/(.*\/|\.png)/g, '').replace(/_/g, ' '));
-    imageElement.addEventListener('click',
-                                  clickHandler,
-                                  false);
-    $('user-image-list').appendChild(imageElement);
+    var imageGrid = $('user-image-grid');
+    if (this.photoImage_)
+      imageGrid.removeItem(this.photoImage_);
+    this.photoImage_ = imageGrid.addItem(photoUrl, undefined, undefined, 1);
+    imageGrid.selectedItem = this.photoImage_;
+    imageGrid.focus();
   };
 
   /**
    * Appends received images to the list.
-   * @param {List} images A list of urls to user images.
+   * @param {Array.<string>} images An array of URLs to user images.
    */
-  UserImageScreen.addUserImages = function(images) {
-    for (var i = 0; i < images.length; i++) {
-      var imageUrl = images[i];
-      UserImageScreen.addUserImage(
-          imageUrl,
-          UserImageScreen.handleImageClick);
-    }
-
-    var userImageScreen = $('user-image');
-    var userImageList = $('user-image-list');
-    userImageList.addEventListener('keydown', function(e) {
-      var prevIndex = userImageScreen.selectedUserImage_;
-      var len = userImageList.children.length;
-      var nextIndex;
-      if (e.keyCode == 39 || e.keyCode == 40)  // right or down
-        nextIndex = (prevIndex + 1) % len;
-      else if (e.keyCode == 37 || e.keyCode == 38)  // left or up
-        nextIndex = (prevIndex - 1 + len) % len;
-      else if (e.keyCode == 13 && prevIndex == 0)
-        // Enter pressed while "Take photo" button active.
-        chrome.send('takePhoto');
-      if (nextIndex == 0)
-        // "Take photo" button: don't send a selection event to Chrome,
-        // just focus element and update selected index.
-        UserImageScreen.selectUserImage(0);
-      else if (nextIndex)
-        chrome.send('selectImage', [userImageList.children[nextIndex].src]);
-      e.stopPropagation();
-    });
+  UserImageScreen.setUserImages = function(images) {
+    var imageGrid = $('user-image-grid');
+    for (var i = 0, url; url = images[i]; i++)
+      imageGrid.addItem(url);
   };
 
   /**
-   * Selects the specified user image and shows it in preview.
-   * @param {number} index The index of the image to select.
+   * Selects user image with the given URL.
+   * @param {string} url URL of the image to select.
    */
-  UserImageScreen.selectUserImage = function(index) {
-    var userImageList = $('user-image-list');
-    var userImageScreen = $('user-image');
-    var prevIndex = userImageScreen.selectedUserImage_;
-    if (prevIndex != -1) {
-      userImageList.children[prevIndex].classList.remove('user-image-selected');
-      userImageList.children[prevIndex].setAttribute('tabIndex', '-1');
-    }
-    if (index != -1) {
-      var selectedImage = userImageList.children[index];
-      selectedImage.classList.add('user-image-selected');
-      selectedImage.setAttribute('tabIndex', '0');
-      selectedImage.focus();
-      $('user-image-preview').src = selectedImage.src;
-    }
-    userImageScreen.selectedUserImage_ = index;
+  UserImageScreen.setSelectedImage = function(url) {
+    var imageGrid = $('user-image-grid');
+    imageGrid.selectedItemUrl = url;
+    imageGrid.focus();
   };
 
   return {

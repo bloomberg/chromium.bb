@@ -294,6 +294,7 @@ cr.define('cr.ui', function() {
 
   return {
     Grid: Grid,
-    GridItem: GridItem
+    GridItem: GridItem,
+    GridSelectionController: GridSelectionController
   }
 });

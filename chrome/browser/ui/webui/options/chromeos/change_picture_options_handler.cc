@@ -7,6 +7,7 @@
 #include "base/callback.h"
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
+#include "base/string_util.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/default_user_images.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
@@ -16,6 +17,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/views/window.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/url_constants.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -83,6 +85,10 @@ void ChangePictureOptionsHandler::RegisterMessages() {
       NewCallback(this,
                   &ChangePictureOptionsHandler::HandleGetAvailableImages));
   web_ui_->RegisterMessageCallback(
+      "getSelectedImage",
+      NewCallback(this,
+                  &ChangePictureOptionsHandler::HandleGetSelectedImage));
+  web_ui_->RegisterMessageCallback(
       "selectImage",
       NewCallback(this, &ChangePictureOptionsHandler::HandleSelectImage));
 }
@@ -130,8 +136,27 @@ void ChangePictureOptionsHandler::HandleGetAvailableImages(
   for (int i = 0; i < kDefaultImagesCount; ++i) {
     image_urls.Append(new StringValue(GetDefaultImageUrl(i)));
   }
-  web_ui_->CallJavascriptFunction("ChangePictureOptions.addUserImages",
+  web_ui_->CallJavascriptFunction("ChangePictureOptions.setUserImages",
                                   image_urls);
+}
+
+void ChangePictureOptionsHandler::HandleGetSelectedImage(
+    const base::ListValue* args) {
+  DCHECK(args && args->empty());
+
+  const UserManager::User& user = UserManager::Get()->logged_in_user();
+  DCHECK(!user.email().empty());
+
+  int image_index = user.default_image_index();
+  if (image_index == UserManager::User::kExternalImageIndex) {
+    // User has image from camera/file, copy it and add to the list of images.
+    previous_image_ = user.image();
+    web_ui_->CallJavascriptFunction("ChangePictureOptions.addOldImage");
+  } else {
+    base::StringValue image_url(GetDefaultImageUrl(image_index));
+    web_ui_->CallJavascriptFunction("ChangePictureOptions.setSelectedImage",
+                                    image_url);
+  }
 }
 
 void ChangePictureOptionsHandler::HandleSelectImage(const ListValue* args) {
@@ -142,20 +167,36 @@ void ChangePictureOptionsHandler::HandleSelectImage(const ListValue* args) {
     NOTREACHED();
     return;
   }
-  int user_image_index = -1;
-  if (!IsDefaultImageUrl(image_url, &user_image_index))
-    return;
 
-  const SkBitmap* image = ResourceBundle::GetSharedInstance().GetBitmapNamed(
-          kDefaultImageResources[user_image_index]);
   UserManager* user_manager = UserManager::Get();
-  user_manager->SetLoggedInUserImage(*image);
-  user_manager->SaveUserImagePath(
-      user_manager->logged_in_user().email(),
-      GetDefaultImagePath(user_image_index));
-  UMA_HISTOGRAM_ENUMERATION("UserImage.ChangeChoice",
-                            user_image_index,
-                            kDefaultImagesCount + 2);
+  const UserManager::User& user = user_manager->logged_in_user();
+  int user_image_index = UserManager::User::kExternalImageIndex;
+
+  if (StartsWithASCII(image_url, chrome::kChromeUIUserImageURL, false)) {
+    DCHECK(!previous_image_.empty());
+
+    user_manager->SetLoggedInUserImage(previous_image_,
+                                       UserManager::User::kExternalImageIndex);
+    user_manager->SaveUserImage(user.email(), previous_image_);
+    UMA_HISTOGRAM_ENUMERATION("UserImage.ChangeChoice",
+                              kHistogramImageOld,
+                              kHistogramImagesCount);
+
+    VLOG(1) << "Selected old user image";
+  } else if (IsDefaultImageUrl(image_url, &user_image_index)) {
+    const SkBitmap* image = ResourceBundle::GetSharedInstance().GetBitmapNamed(
+        kDefaultImageResources[user_image_index]);
+
+    user_manager->SetLoggedInUserImage(*image, user_image_index);
+    user_manager->SaveUserImagePath(
+        user_manager->logged_in_user().email(),
+        GetDefaultImagePath(user_image_index));
+    UMA_HISTOGRAM_ENUMERATION("UserImage.ChangeChoice",
+                              user_image_index,
+                              kHistogramImagesCount);
+
+    VLOG(1) << "Selected default user image: " << user_image_index;
+  }
 }
 
 void ChangePictureOptionsHandler::FileSelected(const FilePath& path,
@@ -163,8 +204,8 @@ void ChangePictureOptionsHandler::FileSelected(const FilePath& path,
                                                void* params) {
   UserManager::Get()->LoadLoggedInUserImage(path);
   UMA_HISTOGRAM_ENUMERATION("UserImage.ChangeChoice",
-                            kDefaultImagesCount + 1,
-                            kDefaultImagesCount + 2);
+                            kHistogramImageFromFile,
+                            kHistogramImagesCount);
 }
 
 void ChangePictureOptionsHandler::OnPhotoAccepted(const SkBitmap& photo) {
@@ -174,11 +215,12 @@ void ChangePictureOptionsHandler::OnPhotoAccepted(const SkBitmap& photo) {
   const UserManager::User& user = user_manager->logged_in_user();
   DCHECK(!user.email().empty());
 
-  user_manager->SetLoggedInUserImage(photo);
+  user_manager->SetLoggedInUserImage(photo,
+                                     UserManager::User::kExternalImageIndex);
   user_manager->SaveUserImage(user.email(), photo);
   UMA_HISTOGRAM_ENUMERATION("UserImage.ChangeChoice",
-                            kDefaultImagesCount,
-                            kDefaultImagesCount + 2);
+                            kHistogramImageFromCamera,
+                            kHistogramImagesCount);
 }
 
 gfx::NativeWindow ChangePictureOptionsHandler::GetBrowserWindow() const {

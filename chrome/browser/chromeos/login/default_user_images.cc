@@ -118,5 +118,9 @@ const int kDefaultImageResources[] = {
 
 const int kDefaultImagesCount = arraysize(kDefaultImageResources);
 
-}  // namespace chromeos
+const int kHistogramImageFromCamera = kDefaultImagesCount;
+const int kHistogramImageFromFile = kDefaultImagesCount + 1;
+const int kHistogramImageOld = kDefaultImagesCount + 2;
+const int kHistogramImagesCount = kDefaultImagesCount + 3;
 
+}  // namespace chromeos
