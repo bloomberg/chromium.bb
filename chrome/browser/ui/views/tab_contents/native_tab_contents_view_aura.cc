@@ -110,5 +110,6 @@ views::NativeWidget* NativeTabContentsViewAura::AsNativeWidget() {
 // static
 NativeTabContentsView* NativeTabContentsView::CreateNativeTabContentsView(
     internal::NativeTabContentsViewDelegate* delegate) {
-  return new NativeTabContentsViewAura(delegate);
+  return new NativeTabContentsViewViews(delegate);
+  // return new NativeTabContentsViewAura(delegate);
 }

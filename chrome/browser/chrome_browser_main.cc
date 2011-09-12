@@ -195,6 +195,10 @@
 #include "views/touchui/touch_factory.h"
 #endif
 
+#if defined(USE_AURA)
+#include "chrome/browser/ui/views/aura/aura_init.h"
+#endif
+
 namespace net {
 class NetLog;
 }  // namespace net
@@ -1351,6 +1355,9 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunInternal() {
         views::desktop::DesktopWindowView::desktop_window_view;
     }
   }
+#endif
+#if defined(USE_AURA)
+  browser::InitAuraDesktop();
 #endif
 
   InitializeNetworkOptions(parsed_command_line());

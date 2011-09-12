@@ -60,6 +60,12 @@ bool Desktop::OnKeyEvent(const KeyEvent& event) {
   return window_->HandleKeyEvent(event);
 }
 
+void Desktop::OnHostResized(const gfx::Size& size) {
+  gfx::Rect bounds(window_->bounds().origin(), size);
+  window_->SetBounds(bounds, 0);
+  compositor_->WidgetSizeChanged(size);
+}
+
 void Desktop::ScheduleCompositorPaint() {
   if (schedule_paint_.empty()) {
     MessageLoop::current()->PostTask(FROM_HERE,

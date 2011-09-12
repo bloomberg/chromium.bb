@@ -47,6 +47,9 @@ class AURA_EXPORT Desktop : public ui::CompositorDelegate {
   // Handles a key event. Returns true if handled.
   bool OnKeyEvent(const KeyEvent& event);
 
+  // Called when the host changes size.
+  void OnHostResized(const gfx::Size& size);
+
   // Compositor we're drawing to.
   ui::Compositor* compositor() { return compositor_.get(); }
 

@@ -116,7 +116,8 @@ void NativeWidgetAura::MarkLayerDirty() {
 
 void NativeWidgetAura::CalculateOffsetToAncestorWithLayer(gfx::Point* offset,
                                                          View** ancestor) {
-  //NOTIMPLEMENTED();
+  if (ancestor)
+    *ancestor = GetWidget()->GetRootView();
 }
 
 void NativeWidgetAura::ViewRemoved(View* view) {
@@ -267,6 +268,7 @@ void NativeWidgetAura::ShowMaximizedWithBounds(
 }
 
 void NativeWidgetAura::ShowWithWindowState(ui::WindowShowState state) {
+  window_->SetVisibility(aura::Window::VISIBILITY_SHOWN);
   NOTIMPLEMENTED();
 }
 
@@ -283,7 +285,7 @@ void NativeWidgetAura::Deactivate() {
 }
 
 bool NativeWidgetAura::IsActive() const {
-  NOTIMPLEMENTED();
+  //NOTIMPLEMENTED();
   return false;
 }
 
@@ -318,7 +320,7 @@ void NativeWidgetAura::SetFullscreen(bool fullscreen) {
 }
 
 bool NativeWidgetAura::IsFullscreen() const {
-  NOTIMPLEMENTED();
+  //NOTIMPLEMENTED();
   return false;
 }
 

@@ -111,7 +111,10 @@ void NativeWidgetViews::InitNativeWidget(const Widget::InitParams& params) {
 
   view_ = new internal::NativeWidgetView(this);
   view_->SetBoundsRect(params.bounds);
+#if !defined(USE_AURA)
+  // TODO(beng): re-enable this once we have a consolidated layer tree.
   view_->SetPaintToLayer(true);
+#endif
 
   // With the default NATIVE_WIDGET_OWNS_WIDGET ownership, the
   // deletion of either of the NativeWidgetViews or NativeWidgetView
