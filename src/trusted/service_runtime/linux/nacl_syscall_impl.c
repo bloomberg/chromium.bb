@@ -663,3 +663,7 @@ int32_t NaClSysSecond_Tls_Set(struct NaClAppThread *natp,
 int32_t NaClSysSecond_Tls_Get(struct NaClAppThread *natp) {
   return natp->tls2;
 }
+
+int32_t NaClSysTest_InfoLeak(struct NaClAppThread *natp) {
+  return NaClCommonSysTest_InfoLeak(natp);
+}

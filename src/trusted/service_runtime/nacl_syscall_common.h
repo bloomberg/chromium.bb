@@ -255,6 +255,8 @@ int32_t NaClCommonSysSem_Post(struct NaClAppThread *natp,
 int32_t NaClCommonSysSem_Get_Value(struct NaClAppThread *natp,
                                    int32_t              sem_handle);
 
+int32_t NaClCommonSysTest_InfoLeak(struct NaClAppThread *natp);
+
 EXTERN_C_END
 
 #endif  /* NATIVE_CLIENT_SERVICE_RUNTIME_NACL_SYSCALL_COMMON_H__ */

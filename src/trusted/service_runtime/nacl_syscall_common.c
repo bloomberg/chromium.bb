@@ -2694,3 +2694,101 @@ cleanup:
   NaClSysCommonThreadSyscallLeave(natp);
   return retval;
 }
+
+
+int32_t NaClCommonSysTest_InfoLeak(struct NaClAppThread *natp) {
+#if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86
+  /*
+   * Put some interesting bits into the x87 and SSE registers.
+   */
+  union fxsave {
+    char buf[512];
+    struct {
+      uint16_t fcw;
+      uint16_t fsw;
+      uint16_t ftw;
+      uint16_t fop;
+      union {
+        struct {
+          uint64_t rip;
+          uint64_t rdp;
+        } x64;
+        struct {
+          uint32_t fpu_ip;
+          uint32_t cs;
+          uint32_t fpu_dp;
+          uint32_t ds;
+        } ia32;
+      } bitness;
+      uint32_t mxcsr;
+      uint32_t mxcsr_mask;
+      struct {
+        uint8_t st[10];
+        uint8_t reserved[6];
+      } st_space[8];
+      uint32_t xmm_space[64];
+    } fxsave;
+  };
+
+  static const char tenbytes[10] = "SecretBits";
+  static const char manybytes[256] =
+      "Highly sensitive information must not be leaked to untrusted code!\n"
+      "xyzzy\nplugh\nYou are likely to be eaten by a grue.\n"
+      "When in the Course of human events it becomes necessary for one people"
+      " to dissolve the political bands which have connected them with ...\n";
+
+# ifdef __GNUC__
+  union fxsave u __attribute__((aligned(16)));
+# elif NACL_WINDOWS
+  __declspec(align(16)) union fxsave u;
+# else
+#  error Unsupported platform
+# endif
+
+  int i;
+
+# ifdef __GNUC__
+  __asm__("fxsave %0" : "=m" (u));
+# elif NACL_WINDOWS
+#  if NACL_BUILD_SUBARCH == 64
+  {
+    void DoFxsave(union fxsave *);
+    DoFxsave(&u);
+  }
+#  else
+  __asm {
+    fxsave u
+  };
+#  endif
+# else
+# error Unsupported platform
+# endif
+
+  for (i = 0; i < 8; ++i)
+    memcpy(&u.fxsave.st_space[i], tenbytes, sizeof(u.fxsave.st_space[i]));
+
+  memcpy(u.fxsave.xmm_space, manybytes, sizeof(u.fxsave.xmm_space));
+
+# ifdef __GNUC__
+  __asm__ volatile("fxrstor %0" :: "m" (u));
+# elif NACL_WINDOWS
+#  if NACL_BUILD_SUBARCH == 64
+  {
+    void DoFxrstor(union fxsave *);
+    DoFxrstor(&u);
+  }
+#  else
+  __asm {
+    fxrstor u
+  };
+#  endif
+# else
+# error Unsupported platform
+# endif
+
+#endif
+
+  UNREFERENCED_PARAMETER(natp);
+
+  return -NACL_ABI_ENOSYS;
+}

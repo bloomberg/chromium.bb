@@ -115,7 +115,8 @@ elif env.Bit('build_x86_64'):
       'arch/x86_64/tramp_64.S',
       ]
   if env.Bit('windows'):
-    ldr_inputs += ['arch/x86_64/sel_addrspace_win_x86_64.c']
+    ldr_inputs += ['arch/x86_64/sel_addrspace_win_x86_64.c',
+                   'arch/x86_64/fxsaverstor.S']
   else:
     ldr_inputs += ['arch/x86_64/sel_addrspace_posix_x86_64.c']
 elif env.Bit('build_arm'):
