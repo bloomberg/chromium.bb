@@ -18,48 +18,42 @@ namespace {
 
 class ExampleComboboxModel : public ui::ComboboxModel {
  public:
-  ExampleComboboxModel(const wchar_t** strings, int count)
+  ExampleComboboxModel(const char** strings, int count)
       : strings_(strings), count_(count) {
   }
 
-  ~ExampleComboboxModel() {
-  }
-
-  void set_data(const wchar_t** strings, int count) {
-    strings_ = strings;
-    count_ = count;
-  }
+  virtual ~ExampleComboboxModel() {}
 
   // Overridden from ui::ComboboxModel:
   virtual int GetItemCount() OVERRIDE {
     return count_;
   }
   virtual string16 GetItemAt(int index) OVERRIDE {
-    return WideToUTF16Hack(strings_[index]);
+    return ASCIIToUTF16(strings_[index]);
   }
 
  private:
-  const wchar_t** strings_;
+  const char** strings_;
   int count_;
 
   DISALLOW_COPY_AND_ASSIGN(ExampleComboboxModel);
 };
 
-const wchar_t* kParts[] = {
-    L"PushButton",
-    L"RadioButton",
-    L"Checkbox",
+const char* kParts[] = {
+    "PushButton",
+    "RadioButton",
+    "Checkbox",
 };
 
-const wchar_t* kStates[] = {
-    L"Disabled",
-    L"Normal",
-    L"Hot",
-    L"Pressed",
-    L"<Dynamic>",
+const char* kStates[] = {
+    "Disabled",
+    "Normal",
+    "Hot",
+    "Pressed",
+    "<Dynamic>",
 };
 
-}  // anonymous namespace
+}  // namespace
 
 namespace examples {
 
