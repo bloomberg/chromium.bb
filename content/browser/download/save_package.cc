@@ -1224,7 +1224,7 @@ void SavePackage::OnPathPicked(const FilePath& final_name,
   saved_main_file_path_ = final_name;
   // TODO(asanka): This call may block on IO and shouldn't be made
   // from the UI thread.  See http://crbug.com/61827.
-  net::GenerateSafeFileName(tab_contents()->contents_mime_type(),
+  net::GenerateSafeFileName(tab_contents()->contents_mime_type(), false,
                             &saved_main_file_path_);
 
   saved_main_directory_path_ = saved_main_file_path_.DirName();
