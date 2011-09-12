@@ -315,7 +315,7 @@ void WebUILoginView::InitStatusArea() {
 #endif
   widget_params.bounds = widget_bounds;
   widget_params.transparent = true;
-  widget_params.parent = login_window->GetNativeView();
+  widget_params.parent_widget = login_window;
   status_window_ = new views::Widget;
   status_window_->Init(widget_params);
   chromeos::WmIpc::instance()->SetWindowType(

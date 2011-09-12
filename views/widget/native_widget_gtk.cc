@@ -648,7 +648,6 @@ void NativeWidgetGtk::InitNativeWidget(const Widget::InitParams& params) {
   SetInitParams(params);
 
   Widget::InitParams modified_params = params;
-  gfx::NativeView parent = params.parent;
   if (params.parent_widget) {
     NativeWidgetGtk* parent_gtk =
         static_cast<NativeWidgetGtk*>(params.parent_widget->native_widget());
@@ -792,7 +791,7 @@ void NativeWidgetGtk::InitNativeWidget(const Widget::InitParams& params) {
                    G_CALLBACK(&OnQueryTooltipThunk), this);
 
   if (child_) {
-    if (parent)
+    if (modified_params.parent)
       SetBounds(params.bounds);
   } else {
     gtk_widget_add_events(widget_,
