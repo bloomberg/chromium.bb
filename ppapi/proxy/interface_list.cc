@@ -241,7 +241,7 @@ const void* InterfaceList::GetInterfaceForPPB(const std::string& name) const {
       name_to_browser_info_.find(name);
   if (found == name_to_browser_info_.end())
     return NULL;
-  return found->second.iface;
+  return found->second.interface;
 }
 
 const void* InterfaceList::GetInterfaceForPPP(const std::string& name) const {
@@ -249,7 +249,7 @@ const void* InterfaceList::GetInterfaceForPPP(const std::string& name) const {
       name_to_plugin_info_.find(name);
   if (found == name_to_plugin_info_.end())
     return NULL;
-  return found->second.iface;
+  return found->second.interface;
 }
 
 void InterfaceList::AddProxy(InterfaceID id,
@@ -270,16 +270,16 @@ void InterfaceList::AddProxy(InterfaceID id,
 
 void InterfaceList::AddPPB(const char* name,
                            InterfaceID id,
-                           const void* iface) {
+                           const void* interface) {
   DCHECK(name_to_browser_info_.find(name) == name_to_browser_info_.end());
-  name_to_browser_info_[name] = InterfaceInfo(id, iface);
+  name_to_browser_info_[name] = InterfaceInfo(id, interface);
 }
 
 void InterfaceList::AddPPP(const char* name,
                            InterfaceID id,
-                           const void* iface) {
+                           const void* interface) {
   DCHECK(name_to_plugin_info_.find(name) == name_to_plugin_info_.end());
-  name_to_plugin_info_[name] = InterfaceInfo(id, iface);
+  name_to_plugin_info_[name] = InterfaceInfo(id, interface);
 }
 
 void InterfaceList::AddPPB(const InterfaceProxy::Info* info) {
