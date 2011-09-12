@@ -12,9 +12,8 @@
 #include "chrome/browser/sync/glue/autofill_change_processor.h"
 #include "chrome/browser/sync/glue/autofill_data_type_controller.h"
 #include "chrome/browser/sync/glue/autofill_model_associator.h"
-#include "chrome/browser/sync/glue/autofill_profile_change_processor.h"
 #include "chrome/browser/sync/glue/autofill_profile_data_type_controller.h"
-#include "chrome/browser/sync/glue/autofill_profile_model_associator.h"
+#include "chrome/browser/sync/glue/autofill_profile_syncable_service.h"
 #include "chrome/browser/sync/glue/bookmark_change_processor.h"
 #include "chrome/browser/sync/glue/bookmark_data_type_controller.h"
 #include "chrome/browser/sync/glue/bookmark_model_associator.h"
@@ -46,11 +45,10 @@
 
 using browser_sync::AppDataTypeController;
 using browser_sync::AutofillChangeProcessor;
-using browser_sync::AutofillProfileChangeProcessor;
 using browser_sync::AutofillDataTypeController;
 using browser_sync::AutofillProfileDataTypeController;
 using browser_sync::AutofillModelAssociator;
-using browser_sync::AutofillProfileModelAssociator;
+using browser_sync::AutofillProfileSyncableService;
 using browser_sync::BookmarkChangeProcessor;
 using browser_sync::BookmarkDataTypeController;
 using browser_sync::BookmarkModelAssociator;
@@ -215,17 +213,17 @@ ProfileSyncFactoryImpl::CreateAutofillProfileSyncComponents(
     WebDatabase* web_database,
     PersonalDataManager* personal_data,
     browser_sync::UnrecoverableErrorHandler* error_handler) {
-
-  AutofillProfileModelAssociator* model_associator =
-      new AutofillProfileModelAssociator(profile_sync_service,
-                                  web_database,
-                                  personal_data);
-  AutofillProfileChangeProcessor* change_processor =
-      new AutofillProfileChangeProcessor(model_associator,
-                                  web_database,
-                                  personal_data,
-                                  error_handler);
-  return SyncComponents(model_associator, change_processor);
+  AutofillProfileSyncableService* sync_service =
+      new AutofillProfileSyncableService(web_database, personal_data,
+                                         profile_sync_service->profile());
+  sync_api::UserShare* user_share = profile_sync_service->GetUserShare();
+  GenericChangeProcessor* change_processor =
+      new GenericChangeProcessor(sync_service, error_handler, user_share);
+  browser_sync::SyncableServiceAdapter* sync_service_adapter =
+      new browser_sync::SyncableServiceAdapter(syncable::AUTOFILL_PROFILE,
+                                               sync_service,
+                                               change_processor);
+  return SyncComponents(sync_service_adapter, change_processor);
 }
 
 ProfileSyncFactory::SyncComponents
