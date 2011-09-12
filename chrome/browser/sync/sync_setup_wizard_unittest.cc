@@ -235,19 +235,7 @@ class SyncSetupWizardTest : public BrowserWithTestWindowTest {
   MockSyncSetupHandler handler_;
 };
 
-// See http://code.google.com/p/chromium/issues/detail?id=40715 for
-// why we skip the below tests on OS X.  We don't use DISABLED_ as we
-// would have to change the corresponding FRIEND_TEST() declarations.
-
-#if defined(OS_MACOSX)
-#define SKIP_TEST_ON_MACOSX() \
-  do { LOG(WARNING) << "Test skipped on OS X"; return; } while (0)
-#else
-#define SKIP_TEST_ON_MACOSX() do {} while (0)
-#endif
-
 TEST_F(SyncSetupWizardTest, InitialStepLogin) {
-  SKIP_TEST_ON_MACOSX();
   ListValue credentials;
   std::string auth = "{\"user\":\"";
   auth += std::string(kTestUser) + "\",\"pass\":\"";
@@ -321,7 +309,6 @@ TEST_F(SyncSetupWizardTest, InitialStepLogin) {
 }
 
 TEST_F(SyncSetupWizardTest, ChooseDataTypesSetsPrefs) {
-  SKIP_TEST_ON_MACOSX();
   wizard_->Step(SyncSetupWizard::GAIA_LOGIN);
   AttachSyncSetupHandler();
   wizard_->Step(SyncSetupWizard::GAIA_SUCCESS);
@@ -355,7 +342,6 @@ TEST_F(SyncSetupWizardTest, ChooseDataTypesSetsPrefs) {
 }
 
 TEST_F(SyncSetupWizardTest, EnterPassphraseRequired) {
-  SKIP_TEST_ON_MACOSX();
   wizard_->Step(SyncSetupWizard::GAIA_LOGIN);
   AttachSyncSetupHandler();
   wizard_->Step(SyncSetupWizard::GAIA_SUCCESS);
@@ -374,7 +360,6 @@ TEST_F(SyncSetupWizardTest, EnterPassphraseRequired) {
 }
 
 TEST_F(SyncSetupWizardTest, DialogCancelled) {
-  SKIP_TEST_ON_MACOSX();
   wizard_->Step(SyncSetupWizard::GAIA_LOGIN);
   AttachSyncSetupHandler();
   // Simulate the user closing the dialog.
@@ -397,7 +382,6 @@ TEST_F(SyncSetupWizardTest, DialogCancelled) {
 }
 
 TEST_F(SyncSetupWizardTest, InvalidTransitions) {
-  SKIP_TEST_ON_MACOSX();
   wizard_->Step(SyncSetupWizard::GAIA_SUCCESS);
   EXPECT_FALSE(wizard_->IsVisible());
 
@@ -420,7 +404,6 @@ TEST_F(SyncSetupWizardTest, InvalidTransitions) {
 }
 
 TEST_F(SyncSetupWizardTest, FullSuccessfulRunSetsPref) {
-  SKIP_TEST_ON_MACOSX();
   CompleteSetup();
   EXPECT_FALSE(wizard_->IsVisible());
   EXPECT_TRUE(service_->profile()->GetPrefs()->GetBoolean(
@@ -428,7 +411,6 @@ TEST_F(SyncSetupWizardTest, FullSuccessfulRunSetsPref) {
 }
 
 TEST_F(SyncSetupWizardTest, AbortedByPendingClear) {
-  SKIP_TEST_ON_MACOSX();
   wizard_->Step(SyncSetupWizard::GAIA_LOGIN);
   AttachSyncSetupHandler();
   wizard_->Step(SyncSetupWizard::GAIA_SUCCESS);
@@ -441,8 +423,6 @@ TEST_F(SyncSetupWizardTest, AbortedByPendingClear) {
 }
 
 TEST_F(SyncSetupWizardTest, DiscreteRunChooseDataTypes) {
-  SKIP_TEST_ON_MACOSX();
-
   CompleteSetup();
 
   wizard_->Step(SyncSetupWizard::CONFIGURE);
@@ -455,8 +435,6 @@ TEST_F(SyncSetupWizardTest, DiscreteRunChooseDataTypes) {
 }
 
 TEST_F(SyncSetupWizardTest, DiscreteRunChooseDataTypesAbortedByPendingClear) {
-  SKIP_TEST_ON_MACOSX();
-
   CompleteSetup();
 
   wizard_->Step(SyncSetupWizard::CONFIGURE);
@@ -471,8 +449,6 @@ TEST_F(SyncSetupWizardTest, DiscreteRunChooseDataTypesAbortedByPendingClear) {
 }
 
 TEST_F(SyncSetupWizardTest, DiscreteRunGaiaLogin) {
-  SKIP_TEST_ON_MACOSX();
-
   CompleteSetup();
 
   wizard_->Step(SyncSetupWizard::GAIA_LOGIN);
@@ -501,7 +477,6 @@ TEST_F(SyncSetupWizardTest, DiscreteRunGaiaLogin) {
 // Tests a scenario where sync is disabled on chrome os on startup due to
 // an auth error (application specific password is needed).
 TEST_F(SyncSetupWizardTest, CrosAuthSetup) {
-  SKIP_TEST_ON_MACOSX();
   service_->set_cros_mode();
 
   wizard_->Step(SyncSetupWizard::GAIA_LOGIN);
@@ -528,8 +503,6 @@ TEST_F(SyncSetupWizardTest, CrosAuthSetup) {
 }
 
 TEST_F(SyncSetupWizardTest, NonFatalError) {
-  SKIP_TEST_ON_MACOSX();
-
   CompleteSetup();
 
   // Set up the ENTER_PASSPHRASE case.
@@ -594,5 +567,3 @@ TEST_F(SyncSetupWizardTest, NonFatalError) {
   CloseSetupUI();
   EXPECT_FALSE(wizard_->IsVisible());
 }
-
-#undef SKIP_TEST_ON_MACOSX
