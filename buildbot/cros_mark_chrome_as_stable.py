@@ -22,6 +22,7 @@ import optparse
 import os
 import re
 import sys
+import time
 
 import cros_mark_as_stable
 from cros_build_lib import RunCommand, Info, Warning
@@ -63,13 +64,13 @@ def  _GetTipOfTrunkSvnRevision(base_url):
     match = revision_re.search(line)
     if match:
       svn_revision = match.group(1)
-      Info('Using SVN Revision %s' % svn_revision)
+      Info('Found SVN Revision %s' % svn_revision)
       return svn_revision
 
   raise Exception('Could not find revision information from %s' % svn_url)
 
 
-def _GetTipOfTrunkVersionContents(chrome_version_info):
+def _GetVersionContents(chrome_version_info):
   """Returns the current Chromium version, from the contents of a VERSION file.
 
   Args:
@@ -81,20 +82,43 @@ def _GetTipOfTrunkVersionContents(chrome_version_info):
 
   return '.'.join(chrome_version_array)
 
-
-def _GetTipOfTrunkVersionUrl(base_url):
-  """Returns the current Chromium version, from a URL to a repository.
+def _GetSpecificVersionUrl(base_url, revision, time_to_wait=600):
+  """Returns the Chromium version, from a repository URL and version.
 
   Args:
      base_url: URL for the root of the chromium checkout.
+     revision: the SVN revision we want to use.
+     time_to_wait: the minimum period before abandoning our wait for the
+         desired revision to be present.
   """
-  svn_url = os.path.join(_GetSvnUrl(base_url), 'src', 'chrome', 'VERSION')
-  chrome_version_info = RunCommand(
-      ['svn', 'cat', svn_url],
-      redirect_stdout=True,
-      error_message='Could not read version file at %s.' % svn_url)
 
-  return _GetTipOfTrunkVersionContents(chrome_version_info)
+  svn_url = os.path.join(_GetSvnUrl(base_url), 'src', 'chrome', 'VERSION')
+
+  if not revision or not (int(revision) > 0):
+    raise Exception('Revision must be positive, got %s' % revision)
+
+  start = time.time()
+  # Use the fact we are SVN, hence ordered.
+  # Dodge the fact it will silently ignore the revision if it is not
+  # yet known.  (i.e. too high)
+  repo_version = _GetTipOfTrunkSvnRevision(base_url)
+  while revision > repo_version:
+    if time.time() - start > time_to_wait:
+      raise Exception('Timeout Exceeeded')
+
+    Info('Repository only has version %s, looking for %s.  Sleeping...' %
+         (repo_version, revision))
+    time.sleep(30)
+    repo_version = _GetTipOfTrunkSvnRevision(base_url)
+
+  chrome_version_info = RunCommand(
+      ['svn', 'cat', '-r', revision, svn_url],
+      redirect_stdout=True,
+      error_message='Could not read version file at %s revision %s.' %
+                    (svn_url, revision))
+
+  return _GetVersionContents(chrome_version_info)
+
 
 def _GetTipOfTrunkVersionFile(root):
   """Returns the current Chromium version, from a file in a checkout.
@@ -108,7 +132,7 @@ def _GetTipOfTrunkVersionFile(root):
       redirect_stdout=True,
       error_message='Could not read version file at %s.' % version_file)
 
-  return _GetTipOfTrunkVersionContents(chrome_version_info)
+  return _GetVersionContents(chrome_version_info)
 
 def _GetLatestRelease(base_url, branch=None):
   """Gets the latest release version from the buildspec_url for the branch.
@@ -224,8 +248,9 @@ def FindChromeUprevCandidate(stable_ebuilds, chrome_rev, sticky_branch):
     Returns the EBuild, otherwise None if none found.
   """
   candidates = []
-  if chrome_rev in [constants.CHROME_REV_LOCAL, constants.CHROME_REV_TOT]:
-    # These two are both labelled alpha, for historic reasons,
+  if chrome_rev in [constants.CHROME_REV_LOCAL, constants.CHROME_REV_TOT,
+                    constants.CHROME_REV_SPEC]:
+    # These are labelled alpha, for historic reasons,
     # not just for the fun of confusion.
     chrome_branch_re = re.compile('%s.*_alpha.*' % _CHROME_VERSION_REGEX)
     for ebuild in stable_ebuilds:
@@ -328,7 +353,7 @@ def GetChromeRevisionListLink(old_chrome, new_chrome, chrome_rev):
   Returns:
     The desired URL.
   """
-  if chrome_rev == constants.CHROME_REV_TOT:
+  if chrome_rev in [constants.CHROME_REV_TOT, constants.CHROME_REV_SPEC]:
     return GetChromeRevisionLinkFromRevisions(GetRevisionFromEBuild(old_chrome),
                                               GetRevisionFromEBuild(new_chrome))
   elif chrome_rev == constants.CHROME_REV_LOCAL:
@@ -351,6 +376,8 @@ def MarkChromeEBuildAsStable(stable_candidate, unstable_ebuild, chrome_rev,
       and logic for chrome_rev type with revision set to 1.
     unstable_ebuild:  ebuild corresponding to the unstable ebuild for chrome.
     chrome_rev: one of constants.VALID_CHROME_REVISIONS or LOCAL
+      constants.CHROME_REV_SPEC -  Requires commit value.  Revs the ebuild for
+        the specified version and uses the portage suffix of _alpha.
       constants.CHROME_REV_TOT -  Requires commit value.  Revs the ebuild for
         the TOT version and uses the portage suffix of _alpha.
       constants.CHROME_REV_LOCAL - Requires a chrome_root. Revs the ebuild for
@@ -389,8 +416,8 @@ def MarkChromeEBuildAsStable(stable_candidate, unstable_ebuild, chrome_rev,
         stable_candidate.ebuild_path_no_revision,
         stable_candidate.current_revision + 1)
   else:
-    if chrome_rev in [constants.CHROME_REV_LOCAL, constants.CHROME_REV_TOT]:
-      # these two happen to be the same, at least for now.
+    if chrome_rev in [constants.CHROME_REV_LOCAL, constants.CHROME_REV_TOT,
+                      constants.CHROME_REV_SPEC]:
       portage_suffix = '_alpha'
     else:
       portage_suffix = '_rc'
@@ -399,6 +426,7 @@ def MarkChromeEBuildAsStable(stable_candidate, unstable_ebuild, chrome_rev,
 
   # Mark latest release and sticky branches as stable.
   mark_stable = chrome_rev not in [constants.CHROME_REV_TOT,
+                                   constants.CHROME_REV_SPEC,
                                    constants.CHROME_REV_LOCAL]
 
   cros_mark_as_stable.EBuildStableMarker.MarkAsStable(
@@ -435,6 +463,7 @@ def main():
   parser = optparse.OptionParser(usage)
   parser.add_option('-b', '--board', default='x86-generic')
   parser.add_option('-c', '--chrome_url', default=BASE_CHROME_SVN_URL)
+  parser.add_option('-f', '--force_revision', default=None)
   parser.add_option('-s', '--srcroot', default=os.path.join(os.environ['HOME'],
                                                             'trunk', 'src'),
                     help='Path to the src directory')
@@ -466,9 +495,14 @@ def main():
     version_to_uprev = _GetTipOfTrunkVersionFile(chrome_root)
     commit_to_use = 'Unknown'
     Info('Using local source, versioning is untrustworthy.')
+  elif chrome_rev == constants.CHROME_REV_SPEC:
+    commit_to_use = options.force_revision
+    version_to_uprev = _GetSpecificVersionUrl(options.chrome_url,
+                                              commit_to_use)
   elif chrome_rev == constants.CHROME_REV_TOT:
-    version_to_uprev = _GetTipOfTrunkVersionUrl(options.chrome_url)
     commit_to_use = _GetTipOfTrunkSvnRevision(options.chrome_url)
+    version_to_uprev = _GetSpecificVersionUrl(options.chrome_url,
+                                              commit_to_use)
   elif chrome_rev == constants.CHROME_REV_LATEST:
     version_to_uprev = _GetLatestRelease(options.chrome_url)
     # Don't rev on stable branch for latest_release.

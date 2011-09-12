@@ -749,7 +749,8 @@ class UprevStageTest(AbstractStageTest):
         self.TRACKING_BRANCH,
         self.options.chrome_rev,
         self.build_config['board'],
-        chrome_root=None).AndReturn(chrome_atom)
+        chrome_root=None,
+        chrome_version=None).AndReturn(chrome_atom)
 
     self.mox.ReplayAll()
     self.RunStage()
@@ -764,7 +765,8 @@ class UprevStageTest(AbstractStageTest):
         self.TRACKING_BRANCH,
         self.options.chrome_rev,
         self.build_config['board'],
-        chrome_root=None)
+        chrome_root=None,
+        chrome_version=None)
 
     sys.exit(0)
 
@@ -804,7 +806,8 @@ class UprevStageTest(AbstractStageTest):
         self.TRACKING_BRANCH,
         self.options.chrome_rev,
         self.build_config['board'],
-        chrome_root=None).AndReturn(None)
+        chrome_root=None,
+        chrome_version=None).AndReturn(None)
 
     commands.UprevPackages(
         self.build_root,

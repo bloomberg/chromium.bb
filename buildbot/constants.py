@@ -34,9 +34,13 @@ CREATED_BRANCHES = [
 
 # Constants for uprevving Chrome
 
-# Builds and validates _alpha ebuilds.  Thesee builds sync to a particular
+# Builds and validates _alpha ebuilds.  These builds sync to the latest
 # revsion of the Chromium src tree and build with that checkout.
 CHROME_REV_TOT = 'tot'
+
+# Builds and validates _alpha ebuilds.  These builds sync to a particular
+# revsion of the Chromium src tree and build with that checkout.
+CHROME_REV_SPEC = 'spec'
 
 # Builds and validates the latest Chromium release as defined by
 # ~/trunk/releases in the Chrome src tree.  These ebuilds are suffixed with rc.
@@ -50,7 +54,7 @@ CHROME_REV_STICKY = 'stable_release'
 # Also uses _alpha, since portage doesn't have anything lower.
 CHROME_REV_LOCAL = 'local'
 VALID_CHROME_REVISIONS = [CHROME_REV_TOT, CHROME_REV_LATEST,
-                          CHROME_REV_STICKY, CHROME_REV_LOCAL]
+                          CHROME_REV_STICKY, CHROME_REV_LOCAL, CHROME_REV_SPEC]
 
 # Build types supported.
 

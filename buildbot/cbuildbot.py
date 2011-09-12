@@ -214,7 +214,8 @@ def RunBuildStages(bot_id, options, build_config):
   if options.lkgm or (options.buildbot and build_config['use_lkgm']):
     sync_stage_class = stages.LKGMSyncStage
   elif (options.buildbot and build_config['manifest_version']
-        and chrome_rev != constants.CHROME_REV_TOT):
+        and chrome_rev not in [constants.CHROME_REV_TOT,
+                               constants.CHROME_REV_SPEC]):
     # TODO(sosa): Fix temporary hack for chrome_rev tot.
     if build_config['build_type'] in (constants.PFQ_TYPE,
                                       constants.CHROME_PFQ_TYPE):
@@ -483,6 +484,16 @@ def _CheckBuildRootOption(option, opt_str, value, parser):
   parser.values.buildroot = os.path.realpath(os.path.expanduser(value))
 
 
+def _CheckChromeVersionOption(option, opt_str, value, parser):
+  """Upgrade other options based on chrome_version being passed."""
+  value = value.strip()
+
+  if parser.values.chrome_rev is None and value:
+    parser.values.chrome_rev = constants.CHROME_REV_SPEC
+
+  parser.values.chrome_version = value
+
+
 def _CheckChromeRootOption(option, opt_str, value, parser):
   """Validate and convert chrome_root to full-path form."""
   value = value.strip()
@@ -569,6 +580,11 @@ def _CreateParser():
                     action='callback', dest='chrome_root',
                     callback=_CheckChromeRootOption,
                     help='Local checkout of Chrome to use.')
+  group.add_option('--chrome_version', default=None, type='string',
+                   action='callback', dest='chrome_version',
+                   callback=_CheckChromeVersionOption,
+                   help='Used with SPEC logic to force a particular SVN '
+                        'revision of chrome rather than the latest.')
   group.add_option('--clobber', action='store_true', dest='clobber',
                     default=False,
                     help='Clears an old checkout before syncing')
@@ -651,6 +667,16 @@ def _PostParseCheck(options):
     if options.chrome_rev == constants.CHROME_REV_LOCAL:
       cros_lib.Die('Chrome root must be set if chrome_rev is %s.' %
                    constants.CHROME_REV_LOCAL)
+
+  if options.chrome_version:
+    if options.chrome_rev != constants.CHROME_REV_SPEC:
+      cros_lib.Die('Chrome rev must be %s if chrome_version is set.' %
+                   constants.CHROME_REV_SPEC)
+  else:
+    if options.chrome_rev == constants.CHROME_REV_SPEC:
+      cros_lib.Die('Chrome rev must not be %s if chrome_version is not set.' %
+                   constants.CHROME_REV_SPEC)
+
 
 
 def main(argv=None):

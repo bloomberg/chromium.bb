@@ -474,7 +474,8 @@ def MarkChromeAsStable(buildroot,
                        tracking_branch,
                        chrome_rev,
                        board,
-                       chrome_root=None):
+                       chrome_root=None,
+                       chrome_version=None):
   """Returns the portage atom for the revved chrome ebuild - see man emerge."""
   cwd = os.path.join(buildroot, 'src', 'scripts')
   extra_env=None
@@ -484,11 +485,16 @@ def MarkChromeAsStable(buildroot,
     assert chrome_rev == constants.CHROME_REV_LOCAL, (
         'Cannot rev non-local with a chrome_root')
 
+  command = ['../../chromite/buildbot/cros_mark_chrome_as_stable',
+             '--tracking_branch=%s' % tracking_branch,
+             '--board=%s' % board,]
+  if chrome_version:
+    command.append('--force_revision=%s' % chrome_version)
+    assert chrome_rev == constants.CHROME_REV_SPEC, (
+        'Cannot rev non-spec with a chrome_version')
+
   portage_atom_string = cros_lib.RunCommand(
-      ['../../chromite/buildbot/cros_mark_chrome_as_stable',
-       '--tracking_branch=%s' % tracking_branch,
-       '--board=%s' % board,
-       chrome_rev],
+      command + [chrome_rev],
       cwd=cwd,
       redirect_stdout=True,
       enter_chroot=True,
