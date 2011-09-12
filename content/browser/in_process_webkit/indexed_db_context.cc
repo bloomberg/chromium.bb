@@ -54,8 +54,11 @@ void GetAllOriginsAndPaths(
   }
 }
 
+// If clear_all_databases is true, deletes all databases not protected by
+// special storage policy. Otherwise deletes session-only databases.
 void ClearLocalState(
     const FilePath& indexeddb_path,
+    bool clear_all_databases,
     scoped_refptr<quota::SpecialStoragePolicy> special_storage_policy) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
   std::vector<GURL> origins;
@@ -65,7 +68,12 @@ void ClearLocalState(
   std::vector<FilePath>::const_iterator file_path_iter = file_paths.begin();
   for (std::vector<GURL>::const_iterator iter = origins.begin();
        iter != origins.end(); ++iter, ++file_path_iter) {
-    if (special_storage_policy->IsStorageProtected(*iter))
+    if (!clear_all_databases &&
+        !special_storage_policy->IsStorageSessionOnly(*iter)) {
+      continue;
+    }
+    if (special_storage_policy.get() &&
+        special_storage_policy->IsStorageProtected(*iter))
       continue;
     file_util::Delete(*file_path_iter, true);
   }
@@ -136,13 +144,25 @@ IndexedDBContext::~IndexedDBContext() {
   if (factory)
     BrowserThread::DeleteSoon(BrowserThread::WEBKIT, FROM_HERE, factory);
 
-  if (clear_local_state_on_exit_ && !data_path_.empty()) {
-    // No WEBKIT thread here means we are running in a unit test where no clean
-    // up is needed.
-    BrowserThread::PostTask(BrowserThread::WEBKIT, FROM_HERE,
-        NewRunnableFunction(&ClearLocalState, data_path_,
-                            special_storage_policy_));
-  }
+  if (data_path_.empty())
+    return;
+
+  bool has_session_only_databases =
+      special_storage_policy_.get() &&
+      special_storage_policy_->HasSessionOnlyOrigins();
+
+  // Clearning only session-only databases, and there are none.
+  if (!clear_local_state_on_exit_ &&
+      !has_session_only_databases)
+    return;
+
+  // No WEBKIT thread here means we are running in a unit test where no clean
+  // up is needed.
+  BrowserThread::PostTask(BrowserThread::WEBKIT, FROM_HERE,
+                          NewRunnableFunction(&ClearLocalState,
+                                              data_path_,
+                                              clear_local_state_on_exit_,
+                                              special_storage_policy_));
 }
 
 WebIDBFactory* IndexedDBContext::GetIDBFactory() {

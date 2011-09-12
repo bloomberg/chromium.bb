@@ -82,6 +82,7 @@ class IndexedDBContext : public base::RefCountedThreadSafe<IndexedDBContext> {
   FRIEND_TEST(ExtensionServiceTest, ClearExtensionData);
   FRIEND_TEST(ExtensionServiceTest, ClearAppData);
   FRIEND_TEST(IndexedDBBrowserTest, ClearLocalState);
+  FRIEND_TEST(IndexedDBBrowserTest, ClearSessionOnlyDatabases);
   friend class IndexedDBQuotaClientTest;
 
   typedef std::map<GURL, int64> OriginToSizeMap;
