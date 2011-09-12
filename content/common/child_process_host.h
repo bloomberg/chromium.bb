@@ -134,11 +134,16 @@ class ChildProcessHost : public IPC::Channel::Listener,
   class ListenerHook : public IPC::Channel::Listener {
    public:
     explicit ListenerHook(ChildProcessHost* host);
+
+    void Shutdown();
+
+    // IPC::Channel::Listener methods:
     virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
     virtual void OnChannelConnected(int32 peer_pid) OVERRIDE;
     virtual void OnChannelError() OVERRIDE;
    private:
     ChildProcessHost* host_;
+    DISALLOW_COPY_AND_ASSIGN(ListenerHook);
   };
 
   ListenerHook listener_;

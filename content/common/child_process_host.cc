@@ -76,6 +76,7 @@ ChildProcessHost::~ChildProcessHost() {
     filters_[i]->OnChannelClosing();
     filters_[i]->OnFilterRemoved();
   }
+  listener_.Shutdown();
 }
 
 void ChildProcessHost::AddFilter(IPC::ChannelProxy::MessageFilter* filter) {
@@ -234,8 +235,15 @@ ChildProcessHost::ListenerHook::ListenerHook(ChildProcessHost* host)
     : host_(host) {
 }
 
+void ChildProcessHost::ListenerHook::Shutdown() {
+  host_ = NULL;
+}
+
 bool ChildProcessHost::ListenerHook::OnMessageReceived(
     const IPC::Message& msg) {
+  if (!host_)
+    return true;
+
 #ifdef IPC_MESSAGE_LOG_ENABLED
   IPC::Logging* logger = IPC::Logging::GetInstance();
   if (msg.type() == IPC_LOGGING_ID) {
@@ -272,6 +280,8 @@ bool ChildProcessHost::ListenerHook::OnMessageReceived(
 }
 
 void ChildProcessHost::ListenerHook::OnChannelConnected(int32 peer_pid) {
+  if (!host_)
+    return;
   host_->opening_channel_ = false;
   host_->OnChannelConnected(peer_pid);
   // Notify in the main loop of the connection.
@@ -282,6 +292,8 @@ void ChildProcessHost::ListenerHook::OnChannelConnected(int32 peer_pid) {
 }
 
 void ChildProcessHost::ListenerHook::OnChannelError() {
+  if (!host_)
+    return;
   host_->opening_channel_ = false;
   host_->OnChannelError();
 
