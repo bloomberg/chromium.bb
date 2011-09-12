@@ -447,6 +447,8 @@
         'browser/chromeos/gview_request_interceptor.h',
         'browser/chromeos/input_method/candidate_window.cc',
         'browser/chromeos/input_method/candidate_window.h',
+        'browser/chromeos/input_method/hotkey_manager.cc',
+        'browser/chromeos/input_method/hotkey_manager.h',
         'browser/chromeos/input_method/ibus_controller.cc',
         'browser/chromeos/input_method/ibus_controller.h',
         'browser/chromeos/input_method/ibus_engine_controller.cc',
