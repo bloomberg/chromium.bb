@@ -13,6 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
 #include "content/renderer/paint_aggregator.h"
+#include "gpu/command_buffer/client/gles2_implementation.h"
 #include "ipc/ipc_channel.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCompositionUnderline.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPopupType.h"
@@ -367,7 +368,8 @@ class RenderWidget : public IPC::Channel::Listener,
   // When accelerated rendering is on, is the maximum number of swapbuffers that
   // can be outstanding before we start throttling based on
   // OnSwapBuffersComplete callback.
-  static const int kMaxSwapBuffersPending = 2;
+  static const int kMaxSwapBuffersPending =
+      gpu::gles2::GLES2Implementation::kMaxSwapBuffers;
 
   // Set to true if we should ignore RenderWidget::Show calls.
   bool did_show_;
