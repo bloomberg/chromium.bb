@@ -47,15 +47,15 @@ class InterfaceList {
     }
 
     InterfaceID id;
-    const void* interface;
+    const void* iface;
   };
 
   typedef std::map<std::string, InterfaceInfo> NameToInterfaceInfoMap;
 
   void AddProxy(InterfaceID id, InterfaceProxy::Factory factory);
 
-  void AddPPB(const char* name, InterfaceID id, const void* interface);
-  void AddPPP(const char* name, InterfaceID id, const void* interface);
+  void AddPPB(const char* name, InterfaceID id, const void* iface);
+  void AddPPP(const char* name, InterfaceID id, const void* iface);
 
   // Old-style add functions. These should be removed when the rest of the
   // proxies are converted over to using the new system.
