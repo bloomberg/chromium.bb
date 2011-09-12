@@ -313,7 +313,6 @@
             'tests/common/test_utils.cc',
             'tests/common/test_utils.h',
             'tests/unit_tests/unit_tests.cc',
-            'src/handle_table_unittest.cc',
             'src/interception_unittest.cc',
             'src/service_resolver_unittest.cc',
             'src/restricted_token_unittest.cc',
