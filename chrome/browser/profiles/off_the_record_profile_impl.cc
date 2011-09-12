@@ -123,14 +123,18 @@ class OffTheRecordProfileImpl : public Profile,
         PluginPrefs::GetForProfile(this), &GetResourceContext());
 
     BrowserThread::PostTask(
-    BrowserThread::IO, FROM_HERE,
-    NewRunnableFunction(&NotifyOTRProfileCreatedOnIOThread, profile_, this));
+        BrowserThread::IO, FROM_HERE,
+        NewRunnableFunction(
+            &NotifyOTRProfileCreatedOnIOThread, profile_, this));
   }
 
   virtual ~OffTheRecordProfileImpl() {
     NotificationService::current()->Notify(
         chrome::NOTIFICATION_PROFILE_DESTROYED, Source<Profile>(this),
         NotificationService::NoDetails());
+
+    // There shouldn't be any browser window associated with this profile.
+    CHECK(!BrowserList::FindBrowserWithProfile(this));
 
     ChromePluginServiceFilter::GetInstance()->UnregisterResourceContext(
         &GetResourceContext());
