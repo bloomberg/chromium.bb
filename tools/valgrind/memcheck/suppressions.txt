@@ -1394,17 +1394,6 @@
    fun:start_thread
 }
 {
-   bug_22450
-   Memcheck:Leak
-   fun:_Znw*
-   fun:*DefaultClientSocketFactory21CreateTCPClientSocketERKNS_11AddressListEPNS_6NetLogE*
-   fun:_ZN3net13TCPConnectJob12DoTCPConnectEv
-   fun:_ZN3net13TCPConnectJob6DoLoopEi
-   fun:_ZN3net13TCPConnectJob12OnIOCompleteEi
-   ...
-   fun:_ZN3net16HostResolverImpl3Job16OnLookupCompleteERKNS_11AddressListERKN4base9TimeTicksEjii
-}
-{
    bug_22923
    Memcheck:Leak
    fun:_Znw*
