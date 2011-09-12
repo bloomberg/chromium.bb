@@ -17,16 +17,6 @@ class GPUUITest : public UITest {
   }
 
   virtual void SetUp() {
-    EXPECT_TRUE(test_launcher_utils::OverrideGLImplementation(
-        &launch_arguments_,
-        gfx::kGLImplementationOSMesaName));
-
-#if defined(OS_MACOSX)
-    // Accelerated compositing does not work with OSMesa. AcceleratedSurface
-    // assumes GL contexts are native.
-    launch_arguments_.AppendSwitch(switches::kDisableAcceleratedCompositing);
-#endif
-
     UITest::SetUp();
 
     gpu_test_dir_ = test_data_directory_.AppendASCII("gpu");

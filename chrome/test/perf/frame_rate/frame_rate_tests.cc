@@ -10,6 +10,7 @@
 #include "base/test/test_timeouts.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/ui/javascript_test_util.h"
 #include "chrome/test/ui/ui_perf_test.h"
@@ -22,6 +23,10 @@ class FrameRateTest : public UIPerfTest {
   FrameRateTest() {
     show_window_ = true;
     dom_automation_enabled_ = true;
+    // Since this is a performance test, try to use the host machine's GPU
+    // instead of falling back to software-rendering.
+    force_use_osmesa_ = false;
+    disable_accelerated_compositing_ = false;
   }
 
   virtual FilePath GetDataPath(const std::string& name) {
@@ -33,6 +38,16 @@ class FrameRateTest : public UIPerfTest {
     test_path = test_path.Append(FILE_PATH_LITERAL("content"));
     test_path = test_path.AppendASCII(name);
     return test_path;
+  }
+
+  virtual void SetUp() {
+    // UI tests boot up render views starting from about:blank. This causes the
+    // renderer to start up thinking it cannot use the GPU. To work around that,
+    // and allow the frame rate test to use the GPU, we must pass
+    // kAllowWebUICompositing.
+    launch_arguments_.AppendSwitch(switches::kAllowWebUICompositing);
+
+    UIPerfTest::SetUp();
   }
 
   void RunTest(const std::string& name, const std::string& suffix) {

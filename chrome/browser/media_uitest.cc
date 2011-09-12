@@ -17,20 +17,6 @@
 
 class MediaTest : public UITest {
  protected:
-  virtual void SetUp() {
-    EXPECT_TRUE(test_launcher_utils::OverrideGLImplementation(
-        &launch_arguments_,
-        gfx::kGLImplementationOSMesaName));
-
-#if defined(OS_MACOSX)
-    // Accelerated compositing does not work with OSMesa. AcceleratedSurface
-    // assumes GL contexts are native.
-    launch_arguments_.AppendSwitch(switches::kDisableAcceleratedCompositing);
-#endif
-
-    UITest::SetUp();
-  }
-
   void PlayMedia(const char* tag, const char* media_file) {
     FilePath test_file(test_data_directory_);
     test_file = test_file.AppendASCII("media/player.html");

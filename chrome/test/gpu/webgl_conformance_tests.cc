@@ -32,10 +32,9 @@ class WebGLConformanceTests : public UITest {
 
   void SetUp() {
     // Force the use of GPU hardware.
-    EXPECT_TRUE(test_launcher_utils::OverrideGLImplementation(
-        &launch_arguments_,
-        kGLImplementationName));
-    // Assert that a GPU bot is never blacklisted.
+    force_use_osmesa_ = false;
+
+    // Ensure that a GPU bot is never blacklisted.
     launch_arguments_.AppendSwitch(switches::kIgnoreGpuBlacklist);
     UITest::SetUp();
   }
