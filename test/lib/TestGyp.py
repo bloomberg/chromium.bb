@@ -471,10 +471,7 @@ class TestGypNinja(TestGypBase):
     return self.workpath(*result)
 
   def up_to_date(self, gyp_file, target=None, **kw):
-    # TODO: Ninja prints "up to date" when the target is up to date,
-    # but it prints nothing if there are aliases in place.
-    # Once that bug in Ninja is fixed, add:
-    #   kw['stdout'] = "ninja: nothing to do"
+    kw['stdout'] = "ninja: no work to do.\n"
     return self.build(gyp_file, target, **kw)
 
 
