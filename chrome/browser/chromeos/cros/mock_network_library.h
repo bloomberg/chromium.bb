@@ -101,6 +101,8 @@ class MockNetworkLibrary : public NetworkLibrary {
   MOCK_CONST_METHOD1(CanConnectToNetwork, bool(const Network*));
   MOCK_METHOD1(ConnectToWifiNetwork, void(WifiNetwork*));
   MOCK_METHOD2(ConnectToWifiNetwork, void(WifiNetwork*, bool));
+  MOCK_METHOD1(ConnectToCellularNetwork, void(CellularNetwork*));
+  MOCK_METHOD1(ConnectToVirtualNetwork, void(VirtualNetwork*));
   MOCK_METHOD6(ConnectToUnconfiguredWifiNetwork,
                void(const std::string&,
                     ConnectionSecurity,
@@ -108,19 +110,11 @@ class MockNetworkLibrary : public NetworkLibrary {
                     const EAPConfigData*,
                     bool,
                     bool));
-  MOCK_METHOD1(ConnectToCellularNetwork, void(CellularNetwork*));
-  MOCK_METHOD1(ConnectToVirtualNetwork, void(VirtualNetwork*));
-  MOCK_METHOD5(ConnectToVirtualNetworkPSK, void(const std::string&,
-                                                const std::string&,
-                                                const std::string&,
-                                                const std::string&,
-                                                const std::string&));
-  MOCK_METHOD6(ConnectToVirtualNetworkCert, void(const std::string&,
-                                                 const std::string&,
-                                                 const std::string&,
-                                                 const std::string&,
-                                                 const std::string&,
-                                                 const std::string&));
+  MOCK_METHOD4(ConnectToUnconfiguredVirtualNetwork,
+               void(const std::string&,
+                    const std::string&,
+                    ProviderType,
+                    const VPNConfigData&));
   MOCK_METHOD0(SignalCellularPlanPayment, void(void));
   MOCK_METHOD0(HasRecentCellularPlanPayment, bool(void));
 

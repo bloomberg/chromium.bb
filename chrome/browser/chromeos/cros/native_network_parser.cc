@@ -81,6 +81,8 @@ EnumMapper<PropertyIndex>::Pair property_index_table[] = {
   { flimflam::kL2tpIpsecPskProperty, PROPERTY_INDEX_L2TPIPSEC_PSK },
   { flimflam::kL2tpIpsecPasswordProperty, PROPERTY_INDEX_L2TPIPSEC_PASSWORD },
   { flimflam::kL2tpIpsecUserProperty, PROPERTY_INDEX_L2TPIPSEC_USER },
+  { flimflam::kL2tpIpsecGroupNameProperty,
+    PROPERTY_INDEX_L2TPIPSEC_GROUP_NAME },
   { flimflam::kManufacturerProperty, PROPERTY_INDEX_MANUFACTURER },
   { flimflam::kMdnProperty, PROPERTY_INDEX_MDN },
   { flimflam::kMeidProperty, PROPERTY_INDEX_MEID },
@@ -1136,32 +1138,39 @@ bool NativeVirtualNetworkParser::ParseProviderValue(PropertyIndex index,
       network->set_ca_cert_nss(ca_cert_nss);
       return true;
     }
-    case PROPERTY_INDEX_L2TPIPSEC_PSK:{
+    case PROPERTY_INDEX_L2TPIPSEC_PSK: {
       std::string psk_passphrase;
       if (!value.GetAsString(&psk_passphrase))
         break;
       network->set_psk_passphrase(psk_passphrase);
       return true;
     }
-    case PROPERTY_INDEX_L2TPIPSEC_CLIENT_CERT_ID:{
+    case PROPERTY_INDEX_L2TPIPSEC_CLIENT_CERT_ID: {
       std::string client_cert_id;
       if (!value.GetAsString(&client_cert_id))
         break;
       network->set_client_cert_id(client_cert_id);
       return true;
     }
-    case PROPERTY_INDEX_L2TPIPSEC_USER:{
+    case PROPERTY_INDEX_L2TPIPSEC_USER: {
       std::string username;
       if (!value.GetAsString(&username))
         break;
       network->set_username(username);
       return true;
     }
-    case PROPERTY_INDEX_L2TPIPSEC_PASSWORD:{
+    case PROPERTY_INDEX_L2TPIPSEC_PASSWORD: {
       std::string user_passphrase;
       if (!value.GetAsString(&user_passphrase))
         break;
       network->set_user_passphrase(user_passphrase);
+      return true;
+    }
+    case PROPERTY_INDEX_L2TPIPSEC_GROUP_NAME: {
+      std::string group_name;
+      if (!value.GetAsString(&group_name))
+        break;
+      network->set_group_name(group_name);
       return true;
     }
     default:
