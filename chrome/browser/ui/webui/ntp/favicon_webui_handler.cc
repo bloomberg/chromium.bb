@@ -87,12 +87,10 @@ void FaviconWebUIHandler::OnFaviconDataAvailable(
   int id = consumer_.GetClientData(favicon_service, request_handle);
   scoped_ptr<StringValue> color_value;
 
-  if (favicon.is_valid()) {
-    // TODO(estade): cache the response
+  if (favicon.is_valid())
     color_value.reset(GetDominantColorCssString(favicon.image_data));
-  } else {
+  else
     color_value.reset(new StringValue("#919191"));
-  }
 
   StringValue dom_id(dom_id_map_[id]);
   web_ui_->CallJavascriptFunction("ntp4.setStripeColor", dom_id, *color_value);
@@ -126,9 +124,7 @@ void FaviconWebUIHandler::HandleGetAppIconDominantColor(
 
 void FaviconWebUIHandler::NotifyAppIconReady(const std::string& extension_id) {
   const SkBitmap& bitmap = app_icon_color_manager_->GetIcon(extension_id);
-  // TODO(gbillock): cache this? Probably call into it from the manager and
-  // cache the color there. Then call back to this method with the ext id
-  // and the color.
+  // TODO(estade): would be nice to avoid a round trip through png encoding.
   std::vector<unsigned char> bits;
   if (!gfx::PNGCodec::EncodeBGRASkBitmap(bitmap, true, &bits))
     return;
