@@ -125,11 +125,6 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
       protocol::Session* session,
       protocol::SessionManager::IncomingSessionResponse* response) OVERRIDE;
 
-  void AddAuthenticatedClient(
-      scoped_refptr<protocol::ConnectionToClient> connection,
-      const protocol::SessionConfig& config,
-      const std::string& jid);
-
   // Sets desired configuration for the protocol. Ownership of the
   // |config| is transferred to the object. Must be called before Start().
   void set_protocol_config(protocol::CandidateSessionConfig* config);

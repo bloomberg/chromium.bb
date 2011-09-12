@@ -447,19 +447,12 @@ void ChromotingHost::EnableCurtainMode(bool enable) {
 
 void ChromotingHost::LocalLoginSucceeded(
     scoped_refptr<ConnectionToClient> connection) {
-  DCHECK(context_->network_message_loop()->BelongsToCurrentThread());
-
-  context_->main_message_loop()->PostTask(
-      FROM_HERE, base::Bind(&ChromotingHost::AddAuthenticatedClient,
-                            this, connection, connection->session()->config(),
-                            connection->session()->jid()));
-}
-
-void ChromotingHost::AddAuthenticatedClient(
-    scoped_refptr<ConnectionToClient> connection,
-    const protocol::SessionConfig& config,
-    const std::string& jid) {
-  DCHECK_EQ(context_->main_message_loop(), MessageLoop::current());
+  if (MessageLoop::current() != context_->main_message_loop()) {
+    context_->main_message_loop()->PostTask(
+        FROM_HERE, base::Bind(&ChromotingHost::LocalLoginSucceeded, this,
+                              connection));
+    return;
+  }
 
   protocol::LocalLoginStatus* status = new protocol::LocalLoginStatus();
   status->set_success(true);
@@ -484,7 +477,7 @@ void ChromotingHost::AddAuthenticatedClient(
   if (!recorder_.get()) {
     // Then we create a ScreenRecorder passing the message loops that
     // it should run on.
-    Encoder* encoder = CreateEncoder(config);
+    Encoder* encoder = CreateEncoder(connection->session()->config());
 
     recorder_ = new ScreenRecorder(context_->main_message_loop(),
                                    context_->encode_message_loop(),
@@ -505,7 +498,7 @@ void ChromotingHost::AddAuthenticatedClient(
   // including closing the connection on failure of a critical operation.
   EnableCurtainMode(true);
   if (is_it2me_) {
-    std::string username = jid;
+    std::string username = connection->session()->jid();
     size_t pos = username.find('/');
     if (pos != std::string::npos)
       username.replace(pos, std::string::npos, "");
