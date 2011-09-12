@@ -2789,13 +2789,6 @@ nacl_irt_env = nacl_env.Clone(
 # omit the directory, we must tell it how to find the pthread.h header.
 nacl_irt_env.Append(CPPPATH='${MAIN_DIR}/src/untrusted/pthread')
 
-# http://code.google.com/p/nativeclient/issues/detail?id=1225
-if nacl_irt_env.Bit('bitcode'):
-  optflags = ['-O0','-O1','-O2','-O3']
-  nacl_irt_env.FilterOut(LINKFLAGS=optflags)
-  nacl_irt_env.FilterOut(CCFLAGS=optflags)
-  nacl_irt_env.FilterOut(CXXFLAGS=optflags)
-
 # Map certain flag bits to suffices on the build output.  This needs to
 # happen pretty early, because it affects any concretized directory names.
 target_variant_map = [
