@@ -347,6 +347,8 @@ int BrowserMain(const MainFunctionParams& parameters) {
   scoped_ptr<content::BrowserMainParts> parts(
       content::GetContentClient()->browser()->CreateBrowserMainParts(
           parameters));
+  if (!parts.get())
+    parts.reset(new content::BrowserMainParts(parameters));
 
   parts->EarlyInitialization();
 

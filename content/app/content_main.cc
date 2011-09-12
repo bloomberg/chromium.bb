@@ -284,7 +284,7 @@ int ContentMain(HINSTANCE instance,
   _Module.Init(NULL, static_cast<HINSTANCE>(instance));
 #else
 int ContentMain(int argc,
-                char** argv,
+                const char** argv,
                 ContentMainDelegate* delegate) {
   // NOTE(willchan): One might ask why this call is done here rather than in
   // process_util_linux.cc with the definition of

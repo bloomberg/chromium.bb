@@ -567,6 +567,7 @@
         ['toolkit_uses_gtk == 1', {
           'dependencies': [
             '../build/linux/system.gyp:dbus',
+            '../build/linux/system.gyp:dbus-glib',
             # For FcLangSetAdd call in render_sandbox_host_linux.cc
             '../build/linux/system.gyp:fontconfig',
             '../build/linux/system.gyp:gtk',

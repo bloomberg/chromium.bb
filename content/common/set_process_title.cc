@@ -25,7 +25,7 @@
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_SOLARIS)
 
-void SetProcessTitleFromCommandLine(char** main_argv) {
+void SetProcessTitleFromCommandLine(const char** main_argv) {
   // Build a single string which consists of all the arguments separated
   // by spaces. We can't actually keep them separate due to the way the
   // setproctitle() function works.
@@ -74,7 +74,7 @@ void SetProcessTitleFromCommandLine(char** main_argv) {
 
 // All other systems (basically Windows & Mac) have no need or way to implement
 // this function.
-void SetProcessTitleFromCommandLine(char** /* main_argv */) {
+void SetProcessTitleFromCommandLine(const char** /* main_argv */) {
 }
 
 #endif

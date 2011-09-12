@@ -4116,7 +4116,6 @@
         }],
         ['toolkit_uses_gtk == 1', {
           'dependencies': [
-            '../build/linux/system.gyp:dbus-glib',
             '../build/linux/system.gyp:gconf',
             '../build/linux/system.gyp:gtk',
             '../build/linux/system.gyp:gtkprint',

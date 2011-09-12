@@ -18,6 +18,6 @@ void setproctitle(const char* fmt, ...);
 
 // Initialize state needed for setproctitle() on Linux. Pass the argv pointer
 // from main() to setproctitle_init() before calling setproctitle().
-void setproctitle_init(char** main_argv);
+void setproctitle_init(const char** main_argv);
 
 #endif  // CONTENT_COMMON_SET_PROCESS_TITLE_LINUX_H_

@@ -21,6 +21,7 @@
       'sources': [
         'app/content_main.cc',
         'app/content_main.h',
+        'app/content_main_delegate.cc',
         'app/content_main_delegate.h',
         'app/startup_helper_win.cc',
         'app/startup_helper_win.h',

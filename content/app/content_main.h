@@ -33,7 +33,7 @@ int ContentMain(HINSTANCE instance,
                 ContentMainDelegate* delegate);
 #else
 int ContentMain(int argc,
-                char** argv,
+                const char** argv,
                 ContentMainDelegate* delegate);
 #endif
 

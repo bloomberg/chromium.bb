@@ -114,7 +114,7 @@ DLLEXPORT int __cdecl ChromeMain(HINSTANCE instance,
 #elif defined(OS_POSIX)
 extern "C" {
 __attribute__((visibility("default")))
-int ChromeMain(int argc, char** argv);
+int ChromeMain(int argc, const char** argv);
 }
 #endif
 
@@ -743,7 +743,7 @@ DLLEXPORT int __cdecl ChromeMain(HINSTANCE instance,
   ChromeMainDelegate chrome_main_delegate;
   return content::ContentMain(instance, sandbox_info, &chrome_main_delegate);
 #elif defined(OS_POSIX)
-int ChromeMain(int argc, char** argv) {
+int ChromeMain(int argc, const char** argv) {
   ChromeMainDelegate chrome_main_delegate;
   return content::ContentMain(argc, argv, &chrome_main_delegate);
 #endif
