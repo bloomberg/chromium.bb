@@ -5015,6 +5015,13 @@
    fun:snd_config_iterator_next
    fun:_ZN11AlsaWrapper14DeviceNameHintEiPKcPPPv
 }
+{
+   bug_96295
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN20ComponentUpdaterTest17RegisterComponentEP12CrxComponentNS_14TestComponentsERK7Version
+   fun:_ZN42ComponentUpdaterTest_ProdVersionCheck_Test8TestBodyEv
+}
 
 
 #-----------------------------------------------------------------------
