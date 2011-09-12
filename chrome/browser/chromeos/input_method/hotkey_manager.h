@@ -27,7 +27,7 @@ class HotkeyManager {
   };
 
   HotkeyManager();
-  ~HotkeyManager() {}
+  ~HotkeyManager();
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);

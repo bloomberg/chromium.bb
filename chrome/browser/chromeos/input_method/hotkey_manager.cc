@@ -71,6 +71,9 @@ HotkeyManager::HotkeyManager()
     filter_release_events_(false) {
 }
 
+HotkeyManager::~HotkeyManager() {
+}
+
 void HotkeyManager::AddObserver(Observer* observer) {
   observers_.AddObserver(observer);
 }
