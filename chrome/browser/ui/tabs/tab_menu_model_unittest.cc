@@ -1,18 +1,20 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/tabs/tab_menu_model.h"
 
+#include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/menu_model_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "testing/platform_test.h"
 
-class TabMenuModelTest : public PlatformTest, public MenuModelTest {
+class TabMenuModelTest : public MenuModelTest,
+                         public BrowserWithTestWindowTest {
 };
 
 TEST_F(TabMenuModelTest, Basics) {
-  TabMenuModel model(&delegate_, true);
+  browser()->NewTab();
+  TabMenuModel model(&delegate_, browser()->tabstrip_model(), 0);
 
   // Verify it has items. The number varies by platform, so we don't check
   // the exact number.
