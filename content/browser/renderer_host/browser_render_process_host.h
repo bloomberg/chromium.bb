@@ -102,6 +102,9 @@ class BrowserRenderProcessHost : public RenderProcessHost,
   // Callers can reduce the RenderProcess' priority.
   void SetBackgrounded(bool backgrounded);
 
+  // Handle termination of our process.
+  void ProcessDied();
+
   // The count of currently visible widgets.  Since the host can be a container
   // for multiple widgets, it uses this count to determine when it should be
   // backgrounded.

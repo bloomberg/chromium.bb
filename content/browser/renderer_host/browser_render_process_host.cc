@@ -657,6 +657,7 @@ bool BrowserRenderProcessHost::FastShutdownIfPossible() {
     return false;
 
   child_process_launcher_.reset();
+  ProcessDied();
   fast_shutdown_started_ = true;
   return true;
 }
@@ -806,6 +807,10 @@ void BrowserRenderProcessHost::OnChannelConnected(int32 peer_pid) {
 }
 
 void BrowserRenderProcessHost::OnChannelError() {
+  ProcessDied();
+}
+
+void BrowserRenderProcessHost::ProcessDied() {
   // Our child process has died.  If we didn't expect it, it's a crash.
   // In any case, we need to let everyone know it's gone.
   // The OnChannelError notification can fire multiple times due to nested sync
