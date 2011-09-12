@@ -146,6 +146,12 @@ bool IsBundlePathBlocked(NSString* bundle_path) {
   return false;
 }
 
+// Returns true if bundle_id identifies a bundle that is allowed to be loaded
+// even when found in a blocked directory.
+bool IsBundleIDAllowed(NSString* bundle_id) {
+  return [bundle_id isEqualToString:@"com.google.osax.Google_Authenticator_BT"];
+}
+
 typedef Boolean (*_CFBundleLoadExecutableAndReturnError_Type)(CFBundleRef,
                                                               Boolean,
                                                               CFErrorRef*);
@@ -167,9 +173,10 @@ Boolean ChromeCFBundleLoadExecutableAndReturnError(CFBundleRef bundle,
       CFURLCopyFileSystemPath(url_cf, kCFURLPOSIXPathStyle));
   NSString* path_ns = base::mac::CFToNSCast(path_cf);
 
-  if (IsBundlePathBlocked(path_ns)) {
-    CFStringRef identifier_cf = CFBundleGetIdentifier(bundle);
-    NSString* identifier_ns = base::mac::CFToNSCast(identifier_cf);
+  CFStringRef identifier_cf = CFBundleGetIdentifier(bundle);
+  NSString* identifier_ns = base::mac::CFToNSCast(identifier_cf);
+
+  if (IsBundlePathBlocked(path_ns) && !IsBundleIDAllowed(identifier_ns)) {
     NSString* identifier_ns_print = identifier_ns ? identifier_ns : @"(nil)";
 
     LOG(INFO) << "Blocking attempt to load bundle "
