@@ -1590,6 +1590,7 @@ class NetworkLibrary {
   // VPNConfigData must be provided.
   struct VPNConfigData {
     VPNConfigData() {}
+    ~VPNConfigData() {}
     std::string psk;
     std::string server_ca_cert_nss_nickname;
     std::string client_cert_pkcs11_id;
