@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,13 +7,12 @@
 #include "net/base/auth.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-
 TEST(LoginPromptTest, GetSignonRealm) {
   scoped_refptr<net::AuthChallengeInfo> auth_info = new net::AuthChallengeInfo;
   auth_info->is_proxy = false;  // server auth
   // auth_info->host is intentionally left empty.
-  auth_info->scheme = L"Basic";
-  auth_info->realm = L"WallyWorld";
+  auth_info->scheme = "Basic";
+  auth_info->realm = "WallyWorld";
 
   std::string url[] = {
     "https://www.nowhere.org/dir/index.html",

@@ -611,9 +611,10 @@ void ExtensionWebRequestEventRouter::OnAuthRequired(
                   base::Uint64ToString(request->identifier()));
   dict->SetString(keys::kUrlKey, request->url().spec());
   dict->SetBoolean(keys::kIsProxyKey, auth_info.is_proxy);
-  dict->SetString(keys::kSchemeKey, WideToUTF8(auth_info.scheme));
+  if (!auth_info.scheme.empty())
+    dict->SetString(keys::kSchemeKey, auth_info.scheme);
   if (!auth_info.realm.empty())
-    dict->SetString(keys::kRealmKey, WideToUTF8(auth_info.realm));
+    dict->SetString(keys::kRealmKey, auth_info.realm);
   dict->SetDouble(keys::kTimeStampKey, time.ToDoubleT() * 1000);
   if (extra_info_spec & ExtraInfoSpec::REQUEST_HEADERS) {
     dict->Set(keys::kResponseHeadersKey,

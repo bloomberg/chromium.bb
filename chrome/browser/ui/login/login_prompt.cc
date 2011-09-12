@@ -58,14 +58,14 @@ std::string GetSignonRealm(const GURL& url,
                            const net::AuthChallengeInfo& auth_info) {
   std::string signon_realm;
   if (auth_info.is_proxy) {
-    signon_realm = WideToASCII(auth_info.host_and_port);
+    signon_realm = auth_info.challenger.ToString();
     signon_realm.append("/");
   } else {
     // Take scheme, host, and port from the url.
     signon_realm = url.GetOrigin().spec();
     // This ends with a "/".
   }
-  signon_realm.append(WideToUTF8(auth_info.realm));
+  signon_realm.append(auth_info.realm);
   return signon_realm;
 }
 
@@ -234,7 +234,7 @@ void LoginHandler::Observe(int type,
   DCHECK(login_details->handler() != this);
 
   // Only handle notification for the identical auth info.
-  if (*login_details->handler()->auth_info() != *auth_info())
+  if (!login_details->handler()->auth_info()->Equals(*auth_info()))
     return;
 
   // Set or cancel the auth in this handler.
@@ -417,19 +417,18 @@ class LoginDialogTask : public Task {
     password_manager->OnPasswordFormsFound(v);
     handler_->SetPasswordManager(password_manager);
 
-    string16 host_and_port_hack16 = WideToUTF16Hack(auth_info_->host_and_port);
-
     // The realm is controlled by the remote server, so there is no reason
     // to believe it is of a reasonable length.
-    string16 realm_hack16;
-    ui::ElideString(WideToUTF16Hack(auth_info_->realm), 120, &realm_hack16);
+    string16 elided_realm;
+    ui::ElideString(UTF8ToUTF16(auth_info_->realm), 120, &elided_realm);
 
-    string16 explanation = realm_hack16.empty() ?
+    string16 host_and_port = ASCIIToUTF16(auth_info_->challenger.ToString());
+    string16 explanation = elided_realm.empty() ?
         l10n_util::GetStringFUTF16(IDS_LOGIN_DIALOG_DESCRIPTION_NO_REALM,
-                                   host_and_port_hack16) :
+                                   host_and_port) :
         l10n_util::GetStringFUTF16(IDS_LOGIN_DIALOG_DESCRIPTION,
-                                   host_and_port_hack16,
-                                   realm_hack16);
+                                   host_and_port,
+                                   elided_realm);
     handler_->BuildViewForPasswordManager(password_manager, explanation);
   }
 
@@ -446,14 +445,15 @@ class LoginDialogTask : public Task {
     } else {
       dialog_form.scheme = PasswordForm::SCHEME_OTHER;
     }
-    std::string host_and_port(WideToASCII(auth_info_->host_and_port));
+    std::string host_and_port(auth_info_->challenger.ToString());
     if (auth_info_->is_proxy) {
       std::string origin = host_and_port;
       // We don't expect this to already start with http:// or https://.
       DCHECK(origin.find("http://") != 0 && origin.find("https://") != 0);
       origin = std::string("http://") + origin;
       dialog_form.origin = GURL(origin);
-    } else if (net::GetHostAndPort(request_url_) != host_and_port) {
+    } else if (!auth_info_->challenger.Equals(
+        net::HostPortPair::FromURL(request_url_))) {
       dialog_form.origin = GURL();
       NOTREACHED();  // crbug.com/32718
     } else {
