@@ -86,8 +86,11 @@ cr.define('options', function() {
    */
   ContentSettings.setContentFilterSettingsValue = function(dict) {
     for (var group in dict) {
-      document.querySelector('input[type=radio][name=' + group + '][value=' +
-                             dict[group]['value'] + ']').checked = true;
+      var radio = document.querySelector('input[type=radio][name=' + group +
+                                         '][value=' + dict[group]['value'] +
+                                         ']');
+      if (radio)
+        radio.checked = true;
       var radios = document.querySelectorAll('input[type=radio][name=' +
                                              group + ']');
       for (var i = 0, len = radios.length; i < len; i++) {
