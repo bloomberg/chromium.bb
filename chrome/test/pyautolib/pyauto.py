@@ -313,12 +313,21 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     """
     consent_file = '/home/chronos/Consent To Send Stats'
     def _HasValidConsentFile():
-      return os.path.isfile(consent_file) and len(open(consent_file).read())
+      if not os.path.isfile(consent_file):
+        return False
+      stat = os.stat(consent_file)
+      return (len(open(consent_file).read()) and
+              (1000, 1000) == (stat.st_uid, stat.st_gid))
     if not _HasValidConsentFile():
       client_id = hashlib.md5('abcdefgh').hexdigest()
-      open(consent_file, 'w').write(client_id)
-      # This file must be owned by cronos:cronos!
-      os.chown(consent_file, 1000, 1000);
+      # Consent file creation and chown to chronos needs to be atomic
+      # to avoid races with the session_manager.  crosbug.com/18413
+      # Therefore, create a temp file, chown, then rename it as consent file.
+      temp_file = consent_file + '.tmp'
+      open(temp_file, 'w').write(client_id)
+      # This file must be owned by chronos:chronos!
+      os.chown(temp_file, 1000, 1000);
+      shutil.move(temp_file, consent_file)
     assert _HasValidConsentFile(), 'Could not create %s' % consent_file
 
   @staticmethod
