@@ -170,6 +170,8 @@ class ProfileImpl : public Profile,
 
   void RegisterComponentExtensions();
 
+  void InstallDefaultApps();
+
   ExtensionPrefValueMap* GetExtensionPrefValueMap();
 
   void CreateQuotaManagerAndClients();

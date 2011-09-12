@@ -353,6 +353,16 @@ bool PathProvider(int key, FilePath* result) {
       create_dir = true;
 #endif
       break;
+    case chrome::DIR_DEFAULT_APPS:
+#if defined(OS_MACOSX)
+      cur = base::mac::MainAppBundlePath();
+      cur = cur.Append(FILE_PATH_LITERAL("Default Apps"));
+#else
+      if (!PathService::Get(chrome::DIR_APP, &cur))
+        return false;
+      cur = cur.Append(FILE_PATH_LITERAL("default_apps"));
+#endif
+      break;
     default:
       return false;
   }

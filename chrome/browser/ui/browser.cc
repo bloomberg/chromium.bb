@@ -730,6 +730,11 @@ TabContents* Browser::OpenApplicationTab(Profile* profile,
       extension_service->extension_prefs()->GetLaunchType(
           extension->id(), ExtensionPrefs::LAUNCH_DEFAULT);
   UMA_HISTOGRAM_ENUMERATION("Extensions.AppTabLaunchType", launch_type, 100);
+
+  // Track launches of the webstore specifically.
+  if (extension->id() == extension_misc::kWebStoreAppId)
+    UserMetrics::RecordAction(UserMetricsAction("Extensions.WebStoreLaunch"));
+
   int add_type = TabStripModel::ADD_ACTIVE;
   if (launch_type == ExtensionPrefs::LAUNCH_PINNED)
     add_type |= TabStripModel::ADD_PINNED;

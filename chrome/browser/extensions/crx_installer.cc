@@ -31,6 +31,7 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_file_util.h"
 #include "content/browser/browser_thread.h"
+#include "content/browser/user_metrics.h"
 #include "content/common/notification_service.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -538,6 +539,13 @@ void CrxInstaller::ReportFailureFromUIThread(const std::string& error) {
 
 void CrxInstaller::ReportSuccessFromFileThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+
+  // Tracking number of extensions installed by users
+  if (install_cause() == extension_misc::INSTALL_CAUSE_USER_DOWNLOAD) {
+    UserMetrics::RecordAction(
+        UserMetricsAction("Extensions.ExtensionInstalled"));
+  }
+
   if (!BrowserThread::PostTask(
           BrowserThread::UI, FROM_HERE,
           NewRunnableMethod(this,

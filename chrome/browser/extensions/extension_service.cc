@@ -78,6 +78,7 @@
 #include "content/browser/plugin_process_host.h"
 #include "content/browser/plugin_service.h"
 #include "content/browser/renderer_host/render_process_host.h"
+#include "content/browser/user_metrics.h"
 #include "content/common/content_notification_types.h"
 #include "content/common/json_value_serializer.h"
 #include "content/common/notification_service.h"
@@ -955,6 +956,10 @@ bool ExtensionService::UninstallExtension(
         FROM_HERE, SyncChangeList(1, sync_change));
     sync_bundle->synced_extensions.erase(extension_id);
   }
+
+  // Track the uninstallation.
+  UserMetrics::RecordAction(
+      UserMetricsAction("Extensions.ExtensionUninstalled"));
 
   return true;
 }

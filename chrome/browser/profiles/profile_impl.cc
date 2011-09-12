@@ -26,6 +26,7 @@
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
+#include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_devtools_manager.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"
 #include "chrome/browser/extensions/extension_event_router.h"
@@ -38,11 +39,13 @@
 #include "chrome/browser/extensions/extension_special_storage_policy.h"
 #include "chrome/browser/extensions/user_script_master.h"
 #include "chrome/browser/favicon/favicon_service.h"
+#include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/geolocation/chrome_geolocation_permission_context.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/shortcuts_backend.h"
 #include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/instant/instant_controller.h"
+#include "chrome/browser/mac/keystone_glue.h"
 #include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/net/gaia/token_service.h"
@@ -87,6 +90,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/spellcheck_messages.h"
+#include "chrome/installer/util/google_update_settings.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/chrome_blob_storage_context.h"
@@ -500,6 +504,26 @@ void ProfileImpl::InitExtensions(bool extensions_enabled) {
       extensions_enabled));
 
   RegisterComponentExtensions();
+
+#if defined(GOOGLE_CHROME_BUILD)
+  // If first run and brand code not equal to ECDB, install default apps.
+#if defined(OS_WIN)
+  string16 brand;
+  GoogleUpdateSettings::GetBrand(&brand);
+#elif defined(OS_MACOSX)
+  std::string brand = keystone_glue::BrandCode();
+#else
+  std::string brand;
+#endif
+  // TODO(caitkp): when we move to multi-profiles (M16) we will want to change
+  // this check, as |FirstRun::IsChromeFirstRun()| checks for the first run
+  // ever, not first run per profile.
+  if (FirstRun::IsChromeFirstRun() &&
+      !LowerCaseEqualsASCII(brand, "ecdb")) {
+    InstallDefaultApps();
+  }
+#endif
+
   extension_service_->Init();
 
   if (extensions_enabled) {
@@ -533,6 +557,31 @@ void ProfileImpl::InitExtensions(bool extensions_enabled) {
     } else {
       extension_service_->InitEventRouters();
     }
+  }
+}
+
+void ProfileImpl::InstallDefaultApps() {
+  FilePath apps_dir;
+  FilePath file;
+  std::list<FilePath> crx_path_list;
+
+  if (PathService::Get(chrome::DIR_DEFAULT_APPS, &apps_dir)) {
+    file_util::FileEnumerator file_enumerator(apps_dir, false,
+        file_util::FileEnumerator::FILES);
+    while (!(file = file_enumerator.Next()).value().empty()) {
+      if (LowerCaseEqualsASCII(file.Extension(), ".crx"))
+        crx_path_list.push_back(file);
+    }
+  }
+
+  for (std::list<FilePath>::iterator iter = crx_path_list.begin();
+       iter != crx_path_list.end(); ++iter) {
+    scoped_refptr<CrxInstaller> crx_installer =
+        extension_service_->MakeCrxInstaller(NULL);
+    crx_installer->set_allow_silent_install(true);
+    crx_installer->set_delete_source(false);
+    crx_installer->set_install_cause(extension_misc::INSTALL_CAUSE_UPDATE);
+    crx_installer->InstallCrx(*iter);
   }
 }
 

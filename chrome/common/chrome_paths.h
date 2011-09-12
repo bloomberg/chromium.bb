@@ -57,6 +57,8 @@ enum {
 #endif
 
   DIR_EXTERNAL_EXTENSIONS,      // Directory where installer places .crx files.
+  DIR_DEFAULT_APPS,             // Directory where installer places .crx files
+                                // to be installed when chrome is first run.
   FILE_RESOURCE_MODULE,         // Full path and filename of the module that
                                 // contains embedded resources (version,
                                 // strings, images, etc.).
