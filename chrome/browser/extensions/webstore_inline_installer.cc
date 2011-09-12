@@ -140,7 +140,9 @@ WebstoreInlineInstaller::WebstoreInlineInstaller(TabContents* tab_contents,
       install_id_(install_id),
       id_(webstore_item_id),
       requestor_url_(requestor_url),
-      delegate_(delegate) {}
+      delegate_(delegate),
+      average_rating_(0.0),
+      rating_count_(0) {}
 
 WebstoreInlineInstaller::~WebstoreInlineInstaller() {
 }

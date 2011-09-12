@@ -359,7 +359,7 @@ ProfileKeyedService* PluginPrefs::Factory::BuildServiceInstanceFor(
   return new PluginPrefsWrapper(plugin_prefs);
 }
 
-PluginPrefs::PluginPrefs() : notify_pending_(false) {
+PluginPrefs::PluginPrefs() : prefs_(NULL), notify_pending_(false) {
 }
 
 PluginPrefs::~PluginPrefs() {

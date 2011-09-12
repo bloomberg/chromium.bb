@@ -19,6 +19,7 @@ namespace browser_sync {
 struct SyncedSession {
   // The type of device.
   enum DeviceType {
+    TYPE_UNSET = 0,
     TYPE_WIN = 1,
     TYPE_MACOSX = 2,
     TYPE_LINUX = 3,

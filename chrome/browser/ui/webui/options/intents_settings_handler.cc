@@ -20,7 +20,9 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "ui/base/l10n/l10n_util.h"
 
-IntentsSettingsHandler::IntentsSettingsHandler() : batch_update_(false) {
+IntentsSettingsHandler::IntentsSettingsHandler()
+    : web_intents_registry_(NULL),
+      batch_update_(false) {
 }
 
 IntentsSettingsHandler::~IntentsSettingsHandler() {

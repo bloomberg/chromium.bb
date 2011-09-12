@@ -23,7 +23,8 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
-ImportDataHandler::ImportDataHandler() : importer_host_(NULL) {
+ImportDataHandler::ImportDataHandler() : importer_host_(NULL),
+                                         import_did_succeed_(false) {
 }
 
 ImportDataHandler::~ImportDataHandler() {

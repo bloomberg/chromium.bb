@@ -18,7 +18,10 @@ namespace webkit {
 namespace ppapi {
 
 PPB_Flash_NetConnector_Impl::PPB_Flash_NetConnector_Impl(PP_Instance instance)
-    : Resource(instance) {
+    : Resource(instance),
+      socket_out_(NULL),
+      local_addr_out_(NULL),
+      remote_addr_out_(NULL) {
 }
 
 PPB_Flash_NetConnector_Impl::~PPB_Flash_NetConnector_Impl() {

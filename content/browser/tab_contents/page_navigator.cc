@@ -20,7 +20,7 @@ OpenURLParams::OpenURLParams(
       transition(transition) {
 }
 
-OpenURLParams::OpenURLParams() {
+OpenURLParams::OpenURLParams() : disposition(UNKNOWN), transition(0) {
 }
 
 OpenURLParams::~OpenURLParams() {

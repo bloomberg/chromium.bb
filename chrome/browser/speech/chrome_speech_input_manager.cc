@@ -84,7 +84,9 @@ class ChromeSpeechInputManager::OptionalRequestInfo
   DISALLOW_COPY_AND_ASSIGN(OptionalRequestInfo);
 };
 
-ChromeSpeechInputManager::SpeechInputRequest::SpeechInputRequest() {
+ChromeSpeechInputManager::SpeechInputRequest::SpeechInputRequest()
+    : delegate(NULL),
+      is_active(false) {
 }
 
 ChromeSpeechInputManager::SpeechInputRequest::~SpeechInputRequest() {

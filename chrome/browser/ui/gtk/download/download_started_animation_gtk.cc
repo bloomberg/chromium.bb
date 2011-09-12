@@ -80,6 +80,7 @@ class DownloadStartedAnimationGtk : public ui::LinearAnimation,
 DownloadStartedAnimationGtk::DownloadStartedAnimationGtk(
     TabContents* tab_contents)
     : ui::LinearAnimation(kMoveTimeMs, kFrameRateHz, NULL),
+      popup_(NULL),
       tab_contents_(tab_contents) {
   static GdkPixbuf* kDownloadImage = NULL;
   if (!kDownloadImage) {
@@ -136,6 +137,8 @@ void DownloadStartedAnimationGtk::Reposition() {
   if (!tab_contents_)
     return;
 
+  DCHECK(popup_);
+
   // Align the image with the bottom left of the web contents (so that it
   // points to the newly created download).
   gtk_window_move(GTK_WINDOW(popup_),
@@ -147,6 +150,8 @@ void DownloadStartedAnimationGtk::Reposition() {
 void DownloadStartedAnimationGtk::Close() {
   if (!tab_contents_)
     return;
+
+  DCHECK(popup_);
 
   registrar_.Remove(
       this,

@@ -143,7 +143,8 @@ static void AppendParams(const std::vector<string16>& additional_names,
 
 namespace chrome {
 
-ChromeContentRendererClient::ChromeContentRendererClient() {
+ChromeContentRendererClient::ChromeContentRendererClient()
+    : spellcheck_provider_(NULL) {
   chrome::InitializePPAPI();
 }
 

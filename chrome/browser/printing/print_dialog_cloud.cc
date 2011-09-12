@@ -244,7 +244,8 @@ CloudPrintFlowHandler::CloudPrintFlowHandler(const FilePath& path_to_file,
                                              const string16& print_job_title,
                                              const string16& print_ticket,
                                              const std::string& file_type)
-    : path_to_file_(path_to_file),
+    : dialog_delegate_(NULL),
+      path_to_file_(path_to_file),
       print_job_title_(print_job_title),
       print_ticket_(print_ticket),
       file_type_(file_type) {

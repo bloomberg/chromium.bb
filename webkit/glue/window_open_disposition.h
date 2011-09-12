@@ -8,6 +8,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNavigationPolicy.h"
 
 enum WindowOpenDisposition {
+  UNKNOWN,
   SUPPRESS_OPEN,
   CURRENT_TAB,
   // Indicates that only one tab with the url should exist in the same window.

@@ -36,7 +36,7 @@ EGLDisplay g_software_display;
 EGLNativeDisplayType g_software_native_display;
 }
 
-GLSurfaceEGL::GLSurfaceEGL() {
+GLSurfaceEGL::GLSurfaceEGL() : software_(false) {
 }
 
 GLSurfaceEGL::~GLSurfaceEGL() {

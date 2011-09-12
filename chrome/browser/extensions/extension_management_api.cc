@@ -198,7 +198,8 @@ class SafeManifestJSONParser : public UtilityProcessHost::Client {
   SafeManifestJSONParser(GetPermissionWarningsByManifestFunction* client,
                  const std::string& manifest)
       : client_(client),
-        manifest_(manifest) {}
+        manifest_(manifest),
+        utility_host_(NULL) {}
 
   void Start() {
     CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));

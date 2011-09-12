@@ -71,6 +71,7 @@ bool IsRetryOnTime(DelayInfo* delay_table, int retry_count,
 RetryVerifier::RetryVerifier() : retry_count_(0),
                                  success_(false),
                                  done_(false) {
+  memset(&delay_table_, 0, sizeof(delay_table_));
 }
 
 RetryVerifier::~RetryVerifier() {

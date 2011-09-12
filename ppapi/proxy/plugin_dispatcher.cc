@@ -42,6 +42,10 @@ InstanceToDispatcherMap* g_instance_to_dispatcher = NULL;
 
 }  // namespace
 
+InstanceData::InstanceData() : fullscreen(PP_FALSE) {
+  memset(&position, 0, sizeof(position));
+}
+
 PluginDispatcher::PluginDispatcher(base::ProcessHandle remote_process_handle,
                                    GetInterfaceFunc get_interface)
     : Dispatcher(remote_process_handle, get_interface),

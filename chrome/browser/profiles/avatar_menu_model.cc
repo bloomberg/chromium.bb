@@ -64,6 +64,7 @@ AvatarMenuModel::~AvatarMenuModel() {
 
 AvatarMenuModel::Item::Item(size_t model_index, const gfx::Image& icon)
     : icon(icon),
+      active(false),
       model_index(model_index) {
 }
 

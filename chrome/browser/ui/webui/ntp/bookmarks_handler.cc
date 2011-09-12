@@ -25,7 +25,8 @@
 
 namespace keys = extension_bookmarks_module_constants;
 
-BookmarksHandler::BookmarksHandler() : dom_ready_(false),
+BookmarksHandler::BookmarksHandler() : model_(NULL),
+                                       dom_ready_(false),
                                        from_current_page_(false) {
 }
 

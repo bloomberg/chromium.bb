@@ -33,7 +33,7 @@ namespace proxy {
 
 // Used to keep track of per-instance data.
 struct InstanceData {
-  InstanceData() : fullscreen(PP_FALSE) {}
+  InstanceData();
   PP_Rect position;
   PP_Bool fullscreen;
 };

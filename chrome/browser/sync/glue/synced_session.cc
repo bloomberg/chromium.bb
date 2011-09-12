@@ -9,7 +9,8 @@
 
 namespace browser_sync {
 
-SyncedSession::SyncedSession() : session_tag("invalid") {
+SyncedSession::SyncedSession() : session_tag("invalid"),
+                                 device_type(TYPE_UNSET) {
 }
 
 SyncedSession::~SyncedSession() {

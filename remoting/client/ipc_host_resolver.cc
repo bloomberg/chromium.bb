@@ -15,7 +15,8 @@ namespace remoting {
 class IpcHostResolver : public HostResolver {
  public:
   IpcHostResolver(content::P2PSocketDispatcher* socket_dispatcher)
-      : socket_dispatcher_(socket_dispatcher) {
+      : socket_dispatcher_(socket_dispatcher),
+        port_(0) {
   }
 
   virtual ~IpcHostResolver() {

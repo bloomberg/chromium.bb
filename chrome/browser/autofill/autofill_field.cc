@@ -27,7 +27,8 @@ static std::string Hash32Bit(const std::string& str) {
 
 AutofillField::AutofillField()
     : server_type_(NO_SERVER_DATA),
-      heuristic_type_(UNKNOWN_TYPE) {
+      heuristic_type_(UNKNOWN_TYPE),
+      phone_part_(IGNORED) {
 }
 
 AutofillField::AutofillField(const webkit_glue::FormField& field,

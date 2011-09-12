@@ -92,6 +92,7 @@ class FlashNetConnector : public PPB_Flash_NetConnector_API,
 FlashNetConnector::FlashNetConnector(const HostResource& resource)
     : Resource(resource),
       callback_(PP_BlockUntilComplete()),
+      socket_out_(NULL),
       local_addr_out_(NULL),
       remote_addr_out_(NULL) {
 }
@@ -175,8 +176,8 @@ int32_t FlashNetConnector::ConnectWithMessage(
 // the callback handler.
 struct PPB_Flash_NetConnector_Proxy::ConnectCallbackInfo {
   ConnectCallbackInfo(const HostResource& r) : resource(r), handle(0) {
-    local_addr.size = 0;
-    remote_addr.size = 0;
+    memset(&local_addr, 0, sizeof(local_addr));
+    memset(&remote_addr, 0, sizeof(remote_addr));
   }
 
   HostResource resource;

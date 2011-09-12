@@ -78,7 +78,10 @@ const int kIconSize = 69;
 
 }  // namespace
 
-ExtensionInstallUI::Prompt::Prompt(PromptType type) : type_(type) {
+ExtensionInstallUI::Prompt::Prompt(PromptType type)
+    : type_(type),
+      average_rating_(0.0),
+      rating_count_(0) {
 }
 
 ExtensionInstallUI::Prompt::~Prompt() {

@@ -19,7 +19,10 @@ const std::string PolicyStatusInfo::kStatusDictPath = "status";
 const std::string PolicyStatusInfo::kValueDictPath = "value";
 
 // PolicyStatusInfo
-PolicyStatusInfo::PolicyStatusInfo() {
+PolicyStatusInfo::PolicyStatusInfo()
+    : source_type(SOURCE_TYPE_UNDEFINED),
+      level(LEVEL_UNDEFINED),
+      status(STATUS_UNDEFINED) {
 }
 
 PolicyStatusInfo::PolicyStatusInfo(
