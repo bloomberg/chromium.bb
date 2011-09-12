@@ -4155,13 +4155,6 @@
    fun:_ZN5views6Widget4InitERKNS0_10InitParamsE
 }
 {
-   bug_86146
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN8chromeos12input_method14IBusController6CreateEv
-   fun:_ZN8chromeos22InputMethodLibraryImpl4InitEv
-}
-{
    bug_86481
    Memcheck:Leak
    fun:_Znw*

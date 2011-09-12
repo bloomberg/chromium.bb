@@ -153,7 +153,7 @@ class InputMethodManagerImpl : public HotkeyManager::Observer,
     notification_registrar_.Add(this, content::NOTIFICATION_APP_TERMINATING,
                                 NotificationService::AllSources());
 
-    ibus_controller_ = IBusController::Create();
+    ibus_controller_.reset(IBusController::Create());
     // The observer should be added before Connect() so we can capture the
     // initial connection change.
     ibus_controller_->AddObserver(this);
@@ -1182,9 +1182,9 @@ class InputMethodManagerImpl : public HotkeyManager::Observer,
     ChangeInputMethod(*iter);
   }
 
-  // A reference to the language api, to allow callbacks when the input method
-  // status changes.
-  IBusController* ibus_controller_;
+  // The IBus controller is used to control the input method status and
+  // allow allow callbacks when the input method status changes.
+  scoped_ptr<IBusController> ibus_controller_;
   ObserverList<InputMethodManager::Observer> observers_;
   ObserverList<VirtualKeyboardObserver> virtual_keyboard_observers_;
 

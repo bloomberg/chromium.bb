@@ -537,10 +537,51 @@ std::string PrintPropList(IBusPropList *prop_list, int tree_level) {
 // The real implementation of the IBusController.
 class IBusControllerImpl : public IBusController {
  public:
-  // TODO(satorux,yusukes): Remove use of singleton here.
-  static IBusControllerImpl* GetInstance() {
-    return Singleton<IBusControllerImpl,
-        LeakySingletonTraits<IBusControllerImpl> >::get();
+  IBusControllerImpl()
+      : ibus_(NULL),
+        ibus_config_(NULL) {
+  }
+
+  ~IBusControllerImpl() {
+    // Disconnect signals so the handler functions will not be called with
+    // |this| which is already freed.
+    if (ibus_) {
+      g_signal_handlers_disconnect_by_func(
+          ibus_,
+          reinterpret_cast<gpointer>(G_CALLBACK(IBusBusConnectedThunk)),
+          this);
+      g_signal_handlers_disconnect_by_func(
+          ibus_,
+          reinterpret_cast<gpointer>(G_CALLBACK(IBusBusDisconnectedThunk)),
+          this);
+      g_signal_handlers_disconnect_by_func(
+          ibus_,
+          reinterpret_cast<gpointer>(
+              G_CALLBACK(IBusBusGlobalEngineChangedThunk)),
+          this);
+      g_signal_handlers_disconnect_by_func(
+          ibus_,
+          reinterpret_cast<gpointer>(G_CALLBACK(IBusBusNameOwnerChangedThunk)),
+          this);
+
+      // Disconnect signals for the panel service as well.
+      IBusPanelService* ibus_panel_service = IBUS_PANEL_SERVICE(
+          g_object_get_data(G_OBJECT(ibus_), kPanelObjectKey));
+      if (ibus_panel_service) {
+        g_signal_handlers_disconnect_by_func(
+            ibus_panel_service,
+            reinterpret_cast<gpointer>(G_CALLBACK(FocusInThunk)),
+            this);
+        g_signal_handlers_disconnect_by_func(
+            ibus_panel_service,
+            reinterpret_cast<gpointer>(G_CALLBACK(RegisterPropertiesThunk)),
+            this);
+        g_signal_handlers_disconnect_by_func(
+            ibus_panel_service,
+            reinterpret_cast<gpointer>(G_CALLBACK(UpdatePropertyThunk)),
+            this);
+      }
+    }
   }
 
   virtual void Connect() {
@@ -799,31 +840,6 @@ class IBusControllerImpl : public IBusController {
                                   gpointer userdata) {
     return reinterpret_cast<IBusControllerImpl*>(userdata)
         ->UpdateProperty(sender, ibus_prop);
-  }
-
-  friend struct DefaultSingletonTraits<IBusControllerImpl>;
-  IBusControllerImpl()
-      : ibus_(NULL),
-        ibus_config_(NULL) {
-  }
-
-  ~IBusControllerImpl() {
-    // Since the class is used as a leaky singleton, this destructor is never
-    // called. However, if you would delete an instance of this class, you have
-    // to disconnect all signals so the handler functions will not be called
-    // with |this| which is already freed.
-    //
-    // if (ibus_) {
-    //   g_signal_handlers_disconnect_by_func(
-    //       ibus_,
-    //       reinterpret_cast<gpointer>(
-    //           G_CALLBACK(IBusBusConnectedCallback)),
-    //       this);
-    //   ...
-    // }
-    // if (ibus_panel_service_) {
-    //   g_signal_handlers_disconnect_by_func(
-    //       ...
   }
 
   // Checks if |ibus_| and |ibus_config_| connections are alive.
@@ -1246,7 +1262,7 @@ class IBusControllerStubImpl : public IBusController {
 
 IBusController* IBusController::Create() {
 #if defined(HAVE_IBUS)
-  return IBusControllerImpl::GetInstance();
+  return new IBusControllerImpl;
 #else
   return new IBusControllerStubImpl;
 #endif
