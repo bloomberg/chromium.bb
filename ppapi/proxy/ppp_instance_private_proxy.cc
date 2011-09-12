@@ -30,16 +30,19 @@ static const PPP_Instance_Private instance_private_interface = {
   &GetInstanceObject
 };
 
-InterfaceProxy* CreateInstancePrivateProxy(Dispatcher* dispatcher,
-                                           const void* target_interface) {
-  return new PPP_Instance_Private_Proxy(dispatcher, target_interface);
+InterfaceProxy* CreateInstancePrivateProxy(Dispatcher* dispatcher) {
+  return new PPP_Instance_Private_Proxy(dispatcher);
 }
 
 }  // namespace
 
-PPP_Instance_Private_Proxy::PPP_Instance_Private_Proxy(
-    Dispatcher* dispatcher, const void* target_interface)
-    : InterfaceProxy(dispatcher, target_interface) {
+PPP_Instance_Private_Proxy::PPP_Instance_Private_Proxy(Dispatcher* dispatcher)
+    : InterfaceProxy(dispatcher),
+      ppp_instance_private_impl_(NULL) {
+  if (dispatcher->IsPlugin()) {
+    ppp_instance_private_impl_ = static_cast<const PPP_Instance_Private*>(
+        dispatcher->local_get_interface()(PPP_INSTANCE_PRIVATE_INTERFACE));
+  }
 }
 
 PPP_Instance_Private_Proxy::~PPP_Instance_Private_Proxy() {
@@ -71,7 +74,7 @@ void PPP_Instance_Private_Proxy::OnMsgGetInstanceObject(
     PP_Instance instance,
     SerializedVarReturnValue result) {
   result.Return(dispatcher(),
-                ppp_instance_private_target()->GetInstanceObject(instance));
+                ppp_instance_private_impl_->GetInstanceObject(instance));
 }
 
 }  // namespace proxy

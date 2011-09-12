@@ -22,19 +22,15 @@ namespace proxy {
 
 class PPB_Broker_Proxy : public InterfaceProxy {
  public:
-  PPB_Broker_Proxy(Dispatcher* dispatcher, const void* target_interface);
+  PPB_Broker_Proxy(Dispatcher* dispatcher);
   virtual ~PPB_Broker_Proxy();
-
-  static const Info* GetInfo();
 
   static PP_Resource CreateProxyResource(PP_Instance instance);
 
-  const PPB_BrokerTrusted* ppb_broker_target() const {
-    return static_cast<const PPB_BrokerTrusted*>(target_interface());
-  }
-
   // InterfaceProxy implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg);
+
+  static const InterfaceID kInterfaceID = INTERFACE_ID_PPB_BROKER;
 
  private:
   // Message handlers.

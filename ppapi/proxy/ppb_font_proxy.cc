@@ -40,31 +40,13 @@ bool PPTextRunToTextRun(const PP_TextRun_Dev* run,
   return true;
 }
 
-InterfaceProxy* CreateFontProxy(Dispatcher* dispatcher,
-                                const void* target_interface) {
-  return new PPB_Font_Proxy(dispatcher, target_interface);
-}
-
 }  // namespace
 
-PPB_Font_Proxy::PPB_Font_Proxy(Dispatcher* dispatcher,
-                               const void* target_interface)
-    : InterfaceProxy(dispatcher, target_interface) {
+PPB_Font_Proxy::PPB_Font_Proxy(Dispatcher* dispatcher)
+    : InterfaceProxy(dispatcher) {
 }
 
 PPB_Font_Proxy::~PPB_Font_Proxy() {
-}
-
-// static
-const InterfaceProxy::Info* PPB_Font_Proxy::GetInfo() {
-  static const Info info = {
-    thunk::GetPPB_Font_Thunk(),
-    PPB_FONT_DEV_INTERFACE,
-    INTERFACE_ID_PPB_FONT,
-    false,
-    &CreateFontProxy,
-  };
-  return &info;
 }
 
 PPB_Font_FunctionAPI* PPB_Font_Proxy::AsPPB_Font_FunctionAPI() {

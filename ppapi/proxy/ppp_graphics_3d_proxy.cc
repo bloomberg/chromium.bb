@@ -24,16 +24,19 @@ static const PPP_Graphics3D graphics_3d_interface = {
   &ContextLost
 };
 
-InterfaceProxy* CreateGraphics3DProxy(Dispatcher* dispatcher,
-                                      const void* target_interface) {
-  return new PPP_Graphics3D_Proxy(dispatcher, target_interface);
+InterfaceProxy* CreateGraphics3DProxy(Dispatcher* dispatcher) {
+  return new PPP_Graphics3D_Proxy(dispatcher);
 }
 
 }  // namespace
 
-PPP_Graphics3D_Proxy::PPP_Graphics3D_Proxy(Dispatcher* dispatcher,
-                                           const void* target_interface)
-    : InterfaceProxy(dispatcher, target_interface) {
+PPP_Graphics3D_Proxy::PPP_Graphics3D_Proxy(Dispatcher* dispatcher)
+    : InterfaceProxy(dispatcher),
+      ppp_graphics_3d_impl_(NULL) {
+  if (dispatcher->IsPlugin()) {
+    ppp_graphics_3d_impl_ = static_cast<const PPP_Graphics3D*>(
+        dispatcher->local_get_interface()(PPP_GRAPHICS_3D_INTERFACE));
+  }
 }
 
 PPP_Graphics3D_Proxy::~PPP_Graphics3D_Proxy() {
@@ -62,8 +65,8 @@ bool PPP_Graphics3D_Proxy::OnMessageReceived(const IPC::Message& msg) {
 }
 
 void PPP_Graphics3D_Proxy::OnMsgContextLost(PP_Instance instance) {
-  if (ppp_graphics_3d_target())
-    ppp_graphics_3d_target()->Graphics3DContextLost(instance);
+  if (ppp_graphics_3d_impl_)
+    ppp_graphics_3d_impl_->Graphics3DContextLost(instance);
 }
 
 }  // namespace proxy

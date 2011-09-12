@@ -22,6 +22,7 @@
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppp.h"
 #include "ppapi/proxy/ppapi_messages.h"
+#include "ppapi/proxy/interface_list.h"
 #include "webkit/plugins/ppapi/webkit_forwarding_impl.h"
 
 #if defined(OS_WIN)
@@ -209,7 +210,7 @@ void PpapiThread::OnMsgLoadPlugin(const FilePath& path) {
     }
     int32_t init_error = init_module(
         local_pp_module_,
-        &ppapi::proxy::PluginDispatcher::GetInterfaceFromDispatcher);
+        &ppapi::proxy::PluginDispatcher::GetBrowserInterface);
     if (init_error != PP_OK) {
       LOG(WARNING) << "InitModule failed with error " << init_error;
       return;

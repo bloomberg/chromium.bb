@@ -17,7 +17,7 @@ class HostDispatcherTest : public HostProxyTest {
   HostDispatcherTest() {}
 
   bool HasTargetProxy(InterfaceID id) {
-    return !!host_dispatcher()->target_proxies_[id].get();
+    return !!host_dispatcher()->proxies_[id].get();
   }
 };
 

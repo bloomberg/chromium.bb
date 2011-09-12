@@ -37,16 +37,19 @@ static const PPP_Messaging messaging_interface = {
   &HandleMessage
 };
 
-InterfaceProxy* CreateMessagingProxy(Dispatcher* dispatcher,
-                                     const void* target_interface) {
-  return new PPP_Messaging_Proxy(dispatcher, target_interface);
+InterfaceProxy* CreateMessagingProxy(Dispatcher* dispatcher) {
+  return new PPP_Messaging_Proxy(dispatcher);
 }
 
 }  // namespace
 
-PPP_Messaging_Proxy::PPP_Messaging_Proxy(Dispatcher* dispatcher,
-                                         const void* target_interface)
-    : InterfaceProxy(dispatcher, target_interface) {
+PPP_Messaging_Proxy::PPP_Messaging_Proxy(Dispatcher* dispatcher)
+    : InterfaceProxy(dispatcher),
+      ppp_messaging_impl_(NULL) {
+  if (dispatcher->IsPlugin()) {
+    ppp_messaging_impl_ = static_cast<const PPP_Messaging*>(
+        dispatcher->local_get_interface()(PPP_MESSAGING_INTERFACE));
+  }
 }
 
 PPP_Messaging_Proxy::~PPP_Messaging_Proxy() {
@@ -80,7 +83,7 @@ void PPP_Messaging_Proxy::OnMsgHandleMessage(
   // SerializedVarReceiveInput will decrement the reference count, but we want
   // to give the recipient a reference.
   PluginResourceTracker::GetInstance()->var_tracker().AddRefVar(received_var);
-  ppp_messaging_target()->HandleMessage(instance, received_var);
+  ppp_messaging_impl_->HandleMessage(instance, received_var);
 }
 
 }  // namespace proxy

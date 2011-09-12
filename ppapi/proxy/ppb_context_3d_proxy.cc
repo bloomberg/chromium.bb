@@ -68,11 +68,6 @@ gpu::CommandBuffer::State GPUStateFromPPState(
 const int32 kCommandBufferSize = 1024 * 1024;
 const int32 kTransferBufferSize = 1024 * 1024;
 
-InterfaceProxy* CreateContext3DProxy(Dispatcher* dispatcher,
-                                     const void* target_interface) {
-  return new PPB_Context3D_Proxy(dispatcher, target_interface);
-}
-
 }  // namespace
 
 class PepperCommandBuffer : public gpu::CommandBuffer {
@@ -521,36 +516,11 @@ gpu::gles2::GLES2Implementation* Context3D::GetGLES2Impl() {
 
 // PPB_Context3D_Proxy ---------------------------------------------------------
 
-PPB_Context3D_Proxy::PPB_Context3D_Proxy(Dispatcher* dispatcher,
-                                         const void* target_interface)
-    : InterfaceProxy(dispatcher, target_interface) {
+PPB_Context3D_Proxy::PPB_Context3D_Proxy(Dispatcher* dispatcher)
+    : InterfaceProxy(dispatcher) {
 }
 
 PPB_Context3D_Proxy::~PPB_Context3D_Proxy() {
-}
-
-// static
-const InterfaceProxy::Info* PPB_Context3D_Proxy::GetInfo() {
-  static const Info info = {
-    thunk::GetPPB_Context3D_Thunk(),
-    PPB_CONTEXT_3D_DEV_INTERFACE,
-    INTERFACE_ID_PPB_CONTEXT_3D,
-    false,
-    &CreateContext3DProxy,
-  };
-  return &info;
-}
-
-// static
-const InterfaceProxy::Info* PPB_Context3D_Proxy::GetTextureMappingInfo() {
-  static const Info info = {
-    thunk::GetPPB_GLESChromiumTextureMapping_Thunk(),
-    PPB_GLES_CHROMIUM_TEXTURE_MAPPING_DEV_INTERFACE,
-    INTERFACE_ID_NONE,  // CONTEXT_3D is the canonical one.
-    false,
-    &CreateContext3DProxy,
-  };
-  return &info;
 }
 
 // static
@@ -621,7 +591,7 @@ void PPB_Context3D_Proxy::OnMsgCreate(PP_Instance instance,
                                      HostResource* result) {
   if (attribs.empty() || attribs.back() != 0)
     return;  // Bad message.
-  EnterFunctionNoLock<ResourceCreationAPI> enter(instance, true);
+  thunk::EnterResourceCreation enter(instance);
   if (enter.succeeded()) {
     result->SetHostResource(
         instance,

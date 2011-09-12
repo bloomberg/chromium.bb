@@ -128,6 +128,24 @@ class EnterResourceNoLock : public EnterResource<ResourceT> {
   }
 };
 
+// Simpler wrapper to enter the resource creation API. This is used for every
+// class so we have this helper function to save template instantiations and
+// typing.
+class EnterResourceCreation : public EnterFunctionNoLock<ResourceCreationAPI> {
+ public:
+  EnterResourceCreation(PP_Instance instance);
+  ~EnterResourceCreation();
+};
+
+// Simpler wrapper to enter the instance API from proxy code. This is used for
+// many interfaces so we have this helper function to save template
+// instantiations and typing.
+class EnterInstance : public EnterFunctionNoLock<PPB_Instance_FunctionAPI> {
+ public:
+  EnterInstance(PP_Instance instance);
+  ~EnterInstance();
+};
+
 }  // namespace thunk
 }  // namespace ppapi
 

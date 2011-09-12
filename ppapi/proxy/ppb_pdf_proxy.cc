@@ -118,16 +118,19 @@ const PPB_PDF pdf_interface = {
   &GetFontTableForPrivateFontFile,
 };
 
-InterfaceProxy* CreatePDFProxy(Dispatcher* dispatcher,
-                              const void* target_interface) {
-  return new PPB_PDF_Proxy(dispatcher, target_interface);
+InterfaceProxy* CreatePDFProxy(Dispatcher* dispatcher) {
+  return new PPB_PDF_Proxy(dispatcher);
 }
 
 }  // namespace
 
-PPB_PDF_Proxy::PPB_PDF_Proxy(Dispatcher* dispatcher,
-                             const void* target_interface)
-    : InterfaceProxy(dispatcher, target_interface) {
+PPB_PDF_Proxy::PPB_PDF_Proxy(Dispatcher* dispatcher)
+    : InterfaceProxy(dispatcher),
+      ppb_pdf_impl_(NULL) {
+  if (!dispatcher->IsPlugin()) {
+    ppb_pdf_impl_ = static_cast<const PPB_PDF*>(
+        dispatcher->local_get_interface()(PPB_PDF_INTERFACE));
+  }
 }
 
 PPB_PDF_Proxy::~PPB_PDF_Proxy() {
@@ -166,7 +169,7 @@ void PPB_PDF_Proxy::OnMsgGetFontFileWithFallback(
   PP_FontDescription_Dev desc;
   in_desc.SetToPPFontDescription(dispatcher(), &desc, false);
   result->SetHostResource(instance,
-      ppb_pdf_target()->GetFontFileWithFallback(
+      ppb_pdf_impl_->GetFontFileWithFallback(
           instance, &desc, static_cast<PP_PrivateFontCharset>(charset)));
 }
 
@@ -177,12 +180,12 @@ void PPB_PDF_Proxy::OnMsgGetFontTableForPrivateFontFile(
   // TODO(brettw): It would be nice not to copy here. At least on Linux,
   // we can map the font file into shared memory and read it that way.
   uint32_t table_length = 0;
-  if (!ppb_pdf_target()->GetFontTableForPrivateFontFile(
+  if (!ppb_pdf_impl_->GetFontTableForPrivateFontFile(
           font_file.host_resource(), table, NULL, &table_length))
     return;
 
   result->resize(table_length);
-  ppb_pdf_target()->GetFontTableForPrivateFontFile(font_file.host_resource(),
+  ppb_pdf_impl_->GetFontTableForPrivateFontFile(font_file.host_resource(),
       table, const_cast<char*>(result->c_str()), &table_length);
 }
 

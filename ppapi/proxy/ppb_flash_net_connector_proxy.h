@@ -22,8 +22,7 @@ namespace proxy {
 
 class PPB_Flash_NetConnector_Proxy : public InterfaceProxy {
  public:
-  PPB_Flash_NetConnector_Proxy(Dispatcher* dispatcher,
-                               const void* target_interface);
+  PPB_Flash_NetConnector_Proxy(Dispatcher* dispatcher);
   virtual ~PPB_Flash_NetConnector_Proxy();
 
   static const Info* GetInfo();

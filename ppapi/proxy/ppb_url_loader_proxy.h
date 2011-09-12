@@ -29,10 +29,9 @@ struct PPBURLLoader_UpdateProgress_Params;
 
 class PPB_URLLoader_Proxy : public InterfaceProxy {
  public:
-  PPB_URLLoader_Proxy(Dispatcher* dispatcher, const void* target_interface);
+  PPB_URLLoader_Proxy(Dispatcher* dispatcher);
   virtual ~PPB_URLLoader_Proxy();
 
-  static const Info* GetInfo();
   static const Info* GetTrustedInfo();
 
   static PP_Resource CreateProxyResource(PP_Instance instance);
@@ -44,10 +43,6 @@ class PPB_URLLoader_Proxy : public InterfaceProxy {
   static PP_Resource TrackPluginResource(
       const ppapi::HostResource& url_loader_resource);
 
-  const PPB_URLLoader* ppb_url_loader_target() const {
-    return reinterpret_cast<const PPB_URLLoader*>(target_interface());
-  }
-
   // InterfaceProxy implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg);
 
@@ -56,6 +51,8 @@ class PPB_URLLoader_Proxy : public InterfaceProxy {
   // necessary setup in the host before the resource is sent. Call this any
   // time you're sending a new URLLoader that the plugin hasn't seen yet.
   void PrepareURLLoaderForSendingToPlugin(PP_Resource resource);
+
+  static const InterfaceID kInterfaceID = INTERFACE_ID_PPB_URL_LOADER;
 
  private:
   // Data associated with callbacks for ReadResponseBody.

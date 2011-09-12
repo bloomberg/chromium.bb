@@ -281,7 +281,7 @@ const PPB_MouseInputEvent_1_0* GetPPB_MouseInputEvent_1_0_Thunk() {
   return &g_ppb_mouse_input_event_1_0_thunk;
 }
 
-const PPB_MouseInputEvent* GetPPB_MouseInputEvent_1_1_Thunk() {
+const PPB_MouseInputEvent* GetPPB_MouseInputEvent_Thunk() {
   return &g_ppb_mouse_input_event_1_1_thunk;
 }
 

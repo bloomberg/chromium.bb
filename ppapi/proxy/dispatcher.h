@@ -17,6 +17,7 @@
 #include "ppapi/proxy/callback_tracker.h"
 #include "ppapi/proxy/proxy_channel.h"
 #include "ppapi/proxy/interface_id.h"
+#include "ppapi/proxy/interface_list.h"
 #include "ppapi/proxy/interface_proxy.h"
 #include "ppapi/proxy/plugin_var_tracker.h"
 
@@ -57,8 +58,10 @@ class PPAPI_PROXY_EXPORT Dispatcher : public ProxyChannel {
     return serialization_rules_.get();
   }
 
-  // Wrapper for calling the local GetInterface function.
-  const void* GetLocalInterface(const char* interface_name);
+  // Returns a non-owning pointer to the interface proxy for the given ID, or
+  // NULL if the ID isn't found. This will create the proxy if it hasn't been
+  // created so far.
+  InterfaceProxy* GetInterfaceProxy(InterfaceID id);
 
   // Returns the pointer to the IO thread for processing IPC messages.
   // TODO(brettw) remove this. It's a hack to support the Flash
@@ -84,14 +87,7 @@ class PPAPI_PROXY_EXPORT Dispatcher : public ProxyChannel {
     return callback_tracker_;
   }
 
-  // Retrieves the information associated with the given interface, identified
-  // either by name or ID. Each function searches either PPP or PPB interfaces.
-  static const InterfaceProxy::Info* GetPPBInterfaceInfo(
-      const std::string& name);
-  static const InterfaceProxy::Info* GetPPBInterfaceInfo(
-      InterfaceID id);
-  static const InterfaceProxy::Info* GetPPPInterfaceInfo(
-      const std::string& name);
+  GetInterfaceFunc local_get_interface() const { return local_get_interface_; }
 
  protected:
   Dispatcher(base::ProcessHandle remote_process_handle,
@@ -101,11 +97,21 @@ class PPAPI_PROXY_EXPORT Dispatcher : public ProxyChannel {
   // Takes ownership of the given pointer, which must be on the heap.
   void SetSerializationRules(VarSerializationRules* var_serialization_rules);
 
+  // Called when an invalid message is received from the remote site. The
+  // default implementation does nothing, derived classes can override.
+  virtual void OnInvalidMessageReceived();
+
   bool disallow_trusted_interfaces() const {
     return disallow_trusted_interfaces_;
   }
 
  private:
+  friend class HostDispatcherTest;
+  friend class PluginDispatcherTest;
+
+  // Lists all lazily-created interface proxies.
+  scoped_ptr<InterfaceProxy> proxies_[INTERFACE_ID_COUNT];
+
   bool disallow_trusted_interfaces_;
 
   GetInterfaceFunc local_get_interface_;

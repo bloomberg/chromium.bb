@@ -94,11 +94,8 @@ class Context3D : public Resource, public thunk::PPB_Context3D_API {
 
 class PPB_Context3D_Proxy : public InterfaceProxy {
  public:
-  PPB_Context3D_Proxy(Dispatcher* dispatcher, const void* target_interface);
+  PPB_Context3D_Proxy(Dispatcher* dispatcher);
   virtual ~PPB_Context3D_Proxy();
-
-  static const Info* GetInfo();
-  static const Info* GetTextureMappingInfo();
 
   static PP_Resource Create(PP_Instance instance,
                             PP_Config3D_Dev config,
@@ -107,6 +104,8 @@ class PPB_Context3D_Proxy : public InterfaceProxy {
 
   // InterfaceProxy implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg);
+
+  static const InterfaceID kInterfaceID = INTERFACE_ID_PPB_CONTEXT_3D;
 
  private:
   void OnMsgCreate(PP_Instance instance,

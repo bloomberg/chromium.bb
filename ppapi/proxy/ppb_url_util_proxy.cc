@@ -129,16 +129,19 @@ const PPB_URLUtil_Dev url_util_interface = {
   &GetPluginInstanceURL
 };
 
-InterfaceProxy* CreateURLUtilProxy(Dispatcher* dispatcher,
-                                   const void* target_interface) {
-  return new PPB_URLUtil_Proxy(dispatcher, target_interface);
+InterfaceProxy* CreateURLUtilProxy(Dispatcher* dispatcher) {
+  return new PPB_URLUtil_Proxy(dispatcher);
 }
 
 }  // namespace
 
-PPB_URLUtil_Proxy::PPB_URLUtil_Proxy(Dispatcher* dispatcher,
-                                     const void* target_interface)
-    : InterfaceProxy(dispatcher, target_interface) {
+PPB_URLUtil_Proxy::PPB_URLUtil_Proxy(Dispatcher* dispatcher)
+    : InterfaceProxy(dispatcher),
+      ppb_url_util_impl_(NULL) {
+  if (!dispatcher->IsPlugin()) {
+    ppb_url_util_impl_ = static_cast<const PPB_URLUtil_Dev*>(
+        dispatcher->local_get_interface()(PPB_URLUTIL_DEV_INTERFACE));
+  }
 }
 
 PPB_URLUtil_Proxy::~PPB_URLUtil_Proxy() {
@@ -179,34 +182,34 @@ void PPB_URLUtil_Proxy::OnMsgResolveRelativeToDocument(
     SerializedVarReceiveInput relative,
     SerializedVarReturnValue result) {
   result.Return(dispatcher(),
-                ppb_url_util_target()->ResolveRelativeToDocument(
+                ppb_url_util_impl_->ResolveRelativeToDocument(
                     instance, relative.Get(dispatcher()), NULL));
 }
 
 void PPB_URLUtil_Proxy::OnMsgDocumentCanRequest(PP_Instance instance,
                                                 SerializedVarReceiveInput url,
                                                 PP_Bool* result) {
-  *result = ppb_url_util_target()->DocumentCanRequest(instance,
-                                                      url.Get(dispatcher()));
+  *result = ppb_url_util_impl_->DocumentCanRequest(instance,
+                                                   url.Get(dispatcher()));
 }
 
 void PPB_URLUtil_Proxy::OnMsgDocumentCanAccessDocument(PP_Instance active,
                                                        PP_Instance target,
                                                        PP_Bool* result) {
-  *result = ppb_url_util_target()->DocumentCanAccessDocument(
+  *result = ppb_url_util_impl_->DocumentCanAccessDocument(
       active, target);
 }
 
 void PPB_URLUtil_Proxy::OnMsgGetDocumentURL(PP_Instance instance,
                                             SerializedVarReturnValue result) {
   result.Return(dispatcher(),
-                ppb_url_util_target()->GetDocumentURL(instance, NULL));
+                ppb_url_util_impl_->GetDocumentURL(instance, NULL));
 }
 
 void PPB_URLUtil_Proxy::OnMsgGetPluginInstanceURL(
     PP_Instance instance, SerializedVarReturnValue result) {
   result.Return(dispatcher(),
-                ppb_url_util_target()->GetPluginInstanceURL(instance, NULL));
+                ppb_url_util_impl_->GetPluginInstanceURL(instance, NULL));
 }
 
 }  // namespace proxy

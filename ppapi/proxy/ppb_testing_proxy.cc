@@ -75,16 +75,19 @@ const PPB_Testing_Dev testing_interface = {
   &IsOutOfProcess
 };
 
-InterfaceProxy* CreateTestingProxy(Dispatcher* dispatcher,
-                                   const void* target_interface) {
-  return new PPB_Testing_Proxy(dispatcher, target_interface);
+InterfaceProxy* CreateTestingProxy(Dispatcher* dispatcher) {
+  return new PPB_Testing_Proxy(dispatcher);
 }
 
 }  // namespace
 
-PPB_Testing_Proxy::PPB_Testing_Proxy(Dispatcher* dispatcher,
-                                     const void* target_interface)
-    : InterfaceProxy(dispatcher, target_interface) {
+PPB_Testing_Proxy::PPB_Testing_Proxy(Dispatcher* dispatcher)
+    : InterfaceProxy(dispatcher),
+      ppb_testing_impl_(NULL) {
+  if (!dispatcher->IsPlugin()) {
+    ppb_testing_impl_ = static_cast<const PPB_Testing_Dev*>(
+        dispatcher->local_get_interface()(PPB_TESTING_DEV_INTERFACE));
+  }
 }
 
 PPB_Testing_Proxy::~PPB_Testing_Proxy() {
@@ -119,21 +122,21 @@ void PPB_Testing_Proxy::OnMsgReadImageData(
     const HostResource& image,
     const PP_Point& top_left,
     PP_Bool* result) {
-  *result = ppb_testing_target()->ReadImageData(
+  *result = ppb_testing_impl_->ReadImageData(
       device_context_2d.host_resource(), image.host_resource(), &top_left);
 }
 
 void PPB_Testing_Proxy::OnMsgRunMessageLoop(PP_Instance instance) {
-  ppb_testing_target()->RunMessageLoop(instance);
+  ppb_testing_impl_->RunMessageLoop(instance);
 }
 
 void PPB_Testing_Proxy::OnMsgQuitMessageLoop(PP_Instance instance) {
-  ppb_testing_target()->QuitMessageLoop(instance);
+  ppb_testing_impl_->QuitMessageLoop(instance);
 }
 
 void PPB_Testing_Proxy::OnMsgGetLiveObjectsForInstance(PP_Instance instance,
                                                        uint32_t* result) {
-  *result = ppb_testing_target()->GetLiveObjectsForInstance(instance);
+  *result = ppb_testing_impl_->GetLiveObjectsForInstance(instance);
 }
 
 }  // namespace proxy

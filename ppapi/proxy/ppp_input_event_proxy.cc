@@ -11,7 +11,6 @@
 #include "ppapi/proxy/plugin_dispatcher.h"
 #include "ppapi/proxy/plugin_resource_tracker.h"
 #include "ppapi/proxy/ppapi_messages.h"
-#include "ppapi/proxy/ppb_input_event_proxy.h"
 #include "ppapi/shared_impl/input_event_impl.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_input_event_api.h"
@@ -53,16 +52,19 @@ static const PPP_InputEvent input_event_interface = {
   &HandleInputEvent
 };
 
-InterfaceProxy* CreateInputEventProxy(Dispatcher* dispatcher,
-                                      const void* target_interface) {
-  return new PPP_InputEvent_Proxy(dispatcher, target_interface);
+InterfaceProxy* CreateInputEventProxy(Dispatcher* dispatcher) {
+  return new PPP_InputEvent_Proxy(dispatcher);
 }
 
 }  // namespace
 
-PPP_InputEvent_Proxy::PPP_InputEvent_Proxy(Dispatcher* dispatcher,
-                                       const void* target_interface)
-    : InterfaceProxy(dispatcher, target_interface) {
+PPP_InputEvent_Proxy::PPP_InputEvent_Proxy(Dispatcher* dispatcher)
+    : InterfaceProxy(dispatcher),
+      ppp_input_event_impl_(NULL) {
+  if (dispatcher->IsPlugin()) {
+    ppp_input_event_impl_ = static_cast<const PPP_InputEvent*>(
+        dispatcher->local_get_interface()(PPP_INPUT_EVENT_INTERFACE));
+  }
 }
 
 PPP_InputEvent_Proxy::~PPP_InputEvent_Proxy() {
@@ -96,7 +98,7 @@ void PPP_InputEvent_Proxy::OnMsgHandleInputEvent(PP_Instance instance,
                                                  const InputEventData& data) {
   scoped_refptr<InputEventImpl> resource(new InputEventImpl(
       InputEventImpl::InitAsProxy(), instance, data));
-  ppp_input_event_target()->HandleInputEvent(instance, resource->pp_resource());
+  ppp_input_event_impl_->HandleInputEvent(instance, resource->pp_resource());
 }
 
 void PPP_InputEvent_Proxy::OnMsgHandleFilteredInputEvent(
@@ -105,8 +107,8 @@ void PPP_InputEvent_Proxy::OnMsgHandleFilteredInputEvent(
     PP_Bool* result) {
   scoped_refptr<InputEventImpl> resource(new InputEventImpl(
       InputEventImpl::InitAsProxy(), instance, data));
-  *result = ppp_input_event_target()->HandleInputEvent(instance,
-                                                       resource->pp_resource());
+  *result = ppp_input_event_impl_->HandleInputEvent(instance,
+                                                    resource->pp_resource());
 }
 
 }  // namespace proxy
