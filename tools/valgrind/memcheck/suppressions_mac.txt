@@ -909,15 +909,7 @@
    fun:gl_context_draw
    fun:ogl_array_flush
    fun:ogl_primitives_end_
-   fun:ogl_emit_quad_indices
-   fun:ogl_emit_nine_part_rect
-   fun:ogl_emit_rect_tex
-   fun:ogl_render_layer_contents_bg
-   fun:ogl_render_layer_image_
-   fun:ogl_render_layer_
-   fun:ogl_render_layer_image_
-   fun:ogl_render_layer_
-   fun:ogl_render_layers
+   ...
    fun:CARenderOGLRender
    fun:view_draw
    fun:view_display_link
@@ -936,15 +928,7 @@
    fun:gl_context_draw
    fun:ogl_array_flush
    fun:ogl_primitives_end_
-   fun:ogl_emit_quad_indices
-   fun:ogl_emit_nine_part_rect
-   fun:ogl_emit_rect_tex
-   fun:ogl_render_layer_contents_bg
-   fun:ogl_render_layer_image_
-   fun:ogl_render_layer_
-   fun:ogl_render_layer_image_
-   fun:ogl_render_layer_
-   fun:ogl_render_layers
+   ...
    fun:CARenderOGLRender
    fun:view_draw
    fun:view_display_link
@@ -960,15 +944,7 @@
    fun:gl_context_draw
    fun:ogl_array_flush
    fun:ogl_primitives_end_
-   fun:ogl_emit_quad_indices
-   fun:ogl_emit_nine_part_rect
-   fun:ogl_emit_rect_tex
-   fun:ogl_render_layer_contents_bg
-   fun:ogl_render_layer_image_
-   fun:ogl_render_layer_
-   fun:ogl_render_layer_image_
-   fun:ogl_render_layer_
-   fun:ogl_render_layers
+   ...
    fun:CARenderOGLRender
    fun:view_draw
    fun:view_display_link
@@ -1911,4 +1887,20 @@
    fun:_ZNK4base8CallbackIFvvEE3RunEv
    fun:_ZN4base13AtExitManager19ProcessCallbacksNowEv
 }
-
+{
+   bug_96300
+   Memcheck:Leak
+   fun:malloc
+   fun:SecAsn1CoderCreate
+   fun:_ZN12OCSPResponseC2ERK9cssm_datad
+   fun:tpVerifyCertGroupWithOCSP
+   fun:_ZN14AppleTPSession15CertGroupVerifyEllRK14cssm_certgroupPK22cssm_tp_verify_contextP29cssm_tp_verify_context_result
+   fun:_Z20cssm_CertGroupVerifylllPK14cssm_certgroupPK22cssm_tp_verify_contextP29cssm_tp_verify_context_result
+   fun:CSSM_TP_CertGroupVerify
+   fun:_ZN8Security10CssmClient6TPImpl15certGroupVerifyERKNS_9CertGroupERKNS_15TPVerifyContextEPNS_14TPVerifyResultE
+   fun:_ZN8Security12KeychainCore5Trust8evaluateEv
+   fun:SecTrustEvaluate
+   fun:_ZNK3net15X509Certificate14VerifyInternalERKSsiPNS_16CertVerifyResultE
+   fun:_ZNK3net15X509Certificate6VerifyERKSsiPNS_16CertVerifyResultE
+   fun:_ZN3net44X509CertificateTest_GoogleDigiNotarTest_Test8TestBodyEv
+}
