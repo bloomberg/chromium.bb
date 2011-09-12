@@ -149,6 +149,9 @@ class VIEWS_EXPORT NativeWidgetViews : public internal::NativeWidgetPrivate {
 
   bool minimized_;
 
+  // Set when SetAlwaysOnTop is called, or keep_on_top is set during creation.
+  bool always_on_top_;
+
   // The following factory is used for calls to close the NativeWidgetViews
   // instance.
   ScopedRunnableMethodFactory<NativeWidgetViews> close_widget_factory_;

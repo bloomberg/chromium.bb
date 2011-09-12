@@ -28,6 +28,7 @@ NativeWidgetViews::NativeWidgetViews(internal::NativeWidgetDelegate* delegate)
       view_(NULL),
       active_(false),
       minimized_(false),
+      always_on_top_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(close_widget_factory_(this)),
       hosting_widget_(NULL),
       ownership_(Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET),
@@ -98,6 +99,7 @@ void NativeWidgetViews::DispatchKeyEventPostIME(const KeyEvent& key) {
 
 void NativeWidgetViews::InitNativeWidget(const Widget::InitParams& params) {
   ownership_ = params.ownership;
+  always_on_top_ = params.keep_on_top;
   View* parent_view = NULL;
   if (params.parent_widget) {
     hosting_widget_ = params.parent_widget;
@@ -339,6 +341,8 @@ void NativeWidgetViews::EnableClose(bool enable) {
 }
 
 void NativeWidgetViews::Show() {
+  if (always_on_top_)
+    MoveToTop();
   view_->SetVisible(true);
   GetWidget()->SetInitialFocus();
 }
@@ -377,6 +381,10 @@ bool NativeWidgetViews::IsActive() const {
 }
 
 void NativeWidgetViews::SetAlwaysOnTop(bool on_top) {
+  always_on_top_ = on_top;
+  // This is not complete yet. At least |MoveToTop| will need to be updated to
+  // make sure a 'normal' window does not get on top of a window with
+  // |always_on_top_| set.
   NOTIMPLEMENTED();
 }
 
