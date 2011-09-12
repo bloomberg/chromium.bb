@@ -14,7 +14,8 @@ class DisconnectWindowMac;
   remoting::ChromotingHost* host_;
   remoting::DisconnectWindowMac* disconnectWindow_;
   NSString* username_;
-  IBOutlet NSTextField* usernameField_;
+  IBOutlet NSTextField* connectedToField_;
+  IBOutlet NSButton* disconnectButton_;
 }
 
 - (IBAction)stopSharing:(id)sender;

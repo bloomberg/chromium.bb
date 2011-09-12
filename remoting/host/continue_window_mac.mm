@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/memory/scoped_nsobject.h"
+#include "base/sys_string_conversions.h"
 #include "remoting/host/chromoting_host.h"
 
 // As this is a plugin, there needs to be a way to find its bundle
@@ -65,11 +66,12 @@ void ContinueWindowMac::Show(remoting::ChromotingHost* host) {
   }
 
   // Put up alert
-  NSString* message = [NSString stringWithUTF8String:kMessage];
-  NSString* continue_button =
-      [NSString stringWithUTF8String:kDefaultButtonText];
-  NSString* cancel_button =
-      [NSString stringWithUTF8String:kCancelButtonText];
+  const UiStrings& strings = host->ui_strings();
+  NSString* message = base::SysUTF16ToNSString(strings.continue_prompt);
+  NSString* continue_button = base::SysUTF16ToNSString(
+      strings.continue_button_text);
+  NSString* cancel_button = base::SysUTF16ToNSString(
+      strings.stop_sharing_button_text);
   scoped_nsobject<NSAlert> continue_alert([[NSAlert alloc] init]);
   [continue_alert setMessageText:message];
   [continue_alert addButtonWithTitle:continue_button];

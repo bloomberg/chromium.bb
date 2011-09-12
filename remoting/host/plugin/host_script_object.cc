@@ -727,7 +727,7 @@ void HostNPScriptObject::LocalizeStrings(NPObject* localize_func) {
   LocalizeString(localize_func,
 #if defined(OS_WIN)
       /*i18n-content*/"DISCONNECT_BUTTON_PLUS_SHORTCUT_WINDOWS",
-#elif defined(OS_MAC)
+#elif defined(OS_MACOSX)
       /*i18n-content*/"DISCONNECT_BUTTON_PLUS_SHORTCUT_MAC_OS_X",
 #else
       /*i18n-content*/"DISCONNECT_BUTTON_PLUS_SHORTCUT_LINUX",

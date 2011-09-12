@@ -7,6 +7,7 @@
 #import "remoting/host/disconnect_window_mac.h"
 
 #include "base/compiler_specific.h"
+#include "base/string_util.h"
 #include "base/sys_string_conversions.h"
 #include "remoting/host/chromoting_host.h"
 #include "remoting/host/disconnect_window.h"
@@ -96,9 +97,14 @@ remoting::DisconnectWindow* remoting::DisconnectWindow::Create() {
 }
 
 - (void)windowDidLoad {
-  // TODO(jamiewalch): Resize the window to fit the username without leaving too
-  // much space.
-  [usernameField_ setStringValue:self.username];
+  string16 text = ReplaceStringPlaceholders(
+      host_->ui_strings().disconnect_message,
+      base::SysNSStringToUTF16(self.username),
+      NULL);
+  [connectedToField_ setStringValue:base::SysUTF16ToNSString(text)];
+
+  [disconnectButton_ setTitle:base::SysUTF16ToNSString(
+      host_->ui_strings().disconnect_button_text_plus_shortcut)];
 }
 
 - (void)windowWillClose:(NSNotification*)notification {

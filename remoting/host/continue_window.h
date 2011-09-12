@@ -21,12 +21,6 @@ class ContinueWindow {
   virtual void Hide() = 0;
 
   static ContinueWindow* Create();
-
- protected:
-  static const char kTitle[];
-  static const char kMessage[];
-  static const char kDefaultButtonText[];
-  static const char kCancelButtonText[];
 };
 
 }
