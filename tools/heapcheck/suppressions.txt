@@ -1606,3 +1606,9 @@
    ...
    fun:net::CookieMonster::CookieMonsterTask::InvokeCallback
 }
+{
+   bug_96295
+   Heapcheck:Leak
+   fun:ComponentUpdaterTest::RegisterComponent
+   fun:ComponentUpdaterTest_ProdVersionCheck_Test::TestBody
+}
