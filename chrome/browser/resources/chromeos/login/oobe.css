@@ -20,6 +20,10 @@ body {
   padding: 0;
 }
 
+button {
+  font-family: inherit;
+}
+
 #outer-container {
   -webkit-box-align: center;
   -webkit-box-pack: center;
@@ -285,7 +289,6 @@ html[dir=rtl] #user-image-preview {
 
 #footer button {
   display: none;
-  font-family: inherit;
   height: 28px;
 }
 

@@ -90,11 +90,6 @@ void WebUILoginDisplay::OnLoginSuccess(const std::string& username) {
 }
 
 void WebUILoginDisplay::SetUIEnabled(bool is_enabled) {
-  // Send message to WM to enable/disable click on windows.
-  WmIpc::Message message(WM_IPC_MESSAGE_WM_SET_LOGIN_STATE);
-  message.set_param(0, is_enabled);
-  WmIpc::instance()->SendMessage(message);
-
   if (is_enabled)
     webui_handler_->ClearAndEnablePassword();
 }

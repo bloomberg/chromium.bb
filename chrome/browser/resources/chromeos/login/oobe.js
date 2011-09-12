@@ -572,7 +572,9 @@ cr.define('cr.ui', function() {
    */
   Oobe.onLoginSuccess = function(username) {
     if (Oobe.getInstance().currentScreen.id == SCREEN_ACCOUNT_PICKER) {
-      $('pod-row').startAuthenticatedAnimation();
+      // TODO(nkostylev): Enable animation back when session start jank
+      // is reduced. See http://crosbug.com/11116 http://crosbug.com/18307
+      // $('pod-row').startAuthenticatedAnimation();
     }
   };
 
