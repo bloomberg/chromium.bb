@@ -50,6 +50,8 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/logging_chrome.h"
+#include "chrome/common/net/gaia/gaia_auth_consumer.h"
+#include "chrome/common/net/gaia/gaia_auth_fetcher.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/common/net/gaia/gaia_urls.h"
 #include "chrome/common/pref_names.h"
@@ -100,13 +102,13 @@ class StartSyncOnUIThreadTask : public Task {
   // Task override.
   virtual void Run() {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
+    LoginUtils::Get()->FetchCookies(ProfileManager::GetDefaultProfile(),
+                                    credentials_);
     LoginUtils::Get()->StartSync(ProfileManager::GetDefaultProfile(),
                                    credentials_);
   }
 
  private:
-  Profile* user_profile_;
   GaiaAuthConsumer::ClientLoginResult credentials_;
 };
 
@@ -220,6 +222,62 @@ class OAuthLoginVerifier : public GaiaOAuthConsumer {
 
   DISALLOW_COPY_AND_ASSIGN(OAuthLoginVerifier);
 };
+
+// Verifies OAuth1 access token by performing OAuthLogin.
+class UserSessionCookieFetcher : public GaiaAuthConsumer {
+ public:
+  explicit UserSessionCookieFetcher(Profile* user_profile)
+      : gaia_fetcher_(this,
+                      std::string(GaiaConstants::kChromeOSSource),
+                      user_profile->GetRequestContext()) {
+  }
+  virtual ~UserSessionCookieFetcher() {}
+
+  void Start(const GaiaAuthConsumer::ClientLoginResult& credentials) {
+    gaia_fetcher_.StartIssueAuthToken(credentials.sid, credentials.lsid,
+                                      GaiaConstants::kGaiaService);
+  }
+
+  // GaiaAuthConsumer overrides.
+  virtual void OnIssueAuthTokenSuccess(const std::string& service,
+                                       const std::string& auth_token) OVERRIDE {
+    gaia_fetcher_.StartMergeSession(auth_token);
+  }
+
+  virtual void OnIssueAuthTokenFailure(const std::string& service,
+      const GoogleServiceAuthError& error) OVERRIDE {
+    LOG(WARNING) << "Failed IssueAuthToken request,"
+                 << " error.state=" << error.state();
+    HandlerGaiaAuthError(error);
+    delete this;
+  }
+
+  virtual void OnMergeSessionSuccess(const std::string& data) OVERRIDE {
+    VLOG(1) << "MergeSession successful.";
+    delete this;
+  }
+
+  virtual void OnMergeSessionFailure(
+      const GoogleServiceAuthError& error) OVERRIDE {
+    LOG(WARNING) << "Failed MergeSession request,"
+                 << " error.state=" << error.state();
+    HandlerGaiaAuthError(error);
+    delete this;
+  }
+
+ private:
+  void HandlerGaiaAuthError(const GoogleServiceAuthError& error) {
+    // Mark this account's login state as offline if we encountered a network
+    // error. That will make us verify user OAuth token and try to fetch session
+    // cookies again once we detect that the machine comes online.
+    if (error.state() == GoogleServiceAuthError::CONNECTION_FAILED)
+      UserManager::Get()->set_offline_login(true);
+  }
+
+  GaiaAuthFetcher gaia_fetcher_;
+  DISALLOW_COPY_AND_ASSIGN(UserSessionCookieFetcher);
+};
+
 
 // Fetches an OAuth token and initializes user policy with it.
 class PolicyOAuthFetcher : public GaiaOAuthConsumer {
@@ -630,16 +688,21 @@ void LoginUtilsImpl::FetchOAuth1AccessToken(Profile* auth_profile) {
   oauth_fetcher_->StartGetOAuthTokenRequest();
 }
 
-void LoginUtilsImpl::FetchCookies(
-    Profile* profile,
+void LoginUtilsImpl::FetchCookies(Profile* user_profile,
     const GaiaAuthConsumer::ClientLoginResult& credentials) {
-  // Take the credentials passed in and try to exchange them for
-  // full-fledged Google authentication cookies.  This is
-  // best-effort; it's possible that we'll fail due to network
-  // troubles or some such.
-  // CookieFetcher will delete itself once done.
-  CookieFetcher* cf = new CookieFetcher(profile);
-  cf->AttemptFetch(credentials.data);
+  if (!using_oauth_) {
+    // Take the credentials passed in and try to exchange them for
+    // full-fledged Google authentication cookies.  This is
+    // best-effort; it's possible that we'll fail due to network
+    // troubles or some such.
+    // CookieFetcher will delete itself once done.
+    CookieFetcher* cf = new CookieFetcher(user_profile);
+    cf->AttemptFetch(credentials.data);
+  } else {
+    UserSessionCookieFetcher* cf =
+        new UserSessionCookieFetcher(user_profile);
+    cf->Start(credentials);
+  }
 }
 
 void LoginUtilsImpl::StartTokenServices(Profile* user_profile) {
