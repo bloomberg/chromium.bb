@@ -54,19 +54,19 @@ void GracefulShutdownHandler(int signal) {
   } while (bytes_written < sizeof(signal));
 }
 
-// See comment in |PreEarlyInitialization()|, where sigaction is called.
+// See comment in |PostMainMessageLoopStart()|, where sigaction is called.
 void SIGHUPHandler(int signal) {
   RAW_CHECK(signal == SIGHUP);
   GracefulShutdownHandler(signal);
 }
 
-// See comment in |PreEarlyInitialization()|, where sigaction is called.
+// See comment in |PostMainMessageLoopStart()|, where sigaction is called.
 void SIGINTHandler(int signal) {
   RAW_CHECK(signal == SIGINT);
   GracefulShutdownHandler(signal);
 }
 
-// See comment in |PreEarlyInitialization()|, where sigaction is called.
+// See comment in |PostMainMessageLoopStart()|, where sigaction is called.
 void SIGTERMHandler(int signal) {
   RAW_CHECK(signal == SIGTERM);
   GracefulShutdownHandler(signal);
@@ -198,24 +198,6 @@ void ChromeBrowserMainPartsPosix::PreEarlyInitialization() {
   action.sa_handler = SIGCHLDHandler;
   CHECK(sigaction(SIGCHLD, &action, NULL) == 0);
 
-  // If adding to this list of signal handlers, note the new signal probably
-  // needs to be reset in child processes. See
-  // base/process_util_posix.cc:LaunchProcess.
-
-  // We need to handle SIGTERM, because that is how many POSIX-based distros ask
-  // processes to quit gracefully at shutdown time.
-  memset(&action, 0, sizeof(action));
-  action.sa_handler = SIGTERMHandler;
-  CHECK(sigaction(SIGTERM, &action, NULL) == 0);
-  // Also handle SIGINT - when the user terminates the browser via Ctrl+C. If
-  // the browser process is being debugged, GDB will catch the SIGINT first.
-  action.sa_handler = SIGINTHandler;
-  CHECK(sigaction(SIGINT, &action, NULL) == 0);
-  // And SIGHUP, for when the terminal disappears. On shutdown, many Linux
-  // distros send SIGHUP, SIGTERM, and then SIGKILL.
-  action.sa_handler = SIGHUPHandler;
-  CHECK(sigaction(SIGHUP, &action, NULL) == 0);
-
   const std::string fd_limit_string =
       parsed_command_line().GetSwitchValueASCII(
           switches::kFileDescriptorLimit);
@@ -251,6 +233,27 @@ void ChromeBrowserMainPartsPosix::PostMainMessageLoopStart() {
       LOG(DFATAL) << "Failed to create shutdown detector task.";
     }
   }
+  // Setup signal handlers for shutdown AFTER shutdown pipe is setup because
+  // it may be called right away after handler is set.
+
+  // If adding to this list of signal handlers, note the new signal probably
+  // needs to be reset in child processes. See
+  // base/process_util_posix.cc:LaunchProcess.
+
+  // We need to handle SIGTERM, because that is how many POSIX-based distros ask
+  // processes to quit gracefully at shutdown time.
+  struct sigaction action;
+  memset(&action, 0, sizeof(action));
+  action.sa_handler = SIGTERMHandler;
+  CHECK(sigaction(SIGTERM, &action, NULL) == 0);
+  // Also handle SIGINT - when the user terminates the browser via Ctrl+C. If
+  // the browser process is being debugged, GDB will catch the SIGINT first.
+  action.sa_handler = SIGINTHandler;
+  CHECK(sigaction(SIGINT, &action, NULL) == 0);
+  // And SIGHUP, for when the terminal disappears. On shutdown, many Linux
+  // distros send SIGHUP, SIGTERM, and then SIGKILL.
+  action.sa_handler = SIGHUPHandler;
+  CHECK(sigaction(SIGHUP, &action, NULL) == 0);
 
 #if defined(TOOLKIT_USES_GTK) && !defined(OS_CHROMEOS)
   printing::PrintingContextCairo::SetCreatePrintDialogFunction(

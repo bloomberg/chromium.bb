@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/login_library.h"
 #include "chrome/browser/chromeos/customization_document.h"
@@ -219,6 +220,9 @@ namespace browser {
 // TODO(nkostylev): Split this into a smaller functions.
 void ShowLoginWizard(const std::string& first_screen_name,
                      const gfx::Size& size) {
+  if (browser_shutdown::IsTryingToQuit())
+    return;
+
   VLOG(1) << "Showing OOBE screen: " << first_screen_name;
 
   // The login screen will enable alternate keyboard layouts, but we don't want
