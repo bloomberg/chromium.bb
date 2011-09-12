@@ -119,3 +119,11 @@ BookmarksUITest.TwoCommandsOneTab
 LocaleTestsDa.TestStart
 LocaleTestsHe.TestStart
 LocaleTestsZhTw.TestStart
+
+# Times out flakily, http://crbug.com/96312
+AutomatedUITestBase.CloseBrowserWindow
+AutomatedUITestBase.CloseTab
+AutomatedUITestBase.OpenCloseBrowserWindowWithAccelerator
+
+# Times out flakily, http://crbug.com/96313
+AutomatedUITestBase.DuplicateTab
