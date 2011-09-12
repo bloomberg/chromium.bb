@@ -200,7 +200,7 @@ cr.define('ntp4', function() {
         var imgDiv = this.ownerDocument.createElement('div');
         imgDiv.className = 'app-icon-div';
         imgDiv.appendChild(appImgContainer);
-        imgDiv.addEventListener('click', this.onClick_.bind(this));
+        this.addLaunchClickTarget_(imgDiv);
         imgDiv.title = this.appData_.name;
         this.imgDiv_ = imgDiv;
         appContents.appendChild(imgDiv);
@@ -213,14 +213,14 @@ cr.define('ntp4', function() {
 
         chrome.send('getAppIconDominantColor', [this.id]);
       } else {
-        appImgContainer.addEventListener('click', this.onClick_.bind(this));
+        this.addLaunchClickTarget_(appImgContainer);
         appImgContainer.title = this.appData_.name;
         appContents.appendChild(appImgContainer);
       }
 
       var appSpan = this.ownerDocument.createElement('span');
       appSpan.textContent = appSpan.title = this.appData_.name;
-      appSpan.addEventListener('click', this.onClick_.bind(this));
+      this.addLaunchClickTarget_(appSpan);
       appContents.appendChild(appSpan);
       this.appendChild(appContents);
 
@@ -394,9 +394,6 @@ cr.define('ntp4', function() {
       }
 
       this.style.width = this.style.height = size + 'px';
-      if (this.isStore_)
-        this.appsPromoExtras_.style.left = size + (imgSize - size) / 2 + 'px';
-
       this.style.left = x + 'px';
       this.style.right = x + 'px';
       this.style.top = y + 'px';
@@ -452,16 +449,32 @@ cr.define('ntp4', function() {
     },
 
     /**
+     * Adds a node to the list of targets that will launch the app. This list
+     * is also used in onMousedown to determine whether the app contents should
+     * be shown as active (if we don't do this, then clicking anywhere in
+     * appContents, even a part that is outside the ideally clickable region,
+     * will cause the app icon to look active).
+     * @param {HTMLElement} node The node that should be clickable.
+     */
+    addLaunchClickTarget_: function(node) {
+      node.classList.add('launch-click-target');
+      node.addEventListener('click', this.onClick_.bind(this));
+    },
+
+    /**
      * Handler for mousedown on the App. Adds a class that allows us to
      * not display as :active for right clicks and clicks on app notifications
-     * (specifically, don't pulse on these occasions).
+     * (specifically, don't pulse on these occasions). Also, we don't pulse
+     * for clicks that aren't within the clickable regions.
      * @param {Event} e The mousedown event.
      */
     onMousedown_: function(e) {
-      if (e.button == 2 || e.target.classList.contains('app-notification'))
-        this.classList.add('suppress-active');
-      else
-        this.classList.remove('suppress-active');
+      if (e.button == 2 ||
+          !findAncestorByClass(e.target, 'launch-click-target')) {
+        this.appContents_.classList.add('suppress-active');
+      } else {
+        this.appContents_.classList.remove('suppress-active');
+      }
     },
 
     /**
