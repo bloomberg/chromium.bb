@@ -98,6 +98,8 @@ DesktopWindowManager::DesktopWindowManager(Widget* desktop)
 }
 
 DesktopWindowManager::~DesktopWindowManager() {
+  DCHECK_EQ(0U, toplevels_.size()) << "Window manager getting destroyed "
+                                   << "before all the windows are closed.";
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -199,6 +201,9 @@ bool DesktopWindowManager::HandleMouseEvent(
 
 void DesktopWindowManager::Register(Widget* widget) {
   DCHECK(!widget->HasObserver(this));
+  if (widget->is_top_level()) {
+    toplevels_.push_back(widget);
+  }
   widget->AddObserver(this);
 }
 
@@ -208,6 +213,15 @@ void DesktopWindowManager::Register(Widget* widget) {
 void DesktopWindowManager::OnWidgetClosing(Widget* widget) {
   if (active_widget_ && active_widget_ == widget)
     active_widget_ = NULL;
+  if (widget->is_top_level()) {
+    for (std::vector<Widget*>::iterator i = toplevels_.begin();
+        i != toplevels_.end(); ++i) {
+      if (*i == widget) {
+        toplevels_.erase(i);
+        break;
+      }
+    }
+  }
 }
 
 void DesktopWindowManager::OnWidgetVisibilityChanged(Widget* widget,

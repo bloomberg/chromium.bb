@@ -10,6 +10,8 @@
 #include "views/widget/widget.h"
 #include "views/widget/window_manager.h"
 
+#include <vector>
+
 namespace gfx {
 class Point;
 }
@@ -60,6 +62,10 @@ class DesktopWindowManager : public views::WindowManager,
   views::Widget* desktop_;
   views::Widget* mouse_capture_;
   views::Widget* active_widget_;
+
+  // An unordered list of all the top-level Widgets.
+  std::vector<views::Widget*> toplevels_;
+
   scoped_ptr<WindowController> window_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopWindowManager);
