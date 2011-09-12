@@ -1685,6 +1685,7 @@
         'browser/ui/content_settings/content_setting_bubble_model_unittest.cc',
         'browser/ui/content_settings/content_setting_image_model_unittest.cc',
         'browser/ui/find_bar/find_backend_unittest.cc',
+        'browser/ui/global_error_service_unittest.cc',
         'browser/ui/gtk/accelerators_gtk_unittest.cc',
         'browser/ui/gtk/bookmarks/bookmark_bar_gtk_unittest.cc',
         'browser/ui/gtk/bookmarks/bookmark_editor_gtk_unittest.cc',
