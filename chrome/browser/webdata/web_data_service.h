@@ -186,12 +186,8 @@ class WebDataService
     virtual ~WebDataRequest();
 
     Handle GetHandle() const;
-
-    // Retrieves the |consumer_| set in the constructor.  If the request was
-    // cancelled via the |Cancel()| method then |true| is returned and
-    // |*consumer| is set to NULL.  The |consumer| parameter may be set to NULL
-    // if only the return value is desired.
-    bool IsCancelled(WebDataServiceConsumer** consumer) const;
+    WebDataServiceConsumer* GetConsumer() const;
+    bool IsCancelled() const;
 
     // This can be invoked from any thread. From this point we assume that
     // our consumer_ reference is invalid.
@@ -210,13 +206,8 @@ class WebDataService
     scoped_refptr<WebDataService> service_;
     MessageLoop* message_loop_;
     Handle handle_;
-
-    // A lock to protect against simultaneous cancellations of the request.
-    // Cancellation affects both the |cancelled_| flag and |consumer_|.
-    mutable base::Lock cancel_lock_;
-    bool cancelled_;
+    bool canceled_;
     WebDataServiceConsumer* consumer_;
-
     WDTypedResult* result_;
 
     DISALLOW_COPY_AND_ASSIGN(WebDataRequest);
