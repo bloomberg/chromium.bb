@@ -567,7 +567,7 @@ void StatusBubbleViews::Init() {
     params.transparent = true;
     params.accept_events = false;
     params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-    params.parent = frame->GetNativeView();
+    params.parent_widget = frame;
     popup_->Init(params);
     popup_->SetOpacity(0x00);
     popup_->SetContentsView(view_);

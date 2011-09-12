@@ -441,6 +441,10 @@ void KeyboardManager::Hide() {
   keyboard_->Hide();
 }
 
+views::Widget* KeyboardManager::keyboard() {
+  return keyboard_;
+}
+
 void KeyboardManager::OnWidgetClosing(views::Widget* widget) {
   DCHECK_EQ(keyboard_, widget);
   keyboard_ = NULL;

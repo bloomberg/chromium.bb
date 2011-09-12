@@ -25,6 +25,9 @@ class KeyboardManager : public views::Widget::Observer {
   // Hides the keyboard.
   void Hide();
 
+  // Returns the keyboard Widget.
+  views::Widget* keyboard();
+
  private:
   friend struct DefaultSingletonTraits<KeyboardManager>;
 

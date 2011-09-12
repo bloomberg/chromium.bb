@@ -3105,6 +3105,8 @@
         'browser/ui/touch/frame/touch_browser_frame_view.h',
         'browser/ui/touch/keyboard/keyboard_manager.cc',
         'browser/ui/touch/keyboard/keyboard_manager.h',
+        'browser/ui/touch/status_bubble_touch.cc',
+        'browser/ui/touch/status_bubble_touch.h',
         'browser/ui/touch/tabs/tab_strip_factory.cc',
         'browser/ui/touch/tabs/touch_tab.cc',
         'browser/ui/touch/tabs/touch_tab.h',

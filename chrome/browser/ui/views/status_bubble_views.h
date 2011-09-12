@@ -42,7 +42,7 @@ class StatusBubbleViews : public StatusBubble {
 
   // Reposition the bubble - as we are using a WS_POPUP for the bubble,
   // we have to manually position it when the browser window moves.
-  void Reposition();
+  virtual void Reposition();
 
   // The bubble only has a preferred height: the sum of the height of
   // the font and kTotalVerticalPadding.
@@ -61,6 +61,9 @@ class StatusBubbleViews : public StatusBubble {
   virtual void MouseMoved(const gfx::Point& location,
                           bool left_content) OVERRIDE;
   virtual void UpdateDownloadShelfVisibility(bool visible) OVERRIDE;
+
+ protected:
+  views::Widget* popup() { return popup_.get(); }
 
  private:
   class StatusView;
