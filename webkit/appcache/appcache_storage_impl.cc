@@ -75,7 +75,12 @@ void CleanUpOnDatabaseThread(
     bool clear_all_appcaches) {
   scoped_ptr<AppCacheDatabase> database_to_delete(database);
 
-  if (!clear_all_appcaches && !special_storage_policy)
+  bool has_session_only_appcaches =
+      special_storage_policy.get() &&
+      special_storage_policy->HasSessionOnlyOrigins();
+
+  // Clearning only session-only databases, and there are none.
+  if (!clear_all_appcaches && !has_session_only_appcaches)
     return;
 
   std::set<GURL> origins;
