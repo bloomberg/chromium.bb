@@ -48,7 +48,9 @@ def _CheckNoProductionCodeUsingTestOnlyFunctions(input_api, output_api):
   # calls to such functions without a proper C++ parser.
   source_extensions = r'\.(cc|cpp|cxx|mm)$'
   file_inclusion_pattern = r'.+%s' % source_extensions
-  file_exclusion_pattern = (r'.+(_test_support|_(unit|browser|ui|perf)test)%s' %
+  file_exclusion_pattern = (
+    r'.+(_test_support|profile_sync_service_harness|'
+    r'_(unit|browser|ui|perf)test)%s' %
                             source_extensions)
   path_exclusion_pattern = r'.*[/\\](test|tool(s)?)[/\\].*'
 
