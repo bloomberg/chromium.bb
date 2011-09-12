@@ -82,8 +82,8 @@ class RenderProcessHost : public IPC::Channel::Sender,
   int id() const { return id_; }
 
   // Returns true iff channel_ has been set to non-NULL. Use this for checking
-  // if there is connection or not.
-  bool HasConnection() { return channel_.get() != NULL; }
+  // if there is connection or not. Virtual for mocking out for tests.
+  virtual bool HasConnection() const;
 
   bool sudden_termination_allowed() const {
     return sudden_termination_allowed_;

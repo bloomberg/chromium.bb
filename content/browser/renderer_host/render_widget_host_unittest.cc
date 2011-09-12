@@ -37,16 +37,8 @@ class RenderWidgetHostProcess : public MockRenderProcessHost {
         current_update_buf_(NULL),
         update_msg_should_reply_(false),
         update_msg_reply_flags_(0) {
-    // DANGER! This is a hack. The RenderWidgetHost checks the channel to see
-    // if the process is still alive, but it doesn't actually dereference it.
-    // An IPC::ChannelProxy is nontrivial, so we just fake it here. If you end up
-    // crashing by dereferencing 1, then you'll have to make a real channel.
-    channel_.reset(reinterpret_cast<IPC::ChannelProxy*>(0x1));
   }
   ~RenderWidgetHostProcess() {
-    // We don't want to actually delete the channel, since it's not a real
-    // pointer.
-    ignore_result(channel_.release());
     delete current_update_buf_;
   }
 
@@ -59,6 +51,8 @@ class RenderWidgetHostProcess : public MockRenderProcessHost {
 
   // Fills the given update parameters with resonable default values.
   void InitUpdateRectParams(ViewHostMsg_UpdateRect_Params* params);
+
+  virtual bool HasConnection() const { return true; }
 
  protected:
   virtual bool WaitForUpdateMsg(int render_widget_id,

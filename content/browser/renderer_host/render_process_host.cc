@@ -114,6 +114,10 @@ RenderProcessHost::~RenderProcessHost() {
     all_hosts.Remove(id());
 }
 
+bool RenderProcessHost::HasConnection() const {
+  return channel_.get() != NULL;
+}
+
 void RenderProcessHost::Attach(IPC::Channel::Listener* listener,
                                int routing_id) {
   VLOG_IF(1, g_log_bug53991) << "AddListener: (" << this << "): " << routing_id;
@@ -136,6 +140,12 @@ void RenderProcessHost::Release(int listener_id) {
         Source<RenderProcessHost>(this), NotificationService::NoDetails());
     MessageLoop::current()->DeleteSoon(FROM_HERE, this);
     deleting_soon_ = true;
+    // It's important not to wait for the DeleteTask to delete the channel
+    // proxy. Kill it off now. That way, in case the profile is going away, the
+    // rest of the objects attached to this RenderProcessHost start going
+    // away first, since deleting the channel proxy will post a
+    // OnChannelClosed() to IPC::ChannelProxy::Context on the IO thread.
+    channel_.reset();
 
     // Remove ourself from the list of renderer processes so that we can't be
     // reused in between now and when the Delete task runs.
