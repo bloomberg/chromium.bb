@@ -49,7 +49,9 @@ EXTRA_ENV = {
 
   'PNACL_TRANSLATE_FLAGS': '${PIC ? -fPIC}',
 
-  'OPT_FLAGS': '-O${OPT_LEVEL} ${OPT_STRIP_%STRIP_MODE%}',
+  'OPT_FLAGS': '-O${OPT_LEVEL} ${OPT_STRIP_%STRIP_MODE%} ' +
+               '-inline-threshold=${OPT_INLINE_THRESHOLD}',
+  'OPT_INLINE_THRESHOLD': '100',
   'OPT_LEVEL': '0',
   'OPT_STRIP_none': '',
   'OPT_STRIP_all': '-disable-opt --strip',
