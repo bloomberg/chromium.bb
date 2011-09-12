@@ -344,14 +344,6 @@ class GeolocationBrowserTest : public InProcessBrowserTest {
               settings_state.state_map().find(requesting_origin)->second);
   }
 
-  void WaitForNavigation() {
-    LOG(WARNING) << "will block for navigation";
-    NavigationController* controller =
-        &current_browser_->GetSelectedTabContents()->controller();
-    ui_test_utils::WaitForNavigation(controller);
-    LOG(WARNING) << "navigated";
-  }
-
   void CheckStringValueFromJavascriptForTab(
       const std::string& expected, const std::string& function,
       TabContents* tab_contents) {
@@ -506,8 +498,12 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest,
   // MockLocationProvider must have been created.
   ASSERT_TRUE(MockLocationProvider::instance_);
   Geoposition fresh_position = GeopositionFromLatLong(3.17, 4.23);
+  ui_test_utils::WindowedNotificationObserver observer(
+      content::NOTIFICATION_LOAD_STOP,
+      Source<NavigationController>(
+          &current_browser_->GetSelectedTabContents()->controller()));
   NotifyGeoposition(fresh_position);
-  WaitForNavigation();
+  observer.Wait();
   CheckGeoposition(fresh_position);
 
   // Disable navigation for this frame.
@@ -539,8 +535,12 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest,
   // MockLocationProvider must have been created.
   ASSERT_TRUE(MockLocationProvider::instance_);
   Geoposition cached_position = GeopositionFromLatLong(5.67, 8.09);
+  ui_test_utils::WindowedNotificationObserver observer(
+      content::NOTIFICATION_LOAD_STOP,
+      Source<NavigationController>(
+          &current_browser_->GetSelectedTabContents()->controller()));
   NotifyGeoposition(cached_position);
-  WaitForNavigation();
+  observer.Wait();
   CheckGeoposition(cached_position);
 
   // Disable navigation for this frame.
@@ -643,8 +643,12 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, TwoWatchesInOneFrame) {
 
   // The second watch will now have cancelled. Ensure an update still makes
   // its way through to the first watcher.
+  ui_test_utils::WindowedNotificationObserver observer(
+      content::NOTIFICATION_LOAD_STOP,
+      Source<NavigationController>(
+          &current_browser_->GetSelectedTabContents()->controller()));
   NotifyGeoposition(final_position);
-  WaitForNavigation();
+  observer.Wait();
   CheckGeoposition(final_position);
 }
 

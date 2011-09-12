@@ -274,12 +274,12 @@ Browser* InProcessBrowserTest::CreateBrowserForPopup(Profile* profile) {
 }
 
 void InProcessBrowserTest::AddBlankTabAndShow(Browser* browser) {
+  ui_test_utils::WindowedNotificationObserver observer(
+      content::NOTIFICATION_LOAD_STOP,
+      NotificationService::AllSources());
   browser->AddSelectedTabWithURL(
       GURL(chrome::kAboutBlankURL), PageTransition::START_PAGE);
-
-  // Wait for the page to finish loading.
-  ui_test_utils::WaitForNavigation(
-      &browser->GetSelectedTabContents()->controller());
+  observer.Wait();
 
   browser->window()->Show();
 }
