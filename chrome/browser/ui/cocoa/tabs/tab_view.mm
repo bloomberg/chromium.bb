@@ -191,10 +191,6 @@ const CGFloat kRapidCloseDist = 2.5;
   mouseDownPoint_ = NSZeroPoint;
 }
 
-- (void)mouseDragged:(NSEvent*)theEvent {
-  [controller_ continueDrag:theEvent];
-}
-
 - (void)mouseUp:(NSEvent*)theEvent {
   // Check for rapid tab closure.
   if ([theEvent type] == NSLeftMouseUp) {

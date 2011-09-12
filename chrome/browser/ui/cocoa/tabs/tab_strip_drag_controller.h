@@ -26,12 +26,6 @@
 // passed here is the one used for the rest of the dragging session.
 - (void)maybeStartDrag:(NSEvent*)event forTab:(TabController*)tab;
 
-// Updates the dragging state with a mouseDragged event.
-- (void)continueDrag:(NSEvent*)event;
-
-// Ends a dragging session with a mouseUp event.
-- (void)endDrag:(NSEvent*)event;
-
 @end
 
 ////////////////////////////////////////////////////////////////////////////////

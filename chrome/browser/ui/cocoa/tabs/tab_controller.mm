@@ -332,12 +332,4 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
   [[target_ dragController] maybeStartDrag:event forTab:tab];
 }
 
-- (void)continueDrag:(NSEvent*)event {
-  [[target_ dragController] continueDrag:event];
-}
-
-- (void)endDrag:(NSEvent*)event {
-  [[target_ dragController] endDrag:event];
-}
-
 @end

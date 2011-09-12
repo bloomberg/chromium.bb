@@ -146,8 +146,10 @@ const NSTimeInterval kTearDuration = 0.333;
     } else if (type == NSLeftMouseDragged) {
       [self continueDrag:theEvent];
     } else if (type == NSLeftMouseUp) {
-      [[tab view] mouseUp:theEvent];
       [self endDrag:theEvent];
+      // Call -mouseUp: after -endDrag: just in case, to avoid triggering
+      // the |inRapidClosureMode| block in TabView's -mouseUp:.
+      [[tab view] mouseUp:theEvent];
       break;
     } else {
       // TODO(viettrungluu): [crbug.com/23830] We can receive right-mouse-ups
@@ -160,6 +162,11 @@ const NSTimeInterval kTearDuration = 0.333;
 }
 
 - (void)continueDrag:(NSEvent*)theEvent {
+  CHECK(draggedTab_);
+
+  // Cancel any delayed -continueDrag: requests that may still be pending.
+  [NSObject cancelPreviousPerformRequestsWithTarget:self];
+
   // Special-case this to keep the logic below simpler.
   if (moveWindowOnDrag_) {
     if ([sourceController_ windowMovementAllowed]) {
@@ -301,7 +308,7 @@ const NSTimeInterval kTearDuration = 0.333;
 
   // When the user first tears off the window, we want slide the window to
   // the current mouse location (to reduce the jarring appearance). We do this
-  // by calling ourselves back with additional mouseDragged calls (not actual
+  // by calling ourselves back with additional -continueDrag: calls (not actual
   // events). |tearProgress| is a normalized measure of how far through this
   // tear "animation" (of length kTearDuration) we are and has values [0..1].
   // We use sqrt() so the animation is non-linear (slow down near the end
@@ -378,12 +385,14 @@ const NSTimeInterval kTearDuration = 0.333;
 }
 
 - (void)endDrag:(NSEvent*)event {
-  // Special-case this to keep the logic below simpler.
-  if (moveWindowOnDrag_)
-    return;
-
-  // Cancel any delayed -mouseDragged: requests that may still be pending.
+  // Cancel any delayed -continueDrag: requests that may still be pending.
   [NSObject cancelPreviousPerformRequestsWithTarget:self];
+
+  // Special-case this to keep the logic below simpler.
+  if (moveWindowOnDrag_) {
+    [self resetDragControllers];
+    return;
+  }
 
   // TODO(pinkerton): http://crbug.com/25682 demonstrates a way to get here by
   // some weird circumstance that doesn't first go through mouseDown:. We
@@ -439,6 +448,7 @@ const NSTimeInterval kTearDuration = 0.333;
 
 // Call to clear out transient weak references we hold during drags.
 - (void)resetDragControllers {
+  draggedTab_ = nil;
   draggedController_ = nil;
   dragWindow_ = nil;
   dragOverlay_ = nil;
