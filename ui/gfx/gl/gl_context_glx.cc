@@ -104,10 +104,14 @@ bool GLContextGLX::Initialize(GLSurface* compatible_surface) {
 
       // Get the visuals for the X drawable.
       XWindowAttributes attributes;
-      XGetWindowAttributes(
+      if (!XGetWindowAttributes(
           display,
           reinterpret_cast<GLXDrawable>(surface_glx->GetHandle()),
-          &attributes);
+          &attributes)) {
+        LOG(ERROR) << "XGetWindowAttributes failed for window " <<
+            reinterpret_cast<GLXDrawable>(surface_glx->GetHandle()) << ".";
+        return false;
+      }
 
       XVisualInfo visual_info_template;
       visual_info_template.visualid = XVisualIDFromVisual(attributes.visual);

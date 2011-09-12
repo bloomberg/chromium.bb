@@ -218,7 +218,8 @@ int BitsPerPixelForPixmapDepth(Display* dpy, int depth) {
 
 bool IsWindowVisible(XID window) {
   XWindowAttributes win_attributes;
-  XGetWindowAttributes(GetXDisplay(), window, &win_attributes);
+  if (!XGetWindowAttributes(GetXDisplay(), window, &win_attributes))
+    return false;
   if (win_attributes.map_state != IsViewable)
     return false;
   // Some compositing window managers (notably kwin) do not actually unmap

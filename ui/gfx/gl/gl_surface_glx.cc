@@ -131,7 +131,10 @@ bool NativeViewGLSurfaceGLX::SwapBuffers() {
 
 gfx::Size NativeViewGLSurfaceGLX::GetSize() {
   XWindowAttributes attributes;
-  XGetWindowAttributes(g_display, window_, &attributes);
+  if (!XGetWindowAttributes(g_display, window_, &attributes)) {
+    LOG(ERROR) << "XGetWindowAttributes failed for window " << window_ << ".";
+    return gfx::Size();
+  }
   return gfx::Size(attributes.width, attributes.height);
 }
 
@@ -154,10 +157,15 @@ void* NativeViewGLSurfaceGLX::GetConfig() {
     // it.
 
     XWindowAttributes attributes;
-    XGetWindowAttributes(
+    if (!XGetWindowAttributes(
         g_display,
         reinterpret_cast<GLXDrawable>(GetHandle()),
-        &attributes);
+        &attributes)) {
+      LOG(ERROR) << "XGetWindowAttributes failed for window " <<
+          reinterpret_cast<GLXDrawable>(GetHandle()) << ".";
+      return NULL;
+    }
+
     int visual_id = XVisualIDFromVisual(attributes.visual);
 
     int num_elements = 0;

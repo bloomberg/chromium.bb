@@ -173,9 +173,13 @@ bool NativeViewGLSurfaceOSMesa::SwapBuffers() {
 
   gfx::Size size = GetSize();
 
-  // Copy the frame into the pixmap.
   XWindowAttributes attributes;
-  XGetWindowAttributes(g_osmesa_display, window_, &attributes);
+  if (!XGetWindowAttributes(g_osmesa_display, window_, &attributes)) {
+    LOG(ERROR) << "XGetWindowAttributes failed for window " << window_ << ".";
+    return false;
+  }
+
+  // Copy the frame into the pixmap.
   ui::PutARGBImage(g_osmesa_display,
                    attributes.visual,
                    attributes.depth,
@@ -200,7 +204,10 @@ bool NativeViewGLSurfaceOSMesa::SwapBuffers() {
 bool NativeViewGLSurfaceOSMesa::UpdateSize() {
   // Get the window size.
   XWindowAttributes attributes;
-  XGetWindowAttributes(g_osmesa_display, window_, &attributes);
+  if (!XGetWindowAttributes(g_osmesa_display, window_, &attributes)) {
+    LOG(ERROR) << "XGetWindowAttributes failed for window " << window_ << ".";
+    return false;
+  }
   gfx::Size window_size = gfx::Size(std::max(1, attributes.width),
                                     std::max(1, attributes.height));
 
