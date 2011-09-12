@@ -722,7 +722,7 @@ unexpected results.
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>A list of frames in the given tab.</dd>
+          <dd>A list of frames in the given tab, null if the specified tab ID is invalid.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -785,7 +785,7 @@ unexpected results.
 
               <div class="description">
                 <p class="todo" style="display: none; ">Undocumented.</p>
-                <p>Retrieves information about the given frame. A frame refers to an <iframe> or a &lt;frame&gt; of a web page and is identified by a tab ID and a frame ID.</iframe></p>
+                <p>Retrieves information about the given frame. A frame refers to an &lt;iframe&gt; or a &lt;frame&gt; of a web page and is identified by a tab ID and a frame ID.</p>
 
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>
@@ -1117,12 +1117,10 @@ unexpected results.
 
               </em>
           </dt>
-          <dd class="todo">
+          <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd style="display: none; ">
-            Description of this parameter from the json schema.
-          </dd>
+          <dd>Information about the requested frame, null if the specified frame ID and/or tab ID are invalid.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.

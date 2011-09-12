@@ -5212,7 +5212,7 @@
       {
         "name": "getFrame",
         "type": "function",
-        "description": "Retrieves information about the given frame. A frame refers to an <iframe> or a <frame> of a web page and is identified by a tab ID and a frame ID.",
+        "description": "Retrieves information about the given frame. A frame refers to an &lt;iframe&gt; or a &lt;frame&gt; of a web page and is identified by a tab ID and a frame ID.",
         "parameters": [
           {
             "type": "object",
@@ -5229,6 +5229,7 @@
                 "type": "object",
                 "name": "details",
                 "optional": true,
+                "description": "Information about the requested frame, null if the specified frame ID and/or tab ID are invalid.",
                 "properties": {
                   "errorOccurred": {
                     "type": "boolean",
@@ -5261,7 +5262,7 @@
             "type": "function", "name": "callback", "parameters": [
               {
                 "type": "array",
-                "description": "A list of frames in the given tab.",
+                "description": "A list of frames in the given tab, null if the specified tab ID is invalid.",
                 "optional": true,
                 "items": {
                   "type": "object",
