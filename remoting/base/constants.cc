@@ -12,6 +12,8 @@ const char kChromotingTokenDefaultServiceName[] = "chromiumsync";
 
 const char kChromotingXmlNamespace[] = "google:remoting";
 
+const char kControlChannelName[] = "control";
+const char kEventChannelName[] = "event";
 const char kVideoChannelName[] = "video";
 const char kVideoRtpChannelName[] = "videortp";
 const char kVideoRtcpChannelName[] = "videortpc";

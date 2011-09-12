@@ -26,13 +26,6 @@ using cricket::BaseSession;
 namespace remoting {
 namespace protocol {
 
-namespace {
-
-const char kControlChannelName[] = "control";
-const char kEventChannelName[] = "event";
-
-}  // namespace
-
 // static
 JingleSession* JingleSession::CreateClientSession(
     JingleSessionManager* manager, const std::string& host_public_key) {

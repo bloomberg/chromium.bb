@@ -38,7 +38,7 @@ class PepperTransportSocketAdapter : public base::NonThreadSafe,
     virtual void OnChannelNewLocalCandidate(const std::string& candidate) = 0;
   };
 
-  PepperTransportSocketAdapter(pp::Instance* pp_instance,
+  PepperTransportSocketAdapter(pp::Transport_Dev* transport,
                                const std::string& name,
                                Observer* observer);
   virtual ~PepperTransportSocketAdapter();

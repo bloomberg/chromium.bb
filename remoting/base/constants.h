@@ -18,6 +18,8 @@ extern const char kChromotingTokenDefaultServiceName[];
 extern const char kChromotingXmlNamespace[];
 
 // Channel names.
+extern const char kControlChannelName[];
+extern const char kEventChannelName[];
 extern const char kVideoChannelName[];
 extern const char kVideoRtpChannelName[];
 extern const char kVideoRtcpChannelName[];

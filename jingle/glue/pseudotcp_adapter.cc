@@ -447,8 +447,8 @@ bool PseudoTcpAdapter::IsConnectedAndIdle() const {
 int PseudoTcpAdapter::GetPeerAddress(net::AddressList* address) const {
   DCHECK(CalledOnValidThread());
 
-  // We actually don't know the peer address. Returning so the upper layers
-  // won't complain.
+  // We don't have a meaningful peer address, but we can't return an
+  // error, so we return a INADDR_ANY instead.
   net::IPAddressNumber ip_address(4);
   *address = net::AddressList::CreateFromIPAddress(ip_address, 0);
   return net::OK;

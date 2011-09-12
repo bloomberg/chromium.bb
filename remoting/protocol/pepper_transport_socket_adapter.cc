@@ -5,8 +5,10 @@
 #include "remoting/protocol/pepper_transport_socket_adapter.h"
 
 #include "base/logging.h"
+#include "net/base/address_list.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
+#include "net/base/net_util.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/cpp/dev/transport_dev.h"
 #include "ppapi/cpp/var.h"
@@ -39,18 +41,17 @@ int PPErrorToNetError(int result) {
 }  // namespace
 
 PepperTransportSocketAdapter::PepperTransportSocketAdapter(
-    pp::Instance* pp_instance,
+    pp::Transport_Dev* transport,
     const std::string& name,
     Observer* observer)
     : name_(name),
       observer_(observer),
+      transport_(transport),
       connected_(false),
       get_address_pending_(false),
       read_callback_(NULL),
       write_callback_(NULL) {
   callback_factory_.Initialize(this);
-  transport_.reset(new pp::Transport_Dev(
-      pp_instance, name_.c_str(), kTcpProtocol));
 }
 
 PepperTransportSocketAdapter::~PepperTransportSocketAdapter() {
@@ -148,8 +149,11 @@ bool PepperTransportSocketAdapter::IsConnectedAndIdle() const {
 
 int PepperTransportSocketAdapter::GetPeerAddress(
     net::AddressList* address) const {
-  NOTIMPLEMENTED();
-  return net::ERR_FAILED;
+  // We don't have a meaningful peer address, but we can't return an
+  // error, so we return a INADDR_ANY instead.
+  net::IPAddressNumber ip_address(4);
+  *address = net::AddressList::CreateFromIPAddress(ip_address, 0);
+  return net::OK;
 }
 
 int PepperTransportSocketAdapter::GetLocalAddress(
