@@ -57,6 +57,7 @@ class AppCacheService {
   virtual ~AppCacheService();
 
   void Initialize(const FilePath& cache_directory,
+                  base::MessageLoopProxy* db_thread,
                   base::MessageLoopProxy* cache_thread);
 
   // Purges any memory not needed.

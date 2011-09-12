@@ -23,7 +23,6 @@
 #include "webkit/appcache/appcache_quota_client.h"
 #include "webkit/appcache/appcache_response.h"
 #include "webkit/appcache/appcache_service.h"
-#include "webkit/appcache/appcache_thread.h"
 #include "webkit/quota/quota_client.h"
 #include "webkit/quota/quota_manager.h"
 #include "webkit/quota/special_storage_policy.h"
@@ -130,7 +129,10 @@ class AppCacheStorageImpl::DatabaseTask
     : public base::RefCountedThreadSafe<DatabaseTask> {
  public:
   explicit DatabaseTask(AppCacheStorageImpl* storage)
-      : storage_(storage), database_(storage->database_) {}
+      : storage_(storage), database_(storage->database_),
+        io_thread_(base::MessageLoopProxy::current()) {
+    DCHECK(io_thread_);
+  }
 
   virtual ~DatabaseTask() {}
 
@@ -167,12 +169,14 @@ class AppCacheStorageImpl::DatabaseTask
   void CallRun();
   void CallRunCompleted();
   void CallDisableStorage();
+
+  scoped_refptr<base::MessageLoopProxy> io_thread_;
 };
 
 void AppCacheStorageImpl::DatabaseTask::Schedule() {
   DCHECK(storage_);
-  DCHECK(AppCacheThread::CurrentlyOn(AppCacheThread::io()));
-  if (AppCacheThread::PostTask(AppCacheThread::db(), FROM_HERE,
+  DCHECK(io_thread_->BelongsToCurrentThread());
+  if (storage_->db_thread_->PostTask(FROM_HERE,
           NewRunnableMethod(this, &DatabaseTask::CallRun))) {
     storage_->scheduled_database_tasks_.push_back(this);
   } else {
@@ -181,27 +185,26 @@ void AppCacheStorageImpl::DatabaseTask::Schedule() {
 }
 
 void AppCacheStorageImpl::DatabaseTask::CancelCompletion() {
-  DCHECK(AppCacheThread::CurrentlyOn(AppCacheThread::io()));
+  DCHECK(io_thread_->BelongsToCurrentThread());
   delegates_.clear();
   storage_ = NULL;
 }
 
 void AppCacheStorageImpl::DatabaseTask::CallRun() {
-  DCHECK(AppCacheThread::CurrentlyOn(AppCacheThread::db()));
   if (!database_->is_disabled()) {
     Run();
     if (database_->is_disabled()) {
-      AppCacheThread::PostTask(AppCacheThread::io(), FROM_HERE,
+      io_thread_->PostTask(FROM_HERE,
           NewRunnableMethod(this, &DatabaseTask::CallDisableStorage));
     }
   }
-  AppCacheThread::PostTask(AppCacheThread::io(), FROM_HERE,
+  io_thread_->PostTask(FROM_HERE,
       NewRunnableMethod(this, &DatabaseTask::CallRunCompleted));
 }
 
 void AppCacheStorageImpl::DatabaseTask::CallRunCompleted() {
   if (storage_) {
-    DCHECK(AppCacheThread::CurrentlyOn(AppCacheThread::io()));
+    DCHECK(io_thread_->BelongsToCurrentThread());
     DCHECK(storage_->scheduled_database_tasks_.front() == this);
     storage_->scheduled_database_tasks_.pop_front();
     RunCompleted();
@@ -211,7 +214,7 @@ void AppCacheStorageImpl::DatabaseTask::CallRunCompleted() {
 
 void AppCacheStorageImpl::DatabaseTask::CallDisableStorage() {
   if (storage_) {
-    DCHECK(AppCacheThread::CurrentlyOn(AppCacheThread::io()));
+    DCHECK(io_thread_->BelongsToCurrentThread());
     storage_->Disable();
   }
 }
@@ -1163,8 +1166,7 @@ AppCacheStorageImpl::~AppCacheStorageImpl() {
                 std::mem_fun(&DatabaseTask::CancelCompletion));
 
   if (database_) {
-    AppCacheThread::PostTask(
-        AppCacheThread::db(),
+    db_thread_->PostTask(
         FROM_HERE,
         NewRunnableFunction(
             CleanUpOnDatabaseThread,
@@ -1175,15 +1177,20 @@ AppCacheStorageImpl::~AppCacheStorageImpl() {
 }
 
 void AppCacheStorageImpl::Initialize(const FilePath& cache_directory,
+                                     base::MessageLoopProxy* db_thread,
                                      base::MessageLoopProxy* cache_thread) {
+  DCHECK(db_thread);
+
   cache_directory_ = cache_directory;
-  cache_thread_ = cache_thread;
   is_incognito_ = cache_directory_.empty();
 
   FilePath db_file_path;
   if (!is_incognito_)
     db_file_path = cache_directory_.Append(kAppCacheDatabaseName);
   database_ = new AppCacheDatabase(db_file_path);
+
+  db_thread_ = db_thread;
+  cache_thread_ = cache_thread;
 
   scoped_refptr<InitTask> task(new InitTask(this));
   task->Schedule();
@@ -1640,7 +1647,7 @@ void AppCacheStorageImpl::OnDiskCacheInitialized(int rv) {
     Disable();
     if (!is_incognito_) {
       VLOG(1) << "Deleting existing appcache data and starting over.";
-      AppCacheThread::PostTask(AppCacheThread::db(), FROM_HERE,
+      db_thread_->PostTask(FROM_HERE,
           NewRunnableFunction(DeleteDirectory, cache_directory_));
     }
   }

@@ -25,6 +25,7 @@ class AppCacheStorageImpl : public AppCacheStorage {
   virtual ~AppCacheStorageImpl();
 
   void Initialize(const FilePath& cache_directory,
+                  base::MessageLoopProxy* db_thread,
                   base::MessageLoopProxy* cache_thread);
   void Disable();
   bool is_disabled() const { return is_disabled_; }
@@ -122,8 +123,13 @@ class AppCacheStorageImpl : public AppCacheStorage {
 
   // The directory in which we place files in the file system.
   FilePath cache_directory_;
-  scoped_refptr<base::MessageLoopProxy> cache_thread_;
   bool is_incognito_;
+
+  // This class operates primarily on the io thread, but schedules
+  // its DatabaseTasks on the db thread. Seperately, the disk_cache uses
+  // the cache_thread.
+  scoped_refptr<base::MessageLoopProxy> db_thread_;
+  scoped_refptr<base::MessageLoopProxy> cache_thread_;
 
   // Structures to keep track of DatabaseTasks that are in-flight.
   DatabaseTaskQueue scheduled_database_tasks_;

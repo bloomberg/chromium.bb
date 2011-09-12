@@ -19,34 +19,6 @@ using WebKit::WebApplicationCacheHostClient;
 using appcache::WebApplicationCacheHostImpl;
 using appcache::AppCacheBackendImpl;
 using appcache::AppCacheInterceptor;
-using appcache::AppCacheThread;
-
-namespace appcache {
-
-// An impl of AppCacheThread we need to provide to the appcache lib.
-
-bool AppCacheThread::PostTask(
-    int id,
-    const tracked_objects::Location& from_here,
-    Task* task) {
-  if (SimpleAppCacheSystem::thread_provider()) {
-    return SimpleAppCacheSystem::thread_provider()->PostTask(
-        id, from_here, task);
-  }
-  scoped_ptr<Task> task_ptr(task);
-  MessageLoop* loop = SimpleAppCacheSystem::GetMessageLoop(id);
-  if (loop)
-    loop->PostTask(from_here, task_ptr.release());
-  return loop ? true : false;
-}
-
-bool AppCacheThread::CurrentlyOn(int id) {
-  if (SimpleAppCacheSystem::thread_provider())
-    return SimpleAppCacheSystem::thread_provider()->CurrentlyOn(id);
-  return MessageLoop::current() == SimpleAppCacheSystem::GetMessageLoop(id);
-}
-
-}  // namespace appcache
 
 // SimpleFrontendProxy --------------------------------------------------------
 // Proxies method calls from the backend IO thread to the frontend UI thread.
@@ -366,8 +338,7 @@ SimpleAppCacheSystem::SimpleAppCacheSystem()
           backend_proxy_(new SimpleBackendProxy(this))),
       ALLOW_THIS_IN_INITIALIZER_LIST(
           frontend_proxy_(new SimpleFrontendProxy(this))),
-      backend_impl_(NULL), service_(NULL), db_thread_("AppCacheDBThread"),
-      thread_provider_(NULL) {
+      backend_impl_(NULL), service_(NULL), db_thread_("AppCacheDBThread") {
   DCHECK(!instance_);
   instance_ = this;
 }
@@ -393,7 +364,6 @@ SimpleAppCacheSystem::~SimpleAppCacheSystem() {
 
 void SimpleAppCacheSystem::InitOnUIThread(const FilePath& cache_directory) {
   DCHECK(!ui_message_loop_);
-  AppCacheThread::Init(DB_THREAD_ID, IO_THREAD_ID);
   ui_message_loop_ = MessageLoop::current();
   cache_directory_ = cache_directory;
 }
@@ -413,6 +383,7 @@ void SimpleAppCacheSystem::InitOnIOThread(
   service_ = new appcache::AppCacheService(NULL);
   backend_impl_ = new appcache::AppCacheBackendImpl();
   service_->Initialize(cache_directory_,
+                       db_thread_.message_loop_proxy(),
                        SimpleResourceLoaderBridge::GetCacheThread());
   service_->set_request_context(request_context);
   backend_impl_->Initialize(service_, frontend_proxy_.get(), kSingleProcessId);

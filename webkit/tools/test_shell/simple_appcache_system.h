@@ -11,7 +11,6 @@
 #include "webkit/appcache/appcache_backend_impl.h"
 #include "webkit/appcache/appcache_frontend_impl.h"
 #include "webkit/appcache/appcache_service.h"
-#include "webkit/appcache/appcache_thread.h"
 #include "webkit/glue/resource_type.h"
 
 namespace WebKit {
@@ -81,37 +80,9 @@ class SimpleAppCacheSystem {
       instance_->GetExtraResponseBits(request, cache_id, manifest_url);
   }
 
-  // Some unittests create their own IO and DB threads.
-
-  enum AppCacheThreadID {
-    DB_THREAD_ID,
-    IO_THREAD_ID,
-  };
-
-  class ThreadProvider {
-   public:
-    virtual ~ThreadProvider() {}
-    virtual bool PostTask(
-        int id,
-        const tracked_objects::Location& from_here,
-        Task* task) = 0;
-    virtual bool CurrentlyOn(int id) = 0;
-  };
-
-  static void set_thread_provider(ThreadProvider* provider) {
-    DCHECK(instance_);
-    DCHECK(!provider || !instance_->thread_provider_);
-    instance_->thread_provider_ = provider;
-  }
-
-  static ThreadProvider* thread_provider() {
-    return instance_ ? instance_->thread_provider_ : NULL;
-  }
-
  private:
   friend class SimpleBackendProxy;
   friend class SimpleFrontendProxy;
-  friend class appcache::AppCacheThread;
 
   // Instance methods called by our static public methods
   void InitOnUIThread(const FilePath& cache_directory);
@@ -137,16 +108,6 @@ class SimpleAppCacheSystem {
   bool is_initailized_on_ui_thread() {
     return ui_message_loop_ ? true : false;
   }
-  static MessageLoop* GetMessageLoop(int id) {
-    if (instance_) {
-      if (id == IO_THREAD_ID)
-        return instance_->io_message_loop_;
-      if (id == DB_THREAD_ID)
-        return instance_->db_thread_.message_loop();
-      NOTREACHED() << "Invalid AppCacheThreadID value";
-    }
-    return NULL;
-  }
 
   FilePath cache_directory_;
   MessageLoop* io_message_loop_;
@@ -163,9 +124,6 @@ class SimpleAppCacheSystem {
 
   // We start a thread for use as the DB thread.
   base::Thread db_thread_;
-
-  // Some unittests create there own IO and DB threads.
-  ThreadProvider* thread_provider_;
 
   // A low-tech singleton.
   static SimpleAppCacheSystem* instance_;

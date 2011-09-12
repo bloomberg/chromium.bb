@@ -48,8 +48,6 @@
         'appcache_storage.h',
         'appcache_storage_impl.cc',
         'appcache_storage_impl.h',
-        'appcache_thread.cc',
-        'appcache_thread.h',
         'appcache_working_set.cc',
         'appcache_working_set.h',
         'appcache_update_job.cc',

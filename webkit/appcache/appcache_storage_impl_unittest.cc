@@ -16,7 +16,6 @@
 #include "webkit/appcache/appcache_service.h"
 #include "webkit/appcache/appcache_storage_impl.h"
 #include "webkit/quota/quota_manager.h"
-#include "webkit/tools/test_shell/simple_appcache_system.h"
 
 namespace appcache {
 
@@ -45,38 +44,8 @@ const int kDefaultEntryIdOffset = 12345;
 
 const int kMockQuota = 5000;
 
-// For the duration of this test case, we hijack the AppCacheThread API
-// calls and implement them in terms of the io and db threads created here.
-
 scoped_ptr<base::Thread> io_thread;
 scoped_ptr<base::Thread> db_thread;
-
-class TestThreadProvider : public SimpleAppCacheSystem::ThreadProvider {
- public:
-  virtual bool PostTask(
-      int id,
-      const tracked_objects::Location& from_here,
-      Task* task) {
-    GetMessageLoop(id)->PostTask(from_here, task);
-    return true;
-  }
-
-  virtual bool CurrentlyOn(int id) {
-    return MessageLoop::current() == GetMessageLoop(id);
-  }
-
-  MessageLoop* GetMessageLoop(int id) {
-    DCHECK(io_thread.get() && db_thread.get());
-    if (id == SimpleAppCacheSystem::IO_THREAD_ID)
-      return io_thread->message_loop();
-    if (id == SimpleAppCacheSystem::DB_THREAD_ID)
-      return db_thread->message_loop();
-    NOTREACHED() << "Invalid AppCacheThreadID value";
-    return NULL;
-  }
-};
-
-TestThreadProvider thread_provider;
 
 }  // namespace
 
@@ -264,12 +233,9 @@ class AppCacheStorageImplTest : public testing::Test {
 
     db_thread.reset(new base::Thread("AppCacheTest::DBThread"));
     ASSERT_TRUE(db_thread->Start());
-
-    SimpleAppCacheSystem::set_thread_provider(&thread_provider);
   }
 
   static void TearDownTestCase() {
-    SimpleAppCacheSystem::set_thread_provider(NULL);
     io_thread.reset(NULL);
     db_thread.reset(NULL);
   }
@@ -290,7 +256,7 @@ class AppCacheStorageImplTest : public testing::Test {
   void SetUpTest() {
     DCHECK(MessageLoop::current() == io_thread->message_loop());
     service_.reset(new AppCacheService(NULL));
-    service_->Initialize(FilePath(), NULL);
+    service_->Initialize(FilePath(), db_thread->message_loop_proxy(), NULL);
     mock_quota_manager_proxy_ = new MockQuotaManagerProxy();
     service_->quota_manager_proxy_ = mock_quota_manager_proxy_;
     delegate_.reset(new MockStorageDelegate(this));

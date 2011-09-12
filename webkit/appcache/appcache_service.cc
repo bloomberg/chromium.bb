@@ -434,10 +434,11 @@ AppCacheService::~AppCacheService() {
 }
 
 void AppCacheService::Initialize(const FilePath& cache_directory,
+                                 base::MessageLoopProxy* db_thread,
                                  base::MessageLoopProxy* cache_thread) {
   DCHECK(!storage_.get());
   AppCacheStorageImpl* storage = new AppCacheStorageImpl(this);
-  storage->Initialize(cache_directory, cache_thread);
+  storage->Initialize(cache_directory, db_thread, cache_thread);
   storage_.reset(storage);
 }
 
