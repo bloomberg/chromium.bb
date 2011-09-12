@@ -36,4 +36,5 @@ ConnectionTesterTest.DeleteWhileInProgress
 GeolocationWifiDataProviderCommonTest.*
 
 # http://crbug.com/96298
+FileSystemDirURLRequestJobTest.Cancel
 FileSystemDirURLRequestJobTest.NoSuchRoot
