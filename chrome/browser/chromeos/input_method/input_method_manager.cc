@@ -40,12 +40,67 @@
 namespace {
 
 const char kIBusDaemonPath[] = "/usr/bin/ibus-daemon";
+const size_t kMaxInputMethodsPerHotkey = 2;
 
 // For hotkey handling.
-enum HotkeyEvents {
+enum HotkeyEvent {
+  // Global hotkeys.
   kPreviousInputMethod = 0,
   kNextInputMethod,
+  // Input method specific hotkeys.
+  kJapaneseInputMethod,
+  kJapaneseLayout,
+  kJapaneseInputMethodOrLayout,
+  kKoreanInputMethodOrLayout,
 };
+
+// Details of the input method specific hotkeys.
+const struct InputMethodSpecificHotkeySetting {
+  const char* input_method_ids[kMaxInputMethodsPerHotkey];
+  int event_id;
+  KeySym keysym;
+  uint32 modifiers;
+  bool trigger_on_press;  // if true. false means 'trigger on release'.
+} kInputMethodSpecificHotkeySettings[] = {
+  {
+    { "mozc-jp" },
+    kJapaneseInputMethod,
+    XK_Henkan,
+    0x0,
+    true,
+  },
+  {
+    { "xkb:jp::jpn" },
+    kJapaneseLayout,
+    XK_Muhenkan,
+    0x0,
+    true,
+  },
+  {
+    { "mozc-jp", "xkb:jp::jpn" },
+    kJapaneseInputMethodOrLayout,
+    XK_Zenkaku_Hankaku,
+    0x0,
+    true,
+  },
+  {
+    { "mozc-hangul", "xkb:kr:kr104:kor" },
+    kKoreanInputMethodOrLayout,
+    XK_Hangul,
+    0x0,
+    true,
+  },
+  {
+    { "mozc-hangul", "xkb:kr:kr104:kor" },
+    kKoreanInputMethodOrLayout,
+    XK_space,
+    ShiftMask,
+    true,
+  },
+};
+
+const size_t kInputMethodSpecificHotkeySettingsLen =
+    arraysize(kInputMethodSpecificHotkeySettings);
 
 // Finds a property which has |new_prop.key| from |prop_list|, and replaces the
 // property with |new_prop|. Returns true if such a property is found.
@@ -104,6 +159,19 @@ class InputMethodManagerImpl : public HotkeyManager::Observer,
     ibus_controller_->AddObserver(this);
     ibus_controller_->Connect();
 
+    // Initialize extra_hotkeys_.
+    for (size_t i = 0; i < kInputMethodSpecificHotkeySettingsLen; ++i) {
+      const char* const* input_method_ids =
+          kInputMethodSpecificHotkeySettings[i].input_method_ids;
+      for (size_t j = 0;
+           j < kMaxInputMethodsPerHotkey && input_method_ids[j];
+           ++j) {
+        extra_hotkeys_.insert(std::make_pair(
+            input_method_ids[j], &kInputMethodSpecificHotkeySettings[i]));
+      }
+    }
+
+    // Register global input method hotkeys: Control+space and Shift+Alt.
     InitHotkeyManager();
   }
 
@@ -229,6 +297,8 @@ class InputMethodManagerImpl : public HotkeyManager::Observer,
            ix != extra_input_method_ids_.end(); ++ix) {
         active_input_method_ids_.push_back(ix->first);
       }
+
+      UpdateInputMethodSpecificHotkeys();
     }
 
     // Before calling FlushImeConfig(), start input method process if necessary.
@@ -248,6 +318,7 @@ class InputMethodManagerImpl : public HotkeyManager::Observer,
     return pending_config_requests_.empty();
   }
 
+  // TODO(yusukes): Support input method specific hotkeys.
   virtual void AddActiveIme(const std::string& id,
                             const std::string& name,
                             const std::vector<std::string>& layouts,
@@ -258,6 +329,8 @@ class InputMethodManagerImpl : public HotkeyManager::Observer,
         InputMethodDescriptor::CreateInputMethodDescriptor(
             id, virtual_layouts, language);
     active_input_method_ids_.push_back(id);
+    // TODO(yusukes): Call UpdateInputMethodSpecificHotkeys() here once IME
+    // extension supports hotkeys.
   }
 
   virtual void RemoveActiveIme(const std::string& id) {
@@ -268,8 +341,9 @@ class InputMethodManagerImpl : public HotkeyManager::Observer,
     if (ix != active_input_method_ids_.end()) {
       active_input_method_ids_.erase(ix);
     }
-
     extra_input_method_ids_.erase(id);
+    // TODO(yusukes): Call UpdateInputMethodSpecificHotkeys() here once IME
+    // extension supports hotkeys.
   }
 
   virtual bool GetExtraDescriptor(const std::string& id,
@@ -349,16 +423,21 @@ class InputMethodManagerImpl : public HotkeyManager::Observer,
   }
 
   virtual void HotkeyPressed(HotkeyManager* manager, int event_id) {
-    switch (HotkeyEvents(event_id)) {
+    const HotkeyEvent event = HotkeyEvent(event_id);
+    switch (event) {
       case kPreviousInputMethod:
         SwitchToPreviousInputMethod();
         break;
       case kNextInputMethod:
         SwitchToNextInputMethod();
         break;
+      case kJapaneseInputMethod:
+      case kJapaneseLayout:
+      case kJapaneseInputMethodOrLayout:
+      case kKoreanInputMethodOrLayout:
+        SwitchToInputMethod(event);
+        break;
     }
-    // TODO(yusukes): handle engine specific hotkeys like Henkan, Muhenkan, and
-    // Hangul.
   }
 
   static InputMethodManagerImpl* GetInstance() {
@@ -961,10 +1040,31 @@ class InputMethodManagerImpl : public HotkeyManager::Observer,
                               XK_Meta_R,
                               ShiftMask | Mod1Mask,
                               false);
+    // Input method specific hotkeys will be added in SetImeConfig().
 
-    // TODO(yusukes): Support engine specific hotkeys like XK_Henkan, Muhenkan,
-    // and Hangul.
     hotkey_manager_.AddObserver(this);
+  }
+
+  void UpdateInputMethodSpecificHotkeys() {
+    // Remove all input method specific hotkeys first.
+    for (size_t i = 0; i < kInputMethodSpecificHotkeySettingsLen; ++i) {
+      hotkey_manager_.RemoveHotkey(
+          kInputMethodSpecificHotkeySettings[i].event_id);
+    }
+
+    for (size_t i = 0; i < active_input_method_ids_.size(); ++i) {
+      typedef std::map<std::string,
+          const InputMethodSpecificHotkeySetting*>::const_iterator Iter;
+      std::pair<Iter, Iter> result = extra_hotkeys_.equal_range(
+          active_input_method_ids_[i]);
+      for (Iter iter = result.first; iter != result.second; ++iter) {
+        hotkey_manager_.AddHotkey(iter->second->event_id,
+                                  iter->second->keysym,
+                                  iter->second->modifiers,
+                                  iter->second->trigger_on_press);
+      }
+    }
+    // TODO(yusukes): Check hotkeys for IME extensions.
   }
 
   // Handles "Shift+Alt" hotkey.
@@ -1017,6 +1117,69 @@ class InputMethodManagerImpl : public HotkeyManager::Observer,
     } else {
       ChangeInputMethod(*iter);
     }
+  }
+
+  // Handles input method specific hotkeys like XK_Henkan.
+  void SwitchToInputMethod(HotkeyEvent event) {
+    // Sanity check.
+    if (active_input_method_ids_.empty()) {
+      LOG(ERROR) << "active input method is empty";
+      return;
+    }
+
+    // Get the list of input method ids for |event_id|. For example, get
+    // { "mozc-hangul", "xkb:kr:kr104:kor" } for kKoreanInputMethodOrLayout.
+    const char* const* input_method_ids_to_switch = NULL;
+    switch (event) {
+      case kPreviousInputMethod:
+      case kNextInputMethod:
+        // These events should not be handled here.
+        break;
+      case kJapaneseInputMethod:
+      case kJapaneseLayout:
+      case kJapaneseInputMethodOrLayout:
+      case kKoreanInputMethodOrLayout:
+        for (size_t i = 0; i < kInputMethodSpecificHotkeySettingsLen; ++i) {
+          if (event == kInputMethodSpecificHotkeySettings[i].event_id) {
+            input_method_ids_to_switch =
+                kInputMethodSpecificHotkeySettings[i].input_method_ids;
+          }
+        }
+        break;
+    }
+    if (!input_method_ids_to_switch) {
+      LOG(ERROR) << "Unknown event: " << event;
+      return;
+    }
+
+    // Obtain the intersection of input_method_ids_to_switch and
+    // active_input_method_ids_. The order of IDs in active_input_method_ids_ is
+    // preserved.
+    std::vector<std::string> ids;
+    for (size_t i = 0; i < kMaxInputMethodsPerHotkey; ++i) {
+      const char* id = input_method_ids_to_switch[i];
+      if (id && std::find(active_input_method_ids_.begin(),
+                          active_input_method_ids_.end(),
+                          id) != active_input_method_ids_.end()) {
+        ids.push_back(id);
+      }
+    }
+    if (ids.empty()) {
+      LOG(ERROR) << "No input method for " << event << " is active";
+      return;
+    }
+
+    // If current_input_method_ is not in ids, switch to ids[0]. If
+    // current_input_method_ is ids[N], switch to ids[N+1].
+    std::vector<std::string>::const_iterator iter =
+        std::find(ids.begin(), ids.end(), current_input_method_.id());
+    if (iter != ids.end()) {
+      ++iter;
+    }
+    if (iter == ids.end()) {
+      iter = ids.begin();
+    }
+    ChangeInputMethod(*iter);
   }
 
   // A reference to the language api, to allow callbacks when the input method
@@ -1088,6 +1251,10 @@ class InputMethodManagerImpl : public HotkeyManager::Observer,
   // those created by extension.
   std::map<std::string, InputMethodDescriptor> extra_input_method_ids_;
 
+  // A muitlmap from input method id to input method specific hotkey
+  // information. e.g. "mozc-jp" to XK_ZenkakuHankaku, "mozc-jp" to XK_Henkan.
+  std::multimap<std::string,
+                const InputMethodSpecificHotkeySetting*> extra_hotkeys_;
   // An object which detects Control+space and Shift+Alt key presses.
   HotkeyManager hotkey_manager_;
 
