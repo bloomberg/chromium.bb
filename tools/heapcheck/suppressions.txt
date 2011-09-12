@@ -1473,26 +1473,6 @@
    fun:ProfileManagerTest_CreateProfileAsyncMultipleRequests_Test::TestBody
 }
 {
-   bug_90381_a
-   Heapcheck:Leak
-   ...
-   fun:chrome_browser_net::PredictorTest_ShutdownWhenResolutionIsPendingTest_Test::TestBody
-}
-{
-   bug_90381_b
-   Heapcheck:Leak
-   ...
-   fun:net::SystemHostResolverProc
-   fun:net::RuleBasedHostResolverProc::Resolve
-   fun:net::HostResolverProc::ResolveUsingPrevious
-   fun:net::RuleBasedHostResolverProc::Resolve
-   fun:net::HostResolverProc::ResolveUsingPrevious
-   fun:net::WaitingHostResolverProc::Resolve
-   fun:net::ResolveAddrInfo
-   fun:net::HostResolverImpl::Job::DoLookup
-   fun:void DispatchToMethod
-}
-{
    bug_91174
    Heapcheck:Leak
    fun:DownloadManager::OnPathExistenceAvailable
