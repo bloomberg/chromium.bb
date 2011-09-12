@@ -354,34 +354,46 @@ void RenderTextWin::ItemizeLogicalText() {
 }
 
 void RenderTextWin::LayoutVisualText(HDC hdc) {
-  HRESULT hr = 0;
+  HRESULT hr = E_FAIL;
   std::vector<internal::TextRun*>::const_iterator run_iter;
   for (run_iter = runs_.begin(); run_iter < runs_.end(); ++run_iter) {
     internal::TextRun* run = *run_iter;
-    int run_length = run->range.length();
+    size_t run_length = run->range.length();
     string16 run_string(text().substr(run->range.start(), run_length));
     const wchar_t* run_text = run_string.c_str();
-    // Select the font desired for glyph generation
+    // Select the font desired for glyph generation.
     SelectObject(hdc, run->font.GetNativeFont());
 
     run->logical_clusters.reset(new WORD[run_length]);
     run->glyph_count = 0;
-    hr = E_OUTOFMEMORY;
-    // kGuess comes from: http://msdn.microsoft.com/en-us/library/dd368564.aspx
-    const int kGuess = static_cast<int>(1.5 * run_length + 16);
-    for (size_t n = kGuess; hr == E_OUTOFMEMORY && n < kMaxGlyphs; n *= 2) {
-      run->glyphs.reset(new WORD[n]);
-      run->visible_attributes.reset(new SCRIPT_VISATTR[n]);
+    // Max glyph guess: http://msdn.microsoft.com/en-us/library/dd368564.aspx
+    size_t max_glyphs = static_cast<size_t>(1.5 * run_length + 16);
+    while (max_glyphs < kMaxGlyphs) {
+      run->glyphs.reset(new WORD[max_glyphs]);
+      run->visible_attributes.reset(new SCRIPT_VISATTR[max_glyphs]);
       hr = ScriptShape(hdc,
                        &script_cache_,
                        run_text,
                        run_length,
-                       n,
+                       max_glyphs,
                        &(run->script_analysis),
                        run->glyphs.get(),
                        run->logical_clusters.get(),
                        run->visible_attributes.get(),
                        &(run->glyph_count));
+      if (hr == E_OUTOFMEMORY) {
+        max_glyphs *= 2;
+      } else if (hr == USP_E_SCRIPT_NOT_IN_FONT) {
+        // The run's font doesn't contain the required glyphs, use an alternate.
+        // TODO(msw): Font fallback... Don't use SCRIPT_UNDEFINED.
+        //            See https://bugzilla.mozilla.org/show_bug.cgi?id=341500
+        //            And http://maxradi.us/documents/uniscribe/
+        if (run->script_analysis.eScript == SCRIPT_UNDEFINED)
+          break;
+        run->script_analysis.eScript = SCRIPT_UNDEFINED;
+      } else {
+        break;
+      }
     }
     DCHECK(SUCCEEDED(hr));
 
