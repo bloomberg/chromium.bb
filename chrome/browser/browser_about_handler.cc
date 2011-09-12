@@ -60,14 +60,11 @@
 #include "net/base/net_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "v8/include/v8.h"
 #include "webkit/glue/user_agent.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/plugins/npapi/plugin_list.h"
 #include "webkit/plugins/webplugininfo.h"
-
-#ifdef CHROME_V8
-#include "v8/include/v8.h"
-#endif
 
 #if defined(OS_WIN)
 #include "chrome/browser/enumerate_modules_model_win.h"
@@ -1108,15 +1105,6 @@ std::string AboutVersionStrings(DictionaryValue* localized_strings,
       l10n_util::GetStringUTF16(IDS_ABOUT_VERSION_TITLE));
   chrome::VersionInfo version_info;
 
-  std::string webkit_version = webkit_glue::GetWebKitVersion();
-#ifdef CHROME_V8
-  std::string js_version(v8::V8::GetVersion());
-  std::string js_engine = "V8";
-#else
-  std::string js_version = webkit_version;
-  std::string js_engine = "JavaScriptCore";
-#endif
-
   localized_strings->SetString("name",
       l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
   localized_strings->SetString("version", version_info.Version());
@@ -1130,9 +1118,10 @@ std::string AboutVersionStrings(DictionaryValue* localized_strings,
   localized_strings->SetString("platform",
                                l10n_util::GetStringUTF16(IDS_PLATFORM_LABEL));
   localized_strings->SetString("os_type", version_info.OSType());
-  localized_strings->SetString("webkit_version", webkit_version);
-  localized_strings->SetString("js_engine", js_engine);
-  localized_strings->SetString("js_version", js_version);
+  localized_strings->SetString("webkit_version",
+                               webkit_glue::GetWebKitVersion());
+  localized_strings->SetString("js_engine", "V8");
+  localized_strings->SetString("js_version", v8::V8::GetVersion());
 
   // Obtain the version of the first enabled Flash plugin.
   std::vector<webkit::WebPluginInfo> info_array;
@@ -1149,7 +1138,6 @@ std::string AboutVersionStrings(DictionaryValue* localized_strings,
   }
   localized_strings->SetString("flash_plugin", "Flash");
   localized_strings->SetString("flash_version", flash_version);
-  localized_strings->SetString("webkit_version", webkit_version);
   localized_strings->SetString("company",
       l10n_util::GetStringUTF16(IDS_ABOUT_VERSION_COMPANY_NAME));
   localized_strings->SetString("copyright",

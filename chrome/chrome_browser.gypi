@@ -3850,11 +3850,6 @@
         '<(grit_out_dir)/grit/theme_resources_standard_map.cc',
       ],
       'conditions': [
-        ['javascript_engine=="v8"', {
-          'defines': [
-            'CHROME_V8',
-          ],
-        }],
         ['debug_devtools==1', {
           'defines': [
             'DEBUG_DEVTOOLS=1',

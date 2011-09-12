@@ -31,12 +31,9 @@
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "v8/include/v8.h"
 #include "webkit/glue/user_agent.h"
 #include "webkit/glue/webkit_glue.h"
-
-#if defined(CHROME_V8)
-#include "v8/include/v8.h"
-#endif
 
 namespace {
 
@@ -210,14 +207,8 @@ void AboutPageHandler::GetLocalizedValues(DictionaryValue* localized_strings) {
 
   // javascript
 
-#if defined(CHROME_V8)
   localized_strings->SetString("js_engine", "V8");
   localized_strings->SetString("js_engine_version", v8::V8::GetVersion());
-#else
-  localized_strings->SetString("js_engine", "JavaScriptCore");
-  localized_strings->SetString("js_engine_version",
-                               webkit_glue::GetWebKitVersion());
-#endif
 
   // user agent
 
