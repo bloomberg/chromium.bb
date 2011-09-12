@@ -22,8 +22,10 @@
 class PanelBrowserWindowCocoa;
 @class PanelTitlebarViewCocoa;
 
-@interface PanelWindowControllerCocoa : NSWindowController<NSWindowDelegate,
-                                                       BrowserCommandExecutor> {
+@interface PanelWindowControllerCocoa : NSWindowController
+                                            <NSWindowDelegate,
+                                             NSAnimationDelegate,
+                                             BrowserCommandExecutor> {
  @private
   IBOutlet PanelTitlebarViewCocoa* titlebar_view_;
   scoped_ptr<PanelBrowserWindowCocoa> windowShim_;
