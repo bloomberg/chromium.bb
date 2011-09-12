@@ -127,25 +127,25 @@ class ManifestVersionedSyncStage(bs.BuilderStage):
 
   manifest_manager = None
 
-  def _GetManifestVersionsRepoUrl(self):
-    if cbuildbot_config.IsInternalBuild(self._build_config):
-      return cbuildbot_config.MANIFEST_VERSIONS_INT_URL
-    else:
-      return cbuildbot_config.MANIFEST_VERSIONS_URL
+  def _GetManifestVersionsRepoUrl(self, read_only=False):
+    return cbuildbot_config._GetManifestVersionsRepoUrl(
+        cbuildbot_config.IsInternalBuild(self._build_config),
+        read_only=read_only)
 
   def InitializeManifestManager(self):
     """Initializes a manager that manages manifests for associated stages."""
     increment = 'branch' if self._tracking_branch == 'master' else 'patch'
 
+    dry_run = self._options.debug
     ManifestVersionedSyncStage.manifest_manager = \
         manifest_version.BuildSpecsManager(
             source_dir=self._build_root,
             checkout_repo=self._build_config['git_url'],
-            manifest_repo=self._GetManifestVersionsRepoUrl(),
+            manifest_repo=self._GetManifestVersionsRepoUrl(read_only=dry_run),
             branch=self._tracking_branch,
             build_name=self._bot_id,
             incr_type=increment,
-            dry_run=self._options.debug)
+            dry_run=dry_run)
 
   def GetNextManifest(self):
     """Uses the initialized manifest manager to get the next manifest."""
@@ -188,14 +188,15 @@ class LKGMCandidateSyncStage(ManifestVersionedSyncStage):
 
   def InitializeManifestManager(self):
     """Override: Creates an LKGMManager rather than a ManifestManager."""
+    dry_run = self._options.debug
     ManifestVersionedSyncStage.manifest_manager = lkgm_manager.LKGMManager(
         source_dir=self._build_root,
         checkout_repo=self._build_config['git_url'],
-        manifest_repo=self._GetManifestVersionsRepoUrl(),
+        manifest_repo=self._GetManifestVersionsRepoUrl(read_only=dry_run),
         branch=self._tracking_branch,
         build_name=self._bot_id,
         build_type=self._build_config['build_type'],
-        dry_run=self._options.debug)
+        dry_run=dry_run)
 
   def GetNextManifest(self):
     """Gets the next manifest using LKGM logic."""
@@ -290,7 +291,8 @@ class LKGMSyncStage(ManifestVersionedSyncStage):
     if os.path.exists(manifests_dir):
       shutil.rmtree(manifests_dir)
 
-    repository.CloneGitRepo(manifests_dir, self._GetManifestVersionsRepoUrl())
+    repository.CloneGitRepo(manifests_dir,
+                            self._GetManifestVersionsRepoUrl(read_only=True))
     return lkgm_manager.LKGMManager.GetAbsolutePathToLKGM()
 
 

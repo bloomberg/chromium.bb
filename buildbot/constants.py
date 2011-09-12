@@ -16,10 +16,21 @@ GERRIT_INT_PORT = '29419'
 
 GERRIT_HOST = 'gerrit.chromium.org'
 GERRIT_INT_HOST = 'gerrit-int.chromium.org'
+GIT_HOST = 'git.chromium.org'
 
 GERRIT_SSH_URL = 'ssh://%s:%s' % (GERRIT_HOST, GERRIT_PORT)
 GERRIT_INT_SSH_URL = 'ssh://%s:%s' % (GERRIT_INT_HOST, GERRIT_INT_PORT)
 GERRIT_HTTP_URL = 'http://%s' % GERRIT_HOST
+GERRIT_HTTP_SUFFIX = '.git'
+GIT_HTTP_URL = 'http://%s' % GIT_HOST
+GIT_HTTP_SUFFIX = '.git'
+
+MANIFEST_URL = GIT_HTTP_URL + '/chromiumos/manifest' + GIT_HTTP_SUFFIX
+MANIFEST_INT_URL = GERRIT_INT_SSH_URL + '/chromeos/manifest-internal'
+
+# TODO(sosa): Move to manifest-versions-external once its created
+MANIFEST_VERSIONS_SUFFIX = '/chromiumos/manifest-versions'
+MANIFEST_VERSIONS_INT_SUFFIX = '/chromeos/manifest-versions'
 
 PATCH_BRANCH = 'patch_branch'
 STABLE_EBUILD_BRANCH = 'stabilizing_branch'

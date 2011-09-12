@@ -368,13 +368,6 @@ def _ConfirmBuildRoot(buildroot):
   repository.CreateTrybotMarker(buildroot)
 
 
-def _GetManifestVersionsRepoUrl(internal_build):
-  if internal_build:
-    return cbuildbot_config.MANIFEST_VERSIONS_INT_URL
-  else:
-    return cbuildbot_config.MANIFEST_VERSIONS_URL
-
-
 def _DetermineDefaultBuildRoot(internal_build):
   """Default buildroot to be under the directory that contains current checkout.
 

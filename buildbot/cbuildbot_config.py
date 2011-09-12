@@ -109,16 +109,6 @@ import copy
 
 GS_PATH_DEFAULT = 'default' # Means gs://chromeos-archive/ + bot_id
 
-MANIFEST_URL = 'http://git.chromium.org/chromiumos/manifest.git'
-MANIFEST_INT_URL = constants.GERRIT_INT_SSH_URL + '/chromeos/manifest-internal'
-
-# TODO(sosa): Move to manifest-versions-external once its created
-_VERSIONS_SUFFIX = '/chromiumos/manifest-versions'
-MANIFEST_VERSIONS_URL = constants.GERRIT_SSH_URL + _VERSIONS_SUFFIX
-
-_VERSIONS_INT_SUFFIX = '/chromeos/manifest-versions'
-MANIFEST_VERSIONS_INT_URL = constants.GERRIT_INT_SSH_URL + _VERSIONS_INT_SUFFIX
-
 
 def IsInternalBuild(config):
   """Returns whether a build config is an internal config.
@@ -126,7 +116,7 @@ def IsInternalBuild(config):
   Args:
     config: The build configuration dictionary to test.
   """
-  return config['git_url'] == MANIFEST_INT_URL
+  return config['git_url'] == constants.MANIFEST_INT_URL
 
 
 def OverrideConfigForTrybot(config):
@@ -145,6 +135,25 @@ def OverrideConfigForTrybot(config):
     copy_config['overlays'] = 'both'
 
   return copy_config
+
+
+def _GetManifestVersionsRepoUrl(internal_build, read_only=False):
+
+  if internal_build:
+    if read_only:
+      # This is not good .. we needlessly load the gerrit server.
+      # TODO(petermayo):  Fix re: crosbug.com/20303
+      return (constants.GERRIT_INT_SSH_URL +
+              constants.MANIFEST_VERSIONS_INT_SUFFIX)
+    else:
+      return (constants.GERRIT_INT_SSH_URL +
+              constants.MANIFEST_VERSIONS_INT_SUFFIX)
+  else:
+    if read_only:
+      return (constants.GIT_HTTP_URL + constants.MANIFEST_VERSIONS_SUFFIX +
+              constants.GIT_HTTP_SUFFIX)
+    else:
+      return constants.GERRIT_SSH_URL + constants.MANIFEST_VERSIONS_SUFFIX
 
 
 default = {
@@ -196,7 +205,7 @@ default = {
   'push_image' : False,
   'upload_symbols' : False,
 
-  'git_url' : MANIFEST_URL,
+  'git_url' : constants.MANIFEST_URL,
   'manifest_version' : False,
   'use_lkgm' : False,
   'prebuilts' : True,
@@ -279,7 +288,7 @@ chrome_pfq_info = {
 
 internal = {
   'overlays' : 'both',
-  'git_url' : MANIFEST_INT_URL,
+  'git_url' : constants.MANIFEST_INT_URL,
   'quick_vm' : False,
 }
 
