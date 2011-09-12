@@ -61,7 +61,7 @@ class SigninManager : public GaiaAuthConsumer,
   // Attempt to sign in this user with OAuth. If successful, set a preference
   // indicating the signed in user and send out a notification, then start
   // fetching tokens for the user.
-  virtual void StartOAuthSignIn();
+  virtual void StartOAuthSignIn(const std::string& oauth1_request_token);
 
   // Attempt to sign in this user with ClientLogin. If successful, set a
   // preference indicating the signed in user and send out a notification,
@@ -94,9 +94,6 @@ class SigninManager : public GaiaAuthConsumer,
       OVERRIDE;
 
   // GaiaOAuthConsumer
-  virtual void OnGetOAuthTokenSuccess(const std::string& oauth_token) OVERRIDE;
-  virtual void OnGetOAuthTokenFailure(
-      const GoogleServiceAuthError& error) OVERRIDE;
   virtual void OnOAuthGetAccessTokenSuccess(const std::string& token,
                                             const std::string& secret) OVERRIDE;
   virtual void OnOAuthGetAccessTokenFailure(
@@ -128,6 +125,7 @@ class SigninManager : public GaiaAuthConsumer,
 
   // OAuth identity.
   std::string oauth_username_;
+  std::string oauth1_request_token_;
 
   void CleanupNotificationRegistration();
 

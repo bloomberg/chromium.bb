@@ -165,24 +165,6 @@ TEST_F(SigninManagerTest, SignInFailureClientLogin) {
   EXPECT_TRUE(manager_->GetUsername().empty());
 }
 
-TEST_F(SigninManagerTest, SignInFailureOAuth) {
-  browser_sync::SetIsUsingOAuthForTest(true);
-  manager_->Initialize(profile_.get());
-
-  GoogleServiceAuthError error(GoogleServiceAuthError::REQUEST_CANCELED);
-  manager_->OnGetOAuthTokenFailure(error);
-
-  EXPECT_EQ(0U, google_login_success_.size());
-  EXPECT_EQ(1U, google_login_failure_.size());
-
-  EXPECT_TRUE(manager_->GetUsername().empty());
-
-  // Should not be persisted
-  manager_.reset(new SigninManager());
-  manager_->Initialize(profile_.get());
-  EXPECT_TRUE(manager_->GetUsername().empty());
-}
-
 TEST_F(SigninManagerTest, ProvideSecondFactorSuccess) {
   browser_sync::SetIsUsingOAuthForTest(false);
   manager_->Initialize(profile_.get());

@@ -220,6 +220,9 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
                                    const std::string& captcha,
                                    const std::string& access_code);
 
+  // Called when a user enters credentials through UI.
+  virtual void OnUserSubmittedOAuth(const std::string& oauth1_request_token);
+
   // Update the last auth error and notify observers of error state.
   void UpdateAuthErrorState(const GoogleServiceAuthError& error);
 

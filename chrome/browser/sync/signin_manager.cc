@@ -101,14 +101,15 @@ void SigninManager::PrepareForOAuthSignin() {
 }
 
 // Users must always sign out before they sign in again.
-void SigninManager::StartOAuthSignIn() {
+void SigninManager::StartOAuthSignIn(const std::string& oauth1_request_token) {
   DCHECK(browser_sync::IsUsingOAuth());
   PrepareForOAuthSignin();
+  oauth1_request_token_.assign(oauth1_request_token);
   oauth_login_.reset(new GaiaOAuthFetcher(this,
                                           profile_->GetRequestContext(),
                                           profile_,
                                           GaiaConstants::kSyncServiceOAuth));
-  oauth_login_->StartGetOAuthToken();
+  oauth_login_->StartOAuthGetAccessToken(oauth1_request_token_);
   // TODO(rogerta?): Bug 92325: Expand Autologin to include OAuth signin
 }
 
@@ -253,22 +254,6 @@ void SigninManager::OnClientLoginFailure(const GoogleServiceAuthError& error) {
     return;
   }
 
-  SignOut();
-}
-
-void SigninManager::OnGetOAuthTokenSuccess(const std::string& oauth_token) {
-  DCHECK(browser_sync::IsUsingOAuth());
-  VLOG(1) << "SigninManager::SigninManager::OnGetOAuthTokenSuccess";
-}
-
-void SigninManager::OnGetOAuthTokenFailure(
-    const GoogleServiceAuthError& error) {
-  DCHECK(browser_sync::IsUsingOAuth());
-  LOG(WARNING) << "SigninManager::OnGetOAuthTokenFailure";
-  NotificationService::current()->Notify(
-      chrome::NOTIFICATION_GOOGLE_SIGNIN_FAILED,
-      Source<Profile>(profile_),
-      Details<const GoogleServiceAuthError>(&error));
   SignOut();
 }
 

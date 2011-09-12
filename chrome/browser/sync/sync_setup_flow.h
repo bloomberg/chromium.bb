@@ -89,6 +89,8 @@ class SyncSetupFlow {
                            const std::string& captcha,
                            const std::string& access_code);
 
+  void OnUserSubmittedOAuth(const std::string& oauth1_request_token);
+
   void OnUserConfigured(const SyncConfiguration& configuration);
 
   // The 'passphrase' screen is used when the user is prompted to enter

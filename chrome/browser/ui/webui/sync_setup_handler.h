@@ -5,12 +5,16 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_SYNC_SETUP_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_SYNC_SETUP_HANDLER_H_
 
+#include "base/memory/scoped_ptr.h"
+#include "chrome/browser/net/gaia/gaia_oauth_consumer.h"
+#include "chrome/browser/net/gaia/gaia_oauth_fetcher.h"
 #include "chrome/browser/sync/sync_setup_flow_handler.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
 
 class SyncSetupFlow;
 
-class SyncSetupHandler : public OptionsPageUIHandler,
+class SyncSetupHandler : public GaiaOAuthConsumer,
+                         public OptionsPageUIHandler,
                          public SyncSetupFlowHandler {
  public:
   SyncSetupHandler();
@@ -33,6 +37,11 @@ class SyncSetupHandler : public OptionsPageUIHandler,
   virtual void ShowSetupDone(const std::wstring& user) OVERRIDE;
   virtual void SetFlow(SyncSetupFlow* flow) OVERRIDE;
   virtual void Focus() OVERRIDE;
+
+  // GaiaOAuthConsumer implementation.
+  virtual void OnGetOAuthTokenSuccess(const std::string& oauth_token) OVERRIDE;
+  virtual void OnGetOAuthTokenFailure(
+      const GoogleServiceAuthError& error) OVERRIDE;
 
   static void GetStaticLocalizedValues(
       base::DictionaryValue* localized_strings);
@@ -76,6 +85,7 @@ class SyncSetupHandler : public OptionsPageUIHandler,
  private:
   // Weak reference.
   SyncSetupFlow* flow_;
+  scoped_ptr<GaiaOAuthFetcher> oauth_login_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncSetupHandler);
 };

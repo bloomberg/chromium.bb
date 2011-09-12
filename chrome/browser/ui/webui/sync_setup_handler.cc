@@ -13,7 +13,9 @@
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/signin_manager.h"
 #include "chrome/browser/sync/sync_setup_flow.h"
+#include "chrome/browser/sync/util/oauth.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "grit/chromium_strings.h"
@@ -302,6 +304,16 @@ void SyncSetupHandler::GetStaticLocalizedValues(
 void SyncSetupHandler::Initialize() {
 }
 
+void SyncSetupHandler::OnGetOAuthTokenSuccess(const std::string& oauth_token) {
+  flow_->OnUserSubmittedOAuth(oauth_token);
+}
+
+void SyncSetupHandler::OnGetOAuthTokenFailure(
+    const GoogleServiceAuthError& error) {
+  CloseSyncSetup();
+}
+
+
 void SyncSetupHandler::RegisterMessages() {
   web_ui_->RegisterMessageCallback("SyncSetupDidClosePage",
       NewCallback(this, &SyncSetupHandler::OnDidClosePage));
@@ -326,11 +338,19 @@ void SyncSetupHandler::RegisterMessages() {
 // The current implementation is functional, but fails asthetically.
 // TODO(rickcam): Bug 90711: Update UI for OAuth sign-in flow
 void SyncSetupHandler::ShowOAuthLogin() {
+  DCHECK(browser_sync::IsUsingOAuth());
+
   Profile* profile = Profile::FromWebUI(web_ui_);
-  profile->GetProfileSyncService()->signin()->StartOAuthSignIn();
+  oauth_login_.reset(new GaiaOAuthFetcher(this,
+                                          profile->GetRequestContext(),
+                                          profile,
+                                          GaiaConstants::kSyncServiceOAuth));
+  oauth_login_->SetAutoFetchLimit(GaiaOAuthFetcher::OAUTH1_REQUEST_TOKEN);
+  oauth_login_->StartGetOAuthToken();
 }
 
 void SyncSetupHandler::ShowGaiaLogin(const DictionaryValue& args) {
+  DCHECK(!browser_sync::IsUsingOAuth());
   StringValue page("login");
   web_ui_->CallJavascriptFunction(
       "SyncSetupOverlay.showSyncSetupPage", page, args);

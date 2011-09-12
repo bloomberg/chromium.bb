@@ -17,6 +17,7 @@
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/sync_setup_flow_handler.h"
 #include "chrome/browser/sync/syncable/model_type.h"
+#include "chrome/browser/sync/util/oauth.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
@@ -272,6 +273,11 @@ void SyncSetupFlow::OnUserSubmittedAuth(const std::string& username,
   if (!password.empty())
     cached_passphrase_ = password;
   service_->OnUserSubmittedAuth(username, password, captcha, access_code);
+}
+
+void SyncSetupFlow::OnUserSubmittedOAuth(
+    const std::string& oauth1_request_token) {
+  service_->OnUserSubmittedOAuth(oauth1_request_token);
 }
 
 void SyncSetupFlow::OnUserConfigured(const SyncConfiguration& configuration) {

@@ -1124,6 +1124,19 @@ void ProfileSyncService::OnUserSubmittedAuth(
                        captcha);
 }
 
+void ProfileSyncService::OnUserSubmittedOAuth(
+    const std::string& oauth1_request_token) {
+  is_auth_in_progress_ = true;
+
+  // The user has submitted credentials, which indicates they don't
+  // want to suppress start up anymore.
+  PrefService* prefs = profile_->GetPrefs();
+  prefs->SetBoolean(prefs::kSyncSuppressStart, false);
+  prefs->ScheduleSavePersistentPrefs();
+
+  signin_->StartOAuthSignIn(oauth1_request_token);
+}
+
 void ProfileSyncService::OnUserChoseDatatypes(bool sync_everything,
     const syncable::ModelTypeSet& chosen_types) {
   if (!backend_.get() &&
