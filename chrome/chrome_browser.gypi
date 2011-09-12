@@ -1693,7 +1693,6 @@
         'browser/policy/configuration_policy_provider_win.h',
         'browser/policy/configuration_policy_reader.cc',
         'browser/policy/configuration_policy_reader.h',
-        'browser/policy/configuration_policy_store_interface.h',
         'browser/policy/delayed_work_scheduler.cc',
         'browser/policy/delayed_work_scheduler.h',
         'browser/policy/device_management_backend.h',
