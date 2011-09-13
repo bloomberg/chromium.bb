@@ -38,6 +38,8 @@ const NSTimeInterval kTearDuration = 0.333;
 - (void)resetDragControllers;
 - (NSArray*)dropTargetsForController:(TabWindowController*)dragController;
 - (void)setWindowBackgroundVisibility:(BOOL)shouldBeVisible;
+- (void)endDrag:(NSEvent*)event;
+- (void)continueDrag:(NSEvent*)event;
 // TODO(davidben): When we stop supporting 10.5, this can be removed.
 - (int)getWorkspaceID:(NSWindow*)window useCache:(BOOL)useCache;
 @end
