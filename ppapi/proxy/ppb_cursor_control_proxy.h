@@ -21,14 +21,11 @@ namespace ppapi {
 namespace proxy {
 
 class PPB_CursorControl_Proxy
-    : public ppapi::FunctionGroupBase,
-      public ppapi::thunk::PPB_CursorControl_FunctionAPI,
-      public InterfaceProxy {
+    : public InterfaceProxy,
+      public ppapi::thunk::PPB_CursorControl_FunctionAPI {
  public:
-  PPB_CursorControl_Proxy(Dispatcher* dispatcher, const void* target_interface);
+  PPB_CursorControl_Proxy(Dispatcher* dispatcher);
   virtual ~PPB_CursorControl_Proxy();
-
-  static const Info* GetInfo();
 
   // FunctionGroupBase overrides.
   ppapi::thunk::PPB_CursorControl_FunctionAPI* AsPPB_CursorControl_FunctionAPI()
@@ -46,6 +43,8 @@ class PPB_CursorControl_Proxy
 
   // InterfaceProxy implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
+
+  static const InterfaceID kInterfaceID = INTERFACE_ID_PPB_CURSORCONTROL;
 
  private:
   // Message handlers.

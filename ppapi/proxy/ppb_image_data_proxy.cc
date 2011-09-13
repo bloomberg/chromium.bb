@@ -25,43 +25,6 @@
 namespace ppapi {
 namespace proxy {
 
-namespace {
-
-InterfaceProxy* CreateImageDataProxy(Dispatcher* dispatcher,
-                                     const void* target_interface) {
-  return new PPB_ImageData_Proxy(dispatcher, target_interface);
-}
-
-}  // namespace
-
-// PPB_ImageData_Proxy ---------------------------------------------------------
-
-PPB_ImageData_Proxy::PPB_ImageData_Proxy(Dispatcher* dispatcher,
-                                         const void* target_interface)
-    : InterfaceProxy(dispatcher, target_interface) {
-}
-
-PPB_ImageData_Proxy::~PPB_ImageData_Proxy() {
-}
-
-// static
-const InterfaceProxy::Info* PPB_ImageData_Proxy::GetInfo() {
-  static const Info info = {
-    thunk::GetPPB_ImageData_Thunk(),
-    PPB_IMAGEDATA_INTERFACE,
-    INTERFACE_ID_PPB_IMAGE_DATA,
-    false,
-    &CreateImageDataProxy,
-  };
-  return &info;
-}
-
-bool PPB_ImageData_Proxy::OnMessageReceived(const IPC::Message& msg) {
-  return false;
-}
-
-// ImageData -------------------------------------------------------------------
-
 ImageData::ImageData(const HostResource& resource,
                      const PP_ImageDataDesc& desc,
                      ImageHandle handle)

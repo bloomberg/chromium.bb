@@ -21,14 +21,11 @@ namespace proxy {
 
 class SerializedVarReturnValue;
 
-class PPB_Font_Proxy : public ppapi::FunctionGroupBase,
-                       public ppapi::thunk::PPB_Font_FunctionAPI,
-                       public InterfaceProxy {
+class PPB_Font_Proxy : public InterfaceProxy,
+                       public ppapi::thunk::PPB_Font_FunctionAPI {
  public:
-  PPB_Font_Proxy(Dispatcher* dispatcher, const void* target_interface);
+  PPB_Font_Proxy(Dispatcher* dispatcher);
   virtual ~PPB_Font_Proxy();
-
-  static const Info* GetInfo();
 
   // FunctionGroupBase overrides.
   virtual ppapi::thunk::PPB_Font_FunctionAPI* AsPPB_Font_FunctionAPI() OVERRIDE;
@@ -38,6 +35,8 @@ class PPB_Font_Proxy : public ppapi::FunctionGroupBase,
 
   // InterfaceProxy implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
+
+  static const InterfaceID kInterfaceID = INTERFACE_ID_PPB_FONT;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PPB_Font_Proxy);

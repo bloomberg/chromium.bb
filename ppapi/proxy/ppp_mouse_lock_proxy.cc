@@ -29,16 +29,18 @@ static const PPP_MouseLock_Dev mouse_lock_interface = {
   &MouseLockLost
 };
 
-InterfaceProxy* CreateMouseLockProxy(Dispatcher* dispatcher,
-                                     const void* target_interface) {
-  return new PPP_MouseLock_Proxy(dispatcher, target_interface);
+InterfaceProxy* CreateMouseLockProxy(Dispatcher* dispatcher) {
+  return new PPP_MouseLock_Proxy(dispatcher);
 }
 
 }  // namespace
 
-PPP_MouseLock_Proxy::PPP_MouseLock_Proxy(Dispatcher* dispatcher,
-                                         const void* target_interface)
-    : InterfaceProxy(dispatcher, target_interface) {
+PPP_MouseLock_Proxy::PPP_MouseLock_Proxy(Dispatcher* dispatcher)
+    : InterfaceProxy(dispatcher) {
+  if (dispatcher->IsPlugin()) {
+    ppp_mouse_lock_impl_ = static_cast<const PPP_MouseLock_Dev*>(
+        dispatcher->local_get_interface()(PPP_MOUSELOCK_DEV_INTERFACE));
+  }
 }
 
 PPP_MouseLock_Proxy::~PPP_MouseLock_Proxy() {
@@ -67,8 +69,8 @@ bool PPP_MouseLock_Proxy::OnMessageReceived(const IPC::Message& msg) {
 }
 
 void PPP_MouseLock_Proxy::OnMsgMouseLockLost(PP_Instance instance) {
-  if (ppp_mouse_lock_target())
-    ppp_mouse_lock_target()->MouseLockLost(instance);
+  if (ppp_mouse_lock_impl_)
+    ppp_mouse_lock_impl_->MouseLockLost(instance);
 }
 
 }  // namespace proxy

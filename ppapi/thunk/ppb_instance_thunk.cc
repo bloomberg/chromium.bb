@@ -49,7 +49,7 @@ PP_Var ExecuteScript(PP_Instance instance,
   return enter.functions()->ExecuteScript(instance, script, exception);
 }
 
-const PPB_Instance_1_0 g_ppb_instance_1_0_thunk = {
+const PPB_Instance g_ppb_instance_thunk = {
   &BindGraphics,
   &IsFullFrame
 };
@@ -62,8 +62,8 @@ const PPB_Instance_Private g_ppb_instance_private_thunk = {
 
 }  // namespace
 
-const PPB_Instance_1_0* GetPPB_Instance_1_0_Thunk() {
-  return &g_ppb_instance_1_0_thunk;
+const PPB_Instance* GetPPB_Instance_Thunk() {
+  return &g_ppb_instance_thunk;
 }
 const PPB_Instance_Private* GetPPB_Instance_Private_Thunk() {
   return &g_ppb_instance_private_thunk;

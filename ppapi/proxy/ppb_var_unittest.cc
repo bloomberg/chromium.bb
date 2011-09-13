@@ -9,6 +9,7 @@
 #include "ppapi/c/pp_var.h"
 #include "ppapi/c/ppb_var.h"
 #include "ppapi/proxy/ppapi_proxy_test.h"
+#include "ppapi/proxy/ppb_var_proxy.h"
 
 // TODO(dmichael): Make PPB_Var_Proxy and PluginResourceTracker thread-safe and
 // add thread-safety tests here.
@@ -30,8 +31,7 @@ class PPB_VarTest : public PluginProxyTest {
 };
 
 TEST_F(PPB_VarTest, Strings) {
-  const PPB_Var* ppb_var = static_cast<const PPB_Var*>(
-      plugin_dispatcher()->GetInterfaceFromDispatcher(PPB_VAR_INTERFACE));
+  const PPB_Var* ppb_var = GetPPB_Var_Interface();
 
   // Make a vector of strings, where the value of test_strings[i] is "i".
   const int kNumStrings = 5;

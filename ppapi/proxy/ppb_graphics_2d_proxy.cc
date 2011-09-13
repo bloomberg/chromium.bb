@@ -24,15 +24,6 @@ using ppapi::thunk::PPB_Graphics2D_API;
 namespace ppapi {
 namespace proxy {
 
-namespace {
-
-InterfaceProxy* CreateGraphics2DProxy(Dispatcher* dispatcher,
-                                      const void* target_interface) {
-  return new PPB_Graphics2D_Proxy(dispatcher, target_interface);
-}
-
-}  // namespace
-
 class Graphics2D : public Resource, public thunk::PPB_Graphics2D_API {
  public:
   Graphics2D(const HostResource& host_resource,
@@ -148,25 +139,12 @@ void Graphics2D::FlushACK(int32_t result_code) {
   PP_RunAndClearCompletionCallback(&current_flush_callback_, result_code);
 }
 
-PPB_Graphics2D_Proxy::PPB_Graphics2D_Proxy(Dispatcher* dispatcher,
-                                           const void* target_interface)
-    : InterfaceProxy(dispatcher, target_interface),
+PPB_Graphics2D_Proxy::PPB_Graphics2D_Proxy(Dispatcher* dispatcher)
+    : InterfaceProxy(dispatcher),
       callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
 }
 
 PPB_Graphics2D_Proxy::~PPB_Graphics2D_Proxy() {
-}
-
-// static
-const InterfaceProxy::Info* PPB_Graphics2D_Proxy::GetInfo() {
-  static const Info info = {
-    thunk::GetPPB_Graphics2D_Thunk(),
-    PPB_GRAPHICS_2D_INTERFACE,
-    INTERFACE_ID_PPB_GRAPHICS_2D,
-    false,
-    &CreateGraphics2DProxy,
-  };
-  return &info;
 }
 
 // static

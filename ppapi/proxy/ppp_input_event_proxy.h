@@ -18,14 +18,10 @@ namespace proxy {
 
 class PPP_InputEvent_Proxy : public InterfaceProxy {
  public:
-  PPP_InputEvent_Proxy(Dispatcher* dispatcher, const void* target_interface);
+  PPP_InputEvent_Proxy(Dispatcher* dispatcher);
   virtual ~PPP_InputEvent_Proxy();
 
   static const Info* GetInfo();
-
-  const PPP_InputEvent* ppp_input_event_target() const {
-    return static_cast<const PPP_InputEvent*>(target_interface());
-  }
 
   // InterfaceProxy implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg);
@@ -37,6 +33,13 @@ class PPP_InputEvent_Proxy : public InterfaceProxy {
   void OnMsgHandleFilteredInputEvent(PP_Instance instance,
                                      const ppapi::InputEventData& data,
                                      PP_Bool* result);
+
+  // When this proxy is in the plugin side, this value caches the interface
+  // pointer so we don't have to retrieve it from the dispatcher each time.
+  // In the host, this value is always NULL.
+  const PPP_InputEvent* ppp_input_event_impl_;
+
+  DISALLOW_COPY_AND_ASSIGN(PPP_InputEvent_Proxy);
 };
 
 }  // namespace proxy

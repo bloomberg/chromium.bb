@@ -85,6 +85,7 @@
 
         'thunk/common.h',
         'thunk/common.cc',
+        'thunk/enter.cc',
         'thunk/enter.h',
         'thunk/ppb_audio_api.h',
         'thunk/ppb_audio_config_api.h',
@@ -99,6 +100,7 @@
         'thunk/ppb_buffer_trusted_thunk.cc',
         'thunk/ppb_char_set_api.h',
         'thunk/ppb_char_set_thunk.cc',
+        'thunk/ppb_console_thunk.cc',
         'thunk/ppb_context_3d_api.h',
         'thunk/ppb_context_3d_thunk.cc',
         'thunk/ppb_context_3d_trusted_thunk.cc',

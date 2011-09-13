@@ -316,10 +316,6 @@ gpu::CommandBuffer::State GPUStateFromPPState(
   return state;
 }
 
-InterfaceProxy* CreateGraphics3DProxy(Dispatcher* dispatcher,
-                                      const void* target_interface) {
-  return new PPB_Graphics3D_Proxy(dispatcher, target_interface);
-}
 }  // namespace
 
 Graphics3D::Graphics3D(const HostResource& resource)
@@ -395,25 +391,12 @@ int32 Graphics3D::DoSwapBuffers() {
   return PP_OK_COMPLETIONPENDING;
 }
 
-PPB_Graphics3D_Proxy::PPB_Graphics3D_Proxy(Dispatcher* dispatcher,
-                                           const void* target_interface)
-    : InterfaceProxy(dispatcher, target_interface),
+PPB_Graphics3D_Proxy::PPB_Graphics3D_Proxy(Dispatcher* dispatcher)
+    : InterfaceProxy(dispatcher),
       callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
 }
 
 PPB_Graphics3D_Proxy::~PPB_Graphics3D_Proxy() {
-}
-
-// static
-const InterfaceProxy::Info* PPB_Graphics3D_Proxy::GetInfo() {
-  static const Info info = {
-    thunk::GetPPB_Graphics3D_Thunk(),
-    PPB_GRAPHICS_3D_INTERFACE,
-    INTERFACE_ID_PPB_GRAPHICS_3D,
-    false,
-    &CreateGraphics3DProxy,
-  };
-  return &info;
 }
 
 // static
@@ -490,7 +473,7 @@ void PPB_Graphics3D_Proxy::OnMsgCreate(PP_Instance instance,
   if (attribs.empty() || attribs.back() != PP_GRAPHICS3DATTRIB_NONE)
     return;  // Bad message.
 
-  EnterFunctionNoLock<ResourceCreationAPI> enter(instance, true);
+  thunk::EnterResourceCreation enter(instance);
   if (enter.succeeded()) {
     result->SetHostResource(
         instance,

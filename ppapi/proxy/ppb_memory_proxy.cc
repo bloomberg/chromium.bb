@@ -27,37 +27,10 @@ const PPB_Memory_Dev memory_dev_interface = {
   &MemFree
 };
 
-InterfaceProxy* CreateMemoryProxy(Dispatcher* dispatcher,
-                                  const void* target_interface) {
-  return new PPB_Memory_Proxy(dispatcher, target_interface);
-}
-
 }  // namespace
 
-PPB_Memory_Proxy::PPB_Memory_Proxy(Dispatcher* dispatcher,
-                                   const void* target_interface)
-    : InterfaceProxy(dispatcher, target_interface) {
-}
-
-PPB_Memory_Proxy::~PPB_Memory_Proxy() {
-}
-
-// static
-const InterfaceProxy::Info* PPB_Memory_Proxy::GetInfo() {
-  static const Info info = {
-    &memory_dev_interface,
-    PPB_MEMORY_DEV_INTERFACE,
-    INTERFACE_ID_PPB_MEMORY,
-    false,
-    &CreateMemoryProxy,
-  };
-  return &info;
-}
-
-bool PPB_Memory_Proxy::OnMessageReceived(const IPC::Message& msg) {
-  // All PPB_Memory_Dev calls are handled locally; there is no need to send or
-  // receive messages here.
-  return false;
+const PPB_Memory_Dev* GetPPB_Memory_Interface() {
+  return &memory_dev_interface;
 }
 
 }  // namespace proxy

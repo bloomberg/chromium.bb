@@ -11,6 +11,7 @@
 #include "ppapi/c/private/ppb_proxy_private.h"
 #include "ppapi/c/ppb_var.h"
 #include "ppapi/proxy/host_var_serialization_rules.h"
+#include "ppapi/proxy/interface_list.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/resource_creation_proxy.h"
 
@@ -75,7 +76,7 @@ HostDispatcher::HostDispatcher(base::ProcessHandle remote_process_handle,
   SetSerializationRules(new HostVarSerializationRules(var_interface, module));
 
   ppb_proxy_ = reinterpret_cast<const PPB_Proxy_Private*>(
-      GetLocalInterface(PPB_PROXY_PRIVATE_INTERFACE));
+      local_get_interface(PPB_PROXY_PRIVATE_INTERFACE));
   DCHECK(ppb_proxy_) << "The proxy interface should always be supported.";
 
   ppb_proxy_->SetReserveInstanceIDCallback(pp_module_, &ReserveInstanceID);
@@ -156,39 +157,7 @@ bool HostDispatcher::OnMessageReceived(const IPC::Message& msg) {
   BoolRestorer restorer(&allow_plugin_reentrancy_);
   allow_plugin_reentrancy_ = false;
 
-  // Handle common control messages.
-  if (Dispatcher::OnMessageReceived(msg))
-    return true;
-
-  if (msg.routing_id() <= 0 || msg.routing_id() >= INTERFACE_ID_COUNT) {
-    NOTREACHED();
-    // TODO(brettw): kill the plugin if it starts sending invalid messages?
-    return true;
-  }
-
-  // New-style function proxies.
-  // TODO(brettw) this is hacked in for the routing for the types we've
-  // implemented in this style so far. When everything is implemented in this
-  // style, this function should be cleaned up.
-  if (msg.routing_id() == INTERFACE_ID_RESOURCE_CREATION) {
-    ResourceCreationProxy proxy(this);
-    return proxy.OnMessageReceived(msg);
-  }
-
-  InterfaceProxy* proxy = target_proxies_[msg.routing_id()].get();
-  if (!proxy) {
-    // Autocreate any proxy objects to handle requests from the plugin. Since
-    // we always support all known PPB_* interfaces (modulo the trusted bit),
-    // there's very little checking necessary.
-    const InterfaceProxy::Info* info = GetPPBInterfaceInfo(
-        static_cast<InterfaceID>(msg.routing_id()));
-    if (!info ||
-        (info->is_trusted && disallow_trusted_interfaces()))
-      return true;
-    proxy = CreatePPBInterfaceProxy(info);
-  }
-
-  return proxy->OnMessageReceived(msg);
+  return Dispatcher::OnMessageReceived(msg);
 }
 
 void HostDispatcher::OnChannelError() {
@@ -198,67 +167,35 @@ void HostDispatcher::OnChannelError() {
   ppb_proxy_->PluginCrashed(pp_module());
 }
 
-const void* HostDispatcher::GetProxiedInterface(
-    const std::string& proxied_interface) {
-  // First see if we even have a proxy for this interface.
-  const InterfaceProxy::Info* info = GetPPPInterfaceInfo(proxied_interface);
-  if (!info)
-    return NULL;
+const void* HostDispatcher::GetProxiedInterface(const std::string& iface_name) {
+  const void* proxied_interface =
+      InterfaceList::GetInstance()->GetInterfaceForPPP(iface_name);
+  if (!proxied_interface)
+    return NULL;  // Don't have a proxy for this interface, don't query further.
 
-  PluginIFSupportedMap::iterator iter(plugin_if_supported_.find(
-      proxied_interface));
-  if (iter == plugin_if_supported_.end()) {
+  PluginSupportedMap::iterator iter(plugin_supported_.find(iface_name));
+  if (iter == plugin_supported_.end()) {
     // Need to query. Cache the result so we only do this once.
     bool supported = false;
 
     bool previous_reentrancy_value = allow_plugin_reentrancy_;
     allow_plugin_reentrancy_ = true;
-    Send(new PpapiMsg_SupportsInterface(proxied_interface, &supported));
+    Send(new PpapiMsg_SupportsInterface(iface_name, &supported));
     allow_plugin_reentrancy_ = previous_reentrancy_value;
 
-    std::pair<PluginIFSupportedMap::iterator, bool> iter_success_pair;
-    iter_success_pair = plugin_if_supported_.insert(
-        PluginIFSupportedMap::value_type(proxied_interface, supported));
+    std::pair<PluginSupportedMap::iterator, bool> iter_success_pair;
+    iter_success_pair = plugin_supported_.insert(
+        PluginSupportedMap::value_type(iface_name, supported));
     iter = iter_success_pair.first;
   }
   if (iter->second)
-    return info->interface_ptr;
+    return proxied_interface;
   return NULL;
 }
 
-InterfaceProxy* HostDispatcher::GetOrCreatePPBInterfaceProxy(
-    InterfaceID id) {
-  InterfaceProxy* proxy = target_proxies_[id].get();
-  if (!proxy) {
-    const InterfaceProxy::Info* info = GetPPBInterfaceInfo(id);
-    if (!info)
-      return NULL;
-
-    // Sanity check. This function won't normally be called for trusted
-    // interfaces, but in case somebody does this, we don't want to then give
-    // the plugin the ability to call that trusted interface (since the
-    // checking occurs at proxy-creation time).
-    if (info->is_trusted && disallow_trusted_interfaces())
-      return NULL;
-
-    proxy = CreatePPBInterfaceProxy(info);
-  }
-  return proxy;
-}
-
-InterfaceProxy* HostDispatcher::CreatePPBInterfaceProxy(
-    const InterfaceProxy::Info* info) {
-  const void* local_interface = GetLocalInterface(info->name);
-  if (!local_interface) {
-    // This should always succeed since the browser should support the stuff
-    // the proxy does. If this happens, something is out of sync.
-    NOTREACHED();
-    return NULL;
-  }
-
-  InterfaceProxy* proxy = info->create_proxy(this, local_interface);
-  target_proxies_[info->id].reset(proxy);
-  return proxy;
+void HostDispatcher::OnInvalidMessageReceived() {
+  // TODO(brettw) bug 95345 kill the plugin when an invalid message is
+  // received.
 }
 
 // ScopedModuleReference -------------------------------------------------------

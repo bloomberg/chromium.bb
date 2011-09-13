@@ -73,7 +73,7 @@ const PPB_VideoLayer_Dev g_ppb_videolayer_thunk = {
 
 }  // namespace
 
-const PPB_VideoLayer_Dev* GetPPB_VideoLayer_Thunk() {
+const PPB_VideoLayer_Dev* GetPPB_VideoLayer_Dev_Thunk() {
   return &g_ppb_videolayer_thunk;
 }
 

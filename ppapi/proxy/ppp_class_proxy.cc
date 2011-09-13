@@ -175,10 +175,15 @@ void* ToUserData(int64 value) {
 // PPP_Class_Proxy -------------------------------------------------------------
 
 PPP_Class_Proxy::PPP_Class_Proxy(Dispatcher* dispatcher)
-    : InterfaceProxy(dispatcher, NULL) {
+    : InterfaceProxy(dispatcher) {
 }
 
 PPP_Class_Proxy::~PPP_Class_Proxy() {
+}
+
+// static
+InterfaceProxy* PPP_Class_Proxy::Create(Dispatcher* dispatcher) {
+  return new PPP_Class_Proxy(dispatcher);
 }
 
 // static

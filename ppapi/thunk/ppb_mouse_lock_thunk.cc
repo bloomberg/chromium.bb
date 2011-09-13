@@ -36,7 +36,7 @@ const PPB_MouseLock_Dev g_ppb_mouse_lock_thunk = {
 
 }  // namespace
 
-const PPB_MouseLock_Dev* GetPPB_MouseLock_Thunk() {
+const PPB_MouseLock_Dev* GetPPB_MouseLock_Dev_Thunk() {
   return &g_ppb_mouse_lock_thunk;
 }
 
