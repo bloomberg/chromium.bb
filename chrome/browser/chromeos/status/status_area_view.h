@@ -28,7 +28,7 @@ class StatusAreaHost;
 class StatusAreaView : public AccessiblePaneView {
  public:
   explicit StatusAreaView(StatusAreaHost* host);
-  virtual ~StatusAreaView() {}
+  virtual ~StatusAreaView();
 
   virtual void Init();
   void MakeButtonsActive(bool active);

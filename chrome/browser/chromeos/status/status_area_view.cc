@@ -45,6 +45,9 @@ StatusAreaView::StatusAreaView(StatusAreaHost* host)
       ALLOW_THIS_IN_INITIALIZER_LIST(task_factory_(this)) {
 }
 
+StatusAreaView::~StatusAreaView() {
+}
+
 void StatusAreaView::Init() {
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kMemoryWidget)) {
     memory_view_ = new MemoryMenuButton(host_);
