@@ -422,6 +422,12 @@ void ContentSettingsHandler::UpdateAllOTRExceptionsViewsFromModel() {
 
 void ContentSettingsHandler::UpdateExceptionsViewFromModel(
     ContentSettingsType type) {
+  // Skip updating intents unless it's enabled from the command line.
+  if (type == CONTENT_SETTINGS_TYPE_INTENTS &&
+      !CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableWebIntents))
+    return;
+
   switch (type) {
     case CONTENT_SETTINGS_TYPE_GEOLOCATION:
       UpdateGeolocationExceptionsView();
@@ -440,6 +446,7 @@ void ContentSettingsHandler::UpdateOTRExceptionsViewFromModel(
   switch (type) {
     case CONTENT_SETTINGS_TYPE_GEOLOCATION:
     case CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
+    case CONTENT_SETTINGS_TYPE_INTENTS:
       break;
     default:
       UpdateExceptionsViewFromOTRHostContentSettingsMap(type);
