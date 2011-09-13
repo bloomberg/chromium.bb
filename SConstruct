@@ -1279,13 +1279,12 @@ def GetNexeFromManifest(env, manifest):
 manifest_map = {}
 
 
-# Returns command line arguments for browser tester that add generated manifest
-# to a list of files to serve.
-def GenerateManifestCommands(env, manifest):
+# Returns scons node for generated manifest.
+def GeneratedManifestNode(env, manifest):
   manifest = env.subst(manifest)
   manifest_base_name = os.path.basename(manifest)
   nexe = GetNexeFromManifest(env, manifest)
-  result = ['--file', env.File('${STAGING_DIR}/' + manifest_base_name)]
+  result = env.File('${STAGING_DIR}/' + manifest_base_name)
   if not env.Bit('nacl_glibc'):
     if manifest_base_name not in manifest_map:
       env.Install('${STAGING_DIR}', manifest)
@@ -1304,7 +1303,9 @@ def GenerateManifestCommands(env, manifest):
        '${NACL_SDK_LIB}/runnable-ld.so',
        env.File('${STAGING_DIR}/' + os.path.basename(nexe)),
        '${SCONSTRUCT_DIR}/DEPS'],
-      '${SOURCES[0]} -a -E LD_TRACE_LOADED_OBJECTS=1 ${SOURCES[1]} '
+      # We ignore return code using '-' in order to build tests where binaries
+      # do not validate. This is the scons feature.
+      '-${SOURCES[0]} -a -E LD_TRACE_LOADED_OBJECTS=1 ${SOURCES[1]} '
       '--library-path ${NACL_SDK_LIB}:${LIB_DIR} ${SOURCES[2].posix} '
       '> ${TARGET}')
   nmf_node = env.Command(
@@ -1379,7 +1380,14 @@ def PPAPIBrowserTester(env,
   command.extend(['--serving_dir', '${LIB_DIR}'])
   if not nmfs is None:
     for nmf_file in nmfs:
-      command.extend(GenerateManifestCommands(env, nmf_file))
+      generated_manifest = GeneratedManifestNode(env, nmf_file)
+      # We need to add generated manifests to the list of default targets.
+      # The manifests should be generated even if the tests are not run -
+      # the manifests may be needed for manual testing.
+      for group in env['COMPONENT_TEST_PROGRAM_GROUPS']:
+        env.Alias(group, generated_manifest)
+      # Generated manifests are served in the root of the HTTP server
+      command.extend(['--file', generated_manifest])
   if 'browser_test_tool' in ARGUMENTS:
     command.extend(['--tool', ARGUMENTS['browser_test_tool']])
 
