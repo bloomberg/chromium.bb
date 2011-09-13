@@ -215,7 +215,7 @@ void Widget::SetPureViews(bool pure) {
 
 // static
 bool Widget::IsPureViews() {
-#if defined(TOUCH_UI)
+#if defined(USE_ONLY_PURE_VIEWS)
   return true;
 #else
   return use_pure_views;
