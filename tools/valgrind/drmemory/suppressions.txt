@@ -785,12 +785,6 @@ LEAK
 *!net::SSL*SocketNSS::DoHandshake
 *!net::SSL*SocketNSS::DoHandshakeLoop
 
-# http://crbug.com/74413
-LEAK
-...
-*!operator new*
-*!net::HttpAuthHandler*Factory::Create*
-
 # http://crbug.com/74417
 LEAK
 *!operator new
