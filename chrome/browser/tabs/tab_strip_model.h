@@ -622,25 +622,7 @@ class TabStripModel : public NotificationObserver {
 
   // The TabContents data currently hosted within this TabStripModel.
   typedef std::vector<TabContentsData*> TabContentsDataVector;
-
-  // TODO(eroman): Temporary for investigating 93747.
-  class Padding {
-   public:
-    Padding();
-    void CheckValid() const;
-
-   private:
-    char bytes_[32];
-  };
-
-  // Surround contents_data_ with some extra bytes to try and catch external
-  // mutation of this memory. This is temporary for debugging 93747.
-  Padding padding1_;
   TabContentsDataVector contents_data_;
-  Padding padding2_;
-
-  // This is temporary for debugging 93747.
-  void CheckIsAliveAndWell() const;
 
   // A profile associated with this TabStripModel, used when creating new Tabs.
   Profile* profile_;
@@ -660,8 +642,6 @@ class TabStripModel : public NotificationObserver {
   NotificationRegistrar registrar_;
 
   TabStripSelectionModel selection_model_;
-
-  uint32 magic_id_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(TabStripModel);
 };
