@@ -675,7 +675,8 @@ ChromeBrowserMainParts::ChromeBrowserMainParts(
       record_search_engine_(false),
       translate_manager_(NULL),
       profile_(NULL),
-      run_message_loop_(true) {
+      run_message_loop_(true),
+      notify_result_(ProcessSingleton::PROCESS_NONE) {
   // If we're running tests (ui_task is non-null).
   if (parameters.ui_task)
     browser_defaults::enable_help_app = false;
@@ -1456,7 +1457,8 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunInternal() {
     // new one. NotifyOtherProcess will currently give the other process up to
     // 20 seconds to respond. Note that this needs to be done before we attempt
     // to read the profile.
-    switch (process_singleton_->NotifyOtherProcessOrCreate()) {
+    notify_result_ = process_singleton_->NotifyOtherProcessOrCreate();
+    switch (notify_result_) {
       case ProcessSingleton::PROCESS_NONE:
         // No process already running, fall through to starting a new one.
         break;
@@ -1970,7 +1972,8 @@ void ChromeBrowserMainParts::PostMainMessageLoopRun() {
   if (parameters().ui_task == NULL && translate_manager_ != NULL)
     translate_manager_->CleanupPendingUlrFetcher();
 
-  process_singleton_->Cleanup();
+  if (notify_result_ == ProcessSingleton::PROCESS_NONE)
+    process_singleton_->Cleanup();
 
   // Stop all tasks that might run on WatchDogThread.
   ThreadWatcherList::StopWatchingAll();

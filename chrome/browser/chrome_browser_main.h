@@ -11,6 +11,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/tracked_objects.h"
 #include "chrome/browser/first_run/first_run.h"
+#include "chrome/browser/process_singleton.h"
 #include "content/browser/browser_main.h"
 
 class BrowserProcessImpl;
@@ -18,7 +19,6 @@ class FieldTrialSynchronizer;
 class HistogramSynchronizer;
 class MetricsService;
 class PrefService;
-class ProcessSingleton;
 class Profile;
 class ShutdownWatcherHelper;
 class TranslateManager;
@@ -117,6 +117,7 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
   TranslateManager* translate_manager_;
   Profile* profile_;
   bool run_message_loop_;
+  ProcessSingleton::NotifyResult notify_result_;
 
   // Initialized in SetupMetricsAndFieldTrials.
   scoped_refptr<FieldTrialSynchronizer> field_trial_synchronizer_;
