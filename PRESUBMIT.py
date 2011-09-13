@@ -111,6 +111,23 @@ def _CheckNoIOStreamInHeaders(input_api, output_api):
   return []
 
 
+def _CheckNoNewWStrings(input_api, output_api):
+  """Checks to make sure we don't introduce use of wstrings."""
+  errors = []
+  for f in input_api.AffectedFiles():
+    for line_num, line in f.ChangedContents():
+      if not f.LocalPath().endswith(('.cc', '.h')):
+        continue
+
+      if 'wstring' in line:
+        errors.append(output_api.PresubmitError(
+            '%s, line %d: new code should not use wstrings.  If you are '
+            'calling an API that accepts a wstring, fix the API.'
+            % (f.LocalPath(), line_num)))
+
+  return errors
+
+
 def _CommonChecks(input_api, output_api):
   """Checks common to both upload and commit."""
   results = []
@@ -121,6 +138,7 @@ def _CommonChecks(input_api, output_api):
   results.extend(
     _CheckNoProductionCodeUsingTestOnlyFunctions(input_api, output_api))
   results.extend(_CheckNoIOStreamInHeaders(input_api, output_api))
+  results.extend(_CheckNoNewWStrings(input_api, output_api))
   return results
 
 
