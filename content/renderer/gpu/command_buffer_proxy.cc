@@ -94,12 +94,12 @@ void CommandBufferProxy::SetChannelErrorCallback(Callback0::Type* callback) {
 bool CommandBufferProxy::Initialize(int32 size) {
   DCHECK(!ring_buffer_.get());
 
-  RenderThread* render_thread = RenderThread::current();
-  if (!render_thread)
+  ChildThread* child_thread = ChildThread::current();
+  if (!child_thread)
     return false;
 
   base::SharedMemoryHandle handle;
-  if (!render_thread->Send(new ViewHostMsg_AllocateSharedMemoryBuffer(
+  if (!child_thread->Send(new ViewHostMsg_AllocateSharedMemoryBuffer(
       size,
       &handle))) {
     return false;
@@ -216,12 +216,12 @@ int32 CommandBufferProxy::CreateTransferBuffer(size_t size, int32 id_request) {
   if (last_state_.error != gpu::error::kNoError)
     return -1;
 
-  RenderThread* render_thread = RenderThread::current();
-  if (!render_thread)
+  ChildThread* child_thread = ChildThread::current();
+  if (!child_thread)
     return -1;
 
   base::SharedMemoryHandle handle;
-  if (!render_thread->Send(new ViewHostMsg_AllocateSharedMemoryBuffer(
+  if (!child_thread->Send(new ViewHostMsg_AllocateSharedMemoryBuffer(
       size,
       &handle))) {
     return -1;

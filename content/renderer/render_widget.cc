@@ -922,10 +922,12 @@ void RenderWidget::didActivateAcceleratedCompositing(bool active) {
   Send(new ViewHostMsg_DidActivateAcceleratedCompositing(
       routing_id_, is_accelerated_compositing_active_));
 
+#ifndef WTF_USE_THREADED_COMPOSITING
   if (active)
     using_asynchronous_swapbuffers_ = SupportsAsynchronousSwapBuffers();
   else if (using_asynchronous_swapbuffers_)
     using_asynchronous_swapbuffers_ = false;
+#endif
 }
 
 void RenderWidget::scheduleComposite() {

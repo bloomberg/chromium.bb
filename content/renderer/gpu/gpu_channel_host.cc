@@ -206,6 +206,7 @@ CommandBufferProxy* GpuChannelHost::CreateViewCommandBuffer(
     const std::string& allowed_extensions,
     const std::vector<int32>& attribs,
     const GURL& active_url) {
+  DCHECK(ChildThread::current());
 #if defined(ENABLE_GPU)
   AutoLock lock(context_lock_);
   // An error occurred. Need to get the host again to reinitialize it.
@@ -219,7 +220,7 @@ CommandBufferProxy* GpuChannelHost::CreateViewCommandBuffer(
   init_params.attribs = attribs;
   init_params.active_url = active_url;
   int32 route_id;
-  if (!RenderThread::current()->Send(
+  if (!ChildThread::current()->Send(
       new GpuHostMsg_CreateViewCommandBuffer(
           render_view_id,
           init_params,

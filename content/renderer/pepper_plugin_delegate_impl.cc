@@ -901,7 +901,9 @@ webkit::ppapi::PluginDelegate::PlatformContext3D*
   WebGraphicsContext3DCommandBufferImpl* context =
       static_cast<WebGraphicsContext3DCommandBufferImpl*>(
           render_view_->webview()->graphicsContext3D());
-  if (!context || context->isContextLost())
+  if (!context)
+    return NULL;
+  if (!context->makeContextCurrent() || context->isContextLost())
     return NULL;
 
   RendererGLContext* parent_context = context->context();

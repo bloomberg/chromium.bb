@@ -31,7 +31,7 @@ class TransportTextureService : public IPC::ChannelProxy::MessageFilter,
   virtual void OnFilterRemoved();
   virtual void OnChannelClosing();
 
-  // Called on RenderThread to create a TransportTextureHost.
+  // Called on ChildThread to create a TransportTextureHost.
   //
   // A routing ID for the GLES2 context needs to be provided. This is
   // important because the resources used needs to be shared with the GLES2
