@@ -25,6 +25,9 @@ enum {
 
 const int kBubbleViewWidth = 262;
 
+// The horizontal padding between the title and the icon.
+const int kTitleHorizontalPadding = 3;
+
 // The vertical offset of the wrench bubble from the wrench menu button.
 const int kWrenchBubblePointOffsetY = 6;
 
@@ -71,7 +74,8 @@ GlobalErrorBubbleView::GlobalErrorBubbleView(Browser* browser,
   views::ColumnSet* cs = layout->AddColumnSet(0);
   cs->AddColumn(views::GridLayout::LEADING, views::GridLayout::LEADING,
                 0, views::GridLayout::USE_PREF, 0, 0);
-  cs->AddColumn(views::GridLayout::LEADING, views::GridLayout::FILL,
+  cs->AddPaddingColumn(0, kTitleHorizontalPadding);
+  cs->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,
                 1, views::GridLayout::USE_PREF, 0, 0);
 
   // Middle row, message label.
