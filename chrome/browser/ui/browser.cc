@@ -240,8 +240,6 @@ bool HasInternalURL(const NavigationEntry* entry) {
 
 }  // namespace
 
-extern bool g_log_bug53991;
-
 ////////////////////////////////////////////////////////////////////////////////
 // Browser, CreateParams:
 
@@ -369,10 +367,6 @@ Browser::Browser(Type type, Profile* profile)
 }
 
 Browser::~Browser() {
-  VLOG_IF(1, g_log_bug53991) << "~Browser: " << profile_->IsOffTheRecord()
-                             << "; stillActive="
-                             << BrowserList::IsOffTheRecordSessionActive();
-
   if (profile_->GetProfileSyncService())
     profile_->GetProfileSyncService()->RemoveObserver(this);
 

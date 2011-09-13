@@ -98,10 +98,6 @@
 
 #include "third_party/skia/include/core/SkBitmap.h"
 
-// TODO(mpcomplete): Remove this after fixing
-// http://code.google.com/p/chromium/issues/detail?id=53991
-bool g_log_bug53991 = false;
-
 // This class creates the IO thread for the renderer when running in
 // single-process mode.  It's not used in multi-process mode.
 class RendererMainThread : public base::Thread {
@@ -236,8 +232,6 @@ BrowserRenderProcessHost::BrowserRenderProcessHost(
 }
 
 BrowserRenderProcessHost::~BrowserRenderProcessHost() {
-  VLOG_IF(1, g_log_bug53991) << "~BrowserRenderProcessHost: " << this;
-
   ChildProcessSecurityPolicy::GetInstance()->Remove(id());
 
   // We may have some unsent messages at this point, but that's OK.
