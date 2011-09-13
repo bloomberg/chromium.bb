@@ -1074,38 +1074,6 @@
    fun:_ZN4skia20BitmapPlatformDevice*
 }
 {
-   bug_61228_a
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN15FilePathWatcherC2Ev
-   fun:_ZN15FilePathWatcherC1Ev
-   fun:_ZN6policy22FileBasedPolicyWatcherC2Ev
-   fun:_ZN6policy22FileBasedPolicyWatcherC1Ev
-   fun:_ZN6policy23FileBasedPolicyProviderC2EPKNS_27ConfigurationPolicyProvider20PolicyDefinitionListEPNS0_8DelegateE
-   fun:_ZN6policy30ConfigurationPolicyProviderMacC2EPKNS_27ConfigurationPolicyProvider20PolicyDefinitionListEP14MacPreferences
-   fun:_ZN6policy30ConfigurationPolicyProviderMacC1EPKNS_27ConfigurationPolicyProvider20PolicyDefinitionListEP14MacPreferences
-}
-{
-   bug_61228_b
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN15FilePathWatcherC2Ev
-   fun:_ZN15FilePathWatcherC1Ev
-   fun:_ZN6policy22FileBasedPolicyWatcherC2Ev
-   fun:_ZN6policy22FileBasedPolicyWatcherC1Ev
-   fun:_ZN6policy23FileBasedPolicyProviderC2EPKNS_27ConfigurationPolicyProvider20PolicyDefinitionListEPNS0_8DelegateE
-   fun:_ZN6policy30ConfigurationPolicyProviderMacC2EPKNS_27ConfigurationPolicyProvider20PolicyDefinitionListE
-   fun:_ZN6policy30ConfigurationPolicyProviderMacC1EPKNS_27ConfigurationPolicyProvider20PolicyDefinitionListE
-}
-{
-   bug_61228_c
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN15FilePathWatcherC2Ev
-   fun:_ZN15FilePathWatcherC1Ev
-   fun:_ZN6policy21FileBasedPolicyLoader16InitOnFileThreadEv
-}
-{
    bug_61737
    Memcheck:Cond
    fun:_ZN2v88internal9preparser9PreParserINS0_7ScannerENS0_21PartialParserRecorderEE36ParseMemberWithNewPrefixesExpressionEPiPb
@@ -1174,32 +1142,6 @@
    fun:_ZN8Security12KeychainCore12CCallbackMgr7consumeEjjRKNS_8CssmDataE
    fun:_ZN8Security14SecurityServer16NotificationPort7receiveERKNS_12MachPlusPlus7MessageE
    fun:_ZN8Security12MachPlusPlus10CFAutoPort10cfCallbackEP12__CFMachPortPvlS4_
-}
-{
-   bug_63513
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN15FilePathWatcherC2Ev
-   fun:_ZN15FilePathWatcherC1Ev
-   fun:_ZN6policy22FileBasedPolicyWatcherC2Ev
-   fun:_ZN6policy22FileBasedPolicyWatcherC1Ev
-   fun:_ZN6policy23FileBasedPolicyProviderC2EPKNS_27ConfigurationPolicyProvider20PolicyDefinitionListEPNS0_8DelegateE
-   fun:_ZN6policy30ConfigurationPolicyProviderMacC2EPKNS_27ConfigurationPolicyProvider20PolicyDefinitionListE
-   fun:_ZN6policy30ConfigurationPolicyProviderMacC1EPKNS_27ConfigurationPolicyProvider20PolicyDefinitionListE
-   fun:_ZN6policy33ConfigurationPolicyProviderKeeper29CreateManagedPlatformProviderEv
-   fun:_ZN6policy33ConfigurationPolicyProviderKeeperC2Ev
-   fun:_ZN6policy33ConfigurationPolicyProviderKeeperC1Ev
-   fun:_ZN22DefaultSingletonTraitsIN6policy33ConfigurationPolicyProviderKeeperEE3NewEv
-   fun:_ZN9SingletonIN6policy33ConfigurationPolicyProviderKeeperE22DefaultSingletonTraitsIS1_ES1_E3getEv
-   fun:_ZN6policy28ConfigurationPolicyPrefStore36CreateManagedPlatformPolicyPrefStoreEv
-   fun:_ZN14PrefValueStore18RefreshPolicyPrefsEP14CallbackRunnerI6Tuple1ISt6vectorISsSaISsEEEE
-   fun:_Z16DispatchToMethodIN18TestingPrefService21TestingPrefValueStoreEM14PrefValueStoreFvP14CallbackRunnerI6Tuple1ISt6vectorISsSaISsEEEEESA_EvPT_T0_RKS4_IT1_E
-   fun:_ZN14RunnableMethodIN18TestingPrefService21TestingPrefValueStoreEM14PrefValueStoreFvP14CallbackRunnerI6Tuple1ISt6vectorISsSaISsEEEEES4_ISA_EE3RunEv
-   fun:_ZN11MessageLoop7RunTaskERKNS_11PendingTaskE
-   fun:_ZN11MessageLoop21DeferOrRunPendingTaskERKNS_11PendingTaskE
-   fun:_ZN11MessageLoop6DoWorkEv
-   fun:_ZN4base18MessagePumpDefault3RunEPNS_11MessagePump8DelegateE
-   fun:_ZN11MessageLoop11RunInternalEv
 }
 {
    bug_63670
