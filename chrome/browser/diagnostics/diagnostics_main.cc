@@ -10,6 +10,7 @@
 #endif
 
 #include <iostream>
+#include <string>
 
 #include "base/basictypes.h"
 #include "base/command_line.h"
@@ -21,6 +22,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/diagnostics/diagnostics_model.h"
 #include "chrome/common/chrome_paths.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
 
 namespace {
@@ -239,7 +241,6 @@ class TestWriter {
   }
 
  private:
-
   SimpleConsole* console_;
 
   // Keeps track of how many tests reported failure.
@@ -285,6 +286,7 @@ class TestController : public DiagnosticsModel::Observer {
       writer_->WriteResult(false, L"Diagnostics start", L"ICU failure");
       return;
     }
+    ResourceBundle::InitSharedInstance("");
     int count = model->GetTestAvailableCount();
     writer_->WriteInfoText(base::StringPrintf(
         L"%d available test(s)\n\n", count));
@@ -301,7 +303,7 @@ class TestController : public DiagnosticsModel::Observer {
 
   virtual void OnFinished(int id, DiagnosticsModel* model) {
     // As each test completes we output the results.
-    ShowResult(model->GetTest(id));
+    ShowResult(&model->GetTest(id));
   }
 
   virtual void OnDoneAll(DiagnosticsModel* model) {
@@ -314,10 +316,10 @@ class TestController : public DiagnosticsModel::Observer {
   }
 
  private:
-  void ShowResult(DiagnosticsModel::TestInfo& test_info) {
-    bool success = (DiagnosticsModel::TEST_OK == test_info.GetResult());
-    writer_->WriteResult(success, UTF16ToWide(test_info.GetTitle()),
-                         UTF16ToWide(test_info.GetAdditionalInfo()));
+  void ShowResult(DiagnosticsModel::TestInfo* test_info) {
+    bool success = (DiagnosticsModel::TEST_OK == test_info->GetResult());
+    writer_->WriteResult(success, UTF16ToWide(test_info->GetTitle()),
+                         UTF16ToWide(test_info->GetAdditionalInfo()));
   }
 
   DiagnosticsModel* model_;
