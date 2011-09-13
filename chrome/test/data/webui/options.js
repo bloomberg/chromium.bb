@@ -106,8 +106,13 @@ TEST_F('OptionsWebUITest', 'MAYBE_testRefreshStaysOnCurrentPage', function() {
 });
 
 // Test that there are no console errors after opening all registered pages.
-// crbug.com/90420
-TEST_F('OptionsWebUITest', 'FLAKY_testOpenAllOptionsPages', function() {
+// Crashes on chromium os, flaky on other platforms. See crbug.com/90420.
+GEN('#if defined(OS_CHROMEOS)');
+GEN('#define MAYBE_testOpenAllOptionsPages DISABLED_testOpenAllOptionsPages');
+GEN('#else');
+GEN('#define MAYBE_testOpenAllOptionsPages FLAKY_testOpenAllOptionsPages');
+GEN('#endif  // defined(OS_CHROMEOS)');
+TEST_F('OptionsWebUITest', 'MAYBE_testOpenAllOptionsPages', function() {
   expectTrue(!!OptionsPage.registeredPages);
   for (var name in OptionsPage.registeredPages) {
     OptionsPage.showPageByName(name, false);
