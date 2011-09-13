@@ -102,6 +102,19 @@ DesktopWindowManager::~DesktopWindowManager() {
                                    << "before all the windows are closed.";
 }
 
+void DesktopWindowManager::UpdateWindowsAfterScreenSizeChanged(
+    const gfx::Rect& new_size) {
+  for (std::vector<Widget*>::iterator i = toplevels_.begin();
+       i != toplevels_.end(); ++i) {
+    Widget* toplevel = *i;
+    if (!toplevel->IsMaximized())
+      continue;
+
+    // If the window is maximized, then resize it!
+    toplevel->SetSize(new_size.size());
+  }
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopWindowManager, WindowManager implementation:
 

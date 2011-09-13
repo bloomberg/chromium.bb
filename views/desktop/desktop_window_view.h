@@ -41,6 +41,7 @@ class DesktopWindowView : public WidgetDelegateView {
  private:
   // Overridden from View:
   virtual void Layout() OVERRIDE;
+  virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) OVERRIDE;
   virtual void ViewHierarchyChanged(
       bool is_add, View* parent, View* child) OVERRIDE;
 

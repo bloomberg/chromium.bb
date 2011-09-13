@@ -176,6 +176,11 @@ void DesktopWindowView::CreateTestWindow(const std::wstring& title,
 void DesktopWindowView::Layout() {
 }
 
+void DesktopWindowView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
+  static_cast<DesktopWindowManager*>(WindowManager::Get())->
+      UpdateWindowsAfterScreenSizeChanged(bounds());
+}
+
 void DesktopWindowView::ViewHierarchyChanged(
     bool is_add, View* parent, View* child) {
   if (child->GetClassName() == internal::NativeWidgetView::kViewClassName) {

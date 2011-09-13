@@ -31,6 +31,8 @@ class DesktopWindowManager : public views::WindowManager,
   DesktopWindowManager(Widget* desktop);
   virtual ~DesktopWindowManager();
 
+  void UpdateWindowsAfterScreenSizeChanged(const gfx::Rect& new_size);
+
   // views::WindowManager implementations:
   virtual void StartMoveDrag(views::Widget* widget,
                              const gfx::Point& point) OVERRIDE;
