@@ -194,7 +194,8 @@ void RenderWidgetHostViewViews::SetSize(const gfx::Size& size) {
 }
 
 void RenderWidgetHostViewViews::SetBounds(const gfx::Rect& rect) {
-  NOTIMPLEMENTED();
+  // TODO(oshima): chromeos/touch doesn't allow moving window.
+  SetSize(rect.size());
 }
 
 gfx::NativeView RenderWidgetHostViewViews::GetNativeView() const {
@@ -748,7 +749,7 @@ void RenderWidgetHostViewViews::OnPaint(gfx::Canvas* canvas) {
     // Only render the widget if it is attached to a window; there's a short
     // period where this object isn't attached to a window but hasn't been
     // Destroy()ed yet and it receives paint messages...
-    if (GetInnerNativeView()->window) {
+    if (IsReadyToPaint()) {
 #endif
       if (!visually_deemphasized_) {
         // In the common case, use XCopyArea. We don't draw more than once, so
