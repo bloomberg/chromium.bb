@@ -579,7 +579,8 @@ IN_PROC_BROWSER_TEST_F(NotificationTest, TestAddWebUIMessageCallback) {
           &NotificationTest::HandleWebUIMessage)));
 }
 
-IN_PROC_BROWSER_TEST_F(NotificationTest, TestWebUIMessageCallback) {
+// Occasional crash: http://crbug.com/96461
+IN_PROC_BROWSER_TEST_F(NotificationTest, FLAKY_TestWebUIMessageCallback) {
   BalloonCollectionImpl* collection = GetBalloonCollectionImpl();
   Profile* profile = browser()->profile();
   // A notification that sends 'test' WebUI message back to chrome.
