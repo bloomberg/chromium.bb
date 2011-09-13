@@ -1612,3 +1612,89 @@
    fun:ComponentUpdaterTest::RegisterComponent
    fun:ComponentUpdaterTest_ProdVersionCheck_Test::TestBody
 }
+{
+   bug_96363a
+   Heapcheck:Leak
+   fun:MakeAutofillProfileSyncComponentsActionP4::gmock_Impl::gmock_PerformImpl
+   fun:testing::internal::ActionHelper::Perform
+   fun:MakeAutofillProfileSyncComponentsActionP4::gmock_Impl::Perform
+   fun:testing::Action::Perform
+   fun:testing::internal::ActionResultHolder::PerformAction
+   fun:testing::internal::FunctionMockerBase::UntypedPerformAction
+   fun:testing::internal::UntypedFunctionMockerBase::UntypedInvokeWith
+   fun:testing::internal::FunctionMockerBase::InvokeWith
+   fun:testing::internal::FunctionMocker::Invoke
+   fun:ProfileSyncFactoryMock::CreateAutofillProfileSyncComponents
+   fun:browser_sync::AutofillProfileDataTypeController::CreateSyncComponents
+   fun:browser_sync::NonFrontendDataTypeController::StartAssociation
+}
+{
+   bug_96363b
+   Heapcheck:Leak
+   fun:__gnu_cxx::new_allocator::allocate
+   fun:std::_Vector_base::_M_allocate
+   fun:std::vector::_M_insert_aux
+   fun:std::vector::push_back
+   fun:ScopedVector::push_back
+   fun:browser_sync::AutofillProfileSyncableService::ActOnChange
+   fun:browser_sync::AutofillProfileSyncableService::Observe
+   fun:NotificationService::Notify
+}
+{
+   bug_96363c
+   Heapcheck:Leak
+   fun:__gnu_cxx::new_allocator::allocate
+   fun:std::_Vector_base::_M_allocate
+   fun:std::vector::_M_insert_aux
+   fun:std::vector::push_back
+   fun:NotificationRegistrar::Add
+   fun:browser_sync::AutofillProfileSyncableService::AutofillProfileSyncableService
+   fun:MakeAutofillProfileSyncComponentsActionP4::gmock_Impl::gmock_PerformImpl
+   fun:testing::internal::ActionHelper::Perform
+   fun:MakeAutofillProfileSyncComponentsActionP4::gmock_Impl::Perform
+   fun:testing::Action::Perform
+   fun:testing::internal::ActionResultHolder::PerformAction
+   fun:testing::internal::FunctionMockerBase::UntypedPerformAction
+   fun:testing::internal::UntypedFunctionMockerBase::UntypedInvokeWith
+   fun:testing::internal::FunctionMockerBase::InvokeWith
+   fun:testing::internal::FunctionMocker::Invoke
+   fun:ProfileSyncFactoryMock::CreateAutofillProfileSyncComponents
+   fun:browser_sync::AutofillProfileDataTypeController::CreateSyncComponents
+   fun:browser_sync::NonFrontendDataTypeController::StartAssociation
+}
+{
+   bug_96363d
+   Heapcheck:Leak
+   fun:__gnu_cxx::new_allocator::allocate
+   fun:std::_Vector_base::_M_allocate
+   fun:std::vector::_M_allocate_and_copy
+   fun:std::vector::operator=
+   fun:testing::internal::SetArgumentPointeeAction::Perform
+   fun:testing::PolymorphicAction::MonomorphicImpl::Perform
+   fun:testing::Action::Perform
+   fun:testing::internal::DoBothAction::Impl::Perform
+   fun:testing::Action::Perform
+   fun:testing::internal::ActionResultHolder::PerformAction
+   fun:testing::internal::FunctionMockerBase::UntypedPerformAction
+   fun:testing::internal::UntypedFunctionMockerBase::UntypedInvokeWith
+   fun:testing::internal::FunctionMockerBase::InvokeWith
+   fun:testing::internal::FunctionMocker::Invoke
+   fun:AutofillTableMock::GetAutofillProfiles
+   fun:browser_sync::AutofillProfileSyncableService::LoadAutofillData
+   fun:browser_sync::AutofillProfileSyncableService::MergeDataAndStartSyncing
+   fun:browser_sync::SyncableServiceAdapter::AssociateModels
+   fun:browser_sync::NonFrontendDataTypeController::StartAssociation
+}
+{
+   bug_96363e
+   Heapcheck:Leak
+   fun:__gnu_cxx::new_allocator::allocate
+   fun:std::_Vector_base::_M_allocate
+   fun:std::vector::_M_insert_aux
+   fun:std::vector::push_back
+   fun:ScopedVector::push_back
+   fun:browser_sync::AutofillProfileSyncableService::CreateOrUpdateProfile
+   fun:browser_sync::AutofillProfileSyncableService::MergeDataAndStartSyncing
+   fun:browser_sync::SyncableServiceAdapter::AssociateModels
+   fun:browser_sync::NonFrontendDataTypeController::StartAssociation
+}
