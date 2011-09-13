@@ -6,10 +6,13 @@
 
 namespace extension_webrequest_api_constants {
 
+const char kChallengerKey[] = "challenger";
 const char kErrorKey[] = "error";
 const char kFrameIdKey[] = "frameId";
 const char kFromCache[] = "fromCache";
+const char kHostKey[] = "host";
 const char kIpKey[] = "ip";
+const char kPortKey[] = "port";
 const char kMethodKey[] = "method";
 const char kRedirectUrlKey[] = "redirectUrl";
 const char kRequestIdKey[] = "requestId";

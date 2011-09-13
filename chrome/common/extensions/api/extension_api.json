@@ -5651,6 +5651,7 @@
               "url": {"type": "string"},
               "scheme": {"type": "string", "description": "The authentication scheme, e.g. Basic or Digest."},
               "realm": {"type": "string", "description": "The authentication realm provided by the server, if there is one.", "optional": true},
+              "challenger": {"type": "object", "description": "The server requesting authentication.", "properties": {"host": {"type": "string"}, "port": {"type": "integer"}}},
               "isProxy": {"type": "boolean", "description": "True for Proxy-Authenticate, false for WWW-Authenticate."},
               "timeStamp": {"type": "number", "description": "The time when the status line and response headers were received, in milliseconds since the epoch."},
               "responseHeaders": {"$ref": "HttpHeaders", "optional": true, "description": "The HTTP response headers that were received along with this response."},

@@ -227,6 +227,7 @@ runTests([
             isProxy: false,
             scheme: "basic",
             realm: "testrealm",
+            challenger: {host: testServer, port: testServerPort}
           }
         },
         { label: "onResponseStarted",

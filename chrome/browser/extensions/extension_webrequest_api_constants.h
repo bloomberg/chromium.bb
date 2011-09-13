@@ -11,11 +11,14 @@
 namespace extension_webrequest_api_constants {
 
 // Keys.
+extern const char kChallengerKey[];
 extern const char kErrorKey[];
 extern const char kFrameIdKey[];
 extern const char kFromCache[];
+extern const char kHostKey[];
 extern const char kIpKey[];
 extern const char kMethodKey[];
+extern const char kPortKey[];
 extern const char kRedirectUrlKey[];
 extern const char kRequestIdKey[];
 extern const char kStatusCodeKey[];

@@ -1,3 +1,7 @@
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
 var getURL = chrome.extension.getURL;
 var deepEq = chrome.test.checkDeepEq;
 var expectedEventData;
@@ -5,6 +9,7 @@ var capturedEventData;
 var expectedEventOrder;
 var tabId;
 var testServerPort;
+var testServer = "www.a.com";
 var eventsCaptured;
 
 function runTests(tests) {
@@ -22,7 +27,7 @@ function runTests(tests) {
 function getServerURL(path) {
   if (!testServerPort)
     throw new Error("Called getServerURL outside of runTests.");
-  return "http://www.a.com:" + testServerPort + "/" + path;
+  return "http://" + testServer + ":" + testServerPort + "/" + path;
 }
 
 // Helper to advance to the next test only when the tab has finished loading.

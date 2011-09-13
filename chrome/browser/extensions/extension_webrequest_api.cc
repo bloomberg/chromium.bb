@@ -615,6 +615,10 @@ void ExtensionWebRequestEventRouter::OnAuthRequired(
     dict->SetString(keys::kSchemeKey, auth_info.scheme);
   if (!auth_info.realm.empty())
     dict->SetString(keys::kRealmKey, auth_info.realm);
+  DictionaryValue* challenger = new DictionaryValue();
+  challenger->SetString(keys::kHostKey, auth_info.challenger.host());
+  challenger->SetInteger(keys::kPortKey, auth_info.challenger.port());
+  dict->Set(keys::kChallengerKey, challenger);
   dict->SetDouble(keys::kTimeStampKey, time.ToDoubleT() * 1000);
   if (extra_info_spec & ExtraInfoSpec::REQUEST_HEADERS) {
     dict->Set(keys::kResponseHeadersKey,
