@@ -4,7 +4,6 @@
 
 #include "content/browser/plugin_service.h"
 
-#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/path_service.h"
 #include "chrome/browser/ui/browser.h"
@@ -43,8 +42,6 @@ class MockPluginProcessHostClient : public PluginProcessHost::Client,
   virtual const content::ResourceContext& GetResourceContext() OVERRIDE {
     return context_;
   }
-  virtual void OnFoundPluginProcessHost(PluginProcessHost* host) {
-  }
 
   void OnChannelOpened(const IPC::ChannelHandle& handle) {
     ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
@@ -79,6 +76,8 @@ class MockPluginProcessHostClient : public PluginProcessHost::Client,
   DISALLOW_COPY_AND_ASSIGN(MockPluginProcessHostClient);
 };
 
+}  // namespace
+
 class PluginServiceTest : public InProcessBrowserTest {
  public:
   PluginServiceTest() : InProcessBrowserTest() { }
@@ -102,60 +101,3 @@ IN_PROC_BROWSER_TEST_F(PluginServiceTest, OpenChannelToPlugin) {
       0, 0, GURL(), GURL(), kNPAPITestPluginMimeType, &mock_client);
   ui_test_utils::RunMessageLoop();
 }
-
-// A strict mock that fails if any of the methods are called. They shouldn't be
-// called since the request should get canceled before then.
-class MockCanceledPluginProcessHostClient: public PluginProcessHost::Client {
- public:
-  // Client implementation.
-  MOCK_METHOD1(OnFoundPluginProcessHost, void(PluginProcessHost* host));
-  MOCK_METHOD1(OnChannelOpened, void(const IPC::ChannelHandle& handle));
-  MOCK_METHOD1(SetPluginInfo, void(const webkit::WebPluginInfo& info));
-  MOCK_METHOD0(OnError, void());
-
-  // Listener implementation.
-  MOCK_METHOD1(OnMessageReceived, bool(const IPC::Message& message));
-  MOCK_METHOD1(OnChannelConnected, void(int32 peer_pid));
-  MOCK_METHOD0(OnChannelError, void());
-  MOCK_METHOD0(OnChannelDenied, void());
-  MOCK_METHOD0(OnChannelListenError, void());
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockCanceledPluginProcessHostClient);
-};
-
-void DoNothing() {}
-
-void QuitUIMessageLoopFromIOThread() {
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          new MessageLoop::QuitTask());
-}
-
-void OpenChannelAndThenCancel(PluginProcessHost::Client* client) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  // Start opening the channel
-  PluginService::GetInstance()->OpenChannelToNpapiPlugin(
-      0, 0, GURL(), GURL(), kNPAPITestPluginMimeType, client);
-  // Immediately cancel it. This is guaranteed to work since PluginService needs
-  // to consult its filter on the FILE thread.
-  PluginService::GetInstance()->CancelOpenChannelToNpapiPlugin(client);
-  // Before we terminate the test, add a roundtrip through the FILE thread to
-  // make sure that it's had a chance to post back to the IO thread. Then signal
-  // the UI thread to stop and exit the test.
-  BrowserThread::PostTaskAndReply(
-      BrowserThread::FILE, FROM_HERE,
-      base::Bind(&DoNothing),
-      base::Bind(&QuitUIMessageLoopFromIOThread));
-}
-
-// Should not attempt to open a channel, since it should be canceled early on.
-IN_PROC_BROWSER_TEST_F(PluginServiceTest, CancelOpenChannelToPlugin) {
-  ::testing::StrictMock<MockPluginProcessHostClient> mock_client(
-      browser()->profile()->GetResourceContext());
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      NewRunnableFunction(OpenChannelAndThenCancel, &mock_client));
-  ui_test_utils::RunMessageLoop();
-}
-
-}  // namespace

@@ -47,17 +47,16 @@ class PluginDataRemover : public base::RefCountedThreadSafe<PluginDataRemover>,
   void Wait();
 
   // PluginProcessHost::Client methods.
-  virtual int ID() OVERRIDE;
-  virtual bool OffTheRecord() OVERRIDE;
-  virtual const content::ResourceContext& GetResourceContext() OVERRIDE;
-  virtual void SetPluginInfo(const webkit::WebPluginInfo& info) OVERRIDE;
-  virtual void OnFoundPluginProcessHost(PluginProcessHost* host) OVERRIDE;
-  virtual void OnChannelOpened(const IPC::ChannelHandle& handle) OVERRIDE;
-  virtual void OnError() OVERRIDE;
+  virtual int ID();
+  virtual bool OffTheRecord();
+  virtual const content::ResourceContext& GetResourceContext();
+  virtual void SetPluginInfo(const webkit::WebPluginInfo& info);
+  virtual void OnChannelOpened(const IPC::ChannelHandle& handle);
+  virtual void OnError();
 
   // IPC::Channel::Listener methods.
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-  virtual void OnChannelError() OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message);
+  virtual void OnChannelError();
 
  private:
   friend class base::RefCountedThreadSafe<PluginDataRemover>;

@@ -100,8 +100,6 @@ PluginService::~PluginService() {
   if (hklm_event_.get())
     hklm_event_->Release();
 #endif
-  // Make sure no plugin channel requests have been leaked.
-  DCHECK(pending_plugin_clients_.empty());
 }
 
 void PluginService::StartWatchingPlugins() {
@@ -287,8 +285,6 @@ void PluginService::OpenChannelToNpapiPlugin(
     const GURL& page_url,
     const std::string& mime_type,
     PluginProcessHost::Client* client) {
-  DCHECK(!ContainsKey(pending_plugin_clients_, client));
-  pending_plugin_clients_.insert(client);
   // The PluginList::GetPluginInfo may need to load the plugins.  Don't do it on
   // the IO thread.
   BrowserThread::PostTask(
@@ -318,13 +314,6 @@ void PluginService::OpenChannelToPpapiBroker(
     plugin_host->OpenChannelToPpapiBroker(client);
   else  // Send error.
     client->OnChannelOpened(base::kNullProcessHandle, IPC::ChannelHandle());
-}
-
-void PluginService::CancelOpenChannelToNpapiPlugin(
-    PluginProcessHost::Client* client) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  DCHECK(ContainsKey(pending_plugin_clients_, client));
-  pending_plugin_clients_.erase(client);
 }
 
 void PluginService::GetAllowedPluginForOpenChannelToPlugin(
@@ -358,18 +347,11 @@ void PluginService::FinishOpenChannelToPlugin(
     PluginProcessHost::Client* client) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  // Make sure it hasn't been canceled yet.
-  if (!ContainsKey(pending_plugin_clients_, client))
-    return;
-  pending_plugin_clients_.erase(client);
-
   PluginProcessHost* plugin_host = FindOrStartNpapiPluginProcess(plugin_path);
-  if (plugin_host) {
-    client->OnFoundPluginProcessHost(plugin_host);
+  if (plugin_host)
     plugin_host->OpenChannelToPlugin(client);
-  } else {
+  else
     client->OnError();
-  }
 }
 
 bool PluginService::GetPluginInfo(int render_process_id,

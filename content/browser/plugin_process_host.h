@@ -52,7 +52,6 @@ class PluginProcessHost : public BrowserChildProcessHost {
     virtual const content::ResourceContext& GetResourceContext() = 0;
     virtual bool OffTheRecord() = 0;
     virtual void SetPluginInfo(const webkit::WebPluginInfo& info) = 0;
-    virtual void OnFoundPluginProcessHost(PluginProcessHost* host) = 0;
     // The client should delete itself when one of these methods is called.
     virtual void OnChannelOpened(const IPC::ChannelHandle& handle) = 0;
     virtual void OnError() = 0;
@@ -83,9 +82,6 @@ class PluginProcessHost : public BrowserChildProcessHost {
   // Cancels all pending channel requests for the given resource context.
   static void CancelPendingRequestsForResourceContext(
       const content::ResourceContext* context);
-
-  // This function is called to cancel requests to open new channels.
-  void CancelRequest(Client* client);
 
   // This function is called on the IO thread once we receive a reply from the
   // modal HTML dialog (in the form of a JSON string). This function forwards
