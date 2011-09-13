@@ -23,6 +23,7 @@ class NaClBrokerListener : public IPC::Channel::Listener {
   // IPC::Channel::Listener implementation.
   virtual void OnChannelConnected(int32 peer_pid) OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
+  virtual void OnChannelError() OVERRIDE;
 
  private:
   void OnLaunchLoaderThroughBroker(const std::wstring& loader_channel_id);

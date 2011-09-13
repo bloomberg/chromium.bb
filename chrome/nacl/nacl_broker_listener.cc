@@ -49,6 +49,11 @@ bool NaClBrokerListener::OnMessageReceived(const IPC::Message& msg) {
   return handled;
 }
 
+void NaClBrokerListener::OnChannelError() {
+  // The browser died unexpectedly, quit to avoid a zombie process.
+  MessageLoop::current()->Quit();
+}
+
 void NaClBrokerListener::OnLaunchLoaderThroughBroker(
     const std::wstring& loader_channel_id) {
   base::ProcessHandle loader_process = 0;
