@@ -68,6 +68,38 @@ TypedUrlModelAssociator::TypedUrlModelAssociator(
 
 TypedUrlModelAssociator::~TypedUrlModelAssociator() {}
 
+
+// static
+bool TypedUrlModelAssociator::GetVisitsForURL(history::HistoryBackend* backend,
+                                              const history::URLRow& url,
+                                              history::VisitVector* visits) {
+  if (!backend->GetMostRecentVisitsForURL(url.id(), kMaxVisitsToFetch, visits))
+    return false;
+
+  // Sometimes (due to a bug elsewhere in the history or sync code, or due to
+  // a crash between adding a URL to the history database and updating the
+  // visit DB) the visit vector for a URL can be empty. If this happens, just
+  // create a new visit whose timestamp is the same as the last_visit time.
+  // This is a workaround for http://crbug.com/84258.
+  if (visits->empty()) {
+    history::VisitRow visit(
+        url.id(), url.last_visit(), 0, PageTransition::TYPED, 0);
+    visits->push_back(visit);
+  }
+
+  // GetMostRecentVisitsForURL() returns the data in the opposite order that
+  // we need it, so reverse it.
+  std::reverse(visits->begin(), visits->end());
+
+  // Checking DB consistency to try to track down http://crbug.com/94733 - if
+  // we start hitting this DCHECK, we can try to fixup the data by adding our
+  // own mock visit as we do for empty visit vectors.
+  DCHECK_EQ(url.last_visit().ToInternalValue(),
+            visits->back().visit_time.ToInternalValue());
+  DCHECK(CheckVisitOrdering(*visits));
+  return true;
+}
+
 bool TypedUrlModelAssociator::AssociateModels(SyncError* error) {
   VLOG(1) << "Associating TypedUrl Models";
   DCHECK(expected_loop_ == MessageLoop::current());
@@ -84,27 +116,10 @@ bool TypedUrlModelAssociator::AssociateModels(SyncError* error) {
   std::map<history::URLID, history::VisitVector> visit_vectors;
   for (std::vector<history::URLRow>::iterator ix = typed_urls.begin();
        ix != typed_urls.end(); ++ix) {
-    if (!history_backend_->GetMostRecentVisitsForURL(
-            ix->id(), kMaxVisitsToFetch, &(visit_vectors[ix->id()]))) {
+    if (!GetVisitsForURL(history_backend_, *ix, &(visit_vectors[ix->id()]))) {
       error->Reset(FROM_HERE, "Could not get the url's visits.", model_type());
       return false;
     }
-    // Sometimes (due to a bug elsewhere in the history or sync code, or due to
-    // a crash between adding a URL to the history database and updating the
-    // visit DB) the visit vector for a URL can be empty. If this happens, just
-    // create a new visit whose timestamp is the same as the last_visit time.
-    // This is a workaround for http://crbug.com/84258.
-    if (visit_vectors[ix->id()].empty()) {
-      history::VisitRow visit(
-          ix->id(), ix->last_visit(), 0, PageTransition::TYPED, 0);
-      visit_vectors[ix->id()].push_back(visit);
-    }
-    // Checking DB consistency to try to track down http://crbug.com/94733 - if
-    // we start hitting this DCHECK, we can try to fixup the data by adding our
-    // own mock visit as we do for empty visit vectors.
-    DCHECK_EQ(ix->last_visit().ToInternalValue(),
-              visit_vectors[ix->id()].back().visit_time.ToInternalValue());
-    DCHECK(CheckVisitOrdering(visit_vectors[ix->id()]));
   }
 
   TypedUrlTitleVector titles;

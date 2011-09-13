@@ -29,13 +29,6 @@ static const int kTypedUrlVisitThrottleThreshold = 10;
 // N, we sync up every Nth update (i.e. when typed_count % N == 0).
 static const int kTypedUrlVisitThrottleMultiple = 10;
 
-// There's no limit on how many visits the history DB could have for a given
-// typed URL, so we limit how many we fetch from the DB to avoid crashes due to
-// running out of memory (http://crbug.com/89793). This value is different
-// from kMaxTypedUrlVisits, as some of the visits fetched from the DB may be
-// RELOAD visits, which will be stripped.
-static const int kMaxVisitsToFetch = 1000;
-
 TypedUrlChangeProcessor::TypedUrlChangeProcessor(
     TypedUrlModelAssociator* model_associator,
     history::HistoryBackend* history_backend,
@@ -98,19 +91,11 @@ bool TypedUrlChangeProcessor::CreateOrUpdateSyncNode(
     const history::URLRow& url, sync_api::WriteTransaction* trans) {
   // Get the visits for this node.
   history::VisitVector visit_vector;
-  if (!history_backend_->GetMostRecentVisitsForURL(
-          url.id(), kMaxVisitsToFetch, &visit_vector)) {
+  if (!TypedUrlModelAssociator::GetVisitsForURL(
+          history_backend_, url, &visit_vector)) {
     error_handler()->OnUnrecoverableError(FROM_HERE,
                                           "Could not get the url's visits.");
     return false;
-  }
-
-  // Make sure our visit vector is not empty by ensuring at least the most
-  // recent visit is found. Workaround for http://crbug.com/84258.
-  if (visit_vector.empty()) {
-    history::VisitRow visit(
-        url.id(), url.last_visit(), 0, PageTransition::TYPED, 0);
-    visit_vector.push_back(visit);
   }
 
   sync_api::ReadNode typed_url_root(trans);
@@ -279,8 +264,8 @@ void TypedUrlChangeProcessor::ApplyChangesFromSyncModel(
       }
 
       history::VisitVector visits;
-      if (!history_backend_->GetMostRecentVisitsForURL(
-              old_url.id(), kMaxVisitsToFetch, &visits)) {
+      if (!TypedUrlModelAssociator::GetVisitsForURL(
+              history_backend_, old_url, &visits)) {
         error_handler()->OnUnrecoverableError(FROM_HERE,
             "Could not get the url's visits.");
         return;

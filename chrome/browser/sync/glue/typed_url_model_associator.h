@@ -144,6 +144,16 @@ class TypedUrlModelAssociator
                                        const history::VisitVector& visits,
                                        sync_pb::TypedUrlSpecifics* specifics);
 
+  // Helper function that fetches visits from the history DB corresponding to
+  // the passed URL. This function compensates for the fact that the history DB
+  // has rather poor data integrity (duplicate visits, visit timestamps that
+  // don't match the last_visit timestamp, huge data sets that exhaust memory
+  // when fetched, etc). Returns false if we could not fetch the visits for the
+  // passed URL.
+  static bool GetVisitsForURL(history::HistoryBackend* backend,
+                              const history::URLRow& url,
+                              history::VisitVector* visits);
+
   // Updates the passed |url_row| based on the values in |specifics|. Fields
   // that are not contained in |specifics| (such as typed_count) are left
   // unchanged.

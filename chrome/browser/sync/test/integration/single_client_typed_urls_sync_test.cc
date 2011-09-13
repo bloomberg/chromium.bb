@@ -44,3 +44,26 @@ IN_PROC_BROWSER_TEST_F(SingleClientTypedUrlsSyncTest, Sanity) {
   AssertAllProfilesHaveSameURLsAsVerifier();
 }
 
+IN_PROC_BROWSER_TEST_F(SingleClientTypedUrlsSyncTest, TwoVisits) {
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+  std::vector<history::URLRow> urls = GetTypedUrlsFromClient(0);
+  ASSERT_EQ(0U, urls.size());
+
+  GURL new_url(kSanityHistoryUrl);
+  // Adding twice should add two visits with distinct timestamps.
+  AddUrlToHistory(0, new_url);
+  AddUrlToHistory(0, new_url);
+
+  urls = GetTypedUrlsFromClient(0);
+  ASSERT_EQ(1U, urls.size());
+  ASSERT_EQ(new_url, urls[0].url());
+  AssertAllProfilesHaveSameURLsAsVerifier();
+
+  ASSERT_TRUE(GetClient(0)->AwaitSyncCycleCompletion(
+      "Waiting for typed url change."));
+
+  // Verify client did not change.
+  AssertAllProfilesHaveSameURLsAsVerifier();
+}
+
+
