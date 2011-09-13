@@ -9894,6 +9894,13 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_SYNC_ENCRYPT_ALL_DATA" desc="Text of the radio that when selected causes sync to encrypt all data.">
         Encrypt all synced data
       </message>
+      <message name="IDS_SYNC_ASP_PASSWORD_WARNING_TEXT" desc="Warning shown if the
+        user enters a gaia password resembling an application specific
+        password.">
+        Enter your Google Account password first,
+        <ph name="LINE_BREAK">&lt;br /&gt;</ph>
+        not an application specific password.
+     </message>
       <if expr="not pp_ifdef('use_titlecase')">
         <message name="IDS_SYNC_PASSPHRASE_SECTION_TITLE" desc="Title of the section containing sync passphrase preferences.">
           Encryption passphrase

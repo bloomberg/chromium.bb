@@ -176,6 +176,10 @@ div.error-msg-spacer {
   width: 200px;
 }
 
+#asp-warning-div {
+  text-align: left;
+}
+
 #logging-in-throbber {
   margin: 0 10px;
 }

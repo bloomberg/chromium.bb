@@ -710,6 +710,14 @@ cr.define('options', function() {
       $('gaia-passwd').disabled = false;
     },
 
+    matchesASPRegex_: function(toMatch) {
+      var noSpaces = /[a-z]{16}/;
+      var withSpaces = /([a-z]{4}\s){3}[a-z]{4}/;
+      if (toMatch.match(noSpaces) || toMatch.match(withSpaces))
+        return true;
+      return false;
+    },
+
     setErrorVisibility_: function() {
       this.resetErrorVisibility_();
       var f = $('gaia-login-form');
@@ -733,6 +741,14 @@ cr.define('options', function() {
         $('errormsg-0-password').hidden = false;
         return false;
       }
+
+      if (f.accessCode.disabled && this.matchesASPRegex_(passwd.value) &&
+          $('asp-warning-div').hidden) {
+        $('asp-warning-div').hidden = false;
+        $('gaia-passwd').value = "";
+        return false;
+      }
+
       return true;
     },
 
