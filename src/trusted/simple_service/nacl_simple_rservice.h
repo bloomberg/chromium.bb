@@ -118,14 +118,33 @@ struct NaClSimpleRevServiceVtbl {
   struct NaClRefCountVtbl     vbase;
 
   /* syscall convention */
+  /*
+   * |instance_data| is both made available to the RPC handlers as
+   * rpc->channel->server_instance_data, and is used as argument
+   * |exit_cb| if |exit_cb| is non-NULL.  |exit_cb| is called when the
+   * connection closes, i.e., when the NaClSrpcServerLoop returns.
+   */
   int                         (*ConnectAndSpawnHandler)(
       struct NaClSimpleRevService *self,
+      void                        *instance_data);
+
+  /*
+   * ConnectAndSpawnHandlerCb invokes |exit_cb| if its value is non-NULL
+   * when the connection closes.  ConnectAndSpawnHandler essentially
+   * invokes ConnectAndSpawnHandlerCb with a NULL |exit_cb|.
+   */
+  int                         (*ConnectAndSpawnHandlerCb)(
+      struct NaClSimpleRevService *self,
+      void                        (*exit_cb)(void *instance_data,
+                                             int  server_loop_ret),
       void                        *instance_data);
 
   /* syscall convention */
   int                         (*RevConnectionFactory)(
       struct NaClSimpleRevService     *self,
       struct NaClDesc                 *conn,
+      void                            (*exit_cb)(void *instance_data,
+                                                 int  server_loop_ret),
       void                            *instance_data,
       struct NaClSimpleRevConnection  **out);
 
@@ -142,6 +161,8 @@ struct NaClSimpleRevConnection {
   struct NaClDesc             *connected_socket;  /* holds a ref */
   struct NaClThreadInterface  *thread;
 
+  void                        (*exit_cb)(void *instance_data,
+                                         int server_loop_ret);
   void                        *instance_data;
 };
 
@@ -149,6 +170,8 @@ int NaClSimpleRevConnectionCtor(
     struct NaClSimpleRevConnection  *self,
     struct NaClSimpleRevService     *service,
     struct NaClDesc                 *conn,
+    void                            (*exit_cb)(void *instance_data,
+                                               int  server_loop_ret),
     void                            *instance_data);
 
 void NaClSimpleRevConnectionDtor(struct NaClRefCount *vself);
@@ -160,6 +183,8 @@ void NaClSimpleRevConnectionDtor(struct NaClRefCount *vself);
 int NaClSimpleRevServiceConnectionFactory(
     struct NaClSimpleRevService     *self,
     struct NaClDesc                 *conn,
+    void                            (*exit_cb)(void *instance_data,
+                                               int  server_loop_ret),
     void                            *instance_data,
     struct NaClSimpleRevConnection  **out);
 
