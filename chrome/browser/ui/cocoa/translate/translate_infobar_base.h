@@ -76,7 +76,8 @@ void AddMenuItem(NSMenu *menu, id target, SEL selector, NSString* title,
   scoped_ptr<OptionsMenuModel> optionsMenuModel_;
 }
 
-// Returns the delegate as a TranslateInfoBarDelegate.
+// Returns the delegate as a TranslateInfoBarDelegate.  The return
+// value can be NULL if the infobar is closing.
 - (TranslateInfoBarDelegate*)delegate;
 
 // Called when the "Show Original" button is pressed.

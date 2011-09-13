@@ -108,6 +108,26 @@ void AddMenuItem(NSMenu *menu, id target, SEL selector, NSString* title,
 
 }  // namespace TranslateInfoBarUtilities
 
+namespace {
+
+// Helper to close and disable popup menus when the infobar closes.
+// Disabling the popup button would cause a distracting visual change.
+void DisablePopUpMenu(NSMenu *menu) {
+  // Remove the menu if visible.
+  [menu cancelTracking];
+
+  // If the menu is re-opened, prevent queries to update items.
+  [menu setDelegate:nil];
+
+  // Prevent target/action messages to the controller.
+  for (NSMenuItem* item in [menu itemArray]) {
+    [item setEnabled:NO];
+    [item setTarget:nil];
+  }
+}
+
+}  // namespace
+
 // TranslateInfoBarDelegate views specific method:
 InfoBar* TranslateInfoBarDelegate::CreateInfoBar(TabContentsWrapper* owner) {
   TranslateInfoBarControllerBase* infobar_controller = NULL;
@@ -309,8 +329,7 @@ InfoBar* TranslateInfoBarDelegate::CreateInfoBar(TabContentsWrapper* owner) {
 
   // The options model doesn't know how to handle state transitions, so rebuild
   // it each time through here.
-  optionsMenuModel_.reset(
-              new OptionsMenuModel([self delegate]));
+  optionsMenuModel_.reset(new OptionsMenuModel([self delegate]));
 
   [optionsPopUp_ removeAllItems];
   // Set title.
@@ -473,7 +492,9 @@ InfoBar* TranslateInfoBarDelegate::CreateInfoBar(TabContentsWrapper* owner) {
 }
 
 - (void)infobarWillClose {
-  [[optionsPopUp_ menu] cancelTracking];
+  DisablePopUpMenu([fromLanguagePopUp_ menu]);
+  DisablePopUpMenu([toLanguagePopUp_ menu]);
+  DisablePopUpMenu([optionsPopUp_ menu]);
   [super infobarWillClose];
 }
 
@@ -499,33 +520,48 @@ InfoBar* TranslateInfoBarDelegate::CreateInfoBar(TabContentsWrapper* owner) {
 
 // Called when "Translate" button is clicked.
 - (IBAction)ok:(id)sender {
+  // The delegate may be NULL if the infobar was closed.
   TranslateInfoBarDelegate* delegate = [self delegate];
-  TranslateInfoBarDelegate::Type state = delegate->type();
-  DCHECK(state == TranslateInfoBarDelegate::BEFORE_TRANSLATE ||
-      state == TranslateInfoBarDelegate::TRANSLATION_ERROR);
-  delegate->Translate();
+  if (delegate) {
+    TranslateInfoBarDelegate::Type state = delegate->type();
+    DCHECK(state == TranslateInfoBarDelegate::BEFORE_TRANSLATE ||
+           state == TranslateInfoBarDelegate::TRANSLATION_ERROR);
+    delegate->Translate();
+  }
   UMA_HISTOGRAM_COUNTS("Translate.Translate", 1);
 }
 
 // Called when someone clicks on the "Nope" button.
 - (IBAction)cancel:(id)sender {
-  DCHECK(
-      [self delegate]->type() == TranslateInfoBarDelegate::BEFORE_TRANSLATE);
-  [self delegate]->TranslationDeclined();
-  UMA_HISTOGRAM_COUNTS("Translate.DeclineTranslate", 1);
+  // The delegate may be NULL if the infobar was closed.
+  TranslateInfoBarDelegate* delegate = [self delegate];
+  if (delegate) {
+    DCHECK(delegate->type() == TranslateInfoBarDelegate::BEFORE_TRANSLATE);
+    delegate->TranslationDeclined();
+    UMA_HISTOGRAM_COUNTS("Translate.DeclineTranslate", 1);
+  }
   [super dismiss:nil];
 }
 
 - (void)messageButtonPressed:(id)sender {
-  [self delegate]->MessageInfoBarButtonPressed();
+  // The delegate may be NULL if the infobar was closed.
+  TranslateInfoBarDelegate* delegate = [self delegate];
+  if (delegate)
+    delegate->MessageInfoBarButtonPressed();
 }
 
 - (IBAction)showOriginal:(id)sender {
-  [self delegate]->RevertTranslation();
+  // The delegate may be NULL if the infobar was closed.
+  TranslateInfoBarDelegate* delegate = [self delegate];
+  if (delegate)
+    delegate->RevertTranslation();
 }
 
 // Called when any of the language drop down menus are changed.
 - (void)languageMenuChanged:(id)item {
+  // The delegate may be NULL if the infobar was closed.
+  if (![self delegate])
+    return;
   if ([item respondsToSelector:@selector(tag)]) {
     int cmd = [item tag];
     if (cmd >= IDC_TRANSLATE_TARGET_LANGUAGE_BASE) {
@@ -556,6 +592,8 @@ InfoBar* TranslateInfoBarDelegate::CreateInfoBar(TabContentsWrapper* owner) {
 
 - (void)dealloc {
   [[NSNotificationCenter defaultCenter] removeObserver:self];
+  [showOriginalButton_ setTarget:nil];
+  [translateMessageButton_ setTarget:nil];
   [super dealloc];
 }
 

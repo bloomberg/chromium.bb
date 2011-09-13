@@ -78,6 +78,7 @@ const float kAnimateCloseDuration = 0.12;
     labelFrame.size.width += NSMinX(imageFrame) - NSMinX(labelFrame);
     labelFrame.origin.x = imageFrame.origin.x;
     [image_ removeFromSuperview];
+    image_ = nil;
     [labelPlaceholder_ setFrame:labelFrame];
   }
   [self initializeLabel];
@@ -86,6 +87,13 @@ const float kAnimateCloseDuration = 0.12;
 
   infoBarView_.tipApex = [self pointForTipApex];
   [infoBarView_ setInfobarType:delegate_->GetInfoBarType()];
+}
+
+- (void)dealloc {
+  [okButton_ setTarget:nil];
+  [cancelButton_ setTarget:nil];
+  [closeButton_ setTarget:nil];
+  [super dealloc];
 }
 
 // Called when someone clicks on the embedded link.
@@ -176,7 +184,9 @@ const float kAnimateCloseDuration = 0.12;
   NSRect labelFrame = [label_.get() frame];
   labelFrame.size.width = NSMaxX([cancelButton_ frame]) - NSMinX(labelFrame);
   [okButton_ removeFromSuperview];
+  okButton_ = nil;
   [cancelButton_ removeFromSuperview];
+  cancelButton_ = nil;
   [label_.get() setFrame:labelFrame];
 }
 
@@ -359,6 +369,7 @@ const float kAnimateCloseDuration = 0.12;
     rightEdge = NSMinX(okButtonFrame);
   } else {
     [okButton_ removeFromSuperview];
+    okButton_ = nil;
   }
 
   // Update and position the Cancel button if needed.  Otherwise, hide it.
@@ -381,6 +392,7 @@ const float kAnimateCloseDuration = 0.12;
     rightEdge = NSMinX(cancelButtonFrame);
   } else {
     [cancelButton_ removeFromSuperview];
+    cancelButton_ = nil;
   }
 
   // If we had either button, leave space before the edge of the textfield.

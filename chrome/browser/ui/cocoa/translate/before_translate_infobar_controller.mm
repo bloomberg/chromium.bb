@@ -30,6 +30,12 @@ NSButton* CreateNSButtonWithResourceIDAndParameter(
 
 @implementation BeforeTranslateInfobarController
 
+- (void)dealloc {
+  [neverTranslateButton_ setTarget:nil];
+  [alwaysTranslateButton_ setTarget:nil];
+  [super dealloc];
+}
+
 - (id) initWithDelegate:(InfoBarDelegate *)delegate
                   owner:(TabContentsWrapper*)owner {
   if ((self = [super initWithDelegate:delegate owner:owner])) {
@@ -100,12 +106,16 @@ NSButton* CreateNSButtonWithResourceIDAndParameter(
 
 // This is called when the "Never Translate [language]" button is pressed.
 - (void)neverTranslate:(id)sender {
-  [self delegate]->NeverTranslatePageLanguage();
+  TranslateInfoBarDelegate* delegate = [self delegate];
+  if (delegate)
+    [self delegate]->NeverTranslatePageLanguage();
 }
 
 // This is called when the "Always Translate [language]" button is pressed.
 - (void)alwaysTranslate:(id)sender {
-  [self delegate]->AlwaysTranslatePageLanguage();
+  TranslateInfoBarDelegate* delegate = [self delegate];
+  if (delegate)
+    delegate->AlwaysTranslatePageLanguage();
 }
 
 - (bool)verifyLayout {
