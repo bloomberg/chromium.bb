@@ -5020,7 +5020,7 @@
    fun:_ZNK23RenderWidgetHostViewGtk15GetNativeViewIdEv
 }
 {
-   bug_96402b
+   bug_96402
    Memcheck:Leak
    fun:malloc
    fun:g_malloc
@@ -5043,6 +5043,22 @@
    fun:g_signal_emit
    fun:gtk_widget_realize
    fun:gtk_widget_set_parent
+}
+{
+   bug_96407
+   Memcheck:Leak
+   fun:malloc
+   fun:g_malloc
+   fun:g_slice_alloc
+   fun:g_slice_alloc0
+   fun:g_type_create_instance
+   fun:g_object_constructor
+   fun:g_object_newv
+   fun:g_object_new
+   fun:_gdk_window_impl_new
+   fun:gdk_window_ensure_native
+   fun:gdk_x11_drawable_get_xid
+   fun:_ZN19TestWebViewDelegate20CreatePluginDelegateERK8FilePathRKSs
 }
 
 #-----------------------------------------------------------------------
