@@ -8,6 +8,7 @@
 
 #include "gestures/include/gestures.h"
 #include "gestures/include/interpreter.h"
+#include "gestures/include/logging.h"
 
 namespace gestures {
 
@@ -18,11 +19,18 @@ ScalingFilterInterpreter::ScalingFilterInterpreter(Interpreter* next)
       tp_x_translate_(0.0),
       tp_y_translate_(0.0),
       screen_x_scale_(1.0),
-      screen_y_scale_(1.0) {
+      screen_y_scale_(1.0),
+      pressure_scale_(1.0),
+      pressure_translate_(0.0) {
   next_.reset(next);
 }
 
-ScalingFilterInterpreter::~ScalingFilterInterpreter() {}
+ScalingFilterInterpreter::~ScalingFilterInterpreter() {
+  if (pressure_scale_prop_ != NULL)
+    Err("pressure_scale_prop_ not freed?");
+  if (pressure_translate_prop_ != NULL)
+    Err("pressure_translate_prop_ not freed?");
+}
 
 Gesture* ScalingFilterInterpreter::SyncInterpret(HardwareState* hwstate,
                                                  stime_t* timeout) {
@@ -46,6 +54,8 @@ void ScalingFilterInterpreter::ScaleHardwareState(HardwareState* hwstate) {
     hwstate->fingers[i].position_x += tp_x_translate_;
     hwstate->fingers[i].position_y *= tp_y_scale_;
     hwstate->fingers[i].position_y += tp_y_translate_;
+    hwstate->fingers[i].pressure *= pressure_scale_;
+    hwstate->fingers[i].pressure += pressure_translate_;
     // TODO(adlr): scale other fields
   }
 }
@@ -99,10 +109,22 @@ void ScalingFilterInterpreter::SetHardwareProperties(
 void ScalingFilterInterpreter::Configure(GesturesPropProvider* pp,
                                          void* data) {
   next_->Configure(pp, data);
+  pressure_scale_prop_ = pp->create_real_fn(data,
+                                            "Pressure Calibration Slope",
+                                            &pressure_scale_,
+                                            pressure_scale_);
+  pressure_translate_prop_ = pp->create_real_fn(data,
+                                                "Pressure Calibration Offset",
+                                                &pressure_translate_,
+                                                pressure_translate_);
 }
 
 void ScalingFilterInterpreter::Deconfigure(GesturesPropProvider* pp,
                                            void* data) {
+  pp->free_fn(data, pressure_scale_prop_);
+  pressure_scale_prop_ = NULL;
+  pp->free_fn(data, pressure_translate_prop_);
+  pressure_translate_prop_ = NULL;
   next_->Deconfigure(pp, data);
 }
 

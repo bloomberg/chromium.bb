@@ -238,8 +238,8 @@ TEST(ImmediateInterpreterTest, PalmTest) {
   };
   ii.SetHardwareProperties(hwprops);
 
-  const int kBig = 100;  // palm pressure
-  const int kSml = 1;  // small, low pressure
+  const int kBig = ii.palm_pressure_ + 1;  // big (palm) pressure
+  const int kSml = ii.palm_pressure_ - 1;  // low pressure
 
   FingerState finger_states[] = {
     // TM, Tm, WM, Wm, Press, Orientation, X, Y, TrID

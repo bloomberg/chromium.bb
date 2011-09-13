@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <base/scoped_ptr.h>
+#include <gtest/gtest.h>  // for FRIEND_TEST
 
 #include "gestures/include/gestures.h"
 #include "gestures/include/interpreter.h"
@@ -33,7 +34,12 @@ namespace gestures {
 // Outgoing gesture objects will be scaled in transit to what the screen
 // actually uses.
 
+// The pressure is converted (based on properties) to surface area in square
+// mm. The two properties allow a configuration file to specify a linear
+// relationship between pressure and surface area.
+
 class ScalingFilterInterpreter : public Interpreter {
+  FRIEND_TEST(ScalingFilterInterpreterTest, SimpleTest);
  public:
   // Takes ownership of |next|:
   explicit ScalingFilterInterpreter(Interpreter* next);
@@ -60,6 +66,13 @@ class ScalingFilterInterpreter : public Interpreter {
   float tp_x_translate_, tp_y_translate_;
 
   float screen_x_scale_, screen_y_scale_;
+
+  // Output surface area (sq. mm) =
+  // input pressure * pressure_scale_ + pressure_translate_;
+  double pressure_scale_;
+  GesturesProp* pressure_scale_prop_;
+  double pressure_translate_;
+  GesturesProp* pressure_translate_prop_;
 };
 
 }  // namespace gestures
