@@ -787,6 +787,9 @@
             'ext/SkFontHost_fontconfig.cpp',
             'ext/SkFontHost_fontconfig_direct.cpp',
           ],
+          'defines': [
+            'SK_MAX_SIZE_FOR_LCDTEXT=256',
+          ],
         }],
         [ 'OS == "mac"', {
           'defines': [
