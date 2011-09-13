@@ -387,10 +387,6 @@ class SyncBackendHost {
         const WeakHandle<JsBackend>& js_backend,
         bool success);
 
-    // Let the front end handle the actionable error event.
-    void HandleActionableErrorEventOnFrontendLoop(
-        const browser_sync::SyncProtocolError& sync_error);
-
    private:
     friend class base::RefCountedThreadSafe<SyncBackendHost::Core>;
     friend class SyncBackendHostForProfileSyncTest;
@@ -410,6 +406,10 @@ class SyncBackendHost {
     // off as soon as the SyncManager tells us it completed
     // initialization.
     void SaveChanges();
+
+    // Let the front end handle the actionable error event.
+    void HandleActionableErrorEventOnFrontendLoop(
+        const browser_sync::SyncProtocolError& sync_error);
 
     // Dispatched to from OnAuthError to handle updating frontend UI
     // components.
@@ -472,7 +472,6 @@ class SyncBackendHost {
 
   // Called to finish the job of ConfigureDataTypes once the syncer is in
   // configuration mode.
-  void FinishConfigureDataTypes();
   void FinishConfigureDataTypesOnFrontendLoop();
 
   // Allows tests to perform alternate core initialization work.
