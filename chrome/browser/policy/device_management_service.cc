@@ -12,6 +12,7 @@
 #include "net/base/cookie_monster.h"
 #include "net/base/host_resolver.h"
 #include "net/base/load_flags.h"
+#include "net/base/net_errors.h"
 #include "net/base/ssl_config_service_defaults.h"
 #include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_network_layer.h"
@@ -136,7 +137,7 @@ void DeviceManagementService::Initialize() {
   initialized_ = true;
 
   while (!queued_jobs_.empty()) {
-    StartJob(queued_jobs_.front());
+    StartJob(queued_jobs_.front(), false);
     queued_jobs_.pop_front();
   }
 }
@@ -160,7 +161,7 @@ DeviceManagementService::DeviceManagementService(
 
 void DeviceManagementService::AddJob(DeviceManagementJob* job) {
   if (initialized_)
-    StartJob(job);
+    StartJob(job, false);
   else
     queued_jobs_.push_back(job);
 }
@@ -182,12 +183,14 @@ void DeviceManagementService::RemoveJob(DeviceManagementJob* job) {
     queued_jobs_.erase(elem);
 }
 
-void DeviceManagementService::StartJob(DeviceManagementJob* job) {
+void DeviceManagementService::StartJob(DeviceManagementJob* job,
+                                       bool bypass_proxy) {
   URLFetcher* fetcher = URLFetcher::Create(0, job->GetURL(server_url_),
                                            URLFetcher::POST, this);
   fetcher->set_load_flags(net::LOAD_DO_NOT_SEND_COOKIES |
                           net::LOAD_DO_NOT_SAVE_COOKIES |
-                          net::LOAD_DISABLE_CACHE);
+                          net::LOAD_DISABLE_CACHE |
+                          (bypass_proxy ? net::LOAD_BYPASS_PROXY : 0));
   fetcher->set_request_context(request_context_getter_.get());
   job->ConfigureRequest(fetcher);
   pending_jobs_[fetcher] = job;
@@ -205,7 +208,27 @@ void DeviceManagementService::OnURLFetchComplete(
   if (entry != pending_jobs_.end()) {
     DeviceManagementJob* job = entry->second;
     pending_jobs_.erase(entry);
-    job->HandleResponse(status, response_code, cookies, data);
+
+    // Retry the job if it failed due to a broken proxy, by bypassing the
+    // proxy on the next try. Don't retry if this URLFetcher already bypassed
+    // the proxy.
+    int error = status.error();
+    if (!status.is_success() &&
+        ((source->load_flags() & net::LOAD_BYPASS_PROXY) == 0) &&
+        (error == net::ERR_PROXY_CONNECTION_FAILED ||
+         error == net::ERR_TUNNEL_CONNECTION_FAILED ||
+         error == net::ERR_PROXY_AUTH_UNSUPPORTED ||
+         error == net::ERR_HTTPS_PROXY_TUNNEL_RESPONSE ||
+         error == net::ERR_MANDATORY_PROXY_CONFIGURATION_FAILED ||
+         error == net::ERR_PROXY_CERTIFICATE_INVALID ||
+         error == net::ERR_SOCKS_CONNECTION_FAILED ||
+         error == net::ERR_SOCKS_CONNECTION_HOST_UNREACHABLE)) {
+      LOG(WARNING) << "Proxy failed while contacting dmserver. Retrying "
+                   << "without using the proxy.";
+      StartJob(job, true);
+    } else {
+      job->HandleResponse(status, response_code, cookies, data);
+    }
   } else {
     NOTREACHED() << "Callback from foreign URL fetcher";
   }

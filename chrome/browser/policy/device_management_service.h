@@ -74,7 +74,7 @@ class DeviceManagementService : public URLFetcher::Delegate {
 
  protected:
   // Starts the given job.
-  virtual void StartJob(DeviceManagementJob* job);
+  virtual void StartJob(DeviceManagementJob* job, bool bypass_proxy);
 
  private:
   typedef std::map<const URLFetcher*, DeviceManagementJob*> JobFetcherMap;

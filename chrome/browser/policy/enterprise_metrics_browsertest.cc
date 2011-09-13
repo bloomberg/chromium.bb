@@ -91,7 +91,7 @@ class DeviceManagementBackendTestHelper {
                       const std::string& data) {
     net::ResponseCookies cookies;
     net::URLRequestStatus url_request_status(status, 0);
-    EXPECT_CALL(service_, StartJob(_))
+    EXPECT_CALL(service_, StartJob(_,_))
         .WillOnce(MockDeviceManagementServiceRespondToJob(
             url_request_status, response_code, cookies, data));
   }
