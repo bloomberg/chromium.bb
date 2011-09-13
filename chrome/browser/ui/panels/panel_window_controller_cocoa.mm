@@ -58,6 +58,14 @@ static BOOL g_reportAnimationStatus = NO;
   return self;
 }
 
+- (void)dealloc {
+  if (windowTrackingArea_.get()) {
+    [[[[self window] contentView] superview]
+        removeTrackingArea:windowTrackingArea_.get()];
+  }
+  [super dealloc];
+}
+
 - (ui::ThemeProvider*)themeProvider {
   return ThemeServiceFactory::GetForProfile(windowShim_->browser()->profile());
 }
@@ -99,6 +107,14 @@ static BOOL g_reportAnimationStatus = NO;
   // HTML content.
   [[window contentView] addSubview:[self tabContentsView]];
   [self enableTabContentsViewAutosizing];
+}
+
+- (void)mouseEntered:(NSEvent*)event {
+  [titlebar_view_ updateSettingsButtonVisibility:YES];
+}
+
+- (void)mouseExited:(NSEvent*)event {
+  [titlebar_view_ updateSettingsButtonVisibility:NO];
 }
 
 - (void)disableTabContentsViewAutosizing {
@@ -304,6 +320,21 @@ static BOOL g_reportAnimationStatus = NO;
 }
 
 - (void)setPanelFrame:(NSRect)frame {
+  // Setup the whole window as the tracking area so that we can get notified
+  // when the mouse enters or leaves the window. This will make us be able to
+  // show or hide settings button accordingly.
+  NSRect localBounds = frame;
+  localBounds.origin = NSZeroPoint;
+  windowTrackingArea_.reset(
+      [[CrTrackingArea alloc] initWithRect:localBounds
+                                   options:(NSTrackingMouseEnteredAndExited |
+                                            NSTrackingActiveAlways)
+                              proxiedOwner:self
+                                  userInfo:nil]);
+  [windowTrackingArea_.get() clearOwnerWhenWindowWillClose:[self window]];
+  [[[[self window] contentView] superview]
+      addTrackingArea:windowTrackingArea_.get()];
+
   if (!animateOnBoundsChange_) {
     [[self window] setFrame:frame display:YES animate:NO];
     return;

@@ -17,6 +17,7 @@
 #import "base/memory/scoped_nsobject.h"
 #import "chrome/browser/ui/cocoa/browser_command_executor.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
+#import "chrome/browser/ui/cocoa/tracking_area.h"
 
 @class FindBarCocoaController;
 class PanelBrowserWindowCocoa;
@@ -33,6 +34,7 @@ class PanelBrowserWindowCocoa;
   NSViewAnimation* boundsAnimation_;  // Lifetime controlled manually, needs
                                       // more then just |release| to terminate.
   BOOL animateOnBoundsChange_;
+  ScopedCrTrackingArea windowTrackingArea_;
 }
 
 // Load the browser window nib and do any Cocoa-specific initialization.

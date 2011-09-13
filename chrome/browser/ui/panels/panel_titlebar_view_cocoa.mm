@@ -121,6 +121,7 @@ static NSEvent* MakeMouseEvent(NSEventType type, NSPoint point) {
   [settingsButton_ setPressedImage:image];
   [settingsButton_ setPressedOpacity:1.0];
   [[settingsButton_ cell] setHighlightsBy:NSNoCellMask];
+  [self checkMouseAndUpdateSettingsButtonVisibility];
 
   // Update layout of controls in the titlebar.
   [self updateCloseButtonLayout];
@@ -198,6 +199,7 @@ static NSEvent* MakeMouseEvent(NSEventType type, NSPoint point) {
 
 - (void)didChangeMainWindow:(NSNotification*)notification {
   [self setNeedsDisplay:YES];
+  [self checkMouseAndUpdateSettingsButtonVisibility];
 }
 
 - (void)mouseDown:(NSEvent*)event {
@@ -303,6 +305,19 @@ static NSEvent* MakeMouseEvent(NSEventType type, NSPoint point) {
 
 - (void)finishDragTitlebar {
   [self endDrag:NO];
+}
+
+- (void)updateSettingsButtonVisibility:(BOOL)mouseOverWindow {
+  // The settings button is visible if the panel is main window or the mouse is
+  // over it.
+  BOOL isMainWindow = [[self window] isMainWindow];
+  [settingsButton_ setHidden:!(isMainWindow || mouseOverWindow)];
+}
+
+- (void)checkMouseAndUpdateSettingsButtonVisibility {
+  BOOL mouseOverWindow = NSPointInRect([NSEvent mouseLocation],
+                                       [[controller_ window] frame]);
+  [self updateSettingsButtonVisibility:mouseOverWindow];
 }
 
 @end

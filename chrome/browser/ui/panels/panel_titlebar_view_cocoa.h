@@ -70,6 +70,9 @@ enum PanelDragState {
 - (void)endDrag:(BOOL)cancelled;
 - (void)dragWithDeltaX:(int)deltaX;
 
+  // Update the visibility of settings button.
+- (void)updateSettingsButtonVisibility:(BOOL)mouseOverWindow;
+- (void)checkMouseAndUpdateSettingsButtonVisibility;
 @end  // @interface PanelTitlebarView
 
 // Methods which are either only for testing, or only public for testing.
