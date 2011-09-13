@@ -102,6 +102,7 @@ class ChromeRenderViewObserver : public RenderViewObserver,
       bool allowed_per_settings,
       const WebKit::WebSecurityOrigin& context,
       const WebKit::WebURL& url) OVERRIDE;
+  virtual void Navigate(const GURL& url) OVERRIDE;
 
   void OnWebUIJavaScript(const string16& frame_xpath,
                          const string16& jscript,
@@ -113,7 +114,6 @@ class ChromeRenderViewObserver : public RenderViewObserver,
                                        const std::string& target);
   void OnJavaScriptStressTestControl(int cmd, int param);
   void OnDownloadFavicon(int id, const GURL& image_url, int image_size);
-  void OnNavigate(const ViewMsg_Navigate_Params& params);
   void OnSetIsPrerendering(bool is_prerendering);
   void OnSetAllowDisplayingInsecureContent(bool allow);
   void OnSetAllowRunningInsecureContent(bool allow);

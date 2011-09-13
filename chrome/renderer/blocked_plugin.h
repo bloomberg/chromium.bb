@@ -48,11 +48,8 @@ class BlockedPlugin : public RenderViewObserver,
   virtual ~BlockedPlugin();
 
   // RenderViewObserver methods:
-  virtual bool OnMessageReceived(const IPC::Message& message);
-
-  void OnMenuItemSelected(
-      const webkit_glue::CustomContextMenuContext& /* ignored */,
-      unsigned id);
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual void ContextMenuAction(unsigned id) OVERRIDE;
 
   void OnLoadBlockedPlugins();
   void OnSetIsPrerendering(bool is_prerendering);

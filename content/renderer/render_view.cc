@@ -751,6 +751,8 @@ void RenderView::OnNavigate(const ViewMsg_Navigate_Params& params) {
   if (!webview())
     return;
 
+  FOR_EACH_OBSERVER(RenderViewObserver, observers_, Navigate(params.url));
+
   bool is_reload =
       params.navigation_type == ViewMsg_Navigate_Type::RELOAD ||
       params.navigation_type == ViewMsg_Navigate_Type::RELOAD_IGNORING_CACHE;
@@ -3634,6 +3636,8 @@ void RenderView::OnCustomContextMenuAction(
     pepper_delegate_.OnCustomContextMenuAction(custom_context, action);
   else
     webview()->performCustomContextMenuAction(action);
+  FOR_EACH_OBSERVER(RenderViewObserver, observers_,
+                    ContextMenuAction(action));
 }
 
 void RenderView::OnEnumerateDirectoryResponse(

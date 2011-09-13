@@ -148,7 +148,6 @@ bool BlockedPlugin::OnMessageReceived(const IPC::Message& message) {
   // ViewMsg_LoadBlockedPlugins because multiple blocked plugins have an
   // interest in it.
   IPC_BEGIN_MESSAGE_MAP(BlockedPlugin, message)
-    IPC_MESSAGE_HANDLER(ViewMsg_CustomContextMenuAction, OnMenuItemSelected)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_LoadBlockedPlugins, OnLoadBlockedPlugins)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SetIsPrerendering, OnSetIsPrerendering)
   IPC_END_MESSAGE_MAP()
@@ -156,9 +155,7 @@ bool BlockedPlugin::OnMessageReceived(const IPC::Message& message) {
   return false;
 }
 
-void BlockedPlugin::OnMenuItemSelected(
-    const webkit_glue::CustomContextMenuContext& /* ignored */,
-    unsigned id) {
+void BlockedPlugin::ContextMenuAction(unsigned id) {
   if (g_last_active_menu != this)
     return;
   if (id == kMenuActionLoad) {

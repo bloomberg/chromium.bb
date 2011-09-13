@@ -69,6 +69,8 @@ class RenderViewObserver : public IPC::Channel::Listener,
 
   virtual void WillCreateMediaPlayer(WebKit::WebFrame* frame,
                                      WebKit::WebMediaPlayerClient* client) {}
+  virtual void ContextMenuAction(unsigned id) {}
+  virtual void Navigate(const GURL& url) {}
 
  protected:
   explicit RenderViewObserver(RenderView* render_view);

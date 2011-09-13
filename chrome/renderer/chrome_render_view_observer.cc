@@ -248,7 +248,6 @@ bool ChromeRenderViewObserver::OnMessageReceived(const IPC::Message& message) {
 
   // Filter only.
   IPC_BEGIN_MESSAGE_MAP(ChromeRenderViewObserver, message)
-    IPC_MESSAGE_HANDLER(ViewMsg_Navigate, OnNavigate)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SetIsPrerendering, OnSetIsPrerendering);
   IPC_END_MESSAGE_MAP()
 
@@ -334,6 +333,10 @@ void ChromeRenderViewObserver::OnSetAllowDisplayingInsecureContent(bool allow) {
 void ChromeRenderViewObserver::OnSetAllowRunningInsecureContent(bool allow) {
   allow_running_insecure_content_ = allow;
   OnSetAllowDisplayingInsecureContent(allow);
+}
+
+void ChromeRenderViewObserver::Navigate(const GURL& url) {
+  AboutHandler::MaybeHandle(url);
 }
 
 void ChromeRenderViewObserver::OnSetClientSidePhishingDetection(
@@ -611,11 +614,6 @@ void ChromeRenderViewObserver::didNotAllowPlugins(WebFrame* frame) {
 
 void ChromeRenderViewObserver::didNotAllowScript(WebFrame* frame) {
   content_settings_->DidNotAllowScript(frame);
-}
-
-void ChromeRenderViewObserver::OnNavigate(
-    const ViewMsg_Navigate_Params& params) {
-  AboutHandler::MaybeHandle(params.url);
 }
 
 void ChromeRenderViewObserver::OnSetIsPrerendering(bool is_prerendering) {
