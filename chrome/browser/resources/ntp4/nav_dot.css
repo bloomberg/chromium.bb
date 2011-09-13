@@ -18,6 +18,10 @@
   -webkit-box-pack: center;
 }
 
+html.starting-up #dot-list {
+  display: none;
+}
+
 .dot {
   box-sizing: border-box;
   cursor: pointer;

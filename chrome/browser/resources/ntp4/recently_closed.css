@@ -20,7 +20,7 @@
 }
 
 /* Reserve space for the menu button even when it's hidden. */
-#recently-closed-menu-button[hidden],
+#recently-closed-menu-button.invisible,
 #footer.showing-trash-mode #recently-closed-menu-button {
   visibility: hidden;
 }
