@@ -25,33 +25,6 @@ NativeTabContentsViewViews::~NativeTabContentsViewViews() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// NativeTabContentsViewViews, NativeWidgetViews implementation:
-void NativeTabContentsViewViews::OnBoundsChanged(
-    const gfx::Rect& new_bounds, const gfx::Rect& old_bounds) {
-  // TODO(oshima): Find out if we need to adjust constrained window.
-  delegate_->OnNativeTabContentsViewSized(new_bounds.size());
-  views::NativeWidgetViews::OnBoundsChanged(new_bounds, old_bounds);
-}
-
-bool NativeTabContentsViewViews::OnMouseEvent(const views::MouseEvent& event) {
-  if (!delegate_->IsShowingSadTab()) {
-    switch (event.type()) {
-      case ui::ET_MOUSE_EXITED:
-        delegate_->OnNativeTabContentsViewMouseMove(false);
-        break;
-      case ui::ET_MOUSE_MOVED:
-        delegate_->OnNativeTabContentsViewMouseMove(true);
-        break;
-      default:
-        // TODO(oshima): mouse wheel
-        break;
-    }
-  }
-  // Pass all mouse event to renderer.
-  return views::NativeWidgetViews::OnMouseEvent(event);
-}
-
-////////////////////////////////////////////////////////////////////////////////
 // NativeTabContentsViewViews, NativeTabContentsView implementation:
 
 void NativeTabContentsViewViews::InitNativeTabContentsView() {
@@ -115,11 +88,3 @@ void NativeTabContentsViewViews::SetDragCursor(
 views::NativeWidget* NativeTabContentsViewViews::AsNativeWidget() {
   return this;
 }
-
-#if defined(TOUCH_UI)
-// static
-NativeTabContentsView* NativeTabContentsView::CreateNativeTabContentsView(
-    internal::NativeTabContentsViewDelegate* delegate) {
-  return new NativeTabContentsViewViews(delegate);
-}
-#endif

@@ -11,10 +11,6 @@
 
 class TabContents;
 
-namespace views {
-class MouseEvent;
-}
-
 class NativeTabContentsViewViews : public views::NativeWidgetViews,
                                    public NativeTabContentsView {
  public:
@@ -23,11 +19,6 @@ class NativeTabContentsViewViews : public views::NativeWidgetViews,
   virtual ~NativeTabContentsViewViews();
 
  private:
-  // Overridden from NativeWidgetViews:
-  virtual void OnBoundsChanged(const gfx::Rect& new_bounds,
-                               const gfx::Rect& old_bounds) OVERRIDE;
-  virtual bool OnMouseEvent(const views::MouseEvent& event) OVERRIDE;
-
   // Overridden from NativeTabContentsView:
   virtual void InitNativeTabContentsView() OVERRIDE;
   virtual void Unparent() OVERRIDE;

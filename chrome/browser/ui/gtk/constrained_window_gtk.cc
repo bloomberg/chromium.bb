@@ -13,7 +13,7 @@
 #include "ui/base/gtk/gtk_hig_constants.h"
 
 #if defined(TOUCH_UI)
-#include "chrome/browser/ui/views/tab_contents/tab_contents_view_views.h"
+#include "chrome/browser/ui/views/tab_contents/tab_contents_view_touch.h"
 #elif defined(TOOLKIT_VIEWS)
 #include "chrome/browser/ui/views/tab_contents/native_tab_contents_view_gtk.h"
 #include "chrome/browser/ui/views/tab_contents/tab_contents_view_views.h"

@@ -266,7 +266,6 @@ class VIEWS_EXPORT NativeWidgetWin : public ui::WindowImpl,
   virtual void FocusNativeView(gfx::NativeView native_view) OVERRIDE;
   virtual bool ConvertPointFromAncestor(
       const Widget* ancestor, gfx::Point* point) const OVERRIDE;
-  virtual gfx::Rect GetWorkAreaBoundsInScreen() const OVERRIDE;
 
  protected:
   // Information saved before going into fullscreen mode, used to restore the

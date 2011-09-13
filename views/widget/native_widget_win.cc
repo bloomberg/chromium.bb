@@ -1092,10 +1092,6 @@ bool NativeWidgetWin::ConvertPointFromAncestor(
   return false;
 }
 
-gfx::Rect NativeWidgetWin::GetWorkAreaBoundsInScreen() const {
-  return gfx::Screen::GetMonitorWorkAreaNearestWindow(GetNativeView());
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // NativeWidgetWin, MessageLoop::Observer implementation:
 

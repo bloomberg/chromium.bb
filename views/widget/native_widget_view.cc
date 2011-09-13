@@ -5,6 +5,10 @@
 #include "views/widget/native_widget_view.h"
 
 #include "ui/gfx/canvas.h"
+#if defined(OS_LINUX)
+#include "views/window/hit_test.h"
+#endif
+#include "views/widget/window_manager.h"
 
 namespace views {
 namespace internal {
@@ -63,7 +67,7 @@ void NativeWidgetView::ViewHierarchyChanged(bool is_add,
 }
 
 void NativeWidgetView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
-  native_widget_->OnBoundsChanged(bounds(), previous_bounds);
+  delegate()->OnNativeWidgetSizeChanged(size());
 }
 
 void NativeWidgetView::OnPaint(gfx::Canvas* canvas) {
@@ -75,15 +79,46 @@ gfx::NativeCursor NativeWidgetView::GetCursor(const MouseEvent& event) {
 }
 
 bool NativeWidgetView::OnMousePressed(const MouseEvent& event) {
-  return native_widget_->OnMouseEvent(event);
+  Widget* hosting_widget = GetAssociatedWidget();
+  if (hosting_widget->non_client_view()) {
+    int hittest_code = hosting_widget->non_client_view()->NonClientHitTest(
+        event.location());
+    switch (hittest_code) {
+      case HTCAPTION: {
+        if (!event.IsOnlyRightMouseButton()) {
+          WindowManager::Get()->StartMoveDrag(hosting_widget, event.location());
+          return true;
+        }
+        break;
+      }
+      case HTBOTTOM:
+      case HTBOTTOMLEFT:
+      case HTBOTTOMRIGHT:
+      case HTGROWBOX:
+      case HTLEFT:
+      case HTRIGHT:
+      case HTTOP:
+      case HTTOPLEFT:
+      case HTTOPRIGHT: {
+        WindowManager::Get()->StartResizeDrag(
+            hosting_widget, event.location(), hittest_code);
+        return true;
+      }
+      default:
+        // Everything else falls into standard client event handling...
+        break;
+    }
+  }
+
+  return delegate()->OnMouseEvent(event);
 }
 
 bool NativeWidgetView::OnMouseDragged(const MouseEvent& event) {
-  return native_widget_->OnMouseEvent(event);
+  return delegate()->OnMouseEvent(event);
 }
 
 void NativeWidgetView::OnMouseReleased(const MouseEvent& event) {
-  native_widget_->OnMouseEvent(event);
+  delegate()->OnMouseEvent(event);
 }
 
 void NativeWidgetView::OnMouseCaptureLost() {
@@ -91,15 +126,15 @@ void NativeWidgetView::OnMouseCaptureLost() {
 }
 
 void NativeWidgetView::OnMouseMoved(const MouseEvent& event) {
-  native_widget_->OnMouseEvent(event);
+  delegate()->OnMouseEvent(event);
 }
 
 void NativeWidgetView::OnMouseEntered(const MouseEvent& event) {
-  native_widget_->OnMouseEvent(event);
+  delegate()->OnMouseEvent(event);
 }
 
 void NativeWidgetView::OnMouseExited(const MouseEvent& event) {
-  native_widget_->OnMouseEvent(event);
+  delegate()->OnMouseEvent(event);
 }
 
 ui::TouchStatus NativeWidgetView::OnTouchEvent(const TouchEvent& event) {
@@ -115,7 +150,7 @@ bool NativeWidgetView::OnKeyReleased(const KeyEvent& event) {
 }
 
 bool NativeWidgetView::OnMouseWheel(const MouseWheelEvent& event) {
-  return native_widget_->OnMouseEvent(event);
+  return delegate()->OnMouseEvent(event);
 }
 
 void NativeWidgetView::VisibilityChanged(View* starting_from,
