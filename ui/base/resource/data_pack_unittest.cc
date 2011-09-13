@@ -12,6 +12,12 @@
 
 namespace ui {
 
+class DataPackTest
+    : public testing::TestWithParam<DataPack::TextEncodingType> {
+ public:
+  DataPackTest() {}
+};
+
 extern const char kSamplePakContents[];
 extern const size_t kSamplePakSize;
 
@@ -44,6 +50,13 @@ TEST(DataPackTest, Load) {
   ASSERT_FALSE(pack.GetStringPiece(140, &data));
 }
 
+INSTANTIATE_TEST_CASE_P(WriteBINARY, DataPackTest, ::testing::Values(
+    DataPack::BINARY));
+INSTANTIATE_TEST_CASE_P(WriteUTF8, DataPackTest, ::testing::Values(
+    DataPack::UTF8));
+INSTANTIATE_TEST_CASE_P(WriteUTF16, DataPackTest, ::testing::Values(
+    DataPack::UTF16));
+
 TEST(DataPackTest, LoadFileWithTruncatedHeader) {
   FilePath data_path;
   PathService::Get(base::DIR_SOURCE_ROOT, &data_path);
@@ -54,7 +67,7 @@ TEST(DataPackTest, LoadFileWithTruncatedHeader) {
   ASSERT_FALSE(pack.Load(data_path));
 }
 
-TEST(DataPackTest, Write) {
+TEST_P(DataPackTest, Write) {
   ScopedTempDir dir;
   ASSERT_TRUE(dir.CreateUniqueTempDir());
   FilePath file = dir.path().Append(FILE_PATH_LITERAL("data.pak"));
@@ -71,11 +84,12 @@ TEST(DataPackTest, Write) {
   resources.insert(std::make_pair(15, base::StringPiece(fifteen)));
   resources.insert(std::make_pair(3, base::StringPiece(three)));
   resources.insert(std::make_pair(4, base::StringPiece(four)));
-  ASSERT_TRUE(DataPack::WritePack(file, resources));
+  ASSERT_TRUE(DataPack::WritePack(file, resources, GetParam()));
 
   // Now try to read the data back in.
   DataPack pack;
   ASSERT_TRUE(pack.Load(file));
+  EXPECT_EQ(pack.GetTextEncodingType(), GetParam());
 
   base::StringPiece data;
   ASSERT_TRUE(pack.GetStringPiece(1, &data));
