@@ -304,3 +304,6 @@ AutomatedUITestBase.OpenCloseBrowserWindowWithAccelerator
 # http://crbug.com/92177
 CustomHandlerMailStartupTest.CustomHandlerMailStartup
 CustomHandlerWebcalStartupTest.CustomHandlerWebcalStartup
+
+# http://crbug.com/96413
+OptionsUITest.LoadOptionsByURL
