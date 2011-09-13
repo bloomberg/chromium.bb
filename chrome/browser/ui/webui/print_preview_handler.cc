@@ -663,8 +663,8 @@ void PrintPreviewHandler::HandlePrintToPdf(
                          GetPageCountFromSettingsDictionary(settings));
 
     // Pre-populating select file dialog with print job title.
-    string16 print_job_title_utf16 =
-        preview_tab_wrapper()->print_view_manager()->RenderSourceName();
+    PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(web_ui_);
+    string16 print_job_title_utf16 = print_preview_ui->initiator_tab_title();
 
 #if defined(OS_WIN)
     FilePath::StringType print_job_title(print_job_title_utf16);
@@ -804,7 +804,8 @@ void PrintPreviewHandler::ReportStats() {
 void PrintPreviewHandler::HandleGetInitiatorTabTitle(
     const ListValue* /*args*/) {
   PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(web_ui_);
-  print_preview_ui->SendInitiatorTabTitle();
+  base::StringValue tab_title(print_preview_ui->initiator_tab_title());
+  web_ui_->CallJavascriptFunction("setInitiatorTabTitle", tab_title);
 }
 
 void PrintPreviewHandler::ActivateInitiatorTabAndClosePreviewTab() {

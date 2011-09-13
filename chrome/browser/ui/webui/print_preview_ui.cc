@@ -116,11 +116,6 @@ void PrintPreviewUI::SetInitiatorTabURLAndTitle(
   initiator_tab_title_ = job_title;
 }
 
-void PrintPreviewUI::SendInitiatorTabTitle() {
-  base::StringValue tab_title(initiator_tab_title_);
-  CallJavascriptFunction("setInitiatorTabTitle", tab_title);
-}
-
 // static
 void PrintPreviewUI::GetCurrentPrintPreviewStatus(
     const std::string& preview_ui_addr,

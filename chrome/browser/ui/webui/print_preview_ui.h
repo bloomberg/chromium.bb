@@ -48,8 +48,7 @@ class PrintPreviewUI : public ChromeWebUI {
   void SetInitiatorTabURLAndTitle(const std::string& initiator_url,
                                   const string16& initiator_tab_title);
 
-  // Notify the Web UI about the initiator tab title.
-  void SendInitiatorTabTitle();
+  string16 initiator_tab_title() { return initiator_tab_title_; }
 
   // Determines whether to cancel a print preview request based on
   // |preview_ui_addr| and |request_id|.
