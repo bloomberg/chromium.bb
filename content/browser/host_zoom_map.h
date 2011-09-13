@@ -20,16 +20,21 @@
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 
+namespace base {
+class DictionaryValue;
+}
+
 class GURL;
 
 // HostZoomMap needs to be deleted on the UI thread because it listens
 // to notifications on there (and holds a NotificationRegistrar).
-class HostZoomMap :
-    public NotificationObserver,
-    public base::RefCountedThreadSafe<HostZoomMap,
-                                      BrowserThread::DeleteOnUIThread> {
+class HostZoomMap
+    : public NotificationObserver,
+      public base::RefCountedThreadSafe<HostZoomMap,
+                                        BrowserThread::DeleteOnUIThread> {
  public:
-  HostZoomMap();
+  explicit HostZoomMap();
+  explicit HostZoomMap(HostZoomMap* original);
 
   // Returns the zoom level for the host or spec for a given url. The zoom
   // level is determined by the host portion of the URL, or (in the absence of
@@ -72,6 +77,8 @@ class HostZoomMap :
   double default_zoom_level() const { return default_zoom_level_; }
   void set_default_zoom_level(double level) { default_zoom_level_ = level; }
 
+  HostZoomMap* GetOriginal() const { return original_; }
+
  private:
   friend struct BrowserThread::DeleteOnThread<BrowserThread::UI>;
   friend class DeleteTask<HostZoomMap>;
@@ -79,10 +86,14 @@ class HostZoomMap :
   typedef std::map<std::string, double> HostZoomLevels;
 
   virtual ~HostZoomMap();
+  void Init();
 
   // Copy of the pref data, so that we can read it on the IO thread.
   HostZoomLevels host_zoom_levels_;
   double default_zoom_level_;
+
+  // Original HostZoomMap passed in constructor or itself.
+  HostZoomMap* original_;
 
   struct TemporaryZoomLevel {
     int render_process_id;

@@ -1310,8 +1310,8 @@ void RenderViewHost::OnDidZoomURL(double zoom_level,
     for (RenderProcessHost::iterator i(RenderProcessHost::AllHostsIterator());
          !i.IsAtEnd(); i.Advance()) {
       RenderProcessHost* render_process_host = i.GetCurrentValue();
-      if (render_process_host->browser_context() ==
-          process()->browser_context()) {
+      if (render_process_host->browser_context()->GetHostZoomMap()->
+          GetOriginal() == host_zoom_map) {
         render_process_host->Send(
             new ViewMsg_SetZoomLevelForCurrentURL(url, zoom_level));
       }

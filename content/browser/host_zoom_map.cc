@@ -8,6 +8,7 @@
 
 #include "base/string_piece.h"
 #include "base/utf_string_conversions.h"
+#include "base/values.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
@@ -18,7 +19,25 @@
 
 using WebKit::WebView;
 
-HostZoomMap::HostZoomMap() : default_zoom_level_(0.0) {
+HostZoomMap::HostZoomMap()
+    : default_zoom_level_(0.0),
+      original_(this) {
+  Init();
+}
+
+HostZoomMap::HostZoomMap(HostZoomMap* original)
+    : default_zoom_level_(0.0),
+      original_(original) {
+  DCHECK(original);
+  Init();
+  base::AutoLock auto_lock(original->lock_);
+  for (HostZoomLevels::const_iterator i(original->host_zoom_levels_.begin());
+       i != original->host_zoom_levels_.end(); ++i) {
+    host_zoom_levels_[i->first] = i->second;
+  }
+}
+
+void HostZoomMap::Init() {
   registrar_.Add(
       this, content::NOTIFICATION_RENDER_VIEW_HOST_WILL_CLOSE_RENDER_VIEW,
       NotificationService::AllSources());
@@ -93,7 +112,6 @@ void HostZoomMap::SetTemporaryZoomLevel(int render_process_id,
       content::NOTIFICATION_ZOOM_LEVEL_CHANGED,
       Source<HostZoomMap>(this),
       Details<const std::string>(&host));
-
 }
 
 void HostZoomMap::Observe(
