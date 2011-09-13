@@ -10,7 +10,9 @@
 #define PPP_GRAPHICS_3D_INTERFACE "PPP_Graphics_3D;1.0"
 
 struct PPP_Graphics3D {
-  // Called when the OpenGL ES window is invalidated and needs to be repainted.
+  /**
+   * Called when the OpenGL ES window is invalidated and needs to be repainted.
+   */
   void (*Graphics3DContextLost)(PP_Instance instance);
 };
 

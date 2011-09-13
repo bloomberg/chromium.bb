@@ -23,12 +23,20 @@ template <> const char* interface_name<PPB_Graphics3D>() {
 Graphics3D::Graphics3D() {
 }
 
-Graphics3D::Graphics3D(const Instance& instance,
+Graphics3D::Graphics3D(const Instance* instance,
+                       const int32_t* attrib_list) {
+  if (has_interface<PPB_Graphics3D>()) {
+    PassRefFromConstructor(get_interface<PPB_Graphics3D>()->Create(
+        instance->pp_instance(), 0, attrib_list));
+  }
+}
+
+Graphics3D::Graphics3D(const Instance* instance,
                        const Graphics3D& share_context,
                        const int32_t* attrib_list) {
   if (has_interface<PPB_Graphics3D>()) {
     PassRefFromConstructor(get_interface<PPB_Graphics3D>()->Create(
-        instance.pp_instance(),
+        instance->pp_instance(),
         share_context.pp_resource(),
         attrib_list));
   }

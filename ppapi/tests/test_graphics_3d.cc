@@ -33,7 +33,7 @@ std::string TestGraphics3D::TestFrame() {
       PP_GRAPHICS3DATTRIB_HEIGHT, height,
       PP_GRAPHICS3DATTRIB_NONE
   };
-  pp::Graphics3D context(*instance_, pp::Graphics3D(), attribs);
+  pp::Graphics3D context(instance_, attribs);
   ASSERT_FALSE(context.is_null());
 
   // Clear color buffer to opaque red.
