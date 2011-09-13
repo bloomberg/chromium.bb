@@ -2826,6 +2826,8 @@
         'browser/ui/gtk/custom_button.h',
         'browser/ui/gtk/custom_drag.cc',
         'browser/ui/gtk/custom_drag.h',
+        'browser/ui/gtk/dialogs_common.cc',
+        'browser/ui/gtk/dialogs_common.h',
         'browser/ui/gtk/dialogs_gtk.cc',
         'browser/ui/gtk/download/download_in_progress_dialog_gtk.cc',
         'browser/ui/gtk/download/download_in_progress_dialog_gtk.h',
@@ -4775,6 +4777,8 @@
             ['OS=="linux" and toolkit_views==1 and chromeos==0', {
               'sources/': [
                 ['exclude', '^browser/extensions/extension_file_browser_private_api'],
+                ['include', '^browser/ui/gtk/dialogs_common.cc'],
+                ['include', '^browser/ui/gtk/dialogs_common.h'],
                 ['include', '^browser/ui/gtk/dialogs_gtk.cc'],
                 ['include', '^browser/ui/gtk/external_protocol_dialog_gtk.cc'],
                 ['include', '^browser/ui/gtk/external_protocol_dialog_gtk.h'],
@@ -4939,6 +4943,8 @@
         # File manager extension replaces the native OS file open/save dialog.
         ['file_manager_extension==1', {
           'sources/': [
+            ['exclude', '^browser/ui/gtk/dialogs_common.cc'],
+            ['exclude', '^browser/ui/gtk/dialogs_common.h'],
             ['exclude', '^browser/ui/gtk/dialogs_gtk.cc'],
             ['exclude', '^browser/ui/views/select_file_dialog.cc'],
             ['include', '^browser/ui/views/file_manager_dialog.cc'],
