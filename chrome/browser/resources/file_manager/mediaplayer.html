@@ -305,6 +305,8 @@ var hideVolumeTimerId = 0;
 var localStrings;
 var fullScreen = false;
 
+var userChangingProgressStatus = null;
+
 ///////////////////////////////////////////////////////////////////////////////
 // Document Functions:
 /**
@@ -339,11 +341,15 @@ function onMediaProgress() {
   var current = element.currentTime;
   var duration = element.duration;
   var progress = $('progress');
-  progress.value = (current*100)/duration;
   var played = $('sliderplayed');
-  played.style.width = '' + progress.value + '%';
-  if (progress.value == 100) {
-    onMediaComplete();
+  var value = (current * 100) / duration;
+  played.style.width = '' + value + '%';
+
+  if (!userChangingProgressStatus) {
+    progress.value = value;
+    if (value == 100) {
+      onMediaComplete();
+    }
   }
 }
 
@@ -395,6 +401,8 @@ function onMediaComplete() {
 }
 
 function onMediaPlay() {
+  if (userChangingProgressStatus)
+    return;
   var pausebutton = $('pausebutton');
   var playbutton = $('playbutton');
   pausebutton.style.display = 'block';
@@ -402,6 +410,8 @@ function onMediaPlay() {
 }
 
 function onMediaPause() {
+  if (userChangingProgressStatus)
+    return;
   var pausebutton = $('pausebutton');
   var playbutton = $('playbutton');
   playbutton.style.display = 'block';
@@ -432,6 +442,8 @@ function getMediaElement() {
 }
 
 function playPauseButtonClick() {
+  if (userChangingProgressStatus)
+    return;
   var mediaElement = getMediaElement();
   if (mediaElement.paused || mediaElement.ended) {
     mediaElement.play();
@@ -469,8 +481,31 @@ function userChangedProgress() {
   var val = $('progress').value;
   var element = getMediaElement();
   if (element.seekable && element.duration) {
-    var current = (progress.value * element.duration)/100;
+    var current = (val * element.duration) / 100;
     element.currentTime = current;
+  }
+}
+
+function userChangingProgressStarted() {
+  var mediaElement = getMediaElement();
+  userChangingProgressStatus = {
+    paused: mediaElement.paused
+  };
+
+  mediaElement.pause();
+}
+
+function userChangingProgressFinished() {
+  var mediaElement = getMediaElement();
+  var status = userChangingProgressStatus;
+  userChangingProgressStatus = null;
+  if ('pendingPlay' in status) {
+    playMediaFile(status.pendingPlay);
+  } else if (!status.paused) {
+    if (mediaElement.currentTime == mediaElement.duration)
+      onMediaComplete();
+    else
+      mediaElement.play();
   }
 }
 
@@ -559,7 +594,8 @@ HidingControlsAnimation.prototype = {
     },
 
     checkInactivity: function() {
-      if ((Date.now() - this.recentActivity) > INACTIVITY_TIMEOUT) {
+      if ((Date.now() - this.recentActivity) > INACTIVITY_TIMEOUT &&
+          !userChangingProgressStatus) {
         $('playercontrols').style.top = '100%';
       }
     }
@@ -633,6 +669,8 @@ function setupPlaybackControls() {
   slider.id = 'progress';
   slider.className = controlsclass + ' progress';
   slider.onchange = userChangedProgress;
+  slider.onmousedown = userChangingProgressStarted;
+  slider.onmouseup = userChangingProgressFinished;
   element.appendChild(slider);
 
   var sliderback = document.createElement('div');
@@ -808,6 +846,11 @@ function togglePlaylist() {
 }
 
 function playMediaFile(url) {
+  if (userChangingProgressStatus) {
+    userChangingProgressStatus.pendingPlay = uri;
+    return;
+  }
+
   $('error').textContent = '';
   $('title').textContent = '';
   if (pathIsVideoFile(url) ) {
