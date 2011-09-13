@@ -34,4 +34,7 @@ void
 tile_source(cairo_t *cr, cairo_surface_t *surface,
 	    int x, int y, int width, int height, int margin, int top_margin);
 
+void
+rounded_rect(cairo_t *cr, int x0, int y0, int x1, int y1, int radius);
+
 #endif

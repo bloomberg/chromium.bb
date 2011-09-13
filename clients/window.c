@@ -172,20 +172,6 @@ static const GOptionEntry xkb_option_entries[] = {
 	{ NULL }
 };
 
-static void
-rounded_rect(cairo_t *cr, int x0, int y0, int x1, int y1, int radius)
-{
-	cairo_move_to(cr, x0, y0 + radius);
-	cairo_arc(cr, x0 + radius, y0 + radius, radius, M_PI, 3 * M_PI / 2);
-	cairo_line_to(cr, x1 - radius, y0);
-	cairo_arc(cr, x1 - radius, y0 + radius, radius, 3 * M_PI / 2, 2 * M_PI);
-	cairo_line_to(cr, x1, y1 - radius);
-	cairo_arc(cr, x1 - radius, y1 - radius, radius, 0, M_PI / 2);
-	cairo_line_to(cr, x0 + radius, y1);
-	cairo_arc(cr, x0 + radius, y1 - radius, radius, M_PI / 2, M_PI);
-	cairo_close_path(cr);
-}
-
 static const cairo_user_data_key_t surface_data_key;
 struct surface_data {
 	struct wl_buffer *buffer;
