@@ -3482,60 +3482,6 @@
    fun:*AutofillDownloadTestHelper*
 }
 {
-   bug_75634_a
-   Memcheck:Value4
-   ...
-   fun:_ZNSs6appendEPKc
-   fun:_ZN4base10JSONWriter15BuildJSONStringEPKNS_5ValueEib
-   fun:_ZN4base10JSONWriter15BuildJSONStringEPKNS_5ValueEib
-   ...
-   fun:_ZN13JsonPrefStore13SerializeDataEPSs
-   fun:_ZN13JsonPrefStore10WritePrefsEv
-   fun:_ZN11PrefService19SavePersistentPrefsEv
-   fun:_ZN11ProfileImpl19MarkAsCleanShutdownEv
-   fun:_ZN11ProfileImplD0Ev
-}
-{
-   bug_75634_b
-   Memcheck:Cond
-   ...
-   fun:_ZNSs6appendEPKc
-   fun:_ZN4base10JSONWriter15BuildJSONStringEPKNS_5ValueEib
-   fun:_ZN4base10JSONWriter15BuildJSONStringEPKNS_5ValueEib
-   ...
-   fun:_ZN13JsonPrefStore13SerializeDataEPSs
-   fun:_ZN13JsonPrefStore10WritePrefsEv
-   fun:_ZN11PrefService19SavePersistentPrefsEv
-   fun:_ZN11ProfileImpl19MarkAsCleanShutdownEv
-   fun:_ZN11ProfileImplD0Ev
-}
-{
-   bug_75634_c
-   Memcheck:Value4
-   ...
-   fun:_ZNSs6appendEPKc
-   fun:_ZN4base10JSONWriter15BuildJSONStringEPKNS_5ValueEib
-   fun:_ZN4base10JSONWriter15BuildJSONStringEPKNS_5ValueEib
-   ...
-   fun:_ZN4base10JSONWriter5WriteEPKNS_5ValueEbPSs
-   fun:_ZN25JSONStringValueSerializer9SerializeERKN4base5ValueE
-   fun:_ZN13JsonPrefStore13SerializeDataEPSs
-   fun:_ZN19ImportantFileWriter16DoScheduledWriteEv
-}
-{
-   bug_75634_d
-   Memcheck:Cond
-   ...
-   fun:_ZNSs6appendEPKc
-   fun:_ZN4base10JSONWriter15BuildJSONStringEPKNS_5ValueEib
-   fun:_ZN4base10JSONWriter15BuildJSONStringEPKNS_5ValueEib
-   ...
-   fun:_ZN4base10JSONWriter5WriteEPKNS_5ValueEbPSs
-   fun:_ZN25JSONStringValueSerializer9SerializeERKN4base5ValueE
-   fun:_ZN13JsonPrefStore13SerializeDataEPSs
-   fun:_ZN19ImportantFileWriter16DoScheduledWriteEv
-}
-{
    bug_75641
    Memcheck:Param
    write(buf)
