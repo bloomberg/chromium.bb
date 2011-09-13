@@ -2920,20 +2920,6 @@
    fun:_ZN12_GLOBAL__N_141FormStructureTest_EncodeQueryRequest_Test8TestBodyEv
 }
 {
-   bug_63015
-   Memcheck:Addr2
-   fun:_ZN7WebCore18stringToLengthTypeERPKtS1_
-   fun:_ZN7WebCore9SVGLength16setValueAsStringERKN3WTF6StringERi
-   fun:_ZN7WebCore13SVGLengthList5parseERKN3WTF6StringENS_13SVGLengthModeE
-   fun:_ZN7WebCore25SVGTextPositioningElement20parseMappedAttributeEPNS_9AttributeE
-   fun:_ZN7WebCore14SVGTextElement20parseMappedAttributeEPNS_9AttributeE
-   fun:_ZN7WebCore13StyledElement16attributeChangedEPNS_9AttributeEb
-   fun:_ZN7WebCore10SVGElement16attributeChangedEPNS_9AttributeEb
-   fun:_ZN7WebCore7Element12setAttributeERKNS_13QualifiedNameERKN3WTF12AtomicStringERi
-   fun:_ZN7WebCore7Element14setAttributeNSERKN3WTF12AtomicStringES4_S4_RiNS_27FragmentScriptingPermissionE
-   fun:_ZN7WebCore15ElementInternal22setAttributeNSCallbackERKN2v89ArgumentsE
-}
-{
    bug_63671
    Memcheck:Param
    write(buf)
@@ -3607,15 +3593,6 @@
    fun:*ResolveProxyMsgHelperTest_*_Test8TestBodyEv
 }
 {
-   bug_76490
-   Memcheck:Cond
-   fun:_ZN7WebCore7Element15removeAttributeERKN3WTF6StringERi
-   fun:_ZN7WebCore19DatasetDOMStringMap10deleteItemERKN3WTF6StringERi
-   fun:_ZN7WebCore14V8DOMStringMap20namedPropertyDeleterEN2v85LocalINS1_6StringEEERKNS1_12AccessorInfoE
-   fun:_ZN2v88internal8JSObject29DeletePropertyWithInterceptorEPNS0_6StringE
-   obj:*
-}
-{
    bug_76647a
    Memcheck:Leak
    fun:_Znw*
@@ -4078,14 +4055,6 @@
    Memcheck:Addr4
    fun:_ZN6WebKit21FrameLoaderClientImpl20allowScriptExtensionERKN3WTF6StringEi
    fun:_ZN7WebCore16V8DOMWindowShell16createNewContextEN2v86HandleINS1_6ObjectEEEi
-}
-{
-   bug_84777
-   Memcheck:Cond
-   fun:_ZN7WebCore12TextIterator13handleTextBoxEv
-   fun:_ZN7WebCore12TextIterator14handleTextNodeEv
-   fun:_ZN7WebCore12TextIterator7advanceEv
-   fun:_ZN7WebCore12TextIteratorC1EPKNS_5RangeENS_20TextIteratorBehaviorE
 }
 {
    bug_84779
