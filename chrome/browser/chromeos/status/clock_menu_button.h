@@ -59,6 +59,9 @@ class ClockMenuButton : public StatusAreaButton,
   // changes.
   void UpdateText();
 
+  // Sets default use 24hour clock mode.
+  void SetDefaultUse24HourClock(bool use_24hour_clock);
+
   // NotificationObserver implementation.
   virtual void Observe(int type,
                        const NotificationSource& source,
@@ -83,6 +86,10 @@ class ClockMenuButton : public StatusAreaButton,
   scoped_ptr<views::MenuRunner> menu_runner_;
 
   PrefChangeRegistrar registrar_;
+
+  // Default value for use_24hour_clock. Used when StatusAreaHost does not
+  // have a profile, i.e. on login screen and lock screen.
+  bool default_use_24hour_clock_;
 
   DISALLOW_COPY_AND_ASSIGN(ClockMenuButton);
 };

@@ -98,6 +98,9 @@ class BackgroundView : public views::View,
   // Tells if screen saver is enabled.
   bool ScreenSaverEnabled();
 
+  // Sets default clock 24 hour mode to use.
+  void SetDefaultUse24HourClock(bool use_24hour_clock);
+
   // Overridden from views::View:
   virtual void Layout() OVERRIDE;
 

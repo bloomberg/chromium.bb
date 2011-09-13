@@ -41,7 +41,8 @@ namespace chromeos {
 const int kTimerSlopSeconds = 1;
 
 ClockMenuButton::ClockMenuButton(StatusAreaHost* host)
-    : StatusAreaButton(host, this) {
+    : StatusAreaButton(host, this),
+      default_use_24hour_clock_(false) {
   // Add as TimezoneSettings observer. We update the clock if timezone changes.
   system::TimezoneSettings::GetInstance()->AddObserver(this);
   CrosLibrary::Get()->GetPowerLibrary()->AddObserver(this);
@@ -87,9 +88,9 @@ void ClockMenuButton::UpdateTextAndSetNextTimer() {
 void ClockMenuButton::UpdateText() {
   base::Time time(base::Time::Now());
   // If the profie is present, check the use 24-hour clock preference.
-  const bool use_24hour_clock =
-      host_->GetProfile() &&
-      host_->GetProfile()->GetPrefs()->GetBoolean(prefs::kUse24HourClock);
+  const bool use_24hour_clock = host_->GetProfile() ?
+      host_->GetProfile()->GetPrefs()->GetBoolean(prefs::kUse24HourClock) :
+      default_use_24hour_clock_;
   SetText(UTF16ToWide(base::TimeFormatTimeOfDayWithHourClockType(
       time,
       use_24hour_clock ? base::k24HourClock : base::k12HourClock,
@@ -97,6 +98,14 @@ void ClockMenuButton::UpdateText() {
   SetTooltipText(UTF16ToWide(base::TimeFormatFriendlyDateAndTime(time)));
   SetAccessibleName(base::TimeFormatFriendlyDateAndTime(time));
   SchedulePaint();
+}
+
+void ClockMenuButton::SetDefaultUse24HourClock(bool use_24hour_clock) {
+  if (default_use_24hour_clock_ == use_24hour_clock)
+    return;
+
+  default_use_24hour_clock_ = use_24hour_clock;
+  UpdateText();
 }
 
 // ClockMenuButton, NotificationObserver implementation:

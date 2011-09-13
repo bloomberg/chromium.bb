@@ -209,6 +209,11 @@ bool BackgroundView::ScreenSaverEnabled() {
   return background_area_ != NULL;
 }
 
+void BackgroundView::SetDefaultUse24HourClock(bool use_24hour_clock) {
+  DCHECK(status_area_);
+  status_area_->clock_view()->SetDefaultUse24HourClock(use_24hour_clock);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // BackgroundView protected:
 

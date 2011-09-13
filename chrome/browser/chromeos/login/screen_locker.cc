@@ -44,6 +44,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/pref_names.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/user_metrics.h"
 #include "content/common/notification_service.h"
@@ -787,6 +788,15 @@ void ScreenLocker::Init() {
   background_container_ = screen_lock_background_view_;
   background_view_ = screen_lock_background_view_;
   background_view_->Init(GURL(url_string));
+
+  // Gets user profile and sets default user 24hour flag since we don't
+  // expose user profile in ScreenLockerBackgroundView.
+  Profile* profile = ProfileManager::GetDefaultProfile();
+  if (profile) {
+    background_view_->SetDefaultUse24HourClock(
+        profile->GetPrefs()->GetBoolean(prefs::kUse24HourClock));
+  }
+
   if (background_view_->ScreenSaverEnabled())
     StartScreenSaver();
 
