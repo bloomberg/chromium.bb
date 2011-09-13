@@ -461,20 +461,6 @@
 }
 
 {
-  bug_72169a
-  ThreadSanitizer:Race
-  fun:base::Thread::ThreadMain*
-}
-
-{
-  bug_72169b
-  ThreadSanitizer:Race
-  fun:base::Thread::message_loop*
-  ...
-  fun:*::InotifyReader::OnInotifyEvent*
-}
-
-{
   bug_72548
   ThreadSanitizer:Race
   ...
