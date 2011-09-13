@@ -5,7 +5,7 @@ found in the LICENSE file.
 */
 
 .details-view {
-  padding-right: 10px;
+  -webkit-padding-end: 10px;
 }
 
 .extension-list-item {
@@ -75,40 +75,41 @@ found in the LICENSE file.
 
 .extension-icon {
   height: 48px;
-  padding-left: 15px;
-  padding-right: 15px;
   vertical-align: text-top;
   width: 48px;
+  -webkit-padding-start: 15px;
+  -webkit-padding-end: 15px;
   -webkit-user-select: none;
 }
 
 .extension-title {
   font-size: 16px;
   font-weight: 500;
-  padding-right: 20px;
+  -webkit-padding-end: 20px;
 }
 
 .extension-version {
   font-size: 13px;
   font-weight: 400;
+  -webkit-padding-end: 7px;
 }
   
 .extension-description {
   font-size: 13px;
   white-space: normal;
-  padding-right: 5px;
+  -webkit-padding-end: 5px;
 }
 
 .extension-checkbox-span {
-  margin-left: 7px;
+  -webkit-margin-start: 7px;
 }
 
 .extension-checkbox-label {
-  margin-right: 10px;
+  -webkit-margin-end: 10px;
 }
 
 .extension-delete {
-  margin-left: 5px;
+  -webkit-margin-start: 5px;
 }
 
 .extension-details-hidden {
@@ -124,11 +125,11 @@ found in the LICENSE file.
 }
 
 .extension-links-view {
-  padding-left: 15px;
+  -webkit-padding-start: 15px;
 }
 
 .extension-links-trailing {
-  padding-right: 7px;
+  -webkit-padding-end: 7px;
 }
 
 .extension-zippy-container {
@@ -159,9 +160,9 @@ found in the LICENSE file.
 }
 
 .extension-zippy-collapsed:hover {
-  -webkit-transition: -webkit-transform .1s, opacity .1s;
   opacity: .5;
   -webkit-transform: rotate(5deg);
+  -webkit-transition: -webkit-transform .1s, opacity .1s;
 }
 
 .extension-zippy-expanded {
@@ -180,9 +181,9 @@ found in the LICENSE file.
 }
 
 .extension-enabling-label {
-  padding-left: 3px;
-  padding-right: 9px;
   color: black;
+  -webkit-padding-start: 3px;
+  -webkit-padding-end: 9px;
 }
 
 .extension-enabling-label-bold {
@@ -204,16 +205,16 @@ found in the LICENSE file.
   border-bottom: 1px solid rgb(205, 205, 205);
   height: 32px;
   padding-bottom: 7px;
-  padding-left: 4px;
-  padding-right: 3px;
   padding-top: 4px;
+  -webkit-padding-start: 4px;
+  -webkit-padding-end: 3px;
   -webkit-transition: padding 300ms, height 300ms, opacity 700ms;
 }
 .dev-closed {
   height: 0;
   opacity: 0;
-  padding-left: 4px;
-  padding-right: 3px;
+  -webkit-padding-start: 4px;
+  -webkit-padding-end: 3px;
   -webkit-transition: padding 300ms, height 700ms, opacity 200ms;
 }
 
@@ -228,14 +229,14 @@ found in the LICENSE file.
 }
 
 #suggest-gallery {
-  padding-left: 10px;
+  -webkit-padding-start: 10px;
 }
 
 #dev-toggle {
   display: block;
   float: right;
   margin-top: -28px;
-  margin-right: 8px;
+  -webkit-margin-end: 8px;
 }
 
 #get-more-extensions-container {
@@ -243,7 +244,7 @@ found in the LICENSE file.
 }
 
 #get-more-extensions {
-  padding-left: 10px;
   padding-top: 5px;
   font-size: 15px;
+  -webkit-padding-start: 10px;
 }

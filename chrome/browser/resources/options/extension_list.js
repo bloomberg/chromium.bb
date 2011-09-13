@@ -184,6 +184,16 @@ cr.define('options', function() {
         version.textContent = extension.version;
         vbox.appendChild(version);
 
+        // And the additional info label (unpacked/crashed).
+        if (extension.terminated || extension.isUnpacked) {
+          var version = this.ownerDocument.createElement('span');
+          version.classList.add('extension-version');
+          version.textContent = extension.terminated ?
+              localStrings.getString('extensionSettingsCrashMessage') :
+              localStrings.getString('extensionSettingsInDevelopment');
+          vbox.appendChild(version);
+        }
+
         div = this.ownerDocument.createElement('div');
         vbox.appendChild(div);
 
@@ -231,37 +241,50 @@ cr.define('options', function() {
         section.classList.add('extension-enabling');
         div.appendChild(section);
 
-        // The Enable checkbox.
-        var input = this.ownerDocument.createElement('input');
-        input.addEventListener('click', this.handleEnable_.bind(this));
-        input.type = 'checkbox';
-        input.name = 'toggle-' + id;
-        if (!extension.mayDisable)
-          input.disabled = true;
-        if (extension.enabled)
-          input.checked = true;
-        input.id = 'toggle-' + id;
-        section.appendChild(input);
-        var label = this.ownerDocument.createElement('label');
-        label.classList.add('extension-enabling-label');
-        if (extension.enabled)
-          label.classList.add('extension-enabling-label-bold');
-        label.setAttribute('for', 'toggle-' + id);
-        label.id = 'toggle-' + id + '-label';
-        if (extension.enabled) {
-          // Enabled (with a d).
-          label.textContent =
-              localStrings.getString('extensionSettingsEnabled');
-        } else {
-          // Enable (no d).
-          label.textContent = localStrings.getString('extensionSettingsEnable');
-        }
-        section.appendChild(label);
+        if (!extension.terminated) {
+          // The Enable checkbox.
+          var input = this.ownerDocument.createElement('input');
+          input.addEventListener('click', this.handleEnable_.bind(this));
+          input.type = 'checkbox';
+          input.name = 'toggle-' + id;
+          if (!extension.mayDisable)
+            input.disabled = true;
+          if (extension.enabled)
+            input.checked = true;
+          input.id = 'toggle-' + id;
+          section.appendChild(input);
+          var label = this.ownerDocument.createElement('label');
+          label.classList.add('extension-enabling-label');
+          if (extension.enabled)
+            label.classList.add('extension-enabling-label-bold');
+          label.setAttribute('for', 'toggle-' + id);
+          label.id = 'toggle-' + id + '-label';
+          if (extension.enabled) {
+            // Enabled (with a d).
+            label.textContent =
+                localStrings.getString('extensionSettingsEnabled');
+          } else {
+            // Enable (no d).
+            label.textContent =
+                localStrings.getString('extensionSettingsEnable');
+          }
+          section.appendChild(label);
 
-        if (label.offsetWidth > maxCheckboxWidth)
-          maxCheckboxWidth = label.offsetWidth;
-        if (label.offsetWidth < minCheckboxWidth)
-          minCheckboxWidth = label.offsetWidth;
+          if (label.offsetWidth > maxCheckboxWidth)
+            maxCheckboxWidth = label.offsetWidth;
+          if (label.offsetWidth < minCheckboxWidth)
+            minCheckboxWidth = label.offsetWidth;
+        } else {
+          // Extension has been terminated, show a Reload link.
+          var link = this.ownerDocument.createElement('a');
+          link.classList.add('extension-links-trailing');
+          link.id = extension.id;
+          link.textContent =
+              localStrings.getString('extensionSettingsReload');
+          link.href = '#';
+          link.addEventListener('click', this.handleReload_.bind(this));
+          section.appendChild(link);
+        }
 
         // And, on the far right we have the uninstall button.
         var button = this.ownerDocument.createElement('button');

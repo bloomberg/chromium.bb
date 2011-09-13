@@ -642,7 +642,11 @@ void ExtensionSettingsHandler::GetLocalizedValues(
   localized_strings->SetString("extensionSettingsPackButton",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_PACK_BUTTON));
   localized_strings->SetString("extensionSettingsUpdateButton",
-    l10n_util::GetStringUTF16(IDS_EXTENSIONS_UPDATE_BUTTON));
+      l10n_util::GetStringUTF16(IDS_EXTENSIONS_UPDATE_BUTTON));
+  localized_strings->SetString("extensionSettingsCrashMessage",
+      l10n_util::GetStringUTF16(IDS_EXTENSIONS_CRASHED_EXTENSION));
+  localized_strings->SetString("extensionSettingsInDevelopment",
+      l10n_util::GetStringUTF16(IDS_EXTENSIONS_IN_DEVELOPMENT));
 }
 
 void ExtensionSettingsHandler::Initialize() {
