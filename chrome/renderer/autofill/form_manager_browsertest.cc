@@ -938,7 +938,7 @@ TEST_F(FormManagerTest, FillForm) {
   EXPECT_TRUE(display_none.value().isEmpty());
 }
 
-TEST_F(FormManagerTest, FAILS_PreviewForm) {
+TEST_F(FormManagerTest, PreviewForm) {
   LoadHTML("<FORM name=\"TestForm\" action=\"http://buh.com\" method=\"post\">"
            "  <INPUT type=\"text\" id=\"firstname\"/>"
            "  <INPUT type=\"text\" id=\"lastname\"/>"
@@ -2377,7 +2377,7 @@ TEST_F(FormManagerTest, MaxLengthFields) {
 // This test re-creates the experience of typing in a field then selecting a
 // profile from the Autofill suggestions popup.  The field that is being typed
 // into should be filled even though it's not technically empty.
-TEST_F(FormManagerTest, FAILS_FillFormNonEmptyField) {
+TEST_F(FormManagerTest, FillFormNonEmptyField) {
   LoadHTML("<FORM name=\"TestForm\" action=\"http://buh.com\" method=\"post\">"
            "  <INPUT type=\"text\" id=\"firstname\"/>"
            "  <INPUT type=\"text\" id=\"lastname\"/>"
