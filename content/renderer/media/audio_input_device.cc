@@ -12,12 +12,6 @@
 #include "content/renderer/render_thread.h"
 #include "media/audio/audio_util.h"
 
-// Max waiting time for Stop() to complete. If this time limit is passed,
-// we will stop waiting and return false. It ensures that Stop() can't block
-// the calling thread forever.
-static const base::TimeDelta kMaxTimeOut =
-    base::TimeDelta::FromMilliseconds(1000);
-
 AudioInputDevice::AudioInputDevice(size_t buffer_size,
                                    int channels,
                                    double sample_rate,
@@ -63,6 +57,11 @@ void AudioInputDevice::Start() {
 
 bool AudioInputDevice::Stop() {
   VLOG(1) << "Stop()";
+  // Max waiting time for Stop() to complete. If this time limit is passed,
+  // we will stop waiting and return false. It ensures that Stop() can't block
+  // the calling thread forever.
+  const base::TimeDelta kMaxTimeOut = base::TimeDelta::FromMilliseconds(1000);
+
   base::WaitableEvent completion(false, false);
 
   ChildProcess::current()->io_message_loop()->PostTask(
@@ -156,6 +155,7 @@ void AudioInputDevice::OnLowLatencyCreated(
   // Takes care of the case when Stop() is called before OnLowLatencyCreated().
   if (!stream_id_) {
     base::SharedMemory::CloseHandle(handle);
+    // Close the socket handler.
     base::SyncSocket socket(socket_handle);
     return;
   }

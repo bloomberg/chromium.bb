@@ -42,6 +42,12 @@
 //    Responsible for calling the RenderCallback and feed audio samples to
 //    the audio layer in the browser process using sync sockets and shared
 //    memory.
+//
+// Implementation notes:
+//
+// - Start() is asynchronous/non-blocking.
+// - Stop() is synchronous/blocking.
+// - The user must call Stop() before deleting the class instance.
 
 #ifndef CONTENT_RENDERER_MEDIA_AUDIO_DEVICE_H_
 #define CONTENT_RENDERER_MEDIA_AUDIO_DEVICE_H_
@@ -78,8 +84,8 @@ class AudioDevice
               RenderCallback* callback);
   virtual ~AudioDevice();
 
-  // Starts audio playback. Returns |true| on success.
-  bool Start();
+  // Starts audio playback.
+  void Start();
 
   // Stops audio playback. Returns |true| on success.
   bool Stop();
@@ -89,8 +95,7 @@ class AudioDevice
   bool SetVolume(double volume);
 
   // Gets the playback volume, with range [0.0, 1.0] inclusive.
-  // Returns |true| on success.
-  bool GetVolume(double* volume);
+  void GetVolume(double* volume);
 
   double sample_rate() const { return sample_rate_; }
   size_t buffer_size() const { return buffer_size_; }
@@ -114,7 +119,7 @@ class AudioDevice
   // sends IPC messages on that thread.
   void InitializeOnIOThread(const AudioParameters& params);
   void StartOnIOThread();
-  void ShutDownOnIOThread();
+  void ShutDownOnIOThread(base::WaitableEvent* completion);
   void SetVolumeOnIOThread(double volume);
 
   void Send(IPC::Message* message);
@@ -157,7 +162,7 @@ class AudioDevice
   // Cached audio message filter (lives on the main render thread).
   scoped_refptr<AudioMessageFilter> filter_;
 
-  // Our stream ID on the message filter. Only modified on the IO thread.
+  // Our stream ID on the message filter. Only accessed on the IO thread.
   int32 stream_id_;
 
   // Data transfer between browser and render process uses a combination

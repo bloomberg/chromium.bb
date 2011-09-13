@@ -356,8 +356,9 @@ int32_t WebRtcAudioDeviceImpl::StartPlayout() {
     LOG(WARNING) << "Playout is already active";
     return 0;
   }
-  playing_ = audio_output_device_->Start();
-  return (playing_ ? 0 : -1);
+  audio_output_device_->Start();
+  playing_ = true;
+  return 0;
 }
 
 int32_t WebRtcAudioDeviceImpl::StopPlayout() {
