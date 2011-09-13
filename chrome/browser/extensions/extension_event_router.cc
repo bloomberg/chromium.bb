@@ -263,12 +263,18 @@ void ExtensionEventRouter::DispatchEventImpl(
         event->extension_id != listener->extension_id)
       continue;
 
+    const Extension* extension = service->GetExtensionById(
+        listener->extension_id, false);
+
+    // The extension could have been removed, but we do not unregister it until
+    // the extension process is unloaded.
+    if (!extension)
+      continue;
+
     // Is this event from a different profile than the renderer (ie, an
     // incognito tab event sent to a normal process, or vice versa).
     bool cross_incognito = event->restrict_to_profile &&
         listener->process->browser_context() != event->restrict_to_profile;
-    const Extension* extension = service->GetExtensionById(
-        listener->extension_id, false);
     // Send the event with different arguments to extensions that can't
     // cross incognito, if necessary.
     if (cross_incognito && !service->CanCrossIncognito(extension)) {

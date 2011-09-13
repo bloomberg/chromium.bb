@@ -2014,6 +2014,7 @@ bool ExtensionService::CanCrossIncognito(const Extension* extension) {
   // We allow the extension to see events and data from another profile iff it
   // uses "spanning" behavior and it has incognito access. "split" mode
   // extensions only see events for a matching profile.
+  CHECK(extension);
   return IsIncognitoEnabled(extension->id()) &&
       !extension->incognito_split_mode();
 }
