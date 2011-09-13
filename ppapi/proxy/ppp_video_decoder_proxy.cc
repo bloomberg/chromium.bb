@@ -78,16 +78,19 @@ static const PPP_VideoDecoder_Dev video_decoder_interface = {
   &NotifyError
 };
 
-InterfaceProxy* CreateVideoDecoderPPPProxy(
-    Dispatcher* dispatcher, const void* target_interface) {
-  return new PPP_VideoDecoder_Proxy(dispatcher, target_interface);
+InterfaceProxy* CreateVideoDecoderPPPProxy(Dispatcher* dispatcher) {
+  return new PPP_VideoDecoder_Proxy(dispatcher);
 }
 
 }  // namespace
 
-PPP_VideoDecoder_Proxy::PPP_VideoDecoder_Proxy(
-    Dispatcher* dispatcher, const void* target_interface)
-    : InterfaceProxy(dispatcher, target_interface) {
+PPP_VideoDecoder_Proxy::PPP_VideoDecoder_Proxy(Dispatcher* dispatcher)
+    : InterfaceProxy(dispatcher),
+      ppp_video_decoder_impl_(NULL) {
+  if (dispatcher->IsPlugin()) {
+    ppp_video_decoder_impl_ = static_cast<const PPP_VideoDecoder_Dev*>(
+        dispatcher->local_get_interface()(PPP_VIDEODECODER_DEV_INTERFACE));
+  }
 }
 
 PPP_VideoDecoder_Proxy::~PPP_VideoDecoder_Proxy() {
@@ -129,7 +132,7 @@ void PPP_VideoDecoder_Proxy::OnMsgProvidePictureBuffers(
     const PP_Size& dimensions) {
   PP_Resource plugin_decoder = PluginResourceTracker::GetInstance()->
       PluginResourceForHostResource(decoder);
-  ppp_video_decoder_target()->ProvidePictureBuffers(
+  ppp_video_decoder_impl_->ProvidePictureBuffers(
       decoder.instance(), plugin_decoder, req_num_of_bufs, dimensions);
 }
 
@@ -137,7 +140,7 @@ void PPP_VideoDecoder_Proxy::OnMsgDismissPictureBuffer(
     const HostResource& decoder, int32_t picture_id) {
   PP_Resource plugin_decoder = PluginResourceTracker::GetInstance()->
       PluginResourceForHostResource(decoder);
-  ppp_video_decoder_target()->DismissPictureBuffer(
+  ppp_video_decoder_impl_->DismissPictureBuffer(
       decoder.instance(), plugin_decoder, picture_id);
 }
 
@@ -145,7 +148,7 @@ void PPP_VideoDecoder_Proxy::OnMsgPictureReady(
     const HostResource& decoder, const PP_Picture_Dev& picture) {
   PP_Resource plugin_decoder = PluginResourceTracker::GetInstance()->
       PluginResourceForHostResource(decoder);
-  ppp_video_decoder_target()->PictureReady(
+  ppp_video_decoder_impl_->PictureReady(
       decoder.instance(), plugin_decoder, picture);
 }
 
@@ -153,7 +156,7 @@ void PPP_VideoDecoder_Proxy::OnMsgNotifyEndOfStream(
     const HostResource& decoder) {
   PP_Resource plugin_decoder = PluginResourceTracker::GetInstance()->
       PluginResourceForHostResource(decoder);
-  ppp_video_decoder_target()->EndOfStream(decoder.instance(),
+  ppp_video_decoder_impl_->EndOfStream(decoder.instance(),
                                           plugin_decoder);
 }
 
@@ -161,7 +164,7 @@ void PPP_VideoDecoder_Proxy::OnMsgNotifyError(
     const HostResource& decoder, PP_VideoDecodeError_Dev error) {
   PP_Resource plugin_decoder = PluginResourceTracker::GetInstance()->
       PluginResourceForHostResource(decoder);
-  ppp_video_decoder_target()->NotifyError(
+  ppp_video_decoder_impl_->NotifyError(
       decoder.instance(), plugin_decoder, error);
 }
 

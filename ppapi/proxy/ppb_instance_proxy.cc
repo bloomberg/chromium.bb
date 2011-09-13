@@ -32,67 +32,19 @@ namespace proxy {
 
 namespace {
 
-InterfaceProxy* CreateInstanceProxy(Dispatcher* dispatcher,
-                                    const void* target_interface) {
-  return new PPB_Instance_Proxy(dispatcher, target_interface);
+typedef EnterFunctionNoLock<PPB_Instance_FunctionAPI> EnterInstanceNoLock;
+
+InterfaceProxy* CreateInstanceProxy(Dispatcher* dispatcher) {
+  return new PPB_Instance_Proxy(dispatcher);
 }
 
 }  // namespace
 
-PPB_Instance_Proxy::PPB_Instance_Proxy(Dispatcher* dispatcher,
-                                       const void* target_interface)
-    : InterfaceProxy(dispatcher, target_interface) {
+PPB_Instance_Proxy::PPB_Instance_Proxy(Dispatcher* dispatcher)
+    : InterfaceProxy(dispatcher) {
 }
 
 PPB_Instance_Proxy::~PPB_Instance_Proxy() {
-}
-
-// static
-const InterfaceProxy::Info* PPB_Instance_Proxy::GetInfo0_5() {
-  static const Info info = {
-    ppapi::thunk::GetPPB_Instance_1_0_Thunk(),
-    PPB_INSTANCE_INTERFACE_0_5,
-    INTERFACE_ID_NONE,  // 1_0 is the canonical one.
-    false,
-    &CreateInstanceProxy,
-  };
-  return &info;
-}
-
-// static
-const InterfaceProxy::Info* PPB_Instance_Proxy::GetInfo1_0() {
-  static const Info info = {
-    ppapi::thunk::GetPPB_Instance_1_0_Thunk(),
-    PPB_INSTANCE_INTERFACE_1_0,
-    INTERFACE_ID_PPB_INSTANCE,
-    false,
-    &CreateInstanceProxy,
-  };
-  return &info;
-}
-
-// static
-const InterfaceProxy::Info* PPB_Instance_Proxy::GetInfoMessaging() {
-  static const Info info = {
-    ppapi::thunk::GetPPB_Messaging_Thunk(),
-    PPB_MESSAGING_INTERFACE,
-    INTERFACE_ID_NONE,  // 1_0 is the canonical one.
-    false,
-    &CreateInstanceProxy,
-  };
-  return &info;
-}
-
-// static
-const InterfaceProxy::Info* PPB_Instance_Proxy::GetInfoMouseLock() {
-  static const Info info = {
-    ppapi::thunk::GetPPB_MouseLock_Thunk(),
-    PPB_MOUSELOCK_DEV_INTERFACE,
-    INTERFACE_ID_NONE,  // 1_0 is the canonical one.
-    false,
-    &CreateInstanceProxy,
-  };
-  return &info;
 }
 
 // static
@@ -138,6 +90,10 @@ bool PPB_Instance_Proxy::OnMessageReceived(const IPC::Message& msg) {
                         OnMsgIsFullFrame)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_ExecuteScript,
                         OnMsgExecuteScript)
+    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_Log,
+                        OnMsgLog)
+    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_LogWithSource,
+                        OnMsgLogWithSource)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_PostMessage,
                         OnMsgPostMessage)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_SetFullscreen,
@@ -207,6 +163,24 @@ PP_Var PPB_Instance_Proxy::ExecuteScript(PP_Instance instance,
       INTERFACE_ID_PPB_INSTANCE, instance,
       SerializedVarSendInput(dispatcher(), script), &se, &result));
   return result.Return(dispatcher());
+}
+
+void PPB_Instance_Proxy::Log(PP_Instance instance,
+                             int log_level,
+                             PP_Var value) {
+  dispatcher()->Send(new PpapiHostMsg_PPBInstance_Log(
+      INTERFACE_ID_PPB_INSTANCE, instance, static_cast<int>(log_level),
+      SerializedVarSendInput(dispatcher(), value)));
+}
+
+void PPB_Instance_Proxy::LogWithSource(PP_Instance instance,
+                                       int log_level,
+                                       PP_Var source,
+                                       PP_Var value) {
+  dispatcher()->Send(new PpapiHostMsg_PPBInstance_LogWithSource(
+      INTERFACE_ID_PPB_INSTANCE, instance, static_cast<int>(log_level),
+      SerializedVarSendInput(dispatcher(), source),
+      SerializedVarSendInput(dispatcher(), value)));
 }
 
 PP_Bool PPB_Instance_Proxy::IsFullscreen(PP_Instance instance) {
@@ -305,7 +279,7 @@ void PPB_Instance_Proxy::UnlockMouse(PP_Instance instance) {
 void PPB_Instance_Proxy::OnMsgGetWindowObject(
     PP_Instance instance,
     SerializedVarReturnValue result) {
-  EnterFunctionNoLock<PPB_Instance_FunctionAPI> enter(instance, false);
+  EnterInstanceNoLock enter(instance, false);
   if (enter.succeeded())
     result.Return(dispatcher(), enter.functions()->GetWindowObject(instance));
 }
@@ -313,7 +287,7 @@ void PPB_Instance_Proxy::OnMsgGetWindowObject(
 void PPB_Instance_Proxy::OnMsgGetOwnerElementObject(
     PP_Instance instance,
     SerializedVarReturnValue result) {
-  EnterFunctionNoLock<PPB_Instance_FunctionAPI> enter(instance, false);
+  EnterInstanceNoLock enter(instance, false);
   if (enter.succeeded()) {
     result.Return(dispatcher(),
                   enter.functions()->GetOwnerElementObject(instance));
@@ -323,7 +297,7 @@ void PPB_Instance_Proxy::OnMsgGetOwnerElementObject(
 void PPB_Instance_Proxy::OnMsgBindGraphics(PP_Instance instance,
                                            const HostResource& device,
                                            PP_Bool* result) {
-  EnterFunctionNoLock<PPB_Instance_FunctionAPI> enter(instance, false);
+  EnterInstanceNoLock enter(instance, false);
   if (enter.succeeded()) {
     *result = enter.functions()->BindGraphics(instance,
                                               device.host_resource());
@@ -332,7 +306,7 @@ void PPB_Instance_Proxy::OnMsgBindGraphics(PP_Instance instance,
 
 void PPB_Instance_Proxy::OnMsgIsFullFrame(PP_Instance instance,
                                           PP_Bool* result) {
-  EnterFunctionNoLock<PPB_Instance_FunctionAPI> enter(instance, false);
+  EnterInstanceNoLock enter(instance, false);
   if (enter.succeeded())
     *result = enter.functions()->IsFullFrame(instance);
 }
@@ -342,7 +316,7 @@ void PPB_Instance_Proxy::OnMsgExecuteScript(
     SerializedVarReceiveInput script,
     SerializedVarOutParam out_exception,
     SerializedVarReturnValue result) {
-  EnterFunctionNoLock<PPB_Instance_FunctionAPI> enter(instance, false);
+  EnterInstanceNoLock enter(instance, false);
   if (enter.failed())
     return;
 
@@ -357,10 +331,30 @@ void PPB_Instance_Proxy::OnMsgExecuteScript(
       out_exception.OutParam(dispatcher())));
 }
 
+void PPB_Instance_Proxy::OnMsgLog(PP_Instance instance,
+                                  int log_level,
+                                  SerializedVarReceiveInput value) {
+  EnterInstanceNoLock enter(instance, false);
+  if (enter.succeeded())
+    enter.functions()->Log(instance, log_level, value.Get(dispatcher()));
+}
+
+void PPB_Instance_Proxy::OnMsgLogWithSource(PP_Instance instance,
+                                            int log_level,
+                                            SerializedVarReceiveInput source,
+                                            SerializedVarReceiveInput value) {
+  EnterInstanceNoLock enter(instance, false);
+  if (enter.succeeded()) {
+    enter.functions()->LogWithSource(instance, log_level,
+                                     source.Get(dispatcher()),
+                                     value.Get(dispatcher()));
+  }
+}
+
 void PPB_Instance_Proxy::OnMsgSetFullscreen(PP_Instance instance,
                                             PP_Bool fullscreen,
                                             PP_Bool* result) {
-  EnterFunctionNoLock<PPB_Instance_FunctionAPI> enter(instance, false);
+  EnterInstanceNoLock enter(instance, false);
   if (enter.succeeded())
     *result = enter.functions()->SetFullscreen(instance, fullscreen);
 }
@@ -368,7 +362,7 @@ void PPB_Instance_Proxy::OnMsgSetFullscreen(PP_Instance instance,
 void PPB_Instance_Proxy::OnMsgGetScreenSize(PP_Instance instance,
                                             PP_Bool* result,
                                             PP_Size* size) {
-  EnterFunctionNoLock<PPB_Instance_FunctionAPI> enter(instance, false);
+  EnterInstanceNoLock enter(instance, false);
   if (enter.succeeded())
     *result = enter.functions()->GetScreenSize(instance, size);
 }
@@ -376,7 +370,7 @@ void PPB_Instance_Proxy::OnMsgGetScreenSize(PP_Instance instance,
 void PPB_Instance_Proxy::OnMsgRequestInputEvents(PP_Instance instance,
                                                  bool is_filtering,
                                                  uint32_t event_classes) {
-  EnterFunctionNoLock<PPB_Instance_FunctionAPI> enter(instance, false);
+  EnterInstanceNoLock enter(instance, false);
   if (enter.succeeded()) {
     if (is_filtering)
       enter.functions()->RequestFilteringInputEvents(instance, event_classes);
@@ -387,14 +381,14 @@ void PPB_Instance_Proxy::OnMsgRequestInputEvents(PP_Instance instance,
 
 void PPB_Instance_Proxy::OnMsgClearInputEvents(PP_Instance instance,
                                                uint32_t event_classes) {
-  EnterFunctionNoLock<PPB_Instance_FunctionAPI> enter(instance, false);
+  EnterInstanceNoLock enter(instance, false);
   if (enter.succeeded())
     enter.functions()->ClearInputEventRequest(instance, event_classes);
 }
 
 void PPB_Instance_Proxy::OnMsgPostMessage(PP_Instance instance,
                                           SerializedVarReceiveInput message) {
-  EnterFunctionNoLock<PPB_Instance_FunctionAPI> enter(instance, false);
+  EnterInstanceNoLock enter(instance, false);
   if (enter.succeeded())
     enter.functions()->PostMessage(instance, message.Get(dispatcher()));
 }

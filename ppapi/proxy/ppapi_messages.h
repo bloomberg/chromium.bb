@@ -468,17 +468,6 @@ IPC_SYNC_MESSAGE_ROUTED2_2(PpapiHostMsg_PPBBuffer_Create,
                            ppapi::HostResource /* result_resource */,
                            base::SharedMemoryHandle /* result_shm_handle */)
 
-// PPB_Console.
-IPC_MESSAGE_ROUTED3(PpapiHostMsg_PPBConsole_Log,
-                    PP_Instance /* instance */,
-                    int /* log_level */,
-                    ppapi::proxy::SerializedVar /* value */)
-IPC_MESSAGE_ROUTED4(PpapiHostMsg_PPBConsole_LogWithSource,
-                    PP_Instance /* instance */,
-                    int /* log_level */,
-                    ppapi::proxy::SerializedVar /* soruce */,
-                    ppapi::proxy::SerializedVar /* value */)
-
 // PPB_Context3D.
 IPC_SYNC_MESSAGE_ROUTED3_1(PpapiHostMsg_PPBContext3D_Create,
                            PP_Instance /* instance */,
@@ -824,6 +813,15 @@ IPC_SYNC_MESSAGE_ROUTED2_2(PpapiHostMsg_PPBInstance_ExecuteScript,
                            ppapi::proxy::SerializedVar /* script */,
                            ppapi::proxy::SerializedVar /* out_exception */,
                            ppapi::proxy::SerializedVar /* result */)
+IPC_MESSAGE_ROUTED3(PpapiHostMsg_PPBInstance_Log,
+                    PP_Instance /* instance */,
+                    int /* log_level */,
+                    ppapi::proxy::SerializedVar /* value */)
+IPC_MESSAGE_ROUTED4(PpapiHostMsg_PPBInstance_LogWithSource,
+                    PP_Instance /* instance */,
+                    int /* log_level */,
+                    ppapi::proxy::SerializedVar /* source */,
+                    ppapi::proxy::SerializedVar /* value */)
 IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBInstance_SetFullscreen,
                            PP_Instance /* instance */,
                            PP_Bool /* fullscreen */,

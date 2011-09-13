@@ -32,21 +32,6 @@ class HostResource;
 
 namespace proxy {
 
-class PPB_ImageData_Proxy : public InterfaceProxy {
- public:
-  PPB_ImageData_Proxy(Dispatcher* dispatcher, const void* target_interface);
-  virtual ~PPB_ImageData_Proxy();
-
-  static const Info* GetInfo();
-
-  const PPB_ImageData* ppb_image_data_target() const {
-    return static_cast<const PPB_ImageData*>(target_interface());
-  }
-
-  // InterfaceProxy implementation.
-  virtual bool OnMessageReceived(const IPC::Message& msg);
-};
-
 class ImageData : public ppapi::Resource,
                   public ppapi::thunk::PPB_ImageData_API,
                   public ppapi::ImageDataImpl {

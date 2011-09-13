@@ -69,7 +69,7 @@ g_ppb_gles_chromium_texture_mapping_thunk = {
 }  // namespace
 
 const PPB_GLESChromiumTextureMapping_Dev*
-GetPPB_GLESChromiumTextureMapping_Thunk() {
+GetPPB_GLESChromiumTextureMapping_Dev_Thunk() {
   return &g_ppb_gles_chromium_texture_mapping_thunk;
 }
 

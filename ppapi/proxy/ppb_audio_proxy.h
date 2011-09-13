@@ -30,10 +30,8 @@ namespace proxy {
 
 class PPB_Audio_Proxy : public InterfaceProxy {
  public:
-  PPB_Audio_Proxy(Dispatcher* dispatcher, const void* target_interface);
+  PPB_Audio_Proxy(Dispatcher* dispatcher);
   virtual ~PPB_Audio_Proxy();
-
-  static const Info* GetInfo();
 
   // Creates an Audio object in the plugin process.
   static PP_Resource CreateProxyResource(PP_Instance instance_id,
@@ -42,12 +40,10 @@ class PPB_Audio_Proxy : public InterfaceProxy {
                                          void* user_data);
 
 
-  const PPB_Audio* ppb_audio_target() const {
-    return static_cast<const PPB_Audio*>(target_interface());
-  }
-
   // InterfaceProxy implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg);
+
+  static const InterfaceID kInterfaceID = INTERFACE_ID_PPB_AUDIO;
 
  private:
   // Plugin->renderer message handlers.

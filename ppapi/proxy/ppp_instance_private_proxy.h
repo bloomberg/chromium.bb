@@ -20,15 +20,10 @@ class SerializedVarReturnValue;
 
 class PPP_Instance_Private_Proxy : public InterfaceProxy {
  public:
-  PPP_Instance_Private_Proxy(Dispatcher* dispatcher,
-                             const void* target_interface);
+  PPP_Instance_Private_Proxy(Dispatcher* dispatcher);
   virtual ~PPP_Instance_Private_Proxy();
 
   static const Info* GetInfo();
-
-  const PPP_Instance_Private* ppp_instance_private_target() const {
-    return reinterpret_cast<const PPP_Instance_Private*>(target_interface());
-  }
 
  private:
   // InterfaceProxy implementation.
@@ -37,6 +32,13 @@ class PPP_Instance_Private_Proxy : public InterfaceProxy {
   // Message handlers.
   void OnMsgGetInstanceObject(PP_Instance instance,
                               SerializedVarReturnValue result);
+
+  // When this proxy is in the plugin side, this value caches the interface
+  // pointer so we don't have to retrieve it from the dispatcher each time.
+  // In the host, this value is always NULL.
+  const PPP_Instance_Private* ppp_instance_private_impl_;
+
+  DISALLOW_COPY_AND_ASSIGN(PPP_Instance_Private_Proxy);
 };
 
 }  // namespace proxy

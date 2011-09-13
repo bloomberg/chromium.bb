@@ -11,6 +11,7 @@
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/thunk/ppb_broker_api.h"
 #include "ppapi/thunk/enter.h"
+#include "ppapi/thunk/resource_creation_api.h"
 #include "ppapi/thunk/thunk.h"
 
 using ppapi::thunk::PPB_Broker_API;
@@ -38,11 +39,6 @@ int32_t PlatformFileToInt(base::PlatformFile handle) {
 #else
   #error Not implemented.
 #endif
-}
-
-InterfaceProxy* CreateBrokerProxy(Dispatcher* dispatcher,
-                                  const void* target_interface) {
-  return new PPB_Broker_Proxy(dispatcher, target_interface);
 }
 
 }  // namespace
@@ -147,25 +143,12 @@ void Broker::ConnectComplete(IPC::PlatformFileForTransit socket_handle,
   PP_RunAndClearCompletionCallback(&current_connect_callback_, result);
 }
 
-PPB_Broker_Proxy::PPB_Broker_Proxy(Dispatcher* dispatcher,
-                                   const void* target_interface)
-    : InterfaceProxy(dispatcher, target_interface) ,
+PPB_Broker_Proxy::PPB_Broker_Proxy(Dispatcher* dispatcher)
+    : InterfaceProxy(dispatcher),
       callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)){
 }
 
 PPB_Broker_Proxy::~PPB_Broker_Proxy() {
-}
-
-// static
-const InterfaceProxy::Info* PPB_Broker_Proxy::GetInfo() {
-  static const Info info = {
-    ppapi::thunk::GetPPB_Broker_Thunk(),
-    PPB_BROKER_TRUSTED_INTERFACE,
-    INTERFACE_ID_PPB_BROKER,
-    true,
-    &CreateBrokerProxy,
-  };
-  return &info;
 }
 
 // static
@@ -196,9 +179,12 @@ bool PPB_Broker_Proxy::OnMessageReceived(const IPC::Message& msg) {
 
 void PPB_Broker_Proxy::OnMsgCreate(PP_Instance instance,
                                    HostResource* result_resource) {
-  result_resource->SetHostResource(
-      instance,
-      ppb_broker_target()->CreateTrusted(instance));
+  thunk::EnterResourceCreation enter(instance);
+  if (enter.succeeded()) {
+    result_resource->SetHostResource(
+        instance,
+        enter.functions()->CreateBroker(instance));
+  }
 }
 
 void PPB_Broker_Proxy::OnMsgConnect(const HostResource& broker) {
@@ -240,8 +226,9 @@ void PPB_Broker_Proxy::ConnectCompleteInHost(int32_t result,
       IPC::InvalidPlatformFileForTransit();
   if (result == PP_OK) {
     int32_t socket_handle = PlatformFileToInt(base::kInvalidPlatformFileValue);
-    result = ppb_broker_target()->GetHandle(broker.host_resource(),
-                                            &socket_handle);
+    EnterHostFromHostResource<PPB_Broker_API> enter(broker);
+    if (enter.succeeded())
+      result = enter.object()->GetHandle(&socket_handle);
     DCHECK(result == PP_OK ||
            socket_handle == PlatformFileToInt(base::kInvalidPlatformFileValue));
 

@@ -64,7 +64,7 @@ const PPB_Context3D_Dev g_ppb_context_3d_thunk = {
 
 }  // namespace
 
-const PPB_Context3D_Dev* GetPPB_Context3D_Thunk() {
+const PPB_Context3D_Dev* GetPPB_Context3D_Dev_Thunk() {
   return &g_ppb_context_3d_thunk;
 }
 

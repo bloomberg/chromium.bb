@@ -20,15 +20,6 @@ using ppapi::thunk::PPB_URLResponseInfo_API;
 namespace ppapi {
 namespace proxy {
 
-namespace {
-
-InterfaceProxy* CreateURLResponseInfoProxy(Dispatcher* dispatcher,
-                                           const void* target_interface) {
-  return new PPB_URLResponseInfo_Proxy(dispatcher, target_interface);
-}
-
-}  // namespace
-
 // URLResponseInfo -------------------------------------------------------------
 
 class URLResponseInfo : public Resource, public PPB_URLResponseInfo_API {
@@ -80,25 +71,11 @@ PP_Resource URLResponseInfo::GetBodyAsFileRef() {
 
 // PPB_URLResponseInfo_Proxy ---------------------------------------------------
 
-PPB_URLResponseInfo_Proxy::PPB_URLResponseInfo_Proxy(
-    Dispatcher* dispatcher,
-    const void* target_interface)
-    : InterfaceProxy(dispatcher, target_interface) {
+PPB_URLResponseInfo_Proxy::PPB_URLResponseInfo_Proxy(Dispatcher* dispatcher)
+    : InterfaceProxy(dispatcher) {
 }
 
 PPB_URLResponseInfo_Proxy::~PPB_URLResponseInfo_Proxy() {
-}
-
-// static
-const InterfaceProxy::Info* PPB_URLResponseInfo_Proxy::GetInfo() {
-  static const Info info = {
-    ppapi::thunk::GetPPB_URLResponseInfo_Thunk(),
-    PPB_URLRESPONSEINFO_INTERFACE,
-    INTERFACE_ID_PPB_URL_RESPONSE_INFO,
-    false,
-    &CreateURLResponseInfoProxy,
-  };
-  return &info;
 }
 
 // static
@@ -142,10 +119,8 @@ void PPB_URLResponseInfo_Proxy::OnMsgGetBodyAsFileRef(
     file_ref = enter.object()->GetBodyAsFileRef();
 
   // Use the FileRef proxy to serialize.
-  DCHECK(!dispatcher()->IsPlugin());
-  HostDispatcher* host_disp = static_cast<HostDispatcher*>(dispatcher());
   PPB_FileRef_Proxy* file_ref_proxy = static_cast<PPB_FileRef_Proxy*>(
-      host_disp->GetOrCreatePPBInterfaceProxy(INTERFACE_ID_PPB_FILE_REF));
+      dispatcher()->GetInterfaceProxy(INTERFACE_ID_PPB_FILE_REF));
   file_ref_proxy->SerializeFileRef(file_ref, result);
 }
 

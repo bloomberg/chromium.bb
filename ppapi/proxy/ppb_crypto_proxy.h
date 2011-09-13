@@ -16,7 +16,7 @@ class PPB_Crypto_Proxy : public InterfaceProxy {
   // function that's implemented entirely within the plugin. However, we need
   // to support this so the machinery for automatically handling interfaces
   // works. As a result, this constructor will assert if it's actually used.
-  PPB_Crypto_Proxy(Dispatcher* dispatcher, const void* target_interface);
+  PPB_Crypto_Proxy(Dispatcher* dispatcher);
   virtual ~PPB_Crypto_Proxy();
 
   static const Info* GetInfo();

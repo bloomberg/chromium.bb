@@ -17,19 +17,11 @@
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_buffer_trusted_api.h"
+#include "ppapi/thunk/resource_creation_api.h"
 #include "ppapi/thunk/thunk.h"
 
 namespace ppapi {
 namespace proxy {
-
-namespace {
-
-InterfaceProxy* CreateBufferProxy(Dispatcher* dispatcher,
-                                  const void* target_interface) {
-  return new PPB_Buffer_Proxy(dispatcher, target_interface);
-}
-
-}  // namespace
 
 Buffer::Buffer(const HostResource& resource,
                const base::SharedMemoryHandle& shm_handle,
@@ -69,24 +61,11 @@ void Buffer::Unmap() {
     shm_.Unmap();
 }
 
-PPB_Buffer_Proxy::PPB_Buffer_Proxy(Dispatcher* dispatcher,
-                                   const void* target_interface)
-    : InterfaceProxy(dispatcher, target_interface) {
+PPB_Buffer_Proxy::PPB_Buffer_Proxy(Dispatcher* dispatcher)
+    : InterfaceProxy(dispatcher) {
 }
 
 PPB_Buffer_Proxy::~PPB_Buffer_Proxy() {
-}
-
-// static
-const InterfaceProxy::Info* PPB_Buffer_Proxy::GetInfo() {
-  static const Info info = {
-    thunk::GetPPB_Buffer_Thunk(),
-    PPB_BUFFER_DEV_INTERFACE,
-    INTERFACE_ID_PPB_BUFFER,
-    false,
-    &CreateBufferProxy,
-  };
-  return &info;
 }
 
 // static
@@ -135,10 +114,15 @@ void PPB_Buffer_Proxy::OnMsgCreate(
   HostDispatcher* dispatcher = HostDispatcher::GetForInstance(instance);
   if (!dispatcher)
     return;
-  PP_Resource local_buffer_resource =
-      ppb_buffer_target()->Create(instance, size);
+
+  thunk::EnterResourceCreation enter(instance);
+  if (enter.failed())
+    return;
+  PP_Resource local_buffer_resource = enter.functions()->CreateBuffer(instance,
+                                                                      size);
   if (local_buffer_resource == 0)
     return;
+
   thunk::EnterResourceNoLock<thunk::PPB_BufferTrusted_API> trusted_buffer(
       local_buffer_resource, false);
   if (trusted_buffer.failed())

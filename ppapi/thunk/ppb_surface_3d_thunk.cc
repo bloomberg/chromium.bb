@@ -63,7 +63,7 @@ const PPB_Surface3D_Dev g_ppb_surface_3d_thunk = {
 
 }  // namespace
 
-const PPB_Surface3D_Dev* GetPPB_Surface3D_Thunk() {
+const PPB_Surface3D_Dev* GetPPB_Surface3D_Dev_Thunk() {
   return &g_ppb_surface_3d_thunk;
 }
 

@@ -18,15 +18,10 @@ class SerializedVarReturnValue;
 
 class PPB_Flash_Clipboard_Proxy : public InterfaceProxy {
  public:
-  PPB_Flash_Clipboard_Proxy(Dispatcher* dispatcher,
-                            const void* target_interface);
+  PPB_Flash_Clipboard_Proxy(Dispatcher* dispatcher);
   virtual ~PPB_Flash_Clipboard_Proxy();
 
   static const Info* GetInfo();
-
-  const PPB_Flash_Clipboard* ppb_flash_clipboard_target() const {
-    return reinterpret_cast<const PPB_Flash_Clipboard*>(target_interface());
-  }
 
   // InterfaceProxy implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg);
@@ -43,6 +38,11 @@ class PPB_Flash_Clipboard_Proxy : public InterfaceProxy {
   void OnMsgWritePlainText(PP_Instance instance_id,
                            int clipboard_type,
                            SerializedVarReceiveInput text);
+
+  // When this proxy is in the host side, this value caches the interface
+  // pointer so we don't have to retrieve it from the dispatcher each time.
+  // In the plugin, this value is always NULL.
+  const PPB_Flash_Clipboard* ppb_flash_clipboard_impl_;
 };
 
 }  // namespace proxy

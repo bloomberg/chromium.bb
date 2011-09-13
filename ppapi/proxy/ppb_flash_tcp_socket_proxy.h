@@ -26,8 +26,7 @@ PPAPI_PROXY_EXPORT extern const int32_t kFlashTCPSocketMaxWriteSize;
 
 class PPB_Flash_TCPSocket_Proxy : public InterfaceProxy {
  public:
-  PPB_Flash_TCPSocket_Proxy(Dispatcher* dispatcher,
-                            const void* target_interface);
+  PPB_Flash_TCPSocket_Proxy(Dispatcher* dispatcher);
   virtual ~PPB_Flash_TCPSocket_Proxy();
 
   static const Info* GetInfo();

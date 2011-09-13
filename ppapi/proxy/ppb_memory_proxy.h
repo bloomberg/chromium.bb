@@ -12,23 +12,7 @@ struct PPB_Memory_Dev;
 namespace ppapi {
 namespace proxy {
 
-class PPB_Memory_Proxy : public InterfaceProxy {
- public:
-  PPB_Memory_Proxy(Dispatcher* dispatcher,
-                   const void* target_interface);
-  virtual ~PPB_Memory_Proxy();
-
-  static const Info* GetInfo();
-
-  const PPB_Memory_Dev* ppb_memory_target() const {
-    return static_cast<const PPB_Memory_Dev*>(target_interface());
-  }
-
-  // InterfaceProxy implementation. In this case, no messages are sent or
-  // received, so this always returns false.
-  virtual bool OnMessageReceived(const IPC::Message& msg);
-
-};
+const PPB_Memory_Dev* GetPPB_Memory_Interface();
 
 }  // namespace proxy
 }  // namespace ppapi
