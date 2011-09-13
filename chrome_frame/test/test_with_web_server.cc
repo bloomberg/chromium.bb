@@ -419,7 +419,7 @@ TEST_F(ChromeFrameTestWithWebServer, WidgetModeIE_iframeBasic) {
 
 const wchar_t kSrcPropertyTestPage[] = L"src_property_host.html";
 
-TEST_F(ChromeFrameTestWithWebServer, WidgetModeIE_SrcProperty) {
+TEST_F(ChromeFrameTestWithWebServer, FLAKY_WidgetModeIE_SrcProperty) {
   SimpleBrowserTest(IE, kSrcPropertyTestPage);
 }
 
