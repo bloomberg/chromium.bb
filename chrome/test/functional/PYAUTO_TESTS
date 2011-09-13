@@ -181,6 +181,8 @@
       '-sync.SyncTest.testDisableAndEnableDatatypes',
       # crbug.com/88190
       '-passwords.PasswordTest.testClearFetchedCredForNewUserName',
+      # crbug.com/96471
+      '-passwords.PasswordTest.testDisplayAndSavePasswordInfobar',
       # Crashes browser. crbug.com/89000
       '-prefs.PrefsTest.testGeolocationPref',
       # crbug.com/93822
