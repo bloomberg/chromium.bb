@@ -131,7 +131,7 @@ void BalloonCollectionImpl::ResizeBalloon(Balloon* balloon,
 
 void BalloonCollectionImpl::OnBalloonClosed(Balloon* source) {
   notification_ui_->Remove(source);
-  base_.Remove(source);
+  base_.Remove(source);  // Deletes |source|.
 
   // There may be no listener in a unit test.
   if (space_change_listener_)

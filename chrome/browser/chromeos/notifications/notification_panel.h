@@ -89,25 +89,25 @@ class NotificationPanel : public PanelController::Delegate,
   void Hide();
 
   // BalloonCollectionImpl::NotificationUI overrides..
-  virtual void Add(Balloon* balloon);
-  virtual bool Update(Balloon* balloon);
-  virtual void Remove(Balloon* balloon);
-  virtual void Show(Balloon* balloon);
+  virtual void Add(Balloon* balloon) OVERRIDE;
+  virtual bool Update(Balloon* balloon) OVERRIDE;
+  virtual void Remove(Balloon* balloon) OVERRIDE;
+  virtual void Show(Balloon* balloon) OVERRIDE;
   virtual void ResizeNotification(Balloon* balloon,
-                                  const gfx::Size& size);
-  virtual void SetActiveView(BalloonViewImpl* view);
+                                  const gfx::Size& size) OVERRIDE;
+  virtual void SetActiveView(BalloonViewImpl* view) OVERRIDE;
 
   // PanelController::Delegate overrides.
-  virtual string16 GetPanelTitle();
-  virtual SkBitmap GetPanelIcon();
-  virtual bool CanClosePanel();
-  virtual void ClosePanel();
-  virtual void ActivatePanel();
+  virtual string16 GetPanelTitle() OVERRIDE;
+  virtual SkBitmap GetPanelIcon() OVERRIDE;
+  virtual bool CanClosePanel() OVERRIDE;
+  virtual void ClosePanel() OVERRIDE;
+  virtual void ActivatePanel() OVERRIDE;
 
   // NotificationObserver overrides:
   virtual void Observe(int type,
                        const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const NotificationDetails& details) OVERRIDE;
 
   // Called when a mouse left the panel window.
   void OnMouseLeave();

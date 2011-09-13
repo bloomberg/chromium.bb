@@ -240,6 +240,16 @@ class BalloonSubContainer : public views::View {
     return NULL;
   }
 
+  // Returns true if the |view| is in the container.
+  // |view| can be a deleted pointer - we do not dereference it.
+  bool HasChildView(View* view) const {
+    for (int i = 0; i < child_count(); ++i) {
+      if (child_at(i) == view)
+        return true;
+    }
+    return false;
+  }
+
  private:
   gfx::Size preferred_size_;
   int margin_;
@@ -345,9 +355,10 @@ class BalloonContainer : public views::View {
   }
 
   // Returns true if the |view| is contained in the panel.
+  // |view| can be a deleted pointer - we do not dereference it.
   bool HasBalloonView(View* view) {
-    return view->parent() == sticky_container_ ||
-        view->parent() == non_sticky_container_;
+    return sticky_container_->HasChildView(view) ||
+        non_sticky_container_->HasChildView(view);
   }
 
   // Updates the bounds so that all notifications are visible.
@@ -420,7 +431,7 @@ NotificationPanel::~NotificationPanel() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// NottificationPanel public.
+// NotificationPanel public.
 
 void NotificationPanel::Show() {
   if (!panel_widget_) {
@@ -796,6 +807,7 @@ void NotificationPanel::StartStaleTimer(Balloon* balloon) {
 }
 
 void NotificationPanel::OnStale(BalloonViewImpl* view) {
+  // Note: |view| may point to deleted memory.
   if (balloon_container_->HasBalloonView(view) && !view->stale()) {
     view->set_stale();
     // don't update panel on stale
