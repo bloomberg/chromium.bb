@@ -263,7 +263,6 @@ internal = {
   'overlays' : 'both',
   'git_url' : MANIFEST_INT_URL,
   'quick_vm' : False,
-  'gs_path' : None,
 }
 
 #
