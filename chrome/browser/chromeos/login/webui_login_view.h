@@ -114,6 +114,10 @@ class WebUILoginView : public views::View,
   virtual bool IsPopupOrPanel(const TabContents* source) const OVERRIDE;
   virtual bool TakeFocus(bool reverse) OVERRIDE;
 
+  // Called when focus is returned from status area.
+  // |reverse| is true when focus is traversed backwards (using Shift-Tab).
+  void ReturnFocus(bool reverse);
+
   // Window that contains status area.
   // TODO(nkostylev): Temporary solution till we have
   // RenderWidgetHostViewViews working.

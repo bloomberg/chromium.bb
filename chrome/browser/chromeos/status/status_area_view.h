@@ -7,6 +7,8 @@
 #pragma once
 
 #include "base/basictypes.h"
+#include "base/callback.h"
+#include "base/task.h"
 #include "chrome/browser/ui/views/accessible_pane_view.h"
 #include "views/view.h"
 
@@ -32,6 +34,16 @@ class StatusAreaView : public AccessiblePaneView {
   void MakeButtonsActive(bool active);
   void ButtonVisibilityChanged(views::View* button_view);
 
+  // Takes focus and transfers it to the first (last if |reverse| is true).
+  // After focus has traversed through all elements, clears focus and calls
+  // |return_focus_cb(reverse)| from the message loop.
+  void TakeFocus(bool reverse,
+                 const base::Callback<void(bool)>& return_focus_cb);
+
+  // Overridden from views::FocusChangeListener:
+  virtual void FocusWillChange(views::View* focused_before,
+                               views::View* focused_now) OVERRIDE;
+
   // views::View* overrides.
   virtual gfx::Size GetPreferredSize();
   virtual void Layout();
@@ -54,6 +66,14 @@ class StatusAreaView : public AccessiblePaneView {
   MemoryMenuButton* memory_view_;
   NetworkMenuButton* network_view_;
   PowerMenuButton* power_view_;
+
+  // True if focus needs to be returned via |return_focus_cb_| when it wraps.
+  bool need_return_focus_;
+  base::Callback<void(bool)> return_focus_cb_;
+  ScopedRunnableMethodFactory<StatusAreaView> task_factory_;
+
+  // Clears focus and calls |return_focus_cb_|.
+  void ReturnFocus(bool reverse);
 
   DISALLOW_COPY_AND_ASSIGN(StatusAreaView);
 };

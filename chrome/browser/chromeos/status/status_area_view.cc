@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "chrome/browser/chromeos/status/accessibility_menu_button.h"
 #include "chrome/browser/chromeos/status/caps_lock_menu_button.h"
@@ -39,7 +40,9 @@ StatusAreaView::StatusAreaView(StatusAreaHost* host)
       input_method_view_(NULL),
       memory_view_(NULL),
       network_view_(NULL),
-      power_view_(NULL) {
+      power_view_(NULL),
+      need_return_focus_(false),
+      ALLOW_THIS_IN_INITIALIZER_LIST(task_factory_(this)) {
 }
 
 void StatusAreaView::Init() {
@@ -130,6 +133,53 @@ void StatusAreaView::MakeButtonsActive(bool active) {
 void StatusAreaView::ButtonVisibilityChanged(views::View* button_view) {
   Layout();
   PreferredSizeChanged();
+}
+
+void StatusAreaView::TakeFocus(
+    bool reverse,
+    const base::Callback<void(bool)>& return_focus_cb) {
+  // Emulates focus receive by AccessiblePaneView::SetPaneFocus.
+  if (!focus_manager_)
+    focus_manager_ = GetFocusManager();
+  focus_manager_->SetFocusedView(
+      reverse ? GetLastFocusableChild() : GetFirstFocusableChild());
+  pane_has_focus_ = true;
+  need_return_focus_ = true;
+  return_focus_cb_ = return_focus_cb;
+  focus_manager_->AddFocusChangeListener(this);
+}
+
+void StatusAreaView::ReturnFocus(bool reverse) {
+  // Emulates focus loss by AccessiblePaneView::RemovePaneFocus.
+  if (!focus_manager_)
+    focus_manager_ = GetFocusManager();
+  focus_manager_->RemoveFocusChangeListener(this);
+  pane_has_focus_ = false;
+  need_return_focus_ = false;
+  focus_manager_->ClearFocus();
+  return_focus_cb_.Run(reverse);
+}
+
+void StatusAreaView::FocusWillChange(views::View* focused_before,
+                                     views::View* focused_now) {
+  // Call superclass.
+  AccessiblePaneView::FocusWillChange(focused_before, focused_now);
+
+  // If focus has been wrapped, postpone focus return task.
+  if (need_return_focus_) {
+    const views::View* first = GetFirstFocusableChild();
+    const views::View* last = GetLastFocusableChild();
+
+    if (focused_before == first && focused_now == last) {
+      MessageLoop::current()->PostTask(
+          FROM_HERE,
+          task_factory_.NewRunnableMethod(&StatusAreaView::ReturnFocus, true));
+    } else if (focused_now == first && focused_before == last) {
+      MessageLoop::current()->PostTask(
+          FROM_HERE,
+          task_factory_.NewRunnableMethod(&StatusAreaView::ReturnFocus, false));
+    }
+  }
 }
 
 }  // namespace chromeos

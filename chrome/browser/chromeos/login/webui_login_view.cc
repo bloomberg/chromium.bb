@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/login/webui_login_view.h"
 
+#include "base/bind.h"
+#include "base/callback.h"
 #include "base/i18n/rtl.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
@@ -344,9 +346,20 @@ bool WebUILoginView::IsPopupOrPanel(const TabContents* source) const {
 }
 
 bool WebUILoginView::TakeFocus(bool reverse) {
-  // Forward the focus back to web contents.
-  webui_login_->tab_contents()->FocusThroughTabTraversal(reverse);
+  if (status_area_) {
+    // Forward the focus to the status area.
+    base::Callback<void(bool)> return_focus_cb =
+        base::Bind(&WebUILoginView::ReturnFocus, base::Unretained(this));
+    status_area_->TakeFocus(reverse, return_focus_cb);
+    status_area_->GetWidget()->Activate();
+  }
   return true;
+}
+
+void WebUILoginView::ReturnFocus(bool reverse) {
+  // Return the focus to the web contents.
+  webui_login_->tab_contents()->FocusThroughTabTraversal(reverse);
+  GetWidget()->Activate();
 }
 
 void WebUILoginView::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
