@@ -47,7 +47,9 @@ void Desktop::Run() {
 }
 
 void Desktop::Draw() {
-  compositor_->NotifyStart();
+  // Second pass renders the layers.
+  const bool force_clear = false;
+  compositor_->NotifyStart(force_clear);
   window_->DrawTree();
   compositor_->NotifyEnd();
 }

@@ -107,7 +107,7 @@ class COMPOSITOR_EXPORT CompositorGL : public Compositor {
  private:
   // Overridden from Compositor.
   virtual Texture* CreateTexture() OVERRIDE;
-  virtual void OnNotifyStart() OVERRIDE;
+  virtual void OnNotifyStart(bool clear) OVERRIDE;
   virtual void OnNotifyEnd() OVERRIDE;
   virtual void Blur(const gfx::Rect& bounds) OVERRIDE;
 

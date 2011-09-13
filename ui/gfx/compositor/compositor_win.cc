@@ -102,10 +102,11 @@ class CompositorWin : public Compositor {
 
   // Compositor:
   virtual Texture* CreateTexture() OVERRIDE;
+
   virtual void Blur(const gfx::Rect& bounds) OVERRIDE;
 
  protected:
-  virtual void OnNotifyStart() OVERRIDE;
+  virtual void OnNotifyStart(bool clear) OVERRIDE;
   virtual void OnNotifyEnd() OVERRIDE;
   virtual void OnWidgetSizeChanged() OVERRIDE;
 
@@ -387,11 +388,12 @@ Texture* CompositorWin::CreateTexture() {
   return new ViewTexture(this, device_.get(), fx_.get());
 }
 
-void CompositorWin::OnNotifyStart() {
+void CompositorWin::OnNotifyStart(bool clear) {
   ID3D10RenderTargetView* target_view = main_render_target_view_.get();
   device_->OMSetRenderTargets(1, &target_view, depth_stencil_view_.get());
 
   // Clear the background and stencil view.
+  // TODO(vollick) see if |clear| can be used to avoid unnecessary clearing.
   device_->ClearRenderTargetView(target_view,
                                  D3DXCOLOR(0.0f, 0.0f, 0.0f, 0.0f));
   device_->ClearDepthStencilView(

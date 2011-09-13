@@ -10,6 +10,7 @@
 #include "ui/base/l10n/l10n_font_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/compositor/compositor.h"
+#include "ui/gfx/compositor/layer.h"
 #include "views/controls/menu/menu_controller.h"
 #include "views/focus/focus_manager_factory.h"
 #include "views/focus/view_storage.h"
@@ -920,7 +921,32 @@ bool Widget::OnNativeWidgetPaintAccelerated(const gfx::Rect& dirty_region) {
   if (!compositor)
     return false;
 
-  compositor->NotifyStart();
+  // If the root view is animating, it is likely that it does not cover the same
+  // set of pixels it did at the last frame, so we must clear when compositing
+  // to avoid leaving ghosts.
+  bool should_force_clear = false;
+  if (GetRootView()->layer()) {
+    const ui::Transform& layer_transform = GetRootView()->layer()->transform();
+    if (layer_transform != GetRootView()->GetTransform()) {
+      // The layer has not caught up to the view (i.e., the layer is still
+      // animating), and so a clear is required.
+      should_force_clear = true;
+    } else {
+      // Determine if the layer fills the client area.
+      gfx::Rect layer_bounds = GetRootView()->layer()->bounds();
+      layer_transform.TransformRect(&layer_bounds);
+      gfx::Rect client_bounds = GetClientAreaScreenBounds();
+      // Translate bounds to origin (client area bounds are offset to account
+      // for buttons, etc).
+      client_bounds.set_origin(gfx::Point(0, 0));
+      if (!layer_bounds.Contains(client_bounds)) {
+        // It doesn't, and so a clear is required.
+        should_force_clear = true;
+      }
+    }
+  }
+
+  compositor->NotifyStart(should_force_clear);
   GetRootView()->PaintToLayer(dirty_region);
   GetRootView()->PaintComposite();
   compositor->NotifyEnd();

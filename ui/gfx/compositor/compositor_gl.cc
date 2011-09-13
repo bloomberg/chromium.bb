@@ -470,18 +470,24 @@ Texture* CompositorGL::CreateTexture() {
   return texture;
 }
 
-void CompositorGL::OnNotifyStart() {
+void CompositorGL::OnNotifyStart(bool clear) {
   started_ = true;
   gl_context_->MakeCurrent(gl_surface_.get());
   glViewport(0, 0, size().width(), size().height());
   glColorMask(true, true, true, true);
 
-#if defined(DEBUG)
-  // Clear to 'psychedelic' purple to make it easy to spot un-rendered regions.
-  glClearColor(223.0 / 255, 0, 1, 1);
-  glClear(GL_COLOR_BUFFER_BIT);
+  if (clear) {
+    glClearColor(0, 0, 0, 0);
+    glClear(GL_COLOR_BUFFER_BIT);
+  }
+#if !defined(NDEBUG)
+  else {
+    // In debug mode, when we're not forcing a clear, clear to 'psychedelic'
+    // purple to make it easy to spot un-rendered regions.
+    glClearColor(223.0 / 255, 0, 1, 1);
+    glClear(GL_COLOR_BUFFER_BIT);
+  }
 #endif
-  // Do not clear in release: root layer is responsible for drawing every pixel.
 }
 
 void CompositorGL::OnNotifyEnd() {

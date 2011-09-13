@@ -15,8 +15,8 @@ Compositor::Compositor(CompositorDelegate* delegate, const gfx::Size& size)
 Compositor::~Compositor() {
 }
 
-void Compositor::NotifyStart() {
-  OnNotifyStart();
+void Compositor::NotifyStart(bool clear) {
+  OnNotifyStart(clear);
 }
 
 void Compositor::NotifyEnd() {

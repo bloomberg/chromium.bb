@@ -88,8 +88,9 @@ class COMPOSITOR_EXPORT Compositor : public base::RefCounted<Compositor> {
   // Creates a new texture. The caller owns the returned object.
   virtual Texture* CreateTexture() = 0;
 
-  // Notifies the compositor that compositing is about to start.
-  void NotifyStart();
+  // Notifies the compositor that compositing is about to start. If |clear| is
+  // true, this will cause the compositor to clear before compositing.
+  void NotifyStart(bool clear);
 
   // Notifies the compositor that compositing is complete.
   void NotifyEnd();
@@ -122,7 +123,7 @@ class COMPOSITOR_EXPORT Compositor : public base::RefCounted<Compositor> {
   virtual ~Compositor();
 
   // Notifies the compositor that compositing is about to start.
-  virtual void OnNotifyStart() = 0;
+  virtual void OnNotifyStart(bool clear) = 0;
 
   // Notifies the compositor that compositing is complete.
   virtual void OnNotifyEnd() = 0;
