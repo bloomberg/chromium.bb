@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 // This class simulates a slow download.  This used in a UI test to test the
@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "base/task.h"
+#include "content/common/content_export.h"
 #include "net/url_request/url_request_job.h"
 
 class URLRequestSlowDownloadJob : public net::URLRequestJob {
@@ -38,7 +39,7 @@ class URLRequestSlowDownloadJob : public net::URLRequestJob {
   static const char kFinishDownloadUrl[];
 
   // Adds the testing URLs to the net::URLRequestFilter.
-  static void AddUrlHandler();
+  CONTENT_EXPORT static void AddUrlHandler();
 
  private:
   virtual ~URLRequestSlowDownloadJob();

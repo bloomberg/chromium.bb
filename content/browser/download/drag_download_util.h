@@ -10,6 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/string16.h"
 #include "content/browser/download/drag_download_file.h"
+#include "content/common/content_export.h"
 #include "ui/base/dragdrop/download_file_interface.h"
 
 class FilePath;
@@ -29,10 +30,10 @@ namespace drag_download_util {
 // appropriately.
 // For example, we can have
 //   text/plain:example.txt:http://example.com/example.txt
-bool ParseDownloadMetadata(const string16& metadata,
-                           string16* mime_type,
-                           FilePath* file_name,
-                           GURL* url);
+CONTENT_EXPORT bool ParseDownloadMetadata(const string16& metadata,
+                                          string16* mime_type,
+                                          FilePath* file_name,
+                                          GURL* url);
 
 // Create a new file at the specified path. If the file already exists, try to
 // insert the sequential unifier to produce a new file, like foo-01.txt.

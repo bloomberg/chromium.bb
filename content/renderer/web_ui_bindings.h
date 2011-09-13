@@ -6,6 +6,7 @@
 #define CONTENT_RENDERER_WEB_UI_BINDINGS_H_
 #pragma once
 
+#include "content/common/content_export.h"
 #include "ipc/ipc_message.h"
 #include "webkit/glue/cpp_bound_class.h"
 
@@ -14,8 +15,8 @@
 // in the browser process.
 class DOMBoundBrowserObject : public CppBoundClass {
  public:
-  DOMBoundBrowserObject();
-  virtual ~DOMBoundBrowserObject();
+  CONTENT_EXPORT DOMBoundBrowserObject();
+  CONTENT_EXPORT virtual ~DOMBoundBrowserObject();
 
   // Set the message channel back to the browser.
   void set_message_sender(IPC::Message::Sender* sender) {

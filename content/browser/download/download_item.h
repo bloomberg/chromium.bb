@@ -27,6 +27,7 @@
 #include "base/timer.h"
 #include "content/browser/download/download_request_handle.h"
 #include "content/browser/download/download_state_info.h"
+#include "content/common/content_export.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_errors.h"
 
@@ -40,7 +41,7 @@ struct DownloadPersistentStoreInfo;
 // Destination tab's download view, may refer to a given DownloadItem.
 //
 // This is intended to be used only on the UI thread.
-class DownloadItem {
+class CONTENT_EXPORT DownloadItem {
  public:
   enum DownloadState {
     // Download is actively progressing.
@@ -98,7 +99,7 @@ class DownloadItem {
 
   // Interface that observers of a particular download must implement in order
   // to receive updates to the download's status.
-  class Observer {
+  class CONTENT_EXPORT Observer {
    public:
     virtual void OnDownloadUpdated(DownloadItem* download) = 0;
 

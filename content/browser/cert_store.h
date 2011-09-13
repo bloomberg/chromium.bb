@@ -10,6 +10,7 @@
 
 #include "base/memory/singleton.h"
 #include "base/synchronization/lock.h"
+#include "content/common/content_export.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 #include "net/base/x509_certificate.h"
@@ -24,7 +25,7 @@
 // Note that the cert ids will overflow if we register more than 2^32 - 1 certs
 // in 1 browsing session (which is highly unlikely to happen).
 
-class CertStore : public NotificationObserver {
+class CONTENT_EXPORT CertStore : public NotificationObserver {
  public:
   // Returns the singleton instance of the CertStore.
   static CertStore* GetInstance();

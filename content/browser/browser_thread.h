@@ -10,6 +10,7 @@
 #include "base/synchronization/lock.h"
 #include "base/task.h"
 #include "base/threading/thread.h"
+#include "content/common/content_export.h"
 
 #if defined(UNIT_TEST)
 #include "base/logging.h"
@@ -39,7 +40,7 @@ class MessageLoopProxy;
 // task is posted to is guaranteed to outlive the current thread, then no locks
 // are used.  You should never need to cache pointers to MessageLoops, since
 // they're not thread safe.
-class BrowserThread : public base::Thread {
+class CONTENT_EXPORT BrowserThread : public base::Thread {
  public:
   // An enumeration of the well-known threads.
   // NOTE: threads must be listed in the order of their life-time, with each

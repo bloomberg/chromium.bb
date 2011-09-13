@@ -7,6 +7,7 @@
 #pragma once
 
 #include "base/string16.h"
+#include "content/common/content_export.h"
 #include "ui/gfx/native_widget_types.h"
 
 class GURL;
@@ -18,7 +19,7 @@ class Message;
 
 namespace content {
 
-class DialogDelegate {
+class CONTENT_EXPORT DialogDelegate {
  public:
   // Returns the root native window with which to associate the dialog.
   virtual gfx::NativeWindow GetDialogRootWindow() = 0;
@@ -32,7 +33,7 @@ class DialogDelegate {
 
 // A class that invokes a JavaScript dialog must implement this interface to
 // allow the dialog implementation to get needed information and return results.
-class JavaScriptDialogDelegate : public DialogDelegate {
+class CONTENT_EXPORT JavaScriptDialogDelegate : public DialogDelegate {
  public:
   // This callback is invoked when the dialog is closed.
   virtual void OnDialogClosed(IPC::Message* reply_msg,

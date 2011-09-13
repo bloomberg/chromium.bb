@@ -11,6 +11,7 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/browser/ssl/ssl_policy_backend.h"
+#include "content/common/content_export.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 #include "googleurl/src/gurl.h"
@@ -59,11 +60,11 @@ class SSLManager : public NotificationObserver {
                                            int cert_status,
                                            int security_bits,
                                            int connection_status);
-  static bool DeserializeSecurityInfo(const std::string& state,
-                                      int* cert_id,
-                                      int* cert_status,
-                                      int* security_bits,
-                                      int* connection_status);
+  CONTENT_EXPORT static bool DeserializeSecurityInfo(const std::string& state,
+                                                     int* cert_id,
+                                                     int* cert_status,
+                                                     int* security_bits,
+                                                     int* connection_status);
 
   // Construct an SSLManager for the specified tab.
   // If |delegate| is NULL, SSLPolicy::GetDefaultPolicy() is used.
@@ -86,7 +87,7 @@ class SSLManager : public NotificationObserver {
   void DidRunInsecureContent(const std::string& security_origin);
 
   // Called to determine if there were any processed SSL errors from request.
-  bool ProcessedSSLErrorFromRequest() const;
+  CONTENT_EXPORT bool ProcessedSSLErrorFromRequest() const;
 
   // Entry point for navigation.  This function begins the process of updating
   // the security UI when the main frame navigates to a new URL.

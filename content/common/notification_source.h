@@ -10,11 +10,12 @@
 #pragma once
 
 #include "base/basictypes.h"
+#include "content/common/content_export.h"
 
 // Do not declare a NotificationSource directly--use either
 // "Source<sourceclassname>(sourceclasspointer)" or
 // NotificationService::AllSources().
-class NotificationSource {
+class CONTENT_EXPORT NotificationSource {
  public:
   NotificationSource(const NotificationSource& other);
   ~NotificationSource();

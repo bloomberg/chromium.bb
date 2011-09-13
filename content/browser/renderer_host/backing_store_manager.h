@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/process.h"
+#include "content/common/content_export.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
 #include "ui/gfx/surface/transport_dib.h"
@@ -59,7 +60,7 @@ class BackingStoreManager {
   static void RemoveBackingStore(RenderWidgetHost* host);
 
   // Removes all backing stores.
-  static void RemoveAllBackingStores();
+  CONTENT_EXPORT static void RemoveAllBackingStores();
 
   // Expires the given backing store. This emulates something getting evicted
   // from the cache for the purpose of testing. Returns true if the host was
@@ -67,7 +68,7 @@ class BackingStoreManager {
   static bool ExpireBackingStoreForTest(RenderWidgetHost* host);
 
   // Current size in bytes of the backing store cache.
-  static size_t MemorySize();
+  CONTENT_EXPORT static size_t MemorySize();
 
  private:
   // Not intended for instantiation.

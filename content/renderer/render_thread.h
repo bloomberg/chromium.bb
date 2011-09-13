@@ -16,6 +16,7 @@
 #include "base/timer.h"
 #include "build/build_config.h"
 #include "content/common/child_thread.h"
+#include "content/common/content_export.h"
 #include "content/common/css_colors.h"
 #include "content/common/gpu/gpu_process_launch_causes.h"
 #include "ipc/ipc_channel_proxy.h"
@@ -91,7 +92,7 @@ class Extension;
 // understand by moving everything to the abstract interface and saying that
 // there should never be a NULL RenderThread::current(). Tests would be
 // responsible for setting up the mock one.
-class RenderThreadBase {
+class CONTENT_EXPORT RenderThreadBase {
  public:
   virtual ~RenderThreadBase() {}
 
@@ -119,8 +120,8 @@ class RenderThreadBase {
 // Most of the communication occurs in the form of IPC messages.  They are
 // routed to the RenderThread according to the routing IDs of the messages.
 // The routing IDs correspond to RenderView instances.
-class RenderThread : public RenderThreadBase,
-                     public ChildThread {
+class CONTENT_EXPORT RenderThread : public RenderThreadBase,
+                                    public ChildThread {
  public:
   // Grabs the IPC channel name from the command line.
   RenderThread();

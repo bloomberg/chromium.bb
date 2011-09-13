@@ -9,15 +9,16 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/process_util.h"
+#include "content/common/content_export.h"
 
 class CommandLine;
 
 // Launches a process asynchronously and notifies the client of the process
 // handle when it's available.  It's used to avoid blocking the calling thread
 // on the OS since often it can take > 100 ms to create the process.
-class ChildProcessLauncher {
+class CONTENT_EXPORT ChildProcessLauncher {
  public:
-  class Client {
+  class CONTENT_EXPORT Client {
    public:
     // Will be called on the thread that the ChildProcessLauncher was
     // constructed on.

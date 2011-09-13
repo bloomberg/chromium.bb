@@ -46,6 +46,7 @@
 #include "content/browser/download/download_item.h"
 #include "content/browser/download/download_request_handle.h"
 #include "content/browser/download/download_status_updater_delegate.h"
+#include "content/common/content_export.h"
 #include "net/base/net_errors.h"
 
 class DownloadFileManager;
@@ -62,7 +63,7 @@ class BrowserContext;
 }
 
 // Browser's download manager: manages all downloads and destination view.
-class DownloadManager
+class CONTENT_EXPORT DownloadManager
     : public base::RefCountedThreadSafe<DownloadManager,
                                         BrowserThread::DeleteOnUIThread>,
       public DownloadStatusUpdaterDelegate {
@@ -75,7 +76,7 @@ class DownloadManager
 
   // Interface to implement for observers that wish to be informed of changes
   // to the DownloadManager's collection of downloads.
-  class Observer {
+  class CONTENT_EXPORT Observer {
    public:
     // New or deleted download, observers should query us for the current set
     // of downloads.
@@ -276,6 +277,8 @@ class DownloadManager
   friend class DownloadManagerTest;
   friend class MockDownloadManager;
 
+  friend class base::RefCountedThreadSafe<DownloadManager,
+                                          BrowserThread::DeleteOnUIThread>;
   friend struct BrowserThread::DeleteOnThread<BrowserThread::UI>;
   friend class DeleteTask<DownloadManager>;
 

@@ -12,6 +12,7 @@
 #include "base/basictypes.h"
 #include "base/string16.h"
 #include "build/build_config.h"
+#include "content/common/content_export.h"
 
 class CommandLine;
 class GURL;
@@ -40,11 +41,11 @@ class ContentUtilityClient;
 
 // Setter and getter for the client.  The client should be set early, before any
 // content code is called.
-void SetContentClient(ContentClient* client);
-ContentClient* GetContentClient();
+CONTENT_EXPORT void SetContentClient(ContentClient* client);
+CONTENT_EXPORT ContentClient* GetContentClient();
 
 // Interface that the embedder implements.
-class ContentClient {
+class CONTENT_EXPORT ContentClient {
  public:
   ContentClient();
   virtual ~ContentClient();

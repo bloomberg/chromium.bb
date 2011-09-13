@@ -14,6 +14,7 @@
 #include "content/browser/speech/audio_encoder.h"
 #include "content/browser/speech/endpointer/endpointer.h"
 #include "content/browser/speech/speech_recognition_request.h"
+#include "content/common/content_export.h"
 #include "media/audio/audio_input_controller.h"
 
 namespace speech_input {
@@ -78,27 +79,27 @@ class SpeechRecognizer
     virtual ~Delegate() {}
   };
 
-  SpeechRecognizer(Delegate* delegate,
-                   int caller_id,
-                   const std::string& language,
-                   const std::string& grammar,
-                   bool censor_results,
-                   const std::string& hardware_info,
-                   const std::string& origin_url);
+  CONTENT_EXPORT SpeechRecognizer(Delegate* delegate,
+                                  int caller_id,
+                                  const std::string& language,
+                                  const std::string& grammar,
+                                  bool censor_results,
+                                  const std::string& hardware_info,
+                                  const std::string& origin_url);
   virtual ~SpeechRecognizer();
 
   // Starts audio recording and does recognition after recording ends. The same
   // SpeechRecognizer instance can be used multiple times for speech recognition
   // though each recognition request can be made only after the previous one
   // completes (i.e. after receiving Delegate::DidCompleteRecognition).
-  bool StartRecording();
+  CONTENT_EXPORT bool StartRecording();
 
   // Stops recording audio and starts recognition.
-  void StopRecording();
+  CONTENT_EXPORT void StopRecording();
 
   // Stops recording audio and cancels recognition. Any audio recorded so far
   // gets discarded.
-  void CancelRecognition();
+  CONTENT_EXPORT void CancelRecognition();
 
   // AudioInputController::EventHandler methods.
   virtual void OnCreated(media::AudioInputController* controller) { }

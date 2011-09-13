@@ -8,11 +8,12 @@
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
+#include "content/common/content_export.h"
 
 // Interface for getting login credentials for HTTP auth requests.  When the
 // implementation has the credentials, it shoudl call the Requests's SetAuth
 // method.
-class ResourceDispatcherHostLoginDelegate
+class CONTENT_EXPORT ResourceDispatcherHostLoginDelegate
     : public base::RefCountedThreadSafe<ResourceDispatcherHostLoginDelegate> {
  public:
   ResourceDispatcherHostLoginDelegate();

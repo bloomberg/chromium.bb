@@ -14,6 +14,7 @@
 #include "base/id_map.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "content/common/content_export.h"
 #include "ppapi/proxy/broker_dispatcher.h"
 #include "ppapi/proxy/proxy_channel.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
@@ -128,7 +129,8 @@ class PepperPluginDelegateImpl
   // the second is that the plugin failed to initialize. In this case,
   // |*pepper_plugin_was_registered| will be set to true and the caller should
   // not fall back on any other plugin types.
-  scoped_refptr<webkit::ppapi::PluginModule> CreatePepperPluginModule(
+  CONTENT_EXPORT scoped_refptr<webkit::ppapi::PluginModule>
+  CreatePepperPluginModule(
       const webkit::WebPluginInfo& webplugin_info,
       bool* pepper_plugin_was_registered);
 
@@ -303,7 +305,7 @@ class PepperPluginDelegateImpl
       OVERRIDE;
   virtual ::ppapi::Preferences GetPreferences() OVERRIDE;
 
-  int GetRoutingId() const;
+  CONTENT_EXPORT int GetRoutingId() const;
 
  private:
   void PublishInitialPolicy(

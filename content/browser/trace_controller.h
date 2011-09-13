@@ -13,6 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/singleton.h"
 #include "base/task.h"
+#include "content/common/content_export.h"
 
 class TraceMessageFilter;
 
@@ -36,7 +37,7 @@ class TraceSubscriber {
 // trace status and collect trace data. Only the browser UI thread is allowed
 // to interact with the TraceController object. All calls on the TraceSubscriber
 // happen on the UI thread.
-class TraceController {
+class CONTENT_EXPORT TraceController {
  public:
   static TraceController* GetInstance();
 

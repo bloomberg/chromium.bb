@@ -11,6 +11,7 @@
 
 #include "base/basictypes.h"
 #include "content/browser/tab_contents/navigation_entry.h"
+#include "content/common/content_export.h"
 #include "content/common/navigation_types.h"
 #include "content/common/page_transition_types.h"
 #include "ui/gfx/native_widget_types.h"
@@ -44,7 +45,7 @@ class FilePath;
 
 // Objects implement this interface to get notified about changes in the
 // TabContents and to provide necessary functionality.
-class TabContentsDelegate {
+class CONTENT_EXPORT TabContentsDelegate {
  public:
   TabContentsDelegate();
 

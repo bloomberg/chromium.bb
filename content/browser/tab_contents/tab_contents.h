@@ -25,6 +25,7 @@
 #include "content/browser/tab_contents/render_view_host_manager.h"
 #include "content/browser/tab_contents/tab_contents_observer.h"
 #include "content/browser/webui/web_ui.h"
+#include "content/common/content_export.h"
 #include "content/common/property_bag.h"
 #include "content/common/renderer_preferences.h"
 #include "net/base/load_states.h"
@@ -58,10 +59,10 @@ struct ViewHostMsg_RunFileChooser_Params;
 
 // Describes what goes in the main content area of a tab. TabContents is
 // the only type of TabContents, and these should be merged together.
-class TabContents : public PageNavigator,
-                    public RenderViewHostDelegate,
-                    public RenderViewHostManager::Delegate,
-                    public content::JavaScriptDialogDelegate {
+class CONTENT_EXPORT TabContents : public PageNavigator,
+                                   public RenderViewHostDelegate,
+                                   public RenderViewHostManager::Delegate,
+                                   public content::JavaScriptDialogDelegate {
  public:
   // Flags passed to the TabContentsDelegate.NavigationStateChanged to tell it
   // what has changed. Combine them to update more than one thing.

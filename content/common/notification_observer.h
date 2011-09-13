@@ -6,12 +6,14 @@
 #define CONTENT_COMMON_NOTIFICATION_OBSERVER_H_
 #pragma once
 
+#include "content/common/content_export.h"
+
 class NotificationDetails;
 class NotificationSource;
 
 // This is the base class for notification observers. When a matching
 // notification is posted to the notification service, Observe is called.
-class NotificationObserver {
+class CONTENT_EXPORT NotificationObserver {
  public:
   NotificationObserver();
   virtual ~NotificationObserver();

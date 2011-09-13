@@ -14,6 +14,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
+#include "content/common/content_export.h"
 #include "content/common/gpu/gpu_feature_flags.h"
 
 class Version;
@@ -23,7 +24,7 @@ namespace base {
 class DictionaryValue;
 }
 
-class GpuBlacklist {
+class CONTENT_EXPORT GpuBlacklist {
  public:
   enum OsType {
     kOsLinux,

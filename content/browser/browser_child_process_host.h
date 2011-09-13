@@ -11,15 +11,17 @@
 #include "content/browser/child_process_launcher.h"
 #include "content/common/child_process_host.h"
 #include "content/common/child_process_info.h"
+#include "content/common/content_export.h"
 
 // Plugins/workers and other child processes that live on the IO thread should
 // derive from this class.
 //
 // [Browser]RenderProcessHost is the main exception that doesn't derive from
 // this class. That project lives on the UI thread.
-class BrowserChildProcessHost : public ChildProcessHost,
-                                public ChildProcessInfo,
-                                public ChildProcessLauncher::Client {
+class CONTENT_EXPORT BrowserChildProcessHost :
+    public ChildProcessHost,
+    public ChildProcessInfo,
+    public ChildProcessLauncher::Client {
  public:
   virtual ~BrowserChildProcessHost();
 
@@ -31,7 +33,7 @@ class BrowserChildProcessHost : public ChildProcessHost,
   // this should be done from the IO thread and that the iterator should not be
   // kept around as it may be invalidated on subsequent event processing in the
   // event loop.
-  class Iterator {
+  class CONTENT_EXPORT Iterator {
    public:
     Iterator();
     explicit Iterator(ChildProcessInfo::ProcessType type);

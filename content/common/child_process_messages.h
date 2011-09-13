@@ -5,8 +5,12 @@
 // Common IPC messages used for child processes.
 // Multiply-included message file, hence no include guard.
 
+#include "content/common/content_export.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_message_macros.h"
+
+#undef IPC_MESSAGE_EXPORT
+#define IPC_MESSAGE_EXPORT CONTENT_EXPORT
 
 #define IPC_MESSAGE_START ChildProcessMsgStart
 

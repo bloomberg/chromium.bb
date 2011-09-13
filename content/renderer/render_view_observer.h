@@ -7,6 +7,7 @@
 #pragma once
 
 #include "base/basictypes.h"
+#include "content/common/content_export.h"
 #include "ipc/ipc_channel.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIconURL.h"
 
@@ -26,8 +27,8 @@ struct WebURLError;
 
 // Base class for objects that want to filter incoming IPCs, and also get
 // notified of changes to the frame.
-class RenderViewObserver : public IPC::Channel::Listener,
-                           public IPC::Message::Sender {
+class CONTENT_EXPORT RenderViewObserver : public IPC::Channel::Listener,
+                                          public IPC::Message::Sender {
  public:
   // By default, observers will be deleted when the RenderView goes away.  If
   // they want to outlive it, they can override this function.

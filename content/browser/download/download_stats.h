@@ -11,6 +11,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "content/common/content_export.h"
 
 namespace base {
 class TimeTicks;
@@ -67,7 +68,7 @@ enum DownloadCountTypes {
 };
 
 // Increment one of the above counts.
-void RecordDownloadCount(DownloadCountTypes type);
+CONTENT_EXPORT void RecordDownloadCount(DownloadCountTypes type);
 
 // Record COMPLETED_COUNT and how long the download took.
 void RecordDownloadCompleted(const base::TimeTicks& start, int64 download_len);

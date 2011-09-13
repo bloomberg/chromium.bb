@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "base/process_util.h"
+#include "content/common/content_export.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
@@ -64,7 +65,7 @@ struct WebScreenInfo;
 // changes.
 class RenderWidgetHostView {
  public:
-  virtual ~RenderWidgetHostView();
+  CONTENT_EXPORT virtual ~RenderWidgetHostView();
 
   // Platform-specific creator. Use this to construct new RenderWidgetHostViews
   // rather than using RenderWidgetHostViewWin & friends.
@@ -315,7 +316,7 @@ class RenderWidgetHostView {
 
   // Subclasses should override this method to do what is appropriate to set
   // the custom background for their platform.
-  virtual void SetBackground(const SkBitmap& background);
+  CONTENT_EXPORT virtual void SetBackground(const SkBitmap& background);
   const SkBitmap& background() const { return background_; }
 
   virtual void OnAccessibilityNotifications(

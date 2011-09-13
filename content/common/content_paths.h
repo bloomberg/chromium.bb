@@ -6,6 +6,8 @@
 #define CONTENT_COMMON_CONTENT_PATHS_H_
 #pragma once
 
+#include "content/common/content_export.h"
+
 // This file declares path keys for the content module.  These can be used with
 // the PathService to access various special directories and files.
 
@@ -24,7 +26,7 @@ enum {
 };
 
 // Call once to register the provider for the path keys defined above.
-void RegisterPathProvider();
+CONTENT_EXPORT void RegisterPathProvider();
 
 }  // namespace content
 

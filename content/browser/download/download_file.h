@@ -13,6 +13,7 @@
 #include "content/browser/download/base_file.h"
 #include "content/browser/download/download_request_handle.h"
 #include "content/browser/download/download_types.h"
+#include "content/common/content_export.h"
 
 struct DownloadCreateInfo;
 class DownloadManager;
@@ -22,7 +23,7 @@ class ResourceDispatcherHost;
 // operations for one download. These objects live only for the duration that
 // the download is 'in progress': once the download has been completed or
 // cancelled, the DownloadFile is destroyed.
-class DownloadFile : public BaseFile {
+class CONTENT_EXPORT DownloadFile : public BaseFile {
  public:
   DownloadFile(const DownloadCreateInfo* info,
                DownloadManager* download_manager);

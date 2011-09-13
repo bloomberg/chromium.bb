@@ -7,9 +7,10 @@
 #pragma once
 
 #include "base/basictypes.h"
+#include "content/common/content_export.h"
 
 // This class is for scoping only.
-class PageTransition {
+class CONTENT_EXPORT PageTransition {
  public:
   // Types of transitions between pages. These are stored in the history
   // database to separate visits, and are reported by the renderer for page

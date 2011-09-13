@@ -7,7 +7,9 @@
 #pragma once
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "build/build_config.h"
+#include "content/common/content_export.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 
 #if defined(OS_WIN)
@@ -24,7 +26,8 @@ typedef struct _GdkEventKey GdkEventKey;
 
 // Owns a platform specific event; used to pass own and pass event through
 // platform independent code.
-struct NativeWebKeyboardEvent : public WebKit::WebKeyboardEvent {
+struct CONTENT_EXPORT NativeWebKeyboardEvent :
+  NON_EXPORTED_BASE(public WebKit::WebKeyboardEvent) {
   NativeWebKeyboardEvent();
 
 #if defined(OS_WIN)

@@ -11,12 +11,13 @@
 #include "base/platform_file.h"
 #include "base/process.h"
 #include "content/browser/browser_thread.h"
+#include "content/common/content_export.h"
 #include "ipc/ipc_platform_file.h"
 
 class FilePath;
 class TabContents;
 
-class MHTMLGenerationManager
+class CONTENT_EXPORT MHTMLGenerationManager
     : public base::RefCountedThreadSafe<MHTMLGenerationManager,
                                         BrowserThread::DeleteOnUIThread> {
  public:

@@ -16,6 +16,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/browser/browser_thread.h"
+#include "content/common/content_export.h"
 #include "googleurl/src/gurl.h"
 
 class GURL;
@@ -35,7 +36,8 @@ class QuotaManagerProxy;
 class SpecialStoragePolicy;
 }
 
-class IndexedDBContext : public base::RefCountedThreadSafe<IndexedDBContext> {
+class CONTENT_EXPORT IndexedDBContext
+    : public base::RefCountedThreadSafe<IndexedDBContext> {
  public:
   IndexedDBContext(WebKitContext* webkit_context,
                    quota::SpecialStoragePolicy* special_storage_policy,

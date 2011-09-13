@@ -5,6 +5,7 @@
 #ifndef CHROME_RENDERER_V8_VALUE_CONVERTER_H_
 #define CHROME_RENDERER_V8_VALUE_CONVERTER_H_
 
+#include "content/common/content_export.h"
 #include "v8/include/v8.h"
 
 namespace base {
@@ -20,7 +21,7 @@ class Value;
 // Only the JSON types (null, boolean, string, number, array, and object) are
 // supported by default. Additional types can be allowed with e.g.
 // set_allow_date(), set_allow_regexp().
-class V8ValueConverter {
+class CONTENT_EXPORT V8ValueConverter {
  public:
   V8ValueConverter();
 

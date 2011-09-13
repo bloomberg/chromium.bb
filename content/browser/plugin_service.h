@@ -20,6 +20,7 @@
 #include "content/browser/plugin_process_host.h"
 #include "content/browser/ppapi_plugin_process_host.h"
 #include "content/browser/ppapi_broker_process_host.h"
+#include "content/common/content_export.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 #include "googleurl/src/gurl.h"
@@ -45,7 +46,7 @@ class PluginServiceFilter;
 
 // This must be created on the main thread but it's only called on the IO/file
 // thread.
-class PluginService
+class CONTENT_EXPORT PluginService
     : public base::WaitableEventWatcher::Delegate,
       public NotificationObserver {
  public:

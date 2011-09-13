@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "content/common/content_export.h"
 #include "content/common/content_notification_types.h"
 
 class NotificationObserver;
@@ -21,7 +22,7 @@ class NotificationSource;
 // class and use it to register your notifications instead of going through the
 // notification service directly. It will automatically unregister them for
 // you.
-class NotificationRegistrar {
+class CONTENT_EXPORT NotificationRegistrar {
  public:
   // This class must not be derived from (we don't have a virtual destructor so
   // it won't work). Instead, use it as a member in your class.

@@ -7,10 +7,12 @@
 #pragma once
 
 #include "base/system_monitor/system_monitor.h"
+#include "content/common/content_export.h"
 
 // Ensures that the Windows high resolution timer is only used
 // when not running on battery power.
-class HighResolutionTimerManager : public base::SystemMonitor::PowerObserver {
+class CONTENT_EXPORT HighResolutionTimerManager
+    : public base::SystemMonitor::PowerObserver {
  public:
   HighResolutionTimerManager();
   virtual ~HighResolutionTimerManager();

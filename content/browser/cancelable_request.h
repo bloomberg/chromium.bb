@@ -100,6 +100,7 @@
 #include "base/synchronization/lock.h"
 #include "base/task.h"
 #include "build/build_config.h"
+#include "content/common/content_export.h"
 
 class CancelableRequestBase;
 class CancelableRequestConsumerBase;
@@ -113,7 +114,7 @@ class CancelableRequestConsumerBase;
 // It is intended that providers inherit from this class to provide the
 // necessary functionality.
 
-class CancelableRequestProvider {
+class CONTENT_EXPORT CancelableRequestProvider {
  public:
   // Identifies a specific request from this provider.
   typedef int Handle;
@@ -514,7 +515,7 @@ extern template class CancelableRequestConsumerT<int, 0>;
 // other thread for the callback, but will still be destroyed properly.
 
 // Non-templatized base class that provides cancellation
-class CancelableRequestBase
+class CONTENT_EXPORT CancelableRequestBase
     : public base::RefCountedThreadSafe<CancelableRequestBase> {
  public:
   friend class CancelableRequestProvider;

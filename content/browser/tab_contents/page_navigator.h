@@ -12,13 +12,14 @@
 
 #include <string>
 
+#include "content/common/content_export.h"
 #include "content/common/page_transition_types.h"
 #include "googleurl/src/gurl.h"
 #include "webkit/glue/window_open_disposition.h"
 
 class TabContents;
 
-struct OpenURLParams {
+struct CONTENT_EXPORT OpenURLParams {
   OpenURLParams(const GURL& url,
                 const GURL& referrer,
                 WindowOpenDisposition disposition,
@@ -43,7 +44,7 @@ class TabContents;
   OpenURLParams();
 };
 
-class PageNavigator {
+class CONTENT_EXPORT PageNavigator {
  public:
   // Deprecated. Please use the one-argument variant instead.
   // TODO(adriansc): Remove this method when refactoring changed all call sites.

@@ -6,13 +6,16 @@
 #define CONTENT_BROWSER_DOWNLOAD_DRAG_DOWNLOAD_FILE_H_
 #pragma once
 
+#include "base/compiler_specific.h"
 #include "base/file_path.h"
 #include "base/memory/linked_ptr.h"
 #include "content/browser/download/download_file.h"
 #include "content/browser/download/download_item.h"
 #include "content/browser/download/download_manager.h"
+#include "content/common/content_export.h"
 #include "googleurl/src/gurl.h"
 #include "ui/base/dragdrop/download_file_interface.h"
+#include "ui/base/ui_export.h"
 
 class TabContents;
 
@@ -20,9 +23,10 @@ namespace net {
 class FileStream;
 }
 
-class DragDownloadFile : public ui::DownloadFileProvider,
-                         public DownloadManager::Observer,
-                         public DownloadItem::Observer {
+class CONTENT_EXPORT DragDownloadFile
+    : public ui::DownloadFileProvider,
+      public DownloadManager::Observer,
+      public DownloadItem::Observer {
  public:
   // On Windows, we need to download into a temporary file. Two threads are
   // involved: background drag-and-drop thread and UI thread.

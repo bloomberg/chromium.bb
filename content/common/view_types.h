@@ -7,9 +7,10 @@
 #pragma once
 
 #include "base/basictypes.h"
+#include "content/common/content_export.h"
 
 // Indicates different types of views
-class ViewType {
+class CONTENT_EXPORT ViewType {
  public:
   enum Type {
     INVALID,

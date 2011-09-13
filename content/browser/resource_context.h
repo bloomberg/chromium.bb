@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
+#include "content/common/content_export.h"
 
 class ChromeAppCacheService;
 class ChromeBlobStorageContext;
@@ -39,7 +40,7 @@ namespace content {
 // resource loading. It lives on the IO thread, although it is constructed on
 // the UI thread. ResourceContext doesn't own anything it points to, it just
 // holds pointers to relevant objects to resource loading.
-class ResourceContext {
+class CONTENT_EXPORT ResourceContext {
  public:
   virtual ~ResourceContext();
 

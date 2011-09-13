@@ -6,11 +6,12 @@
 #define CONTENT_COMMON_RESOURCE_DISPATCHER_DELEGATE_H_
 #pragma once
 
+#include "content/common/content_export.h"
 #include "webkit/glue/resource_loader_bridge.h"
 
 // Interface that allows observing request events and optionally replacing the
 // peer.
-class ResourceDispatcherDelegate {
+class CONTENT_EXPORT ResourceDispatcherDelegate {
  public:
   ResourceDispatcherDelegate();
   virtual ~ResourceDispatcherDelegate();

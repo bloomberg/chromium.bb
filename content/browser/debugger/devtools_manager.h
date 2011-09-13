@@ -11,6 +11,7 @@
 
 #include "content/browser/debugger/devtools_agent_host.h"
 #include "content/browser/debugger/devtools_client_host.h"
+#include "content/common/content_export.h"
 
 namespace IPC {
 class Message;
@@ -32,8 +33,9 @@ typedef std::map<std::string, std::string> DevToolsRuntimeProperties;
 // Methods below that accept inspected RenderViewHost as a parameter are
 // just convenience methods that call corresponding methods accepting
 // DevToolAgentHost.
-class DevToolsManager : public DevToolsClientHost::CloseListener,
-                        public DevToolsAgentHost::CloseListener {
+class CONTENT_EXPORT DevToolsManager
+    : public DevToolsClientHost::CloseListener,
+      public DevToolsAgentHost::CloseListener {
  public:
   static DevToolsManager* GetInstance();
 

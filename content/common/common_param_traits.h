@@ -16,6 +16,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/platform_file.h"
+#include "content/common/content_export.h"
 #include "content/common/dom_storage_common.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_message_utils.h"
@@ -46,7 +47,7 @@ class Range;
 namespace IPC {
 
 template <>
-struct ParamTraits<GURL> {
+struct CONTENT_EXPORT ParamTraits<GURL> {
   typedef GURL param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* p);
@@ -62,7 +63,7 @@ struct ParamTraits<ResourceType::Type> {
 };
 
 template <>
-struct ParamTraits<net::URLRequestStatus> {
+struct CONTENT_EXPORT ParamTraits<net::URLRequestStatus> {
   typedef net::URLRequestStatus param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* r);
@@ -70,7 +71,7 @@ struct ParamTraits<net::URLRequestStatus> {
 };
 
 template <>
-struct ParamTraits<scoped_refptr<net::UploadData> > {
+struct CONTENT_EXPORT ParamTraits<scoped_refptr<net::UploadData> > {
   typedef scoped_refptr<net::UploadData> param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* r);
@@ -78,7 +79,7 @@ struct ParamTraits<scoped_refptr<net::UploadData> > {
 };
 
 template<>
-struct ParamTraits<net::HostPortPair> {
+struct CONTENT_EXPORT ParamTraits<net::HostPortPair> {
   typedef net::HostPortPair param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* r);
@@ -110,7 +111,7 @@ struct ParamTraits<base::PlatformFileInfo> {
 };
 
 template <>
-struct ParamTraits<gfx::Point> {
+struct CONTENT_EXPORT ParamTraits<gfx::Point> {
   typedef gfx::Point param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* r);
@@ -118,7 +119,7 @@ struct ParamTraits<gfx::Point> {
 };
 
 template <>
-struct ParamTraits<gfx::Size> {
+struct CONTENT_EXPORT ParamTraits<gfx::Size> {
   typedef gfx::Size param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* r);
@@ -126,7 +127,7 @@ struct ParamTraits<gfx::Size> {
 };
 
 template <>
-struct ParamTraits<gfx::Rect> {
+struct CONTENT_EXPORT ParamTraits<gfx::Rect> {
   typedef gfx::Rect param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* r);
@@ -166,7 +167,7 @@ struct ParamTraits<gfx::NativeWindow> {
 };
 
 template <>
-struct ParamTraits<ui::Range> {
+struct CONTENT_EXPORT ParamTraits<ui::Range> {
   typedef ui::Range param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* r);
@@ -214,7 +215,7 @@ struct ParamTraits<TransportDIB::Id> {
 #endif
 
 template <>
-struct ParamTraits<SkBitmap> {
+struct CONTENT_EXPORT ParamTraits<SkBitmap> {
   typedef SkBitmap param_type;
   static void Write(Message* m, const param_type& p);
 

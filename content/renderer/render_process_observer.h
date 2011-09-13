@@ -8,12 +8,13 @@
 
 #include "base/basictypes.h"
 #include "ipc/ipc_message.h"
+#include "content/common/content_export.h"
 
 class GURL;
 
 // Base class for objects that want to filter control IPC messages and get
 // notified of events.
-class RenderProcessObserver : public IPC::Message::Sender {
+class CONTENT_EXPORT RenderProcessObserver : public IPC::Message::Sender {
  public:
   RenderProcessObserver();
   virtual ~RenderProcessObserver();

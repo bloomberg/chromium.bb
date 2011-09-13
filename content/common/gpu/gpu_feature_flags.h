@@ -12,6 +12,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "content/common/content_export.h"
 
 class GpuFeatureFlags {
  public:
@@ -33,7 +34,7 @@ class GpuFeatureFlags {
   // flags are OR combination of GpuFeatureType.
   void set_flags(uint32 flags);
 
-  uint32 flags() const;
+  CONTENT_EXPORT uint32 flags() const;
 
   // Resets each flag by OR with the corresponding flag in "other".
   void Combine(const GpuFeatureFlags& other);

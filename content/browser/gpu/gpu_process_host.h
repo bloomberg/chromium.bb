@@ -13,6 +13,7 @@
 #include "base/memory/linked_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "content/browser/browser_child_process_host.h"
+#include "content/common/content_export.h"
 #include "content/common/gpu/gpu_info.h"
 #include "content/common/gpu/gpu_process_launch_causes.h"
 #include "ui/gfx/native_widget_types.h"
@@ -42,9 +43,9 @@ class GpuProcessHost : public BrowserChildProcessHost,
   // Helper function to send the given message to the GPU process on the IO
   // thread.  Calls GetForRenderer and if a host is returned, sends it.
   // Can be called from any thread.
-  static void SendOnIO(int renderer_id,
-                       content::CauseForGpuLaunch cause,
-                       IPC::Message* message);
+  CONTENT_EXPORT static void SendOnIO(int renderer_id,
+                                      content::CauseForGpuLaunch cause,
+                                      IPC::Message* message);
 
   // Get the GPU process host for the GPU process with the given ID. Returns
   // null if the process no longer exists.
@@ -153,7 +154,7 @@ class GpuProcessHost : public BrowserChildProcessHost,
   // Master switch for enabling/disabling GPU acceleration for the current
   // browser session. It does not change the acceleration settings for
   // existing tabs, just the future ones.
-  static bool gpu_enabled_;
+  CONTENT_EXPORT static bool gpu_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuProcessHost);
 };

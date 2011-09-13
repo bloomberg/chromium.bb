@@ -10,11 +10,12 @@
 #pragma once
 
 #include "base/basictypes.h"
+#include "content/common/content_export.h"
 
 // Do not declare a NotificationDetails directly--use either
 // "Details<detailsclassname>(detailsclasspointer)" or
 // NotificationService::NoDetails().
-class NotificationDetails {
+class CONTENT_EXPORT NotificationDetails {
  public:
   NotificationDetails();
   NotificationDetails(const NotificationDetails& other);

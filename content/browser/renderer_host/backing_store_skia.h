@@ -8,6 +8,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "content/browser/renderer_host/backing_store.h"
+#include "content/common/content_export.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 class SkCanvas;
@@ -22,10 +23,14 @@ class Canvas;
 // RWHVV, and then this backing store will be removed.
 class BackingStoreSkia : public BackingStore {
  public:
-  BackingStoreSkia(RenderWidgetHost* widget, const gfx::Size& size);
+  CONTENT_EXPORT BackingStoreSkia(
+      RenderWidgetHost* widget,
+      const gfx::Size& size);
+
   virtual ~BackingStoreSkia();
 
-  void SkiaShowRect(const gfx::Point& point, gfx::Canvas* canvas);
+  CONTENT_EXPORT void SkiaShowRect(const gfx::Point& point,
+                                   gfx::Canvas* canvas);
 
   // BackingStore implementation.
   virtual size_t MemorySize();

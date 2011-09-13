@@ -9,6 +9,7 @@
 #include <map>
 
 #include "base/basictypes.h"
+#include "content/common/content_export.h"
 
 template <typename T>
 class linked_ptr;
@@ -42,7 +43,7 @@ class PropertyAccessorBase;
 //
 //     accessor->SetProperty(object, 22);
 //   }
-class PropertyBag {
+class CONTENT_EXPORT PropertyBag {
  public:
   // The type that uniquely identifies a property type.
   typedef int PropID;
@@ -93,7 +94,7 @@ class PropertyBag {
 
 // Manages getting the unique IDs to identify a property. Callers should use
 // PropertyAccessor below instead.
-class PropertyAccessorBase {
+class CONTENT_EXPORT PropertyAccessorBase {
  public:
   PropertyAccessorBase();
   virtual ~PropertyAccessorBase() {}

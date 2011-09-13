@@ -6,14 +6,15 @@
 #define CONTENT_BROWSER_RENDERER_HOST_RENDER_VIEW_HOST_OBSERVER_H_
 
 #include "ipc/ipc_channel.h"
+#include "content/common/content_export.h"
 
 class RenderViewHost;
 struct ViewMsg_Navigate_Params;
 
 // An observer API implemented by classes which want to filter IPC messages from
 // RenderViewHost.
-class RenderViewHostObserver : public IPC::Channel::Listener,
-                               public IPC::Message::Sender {
+class CONTENT_EXPORT RenderViewHostObserver : public IPC::Channel::Listener,
+                                              public IPC::Message::Sender {
  public:
 
  protected:

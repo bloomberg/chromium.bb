@@ -13,13 +13,14 @@
 #include <map>
 
 #include "base/observer_list.h"
+#include "content/common/content_export.h"
 #include "content/common/content_notification_types.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_source.h"
 
 class NotificationObserver;
 
-class NotificationService {
+class CONTENT_EXPORT NotificationService {
  public:
   // Returns the NotificationService object for the current thread, or NULL if
   // none.

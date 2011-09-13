@@ -11,6 +11,7 @@
 #include <string>
 
 #include "base/memory/ref_counted.h"
+#include "content/common/content_export.h"
 #include "googleurl/src/gurl.h"
 #include "net/url_request/url_request_status.h"
 #include "webkit/glue/resource_loader_bridge.h"
@@ -31,7 +32,8 @@ struct SyncLoadResult : ResourceResponseHead {
 };
 
 // Simple wrapper that refcounts ResourceResponseHead.
-struct ResourceResponse : public base::RefCounted<ResourceResponse> {
+struct CONTENT_EXPORT ResourceResponse
+    : public base::RefCounted<ResourceResponse> {
   ResourceResponse();
 
   ResourceResponseHead response_head;

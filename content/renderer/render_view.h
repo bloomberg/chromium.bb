@@ -23,6 +23,7 @@
 #include "build/build_config.h"
 #include "content/renderer/render_view_selection.h"
 #include "content/renderer/renderer_webcookiejar_impl.h"
+#include "content/common/content_export.h"
 #include "content/common/edit_command.h"
 #include "content/common/navigation_gesture.h"
 #include "content/common/page_zoom.h"
@@ -189,16 +190,16 @@ class RenderView : public RenderWidget,
 
   // Visit all RenderViews with a live WebView (i.e., RenderViews that have
   // been closed but not yet destroyed are excluded).
-  static void ForEach(RenderViewVisitor* visitor);
+  CONTENT_EXPORT static void ForEach(RenderViewVisitor* visitor);
 
   // Returns the RenderView containing the given WebView.
-  static RenderView* FromWebView(WebKit::WebView* webview);
+  CONTENT_EXPORT static RenderView* FromWebView(WebKit::WebView* webview);
 
   // Sets the "next page id" counter.
   static void SetNextPageID(int32 next_page_id);
 
   // May return NULL when the view is closing.
-  WebKit::WebView* webview() const;
+  CONTENT_EXPORT WebKit::WebView* webview() const;
 
   // Called by a GraphicsContext associated with this view when swapbuffers
   // is posted, completes or is aborted.
@@ -241,10 +242,10 @@ class RenderView : public RenderWidget,
   void RemoveObserver(RenderViewObserver* observer);
 
   // Evaluates a string of JavaScript in a particular frame.
-  void EvaluateScript(const string16& frame_xpath,
-                      const string16& jscript,
-                      int id,
-                      bool notify_result);
+  CONTENT_EXPORT void EvaluateScript(const string16& frame_xpath,
+                                     const string16& jscript,
+                                     int id,
+                                     bool notify_result);
 
   // Adds the given file chooser request to the file_chooser_completion_ queue
   // (see that var for more) and requests the chooser be displayed if there are
@@ -259,17 +260,18 @@ class RenderView : public RenderWidget,
   void SetReportLoadProgressEnabled(bool enabled);
 
   // Gets the focused node. If no such node exists then the node will be isNull.
-  WebKit::WebNode GetFocusedNode() const;
+  CONTENT_EXPORT WebKit::WebNode GetFocusedNode() const;
 
   // Returns true if the parameter node is a textfield, text area or a content
   // editable div.
-  bool IsEditableNode(const WebKit::WebNode& node);
+  CONTENT_EXPORT bool IsEditableNode(const WebKit::WebNode& node);
 
-  void LoadNavigationErrorPage(WebKit::WebFrame* frame,
-                               const WebKit::WebURLRequest& failed_request,
-                               const WebKit::WebURLError& error,
-                               const std::string& html,
-                               bool replace);
+  CONTENT_EXPORT void LoadNavigationErrorPage(
+      WebKit::WebFrame* frame,
+      const WebKit::WebURLRequest& failed_request,
+      const WebKit::WebURLError& error,
+      const std::string& html,
+      bool replace);
 
   // Plugin-related functions --------------------------------------------------
   // (See also WebPluginPageDelegate implementation.)
@@ -278,13 +280,14 @@ class RenderView : public RenderWidget,
   void PluginCrashed(const FilePath& plugin_path);
 
   // Create a new NPAPI plugin.
-  WebKit::WebPlugin* CreateNPAPIPlugin(WebKit::WebFrame* frame,
-                                       const WebKit::WebPluginParams& params,
-                                       const FilePath& path,
-                                       const std::string& mime_type);
+  CONTENT_EXPORT WebKit::WebPlugin* CreateNPAPIPlugin(
+      WebKit::WebFrame* frame,
+      const WebKit::WebPluginParams& params,
+      const FilePath& path,
+      const std::string& mime_type);
 
   // Create a new Pepper plugin.
-  WebKit::WebPlugin* CreatePepperPlugin(
+  CONTENT_EXPORT WebKit::WebPlugin* CreatePepperPlugin(
       WebKit::WebFrame* frame,
       const WebKit::WebPluginParams& params,
       const FilePath& path,
@@ -295,8 +298,9 @@ class RenderView : public RenderWidget,
       webkit::ppapi::PluginInstance* plugin);
 
   // Create a new plugin without checking the content settings.
-  WebKit::WebPlugin* CreatePluginNoCheck(WebKit::WebFrame* frame,
-                                         const WebKit::WebPluginParams& params);
+  CONTENT_EXPORT WebKit::WebPlugin* CreatePluginNoCheck(
+      WebKit::WebFrame* frame,
+      const WebKit::WebPluginParams& params);
 
   // Informs the render view that a PPAPI plugin has gained or lost focus.
   void PpapiPluginFocusChanged();

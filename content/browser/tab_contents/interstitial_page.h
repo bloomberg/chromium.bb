@@ -12,6 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/process_util.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
+#include "content/common/content_export.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 #include "content/common/renderer_preferences.h"
@@ -40,8 +41,8 @@ enum ResourceRequestAction {
   CANCEL
 };
 
-class InterstitialPage : public NotificationObserver,
-                         public RenderViewHostDelegate {
+class CONTENT_EXPORT InterstitialPage : public NotificationObserver,
+                                        public RenderViewHostDelegate {
  public:
   // The different state of actions the user can take in an interstitial.
   enum ActionState {

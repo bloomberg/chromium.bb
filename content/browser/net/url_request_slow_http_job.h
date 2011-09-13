@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -10,6 +10,7 @@
 
 #include "base/timer.h"
 #include "content/browser/net/url_request_mock_http_job.h"
+#include "content/common/content_export.h"
 
 class URLRequestSlowHTTPJob : public URLRequestMockHTTPJob {
  public:
@@ -20,7 +21,7 @@ class URLRequestSlowHTTPJob : public URLRequestMockHTTPJob {
   static net::URLRequest::ProtocolFactory Factory;
 
   // Adds the testing URLs to the net::URLRequestFilter.
-  static void AddUrlHandler(const FilePath& base_path);
+  CONTENT_EXPORT static void AddUrlHandler(const FilePath& base_path);
 
   // Given the path to a file relative to base_path_, construct a mock URL.
   static GURL GetMockUrl(const FilePath& path);

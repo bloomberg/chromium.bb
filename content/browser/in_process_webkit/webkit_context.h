@@ -14,6 +14,7 @@
 #include "base/time.h"
 #include "content/browser/in_process_webkit/dom_storage_context.h"
 #include "content/browser/in_process_webkit/indexed_db_context.h"
+#include "content/common/content_export.h"
 
 namespace base {
 class MessageLoopProxy;
@@ -31,7 +32,8 @@ class SpecialStoragePolicy;
 //
 // This class is created on the UI thread and accessed on the UI, IO, and WebKit
 // threads.
-class WebKitContext : public base::RefCountedThreadSafe<WebKitContext> {
+class CONTENT_EXPORT WebKitContext
+    : public base::RefCountedThreadSafe<WebKitContext> {
  public:
   WebKitContext(bool is_incognito, const FilePath& data_path,
                 quota::SpecialStoragePolicy* special_storage_policy,

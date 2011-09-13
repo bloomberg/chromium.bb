@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_SPEECH_SPEECH_INPUT_MANAGER_H_
 
 #include "base/basictypes.h"
+#include "content/common/content_export.h"
 #include "content/common/speech_input_result.h"
 #include "ui/gfx/rect.h"
 
@@ -30,13 +31,13 @@ class SpeechInputManager {
     virtual ~Delegate() {}
   };
 
-  SpeechInputManager();
+  CONTENT_EXPORT SpeechInputManager();
 
   // Invokes the platform provided microphone settings UI in a non-blocking way,
   // via the BrowserThread::FILE thread.
   static void ShowAudioInputSettings();
 
-  virtual ~SpeechInputManager();
+  CONTENT_EXPORT virtual ~SpeechInputManager();
 
   // Handlers for requests from render views.
 

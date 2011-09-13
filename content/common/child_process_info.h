@@ -10,9 +10,10 @@
 
 #include "base/process.h"
 #include "base/string16.h"
+#include "content/common/content_export.h"
 
 // Holds information about a child process.
-class ChildProcessInfo {
+class CONTENT_EXPORT ChildProcessInfo {
  public:
   // NOTE: Do not remove or reorder the elements in this enum, and only add new
   // items at the end. We depend on these specific values in a histogram.

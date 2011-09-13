@@ -13,6 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "content/browser/browser_child_process_host.h"
 #include "content/browser/browser_thread.h"
+#include "content/common/content_export.h"
 
 // This class acts as the browser-side host to a utility child process.  A
 // utility process is a short-lived sandboxed process that is created to run
@@ -21,12 +22,12 @@
 // If you need multiple batches of work to be done in the sandboxed process,
 // use StartBatchMode(), then multiple calls to StartFooBar(p),
 // then finish with EndBatchMode().
-class UtilityProcessHost : public BrowserChildProcessHost {
+class CONTENT_EXPORT UtilityProcessHost : public BrowserChildProcessHost {
  public:
   // An interface to be implemented by consumers of the utility process to
   // get results back.  All functions are called on the thread passed along
   // to UtilityProcessHost.
-  class Client : public base::RefCountedThreadSafe<Client> {
+  class CONTENT_EXPORT Client : public base::RefCountedThreadSafe<Client> {
    public:
     Client();
 

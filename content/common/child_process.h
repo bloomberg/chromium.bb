@@ -10,12 +10,13 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread.h"
 #include "base/synchronization/waitable_event.h"
+#include "content/common/content_export.h"
 
 class ChildThread;
 
 // Base class for child processes of the browser process (i.e. renderer and
 // plugin host). This is a singleton object for each child process.
-class ChildProcess {
+class CONTENT_EXPORT ChildProcess {
  public:
   // Child processes should have an object that derives from this class.
   // Normally you would immediately call set_main_thread after construction.

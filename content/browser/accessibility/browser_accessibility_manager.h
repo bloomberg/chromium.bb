@@ -11,6 +11,7 @@
 #include "base/hash_tables.h"
 #include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
+#include "content/common/content_export.h"
 #include "ui/gfx/native_widget_types.h"
 #include "webkit/glue/webaccessibility.h"
 
@@ -24,7 +25,7 @@ using webkit_glue::WebAccessibility;
 struct ViewHostMsg_AccessibilityNotification_Params;
 
 // Class that can perform actions on behalf of the BrowserAccessibilityManager.
-class BrowserAccessibilityDelegate {
+class CONTENT_EXPORT BrowserAccessibilityDelegate {
  public:
   virtual ~BrowserAccessibilityDelegate() {}
   virtual void SetAccessibilityFocus(int acc_obj_id) = 0;

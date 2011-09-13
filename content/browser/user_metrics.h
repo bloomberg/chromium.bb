@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,8 @@
 #pragma once
 
 #include <string>
+
+#include "content/common/content_export.h"
 
 // This module provides some helper functions for logging actions tracked by
 // the user metrics system.
@@ -21,7 +23,7 @@ struct UserMetricsAction {
 };
 
 
-class UserMetrics {
+class CONTENT_EXPORT UserMetrics {
  public:
   // Record that the user performed an action.
   // "Action" here means a user-generated event:

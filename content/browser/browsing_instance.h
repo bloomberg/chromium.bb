@@ -8,6 +8,7 @@
 
 #include "base/hash_tables.h"
 #include "base/memory/ref_counted.h"
+#include "content/common/content_export.h"
 
 class GURL;
 class SiteInstance;
@@ -55,7 +56,8 @@ class BrowserContext;
 // site_instance_unittest.cc.
 //
 ///////////////////////////////////////////////////////////////////////////////
-class BrowsingInstance : public base::RefCounted<BrowsingInstance> {
+class CONTENT_EXPORT BrowsingInstance
+    : public base::RefCounted<BrowsingInstance> {
  public:
   // Create a new BrowsingInstance.
   explicit BrowsingInstance(content::BrowserContext* context);

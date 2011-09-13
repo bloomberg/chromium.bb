@@ -24,6 +24,7 @@
 #include "base/timer.h"
 #include "content/browser/renderer_host/resource_queue.h"
 #include "content/common/child_process_info.h"
+#include "content/common/content_export.h"
 #include "content/common/content_notification_types.h"
 #include "ipc/ipc_message.h"
 #include "net/url_request/url_request.h"
@@ -59,7 +60,7 @@ namespace webkit_blob {
 class DeletableFileReference;
 }
 
-class ResourceDispatcherHost : public net::URLRequest::Delegate {
+class CONTENT_EXPORT ResourceDispatcherHost : public net::URLRequest::Delegate {
  public:
   explicit ResourceDispatcherHost(
       const ResourceQueue::DelegateSet& resource_queue_delegates);

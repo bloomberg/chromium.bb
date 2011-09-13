@@ -8,13 +8,14 @@
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
+#include "content/common/content_export.h"
 
 class GURL;
 
 // GeolocationPermissionContext must be implemented by the embedder, to provide
 // the policy and logic for the Geolocation permissions flow.
 // This includes both prompting the user and persisting results, as required.
-class GeolocationPermissionContext
+class CONTENT_EXPORT GeolocationPermissionContext
     : public base::RefCountedThreadSafe<GeolocationPermissionContext> {
  public:
   // The renderer is requesting permission to use Geolocation.

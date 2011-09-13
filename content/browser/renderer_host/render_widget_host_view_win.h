@@ -13,12 +13,14 @@
 
 #include <vector>
 
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/task.h"
 #include "base/win/scoped_comptr.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
+#include "content/common/content_export.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 #include "ui/base/win/ime_input.h"
@@ -44,7 +46,7 @@ class ViewProp;
 typedef CWinTraits<WS_CHILD | WS_CLIPCHILDREN | WS_CLIPSIBLINGS, 0>
     RenderWidgetHostHWNDTraits;
 
-extern const wchar_t kRenderWidgetHostHWNDClass[];
+CONTENT_EXPORT extern const wchar_t kRenderWidgetHostHWNDClass[];
 
 ///////////////////////////////////////////////////////////////////////////////
 // RenderWidgetHostViewWin
@@ -70,14 +72,14 @@ class RenderWidgetHostViewWin
       public BrowserAccessibilityDelegate {
  public:
   // The view will associate itself with the given widget.
-  explicit RenderWidgetHostViewWin(RenderWidgetHost* widget);
+  CONTENT_EXPORT explicit RenderWidgetHostViewWin(RenderWidgetHost* widget);
   virtual ~RenderWidgetHostViewWin();
 
-  void CreateWnd(HWND parent);
+  CONTENT_EXPORT void CreateWnd(HWND parent);
 
   void ScheduleComposite();
 
-  IAccessible* GetIAccessible();
+  CONTENT_EXPORT IAccessible* GetIAccessible();
 
   DECLARE_WND_CLASS_EX(kRenderWidgetHostHWNDClass, CS_DBLCLKS, 0);
 

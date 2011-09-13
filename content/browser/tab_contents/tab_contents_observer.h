@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_TAB_CONTENTS_TAB_CONTENTS_OBSERVER_H_
 
 #include "content/browser/tab_contents/navigation_controller.h"
+#include "content/common/content_export.h"
 #include "content/common/page_transition_types.h"
 #include "ipc/ipc_channel.h"
 #include "webkit/glue/window_open_disposition.h"
@@ -15,8 +16,8 @@ struct ViewHostMsg_FrameNavigate_Params;
 
 // An observer API implemented by classes which are interested in various page
 // load events from TabContents.  They also get a chance to filter IPC messages.
-class TabContentsObserver : public IPC::Channel::Listener,
-                            public IPC::Message::Sender {
+class CONTENT_EXPORT TabContentsObserver : public IPC::Channel::Listener,
+                                           public IPC::Message::Sender {
  public:
   virtual void RenderViewCreated(RenderViewHost* render_view_host);
   virtual void NavigateToPendingEntry(

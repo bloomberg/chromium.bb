@@ -8,6 +8,7 @@
 
 #include <string>
 #include "content/common/navigation_types.h"
+#include "content/common/content_export.h"
 #include "googleurl/src/gurl.h"
 
 class NavigationEntry;
@@ -18,7 +19,7 @@ namespace content {
 // Provides the details for a NOTIFY_NAV_ENTRY_COMMITTED notification.
 // TODO(brettw) this mostly duplicates ProvisionalLoadDetails, it would be
 // nice to unify these somehow.
-struct LoadCommittedDetails {
+struct CONTENT_EXPORT LoadCommittedDetails {
   // By default, the entry will be filled according to a new main frame
   // navigation.
   LoadCommittedDetails();

@@ -9,6 +9,7 @@
 
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
+#include "content/common/content_export.h"
 #include "net/base/net_util.h"
 
 namespace base {
@@ -24,8 +25,8 @@ class P2PSocketDispatcher;
 //
 // TODO(sergeyu): Name of this class may be confusing. Rename it to
 // something else, e.g. P2PHostnameResolver.
-class P2PHostAddressRequest :
-    public base::RefCountedThreadSafe<P2PHostAddressRequest>  {
+class CONTENT_EXPORT P2PHostAddressRequest
+    : public base::RefCountedThreadSafe<P2PHostAddressRequest>  {
  public:
   typedef base::Callback<void(const net::IPAddressNumber&)> DoneCallback;
 

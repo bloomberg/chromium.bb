@@ -15,6 +15,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/singleton.h"
 #include "base/synchronization/lock.h"
+#include "content/common/content_export.h"
 
 class FilePath;
 class GURL;
@@ -26,7 +27,7 @@ class GURL;
 //
 // ChildProcessSecurityPolicy is a singleton that may be used on any thread.
 //
-class ChildProcessSecurityPolicy {
+class CONTENT_EXPORT ChildProcessSecurityPolicy {
  public:
   // Object can only be created through GetInstance() so the constructor is
   // private.

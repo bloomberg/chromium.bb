@@ -13,6 +13,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "content/common/content_export.h"
 #include "net/server/http_server.h"
 #include "net/url_request/url_request.h"
 
@@ -50,7 +51,7 @@ class DevToolsHttpProtocolHandler
   };
 
   // Takes ownership over |delegate|.
-  static scoped_refptr<DevToolsHttpProtocolHandler> Start(
+  CONTENT_EXPORT static scoped_refptr<DevToolsHttpProtocolHandler> Start(
       const std::string& ip,
       int port,
       const std::string& frontend_url,
@@ -58,7 +59,7 @@ class DevToolsHttpProtocolHandler
 
   // Called from the main thread in order to stop protocol handler.
   // Will schedule tear down task on IO thread.
-  void Stop();
+  CONTENT_EXPORT void Stop();
 
  private:
   friend class base::RefCountedThreadSafe<DevToolsHttpProtocolHandler>;

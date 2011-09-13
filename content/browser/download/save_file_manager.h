@@ -65,6 +65,7 @@
 #include "base/hash_tables.h"
 #include "base/memory/ref_counted.h"
 #include "content/browser/download/save_types.h"
+#include "content/common/content_export.h"
 
 class FilePath;
 class GURL;
@@ -87,7 +88,7 @@ class SaveFileManager
   explicit SaveFileManager(ResourceDispatcherHost* rdh);
 
   // Lifetime management.
-  void Shutdown();
+  CONTENT_EXPORT void Shutdown();
 
   // Called on the IO thread. This generates unique IDs for
   // SaveFileResourceHandler objects (there's one per file in a SavePackage).

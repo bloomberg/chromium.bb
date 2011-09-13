@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
+#include "content/common/content_export.h"
 #include "content/common/page_transition_types.h"
 #include "content/common/page_type.h"
 #include "content/common/security_style.h"
@@ -28,7 +29,7 @@ class SiteInstance;
 // URL which is used for our user interface.
 //
 ////////////////////////////////////////////////////////////////////////////////
-class NavigationEntry {
+class CONTENT_EXPORT NavigationEntry {
  public:
   // SSL -----------------------------------------------------------------------
 
@@ -50,7 +51,7 @@ class NavigationEntry {
       RAN_INSECURE_CONTENT       = 1 << 1,
     };
 
-    SSLStatus();
+    CONTENT_EXPORT SSLStatus();
 
     bool Equals(const SSLStatus& status) const {
       return security_style_ == status.security_style_ &&

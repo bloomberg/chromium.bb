@@ -12,6 +12,7 @@
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/browser/power_save_blocker.h"
+#include "content/common/content_export.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_errors.h"
 
@@ -24,7 +25,7 @@ class FileStream;
 
 // File being downloaded and saved to disk. This is a base class
 // for DownloadFile and SaveFile, which keep more state information.
-class BaseFile {
+class CONTENT_EXPORT BaseFile {
  public:
   BaseFile(const FilePath& full_path,
            const GURL& source_url,

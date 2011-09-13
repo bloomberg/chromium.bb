@@ -8,12 +8,14 @@
 
 #include "base/process.h"
 #include "content/browser/browser_thread.h"
+#include "content/common/content_export.h"
 #include "ipc/ipc_channel_proxy.h"
 
 // Base class for message filters in the browser process.  You can receive and
 // send messages on any thread.
-class BrowserMessageFilter : public IPC::ChannelProxy::MessageFilter,
-                             public IPC::Message::Sender {
+class CONTENT_EXPORT BrowserMessageFilter :
+    public IPC::ChannelProxy::MessageFilter,
+    public IPC::Message::Sender {
  public:
   BrowserMessageFilter();
   virtual ~BrowserMessageFilter();

@@ -6,8 +6,10 @@
 #define CONTENT_BROWSER_APPCACHE_CHROME_APPCACHE_SERVICE_H_
 #pragma once
 
+#include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "content/browser/browser_thread.h"
+#include "content/common/content_export.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 #include "webkit/appcache/appcache_policy.h"
@@ -28,11 +30,14 @@ class ResourceContext;
 //
 // All methods, except the ctor, are expected to be called on
 // the IO thread (unless specifically called out in doc comments).
-class ChromeAppCacheService
+//
+// TODO(dpranke): Fix dependencies on AppCacheService so that we don't have
+// to worry about clients calling AppCacheService methods.
+class CONTENT_EXPORT ChromeAppCacheService
     : public base::RefCountedThreadSafe<ChromeAppCacheService,
                                         BrowserThread::DeleteOnIOThread>,
-      public appcache::AppCacheService,
-      public appcache::AppCachePolicy,
+      NON_EXPORTED_BASE(public appcache::AppCacheService),
+      NON_EXPORTED_BASE(public appcache::AppCachePolicy),
       public NotificationObserver {
  public:
   explicit ChromeAppCacheService(quota::QuotaManagerProxy* proxy);
@@ -43,6 +48,8 @@ class ChromeAppCacheService
       scoped_refptr<quota::SpecialStoragePolicy> special_storage_policy);
 
  private:
+  friend class base::RefCountedThreadSafe<ChromeAppCacheService,
+                                          BrowserThread::DeleteOnIOThread>;
   friend class BrowserThread;
   friend class DeleteTask<ChromeAppCacheService>;
 

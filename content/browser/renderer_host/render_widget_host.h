@@ -15,6 +15,7 @@
 #include "base/process_util.h"
 #include "base/string16.h"
 #include "base/timer.h"
+#include "content/common/content_export.h"
 #include "content/common/native_web_keyboard_event.h"
 #include "content/common/property_bag.h"
 #include "ipc/ipc_channel.h"
@@ -123,8 +124,8 @@ struct ViewHostMsg_UpdateRect_Params;
 // anything else. When the view is live, these messages are forwarded to it by
 // the RenderWidgetHost's IPC message map.
 //
-class RenderWidgetHost : public IPC::Channel::Listener,
-                         public IPC::Channel::Sender {
+class CONTENT_EXPORT RenderWidgetHost : public IPC::Channel::Listener,
+                                        public IPC::Channel::Sender {
  public:
   // Used as the details object for a
   // RENDER_WIDGET_HOST_DID_RECEIVE_PAINT_AT_SIZE_ACK notification.

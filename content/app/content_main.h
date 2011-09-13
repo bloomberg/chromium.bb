@@ -7,6 +7,7 @@
 #pragma once
 
 #include "build/build_config.h"
+#include "content/common/content_export.h"
 
 #if defined(OS_WIN)
 #include <windows.h>
@@ -28,13 +29,13 @@ class ContentMainDelegate;
 
 // |sandbox_info| should be initialized using InitializeSandboxInfo from
 // content_main_win.h
-int ContentMain(HINSTANCE instance,
-                sandbox::SandboxInterfaceInfo* sandbox_info,
-                ContentMainDelegate* delegate);
+CONTENT_EXPORT int ContentMain(HINSTANCE instance,
+                               sandbox::SandboxInterfaceInfo* sandbox_info,
+                               ContentMainDelegate* delegate);
 #else
-int ContentMain(int argc,
-                const char** argv,
-                ContentMainDelegate* delegate);
+CONTENT_EXPORT int ContentMain(int argc,
+                               char** argv,
+                               ContentMainDelegate* delegate);
 #endif
 
 }  // namespace content

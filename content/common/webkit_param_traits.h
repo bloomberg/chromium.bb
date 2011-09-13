@@ -17,6 +17,7 @@
 #include <string>
 
 #include "base/memory/ref_counted.h"
+#include "content/common/content_export.h"
 #include "ipc/ipc_message_utils.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebTextDirection.h"
@@ -227,7 +228,7 @@ struct SimilarTypeTraits<WindowOpenDisposition> {
 };
 
 template <>
-struct ParamTraits<webkit_glue::PasswordForm> {
+struct CONTENT_EXPORT ParamTraits<webkit_glue::PasswordForm> {
   typedef webkit_glue::PasswordForm param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* p);

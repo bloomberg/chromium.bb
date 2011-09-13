@@ -20,6 +20,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/string16.h"
 #include "content/browser/cancelable_request.h"
+#include "content/common/content_export.h"
 #include "googleurl/src/gurl.h"
 
 class GURL;
@@ -52,8 +53,8 @@ class AccessTokenStore : public base::RefCountedThreadSafe<AccessTokenStore>,
 
  protected:
   friend class base::RefCountedThreadSafe<AccessTokenStore>;
-  AccessTokenStore();
-  virtual ~AccessTokenStore();
+  CONTENT_EXPORT AccessTokenStore();
+  CONTENT_EXPORT virtual ~AccessTokenStore();
 
   virtual void DoLoadAccessTokens(
       scoped_refptr<CancelableRequest<LoadAccessTokensCallbackType> > req) = 0;

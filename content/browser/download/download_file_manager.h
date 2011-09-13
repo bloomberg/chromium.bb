@@ -49,6 +49,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/timer.h"
 #include "content/browser/download/download_request_handle.h"
+#include "content/common/content_export.h"
 #include "net/base/net_errors.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -72,7 +73,7 @@ class DownloadFileManager
   explicit DownloadFileManager(ResourceDispatcherHost* rdh);
 
   // Called on shutdown on the UI thread.
-  void Shutdown();
+  CONTENT_EXPORT void Shutdown();
 
   // Called on the IO or UI threads.
   int GetNextId();

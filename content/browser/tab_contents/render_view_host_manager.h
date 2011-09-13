@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
+#include "content/common/content_export.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 #include "content/browser/site_instance.h"
@@ -41,7 +42,7 @@ class RenderViewHostManager
   // There is additional complexity that some of the functions we need in
   // TabContents are inherited and non-virtual. These are named with
   // "RenderManager" so that the duplicate implementation of them will be clear.
-  class Delegate {
+  class CONTENT_EXPORT Delegate {
    public:
     // See tab_contents.h's implementation for more.
     virtual bool CreateRenderViewForRenderManager(

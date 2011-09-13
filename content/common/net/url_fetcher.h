@@ -22,6 +22,7 @@
 #include "base/message_loop.h"
 #include "base/platform_file.h"
 #include "base/time.h"
+#include "content/common/content_export.h"
 
 class FilePath;
 class GURL;
@@ -68,7 +69,7 @@ typedef std::vector<std::string> ResponseCookies;
 // NOTE: By default URLFetcher requests are NOT intercepted, except when
 // interception is explicitly enabled in tests.
 
-class URLFetcher {
+class CONTENT_EXPORT URLFetcher {
  public:
   enum RequestType {
     GET,
@@ -80,7 +81,7 @@ class URLFetcher {
   // was received.
   static const int kInvalidHttpResponseCode;
 
-  class Delegate {
+  class CONTENT_EXPORT Delegate {
    public:
     // TODO(skerner): This will be removed in favor of the |source|-only
     // version below. Leaving this for now to make the initial code review

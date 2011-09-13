@@ -7,11 +7,12 @@
 #pragma once
 
 #include "base/basictypes.h"
+#include "content/common/content_export.h"
 #include "net/base/network_change_notifier.h"
 
 // Listens for changes to the online state and manages sending
 // updates to each RenderProcess via RenderProcessHost IPC.
-class BrowserOnlineStateObserver
+class CONTENT_EXPORT BrowserOnlineStateObserver
     : public net::NetworkChangeNotifier::OnlineStateObserver {
  public:
   BrowserOnlineStateObserver();

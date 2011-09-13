@@ -13,13 +13,14 @@
 
 #include "base/file_path.h"
 #include "base/time.h"
+#include "content/common/content_export.h"
 #include "googleurl/src/gurl.h"
 
 class DownloadItem;
 
 // Contains the information that is stored in the download system's persistent
 // store (or refers to it).  Managed by the DownloadItem.
-struct DownloadPersistentStoreInfo {
+struct CONTENT_EXPORT DownloadPersistentStoreInfo {
   // TODO(ahendrickson) -- Reduce the number of constructors.
   DownloadPersistentStoreInfo();
   DownloadPersistentStoreInfo(const FilePath& path,

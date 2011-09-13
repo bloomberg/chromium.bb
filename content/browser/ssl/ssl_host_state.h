@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,8 +10,10 @@
 #include <map>
 #include <set>
 
+#include "base/compiler_specific.h"
 #include "base/basictypes.h"
 #include "base/threading/non_thread_safe.h"
+#include "content/common/content_export.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/x509_certificate.h"
 
@@ -23,7 +25,8 @@
 // from the SSLManager because this state is shared across many navigation
 // controllers.
 
-class SSLHostState : public base::NonThreadSafe {
+class CONTENT_EXPORT SSLHostState
+    : NON_EXPORTED_BASE(public base::NonThreadSafe) {
  public:
   SSLHostState();
   ~SSLHostState();

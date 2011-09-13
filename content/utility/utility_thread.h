@@ -13,6 +13,7 @@
 #include "base/compiler_specific.h"
 #include "base/string16.h"
 #include "content/common/child_thread.h"
+#include "content/common/content_export.h"
 
 class IndexedDBKey;
 class SerializedScriptValue;
@@ -28,7 +29,7 @@ class UtilityThread : public ChildThread {
   virtual ~UtilityThread();
 
   // Releases the process if we are not (or no longer) in batch mode.
-  void ReleaseProcessIfNeeded();
+  CONTENT_EXPORT void ReleaseProcessIfNeeded();
 
   // Returns the one utility thread.
   static UtilityThread* current() {

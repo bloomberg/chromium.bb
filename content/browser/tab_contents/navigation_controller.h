@@ -15,6 +15,7 @@
 #include "base/time.h"
 #include "googleurl/src/gurl.h"
 #include "content/browser/ssl/ssl_manager.h"
+#include "content/common/content_export.h"
 #include "content/common/navigation_types.h"
 #include "content/common/page_transition_types.h"
 
@@ -34,7 +35,7 @@ struct LoadCommittedDetails;
 //
 // The NavigationController also owns all TabContents for the tab. This is to
 // make sure that we have at most one TabContents instance per type.
-class NavigationController {
+class CONTENT_EXPORT NavigationController {
  public:
 
   enum ReloadType {

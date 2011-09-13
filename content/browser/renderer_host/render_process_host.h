@@ -13,6 +13,7 @@
 #include "base/process.h"
 #include "base/process_util.h"
 #include "base/time.h"
+#include "content/common/content_export.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/surface/transport_dib.h"
@@ -38,8 +39,8 @@ class URLRequestContextGetter;
 // The concrete implementation of this class for normal use is the
 // BrowserRenderProcessHost. It may also be implemented by a testing interface
 // for mocking purposes.
-class RenderProcessHost : public IPC::Channel::Sender,
-                          public IPC::Channel::Listener {
+class CONTENT_EXPORT RenderProcessHost : public IPC::Channel::Sender,
+                                         public IPC::Channel::Listener {
  public:
   typedef IDMap<RenderProcessHost>::iterator iterator;
 

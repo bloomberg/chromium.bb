@@ -8,6 +8,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "content/common/content_export.h"
 #include "content/common/message_router.h"
 #include "webkit/glue/resource_loader_bridge.h"
 
@@ -24,8 +25,8 @@ class SyncMessageFilter;
 }
 
 // The main thread of a child process derives from this class.
-class ChildThread : public IPC::Channel::Listener,
-                    public IPC::Message::Sender {
+class CONTENT_EXPORT ChildThread : public IPC::Channel::Listener,
+                                   public IPC::Message::Sender {
  public:
   // Creates the thread.
   ChildThread();

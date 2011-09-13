@@ -6,6 +6,7 @@
 #define CONTENT_RENDERER_P2P_IPC_SOCKET_FACTORY_H_
 
 #include "base/basictypes.h"
+#include "content/common/content_export.h"
 #include "third_party/libjingle/source/talk/base/packetsocketfactory.h"
 
 namespace content {
@@ -20,7 +21,8 @@ class P2PSocketDispatcher;
 // created on.
 class IpcPacketSocketFactory : public talk_base::PacketSocketFactory {
  public:
-  explicit IpcPacketSocketFactory(P2PSocketDispatcher* socket_dispatcher);
+  CONTENT_EXPORT explicit IpcPacketSocketFactory(
+      P2PSocketDispatcher* socket_dispatcher);
   virtual ~IpcPacketSocketFactory();
 
   virtual talk_base::AsyncPacketSocket* CreateUdpSocket(

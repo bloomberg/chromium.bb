@@ -8,6 +8,8 @@
 
 #include <windows.h>
 
+#include "content/common/content_export.h"
+
 namespace chrome {
 
 // Duplicates a section handle from another process to the current process.
@@ -16,7 +18,10 @@ HANDLE GetSectionFromProcess(HANDLE section, HANDLE process, bool read_only);
 
 // Duplicates a section handle from the current process for use in another
 // process. Returns the new valid handle or NULL on failure.
-HANDLE GetSectionForProcess(HANDLE section, HANDLE process, bool read_only);
+CONTENT_EXPORT HANDLE GetSectionForProcess(
+    HANDLE section,
+    HANDLE process,
+    bool read_only);
 
 }  // namespace chrome
 

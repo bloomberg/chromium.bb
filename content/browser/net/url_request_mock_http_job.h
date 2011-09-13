@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -10,11 +10,12 @@
 
 #include <string>
 
+#include "content/common/content_export.h"
 #include "net/url_request/url_request_file_job.h"
 
 class FilePath;
 
-class URLRequestMockHTTPJob : public net::URLRequestFileJob {
+class CONTENT_EXPORT URLRequestMockHTTPJob : public net::URLRequestFileJob {
  public:
   URLRequestMockHTTPJob(net::URLRequest* request, const FilePath& file_path);
 

@@ -9,6 +9,7 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "content/browser/browser_thread.h"
+#include "content/common/content_export.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 #include "net/base/ssl_cert_request_info.h"
@@ -22,7 +23,7 @@ class X509Certificate;
 // authentication by the user.
 // It is self-owned and deletes itself when the UI reports the user selection or
 // when the net::URLRequest is cancelled.
-class SSLClientAuthHandler
+class CONTENT_EXPORT SSLClientAuthHandler
     : public base::RefCountedThreadSafe<SSLClientAuthHandler,
                                         BrowserThread::DeleteOnIOThread> {
  public:
@@ -54,6 +55,8 @@ class SSLClientAuthHandler
   virtual ~SSLClientAuthHandler();
 
  private:
+  friend class base::RefCountedThreadSafe<SSLClientAuthHandler,
+                                          BrowserThread::DeleteOnIOThread>;
   friend class BrowserThread;
   friend class DeleteTask<SSLClientAuthHandler>;
 
@@ -74,7 +77,7 @@ class SSLClientAuthHandler
   DISALLOW_COPY_AND_ASSIGN(SSLClientAuthHandler);
 };
 
-class SSLClientAuthObserver : public NotificationObserver {
+class CONTENT_EXPORT SSLClientAuthObserver : public NotificationObserver {
  public:
   SSLClientAuthObserver(net::SSLCertRequestInfo* cert_request_info,
                         SSLClientAuthHandler* handler);

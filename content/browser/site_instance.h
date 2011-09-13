@@ -7,6 +7,7 @@
 #pragma once
 
 #include "content/browser/renderer_host/render_process_host.h"
+#include "content/common/content_export.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 #include "googleurl/src/gurl.h"
@@ -51,8 +52,8 @@ class BrowserContext;
 // tabs with no NavigationEntries or in NavigationEntries in the history.
 //
 ///////////////////////////////////////////////////////////////////////////////
-class SiteInstance : public base::RefCounted<SiteInstance>,
-                     public NotificationObserver {
+class CONTENT_EXPORT SiteInstance : public base::RefCounted<SiteInstance>,
+                                    public NotificationObserver {
  public:
   // Returns a unique ID for this SiteInstance.
   int32 id() { return id_; }

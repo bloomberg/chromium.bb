@@ -10,6 +10,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/string16.h"
+#include "content/common/content_export.h"
 
 class IndexedDBKey;
 class SerializedScriptValue;
@@ -39,7 +40,7 @@ class IndexedDBKeyUtilityClient {
       const string16& key_path);
 
   // Shut down the underlying implementation. Must be called on the IO thread.
-  static void Shutdown();
+  CONTENT_EXPORT static void Shutdown();
 
  private:
   friend struct base::DefaultLazyInstanceTraits<IndexedDBKeyUtilityClient>;

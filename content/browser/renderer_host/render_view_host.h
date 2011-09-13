@@ -14,6 +14,7 @@
 #include "base/observer_list.h"
 #include "base/process_util.h"
 #include "content/browser/renderer_host/render_widget_host.h"
+#include "content/common/content_export.h"
 #include "content/common/window_container_type.h"
 #include "net/base/load_states.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebConsoleMessage.h"
@@ -94,7 +95,7 @@ class URLRequestContextGetter;
 //  if we want to bring that and other functionality down into this object so
 //  it can be shared by others.
 //
-class RenderViewHost : public RenderWidgetHost {
+class CONTENT_EXPORT RenderViewHost : public RenderWidgetHost {
  public:
   // Returns the RenderViewHost given its ID and the ID of its render process.
   // Returns NULL if the IDs do not correspond to a live RenderViewHost.

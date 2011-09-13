@@ -13,6 +13,7 @@
 #include "base/callback_old.h"
 #include "base/compiler_specific.h"
 #include "base/string16.h"
+#include "content/common/content_export.h"
 #include "content/common/page_transition_types.h"
 #include "ipc/ipc_channel.h"
 
@@ -32,7 +33,7 @@ class Value;
 //
 // NOTE: If you're creating a new WebUI for Chrome code, make sure you extend
 // ChromeWebUI.
-class WebUI : public IPC::Channel::Listener {
+class CONTENT_EXPORT WebUI : public IPC::Channel::Listener {
  public:
   explicit WebUI(TabContents* contents);
   virtual ~WebUI();
@@ -198,7 +199,7 @@ class WebUI : public IPC::Channel::Listener {
 // Messages sent from the DOM are forwarded via the WebUI to handler
 // classes. These objects are owned by WebUI and destroyed when the
 // host is destroyed.
-class WebUIMessageHandler {
+class CONTENT_EXPORT WebUIMessageHandler {
  public:
   WebUIMessageHandler();
   virtual ~WebUIMessageHandler();

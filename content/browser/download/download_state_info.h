@@ -7,6 +7,7 @@
 #pragma once
 
 #include "base/file_path.h"
+#include "content/common/content_export.h"
 #include "content/common/page_transition_types.h"
 
 // Contains information relating to the process of determining what to do with
@@ -25,7 +26,7 @@ struct DownloadStateInfo {
                     bool dangerous_url);
 
   // Indicates if the download is dangerous.
-  bool IsDangerous() const;
+  CONTENT_EXPORT bool IsDangerous() const;
 
   // The original name for a dangerous download, specified by the request.
   FilePath target_name;

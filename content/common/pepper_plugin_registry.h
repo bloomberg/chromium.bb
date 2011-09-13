@@ -12,12 +12,13 @@
 #include <vector>
 
 #include "base/file_path.h"
+#include "content/common/content_export.h"
 #include "ppapi/proxy/proxy_channel.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/webplugininfo.h"
 
-struct PepperPluginInfo {
+struct CONTENT_EXPORT PepperPluginInfo {
   PepperPluginInfo();
   ~PepperPluginInfo();
 
@@ -71,7 +72,8 @@ class PepperPluginRegistry
   // has no need to load the pepper plugin modules. It will re-compute the
   // plugin list every time it is called. Generally, code in the registry should
   // be using the cached plugin_list_ instead.
-  static void ComputeList(std::vector<PepperPluginInfo>* plugins);
+  CONTENT_EXPORT static void ComputeList(
+      std::vector<PepperPluginInfo>* plugins);
 
   // Loads the (native) libraries but does not initialize them (i.e., does not
   // call PPP_InitializeModule). This is needed by the zygote on Linux to get

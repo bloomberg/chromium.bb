@@ -17,6 +17,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "content/common/content_export.h"
 #include "content/common/content_notification_types.h"
 #include "ipc/ipc_channel_proxy.h"
 
@@ -30,8 +31,8 @@ class Message;
 // Provides common functionality for hosting a child process and processing IPC
 // messages between the host and the child process. Subclasses are responsible
 // for the actual launching and terminating of the child processes.
-class ChildProcessHost : public IPC::Channel::Listener,
-                         public IPC::Message::Sender {
+class CONTENT_EXPORT ChildProcessHost : public IPC::Channel::Listener,
+                                        public IPC::Message::Sender {
  public:
 
   // These flags may be passed to GetChildPath in order to alter its behavior,

@@ -17,6 +17,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 #include "content/browser/browser_thread.h"
+#include "content/common/content_export.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 
@@ -28,7 +29,7 @@ class GURL;
 
 // HostZoomMap needs to be deleted on the UI thread because it listens
 // to notifications on there (and holds a NotificationRegistrar).
-class HostZoomMap
+class CONTENT_EXPORT HostZoomMap
     : public NotificationObserver,
       public base::RefCountedThreadSafe<HostZoomMap,
                                         BrowserThread::DeleteOnUIThread> {
@@ -80,6 +81,8 @@ class HostZoomMap
   HostZoomMap* GetOriginal() const { return original_; }
 
  private:
+  friend class base::RefCountedThreadSafe<HostZoomMap,
+                                          BrowserThread::DeleteOnUIThread>;
   friend struct BrowserThread::DeleteOnThread<BrowserThread::UI>;
   friend class DeleteTask<HostZoomMap>;
 

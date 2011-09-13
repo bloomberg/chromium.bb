@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,7 @@
 #include <set>
 
 #include "base/basictypes.h"
+#include "content/common/content_export.h"
 
 namespace net {
 class URLRequest;
@@ -39,7 +40,7 @@ class ResourceQueueDelegate {
   virtual void WillShutdownResourceQueue() = 0;
 
  protected:
-  virtual ~ResourceQueueDelegate();
+  CONTENT_EXPORT virtual ~ResourceQueueDelegate();
 };
 
 // Makes it easy to delay starting URL requests until specified conditions are
@@ -76,8 +77,8 @@ class ResourceQueue {
   // A delegate should call StartDelayedRequest when it wants to allow the
   // request to start. If it was the last delegate that demanded the request
   // to be delayed, the request will be started.
-  void StartDelayedRequest(ResourceQueueDelegate* delegate,
-                           const GlobalRequestID& request_id);
+  CONTENT_EXPORT void StartDelayedRequest(ResourceQueueDelegate* delegate,
+                                          const GlobalRequestID& request_id);
 
  private:
   typedef std::map<GlobalRequestID, net::URLRequest*> RequestMap;

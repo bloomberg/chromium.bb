@@ -19,6 +19,7 @@
 #include "base/task.h"
 #include "content/browser/download/download_manager.h"
 #include "content/browser/tab_contents/tab_contents_observer.h"
+#include "content/common/content_export.h"
 #include "googleurl/src/gurl.h"
 
 class GURL;
@@ -49,10 +50,11 @@ class Time;
 // saved. Each file is represented by a SaveItem, and all SaveItems are owned
 // by the SavePackage. SaveItems are created when a user initiates a page
 // saving job, and exist for the duration of one tab's life time.
-class SavePackage : public base::RefCountedThreadSafe<SavePackage>,
-                    public TabContentsObserver,
-                    public DownloadItem::Observer,
-                    public base::SupportsWeakPtr<SavePackage> {
+class CONTENT_EXPORT SavePackage
+    : public base::RefCountedThreadSafe<SavePackage>,
+      public TabContentsObserver,
+      public DownloadItem::Observer,
+      public base::SupportsWeakPtr<SavePackage> {
  public:
   enum SavePackageType {
     // The value of the save type before its set by the user.

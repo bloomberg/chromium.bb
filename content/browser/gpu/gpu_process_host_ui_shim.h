@@ -18,6 +18,7 @@
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/non_thread_safe.h"
+#include "content/common/content_export.h"
 #include "content/common/message_router.h"
 
 namespace gfx {
@@ -62,7 +63,7 @@ class GpuProcessHostUIShim
   static void Destroy(int host_id);
 
   // Destroy all remaining GpuProcessHostUIShims.
-  static void DestroyAll();
+  CONTENT_EXPORT static void DestroyAll();
 
   static GpuProcessHostUIShim* FromID(int host_id);
 

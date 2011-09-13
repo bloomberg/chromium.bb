@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,7 @@
 #pragma once
 
 #include "base/basictypes.h"
+#include "content/common/content_export.h"
 
 template <typename T> struct DefaultSingletonTraits;
 
@@ -27,7 +28,7 @@ template <typename T> struct DefaultSingletonTraits;
 // when VoiceOver is launched and unset when VoiceOver is closed.  This is an
 // improvement over reading defaults preference values (which has no callback
 // mechanism).
-class BrowserAccessibilityState {
+class CONTENT_EXPORT BrowserAccessibilityState {
  public:
   // Returns the singleton instance.
   static BrowserAccessibilityState* GetInstance();

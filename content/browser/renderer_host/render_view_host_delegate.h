@@ -15,6 +15,7 @@
 #include "base/process_util.h"
 #include "base/string16.h"
 #include "base/values.h"
+#include "content/common/content_export.h"
 #include "content/common/view_types.h"
 #include "content/common/window_container_type.h"
 #include "ipc/ipc_channel.h"
@@ -64,11 +65,11 @@ class Size;
 //  exposing a more generic Send function on RenderViewHost and a response
 //  listener here to serve that need.
 //
-class RenderViewHostDelegate : public IPC::Channel::Listener {
+class CONTENT_EXPORT RenderViewHostDelegate : public IPC::Channel::Listener {
  public:
   // View ----------------------------------------------------------------------
   // Functions that can be routed directly to a view-specific class.
-  class View {
+  class CONTENT_EXPORT View {
    public:
     // The page is trying to open a new page (e.g. a popup window). The window
     // should be created associated with the given route, but it should not be

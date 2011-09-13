@@ -11,6 +11,7 @@
 #include "base/basictypes.h"
 #include "base/time.h"
 #include "content/common/child_process_info.h"
+#include "content/common/content_export.h"
 #include "content/common/page_transition_types.h"
 #include "net/base/load_states.h"
 #include "net/url_request/url_request.h"
@@ -71,7 +72,8 @@ class ResourceDispatcherHostRequestInfo : public net::URLRequest::UserData {
   ResourceDispatcherHostLoginDelegate* login_delegate() const {
     return login_delegate_.get();
   }
-  void set_login_delegate(ResourceDispatcherHostLoginDelegate* ld);
+  CONTENT_EXPORT void set_login_delegate(
+      ResourceDispatcherHostLoginDelegate* ld);
 
   // Pointer to the SSL auth, or NULL if there is none for this request.
   SSLClientAuthHandler* ssl_client_auth_handler() const {

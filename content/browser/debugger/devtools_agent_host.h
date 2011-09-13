@@ -6,6 +6,8 @@
 #define CONTENT_BROWSER_DEBUGGER_DEVTOOLS_AGENT_HOST_H_
 #pragma once
 
+#include "content/common/content_export.h"
+
 namespace IPC {
 class Message;
 }
@@ -13,7 +15,7 @@ class Message;
 // Describes interface for managing devtools agents from the browser process.
 class DevToolsAgentHost {
  public:
-  class CloseListener {
+  class CONTENT_EXPORT CloseListener {
    public:
     virtual void AgentHostClosing(DevToolsAgentHost*) = 0;
    protected:

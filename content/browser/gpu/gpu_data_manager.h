@@ -15,13 +15,14 @@
 #include "base/synchronization/lock.h"
 #include "base/task.h"
 #include "base/values.h"
+#include "content/common/content_export.h"
 #include "content/common/gpu/gpu_feature_flags.h"
 #include "content/common/gpu/gpu_info.h"
 
 class CommandLine;
 class GpuBlacklist;
 
-class GpuDataManager {
+class CONTENT_EXPORT GpuDataManager {
  public:
   // Getter for the singleton. This will return NULL on failure.
   static GpuDataManager* GetInstance();

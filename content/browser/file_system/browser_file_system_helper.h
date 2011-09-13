@@ -7,6 +7,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "content/common/content_export.h"
 #include "webkit/fileapi/file_system_context.h"
 
 namespace quota {
@@ -15,7 +16,8 @@ class SpecialStoragePolicy;
 
 // Helper method that returns FileSystemContext constructed for
 // the browser process.
-scoped_refptr<fileapi::FileSystemContext> CreateFileSystemContext(
+CONTENT_EXPORT scoped_refptr<fileapi::FileSystemContext>
+CreateFileSystemContext(
     const FilePath& profile_path,
     bool is_incognito,
     quota::SpecialStoragePolicy* special_storage_policy,

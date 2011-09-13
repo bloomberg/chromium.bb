@@ -42,6 +42,7 @@
 #include <map>
 #include <string>
 
+#include "content/common/content_export.h"
 #include "ipc/ipc_message_macros.h"
 
 // Singly-included section.
@@ -51,6 +52,9 @@
 typedef std::map<std::string, std::string> DevToolsRuntimeProperties;
 
 #endif  // CONTENT_COMMON_DEVTOOLS_MESSAGES_H_
+
+#undef IPC_MESSAGE_EXPORT
+#define IPC_MESSAGE_EXPORT CONTENT_EXPORT
 
 #define IPC_MESSAGE_START DevToolsMsgStart
 

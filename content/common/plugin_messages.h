@@ -6,6 +6,7 @@
 
 #include "build/build_config.h"
 #include "content/common/common_param_traits.h"
+#include "content/common/content_export.h"
 #include "content/common/webkit_param_traits.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_message_macros.h"
@@ -16,6 +17,9 @@
 #if defined(OS_POSIX)
 #include "base/file_descriptor_posix.h"
 #endif
+
+#undef IPC_MESSAGE_EXPORT
+#define IPC_MESSAGE_EXPORT CONTENT_EXPORT
 
 #define IPC_MESSAGE_START PluginMsgStart
 

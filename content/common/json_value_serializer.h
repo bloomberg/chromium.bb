@@ -11,8 +11,9 @@
 #include "base/basictypes.h"
 #include "base/file_path.h"
 #include "base/values.h"
+#include "content/common/content_export.h"
 
-class JSONStringValueSerializer : public base::ValueSerializer {
+class CONTENT_EXPORT JSONStringValueSerializer : public base::ValueSerializer {
  public:
   // json_string is the string that will be source of the deserialization
   // or the destination of the serialization.  The caller of the constructor
@@ -66,7 +67,7 @@ class JSONStringValueSerializer : public base::ValueSerializer {
   DISALLOW_COPY_AND_ASSIGN(JSONStringValueSerializer);
 };
 
-class JSONFileValueSerializer : public base::ValueSerializer {
+class CONTENT_EXPORT JSONFileValueSerializer : public base::ValueSerializer {
  public:
   // json_file_patch is the path of a file that will be source of the
   // deserialization or the destination of the serialization.

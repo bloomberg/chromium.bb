@@ -8,6 +8,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
+#include "content/common/content_export.h"
 
 class WebKitContext;
 
@@ -32,7 +33,7 @@ class SessionStorageNamespace
   SessionStorageNamespace(WebKitContext* webkit_context, int64 id);
 
   friend class base::RefCountedThreadSafe<SessionStorageNamespace>;
-  ~SessionStorageNamespace();
+  CONTENT_EXPORT ~SessionStorageNamespace();
 
   scoped_refptr<WebKitContext> webkit_context_;
 

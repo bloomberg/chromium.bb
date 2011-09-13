@@ -8,6 +8,7 @@
 #include "base/process.h"
 #include "base/shared_memory.h"
 #include "content/common/common_param_traits.h"
+#include "content/common/content_export.h"
 #include "content/common/css_colors.h"
 #include "content/common/edit_command.h"
 #include "content/common/navigation_gesture.h"
@@ -194,6 +195,9 @@ struct ViewMsg_StopFinding_Params {
 };
 
 #endif  // CONTENT_COMMON_VIEW_MESSAGES_H_
+
+#undef IPC_MESSAGE_EXPORT
+#define IPC_MESSAGE_EXPORT CONTENT_EXPORT
 
 #define IPC_MESSAGE_START ViewMsgStart
 

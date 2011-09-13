@@ -8,6 +8,8 @@
 #define CONTENT_COMMON_URL_CONSTANTS_H_
 #pragma once
 
+#include "content/common/content_export.h"
+
 namespace chrome {
 
 // Null terminated list of schemes that are savable.
@@ -16,29 +18,29 @@ extern const char* kSavableSchemes[];
 // Canonical schemes you can use as input to GURL.SchemeIs().
 // TODO(jam): some of these don't below in the content layer, but are accessed
 // from there.
-extern const char kAboutScheme[];
-extern const char kBlobScheme[];
-extern const char kChromeDevToolsScheme[];
-extern const char kChromeInternalScheme[];
-extern const char kChromeUIScheme[];  // The scheme used for WebUIs.
-extern const char kCrosScheme[];      // The scheme used for ChromeOS.
-extern const char kDataScheme[];
-extern const char kExtensionScheme[];
-extern const char kFileScheme[];
-extern const char kFileSystemScheme[];
-extern const char kFtpScheme[];
-extern const char kHttpScheme[];
-extern const char kHttpsScheme[];
-extern const char kJavaScriptScheme[];
-extern const char kMailToScheme[];
-extern const char kMetadataScheme[];
-extern const char kViewSourceScheme[];
+CONTENT_EXPORT extern const char kAboutScheme[];
+CONTENT_EXPORT extern const char kBlobScheme[];
+CONTENT_EXPORT extern const char kChromeDevToolsScheme[];
+CONTENT_EXPORT extern const char kChromeInternalScheme[];
+CONTENT_EXPORT extern const char kChromeUIScheme[];  // Used for WebUIs.
+CONTENT_EXPORT extern const char kCrosScheme[];      // Used for ChromeOS.
+CONTENT_EXPORT extern const char kDataScheme[];
+CONTENT_EXPORT extern const char kExtensionScheme[];
+CONTENT_EXPORT extern const char kFileScheme[];
+CONTENT_EXPORT extern const char kFileSystemScheme[];
+CONTENT_EXPORT extern const char kFtpScheme[];
+CONTENT_EXPORT extern const char kHttpScheme[];
+CONTENT_EXPORT extern const char kHttpsScheme[];
+CONTENT_EXPORT extern const char kJavaScriptScheme[];
+CONTENT_EXPORT extern const char kMailToScheme[];
+CONTENT_EXPORT extern const char kMetadataScheme[];
+CONTENT_EXPORT extern const char kViewSourceScheme[];
 
 // Used to separate a standard scheme and the hostname: "://".
-extern const char kStandardSchemeSeparator[];
+CONTENT_EXPORT extern const char kStandardSchemeSeparator[];
 
 // About URLs (including schemes).
-extern const char kAboutBlankURL[];
+CONTENT_EXPORT extern const char kAboutBlankURL[];
 extern const char kAboutCrashURL[];
 
 // Special URL used to start a navigation to an error page.

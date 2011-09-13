@@ -18,6 +18,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/singleton.h"
+#include "content/common/content_export.h"
 
 class GURL;
 
@@ -27,7 +28,7 @@ class BrowserContext;
 
 // BrowserURLHandler manages the list of all special URLs and manages
 // dispatching the URL handling to registered handlers.
-class BrowserURLHandler {
+class CONTENT_EXPORT BrowserURLHandler {
  public:
   // The type of functions that can process a URL.
   // If a handler handles |url|, it should :

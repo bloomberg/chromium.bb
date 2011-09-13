@@ -15,6 +15,8 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "content/common/content_export.h"
+
 #if defined(OS_WIN)
 #include "sandbox/src/sandbox.h"
 #endif
@@ -23,7 +25,7 @@ class CommandLine;
 
 #if defined(OS_WIN)
 
-class SandboxInitWrapper {
+class CONTENT_EXPORT SandboxInitWrapper {
  public:
   SandboxInitWrapper() : broker_services_(), target_services_() { }
   // SetServices() needs to be called before InitializeSandbox() on Win32 with
