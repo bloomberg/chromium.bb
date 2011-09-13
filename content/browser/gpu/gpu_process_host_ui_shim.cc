@@ -129,8 +129,10 @@ void GpuProcessHostUIShim::DidDestroyAcceleratedSurface(int renderer_id,
 
 void GpuProcessHostUIShim::SendToGpuHost(int host_id, IPC::Message* msg) {
   GpuProcessHostUIShim* ui_shim = FromID(host_id);
-  if (!ui_shim)
+  if (!ui_shim) {
+    delete msg;
     return;
+  }
 
   ui_shim->Send(msg);
 }
