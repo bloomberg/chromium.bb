@@ -3607,14 +3607,6 @@
    fun:_ZN14RunnableMethodIN5media13FFmpegDemuxerEMS1_FvP14CallbackRunnerI6Tuple0EE6Tuple1IS5_EE3RunEv
 }
 {
-   bug_77049
-   Memcheck:Cond
-   fun:_ZN7WebCore8Gradient20sortStopsIfNecessaryEv
-   fun:_ZN7WebCore8Gradient16platformGradientEv
-   fun:_ZN7WebCore15GraphicsContext*EPNS_8GradientE
-   fun:_ZN7WebCore15GraphicsContext*EN3WTF10PassRefPtrINS_8GradientEEE
-}
-{
    bug_77990
    Memcheck:Leak
    fun:calloc
