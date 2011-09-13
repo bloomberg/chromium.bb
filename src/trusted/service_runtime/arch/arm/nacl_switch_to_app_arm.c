@@ -15,6 +15,14 @@
 #include "native_client/src/trusted/service_runtime/nacl_globals.h"
 #include "native_client/src/trusted/service_runtime/nacl_switch_to_app.h"
 
+void NaClInitSwitchToApp(struct NaClApp *nap) {
+  /*
+   * We don't need anything here.  We might need it in future if e.g.
+   * we start letting untrusted code use NEON extensions.
+   */
+  UNREFERENCED_PARAMETER(nap);
+}
+
 /*
  * Does a quick calculation to get the real springboard address.
  * This is necessary because the springboard_addr is being used both as a code

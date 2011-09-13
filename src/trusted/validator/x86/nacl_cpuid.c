@@ -49,6 +49,8 @@ typedef enum {
   CPUFeature_VME,
   CPUFeature_PSN,
   CPUFeature_VMX,
+  CPUFeature_OSXSAVE,
+  CPUFeature_AVX,
   /* AMD-specific features */
   CPUFeature_3DNOW,
   CPUFeature_EMMX,
@@ -117,11 +119,11 @@ typedef enum {
 /* 0x00200000 reserved */
 #define CPUID_ECX_MOVBE      0x00400000  /* MOVBE instruction */
 #define CPUID_ECX_POPCNT     0x00800000  /* POPCNT instruction */
-/* 0x01000000 reserved */
-/* 0x02000000 reserved */
-/* 0x04000000 reserved */
-/* 0x08000000 reserved */
-/* 0x10000000 reserved */
+/* 0x00100000 reserved */
+#define CPUID_ECX_AES        0x02000000  /* AES instructions */
+#define CPUID_ECX_XSAVE      0x04000000  /* XSAVE/XRSTOR/XSETBV/XGETBV */
+#define CPUID_ECX_OSXSAVE    0x08000000  /* XSAVE et al enabled by OS */
+#define CPUID_ECX_AVX        0x10000000  /* AVX instructions */
 /* 0x20000000 reserved */
 /* 0x40000000 reserved */
 /* 0x80000000 reserved */
@@ -176,6 +178,8 @@ static const CPUFeature CPUFeatureDescriptions[(int)CPUFeature_Last] = {
   {CFReg_EDX_I, CPUID_EDX_VME, "VME"},
   {CFReg_EDX_I, CPUID_EDX_PSN, "PSN"},
   {CFReg_ECX_I, CPUID_ECX_VMX, "VMX"},
+  {CFReg_ECX_I, CPUID_ECX_OSXSAVE, "OSXSAVE"},
+  {CFReg_ECX_I, CPUID_ECX_AVX, "AVX"},
   {CFReg_EDX_A, CPUID_EDX_3DN, "3DNow"},
   {CFReg_EDX_A, CPUID_EDX_EMMX, "EMMX"},
   {CFReg_EDX_A, CPUID_EDX_E3DN, "E3DNow"},
@@ -282,7 +286,7 @@ static void CacheCPUVersionID(NaClCPUData* data) {
 
 
 /* Cache feature vector as array of uint32_t [ecx, edx] */
-void CacheCPUFeatureVector(NaClCPUData* data) {
+static void CacheCPUFeatureVector(NaClCPUData* data) {
   int i;
   for (i = 0; i < kMaxCPUFeatureReg; ++i) {
     data->_featurev[i] = 0;
@@ -333,6 +337,23 @@ static Bool CheckCPUFeature(NaClCPUData* data, CPUFeatureID fid) {
     return TRUE;
   } else {
     return FALSE;
+  }
+}
+
+uint64_t NaClXGETBV(uint32_t);
+
+/* Cache XCR vector */
+static void CacheCPUXCRVector(NaClCPUData* data) {
+  if (CheckCPUFeature(data, CPUFeature_OSXSAVE)) {
+    int i;
+    for (i = 0; i < kMaxCPUXCRReg; ++i) {
+      data->_xcrv[i] = NaClXGETBV(i);
+    }
+  } else {
+    int i;
+    for (i = 0; i < kMaxCPUXCRReg; ++i) {
+      data->_xcrv[i] = 0;
+    }
   }
 }
 
@@ -407,6 +428,7 @@ void GetCPUFeatures(NaClCPUData* data, CPUFeatures *cpuf) {
   cpuf->f_VME = CheckCPUFeature(data, CPUFeature_VME);
   cpuf->f_PSN = CheckCPUFeature(data, CPUFeature_PSN);
   cpuf->f_VMX = CheckCPUFeature(data, CPUFeature_VMX);
+  cpuf->f_OSXSAVE = CheckCPUFeature(data, CPUFeature_OSXSAVE);
   /* AMD-specific features */
   cpuf->f_3DNOW = CheckCPUFeature(data, CPUFeature_3DNOW);
   cpuf->f_EMMX = CheckCPUFeature(data, CPUFeature_EMMX);
@@ -415,6 +437,14 @@ void GetCPUFeatures(NaClCPUData* data, CPUFeatures *cpuf) {
   cpuf->f_SSE4A = CheckCPUFeature(data, CPUFeature_SSE4A);
   cpuf->f_LM = CheckCPUFeature(data, CPUFeature_LM);
   cpuf->f_SVM = CheckCPUFeature(data, CPUFeature_SVM);
+
+  /*
+   * If the operating system doesn't maintain the AVX state,
+   * pretend we don't have the instructions available at all.
+   */
+  cpuf->f_AVX = (CheckCPUFeature(data, CPUFeature_AVX) &&
+                 cpuf->f_OSXSAVE &&
+                 (data->_xcrv[0] & 6) == 6);
 }
 
 void NaClCPUDataGet(NaClCPUData* data) {
@@ -422,5 +452,6 @@ void NaClCPUDataGet(NaClCPUData* data) {
   CacheCPUVersionID(data);
   CacheCPUVersionID(data);
   CacheCPUFeatureVector(data);
+  CacheCPUXCRVector(data);
   CacheGetCPUIDString(data);
 }

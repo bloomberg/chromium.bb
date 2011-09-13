@@ -45,7 +45,7 @@ __attribute__((noinline)) static int infoleak_check_state(void) {
   return ok;
 }
 
-#define EXPECT_OK 0  /* Currently known to be broken. */
+#define EXPECT_OK 1
 
 #else
 

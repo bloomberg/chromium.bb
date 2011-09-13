@@ -18,9 +18,51 @@
          */
 
         .text
-.globl  IDENTIFIER(NaClSwitch)
-        HIDDEN(NaClSwitch)
-IDENTIFIER(NaClSwitch):
+/*
+ * The MacOS assembler has a macro facility that is pretty close
+ * to GNU as macros, but not quite the same.
+ */
+#if NACL_OSX
+# define MACRO(name)    .macro name
+# define ENDMACRO       .endmacro
+# define MACROENTRY     \
+        .globl IDENTIFIER($0)   ; \
+        HIDDEN($0)              ; \
+        IDENTIFIER($0):
+# define MACROARG1      $0
+# define MACROARG2      $1
+#else
+# define MACRO(name)    .macro name arg1, arg2=0
+# define ENDMACRO       .endm
+# define MACROENTRY     \
+        .globl IDENTIFIER(\arg1); \
+        HIDDEN(\arg1)           ; \
+        IDENTIFIER(\arg1):
+# define MACROARG1      \arg1
+# define MACROARG2      \arg2
+#endif
+
+/*
+ * This is "vxorps %ymm\N, %ymm\N, %ymm\N".
+ * Some assembler versions don't know the AVX instructions.
+ */
+MACRO(clear_ymm)
+.if MACROARG1 < 8
+        .byte 0xc5
+        .byte (~MACROARG1 << 3) | 4
+        .byte 0x57
+        .byte 0xc0 | (MACROARG1 << 3) | MACROARG1
+.else
+        .byte 0xc4, 0x41
+        .byte (~MACROARG1 << 3) & 0x7f | 4
+        .byte 0x57
+        .byte 0xc0 | ((MACROARG1 - 8) << 3) | (MACROARG1 - 8)
+.endif
+ENDMACRO
+
+
+MACRO(switcher)
+MACROENTRY
 #if NACL_WINDOWS
         /* if Windows, 1st param is already in %rcx, not %rdi */
 #elif NACL_LINUX || NACL_OSX
@@ -64,6 +106,50 @@ IDENTIFIER(NaClSwitch):
         movq    %rdx, %r11
 
         /*
+         * Clear the x87 state.
+         */
+        fninit
+
+        /*
+         * Clear the vector registers.
+         */
+.if MACROARG2
+        clear_ymm 0
+        clear_ymm 1
+        clear_ymm 2
+        clear_ymm 3
+        clear_ymm 4
+        clear_ymm 5
+        clear_ymm 6
+        clear_ymm 7
+        clear_ymm 8
+        clear_ymm 9
+        clear_ymm 10
+        clear_ymm 11
+        clear_ymm 12
+        clear_ymm 13
+        clear_ymm 14
+        clear_ymm 15
+.else
+        xorps   %xmm0, %xmm0
+        xorps   %xmm1, %xmm1
+        xorps   %xmm2, %xmm2
+        xorps   %xmm3, %xmm3
+        xorps   %xmm4, %xmm4
+        xorps   %xmm5, %xmm5
+        xorps   %xmm6, %xmm6
+        xorps   %xmm7, %xmm7
+        xorps   %xmm8, %xmm8
+        xorps   %xmm9, %xmm9
+        xorps   %xmm10, %xmm10
+        xorps   %xmm11, %xmm11
+        xorps   %xmm12, %xmm12
+        xorps   %xmm13, %xmm13
+        xorps   %xmm14, %xmm14
+        xorps   %xmm15, %xmm15
+.endif
+
+        /*
          * Load the return address into %rcx rather than doing
          * "jmp *0x88(%rcx)" so that we do not leak the address of the
          * struct NaClThreadContext to untrusted code.  Knowing this
@@ -71,3 +157,7 @@ IDENTIFIER(NaClSwitch):
          */
         movq    0x88(%rcx), %rcx
         jmp     *%rcx
+ENDMACRO
+
+        switcher NaClSwitchSSE, 0
+        switcher NaClSwitchAVX, 1

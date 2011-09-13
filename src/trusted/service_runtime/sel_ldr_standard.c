@@ -35,6 +35,7 @@
 #include "native_client/src/trusted/service_runtime/nacl_debug_init.h"
 #include "native_client/src/trusted/service_runtime/nacl_kern_services.h"
 #include "native_client/src/trusted/service_runtime/nacl_oop_debugger_hooks.h"
+#include "native_client/src/trusted/service_runtime/nacl_switch_to_app.h"
 #include "native_client/src/trusted/service_runtime/nacl_syscall_common.h"
 #include "native_client/src/trusted/service_runtime/nacl_text.h"
 #include "native_client/src/trusted/service_runtime/outer_sandbox.h"
@@ -402,6 +403,9 @@ NaClErrorCode NaClAppLoadFile(struct Gio       *gp,
     goto done;
   }
 #endif
+
+  NaClLog(2, "Initializing arch switcher\n");
+  NaClInitSwitchToApp(nap);
 
   NaClLog(2, "Installing trampoline\n");
   NaClLoadTrampoline(nap);

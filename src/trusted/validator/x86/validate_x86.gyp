@@ -20,6 +20,7 @@
             'error_reporter.c',
             'halt_trim.c',
             'nacl_cpuid.c',
+            'nacl_xgetbv.S',
             'ncinstbuffer.c',
             'x86_insts.c',
             'nc_segment.c',

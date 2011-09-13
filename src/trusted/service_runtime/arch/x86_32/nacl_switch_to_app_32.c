@@ -13,7 +13,38 @@
 #include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
 #include "native_client/src/trusted/service_runtime/nacl_globals.h"
 #include "native_client/src/trusted/service_runtime/nacl_switch_to_app.h"
+#include "native_client/src/trusted/validator/x86/nacl_cpuid.h"
 
+#if NACL_WINDOWS
+# define NORETURN_PTR
+#else
+# define NORETURN_PTR NORETURN
+#endif
+
+static NORETURN_PTR void (*NaClSwitch)(struct NaClThreadContext *context);
+
+void NaClInitSwitchToApp(struct NaClApp *nap) {
+  NaClCPUData cpu_data;
+  CPUFeatures cpu_features;
+
+  UNREFERENCED_PARAMETER(nap);
+
+  /*
+   * TODO(mcgrathr): This call is repeated in platform qualification and
+   * in every application of the validator.  It would be more efficient
+   * to do it once and then reuse the same data.
+   */
+  NaClCPUDataGet(&cpu_data);
+  GetCPUFeatures(&cpu_data, &cpu_features);
+
+  if (cpu_features.f_AVX) {
+    NaClSwitch = NaClSwitchAVX;
+  } else if (cpu_features.f_SSE) {
+    NaClSwitch = NaClSwitchSSE;
+  } else {
+    NaClSwitch = NaClSwitchNoSSE;
+  }
+}
 
 NORETURN void NaClStartThreadInApp(struct NaClAppThread *natp,
                                    nacl_reg_t           new_prog_ctr) {

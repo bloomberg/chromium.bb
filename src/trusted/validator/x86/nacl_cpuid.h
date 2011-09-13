@@ -42,11 +42,13 @@ typedef struct cpu_feature_struct {
   Bool f_FXSR;
   Bool f_CLFLUSH;
   Bool f_TSC;
+  Bool f_OSXSAVE;
   /* These instructions are illegal but included for completeness */
   Bool f_MSR;
   Bool f_VME;
   Bool f_PSN;
   Bool f_VMX;
+  Bool f_AVX;
   /* AMD-specific features */
   Bool f_3DNOW;
   Bool f_EMMX;
@@ -70,6 +72,10 @@ typedef struct cpu_feature_struct {
  */
 #define kMaxCPUFeatureReg 8
 
+/* Defines the maximum number of extended control registers.
+ */
+#define kMaxCPUXCRReg 1
+
 /* Define a cache for collected CPU runtime information, from which
  * queries can answer questions.
  */
@@ -85,6 +91,9 @@ typedef struct NaClCPUData {
    * picked up.
    */
   uint32_t _featurev[kMaxCPUFeatureReg];
+  /* Define the set of extended control register (XCR) values.
+   */
+  uint64_t _xcrv[kMaxCPUXCRReg];
   /* Define a string to hold and cache the CPUID. In such cases, such races
    * will at worst cause the CPUID to not be recognized.
    */
