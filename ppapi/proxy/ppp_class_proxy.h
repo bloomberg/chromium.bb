@@ -31,10 +31,6 @@ class PPP_Class_Proxy : public InterfaceProxy {
   PPP_Class_Proxy(Dispatcher* dispatcher);
   virtual ~PPP_Class_Proxy();
 
-  // Factory function used for registration (normal code can just use the
-  // constructor).
-  static InterfaceProxy* Create(Dispatcher* dispatcher);
-
   // Creates a proxied object in the browser process. This takes the browser's
   // PPB_Var_Deprecated interface to use to create the object. The class and
   static PP_Var CreateProxiedObject(const PPB_Var_Deprecated* var,

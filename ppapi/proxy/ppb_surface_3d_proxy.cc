@@ -25,8 +25,9 @@ namespace proxy {
 
 namespace {
 
-InterfaceProxy* CreateSurface3DProxy(Dispatcher* dispatcher) {
-  return new PPB_Surface3D_Proxy(dispatcher);
+InterfaceProxy* CreateSurface3DProxy(Dispatcher* dispatcher,
+                                     const void* target_interface) {
+  return new PPB_Surface3D_Proxy(dispatcher, target_interface);
 }
 
 }  // namespace
@@ -87,8 +88,9 @@ void Surface3D::SwapBuffersACK(int32_t pp_error) {
 
 // PPB_Surface3D_Proxy ---------------------------------------------------------
 
-PPB_Surface3D_Proxy::PPB_Surface3D_Proxy(Dispatcher* dispatcher)
-    : InterfaceProxy(dispatcher),
+PPB_Surface3D_Proxy::PPB_Surface3D_Proxy(Dispatcher* dispatcher,
+                                         const void* target_interface)
+    : InterfaceProxy(dispatcher, target_interface),
       callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
 }
 
@@ -98,7 +100,7 @@ PPB_Surface3D_Proxy::~PPB_Surface3D_Proxy() {
 // static
 const InterfaceProxy::Info* PPB_Surface3D_Proxy::GetInfo() {
   static const Info info = {
-    thunk::GetPPB_Surface3D_Dev_Thunk(),
+    thunk::GetPPB_Surface3D_Thunk(),
     PPB_SURFACE_3D_DEV_INTERFACE,
     INTERFACE_ID_PPB_SURFACE_3D,
     false,
@@ -160,7 +162,7 @@ void PPB_Surface3D_Proxy::OnMsgCreate(PP_Instance instance,
       attribs.back() != PP_GRAPHICS3DATTRIB_NONE)
     return;  // Bad message.
 
-  thunk::EnterResourceCreation enter(instance);
+  EnterFunctionNoLock<ResourceCreationAPI> enter(instance, true);
   if (enter.succeeded()) {
     result->SetHostResource(
         instance,

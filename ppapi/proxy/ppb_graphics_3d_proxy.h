@@ -63,17 +63,21 @@ class Graphics3D : public Resource, public Graphics3DImpl {
 
 class PPB_Graphics3D_Proxy : public InterfaceProxy {
  public:
-  PPB_Graphics3D_Proxy(Dispatcher* dispatcher);
+  PPB_Graphics3D_Proxy(Dispatcher* dispatcher, const void* target_interface);
   virtual ~PPB_Graphics3D_Proxy();
+
+  static const Info* GetInfo();
 
   static PP_Resource CreateProxyResource(PP_Instance instance,
                                          PP_Resource share_context,
                                          const int32_t* attrib_list);
 
+  const PPB_Graphics3D* ppb_graphics_3d_target() const {
+    return static_cast<const PPB_Graphics3D*>(target_interface());
+  }
+
   // InterfaceProxy implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg);
-
-  static const InterfaceID kInterfaceID = INTERFACE_ID_PPB_GRAPHICS_3D;
 
  private:
   void OnMsgCreate(PP_Instance instance,

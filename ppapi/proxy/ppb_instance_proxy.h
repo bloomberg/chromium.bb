@@ -23,11 +23,16 @@ class SerializedVarReturnValue;
 
 class PPB_Instance_Proxy : public InterfaceProxy,
                            public ppapi::InstanceImpl,
+                           public ppapi::FunctionGroupBase,
                            public ppapi::thunk::PPB_Instance_FunctionAPI {
  public:
-  PPB_Instance_Proxy(Dispatcher* dispatcher);
+  PPB_Instance_Proxy(Dispatcher* dispatcher, const void* target_interface);
   virtual ~PPB_Instance_Proxy();
 
+  static const Info* GetInfo0_5();
+  static const Info* GetInfo1_0();
+  static const Info* GetInfoMessaging();
+  static const Info* GetInfoMouseLock();
   static const Info* GetInfoPrivate();
   static const Info* GetInfoFullscreen();
 
@@ -46,13 +51,6 @@ class PPB_Instance_Proxy : public InterfaceProxy,
   virtual PP_Var ExecuteScript(PP_Instance instance,
                                PP_Var script,
                                PP_Var* exception) OVERRIDE;
-  virtual void Log(PP_Instance instance,
-                   int log_level,
-                   PP_Var value) OVERRIDE;
-  virtual void LogWithSource(PP_Instance instance,
-                             int log_level,
-                             PP_Var source,
-                             PP_Var value) OVERRIDE;
   virtual PP_Bool IsFullscreen(PP_Instance instance) OVERRIDE;
   virtual PP_Bool SetFullscreen(PP_Instance instance,
                                 PP_Bool fullscreen) OVERRIDE;
@@ -73,8 +71,6 @@ class PPB_Instance_Proxy : public InterfaceProxy,
                             PP_CompletionCallback callback) OVERRIDE;
   virtual void UnlockMouse(PP_Instance instance) OVERRIDE;
 
-  static const InterfaceID kInterfaceID = INTERFACE_ID_PPB_INSTANCE;
-
  private:
   // Message handlers.
   void OnMsgGetWindowObject(PP_Instance instance,
@@ -89,13 +85,6 @@ class PPB_Instance_Proxy : public InterfaceProxy,
                           SerializedVarReceiveInput script,
                           SerializedVarOutParam out_exception,
                           SerializedVarReturnValue result);
-  void OnMsgLog(PP_Instance instance,
-                int log_level,
-                SerializedVarReceiveInput value);
-  void OnMsgLogWithSource(PP_Instance instance,
-                          int log_level,
-                          SerializedVarReceiveInput source,
-                          SerializedVarReceiveInput value);
   void OnMsgSetFullscreen(PP_Instance instance,
                           PP_Bool fullscreen,
                           PP_Bool* result);

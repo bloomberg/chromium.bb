@@ -13,7 +13,6 @@
 #include "ipc/ipc_sync_channel.h"
 #include "base/debug/trace_event.h"
 #include "ppapi/c/pp_errors.h"
-#include "ppapi/proxy/interface_list.h"
 #include "ppapi/proxy/interface_proxy.h"
 #include "ppapi/proxy/plugin_message_filter.h"
 #include "ppapi/proxy/plugin_resource_tracker.h"
@@ -54,6 +53,11 @@ PluginDispatcher::PluginDispatcher(base::ProcessHandle remote_process_handle,
       received_preferences_(false),
       plugin_dispatcher_id_(0) {
   SetSerializationRules(new PluginVarSerializationRules);
+
+  // As a plugin, we always support the PPP_Class interface. There's no
+  // GetInterface call or name for it, so we insert it into our table now.
+  target_proxies_[INTERFACE_ID_PPP_CLASS].reset(new PPP_Class_Proxy(this));
+
   TrackerBase::Init(&PluginResourceTracker::GetTrackerBaseInstance);
 }
 
@@ -79,19 +83,13 @@ PluginDispatcher* PluginDispatcher::GetForResource(const Resource* resource) {
 }
 
 // static
-const void* PluginDispatcher::GetBrowserInterface(const char* interface_name) {
-  return InterfaceList::GetInstance()->GetInterfaceForPPB(interface_name);
-}
-
-const void* PluginDispatcher::GetPluginInterface(
-    const std::string& interface_name) {
-  InterfaceMap::iterator found = plugin_interfaces_.find(interface_name);
-  if (found == plugin_interfaces_.end()) {
-    const void* ret = local_get_interface()(interface_name.c_str());
-    plugin_interfaces_.insert(std::make_pair(interface_name, ret));
-    return ret;
-  }
-  return found->second;
+const void* PluginDispatcher::GetInterfaceFromDispatcher(
+    const char* dispatcher_interface) {
+  // All interfaces the plugin requests of the browser are "PPB".
+  const InterfaceProxy::Info* info = GetPPBInterfaceInfo(dispatcher_interface);
+  if (!info)
+    return NULL;
+  return info->interface_ptr;
 }
 
 bool PluginDispatcher::InitPluginWithChannel(
@@ -133,18 +131,56 @@ bool PluginDispatcher::OnMessageReceived(const IPC::Message& msg) {
   TRACE_EVENT2("ppapi proxy", "PluginDispatcher::OnMessageReceived",
                "Class", IPC_MESSAGE_ID_CLASS(msg.type()),
                "Line", IPC_MESSAGE_ID_LINE(msg.type()));
+  // Handle common control messages.
+  if (Dispatcher::OnMessageReceived(msg))
+    return true;
+
   if (msg.routing_id() == MSG_ROUTING_CONTROL) {
     // Handle some plugin-specific control messages.
     bool handled = true;
     IPC_BEGIN_MESSAGE_MAP(PluginDispatcher, msg)
       IPC_MESSAGE_HANDLER(PpapiMsg_SupportsInterface, OnMsgSupportsInterface)
       IPC_MESSAGE_HANDLER(PpapiMsg_SetPreferences, OnMsgSetPreferences)
-      IPC_MESSAGE_UNHANDLED(handled = false);
     IPC_END_MESSAGE_MAP()
-    if (handled)
-      return true;
+    return handled;
   }
-  return Dispatcher::OnMessageReceived(msg);
+
+  if (msg.routing_id() <= 0 || msg.routing_id() >= INTERFACE_ID_COUNT) {
+    // Host is sending us garbage. Since it's supposed to be trusted, this
+    // isn't supposed to happen. Crash here in all builds in case the renderer
+    // is compromised.
+    CHECK(false);
+    return true;
+  }
+
+  // There are two cases:
+  //
+  // * The first case is that the host is calling a PPP interface. It will
+  //   always do a check for the interface before sending messages, and this
+  //   will create the necessary interface proxy at that time. So when we
+  //   actually receive a message, we know such a proxy will exist.
+  //
+  // * The second case is that the host is sending a response to the plugin
+  //   side of a PPB interface (some, like the URL loader, have complex
+  //   response messages). Since the host is trusted and not supposed to be
+  //   doing silly things, we can just create a PPB proxy project on demand the
+  //   first time it's needed.
+
+  InterfaceProxy* proxy = target_proxies_[msg.routing_id()].get();
+  if (!proxy) {
+    // Handle the first time the host calls a PPB reply interface by
+    // autocreating it.
+    const InterfaceProxy::Info* info = GetPPBInterfaceInfo(
+        static_cast<InterfaceID>(msg.routing_id()));
+    if (!info) {
+      NOTREACHED();
+      return true;
+    }
+    proxy = info->create_proxy(this, NULL);
+    target_proxies_[info->id].reset(proxy);
+  }
+
+  return proxy->OnMessageReceived(msg);
 }
 
 void PluginDispatcher::OnChannelError() {
@@ -202,7 +238,23 @@ WebKitForwarding* PluginDispatcher::GetWebKitForwarding() {
 }
 
 FunctionGroupBase* PluginDispatcher::GetFunctionAPI(InterfaceID id) {
-  return GetInterfaceProxy(id);
+  scoped_ptr<FunctionGroupBase >& proxy = function_proxies_[id];
+
+  if (proxy.get())
+    return proxy.get();
+
+  if (id == INTERFACE_ID_PPB_CHAR_SET)
+    proxy.reset(new PPB_CharSet_Proxy(this, NULL));
+  else if(id == INTERFACE_ID_PPB_CURSORCONTROL)
+    proxy.reset(new PPB_CursorControl_Proxy(this, NULL));
+  else if (id == INTERFACE_ID_PPB_FONT)
+    proxy.reset(new PPB_Font_Proxy(this, NULL));
+  else if (id == INTERFACE_ID_PPB_INSTANCE)
+    proxy.reset(new PPB_Instance_Proxy(this, NULL));
+  else if (id == INTERFACE_ID_RESOURCE_CREATION)
+    proxy.reset(new ResourceCreationProxy(this));
+
+  return proxy.get();
 }
 
 void PluginDispatcher::ForceFreeAllInstances() {
@@ -226,7 +278,26 @@ void PluginDispatcher::ForceFreeAllInstances() {
 void PluginDispatcher::OnMsgSupportsInterface(
     const std::string& interface_name,
     bool* result) {
-  *result = !!GetPluginInterface(interface_name);
+  *result = false;
+
+  // Setup a proxy for receiving the messages from this interface.
+  const InterfaceProxy::Info* info = GetPPPInterfaceInfo(interface_name);
+  if (!info)
+    return;  // Interface not supported by proxy.
+
+  // Check for a cached result.
+  if (target_proxies_[info->id].get()) {
+    *result = true;
+    return;
+  }
+
+  // Query the plugin & cache the result.
+  const void* interface_functions = GetLocalInterface(interface_name.c_str());
+  if (!interface_functions)
+    return;
+  target_proxies_[info->id].reset(
+      info->create_proxy(this, interface_functions));
+  *result = true;
 }
 
 void PluginDispatcher::OnMsgSetPreferences(const Preferences& prefs) {

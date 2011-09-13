@@ -26,10 +26,15 @@ class SerializedVarReturnValue;
 
 class PPB_Var_Deprecated_Proxy : public InterfaceProxy {
  public:
-  PPB_Var_Deprecated_Proxy(Dispatcher* dispatcher);
+  PPB_Var_Deprecated_Proxy(Dispatcher* dispatcher,
+                           const void* target_interface);
   virtual ~PPB_Var_Deprecated_Proxy();
 
   static const Info* GetInfo();
+
+  const PPB_Var_Deprecated* ppb_var_target() const {
+    return static_cast<const PPB_Var_Deprecated*>(target_interface());
+  }
 
   // InterfaceProxy implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg);
@@ -91,10 +96,6 @@ class PPB_Var_Deprecated_Proxy : public InterfaceProxy {
 
   void DoReleaseObject(int64 object_id);
   ScopedRunnableMethodFactory<PPB_Var_Deprecated_Proxy> task_factory_;
-
-  const PPB_Var_Deprecated* ppb_var_impl_;
-
-  DISALLOW_COPY_AND_ASSIGN(PPB_Var_Deprecated_Proxy);
 };
 
 }  // namespace proxy

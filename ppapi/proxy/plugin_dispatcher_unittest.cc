@@ -53,7 +53,7 @@ class PluginDispatcherTest : public PluginProxyTest {
   PluginDispatcherTest() {}
 
   bool HasTargetProxy(InterfaceID id) {
-    return !!plugin_dispatcher()->proxies_[id].get();
+    return !!plugin_dispatcher()->target_proxies_[id].get();
   }
 };
 
@@ -63,6 +63,11 @@ TEST_F(PluginDispatcherTest, SupportsInterface) {
 
   // Sending a request for a random interface should fail.
   EXPECT_FALSE(SupportsInterface("Random interface"));
+
+  // Sending a request for a PPB interface should fail even though we've
+  // registered it as existing in the GetInterface function (the plugin proxy
+  // should only respond to PPP interfaces when asked if it supports them).
+  EXPECT_FALSE(SupportsInterface(PPB_AUDIO_INTERFACE));
 
   // Sending a request for a supported PPP interface should succeed.
   EXPECT_TRUE(SupportsInterface(PPP_INSTANCE_INTERFACE));

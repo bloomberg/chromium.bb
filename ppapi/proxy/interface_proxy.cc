@@ -10,8 +10,10 @@
 namespace ppapi {
 namespace proxy {
 
-InterfaceProxy::InterfaceProxy(Dispatcher* dispatcher)
-    : dispatcher_(dispatcher) {
+InterfaceProxy::InterfaceProxy(Dispatcher* dispatcher,
+                               const void* target_interface)
+    : dispatcher_(dispatcher),
+      target_interface_(target_interface) {
 }
 
 InterfaceProxy::~InterfaceProxy() {

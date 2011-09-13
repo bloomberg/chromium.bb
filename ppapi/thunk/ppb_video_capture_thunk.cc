@@ -65,7 +65,7 @@ const PPB_VideoCapture_Dev g_ppb_videocapture_thunk = {
 
 }  // namespace
 
-const PPB_VideoCapture_Dev* GetPPB_VideoCapture_Dev_Thunk() {
+const PPB_VideoCapture_Dev* GetPPB_VideoCapture_Thunk() {
   return &g_ppb_videocapture_thunk;
 }
 

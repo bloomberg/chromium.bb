@@ -46,7 +46,7 @@ const PPB_DirectoryReader_Dev g_ppb_directory_reader_thunk = {
 
 }  // namespace
 
-const PPB_DirectoryReader_Dev* GetPPB_DirectoryReader_Dev_Thunk() {
+const PPB_DirectoryReader_Dev* GetPPB_DirectoryReader_Thunk() {
   return &g_ppb_directory_reader_thunk;
 }
 

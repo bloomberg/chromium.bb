@@ -22,7 +22,7 @@ class SerializedFlashMenu;
 
 class PPB_Flash_Menu_Proxy : public InterfaceProxy {
  public:
-  PPB_Flash_Menu_Proxy(Dispatcher* dispatcher);
+  PPB_Flash_Menu_Proxy(Dispatcher* dispatcher, const void* target_interface);
   virtual ~PPB_Flash_Menu_Proxy();
 
   static const Info* GetInfo();

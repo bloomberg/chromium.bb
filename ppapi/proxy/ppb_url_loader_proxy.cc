@@ -70,8 +70,9 @@ void UpdateResourceLoadStatus(PP_Instance pp_instance,
       INTERFACE_ID_PPB_URL_LOADER, params));
 }
 
-InterfaceProxy* CreateURLLoaderProxy(Dispatcher* dispatcher) {
-  return new PPB_URLLoader_Proxy(dispatcher);
+InterfaceProxy* CreateURLLoaderProxy(Dispatcher* dispatcher,
+                                     const void* target_interface) {
+  return new PPB_URLLoader_Proxy(dispatcher, target_interface);
 }
 
 }  // namespace
@@ -345,8 +346,9 @@ struct PPB_URLLoader_Proxy::ReadCallbackInfo {
   std::string read_buffer;
 };
 
-PPB_URLLoader_Proxy::PPB_URLLoader_Proxy(Dispatcher* dispatcher)
-    : InterfaceProxy(dispatcher),
+PPB_URLLoader_Proxy::PPB_URLLoader_Proxy(Dispatcher* dispatcher,
+                                         const void* target_interface)
+    : InterfaceProxy(dispatcher, target_interface),
       callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       host_urlloader_trusted_interface_(NULL) {
 }
@@ -358,6 +360,18 @@ PPB_URLLoader_Proxy::~PPB_URLLoader_Proxy() {
 PP_Resource PPB_URLLoader_Proxy::TrackPluginResource(
     const HostResource& url_loader_resource) {
   return (new URLLoader(url_loader_resource))->GetReference();
+}
+
+// static
+const InterfaceProxy::Info* PPB_URLLoader_Proxy::GetInfo() {
+  static const Info info = {
+    thunk::GetPPB_URLLoader_Thunk(),
+    PPB_URLLOADER_INTERFACE,
+    INTERFACE_ID_PPB_URL_LOADER,
+    false,
+    &CreateURLLoaderProxy,
+  };
+  return &info;
 }
 
 // static
@@ -429,7 +443,7 @@ void PPB_URLLoader_Proxy::PrepareURLLoaderForSendingToPlugin(
 
 void PPB_URLLoader_Proxy::OnMsgCreate(PP_Instance instance,
                                       HostResource* result) {
-  thunk::EnterResourceCreation enter(instance);
+  EnterFunctionNoLock<ResourceCreationAPI> enter(instance, true);
   if (enter.succeeded()) {
     result->SetHostResource(instance,
                             enter.functions()->CreateURLLoader(instance));
@@ -442,7 +456,8 @@ void PPB_URLLoader_Proxy::OnMsgOpen(const HostResource& loader,
                                     uint32_t serialized_callback) {
   // Have to be careful to always issue the callback, so don't return early.
   EnterHostFromHostResource<PPB_URLLoader_API> enter(loader);
-  thunk::EnterResourceCreation enter_creation(loader.instance());
+  EnterFunctionNoLock<ResourceCreationAPI> enter_creation(
+      loader.instance(), true);
 
   PP_CompletionCallback callback = ReceiveCallback(serialized_callback);
 

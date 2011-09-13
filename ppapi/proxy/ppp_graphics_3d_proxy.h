@@ -16,10 +16,14 @@ namespace proxy {
 
 class PPP_Graphics3D_Proxy : public InterfaceProxy {
  public:
-  PPP_Graphics3D_Proxy(Dispatcher* dispatcher);
+  PPP_Graphics3D_Proxy(Dispatcher* dispatcher, const void* target_interface);
   virtual ~PPP_Graphics3D_Proxy();
 
   static const Info* GetInfo();
+
+  const PPP_Graphics3D* ppp_graphics_3d_target() const {
+    return reinterpret_cast<const PPP_Graphics3D*>(target_interface());
+  }
 
   // InterfaceProxy implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg);
@@ -27,13 +31,6 @@ class PPP_Graphics3D_Proxy : public InterfaceProxy {
  private:
   // Message handlers.
   void OnMsgContextLost(PP_Instance instance);
-
-  // When this proxy is in the plugin side, this value caches the interface
-  // pointer so we don't have to retrieve it from the dispatcher each time.
-  // In the host, this value is always NULL.
-  const PPP_Graphics3D* ppp_graphics_3d_impl_;
-
-  DISALLOW_COPY_AND_ASSIGN(PPP_Graphics3D_Proxy);
 };
 
 }  // namespace proxy

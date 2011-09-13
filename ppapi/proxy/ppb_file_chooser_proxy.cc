@@ -16,7 +16,6 @@
 #include "ppapi/proxy/ppb_file_ref_proxy.h"
 #include "ppapi/proxy/serialized_var.h"
 #include "ppapi/shared_impl/var.h"
-#include "ppapi/thunk/resource_creation_api.h"
 #include "ppapi/thunk/thunk.h"
 
 using ppapi::thunk::PPB_FileChooser_API;
@@ -119,12 +118,75 @@ void FileChooser::ChooseComplete(
   // DANGER: May delete |this|!
 }
 
-PPB_FileChooser_Proxy::PPB_FileChooser_Proxy(Dispatcher* dispatcher)
-    : InterfaceProxy(dispatcher),
+namespace {
+
+PP_Resource Create0_4(PP_Instance instance,
+                      const PP_FileChooserOptions_0_4_Dev* options) {
+  PP_Var accept_var = PP_MakeUndefined();
+  if (options->accept_mime_types)
+    accept_var = StringVar::StringToPPVar(0, options->accept_mime_types);
+  PP_Resource result = thunk::GetPPB_FileChooser_Thunk()->Create(
+      instance, options->mode, accept_var);
+  if (accept_var.type == PP_VARTYPE_STRING)
+    PluginResourceTracker::GetInstance()->var_tracker().ReleaseVar(accept_var);
+  return result;
+}
+
+PP_Bool IsFileChooser0_4(PP_Resource resource) {
+  return thunk::GetPPB_FileChooser_Thunk()->IsFileChooser(resource);
+}
+
+int32_t Show0_4(PP_Resource chooser, PP_CompletionCallback callback) {
+  return thunk::GetPPB_FileChooser_Thunk()->Show(chooser, callback);
+}
+
+PP_Resource GetNextChosenFile0_4(PP_Resource chooser) {
+  return thunk::GetPPB_FileChooser_Thunk()->GetNextChosenFile(chooser);
+}
+
+PPB_FileChooser_0_4_Dev file_chooser_0_4_interface = {
+  &Create0_4,
+  &IsFileChooser0_4,
+  &Show0_4,
+  &GetNextChosenFile0_4
+};
+
+InterfaceProxy* CreateFileChooserProxy(Dispatcher* dispatcher,
+                                       const void* target_interface) {
+  return new PPB_FileChooser_Proxy(dispatcher, target_interface);
+}
+
+}  // namespace
+
+PPB_FileChooser_Proxy::PPB_FileChooser_Proxy(Dispatcher* dispatcher,
+                                             const void* target_interface)
+    : InterfaceProxy(dispatcher, target_interface),
       callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
 }
 
 PPB_FileChooser_Proxy::~PPB_FileChooser_Proxy() {
+}
+
+const InterfaceProxy::Info* PPB_FileChooser_Proxy::GetInfo() {
+  static const Info info = {
+    thunk::GetPPB_FileChooser_Thunk(),
+    PPB_FILECHOOSER_DEV_INTERFACE,
+    INTERFACE_ID_PPB_FILE_CHOOSER,
+    false,
+    &CreateFileChooserProxy,
+  };
+  return &info;
+}
+
+const InterfaceProxy::Info* PPB_FileChooser_Proxy::GetInfo0_4() {
+  static const Info info = {
+    &file_chooser_0_4_interface,
+    PPB_FILECHOOSER_DEV_INTERFACE_0_4,
+    INTERFACE_ID_NONE,
+    false,
+    &CreateFileChooserProxy,
+  };
+  return &info;
 }
 
 // static
@@ -167,12 +229,9 @@ void PPB_FileChooser_Proxy::OnMsgCreate(
     int mode,
     SerializedVarReceiveInput accept_mime_types,
     HostResource* result) {
-  thunk::EnterResourceCreation enter(instance);
-  if (enter.succeeded()) {
-    result->SetHostResource(instance, enter.functions()->CreateFileChooser(
-        instance, static_cast<PP_FileChooserMode_Dev>(mode),
-        accept_mime_types.Get(dispatcher())));
-  }
+  result->SetHostResource(instance, ppb_file_chooser_target()->Create(
+      instance, static_cast<PP_FileChooserMode_Dev>(mode),
+      accept_mime_types.Get(dispatcher())));
 }
 
 void PPB_FileChooser_Proxy::OnMsgShow(const HostResource& chooser) {
@@ -196,16 +255,19 @@ void PPB_FileChooser_Proxy::OnMsgChooseComplete(
 
 void PPB_FileChooser_Proxy::OnShowCallback(int32_t result,
                                            const HostResource& chooser) {
-  EnterHostFromHostResource<PPB_FileChooser_API> enter(chooser);
-
   std::vector<PPB_FileRef_CreateInfo> files;
-  if (enter.succeeded() && result == PP_OK) {
+  if (result == PP_OK) {
+    // Jump through some hoops to get the FileRef proxy. Since we know we're
+    // in the host at this point, we can ask the host dispatcher for it.
+    DCHECK(!dispatcher()->IsPlugin());
+    HostDispatcher* host_disp = static_cast<HostDispatcher*>(dispatcher());
     PPB_FileRef_Proxy* file_ref_proxy = static_cast<PPB_FileRef_Proxy*>(
-        dispatcher()->GetInterfaceProxy(INTERFACE_ID_PPB_FILE_REF));
+        host_disp->GetOrCreatePPBInterfaceProxy(INTERFACE_ID_PPB_FILE_REF));
 
     // Convert the returned files to the serialized info.
     while (PP_Resource cur_file_resource =
-           enter.object()->GetNextChosenFile()) {
+               ppb_file_chooser_target()->GetNextChosenFile(
+                   chooser.host_resource())) {
       PPB_FileRef_CreateInfo cur_create_info;
       file_ref_proxy->SerializeFileRef(cur_file_resource, &cur_create_info);
       files.push_back(cur_create_info);

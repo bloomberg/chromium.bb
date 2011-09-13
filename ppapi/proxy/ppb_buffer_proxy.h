@@ -46,8 +46,10 @@ class Buffer : public thunk::PPB_Buffer_API, public Resource {
 
 class PPB_Buffer_Proxy : public InterfaceProxy {
  public:
-  PPB_Buffer_Proxy(Dispatcher* dispatcher);
+  PPB_Buffer_Proxy(Dispatcher* dispatcher, const void* target_interface);
   virtual ~PPB_Buffer_Proxy();
+
+  static const Info* GetInfo();
 
   static PP_Resource CreateProxyResource(PP_Instance instance,
                                          uint32_t size);
@@ -55,10 +57,12 @@ class PPB_Buffer_Proxy : public InterfaceProxy {
                                       base::SharedMemoryHandle shm_handle,
                                       uint32_t size);
 
+  const PPB_Buffer_Dev* ppb_buffer_target() const {
+    return static_cast<const PPB_Buffer_Dev*>(target_interface());
+  }
+
   // InterfaceProxy implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg);
-
-  static const InterfaceID kInterfaceID = INTERFACE_ID_PPB_BUFFER;
 
  private:
   // Message handlers.

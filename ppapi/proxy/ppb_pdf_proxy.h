@@ -18,10 +18,14 @@ struct SerializedFontDescription;
 
 class PPB_PDF_Proxy : public InterfaceProxy {
  public:
-  PPB_PDF_Proxy(Dispatcher* dispatcher);
+  PPB_PDF_Proxy(Dispatcher* dispatcher, const void* target_interface);
   virtual ~PPB_PDF_Proxy();
 
   static const Info* GetInfo();
+
+  const PPB_PDF* ppb_pdf_target() const {
+    return static_cast<const PPB_PDF*>(target_interface());
+  }
 
   // InterfaceProxy implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg);
@@ -35,11 +39,6 @@ class PPB_PDF_Proxy : public InterfaceProxy {
   void OnMsgGetFontTableForPrivateFontFile(const ppapi::HostResource& font_file,
                                            uint32_t table,
                                            std::string* result);
-
-  // When this proxy is in the host side, this value caches the interface
-  // pointer so we don't have to retrieve it from the dispatcher each time.
-  // In the plugin, this value is always NULL.
-  const PPB_PDF* ppb_pdf_impl_;
 };
 
 }  // namespace proxy

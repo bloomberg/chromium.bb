@@ -24,8 +24,10 @@ namespace proxy {
 
 class PPB_FileRef_Proxy : public InterfaceProxy {
  public:
-  PPB_FileRef_Proxy(Dispatcher* dispatcher);
+  PPB_FileRef_Proxy(Dispatcher* dispatcher, const void* target_interface);
   virtual ~PPB_FileRef_Proxy();
+
+  static const Info* GetInfo();
 
   static PP_Resource CreateProxyResource(PP_Resource file_system,
                                          const char* path);
@@ -54,8 +56,6 @@ class PPB_FileRef_Proxy : public InterfaceProxy {
   // function is public so anybody can receive a file ref.
   static PP_Resource DeserializeFileRef(
       const PPB_FileRef_CreateInfo& serialized);
-
-  static const InterfaceID kInterfaceID = INTERFACE_ID_PPB_FILE_REF;
 
  private:
   // Message handlers.

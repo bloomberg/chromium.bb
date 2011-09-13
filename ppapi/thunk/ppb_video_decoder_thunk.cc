@@ -90,7 +90,7 @@ const PPB_VideoDecoder_Dev g_ppb_videodecoder_thunk = {
 
 }  // namespace
 
-const PPB_VideoDecoder_Dev* GetPPB_VideoDecoder_Dev_Thunk() {
+const PPB_VideoDecoder_Dev* GetPPB_VideoDecoder_Thunk() {
   return &g_ppb_videodecoder_thunk;
 }
 

@@ -18,11 +18,33 @@ using ppapi::thunk::PPB_CursorControl_FunctionAPI;
 namespace ppapi {
 namespace proxy {
 
-PPB_CursorControl_Proxy::PPB_CursorControl_Proxy(Dispatcher* dispatcher)
-    : InterfaceProxy(dispatcher) {
+namespace {
+
+InterfaceProxy* CreateCursorControlProxy(Dispatcher* dispatcher,
+                                         const void* target_interface) {
+  return new PPB_CursorControl_Proxy(dispatcher, target_interface);
+}
+
+}  // namespace
+
+PPB_CursorControl_Proxy::PPB_CursorControl_Proxy(Dispatcher* dispatcher,
+                               const void* target_interface)
+    : InterfaceProxy(dispatcher, target_interface) {
 }
 
 PPB_CursorControl_Proxy::~PPB_CursorControl_Proxy() {
+}
+
+// static
+const InterfaceProxy::Info* PPB_CursorControl_Proxy::GetInfo() {
+  static const Info info = {
+    thunk::GetPPB_CursorControl_Thunk(),
+    PPB_CURSOR_CONTROL_DEV_INTERFACE,
+    INTERFACE_ID_PPB_CURSORCONTROL,
+    false,
+    &CreateCursorControlProxy,
+  };
+  return &info;
 }
 
 ppapi::thunk::PPB_CursorControl_FunctionAPI*

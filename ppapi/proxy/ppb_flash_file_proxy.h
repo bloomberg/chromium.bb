@@ -27,10 +27,15 @@ struct SerializedDirEntry;
 
 class PPB_Flash_File_ModuleLocal_Proxy : public InterfaceProxy {
  public:
-  PPB_Flash_File_ModuleLocal_Proxy(Dispatcher* dispatcher);
+  PPB_Flash_File_ModuleLocal_Proxy(Dispatcher* dispatcher,
+                                   const void* target_interface);
   virtual ~PPB_Flash_File_ModuleLocal_Proxy();
 
   static const Info* GetInfo();
+
+  const PPB_Flash_File_ModuleLocal* ppb_flash_file_module_local_target() const {
+    return static_cast<const PPB_Flash_File_ModuleLocal*>(target_interface());
+  }
 
   // InterfaceProxy implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg);
@@ -61,21 +66,19 @@ class PPB_Flash_File_ModuleLocal_Proxy : public InterfaceProxy {
                            const std::string& path,
                            std::vector<SerializedDirEntry>* entries,
                            int32_t* result);
-
-  // When this proxy is in the host side, this value caches the interface
-  // pointer so we don't have to retrieve it from the dispatcher each time.
-  // In the plugin, this value is always NULL.
-  const PPB_Flash_File_ModuleLocal* ppb_flash_file_module_local_impl_;
-
-  DISALLOW_COPY_AND_ASSIGN(PPB_Flash_File_ModuleLocal_Proxy);
 };
 
 class PPB_Flash_File_FileRef_Proxy : public InterfaceProxy {
  public:
-  PPB_Flash_File_FileRef_Proxy(Dispatcher* dispatcher);
+  PPB_Flash_File_FileRef_Proxy(Dispatcher* dispatcher,
+                               const void* target_interface);
   virtual ~PPB_Flash_File_FileRef_Proxy();
 
   static const Info* GetInfo();
+
+  const PPB_Flash_File_FileRef* ppb_flash_file_module_local_target() const {
+    return static_cast<const PPB_Flash_File_FileRef*>(target_interface());
+  }
 
   // InterfaceProxy implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg);
@@ -89,13 +92,6 @@ class PPB_Flash_File_FileRef_Proxy : public InterfaceProxy {
   void OnMsgQueryFile(const ppapi::HostResource& host_resource,
                       PP_FileInfo* info,
                       int32_t* result);
-
-  // When this proxy is in the host side, this value caches the interface
-  // pointer so we don't have to retrieve it from the dispatcher each time.
-  // In the plugin, this value is always NULL.
-  const PPB_Flash_File_FileRef* ppb_flash_file_fileref_impl_;
-
-  DISALLOW_COPY_AND_ASSIGN(PPB_Flash_File_FileRef_Proxy);
 };
 
 }  // namespace proxy

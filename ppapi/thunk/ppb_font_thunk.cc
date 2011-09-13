@@ -93,7 +93,7 @@ const PPB_Font_Dev g_ppb_font_thunk = {
 
 }  // namespace
 
-const PPB_Font_Dev* GetPPB_Font_Dev_Thunk() {
+const PPB_Font_Dev* GetPPB_Font_Thunk() {
   return &g_ppb_font_thunk;
 }
 

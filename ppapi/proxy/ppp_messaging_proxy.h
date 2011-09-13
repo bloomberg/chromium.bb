@@ -17,10 +17,14 @@ class SerializedVarReceiveInput;
 
 class PPP_Messaging_Proxy : public InterfaceProxy {
  public:
-  PPP_Messaging_Proxy(Dispatcher* dispatcher);
+  PPP_Messaging_Proxy(Dispatcher* dispatcher, const void* target_interface);
   virtual ~PPP_Messaging_Proxy();
 
   static const Info* GetInfo();
+
+  const PPP_Messaging* ppp_messaging_target() const {
+    return static_cast<const PPP_Messaging*>(target_interface());
+  }
 
   // InterfaceProxy implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
@@ -29,13 +33,6 @@ class PPP_Messaging_Proxy : public InterfaceProxy {
   // Message handlers.
   void OnMsgHandleMessage(PP_Instance instance,
                           SerializedVarReceiveInput data);
-
-  // When this proxy is in the plugin side, this value caches the interface
-  // pointer so we don't have to retrieve it from the dispatcher each time.
-  // In the host, this value is always NULL.
-  const PPP_Messaging* ppp_messaging_impl_;
-
-  DISALLOW_COPY_AND_ASSIGN(PPP_Messaging_Proxy);
 };
 
 }  // namespace proxy

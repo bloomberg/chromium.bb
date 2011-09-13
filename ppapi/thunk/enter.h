@@ -12,7 +12,6 @@
 #include "ppapi/shared_impl/resource.h"
 #include "ppapi/shared_impl/tracker_base.h"
 #include "ppapi/shared_impl/resource_tracker.h"
-#include "ppapi/thunk/ppapi_thunk_export.h"
 
 namespace ppapi {
 namespace thunk {
@@ -127,26 +126,6 @@ class EnterResourceNoLock : public EnterResource<ResourceT> {
       : EnterResource<ResourceT>(resource, report_error) {
     // TODO(brettw) assert the lock is held.
   }
-};
-
-// Simpler wrapper to enter the resource creation API. This is used for every
-// class so we have this helper function to save template instantiations and
-// typing.
-class PPAPI_THUNK_EXPORT EnterResourceCreation
-    : public EnterFunctionNoLock<ResourceCreationAPI> {
- public:
-  EnterResourceCreation(PP_Instance instance);
-  ~EnterResourceCreation();
-};
-
-// Simpler wrapper to enter the instance API from proxy code. This is used for
-// many interfaces so we have this helper function to save template
-// instantiations and typing.
-class PPAPI_THUNK_EXPORT EnterInstance
-    : public EnterFunctionNoLock<PPB_Instance_FunctionAPI> {
- public:
-  EnterInstance(PP_Instance instance);
-  ~EnterInstance();
 };
 
 }  // namespace thunk

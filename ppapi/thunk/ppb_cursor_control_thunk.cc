@@ -59,7 +59,7 @@ const PPB_CursorControl_Dev g_ppb_cursor_control_thunk = {
 
 }  // namespace
 
-const PPB_CursorControl_Dev* GetPPB_CursorControl_Dev_Thunk() {
+const PPB_CursorControl_Dev* GetPPB_CursorControl_Thunk() {
   return &g_ppb_cursor_control_thunk;
 }
 
