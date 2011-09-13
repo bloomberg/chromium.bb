@@ -170,6 +170,9 @@ void AutofillAgent::didSelectAutofillSuggestion(const WebNode& node,
 }
 
 void AutofillAgent::didClearAutofillSelection(const WebNode& node) {
+  if (password_autofill_manager_->DidClearAutofillSelection(node))
+    return;
+
   DCHECK(node == autofill_query_element_);
   FormManager::ClearPreviewedFormWithElement(autofill_query_element_,
                                              was_query_node_autofilled_);

@@ -45,6 +45,10 @@ class PasswordAutofillManager : public RenderViewObserver,
   // A no-op.  No filling happens for selection.  But this method returns
   // true when |node| is fillable by password Autofill.
   bool DidSelectAutofillSuggestion(const WebKit::WebNode& node);
+  // A no-op.  Password forms are not previewed, so they do not need to be
+  // cleared when the selection changes.  However, this method returns
+  // true when |node| is fillable by password Autofill.
+  bool DidClearAutofillSelection(const WebKit::WebNode& node);
 
  private:
   friend class PasswordAutofillManagerTest;

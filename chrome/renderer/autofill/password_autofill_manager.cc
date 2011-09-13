@@ -322,6 +322,13 @@ bool PasswordAutofillManager::DidSelectAutofillSuggestion(
   return FindLoginInfo(node, &input, &password);
 }
 
+bool PasswordAutofillManager::DidClearAutofillSelection(
+    const WebKit::WebNode& node) {
+  WebKit::WebInputElement input;
+  PasswordInfo password;
+  return FindLoginInfo(node, &input, &password);
+}
+
 void PasswordAutofillManager::SendPasswordForms(WebKit::WebFrame* frame,
                                                 bool only_visible) {
   // Make sure that this security origin is allowed to use password manager.
