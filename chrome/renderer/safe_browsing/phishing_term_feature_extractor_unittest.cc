@@ -18,6 +18,7 @@
 #include "crypto/sha2.h"
 #include "chrome/renderer/safe_browsing/features.h"
 #include "chrome/renderer/safe_browsing/mock_feature_extractor_clock.h"
+#include "chrome/renderer/safe_browsing/murmurhash3_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -61,15 +62,17 @@ class PhishingTermFeatureExtractorTest : public ::testing::Test {
     words.insert("\xe4\xbd\xa0\xe5\xa5\xbd");
     words.insert("\xe5\x86\x8d\xe8\xa7\x81");
 
+    static const uint32 kMurmurHash3Seed = 2777808611U;
     for (base::hash_set<std::string>::iterator it = words.begin();
          it != words.end(); ++it) {
-      word_hashes_.insert(crypto::SHA256HashString(*it));
+      word_hashes_.insert(MurmurHash3String(*it, kMurmurHash3Seed));
     }
 
     extractor_.reset(new PhishingTermFeatureExtractor(
         &term_hashes_,
         &word_hashes_,
         3 /* max_words_per_term */,
+        kMurmurHash3Seed,
         &clock_));
   }
 
@@ -112,7 +115,7 @@ class PhishingTermFeatureExtractorTest : public ::testing::Test {
   MockFeatureExtractorClock clock_;
   scoped_ptr<PhishingTermFeatureExtractor> extractor_;
   base::hash_set<std::string> term_hashes_;
-  base::hash_set<std::string> word_hashes_;
+  base::hash_set<uint32> word_hashes_;
   bool success_;  // holds the success value from ExtractFeatures
 };
 

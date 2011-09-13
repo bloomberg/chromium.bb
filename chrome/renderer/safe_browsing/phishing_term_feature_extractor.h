@@ -41,8 +41,8 @@ class PhishingTermFeatureExtractor {
   // all of the terms whose SHA-256 hashes are in |page_term_hashes|.  These
   // terms may be multi-word n-grams, with at most |max_words_per_term| words.
   //
-  // |page_word_hashes| contains the hashes for all of the individual words
-  // that make up the terms.  Both sets of strings are UTF-8 encoded and
+  // |page_word_hashes| contains the murmur3 hashes for all of the individual
+  // words that make up the terms.  Both sets of strings are UTF-8 encoded and
   // lowercased prior to hashing.  The caller owns both sets of strings, and
   // must ensure that they are valid until the PhishingTermFeatureExtractor is
   // destroyed.
@@ -51,8 +51,9 @@ class PhishingTermFeatureExtractor {
   // for testing.  The caller keeps ownership of the clock.
   PhishingTermFeatureExtractor(
       const base::hash_set<std::string>* page_term_hashes,
-      const base::hash_set<std::string>* page_word_hashes,
+      const base::hash_set<uint32>* page_word_hashes,
       size_t max_words_per_term,
+      uint32 murmurhash3_seed,
       FeatureExtractorClock* clock);
   ~PhishingTermFeatureExtractor();
 
@@ -121,15 +122,18 @@ class PhishingTermFeatureExtractor {
   // All of the term hashes that we are looking for in the page.
   const base::hash_set<std::string>* page_term_hashes_;
 
-  // Hashes of all the individual words in page_term_hashes_.  If
+  // Murmur3 hashes of all the individual words in page_term_hashes_.  If
   // page_term_hashes_ included (hashed) "one" and "one two", page_word_hashes_
   // would contain (hashed) "one" and "two".  We do this so that we can have a
   // quick out in the common case that the current word we are processing
   // doesn't contain any part of one of our terms.
-  const base::hash_set<std::string>* page_word_hashes_;
+  const base::hash_set<uint32>* page_word_hashes_;
 
   // The maximum number of words in an n-gram.
-  size_t max_words_per_term_;
+  const size_t max_words_per_term_;
+
+  // The seed for murmurhash3.
+  const uint32 murmurhash3_seed_;
 
   // This cache is used to see if we need to check the word at all, as
   // converting to UTF8, lowercasing, and hashing are all relatively expensive

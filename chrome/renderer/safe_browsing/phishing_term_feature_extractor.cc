@@ -17,6 +17,7 @@
 #include "crypto/sha2.h"
 #include "chrome/renderer/safe_browsing/feature_extractor_clock.h"
 #include "chrome/renderer/safe_browsing/features.h"
+#include "chrome/renderer/safe_browsing/murmurhash3_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "unicode/ubrk.h"
 
@@ -40,7 +41,7 @@ const int PhishingTermFeatureExtractor::kMaxNegativeWordCacheSize = 1000;
 
 // All of the state pertaining to the current feature extraction.
 struct PhishingTermFeatureExtractor::ExtractionState {
-  // Stores up to max_words_per_ngram_ previous words separated by spaces.
+  // Stores up to max_words_per_term_ previous words separated by spaces.
   std::string previous_words;
 
   // Stores the sizes of the words in previous_words.  Note: the size includes
@@ -90,12 +91,14 @@ struct PhishingTermFeatureExtractor::ExtractionState {
 
 PhishingTermFeatureExtractor::PhishingTermFeatureExtractor(
     const base::hash_set<std::string>* page_term_hashes,
-    const base::hash_set<std::string>* page_word_hashes,
+    const base::hash_set<uint32>* page_word_hashes,
     size_t max_words_per_term,
+    uint32 murmurhash3_seed,
     FeatureExtractorClock* clock)
     : page_term_hashes_(page_term_hashes),
       page_word_hashes_(page_word_hashes),
       max_words_per_term_(max_words_per_term),
+      murmurhash3_seed_(murmurhash3_seed),
       negative_word_cache_(kMaxNegativeWordCacheSize),
       clock_(clock),
       ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
@@ -206,8 +209,8 @@ void PhishingTermFeatureExtractor::ExtractFeaturesWithTimeout() {
 void PhishingTermFeatureExtractor::HandleWord(
     const base::StringPiece16& word) {
   // Quickest out if we have seen this word before and know that it's not
-  // part of any term. This avoids the SHA256, lowercasing, and UTF conversion,
-  // all of which are relatively expensive.
+  // part of any term. This avoids the lowercasing and UTF conversion, both of
+  // which are relatively expensive.
   if (negative_word_cache_.Get(word) != negative_word_cache_.end()) {
     // We know we're no longer in a possible n-gram, so clear the previous word
     // state.
@@ -217,7 +220,7 @@ void PhishingTermFeatureExtractor::HandleWord(
   }
 
   std::string word_lower = UTF16ToUTF8(base::i18n::ToLower(word));
-  std::string word_hash = crypto::SHA256HashString(word_lower);
+  uint32 word_hash = MurmurHash3String(word_lower, murmurhash3_seed_);
 
   // Quick out if the word is not part of any term, which is the common case.
   if (page_word_hashes_->find(word_hash) == page_word_hashes_->end()) {
@@ -229,11 +232,11 @@ void PhishingTermFeatureExtractor::HandleWord(
     return;
   }
 
-  // Find all of the n-grams that we need to check and compute their hashes.
-  // We already have the hash for word_lower, so we don't compute that again.
+  // Find all of the n-grams that we need to check and compute their SHA-256
+  // hashes.
   std::map<std::string /* hash */, std::string /* plaintext */>
       hashes_to_check;
-  hashes_to_check[word_hash] = word_lower;
+  hashes_to_check[crypto::SHA256HashString(word_lower)] = word_lower;
 
   // Combine the new word with the previous words to find additional n-grams.
   // Note that we don't yet add the new word length to previous_word_sizes,

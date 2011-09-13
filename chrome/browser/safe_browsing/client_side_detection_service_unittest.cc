@@ -565,7 +565,6 @@ TEST_F(ClientSideDetectionServiceTest, ModelHasValidHashIds) {
   model.add_hashes("bla");
   EXPECT_TRUE(ClientSideDetectionService::ModelHasValidHashIds(model));
   model.add_page_term(0);
-  model.add_page_word(0);
   EXPECT_TRUE(ClientSideDetectionService::ModelHasValidHashIds(model));
 
   model.add_page_term(-1);
@@ -573,13 +572,6 @@ TEST_F(ClientSideDetectionServiceTest, ModelHasValidHashIds) {
   model.set_page_term(1, 1);
   EXPECT_FALSE(ClientSideDetectionService::ModelHasValidHashIds(model));
   model.set_page_term(1, 0);
-  EXPECT_TRUE(ClientSideDetectionService::ModelHasValidHashIds(model));
-
-  model.add_page_word(-2);
-  EXPECT_FALSE(ClientSideDetectionService::ModelHasValidHashIds(model));
-  model.set_page_word(1, 2);
-  EXPECT_FALSE(ClientSideDetectionService::ModelHasValidHashIds(model));
-  model.set_page_word(1, 0);
   EXPECT_TRUE(ClientSideDetectionService::ModelHasValidHashIds(model));
 
   // Test bad rules.

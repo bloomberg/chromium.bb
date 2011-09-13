@@ -18,6 +18,7 @@
 #include "chrome/common/safe_browsing/csd.pb.h"
 #include "chrome/renderer/safe_browsing/features.h"
 #include "chrome/renderer/safe_browsing/mock_feature_extractor_clock.h"
+#include "chrome/renderer/safe_browsing/murmurhash3_util.h"
 #include "chrome/renderer/safe_browsing/render_view_fake_resources_test.h"
 #include "chrome/renderer/safe_browsing/scorer.h"
 #include "crypto/sha2.h"
@@ -72,7 +73,8 @@ class PhishingClassifierTest : public RenderViewFakeResourcesTest {
     rule->set_weight(1.0);
 
     model.add_page_term(3);
-    model.add_page_word(3);
+    model.set_murmur_hash_seed(2777808611U);
+    model.add_page_word(MurmurHash3String("login", model.murmur_hash_seed()));
     model.set_max_words_per_term(1);
 
     clock_ = new MockFeatureExtractorClock;

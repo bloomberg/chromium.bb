@@ -70,7 +70,7 @@ Scorer* Scorer::Create(const base::StringPiece& model_str) {
     scorer->page_terms_.insert(model.hashes(model.page_term(i)));
   }
   for (int i = 0; i < model.page_word_size(); ++i) {
-    scorer->page_words_.insert(model.hashes(model.page_word(i)));
+    scorer->page_words_.insert(model.page_word(i));
   }
   return scorer.release();
 }
@@ -91,12 +91,16 @@ const base::hash_set<std::string>& Scorer::page_terms() const {
   return page_terms_;
 }
 
-const base::hash_set<std::string>& Scorer::page_words() const {
+const base::hash_set<uint32>& Scorer::page_words() const {
   return page_words_;
 }
 
 size_t Scorer::max_words_per_term() const {
   return model_.max_words_per_term();
+}
+
+uint32 Scorer::murmurhash3_seed() const {
+  return model_.murmur_hash_seed();
 }
 
 double Scorer::ComputeRuleScore(const ClientSideModel::Rule& rule,

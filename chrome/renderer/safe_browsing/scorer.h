@@ -50,10 +50,13 @@ class Scorer {
 
   // Returns a set of hashed page words that appear in the model in binary
   // format.
-  const base::hash_set<std::string>& page_words() const;
+  const base::hash_set<uint32>& page_words() const;
 
   // Return the maximum number of words per term for the loaded model.
   size_t max_words_per_term() const;
+
+  // Returns the murmurhash3 seed for the loaded model.
+  uint32 murmurhash3_seed() const;
 
  protected:
   // Most clients should use the factory method.  This constructor is public
@@ -73,7 +76,7 @@ class Scorer {
 
   ClientSideModel model_;
   base::hash_set<std::string> page_terms_;
-  base::hash_set<std::string> page_words_;
+  base::hash_set<uint32> page_words_;
 
   DISALLOW_COPY_AND_ASSIGN(Scorer);
 };

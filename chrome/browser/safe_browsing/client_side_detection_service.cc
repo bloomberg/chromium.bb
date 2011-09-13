@@ -50,11 +50,8 @@ const base::TimeDelta ClientSideDetectionService::kPositiveCacheInterval =
 
 const char ClientSideDetectionService::kClientReportPhishingUrl[] =
     "https://sb-ssl.google.com/safebrowsing/clientreport/phishing";
-// Note: when updatng the model version, don't forget to change the filename
-// in chrome/common/chrome_constants.cc as well, or else existing users won't
-// download the new model.
 const char ClientSideDetectionService::kClientModelUrl[] =
-    "https://ssl.gstatic.com/safebrowsing/csd/client_model_v3.pb";
+    "https://ssl.gstatic.com/safebrowsing/csd/client_model_v4.pb";
 
 struct ClientSideDetectionService::ClientReportInfo {
   scoped_ptr<ClientReportPhishingRequestCallback> callback;
@@ -597,11 +594,6 @@ bool ClientSideDetectionService::ModelHasValidHashIds(
   }
   for (int i = 0; i < model.page_term_size(); ++i) {
     if (model.page_term(i) < 0 || model.page_term(i) > max_index) {
-      return false;
-    }
-  }
-  for (int i = 0; i < model.page_word_size(); ++i) {
-    if (model.page_word(i) < 0 || model.page_word(i) > max_index) {
       return false;
     }
   }

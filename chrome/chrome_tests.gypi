@@ -1806,6 +1806,7 @@
         'renderer/plugin_uma_unittest.cc',
         'renderer/renderer_about_handler_unittest.cc',
         'renderer/safe_browsing/features_unittest.cc',
+        'renderer/safe_browsing/murmurhash3_util_unittest.cc',
         'renderer/safe_browsing/phishing_term_feature_extractor_unittest.cc',
         'renderer/safe_browsing/phishing_url_feature_extractor_unittest.cc',
         'renderer/safe_browsing/scorer_unittest.cc',

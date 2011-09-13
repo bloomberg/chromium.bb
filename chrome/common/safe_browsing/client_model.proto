@@ -60,11 +60,12 @@ message ClientSideModel {
   // as lowercase UTF-8 strings.
   repeated int32 page_term = 3;
 
-  // List of indexes that point to the hashed page words.  The page words
-  // correspond to all words that appear in page terms.  If the term
-  // "one two" is in the list of page terms then "one" and "two" will be
-  // in the list of page words.
-  repeated int32 page_word = 4;
+  // List of hashed page words.  The page words correspond to all words that
+  // appear in page terms.  If the term "one two" is in the list of page terms
+  // then "one" and "two" will be in the list of page words.  For page words
+  // we don't use SHA256 because it is too expensive.  We use MurmurHash3
+  // instead.  See: http://code.google.com/p/smhasher.
+  repeated fixed32 page_word = 4;
 
   // Page terms in page_term contain at most this many page words.
   required int32 max_words_per_term = 5;
@@ -84,4 +85,7 @@ message ClientSideModel {
     optional int32 size = 2 [default = 128];
   };
   repeated IPSubnet bad_subnet = 7;
+
+  // Murmur hash seed that was used to hash the page words.
+  optional fixed32 murmur_hash_seed = 8;
 }

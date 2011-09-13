@@ -31,9 +31,6 @@ class PhishingScorerTest : public ::testing::Test {
     model_.add_hashes("feature3");
     model_.add_hashes("token one");
     model_.add_hashes("token two");
-    model_.add_hashes("token");
-    model_.add_hashes("one");
-    model_.add_hashes("two");
 
     ClientSideModel::Rule* rule;
     rule = model_.add_rule();
@@ -51,11 +48,14 @@ class PhishingScorerTest : public ::testing::Test {
     model_.add_page_term(3);  // token one
     model_.add_page_term(4);  // token two
 
-    model_.add_page_word(5);  // token
-    model_.add_page_word(6);  // one
-    model_.add_page_word(7);  // two
+    // These will be murmur3 hashes, but for this test it's not necessary
+    // that the hashes correspond to actual words.
+    model_.add_page_word(1000U);
+    model_.add_page_word(2000U);
+    model_.add_page_word(3000U);
 
     model_.set_max_words_per_term(2);
+    model_.set_murmur_hash_seed(12345U);
   }
 
   ClientSideModel model_;
@@ -89,12 +89,14 @@ TEST_F(PhishingScorerTest, PageTerms) {
 TEST_F(PhishingScorerTest, PageWords) {
   scoped_ptr<Scorer> scorer(Scorer::Create(model_.SerializeAsString()));
   ASSERT_TRUE(scorer.get());
-  base::hash_set<std::string> expected_page_words;
-  expected_page_words.insert("token");
-  expected_page_words.insert("one");
-  expected_page_words.insert("two");
+  base::hash_set<uint32> expected_page_words;
+  expected_page_words.insert(1000U);
+  expected_page_words.insert(2000U);
+  expected_page_words.insert(3000U);
   EXPECT_THAT(scorer->page_words(),
               ::testing::ContainerEq(expected_page_words));
+  EXPECT_EQ(2U, scorer->max_words_per_term());
+  EXPECT_EQ(12345U, scorer->murmurhash3_seed());
 }
 
 TEST_F(PhishingScorerTest, ComputeScore) {
