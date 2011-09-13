@@ -1030,6 +1030,8 @@
         'browser/extensions/extension_metrics_module.h',
         'browser/extensions/extension_module.cc',
         'browser/extensions/extension_module.h',
+        'browser/extensions/extension_navigation_observer.cc',
+        'browser/extensions/extension_navigation_observer.h',
         'browser/extensions/extension_omnibox_api.cc',
         'browser/extensions/extension_omnibox_api.h',
         'browser/extensions/extension_page_actions_module.cc',

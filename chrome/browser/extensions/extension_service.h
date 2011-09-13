@@ -356,9 +356,11 @@ class ExtensionService
   // Lookup an extension by |url|.
   const Extension* GetExtensionByURL(const GURL& url);
 
-  // If there is an extension for the specified url it is returned. Otherwise
-  // returns the extension whose web extent contains |url|.
+  // Returns the extension whose web extent contains |url|.
   const Extension* GetExtensionByWebExtent(const GURL& url);
+
+  // Returns the disabled extension whose web extent contains |url|.
+  const Extension* GetDisabledExtensionByWebExtent(const GURL& url);
 
   // Returns an extension that contains any URL that overlaps with the given
   // extent, if one exists.

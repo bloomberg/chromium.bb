@@ -2579,6 +2579,15 @@ const Extension* ExtensionService::GetExtensionByWebExtent(const GURL& url) {
   return NULL;
 }
 
+const Extension* ExtensionService::GetDisabledExtensionByWebExtent(
+    const GURL& url) {
+  for (size_t i = 0; i < disabled_extensions_.size(); ++i) {
+    if (disabled_extensions_[i]->web_extent().MatchesURL(url))
+      return disabled_extensions_[i];
+  }
+  return NULL;
+}
+
 bool ExtensionService::ExtensionBindingsAllowed(const GURL& url) {
   // Allow bindings for all packaged extensions.
   // Note that GetExtensionByURL may return an Extension for hosted apps

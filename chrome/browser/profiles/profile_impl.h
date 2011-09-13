@@ -19,6 +19,7 @@
 #include "content/common/notification_registrar.h"
 
 class ChromeDownloadManagerDelegate;
+class ExtensionNavigationObserver;
 class ExtensionPrefs;
 class ExtensionPrefValueMap;
 class ExtensionSettings;
@@ -201,6 +202,7 @@ class ProfileImpl : public Profile,
   scoped_ptr<ExtensionProcessManager> extension_process_manager_;
   scoped_refptr<ExtensionMessageService> extension_message_service_;
   scoped_ptr<ExtensionEventRouter> extension_event_router_;
+  scoped_ptr<ExtensionNavigationObserver> extension_navigation_observer_;
   scoped_refptr<ExtensionSpecialStoragePolicy>
       extension_special_storage_policy_;
   scoped_ptr<SSLHostState> ssl_host_state_;
