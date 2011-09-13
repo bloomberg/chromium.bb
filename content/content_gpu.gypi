@@ -3,15 +3,8 @@
 # found in the LICENSE file.
 
 {
-  'variables': {
-    'directxsdk_exists': '<!(python <(DEPTH)/build/dir_exists.py ../third_party/directxsdk)',
-  },  # variables
-  'targets': [
-    {
-      'target_name': 'content_gpu',
-      'type': 'static_library',
+      # TODO(dpranke): Fix indentation.
       'dependencies': [
-        'content_common',
         '../base/base.gyp:base',
         '../skia/skia.gyp:skia',
         '../ui/gfx/gl/gl.gyp:gl',
@@ -92,6 +85,4 @@
           ],
         }],
       ],
-    },
-  ],
 }

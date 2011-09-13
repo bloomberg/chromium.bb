@@ -3,12 +3,8 @@
 # found in the LICENSE file.
 
 {
-  'targets': [
-    {
-      'target_name': 'content_browser',
-      'type': 'static_library',
+      # TODO(dpranke): Fix indentation.
       'dependencies': [
-        'content_common',
         '../crypto/crypto.gyp:crypto',
         '../net/net.gyp:net',
         '../net/net.gyp:http_server',
@@ -629,6 +625,4 @@
           ],
         }],
       ],
-    },
-  ],
 }

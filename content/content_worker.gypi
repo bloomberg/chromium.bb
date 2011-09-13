@@ -3,12 +3,8 @@
 # found in the LICENSE file.
 
 {
-  'targets': [
-    {
-      'target_name': 'content_worker',
-      'type': 'static_library',
+      # TODO(dpranke): Fix indentation.
       'dependencies': [
-        'content_common',
         '../base/base.gyp:base',
         '../skia/skia.gyp:skia',
         '../third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
@@ -35,6 +31,4 @@
       'include_dirs': [
         '..',
       ],
-    },
-  ],
 }

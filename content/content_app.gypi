@@ -3,16 +3,11 @@
 # found in the LICENSE file.
 
 {
-  'targets': [
-    {
-      'target_name': 'content_app',
-      'type': 'static_library',
+      # TODO(dpranke): Fix indentation
       'include_dirs': [
         '..',
       ],
       'dependencies': [
-        'content_browser',
-        'content_common',
         '../base/base.gyp:base',
         '../base/base.gyp:base_i18n',
         '../crypto/crypto.gyp:crypto',
@@ -33,6 +28,4 @@
           ],
         }],
       ],
-    },
-  ],
 }

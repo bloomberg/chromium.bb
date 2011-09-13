@@ -172,4 +172,26 @@
       ],
     },
   ],
+  'conditions': [
+    ['target_arch=="arm"', {
+      'targets': [
+        {
+          'target_name': 'omx_video_decode_accelerator_unittest',
+          'type': 'executable',
+          'dependencies': [
+            'content',
+            '../testing/gtest.gyp:gtest',
+          ],
+          'include_dirs': [
+            '<(DEPTH)/third_party/angle/include',
+            '<(DEPTH)/third_party/openmax/il',
+          ],
+          'sources': [
+            'common/gpu/media/omx_video_decode_accelerator_unittest.cc',
+          ],
+        }
+      ],
+    },
+   ],
+  ],
 }
