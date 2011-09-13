@@ -72,6 +72,8 @@ class ClientSession : public protocol::HostStub,
     awaiting_continue_approval_ = awaiting;
   }
 
+  const std::string& client_jid() { return client_jid_; }
+
   // Indicate that local mouse activity has been detected. This causes remote
   // inputs to be ignored for a short time so that the local user will always
   // have the upper hand in 'pointer wars'.
@@ -101,6 +103,8 @@ class ClientSession : public protocol::HostStub,
 
   // The connection to the client.
   scoped_refptr<protocol::ConnectionToClient> connection_;
+
+  std::string client_jid_;
 
   // The input stub to which this object delegates.
   protocol::InputStub* input_stub_;

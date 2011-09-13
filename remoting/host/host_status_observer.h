@@ -31,10 +31,8 @@ class HostStatusObserver {
   // Called on the main thread when a client authenticates, or disconnects.
   // The observer must not tear-down ChromotingHost state on receipt of
   // this callback; it is purely informational.
-  virtual void OnClientAuthenticated(
-      remoting::protocol::ConnectionToClient* client) = 0;
-  virtual void OnClientDisconnected(
-      remoting::protocol::ConnectionToClient* client) = 0;
+  virtual void OnClientAuthenticated(const std::string& jid) = 0;
+  virtual void OnClientDisconnected(const std::string& jid) = 0;
 
   // Called on the main thread when the host shuts down.
   virtual void OnShutdown() = 0;

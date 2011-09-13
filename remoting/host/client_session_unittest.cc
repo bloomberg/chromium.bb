@@ -23,19 +23,27 @@ using protocol::MockConnectionToClient;
 using protocol::MockConnectionToClientEventHandler;
 using protocol::MockHostStub;
 using protocol::MockInputStub;
+using protocol::MockSession;
 
 using testing::_;
 using testing::DeleteArg;
 using testing::InSequence;
 using testing::Return;
+using testing::ReturnRef;
 
 class ClientSessionTest : public testing::Test {
  public:
   ClientSessionTest() {}
 
   virtual void SetUp() {
+    client_jid_ = "user@domain/rest-of-jid";
+    EXPECT_CALL(session_, jid()).WillRepeatedly(ReturnRef(client_jid_));
+
     connection_ = new MockConnectionToClient(
         &connection_event_handler_, &host_stub_, &input_stub_);
+
+    EXPECT_CALL(*connection_, session()).WillRepeatedly(Return(&session_));
+
     user_authenticator_ = new MockUserAuthenticator();
     client_session_ = new ClientSession(
         &session_event_handler_,
@@ -49,6 +57,8 @@ class ClientSessionTest : public testing::Test {
 
  protected:
   MessageLoop message_loop_;
+  std::string client_jid_;
+  MockSession session_;
   MockConnectionToClientEventHandler connection_event_handler_;
   MockHostStub host_stub_;
   MockInputStub input_stub_;

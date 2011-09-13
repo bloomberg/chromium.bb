@@ -84,9 +84,9 @@ void RegisterSupportHostRequest::OnSignallingDisconnected() {
 // connected/disconnected events.
 void RegisterSupportHostRequest::OnAccessDenied() { }
 void RegisterSupportHostRequest::OnClientAuthenticated(
-    remoting::protocol::ConnectionToClient* client) { }
+    const std::string& jid) { }
 void RegisterSupportHostRequest::OnClientDisconnected(
-    remoting::protocol::ConnectionToClient* client) { }
+    const std::string& jid) { }
 void RegisterSupportHostRequest::OnShutdown() { }
 
 XmlElement* RegisterSupportHostRequest::CreateRegistrationRequest(

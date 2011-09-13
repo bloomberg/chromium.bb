@@ -74,10 +74,8 @@ class HostNPScriptObject : public HostStatusObserver {
                                      const std::string& full_jid) OVERRIDE;
   virtual void OnSignallingDisconnected() OVERRIDE;
   virtual void OnAccessDenied() OVERRIDE;
-  virtual void OnClientAuthenticated(
-      remoting::protocol::ConnectionToClient* client) OVERRIDE;
-  virtual void OnClientDisconnected(
-      remoting::protocol::ConnectionToClient* client) OVERRIDE;
+  virtual void OnClientAuthenticated(const std::string& jid) OVERRIDE;
+  virtual void OnClientDisconnected(const std::string& jid) OVERRIDE;
   virtual void OnShutdown() OVERRIDE;
 
   // Post LogDebugInfo to the correct proxy (and thus, on the correct thread).

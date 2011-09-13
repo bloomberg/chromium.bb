@@ -158,10 +158,7 @@ net::Socket* JingleSession::event_channel() {
 }
 
 const std::string& JingleSession::jid() {
-  // TODO(sergeyu): Fix ChromotingHost so that it doesn't call this
-  // method on invalid thread and uncomment this DCHECK.
-  // See crbug.com/88600 .
-  // DCHECK(CalledOnValidThread());
+  DCHECK(CalledOnValidThread());
   return jid_;
 }
 
@@ -185,10 +182,7 @@ const std::string& JingleSession::local_certificate() const {
 }
 
 const SessionConfig& JingleSession::config() {
-  // TODO(sergeyu): Fix ChromotingHost so that it doesn't call this
-  // method on invalid thread and uncomment this DCHECK.
-  // See crbug.com/88600 .
-  // DCHECK(CalledOnValidThread());
+  DCHECK(CalledOnValidThread());
   DCHECK(config_set_);
   return config_;
 }

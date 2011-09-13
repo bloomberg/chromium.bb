@@ -33,6 +33,7 @@ ClientSession::ClientSession(
     : event_handler_(event_handler),
       user_authenticator_(user_authenticator),
       connection_(connection),
+      client_jid_(connection->session()->jid()),
       input_stub_(input_stub),
       authenticated_(false),
       awaiting_continue_approval_(false),

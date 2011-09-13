@@ -114,6 +114,7 @@ class ChromotingHostTest : public testing::Test {
     session2_.reset(new MockSession());
     session_config_ = SessionConfig::GetDefault();
     session_jid_ = "user@domain/rest-of-jid";
+    session2_jid_ = "user2@domain/rest-of-jid";
     session_config2_ = SessionConfig::GetDefault();
 
     ON_CALL(video_stub_, ProcessVideoPacket(_, _))
@@ -136,10 +137,12 @@ class ChromotingHostTest : public testing::Test {
         .WillByDefault(Return(session2_.get()));
     ON_CALL(*session_.get(), config())
         .WillByDefault(ReturnRef(session_config_));
-    ON_CALL(*session_, jid())
-        .WillByDefault(ReturnRef(session_jid_));
     ON_CALL(*session2_.get(), config())
         .WillByDefault(ReturnRef(session_config2_));
+    EXPECT_CALL(*session_, jid())
+        .WillRepeatedly(ReturnRef(session_jid_));
+    EXPECT_CALL(*session2_, jid())
+        .WillRepeatedly(ReturnRef(session2_jid_));
     EXPECT_CALL(*connection_.get(), video_stub())
         .Times(AnyNumber());
     EXPECT_CALL(*connection_.get(), client_stub())
@@ -226,6 +229,7 @@ class ChromotingHostTest : public testing::Test {
   MockClientStub client_stub_;
   MockHostStub host_stub_;
   scoped_refptr<MockConnectionToClient> connection2_;
+  std::string session2_jid_;
   scoped_ptr<MockSession> session2_;
   SessionConfig session_config2_;
   MockVideoStub video_stub2_;

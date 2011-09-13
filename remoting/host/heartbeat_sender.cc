@@ -90,10 +90,8 @@ void HeartbeatSender::OnSignallingDisconnected() {
 // Ignore any notifications other than signalling
 // connected/disconnected events.
 void HeartbeatSender::OnAccessDenied() { }
-void HeartbeatSender::OnClientAuthenticated(
-    remoting::protocol::ConnectionToClient* client) { }
-void HeartbeatSender::OnClientDisconnected(
-    remoting::protocol::ConnectionToClient* client) { }
+void HeartbeatSender::OnClientAuthenticated(const std::string& jid) { }
+void HeartbeatSender::OnClientDisconnected(const std::string& jid) { }
 void HeartbeatSender::OnShutdown() { }
 
 void HeartbeatSender::DoSendStanza() {
