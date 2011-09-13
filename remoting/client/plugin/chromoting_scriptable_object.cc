@@ -365,6 +365,7 @@ Var ChromotingScriptableObject::DoConnect(const std::vector<Var>& args,
   //   host_public_key
   //   client_jid
   //   access_code (optional)
+  //   use_p2p_api (optional)
   unsigned int arg = 0;
   if (!args[arg].is_string()) {
     *exception = Var("The host_jid must be a string.");
@@ -393,6 +394,15 @@ Var ChromotingScriptableObject::DoConnect(const std::vector<Var>& args,
     access_code = args[arg++].AsString();
   }
 
+  bool use_p2p_api = false;
+  if (args.size() > arg) {
+    if (!args[arg].is_bool()) {
+      *exception = Var("The use_p2p_api parameter must be a boolean.");
+      return Var();
+    }
+    use_p2p_api = args[arg++].AsBool();
+  }
+
   if (args.size() != arg) {
     *exception = Var("Too many agruments passed to connect().");
     return Var();
@@ -406,7 +416,7 @@ Var ChromotingScriptableObject::DoConnect(const std::vector<Var>& args,
   config.host_jid = host_jid;
   config.host_public_key = host_public_key;
   config.access_code = access_code;
-  instance_->Connect(config);
+  instance_->Connect(config, use_p2p_api);
 
   return Var();
 }

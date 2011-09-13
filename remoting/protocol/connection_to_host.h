@@ -21,6 +21,10 @@ namespace base {
 class MessageLoopProxy;
 }  // namespace base
 
+namespace pp {
+class Instance;
+}  // namespace pp
+
 namespace talk_base {
 class NetworkManager;
 class PacketSocketFactory;
@@ -77,6 +81,7 @@ class ConnectionToHost : public SignalStrategy::StatusObserver,
   //
   // TODO(sergeyu): Constructor shouldn't need thread here.
   ConnectionToHost(base::MessageLoopProxy* network_message_loop,
+                   pp::Instance* pp_instance,
                    talk_base::NetworkManager* network_manager,
                    talk_base::PacketSocketFactory* socket_factory,
                    HostResolverFactory* host_resolver_factory,
@@ -140,6 +145,7 @@ class ConnectionToHost : public SignalStrategy::StatusObserver,
   void CloseChannels();
 
   scoped_refptr<base::MessageLoopProxy> message_loop_;
+  pp::Instance* pp_instance_;
   scoped_ptr<talk_base::NetworkManager> network_manager_;
   scoped_ptr<talk_base::PacketSocketFactory> socket_factory_;
   scoped_ptr<HostResolverFactory> host_resolver_factory_;

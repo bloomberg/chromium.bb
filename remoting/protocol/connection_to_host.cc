@@ -18,6 +18,7 @@
 #include "remoting/protocol/host_control_sender.h"
 #include "remoting/protocol/input_sender.h"
 #include "remoting/protocol/jingle_session_manager.h"
+#include "remoting/protocol/pepper_session_manager.h"
 #include "remoting/protocol/video_reader.h"
 #include "remoting/protocol/video_stub.h"
 #include "remoting/protocol/util.h"
@@ -27,12 +28,14 @@ namespace protocol {
 
 ConnectionToHost::ConnectionToHost(
     base::MessageLoopProxy* message_loop,
+    pp::Instance* pp_instance,
     talk_base::NetworkManager* network_manager,
     talk_base::PacketSocketFactory* socket_factory,
     HostResolverFactory* host_resolver_factory,
     PortAllocatorSessionFactory* session_factory,
     bool allow_nat_traversal)
     : message_loop_(message_loop),
+      pp_instance_(pp_instance),
       network_manager_(network_manager),
       socket_factory_(socket_factory),
       host_resolver_factory_(host_resolver_factory),
@@ -108,17 +111,22 @@ void ConnectionToHost::Disconnect(const base::Closure& shutdown_task) {
 void ConnectionToHost::InitSession() {
   DCHECK(message_loop_->BelongsToCurrentThread());
 
-  // Initialize chromotocol |session_manager_|.
-  JingleSessionManager* session_manager =
-      JingleSessionManager::CreateSandboxed(
-          message_loop_, network_manager_.release(), socket_factory_.release(),
-          host_resolver_factory_.release(),
-          port_allocator_session_factory_.release());
+  // Initialize |session_manager_|.
+  if (pp_instance_) {
+    session_manager_.reset(new PepperSessionManager(pp_instance_));
+  } else {
+    JingleSessionManager* session_manager =
+        JingleSessionManager::CreateSandboxed(
+            message_loop_, network_manager_.release(),
+            socket_factory_.release(), host_resolver_factory_.release(),
+            port_allocator_session_factory_.release());
 
-  // TODO(ajwong): Make this a command switch when we're more stable.
-  session_manager->set_allow_local_ips(true);
+    // TODO(ajwong): Make this a command switch when we're more stable.
+    session_manager->set_allow_local_ips(true);
 
-  session_manager_.reset(session_manager);
+    session_manager_.reset(session_manager);
+  }
+
   session_manager_->Init(
       local_jid_, signal_strategy_.get(), this, NULL, "", allow_nat_traversal_);
 }

@@ -16,6 +16,12 @@
 /** @suppress {duplicate} */
 var remoting = remoting || {};
 
+/**
+ * Whether or not the P2P Transport API should be used.
+ * @type {boolean}
+ */
+remoting.useP2pApi = false;
+
 (function() {
 /**
  * @param {string} hostJid The jid of the host to connect to.
@@ -306,13 +312,14 @@ remoting.ClientSession.prototype.registerConnection_ =
     remoting.debug.log('Receiving Iq: --' + xhr.responseText + '--');
     that.clientJid = xhr.responseText;
 
-    // TODO(ajwong): Remove old version support.
-    if (that.plugin.apiVersion >= 2) {
+    if (remoting.useP2pApi) {
+      that.plugin.connect(that.hostJid, that.hostPublicKey, that.clientJid,
+                          that.accessCode, remoting.useP2pApi);
+    } else {
       that.plugin.connect(that.hostJid, that.hostPublicKey, that.clientJid,
                           that.accessCode);
-    } else {
-      that.plugin.connect(that.hostJid, that.clientJid, that.accessCode);
     }
+
     that.feedIq_();
   };
 
