@@ -64,6 +64,11 @@ class NullWindowManager : public views::WindowManager {
     return false;
   }
 
+  virtual ui::TouchStatus HandleTouchEvent(views::Widget* widget,
+      const views::TouchEvent& event) OVERRIDE {
+    return ui::TOUCH_STATUS_UNKNOWN;
+  }
+
   void Register(views::Widget* widget) OVERRIDE {}
 
  private:

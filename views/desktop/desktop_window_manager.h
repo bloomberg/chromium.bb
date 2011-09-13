@@ -44,6 +44,8 @@ class DesktopWindowManager : public views::WindowManager,
                               const views::KeyEvent& event) OVERRIDE;
   virtual bool HandleMouseEvent(views::Widget* widget,
                                 const views::MouseEvent& event) OVERRIDE;
+  virtual ui::TouchStatus HandleTouchEvent(views::Widget* widget,
+      const views::TouchEvent& event) OVERRIDE;
 
   virtual void Register(Widget* widget) OVERRIDE;
 
@@ -58,6 +60,10 @@ class DesktopWindowManager : public views::WindowManager,
   bool HasMouseCapture() const;
 
   void Activate(Widget* widget);
+
+  // Returns true if a deactivated widget at the location was activated. Returns
+  // false otherwise.
+  bool ActivateWidgetAtLocation(Widget* widget, const gfx::Point& point);
 
   views::Widget* desktop_;
   views::Widget* mouse_capture_;

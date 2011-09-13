@@ -7,6 +7,7 @@
 #pragma once
 
 #include "base/basictypes.h"
+#include "ui/base/events.h"
 #include "views/views_export.h"
 
 namespace gfx {
@@ -16,6 +17,7 @@ class Point;
 namespace views {
 class KeyEvent;
 class MouseEvent;
+class TouchEvent;
 class Widget;
 
 // A interface to WindowManager.
@@ -50,9 +52,14 @@ class VIEWS_EXPORT WindowManager {
   // or send the event to widget that has mouse capture.
   virtual bool HandleKeyEvent(Widget* widget, const KeyEvent& event) = 0;
 
-  // WindowManager handles mouse event first. It may reisze/move window,
+  // WindowManager handles mouse event first. It may resize/move window,
   // or send the event to widget that has mouse capture.
   virtual bool HandleMouseEvent(Widget* widget, const MouseEvent& event) = 0;
+
+  // WindowManager handles touch event first. It is currently used only to
+  // activate windows. But it can also be used to move/resize windows.
+  virtual ui::TouchStatus HandleTouchEvent(Widget* widget,
+                                           const TouchEvent& event) = 0;
 
   // Register widget to the window manager.
   virtual void Register(Widget* widget) = 0;

@@ -42,9 +42,17 @@ class DesktopWindow : public Widget {
     return WindowManager::Get()->HandleKeyEvent(this, event);
   }
 
-  virtual bool OnMouseEvent(const MouseEvent& event) {
+  virtual bool OnMouseEvent(const MouseEvent& event) OVERRIDE {
     return WindowManager::Get()->HandleMouseEvent(this, event) ||
         Widget::OnMouseEvent(event);
+  }
+
+  virtual ui::TouchStatus OnTouchEvent(const TouchEvent& event) OVERRIDE {
+    ui::TouchStatus status = WindowManager::Get()->
+        HandleTouchEvent(this, event);
+    if (status == ui::TOUCH_STATUS_UNKNOWN)
+      status = Widget::OnTouchEvent(event);
+    return status;
   }
 
   DesktopWindowView* desktop_window_view_;

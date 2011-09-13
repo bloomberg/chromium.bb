@@ -167,20 +167,17 @@ bool DesktopWindowManager::HandleKeyEvent(
 
 bool DesktopWindowManager::HandleMouseEvent(
     views::Widget* widget, const views::MouseEvent& event) {
-  if (event.type() == ui::ET_MOUSE_PRESSED) {
-    View* target =
-        widget->GetRootView()->GetEventHandlerForPoint(event.location());
-
-    if (target->GetClassName() == internal::NativeWidgetView::kViewClassName) {
-      internal::NativeWidgetView* native_widget_view =
-          static_cast<internal::NativeWidgetView*>(target);
-      views::Widget* target_widget = native_widget_view->GetAssociatedWidget();
-      if (target_widget->CanActivate())
-        Activate(target_widget);
-    }
-  } else if (event.type() == ui::ET_MOUSEWHEEL && active_widget_) {
-    return active_widget_->OnMouseEvent(event);
+  if (mouse_capture_) {
+    views::MouseEvent translated(event, widget->GetRootView(),
+                                 mouse_capture_->GetRootView());
+    mouse_capture_->OnMouseEvent(translated);
+    return true;
   }
+
+  if (event.type() == ui::ET_MOUSE_PRESSED)
+    ActivateWidgetAtLocation(widget, event.location());
+  else if (event.type() == ui::ET_MOUSEWHEEL && active_widget_)
+    return active_widget_->OnMouseEvent(event);
 
   if (window_controller_.get()) {
     if (!window_controller_->OnMouseEvent(event)) {
@@ -190,13 +187,23 @@ bool DesktopWindowManager::HandleMouseEvent(
     return true;
   }
 
-  if (mouse_capture_) {
-    views::MouseEvent translated(event, widget->GetRootView(),
-                                 mouse_capture_->GetRootView());
-    mouse_capture_->OnMouseEvent(translated);
-    return true;
-  }
   return false;
+}
+
+ui::TouchStatus DesktopWindowManager::HandleTouchEvent(Widget* widget,
+    const TouchEvent& event) {
+  // If there is a widget capturing mouse events, the widget should also receive
+  // touch events.
+  if (mouse_capture_) {
+    views::TouchEvent translated(event, widget->GetRootView(),
+                                 mouse_capture_->GetRootView());
+    return mouse_capture_->OnTouchEvent(translated);
+  }
+  if (event.type() == ui::ET_TOUCH_PRESSED &&
+      ActivateWidgetAtLocation(widget, event.location()))
+    return ui::TOUCH_STATUS_END;
+
+  return ui::TOUCH_STATUS_UNKNOWN;
 }
 
 void DesktopWindowManager::Register(Widget* widget) {
@@ -260,6 +267,23 @@ void DesktopWindowManager::Activate(Widget* widget) {
       widget->AddObserver(this);
     widget->Activate();
   }
+}
+
+bool DesktopWindowManager::ActivateWidgetAtLocation(Widget* widget,
+                                                    const gfx::Point& point) {
+  View* target = widget->GetRootView()->GetEventHandlerForPoint(point);
+
+  if (target->GetClassName() == internal::NativeWidgetView::kViewClassName) {
+    internal::NativeWidgetView* native_widget_view =
+        static_cast<internal::NativeWidgetView*>(target);
+    views::Widget* target_widget = native_widget_view->GetAssociatedWidget();
+    if (!target_widget->IsActive() && target_widget->CanActivate()) {
+      Activate(target_widget);
+      return true;
+    }
+  }
+
+  return false;
 }
 
 }  // namespace desktop
