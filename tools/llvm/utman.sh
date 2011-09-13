@@ -3069,6 +3069,9 @@ verify-object-llvm() {
 
 
 check-elf-abi() {
+  # Temporarily disable ELF abi check until DEPS roll
+  return 0
+
   local arch_info="$(${NACL_OBJDUMP} -f $1)"
   if ! grep -q $2 <<< ${arch_info} ; then
     echo "ERROR $1 - bad file format: $2 vs ${arch_info}\n"
