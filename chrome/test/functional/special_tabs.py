@@ -43,7 +43,7 @@ class SpecialTabsTest(pyauto.PyUITest):
     'chrome://credits': { 'title': 'Credits', 'CSP': False },
     'chrome://downloads': { 'title': 'Downloads' },
     'chrome://dns': { 'title': 'About DNS' },
-    'chrome://extensions': { 'title': 'Extensions' },
+    'chrome://settings/extensionSettings': { 'title': 'Extensions' },
     'chrome://flags': {},
     'chrome://flash': {},
     'chrome://gpu-internals': {},
@@ -267,9 +267,9 @@ class SpecialTabsTest(pyauto.PyUITest):
 
   def testSpecialURLTabs(self):
     """Test special tabs created by URLs like chrome://downloads,
-       chrome://extensions, chrome://history etc.  Also ensures they
-       specify content-security-policy and not inline scripts for those
-       pages that are expected to do so."""
+       chrome://settings/extensionSettings, chrome://history etc.
+       Also ensures they specify content-security-policy and not inline
+       scripts for those pages that are expected to do so."""
     tabs = self._GetPlatformSpecialURLTabs()
     for url, properties in tabs.iteritems():
       logging.debug('Testing URL %s.' % url)
