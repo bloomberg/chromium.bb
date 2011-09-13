@@ -287,6 +287,15 @@ void SigninManager::OnOAuthWrapBridgeFailure(
 // NOTE: userinfo is an OAuth request similar to ClientLogin's GetUserInfo
 void SigninManager::OnUserInfoSuccess(const std::string& email) {
   DCHECK(browser_sync::IsUsingOAuth());
+
+  TokenService* token_service = profile_->GetTokenService();
+  CHECK(token_service);
+
+  // If |SignOut()| was called between the login start and |OnUserInfoSucess()|,
+  // then the OAuth credentials would have been cleared.
+  if (!token_service->AreOAuthCredentialsValid())
+    return;
+
   VLOG(1) << "Sync signin for " << email << " is complete.";
   oauth_username_ = email;
   profile_->GetPrefs()->SetString(
@@ -301,8 +310,6 @@ void SigninManager::OnUserInfoSuccess(const std::string& email) {
       Source<Profile>(profile_),
       Details<const GoogleServiceSigninSuccessDetails>(&details));
 
-  TokenService* token_service = profile_->GetTokenService();
-  CHECK(token_service);
   DCHECK(token_service->AreOAuthCredentialsValid());
   token_service->StartFetchingOAuthTokens();
 }
