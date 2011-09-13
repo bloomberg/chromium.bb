@@ -181,7 +181,13 @@ TEST_F(WorkerTest, SingleSharedWorker) {
   RunTest(FilePath(FILE_PATH_LITERAL("single_worker.html")), "shared=true");
 }
 
-TEST_F(WorkerTest, MultipleSharedWorkers) {
+// Flaky on Win XP only.  http://crbug.com/96435
+#if defined(OS_WIN)
+#define MAYBE_MultipleSharedWorkers FLAKY_MultipleSharedWorkers
+#else
+#define MAYBE_MultipleSharedWorkers MultipleSharedWorkers
+#endif
+TEST_F(WorkerTest, MAYBE_MultipleSharedWorkers) {
   RunTest(FilePath(FILE_PATH_LITERAL("multi_worker.html")), "shared=true");
 }
 
