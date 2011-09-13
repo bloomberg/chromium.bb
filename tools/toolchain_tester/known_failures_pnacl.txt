@@ -11,8 +11,6 @@ pr34070-1.c
 # signed/unsigned mixup
 pr34070-2.c
 # select function via ternary operator - looks like a complete miscompile
-pr34768-1.c
-# long long with bitfields
 pr34971.c
 # signed/unsigned mixup
 pr35163.c
@@ -60,7 +58,7 @@ simd-6.c
 # ======================================================================
 # complex va_arg - frontend assert
 20020412-1.c
-# compiler hangs
+# compiler hangs  (uses unsupported vectors)
 pr23135.c
 # uses __builtin_return_address (internal compiler error x86-64)
 20010122-1.c
@@ -92,6 +90,9 @@ compare-fp-3.c
 # abort when code is reached
 call-trap-1.c
 va-arg-trap-1.c
+pr34768-1.c
+# long long with bitfields (this is rather idiosyncratic behavior and probably a wont fix)
+
 # ======================================================================
 # wont fixes - nested functions
 # ======================================================================
