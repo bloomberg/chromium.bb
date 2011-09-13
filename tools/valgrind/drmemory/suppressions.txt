@@ -697,6 +697,9 @@ LEAK
 UNADDRESSABLE ACCESS
 *!CrashingChildProcess
 
+UNADDRESSABLE ACCESS
+*!`anonymous namespace'::Crasher::Run
+
 # http://crbug.com/79933
 LEAK
 ...
@@ -893,6 +896,11 @@ LEAK
 ...
 *!operator new
 *!views::NativeWidgetWin::OnCreate
+
+# http://crbug.com/96010
+UNADDRESSABLE ACCESS
+...
+*!NotificationService::Notify
 
 # Empty line at EOF - workaround for
 # http://code.google.com/p/drmemory/issues/detail?id=41
