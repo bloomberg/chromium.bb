@@ -35,9 +35,33 @@ class HungRendererDialogGtk {
   HungRendererDialogGtk();
   virtual ~HungRendererDialogGtk() {}
   void ShowForTabContents(TabContents* hung_contents);
+  void Hide();
   void EndForTabContents(TabContents* hung_contents);
 
  private:
+  // Dismiss the panel if |contents_| is closed or its renderer exits.
+  class TabContentsObserverImpl : public TabContentsObserver {
+   public:
+    TabContentsObserverImpl(HungRendererDialogGtk* dialog,
+                            TabContents* contents)
+        : TabContentsObserver(contents),
+          dialog_(dialog) {
+    }
+
+    // TabContentsObserver overrides:
+    virtual void RenderViewGone() OVERRIDE {
+      dialog_->Hide();
+    }
+    virtual void TabContentsDestroyed(TabContents* tab) OVERRIDE {
+      dialog_->Hide();
+    }
+
+   private:
+    HungRendererDialogGtk* dialog_;  // weak
+
+    DISALLOW_COPY_AND_ASSIGN(TabContentsObserverImpl);
+  };
+
   // The GtkTreeView column ids.
   enum {
     COL_FAVICON,
@@ -53,6 +77,7 @@ class HungRendererDialogGtk {
   GtkDialog* dialog_;
   GtkListStore* model_;
   TabContents* contents_;
+  scoped_ptr<TabContentsObserverImpl> contents_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(HungRendererDialogGtk);
 };
@@ -150,6 +175,7 @@ void HungRendererDialogGtk::Init() {
 void HungRendererDialogGtk::ShowForTabContents(TabContents* hung_contents) {
   DCHECK(hung_contents && dialog_);
   contents_ = hung_contents;
+  contents_observer_.reset(new TabContentsObserverImpl(this, contents_));
   gtk_list_store_clear(model_);
 
   GtkTreeIter tree_iter;
@@ -176,13 +202,18 @@ void HungRendererDialogGtk::ShowForTabContents(TabContents* hung_contents) {
   gtk_util::ShowDialog(GTK_WIDGET(dialog_));
 }
 
+void HungRendererDialogGtk::Hide() {
+  gtk_widget_hide(GTK_WIDGET(dialog_));
+  // Since we're closing, we no longer need this TabContents.
+  contents_observer_.reset();
+  contents_ = NULL;
+}
+
 void HungRendererDialogGtk::EndForTabContents(TabContents* contents) {
   DCHECK(contents);
   if (contents_ && contents_->GetRenderProcessHost() ==
       contents->GetRenderProcessHost()) {
-    gtk_widget_hide(GTK_WIDGET(dialog_));
-    // Since we're closing, we no longer need this TabContents.
-    contents_ = NULL;
+    Hide();
   }
 }
 
