@@ -1648,7 +1648,7 @@
    fun:std::vector::_M_insert_aux
    fun:std::vector::push_back
    fun:NotificationRegistrar::Add
-   fun:browser_sync::AutofillProfileSyncableService::AutofillProfileSyncableService
+   fun:*AutofillProfileSyncableService
    fun:MakeAutofillProfileSyncComponentsActionP4::gmock_Impl::gmock_PerformImpl
    fun:testing::internal::ActionHelper::Perform
    fun:MakeAutofillProfileSyncComponentsActionP4::gmock_Impl::Perform
