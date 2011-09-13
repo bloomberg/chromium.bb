@@ -23,6 +23,7 @@
 #include "content/common/main_function_params.h"
 #include "content/common/sandbox_init_wrapper.h"
 #include "content/common/set_process_title.h"
+#include "content/renderer/renderer_main.h"
 #include "crypto/nss_util.h"
 #include "ipc/ipc_switches.h"
 #include "ui/base/ui_base_switches.h"
@@ -57,7 +58,6 @@ int tc_set_new_mode(int mode);
 #endif
 
 extern int BrowserMain(const MainFunctionParams&);
-extern int RendererMain(const MainFunctionParams&);
 extern int GpuMain(const MainFunctionParams&);
 extern int PluginMain(const MainFunctionParams&);
 extern int PpapiPluginMain(const MainFunctionParams&);

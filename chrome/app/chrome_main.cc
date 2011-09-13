@@ -29,6 +29,7 @@
 #include "content/app/content_main.h"
 #include "content/app/content_main_delegate.h"
 #include "content/browser/renderer_host/render_process_host.h"
+#include "content/renderer/renderer_main.h"
 #include "content/common/content_client.h"
 #include "content/common/content_counters.h"
 #include "content/common/content_paths.h"
@@ -98,7 +99,6 @@ base::LazyInstance<chrome::ChromeContentUtilityClient>
 base::LazyInstance<chrome::ChromeContentPluginClient>
     g_chrome_content_plugin_client(base::LINKER_INITIALIZED);
 
-extern int RendererMain(const MainFunctionParams&);
 extern int NaClMain(const MainFunctionParams&);
 extern int ProfileImportMain(const MainFunctionParams&);
 extern int ServiceProcessMain(const MainFunctionParams&);
