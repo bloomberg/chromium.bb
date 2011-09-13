@@ -139,12 +139,6 @@ void ImportantFileWriter::ScheduleWrite(DataSerializer* serializer) {
   DCHECK(serializer);
   serializer_ = serializer;
 
-  if (!MessageLoop::current()) {
-    // Happens in unit tests.
-    DoScheduledWrite();
-    return;
-  }
-
   if (!timer_.IsRunning()) {
     timer_.Start(FROM_HERE, commit_interval_, this,
                  &ImportantFileWriter::DoScheduledWrite);
