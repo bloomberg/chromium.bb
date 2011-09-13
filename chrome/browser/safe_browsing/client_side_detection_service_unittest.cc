@@ -19,7 +19,7 @@
 #include "chrome/common/safe_browsing/csd.pb.h"
 #include "chrome/renderer/safe_browsing/features.h"
 #include "content/browser/browser_thread.h"
-#include "content/common/net/url_fetcher.h"
+#include "content/common/url_fetcher.h"
 #include "content/test/test_url_fetcher_factory.h"
 #include "crypto/sha2.h"
 #include "googleurl/src/gurl.h"

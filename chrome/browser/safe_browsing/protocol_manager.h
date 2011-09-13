@@ -25,7 +25,7 @@
 #include "chrome/browser/safe_browsing/protocol_parser.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/safe_browsing_util.h"
-#include "content/common/net/url_fetcher.h"
+#include "content/common/url_fetcher.h"
 
 namespace net {
 class URLRequestStatus;

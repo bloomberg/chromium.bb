@@ -25,6 +25,7 @@
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/common/notification_service.h"
+#include "content/common/url_fetcher.h"
 #include "crypto/sha2.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/load_flags.h"

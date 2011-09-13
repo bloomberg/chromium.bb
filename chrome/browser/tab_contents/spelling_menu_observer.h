@@ -12,7 +12,7 @@
 #include "base/string16.h"
 #include "base/timer.h"
 #include "chrome/browser/tab_contents/render_view_context_menu_observer.h"
-#include "content/common/net/url_fetcher.h"
+#include "content/common/url_fetcher.h"
 
 class GURL;
 class RenderViewContextMenuProxy;

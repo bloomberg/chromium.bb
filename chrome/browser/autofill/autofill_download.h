@@ -17,7 +17,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/time.h"
 #include "chrome/browser/autofill/autofill_type.h"
-#include "content/common/net/url_fetcher.h"
+#include "content/common/url_fetcher.h"
 
 class AutofillMetrics;
 class FormStructure;
@@ -170,3 +170,4 @@ class AutofillDownloadManager : public URLFetcher::Delegate {
 };
 
 #endif  // CHROME_BROWSER_AUTOFILL_AUTOFILL_DOWNLOAD_H_
+

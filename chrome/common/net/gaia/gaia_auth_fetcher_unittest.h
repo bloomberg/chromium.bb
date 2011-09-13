@@ -13,7 +13,7 @@
 
 #include "chrome/common/net/gaia/gaia_auth_fetcher.h"
 #include "chrome/common/net/http_return.h"
-#include "content/common/net/url_fetcher.h"
+#include "content/common/url_fetcher.h"
 #include "content/test/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_status.h"
 

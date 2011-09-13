@@ -7,7 +7,7 @@
 #pragma once
 
 #include "content/browser/utility_process_host.h"
-#include "content/common/net/url_fetcher.h"
+#include "content/common/url_fetcher.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 

@@ -16,7 +16,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/task.h"
-#include "content/common/net/url_fetcher.h"
+#include "content/common/url_fetcher.h"
 #include "net/base/sdch_manager.h"
 
 class SdchDictionaryFetcher : public URLFetcher::Delegate,
