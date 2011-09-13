@@ -136,8 +136,7 @@ void ExtensionContextMenuModel::ExecuteCommand(int command_id) {
       break;
     }
     case MANAGE: {
-      browser_->OpenURL(GURL(chrome::kChromeUIExtensionsURL), GURL(),
-                        SINGLETON_TAB, PageTransition::LINK);
+      browser_->ShowOptionsTab(chrome::kExtensionsSubPage);
       break;
     }
     case INSPECT_POPUP: {

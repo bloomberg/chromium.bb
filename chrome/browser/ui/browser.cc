@@ -738,7 +738,8 @@ TabContents* Browser::OpenApplicationTab(Profile* profile,
   if (!extension_url.is_valid()) {
     extension_url = extension->options_url();
     if (!extension_url.is_valid())
-      extension_url = GURL(chrome::kChromeUIExtensionsURL);
+      extension_url = GURL(std::string(chrome::kChromeUISettingsURL) +
+                           chrome::kExtensionsSubPage);
   }
 
   // TODO(erikkay): START_PAGE doesn't seem like the right transition in all
@@ -2069,8 +2070,7 @@ void Browser::ShowDownloadsTab() {
 
 void Browser::ShowExtensionsTab() {
   UserMetrics::RecordAction(UserMetricsAction("ShowExtensions"));
-  ShowSingletonTabOverwritingNTP(
-      GetSingletonTabNavigateParams(GURL(chrome::kChromeUIExtensionsURL)));
+  ShowOptionsTab(chrome::kExtensionsSubPage);
 }
 
 void Browser::ShowAboutConflictsTab() {

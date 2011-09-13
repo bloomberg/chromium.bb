@@ -1500,7 +1500,8 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, ChromeURLAfterDownload) {
   FilePath file(FILE_PATH_LITERAL("download-test1.lib"));
   GURL download_url(URLRequestMockHTTPJob::GetMockUrl(file));
   GURL flags_url(chrome::kChromeUIFlagsURL);
-  GURL extensions_url(chrome::kChromeUIExtensionsURL);
+  GURL extensions_url(GURL(std::string(chrome::kChromeUISettingsURL) +
+                           chrome::kExtensionsSubPage));
 
   ui_test_utils::NavigateToURL(browser(), flags_url);
   DownloadAndWait(browser(), download_url, EXPECT_NO_SELECT_DIALOG);

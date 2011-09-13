@@ -513,8 +513,7 @@ TEST_F(AutomationProxyTest, AcceleratorExtensions) {
 
   ASSERT_TRUE(window->RunCommand(IDC_MANAGE_EXTENSIONS));
 
-  // We expect the RunCommand above to wait until the title is updated.
-  EXPECT_EQ(L"Extensions", GetActiveTabTitle());
+  EXPECT_EQ("chrome://settings/extensionSettings", GetActiveTabURL().spec());
 }
 
 TEST_F(AutomationProxyTest, AcceleratorHistory) {

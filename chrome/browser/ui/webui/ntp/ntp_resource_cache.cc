@@ -252,9 +252,11 @@ void NTPResourceCache::CreateNewTabIncognitoHTML() {
       l10n_util::GetStringFUTF16(new_tab_message_ids,
                                  GetUrlWithLang(GURL(new_tab_link))));
   localized_strings.SetString("extensionsmessage",
-      l10n_util::GetStringFUTF16(IDS_NEW_TAB_OTR_EXTENSIONS_MESSAGE,
-                                 l10n_util::GetStringUTF16(IDS_PRODUCT_NAME),
-                                 ASCIIToUTF16(chrome::kChromeUIExtensionsURL)));
+      l10n_util::GetStringFUTF16(
+          IDS_NEW_TAB_OTR_EXTENSIONS_MESSAGE,
+          l10n_util::GetStringUTF16(IDS_PRODUCT_NAME),
+          ASCIIToUTF16(std::string(chrome::kChromeUISettingsURL) +
+                       chrome::kExtensionsSubPage)));
   bool bookmark_bar_attached = profile_->GetPrefs()->GetBoolean(
       prefs::kShowBookmarkBar);
   localized_strings.SetString("bookmarkbarattached",

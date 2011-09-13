@@ -20,6 +20,7 @@ const char* kChromeSettingsSubPages[] = {
   chrome::kClearBrowserDataSubPage,
   chrome::kContentSettingsSubPage,
   chrome::kContentSettingsExceptionsSubPage,
+  chrome::kExtensionsSubPage,
   chrome::kImportDataSubPage,
   chrome::kInstantConfirmPage,
   chrome::kLanguageOptionsSubPage,

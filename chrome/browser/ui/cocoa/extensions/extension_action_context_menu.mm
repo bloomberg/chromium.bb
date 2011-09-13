@@ -265,8 +265,7 @@ int CurrentTabId() {
       break;
     }
     case kExtensionContextManage: {
-      browser->OpenURL(GURL(chrome::kChromeUIExtensionsURL), GURL(),
-                       NEW_FOREGROUND_TAB, PageTransition::LINK);
+      browser->ShowOptionsTab(chrome::kExtensionsSubPage);
       break;
     }
     case kExtensionContextInspect: {

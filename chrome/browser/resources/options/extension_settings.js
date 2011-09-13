@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// Used for observing function of the backend datasource for this page by
+// tests.
+var webui_responded_ = false;
+
 cr.define('options', function() {
   var OptionsPage = options.OptionsPage;
   var ExtensionsList = options.ExtensionsList;
@@ -143,6 +147,8 @@ cr.define('options', function() {
    * the current state of installed extensions.
    */
   ExtensionSettings.returnExtensionsData = function(extensionsData) {
+    webui_responded_ = true;
+
     $('no-extensions').hidden = true;
     $('suggest-gallery').hidden = true;
     $('get-more-extensions-container').hidden = true;
