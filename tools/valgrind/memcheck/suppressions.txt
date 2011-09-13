@@ -4350,12 +4350,6 @@
    fun:_Z16DispatchToMethodIN3net17URLRequestHttpJobEMS1_FviEiEvPT_T0_RK6Tuple1IT1_E
 }
 {
-   bug_90212
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN25TestingAutomationProvider21CaptureEntirePageJSONEPN4base15DictionaryValueEPN3IPC7MessageE
-}
-{
    bug_90215_c
    Memcheck:Leak
    ...
