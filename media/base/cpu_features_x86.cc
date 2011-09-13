@@ -48,6 +48,16 @@ static inline void getcpuid(int info_type, int info[4]) {
 }
 #endif
 
+bool hasMMX() {
+  // TODO(hclam): Acutually checks it.
+  return true;
+}
+
+bool hasSSE() {
+  // TODO(hclam): Actually checks it.
+  return true;
+}
+
 bool hasSSE2() {
 #if defined(ARCH_CPU_X86_64)
   /* All x86_64 machines have SSE2, so don't even bother checking. */
