@@ -9,7 +9,7 @@ import csv
 from datetime import datetime
 import optparse
 import os
-
+import time
 
 from layouttests import LayoutTests
 import layouttest_analyzer_helpers
@@ -21,9 +21,10 @@ DEFAULT_RESULT_DIR = 'result'
 DEFAULT_ANNO_FILE = os.path.join('anno', 'anno.csv')
 DEFAULT_GRAPH_FILE = os.path.join('graph', 'graph.html')
 # Predefined result files for debug.
+CUR_TIME_FOR_DEBUG = '2011-09-11-19'
 CURRENT_RESULT_FILE_FOR_DEBUG = os.path.join(DEFAULT_RESULT_DIR,
-                                             '2011-08-19-21')
-PREV_TIME_FOR_DEBUG = '2011-08-19-11'
+                                             CUR_TIME_FOR_DEBUG)
+PREV_TIME_FOR_DEBUG = '2011-09-11-18'
 
 DEFAULT_TEST_GROUP_FILE = os.path.join('testname', 'media.csv')
 DEFAULT_TEST_GROUP_NAME = 'media'
@@ -146,11 +147,27 @@ def main():
                       any(diff_map['nonskip']))
   # Email only when |email_only_change_mode| is False or there
   # is a change in the result compared to the last result.
+  simple_rev_str = ''
   if not options.email_only_change_mode or result_change:
+    prev_time_in_float = datetime.strptime(prev_time, '%Y-%m-%d-%H')
+    prev_time_in_float = time.mktime(prev_time_in_float.timetuple())
+    if options.debug:
+      cur_time_in_float = datetime.strptime(CUR_TIME_FOR_DEBUG, '%Y-%m-%d-%H')
+      cur_time_in_float = time.mktime(cur_time_in_float.timetuple())
+    else:
+      cur_time_in_float = time.time()
+    (rev_str, simple_rev_str) = (
+        layouttest_analyzer_helpers.GetRevisionString(prev_time_in_float,
+                                                      cur_time_in_float,
+                                                      diff_map))
     layouttest_analyzer_helpers.SendStatusEmail(
         prev_time, analyzer_result_map, diff_map, anno_map,
         options.receiver_email_address, options.test_group_name,
-        appended_text_to_email)
+        appended_text_to_email, rev_str)
+  if simple_rev_str:
+    simple_rev_str = '\'' + simple_rev_str + '\''
+  else:
+    simple_rev_str = 'undefined'  # GViz uses undefined for NONE.
   if not options.debug:
     # Save the current result.
     date = start_time.strftime('%Y-%m-%d-%H')
@@ -160,19 +177,45 @@ def main():
   if result_change:
     # Trend graph update (if specified in the command-line argument) when
     # there is change from the last result.
+    # Currently, there are two graphs (graph1 is for 'whole', 'skip',
+    # 'nonskip' and the graph2 is for 'passingrate'). Please refer to
+    # graph/graph.html.
+    # Sample JS annotation for graph1:
+    #   [new Date(2011,8,12,10,41,32),224,undefined,'',52,undefined,undefined,
+    #   12, 'test1,','<a href="http://t</a>,',],
+    # This example lists 'whole' triple and 'skip' triple and
+    # 'nonskip' triple. Each triple is (the number of tests that belong to
+    # the test group, linked text, a link). The following code generates this
+    # automatically based on rev_string etc.
     trend_graph = TrendGraph(options.trend_graph_location)
     datetime_string = start_time.strftime('%Y,%m,%d,%H,%M,%S')
-    # TODO(imasaki): add correct title and text instead of 'undefined'.
-    data_map = (
-        {'whole': (str(len(analyzer_result_map.result_map['whole'].keys())),
-                   'undefined', 'undefined'),
-         'skip': (str(len(analyzer_result_map.result_map['skip'].keys())),
-                  'undefined', 'undefined'),
-         'nonskip': (
-             str(len(analyzer_result_map.result_map['nonskip'].keys())),
-             'undefined', 'undefined'),
-         'passingrate': (str(analyzer_result_map.GetPassingRate()),
-                         'undefined', 'undefined')})
+    data_map = {}
+    passingrate_anno = ''
+    for test_group in ['whole', 'skip', 'nonskip']:
+      anno = 'undefined'
+      tests = analyzer_result_map.result_map[test_group].keys()
+      if diff_map[test_group]:
+        test_str = ''
+        links = ''
+        for i in [0, 1]:
+          for (name, _) in diff_map[test_group][i]:
+            test_str += name + ','
+            # This is link to test HTML in WebKit SVN.
+            links += ('<a href="http://trac.webkit.org/browser/trunk/'
+                      'LayoutTests/%s">%s</a>,') % (name, name)
+        if test_str:
+          anno = '\'' + test_str + '\''
+          # The annotation of passing rate is a union of all annotations.
+          passingrate_anno += anno
+        if test_group is 'whole':
+          data_map[test_group] = (str(len(tests)), anno, '\'' + links + '\'')
+        else:
+          data_map[test_group] = (str(len(tests)), anno, simple_rev_str)
+    if not passingrate_anno:
+      passingrate_anno = 'undefined'
+    data_map['passingrate'] = (
+        str(analyzer_result_map.GetPassingRate()), passingrate_anno,
+        simple_rev_str)
     trend_graph.Update(datetime_string, data_map)
 
 

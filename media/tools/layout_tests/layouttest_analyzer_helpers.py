@@ -99,18 +99,18 @@ class AnalyzerResultMap:
     whole_str = '<font color="%s">%s%d</font>' % (color, diff_sign, diff)
     str1 = ''
     for (name, _) in diff_map_element[0]:
-      str1 += name + ','
+      str1 += '<font color="red">%s,</font> ' % name
     str1 = str1[:-1]
     str2 = ''
     for (name, _) in diff_map_element[1]:
-      str2 += name + ','
+      str2 += '<font color="green">%s,</font> ' % name
     str2 = str2[:-1]
     if str1 or str2:
       whole_str += ':'
     if str1:
-      whole_str += '<font color="%s">%s</font> ' % (color, str1)
+      whole_str += str1
     if str2:
-      whole_str += '<font color="%s">%s</font>' % (color, str2)
+      whole_str += str2
     return whole_str
 
   def GetPassingRate(self):
@@ -185,19 +185,8 @@ class AnalyzerResultMap:
           map of the current object.
 
     Returns:
-      a map that has 'whole', 'skip' and 'nonskip' as keys. The values of the
-          map are the result of |GetDiffBetweenMaps()|.
-          The element has two lists of test cases. One (with index 0) is for
-          test names that are in the current result but NOT in the previous
-          result. The other (with index 1) is for test names that are in the
-          previous results but NOT in the current result.
-           For example (test expectation information is omitted for
-           simplicity),
-             comp_result_map['whole'][0] = ['foo1.html']
-             comp_result_map['whole'][1] = ['foo2.html']
-           This means that current result has 'foo1.html' but it is NOT in the
-           previous result. This also means the previous result has 'foo2.html'
-           but it is NOT in the current result.
+      a map that has 'whole', 'skip' and 'nonskip' as keys.
+          Please refer to |diff_map| in |SendStatusEmail()|.
     """
     comp_result_map = {}
     for name in ['whole', 'skip', 'nonskip']:
@@ -243,9 +232,9 @@ class AnalyzerResultMap:
     This is used for generating email content.
 
     Returns:
-      a mapping from bug modifier text (e.g., BUGCR1111) to a test name and
-          main test information string which excludes comments and bugs. This
-          is used for grouping test names by bug.
+        a mapping from bug modifier text (e.g., BUGCR1111) to a test name and
+            main test information string which excludes comments and bugs.
+            This is used for grouping test names by bug.
     """
     bug_map = {}
     for (name, value) in self.result_map['nonskip'].iteritems():
@@ -264,7 +253,7 @@ class AnalyzerResultMap:
 
 def SendStatusEmail(prev_time, analyzer_result_map, diff_map,
                     bug_anno_map, receiver_email_address, test_group_name,
-                    appended_text_to_email):
+                    appended_text_to_email, rev_str):
   """Send status email.
 
   Args:
@@ -290,23 +279,54 @@ def SendStatusEmail(prev_time, analyzer_result_map, diff_map,
     test_group_name: string representing the test group name (e.g., 'media').
     appended_text_to_email: a text which is appended at the end of the status
         email.
+    rev_str: a revision string that contains revision information that is sent
+        out in the status email. It is obtained by calling
+        |GetRevisionString()|.
   """
   output_str = analyzer_result_map.ConvertToString(prev_time, diff_map,
                                                    bug_anno_map)
-  # Add diff info about skipped/non-skipped test.
-  prev_time = datetime.strptime(prev_time, '%Y-%m-%d-%H')
-  prev_time = time.mktime(prev_time.timetuple())
+  if rev_str:
+    output_str += '<br><b>Revision Information:</b>'
+    output_str += rev_str
+  localtime = time.asctime(time.localtime(time.time()))
+  # TODO(imasaki): remove my name from here.
+  subject = 'Layout Test Analyzer Result (%s): %s' % (test_group_name,
+                                                      localtime)
+  SendEmail('imasaki@chromium.org', [receiver_email_address],
+            subject, output_str + appended_text_to_email)
+
+
+def GetRevisionString(prev_time, current_time, diff_map):
+  """Get a string for revision information during the specified time period.
+
+  Args:
+    prev_time: the previous time as a floating point number expressed
+        in seconds since the epoch, in UTC.
+    current_time: the current time as a floating point number expressed
+        in seconds since the epoch, in UTC. It is typically obtained by
+        time.time() function.
+    diff_map: a map that has 'whole', 'skip' and 'nonskip' as keys.
+        Please refer to |diff_map| in |SendStatusEmail()|.
+
+  Returns:
+     a tuple of two strings: one string is a full string that contains links,
+         author, date, and line for each change in the test expectation file,
+         and the other string contains only links to the change. The latter is
+         used for the trend graph annotations.
+  """
+  if not diff_map:
+    return ('', '')
   testname_map = {}
   for test_group in ['skip', 'nonskip']:
     for i in range(2):
       for (k, _) in diff_map[test_group][i]:
         testname_map[k] = True
-  now = time.time()
-
-  rev_infos = TestExpectationsHistory.GetDiffBetweenTimes(now, prev_time,
+  rev_infos = TestExpectationsHistory.GetDiffBetweenTimes(prev_time,
+                                                          current_time,
                                                           testname_map.keys())
+  rev_str = ''
+  simple_rev_str = ''
   if rev_infos:
-    output_str += '<br><b>Revision Information:</b>'
     for rev_info in rev_infos:
       (old_rev, new_rev, author, date, _, target_lines) = rev_info
       link = urllib.unquote('http://trac.webkit.org/changeset?new=%d%40trunk'
@@ -314,18 +334,14 @@ def SendStatusEmail(prev_time, analyzer_result_map, diff_map,
                             'test_expectations.txt&old=%d%40trunk%2F'
                             'LayoutTests%2Fplatform%2Fchromium%2F'
                             'test_expectations.txt') % (new_rev, old_rev)
-      output_str += '<ul><a href="%s">%s->%s</a>\n' % (link, old_rev, new_rev)
-      output_str += '<li>%s</li>\n' % author
-      output_str += '<li>%s</li>\n<ul>' % date
+      rev_str += '<ul><a href="%s">%s->%s</a>\n' % (link, old_rev, new_rev)
+      simple_rev_str = '<a href="%s">%s->%s</a>,' % (link, old_rev, new_rev)
+      rev_str += '<li>%s</li>\n' % author
+      rev_str += '<li>%s</li>\n<ul>' % date
       for line in target_lines:
-        output_str += '<li>%s</li>\n' % line
-      output_str += '</ul></ul>'
-  localtime = time.asctime(time.localtime(time.time()))
-  # TODO(imasaki): remove my name from here.
-  subject = 'Layout Test Analyzer Result (%s): %s' % (test_group_name,
-                                                      localtime)
-  SendEmail('imasaki@chromium.org', [receiver_email_address],
-            subject, output_str + appended_text_to_email)
+        rev_str += '<li>%s</li>\n' % line
+      rev_str += '</ul></ul>'
+  return (rev_str, simple_rev_str)
 
 
 def SendEmail(sender_email_address, receivers_email_addresses, subject,

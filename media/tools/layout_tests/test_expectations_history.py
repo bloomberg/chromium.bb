@@ -55,33 +55,35 @@ class TestExpectationsHistory:
     te_location_dir = te_location[0:te_location.rindex('/')]
     client = pysvn.Client()
     client.checkout(te_location_dir, 'tmp', recurse=False)
+    # PySVN.log() (http://pysvn.tigris.org/docs/pysvn_prog_ref.html
+    # #pysvn_client_log) returns the log messages (including revision
+    # number in chronological order).
     logs = client.log('tmp/test_expectations.txt',
                       revision_start=pysvn.Revision(
                           pysvn.opt_revision_kind.date, start),
                       revision_end=pysvn.Revision(
                           pysvn.opt_revision_kind.date, end))
     result_list = []
-    # Find the last revision outside of time period and
-    # append it to preserve the last change before entering the time period.
     gobackdays = 1
     while gobackdays < sys.maxint:
-      start2 = time.mktime(
+      goback_start = time.mktime(
           (datetime.fromtimestamp(start) - (
               timedelta(days=gobackdays))).timetuple())
-      logs2 = client.log('tmp/test_expectations.txt',
-                         revision_start=pysvn.Revision(
-                             pysvn.opt_revision_kind.date, start2),
-                         revision_end=pysvn.Revision(
-                             pysvn.opt_revision_kind.date, start))
-      if logs2:
-        logs.append(logs2[len(logs2) - 2])
+      logs_before_time_period = (
+          client.log('tmp/test_expectations.txt',
+                     revision_start=pysvn.Revision(
+                         pysvn.opt_revision_kind.date, goback_start),
+                     revision_end=pysvn.Revision(
+                         pysvn.opt_revision_kind.date, start)))
+      if logs_before_time_period:
+        # Prepend at the beginning of logs.
+        logs.insert(0, logs_before_time_period[len(logs_before_time_period)-1])
         break
       gobackdays *= 2
 
     for i in xrange(len(logs) - 1):
-      # PySVN.log() returns logs in reverse chronological order.
-      new_rev = logs[i].revision.number
-      old_rev = logs[i + 1].revision.number
+      old_rev = logs[i].revision.number
+      new_rev = logs[i + 1].revision.number
       # Parsing the actual diff.
       text = client.diff('/tmp', 'tmp/test_expectations.txt',
                          revision1=pysvn.Revision(
@@ -99,7 +101,8 @@ class TestExpectationsHistory:
       if target_lines:
         # Needs to convert to normal date string for presentation.
         result_list.append((
-            old_rev, new_rev, logs[i].author,
-            datetime.fromtimestamp(logs[i].date).strftime('%Y-%m-%d %H:%M:%S'),
-            logs[i].message, target_lines))
+            old_rev, new_rev, logs[i + 1].author,
+            datetime.fromtimestamp(
+                logs[i + 1].date).strftime('%Y-%m-%d %H:%M:%S'),
+            logs[i + 1].message, target_lines))
     return result_list
