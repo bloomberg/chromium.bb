@@ -6,19 +6,38 @@
 
 #include "base/logging.h"
 
-TraceSubscriberStdio::TraceSubscriberStdio(const FilePath& path) {
+TraceSubscriberStdio::TraceSubscriberStdio() : file_(0) {
+}
+
+TraceSubscriberStdio::TraceSubscriberStdio(const FilePath& path) : file_(0) {
+  OpenFile(path);
+}
+
+TraceSubscriberStdio::~TraceSubscriberStdio() {
+  CloseFile();
+}
+
+bool TraceSubscriberStdio::OpenFile(const FilePath& path) {
   LOG(INFO) << "Logging performance trace to file: " << path.value();
+  CloseFile();
   file_ = file_util::OpenFile(path, "w+");
   if (IsValid()) {
     // FIXME: the file format expects it to start with "[".
     fputc('[', file_);
+    return true;
   } else {
     LOG(ERROR) << "Failed to open performance trace file: " << path.value();
+    return false;
   }
 }
 
-TraceSubscriberStdio::~TraceSubscriberStdio() {
-  OnEndTracingComplete();
+void TraceSubscriberStdio::CloseFile() {
+  if (file_) {
+    // FIXME: the file format expects it to end with "]".
+    fputc(']', file_);
+    fclose(file_);
+    file_ = 0;
+  }
 }
 
 bool TraceSubscriberStdio::IsValid() {
@@ -26,12 +45,7 @@ bool TraceSubscriberStdio::IsValid() {
 }
 
 void TraceSubscriberStdio::OnEndTracingComplete() {
-  if (file_) {
-    // FIXME: the file format expects it to end with "]".
-    fputc(']', file_);
-    fclose(file_);
-    file_ = 0;
-  }
+  CloseFile();
 }
 
 void TraceSubscriberStdio::OnTraceDataCollected(

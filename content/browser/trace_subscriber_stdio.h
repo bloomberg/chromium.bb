@@ -14,8 +14,14 @@
 // Stdio implementation of TraceSubscriber. Use this to write traces to a file.
 class TraceSubscriberStdio : public TraceSubscriber {
  public:
+  TraceSubscriberStdio();
   // Creates or overwrites the specified file. Check IsValid() for success.
   explicit TraceSubscriberStdio(const FilePath& path);
+
+  // Creates or overwrites the specified file. Returns true on success.
+  bool OpenFile(const FilePath& path);
+  // Finishes json output and closes file.
+  void CloseFile();
 
   // Returns TRUE if we're currently writing data to a file.
   bool IsValid();
