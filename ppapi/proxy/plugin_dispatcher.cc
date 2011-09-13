@@ -79,8 +79,8 @@ PluginDispatcher* PluginDispatcher::GetForResource(const Resource* resource) {
 }
 
 // static
-const void* PluginDispatcher::GetBrowserInterface(const char* interface) {
-  return InterfaceList::GetInstance()->GetInterfaceForPPB(interface);
+const void* PluginDispatcher::GetBrowserInterface(const char* interface_name) {
+  return InterfaceList::GetInstance()->GetInterfaceForPPB(interface_name);
 }
 
 const void* PluginDispatcher::GetPluginInterface(

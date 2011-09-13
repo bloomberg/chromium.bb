@@ -90,7 +90,7 @@ class PPAPI_PROXY_EXPORT PluginDispatcher : public Dispatcher {
 
   // Implements the GetInterface function for the plugin to call to retrieve
   // a browser interface.
-  static const void* GetBrowserInterface(const char* interface);
+  static const void* GetBrowserInterface(const char* interface_name);
 
   const void* GetPluginInterface(const std::string& interface_name);
 
