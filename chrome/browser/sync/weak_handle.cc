@@ -14,42 +14,13 @@ namespace browser_sync {
 namespace internal {
 
 WeakHandleCoreBase::WeakHandleCoreBase()
-    : owner_loop_(MessageLoop::current()),
-      owner_loop_proxy_(base::MessageLoopProxy::current()),
-      destroyed_on_owner_thread_(false) {
-  owner_loop_->AddDestructionObserver(this);
-}
+    : owner_loop_proxy_(base::MessageLoopProxy::current()) {}
 
 bool WeakHandleCoreBase::IsOnOwnerThread() const {
-  // We can't use |owner_loop_proxy_->BelongsToCurrentThread()| as
-  // it may not work from within a MessageLoop::DestructionObserver
-  // callback.
-  return MessageLoop::current() == owner_loop_;
+  return owner_loop_proxy_->BelongsToCurrentThread();
 }
 
-void WeakHandleCoreBase::WillDestroyCurrentMessageLoop() {
-  CHECK(IsOnOwnerThread());
-  CHECK(!destroyed_on_owner_thread_);
-  // NOTE: This function dispatches to
-  // WeakHandle<T>::CleanupOnOwnerThread() (i.e., not just
-  // WeakHandleCoreBase::CleanupOnOwnerThread() is run).
-  CleanupOnOwnerThread();
-  CHECK(destroyed_on_owner_thread_);
-}
-
-WeakHandleCoreBase::~WeakHandleCoreBase() {
-  // It is safe to read |destroyed_on_owner_thread_| here even if
-  // we're not on the owner thread (see comments on
-  // base::AtomicRefCountDecN()).
-  CHECK(destroyed_on_owner_thread_);
-}
-
-void WeakHandleCoreBase::CleanupOnOwnerThread() {
-  CHECK(IsOnOwnerThread());
-  CHECK(!destroyed_on_owner_thread_);
-  owner_loop_->RemoveDestructionObserver(this);
-  destroyed_on_owner_thread_ = true;
-}
+WeakHandleCoreBase::~WeakHandleCoreBase() {}
 
 namespace {
 
@@ -70,34 +41,6 @@ void WeakHandleCoreBase::PostToOwnerThread(
   if (!owner_loop_proxy_->PostTask(from_here, fn)) {
     VLOG(1) << "Could not post task from " << GetLocationString(from_here);
   }
-}
-
-void WeakHandleCoreBase::Destroy() {
-  if (IsOnOwnerThread()) {
-    CHECK(!destroyed_on_owner_thread_);
-    CleanupAndDestroyOnOwnerThread();
-  } else if (!owner_loop_proxy_->PostTask(
-      FROM_HERE,
-      base::Bind(&WeakHandleCoreBase::CleanupAndDestroyOnOwnerThread,
-                 base::Unretained(this)))) {
-    // If the post fails, that means that the owner loop is gone and
-    // therefore CleanupOnOwnerThread() should have already been
-    // called via WillDestroyCurrentMessageLoop().  Therefore, the
-    // only thing left is to self-destruct.
-    delete this;
-  }
-}
-
-void WeakHandleCoreBase::CleanupAndDestroyOnOwnerThread() {
-  CHECK(IsOnOwnerThread());
-  CHECK(!destroyed_on_owner_thread_);
-  CleanupOnOwnerThread();
-  CHECK(destroyed_on_owner_thread_);
-  delete this;
-}
-
-void WeakHandleCoreBaseTraits::Destruct(const WeakHandleCoreBase* core_base) {
-  const_cast<WeakHandleCoreBase*>(core_base)->Destroy();
 }
 
 }  // namespace internal
