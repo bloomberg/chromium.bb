@@ -4,6 +4,7 @@
 
 #include "content/common/net/url_fetcher.h"
 
+#include "base/bind.h"
 #include "base/message_loop_proxy.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
@@ -28,24 +29,7 @@ using base::TimeDelta;
 namespace {
 
 const FilePath::CharType kDocRoot[] = FILE_PATH_LITERAL("chrome/test/data");
-const std::string kTestServerFilePrefix = "files/";
-
-class CurriedTask : public Task {
- public:
-  CurriedTask(Task* task, MessageLoop* target_loop)
-      : task_(task),
-        target_loop_(target_loop) {}
-
-  virtual void Run() {
-    target_loop_->PostTask(FROM_HERE, task_);
-  }
-
- private:
-  Task* const task_;
-  MessageLoop* const target_loop_;
-
-  DISALLOW_COPY_AND_ASSIGN(CurriedTask);
-};
+const char kTestServerFilePrefix[] = "files/";
 
 class TestURLRequestContextGetter : public net::URLRequestContextGetter {
  public:
@@ -76,6 +60,10 @@ class TestURLRequestContextGetter : public net::URLRequestContextGetter {
 class URLFetcherTest : public testing::Test, public URLFetcher::Delegate {
  public:
   URLFetcherTest() : fetcher_(NULL) { }
+
+  static int GetNumFetcherCores() {
+    return URLFetcher::GetNumFetcherCores();
+  }
 
   // Creates a URLFetcher, using the program's main thread to do IO.
   virtual void CreateFetcher(const GURL& url);
@@ -108,10 +96,6 @@ class URLFetcherTest : public testing::Test, public URLFetcher::Delegate {
 #if defined(USE_NSS)
     net::ShutdownOCSP();
 #endif
-  }
-
-  int GetNumFetcherCores() const {
-    return URLFetcher::GetNumFetcherCores();
   }
 
   // URLFetcher is designed to run on the main UI thread, but in our tests
@@ -356,7 +340,8 @@ TEST_F(URLFetcherTempFileTest, SmallGet) {
   // Get a small file.
   const char* kFileToFetch = "simple.html";
   expected_file_ = test_server.document_root().AppendASCII(kFileToFetch);
-  CreateFetcher(test_server.GetURL(kTestServerFilePrefix + kFileToFetch));
+  CreateFetcher(
+      test_server.GetURL(std::string(kTestServerFilePrefix) + kFileToFetch));
 
   MessageLoop::current()->Run();  // OnURLFetchComplete() will Quit().
 
@@ -372,7 +357,8 @@ TEST_F(URLFetcherTempFileTest, LargeGet) {
   // URLFetcher::Core's IOBuffer.
   const char* kFileToFetch = "animate1.gif";
   expected_file_ = test_server.document_root().AppendASCII(kFileToFetch);
-  CreateFetcher(test_server.GetURL(kTestServerFilePrefix + kFileToFetch));
+  CreateFetcher(test_server.GetURL(
+      std::string(kTestServerFilePrefix) + kFileToFetch));
 
   MessageLoop::current()->Run();  // OnURLFetchComplete() will Quit().
 }
@@ -384,7 +370,8 @@ TEST_F(URLFetcherTempFileTest, CanTakeOwnershipOfFile) {
   // Get a small file.
   const char* kFileToFetch = "simple.html";
   expected_file_ = test_server.document_root().AppendASCII(kFileToFetch);
-  CreateFetcher(test_server.GetURL(kTestServerFilePrefix + kFileToFetch));
+  CreateFetcher(test_server.GetURL(
+      std::string(kTestServerFilePrefix) + kFileToFetch));
 
   MessageLoop::current()->Run();  // OnURLFetchComplete() will Quit().
 
@@ -887,6 +874,12 @@ TEST_F(URLFetcherMultipleAttemptTest, SameData) {
   MessageLoop::current()->Run();
 }
 
+void CancelAllOnIO() {
+  EXPECT_EQ(1, URLFetcherTest::GetNumFetcherCores());
+  URLFetcher::CancelAll();
+  EXPECT_EQ(0, URLFetcherTest::GetNumFetcherCores());
+}
+
 // Tests to make sure CancelAll() will successfully cancel existing URLFetchers.
 TEST_F(URLFetcherTest, CancelAll) {
   net::TestServer test_server(net::TestServer::TYPE_HTTP, FilePath(kDocRoot));
@@ -894,12 +887,12 @@ TEST_F(URLFetcherTest, CancelAll) {
   EXPECT_EQ(0, GetNumFetcherCores());
 
   CreateFetcher(test_server.GetURL("defaultresponse"));
-  io_message_loop_proxy()->PostTask(
+  io_message_loop_proxy()->PostTaskAndReply(
       FROM_HERE,
-      new CurriedTask(new MessageLoop::QuitTask(), MessageLoop::current()));
+      base::Bind(&CancelAllOnIO),
+      base::Bind(&MessageLoop::Quit,
+                 base::Unretained(MessageLoop::current())));
   MessageLoop::current()->Run();
-  EXPECT_EQ(1, GetNumFetcherCores());
-  URLFetcher::CancelAll();
   EXPECT_EQ(0, GetNumFetcherCores());
   delete fetcher_;
 }
