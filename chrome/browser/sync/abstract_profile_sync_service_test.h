@@ -54,7 +54,7 @@ class AbstractProfileSyncServiceTest : public testing::Test {
   BrowserThread db_thread_;
   BrowserThread io_thread_;
   ProfileSyncFactoryMock factory_;
-  TokenService token_service_;
+  scoped_ptr<TokenService> token_service_;
   scoped_ptr<TestProfileSyncService> service_;
 };
 

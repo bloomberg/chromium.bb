@@ -72,7 +72,8 @@ bool ProfileSyncServiceTestHelper::CreateRoot(
 AbstractProfileSyncServiceTest::AbstractProfileSyncServiceTest()
     : ui_thread_(BrowserThread::UI, &ui_loop_),
       db_thread_(BrowserThread::DB),
-      io_thread_(BrowserThread::IO) {}
+      io_thread_(BrowserThread::IO),
+      token_service_(new TokenService) {}
 
 AbstractProfileSyncServiceTest::~AbstractProfileSyncServiceTest() {}
 
@@ -87,6 +88,12 @@ void AbstractProfileSyncServiceTest::TearDown() {
   // Pump messages posted by the sync core thread (which may end up
   // posting on the IO thread).
   ui_loop_.RunAllPending();
+  // We need to destroy the |token_service_| here before we stop the
+  // |io_thread_| because it holds references to a ref-counted
+  // URLRequestContext. The deletion is passed to the |io_thread_|
+  // by scoped_refptr. If |token_service_| is destroyed after stopping
+  // the |io_thread_|, the deletion never happens.
+  token_service_.reset(NULL);
   io_thread_.Stop();
   db_thread_.Stop();
   ui_loop_.RunAllPending();

@@ -333,11 +333,11 @@ class ProfileSyncServiceAutofillTest : public AbstractProfileSyncServiceTest {
         WillRepeatedly(Return(true));
 
      // We need tokens to get the tests going
-    token_service_.IssueAuthTokenForTest(
+    token_service_->IssueAuthTokenForTest(
         GaiaConstants::kSyncService, "token");
 
     EXPECT_CALL(profile_, GetTokenService()).
-        WillRepeatedly(Return(&token_service_));
+        WillRepeatedly(Return(token_service_.get()));
 
     service_->RegisterDataTypeController(data_type_controller);
     service_->Initialize();

@@ -188,11 +188,11 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
       EXPECT_CALL(profile_, GetHistoryService(_)).
           WillRepeatedly(Return(history_service_.get()));
 
-      token_service_.IssueAuthTokenForTest(
+      token_service_->IssueAuthTokenForTest(
           GaiaConstants::kSyncService, "token");
 
       EXPECT_CALL(profile_, GetTokenService()).
-          WillRepeatedly(Return(&token_service_));
+          WillRepeatedly(Return(token_service_.get()));
 
       service_->RegisterDataTypeController(data_type_controller);
 

@@ -3596,13 +3596,6 @@
    fun:_ZN14RunnableMethodIN12browser_sync15SyncBackendHost4CoreEMS2_FvRKNS2_19DoInitializeOptionsEE6Tuple1IS3_EE3RunEv
 }
 {
-   bug_78784
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN14TestingProfile20CreateRequestContextEv
-   fun:*ProfileSyncService*SetUpEv
-}
-{
    bug_78786
    Memcheck:Leak
    fun:_Znw*

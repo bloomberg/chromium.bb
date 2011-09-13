@@ -110,6 +110,13 @@ class ProfileSyncServiceSessionTest
     SessionServiceFactory::SetForTestProfile(profile(), NULL);
     sync_service_.reset();
     profile()->ResetRequestContext();
+
+    // We need to destroy the profile before shutting down the threads, because
+    // some of the ref counted objects in the profile depend on their
+    // destruction on the io thread.
+    DestroyBrowser();
+    set_profile(NULL);
+
     // Pump messages posted by the sync core thread (which may end up
     // posting on the IO thread).
     MessageLoop::current()->RunAllPending();
