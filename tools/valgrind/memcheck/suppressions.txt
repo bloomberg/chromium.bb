@@ -5019,6 +5019,31 @@
    fun:_ZN20GtkNativeViewManager14GetIdForWidgetEP10_GtkWidget
    fun:_ZNK23RenderWidgetHostViewGtk15GetNativeViewIdEv
 }
+{
+   bug_96402b
+   Memcheck:Leak
+   fun:malloc
+   fun:g_malloc
+   fun:g_slice_alloc
+   fun:g_slice_alloc0
+   fun:g_type_create_instance
+   fun:g_object_constructor
+   fun:g_object_newv
+   fun:g_object_new
+   fun:_gdk_window_impl_new
+   fun:gdk_window_ensure_native
+   fun:gdk_x11_drawable_get_xid
+   fun:_gtk_socket_windowing_realize_window
+   fun:gtk_socket_realize
+   fun:g_cclosure_marshal_VOID__VOID
+   fun:g_type_class_meta_marshal
+   fun:g_closure_invoke
+   fun:signal_emit_unlocked_R
+   fun:g_signal_emit_valist
+   fun:g_signal_emit
+   fun:gtk_widget_realize
+   fun:gtk_widget_set_parent
+}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
