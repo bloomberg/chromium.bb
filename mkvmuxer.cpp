@@ -1601,9 +1601,11 @@ bool Segment::WriteFramesAll() {
 }
 
 bool Segment::WriteFramesLessThan(uint64 timestamp) {
-  if (frames_size_ > 0) {
+  // Check |cluster_list_size_| to see if this is the first cluster. If it is
+  // the first cluster the audio frames that are less than the first video
+  // timesatmp will be written in a later step.
+  if (frames_size_ > 0 && cluster_list_size_ > 0) {
     assert(frames_);
-    assert(cluster_list_size_ > 0);
     Cluster* const cluster = cluster_list_[cluster_list_size_-1];
     assert(cluster);
 
