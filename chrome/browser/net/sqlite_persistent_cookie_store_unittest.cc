@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
 #include "base/file_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop.h"
 #include "base/scoped_temp_dir.h"
 #include "base/stl_util.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/test/thread_test_helper.h"
 #include "base/time.h"
 #include "chrome/browser/net/sqlite_persistent_cookie_store.h"
@@ -19,19 +21,37 @@ class SQLitePersistentCookieStoreTest : public testing::Test {
  public:
   SQLitePersistentCookieStoreTest()
       : ui_thread_(BrowserThread::UI),
-        db_thread_(BrowserThread::DB) {
+        db_thread_(BrowserThread::DB),
+        io_thread_(BrowserThread::IO),
+        event_(false, false) {
   }
 
  protected:
+  void OnLoaded(
+      const std::vector<net::CookieMonster::CanonicalCookie*>& cookies) {
+    cookies_ = cookies;
+    event_.Signal();
+  }
+
+  bool Load(std::vector<net::CookieMonster::CanonicalCookie*>* cookies) {
+    bool result =
+        store_->Load(base::Bind(&SQLitePersistentCookieStoreTest::OnLoaded,
+                                base::Unretained(this)));
+    event_.Wait();
+    *cookies = cookies_;
+    return result;
+  }
+
   virtual void SetUp() {
     ui_thread_.Start();
     db_thread_.Start();
+    io_thread_.Start();
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     store_ = new SQLitePersistentCookieStore(
         temp_dir_.path().Append(chrome::kCookieFilename));
     std::vector<net::CookieMonster::CanonicalCookie*> cookies;
-    ASSERT_TRUE(store_->Load(&cookies));
-    ASSERT_TRUE(0 == cookies.size());
+    ASSERT_TRUE(Load(&cookies));
+    ASSERT_EQ(0u, cookies.size());
     // Make sure the store gets written at least once.
     store_->AddCookie(
         net::CookieMonster::CanonicalCookie(GURL(), "A", "B", "http://foo.bar",
@@ -44,6 +64,9 @@ class SQLitePersistentCookieStoreTest : public testing::Test {
 
   BrowserThread ui_thread_;
   BrowserThread db_thread_;
+  BrowserThread io_thread_;
+  base::WaitableEvent event_;
+  std::vector<net::CookieMonster::CanonicalCookie*> cookies_;
   ScopedTempDir temp_dir_;
   scoped_refptr<SQLitePersistentCookieStore> store_;
 };
@@ -95,7 +118,7 @@ TEST_F(SQLitePersistentCookieStoreTest, TestPersistance) {
       temp_dir_.path().Append(chrome::kCookieFilename));
 
   // Reload and test for persistence
-  ASSERT_TRUE(store_->Load(&cookies));
+  ASSERT_TRUE(Load(&cookies));
   ASSERT_EQ(1U, cookies.size());
   ASSERT_STREQ("http://foo.bar", cookies[0]->Domain().c_str());
   ASSERT_STREQ("A", cookies[0]->Name().c_str());
@@ -112,7 +135,7 @@ TEST_F(SQLitePersistentCookieStoreTest, TestPersistance) {
       temp_dir_.path().Append(chrome::kCookieFilename));
 
   // Reload and check if the cookie has been removed.
-  ASSERT_TRUE(store_->Load(&cookies));
+  ASSERT_TRUE(Load(&cookies));
   ASSERT_EQ(0U, cookies.size());
 }
 

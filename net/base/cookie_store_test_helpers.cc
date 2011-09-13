@@ -20,10 +20,10 @@ DelayedCookieMonster::~DelayedCookieMonster() {
 }
 
 void DelayedCookieMonster::GetCookiesInternalCallback(
-    std::string* cookie_line,
-    std::vector<CookieStore::CookieInfo>* cookie_info) {
-  cookie_line_ = *cookie_line;
-  cookie_info_ = *cookie_info;
+    const std::string& cookie_line,
+    const std::vector<CookieStore::CookieInfo>& cookie_info) {
+  cookie_line_ = cookie_line;
+  cookie_info_ = cookie_info;
   did_run_ = true;
 }
 
@@ -91,7 +91,7 @@ void DelayedCookieMonster::GetCookiesWithOptionsAsync(
 void DelayedCookieMonster::InvokeGetCookiesCallback(
     const CookieMonster::GetCookieInfoCallback& callback) {
   if (!callback.is_null())
-    callback.Run(&cookie_line_, &cookie_info_);
+    callback.Run(cookie_line_, cookie_info_);
 }
 
 void DelayedCookieMonster::InvokeSetCookiesCallback(
