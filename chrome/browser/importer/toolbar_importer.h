@@ -18,7 +18,7 @@
 #include "base/string16.h"
 #include "chrome/browser/importer/importer.h"
 #include "chrome/browser/importer/profile_writer.h"
-#include "content/common/url_fetcher.h"
+#include "content/common/net/url_fetcher.h"
 
 class ImporterBridge;
 class XmlReader;

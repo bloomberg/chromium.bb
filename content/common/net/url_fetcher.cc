@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/url_fetcher.h"
+#include "content/common/net/url_fetcher.h"
 
 #include <set>
 

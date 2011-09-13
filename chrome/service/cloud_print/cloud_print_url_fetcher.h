@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
-#include "content/common/url_fetcher.h"
+#include "content/common/net/url_fetcher.h"
 
 class GURL;
 

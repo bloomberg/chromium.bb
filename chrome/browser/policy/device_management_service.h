@@ -12,7 +12,7 @@
 
 #include "base/basictypes.h"
 #include "chrome/browser/policy/device_management_backend.h"
-#include "content/common/url_fetcher.h"
+#include "content/common/net/url_fetcher.h"
 #include "googleurl/src/gurl.h"
 
 class Profile;

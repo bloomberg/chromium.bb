@@ -16,9 +16,9 @@
 #include "base/task.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/common/translate_errors.h"
+#include "content/common/net/url_fetcher.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
-#include "content/common/url_fetcher.h"
 
 template <typename T> struct DefaultSingletonTraits;
 class GURL;

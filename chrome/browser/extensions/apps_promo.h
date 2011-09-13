@@ -11,7 +11,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "chrome/common/extensions/extension.h"
-#include "content/common/url_fetcher.h"
+#include "content/common/net/url_fetcher.h"
 
 class PrefService;
 class Profile;

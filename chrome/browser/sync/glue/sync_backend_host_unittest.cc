@@ -14,7 +14,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/test_url_request_context_getter.h"
 #include "content/browser/browser_thread.h"
-#include "content/common/url_fetcher.h"
+#include "content/common/net/url_fetcher.h"
 #include "content/test/test_url_fetcher_factory.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gmock/include/gmock/gmock.h"
