@@ -84,7 +84,8 @@ cr.define('options.browser_options', function() {
         self.parentNode.autocompleteList.detach();
       });
 
-      this.draggable = true;
+      if (!this.isPlaceholder)
+        this.draggable = true;
     },
 
     /** @inheritDoc */
