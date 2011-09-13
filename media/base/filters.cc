@@ -63,12 +63,6 @@ void Filter::Seek(base::TimeDelta time, const FilterStatusCB& callback) {
 void Filter::OnAudioRendererDisabled() {
 }
 
-AVStream* DemuxerStream::GetAVStream() {
-  return NULL;
-}
-
-DemuxerStream::~DemuxerStream() {}
-
 VideoDecoder::VideoDecoder() {}
 
 VideoDecoder::~VideoDecoder() {}

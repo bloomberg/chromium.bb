@@ -36,8 +36,6 @@
 #include "media/base/pipeline_status.h"
 #include "media/base/video_frame.h"
 
-struct AVStream;
-
 namespace media {
 
 class Buffer;
@@ -159,48 +157,6 @@ class MEDIA_EXPORT DataSource : public Filter {
   // Values of |bitrate| <= 0 are invalid and should be ignored.
   virtual void SetBitrate(int bitrate) = 0;
 };
-
-class MEDIA_EXPORT DemuxerStream
-    : public base::RefCountedThreadSafe<DemuxerStream> {
- public:
-  typedef base::Callback<void(Buffer*)> ReadCallback;
-
-  enum Type {
-    UNKNOWN,
-    AUDIO,
-    VIDEO,
-    NUM_TYPES,  // Always keep this entry as the last one!
-  };
-
-  // Schedules a read.  When the |read_callback| is called, the downstream
-  // filter takes ownership of the buffer by AddRef()'ing the buffer.
-  virtual void Read(const ReadCallback& read_callback) = 0;
-
-  // Returns an |AVStream*| if supported, or NULL.
-  virtual AVStream* GetAVStream();
-
-  // Returns the type of stream.
-  virtual Type type() = 0;
-
-  virtual void EnableBitstreamConverter() = 0;
-
- protected:
-  friend class base::RefCountedThreadSafe<DemuxerStream>;
-  virtual ~DemuxerStream();
-};
-
-class MEDIA_EXPORT Demuxer : public Filter {
- public:
-  // Returns the given stream type, or NULL if that type is not present.
-  virtual scoped_refptr<DemuxerStream> GetStream(DemuxerStream::Type type) = 0;
-
-  // Alert the Demuxer that the video preload value has been changed.
-  virtual void SetPreload(Preload preload) = 0;
-
-  // Returns the starting time for the media file.
-  virtual base::TimeDelta GetStartTime() const = 0;
-};
-
 
 class MEDIA_EXPORT VideoDecoder : public Filter {
  public:

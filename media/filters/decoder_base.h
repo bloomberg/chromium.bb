@@ -16,6 +16,7 @@
 #include "base/threading/thread.h"
 #include "media/base/buffers.h"
 #include "media/base/callback.h"
+#include "media/base/demuxer_stream.h"
 #include "media/base/filters.h"
 #include "media/base/filter_host.h"
 

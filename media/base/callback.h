@@ -21,6 +21,7 @@
 
 #include <vector>
 
+#include "base/callback.h"
 #include "base/callback_old.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/task.h"
@@ -60,6 +61,13 @@ class TaskToCallbackAdapter : public Callback0::Type {
 
   DISALLOW_COPY_AND_ASSIGN(TaskToCallbackAdapter);
 };
+
+// TODO(acolwell): Delete this once all old style callbacks have been
+// removed from the media code.
+//
+// The new callback stores a copy of |cb| so the lifetime of the copy
+// matches the lifetime of the new callback.
+Callback0::Type* NewCallbackForClosure(const base::Closure& cb);
 
 }  // namespace media
 

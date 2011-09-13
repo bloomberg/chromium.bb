@@ -16,7 +16,7 @@
 #include "base/synchronization/lock.h"
 #include "media/base/buffers.h"
 #include "media/base/filter_factories.h"
-#include "media/base/filters.h"
+#include "media/base/demuxer.h"
 #include "media/base/pipeline.h"
 
 namespace media {
@@ -142,17 +142,16 @@ class AdaptiveDemuxer : public Demuxer {
   // Get the ID of the current video stream.
   int GetCurrentVideoId() const;
 
-  // Filter implementation.
-  virtual void Stop(FilterCallback* callback);
-  virtual void Seek(base::TimeDelta time, const FilterStatusCB&  cb);
-  virtual void OnAudioRendererDisabled();
-  virtual void set_host(FilterHost* filter_host);
-  virtual void SetPlaybackRate(float playback_rate);
-  virtual void SetPreload(Preload preload);
-
   // Demuxer implementation.
-  virtual scoped_refptr<DemuxerStream> GetStream(DemuxerStream::Type type);
-  virtual base::TimeDelta GetStartTime() const;
+  virtual void Stop(FilterCallback* callback) OVERRIDE;
+  virtual void Seek(base::TimeDelta time, const PipelineStatusCB&  cb) OVERRIDE;
+  virtual void OnAudioRendererDisabled() OVERRIDE;
+  virtual void set_host(FilterHost* filter_host) OVERRIDE;
+  virtual void SetPlaybackRate(float playback_rate) OVERRIDE;
+  virtual void SetPreload(Preload preload) OVERRIDE;
+  virtual scoped_refptr<DemuxerStream> GetStream(
+      DemuxerStream::Type type) OVERRIDE;
+  virtual base::TimeDelta GetStartTime() const OVERRIDE;
 
  private:
   // Returns a pointer to the currently active demuxer of the given type.

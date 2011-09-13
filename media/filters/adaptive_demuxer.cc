@@ -599,7 +599,7 @@ Demuxer* AdaptiveDemuxer::current_demuxer(DemuxerStream::Type type) {
 // Helper class that wraps a FilterCallback and expects to get called a set
 // number of times, after which the wrapped callback is fired (and deleted).
 //
-// TODO(acolwell): Remove this class once Stop() is converted to FilterStatusCB.
+// TODO(acolwell): Remove this class once Stop() is converted to base::Closure.
 class CountingCallback {
  public:
   CountingCallback(int count, FilterCallback* orig_cb)
@@ -631,20 +631,20 @@ class CountingCallback {
   scoped_ptr<FilterCallback> orig_cb_;
 };
 
-// Helper class that wraps FilterStatusCB and expects to get called a set
+// Helper class that wraps PipelineStatusCB and expects to get called a set
 // number of times, after which the wrapped callback is fired. If an error
 // is reported in any of the callbacks, only the first error code is passed
 // to the wrapped callback.
 class CountingStatusCB : public base::RefCountedThreadSafe<CountingStatusCB> {
  public:
-  CountingStatusCB(int count, const FilterStatusCB& orig_cb)
+  CountingStatusCB(int count, const PipelineStatusCB& orig_cb)
       : remaining_count_(count), orig_cb_(orig_cb),
         overall_status_(PIPELINE_OK) {
     DCHECK_GT(remaining_count_, 0);
     DCHECK(!orig_cb.is_null());
   }
 
-  FilterStatusCB GetACallback() {
+  PipelineStatusCB GetACallback() {
     return base::Bind(&CountingStatusCB::OnChildCallbackDone, this);
   }
 
@@ -671,7 +671,7 @@ class CountingStatusCB : public base::RefCountedThreadSafe<CountingStatusCB> {
 
   base::Lock lock_;
   int remaining_count_;
-  FilterStatusCB orig_cb_;
+  PipelineStatusCB orig_cb_;
   PipelineStatus overall_status_;
 
   DISALLOW_COPY_AND_ASSIGN(CountingStatusCB);
@@ -686,13 +686,13 @@ void AdaptiveDemuxer::Stop(FilterCallback* callback) {
   // them before they are destroyed.
   //
   // TODO(acolwell): Remove CountingCallback once Stop() is converted to
-  // FilterStatusCB.
+  // base::Closure.
   CountingCallback* wrapper = new CountingCallback(demuxers_.size(), callback);
   for (size_t i = 0; i < demuxers_.size(); ++i)
     demuxers_[i]->Stop(wrapper->GetACallback());
 }
 
-void AdaptiveDemuxer::Seek(base::TimeDelta time, const FilterStatusCB& cb) {
+void AdaptiveDemuxer::Seek(base::TimeDelta time, const PipelineStatusCB& cb) {
   if (audio_stream_)
     audio_stream_->OnAdaptiveDemuxerSeek(time);
 
@@ -771,7 +771,7 @@ void AdaptiveDemuxer::StartStreamSwitchSeek(
 
   Demuxer* demuxer = NULL;
   base::TimeDelta seek_point;
-  FilterStatusCB filter_cb;
+  PipelineStatusCB filter_cb;
 
   {
     base::AutoLock auto_lock(lock_);
@@ -803,7 +803,7 @@ void AdaptiveDemuxer::OnIndexSeekDone(
     const AdaptiveDemuxerStream::SeekFunctionCB& seek_cb,
     PipelineStatus status) {
   base::TimeDelta seek_point;
-  FilterStatusCB filter_cb;
+  PipelineStatusCB filter_cb;
 
   Demuxer* demuxer = NULL;
 

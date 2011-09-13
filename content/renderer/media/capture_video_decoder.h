@@ -8,6 +8,7 @@
 #include <deque>
 
 #include "base/time.h"
+#include "media/base/demuxer_stream.h"
 #include "media/base/filters.h"
 #include "media/base/video_frame.h"
 #include "media/video/capture/video_capture.h"
