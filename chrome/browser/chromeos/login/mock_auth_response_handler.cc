@@ -7,7 +7,7 @@
 #include <string>
 
 #include "base/message_loop.h"
-#include "content/common/url_fetcher.h"
+#include "content/common/net/url_fetcher.h"
 #include "googleurl/src/gurl.h"
 #include "net/url_request/url_request_status.h"
 #include "testing/gmock/include/gmock/gmock.h"

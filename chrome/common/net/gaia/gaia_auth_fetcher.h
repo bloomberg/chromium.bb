@@ -11,7 +11,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/common/net/gaia/gaia_auth_consumer.h"
-#include "content/common/url_fetcher.h"
+#include "content/common/net/url_fetcher.h"
 #include "googleurl/src/gurl.h"
 
 // Authenticate a user against the Google Accounts ClientLogin API

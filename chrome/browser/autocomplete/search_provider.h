@@ -26,7 +26,7 @@
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_id.h"
-#include "content/common/url_fetcher.h"
+#include "content/common/net/url_fetcher.h"
 
 class Profile;
 

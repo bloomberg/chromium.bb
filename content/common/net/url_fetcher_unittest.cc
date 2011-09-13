@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/common/net/url_fetcher.h"
+
 #include "base/message_loop_proxy.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
-#include "content/common/url_fetcher.h"
 #include "crypto/nss_util.h"
 #include "net/http/http_response_headers.h"
 #include "net/test/test_server.h"

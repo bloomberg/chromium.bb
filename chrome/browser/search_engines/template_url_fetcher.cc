@@ -15,10 +15,10 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/search_engines/template_url_parser.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "content/common/net/url_fetcher.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 #include "content/common/notification_source.h"
-#include "content/common/url_fetcher.h"
 #include "net/url_request/url_request_status.h"
 
 // RequestDelegate ------------------------------------------------------------

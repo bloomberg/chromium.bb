@@ -14,7 +14,7 @@
 #include "chrome/browser/extensions/extension_install_ui.h"
 #include "chrome/browser/extensions/webstore_install_helper.h"
 #include "content/browser/tab_contents/tab_contents_observer.h"
-#include "content/common/url_fetcher.h"
+#include "content/common/net/url_fetcher.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 

@@ -25,7 +25,7 @@
 #include "chrome/common/net/gaia/gaia_auth_fetcher_unittest.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/browser/browser_thread.h"
-#include "content/common/url_fetcher.h"
+#include "content/common/net/url_fetcher.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_errors.h"
 #include "net/url_request/url_request_status.h"

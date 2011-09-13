@@ -20,7 +20,7 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_pref_service.h"
 #include "content/browser/browser_thread.h"
-#include "content/common/url_fetcher.h"
+#include "content/common/net/url_fetcher.h"
 #include "policy/policy_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

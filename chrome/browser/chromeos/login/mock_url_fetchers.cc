@@ -10,7 +10,7 @@
 #include "base/stringprintf.h"
 #include "chrome/common/net/http_return.h"
 #include "content/browser/browser_thread.h"
-#include "content/common/url_fetcher.h"
+#include "content/common/net/url_fetcher.h"
 #include "googleurl/src/gurl.h"
 #include "net/url_request/url_request_status.h"
 #include "testing/gtest/include/gtest/gtest.h"

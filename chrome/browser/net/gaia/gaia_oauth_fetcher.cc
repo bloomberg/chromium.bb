@@ -24,7 +24,6 @@
 #include "chrome/common/net/http_return.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_source.h"
-#include "content/common/url_fetcher.h"
 #include "grit/chromium_strings.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_request_context_getter.h"

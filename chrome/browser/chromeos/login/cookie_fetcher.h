@@ -12,7 +12,7 @@
 #include "chrome/browser/chromeos/login/auth_response_handler.h"
 #include "chrome/browser/chromeos/login/client_login_response_handler.h"
 #include "chrome/browser/chromeos/login/issue_response_handler.h"
-#include "content/common/url_fetcher.h"
+#include "content/common/net/url_fetcher.h"
 
 class Profile;
 

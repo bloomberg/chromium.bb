@@ -11,9 +11,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/net/chrome_cookie_notification_details.h"
 #include "chrome/browser/net/gaia/gaia_oauth_consumer.h"
+#include "content/common/net/url_fetcher.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
-#include "content/common/url_fetcher.h"
 #include "googleurl/src/gurl.h"
 
 struct ChromeCookieDetails;

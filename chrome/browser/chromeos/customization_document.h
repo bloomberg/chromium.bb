@@ -13,7 +13,7 @@
 #include "base/memory/singleton.h"
 #include "base/timer.h"
 #include "base/values.h"
-#include "content/common/url_fetcher.h"
+#include "content/common/net/url_fetcher.h"
 #include "googleurl/src/gurl.h"
 
 class FilePath;

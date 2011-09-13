@@ -9,7 +9,7 @@
 #include "base/stringprintf.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/common/net/gaia/gaia_urls.h"
-#include "content/common/url_fetcher.h"
+#include "content/common/net/url_fetcher.h"
 #include "net/base/load_flags.h"
 
 namespace chromeos {

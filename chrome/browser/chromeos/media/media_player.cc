@@ -36,7 +36,7 @@
 #include "content/browser/download/download_manager.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/user_metrics.h"
-#include "content/common/url_fetcher.h"
+#include "content/common/net/url_fetcher.h"
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"

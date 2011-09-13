@@ -11,8 +11,8 @@
 // temporary situation.  We will work on allowing support for multiple "io"
 // threads per process.
 
-#ifndef CONTENT_COMMON_URL_FETCHER_H_
-#define CONTENT_COMMON_URL_FETCHER_H_
+#ifndef CONTENT_COMMON_NET_URL_FETCHER_H_
+#define CONTENT_COMMON_NET_URL_FETCHER_H_
 #pragma once
 
 #include <string>
@@ -320,4 +320,4 @@ class URLFetcher {
   DISALLOW_COPY_AND_ASSIGN(URLFetcher);
 };
 
-#endif  // CONTENT_COMMON_URL_FETCHER_H_
+#endif  // CONTENT_COMMON_NET_URL_FETCHER_H_

@@ -8,7 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "chrome/common/net/http_return.h"
-#include "content/common/url_fetcher.h"
+#include "content/common/net/url_fetcher.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/escape.h"
 #include "net/url_request/url_request_context_getter.h"

@@ -11,7 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/waitable_event.h"
 #include "chrome/common/net/gaia/gaia_authenticator.h"
-#include "content/common/url_fetcher.h"
+#include "content/common/net/url_fetcher.h"
 
 namespace base {
 class MessageLoopProxy;
@@ -56,4 +56,3 @@ class ServiceGaiaAuthenticator
 };
 
 #endif  // CHROME_SERVICE_GAIA_SERVICE_GAIA_AUTHENTICATOR_H_
-

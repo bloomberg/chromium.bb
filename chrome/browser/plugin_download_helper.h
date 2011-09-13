@@ -12,7 +12,7 @@
 #if defined(OS_WIN)
 #include "base/file_path.h"
 #include "base/message_loop_proxy.h"
-#include "content/common/url_fetcher.h"
+#include "content/common/net/url_fetcher.h"
 #include "net/base/file_stream.h"
 #include "net/url_request/url_request.h"
 #include "ui/gfx/native_widget_types.h"
@@ -69,5 +69,3 @@ class PluginDownloadUrlHelper : public URLFetcher::Delegate {
 #endif  // OS_WIN
 
 #endif  // CHROME_BROWSER_PLUGIN_DOWNLOAD_HELPER_H_
-
-
