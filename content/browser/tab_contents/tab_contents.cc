@@ -1818,7 +1818,8 @@ WebPreferences TabContents::GetWebkitPrefs() {
       // Allow accelerated compositing for keyboard and log in screen.
       GetURL().SchemeIs(chrome::kChromeUIScheme) ||
 #endif
-      GetURL().SchemeIs(chrome::kAboutScheme)) &&
+      (GetURL().SchemeIs(chrome::kAboutScheme) &&
+       GetURL().spec() != chrome::kAboutBlankURL)) &&
       !web_prefs.allow_webui_compositing) {
     web_prefs.accelerated_compositing_enabled = false;
     web_prefs.accelerated_2d_canvas_enabled = false;
