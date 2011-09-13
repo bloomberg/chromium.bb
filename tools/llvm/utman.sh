@@ -214,7 +214,7 @@ else
 fi
 
 # Current milestones in each repo
-readonly UPSTREAM_REV=${UPSTREAM_REV:-039d14f07924}
+readonly UPSTREAM_REV=${UPSTREAM_REV:-dfe66bd220b8}
 
 readonly NEWLIB_REV=57d709868c78
 readonly BINUTILS_REV=2f1d9c8ef12d
@@ -3083,7 +3083,7 @@ check-elf-abi() {
 #   Ensure that the ARCH properties are what we expect, this is a little
 #   fragile and needs to be updated when tools change
 verify-object-arm() {
-  check-elf-abi $1 "elf32-littlearm-nacl"
+  check-elf-abi $1 "elf32-littlearm"
   arch_info="$("${PNACL_READELF}" -A "$1")"
   #TODO(robertm): some refactoring and cleanup needed
   if ! grep -q "Tag_FP_arch: VFPv2" <<< ${arch_info} ; then
@@ -3105,13 +3105,13 @@ verify-object-arm() {
 # verify-object-x86-32 <obj>
 #
 verify-object-x86-32() {
-  check-elf-abi $1 "elf32-nacl"
+  check-elf-abi $1 "elf32-i386"
 }
 
 # verify-object-x86-64 <obj>
 #
 verify-object-x86-64() {
-  check-elf-abi $1 "elf64-nacl"
+  check-elf-abi $1 "elf64-x86-64"
 }
 
 #
