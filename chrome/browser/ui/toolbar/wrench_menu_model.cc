@@ -431,8 +431,6 @@ WrenchMenuModel::WrenchMenuModel()
 
 #if !defined(OS_CHROMEOS)
 void WrenchMenuModel::Build() {
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-
   AddItemWithStringId(IDC_NEW_TAB, IDS_NEW_TAB);
   AddItemWithStringId(IDC_NEW_WINDOW, IDS_NEW_WINDOW);
   AddItemWithStringId(IDC_NEW_INCOGNITO_WINDOW, IDS_NEW_INCOGNITO_WINDOW);
@@ -523,16 +521,28 @@ void WrenchMenuModel::Build() {
       IDS_VIEW_INCOMPATIBILITIES));
 
 #if defined(OS_WIN)
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   SetIcon(GetIndexOfCommandId(IDC_VIEW_INCOMPATIBILITIES),
           *rb.GetBitmapNamed(IDR_CONFLICT_MENU));
 #endif
 
   AddItemWithStringId(IDC_HELP_PAGE, IDS_HELP_PAGE);
 
+  AddGlobalErrorMenuItems();
+
+  if (browser_defaults::kShowExitMenuItem) {
+    AddSeparator();
+    AddItemWithStringId(IDC_EXIT, IDS_EXIT);
+  }
+}
+#endif // !OS_CHROMEOS
+
+void WrenchMenuModel::AddGlobalErrorMenuItems() {
   // TODO(sail): Currently we only build the wrench menu once per browser
   // window. This means that if a new error is added after the menu is built
   // it won't show in the existing wrench menu. To fix this we need to some
   // how update the menu if new errors are added.
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   const std::vector<GlobalError*>& errors =
       GlobalErrorServiceFactory::GetForProfile(browser_->profile())->errors();
   for (std::vector<GlobalError*>::const_iterator
@@ -548,13 +558,7 @@ void WrenchMenuModel::Build() {
       }
     }
   }
-
-  if (browser_defaults::kShowExitMenuItem) {
-    AddSeparator();
-    AddItemWithStringId(IDC_EXIT, IDS_EXIT);
-  }
 }
-#endif // !OS_CHROMEOS
 
 void WrenchMenuModel::CreateCutCopyPaste() {
   // WARNING: views/wrench_menu assumes these items are added in this order. If

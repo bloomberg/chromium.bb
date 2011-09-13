@@ -70,6 +70,9 @@ void WrenchMenuModel::Build() {
 
   // Show IDC_FEEDBACK in top-tier wrench menu for ChromeOS.
   AddItemWithStringId(IDC_FEEDBACK, IDS_FEEDBACK);
+
+  AddGlobalErrorMenuItems();
+
   AddSeparator();
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kGuestSession)) {

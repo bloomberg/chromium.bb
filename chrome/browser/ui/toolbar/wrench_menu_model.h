@@ -137,6 +137,8 @@ class WrenchMenuModel : public ui::SimpleMenuModel,
 
   void Build();
 
+  void AddGlobalErrorMenuItems();
+
   // Adds custom items to the menu. Deprecated in favor of a cross platform
   // model for button items.
   void CreateCutCopyPaste();
