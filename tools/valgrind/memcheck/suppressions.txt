@@ -959,6 +959,15 @@
    fun:_ZN10disk_cache10InFlightIO12OnIOCompleteEPNS_12BackgroundIOE
 }
 {
+   bug_87500_c
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN3net9HttpCache*EntryERKSsPPNS0_11ActiveEntryEPNS0_11TransactionE
+   fun:_ZN3net9HttpCache11Transaction13Do*EntryEv
+   fun:_ZN3net9HttpCache11Transaction6DoLoopEi
+   fun:_ZN3net9HttpCache11Transaction12OnIOCompleteEi
+}
+{
    Intentional, see http://codereview.chromium.org/7670025
    Memcheck:Param
    msync(start)
@@ -4516,15 +4525,6 @@
    fun:_ZN6webkit5ppapi15ResourceTracker19CleanupInstanceDataEib
    fun:_ZN6webkit5ppapi15ResourceTracker15InstanceDeletedEi
    fun:_ZN6webkit5ppapi14PluginInstanceD0Ev
-}
-{
-   bug_90973
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN3net9HttpCache11CreateEntryERKSsPPNS0_11ActiveEntryEPNS0_11TransactionE
-   fun:_ZN3net9HttpCache11Transaction13DoCreateEntryEv
-   fun:_ZN3net9HttpCache11Transaction6DoLoopEi
-   fun:_ZN3net9HttpCache11Transaction12OnIOCompleteEi
 }
 {
    bug_91199
