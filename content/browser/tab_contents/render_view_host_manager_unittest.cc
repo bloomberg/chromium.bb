@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/test/base/test_notification_tracker.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/browser_url_handler.h"
@@ -17,6 +16,7 @@
 #include "content/common/page_transition_types.h"
 #include "content/common/test_url_constants.h"
 #include "content/common/view_messages.h"
+#include "content/test/test_notification_tracker.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/glue/webkit_glue.h"
 
