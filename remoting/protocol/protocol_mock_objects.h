@@ -57,8 +57,8 @@ class MockInputStub : public InputStub {
   MockInputStub();
   virtual ~MockInputStub();
 
-  MOCK_METHOD2(InjectKeyEvent, void(const KeyEvent* event, Task* done));
-  MOCK_METHOD2(InjectMouseEvent, void(const MouseEvent* event, Task* done));
+  MOCK_METHOD1(InjectKeyEvent, void(const KeyEvent& event));
+  MOCK_METHOD1(InjectMouseEvent, void(const MouseEvent& event));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockInputStub);

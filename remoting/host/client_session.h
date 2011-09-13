@@ -51,8 +51,8 @@ class ClientSession : public protocol::HostStub,
       const protocol::LocalLoginCredentials* credentials, Task* done);
 
   // protocol::InputStub interface.
-  virtual void InjectKeyEvent(const protocol::KeyEvent* event, Task* done);
-  virtual void InjectMouseEvent(const protocol::MouseEvent* event, Task* done);
+  virtual void InjectKeyEvent(const protocol::KeyEvent& event);
+  virtual void InjectMouseEvent(const protocol::MouseEvent& event);
 
   // Disconnect this client session.
   void Disconnect();
@@ -79,8 +79,8 @@ class ClientSession : public protocol::HostStub,
   // have the upper hand in 'pointer wars'.
   void LocalMouseMoved(const gfx::Point& new_pos);
 
-  bool ShouldIgnoreRemoteMouseInput(const protocol::MouseEvent* event) const;
-  bool ShouldIgnoreRemoteKeyboardInput(const protocol::KeyEvent* event) const;
+  bool ShouldIgnoreRemoteMouseInput(const protocol::MouseEvent& event) const;
+  bool ShouldIgnoreRemoteKeyboardInput(const protocol::KeyEvent& event) const;
 
  private:
   friend class base::RefCountedThreadSafe<ClientSession>;
@@ -89,7 +89,7 @@ class ClientSession : public protocol::HostStub,
 
   // Keep track of keydowns and keyups so that we can clean up the keyboard
   // state when the user disconnects.
-  void RecordKeyEvent(const protocol::KeyEvent* event);
+  void RecordKeyEvent(const protocol::KeyEvent& event);
 
   // Synthesize KeyUp events for keys that have been pressed but not released.
   // This should be used when the client has disconnected to clear out any

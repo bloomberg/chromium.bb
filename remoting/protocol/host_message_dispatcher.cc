@@ -67,22 +67,22 @@ void HostMessageDispatcher::OnControlMessageReceived(
 
 void HostMessageDispatcher::OnEventMessageReceived(
     EventMessage* message, Task* done_task) {
+  base::ScopedTaskRunner done_runner(done_task);
+
   connection_->UpdateSequenceNumber(message->sequence_number());
 
   if (message->has_key_event()) {
     const KeyEvent& event = message->key_event();
     if (event.has_keycode() && event.has_pressed()) {
-      input_stub_->InjectKeyEvent(&event, done_task);
+      input_stub_->InjectKeyEvent(event);
       return;
     }
   } else if (message->has_mouse_event()) {
-    input_stub_->InjectMouseEvent(&message->mouse_event(), done_task);
+    input_stub_->InjectMouseEvent(message->mouse_event());
     return;
   }
 
-  LOG(WARNING) << "Invalid event message received.";
-  done_task->Run();
-  delete done_task;
+  LOG(WARNING) << "Unknown event message received.";
 }
 
 }  // namespace protocol

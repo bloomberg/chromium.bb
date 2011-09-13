@@ -109,10 +109,8 @@ class MockEventExecutor : public EventExecutor {
   MockEventExecutor();
   virtual ~MockEventExecutor();
 
-  MOCK_METHOD2(InjectKeyEvent, void(const protocol::KeyEvent* event,
-                                    Task* done));
-  MOCK_METHOD2(InjectMouseEvent, void(const protocol::MouseEvent* event,
-                                      Task* done));
+  MOCK_METHOD1(InjectKeyEvent, void(const protocol::KeyEvent& event));
+  MOCK_METHOD1(InjectMouseEvent, void(const protocol::MouseEvent& event));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockEventExecutor);

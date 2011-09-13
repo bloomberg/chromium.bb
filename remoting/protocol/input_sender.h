@@ -43,8 +43,8 @@ class InputSender : public InputStub {
   virtual ~InputSender();
 
   // InputStub implementation.
-  virtual void InjectKeyEvent(const KeyEvent* event, Task* done);
-  virtual void InjectMouseEvent(const MouseEvent* event, Task* done);
+  virtual void InjectKeyEvent(const KeyEvent& event);
+  virtual void InjectMouseEvent(const MouseEvent& event);
 
   // Stop writing. Must be called on the network thread when the
   // underlying socket is being destroyed.

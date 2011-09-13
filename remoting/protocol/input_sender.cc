@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // This stub is thread safe because of the use of BufferedSocketWriter.
-// BufferedSocketWriter buffers messages and send them on them right thread.
+// BufferedSocketWriter buffers messages and send them on the right thread.
 
 #include "remoting/protocol/input_sender.h"
 
@@ -27,22 +27,18 @@ InputSender::InputSender(base::MessageLoopProxy* message_loop,
 InputSender::~InputSender() {
 }
 
-void InputSender::InjectKeyEvent(const KeyEvent* event, Task* done) {
-  DCHECK(done);
-
+void InputSender::InjectKeyEvent(const KeyEvent& event) {
   EventMessage message;
   message.set_sequence_number(base::Time::Now().ToInternalValue());
-  message.mutable_key_event()->CopyFrom(*event);
-  buffered_writer_->Write(SerializeAndFrameMessage(message), done);
+  message.mutable_key_event()->CopyFrom(event);
+  buffered_writer_->Write(SerializeAndFrameMessage(message), NULL);
 }
 
-void InputSender::InjectMouseEvent(const MouseEvent* event, Task* done) {
-  DCHECK(done);
-
+void InputSender::InjectMouseEvent(const MouseEvent& event) {
   EventMessage message;
   message.set_sequence_number(base::Time::Now().ToInternalValue());
-  message.mutable_mouse_event()->CopyFrom(*event);
-  buffered_writer_->Write(SerializeAndFrameMessage(message), done);
+  message.mutable_mouse_event()->CopyFrom(event);
+  buffered_writer_->Write(SerializeAndFrameMessage(message), NULL);
 }
 
 void InputSender::Close() {
