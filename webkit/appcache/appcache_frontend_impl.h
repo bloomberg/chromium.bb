@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,12 +7,11 @@
 
 #include <string>
 #include <vector>
-#include "webkit/appcache/appcache_export.h"
 #include "webkit/appcache/appcache_interfaces.h"
 
 namespace appcache {
 
-class APPCACHE_EXPORT AppCacheFrontendImpl : public AppCacheFrontend {
+class AppCacheFrontendImpl : public AppCacheFrontend {
  public:
   virtual void OnCacheSelected(
       int host_id, const appcache::AppCacheInfo& info);

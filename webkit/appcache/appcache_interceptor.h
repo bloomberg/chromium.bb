@@ -8,7 +8,6 @@
 #include "base/memory/singleton.h"
 #include "googleurl/src/gurl.h"
 #include "net/url_request/url_request.h"
-#include "webkit/appcache/appcache_export.h"
 #include "webkit/glue/resource_type.h"
 
 namespace appcache {
@@ -18,8 +17,7 @@ class AppCacheService;
 
 // An interceptor to hijack requests and potentially service them out of
 // the appcache.
-class APPCACHE_EXPORT AppCacheInterceptor
-    : public net::URLRequest::Interceptor {
+class AppCacheInterceptor : public net::URLRequest::Interceptor {
  public:
   // Registers a singleton instance with the net library.
   // Should be called early in the IO thread prior to initiating requests.
