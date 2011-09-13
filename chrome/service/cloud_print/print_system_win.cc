@@ -421,9 +421,18 @@ class PrintSystemWin : public PrintSystem {
 
           printer_dc_.Set(dc);
           int printer_dpi = ::GetDeviceCaps(printer_dc_.Get(), LOGPIXELSX);
+          int offset_x = ::GetDeviceCaps(printer_dc_.Get(), PHYSICALOFFSETX);
+          int offset_y = ::GetDeviceCaps(printer_dc_.Get(), PHYSICALOFFSETY);
           saved_dc_ = SaveDC(printer_dc_.Get());
           SetGraphicsMode(printer_dc_.Get(), GM_ADVANCED);
+
+          // Setup the matrix to translate and scale to the right place. Take in
+          // account the actual shrinking factor.
+          // Note that the printing output is relative to printable area of
+          // the page. That is 0,0 is offset by PHYSICALOFFSETX/Y from the page.
           XFORM xform = {0};
+          xform.eDx = static_cast<float>(-offset_x);
+          xform.eDy = static_cast<float>(-offset_y);
           xform.eM11 = xform.eM22 = static_cast<float>(printer_dpi) /
               static_cast<float>(GetDeviceCaps(GetDC(NULL), LOGPIXELSX));
           ModifyWorldTransform(printer_dc_.Get(), &xform, MWT_LEFTMULTIPLY);
