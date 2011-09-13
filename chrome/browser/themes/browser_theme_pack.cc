@@ -36,11 +36,12 @@ const int kThemePackVersion = 17;
 // "header" to be written last. That way we can detect whether the pack was
 // successfully written and ignore and regenerate if it was only partially
 // written (i.e. chrome crashed on a different thread while writing the pack).
-const int kHeaderID = std::numeric_limits<uint16>::max() - 1;
-const int kTintsID = std::numeric_limits<uint16>::max() - 2;
-const int kColorsID = std::numeric_limits<uint16>::max() - 3;
-const int kDisplayPropertiesID = std::numeric_limits<uint16>::max() - 4;
-const int kSourceImagesID = std::numeric_limits<uint16>::max() - 5;
+const int kMaxID = 0x0000FFFF;  // Max unsigned 16-bit int.
+const int kHeaderID = kMaxID - 1;
+const int kTintsID = kMaxID - 2;
+const int kColorsID = kMaxID - 3;
+const int kDisplayPropertiesID = kMaxID - 4;
+const int kSourceImagesID = kMaxID - 5;
 
 // Static size of the tint/color/display property arrays that are mmapped.
 const int kTintArraySize = 6;
