@@ -21,6 +21,7 @@
 #include "webkit/plugins/webplugininfo.h"
 
 class PluginPrefs;
+class Profile;
 
 // This class must be created (by calling the |GetInstance| method) on the UI
 // thread, but is safe to use on any thread after that.
@@ -41,9 +42,14 @@ class ChromePluginServiceFilter : public content::PluginServiceFilter,
                             const GURL& url,
                             const webkit::WebPluginInfo& plugin);
 
-  // Restricts the given plugin to the the scheme and host of the given url.
-  // Call with an empty url to reset this.
-  void RestrictPluginToUrl(const FilePath& plugin_path, const GURL& url);
+  // Restricts the given plugin to the given profile and origin of the given
+  // URL.
+  void RestrictPluginToProfileAndOrigin(const FilePath& plugin_path,
+                                        Profile* profile,
+                                        const GURL& url);
+
+  // Lifts a restriction on a plug-in.
+  void UnrestrictPlugin(const FilePath& plugin_path);
 
   // PluginServiceFilter implementation:
   virtual bool ShouldUsePlugin(
@@ -76,7 +82,8 @@ class ChromePluginServiceFilter : public content::PluginServiceFilter,
 
   base::Lock lock_;  // Guards access to member variables.
   // Map of plugin paths to the origin they are restricted to.
-  typedef base::hash_map<FilePath, GURL> RestrictedPluginMap;
+  typedef std::pair<const void*, GURL> RestrictedPluginPair;
+  typedef base::hash_map<FilePath, RestrictedPluginPair> RestrictedPluginMap;
   RestrictedPluginMap restricted_plugins_;
   typedef std::map<const void*, scoped_refptr<PluginPrefs> > ResourceContextMap;
   ResourceContextMap resource_context_map_;

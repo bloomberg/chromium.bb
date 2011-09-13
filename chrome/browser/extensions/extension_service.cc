@@ -1507,9 +1507,14 @@ void ExtensionService::NotifyExtensionLoaded(const Extension* extension) {
     webkit::npapi::PluginList::Singleton()->RefreshPlugins();
     webkit::npapi::PluginList::Singleton()->AddExtraPluginPath(plugin.path);
     plugins_changed = true;
-    if (!plugin.is_public) {
-      ChromePluginServiceFilter::GetInstance()->RestrictPluginToUrl(
-          plugin.path, extension->url());
+    ChromePluginServiceFilter* filter =
+        ChromePluginServiceFilter::GetInstance();
+    if (plugin.is_public) {
+      filter->RestrictPluginToProfileAndOrigin(
+          plugin.path, profile_, GURL());
+    } else {
+      filter->RestrictPluginToProfileAndOrigin(
+          plugin.path, profile_, extension->url());
     }
   }
 
@@ -1603,10 +1608,7 @@ void ExtensionService::NotifyExtensionUnloaded(
     webkit::npapi::PluginList::Singleton()->RemoveExtraPluginPath(
         plugin.path);
     plugins_changed = true;
-    if (!plugin.is_public) {
-      ChromePluginServiceFilter::GetInstance()->RestrictPluginToUrl(
-          plugin.path, GURL());
-    }
+    ChromePluginServiceFilter::GetInstance()->UnrestrictPlugin(plugin.path);
   }
 
   bool nacl_modules_changed = false;

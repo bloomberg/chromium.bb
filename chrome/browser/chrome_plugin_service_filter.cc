@@ -48,13 +48,20 @@ void ChromePluginServiceFilter::OverridePluginForTab(
   overridden_plugins_.push_back(overridden_plugin);
 }
 
-void ChromePluginServiceFilter::RestrictPluginToUrl(const FilePath& plugin_path,
-                                                    const GURL& url) {
+void ChromePluginServiceFilter::RestrictPluginToProfileAndOrigin(
+    const FilePath& plugin_path,
+    Profile* profile,
+    const GURL& origin) {
   base::AutoLock auto_lock(lock_);
-  if (url.is_empty())
-    restricted_plugins_.erase(plugin_path);
-  else
-    restricted_plugins_[plugin_path] = url;
+  restricted_plugins_[plugin_path] =
+      std::make_pair(PluginPrefs::GetForProfile(profile),
+                     origin);
+}
+
+void ChromePluginServiceFilter::UnrestrictPlugin(
+    const FilePath& plugin_path) {
+  base::AutoLock auto_lock(lock_);
+  restricted_plugins_.erase(plugin_path);
 }
 
 bool ChromePluginServiceFilter::ShouldUsePlugin(
@@ -91,10 +98,16 @@ bool ChromePluginServiceFilter::ShouldUsePlugin(
   // Check whether the plugin is restricted to a URL.
   RestrictedPluginMap::const_iterator it =
       restricted_plugins_.find(plugin->path);
-  if (it != restricted_plugins_.end() &&
-      (policy_url.scheme() != it->second.scheme() ||
-       policy_url.host() != it->second.host())) {
-    return false;
+  if (it != restricted_plugins_.end()) {
+    if (it->second.first != plugin_prefs)
+      return false;
+    const GURL& origin = it->second.second;
+    if (!origin.is_empty() &&
+        (policy_url.scheme() != origin.scheme() ||
+         policy_url.host() != origin.host() ||
+         policy_url.port() != origin.port())) {
+      return false;
+    }
   }
 
   return true;

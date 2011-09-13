@@ -82,10 +82,11 @@ void PluginPrefs::Initialize() {
 
 // static
 PluginPrefs* PluginPrefs::GetForProfile(Profile* profile) {
-  PluginPrefs* plugin_prefs =
-      Factory::GetInstance()->GetWrapperForProfile(profile)->plugin_prefs();
-  DCHECK(plugin_prefs);
-  return plugin_prefs;
+  PluginPrefsWrapper* wrapper =
+      Factory::GetInstance()->GetWrapperForProfile(profile);
+  if (!wrapper)
+    return NULL;
+  return wrapper->plugin_prefs();
 }
 
 DictionaryValue* PluginPrefs::CreatePluginFileSummary(
