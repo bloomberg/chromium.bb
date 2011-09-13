@@ -302,7 +302,7 @@ TEST_F(DllRedirectorTest, BadVersionNumber) {
   EXPECT_TRUE(first_redirector->RegisterAsFirstCFModule());
 
   HMODULE first_module = first_redirector->GetFirstModule();
-  EXPECT_EQ(reinterpret_cast<HMODULE>(&__ImageBase), first_module);
+  EXPECT_EQ(NULL, first_module);
 }
 
 // TODO(robertshield): These tests rely on simulating access checks from a low

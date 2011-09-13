@@ -42,7 +42,10 @@ DllRedirector::~DllRedirector() {
   if (first_module_handle_) {
     if (first_module_handle_ != reinterpret_cast<HMODULE>(&__ImageBase)) {
       FreeLibrary(first_module_handle_);
+    } else {
+      NOTREACHED() << "Error, DllRedirector attempting to free self.";
     }
+
     first_module_handle_ = NULL;
   }
   UnregisterAsFirstCFModule();
@@ -142,7 +145,6 @@ bool DllRedirector::RegisterAsFirstCFModule() {
     // back to loading our current version. We return true to indicate that the
     // caller should not attempt to delegate to an already loaded version.
     dll_version_.swap(our_version);
-    first_module_handle_ = reinterpret_cast<HMODULE>(&__ImageBase);
     return true;
   }
 
@@ -182,9 +184,6 @@ bool DllRedirector::RegisterAsFirstCFModule() {
                   dll_version_->GetString().c_str(),
                   std::min(kSharedMemorySize,
                            dll_version_->GetString().length() + 1));
-
-        // Mark ourself as the first module in.
-        first_module_handle_ = reinterpret_cast<HMODULE>(&__ImageBase);
       } else {
         char buffer[kSharedMemorySize] = {0};
         memcpy(buffer, shared_memory_->memory(), kSharedMemorySize - 1);
@@ -195,7 +194,6 @@ bool DllRedirector::RegisterAsFirstCFModule() {
           // memory or we did parse a version and it is the same as our own,
           // then pretend we're first in to avoid trying to load any other DLLs.
           dll_version_.reset(our_version.release());
-          first_module_handle_ = reinterpret_cast<HMODULE>(&__ImageBase);
           created_beacon = true;
         }
       }
@@ -228,15 +226,14 @@ void DllRedirector::UnregisterAsFirstCFModule() {
 LPFNGETCLASSOBJECT DllRedirector::GetDllGetClassObjectPtr() {
   HMODULE first_module_handle = GetFirstModule();
 
-  LPFNGETCLASSOBJECT proc_ptr = reinterpret_cast<LPFNGETCLASSOBJECT>(
-      GetProcAddress(first_module_handle, "DllGetClassObject"));
-  if (!proc_ptr) {
-    DPLOG(ERROR) << "DllRedirector: Could not get address of DllGetClassObject "
-                    "from first loaded module.";
-    // Oh boink, the first module we loaded was somehow bogus, make ourselves
-    // the first module again.
-    first_module_handle = reinterpret_cast<HMODULE>(&__ImageBase);
+  LPFNGETCLASSOBJECT proc_ptr = NULL;
+  if (first_module_handle) {
+    proc_ptr = reinterpret_cast<LPFNGETCLASSOBJECT>(
+        GetProcAddress(first_module_handle, "DllGetClassObject"));
+    DPLOG_IF(ERROR, !proc_ptr) << "DllRedirector: Could not get address of "
+                                  "DllGetClassObject from first loaded module.";
   }
+
   return proc_ptr;
 }
 
@@ -261,9 +258,11 @@ HMODULE DllRedirector::GetFirstModule() {
 
   if (first_module_handle_ == NULL) {
     first_module_handle_ = LoadVersionedModule(dll_version_.get());
-    if (!first_module_handle_) {
-      first_module_handle_ = reinterpret_cast<HMODULE>(&__ImageBase);
-    }
+  }
+
+  if (first_module_handle_ == reinterpret_cast<HMODULE>(&__ImageBase)) {
+    NOTREACHED() << "Should not be loading own version.";
+    first_module_handle_ = NULL;
   }
 
   return first_module_handle_;

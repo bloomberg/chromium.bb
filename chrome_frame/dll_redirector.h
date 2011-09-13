@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_FRAME_MODULE_UTILS_H_
-#define CHROME_FRAME_MODULE_UTILS_H_
+#ifndef CHROME_FRAME_DLL_REDIRECTOR_H_
+#define CHROME_FRAME_DLL_REDIRECTOR_H_
 
 #include <ObjBase.h>
 #include <windows.h>
+#include <string>
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
@@ -49,8 +50,12 @@ class DllRedirector {
   void DllRedirector::UnregisterAsFirstCFModule();
 
   // Helper function to return the DllGetClassObject function pointer from
-  // the given module. On success, the return value is non-null and module
-  // will have had its reference count incremented.
+  // the given module. This function will return NULL unless
+  // RegisterAsFirstCFModule has been called first and returned false
+  // indicating that another module was first in.
+  //
+  // On success, the return value is non-null and the first-in module will have
+  // had its reference count incremented.
   LPFNGETCLASSOBJECT GetDllGetClassObjectPtr();
 
  protected:
@@ -101,4 +106,4 @@ class DllRedirector {
   DISALLOW_COPY_AND_ASSIGN(DllRedirector);
 };
 
-#endif  // CHROME_FRAME_MODULE_UTILS_H_
+#endif  // CHROME_FRAME_DLL_REDIRECTOR_H_
