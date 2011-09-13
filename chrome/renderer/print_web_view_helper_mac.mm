@@ -86,6 +86,8 @@ bool PrintWebViewHelper::RenderPreviewPage(int page_number) {
   if (render_to_draft) {
     draft_metafile.reset(new printing::PreviewMetafile());
     if (!draft_metafile->Init()) {
+      print_preview_context_.set_error(
+          PREVIEW_ERROR_MAC_DRAFT_METAFILE_INIT_FAILED);
       LOG(ERROR) << "Draft PreviewMetafile Init failed";
       return false;
     }

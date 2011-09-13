@@ -325,6 +325,18 @@ class PrintWebViewHelper : public RenderViewObserver,
   // footers if requested by the user.
   scoped_ptr<base::DictionaryValue> header_footer_info_;
 
+  enum PrintPreviewErrorBuckets {
+    PREVIEW_ERROR_NONE,  // Always first.
+    PREVIEW_ERROR_BAD_SETTING,
+    PREVIEW_ERROR_METAFILE_COPY_FAILED,
+    PREVIEW_ERROR_METAFILE_INIT_FAILED,
+    PREVIEW_ERROR_ZERO_PAGES,
+    PREVIEW_ERROR_MAC_DRAFT_METAFILE_INIT_FAILED,
+    PREVIEW_ERROR_PAGE_RENDERED_WITHOUT_METAFILE,
+    PREVIEW_ERROR_UPDATING_PRINT_SETTINGS,
+    PREVIEW_ERROR_LAST_ENUM  // Always last.
+  };
+
   // Keeps track of the state of print preview between messages.
   class PrintPreviewContext {
    public:
@@ -357,7 +369,7 @@ class PrintWebViewHelper : public RenderViewObserver,
     void Finished();
 
     // Cleanup after print preview fails.
-    void Failed();
+    void Failed(bool report_error);
 
     // Helper functions
     int GetNextPageNumber();
@@ -368,6 +380,7 @@ class PrintWebViewHelper : public RenderViewObserver,
 
     // Setters
     void set_generate_draft_pages(bool generate_draft_pages);
+    void set_error(enum PrintPreviewErrorBuckets error);
 
     // Getters
     WebKit::WebFrame* frame() const;
@@ -414,6 +427,8 @@ class PrintWebViewHelper : public RenderViewObserver,
 
     base::TimeDelta document_render_time_;
     base::TimeTicks begin_time_;
+
+    enum PrintPreviewErrorBuckets error_;
 
     State state_;
   };

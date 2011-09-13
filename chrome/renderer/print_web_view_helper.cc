@@ -704,7 +704,7 @@ bool PrintWebViewHelper::CreatePreviewDocument() {
 
   while (!print_preview_context_.IsFinalPageRendered()) {
     int page_number = print_preview_context_.GetNextPageNumber();
-    DCHECK(page_number >= 0);
+    DCHECK_GE(page_number, 0);
     if (!RenderPreviewPage(page_number))
       return false;
 
@@ -755,6 +755,7 @@ bool PrintWebViewHelper::FinalizePrintReadyDocument() {
   if (!CopyMetafileDataToSharedMem(metafile,
                                    &(preview_params.metafile_data_handle))) {
     LOG(ERROR) << "CopyMetafileDataToSharedMem failed";
+    print_preview_context_.set_error(PREVIEW_ERROR_METAFILE_COPY_FAILED);
     return false;
   }
   is_print_ready_metafile_sent_ = true;
@@ -856,7 +857,7 @@ void PrintWebViewHelper::DidFinishPrinting(PrintingResult result) {
       Send(new PrintHostMsg_PrintPreviewFailed(routing_id(), cookie));
     else
       Send(new PrintHostMsg_PrintPreviewCancelled(routing_id(), cookie));
-    print_preview_context_.Failed();
+    print_preview_context_.Failed(notify_browser_of_print_failure_);
   }
 
   if (print_web_view_) {
@@ -1110,8 +1111,10 @@ bool PrintWebViewHelper::UpdatePrintSettings(
 
   Send(new PrintHostMsg_UpdatePrintSettings(routing_id(),
        print_pages_params_->params.document_cookie, job_settings, &settings));
-  if (settings.params.dpi < kMinDpi || !settings.params.document_cookie)
+  if (settings.params.dpi < kMinDpi || !settings.params.document_cookie) {
+    print_preview_context_.set_error(PREVIEW_ERROR_UPDATING_PRINT_SETTINGS);
     return false;
+  }
 
   if (is_preview) {
     // Validate expected print preview settings.
@@ -1122,6 +1125,7 @@ bool PrintWebViewHelper::UpdatePrintSettings(
         !job_settings.GetBoolean(printing::kIsFirstRequest,
                                  &(settings.params.is_first_request))) {
       NOTREACHED();
+      print_preview_context_.set_error(PREVIEW_ERROR_BAD_SETTING);
       return false;
     }
 
@@ -1311,6 +1315,8 @@ bool PrintWebViewHelper::PreviewPageRendered(int page_number,
 
   if (!metafile) {
     NOTREACHED();
+    print_preview_context_.set_error(
+        PREVIEW_ERROR_PAGE_RENDERED_WITHOUT_METAFILE);
     return false;
   }
 
@@ -1321,6 +1327,7 @@ bool PrintWebViewHelper::PreviewPageRendered(int page_number,
   if (!CopyMetafileDataToSharedMem(
       metafile, &(preview_page_params.metafile_data_handle))) {
     LOG(ERROR) << "CopyMetafileDataToSharedMem failed";
+    print_preview_context_.set_error(PREVIEW_ERROR_METAFILE_COPY_FAILED);
     return false;
   }
   preview_page_params.data_size = buf_size;
@@ -1338,6 +1345,7 @@ PrintWebViewHelper::PrintPreviewContext::PrintPreviewContext()
       current_page_index_(0),
       generate_draft_pages_(true),
       print_ready_metafile_page_count_(0),
+      error_(PREVIEW_ERROR_NONE),
       state_(UNINITIALIZED) {
 }
 
@@ -1375,6 +1383,7 @@ bool PrintWebViewHelper::PrintPreviewContext::CreatePreviewDocument(
 
   metafile_.reset(new printing::PreviewMetafile);
   if (!metafile_->Init()) {
+    set_error(PREVIEW_ERROR_METAFILE_INIT_FAILED);
     LOG(ERROR) << "PreviewMetafile Init failed";
     return false;
   }
@@ -1388,6 +1397,7 @@ bool PrintWebViewHelper::PrintPreviewContext::CreatePreviewDocument(
   total_page_count_ = prep_frame_view_->GetExpectedPageCount();
   if (total_page_count_ == 0) {
     LOG(ERROR) << "CreatePreviewDocument got 0 page count";
+    set_error(PREVIEW_ERROR_ZERO_PAGES);
     return false;
   }
 
@@ -1458,9 +1468,14 @@ void PrintWebViewHelper::PrintPreviewContext::Finished() {
   ClearContext();
 }
 
-void PrintWebViewHelper::PrintPreviewContext::Failed() {
+void PrintWebViewHelper::PrintPreviewContext::Failed(bool report_error) {
   DCHECK(state_ == INITIALIZED || state_ == RENDERING);
   state_ = INITIALIZED;
+  if (report_error) {
+    DCHECK_NE(PREVIEW_ERROR_NONE, error_);
+    UMA_HISTOGRAM_ENUMERATION("PrintPreview.RendererError", error_,
+                              PREVIEW_ERROR_LAST_ENUM);
+  }
   ClearContext();
 }
 
@@ -1499,6 +1514,11 @@ void PrintWebViewHelper::PrintPreviewContext::set_generate_draft_pages(
   generate_draft_pages_ = generate_draft_pages;
 }
 
+void PrintWebViewHelper::PrintPreviewContext::set_error(
+    enum PrintPreviewErrorBuckets error) {
+  error_ = error;
+}
+
 WebKit::WebFrame* PrintWebViewHelper::PrintPreviewContext::frame() const {
   return frame_;
 }
@@ -1535,4 +1555,5 @@ void PrintWebViewHelper::PrintPreviewContext::ClearContext() {
   prep_frame_view_.reset();
   metafile_.reset();
   pages_to_render_.clear();
+  error_ = PREVIEW_ERROR_NONE;
 }
