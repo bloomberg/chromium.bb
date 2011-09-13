@@ -133,7 +133,6 @@ def FindDumpRenderTree():
     search_locations.append(src_dir + "/sconsbuild/Release/DumpRenderTree")
     search_locations.append(src_dir + "/out/Release/DumpRenderTree")
     search_locations.append(src_dir + "/sconsbuild/Debug/DumpRenderTree")
-    search_locations.append(src_dir + "/ninja/DumpRenderTree")
     search_locations.append(src_dir + "/out/Debug/DumpRenderTree")
     search_locations.append(os.getenv("HOME") + "/bin/DumpRenderTree/"
                             "DumpRenderTree")
