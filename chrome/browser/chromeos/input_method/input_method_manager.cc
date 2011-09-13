@@ -440,6 +440,32 @@ class InputMethodManagerImpl : public HotkeyManager::Observer,
     }
   }
 
+  // Handles "Shift+Alt" hotkey.
+  virtual void SwitchToNextInputMethod() {
+    // Sanity checks.
+    if (active_input_method_ids_.empty()) {
+      LOG(ERROR) << "active input method is empty";
+      return;
+    }
+    if (current_input_method_.id().empty()) {
+      LOG(ERROR) << "current_input_method_ is unknown";
+      return;
+    }
+
+    // Find the next input method.
+    std::vector<std::string>::const_iterator iter =
+        std::find(active_input_method_ids_.begin(),
+                  active_input_method_ids_.end(),
+                  current_input_method_.id());
+    if (iter != active_input_method_ids_.end()) {
+      ++iter;
+    }
+    if (iter == active_input_method_ids_.end()) {
+      iter = active_input_method_ids_.begin();
+    }
+    ChangeInputMethod(*iter);
+  }
+
   static InputMethodManagerImpl* GetInstance() {
     return Singleton<InputMethodManagerImpl,
         DefaultSingletonTraits<InputMethodManagerImpl> >::get();
@@ -1065,32 +1091,6 @@ class InputMethodManagerImpl : public HotkeyManager::Observer,
       }
     }
     // TODO(yusukes): Check hotkeys for IME extensions.
-  }
-
-  // Handles "Shift+Alt" hotkey.
-  void SwitchToNextInputMethod() {
-    // Sanity checks.
-    if (active_input_method_ids_.empty()) {
-      LOG(ERROR) << "active input method is empty";
-      return;
-    }
-    if (current_input_method_.id().empty()) {
-      LOG(ERROR) << "current_input_method_ is unknown";
-      return;
-    }
-
-    // Find the next input method.
-    std::vector<std::string>::const_iterator iter =
-        std::find(active_input_method_ids_.begin(),
-                  active_input_method_ids_.end(),
-                  current_input_method_.id());
-    if (iter != active_input_method_ids_.end()) {
-      ++iter;
-    }
-    if (iter == active_input_method_ids_.end()) {
-      iter = active_input_method_ids_.begin();
-    }
-    ChangeInputMethod(*iter);
   }
 
   // Handles "Control+space" hotkey.

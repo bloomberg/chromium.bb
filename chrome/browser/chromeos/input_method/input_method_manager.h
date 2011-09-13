@@ -192,6 +192,9 @@ class InputMethodManager {
   // and Shift+Alt key presses.
   virtual HotkeyManager* GetHotkeyManager() = 0;
 
+  // Switches the current input method (or keyboard layout) to the next one.
+  virtual void SwitchToNextInputMethod() = 0;
+
   virtual InputMethodDescriptor previous_input_method() const = 0;
   virtual InputMethodDescriptor current_input_method() const = 0;
 
