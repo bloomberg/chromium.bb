@@ -273,8 +273,8 @@ class SyncTest : public InProcessBrowserTest {
 
   // Collection of sync profiles used by a test. A sync profile maintains sync
   // data contained within its own subdirectory under the chrome user data
-  // directory.
-  ScopedVector<Profile> profiles_;
+  // directory. Profiles are owned by the ProfileManager.
+  std::vector<Profile*> profiles_;
 
   // Collection of pointers to the browser objects used by a test. One browser
   // instance is created for each sync profile. Browser object lifetime is
@@ -289,7 +289,7 @@ class SyncTest : public InProcessBrowserTest {
   // Sync profile against which changes to individual profiles are verified. We
   // don't need a corresponding verifier sync client because the contents of the
   // verifier profile are strictly local, and are not meant to be synced.
-  scoped_ptr<Profile> verifier_;
+  Profile* verifier_;
 
   // Indicates whether changes to a profile should also change the verifier
   // profile or not.

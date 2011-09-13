@@ -173,6 +173,11 @@ class ProfileManager : public base::NonThreadSafe,
   // Checks if multiple profiles is enabled.
   static bool IsMultipleProfilesEnabled();
 
+  // Register and add testing profile to the ProfileManager. Use ONLY in tests.
+  // This allows the creation of Profiles outside of the standard creation path
+  // for testing. If |addToCache|, add to ProfileInfoCache as well.
+  void RegisterTestingProfile(Profile* profile, bool addToCache);
+
  protected:
   // Does final initial actions.
   virtual void DoFinalInit(Profile* profile, bool go_off_the_record);

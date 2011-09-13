@@ -576,3 +576,10 @@ bool ProfileManager::IsMultipleProfilesEnabled() {
 ProfileManagerWithoutInit::ProfileManagerWithoutInit(
     const FilePath& user_data_dir) : ProfileManager(user_data_dir) {
 }
+
+void ProfileManager::RegisterTestingProfile(Profile* profile,
+                                            bool add_to_cache) {
+  RegisterProfile(profile, true);
+  if (add_to_cache)
+    AddProfileToCache(profile);
+}

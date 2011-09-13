@@ -231,7 +231,9 @@ Profile* SyncTest::MakeProfile(const FilePath::StringType name) {
   if (!file_util::PathExists(path))
     CHECK(file_util::CreateDirectory(path));
 
-  return Profile::CreateProfile(path);
+  Profile* profile = Profile::CreateProfile(path);
+  g_browser_process->profile_manager()->RegisterTestingProfile(profile, true);
+  return profile;
 }
 
 Profile* SyncTest::GetProfile(int index) {
@@ -259,9 +261,9 @@ ProfileSyncServiceHarness* SyncTest::GetClient(int index) {
 }
 
 Profile* SyncTest::verifier() {
-  if (verifier_.get() == NULL)
+  if (verifier_ == NULL)
     LOG(FATAL) << "SetupClients() has not yet been called.";
-  return verifier_.get();
+  return verifier_;
 }
 
 void SyncTest::DisableVerifier() {
@@ -295,9 +297,9 @@ bool SyncTest::SetupClients() {
   }
 
   // Create the verifier profile.
-  verifier_.reset(MakeProfile(FILE_PATH_LITERAL("Verifier")));
+  verifier_ = MakeProfile(FILE_PATH_LITERAL("Verifier"));
   ui_test_utils::WaitForBookmarkModelToLoad(verifier()->GetBookmarkModel());
-  return (verifier_.get() != NULL);
+  return (verifier_ != NULL);
 }
 
 bool SyncTest::SetupSync() {
@@ -324,10 +326,7 @@ void SyncTest::CleanUpOnMainThread() {
   // All browsers should be closed at this point, or else we could see memory
   // corruption in QuitBrowser().
   CHECK_EQ(0U, BrowserList::size());
-
-  profiles_.reset();
   clients_.reset();
-  verifier_.reset(NULL);
 }
 
 void SyncTest::SetUpInProcessBrowserTestFixture() {
