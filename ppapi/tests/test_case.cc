@@ -48,6 +48,8 @@ pp::VarPrivate TestCase::GetTestObject() {
 
 void TestCase::HandleMessage(const pp::Var& message_data) {}
 
+void TestCase::DidChangeView(const pp::Rect& position, const pp::Rect& clip) {}
+
 #if !(defined __native_client__)
 pp::deprecated::ScriptableObject* TestCase::CreateTestObject() {
   return NULL;

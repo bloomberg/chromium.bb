@@ -127,4 +127,3 @@ pp::InstancePrivate {
 };
 
 #endif  // PPAPI_TESTS_TESTING_INSTANCE_H_
-

@@ -55,6 +55,11 @@ class TestCase {
   // method.
   virtual void HandleMessage(const pp::Var& message_data);
 
+  // A function that is invoked whenever DidChangeView is called on the
+  // associated TestingInstance. Default implementation does nothing. TestCases
+  // that want to handle view changes should override this method.
+  virtual void DidChangeView(const pp::Rect& position, const pp::Rect& clip);
+
  protected:
 #if !(defined __native_client__)
   // Overridden by each test to supply a ScriptableObject corresponding to the

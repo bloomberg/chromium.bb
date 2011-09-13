@@ -89,6 +89,7 @@ void TestingInstance::DidChangeView(const pp::Rect& position,
         0,
         callback_factory_.NewCallback(&TestingInstance::ExecuteTests));
   }
+  current_case_->DidChangeView(position, clip);
 }
 
 void TestingInstance::LogTest(const std::string& test_name,
