@@ -202,13 +202,10 @@ ui::Compositor* NativeWidgetViews::GetCompositor() {
   return view_->GetWidget() ? view_->GetWidget()->GetCompositor() : NULL;
 }
 
-void NativeWidgetViews::MarkLayerDirty() {
-  view_->MarkLayerDirty();
-}
-
-void NativeWidgetViews::CalculateOffsetToAncestorWithLayer(gfx::Point* offset,
-                                                           View** ancestor) {
-  view_->CalculateOffsetToAncestorWithLayer(offset, ancestor);
+void NativeWidgetViews::CalculateOffsetToAncestorWithLayer(
+    gfx::Point* offset,
+    ui::Layer** layer_parent) {
+  view_->CalculateOffsetToAncestorWithLayer(offset, layer_parent);
 }
 
 void NativeWidgetViews::ViewRemoved(View* view) {

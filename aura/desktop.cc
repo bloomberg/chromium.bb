@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "ui/gfx/compositor/compositor.h"
+#include "ui/gfx/compositor/layer.h"
 
 namespace aura {
 
@@ -50,7 +51,7 @@ void Desktop::Draw() {
   // Second pass renders the layers.
   const bool force_clear = false;
   compositor_->NotifyStart(force_clear);
-  window_->DrawTree();
+  window_->layer()->DrawTree();
   compositor_->NotifyEnd();
 }
 

@@ -504,8 +504,8 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   ui::Compositor* GetCompositor();
 
   // Invokes method of same name on the NativeWidget.
-  void MarkLayerDirty();
-  void CalculateOffsetToAncestorWithLayer(gfx::Point* offset, View** ancestor);
+  void CalculateOffsetToAncestorWithLayer(gfx::Point* offset,
+                                          ui::Layer** layer_parent);
 
   // Notifies assistive technology that an accessibility event has
   // occurred on |view|, such as when the view is focused or when its

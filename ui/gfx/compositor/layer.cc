@@ -17,6 +17,7 @@ Layer::Layer(Compositor* compositor)
     : compositor_(compositor),
       texture_(compositor->CreateTexture()),
       parent_(NULL),
+      visible_(true),
       fills_bounds_opaquely_(false),
       delegate_(NULL) {
 }
@@ -161,6 +162,15 @@ void Layer::Draw() {
       bounds_.height() - hole_rect_.bottom()));
 }
 
+void Layer::DrawTree() {
+  if (!visible_)
+    return;
+
+  Draw();
+  for (size_t i = 0; i < children_.size(); ++i)
+    children_.at(i)->DrawTree();
+}
+
 void Layer::DrawRegion(const ui::TextureDrawParams& params,
                        const gfx::Rect& region_to_draw) {
   if (!region_to_draw.IsEmpty())
@@ -181,7 +191,7 @@ void Layer::UpdateLayerCanvas() {
   scoped_ptr<gfx::Canvas> canvas(gfx::Canvas::CreateCanvas(
       draw_rect.width(), draw_rect.height(), false));
   canvas->TranslateInt(draw_rect.x(), draw_rect.y());
-  delegate_->OnPaint(canvas.get());
+  delegate_->OnPaintLayer(canvas.get());
   SetCanvas(*canvas->AsCanvasSkia(), bounds().origin());
 }
 

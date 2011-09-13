@@ -102,7 +102,6 @@ class VIEWS_EXPORT RootView : public View, public FocusTraversable {
   virtual bool IsVisibleInRootView() const OVERRIDE;
   virtual std::string GetClassName() const OVERRIDE;
   virtual void SchedulePaintInRect(const gfx::Rect& rect) OVERRIDE;
-  virtual void SchedulePaintInternal(const gfx::Rect& rect) OVERRIDE;
   virtual bool OnMousePressed(const MouseEvent& event) OVERRIDE;
   virtual bool OnMouseDragged(const MouseEvent& event) OVERRIDE;
   virtual void OnMouseReleased(const MouseEvent& event) OVERRIDE;
@@ -121,9 +120,9 @@ class VIEWS_EXPORT RootView : public View, public FocusTraversable {
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
   virtual const ui::Compositor* GetCompositor() const OVERRIDE;
   virtual ui::Compositor* GetCompositor() OVERRIDE;
-  virtual void MarkLayerDirty() OVERRIDE;
-  virtual void CalculateOffsetToAncestorWithLayer(gfx::Point* offset,
-                                                  View** ancestor) OVERRIDE;
+  virtual void CalculateOffsetToAncestorWithLayer(
+      gfx::Point* offset,
+      ui::Layer** layer_parent) OVERRIDE;
 
  private:
   friend class View;

@@ -239,10 +239,6 @@ class ScheduleAllView : public views::View {
     View::SchedulePaintInRect(gfx::Rect(0, 0, width(), height()));
   }
 
-  virtual void SchedulePaintInternal(const gfx::Rect& r) {
-    View::SchedulePaintInternal(gfx::Rect(0, 0, width(), height()));
-  }
-
  private:
   DISALLOW_COPY_AND_ASSIGN(ScheduleAllView);
 };

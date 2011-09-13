@@ -40,17 +40,10 @@ Widget* NativeWidgetView::GetAssociatedWidget() {
 ////////////////////////////////////////////////////////////////////////////////
 // NativeWidgetView, View overrides:
 
-void NativeWidgetView::SchedulePaintInternal(const gfx::Rect& r) {
-  View::SchedulePaintInternal(r);
-}
-
-void NativeWidgetView::MarkLayerDirty() {
-  View::MarkLayerDirty();
-}
-
-void NativeWidgetView::CalculateOffsetToAncestorWithLayer(gfx::Point* offset,
-                                                          View** ancestor) {
-  View::CalculateOffsetToAncestorWithLayer(offset, ancestor);
+void NativeWidgetView::CalculateOffsetToAncestorWithLayer(
+    gfx::Point* offset,
+    ui::Layer** layer_parent) {
+  View::CalculateOffsetToAncestorWithLayer(offset, layer_parent);
 }
 
 void NativeWidgetView::ViewHierarchyChanged(bool is_add,
@@ -160,24 +153,6 @@ void NativeWidgetView::UpdateLayerBounds(const gfx::Point& offset) {
     gfx::Point new_offset(offset.x() + x(), offset.y() + y());
     GetAssociatedWidget()->GetRootView()->UpdateLayerBounds(new_offset);
   }
-}
-
-void NativeWidgetView::PaintToLayer(const gfx::Rect& dirty_rect) {
-  View::PaintToLayer(dirty_rect);
-
-  View* root = GetAssociatedWidget()->GetRootView();
-  gfx::Rect root_dirty_rect = dirty_rect;
-  root->GetTransform().TransformRectReverse(&root_dirty_rect);
-  root_dirty_rect =
-      gfx::Rect(gfx::Point(), root->size()).Intersect(root_dirty_rect);
-
-  if (!root_dirty_rect.IsEmpty())
-    root->PaintToLayer(root_dirty_rect);
-}
-
-void NativeWidgetView::PaintComposite() {
-  View::PaintComposite();
-  GetAssociatedWidget()->GetRootView()->PaintComposite();
 }
 
 }  // namespace internal

@@ -853,11 +853,9 @@ ui::Compositor* NativeWidgetGtk::GetCompositor() {
   return compositor_.get();
 }
 
-void NativeWidgetGtk::MarkLayerDirty() {
-}
-
-void NativeWidgetGtk::CalculateOffsetToAncestorWithLayer(gfx::Point* offset,
-                                                         View** ancestor) {
+void NativeWidgetGtk::CalculateOffsetToAncestorWithLayer(
+    gfx::Point* offset,
+    ui::Layer** layer_parent) {
 }
 
 void NativeWidgetGtk::ViewRemoved(View* view) {

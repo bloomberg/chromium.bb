@@ -17,6 +17,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
+#include "ui/gfx/compositor/layer_delegate.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"
 #include "views/accelerator.h"
@@ -91,7 +92,8 @@ class RootView;
 //   accessed from the main thread.
 //
 /////////////////////////////////////////////////////////////////////////////
-class VIEWS_EXPORT View : public AcceleratorTarget {
+class VIEWS_EXPORT View : public ui::LayerDelegate,
+                          public AcceleratorTarget {
  public:
   typedef std::vector<View*> Views;
 
@@ -961,29 +963,6 @@ class VIEWS_EXPORT View : public AcceleratorTarget {
 
   // Accelerated painting ------------------------------------------------------
 
-  // Invoked from SchedulePaintInRect. Invokes SchedulePaintInternal on the
-  // parent. This does not mark the layer as dirty. It's assumed the caller has
-  // done this. You should not need to invoke this, use SchedulePaint or
-  // SchedulePaintInRect instead.
-  virtual void SchedulePaintInternal(const gfx::Rect& r);
-
-  // If our layer is out of date invokes Paint() with a canvas that is then
-  // copied to the layer. If the layer is not out of date recursively descends
-  // in case any children needed their layers updated.
-  //
-  // This is invoked internally by Widget and painting code.
-  virtual void PaintToLayer(const gfx::Rect& dirty_rect);
-
-  // Instructs the compositor to show our layer and all children layers.
-  // Invokes OnWillCompositeLayer() for any views that have layers.
-  //
-  // This is invoked internally by Widget and painting code.
-  virtual void PaintComposite();
-
-  // Invoked from |PaintComposite| if this view has a layer and before the
-  // layer is rendered by the compositor.
-  virtual void OnWillCompositeLayer();
-
   // This creates a layer for the view, if one does not exist. It then
   // passes the texture to a layer associated with the view. While an external
   // texture is set, the view will not update the layer contents.
@@ -997,13 +976,11 @@ class VIEWS_EXPORT View : public AcceleratorTarget {
   virtual const ui::Compositor* GetCompositor() const;
   virtual ui::Compositor* GetCompositor();
 
-  // Marks the layer this view draws into as dirty.
-  virtual void MarkLayerDirty();
-
-  // Returns the offset from this view to the neareset ancestor with a layer.
-  // If |ancestor| is non-NULL it is set to the nearset ancestor with a layer.
-  virtual void CalculateOffsetToAncestorWithLayer(gfx::Point* offset,
-                                                  View** ancestor);
+  // Returns the offset from this view to the nearest ancestor with a layer.
+  // If |ancestor| is non-NULL it is set to the nearest ancestor with a layer.
+  virtual void CalculateOffsetToAncestorWithLayer(
+      gfx::Point* offset,
+      ui::Layer** layer_parent);
 
   // Creates a layer for this and recurses through all descendants.
   virtual void CreateLayerIfNecessary();
@@ -1023,6 +1000,9 @@ class VIEWS_EXPORT View : public AcceleratorTarget {
   // Resets the bounds of the layer associated with this view and all
   // descendants.
   virtual void UpdateLayerBounds(const gfx::Point& offset);
+
+  // Overridden from ui::LayerDelegate:
+  virtual void OnPaintLayer(gfx::Canvas* canvas) OVERRIDE;
 
   // Input ---------------------------------------------------------------------
 
@@ -1138,6 +1118,10 @@ class VIEWS_EXPORT View : public AcceleratorTarget {
   // Invoked before and after the bounds change to schedule painting the old and
   // new bounds.
   void SchedulePaintBoundsChanged(SchedulePaintType type);
+
+  // Common Paint() code shared by accelerated and non-accelerated code paths to
+  // invoke OnPaint() on the View.
+  void PaintCommon(gfx::Canvas* canvas);
 
   // Tree operations -----------------------------------------------------------
 

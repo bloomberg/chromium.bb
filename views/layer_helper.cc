@@ -13,8 +13,7 @@ namespace views {
 namespace internal {
 
 LayerHelper::LayerHelper()
-    : bitmap_needs_updating_(true),
-      fills_bounds_opaquely_(false),
+    : fills_bounds_opaquely_(false),
       layer_updated_externally_(false),
       paint_to_layer_(false),
       property_setter_explicitly_set_(false),

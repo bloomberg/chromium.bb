@@ -87,9 +87,6 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
   // TODO(beng): this is (obviously) feeble.
   void MoveChildToFront(Window* child);
 
-  // Draw the window and its children.
-  void DrawTree();
-
   // Tree operations.
   // TODO(beng): Child windows are currently not owned by the hierarchy. We
   //             should change this.
@@ -133,14 +130,11 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
   // If SchedulePaint has been invoked on the Window the delegate is notified.
   void UpdateLayerCanvas();
 
-  // Draws the Window's contents.
-  void Draw();
-
   // Schedules a paint for the Window's entire bounds.
   void SchedulePaint();
 
   // Overridden from ui::LayerDelegate:
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
+  virtual void OnPaintLayer(gfx::Canvas* canvas) OVERRIDE;
 
   WindowDelegate* delegate_;
 

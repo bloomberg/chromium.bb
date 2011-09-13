@@ -54,7 +54,8 @@ void Window::SetVisibility(Visibility visibility) {
     return;
 
   visibility_ = visibility;
-  if (visibility_ != VISIBILITY_HIDDEN)
+  layer_->set_visible(visibility_ != VISIBILITY_HIDDEN);
+  if (layer_->visible())
     SchedulePaint();
 }
 
@@ -103,12 +104,6 @@ void Window::MoveChildToFront(Window* child) {
   // TODO(beng): this obviously has to handle different window types.
   children_.insert(children_.begin() + children_.size(), child);
   SchedulePaintInRect(gfx::Rect());
-}
-
-void Window::DrawTree() {
-  Draw();
-  for (Windows::iterator i = children_.begin(); i != children_.end(); ++i)
-    (*i)->DrawTree();
 }
 
 void Window::AddChild(Window* child) {
@@ -168,17 +163,13 @@ internal::FocusManager* Window::GetFocusManager() {
   return parent_ ? parent_->GetFocusManager() : NULL;
 }
 
-void Window::Draw() {
-  if (visibility_ != VISIBILITY_HIDDEN)
-    layer_->Draw();
-}
-
 void Window::SchedulePaint() {
   SchedulePaintInRect(gfx::Rect(0, 0, bounds_.width(), bounds_.height()));
 }
 
-void Window::OnPaint(gfx::Canvas* canvas) {
-  delegate_->OnPaint(canvas);
+void Window::OnPaintLayer(gfx::Canvas* canvas) {
+  if (delegate_)
+    delegate_->OnPaint(canvas);
 }
 
 }  // namespace aura

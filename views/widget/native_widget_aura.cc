@@ -110,14 +110,11 @@ ui::Compositor* NativeWidgetAura::GetCompositor() {
   return window_->layer()->compositor();
 }
 
-void NativeWidgetAura::MarkLayerDirty() {
-  //NOTIMPLEMENTED();
-}
-
-void NativeWidgetAura::CalculateOffsetToAncestorWithLayer(gfx::Point* offset,
-                                                         View** ancestor) {
-  if (ancestor)
-    *ancestor = GetWidget()->GetRootView();
+void NativeWidgetAura::CalculateOffsetToAncestorWithLayer(
+    gfx::Point* offset,
+    ui::Layer** layer_parent) {
+  if (layer_parent)
+    *layer_parent = window_->layer();
 }
 
 void NativeWidgetAura::ViewRemoved(View* view) {

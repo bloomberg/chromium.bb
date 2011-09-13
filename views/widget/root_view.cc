@@ -155,11 +155,6 @@ std::string RootView::GetClassName() const {
 }
 
 void RootView::SchedulePaintInRect(const gfx::Rect& rect) {
-  MarkLayerDirty();
-  SchedulePaintInternal(rect);
-}
-
-void RootView::SchedulePaintInternal(const gfx::Rect& rect) {
   gfx::Rect xrect = ConvertRectToParent(rect);
   gfx::Rect invalid_rect = GetLocalBounds().Intersect(xrect);
   if (!invalid_rect.IsEmpty())
@@ -430,17 +425,11 @@ ui::Compositor* RootView::GetCompositor() {
   return widget_->GetCompositor();
 }
 
-void RootView::MarkLayerDirty() {
-  View::MarkLayerDirty();
-  if (!layer())
-    widget_->MarkLayerDirty();
-}
-
 void RootView::CalculateOffsetToAncestorWithLayer(gfx::Point* offset,
-                                                  View** ancestor) {
-  View::CalculateOffsetToAncestorWithLayer(offset, ancestor);
+                                                  ui::Layer** layer_parent) {
+  View::CalculateOffsetToAncestorWithLayer(offset, layer_parent);
   if (!layer())
-    widget_->CalculateOffsetToAncestorWithLayer(offset, ancestor);
+    widget_->CalculateOffsetToAncestorWithLayer(offset, layer_parent);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

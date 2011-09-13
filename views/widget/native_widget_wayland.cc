@@ -180,12 +180,9 @@ ui::Compositor* NativeWidgetWayland::GetCompositor() {
   return compositor_.get();
 }
 
-void NativeWidgetWayland::MarkLayerDirty() {
-}
-
 void NativeWidgetWayland::CalculateOffsetToAncestorWithLayer(
     gfx::Point* offset,
-    View** ancestor) {
+    ui::Layer** layer_parent) {
 }
 
 void NativeWidgetWayland::ViewRemoved(View* view) {

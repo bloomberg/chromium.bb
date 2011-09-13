@@ -7,12 +7,28 @@
 #include "base/scoped_ptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/canvas_skia.h"
+#include "ui/gfx/compositor/compositor_observer.h"
 #include "ui/gfx/compositor/layer.h"
 #include "ui/gfx/compositor/test_compositor_host.h"
 
 namespace ui {
 
 namespace {
+
+// Simple class that exits the current message loop when compositing finishes.
+class CompositingEndedObserver : public CompositorObserver {
+ public:
+  CompositingEndedObserver() {}
+  virtual ~CompositingEndedObserver() {}
+
+  // Overridden from CompositorObserver:
+  virtual void OnCompositingEnded() OVERRIDE {
+    MessageLoop::current()->Quit();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(CompositingEndedObserver);
+};
 
 class TestLayerDelegate : public LayerDelegate {
 public:
@@ -27,15 +43,13 @@ public:
   int color_index() const { return color_index_; }
 
   // Overridden from LayerDelegate:
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
+  virtual void OnPaintLayer(gfx::Canvas* canvas) OVERRIDE {
     SkBitmap contents = canvas->AsCanvasSkia()->ExtractBitmap();
     paint_size_ = gfx::Size(contents.width(), contents.height());
     canvas->FillRectInt(colors_.at(color_index_), 0, 0,
                         contents.width(),
                         contents.height());
     color_index_ = ++color_index_ % colors_.size();
-
-    MessageLoop::current()->Quit();
   }
 
 private:
@@ -94,17 +108,8 @@ class LayerTest : public testing::Test,
 
   void DrawTree(Layer* root) {
     window_->GetCompositor()->NotifyStart();
-    DrawLayerChildren(root);
+    root->DrawTree();
     window_->GetCompositor()->NotifyEnd();
-  }
-
-  void DrawLayerChildren(Layer* layer) {
-    layer->Draw();
-    std::vector<Layer*>::const_iterator it = layer->children().begin();
-    while (it != layer->children().end()) {
-      DrawLayerChildren(*it);
-      ++it;
-    }
   }
 
   void RunPendingMessages() {
@@ -118,7 +123,7 @@ class LayerTest : public testing::Test,
   // Overridden from TestCompositorHostDelegate:
   virtual void Draw() {
     if (root_layer_)
-      DrawLayerChildren(root_layer_);
+      root_layer_->DrawTree();
   }
 
   MessageLoopForUI message_loop_;
@@ -126,6 +131,28 @@ class LayerTest : public testing::Test,
   Layer* root_layer_;
 
   DISALLOW_COPY_AND_ASSIGN(LayerTest);
+};
+
+class LayerQuitOnCompositedTest : public LayerTest {
+ public:
+  LayerQuitOnCompositedTest() {}
+  virtual ~LayerQuitOnCompositedTest() {}
+
+  // Overridden from LayerTest:
+  virtual void SetUp() OVERRIDE {
+    LayerTest::SetUp();
+    GetCompositor()->AddObserver(&compositor_observer_);
+  }
+
+  virtual void TearDown() OVERRIDE {
+    LayerTest::TearDown();
+    GetCompositor()->RemoveObserver(&compositor_observer_);
+  }
+
+ private:
+  CompositingEndedObserver compositor_observer_;
+
+  DISALLOW_COPY_AND_ASSIGN(LayerQuitOnCompositedTest);
 };
 
 }
@@ -205,7 +232,7 @@ TEST_F(LayerTest, ConvertPointToLayer_Medium) {
   EXPECT_EQ(point2_in_l3_coords, point2_in_l1_coords);
 }
 
-TEST_F(LayerTest, Delegate) {
+TEST_F(LayerQuitOnCompositedTest, Delegate) {
   scoped_ptr<Layer> l1(CreateColorLayer(SK_ColorBLACK,
                                         gfx::Rect(20, 20, 400, 400)));
   TestLayerDelegate delegate(l1.get());
@@ -230,6 +257,58 @@ TEST_F(LayerTest, Delegate) {
   RunPendingMessages();
   EXPECT_EQ(delegate.color_index(), 0);
   EXPECT_EQ(delegate.paint_size(), gfx::Size(50, 50));
+}
+
+namespace {
+
+class DrawTreeLayerDelegate : public LayerDelegate {
+ public:
+  DrawTreeLayerDelegate() : painted_(false) {}
+  virtual ~DrawTreeLayerDelegate() {}
+
+  void Reset() {
+    painted_ = false;
+  }
+
+  bool painted() const { return painted_; }
+
+  // Overridden from LayerDelegate:
+  virtual void OnPaintLayer(gfx::Canvas* canvas) OVERRIDE {
+    painted_ = true;
+  }
+
+ private:
+  bool painted_;
+
+  DISALLOW_COPY_AND_ASSIGN(DrawTreeLayerDelegate);
+};
+
+}  // namespace
+
+TEST_F(LayerQuitOnCompositedTest, DrawTree) {
+  scoped_ptr<Layer> l1(CreateColorLayer(SK_ColorRED,
+                                        gfx::Rect(20, 20, 400, 400)));
+  scoped_ptr<Layer> l2(CreateColorLayer(SK_ColorBLUE,
+                                        gfx::Rect(10, 10, 350, 350)));
+  scoped_ptr<Layer> l3(CreateColorLayer(SK_ColorYELLOW,
+                                        gfx::Rect(10, 10, 100, 100)));
+  l1->Add(l2.get());
+  l2->Add(l3.get());
+
+  DrawTreeLayerDelegate d1;
+  l1->set_delegate(&d1);
+  DrawTreeLayerDelegate d2;
+  l2->set_delegate(&d2);
+  DrawTreeLayerDelegate d3;
+  l3->set_delegate(&d3);
+
+  set_root_layer(l1.get());
+
+  l2->SchedulePaint(gfx::Rect(5, 5, 5, 5));
+  RunPendingMessages();
+  EXPECT_FALSE(d1.painted());
+  EXPECT_TRUE(d2.painted());
+  EXPECT_FALSE(d3.painted());
 }
 
 }  // namespace ui

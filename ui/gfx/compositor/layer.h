@@ -60,6 +60,10 @@ class COMPOSITOR_EXPORT Layer {
   void SetBounds(const gfx::Rect& bounds);
   const gfx::Rect& bounds() const { return bounds_; }
 
+  // Sets |visible_|. The Layer is drawn by Draw() only when visible_ is true.
+  bool visible() const { return visible_; }
+  void set_visible(bool visible) { visible_ = visible; }
+
   // Converts a point from the coordinates of |source| to the coordinates of
   // |target|. Necessarily, |source| and |target| must inhabit the same Layer
   // tree.
@@ -89,24 +93,28 @@ class COMPOSITOR_EXPORT Layer {
   // repaint.
   void SchedulePaint(const gfx::Rect& invalid_rect);
 
-// Draws the layer with hole if hole is non empty.
-// hole looks like:
-//
-//  layer____________________________
-//  |xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx|
-//  |xxxxxxxxxxxxx top xxxxxxxxxxxxxx|
-//  |________________________________|
-//  |xxxxx|                    |xxxxx|
-//  |xxxxx|      Hole Rect     |xxxxx|
-//  |left | (not composited)   |right|
-//  |_____|____________________|_____|
-//  |xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx|
-//  |xxxxxxxxxx bottom xxxxxxxxxxxxxx|
-//  |________________________________|
-//
-// Legend:
-//   composited area: x
+  // Draws the layer with hole if hole is non empty.
+  // hole looks like:
+  //
+  //  layer____________________________
+  //  |xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx|
+  //  |xxxxxxxxxxxxx top xxxxxxxxxxxxxx|
+  //  |________________________________|
+  //  |xxxxx|                    |xxxxx|
+  //  |xxxxx|      Hole Rect     |xxxxx|
+  //  |left | (not composited)   |right|
+  //  |_____|____________________|_____|
+  //  |xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx|
+  //  |xxxxxxxxxx bottom xxxxxxxxxxxxxx|
+  //  |________________________________|
+  //
+  // Legend:
+  //   composited area: x
   void Draw();
+
+  // Draws a tree of Layers, by calling Draw() on each in the hierarchy starting
+  // with the receiver.
+  void DrawTree();
 
  private:
   // calls Texture::Draw only if the region to be drawn is non empty
@@ -143,6 +151,8 @@ class COMPOSITOR_EXPORT Layer {
   ui::Transform transform_;
 
   gfx::Rect bounds_;
+
+  bool visible_;
 
   bool fills_bounds_opaquely_;
 

@@ -747,13 +747,9 @@ ui::Compositor* Widget::GetCompositor() {
   return native_widget_->GetCompositor();
 }
 
-void Widget::MarkLayerDirty() {
-  native_widget_->MarkLayerDirty();
-}
-
 void Widget::CalculateOffsetToAncestorWithLayer(gfx::Point* offset,
-                                                View** ancestor) {
-  native_widget_->CalculateOffsetToAncestorWithLayer(offset, ancestor);
+                                                ui::Layer** layer_parent) {
+  native_widget_->CalculateOffsetToAncestorWithLayer(offset, layer_parent);
 }
 
 void Widget::NotifyAccessibilityEvent(
@@ -947,8 +943,7 @@ bool Widget::OnNativeWidgetPaintAccelerated(const gfx::Rect& dirty_region) {
   }
 
   compositor->NotifyStart(should_force_clear);
-  GetRootView()->PaintToLayer(dirty_region);
-  GetRootView()->PaintComposite();
+  GetRootView()->layer()->Draw();
   compositor->NotifyEnd();
   return true;
 }

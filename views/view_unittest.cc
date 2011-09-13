@@ -67,7 +67,7 @@ class TestView : public View {
   virtual void OnMouseReleased(const MouseEvent& event) OVERRIDE;
   virtual ui::TouchStatus OnTouchEvent(const TouchEvent& event) OVERRIDE;
   virtual void Paint(gfx::Canvas* canvas) OVERRIDE;
-  virtual void SchedulePaintInternal(const gfx::Rect& rect) OVERRIDE;
+  virtual void SchedulePaintInRect(const gfx::Rect& rect) OVERRIDE;
   virtual bool AcceleratorPressed(const Accelerator& accelerator) OVERRIDE;
 
   // OnBoundsChanged.
@@ -398,9 +398,9 @@ void TestView::Paint(gfx::Canvas* canvas) {
   canvas->AsCanvasSkia()->getClipBounds(&last_clip_);
 }
 
-void TestView::SchedulePaintInternal(const gfx::Rect& rect) {
+void TestView::SchedulePaintInRect(const gfx::Rect& rect) {
   scheduled_paint_rects_.push_back(rect);
-  View::SchedulePaintInternal(rect);
+  View::SchedulePaintInRect(rect);
 }
 
 void CheckRect(const SkRect& check_rect, const SkRect& target_rect) {
@@ -1480,7 +1480,7 @@ class TransformPaintView : public TestView {
   gfx::Rect scheduled_paint_rect() const { return scheduled_paint_rect_; }
 
   // Overridden from View:
-  virtual void SchedulePaintInternal(const gfx::Rect& rect) {
+  virtual void SchedulePaintInRect(const gfx::Rect& rect) {
     gfx::Rect xrect = ConvertRectToParent(rect);
     scheduled_paint_rect_ = scheduled_paint_rect_.Union(xrect);
   }
@@ -2345,16 +2345,15 @@ void TestTexture::SetCanvas(const SkCanvas& canvas,
 
 class TestCompositor : public ui::Compositor {
  public:
-  TestCompositor() : Compositor(gfx::Size(100, 100)) {}
+  TestCompositor() : Compositor(NULL, gfx::Size(100, 100)) {}
 
   // ui::Compositor:
   virtual ui::Texture* CreateTexture() OVERRIDE {
     return new TestTexture();
   }
-  virtual void NotifyStart() OVERRIDE {}
-  virtual void NotifyEnd() OVERRIDE {}
+  virtual void OnNotifyStart() OVERRIDE {}
+  virtual void OnNotifyEnd() OVERRIDE {}
   virtual void Blur(const gfx::Rect& bounds) OVERRIDE {}
-  virtual void SchedulePaint() OVERRIDE {}
 
  protected:
   virtual void OnWidgetSizeChanged() OVERRIDE {}

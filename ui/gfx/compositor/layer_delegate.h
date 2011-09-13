@@ -19,7 +19,7 @@ class COMPOSITOR_EXPORT LayerDelegate {
  public:
   // Paint content for the layer to the specified canvas. It has already been
   // clipped to the Layer's invalid rect.
-  virtual void OnPaint(gfx::Canvas* canvas) = 0;
+  virtual void OnPaintLayer(gfx::Canvas* canvas) = 0;
 
  protected:
   virtual ~LayerDelegate() {}

@@ -555,11 +555,9 @@ ui::Compositor* NativeWidgetWin::GetCompositor() {
   return compositor_.get();
 }
 
-void NativeWidgetWin::MarkLayerDirty() {
-}
-
-void NativeWidgetWin::CalculateOffsetToAncestorWithLayer(gfx::Point* offset,
-                                                         View** ancestor) {
+void NativeWidgetWin::CalculateOffsetToAncestorWithLayer(
+    gfx::Point* offset,
+    ui::Layer** layer_parent) {
 }
 
 void NativeWidgetWin::ViewRemoved(View* view) {
