@@ -37,7 +37,6 @@ void AsynchronousPolicyLoader::Init() {
 void AsynchronousPolicyLoader::Stop() {
   if (!stopped_) {
     stopped_ = true;
-    delegate_.reset();
     FOR_EACH_OBSERVER(ConfigurationPolicyProvider::Observer,
                       observer_list_,
                       OnProviderGoingAway());
@@ -131,6 +130,7 @@ void AsynchronousPolicyLoader::InitOnFileThread() {
 }
 
 void AsynchronousPolicyLoader::StopOnFileThread() {
+  delegate_.reset();
   CancelReloadTask();
 }
 
