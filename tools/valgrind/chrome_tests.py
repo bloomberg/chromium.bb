@@ -328,7 +328,7 @@ class ChromeTests:
     tool = valgrind_test.CreateTool(self._options.valgrind_tool)
     cmd = self._DefaultCommand(tool)
     cmd.append("--trace_children")
-    cmd.append("--indirect")
+    cmd.append("--indirect_webkit_layout")
     cmd.append("--ignore_exit_code")
     # Now build script_cmd, the run_webkits_tests.py commandline
     # Store each chunk in its own directory so that we can find the data later

@@ -247,6 +247,10 @@ class ValgrindTool(BaseTool):
                             default=False,
                             help="set BROWSER_WRAPPER rather than "
                                  "running valgrind directly")
+    parser.add_option("", "--indirect_webkit_layout", action="store_true",
+                            default=False,
+                            help="set --wrapper rather than running valgrind "
+                                 "directly.")
     parser.add_option("", "--trace_children", action="store_true",
                             default=False,
                             help="also trace child processes")
@@ -363,8 +367,19 @@ class ValgrindTool(BaseTool):
 
     # The Valgrind command is constructed.
 
+    # Handle --indirect_webkit_layout separately.
+    if self._options.indirect_webkit_layout:
+      # Need to create the wrapper before modifying |proc|.
+      wrapper = self.CreateBrowserWrapper(proc)
+      proc = self._args
+      proc.append("--wrapper")
+      proc.append(wrapper)
+      return proc
+
     if self._options.indirect:
-      self.CreateBrowserWrapper(" ".join(proc), logfilename)
+      wrapper = self.CreateBrowserWrapper(proc)
+      os.putenv("BROWSER_WRAPPER", wrapper)
+      logging.info('export BROWSER_WRAPPER=' + wrapper)
       proc = []
     proc += self._args
     return proc
@@ -373,13 +388,16 @@ class ValgrindTool(BaseTool):
     raise NotImplementedError, "This method should be implemented " \
                                "in the tool-specific subclass"
 
-  def CreateBrowserWrapper(self, command, logfiles):
-    """The program being run invokes Python or something else
-    that can't stand to be valgrinded, and also invokes
-    the Chrome browser.  Set an environment variable to
-    tell the program to prefix the Chrome commandline
-    with a magic wrapper.  Build the magic wrapper here.
+  def CreateBrowserWrapper(self, proc):
+    """The program being run invokes Python or something else that can't stand
+    to be valgrinded, and also invokes the Chrome browser. In this case, use a
+    magic wrapper to only valgrind the Chrome browser. Build the wrapper here.
+    Returns the path to the wrapper. It's up to the caller to use the wrapper
+    appropriately.
     """
+    command = " ".join(proc)
+    command = command.replace("%p", "$$.%p")
+
     (fd, indirect_fname) = tempfile.mkstemp(dir=self.log_dir,
                                             prefix="browser_wrapper.",
                                             text=True)
@@ -388,12 +406,11 @@ class ValgrindTool(BaseTool):
     f.write('echo "Started Valgrind wrapper for this test, PID=$$"\n')
     # Add the PID of the browser wrapper to the logfile names so we can
     # separate log files for different UI tests at the analyze stage.
-    f.write(command.replace("%p", "$$.%p"))
+    f.write(command)
     f.write(' "$@"\n')
     f.close()
     os.chmod(indirect_fname, stat.S_IRUSR|stat.S_IXUSR)
-    os.putenv("BROWSER_WRAPPER", indirect_fname)
-    logging.info('export BROWSER_WRAPPER=' + indirect_fname)
+    return indirect_fname
 
   def CreateAnalyzer(self):
     raise NotImplementedError, "This method should be implemented " \
