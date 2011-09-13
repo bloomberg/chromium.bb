@@ -4243,15 +4243,6 @@
    fun:_ZN3IPC12ChannelProxyC1ERKNS_13ChannelHandleENS_7Channel4ModeEPNS4_8ListenerEPN4base16MessageLoopProxyE
 }
 {
-   bug_89300
-   Memcheck:Leak
-   fun:_Znw*
-   ...
-   fun:_ZN8IOThread31RegisterURLRequestContextGetterEP29ChromeURLRequestContextGetter
-   fun:_ZN29ChromeURLRequestContextGetter20GetURLRequestContextEv
-   fun:_ZL23AddDataSourceOnIOThread13scoped_refptrIN3net23URLRequestContextGetterEES_IN20ChromeURLDataManager10DataSourceEE
-}
-{
    bug_89304
    Memcheck:Leak
    fun:_Znw*
