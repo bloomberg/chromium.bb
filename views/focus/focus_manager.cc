@@ -6,14 +6,9 @@
 
 #include <algorithm>
 
-#include "build/build_config.h"
-
-#if defined(OS_LINUX)
-#include <gtk/gtk.h>
-#endif
-
 #include "base/auto_reset.h"
 #include "base/logging.h"
+#include "build/build_config.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "views/accelerator.h"
 #include "views/focus/focus_search.h"
