@@ -4,7 +4,6 @@
 
 #include "chrome/browser/extensions/extension_tab_helper.h"
 
-#include "base/command_line.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/webstore_inline_installer.h"
 #include "chrome/browser/profiles/profile.h"
@@ -14,7 +13,6 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper_delegate.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_action.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_icon_set.h"
@@ -152,11 +150,6 @@ void ExtensionTabHelper::OnInlineWebstoreInstall(
     int install_id,
     const std::string& webstore_item_id,
     const GURL& requestor_url) {
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableInlineWebstoreInstall)) {
-    return;
-  }
-
   scoped_refptr<WebstoreInlineInstaller> installer(new WebstoreInlineInstaller(
       tab_contents(), install_id, webstore_item_id, requestor_url, this));
   installer->BeginInstall();

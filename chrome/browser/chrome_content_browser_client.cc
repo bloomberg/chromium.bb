@@ -318,7 +318,6 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
       switches::kEnableCrxlessWebApps,
       switches::kEnableExperimentalExtensionApis,
       switches::kEnableInBrowserThumbnailing,
-      switches::kEnableInlineWebstoreInstall,
       switches::kEnableIPCFuzzing,
       switches::kEnableNaCl,
       switches::kEnablePrintPreview,

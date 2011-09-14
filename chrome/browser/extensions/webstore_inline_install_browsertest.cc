@@ -46,8 +46,6 @@ class WebstoreInlineInstallTest : public InProcessBrowserTest {
     GURL crx_url = GenerateTestServerUrl(kWebstoreDomain, "extension.crx");
     CommandLine::ForCurrentProcess()->AppendSwitchASCII(
         switches::kAppsGalleryUpdateURL, crx_url.spec());
-
-    command_line->AppendSwitch(switches::kEnableInlineWebstoreInstall);
   }
 
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {

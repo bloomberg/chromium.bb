@@ -85,11 +85,7 @@ void ExtensionDispatcher::WebKitInitialized() {
   }
 
   RegisterExtension(extensions_v8::ChromeAppExtension::Get(this), false);
-
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableInlineWebstoreInstall)) {
-    RegisterExtension(ChromeWebstoreExtension::Get(), false);
-  }
+  RegisterExtension(ChromeWebstoreExtension::Get(), false);
 
   // Add v8 extensions related to chrome extensions.
   RegisterExtension(ExtensionProcessBindings::Get(this), true);
