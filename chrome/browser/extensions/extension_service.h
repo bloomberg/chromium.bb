@@ -49,6 +49,7 @@ class ExtensionBookmarkEventRouter;
 class ExtensionBrowserEventRouter;
 class ExtensionContentSettingsStore;
 class ExtensionCookiesEventRouter;
+class ExtensionDownloadsEventRouter;
 class ExtensionFileBrowserEventRouter;
 class ExtensionHistoryEventRouter;
 class ExtensionInstallUI;
@@ -762,6 +763,8 @@ class ExtensionService
 
   // Flag to make sure event routers are only initialized once.
   bool event_routers_initialized_;
+
+  scoped_ptr<ExtensionDownloadsEventRouter> downloads_event_router_;
 
   scoped_ptr<ExtensionHistoryEventRouter> history_event_router_;
 

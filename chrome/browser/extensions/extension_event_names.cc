@@ -29,4 +29,8 @@ const char kOnFileBrowserMountCompleted[] =
     "fileBrowserPrivate.onMountCompleted";
 
 const char kOnInputMethodChanged[] = "inputMethodPrivate.onChanged";
+
+const char kOnDownloadCreated[] = "experimental.downloads.onCreated";
+const char kOnDownloadChanged[] = "experimental.downloads.onChanged";
+const char kOnDownloadErased[] = "experimental.downloads.onErased";
 }  // namespace extension_event_names

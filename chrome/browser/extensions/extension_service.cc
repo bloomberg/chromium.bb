@@ -32,6 +32,7 @@
 #include "chrome/browser/extensions/extension_browser_event_router.h"
 #include "chrome/browser/extensions/extension_cookies_api.h"
 #include "chrome/browser/extensions/extension_data_deleter.h"
+#include "chrome/browser/extensions/extension_downloads_api.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"
 #include "chrome/browser/extensions/extension_history_api.h"
 #include "chrome/browser/extensions/extension_host.h"
@@ -700,6 +701,7 @@ void ExtensionService::InitEventRouters() {
   if (event_routers_initialized_)
     return;
 
+  downloads_event_router_.reset(new ExtensionDownloadsEventRouter(profile_));
   history_event_router_.reset(new ExtensionHistoryEventRouter());
   history_event_router_->ObserveProfile(profile_);
   ExtensionAccessibilityEventRouter::GetInstance()->ObserveProfile(profile_);

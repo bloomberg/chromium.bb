@@ -242,4 +242,24 @@ class DownloadsDragFunction : public AsyncDownloadsFunction {
  private:
   DISALLOW_COPY_AND_ASSIGN(DownloadsDragFunction);
 };
+
+class ExtensionDownloadsEventRouter : public DownloadManager::Observer {
+ public:
+  explicit ExtensionDownloadsEventRouter(Profile* profile);
+  virtual ~ExtensionDownloadsEventRouter();
+
+  virtual void ModelChanged() OVERRIDE;
+  virtual void ManagerGoingDown() OVERRIDE;
+
+ private:
+  void DispatchEvent(const char* event_name, base::Value* json_arg);
+  typedef base::hash_map<int, DownloadItem*> ItemMap;
+  typedef std::set<int> DownloadIdSet;
+
+  Profile* profile_;
+  DownloadManager* manager_;
+  DownloadIdSet downloads_;
+
+  DISALLOW_COPY_AND_ASSIGN(ExtensionDownloadsEventRouter);
+};
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_DOWNLOADS_API_H_

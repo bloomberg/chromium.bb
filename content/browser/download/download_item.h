@@ -301,6 +301,8 @@ class CONTENT_EXPORT DownloadItem {
   void set_opened(bool opened) { opened_ = opened; }
   bool opened() const { return opened_; }
 
+  net::Error last_error() const { return last_error_; }
+
   DownloadPersistentStoreInfo GetPersistentStoreInfo() const;
   DownloadStateInfo state_info() const { return state_info_; }
   const DownloadRequestHandle& request_handle() const {

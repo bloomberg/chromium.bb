@@ -38,6 +38,11 @@ extern const char kOnFileBrowserMountCompleted[];
 // InputMethod.
 extern const char kOnInputMethodChanged[];
 
+// Downloads.
+extern const char kOnDownloadCreated[];
+extern const char kOnDownloadChanged[];
+extern const char kOnDownloadErased[];
+
 };  // namespace extension_event_names
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_EVENT_NAMES_H_
