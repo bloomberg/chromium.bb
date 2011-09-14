@@ -37,3 +37,4 @@ GeolocationWifiDataProviderCommonTest.*
 
 # http://crbug.com/96298
 FileSystemDirURLRequestJobTest.*
+FileSystemOperationWriteTest.*
