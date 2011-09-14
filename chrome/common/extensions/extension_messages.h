@@ -325,3 +325,8 @@ IPC_MESSAGE_ROUTED3(ExtensionMsg_InlineWebstoreInstallResponse,
                     int32 /* install id */,
                     bool /* whether the install was successful */,
                     std::string /* error */)
+
+// Deliver a message sent with ExtensionHostMsg_PostMessage.
+IPC_MESSAGE_ROUTED2(ExtensionMsg_DeliverMessage,
+                    int /* target_port_id */,
+                    std::string /* message */)

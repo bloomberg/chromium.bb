@@ -6,6 +6,8 @@
 #define CHROME_RENDERER_EXTENSIONS_RENDERER_EXTENSION_BINDINGS_H_
 #pragma once
 
+#include <string>
+
 class ExtensionDispatcher;
 
 namespace v8 {
@@ -21,6 +23,9 @@ class RendererExtensionBindings {
 
   // Creates an instance of the extension.
   static v8::Extension* Get(ExtensionDispatcher* dispatcher);
+
+  // Delivers a message sent using content script messaging.
+  static void DeliverMessage(int target_port_id, const std::string& message);
 };
 
 #endif  // CHROME_RENDERER_EXTENSIONS_RENDERER_EXTENSION_BINDINGS_H_

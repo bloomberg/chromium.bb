@@ -253,3 +253,34 @@ v8::Extension* RendererExtensionBindings::Get(ExtensionDispatcher* dispatcher) {
   static v8::Extension* extension = new ExtensionImpl(dispatcher);
   return extension;
 }
+
+void RendererExtensionBindings::DeliverMessage(int target_port_id,
+                                               const std::string& message) {
+  v8::HandleScope handle_scope;
+
+  bindings_utils::ContextList contexts = bindings_utils::GetContexts();
+  for (bindings_utils::ContextList::iterator it = contexts.begin();
+       it != contexts.end(); ++it) {
+
+    v8::Handle<v8::Context> context = (*it)->context;
+    if (context.IsEmpty())
+      continue;
+
+    // Check to see whether the context has this port before bothering to create
+    // the message.
+    v8::Handle<v8::Value> port_id_handle = v8::Integer::New(target_port_id);
+    v8::Handle<v8::Value> has_port =
+        bindings_utils::CallFunctionInContext(
+            context, "Port.hasPort", 1, &port_id_handle);
+    CHECK(!has_port.IsEmpty());
+    if (!has_port->BooleanValue())
+      continue;
+
+    std::vector<v8::Handle<v8::Value> > arguments;
+    arguments.push_back(v8::String::New(message.c_str(), message.size()));
+    arguments.push_back(port_id_handle);
+    bindings_utils::CallFunctionInContext(
+        context, "Port.dispatchOnMessage",
+        arguments.size(), &arguments[0]);
+  }
+}

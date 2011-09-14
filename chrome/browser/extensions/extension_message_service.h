@@ -56,7 +56,6 @@ class ExtensionMessageService
   // Javascript function name constants.
   static const char kDispatchOnConnect[];
   static const char kDispatchOnDisconnect[];
-  static const char kDispatchOnMessage[];
 
   // Allocates a pair of port ids.
   // NOTE: this can be called from any thread.

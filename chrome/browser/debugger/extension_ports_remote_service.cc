@@ -226,6 +226,7 @@ bool ExtensionPortsRemoteService::Send(IPC::Message *message) {
 
   IPC_BEGIN_MESSAGE_MAP(ExtensionPortsRemoteService, *message)
     IPC_MESSAGE_HANDLER(ExtensionMsg_MessageInvoke, OnExtensionMessageInvoke)
+    IPC_MESSAGE_HANDLER(ExtensionMsg_DeliverMessage, OnDeliverMessage)
     IPC_MESSAGE_UNHANDLED_ERROR()
   IPC_END_MESSAGE_MAP()
 
@@ -238,13 +239,7 @@ void ExtensionPortsRemoteService::OnExtensionMessageInvoke(
     const std::string& function_name,
     const ListValue& args,
     const GURL& event_url) {
-  if (function_name == ExtensionMessageService::kDispatchOnMessage) {
-    DCHECK_EQ(args.GetSize(), 2u);
-    std::string message;
-    int port_id;
-    if (args.GetString(0, &message) && args.GetInteger(1, &port_id))
-      OnExtensionMessage(message, port_id);
-  } else if (function_name == ExtensionMessageService::kDispatchOnDisconnect) {
+  if (function_name == ExtensionMessageService::kDispatchOnDisconnect) {
     DCHECK_EQ(args.GetSize(), 1u);
     int port_id;
     if (args.GetInteger(0, &port_id))
@@ -258,8 +253,8 @@ void ExtensionPortsRemoteService::OnExtensionMessageInvoke(
   }
 }
 
-void ExtensionPortsRemoteService::OnExtensionMessage(
-    const std::string& message, int port_id) {
+void ExtensionPortsRemoteService::OnDeliverMessage(
+    int port_id, const std::string& message) {
   VLOG(1) << "Message event: from port " << port_id << ", < " << message << ">";
   // Transpose the information into a JSON message for the external client.
   DictionaryValue content;
