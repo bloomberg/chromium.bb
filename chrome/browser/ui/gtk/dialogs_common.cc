@@ -31,12 +31,7 @@ SelectFileDialogImpl::SelectFileDialogImpl(Listener* listener)
   }
 }
 
-SelectFileDialogImpl::~SelectFileDialogImpl() {
-  delete last_saved_path_;
-  last_saved_path_ = NULL;
-  delete last_opened_path_;
-  last_opened_path_ = NULL;
-}
+SelectFileDialogImpl::~SelectFileDialogImpl() { }
 
 void SelectFileDialogImpl::ListenerDestroyed() {
   listener_ = NULL;
