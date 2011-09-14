@@ -24,6 +24,8 @@ class MockDownloadManagerDelegate : public DownloadManagerDelegate {
   virtual bool ShouldOpenDownload(DownloadItem* item) OVERRIDE;
   virtual bool ShouldCompleteDownload(DownloadItem* item) OVERRIDE;
   virtual bool GenerateFileHash() OVERRIDE;
+  virtual void OnResponseCompleted(DownloadItem* item,
+                                   const std::string& hash) OVERRIDE;
   virtual void AddItemToPersistentStore(DownloadItem* item) OVERRIDE;
   virtual void UpdateItemInPersistentStore(DownloadItem* item) OVERRIDE;
   virtual void UpdatePathForItemInPersistentStore(

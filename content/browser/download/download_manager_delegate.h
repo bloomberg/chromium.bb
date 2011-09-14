@@ -59,6 +59,11 @@ class DownloadManagerDelegate {
   // Returns true if we need to generate a binary hash for downloads.
   virtual bool GenerateFileHash() = 0;
 
+  // Informs the delegate that given download has finishd downloading, and gives
+  // it the hash (if it chose to compute it from GenerateFileHash()).
+  virtual void OnResponseCompleted(DownloadItem* item,
+                                   const std::string& hash) = 0;
+
   // Notifies the delegate that a new download item is created. The
   // DownloadManager waits for the delegate to add information about this
   // download to its persistent store. When the delegate is done, it calls

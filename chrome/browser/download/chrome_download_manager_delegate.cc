@@ -179,6 +179,28 @@ bool ChromeDownloadManagerDelegate::GenerateFileHash() {
 #endif
 }
 
+void ChromeDownloadManagerDelegate::OnResponseCompleted(
+    DownloadItem* item,
+    const std::string& hash) {
+#if defined(ENABLE_SAFE_BROWSING)
+  // When hash is not available, it means either it is not calculated
+  // or there is error while it is calculated. We will skip the download hash
+  // check in that case.
+  if (hash.empty())
+    return;
+
+  scoped_refptr<DownloadSBClient> sb_client =
+      new DownloadSBClient(item->id(),
+                           item->url_chain(),
+                           item->referrer_url(),
+                           profile_->GetPrefs()->GetBoolean(
+                               prefs::kSafeBrowsingEnabled));
+  sb_client->CheckDownloadHash(
+      hash,
+      NewCallback(this, &ChromeDownloadManagerDelegate::CheckDownloadHashDone));
+#endif
+}
+
 void ChromeDownloadManagerDelegate::AddItemToPersistentStore(
     DownloadItem* item) {
   download_history_->AddEntry(item,
@@ -510,4 +532,15 @@ void ChromeDownloadManagerDelegate::OnItemAddedToPersistentStore(
   if (db_handle == DownloadItem::kUninitializedHandle)
     db_handle = download_history_->GetNextFakeDbHandle();
   download_manager_->OnItemAddedToPersistentStore(download_id, db_handle);
+}
+
+// TODO(noelutz): This function currently works as a callback place holder.
+// Once we decide the hash check is reliable, we could move the
+// MaybeCompleteDownload in OnAllDataSaved to this function.
+void ChromeDownloadManagerDelegate::CheckDownloadHashDone(
+    int32 download_id,
+    bool is_dangerous_hash) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DVLOG(1) << "CheckDownloadHashDone, download_id: " << download_id
+           << " is dangerous_hash: " << is_dangerous_hash;
 }

@@ -61,6 +61,8 @@ class ChromeDownloadManagerDelegate
   virtual bool ShouldOpenDownload(DownloadItem* item) OVERRIDE;
   virtual bool ShouldCompleteDownload(DownloadItem* item) OVERRIDE;
   virtual bool GenerateFileHash() OVERRIDE;
+  virtual void OnResponseCompleted(DownloadItem* item,
+                                   const std::string& hash) OVERRIDE;
   virtual void AddItemToPersistentStore(DownloadItem* item) OVERRIDE;
   virtual void UpdateItemInPersistentStore(DownloadItem* item) OVERRIDE;
   virtual void UpdatePathForItemInPersistentStore(
@@ -120,6 +122,10 @@ class ChromeDownloadManagerDelegate
 
   // Callback from history system.
   void OnItemAddedToPersistentStore(int32 download_id, int64 db_handle);
+
+  // Callback function after download file hash is checked with safebrowsing
+  // service.
+  void CheckDownloadHashDone(int32 download_id, bool is_dangerous_hash);
 
   Profile* profile_;
   scoped_refptr<DownloadManager> download_manager_;

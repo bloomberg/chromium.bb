@@ -364,6 +364,8 @@ void DownloadManager::OnResponseCompleted(int32 download_id,
   DownloadItem* download = active_downloads_[download_id];
   download->OnAllDataSaved(size);
 
+  delegate_->OnResponseCompleted(download, hash);
+
   MaybeCompleteDownload(download);
 }
 

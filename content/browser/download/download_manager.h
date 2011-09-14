@@ -298,11 +298,6 @@ class CONTENT_EXPORT DownloadManager
   void ContinueDownloadWithPath(DownloadItem* download,
                                 const FilePath& chosen_file);
 
-  // All data has been downloaded.
-  // |hash| is sha256 hash for the downloaded file. It is empty when the hash
-  // is not available.
-  void OnAllDataSaved(int32 download_id, int64 size, const std::string& hash);
-
   // Retrieves the download from the |download_id|.
   // Returns NULL if the download is not active.
   DownloadItem* GetActiveDownload(int32 download_id);
