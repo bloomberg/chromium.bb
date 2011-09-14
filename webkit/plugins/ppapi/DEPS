@@ -1,12 +1,9 @@
 include_rules = [
-  "+gpu/command_buffer",
   "+ppapi/c",
   "+ppapi/shared_impl",
   "+ppapi/thunk",
   "+printing",
   "+media/video",
-  "+skia",
-  "+ui/base",
 
   # This should technically not be allowed. Brett is refactoring this and will
   # move this file to a more proper shared location in a future iteration.

@@ -12,7 +12,6 @@ include_rules = [
   "+skia",
   "+third_party/sqlite",
   "+third_party/tcmalloc",
-  "+ui/gfx",
 
   # For databases/
   "+sql",
@@ -35,6 +34,5 @@ include_rules = [
   "+net/test",
   "+net/url_request",
   "+net/websockets",
-  "+ppapi/cpp",
   "+third_party/npapi/bindings",
 ]

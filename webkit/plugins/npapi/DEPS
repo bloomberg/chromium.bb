@@ -1,11 +1,4 @@
 include_rules = [
-  "+ppapi",
-
-  # Files in this directory must not depend on the proxy, because the proxy
-  # depends on IPC which we don't want to have in /webkit.
-  "-ppapi/proxy",
-
   "+printing",
-  "+skia",
   "+ui/base",
 ]
