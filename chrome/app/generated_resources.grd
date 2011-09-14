@@ -4232,8 +4232,14 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_POLICY_USER_POLICIES" desc="The title for the user policies status box.">
         User policies
       </message>
-      <message name="IDS_POLICY_ENROLLMENT_DOMAIN" desc="The label for the enrollment domain in the status boxes.">
+      <message name="IDS_POLICY_ENROLLMENT_DOMAIN" desc="The label for the enrollment domain in the device policies status box.">
         Enrollment domain:
+      </message>
+      <message name="IDS_POLICY_CLIENT_ID" desc="The label for the client ids in the status boxes.">
+        Client Id:
+      </message>
+      <message name="IDS_POLICY_USERNAME" desc="The label for the username in the user policies status box.">
+        User:
       </message>
       <message name="IDS_POLICY_LAST_FETCHED" desc="The label for the last fetched time in the status boxes.">
         Last fetched:
@@ -4269,7 +4275,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_POLICY_ENTRY_STATUS" desc="The table header for the column in policy table that contains the status of the policy.">
         Status
       </message>
-
+      <message name="IDS_POLICY_SHOW_MORE" desc="The text for the link that expands a policy value or policy status table cell.">
+        [Show more]
+      </message>
+      <message name="IDS_POLICY_HIDE" desc="The text for the link that hides overflowing text in a policy value or policy status table cell.">
+        [Hide]
+      </message>
       <!-- about:flags -->
       <message name="IDS_FLAGS_LONG_TITLE" desc="Long version of the title for the about:flags page.">
         Careful, these experiments may bite

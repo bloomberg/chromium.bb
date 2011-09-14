@@ -5,52 +5,85 @@
 <title i18n-content="policyTitle"></title>
 <link rel="stylesheet" href="chrome://resources/css/button.css">
 <link rel="stylesheet" href="policy.css">
+<link rel="stylesheet" href="webui.css">
 <script src="chrome://policy/strings.js"></script>
 <script src="chrome://resources/js/cr.js"></script>
 <script src="chrome://resources/js/cr/ui.js"></script>
-<script src="chrome://resources/js/local_strings.js"></script>
 <script src="chrome://resources/js/i18n_template.js"></script>
 <script src="chrome://resources/js/i18n_process.js"></script>
 <script src="chrome://resources/js/jstemplate_compiled.js"></script>
 <script src="chrome://resources/js/util.js"></script>
 <script src="policy.js"></script>
 </head>
-<body i18n-values=".style.fontFamily:fontfamily;">
+<body i18n-values=".style.fontFamily:fontfamily; .style.fontSize:fontsize">
   <div class="header">
     <h1 id="about-policy-title" i18n-content="policyTitle"></h1>
   </div>
   <div id="main-content">
-    <section id="status-section">
-      <div class="separator">
-        <span id="status-title" i18n-content="statusPaneTitle"></span>
-        <div id="fetch-policies">
-          <button id="fetch-policies-button" i18n-content="fetchPoliciesText">
-          </button>
+    <div id="data-template">
+      <section id="status-section" jsselect="status" hidden
+          jsdisplay="displayStatusSection">
+        <div class="separator">
+          <span id="status-title" i18n-content="statusPaneTitle"></span>
+          <div id="fetch-policies">
+            <button id="fetch-policies-button" i18n-content="fetchPoliciesText">
+            </button>
+          </div>
         </div>
-      </div>
-      <div id="status-pane">
-        <fieldset class="status-box">
-          <legend i18n-content="devicePoliciesBoxTitle"></legend>
-            <ul>
-              <li i18n-content="enrollmentDomainText"></li>
-              <li i18n-content="lastFetchedText"></li>
-              <li i18n-content="fetchIntervalText"></li>
-              <li i18n-content="serverStatusText"></li>
-            </ul>
-        </fieldset>
-        <fieldset class="status-box">
-          <legend i18n-content="userPoliciesBoxTitle"></legend>
-            <ul>
-              <li i18n-content="enrollmentDomainText"></li>
-              <li i18n-content="lastFetchedText"></li>
-              <li i18n-content="fetchIntervalText"></li>
-              <li i18n-content="serverStatusText"></li>
-            </ul>
-        </fielset>
-      </div>
-    </section>
-    <section id="policies-section">
-      <div id="policiesTemplate">
+          <div id="status-pane">
+            <fieldset class="status-box">
+              <legend i18n-content="devicePoliciesBoxTitle"></legend>
+                <ul>
+                  <li>
+                    <span i18n-content="enrollmentDomainText"></span>
+                    <span jscontent="devicePolicyDomain"></span>
+                  </li>
+                  <li>
+                    <span i18n-content="clientIdText"></span>
+                    <span jscontent="deviceId"></span>
+                  </li>
+                  <li>
+                    <span i18n-content="lastFetchedText"></span>
+                    <span jscontent="deviceLastFetchTime"></span>
+                  </li>
+                  <li>
+                    <span i18n-content="fetchIntervalText"></span>
+                    <span jscontent="deviceFetchInterval"></span>
+                  </li>
+                  <li>
+                    <span i18n-content="serverStatusText"></span>
+                    <span jscontent="deviceStatusMessage"></span>
+                  </li>
+                </ul>
+            </fieldset>
+            <fieldset class="status-box">
+              <legend i18n-content="userPoliciesBoxTitle"></legend>
+                <ul>
+                  <li>
+                    <span i18n-content="usernameText"></span>
+                    <span jscontent="user"></span>
+                  </li>
+                  <li>
+                    <span i18n-content="clientIdText"></span>
+                    <span jscontent="userId"></span>
+                  </li>
+                  <li>
+                    <span i18n-content="lastFetchedText"></span>
+                    <span jscontent="userLastFetchTime"></span>
+                  </li>
+                  <li>
+                    <span i18n-content="fetchIntervalText"></span>
+                    <span jscontent="userFetchInterval"></span>
+                  </li>
+                  <li>
+                    <span i18n-content="serverStatusText"></span>
+                    <span jscontent="userStatusMessage"></span>
+                  </li>
+                </ul>
+            </fielset>
+          </div>
+      </section>
+      <section id="policies-section">
         <div class="separator">
           <span id="policies-title" i18n-content="policyTitle"></span>
           <div id="unsent-policies-control">
@@ -66,11 +99,10 @@
           </div>
         </div>
         <div>
-          <div id="no-policies" jsdisplay="!anyPoliciesSet">
+          <div id="no-policies" hidden jsdisplay="!anyPoliciesSet">
             <div id="no-policies-text" i18n-content="noPoliciesSet"></div>
           </div>
-          <div id="policies"
-              jsvalues=".style.display: anyPoliciesSet ?
+          <div id="policies" jsvalues=".style.display: anyPoliciesSet ?
               '': 'none'">
             <table id="policy-table">
               <tr>
@@ -83,29 +115,43 @@
               <tr jsselect="policies"
                   jsvalues=".className: $this.set ?
                   'policy-set': 'policy-unset';
-                  .style.display: Policy.shouldDisplayPolicy($this) ?
-                  '': 'none'">
+                  .style.visibility: Policy.shouldDisplayPolicy($this) ?
+                  'visible': 'hidden'">
               <td>
                 <span class="policy-type" jscontent="sourceType"></span>
               </td>
               <td>
                 <span class="policy-level" jscontent="level"></span>
               </td>
-              <td>
+              <td class="collapsed">
                 <span class="policy-name" jscontent="name"></span>
               </td>
               <td>
-                <span class="policy-value" jscontent="value"></span>
+                <div class="text-container collapsed">
+                  <span class="cell-text" jscontent="value"></span>
+                </div>
+                <a class="toggler expand" style="display: none"
+                    jsdisplay="Policy.shouldShowExpand(this)"
+                    i18n-content="showMoreText"></a>
+                <a class="toggler collapse" style="display: none"
+                    i18n-content="hideText"></a>
               </td>
               <td>
-                <span class="policy-status" jscontent="status"></span>
+                <div class="text-container collapsed">
+                  <span class="cell-text" jscontent="status"></span>
+                </div>
+                <a class="toggler expand" style="display: none"
+                  jsdisplay="Policy.shouldShowExpand(this)"
+                  i18n-content="showMoreText"></a>
+                <a class="toggler collapse" style="display: none"
+                  i18n-content="hideText"></a>
               </td>
               </tr>
             </table>
           </div>
         </div>
-      </div>
-    </section>
+      </section>
+    </div>
   </div>
 </body>
 </html>

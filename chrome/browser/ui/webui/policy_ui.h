@@ -7,13 +7,17 @@
 #pragma once
 
 #include "base/scoped_ptr.h"
+#include "base/time.h"
 #include "base/values.h"
+#include "chrome/browser/policy/cloud_policy_data_store.h"
+#include "chrome/browser/policy/cloud_policy_subsystem.h"
 #include "chrome/browser/policy/configuration_policy_reader.h"
 #include "chrome/browser/ui/webui/chrome_web_ui.h"
 #include "content/common/notification_observer.h"
 
 // The base class handler of Javascript messages of the about:policy page.
-class PolicyUIHandler : public WebUIMessageHandler {
+class PolicyUIHandler : public WebUIMessageHandler,
+                        public policy::PolicyStatus::Observer {
  public:
   PolicyUIHandler();
   virtual ~PolicyUIHandler();
@@ -22,11 +26,46 @@ class PolicyUIHandler : public WebUIMessageHandler {
   virtual WebUIMessageHandler* Attach(WebUI* web_ui) OVERRIDE;
   virtual void RegisterMessages() OVERRIDE;
 
- private:
-  typedef policy::ConfigurationPolicyReader ConfigurationPolicyReader;
+  // policy::ConfigurationPolicyReader::Observer implementation.
+  virtual void OnPolicyValuesChanged() OVERRIDE;
 
-  // Callback for the "requestPolicyData" message.
-  void HandleRequestPolicyData(const ListValue* args);
+ private:
+
+  // Callback for the "requestData" message. The parameter |args| is unused.
+  void HandleRequestData(const ListValue* args);
+
+  // Callback for the "fetchPolicy" message. The parameter |args| is unused.
+  void HandleFetchPolicy(const ListValue* args);
+
+  // Send requested data to UI. |is_policy_update| should be set to true when
+  // policy data is pushed to the UI without having been requested by a
+  // javascript message and to false otherwise.
+  void SendDataToUI(bool is_policy_update);
+
+  // Returns a DictionaryValue pointer containing information about the status
+  // of the policy system. The caller acquires ownership of the returned
+  // DictionaryValue pointer.
+  DictionaryValue* GetStatusData();
+
+  // Fetches policy if the appropriate device tokens are available. Returns
+  // true, if any policy was fetched (device or user). Returns false otherwise.
+  bool FetchPolicyIfTokensAvailable();
+
+  // Returns the time at which policy was last fetched by the
+  // CloudPolicySubsystem |subsystem| in string form.
+  string16 GetLastFetchTime(policy::CloudPolicySubsystem* subsystem);
+
+  // Reads the device id from |data_store| and returns it as a string16.
+  string16 GetDeviceId(const policy::CloudPolicyDataStore* data_store);
+
+  // Reads the policy fetch interval from the preferences specified by
+  // |refresh_pref| and returns it as a string16.
+  string16 GetPolicyFetchInterval(const char* refresh_pref);
+
+  // Returns the string corresponding to the CloudPolicySubsystem::ErrorDetails
+  // enum value |error_details|.
+  static string16 CreateStatusMessageString(
+      policy::CloudPolicySubsystem::ErrorDetails error_details);
 
   scoped_ptr<policy::PolicyStatus> policy_status_;
 

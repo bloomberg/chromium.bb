@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_POLICY_CONFIGURATION_POLICY_READER_H_
 #pragma once
 
+#include "base/observer_list.h"
 #include "base/scoped_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/policy/configuration_policy_provider.h"
@@ -21,6 +22,18 @@ class ConfigurationPolicyStatusKeeper;
 // about:policy UI.
 class ConfigurationPolicyReader : public ConfigurationPolicyProvider::Observer {
  public:
+
+  // Observer class for the ConfigurationPolicyReader. Observer objects are
+  // notified when policy values have changed.
+  class Observer {
+   public:
+    // Called on an observer when the policy values have changed.
+    virtual void OnPolicyValuesChanged() = 0;
+
+   protected:
+    virtual ~Observer() {}
+  };
+
   ConfigurationPolicyReader(ConfigurationPolicyProvider* provider,
                             PolicyStatusInfo::PolicyLevel policy_level);
   virtual ~ConfigurationPolicyReader();
@@ -29,21 +42,21 @@ class ConfigurationPolicyReader : public ConfigurationPolicyProvider::Observer {
   virtual void OnUpdatePolicy();
   virtual void OnProviderGoingAway();
 
+  // Methods to handle Observers. |observer| must be non-NULL.
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
+
   // Creates a ConfigurationPolicyReader that reads managed platform policy.
-  static ConfigurationPolicyReader*
-      CreateManagedPlatformPolicyReader();
+  static ConfigurationPolicyReader* CreateManagedPlatformPolicyReader();
 
   // Creates a ConfigurationPolicyReader that reads managed cloud policy.
-  static ConfigurationPolicyReader*
-      CreateManagedCloudPolicyReader();
+  static ConfigurationPolicyReader* CreateManagedCloudPolicyReader();
 
   // Creates a ConfigurationPolicyReader that reads recommended platform policy.
-  static ConfigurationPolicyReader*
-        CreateRecommendedPlatformPolicyReader();
+  static ConfigurationPolicyReader* CreateRecommendedPlatformPolicyReader();
 
   // Creates a ConfigurationPolicyReader that reads recommended cloud policy.
-  static ConfigurationPolicyReader*
-        CreateRecommendedCloudPolicyReader();
+  static ConfigurationPolicyReader* CreateRecommendedCloudPolicyReader();
 
   // Returns a pointer to a DictionaryValue object containing policy status
   // information for the UI. Ownership of the return value is acquired by the
@@ -70,6 +83,9 @@ class ConfigurationPolicyReader : public ConfigurationPolicyProvider::Observer {
   // Current policy status.
   scoped_ptr<ConfigurationPolicyStatusKeeper> policy_keeper_;
 
+  // The list of observers for this ConfigurationPolicyReader.
+  ObserverList<Observer, true> observers_;
+
   ConfigurationPolicyObserverRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(ConfigurationPolicyReader);
@@ -80,17 +96,24 @@ class ConfigurationPolicyReader : public ConfigurationPolicyProvider::Observer {
 // about:policy UI can display.
 class PolicyStatus {
  public:
+  typedef ConfigurationPolicyReader::Observer Observer;
   PolicyStatus(ConfigurationPolicyReader* managed_platform,
                ConfigurationPolicyReader* managed_cloud,
                ConfigurationPolicyReader* recommended_platform,
                ConfigurationPolicyReader* recommended_cloud);
   ~PolicyStatus();
 
+  // Adds an observer to each one of the ConfigurationPolicyReaders.
+  void AddObserver(Observer* observer) const;
+
+  // Removes an observer from each one of the ConfigurationPolicyReaders.
+  void RemoveObserver(Observer* observer) const;
+
   // Returns a ListValue pointer containing the status information of all
-  // policies supported by the client. |any_policies_sent| is set to true if
+  // policies supported by the client. |any_policies_set| is set to true if
   // there are policies in the list that were sent by a provider, otherwise
   // it is set to false. This is for the about:policy UI to display.
-  ListValue* GetPolicyStatusList(bool* any_policies_sent) const;
+  ListValue* GetPolicyStatusList(bool* any_policies_set) const;
 
   // Returns a string16 containing the actual name of the policy corresponding
   // to |policy_type|. Returns an empty string if there is no such policy_type
@@ -105,7 +128,7 @@ class PolicyStatus {
   // |list| as it is returned by the different ConfigurationPolicyReader
   // objects. Returns true if a policy was added and false otherwise.
   bool AddPolicyFromReaders(ConfigurationPolicyType policy,
-                             ListValue* list) const;
+                            ListValue* list) const;
 
   scoped_ptr<ConfigurationPolicyReader> managed_platform_;
   scoped_ptr<ConfigurationPolicyReader> managed_cloud_;

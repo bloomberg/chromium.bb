@@ -120,6 +120,14 @@ void ConfigurationPolicyReader::OnProviderGoingAway() {
   provider_ = NULL;
 }
 
+void ConfigurationPolicyReader::AddObserver(Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void ConfigurationPolicyReader::RemoveObserver(Observer* observer) {
+  observers_.RemoveObserver(observer);
+}
+
 // static
 ConfigurationPolicyReader*
     ConfigurationPolicyReader::CreateManagedPlatformPolicyReader() {
@@ -176,6 +184,8 @@ void ConfigurationPolicyReader::Refresh() {
   scoped_ptr<ConfigurationPolicyStatusKeeper> new_keeper(
       new ConfigurationPolicyStatusKeeper(provider_, policy_level_));
   policy_keeper_.reset(new_keeper.release());
+
+  FOR_EACH_OBSERVER(Observer, observers_, OnPolicyValuesChanged());
 }
 
 // PolicyStatus
@@ -192,11 +202,25 @@ PolicyStatus::PolicyStatus(ConfigurationPolicyReader* managed_platform,
 PolicyStatus::~PolicyStatus() {
 }
 
-ListValue* PolicyStatus::GetPolicyStatusList(bool* any_policies_sent) const {
+void PolicyStatus::AddObserver(Observer* observer) const {
+  managed_platform_->AddObserver(observer);
+  managed_cloud_->AddObserver(observer);
+  recommended_platform_->AddObserver(observer);
+  recommended_cloud_->AddObserver(observer);
+}
+
+void PolicyStatus::RemoveObserver(Observer* observer) const {
+  managed_platform_->RemoveObserver(observer);
+  managed_cloud_->RemoveObserver(observer);
+  recommended_platform_->RemoveObserver(observer);
+  recommended_cloud_->RemoveObserver(observer);
+}
+
+ListValue* PolicyStatus::GetPolicyStatusList(bool* any_policies_set) const {
   ListValue* result = new ListValue();
   std::vector<DictionaryValue*> unsent_policies;
 
-  *any_policies_sent = false;
+  *any_policies_set = false;
   const PolicyDefinitionList* supported_policies =
       ConfigurationPolicyPrefStore::GetChromePolicyDefinitionList();
   const PolicyDefinitionList::Entry* policy = supported_policies->begin;
@@ -210,7 +234,7 @@ ListValue* PolicyStatus::GetPolicyStatusList(bool* any_policies_sent) const {
                             string16());
       unsent_policies.push_back(info.GetDictionaryValue());
     } else {
-      *any_policies_sent = true;
+      *any_policies_set = true;
     }
   }
 

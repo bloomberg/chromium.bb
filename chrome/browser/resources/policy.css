@@ -141,3 +141,18 @@ legend {
   text-overflow: ellipsis;
   width: 20%;
 }
+
+.toggler {
+  color: #808080;
+}
+
+.collapsed {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.expanded {
+  overflow: visible;
+  word-wrap: break-word;
+}
