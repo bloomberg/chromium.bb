@@ -341,8 +341,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, IncognitoDragging) {
   BrowserActionTestUtil incognito_bar(incognito_browser);
 
   // Navigate just to have a tab in this window, otherwise wonky things happen.
-  ui_test_utils::OpenURLOffTheRecord(browser()->profile(),
-                                     GURL(chrome::kChromeUIExtensionsURL));
+  ui_test_utils::OpenURLOffTheRecord(browser()->profile(), GURL("about:blank"));
 
   ASSERT_EQ(2, incognito_bar.NumberOfBrowserActions());
 
