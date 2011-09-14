@@ -30,6 +30,8 @@ const char kUsersKey[] = "users";
 const char kAverageRatingKey[] = "average_rating";
 const char kRatingCountKey[] = "rating_count";
 const char kVerifiedSiteKey[] = "verified_site";
+const char kInlineInstallNotSupportedKey[] = "inline_install_not_supported";
+const char kRedirectUrlKey[] = "redirect_url";
 
 const char kInvalidWebstoreItemId[] = "Invalid Chrome Web Store item ID";
 const char kWebstoreRequestError[] =
@@ -40,6 +42,9 @@ const char kUserCancelledError[] = "User cancelled install";
 const char kNotFromVerifiedSite[] =
     "Installs can only be initiated by the Chrome Web Store item's verified "
     "site";
+const char kInlineInstallSupportedError[] =
+    "Inline installation is not supported for this item. The user will be "
+    "redirected to the Chrome Web Store.";
 
 class SafeWebstoreResponseParser : public UtilityProcessHost::Client {
  public:
@@ -203,14 +208,36 @@ void WebstoreInlineInstaller::OnWebstoreResponseParseSuccess(
 
   webstore_data_.reset(webstore_data);
 
-  std::string manifest;
-  if (!webstore_data->GetString(kManifestKey, &manifest)) {
+  // The store may not support inline installs for this item, in which case
+  // we open the store-provided redirect URL in a new tab and abort the
+  // installation process.
+  bool inline_install_not_supported = false;
+  if (webstore_data->HasKey(kInlineInstallNotSupportedKey) &&
+      !webstore_data->GetBoolean(
+          kInlineInstallNotSupportedKey, &inline_install_not_supported)) {
     CompleteInstall(kInvalidWebstoreResponseError);
     return;
   }
+  if (inline_install_not_supported) {
+    std::string redirect_url;
+    if (!webstore_data->GetString(kRedirectUrlKey, &redirect_url)) {
+      CompleteInstall(kInvalidWebstoreResponseError);
+      return;
+    }
 
-  // Number of users, average rating and rating count are required.
-  if (!webstore_data->GetString(kUsersKey, &localized_user_count_) ||
+    tab_contents()->OpenURL(OpenURLParams(
+        GURL(redirect_url),
+        tab_contents()->GetURL(),
+        NEW_FOREGROUND_TAB,
+        PageTransition::AUTO_BOOKMARK));
+    CompleteInstall(kInlineInstallSupportedError);
+    return;
+  }
+
+  // Manifest, number of users, average rating and rating count are required.
+  std::string manifest;
+  if (!webstore_data->GetString(kManifestKey, &manifest) ||
+      !webstore_data->GetString(kUsersKey, &localized_user_count_) ||
       !webstore_data->GetDouble(kAverageRatingKey, &average_rating_) ||
       !webstore_data->GetInteger(kRatingCountKey, &rating_count_)) {
     CompleteInstall(kInvalidWebstoreResponseError);

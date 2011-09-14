@@ -151,3 +151,20 @@ IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallTest, MAYBE_ArgumentValidation) {
 
   RunInlineInstallTest();
 }
+
+IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallTest, InstallNotSupported) {
+  SetExtensionInstallDialogForManifestAutoConfirmForTests(false);
+  ui_test_utils::NavigateToURL(
+      browser(),
+      GenerateTestServerUrl(kAppDomain, "install-not-supported.html"));
+
+  RunInlineInstallTest();
+
+  // The inline install should fail, and a store-provided URL should be opened
+  // in a new tab.
+  if (browser()->tabstrip_model()->count() == 1) {
+    ui_test_utils::WaitForNewTab(browser());
+  }
+  TabContents* tab_contents = browser()->GetSelectedTabContents();
+  EXPECT_EQ(GURL("http://cws.com/show-me-the-money"), tab_contents->GetURL());
+}
