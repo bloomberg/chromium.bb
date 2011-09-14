@@ -90,7 +90,7 @@ void KeyboardOverlayDialogView::ShowDialog(
   delegate->set_view(html_view);
   html_view->InitDialog();
   chromeos::BubbleWindow::Create(owning_window,
-                                 chromeos::STYLE_XSHAPE,
+                                 chromeos::STYLE_FLUSH,
                                  html_view);
   html_view->GetWidget()->Show();
 }

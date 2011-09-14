@@ -35,9 +35,7 @@ void ChooseMobileNetworkDialog::ShowDialog(gfx::NativeWindow owning_window) {
   HtmlDialogView* html_view =
       new HtmlDialogView(profile, new ChooseMobileNetworkDialog);
   html_view->InitDialog();
-  chromeos::BubbleWindow::Create(owning_window,
-                                 chromeos::STYLE_GENERIC,
-                                 html_view);
+  BubbleWindow::Create(owning_window, STYLE_FLUSH, html_view);
   html_view->GetWidget()->Show();
 }
 

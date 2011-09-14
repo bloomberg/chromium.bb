@@ -19,6 +19,26 @@
 #include "googleurl/src/gurl.h"
 #include "views/widget/widget.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/frame/bubble_window.h"
+#endif
+
+namespace {
+
+views::Widget* CreateWindow(gfx::NativeWindow parent,
+                            views::WidgetDelegate* delegate) {
+#if defined(OS_CHROMEOS)
+  // On Chrome OS we need to override the style to suppress padding around
+  // the borders.
+  return chromeos::BubbleWindow::Create(parent,
+      chromeos::STYLE_FLUSH, delegate);
+#else
+  return browser::CreateViewsWindow(parent, delegate);
+#endif
+}
+
+}  // namespace
+
 ExtensionDialog::ExtensionDialog(ExtensionHost* host,
                                  ExtensionDialogObserver* observer)
     : window_(NULL),
@@ -68,8 +88,7 @@ ExtensionHost* ExtensionDialog::CreateExtensionHost(const GURL& url,
 
 void ExtensionDialog::InitWindow(Browser* browser, int width, int height) {
   gfx::NativeWindow parent = browser->window()->GetNativeHandle();
-  window_ = browser::CreateViewsWindow(
-      parent, this /* views::WidgetDelegate */);
+  window_ = CreateWindow(parent, this /* views::WidgetDelegate */);
 
   // Center the window over the browser.
   gfx::Point center = browser->window()->GetBounds().CenterPoint();

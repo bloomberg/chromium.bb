@@ -7,7 +7,6 @@
 #pragma once
 
 #include "chrome/browser/chromeos/frame/bubble_window_style.h"
-#include "third_party/skia/include/core/SkColor.h"
 #include "views/widget/native_widget_gtk.h"
 
 namespace views {
@@ -30,10 +29,6 @@ class BubbleWindow : public views::NativeWidgetGtk {
   virtual void InitNativeWidget(
       const views::Widget::InitParams& params) OVERRIDE;
   virtual views::NonClientFrameView* CreateNonClientFrameView() OVERRIDE;
-
-  // Trims the window margins and rounds off the corners.
-  void TrimMargins(int margin_left, int margin_right, int margin_top,
-                   int margin_bottom, int border_radius);
 
  private:
   BubbleWindowStyle style_;

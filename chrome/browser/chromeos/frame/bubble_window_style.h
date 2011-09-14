@@ -12,10 +12,19 @@ namespace chromeos {
 
 // A class to share common definitions between GTK and Views implementations.
 enum BubbleWindowStyle {
-  STYLE_GENERIC = 0, // Default style.
-  STYLE_XBAR = 1 << 0, // Show close button at the top right (left for RTL).
-  STYLE_THROBBER = 1 << 1, // Show throbber for slow rendering.
-  STYLE_XSHAPE = 1 << 2 // Trim the window margins and round corners.
+  // Default style.
+  STYLE_GENERIC = 0,
+
+  // Show close button at the top right (left for RTL).
+  // Deprecated, see BubbleWindow::Create().
+  STYLE_XBAR = 1 << 0,
+
+  // Show throbber for slow rendering.
+  // Deprecated, see BubbleWindow::Create().
+  STYLE_THROBBER = 1 << 1,
+
+  // Content flush to edge, no padding.
+  STYLE_FLUSH = 1 << 2
 };
 
 extern const SkColor kBubbleWindowBackgroundColor;
