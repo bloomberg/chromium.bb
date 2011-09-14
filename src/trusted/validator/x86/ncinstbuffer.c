@@ -152,6 +152,14 @@ uint8_t NCInstBytesPeek(NCInstBytes* bytes, ssize_t n) {
   return NCRemainingMemoryLookahead(bytes->memory, n);
 }
 
+uint8_t NCInstByte(NCInstBytes* bytes, ssize_t n) {
+  if (n < bytes->length)  {
+    return bytes->byte[n];
+  } else {
+    return NCRemainingMemoryLookahead(bytes->memory, n - bytes->length);
+  }
+}
+
 uint8_t NCInstBytesRead(NCInstBytes* bytes) {
   uint8_t byte = NCRemainingMemoryRead(bytes->memory);
   if (bytes->length < MAX_INST_LENGTH) {

@@ -401,7 +401,7 @@ void NcInstStateTests::dummy() {
   NaClValidatePrefixFlags(_state);
   NaClClearInstState(_state, 0);
   NaClGetNextInstCandidates(_state, &prefix_desc, NULL);
-  NaClConsumeOpcodeSequence(_state);
+  NaClConsumeHardCodedNop(_state);
 }
 
 // Test function NaClExtactOpSize, which returns the expected

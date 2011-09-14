@@ -174,6 +174,11 @@ void NCInstBytesInit(NCInstBytes* bytes);
  */
 uint8_t NCInstBytesPeek(NCInstBytes* bytes, ssize_t n);
 
+/* Peek at the nth character in the sequence of bytes being parsed (independent
+ * of the current position).
+ */
+uint8_t NCInstByte(NCInstBytes* bytes, ssize_t n);
+
 /* Reads a byte from the memory segment and adds it to the instruction buffer.
  * Returns the read byte.
  * Note: Assumes that NCInstBytesInitMemory has already been called to associate

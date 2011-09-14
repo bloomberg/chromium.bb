@@ -1657,6 +1657,13 @@ static void NaClDefNops() {
    * 0f 1f 80 00 00 00 00                         nop
    * 0f 1f 84 00 00 00 00 00                      nop
    */
+  /* Note: For performance reasons, the function NaClMaybeHardCodedNop in
+   * src/trusted/validator/x86/decoder/nc_inst_state.c
+   * has been tuned to not look for these Nop instructions, unless
+   * the opcode byte sequence is one of "90", "0f1f",  or "0f0b". If you add
+   * any nop instruction that doesn't meet this criteria, be sure
+   * to update NaClMaybeHardCodedNop accordingly.
+   */
   /* nop */
   NaClDefNopSeq("90", 0x90);
   NaClDefNopSeq("6690", 0x90);

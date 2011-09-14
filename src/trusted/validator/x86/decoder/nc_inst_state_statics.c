@@ -740,6 +740,9 @@ static Bool NaClValidatePrefixFlags(NaClInstState* state) {
   return TRUE;
 }
 
+/* Move back to point just after the prefix sequence (defined by
+ * inst_length).
+ */
 static void NaClClearInstState(NaClInstState* state, uint8_t inst_length) {
   if (state->bytes.length != inst_length) {
     NCInstBytesReset(&state->bytes);
@@ -755,6 +758,32 @@ static void NaClClearInstState(NaClInstState* state, uint8_t inst_length) {
   state->num_imm2_bytes = 0;
   state->operand_size = 32;
   state->address_size = 32;
+  state->nodes.is_defined = FALSE;
+  state->nodes.number_expr_nodes = 0;
+}
+
+/* Move back to the beginning of the instruction, so that we can reparse. */
+static void NaClResetInstState(NaClInstState* state) {
+  if (state->bytes.length > 0) {
+    NCInstBytesReset(&state->bytes);
+  }
+  state->num_prefix_bytes = 0;
+  state->opcode_prefix = 0;
+  state->num_opcode_bytes = 0;
+  state->rexprefix = 0;
+  state->num_rex_prefixes = 0;
+  state->modrm = 0;
+  state->has_prefix_duplicates = FALSE;
+  state->has_ambig_segment_prefixes = FALSE;
+  state->has_sib = FALSE;
+  state->sib = 0;
+  state->num_disp_bytes = 0;
+  state->first_disp_byte = 0;
+  state->num_imm_bytes = 0;
+  state->first_imm_byte = 0;
+  state->num_imm2_bytes = 0;
+  state->prefix_mask = 0;
+  state->inst = NULL;
   state->nodes.is_defined = FALSE;
   state->nodes.number_expr_nodes = 0;
 }
@@ -842,16 +871,14 @@ static const NaClInst* NaClGetNextInstCandidates(
   return cand_insts;
 }
 
-static Bool NaClConsumeOpcodeSequence(NaClInstState* state) {
+static Bool NaClConsumeHardCodedNop(NaClInstState* state) {
   uint8_t next_byte;
   const NaClInstNode* next;
   uint8_t next_length = 0;
   const NaClInst* matching_inst = NULL;
   uint8_t matching_length = 0;
 
-  /* Cut quick if first byte not applicable. */
-  if (state->bytes.length + next_length >= state->length_limit) return FALSE;
-  next_byte = NCInstBytesPeek(&state->bytes, next_length);
+  next_byte = NCInstByte(&state->bytes, next_length);
   next = state->decoder_tables->hard_coded;
 
   /* Find maximal match in trie. */
@@ -866,8 +893,10 @@ static Bool NaClConsumeOpcodeSequence(NaClInstState* state) {
         matching_length = next_length;
       }
       if (next_length < state->length_limit) {
-        next_byte = NCInstBytesPeek(&state->bytes, next_length);
         next = next->success;
+        if (next != NULL) {
+          next_byte = NCInstByte(&state->bytes, next_length);
+        }
       } else {
         break;
       }
@@ -886,6 +915,7 @@ static Bool NaClConsumeOpcodeSequence(NaClInstState* state) {
      * using opcode sequences have no (useful) operands, and hence
      * no additional information is needed.
      */
+    NaClResetInstState(state);
     state->inst = matching_inst;
     NCInstBytesReadBytes(matching_length, &state->bytes);
     DEBUG(NaClLog(LOG_INFO, "matched inst sequence [%d]!\n", matching_length));
