@@ -108,7 +108,7 @@ var DragWrapper = (function() {
         return;
 
       this.target_.classList.remove('drag-target');
-      this.handler_.doDragLeave();
+      this.handler_.doDragLeave(e);
     },
   };
 

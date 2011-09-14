@@ -151,14 +151,18 @@ cr.define('ntp4', function() {
       setCurrentlyDraggingTile(null);
 
       // tilePage will be null if we've already been removed.
-      if (this.tilePage)
-        this.tilePage.positionTile_(this.index);
+      var tilePage = this.tilePage;
+      if (tilePage)
+        tilePage.positionTile_(this.index);
 
       // Take an appropriate action with the drag clone.
       if (this.landedOnTrash) {
         this.dragClone.classList.add('deleting');
-      } else if (this.tilePage) {
-        if (this.tilePage.selected && e.dataTransfer.dropEffect != 'copy') {
+      } else if (tilePage) {
+        // TODO(dbeam): Until we fix dropEffect to the correct behavior it will
+        // differ on windows - crbug.com/39399.  That's why we use the custom
+        // tilePage.lastDropEffect_ instead of e.dataTransfer.dropEffect.
+        if (tilePage.selected && tilePage.lastDropEffect_ != 'copy') {
           // The drag clone can still be hidden from the last drag move event.
           this.dragClone.hidden = false;
           // The tile's contents may have moved following the respositioning;
@@ -927,6 +931,8 @@ cr.define('ntp4', function() {
       if (newDragIndex < 0 || newDragIndex >= this.tileElements_.length)
         newDragIndex = this.dragItemIndex_;
       this.updateDropIndicator_(newDragIndex);
+
+      this.lastDropEffect_ = e.dataTransfer.dropEffect;
     },
 
     /**
