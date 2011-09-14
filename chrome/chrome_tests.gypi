@@ -1639,6 +1639,7 @@
         'browser/ui/cocoa/omnibox/omnibox_popup_view_mac_unittest.mm',
         'browser/ui/cocoa/omnibox/omnibox_view_mac_unittest.mm',
         'browser/ui/cocoa/page_info_bubble_controller_unittest.mm',
+        'browser/ui/cocoa/profile_menu_controller_unittest.mm',
         'browser/ui/cocoa/run_loop_testing.h',
         'browser/ui/cocoa/run_loop_testing.mm',
         'browser/ui/cocoa/run_loop_testing_unittest.mm',

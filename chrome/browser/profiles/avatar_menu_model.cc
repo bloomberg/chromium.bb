@@ -82,8 +82,13 @@ void AvatarMenuModel::SwitchToProfile(size_t index) {
 }
 
 void AvatarMenuModel::EditProfile(size_t index) {
-  DCHECK(browser_);
-  browser_->ShowOptionsTab(chrome::kPersonalOptionsSubPage);
+  Browser* browser = browser_;
+  if (!browser) {
+    Profile* profile = g_browser_process->profile_manager()->GetProfileByPath(
+        profile_info_->GetPathOfProfileAtIndex(GetItemAt(index).model_index));
+    browser = Browser::Create(profile);
+  }
+  browser->ShowOptionsTab(chrome::kPersonalOptionsSubPage);
 }
 
 void AvatarMenuModel::AddNewProfile() {

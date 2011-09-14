@@ -11,9 +11,8 @@
 #include "base/memory/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 
+class AvatarMenuModel;
 class Browser;
-@class MenuController;
-class ProfileMenuModel;
 
 namespace ProfileMenuControllerInternal {
 class Observer;
@@ -25,12 +24,10 @@ class Observer;
 @interface ProfileMenuController : NSObject {
  @private
   // The model for the profile submenu.
-  scoped_ptr<ProfileMenuModel> submenuModel_;
+  scoped_ptr<AvatarMenuModel> model_;
 
-  // The Cocoa controller that creates the NSMenu from the model.
-  scoped_nsobject<MenuController> submenuController_;
-
-  // A BrowserList::Observer to be notified when the active browser changes.
+  // An observer to be notified when the active browser changes and when the
+  // model changes.
   scoped_ptr<ProfileMenuControllerInternal::Observer> observer_;
 
   // The main menu item to which the profile menu is attached.
@@ -40,6 +37,18 @@ class Observer;
 // Designated initializer.
 - (id)initWithMainMenuItem:(NSMenuItem*)item;
 
+// Actions for the menu items.
+- (IBAction)switchToProfile:(id)sender;
+- (IBAction)editProfile:(id)sender;
+- (IBAction)newProfile:(id)sender;
+
+@end
+
+@interface ProfileMenuController (PrivateExposedForTesting)
+- (NSMenu*)menu;
+- (void)rebuildMenu;
+- (NSMenuItem*)createItemWithTitle:(NSString*)title action:(SEL)sel;
+- (void)activeBrowserChangedTo:(Browser*)browser;
 @end
 
 #endif  // CHROME_BROWSER_UI_COCOA_PROFILE_MENU_CONTROLLER_H_
