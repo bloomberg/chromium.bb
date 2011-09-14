@@ -19,6 +19,7 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/utility_process_host.h"
 #include "net/base/escape.h"
+#include "net/base/load_flags.h"
 #include "net/url_request/url_request_status.h"
 
 const char kManifestKey[] = "manifest";
@@ -163,6 +164,9 @@ void WebstoreInlineInstaller::BeginInstall() {
       tab_contents()->browser_context());
   webstore_data_url_fetcher_->set_request_context(
       profile->GetRequestContext());
+  webstore_data_url_fetcher_->set_load_flags(net::LOAD_DO_NOT_SEND_COOKIES |
+                                             net::LOAD_DO_NOT_SAVE_COOKIES |
+                                             net::LOAD_DISABLE_CACHE);
   webstore_data_url_fetcher_->Start();
 }
 
