@@ -15,6 +15,7 @@
 #include "content/browser/tab_contents/tab_contents_view.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDragData.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
+#include "views/views_delegate.h"
 
 using WebKit::WebDragOperation;
 using WebKit::WebDragOperationsMask;
@@ -261,7 +262,8 @@ void NativeTabContentsViewGtk::PositionConstrainedWindows(
 // static
 NativeTabContentsView* NativeTabContentsView::CreateNativeTabContentsView(
     internal::NativeTabContentsViewDelegate* delegate) {
-  if (views::Widget::IsPureViews())
+  if (views::Widget::IsPureViews() &&
+      views::ViewsDelegate::views_delegate->GetDefaultParentView())
     return new NativeTabContentsViewViews(delegate);
   return new NativeTabContentsViewGtk(delegate);
 }

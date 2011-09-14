@@ -203,7 +203,6 @@ class VIEWS_EXPORT NativeWidgetPrivate : public NativeWidget,
   virtual void FocusNativeView(gfx::NativeView native_view) = 0;
   virtual bool ConvertPointFromAncestor(
       const Widget* ancestor, gfx::Point* point) const = 0;
-  virtual gfx::Rect GetWorkAreaBoundsInScreen() const = 0;
 
   // Overridden from NativeWidget:
   virtual internal::NativeWidgetPrivate* AsNativeWidgetPrivate() OVERRIDE;

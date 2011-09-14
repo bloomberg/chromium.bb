@@ -69,26 +69,25 @@ gfx::PluginWindowHandle RenderWidgetHostViewViews::GetCompositingSurface() {
 }
 #endif
 
-bool RenderWidgetHostViewViews::IsReadyToPaint() {
-  views::Widget* top = NULL;
-  // TODO(oshima): move this functionality to Widget.
-  if (views::ViewsDelegate::views_delegate &&
-      views::ViewsDelegate::views_delegate->GetDefaultParentView()) {
-    top = views::ViewsDelegate::views_delegate->GetDefaultParentView()->
-        GetWidget();
-  } else {
-    top = GetWidget() ? GetWidget()->GetTopLevelWidget() : NULL;
-  }
+gfx::NativeView RenderWidgetHostViewViews::GetInnerNativeView() const {
+  const views::View* view = NULL;
+  if (views::ViewsDelegate::views_delegate)
+    view = views::ViewsDelegate::views_delegate->GetDefaultParentView();
+  if (!view)
+    view = this;
 
-  return top ?
-      !!(static_cast<const views::NativeWidgetGtk*>(top->native_widget())->
-         window_contents()->window) : false;
+  // TODO(sad): Ideally this function should be equivalent to GetNativeView, and
+  // NativeWidgetGtk-specific function call should not be necessary.
+  const views::Widget* widget = view->GetWidget();
+  const views::NativeWidget* native = widget ? widget->native_widget() : NULL;
+  return native ? static_cast<const views::NativeWidgetGtk*>(native)->
+      window_contents() : NULL;
 }
 
 void RenderWidgetHostViewViews::ShowCurrentCursor() {
   // The widget may not have a window. If that's the case, abort mission. This
   // is the same issue as that explained above in Paint().
-  if (!IsReadyToPaint())
+  if (!GetInnerNativeView() || !GetInnerNativeView()->window)
     return;
 
   native_cursor_ = current_cursor_.GetNativeCursor();

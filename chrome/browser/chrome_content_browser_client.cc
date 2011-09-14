@@ -76,7 +76,9 @@
 #include "chrome/browser/crash_handler_host_linux.h"
 #endif
 
-#if defined(TOOLKIT_VIEWS)
+#if defined(TOUCH_UI)
+#include "chrome/browser/ui/views/tab_contents/tab_contents_view_touch.h"
+#elif defined(TOOLKIT_VIEWS)
 #include "chrome/browser/ui/views/tab_contents/tab_contents_view_views.h"
 #elif defined(OS_LINUX)
 #include "chrome/browser/tab_contents/tab_contents_view_gtk.h"
@@ -135,7 +137,9 @@ content::BrowserMainParts* ChromeContentBrowserClient::CreateBrowserMainParts(
 
 TabContentsView* ChromeContentBrowserClient::CreateTabContentsView(
     TabContents* tab_contents) {
-#if defined(TOOLKIT_VIEWS)
+#if defined(TOUCH_UI)
+  return new TabContentsViewTouch(tab_contents);
+#elif defined(TOOLKIT_VIEWS)
   return new TabContentsViewViews(tab_contents);
 #elif defined(OS_LINUX)
   return new TabContentsViewGtk(tab_contents);

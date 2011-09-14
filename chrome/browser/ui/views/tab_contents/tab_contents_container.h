@@ -16,11 +16,10 @@
 // views-only code is in tab_contents_container_views.cc and native-widget only
 // code is in tab_contents_container_native.cc. The headers are distinct
 // because the classes have different member variables.
-
-// TODO(oshima): Rename tab_contents_container_native to tab_contents_container.
-// TODO(oshima): Figure out if we can consolidate
-// native_tab_contents_containers.
-
+#if defined(TOUCH_UI)
+#include "chrome/browser/ui/views/tab_contents/tab_contents_container_views.h"
+#else
 #include "chrome/browser/ui/views/tab_contents/tab_contents_container_native.h"
+#endif
 
 #endif  // CHROME_BROWSER_UI_VIEWS_TAB_CONTENTS_TAB_CONTENTS_CONTAINER_H_
