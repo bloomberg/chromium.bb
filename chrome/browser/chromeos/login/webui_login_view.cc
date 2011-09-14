@@ -303,15 +303,13 @@ void WebUILoginView::InitStatusArea() {
       width() - widget_size.width() - kStatusAreaCornerPadding;
   gfx::Rect widget_bounds(widget_x, kStatusAreaCornerPadding,
                           widget_size.width(), widget_size.height());
-  // TODO(nkostylev): Make status area in the same window as |webui_login_|
-  // once RenderWidgetHostViewViews is ready.
 #if defined(TOUCH_UI)
-  // TODO(oshima): Window manager doesn't know about touch event, hence can't
-  // activate the window. Use POPUP for now. This will be non issue
-  // once we move to pure views + in chrome WM.
   views::Widget::InitParams widget_params(
-      views::Widget::InitParams::TYPE_POPUP);
+      views::Widget::InitParams::TYPE_CONTROL);
 #else
+  // TODO(nkostylev|oshima): Make status area in the same window as
+  // |webui_login_| once RenderWidgetHostViewViews and compositor are
+  // ready.
   views::Widget::InitParams widget_params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
 #endif
