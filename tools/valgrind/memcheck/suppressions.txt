@@ -2245,7 +2245,7 @@
    Memcheck:Leak
    fun:_Znw*
    ...
-   fun:_ZN23OffTheRecordProfileImpl*Profile
+   fun:_ZN23OffTheRecordProfileImpl4InitEv
    fun:_ZN7Profile25CreateOffTheRecordProfileEv
    fun:_ZN11ProfileImpl22GetOffTheRecordProfileEv
 }
