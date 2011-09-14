@@ -92,7 +92,9 @@ class IDLOutFile(object):
 
     if GetOption('diff'):
       for line in difflib.unified_diff(intext.split('\n'), outtext.split('\n'),
-                                     self.filename, 'NEW', n=1, lineterm=''):
+                                       'OLD ' + self.filename,
+                                       'NEW ' + self.filename,
+                                       n=1, lineterm=''):
         ErrOut.Log(line)
 
     try:

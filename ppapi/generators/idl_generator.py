@@ -146,7 +146,7 @@ class GeneratorByFile(Generator):
     cnt = 0
     for filenode in ast.GetListOf('File'):
       # Skip this file if not required
-      if outlist and name not in outlist:
+      if outlist and filenode.GetName() not in outlist:
         continue
 
       # If this file has errors, skip it
