@@ -120,7 +120,7 @@ BookmarkModel::BookmarkModel(Profile* profile)
       synced_node_(NULL),
       next_node_id_(1),
       observers_(ObserverList<BookmarkModelObserver>::NOTIFY_EXISTING_ONLY),
-      loaded_signal_(TRUE, FALSE) {
+      loaded_signal_(true, false) {
   if (!profile_) {
     // Profile is null during testing.
     DoneLoading(CreateLoadDetails());
@@ -142,6 +142,14 @@ BookmarkModel::~BookmarkModel() {
 void BookmarkModel::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterListPref(prefs::kBookmarkEditorExpandedNodes, new ListValue,
                           PrefService::SYNCABLE_PREF);
+}
+
+void BookmarkModel::Cleanup() {
+  if (loaded_)
+    return;
+
+  // See comment in Profile shutdown code where this is invoked for details.
+  loaded_signal_.Signal();
 }
 
 void BookmarkModel::Load() {

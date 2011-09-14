@@ -175,6 +175,9 @@ class BookmarkModel : public NotificationObserver, public BookmarkService {
 
   static void RegisterUserPrefs(PrefService* prefs);
 
+  // Invoked prior to destruction to release any necessary resources.
+  void Cleanup();
+
   // Loads the bookmarks. This is called by Profile upon creation of the
   // BookmarkModel. You need not invoke this directly.
   void Load();
