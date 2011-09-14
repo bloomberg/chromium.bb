@@ -343,26 +343,31 @@ def CheckCallAndFilter(args, stdout=None, filter_fn=None,
   # This has to be done on a per byte basis to make sure it is not buffered:
   # normally buffering is done for each line, but if svn requests input, no
   # end-of-line character is output after the prompt and it would not show up.
-  in_byte = kid.stdout.read(1)
-  if in_byte:
-    if call_filter_on_first_line:
-      filter_fn(None)
-    in_line = ''
-    while in_byte:
-      if in_byte != '\r':
-        if print_stdout:
-          stdout.write(in_byte)
-        if in_byte != '\n':
-          in_line += in_byte
-        else:
-          filter_fn(in_line)
-          in_line = ''
-      in_byte = kid.stdout.read(1)
-    # Flush the rest of buffered output. This is only an issue with
-    # stdout/stderr not ending with a \n.
-    if len(in_line):
-      filter_fn(in_line)
-  rv = kid.wait()
+  try:
+    in_byte = kid.stdout.read(1)
+    if in_byte:
+      if call_filter_on_first_line:
+        filter_fn(None)
+      in_line = ''
+      while in_byte:
+        if in_byte != '\r':
+          if print_stdout:
+            stdout.write(in_byte)
+          if in_byte != '\n':
+            in_line += in_byte
+          else:
+            filter_fn(in_line)
+            in_line = ''
+        in_byte = kid.stdout.read(1)
+      # Flush the rest of buffered output. This is only an issue with
+      # stdout/stderr not ending with a \n.
+      if len(in_line):
+        filter_fn(in_line)
+    rv = kid.wait()
+  except KeyboardInterrupt:
+    print >> sys.stderr, 'Failed while running "%s"' % ' '.join(args)
+    raise
+
   if rv:
     raise subprocess2.CalledProcessError(
         rv, args, kwargs.get('cwd', None), None, None)
