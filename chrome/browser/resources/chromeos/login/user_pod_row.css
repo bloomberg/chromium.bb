@@ -17,6 +17,7 @@ podrow {
 .pod {
   -webkit-transition: all .23s ease;
   border-radius: 2px;
+  cursor: pointer;
   margin: 0 10px;
   outline: none;
   padding: 10px;
@@ -38,6 +39,7 @@ podrow {
 
 .pod.focused {
   background-color: #ebebeb;
+  cursor: default;
 }
 
 .pod.faded {
