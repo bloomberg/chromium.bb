@@ -1840,3 +1840,33 @@
    fun:_ZNK3net15X509Certificate6VerifyERKSsiPNS_16CertVerifyResultE
    fun:_ZN3net44X509CertificateTest_GoogleDigiNotarTest_Test8TestBodyEv
 }
+{
+   bug_96559a
+   Memcheck:Value4
+   fun:PyObject_Realloc
+}
+{
+   bug_96559b
+   Memcheck:Addr4
+   fun:PyObject_Realloc
+}
+{
+   bug_96559c
+   Memcheck:Cond
+   fun:PyObject_Realloc
+}
+{
+   bug_96559d
+   Memcheck:Value4
+   fun:PyObject_Free
+}
+{
+   bug_96559e
+   Memcheck:Addr4
+   fun:PyObject_Free
+}
+{
+   bug_96559f
+   Memcheck:Cond
+   fun:PyObject_Free
+}
