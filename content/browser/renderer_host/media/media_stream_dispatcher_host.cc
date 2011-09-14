@@ -4,20 +4,23 @@
 
 #include "content/browser/renderer_host/media/media_stream_dispatcher_host.h"
 
+#include "content/browser/resource_context.h"
 #include "content/common/media/media_stream_messages.h"
 #include "content/common/media/media_stream_options.h"
 
 namespace media_stream {
 
-MediaStreamDispatcherHost::MediaStreamDispatcherHost(int render_process_id)
-    : render_process_id_(render_process_id) {
+MediaStreamDispatcherHost::MediaStreamDispatcherHost(
+    const content::ResourceContext* resource_context, int render_process_id)
+    : resource_context_(resource_context),
+      render_process_id_(render_process_id) {
 }
 
 MediaStreamDispatcherHost::~MediaStreamDispatcherHost() {
 }
 
 MediaStreamManager* MediaStreamDispatcherHost::manager() {
-  return MediaStreamManager::Get();
+  return resource_context_->media_stream_manager();
 }
 
 bool MediaStreamDispatcherHost::OnMessageReceived(

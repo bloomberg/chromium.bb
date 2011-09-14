@@ -23,7 +23,8 @@
 #include <string>
 #include <vector>
 
-#include "base/lazy_instance.h"
+#include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
 #include "content/browser/renderer_host/media/media_stream_provider.h"
 #include "content/browser/renderer_host/media/media_stream_settings_requester.h"
 #include "content/common/media/media_stream_options.h"
@@ -42,11 +43,10 @@ class MediaStreamManager
     : public MediaStreamProviderListener,
       public SettingsRequester {
  public:
-  typedef MediaStreamManager* (AccessorMethod)();
-  static MediaStreamManager* Get();
+  MediaStreamManager();
   virtual ~MediaStreamManager();
 
-  // Used to access VideoCaptuerManager.
+  // Used to access VideoCaptureManager.
   VideoCaptureManager* video_capture_manager();
 
   // GenerateStream opens new media devices according to |components|. The
@@ -106,13 +106,10 @@ class MediaStreamManager
 
   // Helpers.
   bool RequestDone(const MediaStreamManager::DeviceRequest& request) const;
-  MediaStreamProvider* GetDeviceManager(MediaStreamType stream_type) const;
+  MediaStreamProvider* GetDeviceManager(MediaStreamType stream_type);
 
-  // Private constructor to enforce singleton.
-  friend struct base::DefaultLazyInstanceTraits<MediaStreamManager>;
-  MediaStreamManager();
-
-  VideoCaptureManager* video_capture_manager_;
+  scoped_ptr<MediaStreamDeviceSettings> device_settings_;
+  scoped_ptr<VideoCaptureManager> video_capture_manager_;
   // TODO(mflodman) Add AudioInputManager.
 
   // Keeps track of device types currently being enumerated to not enumerate
@@ -122,8 +119,6 @@ class MediaStreamManager
   // All non-closed request.
   typedef std::map<std::string, DeviceRequest> DeviceRequests;
   DeviceRequests requests_;
-
-  MediaStreamDeviceSettings* device_settings_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaStreamManager);
 };

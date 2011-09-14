@@ -6,7 +6,7 @@
 
 #include <list>
 
-#include "base/lazy_instance.h"
+#include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/rand_util.h"
 #include "content/browser/browser_thread.h"
@@ -17,13 +17,9 @@
 
 namespace media_stream {
 
-// TODO(mflodman) Find out who should own MediaStreamManager.
-base::LazyInstance<MediaStreamManager> g_media_stream_manager(
-    base::LINKER_INITIALIZED);
-
 // Creates a random label used to identify requests.
 static std::string RandomLabel() {
-  // Alphbet according to WhatWG standard, i.e. containing 36 characters from
+  // Alphabet according to WhatWG standard, i.e. containing 36 characters from
   // range: U+0021, U+0023 to U+0027, U+002A to U+002B, U+002D to U+002E,
   // U+0030 to U+0039, U+0041 to U+005A, U+005E to U+007E.
   static const char alphabet[] = "!#$%&\'*+-.0123456789"
@@ -49,18 +45,24 @@ static bool Requested(const StreamOptions& options,
   return false;
 }
 
-MediaStreamManager* MediaStreamManager::Get() {
-  return g_media_stream_manager.Pointer();
+MediaStreamManager::MediaStreamManager()
+    : ALLOW_THIS_IN_INITIALIZER_LIST(
+          device_settings_(new MediaStreamDeviceSettings(this))),
+      enumeration_in_progress_(kNumMediaStreamTypes, false) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 }
 
 MediaStreamManager::~MediaStreamManager() {
-  delete device_settings_;
-  delete video_capture_manager_;
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 }
 
 VideoCaptureManager* MediaStreamManager::video_capture_manager() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  return video_capture_manager_;
+  if (!video_capture_manager_.get()) {
+    video_capture_manager_.reset(new VideoCaptureManager());
+    video_capture_manager_->Register(this);
+  }
+  return video_capture_manager_.get();
 }
 
 void MediaStreamManager::GenerateStream(MediaStreamRequester* requester,
@@ -120,7 +122,7 @@ void MediaStreamManager::CancelRequests(MediaStreamRequester* requester) {
              request->video_devices.begin(); it != request->video_devices.end();
              ++it) {
           if (it->in_use == true) {
-            video_capture_manager_->Close(it->session_id);
+            video_capture_manager()->Close(it->session_id);
           }
         }
       }
@@ -145,7 +147,7 @@ void MediaStreamManager::StopGeneratedStream(const std::string& label) {
     for (StreamDeviceInfoArray::iterator video_it =
          it->second.video_devices.begin();
          video_it != it->second.video_devices.end(); ++video_it) {
-      video_capture_manager_->Close(video_it->session_id);
+      video_capture_manager()->Close(video_it->session_id);
     }
     requests_.erase(it);
     return;
@@ -354,7 +356,7 @@ void MediaStreamManager::SettingsError(const std::string& label) {
 
 void MediaStreamManager::UseFakeDevice() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  video_capture_manager_->UseFakeDevice();
+  video_capture_manager()->UseFakeDevice();
   device_settings_->UseFakeUI();
   // TODO(mflodman) Add audio manager when available.
 }
@@ -385,9 +387,9 @@ bool MediaStreamManager::RequestDone(const DeviceRequest& request) const {
 
 // Called to get media capture device manager of specified type.
 MediaStreamProvider* MediaStreamManager::GetDeviceManager(
-    MediaStreamType stream_type) const {
+    MediaStreamType stream_type) {
   if (stream_type == kVideoCapture) {
-    return video_capture_manager_;
+    return video_capture_manager();
   } else if (stream_type == kAudioCapture) {
     // TODO(mflodman) Add support when audio input manager is available.
     NOTREACHED();
@@ -395,16 +397,6 @@ MediaStreamProvider* MediaStreamManager::GetDeviceManager(
   }
   NOTREACHED();
   return NULL;
-}
-
-MediaStreamManager::MediaStreamManager()
-    : video_capture_manager_(new VideoCaptureManager()),
-      enumeration_in_progress_(kNumMediaStreamTypes, false),
-      requests_(),
-      device_settings_(NULL) {
-  device_settings_ = new MediaStreamDeviceSettings(this);
-  video_capture_manager_->Register(this);
-  // TODO(mflodman) Add when audio input manager is available.
 }
 
 MediaStreamManager::DeviceRequest::DeviceRequest()

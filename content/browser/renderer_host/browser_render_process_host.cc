@@ -361,7 +361,8 @@ void BrowserRenderProcessHost::CreateMessageFilters() {
   channel_->AddFilter(new AudioInputRendererHost());
   channel_->AddFilter(
       new AudioRendererHost(&browser_context()->GetResourceContext()));
-  channel_->AddFilter(new VideoCaptureHost());
+  channel_->AddFilter(
+      new VideoCaptureHost(&browser_context()->GetResourceContext()));
   channel_->AddFilter(
       new AppCacheDispatcherHost(browser_context()->GetAppCacheService(),
                                  id()));
@@ -374,7 +375,8 @@ void BrowserRenderProcessHost::CreateMessageFilters() {
       GeolocationDispatcherHost::New(
           id(), browser_context()->GetGeolocationPermissionContext()));
   channel_->AddFilter(new GpuMessageFilter(id(), widget_helper_.get()));
-  channel_->AddFilter(new media_stream::MediaStreamDispatcherHost(id()));
+  channel_->AddFilter(new media_stream::MediaStreamDispatcherHost(
+      &browser_context()->GetResourceContext(), id()));
   channel_->AddFilter(new PepperFileMessageFilter(id(), browser_context()));
   channel_->AddFilter(
       new PepperMessageFilter(&browser_context()->GetResourceContext()));

@@ -20,6 +20,9 @@ class MediaObserver;
 namespace fileapi {
 class FileSystemContext;
 }  // namespace fileapi
+namespace media_stream {
+class MediaStreamManager;
+}  // namespace media_stream
 namespace net {
 class HostResolver;
 class URLRequestContext;
@@ -76,6 +79,10 @@ class CONTENT_EXPORT ResourceContext {
   MediaObserver* media_observer() const;
   void set_media_observer(MediaObserver* media_observer);
 
+  media_stream::MediaStreamManager* media_stream_manager() const;
+  void set_media_stream_manager(
+      media_stream::MediaStreamManager* media_stream_manager);
+
   // =======================================================================
   // TODO(willchan): These don't belong in content/. Remove them eventually.
 
@@ -101,6 +108,7 @@ class CONTENT_EXPORT ResourceContext {
   quota::QuotaManager* quota_manager_;
   HostZoomMap* host_zoom_map_;
   MediaObserver* media_observer_;
+  media_stream::MediaStreamManager* media_stream_manager_;
 
   // Externally-defined data accessible by key.
   typedef std::map<const void*, void*> UserDataMap;

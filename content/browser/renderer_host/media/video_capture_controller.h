@@ -27,13 +27,19 @@
 #include "media/video/capture/video_capture_types.h"
 #include "ui/gfx/surface/transport_dib.h"
 
+namespace media_stream {
+class VideoCaptureManager;
+}  // namespace media_stream
+
 class VideoCaptureController
     : public base::RefCountedThreadSafe<VideoCaptureController>,
       public media::VideoCaptureDevice::EventHandler {
  public:
-  VideoCaptureController(const VideoCaptureControllerID& id,
-                         base::ProcessHandle render_process,
-                         VideoCaptureControllerEventHandler* event_handler);
+  VideoCaptureController(
+      const VideoCaptureControllerID& id,
+      base::ProcessHandle render_process,
+      VideoCaptureControllerEventHandler* event_handler,
+      media_stream::VideoCaptureManager* video_capture_manager);
   virtual ~VideoCaptureController();
 
   // Starts video capturing and tries to use the resolution specified in
@@ -86,6 +92,8 @@ class VideoCaptureController
   // ID used for identifying this object.
   VideoCaptureControllerID id_;
   media::VideoCaptureDevice::Capability frame_info_;
+
+  media_stream::VideoCaptureManager* video_capture_manager_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(VideoCaptureController);
 };

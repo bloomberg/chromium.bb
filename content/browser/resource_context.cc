@@ -20,7 +20,8 @@ ResourceContext::ResourceContext()
       blob_storage_context_(NULL),
       quota_manager_(NULL),
       host_zoom_map_(NULL),
-      media_observer_(NULL) {
+      media_observer_(NULL),
+      media_stream_manager_(NULL) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
@@ -150,6 +151,19 @@ MediaObserver* ResourceContext::media_observer() const {
 void ResourceContext::set_media_observer(MediaObserver* media_observer) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   media_observer_ = media_observer;
+}
+
+media_stream::MediaStreamManager*
+ResourceContext::media_stream_manager() const {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  EnsureInitialized();
+  return media_stream_manager_;
+}
+
+void ResourceContext::set_media_stream_manager(
+    media_stream::MediaStreamManager* media_stream_manager) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  media_stream_manager_ = media_stream_manager;
 }
 
 const base::Callback<prerender::PrerenderManager*(void)>&
