@@ -685,11 +685,13 @@ class GuestSessionProfile : public OffTheRecordProfileImpl {
 #endif
 
 Profile* Profile::CreateOffTheRecordProfile() {
+  OffTheRecordProfileImpl* profile = NULL;
 #if defined(OS_CHROMEOS)
   if (Profile::IsGuestSession())
-    return new GuestSessionProfile(this);
+    profile = new GuestSessionProfile(this);
 #endif
-  OffTheRecordProfileImpl* profile = new OffTheRecordProfileImpl(this);
+  if (!profile)
+    profile = new OffTheRecordProfileImpl(this);
   profile->Init();
   return profile;
 }
