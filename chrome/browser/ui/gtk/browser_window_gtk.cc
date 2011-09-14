@@ -2353,6 +2353,11 @@ void BrowserWindowGtk::PlaceBookmarkBar(bool is_floating) {
   }
 }
 
+void BrowserWindowGtk::ShowSettingsMenu(GtkWidget* widget,
+                                        GdkEventButton* event) {
+  // Nothing to do. Panel window will override this.
+}
+
 // static
 bool BrowserWindowGtk::GetCustomFramePrefDefault() {
   std::string wm_name;

@@ -55,6 +55,10 @@ class BrowserWindowGtk : public BrowserWindow,
   // functions during initialization.
   virtual void Init();
 
+  // Shows the settings menu when the settings button, if present, is clicked.
+  // This is currently only used in panel window.
+  virtual void ShowSettingsMenu(GtkWidget* widget, GdkEventButton* event);
+
   // Overridden from BrowserWindow
   virtual void Show();
   virtual void ShowInactive();

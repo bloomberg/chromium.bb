@@ -94,12 +94,12 @@ void ExtensionUninstallDialog::Show(
     return;
   }
 
-  BrowserWindowGtk* browser_window = static_cast<BrowserWindowGtk*>(
-      browser->window());
+  BrowserWindow* browser_window = browser->window();
   if (!browser_window) {
     delegate->ExtensionDialogCanceled();
     return;
   }
 
-  ShowUninstallDialogGtk(browser_window->window(), icon, extension, delegate);
+  ShowUninstallDialogGtk(browser_window->GetNativeHandle(),
+                         icon, extension, delegate);
 }

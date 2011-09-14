@@ -6,6 +6,7 @@
 
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
+#include "chrome/browser/ui/panels/panel_settings_menu_model.h"
 #include "ui/base/dragdrop/gtk_dnd_util.h"
 
 NativePanel* Panel::CreateNativePanel(Browser* browser, Panel* panel,
@@ -99,6 +100,15 @@ void PanelBrowserWindowGtk::SetBounds(const gfx::Rect& bounds) {
 bool PanelBrowserWindowGtk::UseCustomFrame() {
   // We always use custom frame for panels.
   return TRUE;
+}
+
+void PanelBrowserWindowGtk::ShowSettingsMenu(GtkWidget* widget,
+                                             GdkEventButton* event) {
+  if (!settings_menu_.get()) {
+    settings_menu_model_.reset(new PanelSettingsMenuModel(panel_.get()));
+    settings_menu_.reset(new MenuGtk(this, settings_menu_model_.get()));
+  }
+  settings_menu_->PopupForWidget(widget, event->button, event->time);
 }
 
 void PanelBrowserWindowGtk::ShowPanel() {

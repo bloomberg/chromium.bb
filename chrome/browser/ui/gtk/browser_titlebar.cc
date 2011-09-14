@@ -379,7 +379,7 @@ void BrowserTitlebar::Init() {
     GtkWidget* favicon_event_box = gtk_event_box_new();
     gtk_event_box_set_visible_window(GTK_EVENT_BOX(favicon_event_box), FALSE);
     g_signal_connect(favicon_event_box, "button-press-event",
-                     G_CALLBACK(OnButtonPressedThunk), this);
+                     G_CALLBACK(OnFaviconMenuButtonPressedThunk), this);
     gtk_box_pack_start(GTK_BOX(app_mode_hbox), favicon_event_box, FALSE,
                        FALSE, 0);
     // We use the app logo as a placeholder image so the title doesn't jump
@@ -396,6 +396,8 @@ void BrowserTitlebar::Init() {
           BuildTitlebarButton(IDR_BALLOON_WRENCH, IDR_BALLOON_WRENCH_P,
                               IDR_BALLOON_WRENCH_H, app_mode_hbox, FALSE,
                               IDS_NEW_TAB_APP_SETTINGS));
+      g_signal_connect(panel_wrench_button_->widget(), "button-press-event",
+                       G_CALLBACK(OnPanelSettingsMenuButtonPressedThunk), this);
       gtk_widget_set_no_show_all(panel_wrench_button_->widget(), TRUE);
     }
 
@@ -878,12 +880,21 @@ void BrowserTitlebar::OnButtonClicked(GtkWidget* button) {
   }
 }
 
-gboolean BrowserTitlebar::OnButtonPressed(GtkWidget* widget,
-                                          GdkEventButton* event) {
+gboolean BrowserTitlebar::OnFaviconMenuButtonPressed(GtkWidget* widget,
+                                                     GdkEventButton* event) {
   if (event->button != 1)
     return FALSE;
 
   ShowFaviconMenu(event);
+  return TRUE;
+}
+
+gboolean BrowserTitlebar::OnPanelSettingsMenuButtonPressed(
+    GtkWidget* widget, GdkEventButton* event) {
+  if (event->button != 1)
+    return FALSE;
+
+  browser_window_->ShowSettingsMenu(widget, event);
   return TRUE;
 }
 

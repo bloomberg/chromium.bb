@@ -6,13 +6,16 @@
 #define CHROME_BROWSER_UI_PANELS_PANEL_BROWSER_WINDOW_GTK_H_
 
 #include "chrome/browser/ui/gtk/browser_window_gtk.h"
+#include "chrome/browser/ui/gtk/menu_gtk.h"
 #include "chrome/browser/ui/panels/native_panel.h"
 
 class Panel;
+class PanelSettingsMenuModel;
 class NativePanelTestingGtk;
 
 class PanelBrowserWindowGtk : public BrowserWindowGtk,
                               public NativePanel,
+                              public MenuGtk::Delegate,
                               public MessageLoopForUI::Observer {
   friend class NativePanelTestingGtk;
  public:
@@ -25,6 +28,8 @@ class PanelBrowserWindowGtk : public BrowserWindowGtk,
 
   // BrowserWindow overrides
   virtual void SetBounds(const gfx::Rect& bounds) OVERRIDE;
+  virtual void ShowSettingsMenu(GtkWidget* widget,
+                                GdkEventButton* event) OVERRIDE;
 
  protected:
   // BrowserWindowGtk overrides
@@ -124,6 +129,10 @@ class PanelBrowserWindowGtk : public BrowserWindowGtk,
 
   scoped_ptr<Panel> panel_;
   gfx::Rect bounds_;
+
+  scoped_ptr<PanelSettingsMenuModel> settings_menu_model_;
+  scoped_ptr<MenuGtk> settings_menu_;
+
   DISALLOW_COPY_AND_ASSIGN(PanelBrowserWindowGtk);
 };
 

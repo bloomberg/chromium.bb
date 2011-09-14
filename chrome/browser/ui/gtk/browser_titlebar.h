@@ -147,9 +147,11 @@ class BrowserTitlebar : public NotificationObserver,
   // Callback for min/max/close buttons.
   CHROMEGTK_CALLBACK_0(BrowserTitlebar, void, OnButtonClicked);
 
-  // Callback for favicon.
-  CHROMEGTK_CALLBACK_1(BrowserTitlebar, gboolean, OnButtonPressed,
-                       GdkEventButton*);
+  // Callback for favicon/settings buttons.
+  CHROMEGTK_CALLBACK_1(BrowserTitlebar, gboolean,
+                       OnFaviconMenuButtonPressed, GdkEventButton*);
+  CHROMEGTK_CALLBACK_1(BrowserTitlebar, gboolean,
+                       OnPanelSettingsMenuButtonPressed, GdkEventButton*);
 
   // -- Context Menu -----------------------------------------------------------
 
