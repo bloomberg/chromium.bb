@@ -27,7 +27,6 @@
 #include "chrome/test/base/testing_profile.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/mock_render_process_host.h"
-#include "content/browser/renderer_host/test_render_view_host.h"
 #include "content/browser/tab_contents/navigation_details.h"
 #include "content/browser/tab_contents/test_tab_contents.h"
 #include "content/common/notification_details.h"
@@ -154,13 +153,13 @@ class TranslateManagerTest : public TabContentsWrapperTestHarness,
  protected:
   virtual void SetUp() {
     // Access the TranslateManager singleton so it is created before we call
-    // RenderViewHostTestHarness::SetUp() to match what's done in Chrome, where
-    // the TranslateManager is created before the TabContents.  This matters as
-    // they both register for similar events and we want the notifications to
-    // happen in the same sequence (TranslateManager first, TabContents second).
-    // Also clears the translate script so it is fetched everytime and sets the
-    // expiration delay to a large value by default (in case it was zeroed in
-    // a previous test).
+    // TabContentsWrapperTestHarness::SetUp() to match what's done in Chrome,
+    // where the TranslateManager is created before the TabContents.  This
+    // matters as they both register for similar events and we want the
+    // notifications to happen in the same sequence (TranslateManager first,
+    // TabContents second).  Also clears the translate script so it is fetched
+    // everytime and sets the expiration delay to a large value by default (in
+    // case it was zeroed in a previous test).
     TranslateManager::GetInstance()->ClearTranslateScript();
     TranslateManager::GetInstance()->
         set_translate_script_expiration_delay(60 * 60 * 1000);

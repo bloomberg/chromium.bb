@@ -16,26 +16,10 @@
 
 class WebApplicationTest : public TabContentsWrapperTestHarness {
  public:
-  WebApplicationTest()
-      : TabContentsWrapperTestHarness(),
-        ui_thread_(BrowserThread::UI, &message_loop_) {
+  WebApplicationTest() : ui_thread_(BrowserThread::UI, &message_loop_) {
   }
 
  private:
-  // Supply our own profile so we use the correct profile data. The test harness
-  // is not supposed to overwrite a profile if it's already created.
-  virtual void SetUp() {
-    profile_.reset(new TestingProfile());
-
-    TabContentsWrapperTestHarness::SetUp();
-  }
-
-  virtual void TearDown() {
-    TabContentsWrapperTestHarness::TearDown();
-
-    profile_.reset(NULL);
-  }
-
   BrowserThread ui_thread_;
 };
 

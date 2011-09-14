@@ -14,9 +14,9 @@
 #include "chrome/browser/sync/js/js_event_details.h"
 #include "chrome/browser/sync/js/js_test_util.h"
 #include "chrome/browser/sync/profile_sync_service_mock.h"
+#include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/profile_mock.h"
 #include "content/browser/browser_thread.h"
-#include "content/browser/renderer_host/test_render_view_host.h"
 #include "content/browser/tab_contents/test_tab_contents.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -43,7 +43,7 @@ class TestSyncInternalsUI : public SyncInternalsUI {
 };
 
 // Tests with non-NULL ProfileSyncService.
-class SyncInternalsUITestWithService : public RenderViewHostTestHarness {
+class SyncInternalsUITestWithService : public ChromeRenderViewHostTestHarness {
  protected:
   SyncInternalsUITestWithService() {}
 
@@ -54,9 +54,9 @@ class SyncInternalsUITestWithService : public RenderViewHostTestHarness {
     StrictMock<ProfileSyncServiceMock> profile_sync_service_mock;
     EXPECT_CALL(*profile_mock, GetProfileSyncService())
         .WillOnce(Return(&profile_sync_service_mock));
-    profile_.reset(profile_mock);
+    browser_context_.reset(profile_mock);
 
-    RenderViewHostTestHarness::SetUp();
+    ChromeRenderViewHostTestHarness::SetUp();
 
     EXPECT_CALL(profile_sync_service_mock, GetJsController())
         .WillOnce(Return(mock_js_controller_.AsWeakPtr()));
@@ -65,7 +65,7 @@ class SyncInternalsUITestWithService : public RenderViewHostTestHarness {
 
     {
       // Needed by |test_sync_internals_ui_|'s constructor.  The
-      // message loop is provided by RenderViewHostTestHarness.
+      // message loop is provided by ChromeRenderViewHostTestHarness.
       BrowserThread ui_thread_(BrowserThread::UI,
                                MessageLoopForUI::current());
       // |test_sync_internals_ui_|'s constructor triggers all the
@@ -85,7 +85,7 @@ class SyncInternalsUITestWithService : public RenderViewHostTestHarness {
                 RemoveJsEventHandler(test_sync_internals_ui_.get()));
     test_sync_internals_ui_.reset();
 
-    RenderViewHostTestHarness::TearDown();
+    ChromeRenderViewHostTestHarness::TearDown();
   }
 
   StrictMock<browser_sync::MockJsController> mock_js_controller_;
@@ -124,7 +124,8 @@ TEST_F(SyncInternalsUITestWithService, OnWebUISendBasic) {
 }
 
 // Tests with NULL ProfileSyncService.
-class SyncInternalsUITestWithoutService : public RenderViewHostTestHarness {
+class SyncInternalsUITestWithoutService
+    : public ChromeRenderViewHostTestHarness {
  protected:
   SyncInternalsUITestWithoutService() {}
 
@@ -134,13 +135,13 @@ class SyncInternalsUITestWithoutService : public RenderViewHostTestHarness {
     NiceMock<ProfileMock>* profile_mock = new NiceMock<ProfileMock>();
     EXPECT_CALL(*profile_mock, GetProfileSyncService())
         .WillOnce(Return(static_cast<ProfileSyncService*>(NULL)));
-    profile_.reset(profile_mock);
+    browser_context_.reset(profile_mock);
 
-    RenderViewHostTestHarness::SetUp();
+    ChromeRenderViewHostTestHarness::SetUp();
 
     {
       // Needed by |test_sync_internals_ui_|'s constructor.  The
-      // message loop is provided by RenderViewHostTestHarness.
+      // message loop is provided by ChromeRenderViewHostTestHarness.
       BrowserThread ui_thread_(BrowserThread::UI,
                                MessageLoopForUI::current());
       // |test_sync_internals_ui_|'s constructor triggers all the

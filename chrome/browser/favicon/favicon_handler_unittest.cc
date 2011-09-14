@@ -4,7 +4,7 @@
 
 #include "chrome/browser/favicon/favicon_handler.h"
 #include "chrome/browser/profiles/profile.h"
-#include "content/browser/renderer_host/test_render_view_host.h"
+#include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/test_tab_contents.h"
 #include "ui/gfx/codec/png_codec.h"
@@ -305,7 +305,7 @@ void HistoryRequestHandler::InvokeCallback() {
   callback_->Run(0, favicon_data_);
 }
 
-class FaviconHandlerTest : public RenderViewHostTestHarness {
+class FaviconHandlerTest : public ChromeRenderViewHostTestHarness {
 };
 
 TEST_F(FaviconHandlerTest, GetFaviconFromHistory) {

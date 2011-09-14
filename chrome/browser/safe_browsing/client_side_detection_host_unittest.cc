@@ -151,7 +151,7 @@ class ClientSideDetectionHostTest : public TabContentsWrapperTestHarness {
     // This needs to happen before we call the parent SetUp() function.  We use
     // a nice mock because other parts of the code are calling IsOffTheRecord.
     mock_profile_ = new NiceMock<MockTestingProfile>();
-    profile_.reset(mock_profile_);
+    browser_context_.reset(mock_profile_);
 
     ui_thread_.reset(new BrowserThread(BrowserThread::UI, &message_loop_));
     // Note: we're starting a real IO thread to make sure our DCHECKs that

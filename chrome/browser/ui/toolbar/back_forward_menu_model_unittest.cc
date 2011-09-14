@@ -11,9 +11,9 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/browser/browser_thread.h"
-#include "content/browser/renderer_host/test_render_view_host.h"
 #include "content/browser/tab_contents/navigation_controller.h"
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -52,7 +52,7 @@ class FaviconDelegate : public ui::MenuModelDelegate {
 
 }  // namespace
 
-class BackFwdMenuModelTest : public RenderViewHostTestHarness {
+class BackFwdMenuModelTest : public ChromeRenderViewHostTestHarness {
  public:
   BackFwdMenuModelTest()
       : ui_thread_(BrowserThread::UI, &message_loop_) {

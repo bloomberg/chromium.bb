@@ -95,7 +95,7 @@ TEST_F(WebUITest, WebUIToStandard) {
   // slightly different than the very-first-navigation case since the
   // SiteInstance will be the same (the original TabContents must still be
   // alive), which will trigger different behavior in RenderViewHostManager.
-  TestTabContents* contents2 = new TestTabContents(profile_.get(), NULL);
+  TestTabContents* contents2 = new TestTabContents(profile(), NULL);
   TabContentsWrapper wrapper2(contents2);
 
   DoNavigationTest(&wrapper2, 101);

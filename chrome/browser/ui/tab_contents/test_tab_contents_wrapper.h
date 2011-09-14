@@ -7,11 +7,11 @@
 #pragma once
 
 #include "base/compiler_specific.h"
-#include "content/browser/renderer_host/test_render_view_host.h"
+#include "chrome/test/base/chrome_render_view_host_test_harness.h"
 
 class TabContentsWrapper;
 
-class TabContentsWrapperTestHarness : public RenderViewHostTestHarness {
+class TabContentsWrapperTestHarness : public ChromeRenderViewHostTestHarness {
  public:
   TabContentsWrapperTestHarness();
   virtual ~TabContentsWrapperTestHarness();

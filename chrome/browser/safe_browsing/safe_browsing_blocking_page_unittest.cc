@@ -8,8 +8,8 @@
 #include "chrome/browser/safe_browsing/malware_details.h"
 #include "chrome/browser/safe_browsing/safe_browsing_blocking_page.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "content/browser/browser_thread.h"
-#include "content/browser/renderer_host/test_render_view_host.h"
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/test_tab_contents.h"
 #include "content/common/view_messages.h"
@@ -67,7 +67,7 @@ class TestSafeBrowsingBlockingPageFactory
   }
 };
 
-class SafeBrowsingBlockingPageTest : public RenderViewHostTestHarness,
+class SafeBrowsingBlockingPageTest : public ChromeRenderViewHostTestHarness,
                                      public SafeBrowsingService::Client {
  public:
   // The decision the user made.
@@ -85,7 +85,7 @@ class SafeBrowsingBlockingPageTest : public RenderViewHostTestHarness,
   }
 
   virtual void SetUp() {
-    RenderViewHostTestHarness::SetUp();
+    ChromeRenderViewHostTestHarness::SetUp();
     SafeBrowsingBlockingPage::RegisterFactory(&factory_);
     ResetUserResponse();
   }

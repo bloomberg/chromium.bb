@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/browser_url_handler.h"
-#include "content/browser/renderer_host/test_render_view_host.h"
 #include "content/browser/site_instance.h"
 #include "content/browser/tab_contents/navigation_controller.h"
 #include "content/browser/tab_contents/navigation_entry.h"
@@ -20,7 +20,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/glue/webkit_glue.h"
 
-class RenderViewHostManagerTest : public RenderViewHostTestHarness {
+class RenderViewHostManagerTest : public ChromeRenderViewHostTestHarness {
  public:
   void NavigateActiveAndCommit(const GURL& url) {
     // Note: we navigate the active RenderViewHost because previous navigations
@@ -67,7 +67,7 @@ TEST_F(RenderViewHostManagerTest, NewTabPageProcesses) {
   NavigateActiveAndCommit(kDestUrl);
 
   // Make a second tab.
-  TestTabContents contents2(profile_.get(), NULL);
+  TestTabContents contents2(profile(), NULL);
 
   // Load the two URLs in the second tab. Note that the first navigation creates
   // a RVH that's not pending (since there is no cross-site transition), so
@@ -167,13 +167,13 @@ TEST_F(RenderViewHostManagerTest, AlwaysSendEnableViewSourceMode) {
 // Tests the Init function by checking the initial RenderViewHost.
 TEST_F(RenderViewHostManagerTest, Init) {
   // Using TestingProfile.
-  SiteInstance* instance = SiteInstance::CreateSiteInstance(profile_.get());
+  SiteInstance* instance = SiteInstance::CreateSiteInstance(profile());
   EXPECT_FALSE(instance->has_site());
 
-  TestTabContents tab_contents(profile_.get(), instance);
+  TestTabContents tab_contents(profile(), instance);
   RenderViewHostManager manager(&tab_contents, &tab_contents);
 
-  manager.Init(profile_.get(), instance, MSG_ROUTING_NONE);
+  manager.Init(profile(), instance, MSG_ROUTING_NONE);
 
   RenderViewHost* host = manager.current_host();
   ASSERT_TRUE(host);
@@ -188,16 +188,16 @@ TEST_F(RenderViewHostManagerTest, Init) {
 TEST_F(RenderViewHostManagerTest, Navigate) {
   TestNotificationTracker notifications;
 
-  SiteInstance* instance = SiteInstance::CreateSiteInstance(profile_.get());
+  SiteInstance* instance = SiteInstance::CreateSiteInstance(profile());
 
-  TestTabContents tab_contents(profile_.get(), instance);
+  TestTabContents tab_contents(profile(), instance);
   notifications.ListenFor(content::NOTIFICATION_RENDER_VIEW_HOST_CHANGED,
                      Source<NavigationController>(&tab_contents.controller()));
 
   // Create.
   RenderViewHostManager manager(&tab_contents, &tab_contents);
 
-  manager.Init(profile_.get(), instance, MSG_ROUTING_NONE);
+  manager.Init(profile(), instance, MSG_ROUTING_NONE);
 
   RenderViewHost* host;
 
@@ -266,12 +266,12 @@ TEST_F(RenderViewHostManagerTest, Navigate) {
 // Tests WebUI creation.
 TEST_F(RenderViewHostManagerTest, WebUI) {
   BrowserThread ui_thread(BrowserThread::UI, MessageLoop::current());
-  SiteInstance* instance = SiteInstance::CreateSiteInstance(profile_.get());
+  SiteInstance* instance = SiteInstance::CreateSiteInstance(profile());
 
-  TestTabContents tab_contents(profile_.get(), instance);
+  TestTabContents tab_contents(profile(), instance);
   RenderViewHostManager manager(&tab_contents, &tab_contents);
 
-  manager.Init(profile_.get(), instance, MSG_ROUTING_NONE);
+  manager.Init(profile(), instance, MSG_ROUTING_NONE);
 
   const GURL kUrl(chrome::kTestNewTabURL);
   NavigationEntry entry(NULL /* instance */, -1 /* page_id */, kUrl,
@@ -305,10 +305,10 @@ TEST_F(RenderViewHostManagerTest, WebUI) {
 // Regression test for bug 46290.
 TEST_F(RenderViewHostManagerTest, NonWebUIChromeURLs) {
   BrowserThread thread(BrowserThread::UI, &message_loop_);
-  SiteInstance* instance = SiteInstance::CreateSiteInstance(profile_.get());
-  TestTabContents tab_contents(profile_.get(), instance);
+  SiteInstance* instance = SiteInstance::CreateSiteInstance(profile());
+  TestTabContents tab_contents(profile(), instance);
   RenderViewHostManager manager(&tab_contents, &tab_contents);
-  manager.Init(profile_.get(), instance, MSG_ROUTING_NONE);
+  manager.Init(profile(), instance, MSG_ROUTING_NONE);
 
   // NTP is a Web UI page.
   const GURL kNtpUrl(chrome::kTestNewTabURL);
@@ -321,7 +321,7 @@ TEST_F(RenderViewHostManagerTest, NonWebUIChromeURLs) {
   // Rewrite so it looks like chrome://about/memory
   bool reverse_on_redirect = false;
   BrowserURLHandler::GetInstance()->RewriteURLIfNecessary(
-      &about_url, profile_.get(), &reverse_on_redirect);
+      &about_url, profile(), &reverse_on_redirect);
   NavigationEntry about_entry(NULL /* instance */, -1 /* page_id */, about_url,
                               GURL() /* referrer */, string16() /* title */,
                               PageTransition::TYPED);

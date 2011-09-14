@@ -25,9 +25,9 @@
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/browser/browser_thread.h"
-#include "content/browser/renderer_host/test_render_view_host.h"
 #include "content/browser/tab_contents/navigation_controller.h"
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -147,11 +147,9 @@ class TabStripDummyDelegate : public TabStripModelDelegate {
   DISALLOW_COPY_AND_ASSIGN(TabStripDummyDelegate);
 };
 
-class TabStripModelTest : public RenderViewHostTestHarness {
+class TabStripModelTest : public ChromeRenderViewHostTestHarness {
  public:
-  TabStripModelTest()
-      : RenderViewHostTestHarness(),
-        browser_thread_(BrowserThread::UI, &message_loop_) {
+  TabStripModelTest() : browser_thread_(BrowserThread::UI, &message_loop_) {
   }
 
   TabContentsWrapper* CreateTabContents() {

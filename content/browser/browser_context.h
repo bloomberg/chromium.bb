@@ -41,6 +41,8 @@ class ResourceContext;
 // It lives on the UI thread.
 class BrowserContext {
  public:
+  virtual ~BrowserContext() {};
+
   // Returns the path of the directory where this context's data is stored.
   virtual FilePath GetPath() = 0;
 

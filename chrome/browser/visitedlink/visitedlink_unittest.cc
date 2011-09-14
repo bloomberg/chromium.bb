@@ -16,10 +16,10 @@
 #include "chrome/browser/visitedlink/visitedlink_event_listener.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/visitedlink_slave.h"
+#include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/browser_render_process_host.h"
-#include "content/browser/renderer_host/test_render_view_host.h"
 #include "content/common/notification_service.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -563,28 +563,23 @@ class VisitedLinkRenderProcessHostFactory
   DISALLOW_COPY_AND_ASSIGN(VisitedLinkRenderProcessHostFactory);
 };
 
-class VisitedLinkEventsTest : public RenderViewHostTestHarness {
+class VisitedLinkEventsTest : public ChromeRenderViewHostTestHarness {
  public:
   VisitedLinkEventsTest()
-      : RenderViewHostTestHarness(),
-        ui_thread_(BrowserThread::UI, &message_loop_),
+      : ui_thread_(BrowserThread::UI, &message_loop_),
         file_thread_(BrowserThread::FILE, &message_loop_) {}
-  ~VisitedLinkEventsTest() {
-    // This ends up using the file thread to schedule the delete.
-    profile_.reset();
-    message_loop_.RunAllPending();
-  }
+  virtual ~VisitedLinkEventsTest() {}
   virtual void SetFactoryMode() {}
   virtual void SetUp() {
     SetFactoryMode();
     event_listener_.reset(new VisitedLinkEventListener());
     rvh_factory_.set_render_process_host_factory(&vc_rph_factory_);
-    profile_.reset(new VisitCountingProfile(event_listener_.get()));
-    RenderViewHostTestHarness::SetUp();
+    browser_context_.reset(new VisitCountingProfile(event_listener_.get()));
+    ChromeRenderViewHostTestHarness::SetUp();
   }
 
   VisitCountingProfile* profile() const {
-    return static_cast<VisitCountingProfile*>(profile_.get());
+    return static_cast<VisitCountingProfile*>(browser_context_.get());
   }
 
   void WaitForCoalescense() {
@@ -607,7 +602,7 @@ class VisitedLinkEventsTest : public RenderViewHostTestHarness {
 
 TEST_F(VisitedLinkEventsTest, Coalescense) {
   // add some URLs to master.
-  VisitedLinkMaster* master = profile_->GetVisitedLinkMaster();
+  VisitedLinkMaster* master = profile()->GetVisitedLinkMaster();
   // Add a few URLs.
   master->AddURL(GURL("http://acidtests.org/"));
   master->AddURL(GURL("http://google.com/"));
@@ -659,7 +654,7 @@ TEST_F(VisitedLinkEventsTest, Coalescense) {
 }
 
 TEST_F(VisitedLinkEventsTest, Basics) {
-  VisitedLinkMaster* master = profile_->GetVisitedLinkMaster();
+  VisitedLinkMaster* master = profile()->GetVisitedLinkMaster();
   rvh()->CreateRenderView(string16());
 
   // Add a few URLs.
@@ -683,7 +678,7 @@ TEST_F(VisitedLinkEventsTest, Basics) {
 }
 
 TEST_F(VisitedLinkEventsTest, TabVisibility) {
-  VisitedLinkMaster* master = profile_->GetVisitedLinkMaster();
+  VisitedLinkMaster* master = profile()->GetVisitedLinkMaster();
   rvh()->CreateRenderView(string16());
 
   // Simulate tab becoming inactive.

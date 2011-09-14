@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/test/base/testing_profile.h"
 #include "content/browser/browser_url_handler.h"
 #include "content/browser/renderer_host/test_backing_store.h"
 #include "content/browser/renderer_host/test_render_view_host.h"
@@ -12,6 +11,7 @@
 #include "content/common/content_client.h"
 #include "content/common/dom_storage_common.h"
 #include "content/common/view_messages.h"
+#include "content/test/test_browser_context.h"
 #include "ui/gfx/rect.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/webpreferences.h"
@@ -307,8 +307,8 @@ TestRenderViewHost* RenderViewHostTestHarness::active_rvh() {
   return pending_rvh() ? pending_rvh() : rvh();
 }
 
-TestingProfile* RenderViewHostTestHarness::profile() {
-  return profile_.get();
+content::BrowserContext* RenderViewHostTestHarness::browser_context() {
+  return browser_context_.get();
 }
 
 MockRenderProcessHost* RenderViewHostTestHarness::process() {
@@ -326,14 +326,15 @@ void RenderViewHostTestHarness::SetContents(TestTabContents* contents) {
 }
 
 TestTabContents* RenderViewHostTestHarness::CreateTestTabContents() {
-  // See comment above profile_ decl for why we check for NULL here.
-  if (!profile_.get())
-    profile_.reset(new TestingProfile());
+  // See comment above browser_context_ decl for why we check for NULL here.
+  if (!browser_context_.get())
+    browser_context_.reset(new TestBrowserContext());
 
   // This will be deleted when the TabContents goes away.
-  SiteInstance* instance = SiteInstance::CreateSiteInstance(profile_.get());
+  SiteInstance* instance =
+      SiteInstance::CreateSiteInstance(browser_context_.get());
 
-  return new TestTabContents(profile_.get(), instance);
+  return new TestTabContents(browser_context_.get(), instance);
 }
 
 void RenderViewHostTestHarness::NavigateAndCommit(const GURL& url) {
@@ -355,10 +356,10 @@ void RenderViewHostTestHarness::TearDown() {
   SetContents(NULL);
 
   // Make sure that we flush any messages related to TabContents destruction
-  // before we destroy the profile.
+  // before we destroy the browser context.
   MessageLoop::current()->RunAllPending();
 
-  // Release the profile on the UI thread.
-  message_loop_.DeleteSoon(FROM_HERE, profile_.release());
+  // Release the browser context on the UI thread.
+  message_loop_.DeleteSoon(FROM_HERE, browser_context_.release());
   message_loop_.RunAllPending();
 }

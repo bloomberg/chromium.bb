@@ -8,8 +8,8 @@
 #import "chrome/browser/ui/cocoa/hyperlink_text_view.h"
 #import "chrome/browser/ui/cocoa/tab_contents/sad_tab_controller.h"
 #import "chrome/browser/ui/cocoa/tab_contents/sad_tab_view.h"
+#include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/browser/renderer_host/test_render_view_host.h"
 #include "content/browser/tab_contents/test_tab_contents.h"
 
 @interface SadTabView (ExposedForTesting)
@@ -25,16 +25,16 @@
 
 namespace {
 
-class SadTabControllerTest : public RenderViewHostTestHarness {
+class SadTabControllerTest : public ChromeRenderViewHostTestHarness {
  public:
   SadTabControllerTest() : test_window_(nil) {
     link_clicked_ = false;
   }
 
   virtual void SetUp() {
-    RenderViewHostTestHarness::SetUp();
-    // Inherting from RenderViewHostTestHarness means we can't inherit from
-    // from CocoaTest, so do a bootstrap and create test window.
+    ChromeRenderViewHostTestHarness::SetUp();
+    // Inherting from ChromeRenderViewHostTestHarness means we can't inherit
+    // from from CocoaTest, so do a bootstrap and create test window.
     CocoaTest::BootstrapCocoa();
     test_window_ = [[CocoaTestHelperWindow alloc] init];
     if (base::debug::BeingDebugged()) {
@@ -47,7 +47,7 @@ class SadTabControllerTest : public RenderViewHostTestHarness {
   virtual void TearDown() {
     [test_window_ close];
     test_window_ = nil;
-    RenderViewHostTestHarness::TearDown();
+    ChromeRenderViewHostTestHarness::TearDown();
   }
 
   // Creates the controller and adds its view to contents, caller has ownership.

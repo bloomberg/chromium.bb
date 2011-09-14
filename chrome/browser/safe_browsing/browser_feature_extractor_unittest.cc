@@ -17,9 +17,9 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/browser_features.h"
 #include "chrome/browser/safe_browsing/client_side_detection_service.h"
+#include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/browser/browser_thread.h"
-#include "content/browser/renderer_host/test_render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/test_tab_contents.h"
 #include "content/common/page_transition_types.h"
@@ -43,15 +43,15 @@ class MockClientSideDetectionService : public ClientSideDetectionService {
 };
 }  // namespace
 
-class BrowserFeatureExtractorTest : public RenderViewHostTestHarness {
+class BrowserFeatureExtractorTest : public ChromeRenderViewHostTestHarness {
  protected:
   BrowserFeatureExtractorTest()
       : ui_thread_(BrowserThread::UI, &message_loop_) {
   }
 
   virtual void SetUp() {
-    RenderViewHostTestHarness::SetUp();
-    profile_->CreateHistoryService(true /* delete_file */, false /* no_db */);
+    ChromeRenderViewHostTestHarness::SetUp();
+    profile()->CreateHistoryService(true /* delete_file */, false /* no_db */);
     service_.reset(new StrictMock<MockClientSideDetectionService>());
     extractor_.reset(new BrowserFeatureExtractor(contents(), service_.get()));
     num_pending_ = 0;
@@ -60,13 +60,13 @@ class BrowserFeatureExtractorTest : public RenderViewHostTestHarness {
 
   virtual void TearDown() {
     extractor_.reset();
-    profile_->DestroyHistoryService();
-    RenderViewHostTestHarness::TearDown();
+    profile()->DestroyHistoryService();
+    ChromeRenderViewHostTestHarness::TearDown();
     ASSERT_EQ(0, num_pending_);
   }
 
   HistoryService* history_service() {
-    return profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
+    return profile()->GetHistoryService(Profile::EXPLICIT_ACCESS);
   }
 
   // This is similar to NavigateAndCommit that is in test_tab_contents, but

@@ -124,12 +124,12 @@ class WebIntentPickerControllerTest : public TabContentsWrapperTestHarness {
   virtual void SetUp() {
     TabContentsWrapperTestHarness::SetUp();
 
-    profile_->CreateFaviconService();
-    profile_->CreateWebDataService(true);
-    web_data_service_ = profile_->GetWebDataService(Profile::EXPLICIT_ACCESS);
-    favicon_service_ = profile_->GetFaviconService(Profile::EXPLICIT_ACCESS);
+    profile()->CreateFaviconService();
+    profile()->CreateWebDataService(true);
+    web_data_service_ = profile()->GetWebDataService(Profile::EXPLICIT_ACCESS);
+    favicon_service_ = profile()->GetFaviconService(Profile::EXPLICIT_ACCESS);
     WebIntentsRegistry *registry =
-        WebIntentsRegistryFactory::GetForProfile(profile_.get());
+        WebIntentsRegistryFactory::GetForProfile(profile());
     registry->Initialize(web_data_service_);
 
     picker_factory_ = new WebIntentPickerFactoryMock();

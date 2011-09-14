@@ -7,9 +7,9 @@
 #include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/render_view_test.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/browser/renderer_host/test_render_view_host.h"
 #include "content/browser/tab_contents/navigation_controller.h"
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/test_tab_contents.h"
@@ -32,7 +32,7 @@ class TabRestoreTimeFactory : public TabRestoreService::TimeFactory {
   base::Time time_;
 };
 
-class TabRestoreServiceTest : public RenderViewHostTestHarness {
+class TabRestoreServiceTest : public ChromeRenderViewHostTestHarness {
  public:
   TabRestoreServiceTest() {
     url1_ = GURL("http://1");
@@ -46,7 +46,7 @@ class TabRestoreServiceTest : public RenderViewHostTestHarness {
  protected:
   // testing::Test overrides
   virtual void SetUp() {
-    RenderViewHostTestHarness::SetUp();
+    ChromeRenderViewHostTestHarness::SetUp();
     time_factory_ = new TabRestoreTimeFactory();
     service_.reset(new TabRestoreService(profile(), time_factory_));
     WebKit::initialize(&webkit_platform_support_);
@@ -55,7 +55,7 @@ class TabRestoreServiceTest : public RenderViewHostTestHarness {
   virtual void TearDown() {
     service_.reset();
     delete time_factory_;
-    RenderViewHostTestHarness::TearDown();
+    ChromeRenderViewHostTestHarness::TearDown();
     WebKit::shutdown();
   }
 

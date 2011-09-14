@@ -9,7 +9,7 @@
 #include "content/browser/tab_contents/test_tab_contents.h"
 
 TabContentsWrapperTestHarness::TabContentsWrapperTestHarness()
-    : RenderViewHostTestHarness() {
+    : ChromeRenderViewHostTestHarness() {
 }
 
 TabContentsWrapperTestHarness::~TabContentsWrapperTestHarness() {
@@ -29,6 +29,8 @@ void TabContentsWrapperTestHarness::SetContents(TestTabContents* contents) {
 }
 
 void TabContentsWrapperTestHarness::SetUp() {
+  if (!browser_context_.get())
+    browser_context_.reset(new TestingProfile());
   SetContents(CreateTestTabContents());
 }
 
@@ -36,10 +38,10 @@ void TabContentsWrapperTestHarness::TearDown() {
   contents_wrapper_.reset();
 
   // Make sure that we flush any messages related to TabContents destruction
-  // before we destroy the profile.
+  // before we destroy the browser context.
   MessageLoop::current()->RunAllPending();
 
-  // Release the profile on the UI thread.
-  message_loop_.DeleteSoon(FROM_HERE, profile_.release());
+  // Release the browser context on the UI thread.
+  message_loop_.DeleteSoon(FROM_HERE, browser_context_.release());
   message_loop_.RunAllPending();
 }

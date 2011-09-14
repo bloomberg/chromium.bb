@@ -4,8 +4,8 @@
 
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/offline/offline_load_page.h"
+#include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "content/browser/browser_thread.h"
-#include "content/browser/renderer_host/test_render_view_host.h"
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/test_tab_contents.h"
 #include "content/common/view_messages.h"
@@ -35,7 +35,7 @@ class TestOfflineLoadPage :  public chromeos::OfflineLoadPage {
 
 namespace chromeos {
 
-class OfflineLoadPageTest : public RenderViewHostTestHarness,
+class OfflineLoadPageTest : public ChromeRenderViewHostTestHarness,
                             public OfflineLoadPage::Delegate {
  public:
   // The decision the user made.
@@ -51,7 +51,7 @@ class OfflineLoadPageTest : public RenderViewHostTestHarness,
   }
 
   virtual void SetUp() {
-    RenderViewHostTestHarness::SetUp();
+    ChromeRenderViewHostTestHarness::SetUp();
     user_response_ = PENDING;
   }
 

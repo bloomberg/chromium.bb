@@ -7,13 +7,13 @@
 
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_webnavigation_api.h"
+#include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/browser/renderer_host/test_render_view_host.h"
 #include "content/browser/tab_contents/test_tab_contents.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 
-class FrameNavigationStateTest : public RenderViewHostTestHarness {
+class FrameNavigationStateTest : public ChromeRenderViewHostTestHarness {
 };
 
 // Test that a frame is correctly tracked, and removed once the tab contents

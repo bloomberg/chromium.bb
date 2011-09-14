@@ -9,16 +9,16 @@
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #import "chrome/browser/ui/cocoa/drag_util.h"
 #import "chrome/browser/ui/cocoa/tab_contents/web_drop_target.h"
-#include "content/browser/renderer_host/test_render_view_host.h"
+#include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "content/browser/tab_contents/test_tab_contents.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "third_party/mozilla/NSPasteboard+Utils.h"
 #include "webkit/glue/webdropdata.h"
 
-class WebDropTargetTest : public RenderViewHostTestHarness {
+class WebDropTargetTest : public ChromeRenderViewHostTestHarness {
  public:
   virtual void SetUp() {
-    RenderViewHostTestHarness::SetUp();
+    ChromeRenderViewHostTestHarness::SetUp();
     CocoaTest::BootstrapCocoa();
     drop_target_.reset([[WebDropTarget alloc] initWithTabContents:contents()]);
   }

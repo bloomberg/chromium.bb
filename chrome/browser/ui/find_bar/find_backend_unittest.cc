@@ -42,7 +42,7 @@ TEST_F(FindBackendTest, InternalState) {
   EXPECT_EQ(string16(), find_tab_helper->find_text());
 
   // Get another TabContents object ready.
-  TestTabContents* contents2 = new TestTabContents(profile_.get(), NULL);
+  TestTabContents* contents2 = new TestTabContents(profile(), NULL);
   TabContentsWrapper wrapper2(contents2);
   FindTabHelper* find_tab_helper2 = wrapper2.find_tab_helper();
 

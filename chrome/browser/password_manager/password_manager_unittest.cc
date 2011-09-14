@@ -11,9 +11,9 @@
 #include "chrome/browser/password_manager/password_manager_delegate.h"
 #include "chrome/browser/password_manager/password_store.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/browser/browser_thread.h"
-#include "content/browser/renderer_host/test_render_view_host.h"
 #include "content/browser/tab_contents/test_tab_contents.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -78,19 +78,19 @@ ACTION_P(SaveToScopedPtr, scoped) {
   scoped->reset(arg0);
 }
 
-class PasswordManagerTest : public RenderViewHostTestHarness {
+class PasswordManagerTest : public ChromeRenderViewHostTestHarness {
  public:
   PasswordManagerTest()
       : ui_thread_(BrowserThread::UI, MessageLoopForUI::current()) {}
  protected:
 
   virtual void SetUp() {
-    RenderViewHostTestHarness::SetUp();
-
     store_ = new MockPasswordStore();
-    profile_.reset(new TestingProfileWithPasswordStore(store_));
+    browser_context_.reset(new TestingProfileWithPasswordStore(store_));
+    ChromeRenderViewHostTestHarness::SetUp();
+
     EXPECT_CALL(delegate_, GetProfileForPasswordManager())
-        .WillRepeatedly(Return(profile_.get()));
+        .WillRepeatedly(Return(profile()));
     manager_.reset(new PasswordManager(contents(), &delegate_));
     EXPECT_CALL(delegate_, DidLastPageLoadEncounterSSLErrors())
         .WillRepeatedly(Return(false));
@@ -99,6 +99,7 @@ class PasswordManagerTest : public RenderViewHostTestHarness {
   virtual void TearDown() {
     manager_.reset();
     store_ = NULL;
+    ChromeRenderViewHostTestHarness::TearDown();
   }
 
   PasswordForm MakeSimpleForm() {
@@ -119,7 +120,6 @@ class PasswordManagerTest : public RenderViewHostTestHarness {
   // We create a UI thread to satisfy PasswordStore.
   BrowserThread ui_thread_;
 
-  scoped_ptr<Profile> profile_;
   scoped_refptr<MockPasswordStore> store_;
   MockPasswordManagerDelegate delegate_;  // Owned by manager_.
   scoped_ptr<PasswordManager> manager_;

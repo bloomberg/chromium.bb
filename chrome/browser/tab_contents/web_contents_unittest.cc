@@ -11,12 +11,12 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_pref_service.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
-#include "content/browser/renderer_host/test_render_view_host.h"
 #include "content/browser/site_instance.h"
 #include "content/browser/tab_contents/constrained_window.h"
 #include "content/browser/tab_contents/navigation_details.h"
@@ -169,22 +169,19 @@ class TestInterstitialPageStateGuard : public TestInterstitialPage::Delegate {
   TestInterstitialPage* interstitial_page_;
 };
 
-class TabContentsTest : public RenderViewHostTestHarness {
+class TabContentsTest : public ChromeRenderViewHostTestHarness {
  public:
-  TabContentsTest()
-      : RenderViewHostTestHarness(),
-        ui_thread_(BrowserThread::UI, &message_loop_) {
+  TabContentsTest() : ui_thread_(BrowserThread::UI, &message_loop_) {
   }
 
  private:
   // Supply our own profile so we use the correct profile data. The test harness
   // is not supposed to overwrite a profile if it's already created.
   virtual void SetUp() {
-    TestingProfile* profile = new TestingProfile();
-    profile_.reset(profile);
+    ChromeRenderViewHostTestHarness::SetUp();
 
     // Set some (WebKit) user preferences.
-    TestingPrefService* pref_services = profile->GetTestingPrefService();
+    TestingPrefService* pref_services = profile()->GetTestingPrefService();
 #if defined(TOOLKIT_USES_GTK)
     pref_services->SetUserPref(prefs::kUsesSystemTheme,
                                Value::CreateBooleanValue(false));
@@ -199,14 +196,6 @@ class TabContentsTest : public RenderViewHostTestHarness {
                                Value::CreateBooleanValue(true));
     pref_services->SetUserPref("webkit.webprefs.foo",
                                Value::CreateStringValue("bar"));
-
-    RenderViewHostTestHarness::SetUp();
-  }
-
-  virtual void TearDown() {
-    RenderViewHostTestHarness::TearDown();
-
-    profile_.reset(NULL);
   }
 
   BrowserThread ui_thread_;

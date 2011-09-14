@@ -16,8 +16,8 @@
 //  #include "chrome/browser/sessions/session_service_factory.h"
 //  #include "chrome/browser/sessions/session_service_test_helper.h"
 //  #include "chrome/browser/sessions/session_types.h"
+#include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/browser/renderer_host/test_render_view_host.h"
 #include "content/browser/site_instance.h"
 #include "content/browser/tab_contents/navigation_controller.h"
 #include "content/browser/tab_contents/navigation_details.h"
@@ -36,7 +36,7 @@ using base::Time;
 
 // NavigationControllerTest ----------------------------------------------------
 
-class NavigationControllerTest : public RenderViewHostTestHarness {
+class NavigationControllerTest : public ChromeRenderViewHostTestHarness {
  public:
   NavigationControllerTest() {}
 };

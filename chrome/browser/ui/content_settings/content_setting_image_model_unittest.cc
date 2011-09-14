@@ -49,7 +49,7 @@ TEST_F(ContentSettingImageModelTest, UpdateFromTabContents) {
 TEST_F(ContentSettingImageModelTest, CookieAccessed) {
   TabSpecificContentSettings* content_settings =
       contents_wrapper()->content_settings();
-  profile_->GetHostContentSettingsMap()->SetDefaultContentSetting(
+  profile()->GetHostContentSettingsMap()->SetDefaultContentSetting(
       CONTENT_SETTINGS_TYPE_COOKIES, CONTENT_SETTING_BLOCK);
   scoped_ptr<ContentSettingImageModel> content_setting_image_model(
      ContentSettingImageModel::CreateContentSettingImageModel(

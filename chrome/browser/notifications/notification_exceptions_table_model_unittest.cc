@@ -6,14 +6,15 @@
 
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/notifications/desktop_notification_service_factory.h"
+#include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/browser/browser_thread.h"
-#include "content/browser/renderer_host/test_render_view_host.h"
 #include "grit/generated_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 
-class NotificationExceptionsTableModelTest : public RenderViewHostTestHarness {
+class NotificationExceptionsTableModelTest
+    : public ChromeRenderViewHostTestHarness {
  public:
   NotificationExceptionsTableModelTest()
      : ui_thread_(BrowserThread::UI, MessageLoop::current()) {
@@ -23,14 +24,14 @@ class NotificationExceptionsTableModelTest : public RenderViewHostTestHarness {
   }
 
   virtual void SetUp() {
-    RenderViewHostTestHarness::SetUp();
+    ChromeRenderViewHostTestHarness::SetUp();
     service_ = DesktopNotificationServiceFactory::GetForProfile(profile());
     ResetModel();
   }
 
   virtual void TearDown() {
     model_.reset(NULL);
-    RenderViewHostTestHarness::TearDown();
+    ChromeRenderViewHostTestHarness::TearDown();
   }
 
   virtual void ResetModel() {

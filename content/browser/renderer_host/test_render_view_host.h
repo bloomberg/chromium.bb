@@ -17,13 +17,16 @@
 #include "content/common/page_transition_types.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace content {
+class BrowserContext;
+}
+
 namespace gfx {
 class Rect;
 }
 
 class NavigationController;
 class SiteInstance;
-class TestingProfile;
 class TestTabContents;
 struct WebMenuItem;
 struct ViewHostMsg_FrameNavigate_Params;
@@ -292,7 +295,7 @@ class RenderViewHostTestHarness : public testing::Test {
   TestRenderViewHost* rvh();
   TestRenderViewHost* pending_rvh();
   TestRenderViewHost* active_rvh();
-  TestingProfile* profile();
+  content::BrowserContext* browser_context();
   MockRenderProcessHost* process();
 
   // Frees the current tab contents for tests that want to test destruction.
@@ -317,10 +320,11 @@ class RenderViewHostTestHarness : public testing::Test {
   virtual void SetUp();
   virtual void TearDown();
 
-  // This profile will be created in SetUp if it has not already been created.
-  // This allows tests to override the profile if they so choose in their own
-  // SetUp function before calling the base class's (us) SetUp().
-  scoped_ptr<TestingProfile> profile_;
+  // This browser context will be created in SetUp if it has not already been
+  // created.  This allows tests to override the browser context if they so
+  // choose in their own SetUp function before calling the base class's (us)
+  // SetUp().
+  scoped_ptr<content::BrowserContext> browser_context_;
 
   MessageLoopForUI message_loop_;
 

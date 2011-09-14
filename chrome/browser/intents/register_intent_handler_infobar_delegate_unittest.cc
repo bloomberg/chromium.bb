@@ -8,9 +8,9 @@
 #include "chrome/browser/intents/web_intents_registry.h"
 #include "chrome/browser/intents/web_intents_registry_factory.h"
 #include "chrome/browser/intents/web_intent_data.h"
+#include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/browser/browser_thread.h"
-#include "content/browser/renderer_host/test_render_view_host.h"
 #include "content/browser/site_instance.h"
 #include "content/browser/tab_contents/test_tab_contents.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -34,29 +34,27 @@ MockWebIntentsRegistry* BuildForProfile(Profile* profile) {
 }
 
 class RegisterIntentHandlerInfoBarDelegateTest
-    : public RenderViewHostTestHarness {
+    : public ChromeRenderViewHostTestHarness {
  protected:
   RegisterIntentHandlerInfoBarDelegateTest()
       : ui_thread_(BrowserThread::UI, MessageLoopForUI::current()) {}
 
   virtual void SetUp() {
-    RenderViewHostTestHarness::SetUp();
+    ChromeRenderViewHostTestHarness::SetUp();
 
-    profile_.reset(new TestingProfile);
-    profile_->CreateWebDataService(false);
+    profile()->CreateWebDataService(false);
 
-    SiteInstance* instance = SiteInstance::CreateSiteInstance(profile_.get());
-    tab_contents_.reset(new TestTabContents(profile_.get(), instance));
+    SiteInstance* instance = SiteInstance::CreateSiteInstance(profile());
+    tab_contents_.reset(new TestTabContents(profile(), instance));
 
-    web_intents_registry_ = BuildForProfile(profile_.get());
+    web_intents_registry_ = BuildForProfile(profile());
   }
 
   virtual void TearDown() {
     tab_contents_.reset();
     web_intents_registry_ = NULL;
-    profile_.reset();
 
-    RenderViewHostTestHarness::TearDown();
+    ChromeRenderViewHostTestHarness::TearDown();
   }
 
   scoped_ptr<TestTabContents> tab_contents_;
@@ -64,7 +62,6 @@ class RegisterIntentHandlerInfoBarDelegateTest
 
  private:
   BrowserThread ui_thread_;
-  scoped_ptr<TestingProfile> profile_;
 
   DISALLOW_COPY_AND_ASSIGN(RegisterIntentHandlerInfoBarDelegateTest);
 };
