@@ -6,11 +6,20 @@
   'targets': [
     {
       'target_name': 'appcache',
+      # TODO(dpranke): Uncomment '<(component)',
+      # 'type': '<(component)',
       'type': 'static_library',
+      'defines': [
+        'APPCACHE_IMPLEMENTATION',
+      ],
       'dependencies': [
+        'quota',
+        '<(DEPTH)/base/base.gyp:base_i18n',
         '<(DEPTH)/build/temp_gyp/googleurl.gyp:googleurl',
         '<(DEPTH)/net/net.gyp:net',
         '<(DEPTH)/sql/sql.gyp:sql',
+        '<(DEPTH)/base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
+        # TODO(dpranke): Uncomment '<(DEPTH)/third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
       ],
       'sources': [
         # This list contains all .h and .cc in appcache except for test code.
@@ -23,6 +32,7 @@
         'appcache_disk_cache.cc',
         'appcache_disk_cache.h',
         'appcache_entry.h',
+        'appcache_export.h',
         'appcache_frontend_impl.cc',
         'appcache_frontend_impl.h',
         'appcache_group.cc',

@@ -11,6 +11,7 @@
 #include "base/file_path.h"
 #include "base/time.h"
 #include "googleurl/src/gurl.h"
+#include "webkit/appcache/appcache_export.h"
 
 namespace net {
 class URLRequest;
@@ -54,7 +55,7 @@ enum LogLevel {
   LOG_ERROR,
 };
 
-struct AppCacheInfo {
+struct APPCACHE_EXPORT AppCacheInfo {
   AppCacheInfo();
   ~AppCacheInfo();
 
@@ -71,7 +72,7 @@ struct AppCacheInfo {
 typedef std::vector<AppCacheInfo> AppCacheInfoVector;
 
 // Type to hold information about a single appcache resource.
-struct AppCacheResourceInfo {
+struct APPCACHE_EXPORT AppCacheResourceInfo {
   AppCacheResourceInfo();
   ~AppCacheResourceInfo();
 
@@ -88,7 +89,7 @@ struct AppCacheResourceInfo {
 typedef std::vector<AppCacheResourceInfo> AppCacheResourceInfoVector;
 
 // Interface used by backend (browser-process) to talk to frontend (renderer).
-class AppCacheFrontend {
+class APPCACHE_EXPORT AppCacheFrontend {
  public:
   virtual void OnCacheSelected(
       int host_id, const appcache::AppCacheInfo& info) = 0;
@@ -109,7 +110,7 @@ class AppCacheFrontend {
 };
 
 // Interface used by frontend (renderer) to talk to backend (browser-process).
-class AppCacheBackend {
+class APPCACHE_EXPORT AppCacheBackend {
  public:
   virtual void RegisterHost(int host_id) = 0;
   virtual void UnregisterHost(int host_id) = 0;
@@ -149,7 +150,7 @@ bool IsSchemeSupported(const GURL& url);
 bool IsMethodSupported(const std::string& method);
 bool IsSchemeAndMethodSupported(const net::URLRequest* request);
 
-extern const FilePath::CharType kAppCacheDatabaseName[];
+APPCACHE_EXPORT extern const FilePath::CharType kAppCacheDatabaseName[];
 
 }  // namespace
 
