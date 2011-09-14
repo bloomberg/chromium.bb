@@ -1,6 +1,6 @@
-set noparent
-
-# extensions_api.json
+# Core extension team members. Specific extension APIs may have other authors
+# (e.g. dmazzoni@ for TTS, kalman@ for settings), please check with them when
+# making significant changes.
 aa@chromium.org
 asargent@chromium.org
 bolms@chromium.org
@@ -14,7 +14,3 @@ mpcomplete@chromium.org
 skerner@chromium.org
 tessamac@chromium.org
 yoz@chromium.org
-
-# devtools_api.json
-caseq@chromium.org
-pfeldman@chromium.org
