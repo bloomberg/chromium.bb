@@ -57,7 +57,7 @@ int NaClThreadInterfaceCtor_protected(
   self->thread_data = thread_data;
   self->thread_started = 0;
   NACL_VTBL(NaClRefCount, self) =
-      (struct NaClRefCountVtbl const *) &kNaClThreadInterfaceVtbl,
+      (struct NaClRefCountVtbl const *) &kNaClThreadInterfaceVtbl;
   NaClLog(3,
           "Leaving NaClThreadInterfaceThreadPlacementFactory, returning 1\n");
   return 1;
