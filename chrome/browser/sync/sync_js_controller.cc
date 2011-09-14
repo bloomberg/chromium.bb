@@ -4,7 +4,6 @@
 
 #include "chrome/browser/sync/sync_js_controller.h"
 
-#include "base/tracked.h"
 #include "chrome/browser/sync/js/js_backend.h"
 #include "chrome/browser/sync/js/js_event_details.h"
 
