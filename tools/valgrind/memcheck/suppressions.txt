@@ -4985,12 +4985,10 @@
    Memcheck:Leak
    fun:realloc
    fun:HB_OpenTypeShape
-   fun:HB_BasicShape
+   ...
    fun:HB_ShapeItem
    fun:_ZN7WebCore21ComplexTextController11shapeGlyphsEv
    fun:_ZN7WebCore21ComplexTextController13nextScriptRunEv
-   fun:_ZN7WebCore21ComplexTextController13selectionRectERKNS_10FloatPointEiii
-   fun:_ZNK7WebCore4Font27selectionRectForComplexTextERKNS_7TextRunERKNS_10FloatPointEiii
 }
 {
    bug_96568b
