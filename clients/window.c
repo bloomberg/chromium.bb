@@ -32,9 +32,9 @@
 #include <time.h>
 #include <cairo.h>
 #include <glib.h>
-#include <glib-object.h>
 #include <gdk-pixbuf/gdk-pixbuf.h>
 #include <sys/mman.h>
+#include <sys/epoll.h>
 
 #include <wayland-egl.h>
 
@@ -51,7 +51,6 @@
 #include <linux/input.h>
 #include "wayland-util.h"
 #include "wayland-client.h"
-#include "wayland-glib.h"
 #include "cairo-util.h"
 
 #include "window.h"
@@ -68,9 +67,14 @@ struct display {
 	EGLConfig premultiplied_argb_config;
 	EGLContext ctx;
 	cairo_device_t *device;
-	int fd;
-	GMainLoop *loop;
-	GSource *source;
+
+	int display_fd;
+	uint32_t mask;
+	struct task display_task;
+
+	int epoll_fd;
+	struct wl_list deferred_list;
+
 	struct wl_list window_list;
 	struct wl_list input_list;
 	char *device_name;
@@ -99,6 +103,7 @@ struct window {
 	int x, y;
 	int resize_edges;
 	int redraw_scheduled;
+	struct task redraw_task;
 	int minimum_width, minimum_height;
 	int margin;
 	int type;
@@ -1374,23 +1379,22 @@ window_set_child_size(struct window *window, int32_t width, int32_t height)
 	}
 }
 
-static gboolean
-idle_redraw(void *data)
+static void
+idle_redraw(struct task *task, uint32_t events)
 {
-	struct window *window = data;
+	struct window *window =
+		container_of(task, struct window, redraw_task);
 
 	window->redraw_handler(window, window->user_data);
-
 	window->redraw_scheduled = 0;
-
-	return FALSE;
 }
 
 void
 window_schedule_redraw(struct window *window)
 {
 	if (!window->redraw_scheduled) {
-		g_idle_add(idle_redraw, window);
+		window->redraw_task.run = idle_redraw;
+		display_defer(window->display, &window->redraw_task);
 		window->redraw_scheduled = 1;
 	}
 }
@@ -1927,6 +1931,25 @@ init_egl(struct display *d)
 	return 0;
 }
 
+static int
+event_mask_update(uint32_t mask, void *data)
+{
+	struct display *d = data;
+
+	d->mask = mask;
+
+	return 0;
+}
+
+static void
+handle_display_data(struct task *task, uint32_t events)
+{
+	struct display *display =
+		container_of(task, struct display, display_task);
+	
+	wl_display_iterate(display->display, display->mask);
+}
+
 struct display *
 display_create(int *argc, char **argv[], const GOptionEntry *option_entries)
 {
@@ -1967,6 +1990,12 @@ display_create(int *argc, char **argv[], const GOptionEntry *option_entries)
 		return NULL;
 	}
 
+	d->epoll_fd = epoll_create1(EPOLL_CLOEXEC);
+	d->display_fd = wl_display_get_fd(d->display, event_mask_update, d);
+	d->display_task.run = handle_display_data;
+	display_watch_fd(d, d->display_fd, EPOLLIN, &d->display_task);
+
+	wl_list_init(&d->deferred_list);
 	wl_list_init(&d->input_list);
 
 	/* Set up listener so we'll catch all events. */
@@ -1986,10 +2015,6 @@ display_create(int *argc, char **argv[], const GOptionEntry *option_entries)
 	create_pointer_surfaces(d);
 
 	display_render_frame(d);
-
-	d->loop = g_main_loop_new(NULL, FALSE);
-	d->source = wl_glib_source_new(d->display);
-	g_source_attach(d->source, NULL);
 
 	wl_list_init(&d->window_list);
 
@@ -2060,7 +2085,46 @@ display_release(struct display *display)
 }
 
 void
-display_run(struct display *d)
+display_defer(struct display *display, struct task *task)
 {
-	g_main_loop_run(d->loop);
+	wl_list_insert(&display->deferred_list, &task->link);
+}
+
+void
+display_watch_fd(struct display *display,
+		 int fd, uint32_t events, struct task *task)
+{
+	struct epoll_event ep;
+
+	ep.events = events;
+	ep.data.ptr = task;
+	epoll_ctl(display->epoll_fd, EPOLL_CTL_ADD, fd, &ep);
+}
+
+void
+display_run(struct display *display)
+{
+	struct task *task;
+	struct epoll_event ep[16];
+	int i, count;
+
+	while (1) {
+		while (display->mask & WL_DISPLAY_WRITABLE)
+			wl_display_iterate(display->display,
+					   WL_DISPLAY_WRITABLE);
+
+		count = epoll_wait(display->epoll_fd,
+				   ep, ARRAY_LENGTH(ep), -1);
+		for (i = 0; i < count; i++) {
+			task = ep[i].data.ptr;
+			task->run(task, ep[i].events);
+		}
+
+		while (!wl_list_empty(&display->deferred_list)) {
+			task = container_of(display->deferred_list.next,
+					    struct task, link);
+			wl_list_remove(&task->link);
+			task->run(task, 0);
+		}
+	}
 }

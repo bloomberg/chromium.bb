@@ -29,11 +29,10 @@
 #include <math.h>
 #include <sys/time.h>
 #include <cairo.h>
-#include <glib.h>
+#include <sys/epoll.h>
 #include <gdk-pixbuf/gdk-pixbuf.h>
 
 #include "wayland-client.h"
-#include "wayland-glib.h"
 
 #include "window.h"
 
@@ -60,9 +59,11 @@ struct dnd_offer {
 	int refcount;
 	struct dnd *dnd;
 	struct wl_array types;
+	struct task io_task;
 	const char *drag_type;
 	uint32_t tag;
 	int x, y;
+	int fd;
 };
 
 struct item {
@@ -421,24 +422,21 @@ drag_offer_motion(void *data,
 	}
 }
 
-static gboolean
-drop_io_func(GIOChannel *source, GIOCondition condition, gpointer data)
+static void
+drop_io_func(struct task *task, uint32_t events)
 {
-	struct dnd_offer *dnd_offer = data;
+	struct dnd_offer *dnd_offer =
+		container_of(task, struct dnd_offer, io_task);
 	struct dnd *dnd = dnd_offer->dnd;
 	struct dnd_flower_message dnd_flower_message;
-	int fd;
 	unsigned int len;
 	struct item *item;
 
-	fd = g_io_channel_unix_get_fd(source);
-	len = read(fd, &dnd_flower_message, sizeof dnd_flower_message);
+	len = read(dnd_offer->fd,
+		   &dnd_flower_message, sizeof dnd_flower_message);
 	fprintf(stderr, "read %d bytes\n", len);
 
-	close(fd);
-	g_source_remove(dnd_offer->tag);
-
-	g_io_channel_unref(source);
+	close(dnd_offer->fd);
 
 	item = item_create(dnd->display,
 			   dnd_offer->x - dnd_flower_message.x_offset - 26,
@@ -449,15 +447,12 @@ drop_io_func(GIOChannel *source, GIOCondition condition, gpointer data)
 	window_schedule_redraw(dnd->window);
 
 	dnd_offer_destroy(dnd_offer);
-
-	return TRUE;
 }
 
 static void
 drag_offer_drop(void *data, struct wl_drag_offer *offer)
 {
 	struct dnd_offer *dnd_offer = data;
-	GIOChannel *channel;
 	int p[2];
 
 	if (!dnd_offer->drag_type) {
@@ -473,9 +468,10 @@ drag_offer_drop(void *data, struct wl_drag_offer *offer)
 	wl_drag_offer_receive(offer, p[1]);
 	close(p[1]);
 
-	channel = g_io_channel_unix_new(p[0]);
-	dnd_offer->tag = g_io_add_watch(channel, G_IO_IN,
-					drop_io_func, dnd_offer);
+	dnd_offer->io_task.run = drop_io_func;
+	dnd_offer->fd = p[0];
+	display_watch_fd(dnd_offer->dnd->display,
+			 p[0], EPOLLIN, &dnd_offer->io_task);
 }
 
 static const struct wl_drag_offer_listener drag_offer_listener = {

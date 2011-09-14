@@ -33,7 +33,6 @@
 #include <glib.h>
 
 #include "wayland-client.h"
-#include "wayland-glib.h"
 #include "window.h"
 
 struct smoke {

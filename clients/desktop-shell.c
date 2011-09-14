@@ -32,7 +32,6 @@
 #include <linux/input.h>
 
 #include "wayland-client.h"
-#include "wayland-glib.h"
 #include "window.h"
 
 #include <desktop-shell-client-protocol.h>

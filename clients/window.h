@@ -30,6 +30,11 @@
 
 struct window;
 
+struct task {
+	void (*run)(struct task *task, uint32_t events);
+	struct wl_list link;
+};
+
 struct rectangle {
 	int32_t x;
 	int32_t y;
@@ -97,6 +102,13 @@ display_add_drag_listener(struct display *display,
 
 void
 display_flush_cairo_device(struct display *display);
+
+void
+display_defer(struct display *display, struct task *task);
+
+void
+display_watch_fd(struct display *display,
+		 int fd, uint32_t events, struct task *task);
 
 void
 display_run(struct display *d);

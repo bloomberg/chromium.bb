@@ -34,7 +34,6 @@
 #include <gdk-pixbuf/gdk-pixbuf.h>
 
 #include "wayland-client.h"
-#include "wayland-glib.h"
 
 #include "window.h"
 

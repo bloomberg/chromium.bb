@@ -38,7 +38,6 @@
 
 #include "wayland-util.h"
 #include "wayland-client.h"
-#include "wayland-glib.h"
 
 #include "window.h"
 

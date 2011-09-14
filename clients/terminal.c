@@ -32,12 +32,12 @@
 #include <ctype.h>
 #include <cairo.h>
 #include <glib.h>
+#include <sys/epoll.h>
 
 #include <X11/keysym.h>
 
 #include "wayland-util.h"
 #include "wayland-client.h"
-#include "wayland-glib.h"
 
 #include "window.h"
 
@@ -359,6 +359,7 @@ struct terminal {
 	struct window *window;
 	struct display *display;
 	union utf8_char *data;
+	struct task io_task;
 	char *tab_ruler;
 	struct attr *data_attr;
 	struct attr curr_attr;
@@ -375,7 +376,6 @@ struct terminal {
 	int width, height, start, row, column;
 	int saved_row, saved_column;
 	int fd, master;
-	GIOChannel *channel;
 	uint32_t modifiers;
 	char escape[MAX_ESCAPE+1];
 	int escape_length;
@@ -2326,25 +2326,22 @@ terminal_create(struct display *display, int fullscreen)
 	return terminal;
 }
 
-static gboolean
-io_handler(GIOChannel   *source,
-	   GIOCondition  condition,
-	   gpointer      data)
+static void
+io_handler(struct task *task, uint32_t events)
 {
-	struct terminal *terminal = data;
-	gchar buffer[256];
-	gsize bytes_read;
-	GError *error = NULL;
+	struct terminal *terminal =
+		container_of(task, struct terminal, io_task);
+	char buffer[256];
+	int len;
 
-	if(condition == G_IO_HUP)
-          exit(0);
+	if (events & EPOLLHUP)
+		exit(0);
 
-	g_io_channel_read_chars(source, buffer, sizeof buffer,
-				&bytes_read, &error);
+	len = read(terminal->master, buffer, sizeof buffer);
+	if (len < 0)
+		exit(0);
 
-	terminal_data(terminal, buffer, bytes_read);
-
-	return TRUE;
+	terminal_data(terminal, buffer, len);
 }
 
 static int
@@ -2367,10 +2364,10 @@ terminal_run(struct terminal *terminal, const char *path)
 	}
 
 	terminal->master = master;
-	terminal->channel = g_io_channel_unix_new(master);
 	fcntl(master, F_SETFL, O_NONBLOCK);
-	g_io_add_watch(terminal->channel, G_IO_IN, io_handler, terminal);
-        g_io_add_watch(terminal->channel, G_IO_HUP, io_handler, terminal);
+	terminal->io_task.run = io_handler;
+	display_watch_fd(terminal->display, terminal->master,
+			 EPOLLIN | EPOLLHUP, &terminal->io_task);
 
 	window_set_fullscreen(terminal->window, terminal->fullscreen);
 	if (!terminal->fullscreen)

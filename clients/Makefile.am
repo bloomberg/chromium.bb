@@ -34,8 +34,6 @@ AM_CPPFLAGS =					\
 libtoytoolkit_a_SOURCES =			\
 	window.c				\
 	window.h				\
-	wayland-glib.c				\
-	wayland-glib.h				\
 	cairo-util.c				\
 	cairo-util.h
 
