@@ -192,6 +192,9 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
     'third_party/gles2_book': [
         'UNKNOWN',
     ],
+    'third_party/gles2_conform/GTF_ES': [
+        'UNKNOWN',
+    ],
     'third_party/gpsd/release-2.38/gps.h': [
         'UNKNOWN',
     ],
@@ -367,6 +370,9 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
     'tools/gyp/test': [
         'UNKNOWN',
     ],
+    'tools/histograms': [
+        'UNKNOWN',
+    ],
     'tools/memory_watcher': [
         'UNKNOWN',
     ],
@@ -435,6 +441,11 @@ def main(options, args):
   for line in stdout.splitlines():
     filename, license = line.split(':', 1)
     filename = os.path.relpath(filename.strip(), options.base_directory)
+
+    # All files in the build output directory are generated one way or another.
+    # There's no need to check them.
+    if filename.startswith('out/') or filename.startswith('sconsbuild/'):
+      continue
 
     # For now we're just interested in the license.
     license = license.replace('*No copyright*', '').strip()
