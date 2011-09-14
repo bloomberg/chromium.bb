@@ -47,6 +47,8 @@ void WatchingFileReader::Cancel() {
   cancelled_ = true;
   // Let go of the watcher to break the reference cycle.
   watcher_.reset();
+  // Destroy the non-thread-safe factory now, since dtor is non-thread-safe.
+  factory_.reset();
 }
 
 void WatchingFileReader::OnFilePathChanged(const FilePath& path) {
@@ -59,7 +61,9 @@ void WatchingFileReader::OnFilePathError(const FilePath& path) {
   RestartWatch();
 }
 
-WatchingFileReader::~WatchingFileReader() {}
+WatchingFileReader::~WatchingFileReader() {
+  DCHECK(cancelled_);
+}
 
 void WatchingFileReader::RescheduleWatch() {
   DCHECK(message_loop_->BelongsToCurrentThread());
