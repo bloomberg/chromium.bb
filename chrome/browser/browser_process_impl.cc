@@ -293,6 +293,7 @@ static void Signal(base::WaitableEvent* event) {
 
 unsigned int BrowserProcessImpl::AddRefModule() {
   DCHECK(CalledOnValidThread());
+  CHECK(!IsShuttingDown());
   did_start_ = true;
   module_ref_count_++;
   return module_ref_count_;
