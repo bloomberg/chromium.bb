@@ -1533,12 +1533,6 @@
    fun:_ZN11TabContents32CreateRenderViewForRenderManagerEP14RenderViewHost
 }
 {
-   bug_81788
-   Memcheck:Leak
-   ...
-   fun:CurResFile
-}
-{
    bug_82328
    Memcheck:Addr8
    fun:CGSFillDRAM64
