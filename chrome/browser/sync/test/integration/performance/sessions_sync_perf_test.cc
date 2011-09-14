@@ -60,7 +60,7 @@ void SessionsSyncPerfTest::UpdateTabs(int profile) {
     browser->SelectNumberedTab(i);
     url = NextURL();
     browser->OpenURL(
-        OpenURLParams(url, GURL("www.google.com"), CURRENT_TAB, 0));
+        OpenURLParams(url, GURL("http://localhost"), CURRENT_TAB, 0));
     urls.push_back(url);
   }
   WaitForTabsToLoad(profile, urls);
@@ -103,7 +103,7 @@ GURL SessionsSyncPerfTest::NextURL() {
 }
 
 GURL SessionsSyncPerfTest::IntToURL(int n) {
-  return GURL(StringPrintf("http://history%d.google.com/", n));
+  return GURL(StringPrintf("http://localhost/%d", n));
 }
 
 IN_PROC_BROWSER_TEST_F(SessionsSyncPerfTest, P0) {
