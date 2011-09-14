@@ -145,7 +145,7 @@ void SpellCheckHostImpl::InitForRenderer(RenderProcessHost* process) {
 
   Profile* profile = Profile::FromBrowserContext(process->browser_context());
   PrefService* prefs = profile->GetPrefs();
-  IPC::PlatformFileForTransit file;
+  IPC::PlatformFileForTransit file = IPC::InvalidPlatformFileForTransit();
 
   if (GetDictionaryFile() != base::kInvalidPlatformFileValue) {
 #if defined(OS_POSIX)
