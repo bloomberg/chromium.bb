@@ -102,10 +102,31 @@ class PasswordTest(pyauto.PyUITest):
     self.PerformActionOnInfobar('accept', infobar_index=0)
     self.NavigateToURL(url_logout)
     self.NavigateToURL(url_https)
-    # Wait until username is filled by the Password manager on the login page.
+
+    # In some cases (such as on Windows) the current page displays an account
+    # name and e-mail, rather than an e-mail and password.  Clicking on a
+    # particular DOM element causes the e-mail and password to be displayed.
+    click_js = """
+      var elements = document.getElementsByClassName("account");
+      if (elements && elements.length > 0)
+        elements[0].onclick();
+      window.domAutomationController.send("done");
+    """
+    self.ExecuteJavascript(click_js, 0, 0)
+
+    # Wait until username/password is filled by the Password manager on the
+    # login page.
+    js_template = """
+      var value = "";
+      var element = document.getElementById("%s");
+      if (element)
+        value = element.value;
+      window.domAutomationController.send(value);
+    """
     self.assertTrue(self.WaitUntil(
-        lambda: self.GetDOMValue('document.getElementById("Email").value',
-                                 0, 0) != ''))
+        lambda: self.ExecuteJavascript(js_template % 'Email', 0, 0) != '' and
+                self.ExecuteJavascript(js_template % 'Passwd', 0, 0) != ''))
+
     test_utils.VerifyGoogleAccountCredsFilled(self, username, password,
                                               tab_index=0, windex=0)
     test_utils.ClearPasswords(self)
