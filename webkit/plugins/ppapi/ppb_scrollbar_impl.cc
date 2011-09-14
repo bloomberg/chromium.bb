@@ -42,11 +42,13 @@ namespace {
 // the GetThickness call which has no parameters.
 
 PP_Resource Create(PP_Instance instance, PP_Bool vertical) {
-  return ::ppapi::thunk::GetPPB_Scrollbar_Thunk()->Create(instance, vertical);
+  return ::ppapi::thunk::GetPPB_Scrollbar_0_5_Dev_Thunk()->Create(instance,
+                                                                  vertical);
 }
 
 PP_Bool IsScrollbar(PP_Resource resource) {
-  return ::ppapi::thunk::GetPPB_Scrollbar_Thunk()->IsScrollbar(resource);
+  return ::ppapi::thunk::GetPPB_Scrollbar_0_5_Dev_Thunk()->IsScrollbar(
+      resource);
 }
 
 uint32_t GetThickness3() {
@@ -54,34 +56,34 @@ uint32_t GetThickness3() {
 }
 
 uint32_t GetThickness4(PP_Resource resource) {
-  return ::ppapi::thunk::GetPPB_Scrollbar_Thunk()->GetThickness(resource);
+  return ::ppapi::thunk::GetPPB_Scrollbar_0_5_Dev_Thunk()->GetThickness(
+      resource);
 }
 
 uint32_t GetValue(PP_Resource resource) {
-  return ::ppapi::thunk::GetPPB_Scrollbar_Thunk()->GetValue(resource);
+  return ::ppapi::thunk::GetPPB_Scrollbar_0_5_Dev_Thunk()->GetValue(resource);
 }
 
 void SetValue(PP_Resource resource, uint32_t value) {
-  return ::ppapi::thunk::GetPPB_Scrollbar_Thunk()->SetValue(resource, value);
+  return ::ppapi::thunk::GetPPB_Scrollbar_0_5_Dev_Thunk()->SetValue(resource,
+                                                                    value);
 }
 
 void SetDocumentSize(PP_Resource resource, uint32_t size) {
-  return ::ppapi::thunk::GetPPB_Scrollbar_Thunk()->SetDocumentSize(resource,
-                                                                   size);
+  return ::ppapi::thunk::GetPPB_Scrollbar_0_5_Dev_Thunk()->SetDocumentSize(
+      resource, size);
 }
 
 void SetTickMarks(PP_Resource resource,
                   const PP_Rect* tick_marks,
                   uint32_t count) {
-  return ::ppapi::thunk::GetPPB_Scrollbar_Thunk()->SetTickMarks(resource,
-                                                                tick_marks,
-                                                                count);
+  return ::ppapi::thunk::GetPPB_Scrollbar_0_5_Dev_Thunk()->SetTickMarks(
+      resource, tick_marks, count);
 }
 
 void ScrollBy(PP_Resource resource, PP_ScrollBy_Dev unit, int32_t multiplier) {
-  return ::ppapi::thunk::GetPPB_Scrollbar_Thunk()->ScrollBy(resource,
-                                                            unit,
-                                                            multiplier);
+  return ::ppapi::thunk::GetPPB_Scrollbar_0_5_Dev_Thunk()->ScrollBy(
+      resource, unit, multiplier);
 }
 
 const PPB_Scrollbar_0_3_Dev ppb_scrollbar_0_3 = {

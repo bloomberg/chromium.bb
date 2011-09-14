@@ -87,7 +87,7 @@ const PPB_Scrollbar_0_5_Dev g_ppb_scrollbar_thunk = {
 
 }  // namespace
 
-const PPB_Scrollbar_0_5_Dev* GetPPB_Scrollbar_Thunk() {
+const PPB_Scrollbar_0_5_Dev* GetPPB_Scrollbar_0_5_Dev_Thunk() {
   return &g_ppb_scrollbar_thunk;
 }
 

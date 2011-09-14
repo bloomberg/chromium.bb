@@ -63,7 +63,7 @@ const PPB_LayerCompositor_Dev g_ppb_layer_compositor_thunk = {
 
 }  // namespace
 
-const PPB_LayerCompositor_Dev* GetPPB_LayerCompositor_Thunk() {
+const PPB_LayerCompositor_Dev* GetPPB_LayerCompositor_Dev_Thunk() {
   return &g_ppb_layer_compositor_thunk;
 }
 

@@ -1492,6 +1492,20 @@ void PluginInstance::LogWithSource(PP_Instance instance,
       WebConsoleMessage(web_level, WebString(UTF8ToUTF16(message))));
 }
 
+void PluginInstance::NumberOfFindResultsChanged(PP_Instance instance,
+                                                int32_t total,
+                                                PP_Bool final_result) {
+  DCHECK_NE(find_identifier_, -1);
+  delegate_->NumberOfFindResultsChanged(find_identifier_, total,
+                                        PP_ToBool(final_result));
+}
+
+void PluginInstance::SelectedFindResultChanged(PP_Instance instance,
+                                               int32_t index) {
+  DCHECK_NE(find_identifier_, -1);
+  delegate_->SelectedFindResultChanged(find_identifier_, index);
+}
+
 PP_Bool PluginInstance::IsFullscreen(PP_Instance instance) {
   return PP_FromBool(fullscreen_);
 }

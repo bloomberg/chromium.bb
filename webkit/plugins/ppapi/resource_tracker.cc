@@ -20,7 +20,6 @@
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/ppb_char_set_impl.h"
 #include "webkit/plugins/ppapi/ppb_cursor_control_impl.h"
-#include "webkit/plugins/ppapi/ppb_find_impl.h"
 #include "webkit/plugins/ppapi/ppb_font_impl.h"
 #include "webkit/plugins/ppapi/resource_creation_impl.h"
 #include "webkit/plugins/ppapi/resource_helper.h"
@@ -141,9 +140,6 @@ void ResourceTracker::CleanupInstanceData(PP_Instance instance,
       break;
     case ::ppapi::proxy::INTERFACE_ID_PPB_CURSORCONTROL:
       proxy.reset(new PPB_CursorControl_Impl(instance));
-      break;
-    case ::ppapi::proxy::INTERFACE_ID_PPB_FIND:
-      proxy.reset(new PPB_Find_Impl(instance));
       break;
     case ::ppapi::proxy::INTERFACE_ID_PPB_FONT:
       proxy.reset(new PPB_Font_FunctionImpl(instance));

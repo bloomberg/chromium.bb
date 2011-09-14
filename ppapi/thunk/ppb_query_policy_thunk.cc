@@ -25,7 +25,7 @@ const PPB_QueryPolicy_Dev g_ppb_querypolicy_thunk = {
 
 }  // namespace
 
-const PPB_QueryPolicy_Dev* GetPPB_QueryPolicy_Thunk() {
+const PPB_QueryPolicy_Dev* GetPPB_QueryPolicy_Dev_Thunk() {
   return &g_ppb_querypolicy_thunk;
 }
 

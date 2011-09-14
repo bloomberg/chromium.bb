@@ -12,7 +12,6 @@
 #define FOR_ALL_PPAPI_FUNCTION_APIS(F) \
   F(PPB_CharSet_FunctionAPI) \
   F(PPB_CursorControl_FunctionAPI) \
-  F(PPB_Find_FunctionAPI) \
   F(PPB_Font_FunctionAPI) \
   F(PPB_Fullscreen_FunctionAPI) \
   F(PPB_Instance_FunctionAPI) \

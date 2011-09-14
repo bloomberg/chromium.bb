@@ -38,6 +38,13 @@ class PPB_Instance_FunctionAPI {
                              PP_Var source,
                              PP_Var value) = 0;
 
+  // Find.
+  virtual void NumberOfFindResultsChanged(PP_Instance instance,
+                                          int32_t total,
+                                          PP_Bool final_result) = 0;
+  virtual void SelectedFindResultChanged(PP_Instance instance,
+                                         int32_t index) = 0;
+
   // Fullscreen.
   virtual PP_Bool IsFullscreen(PP_Instance instance) = 0;
   virtual PP_Bool SetFullscreen(PP_Instance instance, PP_Bool fullscreen) = 0;

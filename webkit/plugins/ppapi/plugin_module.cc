@@ -253,12 +253,8 @@ const void* GetInterface(const char* name) {
     return &core_interface;
   if (strcmp(name, PPB_CRYPTO_DEV_INTERFACE) == 0)
     return PPB_Crypto_Impl::GetInterface();
-  if (strcmp(name, PPB_DIRECTORYREADER_DEV_INTERFACE) == 0)
-    return ::ppapi::thunk::GetPPB_DirectoryReader_Dev_Thunk();
   if (strcmp(name, PPB_FILEIOTRUSTED_INTERFACE) == 0)
     return ::ppapi::thunk::GetPPB_FileIOTrusted_Thunk();
-  if (strcmp(name, PPB_FIND_DEV_INTERFACE) == 0)
-    return ::ppapi::thunk::GetPPB_Find_Thunk();
   if (strcmp(name, PPB_FLASH_INTERFACE) == 0)
     return PPB_Flash_Impl::GetInterface();
   if (strcmp(name, PPB_FLASH_CLIPBOARD_INTERFACE) == 0)
@@ -271,8 +267,6 @@ const void* GetInterface(const char* name) {
     return ::ppapi::thunk::GetPPB_Flash_Menu_Thunk();
   if (strcmp(name, PPB_FLASH_TCPSOCKET_INTERFACE) == 0)
     return ::ppapi::thunk::GetPPB_Flash_TCPSocket_Thunk();
-  if (strcmp(name, PPB_FULLSCREEN_DEV_INTERFACE) == 0)
-    return ::ppapi::thunk::GetPPB_Fullscreen_Thunk();
   if (strcmp(name, PPB_GPU_BLACKLIST_INTERFACE) == 0)
     return PPB_GpuBlacklist_Private_Impl::GetInterface();
   if (strcmp(name, PPB_GRAPHICS_3D_TRUSTED_INTERFACE) == 0)
@@ -283,22 +277,16 @@ const void* GetInterface(const char* name) {
     return ::ppapi::thunk::GetPPB_InputEvent_Thunk();
   if (strcmp(name, PPB_INSTANCE_PRIVATE_INTERFACE) == 0)
     return ::ppapi::thunk::GetPPB_Instance_Private_Thunk();
-  if (strcmp(name, PPB_LAYER_COMPOSITOR_DEV_INTERFACE) == 0)
-    return ::ppapi::thunk::GetPPB_LayerCompositor_Thunk();
   if (strcmp(name, PPB_MEMORY_DEV_INTERFACE) == 0)
     return PPB_Memory_Impl::GetInterface();
   if (strcmp(name, PPB_OPENGLES2_INTERFACE) == 0)
     return PPB_OpenGLES_Impl::GetInterface();
   if (strcmp(name, PPB_PROXY_PRIVATE_INTERFACE) == 0)
     return PPB_Proxy_Impl::GetInterface();
-  if (strcmp(name, PPB_QUERY_POLICY_DEV_INTERFACE_0_1) == 0)
-    return ::ppapi::thunk::GetPPB_QueryPolicy_Thunk();
   if (strcmp(name, PPB_SCROLLBAR_DEV_INTERFACE_0_4) == 0)
     return PPB_Scrollbar_Impl::Get0_4Interface();
   if (strcmp(name, PPB_SCROLLBAR_DEV_INTERFACE_0_3) == 0)
     return PPB_Scrollbar_Impl::Get0_3Interface();
-  if (strcmp(name, PPB_SCROLLBAR_DEV_INTERFACE_0_5) == 0)
-    return ::ppapi::thunk::GetPPB_Scrollbar_Thunk();
   if (strcmp(name, PPB_UMA_PRIVATE_INTERFACE) == 0)
     return PPB_UMA_Private_Impl::GetInterface();
   if (strcmp(name, PPB_URLLOADERTRUSTED_INTERFACE) == 0)
@@ -309,22 +297,11 @@ const void* GetInterface(const char* name) {
     return PPB_Var_Impl::GetVarDeprecatedInterface();
   if (strcmp(name, PPB_VAR_INTERFACE_1_0) == 0)
     return PPB_Var_Impl::GetVarInterface();
-  if (strcmp(name, PPB_VIDEOLAYER_DEV_INTERFACE) == 0)
-    return ::ppapi::thunk::GetPPB_VideoLayer_Dev_Thunk();
-  if (strcmp(name, PPB_WIDGET_DEV_INTERFACE) == 0)
-    return ::ppapi::thunk::GetPPB_Widget_Dev_Thunk();
-  if (strcmp(name, PPB_ZOOM_DEV_INTERFACE) == 0)
-    return ::ppapi::thunk::GetPPB_Zoom_Thunk();
 
 #ifdef ENABLE_FLAPPER_HACKS
   if (strcmp(name, PPB_FLASH_NETCONNECTOR_INTERFACE) == 0)
     return ::ppapi::thunk::GetPPB_Flash_NetConnector_Thunk();
 #endif  // ENABLE_FLAPPER_HACKS
-
-#if defined(ENABLE_P2P_APIS)
-  if (strcmp(name, PPB_TRANSPORT_DEV_INTERFACE) == 0)
-    return ::ppapi::thunk::GetPPB_Transport_Dev_Thunk();
-#endif
 
   // Only support the testing interface when the command line switch is
   // specified. This allows us to prevent people from (ab)using this interface

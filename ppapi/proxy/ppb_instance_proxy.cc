@@ -59,18 +59,6 @@ const InterfaceProxy::Info* PPB_Instance_Proxy::GetInfoPrivate() {
   return &info;
 }
 
-// static
-const InterfaceProxy::Info* PPB_Instance_Proxy::GetInfoFullscreen() {
-  static const Info info = {
-    ppapi::thunk::GetPPB_Fullscreen_Thunk(),
-    PPB_FULLSCREEN_DEV_INTERFACE,
-    INTERFACE_ID_NONE,  // 1_0 is the canonical one.
-    false,
-    &CreateInstanceProxy,
-  };
-  return &info;
-}
-
 bool PPB_Instance_Proxy::OnMessageReceived(const IPC::Message& msg) {
   // Prevent the dispatcher from going away during a call to ExecuteScript.
   // This must happen OUTSIDE of ExecuteScript since the SerializedVars use
@@ -181,6 +169,17 @@ void PPB_Instance_Proxy::LogWithSource(PP_Instance instance,
       INTERFACE_ID_PPB_INSTANCE, instance, static_cast<int>(log_level),
       SerializedVarSendInput(dispatcher(), source),
       SerializedVarSendInput(dispatcher(), value)));
+}
+
+void PPB_Instance_Proxy::NumberOfFindResultsChanged(PP_Instance instance,
+                                                    int32_t total,
+                                                    PP_Bool final_result) {
+  NOTIMPLEMENTED();  // Not proxied yet.
+}
+
+void PPB_Instance_Proxy::SelectedFindResultChanged(PP_Instance instance,
+                                                   int32_t index) {
+  NOTIMPLEMENTED();  // Not proxied yet.
 }
 
 PP_Bool PPB_Instance_Proxy::IsFullscreen(PP_Instance instance) {

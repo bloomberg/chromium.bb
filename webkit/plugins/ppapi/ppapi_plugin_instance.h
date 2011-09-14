@@ -106,8 +106,6 @@ class PluginInstance : public base::RefCounted<PluginInstance>,
   const gfx::Rect& position() const { return position_; }
   const gfx::Rect& clip() const { return clip_; }
 
-  int find_identifier() const { return find_identifier_; }
-
   void set_always_on_top(bool on_top) { always_on_top_ = on_top; }
 
   // Returns the PP_Instance uniquely identifying this instance. Guaranteed
@@ -271,6 +269,11 @@ class PluginInstance : public base::RefCounted<PluginInstance>,
                              int log_level,
                              PP_Var source,
                              PP_Var value) OVERRIDE;
+  virtual void NumberOfFindResultsChanged(PP_Instance instance,
+                                          int32_t total,
+                                          PP_Bool final_result) OVERRIDE;
+  virtual void SelectedFindResultChanged(PP_Instance instance,
+                                         int32_t index) OVERRIDE;
   virtual PP_Bool IsFullscreen(PP_Instance instance) OVERRIDE;
   virtual PP_Bool SetFullscreen(PP_Instance instance,
                                 PP_Bool fullscreen) OVERRIDE;

@@ -181,7 +181,6 @@ InterfaceList::InterfaceList() {
   AddPPB(PPB_Flash_Menu_Proxy::GetInfo());
   AddPPB(PPB_Flash_Proxy::GetInfo());
   AddPPB(PPB_Flash_TCPSocket_Proxy::GetInfo());
-  AddPPB(PPB_Instance_Proxy::GetInfoFullscreen());
   AddPPB(PPB_Instance_Proxy::GetInfoPrivate());
   AddPPB(PPB_PDF_Proxy::GetInfo());
   AddPPB(PPB_Testing_Proxy::GetInfo());

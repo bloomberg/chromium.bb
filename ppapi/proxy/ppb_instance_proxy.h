@@ -29,7 +29,6 @@ class PPB_Instance_Proxy : public InterfaceProxy,
   virtual ~PPB_Instance_Proxy();
 
   static const Info* GetInfoPrivate();
-  static const Info* GetInfoFullscreen();
 
   // InterfaceProxy implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg);
@@ -53,6 +52,11 @@ class PPB_Instance_Proxy : public InterfaceProxy,
                              int log_level,
                              PP_Var source,
                              PP_Var value) OVERRIDE;
+  virtual void NumberOfFindResultsChanged(PP_Instance instance,
+                                          int32_t total,
+                                          PP_Bool final_result) OVERRIDE;
+  virtual void SelectedFindResultChanged(PP_Instance instance,
+                                         int32_t index) OVERRIDE;
   virtual PP_Bool IsFullscreen(PP_Instance instance) OVERRIDE;
   virtual PP_Bool SetFullscreen(PP_Instance instance,
                                 PP_Bool fullscreen) OVERRIDE;

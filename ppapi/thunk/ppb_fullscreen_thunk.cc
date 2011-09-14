@@ -42,7 +42,7 @@ const PPB_Fullscreen_Dev g_ppb_fullscreen_thunk = {
 
 }  // namespace
 
-const PPB_Fullscreen_Dev* GetPPB_Fullscreen_Thunk() {
+const PPB_Fullscreen_Dev* GetPPB_Fullscreen_Dev_Thunk() {
   return &g_ppb_fullscreen_thunk;
 }
 

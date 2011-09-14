@@ -35,7 +35,7 @@ const PPB_Zoom_Dev g_ppb_zoom_thunk = {
 
 }  // namespace
 
-const PPB_Zoom_Dev* GetPPB_Zoom_Thunk() {
+const PPB_Zoom_Dev* GetPPB_Zoom_Dev_Thunk() {
   return &g_ppb_zoom_thunk;
 }
 
