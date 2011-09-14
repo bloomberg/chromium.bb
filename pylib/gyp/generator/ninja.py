@@ -195,12 +195,17 @@ class NinjaWriter:
     return os.path.normpath(os.path.join(obj, self.base_dir, path_dir,
                                          path_basename))
 
-  def StampPath(self, name):
-    """Return a path for a stamp file with a particular name.
+  def WriteCollapsedDependencies(self, name, targets):
+    """Given a list of targets, return a dependency list for a single
+    file representing the result of building all the targets.
 
-    Stamp files are used to collapse a dependency on a bunch of files
-    into a single file."""
-    return self.GypPathToUniqueOutput(name + '.stamp')
+    Uses a stamp file if necessary."""
+
+    if len(targets) > 1:
+      stamp = self.GypPathToUniqueOutput(name + '.stamp')
+      targets = self.ninja.build(stamp, 'stamp', targets)
+      self.ninja.newline()
+    return targets
 
   def WriteSpec(self, spec, config):
     """The main entry point for NinjaWriter: write the build rules for a spec.
@@ -220,14 +225,10 @@ class NinjaWriter:
     # running any of its internal steps.
     prebuild = []
     if 'dependencies' in spec:
-      prebuild_deps = []
       for dep in spec['dependencies']:
         if dep in self.target_outputs:
-          prebuild_deps.append(self.target_outputs[dep][0])
-      if prebuild_deps:
-        stamp = self.StampPath('predepends')
-        prebuild = self.ninja.build(stamp, 'stamp', prebuild_deps)
-        self.ninja.newline()
+          prebuild.append(self.target_outputs[dep][0])
+      prebuild = self.WriteCollapsedDependencies('predepends', prebuild)
 
     # Write out actions, rules, and copies.  These must happen before we
     # compile any sources, so compute a list of predependencies for sources
@@ -270,11 +271,7 @@ class NinjaWriter:
     if 'copies' in spec:
       outputs += self.WriteCopies(spec['copies'], prebuild)
 
-    # To simplify downstream build edges, ensure we generate a single
-    # stamp file that represents the results of all of the above.
-    if len(outputs) > 1:
-      stamp = self.StampPath('actions_rules_copies')
-      outputs = self.ninja.build(stamp, 'stamp', outputs)
+    outputs = self.WriteCollapsedDependencies('actions_rules_copies', outputs)
 
     return outputs
 
