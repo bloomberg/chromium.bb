@@ -311,7 +311,9 @@ class SpecialTabsTest(pyauto.PyUITest):
        IDC_SHOW_DOWNLOADS."""
     for accel, title in self.special_accelerator_tabs.iteritems():
       self.RunCommand(accel)
-      self.assertEqual(title, self.GetActiveTabTitle())
+      self.assertTrue(self.WaitUntil(
+            self.GetActiveTabTitle, expect_retval=title),
+          msg='Expected "%s"' % title)
 
 
 if __name__ == '__main__':
