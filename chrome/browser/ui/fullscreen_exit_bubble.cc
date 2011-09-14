@@ -9,7 +9,7 @@
 
 const double FullscreenExitBubble::kOpacity = 0.7;
 const int FullscreenExitBubble::kPaddingPx = 8;
-const int FullscreenExitBubble::kInitialDelayMs = 2300;
+const int FullscreenExitBubble::kInitialDelayMs = 3800;
 const int FullscreenExitBubble::kIdleTimeMs = 2300;
 const int FullscreenExitBubble::kPositionCheckHz = 10;
 const int FullscreenExitBubble::kSlideInRegionHeightPx = 4;
