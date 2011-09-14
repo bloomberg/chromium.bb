@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -118,21 +118,20 @@ void SpeechInputDispatcher::OnSpeechRecognitionToggleSpeechInput() {
   if (document.isNull())
     return;
 
-  WebNode focusedNode = document.focusedNode();
-  if (focusedNode.isNull() || !focusedNode.isElementNode())
+  WebNode focused_node = document.focusedNode();
+  if (focused_node.isNull() || !focused_node.isElementNode())
     return;
 
-  WebKit::WebElement element = focusedNode.to<WebKit::WebElement>();
-  if (!element.isTextFormControlElement())
+  WebKit::WebElement element = focused_node.to<WebKit::WebElement>();
+  WebKit::WebInputElement* input_element = WebKit::toWebInputElement(&element);
+  if (!input_element)
+    return;
+  if (!input_element->isSpeechInputEnabled())
     return;
 
-  WebKit::WebInputElement inputElement = element.to<WebKit::WebInputElement>();
-  if (!inputElement.isSpeechInputEnabled())
-    return;
-
-  if (inputElement.getSpeechInputState() == WebInputElement::Idle) {
-    inputElement.startSpeechInput();
+  if (input_element->getSpeechInputState() == WebInputElement::Idle) {
+    input_element->startSpeechInput();
   } else {
-    inputElement.stopSpeechInput();
+    input_element->stopSpeechInput();
   }
 }
