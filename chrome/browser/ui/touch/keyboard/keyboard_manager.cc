@@ -39,6 +39,19 @@ const int kKeyboardSlideDuration = 300;  // In milliseconds
 const char kOnTextInputTypeChanged[] =
     "experimental.input.onTextInputTypeChanged";
 
+// The default position of the keyboard widget should be at the bottom,
+// spanning the entire width of the desktop.
+gfx::Rect GetKeyboardPosition(int height) {
+  views::View* desktop = views::desktop::DesktopWindowView::desktop_window_view;
+  gfx::Rect area;
+  if (desktop)
+    area = desktop->bounds();
+  else
+    area = gfx::Screen::GetMonitorAreaNearestPoint(gfx::Point());
+  return gfx::Rect(area.x(), area.y() + area.height() - height,
+                   area.width(), height);
+}
+
 }  // namespace
 
 // TODO(sad): Is the default profile always going to be the one we want?
@@ -62,6 +75,9 @@ class KeyboardWidget
   // be sent to |widget|.
   // TODO(sad): Allow specifying the type of keyboard to show.
   void ShowKeyboardForWidget(views::Widget* widget);
+
+  // Updates the bounds to reflect the current screen/desktop bounds.
+  void ResetBounds();
 
   // Overridden from views::Widget
   void Hide() OVERRIDE;
@@ -138,16 +154,10 @@ KeyboardWidget::KeyboardWidget()
       target_(NULL),
       keyboard_height_(kDefaultKeyboardHeight) {
 
-  // The default position of the keyboard widget should be at the bottom,
-  // spanning the entire width of the screen.
-  gfx::Rect area = gfx::Screen::GetMonitorAreaNearestPoint(gfx::Point());
-
   // Initialize the widget first.
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
   params.transparent = true;
-  params.bounds = gfx::Rect(area.x(),
-                            area.y() + area.height() - keyboard_height_,
-                            area.width(), keyboard_height_);
+  params.bounds = GetKeyboardPosition(keyboard_height_);
   Init(params);
 
   // Setup the DOM view to host the keyboard.
@@ -219,6 +229,10 @@ void KeyboardWidget::ShowKeyboardForWidget(views::Widget* widget) {
       chrome::NOTIFICATION_KEYBOARD_VISIBILITY_CHANGED,
       Source<KeyboardWidget>(this),
       Details<bool>(&visible));
+}
+
+void KeyboardWidget::ResetBounds() {
+  SetBounds(GetKeyboardPosition(keyboard_height_));
 }
 
 void KeyboardWidget::Hide() {
@@ -425,10 +439,30 @@ void KeyboardWidget::OnWidgetActivationChanged(Widget* widget, bool active) {
 KeyboardManager::KeyboardManager()
     : keyboard_(new KeyboardWidget()) {
   keyboard_->AddObserver(this);
+
+  views::desktop::DesktopWindowView* desktop =
+      views::desktop::DesktopWindowView::desktop_window_view;
+
+  // We are either not in views desktop mode, or we are and we are not yet
+  // observing the desktop.
+  DCHECK(!desktop || !desktop->HasObserver(this));
+
+  if (desktop)
+    desktop->AddObserver(this);
 }
 
 KeyboardManager::~KeyboardManager() {
   DCHECK(!keyboard_);
+
+  views::desktop::DesktopWindowView* desktop =
+      views::desktop::DesktopWindowView::desktop_window_view;
+
+  // We are either not in views desktop mode, or we are and we have been
+  // observing the desktop
+  DCHECK(!desktop || desktop->HasObserver(this));
+
+  if (desktop)
+    desktop->RemoveObserver(this);
 }
 
 void KeyboardManager::ShowKeyboardForWidget(views::Widget* widget) {
@@ -446,6 +480,10 @@ views::Widget* KeyboardManager::keyboard() {
 void KeyboardManager::OnWidgetClosing(views::Widget* widget) {
   DCHECK_EQ(keyboard_, widget);
   keyboard_ = NULL;
+}
+
+void KeyboardManager::OnDesktopBoundsChanged(const gfx::Rect& prev_bounds) {
+  keyboard_->ResetBounds();
 }
 
 // static

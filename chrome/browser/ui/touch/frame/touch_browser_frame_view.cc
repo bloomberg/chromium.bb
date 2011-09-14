@@ -54,7 +54,8 @@ const char TouchBrowserFrameView::kViewClassName[] =
 
 TouchBrowserFrameView::TouchBrowserFrameView(BrowserFrame* frame,
                                              BrowserView* browser_view)
-    : OpaqueBrowserFrameView(frame, browser_view) {
+    : OpaqueBrowserFrameView(frame, browser_view),
+      initialized_screen_rotation_(false) {
   // Make sure the singleton KeyboardManager object is initialized.
   KeyboardManager::GetInstance();
   sensors::Provider::GetInstance()->AddListener(this);
@@ -102,15 +103,16 @@ void TouchBrowserFrameView::OnScreenOrientationChanged(
   }
 
   if (!initialized_screen_rotation_) {
-      to_rotate->SetPaintToLayer(true);
-      to_rotate->SetLayerPropertySetter(
-          ScreenRotationSetterFactory::Create(to_rotate));
-      initialized_screen_rotation_ = true;
+    to_rotate->SetPaintToLayer(true);
+    to_rotate->SetLayerPropertySetter(
+        ScreenRotationSetterFactory::Create(to_rotate));
+    initialized_screen_rotation_ = true;
   }
 
   ui::Transform xform = SideToTransform(change.upward,
                                         to_rotate->GetTransform(),
                                         to_rotate->size());
+
   to_rotate->SetTransform(xform);
 }
 

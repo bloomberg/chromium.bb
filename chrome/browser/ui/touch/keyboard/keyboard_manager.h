@@ -7,12 +7,14 @@
 #pragma once
 
 #include "base/memory/singleton.h"
+#include "views/desktop/desktop_window_view.h"
 #include "views/widget/widget.h"
 
 class KeyboardWidget;
 
 // A singleton object to manage the virtual keyboard.
-class KeyboardManager : public views::Widget::Observer {
+class KeyboardManager : public views::Widget::Observer,
+                        public views::desktop::DesktopWindowView::Observer {
  public:
   // Returns the singleton object.
   static KeyboardManager* GetInstance();
@@ -36,6 +38,9 @@ class KeyboardManager : public views::Widget::Observer {
 
   // Overridden from views::Widget::Observer.
   virtual void OnWidgetClosing(views::Widget* widget) OVERRIDE;
+
+  // Overridden from views::desktop::DesktopWindowView::Observer
+  virtual void OnDesktopBoundsChanged(const gfx::Rect& prev_bounds) OVERRIDE;
 
   KeyboardWidget* keyboard_;
 
