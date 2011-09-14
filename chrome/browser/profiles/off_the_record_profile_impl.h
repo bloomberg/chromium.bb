@@ -137,6 +137,9 @@ class OffTheRecordProfileImpl : public Profile,
                        const NotificationDetails& details) OVERRIDE;
 
  private:
+  virtual void SetDownloadManagerDelegate(
+      ChromeDownloadManagerDelegate* delegate) OVERRIDE;
+
   void CreateQuotaManagerAndClients();
 
   NotificationRegistrar registrar_;

@@ -11,6 +11,7 @@
 #include "base/test/test_file_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/download/chrome_download_manager_delegate.h"
 #include "chrome/browser/download/download_crx_util.h"
 #include "chrome/browser/download/download_history.h"
 #include "chrome/browser/download/download_prefs.h"
@@ -490,6 +491,138 @@ class CancelTestDataCollector
   DISALLOW_COPY_AND_ASSIGN(CancelTestDataCollector);
 };
 
+class PickSuggestedFileDelegate : public ChromeDownloadManagerDelegate {
+ public:
+  explicit PickSuggestedFileDelegate(Profile* profile)
+      : ChromeDownloadManagerDelegate(profile) {
+    SetDownloadManager(profile->GetDownloadManager());
+  }
+
+  virtual void ChooseDownloadPath(TabContents* tab_contents,
+                                  const FilePath& suggested_path,
+                                  void* data) OVERRIDE {
+    if (download_manager_)
+      download_manager_->FileSelected(suggested_path, data);
+  }
+};
+
+// Get History Information.
+class DownloadsHistoryDataCollector {
+ public:
+  DownloadsHistoryDataCollector(int64 download_db_handle,
+                                DownloadManager* manager)
+      : result_valid_(false),
+        download_db_handle_(download_db_handle) {
+    HistoryService* hs =
+        Profile::FromBrowserContext(manager->browser_context())->
+            GetHistoryService(Profile::EXPLICIT_ACCESS);
+    DCHECK(hs);
+    hs->QueryDownloads(
+        &callback_consumer_,
+        NewCallback(this,
+                    &DownloadsHistoryDataCollector::OnQueryDownloadsComplete));
+
+    // TODO(rdsmith): Move message loop out of constructor.
+    // Cannot complete immediately because the history backend runs on a
+    // separate thread, so we can assume that the RunMessageLoop below will
+    // be exited by the Quit in OnQueryDownloadsComplete.
+    ui_test_utils::RunMessageLoop();
+  }
+
+  bool GetDownloadsHistoryEntry(DownloadPersistentStoreInfo* result) {
+    DCHECK(result);
+    *result = result_;
+    return result_valid_;
+  }
+
+ private:
+  void OnQueryDownloadsComplete(
+      std::vector<DownloadPersistentStoreInfo>* entries) {
+    result_valid_ = false;
+    for (std::vector<DownloadPersistentStoreInfo>::const_iterator it =
+             entries->begin();
+         it != entries->end(); ++it) {
+      if (it->db_handle == download_db_handle_) {
+        result_ = *it;
+        result_valid_ = true;
+      }
+    }
+    MessageLoopForUI::current()->Quit();
+  }
+
+  DownloadPersistentStoreInfo result_;
+  bool result_valid_;
+  int64 download_db_handle_;
+  CancelableRequestConsumer callback_consumer_;
+
+  DISALLOW_COPY_AND_ASSIGN(DownloadsHistoryDataCollector);
+};
+
+// Mock that simulates a permissions dialog where the user denies
+// permission to install.  TODO(skerner): This could be shared with
+// extensions tests.  Find a common place for this class.
+class MockAbortExtensionInstallUI : public ExtensionInstallUI {
+ public:
+  MockAbortExtensionInstallUI() : ExtensionInstallUI(NULL) {}
+
+  // Simulate a user abort on an extension installation.
+  virtual void ConfirmInstall(Delegate* delegate, const Extension* extension) {
+    delegate->InstallUIAbort(true);
+    MessageLoopForUI::current()->Quit();
+  }
+
+  virtual void OnInstallSuccess(const Extension* extension, SkBitmap* icon) {}
+  virtual void OnInstallFailure(const std::string& error) {}
+};
+
+// Mock that simulates a permissions dialog where the user allows
+// installation.
+class MockAutoConfirmExtensionInstallUI : public ExtensionInstallUI {
+ public:
+  explicit MockAutoConfirmExtensionInstallUI(Profile* profile)
+      : ExtensionInstallUI(profile) {}
+
+  // Proceed without confirmation prompt.
+  virtual void ConfirmInstall(Delegate* delegate, const Extension* extension) {
+    delegate->InstallUIProceed();
+  }
+
+  virtual void OnInstallSuccess(const Extension* extension, SkBitmap* icon) {}
+  virtual void OnInstallFailure(const std::string& error) {}
+};
+
+}  // namespace
+
+// While an object of this class exists, it will mock out download
+// opening for all downloads created on the specified download manager.
+class MockDownloadOpeningObserver : public DownloadManager::Observer {
+ public:
+  explicit MockDownloadOpeningObserver(DownloadManager* manager)
+      : download_manager_(manager) {
+    download_manager_->AddObserver(this);
+  }
+
+  ~MockDownloadOpeningObserver() {
+    download_manager_->RemoveObserver(this);
+  }
+
+  // DownloadManager::Observer
+  virtual void ModelChanged() {
+    std::vector<DownloadItem*> downloads;
+    download_manager_->SearchDownloads(string16(), &downloads);
+
+    for (std::vector<DownloadItem*>::iterator it = downloads.begin();
+         it != downloads.end(); ++it) {
+      (*it)->TestMockDownloadOpen();
+    }
+  }
+
+ private:
+  DownloadManager* download_manager_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockDownloadOpeningObserver);
+};
+
 class DownloadTest : public InProcessBrowserTest {
  public:
   enum SelectExpectation {
@@ -814,128 +947,27 @@ class DownloadTest : public InProcessBrowserTest {
     EXPECT_EQ(expected, BrowserList::size());
   }
 
+  // Arrange for select file calls on the given browser from the
+  // download manager to always choose the suggested file.
+  void NullSelectFile(Browser* browser) {
+    PickSuggestedFileDelegate* new_delegate =
+        new PickSuggestedFileDelegate(browser->profile());
+
+    DownloadManager* manager = browser->profile()->GetDownloadManager();
+
+    new_delegate->SetDownloadManager(manager);
+    manager->set_delegate(new_delegate);
+
+    // Gives ownership to Profile.
+    browser->profile()->SetDownloadManagerDelegate(new_delegate);
+  }
+
  private:
   // Location of the test data.
   FilePath test_dir_;
 
   // Location of the downloads directory for these tests
   ScopedTempDir downloads_directory_;
-};
-
-// Get History Information.
-class DownloadsHistoryDataCollector {
- public:
-  DownloadsHistoryDataCollector(int64 download_db_handle,
-                                DownloadManager* manager)
-      : result_valid_(false),
-        download_db_handle_(download_db_handle) {
-    HistoryService* hs =
-        Profile::FromBrowserContext(manager->browser_context())->
-            GetHistoryService(Profile::EXPLICIT_ACCESS);
-    DCHECK(hs);
-    hs->QueryDownloads(
-        &callback_consumer_,
-        NewCallback(this,
-                    &DownloadsHistoryDataCollector::OnQueryDownloadsComplete));
-
-    // Cannot complete immediately because the history backend runs on a
-    // separate thread, so we can assume that the RunMessageLoop below will
-    // be exited by the Quit in OnQueryDownloadsComplete.
-    ui_test_utils::RunMessageLoop();
-  }
-
-  bool GetDownloadsHistoryEntry(DownloadPersistentStoreInfo* result) {
-    DCHECK(result);
-    *result = result_;
-    return result_valid_;
-  }
-
- private:
-  void OnQueryDownloadsComplete(
-      std::vector<DownloadPersistentStoreInfo>* entries) {
-    result_valid_ = false;
-    for (std::vector<DownloadPersistentStoreInfo>::const_iterator it =
-             entries->begin();
-         it != entries->end(); ++it) {
-      if (it->db_handle == download_db_handle_) {
-        result_ = *it;
-        result_valid_ = true;
-      }
-    }
-    MessageLoopForUI::current()->Quit();
-  }
-
-  DownloadPersistentStoreInfo result_;
-  bool result_valid_;
-  int64 download_db_handle_;
-  CancelableRequestConsumer callback_consumer_;
-
-  DISALLOW_COPY_AND_ASSIGN(DownloadsHistoryDataCollector);
-};
-
-// Mock that simulates a permissions dialog where the user denies
-// permission to install.  TODO(skerner): This could be shared with
-// extensions tests.  Find a common place for this class.
-class MockAbortExtensionInstallUI : public ExtensionInstallUI {
- public:
-  MockAbortExtensionInstallUI() : ExtensionInstallUI(NULL) {}
-
-  // Simulate a user abort on an extension installation.
-  virtual void ConfirmInstall(Delegate* delegate, const Extension* extension) {
-    delegate->InstallUIAbort(true);
-    MessageLoopForUI::current()->Quit();
-  }
-
-  virtual void OnInstallSuccess(const Extension* extension, SkBitmap* icon) {}
-  virtual void OnInstallFailure(const std::string& error) {}
-};
-
-// Mock that simulates a permissions dialog where the user allows
-// installation.
-class MockAutoConfirmExtensionInstallUI : public ExtensionInstallUI {
- public:
-  explicit MockAutoConfirmExtensionInstallUI(Profile* profile)
-      : ExtensionInstallUI(profile) {}
-
-  // Proceed without confirmation prompt.
-  virtual void ConfirmInstall(Delegate* delegate, const Extension* extension) {
-    delegate->InstallUIProceed();
-  }
-
-  virtual void OnInstallSuccess(const Extension* extension, SkBitmap* icon) {}
-  virtual void OnInstallFailure(const std::string& error) {}
-};
-
-}  // namespace
-
-// While an object of this class exists, it will mock out download
-// opening for all downloads created on the specified download manager.
-class MockDownloadOpeningObserver : public DownloadManager::Observer {
- public:
-  explicit MockDownloadOpeningObserver(DownloadManager* manager)
-      : download_manager_(manager) {
-    download_manager_->AddObserver(this);
-  }
-
-  ~MockDownloadOpeningObserver() {
-    download_manager_->RemoveObserver(this);
-  }
-
-  // DownloadManager::Observer
-  virtual void ModelChanged() {
-    std::vector<DownloadItem*> downloads;
-    download_manager_->SearchDownloads(string16(), &downloads);
-
-    for (std::vector<DownloadItem*>::iterator it = downloads.begin();
-         it != downloads.end(); ++it) {
-      (*it)->TestMockDownloadOpen();
-    }
-  }
-
- private:
-  DownloadManager* download_manager_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockDownloadOpeningObserver);
 };
 
 // NOTES:
@@ -981,27 +1013,34 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, CheckInternetZone) {
 }
 #endif
 
-// Put up a Select File dialog when the file is downloaded, due to its MIME
-// type.
-//
-// This test runs correctly, but leaves behind turds in the test user's
-// download directory because of http://crbug.com/62099.  No big loss; it
-// was primarily confirming DownloadsObserver wait on select file dialog
-// functionality anyway.
-IN_PROC_BROWSER_TEST_F(DownloadTest, DISABLED_DownloadMimeTypeSelect) {
+// Put up a Select File dialog when the file is downloaded, due to
+// downloads preferences settings.
+IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadMimeTypeSelect) {
   ASSERT_TRUE(InitialSetup(true));
   FilePath file(FILE_PATH_LITERAL("download-test1.lib"));
   GURL url(URLRequestMockHTTPJob::GetMockUrl(file));
 
+  NullSelectFile(browser());
+
   // Download the file and wait.  We expect the Select File dialog to appear
-  // due to the MIME type.
-  DownloadAndWait(browser(), url, EXPECT_SELECT_DIALOG);
+  // due to the MIME type, but we still wait until the download completes.
+  scoped_ptr<DownloadsObserver> observer(
+      new DownloadsObserver(
+          browser()->profile()->GetDownloadManager(),
+          1,
+          DownloadItem::COMPLETE,  // Really done
+          false,                   // Continue on select file.
+          ON_DANGEROUS_DOWNLOAD_FAIL));
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), url, CURRENT_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+  observer->WaitForFinished();
+  EXPECT_TRUE(observer->select_file_dialog_seen());
 
   // Check state.
   EXPECT_EQ(1, browser()->tab_count());
-  // Since we exited while the Select File dialog was visible, there should not
-  // be anything in the download shelf and so it should not be visible.
-  CheckDownloadUI(browser(), false, false, FilePath());
+  CheckDownload(browser(), file, file);
+  CheckDownloadUI(browser(), true, true, file);
 }
 
 // Access a file with a viewable mime-type, verify that a download

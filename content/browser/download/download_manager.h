@@ -276,11 +276,14 @@ class CONTENT_EXPORT DownloadManager
   // For testing.
   friend class DownloadManagerTest;
   friend class MockDownloadManager;
+  friend class DownloadTest;
 
   friend class base::RefCountedThreadSafe<DownloadManager,
                                           BrowserThread::DeleteOnUIThread>;
   friend struct BrowserThread::DeleteOnThread<BrowserThread::UI>;
   friend class DeleteTask<DownloadManager>;
+
+  void set_delegate(DownloadManagerDelegate* delegate) { delegate_ = delegate; }
 
   virtual ~DownloadManager();
 

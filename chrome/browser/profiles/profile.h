@@ -59,6 +59,7 @@ class Predictor;
 class AutocompleteClassifier;
 class BookmarkModel;
 class ChromeAppCacheService;
+class ChromeDownloadManagerDelegate;
 class ChromeURLDataManager;
 class Extension;
 class ExtensionDevToolsManager;
@@ -555,6 +556,13 @@ class Profile : public content::BrowserContext {
   static net::URLRequestContextGetter* default_request_context_;
 
  private:
+  friend class DownloadTest;
+
+  // Allow replacement of the download manager delegate, for interposition
+  // on browser tests.  Note that this takes ownership of |delegate|.
+  virtual void SetDownloadManagerDelegate(
+      ChromeDownloadManagerDelegate* delegate) = 0;
+
   // ***DEPRECATED**: You should be passing in the specific profile's
   // URLRequestContextGetter or using the system URLRequestContextGetter.
   //

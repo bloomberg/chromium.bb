@@ -294,6 +294,9 @@ class TestingProfile : public Profile {
   TestingPrefService* testing_prefs_;
 
  private:
+  virtual void SetDownloadManagerDelegate(
+      ChromeDownloadManagerDelegate* delegate);
+
   // Common initialization between the two constructors.
   void Init();
 

@@ -179,6 +179,9 @@ class ProfileImpl : public Profile,
 
   SpellCheckProfile* GetSpellCheckProfile();
 
+  virtual void SetDownloadManagerDelegate(
+      ChromeDownloadManagerDelegate* delegate);
+
   NotificationRegistrar registrar_;
   PrefChangeRegistrar pref_change_registrar_;
 

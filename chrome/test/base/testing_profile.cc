@@ -786,6 +786,13 @@ prerender::PrerenderManager* TestingProfile::GetPrerenderManager() {
   return prerender_manager_.get();
 }
 
+void TestingProfile::SetDownloadManagerDelegate(
+    ChromeDownloadManagerDelegate* delegate) {
+  // Specially marked so errors from use will occur near to the site
+  // of the error.
+  NOTIMPLEMENTED();
+}
+
 PrefService* TestingProfile::GetOffTheRecordPrefs() {
   return NULL;
 }

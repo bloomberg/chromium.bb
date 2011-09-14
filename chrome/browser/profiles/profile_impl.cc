@@ -1349,7 +1349,9 @@ void ProfileImpl::CreatePasswordStore() {
 
 DownloadManager* ProfileImpl::GetDownloadManager() {
   if (!created_download_manager_) {
-    download_manager_delegate_= new ChromeDownloadManagerDelegate(this);
+    // In case the delegate has already been set by SetDownloadManagerDelegate.
+    if (!download_manager_delegate_.get())
+      download_manager_delegate_= new ChromeDownloadManagerDelegate(this);
     scoped_refptr<DownloadManager> dlm(
         new DownloadManager(download_manager_delegate_,
                             g_browser_process->download_status_updater()));
@@ -1823,4 +1825,9 @@ SpellCheckProfile* ProfileImpl::GetSpellCheckProfile() {
   if (!spellcheck_profile_.get())
     spellcheck_profile_.reset(new SpellCheckProfile());
   return spellcheck_profile_.get();
+}
+
+void ProfileImpl::SetDownloadManagerDelegate(
+    ChromeDownloadManagerDelegate* delegate) {
+  download_manager_delegate_ = delegate;
 }

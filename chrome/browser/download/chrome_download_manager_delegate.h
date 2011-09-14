@@ -83,9 +83,16 @@ class ChromeDownloadManagerDelegate
   DownloadPrefs* download_prefs() { return download_prefs_.get(); }
   DownloadHistory* download_history() { return download_history_.get(); }
 
+ protected:
+  // So that test classes can inherit from this for override purposes.
+  virtual ~ChromeDownloadManagerDelegate();
+
+  // So that test classes that inherit from this for override purposes
+  // can call back into the DownloadManager.
+  scoped_refptr<DownloadManager> download_manager_;
+
  private:
   friend class base::RefCountedThreadSafe<ChromeDownloadManagerDelegate>;
-  virtual ~ChromeDownloadManagerDelegate();
 
   // NotificationObserver implementation.
   virtual void Observe(int type,
@@ -128,7 +135,6 @@ class ChromeDownloadManagerDelegate
   void CheckDownloadHashDone(int32 download_id, bool is_dangerous_hash);
 
   Profile* profile_;
-  scoped_refptr<DownloadManager> download_manager_;
   scoped_ptr<DownloadPrefs> download_prefs_;
   scoped_ptr<DownloadHistory> download_history_;
 

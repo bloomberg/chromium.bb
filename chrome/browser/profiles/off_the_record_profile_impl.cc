@@ -326,7 +326,10 @@ TemplateURLFetcher* OffTheRecordProfileImpl::GetTemplateURLFetcher() {
 
 DownloadManager* OffTheRecordProfileImpl::GetDownloadManager() {
   if (!download_manager_.get()) {
-    download_manager_delegate_ = new ChromeDownloadManagerDelegate(this);
+    // In case the delegate has already been set by
+    // SetDownloadManagerDelegate.
+    if (!download_manager_delegate_.get())
+      download_manager_delegate_ = new ChromeDownloadManagerDelegate(this);
     scoped_refptr<DownloadManager> dlm(
         new DownloadManager(download_manager_delegate_,
                             g_browser_process->download_status_updater()));
@@ -613,6 +616,11 @@ void OffTheRecordProfileImpl::Observe(int type,
       GetHostZoomMap()->SetZoomLevel(host, level);
     }
   }
+}
+
+void OffTheRecordProfileImpl::SetDownloadManagerDelegate(
+    ChromeDownloadManagerDelegate* delegate) {
+  download_manager_delegate_ = delegate;
 }
 
 void OffTheRecordProfileImpl::CreateQuotaManagerAndClients() {
