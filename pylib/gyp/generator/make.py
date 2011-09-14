@@ -1034,12 +1034,13 @@ class MacPrefixHeader(object):
     # This doesn't support per-configuration prefix headers. Good enough
     # for now.
     self.header = None
+    self.compile_headers = False
     if path_provider.flavor == 'mac':
       self.header = path_provider.xcode_settings.GetPerTargetSetting(
           'GCC_PREFIX_HEADER')
+      self.compile_headers = path_provider.xcode_settings.GetPerTargetSetting(
+          'GCC_PRECOMPILE_PREFIX_HEADER', default='NO') != 'NO'
     self.compiled_headers = {}
-    self.compile_headers = path_provider.xcode_settings.GetPerTargetSetting(
-        'GCC_PRECOMPILE_PREFIX_HEADER', default='NO') != 'NO'
     if self.header:
       self.header = path_provider.Absolutify(self.header)
       if self.compile_headers:
