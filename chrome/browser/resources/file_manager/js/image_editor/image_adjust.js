@@ -325,7 +325,7 @@ ImageEditor.Mode.Blur = function() {
 ImageEditor.Mode.Blur.prototype =
     {__proto__: ImageEditor.Mode.Adjust.prototype};
 
-ImageEditor.Mode.register(ImageEditor.Mode.Blur);
+// TODO(dgozman): register Mode.Blur in v2.
 
 ImageEditor.Mode.Blur.prototype.createTools = function(toolbar) {
   toolbar.addRange('strength', 0, 0, 1, 100);
@@ -343,7 +343,7 @@ ImageEditor.Mode.Sharpen = function() {
 ImageEditor.Mode.Sharpen.prototype =
     {__proto__: ImageEditor.Mode.Adjust.prototype};
 
-ImageEditor.Mode.register(ImageEditor.Mode.Sharpen);
+// TODO(dgozman): register Mode.Sharpen in v2.
 
 ImageEditor.Mode.Sharpen.prototype.createTools = function(toolbar) {
   toolbar.addRange('strength', 0, 0, 1, 100);

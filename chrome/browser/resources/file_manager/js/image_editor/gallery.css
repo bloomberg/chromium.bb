@@ -28,7 +28,7 @@ body {
 .gallery > .image-container {
   position: absolute;
   top: 30px;
-  bottom: 80px;
+  bottom: 0px;
   width: 100%;
   background-color: rgba(0,0,0,1);
 }
@@ -37,18 +37,26 @@ body {
   position: absolute;
   bottom: 0px;
   width: 100%;
-  height: 80px;
+  height: 60px;
   padding: 3px;
   display: -webkit-box;
   -webkit-box-orient: horizontal;
   -webkit-box-pack: start;
   -webkit-box-align: stretch;
+  opacity: 1.0;
+  -webkit-transition: opacity 0.5s ease-in-out;
+  background-color: rgba(18,18,18,0.75);
+  border-top: 1px solid rgba(31,31,31,0.75);
+}
+
+.gallery > .toolbar[hidden] {
+  opacity: 0.0;
 }
 
 .gallery .ribbon {
   -webkit-box-flex: 1;
-  border: solid 1px white;
   overflow: hidden;
+  height: 100%;
   display: -webkit-box;
   -webkit-box-orient: horizontal;
   -webkit-box-pack: left;
@@ -58,8 +66,29 @@ body {
 .gallery .ribbon-right {
   width: 20px;
   height: 100%;
-  background-color: red;
   cursor: pointer;
+  display: -webkit-box;
+  -webkit-box-align: center;
+  -webkit-box-pack: center;
+  background-repeat: no-repeat;
+  background-position: center center;
+}
+
+.gallery .ribbon-left {
+  background-image: url(../../images/gallery/arrow_left.png);
+}
+
+.gallery .ribbon-left[disabled] {
+  background-image: url(../../images/gallery/arrow_left_disabled.png);
+}
+
+.gallery .ribbon-right {
+  background-image: url(../../images/gallery/arrow_right.png);
+  border-right: 1px solid rgba(87,87,87,0.5);
+}
+
+.gallery .ribbon-right[disabled] {
+  background-image: url(../../images/gallery/arrow_right_disabled.png);
 }
 
 .gallery .ribbon-image {
@@ -69,19 +98,19 @@ body {
   -webkit-box-align: center;
   overflow: hidden;
   cursor: pointer;
-  width: 70px;
-  height: 70px;
-  margin: 4px;
-  border: 1px solid rgba(255,255,255,0); /* transparent white */
+  width: 47px;
+  height: 47px;
+  margin: 2px;
+  border: 2px solid rgba(255,255,255,0); /* transparent white */
 }
 
 .gallery .ribbon-image[selected] {
-  border: 1px solid rgba(255,255,0,1);
+  border: 2px solid rgba(255,233,168,1);
 }
 
 .gallery .ribbon-image > img {
-  max-width: 70px;
-  max-height: 70px;
+  max-width: 45px;
+  max-height: 45px;
 }
 
 .gallery .ribbon-spacer {
@@ -92,43 +121,80 @@ body {
 .gallery .edit-bar {
   -webkit-box-flex: 0;
   width: 60%;
+  height: 100%;
   color: white;
   display: -webkit-box;
   -webkit-box-orient: horizontal;
+  -webkit-transition: width 0.5s ease-in-out;
+}
+
+.gallery .edit-bar > .toolbar {
+  opacity: 1.0;
+  -webkit-transition: opacity 0.25s ease-in-out 0.25s;
 }
 
 .gallery .edit-bar[hidden] {
+  width: 0%;
+  -webkit-transition: width 0.5s ease-in-out;
+}
+
+.gallery .edit-bar[hidden] > .toolbar {
+  opacity: 0;
+  -webkit-transition: opacity 0.25s ease-in-out;
+}
+
+.gallery .edit-bar[hidden] > .toolbar[hidden] {
   display: none;
 }
 
-.gallery .toolbar > .button {
+.gallery > .toolbar > .button {
   -webkit-box-flex: 0;
   padding: 10px;
   cursor: pointer;
-  margin: 8px 3px;
-  width: 80px;
+  width: 75px;
+  margin: 10px 5px;
 
   display: -webkit-box;
   -webkit-box-orient: horizontal;
   -webkit-box-align: center;
+  -webkit-box-pack: end;
+
+  background-repeat: no-repeat;
+  background-position: left center;
 }
 
-.gallery .button {
-  background-color: rgba(0,0,0,1);
+.gallery > .toolbar > .button {
+  background-color: rgba(0,0,0,0);
   color: white;
 }
 
-.gallery .button:hover {
-  background-color: rgba(127,127,127,1);
+.gallery > .toolbar > .button:hover {
+  background-color: rgba(31,31,31,1);
   color: white;
 }
 
-.gallery .button[pressed] {
-  background-color: rgba(255,255,255,1);
+.gallery > .toolbar > .button[pressed] {
+  background-color: rgba(240,240,240,1);
   color: black;
 }
 
-.gallery .button[pressed]:hover {
-  background-color: rgba(127,127,127,1);
+.gallery > .toolbar > .button[pressed]:hover {
+  background-color: rgba(240,240,240,1);
   color: black;
+}
+
+.gallery > .toolbar > .button.edit {
+  background-image: url(../../images/gallery/icon_edit.png);
+}
+
+.gallery > .toolbar > .button.edit[pressed] {
+  background-image: url(../../images/gallery/icon_edit_selected.png);
+}
+
+.gallery > .toolbar > .button.share {
+  background-image: url(../../images/gallery/icon_share.png);
+}
+
+.gallery > .toolbar > .button.share[pressed] {
+  background-image: url(../../images/gallery/icon_share_selected.png);
 }

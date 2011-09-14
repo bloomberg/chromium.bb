@@ -49,16 +49,17 @@ Gallery.prototype.initDom_ = function() {
 
   this.editBar_  = doc.createElement('div');
   this.editBar_.className = 'edit-bar';
+  this.editBar_.setAttribute('hidden', 'hidden');
   this.toolbar_.appendChild(this.editBar_);
 
   this.editButton_ = doc.createElement('div');
-  this.editButton_.className = 'button';
+  this.editButton_.className = 'button edit';
   this.editButton_.textContent = Gallery.EDIT_LABEL;
   this.editButton_.addEventListener('click', this.onEdit_.bind(this));
   this.toolbar_.appendChild(this.editButton_);
 
   this.shareButton_ = doc.createElement('div');
-  this.shareButton_.className = 'button';
+  this.shareButton_.className = 'button share';
   this.shareButton_.textContent = Gallery.SHARE_LABEL;
   this.shareButton_.addEventListener('click', this.onShare_.bind(this));
   this.toolbar_.appendChild(this.shareButton_);
@@ -69,8 +70,12 @@ Gallery.prototype.initDom_ = function() {
 
 Gallery.prototype.load = function(parentDirEntry, entries) {
   this.editBar_.setAttribute('hidden', 'hidden');
+  // Firstchild is the toolbar with buttons, which should be hidden at start.
+  this.editBar_.firstChild.setAttribute('hidden', 'hidden');
   this.editButton_.removeAttribute('pressed');
   this.shareButton_.removeAttribute('pressed');
+  this.toolbar_.removeAttribute('hidden');
+  this.editing_ = false;
 
   this.ribbon_.setEntries(entries);
   this.parentDirEntry_ = parentDirEntry;
@@ -122,18 +127,29 @@ Gallery.prototype.onImageSelected_ = function(entry) {
 };
 
 Gallery.prototype.onEdit_ = function(event) {
-  // TODO(dgozman): nice animation.
+  var self = this;
   if (this.editing_) {
     this.editBar_.setAttribute('hidden', 'hidden');
     this.editButton_.removeAttribute('pressed');
     this.editing_ = false;
     this.initiateFading_();
+    window.setTimeout(function() {
+      // Hide the toolbar, so it will not overlap with buttons.
+      self.editBar_.firstChild.setAttribute('hidden', 'hidden');
+      self.ribbon_.redraw();
+    }, 500);
   } else {
-    this.editBar_.removeAttribute('hidden');
-    this.editButton_.setAttribute('pressed', 'pressed');
-    this.editing_ = true;
+    this.cancelFading_();
+    // Show the toolbar.
+    this.editBar_.firstChild.removeAttribute('hidden');
+    // Use setTimeout, so computed style will be recomputed.
+    window.setTimeout(function() {
+      self.editBar_.removeAttribute('hidden');
+      self.editButton_.setAttribute('pressed', 'pressed');
+      self.editing_ = true;
+      self.ribbon_.redraw();
+    }, 0);
   }
-  this.ribbon_.redraw();
 };
 
 Gallery.prototype.onShare_ = function(event) {
@@ -160,9 +176,7 @@ Gallery.prototype.onKeyDown_ = function(event) {
 };
 
 Gallery.prototype.onMouseMove_ = function(e) {
-  if (this.fadeTimeoutId_) {
-    window.clearTimeout(this.fadeTimeoutId_);
-  }
+  this.cancelFading_();
   this.toolbar_.removeAttribute('hidden');
   this.initiateFading_();
 };
@@ -173,28 +187,37 @@ Gallery.prototype.onFadeTimeout_ = function() {
 };
 
 Gallery.prototype.initiateFading_ = function() {
-  if (this.editing_) {
+  if (this.editing_ || this.fadeTimeoutId_) {
     return;
   }
   this.fadeTimeoutId_ = window.setTimeout(
       this.onFadeTimeoutBound_, Gallery.FADE_TIMEOUT);
 };
 
+Gallery.prototype.cancelFading_ = function() {
+  if (this.fadeTimeoutId_) {
+    window.clearTimeout(this.fadeTimeoutId_);
+    this.fadeTimeoutId_ = null;
+  }
+};
+
 function Ribbon(parentNode, onSelect) {
   this.container_ = parentNode;
   this.document_ = parentNode.ownerDocument;
+
+  this.left_ = this.document_.createElement('div');
+  this.left_.className = 'ribbon-left';
+  this.left_.addEventListener('click', this.scrollLeft.bind(this));
+  this.container_.appendChild(this.left_);
 
   this.bar_ = this.document_.createElement('div');
   this.bar_.className = 'ribbon';
   this.container_.appendChild(this.bar_);
 
-  this.left_ = this.document_.createElement('div');
-  this.left_.className = 'ribbon-left';
-  this.left_.addEventListener('click', this.scrollLeft.bind(this));
-
   this.right_ = this.document_.createElement('div');
   this.right_.className = 'ribbon-right';
   this.right_.addEventListener('click', this.scrollRight.bind(this));
+  this.container_.appendChild(this.right_);
 
   this.spacer_ = this.document_.createElement('div');
   this.spacer_.className = 'ribbon-spacer';
@@ -252,18 +275,16 @@ Ribbon.prototype.redraw = function() {
   this.bar_.textContent = '';
 
   // TODO(dgozman): get rid of these constants.
-  var itemWidth = 80;
+  var itemWidth = 49;
   var width = this.bar_.clientWidth - 40;
 
   var fit = Math.round(Math.floor(width / itemWidth));
   var lastIndex = Math.min(this.entries_.length, this.firstIndex_ + fit);
   this.firstIndex_ = Math.max(0, lastIndex - fit);
-  this.bar_.appendChild(this.left_);
   for (var index = this.firstIndex_; index < lastIndex; ++index) {
     this.bar_.appendChild(this.images_[index]);
   }
   this.bar_.appendChild(this.spacer_);
-  this.bar_.appendChild(this.right_);
 };
 
 Ribbon.prototype.scrollLeft = function() {

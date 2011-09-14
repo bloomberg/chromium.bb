@@ -12,7 +12,7 @@ ImageEditor.Mode.Resize = function() {
 
 ImageEditor.Mode.Resize.prototype = {__proto__: ImageEditor.Mode.prototype};
 
-ImageEditor.Mode.register(ImageEditor.Mode.Resize);
+// TODO(dgozman): register Mode.Resize in v2.
 
 ImageEditor.Mode.Resize.prototype.createTools = function(toolbar) {
   var canvas = this.getContent().getCanvas();

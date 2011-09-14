@@ -65,9 +65,18 @@
         <include name="IDR_FILE_MANAGER_IMG_FILETYPE_LARGE_GENERIC_MULTIPLE" file="file_manager/images/filetype_large_generic_multiple.png" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_IMG_FILETYPE_LARGE_VIDEO" file="file_manager/images/filetype_large_video.png" type="BINDATA" />
 
+        <include name="IDR_FILE_MANAGER_IMG_GALLERY_ARROW_LEFT" file="file_manager/images/gallery/arrow_left.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_IMG_GALLERY_ARROW_LEFT_DISABLED" file="file_manager/images/gallery/arrow_left_disabled.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_IMG_GALLERY_ARROW_RIGHT" file="file_manager/images/gallery/arrow_right.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_IMG_GALLERY_ARROW_RIGHT_DISABLED" file="file_manager/images/gallery/arrow_right_disabled.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_IMG_GALLERY_EDIT" file="file_manager/images/gallery/icon_edit.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_IMG_GALLERY_EDIT_SELECTED" file="file_manager/images/gallery/icon_edit_selected.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_IMG_GALLERY_SHARE" file="file_manager/images/gallery/icon_share.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_IMG_GALLERY_SHARE_SELECTED" file="file_manager/images/gallery/icon_share_selected.png" type="BINDATA" />
+
         <include name="IDR_FILE_MANAGER_ICON_DETAIL_VIEW" file="file_manager/images/icon-detail-view.png" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_ICON_THUMB_VIEW" file="file_manager/images/icon-thumb-view.png" type="BINDATA" />
-	<include name="IDR_FILE_MANAGER_WARNING_ICON" file="file_manager/images/warning_icon_square_26x26.png" type="BINDATA"/>
+        <include name="IDR_FILE_MANAGER_WARNING_ICON" file="file_manager/images/warning_icon_square_26x26.png" type="BINDATA"/>
 
         <include name="IDR_FILE_MANAGER_BUTTON_ICON_COPY" file="file_manager/images/button-icon-copy.png" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_BUTTON_ICON_PASTE" file="file_manager/images/button-icon-paste.png" type="BINDATA" />
