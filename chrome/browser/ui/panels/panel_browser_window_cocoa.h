@@ -76,6 +76,7 @@ class PanelBrowserWindowCocoa : public NativePanel {
   FRIEND_TEST_ALL_PREFIXES(PanelBrowserWindowCocoaTest, KeyEvent);
   FRIEND_TEST_ALL_PREFIXES(PanelBrowserWindowCocoaTest, ThemeProvider);
   FRIEND_TEST_ALL_PREFIXES(PanelBrowserWindowCocoaTest, SetTitle);
+  FRIEND_TEST_ALL_PREFIXES(PanelBrowserWindowCocoaTest, ActivatePanel);
 
   bool isClosed();
 

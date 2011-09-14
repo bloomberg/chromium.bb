@@ -376,3 +376,31 @@ TEST_F(PanelBrowserWindowCocoaTest, SetTitle) {
   EXPECT_NSNE([[native_window->controller_ window] title], previousTitle);
   ClosePanelAndWait(panel->browser());
 }
+
+TEST_F(PanelBrowserWindowCocoaTest, ActivatePanel) {
+  Panel* panel = CreateTestPanel("Test Panel");
+  Panel* panel2 = CreateTestPanel("Test Panel 2");
+  ASSERT_TRUE(panel);
+  ASSERT_TRUE(panel2);
+
+  PanelBrowserWindowCocoa* native_window =
+      static_cast<PanelBrowserWindowCocoa*>(panel->native_panel());
+  ASSERT_TRUE(native_window);
+  PanelBrowserWindowCocoa* native_window2 =
+      static_cast<PanelBrowserWindowCocoa*>(panel2->native_panel());
+  ASSERT_TRUE(native_window2);
+
+  // No one has a good answer why but apparently windows can't take keyboard
+  // focus outside of interactive UI tests. BrowserWindowController uses the
+  // same way of testing this.
+  native_window->ActivatePanel();
+  NSWindow* frontmostWindow = [[NSApp orderedWindows] objectAtIndex:0];
+  EXPECT_NSEQ(frontmostWindow, [native_window->controller_ window]);
+
+  native_window2->ActivatePanel();
+  frontmostWindow = [[NSApp orderedWindows] objectAtIndex:0];
+  EXPECT_NSEQ(frontmostWindow, [native_window2->controller_ window]);
+
+  ClosePanelAndWait(panel->browser());
+  ClosePanelAndWait(panel2->browser());
+}

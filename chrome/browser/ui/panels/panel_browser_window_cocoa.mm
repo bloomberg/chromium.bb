@@ -110,10 +110,13 @@ void PanelBrowserWindowCocoa::ClosePanel() {
 }
 
 void PanelBrowserWindowCocoa::ActivatePanel() {
-  NOTIMPLEMENTED();
+  if (!is_shown_)
+    return;
+  [BrowserWindowUtils activateWindowForController:controller_];
 }
 
 void PanelBrowserWindowCocoa::DeactivatePanel() {
+  // TODO(dcheng): Implement. See crbug.com/51364 for more details.
   NOTIMPLEMENTED();
 }
 

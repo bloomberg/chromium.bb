@@ -37,6 +37,8 @@ struct NativeWebKeyboardEvent;
 
 + (NSPoint)themePatternPhaseFor:(NSView*)windowView
                    withTabStrip:(NSView*)tabStripView;
+
++ (void)activateWindowForController:(NSWindowController*)controller;
 @end
 
 #endif  // CHROME_BROWSER_UI_COCOA_BROWSER_WINDOW_UTILS_H_

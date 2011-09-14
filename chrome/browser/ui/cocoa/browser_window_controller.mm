@@ -4,8 +4,6 @@
 
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 
-#include <Carbon/Carbon.h>
-
 #include <cmath>
 #include <numeric>
 
@@ -724,10 +722,7 @@ enum {
 }
 
 - (void)activate {
-  [[self window] makeKeyAndOrderFront:self];
-  ProcessSerialNumber psn;
-  GetCurrentProcess(&psn);
-  SetFrontProcessWithOptions(&psn, kSetFrontProcessFrontWindowOnly);
+  [BrowserWindowUtils activateWindowForController:self];
 }
 
 // Determine whether we should let a window zoom/unzoom to the given |newFrame|.

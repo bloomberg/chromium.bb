@@ -4,6 +4,8 @@
 
 #import "chrome/browser/ui/cocoa/browser_window_utils.h"
 
+#include <Carbon/Carbon.h>
+
 #include "base/logging.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/global_keyboard_shortcuts_mac.h"
@@ -173,6 +175,15 @@ const CGFloat kPatternVerticalOffsetNoTabStrip = 3;
                      NSMinY(tabStripViewWindowBounds)
                          + [TabStripController defaultTabHeight]
                          + kPatternVerticalOffset);
+}
+
++ (void)activateWindowForController:(NSWindowController*)controller {
+  // Per http://crbug.com/73779 and http://crbug.com/75223, we need this to
+  // properly activate windows if Chrome is not the active application.
+  [[controller window] makeKeyAndOrderFront:controller];
+  ProcessSerialNumber psn;
+  GetCurrentProcess(&psn);
+  SetFrontProcessWithOptions(&psn, kSetFrontProcessFrontWindowOnly);
 }
 
 @end
