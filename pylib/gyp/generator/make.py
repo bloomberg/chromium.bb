@@ -1038,20 +1038,24 @@ class MacPrefixHeader(object):
       self.header = path_provider.xcode_settings.GetPerTargetSetting(
           'GCC_PREFIX_HEADER')
     self.compiled_headers = {}
+    self.compile_headers = path_provider.xcode_settings.GetPerTargetSetting(
+        'GCC_PRECOMPILE_PREFIX_HEADER', default='NO') != 'NO'
     if self.header:
       self.header = path_provider.Absolutify(self.header)
-      for lang in ['c', 'cc', 'm', 'mm']:
-        self.compiled_headers[lang] = path_provider.Pchify(self.header, lang)
+      if self.compile_headers:
+        for lang in ['c', 'cc', 'm', 'mm']:
+          self.compiled_headers[lang] = path_provider.Pchify(self.header, lang)
 
   def _Gch(self, lang):
     """Returns the actual file name of the prefix header for language |lang|."""
+    assert self.compile_headers
     return self.compiled_headers[lang] + '.gch'
 
   def WriteObjDependencies(self, compilable, objs, writer):
     """Writes dependencies from the object files in |objs| to the corresponding
     precompiled header file. |compilable[i]| has to be the source file belonging
     to |objs[i]|."""
-    if not self.header:
+    if not self.header or not self.compile_headers:
       return
 
     writer.WriteLn('# Dependencies from obj files to their precompiled headers')
@@ -1069,13 +1073,16 @@ class MacPrefixHeader(object):
 
   def GetInclude(self, lang):
     """Gets the cflags to include the prefix header for language |lang|."""
-    if lang not in self.compiled_headers:
+    if self.compile_headers and lang in self.compiled_headers:
+      return '-include %s ' % self.compiled_headers[lang]
+    elif self.header:
+      return '-include %s ' % self.header
+    else:
       return ''
-    return '-include %s ' % self.compiled_headers[lang]
 
   def WritePchTargets(self, writer):
     """Writes make rules to compile the prefix headers."""
-    if not self.header:
+    if not self.header or not self.compile_headers:
       return
 
     writer.WriteLn(self._Gch('c') + ": GYP_PCH_CFLAGS := "
