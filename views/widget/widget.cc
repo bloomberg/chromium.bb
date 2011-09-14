@@ -12,26 +12,30 @@
 #include "ui/gfx/compositor/compositor.h"
 #include "ui/gfx/compositor/layer.h"
 #include "views/controls/menu/menu_controller.h"
+#include "views/focus/focus_manager.h"
 #include "views/focus/focus_manager_factory.h"
 #include "views/focus/view_storage.h"
+#include "views/focus/widget_focus_manager.h"
 #include "views/ime/input_method.h"
 #include "views/views_delegate.h"
 #include "views/widget/default_theme_provider.h"
-#include "views/widget/root_view.h"
 #include "views/widget/native_widget_private.h"
+#include "views/widget/root_view.h"
 #include "views/widget/tooltip_manager.h"
 #include "views/widget/widget_delegate.h"
 #include "views/window/custom_frame_view.h"
 
-namespace views {
-
 namespace {
+
 // Set to true if a pure Views implementation is preferred
 bool use_pure_views = false;
 
 // True to enable debug paint that indicates where to be painted.
 bool debug_paint = false;
-}
+
+}  // namespace
+
+namespace views {
 
 // This class is used to keep track of the event a Widget is processing, and
 // restore any previously active event afterwards.
@@ -844,15 +848,13 @@ void Widget::OnNativeWidgetActivationChanged(bool active) {
 }
 
 void Widget::OnNativeFocus(gfx::NativeView focused_view) {
-  GetFocusManager()->GetWidgetFocusManager()->OnWidgetFocusEvent(
-      focused_view,
-      GetNativeView());
+  WidgetFocusManager::GetInstance()->OnWidgetFocusEvent(focused_view,
+                                                        GetNativeView());
 }
 
 void Widget::OnNativeBlur(gfx::NativeView focused_view) {
-  GetFocusManager()->GetWidgetFocusManager()->OnWidgetFocusEvent(
-      GetNativeView(),
-      focused_view);
+  WidgetFocusManager::GetInstance()->OnWidgetFocusEvent(GetNativeView(),
+                                                        focused_view);
 }
 
 void Widget::OnNativeWidgetVisibilityChanged(bool visible) {

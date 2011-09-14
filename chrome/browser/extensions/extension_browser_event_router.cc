@@ -67,7 +67,7 @@ void ExtensionBrowserEventRouter::Init() {
     return;
   BrowserList::AddObserver(this);
 #if defined(TOOLKIT_VIEWS)
-  views::FocusManager::GetWidgetFocusManager()->AddFocusChangeListener(this);
+  views::WidgetFocusManager::GetInstance()->AddFocusChangeListener(this);
 #elif defined(TOOLKIT_GTK)
   ui::ActiveWindowWatcherX::AddObserver(this);
 #elif defined(OS_MACOSX)
@@ -108,7 +108,7 @@ ExtensionBrowserEventRouter::ExtensionBrowserEventRouter(Profile* profile)
 ExtensionBrowserEventRouter::~ExtensionBrowserEventRouter() {
   BrowserList::RemoveObserver(this);
 #if defined(TOOLKIT_VIEWS)
-  views::FocusManager::GetWidgetFocusManager()->RemoveFocusChangeListener(this);
+  views::WidgetFocusManager::GetInstance()->RemoveFocusChangeListener(this);
 #elif defined(TOOLKIT_GTK)
   ui::ActiveWindowWatcherX::RemoveObserver(this);
 #endif

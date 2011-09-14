@@ -264,6 +264,8 @@
         'focus/focus_search.h',
         'focus/view_storage.cc',
         'focus/view_storage.h',
+        'focus/widget_focus_manager.cc',
+        'focus/widget_focus_manager.h',
         'ime/character_composer.cc',
         'ime/character_composer.h',
         'ime/input_method.h',

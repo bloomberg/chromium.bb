@@ -13,6 +13,7 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "views/focus/focus_manager.h"
+#include "views/focus/widget_focus_manager.h"
 #include "views/layout/fill_layout.h"
 #include "views/widget/native_widget_views.h"
 

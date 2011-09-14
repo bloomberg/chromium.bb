@@ -16,8 +16,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "content/common/notification_registrar.h"
 #if defined(TOOLKIT_VIEWS)
-#include "views/focus/focus_manager.h"
-#include "views/view.h"
+#include "views/focus/widget_focus_manager.h"
 #elif defined(TOOLKIT_GTK)
 #include "ui/base/x/active_window_watcher_x.h"
 #endif

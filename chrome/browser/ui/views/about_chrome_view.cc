@@ -14,6 +14,7 @@
 #include "base/callback.h"
 #include "base/i18n/rtl.h"
 #include "base/string_number_conversions.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/google/google_util.h"

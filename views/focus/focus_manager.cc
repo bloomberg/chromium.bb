@@ -13,46 +13,12 @@
 #include "views/accelerator.h"
 #include "views/focus/focus_search.h"
 #include "views/focus/view_storage.h"
+#include "views/focus/widget_focus_manager.h"
 #include "views/view.h"
 #include "views/widget/root_view.h"
 #include "views/widget/widget.h"
 
 namespace views {
-
-// FocusManager::WidgetFocusManager ---------------------------------
-
-void FocusManager::WidgetFocusManager::AddFocusChangeListener(
-    WidgetFocusChangeListener* listener) {
-  focus_change_listeners_.AddObserver(listener);
-}
-
-void FocusManager::WidgetFocusManager::RemoveFocusChangeListener(
-    WidgetFocusChangeListener* listener) {
-  focus_change_listeners_.RemoveObserver(listener);
-}
-
-void FocusManager::WidgetFocusManager::OnWidgetFocusEvent(
-    gfx::NativeView focused_before,
-    gfx::NativeView focused_now) {
-  if (enabled_) {
-    FOR_EACH_OBSERVER(WidgetFocusChangeListener, focus_change_listeners_,
-                      NativeFocusWillChange(focused_before, focused_now));
-  }
-}
-
-FocusManager::WidgetFocusManager::WidgetFocusManager() : enabled_(true) {
-}
-
-FocusManager::WidgetFocusManager::~WidgetFocusManager() {
-}
-
-// static
-FocusManager::WidgetFocusManager*
-FocusManager::WidgetFocusManager::GetInstance() {
-  return Singleton<WidgetFocusManager>::get();
-}
-
-// FocusManager -----------------------------------------------------
 
 FocusManager::FocusManager(Widget* widget)
     : widget_(widget),
@@ -65,11 +31,6 @@ FocusManager::FocusManager(Widget* widget)
 }
 
 FocusManager::~FocusManager() {
-}
-
-// static
-FocusManager::WidgetFocusManager* FocusManager::GetWidgetFocusManager() {
-  return WidgetFocusManager::GetInstance();
 }
 
 bool FocusManager::OnKeyEvent(const KeyEvent& event) {
