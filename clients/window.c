@@ -1420,7 +1420,7 @@ window_set_fullscreen(struct window *window, int fullscreen)
 {
 	int32_t width, height;
 
-	if (window->type == TYPE_FULLSCREEN)
+	if ((window->type == TYPE_FULLSCREEN) == fullscreen)
 		return;
 
 	if (fullscreen) {

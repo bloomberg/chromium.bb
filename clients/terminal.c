@@ -2372,7 +2372,10 @@ terminal_run(struct terminal *terminal, const char *path)
 	g_io_add_watch(terminal->channel, G_IO_IN, io_handler, terminal);
         g_io_add_watch(terminal->channel, G_IO_HUP, io_handler, terminal);
 
-	terminal_resize(terminal, 80, 24);
+	window_set_fullscreen(terminal->window, terminal->fullscreen);
+	if (!terminal->fullscreen)
+		terminal_resize(terminal, 80, 24);
+
 	terminal_draw(terminal);
 
 	return 0;
