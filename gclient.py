@@ -145,8 +145,9 @@ class Dependency(GClientKeywords, gclient_utils.WorkItem):
     # self.dependencies and self.requirements are read and modified from
     # multiple threads at the same time. Sad.
     GClientKeywords.__init__(self)
-    gclient_utils.WorkItem.__init__(self, name)
+    gclient_utils.WorkItem.__init__(self)
     self.parent = parent
+    self.name = name
     self.url = url
     self.parsed_url = None
     # These 2 are only set in .gclient and not in DEPS files.
@@ -168,6 +169,8 @@ class Dependency(GClientKeywords, gclient_utils.WorkItem):
     self.processed = False
     # This dependency had its hook run
     self.hooks_ran = False
+    # Required dependencies to run before running this one:
+    self.requirements = set()
 
     # Post process the url to remove trailing slashes.
     if isinstance(self.url, basestring):
@@ -198,7 +201,7 @@ class Dependency(GClientKeywords, gclient_utils.WorkItem):
     # self.parent is implicitly a requirement. This will be recursive by
     # definition.
     if self.parent and self.parent.name:
-      self._requirements.add(self.parent.name)
+      self.requirements.add(self.parent.name)
 
     # For a tree with at least 2 levels*, the leaf node needs to depend
     # on the level higher up in an orderly way.
@@ -216,10 +219,10 @@ class Dependency(GClientKeywords, gclient_utils.WorkItem):
       for i in range(0, root_deps.index(self.parent)):
         value = root_deps[i]
         if value.name:
-          self._requirements.add(value.name)
+          self.requirements.add(value.name)
 
     if isinstance(self.url, self.FromImpl):
-      self._requirements.add(self.url.module_name)
+      self.requirements.add(self.url.module_name)
 
     if self.name and self.should_process:
       def yield_full_tree(root):
@@ -235,7 +238,7 @@ class Dependency(GClientKeywords, gclient_utils.WorkItem):
           continue
         # Step 1: Find any requirements self may need.
         if self.name.startswith(posixpath.join(obj.name, '')):
-          self._requirements.add(obj.name)
+          self.requirements.add(obj.name)
         # Step 2: Find any requirements self may impose.
         if obj.name.startswith(posixpath.join(self.name, '')):
           obj.requirements.add(self.name)

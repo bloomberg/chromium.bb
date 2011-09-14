@@ -456,44 +456,18 @@ def GetGClientRootAndEntries(path=None):
   return config_dir, env['entries']
 
 
-def lockedmethod(method):
-  """Method decorator that holds self.lock for the duration of the call."""
-  def inner(self, *args, **kwargs):
-    try:
-      try:
-        self.lock.acquire()
-      except KeyboardInterrupt:
-        print >> sys.stderr, 'Was deadlocked'
-        raise
-      return method(self, *args, **kwargs)
-    finally:
-      self.lock.release()
-  return inner
-
-
 class WorkItem(object):
   """One work item."""
-  def __init__(self, name):
+  def __init__(self):
     # A list of string, each being a WorkItem name.
-    self._requirements = set()
+    self.requirements = []
     # A unique string representing this work item.
-    self._name = name
-    self.lock = threading.RLock()
+    self.name = None
 
-  @lockedmethod
   def run(self, work_queue):
     """work_queue is passed as keyword argument so it should be
     the last parameters of the function when you override it."""
     pass
-
-  @property
-  def name(self):
-    return self._name
-
-  @property
-  @lockedmethod
-  def requirements(self):
-    return tuple(self._requirements)
 
 
 class ExecutionQueue(object):
