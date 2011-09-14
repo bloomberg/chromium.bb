@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "base/command_line.h"
-#include "base/file_util.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
@@ -39,17 +38,10 @@ bool InMemoryHistoryBackend::Init(const FilePath& history_filename,
                                   const std::string& languages) {
   db_.reset(new InMemoryDatabase);
   bool success = db_->InitFromDisk(history_filename);
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableHistoryQuickProvider)) {
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableHistoryQuickProvider)) {
     index_.reset(new InMemoryURLIndex(history_dir));
     index_->Init(db, languages);
-  } else {
-    // We switched the default from on to off for the HQP. So delete any old
-    // provider cache that's now orphaned with the in memory backend being
-    // disabled. This will be automatically regenerated when we re-enable HQP.
-    FilePath provider_cache = history_dir.Append(
-        FILE_PATH_LITERAL("History Provider Cache"));
-    file_util::Delete(provider_cache, false);
   }
   return success;
 }

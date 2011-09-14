@@ -247,6 +247,9 @@ const char kDisableExtensionsFileAccessCheck[] =
 // Disables the sandbox for the built-in flash player.
 const char kDisableFlashSandbox[]           = "disable-flash-sandbox";
 
+// Disable the use of the HistoryQuickProvider for autocomplete results.
+const char kDisableHistoryQuickProvider[]   = "disable-history-quick-provider";
+
 // Disable the use of the HistoryURLProvider for autocomplete results.
 const char kDisableHistoryURLProvider[]     = "disable-history-url-provider";
 
@@ -442,9 +445,6 @@ const char kEnableFastback[]                = "enable-fastback";
 // By default, cookies are not allowed on file://. They are needed for
 // testing, for example page cycler and layout tests.  See bug 1157243.
 const char kEnableFileCookies[]             = "enable-file-cookies";
-
-// Enable the use of the HistoryQuickProvider for autocomplete results.
-const char kEnableHistoryQuickProvider[]    = "enable-history-quick-provider";
 
 // Enable the in-browser thumbnailing, which is more efficient than the
 // in-renderer thumbnailing, as we can use more information to determine
