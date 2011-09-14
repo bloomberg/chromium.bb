@@ -76,7 +76,7 @@ def determine_scm(root):
     return 'git'
   else:
     try:
-      subprocess2.check_output(
+      subprocess2.check_call(
           ['git', 'rev-parse', '--show-cdup'],
           stdout=subprocess2.VOID,
           stderr=subprocess2.VOID,
