@@ -65,12 +65,6 @@ class LayerHelper {
     return property_setter_explicitly_set_;
   }
 
-  // See View::SetExternalTexture for details.
-  void set_layer_updated_externally(bool value) {
-    layer_updated_externally_ = value;
-  }
-  bool layer_updated_externally() const { return layer_updated_externally_; }
-
   // Returns true if the layer needs to be used.
   bool ShouldPaintToLayer() const;
 
@@ -89,9 +83,6 @@ class LayerHelper {
   gfx::Rect clip_rect_;
 
   bool fills_bounds_opaquely_;
-
-  // If true the bitmap is always up to date.
-  bool layer_updated_externally_;
 
   // Should the View paint to a layer?
   bool paint_to_layer_;

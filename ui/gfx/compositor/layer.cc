@@ -19,6 +19,7 @@ Layer::Layer(Compositor* compositor)
       parent_(NULL),
       visible_(true),
       fills_bounds_opaquely_(false),
+      layer_updated_externally_(false),
       delegate_(NULL) {
 }
 
@@ -101,11 +102,14 @@ void Layer::SetFillsBoundsOpaquely(bool fills_bounds_opaquely) {
     parent()->RecomputeHole();
 }
 
-void Layer::SetTexture(ui::Texture* texture) {
-  if (texture == NULL)
+void Layer::SetExternalTexture(ui::Texture* texture) {
+  if (texture == NULL) {
+    layer_updated_externally_ = false;
     texture_ = compositor_->CreateTexture();
-  else
+  } else {
+    layer_updated_externally_ = true;
     texture_ = texture;
+  }
 }
 
 void Layer::SetCanvas(const SkCanvas& canvas, const gfx::Point& origin) {
@@ -184,7 +188,7 @@ void Layer::DrawRegion(const ui::TextureDrawParams& params,
 void Layer::UpdateLayerCanvas() {
   // If we have no delegate, that means that whoever constructed the Layer is
   // setting its canvas directly with SetCanvas().
-  if (!delegate_)
+  if (!delegate_ || layer_updated_externally_)
     return;
   gfx::Rect local_bounds = gfx::Rect(gfx::Point(), bounds_.size());
   gfx::Rect draw_rect = invalid_rect_.Intersect(local_bounds);

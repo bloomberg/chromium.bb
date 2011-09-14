@@ -1132,9 +1132,8 @@ bool View::SetExternalTexture(ui::Texture* texture) {
       (*i)->SetPaintToLayer(true);
   }
 
-  layer_helper_->set_layer_updated_externally(use_external);
   if (layer())
-    layer()->SetTexture(texture);
+    layer()->SetExternalTexture(texture);
 
   SchedulePaintInRect(GetLocalBounds());
 
@@ -1205,10 +1204,6 @@ void View::UpdateLayerBounds(const gfx::Point& offset) {
 }
 
 void View::OnPaintLayer(gfx::Canvas* canvas) {
-  // If someone else is directly providing our Layer's texture, we should not
-  // do any rendering.
-  if (layer_helper_->layer_updated_externally())
-    return;
   canvas->AsCanvasSkia()->drawColor(SK_ColorBLACK, SkXfermode::kClear_Mode);
   PaintCommon(canvas);
 }
@@ -1470,7 +1465,7 @@ void View::BoundsChanged(const gfx::Rect& previous_bounds) {
           layer_helper_->property_setter()->SetBounds(layer(), bounds_);
         }
         if (previous_bounds.size() != bounds_.size() &&
-            !layer_helper_->layer_updated_externally()) {
+            !layer()->layer_updated_externally()) {
           // If our bounds have changed then we need to update the complete
           // texture.
           layer()->SchedulePaint(GetLocalBounds());
@@ -1650,8 +1645,8 @@ bool View::ConvertPointFromAncestor(const View* ancestor,
 bool View::ShouldPaintToLayer() const {
   return use_acceleration_when_possible &&
       ((layer_helper_.get() && layer_helper_->ShouldPaintToLayer()) ||
-       (parent_ && parent_->layer_helper_.get() &&
-        parent_->layer_helper_->layer_updated_externally()));
+       (parent_ && parent_->layer() &&
+        parent_->layer()->layer_updated_externally()));
 }
 
 void View::CreateLayer() {
