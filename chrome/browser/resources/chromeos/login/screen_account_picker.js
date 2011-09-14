@@ -39,10 +39,19 @@ cr.define('login', function() {
      * @param data {string} Screen init payload.
      */
     onBeforeShow: function(data) {
+      $('pod-row').handleShow();
       if (this.firstShown_) {
         this.firstShown_ = false;
         $('pod-row').startInitAnimation();
       }
+    },
+
+     /**
+      * Event handler that is invoked just before the frame is hidden.
+      * @param data {string} Screen init payload.
+      */
+    onBeforeHide: function(data) {
+      $('pod-row').handleHide();
     }
   };
 
