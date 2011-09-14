@@ -13,7 +13,7 @@ namespace system {
 TEST(NameValuePairsParser, TestGetSingleValueFromTool) {
   NameValuePairsParser::NameValueMap map;
   NameValuePairsParser parser(&map);
-  const char* command[] = { "echo", "Foo" };
+  const char* command[] = { "/bin/echo", "Foo" };
   EXPECT_TRUE(parser.GetSingleValueFromTool(arraysize(command), command,
                                             "foo"));
   ASSERT_EQ(1U, map.size());
@@ -23,7 +23,7 @@ TEST(NameValuePairsParser, TestGetSingleValueFromTool) {
 TEST(NameValuePairsParser, TestParseNameValuePairsFromTool) {
   NameValuePairsParser::NameValueMap map;
   NameValuePairsParser parser(&map);
-  const char* command1[] = { "echo", "foo=Foo bar=Bar\nfoobar=FooBar\n" };
+  const char* command1[] = { "/bin/echo", "foo=Foo bar=Bar\nfoobar=FooBar\n" };
   EXPECT_TRUE(parser.ParseNameValuePairsFromTool(
       arraysize(command1), command1, "=", " \n"));
   ASSERT_EQ(3U, map.size());
@@ -32,7 +32,7 @@ TEST(NameValuePairsParser, TestParseNameValuePairsFromTool) {
   EXPECT_EQ("FooBar", map["foobar"]);
 
   map.clear();
-  const char* command2[] = { "echo", "foo=Foo,bar=Bar" };
+  const char* command2[] = { "/bin/echo", "foo=Foo,bar=Bar" };
   EXPECT_TRUE(parser.ParseNameValuePairsFromTool(
       arraysize(command2), command2, "=", ",\n"));
   ASSERT_EQ(2U, map.size());
@@ -40,17 +40,17 @@ TEST(NameValuePairsParser, TestParseNameValuePairsFromTool) {
   EXPECT_EQ("Bar", map["bar"]);
 
   map.clear();
-  const char* command3[] = { "echo", "foo=Foo=foo,bar=Bar" };
+  const char* command3[] = { "/bin/echo", "foo=Foo=foo,bar=Bar" };
   EXPECT_FALSE(parser.ParseNameValuePairsFromTool(
       arraysize(command3), command3, "=", ",\n"));
 
   map.clear();
-  const char* command4[] = { "echo", "foo=Foo,=Bar" };
+  const char* command4[] = { "/bin/echo", "foo=Foo,=Bar" };
   EXPECT_FALSE(parser.ParseNameValuePairsFromTool(
       arraysize(command4), command4, "=", ",\n"));
 
   map.clear();
-  const char* command5[] = { "echo",
+  const char* command5[] = { "/bin/echo",
       "\"initial_locale\"=\"ja\"\n"
       "\"initial_timezone\"=\"Asia/Tokyo\"\n"
       "\"keyboard_layout\"=\"mozc-jp\"\n" };

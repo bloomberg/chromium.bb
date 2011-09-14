@@ -2107,13 +2107,6 @@
    fun:_ZN11MessageLoop7RunTaskERKNS_11PendingTaskE
 }
 {
-   bug_46163
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN4base19MessagePumpLibevent3RunEPNS_11MessagePump8DelegateE
-   fun:_ZN11MessageLoop11RunInternalEv
-}
-{
    bug_46250
    Memcheck:Leak
    fun:_Znw*

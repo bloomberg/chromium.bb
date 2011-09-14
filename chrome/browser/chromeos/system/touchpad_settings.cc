@@ -6,6 +6,8 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/file_path.h"
+#include "base/file_util.h"
 #include "base/message_loop.h"
 #include "base/process_util.h"
 #include "base/stringprintf.h"
@@ -18,6 +20,18 @@ namespace {
 const char* kTpControl = "/opt/google/touchpad/tpcontrol";
 }  // namespace
 
+// Launches the tpcontrol command asynchronously, if it exists.
+void LaunchTpControl(const std::vector<std::string>& argv) {
+  if (!file_util::PathExists(FilePath(argv[0]))) {
+    LOG(WARNING) << argv[0] << " not found. Maybe running on Linux desktop?";
+    return;
+  }
+
+  base::LaunchOptions options;
+  options.wait = false;  // Launch asynchronously.
+
+  base::LaunchProcess(CommandLine(argv), options, NULL);
+}
 
 void SetSensitivity(int value) {
   // Run this on the FILE thread.
@@ -33,10 +47,7 @@ void SetSensitivity(int value) {
   argv.push_back("sensitivity");
   argv.push_back(StringPrintf("%d", value));
 
-  base::LaunchOptions options;
-  options.wait = false;  // Launch asynchronously.
-
-  base::LaunchProcess(CommandLine(argv), options, NULL);
+  LaunchTpControl(argv);
 }
 
 void SetTapToClick(bool enabled) {
@@ -53,10 +64,7 @@ void SetTapToClick(bool enabled) {
   argv.push_back("taptoclick");
   argv.push_back(enabled ? "on" : "off");
 
-  base::LaunchOptions options;
-  options.wait = false;  // Launch asynchronously.
-
-  base::LaunchProcess(CommandLine(argv), options, NULL);
+  LaunchTpControl(argv);
 }
 
 }  // namespace touchpad_settings

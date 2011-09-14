@@ -27,6 +27,9 @@ class NameValuePairsParser {
   void AddNameValuePair(const std::string& key, const std::string& value);
 
   // Executes tool and inserts (key, <output>) into map_.
+  // The program name (argv[0]) should be an absolute path. The function
+  // checks if the program exists before executing it as some programs
+  // don't exist on Linux desktop.
   bool GetSingleValueFromTool(int argc, const char* argv[],
                               const std::string& key);
   // Executes tool, parses the output using ParseNameValuePairs,
