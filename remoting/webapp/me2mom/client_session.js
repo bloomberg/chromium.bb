@@ -16,12 +16,6 @@
 /** @suppress {duplicate} */
 var remoting = remoting || {};
 
-/**
- * Whether or not the P2P Transport API should be used.
- * @type {boolean}
- */
-remoting.useP2pApi = false;
-
 (function() {
 /**
  * @param {string} hostJid The jid of the host to connect to.
