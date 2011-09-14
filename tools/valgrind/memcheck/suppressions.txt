@@ -3217,16 +3217,6 @@
    fun:_ZN3net18SSLClientSocketNSS15DoHandshakeLoopEi
 }
 {
-   bug_70115
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN15FilePathWatcherC1Ev
-   fun:_ZN13PluginServiceC1Ev
-   fun:_ZN22DefaultSingletonTraitsI13PluginServiceE3NewEv
-   fun:_ZN9SingletonI13PluginService22DefaultSingletonTraitsIS0_ES0_E3getEv
-   fun:_ZN13PluginService11GetInstanceEv
-}
-{
    bug_70327_a
    Memcheck:Leak
    ...

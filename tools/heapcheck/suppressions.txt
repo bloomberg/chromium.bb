@@ -913,23 +913,6 @@
    fun:PR_CallOnce
 }
 {
-   bug_70115
-   Heapcheck:Leak
-   ...
-   fun:FilePathWatcher
-   fun:PluginService
-   fun:DefaultSingletonTraits::New
-   fun:Singleton::get
-   fun:PluginService::GetInstance
-   fun:ResourceDispatcherHost::BeginRequest
-   fun:ResourceDispatcherHost::OnRequestResource
-   fun:IPC::MessageWithTuple::Dispatch
-   fun:ResourceDispatcherHost::OnMessageReceived
-   fun:ResourceDispatcherHostTest::MakeTestRequest
-   fun:ResourceDispatcherHostTest::MakeTestRequest
-   fun:ResourceDispatcherHostTest_TestMany_Test::TestBody
-}
-{
    bug_70327
    Heapcheck:Leak
    fun:g_malloc
@@ -1014,16 +997,6 @@
    Heapcheck:Leak
    fun:*AutofillDownloadTestHelper
    fun:AutofillDownloadTest_*Test_Test::TestBody
-}
-{
-   bug_75917
-   Heapcheck:Leak
-   fun:FilePathWatcher
-   fun:PluginService
-   fun:DefaultSingletonTraits::New
-   fun:Singleton::get
-   fun:PluginService::GetInstance
-   fun:::PluginServiceTest::SetUp
 }
 {
    bug_76354
