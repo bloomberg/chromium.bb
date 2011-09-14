@@ -112,9 +112,9 @@ void TestTransport::RunTest() {
   RUN_TEST_FORCEASYNC_AND_NOT(ConnectAndCloseTcp);
 }
 
-std::string TestTransport::InitTargets(PP_TransportType type) {
-  transport1_.reset(new pp::Transport_Dev(instance_, kTestChannelName, type));
-  transport2_.reset(new pp::Transport_Dev(instance_, kTestChannelName, type));
+std::string TestTransport::InitTargets(const char* proto) {
+  transport1_.reset(new pp::Transport_Dev(instance_, kTestChannelName, proto));
+  transport2_.reset(new pp::Transport_Dev(instance_, kTestChannelName, proto));
 
   ASSERT_TRUE(transport1_.get() != NULL);
   ASSERT_TRUE(transport2_.get() != NULL);
@@ -161,7 +161,7 @@ std::string TestTransport::Clean() {
 }
 
 std::string TestTransport::TestCreate() {
-  RUN_SUBTEST(InitTargets(PP_TRANSPORTTYPE_DATAGRAM));
+  RUN_SUBTEST(InitTargets("udp"));
 
   Clean();
 
@@ -169,7 +169,7 @@ std::string TestTransport::TestCreate() {
 }
 
 std::string TestTransport::TestSetProperty() {
-  RUN_SUBTEST(InitTargets(PP_TRANSPORTTYPE_STREAM));
+  RUN_SUBTEST(InitTargets("tcp"));
 
   // Try settings STUN and Relay properties.
   ASSERT_EQ(transport1_->SetProperty(
@@ -200,7 +200,7 @@ std::string TestTransport::TestSetProperty() {
 
   ASSERT_EQ(transport1_->SetProperty(PP_TRANSPORTPROPERTY_TCP_ACK_DELAY,
                                      pp::Var(10)), PP_OK);
-  ASSERT_EQ(transport1_->SetProperty(PP_TRANSPORTPROPERTY_TCP_ACK_DELAY,
+  ASSERT_EQ(transport1_->SetProperty(PP_TRANSPORTPROPERTY_TCP_SEND_WINDOW,
                                      pp::Var(10000)), PP_ERROR_BADARGUMENT);
 
   TestCompletionCallback connect_cb(instance_->pp_instance());
@@ -218,7 +218,7 @@ std::string TestTransport::TestSetProperty() {
 }
 
 std::string TestTransport::TestConnect() {
-  RUN_SUBTEST(InitTargets(PP_TRANSPORTTYPE_DATAGRAM));
+  RUN_SUBTEST(InitTargets("udp"));
   RUN_SUBTEST(Connect());
 
   Clean();
@@ -229,7 +229,7 @@ std::string TestTransport::TestConnect() {
 // Creating datagram connection and try sending data over it. Verify
 // that at least some packets are received (some packets may be lost).
 std::string TestTransport::TestSendDataUdp() {
-  RUN_SUBTEST(InitTargets(PP_TRANSPORTTYPE_DATAGRAM));
+  RUN_SUBTEST(InitTargets("udp"));
   RUN_SUBTEST(Connect());
 
   const int kNumPackets = 100;
@@ -283,7 +283,7 @@ std::string TestTransport::TestSendDataUdp() {
 // Creating reliable (TCP-like) connection and try sending data over
 // it. Verify that all data is received correctly.
 std::string TestTransport::TestSendDataTcp() {
-  RUN_SUBTEST(InitTargets(PP_TRANSPORTTYPE_STREAM));
+  RUN_SUBTEST(InitTargets("tcp"));
   RUN_SUBTEST(Connect());
 
   const int kTcpSendSize = 100000;
@@ -327,7 +327,7 @@ std::string TestTransport::TestSendDataTcp() {
 }
 
 std::string TestTransport::TestConnectAndCloseUdp() {
-  RUN_SUBTEST(InitTargets(PP_TRANSPORTTYPE_DATAGRAM));
+  RUN_SUBTEST(InitTargets("udp"));
   RUN_SUBTEST(Connect());
 
   std::vector<char> recv_buffer(kReadBufferSize);
@@ -348,7 +348,7 @@ std::string TestTransport::TestConnectAndCloseUdp() {
 }
 
 std::string TestTransport::TestConnectAndCloseTcp() {
-  RUN_SUBTEST(InitTargets(PP_TRANSPORTTYPE_STREAM));
+  RUN_SUBTEST(InitTargets("tcp"));
   RUN_SUBTEST(Connect());
 
   std::vector<char> recv_buffer(kReadBufferSize);

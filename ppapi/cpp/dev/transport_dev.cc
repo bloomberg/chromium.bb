@@ -23,10 +23,10 @@ template <> const char* interface_name<PPB_Transport_Dev>() {
 
 Transport_Dev::Transport_Dev(Instance* instance,
                              const char* name,
-                             PP_TransportType type) {
+                             const char* proto) {
   if (has_interface<PPB_Transport_Dev>())
     PassRefFromConstructor(get_interface<PPB_Transport_Dev>()->CreateTransport(
-        instance->pp_instance(), name, type));
+        instance->pp_instance(), name, proto));
 }
 
 bool Transport_Dev::IsWritable() {

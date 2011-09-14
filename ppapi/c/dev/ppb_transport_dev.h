@@ -13,13 +13,8 @@
 #include "ppapi/c/pp_stdint.h"
 #include "ppapi/c/pp_var.h"
 
-#define PPB_TRANSPORT_DEV_INTERFACE_0_7 "PPB_Transport;0.7"
-#define PPB_TRANSPORT_DEV_INTERFACE PPB_TRANSPORT_DEV_INTERFACE_0_7
-
-typedef enum {
-  PP_TRANSPORTTYPE_DATAGRAM = 0,
-  PP_TRANSPORTTYPE_STREAM = 1
-} PP_TransportType;
+#define PPB_TRANSPORT_DEV_INTERFACE_0_6 "PPB_Transport;0.6"
+#define PPB_TRANSPORT_DEV_INTERFACE PPB_TRANSPORT_DEV_INTERFACE_0_6
 
 typedef enum {
   // STUN server address and port, e.g "stun.example.com:19302".
@@ -55,7 +50,7 @@ struct PPB_Transport_Dev {
   // specified protocol.
   PP_Resource (*CreateTransport)(PP_Instance instance,
                                  const char* name,
-                                 PP_TransportType type);
+                                 const char* proto);
 
   // Returns PP_TRUE if resource is a Transport, PP_FALSE otherwise.
   PP_Bool (*IsTransport)(PP_Resource resource);

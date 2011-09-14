@@ -251,9 +251,9 @@ PP_Resource ResourceCreationImpl::CreateSurface3D(
 
 PP_Resource ResourceCreationImpl::CreateTransport(PP_Instance instance,
                                                   const char* name,
-                                                  PP_TransportType type) {
+                                                  const char* proto) {
 #if defined(ENABLE_P2P_APIS)
-  return PPB_Transport_Impl::Create(instance, name, type);
+  return PPB_Transport_Impl::Create(instance, name, proto);
 #endif
 }
 

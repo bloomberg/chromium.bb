@@ -110,7 +110,7 @@ class ResourceCreationProxy : public InterfaceProxy,
                                       const int32_t* attrib_list) OVERRIDE;
   virtual PP_Resource CreateTransport(PP_Instance instance,
                                       const char* name,
-                                      PP_TransportType type) OVERRIDE;
+                                      const char* proto) OVERRIDE;
   virtual PP_Resource CreateURLLoader(PP_Instance instance) OVERRIDE;
   virtual PP_Resource CreateURLRequestInfo(
       PP_Instance instance,

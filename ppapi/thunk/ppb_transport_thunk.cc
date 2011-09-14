@@ -17,12 +17,11 @@ namespace {
 
 typedef EnterResource<PPB_Transport_API> EnterTransport;
 
-PP_Resource Create(PP_Instance instance, const char* name,
-                   PP_TransportType type) {
+PP_Resource Create(PP_Instance instance, const char* name, const char* proto) {
   EnterFunction<ResourceCreationAPI> enter(instance, true);
   if (enter.failed())
     return 0;
-  return enter.functions()->CreateTransport(instance, name, type);
+  return enter.functions()->CreateTransport(instance, name, proto);
 }
 
 PP_Bool IsTransport(PP_Resource resource) {

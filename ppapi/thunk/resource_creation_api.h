@@ -16,7 +16,6 @@
 #include "ppapi/c/ppb_graphics_3d.h"
 #include "ppapi/c/ppb_image_data.h"
 #include "ppapi/c/ppb_input_event.h"
-#include "ppapi/c/dev/ppb_transport_dev.h"
 #include "ppapi/proxy/interface_id.h"
 
 struct PP_Flash_Menu;
@@ -111,7 +110,7 @@ class ResourceCreationAPI {
                                       const int32_t* attrib_list) = 0;
   virtual PP_Resource CreateTransport(PP_Instance instance,
                                       const char* name,
-                                      PP_TransportType type) = 0;
+                                      const char* proto) = 0;
   virtual PP_Resource CreateURLLoader(PP_Instance instance) = 0;
   virtual PP_Resource CreateURLRequestInfo(
       PP_Instance instance,
