@@ -381,16 +381,6 @@ BaseKey.prototype = {
   },
 
   /**
-   * Set the vertical position, aka row, of this key.
-   * @param {number} row The row.
-   */
-  set row(row) {
-    for (var i in this.modeElements_) {
-      this.modeElements_[i].classList.add(this.cellType_ + 'r' + row);
-    }
-  },
-
-  /**
    * Create the DOM elements for the given keyboard mode.  Must be overridden.
    * @param {string} mode The keyboard mode to create elements for.
    * @return {Element} The top-level DOM Element for the key.
@@ -695,10 +685,6 @@ Row.prototype = {
       var clearingDiv = document.createElement('div');
       clearingDiv.style.clear = 'both';
       this.modeElements_[MODES[i]].appendChild(clearingDiv);
-    }
-
-    for (var i = 0; i < this.keys_.length; ++i) {
-      this.keys_[i].row = this.position_;
     }
 
     return this.element_;

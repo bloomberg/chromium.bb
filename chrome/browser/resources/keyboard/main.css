@@ -5,7 +5,7 @@ found in the LICENSE file.
 */
 
 body {
-  background: -webkit-linear-gradient(#131925, #04070B);
+  background: -webkit-linear-gradient(#bababa, #868686);
   color: white;
   margin: 0;
   overflow: hidden;
@@ -45,12 +45,12 @@ div.row > div {
 }
 
 .handwritingcanvas {
+  border-radius: 4px;
   border: 1px solid gray;
   color: #dbdbdb;
   font-family: sans-serif;
   margin: 5px 0 0 5px;
   text-align: center;
-  -webkit-border-radius: 4px;
 }
 
 .ime {
@@ -82,14 +82,19 @@ div.row > div {
 }
 
 .key {
-  border: 1px solid gray;
-  color: #dbdbdb;
+  background: -webkit-linear-gradient(#fff, #cacaca);
+  border-radius: 6px;
+  /* Reserving equivalent space to .key:active so
+     keys don't shift when selected. */
+  border: 1px solid transparent;
+  box-shadow: 0px 1px 1px #000;
+  color: #535353;
   display: -webkit-box;
   font-family: sans-serif;
+  font-weight: 100;
   margin-left: 5px;
   position: relative;
   -webkit-box-flex: 1;
-  -webkit-border-radius: 4px;
 }
 
 .key > div {
@@ -101,44 +106,15 @@ div.row > div {
   top: 0;
 }
 
-.r0 {
-  background: -webkit-linear-gradient(#5a616f, #505662);
-}
-.r0:active {
-  background: -webkit-linear-gradient(#505662, #5a616f);
-}
-
-.r1 {
-  background: -webkit-linear-gradient(#505662, #41464f);
-}
-.r1:active {
-  background: -webkit-linear-gradient(#41464f, #505662);
-}
-
-.r2 {
-  background: -webkit-linear-gradient(#41464f, #32373d);
-}
-.r2:active {
-  background: -webkit-linear-gradient(#32373d, #41464f);
+.key:active {
+  background: -webkit-linear-gradient(#d6d6d6, #acacac);
+  border: 1px solid rgba(125,125,125,0.5);
+  box-shadow: 0px 0px 15px #fff;
 }
 
 div.moddown {
-  background: -webkit-linear-gradient(#0d0d0d, #1e2026);
+  background: -webkit-linear-gradient(#d6d6d6, #acacac);
   border-color: #304a9b;
-}
-
-.ncr0,
-.ncr1,
-.ncr2,
-.ncr3 {
-  background: -webkit-linear-gradient(#1f2127, #1b1e22);
-}
-
-.ncr0:active,
-.ncr1:active,
-.ncr2:active,
-.ncr3:active {
-  background: -webkit-linear-gradient(#0d0d0d, #1e2026);
 }
 
 .image-key {
