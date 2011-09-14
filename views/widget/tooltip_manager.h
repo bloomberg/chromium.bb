@@ -31,9 +31,6 @@ class VIEWS_EXPORT TooltipManager {
   // Returns the default font used by tooltips.
   static gfx::Font GetDefaultFont();
 
-  // Returns the separator for lines of text in a tooltip.
-  static const std::wstring& GetLineSeparator();
-
   // Returns the maximum width of the tooltip. |x| and |y| give the location
   // the tooltip is to be displayed on in screen coordinates.
   static int GetMaxWidth(int x, int y);

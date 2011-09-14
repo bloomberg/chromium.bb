@@ -547,7 +547,7 @@ std::wstring BookmarkBarView::CreateToolTipForURLAndTitle(
   // Only show the URL if the url and title differ.
   if (title != UTF8ToWide(url.spec())) {
     if (!result.empty())
-      result.append(WideToUTF16(views::TooltipManager::GetLineSeparator()));
+      result.push_back('\n');
 
     // We need to explicitly specify the directionality of the URL's text to
     // make sure it is treated as an LTR string when the context is RTL. For

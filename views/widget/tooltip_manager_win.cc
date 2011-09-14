@@ -10,6 +10,7 @@
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
+#include "base/string_util.h"
 #include "ui/base/l10n/l10n_util_win.h"
 #include "ui/base/win/hwnd_util.h"
 #include "ui/gfx/font.h"
@@ -50,14 +51,6 @@ gfx::Font TooltipManager::GetDefaultFont() {
   if (!font)
     font = new gfx::Font(DetermineDefaultFont());
   return *font;
-}
-
-// static
-const std::wstring& TooltipManager::GetLineSeparator() {
-  static const std::wstring* separator = NULL;
-  if (!separator)
-    separator = new std::wstring(L"\r\n");
-  return *separator;
 }
 
 // static
@@ -347,6 +340,7 @@ void TooltipManagerWin::ShowKeyboardTooltip(View* focused_view) {
   int line_count;
   TrimTooltipToFit(&tooltip_text, &tooltip_width, &line_count,
                    screen_point.x(), screen_point.y());
+  ReplaceSubstringsAfterOffset(&tooltip_text, 0, L"\n", L"\r\n");
   TOOLINFO keyboard_toolinfo;
   memset(&keyboard_toolinfo, 0, sizeof(keyboard_toolinfo));
   keyboard_toolinfo.cbSize = sizeof(keyboard_toolinfo);

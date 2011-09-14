@@ -56,12 +56,6 @@ gfx::Font TooltipManager::GetDefaultFont() {
 }
 
 // static
-const std::wstring& TooltipManager::GetLineSeparator() {
-  static const std::wstring* line_separator = new std::wstring(L"\n");
-  return *line_separator;
-}
-
-// static
 int TooltipManager::GetMaxWidth(int x, int y) {
   // FIXME: change this. This is for now just copied from TooltipManagerGtk.
 

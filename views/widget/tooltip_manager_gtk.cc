@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -51,14 +51,6 @@ gfx::Font TooltipManager::GetDefaultFont() {
     font = LoadDefaultFont();
 
   return *font;
-}
-
-// static
-const std::wstring& TooltipManager::GetLineSeparator() {
-  static std::wstring* line_separator = NULL;
-  if (!line_separator)
-    line_separator = new std::wstring(L"\n");
-  return *line_separator;
 }
 
 // static
