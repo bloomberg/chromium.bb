@@ -275,7 +275,7 @@ deps = {
     (Var("googlecode_url") % "mozc") + "/trunk/src/session@58",
 
   "src/third_party/smhasher/src":
-    "http://smhasher.googlecode.com/svn/trunk@136",
+    (Var("googlecode_url") % "smhasher") + "/trunk@136",
 }
 
 
