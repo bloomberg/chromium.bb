@@ -39,7 +39,10 @@ const char kWebstoreRequestError[] =
 const char kInvalidWebstoreResponseError[] = "Invalid Chrome Web Store reponse";
 const char kInvalidManifestError[] = "Invalid manifest";
 const char kUserCancelledError[] = "User cancelled install";
-const char kNotFromVerifiedSite[] =
+const char kNoVerifiedSiteError[] =
+    "Inline installs can only be initiated for Chrome Web Store items that "
+    "have a verified site";
+const char kNotFromVerifiedSiteError[] =
     "Installs can only be initiated by the Chrome Web Store item's verified "
     "site";
 const char kInlineInstallSupportedError[] =
@@ -276,7 +279,7 @@ void WebstoreInlineInstaller::OnWebstoreResponseParseSuccess(
     }
   }
 
-  // Verified site is optional
+  // Verified site is required
   if (webstore_data->HasKey(kVerifiedSiteKey)) {
     std::string verified_site_domain;
     if (!webstore_data->GetString(kVerifiedSiteKey, &verified_site_domain)) {
@@ -291,9 +294,12 @@ void WebstoreInlineInstaller::OnWebstoreResponseParseSuccess(
     verified_site_pattern.SetPath("/*");
 
     if (!verified_site_pattern.MatchesURL(requestor_url_)) {
-      CompleteInstall(kNotFromVerifiedSite);
+      CompleteInstall(kNotFromVerifiedSiteError);
       return;
     }
+  } else {
+    CompleteInstall(kNoVerifiedSiteError);
+    return;
   }
 
   scoped_refptr<WebstoreInstallHelper> helper = new WebstoreInstallHelper(

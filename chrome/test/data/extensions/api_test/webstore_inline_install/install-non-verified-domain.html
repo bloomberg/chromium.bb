@@ -7,14 +7,7 @@
 <script>
   console.log('Page loaded');
 
-  function runTest(galleryUrl) {
-    console.log('In runTest');
-
-    // Link URL has to be generated dynamically in order to include the right
-    // port number. The ID corresponds to the data in the "extension" directory.
-    document.getElementsByTagName('link')[0].href =
-        galleryUrl + '/detail/ecglahbcnmdpdciemllbhojghbkagdje';
-
+  function tryInlineInstall() {
     try {
       chrome.webstore.install(
           undefined,
@@ -37,6 +30,30 @@
       window.domAutomationController.send(false);
       throw e;
     }
+  }
+
+  function runTest1(galleryUrl) {
+    console.log('In runTest1');
+
+    // Initially we point at an extension that has a verified domain of app.com
+    // but we're on nonapp.com (Link URL has to be generated dynamically in
+    // order to include the right port number. The ID corresponds to the data
+    // in the "extension" directory.)
+    document.getElementsByTagName('link')[0].href =
+        galleryUrl + '/detail/ecglahbcnmdpdciemllbhojghbkagdje';
+
+    tryInlineInstall();
+  }
+
+  function runTest2(galleryUrl) {
+    console.log('In runTest2');
+
+    // Now try a different extension, which doesn't have a verified domain at
+    // all (it should not be allowed)
+    document.getElementsByTagName('link')[0].href =
+        galleryUrl + '/detail/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
+
+    tryInlineInstall();
   }
 </script>
 
