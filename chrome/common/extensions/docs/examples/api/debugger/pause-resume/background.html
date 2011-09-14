@@ -1,0 +1,67 @@
+<!--
+Copyright (c) 2011 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+
+<html>
+<head>
+<script>
+
+var attachedTabs = {};
+
+chrome.experimental.debugger.onEvent.addListener(onEvent);
+chrome.experimental.debugger.onDetach.addListener(onDetach);
+
+chrome.browserAction.onClicked.addListener(function() {
+  chrome.windows.getCurrent(function(win) {
+    chrome.tabs.getSelected(win.id, actionClicked);
+  });
+});
+
+function actionClicked(tab) {
+  var tabId = tab.id;
+  if (attachedTabs[tabId] === "pausing")
+    return;
+
+  if (!attachedTabs[tabId])
+    chrome.experimental.debugger.attach(tabId, onAttach.bind(null, tabId));
+  else if (attachedTabs[tabId])
+    chrome.experimental.debugger.detach(tabId, onDetach.bind(null, tabId));
+}
+
+function onAttach(tabId) {
+  if (chrome.extension.lastError) {
+    alert("Another debugger is already attached to this tab.");
+    return;
+  }
+
+  chrome.browserAction.setIcon({tabId: tabId, path:"debuggerPausing.png"});
+  chrome.browserAction.setTitle({tabId: tabId, title:"Pausing JavaScript"});
+  attachedTabs[tabId] = "pausing";
+  chrome.experimental.debugger.sendRequest(
+      tabId, "Debugger.enable", {},
+      onDebuggerEnabled.bind(null, tabId));
+}
+
+function onDebuggerEnabled(tabId) {
+  chrome.experimental.debugger.sendRequest(tabId, "Debugger.pause");
+}
+
+function onEvent(tabId, method) {
+  if (method === "Debugger.paused") {
+    attachedTabs[tabId] = "paused";
+    chrome.browserAction.setIcon({tabId: tabId, path:"debuggerContinue.png"});
+    chrome.browserAction.setTitle({tabId: tabId, title:"Resume JavaScript"});
+  }
+}
+
+function onDetach(tabId) {
+  delete attachedTabs[tabId];
+  chrome.browserAction.setIcon({tabId: tabId, path:"debuggerPause.png"});
+  chrome.browserAction.setTitle({tabId: tabId, title:"Pause JavaScript"});
+}
+
+</script>
+</head>
+</html>

@@ -1,24 +1,45 @@
 <!-- BEGIN AUTHORED CONTENT -->
 
-
-<h2>Notes</h2>
+<h2 id="manifest">Notes</h2>
 
 <p>
-Debugger API exposes Google Chrome debugging interface to the extensions.
-Debugging messages that are being sent and received are all JSON objects
-with the structure defined by the Developer Tools / Web Inspector Protocol.
-We are currently drafting this protocol, it is by no means ready and stable,
-but we can already expose the way to attach to a given tab and instrument it.
-Although not finalized, this API is feature rich. There is a proof of concept
-implementation of the Chrome Developer Tools front-end running as an extension
-using the debugger API.
+Debugger API serves as an alternate transport for Chrome's
+<a href="http://code.google.com/chrome/devtools/docs/remote-debugging.html">
+remote debugging protocol</a>. Use debugger to attach to a tab, instrument its
+network interaction, debug JavaScript, mutate page's DOM and CSS, etc.
 </p>
 
 <p>
-Note that attaching to the page by means of the debugger API and using embedded
-Chrome Developer Tools with it are mutually exclusive. If extension is attached
-to the page and user invokes Developer Tools, debugging session is being
-terminated. Extension can then re-establish it via attaching to a tab later.
+As of today, attaching to the tab by means of the debugger API
+and using embedded Chrome DevTools with that tab are mutually exclusive.
+If user invokes Chrome DevTools while extension is attached to the tab,
+debugging session is terminated. Extension can re-establish it later.
+</p>
+
+<h2 id="manifest">Manifest</h2>
+
+<p>
+You must declare the "debugger" permission in your extension's manifest
+to use this API. The debugger API is currently experimental, so you must
+declare the "experimental" permission to use it as well.
+</p>
+
+<pre>{
+  "name": "My extension",
+  ...
+<b>  "permissions": [
+    "debugger",
+    "experimental"
+  ]</b>,
+  ...
+}</pre>
+
+
+<h2 id="examples">Examples</h2>
+
+<p>
+You can find samples of this API in
+<a href="samples.html#debugger">Samples</a>.
 </p>
 
 <!-- END AUTHORED CONTENT -->

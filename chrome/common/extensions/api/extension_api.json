@@ -8020,7 +8020,7 @@
           {
             "type": "string",
             "name": "method",
-            "description": "Method name."
+            "description": "Method name. Should be one of the methods defined by the <a href='http://code.google.com/chrome/devtools/docs/remote-debugging.html'>remote debugging protocol</a>."
           },
           {
             "type": "object",
@@ -8028,7 +8028,7 @@
             "optional": true,
             "properties": {},
             "additionalProperties": { "type": "any" },
-            "description": "JSON object matching Developer Tools / Web Inspector Protocol scheme."
+            "description": "JSON object with request parameters. This object must conform to the remote debugging params scheme for given method."
           },
           {
             "type": "function",
@@ -8041,10 +8041,10 @@
                 "optional": true,
                 "properties": {},
                 "additionalProperties": { "type": "any" },
-                "description": "JSON object with the request response."
+                "description": "JSON object with the response. Structure of the response varies depending on the method and is defined by the remote debugging protocol."
               }
             ],
-            "description": "Request response body. If an error occurs while posting the message, the callback will be called with no arguments and <a href='extension.html#property-lastError'>chrome.extension.lastError</a> will be set to the error message."
+            "description": "Response body. If an error occurs while posting the message, the callback will be called with no arguments and <a href='extension.html#property-lastError'>chrome.extension.lastError</a> will be set to the error message."
           }
         ]
       }
@@ -8058,12 +8058,12 @@
           {
             "type": "integer",
             "name": "tabId",
-            "description": "The id of the tab that generated debug evet."
+            "description": "The id of the tab that generated debug event."
           },
           {
             "type": "string",
             "name": "method",
-            "description": "Method name."
+            "description": "Method name. Should be one of the notifications defined by the <a href='http://code.google.com/chrome/devtools/docs/remote-debugging.html'>remote debugging protocol</a>."
           },
           {
             "type": "object",
@@ -8071,14 +8071,14 @@
             "optional": true,
             "properties": {},
             "additionalProperties": { "type": "any" },
-            "description": "JSON object matching Developer Tools / Web Inspector Protocol event data scheme."
+            "description": "JSON object with the response. Structure of the response varies depending on the method and is defined by the remote debugging protocol."
           }
         ]
       },
       {
         "name": "onDetach",
         "type": "function",
-        "description": "Fired when browser terminates debugging session for the tab.",
+        "description": "Fired when browser terminates debugging session for the tab. This happens when either the tab is being closed or Chrome DevTools is being invoked for the attached tab.",
         "parameters": [
           {
             "type": "integer",
