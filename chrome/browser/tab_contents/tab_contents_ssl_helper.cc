@@ -45,6 +45,12 @@ bool CertMatchesFilter(const net::X509Certificate& cert,
                        const base::DictionaryValue& filter) {
   // TODO(markusheintz): This is the minimal required filter implementation.
   // Implement a better matcher.
+
+  // An empty filter matches any client certificate since no requirements are
+  // specified at all.
+  if (filter.empty())
+    return true;
+
   std::string common_name;
   if (filter.GetString("ISSUER.CN", &common_name) &&
       (cert.issuer().common_name == common_name)) {
