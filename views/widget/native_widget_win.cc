@@ -327,6 +327,10 @@ bool NativeWidgetWin::screen_reader_active_ = false;
 // associated Window's lock and unlock functions as it is created and destroyed.
 // See documentation in those methods for the technique used.
 //
+// The lock only has an effect if the window was visible upon lock creation, as
+// it doesn't guard against direct visiblility changes, and multiple locks may
+// exist simultaneously to handle certain nested Windows messages.
+//
 // IMPORTANT: Do not use this scoping object for large scopes or periods of
 //            time! IT WILL PREVENT THE WINDOW FROM BEING REDRAWN! (duh).
 //
@@ -334,17 +338,23 @@ bool NativeWidgetWin::screen_reader_active_ = false;
 // list of other messages that this applies to ;-)
 class NativeWidgetWin::ScopedRedrawLock {
  public:
-  explicit ScopedRedrawLock(NativeWidgetWin* widget) : widget_(widget) {
-    widget_->LockUpdates();
+  explicit ScopedRedrawLock(NativeWidgetWin* widget)
+    : widget_(widget),
+      was_visible_(widget_->IsVisible()) {
+    if (was_visible_)
+      widget_->LockUpdates();
   }
 
   ~ScopedRedrawLock() {
-    widget_->UnlockUpdates();
+    if (was_visible_)
+      widget_->UnlockUpdates();
   }
 
  private:
   // The widget having its style changed.
   NativeWidgetWin* widget_;
+  // Records the widget visibility at the time of creation.
+  bool was_visible_;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -365,16 +375,21 @@ NativeWidgetWin::NativeWidgetWin(internal::NativeWidgetDelegate* delegate)
       previous_cursor_(NULL),
       fullscreen_(false),
       force_hidden_count_(0),
-      lock_updates_(false),
+      lock_updates_count_(0),
       saved_window_style_(0),
       ignore_window_pos_changes_(false),
       ignore_pos_changes_factory_(this),
       last_monitor_(NULL),
       is_right_mouse_pressed_on_caption_(false),
-      restored_enabled_(false) {
+      restored_enabled_(false),
+      destroyed_(NULL) {
 }
 
 NativeWidgetWin::~NativeWidgetWin() {
+  // TODO(msw): Remove debugging code for crbug.com/95727
+  if (destroyed_ != NULL)
+    *destroyed_ = true;
+
   if (ownership_ == Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET)
     delete delegate_;
   else
@@ -1539,17 +1554,22 @@ LRESULT NativeWidgetWin::OnMouseRange(UINT message,
 
   bool handled = delegate_->OnMouseEvent(event);
 
-  if (!handled && message == WM_NCLBUTTONDOWN) {
+  // TODO(msw): Remove debugging code for crbug.com/95727
+  bool destroyed = false;
+  destroyed_ = &destroyed;
+  if (!handled && message == WM_NCLBUTTONDOWN && w_param != HTSYSMENU &&
+      !GetWidget()->ShouldUseNativeFrame()) {
     // TODO(msw): Eliminate undesired painting, or re-evaluate this workaround.
     // DefWindowProc for WM_NCLBUTTONDOWN does weird non-client painting, so we
     // need to call it directly here inside a ScopedRedrawLock. This may cause
     // other negative side-effects (ex/ stifling non-client mouse releases).
     ScopedRedrawLock lock(this);
     DefWindowProc(GetNativeView(), message, w_param, l_param);
-    // Update the saved window style, which may change (maximized to restored).
-    saved_window_style_ = GetWindowLong(GWL_STYLE);
     handled = true;
+    CHECK(!destroyed);
   }
+  CHECK(!destroyed);
+  destroyed_ = NULL;
 
   SetMsgHandled(handled);
   return 0;
@@ -1933,11 +1953,10 @@ void NativeWidgetWin::OnSysCommand(UINT notification_code, CPoint click) {
       GetWidget()->non_client_view()->ResetWindowControls();
     } else if ((notification_code & sc_mask) == SC_MOVE ||
                (notification_code & sc_mask) == SC_SIZE) {
-      if (lock_updates_) {
-        // We were locked, before entering a resize or move modal loop. Now that
-        // we've begun to move the window, we need to unlock updates so that the
-        // sizing/moving feedback can be continuous.
-        UnlockUpdates();
+      if (!IsVisible()) {
+        // Circumvent ScopedRedrawLocks and force visibility before entering a
+        // resize or move modal loop to get continuous sizing/moving feedback.
+        SetWindowLong(GWL_STYLE, GetWindowLong(GWL_STYLE) | WS_VISIBLE);
       }
     }
   }
@@ -2292,24 +2311,28 @@ void NativeWidgetWin::RedrawLayeredWindowContents() {
 }
 
 void NativeWidgetWin::LockUpdates() {
-  lock_updates_ = true;
-
   // We skip locked updates when Aero is on for two reasons:
   // 1. Because it isn't necessary
   // 2. Because toggling the WS_VISIBLE flag may occur while the GPU process is
   //    attempting to present a child window's backbuffer onscreen. When these
   //    two actions race with one another, the child window will either flicker
   //    or will simply stop updating entirely.
-  if (!IsAeroGlassEnabled()) {
-    saved_window_style_ = GetWindowLong(GWL_STYLE);
-    SetWindowLong(GWL_STYLE, saved_window_style_ & ~WS_VISIBLE);
+  if (!IsAeroGlassEnabled() && ++lock_updates_count_ == 1) {
+    SetWindowLong(GWL_STYLE, GetWindowLong(GWL_STYLE) & ~WS_VISIBLE);
   }
+  // TODO(msw): Remove nested LockUpdates VLOG info for crbug.com/93530.
+  VLOG_IF(1, (lock_updates_count_ > 1)) << "Nested LockUpdates call: "
+      << lock_updates_count_ << " locks for widget " << this;
 }
 
 void NativeWidgetWin::UnlockUpdates() {
-  if (!IsAeroGlassEnabled())
-    SetWindowLong(GWL_STYLE, saved_window_style_);
-  lock_updates_ = false;
+  // TODO(msw): Remove nested LockUpdates VLOG info for crbug.com/93530.
+  VLOG_IF(1, (lock_updates_count_ > 1)) << "Nested UnlockUpdates call: "
+      << lock_updates_count_ << " locks for widget " << this;
+  if (!IsAeroGlassEnabled() && --lock_updates_count_ <= 0) {
+    SetWindowLong(GWL_STYLE, GetWindowLong(GWL_STYLE) | WS_VISIBLE);
+    lock_updates_count_ = 0;
+  }
 }
 
 bool NativeWidgetWin::WidgetSizeIsClientSize() const {
