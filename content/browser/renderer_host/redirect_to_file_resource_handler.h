@@ -12,6 +12,7 @@
 #include "base/platform_file.h"
 #include "content/browser/renderer_host/resource_handler.h"
 #include "net/base/completion_callback.h"
+#include "net/url_request/url_request_status.h"
 
 class RefCountedPlatformFile;
 class ResourceDispatcherHost;
@@ -85,6 +86,10 @@ class RedirectToFileResourceHandler : public ResourceHandler {
 
   // True if OnRequestClosed() has already been called.
   bool request_was_closed_;
+
+  bool completed_during_write_;
+  net::URLRequestStatus completed_status_;
+  std::string completed_security_info_;
 
   DISALLOW_COPY_AND_ASSIGN(RedirectToFileResourceHandler);
 };

@@ -37,7 +37,8 @@ RedirectToFileResourceHandler::RedirectToFileResourceHandler(
       write_callback_(ALLOW_THIS_IN_INITIALIZER_LIST(this),
                       &RedirectToFileResourceHandler::DidWriteToFile),
       write_callback_pending_(false),
-      request_was_closed_(false) {
+      request_was_closed_(false),
+      completed_during_write_(false) {
 }
 
 bool RedirectToFileResourceHandler::OnUploadProgress(int request_id,
@@ -127,9 +128,6 @@ bool RedirectToFileResourceHandler::OnReadCompleted(int request_id,
   if (BufIsFull())
     host_->PauseRequest(process_id_, request_id, true);
 
-  if (*bytes_read > 0)
-    next_handler_->OnDataDownloaded(request_id, *bytes_read);
-
   return WriteMore();
 }
 
@@ -137,6 +135,12 @@ bool RedirectToFileResourceHandler::OnResponseCompleted(
     int request_id,
     const net::URLRequestStatus& status,
     const std::string& security_info) {
+  if (write_callback_pending_) {
+    completed_during_write_ = true;
+    completed_status_ = status;
+    completed_security_info_ = security_info;
+    return false;
+  }
   return next_handler_->OnResponseCompleted(request_id, status, security_info);
 }
 
@@ -185,14 +189,20 @@ void RedirectToFileResourceHandler::DidWriteToFile(int result) {
 
   bool failed = false;
   if (result > 0) {
+    next_handler_->OnDataDownloaded(request_id_, result);
     write_cursor_ += result;
     failed = !WriteMore();
   } else {
     failed = true;
   }
 
-  if (failed)
+  if (failed) {
     host_->CancelRequest(process_id_, request_id_, false);
+  } else if (completed_during_write_) {
+    next_handler_->OnResponseCompleted(request_id_, completed_status_,
+                                       completed_security_info_);
+    host_->RemovePendingRequest(process_id_, request_id_);
+  }
 }
 
 bool RedirectToFileResourceHandler::WriteMore() {
@@ -219,8 +229,9 @@ bool RedirectToFileResourceHandler::WriteMore() {
       write_callback_pending_ = true;
       return true;
     }
-    if (rv < 0)
+    if (rv <= 0)
       return false;
+    next_handler_->OnDataDownloaded(request_id_, rv);
     write_cursor_ += rv;
   }
 }
