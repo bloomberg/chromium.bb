@@ -3,8 +3,12 @@
 # found in the LICENSE file.
 
 {
-      # TODO(dpranke): Fix indentation.
+  'targets': [
+    {
+      'target_name': 'content_renderer',
+      'type': 'static_library',
       'dependencies': [
+        'content_common',
         '../jingle/jingle.gyp:jingle_glue',
         '../net/net.gyp:net',
         '../ppapi/ppapi_internal.gyp:ppapi_proxy',
@@ -247,4 +251,6 @@
           ],
         }],
       ],
+    },
+  ],
 }

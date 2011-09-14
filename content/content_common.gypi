@@ -3,7 +3,10 @@
 # found in the LICENSE file.
 
 {
-      # TODO(dpranke): Fix indentation.
+  'targets': [
+    {
+      'target_name': 'content_common',
+      'type': 'static_library',
       'dependencies': [
         '../base/base.gyp:base',
         '../gpu/gpu.gyp:gpu_ipc',
@@ -321,4 +324,29 @@
           },
         }],
       ],
+    },
+  ],
+
+  'conditions': [
+    ['target_arch=="arm"', {
+      'targets': [
+        {
+          'target_name': 'omx_video_decode_accelerator_unittest',
+          'type': 'executable',
+          'dependencies': [
+            'content_common',
+            '../testing/gtest.gyp:gtest',
+          ],
+          'include_dirs': [
+            '<(DEPTH)/third_party/angle/include',
+            '<(DEPTH)/third_party/openmax/il',
+          ],
+          'sources': [
+            'common/gpu/media/omx_video_decode_accelerator_unittest.cc',
+          ],
+        }
+      ],
+    },
+   ],
+  ],
 }

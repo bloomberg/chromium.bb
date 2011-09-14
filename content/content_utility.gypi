@@ -3,8 +3,12 @@
 # found in the LICENSE file.
 
 {
-      # TODO(dpranke): Fix indentation.
+  'targets': [
+    {
+      'target_name': 'content_utility',
+      'type': 'static_library',
       'dependencies': [
+        'content_common',
         '../base/base.gyp:base',
       ],
       'sources': [
@@ -25,4 +29,6 @@
           },
         }],
       ],
+    },
+  ],
 }
