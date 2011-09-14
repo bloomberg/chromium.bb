@@ -22,10 +22,6 @@ namespace npapi {
 
 namespace {
 
-const short kSTRTypeDefinitionResourceID = 128;
-const short kSTRTypeDescriptionResourceID = 127;
-const short kSTRPluginDescriptionResourceID = 126;
-
 NSDictionary* GetMIMETypes(CFBundleRef bundle) {
   NSString* mime_filename =
       (NSString*)CFBundleGetValueForInfoDictionaryKey(bundle,
@@ -134,133 +130,21 @@ bool ReadPlistPluginInfo(const FilePath& filename, CFBundleRef bundle,
   return true;
 }
 
-class ScopedBundleResourceFile {
- public:
-  ScopedBundleResourceFile(CFBundleRef bundle) : bundle_(bundle) {
-    old_ref_num_ = CurResFile();
-    bundle_ref_num_ = CFBundleOpenBundleResourceMap(bundle);
-    UseResFile(bundle_ref_num_);
-  }
-  ~ScopedBundleResourceFile() {
-    UseResFile(old_ref_num_);
-    CFBundleCloseBundleResourceMap(bundle_, bundle_ref_num_);
-  }
-
- private:
-  CFBundleRef bundle_;
-  CFBundleRefNum bundle_ref_num_;
-  ResFileRefNum old_ref_num_;
-};
-
-bool GetSTRResource(CFBundleRef bundle, short res_id,
-                    std::vector<std::string>* contents) {
-  Handle res_handle = Get1Resource('STR#', res_id);
-  if (!res_handle || !*res_handle)
-    return false;
-
-  char* pointer = *res_handle;
-  short num_strings = *(short*)pointer;
-  pointer += sizeof(short);
-  for (short i = 0; i < num_strings; ++i) {
-    // Despite being 8-bits wide, these are legacy encoded. Make a round trip.
-    ScopedCFTypeRef<CFStringRef> str(CFStringCreateWithPascalStringNoCopy(
-        kCFAllocatorDefault,
-        (unsigned char*)pointer,
-        GetApplicationTextEncoding(),  // is this right?
-        kCFAllocatorNull));            // perhaps CFStringGetSystemEncoding?
-    if (!str.get())
-      return false;
-    contents->push_back(base::SysCFStringRefToUTF8(str.get()));
-    pointer += 1+*reinterpret_cast<unsigned char*>(pointer);
-  }
-
-  return true;
-}
-
-bool ReadSTRPluginInfo(const FilePath& filename, CFBundleRef bundle,
-                       WebPluginInfo* info) {
-  ScopedBundleResourceFile res_file(bundle);
-
-  std::vector<std::string> type_strings;
-  if (!GetSTRResource(bundle, kSTRTypeDefinitionResourceID, &type_strings))
-    return false;
-
-  std::vector<std::string> type_descs;
-  bool have_type_descs = GetSTRResource(bundle,
-                                        kSTRTypeDescriptionResourceID,
-                                        &type_descs);
-
-  std::vector<std::string> plugin_descs;
-  bool have_plugin_descs = GetSTRResource(bundle,
-                                          kSTRPluginDescriptionResourceID,
-                                          &plugin_descs);
-
-  size_t num_types = type_strings.size()/2;
-
-  for (size_t i = 0; i < num_types; ++i) {
-    WebPluginMimeType mime;
-    mime.mime_type = StringToLowerASCII(type_strings[2*i]);
-    if (have_type_descs && i < type_descs.size())
-      mime.description = UTF8ToUTF16(type_descs[i]);
-    base::SplitString(
-        StringToLowerASCII(type_strings[2*i+1]), ',', &mime.file_extensions);
-
-    info->mime_types.push_back(mime);
-  }
-
-  NSString* plugin_vers =
-      (NSString*)CFBundleGetValueForInfoDictionaryKey(bundle,
-      CFSTR("CFBundleShortVersionString"));
-
-  if (have_plugin_descs && plugin_descs.size() > 1)
-    info->name = UTF8ToUTF16(plugin_descs[1]);
-  else
-    info->name = UTF8ToUTF16(filename.BaseName().value());
-  info->path = filename;
-  if (plugin_vers)
-    info->version = base::SysNSStringToUTF16(plugin_vers);
-  if (have_plugin_descs && !plugin_descs.empty())
-    info->desc = UTF8ToUTF16(plugin_descs[0]);
-  else
-    info->desc = UTF8ToUTF16(filename.BaseName().value());
-  info->enabled = WebPluginInfo::USER_ENABLED;
-
-  return true;
-}
-
 }  // anonymous namespace
 
 bool PluginLib::ReadWebPluginInfo(const FilePath &filename,
                                   WebPluginInfo* info) {
-  // There are two ways to get information about plugin capabilities. One is an
-  // Info.plist set of keys, documented at
+  // There are three ways to get information about plugin capabilities:
+  // 1) a set of Info.plist keys, documented at
   // http://developer.apple.com/documentation/InternetWeb/Conceptual/WebKit_PluginProgTopic/Concepts/AboutPlugins.html .
-  // The other is a set of STR# resources, documented at
+  // 2) a set of STR# resources, documented at
   // https://developer.mozilla.org/En/Gecko_Plugin_API_Reference/Plug-in_Development_Overview .
+  // 3) a NP_GetMIMEDescription() entry point, documented at
+  // https://developer.mozilla.org/en/NP_GetMIMEDescription
   //
-  // Historically, the data was maintained in the STR# resources. Apple, with
-  // the introduction of WebKit, noted the weaknesses of resources and moved the
-  // information into the Info.plist. Mozilla had always supported a
-  // NP_GetMIMEDescription() entry point for Unix plugins and also supports it
-  // on the Mac to supplement the STR# format. WebKit does not support
-  // NP_GetMIMEDescription() and neither do we. (That entry point is documented
-  // at https://developer.mozilla.org/en/NP_GetMIMEDescription .) We prefer the
-  // Info.plist format because it's more extensible and has a defined encoding,
-  // but will fall back to the STR# format of the data if it is not present in
-  // the Info.plist.
-  //
-  // The parsing of the data lives in the two functions ReadSTRPluginInfo() and
-  // ReadPlistPluginInfo(), but a summary of the formats follows.
-  //
-  // Each data type handled by a plugin has several properties:
-  // - <<type0mimetype>>
-  // - <<type0fileextension0>>..<<type0fileextensionk>>
-  // - <<type0description>>
-  //
-  // Each plugin may have any number of types defined. In addition, the plugin
-  // itself has properties:
-  // - <<plugindescription>>
-  // - <<pluginname>>
+  // Mozilla supported (3), but WebKit never has, so no plugins rely on it. Most
+  // browsers supported (2) and then added support for (1); Chromium originally
+  // supported (2) and (1), but now supports only (1) as (2) is deprecated.
   //
   // For the Info.plist version, the data is formatted as follows (in text plist
   // format):
@@ -289,27 +173,6 @@ bool PluginLib::ReadWebPluginInfo(const FilePath &filename,
   // the WebPluginMIMETypes key. If the key is present but the file doesn't
   // exist, we must load the plugin and call a specific function to have the
   // plugin create the file.
-  //
-  // If we do not find those keys in the Info.plist, we fall back to the STR#
-  // resources. In them, the data is formatted as follows:
-  // STR# 128
-  // (1) <<type0mimetype>>
-  // (2) <<type0fileextension0>>,...,<<type0fileextensionk>>
-  // (3) <<type1mimetype>>
-  // (4) <<type1fileextension0>>,...,<<type1fileextensionk>>
-  // (...)
-  // (2n+1) <<typenmimetype>>
-  // (2n+2) <<typenfileextension0>>,...,<<typenfileextensionk>>
-  // STR# 127
-  // (1) <<type0description>>
-  // (2) <<type1description>>
-  // (...)
-  // (n+1) <<typendescription>>
-  // STR# 126
-  // (1) <<plugindescription>>
-  // (2) <<pluginname>>
-  //
-  // Strictly speaking, only STR# 128 is required.
 
   ScopedCFTypeRef<CFURLRef> bundle_url(CFURLCreateFromFileSystemRepresentation(
       kCFAllocatorDefault, (const UInt8*)filename.value().c_str(),
@@ -336,9 +199,6 @@ bool PluginLib::ReadWebPluginInfo(const FilePath &filename,
   // get the info
 
   if (ReadPlistPluginInfo(filename, bundle.get(), info))
-    return true;
-
-  if (ReadSTRPluginInfo(filename, bundle.get(), info))
     return true;
 
   // ... or not
