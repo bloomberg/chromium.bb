@@ -146,8 +146,11 @@ class ProcessSingleton : public base::NonThreadSafe {
     return msg_wnd->WndProc(hwnd, message, wparam, lparam);
   }
 
+  bool EscapeVirtualization(const FilePath& user_data_dir);
+
   HWND remote_window_;  // The HWND_MESSAGE of another browser.
   HWND window_;  // The HWND_MESSAGE window.
+  bool is_virtualized_;  // Stuck inside Microsoft Softricity VM environment.
 #elif defined(USE_X11)
   // Path in file system to the socket.
   FilePath socket_path_;

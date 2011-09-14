@@ -21,6 +21,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/installer/util/wmi.h"
 #include "content/common/result_codes.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -40,13 +41,45 @@ BOOL CALLBACK BrowserWindowEnumeration(HWND window, LPARAM param) {
 
 }  // namespace
 
+// Microsoft's Softricity virtualization breaks the sandbox processes.
+// So, if we detect the Softricity DLL we use WMI Win32_Process.Create to
+// break out of the virtualization environment.
+// http://code.google.com/p/chromium/issues/detail?id=43650
+bool ProcessSingleton::EscapeVirtualization(const FilePath& user_data_dir) {
+  if (::GetModuleHandle(L"sftldr_wow64.dll") ||
+      ::GetModuleHandle(L"sftldr.dll")) {
+    int process_id;
+    if (!installer::WMIProcess::Launch(GetCommandLineW(), &process_id))
+      return false;
+    is_virtualized_ = true;
+    // The new window was spawned from WMI, and won't be in the foreground.
+    // So, first we sleep while the new chrome.exe instance starts (because
+    // WaitForInputIdle doesn't work here). Then we poll for up to two more
+    // seconds and make the window foreground if we find it (or we give up).
+    HWND hwnd = 0;
+    ::Sleep(90);
+    for (int tries = 200; tries; --tries) {
+      hwnd = FindWindowEx(HWND_MESSAGE, NULL, chrome::kMessageWindowClass,
+                          user_data_dir.value().c_str());
+      if (hwnd) {
+        ::SetForegroundWindow(hwnd);
+        break;
+      }
+      ::Sleep(10);
+    }
+    return true;
+  }
+  return false;
+}
+
 // Look for a Chrome instance that uses the same profile directory.
 ProcessSingleton::ProcessSingleton(const FilePath& user_data_dir)
-    : window_(NULL), locked_(false), foreground_window_(NULL) {
+    : window_(NULL), locked_(false), foreground_window_(NULL),
+    is_virtualized_(false) {
   remote_window_ = FindWindowEx(HWND_MESSAGE, NULL,
                                 chrome::kMessageWindowClass,
                                 user_data_dir.value().c_str());
-  if (!remote_window_) {
+  if (!remote_window_ && !EscapeVirtualization(user_data_dir)) {
     // Make sure we will be the one and only process creating the window.
     // We use a named Mutex since we are protecting against multi-process
     // access. As documented, it's clearer to NOT request ownership on creation
@@ -84,7 +117,9 @@ ProcessSingleton::~ProcessSingleton() {
 }
 
 ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcess() {
-  if (!remote_window_)
+  if (is_virtualized_)
+    return PROCESS_NOTIFIED;  // We already spawned the process in this case.
+  else if (!remote_window_)
     return PROCESS_NONE;
 
   // Found another window, send our command line to it
