@@ -920,3 +920,4 @@ void LinearScaleYUVToRGB32Row(const uint8* y_buf,
 
 #endif  // USE_MMX
 }  // extern "C"
+
