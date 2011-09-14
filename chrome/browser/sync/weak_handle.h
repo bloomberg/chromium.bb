@@ -57,8 +57,6 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop.h"
-#include "base/tracked.h"
 
 namespace base {
 class MessageLoopProxy;
@@ -98,18 +96,9 @@ struct ParamTraits<T[]> {
   typedef const T* ForwardType;
 };
 
-class WeakHandleCoreBase;
-
-struct WeakHandleCoreBaseTraits {
-  static void Destruct(const WeakHandleCoreBase* core_base);
-};
-
 // Base class for WeakHandleCore<T> to avoid template bloat.  Handles
 // the interaction with the owner thread and its message loop.
-class WeakHandleCoreBase
-    : public MessageLoop::DestructionObserver,
-      public base::RefCountedThreadSafe<WeakHandleCoreBase,
-                                        WeakHandleCoreBaseTraits> {
+class WeakHandleCoreBase {
  public:
   // Assumes the current thread is the owner thread.
   WeakHandleCoreBase();
@@ -117,64 +106,35 @@ class WeakHandleCoreBase
   // May be called on any thread.
   bool IsOnOwnerThread() const;
 
-  // MessageLoop::DestructionObserver implementation.  Must be called
-  // on the owner thread.
-  virtual void WillDestroyCurrentMessageLoop() OVERRIDE;
-
  protected:
-  // May be deleted on any thread, but only via DestroyAndDelete()
-  // which is called by our traits class.
-  virtual ~WeakHandleCoreBase();
-
-  // This is called exactly once on the owner thread right before this
-  // object is destroyed or when the owner thread is destroyed,
-  // whichever comes first.  Overridden by WeakHandle<T> (which also
-  // calls WeakHandleCoreBase::CleanupOnOwnerThread()).
-  virtual void CleanupOnOwnerThread();
+  // May be destroyed on any thread.
+  ~WeakHandleCoreBase();
 
   // May be called on any thread.
   void PostToOwnerThread(const tracked_objects::Location& from_here,
                          const base::Closure& fn) const;
 
  private:
-  friend struct WeakHandleCoreBaseTraits;
-
-  // May be called on any thread, but only via
-  // WeakHandleCoreBaseTraits::Destruct().  Destroys and deletes this
-  // object.
-  void Destroy();
-
-  // Calls CleanupOnOwnerThread() and deletes |this|.  Must be called
-  // on the owner thread via Destroy().
-  void CleanupAndDestroyOnOwnerThread();
-
-  // May be read on any thread, but should only be dereferenced on the
-  // owner thread.
-  MessageLoop* const owner_loop_;
-
   // May be used on any thread.
   const scoped_refptr<base::MessageLoopProxy> owner_loop_proxy_;
-
-  // Should only be read on the owner thread or in the destructor.
-  // Used only for CHECKs.
-  bool destroyed_on_owner_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(WeakHandleCoreBase);
 };
 
 // WeakHandleCore<T> contains all the logic for WeakHandle<T>.
 template <typename T>
-class WeakHandleCore : public WeakHandleCoreBase {
+class WeakHandleCore
+    : public WeakHandleCoreBase,
+      public base::RefCountedThreadSafe<WeakHandleCore<T> > {
  public:
   // Must be called on |ptr|'s owner thread, which is assumed to be
   // the current thread.
-  explicit WeakHandleCore(const base::WeakPtr<T>& ptr)
-      : ptr_(new base::WeakPtr<T>(ptr)) {}
+  explicit WeakHandleCore(const base::WeakPtr<T>& ptr) : ptr_(ptr) {}
 
   // Must be called on |ptr_|'s owner thread.
   base::WeakPtr<T> Get() const {
     CHECK(IsOnOwnerThread());
-    return ptr_ ? *ptr_ : base::WeakPtr<T>();
+    return ptr_;
   }
 
   // Call(...) may be called on any thread, but all its arguments
@@ -234,23 +194,11 @@ class WeakHandleCore : public WeakHandleCoreBase {
              this, fn, a1, a2, a3, a4));
   }
 
- protected:
-  // Must be called on |ptr_|'s owner thread exactly once.
-  virtual void CleanupOnOwnerThread() OVERRIDE {
-    CHECK(IsOnOwnerThread());
-    CHECK(ptr_);
-    delete ptr_;
-    ptr_ = NULL;
-    WeakHandleCoreBase::CleanupOnOwnerThread();
-  }
-
  private:
-  // May be called on any thread.
-  ~WeakHandleCore() {
-    // It is safe to read |ptr_| here even if we're not on the owner
-    // thread (see comments on base::AtomicRefCountDecN()).
-    CHECK(!ptr_);
-  }
+  friend class base::RefCountedThreadSafe<WeakHandleCore<T> >;
+
+  // May be destroyed on any thread.
+  ~WeakHandleCore() {}
 
   // GCC 4.2.1 on OS X gets confused if all the DoCall functions are
   // named the same, so we distinguish them.
@@ -310,9 +258,9 @@ class WeakHandleCore : public WeakHandleCoreBase {
     (Get()->*fn)(a1, a2, a3, a4);
   }
 
-  // Must be dereferenced and destroyed only on the owner thread.
-  // Must be read only on the owner thread or the destructor.
-  base::WeakPtr<T>* ptr_;
+  // Must be dereferenced only on the owner thread.  May be destroyed
+  // from any thread.
+  base::WeakPtr<T> ptr_;
 
   DISALLOW_COPY_AND_ASSIGN(WeakHandleCore);
 };
