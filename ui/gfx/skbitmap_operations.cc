@@ -631,42 +631,44 @@ SkBitmap SkBitmapOperations::DownsampleByTwo(const SkBitmap& bitmap) {
   result.allocPixels();
 
   SkAutoLockPixels lock(bitmap);
+
+  const int resultLastX = result.width() - 1;
+  const int srcLastX = bitmap.width() - 1;
+
   for (int dest_y = 0; dest_y < result.height(); ++dest_y) {
-    for (int dest_x = 0; dest_x < result.width(); ++dest_x) {
+    const int src_y = dest_y << 1;
+    const SkPMColor* SK_RESTRICT cur_src0 = bitmap.getAddr32(0, src_y);
+    const SkPMColor* SK_RESTRICT cur_src1 = cur_src0;
+    if (src_y + 1 < bitmap.height())
+      cur_src1 = bitmap.getAddr32(0, src_y + 1);
+
+    SkPMColor* SK_RESTRICT cur_dst = result.getAddr32(0, dest_y);
+
+    for (int dest_x = 0; dest_x <= resultLastX; ++dest_x) {
       // This code is based on downsampleby2_proc32 in SkBitmap.cpp. It is very
       // clever in that it does two channels at once: alpha and green ("ag")
       // and red and blue ("rb"). Each channel gets averaged across 4 pixels
       // to get the result.
-      int src_x = dest_x << 1;
-      int src_y = dest_y << 1;
-      const SkPMColor* cur_src = bitmap.getAddr32(src_x, src_y);
+      int bump_x = (dest_x << 1) < srcLastX;
       SkPMColor tmp, ag, rb;
 
       // Top left pixel of the 2x2 block.
-      tmp = *cur_src;
+      tmp = cur_src0[0];
       ag = (tmp >> 8) & 0xFF00FF;
       rb = tmp & 0xFF00FF;
-      if (src_x < (bitmap.width() - 1))
-        ++cur_src;
 
       // Top right pixel of the 2x2 block.
-      tmp = *cur_src;
+      tmp = cur_src0[bump_x];
       ag += (tmp >> 8) & 0xFF00FF;
       rb += tmp & 0xFF00FF;
-      if (src_y < (bitmap.height() - 1))
-        cur_src = bitmap.getAddr32(src_x, src_y + 1);
-      else
-        cur_src = bitmap.getAddr32(src_x, src_y);  // Move back to the first.
 
       // Bottom left pixel of the 2x2 block.
-      tmp = *cur_src;
+      tmp = cur_src1[0];
       ag += (tmp >> 8) & 0xFF00FF;
       rb += tmp & 0xFF00FF;
-      if (src_x < (bitmap.width() - 1))
-        ++cur_src;
 
       // Bottom right pixel of the 2x2 block.
-      tmp = *cur_src;
+      tmp = cur_src1[bump_x];
       ag += (tmp >> 8) & 0xFF00FF;
       rb += tmp & 0xFF00FF;
 
@@ -674,8 +676,10 @@ SkBitmap SkBitmapOperations::DownsampleByTwo(const SkBitmap& bitmap) {
       // |ag| has the alpha and green channels shifted right by 8 bits from
       // there they should end up, so shifting left by 6 gives them in the
       // correct position divided by 4.
-      *result.getAddr32(dest_x, dest_y) =
-          ((rb >> 2) & 0xFF00FF) | ((ag << 6) & 0xFF00FF00);
+      *cur_dst++ = ((rb >> 2) & 0xFF00FF) | ((ag << 6) & 0xFF00FF00);
+
+      cur_src0 += 2;
+      cur_src1 += 2;
     }
   }
 
