@@ -251,23 +251,21 @@ void ChromotingInstance::DidChangeView(const pp::Rect& position,
                                        const pp::Rect& clip) {
   DCHECK(plugin_message_loop_->BelongsToCurrentThread());
 
-  bool size_changed =
-      view_->SetPluginSize(gfx::Size(position.width(), position.height()));
+  view_->SetPluginSize(gfx::Size(position.width(), position.height()));
 
-  // If scale to fit there is no clipping so just update the scale ratio.
+  // TODO(wez): Pass the dimensions of the plugin to the RectangleDecoder
+  //            and let it generate the necessary refresh events.
+  // If scale-to-fit is enabled then update the scaling ratios.
+  // We also force a full-frame refresh, in case the ratios changed.
   if (scale_to_fit_) {
     rectangle_decoder_->SetScaleRatios(view_->GetHorizontalScaleRatio(),
                                        view_->GetVerticalScaleRatio());
+    rectangle_decoder_->RefreshFullFrame();
   }
 
-  if (size_changed) {
-    // If plugin size has changed there may be regions uncovered so simply
-    // request a full refresh.
-    rectangle_decoder_->RefreshFullFrame();
-  } else if (!scale_to_fit_) {
-    rectangle_decoder_->UpdateClipRect(
-        gfx::Rect(clip.x(), clip.y(), clip.width(), clip.height()));
-  }
+  // Notify the RectangleDecoder of the new clip rect.
+  rectangle_decoder_->UpdateClipRect(
+      gfx::Rect(clip.x(), clip.y(), clip.width(), clip.height()));
 }
 
 bool ChromotingInstance::HandleInputEvent(const pp::InputEvent& event) {
@@ -374,6 +372,9 @@ void ChromotingInstance::SetScaleToFit(bool scale_to_fit) {
   } else {
     rectangle_decoder_->SetScaleRatios(1.0, 1.0);
   }
+
+  // TODO(wez): The RectangleDecoder should generate refresh events
+  //            as necessary in response to any scaling change.
   rectangle_decoder_->RefreshFullFrame();
 }
 
