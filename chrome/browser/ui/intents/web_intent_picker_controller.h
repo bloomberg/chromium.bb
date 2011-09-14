@@ -8,11 +8,13 @@
 
 #include <vector>
 
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
 #include "chrome/browser/ui/intents/web_intent_picker_delegate.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
+#include "ui/gfx/native_widget_types.h"
 
 class FaviconService;
 class GURL;
@@ -33,9 +35,11 @@ class WebIntentPickerController : public NotificationObserver,
                             WebIntentPickerFactory* factory);
   virtual ~WebIntentPickerController();
 
-  // Shows the web intent picker, given the intent |action| and mime-type
-  // |type|.
-  void ShowDialog(const string16& action, const string16& type);
+  // Shows the web intent picker for the window |parent|, given the intent
+  // |action| and MIME-type |type|.
+  void ShowDialog(gfx::NativeWindow parent,
+                  const string16& action,
+                  const string16& type);
 
  protected:
   // NotificationObserver implementation.

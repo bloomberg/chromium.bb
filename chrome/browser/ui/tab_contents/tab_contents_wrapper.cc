@@ -44,7 +44,7 @@
 #include "chrome/browser/ui/blocked_content/blocked_content_tab_helper.h"
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
-#include "chrome/browser/ui/intents/web_intent_constrained_dialog_factory.h"
+#include "chrome/browser/ui/intents/web_intent_picker_factory_impl.h"
 #include "chrome/browser/ui/intents/web_intent_picker_controller.h"
 #include "chrome/browser/ui/search_engines/search_engine_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper_delegate.h"
@@ -274,7 +274,7 @@ TabContentsWrapper::TabContentsWrapper(TabContents* contents)
   content_settings_.reset(new TabSpecificContentSettings(contents));
   translate_tab_helper_.reset(new TranslateTabHelper(contents));
   web_intent_picker_controller_.reset(new WebIntentPickerController(
-      this, new WebIntentConstrainedDialogFactory()));
+      this, new WebIntentPickerFactoryImpl()));
 
   // Create the per-tab observers.
   download_request_limiter_observer_.reset(

@@ -117,12 +117,13 @@ WebIntentPickerController::WebIntentPickerController(
 WebIntentPickerController::~WebIntentPickerController() {
 }
 
-void WebIntentPickerController::ShowDialog(const string16& action,
+void WebIntentPickerController::ShowDialog(gfx::NativeWindow parent,
+                                           const string16& action,
                                            const string16& type) {
   if (picker_ != NULL)
     return;
 
-  picker_ = picker_factory_->Create(wrapper_, this);
+  picker_ = picker_factory_->Create(parent, wrapper_, this);
 
   // TODO(binji) Remove this check when there are implementations of the picker
   // for windows and mac.

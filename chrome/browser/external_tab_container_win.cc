@@ -773,8 +773,8 @@ void ExternalTabContainer::WebIntentDispatch(TabContents* tab,
                                              const string16& type,
                                              const string16& data,
                                              int intent_id) {
-  Browser::WebIntentDispatchHelper(tab, routing_id, action, type, data,
-                                   intent_id);
+  // TODO(binji) How do we want to display the WebIntentPicker bubble if there
+  // is no BrowserWindow?
 }
 
 void ExternalTabContainer::FindReply(TabContents* tab,

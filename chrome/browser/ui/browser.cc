@@ -2512,28 +2512,6 @@ void Browser::RegisterIntentHandlerHelper(TabContents* tab,
 }
 
 // static
-void Browser::WebIntentDispatchHelper(TabContents* tab,
-                                      int routing_id,
-                                      const string16& action,
-                                      const string16& type,
-                                      const string16& data,
-                                      int intent_id) {
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableWebIntents))
-    return;
-
-  TabContentsWrapper* tcw = TabContentsWrapper::GetCurrentWrapperForContents(
-      tab);
-
-  DLOG(INFO) << "Browser tab contents received intent:"
-             << "\naction=" << UTF16ToASCII(action)
-             << "\ntype=" << UTF16ToASCII(type)
-             << "\nrenderer_id=" << routing_id
-             << "\nid=" << intent_id;
-
-  tcw->web_intent_picker_controller()->ShowDialog(action, type);
-}
-
-// static
 void Browser::FindReplyHelper(TabContents* tab,
                               int request_id,
                               int number_of_matches,
@@ -3862,8 +3840,14 @@ void Browser::WebIntentDispatch(TabContents* tab,
                                 const string16& type,
                                 const string16& data,
                                 int intent_id) {
-  WebIntentDispatchHelper(tab, routing_id, action, type, data,
-                          intent_id);
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableWebIntents))
+    return;
+
+  TabContentsWrapper* tcw =
+      TabContentsWrapper::GetCurrentWrapperForContents(tab);
+
+  tcw->web_intent_picker_controller()->ShowDialog(window()->GetNativeHandle(),
+                                                  action, type);
 }
 
 void Browser::FindReply(TabContents* tab,

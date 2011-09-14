@@ -5,9 +5,11 @@
 #include "chrome/browser/ui/intents/web_intent_picker.h"
 #include "chrome/browser/ui/intents/web_intent_picker_delegate.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "ui/gfx/native_widget_types.h"
 
 // static
-WebIntentPicker* WebIntentPicker::Create(TabContentsWrapper* wrapper,
+WebIntentPicker* WebIntentPicker::Create(gfx::NativeWindow parent,
+                                         TabContentsWrapper* wrapper,
                                          WebIntentPickerDelegate* delegate) {
   // TODO(binji) Implement. See http://crbug.com/93915.
   return NULL;

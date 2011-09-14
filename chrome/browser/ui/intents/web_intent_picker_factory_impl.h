@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_INTENTS_WEB_INTENT_CONSTRAINED_DIALOG_FACTORY_H_
-#define CHROME_BROWSER_UI_INTENTS_WEB_INTENT_CONSTRAINED_DIALOG_FACTORY_H_
+#ifndef CHROME_BROWSER_UI_INTENTS_WEB_INTENT_PICKER_FACTORY_IMPL_H_
+#define CHROME_BROWSER_UI_INTENTS_WEB_INTENT_PICKER_FACTORY_IMPL_H_
 #pragma once
 
 #include "base/basictypes.h"
@@ -13,28 +13,28 @@
 class TabContents;
 class WebIntentPickerDelegate;
 
-// A factory for creating a constrained dialog as the intent picker UI for a
-// given TabContents.
-class WebIntentConstrainedDialogFactory : public WebIntentPickerFactory {
+// A factory for creating the web intent picker UI.
+class WebIntentPickerFactoryImpl : public WebIntentPickerFactory {
  public:
-  WebIntentConstrainedDialogFactory();
-  virtual ~WebIntentConstrainedDialogFactory();
+  WebIntentPickerFactoryImpl();
+  virtual ~WebIntentPickerFactoryImpl();
 
   // WebIntentPickerFactory implementation.
   virtual WebIntentPicker* Create(
+      gfx::NativeWindow parent,
       TabContentsWrapper* wrapper,
       WebIntentPickerDelegate* delegate) OVERRIDE;
   virtual void ClosePicker(WebIntentPicker* picker) OVERRIDE;
 
  private:
-  // Closes the dialog and destroys it.
-  void CloseDialog();
+  // Close the picker and destroys it.
+  void Close();
 
   // A weak pointer to the currently active picker, or NULL if there is no
   // active picker.
   WebIntentPicker* picker_;
 
-  DISALLOW_COPY_AND_ASSIGN(WebIntentConstrainedDialogFactory);
+  DISALLOW_COPY_AND_ASSIGN(WebIntentPickerFactoryImpl);
 };
 
-#endif  // CHROME_BROWSER_UI_INTENTS_WEB_INTENT_CONSTRAINED_DIALOG_FACTORY_H_
+#endif  // CHROME_BROWSER_UI_INTENTS_WEB_INTENT_PICKER_FACTORY_IMPL_H_

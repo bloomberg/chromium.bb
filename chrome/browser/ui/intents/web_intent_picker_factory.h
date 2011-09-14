@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_UI_INTENTS_WEB_INTENT_PICKER_FACTORY_H_
 #pragma once
 
+#include "ui/gfx/native_widget_types.h"
+
 class TabContentsWrapper;
 class WebIntentPicker;
 class WebIntentPickerDelegate;
@@ -16,7 +18,8 @@ class WebIntentPickerFactory {
   virtual ~WebIntentPickerFactory() {}
 
   // Creates a new WebIntentPicker. The picker is owned by the factory.
-  virtual WebIntentPicker* Create(TabContentsWrapper* tab_contents,
+  virtual WebIntentPicker* Create(gfx::NativeWindow parent,
+                                  TabContentsWrapper* tab_contents,
                                   WebIntentPickerDelegate* delegate) = 0;
 
   // Closes and destroys the picker.

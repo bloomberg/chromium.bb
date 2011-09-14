@@ -678,14 +678,6 @@ class Browser : public TabHandlerDelegate,
                                           const string16& href,
                                           const string16& title);
 
-  // Helper function to handle WebIntent notifications.
-  static void WebIntentDispatchHelper(TabContents* tab,
-                                      int routing_id,
-                                      const string16& action,
-                                      const string16& type,
-                                      const string16& data,
-                                      int intent_id);
-
   // Helper function to handle find results.
   static void FindReplyHelper(TabContents* tab,
                               int request_id,

@@ -21,11 +21,11 @@
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/browser/browser_thread.h"
-#include "content/browser/tab_contents/constrained_window.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/test_tab_contents.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/gfx/codec/png_codec.h"
+#include "ui/gfx/native_widget_types.h"
 
 using testing::_;
 using testing::AtMost;
@@ -86,8 +86,9 @@ class WebIntentPickerMock : public WebIntentPicker {
 
 class WebIntentPickerFactoryMock : public WebIntentPickerFactory {
  public:
-  MOCK_METHOD2(Create,
-               WebIntentPicker*(TabContentsWrapper* wrapper,
+  MOCK_METHOD3(Create,
+               WebIntentPicker*(gfx::NativeWindow parent,
+                                TabContentsWrapper* wrapper,
                                 WebIntentPickerDelegate* delegate));
   MOCK_METHOD1(ClosePicker, void(WebIntentPicker* picker));
 };
@@ -165,8 +166,8 @@ class WebIntentPickerControllerTest : public TabContentsWrapperTestHarness {
 
   void SetPickerExpectations(int expected_service_count,
                              int expected_default_favicons) {
-    EXPECT_CALL(*picker_factory_, Create(_, _)).
-        WillOnce(DoAll(SaveArg<1>(&delegate_), Return(&picker_)));
+    EXPECT_CALL(*picker_factory_, Create(_, _, _)).
+        WillOnce(DoAll(SaveArg<2>(&delegate_), Return(&picker_)));
     EXPECT_CALL(picker_,
                 SetServiceURLs(VectorIsOfSize(expected_service_count))).
         Times(1);
@@ -207,7 +208,7 @@ TEST_F(WebIntentPickerControllerTest, ShowDialogWith3Services) {
   AddWebIntentService(kAction1, kServiceURL2);
   AddWebIntentService(kAction1, kServiceURL3);
 
-  controller_->ShowDialog(kAction1, kType);
+  controller_->ShowDialog(NULL, kAction1, kType);
   WaitForDialogToShow();
 }
 
@@ -216,7 +217,7 @@ TEST_F(WebIntentPickerControllerTest, ShowDialogWithNoServices) {
 
   EXPECT_CALL(picker_, SetServiceIcon(_, _)).Times(0);
 
-  controller_->ShowDialog(kAction1, kType);
+  controller_->ShowDialog(NULL, kAction1, kType);
   WaitForDialogToShow();
 }
 
@@ -234,7 +235,7 @@ TEST_F(WebIntentPickerControllerTest, DISABLED_ShowFavicon) {
   EXPECT_CALL(picker_, SetDefaultServiceIcon(1)).Times(1);
   EXPECT_CALL(picker_, SetServiceIcon(2, _)).Times(1);
 
-  controller_->ShowDialog(kAction1, kType);
+  controller_->ShowDialog(NULL, kAction1, kType);
   WaitForDialogToShow();
 }
 
@@ -250,7 +251,7 @@ TEST_F(WebIntentPickerControllerTest, ChooseService) {
       .Times(0);
   EXPECT_CALL(*picker_factory_, ClosePicker(_));
 
-  controller_->ShowDialog(kAction1, kType);
+  controller_->ShowDialog(NULL, kAction1, kType);
   WaitForDialogToShow();
   delegate_->OnServiceChosen(0);
 }
@@ -267,7 +268,7 @@ TEST_F(WebIntentPickerControllerTest, Cancel) {
                        &TestWebIntentPickerController::BaseOnCancelled));
   EXPECT_CALL(*picker_factory_, ClosePicker(_));
 
-  controller_->ShowDialog(kAction1, kType);
+  controller_->ShowDialog(NULL, kAction1, kType);
   WaitForDialogToShow();
   delegate_->OnCancelled();
 }
