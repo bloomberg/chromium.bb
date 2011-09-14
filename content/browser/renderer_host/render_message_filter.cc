@@ -118,51 +118,6 @@ class ClearCacheCompletion : public RenderMessageCompletionCallback,
   }
 };
 
-class OpenChannelToNpapiPluginCallback : public RenderMessageCompletionCallback,
-                                         public PluginProcessHost::Client {
- public:
-  OpenChannelToNpapiPluginCallback(RenderMessageFilter* filter,
-                                   const content::ResourceContext& context,
-                                   IPC::Message* reply_msg)
-      : RenderMessageCompletionCallback(filter, reply_msg),
-        context_(context) {
-  }
-
-  virtual int ID() OVERRIDE {
-    return filter()->render_process_id();
-  }
-
-  virtual const content::ResourceContext& GetResourceContext() OVERRIDE {
-    return context_;
-  }
-
-  virtual bool OffTheRecord() OVERRIDE {
-    return filter()->OffTheRecord();
-  }
-
-  virtual void SetPluginInfo(const webkit::WebPluginInfo& info) OVERRIDE {
-    info_ = info;
-  }
-
-  virtual void OnChannelOpened(const IPC::ChannelHandle& handle) OVERRIDE {
-    WriteReplyAndDeleteThis(handle);
-  }
-
-  virtual void OnError() OVERRIDE {
-    WriteReplyAndDeleteThis(IPC::ChannelHandle());
-  }
-
- private:
-  void WriteReplyAndDeleteThis(const IPC::ChannelHandle& handle) {
-    ViewHostMsg_OpenChannelToPlugin::WriteReplyParams(reply_msg(),
-                                                      handle, info_);
-    SendReplyAndDeleteThis();
-  }
-
-  const content::ResourceContext& context_;
-  webkit::WebPluginInfo info_;
-};
-
 class OpenChannelToPpapiPluginCallback : public RenderMessageCompletionCallback,
                                          public PpapiPluginProcessHost::Client {
  public:
@@ -278,6 +233,78 @@ class DoomEntriesHelper {
 
 }  // namespace
 
+class RenderMessageFilter::OpenChannelToNpapiPluginCallback
+    : public RenderMessageCompletionCallback,
+      public PluginProcessHost::Client {
+ public:
+  OpenChannelToNpapiPluginCallback(RenderMessageFilter* filter,
+                                   const content::ResourceContext& context,
+                                   IPC::Message* reply_msg)
+      : RenderMessageCompletionCallback(filter, reply_msg),
+        context_(context),
+        host_(NULL),
+        sent_plugin_channel_request_(false) {
+  }
+
+  virtual int ID() OVERRIDE {
+    return filter()->render_process_id();
+  }
+
+  virtual const content::ResourceContext& GetResourceContext() OVERRIDE {
+    return context_;
+  }
+
+  virtual bool OffTheRecord() OVERRIDE {
+    return filter()->OffTheRecord();
+  }
+
+  virtual void SetPluginInfo(const webkit::WebPluginInfo& info) OVERRIDE {
+    info_ = info;
+  }
+
+  virtual void OnFoundPluginProcessHost(PluginProcessHost* host) OVERRIDE {
+    DCHECK(host);
+    host_ = host;
+  }
+
+  virtual void OnSentPluginChannelRequest() OVERRIDE {
+    sent_plugin_channel_request_ = true;
+  }
+
+  virtual void OnChannelOpened(const IPC::ChannelHandle& handle) OVERRIDE {
+    WriteReplyAndDeleteThis(handle);
+  }
+
+  virtual void OnError() OVERRIDE {
+    WriteReplyAndDeleteThis(IPC::ChannelHandle());
+  }
+
+  PluginProcessHost* host() const {
+    return host_;
+  }
+
+  bool sent_plugin_channel_request() const {
+    return sent_plugin_channel_request_;
+  }
+
+  void Cancel() {
+    delete this;
+  }
+
+ private:
+  void WriteReplyAndDeleteThis(const IPC::ChannelHandle& handle) {
+    ViewHostMsg_OpenChannelToPlugin::WriteReplyParams(reply_msg(),
+                                                      handle, info_);
+    filter()->OnCompletedOpenChannelToNpapiPlugin(this);
+    SendReplyAndDeleteThis();
+  }
+
+  const content::ResourceContext& context_;
+  webkit::WebPluginInfo info_;
+  PluginProcessHost* host_;
+  bool sent_plugin_channel_request_;
+};
+
 RenderMessageFilter::RenderMessageFilter(
     int render_process_id,
     PluginService* plugin_service,
@@ -302,6 +329,26 @@ RenderMessageFilter::RenderMessageFilter(
 RenderMessageFilter::~RenderMessageFilter() {
   // This function should be called on the IO thread.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(plugin_host_clients_.empty());
+}
+
+void RenderMessageFilter::OnChannelClosing() {
+  BrowserMessageFilter::OnChannelClosing();
+  for (std::set<OpenChannelToNpapiPluginCallback*>::iterator it =
+       plugin_host_clients_.begin(); it != plugin_host_clients_.end(); ++it) {
+    OpenChannelToNpapiPluginCallback* client = *it;
+    if (client->host()) {
+      if (client->sent_plugin_channel_request()) {
+        client->host()->CancelSentRequest(client);
+      } else {
+        client->host()->CancelPendingRequest(client);
+      }
+    } else {
+      plugin_service_->CancelOpenChannelToNpapiPlugin(client);
+    }
+    client->Cancel();
+  }
+  plugin_host_clients_.clear();
 }
 
 void RenderMessageFilter::OverrideThreadForMessage(const IPC::Message& message,
@@ -568,12 +615,13 @@ void RenderMessageFilter::OnOpenChannelToPlugin(int routing_id,
                                                 const GURL& policy_url,
                                                 const std::string& mime_type,
                                                 IPC::Message* reply_msg) {
+  OpenChannelToNpapiPluginCallback* client =
+      new OpenChannelToNpapiPluginCallback(this, resource_context_, reply_msg);
+  DCHECK(!ContainsKey(plugin_host_clients_, client));
+  plugin_host_clients_.insert(client);
   plugin_service_->OpenChannelToNpapiPlugin(
       render_process_id_, routing_id,
-      url, policy_url, mime_type,
-      new OpenChannelToNpapiPluginCallback(this,
-                                           resource_context_,
-                                           reply_msg));
+      url, policy_url, mime_type, client);
 }
 
 void RenderMessageFilter::OnOpenChannelToPepperPlugin(
@@ -916,4 +964,11 @@ void RenderMessageFilter::SendGetRawCookiesResponse(
     cookies.push_back(webkit_glue::WebCookie(cookie_list[i]));
   ViewHostMsg_GetRawCookies::WriteReplyParams(reply_msg, cookies);
   Send(reply_msg);
+}
+
+void RenderMessageFilter::OnCompletedOpenChannelToNpapiPlugin(
+    OpenChannelToNpapiPluginCallback* client) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(ContainsKey(plugin_host_clients_, client));
+  plugin_host_clients_.erase(client);
 }

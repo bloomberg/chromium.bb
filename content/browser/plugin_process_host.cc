@@ -328,7 +328,7 @@ void PluginProcessHost::CancelRequests() {
 
   while (!sent_requests_.empty()) {
     sent_requests_.front()->OnError();
-    sent_requests_.pop();
+    sent_requests_.pop_front();
   }
 }
 
@@ -364,6 +364,30 @@ void PluginProcessHost::OpenChannelToPlugin(Client* client) {
   RequestPluginChannel(client);
 }
 
+void PluginProcessHost::CancelPendingRequest(Client* client) {
+  std::vector<Client*>::iterator it = pending_requests_.begin();
+  while (it != pending_requests_.end()) {
+    if (client == *it) {
+      pending_requests_.erase(it);
+      return;
+    }
+    ++it;
+  }
+  DCHECK(it != pending_requests_.end());
+}
+
+void PluginProcessHost::CancelSentRequest(Client* client) {
+  std::list<Client*>::iterator it = sent_requests_.begin();
+  while (it != sent_requests_.end()) {
+    if (client == *it) {
+      *it = NULL;
+      return;
+    }
+    ++it;
+  }
+  DCHECK(it != sent_requests_.end());
+}
+
 void PluginProcessHost::RequestPluginChannel(Client* client) {
   // We can't send any sync messages from the browser because it might lead to
   // a hang.  However this async messages must be answered right away by the
@@ -376,7 +400,8 @@ void PluginProcessHost::RequestPluginChannel(Client* client) {
           client->OffTheRecord());
   msg->set_unblock(true);
   if (Send(msg)) {
-    sent_requests_.push(client);
+    sent_requests_.push_back(client);
+    client->OnSentPluginChannelRequest();
   } else {
     client->OnError();
   }
@@ -386,6 +411,7 @@ void PluginProcessHost::OnChannelCreated(
     const IPC::ChannelHandle& channel_handle) {
   Client* client = sent_requests_.front();
 
-  client->OnChannelOpened(channel_handle);
-  sent_requests_.pop();
+  if (client)
+    client->OnChannelOpened(channel_handle);
+  sent_requests_.pop_front();
 }

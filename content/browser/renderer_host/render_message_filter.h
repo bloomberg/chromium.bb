@@ -76,6 +76,9 @@ class RenderMessageFilter : public BrowserMessageFilter {
                       net::URLRequestContextGetter* request_context,
                       RenderWidgetHelper* render_widget_helper);
 
+  // IPC::ChannelProxy::MessageFilter methods:
+  virtual void OnChannelClosing() OVERRIDE;
+
   // BrowserMessageFilter methods:
   virtual void OverrideThreadForMessage(const IPC::Message& message,
                                         BrowserThread::ID* thread);
@@ -98,6 +101,8 @@ class RenderMessageFilter : public BrowserMessageFilter {
  private:
   friend class BrowserThread;
   friend class DeleteTask<RenderMessageFilter>;
+
+  class OpenChannelToNpapiPluginCallback;
 
   virtual ~RenderMessageFilter();
 
@@ -226,6 +231,8 @@ class RenderMessageFilter : public BrowserMessageFilter {
 
   bool CheckBenchmarkingEnabled() const;
   bool CheckPreparsedJsCachingEnabled() const;
+  void OnCompletedOpenChannelToNpapiPlugin(
+      OpenChannelToNpapiPluginCallback* client);
 
   // Cached resource request dispatcher host and plugin service, guaranteed to
   // be non-null if Init succeeds. We do not own the objects, they are managed
@@ -254,6 +261,8 @@ class RenderMessageFilter : public BrowserMessageFilter {
   scoped_refptr<WebKitContext> webkit_context_;
 
   int render_process_id_;
+
+  std::set<OpenChannelToNpapiPluginCallback*> plugin_host_clients_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderMessageFilter);
 };
