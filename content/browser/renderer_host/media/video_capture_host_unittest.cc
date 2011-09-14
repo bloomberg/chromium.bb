@@ -12,11 +12,9 @@
 #include "base/stl_util.h"
 #include "base/stringprintf.h"
 #include "content/browser/browser_thread.h"
-#include "content/browser/mock_resource_context.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/browser/renderer_host/media/video_capture_host.h"
 #include "content/browser/renderer_host/media/video_capture_manager.h"
-#include "content/browser/resource_context.h"
 #include "content/common/media/video_capture_messages.h"
 #include "media/video/capture/video_capture_types.h"
 
@@ -68,10 +66,7 @@ class DumpVideo {
 
 class MockVideoCaptureHost : public VideoCaptureHost {
  public:
-  explicit MockVideoCaptureHost(content::ResourceContext* resource_context)
-      : VideoCaptureHost(resource_context),
-        return_buffers_(false),
-        dump_video_(false) {}
+  MockVideoCaptureHost() : return_buffers_(false), dump_video_(false) {}
   virtual ~MockVideoCaptureHost() {
     STLDeleteContainerPairSecondPointers(filled_dib_.begin(),
                                          filled_dib_.end());
@@ -192,25 +187,14 @@ class VideoCaptureHostTest : public testing::Test {
   virtual void SetUp() {
     // Create a message loop so VideoCaptureHostTest can use it.
     message_loop_.reset(new MessageLoop(MessageLoop::TYPE_IO));
-
-    // ResourceContext must be created on the UI thread.
-    ui_thread_.reset(new BrowserThread(BrowserThread::UI, message_loop_.get()));
-
-    // MediaStreamManager must be created on the IO thread.
     io_thread_.reset(new BrowserThread(BrowserThread::IO, message_loop_.get()));
-
-    // Create a MediaStreamManager instance and hand over pointer to
-    // ResourceContext.
-    media_stream_manager_.reset(new media_stream::MediaStreamManager());
-
+    // Setup the VideoCaptureManager to use fake video capture device.
 #ifndef TEST_REAL_CAPTURE_DEVICE
-    media_stream_manager_->UseFakeDevice();
+    media_stream::VideoCaptureManager* manager =
+        media_stream::MediaStreamManager::Get()->video_capture_manager();
+    manager->UseFakeDevice();
 #endif
-
-    content::MockResourceContext::GetInstance()->set_media_stream_manager(
-        media_stream_manager_.get());
-    host_ = new MockVideoCaptureHost(
-        content::MockResourceContext::GetInstance());
+    host_ = new MockVideoCaptureHost();
 
     // Simulate IPC channel connected.
     host_->OnChannelConnected(base::GetCurrentProcId());
@@ -235,7 +219,7 @@ class VideoCaptureHostTest : public testing::Test {
     // We need to continue running message_loop_ to complete all destructions.
     SyncWithVideoCaptureManagerThread();
 
-    content::MockResourceContext::GetInstance()->set_media_stream_manager(NULL);
+    io_thread_.reset();
   }
 
   // Called on the VideoCaptureManager thread.
@@ -244,9 +228,8 @@ class VideoCaptureHostTest : public testing::Test {
   }
 
   // Called on the main thread.
-  static void PostQuitOnVideoCaptureManagerThread(
-      MessageLoop* message_loop, content::ResourceContext* resource_context) {
-    resource_context->media_stream_manager()->video_capture_manager()->
+  static void PostQuitOnVideoCaptureManagerThread(MessageLoop* message_loop) {
+    media_stream::MediaStreamManager::Get()->video_capture_manager()->
         GetMessageLoop()->PostTask(FROM_HERE,
                                    NewRunnableFunction(
                                        &PostQuitMessageLoop, message_loop));
@@ -259,10 +242,8 @@ class VideoCaptureHostTest : public testing::Test {
   // capture device.
   void SyncWithVideoCaptureManagerThread() {
     message_loop_->PostTask(
-        FROM_HERE,
-        NewRunnableFunction(&PostQuitOnVideoCaptureManagerThread,
-                            message_loop_.get(),
-                            content::MockResourceContext::GetInstance()));
+        FROM_HERE, NewRunnableFunction(&PostQuitOnVideoCaptureManagerThread,
+                                       message_loop_.get()));
     message_loop_->Run();
   }
 
@@ -358,9 +339,7 @@ class VideoCaptureHostTest : public testing::Test {
   scoped_refptr<MockVideoCaptureHost> host_;
  private:
   scoped_ptr<MessageLoop> message_loop_;
-  scoped_ptr<BrowserThread> ui_thread_;
   scoped_ptr<BrowserThread> io_thread_;
-  scoped_ptr<media_stream::MediaStreamManager> media_stream_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoCaptureHostTest);
 };

@@ -34,10 +34,6 @@ namespace fileapi {
 class FileSystemContext;
 }  // namespace fileapi
 
-namespace media_stream {
-class MediaStreamManager;
-}  // namespace media_stream
-
 namespace net {
 class CookieStore;
 class DnsCertProvenanceChecker;
@@ -285,7 +281,6 @@ class ProfileIOData {
   mutable scoped_refptr<fileapi::FileSystemContext> file_system_context_;
   mutable scoped_refptr<quota::QuotaManager> quota_manager_;
   mutable scoped_refptr<HostZoomMap> host_zoom_map_;
-  mutable scoped_ptr<media_stream::MediaStreamManager> media_stream_manager_;
 
   // TODO(willchan): Remove from ResourceContext.
   mutable scoped_refptr<ExtensionInfoMap> extension_info_map_;

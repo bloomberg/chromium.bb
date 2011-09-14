@@ -42,7 +42,6 @@
 #include "content/browser/browser_thread.h"
 #include "content/browser/chrome_blob_storage_context.h"
 #include "content/browser/host_zoom_map.h"
-#include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
 #include "content/browser/resource_context.h"
@@ -474,8 +473,6 @@ void ProfileIOData::LazyInitialize() const {
     job_factory_->AddInterceptor(new chromeos::GViewRequestInterceptor);
 #endif  // defined(OS_CHROMEOS)
 
-  media_stream_manager_.reset(new media_stream::MediaStreamManager);
-
   // Take ownership over these parameters.
   database_tracker_ = profile_params_->database_tracker;
   appcache_service_ = profile_params_->appcache_service;
@@ -500,7 +497,6 @@ void ProfileIOData::LazyInitialize() const {
   resource_context_.SetUserData(NULL, const_cast<ProfileIOData*>(this));
   resource_context_.set_media_observer(
       io_thread_globals->media.media_internals.get());
-  resource_context_.set_media_stream_manager(media_stream_manager_.get());
 
   LazyInitializeInternal(profile_params_.get());
 

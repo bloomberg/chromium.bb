@@ -16,13 +16,11 @@ static const size_t kNoOfDIBS = 3;
 VideoCaptureController::VideoCaptureController(
     const VideoCaptureControllerID& id,
     base::ProcessHandle render_process,
-    VideoCaptureControllerEventHandler* event_handler,
-    media_stream::VideoCaptureManager* video_capture_manager)
+    VideoCaptureControllerEventHandler* event_handler)
     : render_handle_(render_process),
       report_ready_to_delete_(false),
       event_handler_(event_handler),
-      id_(id),
-      video_capture_manager_(video_capture_manager) {
+      id_(id) {
   memset(&params_, 0, sizeof(params_));
 }
 
@@ -37,18 +35,21 @@ void VideoCaptureController::StartCapture(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   params_ = params;
+    media_stream::VideoCaptureManager* manager =
+        media_stream::MediaStreamManager::Get()->video_capture_manager();
   // Order the manager to start the actual capture.
-  video_capture_manager_->Start(params, this);
+  manager->Start(params, this);
 }
 
 void VideoCaptureController::StopCapture(Task* stopped_task) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  video_capture_manager_->Stop(
-      params_.session_id,
-      NewRunnableMethod(this,
-                        &VideoCaptureController::OnDeviceStopped,
-                        stopped_task));
+  media_stream::VideoCaptureManager* manager =
+      media_stream::MediaStreamManager::Get()->video_capture_manager();
+  manager->Stop(params_.session_id,
+                NewRunnableMethod(this,
+                                  &VideoCaptureController::OnDeviceStopped,
+                                  stopped_task));
 }
 
 void VideoCaptureController::ReturnBuffer(int buffer_id) {
@@ -157,7 +158,8 @@ void VideoCaptureController::OnIncomingCapturedFrame(const uint8* data,
 
 void VideoCaptureController::OnError() {
   event_handler_->OnError(id_);
-  video_capture_manager_->Error(params_.session_id);
+  media_stream::MediaStreamManager::Get()->video_capture_manager()->
+      Error(params_.session_id);
 }
 
 void VideoCaptureController::OnFrameInfo(

@@ -43,15 +43,11 @@
 #include "content/browser/renderer_host/media/video_capture_controller.h"
 #include "ipc/ipc_message.h"
 
-namespace content {
-class ResourceContext;
-}  // namespace content
-
 class VideoCaptureHost
     : public BrowserMessageFilter,
       public VideoCaptureControllerEventHandler {
  public:
-  VideoCaptureHost(const content::ResourceContext* resource_context);
+  VideoCaptureHost();
 
   // BrowserMessageFilter implementation.
   virtual void OnChannelClosing();
@@ -130,9 +126,6 @@ class VideoCaptureHost
   // A map of VideoCaptureControllerID to VideoCaptureController
   // objects that is currently active.
   EntryMap entries_;
-
-  // Used to get a pointer to VideoCaptureManager to start/stop capture devices.
-  const content::ResourceContext* resource_context_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoCaptureHost);
 };

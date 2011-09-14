@@ -6,14 +6,9 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
-#include "content/browser/renderer_host/media/media_stream_manager.h"
-#include "content/browser/resource_context.h"
 #include "content/common/media/video_capture_messages.h"
 
-VideoCaptureHost::VideoCaptureHost(
-    const content::ResourceContext* resource_context)
-    : resource_context_(resource_context) {
-}
+VideoCaptureHost::VideoCaptureHost() {}
 
 VideoCaptureHost::~VideoCaptureHost() {}
 
@@ -152,9 +147,7 @@ void VideoCaptureHost::OnStartCapture(int device_id,
   DCHECK(entries_.find(controller_id) == entries_.end());
 
   scoped_refptr<VideoCaptureController> controller =
-      new VideoCaptureController(
-          controller_id, peer_handle(), this,
-          resource_context_->media_stream_manager()->video_capture_manager());
+      new VideoCaptureController(controller_id, peer_handle(), this);
   entries_.insert(std::make_pair(controller_id, controller));
   controller->StartCapture(params);
 }
