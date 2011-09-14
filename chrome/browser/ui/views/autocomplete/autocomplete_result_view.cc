@@ -31,7 +31,7 @@
 
 namespace {
 
-const char16 kEllipsis[] = { 0x2026 };
+const char16 kEllipsis[] = { 0x2026, 0x0 };
 
 // The minimum distance between the top and bottom of the {icon|text} and the
 // top or bottom of the row.
