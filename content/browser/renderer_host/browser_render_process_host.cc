@@ -743,9 +743,10 @@ bool BrowserRenderProcessHost::Send(IPC::Message* msg) {
 }
 
 bool BrowserRenderProcessHost::OnMessageReceived(const IPC::Message& msg) {
-  // If we're about to be deleted, we can no longer trust that our browser
-  // context is valid, so we ignore incoming messages.
-  if (deleting_soon_)
+  // If we're about to be deleted, or have initiated the fast shutdown sequence,
+  // we ignore incoming messages.
+
+  if (deleting_soon_ || fast_shutdown_started_)
     return false;
 
   mark_child_process_activity_time();
