@@ -72,6 +72,13 @@ static size_t g_extension_ids_offset;
 static size_t g_client_id_offset;
 static size_t g_gpu_info_offset;
 static size_t g_num_of_views_offset;
+static size_t g_num_switches_offset;
+static size_t g_switches_offset;
+
+// The maximum number of command line switches to include in the crash
+// report's metadata. Note that the mini-dump itself will also contain the
+// (original) command line arguments within the PEB.
+const size_t kMaxSwitches = 15;
 
 // Dumps the current process memory.
 extern "C" void __declspec(dllexport) __cdecl DumpProcess() {
@@ -86,6 +93,41 @@ std::wstring TrimToBreakpadMax(const std::wstring& str) {
   std::wstring shorter(str);
   return shorter.substr(0,
       google_breakpad::CustomInfoEntry::kValueMaxLength - 1);
+}
+
+static void SetIntegerValue(size_t offset, int value) {
+  if (!g_custom_entries)
+    return;
+
+  wcscpy_s((*g_custom_entries)[offset].value,
+           google_breakpad::CustomInfoEntry::kValueMaxLength,
+           base::StringPrintf(L"%d", value).c_str());
+}
+
+extern "C" void __declspec(dllexport) __cdecl SetCommandLine(
+    const CommandLine* command_line) {
+  if (!g_custom_entries)
+    return;
+
+  const CommandLine::StringVector& argv = command_line->argv();
+
+  // Copy up to the kMaxSwitches arguments into the custom entries array. Skip
+  // past the first argument, as it is just the executable path.
+  size_t argv_i = 1;
+  size_t num_added = 0;
+
+  for (; argv_i < argv.size() && num_added < kMaxSwitches;
+       ++argv_i, ++num_added) {
+    // TODO(eroman): Filter out flags which aren't useful and just add bloat
+    //               to the report.
+    wcsncpy((*g_custom_entries)[g_switches_offset + num_added].value,
+            argv[argv_i].c_str(),
+            google_breakpad::CustomInfoEntry::kValueMaxLength);
+  }
+
+  // Make note of the total number of switches. This is useful in case we have
+  // truncated at kMaxSwitches, to see how many were unaccounted for.
+  SetIntegerValue(g_num_switches_offset, static_cast<int>(argv.size()) - 1);
 }
 
 // Returns the custom info structure based on the dll in parameter and the
@@ -168,6 +210,23 @@ google_breakpad::CustomClientInfo* GetCustomInfo(const std::wstring& dll_path,
   g_custom_entries->push_back(
       google_breakpad::CustomInfoEntry(L"guid", guid.c_str()));
 
+  // Add empty values for the command line switches. We will fill them with
+  // actual values as part of SetCommandLine().
+  g_num_switches_offset = g_custom_entries->size();
+  g_custom_entries->push_back(
+      google_breakpad::CustomInfoEntry(L"num-switches", L""));
+
+  g_switches_offset = g_custom_entries->size();
+  for (int i = 0; i < kMaxSwitches; ++i) {
+    g_custom_entries->push_back(google_breakpad::CustomInfoEntry(
+        base::StringPrintf(L"switch-%i", i + 1).c_str(), L""));
+  }
+
+  // Fill in the command line arguments using CommandLine::ForCurrentProcess().
+  // The browser process may call SetCommandLine() again later on with a command
+  // line that has been augmented with the about:flags experiments.
+  SetCommandLine(CommandLine::ForCurrentProcess());
+
   if (type == L"renderer" || type == L"plugin" || type == L"gpu-process") {
     g_num_of_views_offset = g_custom_entries->size();
     g_custom_entries->push_back(
@@ -183,26 +242,6 @@ google_breakpad::CustomClientInfo* GetCustomInfo(const std::wstring& dll_path,
   } else {
     g_custom_entries->push_back(
         google_breakpad::CustomInfoEntry(L"num-views", L"N/A"));
-
-    // Browser-specific g_custom_entries.
-    google_breakpad::CustomInfoEntry switch1(L"switch-1", L"");
-    google_breakpad::CustomInfoEntry switch2(L"switch-2", L"");
-
-    // Get the first two command line switches if they exist. The CommandLine
-    // class does not allow to enumerate the switches so we do it by hand.
-    int num_args = 0;
-    wchar_t** args = ::CommandLineToArgvW(::GetCommandLineW(), &num_args);
-    if (args) {
-      if (num_args > 1)
-        switch1.set_value(TrimToBreakpadMax(args[1]).c_str());
-      if (num_args > 2)
-        switch2.set_value(TrimToBreakpadMax(args[2]).c_str());
-      // The caller must free the memory allocated for |args|.
-      ::LocalFree(args);
-    }
-
-    g_custom_entries->push_back(switch1);
-    g_custom_entries->push_back(switch2);
   }
 
   static google_breakpad::CustomClientInfo custom_client_info;
@@ -335,15 +374,6 @@ extern "C" void __declspec(dllexport) __cdecl SetClientId(
   wcscpy_s((*g_custom_entries)[g_client_id_offset].value,
            google_breakpad::CustomInfoEntry::kValueMaxLength,
            client_id);
-}
-
-static void SetIntegerValue(size_t offset, int value) {
-  if (!g_custom_entries)
-    return;
-
-  wcscpy_s((*g_custom_entries)[offset].value,
-           google_breakpad::CustomInfoEntry::kValueMaxLength,
-           base::StringPrintf(L"%d", value).c_str());
 }
 
 extern "C" void __declspec(dllexport) __cdecl SetNumberOfExtensions(

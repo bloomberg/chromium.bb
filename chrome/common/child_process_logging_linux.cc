@@ -78,4 +78,9 @@ void SetNumberOfViews(int number_of_views) {
   // TODO(port)
 }
 
+void SetCommandLine(const CommandLine*) {
+  // TODO: http://crbug.com/60993
+  NOTIMPLEMENTED();
+}
+
 }  // namespace child_process_logging

@@ -74,6 +74,7 @@
 #include "chrome/browser/ui/browser_init.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager_backend.h"
 #include "chrome/browser/web_resource/gpu_blacklist_updater.h"
+#include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_result_codes.h"
@@ -1332,6 +1333,10 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunInternal() {
   // Convert active labs into switches. Modifies the current command line.
   about_flags::ConvertFlagsToSwitches(local_state,
                                       CommandLine::ForCurrentProcess());
+
+  // Reset the command line in the crash report details, since we may have
+  // just changed it to include experiments.
+  child_process_logging::SetCommandLine(CommandLine::ForCurrentProcess());
 
 #if defined(TOOLKIT_VIEWS)
   views::Widget::SetPureViews(

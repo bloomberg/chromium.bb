@@ -173,4 +173,9 @@ void SetNumberOfViews(int number_of_views) {
     SetNumberOfViewsImpl(number_of_views, SetCrashKeyValue);
 }
 
+void SetCommandLine(const CommandLine*) {
+  // TODO: http://crbug.com/60991
+  NOTIMPLEMENTED();
+}
+
 }  // namespace child_process_logging

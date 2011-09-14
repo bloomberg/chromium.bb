@@ -13,6 +13,7 @@
 #include "base/mac/crash_logging.h"
 #include "googleurl/src/gurl.h"
 
+class CommandLine;
 struct GPUInfo;
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
@@ -60,6 +61,10 @@ void SetNumberOfViews(int number_of_views);
 
 // Sets the data on the gpu to send along with crash reports.
 void SetGpuInfo(const GPUInfo& gpu_info);
+
+// Sets the command line arguments to send along with crash reports to the
+// values in |command_line|.
+void SetCommandLine(const CommandLine* command_line);
 
 // Simple wrapper class that sets the active URL in it's constructor and clears
 // the active URL in the destructor.
