@@ -106,6 +106,9 @@ class NativeWidgetAura : public internal::NativeWidgetPrivate,
   virtual void FocusNativeView(gfx::NativeView native_view) OVERRIDE;
   virtual bool ConvertPointFromAncestor(
       const Widget* ancestor, gfx::Point* point) const OVERRIDE;
+  virtual gfx::Rect GetWorkAreaBoundsInScreen() const OVERRIDE;
+
+  // Overridden from views::InputMethodDelegate:
   virtual void DispatchKeyEventPostIME(const KeyEvent& key) OVERRIDE;
 
   // Overridden from aura::WindowDelegate:

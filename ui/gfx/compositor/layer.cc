@@ -136,30 +136,34 @@ void Layer::Draw() {
 
   hole_rect_ = hole_rect_.Intersect(
       gfx::Rect(0, 0, bounds_.width(), bounds_.height()));
+  if (hole_rect_.IsEmpty()) {
+    DrawRegion(texture_draw_params,
+               gfx::Rect(0, 0, bounds_.width(), bounds_.height()));
+  } else {
+    // Top (above the hole).
+    DrawRegion(texture_draw_params, gfx::Rect(0,
+                                              0,
+                                              bounds_.width(),
+                                              hole_rect_.y()));
+    // Left (of the hole).
+    DrawRegion(texture_draw_params, gfx::Rect(0,
+                                              hole_rect_.y(),
+                                              hole_rect_.x(),
+                                              hole_rect_.height()));
+    // Right (of the hole).
+    DrawRegion(texture_draw_params, gfx::Rect(
+        hole_rect_.right(),
+        hole_rect_.y(),
+        bounds_.width() - hole_rect_.right(),
+        hole_rect_.height()));
 
-  // top
-  DrawRegion(texture_draw_params, gfx::Rect(0,
-                                            0,
-                                            bounds_.width(),
-                                            hole_rect_.y()));
-  // left
-  DrawRegion(texture_draw_params, gfx::Rect(0,
-                                            hole_rect_.y(),
-                                            hole_rect_.x(),
-                                            hole_rect_.height()));
-  // right
-  DrawRegion(texture_draw_params, gfx::Rect(
-      hole_rect_.right(),
-      hole_rect_.y(),
-      bounds_.width() - hole_rect_.right(),
-      hole_rect_.height()));
-
-  // bottom
-  DrawRegion(texture_draw_params, gfx::Rect(
-      0,
-      hole_rect_.bottom(),
-      bounds_.width(),
-      bounds_.height() - hole_rect_.bottom()));
+    // Bottom (below the hole).
+    DrawRegion(texture_draw_params, gfx::Rect(
+        0,
+        hole_rect_.bottom(),
+        bounds_.width(),
+        bounds_.height() - hole_rect_.bottom()));
+  }
 }
 
 void Layer::DrawTree() {
@@ -190,9 +194,9 @@ void Layer::UpdateLayerCanvas() {
   }
   scoped_ptr<gfx::Canvas> canvas(gfx::Canvas::CreateCanvas(
       draw_rect.width(), draw_rect.height(), false));
-  canvas->TranslateInt(draw_rect.x(), draw_rect.y());
+  canvas->TranslateInt(-draw_rect.x(), -draw_rect.y());
   delegate_->OnPaintLayer(canvas.get());
-  SetCanvas(*canvas->AsCanvasSkia(), bounds().origin());
+  SetCanvas(*canvas->AsCanvasSkia(), draw_rect.origin());
 }
 
 void Layer::RecomputeHole() {

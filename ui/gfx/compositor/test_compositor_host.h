@@ -7,32 +7,21 @@
 #pragma once
 
 #include "base/message_loop.h"
-#include "ui/gfx/native_widget_types.h"
 
 namespace gfx {
 class Rect;
-class Size;
 }
 
 namespace ui {
 
 class Compositor;
 
-class TestCompositorHostDelegate {
- public:
-  virtual void Draw() = 0;
-
- protected:
-  virtual ~TestCompositorHostDelegate() {}
-};
-
 class TestCompositorHost : public MessageLoop::Dispatcher {
  public:
   virtual ~TestCompositorHost() {}
 
   // Creates a new TestCompositorHost. The caller owns the returned value.
-  static TestCompositorHost* Create(const gfx::Rect& bounds,
-                                    TestCompositorHostDelegate* delegate);
+  static TestCompositorHost* Create(const gfx::Rect& bounds);
 
   // Shows the TestCompositorHost.
   virtual void Show() = 0;

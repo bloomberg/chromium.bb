@@ -14,9 +14,7 @@ class TestCompositorHostWin : public TestCompositorHost,
                               public WindowImpl,
                               public CompositorDelegate {
  public:
-  TestCompositorHostWin(const gfx::Rect& bounds,
-                        TestCompositorHostDelegate* delegate)
-      : delegate_(delegate) {
+  TestCompositorHostWin(const gfx::Rect& bounds) {
     Init(NULL, bounds);
     compositor_ = ui::Compositor::Create(this, hwnd(), GetSize());
   }
@@ -53,9 +51,7 @@ class TestCompositorHostWin : public TestCompositorHost,
   END_MSG_MAP()
 
   void OnPaint(HDC dc) {
-    compositor_->NotifyStart();
-    delegate_->Draw();
-    compositor_->NotifyEnd();
+    compositor_->Draw(false);
     ValidateRect(hwnd(), NULL);
   }
 
@@ -66,15 +62,12 @@ class TestCompositorHostWin : public TestCompositorHost,
   }
 
   scoped_refptr<ui::Compositor> compositor_;
-  TestCompositorHostDelegate* delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(TestCompositorHostWin);
 };
 
-TestCompositorHost* TestCompositorHost::Create(
-    const gfx::Rect& bounds,
-    TestCompositorHostDelegate* delegate) {
-  return new TestCompositorHostWin(bounds, delegate);
+TestCompositorHost* TestCompositorHost::Create(const gfx::Rect& bounds) {
+  return new TestCompositorHostWin(bounds);
 }
 
 }  // namespace ui

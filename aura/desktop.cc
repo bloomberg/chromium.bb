@@ -48,11 +48,7 @@ void Desktop::Run() {
 }
 
 void Desktop::Draw() {
-  // Second pass renders the layers.
-  const bool force_clear = false;
-  compositor_->NotifyStart(force_clear);
-  window_->layer()->DrawTree();
-  compositor_->NotifyEnd();
+  compositor_->Draw(false);
 }
 
 bool Desktop::OnMouseEvent(const MouseEvent& event) {
@@ -81,6 +77,7 @@ Desktop* Desktop::GetInstance() {
   if (!instance_) {
     instance_ = new Desktop;
     instance_->window_->Init();
+    instance_->compositor()->set_root_layer(instance_->window_->layer());
   }
   return instance_;
 }

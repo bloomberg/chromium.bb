@@ -61,17 +61,15 @@ private:
   DISALLOW_COPY_AND_ASSIGN(TestLayerDelegate);
 };
 
-class LayerTest : public testing::Test,
-                  public TestCompositorHostDelegate {
+class LayerTest : public testing::Test {
  public:
-  LayerTest() : root_layer_(NULL) {}
+  LayerTest() {}
   virtual ~LayerTest() {}
 
   // Overridden from testing::Test:
   virtual void SetUp() OVERRIDE {
-    root_layer_ = NULL;
     const gfx::Rect host_bounds(10, 10, 500, 500);
-    window_.reset(TestCompositorHost::Create(host_bounds, this));
+    window_.reset(TestCompositorHost::Create(host_bounds));
     window_->Show();
   }
 
@@ -107,28 +105,17 @@ class LayerTest : public testing::Test,
   }
 
   void DrawTree(Layer* root) {
-    window_->GetCompositor()->NotifyStart();
-    root->DrawTree();
-    window_->GetCompositor()->NotifyEnd();
+    GetCompositor()->set_root_layer(root);
+    GetCompositor()->Draw(false);
   }
 
   void RunPendingMessages() {
     MessageLoopForUI::current()->Run(NULL);
   }
 
- protected:
-  void set_root_layer(Layer* root_layer) { root_layer_ = root_layer; }
-
  private:
-  // Overridden from TestCompositorHostDelegate:
-  virtual void Draw() {
-    if (root_layer_)
-      root_layer_->DrawTree();
-  }
-
   MessageLoopForUI message_loop_;
   scoped_ptr<TestCompositorHost> window_;
-  Layer* root_layer_;
 
   DISALLOW_COPY_AND_ASSIGN(LayerTest);
 };
@@ -241,7 +228,7 @@ TEST_F(LayerQuitOnCompositedTest, Delegate) {
   delegate.AddColor(SK_ColorYELLOW);
   delegate.AddColor(SK_ColorGREEN);
 
-  set_root_layer(l1.get());
+  GetCompositor()->set_root_layer(l1.get());
 
   l1->SchedulePaint(gfx::Rect(0, 0, 400, 400));
   RunPendingMessages();
@@ -302,7 +289,7 @@ TEST_F(LayerQuitOnCompositedTest, DrawTree) {
   DrawTreeLayerDelegate d3;
   l3->set_delegate(&d3);
 
-  set_root_layer(l1.get());
+  GetCompositor()->set_root_layer(l1.get());
 
   l2->SchedulePaint(gfx::Rect(5, 5, 5, 5));
   RunPendingMessages();

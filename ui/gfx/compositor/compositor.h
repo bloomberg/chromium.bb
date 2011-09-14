@@ -22,6 +22,7 @@ class Rect;
 namespace ui {
 
 class CompositorObserver;
+class Layer;
 
 struct TextureDrawParams {
   TextureDrawParams() : transform(), blend(false), compositor_size() {}
@@ -88,13 +89,6 @@ class COMPOSITOR_EXPORT Compositor : public base::RefCounted<Compositor> {
   // Creates a new texture. The caller owns the returned object.
   virtual Texture* CreateTexture() = 0;
 
-  // Notifies the compositor that compositing is about to start. If |clear| is
-  // true, this will cause the compositor to clear before compositing.
-  void NotifyStart(bool clear);
-
-  // Notifies the compositor that compositing is complete.
-  void NotifyEnd();
-
   // Blurs the specific region in the compositor.
   virtual void Blur(const gfx::Rect& bounds) = 0;
 
@@ -102,6 +96,17 @@ class COMPOSITOR_EXPORT Compositor : public base::RefCounted<Compositor> {
   void SchedulePaint() {
     delegate_->ScheduleCompositorPaint();
   }
+
+  // Sets the root of the layer tree drawn by this Compositor.
+  // The Compositor does not own the root layer.
+  void set_root_layer(Layer* root_layer) {
+    root_layer_ = root_layer;
+  }
+
+  // Draws the scene created by the layer tree and any visual effects. If
+  // |force_clear| is true, this will cause the compositor to clear before
+  // compositing.
+  void Draw(bool force_clear);
 
   // Notifies the compositor that the size of the widget that it is
   // drawing to has changed.
@@ -133,8 +138,18 @@ class COMPOSITOR_EXPORT Compositor : public base::RefCounted<Compositor> {
   CompositorDelegate* delegate() { return delegate_; }
 
  private:
+  // Notifies the compositor that compositing is about to start. See Draw() for
+  // notes about |force_clear|.
+  void NotifyStart(bool force_clear);
+
+  // Notifies the compositor that compositing is complete.
+  void NotifyEnd();
+
   CompositorDelegate* delegate_;
   gfx::Size size_;
+
+  // The root of the Layer tree drawn by this compositor.
+  Layer* root_layer_;
 
   ObserverList<CompositorObserver> observer_list_;
 

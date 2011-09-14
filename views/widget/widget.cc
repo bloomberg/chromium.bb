@@ -922,13 +922,13 @@ bool Widget::OnNativeWidgetPaintAccelerated(const gfx::Rect& dirty_region) {
   // If the root view is animating, it is likely that it does not cover the same
   // set of pixels it did at the last frame, so we must clear when compositing
   // to avoid leaving ghosts.
-  bool should_force_clear = false;
+  bool force_clear = false;
   if (GetRootView()->layer()) {
     const ui::Transform& layer_transform = GetRootView()->layer()->transform();
     if (layer_transform != GetRootView()->GetTransform()) {
       // The layer has not caught up to the view (i.e., the layer is still
       // animating), and so a clear is required.
-      should_force_clear = true;
+      force_clear = true;
     } else {
       // Determine if the layer fills the client area.
       gfx::Rect layer_bounds = GetRootView()->layer()->bounds();
@@ -939,14 +939,13 @@ bool Widget::OnNativeWidgetPaintAccelerated(const gfx::Rect& dirty_region) {
       client_bounds.set_origin(gfx::Point(0, 0));
       if (!layer_bounds.Contains(client_bounds)) {
         // It doesn't, and so a clear is required.
-        should_force_clear = true;
+        force_clear = true;
       }
     }
   }
 
-  compositor->NotifyStart(should_force_clear);
-  GetRootView()->layer()->Draw();
-  compositor->NotifyEnd();
+  compositor->set_root_layer(GetRootView()->layer());
+  compositor->Draw(force_clear);
   return true;
 }
 
