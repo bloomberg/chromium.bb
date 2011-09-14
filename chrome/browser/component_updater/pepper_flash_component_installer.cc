@@ -4,6 +4,8 @@
 
 #include "chrome/browser/component_updater/flash_component_installer.h"
 
+#include <string.h>
+
 #include "base/base_paths.h"
 #include "base/compiler_specific.h"
 #include "base/file_path.h"
@@ -17,6 +19,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/pepper_plugin_registry.h"
+#include "ppapi/c/private/ppb_pdf.h"
 #include "webkit/plugins/npapi/plugin_list.h"
 #include "webkit/plugins/plugin_constants.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
@@ -92,7 +95,11 @@ bool GetLatestPepperFlashDirectory(FilePath* result, Version* latest) {
 bool SupportsPepperInterface(const char* interface_name) {
   static webkit::ppapi::PluginModule::GetInterfaceFunc get_itf =
       webkit::ppapi::PluginModule::GetLocalGetInterfaceFunc();
-  return get_itf(interface_name) != NULL;
+  if (get_itf(interface_name))
+    return true;
+  // It might be that flapper is using as a temporary hack the PDF interface
+  // so we need to check for that as well. TODO(cpu): make this more sane.
+  return (strcmp(interface_name, PPB_PDF_INTERFACE) == 0);
 }
 
 }  // namespace
