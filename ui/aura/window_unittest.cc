@@ -15,7 +15,7 @@
 #include "ui/base/keycodes/keyboard_codes.h"
 
 #if !defined(OS_WIN)
-#include "aura/hit_test.h"
+#include "ui/aura/hit_test.h"
 #endif
 
 namespace aura {
