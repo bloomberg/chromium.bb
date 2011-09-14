@@ -727,7 +727,6 @@
         'GR_AGGRESSIVE_SHADER_OPTS=1',
         'SK_DISABLE_FAST_AA_STROKE_RECT',
         'SK_IGNORE_CF_OPTIMIZATION',
-        'SK_BLUR_MASK_FILTER_IGNORE_MARGIN_FIX',
       ],
       'sources!': [
         '../third_party/skia/include/core/SkTypes.h',
