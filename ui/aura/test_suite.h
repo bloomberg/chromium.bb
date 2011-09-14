@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef AURA_TEST_SUITE_H_
-#define AURA_TEST_SUITE_H_
+#ifndef UI_AURA_TEST_SUITE_H_
+#define UI_AURA_TEST_SUITE_H_
 #pragma once
 
 #include "base/compiler_specific.h"
@@ -19,4 +19,4 @@ class AuraTestSuite : public base::TestSuite {
   virtual void Shutdown() OVERRIDE;
 };
 
-#endif  // AURA_TEST_SUITE_H_
+#endif  // UI_AURA_TEST_SUITE_H_

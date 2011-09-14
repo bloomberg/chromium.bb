@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef AURA_DESKTOP_H_
-#define AURA_DESKTOP_H_
+#ifndef UI_AURA_DESKTOP_H_
+#define UI_AURA_DESKTOP_H_
 #pragma once
 
-#include "aura/root_window.h"
-#include "aura/aura_export.h"
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/task.h"
+#include "ui/aura/root_window.h"
+#include "ui/aura/aura_export.h"
 #include "ui/gfx/compositor/compositor.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -77,4 +77,4 @@ class AURA_EXPORT Desktop : public ui::CompositorDelegate {
 
 }  // namespace aura
 
-#endif  // AURA_DESKTOP_H_
+#endif  // UI_AURA_DESKTOP_H_

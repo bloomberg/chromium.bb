@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef AURA_FOCUS_MANAGER_H_
-#define AURA_FOCUS_MANAGER_H_
+#ifndef UI_AURA_FOCUS_MANAGER_H_
+#define UI_AURA_FOCUS_MANAGER_H_
 #pragma once
 
 #include "base/basictypes.h"
@@ -34,4 +34,4 @@ class FocusManager {
 }  // namespace internal
 }  // namespace aura
 
-#endif  // AURA_FOCUS_MANAGER_H_
+#endif  // UI_AURA_FOCUS_MANAGER_H_

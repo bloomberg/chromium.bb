@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "aura/event.h"
+#include "ui/aura/event.h"
 
 #include <X11/Xlib.h>
 #include <X11/extensions/XInput2.h>

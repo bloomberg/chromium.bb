@@ -421,7 +421,7 @@
         }],
         ['use_aura==1', {
           'dependencies': [
-            '../aura/aura.gyp:aura',
+            '../ui/aura/aura.gyp:aura',
           ],
           'sources/': [
             ['exclude', '_(gtk|x)\\.cc$'],
@@ -855,13 +855,13 @@
           'target_name': 'views_aura_desktop',
           'type': 'executable',
           'dependencies': [
-            '../aura/aura.gyp:aura',
             '../base/base.gyp:base',
             '../base/base.gyp:base_i18n',
             '../chrome/chrome.gyp:packed_resources',
             '../skia/skia.gyp:skia',
             '../third_party/icu/icu.gyp:icui18n',
             '../third_party/icu/icu.gyp:icuuc',
+            '../ui/aura/aura.gyp:aura',
             '../ui/ui.gyp:gfx_resources',
             '../ui/ui.gyp:ui',
             '../ui/ui.gyp:ui_resources',

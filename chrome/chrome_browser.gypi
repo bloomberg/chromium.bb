@@ -4082,7 +4082,7 @@
             ['include', '^browser/ui/views/simple_message_box_views.h'],
           ],
           'dependencies': [
-            '../aura/aura.gyp:aura',
+            '../ui/aura/aura.gyp:aura',
           ],
         }],
         ['webui_dialogs == 1', {

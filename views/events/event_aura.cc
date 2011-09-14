@@ -4,8 +4,8 @@
 
 #include "views/events/event.h"
 
-#include "aura/event.h"
 #include "base/logging.h"
+#include "ui/aura/event.h"
 
 namespace views {
 

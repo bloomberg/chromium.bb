@@ -4,9 +4,9 @@
 
 #include "chrome/browser/ui/views/aura/aura_init.h"
 
-#include "aura/desktop.h"
-#include "aura/window_delegate.h"
 #include "chrome/browser/ui/views/chrome_views_delegate.h"
+#include "ui/aura/desktop.h"
+#include "ui/aura/window_delegate.h"
 #include "ui/gfx/canvas_skia.h"
 #include "views/view.h"
 #include "views/widget/widget.h"

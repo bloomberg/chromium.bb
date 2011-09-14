@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "aura/desktop.h"
-#include "aura/desktop_host.h"
-#include "aura/window.h"
-#include "aura/window_delegate.h"
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/i18n/icu_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "third_party/skia/include/core/SkXfermode.h"
+#include "ui/aura/desktop.h"
+#include "ui/aura/desktop_host.h"
+#include "ui/aura/window.h"
+#include "ui/aura/window_delegate.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/gfx/canvas.h"
@@ -21,7 +21,7 @@
 #include "views/widget/widget_delegate.h"
 
 #if !defined(OS_WIN)
-#include "aura/hit_test.h"
+#include "ui/aura/hit_test.h"
 #endif
 
 namespace {

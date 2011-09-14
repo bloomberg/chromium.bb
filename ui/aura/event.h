@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef AURA_EVENT_H_
-#define AURA_EVENT_H_
+#ifndef UI_AURA_EVENT_H_
+#define UI_AURA_EVENT_H_
 #pragma once
 
-#include "aura/aura_export.h"
 #include "base/basictypes.h"
 #include "base/time.h"
+#include "ui/aura/aura_export.h"
 #include "ui/base/events.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/gfx/point.h"
@@ -108,4 +108,4 @@ class AURA_EXPORT KeyEvent : public Event {
 
 }  // namespace aura
 
-#endif  // AURA_EVENT_H_
+#endif  // UI_AURA_EVENT_H_

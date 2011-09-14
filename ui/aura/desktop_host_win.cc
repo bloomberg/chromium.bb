@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "aura/desktop_host_win.h"
+#include "ui/aura/desktop_host_win.h"
 
-#include "aura/desktop.h"
-#include "aura/event.h"
 #include "base/message_loop.h"
+#include "ui/aura/desktop.h"
+#include "ui/aura/event.h"
 
 namespace aura {
 

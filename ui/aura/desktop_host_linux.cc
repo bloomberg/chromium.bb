@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "aura/desktop_host.h"
+#include "ui/aura/desktop_host.h"
 
-#include "aura/desktop.h"
-#include "aura/event.h"
 #include "base/message_loop.h"
 #include "base/message_pump_x.h"
+#include "ui/aura/desktop.h"
+#include "ui/aura/event.h"
 
 #include <X11/Xlib.h>
 

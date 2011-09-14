@@ -6,9 +6,12 @@
 #define VIEWS_WIDGET_NATIVE_WIDGET_AURA_H_
 #pragma once
 
-#include "aura/window_delegate.h"
+#include "ui/aura/window_delegate.h"
 #include "views/widget/native_widget_private.h"
 
+namespace aura {
+class Window;
+}
 namespace gfx {
 class Font;
 }

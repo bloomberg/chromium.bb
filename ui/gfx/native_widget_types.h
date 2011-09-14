@@ -37,7 +37,9 @@
 // 'views'.
 
 #if defined(USE_AURA)
-#include "aura/window.h"
+namespace aura {
+class Window;
+}
 #endif
 #if defined(OS_WIN)
 #include <windows.h>  // NOLINT

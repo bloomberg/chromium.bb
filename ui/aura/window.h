@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef AURA_WINDOW_H_
-#define AURA_WINDOW_H_
+#ifndef UI_AURA_WINDOW_H_
+#define UI_AURA_WINDOW_H_
 #pragma once
 
 #include <vector>
 
-#include "aura/aura_export.h"
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "ui/aura/aura_export.h"
 #include "ui/gfx/compositor/layer_delegate.h"
 #include "ui/gfx/rect.h"
 
@@ -163,4 +163,4 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
 
 }  // namespace aura
 
-#endif  // AURA_WINDOW_H_
+#endif  // UI_AURA_WINDOW_H_

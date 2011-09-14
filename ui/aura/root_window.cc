@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "aura/root_window.h"
+#include "ui/aura/root_window.h"
 
 #include "base/logging.h"
-#include "aura/event.h"
-#include "aura/focus_manager.h"
-#include "aura/window_delegate.h"
+#include "ui/aura/event.h"
+#include "ui/aura/focus_manager.h"
+#include "ui/aura/window_delegate.h"
 #include "ui/base/events.h"
 
 namespace aura {

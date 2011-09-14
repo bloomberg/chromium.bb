@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "aura/window_manager.h"
+#include "ui/aura/window_manager.h"
 
-#include "aura/event.h"
-#include "aura/focus_manager.h"
-#include "aura/window.h"
-#include "aura/window_delegate.h"
+#include "ui/aura/event.h"
+#include "ui/aura/focus_manager.h"
+#include "ui/aura/window.h"
+#include "ui/aura/window_delegate.h"
 
 #if !defined(OS_WIN)
-#include "aura/hit_test.h"
+#include "ui/aura/hit_test.h"
 #endif
 
 namespace aura {

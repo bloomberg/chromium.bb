@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "aura/desktop.h"
-#include "aura/event.h"
-#include "aura/focus_manager.h"
-#include "aura/root_window.h"
-#include "aura/window_delegate.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/message_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/aura/desktop.h"
+#include "ui/aura/event.h"
+#include "ui/aura/focus_manager.h"
+#include "ui/aura/root_window.h"
+#include "ui/aura/window_delegate.h"
 #include "ui/gfx/canvas_skia.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 

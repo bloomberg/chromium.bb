@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef AURA_AURA_EXPORT_H
-#define AURA_AURA_EXPORT_H
+#ifndef UI_AURA_AURA_EXPORT_H
+#define UI_AURA_AURA_EXPORT_H
 #pragma once
 
 // Defines AURA_EXPORT so that functionality implemented by the aura module
@@ -26,5 +26,4 @@
 #define AURA_EXPORT
 #endif
 
-#endif  // AURA_AURA_EXPORT_H
-
+#endif  // UI_AURA_AURA_EXPORT_H

@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef AURA_DESKTOP_HOST_WIN_H_
-#define AURA_DESKTOP_HOST_WIN_H_
+#ifndef UI_AURA_DESKTOP_HOST_WIN_H_
+#define UI_AURA_DESKTOP_HOST_WIN_H_
 #pragma once
 
-#include "aura/desktop_host.h"
 #include "base/compiler_specific.h"
+#include "ui/aura/desktop_host.h"
 #include "ui/base/win/window_impl.h"
 
 namespace aura {
@@ -57,4 +57,4 @@ class DesktopHostWin : public DesktopHost, public ui::WindowImpl {
 
 }  // namespace aura
 
-#endif  // AURA_DESKTOP_HOST_WIN_H_
+#endif  // UI_AURA_DESKTOP_HOST_WIN_H_

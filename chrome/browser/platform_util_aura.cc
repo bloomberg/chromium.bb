@@ -4,8 +4,8 @@
 
 #include "chrome/browser/platform_util.h"
 
-#include "aura/window.h"
 #include "base/logging.h"
+#include "ui/aura/window.h"
 
 namespace platform_util {
 

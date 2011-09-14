@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef AURA_HIT_TEST_H_
-#define AURA_HIT_TEST_H_
+#ifndef UI_AURA_HIT_TEST_H_
+#define UI_AURA_HIT_TEST_H_
 #pragma once
 
 // Defines the same symbolic names used by the WM_NCHITTEST Notification under
@@ -39,4 +39,4 @@ enum HitTestCompat {
   HTZOOM
 };
 
-#endif  // AURA_HIT_TEST_H_
+#endif  // UI_AURA_HIT_TEST_H_

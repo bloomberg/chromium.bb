@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "aura/window.h"
+#include "ui/aura/window.h"
 
 #include <algorithm>
 
-#include "aura/desktop.h"
-#include "aura/event.h"
-#include "aura/window_delegate.h"
-#include "aura/window_manager.h"
 #include "base/logging.h"
+#include "ui/aura/desktop.h"
+#include "ui/aura/event.h"
+#include "ui/aura/window_delegate.h"
+#include "ui/aura/window_manager.h"
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/compositor/compositor.h"
 #include "ui/gfx/compositor/layer.h"

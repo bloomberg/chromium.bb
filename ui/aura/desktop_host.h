@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef AURA_DESKTOP_HOST_H_
-#define AURA_DESKTOP_HOST_H_
+#ifndef UI_AURA_DESKTOP_HOST_H_
+#define UI_AURA_DESKTOP_HOST_H_
 #pragma once
 
 #include "base/message_loop.h"
@@ -44,4 +44,4 @@ class DesktopHost : public MessageLoop::Dispatcher {
 
 }  // namespace aura
 
-#endif  // AURA_DESKTOP_HOST_H_
+#endif  // UI_AURA_DESKTOP_HOST_H_

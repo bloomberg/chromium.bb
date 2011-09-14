@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "aura/desktop.h"
+#include "ui/aura/desktop.h"
 
-#include "aura/desktop_host.h"
-#include "aura/root_window.h"
-#include "aura/window.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
+#include "ui/aura/desktop_host.h"
+#include "ui/aura/root_window.h"
+#include "ui/aura/window.h"
 #include "ui/gfx/compositor/compositor.h"
 #include "ui/gfx/compositor/layer.h"
 
