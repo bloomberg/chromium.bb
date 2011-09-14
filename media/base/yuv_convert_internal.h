@@ -13,15 +13,15 @@
 namespace media {
 
 // SSE2 version of converting RGBA to YV12.
-extern void ConvertRGB32ToYUV_SSE2(const uint8* rgbframe,
-                                   uint8* yplane,
-                                   uint8* uplane,
-                                   uint8* vplane,
-                                   int width,
-                                   int height,
-                                   int rgbstride,
-                                   int ystride,
-                                   int uvstride);
+void ConvertRGB32ToYUV_SSE2(const uint8* rgbframe,
+                            uint8* yplane,
+                            uint8* uplane,
+                            uint8* vplane,
+                            int width,
+                            int height,
+                            int rgbstride,
+                            int ystride,
+                            int uvstride);
 
 // This is a C reference implementation of the above routine.
 // This method should only be used in unit test.
