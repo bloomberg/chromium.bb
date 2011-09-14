@@ -35,9 +35,12 @@ def Main(args):
     # See http://code.google.com/p/nativeclient/issues/detail?id=2124
     # TODO(mseaborn): Reenable when this issue is resolved.
     tests_to_disable.append('run_ppapi_ppb_var_browser_test')
-    # Te behavior of the URLRequest changed slightly and this test needs to be
+    # The behavior of the URLRequest changed slightly and this test needs to be
     # updated. http://code.google.com/p/chromium/issues/detail?id=94352
     tests_to_disable.append('run_ppapi_ppb_url_request_info_browser_test')
+    # This test failed and caused the build's gatekeep to close the tree.
+    # http://code.google.com/p/chromium/issues/detail?id=96434
+    tests_to_disable.append('run_ppapi_example_post_message_test')
 
     # TODO(ncbray) why did these tests flake?
     # http://code.google.com/p/nativeclient/issues/detail?id=2230
