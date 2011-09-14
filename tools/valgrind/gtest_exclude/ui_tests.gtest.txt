@@ -127,3 +127,6 @@ AutomatedUITestBase.OpenCloseBrowserWindowWithAccelerator
 
 # Times out flakily, http://crbug.com/96313
 AutomatedUITestBase.DuplicateTab
+
+# Flaky failure on Linux/ChromeOS, http://crbug.com/96553
+OptionsUITest.LoadOptionsByURL
