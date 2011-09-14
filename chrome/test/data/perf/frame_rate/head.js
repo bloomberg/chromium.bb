@@ -352,6 +352,10 @@ function __start_recording() {
   __start(__advance_gesture_recording);
 }
 
+function __make_body_composited() {
+  document.body.style.webkitTransform = "translateZ(0)";
+}
+
 function __start(gesture_function) {
   if (__running)
     return;

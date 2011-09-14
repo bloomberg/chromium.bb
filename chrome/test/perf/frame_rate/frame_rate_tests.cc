@@ -50,7 +50,9 @@ class FrameRateTest : public UIPerfTest {
     UIPerfTest::SetUp();
   }
 
-  void RunTest(const std::string& name, const std::string& suffix) {
+  void RunTest(const std::string& name,
+               const std::string& suffix,
+               bool make_body_composited) {
     FilePath test_path = GetDataPath(name);
     ASSERT_TRUE(file_util::DirectoryExists(test_path))
         << "Missing test directory: " << test_path.value();
@@ -62,6 +64,11 @@ class FrameRateTest : public UIPerfTest {
 
     ASSERT_EQ(AUTOMATION_MSG_NAVIGATION_SUCCESS,
               tab->NavigateToURL(net::FilePathToFileURL(test_path)));
+
+    if (make_body_composited) {
+      ASSERT_TRUE(tab->NavigateToURLAsync(
+          GURL("javascript:__make_body_composited();")));
+    }
 
     // Start the tests.
     ASSERT_TRUE(tab->NavigateToURLAsync(GURL("javascript:__start_all();")));
@@ -111,12 +118,29 @@ class FrameRateTest_Reference : public FrameRateTest {
 
 #define FRAME_RATE_TEST(content) \
 TEST_F(FrameRateTest, content) { \
-  RunTest(#content, ""); \
+  RunTest(#content, "", false); \
 } \
 TEST_F(FrameRateTest_Reference, content) { \
-  RunTest(#content, "_ref"); \
+  RunTest(#content, "_ref", false); \
 }
-FRAME_RATE_TEST(blank);
-FRAME_RATE_TEST(googleblog);
+
+
+// Tests that trigger compositing with a -webkit-translateZ(0)
+#define FRAME_RATE_TEST_WITH_AND_WITHOUT_ACCELERATED_COMPOSITING(content) \
+TEST_F(FrameRateTest, content) { \
+  RunTest(#content, "", false); \
+} \
+TEST_F(FrameRateTest, content ## _comp) { \
+  RunTest(#content, "_comp", true); \
+} \
+TEST_F(FrameRateTest_Reference, content) { \
+  RunTest(#content, "_ref", false); \
+} \
+TEST_F(FrameRateTest_Reference, content ## _comp) { \
+  RunTest(#content, "_comp_ref", true); \
+}
+
+FRAME_RATE_TEST_WITH_AND_WITHOUT_ACCELERATED_COMPOSITING(blank);
+FRAME_RATE_TEST_WITH_AND_WITHOUT_ACCELERATED_COMPOSITING(googleblog);
 
 }  // namespace
