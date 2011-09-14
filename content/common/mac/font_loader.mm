@@ -164,31 +164,3 @@ bool FontLoader::CGFontRefFromBuffer(base::SharedMemoryHandle font_data,
 
   return true;
 }
-
-// TODO(jeremy): Remove once http://webk.it/66935 lands.
-// static
-bool FontLoader::ATSFontContainerFromBuffer(base::SharedMemoryHandle font_data,
-                                            uint32 font_data_size,
-                                            ATSFontContainerRef* font_container)
-{
-  CHECK(font_container);
-
-  using base::SharedMemory;
-  DCHECK(SharedMemory::IsHandleValid(font_data));
-  DCHECK_GT(font_data_size, 0U);
-
-  SharedMemory shm(font_data, true);
-  if (!shm.Map(font_data_size))
-    return false;
-
-  // A value of 3 means the font is private and can't be seen by anyone else.
-  // This is the value used by WebKit when activating remote fonts.
-  const ATSFontContext kFontContextPrivate = 3;
-  OSStatus err = ATSFontActivateFromMemory(shm.memory(), font_data_size,
-                    kFontContextPrivate, kATSFontFormatUnspecified, NULL,
-                    kATSOptionFlagsDefault, font_container);
-  if (err != noErr || !font_container)
-    return false;
-
-  return true;
-}

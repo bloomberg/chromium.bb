@@ -52,12 +52,6 @@ class FontLoader {
   static bool CGFontRefFromBuffer(base::SharedMemoryHandle font_data,
                                   uint32 font_data_size,
                                   CGFontRef* out);
-
-
-  // TODO(jeremy): Remove once http://webk.it/66935 lands.
-  static bool ATSFontContainerFromBuffer(base::SharedMemoryHandle font_data,
-                                         uint32 font_data_size,
-                                         ATSFontContainerRef* font_container);
 };
 
 #endif // CONTENT_COMMON_MAC_FONT_LOADER_H_

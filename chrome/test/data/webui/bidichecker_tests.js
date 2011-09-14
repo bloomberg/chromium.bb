@@ -56,8 +56,9 @@ function filtersForPage(pageName, isRTL) {
     },
     "chrome://newtab" : {
       "RTL" : [
-      // BUG: http://code.google.com/p/chromium/issues/detail?id=93339
-        bidichecker.FilterFactory.atText("Chrome Web Store")
+        // BUG: http://code.google.com/p/chromium/issues/detail?id=93339
+        bidichecker.FilterFactory.atText("Chrome Web Store"),
+        bidichecker.FilterFactory.atText("File Manager")
       ]
     }
   };

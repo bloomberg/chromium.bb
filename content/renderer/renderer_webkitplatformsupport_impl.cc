@@ -119,11 +119,6 @@ class RendererWebKitPlatformSupportImpl::SandboxSupport
       NSFont* src_font,
       CGFontRef* container,
       uint32* font_id);
-  // TODO(jeremy): Remove once http://webk.it/66935 lands.
-  virtual bool loadFont(
-      NSFont* src_font,
-      ATSFontContainerRef* out,
-      uint32_t* font_id);
 #elif defined(OS_POSIX)
   virtual WebKit::WebString getFontFamilyForCharacters(
       const WebKit::WebUChar* characters,
@@ -480,35 +475,6 @@ bool RendererWebKitPlatformSupportImpl::SandboxSupport::loadFont(
   // activated, don't reactivate it here - crbug.com/72727 .
 
   return FontLoader::CGFontRefFromBuffer(font_data, font_data_size, out);
-}
-
-// TODO(jeremy): Remove once http://webk.it/66935 lands.
-bool RendererWebKitPlatformSupportImpl::SandboxSupport::loadFont(
-    NSFont* src_font, ATSFontContainerRef* container, uint32* font_id) {
-  uint32 font_data_size;
-  FontDescriptor src_font_descriptor(src_font);
-  base::SharedMemoryHandle font_data;
-  if (!RenderThread::current()->Send(new ViewHostMsg_LoadFont(
-        src_font_descriptor, &font_data_size, &font_data, font_id))) {
-    *container = kATSFontContainerRefUnspecified;
-    *font_id = 0;
-    return false;
-  }
-
-  if (font_data_size == 0 || font_data == base::SharedMemory::NULLHandle() ||
-      *font_id == 0) {
-    NOTREACHED() << "Bad response from ViewHostMsg_LoadFont() for " <<
-        src_font_descriptor.font_name;
-    *container = kATSFontContainerRefUnspecified;
-    *font_id = 0;
-    return false;
-  }
-
-  // TODO(jeremy): Need to call back into WebKit to make sure that the font
-  // isn't already activated, based on the font id.  If it's already
-  // activated, don't reactivate it here - crbug.com/72727 .
-  return FontLoader::ATSFontContainerFromBuffer(font_data, font_data_size,
-      container);
 }
 
 #elif defined(OS_POSIX)
