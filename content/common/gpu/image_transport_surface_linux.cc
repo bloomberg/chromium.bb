@@ -436,11 +436,6 @@ bool ImageTransportHelper::Initialize() {
 }
 
 void ImageTransportHelper::Destroy() {
-  gpu::GpuScheduler* scheduler = Scheduler();
-  if (!scheduler)
-    return;
-
-  scheduler->SetResizeCallback(NULL);
 }
 
 bool ImageTransportHelper::OnMessageReceived(const IPC::Message& message) {
