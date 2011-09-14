@@ -23,6 +23,14 @@
 #include "net/base/x509_certificate.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
+@interface SFChooseIdentityPanel (SystemPrivate)
+// A system-private interface that dismisses a panel whose sheet was started by
+// beginSheetForWindow:modalDelegate:didEndSelector:contextInfo:identities:message:
+// as though the user clicked the button identified by returnCode. Verified
+// present in 10.5, 10.6, and 10.7.
+- (void)_dismissWithCode:(NSInteger)code;
+@end
+
 namespace {
 
 class ConstrainedSFChooseIdentityPanel
@@ -38,16 +46,16 @@ class ConstrainedSFChooseIdentityPanel
   }
 
   virtual ~ConstrainedSFChooseIdentityPanel() {
-    // As required by ConstrainedWindowMacDelegate, close the sheet if
-    // it's still open.
-    if (is_sheet_open()) {
-      [NSApp endSheet:sheet()
-           returnCode:NSFileHandlingPanelCancelButton];
-    }
   }
 
   // ConstrainedWindowMacDelegateSystemSheet implementation:
   virtual void DeleteDelegate() {
+    // As required by ConstrainedWindowMacDelegate, close the sheet if
+    // it's still open.
+    if (is_sheet_open()) {
+      [sheet() _dismissWithCode:NSFileHandlingPanelCancelButton];
+    }
+
     delete this;
   }
 

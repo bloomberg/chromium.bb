@@ -141,6 +141,9 @@ class ConstrainedWindowMac : public ConstrainedWindow {
   // Stores if |ShowConstrainedWindow()| was called.
   bool should_be_visible_;
 
+  // True when CloseConstrainedWindow has been called.
+  bool closing_;
+
   DISALLOW_COPY_AND_ASSIGN(ConstrainedWindowMac);
 };
 
