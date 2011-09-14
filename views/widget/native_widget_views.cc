@@ -467,7 +467,7 @@ void NativeWidgetViews::RunShellDrag(View* view,
 }
 
 void NativeWidgetViews::SchedulePaintInRect(const gfx::Rect& rect) {
-  view_->SchedulePaintInternal(rect);
+  view_->SchedulePaintInRect(rect);
 }
 
 void NativeWidgetViews::SetCursor(gfx::NativeCursor cursor) {
