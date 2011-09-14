@@ -4980,6 +4980,29 @@
    fun:gdk_x11_drawable_get_xid
    fun:_ZN19TestWebViewDelegate20CreatePluginDelegateERK8FilePathRKSs
 }
+{
+   bug_96568a
+   Memcheck:Leak
+   fun:realloc
+   fun:HB_OpenTypeShape
+   fun:HB_BasicShape
+   fun:HB_ShapeItem
+   fun:_ZN7WebCore21ComplexTextController11shapeGlyphsEv
+   fun:_ZN7WebCore21ComplexTextController13nextScriptRunEv
+   fun:_ZN7WebCore21ComplexTextController13selectionRectERKNS_10FloatPointEiii
+   fun:_ZNK7WebCore4Font27selectionRectForComplexTextERKNS_7TextRunERKNS_10FloatPointEiii
+}
+{
+   bug_96568b
+   Memcheck:Leak
+   ...
+   fun:HB_NewFace
+   fun:_ZN7WebCoreL21getCachedHarfbuzzFaceEPNS_16FontPlatformDataE
+   fun:_ZN7WebCore12HarfbuzzFaceC1EPNS_16FontPlatformDataE
+   fun:_ZN7WebCore12HarfbuzzFace6createEPNS_16FontPlatformDataE
+   fun:_ZNK7WebCore16FontPlatformData12harfbuzzFaceEv
+   fun:_ZN7WebCore21ComplexTextController21setupFontForScriptRunEv
+}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
