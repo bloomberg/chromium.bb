@@ -3,12 +3,8 @@
 # found in the LICENSE file.
 
 {
-  'targets': [
-    {
-      'target_name': 'content_plugin',
-      'type': 'static_library',
+      # TODO(dpranke): Fix indentation.
       'dependencies': [
-        'content_common',
         '../skia/skia.gyp:skia',
         '../third_party/npapi/npapi.gyp:npapi',
         '../webkit/support/webkit_support.gyp:glue',
@@ -64,6 +60,4 @@
           },
         }],
       ],
-    },
-  ],
 }

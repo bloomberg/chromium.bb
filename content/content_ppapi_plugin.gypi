@@ -3,10 +3,7 @@
 # found in the LICENSE file.
 
 {
-  'targets': [
-    {
-      'target_name': 'content_ppapi_plugin',
-      'type': 'static_library',
+      # TODO(dpranke): Fix indentation.
       'dependencies': [
         '../base/base.gyp:base',
         '../ppapi/ppapi_internal.gyp:ppapi_proxy',
@@ -37,6 +34,4 @@
           },
         }],
       ],
-    },
-  ],
 }
