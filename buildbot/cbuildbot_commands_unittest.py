@@ -286,7 +286,7 @@ class CBuildBotTest(mox.MoxTestBase):
     self.mox.VerifyAll()
 
   def testPushImages(self):
-    """Test UploadSymbols Command."""
+    """Test PushImages Command."""
     buildroot = '/bob'
     board = 'board_name'
     branch_name = 'branch_name'
@@ -299,7 +299,27 @@ class CBuildBotTest(mox.MoxTestBase):
                         cwd=mox.StrContains('crostools'))
 
     self.mox.ReplayAll()
-    commands.PushImages(buildroot, board, branch_name, archive_dir)
+    commands.PushImages(buildroot, board, branch_name, archive_dir, None)
+    self.mox.VerifyAll()
+
+  def testPushImages2(self):
+    """Test PushImages Command with profile."""
+    buildroot = '/bob'
+    board = 'board_name'
+    branch_name = 'branch_name'
+    profile_name = 'profile_name'
+    archive_dir = '/archive/dir'
+
+    cros_lib.RunCommand(['./pushimage',
+                         '--board=board_name',
+                         '--profile=profile_name',
+                         '--branch=branch_name',
+                         '/archive/dir'],
+                        cwd=mox.StrContains('crostools'))
+
+    self.mox.ReplayAll()
+    commands.PushImages(buildroot, board, branch_name, archive_dir,
+                        profile=profile_name)
     self.mox.VerifyAll()
 
 

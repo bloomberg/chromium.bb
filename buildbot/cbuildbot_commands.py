@@ -778,12 +778,17 @@ def UploadSymbols(buildroot, board, official):
   cros_lib.RunCommand(cmd, cwd=cwd, error_ok=True, enter_chroot=True)
 
 
-def PushImages(buildroot, board, branch_name, archive_dir):
+def PushImages(buildroot, board, branch_name, archive_dir, profile):
   """Push the generated image to http://chromeos_images."""
-  cmd = ['./pushimage',
-        '--board=%s' % board,
-        '--branch=%s' % branch_name,
-        archive_dir]
+  cmd = ['./pushimage', '--board=%s' % board]
+
+  if profile:
+    cmd.append('--profile=%s' % profile)
+
+  if branch_name:
+    cmd.append('--branch=%s' % branch_name)
+
+  cmd.append(archive_dir)
 
   cros_lib.RunCommand(cmd, cwd=os.path.join(buildroot, 'crostools'))
 

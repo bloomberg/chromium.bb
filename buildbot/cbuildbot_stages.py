@@ -897,7 +897,9 @@ class ArchiveStage(NonHaltingBuilderStage):
       commands.PushImages(buildroot,
                           board=board,
                           branch_name='master',
-                          archive_dir=archive_path)
+                          archive_dir=archive_path,
+                          profile=self._options.profile or
+                            self._build_config['profile'])
 
 
     commands.RemoveOldArchives(self._bot_archive_root,
