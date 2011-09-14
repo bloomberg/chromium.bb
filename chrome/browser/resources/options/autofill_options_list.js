@@ -8,6 +8,21 @@ cr.define('options.autofillOptions', function() {
   const InlineEditableItem = options.InlineEditableItem;
   const InlineEditableItemList = options.InlineEditableItemList;
 
+  function AutofillEditProfileButton(guid, edit) {
+    var editButtonEl = document.createElement('button');
+    editButtonEl.className = 'raw-button';
+    editButtonEl.textContent =
+        templateData.autofillEditProfileButton;
+    editButtonEl.onclick = function(e) { edit(guid); };
+
+    // Don't select the row when clicking the button.
+    editButtonEl.onmousedown = function(e) {
+      e.stopPropagation();
+    };
+
+    return editButtonEl;
+  }
+
   /**
    * Creates a new address list item.
    * @param {Array} entry An array of the form [guid, label].
@@ -36,6 +51,12 @@ cr.define('options.autofillOptions', function() {
       label.className = 'autofill-list-item';
       label.textContent = this.label;
       this.contentElement.appendChild(label);
+
+      // The 'Edit' button.
+      var editButtonEl = new AutofillEditProfileButton(
+        this.guid,
+        AutofillOptions.loadAddressEditor);
+      this.contentElement.appendChild(editButtonEl);
     },
   };
 
@@ -75,6 +96,12 @@ cr.define('options.autofillOptions', function() {
       icon.src = this.icon;
       icon.alt = this.description;
       this.contentElement.appendChild(icon);
+
+      // The 'Edit' button.
+      var editButtonEl = new AutofillEditProfileButton(
+        this.guid,
+        AutofillOptions.loadCreditCardEditor);
+      this.contentElement.appendChild(editButtonEl);
     },
   };
 
@@ -214,11 +241,6 @@ cr.define('options.autofillOptions', function() {
     },
 
     /** @inheritDoc */
-    activateItemAtIndex: function(index) {
-      AutofillOptions.loadAddressEditor(this.dataModel.item(index)[0]);
-    },
-
-    /** @inheritDoc */
     deleteItemAtIndex: function(index) {
       AutofillOptions.removeAddress(this.dataModel.item(index)[0]);
     },
@@ -251,11 +273,6 @@ cr.define('options.autofillOptions', function() {
     /** @inheritDoc */
     createItem: function(entry) {
       return new CreditCardListItem(entry);
-    },
-
-    /** @inheritDoc */
-    activateItemAtIndex: function(index) {
-      AutofillOptions.loadCreditCardEditor(this.dataModel.item(index)[0]);
     },
 
     /** @inheritDoc */

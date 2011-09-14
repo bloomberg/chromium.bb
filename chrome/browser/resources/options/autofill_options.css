@@ -15,11 +15,23 @@
 }
 
 #autofill-options > div.settings-list > div:last-child {
-  border-top: 1px solid #D9D9D9;
+  border-top: 1px solid #d9d9d9;
   padding: 5px 10px;
 }
 
 #autofill-add-address,
 #autofill-add-creditcard {
   margin: 2px 0;
+}
+
+.autofill-list-item + button,
+.autofill-list-item + img + button {
+  background: #8aaaed !important;  /* Gets overwritten by raw-button:hover */
+  color: #fff;
+  margin-top: 0;
+}
+
+#address-list > div:not(:hover) * button,
+#creditcard-list > div:not(:hover) * button {
+  display: none;
 }

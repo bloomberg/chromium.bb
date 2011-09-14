@@ -205,6 +205,7 @@ void AutofillOptionsHandler::GetLocalizedValues(
     { "autofillCreditCards", IDS_AUTOFILL_CREDITCARDS_GROUP_NAME },
     { "autofillAddAddress", IDS_AUTOFILL_ADD_ADDRESS_BUTTON },
     { "autofillAddCreditCard", IDS_AUTOFILL_ADD_CREDITCARD_BUTTON },
+    { "autofillEditProfileButton", IDS_AUTOFILL_EDIT_PROFILE_BUTTON },
     { "helpButton", IDS_AUTOFILL_HELP_LABEL },
     { "addAddressTitle", IDS_AUTOFILL_ADD_ADDRESS_CAPTION },
     { "editAddressTitle", IDS_AUTOFILL_EDIT_ADDRESS_CAPTION },
