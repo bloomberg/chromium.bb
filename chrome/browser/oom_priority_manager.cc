@@ -144,14 +144,16 @@ void OomPriorityManager::AdjustOomPriorities() {
       const TabStripModel* model = browser->tabstrip_model();
       for (int i = 0; i < model->count(); i++) {
         TabContents* contents = model->GetTabContentsAt(i)->tab_contents();
-        RendererStats stats;
-        stats.last_selected = contents->last_selected_time();
-        stats.renderer_handle = contents->GetRenderProcessHost()->GetHandle();
-        stats.is_pinned = model->IsTabPinned(i);
-        stats.memory_used = 0;  // Calculated in DoAdjustOomPriorities.
-        stats.is_selected = model->IsTabSelected(i);
-        stats.title = contents->GetTitle();
-        renderer_stats_.push_back(stats);
+        if (!contents->is_crashed()) {
+          RendererStats stats;
+          stats.last_selected = contents->last_selected_time();
+          stats.renderer_handle = contents->GetRenderProcessHost()->GetHandle();
+          stats.is_pinned = model->IsTabPinned(i);
+          stats.memory_used = 0;  // Calculated in DoAdjustOomPriorities.
+          stats.is_selected = model->IsTabSelected(i);
+          stats.title = contents->GetTitle();
+          renderer_stats_.push_back(stats);
+        }
       }
     }
   }
