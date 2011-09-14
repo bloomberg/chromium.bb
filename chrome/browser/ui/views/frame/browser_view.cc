@@ -400,10 +400,23 @@ BrowserView* BrowserView::GetBrowserViewForNativeWindow(
         ui::ViewProp::GetValue(window, kBrowserViewKey));
   }
 #else
+  BrowserView* browser_view = NULL;
   if (window) {
-    return static_cast<BrowserView*>(
+    browser_view = static_cast<BrowserView*>(
         g_object_get_data(G_OBJECT(window), kBrowserViewKey));
+
+#if defined(TOUCH_UI)
+    if (!browser_view) {
+      // With views-desktop, we cannot determine the BrowserView from the
+      // NativeWindow. So do the next best thing, and assume the last active
+      // BrowserView is what we want.
+      Browser* browser = BrowserList::GetLastActive();
+      if (browser && !browser->is_type_popup() && !browser->is_type_panel())
+        browser_view = reinterpret_cast<BrowserView*>(browser->window());
+    }
+#endif
   }
+  return browser_view;
 #endif
   return NULL;
 }
