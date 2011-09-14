@@ -29,7 +29,7 @@ namespace {
 
 // Version number of the current theme pack. We just throw out and rebuild
 // theme packs that aren't int-equal to this.
-const int kThemePackVersion = 18;
+const int kThemePackVersion = 17;
 
 // IDs that are in the DataPack won't clash with the positive integer
 // uint16. kHeaderID should always have the maximum value because we want the
@@ -450,7 +450,7 @@ bool BrowserThemePack::WriteToDisk(FilePath path) const {
   RepackImages(prepared_images_, &reencoded_images);
   AddRawImagesTo(reencoded_images, &resources);
 
-  return ui::DataPack::WritePack(path, resources, ui::DataPack::BINARY);
+  return ui::DataPack::WritePack(path, resources);
 }
 
 bool BrowserThemePack::GetTint(int id, color_utils::HSL* hsl) const {

@@ -74,7 +74,7 @@ class IncludeNode(base.Node):
     '''
     return self.FilenameToOpen()
 
-  def GetDataPackPair(self, lang, encoding):
+  def GetDataPackPair(self, lang):
     '''Returns a (id, string) pair that represents the resource id and raw
     bytes of the data.  This is used to generate the data pack data file.
     '''
@@ -90,8 +90,6 @@ class IncludeNode(base.Node):
       data = infile.read()
       infile.close()
 
-    # Include does not care about the encoding, because it only returns binary
-    # data.
     return id, data
 
   def Flatten(self, output_dir):
@@ -138,3 +136,4 @@ class IncludeNode(base.Node):
     node.EndParsing()
     return node
   Construct = staticmethod(Construct)
+

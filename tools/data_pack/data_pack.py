@@ -12,18 +12,11 @@ to point to grit scripts.
 
 import struct
 
-FILE_FORMAT_VERSION = 4
-HEADER_LENGTH = 2 * 4 + 1  # Two uint32s. (file version, number of entries) and
-                           # one uint8 (encoding of text resources)
-BINARY, UTF8, UTF16 = range(3)
+FILE_FORMAT_VERSION = 3
+HEADER_LENGTH = 2 * 4  # Two uint32s. (file version and number of entries)
 
 class WrongFileVersion(Exception):
   pass
-
-class DataPackContents:
-  def __init__(self, resources, encoding):
-    self.resources = resources
-    self.encoding = encoding
 
 def ReadDataPack(input_file):
   """Reads a data pack file and returns a dictionary."""
@@ -31,14 +24,13 @@ def ReadDataPack(input_file):
   original_data = data
 
   # Read the header.
-  version, num_entries, encoding = struct.unpack("<IIB", data[:HEADER_LENGTH])
+  version, num_entries = struct.unpack("<II", data[:HEADER_LENGTH])
   if version != FILE_FORMAT_VERSION:
-    print "Wrong file version in ", input_file
     raise WrongFileVersion
 
   resources = {}
   if num_entries == 0:
-    return DataPackContents(resources, encoding)
+    return resources
 
   # Read the index and data.
   data = data[HEADER_LENGTH:]
@@ -49,15 +41,15 @@ def ReadDataPack(input_file):
     next_id, next_offset = struct.unpack("<HI", data[:kIndexEntrySize])
     resources[id] = original_data[offset:next_offset]
 
-  return DataPackContents(resources, encoding)
+  return resources
 
-def WriteDataPack(resources, output_file, encoding):
+def WriteDataPack(resources, output_file):
   """Write a map of id=>data into output_file as a data pack."""
   ids = sorted(resources.keys())
   file = open(output_file, "wb")
 
   # Write file header.
-  file.write(struct.pack("<IIB", FILE_FORMAT_VERSION, len(ids), encoding))
+  file.write(struct.pack("<II", FILE_FORMAT_VERSION, len(ids)))
 
   # Each entry is a uint16 and a uint32. We have one extra entry for the last
   # item.
@@ -78,9 +70,9 @@ def WriteDataPack(resources, output_file, encoding):
 def main():
   # Just write a simple file.
   data = { 1: "", 4: "this is id 4", 6: "this is id 6", 10: "" }
-  WriteDataPack(data, "datapack1.pak", UTF8)
+  WriteDataPack(data, "datapack1.pak")
   data2 = { 1000: "test", 5: "five" }
-  WriteDataPack(data2, "datapack2.pak", UTF8)
+  WriteDataPack(data2, "datapack2.pak")
   print "wrote datapack1 and datapack2 to current directory."
 
 if __name__ == '__main__':
