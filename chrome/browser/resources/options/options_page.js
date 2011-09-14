@@ -462,9 +462,31 @@ cr.define('options', function() {
             this.findSectionForNode_(associatedControls[0]);
       }
     }
+
+    // Reverse the button strip for views. See the documentation of
+    // reverseButtonStrip_() for an explanation of why this is necessary.
+    if (document.documentElement.toolkit == 'views')
+      this.reverseButtonStrip_(overlay);
+
     overlay.tab = undefined;
     overlay.isOverlay = true;
     overlay.initializePage();
+  };
+
+  /**
+   * Reverses the child elements of a button strip. This is necessary because
+   * WebKit does not alter the tab order for elements that are visually reversed
+   * using -webkit-box-direction: reverse, and the button order is reversed for
+   * views.  See https://bugs.webkit.org/show_bug.cgi?id=62664 for more
+   * information.
+   * @param {Object} overlay The overlay containing the button strip to reverse.
+   * @private
+   */
+  OptionsPage.reverseButtonStrip_ = function(overlay) {
+    var buttonStrip = overlay.pageDiv.querySelector('.button-strip');
+    var childNodes = buttonStrip.childNodes;
+    for (var i = childNodes.length - 1; i >= 0; i--)
+      buttonStrip.appendChild(childNodes[i]);
   };
 
   /**

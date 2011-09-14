@@ -108,21 +108,17 @@ html[dir='rtl'] .action-area {
   display: -webkit-box;
 }
 
+.button-strip > button {
+  -webkit-margin-start: 10px;
+  display: block;
+}
+
 .bottom-strip {
   padding: 12px;
   position: absolute;
   right: 0px;
   bottom: 0px;
   border-top: none;
-}
-
-html[toolkit=views] .button-strip {
-  -webkit-box-direction: reverse;
-}
-
-.button-strip > button {
-  -webkit-margin-start: 10px;
-  display: block;
 }
 
 .overlay .page {
