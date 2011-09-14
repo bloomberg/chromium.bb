@@ -189,7 +189,7 @@ void TreeViewInsertColumnWithPixbuf(GtkWidget* treeview, int resid) {
                                      kTaskManagerBackgroundColor);
   GtkCellRenderer* text_renderer = gtk_cell_renderer_text_new();
   gtk_tree_view_column_pack_start(column, text_renderer, TRUE);
-  gtk_tree_view_column_add_attribute(column, text_renderer, "text", colid);
+  gtk_tree_view_column_add_attribute(column, text_renderer, "markup", colid);
   gtk_tree_view_column_add_attribute(column, text_renderer,
                                      "cell-background-gdk",
                                      kTaskManagerBackgroundColor);
@@ -756,6 +756,7 @@ GdkPixbuf* TaskManagerGtk::GetModelIcon(int row) {
 void TaskManagerGtk::SetRowDataFromModel(int row, GtkTreeIter* iter) {
   GdkPixbuf* icon = GetModelIcon(row);
   std::string page = GetModelText(row, IDS_TASK_MANAGER_PAGE_COLUMN);
+  gchar* page_markup = g_markup_escape_text(page.c_str(), page.length());
   std::string shared_mem = GetModelText(
       row, IDS_TASK_MANAGER_SHARED_MEM_COLUMN);
   std::string priv_mem = GetModelText(row, IDS_TASK_MANAGER_PRIVATE_MEM_COLUMN);
@@ -797,7 +798,7 @@ void TaskManagerGtk::SetRowDataFromModel(int row, GtkTreeIter* iter) {
       highlight_background_resources_;
   gtk_list_store_set(process_list_, iter,
                      kTaskManagerIcon, icon,
-                     kTaskManagerPage, page.c_str(),
+                     kTaskManagerPage, page_markup,
                      kTaskManagerSharedMem, shared_mem.c_str(),
                      kTaskManagerPrivateMem, priv_mem.c_str(),
                      kTaskManagerCPU, cpu.c_str(),
@@ -814,6 +815,7 @@ void TaskManagerGtk::SetRowDataFromModel(int row, GtkTreeIter* iter) {
                      is_background ? &kHighlightColor : NULL,
                      -1);
   g_object_unref(icon);
+  g_free(page_markup);
 }
 
 void TaskManagerGtk::KillSelectedProcesses() {
