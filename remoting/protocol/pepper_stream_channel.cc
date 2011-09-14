@@ -95,7 +95,8 @@ void PepperStreamChannel::Connect(pp::Instance* pp_instance,
   remote_cert_ = remote_cert;
 
   pp::Transport_Dev* transport =
-      new pp::Transport_Dev(pp_instance, name_.c_str(), "tcp");
+      new pp::Transport_Dev(pp_instance, name_.c_str(),
+                            PP_TRANSPORTTYPE_STREAM);
 
   if (transport->SetProperty(PP_TRANSPORTPROPERTY_TCP_RECEIVE_WINDOW,
                              pp::Var(kTcpReceiveBufferSize)) != PP_OK) {

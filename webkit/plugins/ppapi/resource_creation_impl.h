@@ -97,7 +97,7 @@ class ResourceCreationImpl : public ::ppapi::FunctionGroupBase,
                                       const int32_t* attrib_list) OVERRIDE;
   virtual PP_Resource CreateTransport(PP_Instance instance,
                                       const char* name,
-                                      const char* proto) OVERRIDE;
+                                      PP_TransportType type) OVERRIDE;
   virtual PP_Resource CreateURLLoader(PP_Instance instance) OVERRIDE;
   virtual PP_Resource CreateURLRequestInfo(
       PP_Instance instance,
