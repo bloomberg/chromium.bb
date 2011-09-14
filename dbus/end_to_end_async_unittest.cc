@@ -234,3 +234,14 @@ TEST_F(EndToEndAsyncTest, TestSignal) {
   WaitForTestSignal();
   ASSERT_EQ(kMessage, test_signal_string_);
 }
+
+TEST_F(EndToEndAsyncTest, TestSignalFromRoot) {
+  const char kMessage[] = "hello, world";
+  // Send the test signal from the root object path, to see if we can
+  // handle signals sent from "/", like dbus-send does.
+  test_service_->SendTestSignalFromRoot(kMessage);
+  // Receive the signal with the object proxy. The signal is handled in
+  // EndToEndAsyncTest::OnTestSignal() in the main thread.
+  WaitForTestSignal();
+  ASSERT_EQ(kMessage, test_signal_string_);
+}

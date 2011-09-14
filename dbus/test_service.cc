@@ -72,11 +72,31 @@ void TestService::SendTestSignal(const std::string& message) {
                  message));
 }
 
+void TestService::SendTestSignalFromRoot(const std::string& message) {
+  message_loop()->PostTask(
+      FROM_HERE,
+      base::Bind(&TestService::SendTestSignalFromRootInternal,
+                 base::Unretained(this),
+                 message));
+}
+
 void TestService::SendTestSignalInternal(const std::string& message) {
   dbus::Signal signal("org.chromium.TestInterface", "Test");
   dbus::MessageWriter writer(&signal);
   writer.AppendString(message);
   exported_object_->SendSignal(&signal);
+}
+
+void TestService::SendTestSignalFromRootInternal(const std::string& message) {
+  dbus::Signal signal("org.chromium.TestInterface", "Test");
+  dbus::MessageWriter writer(&signal);
+  writer.AppendString(message);
+
+  // Use "/" just like dbus-send does.
+  ExportedObject* root_object =
+      bus_->GetExportedObject("org.chromium.TestService",
+                              "/");
+  root_object->SendSignal(&signal);
 }
 
 void TestService::OnExported(const std::string& interface_name,

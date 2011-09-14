@@ -62,9 +62,16 @@ class TestService : public base::Thread {
   // Sends "Test" signal with the given message from the exported object.
   void SendTestSignal(const std::string& message);
 
+  // Sends "Test" signal with the given message from the root object ("/").
+  // This function emulates dbus-send's behavior.
+  void SendTestSignalFromRoot(const std::string& message);
+
  private:
   // Helper function for SendTestSignal().
   void SendTestSignalInternal(const std::string& message);
+
+  // Helper function for SendTestSignalFromRoot.
+  void SendTestSignalFromRootInternal(const std::string& message);
 
   // Helper function for ShutdownAndBlock().
   void ShutdownAndBlockInternal();

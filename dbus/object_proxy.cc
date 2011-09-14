@@ -291,10 +291,14 @@ void ObjectProxy::ConnectToSignalInternal(
       filter_added_ = true;
     }
     // Add a match rule so the signal goes through HandleMessage().
+    //
+    // We don't restrict the sender object path to be |object_path_| here,
+    // to make it easy to test D-Bus signal handling with dbus-send, that
+    // uses "/" as the sender object path. We can make the object path
+    // restriction customizable when it becomes necessary.
     const std::string match_rule =
-        base::StringPrintf("type='signal', interface='%s', path='%s'",
-                           interface_name.c_str(),
-                           object_path_.c_str());
+        base::StringPrintf("type='signal', interface='%s'",
+                           interface_name.c_str());
     ScopedDBusError error;
     bus_->AddMatch(match_rule, error.get());;
     if (error.is_set()) {
@@ -341,9 +345,7 @@ DBusHandlerResult ObjectProxy::HandleMessage(
   scoped_ptr<Signal> signal(
       Signal::FromRawMessage(raw_message));
 
-  // The signal is not coming from the remote object we are attaching to.
-  if (signal->GetPath() != object_path_)
-    return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+  VLOG(1) << "Signal received: " << signal->ToString();
 
   const std::string interface = signal->GetInterface();
   const std::string member = signal->GetMember();
