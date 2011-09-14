@@ -88,7 +88,9 @@ set-master-revision() {
 
 set-upstream-revision() {
   echo "@@@BUILD_STEP Get mercurial source@@@"
-  export UPSTREAM_REV=${UPSTREAM_BRANCH}
+  if ${INTERACTIVE_MERGE} ; then
+    export UPSTREAM_REV=${UPSTREAM_BRANCH}
+  fi
   utman hg-checkout-upstream
   utman hg-update-upstream
 }
