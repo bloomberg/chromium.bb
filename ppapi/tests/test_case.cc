@@ -18,6 +18,10 @@ TestCase::TestCase(TestingInstance* instance)
 TestCase::~TestCase() {
 }
 
+bool TestCase::Init() {
+  return true;
+}
+
 // static
 std::string TestCase::MakeFailureMessage(const char* file,
                                          int line,

@@ -34,7 +34,8 @@ class TestCase {
   virtual ~TestCase();
 
   // Optionally override to do testcase specific initialization.
-  virtual bool Init() { return true; }
+  // Default implementation just returns true.
+  virtual bool Init();
 
   // Override to implement the test. It will be called after the plugin is
   // first displayed.
