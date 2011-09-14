@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
-#include "base/task.h"
+#include "base/observer_list.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "views/controls/menu/menu_wrapper.h"
 #include "views/views_export.h"
@@ -130,8 +130,8 @@ class VIEWS_EXPORT NativeMenuWin : public MenuWrapper {
   // The action that took place during the call to RunMenuAt.
   MenuAction menu_action_;
 
-  // Vector of listeners to receive callbacks when the menu opens.
-  std::vector<MenuListener*> listeners_;
+  // A list of listeners to call when the menu opens.
+  ObserverList<MenuListener> listeners_;
 
   // Keep track of whether the listeners have already been called at least
   // once.

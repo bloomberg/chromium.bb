@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,9 +8,8 @@
 
 #include <gtk/gtk.h>
 
-#include <vector>
-
 #include "base/message_loop.h"
+#include "base/observer_list.h"
 #include "ui/base/gtk/gtk_signal.h"
 #include "views/controls/menu/menu_wrapper.h"
 
@@ -140,8 +139,8 @@ class NativeMenuGtk : public MenuWrapper,
   // The action that took place during the call to RunMenuAt.
   MenuAction menu_action_;
 
-  // Vector of listeners to receive callbacks when the menu opens.
-  std::vector<MenuListener*> listeners_;
+  // A list of listeners to call when the menu opens.
+  ObserverList<MenuListener> listeners_;
 
   // Nested dispatcher object that can outlive this object.
   // This is to deal with the menu being deleted while the nested

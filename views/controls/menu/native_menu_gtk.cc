@@ -120,9 +120,7 @@ void NativeMenuGtk::RunMenuAt(const gfx::Point& point, int alignment) {
   DCHECK(menu_hidden_);
   menu_hidden_ = false;
 
-  for (unsigned int i = 0; i < listeners_.size(); ++i) {
-    listeners_[i]->OnMenuOpened();
-  }
+  FOR_EACH_OBSERVER(MenuListener, listeners_, OnMenuOpened());
 
   // Listen for "hide" signal so that we know when to return from the blocking
   // RunMenuAt call.
@@ -228,18 +226,11 @@ NativeMenuGtk::MenuAction NativeMenuGtk::GetMenuAction() const {
 }
 
 void NativeMenuGtk::AddMenuListener(MenuListener* listener) {
-  listeners_.push_back(listener);
+  listeners_.AddObserver(listener);
 }
 
 void NativeMenuGtk::RemoveMenuListener(MenuListener* listener) {
-  for (std::vector<MenuListener*>::iterator iter = listeners_.begin();
-    iter != listeners_.end();
-    ++iter) {
-      if (*iter == listener) {
-        listeners_.erase(iter);
-        return;
-      }
-  }
+  listeners_.RemoveObserver(listener);
 }
 
 void NativeMenuGtk::SetMinimumWidth(int width) {

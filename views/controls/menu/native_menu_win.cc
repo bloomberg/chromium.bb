@@ -496,18 +496,11 @@ NativeMenuWin::MenuAction NativeMenuWin::GetMenuAction() const {
 }
 
 void NativeMenuWin::AddMenuListener(MenuListener* listener) {
-  listeners_.push_back(listener);
+  listeners_.AddObserver(listener);
 }
 
 void NativeMenuWin::RemoveMenuListener(MenuListener* listener) {
-  for (std::vector<MenuListener*>::iterator iter = listeners_.begin();
-    iter != listeners_.end();
-    ++iter) {
-      if (*iter == listener) {
-        listeners_.erase(iter);
-        return;
-      }
-  }
+  listeners_.RemoveObserver(listener);
 }
 
 void NativeMenuWin::SetMinimumWidth(int width) {
@@ -560,9 +553,7 @@ LRESULT CALLBACK NativeMenuWin::MenuMessageHook(
   // The first time this hook is called, that means the menu has successfully
   // opened, so call the callback function on all of our listeners.
   if (!this_ptr->listeners_called_) {
-    for (unsigned int i = 0; i < this_ptr->listeners_.size(); ++i) {
-      this_ptr->listeners_[i]->OnMenuOpened();
-    }
+    FOR_EACH_OBSERVER(MenuListener, this_ptr->listeners_, OnMenuOpened());
     this_ptr->listeners_called_ = true;
   }
 
