@@ -493,9 +493,13 @@ void GpuProcessHost::OnChildDied() {
   UMA_HISTOGRAM_ENUMERATION("GPU.GPUProcessTerminationStatus",
                             status,
                             base::TERMINATION_STATUS_MAX_ENUM);
-  UMA_HISTOGRAM_ENUMERATION("GPU.GPUProcessExitCode",
-                            exit_code,
-                            content::RESULT_CODE_LAST_CODE);
+
+  if (status == base::TERMINATION_STATUS_NORMAL_TERMINATION ||
+      status == base::TERMINATION_STATUS_ABNORMAL_TERMINATION) {
+    UMA_HISTOGRAM_ENUMERATION("GPU.GPUProcessExitCode",
+                              exit_code,
+                              content::RESULT_CODE_LAST_CODE);
+  }
 
   BrowserChildProcessHost::OnChildDied();
 }
