@@ -17,7 +17,7 @@ function filtersForPage(pageName, isRTL) {
   // TODO(ofri): Link to more comprehensive documentation when available.
   var filters = {
     // Page filters
-    "chrome://history/" : {
+    "chrome://history" : {
       // Filters for LTR UI
       "LTR" : [
         // BUG: http://code.google.com/p/chromium/issues/detail?id=80791
@@ -25,17 +25,52 @@ function filtersForPage(pageName, isRTL) {
       ],
       // Filters for RTL UI
       "RTL" : [
+        // BUG: http://code.google.com/p/chromium/issues/detail?id=80791
+        bidichecker.FilterFactory.atText("Google"),
+        // The following two are probably false positives since we can't
+        // completely change the environment to RTL on Linux.
+        // TODO(ofri): Verify that it's indeed a false positive.
+        bidichecker.FilterFactory.locationClass('day'),
+        bidichecker.FilterFactory.locationClass('time')
       ]
     },
     "chrome://settings/autofill" : {
       "LTR" : [
         // BUG: http://code.google.com/p/chromium/issues/detail?id=82267
         bidichecker.FilterFactory.atText("משה ב כהן, דרך מנחם בגין")
+      ],
+      "RTL" : [
+        // BUG: http://code.google.com/p/chromium/issues/detail?id=90322
+        bidichecker.FilterFactory.atText(
+            "Milton C. Waddams, 4120 Freidrich Lane")
+      ]
+    },
+    "chrome://plugins" : {
+      "RTL" : [
+        // False positive
+        bidichecker.FilterFactory.atText('x'),
+        // Apparently also a false positive
+        bidichecker.FilterFactory.atText("undefined\n      undefined"),
+        bidichecker.FilterFactory.locationClass('plugin-text')
+      ]
+    },
+    "chrome://newtab" : {
+      "RTL" : [
+      // BUG: http://code.google.com/p/chromium/issues/detail?id=93339
+        bidichecker.FilterFactory.atText("Chrome Web Store")
       ]
     }
   };
 
   var dir = isRTL ? "RTL" : "LTR";
+  if (!filters.hasOwnProperty(pageName))
+    pageName += '/';
+  if (!filters.hasOwnProperty(pageName)) {
+    if (pageName.charAt(pageName.length - 2) == '/')
+      pageName = pageName.substr(0, pageName.length - 2);
+    else
+      return [];
+  }
   if (filters.hasOwnProperty(pageName) &&
       filters[pageName].hasOwnProperty(dir)) {
     return filters[pageName][dir];
@@ -46,10 +81,12 @@ function filtersForPage(pageName, isRTL) {
 
 function buildPrettyErrors(bidiErrors) {
   var idx;
-  var prettyErrors = [];
+  var prettyErrors;
   for (idx = 0; idx < bidiErrors.length; ++idx) {
-    prettyErrors[idx] = bidiErrors[idx].toString();
+    prettyErrors += '\n\n';
+    prettyErrors += bidiErrors[idx].toString();
   }
+  prettyErrors += '\n\n';
   return prettyErrors;
 }
 

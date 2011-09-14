@@ -149,6 +149,10 @@ class UI_EXPORT ResourceBundle {
   // system have changed, for example, when the locale has changed.
   void ReloadFonts();
 
+  // Overrides the path to the pak file from which the locale resources will be
+  // loaded. Pass an empty path to undo.
+  void OverrideLocalePakForTest(const FilePath& pak_path);
+
 #if defined(OS_WIN)
   // NOTE: This needs to be called before initializing the shared instance if
   // your resources are not stored in the executable.
@@ -271,6 +275,8 @@ class UI_EXPORT ResourceBundle {
   // bright red bitmap.
   gfx::Image* GetEmptyImage();
 
+  const FilePath& GetOverriddenPakPath();
+
   // Class level lock.  Used to protect internal data structures that may be
   // accessed from other threads (e.g., images_).
   scoped_ptr<base::Lock> lock_;
@@ -299,6 +305,8 @@ class UI_EXPORT ResourceBundle {
   scoped_ptr<gfx::Font> web_font_;
 
   static ResourceBundle* g_shared_instance_;
+
+  FilePath overridden_pak_path_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceBundle);
 };
