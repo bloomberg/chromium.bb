@@ -68,7 +68,7 @@ class VIEWS_EXPORT WidgetFocusManager {
 
 // A basic helper class that is used to disable native focus change
 // notifications within a scope.
-class AutoNativeNotificationDisabler {
+class VIEWS_EXPORT AutoNativeNotificationDisabler {
  public:
   AutoNativeNotificationDisabler();
   ~AutoNativeNotificationDisabler();
