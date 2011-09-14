@@ -140,15 +140,14 @@ PP_Resource ResourceTracker::AddResource(Resource* object) {
   if (last_resource_value_ == kMaxPPId)
     return 0;
 
-  // If you hit this somebody forgot to call DidCreateInstance or the resource
-  // was created with an invalid PP_Instance.
-  //
-  // This is specifically a check even in release mode. When creating resources
-  // it can be easy to forget to validate the instance parameter. If somebody
-  // does forget, we don't want to introduce a vulnerability with invalid
-  // pointers floating around, so we die ASAP.
   InstanceMap::iterator found = instance_map_.find(object->pp_instance());
-  CHECK(found != instance_map_.end());
+  if (found == instance_map_.end()) {
+    // If you hit this, it's likely somebody forgot to call DidCreateInstance,
+    // the resource was created with an invalid PP_Instance, or the renderer
+    // side tried to create a resource for a plugin that crashed.
+    NOTREACHED();
+    return 0;
+  }
 
   PP_Resource new_id = MakeTypedId(++last_resource_value_, PP_ID_TYPE_RESOURCE);
   found->second->resources.insert(new_id);

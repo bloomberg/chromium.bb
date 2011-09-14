@@ -450,6 +450,10 @@ bool PluginInstance::HandleDocumentLoad(PPB_URLLoader_Impl* loader) {
 
 bool PluginInstance::HandleInputEvent(const WebKit::WebInputEvent& event,
                                       WebCursorInfo* cursor_info) {
+  // Don't dispatch input events to crashed plugins.
+  if (module()->is_crashed())
+    return false;
+
   // Keep a reference on the stack. See NOTE above.
   scoped_refptr<PluginInstance> ref(this);
 

@@ -10,6 +10,10 @@
 #include "googleurl/src/gurl.h"
 #include "ppapi/c/pp_var.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebBindings.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebElement.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebPluginContainer.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPluginParams.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPoint.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebRect.h"
@@ -153,6 +157,12 @@ bool WebPluginImpl::handleInputEvent(const WebKit::WebInputEvent& event,
 void WebPluginImpl::didReceiveResponse(
     const WebKit::WebURLResponse& response) {
   DCHECK(!document_loader_);
+
+  if (instance_->module()->is_crashed()) {
+    // Don't create a resource for a crashed plugin.
+    instance_->container()->element().document().frame()->stopLoading();
+    return;
+  }
 
   document_loader_ = new PPB_URLLoader_Impl(instance_->pp_instance(), true);
   document_loader_->didReceiveResponse(NULL, response);
