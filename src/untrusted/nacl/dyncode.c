@@ -6,22 +6,34 @@
 
 #include <errno.h>
 #include <sys/nacl_syscalls.h>
+#include <unistd.h>
 
-#include "native_client/src/untrusted/irt/irt_interfaces.h"
-#include "native_client/src/untrusted/nacl/nacl_irt.h"
+#include "native_client/src/untrusted/irt/irt.h"
 
 /*
  * ABI table for underyling NaCl dyncode interfaces.
- * We set this up in a constructor run implicitly at initialization time.
+ * We set this up on demand.
  */
 static struct nacl_irt_dyncode irt_dyncode;
 
-static void __attribute__((constructor)) setup_irt_dyncode(void) {
-  __libnacl_mandatory_irt_query(NACL_IRT_DYNCODE_v0_1, &irt_dyncode,
-                                sizeof(irt_dyncode));
+/*
+ * We don't do any locking here, but simultaneous calls are harmless enough.
+ * They'll all be writing the same values to the same words.
+ */
+static void setup_irt_dyncode(void) {
+  if (nacl_interface_query(NACL_IRT_DYNCODE_v0_1, &irt_dyncode,
+                           sizeof(irt_dyncode)) != sizeof(irt_dyncode)) {
+    static const char fail_msg[] =
+        "IRT interface query failed for essential interface \""
+        NACL_IRT_DYNCODE_v0_1 "\"!\n";
+    write(2, fail_msg, sizeof(fail_msg) - 1);
+    _exit(-1);
+  }
 }
 
 int nacl_dyncode_create(void *dest, const void *src, size_t size) {
+  if (NULL == irt_dyncode.dyncode_create)
+    setup_irt_dyncode();
   int error = irt_dyncode.dyncode_create(dest, src, size);
   if (error) {
     errno = error;
@@ -31,6 +43,8 @@ int nacl_dyncode_create(void *dest, const void *src, size_t size) {
 }
 
 int nacl_dyncode_modify(void *dest, const void *src, size_t size) {
+  if (NULL == irt_dyncode.dyncode_modify)
+    setup_irt_dyncode();
   int error = irt_dyncode.dyncode_modify(dest, src, size);
   if (error) {
     errno = error;
@@ -40,6 +54,8 @@ int nacl_dyncode_modify(void *dest, const void *src, size_t size) {
 }
 
 int nacl_dyncode_delete(void *dest, size_t size) {
+  if (NULL == irt_dyncode.dyncode_delete)
+    setup_irt_dyncode();
   int error = irt_dyncode.dyncode_delete(dest, size);
   if (error) {
     errno = error;
