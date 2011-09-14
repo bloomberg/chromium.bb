@@ -69,7 +69,6 @@ class ExtensionDispatcher : public RenderProcessObserver {
                        const std::string& function_name,
                        const base::ListValue& args,
                        const GURL& event_url);
-  void OnDeliverMessage(int target_port_id, const std::string& message);
   void OnSetFunctionNames(const std::vector<std::string>& names);
   void OnLoaded(const ExtensionMsg_Loaded_Params& params);
   void OnUnloaded(const std::string& id);

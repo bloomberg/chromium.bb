@@ -77,15 +77,14 @@ class ExtensionPortsRemoteService : public DevToolsRemoteListener,
                     const std::string& tool,
                     const std::string& destination);
 
-  // Handles requests from ExtensionMessageService to invoke specific
-  // JavaScript functions. Currently we only handle the "disconnect" function.
+  // Handles a message from the ExtensionMessageService.
   void OnExtensionMessageInvoke(const std::string& extension_id,
                                 const std::string& function_name,
                                 const base::ListValue& args,
                                 const GURL& event_url);
   // Handles a message sent from an extension through the
   // ExtensionMessageService, to be passed to the external client.
-  void OnDeliverMessage(int port_id, const std::string& message);
+  void OnExtensionMessage(const std::string& message, int port_id);
   // Handles a disconnect event sent from the ExtensionMessageService.
   void OnExtensionPortDisconnected(int port_id);
 

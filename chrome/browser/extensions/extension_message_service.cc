@@ -50,6 +50,8 @@ const char ExtensionMessageService::kDispatchOnConnect[] =
     "Port.dispatchOnConnect";
 const char ExtensionMessageService::kDispatchOnDisconnect[] =
     "Port.dispatchOnDisconnect";
+const char ExtensionMessageService::kDispatchOnMessage[] =
+    "Port.dispatchOnMessage";
 
 namespace {
 
@@ -86,10 +88,12 @@ static void DispatchOnDisconnect(
 }
 
 static void DispatchOnMessage(const ExtensionMessageService::MessagePort& port,
-                              const std::string& message, int target_port_id) {
-  port.sender->Send(
-      new ExtensionMsg_DeliverMessage(
-          port.routing_id, target_port_id, message));
+                              const std::string& message, int source_port_id) {
+  ListValue args;
+  args.Set(0, Value::CreateStringValue(message));
+  args.Set(1, Value::CreateIntegerValue(source_port_id));
+  port.sender->Send(new ExtensionMsg_MessageInvoke(port.routing_id,
+      "", ExtensionMessageService::kDispatchOnMessage, args, GURL()));
 }
 
 }  // namespace

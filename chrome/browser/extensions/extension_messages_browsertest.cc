@@ -8,7 +8,6 @@
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/extensions/event_bindings.h"
-#include "chrome/renderer/extensions/renderer_extension_bindings.h"
 #include "chrome/test/base/render_view_test.h"
 #include "content/common/view_messages.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -33,6 +32,14 @@ static void DispatchOnDisconnect(int source_port_id) {
   args.Set(0, Value::CreateIntegerValue(source_port_id));
   EventBindings::CallFunction(
       "", ExtensionMessageService::kDispatchOnDisconnect, args, NULL, GURL());
+}
+
+static void DispatchOnMessage(const std::string& message, int source_port_id) {
+  ListValue args;
+  args.Set(0, Value::CreateStringValue(message));
+  args.Set(1, Value::CreateIntegerValue(source_port_id));
+  EventBindings::CallFunction(
+      "", ExtensionMessageService::kDispatchOnMessage, args, NULL, GURL());
 }
 
 // Tests that the bindings for opening a channel to an extension and sending
@@ -69,7 +76,7 @@ TEST_F(RenderViewTest, ExtensionMessagesOpenChannel) {
   // Now simulate getting a message back from the other side.
   render_thread_.sink().ClearMessages();
   const int kPortId = 0;
-  RendererExtensionBindings::DeliverMessage(kPortId, "{\"val\": 42}");
+  DispatchOnMessage("{\"val\": 42}", kPortId);
 
   // Verify that we got it.
   const IPC::Message* alert_msg =
@@ -121,7 +128,7 @@ TEST_F(RenderViewTest, ExtensionMessagesOnConnect) {
 
   // Now simulate getting a message back from the channel opener.
   render_thread_.sink().ClearMessages();
-  RendererExtensionBindings::DeliverMessage(kPortId, "{\"val\": 42}");
+  DispatchOnMessage("{\"val\": 42}", kPortId);
 
   // Verify that we got it.
   const IPC::Message* alert_msg =
