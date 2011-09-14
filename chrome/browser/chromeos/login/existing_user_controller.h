@@ -196,6 +196,9 @@ class ExistingUserController : public LoginDisplay::Delegate,
   // Used to verify ownership before starting enterprise enrollment.
   scoped_ptr<OwnershipStatusChecker> ownership_checker_;
 
+  // Whether it's first login to the device and this user will be owner.
+  bool is_owner_login_;
+
   FRIEND_TEST_ALL_PREFIXES(ExistingUserControllerTest, NewUserLogin);
 
   DISALLOW_COPY_AND_ASSIGN(ExistingUserController);

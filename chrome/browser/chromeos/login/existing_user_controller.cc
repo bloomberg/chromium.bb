@@ -45,9 +45,13 @@ namespace {
 // Url for setting up sync authentication.
 const char kSettingsSyncLoginURL[] = "chrome://settings/personal";
 
-// URL that will be opened on when user logs in first time on the device.
+// URL that will be opened when user logs in first time on the device.
 const char kGetStartedURLPattern[] =
     "http://www.gstatic.com/chromebook/gettingstarted/index-%s.html";
+
+// URL that will be opened when first user logs in first time on the device.
+const char kGetStartedOwnerURLPattern[] =
+    "http://www.gstatic.com/chromebook/gettingstarted/index-%s.html#first";
 
 // URL for account creation.
 const char kCreateAccountURL[] =
@@ -74,7 +78,8 @@ ExistingUserController::ExistingUserController(LoginDisplayHost* host)
       host_(host),
       num_login_attempts_(0),
       user_settings_(new UserCrosSettingsProvider),
-      method_factory_(this) {
+      method_factory_(this),
+      is_owner_login_(false) {
   DCHECK(current_controller_ == NULL);
   current_controller_ = this;
 
@@ -169,6 +174,10 @@ void ExistingUserController::CompleteLogin(const std::string& username,
     login_performer_.reset(new LoginPerformer(delegate));
   }
 
+  // If the device is not owned yet, successfully logged in user will be owner.
+  is_owner_login_ = OwnershipService::GetSharedInstance()->GetStatus(true) ==
+      OwnershipService::OWNERSHIP_NONE;
+
   login_performer_->CompleteLogin(username, password);
   WizardAccessibilityHelper::GetInstance()->MaybeSpeak(
       l10n_util::GetStringUTF8(IDS_CHROMEOS_ACC_LOGIN_SIGNING_IN).c_str(),
@@ -182,6 +191,10 @@ void ExistingUserController::Login(const std::string& username,
   SetStatusAreaEnabled(false);
   // Disable clicking on other windows.
   login_display_->SetUIEnabled(false);
+
+  // If the device is not owned yet, successfully logged in user will be owner.
+  is_owner_login_ = OwnershipService::GetSharedInstance()->GetStatus(true) ==
+      OwnershipService::OWNERSHIP_NONE;
 
   BootTimesLoader::Get()->RecordLoginAttempted();
 
@@ -382,8 +395,10 @@ void ExistingUserController::OnProfilePrepared(Profile* profile) {
         current_locale.find("en") != std::string::npos) {
       start_url = kChromeVoxTutorialURL;
     } else {
-      start_url = base::StringPrintf(kGetStartedURLPattern,
-                                     current_locale.c_str());
+      const char* url = kGetStartedURLPattern;
+      if (is_owner_login_)
+        url = kGetStartedOwnerURLPattern;
+      start_url = base::StringPrintf(url, current_locale.c_str());
     }
     CommandLine::ForCurrentProcess()->AppendArg(start_url);
 
