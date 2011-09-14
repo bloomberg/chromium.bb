@@ -88,6 +88,8 @@ class GclientTest(trial_dir.TestCase):
     # fetched until 'src' is done.
     # jobs is the number of parallel jobs simulated. reverse is to reshuffle the
     # list to see if it is still processed in order correctly.
+    # Also test that a From() dependency that should not be processed is listed
+    # as a requirement.
     parser = gclient.Parser()
     options, args = parser.parse_args(['--jobs', jobs])
     write(
@@ -101,9 +103,11 @@ class GclientTest(trial_dir.TestCase):
         os.path.join('foo', 'DEPS'),
         'deps = {\n'
         '  "foo/dir1": "/dir1",\n'
+        # This one will depend on dir1/dir2 in bar.
         '  "foo/dir1/dir2/dir3": "/dir1/dir2/dir3",\n'
-        '  "foo/dir1/dir4": "/dir1/dir4",\n'
         '  "foo/dir1/dir2/dir3/dir4": "/dir1/dir2/dir3/dir4",\n'
+        '  "foo/dir1/dir2/dir5/dir6":\n'
+        '    From("foo/dir1/dir2/dir3/dir4", "foo/dir1/dir2"),\n'
         '}')
     write(
         os.path.join('bar', 'DEPS'),
@@ -113,6 +117,14 @@ class GclientTest(trial_dir.TestCase):
     write(
         os.path.join('bar/empty', 'DEPS'),
         'deps = {\n'
+        '}')
+    # Test From()
+    write(
+        os.path.join('foo/dir1/dir2/dir3/dir4', 'DEPS'),
+        'deps = {\n'
+        # This one should not be fetched or set as a requirement.
+        '  "foo/dir1/dir2/dir5": "svn://example.com/x",\n'
+        '  "foo/dir1/dir2": "/dir1/another",\n'
         '}')
 
     obj = gclient.GClient.LoadCurrentConfig(options)
@@ -139,9 +151,10 @@ class GclientTest(trial_dir.TestCase):
     self.assertEquals(
         [
           'svn://example.com/foo/dir1',
-          'svn://example.com/foo/dir1/dir4',
           'svn://example.com/foo/dir1/dir2/dir3',
           'svn://example.com/foo/dir1/dir2/dir3/dir4',
+          # TODO(maruel): This is probably wrong.
+          'svn://example.com/foo/dir1/dir2/dir3/dir4/dir1/another',
         ],
         actual)
     self._check_requirements(
@@ -151,7 +164,8 @@ class GclientTest(trial_dir.TestCase):
           'foo/dir1/dir2/dir3': ['foo', 'foo/dir1', 'foo/dir1/dir2'],
           'foo/dir1/dir2/dir3/dir4':
               ['foo', 'foo/dir1', 'foo/dir1/dir2', 'foo/dir1/dir2/dir3'],
-          'foo/dir1/dir4': ['foo', 'foo/dir1'],
+          'foo/dir1/dir2/dir5/dir6':
+              ['foo', 'foo/dir1', 'foo/dir1/dir2', 'foo/dir1/dir2/dir3/dir4'],
         })
     self._check_requirements(
         obj.dependencies[1],

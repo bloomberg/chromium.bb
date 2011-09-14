@@ -454,10 +454,11 @@ def GetGClientRootAndEntries(path=None):
 
 class WorkItem(object):
   """One work item."""
-  # A list of string, each being a WorkItem name.
-  requirements = []
-  # A unique string representing this work item.
-  name = None
+  def __init__(self):
+    # A list of string, each being a WorkItem name.
+    self.requirements = []
+    # A unique string representing this work item.
+    self.name = None
 
   def run(self, work_queue):
     """work_queue is passed as keyword argument so it should be
@@ -548,7 +549,20 @@ class ExecutionQueue(object):
           # We're done.
           break
         # We need to poll here otherwise Ctrl-C isn't processed.
-        self.ready_cond.wait(10)
+        try:
+          self.ready_cond.wait(10)
+        except KeyboardInterrupt:
+          # Help debugging by printing some information:
+          print >> sys.stderr, (
+              ('\nAllowed parallel jobs: %d\n# queued: %d\nRan: %s\n'
+                'Running: %d') % (
+              self.jobs,
+              len(self.queued),
+              ', '.join(self.ran),
+              len(self.running)))
+          for i in self.queued:
+            print >> sys.stderr, '%s: %s' % (i.name, ', '.join(i.requirements))
+          raise
         # Something happened: self.enqueue() or a thread terminated. Loop again.
     finally:
       self.ready_cond.release()

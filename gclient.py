@@ -224,13 +224,14 @@ class Dependency(GClientKeywords, gclient_utils.WorkItem):
     if isinstance(self.url, self.FromImpl):
       self.requirements.add(self.url.module_name)
 
-    if self.name:
+    if self.name and self.should_process:
       def yield_full_tree(root):
         """Depth-first recursion."""
         yield root
         for i in root.dependencies:
           for j in yield_full_tree(i):
-            yield j
+            if j.should_process:
+              yield j
 
       for obj in yield_full_tree(self.root_parent()):
         if obj is self or not obj.name:
