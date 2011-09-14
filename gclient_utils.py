@@ -332,7 +332,6 @@ def CheckCallAndFilter(args, stdout=None, filter_fn=None,
   assert print_stdout or filter_fn
   stdout = stdout or sys.stdout
   filter_fn = filter_fn or (lambda x: None)
-  assert not 'stderr' in kwargs
   kid = subprocess2.Popen(
       args, bufsize=0, stdout=subprocess2.PIPE, stderr=subprocess2.STDOUT,
       **kwargs)
@@ -588,7 +587,10 @@ class ExecutionQueue(object):
         sys.stdout.full_flush()  # pylint: disable=E1101
         if self.progress:
           self.progress.update(1, t.item.name)
-        assert not t.item.name in self.ran
+        if t.item.name in self.ran:
+          raise Error(
+              'gclient is confused, "%s" is already in "%s"' % (
+                t.item.name, ', '.join(self.ran)))
         if not t.item.name in self.ran:
           self.ran.append(t.item.name)
 
