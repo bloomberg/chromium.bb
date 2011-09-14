@@ -173,9 +173,17 @@ void AutofillAgent::didClearAutofillSelection(const WebNode& node) {
   if (password_autofill_manager_->DidClearAutofillSelection(node))
     return;
 
-  DCHECK(node == autofill_query_element_);
-  FormManager::ClearPreviewedFormWithElement(autofill_query_element_,
-                                             was_query_node_autofilled_);
+  if (!autofill_query_element_.isNull() && node == autofill_query_element_) {
+    FormManager::ClearPreviewedFormWithElement(autofill_query_element_,
+                                               was_query_node_autofilled_);
+  } else {
+    // TODO(isherman): There seem to be rare cases where this code *is*
+    // reachable: see [ http://crbug.com/96321#c6 ].  Ideally we would
+    // understand those cases and fix the code to avoid them.  However, so far I
+    // have been unable to reproduce such a case locally.  If you hit this
+    // NOTREACHED(), please file a bug against me.
+    NOTREACHED();
+  }
 }
 
 void AutofillAgent::removeAutocompleteSuggestion(const WebString& name,
