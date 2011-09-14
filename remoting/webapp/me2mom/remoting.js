@@ -465,8 +465,9 @@ function onClientStateChange_(oldState) {
   } else if (state == remoting.ClientSession.State.INITIALIZING) {
     remoting.debug.log('Initializing connection');
   } else if (state == remoting.ClientSession.State.CONNECTED) {
-    showToolbarPreview_();
     remoting.setMode(remoting.AppMode.IN_SESSION);
+    recenterToolbar_();
+    showToolbarPreview_();
     updateStatistics();
     var accessCode = document.getElementById('access-code-entry');
     accessCode.value = '';
@@ -674,6 +675,7 @@ remoting.toggleScaleToFit = function(button) {
 remoting.onResize = function() {
   if (remoting.session)
     remoting.session.onWindowSizeChanged();
+  recenterToolbar_();
 }
 
 /**
@@ -722,6 +724,13 @@ remoting.setUseP2pApi = function(use) {
   } else {
     window.localStorage.removeItem(KEY_USE_P2P_API_);
   }
+}
+
+function recenterToolbar_() {
+  var toolbar = document.getElementById('session-toolbar');
+  var toolbarX = (window.innerWidth - toolbar.clientWidth) / 2;
+  toolbar.style['left'] = toolbarX + 'px';
+  remoting.debug.log('toolbar moved to ' + toolbarX);
 }
 
 }());
