@@ -1089,19 +1089,6 @@
    fun:::AutocompleteProviderTest::RunTest
 }
 {
-   bug_79326
-   Heapcheck:Leak
-   ...
-   fun:*string*
-   ...
-   fun:browser_sync::HttpBridge::SetUserAgent
-   fun:sync_api::SyncAPIBridgedPost::Init
-   fun:browser_sync::ServerConnectionManager::CheckTime
-   fun:browser_sync::ServerConnectionManager::IsServerReachable
-   fun:browser_sync::ServerConnectionManager::CheckServerReachable
-   fun:sync_api::SyncManager::SyncInternal::CheckServerReachable
-}
-{
    bug_79327
    Heapcheck:Leak
    fun:HttpBridgeFactory
