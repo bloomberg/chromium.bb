@@ -27,7 +27,7 @@ class PPB_Transport_Impl : public ::ppapi::Resource,
 
   static PP_Resource Create(PP_Instance instance,
                             const char* name,
-                            const char* proto);
+                            PP_TransportType type);
 
   // Resource override.
   virtual ::ppapi::thunk::PPB_Transport_API* AsPPB_Transport_API() OVERRIDE;
@@ -54,13 +54,13 @@ class PPB_Transport_Impl : public ::ppapi::Resource,
  private:
   explicit PPB_Transport_Impl(PP_Instance instance);
 
-  bool Init(const char* name, const char* proto);
+  bool Init(const char* name, PP_TransportType type);
 
   void OnRead(int result);
   void OnWritten(int result);
 
   std::string name_;
-  bool use_tcp_;
+  PP_TransportType type_;
   webkit_glue::P2PTransport::Config config_;
   bool started_;
   scoped_ptr<webkit_glue::P2PTransport> p2p_transport_;

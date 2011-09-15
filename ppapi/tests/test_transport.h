@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
+#include "ppapi/c/dev/ppb_transport_dev.h"
 #include "ppapi/tests/test_case.h"
 
 struct PPB_Transport_Dev;
@@ -25,7 +26,7 @@ class TestTransport : public TestCase {
   virtual void RunTest();
 
  private:
-  std::string InitTargets(const char* proto);
+  std::string InitTargets(PP_TransportType type);
   std::string Connect();
   std::string Clean();
 

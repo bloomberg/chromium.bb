@@ -70,9 +70,9 @@ PPB_Transport_Impl::~PPB_Transport_Impl() {
 // static
 PP_Resource PPB_Transport_Impl::Create(PP_Instance instance,
                                        const char* name,
-                                       const char* proto) {
+                                       PP_TransportType type) {
   scoped_refptr<PPB_Transport_Impl> t(new PPB_Transport_Impl(instance));
-  if (!t->Init(name, proto))
+  if (!t->Init(name, type))
     return 0;
   return t->GetReference();
 }
@@ -81,17 +81,14 @@ PPB_Transport_API* PPB_Transport_Impl::AsPPB_Transport_API() {
   return this;
 }
 
-bool PPB_Transport_Impl::Init(const char* name, const char* proto) {
+bool PPB_Transport_Impl::Init(const char* name, PP_TransportType type) {
   name_ = name;
 
-  if (base::strcasecmp(proto, kUdpProtocolName) == 0) {
-    use_tcp_ = false;
-  } else if (base::strcasecmp(proto, kTcpProtocolName) == 0) {
-    use_tcp_ = true;
-  } else {
-    LOG(WARNING) << "Unknown protocol: " << proto;
+  if (type != PP_TRANSPORTTYPE_DATAGRAM && type != PP_TRANSPORTTYPE_STREAM) {
+    LOG(WARNING) << "Unknown transport type: " << type;
     return false;
   }
+  type_ = type;
 
   PluginDelegate* plugin_delegate = ResourceHelper::GetPluginDelegate(this);
   if (!plugin_delegate)
@@ -147,7 +144,7 @@ int32_t PPB_Transport_Impl::SetProperty(PP_TransportProperty property,
     }
 
     case PP_TRANSPORTPROPERTY_TCP_RECEIVE_WINDOW: {
-      if (!use_tcp_)
+      if (type_ != PP_TRANSPORTTYPE_STREAM)
         return PP_ERROR_BADARGUMENT;
 
       int32_t int_value = value.value.as_int;
@@ -160,7 +157,7 @@ int32_t PPB_Transport_Impl::SetProperty(PP_TransportProperty property,
     }
 
     case PP_TRANSPORTPROPERTY_TCP_SEND_WINDOW: {
-      if (!use_tcp_)
+      if (type_ != PP_TRANSPORTTYPE_STREAM)
         return PP_ERROR_BADARGUMENT;
 
       int32_t int_value = value.value.as_int;
@@ -173,7 +170,7 @@ int32_t PPB_Transport_Impl::SetProperty(PP_TransportProperty property,
     }
 
     case PP_TRANSPORTPROPERTY_TCP_NO_DELAY: {
-      if (!use_tcp_)
+      if (type_ != PP_TRANSPORTTYPE_STREAM)
         return PP_ERROR_BADARGUMENT;
 
       if (value.type != PP_VARTYPE_BOOL)
@@ -183,7 +180,7 @@ int32_t PPB_Transport_Impl::SetProperty(PP_TransportProperty property,
     }
 
     case PP_TRANSPORTPROPERTY_TCP_ACK_DELAY: {
-      if (!use_tcp_)
+      if (type_ != PP_TRANSPORTTYPE_STREAM)
         return PP_ERROR_BADARGUMENT;
 
       int32_t int_value = value.value.as_int;
@@ -210,7 +207,7 @@ int32_t PPB_Transport_Impl::Connect(PP_CompletionCallback callback) {
   if (started_)
     return PP_ERROR_INPROGRESS;
 
-  P2PTransport::Protocol protocol = use_tcp_ ?
+  P2PTransport::Protocol protocol = (type_ == PP_TRANSPORTTYPE_STREAM) ?
       P2PTransport::PROTOCOL_TCP : P2PTransport::PROTOCOL_UDP;
 
   if (!p2p_transport_->Init(name_, protocol, config_, this))

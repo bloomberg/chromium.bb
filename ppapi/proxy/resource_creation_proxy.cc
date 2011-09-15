@@ -287,7 +287,7 @@ PP_Resource ResourceCreationProxy::CreateSurface3D(
 
 PP_Resource ResourceCreationProxy::CreateTransport(PP_Instance instance,
                                                    const char* name,
-                                                   const char* proto) {
+                                                   PP_TransportType type) {
   NOTIMPLEMENTED();  // Not proxied yet.
   return 0;
 }
