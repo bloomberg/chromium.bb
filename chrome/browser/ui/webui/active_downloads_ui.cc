@@ -386,6 +386,33 @@ ActiveDownloadsUI::ActiveDownloadsUI(TabContents* contents)
   profile->GetChromeURLDataManager()->AddDataSource(html_source);
 }
 
+#if defined(TOUCH_UI)
+
+// static
+TabContents* ActiveDownloadsUI::OpenPopup(Profile* profile) {
+  Browser* browser = Browser::GetOrCreateTabbedBrowser(profile);
+  OpenURLParams params(GURL(chrome::kChromeUIActiveDownloadsURL), GURL(),
+                      SINGLETON_TAB, PageTransition::LINK);
+  TabContents* download_contents = browser->OpenURL(params);
+  browser->window()->Show();
+  return download_contents;
+}
+
+TabContents* ActiveDownloadsUI::GetPopup(Browser** browser) {
+  for (TabContentsIterator it; !it.done(); ++it) {
+    TabContents* tab = it->tab_contents();
+    const GURL& url = tab->GetURL();
+    if (url.SchemeIs(chrome::kChromeUIScheme) &&
+        url.host() == chrome::kChromeUIActiveDownloadsHost) {
+      if (browser)
+        *browser = it.browser();
+      return tab;
+    }
+  }
+  return NULL;
+}
+
+#else  // defined(TOUCH_UI)
 // static
 Browser* ActiveDownloadsUI::OpenPopup(Profile* profile) {
   Browser* browser = GetPopup();
@@ -433,6 +460,7 @@ Browser* ActiveDownloadsUI::GetPopup() {
   }
   return NULL;
 }
+#endif  // defined(TOUCH_UI)
 
 const ActiveDownloadsUI::DownloadList& ActiveDownloadsUI::GetDownloads() const {
   return handler_->downloads();

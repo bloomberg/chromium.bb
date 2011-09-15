@@ -14,17 +14,22 @@
 #include "chrome/browser/ui/webui/html_dialog_ui.h"
 #include "net/base/directory_lister.h"
 
-class Browser;
-class Profile;
-class DownloadItem;
 class ActiveDownloadsHandler;
+class Browser;
+class DownloadItem;
+class Profile;
 
 class ActiveDownloadsUI : public HtmlDialogUI {
  public:
   explicit ActiveDownloadsUI(TabContents* contents);
 
+#if defined(TOUCH_UI)
+  static TabContents* OpenPopup(Profile* profile);
+  static TabContents* GetPopup(Browser** browser);
+#else
   static Browser* OpenPopup(Profile* profile);
   static Browser* GetPopup();
+#endif
 
   // For testing.
   typedef std::vector<DownloadItem*> DownloadList;
