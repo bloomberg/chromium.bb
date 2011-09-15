@@ -1892,17 +1892,6 @@
    fun:_ZN7WebCore4Node28dispatchSubtreeModifiedEventEv
 }
 {
-   bug_36062
-   Memcheck:Leak
-   fun:malloc
-   fun:_ZN3WTF10fastMallocEj
-   fun:_ZN3WTF13FastAllocBasenwEj
-   fun:_ZN7WebCore17DOMImplementation6createEv
-   fun:_ZNK7WebCore8Document14implementationEv
-   fun:_ZN7WebCore10V8Document28implementationAccessorGetterEN2v85LocalINS1_6StringEEERKNS1_12AccessorInfoE
-   fun:_ZN2v88internal6Object23GetPropertyWithCallbackEPS1_S2_PNS0_6StringES2_
-}
-{
    bug_38138
    Memcheck:Param
    write(buf)
