@@ -180,7 +180,7 @@ void TooltipManagerViews::Update() {
     string16 tooltip_text(tooltip_text_);
     TrimTooltipToFit(&tooltip_text, &max_width, &line_count,
                      curr_mouse_pos_.x(), curr_mouse_pos_.y());
-    tooltip_label_.SetText(tooltip_text);
+    tooltip_label_.SetText(UTF16ToWideHack(tooltip_text));
 
     SetTooltipBounds(curr_mouse_pos_, max_width,
                      tooltip_label_.GetPreferredSize().height());
