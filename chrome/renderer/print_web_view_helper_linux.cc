@@ -159,9 +159,6 @@ bool PrintWebViewHelper::RenderPages(const PrintMsg_PrintPages_Params& params,
                                                   *page_count));
 #endif
 
-  base::TimeTicks begin_time = base::TimeTicks::Now();
-  base::TimeTicks page_begin_time = begin_time;
-
   PrintMsg_PrintPage_Params page_params;
   page_params.params = print_params;
   const gfx::Size& canvas_size = prepare->GetPrintCanvasSize();
@@ -176,8 +173,6 @@ bool PrintWebViewHelper::RenderPages(const PrintMsg_PrintPages_Params& params,
       PrintPageInternal(page_params, canvas_size, frame, metafile);
     }
   }
-
-  base::TimeDelta render_time = base::TimeTicks::Now() - begin_time;
 
   prepare->FinishPrinting();
   metafile->FinishDocument();
