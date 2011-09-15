@@ -8,6 +8,7 @@
 # pylint is too confused.
 # pylint: disable=E1101,E1103,R0201,W0212,W0403
 
+import logging
 import StringIO
 import sys
 import time
@@ -578,7 +579,7 @@ def CheckChangeOnCommit(input_api, output_api):
         change, False, True, None, input_buf, DEFAULT_SCRIPT, False, None)
     self.failIf(output.should_continue())
     text = ('Running presubmit upload checks ...\n'
-            'Warning, no presubmit.py found.\n'
+            'Warning, no PRESUBMIT.py found.\n'
             'Running default presubmit script.\n'
             '\n'
             '** Presubmit ERRORS **\n!!\n\n'
@@ -658,7 +659,7 @@ def CheckChangeOnCommit(input_api, output_api):
         change, False, True, output, input_buf, DEFAULT_SCRIPT, False, None))
     self.assertEquals(output.getvalue(),
                       ('Running presubmit upload checks ...\n'
-                       'Warning, no presubmit.py found.\n'
+                       'Warning, no PRESUBMIT.py found.\n'
                        'Running default presubmit script.\n'
                        '\n'
                        '** Presubmit Messages **\n'
@@ -1894,8 +1895,8 @@ class CannedChecksUnittest(PresubmitTestsBase):
   def testRunPythonUnitTestsNonExistentUpload(self):
     input_api = self.MockInputApi(None, False)
     input_api.subprocess.check_output(
-        ['pyyyyython', '-m', '_non_existent_module'], cwd=None, env=None
-        ).AndRaise(
+        ['pyyyyython', '-m', '_non_existent_module'], cwd=None, env=None,
+        stderr=input_api.subprocess.STDOUT).AndRaise(
             input_api.subprocess.CalledProcessError())
     self.mox.ReplayAll()
 
@@ -1908,8 +1909,8 @@ class CannedChecksUnittest(PresubmitTestsBase):
   def testRunPythonUnitTestsNonExistentCommitting(self):
     input_api = self.MockInputApi(None, True)
     input_api.subprocess.check_output(
-        ['pyyyyython', '-m', '_non_existent_module'], cwd=None, env=None
-        ).AndRaise(
+        ['pyyyyython', '-m', '_non_existent_module'], cwd=None, env=None,
+        stderr=input_api.subprocess.STDOUT).AndRaise(
             input_api.subprocess.CalledProcessError())
     self.mox.ReplayAll()
 
@@ -1923,7 +1924,8 @@ class CannedChecksUnittest(PresubmitTestsBase):
     input_api.unittest = self.mox.CreateMock(unittest)
     input_api.cStringIO = self.mox.CreateMock(presubmit.cStringIO)
     input_api.subprocess.check_output(
-        ['pyyyyython', '-m', 'test_module'], cwd=None, env=None).AndRaise(
+        ['pyyyyython', '-m', 'test_module'], cwd=None, env=None,
+        stderr=input_api.subprocess.STDOUT).AndRaise(
             input_api.subprocess.CalledProcessError())
     self.mox.ReplayAll()
 
@@ -1937,7 +1939,8 @@ class CannedChecksUnittest(PresubmitTestsBase):
   def testRunPythonUnitTestsFailureCommitting(self):
     input_api = self.MockInputApi(None, True)
     input_api.subprocess.check_output(
-        ['pyyyyython', '-m', 'test_module'], cwd=None, env=None).AndRaise(
+        ['pyyyyython', '-m', 'test_module'], cwd=None, env=None,
+        stderr=input_api.subprocess.STDOUT).AndRaise(
             input_api.subprocess.CalledProcessError())
     self.mox.ReplayAll()
 
@@ -1952,7 +1955,8 @@ class CannedChecksUnittest(PresubmitTestsBase):
     input_api.cStringIO = self.mox.CreateMock(presubmit.cStringIO)
     input_api.unittest = self.mox.CreateMock(unittest)
     input_api.subprocess.check_output(
-        ['pyyyyython', '-m', 'test_module'], cwd=None, env=None)
+        ['pyyyyython', '-m', 'test_module'], cwd=None, env=None,
+        stderr=input_api.subprocess.STDOUT)
     self.mox.ReplayAll()
 
     results = presubmit_canned_checks.RunPythonUnitTests(
@@ -2170,6 +2174,7 @@ mac|success|blew
         'foo1', 'description1', self.fake_root_dir, None, 0, 0, None)
     input_api = self.MockInputApi(change, False)
     input_api.verbose = True
+    input_api.logging = self.mox.CreateMock(logging)
     input_api.PresubmitLocalPath().AndReturn(self.fake_root_dir)
     input_api.PresubmitLocalPath().AndReturn(self.fake_root_dir)
     path = presubmit.os.path.join(self.fake_root_dir, 'random_directory')
@@ -2178,6 +2183,7 @@ mac|success|blew
     input_api.subprocess.check_call(
         [presubmit.os.path.join('random_directory', 'b'), '--verbose'],
         cwd=self.fake_root_dir)
+    input_api.logging.debug('Found 5 files, running 1')
 
     self.mox.ReplayAll()
     results = presubmit_canned_checks.RunUnitTestsInDirectory(

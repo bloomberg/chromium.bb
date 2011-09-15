@@ -16,6 +16,7 @@ from super_mox import SuperMoxTestBase
 
 import fake_repos
 import scm
+import subprocess2
 
 
 class BaseTestCase(SuperMoxTestBase):
@@ -32,10 +33,10 @@ class BaseTestCase(SuperMoxTestBase):
 class BaseSCMTestCase(BaseTestCase):
   def setUp(self):
     BaseTestCase.setUp(self)
-    self.mox.StubOutWithMock(scm.gclient_utils, 'CheckCall')
     self.mox.StubOutWithMock(scm.gclient_utils, 'CheckCallAndFilter')
     self.mox.StubOutWithMock(scm.gclient_utils, 'CheckCallAndFilterAndHeader')
-    self.mox.StubOutWithMock(scm.gclient_utils, 'Popen')
+    self.mox.StubOutWithMock(subprocess2, 'Popen')
+    self.mox.StubOutWithMock(subprocess2, 'communicate')
 
 
 class RootTestCase(BaseSCMTestCase):
@@ -45,7 +46,7 @@ class RootTestCase(BaseSCMTestCase):
         'ElementTree', 'GetCasedPath', 'GenFakeDiff', 'GIT', 'SVN',
         'ValidateEmail',
         'cStringIO', 'determine_scm', 'gclient_utils', 'glob', 'logging', 'os',
-        're', 'shutil', 'subprocess', 'subprocess2', 'sys', 'tempfile', 'time',
+        're', 'subprocess2', 'sys', 'tempfile', 'time',
     ]
     # If this test fails, you should add the relevant test.
     self.compareMembers(scm, members)

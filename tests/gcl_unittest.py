@@ -94,7 +94,7 @@ class GclUnittest(GclTestsBase):
         'gclient_utils', 'json', 'main', 'need_change', 'need_change_and_args',
         'no_args', 'optparse', 'os', 'presubmit_support', 'random', 're',
         'rietveld',
-        'string', 'subprocess', 'subprocess2', 'sys', 'tempfile', 'time',
+        'string', 'subprocess2', 'sys', 'tempfile', 'time',
         'upload', 'urllib2',
     ]
     # If this test fails, you should add the relevant test.

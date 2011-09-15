@@ -5,72 +5,42 @@
 
 # pylint: disable=E1101,W0403
 
+import os
 import StringIO
 
 # Fixes include path.
 from super_mox import SuperMoxTestBase
 import trial_dir
-import os
+
 import gclient_utils
+import subprocess2
 
 
 class GclientUtilBase(SuperMoxTestBase):
   def setUp(self):
     super(GclientUtilBase, self).setUp()
     gclient_utils.sys.stdout.flush = lambda: None
-    self.mox.StubOutWithMock(gclient_utils, 'Popen')
+    self.mox.StubOutWithMock(subprocess2, 'Popen')
+    self.mox.StubOutWithMock(subprocess2, 'communicate')
 
 
 class GclientUtilsUnittest(GclientUtilBase):
   """General gclient_utils.py tests."""
   def testMembersChanged(self):
     members = [
-        'CheckCall', 'CheckCallError', 'CheckCallAndFilter',
+        'CheckCallAndFilter',
         'CheckCallAndFilterAndHeader', 'Error', 'ExecutionQueue', 'FileRead',
         'FileWrite', 'FindFileUpwards', 'FindGclientRoot',
         'GetGClientRootAndEntries', 'IsDateRevision', 'MakeDateRevision',
-        'MakeFileAutoFlush', 'MakeFileAnnotated', 'PathDifference', 'Popen',
+        'MakeFileAutoFlush', 'MakeFileAnnotated', 'PathDifference',
         'PrintableObject', 'RemoveDirectory', 'SoftClone', 'SplitUrlRevision',
         'SyntaxErrorToError', 'WorkItem',
-        'errno', 'hack_subprocess', 'logging', 'os', 'Queue', 're', 'rmtree',
-        'stat', 'subprocess', 'sys','threading', 'time',
+        'errno', 'logging', 'os', 'Queue', 're', 'rmtree',
+        'stat', 'subprocess2', 'sys','threading', 'time',
     ]
     # If this test fails, you should add the relevant test.
     self.compareMembers(gclient_utils, members)
 
-
-class CheckCallTestCase(GclientUtilBase):
-  def testCheckCallSuccess(self):
-    args = ['boo', 'foo', 'bar']
-    process = self.mox.CreateMockAnything()
-    process.returncode = 0
-    gclient_utils.Popen(
-        args, cwd='bar',
-        stderr=None,
-        stdout=gclient_utils.subprocess.PIPE).AndReturn(process)
-    process.communicate().AndReturn(['bleh', 'foo'])
-    self.mox.ReplayAll()
-    gclient_utils.CheckCall(args, cwd='bar')
-
-  def testCheckCallFailure(self):
-    args = ['boo', 'foo', 'bar']
-    process = self.mox.CreateMockAnything()
-    process.returncode = 42
-    gclient_utils.Popen(
-        args,
-        stderr=None,
-        stdout=gclient_utils.subprocess.PIPE).AndReturn(process)
-    process.communicate().AndReturn(['bleh', 'foo'])
-    self.mox.ReplayAll()
-    try:
-      gclient_utils.CheckCall(args)
-      self.fail()
-    except gclient_utils.CheckCallError, e:
-      self.assertEqual(e.command, args)
-      self.assertEqual(e.cwd, None)
-      self.assertEqual(e.returncode, 42)
-      self.assertEqual(e.stdout, 'bleh')
-      self.assertEqual(e.stderr, 'foo')
 
 
 class CheckCallAndFilterTestCase(GclientUtilBase):
@@ -86,11 +56,11 @@ class CheckCallAndFilterTestCase(GclientUtilBase):
         '\n________ running \'boo foo bar\' in \'bleh\'\n')
     for i in test_string:
       gclient_utils.sys.stdout.write(i)
-    gclient_utils.Popen(
+    subprocess2.Popen(
         args,
         cwd=cwd,
-        stdout=gclient_utils.subprocess.PIPE,
-        stderr=gclient_utils.subprocess.STDOUT,
+        stdout=subprocess2.PIPE,
+        stderr=subprocess2.STDOUT,
         bufsize=0).AndReturn(self.ProcessIdMock(test_string))
 
     self.mox.ReplayAll()

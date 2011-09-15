@@ -42,7 +42,7 @@ def CommonChecks(input_api, output_api, tests_to_black_list):
       input_api,
       output_api,
       'tests',
-      whitelist=[r'.*tests\.py$'],
+      whitelist=[r'.*test\.py$'],
       blacklist=tests_to_black_list))
   return results
 

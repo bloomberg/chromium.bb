@@ -141,8 +141,9 @@ class SuperMoxTestBase(TestCaseUtils, StdoutCheck, mox.MoxTestBase):
       if hasattr(parent, item):
         try:
           self.mox.StubOutWithMock(parent, item)
-        except TypeError:
-          raise TypeError('Couldn\'t mock %s in %s' % (item, parent.__name__))
+        except TypeError, e:
+          raise TypeError(
+              'Couldn\'t mock %s in %s: %s' % (item, parent.__name__, e))
 
   def UnMock(self, obj, name):
     """Restore an object inside a test."""

@@ -1075,7 +1075,7 @@ def DoPresubmitChecks(change,
     presubmit_files = ListRelevantPresubmitFiles(
         change.AbsoluteLocalPaths(True), change.RepositoryRoot())
     if not presubmit_files and verbose:
-      output.write("Warning, no presubmit.py found.\n")
+      output.write("Warning, no PRESUBMIT.py found.\n")
     results = []
     executer = PresubmitExecuter(change, committing, rietveld_obj, verbose)
     if default_presubmit:

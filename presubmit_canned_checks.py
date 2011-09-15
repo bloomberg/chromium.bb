@@ -477,7 +477,9 @@ def RunUnitTestsInDirectory(
   def check(filename, filters):
     return any(True for i in filters if input_api.re.match(i, filename))
 
+  to_run = found = 0
   for filename in input_api.os_listdir(test_path):
+    found += 1
     fullpath = input_api.os_path.join(test_path, filename)
     if not input_api.os_path.isfile(fullpath):
       continue
@@ -486,6 +488,14 @@ def RunUnitTestsInDirectory(
     if blacklist and check(filename, blacklist):
       continue
     unit_tests.append(input_api.os_path.join(directory, filename))
+    to_run += 1
+  input_api.logging.debug('Found %d files, running %d' % (found, to_run))
+  if not to_run:
+    return [
+        output_api.PresubmitPromptWarning(
+          'Out of %d files, found none that matched w=%r, b=%r in directory %s'
+          % (found, whitelist, blacklist, directory))
+    ]
   return RunUnitTests(input_api, output_api, unit_tests)
 
 

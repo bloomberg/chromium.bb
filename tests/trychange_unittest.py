@@ -10,6 +10,7 @@
 # Fixes include path.
 from super_mox import SuperMoxTestBase
 
+import subprocess2
 import trychange
 
 
@@ -17,7 +18,7 @@ class TryChangeTestsBase(SuperMoxTestBase):
   """Setups and tear downs the mocks but doesn't test anything as-is."""
   def setUp(self):
     SuperMoxTestBase.setUp(self)
-    self.mox.StubOutWithMock(trychange.gclient_utils, 'CheckCall')
+    self.mox.StubOutWithMock(subprocess2, 'communicate')
     self.mox.StubOutWithMock(trychange.scm.GIT, 'Capture')
     self.mox.StubOutWithMock(trychange.scm.GIT, 'GenerateDiff')
     self.mox.StubOutWithMock(trychange.scm.GIT, 'GetCheckoutRoot')

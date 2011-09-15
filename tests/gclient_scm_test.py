@@ -21,6 +21,7 @@ from super_mox import mox, StdoutCheck, TestCaseUtils, SuperMoxTestBase
 import logging
 import sys
 import gclient_scm
+import subprocess2
 
 # Shortcut since this function is used often
 join = gclient_scm.os.path.join
@@ -40,19 +41,19 @@ class GCBaseTestCase(object):
 class BaseTestCase(GCBaseTestCase, SuperMoxTestBase):
   def setUp(self):
     SuperMoxTestBase.setUp(self)
-    self.mox.StubOutWithMock(gclient_scm.gclient_utils, 'CheckCall')
     self.mox.StubOutWithMock(gclient_scm.gclient_utils, 'CheckCallAndFilter')
     self.mox.StubOutWithMock(gclient_scm.gclient_utils,
         'CheckCallAndFilterAndHeader')
     self.mox.StubOutWithMock(gclient_scm.gclient_utils, 'FileRead')
     self.mox.StubOutWithMock(gclient_scm.gclient_utils, 'FileWrite')
-    self.mox.StubOutWithMock(gclient_scm.gclient_utils, 'Popen')
     self.mox.StubOutWithMock(gclient_scm.gclient_utils, 'RemoveDirectory')
     self._CaptureSVNInfo = gclient_scm.scm.SVN.CaptureInfo
     self.mox.StubOutWithMock(gclient_scm.scm.SVN, 'Capture')
     self.mox.StubOutWithMock(gclient_scm.scm.SVN, 'CaptureInfo')
     self.mox.StubOutWithMock(gclient_scm.scm.SVN, 'CaptureStatus')
     self.mox.StubOutWithMock(gclient_scm.scm.SVN, 'RunAndGetFileList')
+    self.mox.StubOutWithMock(subprocess2, 'communicate')
+    self.mox.StubOutWithMock(subprocess2, 'Popen')
     self._scm_wrapper = gclient_scm.CreateSCM
     gclient_scm.scm.SVN.current_version = None
     # Absolute path of the fake checkout directory.
@@ -757,7 +758,7 @@ from :3
     try:
       scm.update(options, (), [])
       self.fail()
-    except gclient_scm.gclient_utils.Error:
+    except (gclient_scm.gclient_utils.Error, subprocess2.CalledProcessError):
       # The exact exception text varies across git versions so it's not worth
       # verifying it. It's fine as long as it throws.
       pass
