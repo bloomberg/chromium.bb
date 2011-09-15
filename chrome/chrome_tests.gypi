@@ -1197,6 +1197,7 @@
         'browser/chromeos/system/mock_statistics_provider.h',
         'browser/chromeos/version_loader_unittest.cc',
         'browser/command_updater_unittest.cc',
+        'browser/component_updater/component_installers_unittest.cc',
         'browser/component_updater/component_updater_service_unittest.cc',
         'browser/component_updater/component_updater_interceptor.cc',
         'browser/component_updater/component_updater_interceptor.h',

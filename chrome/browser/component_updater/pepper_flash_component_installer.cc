@@ -189,19 +189,8 @@ bool PepperFlashComponentInstaller::Install(base::DictionaryValue* manifest,
     return false;
   if (!file_util::PathExists(unpack_path.Append(kPepperFlashPluginFileName)))
     return false;
-
-  // Check that we implement the required interfaces.
-  base::ListValue* interfaces = NULL;
-  if (manifest->GetList("x-ppapi-required-interfaces", &interfaces)) {
-    for (size_t ix = 0; ix != interfaces->GetSize(); ++ix) {
-      std::string interface_name;
-      if (!interfaces->GetString(ix, &interface_name))
-        return false;
-      if (!SupportsPepperInterface(interface_name.c_str()))
-        return false;
-    }
-  }
-
+  if (!VetoPepperFlashIntefaces(manifest))
+    return false;
   // Passed the basic tests. Time to install it.
   FilePath path =
       GetPepperFlashBaseDirectory().AppendASCII(version.GetString());
@@ -216,6 +205,21 @@ bool PepperFlashComponentInstaller::Install(base::DictionaryValue* manifest,
   PathService::Override(chrome::FILE_PEPPER_FLASH_PLUGIN, path);
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
       NewRunnableFunction(&RegisterPepperFlashWithChrome, path, version));
+  return true;
+}
+
+bool VetoPepperFlashIntefaces(base::DictionaryValue* manifest) {
+  // Check that we implement the required interfaces.
+  base::ListValue* interfaces = NULL;
+  if (manifest->GetList("x-ppapi-required-interfaces", &interfaces)) {
+    for (size_t ix = 0; ix != interfaces->GetSize(); ++ix) {
+      std::string interface_name;
+      if (!interfaces->GetString(ix, &interface_name))
+        return false;
+      if (!SupportsPepperInterface(interface_name.c_str()))
+        return false;
+    }
+  }
   return true;
 }
 
