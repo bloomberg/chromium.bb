@@ -37,8 +37,11 @@
 #include "ui/base/l10n/l10n_util_win.h"
 #endif
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
+#if defined(OS_CHROMEOS)
 #include <dbus/dbus-glib.h>
+#endif
+
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
 #include <sys/stat.h>
 
 #include "content/browser/renderer_host/render_sandbox_host_linux.h"
@@ -282,10 +285,11 @@ void BrowserMainParts::InitializeToolkit() {
   // definitely harmless, so retained as a reminder of this
   // requirement for gconf.
   g_type_init();
-  // We use glib-dbus for geolocation and it's possible other libraries
-  // (e.g. gnome-keyring) will use it, so initialize its threading here
-  // as well.
+#if defined(OS_CHROMEOS)
+  // ChromeOS still uses dbus-glib, so initialize its threading here.
+  // TODO(satorux, stevenjb): remove this once it is no longer needed.
   dbus_g_thread_init();
+#endif
   gfx::GtkInitFromCommandLine(parameters().command_line_);
   SetUpGLibLogHandler();
 #endif
