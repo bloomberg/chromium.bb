@@ -13,7 +13,6 @@ import tempfile
 from chromite.buildbot import repository
 from chromite.lib import cros_build_lib as cros_lib
 
-
 _DEFAULT_RETRIES = 3
 _PACKAGE_FILE = '%(buildroot)s/src/scripts/cbuildbot_package.list'
 CHROME_KEYWORDS_FILE = ('/build/%(board)s/etc/portage/package.keywords/chrome')
@@ -29,6 +28,9 @@ _PRIVATE_BINHOST_CONF_DIR = ('src/private-overlays/chromeos-overlay/'
 _GSUTIL_PATH = '/b/scripts/slave/gsutil'
 _GS_ACL = '/home/chrome-bot/slave_archive_acl'
 _BINHOST_PACKAGE_FILE = '/etc/portage/make.profile/package.installable'
+
+class TestException(Exception):
+  pass
 
 # =========================== Command Helpers =================================
 
@@ -273,7 +275,7 @@ def RunUnitTests(buildroot, board, full, nowithdebug):
   if nowithdebug:
     cmd.append('--nowithdebug')
 
-# If we aren't running ALL tests, then restrict to just the packages
+  # If we aren't running ALL tests, then restrict to just the packages
   #   uprev noticed were changed.
   if not full:
     cmd += ['--package_file=%s' %
@@ -335,7 +337,12 @@ def RunTestSuite(buildroot, board, image_dir, results_dir, full=True):
            '--target_image=%s' % image_path,
            '--test_results_root=%s' % results_dir_in_chroot, ]
 
-  cros_lib.OldRunCommand(cmd, cwd=cwd, error_ok=False)
+  code = cros_lib.OldRunCommand(cmd, cwd=cwd, error_ok=True, exit_code=True)
+  if code:
+    failed = open(results_dir_in_chroot + '/failed_test_command', 'w')
+    failed.write('%s exited with code %d' % (' '.join(cmd), code))
+    failed.close()
+    raise TestException('Tests failed with code %d' % code)
 
 
 def UpdateRemoteHW(buildroot, board, image_dir, remote_ip):

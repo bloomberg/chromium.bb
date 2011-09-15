@@ -34,6 +34,9 @@ _CROS_ARCHIVE_URL = 'CROS_ARCHIVE_URL'
 OVERLAY_LIST_CMD = '%(buildroot)s/src/platform/dev/host/cros_overlay_list'
 _PRINT_INTERVAL = 1
 
+class NonBacktraceException(Exception):
+  pass
+
 class BuildException(Exception):
   pass
 
@@ -46,7 +49,7 @@ class BuilderStage(object):
   overlays = None
   push_overlays = None
 
-  # Class variable that stores the branch to build and test
+  # Class variable that stores the branch to build and test.
   _tracking_branch = None
 
   @staticmethod
@@ -224,7 +227,11 @@ class BuilderStage(object):
     """
     # Tell the user about the exception, and record it
     print '@@@STEP_FAILURE@@@'
-    description = traceback.format_exc()
+    description = None
+    if isinstance(exception, NonBacktraceException):
+      description = str(exception)
+    else:
+      description = traceback.format_exc()
     print >> sys.stderr, description
     return exception, description
 
@@ -785,6 +792,8 @@ class VMTestStage(BuilderStage):
                                   self.GetImageDirSymlink(),
                                   os.path.join(test_results_dir,
                                                'chrome_results'))
+    except commands.TestException as e:
+      raise NonBacktraceException(str(e))
     finally:
       test_tarball = None
       if test_results_dir:
@@ -1205,5 +1214,3 @@ class PublishUprevChangesStage(NonHaltingBuilderStage):
                        self._build_config['board'],
                        BuilderStage.push_overlays,
                        self._options.debug)
-
-
