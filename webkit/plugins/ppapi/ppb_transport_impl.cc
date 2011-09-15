@@ -14,6 +14,9 @@
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/shared_impl/var.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebElement.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebPluginContainer.h"
 #include "webkit/plugins/ppapi/common.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
@@ -50,6 +53,14 @@ int MapNetError(int result) {
     default:
       return PP_ERROR_FAILED;
   }
+}
+
+WebKit::WebFrame* GetFrameForResource(const ::ppapi::Resource* resource) {
+  PluginInstance* plugin_instance =
+      ResourceHelper::GetPluginInstance(resource);
+  if (!plugin_instance)
+    return NULL;
+  return plugin_instance->container()->element().document().frame();
 }
 
 }  // namespace
@@ -115,7 +126,6 @@ int32_t PPB_Transport_Impl::SetProperty(PP_TransportProperty property,
       StringVar* value_str = StringVar::FromPPVar(value);
       if (!value_str)
         return PP_ERROR_BADARGUMENT;
-
       if (!net::ParseHostAndPort(value_str->value(), &config_.stun_server,
                                  &config_.stun_server_port)) {
         return PP_ERROR_BADARGUMENT;
@@ -127,7 +137,6 @@ int32_t PPB_Transport_Impl::SetProperty(PP_TransportProperty property,
       StringVar* value_str = StringVar::FromPPVar(value);
       if (!value_str)
         return PP_ERROR_BADARGUMENT;
-
       if (!net::ParseHostAndPort(value_str->value(), &config_.relay_server,
                                  &config_.relay_server_port)) {
         return PP_ERROR_BADARGUMENT;
@@ -135,11 +144,33 @@ int32_t PPB_Transport_Impl::SetProperty(PP_TransportProperty property,
       break;
     }
 
-    case PP_TRANSPORTPROPERTY_RELAY_TOKEN: {
+    case PP_TRANSPORTPROPERTY_RELAY_USERNAME: {
       StringVar* value_str = StringVar::FromPPVar(value);
       if (!value_str)
         return PP_ERROR_BADARGUMENT;
-      config_.relay_token = value_str->value();
+      config_.relay_username = value_str->value();
+      break;
+    }
+
+    case PP_TRANSPORTPROPERTY_RELAY_PASSWORD: {
+      StringVar* value_str = StringVar::FromPPVar(value);
+      if (!value_str)
+        return PP_ERROR_BADARGUMENT;
+      config_.relay_password = value_str->value();
+      break;
+    }
+
+    case PP_TRANSPORTPROPERTY_RELAY_MODE: {
+      switch (value.value.as_int) {
+        case PP_TRANSPORTRELAYMODE_TURN:
+          config_.legacy_relay = false;
+          break;
+        case PP_TRANSPORTRELAYMODE_GOOGLE:
+          config_.legacy_relay = true;
+          break;
+        default:
+          return PP_ERROR_BADARGUMENT;
+      }
       break;
     }
 
@@ -210,8 +241,10 @@ int32_t PPB_Transport_Impl::Connect(PP_CompletionCallback callback) {
   P2PTransport::Protocol protocol = (type_ == PP_TRANSPORTTYPE_STREAM) ?
       P2PTransport::PROTOCOL_TCP : P2PTransport::PROTOCOL_UDP;
 
-  if (!p2p_transport_->Init(name_, protocol, config_, this))
+  if (!p2p_transport_->Init(
+          GetFrameForResource(this), name_, protocol, config_, this)) {
     return PP_ERROR_FAILED;
+  }
 
   started_ = true;
 

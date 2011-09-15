@@ -127,13 +127,19 @@ void PepperStreamChannel::Connect(pp::Instance* pp_instance,
     if (transport->SetProperty(
             PP_TRANSPORTPROPERTY_RELAY_SERVER,
             pp::Var(transport_config.relay_server)) != PP_OK) {
-      LOG(ERROR) << "Failed to set Relay server.";
+      LOG(ERROR) << "Failed to set relay server.";
     }
 
     if (transport->SetProperty(
-            PP_TRANSPORTPROPERTY_RELAY_TOKEN,
+            PP_TRANSPORTPROPERTY_RELAY_PASSWORD,
             pp::Var(transport_config.relay_token)) != PP_OK) {
-      LOG(ERROR) << "Failed to set Relay token.";
+      LOG(ERROR) << "Failed to set relay token.";
+    }
+
+    if (transport->SetProperty(
+            PP_TRANSPORTPROPERTY_RELAY_MODE,
+            pp::Var(PP_TRANSPORTRELAYMODE_GOOGLE)) != PP_OK) {
+      LOG(ERROR) << "Failed to set relay mode.";
     }
   }
 

@@ -144,6 +144,7 @@ std::string TestTransport::Connect() {
   ASSERT_EQ(transport1_->ReceiveRemoteAddress(address2), PP_OK);
   ASSERT_EQ(transport2_->ReceiveRemoteAddress(address1), PP_OK);
 
+
   ASSERT_EQ(connect_cb1.WaitForResult(), PP_OK);
   ASSERT_EQ(connect_cb2.WaitForResult(), PP_OK);
 
@@ -181,8 +182,11 @@ std::string TestTransport::TestSetProperty() {
       pp::Var("ralay.example.com:80")), PP_OK);
 
   ASSERT_EQ(transport1_->SetProperty(
-      PP_TRANSPORTPROPERTY_RELAY_TOKEN,
-      pp::Var("INVALID_TOKEN")), PP_OK);
+      PP_TRANSPORTPROPERTY_RELAY_USERNAME,
+      pp::Var("USERNAME")), PP_OK);
+  ASSERT_EQ(transport1_->SetProperty(
+      PP_TRANSPORTPROPERTY_RELAY_PASSWORD,
+      pp::Var("PASSWORD")), PP_OK);
 
   // Try changing TCP window size.
   ASSERT_EQ(transport1_->SetProperty(PP_TRANSPORTPROPERTY_TCP_RECEIVE_WINDOW,

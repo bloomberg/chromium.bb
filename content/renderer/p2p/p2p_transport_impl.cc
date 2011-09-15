@@ -44,7 +44,8 @@ P2PTransportImpl::P2PTransportImpl(P2PSocketDispatcher* socket_dispatcher)
 P2PTransportImpl::~P2PTransportImpl() {
 }
 
-bool P2PTransportImpl::Init(const std::string& name,
+bool P2PTransportImpl::Init(WebKit::WebFrame* web_frame,
+                            const std::string& name,
                             Protocol protocol,
                             const Config& config,
                             EventHandler* event_handler) {
@@ -58,8 +59,9 @@ bool P2PTransportImpl::Init(const std::string& name,
   event_handler_ = event_handler;
 
   if (socket_dispatcher_) {
+    DCHECK(web_frame);
     allocator_.reset(new P2PPortAllocator(
-        socket_dispatcher_, network_manager_.get(),
+        web_frame, socket_dispatcher_, network_manager_.get(),
         socket_factory_.get(), config));
   } else {
     // Use BasicPortAllocator if we don't have P2PSocketDispatcher

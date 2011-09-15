@@ -53,7 +53,8 @@ class P2PTransportImpl : public webkit_glue::P2PTransport,
   virtual ~P2PTransportImpl();
 
   // webkit_glue::P2PTransport interface.
-  virtual bool Init(const std::string& name,
+  virtual bool Init(WebKit::WebFrame* web_frame,
+                    const std::string& name,
                     Protocol protocol,
                     const Config& config,
                     EventHandler* event_handler) OVERRIDE;

@@ -12,6 +12,10 @@ namespace net {
 class Socket;
 }  // namespace net
 
+namespace WebKit {
+class WebFrame;
+}  // namespace WebKit
+
 namespace webkit_glue {
 
 // Interface for P2P transport.
@@ -48,16 +52,23 @@ class P2PTransport {
     Config();
     ~Config();
 
-    // STUN server address and port, e.g. "stun.example.com:23542".
+    // STUN server address and port.
     std::string stun_server;
     int stun_server_port;
 
-    // Relay server address and port, e.g. "relay.example.com:4234".
+    // Relay server address and port.
     std::string relay_server;
     int relay_server_port;
 
-    // Relay token to use for relay servers.
-    std::string relay_token;
+    // Relay server username.
+    std::string relay_username;
+
+    // Relay server password.
+    std::string relay_password;
+
+    // When set to true relay is a legacy Google relay (not TURN
+    // compliant).
+    bool legacy_relay;
 
     // TCP window sizes. Default size is used when set to 0.
     int tcp_receive_window;
@@ -72,9 +83,11 @@ class P2PTransport {
 
   virtual ~P2PTransport() {}
 
-  // Initialize transport using specified configuration. Returns true
+  // Initialize transport using specified configuration. |web_frame|
+  // is used to make HTTP requests to relay servers. Returns true
   // if initialization succeeded.
-  virtual bool Init(const std::string& name,
+  virtual bool Init(WebKit::WebFrame* web_frame,
+                    const std::string& name,
                     Protocol protocol,
                     const Config& config,
                     EventHandler* event_handler) = 0;

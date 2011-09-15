@@ -25,30 +25,45 @@ typedef enum {
   // STUN server address and port, e.g "stun.example.com:19302".
   PP_TRANSPORTPROPERTY_STUN_SERVER = 0,
 
-  // Relay server name, e.g. "relay.example.com".
+  // Relay server address and port, e.g. "relay.example.com:12344".
   PP_TRANSPORTPROPERTY_RELAY_SERVER = 1,
 
-  // Single string that specifies token for use with relay server.
-  PP_TRANSPORTPROPERTY_RELAY_TOKEN = 2,
+  // Username for the relay server.
+  PP_TRANSPORTPROPERTY_RELAY_USERNAME = 2,
+
+  // Password for the relay server.
+  PP_TRANSPORTPROPERTY_RELAY_PASSWORD = 3,
+
+  // Type of Relay server. Must be one of the PP_TransportRelayMode
+  // values. By default is set to PP_TRANSPORTRELAYMODE_TURN.
+  PP_TRANSPORTPROPERTY_RELAY_MODE = 4,
 
   // TCP receive window in bytes. Takes effect only for PseudoTCP
   // connections.
-  PP_TRANSPORTPROPERTY_TCP_RECEIVE_WINDOW = 3,
+  PP_TRANSPORTPROPERTY_TCP_RECEIVE_WINDOW = 5,
 
   // TCP send window in bytes. Takes effect only for PseudoTCP
   // connections.
-  PP_TRANSPORTPROPERTY_TCP_SEND_WINDOW = 4,
+  PP_TRANSPORTPROPERTY_TCP_SEND_WINDOW = 6,
 
   // Boolean value that disables Neagle's algorithm when set to
   // true. When Neagle's algorithm is disabled, all outgoing packets
   // are sent as soon as possible. When set to false (by default) data
   // may be buffered until there is a sufficient amount to send.
-  PP_TRANSPORTPROPERTY_TCP_NO_DELAY = 5,
+  PP_TRANSPORTPROPERTY_TCP_NO_DELAY = 7,
 
   // Delay for ACK packets in milliseconds. By default set to 100ms.
-  PP_TRANSPORTPROPERTY_TCP_ACK_DELAY = 6
+  PP_TRANSPORTPROPERTY_TCP_ACK_DELAY = 8
 } PP_TransportProperty;
 PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_TransportProperty, 4);
+
+typedef enum {
+  // RFC5766 compliant relay server.
+  PP_TRANSPORTRELAYMODE_TURN = 0,
+
+  // Legacy Google relay server.
+  PP_TRANSPORTRELAYMODE_GOOGLE = 1
+} PP_TransportRelayMode;
 
 struct PPB_Transport_Dev {
   // Creates a new transport object with the specified name using the

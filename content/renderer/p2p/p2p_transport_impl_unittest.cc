@@ -353,9 +353,9 @@ class P2PTransportImplTest : public testing::Test {
   void Init(P2PTransport::Protocol protocol) {
     P2PTransport::Config config;
     ASSERT_TRUE(transport1_->Init(
-        kTransportName1, protocol, config, &event_handler1_));
+        NULL, kTransportName1, protocol, config, &event_handler1_));
     ASSERT_TRUE(transport2_->Init(
-        kTransportName2, protocol, config, &event_handler2_));
+        NULL, kTransportName2, protocol, config, &event_handler2_));
   }
 
   MessageLoop message_loop_;
