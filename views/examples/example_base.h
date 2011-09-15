@@ -29,13 +29,13 @@ class ExampleBase {
   // Sub-classes should creates and add the views to the given parent.
   virtual void CreateExampleView(views::View* parent) = 0;
 
- protected:
-  explicit ExampleBase(ExamplesMain* main);
-  virtual ~ExampleBase() {}
-
   // Sub-classes should return the name of this test.
   // It is used as the title of the tab displaying this test's controls.
   virtual std::wstring GetExampleTitle() = 0;
+
+ protected:
+  explicit ExampleBase(ExamplesMain* main);
+  virtual ~ExampleBase() {}
 
   // Prints a message in the status area, at the bottom of the window.
   void PrintStatus(const char* format, ...);

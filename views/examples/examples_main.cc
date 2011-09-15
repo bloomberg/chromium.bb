@@ -42,7 +42,10 @@
 
 namespace examples {
 
-ExamplesMain::ExamplesMain() : contents_(NULL), status_label_(NULL) {}
+ExamplesMain::ExamplesMain()
+    : tabbed_pane_(NULL),
+      contents_(NULL),
+      status_label_(NULL) {}
 
 ExamplesMain::~ExamplesMain() {}
 
@@ -95,11 +98,11 @@ void ExamplesMain::Run() {
   column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1,
                         views::GridLayout::USE_PREF, 0, 0);
 
-  views::TabbedPane* tabbed_pane = new views::TabbedPane();
+  tabbed_pane_ = new views::TabbedPane();
   status_label_ = new views::Label();
 
   layout->StartRow(1, 0);
-  layout->AddView(tabbed_pane);
+  layout->AddView(tabbed_pane_);
   layout->StartRow(0 /* no expand */, 0);
   layout->AddView(status_label_);
 
@@ -108,82 +111,69 @@ void ExamplesMain::Run() {
   views::Widget* window =
       views::Widget::CreateWindowWithBounds(this, gfx::Rect(0, 0, 850, 300));
 
-  examples::NativeThemeCheckboxExample native_theme_checkbox_example(this);
-  tabbed_pane->AddTab(native_theme_checkbox_example.GetExampleTitle(),
-                      native_theme_checkbox_example.GetExampleView());
+  NativeThemeCheckboxExample native_theme_checkbox_example(this);
+  AddExample(&native_theme_checkbox_example);
 
-  examples::NativeThemeButtonExample native_theme_button_example(this);
-  tabbed_pane->AddTab(native_theme_button_example.GetExampleTitle(),
-                      native_theme_button_example.GetExampleView());
+  NativeThemeButtonExample native_theme_button_example(this);
+  AddExample(&native_theme_button_example);
 
-  examples::NativeWidgetViewsExample native_widget_views_example(this);
-  tabbed_pane->AddTab(native_widget_views_example.GetExampleTitle(),
-                      native_widget_views_example.GetExampleView());
+  NativeWidgetViewsExample native_widget_views_example(this);
+  AddExample(&native_widget_views_example);
 
-  examples::TextfieldExample textfield_example(this);
-  tabbed_pane->AddTab(textfield_example.GetExampleTitle(),
-                      textfield_example.GetExampleView());
+  TextfieldExample textfield_example(this);
+  AddExample(&textfield_example);
 
-  examples::ButtonExample button_example(this);
-  tabbed_pane->AddTab(button_example.GetExampleTitle(),
-                      button_example.GetExampleView());
+  ButtonExample button_example(this);
+  AddExample(&button_example);
 
-  examples::ThrobberExample throbber_example(this);
-  tabbed_pane->AddTab(throbber_example.GetExampleTitle(),
-                      throbber_example.GetExampleView());
+  ThrobberExample throbber_example(this);
+  AddExample(&throbber_example);
 
-  examples::ComboboxExample combobox_example(this);
-  tabbed_pane->AddTab(combobox_example.GetExampleTitle(),
-                      combobox_example.GetExampleView());
+  ComboboxExample combobox_example(this);
+  AddExample(&combobox_example);
 
-  examples::LinkExample link_example(this);
-  tabbed_pane->AddTab(link_example.GetExampleTitle(),
-                      link_example.GetExampleView());
+  LinkExample link_example(this);
+  AddExample(&link_example);
 
-  examples::TabbedPaneExample tabbed_pane_example(this);
-  tabbed_pane->AddTab(tabbed_pane_example.GetExampleTitle(),
-                      tabbed_pane_example.GetExampleView());
+  TabbedPaneExample tabbed_pane_example(this);
+  AddExample(&tabbed_pane_example);
 
-  examples::MessageBoxExample message_box_example(this);
-  tabbed_pane->AddTab(message_box_example.GetExampleTitle(),
-                      message_box_example.GetExampleView());
+  MessageBoxExample message_box_example(this);
+  AddExample(&message_box_example);
 
-  examples::RadioButtonExample radio_button_example(this);
-  tabbed_pane->AddTab(radio_button_example.GetExampleTitle(),
-                      radio_button_example.GetExampleView());
+  RadioButtonExample radio_button_example(this);
+  AddExample(&radio_button_example);
 
-  examples::ScrollViewExample scroll_view_example(this);
-  tabbed_pane->AddTab(scroll_view_example.GetExampleTitle(),
-                      scroll_view_example.GetExampleView());
+  ScrollViewExample scroll_view_example(this);
+  AddExample(&scroll_view_example);
 
-  examples::SingleSplitViewExample single_split_view_example(this);
-  tabbed_pane->AddTab(single_split_view_example.GetExampleTitle(),
-                      single_split_view_example.GetExampleView());
+  SingleSplitViewExample single_split_view_example(this);
+  AddExample(&single_split_view_example);
 
 #if defined(OS_WIN)
-  examples::TableExample table_example(this);
-  tabbed_pane->AddTab(table_example.GetExampleTitle(),
-                      table_example.GetExampleView());
+  TableExample table_example(this);
+  AddExample(&table_example);
 #endif
 
-  examples::Table2Example table2_example(this);
-  tabbed_pane->AddTab(table2_example.GetExampleTitle(),
-                      table2_example.GetExampleView());
+  Table2Example table2_example(this);
+  AddExample(&table2_example);
 
-  examples::WidgetExample widget_example(this);
-  tabbed_pane->AddTab(widget_example.GetExampleTitle(),
-                      widget_example.GetExampleView());
+  WidgetExample widget_example(this);
+  AddExample(&widget_example);
 
-  examples::MenuExample menu_example(this);
-  tabbed_pane->AddTab(menu_example.GetExampleTitle(),
-                      menu_example.GetExampleView());
+  MenuExample menu_example(this);
+  AddExample(&widget_example);
 
   window->Show();
   views::AcceleratorHandler accelerator_handler;
   MessageLoopForUI::current()->Run(&accelerator_handler);
 }
 
-}  // examples namespace
+void ExamplesMain::AddExample(ExampleBase* example) {
+  tabbed_pane_->AddTab(example->GetExampleTitle(), example->GetExampleView());
+}
+
+}  // namespace examples
 
 int main(int argc, char** argv) {
 #if defined(OS_WIN)
@@ -198,10 +188,10 @@ int main(int argc, char** argv) {
 
   CommandLine::Init(argc, argv);
 
-  // We do not this header: chrome/common/chrome_switches.h
-  // because that would create a dependency back on Chrome
+  // We do not use this header: chrome/common/chrome_switches.h
+  // because that would create a bad dependency back on Chrome.
   views::Widget::SetPureViews(
-        CommandLine::ForCurrentProcess()->HasSwitch("use-pure-views"));
+      CommandLine::ForCurrentProcess()->HasSwitch("use-pure-views"));
 
   examples::ExamplesMain main;
   main.Run();
