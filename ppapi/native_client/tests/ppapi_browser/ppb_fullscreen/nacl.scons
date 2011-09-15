@@ -8,6 +8,8 @@
 Import('env')
 
 env.Prepend(CPPDEFINES=['XP_UNIX'])
+env.Replace(TEST_DIR='${SOURCE_ROOT}/ppapi/native_client/tests/ppapi_browser/' +
+                     'ppb_fullscreen')
 
 nexe = 'ppapi_ppb_fullscreen_%s' % env.get('TARGET_FULLARCH')
 env.Alias('ppapi_ppb_fullscreen${PROGSUFFIX}',
@@ -25,10 +27,10 @@ ppapi_ppb_url_request_info_nexe = env.ComponentProgram(
 
 env.Publish(nexe, 'run',
             ['ppapi_ppb_fullscreen.html',
-             'ppapi_ppb_fullscreen.nmf',
              'ppapi_ppb_fullscreen.js'])
 
 node = env.PPAPIBrowserTester('ppapi_ppb_fullscreen_browser_test.out',
+                              nmfs=['${TEST_DIR}/ppapi_ppb_fullscreen.nmf'],
                               url='ppapi_ppb_fullscreen.html',
                               files=env.ExtractPublishedFiles(nexe),
                               browser_flags=['--enable-pepper-testing'])
