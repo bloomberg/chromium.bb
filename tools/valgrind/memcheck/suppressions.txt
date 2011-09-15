@@ -2690,29 +2690,6 @@
    fun:_ZN3net10URLRequest15ResponseStartedEv
 }
 {
-   bug_60653
-   Memcheck:Cond
-   ...
-   fun:vsnprintf
-   fun:_ZN3WTF6String6formatEPKcz
-   fun:_ZN3WTF6String6numberEd
-   fun:_ZNK7WebCore17CSSPrimitiveValue7cssTextEv
-   fun:_ZNK7WebCore12CSSValueList7cssTextEv
-   fun:_ZNK7WebCore11CSSProperty7cssTextEv
-   fun:_ZNK7WebCore26CSSMutableStyleDeclaration7cssTextEv
-   fun:_ZNK7WebCore13StyledElement20updateStyleAttributeEv
-   fun:_ZNK7WebCore7Element13hasAttributesEv
-   fun:_ZNK7WebCore4Node13hasAttributesEv
-   fun:_ZN7WebCore20ObjectGrouperVisitor15visitDOMWrapperEPNS_4NodeEN2v810PersistentINS3_6ObjectEEE
-   fun:_ZN7WebCore12DOMDataStore22IntrusiveDOMWrapperMap18ChunkedTableTraits5visitEPN2v810PersistentINS3_6ObjectEEEPNS_24AbstractWeakReferenceMapINS_4NodeES5_E7VisitorE
-   fun:_ZN7WebCore12ChunkedTableIN2v810PersistentINS1_6ObjectEEELi1023ENS_12DOMDataStore22IntrusiveDOMWrapperMap18ChunkedTableTraitsEE12visitEntriesEPS4_S9_PNS_24AbstractWeakReferenceMapINS_4NodeES3_E7VisitorE
-   fun:_ZN7WebCore12ChunkedTableIN2v810PersistentINS1_6ObjectEEELi1023ENS_12DOMDataStore22IntrusiveDOMWrapperMap18ChunkedTableTraitsEE5visitEPNS_24AbstractWeakReferenceMapINS_4NodeES3_E7VisitorE
-   fun:_ZN7WebCore12DOMDataStore22IntrusiveDOMWrapperMap5visitEPNS_24AbstractWeakReferenceMapINS_4NodeEN2v86ObjectEE7VisitorE
-   fun:_ZN7WebCore28visitDOMNodesInCurrentThreadEPNS_24AbstractWeakReferenceMapINS_4NodeEN2v86ObjectEE7VisitorE
-   fun:_ZN7WebCore14V8GCController10gcPrologueEv
-   fun:_ZN2v88internal4Heap24PerformGarbageCollectionENS0_16GarbageCollectorEPNS0_8GCTracerENS1_16CollectionPolicyE
-}
-{
    bug_60654
    Memcheck:Cond
    fun:_ZN7WebCore25GraphicsContext3DInternal7reshapeEii
