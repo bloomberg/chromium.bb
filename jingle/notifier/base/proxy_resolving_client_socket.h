@@ -21,6 +21,7 @@
 #include "net/socket/stream_socket.h"
 
 namespace net {
+class ClientSocketFactory;
 class ClientSocketHandle;
 class HttpNetworkSession;
 class URLRequestContextGetter;
@@ -31,11 +32,15 @@ namespace notifier {
 
 class ProxyResolvingClientSocket : public net::StreamSocket {
  public:
+  // Constructs a new ProxyResolvingClientSocket. |socket_factory| is the
+  // ClientSocketFactory that will be used by the underlying HttpNetworkSession.
+  // If |socket_factory| is NULL, the default socket factory
+  // (net::ClientSocketFactory::GetDefaultFactory()) will be used.
   ProxyResolvingClientSocket(
-    const scoped_refptr<net::URLRequestContextGetter>&
-        request_context_getter,
-    const net::SSLConfig& ssl_config,
-    const net::HostPortPair& dest_host_port_pair);
+      net::ClientSocketFactory* socket_factory,
+      const scoped_refptr<net::URLRequestContextGetter>& request_context_getter,
+      const net::SSLConfig& ssl_config,
+      const net::HostPortPair& dest_host_port_pair);
   virtual ~ProxyResolvingClientSocket();
 
   // net::StreamSocket implementation.

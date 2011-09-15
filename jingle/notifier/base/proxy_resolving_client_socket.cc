@@ -19,6 +19,7 @@
 namespace notifier {
 
 ProxyResolvingClientSocket::ProxyResolvingClientSocket(
+    net::ClientSocketFactory* socket_factory,
     const scoped_refptr<net::URLRequestContextGetter>& request_context_getter,
     const net::SSLConfig& ssl_config,
     const net::HostPortPair& dest_host_port_pair)
@@ -42,7 +43,7 @@ ProxyResolvingClientSocket::ProxyResolvingClientSocket(
       request_context_getter->GetURLRequestContext();
   DCHECK(request_context);
   net::HttpNetworkSession::Params session_params;
-  session_params.client_socket_factory = NULL;
+  session_params.client_socket_factory = socket_factory;
   session_params.host_resolver = request_context->host_resolver();
   session_params.cert_verifier = request_context->cert_verifier();
   // TODO(rkn): This is NULL because OriginBoundCertService is not thread safe.
