@@ -221,6 +221,9 @@
     'imageburner': {
       'filepath': 'imageburner'
     },
+    'active_downloads': {
+      'filepath': 'active_downloads'
+    },
     'clang_update': {
       'filepath': 'tools/clang/scripts/update.sh'
     },
@@ -326,6 +329,7 @@
     'dom_login': ['rharrison@chromium.org'],
     'task_manager': ['yoshiki+watch@chromium.org'],
     'imageburner': ['achuith+watch@chromium.org', 'tbarzic+watch@chromium.org'],
+    'active_downloads': ['achuith+watch@chromium.org'],
     'filebrowse': ['achuith+watch@chromium.org', 'rginda+watch@chromium.org'],
     'clang_update': ['fischman+watch@chromium.org', 'ukai+watch@chromium.org'],
     'panels': ['dimich@chromium.org', 'jennb@chromium.org',
