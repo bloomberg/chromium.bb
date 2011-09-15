@@ -4,6 +4,8 @@
 
 #include "chrome/common/child_process_logging.h"
 
+#include "base/command_line.h"
+#include "base/format_macros.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
@@ -31,6 +33,19 @@ char g_gpu_driver_ver[kGpuStringSize] = "";
 char g_gpu_ps_ver[kGpuStringSize] = "";
 char g_gpu_vs_ver[kGpuStringSize] = "";
 
+static const size_t kNumSize = 32;
+char g_num_extensions[kNumSize] = "";
+char g_num_switches[kNumSize] = "";
+char g_num_views[kNumSize] = "";
+
+static const size_t kMaxExtensionSize =
+    kExtensionLen * kMaxReportedActiveExtensions + 1;
+char g_extension_ids[kMaxExtensionSize] = "";
+
+// Assume command line switches are less than 64 chars.
+static const size_t kMaxSwitchesSize = kSwitchLen * kMaxSwitches + 1;
+char g_switches[kMaxSwitchesSize] = "";
+
 void SetActiveURL(const GURL& url) {
   base::strlcpy(g_active_url,
                 url.possibly_invalid_spec().c_str(),
@@ -54,7 +69,18 @@ std::string GetClientId() {
 }
 
 void SetActiveExtensions(const std::set<std::string>& extension_ids) {
-  // TODO(port)
+  snprintf(g_num_extensions, kNumSize - 1, "%" PRIuS, extension_ids.size());
+  g_num_extensions[kNumSize - 1] = '\0';
+
+  std::string extension_str;
+  std::set<std::string>::const_iterator iter = extension_ids.begin();
+  for (int i = 0;
+       i < kMaxReportedActiveExtensions && iter != extension_ids.end();
+       ++i, ++iter) {
+    extension_str += *iter;
+  }
+  strncpy(g_extension_ids, extension_str.c_str(), kMaxExtensionSize - 1);
+  g_extension_ids[kMaxExtensionSize - 1] = '\0';
 }
 
 void SetGpuInfo(const GPUInfo& gpu_info) {
@@ -75,12 +101,26 @@ void SetGpuInfo(const GPUInfo& gpu_info) {
 }
 
 void SetNumberOfViews(int number_of_views) {
-  // TODO(port)
+  snprintf(g_num_views, kNumSize - 1, "%d", number_of_views);
+  g_num_views[kNumSize - 1] = '\0';
 }
 
-void SetCommandLine(const CommandLine*) {
-  // TODO: http://crbug.com/60993
-  NOTIMPLEMENTED();
+void SetCommandLine(const CommandLine* command_line) {
+  const CommandLine::StringVector& argv = command_line->argv();
+
+  snprintf(g_num_switches, kNumSize - 1, "%lu", argv.size() - 1);
+  g_num_switches[kNumSize - 1] = '\0';
+
+  std::string command_line_str;
+  for (size_t argv_i = 1;
+       argv_i < argv.size() && argv_i <= kMaxSwitches;
+       ++argv_i) {
+    command_line_str += argv[argv_i];
+    // Truncate long switches, align short ones with spaces to be trimmed later.
+    command_line_str.resize(argv_i * kSwitchLen, ' ');
+  }
+  strncpy(g_switches, command_line_str.c_str(), kMaxSwitchesSize - 1);
+  g_switches[kMaxSwitchesSize - 1] = '\0';
 }
 
 }  // namespace child_process_logging

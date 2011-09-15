@@ -16,12 +16,17 @@
 class CommandLine;
 struct GPUInfo;
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
 // The maximum number of active extensions we will report.
 // Also used in chrome/app, but we define it here to avoid a common->app
 // dependency.
 static const int kMaxReportedActiveExtensions = 10;
-#endif
+
+// The maximum number of command line switches to include in the crash
+// report's metadata. Note that the mini-dump itself will also contain the
+// (original) command line arguments within the PEB.
+// Also used in chrome/app, but we define it here to avoid a common->app
+// dependency.
+static const size_t kMaxSwitches = 15;
 
 namespace child_process_logging {
 
@@ -30,11 +35,22 @@ namespace child_process_logging {
 // compromised context without going through the standard library.
 extern char g_active_url[];
 extern char g_client_id[];
+extern char g_extension_ids[];
 extern char g_gpu_vendor_id[];
 extern char g_gpu_device_id[];
 extern char g_gpu_driver_ver[];
 extern char g_gpu_ps_ver[];
 extern char g_gpu_vs_ver[];
+extern char g_num_extensions[];
+extern char g_num_switches[];
+extern char g_num_views[];
+extern char g_switches[];
+
+// Assume IDs are 32 bytes long.
+static const size_t kExtensionLen = 32;
+
+// Assume command line switches are less than 64 chars.
+static const size_t kSwitchLen = 64;
 #endif
 
 // Sets the URL that is logged if the child process crashes. Use GURL() to clear
