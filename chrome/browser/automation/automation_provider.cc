@@ -215,18 +215,21 @@ void AutomationProvider::SetExpectedTabCount(size_t expected_tabs) {
 
 void AutomationProvider::OnInitialTabLoadsComplete() {
   initial_tab_loads_complete_ = true;
+  VLOG(2) << "OnInitialTabLoadsComplete";
   if (is_connected_ && network_library_initialized_ && login_webui_ready_)
     Send(new AutomationMsg_InitialLoadsComplete());
 }
 
 void AutomationProvider::OnNetworkLibraryInit() {
   network_library_initialized_ = true;
+  VLOG(2) << "OnNetworkLibraryInit";
   if (is_connected_ && initial_tab_loads_complete_ && login_webui_ready_)
     Send(new AutomationMsg_InitialLoadsComplete());
 }
 
 void AutomationProvider::OnLoginWebuiReady() {
   login_webui_ready_ = true;
+  VLOG(2) << "OnLoginWebuiReady";
   if (is_connected_ && initial_tab_loads_complete_ &&
       network_library_initialized_)
     Send(new AutomationMsg_InitialLoadsComplete());
