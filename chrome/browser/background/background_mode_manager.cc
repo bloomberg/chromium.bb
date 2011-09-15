@@ -12,6 +12,7 @@
 #include "chrome/browser/background/background_application_list_model.h"
 #include "chrome/browser/background/background_mode_manager.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/status_icons/status_icon.h"
@@ -135,6 +136,10 @@ BackgroundModeManager::BackgroundModeManager(CommandLine* command_line)
       keep_alive_for_startup_(false),
       keep_alive_for_test_(false),
       current_command_id_(0) {
+  // We should never start up if there is no browser process or if we are
+  // currently quitting.
+  CHECK(g_browser_process != NULL);
+  CHECK(!browser_shutdown::IsTryingToQuit());
   // If background mode is currently disabled, just exit - don't listen for any
   // notifications.
   if (IsBackgroundModePermanentlyDisabled(command_line))

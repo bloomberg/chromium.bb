@@ -571,6 +571,12 @@ void BrowserList::StartKeepAlive() {
 void BrowserList::EndKeepAlive() {
   DCHECK_GT(keep_alive_count_, 0);
   keep_alive_count_--;
+
+  DCHECK(g_browser_process);
+  // Although we should have a browser process, if there is none,
+  // there is nothing to do.
+  if (!g_browser_process) return;
+
   // Allow the app to shutdown again.
   if (!WillKeepAlive()) {
     g_browser_process->ReleaseModule();
