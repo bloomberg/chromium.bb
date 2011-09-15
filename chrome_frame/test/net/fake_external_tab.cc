@@ -561,6 +561,8 @@ int main(int argc, char** argv) {
   google_breakpad::scoped_ptr<google_breakpad::ExceptionHandler> breakpad(
       InitializeCrashReporting(HEADLESS));
 
+  NotificationService service;
+
   // TODO(tommi): Stuff be broke. Needs a fixin'.
   // This is awkward: the TestSuite derived CFUrlRequestUnittestRunner contains
   // the instance of the AtExitManager that RegisterPathProvider() and others
