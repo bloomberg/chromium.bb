@@ -7,6 +7,7 @@
         <div class="radio">
           <label>
             <input type="radio" name="startup" value="0"
+                pref="session.restore_on_startup"
                 metric="Options_Startup_Homepage">
             <span i18n-content="startupShowDefaultAndNewTab"></span>
           </label>
@@ -14,6 +15,7 @@
         <div class="radio">
           <label>
             <input type="radio" name="startup" value="1"
+                pref="session.restore_on_startup"
                 metric="Options_Startup_LastSession">
             <span i18n-content="startupShowLastSession"></span>
           </label>
@@ -21,7 +23,8 @@
         <div class="radio">
           <label>
             <input id="startupShowPagesButton" type="radio" name="startup"
-                value="2" metric="Options_Startup_Custom">
+                pref="session.restore_on_startup"
+                value="4" metric="Options_Startup_Custom">
             <span id="startupShowPagesLabel"
                 i18n-content="startupShowPages"></span>
           </label>

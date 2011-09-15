@@ -65,10 +65,6 @@ class BrowserOptionsHandler : public OptionsPageUIHandler,
   // Sets the search engine at the given index to be default. Called from WebUI.
   void SetDefaultSearchEngine(const ListValue* args);
 
-  // Sets the session restore setting to the integer value (enum) at index 0 of
-  // |args|.  Called from WebUI.
-  void SetRestoreOnStartup(const ListValue* args);
-
   // Removes the startup page at the given indexes. Called from WebUI.
   void RemoveStartupPages(const ListValue* args);
 
@@ -110,9 +106,6 @@ class BrowserOptionsHandler : public OptionsPageUIHandler,
 
   // Updates the UI with the given state for the default browser.
   void SetDefaultBrowserUIString(int status_string_id);
-
-  // Updates the UI with the given state for the window restore setting.
-  void UpdateRestoreOnStartup();
 
   // Loads the current set of custom startup pages and reports it to the WebUI.
   void UpdateStartupPages();

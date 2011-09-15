@@ -103,9 +103,6 @@ void BrowserOptionsHandler::RegisterMessages() {
       "setDefaultSearchEngine",
       NewCallback(this, &BrowserOptionsHandler::SetDefaultSearchEngine));
   web_ui_->RegisterMessageCallback(
-      "setRestoreOnStartup",
-      NewCallback(this, &BrowserOptionsHandler::SetRestoreOnStartup));
-  web_ui_->RegisterMessageCallback(
       "removeStartupPages",
       NewCallback(this, &BrowserOptionsHandler::RemoveStartupPages));
   web_ui_->RegisterMessageCallback(
@@ -151,7 +148,6 @@ void BrowserOptionsHandler::Initialize() {
                                this);
   UpdateDefaultBrowserState();
 
-  UpdateRestoreOnStartup();
   startup_custom_pages_table_model_.reset(
       new CustomHomePagesTableModel(profile));
   startup_custom_pages_table_model_->SetObserver(this);
@@ -325,15 +321,6 @@ void BrowserOptionsHandler::UpdateSearchEngines() {
   }
 }
 
-void BrowserOptionsHandler::UpdateRestoreOnStartup() {
-  Profile* profile = Profile::FromWebUI(web_ui_);
-  const SessionStartupPref startup_pref =
-      SessionStartupPref::GetStartupPref(profile->GetPrefs());
-  base::FundamentalValue restore_on_startup(startup_pref.type);
-  web_ui_->CallJavascriptFunction("BrowserOptions.updateRestoreOnStartup",
-                                  restore_on_startup);
-}
-
 void BrowserOptionsHandler::UpdateStartupPages() {
   Profile* profile = Profile::FromWebUI(web_ui_);
   const SessionStartupPref startup_pref =
@@ -378,8 +365,6 @@ void BrowserOptionsHandler::Observe(int type,
     std::string* pref = Details<std::string>(details).ptr();
     if (*pref == prefs::kDefaultBrowserSettingEnabled) {
       UpdateDefaultBrowserState();
-    } else if (*pref == prefs::kRestoreOnStartup) {
-      UpdateRestoreOnStartup();
     } else if (*pref == prefs::kURLsToRestoreOnStartup) {
       UpdateStartupPages();
     } else {
@@ -394,28 +379,6 @@ void BrowserOptionsHandler::SetStartupPagesToCurrentPages(
     const ListValue* args) {
   startup_custom_pages_table_model_->SetToCurrentlyOpenPages();
   SaveStartupPagesPref();
-}
-
-void BrowserOptionsHandler::SetRestoreOnStartup(const ListValue* args) {
-  std::string pref_string;
-  CHECK_EQ(args->GetSize(), 1UL);
-  CHECK(args->GetString(0, &pref_string));
-
-  PrefService* prefs = Profile::FromWebUI(web_ui_)->GetPrefs();
-
-  SessionStartupPref pref = SessionStartupPref::GetStartupPref(prefs);
-  if (pref_string == "0") {
-    pref.type = SessionStartupPref::DEFAULT;
-  } else if (pref_string == "1") {
-    pref.type = SessionStartupPref::LAST;
-  } else if (pref_string == "2") {
-    pref.type = SessionStartupPref::URLS;
-  } else {
-    NOTREACHED();
-    return;
-  }
-
-  SessionStartupPref::SetStartupPref(prefs, pref);
 }
 
 void BrowserOptionsHandler::RemoveStartupPages(const ListValue* args) {

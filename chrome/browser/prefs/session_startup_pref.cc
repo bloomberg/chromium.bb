@@ -46,19 +46,27 @@ SessionStartupPref::Type PrefValueToType(int pref_value) {
   }
 }
 
-bool TypeIsDefaultValue(PrefService* prefs) {
-  const PrefService::Preference* pref_restore =
-      prefs->FindPreference(prefs::kRestoreOnStartup);
-  return pref_restore->IsDefaultValue();
-}
-
 }  // namespace
 
 // static
 void SessionStartupPref::RegisterUserPrefs(PrefService* prefs) {
+  SessionStartupPref::Type type = browser_defaults::kDefaultSessionStartupType;
+
+#ifdef OS_MACOSX
+  // During first run the calling code relies on |DEFAULT| session preference
+  // value to avoid session restore.  That is respected here.
+  if (!FirstRun::IsChromeFirstRun()) {
+    // |DEFAULT| really means "Don't restore".  The actual default value could
+    // change, so explicitly set both.
+    if (restore_utils::IsWindowRestoreEnabled())
+      type = SessionStartupPref::LAST;
+    else
+      type = SessionStartupPref::DEFAULT;
+  }
+#endif
+
   prefs->RegisterIntegerPref(prefs::kRestoreOnStartup,
-                             TypeToPrefValue(
-                                 browser_defaults::kDefaultSessionStartupType),
+                             TypeToPrefValue(type),
                              PrefService::SYNCABLE_PREF);
   prefs->RegisterListPref(prefs::kURLsToRestoreOnStartup,
                           PrefService::SYNCABLE_PREF);
@@ -106,19 +114,6 @@ SessionStartupPref SessionStartupPref::GetStartupPref(PrefService* prefs) {
   DCHECK(prefs);
   SessionStartupPref pref(
       PrefValueToType(prefs->GetInteger(prefs::kRestoreOnStartup)));
-
-#ifdef OS_MACOSX
-  // During first run the calling code relies on |DEFAULT| session preference
-  // value to avoid session restore.  That is respected here.
-  if (!FirstRun::IsChromeFirstRun() && TypeIsDefaultValue(prefs)) {
-    // |DEFAULT| really means "Don't restore".  The actual default value could
-    // change, so explicitly set both.
-    if (restore_utils::IsWindowRestoreEnabled())
-      pref.type = SessionStartupPref::LAST;
-    else
-      pref.type = SessionStartupPref::DEFAULT;
-  }
-#endif
 
   // Always load the urls, even if the pref type isn't URLS. This way the
   // preferences panels can show the user their last choice.

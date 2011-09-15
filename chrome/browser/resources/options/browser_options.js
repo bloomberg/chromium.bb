@@ -63,14 +63,6 @@ cr.define('options', function() {
       $('toolbarShowBookmarksBar').onchange = function() {
         chrome.send('toggleShowBookmarksBar');
       };
-      var items = document.querySelectorAll('input[name=startup]');
-      for (i = 0; i < items.length; i++) {
-        items[i].onchange = function(event) {
-          chrome.send('setRestoreOnStartup', [event.target.value]);
-          chrome.send('coreOptionsUserMetricsAction',
-              [event.target.getAttribute('metric')]);
-        };
-      }
       $('defaultSearchManageEnginesButton').onclick = function(event) {
         OptionsPage.navigateToPage('searchEngines');
         chrome.send('coreOptionsUserMetricsAction',
@@ -263,21 +255,6 @@ cr.define('options', function() {
     shouldEnableCustomStartupPageControls: function(pages) {
       return $('startupShowPagesButton').checked &&
           !this.startup_pages_pref_.controlledBy;
-    },
-
-    /**
-     * Updates the startup radio group with the given value.
-     * @param {number} value the preference value being set.
-     * @private
-     */
-    updateRestoreOnStartup_: function(value) {
-      var items = document.querySelectorAll('input[name=startup]');
-      for (i = 0; i < items.length; i++) {
-        if (items[i].value == value)
-          items[i].checked = true;
-      }
-
-      this.updateCustomStartupPageControlStates_();
     },
 
     /**
@@ -531,10 +508,6 @@ cr.define('options', function() {
                                                 defaultManaged) {
     BrowserOptions.getInstance().updateSearchEngines_(engines, defaultValue,
                                                       defaultManaged);
-  };
-
-  BrowserOptions.updateRestoreOnStartup = function(value) {
-    BrowserOptions.getInstance().updateRestoreOnStartup_(value);
   };
 
   BrowserOptions.updateStartupPages = function(pages) {
