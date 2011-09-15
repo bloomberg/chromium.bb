@@ -90,6 +90,8 @@
         'tests/test_cursor_control.h',
         'tests/test_directory_reader.cc',
         'tests/test_directory_reader.h',
+        'tests/test_fullscreen.cc',
+        'tests/test_fullscreen.h',
         'tests/test_file_io.cc',
         'tests/test_file_io.h',
         'tests/test_file_ref.cc',

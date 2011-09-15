@@ -255,6 +255,16 @@ TEST_PPAPI_IN_PROCESS_VIA_HTTP(FileRef)
 TEST_PPAPI_IN_PROCESS_VIA_HTTP(FileSystem)
 TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(FileSystem)
 
+// http://crbug.com/96767
+#if !defined(OS_MACOSX)
+TEST_F(PPAPITest, FLAKY_Fullscreen) {
+  RunTestViaHTTP("Fullscreen");
+}
+TEST_F(OutOfProcessPPAPITest, FLAKY_Fullscreen) {
+  RunTestViaHTTP("Fullscreen");
+}
+#endif
+
 #if defined(OS_POSIX)
 #define MAYBE_DirectoryReader FLAKY_DirectoryReader
 #else
