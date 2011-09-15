@@ -428,8 +428,10 @@ cr.define('ntp4', function() {
   function updateOfflineEnabledApps() {
     var apps = document.querySelectorAll('.app');
     for (var i = 0; i < apps.length; ++i) {
-      if (apps[i].appData.enabled && !apps[i].appData.offline_enabled)
+      if (apps[i].appData.enabled && !apps[i].appData.offline_enabled) {
         apps[i].setIcon();
+        apps[i].loadIcon();
+      }
     }
   }
 

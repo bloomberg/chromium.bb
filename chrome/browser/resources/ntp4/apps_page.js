@@ -188,12 +188,12 @@ cr.define('ntp4', function() {
         this.useSmallIcon_ = true;
 
       var appImg = this.ownerDocument.createElement('img');
-      // This is temporary (setIcon_/loadIcon will overwrite it) but is visible
+      // This is temporary (setIcon/loadIcon will overwrite it) but is visible
       // before the page is shown (e.g. if switching from most visited to
       // bookmarks).
       appImg.src = 'chrome://theme/IDR_APP_DEFAULT_ICON';
       this.appImg_ = appImg;
-      this.setIcon_();
+      this.setIcon();
       appImgContainer.appendChild(appImg);
 
       if (this.useSmallIcon_) {
@@ -274,9 +274,8 @@ cr.define('ntp4', function() {
      * Set the URL of the icon from |appData_|. This won't actually show the
      * icon until loadIcon() is called (for performance reasons; we don't want
      * to load icons until we have to).
-     * @private
      */
-    setIcon_: function() {
+    setIcon: function() {
       var src = this.useSmallIcon_ ? this.appData_.icon_small :
                                      this.appData_.icon_big;
       if (!this.appData_.enabled ||
@@ -483,7 +482,7 @@ cr.define('ntp4', function() {
      */
     replaceAppData: function(appData) {
       this.appData_ = appData;
-      this.setIcon_();
+      this.setIcon();
       this.loadIcon();
     },
 
