@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
+#include "base/debug/alias.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
@@ -455,6 +456,12 @@ void ResourceDispatcherHost::BeginRequest(
     int route_id) {
   ChildProcessInfo::ProcessType process_type = filter_->process_type();
   int child_id = filter_->child_id();
+
+  // If we crash here, figure out what URL the renderer was requesting.
+  // http://crbug.com/91398
+  char url_buf[128];
+  base::strlcpy(url_buf, request_data.url.spec().c_str(), arraysize(url_buf));
+  base::debug::Alias(url_buf);
 
   const content::ResourceContext& resource_context =
       filter_->resource_context();
