@@ -541,7 +541,7 @@ bool ImeInput::IsCtrlShiftPressed(base::i18n::TextDirection* direction) {
     return false;
   }
 
-  // Scan the key status to find pressed keys. We should adandon changing the
+  // Scan the key status to find pressed keys. We should abandon changing the
   // text direction when there are other pressed keys.
   // This code is executed only when a user is pressing a control key and a
   // right-shift key (or a left-shift key), i.e. we should ignore the status of
