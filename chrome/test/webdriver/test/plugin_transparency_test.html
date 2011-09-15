@@ -1,0 +1,25 @@
+<html>
+<style>
+  .translucent_div {
+    position:relative;
+	top:-100px;
+	left:50px;
+	opacity:0.5;
+	width:100px;
+	height:100px;
+	background-color:black;
+  }
+  * {
+    margin:0px;
+	padding:0px;
+  }
+</style>
+<!-- Make the body 2000x2000 so that regardless of the window size, the
+     document should be the same size-->
+<body style='background-color:red; width:2000px; height:2000px'>
+  <embed src="does_not_exist" width="100" height="100" wmode="opaque"
+         type="application/x-shockwave-flash" allowscriptaccess="never">
+  </embed>
+  <div class='translucent_div'></div>
+</body>
+</html>

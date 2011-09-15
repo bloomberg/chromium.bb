@@ -73,6 +73,7 @@
 #include "content/common/json_value_serializer.h"
 #include "content/common/notification_service.h"
 #include "googleurl/src/gurl.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/rect.h"
 
@@ -1894,13 +1895,25 @@ void PageSnapshotTaker::OnModalDialogShown() {
 void PageSnapshotTaker::OnSnapshotTaken(const SkBitmap& bitmap) {
   base::ThreadRestrictions::ScopedAllowIO allow_io;
   std::vector<unsigned char> png_data;
-  gfx::PNGCodec::EncodeBGRASkBitmap(bitmap, true, &png_data);
-  int bytes_written = file_util::WriteFile(image_path_,
-      reinterpret_cast<char*>(&png_data[0]), png_data.size());
-  bool success = bytes_written == static_cast<int>(png_data.size());
+  SkAutoLockPixels lock_input(bitmap);
+  bool success = gfx::PNGCodec::Encode(
+      reinterpret_cast<unsigned char*>(bitmap.getAddr32(0, 0)),
+      gfx::PNGCodec::FORMAT_BGRA,
+      gfx::Size(bitmap.width(), bitmap.height()),
+      bitmap.rowBytes(),
+      true,  // discard_transparency
+      std::vector<gfx::PNGCodec::Comment>(),
+      &png_data);
   std::string error_msg;
-  if (!success)
-    error_msg = "could not write snapshot to disk";
+  if (!success) {
+    error_msg = "could not encode bitmap as PNG";
+  } else {
+    int bytes_written = file_util::WriteFile(image_path_,
+        reinterpret_cast<char*>(&png_data[0]), png_data.size());
+    success = bytes_written == static_cast<int>(png_data.size());
+    if (!success)
+      error_msg = "could not write snapshot to disk";
+  }
   SendMessage(success, error_msg);
 }
 

@@ -388,10 +388,6 @@ class ScreenshotTest(ChromeDriverTest):
 
   REDBOX = "automation_proxy_snapshot/set_size.html"
 
-  def setUp(self):
-    super(ScreenshotTest, self).setUp()
-    self._driver = self.GetNewDriver()
-
   def testScreenCaptureAgainstReference(self):
     # This has regressed on linux because of tighter sandbox restrictions.
     # See crbug.com/89777.
@@ -401,13 +397,25 @@ class ScreenshotTest(ChromeDriverTest):
     # Create a red square of 2000x2000 pixels.
     url = GetFileURLForPath(os.path.join(test_paths.DataDir(),
                                          self.REDBOX))
-    url += "?2000,2000"
-    self._driver.get(url)
-    s = self._driver.get_screenshot_as_base64();
-    self._driver.get_screenshot_as_file("/tmp/foo.png")
+    url += '?2000,2000'
+    driver = self.GetNewDriver()
+    driver.get(url)
+    s = driver.get_screenshot_as_base64()
     h = hashlib.md5(s).hexdigest()
     # Compare the PNG created to the reference hash.
     self.assertEquals(h, '12c0ade27e3875da3d8866f52d2fa84f')
+
+  # This test requires Flash and must be run on a VM or via remote desktop.
+  # See crbug.com/96317.
+  def testSnapshotWithWindowlessFlashAndTransparentOverlay(self):
+    if not IsWindows():
+      return
+
+    driver = self.GetNewDriver()
+    driver.get(GetTestDataUrl() + '/plugin_transparency_test.html')
+    snapshot = driver.get_screenshot_as_base64()
+    self.assertEquals(hashlib.md5(snapshot).hexdigest(),
+                      '72e5b8525e48758bae59997472f27f14')
 
 
 class SessionTest(ChromeDriverTest):
