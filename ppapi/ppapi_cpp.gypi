@@ -42,7 +42,7 @@
         'c/ppb_input_event.h',
         'c/ppb_instance.h',
         'c/ppb_messaging.h',
-        'c/ppb_opengles.h',
+        'c/ppb_opengles2.h',
         'c/ppb_url_loader.h',
         'c/ppb_url_request_info.h',
         'c/ppb_url_response_info.h',
