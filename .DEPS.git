@@ -162,7 +162,7 @@ deps_os = {
         'src/third_party/swig/win':
             Var('git_url') + '/chromium/deps/swig/win.git@986f013ba518541adf5c839811efb35630a31031',
         'src/third_party/syzygy/binaries':
-            Var('git_url') + '/external/sawbuck/syzygy/binaries.git@beeb8971b0ae32b297708aa009b8a81e25696c1d',
+            Var('git_url') + '/external/sawbuck/syzygy/binaries.git@8f484b228515df80815e95d404452ea45994669d',
         'src/third_party/xulrunner-sdk':
             Var('git_url') + '/chromium/deps/xulrunner-sdk.git@143c700d4d51e850c4b921129bb53c1ed1c8752e',
         'src/third_party/yasm/binaries':
