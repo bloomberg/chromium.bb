@@ -540,12 +540,15 @@ hg-update-google-perftools() {
 #@                         (REPO can be llvm-gcc, llvm, newlib, binutils)
 hg-pull-all() {
   StepBanner "HG-PULL" "Running 'hg pull' in all repos..."
-  hg-pull-llvm-gcc
-  hg-pull-llvm
+  hg-pull-upstream
   hg-pull-newlib
   hg-pull-binutils
   hg-pull-compiler-rt
   hg-pull-google-perftools
+}
+
+hg-pull-upstream() {
+  hg-pull "${TC_SRC_UPSTREAM}"
 }
 
 hg-pull-newlib() {
