@@ -148,11 +148,12 @@ class TypedUrlModelAssociator
   // the passed URL. This function compensates for the fact that the history DB
   // has rather poor data integrity (duplicate visits, visit timestamps that
   // don't match the last_visit timestamp, huge data sets that exhaust memory
-  // when fetched, etc). Returns false if we could not fetch the visits for the
-  // passed URL.
-  static bool GetVisitsForURL(history::HistoryBackend* backend,
-                              const history::URLRow& url,
-                              history::VisitVector* visits);
+  // when fetched, etc) by modifying the passed |url| object and |visits|
+  // vector.
+  // Returns false if we could not fetch the visits for the passed URL.
+  static bool FixupURLAndGetVisits(history::HistoryBackend* backend,
+                                   history::URLRow* url,
+                                   history::VisitVector* visits);
 
   // Updates the passed |url_row| based on the values in |specifics|. Fields
   // that are not contained in |specifics| (such as typed_count) are left

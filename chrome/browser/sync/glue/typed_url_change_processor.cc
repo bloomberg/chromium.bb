@@ -88,11 +88,11 @@ void TypedUrlChangeProcessor::HandleURLsModified(
 }
 
 bool TypedUrlChangeProcessor::CreateOrUpdateSyncNode(
-    const history::URLRow& url, sync_api::WriteTransaction* trans) {
+    history::URLRow url, sync_api::WriteTransaction* trans) {
   // Get the visits for this node.
   history::VisitVector visit_vector;
-  if (!TypedUrlModelAssociator::GetVisitsForURL(
-          history_backend_, url, &visit_vector)) {
+  if (!TypedUrlModelAssociator::FixupURLAndGetVisits(
+          history_backend_, &url, &visit_vector)) {
     error_handler()->OnUnrecoverableError(FROM_HERE,
                                           "Could not get the url's visits.");
     return false;
@@ -264,8 +264,8 @@ void TypedUrlChangeProcessor::ApplyChangesFromSyncModel(
       }
 
       history::VisitVector visits;
-      if (!TypedUrlModelAssociator::GetVisitsForURL(
-              history_backend_, old_url, &visits)) {
+      if (!TypedUrlModelAssociator::FixupURLAndGetVisits(
+              history_backend_, &old_url, &visits)) {
         error_handler()->OnUnrecoverableError(FROM_HERE,
             "Could not get the url's visits.");
         return;

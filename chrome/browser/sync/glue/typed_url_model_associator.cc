@@ -70,10 +70,11 @@ TypedUrlModelAssociator::~TypedUrlModelAssociator() {}
 
 
 // static
-bool TypedUrlModelAssociator::GetVisitsForURL(history::HistoryBackend* backend,
-                                              const history::URLRow& url,
-                                              history::VisitVector* visits) {
-  if (!backend->GetMostRecentVisitsForURL(url.id(), kMaxVisitsToFetch, visits))
+bool TypedUrlModelAssociator::FixupURLAndGetVisits(
+    history::HistoryBackend* backend,
+    history::URLRow* url,
+    history::VisitVector* visits) {
+  if (!backend->GetMostRecentVisitsForURL(url->id(), kMaxVisitsToFetch, visits))
     return false;
 
   // Sometimes (due to a bug elsewhere in the history or sync code, or due to
@@ -83,7 +84,7 @@ bool TypedUrlModelAssociator::GetVisitsForURL(history::HistoryBackend* backend,
   // This is a workaround for http://crbug.com/84258.
   if (visits->empty()) {
     history::VisitRow visit(
-        url.id(), url.last_visit(), 0, PageTransition::TYPED, 0);
+        url->id(), url->last_visit(), 0, PageTransition::TYPED, 0);
     visits->push_back(visit);
   }
 
@@ -91,11 +92,10 @@ bool TypedUrlModelAssociator::GetVisitsForURL(history::HistoryBackend* backend,
   // we need it, so reverse it.
   std::reverse(visits->begin(), visits->end());
 
-  // Checking DB consistency to try to track down http://crbug.com/94733 - if
-  // we start hitting this DCHECK, we can try to fixup the data by adding our
-  // own mock visit as we do for empty visit vectors.
-  DCHECK_EQ(url.last_visit().ToInternalValue(),
-            visits->back().visit_time.ToInternalValue());
+  // Sometimes, the last_visit field in the URL doesn't match the timestamp of
+  // the last visit in our visit array (they come from different tables, so
+  // crashes/bugs can cause them to mismatch), so just set it here.
+  url->set_last_visit(visits->back().visit_time);
   DCHECK(CheckVisitOrdering(*visits));
   return true;
 }
@@ -116,7 +116,8 @@ bool TypedUrlModelAssociator::AssociateModels(SyncError* error) {
   std::map<history::URLID, history::VisitVector> visit_vectors;
   for (std::vector<history::URLRow>::iterator ix = typed_urls.begin();
        ix != typed_urls.end(); ++ix) {
-    if (!GetVisitsForURL(history_backend_, *ix, &(visit_vectors[ix->id()]))) {
+    if (!FixupURLAndGetVisits(
+            history_backend_, &(*ix), &(visit_vectors[ix->id()]))) {
       error->Reset(FROM_HERE, "Could not get the url's visits.", model_type());
       return false;
     }
@@ -132,9 +133,9 @@ bool TypedUrlModelAssociator::AssociateModels(SyncError* error) {
     sync_api::ReadNode typed_url_root(&trans);
     if (!typed_url_root.InitByTagLookup(kTypedUrlTag)) {
       error->Reset(FROM_HERE,
-                  "Server did not create the top-level typed_url node. We "
-                  "might be running against an out-of-date server.",
-                  model_type());
+                   "Server did not create the top-level typed_url node. We "
+                   "might be running against an out-of-date server.",
+                   model_type());
       return false;
     }
 
