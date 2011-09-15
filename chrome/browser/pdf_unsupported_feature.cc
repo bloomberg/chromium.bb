@@ -7,9 +7,9 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "base/version.h"
-#include "chrome/browser/chrome_plugin_service_filter.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/plugin_prefs.h"
+#include "chrome/browser/chrome_plugin_service_filter.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/chrome_interstitial_page.h"
@@ -116,13 +116,14 @@ string16 PDFEnableAdobeReaderInfoBarDelegate::GetMessageText() const {
 
 void PDFEnableAdobeReaderInfoBarDelegate::OnYes() {
   UserMetrics::RecordAction(UserMetricsAction("PDF_EnableReaderInfoBarOK"));
+  webkit::npapi::PluginList::Singleton()->EnableGroup(false,
+      ASCIIToUTF16(chrome::ChromeContentClient::kPDFPluginName));
   Profile* profile =
       Profile::FromBrowserContext(tab_contents_->browser_context());
   PluginPrefs* plugin_prefs = PluginPrefs::GetForProfile(profile);
   plugin_prefs->EnablePluginGroup(
       true, ASCIIToUTF16(webkit::npapi::PluginGroup::kAdobeReaderGroupName));
-  plugin_prefs->EnablePluginGroup(
-      false, ASCIIToUTF16(chrome::ChromeContentClient::kPDFPluginName));
+  plugin_prefs->UpdatePreferences(0);
 }
 
 void PDFEnableAdobeReaderInfoBarDelegate::OnNo() {
@@ -141,9 +142,11 @@ void OpenUsingReader(TabContentsWrapper* tab,
                      InfoBarDelegate* old_delegate,
                      InfoBarDelegate* new_delegate) {
   WebPluginInfo plugin = reader_plugin;
-  // Give the plugin a new version so that the renderer doesn't show the blocked
+  // The plugin is disabled, so enable it to get around the renderer check.
+  // Also give it a new version so that the renderer doesn't show the blocked
   // plugin UI if it's vulnerable, since we already went through the
   // interstitial.
+  plugin.enabled = WebPluginInfo::USER_ENABLED;
   plugin.version = ASCIIToUTF16("11.0.0.0");
 
   ChromePluginServiceFilter::GetInstance()->OverridePluginForTab(
@@ -281,12 +284,11 @@ PDFUnsupportedFeatureInfoBarDelegate::PDFUnsupportedFeatureInfoBarDelegate(
   }
 
   UserMetrics::RecordAction(UserMetricsAction("PDF_UseReaderInfoBarShown"));
-  const std::vector<WebPluginInfo>& plugins =
-      reader_group->web_plugin_infos();
+  std::vector<WebPluginInfo> plugins = reader_group->web_plugin_infos();
   DCHECK_EQ(plugins.size(), 1u);
   reader_webplugininfo_ = plugins[0];
 
-  reader_vulnerable_ = reader_group->IsVulnerable(reader_webplugininfo_);
+  reader_vulnerable_ = reader_group->IsVulnerable();
   if (!reader_vulnerable_) {
     scoped_ptr<Version> version(PluginGroup::CreateVersionFromString(
         reader_webplugininfo_.version));
@@ -380,11 +382,8 @@ void PDFHasUnsupportedFeature(TabContentsWrapper* tab) {
   string16 reader_group_name(ASCIIToUTF16(PluginGroup::kAdobeReaderGroupName));
 
   // If the Reader plugin is disabled by policy, don't prompt them.
-  PluginPrefs* plugin_prefs = PluginPrefs::GetForProfile(tab->profile());
-  if (plugin_prefs->PolicyStatusForPlugin(reader_group_name) ==
-      PluginPrefs::POLICY_DISABLED) {
+  if (PluginGroup::IsPluginNameDisabledByPolicy(reader_group_name))
     return;
-  }
 
   PluginGroup* reader_group = NULL;
   std::vector<PluginGroup> plugin_groups;

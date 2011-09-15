@@ -358,7 +358,7 @@ bool PluginList::ShouldLoadPlugin(const webkit::WebPluginInfo& info,
 
   for (size_t i = 0; i < plugin_groups->size(); ++i) {
     const std::vector<webkit::WebPluginInfo>& plugins =
-        (*plugin_groups)[i]->web_plugin_infos();
+        (*plugin_groups)[i]->web_plugins_info();
     for (size_t j = 0; j < plugins.size(); ++j) {
       std::wstring plugin1 =
           StringToLowerASCII(plugins[j].path.BaseName().value());
@@ -420,7 +420,7 @@ bool PluginList::ShouldLoadPlugin(const webkit::WebPluginInfo& info,
 
     for (size_t i = 0; i < plugin_groups->size(); ++i) {
       const std::vector<webkit::WebPluginInfo>& plugins =
-          (*plugin_groups)[i]->web_plugin_infos();
+          (*plugin_groups)[i]->web_plugins_info();
       for (size_t j = 0; j < plugins.size(); ++j) {
         if (plugins[j].path.BaseName().value() == kOldWMPPlugin) {
           (*plugin_groups)[i]->RemovePlugin(plugins[j].path);
@@ -431,7 +431,7 @@ bool PluginList::ShouldLoadPlugin(const webkit::WebPluginInfo& info,
   } else if (filename == kOldWMPPlugin) {
     for (size_t i = 0; i < plugin_groups->size(); ++i) {
       const std::vector<webkit::WebPluginInfo>& plugins =
-          (*plugin_groups)[i]->web_plugin_infos();
+          (*plugin_groups)[i]->web_plugins_info();
       for (size_t j = 0; j < plugins.size(); ++j) {
         if (plugins[j].path.BaseName().value() == kNewWMPPlugin)
           return false;

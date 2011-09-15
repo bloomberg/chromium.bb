@@ -22,7 +22,8 @@ WebPluginMimeType::WebPluginMimeType(const std::string& m,
 
 WebPluginMimeType::~WebPluginMimeType() {}
 
-WebPluginInfo::WebPluginInfo() : type(PLUGIN_TYPE_NPAPI) {
+WebPluginInfo::WebPluginInfo()
+    : enabled(USER_DISABLED_POLICY_UNMANAGED), type(PLUGIN_TYPE_NPAPI) {
 }
 
 WebPluginInfo::WebPluginInfo(const WebPluginInfo& rhs)
@@ -31,6 +32,7 @@ WebPluginInfo::WebPluginInfo(const WebPluginInfo& rhs)
       version(rhs.version),
       desc(rhs.desc),
       mime_types(rhs.mime_types),
+      enabled(rhs.enabled),
       type(rhs.type) {
 }
 
@@ -42,6 +44,7 @@ WebPluginInfo& WebPluginInfo::operator=(const WebPluginInfo& rhs) {
   version = rhs.version;
   desc = rhs.desc;
   mime_types = rhs.mime_types;
+  enabled = rhs.enabled;
   type = rhs.type;
   return *this;
 }
@@ -55,7 +58,13 @@ WebPluginInfo::WebPluginInfo(const string16& fake_name,
       version(fake_version),
       desc(fake_desc),
       mime_types(),
+      enabled(USER_ENABLED_POLICY_UNMANAGED),
       type(PLUGIN_TYPE_NPAPI) {
+}
+
+bool IsPluginEnabled(const WebPluginInfo& plugin) {
+  return ((plugin.enabled & WebPluginInfo::POLICY_ENABLED) ||
+          plugin.enabled == WebPluginInfo::USER_ENABLED_POLICY_UNMANAGED);
 }
 
 bool IsPepperPlugin(const WebPluginInfo& plugin) {

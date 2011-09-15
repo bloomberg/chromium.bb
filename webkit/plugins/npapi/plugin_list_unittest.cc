@@ -13,18 +13,21 @@ namespace npapi {
 
 namespace {
 
-bool Equals(const WebPluginInfo& a, const WebPluginInfo& b) {
+bool Equals(const WebPluginInfo& a, const WebPluginInfo& b,
+            bool care_about_enabled_status) {
   return (a.name == b.name &&
           a.path == b.path &&
           a.version == b.version &&
-          a.desc == b.desc);
+          a.desc == b.desc &&
+          (!care_about_enabled_status || a.enabled == b.enabled));
 }
 
 bool Contains(const std::vector<WebPluginInfo>& list,
-              const WebPluginInfo& plugin) {
+              const WebPluginInfo& plugin,
+              bool care_about_enabled_status) {
   for (std::vector<WebPluginInfo>::const_iterator it = list.begin();
        it != list.end(); ++it) {
-    if (Equals(*it, plugin))
+    if (Equals(*it, plugin, care_about_enabled_status))
       return true;
   }
   return false;
@@ -57,6 +60,8 @@ class PluginListTest : public testing::Test {
   }
 
   virtual void SetUp() {
+    bar_plugin_.enabled = WebPluginInfo::USER_DISABLED_POLICY_UNMANAGED;
+    plugin_list_.DisablePlugin(bar_plugin_.path);
     plugin_list_.AddPluginToLoad(foo_plugin_);
     plugin_list_.AddPluginToLoad(bar_plugin_);
   }
@@ -71,20 +76,26 @@ TEST_F(PluginListTest, GetPlugins) {
   std::vector<WebPluginInfo> plugins;
   plugin_list_.GetPlugins(&plugins);
   EXPECT_EQ(2u, plugins.size());
-  EXPECT_TRUE(Contains(plugins, foo_plugin_));
-  EXPECT_TRUE(Contains(plugins, bar_plugin_));
+  EXPECT_TRUE(Contains(plugins, foo_plugin_, true));
+  EXPECT_TRUE(Contains(plugins, bar_plugin_, true));
 }
 
 TEST_F(PluginListTest, GetPluginGroup) {
   const PluginGroup* foo_group = plugin_list_.GetPluginGroup(foo_plugin_);
   EXPECT_EQ(ASCIIToUTF16(kFooGroupName), foo_group->GetGroupName());
+  EXPECT_TRUE(foo_group->Enabled());
+  // The second request should return a pointer to the same instance.
+  const PluginGroup* foo_group2 = plugin_list_.GetPluginGroup(foo_plugin_);
+  EXPECT_EQ(foo_group, foo_group2);
+  const PluginGroup* bar_group = plugin_list_.GetPluginGroup(bar_plugin_);
+  EXPECT_FALSE(bar_group->Enabled());
 }
 
 TEST_F(PluginListTest, EmptyGroup) {
   std::vector<PluginGroup> groups;
   plugin_list_.GetPluginGroups(false, &groups);
   for (size_t i = 0; i < groups.size(); ++i)
-    EXPECT_GE(1U, groups[i].web_plugin_infos().size());
+    EXPECT_GE(1U, groups[i].web_plugins_info().size());
 }
 
 TEST_F(PluginListTest, BadPluginDescription) {
@@ -99,19 +110,60 @@ TEST_F(PluginListTest, BadPluginDescription) {
   plugin_list_.RefreshPlugins();
   std::vector<WebPluginInfo> plugins;
   plugin_list_.GetPlugins(&plugins);
-  ASSERT_TRUE(Contains(plugins, plugin_3043));
+  ASSERT_TRUE(Contains(plugins, plugin_3043, true));
+}
+
+TEST_F(PluginListTest, DisableAndEnableBeforeLoad) {
+  WebPluginInfo plugin_3043(ASCIIToUTF16("MyPlugin"),
+                            FilePath(FILE_PATH_LITERAL("/myplugin.3.0.43")),
+                            ASCIIToUTF16("3.0.43"),
+                            ASCIIToUTF16("MyPlugin version 3.0.43"));
+  WebPluginInfo plugin_3045(ASCIIToUTF16("MyPlugin"),
+                            FilePath(FILE_PATH_LITERAL("/myplugin.3.0.45")),
+                            ASCIIToUTF16("3.0.45"),
+                            ASCIIToUTF16("MyPlugin version 3.0.45"));
+  // Disable the first one and disable and then enable the second one.
+  EXPECT_TRUE(plugin_list_.DisablePlugin(plugin_3043.path));
+  EXPECT_TRUE(plugin_list_.DisablePlugin(plugin_3045.path));
+  EXPECT_TRUE(plugin_list_.EnablePlugin(plugin_3045.path));
+  // Simulate loading of the plugins.
+  plugin_list_.ClearPluginsToLoad();
+  plugin_list_.AddPluginToLoad(plugin_3043);
+  plugin_list_.AddPluginToLoad(plugin_3045);
+  // Now we should have them in the state we specified above.
+  plugin_list_.RefreshPlugins();
+  std::vector<WebPluginInfo> plugins;
+  plugin_list_.GetPlugins(&plugins);
+  plugin_3043.enabled = WebPluginInfo::USER_DISABLED_POLICY_UNMANAGED;
+  ASSERT_TRUE(Contains(plugins, plugin_3043, true));
+  ASSERT_TRUE(Contains(plugins, plugin_3045, true));
 }
 
 TEST_F(PluginListTest, HardcodedGroups) {
   std::vector<PluginGroup> groups;
   plugin_list_.GetPluginGroups(true, &groups);
   ASSERT_EQ(2u, groups.size());
-  EXPECT_EQ(1u, groups[0].web_plugin_infos().size());
+  EXPECT_TRUE(groups[0].Enabled());
+  EXPECT_EQ(1u, groups[0].web_plugins_info().size());
   EXPECT_TRUE(groups[0].ContainsPlugin(FilePath(kFooPath)));
   EXPECT_EQ(kFooIdentifier, groups[0].identifier());
-  EXPECT_EQ(1u, groups[1].web_plugin_infos().size());
+  EXPECT_FALSE(groups[1].Enabled());
+  EXPECT_EQ(1u, groups[1].web_plugins_info().size());
   EXPECT_TRUE(groups[1].ContainsPlugin(FilePath(kBarPath)));
   EXPECT_EQ("bar.plugin", groups[1].identifier());
+}
+
+TEST_F(PluginListTest, DisableBeforeLoad) {
+  // Test that a plugin group that was disabled before plugins are loaded stays
+  // disabled afterwards.
+
+  EXPECT_TRUE(plugin_list_.EnableGroup(false, ASCIIToUTF16(kFooGroupName)));
+
+  plugin_list_.RefreshPlugins();
+  std::vector<WebPluginInfo> plugins;
+  plugin_list_.GetPlugins(&plugins);
+  ASSERT_EQ(2u, plugins.size());
+  ASSERT_EQ(WebPluginInfo::USER_DISABLED_POLICY_UNMANAGED, plugins[0].enabled);
 }
 
 }  // namespace npapi

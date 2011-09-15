@@ -87,6 +87,12 @@ class PluginGroupTest : public testing::Test {
   static PluginGroup* CreatePluginGroup(const WebPluginInfo& wpi) {
     return PluginGroup::FromWebPluginInfo(wpi);
   }
+ protected:
+  virtual void TearDown() {
+    PluginGroup::SetPolicyEnforcedPluginPatterns(std::set<string16>(),
+                                                 std::set<string16>(),
+                                                 std::set<string16>());
+  }
 };
 
 TEST_F(PluginGroupTest, PluginGroupMatch) {
@@ -96,7 +102,7 @@ TEST_F(PluginGroupTest, PluginGroupMatch) {
   EXPECT_TRUE(group->Match(kPlugin3045r));
   EXPECT_FALSE(group->Match(kPluginNoVersion));
   group->AddPlugin(kPlugin3045);
-  EXPECT_FALSE(group->IsVulnerable(kPlugin3045));
+  EXPECT_FALSE(group->IsVulnerable());
 
   group.reset(PluginGroupTest::CreatePluginGroup(kPluginDef));
   EXPECT_FALSE(group->Match(kPluginNoVersion));
@@ -118,6 +124,45 @@ TEST_F(PluginGroupTest, PluginGroupMatchCorrectVersion) {
   EXPECT_TRUE(group->Match(kPlugin2043));
   EXPECT_TRUE(group->Match(kPlugin3043));
   EXPECT_TRUE(group->Match(kPlugin4043));
+}
+
+TEST_F(PluginGroupTest, PluginGroupDescription) {
+  string16 desc3043(ASCIIToUTF16("MyPlugin version 3.0.43"));
+  string16 desc3045(ASCIIToUTF16("MyPlugin version 3.0.45"));
+
+  PluginGroupDefinition plugindefs[] =
+      { kPluginDef, kPluginDef3, kPluginDef34 };
+  for (size_t i = 0; i < arraysize(plugindefs); ++i) {
+    WebPluginInfo plugin3043(kPlugin3043);
+    WebPluginInfo plugin3045(kPlugin3045);
+    {
+      scoped_ptr<PluginGroup> group(PluginGroupTest::CreatePluginGroup(
+          plugindefs[i]));
+      EXPECT_TRUE(group->Match(plugin3043));
+      group->AddPlugin(plugin3043);
+      EXPECT_EQ(desc3043, group->description());
+      EXPECT_TRUE(group->IsVulnerable());
+      EXPECT_TRUE(group->Match(plugin3045));
+      group->AddPlugin(plugin3045);
+      EXPECT_EQ(desc3043, group->description());
+      EXPECT_TRUE(group->IsVulnerable());
+    }
+    {
+      // Disable the second plugin.
+      plugin3045.enabled =
+          webkit::WebPluginInfo::USER_DISABLED_POLICY_UNMANAGED;
+      scoped_ptr<PluginGroup> group(PluginGroupTest::CreatePluginGroup(
+          plugindefs[i]));
+      EXPECT_TRUE(group->Match(plugin3043));
+      group->AddPlugin(plugin3043);
+      EXPECT_EQ(desc3043, group->description());
+      EXPECT_TRUE(group->IsVulnerable());
+      EXPECT_TRUE(group->Match(plugin3045));
+      group->AddPlugin(plugin3045);
+      EXPECT_EQ(desc3043, group->description());
+      EXPECT_TRUE(group->IsVulnerable());
+    }
+  }
 }
 
 TEST_F(PluginGroupTest, PluginGroupDefinition) {
@@ -143,10 +188,115 @@ TEST_F(PluginGroupTest, VersionExtraction) {
   };
 
   for (size_t i = 0; i < arraysize(versions); i++) {
-    scoped_ptr<Version> version(PluginGroup::CreateVersionFromString(
-        ASCIIToUTF16(versions[i][0])));
-    EXPECT_STREQ(versions[i][1], version->GetString().c_str());
+    const WebPluginInfo plugin = WebPluginInfo(
+        ASCIIToUTF16("Blah Plugin"), FilePath(FILE_PATH_LITERAL("blahfile")),
+        ASCIIToUTF16(versions[i][0]), string16());
+    scoped_ptr<PluginGroup> group(PluginGroupTest::CreatePluginGroup(plugin));
+    EXPECT_TRUE(group->Match(plugin));
+    group->AddPlugin(plugin);
+    scoped_ptr<DictionaryValue> data(group->GetDataForUI());
+    std::string version;
+    data->GetString("version", &version);
+    EXPECT_EQ(versions[i][1], version);
   }
+}
+
+TEST_F(PluginGroupTest, DisabledByPolicy) {
+  std::set<string16> disabled_plugins;
+  disabled_plugins.insert(ASCIIToUTF16("Disable this!"));
+  disabled_plugins.insert(ASCIIToUTF16("*Google*"));
+  PluginGroup::SetPolicyEnforcedPluginPatterns(disabled_plugins,
+                                               std::set<string16>(),
+                                               std::set<string16>());
+
+  EXPECT_FALSE(PluginGroup::IsPluginNameDisabledByPolicy(ASCIIToUTF16("42")));
+  EXPECT_TRUE(PluginGroup::IsPluginNameDisabledByPolicy(
+      ASCIIToUTF16("Disable this!")));
+  EXPECT_TRUE(PluginGroup::IsPluginNameDisabledByPolicy(
+      ASCIIToUTF16("Google Earth")));
+}
+
+TEST_F(PluginGroupTest, EnabledByPolicy) {
+  std::set<string16> enabled_plugins;
+  enabled_plugins.insert(ASCIIToUTF16("Enable that!"));
+  enabled_plugins.insert(ASCIIToUTF16("PDF*"));
+  PluginGroup::SetPolicyEnforcedPluginPatterns(std::set<string16>(),
+                                               std::set<string16>(),
+                                               enabled_plugins);
+
+  EXPECT_FALSE(PluginGroup::IsPluginNameEnabledByPolicy(ASCIIToUTF16("42")));
+  EXPECT_TRUE(PluginGroup::IsPluginNameEnabledByPolicy(
+      ASCIIToUTF16("Enable that!")));
+  EXPECT_TRUE(PluginGroup::IsPluginNameEnabledByPolicy(
+      ASCIIToUTF16("PDF Reader")));
+}
+
+TEST_F(PluginGroupTest, EnabledAndDisabledByPolicy) {
+  const string16 k42(ASCIIToUTF16("42"));
+  const string16 kEnabled(ASCIIToUTF16("Enabled"));
+  const string16 kEnabled2(ASCIIToUTF16("Enabled 2"));
+  const string16 kEnabled3(ASCIIToUTF16("Enabled 3"));
+  const string16 kException(ASCIIToUTF16("Exception"));
+  const string16 kException2(ASCIIToUTF16("Exception 2"));
+  const string16 kGoogleMars(ASCIIToUTF16("Google Mars"));
+  const string16 kGoogleEarth(ASCIIToUTF16("Google Earth"));
+
+  std::set<string16> disabled_plugins;
+  std::set<string16> disabled_plugins_exceptions;
+  std::set<string16> enabled_plugins;
+
+  disabled_plugins.insert(kEnabled);
+  disabled_plugins_exceptions.insert(kEnabled);
+  enabled_plugins.insert(kEnabled);
+
+  disabled_plugins_exceptions.insert(kException);
+
+  disabled_plugins.insert(kEnabled2);
+  enabled_plugins.insert(kEnabled2);
+
+  disabled_plugins.insert(kException2);
+  disabled_plugins_exceptions.insert(kException2);
+
+  disabled_plugins_exceptions.insert(kEnabled3);
+  enabled_plugins.insert(kEnabled3);
+
+  PluginGroup::SetPolicyEnforcedPluginPatterns(disabled_plugins,
+                                               disabled_plugins_exceptions,
+                                               enabled_plugins);
+
+  EXPECT_FALSE(PluginGroup::IsPluginNameEnabledByPolicy(k42));
+  EXPECT_FALSE(PluginGroup::IsPluginNameDisabledByPolicy(k42));
+
+  EXPECT_TRUE(PluginGroup::IsPluginNameEnabledByPolicy(kEnabled));
+  EXPECT_FALSE(PluginGroup::IsPluginNameDisabledByPolicy(kEnabled));
+  EXPECT_TRUE(PluginGroup::IsPluginNameEnabledByPolicy(kEnabled2));
+  EXPECT_FALSE(PluginGroup::IsPluginNameDisabledByPolicy(kEnabled2));
+  EXPECT_TRUE(PluginGroup::IsPluginNameEnabledByPolicy(kEnabled3));
+  EXPECT_FALSE(PluginGroup::IsPluginNameDisabledByPolicy(kEnabled3));
+
+  EXPECT_FALSE(PluginGroup::IsPluginNameEnabledByPolicy(kException));
+  EXPECT_FALSE(PluginGroup::IsPluginNameDisabledByPolicy(kException));
+  EXPECT_FALSE(PluginGroup::IsPluginNameEnabledByPolicy(kException2));
+  EXPECT_FALSE(PluginGroup::IsPluginNameDisabledByPolicy(kException2));
+
+  disabled_plugins.clear();
+  disabled_plugins_exceptions.clear();
+  enabled_plugins.clear();
+
+  disabled_plugins.insert(ASCIIToUTF16("*"));
+  disabled_plugins_exceptions.insert(ASCIIToUTF16("*Google*"));
+  enabled_plugins.insert(kGoogleEarth);
+
+  PluginGroup::SetPolicyEnforcedPluginPatterns(disabled_plugins,
+                                               disabled_plugins_exceptions,
+                                               enabled_plugins);
+
+  EXPECT_TRUE(PluginGroup::IsPluginNameEnabledByPolicy(kGoogleEarth));
+  EXPECT_FALSE(PluginGroup::IsPluginNameDisabledByPolicy(kGoogleEarth));
+  EXPECT_FALSE(PluginGroup::IsPluginNameEnabledByPolicy(kGoogleMars));
+  EXPECT_FALSE(PluginGroup::IsPluginNameDisabledByPolicy(kGoogleMars));
+  EXPECT_FALSE(PluginGroup::IsPluginNameEnabledByPolicy(k42));
+  EXPECT_TRUE(PluginGroup::IsPluginNameDisabledByPolicy(k42));
 }
 
 TEST_F(PluginGroupTest, IsVulnerable) {
@@ -168,8 +318,8 @@ TEST_F(PluginGroupTest, IsVulnerable) {
       adobe_reader_plugin_def));
   group->AddPlugin(adobe_reader_plugin);
   PluginGroup group_copy(*group);  // Exercise the copy constructor.
-  EXPECT_FALSE(group_copy.IsVulnerable(adobe_reader_plugin));
-  EXPECT_FALSE(group_copy.RequiresAuthorization(adobe_reader_plugin));
+  EXPECT_FALSE(group_copy.IsVulnerable());
+  EXPECT_FALSE(group_copy.RequiresAuthorization());
 
   // Silverlight 4
   VersionRangeDefinition silverlight_version_range[] = {
@@ -186,8 +336,62 @@ TEST_F(PluginGroupTest, IsVulnerable) {
                                    ASCIIToUTF16("silverlight 4"));
   group.reset(PluginGroupTest::CreatePluginGroup(silverlight_plugin_def));
   group->AddPlugin(silverlight_plugin);
-  EXPECT_FALSE(PluginGroup(*group).IsVulnerable(silverlight_plugin));
-  EXPECT_TRUE(PluginGroup(*group).RequiresAuthorization(silverlight_plugin));
+  EXPECT_FALSE(PluginGroup(*group).IsVulnerable());
+  EXPECT_TRUE(PluginGroup(*group).RequiresAuthorization());
+}
+
+TEST_F(PluginGroupTest, WhitelistedIsNotVulnerable) {
+  VersionRangeDefinition version_range[] = {
+      { "0", "6", "5.0", true }
+  };
+  PluginGroupDefinition plugin_def = {
+      "nativehtml5", "NativeHTML5", "NativeHTML5", version_range,
+      arraysize(version_range),
+      "http://bugzilla.mozilla.org/show_bug.cgi?id=649408" };
+  WebPluginInfo plugin(ASCIIToUTF16("NativeHTML5"),
+                       FilePath(FILE_PATH_LITERAL("/native.so")),
+                       ASCIIToUTF16("4.0"),
+                       ASCIIToUTF16("NativeHTML5"));
+  scoped_ptr<PluginGroup> group(PluginGroupTest::CreatePluginGroup(plugin_def));
+  group->AddPlugin(plugin);
+
+  EXPECT_TRUE(group->IsVulnerable());
+  EXPECT_TRUE(group->RequiresAuthorization());
+
+  std::set<string16> enabled_plugins;
+  enabled_plugins.insert(ASCIIToUTF16("NativeHTML5"));
+  PluginGroup::SetPolicyEnforcedPluginPatterns(std::set<string16>(),
+                                               std::set<string16>(),
+                                               enabled_plugins);
+  group->EnforceGroupPolicy();
+
+  EXPECT_FALSE(group->IsVulnerable());
+  EXPECT_FALSE(group->RequiresAuthorization());
+}
+
+TEST_F(PluginGroupTest, MultipleVersions) {
+  scoped_ptr<PluginGroup> group(
+      PluginGroupTest::CreatePluginGroup(kPluginDef3));
+  group->AddPlugin(kPlugin3044);
+  group->AddPlugin(kPlugin3043);
+  EXPECT_EQ(kPlugin3044.desc, group->description());
+  EXPECT_FALSE(group->IsVulnerable());
+
+  group->DisablePlugin(kPlugin3044.path);
+  EXPECT_EQ(kPlugin3043.desc, group->description());
+  EXPECT_TRUE(group->IsVulnerable());
+
+  EXPECT_TRUE(group->EnableGroup(false));
+  EXPECT_EQ(kPlugin3044.desc, group->description());
+  EXPECT_FALSE(group->IsVulnerable());
+
+  EXPECT_TRUE(group->RemovePlugin(kPlugin3044.path));
+  EXPECT_EQ(kPlugin3043.desc, group->description());
+  EXPECT_TRUE(group->IsVulnerable());
+
+  EXPECT_TRUE(group->RemovePlugin(kPlugin3043.path));
+  EXPECT_TRUE(group->IsEmpty());
+  EXPECT_EQ(string16(), group->description());
 }
 
 }  // namespace npapi

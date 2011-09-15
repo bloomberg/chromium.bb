@@ -33,6 +33,9 @@ struct CONTENT_EXPORT PepperPluginInfo {
   // True when this plugin should be run out of process. Defaults to false.
   bool is_out_of_process;
 
+  // Whether the plugin is enabled.  Defaults to true.
+  bool enabled;
+
   FilePath path;  // Internal plugins have "internal-[name]" as path.
   std::string name;
   std::string description;

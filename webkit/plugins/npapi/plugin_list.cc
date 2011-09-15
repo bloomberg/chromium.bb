@@ -230,6 +230,7 @@ void PluginList::RegisterInternalPlugin(const FilePath& filename,
   plugin.info.name = ASCIIToUTF16(name);
   plugin.info.version = ASCIIToUTF16("1");
   plugin.info.desc = ASCIIToUTF16(description);
+  plugin.info.enabled = webkit::WebPluginInfo::USER_ENABLED_POLICY_UNMANAGED;
 
   webkit::WebPluginMimeType mime_type;
   mime_type.mime_type = mime_type_str;
@@ -407,6 +408,51 @@ void PluginList::LoadPlugins() {
   LoadPluginsInternal(&new_plugin_groups);
 
   base::AutoLock lock(lock_);
+  // Grab all plugins that were found before to copy enabled statuses.
+  std::vector<webkit::WebPluginInfo> old_plugins;
+  for (size_t i = 0; i < plugin_groups_.size(); ++i) {
+    const std::vector<webkit::WebPluginInfo>& gr_plugins =
+        plugin_groups_[i]->web_plugins_info();
+    old_plugins.insert(old_plugins.end(), gr_plugins.begin(), gr_plugins.end());
+  }
+  // Disable all of the plugins and plugin groups that are disabled by policy.
+  for (size_t i = 0; i < new_plugin_groups.size(); ++i) {
+    PluginGroup* group = new_plugin_groups[i];
+    string16 group_name = group->GetGroupName();
+
+    std::vector<webkit::WebPluginInfo>& gr_plugins =
+        group->GetPluginsContainer();
+    for (size_t j = 0; j < gr_plugins.size(); ++j) {
+      int plugin_found = -1;
+      for (size_t k = 0; k < old_plugins.size(); ++k) {
+        if (gr_plugins[j].path == old_plugins[k].path) {
+          plugin_found = k;
+          break;
+        }
+      }
+      if (plugin_found >= 0)
+        gr_plugins[j].enabled = old_plugins[plugin_found].enabled;
+      // Set the disabled flag of all plugins scheduled for disabling.
+      if (plugins_to_disable_.find(gr_plugins[j].path) !=
+          plugins_to_disable_.end()) {
+          group->DisablePlugin(gr_plugins[j].path);
+      }
+    }
+
+    if (group->IsEmpty()) {
+      new_plugin_groups.erase(new_plugin_groups.begin() + i);
+      --i;
+      continue;
+    }
+
+    group->EnforceGroupPolicy();
+  }
+  // We flush the list of prematurely disabled plugins after the load has
+  // finished. If for some reason a plugin reappears on a second load it is
+  // going to be loaded normally. This is only true for non-policy controlled
+  // plugins though.
+  plugins_to_disable_.clear();
+
   plugin_groups_.swap(new_plugin_groups);
 }
 
@@ -447,7 +493,7 @@ void PluginList::GetPlugins(std::vector<WebPluginInfo>* plugins) {
   base::AutoLock lock(lock_);
   for (size_t i = 0; i < plugin_groups_.size(); ++i) {
     const std::vector<webkit::WebPluginInfo>& gr_plugins =
-        plugin_groups_[i]->web_plugin_infos();
+        plugin_groups_[i]->web_plugins_info();
     plugins->insert(plugins->end(), gr_plugins.begin(), gr_plugins.end());
   }
 }
@@ -476,7 +522,7 @@ void PluginList::GetPluginInfoArray(
   // Add in plugins by mime type.
   for (size_t i = 0; i < plugin_groups_.size(); ++i) {
     const std::vector<webkit::WebPluginInfo>& plugins =
-        plugin_groups_[i]->web_plugin_infos();
+        plugin_groups_[i]->web_plugins_info();
     for (size_t i = 0; i < plugins.size(); ++i) {
       if (SupportsType(plugins[i], mime_type, allow_wildcard)) {
         FilePath path = plugins[i].path;
@@ -498,7 +544,7 @@ void PluginList::GetPluginInfoArray(
     std::string actual_mime_type;
     for (size_t i = 0; i < plugin_groups_.size(); ++i) {
       const std::vector<webkit::WebPluginInfo>& plugins =
-          plugin_groups_[i]->web_plugin_infos();
+          plugin_groups_[i]->web_plugins_info();
       for (size_t i = 0; i < plugins.size(); ++i) {
         if (SupportsExtension(plugins[i], extension, &actual_mime_type)) {
           FilePath path = plugins[i].path;
@@ -523,9 +569,9 @@ void PluginList::GetPluginInfoArray(
     if (plugin_groups_[i]->identifier().compare(
         kDefaultPluginLibraryName) == 0) {
 #endif
-      DCHECK_NE(0U, plugin_groups_[i]->web_plugin_infos().size());
+      DCHECK_NE(0U, plugin_groups_[i]->web_plugins_info().size());
       const webkit::WebPluginInfo& default_info =
-          plugin_groups_[i]->web_plugin_infos()[0];
+          plugin_groups_[i]->web_plugins_info()[0];
       if (SupportsType(default_info, mime_type, allow_wildcard)) {
         info->push_back(default_info);
         if (actual_mime_types)
@@ -541,7 +587,7 @@ bool PluginList::GetPluginInfoByPath(const FilePath& plugin_path,
   base::AutoLock lock(lock_);
   for (size_t i = 0; i < plugin_groups_.size(); ++i) {
     const std::vector<webkit::WebPluginInfo>& plugins =
-        plugin_groups_[i]->web_plugin_infos();
+        plugin_groups_[i]->web_plugins_info();
     for (size_t i = 0; i < plugins.size(); ++i) {
       if (plugins[i].path == plugin_path) {
         *info = plugins[i];
@@ -568,10 +614,10 @@ void PluginList::GetPluginGroups(
   }
 }
 
-PluginGroup* PluginList::GetPluginGroup(
+const PluginGroup* PluginList::GetPluginGroup(
     const webkit::WebPluginInfo& web_plugin_info) {
   base::AutoLock lock(lock_);
-  return new PluginGroup(*AddToPluginGroups(web_plugin_info, &plugin_groups_));
+  return AddToPluginGroups(web_plugin_info, &plugin_groups_);
 }
 
 string16 PluginList::GetPluginGroupName(const std::string& identifier) {
@@ -624,7 +670,58 @@ PluginGroup* PluginList::AddToPluginGroups(
     plugin_groups->push_back(group);
   }
   group->AddPlugin(web_plugin_info);
+  // If group is scheduled for disabling do that now and remove it from the
+  // list.
+  if (groups_to_disable_.erase(group->GetGroupName()))
+    group->EnableGroup(false);
   return group;
+}
+
+bool PluginList::EnablePlugin(const FilePath& filename) {
+  base::AutoLock lock(lock_);
+  for (size_t i = 0; i < plugin_groups_.size(); ++i) {
+    if (plugin_groups_[i]->ContainsPlugin(filename))
+      return plugin_groups_[i]->EnablePlugin(filename);
+  }
+  // Non existing plugin is being enabled. Check if it has been disabled before
+  // and remove it.
+  return (plugins_to_disable_.erase(filename) != 0);
+}
+
+bool PluginList::DisablePlugin(const FilePath& filename) {
+  base::AutoLock lock(lock_);
+  for (size_t i = 0; i < plugin_groups_.size(); ++i) {
+    if (plugin_groups_[i]->ContainsPlugin(filename))
+      return plugin_groups_[i]->DisablePlugin(filename);
+  }
+  // Non existing plugin is being disabled. Queue the plugin so that on the next
+  // load plugins call they will be disabled.
+  plugins_to_disable_.insert(filename);
+  return true;
+}
+
+bool PluginList::EnableGroup(bool enable, const string16& group_name) {
+  base::AutoLock lock(lock_);
+  PluginGroup* group = NULL;
+  for (size_t i = 0; i < plugin_groups_.size(); ++i) {
+    if (!plugin_groups_[i]->IsEmpty() &&
+        plugin_groups_[i]->GetGroupName().find(group_name) != string16::npos) {
+      group = plugin_groups_[i];
+      break;
+    }
+  }
+  if (!group) {
+    // Non existing group is being enabled. Queue the group so that on the next
+    // load plugins call they will be disabled.
+    if (!enable) {
+      groups_to_disable_.insert(group_name);
+      return true;
+    } else {
+      return (groups_to_disable_.erase(group_name) != 0);
+    }
+  }
+
+  return group->EnableGroup(enable);
 }
 
 bool PluginList::SupportsType(const webkit::WebPluginInfo& plugin,

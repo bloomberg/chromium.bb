@@ -52,11 +52,11 @@ void EnableInternalPDFPluginForTab(TabContentsWrapper* preview_tab) {
     }
   }
   if (internal_pdf_group) {
-    const std::vector<WebPluginInfo>& plugins =
-        internal_pdf_group->web_plugin_infos();
+    std::vector<WebPluginInfo> plugins = internal_pdf_group->web_plugin_infos();
     DCHECK_EQ(plugins.size(), 1U);
 
     webkit::WebPluginInfo plugin = plugins[0];
+    plugin.enabled = WebPluginInfo::USER_ENABLED;
     ChromePluginServiceFilter::GetInstance()->OverridePluginForTab(
         preview_tab->render_view_host()->process()->id(),
         preview_tab->render_view_host()->routing_id(),

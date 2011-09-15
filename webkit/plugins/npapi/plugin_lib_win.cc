@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -38,6 +38,7 @@ bool PluginLib::ReadWebPluginInfo(const FilePath &filename,
   info->desc = version_info->file_description();
   info->version = version_info->file_version();
   info->path = filename;
+  info->enabled = WebPluginInfo::USER_ENABLED_POLICY_UNMANAGED;
 
   // TODO(evan): Move the ParseMimeTypes code inline once Pepper is updated.
   if (!PluginList::ParseMimeTypes(

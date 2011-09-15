@@ -7,23 +7,19 @@
 #include <string>
 
 #include "base/command_line.h"
-#include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
-#include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "base/version.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/browser/profiles/profile_keyed_service_factory.h"
-#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
@@ -31,7 +27,6 @@
 #include "chrome/common/pref_names.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/notification_service.h"
-#include "webkit/plugins/npapi/plugin_group.h"
 #include "webkit/plugins/npapi/plugin_list.h"
 #include "webkit/plugins/webplugininfo.h"
 
@@ -54,11 +49,6 @@ class PluginPrefsWrapper : public ProfileKeyedService {
   scoped_refptr<PluginPrefs> plugin_prefs_;
 };
 
-// Default state for a plug-in (not state of the default plug-in!).
-// Accessed only on the UI thread.
-base::LazyInstance<std::map<FilePath, bool> > g_default_plugin_state(
-    base::LINKER_INITIALIZED);
-
 }
 
 // How long to wait to save the plugin enabled information, which might need to
@@ -70,10 +60,6 @@ class PluginPrefs::Factory : public ProfileKeyedServiceFactory {
   static Factory* GetInstance();
 
   PluginPrefsWrapper* GetWrapperForProfile(Profile* profile);
-
-  // Factory function for use with
-  // ProfileKeyedServiceFactory::SetTestingFactory.
-  static ProfileKeyedService* CreateWrapperForProfile(Profile* profile);
 
  private:
   friend struct DefaultSingletonTraits<Factory>;
@@ -103,138 +89,31 @@ PluginPrefs* PluginPrefs::GetForProfile(Profile* profile) {
   return wrapper->plugin_prefs();
 }
 
-// static
-PluginPrefs* PluginPrefs::GetForTestingProfile(Profile* profile) {
-  ProfileKeyedService* wrapper =
-      Factory::GetInstance()->SetTestingFactoryAndUse(
-          profile, &Factory::CreateWrapperForProfile);
-  return static_cast<PluginPrefsWrapper*>(wrapper)->plugin_prefs();
+DictionaryValue* PluginPrefs::CreatePluginFileSummary(
+    const webkit::WebPluginInfo& plugin) {
+  DictionaryValue* data = new DictionaryValue();
+  data->SetString("path", plugin.path.value());
+  data->SetString("name", plugin.name);
+  data->SetString("version", plugin.version);
+  data->SetBoolean("enabled", IsPluginEnabled(plugin));
+  return data;
 }
 
-void PluginPrefs::EnablePluginGroup(bool enabled, const string16& group_name) {
-  if (!BrowserThread::CurrentlyOn(BrowserThread::FILE)) {
-    BrowserThread::PostTask(
-        BrowserThread::FILE, FROM_HERE,
-        NewRunnableMethod(this, &PluginPrefs::EnablePluginGroup,
-                          enabled, group_name));
-    return;
-  }
-
-  webkit::npapi::PluginList* plugin_list =
-      webkit::npapi::PluginList::Singleton();
-  std::vector<webkit::npapi::PluginGroup> groups;
-  plugin_list->GetPluginGroups(true, &groups);
-
-  base::AutoLock auto_lock(lock_);
-
-  // Set the desired state for the group.
-  plugin_group_state_[group_name] = enabled;
-
-  // Update the state for all plug-ins in the group.
-  for (size_t i = 0; i < groups.size(); ++i) {
-    if (groups[i].GetGroupName() != group_name)
-      continue;
-    const std::vector<webkit::WebPluginInfo>& plugins =
-        groups[i].web_plugin_infos();
-    for (size_t j = 0; j < plugins.size(); ++j)
-      plugin_state_[plugins[j].path] = enabled;
-    break;
-  }
-
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(this, &PluginPrefs::OnUpdatePreferences, groups));
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(this, &PluginPrefs::NotifyPluginStatusChanged));
+void PluginPrefs::EnablePluginGroup(bool enable, const string16& group_name) {
+  webkit::npapi::PluginList::Singleton()->EnableGroup(enable, group_name);
+  NotifyPluginStatusChanged();
 }
 
-void PluginPrefs::EnablePlugin(bool enabled, const FilePath& path) {
-  if (!BrowserThread::CurrentlyOn(BrowserThread::FILE)) {
-    BrowserThread::PostTask(
-        BrowserThread::FILE, FROM_HERE,
-        NewRunnableMethod(this, &PluginPrefs::EnablePlugin, enabled, path));
-    return;
-  }
+void PluginPrefs::EnablePlugin(bool enable, const FilePath& path) {
+  if (enable)
+    webkit::npapi::PluginList::Singleton()->EnablePlugin(path);
+  else
+    webkit::npapi::PluginList::Singleton()->DisablePlugin(path);
 
-  {
-    // Set the desired state for the plug-in.
-    base::AutoLock auto_lock(lock_);
-    plugin_state_[path] = enabled;
-  }
-
-  webkit::npapi::PluginList* plugin_list =
-      webkit::npapi::PluginList::Singleton();
-  std::vector<webkit::npapi::PluginGroup> groups;
-  plugin_list->GetPluginGroups(true, &groups);
-
-  bool found_group = false;
-  for (size_t i = 0; i < groups.size(); ++i) {
-    bool all_disabled = true;
-    const std::vector<webkit::WebPluginInfo>& plugins =
-        groups[i].web_plugin_infos();
-    for (size_t j = 0; j < plugins.size(); ++j) {
-      all_disabled = all_disabled && !IsPluginEnabled(plugins[j]);
-      if (plugins[j].path == path) {
-        found_group = true;
-        DCHECK_EQ(enabled, IsPluginEnabled(plugins[j]));
-      }
-    }
-    if (found_group) {
-      // Update the state for the corresponding plug-in group.
-      base::AutoLock auto_lock(lock_);
-      plugin_group_state_[groups[i].GetGroupName()] = !all_disabled;
-      break;
-    }
-  }
-
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(this, &PluginPrefs::OnUpdatePreferences, groups));
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(this, &PluginPrefs::NotifyPluginStatusChanged));
-}
-
-// static
-void PluginPrefs::EnablePluginGlobally(bool enable, const FilePath& file_path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  g_default_plugin_state.Get()[file_path] = enable;
-  std::vector<Profile*> profiles =
-      g_browser_process->profile_manager()->GetLoadedProfiles();
-  for (std::vector<Profile*>::iterator it = profiles.begin();
-       it != profiles.end(); ++it) {
-    PluginPrefs* plugin_prefs = PluginPrefs::GetForProfile(*it);
-    DCHECK(plugin_prefs);
-    plugin_prefs->EnablePlugin(enable, file_path);
-  }
-}
-
-PluginPrefs::PolicyStatus PluginPrefs::PolicyStatusForPlugin(
-    const string16& name) {
-  base::AutoLock auto_lock(lock_);
-  if (IsStringMatchedInSet(name, policy_enabled_plugin_patterns_)) {
-    return POLICY_ENABLED;
-  } else if (IsStringMatchedInSet(name, policy_disabled_plugin_patterns_) &&
-             !IsStringMatchedInSet(
-                 name, policy_disabled_plugin_exception_patterns_)) {
-    return POLICY_DISABLED;
-  } else {
-    return NO_POLICY;
-  }
+  NotifyPluginStatusChanged();
 }
 
 bool PluginPrefs::IsPluginEnabled(const webkit::WebPluginInfo& plugin) {
-  scoped_ptr<webkit::npapi::PluginGroup> group(
-      webkit::npapi::PluginList::Singleton()->GetPluginGroup(plugin));
-  string16 group_name = group->GetGroupName();
-
-  // Check if the plug-in or its group is enabled by policy.
-  PolicyStatus plugin_status = PolicyStatusForPlugin(plugin.name);
-  PolicyStatus group_status = PolicyStatusForPlugin(group_name);
-  if (plugin_status == POLICY_ENABLED || group_status == POLICY_ENABLED)
-    return true;
-
-  // Check if the plug-in or its group is disabled by policy.
-  if (plugin_status == POLICY_DISABLED || group_status == POLICY_DISABLED)
-    return false;
-
   // If enabling NaCl, make sure the plugin is also enabled. See bug
   // http://code.google.com/p/chromium/issues/detail?id=81010 for more
   // information.
@@ -244,27 +123,12 @@ bool PluginPrefs::IsPluginEnabled(const webkit::WebPluginInfo& plugin) {
       CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableNaCl)) {
     return true;
   }
-
-  base::AutoLock auto_lock(lock_);
-  // Check user preferences for the plug-in.
-  std::map<FilePath, bool>::iterator plugin_it =
-      plugin_state_.find(plugin.path);
-  if (plugin_it != plugin_state_.end())
-    return plugin_it->second;
-
-  // Check user preferences for the plug-in group.
-  std::map<string16, bool>::iterator group_it(
-      plugin_group_state_.find(plugin.name));
-  if (group_it != plugin_group_state_.end())
-    return group_it->second;
-
-  // Default to enabled.
-  return true;
+  return webkit::IsPluginEnabled(plugin);
 }
 
 void PluginPrefs::Observe(int type,
-                          const NotificationSource& source,
-                          const NotificationDetails& details) {
+                            const NotificationSource& source,
+                            const NotificationDetails& details) {
   DCHECK_EQ(chrome::NOTIFICATION_PREF_CHANGED, type);
   const std::string* pref_name = Details<std::string>(details).ptr();
   if (!pref_name) {
@@ -272,39 +136,39 @@ void PluginPrefs::Observe(int type,
     return;
   }
   DCHECK_EQ(prefs_, Source<PrefService>(source).ptr());
-  if (*pref_name == prefs::kPluginsDisabledPlugins) {
-    base::AutoLock auto_lock(lock_);
-    ListValueToStringSet(prefs_->GetList(prefs::kPluginsDisabledPlugins),
-                         &policy_disabled_plugin_patterns_);
-  } else if (*pref_name == prefs::kPluginsDisabledPluginsExceptions) {
-    base::AutoLock auto_lock(lock_);
-    ListValueToStringSet(
-        prefs_->GetList(prefs::kPluginsDisabledPluginsExceptions),
-        &policy_disabled_plugin_exception_patterns_);
-  } else if (*pref_name == prefs::kPluginsEnabledPlugins) {
-    base::AutoLock auto_lock(lock_);
-    ListValueToStringSet(prefs_->GetList(prefs::kPluginsEnabledPlugins),
-                         &policy_enabled_plugin_patterns_);
-  } else {
-    NOTREACHED();
+  if (*pref_name == prefs::kPluginsDisabledPlugins ||
+      *pref_name == prefs::kPluginsDisabledPluginsExceptions ||
+      *pref_name == prefs::kPluginsEnabledPlugins) {
+    const ListValue* disabled_list =
+        prefs_->GetList(prefs::kPluginsDisabledPlugins);
+    const ListValue* exceptions_list =
+        prefs_->GetList(prefs::kPluginsDisabledPluginsExceptions);
+    const ListValue* enabled_list =
+        prefs_->GetList(prefs::kPluginsEnabledPlugins);
+    UpdatePluginsStateFromPolicy(disabled_list, exceptions_list, enabled_list);
   }
+}
+
+void PluginPrefs::UpdatePluginsStateFromPolicy(
+    const ListValue* disabled_list,
+    const ListValue* exceptions_list,
+    const ListValue* enabled_list) {
+  std::set<string16> disabled_plugin_patterns;
+  std::set<string16> disabled_plugin_exception_patterns;
+  std::set<string16> enabled_plugin_patterns;
+
+  ListValueToStringSet(disabled_list, &disabled_plugin_patterns);
+  ListValueToStringSet(exceptions_list, &disabled_plugin_exception_patterns);
+  ListValueToStringSet(enabled_list, &enabled_plugin_patterns);
+
+  webkit::npapi::PluginGroup::SetPolicyEnforcedPluginPatterns(
+      disabled_plugin_patterns,
+      disabled_plugin_exception_patterns,
+      enabled_plugin_patterns);
+
   NotifyPluginStatusChanged();
 }
 
-/*static*/
-bool PluginPrefs::IsStringMatchedInSet(const string16& name,
-                                       const std::set<string16>& pattern_set) {
-  std::set<string16>::const_iterator pattern(pattern_set.begin());
-  while (pattern != pattern_set.end()) {
-    if (MatchPattern(name, *pattern))
-      return true;
-    ++pattern;
-  }
-
-  return false;
-}
-
-/* static */
 void PluginPrefs::ListValueToStringSet(const ListValue* src,
                                        std::set<string16>* dest) {
   DCHECK(src);
@@ -413,7 +277,8 @@ void PluginPrefs::SetPrefs(PrefService* prefs) {
             }
           }
 
-          plugin_state_[plugin_path] = enabled;
+          if (!enabled)
+            webkit::npapi::PluginList::Singleton()->DisablePlugin(plugin_path);
         } else if (!enabled && plugin->GetString("name", &group_name)) {
           // Don't disable this group if it's for the pdf or nacl plugins and
           // we just forced it on.
@@ -424,7 +289,7 @@ void PluginPrefs::SetPrefs(PrefService* prefs) {
             continue;
 
           // Otherwise this is a list of groups.
-          plugin_group_state_[group_name] = false;
+          EnablePluginGroup(false, group_name);
         }
       }
     } else {
@@ -439,14 +304,17 @@ void PluginPrefs::SetPrefs(PrefService* prefs) {
 
   // Build the set of policy enabled/disabled plugin patterns once and cache it.
   // Don't do this in the constructor, there's no profile available there.
-  ListValueToStringSet(prefs_->GetList(prefs::kPluginsDisabledPlugins),
-                       &policy_disabled_plugin_patterns_);
-  ListValueToStringSet(
-      prefs_->GetList(prefs::kPluginsDisabledPluginsExceptions),
-      &policy_disabled_plugin_exception_patterns_);
-  ListValueToStringSet(prefs_->GetList(prefs::kPluginsEnabledPlugins),
-                       &policy_enabled_plugin_patterns_);
+  const ListValue* disabled_plugins =
+      prefs_->GetList(prefs::kPluginsDisabledPlugins);
+  const ListValue* disabled_exception_plugins =
+      prefs_->GetList(prefs::kPluginsDisabledPluginsExceptions);
+  const ListValue* enabled_plugins =
+      prefs_->GetList(prefs::kPluginsEnabledPlugins);
+  UpdatePluginsStateFromPolicy(disabled_plugins,
+                               disabled_exception_plugins,
+                               enabled_plugins);
 
+  registrar_.RemoveAll();
   registrar_.Init(prefs_);
   registrar_.Add(prefs::kPluginsDisabledPlugins, this);
   registrar_.Add(prefs::kPluginsDisabledPluginsExceptions, this);
@@ -454,22 +322,16 @@ void PluginPrefs::SetPrefs(PrefService* prefs) {
 
   if (force_enable_internal_pdf || internal_pdf_enabled) {
     // See http://crbug.com/50105 for background.
-    plugin_group_state_[ASCIIToUTF16(
-        webkit::npapi::PluginGroup::kAdobeReaderGroupName)] = false;
+    EnablePluginGroup(false, ASCIIToUTF16(
+        webkit::npapi::PluginGroup::kAdobeReaderGroupName));
   }
 
   if (force_enable_internal_pdf || force_enable_nacl) {
     // We want to save this, but doing so requires loading the list of plugins,
     // so do it after a minute as to not impact startup performance.  Note that
     // plugins are loaded after 30s by the metrics service.
-    BrowserThread::PostDelayedTask(
-        BrowserThread::FILE,
-        FROM_HERE,
-        NewRunnableMethod(this, &PluginPrefs::GetPreferencesDataOnFileThread),
-        kPluginUpdateDelayMs);
+    UpdatePreferences(kPluginUpdateDelayMs);
   }
-
-  NotifyPluginStatusChanged();
 }
 
 void PluginPrefs::ShutdownOnUIThread() {
@@ -487,51 +349,47 @@ PluginPrefsWrapper* PluginPrefs::Factory::GetWrapperForProfile(
   return static_cast<PluginPrefsWrapper*>(GetServiceForProfile(profile, true));
 }
 
-// static
-ProfileKeyedService* PluginPrefs::Factory::CreateWrapperForProfile(
-    Profile* profile) {
-  return GetInstance()->BuildServiceInstanceFor(profile);
-}
-
 PluginPrefs::Factory::Factory()
     : ProfileKeyedServiceFactory(ProfileDependencyManager::GetInstance()) {
 }
 
 ProfileKeyedService* PluginPrefs::Factory::BuildServiceInstanceFor(
-    Profile* profile) const {
+      Profile* profile) const {
   scoped_refptr<PluginPrefs> plugin_prefs(new PluginPrefs());
   plugin_prefs->SetPrefs(profile->GetPrefs());
   return new PluginPrefsWrapper(plugin_prefs);
 }
 
-PluginPrefs::PluginPrefs() : plugin_state_(g_default_plugin_state.Get()),
-                             prefs_(NULL) {
+PluginPrefs::PluginPrefs() : prefs_(NULL), notify_pending_(false) {
 }
 
 PluginPrefs::~PluginPrefs() {
 }
 
-void PluginPrefs::SetPolicyEnforcedPluginPatterns(
-    const std::set<string16>& disabled_patterns,
-    const std::set<string16>& disabled_exception_patterns,
-    const std::set<string16>& enabled_patterns) {
-  policy_disabled_plugin_patterns_ = disabled_patterns;
-  policy_disabled_plugin_exception_patterns_ = disabled_exception_patterns;
-  policy_enabled_plugin_patterns_ = enabled_patterns;
+void PluginPrefs::UpdatePreferences(int delay_ms) {
+  BrowserThread::PostDelayedTask(
+      BrowserThread::FILE,
+      FROM_HERE,
+      NewRunnableMethod(this, &PluginPrefs::GetPreferencesDataOnFileThread),
+      delay_ms);
 }
 
 void PluginPrefs::GetPreferencesDataOnFileThread() {
+  std::vector<webkit::WebPluginInfo> plugins;
   std::vector<webkit::npapi::PluginGroup> groups;
 
   webkit::npapi::PluginList* plugin_list =
       webkit::npapi::PluginList::Singleton();
+  plugin_list->GetPlugins(&plugins);
   plugin_list->GetPluginGroups(false, &groups);
 
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(this, &PluginPrefs::OnUpdatePreferences, groups));
+      NewRunnableMethod(this, &PluginPrefs::OnUpdatePreferences,
+                        plugins, groups));
 }
 
 void PluginPrefs::OnUpdatePreferences(
+    std::vector<webkit::WebPluginInfo> plugins,
     std::vector<webkit::npapi::PluginGroup> groups) {
   if (!prefs_)
     return;
@@ -544,42 +402,44 @@ void PluginPrefs::OnUpdatePreferences(
   if (PathService::Get(chrome::DIR_INTERNAL_PLUGINS, &internal_dir))
     prefs_->SetFilePath(prefs::kPluginsLastInternalDirectory, internal_dir);
 
-  base::AutoLock auto_lock(lock_);
-
-  // Add the plug-in groups.
-  for (size_t i = 0; i < groups.size(); ++i) {
-    // Add the plugin files to the same list.
-    const std::vector<webkit::WebPluginInfo>& plugins =
-        groups[i].web_plugin_infos();
-    for (size_t j = 0; j < plugins.size(); ++j) {
-      DictionaryValue* summary = new DictionaryValue();
-      summary->SetString("path", plugins[j].path.value());
-      summary->SetString("name", plugins[j].name);
-      summary->SetString("version", plugins[j].version);
-      bool enabled = true;
-      std::map<FilePath, bool>::iterator it =
-          plugin_state_.find(plugins[j].path);
-      if (it != plugin_state_.end())
-        enabled = it->second;
-      summary->SetBoolean("enabled", enabled);
-      plugins_list->Append(summary);
+  // Add the plugin files.
+  for (size_t i = 0; i < plugins.size(); ++i) {
+    DictionaryValue* summary = CreatePluginFileSummary(plugins[i]);
+    // If the plugin is managed by policy, store the user preferred state
+    // instead.
+    if (plugins[i].enabled & webkit::WebPluginInfo::MANAGED_MASK) {
+      bool user_enabled =
+          (plugins[i].enabled & webkit::WebPluginInfo::USER_MASK) ==
+              webkit::WebPluginInfo::USER_ENABLED;
+      summary->SetBoolean("enabled", user_enabled);
     }
-
-    DictionaryValue* summary = new DictionaryValue();
-    string16 name = groups[i].GetGroupName();
-    summary->SetString("name", name);
-    bool enabled = true;
-    std::map<string16, bool>::iterator it =
-        plugin_group_state_.find(name);
-    if (it != plugin_group_state_.end())
-      enabled = it->second;
-    summary->SetBoolean("enabled", enabled);
     plugins_list->Append(summary);
+  }
+
+  // Add the groups as well.
+  for (size_t i = 0; i < groups.size(); ++i) {
+      DictionaryValue* summary = groups[i].GetSummary();
+      // If the plugin is disabled only by policy don't store this state in the
+      // user pref store.
+      if (!groups[i].Enabled() &&
+          webkit::npapi::PluginGroup::IsPluginNameDisabledByPolicy(
+              groups[i].GetGroupName()))
+        summary->SetBoolean("enabled", true);
+      plugins_list->Append(summary);
   }
 }
 
 void PluginPrefs::NotifyPluginStatusChanged() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (notify_pending_)
+    return;
+  notify_pending_ = true;
+  MessageLoop::current()->PostTask(
+      FROM_HERE,
+      NewRunnableMethod(this, &PluginPrefs::OnNotifyPluginStatusChanged));
+}
+
+void PluginPrefs::OnNotifyPluginStatusChanged() {
+  notify_pending_ = false;
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_PLUGIN_ENABLE_STATUS_CHANGED,
       Source<PluginPrefs>(this),
