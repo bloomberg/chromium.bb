@@ -670,6 +670,8 @@
         'examples/button_example.h',
         'examples/combobox_example.cc',
         'examples/combobox_example.h',
+        'examples/double_split_view_example.cc',
+        'examples/double_split_view_example.h',
         'examples/example_base.cc',
         'examples/example_base.h',
         'examples/examples_main.cc',

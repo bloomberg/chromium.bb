@@ -16,6 +16,7 @@
 #include "views/controls/tabbed_pane/tabbed_pane.h"
 #include "views/examples/button_example.h"
 #include "views/examples/combobox_example.h"
+#include "views/examples/double_split_view_example.h"
 #include "views/examples/link_example.h"
 #include "views/examples/menu_example.h"
 #include "views/examples/message_box_example.h"
@@ -149,6 +150,9 @@ void ExamplesMain::Run() {
 
   SingleSplitViewExample single_split_view_example(this);
   AddExample(&single_split_view_example);
+
+  DoubleSplitViewExample double_split_view_example(this);
+  AddExample(&double_split_view_example);
 
 #if defined(OS_WIN)
   TableExample table_example(this);

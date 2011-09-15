@@ -246,7 +246,8 @@ int SingleSplitView::NormalizeDividerOffset(int divider_offset,
                                             const gfx::Rect& bounds) const {
   int primary_axis_size = GetPrimaryAxisSize(bounds.width(), bounds.height());
   if (divider_offset < 0)
-    return (primary_axis_size - kDividerSize) / 2;
+    // primary_axis_size may < kDividerSize during initial layout.
+    return std::max(0, (primary_axis_size - kDividerSize) / 2);
   return std::min(divider_offset,
                   std::max(primary_axis_size - kDividerSize, 0));
 }
