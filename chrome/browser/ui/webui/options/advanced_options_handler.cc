@@ -201,8 +201,6 @@ void AdvancedOptionsHandler::Initialize() {
   SetupMetricsReportingCheckbox();
   SetupMetricsReportingSettingVisibility();
   SetupFontSizeLabel();
-  SetupDownloadLocationPath();
-  SetupPromptForDownload();
   SetupAutoOpenFileTypesDisabledAttribute();
   SetupProxySettingsSection();
   SetupSSLConfigSettings();
@@ -244,11 +242,6 @@ WebUIMessageHandler* AdvancedOptionsHandler::Attach(WebUI* web_ui) {
                                 this);
 #endif
 
-  default_download_location_.Init(prefs::kDownloadDefaultDirectory,
-                                  prefs, this);
-  ask_for_save_location_.Init(prefs::kPromptForDownload, prefs, this);
-  allow_file_selection_dialogs_.Init(prefs::kAllowFileSelectionDialogs,
-                                     g_browser_process->local_state(), this);
   auto_open_files_.Init(prefs::kDownloadExtensionsToOpen, prefs, this);
   default_font_size_.Init(prefs::kWebKitDefaultFontSize, prefs, this);
   proxy_prefs_.reset(
@@ -264,9 +257,6 @@ void AdvancedOptionsHandler::RegisterMessages() {
   web_ui_->RegisterMessageCallback("selectDownloadLocation",
       NewCallback(this,
                   &AdvancedOptionsHandler::HandleSelectDownloadLocation));
-  web_ui_->RegisterMessageCallback("promptForDownloadAction",
-      NewCallback(this,
-                  &AdvancedOptionsHandler::HandlePromptForDownload));
   web_ui_->RegisterMessageCallback("autoOpenFileTypesAction",
       NewCallback(this,
                   &AdvancedOptionsHandler::HandleAutoOpenButton));
@@ -313,12 +303,7 @@ void AdvancedOptionsHandler::Observe(int type,
                                      const NotificationDetails& details) {
   if (type == chrome::NOTIFICATION_PREF_CHANGED) {
     std::string* pref_name = Details<std::string>(details).ptr();
-    if ((*pref_name == prefs::kDownloadDefaultDirectory) ||
-        (*pref_name == prefs::kPromptForDownload) ||
-        (*pref_name == prefs::kAllowFileSelectionDialogs)) {
-      SetupDownloadLocationPath();
-      SetupPromptForDownload();
-    } else if (*pref_name == prefs::kDownloadExtensionsToOpen) {
+    if (*pref_name == prefs::kDownloadExtensionsToOpen) {
       SetupAutoOpenFileTypesDisabledAttribute();
     } else if (proxy_prefs_->IsObserved(*pref_name)) {
       SetupProxySettingsSection();
@@ -350,17 +335,11 @@ void AdvancedOptionsHandler::HandleSelectDownloadLocation(
       web_ui_->tab_contents()->view()->GetTopLevelNativeWindow(), NULL);
 }
 
-void AdvancedOptionsHandler::HandlePromptForDownload(
-    const ListValue* args) {
-  std::string checked_str = UTF16ToUTF8(ExtractStringValue(args));
-  ask_for_save_location_.SetValue(checked_str == "true");
-}
-
 void AdvancedOptionsHandler::FileSelected(const FilePath& path, int index,
                                           void* params) {
   UserMetrics::RecordAction(UserMetricsAction("Options_SetDownloadDirectory"));
-  default_download_location_.SetValue(path);
-  SetupDownloadLocationPath();
+  PrefService* pref_service = Profile::FromWebUI(web_ui_)->GetPrefs();
+  pref_service->SetFilePath(prefs::kDownloadDefaultDirectory, path);
 }
 
 void AdvancedOptionsHandler::OnCloudPrintSetupClosed() {
@@ -550,28 +529,6 @@ void AdvancedOptionsHandler::SetupFontSizeLabel() {
   base::FundamentalValue font_size(default_font_size_.GetValue());
   web_ui_->CallJavascriptFunction(
       "options.AdvancedOptions.SetFontSize", font_size);
-}
-
-void AdvancedOptionsHandler::SetupDownloadLocationPath() {
-  StringValue value(default_download_location_.GetValue().value());
-  // In case allow_file_selection_dialogs_ is false, we will not display any
-  // file-selection dialogs but show an InfoBar. That is why we can disable
-  // the DownloadLocationPath-Chooser right-away.
-  base::FundamentalValue disabled(default_download_location_.IsManaged() ||
-                            !allow_file_selection_dialogs_.GetValue());
-  web_ui_->CallJavascriptFunction(
-      "options.AdvancedOptions.SetDownloadLocationPath", value, disabled);
-}
-
-void AdvancedOptionsHandler::SetupPromptForDownload() {
-  base::FundamentalValue checked(ask_for_save_location_.GetValue());
-  // If either the DownloadDirectory is managed or if file-selection dialogs are
-  // disallowed then |ask_for_save_location_| must currently be false and cannot
-  // be changed.
-  base::FundamentalValue disabled(default_download_location_.IsManaged() ||
-                            !allow_file_selection_dialogs_.GetValue());
-  web_ui_->CallJavascriptFunction(
-      "options.AdvancedOptions.SetPromptForDownload", checked, disabled);
 }
 
 void AdvancedOptionsHandler::SetupAutoOpenFileTypesDisabledAttribute() {

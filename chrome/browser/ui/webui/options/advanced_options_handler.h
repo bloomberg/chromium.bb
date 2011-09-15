@@ -47,10 +47,6 @@ class AdvancedOptionsHandler
   // the user for a destination folder using platform-specific APIs.
   void HandleSelectDownloadLocation(const ListValue* args);
 
-  // Callback for the "promptForDownloadAction" message.  This will set
-  // the ask for save location pref accordingly.
-  void HandlePromptForDownload(const ListValue* args);
-
   // Callback for the "autoOpenFileTypesResetToDefault" message.  This will
   // remove all auto-open file-type settings.
   void HandleAutoOpenButton(const ListValue* args);
@@ -132,12 +128,6 @@ class AdvancedOptionsHandler
 
   void SetupFontSizeLabel();
 
-  // Setup the download path based on user preferences.
-  void SetupDownloadLocationPath();
-
-  // Setup the pref whether to prompt for download location every time.
-  void SetupPromptForDownload();
-
   // Setup the enabled state of the reset button.
   void SetupAutoOpenFileTypesDisabledAttribute();
 
@@ -164,9 +154,6 @@ class AdvancedOptionsHandler
   BooleanPrefMember background_mode_enabled_;
 #endif
 
-  FilePathPrefMember default_download_location_;
-  BooleanPrefMember ask_for_save_location_;
-  BooleanPrefMember allow_file_selection_dialogs_;
   StringPrefMember auto_open_files_;
   IntegerPrefMember default_font_size_;
   scoped_ptr<PrefSetObserver> proxy_prefs_;

@@ -88,10 +88,10 @@ var OptionsPage = options.OptionsPage;
         $('downloadLocationChangeButton').onclick = function(event) {
           chrome.send('selectDownloadLocation');
         };
-        $('promptForDownload').onclick = function(event) {
-          chrome.send('promptForDownloadAction',
-              [String($('promptForDownload').checked)]);
-        };
+        // This text field is always disabled. Setting ".disabled = true" isn't
+        // enough, since a policy can disable it but shouldn't re-enable when
+        // it is removed.
+        $('downloadLocationPath').setDisabled('readonly', true);
       }
 
       $('sslCheckRevocation').onclick = function(event) {
@@ -169,26 +169,6 @@ var OptionsPage = options.OptionsPage;
       selectCtl.add(option);
     }
     $('Custom').selected = true;
-  };
-
-  // Set the download path.
-  AdvancedOptions.SetDownloadLocationPath = function(path, disabled) {
-    if (!cr.isChromeOS) {
-      $('downloadLocationPath').value = path;
-      $('downloadLocationChangeButton').disabled = disabled;
-    }
-  };
-
-  // Set the prompt for download checkbox.
-  AdvancedOptions.SetPromptForDownload = function(checked, disabled) {
-    if (!cr.isChromeOS) {
-      $('promptForDownload').checked = checked;
-      $('promptForDownload').disabled = disabled;
-      if (disabled)
-        $('promptForDownloadLabel').className = 'informational-text';
-      else
-        $('promptForDownloadLabel').className = '';
-    }
   };
 
   // Set the enabled state for the autoOpenFileTypesResetToDefault button.
