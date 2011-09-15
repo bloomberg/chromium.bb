@@ -203,6 +203,34 @@ class GclientTest(trial_dir.TestCase):
         None, '', True)
     self.assertEquals('proto://host/path@revision', d.url)
 
+  def testStr(self):
+    # Make sure __str__() works fine.
+    # pylint: disable=W0212
+    parser = gclient.Parser()
+    options, _ = parser.parse_args([])
+    obj = gclient.GClient('foo', options)
+    obj.dependencies.append(
+        gclient.Dependency(obj, 'foo', 'url', None, None, None, 'DEPS', True))
+    obj.dependencies.append(
+        gclient.Dependency(obj, 'bar', 'url', None, None, None, 'DEPS', True))
+    obj.dependencies[0].dependencies.append(
+        gclient.Dependency(
+          obj.dependencies[0], 'foo/dir1', 'url', None, None, None, 'DEPS',
+          True))
+    obj.dependencies[0].dependencies.append(
+        gclient.Dependency(
+          obj.dependencies[0], 'foo/dir2',
+          gclient.GClientKeywords.FromImpl('bar'), None, None, None, 'DEPS',
+          True))
+    obj.dependencies[0].dependencies.append(
+        gclient.Dependency(
+          obj.dependencies[0], 'foo/dir3',
+          gclient.GClientKeywords.FileImpl('url'), None, None, None, 'DEPS',
+          True))
+    obj.dependencies[0]._file_list.append('foo')
+    self.assertEquals(434, len(str(obj)), '%d\n%s' % (len(str(obj)), str(obj)))
+
+
 if __name__ == '__main__':
   logging.basicConfig(
       level=[logging.ERROR, logging.WARNING, logging.INFO, logging.DEBUG][

@@ -585,11 +585,15 @@ class Dependency(GClientKeywords, gclient_utils.WorkItem):
   def __str__(self):
     out = []
     for i in ('name', 'url', 'parsed_url', 'safesync_url', 'custom_deps',
-              'custom_vars', 'deps_hooks', '_file_list', 'should_process',
+              'custom_vars', 'deps_hooks', 'file_list', 'should_process',
               'processed', 'hooks_ran', 'deps_parsed', 'requirements'):
-      # 'deps_file'
-      if self.__dict__[i]:
-        out.append('%s: %s' % (i, self.__dict__[i]))
+      # First try the native property if it exists.
+      if hasattr(self, '_' + i):
+        value = getattr(self, '_' + i, False)
+      else:
+        value = getattr(self, i, False)
+      if value:
+        out.append('%s: %s' % (i, value))
 
     for d in self.dependencies:
       out.extend(['  ' + x for x in str(d).splitlines()])
