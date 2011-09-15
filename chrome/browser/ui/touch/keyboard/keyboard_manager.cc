@@ -187,9 +187,6 @@ KeyboardWidget::KeyboardWidget()
                  chrome::NOTIFICATION_SET_KEYBOARD_HEIGHT_INVOKED,
                  NotificationService::AllSources());
   registrar_.Add(this,
-                 chrome::NOTIFICATION_EDITABLE_ELEMENT_TOUCHED,
-                 NotificationService::AllSources());
-  registrar_.Add(this,
                  content::NOTIFICATION_APP_EXITING,
                  NotificationService::AllSources());
 
@@ -401,15 +398,6 @@ void KeyboardWidget::Observe(int type,
         // TODO(sad): Notify the target widget that the size has changed so it
         // can update its display accordingly if it wanted to.
       }
-      break;
-    }
-
-    case chrome::NOTIFICATION_EDITABLE_ELEMENT_TOUCHED: {
-      // In case the keyboard hid itself and the focus is still in an editable
-      // field, and the user touches the field, then we want to show the
-      // keyboard again.
-      views::View* src = Source<views::View>(source).ptr();
-      ShowKeyboardForWidget(src->GetWidget());
       break;
     }
 

@@ -874,10 +874,6 @@ enum NotificationType {
   // Sent when an API for set height of the keyboard is invoked from
   // JavaScript code.
   NOTIFICATION_SET_KEYBOARD_HEIGHT_INVOKED,
-
-  // Sent when an editable element is touched, such as text box, password
-  // field, and omnibox.
-  NOTIFICATION_EDITABLE_ELEMENT_TOUCHED,
 #endif
 
   // Protocol Handler Registry -----------------------------------------------

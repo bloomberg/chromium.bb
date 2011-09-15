@@ -35,28 +35,6 @@ BrowserRootView::BrowserRootView(BrowserView* browser_view,
       browser_view_(browser_view),
       forwarding_to_tab_strip_(false) { }
 
-#if defined(TOUCH_UI)
-ui::TouchStatus BrowserRootView::OnTouchEvent(const views::TouchEvent& event) {
-  const ui::TouchStatus status = views::internal::RootView::OnTouchEvent(event);
-
-  if (event.type() != ui::ET_TOUCH_PRESSED)
-    return status;
-
-  views::InputMethod* input_method = GetInputMethod();
-  if (!input_method)
-    return status;
-
-  ui::TextInputType text_input_type = input_method->GetTextInputType();
-  if (text_input_type != ui::TEXT_INPUT_TYPE_NONE) {
-    NotificationService::current()->Notify(
-        chrome::NOTIFICATION_EDITABLE_ELEMENT_TOUCHED,
-        Source<View>(this),
-        Details<ui::TextInputType>(&text_input_type));
-  }
-  return status;
-}
-#endif
-
 bool BrowserRootView::GetDropFormats(
       int* formats,
       std::set<ui::OSExchangeData::CustomFormat>* custom_formats) {
