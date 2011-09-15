@@ -294,8 +294,6 @@
         'browser/browser_process.h',
         'browser/browser_process_impl.cc',
         'browser/browser_process_impl.h',
-        'browser/browser_process_sub_thread.cc',
-        'browser/browser_process_sub_thread.h',
         'browser/browser_shutdown.cc',
         'browser/browser_shutdown.h',
         'browser/browser_trial.cc',

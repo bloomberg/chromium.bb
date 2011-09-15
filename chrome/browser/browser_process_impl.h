@@ -33,7 +33,6 @@ class ChromeResourceDispatcherHostDelegate;
 class CommandLine;
 class DevToolsProtocolHandler;
 class FilePath;
-class NotificationService;
 class PluginDataRemover;
 class RemoteDebuggingServer;
 class TabCloseableStateWatcher;
@@ -243,8 +242,6 @@ class BrowserProcessImpl : public BrowserProcess,
 
   scoped_ptr<GoogleURLTracker> google_url_tracker_;
   scoped_ptr<IntranetRedirectDetector> intranet_redirect_detector_;
-
-  scoped_ptr<NotificationService> main_notification_service_;
 
   scoped_ptr<TabCloseableStateWatcher> tab_closeable_state_watcher_;
 

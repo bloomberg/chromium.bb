@@ -11,9 +11,9 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/task.h"
-#include "chrome/browser/browser_process_sub_thread.h"
 #include "chrome/browser/net/ssl_config_service_manager.h"
 #include "chrome/browser/prefs/pref_member.h"
+#include "content/browser/browser_process_sub_thread.h"
 #include "net/base/network_change_notifier.h"
 
 class ChromeNetLog;

@@ -6,24 +6,36 @@
 
 #include "base/file_path.h"
 #include "content/browser/webui/empty_web_ui_factory.h"
+#include "content/shell/shell_browser_main.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "ui/base/clipboard/clipboard.h"
 #include "webkit/glue/webpreferences.h"
 
+#if defined(OS_WIN)
+#include "content/browser/tab_contents/tab_contents_view_win.h"
+#endif
+
 namespace content {
+
+ShellContentBrowserClient::ShellContentBrowserClient()
+    : shell_browser_main_parts_(NULL) {
+}
 
 ShellContentBrowserClient::~ShellContentBrowserClient() {
 }
 
 BrowserMainParts* ShellContentBrowserClient::CreateBrowserMainParts(
     const MainFunctionParams& parameters) {
-  return NULL;
+  return new ShellBrowserMainParts(parameters);
 }
 
 TabContentsView* ShellContentBrowserClient::CreateTabContentsView(
     TabContents* tab_contents) {
+#if defined(TOOLKIT_VIEWS)
+  return new TabContentsViewWin(tab_contents);
+#else
   return NULL;
+#endif
 }
 
 void ShellContentBrowserClient::RenderViewHostCreated(
@@ -44,7 +56,7 @@ void ShellContentBrowserClient::WorkerProcessHostCreated(
 
 WebUIFactory* ShellContentBrowserClient::GetWebUIFactory() {
   // Return an empty factory so callsites don't have to check for NULL.
-  return EmptyWebUIFactory::Get();
+  return EmptyWebUIFactory::GetInstance();
 }
 
 GURL ShellContentBrowserClient::GetEffectiveURL(
@@ -191,12 +203,11 @@ std::string ShellContentBrowserClient::GetWorkerProcessTitle(
 }
 
 ResourceDispatcherHost* ShellContentBrowserClient::GetResourceDispatcherHost() {
-  return NULL;
+  return shell_browser_main_parts_->GetResourceDispatcherHost();
 }
 
 ui::Clipboard* ShellContentBrowserClient::GetClipboard() {
-  static ui::Clipboard clipboard;
-  return &clipboard;
+  return shell_browser_main_parts_->GetClipboard();
 }
 
 MHTMLGenerationManager* ShellContentBrowserClient::GetMHTMLGenerationManager() {

@@ -17,6 +17,7 @@
 #include "content/common/content_switches.h"
 #include "content/common/hi_res_timer_manager.h"
 #include "content/common/main_function_params.h"
+#include "content/common/notification_service.h"
 #include "content/common/result_codes.h"
 #include "content/common/sandbox_policy.h"
 #include "crypto/nss_util.h"
@@ -346,6 +347,8 @@ void BrowserMainParts::ToolkitInitialized() {
 int BrowserMain(const MainFunctionParams& parameters) {
   TRACE_EVENT_BEGIN_ETW("BrowserMain", 0, "");
 
+  NotificationService main_notification_service;
+
   scoped_ptr<content::BrowserMainParts> parts(
       content::GetContentClient()->browser()->CreateBrowserMainParts(
           parameters));
@@ -401,7 +404,6 @@ int BrowserMain(const MainFunctionParams& parameters) {
   base::win::ScopedCOMInitializer com_initializer;
 #endif  // OS_WIN
 
-  // Initialize histogram statistics gathering system.
   base::StatisticsRecorder statistics;
 
   parts->RunMainMessageLoopParts();

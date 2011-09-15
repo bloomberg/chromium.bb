@@ -18,7 +18,6 @@
 #include "chrome/browser/automation/automation_provider_list.h"
 #include "chrome/browser/background/background_mode_manager.h"
 #include "chrome/browser/chrome_browser_main.h"
-#include "chrome/browser/browser_process_sub_thread.h"
 #include "chrome/browser/browser_trial.h"
 #include "chrome/browser/chrome_plugin_service_filter.h"
 #include "chrome/browser/component_updater/component_updater_configurator.h"
@@ -68,6 +67,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "content/browser/browser_child_process_host.h"
+#include "content/browser/browser_process_sub_thread.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/child_process_security_policy.h"
 #include "content/browser/debugger/devtools_manager.h"
@@ -148,7 +148,6 @@ BrowserProcessImpl::BrowserProcessImpl(const CommandLine& command_line)
       using_new_frames_(false) {
   g_browser_process = this;
   clipboard_.reset(new ui::Clipboard);
-  main_notification_service_.reset(new NotificationService);
 
   // Must be created after the NotificationService.
   print_job_manager_.reset(new printing::PrintJobManager);
@@ -282,9 +281,6 @@ BrowserProcessImpl::~BrowserProcessImpl() {
   // former registers for notifications.
   tab_closeable_state_watcher_.reset();
 
-  // Now OK to destroy NotificationService.
-  main_notification_service_.reset();
-
   g_browser_process = NULL;
 }
 
@@ -322,8 +318,6 @@ unsigned int BrowserProcessImpl::ReleaseModule() {
     io_thread()->message_loop()->PostTask(
         FROM_HERE,
         NewRunnableFunction(&base::ThreadRestrictions::SetIOAllowed, true));
-    MessageLoop::current()->PostTask(
-        FROM_HERE, NewRunnableFunction(content::DidEndMainMessageLoop));
     MessageLoop::current()->Quit();
   }
   return module_ref_count_;

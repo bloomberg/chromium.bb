@@ -24,15 +24,6 @@
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/resource/resource_bundle.h"
 
-namespace content {
-
-void DidEndMainMessageLoop() {
-  AppController* appController = [NSApp delegate];
-  [appController didEndMainMessageLoop];
-}
-
-}
-
 void RecordBreakpadStatusUMA(MetricsService* metrics) {
   metrics->RecordBreakpadRegistration(IsCrashReporterEnabled());
   metrics->RecordBreakpadHasDebugger(base::debug::BeingDebugged());
@@ -135,4 +126,11 @@ void ChromeBrowserMainPartsMac::PreMainMessageLoopStart() {
   // |-application:openFiles:|, since we already handle them directly.
   [[NSUserDefaults standardUserDefaults]
       setObject:@"NO" forKey:@"NSTreatUnknownArgumentsAsOpen"];
+}
+
+void ChromeBrowserMainPartsMac::PostMainMessageLoopRun() {
+  ChromeBrowserMainPartsPosix::PostMainMessageLoopRun();
+
+  AppController* appController = [NSApp delegate];
+  [appController didEndMainMessageLoop];
 }

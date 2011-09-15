@@ -18,6 +18,8 @@ class SavePackage;
 // Browser's download manager: manages all downloads and destination view.
 class DownloadManagerDelegate {
  public:
+  virtual ~DownloadManagerDelegate() {}
+
   // Lets the delegate know that the download manager is shutting down.
   virtual void Shutdown() = 0;
 
@@ -105,7 +107,6 @@ class DownloadManagerDelegate {
 
  protected:
   DownloadManagerDelegate() {}
-  virtual ~DownloadManagerDelegate() {}
 
   DISALLOW_COPY_AND_ASSIGN(DownloadManagerDelegate);
 };

@@ -56,6 +56,8 @@
         'browser/browser_main.h',
         'browser/browser_message_filter.cc',
         'browser/browser_message_filter.h',
+        'browser/browser_process_sub_thread.cc',
+        'browser/browser_process_sub_thread.h',
         'browser/browser_thread.cc',
         'browser/browser_thread.h',
         'browser/browser_url_handler.cc',

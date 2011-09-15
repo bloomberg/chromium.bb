@@ -57,14 +57,6 @@ void InitializeWindowProcExceptions() {
 }
 }  // namespace
 
-namespace content {
-
-void DidEndMainMessageLoop() {
-  OleUninitialize();
-}
-
-}
-
 void RecordBreakpadStatusUMA(MetricsService* metrics) {
   DWORD len = ::GetEnvironmentVariableW(
       ASCIIToWide(env_vars::kNoOOBreakpad).c_str() , NULL, 0);

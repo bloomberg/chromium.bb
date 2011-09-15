@@ -9,13 +9,21 @@
 #include <string>
 
 #include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
 #include "content/browser/content_browser_client.h"
 
 namespace content {
 
+class ShellBrowserMainParts;
+
 class ShellContentBrowserClient : public ContentBrowserClient {
  public:
+  ShellContentBrowserClient();
   virtual ~ShellContentBrowserClient();
+
+  void set_shell_browser_main_parts(ShellBrowserMainParts* parts) {
+    shell_browser_main_parts_ = parts;
+  }
 
   virtual BrowserMainParts* CreateBrowserMainParts(
       const MainFunctionParams& parameters) OVERRIDE;
@@ -136,6 +144,9 @@ class ShellContentBrowserClient : public ContentBrowserClient {
       crypto::CryptoModuleBlockingPasswordDelegate* GetCryptoPasswordDelegate(
           const GURL& url) OVERRIDE;
 #endif
+
+ private:
+  ShellBrowserMainParts* shell_browser_main_parts_;
 };
 
 }  // namespace content

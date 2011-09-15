@@ -24,6 +24,11 @@
         '..',
       ],
       'sources': [
+        'browser/download/mock_download_manager_delegate.cc',
+        'browser/tab_contents/tab_contents_view_win.cc',
+        'browser/tab_contents/tab_contents_view_win.h',
+        'shell/shell_browser_context.cc',
+        'shell/shell_browser_context.h',
         'shell/shell_browser_main.cc',
         'shell/shell_browser_main.h',
         'shell/shell_content_browser_client.cc',
