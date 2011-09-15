@@ -109,10 +109,10 @@ void TouchBrowserFrameView::OnScreenOrientationChanged(
     initialized_screen_rotation_ = true;
   }
 
-  ui::Transform xform = SideToTransform(change.upward,
-                                        to_rotate->GetTransform(),
-                                        to_rotate->size());
-
-  to_rotate->SetTransform(xform);
+  const ui::Transform& old_xform = to_rotate->GetTransform();
+  const ui::Transform& new_xform = SideToTransform(change.upward,
+                                                   old_xform,
+                                                   to_rotate->size());
+  if (old_xform != new_xform)
+    to_rotate->SetTransform(new_xform);
 }
-

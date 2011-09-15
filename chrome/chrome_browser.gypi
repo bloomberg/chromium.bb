@@ -720,6 +720,8 @@
         'browser/chromeos/proxy_config_service_impl.h',
         'browser/chromeos/proxy_cros_settings_provider.cc',
         'browser/chromeos/proxy_cros_settings_provider.h',
+        'browser/chromeos/sensors_source_chromeos.cc',
+        'browser/chromeos/sensors_source_chromeos.h',
         'browser/chromeos/setting_level_bubble.cc',
         'browser/chromeos/setting_level_bubble.h',
         'browser/chromeos/setting_level_bubble_view.cc',

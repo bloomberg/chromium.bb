@@ -1,21 +1,35 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/chromeos/chrome_browser_main_chromeos.h"
 
+#include "base/bind.h"
+#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/message_loop.h"
 #include "chrome/browser/chromeos/boot_times_loader.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/net/cros_network_change_notifier_factory.h"
+#include "chrome/browser/chromeos/sensors_source_chromeos.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/common/main_function_params.h"
 #include "net/base/network_change_notifier.h"
 
 #include <gtk/gtk.h>
+
+namespace {
+
+// Queued in PostMainMessageLoopStart. Needs to run after the IO thread is
+// available via BrowserThread, as this is used by SensorsSourceChromeos.
+void DoDeferredSensorsInit(sensors::SensorsSourceChromeos* source) {
+  if (!source->Init())
+    LOG(WARNING) << "Failed to initialize sensors source.";
+}
+
+}  // namespace
 
 class MessageLoopObserver : public MessageLoopForUI::Observer {
   virtual void WillProcessEvent(GdkEvent* event) {
@@ -93,4 +107,13 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopStart() {
   ChromeBrowserMainPartsPosix::PostMainMessageLoopStart();
   MessageLoopForUI* message_loop = MessageLoopForUI::current();
   message_loop->AddObserver(g_message_loop_observer.Pointer());
+
+  if (parameters().command_line_.HasSwitch(switches::kEnableSensors)) {
+    sensors_source_ = new sensors::SensorsSourceChromeos();
+    // This initialization needs to be performed after BrowserThread::FILE is
+    // started. Post it into the current (UI) message loop, so that will be
+    // deferred until after browser main.
+    message_loop->PostTask(FROM_HERE,
+                           base::Bind(&DoDeferredSensorsInit, sensors_source_));
+  }
 }

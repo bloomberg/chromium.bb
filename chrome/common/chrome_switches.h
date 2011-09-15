@@ -283,6 +283,7 @@ extern const char kSkipOAuthLogin[];
 extern const char kEnableDevicePolicy[];
 extern const char kEnableGView[];
 extern const char kEnableLoginImages[];
+extern const char kEnableSensors[];
 extern const char kEnableStaticIPConfig[];
 extern const char kLoginManager[];
 // TODO(avayvod): Remove this flag when it's unnecessary for testing

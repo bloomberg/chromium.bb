@@ -796,6 +796,7 @@ std::string LoginUtilsImpl::GetOffTheRecordCommandLine(
       switches::kUserDataDir,
       switches::kScrollPixels,
       switches::kEnableGView,
+      switches::kEnableSensors,
       switches::kNoFirstRun,
       switches::kLoginProfile,
       switches::kCompressSystemFeedback,
