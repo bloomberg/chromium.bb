@@ -547,7 +547,7 @@ def _GenerateExternalRules(rules, output_dir, spec,
   # Write out all: target, including mkdir for each output directory.
   mk_file.write('all: %s\n' % ' '.join(first_outputs_cyg))
   for od in all_output_dirs:
-    mk_file.write('\tmkdir -p %s\n' % od)
+    mk_file.write('\tmkdir -p `cygpath -u "%s"`\n' % od)
   mk_file.write('\n')
   # Define how each output is generated.
   for rule in rules:
