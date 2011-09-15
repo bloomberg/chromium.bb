@@ -7,11 +7,13 @@
 #pragma once
 
 #include "base/basictypes.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/gfx/rect.h"
 
 namespace ui {
 class Layer;
+class Texture;
 class Transform;
 }
 
@@ -35,6 +37,15 @@ class LayerHelper {
 
   void SetLayer(ui::Layer* layer);
   ui::Layer* layer() { return layer_.get(); }
+
+  // Passing NULL will cause the layer to get a texture from its compositor.
+  void SetExternalTexture(ui::Texture* texture);
+
+  // Sometimes the Layer is being updated by something other than SetCanvas
+  // (e.g. the GPU process on TOUCH_UI).
+  bool layer_updated_externally() const {
+    return external_texture_.get() != NULL;
+  }
 
   // Rectangle that needs to be painted.
   void set_clip_rect(const gfx::Rect& rect) {
@@ -90,6 +101,8 @@ class LayerHelper {
   bool property_setter_explicitly_set_;
 
   bool needs_paint_all_;
+
+  scoped_refptr<ui::Texture> external_texture_;
 
   DISALLOW_COPY_AND_ASSIGN(LayerHelper);
 };

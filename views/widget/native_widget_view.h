@@ -72,6 +72,7 @@ class VIEWS_EXPORT NativeWidgetView : public View {
                                  const gfx::Point& point) OVERRIDE;
   virtual void DestroyLayerRecurse() OVERRIDE;
   virtual void UpdateLayerBounds(const gfx::Point& offset) OVERRIDE;
+  virtual void CreateLayerIfNecessary() OVERRIDE;
 
   internal::NativeWidgetDelegate* delegate() {
     return native_widget_->delegate();

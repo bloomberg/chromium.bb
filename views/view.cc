@@ -1116,24 +1116,14 @@ bool View::SetExternalTexture(ui::Texture* texture) {
 
   if (!layer_helper_.get())
     layer_helper_.reset(new internal::LayerHelper());
-  bool use_external = (texture != NULL);
-  if (use_external != layer_helper_->paint_to_layer())
-    SetPaintToLayer(use_external);
-  else if (use_external && !layer())
-    CreateLayer();
-
-  if (use_external && !layer())
-    return false;
+  layer_helper_->SetExternalTexture(texture);
 
   // Child views must not paint into the external texture. So make sure each
   // child view has its own layer to paint into.
-  if (use_external) {
+  if (texture) {
     for (Views::iterator i = children_.begin(); i != children_.end(); ++i)
       (*i)->SetPaintToLayer(true);
   }
-
-  if (layer())
-    layer()->SetExternalTexture(texture);
 
   SchedulePaintInRect(GetLocalBounds());
 
@@ -1700,7 +1690,8 @@ void View::DestroyLayer() {
 
   if (!layer_helper_->property_setter_explicitly_set() &&
       !ShouldPaintToLayer() &&
-      !layer_helper_->fills_bounds_opaquely())
+      !layer_helper_->fills_bounds_opaquely() &&
+      !layer_helper_->layer_updated_externally())
     layer_helper_.reset();
   else
     layer_helper_->SetLayer(NULL);

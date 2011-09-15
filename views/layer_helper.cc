@@ -5,6 +5,7 @@
 #include "views/layer_helper.h"
 
 #include "views/layer_property_setter.h"
+#include "ui/gfx/compositor/compositor.h"
 #include "ui/gfx/compositor/layer.h"
 #include "ui/gfx/transform.h"
 
@@ -38,9 +39,17 @@ void LayerHelper::SetLayer(ui::Layer* layer) {
     if (!property_setter_.get())
       property_setter_.reset(LayerPropertySetter::CreateDefaultSetter());
     property_setter_->Installed(this->layer());
+    if (layer_updated_externally())
+      layer_->SetExternalTexture(external_texture_.get());
   } else if (!property_setter_explicitly_set_) {
     property_setter_.reset(NULL);
   }
+}
+
+void LayerHelper::SetExternalTexture(ui::Texture* texture) {
+  external_texture_ = texture;
+  if (layer_.get())
+    layer_->SetExternalTexture(texture);
 }
 
 void LayerHelper::SetPropertySetter(LayerPropertySetter* setter) {
@@ -55,7 +64,9 @@ void LayerHelper::SetPropertySetter(LayerPropertySetter* setter) {
 }
 
 bool LayerHelper::ShouldPaintToLayer() const {
-  return paint_to_layer_ || (transform_.get() && transform_->HasChange());
+  return paint_to_layer_ ||
+      layer_updated_externally() ||
+      (transform_.get() && transform_->HasChange());
 }
 
 } // namespace internal

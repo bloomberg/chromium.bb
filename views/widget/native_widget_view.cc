@@ -190,5 +190,10 @@ void NativeWidgetView::UpdateLayerBounds(const gfx::Point& offset) {
   }
 }
 
+void NativeWidgetView::CreateLayerIfNecessary() {
+  View::CreateLayerIfNecessary();
+  GetAssociatedWidget()->GetRootView()->CreateLayerIfNecessary();
+}
+
 }  // namespace internal
 }  // namespace views
