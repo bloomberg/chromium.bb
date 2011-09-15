@@ -22,7 +22,7 @@
  * The MacOS assembler has a macro facility that is pretty close
  * to GNU as macros, but not quite the same.
  */
-#if NACL_OSX
+#if NACL_OSX || defined(__clang__)
 # define MACRO(name)    .macro name
 # define ENDMACRO       .endmacro
 # define MACROENTRY     \
