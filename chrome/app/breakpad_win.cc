@@ -75,6 +75,11 @@ static size_t g_num_of_views_offset;
 static size_t g_num_switches_offset;
 static size_t g_switches_offset;
 
+// The maximum number of command line switches to include in the crash
+// report's metadata. Note that the mini-dump itself will also contain the
+// (original) command line arguments within the PEB.
+const size_t kMaxSwitches = 15;
+
 // Dumps the current process memory.
 extern "C" void __declspec(dllexport) __cdecl DumpProcess() {
   if (g_breakpad)
