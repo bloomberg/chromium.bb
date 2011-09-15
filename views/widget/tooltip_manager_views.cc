@@ -158,7 +158,7 @@ View* TooltipManagerViews::GetViewForTooltip(int x, int y, bool for_keyboard) {
 
 void TooltipManagerViews::UpdateIfRequired(int x, int y, bool for_keyboard) {
   View* view = GetViewForTooltip(x, y, for_keyboard);
-  std::wstring tooltip_text;
+  string16 tooltip_text;
   if (view)
     view->GetTooltipText(gfx::Point(x, y), &tooltip_text);
 
@@ -177,7 +177,7 @@ void TooltipManagerViews::Update() {
     tooltip_widget_->Hide();
   } else {
     int max_width, line_count;
-    std::wstring tooltip_text(tooltip_text_);
+    string16 tooltip_text(tooltip_text_);
     TrimTooltipToFit(&tooltip_text, &max_width, &line_count,
                      curr_mouse_pos_.x(), curr_mouse_pos_.y());
     tooltip_label_.SetText(tooltip_text);

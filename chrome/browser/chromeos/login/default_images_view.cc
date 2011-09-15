@@ -93,8 +93,8 @@ DefaultImagesView::~DefaultImagesView() {}
 void DefaultImagesView::Init() {
   UserImageButton* capture_button = new UserImageButton(this);
   capture_button->set_id(kCaptureButtonId);
-  capture_button->SetTooltipText(UTF16ToWide(
-      l10n_util::GetStringUTF16(IDS_OPTIONS_CHANGE_PICTURE_TAKE_PHOTO)));
+  capture_button->SetTooltipText(
+      l10n_util::GetStringUTF16(IDS_OPTIONS_CHANGE_PICTURE_TAKE_PHOTO));
   InitButton(IDR_BUTTON_USER_IMAGE_TAKE_PHOTO, capture_button);
   default_images_.push_back(capture_button);
   for (int i = 0; i < kDefaultImagesCount; ++i) {

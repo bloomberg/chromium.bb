@@ -193,7 +193,7 @@ void PageActionImageView::UpdateVisibility(TabContents* contents,
 
   // Set the tooltip.
   tooltip_ = page_action_->GetTitle(current_tab_id_);
-  SetTooltipText(UTF8ToWide(tooltip_));
+  SetTooltipText(UTF8ToUTF16(tooltip_));
 
   // Set the image.
   // It can come from three places. In descending order of priority:

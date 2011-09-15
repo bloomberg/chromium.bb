@@ -372,13 +372,13 @@ void EulaView::UpdateLocalizedStrings() {
   // Set tooltip for usage statistics checkbox if the metric is unmanaged.
   if (!usage_statistics_checkbox_->IsEnabled()) {
     usage_statistics_checkbox_->SetTooltipText(
-        UTF16ToWide(l10n_util::GetStringUTF16(IDS_OPTION_DISABLED_BY_POLICY)));
+        l10n_util::GetStringUTF16(IDS_OPTION_DISABLED_BY_POLICY));
   }
 
   // Set tooltip for system security settings link if TPM is disabled.
   if (!system_security_settings_link_->IsEnabled()) {
     system_security_settings_link_->SetTooltipText(
-        UTF16ToWide(l10n_util::GetStringUTF16(IDS_EULA_TPM_DISABLED)));
+        l10n_util::GetStringUTF16(IDS_EULA_TPM_DISABLED));
   }
 
   // Load other labels from resources.

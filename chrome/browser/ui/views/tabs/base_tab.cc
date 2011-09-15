@@ -165,7 +165,7 @@ BaseTab::BaseTab(TabController* controller)
   close_button_->SetImage(views::CustomButton::BS_PUSHED,
                           rb.GetBitmapNamed(IDR_TAB_CLOSE_P));
   close_button_->SetTooltipText(
-      UTF16ToWide(l10n_util::GetStringUTF16(IDS_TOOLTIP_CLOSE_TAB)));
+      l10n_util::GetStringUTF16(IDS_TOOLTIP_CLOSE_TAB));
   close_button_->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_ACCNAME_CLOSE));
   // Disable animation so that the red danger sign shows up immediately
@@ -370,13 +370,13 @@ void BaseTab::OnMouseExited(const views::MouseEvent& event) {
   hover_animation_->Hide();
 }
 
-bool BaseTab::GetTooltipText(const gfx::Point& p, std::wstring* tooltip) {
+bool BaseTab::GetTooltipText(const gfx::Point& p, string16* tooltip) {
   if (data_.title.empty())
     return false;
 
   // Only show the tooltip if the title is truncated.
   if (font_->GetStringWidth(data_.title) > GetTitleBounds().width()) {
-    *tooltip = UTF16ToWide(data_.title);
+    *tooltip = data_.title;
     return true;
   }
   return false;

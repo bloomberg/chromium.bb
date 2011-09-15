@@ -498,7 +498,7 @@ void InputMethodMenu::UpdateUIFromInputMethod(
     const input_method::InputMethodDescriptor& input_method,
     size_t num_active_input_methods) {
   const std::wstring name = GetTextForIndicator(input_method);
-  const std::wstring tooltip = GetTextForMenu(input_method);
+  const string16 tooltip = WideToUTF16Hack(GetTextForMenu(input_method));
   UpdateUI(input_method.id(), name, tooltip, num_active_input_methods);
 }
 

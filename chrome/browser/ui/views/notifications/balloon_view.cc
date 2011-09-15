@@ -290,8 +290,8 @@ void BalloonViewImpl::Show(Balloon* balloon) {
   options_menu_button_ = new views::MenuButton(NULL, L"", this, false);
   AddChildView(options_menu_button_);
   close_button_ = new views::ImageButton(this);
-  close_button_->SetTooltipText(UTF16ToWide(l10n_util::GetStringUTF16(
-      IDS_NOTIFICATION_BALLOON_DISMISS_LABEL)));
+  close_button_->SetTooltipText(l10n_util::GetStringUTF16(
+      IDS_NOTIFICATION_BALLOON_DISMISS_LABEL));
   AddChildView(close_button_);
 
   // We have to create two windows: one for the contents and one for the

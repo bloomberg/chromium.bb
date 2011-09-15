@@ -328,12 +328,11 @@ void RenderWidgetHostViewViews::Destroy() {
   MessageLoop::current()->DeleteSoon(FROM_HERE, this);
 }
 
-void RenderWidgetHostViewViews::SetTooltipText(const std::wstring& tip) {
+void RenderWidgetHostViewViews::SetTooltipText(const string16& tip) {
   const int kMaxTooltipLength = 8 << 10;
   // Clamp the tooltip length to kMaxTooltipLength so that we don't
   // accidentally DOS the user with a mega tooltip.
-  tooltip_text_ =
-      ui::TruncateString(WideToUTF16Hack(tip), kMaxTooltipLength);
+  tooltip_text_ = ui::TruncateString(tip, kMaxTooltipLength);
   if (GetWidget())
     GetWidget()->TooltipTextChanged(this);
 }
@@ -577,10 +576,10 @@ views::TextInputClient* RenderWidgetHostViewViews::GetTextInputClient() {
 }
 
 bool RenderWidgetHostViewViews::GetTooltipText(const gfx::Point& p,
-                                               std::wstring* tooltip) {
+                                               string16* tooltip) {
   if (tooltip_text_.length() == 0)
     return false;
-  *tooltip = UTF16ToWide(tooltip_text_);
+  *tooltip = tooltip_text_;
   return true;
 }
 

@@ -289,11 +289,11 @@ void ProgressBar::OnPaint(gfx::Canvas* canvas) {
 #endif
 }
 
-bool ProgressBar::GetTooltipText(const gfx::Point& p, std::wstring* tooltip) {
+bool ProgressBar::GetTooltipText(const gfx::Point& p, string16* tooltip) {
   DCHECK(tooltip);
   if (tooltip == NULL)
     return false;
-  tooltip->assign(UTF16ToWideHack(tooltip_text_));
+  tooltip->assign(tooltip_text_);
   return !tooltip_text_.empty();
 }
 
@@ -315,8 +315,8 @@ void ProgressBar::SetValue(double value) {
   }
 }
 
-void ProgressBar::SetTooltipText(const std::wstring& tooltip_text) {
-  tooltip_text_ = WideToUTF16Hack(tooltip_text);
+void ProgressBar::SetTooltipText(const string16& tooltip_text) {
+  tooltip_text_ = tooltip_text;
 }
 
 }  // namespace views

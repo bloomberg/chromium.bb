@@ -29,7 +29,7 @@ class VIEWS_EXPORT Button : public View {
  public:
   virtual ~Button();
 
-  void SetTooltipText(const std::wstring& tooltip_text);
+  void SetTooltipText(const string16& tooltip_text);
 
   int tag() const { return tag_; }
   void set_tag(int tag) { tag_ = tag; }
@@ -40,8 +40,7 @@ class VIEWS_EXPORT Button : public View {
   void SetAccessibleKeyboardShortcut(const string16& shortcut);
 
   // Overridden from View:
-  virtual bool GetTooltipText(const gfx::Point& p,
-                              std::wstring* tooltip) OVERRIDE;
+  virtual bool GetTooltipText(const gfx::Point& p, string16* tooltip) OVERRIDE;
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
 
  protected:

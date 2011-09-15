@@ -23,10 +23,8 @@ TooltipWindowGtk::~TooltipWindowGtk() {
     gtk_widget_destroy(window_);
 }
 
-void TooltipWindowGtk::SetTooltipText(const std::wstring& text) {
-  const std::string& utf8 = WideToUTF8(text);
-
-  gtk_label_set_text(label(), utf8.c_str());
+void TooltipWindowGtk::SetTooltipText(const string16& text) {
+  gtk_label_set_text(label(), UTF16ToUTF8(text).c_str());
 }
 
 GtkLabel* TooltipWindowGtk::label() {

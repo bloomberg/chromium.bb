@@ -727,11 +727,11 @@ void RenderWidgetHostViewWin::Destroy() {
   DestroyWindow();
 }
 
-void RenderWidgetHostViewWin::SetTooltipText(const std::wstring& tooltip_text) {
+void RenderWidgetHostViewWin::SetTooltipText(const string16& tooltip_text) {
   // Clamp the tooltip length to kMaxTooltipLength so that we don't
   // accidentally DOS the user with a mega tooltip (since Windows doesn't seem
   // to do this itself).
-  const std::wstring& new_tooltip_text =
+  const string16 new_tooltip_text =
       ui::TruncateString(tooltip_text, kMaxTooltipLength);
 
   if (new_tooltip_text != tooltip_text_) {
@@ -1096,7 +1096,7 @@ LRESULT RenderWidgetHostViewWin::OnNotify(int w_param, NMHDR* header) {
     case TTN_GETDISPINFO: {
       NMTTDISPINFOW* tooltip_info = reinterpret_cast<NMTTDISPINFOW*>(header);
       tooltip_info->szText[0] = L'\0';
-      tooltip_info->lpszText = const_cast<wchar_t*>(tooltip_text_.c_str());
+      tooltip_info->lpszText = const_cast<WCHAR*>(tooltip_text_.c_str());
       ::SendMessage(
         tooltip_hwnd_, TTM_SETMAXTIPWIDTH, 0, kTooltipMaxWidthPixels);
       SetMsgHandled(TRUE);

@@ -280,7 +280,7 @@ STDMETHODIMP NativeViewAccessibilityWin::get_accDescription(
   if (!view_)
     return E_FAIL;
 
-  std::wstring temp_desc;
+  string16 temp_desc;
 
   view_->GetTooltipText(gfx::Point(), &temp_desc);
   if (!temp_desc.empty()) {

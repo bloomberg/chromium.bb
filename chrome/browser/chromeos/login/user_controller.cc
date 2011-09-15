@@ -190,7 +190,7 @@ void UserController::ClearAndEnablePassword() {
 
 void UserController::EnableNameTooltip(bool enable) {
   name_tooltip_enabled_ = enable;
-  std::wstring tooltip_text;
+  string16 tooltip_text;
   if (enable)
     tooltip_text = GetNameTooltip();
 
@@ -519,14 +519,13 @@ gfx::Font UserController::GetUnselectedLabelFont() {
       kUnselectedUsernameFontDelta, gfx::Font::BOLD);
 }
 
-
-std::wstring UserController::GetNameTooltip() const {
+string16 UserController::GetNameTooltip() const {
   if (is_new_user_)
-    return UTF16ToWide(l10n_util::GetStringUTF16(IDS_ADD_USER));
+    return l10n_util::GetStringUTF16(IDS_ADD_USER);
   else if (is_guest_)
-    return UTF16ToWide(l10n_util::GetStringUTF16(IDS_GO_INCOGNITO_BUTTON));
+    return l10n_util::GetStringUTF16(IDS_GO_INCOGNITO_BUTTON);
   else
-    return UTF8ToWide(user_.GetNameTooltip());
+    return UTF8ToUTF16(user_.GetNameTooltip());
 }
 
 }  // namespace chromeos

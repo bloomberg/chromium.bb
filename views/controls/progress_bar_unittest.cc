@@ -12,10 +12,10 @@ namespace views {
 
 TEST(ProgressBarTest, TooltipTextProperty) {
   ProgressBar bar;
-  std::wstring tooltip = L"Some text";
+  string16 tooltip = ASCIIToUTF16("Some text");
   EXPECT_FALSE(bar.GetTooltipText(gfx::Point(), &tooltip));
-  EXPECT_EQ(L"", tooltip);
-  std::wstring tooltip_text = L"My progress";
+  EXPECT_EQ(string16(), tooltip);
+  string16 tooltip_text = ASCIIToUTF16("My progress");
   bar.SetTooltipText(tooltip_text);
   EXPECT_TRUE(bar.GetTooltipText(gfx::Point(), &tooltip));
   EXPECT_EQ(tooltip_text, tooltip);

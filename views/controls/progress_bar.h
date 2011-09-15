@@ -39,8 +39,7 @@ class VIEWS_EXPORT ProgressBar : public View {
   virtual std::string GetClassName() const OVERRIDE;
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
-  virtual bool GetTooltipText(const gfx::Point& p, std::wstring* tooltip)
-      OVERRIDE;
+  virtual bool GetTooltipText(const gfx::Point& p, string16* tooltip) OVERRIDE;
 
   // Sets the inclusive range of values to be displayed.  Values outside of the
   // range will be capped when displayed.
@@ -54,7 +53,7 @@ class VIEWS_EXPORT ProgressBar : public View {
   // Sets the tooltip text.  Default behavior for a progress bar is to show no
   // tooltip on mouse hover. Calling this lets you set a custom tooltip.  To
   // revert to default behavior, call this with an empty string.
-  virtual void SetTooltipText(const std::wstring& tooltip_text);
+  void SetTooltipText(const string16& tooltip_text);
 
 
  private:

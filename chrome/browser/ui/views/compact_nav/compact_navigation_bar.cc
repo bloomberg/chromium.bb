@@ -79,8 +79,7 @@ void CompactNavigationBar::Init() {
   back_->set_triggerable_event_flags(ui::EF_LEFT_BUTTON_DOWN |
                                      ui::EF_MIDDLE_BUTTON_DOWN);
   back_->set_tag(IDC_BACK);
-  back_->SetTooltipText(
-      UTF16ToWide(l10n_util::GetStringUTF16(IDS_TOOLTIP_BACK)));
+  back_->SetTooltipText(l10n_util::GetStringUTF16(IDS_TOOLTIP_BACK));
   back_->SetAccessibleName(l10n_util::GetStringUTF16(IDS_ACCNAME_BACK));
   back_->SetImageAlignment(views::ImageButton::ALIGN_CENTER,
                            views::ImageButton::ALIGN_MIDDLE);
@@ -95,8 +94,7 @@ void CompactNavigationBar::Init() {
   forward_->set_triggerable_event_flags(ui::EF_LEFT_BUTTON_DOWN |
                                         ui::EF_MIDDLE_BUTTON_DOWN);
   forward_->set_tag(IDC_FORWARD);
-  forward_->SetTooltipText(
-      UTF16ToWide(l10n_util::GetStringUTF16(IDS_TOOLTIP_FORWARD)));
+  forward_->SetTooltipText(l10n_util::GetStringUTF16(IDS_TOOLTIP_FORWARD));
   forward_->SetAccessibleName(l10n_util::GetStringUTF16((IDS_ACCNAME_FORWARD)));
   forward_->SetImageAlignment(views::ImageButton::ALIGN_CENTER,
                               views::ImageButton::ALIGN_MIDDLE);

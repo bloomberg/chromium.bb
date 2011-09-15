@@ -167,7 +167,7 @@ class UserController : public views::WidgetDelegate,
                           int controls_width, int controls_height);
 
   // Returns tooltip text for user name.
-  std::wstring GetNameTooltip() const;
+  string16 GetNameTooltip() const;
 
   // Creates the widget that holds the controls. Caller owns the returned
   // widget.

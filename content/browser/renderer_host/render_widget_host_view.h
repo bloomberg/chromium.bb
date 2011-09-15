@@ -181,7 +181,7 @@ class RenderWidgetHostView {
 
   // Tells the View that the tooltip text for the current mouse position over
   // the page has changed.
-  virtual void SetTooltipText(const std::wstring& tooltip_text) = 0;
+  virtual void SetTooltipText(const string16& tooltip_text) = 0;
 
   // Notifies the View that the renderer text selection has changed. |start|
   // and |end| are the visual end points of the selection in the coordinate

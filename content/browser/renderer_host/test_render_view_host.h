@@ -87,7 +87,7 @@ class TestRenderWidgetHostView : public RenderWidgetHostView {
                               int error_code) OVERRIDE;
   virtual void WillDestroyRenderWidget(RenderWidgetHost* rwh) { }
   virtual void Destroy() OVERRIDE {}
-  virtual void SetTooltipText(const std::wstring& tooltip_text) OVERRIDE {}
+  virtual void SetTooltipText(const string16& tooltip_text) OVERRIDE {}
   virtual BackingStore* AllocBackingStore(const gfx::Size& size) OVERRIDE;
 #if defined(OS_MACOSX)
   virtual void SetTakesFocusOnlyOnMouseDown(bool flag) OVERRIDE {}

@@ -93,13 +93,13 @@ class VIEWS_EXPORT ToggleImageButton : public ImageButton {
   void SetToggledImage(ButtonState state, const SkBitmap* image);
 
   // Set the tooltip text displayed when the button is toggled.
-  void SetToggledTooltipText(const std::wstring& tooltip);
+  void SetToggledTooltipText(const string16& tooltip);
 
   // Overridden from ImageButton:
   virtual void SetImage(ButtonState aState, const SkBitmap* anImage);
 
   // Overridden from View:
-  virtual bool GetTooltipText(const gfx::Point& p, std::wstring* tooltip);
+  virtual bool GetTooltipText(const gfx::Point& p, string16* tooltip);
 
  private:
   // The parent class's images_ member is used for the current images,

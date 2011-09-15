@@ -84,7 +84,7 @@ class RenderWidgetHostViewGtk : public RenderWidgetHostView,
                               int error_code) OVERRIDE;
   virtual void Destroy() OVERRIDE;
   virtual void WillDestroyRenderWidget(RenderWidgetHost* rwh) {}
-  virtual void SetTooltipText(const std::wstring& tooltip_text) OVERRIDE;
+  virtual void SetTooltipText(const string16& tooltip_text) OVERRIDE;
   virtual void SelectionChanged(const std::string& text,
                                 const ui::Range& range,
                                 const gfx::Point& start,

@@ -255,13 +255,12 @@ void EditSearchEngineDialog::UpdateImageView(ImageView* image_view,
                                              bool is_valid,
                                              int invalid_message_id) {
   if (is_valid) {
-    image_view->SetTooltipText(std::wstring());
+    image_view->SetTooltipText(string16());
     image_view->SetImage(
         ResourceBundle::GetSharedInstance().GetBitmapNamed(
             IDR_INPUT_GOOD));
   } else {
-    image_view->SetTooltipText(
-        UTF16ToWide(l10n_util::GetStringUTF16(invalid_message_id)));
+    image_view->SetTooltipText(l10n_util::GetStringUTF16(invalid_message_id)) ;
     image_view->SetImage(
         ResourceBundle::GetSharedInstance().GetBitmapNamed(
             IDR_INPUT_ALERT));

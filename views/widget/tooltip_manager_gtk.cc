@@ -93,7 +93,7 @@ bool TooltipManagerGtk::ShowTooltip(int x, int y, bool for_keyboard,
   if (!view)
     return false;
 
-  std::wstring text;
+  string16 text;
   if (!view->GetTooltipText(view_loc, &text))
     return false;
 
@@ -138,7 +138,7 @@ void TooltipManagerGtk::ShowKeyboardTooltip(View* view) {
   // We have to hide the current tooltip, then show again.
   HideKeyboardTooltip();
 
-  std::wstring tooltip_text;
+  string16 tooltip_text;
   if (!view->GetTooltipText(gfx::Point(), &tooltip_text))
     return;  // The view doesn't have a tooltip, nothing to do.
 

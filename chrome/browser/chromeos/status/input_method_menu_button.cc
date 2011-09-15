@@ -41,7 +41,7 @@ class MenuImpl : public chromeos::InputMethodMenu {
   // InputMethodMenu implementation.
   virtual void UpdateUI(const std::string& input_method_id,
                         const std::wstring& name,
-                        const std::wstring& tooltip,
+                        const string16& tooltip,
                         size_t num_active_input_methods) {
     button_->UpdateUI(input_method_id, name, tooltip, num_active_input_methods);
   }
@@ -107,7 +107,7 @@ bool InputMethodMenuButton::WindowIsActive() {
 
 void InputMethodMenuButton::UpdateUI(const std::string& input_method_id,
                                      const std::wstring& name,
-                                     const std::wstring& tooltip,
+                                     const string16& tooltip,
                                      size_t num_active_input_methods) {
   // Hide the button only if there is only one input method, and the input
   // method is a XKB keyboard layout. We don't hide the button for other
@@ -120,7 +120,7 @@ void InputMethodMenuButton::UpdateUI(const std::string& input_method_id,
   SetVisible(!hide_button);
   SetText(name);
   SetTooltipText(tooltip);
-  SetAccessibleName(WideToUTF16(tooltip));
+  SetAccessibleName(tooltip);
 
   if (WindowIsActive()) {
     // We don't call these functions if the |current_window| is not active since
@@ -150,7 +150,8 @@ void InputMethodMenuButton::UpdateUIFromCurrentInputMethod() {
   const input_method::InputMethodDescriptor& input_method =
       input_method_manager->current_input_method();
   const std::wstring name = InputMethodMenu::GetTextForIndicator(input_method);
-  const std::wstring tooltip = InputMethodMenu::GetTextForMenu(input_method);
+  const string16 tooltip = WideToUTF16Hack(
+      InputMethodMenu::GetTextForMenu(input_method));
   const size_t num_active_input_methods =
       input_method_manager->GetNumActiveInputMethods();
   UpdateUI(input_method.id(), name, tooltip, num_active_input_methods);

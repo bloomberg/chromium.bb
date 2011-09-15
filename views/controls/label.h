@@ -124,7 +124,7 @@ class VIEWS_EXPORT Label : public View {
   // show the full text if it is wider than its bounds.  Calling this overrides
   // the default behavior and lets you set a custom tooltip.  To revert to
   // default behavior, call this with an empty string.
-  void SetTooltipText(const std::wstring& tooltip_text);
+  void SetTooltipText(const string16& tooltip_text);
 
   // The background color to use when the mouse is over the label. Label
   // takes ownership of the Background.
@@ -171,12 +171,13 @@ class VIEWS_EXPORT Label : public View {
   virtual void OnMouseMoved(const MouseEvent& event) OVERRIDE;
   virtual void OnMouseEntered(const MouseEvent& event) OVERRIDE;
   virtual void OnMouseExited(const MouseEvent& event) OVERRIDE;
+  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
+
   // Gets the tooltip text for labels that are wider than their bounds, except
   // when the label is multiline, in which case it just returns false (no
   // tooltip).  If a custom tooltip has been specified with SetTooltipText()
   // it is returned instead.
-  virtual bool GetTooltipText(const gfx::Point& p, std::wstring* tooltip);
-  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
+  bool GetTooltipText(const gfx::Point& p, string16* tooltip);
 
  protected:
   // Called by Paint to paint the text.  Override this to change how

@@ -230,7 +230,7 @@ class RenderWidgetHostViewMac : public RenderWidgetHostView {
   virtual void RenderViewGone(base::TerminationStatus status,
                               int error_code) OVERRIDE;
   virtual void Destroy() OVERRIDE;
-  virtual void SetTooltipText(const std::wstring& tooltip_text) OVERRIDE;
+  virtual void SetTooltipText(const string16& tooltip_text) OVERRIDE;
   virtual void SelectionChanged(const std::string& text,
                                 const ui::Range& range,
                                 const gfx::Point& start,
@@ -412,7 +412,7 @@ class RenderWidgetHostViewMac : public RenderWidgetHostView {
   bool is_showing_context_menu_;
 
   // The text to be shown in the tooltip, supplied by the renderer.
-  std::wstring tooltip_text_;
+  string16 tooltip_text_;
 
   // Factory used to safely scope delayed calls to ShutdownHost().
   ScopedRunnableMethodFactory<RenderWidgetHostViewMac> shutdown_factory_;

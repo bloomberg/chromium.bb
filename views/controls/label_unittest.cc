@@ -110,19 +110,19 @@ TEST(LabelTest, MultiLineProperty) {
 
 TEST(LabelTest, TooltipProperty) {
   Label label;
-  std::wstring test_text(L"My cool string.");
-  label.SetText(test_text);
+  string16 test_text(ASCIIToUTF16("My cool string."));
+  label.SetText(UTF16ToWideHack(test_text));
 
-  std::wstring tooltip;
+  string16 tooltip;
   EXPECT_TRUE(label.GetTooltipText(gfx::Point(), &tooltip));
   EXPECT_EQ(test_text, tooltip);
 
-  std::wstring tooltip_text(L"The tooltip!");
+  string16 tooltip_text(ASCIIToUTF16("The tooltip!"));
   label.SetTooltipText(tooltip_text);
   EXPECT_TRUE(label.GetTooltipText(gfx::Point(), &tooltip));
   EXPECT_EQ(tooltip_text, tooltip);
 
-  std::wstring empty_text;
+  string16 empty_text;
   label.SetTooltipText(empty_text);
   EXPECT_TRUE(label.GetTooltipText(gfx::Point(), &tooltip));
   EXPECT_EQ(test_text, tooltip);

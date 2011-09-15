@@ -607,10 +607,10 @@ void WrenchMenu::RunMenu(views::MenuButton* host) {
     selected_menu_model_->ActivatedAt(selected_index_);
 }
 
-std::wstring WrenchMenu::GetTooltipText(int id,
+string16 WrenchMenu::GetTooltipText(int id,
                                         const gfx::Point& p) {
   return is_bookmark_command(id) ?
-      bookmark_menu_delegate_->GetTooltipText(id, p) : std::wstring();
+      bookmark_menu_delegate_->GetTooltipText(id, p) : string16();
 }
 
 bool WrenchMenu::IsTriggerableEvent(views::MenuItemView* menu,

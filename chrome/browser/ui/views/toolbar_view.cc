@@ -132,8 +132,7 @@ void ToolbarView::Init() {
   back_->set_tag(IDC_BACK);
   back_->SetImageAlignment(views::ImageButton::ALIGN_RIGHT,
                            views::ImageButton::ALIGN_TOP);
-  back_->SetTooltipText(
-      UTF16ToWide(l10n_util::GetStringUTF16(IDS_TOOLTIP_BACK)));
+  back_->SetTooltipText(l10n_util::GetStringUTF16(IDS_TOOLTIP_BACK));
   back_->SetAccessibleName(l10n_util::GetStringUTF16(IDS_ACCNAME_BACK));
   back_->set_id(VIEW_ID_BACK_BUTTON);
 
@@ -141,8 +140,7 @@ void ToolbarView::Init() {
   forward_->set_triggerable_event_flags(ui::EF_LEFT_BUTTON_DOWN |
                                         ui::EF_MIDDLE_BUTTON_DOWN);
   forward_->set_tag(IDC_FORWARD);
-  forward_->SetTooltipText(
-      UTF16ToWide(l10n_util::GetStringUTF16(IDS_TOOLTIP_FORWARD)));
+  forward_->SetTooltipText(l10n_util::GetStringUTF16(IDS_TOOLTIP_FORWARD));
   forward_->SetAccessibleName(l10n_util::GetStringUTF16(IDS_ACCNAME_FORWARD));
   forward_->set_id(VIEW_ID_FORWARD_BUTTON);
 
@@ -155,8 +153,7 @@ void ToolbarView::Init() {
   reload_->set_triggerable_event_flags(ui::EF_LEFT_BUTTON_DOWN |
                                        ui::EF_MIDDLE_BUTTON_DOWN);
   reload_->set_tag(IDC_RELOAD);
-  reload_->SetTooltipText(
-      UTF16ToWide(l10n_util::GetStringUTF16(IDS_TOOLTIP_RELOAD)));
+  reload_->SetTooltipText(l10n_util::GetStringUTF16(IDS_TOOLTIP_RELOAD));
   reload_->SetAccessibleName(l10n_util::GetStringUTF16(IDS_ACCNAME_RELOAD));
   reload_->set_id(VIEW_ID_RELOAD_BUTTON);
 
@@ -164,8 +161,7 @@ void ToolbarView::Init() {
   home_->set_triggerable_event_flags(ui::EF_LEFT_BUTTON_DOWN |
                                      ui::EF_MIDDLE_BUTTON_DOWN);
   home_->set_tag(IDC_HOME);
-  home_->SetTooltipText(
-      UTF16ToWide(l10n_util::GetStringUTF16(IDS_TOOLTIP_HOME)));
+  home_->SetTooltipText(l10n_util::GetStringUTF16(IDS_TOOLTIP_HOME));
   home_->SetAccessibleName(l10n_util::GetStringUTF16(IDS_ACCNAME_HOME));
   home_->set_id(VIEW_ID_HOME_BUTTON);
 
@@ -179,9 +175,9 @@ void ToolbarView::Init() {
   app_menu_->set_border(NULL);
   app_menu_->EnableCanvasFlippingForRTLUI(true);
   app_menu_->SetAccessibleName(l10n_util::GetStringUTF16(IDS_ACCNAME_APP));
-  app_menu_->SetTooltipText(UTF16ToWide(l10n_util::GetStringFUTF16(
+  app_menu_->SetTooltipText(l10n_util::GetStringFUTF16(
       IDS_APPMENU_TOOLTIP,
-      l10n_util::GetStringUTF16(IDS_PRODUCT_NAME))));
+      l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
   app_menu_->set_id(VIEW_ID_APP_MENU);
 
   // Add any necessary badges to the menu item based on the system state.
@@ -207,9 +203,9 @@ void ToolbarView::Init() {
   // Accessibility specific tooltip text.
   if (BrowserAccessibilityState::GetInstance()->IsAccessibleBrowser()) {
     back_->SetTooltipText(
-        UTF16ToWide(l10n_util::GetStringUTF16(IDS_ACCNAME_TOOLTIP_BACK)));
+        l10n_util::GetStringUTF16(IDS_ACCNAME_TOOLTIP_BACK));
     forward_->SetTooltipText(
-        UTF16ToWide(l10n_util::GetStringUTF16(IDS_ACCNAME_TOOLTIP_FORWARD)));
+        l10n_util::GetStringUTF16(IDS_ACCNAME_TOOLTIP_FORWARD));
   }
 }
 

@@ -854,7 +854,7 @@ void RenderWidgetHost::OnMsgSetTooltipText(
     }
   }
   if (view())
-    view()->SetTooltipText(UTF16ToWide(wrapped_tooltip_text));
+    view()->SetTooltipText(wrapped_tooltip_text);
 }
 
 void RenderWidgetHost::OnMsgRequestMove(const gfx::Rect& pos) {

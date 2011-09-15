@@ -21,9 +21,8 @@ const gfx::Font& MenuDelegate::GetLabelFont(int id) const {
   return MenuConfig::instance().font;
 }
 
-std::wstring MenuDelegate::GetTooltipText(int id,
-                                          const gfx::Point& screen_loc) {
-  return std::wstring();
+string16 MenuDelegate::GetTooltipText(int id, const gfx::Point& screen_loc) {
+  return string16();
 }
 
 bool MenuDelegate::GetAccelerator(int id, Accelerator* accelerator) {

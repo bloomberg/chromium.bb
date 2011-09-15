@@ -120,8 +120,7 @@ void CompactLocationBarView::Init() {
   reload_button_->set_triggerable_event_flags(ui::EF_LEFT_BUTTON_DOWN |
       ui::EF_MIDDLE_BUTTON_DOWN);
   reload_button_->set_tag(IDC_RELOAD);
-  reload_button_->SetTooltipText(
-      UTF16ToWide(l10n_util::GetStringUTF16(IDS_TOOLTIP_RELOAD)));
+  reload_button_->SetTooltipText(l10n_util::GetStringUTF16(IDS_TOOLTIP_RELOAD));
   reload_button_->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_ACCNAME_RELOAD));
   reload_button_->set_id(VIEW_ID_RELOAD_BUTTON);

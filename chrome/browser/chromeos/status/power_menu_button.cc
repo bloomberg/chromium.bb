@@ -397,7 +397,7 @@ void PowerMenuButton::UpdateIconAndLabelInfo() {
   }
 
   percentage_text_ = GetBatteryPercentageText();
-  SetTooltipText(UTF16ToWide(percentage_text_));
+  SetTooltipText(percentage_text_);
   SetAccessibleName(percentage_text_);
   SchedulePaint();
   if (status_)

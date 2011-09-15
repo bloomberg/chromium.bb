@@ -83,7 +83,7 @@ views::View* CreateProviderLogo(
     SkBitmap* logo_bmp =
         ResourceBundle::GetSharedInstance().GetBitmapNamed(logo_id);
     logo_image->SetImage(logo_bmp);
-    logo_image->SetTooltipText(short_name);
+    logo_image->SetTooltipText(WideToUTF16Hack(short_name));
     logo_view = logo_image;
   } else {
     // No logo -- show a text label.
@@ -92,7 +92,7 @@ views::View* CreateProviderLogo(
     logo_label->SetFont(logo_label->font().DeriveFont(3, gfx::Font::BOLD));
     logo_label->SetHorizontalAlignment(views::Label::ALIGN_CENTER);
     // Tooltip text provides accessibility for low-vision users.
-    logo_label->SetTooltipText(short_name);
+    logo_label->SetTooltipText(WideToUTF16Hack(short_name));
     logo_view = logo_label;
   }
 

@@ -80,7 +80,7 @@ class TooltipManagerViews : public TooltipManager,
   scoped_ptr<Widget> tooltip_widget_;
   internal::RootView* root_view_;
   View* tooltip_view_;
-  std::wstring tooltip_text_;
+  string16 tooltip_text_;
   Label tooltip_label_;
 
   gfx::Point curr_mouse_pos_;

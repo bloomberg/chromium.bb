@@ -681,7 +681,7 @@ void RenderWidgetHostViewMac::Destroy() {
 // Called from the renderer to tell us what the tooltip text should be. It
 // calls us frequently so we need to cache the value to prevent doing a lot
 // of repeat work.
-void RenderWidgetHostViewMac::SetTooltipText(const std::wstring& tooltip_text) {
+void RenderWidgetHostViewMac::SetTooltipText(const string16& tooltip_text) {
   if (tooltip_text != tooltip_text_ && [[cocoa_view_ window] isKeyWindow]) {
     tooltip_text_ = tooltip_text;
 
@@ -689,11 +689,11 @@ void RenderWidgetHostViewMac::SetTooltipText(const std::wstring& tooltip_text) {
     // Windows; we're just trying to be polite. Don't persist the trimmed
     // string, as then the comparison above will always fail and we'll try to
     // set it again every single time the mouse moves.
-    std::wstring display_text = tooltip_text_;
+    string16 display_text = tooltip_text_;
     if (tooltip_text_.length() > kMaxTooltipLength)
       display_text = tooltip_text_.substr(0, kMaxTooltipLength);
 
-    NSString* tooltip_nsstring = base::SysWideToNSString(display_text);
+    NSString* tooltip_nsstring = base::SysUTF16ToNSString(display_text);
     [cocoa_view_ setToolTipAtMousePoint:tooltip_nsstring];
   }
 }

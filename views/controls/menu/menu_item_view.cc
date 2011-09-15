@@ -40,7 +40,7 @@ class EmptyMenuMenuItem : public MenuItemView {
     SetEnabled(false);
   }
 
-  virtual bool GetTooltipText(const gfx::Point& p, std::wstring* tooltip) {
+  virtual bool GetTooltipText(const gfx::Point& p, string16* tooltip) OVERRIDE {
     // Empty menu items shouldn't have a tooltip.
     return false;
   }
@@ -101,8 +101,8 @@ void MenuItemView::ChildPreferredSizeChanged(View* child) {
   PreferredSizeChanged();
 }
 
-bool MenuItemView::GetTooltipText(const gfx::Point& p, std::wstring* tooltip) {
-  *tooltip = UTF16ToWideHack(tooltip_);
+bool MenuItemView::GetTooltipText(const gfx::Point& p, string16* tooltip) {
+  *tooltip = tooltip_;
   if (!tooltip->empty())
     return true;
 
@@ -297,10 +297,10 @@ void MenuItemView::SetSelected(bool selected) {
   SchedulePaint();
 }
 
-void MenuItemView::SetTooltip(const std::wstring& tooltip, int item_id) {
+void MenuItemView::SetTooltip(const string16& tooltip, int item_id) {
   MenuItemView* item = GetMenuItemByID(item_id);
   DCHECK(item);
-  item->tooltip_ = WideToUTF16Hack(tooltip);
+  item->tooltip_ = tooltip;
 }
 
 void MenuItemView::SetIcon(const SkBitmap& icon, int item_id) {

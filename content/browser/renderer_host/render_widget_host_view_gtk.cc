@@ -819,7 +819,7 @@ void RenderWidgetHostViewGtk::Destroy() {
   MessageLoop::current()->DeleteSoon(FROM_HERE, this);
 }
 
-void RenderWidgetHostViewGtk::SetTooltipText(const std::wstring& tooltip_text) {
+void RenderWidgetHostViewGtk::SetTooltipText(const string16& tooltip_text) {
   // Maximum number of characters we allow in a tooltip.
   const int kMaxTooltipLength = 8 << 10;
   // Clamp the tooltip length to kMaxTooltipLength so that we don't
@@ -827,8 +827,7 @@ void RenderWidgetHostViewGtk::SetTooltipText(const std::wstring& tooltip_text) {
   // this itself).
   // I filed https://bugzilla.gnome.org/show_bug.cgi?id=604641 upstream.
   const string16 clamped_tooltip =
-      ui::TruncateString(WideToUTF16Hack(tooltip_text),
-                         kMaxTooltipLength);
+      ui::TruncateString(tooltip_text, kMaxTooltipLength);
 
   if (clamped_tooltip.empty()) {
     gtk_widget_set_has_tooltip(view_.get(), FALSE);
@@ -836,7 +835,7 @@ void RenderWidgetHostViewGtk::SetTooltipText(const std::wstring& tooltip_text) {
     gtk_widget_set_tooltip_text(view_.get(),
                                 UTF16ToUTF8(clamped_tooltip).c_str());
 #if defined(OS_CHROMEOS)
-    tooltip_window_->SetTooltipText(UTF16ToWideHack(clamped_tooltip));
+    tooltip_window_->SetTooltipText(clamped_tooltip);
 #endif  // defined(OS_CHROMEOS)
   }
 }

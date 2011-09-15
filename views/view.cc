@@ -944,7 +944,7 @@ FocusTraversable* View::GetPaneFocusTraversable() {
 
 // Tooltips --------------------------------------------------------------------
 
-bool View::GetTooltipText(const gfx::Point& p, std::wstring* tooltip) {
+bool View::GetTooltipText(const gfx::Point& p, string16* tooltip) {
   return false;
 }
 

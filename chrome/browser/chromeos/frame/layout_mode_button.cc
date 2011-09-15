@@ -85,13 +85,13 @@ void LayoutModeButton::UpdateForCurrentLayoutMode() {
   switch (mode) {
     case WM_IPC_LAYOUT_MAXIMIZED:
       SetImage(BS_NORMAL, rb.GetBitmapNamed(IDR_STATUSBAR_WINDOW_RESTORE));
-      SetTooltipText(UTF16ToWide(
-          l10n_util::GetStringUTF16(IDS_STATUSBAR_WINDOW_RESTORE_TOOLTIP)));
+      SetTooltipText(
+          l10n_util::GetStringUTF16(IDS_STATUSBAR_WINDOW_RESTORE_TOOLTIP));
       break;
     case WM_IPC_LAYOUT_OVERLAPPING:
       SetImage(BS_NORMAL, rb.GetBitmapNamed(IDR_STATUSBAR_WINDOW_MAXIMIZE));
-      SetTooltipText(UTF16ToWide(
-          l10n_util::GetStringUTF16(IDS_STATUSBAR_WINDOW_MAXIMIZE_TOOLTIP)));
+      SetTooltipText(
+          l10n_util::GetStringUTF16(IDS_STATUSBAR_WINDOW_MAXIMIZE_TOOLTIP));
       break;
     default:
       DLOG(WARNING) << "Unknown layout mode " << mode;

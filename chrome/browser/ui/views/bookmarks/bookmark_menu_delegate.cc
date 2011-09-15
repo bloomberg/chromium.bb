@@ -95,16 +95,17 @@ void BookmarkMenuDelegate::SetActiveMenu(const BookmarkNode* node,
   menu_ = node_to_menu_map_[node];
 }
 
-std::wstring BookmarkMenuDelegate::GetTooltipText(
-    int id,
-    const gfx::Point& screen_loc) {
+string16 BookmarkMenuDelegate::GetTooltipText(int id,
+                                              const gfx::Point& screen_loc) {
   DCHECK(menu_id_to_node_map_.find(id) != menu_id_to_node_map_.end());
 
   const BookmarkNode* node = menu_id_to_node_map_[id];
-  if (node->is_url())
-    return BookmarkBarView::CreateToolTipForURLAndTitle(
-        screen_loc, node->url(), UTF16ToWide(node->GetTitle()), profile_);
-  return std::wstring();
+  if (node->is_url()) {
+    return WideToUTF16Hack(BookmarkBarView::CreateToolTipForURLAndTitle(
+                               screen_loc, node->url(),
+                               UTF16ToWide(node->GetTitle()), profile_));
+  }
+  return string16();
 }
 
 bool BookmarkMenuDelegate::IsTriggerableEvent(views::MenuItemView* menu,

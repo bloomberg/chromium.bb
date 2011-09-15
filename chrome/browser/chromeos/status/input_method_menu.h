@@ -127,7 +127,7 @@ class InputMethodMenu : public views::ViewMenuDelegate,
   // status area). Sub classes have to implement the interface for their own UI.
   virtual void UpdateUI(const std::string& input_method_id,  // e.g. "mozc"
                         const std::wstring& name,  // e.g. "US", "INTL"
-                        const std::wstring& tooltip,
+                        const string16& tooltip,
                         size_t num_active_input_methods) = 0;
 
   // Sub classes have to implement the interface. This interface should return

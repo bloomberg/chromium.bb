@@ -877,11 +877,11 @@ void WifiConfigView::Init(WifiNetwork* wifi, bool show_8021x) {
   // Password visible button.
   passphrase_visible_button_ = new views::ToggleImageButton(this);
   passphrase_visible_button_->SetTooltipText(
-      UTF16ToWide(l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PASSPHRASE_SHOW)));
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PASSPHRASE_SHOW));
   passphrase_visible_button_->SetToggledTooltipText(
-      UTF16ToWide(l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PASSPHRASE_HIDE)));
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PASSPHRASE_HIDE));
   passphrase_visible_button_->SetImage(
       views::ImageButton::BS_NORMAL,
       ResourceBundle::GetSharedInstance().

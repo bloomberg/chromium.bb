@@ -100,7 +100,7 @@ SearchEngineChoice::SearchEngineChoice(views::ButtonListener* listener,
     if (use_small_logos)
       logo_image->SetImageSize(gfx::Size(kSmallLogoWidth, kSmallLogoHeight));
     // Tooltip text provides accessibility for low-vision users.
-    logo_image->SetTooltipText(search_engine_->short_name());
+    logo_image->SetTooltipText(WideToUTF16Hack(search_engine_->short_name()));
     choice_view_ = logo_image;
   } else {
     // No logo -- we must show a text label.
@@ -108,7 +108,7 @@ SearchEngineChoice::SearchEngineChoice(views::ButtonListener* listener,
     logo_label->SetColor(SK_ColorDKGRAY);
     logo_label->SetFont(logo_label->font().DeriveFont(3, gfx::Font::BOLD));
     logo_label->SetHorizontalAlignment(views::Label::ALIGN_CENTER);
-    logo_label->SetTooltipText(search_engine_->short_name());
+    logo_label->SetTooltipText(WideToUTF16Hack(search_engine_->short_name()));
     logo_label->SetMultiLine(true);
     logo_label->SizeToFit(kSmallLogoWidth);
     choice_view_ = logo_label;

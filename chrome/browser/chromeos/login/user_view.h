@@ -63,7 +63,7 @@ class UserView : public views::View,
   void SetImage(const SkBitmap& image, const SkBitmap& image_hot);
 
   // Sets tooltip over the image.
-  void SetTooltipText(const std::wstring& text);
+  void SetTooltipText(const string16& text);
 
   // Show/Hide remove button.
   void SetRemoveButtonVisible(bool flag);

@@ -86,7 +86,7 @@ void CapsLockMenuButton::UpdateTooltip() {
   int id = IDS_STATUSBAR_CAPS_LOCK_ENABLED;
   if (prefs_ && (remap_search_key_to_.GetValue() == input_method::kCapsLockKey))
     id = IDS_STATUSBAR_CAPS_LOCK_ENABLED_PRESS_SEARCH;
-  SetTooltipText(UTF16ToWide(l10n_util::GetStringUTF16(id)));
+  SetTooltipText(l10n_util::GetStringUTF16(id));
   SetAccessibleName(l10n_util::GetStringUTF16(id));
 }
 

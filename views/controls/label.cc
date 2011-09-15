@@ -129,8 +129,8 @@ void Label::SetElideInMiddle(bool elide_in_middle) {
   }
 }
 
-void Label::SetTooltipText(const std::wstring& tooltip_text) {
-  tooltip_text_ = WideToUTF16Hack(tooltip_text);
+void Label::SetTooltipText(const string16& tooltip_text) {
+  tooltip_text_ = tooltip_text;
 }
 
 void Label::SetMouseOverBackground(Background* background) {
@@ -234,19 +234,19 @@ void Label::OnMouseExited(const MouseEvent& event) {
   SetContainsMouse(false);
 }
 
-bool Label::GetTooltipText(const gfx::Point& p, std::wstring* tooltip) {
+bool Label::GetTooltipText(const gfx::Point& p, string16* tooltip) {
   DCHECK(tooltip);
 
   // If a tooltip has been explicitly set, use it.
   if (!tooltip_text_.empty()) {
-    tooltip->assign(UTF16ToWideHack(tooltip_text_));
+    tooltip->assign(tooltip_text_);
     return true;
   }
 
   // Show the full text if the text does not fit.
   if (!is_multi_line_ &&
       (font_.GetStringWidth(text_) > GetAvailableRect().width())) {
-    *tooltip = UTF16ToWideHack(text_);
+    *tooltip = text_;
     return true;
   }
   return false;

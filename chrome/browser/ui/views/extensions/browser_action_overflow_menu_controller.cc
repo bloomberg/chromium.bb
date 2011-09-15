@@ -45,7 +45,7 @@ BrowserActionOverflowMenuController::BrowserActionOverflowMenuController(
         canvas->AsCanvasSkia()->ExtractBitmap());
 
     // Set the tooltip for this item.
-    std::wstring tooltip = UTF8ToWide(
+    string16 tooltip = UTF8ToUTF16(
         view->button()->extension()->browser_action()->GetTitle(
             owner_->GetCurrentTabId()));
     menu_->SetTooltip(tooltip, command_id);

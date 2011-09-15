@@ -56,10 +56,10 @@ std::string BrowserActionTestUtil::GetExtensionId(int index) {
 }
 
 std::string BrowserActionTestUtil::GetTooltip(int index) {
-  std::wstring text;
+  string16 text;
   GetContainer(browser_)->GetBrowserActionViewAt(index)->button()->
     GetTooltipText(gfx::Point(), &text);
-  return WideToUTF8(text);
+  return UTF16ToUTF8(text);
 }
 
 bool BrowserActionTestUtil::HasPopup() {

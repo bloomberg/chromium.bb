@@ -324,7 +324,7 @@ bool NativeTableWin::ProcessMessage(UINT message, WPARAM w_param,
         // be called when dwFlags would be LVGIT_UNFOLDED.  Removing it entirely
         // will disable all of the above behavior.
         NMLVGETINFOTIP* info_tip = reinterpret_cast<NMLVGETINFOTIP*>(hdr);
-        std::wstring tooltip = table_->model()->GetTooltip(info_tip->iItem);
+        string16 tooltip = table_->model()->GetTooltip(info_tip->iItem);
         CHECK(info_tip->cchTextMax >= 2);
         if (tooltip.length() >= static_cast<size_t>(info_tip->cchTextMax)) {
           // Elide the tooltip if necessary.

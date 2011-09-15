@@ -72,7 +72,7 @@ void ContentSettingImageView::UpdateFromTabContents(TabContents* tab_contents) {
   }
   SetImage(ResourceBundle::GetSharedInstance().GetBitmapNamed(
       content_setting_image_model_->get_icon()));
-  SetTooltipText(UTF8ToWide(content_setting_image_model_->get_tooltip()));
+  SetTooltipText(UTF8ToUTF16(content_setting_image_model_->get_tooltip()));
   SetVisible(true);
 
   TabSpecificContentSettings* content_settings = NULL;

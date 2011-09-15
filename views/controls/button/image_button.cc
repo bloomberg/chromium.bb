@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -141,8 +141,8 @@ void ToggleImageButton::SetToggledImage(ButtonState state,
   }
 }
 
-void ToggleImageButton::SetToggledTooltipText(const std::wstring& tooltip) {
-  toggled_tooltip_text_ = WideToUTF16Hack(tooltip);
+void ToggleImageButton::SetToggledTooltipText(const string16& tooltip) {
+  toggled_tooltip_text_ = tooltip;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -163,11 +163,11 @@ void ToggleImageButton::SetImage(ButtonState state, const SkBitmap* image) {
 // ToggleImageButton, View overrides:
 
 bool ToggleImageButton::GetTooltipText(const gfx::Point& p,
-                                       std::wstring* tooltip) {
+                                       string16* tooltip) {
   if (!toggled_ || toggled_tooltip_text_.empty())
     return Button::GetTooltipText(p, tooltip);
 
-  *tooltip = UTF16ToWideHack(toggled_tooltip_text_);
+  *tooltip = toggled_tooltip_text_;
   return true;
 }
 

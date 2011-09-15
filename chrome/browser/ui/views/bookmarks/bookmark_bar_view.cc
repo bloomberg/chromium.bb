@@ -148,11 +148,11 @@ class BookmarkButton : public views::TextButton {
   }
 
   virtual bool GetTooltipText(const gfx::Point& p,
-                              std::wstring* tooltip) OVERRIDE {
+                              string16* tooltip) OVERRIDE {
     gfx::Point location(p);
     ConvertPointToScreen(this, &location);
-    *tooltip = BookmarkBarView::CreateToolTipForURLAndTitle(location, url_,
-        text(), profile_);
+    *tooltip = WideToUTF16Hack(BookmarkBarView::CreateToolTipForURLAndTitle(
+                                   location, url_, text(), profile_));
     return !tooltip->empty();
   }
 
@@ -198,9 +198,9 @@ class BookmarkFolderButton : public views::MenuButton {
   }
 
   virtual bool GetTooltipText(const gfx::Point& p,
-                              std::wstring* tooltip) OVERRIDE {
+                              string16* tooltip) OVERRIDE {
     if (text_size_.width() > GetTextBounds().width())
-      *tooltip = UTF16ToWide(text_);
+      *tooltip = text_;
     return !tooltip->empty();
   }
 
@@ -1250,7 +1250,7 @@ views::TextButton* BookmarkBarView::CreateSyncErrorButton() {
   // The tooltip is the only way we have to display text explaining the error
   // to the user.
   sync_error_button->SetTooltipText(
-      UTF16ToWide(l10n_util::GetStringUTF16(IDS_SYNC_BOOKMARK_BAR_ERROR_DESC)));
+      l10n_util::GetStringUTF16(IDS_SYNC_BOOKMARK_BAR_ERROR_DESC));
   sync_error_button->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_ACCNAME_SYNC_ERROR_BUTTON));
   sync_error_button->SetIcon(

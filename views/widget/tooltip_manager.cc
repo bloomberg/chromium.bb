@@ -13,17 +13,17 @@
 namespace {
 
 // Maximum number of characters we allow in a tooltip.
-static const size_t kMaxTooltipLength = 1024;
+const size_t kMaxTooltipLength = 1024;
 
 // Maximum number of lines we allow in the tooltip.
-static const size_t kMaxLines = 6;
+const size_t kMaxLines = 6;
 
 }  // anonymous namespace
 
 namespace views {
 
 // static
-void TooltipManager::TrimTooltipToFit(std::wstring* text,
+void TooltipManager::TrimTooltipToFit(string16* text,
                                       int* max_width,
                                       int* line_count,
                                       int x,
@@ -41,7 +41,7 @@ void TooltipManager::TrimTooltipToFit(std::wstring* text,
 
   // Split the string into at most kMaxLines lines.
   std::vector<string16> lines;
-  base::SplitString(WideToUTF16(*text), '\n', &lines);
+  base::SplitString(*text, '\n', &lines);
   if (lines.size() > kMaxLines)
     lines.resize(kMaxLines);
   *line_count = static_cast<int>(lines.size());
@@ -57,7 +57,7 @@ void TooltipManager::TrimTooltipToFit(std::wstring* text,
       result.push_back('\n');
     result.append(elided_text);
   }
-  *text = UTF16ToWideHack(result);
+  *text = result;
 }
 
 }  // namespace views

@@ -223,7 +223,7 @@ PanelBrowserFrameView::PanelBrowserFrameView(BrowserFrame* frame,
   settings_button_->set_alignment(views::TextButton::ALIGN_CENTER);
   settings_button_->set_border(NULL);
   settings_button_->SetTooltipText(
-      UTF16ToWide(l10n_util::GetStringUTF16(IDS_NEW_TAB_APP_SETTINGS)));
+      l10n_util::GetStringUTF16(IDS_NEW_TAB_APP_SETTINGS));
   settings_button_->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_NEW_TAB_APP_SETTINGS));
   settings_button_->SetVisible(is_settings_button_visible_);
@@ -237,7 +237,7 @@ PanelBrowserFrameView::PanelBrowserFrameView(BrowserFrame* frame,
   close_button_->SetImage(views::CustomButton::BS_PUSHED,
                           close_button_resources.pushed_image);
   close_button_->SetTooltipText(
-      UTF16ToWide(l10n_util::GetStringUTF16(IDS_TOOLTIP_CLOSE_TAB)));
+      l10n_util::GetStringUTF16(IDS_TOOLTIP_CLOSE_TAB));
   close_button_->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_ACCNAME_CLOSE));
   AddChildView(close_button_);

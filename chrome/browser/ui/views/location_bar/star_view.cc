@@ -27,8 +27,8 @@ StarView::~StarView() {
 }
 
 void StarView::SetToggled(bool on) {
-  SetTooltipText(UTF16ToWide(l10n_util::GetStringUTF16(
-      on ? IDS_TOOLTIP_STARRED : IDS_TOOLTIP_STAR)));
+  SetTooltipText(l10n_util::GetStringUTF16(
+      on ? IDS_TOOLTIP_STARRED : IDS_TOOLTIP_STAR));
   SetImage(ResourceBundle::GetSharedInstance().GetBitmapNamed(
       on ? IDR_STAR_LIT : IDR_STAR));
 }
@@ -38,7 +38,7 @@ void StarView::GetAccessibleState(ui::AccessibleViewState* state) {
   state->role = ui::AccessibilityTypes::ROLE_PUSHBUTTON;
 }
 
-bool StarView::GetTooltipText(const gfx::Point& p, std::wstring* tooltip) {
+bool StarView::GetTooltipText(const gfx::Point& p, string16* tooltip) {
   // Don't show tooltip to distract user if BookmarkBubbleView is showing.
   if (browser::IsBookmarkBubbleViewShowing())
     return false;

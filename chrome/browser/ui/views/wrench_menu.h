@@ -37,7 +37,7 @@ class WrenchMenu : public views::MenuDelegate,
   void RunMenu(views::MenuButton* host);
 
   // MenuDelegate overrides:
-  virtual std::wstring GetTooltipText(int id, const gfx::Point& p) OVERRIDE;
+  virtual string16 GetTooltipText(int id, const gfx::Point& p) OVERRIDE;
   virtual bool IsTriggerableEvent(views::MenuItemView* menu,
                                   const views::MouseEvent& e) OVERRIDE;
   virtual bool GetDropFormats(

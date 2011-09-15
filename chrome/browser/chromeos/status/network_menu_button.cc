@@ -435,7 +435,7 @@ void NetworkMenuButton::ShowOptionalMobileDataPromoNotification(
 }
 
 void NetworkMenuButton::SetTooltipAndAccessibleName(const string16& label) {
-  SetTooltipText(UTF16ToWide(label));
+  SetTooltipText(label);
   SetAccessibleName(label);
 }
 

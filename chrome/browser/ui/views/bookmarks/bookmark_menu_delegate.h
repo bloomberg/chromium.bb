@@ -85,7 +85,7 @@ class BookmarkMenuDelegate : public BaseBookmarkModelObserver,
   bool is_mutating_model() const { return is_mutating_model_; }
 
   // MenuDelegate like methods (see class description for details).
-  std::wstring GetTooltipText(int id, const gfx::Point& p);
+  string16 GetTooltipText(int id, const gfx::Point& p);
   bool IsTriggerableEvent(views::MenuItemView* menu,
                           const views::MouseEvent& e);
   void ExecuteCommand(int id, int mouse_event_flags);

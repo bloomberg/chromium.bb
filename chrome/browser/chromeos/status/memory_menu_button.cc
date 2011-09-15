@@ -81,12 +81,12 @@ void MemoryMenuButton::UpdateText() {
                                           anon_kb / 1024,
                                           renderer_kills_);
   SetText(label);
-  std::wstring tooltip = base::StringPrintf(
-      L"%d MB allocated (anonymous)\n"
-      L"%d renderer kill(s)",
+  std::string tooltip = base::StringPrintf(
+      "%d MB allocated (anonymous)\n"
+      "%d renderer kill(s)",
       anon_kb / 1024,
       renderer_kills_);
-  SetTooltipText(tooltip);
+  SetTooltipText(ASCIIToUTF16(tooltip));
   SchedulePaint();
 }
 

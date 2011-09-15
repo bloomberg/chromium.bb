@@ -155,15 +155,15 @@ ImageView::Alignment ImageView::GetVerticalAlignment() {
   return vert_alignment_;
 }
 
-void ImageView::SetTooltipText(const std::wstring& tooltip) {
-  tooltip_text_ = WideToUTF16Hack(tooltip);
+void ImageView::SetTooltipText(const string16& tooltip) {
+  tooltip_text_ = tooltip;
 }
 
-std::wstring ImageView::GetTooltipText() {
-  return UTF16ToWideHack(tooltip_text_);
+string16 ImageView::GetTooltipText() {
+  return tooltip_text_;
 }
 
-bool ImageView::GetTooltipText(const gfx::Point& p, std::wstring* tooltip) {
+bool ImageView::GetTooltipText(const gfx::Point& p, string16* tooltip) {
   if (tooltip_text_.empty())
     return false;
 

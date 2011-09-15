@@ -77,7 +77,7 @@ class BookmarkMenuController : public BaseBookmarkModelObserver,
   void set_observer(Observer* observer) { observer_ = observer; }
 
   // MenuDelegate methods.
-  virtual std::wstring GetTooltipText(int id, const gfx::Point& p);
+  virtual string16 GetTooltipText(int id, const gfx::Point& p) OVERRIDE;
   virtual bool IsTriggerableEvent(views::MenuItemView* view,
                                   const views::MouseEvent& e);
   virtual void ExecuteCommand(int id, int mouse_event_flags);

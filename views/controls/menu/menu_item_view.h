@@ -111,8 +111,7 @@ class VIEWS_EXPORT MenuItemView : public View {
   explicit MenuItemView(MenuDelegate* delegate);
 
   // Overridden from View:
-  virtual bool GetTooltipText(const gfx::Point& p,
-                              std::wstring* tooltip) OVERRIDE;
+  virtual bool GetTooltipText(const gfx::Point& p, string16* tooltip) OVERRIDE;
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
 
   // Returns the preferred height of menu items. This is only valid when the
@@ -243,7 +242,7 @@ class VIEWS_EXPORT MenuItemView : public View {
   bool IsSelected() const { return selected_; }
 
   // Sets the |tooltip| for a menu item view with |item_id| identifier.
-  void SetTooltip(const std::wstring& tooltip, int item_id);
+  void SetTooltip(const string16& tooltip, int item_id);
 
   // Sets the icon for the descendant identified by item_id.
   void SetIcon(const SkBitmap& icon, int item_id);

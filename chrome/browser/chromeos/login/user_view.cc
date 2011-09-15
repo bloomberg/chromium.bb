@@ -301,7 +301,7 @@ void UserView::SetImage(const SkBitmap& image, const SkBitmap& image_hot) {
   image_view_->SetImage(image, image_hot);
 }
 
-void UserView::SetTooltipText(const std::wstring& text) {
+void UserView::SetTooltipText(const string16& text) {
   DCHECK(image_view_);
   image_view_->SetTooltipText(text);
 }

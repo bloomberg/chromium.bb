@@ -278,7 +278,7 @@ void TooltipManagerWin::UpdateTooltip(const gfx::Point& mouse_pos) {
     // text has changed.
     gfx::Point view_point = mouse_pos;
     View::ConvertPointToView(root_view, last_tooltip_view_, &view_point);
-    std::wstring new_tooltip_text;
+    string16 new_tooltip_text;
     bool has_tooltip_text =
         last_tooltip_view_->GetTooltipText(view_point, &new_tooltip_text);
     if (!has_tooltip_text || (new_tooltip_text != tooltip_text_)) {
@@ -322,7 +322,7 @@ void TooltipManagerWin::ShowKeyboardTooltip(View* focused_view) {
     tooltip_text_.clear();
   }
   HideKeyboardTooltip();
-  std::wstring tooltip_text;
+  string16 tooltip_text;
   if (!focused_view->GetTooltipText(gfx::Point(), &tooltip_text))
     return;
   gfx::Rect focused_bounds = focused_view->bounds();

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,8 +15,8 @@ namespace views {
 Button::~Button() {
 }
 
-void Button::SetTooltipText(const std::wstring& tooltip_text) {
-  tooltip_text_ = WideToUTF16Hack(tooltip_text);
+void Button::SetTooltipText(const string16& tooltip_text) {
+  tooltip_text_ = tooltip_text;
   TooltipTextChanged();
 }
 
@@ -31,11 +31,11 @@ void Button::SetAccessibleKeyboardShortcut(const string16& shortcut) {
 ////////////////////////////////////////////////////////////////////////////////
 // Button, View overrides:
 
-bool Button::GetTooltipText(const gfx::Point& p, std::wstring* tooltip) {
+bool Button::GetTooltipText(const gfx::Point& p, string16* tooltip) {
   if (tooltip_text_.empty())
     return false;
 
-  *tooltip = UTF16ToWideHack(tooltip_text_);
+  *tooltip = tooltip_text_;
   return true;
 }
 

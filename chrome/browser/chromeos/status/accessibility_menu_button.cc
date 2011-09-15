@@ -86,7 +86,7 @@ void AccessibilityMenuButton::Update() {
   // Update tooltip and accessibile name.
   string16 message =
       l10n_util::GetStringUTF16(IDS_STATUSBAR_ACCESSIBILITY_ENABLED);
-  SetTooltipText(UTF16ToWide(message));
+  SetTooltipText(message);
   SetAccessibleName(message);
   // Update visibility.
   SetVisible(accessibility_enabled_.GetValue());

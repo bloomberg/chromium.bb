@@ -8,7 +8,7 @@
 
 #include <string>
 
-#include "base/basictypes.h"
+#include "base/string16.h"
 #include "ui/base/gtk/gtk_integers.h"
 #include "ui/base/gtk/gtk_signal.h"
 #include "ui/base/ui_export.h"
@@ -29,7 +29,7 @@ class UI_EXPORT TooltipWindowGtk {
   virtual ~TooltipWindowGtk();
 
   // Sets tooltip text to display.
-  void SetTooltipText(const std::wstring& text);
+  void SetTooltipText(const string16& text);
 
   GtkLabel* label();
 

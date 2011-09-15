@@ -46,8 +46,7 @@ class ReloadButton : public views::ToggleImageButton,
 
   // Overridden from views::View:
   virtual void OnMouseExited(const views::MouseEvent& event) OVERRIDE;
-  virtual bool GetTooltipText(const gfx::Point& p,
-                              std::wstring* tooltip) OVERRIDE;
+  virtual bool GetTooltipText(const gfx::Point& p, string16* tooltip) OVERRIDE;
   virtual std::string GetClassName() const OVERRIDE;
 
  private:
