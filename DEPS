@@ -135,6 +135,9 @@ deps = {
   "src/third_party/WebKit/Tools/Scripts":
     Var("webkit_trunk") + "/Tools/Scripts@" + Var("webkit_revision"),
 
+  "src/third_party/WebKit/Tools/TestWebKitAPI":
+    Var("webkit_trunk") + "/Tools/TestWebKitAPI@" + Var("webkit_revision"),
+
   "src/third_party/ots":
     (Var("googlecode_url") % "ots") + "/trunk@69",
 
