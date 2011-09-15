@@ -36,6 +36,9 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "webkit/plugins/npapi/plugin_list.h"
 
+using webkit::npapi::PluginGroup;
+using webkit::WebPluginInfo;
+
 namespace {
 
 ChromeWebUIDataSource* CreatePluginsUIHTMLSource(bool enable_controls) {
@@ -125,17 +128,17 @@ class PluginsDOMHandler : public WebUIMessageHandler,
  private:
   // Loads the plugins on the FILE thread.
   static void LoadPluginsOnFileThread(
-      std::vector<webkit::npapi::PluginGroup>* groups, Task* task);
+      std::vector<PluginGroup>* groups, Task* task);
 
   // Used in conjunction with ListWrapper to avoid any memory leaks.
   static void EnsurePluginGroupsDeleted(
-      std::vector<webkit::npapi::PluginGroup>* groups);
+      std::vector<PluginGroup>* groups);
 
   // Call this to start getting the plugins on the UI thread.
   void LoadPlugins();
 
   // Called on the UI thread when the plugin information is ready.
-  void PluginsLoaded(const std::vector<webkit::npapi::PluginGroup>* groups);
+  void PluginsLoaded(const std::vector<PluginGroup>* groups);
 
   NotificationRegistrar registrar_;
 
@@ -181,13 +184,6 @@ void PluginsDOMHandler::HandleRequestPluginsData(const ListValue* args) {
 void PluginsDOMHandler::HandleEnablePluginMessage(const ListValue* args) {
   Profile* profile = Profile::FromWebUI(web_ui_);
 
-  // If a non-first-profile user tries to trigger these methods sneakily,
-  // forbid it.
-#if !defined(OS_CHROMEOS)
-  if (!profile->GetOriginalProfile()->first_launched())
-    return;
-#endif
-
   // Be robust in accepting badness since plug-ins display HTML (hence
   // JavaScript).
   if (args->GetSize() != 3)
@@ -209,27 +205,20 @@ void PluginsDOMHandler::HandleEnablePluginMessage(const ListValue* args) {
     if (enable) {
       // See http://crbug.com/50105 for background.
       string16 adobereader = ASCIIToUTF16(
-          webkit::npapi::PluginGroup::kAdobeReaderGroupName);
+          PluginGroup::kAdobeReaderGroupName);
       string16 internalpdf =
           ASCIIToUTF16(chrome::ChromeContentClient::kPDFPluginName);
-      if (group_name == adobereader) {
+      if (group_name == adobereader)
         plugin_prefs->EnablePluginGroup(false, internalpdf);
-      } else if (group_name == internalpdf) {
+      else if (group_name == internalpdf)
         plugin_prefs->EnablePluginGroup(false, adobereader);
-      }
     }
   } else {
     FilePath::StringType file_path;
     if (!args->GetString(0, &file_path))
       return;
-
     plugin_prefs->EnablePlugin(enable, FilePath(file_path));
   }
-
-  // TODO(viettrungluu): We might also want to ensure that the plugins
-  // list is always written to prefs even when the user hasn't disabled a
-  // plugin. <http://crbug.com/39101>
-  plugin_prefs->UpdatePreferences(0);
 }
 
 void PluginsDOMHandler::HandleSaveShowDetailsToPrefs(const ListValue* args) {
@@ -254,7 +243,7 @@ void PluginsDOMHandler::Observe(int type,
 }
 
 void PluginsDOMHandler::LoadPluginsOnFileThread(
-    std::vector<webkit::npapi::PluginGroup>* groups,
+    std::vector<PluginGroup>* groups,
     Task* task) {
   webkit::npapi::PluginList::Singleton()->GetPluginGroups(true, groups);
 
@@ -267,7 +256,7 @@ void PluginsDOMHandler::LoadPluginsOnFileThread(
 }
 
 void PluginsDOMHandler::EnsurePluginGroupsDeleted(
-    std::vector<webkit::npapi::PluginGroup>* groups) {
+    std::vector<PluginGroup>* groups) {
   delete groups;
 }
 
@@ -275,8 +264,7 @@ void PluginsDOMHandler::LoadPlugins() {
   if (!get_plugins_factory_.empty())
     return;
 
-  std::vector<webkit::npapi::PluginGroup>* groups =
-      new std::vector<webkit::npapi::PluginGroup>;
+  std::vector<PluginGroup>* groups = new std::vector<PluginGroup>;
   Task* task = get_plugins_factory_.NewRunnableMethod(
           &PluginsDOMHandler::PluginsLoaded, groups);
 
@@ -287,13 +275,103 @@ void PluginsDOMHandler::LoadPlugins() {
           &PluginsDOMHandler::LoadPluginsOnFileThread, groups, task));
 }
 
-void PluginsDOMHandler::PluginsLoaded(
-    const std::vector<webkit::npapi::PluginGroup>* groups) {
+void PluginsDOMHandler::PluginsLoaded(const std::vector<PluginGroup>* groups) {
+  PluginPrefs* plugin_prefs =
+      PluginPrefs::GetForProfile(Profile::FromWebUI(web_ui_));
+
+  bool all_plugins_enabled_by_policy = true;
+  bool all_plugins_disabled_by_policy = true;
+
   // Construct DictionaryValues to return to the UI
   ListValue* plugin_groups_data = new ListValue();
   for (size_t i = 0; i < groups->size(); ++i) {
-    plugin_groups_data->Append((*groups)[i].GetDataForUI());
-    // TODO(bauerb): Fetch plugin enabled state from PluginPrefs.
+    ListValue* plugin_files = new ListValue();
+    const PluginGroup& group = (*groups)[i];
+    string16 group_name = group.GetGroupName();
+    bool group_enabled = false;
+    const WebPluginInfo* active_plugin = NULL;
+    for (size_t j = 0; j < group.web_plugin_infos().size(); ++j) {
+      const WebPluginInfo& group_plugin = group.web_plugin_infos()[j];
+
+      DictionaryValue* plugin_file = new DictionaryValue();
+      plugin_file->SetString("name", group_plugin.name);
+      plugin_file->SetString("description", group_plugin.desc);
+      plugin_file->SetString("path", group_plugin.path.value());
+      plugin_file->SetString("version", group_plugin.version);
+
+      ListValue* mime_types = new ListValue();
+      const std::vector<webkit::WebPluginMimeType>& plugin_mime_types =
+          group_plugin.mime_types;
+      for (size_t k = 0; k < plugin_mime_types.size(); ++k) {
+        DictionaryValue* mime_type = new DictionaryValue();
+        mime_type->SetString("mimeType", plugin_mime_types[k].mime_type);
+        mime_type->SetString("description", plugin_mime_types[k].description);
+
+        ListValue* file_extensions = new ListValue();
+        const std::vector<std::string>& mime_file_extensions =
+            plugin_mime_types[k].file_extensions;
+        for (size_t l = 0; l < mime_file_extensions.size(); ++l)
+          file_extensions->Append(new StringValue(mime_file_extensions[l]));
+        mime_type->Set("fileExtensions", file_extensions);
+
+        mime_types->Append(mime_type);
+      }
+      plugin_file->Set("mimeTypes", mime_types);
+
+      bool plugin_enabled = plugin_prefs->IsPluginEnabled(group_plugin);
+
+      if (!active_plugin || (plugin_enabled && !group_enabled))
+        active_plugin = &group_plugin;
+      group_enabled = plugin_enabled || group_enabled;
+
+      std::string enabled_mode;
+      PluginPrefs::PolicyStatus plugin_status =
+          plugin_prefs->PolicyStatusForPlugin(group_plugin.name);
+      PluginPrefs::PolicyStatus group_status =
+          plugin_prefs->PolicyStatusForPlugin(group_name);
+      if (plugin_status == PluginPrefs::POLICY_ENABLED ||
+          group_status == PluginPrefs::POLICY_ENABLED) {
+        enabled_mode = "enabledByPolicy";
+      } else {
+        all_plugins_enabled_by_policy = false;
+        if (plugin_status == PluginPrefs::POLICY_DISABLED ||
+          group_status == PluginPrefs::POLICY_DISABLED) {
+          enabled_mode = "disabledByPolicy";
+        } else {
+          all_plugins_disabled_by_policy = false;
+          if (plugin_enabled) {
+            enabled_mode = "enabledByUser";
+          } else {
+            enabled_mode = "disabledByUser";
+          }
+        }
+      }
+      plugin_file->SetString("enabledMode", enabled_mode);
+
+      plugin_files->Append(plugin_file);
+    }
+    DictionaryValue* group_data = new DictionaryValue();
+
+    group_data->Set("plugin_files", plugin_files);
+    group_data->SetString("name", group_name);
+    group_data->SetString("description", active_plugin->desc);
+    group_data->SetString("version", active_plugin->version);
+    group_data->SetBoolean("critical", group.IsVulnerable(*active_plugin));
+    group_data->SetString("update_url", group.GetUpdateURL());
+
+    std::string enabled_mode;
+    if (all_plugins_enabled_by_policy) {
+      enabled_mode = "enabledByPolicy";
+    } else if (all_plugins_disabled_by_policy) {
+      enabled_mode = "disabledByPolicy";
+    } else if (group_enabled) {
+      enabled_mode = "enabledByUser";
+    } else {
+      enabled_mode = "disabledByUser";
+    }
+    group_data->SetString("enabledMode", enabled_mode);
+
+    plugin_groups_data->Append(group_data);
   }
   DictionaryValue results;
   results.Set("plugins", plugin_groups_data);
@@ -312,11 +390,9 @@ PluginsUI::PluginsUI(TabContents* contents) : ChromeWebUI(contents) {
   AddMessageHandler((new PluginsDOMHandler())->Attach(this));
 
   // Set up the chrome://plugins/ source.
+  // TODO(bauerb): Remove |enable_controls| & co.
   bool enable_controls = true;
   Profile* profile = Profile::FromBrowserContext(contents->browser_context());
-#if !defined(OS_CHROMEOS)
-  enable_controls = profile->GetOriginalProfile()->first_launched();
-#endif
   profile->GetChromeURLDataManager()->AddDataSource(
       CreatePluginsUIHTMLSource(enable_controls));
 }

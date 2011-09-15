@@ -71,6 +71,7 @@ class GViewRequestInterceptorTest : public testing::Test {
  public:
   GViewRequestInterceptorTest()
       : ui_thread_(BrowserThread::UI, &message_loop_),
+        file_thread_(BrowserThread::FILE, &message_loop_),
         io_thread_(BrowserThread::IO, &message_loop_) {}
 
   virtual void SetUp() {
@@ -96,6 +97,7 @@ class GViewRequestInterceptorTest : public testing::Test {
   }
 
   virtual void TearDown() {
+    plugin_prefs_->ShutdownOnUIThread();
     content::ResourceContext* resource_context =
         content::MockResourceContext::GetInstance();
     net::URLRequestContext* request_context =
@@ -110,7 +112,6 @@ class GViewRequestInterceptorTest : public testing::Test {
   void RegisterPDFPlugin() {
     webkit::WebPluginInfo info;
     info.path = pdf_path_;
-    info.enabled = webkit::WebPluginInfo::USER_ENABLED_POLICY_UNMANAGED;
     webkit::npapi::PluginList::Singleton()->RegisterInternalPlugin(info);
     webkit::npapi::PluginList::Singleton()->RefreshPlugins();
   }
@@ -166,6 +167,7 @@ class GViewRequestInterceptorTest : public testing::Test {
  protected:
   MessageLoopForIO message_loop_;
   BrowserThread ui_thread_;
+  BrowserThread file_thread_;
   BrowserThread io_thread_;
   TestingPrefService prefs_;
   scoped_refptr<PluginPrefs> plugin_prefs_;
@@ -197,7 +199,7 @@ TEST_F(GViewRequestInterceptorTest, DoNotInterceptDownload) {
 
 TEST_F(GViewRequestInterceptorTest, DoNotInterceptPdfWhenEnabled) {
   SetPDFPluginLoadedState(true);
-  webkit::npapi::PluginList::Singleton()->EnablePlugin(pdf_path_);
+  plugin_prefs_->EnablePlugin(true, pdf_path_);
 
   net::URLRequest request(GURL("http://foo.com/file.pdf"), &test_delegate_);
   SetupRequest(&request);
@@ -209,7 +211,7 @@ TEST_F(GViewRequestInterceptorTest, DoNotInterceptPdfWhenEnabled) {
 
 TEST_F(GViewRequestInterceptorTest, InterceptPdfWhenDisabled) {
   SetPDFPluginLoadedState(true);
-  webkit::npapi::PluginList::Singleton()->DisablePlugin(pdf_path_);
+  plugin_prefs_->EnablePlugin(false, pdf_path_);
 
   net::URLRequest request(GURL("http://foo.com/file.pdf"), &test_delegate_);
   SetupRequest(&request);

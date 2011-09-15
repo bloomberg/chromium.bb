@@ -3536,12 +3536,9 @@ void TestingAutomationProvider::EnablePlugin(Browser* browser,
   if (!args->GetString("path", &path)) {
     reply.SendError("path not specified.");
     return;
-  } else if (!webkit::npapi::PluginList::Singleton()->EnablePlugin(
-        FilePath(path))) {
-    reply.SendError(StringPrintf("Could not enable plugin for path %s.",
-                                 path.c_str()));
-    return;
   }
+  PluginPrefs::GetForProfile(browser->profile())->EnablePlugin(
+      true, FilePath(path));
   reply.SendSuccess(NULL);
 }
 
@@ -3556,12 +3553,9 @@ void TestingAutomationProvider::DisablePlugin(Browser* browser,
   if (!args->GetString("path", &path)) {
     reply.SendError("path not specified.");
     return;
-  } else if (!webkit::npapi::PluginList::Singleton()->DisablePlugin(
-        FilePath(path))) {
-    reply.SendError(StringPrintf("Could not disable plugin for path %s.",
-                                 path.c_str()));
-    return;
   }
+  PluginPrefs::GetForProfile(browser->profile())->EnablePlugin(
+      false, FilePath(path));
   reply.SendSuccess(NULL);
 }
 

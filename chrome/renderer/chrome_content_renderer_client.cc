@@ -331,9 +331,8 @@ WebPlugin* ChromeContentRendererClient::CreatePluginImpl(
     return NULL;
   }
 
-  const webkit::npapi::PluginGroup* group =
-      webkit::npapi::PluginList::Singleton()->GetPluginGroup(info);
-  DCHECK(group != NULL);
+  scoped_ptr<webkit::npapi::PluginGroup> group(
+      webkit::npapi::PluginList::Singleton()->GetPluginGroup(info));
 
   ContentSetting plugin_setting = CONTENT_SETTING_DEFAULT;
   std::string resource;
@@ -356,14 +355,14 @@ WebPlugin* ChromeContentRendererClient::CreatePluginImpl(
 
   ContentSetting outdated_policy = CONTENT_SETTING_ASK;
   ContentSetting authorize_policy = CONTENT_SETTING_ASK;
-  if (group->IsVulnerable() || group->RequiresAuthorization()) {
+  if (group->IsVulnerable(info) || group->RequiresAuthorization(info)) {
     // These policies are dynamic and can changed at runtime, so they aren't
     // cached here.
     render_view->Send(new ChromeViewHostMsg_GetPluginPolicies(
         &outdated_policy, &authorize_policy));
   }
 
-  if (group->IsVulnerable()) {
+  if (group->IsVulnerable(info)) {
     if (outdated_policy == CONTENT_SETTING_ASK ||
         outdated_policy == CONTENT_SETTING_BLOCK) {
       if (outdated_policy == CONTENT_SETTING_ASK) {
@@ -383,7 +382,7 @@ WebPlugin* ChromeContentRendererClient::CreatePluginImpl(
   ContentSetting host_setting =
       observer->GetContentSetting(CONTENT_SETTINGS_TYPE_PLUGINS);
 
-  if (group->RequiresAuthorization() &&
+  if (group->RequiresAuthorization(info) &&
       authorize_policy == CONTENT_SETTING_ASK &&
       (plugin_setting == CONTENT_SETTING_ALLOW ||
        plugin_setting == CONTENT_SETTING_ASK) &&

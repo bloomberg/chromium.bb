@@ -16,6 +16,7 @@
 #include "base/stringprintf.h"
 #include "base/values.h"
 #include "chrome/browser/component_updater/component_updater_service.h"
+#include "chrome/browser/plugin_prefs.h"
 #include "chrome/common/chrome_paths.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/pepper_plugin_registry.h"
@@ -107,7 +108,6 @@ bool SupportsPepperInterface(const char* interface_name) {
 bool MakePepperFlashPluginInfo(const FilePath& flash_path,
                                const Version& flash_version,
                                bool out_of_process,
-                               bool enabled,
                                PepperPluginInfo* plugin_info) {
   if (!flash_version.IsValid())
     return false;
@@ -119,7 +119,6 @@ bool MakePepperFlashPluginInfo(const FilePath& flash_path,
   plugin_info->is_out_of_process = out_of_process;
   plugin_info->path = flash_path;
   plugin_info->name = kFlashPluginName;
-  plugin_info->enabled = enabled;
 
   // The description is like "Shockwave Flash 10.2 r154".
   plugin_info->description = StringPrintf("%s %d.%d r%d",
@@ -143,8 +142,9 @@ void RegisterPepperFlashWithChrome(const FilePath& path,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   PepperPluginInfo plugin_info;
   // Register it as out-of-process and disabled.
-  if (!MakePepperFlashPluginInfo(path, version, true, false, &plugin_info))
+  if (!MakePepperFlashPluginInfo(path, version, true, &plugin_info))
     return;
+  PluginPrefs::EnablePluginGlobally(false, plugin_info.path);
   webkit::npapi::PluginList::Singleton()->RegisterInternalPlugin(
       plugin_info.ToWebPluginInfo());
   webkit::npapi::PluginList::Singleton()->RefreshPlugins();

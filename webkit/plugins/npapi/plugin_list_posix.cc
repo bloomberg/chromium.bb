@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -248,7 +248,7 @@ bool PluginList::ShouldLoadPlugin(const WebPluginInfo& info,
     // See if we have a better version of this plugin.
     for (size_t i = 0; i < plugin_groups->size(); ++i) {
       const std::vector<WebPluginInfo>& plugins =
-          (*plugin_groups)[i]->web_plugins_info();
+          (*plugin_groups)[i]->web_plugin_infos();
       for (size_t j = 0; j < plugins.size(); ++j) {
         if (plugins[j].name == info.name &&
             !IsUndesirablePlugin(plugins[j])) {
