@@ -29,14 +29,6 @@
       ],
       'sources': [
         # All .cc, .h under views, except unittests
-        'desktop_background_view.cc',
-        'desktop_background_view.h',
-        'desktop_layout_manager.cc',
-        'desktop_layout_manager.h',
-        'launcher_view.cc',
-        'launcher_view.h',
-        'status_area_view.cc',
-        'status_area_view.h',
       ],
     },
     {
