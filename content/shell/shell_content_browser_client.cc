@@ -31,7 +31,7 @@ BrowserMainParts* ShellContentBrowserClient::CreateBrowserMainParts(
 
 TabContentsView* ShellContentBrowserClient::CreateTabContentsView(
     TabContents* tab_contents) {
-#if defined(TOOLKIT_VIEWS)
+#if defined(OS_WIN)
   return new TabContentsViewWin(tab_contents);
 #else
   return NULL;
