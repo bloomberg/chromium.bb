@@ -707,9 +707,7 @@ void RenderWidgetHostViewWin::RenderViewGone(base::TerminationStatus status,
                                              int error_code) {
   // TODO(darin): keep this around, and draw sad-tab into it.
   UpdateCursorIfOverSelf();
-  being_destroyed_ = true;
-  CleanupCompositorWindow();
-  DestroyWindow();
+  Destroy();
 }
 
 void RenderWidgetHostViewWin::WillWmDestroy() {
