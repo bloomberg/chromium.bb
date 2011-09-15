@@ -18,7 +18,6 @@ import os
 import platform
 import re
 import shutil
-import subprocess
 import sys
 import time
 import zipfile
@@ -47,18 +46,18 @@ def createZip(zip_path, directory):
   zip.close()
 
 
-def buildWebApp(linux_strip, mimetype, destination, zip_path, plugin, files,
+def buildWebApp(mimetype, destination, zip_path, plugin, name_suffix, files,
                 locales):
   """Does the main work of building the webapp directory and zipfile.
 
   Args:
-    linux_strip: should we strip the build on Linux (0 or !0).
     mimetype: A string with mimetype of plugin.
     destination: A string with path to directory where the webapp will be
                  written.
     zipfile: A string with path to the zipfile to create containing the
              contents of |destination|.
     plugin: A string with path to the binary plugin for this webapp.
+    name_suffix: A string to append to the webapp's title.
     files: An array of strings listing the paths for resources to include
            in this webapp.
     locales: An array of strings listing locales, which are copied, along
@@ -78,9 +77,9 @@ def buildWebApp(linux_strip, mimetype, destination, zip_path, plugin, files,
   #
   # On Windows Vista platform.system() can return 'Microsoft' with some
   # versions of Python, see http://bugs.python.org/issue1082
-  # should_symlink = platform.system() not in ['Windows', 'Microsoft']
+  #should_symlink = platform.system() not in ['Windows', 'Microsoft']
   #
-  # TODO(ajwong): Pending decision on http://crbug.com/27185 we may not be
+  # TODO(ajwong): Pending decision on http://crbug.com/27185, we may not be
   # able to load symlinked resources.
   should_symlink = False
 
@@ -124,24 +123,6 @@ def buildWebApp(linux_strip, mimetype, destination, zip_path, plugin, files,
     os.mkdir(destination_dir, 0775)
     shutil.copy2(current_locale, destination_file)
 
-  # Create fake plugin files to appease the manifest checker.
-  # It requires that if there is a plugin listed in the manifest that
-  # there be a file in the plugin with that name.
-  names = [
-    'remoting_host_plugin.dll',  # Windows
-    'remoting_host_plugin.plugin',  # Mac
-    'libremoting_host_plugin.ia32.so',  # Linux 32
-    'libremoting_host_plugin.x64.so'  # Linux 64
-  ]
-  pluginName = os.path.basename(plugin)
-
-  for name in names:
-    if name != pluginName:
-      path = os.path.join(destination, name)
-      f = open(path, 'w')
-      f.write("placeholder for %s" % (name))
-      f.close()
-
   # Copy the plugin.
   pluginName = os.path.basename(plugin)
   newPluginPath = os.path.join(destination, pluginName)
@@ -151,9 +132,15 @@ def buildWebApp(linux_strip, mimetype, destination, zip_path, plugin, files,
   else:
     shutil.copy2(plugin, newPluginPath)
 
-  # Strip the linux build.
-  if ((platform.system() == 'Linux') and (linux_strip != '0')):
-    subprocess.call(["strip", newPluginPath])
+  # Now massage the manifest to the right plugin name.
+  findAndReplace(os.path.join(destination, 'manifest.json'),
+                 '"PLUGINS": "PLACEHOLDER"',
+                  '"plugins": [\n    { "path": "' + pluginName +'" }\n  ]')
+
+  # Add the name suffix.
+  findAndReplace(os.path.join(destination, 'manifest.json'),
+                 'NAME_SUFFIX',
+                 name_suffix)
 
   # Add unique build numbers to manifest version.
   # For now, this is based on the system clock (seconds since 1/1/1970), since
@@ -181,8 +168,8 @@ def buildWebApp(linux_strip, mimetype, destination, zip_path, plugin, files,
 def main():
   if len(sys.argv) < 6:
     print ('Usage: build-webapp.py '
-           '<linux-strip> <mime-type> <dst> <zip-path> <plugin> '
-           '<other files...> --locales <locales...>')
+           '<mime-type> <dst> <zip-path> <plugin> <other files...> '
+           '--locales <locales...>')
     sys.exit(1)
 
   reading_locales = False
@@ -196,8 +183,8 @@ def main():
     else:
       files.append(arg)
 
-  buildWebApp(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5],
-              files, locales)
+  buildWebApp(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4],
+              sys.argv[5], files, locales)
 
 
 if __name__ == '__main__':

@@ -1,5 +1,5 @@
 {
-  "name": "__MSG_PRODUCT_NAME_AND_VERSION__",
+  "name": "__MSG_PRODUCT_NAME_AND_VERSION__ NAME_SUFFIX",
   "version": "1.0.UNIQUE_VERSION",
   "description": "__MSG_PRODUCT_DESCRIPTION__",
   "default_locale": "en",
@@ -15,23 +15,17 @@
   "content_scripts": [
     {
       "matches": [
-        "https://talkgadget.google.com/talkgadget/blank",
-        "https://talkgadget.google.com/talkgadget/blank?*"
+          "https://talkgadget.google.com/talkgadget/blank",
+          "https://talkgadget.google.com/talkgadget/blank?*"
       ],
-      "js": [ "cs_oauth2_trampoline.js" ]
+      "js": ["cs_oauth2_trampoline.js"]
     }
   ],
   "permissions": [
     "tabs",
     "https://accounts.google.com/o/oauth2/*",
     "https://www.google.com/accounts/*",
-    "https://www.googleapis.com/chromoting/*",
-    "https://talkgadget.google.com/talkgadget/*"
+    "https://www.googleapis.com/chromoting/*"
   ],
-  "plugins": [
-    { "path": "remoting_host_plugin.dll", "public": false },
-    { "path": "libremoting_host_plugin.ia32.so", "public": false },
-    { "path": "libremoting_host_plugin.x64.so", "public": false },
-    { "path": "remoting_host_plugin.plugin", "public": false }
-  ]
+  "PLUGINS": "PLACEHOLDER"
 }
