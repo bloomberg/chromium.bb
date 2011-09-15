@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/options/extension_settings_handler.h"
 
+#include "base/auto_reset.h"
 #include "base/base64.h"
 #include "base/file_util.h"
 #include "base/string_number_conversions.h"
@@ -411,10 +412,9 @@ void ExtensionSettingsHandler::HandleEnableIncognitoMessage(
   // notification for this case.
   //
   // Bug: http://crbug.com/41384
-  ignore_notifications_ = true;
+  AutoReset<bool> auto_reset_ignore_notifications(&ignore_notifications_, true);
   extension_service_->SetIsIncognitoEnabled(extension->id(),
                                             enable_str == "true");
-  ignore_notifications_ = false;
 }
 
 void ExtensionSettingsHandler::HandleAllowFileAccessMessage(
@@ -711,7 +711,8 @@ const Extension* ExtensionSettingsHandler::GetExtension(const ListValue* args) {
 }
 
 void ExtensionSettingsHandler::MaybeUpdateAfterNotification() {
-  if (!ignore_notifications_ && web_ui_->tab_contents())
+  TabContents* contents = web_ui_->tab_contents();
+  if (!ignore_notifications_ && contents && contents->render_view_host())
     HandleRequestExtensionsData(NULL);
   deleting_rvh_ = NULL;
 }
