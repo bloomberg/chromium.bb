@@ -131,8 +131,6 @@
       # ==================================================
       # Disabled tests that need to be investigated/fixed.
       # ==================================================
-      # crbug.com/88210
-      '-autofill.AutofillTest.testCharsStrippedForAggregatedPhoneNumbers',
       # crbug.com/81271
       '-autofill.AutofillTest.testMergeAggregatedProfilesWithSameAddress',
       '-autofill.AutofillTest.testProfilesNotMergedWhenNoMinAddressData',
@@ -271,8 +269,6 @@
       # ==================================================
       # Disabled tests that need to be investigated/fixed.
       # ==================================================
-      # crbug.com/90882
-      '-autofill.AutofillTest.testCharsStrippedForAggregatedPhoneNumbers',
       # crbug.com/91225
       '-find_in_page.FindMatchTests.testSearchInPDF',
       # crbug.com/91226
@@ -313,8 +309,6 @@
       # ==================================================
       # Disabled tests that need to be investigated/fixed.
       # ==================================================
-      # crbug.com/90882
-      '-autofill.AutofillTest.testCharsStrippedForAggregatedPhoneNumbers',
       # crbug.com/81271
       '-autofill.AutofillTest.testMergeAggregatedProfilesWithSameAddress',	
       '-autofill.AutofillTest.testProfilesNotMergedWhenNoMinAddressData',

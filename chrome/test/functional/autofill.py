@@ -365,15 +365,15 @@ class AutofillTest(pyauto.PyUITest):
 
   def testCharsStrippedForAggregatedPhoneNumbers(self):
     """Test aggregated phone numbers are standardized (not saved "as-is")."""
-    us_phone = self.GetAutofillProfile()[
-        'profiles'][0]['PHONE_HOME_WHOLE_NUMBER']
-    de_phone = self.GetAutofillProfile()[
-        'profiles'][1]['PHONE_HOME_WHOLE_NUMBER']
     profiles_list = self.EvalDataFrom(
         os.path.join(self.DataDir(), 'autofill', 'functional',
                      'phonecharacters.txt'))
     self._FillFormAndSubmit(profiles_list, 'autofill_test_form.html',
                             tab_index=0, windex=0)
+    us_phone = self.GetAutofillProfile()[
+        'profiles'][0]['PHONE_HOME_WHOLE_NUMBER']
+    de_phone = self.GetAutofillProfile()[
+        'profiles'][1]['PHONE_HOME_WHOLE_NUMBER']
     self.assertEqual(
         ['+1 408-871-4567',], us_phone,
         msg='Aggregated US phone number %s not standardized.' % us_phone)
