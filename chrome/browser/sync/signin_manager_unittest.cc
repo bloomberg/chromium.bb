@@ -53,7 +53,7 @@ class SigninManagerTest : public TokenServiceTestHarness {
         "email=user@gmail.com");
   }
 
-  void SimulateValidSigninOAuth() {
+  void SimulateSigninStartOAuth() {
     DCHECK(browser_sync::IsUsingOAuth());
     // Simulate a valid OAuth-based signin
     manager_->OnGetOAuthTokenSuccess("oauth_token-Ev1Vu1hv");
@@ -62,7 +62,15 @@ class SigninManagerTest : public TokenServiceTestHarness {
     manager_->OnOAuthWrapBridgeSuccess(browser_sync::SyncServiceName(),
                                        "oauth2_wrap_access_token-R0Z3nRtw",
                                        "3600");
+  }
+
+  void SimulateOAuthUserInfoSuccess() {
     manager_->OnUserInfoSuccess("user-xZIuqTKu@gmail.com");
+  }
+
+  void SimulateValidSigninOAuth() {
+    SimulateSigninStartOAuth();
+    SimulateOAuthUserInfoSuccess();
   }
 
 
@@ -92,6 +100,7 @@ TEST_F(SigninManagerTest, SignInClientLogin) {
   manager_.reset(new SigninManager());
   manager_->Initialize(profile_.get());
   EXPECT_EQ("user@gmail.com", manager_->GetUsername());
+  browser_sync::SetIsUsingOAuthForTest(false);
 }
 
 // NOTE: OAuth's "StartOAuthSignIn" is called before collecting credentials
@@ -112,6 +121,7 @@ TEST_F(SigninManagerTest, SignInOAuth) {
   manager_.reset(new SigninManager());
   manager_->Initialize(profile_.get());
   EXPECT_EQ("user-xZIuqTKu@gmail.com", manager_->GetUsername());
+  browser_sync::SetIsUsingOAuthForTest(false);
 }
 
 TEST_F(SigninManagerTest, SignOutClientLogin) {
@@ -145,6 +155,7 @@ TEST_F(SigninManagerTest, SignOutOAuth) {
   manager_.reset(new SigninManager());
   manager_->Initialize(profile_.get());
   EXPECT_TRUE(manager_->GetUsername().empty());
+  browser_sync::SetIsUsingOAuthForTest(false);
 }
 
 TEST_F(SigninManagerTest, SignInFailureClientLogin) {
@@ -223,4 +234,16 @@ TEST_F(SigninManagerTest, SignOutMidConnect) {
   EXPECT_EQ(0U, google_login_failure_.size());
 
   EXPECT_TRUE(manager_->GetUsername().empty());
+}
+
+TEST_F(SigninManagerTest, SignOutOnUserInfoSucessRaceTest) {
+  browser_sync::SetIsUsingOAuthForTest(true);
+  manager_->Initialize(profile_.get());
+  EXPECT_TRUE(manager_->GetUsername().empty());
+
+  SimulateSigninStartOAuth();
+  manager_->SignOut();
+  SimulateOAuthUserInfoSuccess();
+  EXPECT_TRUE(manager_->GetUsername().empty());
+  browser_sync::SetIsUsingOAuthForTest(false);
 }
