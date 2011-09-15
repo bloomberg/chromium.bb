@@ -99,6 +99,7 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       paused_(true),
       seeking_(false),
       playback_rate_(0.0f),
+      pending_seek_(false),
       client_(client),
       proxy_(NULL),
       media_stream_client_(media_stream_client),
@@ -292,6 +293,12 @@ void WebMediaPlayerImpl::seek(float seconds) {
   // HTMLMediaElement gets into an inconsistent state.
   if (pipeline_->GetCurrentTime().ToInternalValue() == 0 && seconds == 0) {
     GetClient()->timeChanged();
+    return;
+  }
+
+  if (seeking_) {
+    pending_seek_ = true;
+    pending_seek_seconds_ = seconds;
     return;
   }
 
@@ -694,6 +701,13 @@ void WebMediaPlayerImpl::OnPipelineInitialize(PipelineStatus status) {
 
 void WebMediaPlayerImpl::OnPipelineSeek(PipelineStatus status) {
   DCHECK(MessageLoop::current() == main_loop_);
+  seeking_ = false;
+  if (pending_seek_) {
+    pending_seek_ = false;
+    seek(pending_seek_seconds_);
+    return;
+  }
+
   if (status == media::PIPELINE_OK) {
     // Update our paused time.
     if (paused_) {
@@ -701,7 +715,6 @@ void WebMediaPlayerImpl::OnPipelineSeek(PipelineStatus status) {
     }
 
     SetReadyState(WebKit::WebMediaPlayer::HaveEnoughData);
-    seeking_ = false;
     GetClient()->timeChanged();
   }
 }

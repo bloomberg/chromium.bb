@@ -243,6 +243,11 @@ class WebMediaPlayerImpl
   float playback_rate_;
   base::TimeDelta paused_time_;
 
+  // Seek gets pending if another seek is in progress. Only last pending seek
+  // will have effect.
+  bool pending_seek_;
+  float pending_seek_seconds_;
+
   WebKit::WebMediaPlayerClient* client_;
 
   scoped_refptr<WebMediaPlayerProxy> proxy_;
