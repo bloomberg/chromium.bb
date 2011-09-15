@@ -912,6 +912,15 @@ class DownloadTest : public InProcessBrowserTest {
   void CheckDownloadUI(Browser* browser, bool expected_non_cros,
       bool expected_cros, const FilePath& filename) {
 #if defined(OS_CHROMEOS)
+#if defined(TOUCH_UI)
+    TabContents* download_contents = ActiveDownloadsUI::GetPopup(NULL);
+    EXPECT_EQ(expected_cros, download_contents != NULL);
+    if (!download_contents || filename.empty())
+      return;
+
+    ActiveDownloadsUI* downloads_ui = static_cast<ActiveDownloadsUI*>(
+        download_contents->web_ui());
+#else
     Browser* popup = ActiveDownloadsUI::GetPopup();
     EXPECT_EQ(expected_cros, popup != NULL);
     if (!popup || filename.empty())
@@ -919,6 +928,8 @@ class DownloadTest : public InProcessBrowserTest {
 
     ActiveDownloadsUI* downloads_ui = static_cast<ActiveDownloadsUI*>(
         popup->GetSelectedTabContents()->web_ui());
+#endif  // defined(TOUCH_UI)
+
     ASSERT_TRUE(downloads_ui);
     const ActiveDownloadsUI::DownloadList& downloads =
         downloads_ui->GetDownloads();
