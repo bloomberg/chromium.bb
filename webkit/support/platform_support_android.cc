@@ -15,10 +15,8 @@
 
 namespace webkit_support {
 
-// TODO(tkent): Implement some of the followings for platform-dependent tasks
-// such as loading resource.
-
 void BeforeInitialize(bool unit_test_mode) {
+  NOTIMPLEMENTED(); // TODO(zhenghao): Implement this function.
 }
 
 void AfterInitialize(bool unit_test_mode) {
@@ -36,6 +34,7 @@ void BeforeShutdown() {
 }
 
 void AfterShutdown() {
+  NOTIMPLEMENTED(); // TODO(zhenghao): Implement this function.
 }
 
 }  // namespace webkit_support

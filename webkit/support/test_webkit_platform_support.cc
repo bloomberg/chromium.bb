@@ -59,7 +59,7 @@
 #include "webkit/tools/test_shell/test_shell_webthemeengine.h"
 #elif defined(OS_MACOSX)
 #include "base/mac/mac_util.h"
-#elif defined(OS_POSIX)
+#elif defined(OS_POSIX) && !defined(OS_ANDROID)
 #include "third_party/WebKit/Source/WebKit/chromium/public/linux/WebThemeEngine.h"
 #endif
 

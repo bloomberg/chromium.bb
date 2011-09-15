@@ -117,13 +117,20 @@ void InitLogging(bool enable_gp_fault_error_box) {
 
 class TestEnvironment {
  public:
+#if defined(OS_ANDROID)
+  // Android UI message loop goes through Java, so don't use it in tests.
+  typedef MessageLoop MessageLoopType;
+#else
+  typedef MessageLoopForUI MessageLoopType;
+#endif
+
   explicit TestEnvironment(bool unit_test_mode) {
     if (!unit_test_mode) {
       at_exit_manager_.reset(new base::AtExitManager);
       InitLogging(false);
     }
-    main_message_loop_.reset(new MessageLoopForUI);
-    // TestWebKitPlatformSupport must be instantiated after MessageLoopForUI.
+    main_message_loop_.reset(new MessageLoopType);
+    // TestWebKitPlatformSupport must be instantiated after MessageLoopType.
     webkit_platform_support_.reset(
       new TestWebKitPlatformSupport(unit_test_mode));
   }
@@ -149,7 +156,7 @@ class TestEnvironment {
 
  private:
   scoped_ptr<base::AtExitManager> at_exit_manager_;
-  scoped_ptr<MessageLoopForUI> main_message_loop_;
+  scoped_ptr<MessageLoopType> main_message_loop_;
   scoped_ptr<TestWebKitPlatformSupport> webkit_platform_support_;
 };
 
@@ -249,9 +256,9 @@ static void SetUpTestEnvironmentImpl(bool unit_test_mode) {
   // Otherwise crash may happend when different threads try to create a GURL
   // at same time.
   url_util::Initialize();
-  webkit_support::BeforeInitialize(unit_test_mode);
-  webkit_support::test_environment = new TestEnvironment(unit_test_mode);
-  webkit_support::AfterInitialize(unit_test_mode);
+  BeforeInitialize(unit_test_mode);
+  test_environment = new TestEnvironment(unit_test_mode);
+  AfterInitialize(unit_test_mode);
   if (!unit_test_mode) {
     // Load ICU data tables.  This has to run after TestEnvironment is created
     // because on Linux, we need base::AtExitManager.
