@@ -119,8 +119,6 @@
       '-special_tabs.SpecialTabsTest.testSpecialURLTabs',
       # crbug.com/88593
       '-sync.SyncTest.testPersonalStuffSyncSection',
-      # crbug.com/94683
-      '-execute_javascript.ExecuteJavascriptTest.testExecuteJavascriptInExtension',
       # crbug.com/95031
       '-notifications.NotificationsTest.testOriginPrefsNotSavedInIncognito',
       # crbug.com/91578
@@ -136,8 +134,6 @@
       '-autofill.AutofillTest.testProfilesNotMergedWhenNoMinAddressData',
       # crbug.com/95141
       '-enterprise.EnterpriseTest.testDisable3DAPI',
-      # crbug.com/94683
-      '-execute_javascript.ExecuteJavascriptTest.testExecuteJavascriptInExtension',
       # Some download test fails on win official builder, only thru buildbot
       # when downloading the small zip file.
       # crbug.com/91225
@@ -289,6 +285,7 @@
       'chromeos_basic',
       'chromeos_browser',
       'chromeos_firmware_version_checker',
+      'chromeos_file_browser',
       'chromeos_power',
       'chromeos_prefs',
       'chromeos_security',

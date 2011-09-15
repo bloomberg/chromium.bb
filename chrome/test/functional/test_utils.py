@@ -9,6 +9,7 @@ import email
 import logging
 import os
 import platform
+import shutil
 import smtplib
 import subprocess
 import types
@@ -19,6 +20,17 @@ import pyauto_utils
 
 
 """Commonly used functions for PyAuto tests."""
+
+def CopyFileFromDataDirToDownloadDir(test, file_path):
+  """Copy a file from data directory to downloads directory.
+
+  Args:
+    test: derived from pyauto.PyUITest - base class for UI test cases.
+    path: path of the file relative to the data directory
+  """
+  data_file = os.path.join(test.DataDir(), file_path)
+  download_dir = test.GetDownloadDirectory().value()
+  shutil.copy(data_file, download_dir)
 
 def DownloadFileFromDownloadsDataDir(test, file_name):
   """Download a file from downloads data directory, in first tab, first window.

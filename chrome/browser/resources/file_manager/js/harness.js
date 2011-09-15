@@ -91,6 +91,9 @@ var harness = {
   get fileManager() {
     return document.getElementById('dialog').contentWindow.fileManager;
   },
+  get pyautoAPI() {
+    return document.getElementById('dialog').contentWindow.pyautoAPI;
+  },
 
   /**
    * Import a list of File objects into harness.filesystem.

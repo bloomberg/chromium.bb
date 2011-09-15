@@ -123,6 +123,10 @@ function FileManager(dialogDom, filesystem, rootEntries) {
 
   var self = this;
 
+  // The list of callbacks to be invoked during the directory rescan after
+  // all paste tasks are complete.
+  this.pasteSuccessCallbacks_ = [];
+
   // The list of active mount points to distinct them from other directories.
   chrome.fileBrowserPrivate.getMountPoints(function(mountPoints) {
       self.mountPoints_ = mountPoints;
@@ -1020,6 +1024,18 @@ FileManager.prototype = {
       if (this.clipboard_.isCut)
         this.clipboard_ = null;
       this.updateCommands_();
+      self = this;
+      this.rescanDirectory_(function() {
+        var callback;
+        while (callback = self.pasteSuccessCallbacks_.shift()) {
+          try {
+            callback();
+          } catch (ex) {
+            console.error('Caught exception while inovking callback: ' +
+                          callback, ex);
+          }
+        }
+      });
 
     } else if (event.reason == 'ERROR') {
       switch (event.error.reason) {
@@ -1040,16 +1056,16 @@ FileManager.prototype = {
           this.showButterError(strf('PASTE_UNEXPECTED_ERROR', event.error));
           break;
       }
-
+      this.rescanDirectory_();
     } else if (event.reason == 'CANCELLED') {
       this.showButter(str('PASTE_CANCELLED'));
+      this.rescanDirectory_();
     } else {
       console.log('Unknown event reason: ' + event.reason);
+      this.rescanDirectory_();
     }
 
-    this.rescanDirectory_();
   };
-
   /**
    * Respond to a command being executed.
    */
@@ -1624,6 +1640,8 @@ FileManager.prototype = {
     // Automated tests need to wait for this, otherwise we crash in browser_test
     // cleanup because the worker process still has URL requests in-flight.
     chrome.test.sendMessage('worker-initialized');
+    // PyAuto tests monitor this state by polling this variable
+    this.workerInitialized_ = true;
   };
 
   FileManager.prototype.onMetadataLog_ = function(arglist) {
@@ -2201,6 +2219,85 @@ FileManager.prototype = {
   };
 
   /**
+   * Add the file/directory with given name to the current selection.
+   *
+   * @param {string} name The name of the entry to select.
+   * @return {boolean} Whether entry exists.
+   */
+  FileManager.prototype.addItemToSelection = function(name) {
+    var entryExists = false;
+    for (var i = 0; i < this.dataModel_.length; i++) {
+      if (this.dataModel_.item(i).name == name) {
+        this.currentList_.selectionModel.setIndexSelected(i, true);
+        this.currentList_.scrollIndexIntoView(i);
+        this.currentList_.focus();
+        entryExists = true;
+        break;
+      }
+    }
+    return entryExists;
+  }
+
+  /**
+   * Return the name of the entries in the current directory
+   *
+   * @return {object} Array of entry names.
+   */
+  FileManager.prototype.listDirectory = function() {
+    var list = []
+    for (var i = 0; i < this.dataModel_.length; i++) {
+      list.push(this.dataModel_.item(i).name);
+    }
+    return list;
+  }
+
+  /**
+   * Open the item selected
+   */
+  FileManager.prototype.doOpen = function() {
+    switch (this.dialogType_) {
+      case FileManager.DialogType.SELECT_FOLDER:
+      case FileManager.DialogType.SELECT_OPEN_FILE:
+      case FileManager.DialogType.SELECT_OPEN_MULTI_FILE:
+        this.onOk_();
+        break;
+      default:
+        throw new Error('Cannot open an item in this dialog type.');
+    }
+  }
+
+  /**
+   * Save the item using the given name
+   *
+   * @param {string} name The name given to item to be saved
+   */
+  FileManager.prototype.doSaveAs = function(name) {
+    if (this.dialogType_ == FileManager.DialogType.SELECT_SAVEAS_FILE) {
+      this.filenameInput_.value = name;
+      this.onOk_();
+    }
+    else {
+      throw new Error('Cannot save an item in this dialog type.');
+    }
+  }
+
+  /**
+   * Return full path of the current directory
+   */
+  FileManager.prototype.getCurrentDirectory = function() {
+    return this.currentDirEntry_.fullPath;
+  }
+
+  /**
+   * Used by tests to wait before interacting with the file maanager
+   */
+  FileManager.prototype.isInitialized = function() {
+    var initialized =  (this.workerInitialized_ != null) &&
+        (this.directoryChanged_ != null);
+    return initialized;
+  }
+
+  /**
    * Change the current directory to the directory represented by a
    * DirectoryEntry.
    *
@@ -2215,7 +2312,8 @@ FileManager.prototype = {
    */
   FileManager.prototype.changeDirectoryEntry = function(dirEntry,
                                                         opt_saveHistory,
-                                                        opt_selectedEntry) {
+                                                        opt_selectedEntry,
+                                                        opt_callback) {
     if (typeof opt_saveHistory == 'undefined') {
       opt_saveHistory = true;
     } else {
@@ -2246,6 +2344,7 @@ FileManager.prototype = {
     e.newDirEntry = dirEntry;
     e.saveHistory = opt_saveHistory;
     e.selectedEntry = opt_selectedEntry;
+    e.opt_callback = opt_callback;
     this.currentDirEntry_ = dirEntry;
     this.dispatchEvent(e);
   }
@@ -2265,11 +2364,13 @@ FileManager.prototype = {
    */
   FileManager.prototype.changeDirectory = function(path,
                                                    opt_saveHistory,
-                                                   opt_selectedEntry) {
+                                                   opt_selectedEntry,
+                                                   opt_callback) {
     if (path == '/')
       return this.changeDirectoryEntry(this.filesystem_.root,
                                        opt_saveHistory,
-                                       opt_selectedEntry);
+                                       opt_selectedEntry,
+                                       opt_callback);
 
     var self = this;
 
@@ -2277,7 +2378,7 @@ FileManager.prototype = {
         path, {create: false},
         function(dirEntry) {
           self.changeDirectoryEntry(
-              dirEntry, opt_saveHistory, opt_selectedEntry);
+              dirEntry, opt_saveHistory, opt_selectedEntry, opt_callback);
         },
         function(err) {
           console.error('Error changing directory to: ' + path + ', ' + err);
@@ -2294,7 +2395,7 @@ FileManager.prototype = {
         });
   };
 
-  FileManager.prototype.deleteEntries = function(entries, force) {
+  FileManager.prototype.deleteEntries = function(entries, force, opt_callback) {
     if (!force) {
       var self = this;
       var msg;
@@ -2314,7 +2415,10 @@ FileManager.prototype = {
     var self = this;
     function onDelete() {
       if (--count == 0)
-         self.rescanDirectory_();
+        self.rescanDirectory_(function() {
+          if (opt_callback)
+            opt_callback();
+        });
     }
 
     for (var i = 0; i < entries.length; i++) {
@@ -2383,13 +2487,13 @@ FileManager.prototype = {
   /**
    * Queue up a file copy operation based on the current clipboard.
    */
-  FileManager.prototype.pasteFromClipboard = function(successCallback,
-                                                      errorCallback) {
+  FileManager.prototype.pasteFromClipboard = function(successCallback) {
     if (!this.clipboard_)
       return null;
 
     this.showButter(str('PASTE_STARTED'), {timeout: 0});
 
+    this.pasteSuccessCallbacks_.push(successCallback);
     this.copyManager_.queueCopy(this.clipboard_.sourceDirEntry,
                                 this.currentDirEntry_,
                                 this.clipboard_.entries,
@@ -2639,9 +2743,18 @@ FileManager.prototype = {
     this.rescanDirectory_(function() {
         if (event.selectedEntry)
           self.selectEntry(event.selectedEntry);
+        if (event.opt_callback) {
+          try {
+            event.opt_callback();
+          } catch (ex) {
+            console.error('Caught exception while inovking callback: ', ex);
+          }
+        }
         // For tests that open the dialog to empty directories, everything
         // is loaded at this point.
         chrome.test.sendMessage('directory-change-complete');
+        // PyAuto tests monitor this state by polling this variable
+        self.directoryChanged_ = true;
       });
   };
 
@@ -2902,23 +3015,14 @@ FileManager.prototype = {
       this.cancelRename_();
   };
 
-  FileManager.prototype.commitRename_ = function() {
-    var entry = this.renameInput_.currentEntry;
-    var newName = this.renameInput_.value;
-    if (!this.validateFileName_(newName))
-      return;
-
-    this.renameInput_.currentEntry = null;
-    this.lastLabelClick_ = null;
-
-    if (this.renameInput_.parentNode)
-      this.renameInput_.parentNode.removeChild(this.renameInput_);
-
-    this.refocus();
-
+  FileManager.prototype.renameEntry = function(entry, newName, opt_callback) {
     var self = this;
     function onSuccess() {
-      self.rescanDirectory_(function() { self.selectEntry(newName) });
+      self.rescanDirectory_(function() {
+        self.selectEntry(newName);
+        if (opt_callback)
+          opt_callback();
+      });
     }
 
     function onError(err) {
@@ -2939,6 +3043,22 @@ FileManager.prototype = {
 
     this.resolvePath(this.currentDirEntry_.fullPath + '/' + newName,
         resolveCallback, resolveCallback);
+  };
+
+  FileManager.prototype.commitRename_ = function() {
+    var entry = this.renameInput_.currentEntry;
+    var newName = this.renameInput_.value;
+    if (!this.validateFileName_(newName))
+      return;
+
+    this.renameInput_.currentEntry = null;
+    this.lastLabelClick_ = null;
+
+    if (this.renameInput_.parentNode)
+      this.renameInput_.parentNode.removeChild(this.renameInput_);
+
+    this.refocus();
+    this.renameEntry(entry, newName);
   };
 
   FileManager.prototype.cancelRename_ = function(event) {
@@ -2997,11 +3117,15 @@ FileManager.prototype = {
     promptForName(str('DEFAULT_NEW_FOLDER_NAME'));
   };
 
-  FileManager.prototype.createNewFolder = function(name) {
+  FileManager.prototype.createNewFolder = function(name, opt_callback) {
     var self = this;
 
     function onSuccess(dirEntry) {
-      self.rescanDirectory_(function() { self.selectEntry(name) });
+      self.rescanDirectory_(function() {
+        self.selectEntry(name);
+        if (opt_callback)
+          opt_callback();
+      });
     }
 
     function onError(err) {

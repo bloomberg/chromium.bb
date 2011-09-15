@@ -658,6 +658,56 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       if self._ui_test.action_timeout_ms() != self._saved_timeout:
         self._ui_test.set_action_timeout_ms(self._saved_timeout)
 
+  class JavascriptExecutor(object):
+    """Abstract base class for JavaScript injection.
+
+    Derived classes should override Execute method."""
+    def Execute(self, script):
+      pass
+
+  class JavascriptExecutorInTab(JavascriptExecutor):
+    """Wrapper for injecting JavaScript in a tab."""
+    def __init__(self, ui_test, tab_index=0, windex=0, frame_xpath=''):
+      """Initialize.
+
+        Refer to ExecuteJavascriptInTab() for the complete argument list
+        description.
+
+      Args:
+        ui_test: a PyUITest object
+      """
+      self._ui_test = ui_test
+      self.windex = windex
+      self.tab_index = tab_index
+      self.frame_xpath = frame_xpath
+
+    def Execute(self, script):
+      """Execute script in the tab."""
+      return self._ui_test.ExecuteJavascriptInTab(script,
+                                                  self.tab_index,
+                                                  self.windex,
+                                                  self.frame_xpath)
+
+  class JavascriptExecutorInRenderView(JavascriptExecutor):
+    """Wrapper for injecting JavaScript in an extension view."""
+    def __init__(self, ui_test, view, frame_xpath=''):
+      """Initialize.
+
+        Refer to ExecuteJavascriptInRenderView() for the complete argument list
+        description.
+
+      Args:
+        ui_test: a PyUITest object
+      """
+      self._ui_test = ui_test
+      self.view = view
+      self.frame_xpath = frame_xpath
+
+    def Execute(self, script):
+      """Execute script in the render view."""
+      return self._ui_test.ExecuteJavascriptInRenderView(script,
+                                                         self.view,
+                                                         self.frame_xpath)
 
   def _GetResultFromJSONRequest(self, cmd_dict, windex=0, timeout=-1):
     """Issue call over the JSON automation channel and fetch output.
@@ -1271,6 +1321,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
           u'extension_id': u'dgcoklnmbeljaehamekjpeidmbicddfj',
           u'url': u'chrome-extension://dgcoklnmbeljaehamekjpeidmbicddfj/'
                     'bg.html',
+          u'loaded': True,
           u'view': {
             u'render_process_id': 2,
             u'render_view_id': 1},
@@ -1569,6 +1620,67 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       'command': 'UpdateExtensionsNow',
     }
     self._GetResultFromJSONRequest(cmd_dict, windex=-1)
+
+  def WaitUntilExtensionViewLoaded(self, name=None, extension_id=None,
+                                   url=None, view_type=None):
+    """Wait for a loaded extension view matching all the given properties.
+
+    If no matching extension views are found, wait for one to be loaded.
+    If there are more than one matching extension view, return one at random.
+    Uses WaitUntil so timeout is capped by automation timeout.
+    Refer to extension_view dictionary returned in GetBrowserInfo()
+    for sample input/output values.
+
+    Args:
+      name: (optional) Name of the extension.
+      extension_id: (optional) ID of the extension.
+      url: (optional) URL of the extension view.
+      view_type: (optional) Type of the extension view.
+
+    Returns:
+      The 'view' property of the extension view.
+      None, if no view loaded.
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation returns an error.
+    """
+    def _GetExtensionViewLoaded():
+      extension_views = self.GetBrowserInfo()['extension_views']
+      for extension_view in extension_views:
+        if ((name and name != extension_view['name']) or
+            (extension_id and extension_id != extension_view['extension_id']) or
+            (url and url != extension_view['url']) or
+            (view_type and view_type != extension_view['view_type'])):
+          continue
+        if extension_view['loaded']:
+          return extension_view['view']
+      return False
+
+    if self.WaitUntil(lambda: _GetExtensionViewLoaded()):
+      return _GetExtensionViewLoaded()
+    return None
+
+  def WaitUntilExtensionViewClosed(self, view):
+    """Wait for the given extension view to to be closed.
+
+    Uses WaitUntil so timeout is capped by automation timeout.
+    Refer to extension_view dictionary returned by GetBrowserInfo()
+    for sample input value.
+
+    Args:
+      view: 'view' property of extension view.
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation returns an error.
+    """
+    def _IsExtensionViewClosed():
+      extension_views = self.GetBrowserInfo()['extension_views']
+      for extension_view in extension_views:
+        if view == extension_view['view']:
+          return False
+      return True
+
+    return self.WaitUntil(lambda: _IsExtensionViewClosed())
 
   def SelectTranslateOption(self, option, tab_index=0, window_index=0):
     """Selects one of the options in the drop-down menu for the translate bar.
@@ -2274,6 +2386,38 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     }
     return self._GetResultFromJSONRequest(cmd_dict, windex=windex)
 
+  def ExecuteJavascriptInTab(self, js, tab_index=0, windex=0, frame_xpath=''):
+    """Executes a script in the specified frame of a tab.
+
+    The invoked javascript function must send a result back via the
+    domAutomationController.send function, or this function will never return.
+
+    Args:
+      js: script to be executed
+      windex: index of the window
+      tab_index: index of the tab
+      frame_xpath: XPath of the frame to execute the script.  Default is no
+      frame. Example: '//frames[1]'.
+
+    Returns:
+      a value that was sent back via the domAutomationController.send method
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    cmd_dict = {
+      'command': 'ExecuteJavascript',
+      'javascript' : js,
+      'windex' : windex,
+      'tab_index' : tab_index,
+      'frame_xpath' : frame_xpath,
+    }
+    result = self._GetResultFromJSONRequest(cmd_dict)['result']
+    # Wrap result in an array before deserializing because valid JSON has an
+    # array or an object as the root.
+    json_string = '[' + result + ']'
+    return json.loads(json_string)[0]
+
   def ExecuteJavascriptInRenderView(self, js, view, frame_xpath=''):
     """Executes a script in the specified frame of an render view.
 
@@ -2305,7 +2449,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       'view' : view,
       'frame_xpath' : frame_xpath,
     }
-    result = self._GetResultFromJSONRequest(cmd_dict)['result']
+    result = self._GetResultFromJSONRequest(cmd_dict, windex=-1)['result']
     # Wrap result in an array before deserializing because valid JSON has an
     # array or an object as the root.
     json_string = '[' + result + ']'
