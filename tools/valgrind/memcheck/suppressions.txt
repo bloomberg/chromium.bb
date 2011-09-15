@@ -2543,17 +2543,6 @@
    fun:_ZN11MessageLoop21DeferOrRunPendingTaskERKNS_11PendingTaskE
 }
 {
-   bug_58074
-   Memcheck:Value4
-   fun:modp_b64_encode
-   fun:_ZN4base12Base64Encode*
-   fun:_ZN11web_ui_util15GetImageDataUrlERK8SkBitmap
-   ...
-   fun:_ZN22InternetOptionsHandler18GetLocalizedValuesEPN4base15DictionaryValueE
-   fun:_ZN9OptionsUI23AddOptionsPageUIHandlerEPN4base15DictionaryValueEP20OptionsPageUIHandler
-   fun:_ZN9OptionsUIC1EP11TabContents
-}
-{
    bug_58321
    Memcheck:Addr4
    fun:_ZNK3WTF6RefPtrIN7WebCore5FrameEE3getEv
