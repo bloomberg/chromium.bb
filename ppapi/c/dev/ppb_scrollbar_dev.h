@@ -21,8 +21,6 @@ typedef enum {
 } PP_ScrollBy_Dev;
 PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_ScrollBy_Dev, 4);
 
-#define PPB_SCROLLBAR_DEV_INTERFACE_0_3 "PPB_Scrollbar(Dev);0.3"
-#define PPB_SCROLLBAR_DEV_INTERFACE_0_4 "PPB_Scrollbar(Dev);0.4"
 #define PPB_SCROLLBAR_DEV_INTERFACE_0_5 "PPB_Scrollbar(Dev);0.5"
 #define PPB_SCROLLBAR_DEV_INTERFACE PPB_SCROLLBAR_DEV_INTERFACE_0_5
 
@@ -63,44 +61,6 @@ struct PPB_Scrollbar_0_5_Dev {
   // Scroll by "multiplier" pixels/lines/pages units.  Positive values are
   // forward and negative are backward.  If "unit" is document then any positive
   // value goes to the end while any negative value goes to the beginning.
-  void (*ScrollBy)(PP_Resource scrollbar,
-                   PP_ScrollBy_Dev unit,
-                   int32_t multiplier);
-};
-
-// Old version without IsOverlay.
-struct PPB_Scrollbar_0_4_Dev {
-  PP_Resource (*Create)(PP_Instance instance,
-                        PP_Bool vertical);
-  PP_Bool (*IsScrollbar)(PP_Resource resource);
-  uint32_t (*GetThickness)(PP_Resource resource);
-  uint32_t (*GetValue)(PP_Resource scrollbar);
-  void (*SetValue)(PP_Resource scrollbar,
-                   uint32_t value);
-  void (*SetDocumentSize)(PP_Resource scrollbar,
-                          uint32_t size);
-  void (*SetTickMarks)(PP_Resource scrollbar,
-                       const struct PP_Rect* tick_marks,
-                       uint32_t count);
-  void (*ScrollBy)(PP_Resource scrollbar,
-                   PP_ScrollBy_Dev unit,
-                   int32_t multiplier);
-};
-
-// Old version with no resource argument to GetThickness.
-struct PPB_Scrollbar_0_3_Dev {
-  PP_Resource (*Create)(PP_Instance instance,
-                        PP_Bool vertical);
-  PP_Bool (*IsScrollbar)(PP_Resource resource);
-  uint32_t (*GetThickness)();
-  uint32_t (*GetValue)(PP_Resource scrollbar);
-  void (*SetValue)(PP_Resource scrollbar,
-                   uint32_t value);
-  void (*SetDocumentSize)(PP_Resource scrollbar,
-                          uint32_t size);
-  void (*SetTickMarks)(PP_Resource scrollbar,
-                       const struct PP_Rect* tick_marks,
-                       uint32_t count);
   void (*ScrollBy)(PP_Resource scrollbar,
                    PP_ScrollBy_Dev unit,
                    int32_t multiplier);

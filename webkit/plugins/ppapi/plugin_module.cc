@@ -283,10 +283,6 @@ const void* GetInterface(const char* name) {
     return PPB_OpenGLES_Impl::GetInterface();
   if (strcmp(name, PPB_PROXY_PRIVATE_INTERFACE) == 0)
     return PPB_Proxy_Impl::GetInterface();
-  if (strcmp(name, PPB_SCROLLBAR_DEV_INTERFACE_0_4) == 0)
-    return PPB_Scrollbar_Impl::Get0_4Interface();
-  if (strcmp(name, PPB_SCROLLBAR_DEV_INTERFACE_0_3) == 0)
-    return PPB_Scrollbar_Impl::Get0_3Interface();
   if (strcmp(name, PPB_UMA_PRIVATE_INTERFACE) == 0)
     return PPB_UMA_Private_Impl::GetInterface();
   if (strcmp(name, PPB_URLLOADERTRUSTED_INTERFACE) == 0)

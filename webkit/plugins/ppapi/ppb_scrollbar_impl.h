@@ -29,16 +29,6 @@ class PPB_Scrollbar_Impl : public PPB_Widget_Impl,
   virtual PPB_Scrollbar_API* AsPPB_Scrollbar_API() OVERRIDE;
   virtual void InstanceWasDeleted();
 
-  // Returns a pointer to the interface implementing PPB_Scrollbar_0_3 that is
-  // exposed to the plugin. New code should use the thunk system for the new
-  // version of this API.
-  static const PPB_Scrollbar_0_3_Dev* Get0_3Interface();
-
-  // Returns a pointer to the interface implementing PPB_Scrollbar_0_4 that is
-  // exposed to the plugin. New code should use the thunk system for the new
-  // version of this API.
-  static const PPB_Scrollbar_0_4_Dev* Get0_4Interface();
-
   // PPB_Scrollbar_API implementation.
   virtual uint32_t GetThickness() OVERRIDE;
   virtual bool IsOverlay() OVERRIDE;

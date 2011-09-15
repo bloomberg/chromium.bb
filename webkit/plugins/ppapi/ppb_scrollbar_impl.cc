@@ -33,83 +33,6 @@ using WebKit::WebScrollbar;
 namespace webkit {
 namespace ppapi {
 
-namespace {
-
-// Version 0.3 implementation --------------------------------------------------
-//
-// TODO(brettw) remove this when we remove support for version 0.3 interface.
-// This just forwards everything to the new version of the interface except for
-// the GetThickness call which has no parameters.
-
-PP_Resource Create(PP_Instance instance, PP_Bool vertical) {
-  return ::ppapi::thunk::GetPPB_Scrollbar_0_5_Dev_Thunk()->Create(instance,
-                                                                  vertical);
-}
-
-PP_Bool IsScrollbar(PP_Resource resource) {
-  return ::ppapi::thunk::GetPPB_Scrollbar_0_5_Dev_Thunk()->IsScrollbar(
-      resource);
-}
-
-uint32_t GetThickness3() {
-  return WebScrollbar::defaultThickness();
-}
-
-uint32_t GetThickness4(PP_Resource resource) {
-  return ::ppapi::thunk::GetPPB_Scrollbar_0_5_Dev_Thunk()->GetThickness(
-      resource);
-}
-
-uint32_t GetValue(PP_Resource resource) {
-  return ::ppapi::thunk::GetPPB_Scrollbar_0_5_Dev_Thunk()->GetValue(resource);
-}
-
-void SetValue(PP_Resource resource, uint32_t value) {
-  return ::ppapi::thunk::GetPPB_Scrollbar_0_5_Dev_Thunk()->SetValue(resource,
-                                                                    value);
-}
-
-void SetDocumentSize(PP_Resource resource, uint32_t size) {
-  return ::ppapi::thunk::GetPPB_Scrollbar_0_5_Dev_Thunk()->SetDocumentSize(
-      resource, size);
-}
-
-void SetTickMarks(PP_Resource resource,
-                  const PP_Rect* tick_marks,
-                  uint32_t count) {
-  return ::ppapi::thunk::GetPPB_Scrollbar_0_5_Dev_Thunk()->SetTickMarks(
-      resource, tick_marks, count);
-}
-
-void ScrollBy(PP_Resource resource, PP_ScrollBy_Dev unit, int32_t multiplier) {
-  return ::ppapi::thunk::GetPPB_Scrollbar_0_5_Dev_Thunk()->ScrollBy(
-      resource, unit, multiplier);
-}
-
-const PPB_Scrollbar_0_3_Dev ppb_scrollbar_0_3 = {
-  &Create,
-  &IsScrollbar,
-  &GetThickness3,
-  &GetValue,
-  &SetValue,
-  &SetDocumentSize,
-  &SetTickMarks,
-  &ScrollBy
-};
-
-const PPB_Scrollbar_0_4_Dev ppb_scrollbar_0_4 = {
-  &Create,
-  &IsScrollbar,
-  &GetThickness4,
-  &GetValue,
-  &SetValue,
-  &SetDocumentSize,
-  &SetTickMarks,
-  &ScrollBy
-};
-
-}  // namespace
-
 // static
 PP_Resource PPB_Scrollbar_Impl::Create(PP_Instance instance,
                                        bool vertical) {
@@ -144,16 +67,6 @@ PPB_Scrollbar_API* PPB_Scrollbar_Impl::AsPPB_Scrollbar_API() {
 void PPB_Scrollbar_Impl::InstanceWasDeleted() {
   Resource::LastPluginRefWasDeleted();
   scrollbar_.reset();
-}
-
-// static
-const PPB_Scrollbar_0_3_Dev* PPB_Scrollbar_Impl::Get0_3Interface() {
-  return &ppb_scrollbar_0_3;
-}
-
-// static
-const PPB_Scrollbar_0_4_Dev* PPB_Scrollbar_Impl::Get0_4Interface() {
-  return &ppb_scrollbar_0_4;
 }
 
 uint32_t PPB_Scrollbar_Impl::GetThickness() {
