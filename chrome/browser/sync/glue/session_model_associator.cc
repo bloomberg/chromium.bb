@@ -973,7 +973,7 @@ bool SessionModelAssociator::IsValidTab(const SyncedTabDelegate& tab) {
     if (!entry)
       return false;
     if (entry->virtual_url().is_valid() &&
-        (entry->virtual_url() != GURL(chrome::kChromeUINewTabURL) ||
+        (entry->virtual_url().GetOrigin() != GURL(chrome::kChromeUINewTabURL) ||
          tab.GetEntryCount() > 1)) {
       return true;
     }
@@ -992,7 +992,7 @@ bool SessionModelAssociator::IsValidSessionTab(const SessionTab& tab) {
           static_cast<int>(tab.navigations.size() - 1)));
   if (selected_index == 0 &&
       tab.navigations.size() == 1 &&
-      tab.navigations.at(selected_index).virtual_url() ==
+      tab.navigations.at(selected_index).virtual_url().GetOrigin() ==
           GURL(chrome::kChromeUINewTabURL)) {
     // This is a new tab with no further history, skip.
     return false;

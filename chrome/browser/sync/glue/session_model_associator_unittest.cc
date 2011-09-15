@@ -52,6 +52,19 @@ TEST_F(SessionModelAssociatorTest, IsValidSessionTab) {
   ASSERT_TRUE(SessionModelAssociator::IsValidSessionTab(tab));
 }
 
+TEST_F(SessionModelAssociatorTest, IsValidSessionTabIgnoresFragmentForNtp) {
+  SessionTab tab;
+  ASSERT_FALSE(SessionModelAssociator::IsValidSessionTab(tab));
+  TabNavigation nav(0, GURL(std::string(chrome::kChromeUINewTabURL) +
+                            "#bookmarks"),
+                    GURL("about:referrer"),
+                    string16(ASCIIToUTF16("title")),
+                    std::string("state"), 0U);
+  tab.navigations.push_back(nav);
+  // NewTab does not count as valid if it's the only navigation.
+  ASSERT_FALSE(SessionModelAssociator::IsValidSessionTab(tab));
+}
+
 TEST_F(SessionModelAssociatorTest, PopulateSessionHeader) {
   sync_pb::SessionHeader header_s;
   header_s.set_client_name("Client 1");
