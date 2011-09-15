@@ -172,12 +172,11 @@ class VIEWS_EXPORT Label : public View {
   virtual void OnMouseEntered(const MouseEvent& event) OVERRIDE;
   virtual void OnMouseExited(const MouseEvent& event) OVERRIDE;
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
-
   // Gets the tooltip text for labels that are wider than their bounds, except
   // when the label is multiline, in which case it just returns false (no
   // tooltip).  If a custom tooltip has been specified with SetTooltipText()
   // it is returned instead.
-  bool GetTooltipText(const gfx::Point& p, string16* tooltip);
+  virtual bool GetTooltipText(const gfx::Point& p, string16* tooltip) OVERRIDE;
 
  protected:
   // Called by Paint to paint the text.  Override this to change how
