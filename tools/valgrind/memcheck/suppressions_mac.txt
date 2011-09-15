@@ -317,9 +317,7 @@
    Memcheck:Leak
    fun:_Znw*
    fun:_ZN11sandboxtest8internal19RegisterSandboxTestIN12_GLOBAL__N_*
-   fun:_ZN11sandboxtest8internal19RegisterSandboxTestIN12_GLOBAL__N_*
-   fun:_Z41__static_initialization_and_destruction_0ii
-   fun:_GLOBAL__I__ZNSt3tr112_GLOBAL__N_16ignoreE
+   ...
    fun:_ZN16ImageLoaderMachO18doModInitFunctionsERKN11ImageLoader11LinkContextE
    fun:_ZN11ImageLoader23recursiveInitializationERKNS_11LinkContextEj
    fun:_ZN11ImageLoader15runInitializersERKNS_11LinkContextE
@@ -568,15 +566,9 @@
    Memcheck:Leak
    fun:calloc
    fun:_internal_class_createInstanceFromZone
-   fun:_internal_class_createInstance
+   ...
    fun:+[NSObject allocWithZone:]
-   fun:_decodeObjectBinary
-   fun:_decodeObject
-   fun:-[NSButtonCell initWithCoder:]
-   fun:_decodeObjectBinary
-   fun:_decodeObject
-   fun:-[NSControl initWithCoder:]
-   fun:-[NSButton initWithCoder:]
+   ...
    fun:_decodeObjectBinary
    fun:_decodeObject
    fun:-[NSNibConnector initWithCoder:]
@@ -1763,21 +1755,21 @@
    fun:memcpy
    fun:vp8_decode_update_thread_context
    fun:update_context_from_thread
-   fun:submit_packet
+   ...
    fun:ff_thread_decode_frame
    fun:avcodec_decode_video2
    fun:_ZN5media23FFmpegVideoDecodeEngine11DecodeFrameE13scoped_refptrINS_6BufferEE
    fun:_ZN5media23FFmpegVideoDecodeEngine18ConsumeVideoSampleE13scoped_refptrINS_6BufferEE
-   fun:_ZNK5media21DemuxCompleteActionP2IPNS_23FFmpegVideoDecodeEngineE13scoped_refptrINS_6BufferEEE10gmock_ImplIFvS5_EE17gmock_PerformImplIS5_N7testing8internal12ExcessiveArgESD_SD_SD_SD_SD_SD_SD_SD_EEvRKNSt3tr15tupleIS5_NSE_10_NullClassESG_SG_SG_SG_SG_SG_SG_SG_EET_T0_T1_T2_T3_T4_T5_T6_T7_T8_
-   fun:_ZN7testing8internal12ActionHelperIvN5media21DemuxCompleteActionP2IPNS2_23FFmpegVideoDecodeEngineE13scoped_refptrINS2_6BufferEEE10gmock_ImplIFvS8_EEEE7PerformIS8_EEvPSC_RKNSt3tr15tupleIT_NSG_10_NullClassESJ_SJ_SJ_SJ_SJ_SJ_SJ_SJ_EE
-   fun:_ZN5media21DemuxCompleteActionP2IPNS_23FFmpegVideoDecodeEngineE13scoped_refptrINS_6BufferEEE10gmock_ImplIFvS5_EE7PerformERKNSt3tr15tupleIS5_NSA_10_NullClassESC_SC_SC_SC_SC_SC_SC_SC_EE
-   fun:_ZNK7testing6ActionIFv13scoped_refptrIN5media6BufferEEEE7PerformERKNSt3tr15tupleIS4_NS7_10_NullClassES9_S9_S9_S9_S9_S9_S9_S9_EE
+   fun:_ZNK5media21DemuxCompleteActionP2IPNS_23FFmpegVideoDecodeEngineE13scoped_refptrINS_6BufferEEE10gmock_ImplIFvS5_EE17gmock_PerformImplIS5_N7testing8internal12ExcessiveArg*
+   ...
+   fun:_ZNK7testing6ActionIFv13scoped_refptrIN5media6BufferEEEE7PerformERKNSt3tr15tupleIS4_*
    fun:_ZN7testing8internal18ActionResultHolderIvE13PerformActionIFv13scoped_refptrIN5media6BufferEEEEEPS2_RKNS_6ActionIT_EERKNS0_8FunctionISB_E13ArgumentTupleE
    fun:_ZNK7testing8internal18FunctionMockerBaseIFv13scoped_refptrIN5media6BufferEEEE20UntypedPerformActionEPKvS9_
    fun:_ZN7testing8internal25UntypedFunctionMockerBase17UntypedInvokeWithEPKv
-   fun:_ZN7testing8internal18FunctionMockerBaseIFv13scoped_refptrIN5media6BufferEEEE10InvokeWithERKNSt3tr15tupleIS5_NS8_10_NullClassESA_SA_SA_SA_SA_SA_SA_SA_EE
+   ...
    fun:_ZN7testing8internal14FunctionMockerIFv13scoped_refptrIN5media6BufferEEEE6InvokeES5_
    fun:_ZN5media27FFmpegVideoDecodeEngineTest18ProduceVideoSampleE13scoped_refptrINS_6BufferEE
+   ...
    fun:_ZN5media23FFmpegVideoDecodeEngine9ReadInputEv
    fun:_ZN5media23FFmpegVideoDecodeEngine17ProduceVideoFrameE13scoped_refptrINS_10VideoFrameEE
    fun:_ZN5media27FFmpegVideoDecodeEngineTest21CallProduceVideoFrameEv
@@ -1791,37 +1783,34 @@
    fun:update_context_from_thread
    fun:frame_thread_free
    fun:avcodec_close
+   ...
    fun:_ZN5media23FFmpegVideoDecodeEngineD0Ev
    fun:_ZN10scoped_ptrIN5media23FFmpegVideoDecodeEngineEE5resetEPS1_
    fun:_ZN5media27FFmpegVideoDecodeEngineTestD2Ev
    fun:_ZN5media51FFmpegVideoDecodeEngineTest_DecodeFrame_Normal_TestD0Ev
-   fun:_ZN7testing4Test11DeleteSelf_Ev
 }
 {
    bug_95718
    Memcheck:Leak
    fun:calloc
-   fun:PR_Calloc
+   ...
    fun:error_get_my_stack
    fun:nss_ClearErrorStack
    fun:NSSArena_Destroy
    fun:nssList_Destroy
    fun:remove_subject_entry
-   fun:nssCertificateStore_RemoveCertLOCKED
+   ...
    fun:nssCertificate_Destroy
    fun:NSSCertificate_Destroy
    fun:CERT_DestroyCertificate
-   fun:ssl_DestroySID
-   fun:ssl_FreeLockedSID
-   fun:UncacheSID
+   ...
    fun:SSL_ClearSessionCache
-   fun:_ZN3net19NSSSSLInitSingletonD2Ev
+   ...
    fun:_ZN3net19NSSSSLInitSingletonD1Ev
-   fun:_ZN4base25DefaultLazyInstanceTraitsIN3net19NSSSSLInitSingletonEE6DeleteEPv
+   ...
    fun:_ZN4base12LazyInstanceIN3net19NSSSSLInitSingletonENS_25DefaultLazyInstanceTraitsIS2_EEE6OnExitEPv
    fun:_ZN4base8internal8Invoker1ILb0ENS0_15InvokerStorage1IPFvPvES3_EES5_E8DoInvokeEPNS0_18InvokerStorageBaseE
    fun:_ZNK4base8CallbackIFvvEE3RunEv
-   fun:_ZN4base13AtExitManager19ProcessCallbacksNowEv
 }
 {
    bug_96300
@@ -1875,6 +1864,4 @@
    Memcheck:Cond
    fun:_ZN23SafeBrowsingDatabaseNew15LoadBloomFilterEv
    fun:_ZN23SafeBrowsingDatabaseNew4InitERK8FilePath
-   fun:_ZN19SafeBrowsingService11GetDatabaseEv
-   fun:_Z16DispatchToMethodI19SafeBrowsingServiceMS0_FP20SafeBrowsingDatabasevEEvPT_T0_RK6Tuple0
 }

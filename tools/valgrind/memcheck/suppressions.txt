@@ -676,56 +676,56 @@
    Memcheck sanity test 02 (malloc/read left).
    Memcheck:Addr1
    fun:*ReadValueOutOfArrayBoundsLeft*
-   fun:*MakeSomeErrors*
+   ...
    fun:_ZN4base43ToolsSanityTest_AccessesToMallocMemory_Test8TestBodyEv
 }
 {
    Memcheck sanity test 03 (malloc/read right).
    Memcheck:Addr1
    fun:*ReadValueOutOfArrayBoundsRight*
-   fun:*MakeSomeErrors*
+   ...
    fun:_ZN4base43ToolsSanityTest_AccessesToMallocMemory_Test8TestBodyEv
 }
 {
    Memcheck sanity test 04 (malloc/write left).
    Memcheck:Addr1
    fun:*WriteValueOutOfArrayBoundsLeft*
-   fun:*MakeSomeErrors*
+   ...
    fun:_ZN4base43ToolsSanityTest_AccessesToMallocMemory_Test8TestBodyEv
 }
 {
    Memcheck sanity test 05 (malloc/write right).
    Memcheck:Addr1
    fun:*WriteValueOutOfArrayBoundsRight*
-   fun:*MakeSomeErrors*
+   ...
    fun:_ZN4base43ToolsSanityTest_AccessesToMallocMemory_Test8TestBodyEv
 }
 {
    Memcheck sanity test 06 (new/read left).
    Memcheck:Addr1
    fun:*ReadValueOutOfArrayBoundsLeft*
-   fun:*MakeSomeErrors*
+   ...
    fun:_ZN4base40ToolsSanityTest_AccessesToNewMemory_Test8TestBodyEv
 }
 {
    Memcheck sanity test 07 (new/read right).
    Memcheck:Addr1
    fun:*ReadValueOutOfArrayBoundsRight*
-   fun:*MakeSomeErrors*
+   ...
    fun:_ZN4base40ToolsSanityTest_AccessesToNewMemory_Test8TestBodyEv
 }
 {
    Memcheck sanity test 08 (new/write left).
    Memcheck:Addr1
    fun:*WriteValueOutOfArrayBoundsLeft*
-   fun:*MakeSomeErrors*
+   ...
    fun:_ZN4base40ToolsSanityTest_AccessesToNewMemory_Test8TestBodyEv
 }
 {
    Memcheck sanity test 09 (new/write right).
    Memcheck:Addr1
    fun:*WriteValueOutOfArrayBoundsRight*
-   fun:*MakeSomeErrors*
+   ...
    fun:_ZN4base40ToolsSanityTest_AccessesToNewMemory_Test8TestBodyEv
 }
 {
@@ -754,14 +754,14 @@
    Memcheck sanity test 14 (malloc/read uninit).
    Memcheck:Cond
    fun:*ReadUninitializedValue*
-   fun:*MakeSomeErrors*
+   ...
    fun:_ZN4base43ToolsSanityTest_AccessesToMallocMemory_Test8TestBodyEv
 }
 {
    Memcheck sanity test 15 (new/read uninit).
    Memcheck:Cond
    fun:*ReadUninitializedValue*
-   fun:*MakeSomeErrors*
+   ...
    fun:_ZN4base40ToolsSanityTest_AccessesToNewMemory_Test8TestBodyEv
 }
 {
@@ -3632,7 +3632,6 @@
    fun:*TabLoader7ObserveEiRK18NotificationSourceRK19NotificationDetails
    fun:_ZN19NotificationService6NotifyEiRK18NotificationSourceRK19NotificationDetails
    fun:_ZN11TabContents12SetIsLoadingEbP23LoadNotificationDetails
-   fun:_ZN11TabContents14DidStopLoadingEv
 }
 {
    bug_79671
@@ -4820,7 +4819,7 @@
    fun:_Znw*
    fun:_ZNK41MakeAutofillProfileSyncComponentsActionP4IP18ProfileSyncServiceP11WebDatabaseP19PersonalDataManagerPN12browser_sync18DataTypeControllerEE10*
    fun:_ZN7testing8internal12ActionHelperIN18ProfileSyncFactory14SyncComponentsEN41MakeAutofillProfileSyncComponentsActionP4IP18ProfileSyncServiceP11WebDatabaseP19PersonalDataManagerPN12browser_sync18DataTypeControllerEE10*
-   fun:_ZN41MakeAutofillProfileSyncComponentsActionP4IP18ProfileSyncServiceP11WebDatabaseP19PersonalDataManagerPN12browser_sync18DataTypeControllerEE10*
+   ...
    fun:_ZNK7testing6ActionIFN18ProfileSyncFactory14SyncComponentsEP18ProfileSyncServiceP11WebDatabaseP19PersonalDataManagerPN12browser_sync25UnrecoverableErrorHandlerEEE7PerformERKNSt3tr15tuple*
    fun:_ZN7testing8internal18ActionResultHolderIN18ProfileSyncFactory14SyncComponentsEE13PerformActionIFS3_P18ProfileSyncServiceP11WebDatabaseP19PersonalDataManagerPN12browser_sync25UnrecoverableErrorHandlerEEEEPS4_RKNS_6ActionIT_EERKNS0_8FunctionISI_E13ArgumentTupleE
    fun:_ZNK7testing8internal18FunctionMockerBaseIFN18ProfileSyncFactory14SyncComponentsEP18ProfileSyncServiceP11WebDatabaseP19PersonalDataManagerPN12browser_sync25UnrecoverableErrorHandlerEEE20UntypedPerformActionEPKvSG_
