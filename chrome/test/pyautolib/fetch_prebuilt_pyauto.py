@@ -108,16 +108,21 @@ class FetchPrebuilt(object):
     self._ParseArgs()
     if not os.path.isdir(self._outdir):
       os.makedirs(self._outdir)
+    get_it2me = self._DoesURLExist(self._it2me_zip_url)
 
     # Fetch chrome & pyauto binaries
     print 'Fetching'
     print self._chrome_zip_url
-    print self._it2me_zip_url
+    if get_it2me:
+      print self._it2me_zip_url
+    else:
+      print 'Warning: %s does not exist.' % self._it2me_zip_url
     print self._pyautolib_py_url
     print self._pyautolib_so_url
     print self._chromedriver_url
     chrome_zip = urllib.urlretrieve(self._chrome_zip_url)[0]
-    it2me_zip = urllib.urlretrieve(self._it2me_zip_url)[0]
+    if get_it2me:
+      it2me_zip = urllib.urlretrieve(self._it2me_zip_url)[0]
     pyautolib_py = urllib.urlretrieve(self._pyautolib_py_url)[0]
     pyautolib_so = urllib.urlretrieve(self._pyautolib_so_url)[0]
     chromedriver = urllib.urlretrieve(self._chromedriver_url)[0]
@@ -126,9 +131,10 @@ class FetchPrebuilt(object):
       print 'Cleaning', chrome_unzip_dir
       pyauto_utils.RemovePath(chrome_unzip_dir)
     pyauto_utils.UnzipFilenameToDir(chrome_zip, self._outdir)
-    pyauto_utils.UnzipFilenameToDir(it2me_zip, self._outdir)
-    shutil.move(self._outdir + '/remoting-it2me',
-                self._outdir + '/remoting/it2me.webapp')
+    if get_it2me:
+      pyauto_utils.UnzipFilenameToDir(it2me_zip, self._outdir)
+      shutil.move(self._outdir + '/remoting-it2me',
+                  self._outdir + '/remoting/it2me.webapp')
 
     # Copy over the binaries to outdir
     items_to_copy = {
