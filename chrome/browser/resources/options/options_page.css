@@ -24,6 +24,7 @@
 
 .overlay {
   -webkit-box-align: center;
+  -webkit-box-orient: vertical;
   -webkit-box-pack: center;
   -webkit-transition: 0.25s opacity;
   background: -webkit-radial-gradient(rgba(127, 127, 127, 0.5),
@@ -32,6 +33,7 @@
   bottom: 0;
   display: -webkit-box;
   left: 0;
+  overflow: auto;
   padding: 20px;
   padding-bottom: 130px;
   position: fixed;
