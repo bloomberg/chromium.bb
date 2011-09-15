@@ -1865,3 +1865,10 @@
    fun:_ZN23SafeBrowsingDatabaseNew15LoadBloomFilterEv
    fun:_ZN23SafeBrowsingDatabaseNew4InitERK8FilePath
 }
+{
+   bug_96671
+   Memcheck:Cond
+   fun:bcmp
+   fun:_ZNK12MockKeychain26SearchCreateFromAttributesEPKvmPK24SecKeychainAttributeListPP26OpaqueSecKeychainSearchRef
+   fun:_ZN14KeychainSearch17FindMatchingItemsEPSt6vectorIP24OpaqueSecKeychainItemRefSaIS2_EE
+}
