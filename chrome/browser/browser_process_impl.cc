@@ -350,11 +350,16 @@ void BrowserProcessImpl::EndSession() {
   // then proceed with normal shutdown.
 #if defined(USE_X11)
   //  Can't run a local loop on linux. Instead create a waitable event.
-  base::WaitableEvent done_writing(false, false);
+  scoped_ptr<base::WaitableEvent> done_writing(
+      new base::WaitableEvent(false, false));
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-      NewRunnableFunction(Signal, &done_writing));
-  done_writing.TimedWait(
-      base::TimeDelta::FromSeconds(kEndSessionTimeoutSeconds));
+      NewRunnableFunction(Signal, done_writing.get()));
+  // If all file writes haven't cleared in the timeout, leak the WaitableEvent
+  // so that there's no race to reference it in Signal().
+  if (!done_writing->TimedWait(
+      base::TimeDelta::FromSeconds(kEndSessionTimeoutSeconds)))
+    ignore_result(done_writing.release());
+
 #elif defined(OS_WIN)
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
       NewRunnableFunction(PostQuit, MessageLoop::current()));
