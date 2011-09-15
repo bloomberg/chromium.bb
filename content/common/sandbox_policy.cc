@@ -239,10 +239,11 @@ string16 PrependWindowsSessionPath(const char16* object) {
 // Closes handles that are opened at process creation and initialization.
 void AddBaseHandleClosePolicy(sandbox::TargetPolicy* policy) {
   // Being able to manipulate anything BaseNamedObjects is bad.
-  policy->AddKernelObjectToClose(L"Directory", PrependWindowsSessionPath(
-      L"\\BaseNamedObjects").data());
-  policy->AddKernelObjectToClose(L"Section", PrependWindowsSessionPath(
-      L"\\BaseNamedObjects\\windows_shell_global_counters").data());
+  string16 object_path = PrependWindowsSessionPath(L"\\BaseNamedObjects");
+  policy->AddKernelObjectToClose(L"Directory", object_path.data());
+  object_path = PrependWindowsSessionPath(
+      L"\\BaseNamedObjects\\windows_shell_global_counters");
+  policy->AddKernelObjectToClose(L"Section", object_path.data());
 }
 
 // Adds the generic policy rules to a sandbox TargetPolicy.
