@@ -2200,18 +2200,6 @@
    fun:_ZN30ChromeURLRequestContextFactoryC2EP7Profile
 }
 {
-   bug_50252
-   Memcheck:Leak
-   fun:malloc
-   fun:realloc
-   ...
-   fun:min_heap_reserve
-   fun:event_add
-   fun:_ZN4base19MessagePumpLibevent3RunEPNS_11MessagePump8DelegateE
-   fun:_ZN11MessageLoop11RunInternalEv
-   fun:_ZN11MessageLoop10RunHandlerEv
-}
-{
    bug_50304
    Memcheck:Leak
    ...
