@@ -855,12 +855,6 @@ LEAK
 *!ProfileImpl::DoFinalInit
 *!ProfileImpl::OnPrefsLoaded
 
-# http://crbug.com/90654
-UNINITIALIZED READ
-*!_output_s_l
-...
-*!testing_internal::DefaultPrintNonContainerTo<policy::FailedRequestParams>
-
 # http://crbug.com/91465
 LEAK
 *!generic_cpp_alloc

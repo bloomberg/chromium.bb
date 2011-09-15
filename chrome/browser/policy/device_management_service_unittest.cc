@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <ostream>
 #include <vector>
 
 #include "base/message_loop.h"
@@ -94,6 +95,12 @@ struct FailedRequestParams {
   int http_status_;
   std::string response_;
 };
+
+void PrintTo(const FailedRequestParams& params, std::ostream* os) {
+  *os << "FailedRequestParams " << params.expected_error_
+      << " " << params.request_status_.status()
+      << " " << params.http_status_;
+}
 
 // A parameterized test case for erroneous response situations, they're mostly
 // the same for all kinds of requests.
