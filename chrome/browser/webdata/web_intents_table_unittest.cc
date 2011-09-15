@@ -32,6 +32,7 @@ WebIntentData MakeIntent(const GURL& url, const string16& action,
   intent.action = action;
   intent.type = type;
   intent.title = title;
+  intent.disposition = WebIntentData::DISPOSITION_INLINE;
   return intent;
 }
 
@@ -130,5 +131,27 @@ TEST_F(WebIntentsTableTest, GetAllIntents) {
   intent.action = test_action;
   intent.title = test_title;
   EXPECT_EQ(intent, intents[0]);
+}
+
+TEST_F(WebIntentsTableTest, DispositionToStringMapping) {
+  WebIntentData intent = MakeIntent(test_url, test_action, mime_image,
+                                    test_title);
+  intent.disposition = WebIntentData::DISPOSITION_WINDOW;
+  EXPECT_TRUE(IntentsTable()->SetWebIntent(intent));
+
+  intent = MakeIntent(test_url, test_action, mime_video,
+                                    test_title);
+  intent.disposition = WebIntentData::DISPOSITION_INLINE;
+  EXPECT_TRUE(IntentsTable()->SetWebIntent(intent));
+
+  std::vector<WebIntentData> intents;
+  EXPECT_TRUE(IntentsTable()->GetAllWebIntents(&intents));
+  ASSERT_EQ(2U, intents.size());
+
+  if (intents[0].disposition == WebIntentData::DISPOSITION_WINDOW)
+    std::swap(intents[0], intents[1]);
+
+  EXPECT_EQ(WebIntentData::DISPOSITION_INLINE, intents[0].disposition);
+  EXPECT_EQ(WebIntentData::DISPOSITION_WINDOW, intents[1].disposition);
 }
 } // namespace

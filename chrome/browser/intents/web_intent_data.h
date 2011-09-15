@@ -12,6 +12,12 @@
 
 // Describes the relevant elements of a WebIntent.
 struct WebIntentData {
+  // An intents disposition determines which context the service is opened in.
+  enum Disposition {
+    DISPOSITION_WINDOW, // Open service inside a new window. (Default)
+    DISPOSITION_INLINE, // Open service inside the picker UI window.
+  };
+
   WebIntentData();
   ~WebIntentData();
 
@@ -21,6 +27,7 @@ struct WebIntentData {
   string16 action;  // Name of action provided by service.
   string16 type;  // MIME type of data accepted by service.
   string16 title;  // The title of the service.
+  Disposition disposition; // The context the service is opened in.
 };
 
 // Printing operator - helps gtest produce readable error messages.

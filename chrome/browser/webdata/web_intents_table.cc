@@ -5,8 +5,31 @@
 #include "chrome/browser/webdata/web_intents_table.h"
 
 #include "base/logging.h"
+#include "base/utf_string_conversions.h"
 #include "googleurl/src/gurl.h"
 #include "sql/statement.h"
+
+namespace {
+bool ExtractIntents(sql::Statement* s, std::vector<WebIntentData>* intents) {
+  DCHECK(s);
+  while (s->Step()) {
+    WebIntentData intent;
+    string16 tmp = s->ColumnString16(0);
+    intent.service_url = GURL(tmp);
+
+    intent.action = s->ColumnString16(1);
+    intent.type = s->ColumnString16(2);
+    intent.title = s->ColumnString16(3);
+    tmp = s->ColumnString16(4);
+     // Default to window disposition.
+    intent.disposition = WebIntentData::DISPOSITION_WINDOW;
+    if (tmp == ASCIIToUTF16("inline"))
+      intent.disposition = WebIntentData::DISPOSITION_INLINE;
+    intents->push_back(intent);
+  }
+  return true;
+}
+}
 
 WebIntentsTable::WebIntentsTable(sql::Connection* db,
                                  sql::MetaTable* meta_table)
@@ -25,6 +48,7 @@ bool WebIntentsTable::Init() {
                     "action VARCHAR,"
                     "type VARCHAR,"
                     "title VARCHAR,"
+                    "disposition VARCHAR,"
                     "UNIQUE (service_url, action, type))")) {
     NOTREACHED();
     return false;
@@ -48,7 +72,7 @@ bool WebIntentsTable::GetWebIntents(const string16& action,
                                     std::vector<WebIntentData>* intents) {
   DCHECK(intents);
   sql::Statement s(db_->GetUniqueStatement(
-      "SELECT service_url, action, type, title FROM web_intents "
+      "SELECT service_url, action, type, title, disposition FROM web_intents "
       "WHERE action=?"));
   if (!s) {
     NOTREACHED() << "Statement prepare failed";
@@ -56,56 +80,40 @@ bool WebIntentsTable::GetWebIntents(const string16& action,
   }
 
   s.BindString16(0, action);
-  while (s.Step()) {
-    WebIntentData intent;
-    string16 tmp = s.ColumnString16(0);
-    intent.service_url = GURL(tmp);
-
-    intent.action = s.ColumnString16(1);
-    intent.type = s.ColumnString16(2);
-    intent.title = s.ColumnString16(3);
-
-    intents->push_back(intent);
-  }
-  return true;
+  return ExtractIntents(&s, intents);
 }
 
 bool WebIntentsTable::GetAllWebIntents(std::vector<WebIntentData>* intents) {
   DCHECK(intents);
   sql::Statement s(db_->GetUniqueStatement(
-      "SELECT service_url, action, type, title FROM web_intents"));
+      "SELECT service_url, action, type, title, disposition FROM web_intents"));
   if (!s) {
     NOTREACHED() << "Statement prepare failed";
     return false;
   }
 
-  while (s.Step()) {
-    WebIntentData intent;
-    string16 tmp = s.ColumnString16(0);
-    intent.service_url = GURL(tmp);
-
-    intent.action = s.ColumnString16(1);
-    intent.type = s.ColumnString16(2);
-    intent.title = s.ColumnString16(3);
-
-    intents->push_back(intent);
-  }
-  return true;
+  return ExtractIntents(&s, intents);
 }
 
 bool WebIntentsTable::SetWebIntent(const WebIntentData& intent) {
   sql::Statement s(db_->GetUniqueStatement(
-      "INSERT OR REPLACE INTO web_intents (service_url, type, action, title) "
-      "VALUES (?, ?, ?, ?)"));
+      "INSERT OR REPLACE INTO web_intents "
+      "(service_url, type, action, title, disposition) "
+      "VALUES (?, ?, ?, ?, ?)"));
   if (!s) {
     NOTREACHED() << "Statement prepare failed";
     return false;
   }
 
+  // Default to window disposition.
+  string16 disposition = ASCIIToUTF16("window");
+  if (intent.disposition == WebIntentData::DISPOSITION_INLINE)
+    disposition = ASCIIToUTF16("inline");
   s.BindString(0, intent.service_url.spec());
   s.BindString16(1, intent.type);
   s.BindString16(2, intent.action);
   s.BindString16(3, intent.title);
+  s.BindString16(4, disposition);
   return s.Run();
 }
 

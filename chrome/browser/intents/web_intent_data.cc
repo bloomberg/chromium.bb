@@ -6,7 +6,9 @@
 #include "chrome/browser/intents/web_intent_data.h"
 #include <ostream>
 
-WebIntentData::WebIntentData() {}
+WebIntentData::WebIntentData()
+    : disposition(WebIntentData::DISPOSITION_WINDOW) {
+}
 
 WebIntentData::~WebIntentData() {}
 
@@ -14,7 +16,8 @@ bool WebIntentData::operator==(const WebIntentData& other) const {
   return (service_url == other.service_url &&
           action == other.action &&
           type == other.type &&
-          title == other.title);
+          title == other.title &&
+          disposition == other.disposition);
 }
 
 std::ostream& operator<<(::std::ostream& os,
@@ -24,5 +27,6 @@ std::ostream& operator<<(::std::ostream& os,
          ", " << UTF16ToUTF8(intent.action) <<
          ", " << UTF16ToUTF8(intent.type) <<
          ", " << UTF16ToUTF8(intent.title) <<
+         ", " << intent.disposition <<
          "}";
 }
