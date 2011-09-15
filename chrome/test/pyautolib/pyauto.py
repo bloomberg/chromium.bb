@@ -3972,7 +3972,7 @@ class _RemoteProxy():
   Example usage:
     class MyTest(pyauto.PyUITest):
       def testRemoteExample(self):
-        remote = pyauto._RemoteProxy('127.0.0.1')
+        remote = pyauto._RemoteProxy(('127.0.0.1', 7410))
         remote.NavigateToURL('http://www.google.com')
         title = remote.GetActiveTabTitle()
         self.assertEqual(title, 'Google')
@@ -3980,12 +3980,19 @@ class _RemoteProxy():
   class RemoteException(Exception):
     pass
 
-  def __init__(self, address, port=7410):
-    self.RemoteConnect(address, port)
+  def __init__(self, host):
+    self.RemoteConnect(host)
 
-  def RemoteConnect(self, address, port):
+  def RemoteConnect(self, host):
     self._socket = socket.socket()
-    self._socket.connect((address, port))
+    begin = time.time()
+    while time.time() - begin < 50:
+      if not self._socket.connect_ex(host):
+        break
+      time.sleep(0.25)
+    else:
+      # Make one last attempt, but raise a socket error on failure.
+      self._socket.connect(host)
 
   def RemoteDisconnect(self):
     if self._socket:
@@ -4100,7 +4107,25 @@ class PyUITestSuite(pyautolib.PyUITestSuiteBase, unittest.TestSuite):
     assert not _REMOTE_PROXY, 'Already connected to a remote host.'
     _REMOTE_PROXY = []
     for address in addresses:
-      _REMOTE_PROXY.append(_RemoteProxy(address))
+      if address == 'localhost' or address == '127.0.0.1':
+        self._StartLocalRemoteHost()
+      _REMOTE_PROXY.append(_RemoteProxy((address, 7410)))
+
+  def _StartLocalRemoteHost(self):
+    """Start a remote PyAuto instance on the local machine."""
+    # Add the path to our main class to the RemoteHost's
+    # environment, so it can load that class at runtime.
+    import __main__
+    main_path = os.path.dirname(__main__.__file__)
+    env = os.environ
+    if env.get('PYTHONPATH', None):
+      env['PYTHONPATH'] += ':' + main_path
+    else:
+      env['PYTHONPATH'] = main_path
+
+    # Run it!
+    subprocess.Popen(['python', os.path.join(os.path.dirname(__file__),
+                                             'remote_host.py')], env=env)
 
 
 class _GTestTextTestResult(unittest._TextTestResult):
@@ -4179,14 +4204,8 @@ class Main(object):
     """Parse command line args."""
     parser = optparse.OptionParser()
     parser.add_option(
-        '-v', '--verbose', action='store_true', default=False,
-        help='Make PyAuto verbose.')
-    parser.add_option(
-        '', '--log-file', type='string', default=None,
-        help='Provide a path to a file to which the logger will log')
-    parser.add_option(
-        '-D', '--wait-for-debugger', action='store_true', default=False,
-        help='Block PyAuto on startup for attaching debugger.')
+        '', '--channel-id', type='string', default='',
+        help='Name of channel id, if using named interface.')
     parser.add_option(
         '', '--chrome-flags', type='string', default='',
         help='Flags passed to Chrome.  This is in addition to the usual flags '
@@ -4194,8 +4213,26 @@ class Main(object):
              'See chrome/common/chrome_switches.cc for the list of flags '
              'chrome understands.')
     parser.add_option(
+        '', '--http-data-dir', type='string',
+        default=os.path.join('chrome', 'test', 'data'),
+        help='Relative path from which http server should serve files.')
+    parser.add_option(
         '', '--list-missing-tests', action='store_true', default=False,
         help='Print a list of tests not included in PYAUTO_TESTS, and exit')
+    parser.add_option(
+        '-L', '--list-tests', action='store_true', default=False,
+        help='List all tests, and exit.')
+    parser.add_option(
+        '', '--log-file', type='string', default=None,
+        help='Provide a path to a file to which the logger will log')
+    parser.add_option(
+        '', '--no-http-server', action='store_true', default=False,
+        help='Do not start an http server to serve files in data dir.')
+    parser.add_option(
+        '', '--remote-host', type='string', default=None,
+        help='Connect to remote hosts for remote automation. If "localhost" '
+            '"127.0.0.1" is specified, a remote host will be launched '
+            'automatically on the local machine.')
     parser.add_option(
         '', '--repeat', type='int', default=1,
         help='Number of times to repeat the tests. Useful to determine '
@@ -4204,21 +4241,11 @@ class Main(object):
         '-S', '--suite', type='string', default='FULL',
         help='Name of the suite to load.  Defaults to "FULL".')
     parser.add_option(
-        '-L', '--list-tests', action='store_true', default=False,
-        help='List all tests, and exit.')
+        '-v', '--verbose', action='store_true', default=False,
+        help='Make PyAuto verbose.')
     parser.add_option(
-        '', '--no-http-server', action='store_true', default=False,
-        help='Do not start an http server to serve files in data dir.')
-    parser.add_option(
-        '', '--remote-host', type='string', default=None,
-        help='Connect to remote hosts for remote automation.')
-    parser.add_option(
-        '', '--http-data-dir', type='string',
-        default=os.path.join('chrome', 'test', 'data'),
-        help='Relative path from which http server should serve files.')
-    parser.add_option(
-        '', '--channel-id', type='string', default='',
-        help='Name of channel id, if using named interface.')
+        '-D', '--wait-for-debugger', action='store_true', default=False,
+        help='Block PyAuto on startup for attaching debugger.')
 
     self._options, self._args = parser.parse_args()
     global _OPTIONS

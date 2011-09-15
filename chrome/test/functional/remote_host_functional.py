@@ -12,5 +12,5 @@ import remote_host
 
 if __name__ == '__main__':
   pyauto_suite = pyauto.PyUITestSuite(sys.argv)
-  remote_host.RemoteHost()
+  remote_host.RemoteHost(('', 7410))
   del pyauto_suite

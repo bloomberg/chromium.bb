@@ -19,15 +19,17 @@ class RemoteHost(object):
   remote_host.RemoteHost.RunHost to start up a PyAuto remote instance that you
   can connect to and automate using pyauto.RemoteProxy.
   """
-  def __init__(self, *args, **kwargs):
-    self.StartSocketServer()
+  def __init__(self, host, *args, **kwargs):
+    self.StartSocketServer(host)
 
-  def StartSocketServer(self, port=7410):
+  def StartSocketServer(self, host):
     listening_socket = socket.socket()
     listening_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    listening_socket.bind(('', port))
+    listening_socket.bind(host)
     listening_socket.listen(1)
-    self._socket, _ = listening_socket.accept()
+    print 'Listening for incoming connections on port %d.' % host[1]
+    self._socket, address = listening_socket.accept()
+    print 'Accepted connection from %s:%d.' % address
 
     while self.Connected():
       self._HandleRPC()
@@ -91,3 +93,9 @@ class RemoteHost(object):
                              exception))
     if self._socket.send(response) != len(response):
       self.StopSocketServer()
+
+
+if __name__ == '__main__':
+  pyauto_suite = pyauto.PyUITestSuite(sys.argv)
+  RemoteHost(('', 7410))
+  del pyauto_suite
