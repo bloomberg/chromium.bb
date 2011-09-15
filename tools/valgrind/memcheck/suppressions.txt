@@ -3725,57 +3725,6 @@
    fun:_ZN10URLFetcher4Core30StartURLRequestWhenAppropriateEv
 }
 {
-   bug_81753a
-   Memcheck:Cond
-   ...
-   fun:_ZN6icu_4612RegexMatcher12MatchChunkAtEiaR10UErrorCode
-   fun:_ZN6icu_4612RegexMatcher7matchesExR10UErrorCode
-   fun:_ZNK4i18n12phonenumbers9IcuRegExp5MatchERKSsbPSs
-   fun:_ZNK4i18n12phonenumbers6RegExp9FullMatchERKSs
-   fun:_ZNK4i18n12phonenumbers15PhoneNumberUtil19IsViablePhoneNumberERKSs
-}
-{
-   bug_81753b
-   Memcheck:Value4
-   ...
-   fun:_ZN6icu_4612RegexMatcher12MatchChunkAtEiaR10UErrorCode
-   fun:_ZN6icu_4612RegexMatcher7matchesExR10UErrorCode
-   fun:_ZNK4i18n12phonenumbers9IcuRegExp5MatchERKSsbPSs
-   fun:_ZNK4i18n12phonenumbers6RegExp9FullMatchERKSs
-   fun:_ZNK4i18n12phonenumbers15PhoneNumberUtil19IsViablePhoneNumberERKSs
-}
-{
-   bug_81753c
-   Memcheck:Cond
-   ...
-   fun:_ZN6icu_4612RegexMatcher12MatchChunkAtEiaR10UErrorCode
-   fun:_ZN6icu_4612RegexMatcher14findUsingChunkEv
-   fun:_ZN6icu_4612RegexMatcher4findEv
-   fun:_ZN6icu_4612RegexMatcher4findExR10UErrorCode
-   fun:_ZN8autofill14MatchesPatternERKSbItN4base20string16_char_traitsESaItEES5_
-}
-{
-   bug_81753d
-   Memcheck:Value4
-   ...
-   fun:_ZN6icu_4612RegexMatcher12MatchChunkAtEiaR10UErrorCode
-   fun:_ZN6icu_4612RegexMatcher14findUsingChunkEv
-   fun:_ZN6icu_4612RegexMatcher4findEv
-   fun:_ZN6icu_4612RegexMatcher4findExR10UErrorCode
-   fun:_ZN8autofill14MatchesPatternERKSbItN4base20string16_char_traitsESaItEES5_
-}
-{
-   bug_81753e
-   Memcheck:Cond
-   ...
-   fun:_ZN6icu_4612RegexMatcher12MatchChunkAtEiaR10UErrorCode
-   fun:_ZN6icu_4612RegexMatcher14findUsingChunkEv
-   fun:_ZN6icu_4612RegexMatcher4findEv
-   fun:_ZN6icu_4612RegexMatcher4findExR10UErrorCode
-   fun:_ZN8autofill11MatchStringERKSbItN4base20string16_char_traitsESaItEES5_
-   fun:_ZN9FormField5MatchEPK13AutofillFieldRKSbItN4base20string16_char_traitsESaItEEi
-}
-{
    bug_82717
    Memcheck:Leak
    fun:_Znw*

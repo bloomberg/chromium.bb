@@ -817,23 +817,6 @@ LEAK
 ...
 *!RenderWidgetHost::WasRestored
 
-# http://crbug.com/81753
-UNINITIALIZED READ
-...
-*!icu_46::RegexMatcher::MatchChunkAt
-*!icu_46::RegexMatcher::findUsingChunk
-*!icu_46::RegexMatcher::find
-*!icu_46::RegexMatcher::find
-*!autofill::MatchesPattern
-
-UNINITIALIZED READ
-...
-*!icu_46::RegexMatcher::MatchChunkAt
-*!icu_46::RegexMatcher::matches
-*!i18n::phonenumbers::IcuRegExp::Match
-*!i18n::phonenumbers::RegExp::FullMatch
-*!i18n::phonenumbers::PhoneNumberUtil::IsViablePhoneNumber
-
 # http://crbug.com/87612
 LEAK
 ...
