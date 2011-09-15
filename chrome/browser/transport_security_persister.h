@@ -39,10 +39,12 @@
 #include "base/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/common/important_file_writer.h"
+#include "content/browser/browser_thread.h"
 #include "net/base/transport_security_state.h"
 
 class TransportSecurityPersister
-    : public base::RefCountedThreadSafe<TransportSecurityPersister>,
+    : public base::RefCountedThreadSafe<TransportSecurityPersister,
+                                        BrowserThread::DeleteOnUIThread>,
       public net::TransportSecurityState::Delegate,
       public ImportantFileWriter::DataSerializer {
  public:
@@ -61,7 +63,8 @@ class TransportSecurityPersister
   virtual bool SerializeData(std::string* data);
 
  private:
-  friend class base::RefCountedThreadSafe<TransportSecurityPersister>;
+  friend struct BrowserThread::DeleteOnThread<BrowserThread::UI>;
+  friend class DeleteTask<TransportSecurityPersister>;
 
   virtual ~TransportSecurityPersister();
 
