@@ -36,6 +36,7 @@
         'focus_manager.cc',
         'focus_manager.h',
         'hit_test.h',
+        'layout_manager.h',
         'root_window.cc',
         'root_window.h',
         'window.cc',

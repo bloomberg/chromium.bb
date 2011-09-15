@@ -362,10 +362,6 @@ bool NativeWidgetAura::ConvertPointFromAncestor(const Widget* ancestor,
   return false;
 }
 
-gfx::Rect NativeWidgetAura::GetWorkAreaBoundsInScreen() const {
-  return gfx::Rect();
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // NativeWidgetAura, views::InputMethodDelegate implementation:
 
