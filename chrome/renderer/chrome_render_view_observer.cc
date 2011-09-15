@@ -744,6 +744,10 @@ void ChromeRenderViewObserver::CapturePageInfo(int load_id,
   if (ds && ds->hasUnreachableURL())
     return;
 
+  // Don't index/capture pages that are being prerendered.
+  if (prerender::PrerenderHelper::IsPrerendering(render_view()))
+    return;
+
   bool same_page_id = last_indexed_page_id_ == load_id;
   if (!preliminary_capture)
     last_indexed_page_id_ = load_id;
