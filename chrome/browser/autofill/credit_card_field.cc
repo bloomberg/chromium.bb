@@ -12,133 +12,10 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autofill/autofill_field.h"
+#include "chrome/browser/autofill/autofill_regex_constants.h"
 #include "chrome/browser/autofill/autofill_scanner.h"
 #include "chrome/browser/autofill/field_types.h"
 #include "ui/base/l10n/l10n_util.h"
-
-namespace {
-
-// The UTF-8 version of these regular expressions are in
-// regular_expressions.txt.
-const char kNameOnCardRe[] =
-    "card.?holder|name.?on.?card|ccname|ccfullname|owner"
-    // de-DE
-    "|karteninhaber"
-    // es
-    "|nombre.*tarjeta"
-    // fr-FR
-    "|nom.*carte"
-    // it-IT
-    "|nome.*cart"
-    // ja-JP
-    "|\xe5\x90\x8d\xe5\x89\x8d"
-    // ru
-    "|\xd0\x98\xd0\xbc\xd1\x8f.*\xd0\xba\xd0\xb0\xd1\x80\xd1\x82\xd1\x8b"
-    // zh-CN
-    "|\xe4\xbf\xa1\xe7\x94\xa8\xe5\x8d\xa1\xe5\xbc\x80\xe6\x88\xb7\xe5\x90\x8d"
-        "|\xe5\xbc\x80\xe6\x88\xb7\xe5\x90\x8d|\xe6\x8c\x81\xe5\x8d\xa1\xe4"
-        "\xba\xba\xe5\xa7\x93\xe5\x90\x8d"
-    // zh-TW
-    "|\xe6\x8c\x81\xe5\x8d\xa1\xe4\xba\xba\xe5\xa7\x93\xe5\x90\x8d";
-const char kNameOnCardContextualRe[] =
-    "name";
-const char kCardNumberRe[] =
-    "card.?number|card.?#|card.?no|ccnum|acctnum"
-    // de-DE
-    "|nummer"
-    // es
-    "|credito|numero|n\xc3\xbamero"
-    // fr-FR
-    "|num\xc3\xa9ro"
-    // ja-JP
-    "|\xe3\x82\xab\xe3\x83\xbc\xe3\x83\x89\xe7\x95\xaa\xe5\x8f\xb7"
-    // ru
-    "|\xd0\x9d\xd0\xbe\xd0\xbc\xd0\xb5\xd1\x80.*\xd0\xba\xd0\xb0\xd1\x80\xd1"
-        "\x82\xd1\x8b"
-    // zh-CN
-    "|\xe4\xbf\xa1\xe7\x94\xa8\xe5\x8d\xa1\xe5\x8f\xb7|\xe4\xbf\xa1\xe7\x94"
-        "\xa8\xe5\x8d\xa1\xe5\x8f\xb7\xe7\xa0\x81"
-    // zh-TW
-    "|\xe4\xbf\xa1\xe7\x94\xa8\xe5\x8d\xa1\xe5\x8d\xa1\xe8\x99\x9f"
-    // ko-KR
-    "|\xec\xb9\xb4\xeb\x93\x9c";
-const char kCardCvcRe[] =
-    "verification|card identification|security code|cvn|cvv|cvc|csc";
-
-// "Expiration date" is the most common label here, but some pages have
-// "Expires", "exp. date" or "exp. month" and "exp. year".  We also look
-// for the field names ccmonth and ccyear, which appear on at least 4 of
-// our test pages.
-
-// On at least one page (The China Shop2.html) we find only the labels
-// "month" and "year".  So for now we match these words directly; we'll
-// see if this turns out to be too general.
-
-// Toolbar Bug 51451: indeed, simply matching "month" is too general for
-//   https://rps.fidelity.com/ftgw/rps/RtlCust/CreatePIN/Init.
-// Instead, we match only words beginning with "month".
-const char kExpirationMonthRe[] =
-    "expir|exp.*mo|exp.*date|ccmonth"
-    // de-DE
-    "|gueltig|g\xc3\xbcltig|monat"
-    // es
-    "|fecha"
-    // fr-FR
-    "|date.*exp"
-    // it-IT
-    "|scadenza"
-    // ja-JP
-    "|\xe6\x9c\x89\xe5\x8a\xb9\xe6\x9c\x9f\xe9\x99\x90"
-    // pt-BR, pt-PT
-    "|validade"
-    // ru
-    "|\xd0\xa1\xd1\x80\xd0\xbe\xd0\xba \xd0\xb4\xd0\xb5\xd0\xb9\xd1\x81\xd1"
-        "\x82\xd0\xb2\xd0\xb8\xd1\x8f \xd0\xba\xd0\xb0\xd1\x80\xd1\x82\xd1\x8b"
-    // zh-CN
-    "|\xe6\x9c\x88";
-const char kExpirationYearRe[] =
-    "exp|^/|year"
-    // de-DE
-    "|ablaufdatum|gueltig|g\xc3\xbcltig|yahr"
-    // es
-    "|fecha"
-    // it-IT
-    "|scadenza"
-    // ja-JP
-    "|\xe6\x9c\x89\xe5\x8a\xb9\xe6\x9c\x9f\xe9\x99\x90"
-    // pt-BR, pt-PT
-    "|validade"
-    // ru
-    "|\xd0\xa1\xd1\x80\xd0\xbe\xd0\xba \xd0\xb4\xd0\xb5\xd0\xb9\xd1\x81\xd1"
-        "\x82\xd0\xb2\xd0\xb8\xd1\x8f \xd0\xba\xd0\xb0\xd1\x80\xd1\x82\xd1\x8b"
-    // zh-CN
-    "|\xe5\xb9\xb4|\xe6\x9c\x89\xe6\x95\x88\xe6\x9c\x9f";
-
-// This regex is a little bit nasty, but it is simply requiring exactly two
-// adjacent y's.
-const char kExpirationDate2DigitYearRe[] =
-    "exp.*date.*[^y]yy([^y]|$)";
-const char kExpirationDateRe[] =
-    "expir|exp.*date"
-    // de-DE
-    "|gueltig|g\xc3\xbcltig"
-    // es
-    "|fecha"
-    // fr-FR
-    "|date.*exp"
-    // it-IT
-    "|scadenza"
-    // ja-JP
-    "|\xe6\x9c\x89\xe5\x8a\xb9\xe6\x9c\x9f\xe9\x99\x90"
-    // pt-BR, pt-PT
-    "|validade"
-    // ru
-    "|\xd0\xa1\xd1\x80\xd0\xbe\xd0\xba \xd0\xb4\xd0\xb5\xd0\xb9\xd1\x81\xd1"
-        "\x82\xd0\xb2\xd0\xb8\xd1\x8f\xd0\xba\xd0\xb0\xd1\x80\xd1\x82\xd1\x8b";
-const char kCardIgnoredRe[] =
-    "^card";
-
-}  // namespace
 
 // static
 FormField* CreditCardField::Parse(AutofillScanner* scanner) {
@@ -162,9 +39,9 @@ FormField* CreditCardField::Parse(AutofillScanner* scanner) {
       string16 name_pattern;
       if (fields == 0 || credit_card_field->expiration_month_) {
         // at beginning or end
-        name_pattern = UTF8ToUTF16(kNameOnCardRe);
+        name_pattern = UTF8ToUTF16(autofill::kNameOnCardRe);
       } else {
-        name_pattern = UTF8ToUTF16(kNameOnCardContextualRe);
+        name_pattern = UTF8ToUTF16(autofill::kNameOnCardContextualRe);
       }
 
       if (ParseField(scanner, name_pattern, &credit_card_field->cardholder_))
@@ -190,14 +67,14 @@ FormField* CreditCardField::Parse(AutofillScanner* scanner) {
     // has a plethora of names; we've seen "verification #",
     // "verification number", "card identification number" and others listed
     // in the |pattern| below.
-    string16 pattern = UTF8ToUTF16(kCardCvcRe);
+    string16 pattern = UTF8ToUTF16(autofill::kCardCvcRe);
     if (!credit_card_field->verification_ &&
         ParseField(scanner, pattern, &credit_card_field->verification_)) {
       continue;
     }
     // TODO(jhawkins): Parse the type select control.
 
-    pattern = UTF8ToUTF16(kCardNumberRe);
+    pattern = UTF8ToUTF16(autofill::kCardNumberRe);
     if (!credit_card_field->number_ &&
         ParseField(scanner, pattern, &credit_card_field->number_)) {
       continue;
@@ -209,11 +86,11 @@ FormField* CreditCardField::Parse(AutofillScanner* scanner) {
     } else {
       // First try to parse split month/year expiration fields.
       scanner->SaveCursor();
-      pattern = UTF8ToUTF16(kExpirationMonthRe);
+      pattern = UTF8ToUTF16(autofill::kExpirationMonthRe);
       if (!credit_card_field->expiration_month_ &&
           ParseFieldSpecifics(scanner, pattern, MATCH_DEFAULT | MATCH_SELECT,
                               &credit_card_field->expiration_month_)) {
-        pattern = UTF8ToUTF16(kExpirationYearRe);
+        pattern = UTF8ToUTF16(autofill::kExpirationYearRe);
         if (ParseFieldSpecifics(scanner, pattern, MATCH_DEFAULT | MATCH_SELECT,
                                  &credit_card_field->expiration_year_)) {
           continue;
@@ -224,7 +101,7 @@ FormField* CreditCardField::Parse(AutofillScanner* scanner) {
       if (!credit_card_field->expiration_date_) {
         // Look for a 2-digit year first.
         scanner->Rewind();
-        pattern = UTF8ToUTF16(kExpirationDate2DigitYearRe);
+        pattern = UTF8ToUTF16(autofill::kExpirationDate2DigitYearRe);
         if (ParseFieldSpecifics(scanner, pattern,
                                 MATCH_LABEL | MATCH_VALUE | MATCH_TEXT,
                                 &credit_card_field->expiration_date_)) {
@@ -232,7 +109,7 @@ FormField* CreditCardField::Parse(AutofillScanner* scanner) {
           continue;
         }
 
-        pattern = UTF8ToUTF16(kExpirationDateRe);
+        pattern = UTF8ToUTF16(autofill::kExpirationDateRe);
         if (ParseFieldSpecifics(scanner, pattern,
                                 MATCH_LABEL | MATCH_VALUE | MATCH_TEXT,
                                 &credit_card_field->expiration_date_)) {
@@ -254,7 +131,7 @@ FormField* CreditCardField::Parse(AutofillScanner* scanner) {
     // We also ignore any other fields within a credit card block that
     // start with "card", under the assumption that they are related to
     // the credit card section being processed but are uninteresting to us.
-    if (ParseField(scanner, UTF8ToUTF16(kCardIgnoredRe), NULL)) {
+    if (ParseField(scanner, UTF8ToUTF16(autofill::kCardIgnoredRe), NULL)) {
       continue;
     }
 

@@ -10,73 +10,11 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autofill/autofill_field.h"
+#include "chrome/browser/autofill/autofill_regex_constants.h"
 #include "chrome/browser/autofill/autofill_scanner.h"
 #include "chrome/browser/autofill/fax_number.h"
 #include "chrome/browser/autofill/home_phone_number.h"
 #include "ui/base/l10n/l10n_util.h"
-
-namespace {
-
-const char kPhoneRe[] =
-    "phone|mobile"
-    // de-DE
-    "|telefonnummer"
-    // es
-    "|telefono|tel\xc3\xa9""fono"
-    // fr-FR
-    "|telfixe"
-    // ja-JP
-    "|\xe9\x9b\xbb\xe8\xa9\xb1"
-    // pt-BR, pt-PT
-    "|telefone|telemovel"
-    // ru
-    "|\xd1\x82\xd0\xb5\xd0\xbb\xd0\xb5\xd1\x84\xd0\xbe\xd0\xbd"
-    // zh-CN
-    "|\xe7\x94\xb5\xe8\xaf\x9d"
-    // ko-KR
-    "|(\xec\xa0\x84\xed\x99\x94|\xed\x95\xb8\xeb\x93\x9c\xed\x8f\xb0|\xed\x9c"
-        "\xb4\xeb\x8c\x80\xed\x8f\xb0|\xed\x9c\xb4\xeb\x8c\x80\xec\xa0\x84\xed"
-        "\x99\x94)(.?\xeb\xb2\x88\xed\x98\xb8)?";
-const char kCountryCodeRe[] =
-    "country.*code|ccode|_cc";
-const char kAreaCodeNotextRe[] =
-    "^\\($";
-const char kAreaCodeRe[] =
-    "area.*code|acode|area"
-    // ko-KR
-    "|\xec\xa7\x80\xec\x97\xad.?\xeb\xb2\x88\xed\x98\xb8";
-const char kFaxRe[] =
-    "fax"
-    // fr-FR
-    "|t\xc3\xa9l\xc3\xa9""copie|telecopie"
-    // ja-JP
-    "|\xe3\x83\x95\xe3\x82\xa1\xe3\x83\x83\xe3\x82\xaf\xe3\x82\xb9"
-    // ru
-    "|\xd1\x84\xd0\xb0\xd0\xba\xd1\x81"
-    // zh-CN
-    "|\xe4\xbc\xa0\xe7\x9c\x9f"
-    // zh-TW
-    "|\xe5\x82\xb3\xe7\x9c\x9f"
-    // ko-KR
-    "|\xed\x8c\xa9\xec\x8a\xa4(.?\xeb\xb2\x88\xed\x98\xb8)?";
-const char kPhonePrefixSeparatorRe[] =
-    "^-$|^\\)$";
-const char kPhoneSuffixSeparatorRe[] =
-    "^-$";
-const char kPhonePrefixRe[] =
-    "prefix|exchange"
-    // fr-FR
-    "|preselection"
-    // pt-BR, pt-PT
-    "|ddd";
-const char kPhoneSuffixRe[] =
-    "suffix";
-const char kPhoneExtensionRe[] =
-    "\\bext|ext\\b|extension"
-    // pt-BR, pt-PT
-    "|ramal";
-
-}  // namespace
 
 // Phone field grammars - first matched grammar will be parsed. Grammars are
 // separated by { REGEX_SEPARATOR, FIELD_NONE, 0 }. Suffix and extension are
@@ -239,12 +177,12 @@ bool PhoneField::ClassifyField(FieldTypeMap* map) const {
 
 string16  PhoneField::GetCountryRegex() const {
   // This one is the same for Home and Fax numbers.
-  return UTF8ToUTF16(kCountryCodeRe);
+  return UTF8ToUTF16(autofill::kCountryCodeRe);
 }
 
 string16 PhoneField::GetAreaRegex() const {
   // This one is the same for Home and Fax numbers.
-  string16 area_code = UTF8ToUTF16(kAreaCodeRe);
+  string16 area_code = UTF8ToUTF16(autofill::kAreaCodeRe);
   area_code.append(ASCIIToUTF16("|"));  // Regexp separator.
   area_code.append(GetAreaNoTextRegex());
   return area_code;
@@ -252,14 +190,14 @@ string16 PhoneField::GetAreaRegex() const {
 
 string16 PhoneField::GetAreaNoTextRegex() const {
   // This one is the same for Home and Fax numbers.
-  return UTF8ToUTF16(kAreaCodeNotextRe);
+  return UTF8ToUTF16(autofill::kAreaCodeNotextRe);
 }
 
 string16 PhoneField::GetPhoneRegex() const {
   if (phone_type_ == HOME_PHONE)
-    return UTF8ToUTF16(kPhoneRe);
+    return UTF8ToUTF16(autofill::kPhoneRe);
   else if (phone_type_ == FAX_PHONE)
-    return UTF8ToUTF16(kFaxRe);
+    return UTF8ToUTF16(autofill::kFaxRe);
   else
     NOTREACHED();
   return string16();
@@ -267,27 +205,27 @@ string16 PhoneField::GetPhoneRegex() const {
 
 string16 PhoneField::GetPrefixSeparatorRegex() const {
   // This one is the same for Home and Fax numbers.
-  return UTF8ToUTF16(kPhonePrefixSeparatorRe);
+  return UTF8ToUTF16(autofill::kPhonePrefixSeparatorRe);
 }
 
 string16 PhoneField::GetPrefixRegex() const {
   // This one is the same for Home and Fax numbers.
-  return UTF8ToUTF16(kPhonePrefixRe);
+  return UTF8ToUTF16(autofill::kPhonePrefixRe);
 }
 
 string16 PhoneField::GetSuffixSeparatorRegex() const {
   // This one is the same for Home and Fax numbers.
-  return UTF8ToUTF16(kPhoneSuffixSeparatorRe);
+  return UTF8ToUTF16(autofill::kPhoneSuffixSeparatorRe);
 }
 
 string16 PhoneField::GetSuffixRegex() const {
   // This one is the same for Home and Fax numbers.
-  return UTF8ToUTF16(kPhoneSuffixRe);
+  return UTF8ToUTF16(autofill::kPhoneSuffixRe);
 }
 
 string16 PhoneField::GetExtensionRegex() const {
   // This one is the same for Home and Fax numbers.
-  return UTF8ToUTF16(kPhoneExtensionRe);
+  return UTF8ToUTF16(autofill::kPhoneExtensionRe);
 }
 
 string16 PhoneField::GetRegExp(RegexType regex_id) const {
