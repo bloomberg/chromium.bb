@@ -384,10 +384,12 @@ cr.define('login', function() {
       if (pod) {
         if (pod.isGuest ||
             localStrings.getString('authType') != 'ext' ||
-            pod.user.oauthTokenStatus == OAUTH_TOKEN_STATUS_VALID) {
-          // Focus current pod if it is guest pod, or
+            pod.user.oauthTokenStatus == OAUTH_TOKEN_STATUS_VALID ||
+            !window.navigator.onLine) {
+          // Focus the pod if it is guest pod, or
           // we are not using gaia ext for signin or
-          // the user has a valid oauth token.
+          // the user has a valid oauth token or
+          // device is offline.
           for (var i = 0; i < this.pods.length; ++i) {
             this.pods[i].activeRemoveButton = false;
             if (this.pods[i] == pod) {
