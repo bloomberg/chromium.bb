@@ -13,7 +13,6 @@
 
 #include "base/file_path.h"
 #include "content/common/content_export.h"
-#include "ppapi/proxy/proxy_channel.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/webplugininfo.h"
@@ -56,8 +55,7 @@ bool MakePepperPluginInfo(const webkit::WebPluginInfo& webplugin_info,
 // is a list of all live modules (some of which may be out-of-process and hence
 // not preloaded).
 class PepperPluginRegistry
-    : public webkit::ppapi::PluginDelegate::ModuleLifetime,
-      public ppapi::proxy::ProxyChannel::Delegate {
+    : public webkit::ppapi::PluginDelegate::ModuleLifetime {
  public:
   ~PepperPluginRegistry();
 
@@ -101,10 +99,6 @@ class PepperPluginRegistry
 
  private:
   PepperPluginRegistry();
-
-  // ProxyChannel::Delegate implementation.
-  virtual base::MessageLoopProxy* GetIPCMessageLoop();
-  virtual base::WaitableEvent* GetShutdownEvent();
 
   // All known pepper plugins.
   std::vector<PepperPluginInfo> plugin_list_;
