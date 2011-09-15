@@ -16,6 +16,7 @@
 
 namespace remoting {
 
+class Capturer;
 class UserAuthenticator;
 
 // A ClientSession keeps a reference to a connection to a client, and maintains
@@ -40,11 +41,12 @@ class ClientSession : public protocol::HostStub,
   };
 
   // Takes ownership of |user_authenticator|. Does not take ownership of
-  // |event_handler| or |input_stub|.
+  // |event_handler|, |input_stub| or |capturer|.
   ClientSession(EventHandler* event_handler,
                 UserAuthenticator* user_authenticator,
                 scoped_refptr<protocol::ConnectionToClient> connection,
-                protocol::InputStub* input_stub);
+                protocol::InputStub* input_stub,
+                Capturer* capturer);
 
   // protocol::HostStub interface.
   virtual void BeginSessionRequest(
@@ -108,6 +110,12 @@ class ClientSession : public protocol::HostStub,
 
   // The input stub to which this object delegates.
   protocol::InputStub* input_stub_;
+
+  // Capturer, used to determine current screen size for ensuring injected
+  // mouse events fall within the screen area.
+  // TODO(lambroslambrou): Move floor-control logic, and clamping to screen
+  // area, out of this class (crbug.com/96508).
+  Capturer* capturer_;
 
   // Whether this client is authenticated.
   bool authenticated_;

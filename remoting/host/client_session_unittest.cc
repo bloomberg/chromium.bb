@@ -44,21 +44,29 @@ class ClientSessionTest : public testing::Test {
 
     EXPECT_CALL(*connection_, session()).WillRepeatedly(Return(&session_));
 
+    // Set up a large default screen size that won't affect most tests.
+    default_screen_size_.SetSize(1000, 1000);
+    ON_CALL(capturer_, size_most_recent()).WillByDefault(ReturnRef(
+        default_screen_size_));
+
     user_authenticator_ = new MockUserAuthenticator();
     client_session_ = new ClientSession(
         &session_event_handler_,
         user_authenticator_,
         connection_,
-        &input_stub_);
+        &input_stub_,
+        &capturer_);
   }
 
  protected:
+  gfx::Size default_screen_size_;
   MessageLoop message_loop_;
   std::string client_jid_;
   MockSession session_;
   MockConnectionToClientEventHandler connection_event_handler_;
   MockHostStub host_stub_;
   MockInputStub input_stub_;
+  MockCapturer capturer_;
   MockClientSessionEventHandler session_event_handler_;
   MockUserAuthenticator* user_authenticator_;
   scoped_refptr<MockConnectionToClient> connection_;
@@ -188,6 +196,37 @@ TEST_F(ClientSessionTest, UnpressKeys) {
   EXPECT_CALL(input_stub_, InjectKeyEvent(EqualsKeyEvent(2, false)));
 
   client_session_->UnpressKeys();
+}
+
+TEST_F(ClientSessionTest, ClampMouseEvents) {
+  gfx::Size screen(200, 100);
+  EXPECT_CALL(capturer_, size_most_recent())
+      .WillRepeatedly(ReturnRef(screen));
+
+  protocol::LocalLoginCredentials credentials;
+  credentials.set_type(protocol::PASSWORD);
+  credentials.set_username("user");
+  credentials.set_credential("password");
+  EXPECT_CALL(*user_authenticator_, Authenticate(_, _))
+      .WillOnce(Return(true));
+  EXPECT_CALL(session_event_handler_, LocalLoginSucceeded(_));
+  client_session_->BeginSessionRequest(&credentials, new DummyTask());
+
+  int input_x[3] = { -999, 100, 999 };
+  int expected_x[3] = { 0, 100, 199 };
+  int input_y[3] = { -999, 50, 999 };
+  int expected_y[3] = { 0, 50, 99 };
+
+  protocol::MouseEvent event;
+  for (int j = 0; j < 3; j++) {
+    for (int i = 0; i < 3; i++) {
+      event.set_x(input_x[i]);
+      event.set_y(input_y[j]);
+      EXPECT_CALL(input_stub_, InjectMouseEvent(EqualsMouseEvent(
+          expected_x[i], expected_y[j])));
+      client_session_->InjectMouseEvent(event);
+    }
+  }
 }
 
 }  // namespace remoting

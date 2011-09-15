@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/task.h"
+#include "remoting/host/capturer.h"
 #include "remoting/host/user_authenticator.h"
 #include "remoting/proto/auth.pb.h"
 #include "remoting/proto/event.pb.h"
@@ -30,12 +31,14 @@ ClientSession::ClientSession(
     EventHandler* event_handler,
     UserAuthenticator* user_authenticator,
     scoped_refptr<protocol::ConnectionToClient> connection,
-    protocol::InputStub* input_stub)
+    protocol::InputStub* input_stub,
+    Capturer* capturer)
     : event_handler_(event_handler),
       user_authenticator_(user_authenticator),
       connection_(connection),
       client_jid_(connection->session()->jid()),
       input_stub_(input_stub),
+      capturer_(capturer),
       authenticated_(false),
       awaiting_continue_approval_(false),
       remote_mouse_button_state_(0) {
@@ -94,15 +97,26 @@ void ClientSession::InjectMouseEvent(const MouseEvent& event) {
         }
       }
     }
+    MouseEvent event_to_inject = event;
     if (event.has_x() && event.has_y()) {
+      // In case the client sends events with off-screen coordinates, modify
+      // the event to lie within the current screen area.  This is better than
+      // simply discarding the event, which might lose a button-up event at the
+      // end of a drag'n'drop (or cause other related problems).
       gfx::Point pos(event.x(), event.y());
+      const gfx::Size& screen = capturer_->size_most_recent();
+      pos.set_x(std::max(0, std::min(screen.width() - 1, pos.x())));
+      pos.set_y(std::max(0, std::min(screen.height() - 1, pos.y())));
+      event_to_inject.set_x(pos.x());
+      event_to_inject.set_y(pos.y());
+
       injected_mouse_positions_.push_back(pos);
       if (injected_mouse_positions_.size() > kNumRemoteMousePositions) {
         VLOG(1) << "Injected mouse positions queue full.";
         injected_mouse_positions_.pop_front();
       }
     }
-    input_stub_->InjectMouseEvent(event);
+    input_stub_->InjectMouseEvent(event_to_inject);
   }
 }
 

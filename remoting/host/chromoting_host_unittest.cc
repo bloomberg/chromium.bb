@@ -178,7 +178,8 @@ class ChromotingHostTest : public testing::Test {
         host_.get(),
         user_authenticator,
         connection,
-        event_executor_);
+        event_executor_,
+        desktop_environment_->capturer());
     connection->set_host_stub(client.get());
 
     context_.network_message_loop()->PostTask(
