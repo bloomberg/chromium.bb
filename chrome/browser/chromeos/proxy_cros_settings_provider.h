@@ -17,8 +17,8 @@ class ProxyCrosSettingsProvider : public CrosSettingsProvider {
  public:
   ProxyCrosSettingsProvider();
   // CrosSettingsProvider implementation.
-  virtual bool Get(const std::string& path, Value** out_value) const;
-  virtual bool HandlesSetting(const std::string& path);
+  virtual bool Get(const std::string& path, Value** out_value) const OVERRIDE;
+  virtual bool HandlesSetting(const std::string& path) const OVERRIDE;
 
   // Set the current network whose proxy settings will be displayed and possibly
   // edited on.
@@ -37,7 +37,7 @@ class ProxyCrosSettingsProvider : public CrosSettingsProvider {
 
  private:
   // CrosSettingsProvider implementation.
-  virtual void DoSet(const std::string& path, Value* value);
+  virtual void DoSet(const std::string& path, Value* value) OVERRIDE;
 
   chromeos::ProxyConfigServiceImpl* GetConfigService() const;
 

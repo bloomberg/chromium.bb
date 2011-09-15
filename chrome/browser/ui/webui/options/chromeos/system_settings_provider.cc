@@ -221,7 +221,7 @@ bool SystemSettingsProvider::Get(const std::string& path,
   return false;
 }
 
-bool SystemSettingsProvider::HandlesSetting(const std::string& path) {
+bool SystemSettingsProvider::HandlesSetting(const std::string& path) const {
   return path == kSystemTimezone;
 }
 

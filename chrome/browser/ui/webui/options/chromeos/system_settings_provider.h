@@ -26,18 +26,19 @@ class SystemSettingsProvider : public CrosSettingsProvider,
   virtual ~SystemSettingsProvider();
 
   // CrosSettingsProvider overrides.
-  virtual bool Get(const std::string& path, base::Value** out_value) const;
-  virtual bool HandlesSetting(const std::string& path);
+  virtual bool Get(const std::string& path,
+                   base::Value** out_value) const OVERRIDE;
+  virtual bool HandlesSetting(const std::string& path) const OVERRIDE;
 
   // Overridden from TimezoneSettings::Observer:
-  virtual void TimezoneChanged(const icu::TimeZone& timezone);
+  virtual void TimezoneChanged(const icu::TimeZone& timezone) OVERRIDE;
 
   // Creates the map of timezones used by the options page.
   base::ListValue* GetTimezoneList();
 
  private:
   // CrosSettingsProvider overrides.
-  virtual void DoSet(const std::string& path, base::Value* in_value);
+  virtual void DoSet(const std::string& path, base::Value* in_value) OVERRIDE;
 
   // Gets timezone name.
   static string16 GetTimezoneName(const icu::TimeZone& timezone);

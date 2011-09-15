@@ -26,7 +26,7 @@ class CrosSettingsProvider {
   virtual bool Get(const std::string& path, base::Value** out_value) const = 0;
 
   // Gets the namespace prefix provided by this provider
-  virtual bool HandlesSetting(const std::string& path) = 0;
+  virtual bool HandlesSetting(const std::string& path) const = 0;
 
  private:
   // Does the real job for Set().

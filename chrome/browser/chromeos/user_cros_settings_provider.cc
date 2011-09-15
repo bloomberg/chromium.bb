@@ -718,7 +718,7 @@ bool UserCrosSettingsProvider::Get(const std::string& path,
   return false;
 }
 
-bool UserCrosSettingsProvider::HandlesSetting(const std::string& path) {
+bool UserCrosSettingsProvider::HandlesSetting(const std::string& path) const {
   return ::StartsWithASCII(path, "cros.accounts.", true) ||
       ::StartsWithASCII(path, "cros.signed.", true) ||
       ::StartsWithASCII(path, "cros.metrics.", true) ||

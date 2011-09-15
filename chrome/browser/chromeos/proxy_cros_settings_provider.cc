@@ -320,7 +320,7 @@ bool ProxyCrosSettingsProvider::Get(const std::string& path,
   }
 }
 
-bool ProxyCrosSettingsProvider::HandlesSetting(const std::string& path) {
+bool ProxyCrosSettingsProvider::HandlesSetting(const std::string& path) const {
   return ::StartsWithASCII(path, "cros.session.proxy", true);
 }
 

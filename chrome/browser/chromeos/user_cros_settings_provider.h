@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -62,8 +62,9 @@ class UserCrosSettingsProvider : public CrosSettingsProvider {
   static bool IsEmailInCachedWhitelist(const std::string& email);
 
   // CrosSettingsProvider implementation.
-  virtual bool Get(const std::string& path, base::Value** out_value) const;
-  virtual bool HandlesSetting(const std::string& path);
+  virtual bool Get(const std::string& path,
+                   base::Value** out_value) const OVERRIDE;
+  virtual bool HandlesSetting(const std::string& path) const OVERRIDE;
 
   void WhitelistUser(const std::string& email);
   void UnwhitelistUser(const std::string& email);
@@ -73,7 +74,7 @@ class UserCrosSettingsProvider : public CrosSettingsProvider {
 
  private:
   // CrosSettingsProvider implementation.
-  virtual void DoSet(const std::string& path, base::Value* value);
+  virtual void DoSet(const std::string& path, base::Value* value) OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(UserCrosSettingsProvider);
 };
