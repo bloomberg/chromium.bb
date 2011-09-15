@@ -630,6 +630,7 @@ add_config('arm-tegra2_seaboard-tangent-private-release',
     'board' : 'tegra2_seaboard',
     'profile' : 'cosine',
     'prebuilts' : False,
+    'gs_path': None,
 }])
 
 add_config('arm-tegra2_seaboard-tangent-private-bin',
@@ -637,6 +638,7 @@ add_config('arm-tegra2_seaboard-tangent-private-bin',
     'board' : 'tegra2_seaboard',
     'profile' : 'cosine',
     'prebuilts' : False,
+    'gs_path': None,
 }])
 
 add_config('x86-mario-release', [internal, full, official, release, {
