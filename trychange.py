@@ -638,7 +638,7 @@ def TryChange(argv,
     # Try to extract the review number if possible and fix the protocol.
     if not '://' in options.rietveld_url:
       options.rietveld_url = 'http://' + options.rietveld_url
-    match = re.match(r'^(.*)/(\d+)$', options.rietveld_url)
+    match = re.match(r'^(.*)/(\d+)/?$', options.rietveld_url)
     if match:
       if options.issue or options.patchset:
         parser.error('Cannot use both --issue and use a review number url')
