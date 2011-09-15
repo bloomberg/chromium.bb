@@ -20,42 +20,27 @@
             'mac_creator': 'Cr24',
           }],  # branding
         ],  # conditions
-        'plugin_extension': 'plugin',
-        'plugin_prefix': '',
-        'name_suffix': '- Mac',
-        'remoting_it2me_os_files': [
-          # Empty for now, may be used in future.
-        ],
+        'host_plugin_extension': 'plugin',
+        'host_plugin_prefix': '',
       }],
-      ['os_posix == 1 and OS != "mac"', {
-        'plugin_extension': 'so',
-        'plugin_prefix': 'lib',
+      ['os_posix == 1 and OS != "mac" and target_arch == "ia32"', {
+        # linux 32 bit
+        'host_plugin_extension': 'ia32.so',
+        'host_plugin_prefix': 'lib',
       }],
-      ['OS=="linux" and chromeos==1', {
-        'name_suffix': '- Chromebook',
-        'remoting_it2me_os_files': [
-          # Empty for now, may be used in future.
-        ],
+      ['os_posix == 1 and OS != "mac" and target_arch == "x64"', {
+        # linux 64 bit
+        'host_plugin_extension': 'x64.so',
+        'host_plugin_prefix': 'lib',
       }],
-      ['OS=="linux" and chromeos==0 and target_arch=="x64"', {
-        'name_suffix': '- Linux - 64',
-        'remoting_it2me_os_files': [
-          # Empty for now, may be used in future.
-        ],
-      }],
-      ['OS=="linux" and chromeos==0 and target_arch!="x64"', {
-        'name_suffix': '- Linux',
-        'remoting_it2me_os_files': [
-          # Empty for now, may be used in future.
-        ],
+      ['os_posix == 1 and OS != "mac" and target_arch == "arm"', {
+        # linux 64 bit
+        'host_plugin_extension': 'arm.so',
+        'host_plugin_prefix': 'lib',
       }],
       ['OS=="win"', {
-        'plugin_extension': 'dll',
-        'plugin_prefix': '',
-        'name_suffix': '- Windows',
-        'remoting_it2me_os_files': [
-          # Empty for now, may be used in future.
-        ],
+        'host_plugin_extension': 'dll',
+        'host_plugin_prefix': '',
       }],
       ['branding=="Chrome"', {
         'remoting_it2me_locale_files': [
@@ -204,6 +189,8 @@
     {
       'target_name': 'remoting_host_plugin',
       'type': 'loadable_module',
+      'product_extension': '<(host_plugin_extension)',
+      'product_prefix': '<(host_plugin_prefix)',
       'defines': [
         'HOST_PLUGIN_MIME_TYPE=<(host_plugin_mime_type)',
       ],
@@ -243,7 +230,6 @@
             'INFOPLIST_FILE': 'host/plugin/host_plugin-Info.plist',
             'INFOPLIST_PREPROCESS': 'YES',
             'INFOPLIST_PREPROCESSOR_DEFINITIONS': 'HOST_PLUGIN_MIME_TYPE=<(host_plugin_mime_type)',
-            'WRAPPER_EXTENSION': '<(plugin_extension)',
           },
           # TODO(mark): Come up with a fancier way to do this.  It should
           # only be necessary to list host_plugin-Info.plist once, not the
@@ -283,7 +269,6 @@
         'webapp/build-webapp.py',
         'webapp/verify-webapp.py',
         '<@(remoting_it2me_files)',
-        '<@(remoting_it2me_os_files)',
         '<@(remoting_it2me_locale_files)',
       ],
       # Can't use a 'copies' because we need to manipulate
@@ -320,13 +305,12 @@
         {
           'action_name': 'Build It2Me WebApp',
           'output_dir': '<(PRODUCT_DIR)/remoting/it2me.webapp',
-          'plugin_path': '<(PRODUCT_DIR)/<(plugin_prefix)remoting_host_plugin.<(plugin_extension)',
+          'plugin_path': '<(PRODUCT_DIR)/<(host_plugin_prefix)remoting_host_plugin.<(host_plugin_extension)',
           'zip_path': '<(PRODUCT_DIR)/remoting-it2me.zip',
           'inputs': [
             'webapp/build-webapp.py',
             '<(_plugin_path)',
             '<@(remoting_it2me_files)',
-            '<@(remoting_it2me_os_files)',
             '<@(remoting_it2me_locale_files)',
           ],
           'outputs': [
@@ -335,13 +319,12 @@
           ],
           'action': [
             'python', 'webapp/build-webapp.py',
+            '<(linux_strip_binary)',
             '<(host_plugin_mime_type)',
             '<(_output_dir)',
             '<(_zip_path)',
             '<(_plugin_path)',
-            '<(name_suffix)',
             '<@(remoting_it2me_files)',
-            '<@(remoting_it2me_os_files)',
             '--locales',
             '<@(remoting_it2me_locale_files)',
           ],
