@@ -12,7 +12,30 @@ namespace ui {
 
 const int kSeparatorId = -1;
 
+// The instance is alive.
+static const uint32 kMagicIdAlive = 0xCa11ab1e;
+
+  // The instance has been deleted.
+static const uint32 kMagicIdDead = 0xDECEA5ED;
+
 struct SimpleMenuModel::Item {
+
+// TODO(sky): Remove this when done investigating 95851.
+#if defined(COMPILER_MSVC)
+#pragma optimize("", off)
+MSVC_PUSH_DISABLE_WARNING(4748)
+#endif
+
+  ~Item() {
+    CHECK_EQ(magic_id, kMagicIdAlive);
+    magic_id = kMagicIdDead;
+  }
+
+#if defined(COMPILER_MSVC)
+#pragma optimize("", off)
+MSVC_PUSH_DISABLE_WARNING(4748)
+#endif
+
   int command_id;
   string16 label;
   SkBitmap icon;
@@ -20,6 +43,7 @@ struct SimpleMenuModel::Item {
   int group_id;
   MenuModel* submenu;
   ButtonMenuItemModel* button_model;
+  uint32 magic_id;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -67,10 +91,13 @@ SimpleMenuModel::SimpleMenuModel(Delegate* delegate)
 }
 
 SimpleMenuModel::~SimpleMenuModel() {
+  for (size_t i = 0; i < items_.size(); ++i)
+    CHECK_EQ(kMagicIdAlive, items_[i].magic_id) << i;
 }
 
 void SimpleMenuModel::AddItem(int command_id, const string16& label) {
-  Item item = { command_id, label, SkBitmap(), TYPE_COMMAND, -1, NULL, NULL };
+  Item item = { command_id, label, SkBitmap(), TYPE_COMMAND, -1, NULL, NULL,
+                kMagicIdAlive};
   AppendItem(item);
 }
 
@@ -80,12 +107,13 @@ void SimpleMenuModel::AddItemWithStringId(int command_id, int string_id) {
 
 void SimpleMenuModel::AddSeparator() {
   Item item = { kSeparatorId, string16(), SkBitmap(), TYPE_SEPARATOR, -1,
-                NULL, NULL };
+                NULL, NULL, kMagicIdAlive };
   AppendItem(item);
 }
 
 void SimpleMenuModel::AddCheckItem(int command_id, const string16& label) {
-  Item item = { command_id, label, SkBitmap(), TYPE_CHECK, -1, NULL };
+  Item item = { command_id, label, SkBitmap(), TYPE_CHECK, -1, NULL,
+                NULL, kMagicIdAlive };
   AppendItem(item);
 }
 
@@ -96,7 +124,7 @@ void SimpleMenuModel::AddCheckItemWithStringId(int command_id, int string_id) {
 void SimpleMenuModel::AddRadioItem(int command_id, const string16& label,
                                    int group_id) {
   Item item = { command_id, label, SkBitmap(), TYPE_RADIO, group_id, NULL,
-                NULL };
+                NULL, kMagicIdAlive };
   AppendItem(item);
 }
 
@@ -108,13 +136,14 @@ void SimpleMenuModel::AddRadioItemWithStringId(int command_id, int string_id,
 void SimpleMenuModel::AddButtonItem(int command_id,
                                     ButtonMenuItemModel* model) {
   Item item = { command_id, string16(), SkBitmap(), TYPE_BUTTON_ITEM, -1, NULL,
-                model };
+                model, kMagicIdAlive };
   AppendItem(item);
 }
 
 void SimpleMenuModel::AddSubMenu(int command_id, const string16& label,
                                  MenuModel* model) {
-  Item item = { command_id, label, SkBitmap(), TYPE_SUBMENU, -1, model, NULL };
+  Item item = { command_id, label, SkBitmap(), TYPE_SUBMENU, -1, model, NULL,
+                kMagicIdAlive };
   AppendItem(item);
 }
 
@@ -125,7 +154,8 @@ void SimpleMenuModel::AddSubMenuWithStringId(int command_id,
 
 void SimpleMenuModel::InsertItemAt(
     int index, int command_id, const string16& label) {
-  Item item = { command_id, label, SkBitmap(), TYPE_COMMAND, -1, NULL, NULL };
+  Item item = { command_id, label, SkBitmap(), TYPE_COMMAND, -1, NULL, NULL,
+                kMagicIdAlive };
   InsertItemAtIndex(item, index);
 }
 
@@ -136,13 +166,14 @@ void SimpleMenuModel::InsertItemWithStringIdAt(
 
 void SimpleMenuModel::InsertSeparatorAt(int index) {
   Item item = { kSeparatorId, string16(), SkBitmap(), TYPE_SEPARATOR, -1,
-                NULL, NULL };
+                NULL, NULL, kMagicIdAlive };
   InsertItemAtIndex(item, index);
 }
 
 void SimpleMenuModel::InsertCheckItemAt(
     int index, int command_id, const string16& label) {
-  Item item = { command_id, label, SkBitmap(), TYPE_CHECK, -1, NULL, NULL };
+  Item item = { command_id, label, SkBitmap(), TYPE_CHECK, -1, NULL, NULL,
+                kMagicIdAlive };
   InsertItemAtIndex(item, index);
 }
 
@@ -155,7 +186,7 @@ void SimpleMenuModel::InsertCheckItemWithStringIdAt(
 void SimpleMenuModel::InsertRadioItemAt(
     int index, int command_id, const string16& label, int group_id) {
   Item item = { command_id, label, SkBitmap(), TYPE_RADIO, group_id, NULL,
-                NULL };
+                NULL, kMagicIdAlive };
   InsertItemAtIndex(item, index);
 }
 
@@ -167,7 +198,8 @@ void SimpleMenuModel::InsertRadioItemWithStringIdAt(
 
 void SimpleMenuModel::InsertSubMenuAt(
     int index, int command_id, const string16& label, MenuModel* model) {
-  Item item = { command_id, label, SkBitmap(), TYPE_SUBMENU, -1, model, NULL };
+  Item item = { command_id, label, SkBitmap(), TYPE_SUBMENU, -1, model, NULL,
+                kMagicIdAlive };
   InsertItemAtIndex(item, index);
 }
 
