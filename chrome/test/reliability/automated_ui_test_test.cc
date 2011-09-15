@@ -4,10 +4,10 @@
 
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/common/url_constants.h"
-#include "chrome/test/automated_ui_tests/automated_ui_test_base.h"
 #include "chrome/test/automation/automation_proxy.h"
 #include "chrome/test/automation/browser_proxy.h"
 #include "chrome/test/automation/tab_proxy.h"
+#include "chrome/test/reliability/automated_ui_test_base.h"
 #include "chrome/test/ui/ui_test.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
@@ -129,7 +129,7 @@ TEST_F(AutomatedUITestBase, MAYBE_CloseTab) {
   ASSERT_EQ(1, tab_count);
 }
 
-// Flakiness tracked here: crbug.com/96049
+// Flakiness tracked there: http://crbug.com/96049.
 TEST_F(AutomatedUITestBase, FLAKY_OpenBrowserWindow) {
   int num_browser_windows;
   int tab_count;

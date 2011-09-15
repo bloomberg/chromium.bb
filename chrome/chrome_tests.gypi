@@ -246,12 +246,12 @@
         '..',
       ],
       'sources': [
-        'test/automated_ui_tests/automated_ui_test_base.cc',
-        'test/automated_ui_tests/automated_ui_test_base.h',
         'test/automation/proxy_launcher.cc',
         'test/automation/proxy_launcher.h',
         'test/base/layout_test_http_server.cc',
         'test/base/layout_test_http_server.h',
+        'test/reliability/automated_ui_test_base.cc',
+        'test/reliability/automated_ui_test_base.h',
         'test/ui/javascript_test_util.cc',
         'test/ui/npapi_test_helper.cc',
         'test/ui/npapi_test_helper.h',
@@ -408,9 +408,9 @@
         '..',
       ],
       'sources': [
-        'test/automated_ui_tests/automated_ui_test_interactive_test.cc',
-        'test/automated_ui_tests/automated_ui_tests.cc',
-        'test/automated_ui_tests/automated_ui_tests.h',
+        'test/reliability/automated_ui_test_interactive_test.cc',
+        'test/reliability/automated_ui_tests.cc',
+        'test/reliability/automated_ui_tests.h',
       ],
       'conditions': [
         ['OS=="win" and buildtype=="Official"', {
@@ -698,8 +698,8 @@
         'test/automation/automation_proxy_uitest.cc',
         'test/automation/automation_proxy_uitest.h',
         'test/automation/extension_proxy_uitest.cc',
-        'test/automated_ui_tests/automated_ui_test_test.cc',
         'test/base/chrome_process_util_uitest.cc',
+        'test/reliability/automated_ui_test_test.cc',
         'test/ui/history_uitest.cc',
         'test/ui/layout_plugin_uitest.cc',
         'test/ui/named_interface_uitest.cc',

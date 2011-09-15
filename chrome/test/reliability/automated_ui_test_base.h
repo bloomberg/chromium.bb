@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_TEST_AUTOMATED_UI_TESTS_AUTOMATED_UI_TEST_BASE_H_
-#define CHROME_TEST_AUTOMATED_UI_TESTS_AUTOMATED_UI_TEST_BASE_H_
+#ifndef CHROME_TEST_RELIABILITY_AUTOMATED_UI_TEST_BASE_H_
+#define CHROME_TEST_RELIABILITY_AUTOMATED_UI_TEST_BASE_H_
 #pragma once
 
 #include <string>
@@ -159,4 +159,4 @@ class AutomatedUITestBase : public UITest {
   DISALLOW_COPY_AND_ASSIGN(AutomatedUITestBase);
 };
 
-#endif  // CHROME_TEST_AUTOMATED_UI_TESTS_AUTOMATED_UI_TEST_BASE_H_
+#endif  // CHROME_TEST_RELIABILITY_AUTOMATED_UI_TEST_BASE_H_

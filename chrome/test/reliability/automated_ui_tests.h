@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_TEST_AUTOMATED_UI_TESTS_AUTOMATED_UI_TESTS_H_
-#define CHROME_TEST_AUTOMATED_UI_TESTS_AUTOMATED_UI_TESTS_H_
+#ifndef CHROME_TEST_RELIABILITY_AUTOMATED_UI_TESTS_H_
+#define CHROME_TEST_RELIABILITY_AUTOMATED_UI_TESTS_H_
 #pragma once
 
 // This takes an input file of commands, which consist of a series of
@@ -103,7 +103,7 @@
 
 #include <string>
 
-#include "chrome/test/automated_ui_tests/automated_ui_test_base.h"
+#include "chrome/test/reliability/automated_ui_test_base.h"
 #include "chrome/test/ui/ui_test.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 
@@ -396,4 +396,4 @@ class AutomatedUITest : public AutomatedUITestBase {
   DISALLOW_COPY_AND_ASSIGN(AutomatedUITest);
 };
 
-#endif  // CHROME_TEST_AUTOMATED_UI_TESTS_AUTOMATED_UI_TESTS_H_
+#endif  // CHROME_TEST_RELIABILITY_AUTOMATED_UI_TESTS_H_
