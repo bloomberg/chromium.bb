@@ -11,7 +11,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, CrossOriginXHRBackgroundPage) {
   ASSERT_TRUE(RunExtensionTest("cross_origin_xhr/background_page")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, CrossOriginXHRContentScript) {
+// Flaky on the trybots. See http://crbug.com/96725.
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, FLAKY_CrossOriginXHRContentScript) {
   host_resolver()->AddRule("*.com", "127.0.0.1");
   ASSERT_TRUE(StartTestServer());
   ASSERT_TRUE(RunExtensionTest("cross_origin_xhr/content_script")) << message_;

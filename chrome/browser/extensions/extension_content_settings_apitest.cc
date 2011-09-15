@@ -88,8 +88,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ContentSettings) {
                 url, url, CONTENT_SETTINGS_TYPE_NOTIFICATIONS, ""));
 }
 
+// Flaky on the trybots. See http://crbug.com/96725.
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest,
-                       ContentSettingsGetResourceIdentifiers) {
+                       FLAKY_ContentSettingsGetResourceIdentifiers) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableExperimentalExtensionApis);
   CommandLine::ForCurrentProcess()->AppendSwitch(

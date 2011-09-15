@@ -52,7 +52,8 @@ class MessageSender : public NotificationObserver {
 }  // namespace
 
 // Tests that message passing between extensions and content scripts works.
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Messaging) {
+// Flaky on the trybots. See http://crbug.com/96725.
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, FLAKY_Messaging) {
   ASSERT_TRUE(StartTestServer());
   ASSERT_TRUE(RunExtensionTest("messaging/connect")) << message_;
 }

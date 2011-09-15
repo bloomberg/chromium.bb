@@ -165,7 +165,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, OldPageActions) {
 }
 
 // Tests popups in page actions.
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ShowPageActionPopup) {
+// Flaky on the trybots. See http://crbug.com/96725.
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, FLAKY_ShowPageActionPopup) {
   ASSERT_TRUE(RunExtensionTest("page_action/popup")) << message_;
   const Extension* extension = GetSingleLoadedExtension();
   ASSERT_TRUE(extension) << message_;
