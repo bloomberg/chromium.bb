@@ -17,19 +17,15 @@ import os
 import re
 import shutil
 import stat
+import subprocess
 import sys
 import tempfile
-import time
 
 import common
-import subprocess
 
 import drmemory_analyze
 import memcheck_analyze
-import tempfile
 import tsan_analyze
-
-import logging_utils
 
 class BaseTool(object):
   """Abstract class for running Valgrind-, PIN-based and other dynamic
@@ -435,7 +431,7 @@ class ValgrindTool(BaseTool):
     for ppid in ppids:
       print "====================================================="
       print " Below is the report for valgrind wrapper PID=%d." % ppid
-      print " You can find the corresponding test "
+      print " You can find the corresponding test"
       print " by searching the above log for 'PID=%d'" % ppid
       sys.stdout.flush()
 
