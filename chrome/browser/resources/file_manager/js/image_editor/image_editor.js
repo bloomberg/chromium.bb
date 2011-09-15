@@ -29,6 +29,7 @@ function ImageEditor(container, toolbarContainer, saveCallback, closeCallback) {
   canvas.height = this.canvasWrapper_.clientHeight;
 
   this.buffer_ = new ImageBuffer(canvas);
+  this.modified_ = false;
 
   // TODO(dgozman): consider adding a ScaleControl in v2.
 
@@ -66,14 +67,28 @@ ImageEditor.open = function(saveCallback, closeCallback, source, opt_metadata) {
 
 /**
  * Loads a new image and its metadata.
+ *
+ * Takes into account the image orientation encoded in metadata.
+ *
  * @param {HTMLCanvasElement|HTMLImageElement|String} source
  * @param {Object} opt_metadata
  */
 ImageEditor.prototype.load = function(source, opt_metadata) {
   this.onModeCancel();
-  this.getBuffer().load(source);
-  this.metadata_ = opt_metadata;
+  this.metadata_ = opt_metadata || {};
+  this.getBuffer().load(source, this.metadata_.imageTransform);
+
+  // The image buffer already did the adjustment for the orientation,
+  // so the transform data is no longer relevant.
+  delete this.metadata_.imageTransform;
+  delete this.metadata_.thumbnailTransform;
+
+  this.modified_ = false;
 };
+
+ImageEditor.prototype.getMetadata = function() { return this.metadata_ };
+
+ImageEditor.prototype.isModified = function() { return this.modified_ };
 
 /**
  * Window resize handler.
@@ -103,7 +118,7 @@ ImageEditor.prototype.close = function() {
  */
 ImageEditor.prototype.save = function() {
   this.saveCallback_(ImageEncoder.getBlob(
-      this.getBuffer().getContent().getCanvas(), 'image/jpeg', this.metadata_));
+      this.getBuffer().getContent().getCanvas(), this.metadata_));
 };
 
 ImageEditor.prototype.onOptionsChange = function(options) {
@@ -228,6 +243,7 @@ ImageEditor.prototype.onModeCancel = function(save) {
   this.currentMode_.cleanUp();
   if (save) {
     this.currentMode_.commit();
+    this.modified_ = true;
   } else {
     this.currentMode_.rollback();
   }

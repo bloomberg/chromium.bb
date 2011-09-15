@@ -31,15 +31,16 @@ ImageBuffer.prototype.getContent = function() { return this.content_ };
  * Loads the new content.
  * A string parameter is treated as an image url.
  * @param {String|HTMLImageElement|HTMLCanvasElement} source
+ * @param {{scaleX: number, scaleY: number, rotate90: number}} opt_transform
  */
-ImageBuffer.prototype.load = function(source) {
+ImageBuffer.prototype.load = function(source, opt_transform) {
   if (typeof source == 'string') {
     var self = this;
     var image = new Image();
-    image.onload = function(e) { self.load(e.target); };
+    image.onload = function(e) { self.load(e.target, opt_transform) };
     image.src = source;
   } else {
-    this.content_.load(source);
+    this.content_.load(source, opt_transform);
     this.repaint();
   }
 };
@@ -247,6 +248,12 @@ ImageBuffer.Content.prototype.invalidateCaches = function() {
 
 ImageBuffer.Content.prototype.getCanvas = function() { return this.canvas_ };
 
+ImageBuffer.Content.prototype.detachCanvas = function() {
+  var canvas = this.canvas_;
+  this.setCanvas(this.createBlankCanvas(0, 0));
+  return canvas;
+};
+
 /**
  * Replaces the off-screen canvas.
  * To be used when the editor modifies the image dimensions.
@@ -297,16 +304,29 @@ ImageBuffer.Content.prototype.copyImageData = function (opt_width, opt_height) {
 
 /**
  * @param {HTMLImageElement|HTMLCanvasElement} image
+ * @param {{scaleX: number, scaleY: number, rotate90: number}} opt_transform
  */
-ImageBuffer.Content.prototype.load = function(image) {
-  this.canvas_.width = image.width;
-  this.canvas_.height = image.height;
+ImageBuffer.Content.prototype.load = function(image, opt_transform) {
+  opt_transform = opt_transform || { scaleX: 1, scaleY: 1, rotate90: 0};
+
+  if (opt_transform.rotate90 & 1) {  // Rotated +/-90deg, swap the dimensions.
+    this.canvas_.width = image.height;
+    this.canvas_.height = image.width;
+  } else {
+    this.canvas_.width = image.width;
+    this.canvas_.height = image.height;
+  }
 
   this.clear();
-  Rect.drawImage(this.canvas_.getContext("2d"), image);
+  ImageUtil.drawImageTransformed(
+      this.canvas_,
+      image,
+      opt_transform.scaleX,
+      opt_transform.scaleY,
+      opt_transform.rotate90 * Math.PI / 2);
   this.invalidateCaches();
 
-  this.viewport_.setImageSize(image.width, image.height);
+  this.viewport_.setImageSize(this.canvas_.width, this.canvas_.height);
   this.viewport_.fitImage();
 };
 

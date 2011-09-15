@@ -43,8 +43,6 @@ function FileManager(dialogDom, filesystem, rootEntries) {
 
   this.listType_ = null;
 
-  this.metadataCache_ = {};
-
   this.selection = null;
 
   this.clipboard_ = null;  // Current clipboard, or null if empty.
@@ -147,14 +145,7 @@ function FileManager(dialogDom, filesystem, rootEntries) {
 
   this.refocus();
 
-  // Pass all URLs to the metadata reader until we have a correct filter.
-  this.metadataUrlFilter_ = /.*/;
-
-  this.metadataReader_ = new Worker('js/metadata_dispatcher.js');
-  this.metadataReader_.onmessage = this.onMetadataMessage_.bind(this);
-  this.metadataReader_.postMessage({verb: 'init'});
-  // Initialization is not complete until the Worker sends back the
-  // 'initialized' message.  See below.
+  this.createMetadataProvider_();
 }
 
 FileManager.prototype = {
@@ -1588,7 +1579,7 @@ FileManager.prototype = {
       } else {
         self.dispatchEvent(new cr.Event('selection-summarized'));
       }
-    };
+    }
 
     if (this.dialogType_ == FileManager.DialogType.FULL_PAGE) {
       this.taskButtons_.innerHTML = '';
@@ -1608,62 +1599,36 @@ FileManager.prototype = {
     cacheNextFile();
   };
 
-  FileManager.prototype.onMetadataResult_ = function(fileURL, metadata) {
-    var observers = this.metadataCache_[fileURL];
-    if (!observers || !(observers instanceof Array)) {
-      console.error('Missing or invalid metadata observers: ' + fileURL + ': ' +
-                    observers);
-      return;
+
+  FileManager.prototype.createMetadataProvider_ = function() {
+    // Subclass MetadataProvider to notify tests when the initialization
+    // is complete.
+
+    var fileManager = this;
+
+    function TestAwareMetadataProvider () {
+      MetadataProvider.apply(this, arguments);
     }
 
-    console.log('metadata result:', metadata);
-    for (var i = 0; i < observers.length; i++) {
-      observers[i](metadata);
-    }
+    TestAwareMetadataProvider.prototype = {
+      __proto__: MetadataProvider.prototype,
 
-    this.metadataCache_[fileURL] = metadata;
-  };
+      onInitialized_: function() {
+        MetadataProvider.prototype.onInitialized_.apply(this, arguments);
 
-  FileManager.prototype.onMetadataError_ = function(fileURL, step, error) {
-    console.warn('metadata: ' + fileURL + ': ' + step + ': ' + error);
-    this.onMetadataResult_(fileURL, {});
-  };
+        // We're ready to run.  Tests can monitor for this state with
+        // ExtensionTestMessageListener listener("worker-initialized");
+        // ASSERT_TRUE(listener.WaitUntilSatisfied());
+        // Automated tests need to wait for this, otherwise we crash in
+        // browser_test cleanup because the worker process still has
+        // URL requests in-flight.
+        chrome.test.sendMessage('worker-initialized');
+        // PyAuto tests monitor this state by polling this variable
+        fileManager.workerInitialized_ = true;
+      }
+    };
 
-  /**
-   * Handles the 'initialized' message from the metadata reader Worker.
-   */
-  FileManager.prototype.onMetadataInitialized_ = function(regexp) {
-    this.metadataUrlFilter_ = regexp;
-    // We're ready to run.  Tests can monitor for this state with
-    // ExtensionTestMessageListener listener("worker-initialized");
-    // ASSERT_TRUE(listener.WaitUntilSatisfied());
-    // Automated tests need to wait for this, otherwise we crash in browser_test
-    // cleanup because the worker process still has URL requests in-flight.
-    chrome.test.sendMessage('worker-initialized');
-    // PyAuto tests monitor this state by polling this variable
-    this.workerInitialized_ = true;
-  };
-
-  FileManager.prototype.onMetadataLog_ = function(arglist) {
-    console.log.apply(console, ['metadata:'].concat(arglist));
-  };
-
-  /**
-   * Dispatch a message from a metadata reader to the appropriate onMetadata*
-   * method.
-   */
-  FileManager.prototype.onMetadataMessage_ = function(event) {
-    var data = event.data;
-
-    var methodName = 'onMetadata' + data.verb.substr(0, 1).toUpperCase() +
-        data.verb.substr(1) + '_';
-
-    if (!(methodName in this)) {
-      console.log('Unknown message from metadata reader: ' + data.verb, data);
-      return;
-    }
-
-    this[methodName].apply(this, data.arguments);
+    this.metadataProvider_ = new TestAwareMetadataProvider();
   };
 
   /**
@@ -1909,12 +1874,12 @@ FileManager.prototype = {
         chrome.fileBrowserPrivate.formatDevice(urls[0]);
       });
     } else if (id == 'gallery') {
-      this.openGallery_(details.entries);
+      this.openGallery_(urls);
     }
   };
 
   FileManager.prototype.getDeviceNumber = function(entry) {
-    if (!entry.isDirectory) return false;
+    if (!entry.isDirectory) return undefined;
     for (var i = 0; i < this.mountPoints_.length; i++) {
       if (normalizeAbsolutePath(entry.fullPath) ==
           normalizeAbsolutePath(this.mountPoints_[i].mountPath)) {
@@ -1922,21 +1887,25 @@ FileManager.prototype = {
       }
     }
     return undefined;
-  }
+  };
 
-  FileManager.prototype.openGallery_ = function(entries) {
+  FileManager.prototype.openGallery_ = function(urls) {
     var self = this;
 
     var galleryFrame = this.document_.createElement('iframe');
     galleryFrame.className = 'overlay-pane';
     galleryFrame.scrolling = 'no';
 
-    // TODO(dgozman): pass metadata to gallery.
     galleryFrame.onload = function() {
       galleryFrame.contentWindow.Gallery.open(
           self.currentDirEntry_,
-          entries,
-          function () { self.dialogDom_.removeChild(galleryFrame) });
+          urls,
+          function () {
+            // TODO(kaznacheev): keep selection.
+            self.rescanDirectoryNow_();  // Make sure new files show up.
+            self.dialogDom_.removeChild(galleryFrame);
+          },
+          self.metadataProvider_);
     };
 
     galleryFrame.src = 'js/image_editor/gallery.html';
@@ -2113,38 +2082,6 @@ FileManager.prototype = {
     }
   };
 
-  FileManager.prototype.cacheMetadata_ = function(entry, callback) {
-    var url = entry.toURL();
-    var cacheValue = this.metadataCache_[url];
-
-    if (!cacheValue) {
-      // This is the first time anyone's asked, go get it.
-      if (entry.name.match(this.metadataUrlFilter_)) {
-        this.metadataCache_[url] = [callback];
-        this.metadataReader_.postMessage(
-            {verb: 'request', arguments: [entry.toURL()]});
-        return;
-      }
-      // Cannot extract metadata for this file, return an empty map.
-      setTimeout(function() { callback({}) });
-      return;
-    }
-
-    if (cacheValue instanceof Array) {
-      // Something is already pending, add to the list of observers.
-      cacheValue.push(callback);
-      return;
-    }
-
-    if (cacheValue instanceof Object) {
-      // We already know the answer, let the caller know in a fresh call stack.
-      setTimeout(function() { callback(cacheValue) });
-      return;
-    }
-
-    console.error('Unexpected metadata cache value:' + cacheValue);
-  };
-
   FileManager.prototype.setPreviewMetadata = function(metadata) {
     this.previewMetadata_.textContent = '';
     if (!(metadata && metadata.ifd))
@@ -2184,7 +2121,7 @@ FileManager.prototype = {
 
     var iconType = this.getIconType(entry);
 
-    this.cacheMetadata_(entry, function (metadata) {
+    this.metadataProvider_.fetch(entry.toURL(), function (metadata) {
       var url = metadata.thumbnailURL;
       if (!url) {
         if (iconType == 'image') {
@@ -2202,7 +2139,7 @@ FileManager.prototype = {
     if (!entry)
       return;
 
-    this.cacheMetadata_(entry, function(metadata) {
+    this.metadataProvider_.fetch(entry.toURL(), function(metadata) {
       callback(metadata.description);
     });
   };

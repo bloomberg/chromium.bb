@@ -152,8 +152,7 @@ ImageEditor.Mode.Rotate.prototype.draw = function(context) {
     ImageUtil.trace.resetTimer('preview');
     var transformed = this.getContent().createBlankCanvas(
         screenClipped.width, screenClipped.height);
-    this.getTransform().apply(
-        transformed.getContext('2d'), this.preClippedOriginal_);
+    this.getTransform().apply(transformed, this.preClippedOriginal_);
     Rect.drawImage(context, transformed, screenClipped);
     ImageUtil.trace.reportTimer('preview');
   }
@@ -224,7 +223,7 @@ ImageEditor.Mode.Rotate.prototype.applyTransform = function() {
   var dstCanvas = this.getContent().createBlankCanvas(
       newSize.width * scale, newSize.height * scale);
   ImageUtil.trace.resetTimer('transform');
-  this.transform_.apply(dstCanvas.getContext('2d'), srcCanvas);
+  this.transform_.apply(dstCanvas, srcCanvas);
   ImageUtil.trace.reportTimer('transform');
   this.getContent().setCanvas(dstCanvas, newSize.width, newSize.height);
 
@@ -304,13 +303,9 @@ ImageEditor.Mode.Rotate.Transform.prototype.getTiltedRectSize =
 };
 
 ImageEditor.Mode.Rotate.Transform.prototype.apply = function(
-    context, srcCanvas) {
-  context.save();
-  context.translate(context.canvas.width / 2, context.canvas.height / 2);
-  context.rotate(this.getAngle());
-  context.scale(this.scaleX, this.scaleY);
-  context.drawImage(srcCanvas, -srcCanvas.width / 2, -srcCanvas.height / 2);
-  context.restore();
+    dstCanvas, srcCanvas) {
+  ImageUtil.drawImageTransformed(
+    dstCanvas, srcCanvas, this.scaleX, this.scaleY, this.getAngle());
 };
 
 /**

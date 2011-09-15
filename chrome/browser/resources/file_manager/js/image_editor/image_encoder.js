@@ -17,12 +17,11 @@ ImageEncoder.registerMetadataEncoder = function(constructor, mimeType) {
 
 /**
  * Create a metadata encoder for a given mime type.
- * @param {String} mimeType
  * @param {Object} metadata
  * @return {ImageEncoder.MetadataEncoder}
  */
-ImageEncoder.createMetadataEncoder = function(mimeType, metadata) {
-  var constructor = ImageEncoder.metadataEncoders[mimeType];
+ImageEncoder.createMetadataEncoder = function(metadata) {
+  var constructor = ImageEncoder.metadataEncoders[metadata.mimeType];
   return constructor ? new constructor(metadata) : null;
 };
 
@@ -30,14 +29,13 @@ ImageEncoder.createMetadataEncoder = function(mimeType, metadata) {
  * Return a blob with the encoded image with metadata inserted.
  * @param {HTMLCanvasElement} canvas The canvas with the image to be encoded.
  * @param canvas
- * @param {String} mimeType
  * @param {Object} metadata
  * @return {Blob}
  */
-ImageEncoder.getBlob = function(canvas, mimeType, metadata) {
+ImageEncoder.getBlob = function(canvas, metadata) {
   var blobBuilder = new WebKitBlobBuilder();
-  ImageEncoder.buildBlob(blobBuilder, canvas, mimeType, 1,
-      ImageEncoder.createMetadataEncoder(mimeType, metadata));
+  ImageEncoder.buildBlob(blobBuilder, canvas, metadata.mimeType, 1,
+      ImageEncoder.createMetadataEncoder(metadata));
   return blobBuilder.getBlob();
 };
 

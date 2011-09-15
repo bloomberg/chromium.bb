@@ -2,20 +2,30 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-function Gallery(container, closeCallback) {
+/**
+ * Image gallery for viewing and editing image files.
+ *
+ * @param {HTMLDivElement} container
+ * @param {function} closeCallback
+ * @param {MetadataProvider} metadataProvider
+ */
+function Gallery(container, closeCallback, metadataProvider) {
   this.container_ = container;
   this.document_ = container.ownerDocument;
   this.editing_ = false;
   this.closeCallback_ = closeCallback;
+  this.metadataProvider_ = metadataProvider;
   this.onFadeTimeoutBound_ = this.onFadeTimeout_.bind(this);
   this.fadeTimeoutId_ = null;
+
   this.initDom_();
 }
 
-Gallery.open = function(parentDirEntry, entries, closeCallback) {
+Gallery.open = function(
+    parentDirEntry, urls, closeCallback, metadataProvider) {
   var container = document.querySelector('.gallery');
-  var gallery = new Gallery(container, closeCallback);
-  gallery.load(parentDirEntry, entries);
+  var gallery = new Gallery(container, closeCallback, metadataProvider);
+  gallery.load(parentDirEntry, urls);
 };
 
 // TODO(dgozman): localization.
@@ -33,7 +43,7 @@ Gallery.prototype.initDom_ = function() {
   this.closeButton_ = doc.createElement('div');
   this.closeButton_.className = 'close';
   this.closeButton_.textContent = Gallery.CLOSE_LABEL;
-  this.closeButton_.addEventListener('click', this.closeCallback_);
+  this.closeButton_.addEventListener('click', this.onClose_.bind(this));
   this.container_.appendChild(this.closeButton_);
 
   this.imageContainer_ = doc.createElement('div');
@@ -44,8 +54,7 @@ Gallery.prototype.initDom_ = function() {
   this.toolbar_.className = 'toolbar';
   this.container_.appendChild(this.toolbar_);
 
-  this.ribbon_ = new Ribbon(this.toolbar_,
-      this.onImageSelected_.bind(this));
+  this.ribbon_ = new Ribbon(this.toolbar_, this.onSelect_.bind(this));
 
   this.editBar_  = doc.createElement('div');
   this.editBar_.className = 'edit-bar';
@@ -65,10 +74,10 @@ Gallery.prototype.initDom_ = function() {
   this.toolbar_.appendChild(this.shareButton_);
 
   this.editor_ = new ImageEditor(this.imageContainer_, this.editBar_,
-      this.onSave_.bind(this), null /*closeCallback*/);
+      null /*saveCallback*/, null /*closeCallback*/);
 };
 
-Gallery.prototype.load = function(parentDirEntry, entries) {
+Gallery.prototype.load = function(parentDirEntry, urls) {
   this.editBar_.setAttribute('hidden', 'hidden');
   // Firstchild is the toolbar with buttons, which should be hidden at start.
   this.editBar_.firstChild.setAttribute('hidden', 'hidden');
@@ -77,53 +86,81 @@ Gallery.prototype.load = function(parentDirEntry, entries) {
   this.toolbar_.removeAttribute('hidden');
   this.editing_ = false;
 
-  this.ribbon_.setEntries(entries);
-  this.parentDirEntry_ = parentDirEntry;
-
-  if (entries.length == 0)
+  if (urls.length == 0)
     return;
 
-  this.ribbon_.select(0);
-  this.editor_.resizeFrame();
+  // TODO(kaznacheev): instead of always selecting the 0-th url
+  // select the url passed from the FileManager.
+  this.ribbon_.load(urls, urls[0], this.metadataProvider_);
+  this.parentDirEntry_ = parentDirEntry;
 
   this.initiateFading_();
 };
 
-Gallery.prototype.onSave_ = function(blob) {
-  var name = this.entry_.name;
-  var ext = '';
-  var index = name.lastIndexOf('.');
-  if (index != -1) {
-    ext = name.substr(index);
-    name = name.substr(0, index);
+Gallery.prototype.saveChanges_ = function(opt_callback) {
+  if (!this.editor_.isModified()) {
+    if (opt_callback) opt_callback();
+    return;
   }
-  var now = new Date();
-  // TODO(dgozman): better name format.
-  name = name + '_Edited_' + now.getFullYear() + '_' +
-      (now.getMonth() + 1) + '_' + now.getDate() + '_' +
-      now.getHours() + '_' + now.getMinutes() + ext;
+
+  var currentItem = this.currentItem_;
+  var newFile = currentItem.isOriginal();
+  var name = currentItem.getCopyName();
+
+  var canvas = this.editor_.getBuffer().getContent().detachCanvas();
+  var metadata = this.editor_.getMetadata();
+  currentItem.overrideContent(canvas, metadata);
+
+  var self = this;
+
+  function onSuccess(url) {
+    console.log('Saved from gallery', name);
+    // Force the metadata provider to reread the metadata from the file.
+    self.metadataProvider_.reset(url);
+    currentItem.onSaveSuccess(url);
+    if (opt_callback) opt_callback();
+  }
 
   function onError(error) {
-    console.log('Error saving from gallery: "' + name + '"');
-    console.log(error);
+    console.log('Error saving from gallery', name, error);
+    currentItem.onSaveError(error);
+    if (opt_callback) opt_callback();
   }
 
-  // TODO(dgozman): Check for existence.
   this.parentDirEntry_.getFile(
-      name, {create: true, exclusive: true}, function(fileEntry) {
-    fileEntry.createWriter(function(fileWriter) {
-      fileWriter.onerror = onError;
-      fileWriter.onwritened = function() {
-        console.log('Saving from gallery succeeded: "' + name + '"');
-      };
-      fileWriter.write(blob);
-    }, onError);
+      name, {create: newFile, exclusive: newFile}, function(fileEntry) {
+        fileEntry.createWriter(function(fileWriter) {
+          function writeContent() {
+            fileWriter.onwriteend = onSuccess.bind(null, fileEntry.toURL());
+            fileWriter.write(ImageEncoder.getBlob(canvas, metadata));
+          }
+          fileWriter.onerror = onError;
+          if (newFile) {
+            writeContent();
+          } else {
+            fileWriter.onwriteend = writeContent;
+            fileWriter.truncate(0);
+          }
+        },
+    onError);
   }, onError);
 };
 
-Gallery.prototype.onImageSelected_ = function(entry) {
-  this.entry_ = entry;
-  this.editor_.load(entry.toURL());
+
+Gallery.prototype.onClose_ = function() {
+  // TODO: handle write errors gracefully (suggest retry or saving elsewhere).
+  this.saveChanges_(this.closeCallback_);
+};
+
+Gallery.prototype.onSelect_ = function(item) {
+  if (this.currentItem_) {
+    this.saveChanges_();
+  }
+
+  this.currentItem_ = item;
+
+  this.editor_.load(this.currentItem_.getContent(),
+                    ImageUtil.deepCopy(this.currentItem_.getMetadata()));
 };
 
 Gallery.prototype.onEdit_ = function(event) {
@@ -223,52 +260,51 @@ function Ribbon(parentNode, onSelect) {
   this.spacer_.className = 'ribbon-spacer';
 
   this.onSelect_ = onSelect;
-  this.entries_ = [];
-  this.images_ = [];
-  this.selectedIndex_ = -1;
+  this.items_ = [];
+  this.selectedItem_ = null;
   this.firstIndex_ = 0;
 }
 
 Ribbon.prototype.clear = function() {
   this.bar_.textContent = '';
-  this.entries_ = [];
-  this.images_ = [];
-  this.selectedIndex_ = -1;
+  this.items_ = [];
+  this.selectedItem_ = null;
   this.firstIndex_ = 0;
 };
 
-Ribbon.prototype.add = function(entry) {
-  this.entries_.push(entry);
-  var index = this.entries_.length - 1;
-
-  var box = this.document_.createElement('div');
-  box.className = 'ribbon-image';
-  box.addEventListener('click', this.select.bind(this, index));
-  this.images_.push(box);
-
-  var img = this.document_.createElement('img');
-  img.setAttribute('src', entry.toURL());
-  box.appendChild(img);
+Ribbon.prototype.add = function(url, selected, metadataProvider) {
+  var index = this.items_.length;
+  var selectClosure = this.select.bind(this);
+  var item =
+      new Ribbon.Item(this.document_, url, selectClosure);
+  this.items_.push(item);
+  metadataProvider.fetch(url, function(metadata) {
+    item.setMetadata(metadata);
+    if (selected) selectClosure(item);
+  });
 };
 
-Ribbon.prototype.setEntries = function(entries) {
+Ribbon.prototype.load = function(urls, selectedUrl, metadataProvider) {
   this.clear();
-  for (var index = 0; index < entries.length; ++index) {
-    this.add(entries[index]);
+  for (var index = 0; index < urls.length; ++index) {
+    this.add(urls[index], urls[index] == selectedUrl, metadataProvider);
   }
 
   window.setTimeout(this.redraw.bind(this), 0);
 };
 
-Ribbon.prototype.select = function(index) {
-  if (index < 0 || index >= this.entries_.length)
-    return;
-  if (this.selectedIndex_ != -1)
-    this.images_[this.selectedIndex_].removeAttribute('selected');
-  this.selectedIndex_ = index;
-  this.images_[this.selectedIndex_].setAttribute('selected', 'selected');
-  if (this.onSelect_)
-    this.onSelect_(this.entries_[index]);
+Ribbon.prototype.select = function(item) {
+  if (this.selectedItem_) {
+    this.selectedItem_.select(false);
+  }
+
+  this.selectedItem_ = item;
+
+  if (this.selectedItem_) {
+    this.selectedItem_.select(true);
+    if (this.onSelect_)
+      this.onSelect_(this.selectedItem_);
+  }
 };
 
 Ribbon.prototype.redraw = function() {
@@ -279,10 +315,10 @@ Ribbon.prototype.redraw = function() {
   var width = this.bar_.clientWidth - 40;
 
   var fit = Math.round(Math.floor(width / itemWidth));
-  var lastIndex = Math.min(this.entries_.length, this.firstIndex_ + fit);
+  var lastIndex = Math.min(this.items_.length, this.firstIndex_ + fit);
   this.firstIndex_ = Math.max(0, lastIndex - fit);
   for (var index = this.firstIndex_; index < lastIndex; ++index) {
-    this.bar_.appendChild(this.images_[index]);
+    this.bar_.appendChild(this.items_[index].getBox());
   }
   this.bar_.appendChild(this.spacer_);
 };
@@ -295,7 +331,7 @@ Ribbon.prototype.scrollLeft = function() {
 };
 
 Ribbon.prototype.scrollRight = function() {
-  if (this.firstIndex_ < this.entries_.length - 1) {
+  if (this.firstIndex_ < this.items_.length - 1) {
     this.firstIndex_++;
     this.redraw();
   }
@@ -309,8 +345,129 @@ Ribbon.prototype.scrollToFirst = function() {
 };
 
 Ribbon.prototype.scrollToLast = function() {
-  if (this.firstIndex_ < this.entries_.length - 1) {
-    this.firstIndex_ = this.entries_.length - 1;
+  if (this.firstIndex_ < this.items_.length - 1) {
+    this.firstIndex_ = this.items_.length - 1;
     this.redraw();
   }
+};
+
+
+Ribbon.Item = function(document, url, selectClosure) {
+  this.url_ = url;
+
+  this.img_ = document.createElement('img');
+
+  this.box_ = document.createElement('div');
+  this.box_.className = 'ribbon-image';
+  this.box_.addEventListener('click', selectClosure.bind(null, this));
+  this.box_.appendChild(this.img_);
+
+  this.original_ = true;
+};
+
+Ribbon.Item.prototype.getBox = function () { return this.box_ };
+
+Ribbon.Item.prototype.isOriginal = function () { return this.original_ };
+
+Ribbon.Item.prototype.select = function(on) {
+  if (on)
+    this.box_.setAttribute('selected', 'selected');
+  else
+    this.box_.removeAttribute('selected');
+};
+
+// TODO: Localize?
+Ribbon.Item.COPY_SIGNATURE = '_Edited_';
+
+Ribbon.Item.prototype.getCopyName = function () {
+  // When saving a modified image we never overwrite the original file (the one
+  // that existed prior to opening the Gallery. Instead we save to a file named
+  // <original-name>_Edited_<date-stamp>.<original extension>.
+
+  var name = this.url_.substr(this.url_.lastIndexOf('/') + 1);
+
+  // If the item represents a file created during the current Gallery session
+  // we reuse it for subsequent saves instead of creating multiple copies.
+  if (!this.original_)
+    return name;
+
+  this.original_ = false;
+
+  var ext = '';
+  var index = name.lastIndexOf('.');
+  if (index != -1) {
+    ext = name.substr(index);
+    name = name.substr(0, index);
+    var signaturePos = name.indexOf(Ribbon.Item.COPY_SIGNATURE);
+    if (signaturePos >= 0) {
+      // The file is likely to be a copy created during a previous session.
+      // Replace the signature instead of appending a new one.
+      name = name.substr(0, signaturePos);
+    }
+  }
+
+  function twoDigits(n) { return (n < 10 ? '0' : '' ) + n }
+
+  var now = new Date();
+
+  // Datestamp the copy with YYYYMMDD_HHMMSS (similar to what many cameras do)
+  return name +
+      Ribbon.Item.COPY_SIGNATURE +
+      now.getFullYear() +
+      twoDigits(now.getMonth() + 1) +
+      twoDigits(now.getDate()) +
+      '_' +
+      twoDigits(now.getHours()) +
+      twoDigits(now.getMinutes()) +
+      twoDigits(now.getSeconds()) +
+      ext;
+};
+
+// The url and metadata stored in the item are not valid while the modified
+// image is being saved. Use cached data instead.
+
+Ribbon.Item.prototype.overrideContent = function(canvas, metadata) {
+  this.cachedCanvas_ = canvas;
+  this.cachedMetadata_ = metadata;
+};
+
+Ribbon.Item.prototype.getContent = function () {
+  return this.cachedCanvas_ || this.url_;
+};
+
+Ribbon.Item.prototype.getMetadata = function () {
+  return this.cachedMetadata_ || this.metadata_;
+};
+
+Ribbon.Item.prototype.onSaveSuccess = function(url) {
+  this.setMetadata(this.cachedMetadata_);
+
+  this.url_ = url;
+  delete this.cachedCanvas_;
+  delete this.cachedMetadata_;
+};
+
+Ribbon.Item.prototype.onSaveError = function(error) {
+  // TODO(kaznacheev): notify the user that the file write failed and
+  // suggest ways to rescue the modified image (retry/save elsewhere).
+  // For now - just drop the modified content.
+  delete this.cachedCanvas_;
+  delete this.cachedMetadata_;
+};
+
+Ribbon.Item.prototype.setMetadata = function(metadata) {
+  this.metadata_ = metadata;
+
+  var transform =
+      metadata.thumbnailURL ?
+      metadata.thumbnailTransform :
+      metadata.imageTransform;
+
+  this.box_.style.webkitTransform = transform ?
+      ('scaleX(' + transform.scaleX + ') ' +
+      'scaleY(' + transform.scaleY + ') ' +
+      'rotate(' + transform.rotate90 * 90 + 'deg)') :
+      '';
+
+  this.img_.setAttribute('src', metadata.thumbnailURL || this.url_);
 };

@@ -17,6 +17,8 @@ const EXIF_TAG_SUBIFD = 0x014a;  // Pointer from TIFF to "Extra" IFDs.
 const EXIF_TAG_JPG_THUMB_OFFSET = 0x0201;  // Pointer from TIFF to thumbnail.
 const EXIF_TAG_JPG_THUMB_LENGTH = 0x0202;  // Length of thumbnail data.
 
+const EXIF_TAG_ORIENTATION = 0x0112;
+
 function ExifParser(parent) {
   MetadataParser.apply(this, [parent]);
   this.verbose = false;
@@ -101,6 +103,7 @@ ExifParser.prototype.parse = function(file, callback, errorCallback) {
 
       var metadata = {
         metadataType: 'exif',
+        mimeType: 'image/jpeg',
         littleEndian: (order == EXIF_ALIGN_LITTLE),
         ifd: {
           image: {},
@@ -116,12 +119,15 @@ ExifParser.prototype.parse = function(file, callback, errorCallback) {
       self.vlog('Read image directory.');
       br.seek(directoryOffset);
       directoryOffset = self.readDirectory(br, metadata.ifd.image);
+      metadata.imageTransform = self.parseOrientation(metadata.ifd.image);
 
       // Thumbnail Directory chained from the end of the image directory.
       if (directoryOffset) {
         self.vlog('Read thumbnail directory.');
         br.seek(directoryOffset);
         self.readDirectory(br, metadata.ifd.thumbnail);
+        metadata.thumbnailTransform =
+            self.parseOrientation(metadata.ifd.thumbnail);
       }
 
       // EXIF Directory may be specified as a tag in the image directory.
@@ -290,6 +296,28 @@ ExifParser.prototype.readTagValue = function(br, tag) {
 
   this.vlog('Read tag: 0x' + tag.id.toString(16) + '/' + tag.format + ': ' +
             tag.value);
+};
+
+ExifParser.SCALEX   = [1, -1, -1,  1,  1,  1, -1, -1];
+ExifParser.SCALEY   = [1,  1, -1, -1, -1,  1,  1, -1];
+ExifParser.ROTATE90 = [0,  0,  0,  0,  1,  1,  1,  1];
+
+/**
+ * Transform exif-encoded orientation into a set of parameters compatible with
+ * CSS and canvas transforms (scaleX, scaleY, rotation).
+ *
+ * @param {Object} ifd exif property dictionary (image or thumbnail)
+ */
+ExifParser.prototype.parseOrientation = function(ifd) {
+  if (ifd[EXIF_TAG_ORIENTATION]) {
+    var index = (ifd[EXIF_TAG_ORIENTATION].value || 1) - 1;
+    return {
+      scaleX: ExifParser.SCALEX[index],
+      scaleY: ExifParser.SCALEY[index],
+      rotate90: ExifParser.ROTATE90[index]
+    }
+  }
+  return null;
 };
 
 MetadataDispatcher.registerParserClass(ExifParser);

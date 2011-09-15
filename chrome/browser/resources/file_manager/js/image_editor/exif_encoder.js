@@ -23,6 +23,7 @@ const EXIF_TAG_JPG_THUMB_LENGTH = 0x0202;  // Length of thumbnail data.
 const EXIF_TAG_IMAGE_WIDTH = 0x0100;
 const EXIF_TAG_IMAGE_HEIGHT = 0x0101;
 
+const EXIF_TAG_ORIENTATION = 0x0112;
 const EXIF_TAG_X_DIMENSION = 0xA002;
 const EXIF_TAG_Y_DIMENSION = 0xA003;
 
@@ -64,6 +65,9 @@ ExifEncoder.prototype.setImageData = function(canvas) {
   ExifEncoder.findOrCreateTag(image, EXIF_TAG_EXIFDATA);
   ExifEncoder.findOrCreateTag(exif, EXIF_TAG_X_DIMENSION).value = canvas.width;
   ExifEncoder.findOrCreateTag(exif, EXIF_TAG_Y_DIMENSION).value = canvas.height;
+
+  // Always save in default orientation.
+  ExifEncoder.findOrCreateTag(image, EXIF_TAG_ORIENTATION).value = 1;
 };
 
 
@@ -87,6 +91,9 @@ ExifEncoder.prototype.setThumbnailData = function(canvas, dataURL) {
     // The values for these tags will be set in ExifWriter.encode.
     ExifEncoder.findOrCreateTag(thumbnail, EXIF_TAG_JPG_THUMB_OFFSET);
     ExifEncoder.findOrCreateTag(thumbnail, EXIF_TAG_JPG_THUMB_LENGTH);
+
+    // Always save in default orientation.
+    ExifEncoder.findOrCreateTag(thumbnail, EXIF_TAG_ORIENTATION).value = 1;
 
     this.metadata_.thumbnailURL = dataURL;
   } else if (this.ifd_.thumbnail) {

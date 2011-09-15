@@ -253,3 +253,44 @@ Circle.prototype.inside = function(x, y) {
   y -= this.y;
   return x * x + y * y <= this.squaredR;
 };
+
+/**
+ * Copy an image applying scaling and rotation.
+ *
+ * @param {HTMLCanvasElement} dst destination
+ * @param {HTMLCanvasElement|HTMLImageElement} src source
+ * @param {number} scaleX
+ * @param {number} scaleY
+ * @param {number} angle (in radians)
+ */
+ImageUtil.drawImageTransformed = function(dst, src, scaleX, scaleY, angle) {
+  var context = dst.getContext('2d');
+  context.save();
+  context.translate(context.canvas.width / 2, context.canvas.height / 2);
+  context.rotate(angle);
+  context.scale(scaleX, scaleY);
+  context.drawImage(src, -src.width / 2, -src.height / 2);
+  context.restore();
+};
+
+
+ImageUtil.deepCopy = function(obj) {
+  if (typeof obj != 'object')
+    return obj;  // Copy built-in types as is.
+
+  var res;
+  if (obj.constructor.name == 'Array') {
+    // obj.constructor == Array would give a false negative if obj came
+    // from a different context.
+    res = [];
+    for (var i = 0; i != obj.length; i++) {
+      res[i] = ImageUtil.deepCopy(obj[i]);
+    }
+  } else {
+    res = {};
+    for (var p in obj) {
+      res[p] = ImageUtil.deepCopy(obj[p]);
+    }
+  }
+  return res;
+};

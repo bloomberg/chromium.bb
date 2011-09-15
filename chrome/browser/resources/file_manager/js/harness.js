@@ -58,7 +58,7 @@ var harness = {
    * 'Reset Fileystem' button click handler.
    */
   onClearClick: function() {
-    utils.forEachDirEntry(this.filesystem.root, function(dirEntry) {
+    util.forEachDirEntry(this.filesystem.root, function(dirEntry) {
       if (!dirEntry)
         return console.log('Filesystem reset.');
 
