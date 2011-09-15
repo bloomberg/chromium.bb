@@ -129,14 +129,8 @@ TEST_F(AutomatedUITestBase, MAYBE_CloseTab) {
   ASSERT_EQ(1, tab_count);
 }
 
-// crbug.com/96049
-#if defined(OS_WIN)
-#define MAYBE_OpenBrowserWindow FLAKY_OpenBrowserWindow
-#else
-#define MAYBE_OpenBrowserWindow OpenBrowserWindow
-#endif
-
-TEST_F(AutomatedUITestBase, MAYBE_OpenBrowserWindow) {
+// Flakiness tracked here: crbug.com/96049
+TEST_F(AutomatedUITestBase, FLAKY_OpenBrowserWindow) {
   int num_browser_windows;
   int tab_count;
   ASSERT_TRUE(automation()->GetBrowserWindowCount(&num_browser_windows));
