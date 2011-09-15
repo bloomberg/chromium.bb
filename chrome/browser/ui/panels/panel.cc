@@ -163,7 +163,7 @@ BrowserWindowTesting* Panel::GetBrowserWindowTesting() {
 }
 
 StatusBubble* Panel::GetStatusBubble() {
-  NOTIMPLEMENTED();
+  // TODO(jennb): Implement.
   return NULL;
 }
 
@@ -185,11 +185,11 @@ void Panel::UpdateDevTools() {
 }
 
 void Panel::UpdateLoadingAnimations(bool should_animate) {
-  NOTIMPLEMENTED();
+  // TODO(jennb): Implement.
 }
 
 void Panel::SetStarredState(bool is_starred) {
-  NOTIMPLEMENTED();
+  // TODO(jennb): Figure out if this applies to Panels.
 }
 
 gfx::Rect Panel::GetRestoredBounds() const {
@@ -201,7 +201,7 @@ gfx::Rect Panel::GetBounds() const {
 }
 
 bool Panel::IsMaximized() const {
-  NOTIMPLEMENTED();
+  // TODO(jennb): Figure out how this applies to Panels. Means isZoomed.
   return false;
 }
 
@@ -224,25 +224,25 @@ bool Panel::IsFullscreenBubbleVisible() const {
 }
 
 LocationBar* Panel::GetLocationBar() const {
-  NOTIMPLEMENTED();
+  // Panels do not have a location bar.
   return NULL;
 }
 
 void Panel::SetFocusToLocationBar(bool select_all) {
-  NOTIMPLEMENTED();
+  // Panels do not have a location bar.
 }
 
 void Panel::UpdateReloadStopState(bool is_loading, bool force) {
-  NOTIMPLEMENTED();
+  // TODO(jennb): Implement.
 }
 
 void Panel::UpdateToolbar(TabContentsWrapper* contents,
                           bool should_restore_state) {
-  NOTIMPLEMENTED();
+  // Panels do not have a toolbar.
 }
 
 void Panel::FocusToolbar() {
-  NOTIMPLEMENTED();
+  // Panels do not have a toolbar.
 }
 
 void Panel::FocusAppMenu() {

@@ -32,12 +32,12 @@ AutoHidingDesktopBarCocoa::AutoHidingDesktopBarCocoa(Observer* observer)
 }
 
 void AutoHidingDesktopBarCocoa::UpdateWorkArea(const gfx::Rect& work_area) {
-  NOTIMPLEMENTED();
+  // TODO(jianli): Implement.
 }
 
 bool AutoHidingDesktopBarCocoa::IsEnabled(
     AutoHidingDesktopBar::Alignment alignment) {
-  NOTIMPLEMENTED();
+  // TODO(jianli): Implement.
   return false;
 }
 
