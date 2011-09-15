@@ -107,9 +107,12 @@ class PasswordTest(pyauto.PyUITest):
     # name and e-mail, rather than an e-mail and password.  Clicking on a
     # particular DOM element causes the e-mail and password to be displayed.
     click_js = """
-      var elements = document.getElementsByClassName("account");
-      if (elements && elements.length > 0)
-        elements[0].onclick();
+      var elements = document.getElementsByClassName("accounts");
+      if (elements && elements.length > 0) {
+        elements = elements[0].getElementsByTagName("p");
+        if (elements && elements.length > 0)
+          elements[0].onclick();
+      }
       window.domAutomationController.send("done");
     """
     self.ExecuteJavascript(click_js, 0, 0)
