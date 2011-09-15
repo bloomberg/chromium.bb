@@ -454,6 +454,9 @@ cr.define('options', function() {
       // The default state is to sync everything.
       this.setCheckboxesToKeepEverythingSynced_(true);
 
+      // Reset encryption settings to 'Encrypt passwords'
+      $('encrypt-sensitive-option').checked = true;
+
       // If the account is not synced with a custom passphrase, reset the
       // passphrase radio when switching to the 'Sync everything' page.
       if (!this.usePassphrase_) {
