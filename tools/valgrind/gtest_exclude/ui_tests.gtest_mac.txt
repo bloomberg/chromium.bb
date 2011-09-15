@@ -224,6 +224,9 @@ HistoryTester.VerifyHistoryLength1
 HistoryTester.VerifyHistoryLength2
 RedirectTest.ClientServerServer
 DomCheckerTest.File
+OptionsUITest.LoadOptionsByURL
+OutOfProcessPPAPITest.FileSystem
+OutOfProcessPPAPITest.Graphics2D
 PPAPITest.Broker
 PPAPITest.Core
 PPAPITest.Memory
@@ -304,6 +307,3 @@ AutomatedUITestBase.OpenCloseBrowserWindowWithAccelerator
 # http://crbug.com/92177
 CustomHandlerMailStartupTest.CustomHandlerMailStartup
 CustomHandlerWebcalStartupTest.CustomHandlerWebcalStartup
-
-# http://crbug.com/96413
-OptionsUITest.LoadOptionsByURL
