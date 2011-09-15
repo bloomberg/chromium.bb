@@ -38,6 +38,18 @@ ContextInfo::ContextInfo(v8::Persistent<v8::Context> context,
 
 ContextInfo::~ContextInfo() {}
 
+WebFrame* ContextInfo::GetWebFrame() const {
+  return WebFrame::frameForContext(context);
+}
+
+RenderView* ContextInfo::GetRenderView() const {
+  WebFrame* frame = GetWebFrame();
+  if (!frame || !frame->view())
+    return NULL;
+
+  return RenderView::FromWebView(frame->view());
+}
+
 ContextList& GetContexts() {
   return g_singleton_data.Get().contexts;
 }

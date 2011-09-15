@@ -392,12 +392,7 @@ void EventBindings::CallFunction(const std::string& extension_id,
     if (!extension_id.empty() && extension_id != (*it)->extension_id)
       continue;
 
-    WebFrame* context_frame = WebFrame::frameForContext((*it)->context);
-    if (!context_frame || !context_frame->view())
-      continue;
-
-    RenderView* context_render_view =
-        RenderView::FromWebView(context_frame->view());
+    RenderView* context_render_view = (*it)->GetRenderView();
     if (!context_render_view)
       continue;
 

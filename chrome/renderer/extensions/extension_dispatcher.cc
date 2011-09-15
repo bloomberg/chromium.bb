@@ -60,6 +60,7 @@ bool ExtensionDispatcher::OnControlMessageReceived(
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ExtensionDispatcher, message)
     IPC_MESSAGE_HANDLER(ExtensionMsg_MessageInvoke, OnMessageInvoke)
+    IPC_MESSAGE_HANDLER(ExtensionMsg_DeliverMessage, OnDeliverMessage)
     IPC_MESSAGE_HANDLER(ExtensionMsg_SetFunctionNames, OnSetFunctionNames)
     IPC_MESSAGE_HANDLER(ExtensionMsg_Loaded, OnLoaded)
     IPC_MESSAGE_HANDLER(ExtensionMsg_Unloaded, OnUnloaded)
@@ -140,6 +141,13 @@ void ExtensionDispatcher::OnMessageInvoke(const std::string& extension_id,
     RenderThread::current()->ScheduleIdleHandler(
         kInitialExtensionIdleHandlerDelayS);
   }
+}
+
+void ExtensionDispatcher::OnDeliverMessage(int target_port_id,
+                                           const std::string& message) {
+  RendererExtensionBindings::DeliverMessage(target_port_id,
+                                            message,
+                                            NULL);  // All render views.
 }
 
 void ExtensionDispatcher::OnLoaded(const ExtensionMsg_Loaded_Params& params) {

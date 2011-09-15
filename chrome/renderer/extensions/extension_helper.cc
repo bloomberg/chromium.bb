@@ -16,6 +16,7 @@
 #include "chrome/renderer/extensions/event_bindings.h"
 #include "chrome/renderer/extensions/extension_dispatcher.h"
 #include "chrome/renderer/extensions/extension_process_bindings.h"
+#include "chrome/renderer/extensions/renderer_extension_bindings.h"
 #include "chrome/renderer/extensions/user_script_idle_scheduler.h"
 #include "chrome/renderer/extensions/user_script_slave.h"
 #include "content/common/json_value_serializer.h"
@@ -121,6 +122,7 @@ bool ExtensionHelper::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(ExtensionHelper, message)
     IPC_MESSAGE_HANDLER(ExtensionMsg_Response, OnExtensionResponse)
     IPC_MESSAGE_HANDLER(ExtensionMsg_MessageInvoke, OnExtensionMessageInvoke)
+    IPC_MESSAGE_HANDLER(ExtensionMsg_DeliverMessage, OnExtensionDeliverMessage)
     IPC_MESSAGE_HANDLER(ExtensionMsg_ExecuteCode, OnExecuteCode)
     IPC_MESSAGE_HANDLER(ExtensionMsg_GetApplicationInfo, OnGetApplicationInfo)
     IPC_MESSAGE_HANDLER(ExtensionMsg_UpdateBrowserWindowId,
@@ -202,6 +204,11 @@ void ExtensionHelper::OnExtensionMessageInvoke(const std::string& extension_id,
                                                const GURL& event_url) {
   EventBindings::CallFunction(
       extension_id, function_name, args, render_view(), event_url);
+}
+
+void ExtensionHelper::OnExtensionDeliverMessage(int target_id,
+                                                const std::string& message) {
+  RendererExtensionBindings::DeliverMessage(target_id, message, render_view());
 }
 
 void ExtensionHelper::OnExecuteCode(

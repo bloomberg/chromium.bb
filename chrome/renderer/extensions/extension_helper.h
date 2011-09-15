@@ -66,6 +66,8 @@ class ExtensionHelper : public RenderViewObserver,
                                 const std::string& function_name,
                                 const base::ListValue& args,
                                 const GURL& event_url);
+  void OnExtensionDeliverMessage(int target_port_id,
+                                 const std::string& message);
   void OnExecuteCode(const ExtensionMsg_ExecuteCode_Params& params);
   void OnGetApplicationInfo(int page_id);
   void OnNotifyRendererViewType(ViewType::Type view_type);

@@ -30,14 +30,22 @@ struct ContextInfo {
               WebKit::WebFrame* frame);
   ~ContextInfo();
 
+  // Returns the web frame associated with this context. Can also return NULL if
+  // the context has been disassociated with the frame, and not GC'd yet.
+  WebKit::WebFrame* GetWebFrame() const;
+
+  // Returns the RenderView associated wit hthis context. Can also return NULL.
+  RenderView* GetRenderView() const;
+
   v8::Persistent<v8::Context> context;
 
   // The extension ID this context is associated with.
   std::string extension_id;
 
   // The frame the context is associated with. ContextInfo can outlive its
-  // frame, so this should not be dereferenced. It is stored only for use for
-  // comparison.
+  // frame, so this should not be dereferenced. Use GetWebFrame() instead for
+  // most cases. This is used for comparisons during unload when GetWebFrame()
+  // doesn't work.
   void* unsafe_frame;
 
   // A count of the number of events that are listening in this context. When
