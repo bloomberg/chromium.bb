@@ -5,7 +5,7 @@
 #ifndef PPAPI_SHARED_IMPL_OPENGLES2_IMPL_H_
 #define PPAPI_SHARED_IMPL_OPENGLES2_IMPL_H_
 
-#include "ppapi/c/ppb_opengles.h"
+#include "ppapi/c/ppb_opengles2.h"
 #include "ppapi/shared_impl/ppapi_shared_export.h"
 
 namespace ppapi {

@@ -13,7 +13,7 @@
 
 #include "ppapi/c/dev/ppb_console_dev.h"
 #include "ppapi/c/pp_errors.h"
-#include "ppapi/c/ppb_opengles.h"
+#include "ppapi/c/ppb_opengles2.h"
 #include "ppapi/cpp/dev/context_3d_dev.h"
 #include "ppapi/cpp/dev/surface_3d_dev.h"
 #include "ppapi/cpp/dev/video_decoder_client_dev.h"

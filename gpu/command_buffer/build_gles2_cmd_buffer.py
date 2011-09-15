@@ -1750,15 +1750,23 @@ _FUNCTION_INFO = {
   },
   'Placeholder447CHROMIUM': {
     'type': 'UnknownCommand',
+    'extension': True,
+    'chromium': True,
   },
   'Placeholder451CHROMIUM': {
     'type': 'UnknownCommand',
+    'extension': True,
+    'chromium': True,
   },
   'Placeholder452CHROMIUM': {
     'type': 'UnknownCommand',
+    'extension': True,
+    'chromium': True,
   },
   'Placeholder453CHROMIUM': {
     'type': 'UnknownCommand',
+    'extension': True,
+    'chromium': True,
   },
 }
 
@@ -5705,8 +5713,8 @@ const size_t GLES2Util::enum_to_string_table_len_ =
       file.Write("typedef %s %s;\n" % (v, k))
     file.Write("#endif  // __gl2_h_\n\n")
 
-    file.Write("#define PPB_OPENGLES2_INTERFACE "
-        "\"PPB_OpenGLES;2.0\"\n")
+    file.Write("#define PPB_OPENGLES2_INTERFACE_1_0 \"PPB_OpenGLES2;1.0\"\n")
+    file.Write("#define PPB_OPENGLES2_INTERFACE PPB_OPENGLES2_INTERFACE_1_0\n")
 
     file.Write("\nstruct PPB_OpenGLES2 {\n")
     for func in self.original_functions:
@@ -5913,7 +5921,7 @@ def main(argv):
   if options.alternate_mode == "ppapi":
     # To trigger this action, do "make ppapi_gles_bindings"
     os.chdir("ppapi");
-    gen.WritePepperGLES2Interface("c/dev/ppb_opengles_dev.h")
+    gen.WritePepperGLES2Interface("c/ppb_opengles2.h")
     gen.WriteGLES2ToPPAPIBridge("lib/gl/gles2/gles2.c")
 
   elif options.alternate_mode == "chrome_ppapi":

@@ -11,7 +11,7 @@
 
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/ppb.h"
-#include "ppapi/c/ppb_opengles.h"
+#include "ppapi/c/ppb_opengles2.h"
 
 #ifdef __cplusplus
 extern "C" {
