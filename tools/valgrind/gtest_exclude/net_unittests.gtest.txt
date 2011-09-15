@@ -2,8 +2,5 @@
 KeygenHandlerTest.*SmokeTest
 KeygenHandlerTest.*ConcurrencyTest
 
-# Fails Valgrind with varying stack traces. http://crbug.com/43179
-SpdyNetworkTransactionTest.PostWithEarlySynReply
-
 # Hangs, see http://crbug.com/61908
 DirectoryListerTest.BigDirRecursiveTest
