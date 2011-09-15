@@ -154,7 +154,7 @@ void DevToolsRemoteListenSocket::DispatchField() {
   static const std::string kHandshakeString = "ChromeDevToolsHandshake";
   switch (state_) {
     case HANDSHAKE:
-      if (protocol_field_.compare(kHandshakeString)) {
+      if (protocol_field_ != kHandshakeString) {
         state_ = INVALID;
       } else {
         Send(kHandshakeString, true);
