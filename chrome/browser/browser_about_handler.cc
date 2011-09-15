@@ -698,6 +698,30 @@ std::string AboutDiscards() {
   } else {
     output.append("<p>None found.  Wait 10 seconds, then refresh.</p>");
   }
+
+  base::SystemMemoryInfoKB meminfo;
+  base::GetSystemMemoryInfo(&meminfo);
+  output.append("<h3>System memory information in MB</h3>");
+  output.append("<table>");
+  output.append(AddStringRow(
+    "Total Memory", base::IntToString(meminfo.total / 1024)));
+  output.append(AddStringRow(
+    "Free Memory", base::IntToString(meminfo.free / 1024)));
+  output.append(AddStringRow(
+    "Buffered Memory", base::IntToString(meminfo.buffers / 1024)));
+  output.append(AddStringRow(
+    "Cached Memory", base::IntToString(meminfo.cached / 1024)));
+  output.append(AddStringRow(
+    "Committed Memory", base::IntToString(
+    (meminfo.total - meminfo.free - meminfo.buffers - meminfo.cached) / 1024)));
+  output.append(AddStringRow(
+    "Active Anon Memory", base::IntToString(meminfo.active_anon / 1024)));
+  output.append(AddStringRow(
+    "Inactive Anon Memory", base::IntToString(meminfo.inactive_anon / 1024)));
+  output.append(AddStringRow(
+    "Shared Memory", base::IntToString(meminfo.shmem / 1024)));
+  output.append("</table>");
+
   AppendFooter(&output);
   return output;
 }
