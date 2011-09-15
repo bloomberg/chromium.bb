@@ -137,7 +137,8 @@ void PpapiThread::Unregister(uint32 plugin_dispatcher_id) {
 }
 
 void PpapiThread::OnMsgLoadPlugin(const FilePath& path) {
-  base::ScopedNativeLibrary library(base::LoadNativeLibrary(path, NULL));
+  std::string error;
+  base::ScopedNativeLibrary library(base::LoadNativeLibrary(path, &error));
 
 #if defined(OS_WIN)
   // Once we lower the token the sandbox is locked down and no new modules
@@ -156,7 +157,8 @@ void PpapiThread::OnMsgLoadPlugin(const FilePath& path) {
 #endif
 
   if (!library.is_valid()) {
-    LOG(ERROR) << "Failed to load pepper module";
+    LOG(ERROR) << "Failed to load Pepper module from "
+      << path.value() << " (error: " << error << ")";
     return;
   }
 
