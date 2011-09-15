@@ -30,7 +30,7 @@ vars = {
   "ffmpeg_revision": "99115",
   "sfntly_revision": "54",
   "skia_revision": "2258",
-  "v8_revision": "9248",
+  "v8_revision": "9288",
   "webrtc_revision": "565",
 
   # Note: On most bots, clang is not checked out via DEPS but by
