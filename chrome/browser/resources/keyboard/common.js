@@ -186,6 +186,9 @@ function setupKeyEventHandlers(key, element, handlers) {
    * @param {UIEvent} evt The UI event which triggered the key down.
    */
   var downHandler = function(evt) {
+    // Prevent any of the system gestures from happening.
+    evt.preventDefault();
+
     // Don't process a key down if the key is already down.
     if (key.pressed) {
       return;
@@ -194,7 +197,6 @@ function setupKeyEventHandlers(key, element, handlers) {
     if (keyDownHandler) {
       keyDownHandler();
     }
-    evt.preventDefault();
     repeatKey.cancel();
 
     // Start a repeating timer if there is a repeat interval and a function to
@@ -228,6 +230,9 @@ function setupKeyEventHandlers(key, element, handlers) {
    * @param {UIEvent} evt The UI event which triggered the key up.
    */
   var upHandler = function(evt) {
+    // Prevent any of the system gestures from happening.
+    evt.preventDefault();
+
     // Reset long-press timer.
     if (key.longPressTimer) {
       clearTimeout(key.longPressTimer);
@@ -248,7 +253,6 @@ function setupKeyEventHandlers(key, element, handlers) {
     if (keyUpHandler) {
       keyUpHandler();
     }
-    evt.preventDefault();
   };
 
   var outHandler = function(evt) {

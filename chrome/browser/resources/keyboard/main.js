@@ -155,6 +155,15 @@ window.onresize = function() {
 window.onload = function() {
   var body = document.getElementById('b');
 
+  // Catch all unhandled touch events and prevent default, to prevent the
+  // keyboard from responding to gestures like double tap.
+  function disableGestures(evt) {
+    evt.preventDefault();
+  }
+  body.addEventListener('touchstart', disableGestures);
+  body.addEventListener('touchmove', disableGestures);
+  body.addEventListener('touchend', disableGestures);
+
   var mainDiv = document.createElement('div');
   mainDiv.className = 'main';
   mainDiv.id = 'main';
