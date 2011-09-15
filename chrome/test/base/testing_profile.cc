@@ -793,6 +793,10 @@ void TestingProfile::SetDownloadManagerDelegate(
   NOTIMPLEMENTED();
 }
 
+chrome_browser_net::Predictor* TestingProfile::GetNetworkPredictor() {
+  return NULL;
+}
+
 PrefService* TestingProfile::GetOffTheRecordPrefs() {
   return NULL;
 }

@@ -280,6 +280,7 @@ class TestingProfile : public Profile {
   virtual PromoCounter* GetInstantPromoCounter();
   virtual ChromeURLDataManager* GetChromeURLDataManager();
   virtual prerender::PrerenderManager* GetPrerenderManager();
+  virtual chrome_browser_net::Predictor* GetNetworkPredictor();
   virtual PrefService* GetOffTheRecordPrefs();
 
   // TODO(jam): remove me once webkit_context_unittest.cc doesn't use Profile

@@ -606,6 +606,12 @@ prerender::PrerenderManager* OffTheRecordProfileImpl::GetPrerenderManager() {
   return NULL;
 }
 
+chrome_browser_net::Predictor* OffTheRecordProfileImpl::GetNetworkPredictor() {
+  // We do not store information about websites visited in OTR profiles which
+  // is necessary for a Predictor, so we do not have a Predictor at all.
+  return NULL;
+}
+
 void OffTheRecordProfileImpl::Observe(int type,
                      const NotificationSource& source,
                      const NotificationDetails& details) {

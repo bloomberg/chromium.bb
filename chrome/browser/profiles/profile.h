@@ -501,6 +501,9 @@ class Profile : public content::BrowserContext {
   // profile.
   virtual prerender::PrerenderManager* GetPrerenderManager() = 0;
 
+  // Returns the Predictor object used for dns prefetch.
+  virtual chrome_browser_net::Predictor* GetNetworkPredictor() = 0;
+
   std::string GetDebugName();
 
   // Returns whether it is a guest session.
@@ -547,8 +550,6 @@ class Profile : public content::BrowserContext {
 
   // Creates an OffTheRecordProfile which points to this Profile.
   Profile* CreateOffTheRecordProfile();
-
-  virtual chrome_browser_net::Predictor* GetNetworkPredictor();
 
  protected:
   friend class OffTheRecordProfileImpl;

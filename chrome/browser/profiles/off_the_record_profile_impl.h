@@ -130,6 +130,7 @@ class OffTheRecordProfileImpl : public Profile,
 
   virtual PrefProxyConfigTracker* GetProxyConfigTracker() OVERRIDE;
   virtual prerender::PrerenderManager* GetPrerenderManager() OVERRIDE;
+  virtual chrome_browser_net::Predictor* GetNetworkPredictor() OVERRIDE;
 
   // NotificationObserver implementation.
   virtual void Observe(int type,
