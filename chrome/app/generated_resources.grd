@@ -1088,12 +1088,24 @@ are declared in build/common.gypi.
       </if>
 
       <!-- App menu -->
+      <if expr="pp_ifdef('android') and not pp_ifdef('use_titlecase')">
+        <message name="IDS_SHOW_BOOKMARK_BAR" desc="In Title Case: The toggle to show the bookmark bar">
+          &amp;Always show bookmarks bar
+        </message>
+      </if>
+      <if expr="not pp_ifdef('android') and pp_ifdef('use_titlecase')">
+        <message name="IDS_SHOW_BOOKMARK_BAR" desc="In Title Case: The toggle to show the bookmark bar">
+          &amp;Show Bookmarks Bar
+        </message>
+      </if>
+      <if expr="not pp_ifdef('android') and not pp_ifdef('use_titlecase')">
+        <message name="IDS_SHOW_BOOKMARK_BAR" desc="The toggle to show the bookmark bar">
+          &amp;Show bookmarks bar
+        </message>
+      </if>
       <if expr="not pp_ifdef('use_titlecase')">
         <message name="IDS_SHOW_HISTORY" desc="The show history menu in the app menu">
           &amp;History
-        </message>
-        <message name="IDS_SHOW_BOOKMARK_BAR" desc="The toggle to show the bookmark bar">
-          &amp;Show bookmarks bar
         </message>
         <message name="IDS_IMPORT_SETTINGS_MENU_LABEL" desc="In sentence case: The app menu label to import bookmarks and settings.">
           Import bookmarks and settings...
@@ -1144,9 +1156,6 @@ are declared in build/common.gypi.
       <if expr="pp_ifdef('use_titlecase')">
         <message name="IDS_SHOW_HISTORY" desc="In Title Case: The show history menu in the app menu">
           &amp;History
-        </message>
-        <message name="IDS_SHOW_BOOKMARK_BAR" desc="In Title Case: The toggle to show the bookmark bar">
-          &amp;Show Bookmarks Bar
         </message>
         <message name="IDS_IMPORT_SETTINGS_MENU_LABEL" desc="In Title Case: The app menu label to import bookmarks and settings.">
           Import Bookmarks and Settings...
@@ -4352,9 +4361,16 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_NACL_NAME" desc="Name of the 'Enable Native Client' lab.">
         Native Client
       </message>
-      <message name="IDS_FLAGS_ENABLE_NACL_DESCRIPTION" desc="Description of the 'Enable Native Client' lab.">
-        Enable Native Client for all web applications, even those that were not installed from the Chrome Web Store.
-      </message>
+      <if expr="pp_ifdef('android')">
+        <message name="IDS_FLAGS_ENABLE_NACL_DESCRIPTION" desc="Description of the 'Enable Native Client' lab.">
+          Enable support for Native Client.
+        </message>
+      </if>
+      <if expr="not pp_ifdef('android')">
+        <message name="IDS_FLAGS_ENABLE_NACL_DESCRIPTION" desc="Description of the 'Enable Native Client' lab.">
+          Enable Native Client for all web applications, even those that were not installed from the Chrome Web Store.
+        </message>
+      </if>
       <message name="IDS_FLAGS_ENABLE_SHORTCUTS_PROVIDER" desc="Name of the 'Enable better ranking of previously selected shortcuts in omnibox' lab.">
         Enable 'shortcuts' in the omnibox.
       </message>
@@ -4497,9 +4513,16 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_EXPERIMENTAL_LOCATION_FEATURES_NAME" desc="Name of the 'Enable experimental location features' lab.">
         Experimental location features
       </message>
-      <message name="IDS_FLAGS_EXPERIMENTAL_LOCATION_FEATURES_DESCRIPTION" desc="Description of the 'Enable experimental location features' lab.">
-        Enables experimental extensions to the geolocation feature to use operating system location APIs (where available).
-      </message>
+      <if expr="pp_ifdef('android')">
+        <message name="IDS_FLAGS_EXPERIMENTAL_LOCATION_FEATURES_DESCRIPTION" desc="Description of the 'Enable experimental location features' lab.">
+          Enables experimental extensions to the geolocation feature. Includes using operating system location APIs (where available), and sending additional local network configuration data to the Google location service to provide higher accuracy positioning.
+        </message>
+      </if>
+      <if expr="not pp_ifdef('android')">
+        <message name="IDS_FLAGS_EXPERIMENTAL_LOCATION_FEATURES_DESCRIPTION" desc="Description of the 'Enable experimental location features' lab.">
+          Enables experimental extensions to the geolocation feature to use operating system location APIs (where available).
+        </message>
+      </if>
       <message name="IDS_FLAGS_BLOCK_ALL_THIRD_PARTY_COOKIES_NAME" desc="Name of the 'Block all third-party cookies' lab.">
         Block all third-party cookies
       </message>
@@ -4596,12 +4619,22 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_SYNC_OAUTH_DESCRIPTION" desc="Description for the flag to enable authenticating with OAuth">
         Use OAuth, rather than ClientLogin, to authenticate Sync operations.  This decouples authentication-specific user interface elements from the browser and enables a rich set of second-factor mechanisms.
       </message>
-      <message name="IDS_FLAGS_SYNC_TYPED_URLS_NAME" desc="Title for the flag to enable syncing the TypedUrl datatype">
-        Enable syncing Omnibox History
-      </message>
-      <message name="IDS_FLAGS_SYNC_TYPED_URLS_DESCRIPTION" desc="Description for the flag to enable syncing the TypedURL datatype">
-        Enable Omnibox History in the sync options. This allows syncing your typed URL history to other clients to assist in omnibox auto-completion.
-      </message>
+      <if expr="pp_ifdef('android')">
+        <message name="IDS_FLAGS_SYNC_TYPED_URLS_NAME" desc="Title for the flag to enable syncing the TypedUrl datatype">
+          Enable syncing typed URLs
+        </message>
+        <message name="IDS_FLAGS_SYNC_TYPED_URLS_DESCRIPTION" desc="Description for the flag to enable syncing the TypedURL datatype">
+          Enable typed URLs in the sync options. This allows syncing your typed URL history to other clients to assist in omnibox auto-completion.
+        </message>
+      </if>
+      <if expr="not pp_ifdef('android')">
+        <message name="IDS_FLAGS_SYNC_TYPED_URLS_NAME" desc="Title for the flag to enable syncing the TypedUrl datatype">
+          Enable syncing Omnibox History
+        </message>
+        <message name="IDS_FLAGS_SYNC_TYPED_URLS_DESCRIPTION" desc="Description for the flag to enable syncing the TypedURL datatype">
+          Enable Omnibox History in the sync options. This allows syncing your typed URL history to other clients to assist in omnibox auto-completion.
+        </message>
+      </if>
       <message name="IDS_FLAGS_PRERENDER_FROM_OMNIBOX_NAME" desc="Title for the flag to prerender from the omnibox">
         Prerender from omnibox
       </message>
