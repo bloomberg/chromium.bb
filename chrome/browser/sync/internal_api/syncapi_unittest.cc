@@ -68,6 +68,7 @@ using browser_sync::ModelSafeWorkerRegistrar;
 using browser_sync::sessions::SyncSessionSnapshot;
 using browser_sync::WeakHandle;
 using syncable::GetAllRealModelTypes;
+using syncable::kEncryptedString;
 using syncable::ModelType;
 using syncable::ModelTypeSet;
 using test::ExpectDictDictionaryValue;
@@ -399,6 +400,47 @@ TEST_F(SyncApiTest, WriteAndReadPassword) {
     const sync_pb::PasswordSpecificsData& data =
         password_node.GetPasswordSpecifics();
     EXPECT_EQ("secret", data.password_value());
+  }
+}
+
+TEST_F(SyncApiTest, WriteEncryptedTitle) {
+  KeyParams params = {"localhost", "username", "passphrase"};
+  {
+    ReadTransaction trans(FROM_HERE, test_user_share_.user_share());
+    trans.GetCryptographer()->AddKey(params);
+    trans.GetCryptographer()->set_encrypt_everything();
+  }
+  {
+    WriteTransaction trans(FROM_HERE, test_user_share_.user_share());
+    ReadNode root_node(&trans);
+    root_node.InitByRootLookup();
+
+    WriteNode bookmark_node(&trans);
+    EXPECT_TRUE(bookmark_node.InitUniqueByCreation(syncable::BOOKMARKS,
+                                                   root_node, "foo"));
+    bookmark_node.SetTitle(UTF8ToWide("foo"));
+
+    WriteNode pref_node(&trans);
+    EXPECT_TRUE(pref_node.InitUniqueByCreation(syncable::PREFERENCES,
+                                               root_node, "bar"));
+    pref_node.SetTitle(UTF8ToWide("bar"));
+  }
+  {
+    ReadTransaction trans(FROM_HERE, test_user_share_.user_share());
+    ReadNode root_node(&trans);
+    root_node.InitByRootLookup();
+
+    ReadNode bookmark_node(&trans);
+    EXPECT_TRUE(bookmark_node.InitByClientTagLookup(syncable::BOOKMARKS,
+                                                    "foo"));
+    EXPECT_EQ("foo", bookmark_node.GetTitle());
+    EXPECT_EQ(kEncryptedString,
+              bookmark_node.GetEntry()->Get(syncable::NON_UNIQUE_NAME));
+
+    ReadNode pref_node(&trans);
+    EXPECT_TRUE(pref_node.InitByClientTagLookup(syncable::PREFERENCES,
+                                                "bar"));
+    EXPECT_EQ(kEncryptedString, pref_node.GetTitle());
   }
 }
 

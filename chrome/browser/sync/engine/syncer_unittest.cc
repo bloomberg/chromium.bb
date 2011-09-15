@@ -24,6 +24,7 @@
 #include "chrome/browser/sync/engine/model_safe_worker.h"
 #include "chrome/browser/sync/engine/net/server_connection_manager.h"
 #include "chrome/browser/sync/engine/process_updates_command.h"
+#include "chrome/browser/sync/engine/nigori_util.h"
 #include "chrome/browser/sync/engine/syncer.h"
 #include "chrome/browser/sync/engine/syncer_proto_util.h"
 #include "chrome/browser/sync/engine/syncer_util.h"
@@ -57,6 +58,7 @@ using syncable::Entry;
 using syncable::GetFirstEntryWithName;
 using syncable::GetOnlyEntryWithName;
 using syncable::Id;
+using syncable::kEncryptedString;
 using syncable::MutableEntry;
 using syncable::ReadTransaction;
 using syncable::ScopedDirLookup;
@@ -566,9 +568,11 @@ TEST_F(SyncerTest, GetCommitIdsFilterEntriesNeedingEncryption) {
     MutableEntry entry_e(&wtrans, GET_BY_HANDLE, handle_e);
     MutableEntry entry_f(&wtrans, GET_BY_HANDLE, handle_f);
     entry_x.Put(SPECIFICS, encrypted_bookmark);
+    entry_x.Put(NON_UNIQUE_NAME, kEncryptedString);
     entry_b.Put(SPECIFICS, DefaultBookmarkSpecifics());
     entry_c.Put(SPECIFICS, DefaultBookmarkSpecifics());
     entry_e.Put(SPECIFICS, encrypted_bookmark);
+    entry_e.Put(NON_UNIQUE_NAME, kEncryptedString);
     entry_f.Put(SPECIFICS, DefaultPreferencesSpecifics());
   }
 

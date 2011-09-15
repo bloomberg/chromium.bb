@@ -59,7 +59,15 @@ bool EntryNeedsEncryption(const ModelTypeSet& encrypted_types,
                           const Entry& entry) {
   if (!entry.Get(UNIQUE_SERVER_TAG).empty())
     return false;  // We don't encrypt unique server nodes.
-  return SpecificsNeedsEncryption(encrypted_types, entry.Get(SPECIFICS));
+  syncable::ModelType type = entry.GetModelType();
+  if (type == PASSWORDS || type == NIGORI)
+    return false;
+  // Checking NON_UNIQUE_NAME is not necessary for the correctness of encrypting
+  // the data, nor for determining if data is encrypted. We simply ensure it has
+  // been overwritten to avoid any possible leaks of sensitive data.
+  return SpecificsNeedsEncryption(encrypted_types, entry.Get(SPECIFICS)) ||
+         (encrypted_types.count(type) > 0 &&
+          entry.Get(NON_UNIQUE_NAME) != kEncryptedString);
 }
 
 bool SpecificsNeedsEncryption(const ModelTypeSet& encrypted_types,

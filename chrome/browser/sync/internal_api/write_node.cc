@@ -77,7 +77,9 @@ bool WriteNode::UpdateEntryWithEncryption(
   }
 
   const sync_pb::EntitySpecifics& old_specifics = entry->Get(SPECIFICS);
-  if (AreSpecificsEqual(cryptographer, old_specifics, generated_specifics)) {
+  if (AreSpecificsEqual(cryptographer, old_specifics, generated_specifics) &&
+      (entry->Get(syncable::NON_UNIQUE_NAME) == kEncryptedString ||
+       !generated_specifics.has_encrypted())) {
     // Even if the data is the same but the old specifics are encrypted with an
     // old key, we should go ahead and re-encrypt with the new key.
     if ((!old_specifics.has_encrypted() &&
@@ -128,7 +130,8 @@ void WriteNode::SetTitle(const std::wstring& title) {
     return;  // Skip redundant changes.
 
   // Only set NON_UNIQUE_NAME to the title if we're not encrypted.
-  if (specifics.has_encrypted()) {
+  Cryptographer* cryptographer = GetTransaction()->GetCryptographer();
+  if (cryptographer->GetEncryptedTypes().count(GetModelType()) > 0) {
     if (old_name != kEncryptedString)
       entry_->Put(syncable::NON_UNIQUE_NAME, kEncryptedString);
   } else {
