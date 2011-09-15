@@ -9,6 +9,7 @@ import csv
 from datetime import datetime
 import optparse
 import os
+import sys
 import time
 
 from layouttests import LayoutTests
@@ -26,83 +27,112 @@ CURRENT_RESULT_FILE_FOR_DEBUG = os.path.join(DEFAULT_RESULT_DIR,
                                              CUR_TIME_FOR_DEBUG)
 PREV_TIME_FOR_DEBUG = '2011-09-11-18'
 
-DEFAULT_TEST_GROUP_FILE = os.path.join('testname', 'media.csv')
-DEFAULT_TEST_GROUP_NAME = 'media'
-
 
 def parse_option():
-    """Parse command-line options using OptionParser.
+  """Parse command-line options using OptionParser.
 
-    Returns:
-        an object containing all command-line option information.
-    """
-    option_parser = optparse.OptionParser()
+  Returns:
+      an object containing all command-line option information.
+  """
+  option_parser = optparse.OptionParser()
 
-    option_parser.add_option('-r', '--receiver-email-address',
-                             dest='receiver_email_address',
-                             help=('receiver\'s email adddress (defaults to '
-                                   '%default'),
-                             default='imasaki@chromium.org')
-    option_parser.add_option('-g', '--debug-mode', dest='debug',
-                             help=('Debug mode is used when you want to debug '
-                                   'the analyzer by using local file rather '
-                                   'than getting data from SVN. This shortens '
-                                   'the debugging time (off by default)'),
-                             action='store_true', default=False)
-    option_parser.add_option('-t', '--trend-graph-location',
-                             dest='trend_graph_location',
-                             help=('Location of the bug trend file; '
-                                   'file is expected to be in Google '
-                                   'Visualization API trend-line format '
-                                   '(defaults to %default)'),
-                             default=DEFAULT_GRAPH_FILE)
-    option_parser.add_option('-a', '--bug-anno-file-location',
-                             dest='bug_annotation_file_location',
-                             help=('Location of the bug annotation file; '
-                                   'file is expected to be in CSV format '
-                                   '(default to %default)'),
-                             default=DEFAULT_ANNO_FILE)
-    option_parser.add_option('-n', '--test-group-file-location',
-                             dest='test_group_file_location',
-                             help=('Location of the test group file; '
-                                   'file is expected to be in CSV format '
-                                   '(default to %default)'),
-                             default=DEFAULT_TEST_GROUP_FILE)
-    option_parser.add_option('-x', '--test-group-name',
-                             dest='test_group_name',
-                             help=('Name of test group '
-                                   '(default to %default)'),
-                             default=DEFAULT_TEST_GROUP_NAME)
-    option_parser.add_option('-d', '--result-directory-location',
-                             dest='result_directory_location',
-                             help=('Name of result directory location '
-                                   '(default to %default)'),
-                             default=DEFAULT_RESULT_DIR)
-    option_parser.add_option('-b', '--email-appended-text-file-location',
-                             dest='email_appended_text_file_location',
-                             help=('File location of the email appended text. '
-                                   'The text is appended in the status email. '
-                                   '(default to %default and no text is '
-                                   'appended in that case.)'),
-                             default=None)
-    option_parser.add_option('-c', '--email-only-change-mode',
-                             dest='email_only_change_mode',
-                             help=('With this mode, email is sent out '
-                                   'only when there is a change in the '
-                                   'analyzer result compared to the previous '
-                                   'result (off by default)'),
-                             action='store_true', default=False)
-    return option_parser.parse_args()[0]
+  option_parser.add_option('-r', '--receiver-email-address',
+                           dest='receiver_email_address',
+                           help=('receiver\'s email adddress (defaults to '
+                                 '%default'),
+                           default='imasaki@chromium.org')
+  option_parser.add_option('-g', '--debug-mode', dest='debug',
+                           help=('Debug mode is used when you want to debug '
+                                 'the analyzer by using local file rather '
+                                 'than getting data from SVN. This shortens '
+                                 'the debugging time (off by default)'),
+                           action='store_true', default=False)
+  option_parser.add_option('-t', '--trend-graph-location',
+                           dest='trend_graph_location',
+                           help=('Location of the bug trend file; '
+                                 'file is expected to be in Google '
+                                 'Visualization API trend-line format '
+                                 '(defaults to %default)'),
+                           default=DEFAULT_GRAPH_FILE)
+  option_parser.add_option('-a', '--bug-anno-file-location',
+                           dest='bug_annotation_file_location',
+                           help=('Location of the bug annotation file; '
+                                 'file is expected to be in CSV format '
+                                 '(default to %default)'),
+                           default=DEFAULT_ANNO_FILE)
+  option_parser.add_option('-n', '--test-group-file-location',
+                           dest='test_group_file_location',
+                           help=('Location of the test group file; '
+                                 'file is expected to be in CSV format '
+                                 'and lists all test name patterns. '
+                                 'When this option is not specified, '
+                                 'the value of --test-group-name is used '
+                                 'for a test name pattern.'),
+                           default=None)
+  option_parser.add_option('-x', '--test-group-name',
+                           dest='test_group_name',
+                           help='A name of test group. Either '
+                                '--test_group_file_location or this option '
+                                'needs to be specified.')
+  option_parser.add_option('-d', '--result-directory-location',
+                           dest='result_directory_location',
+                           help=('Name of result directory location '
+                                 '(default to %default)'),
+                           default=DEFAULT_RESULT_DIR)
+  option_parser.add_option('-b', '--email-appended-text-file-location',
+                           dest='email_appended_text_file_location',
+                           help=('File location of the email appended text. '
+                                 'The text is appended in the status email. '
+                                 '(default to %default and no text is '
+                                 'appended in that case.)'),
+                           default=None)
+  option_parser.add_option('-c', '--email-only-change-mode',
+                           dest='email_only_change_mode',
+                           help=('With this mode, email is sent out '
+                                 'only when there is a change in the '
+                                 'analyzer result compared to the previous '
+                                 'result (off by default)'),
+                           action='store_true', default=False)
+  return option_parser.parse_args()[0]
 
 
 def main():
   """A main function for the analyzer."""
   options = parse_option()
   start_time = datetime.now()
-
   # Do the main analysis.
   if not options.debug:
-    layouttests = LayoutTests(csv_file_path=options.test_group_file_location)
+    if not options.test_group_file_location and not options.test_group_name:
+      print ('Either --test-group-name or --test_group_file_location must be '
+             'specified. Exiting this program.')
+      sys.exit()
+    filter_names = []
+    if options.test_group_file_location and (
+        os.path.exists(options.test_group_file_location)):
+      filter_names = LayoutTests.GetLayoutTestNamesFromCSV(
+          options.test_group_file_location)
+      parent_location_list = LayoutTests.GetParentDirectoryList(filter_names)
+      recursion = False
+    else:
+      # When test group CSV file is not specified, test group name
+      # (e.g., 'media') is used for getting layout tests.
+      # The tests are in
+      #   http://svn.webkit.org/repository/webkit/trunk/LayoutTests/media
+      # Filtering is not set so all HTML files are considered as valid tests.
+      # Also, we look for the tests recursively.
+      if not os.path.exists(options.test_group_file_location):
+        print ('Warning: CSV file (%s) does not exist. So it is ignored and '
+               '%s is used for obtaining test names') % (
+                   options.test_group_file_location, options.test_group_name)
+      test_group_name = options.test_group_name
+      if not test_group_name.endswith('/'):
+        test_group_name += '/'
+      parent_location_list = [test_group_name]
+      filter_names = None
+      recursion = True
+    layouttests = LayoutTests(parent_location_list=parent_location_list,
+                              recursion=recursion,
+                              filter_names=filter_names)
     analyzer_result_map = layouttest_analyzer_helpers.AnalyzerResultMap(
         layouttests.JoinWithTestExpectation(TestExpectations()))
     (prev_time, prev_analyzer_result_map) = (
