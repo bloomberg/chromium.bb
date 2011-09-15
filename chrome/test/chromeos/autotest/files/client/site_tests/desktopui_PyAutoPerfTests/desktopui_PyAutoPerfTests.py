@@ -67,11 +67,15 @@ class desktopui_PyAutoPerfTests(chrome_test.ChromeTestBase):
     def parse_args(self, args):
         """Parses input arguments to this autotest."""
         parser = optparse.OptionParser()
-        parser.add_option('-i', '--num_iterations', dest='num_iterations',
-                          type='int', default=0,
+        parser.add_option('--iterations', dest='num_iterations', type='int',
+                          default=0,
                           help='Number of iterations for perf measurements. '
                                'Defaults to the value given in perf.py.')
-        return parser.parse_args(args)
+        # Preprocess the args to remove quotes before/after each one if they
+        # exist.  This is necessary because arguments passed via
+        # run_remote_tests.sh may be individually quoted, and those quotes must
+        # be stripped before they are parsed.
+        return parser.parse_args(map(lambda arg: arg.strip('\'\"'), args))
 
     def run_once(self, args=[]):
         """Runs the PyAuto performance tests."""
