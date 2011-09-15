@@ -9,3 +9,6 @@
 
 BUG_LOISLO WIN LINUX : inspector/debugger/scripts-sorting.html = TEXT
 
+BUG_LEVIN SNOWLEOPARD : http/tests/loading/307-after-303-after-post.html = PASS TEXT
+BUG_LEVIN SNOWLEOPARD : http/tests/security/mixedContent/insecure-image-in-main-frame.html = PASS TEXT
+BUG_LEVIN SNOWLEOPARD : http/tests/security/mixedContent/insecure-script-in-iframe.html = PASS TEXT
