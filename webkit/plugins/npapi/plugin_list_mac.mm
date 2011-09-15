@@ -107,7 +107,7 @@ bool PluginList::ShouldLoadPlugin(const WebPluginInfo& info,
   //  encounter earlier must override plugins we encounter later)
   for (size_t i = 0; i < plugin_groups->size(); ++i) {
     const std::vector<WebPluginInfo>& plugins =
-        (*plugin_groups)[i]->web_plugins_info();
+        (*plugin_groups)[i]->web_plugin_infos();
     for (size_t j = 0; j < plugins.size(); ++j) {
       if (plugins[j].path.BaseName() == info.path.BaseName()) {
         return false;  // Already have a loaded plugin higher in the hierarchy.

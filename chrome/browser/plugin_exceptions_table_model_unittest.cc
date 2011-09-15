@@ -93,8 +93,6 @@ class PluginExceptionsTableModelTest : public testing::Test {
     webkit::WebPluginInfo foo_plugin;
     foo_plugin.path = FilePath(FILE_PATH_LITERAL("a-foo"));
     foo_plugin.name = ASCIIToUTF16("FooPlugin");
-    foo_plugin.enabled =
-        webkit::WebPluginInfo::USER_ENABLED_POLICY_UNMANAGED;
     scoped_ptr<webkit::npapi::PluginGroup> foo_group(
         webkit::npapi::PluginGroup::FromWebPluginInfo(foo_plugin));
     plugins.push_back(*foo_group);
@@ -102,8 +100,6 @@ class PluginExceptionsTableModelTest : public testing::Test {
     webkit::WebPluginInfo bar_plugin;
     bar_plugin.path = FilePath(FILE_PATH_LITERAL("b-bar"));
     bar_plugin.name = ASCIIToUTF16("BarPlugin");
-    bar_plugin.enabled =
-        webkit::WebPluginInfo::USER_ENABLED_POLICY_UNMANAGED;
     scoped_ptr<webkit::npapi::PluginGroup> bar_group(
         webkit::npapi::PluginGroup::FromWebPluginInfo(bar_plugin));
     plugins.push_back(*bar_group);
