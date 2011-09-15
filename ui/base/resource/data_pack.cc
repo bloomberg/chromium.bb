@@ -17,9 +17,9 @@
 
 namespace {
 
-static const uint32 kFileFormatVersion = 4;
-// Length of file header: version, entry count and text encoding type.
-static const size_t kHeaderLength = 2 * sizeof(uint32) + sizeof(uint8);
+static const uint32 kFileFormatVersion = 3;
+// Length of file header: version and entry count.
+static const size_t kHeaderLength = 2 * sizeof(uint32);
 
 #pragma pack(push,2)
 struct DataPackEntry {
@@ -60,7 +60,7 @@ enum LoadErrors {
 namespace ui {
 
 // In .cc for MemoryMappedFile dtor.
-DataPack::DataPack() : resource_count_(0), text_encoding_type_(BINARY) {
+DataPack::DataPack() : resource_count_(0) {
 }
 DataPack::~DataPack() {
 }
@@ -83,7 +83,7 @@ bool DataPack::Load(const FilePath& path) {
   }
 
   // Parse the header of the file.
-  // First uint32: version; second: resource count;
+  // First uint32: version; second: resource count.
   const uint32* ptr = reinterpret_cast<const uint32*>(mmap_->data());
   uint32 version = ptr[0];
   if (version != kFileFormatVersion) {
@@ -95,17 +95,6 @@ bool DataPack::Load(const FilePath& path) {
     return false;
   }
   resource_count_ = ptr[1];
-
-  // third: text encoding.
-  const uint8* ptr_encoding = reinterpret_cast<const uint8*>(ptr + 2);
-  text_encoding_type_ = static_cast<TextEncodingType>(*ptr_encoding);
-  if (text_encoding_type_ != UTF8 && text_encoding_type_ != UTF16 &&
-      text_encoding_type_ != BINARY) {
-    LOG(ERROR) << "Bad data pack text encoding: got " << text_encoding_type_
-               << ", expected between " << BINARY << " and " << UTF16;
-    mmap_.reset();
-    return false;
-  }
 
   // Sanity check the file.
   // 1) Check we have enough entries.
@@ -174,8 +163,7 @@ RefCountedStaticMemory* DataPack::GetStaticMemory(uint16 resource_id) const {
 
 // static
 bool DataPack::WritePack(const FilePath& path,
-                         const std::map<uint16, base::StringPiece>& resources,
-                         TextEncodingType textEncodingType) {
+                         const std::map<uint16, base::StringPiece>& resources) {
   FILE* file = file_util::OpenFile(path, "wb");
   if (!file)
     return false;
@@ -191,21 +179,6 @@ bool DataPack::WritePack(const FilePath& path,
   uint32 entry_count = resources.size();
   if (fwrite(&entry_count, sizeof(entry_count), 1, file) != 1) {
     LOG(ERROR) << "Failed to write entry count";
-    file_util::CloseFile(file);
-    return false;
-  }
-
-  if (textEncodingType != UTF8 && textEncodingType != UTF16 &&
-      textEncodingType != BINARY) {
-    LOG(ERROR) << "Invalid text encoding type, got " << textEncodingType
-               << ", expected between " << BINARY << " and " << UTF16;
-    file_util::CloseFile(file);
-    return false;
-  }
-
-  uint8 write_buffer = textEncodingType;
-  if (fwrite(&write_buffer, sizeof(uint8), 1, file) != 1) {
-    LOG(ERROR) << "Failed to write file text resources encoding";
     file_util::CloseFile(file);
     return false;
   }

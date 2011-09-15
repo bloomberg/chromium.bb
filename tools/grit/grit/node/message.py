@@ -1,5 +1,5 @@
 #!/usr/bin/python2.4
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -19,7 +19,6 @@ from grit import exception
 from grit import tclib
 from grit import util
 
-BINARY, UTF8, UTF16 = range(3)
 
 # Finds whitespace at the start and end of a string which can be multiline.
 _WHITESPACE = re.compile('(?P<start>\s*)(?P<body>.+?)(?P<end>\s*)\Z',
@@ -187,7 +186,7 @@ class MessageNode(base.ContentNode):
     else:
       return self.attrs['offset']
 
-  def GetDataPackPair(self, lang, encoding):
+  def GetDataPackPair(self, lang):
     '''Returns a (id, string) pair that represents the string id and the string
     in utf8.  This is used to generate the data pack data file.
     '''
@@ -200,15 +199,10 @@ class MessageNode(base.ContentNode):
       # Windows automatically translates \n to a new line, but GTK+ doesn't.
       # Manually do the conversion here rather than at run time.
       message = message.replace("\\n", "\n")
-    # |message| is a python unicode string, so convert to a byte stream that
-    # has the correct encoding requested for the datapacks. We skip the first
-    # 2 bytes of text resources because it is the BOM.
-    if encoding == UTF8:
-      return id, message.encode('utf8')
-    if encoding == UTF16:
-      return id, message.encode('utf16')[2:]
-    # Default is BINARY
-    return id, message
+    # |message| is a python unicode string, so convert to a utf16 byte stream
+    # because that's the format of datapacks.  We skip the first 2 bytes
+    # because it is the BOM.
+    return id, message.encode('utf16')[2:]
 
   # static method
   def Construct(parent, message, name, desc='', meaning='', translateable=True):

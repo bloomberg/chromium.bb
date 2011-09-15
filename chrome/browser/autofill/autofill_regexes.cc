@@ -81,3 +81,4 @@ bool MatchesPattern(const string16& input, const string16& pattern) {
 }
 
 }  // namespace autofill
+

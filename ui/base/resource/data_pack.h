@@ -31,13 +31,6 @@ namespace ui {
 
 class UI_EXPORT DataPack {
  public:
-  // What type of encoding the text resources use.
-  enum TextEncodingType {
-    BINARY,
-    UTF8,
-    UTF16
-  };
-
   DataPack();
   ~DataPack();
 
@@ -54,16 +47,9 @@ class UI_EXPORT DataPack {
   // for localization strings.
   RefCountedStaticMemory* GetStaticMemory(uint16 resource_id) const;
 
-  // Writes a pack file containing |resources| to |path|. If there are any
-  // text resources to be written, their encoding must already agree to the
-  // |textEncodingType| specified. If no text resources are present, please
-  // indicate BINARY.
+  // Writes a pack file containing |resources| to |path|.
   static bool WritePack(const FilePath& path,
-                        const std::map<uint16, base::StringPiece>& resources,
-                        TextEncodingType textEncodingType);
-
-  // Get the encoding type of text resources.
-  TextEncodingType GetTextEncodingType() const { return text_encoding_type_; }
+                        const std::map<uint16, base::StringPiece>& resources);
 
  private:
   // The memory-mapped data.
@@ -71,9 +57,6 @@ class UI_EXPORT DataPack {
 
   // Number of resources in the data.
   size_t resource_count_;
-
-  // Type of encoding for text resources.
-  TextEncodingType text_encoding_type_;
 
   DISALLOW_COPY_AND_ASSIGN(DataPack);
 };

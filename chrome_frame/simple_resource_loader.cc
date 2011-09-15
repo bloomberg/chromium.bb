@@ -241,14 +241,10 @@ std::wstring SimpleResourceLoader::GetLocalizedResource(int message_id) {
     return std::wstring();
   }
 
-  // Data pack encodes strings as either UTF8 or UTF16.
-  string16 msg;
-  if (data_pack_->GetTextEncodingType() == ui::DataPack::UTF16) {
-    msg = string16(reinterpret_cast<const char16*>(data.data()),
-                   data.length() / 2);
-  } else if (data_pack_->GetTextEncodingType() == ui::DataPack::UTF8) {
-    msg = UTF8ToUTF16(data);
-  }
+  // Data pack encodes strings as UTF16.
+  DCHECK_EQ(data.length() % 2, 0U);
+  string16 msg(reinterpret_cast<const char16*>(data.data()),
+               data.length() / 2);
   return msg;
 }
 
