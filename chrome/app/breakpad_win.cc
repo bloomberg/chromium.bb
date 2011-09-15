@@ -99,9 +99,9 @@ static void SetIntegerValue(size_t offset, int value) {
   if (!g_custom_entries)
     return;
 
-  wcscpy_s((*g_custom_entries)[offset].value,
-           google_breakpad::CustomInfoEntry::kValueMaxLength,
-           base::StringPrintf(L"%d", value).c_str());
+  base::wcslcpy((*g_custom_entries)[offset].value,
+                base::StringPrintf(L"%d", value).c_str(),
+                google_breakpad::CustomInfoEntry::kValueMaxLength);
 }
 
 extern "C" void __declspec(dllexport) __cdecl SetCommandLine(
@@ -120,9 +120,9 @@ extern "C" void __declspec(dllexport) __cdecl SetCommandLine(
        ++argv_i, ++num_added) {
     // TODO(eroman): Filter out flags which aren't useful and just add bloat
     //               to the report.
-    wcsncpy((*g_custom_entries)[g_switches_offset + num_added].value,
-            argv[argv_i].c_str(),
-            google_breakpad::CustomInfoEntry::kValueMaxLength);
+    base::wcslcpy((*g_custom_entries)[g_switches_offset + num_added].value,
+                  argv[argv_i].c_str(),
+                  google_breakpad::CustomInfoEntry::kValueMaxLength);
   }
 
   // Make note of the total number of switches. This is useful in case we have
@@ -371,9 +371,9 @@ extern "C" void __declspec(dllexport) __cdecl SetClientId(
   if (!g_custom_entries)
     return;
 
-  wcscpy_s((*g_custom_entries)[g_client_id_offset].value,
-           google_breakpad::CustomInfoEntry::kValueMaxLength,
-           client_id);
+  base::wcslcpy((*g_custom_entries)[g_client_id_offset].value,
+                client_id,
+                google_breakpad::CustomInfoEntry::kValueMaxLength);
 }
 
 extern "C" void __declspec(dllexport) __cdecl SetNumberOfExtensions(
@@ -389,9 +389,9 @@ extern "C" void __declspec(dllexport) __cdecl SetExtensionID(
   if (!g_custom_entries)
     return;
 
-  wcscpy_s((*g_custom_entries)[g_extension_ids_offset + index].value,
-           google_breakpad::CustomInfoEntry::kValueMaxLength,
-           id);
+  base::wcslcpy((*g_custom_entries)[g_extension_ids_offset + index].value,
+                id,
+                google_breakpad::CustomInfoEntry::kValueMaxLength);
 }
 
 extern "C" void __declspec(dllexport) __cdecl SetGpuInfo(
@@ -401,21 +401,21 @@ extern "C" void __declspec(dllexport) __cdecl SetGpuInfo(
   if (!g_custom_entries)
     return;
 
-  wcscpy_s((*g_custom_entries)[g_gpu_info_offset].value,
-           google_breakpad::CustomInfoEntry::kValueMaxLength,
-           vendor_id);
-  wcscpy_s((*g_custom_entries)[g_gpu_info_offset+1].value,
-           google_breakpad::CustomInfoEntry::kValueMaxLength,
-           device_id);
-  wcscpy_s((*g_custom_entries)[g_gpu_info_offset+2].value,
-           google_breakpad::CustomInfoEntry::kValueMaxLength,
-           driver_version);
-  wcscpy_s((*g_custom_entries)[g_gpu_info_offset+3].value,
-           google_breakpad::CustomInfoEntry::kValueMaxLength,
-           pixel_shader_version);
-  wcscpy_s((*g_custom_entries)[g_gpu_info_offset+4].value,
-           google_breakpad::CustomInfoEntry::kValueMaxLength,
-           vertex_shader_version);
+  base::wcslcpy((*g_custom_entries)[g_gpu_info_offset].value,
+                vendor_id,
+                google_breakpad::CustomInfoEntry::kValueMaxLength);
+  base::wcslcpy((*g_custom_entries)[g_gpu_info_offset+1].value,
+                device_id,
+                google_breakpad::CustomInfoEntry::kValueMaxLength);
+  base::wcslcpy((*g_custom_entries)[g_gpu_info_offset+2].value,
+                driver_version,
+                google_breakpad::CustomInfoEntry::kValueMaxLength);
+  base::wcslcpy((*g_custom_entries)[g_gpu_info_offset+3].value,
+                pixel_shader_version,
+                google_breakpad::CustomInfoEntry::kValueMaxLength);
+  base::wcslcpy((*g_custom_entries)[g_gpu_info_offset+4].value,
+                vertex_shader_version,
+                google_breakpad::CustomInfoEntry::kValueMaxLength);
 }
 
 extern "C" void __declspec(dllexport) __cdecl SetNumberOfViews(
