@@ -7,9 +7,9 @@
 #pragma once
 
 #include <set>
-#include <vector>
 
 #include "base/memory/scoped_ptr.h"
+#include "base/observer_list.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/ui/toolbar/back_forward_menu_model.h"
@@ -203,8 +203,8 @@ class ToolbarView : public AccessiblePaneView,
   // Wrench menu.
   scoped_ptr<WrenchMenu> wrench_menu_;
 
-  // Vector of listeners to receive callbacks when the menu opens.
-  std::vector<views::MenuListener*> menu_listeners_;
+  // A list of listeners to call when the menu opens.
+  ObserverList<views::MenuListener> menu_listeners_;
 
   NotificationRegistrar registrar_;
 

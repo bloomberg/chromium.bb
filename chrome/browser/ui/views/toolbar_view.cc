@@ -11,14 +11,14 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/global_error_service.h"
+#include "chrome/browser/ui/global_error_service_factory.h"
 #include "chrome/browser/ui/toolbar/wrench_menu_model.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/browser_actions_container.h"
 #include "chrome/browser/ui/views/event_utils.h"
 #include "chrome/browser/ui/views/wrench_menu.h"
 #include "chrome/browser/upgrade_detector.h"
-#include "chrome/browser/ui/global_error_service.h"
-#include "chrome/browser/ui/global_error_service_factory.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/accessibility/browser_accessibility_state.h"
@@ -230,17 +230,11 @@ bool ToolbarView::IsAppMenuFocused() {
 }
 
 void ToolbarView::AddMenuListener(views::MenuListener* listener) {
-  menu_listeners_.push_back(listener);
+  menu_listeners_.AddObserver(listener);
 }
 
 void ToolbarView::RemoveMenuListener(views::MenuListener* listener) {
-  for (std::vector<views::MenuListener*>::iterator i(menu_listeners_.begin());
-       i != menu_listeners_.end(); ++i) {
-    if (*i == listener) {
-      menu_listeners_.erase(i);
-      return;
-    }
-  }
+  menu_listeners_.RemoveObserver(listener);
 }
 
 SkBitmap ToolbarView::GetAppMenuIcon(views::CustomButton::ButtonState state) {
@@ -337,8 +331,7 @@ void ToolbarView::RunMenu(views::View* source, const gfx::Point& /* pt */) {
   wrench_menu_.reset(new WrenchMenu(browser_));
   wrench_menu_->Init(wrench_menu_model_.get());
 
-  for (size_t i = 0; i < menu_listeners_.size(); ++i)
-    menu_listeners_[i]->OnMenuOpened();
+  FOR_EACH_OBSERVER(views::MenuListener, menu_listeners_, OnMenuOpened());
 
   wrench_menu_->RunMenu(app_menu_);
 }
