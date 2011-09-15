@@ -151,10 +151,7 @@ void ProfileSyncService::Initialize() {
   // We clear this here (vs Shutdown) because we want to remember that an error
   // happened on shutdown so we can display details (message, location) about it
   // in about:sync.
-  unrecoverable_error_detected_ = false;
-  unrecoverable_error_message_.clear();
-  unrecoverable_error_location_.reset();
-  last_actionable_error_ = SyncProtocolError();
+  ClearStaleErrors();
 
   // Watch the preference that indicates sync is managed so we can take
   // appropriate action.
@@ -382,7 +379,7 @@ SyncCredentials ProfileSyncService::GetCredentials() {
   return credentials;
 }
 
-void ProfileSyncService::InitializeBackend(bool delete_sync_data_folder) {
+void ProfileSyncService::InitializeBackend(bool delete_stale_data) {
   if (!backend_.get()) {
     NOTREACHED();
     return;
@@ -401,13 +398,16 @@ void ProfileSyncService::InitializeBackend(bool delete_sync_data_folder) {
   scoped_refptr<net::URLRequestContextGetter> request_context_getter(
       profile_->GetRequestContext());
 
+  if (delete_stale_data)
+    ClearStaleErrors();
+
   backend_->Initialize(
       this,
       WeakHandle<JsEventHandler>(sync_js_controller_.AsWeakPtr()),
       sync_service_url_,
       initial_types,
       credentials,
-      delete_sync_data_folder);
+      delete_stale_data);
 }
 
 void ProfileSyncService::CreateBackend() {
@@ -536,6 +536,13 @@ void ProfileSyncService::NotifyObservers() {
   // event routing.
   sync_js_controller_.HandleJsEvent(
       "onServiceStateChanged", JsEventDetails());
+}
+
+void ProfileSyncService::ClearStaleErrors() {
+  unrecoverable_error_detected_ = false;
+  unrecoverable_error_message_.clear();
+  unrecoverable_error_location_.reset();
+  last_actionable_error_ = SyncProtocolError();
 }
 
 // static

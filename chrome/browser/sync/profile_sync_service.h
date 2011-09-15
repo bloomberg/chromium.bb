@@ -554,6 +554,8 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
 
   void NotifyObservers();
 
+  void ClearStaleErrors();
+
   static const char* GetPrefNameForDataType(syncable::ModelType data_type);
 
   // About-flags experiment names for datatypes that aren't enabled by default
