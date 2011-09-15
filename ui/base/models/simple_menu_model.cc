@@ -32,8 +32,8 @@ MSVC_PUSH_DISABLE_WARNING(4748)
   }
 
 #if defined(COMPILER_MSVC)
-#pragma optimize("", off)
-MSVC_PUSH_DISABLE_WARNING(4748)
+MSVC_POP_WARNING()
+#pragma optimize("", on)
 #endif
 
   int command_id;
