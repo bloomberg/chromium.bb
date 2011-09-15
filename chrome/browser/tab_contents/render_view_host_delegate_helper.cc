@@ -461,7 +461,7 @@ WebPreferences RenderViewHostDelegateHelper::GetWebkitPrefs(
     web_prefs.allow_running_insecure_content =
         prefs->GetBoolean(prefs::kWebKitAllowRunningInsecureContent);
 
-#if defined(OS_MACOSX)
+#if defined(OS_MACOSX) || defined(TOUCH_UI)
     bool default_enable_scroll_animator = true;
 #else
     // On CrOS, the launcher always passes in the --enable flag.
