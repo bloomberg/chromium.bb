@@ -107,6 +107,14 @@
 static const int kUpdateCheckIntervalHours = 6;
 #endif
 
+#if defined(OS_WIN)
+// Attest to the fact that the call to the file thread to save preferences has
+// run, and it is safe to terminate.  This avoids the potential of some other
+// task prematurely terminating our waiting message loop by posting a
+// QuitTask().
+static bool g_end_session_file_thread_has_completed = false;
+#endif
+
 #if defined(USE_X11)
 // How long to wait for the File thread to complete during EndSession, on
 // Linux. We have a timeout here because we're unable to run the UI messageloop
@@ -281,8 +289,12 @@ BrowserProcessImpl::~BrowserProcessImpl() {
 }
 
 #if defined(OS_WIN)
-// Send a QuitTask to the given MessageLoop.
+// Send a QuitTask to the given MessageLoop when the (file) thread has processed
+// our (other) recent requests (to save preferences).
+// Change the boolean so that the receiving thread will know that we did indeed
+// send the QuitTask that terminated the message loop.
 static void PostQuit(MessageLoop* message_loop) {
+  g_end_session_file_thread_has_completed = true;
   message_loop->PostTask(FROM_HERE, new MessageLoop::QuitTask());
 }
 #elif defined(USE_X11)
@@ -346,7 +358,14 @@ void BrowserProcessImpl::EndSession() {
 #elif defined(OS_WIN)
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
       NewRunnableFunction(PostQuit, MessageLoop::current()));
-  MessageLoop::current()->Run();
+  int quits_received = 0;
+  do {
+    MessageLoop::current()->Run();
+    ++quits_received;
+  } while (!g_end_session_file_thread_has_completed);
+  // If we did get extra quits, then we should re-post them to the message loop.
+  while (--quits_received > 0)
+    MessageLoop::current()->PostTask(FROM_HERE, new MessageLoop::QuitTask());
 #else
   NOTIMPLEMENTED();
 #endif
