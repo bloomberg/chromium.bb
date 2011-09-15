@@ -240,6 +240,10 @@ class InfoBarNotificationObserver : public NotificationObserver {
   for (InfoBarController* controller in
        [NSArray arrayWithArray:infobarControllers_.get()]) {
     [[controller animatableView] stopAnimation];
+    // This code can be executed while InfoBarController is still on the stack,
+    // so we retain and autorelease the controller to prevent it from being
+    // dealloc'ed too early.
+    [[controller retain] autorelease];
     [[controller view] removeFromSuperview];
   }
   [infobarControllers_ removeAllObjects];
