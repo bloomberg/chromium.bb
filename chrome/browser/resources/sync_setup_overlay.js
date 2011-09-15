@@ -203,7 +203,6 @@ cr.define('options', function() {
 
     sendConfiguration_: function() {
       // Trying to submit, so hide previous errors.
-      $('aborted-text').hidden = true;
       $('error-text').hidden = true;
 
       if (this.noDataTypesChecked_()) {
@@ -393,19 +392,10 @@ cr.define('options', function() {
       }
     },
 
-    setErrorState_: function(args) {
-      if (!args.was_aborted)
-        return;
-
-      $('aborted-text').hidden = false;
-      $('choose-datatypes-ok').disabled = true;
-    },
-
     setCheckboxesAndErrors_: function(args) {
       this.setChooseDataTypesCheckboxes_(args);
       this.setEncryptionRadios_(args);
       this.setPassphraseRadios_(args);
-      this.setErrorState_(args);
     },
 
     showConfigure_: function(args) {
@@ -676,6 +666,8 @@ cr.define('options', function() {
         this.setBlurbError_(args.error_message);
       } else if (4 == args.error) {
         this.showCaptcha_(args);
+      } else if (7 == args.error) {
+        this.setBlurbError_(localStrings.getString('serviceUnavailableError'));
       } else if (8 == args.error) {
         this.showAccessCodeRequired_();
       } else if (args.error_message) {

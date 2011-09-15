@@ -447,9 +447,9 @@ void SyncSetupFlow::ActivateState(SyncSetupWizard::State state) {
     }
     case SyncSetupWizard::SETUP_ABORTED_BY_PENDING_CLEAR: {
       DictionaryValue args;
-      SyncSetupFlow::GetArgsForConfigure(service_, &args);
-      args.SetBoolean("was_aborted", true);
-      flow_handler_->ShowConfigure(args);
+      SyncSetupFlow::GetArgsForGaiaLogin(service_, &args);
+      args.SetInteger("error", GoogleServiceAuthError::SERVICE_UNAVAILABLE);
+      flow_handler_->ShowGaiaLogin(args);
       break;
     }
     case SyncSetupWizard::SETTING_UP: {

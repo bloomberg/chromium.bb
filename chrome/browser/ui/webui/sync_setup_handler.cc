@@ -258,7 +258,7 @@ void SyncSetupHandler::GetStaticLocalizedValues(
     { "searchEngines", IDS_SYNC_DATATYPE_SEARCH_ENGINES },
     { "openTabs", IDS_SYNC_DATATYPE_TABS },
     { "syncZeroDataTypesError", IDS_SYNC_ZERO_DATA_TYPES_ERROR },
-    { "abortedError", IDS_SYNC_SETUP_ABORTED_BY_PENDING_CLEAR },
+    { "serviceUnavailableError", IDS_SYNC_SETUP_ABORTED_BY_PENDING_CLEAR },
     { "encryptAllLabel", IDS_SYNC_ENCRYPT_ALL_LABEL },
     { "googleOption", IDS_SYNC_PASSPHRASE_OPT_GOOGLE },
     { "explicitOption", IDS_SYNC_PASSPHRASE_OPT_EXPLICIT },
