@@ -35,9 +35,9 @@ class InputMethodMenuButton : public StatusAreaButton,
   virtual void UpdateUI(const std::string& input_method_id,
                         const std::wstring& name,
                         const string16& tooltip,
-                        size_t num_active_input_methods) OVERRIDE;
-  virtual bool ShouldSupportConfigUI() OVERRIDE;
-  virtual void OpenConfigUI() OVERRIDE;
+                        size_t num_active_input_methods);
+  virtual bool ShouldSupportConfigUI();
+  virtual void OpenConfigUI();
 
   // Updates the UI from the current input method.
   void UpdateUIFromCurrentInputMethod();
