@@ -16,7 +16,6 @@ struct wl_display;
 struct wl_shell;
 struct wl_shm;
 struct wl_surface;
-struct wl_visual;
 
 namespace ui {
 
@@ -26,7 +25,7 @@ class WaylandScreen;
 
 // WaylandDisplay is a wrapper around wl_display. Once we get a valid
 // wl_display, the Wayland server will send different events to register
-// the Wayland compositor, shell, visuals, screens, input devices, ...
+// the Wayland compositor, shell, screens, input devices, ...
 class WaylandDisplay {
  public:
   // Attempt to create a connection to the display. If it fails this returns
@@ -56,8 +55,6 @@ class WaylandDisplay {
 
   wl_shm* shm() const { return shm_; }
 
-  wl_visual* visual() const { return visual_; }
-
  private:
   WaylandDisplay(char* name);
 
@@ -68,12 +65,6 @@ class WaylandDisplay {
                                   const char* interface,
                                   uint32_t version,
                                   void* data);
-
-  // Used by the compositor initialization to register the different visuals.
-  static void CompositorHandleVisual(void* data,
-                                     wl_compositor* compositor,
-                                     uint32_t id,
-                                     uint32_t token);
 
   // Used when the shell requires configuration. This is called when a
   // window is configured and receives its size.
@@ -93,7 +84,6 @@ class WaylandDisplay {
   wl_compositor* compositor_;
   wl_shell* shell_;
   wl_shm* shm_;
-  wl_visual* visual_;
   std::list<WaylandScreen*> screen_list_;
   std::list<WaylandInputDevice*> input_list_;
 

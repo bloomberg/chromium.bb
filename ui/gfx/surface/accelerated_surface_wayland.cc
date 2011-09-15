@@ -17,13 +17,10 @@ AcceleratedSurface::AcceleratedSurface(const gfx::Size& size)
       image_(NULL),
       pixmap_(NULL),
       texture_(0) {
-  ui::WaylandDisplay* dpy = ui::WaylandDisplay::GetDisplay(
-      gfx::GLSurfaceEGL::GetNativeDisplay());
   EGLDisplay edpy = gfx::GLSurfaceEGL::GetHardwareDisplay();
 
   pixmap_ = wl_egl_pixmap_create(size_.width(),
                                  size_.height(),
-                                 dpy->visual(),
                                  0);
 
   image_ = eglCreateImageKHR(

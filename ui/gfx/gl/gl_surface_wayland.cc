@@ -56,8 +56,6 @@ bool PixmapGLSurfaceEGL::Initialize() {
   pixmap_ = wl_egl_pixmap_create(
       size_.width(),
       size_.height(),
-      ui::WaylandDisplay::GetDisplay(
-          GLSurfaceEGL::GetNativeDisplay())->visual(),
       0);
   surface_ = eglCreatePixmapSurface(gfx::GLSurfaceEGL::GetDisplay(),
                                     gfx::GLSurfaceEGL::GetConfig(),

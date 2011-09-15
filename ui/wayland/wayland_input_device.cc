@@ -16,7 +16,8 @@ namespace ui {
 WaylandInputDevice::WaylandInputDevice(
     wl_display* display,
     uint32_t id)
-    : input_device_(wl_input_device_create(display, id, 1)),
+    : input_device_(static_cast<wl_input_device*>(
+          wl_display_bind(display, id, &wl_input_device_interface))),
       pointer_focus_(NULL),
       keyboard_focus_(NULL),
       keyboard_modifiers_(0) {

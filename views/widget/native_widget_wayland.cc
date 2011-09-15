@@ -77,8 +77,7 @@ void NativeWidgetWayland::InitNativeWidget(const Widget::InitParams& params) {
 
   egl_window_ = wl_egl_window_create(wayland_window_->surface(),
                                      allocation_.width(),
-                                     allocation_.height(),
-                                     wayland_display_->visual());
+                                     allocation_.height());
 
   SetNativeWindowProperty(kNativeWidgetKey, this);
 
@@ -86,7 +85,9 @@ void NativeWidgetWayland::InitNativeWidget(const Widget::InitParams& params) {
     if (Widget::compositor_factory()) {
       compositor_ = (*Widget::compositor_factory())();
     } else {
-      compositor_ = ui::Compositor::Create(egl_window_, allocation_.size());
+      compositor_ = ui::Compositor::Create(this,
+                                           egl_window_,
+                                           allocation_.size());
     }
     if (compositor_.get())
       delegate_->AsWidget()->GetRootView()->SetPaintToLayer(true);
@@ -244,9 +245,9 @@ void NativeWidgetWayland::CenterWindow(const gfx::Size& size) {
   NOTIMPLEMENTED();
 }
 
-void NativeWidgetWayland::GetWindowBoundsAndMaximizedState(
+void NativeWidgetWayland::GetWindowPlacement(
     gfx::Rect* bounds,
-    bool* maximized) const {
+    ui::WindowShowState* show_state) const {
   NOTIMPLEMENTED();
 }
 
@@ -366,7 +367,7 @@ void NativeWidgetWayland::ShowMaximizedWithBounds(
   saved_allocation_ = restored_bounds;
 }
 
-void NativeWidgetWayland::ShowWithState(ShowState state) {
+void NativeWidgetWayland::ShowWithWindowState(ui::WindowShowState state) {
   NOTIMPLEMENTED();
 }
 
@@ -503,6 +504,10 @@ bool NativeWidgetWayland::ConvertPointFromAncestor(
     const Widget* ancestor, gfx::Point* point) const {
   NOTREACHED();
   return false;
+}
+
+void NativeWidgetWayland::ScheduleCompositorPaint() {
+  SchedulePaintInRect(allocation_);
 }
 
 // Overridden from NativeWidget

@@ -18,7 +18,8 @@ WaylandScreen::WaylandScreen(WaylandDisplay* display, uint32_t id)
     WaylandScreen::OutputHandleMode,
   };
 
-  output_ = wl_output_create(display_->display(), id, 1);
+  output_ = static_cast<wl_output*>(
+      wl_display_bind(display_->display(), id, &wl_output_interface));
   wl_output_add_listener(output_, &kOutputListener, this);
 }
 

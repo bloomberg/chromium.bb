@@ -47,7 +47,8 @@ WaylandShmBuffer::WaylandShmBuffer(WaylandDisplay* display,
   data_surface_ = cairo_image_surface_create_for_data(
       data, CAIRO_FORMAT_ARGB32, width, height, stride);
   buffer_ = wl_shm_create_buffer(display->shm(), fd,
-                                 width, height, stride, display->visual());
+                                 width, height, stride,
+                                 WL_SHM_FORMAT_PREMULTIPLIED_ARGB32);
   close(fd);
 }
 

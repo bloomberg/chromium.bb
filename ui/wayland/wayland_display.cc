@@ -26,7 +26,7 @@ WaylandDisplay* WaylandDisplay::Connect(char* name) {
   // Register the display initialization handler and iterate over the initial
   // connection events sent by the server. This is required since the display
   // will send registration events needed to initialize everything else. This
-  // will create the compositor, visuals, etc.., which are required in creating
+  // will create the compositor, etc.., which are required in creating
   // a drawing context.
   wl_display_add_global_listener(display->display_,
                                  WaylandDisplay::DisplayHandleGlobal,
@@ -44,8 +44,7 @@ WaylandDisplay* WaylandDisplay::GetDisplay(wl_display* display) {
 WaylandDisplay::WaylandDisplay(char* name) : display_(NULL),
                                              compositor_(NULL),
                                              shell_(NULL),
-                                             shm_(NULL),
-                                             visual_(NULL) {
+                                             shm_(NULL) {
   display_ = wl_display_connect(name);
 }
 
@@ -54,8 +53,6 @@ WaylandDisplay::~WaylandDisplay() {
     wl_display_destroy(display_);
   if (compositor_)
     wl_compositor_destroy(compositor_);
-  if (visual_)
-    wl_visual_destroy(visual_);
   if (shell_)
     wl_shell_destroy(shell_);
   if (shm_)
@@ -96,18 +93,13 @@ void WaylandDisplay::DisplayHandleGlobal(wl_display* display,
                                          void* data) {
   WaylandDisplay* disp = static_cast<WaylandDisplay*>(data);
 
-  static const wl_compositor_listener kCompositorListener = {
-    WaylandDisplay::CompositorHandleVisual,
-  };
   static const wl_shell_listener kShellListener = {
     WaylandDisplay::ShellHandleConfigure,
   };
 
   if (strcmp(interface, "wl_compositor") == 0) {
-    disp->compositor_ = wl_compositor_create(display, id, 1);
-    wl_compositor_add_listener(disp->compositor_,
-                               &kCompositorListener,
-                               disp);
+    disp->compositor_ = static_cast<wl_compositor*>(
+        wl_display_bind(display, id, &wl_compositor_interface));
   } else if (strcmp(interface, "wl_output") == 0) {
     WaylandScreen* screen = new WaylandScreen(disp, id);
     disp->screen_list_.push_back(screen);
@@ -115,30 +107,12 @@ void WaylandDisplay::DisplayHandleGlobal(wl_display* display,
     WaylandInputDevice *input_device = new WaylandInputDevice(display, id);
     disp->input_list_.push_back(input_device);
   } else if (strcmp(interface, "wl_shell") == 0) {
-    disp->shell_ = wl_shell_create(display, id, 1);
+    disp->shell_ = static_cast<wl_shell*>(
+        wl_display_bind(display, id, &wl_shell_interface));
     wl_shell_add_listener(disp->shell_, &kShellListener, disp);
   } else if (strcmp(interface, "wl_shm") == 0) {
-    disp->shm_ = wl_shm_create(display, id, 1);
-  }
-}
-
-// static
-void WaylandDisplay::CompositorHandleVisual(void* data,
-                                            wl_compositor* compositor,
-                                            uint32_t id,
-                                            uint32_t token) {
-  WaylandDisplay* display = static_cast<WaylandDisplay*>(data);
-
-  // The compositor may support multiple types of visuals but we really only
-  // need one.
-  switch (token) {
-    case WL_COMPOSITOR_VISUAL_ARGB32:
-      break;
-    case WL_COMPOSITOR_VISUAL_PREMULTIPLIED_ARGB32:
-      display->visual_ = wl_visual_create(display->display_, id, 1);
-      break;
-    case WL_COMPOSITOR_VISUAL_XRGB32:
-      break;
+    disp->shm_ = static_cast<wl_shm*>(
+        wl_display_bind(display, id, &wl_shm_interface));
   }
 }
 

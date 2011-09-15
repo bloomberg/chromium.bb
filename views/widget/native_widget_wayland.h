@@ -9,6 +9,7 @@
 #include <wayland-client.h>
 
 #include "base/memory/scoped_vector.h"
+#include "ui/gfx/compositor/compositor.h"
 #include "ui/gfx/gl/gl_context.h"
 #include "ui/gfx/gl/gl_surface.h"
 #include "ui/gfx/size.h"
@@ -38,6 +39,7 @@ class NativeWidgetDelegate;
 
 // Widget implementation for Wayland
 class NativeWidgetWayland : public internal::NativeWidgetPrivate,
+                            public ui::CompositorDelegate,
                             public ui::WaylandWidget {
  public:
   explicit NativeWidgetWayland(internal::NativeWidgetDelegate* delegate);
@@ -72,8 +74,9 @@ class NativeWidgetWayland : public internal::NativeWidgetPrivate,
   virtual bool HasMouseCapture() const OVERRIDE;
   virtual InputMethod* CreateInputMethod() OVERRIDE;
   virtual void CenterWindow(const gfx::Size& size) OVERRIDE;
-  virtual void GetWindowBoundsAndMaximizedState(gfx::Rect* bounds,
-                                                bool* maximized) const OVERRIDE;
+  virtual void GetWindowPlacement(
+      gfx::Rect* bounds,
+      ui::WindowShowState* show_state) const OVERRIDE;
   virtual void SetWindowTitle(const std::wstring& title) OVERRIDE;
   virtual void SetWindowIcons(const SkBitmap& window_icon,
                               const SkBitmap& app_icon) OVERRIDE;
@@ -98,7 +101,7 @@ class NativeWidgetWayland : public internal::NativeWidgetPrivate,
   virtual void Hide() OVERRIDE;
   virtual void ShowMaximizedWithBounds(
       const gfx::Rect& restored_bounds) OVERRIDE;
-  virtual void ShowWithState(ShowState state) OVERRIDE;
+  virtual void ShowWithWindowState(ui::WindowShowState window_state) OVERRIDE;
   virtual bool IsVisible() const OVERRIDE;
   virtual void Activate() OVERRIDE;
   virtual void Deactivate() OVERRIDE;
@@ -134,6 +137,9 @@ class NativeWidgetWayland : public internal::NativeWidgetPrivate,
 
  private:
   typedef ScopedVector<ui::ViewProp> ViewProps;
+
+  // Overridden from ui::CompositorDelegate
+  virtual void ScheduleCompositorPaint();
 
   // Overridden from NativeWidget
   virtual gfx::AcceleratedWidget GetAcceleratedWidget() OVERRIDE;
