@@ -4051,14 +4051,6 @@
    fun:_ZN11ProfileImplC1ERK8FilePathPN7Profile8DelegateE
 }
 {
-   bug_88863_a
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN3IPC11SyncMessage13GenerateReplyEPKNS_7MessageE
-   fun:_ZN3IPC17SyncMessageSchemaI6Tuple1IbES1_IRSt6vectorIN6webkit13WebPluginInfoESaIS5_EEEE22DispatchWithSendParamsI19RenderMessageFilterSC_MSC_FvbPS7_EEEbbRKS2_PKNS_7MessageEPT_PT0_T1_
-   fun:_ZN22ViewHostMsg_GetPlugins8DispatchI19RenderMessageFilterS1_MS1_FvbPSt6vectorIN6webkit13WebPluginInfoESaIS4_EEEEEbPKN3IPC7MessageEPT_PT0_T1_
-}
-{
    bug_81796
    Memcheck:Leak
    fun:_Znw*
