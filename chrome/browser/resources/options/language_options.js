@@ -82,6 +82,16 @@ cr.define('options', function() {
         var addLanguageList = $('add-language-overlay-language-list');
         addLanguageList.addEventListener('click',
             this.handleAddLanguageListClick_.bind(this));
+        // Listen to user clicks on the "Change touch keyboard settings..."
+        // button.
+        if (cr.isTouch) {
+          var virtualKeyboardButton = $('language-options-virtual-keyboard');
+          // TODO(yusukes): would be better to hide the button if no virtual
+          // keyboard is registered.
+          virtualKeyboardButton.onclick = function(e) {
+            OptionsPage.navigateToPage('virtualKeyboards');
+          };
+        }
       } else {
         // Listen to add language dialog ok button.
         var addLanguageOkButton = $('add-language-overlay-ok-button');

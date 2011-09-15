@@ -7400,19 +7400,19 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </if>
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_VIRTUAL_KEYBOARD_BUTTON"
                desc="The label for the virtual keyboard button for customizing virtual keyboard settings">
-        Change virtual keyboard settings...
+        Change on-screen keyboard settings...
       </message>
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_VIRTUAL_KEYBOARD_SETTINGS_TITLE"
                desc="The label for the virtual keyboard manager page">
-        Virtual Keyboard Settings
+        On-Screen Keyboard Settings
       </message>
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_VIRTUAL_KEYBOARD_LAYOUT_COLUMN_TITLE"
                desc="The label for the virtual keyboard manager page">
-        Layout
+        Keyboard
       </message>
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_VIRTUAL_KEYBOARD_KEYBOARD_COLUMN_TITLE"
                desc="The label for the virtual keyboard manager page">
-        Virtual Keyboard
+        On-Screen Keyboard
       </message>
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_DEFAULT_VIRTUAL_KEYBOARD"
                desc="The label for a default virtual keyboard in a drop down menu">

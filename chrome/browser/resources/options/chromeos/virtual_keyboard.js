@@ -70,6 +70,14 @@ cr.define('options', function() {
         // extension.
         return element.supportedKeyboards.length > 1;
       });
+
+    // Sort the drop-down menu items by name.
+    filteredList.forEach(function(e) {
+        e.supportedKeyboards.sort(function(e1, e2) {
+            return e1.name > e2.name;
+          });
+      });
+
     // Sort the list by layout name.
     $('virtual-keyboard-per-layout-list').setVirtualKeyboardList(
         filteredList.sort(function(e1, e2) {

@@ -44,6 +44,12 @@
            class="language-options-contents">
       </div>
 </if>
+<if expr="pp_ifdef('chromeos') and pp_ifdef('touchui')">
+      <div class="language-options-contents">
+        <button id="language-options-virtual-keyboard"
+                i18n-content="virtual_keyboard_button"></button>
+      </div>
+</if>
     </div>
   </div>
   <div class="language-options-footer">
