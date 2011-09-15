@@ -10,7 +10,6 @@
 #include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "content/common/child_process.h"
 #include "content/common/content_client.h"
 #include "content/common/content_switches.h"
 #include "webkit/plugins/npapi/plugin_list.h"
@@ -250,13 +249,3 @@ PepperPluginRegistry::PepperPluginRegistry() {
   }
 }
 
-base::MessageLoopProxy* PepperPluginRegistry::GetIPCMessageLoop() {
-  // This is called only in the renderer so we know we have a child process.
-  DCHECK(ChildProcess::current()) << "Must be in the renderer.";
-  return ChildProcess::current()->io_message_loop_proxy();
-}
-
-base::WaitableEvent* PepperPluginRegistry::GetShutdownEvent() {
-  DCHECK(ChildProcess::current()) << "Must be in the renderer.";
-  return ChildProcess::current()->GetShutDownEvent();
-}

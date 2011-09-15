@@ -68,6 +68,7 @@ class BrokerDispatcherWrapper {
 
  private:
   scoped_ptr<ppapi::proxy::BrokerDispatcher> dispatcher_;
+  scoped_ptr<ppapi::proxy::ProxyChannel::Delegate> dispatcher_delegate_;
 };
 
 // This object is NOT thread-safe.
