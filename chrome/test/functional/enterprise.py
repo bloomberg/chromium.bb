@@ -377,6 +377,25 @@ class EnterpriseTest(pyauto.PyUITest):
                                       'getContext("experimental-webgl")' +
                                       '== null ? "ok" : ""'), 'ok')
 
+  def testDefaultSearchProviderEnabled(self):
+    """Verify a default search is performed when the user types text in the
+       omnibox that is not a URL
+    """
+    if self.GetBrowserInfo()['properties']['branding'] != 'Google Chrome':
+      return
+
+    self._CheckIfPrefCanBeModified(pyauto.kDefaultSearchProviderEnabled, True,
+                                   False)
+    intranet_engine = [x for x in self.GetSearchEngineInfo()
+                       if x['keyword'] == 'mis']
+    self.assertTrue(intranet_engine)
+    self.assertTrue(intranet_engine[0]['is_default'])
+    self.SetOmniboxText('google chrome')
+    self.WaitUntilOmniboxQueryDone()
+    self.OmniboxAcceptInput()
+    self.assertTrue(re.search('search.my.company',
+                              self.GetActiveTabURL().spec()))
+
 class EnterpriseTestReverse(pyauto.PyUITest):
   """Test for the Enterprise features that uses the opposite values of the
   policies used by above test class 'EnterpriseTest'.
@@ -682,6 +701,21 @@ class EnterpriseTestReverse(pyauto.PyUITest):
     self.assertEqual(self.GetDOMValue('document.createElement("canvas").' +
                                       'getContext("experimental-webgl")' +
                                       '!= null ? "ok" : ""'), 'ok')
+
+  def testDefaultSearchProviderDisabled(self):
+    """Verify that inputting text in omnibox does not trigger search when
+    default search provider is disabled.
+    """
+
+    if self.GetBrowserInfo()['properties']['branding'] != 'Google Chrome':
+      return
+
+    self._CheckIfPrefCanBeModified(pyauto.kDefaultSearchProviderEnabled, False,
+                                   True)
+    self.SetOmniboxText('deli')
+    self.WaitUntilOmniboxQueryDone()
+    self.assertRaises(pyauto.JSONInterfaceError,
+                      lambda: self.OmniboxAcceptInput())
 
 
 if __name__ == '__main__':

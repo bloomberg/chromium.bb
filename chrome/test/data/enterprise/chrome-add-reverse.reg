@@ -1,6 +1,9 @@
 Windows Registry Editor Version 5.00
 
 [HKEY_LOCAL_MACHINE\Software\Policies\Google\Chrome]
+"DefaultSearchProviderEnabled"=dword:0
+
+[HKEY_LOCAL_MACHINE\Software\Policies\Google\Chrome]
 "HomepageLocation"="http://chromium.org"
 "HomepageIsNewTabPage"=dword:0
 "PasswordManagerEnabled"=dword:0
