@@ -101,6 +101,7 @@ class AudioDevice
   size_t buffer_size() const { return buffer_size_; }
 
   static double GetAudioHardwareSampleRate();
+  static size_t GetAudioHardwareBufferSize();
 
   // Methods called on IO thread ----------------------------------------------
   // AudioMessageFilter::Delegate methods, called by AudioMessageFilter.

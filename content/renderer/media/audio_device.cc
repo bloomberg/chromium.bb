@@ -243,3 +243,13 @@ double AudioDevice::GetAudioHardwareSampleRate() {
   }
   return hardware_sample_rate;
 }
+
+size_t AudioDevice::GetAudioHardwareBufferSize() {
+  // Uses cached value if possible.
+  static size_t buffer_size = 0;
+
+  if (!buffer_size)
+    buffer_size = media::GetAudioHardwareBufferSize();
+
+  return buffer_size;
+}

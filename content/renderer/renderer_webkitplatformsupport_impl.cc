@@ -567,6 +567,10 @@ double RendererWebKitPlatformSupportImpl::audioHardwareSampleRate() {
   return AudioDevice::GetAudioHardwareSampleRate();
 }
 
+size_t RendererWebKitPlatformSupportImpl::audioHardwareBufferSize() {
+  return AudioDevice::GetAudioHardwareBufferSize();
+}
+
 WebAudioDevice*
 RendererWebKitPlatformSupportImpl::createAudioDevice(
     size_t buffer_size,
