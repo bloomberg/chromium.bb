@@ -14,7 +14,6 @@ class ChromeBrowserMainPartsMac : public ChromeBrowserMainPartsPosix {
 
   virtual void PreEarlyInitialization() OVERRIDE;
   virtual void PreMainMessageLoopStart() OVERRIDE;
-  virtual void PostMainMessageLoopRun() OVERRIDE;
 };
 
 #endif  // CHROME_BROWSER_CHROME_BROWSER_MAIN_MAC_H_

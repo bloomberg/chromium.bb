@@ -126,6 +126,13 @@ void ChromeBrowserMainPartsGtk::DetectRunningAsRoot() {
   }
 }
 
+namespace content {
+
+void DidEndMainMessageLoop() {
+}
+
+}
+
 void RecordBreakpadStatusUMA(MetricsService* metrics) {
 #if defined(USE_LINUX_BREAKPAD)
   metrics->RecordBreakpadRegistration(IsCrashReporterEnabled());

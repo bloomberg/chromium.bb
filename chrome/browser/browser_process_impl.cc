@@ -318,6 +318,8 @@ unsigned int BrowserProcessImpl::ReleaseModule() {
     io_thread()->message_loop()->PostTask(
         FROM_HERE,
         NewRunnableFunction(&base::ThreadRestrictions::SetIOAllowed, true));
+    MessageLoop::current()->PostTask(
+        FROM_HERE, NewRunnableFunction(content::DidEndMainMessageLoop));
     MessageLoop::current()->Quit();
   }
   return module_ref_count_;
