@@ -9,10 +9,10 @@
 namespace browser_sync {
 
 JsEventDetails::JsEventDetails()
-    : details_(new SharedValue<DictionaryValue>()) {}
+    : details_(new SharedDictionaryValue()) {}
 
 JsEventDetails::JsEventDetails(DictionaryValue* details)
-    : details_(new SharedValue<DictionaryValue>(details)) {}
+    : details_(new SharedDictionaryValue(details)) {}
 
 JsEventDetails::~JsEventDetails() {}
 

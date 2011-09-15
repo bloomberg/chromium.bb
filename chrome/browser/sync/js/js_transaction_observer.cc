@@ -4,10 +4,10 @@
 
 #include "chrome/browser/sync/js/js_transaction_observer.h"
 
-#include <sstream>
 #include <string>
 
 #include "base/logging.h"
+#include "base/string_number_conversions.h"
 #include "base/tracked.h"
 #include "base/values.h"
 #include "chrome/browser/sync/js/js_event_details.h"
@@ -29,10 +29,9 @@ void JsTransactionObserver::SetJsEventHandler(
 namespace {
 
 std::string GetLocationString(const tracked_objects::Location& location) {
-  std::ostringstream oss;
-  oss << location.function_name() << "@"
-      << location.file_name() << ":" << location.line_number();
-  return oss.str();
+  return std::string(location.function_name()) + "@" +
+      location.file_name() + ":" +
+      base::IntToString(location.line_number());
 }
 
 }  // namespace
@@ -50,10 +49,18 @@ void JsTransactionObserver::OnTransactionStart(
   HandleJsEvent(FROM_HERE, "onTransactionStart", JsEventDetails(&details));
 }
 
+namespace {
+
+// Max number of mutations we attempt to convert to values (to avoid
+// running out of memory).
+const size_t kMutationLimit = 300;
+
+}  // namespace
+
 void JsTransactionObserver::OnTransactionMutate(
     const tracked_objects::Location& location,
     const syncable::WriterTag& writer,
-    const syncable::EntryKernelMutationSet& mutations,
+    const syncable::SharedEntryKernelMutationMap& mutations,
     const syncable::ModelTypeBitSet& models_with_changes) {
   DCHECK(non_thread_safe_.CalledOnValidThread());
   if (!event_handler_.IsInitialized()) {
@@ -62,7 +69,17 @@ void JsTransactionObserver::OnTransactionMutate(
   DictionaryValue details;
   details.SetString("location", GetLocationString(location));
   details.SetString("writer", syncable::WriterTagToString(writer));
-  details.Set("mutations", syncable::EntryKernelMutationSetToValue(mutations));
+  Value* mutations_value = NULL;
+  const size_t mutations_size = mutations.Get().size();
+  if (mutations_size <= kMutationLimit) {
+    mutations_value = syncable::EntryKernelMutationMapToValue(mutations.Get());
+  } else {
+    mutations_value =
+        Value::CreateStringValue(
+            base::Uint64ToString(static_cast<uint64>(mutations_size)) +
+            " mutations");
+  }
+  details.Set("mutations", mutations_value);
   details.Set("modelsWithChanges",
               syncable::ModelTypeBitSetToValue(models_with_changes));
   HandleJsEvent(FROM_HERE, "onTransactionMutate", JsEventDetails(&details));

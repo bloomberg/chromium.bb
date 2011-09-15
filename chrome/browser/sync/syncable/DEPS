@@ -8,7 +8,7 @@ include_rules = [
   "+chrome/browser/sync/test",
   "+chrome/browser/sync/util",
 
-  # this file is wierd.
+  # this file is weird.
   "+chrome/browser/sync/engine/syncproto.h",
 
   # maybe this file should live in syncable?

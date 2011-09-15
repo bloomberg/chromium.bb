@@ -75,7 +75,7 @@ using browser_sync::Syncer;
 using browser_sync::WeakHandle;
 using browser_sync::sessions::SyncSessionContext;
 using syncable::DirectoryManager;
-using syncable::EntryKernelMutationSet;
+using syncable::EntryKernelMutationMap;
 using syncable::ModelType;
 using syncable::ModelTypeBitSet;
 using syncable::SPECIFICS;
@@ -298,10 +298,10 @@ class SyncManager::SyncInternal
   virtual ModelTypeBitSet HandleTransactionEndingChangeEvent(
       syncable::BaseTransaction* trans);
   virtual void HandleCalculateChangesChangeEventFromSyncApi(
-      const EntryKernelMutationSet& mutations,
+      const EntryKernelMutationMap& mutations,
       syncable::BaseTransaction* trans);
   virtual void HandleCalculateChangesChangeEventFromSyncer(
-      const EntryKernelMutationSet& mutations,
+      const EntryKernelMutationMap& mutations,
       syncable::BaseTransaction* trans);
 
   // Listens for notifications from the ServerConnectionManager
@@ -1448,7 +1448,7 @@ ModelTypeBitSet SyncManager::SyncInternal::HandleTransactionEndingChangeEvent(
 }
 
 void SyncManager::SyncInternal::HandleCalculateChangesChangeEventFromSyncApi(
-    const EntryKernelMutationSet& mutations,
+    const EntryKernelMutationMap& mutations,
     syncable::BaseTransaction* trans) {
   if (!scheduler()) {
     return;
@@ -1463,14 +1463,15 @@ void SyncManager::SyncInternal::HandleCalculateChangesChangeEventFromSyncApi(
 
   // Find the first real mutation.  We assume that only a single model
   // type is mutated per transaction.
-  for (syncable::EntryKernelMutationSet::const_iterator it =
+  for (syncable::EntryKernelMutationMap::const_iterator it =
            mutations.begin(); it != mutations.end(); ++it) {
-    if (!it->mutated.ref(syncable::IS_UNSYNCED)) {
+    if (!it->second.mutated.ref(syncable::IS_UNSYNCED)) {
       continue;
     }
 
     syncable::ModelType model_type =
-        syncable::GetModelTypeFromSpecifics(it->mutated.ref(SPECIFICS));
+        syncable::GetModelTypeFromSpecifics(
+            it->second.mutated.ref(SPECIFICS));
     if (model_type < syncable::FIRST_REAL_MODEL_TYPE) {
       NOTREACHED() << "Permanent or underspecified item changed via syncapi.";
       continue;
@@ -1527,7 +1528,7 @@ void SyncManager::SyncInternal::SetExtraChangeRecordData(int64 id,
 }
 
 void SyncManager::SyncInternal::HandleCalculateChangesChangeEventFromSyncer(
-    const EntryKernelMutationSet& mutations,
+    const EntryKernelMutationMap& mutations,
     syncable::BaseTransaction* trans) {
   // We only expect one notification per sync step, so change_buffers_ should
   // contain no pending entries.
@@ -1535,30 +1536,31 @@ void SyncManager::SyncInternal::HandleCalculateChangesChangeEventFromSyncer(
       "CALCULATE_CHANGES called with unapplied old changes.";
 
   Cryptographer* crypto = dir_manager()->GetCryptographer(trans);
-  for (syncable::EntryKernelMutationSet::const_iterator it =
+  for (syncable::EntryKernelMutationMap::const_iterator it =
            mutations.begin(); it != mutations.end(); ++it) {
-    bool existed_before = !it->original.ref(syncable::IS_DEL);
-    bool exists_now = !it->mutated.ref(syncable::IS_DEL);
+    bool existed_before = !it->second.original.ref(syncable::IS_DEL);
+    bool exists_now = !it->second.mutated.ref(syncable::IS_DEL);
 
     // Omit items that aren't associated with a model.
     syncable::ModelType type =
-        syncable::GetModelTypeFromSpecifics(it->mutated.ref(SPECIFICS));
+        syncable::GetModelTypeFromSpecifics(
+            it->second.mutated.ref(SPECIFICS));
     if (type < syncable::FIRST_REAL_MODEL_TYPE)
       continue;
 
-    int64 id = it->original.ref(syncable::META_HANDLE);
+    int64 handle = it->first;
     if (exists_now && !existed_before)
-      change_buffers_[type].PushAddedItem(id);
+      change_buffers_[type].PushAddedItem(handle);
     else if (!exists_now && existed_before)
-      change_buffers_[type].PushDeletedItem(id);
+      change_buffers_[type].PushDeletedItem(handle);
     else if (exists_now && existed_before &&
-             VisiblePropertiesDiffer(*it, crypto)) {
+             VisiblePropertiesDiffer(it->second, crypto)) {
       change_buffers_[type].PushUpdatedItem(
-          id, VisiblePositionsDiffer(*it));
+          handle, VisiblePositionsDiffer(it->second));
     }
 
-    SetExtraChangeRecordData(id, type, &change_buffers_[type], crypto,
-                             it->original, existed_before, exists_now);
+    SetExtraChangeRecordData(handle, type, &change_buffers_[type], crypto,
+                             it->second.original, existed_before, exists_now);
   }
 }
 

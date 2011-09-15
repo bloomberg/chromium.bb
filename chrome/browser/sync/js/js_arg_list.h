@@ -12,7 +12,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/values.h"
-#include "chrome/browser/sync/shared_value.h"
+#include "chrome/browser/sync/util/shared_value.h"
 
 namespace browser_sync {
 
@@ -35,7 +35,9 @@ class JsArgList {
   // Copy constructor and assignment operator welcome.
 
  private:
-  scoped_refptr<const SharedValue<ListValue> > args_;
+  typedef SharedValue<ListValue, HasSwapMemFnTraits<ListValue> >
+      SharedListValue;
+  scoped_refptr<const SharedListValue> args_;
 };
 
 }  // namespace browser_sync

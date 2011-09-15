@@ -8,10 +8,10 @@
 
 namespace browser_sync {
 
-JsArgList::JsArgList() : args_(new SharedValue<ListValue>()) {}
+JsArgList::JsArgList() : args_(new SharedListValue()) {}
 
 JsArgList::JsArgList(ListValue* args)
-    : args_(new SharedValue<ListValue>(args)) {}
+    : args_(new SharedListValue(args)) {}
 
 JsArgList::~JsArgList() {}
 

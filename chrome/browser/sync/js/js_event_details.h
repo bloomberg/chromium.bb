@@ -12,7 +12,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/values.h"
-#include "chrome/browser/sync/shared_value.h"
+#include "chrome/browser/sync/util/shared_value.h"
 
 namespace browser_sync {
 
@@ -35,7 +35,10 @@ class JsEventDetails {
   // Copy constructor and assignment operator welcome.
 
  private:
-  scoped_refptr<const SharedValue<DictionaryValue> > details_;
+  typedef SharedValue<DictionaryValue, HasSwapMemFnTraits<DictionaryValue> >
+      SharedDictionaryValue;
+
+  scoped_refptr<const SharedDictionaryValue> details_;
 };
 
 }  // namespace browser_sync

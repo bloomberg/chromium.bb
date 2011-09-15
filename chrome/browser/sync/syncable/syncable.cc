@@ -27,6 +27,7 @@
 #include <set>
 #include <string>
 
+#include "base/compiler_specific.h"
 #include "base/file_util.h"
 #include "base/hash_tables.h"
 #include "base/logging.h"
@@ -64,9 +65,6 @@ static const InvariantCheckLevel kInvariantCheckLevel = VERIFY_IN_MEMORY;
 
 // Max number of milliseconds to spend checking syncable entry invariants
 static const int kInvariantCheckMaxMs = 50;
-
-// Max number of mutations in a mutation set we permit passing to observers.
-static const size_t kMutationObserverLimit = 1000;
 }  // namespace
 
 using std::string;
@@ -92,6 +90,24 @@ std::string WriterTagToString(WriterTag writer_tag) {
 
 #undef ENUM_CASE
 
+SharedEntryKernelMutationMap::SharedEntryKernelMutationMap()
+    : mutations_(new SharedMutationMap()) {}
+
+SharedEntryKernelMutationMap::SharedEntryKernelMutationMap(
+    EntryKernelMutationMap* mutations)
+    : mutations_(new SharedMutationMap(mutations)) {}
+
+SharedEntryKernelMutationMap::~SharedEntryKernelMutationMap() {}
+
+const EntryKernelMutationMap& SharedEntryKernelMutationMap::Get() const {
+  return mutations_->Get();
+}
+
+void SharedEntryKernelMutationMap::MutationMapTraits::Swap(
+    EntryKernelMutationMap* mutations1, EntryKernelMutationMap* mutations2) {
+  mutations1->swap(*mutations2);
+}
+
 namespace {
 
 DictionaryValue* EntryKernelMutationToValue(
@@ -104,12 +120,12 @@ DictionaryValue* EntryKernelMutationToValue(
 
 }  // namespace
 
-ListValue* EntryKernelMutationSetToValue(
-    const EntryKernelMutationSet& mutations) {
+ListValue* EntryKernelMutationMapToValue(
+    const EntryKernelMutationMap& mutations) {
   ListValue* list = new ListValue();
-  for (EntryKernelMutationSet::const_iterator it = mutations.begin();
+  for (EntryKernelMutationMap::const_iterator it = mutations.begin();
        it != mutations.end(); ++it) {
-    list->Append(EntryKernelMutationToValue(*it));
+    list->Append(EntryKernelMutationToValue(it->second));
   }
   return list;
 }
@@ -992,14 +1008,14 @@ class SomeIdsFilter : public IdFilter {
 };
 
 void Directory::CheckTreeInvariants(syncable::BaseTransaction* trans,
-                                    const EntryKernelMutationSet& mutations) {
+                                    const EntryKernelMutationMap& mutations) {
   MetahandleSet handles;
   SomeIdsFilter filter;
   filter.ids_.reserve(mutations.size());
-  for (EntryKernelMutationSet::const_iterator i = mutations.begin(),
-         end = mutations.end(); i != end; ++i) {
-    filter.ids_.push_back(i->mutated.ref(ID));
-    handles.insert(i->original.ref(META_HANDLE));
+  for (EntryKernelMutationMap::const_iterator it = mutations.begin(),
+         end = mutations.end(); it != end; ++it) {
+    filter.ids_.push_back(it->second.mutated.ref(ID));
+    handles.insert(it->first);
   }
   std::sort(filter.ids_.begin(), filter.ids_.end());
   CheckTreeInvariants(trans, handles, filter);
@@ -1203,37 +1219,34 @@ void WriteTransaction::SaveOriginal(const EntryKernel* entry) {
     return;
   }
   // Insert only if it's not already there.
-  EntryKernelSet::iterator it = originals_.lower_bound(*entry);
-  if (it == originals_.end() ||
-      it->ref(META_HANDLE) != entry->ref(META_HANDLE)) {
-    originals_.insert(it, *entry);
+  const int64 handle = entry->ref(META_HANDLE);
+  EntryKernelMutationMap::iterator it = mutations_.lower_bound(handle);
+  if (it == mutations_.end() || it->first != handle) {
+    EntryKernelMutation mutation;
+    mutation.original = *entry;
+    ignore_result(mutations_.insert(it, std::make_pair(handle, mutation)));
   }
 }
 
-EntryKernelMutationSet WriteTransaction::RecordMutations() {
+SharedEntryKernelMutationMap WriteTransaction::RecordMutations() {
   dirkernel_->transaction_mutex.AssertAcquired();
-  EntryKernelMutationSet mutations;
-  for (syncable::EntryKernelSet::iterator it = originals_.begin();
-       it != originals_.end(); ++it) {
-    int64 id = it->ref(syncable::META_HANDLE);
-    EntryKernel* kernel = directory()->GetEntryByHandle(id);
+  for (syncable::EntryKernelMutationMap::iterator it = mutations_.begin();
+       it != mutations_.end(); ++it) {
+    EntryKernel* kernel = directory()->GetEntryByHandle(it->first);
     if (!kernel) {
       NOTREACHED();
       continue;
     }
-    EntryKernelMutation mutation;
-    mutation.original = *it;
-    mutation.mutated = *kernel;
-    mutations.insert(mutation);
+    it->second.mutated = *kernel;
   }
-  return mutations;
+  return SharedEntryKernelMutationMap(&mutations_);
 }
 
 void WriteTransaction::UnlockAndNotify(
-    const EntryKernelMutationSet& mutations) {
+    const SharedEntryKernelMutationMap& mutations) {
   // Work while transaction mutex is held.
   ModelTypeBitSet models_with_changes;
-  bool has_mutations = !mutations.empty();
+  bool has_mutations = !mutations.Get().empty();
   if (has_mutations) {
     models_with_changes = NotifyTransactionChangingAndEnding(mutations);
   }
@@ -1246,34 +1259,25 @@ void WriteTransaction::UnlockAndNotify(
 }
 
 ModelTypeBitSet WriteTransaction::NotifyTransactionChangingAndEnding(
-    const EntryKernelMutationSet& mutations) {
+    const SharedEntryKernelMutationMap& mutations) {
   dirkernel_->transaction_mutex.AssertAcquired();
-  DCHECK(!mutations.empty());
+  DCHECK(!mutations.Get().empty());
 
   DirectoryChangeDelegate* const delegate = dirkernel_->delegate;
   if (writer_ == syncable::SYNCAPI) {
-    delegate->HandleCalculateChangesChangeEventFromSyncApi(mutations, this);
+    delegate->HandleCalculateChangesChangeEventFromSyncApi(
+        mutations.Get(), this);
   } else {
-    delegate->HandleCalculateChangesChangeEventFromSyncer(mutations, this);
+    delegate->HandleCalculateChangesChangeEventFromSyncer(
+        mutations.Get(), this);
   }
 
   ModelTypeBitSet models_with_changes =
       delegate->HandleTransactionEndingChangeEvent(this);
 
-  // These notifications pass the mutation list around by value, which when we
-  // rewrite all sync data can be extremely large and result in out of memory
-  // errors (see crbug.com/90169). As a result, when there are more than
-  // kMutationObserverLimit mutations, we pass around an empty mutation set.
-  if (mutations.size() < kMutationObserverLimit) {
-    dirkernel_->observers->Notify(
-        &TransactionObserver::OnTransactionMutate,
-        from_here_, writer_, mutations, models_with_changes);
-  } else {
-    EntryKernelMutationSet dummy_mutations;  // Empty set.
-    dirkernel_->observers->Notify(
-        &TransactionObserver::OnTransactionMutate,
-        from_here_, writer_, dummy_mutations, models_with_changes);
-  }
+  dirkernel_->observers->Notify(
+      &TransactionObserver::OnTransactionMutate,
+      from_here_, writer_, mutations, models_with_changes);
 
   return models_with_changes;
 }
@@ -1285,14 +1289,14 @@ void WriteTransaction::NotifyTransactionComplete(
 }
 
 WriteTransaction::~WriteTransaction() {
-  EntryKernelMutationSet mutations = RecordMutations();
+  const SharedEntryKernelMutationMap& mutations = RecordMutations();
 
   if (OFF != kInvariantCheckLevel) {
     const bool full_scan = (FULL_DB_VERIFICATION == kInvariantCheckLevel);
     if (full_scan)
       directory()->CheckTreeInvariants(this, full_scan);
     else
-      directory()->CheckTreeInvariants(this, mutations);
+      directory()->CheckTreeInvariants(this, mutations.Get());
   }
 
   UnlockAndNotify(mutations);

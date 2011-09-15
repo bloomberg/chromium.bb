@@ -10,6 +10,7 @@
 #include <bitset>
 #include <iosfwd>
 #include <limits>
+#include <map>
 #include <set>
 #include <string>
 #include <vector>
@@ -31,6 +32,7 @@
 #include "chrome/browser/sync/syncable/syncable_id.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/util/dbgq.h"
+#include "chrome/browser/sync/util/shared_value.h"
 
 struct PurgeInfo;
 
@@ -222,6 +224,8 @@ enum CreateNewUpdateItem {
 };
 
 typedef std::set<int64> MetahandleSet;
+
+// TODO(akalin): Move EntryKernel and related into its own header file.
 
 // Why the singular enums?  So the code compile-time dispatches instead of
 // runtime dispatches as it would with a single enum and an if() statement.
@@ -443,7 +447,7 @@ class Entry {
   friend class sync_api::ReadNode;
   void* operator new(size_t size) { return (::operator new)(size); }
 
-  inline Entry(BaseTransaction* trans)
+  inline explicit Entry(BaseTransaction* trans)
       : basetrans_(trans),
         kernel_(NULL) { }
 
@@ -557,21 +561,35 @@ typedef std::set<EntryKernel, EntryKernelLessByMetaHandle> EntryKernelSet;
 struct EntryKernelMutation {
   EntryKernel original, mutated;
 };
-class EntryKernelMutationLessByMetaHandle {
+typedef std::map<int64, EntryKernelMutation> EntryKernelMutationMap;
+
+// A thread-safe wrapper around an immutable mutation map.  Used for
+// passing around mutation maps without incurring lots of copies.
+class SharedEntryKernelMutationMap {
  public:
-  inline bool operator()(const EntryKernelMutation& a,
-                         const EntryKernelMutation& b) const {
-    DCHECK_EQ(a.original.ref(META_HANDLE), a.mutated.ref(META_HANDLE));
-    DCHECK_EQ(b.original.ref(META_HANDLE), b.mutated.ref(META_HANDLE));
-    return a.original.ref(META_HANDLE) < b.original.ref(META_HANDLE);
-  }
+  SharedEntryKernelMutationMap();
+  // Takes over the data in |mutations|, leaving |mutations| empty.
+  explicit SharedEntryKernelMutationMap(EntryKernelMutationMap* mutations);
+
+  ~SharedEntryKernelMutationMap();
+
+  const EntryKernelMutationMap& Get() const;
+
+ private:
+  struct MutationMapTraits {
+    static void Swap(EntryKernelMutationMap* mutations1,
+                     EntryKernelMutationMap* mutations2);
+  };
+
+  typedef browser_sync::SharedValue<EntryKernelMutationMap, MutationMapTraits>
+      SharedMutationMap;
+
+  scoped_refptr<const SharedMutationMap> mutations_;
 };
-typedef std::set<EntryKernelMutation, EntryKernelMutationLessByMetaHandle>
-    EntryKernelMutationSet;
 
 // Caller owns the return value.
-base::ListValue* EntryKernelMutationSetToValue(
-    const EntryKernelMutationSet& mutations);
+base::ListValue* EntryKernelMutationMapToValue(
+    const EntryKernelMutationMap& mutations);
 
 // How syncable indices & Indexers work.
 //
@@ -915,7 +933,7 @@ class Directory {
                            bool full_scan);
 
   void CheckTreeInvariants(syncable::BaseTransaction* trans,
-                           const EntryKernelMutationSet& mutations);
+                           const EntryKernelMutationMap& mutations);
 
   void CheckTreeInvariants(syncable::BaseTransaction* trans,
                            const MetahandleSet& handles,
@@ -1169,14 +1187,17 @@ class WriteTransaction : public BaseTransaction {
       ModelTypeBitSet models_with_changes);
 
  private:
-  EntryKernelMutationSet RecordMutations();
+  // Clears |mutations_|.
+  SharedEntryKernelMutationMap RecordMutations();
 
-  void UnlockAndNotify(const EntryKernelMutationSet& mutations);
+  void UnlockAndNotify(const SharedEntryKernelMutationMap& mutations);
 
   ModelTypeBitSet NotifyTransactionChangingAndEnding(
-      const EntryKernelMutationSet& mutations);
+      const SharedEntryKernelMutationMap& mutations);
 
-  EntryKernelSet originals_;
+  // Only the original fields are filled in until |RecordMutations()|.
+  // We use a mutation map instead of a kernel set to avoid copying.
+  EntryKernelMutationMap mutations_;
 
   DISALLOW_COPY_AND_ASSIGN(WriteTransaction);
 };

@@ -9,6 +9,7 @@ include_rules = [
   "+chrome/browser/sync/protocol/sync_protocol_error.h",
   "+chrome/browser/sync/syncable/transaction_observer.h",
   "+chrome/browser/sync/test",
+  "+chrome/browser/sync/util",
 
   # TODO(akalin): this should be in base.
   "+chrome/browser/sync/weak_handle.h",
