@@ -4019,36 +4019,6 @@
    fun:_ZN5media17VideoRendererBase10ThreadMainEv
 }
 {
-   bug_87380_a
-   Memcheck:Cond
-   fun:_ZNK7WebCore33InspectorStyleSheetForInlineStyle4textEPN3WTF6StringE
-   fun:_ZNK7WebCore14InspectorStyle9styleTextEPN3WTF6StringE
-   fun:_ZNK7WebCore14InspectorStyle21populateAllPropertiesEPN3WTF6VectorINS_22InspectorStylePropertyELj0EEE
-   fun:_ZNK7WebCore14InspectorStyle33populateObjectWithStylePropertiesEPNS_15InspectorObjectE
-   fun:_ZNK7WebCore14InspectorStyle19buildObjectForStyleEv
-   fun:_ZN7WebCore19InspectorStyleSheet19buildObjectForStyleEPNS_19CSSStyleDeclarationE
-   fun:_ZN7WebCore17InspectorCSSAgent16getStylesForNodeEPN3WTF6StringEiPNS1_6RefPtrINS_15InspectorObjectEEE
-   fun:_ZN7WebCore26InspectorBackendDispatcher20CSS_getStylesForNodeElPNS_15InspectorObjectE
-   fun:_ZN7WebCore26InspectorBackendDispatcher8dispatchERKN3WTF6StringE
-   fun:_ZN7WebCore19InspectorController27dispatchMessageFromFrontendERKN3WTF6StringE
-   fun:_ZN6WebKit20WebDevToolsAgentImpl26dispatchOnInspectorBackendERKNS_9WebStringE
-   fun:_ZN16DRTDevToolsAgent4callERKN6WebKit9WebStringE
-   fun:_ZN16DRTDevToolsAgent13AsyncCallTask10runIfValidEv
-}
-{
-   bug_87380_b
-   Memcheck:Cond
-   fun:_ZNK7WebCore33InspectorStyleSheetForInlineStyle4textEPN3WTF6StringE
-   fun:_ZN7WebCore19InspectorStyleSheet19buildObjectForStyleEPNS_19CSSStyleDeclarationE
-   fun:_ZN7WebCore17InspectorCSSAgent16getStylesForNodeEPN3WTF6StringEiPNS1_6RefPtrINS_15InspectorObjectEEE
-   fun:_ZN7WebCore26InspectorBackendDispatcher20CSS_getStylesForNodeElPNS_15InspectorObjectE
-   fun:_ZN7WebCore26InspectorBackendDispatcher8dispatchERKN3WTF6StringE
-   fun:_ZN7WebCore19InspectorController27dispatchMessageFromFrontendERKN3WTF6StringE
-   fun:_ZN6WebKit20WebDevToolsAgentImpl26dispatchOnInspectorBackendERKNS_9WebStringE
-   fun:_ZN16DRTDevToolsAgent4callERKN6WebKit9WebStringE
-   fun:_ZN16DRTDevToolsAgent13AsyncCallTask10runIfValidEv
-}
-{
    bug_87408
    Memcheck:Addr4
    fun:sqlite3MemSize
