@@ -47,7 +47,7 @@ function fileCreatedCallback(fileEntry) {
 
 function onGetFileWriter(writer) {
   // Start
-  console.log("Got file writter");
+  console.log("Got file writer");
   writer.onerror = errorCallback;
   writer.onwrite = onFileWriteCompleted;
   var bb = new WebKitBlobBuilder();
@@ -70,7 +70,31 @@ function onGetTasks(tasks) {
     chrome.test.fail("No tasks registered");
     return;
   }
-  console.log("DONE fetching tasks: " + tasks[0].taskId);
+
+  var expected_tasks = {'TextAction': ['filesystem:*.txt'],
+                        'BaseAction': ['filesystem:*', 'filesystem:*.*']};
+
+  console.log("DONE fetching " + tasks.length + " tasks");
+
+  if (tasks.length != 2)
+    chrome.test.fail('Wrong number of tasks found.');
+
+  for (var i = 0; i < tasks.length; ++i) {
+    var task_name = /^.*[|](\w+)$/.exec(tasks[i].taskId)[1];
+    var patterns = tasks[i].patterns;
+    var expected_patterns = expected_tasks[task_name];
+    if (!expected_patterns)
+      chrome.test.fail('Wrong task from getFileTasks(): ' + task_name);
+    patterns = patterns.sort();
+    expected_patterns = expected_patterns.sort();
+    for (var j = 0; j < patterns.length; ++j) {
+      if (patterns[j] != expected_patterns[j])
+        chrome.test.fail('Wrong patterns set for task ' + task_name + '. ' +
+                         'Got: ' + patterns +
+                         ' expected: ' + expected_patterns);
+    }
+  }
+
   chrome.fileBrowserPrivate.executeTask(tasks[0].taskId, [fileUrl]);
 }
 

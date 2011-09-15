@@ -5,29 +5,30 @@ function getLastFileEntries() {
   return last_file_entries;
 }
 
-chrome.fileBrowserHandler.onExecute.addListener(
-  function(id, details) {
-    if (id != "TestAction") {
-      chrome.test.fail("Unexpected action id: " + id);
+function executeListener(id, details) {
+  if (id != "TextAction" && id != "BaseAction" && id != "JpegAction") {
+    chrome.test.fail("Unexpected action id: " + id);
+    return;
+  }
+  var file_entries = details.entries;
+  if (!file_entries || file_entries.length != 1) {
+    chrome.test.fail("Unexpected file url list");
+    return;
+  }
+  last_file_entries = file_entries;
+  chrome.tabs.get(details.tab_id, function(tab) {
+    if (tab.title != "file browser component test") {
+      chrome.test.fail("Unexpected tab title: " + tab.title);
       return;
     }
-    var file_entries = details.entries;
-    if (!file_entries || file_entries.length != 1) {
-      chrome.test.fail("Unexpected file url list");
-      return;
-    }
-    last_file_entries = file_entries;
-    chrome.tabs.get(details.tab_id, function(tab) {
-      if (tab.title != "file browser component test") {
-        chrome.test.fail("Unexpected tab title: " + tab.title);
-        return;
-      }
-      // Create a new tab
-      chrome.tabs.create({
-        url: "tab.html"
-      });
+    // Create a new tab
+    chrome.tabs.create({
+      url: "tab.html"
     });
   });
+}
+
+chrome.fileBrowserHandler.onExecute.addListener(executeListener);
 
 // This extension just initializes its chrome.fileBrowserHandler.onExecute
 // event listener, the real testing is done when this extension's handler is

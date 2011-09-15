@@ -6,10 +6,22 @@
   "background_page": "background.html",
   "file_browser_handlers": [
     {
-      "id" : "TestAction",
-      "default_title" : "Default title",
+      "id" : "TextAction",
+      "default_title" : "txt file action.",
       "default_icon" : "icon.png",
-      "file_filters" : [ "filesystem:*.tXt" ]
+      "file_filters" : [ "filesystem:*.tXt", "filesystem:*.text" ]
+    },
+    {
+      "id" : "JpegAction",
+      "default_title" : "jpg file action",
+      "default_icon" : "icon.png",
+      "file_filters" : [ "filesystem:*.jpg", "filesystem:*.jpeg" ]
+    },
+    {
+      "id" : "BaseAction",
+      "default_title" : "Base action",
+      "default_icon" : "icon.png",
+      "file_filters" : [ "filesystem:*", "filesystem:*.*" ]
     }
   ],
   "permissions": [
@@ -18,4 +30,3 @@
     "unlimitedStorage"
   ]
 }
-

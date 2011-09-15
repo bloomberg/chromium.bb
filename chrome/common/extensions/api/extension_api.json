@@ -6694,7 +6694,12 @@
         "properties": {
           "taskId": {"type": "string", "description": "The unique identifier of the task."},
           "title": {"type": "string", "description": "Task title."},
-          "iconUrl": {"type": "string", "description": "Task icon url (from chrome://extension-icon/...)"}
+          "iconUrl": {"type": "string", "description": "Task icon url (from chrome://extension-icon/...)"},
+          "patterns": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "The list of URL patterns supported by the task that matched at least one file."
+          }
         }
       },
       {
@@ -6915,7 +6920,7 @@
       },
       {
         "name": "getFileTasks",
-        "description": "Gets the of tasks that can be performed over selected files.",
+        "description": "Gets the list of tasks that can be performed over selected files.",
         "parameters": [
           {
             "name": "fileURLs",
@@ -6932,7 +6937,7 @@
                 "name": "tasks",
                 "type": "array",
                 "items": {"$ref": "FileBrowserTask"},
-                "description": "The list of available tasks that can be performed on all of the passed file paths."
+                "description": "The list of matched file URL patterns for this task."
               }
             ]
           }

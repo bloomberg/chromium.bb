@@ -88,11 +88,20 @@ const int kReadWriteFilePermissions = base::PLATFORM_FILE_OPEN |
                                       base::PLATFORM_FILE_ASYNC |
                                       base::PLATFORM_FILE_WRITE_ATTRIBUTES;
 
-typedef std::pair<int, const FileBrowserHandler* > LastUsedHandler;
+struct LastUsedHandler {
+  LastUsedHandler(int t, const FileBrowserHandler* h, URLPatternSet p)
+      : timestamp(t),
+        handler(h),
+        patterns(p) {
+  }
+
+  int timestamp;
+  const FileBrowserHandler* handler;
+  URLPatternSet patterns;
+};
+
 typedef std::vector<LastUsedHandler> LastUsedHandlerList;
-
-typedef std::vector<const FileBrowserHandler*> ActionList;
-
+typedef std::set<const FileBrowserHandler*> ActionSet;
 
 // Breaks down task_id that is used between getFileTasks() and executeTask() on
 // its building blocks. task_id field the following structure:
@@ -116,8 +125,8 @@ std::string MakeTaskID(const char* extension_id,
 }
 
 bool GetFileBrowserHandlers(Profile* profile,
-                           const GURL& selected_file_url,
-                           ActionList* results) {
+                            const GURL& selected_file_url,
+                            ActionSet* results) {
   ExtensionService* service = profile->GetExtensionService();
   if (!service)
     return false;  // In unit-tests, we may not have an ExtensionService.
@@ -131,13 +140,13 @@ bool GetFileBrowserHandlers(Profile* profile,
 
     for (Extension::FileBrowserHandlerList::const_iterator action_iter =
              extension->file_browser_handlers()->begin();
-        action_iter != extension->file_browser_handlers()->end();
-        ++action_iter) {
+         action_iter != extension->file_browser_handlers()->end();
+         ++action_iter) {
       const FileBrowserHandler* action = action_iter->get();
       if (!action->MatchesURL(selected_file_url))
         continue;
 
-      results->push_back(action_iter->get());
+      results->insert(action_iter->get());
     }
   }
   return true;
@@ -145,85 +154,102 @@ bool GetFileBrowserHandlers(Profile* profile,
 
 bool SortByLastUsedTimestampDesc(const LastUsedHandler& a,
                                  const LastUsedHandler& b) {
-  return a.first > b.first;
+  return a.timestamp > b.timestamp;
 }
 
 // TODO(zelidrag): Wire this with ICU to make this sort I18N happy.
 bool SortByTaskName(const LastUsedHandler& a, const LastUsedHandler& b) {
-  return base::strcasecmp(a.second->title().data(),
-                          b.second->title().data()) > 0;
+  return base::strcasecmp(a.handler->title().data(),
+                          b.handler->title().data()) > 0;
+}
+
+void SortLastUsedHandlerList(LastUsedHandlerList *list) {
+  // Sort by the last used descending.
+  std::sort(list->begin(), list->end(), SortByLastUsedTimestampDesc);
+  if (list->size() > 1) {
+    // Sort the rest by name.
+    std::sort(list->begin() + 1, list->end(), SortByTaskName);
+  }
+}
+
+URLPatternSet GetAllMatchingPatterns(const FileBrowserHandler* handler,
+                                     const std::vector<GURL>& files_list) {
+  URLPatternSet matching_patterns;
+  const URLPatternSet& patterns = handler->file_url_patterns();
+  for (URLPatternSet::const_iterator pattern_it = patterns.begin();
+       pattern_it != patterns.end(); ++pattern_it) {
+    for (std::vector<GURL>::const_iterator file_it = files_list.begin();
+         file_it != files_list.end(); ++file_it) {
+      if (pattern_it->MatchesURL(*file_it)) {
+        matching_patterns.AddPattern(*pattern_it);
+        break;
+      }
+    }
+  }
+
+  return matching_patterns;
 }
 
 // Given the list of selected files, returns array of context menu tasks
 // that are shared
 bool FindCommonTasks(Profile* profile,
-                     ListValue* files_list,
+                     const std::vector<GURL>& files_list,
                      LastUsedHandlerList* named_action_list) {
   named_action_list->clear();
-  ActionList common_tasks;
-  for (size_t i = 0; i < files_list->GetSize(); ++i) {
-    std::string file_url;
-    if (!files_list->GetString(i, &file_url))
-      return false;
-
-    // We need case-insensitive matching, and pattern in handler is already
-    // in lower case.
-    StringToLowerASCII(&file_url);
-
-    ActionList file_actions;
-    if (!GetFileBrowserHandlers(profile, GURL(file_url), &file_actions))
+  ActionSet common_tasks;
+  for (std::vector<GURL>::const_iterator it = files_list.begin();
+       it != files_list.end(); ++it) {
+    ActionSet file_actions;
+    if (!GetFileBrowserHandlers(profile, *it, &file_actions))
       return false;
     // If there is nothing to do for one file, the intersection of tasks for all
     // files will be empty at the end.
-    if (!file_actions.size()) {
-      common_tasks.clear();
+    if (!file_actions.size())
       return true;
-    }
+
     // For the very first file, just copy elements.
-    if (i == 0) {
-      common_tasks.insert(common_tasks.begin(),
-                          file_actions.begin(),
-                          file_actions.end());
-      std::sort(common_tasks.begin(), common_tasks.end());
-    } else if (common_tasks.size()) {
-      // For all additional files, find intersection between the accumulated
-      // and file specific set.
-      std::sort(file_actions.begin(), file_actions.end());
-      ActionList intersection(common_tasks.size());
-      ActionList::iterator intersection_end =
-          std::set_intersection(common_tasks.begin(),
-                                common_tasks.end(),
-                                file_actions.begin(),
-                                file_actions.end(),
-                                intersection.begin());
-      common_tasks.clear();
-      common_tasks.insert(common_tasks.begin(),
-                          intersection.begin(),
-                          intersection_end);
-      std::sort(common_tasks.begin(), common_tasks.end());
+    if (it == files_list.begin()) {
+      common_tasks = file_actions;
+    } else {
+      if (common_tasks.size()) {
+        // For all additional files, find intersection between the accumulated
+        // and file specific set.
+        ActionSet intersection;
+        std::set_intersection(common_tasks.begin(), common_tasks.end(),
+                              file_actions.begin(), file_actions.end(),
+                              std::inserter(intersection,
+                                            intersection.begin()));
+        common_tasks = intersection;
+      }
     }
   }
 
   const DictionaryValue* prefs_tasks =
       profile->GetPrefs()->GetDictionary(prefs::kLastUsedFileBrowserHandlers);
-  for (ActionList::const_iterator iter = common_tasks.begin();
+  for (ActionSet::const_iterator iter = common_tasks.begin();
        iter != common_tasks.end(); ++iter) {
     // Get timestamp of when this task was used last time.
     int last_used_timestamp = 0;
     prefs_tasks->GetInteger(MakeTaskID((*iter)->extension_id().data(),
                                        (*iter)->id().data()),
-                             &last_used_timestamp);
-    named_action_list->push_back(LastUsedHandler(last_used_timestamp, *iter));
+                            &last_used_timestamp);
+    URLPatternSet matching_patterns = GetAllMatchingPatterns(*iter, files_list);
+    named_action_list->push_back(LastUsedHandler(last_used_timestamp, *iter,
+                                                 matching_patterns));
   }
-  // Sort by the last used descending.
-  std::sort(named_action_list->begin(), named_action_list->end(),
-            SortByLastUsedTimestampDesc);
-  if (named_action_list->size() > 1) {
-    // Sort the rest by name.
-    std::sort(named_action_list->begin() + 1, named_action_list->end(),
-              SortByTaskName);
-  }
+
+  SortLastUsedHandlerList(named_action_list);
   return true;
+}
+
+ListValue* URLPatternSetToStringList(const URLPatternSet& patterns) {
+  ListValue* list = new ListValue();
+  for (URLPatternSet::const_iterator it = patterns.begin();
+       it != patterns.end(); ++it) {
+    list->Append(new StringValue(it->GetAsString()));
+  }
+
+  return list;
 }
 
 // Update file handler usage stats.
@@ -534,24 +560,38 @@ bool GetFileTasksFileBrowserFunction::RunImpl() {
   if (!args_->GetList(0, &files_list))
     return false;
 
+  std::vector<GURL> file_urls;
+  for (size_t i = 0; i < files_list->GetSize(); ++i) {
+    std::string file_url;
+    if (!files_list->GetString(i, &file_url))
+      return false;
+
+    // We need case-insensitive matching, and pattern in handler is already
+    // in lower case.
+    StringToLowerASCII(&file_url);
+    file_urls.push_back(GURL(file_url));
+  }
+
   ListValue* result_list = new ListValue();
   result_.reset(result_list);
 
   LastUsedHandlerList common_tasks;
-  if (!FindCommonTasks(profile_, files_list, &common_tasks))
+  if (!FindCommonTasks(profile_, file_urls, &common_tasks))
     return false;
 
   ExtensionService* service = profile_->GetExtensionService();
   for (LastUsedHandlerList::const_iterator iter = common_tasks.begin();
        iter != common_tasks.end();
        ++iter) {
-    const std::string extension_id = iter->second->extension_id();
+    const FileBrowserHandler* handler = iter->handler;
+    const std::string extension_id = handler->extension_id();
     const Extension* extension = service->GetExtensionById(extension_id, false);
     CHECK(extension);
     DictionaryValue* task = new DictionaryValue();
     task->SetString("taskId", MakeTaskID(extension_id.data(),
-                                         iter->second->id().data()));
-    task->SetString("title", iter->second->title());
+                                         handler->id().data()));
+    task->SetString("title", handler->title());
+    task->Set("patterns", URLPatternSetToStringList(iter->patterns));
     // TODO(zelidrag): Figure out how to expose icon URL that task defined in
     // manifest instead of the default extension icon.
     GURL icon =
