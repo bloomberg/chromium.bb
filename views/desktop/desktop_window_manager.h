@@ -4,21 +4,24 @@
 
 #ifndef VIEWS_DESKTOP_DESKTOP_WINDOW_MANAGER_H_
 #define VIEWS_DESKTOP_DESKTOP_WINDOW_MANAGER_H_
+#pragma once
 
+#include <vector>
+
+#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/scoped_ptr.h"
 #include "views/widget/widget.h"
 #include "views/widget/window_manager.h"
 
-#include <vector>
 
 namespace gfx {
 class Point;
 }
 
 namespace views {
-
 namespace desktop {
+
 class WindowController;
 
 // A tentative window manager for views destktop until we have *right*

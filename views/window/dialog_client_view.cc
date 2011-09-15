@@ -4,6 +4,8 @@
 
 #include "views/window/dialog_client_view.h"
 
+#include "build/build_config.h"
+
 #if defined(OS_WIN)
 #include <windows.h>
 #include <uxtheme.h>
@@ -31,14 +33,12 @@
 #include "ui/gfx/native_theme.h"
 #else
 #include "ui/gfx/skia_utils_gtk.h"
-#include "views/widget/widget.h"
 #include "views/window/hit_test.h"
 #endif
 
 using ui::MessageBoxFlags;
 
 namespace views {
-
 namespace {
 
 // Updates any of the standard buttons according to the delegate.

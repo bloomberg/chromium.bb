@@ -4,15 +4,14 @@
 
 #include "views/desktop/desktop_window_manager.h"
 
-#include "views/events/event.h"
-#include "views/widget/widget.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
-#include "views/widget/widget.h"
+#include "views/events/event.h"
 #include "views/widget/native_widget_private.h"
 #include "views/widget/native_widget_view.h"
 #include "views/widget/native_widget_views.h"
 #include "views/widget/widget_delegate.h"
+
 #if defined(OS_LINUX)
 #include "views/window/hit_test.h"
 #endif
