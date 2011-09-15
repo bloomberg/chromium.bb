@@ -131,6 +131,6 @@ void ChromeBrowserMainPartsMac::PreMainMessageLoopStart() {
 void ChromeBrowserMainPartsMac::PostMainMessageLoopRun() {
   ChromeBrowserMainPartsPosix::PostMainMessageLoopRun();
 
-  AppController* appController = [NSApp delegate];
-  [appController didEndMainMessageLoop];
+  //AppController* appController = [NSApp delegate];
+  //[appController didEndMainMessageLoop];
 }
