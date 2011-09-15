@@ -101,6 +101,8 @@ PrintPreviewDataSource::PrintPreviewDataSource()
                      IDS_PRINT_PREVIEW_PAGE_RANGE_INSTRUCTION);
   AddLocalizedString("copiesInstruction", IDS_PRINT_PREVIEW_COPIES_INSTRUCTION);
   AddLocalizedString("signIn", IDS_PRINT_PREVIEW_SIGN_IN);
+  AddLocalizedString("morePrinters", IDS_PRINT_PREVIEW_MORE_PRINTERS);
+  AddLocalizedString("addCloudPrinter", IDS_PRINT_PREVIEW_ADD_CLOUD_PRINTER);
   AddLocalizedString("cloudPrinters", IDS_PRINT_PREVIEW_CLOUD_PRINTERS);
   AddLocalizedString("localPrinters", IDS_PRINT_PREVIEW_LOCAL_PRINTERS);
   AddLocalizedString("manageCloudPrinters",
@@ -108,10 +110,6 @@ PrintPreviewDataSource::PrintPreviewDataSource()
   AddLocalizedString("manageLocalPrinters",
                      IDS_PRINT_PREVIEW_MANAGE_LOCAL_PRINTERS);
   AddLocalizedString("managePrinters", IDS_PRINT_PREVIEW_MANAGE_PRINTERS);
-  AddLocalizedString("printWithCloudPrintWait",
-                     IDS_PRINT_PREVIEW_PRINT_WITH_CLOUD_PRINT_WAIT);
-  AddLocalizedString("printWithCloudPrint",
-                     IDS_PRINT_PREVIEW_PRINT_WITH_CLOUD_PRINT);
   AddLocalizedString("incrementTitle", IDS_PRINT_PREVIEW_INCREMENT_TITLE);
   AddLocalizedString("decrementTitle", IDS_PRINT_PREVIEW_DECREMENT_TITLE);
   AddLocalizedString("printPagesLabel", IDS_PRINT_PREVIEW_PRINT_PAGES_LABEL);

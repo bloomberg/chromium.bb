@@ -22,8 +22,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/printing/background_printing_manager.h"
-#include "chrome/browser/printing/print_dialog_cloud.h"
-#include "chrome/browser/printing/print_job_manager.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_url.h"
 #include "chrome/browser/printing/printer_manager_dialog.h"
 #include "chrome/browser/printing/print_preview_tab_controller.h"
@@ -85,7 +83,6 @@ enum UserActionBuckets {
   PREVIEW_STARTED,
   INITIATOR_TAB_CRASHED,
   INITIATOR_TAB_CLOSED,
-  PRINT_WITH_CLOUD_PRINT,
   USERACTION_BUCKET_BOUNDARY
 };
 
@@ -472,10 +469,12 @@ void PrintPreviewHandler::RegisterMessages() {
       NewCallback(this, &PrintPreviewHandler::HandleGetPrinterCapabilities));
   web_ui_->RegisterMessageCallback("showSystemDialog",
       NewCallback(this, &PrintPreviewHandler::HandleShowSystemDialog));
+  web_ui_->RegisterMessageCallback("morePrinters",
+      NewCallback(this, &PrintPreviewHandler::HandleShowSystemDialog));
   web_ui_->RegisterMessageCallback("signIn",
       NewCallback(this, &PrintPreviewHandler::HandleSignin));
-  web_ui_->RegisterMessageCallback("printWithCloudPrint",
-      NewCallback(this, &PrintPreviewHandler::HandlePrintWithCloudPrint));
+  web_ui_->RegisterMessageCallback("addCloudPrinter",
+      NewCallback(this, &PrintPreviewHandler::HandleManageCloudPrint));
   web_ui_->RegisterMessageCallback("manageCloudPrinters",
       NewCallback(this, &PrintPreviewHandler::HandleManageCloudPrint));
   web_ui_->RegisterMessageCallback("manageLocalPrinters",
@@ -737,31 +736,6 @@ void PrintPreviewHandler::HandleGetPrinterCapabilities(const ListValue* args) {
 
 void PrintPreviewHandler::HandleSignin(const ListValue* /*args*/) {
   cloud_print_signin_dialog::CreateCloudPrintSigninDialog(preview_tab());
-}
-
-void PrintPreviewHandler::HandlePrintWithCloudPrint(const ListValue* /*args*/) {
-  // Record the number of times the user asks to print via cloud print
-  // instead of the print preview dialog.
-  ReportStats();
-  ReportUserActionHistogram(PRINT_WITH_CLOUD_PRINT);
-
-  PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(web_ui_);
-  scoped_refptr<RefCountedBytes> data;
-  print_preview_ui->GetPrintPreviewDataForIndex(
-      printing::COMPLETE_PREVIEW_DOCUMENT_INDEX, &data);
-  CHECK(data.get());
-  DCHECK_GT(data->size(), 0U);
-  print_dialog_cloud::CreatePrintDialogForBytes(data,
-      string16(print_preview_ui->initiator_tab_title()),
-      string16(),
-      std::string("application/pdf"),
-      false);
-
-  // Once the cloud print dialog comes up we're no longer in a background
-  // printing situation.  Close the print preview.
-  // TODO(abodenha@chromium.org) The flow should be changed as described in
-  // http://code.google.com/p/chromium/issues/detail?id=44093
-  ActivateInitiatorTabAndClosePreviewTab();
 }
 
 void PrintPreviewHandler::HandleManageCloudPrint(const ListValue* /*args*/) {

@@ -1104,8 +1104,7 @@ const AEEventClass kAECloudPrintUninstallClass = 'GCPu';
     string16 printTicket16 = base::SysNSStringToUTF16(printTicket);
     print_dialog_cloud::CreatePrintDialogForFile(
         FilePath([inputPath UTF8String]), title16,
-        printTicket16, [mime UTF8String], /*modal=*/false,
-        /*delete_on_close=*/false);
+        printTicket16, [mime UTF8String], /*modal=*/false);
   }
 }
 

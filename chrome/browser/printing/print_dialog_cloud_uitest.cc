@@ -204,8 +204,7 @@ class PrintDialogCloudTest : public InProcessBrowserTest {
                             string16(),
                             string16(),
                             std::string("application/pdf"),
-                            true,
-                            false));
+                            true));
   }
 
   bool handler_added_;

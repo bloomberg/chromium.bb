@@ -124,9 +124,6 @@ class PrintPreviewHandler : public WebUIMessageHandler,
   // |args| is unused.
   void HandleManagePrinters(const base::ListValue* args);
 
-  // Asks the browser to show the cloud print dialog. |args| is unused.
-  void HandlePrintWithCloudPrint(const base::ListValue* args);
-
   // Asks the browser to close the preview tab. |args| is unused.
   void HandleClosePreviewTab(const base::ListValue* args);
 
