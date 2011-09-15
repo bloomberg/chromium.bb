@@ -22,6 +22,9 @@ namespace {
 const int kMinimumWindowSize = 1;
 
 // TODO(dcheng): Move elsewhere so BrowserWindowCocoa can use them too.
+// Converts global screen coordinates in platfrom-independent coordinates
+// (with the (0,0) in the top-left corner of the primary screen) to the Cocoa
+// screen coordinates (with (0,0) in the low-left corner).
 NSRect ConvertCoordinatesToCocoa(const gfx::Rect& bounds) {
   // Flip coordinates based on the primary screen.
   NSScreen* screen = [[NSScreen screens] objectAtIndex:0];
@@ -84,15 +87,45 @@ gfx::Rect PanelBrowserWindowCocoa::GetPanelBounds() const {
   return bounds_;
 }
 
+// |bounds| is the platform-independent screen coordinates, with (0,0) at
+// top-left of the primary screen.
 void PanelBrowserWindowCocoa::SetPanelBounds(const gfx::Rect& bounds) {
   bounds_ = bounds;
   NSRect frame = ConvertCoordinatesToCocoa(bounds);
   [controller_ setPanelFrame:frame];
+
+  // Store the expanded height for subsequent minimize/restore operations.
+  if (panel_->expansion_state() == Panel::EXPANDED)
+    restored_height_ = NSHeight(frame);
 }
 
 void PanelBrowserWindowCocoa::OnPanelExpansionStateChanged(
     Panel::ExpansionState expansion_state) {
-  NOTIMPLEMENTED();
+  int height;  // New height of the Panel in screen coordinates.
+  switch (expansion_state) {
+    case Panel::EXPANDED:
+      height = restored_height_;
+      break;
+    case Panel::TITLE_ONLY:
+      height = [controller_ titlebarHeightInScreeenCoordinates];
+      break;
+    case Panel::MINIMIZED:
+      height = 3;  // TODO(dimich) merge with GTK patch which defines it better.
+      break;
+    default:
+      NOTREACHED();
+      height = restored_height_;
+      break;
+  }
+
+  int bottom = panel_->manager()->GetBottomPositionForExpansionState(
+      expansion_state);
+  // This math is in platform-independent screen coordinates (inverted),
+  // because it's what SetPanelBounds expects.
+  gfx::Rect bounds = bounds_;
+  bounds.set_y(bottom - height);
+  bounds.set_height(height);
+  SetPanelBounds(bounds);
 }
 
 bool PanelBrowserWindowCocoa::ShouldBringUpPanelTitlebar(int mouse_x,

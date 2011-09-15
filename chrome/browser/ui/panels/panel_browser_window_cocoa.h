@@ -82,7 +82,13 @@ class PanelBrowserWindowCocoa : public NativePanel {
 
   scoped_ptr<Browser> browser_;
   scoped_ptr<Panel> panel_;
+
+  // These use platform-independent screen coordinates, with (0,0) at
+  // top-left of the primary screen. They have to be converted to Cocoa
+  // screen coordinates before calling Cocoa API.
   gfx::Rect bounds_;
+  int restored_height_;
+
   PanelWindowControllerCocoa* controller_;  // Weak, owns us.
   bool is_shown_;  // Panel is hidden on creation, Show() changes that forever.
   bool has_find_bar_; // Find bar should only be created once per panel.

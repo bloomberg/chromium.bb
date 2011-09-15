@@ -206,6 +206,13 @@ static NSEvent* MakeMouseEvent(NSEventType type, NSPoint point) {
   dragState_ = PANEL_DRAG_CAN_START;
 }
 
+- (void)mouseUp:(NSEvent*)event {
+  DCHECK(dragState_ != PANEL_DRAG_IN_PROGRESS);
+
+  if ([event clickCount] == 1)
+    [controller_ flipExpansionState];
+}
+
 - (void)mouseDragged:(NSEvent*)event {
   // In addition to events needed to control the drag operation, fetch the right
   // mouse click events and key down events and ignore them, to prevent their

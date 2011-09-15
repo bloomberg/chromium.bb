@@ -46,6 +46,13 @@ enum {
 // In UNIT_TESTS, this is set to YES to wait on nonblocking animations.
 static BOOL g_reportAnimationStatus = NO;
 
+@implementation PanelWindowCocoaImpl
+- (NSRect)constrainFrameRect:(NSRect)frameRect toScreen:(NSScreen *)screen {
+  return frameRect;
+}
+@end
+
+
 @implementation PanelWindowControllerCocoa
 
 - (id)initWithBrowserWindow:(PanelBrowserWindowCocoa*)window {
@@ -268,6 +275,9 @@ static BOOL g_reportAnimationStatus = NO;
     return NO;
 
   if (!browser->tabstrip_model()->empty()) {
+    // Terminate any playing animations.
+    [self terminateBoundsAnimation];
+    animateOnBoundsChange_ = NO;
     // Tab strip isn't empty. Make browser to close all the tabs, allowing the
     // renderer to shut down and call us back again.
     // The tab strip of Panel is not visible and contains only one tab but
@@ -339,6 +349,8 @@ static BOOL g_reportAnimationStatus = NO;
     [[self window] setFrame:frame display:YES animate:NO];
     return;
   }
+  // Will be enabled back in animationDidEnd callback.
+  [self disableTabContentsViewAutosizing];
 
   NSDictionary *windowResize = [NSDictionary dictionaryWithObjectsAndKeys:
       [self window], NSViewAnimationTargetKey,
@@ -358,6 +370,9 @@ static BOOL g_reportAnimationStatus = NO;
 }
 
 - (void)animationDidEnd:(NSAnimation*)animation {
+  if (windowShim_->panel()->expansion_state() == Panel::EXPANDED)
+    [self enableTabContentsViewAutosizing];
+
   if (!g_reportAnimationStatus)
     return;
 
@@ -373,8 +388,21 @@ static BOOL g_reportAnimationStatus = NO;
   [boundsAnimation_ stopAnimation];
   [boundsAnimation_ setDelegate:nil];
   [boundsAnimation_ release];
+  boundsAnimation_ = nil;
 }
 
+- (void)flipExpansionState {
+    Panel* panel = windowShim_->panel();
+    Panel::ExpansionState newExpansionState =
+      (panel->expansion_state() != Panel::EXPANDED) ? Panel::EXPANDED
+                                                    : Panel::MINIMIZED;
+    panel->SetExpansionState(newExpansionState);
+}
+
+- (int)titlebarHeightInScreeenCoordinates {
+  NSView* titlebar = [self titlebarView];
+  return NSHeight([titlebar convertRect:[titlebar bounds] toView:nil]);
+}
 // TestingAPI interface implementation
 
 + (void)enableBoundsAnimationNotifications {

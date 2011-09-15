@@ -16,12 +16,23 @@
 #include "base/memory/scoped_ptr.h"
 #import "base/memory/scoped_nsobject.h"
 #import "chrome/browser/ui/cocoa/browser_command_executor.h"
+#import "chrome/browser/ui/cocoa/themed_browser_window.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
 #import "chrome/browser/ui/cocoa/tracking_area.h"
 
 @class FindBarCocoaController;
 class PanelBrowserWindowCocoa;
 @class PanelTitlebarViewCocoa;
+
+@interface PanelWindowCocoaImpl : ThemedBrowserWindow {
+}
+// The panels cannot be reduced to 3-px windows on the edge of the screen
+// active area (above Dock). Default constraining logic makes at least a height
+// of the titlebar visible, so the user could still grab it. We do 'restore'
+// differently, and minimize panels to 3 px. Hence the need to override the
+// constraining logic.
+- (NSRect)constrainFrameRect:(NSRect)frameRect toScreen:(NSScreen *)screen;
+@end
 
 @interface PanelWindowControllerCocoa : NSWindowController
                                             <NSWindowDelegate,
@@ -71,6 +82,7 @@ class PanelBrowserWindowCocoa;
 // Uses nonblocking animation for moving the Panels. It's especially
 // important in case of dragging a Panel when other Panels should 'slide out',
 // indicating the potential drop slot.
+// |frame| is in screen coordinates, same as [window frame].
 - (void)setPanelFrame:(NSRect)frame;
 
 // Used by PanelTitlebarViewCocoa when user rearranges the Panels by dragging.
@@ -80,6 +92,12 @@ class PanelBrowserWindowCocoa;
 
 // Accessor for titlebar view.
 - (PanelTitlebarViewCocoa*)titlebarView;
+// Returns the height of titlebar, used to show the titlebar in
+// "Draw Attention" state.
+- (int)titlebarHeightInScreeenCoordinates;
+
+// Invoked when user clicks on the titlebar. Flips Minimized/Restored states.
+- (void)flipExpansionState;
 
 // Executes the command in the context of the current browser.
 // |command| is an integer value containing one of the constants defined in the
