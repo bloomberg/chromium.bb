@@ -203,16 +203,8 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewTabControllerBrowserTest,
 }
 
 // Test that print preview tabs created by pop-up windows are placed correctly.
-#if defined(OS_LINUX) && defined(TOOLKIT_VIEWS)
-// See http://crbug.com/96172.
-#define MAYBE_OpenPreviewTabFromPopupInCorrectPosition \
-    FAILS_OpenPreviewTabFromPopupInCorrectPosition
-#else
-#define MAYBE_OpenPreviewTabFromPopupInCorrectPosition \
-    OpenPreviewTabFromPopupInCorrectPosition
-#endif // defined(OS_LINUX) && defined(TOOLKIT_VIEWS)
 IN_PROC_BROWSER_TEST_F(PrintPreviewTabControllerBrowserTest,
-                       MAYBE_OpenPreviewTabFromPopupInCorrectPosition) {
+                       OpenPreviewTabFromPopupInCorrectPosition) {
   const int kTabCount = 4;
   // Create kTabCount - 1 tabs since we start with 1 tab already.
   for (int i = 0; i < kTabCount - 1; ++i) {
@@ -227,9 +219,16 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewTabControllerBrowserTest,
   p.disposition = NEW_POPUP;
   ui_test_utils::NavigateToURL(&p);
 
+
+#if defined(OS_LINUX) && defined(TOOLKIT_VIEWS)
+  // Navigate() should have opened a new tab on CrOS.
+  EXPECT_EQ(browser(), p.browser);
+  EXPECT_EQ(Browser::TYPE_TABBED, p.browser->type());
+#else
   // Navigate() should have opened a new popup window.
   EXPECT_NE(browser(), p.browser);
   EXPECT_EQ(Browser::TYPE_POPUP, p.browser->type());
+#endif
   ASSERT_TRUE(p.target_contents);
 
   // Create a print preview tab.
@@ -241,8 +240,14 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewTabControllerBrowserTest,
     tab_controller->GetOrCreatePreviewTab(p.target_contents);
   EXPECT_TRUE(preview_tab);
 
+  int tab_position = kTabCount;
+#if defined(OS_LINUX) && defined(TOOLKIT_VIEWS)
+  // Increment position since CrOS opened a new tab instead of a popup.
+  tab_position++;
+#endif
+
   // Check the preview tab's location.
-  EXPECT_EQ(preview_tab, browser()->GetTabContentsWrapperAt(kTabCount));
+  EXPECT_EQ(preview_tab, browser()->GetTabContentsWrapperAt(tab_position));
   EXPECT_EQ(preview_tab, browser()->GetSelectedTabContentsWrapper());
 }
 
