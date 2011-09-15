@@ -102,7 +102,8 @@ class ReadErrorHandler : public PersistentPrefStore::ReadErrorDelegate {
         BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
             NewRunnableFunction(&NotifyReadError, message_id));
       }
-      UMA_HISTOGRAM_ENUMERATION("PrefService.ReadError", error, 20);
+      UMA_HISTOGRAM_ENUMERATION("PrefService.ReadError", error,
+                                PersistentPrefStore::PREF_READ_ERROR_MAX_ENUM);
     }
   }
 };

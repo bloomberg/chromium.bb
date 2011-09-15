@@ -12,6 +12,7 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/message_loop_proxy.h"
+#include "base/metrics/histogram.h"
 #include "base/string_number_conversions.h"
 #include "base/task.h"
 #include "base/threading/thread.h"
@@ -37,7 +38,7 @@ class WriteToDiskTask : public Task {
     // is securely created.
     FilePath tmp_file_path;
     if (!file_util::CreateTemporaryFileInDir(path_.DirName(), &tmp_file_path)) {
-      LogFailure("could not create temporary file");
+      LogFailure(FAILED_CREATING, "could not create temporary file");
       return;
     }
 
@@ -45,7 +46,7 @@ class WriteToDiskTask : public Task {
     base::PlatformFile tmp_file =
         base::CreatePlatformFile(tmp_file_path, flags, NULL, NULL);
     if (tmp_file == base::kInvalidPlatformFileValue) {
-      LogFailure("could not open temporary file");
+      LogFailure(FAILED_OPENING, "could not open temporary file");
       return;
     }
 
@@ -55,29 +56,40 @@ class WriteToDiskTask : public Task {
     base::FlushPlatformFile(tmp_file);  // Ignore return value.
 
     if (!base::ClosePlatformFile(tmp_file)) {
-      LogFailure("failed to close temporary file");
+      LogFailure(FAILED_CLOSING, "failed to close temporary file");
       file_util::Delete(tmp_file_path, false);
       return;
     }
 
     if (bytes_written < static_cast<int>(data_.length())) {
-      LogFailure("error writing, bytes_written=" +
+      LogFailure(FAILED_WRITING, "error writing, bytes_written=" +
                  base::IntToString(bytes_written));
       file_util::Delete(tmp_file_path, false);
       return;
     }
 
     if (!file_util::ReplaceFile(tmp_file_path, path_)) {
-      LogFailure("could not rename temporary file");
+      LogFailure(FAILED_RENAMING, "could not rename temporary file");
       file_util::Delete(tmp_file_path, false);
       return;
     }
   }
 
  private:
-  void LogFailure(const std::string& message) {
-    PLOG(WARNING) << "failed to write " << path_.value()
-                  << ": " << message;
+  enum TempFileFailure {
+    FAILED_CREATING,
+    FAILED_OPENING,
+    FAILED_CLOSING,
+    FAILED_WRITING,
+    FAILED_RENAMING,
+    TEMP_FILE_FAILURE_MAX
+  };
+
+  void LogFailure(TempFileFailure failure_code, const std::string& message) {
+    UMA_HISTOGRAM_ENUMERATION("ImportantFile.TempFileFailures", failure_code,
+                              TEMP_FILE_FAILURE_MAX);
+    PLOG(WARNING) << "temp file failure: " << path_.value()
+                  << " : " << message;
   }
 
   const FilePath path_;

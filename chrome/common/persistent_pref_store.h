@@ -31,7 +31,8 @@ class PersistentPrefStore : public PrefStore {
     PREF_READ_ERROR_NO_FILE,
     PREF_READ_ERROR_JSON_REPEAT,
     PREF_READ_ERROR_OTHER,
-    PREF_READ_ERROR_FILE_NOT_SPECIFIED
+    PREF_READ_ERROR_FILE_NOT_SPECIFIED,
+    PREF_READ_ERROR_MAX_ENUM
   };
 
   class ReadErrorDelegate {
