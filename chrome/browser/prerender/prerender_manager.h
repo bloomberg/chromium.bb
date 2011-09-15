@@ -222,8 +222,6 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   // Test that needs needs access to internal functions.
   friend class PrerenderBrowserTest;
 
-  friend class base::RefCountedThreadSafe<PrerenderManager>;
-
   struct PrerenderContentsData;
   struct NavigationRecord;
 
