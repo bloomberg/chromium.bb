@@ -112,7 +112,7 @@ bool OomPriorityManager::CompareRendererStats(RendererStats first,
   // to take the one that uses more memory.
   if (abs((first.last_selected - second.last_selected).ToInternalValue()) <
       kTimeBucketInterval)
-    return first.last_selected < second.last_selected;
+    return first.last_selected > second.last_selected;
 
   return first.memory_used < second.memory_used;
 }
