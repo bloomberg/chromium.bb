@@ -327,7 +327,9 @@ void PluginProcessHost::CancelRequests() {
   pending_requests_.clear();
 
   while (!sent_requests_.empty()) {
-    sent_requests_.front()->OnError();
+    Client* client = sent_requests_.front();
+    if (client)
+      client->OnError();
     sent_requests_.pop_front();
   }
 }
