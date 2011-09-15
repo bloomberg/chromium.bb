@@ -342,7 +342,7 @@ def RunTestSuite(buildroot, board, image_dir, results_dir, full=True):
     failed = open(results_dir_in_chroot + '/failed_test_command', 'w')
     failed.write('%s exited with code %d' % (' '.join(cmd), code))
     failed.close()
-    raise TestException('Tests failed with code %d' % code)
+    raise TestException('** VMTests failed with code %d **' % code)
 
 
 def UpdateRemoteHW(buildroot, board, image_dir, remote_ip):

@@ -16,6 +16,7 @@ import unittest
 
 import constants
 sys.path.append(constants.SOURCE_ROOT)
+from chromite.buildbot import builderstage as bs
 from chromite.buildbot import cbuildbot
 from chromite.buildbot import cbuildbot_background as background
 from chromite.buildbot import cbuildbot_config as config
@@ -40,7 +41,7 @@ class AbstractStageTest(mox.MoxTestBase):
     """Returns an instance of the stage to be tested.
     Implement in subclasses.
     """
-    raise NotImplementedError, "return an instance of stage to be tested"
+    raise NotImplementedError, "return an instance of stage to be tested."
 
   def setUp(self):
     mox.MoxTestBase.setUp(self)
@@ -64,10 +65,10 @@ class AbstractStageTest(mox.MoxTestBase):
     self.options.buildnumber = 1234
     self.overlay = os.path.join(self.build_root,
                                 'src/third_party/chromiumos-overlay')
-    stages.BuilderStage.overlays = [self.overlay]
-    stages.BuilderStage.push_overlays = [self.overlay]
+    bs.BuilderStage.overlays = [self.overlay]
+    bs.BuilderStage.push_overlays = [self.overlay]
 
-    stages.BuilderStage.SetTrackingBranch(self.TRACKING_BRANCH)
+    bs.BuilderStage.SetTrackingBranch(self.TRACKING_BRANCH)
 
     self.mox.StubOutWithMock(os.path, 'isdir')
 
@@ -93,7 +94,7 @@ class BuilderStageTest(AbstractStageTest):
     AbstractStageTest.setUp(self)
 
   def ConstructStage(self):
-    return stages.BuilderStage(self.bot_id, self.options, self.build_config)
+    return bs.BuilderStage(self.bot_id, self.options, self.build_config)
 
   def testGetPortageEnvVar(self):
     """Basic test case for _GetPortageEnvVar function."""
@@ -126,7 +127,7 @@ class BuilderStageTest(AbstractStageTest):
           mox.And(mox.IsA(list), mox.In('--nopublic')),
           print_cmd=False, redirect_stdout=True).AndReturn(output_obj)
     self.mox.ReplayAll()
-    stages.OVERLAY_LIST_CMD = '/bin/true'
+    bs.OVERLAY_LIST_CMD = '/bin/true'
     stage = self.ConstructStage()
     public_overlays = ['public1', 'public2', self.overlay]
     private_overlays = ['private1', 'private2']
@@ -845,7 +846,7 @@ class BuildTargetStageTest(AbstractStageTest):
     self.mox.StubOutWithMock(commands, 'UploadPrebuilts')
     self.mox.StubOutWithMock(commands, 'BuildImage')
     self.mox.StubOutWithMock(commands, 'BuildVMImageForTesting')
-    self.mox.StubOutWithMock(stages.BuilderStage, '_GetPortageEnvVar')
+    self.mox.StubOutWithMock(bs.BuilderStage, '_GetPortageEnvVar')
 
   def ConstructStage(self):
     return stages.BuildTargetStage(self.bot_id,
@@ -1134,15 +1135,15 @@ class BuildStagesResultsTest(unittest.TestCase):
     # Save off our self where FailStage._PerformStage can find it.
     outer_self = self
 
-    class PassStage(stages.BuilderStage):
+    class PassStage(bs.BuilderStage):
       """PassStage always works"""
       pass
 
-    class Pass2Stage(stages.BuilderStage):
+    class Pass2Stage(bs.BuilderStage):
       """Pass2Stage always works"""
       pass
 
-    class FailStage(stages.BuilderStage):
+    class FailStage(bs.BuilderStage):
       """FailStage always throws an exception"""
 
       def _PerformStage(self):
@@ -1154,7 +1155,7 @@ class BuildStagesResultsTest(unittest.TestCase):
     Pass2Stage(self.bot_id, self.options, self.build_config).Run()
 
     self.assertRaises(
-      stages.BuildException,
+      bs.NonBacktraceBuildException,
       FailStage(self.bot_id, self.options, self.build_config).Run)
 
   def _verifyRunResults(self, expectedResults):
@@ -1213,7 +1214,7 @@ class BuildStagesResultsTest(unittest.TestCase):
   def testStagesReportSuccess(self):
     """Tests Stage reporting."""
 
-    stages.BuilderStage.archive_url = None
+    bs.BuilderStage.archive_url = None
     stages.ManifestVersionedSyncStage.manifest_manager = None
 
     # Store off a known set of results and generate a report
@@ -1262,7 +1263,7 @@ class BuildStagesResultsTest(unittest.TestCase):
   def testStagesReportError(self):
     """Tests Stage reporting with exceptions."""
 
-    stages.BuilderStage.archive_url = None
+    bs.BuilderStage.archive_url = None
     stages.ManifestVersionedSyncStage.manifest_manager = None
 
     # Store off a known set of results and generate a report

@@ -22,10 +22,11 @@ import sys
 if __name__ == '__main__':
   sys.path.append(constants.SOURCE_ROOT)
 
+from chromite.buildbot import builderstage as bs
+from chromite.buildbot import cbuildbot_background as background
 from chromite.buildbot import cbuildbot_commands as commands
 from chromite.buildbot import cbuildbot_config
 from chromite.buildbot import cbuildbot_stages as stages
-from chromite.buildbot import cbuildbot_background as background
 from chromite.buildbot import cbuildbot_results as results_lib
 from chromite.buildbot import patch as cros_patch
 from chromite.buildbot import repository
@@ -182,7 +183,7 @@ def RunBuildStages(bot_id, options, build_config):
   completed_stages_file = os.path.join(options.buildroot, '.completed_stages')
 
   tracking_branch = _GetChromiteTrackingBranch()
-  stages.BuilderStage.SetTrackingBranch(tracking_branch)
+  bs.BuilderStage.SetTrackingBranch(tracking_branch)
 
   # Process patches ASAP, before the clean stage.
   gerrit_patches, local_patches = _PreProcessPatches(options.gerrit_patches,
@@ -308,7 +309,7 @@ def RunBuildStages(bot_id, options, build_config):
     else:
       build_and_test_success = True
 
-  except (stages.BuildException, background.BackgroundException):
+  except (bs.NonBacktraceBuildException, background.BackgroundException):
     # We skipped out of this build block early, all we need to do.
     pass
 
@@ -320,7 +321,7 @@ def RunBuildStages(bot_id, options, build_config):
 
   publish_changes = (options.buildbot and build_config['master'] and
                      build_and_test_success and
-                     stages.BuilderStage.push_overlays)
+                     bs.BuilderStage.push_overlays)
 
   if completion_stage:
     # Wait for slave builds to complete.

@@ -11,6 +11,7 @@ import sys
 import tempfile
 import traceback
 
+from chromite.buildbot import builderstage as bs
 from chromite.buildbot import cbuildbot_commands as commands
 from chromite.buildbot import cbuildbot_results as results_lib
 
@@ -94,6 +95,8 @@ class BackgroundSteps(multiprocessing.Process):
       try:
         results_lib.Results.Clear()
         step()
+      except bs.NonBacktraceBuildException:
+        error = traceback.format_exc()
       except Exception:
         traceback.print_exc(file=output)
         error = traceback.format_exc()

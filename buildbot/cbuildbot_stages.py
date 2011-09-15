@@ -7,14 +7,13 @@
 import multiprocessing
 import os
 import Queue
-import re
 import shutil
 import socket
 import sys
 import tempfile
-import time
 import traceback
 
+from chromite.buildbot import builderstage as bs
 from chromite.buildbot import cbuildbot_background as background
 from chromite.buildbot import cbuildbot_results as results_lib
 from chromite.buildbot import cbuildbot_commands as commands
@@ -29,251 +28,15 @@ from chromite.lib import cros_build_lib as cros_lib
 
 _FULL_BINHOST = 'FULL_BINHOST'
 _PORTAGE_BINHOST = 'PORTAGE_BINHOST'
-PUBLIC_OVERLAY = '%(buildroot)s/src/third_party/chromiumos-overlay'
 _CROS_ARCHIVE_URL = 'CROS_ARCHIVE_URL'
-OVERLAY_LIST_CMD = '%(buildroot)s/src/platform/dev/host/cros_overlay_list'
 _PRINT_INTERVAL = 1
 
-class NonBacktraceException(Exception):
-  pass
-
-class BuildException(Exception):
-  pass
-
-class BuilderStage(object):
-  """Parent class for stages to be performed by a builder."""
-  name_stage_re = re.compile('(\w+)Stage')
-
-  # TODO(sosa): Remove these once we have a SEND/RECIEVE IPC mechanism
-  # implemented.
-  overlays = None
-  push_overlays = None
-
-  # Class variable that stores the branch to build and test.
-  _tracking_branch = None
-
-  @staticmethod
-  def SetTrackingBranch(tracking_branch):
-    BuilderStage._tracking_branch = tracking_branch
-
-  def __init__(self, bot_id, options, build_config):
-    self._bot_id = bot_id
-    self._options = options
-    self._build_config = build_config
-    self._prebuilt_type = None
-    self.name = self.name_stage_re.match(self.__class__.__name__).group(1)
-    self._ExtractVariables()
-    repo_dir = os.path.join(self._build_root, '.repo')
-
-    # Determine correct chrome_rev.
-    self._chrome_rev = self._build_config['chrome_rev']
-    if self._options.chrome_rev: self._chrome_rev = self._options.chrome_rev
-
-    if not self._options.clobber and os.path.isdir(repo_dir):
-      self._ExtractOverlays()
-
-  def _ExtractVariables(self):
-    """Extracts common variables from build config and options into class."""
-    self._build_root = os.path.abspath(self._options.buildroot)
-    if self._options.prebuilts and self._build_config['prebuilts']:
-      self._prebuilt_type = self._build_config['build_type']
-
-  def _ExtractOverlays(self):
-    """Extracts list of overlays into class."""
-    if not BuilderStage.overlays or not BuilderStage.push_overlays:
-      overlays = self._ResolveOverlays(self._build_config['overlays'])
-      push_overlays = self._ResolveOverlays(self._build_config['push_overlays'])
-
-      # Sanity checks.
-      # We cannot push to overlays that we don't rev.
-      assert set(push_overlays).issubset(set(overlays))
-      # Either has to be a master or not have any push overlays.
-      assert self._build_config['master'] or not push_overlays
-
-      BuilderStage.overlays = overlays
-      BuilderStage.push_overlays = push_overlays
-
-  def _ListifyBoard(self, board):
-    """Return list of boards from either str or list |board|."""
-    boards = None
-    if isinstance(board, str):
-      boards = [board]
-    else:
-      boards = board
-
-    assert isinstance(boards, list), 'Board was neither an array or a string.'
-    return boards
-
-  def _ResolveOverlays(self, overlays):
-    """Return the list of overlays to use for a given buildbot.
-
-    Args:
-      overlays: A string describing which overlays you want.
-                'private': Just the private overlay.
-                'public': Just the public overlay.
-                'both': Both the public and private overlays.
-    """
-    cmd = OVERLAY_LIST_CMD % {'buildroot': self._build_root}
-    # Check in case we haven't checked out the source yet.
-    if not os.path.exists(cmd):
-      return []
-
-    public_overlays = cros_lib.RunCommand([cmd, '--all_boards', '--noprivate'],
-                                          redirect_stdout=True,
-                                          print_cmd=False).output.split()
-    private_overlays = cros_lib.RunCommand([cmd, '--all_boards', '--nopublic'],
-                                           redirect_stdout=True,
-                                           print_cmd=False).output.split()
-
-    # TODO(davidjames): cros_overlay_list should include chromiumos-overlay in
-    #                   its list of public overlays. But it doesn't yet...
-    public_overlays.append(PUBLIC_OVERLAY % {'buildroot': self._build_root})
-
-    if overlays == 'private':
-      paths = private_overlays
-    elif overlays == 'public':
-      paths = public_overlays
-    elif overlays == 'both':
-      paths = public_overlays + private_overlays
-    else:
-      cros_lib.Info('No overlays found.')
-      paths = []
-
-    return paths
-
-  def _PrintLoudly(self, msg):
-    """Prints a msg with loudly."""
-
-    border_line = '*' * 60
-    edge = '*' * 2
-
-    print border_line
-
-    msg_lines = msg.split('\n')
-
-    # If the last line is whitespace only drop it.
-    if not msg_lines[-1].rstrip():
-      del msg_lines[-1]
-
-    for msg_line in msg_lines:
-      print '%s %s' % (edge, msg_line)
-
-    print border_line
-
-  def _GetPortageEnvVar(self, envvar, board):
-    """Get a portage environment variable for the configuration's board.
-
-    envvar: The environment variable to get. E.g. 'PORTAGE_BINHOST'.
-
-    Returns:
-      The value of the environment variable, as a string. If no such variable
-      can be found, return the empty string.
-    """
-    cwd = os.path.join(self._build_root, 'src', 'scripts')
-    if board:
-      portageq = 'portageq-%s' % board
-    else:
-      portageq = 'portageq'
-    binhost = cros_lib.OldRunCommand(
-        [portageq, 'envvar', envvar], cwd=cwd, redirect_stdout=True,
-        enter_chroot=True, error_ok=True)
-    return binhost.rstrip('\n')
-
-  def _GetImportantBuildersForMaster(self, config):
-    """Gets the important builds corresponding to this master builder.
-
-    Given that we are a master builder, find all corresponding slaves that
-    are important to me.  These are those builders that share the same
-    build_type and manifest_version url.
-    """
-    builders = []
-    build_type = self._build_config['build_type']
-    overlay_config = self._build_config['overlays']
-    use_manifest_version = self._build_config['manifest_version']
-    for build_name, config in config.iteritems():
-      if (config['important'] and config['build_type'] == build_type and
-          config['chrome_rev'] == self._chrome_rev and
-          config['overlays'] == overlay_config and
-          config['manifest_version'] == use_manifest_version):
-        builders.append(build_name)
-
-    return builders
-
-  def _Begin(self):
-    """Can be overridden.  Called before a stage is performed."""
-
-    # Tell the buildbot we are starting a new step for the waterfall
-    print '@@@BUILD_STEP %s@@@\n' % self.name
-
-    self._PrintLoudly('Start Stage %s - %s\n\n%s' % (
-        self.name, time.strftime('%H:%M:%S'), self.__doc__))
-
-  def _Finish(self):
-    """Can be overridden.  Called after a stage has been performed."""
-    self._PrintLoudly('Finished Stage %s - %s' %
-                      (self.name, time.strftime('%H:%M:%S')))
-
-  def _PerformStage(self):
-    """Subclassed stages must override this function to perform what they want
-    to be done.
-    """
-    pass
-
-  def _HandleStageException(self, exception):
-    """Called when _PerformStages throws an exception.  Can be overriden.
-
-    Should return result, description.  Description should be None if result
-    is not an exception.
-    """
-    # Tell the user about the exception, and record it
-    print '@@@STEP_FAILURE@@@'
-    description = None
-    if isinstance(exception, NonBacktraceException):
-      description = str(exception)
-    else:
-      description = traceback.format_exc()
-    print >> sys.stderr, description
-    return exception, description
-
-  def GetImageDirSymlink(self, pointer='latest-cbuildbot'):
-    """Get the location of the current image."""
-    buildroot, board = self._options.buildroot, self._build_config['board']
-    return os.path.join(buildroot, 'src', 'build', 'images', board, pointer)
-
-  def Run(self):
-    """Have the builder execute the stage."""
-
-    if results_lib.Results.PreviouslyCompleted(self.name):
-      self._PrintLoudly('Skipping Stage %s' % self.name)
-      results_lib.Results.Record(self.name, results_lib.Results.SKIPPED)
-      return
-
-    start_time = time.time()
-
-    # Set default values
-    result = results_lib.Results.SUCCESS
-    description = None
-
-    self._Begin()
-    try:
-      self._PerformStage()
-    except Exception as e:
-      # Tell the build bot this step failed for the waterfall
-      result, description = self._HandleStageException(e)
-      raise BuildException()
-    finally:
-      elapsed_time = time.time() - start_time
-      results_lib.Results.Record(self.name, result, description,
-                                 time=elapsed_time)
-      self._Finish()
-
-
-class NonHaltingBuilderStage(BuilderStage):
+class NonHaltingBuilderStage(bs.BuilderStage):
   """Build stage that fails a build but finishes the other steps."""
   def Run(self):
     try:
       super(NonHaltingBuilderStage, self).Run()
-    except BuildException:
+    except bs.NonBacktraceBuildException:
       pass
 
 
@@ -287,7 +50,7 @@ class ForgivingBuilderStage(NonHaltingBuilderStage):
     return results_lib.Results.FORGIVEN, None
 
 
-class CleanUpStage(BuilderStage):
+class CleanUpStage(bs.BuilderStage):
   """Stages that cleans up build artifacts from previous runs.
 
   This stage cleans up previous KVM state, temporary git commits,
@@ -318,7 +81,7 @@ class CleanUpStage(BuilderStage):
                             print_cmd=False)
 
 
-class SyncStage(BuilderStage):
+class SyncStage(bs.BuilderStage):
   """Stage that performs syncing for the builder."""
 
   def _PerformStage(self):
@@ -328,24 +91,24 @@ class SyncStage(BuilderStage):
 
     # Check that all overlays can be found.
     self._ExtractOverlays() # Our list of overlays are from pre-sync, refresh
-    for path in BuilderStage.overlays:
+    for path in bs.BuilderStage.overlays:
       assert os.path.isdir(path), 'Missing overlay: %s' % path
 
 
-class PatchChangesStage(BuilderStage):
+class PatchChangesStage(bs.BuilderStage):
   """Stage that patches a set of Gerrit changes to the buildroot source tree."""
   def __init__(self, bot_id, options, build_config, gerrit_patches,
                local_patches):
     """Construct a PatchChangesStage.
 
     Args:
-      bot_id, options, build_config: See arguments to BuilderStage.__init__()
+      bot_id, options, build_config: See arguments to bs.BuilderStage.__init__()
       gerrit_patches: A list of cros_patch.GerritPatch objects to apply.
                       Cannot be None.
       local_patches: A list cros_patch.LocalPatch objects to apply. Cannot be
                      None.
     """
-    BuilderStage.__init__(self, bot_id, options, build_config)
+    bs.BuilderStage.__init__(self, bot_id, options, build_config)
     assert(gerrit_patches is not None and local_patches is not None)
     self.gerrit_patches = gerrit_patches
     self.local_patches = local_patches
@@ -359,7 +122,7 @@ class PatchChangesStage(BuilderStage):
       cros_patch.RemovePatchRoot(patch_root)
 
 
-class ManifestVersionedSyncStage(BuilderStage):
+class ManifestVersionedSyncStage(bs.BuilderStage):
   """Stage that generates a unique manifest file, and sync's to it."""
 
   manifest_manager = None
@@ -416,7 +179,7 @@ class ManifestVersionedSyncStage(BuilderStage):
 
     # Check that all overlays can be found.
     self._ExtractOverlays()
-    for path in BuilderStage.overlays:
+    for path in bs.BuilderStage.overlays:
       assert os.path.isdir(path), 'Missing overlay: %s' % path
 
 
@@ -535,7 +298,7 @@ class ManifestVersionedSyncCompletionStage(ForgivingBuilderStage):
   """Stage that records board specific results for a unique manifest file."""
 
   def __init__(self, bot_id, options, build_config, success):
-    BuilderStage.__init__(self, bot_id, options, build_config)
+    bs.BuilderStage.__init__(self, bot_id, options, build_config)
     self.success = success
 
   def _PerformStage(self):
@@ -603,7 +366,7 @@ class CommitQueueCompletionStage(LKGMCandidateSyncCompletionStage):
       super(CommitQueueCompletionStage, self).HandleError()
 
 
-class RefreshPackageStatusStage(BuilderStage):
+class RefreshPackageStatusStage(bs.BuilderStage):
   """Stage for refreshing Portage package status in online spreadsheet."""
   def _PerformStage(self):
     # If board is a string, convert to list.
@@ -612,7 +375,7 @@ class RefreshPackageStatusStage(BuilderStage):
                                   boards=boards, debug=self._options.debug)
 
 
-class BuildBoardStage(BuilderStage):
+class BuildBoardStage(bs.BuilderStage):
   """Stage that is responsible for building host pkgs and setting up a board."""
   def _PerformStage(self):
     chroot_path = os.path.join(self._build_root, 'chroot')
@@ -652,7 +415,7 @@ class BuildBoardStage(BuilderStage):
 
 
 
-class UprevStage(BuilderStage):
+class UprevStage(bs.BuilderStage):
   """Stage that uprevs Chromium OS packages that the builder intends to
   validate.
   """
@@ -670,13 +433,13 @@ class UprevStage(BuilderStage):
     if self._build_config['uprev']:
       commands.UprevPackages(self._build_root,
                              self._build_config['board'],
-                             BuilderStage.overlays)
+                             bs.BuilderStage.overlays)
     elif self._chrome_rev and not chrome_atom_to_build:
       # TODO(sosa): Do this in a better way.
       sys.exit(0)
 
 
-class BuildTargetStage(BuilderStage):
+class BuildTargetStage(bs.BuilderStage):
   """This stage builds Chromium OS for a target.
 
   Specifically, we build Chromium OS packages and perform imaging to get
@@ -729,7 +492,7 @@ class BuildTargetStage(BuilderStage):
     os.symlink(latest_image, cbuildbot_image_link)
 
 
-class UnitTestStage(BuilderStage):
+class UnitTestStage(bs.BuilderStage):
   """Run unit tests."""
   def _PerformStage(self):
     if self._build_config['unittests'] and self._options.tests:
@@ -739,7 +502,7 @@ class UnitTestStage(BuilderStage):
                             nowithdebug=self._build_config['nowithdebug'])
 
 
-class VMTestStage(BuilderStage):
+class VMTestStage(bs.BuilderStage):
   """Run autotests in a virtual machine."""
   def __init__(self, bot_id, options, build_config, archive_stage):
     super(VMTestStage, self).__init__(bot_id, options, build_config)
@@ -793,7 +556,7 @@ class VMTestStage(BuilderStage):
                                   os.path.join(test_results_dir,
                                                'chrome_results'))
     except commands.TestException as e:
-      raise NonBacktraceException(str(e))
+      raise bs.NonBacktraceBuildException(str(e))
     finally:
       test_tarball = None
       if test_results_dir:
@@ -833,7 +596,7 @@ class HWTestStage(NonHaltingBuilderStage):
                              test_args)
 
 
-class SDKTestStage(BuilderStage):
+class SDKTestStage(bs.BuilderStage):
   """Stage that performs testing an SDK created in a previous stage"""
   def _PerformStage(self):
     tarball_location = os.path.join(self._build_root, 'built-sdk.tbz2')
@@ -858,7 +621,7 @@ class SDKTestStage(BuilderStage):
     cros_lib.RunCommand(cmd, cwd=self._build_root)
 
 
-class RemoteTestStatusStage(BuilderStage):
+class RemoteTestStatusStage(bs.BuilderStage):
   """Stage that performs testing steps."""
   def _PerformStage(self):
     test_status_cmd = ['./crostools/get_test_status.py',
@@ -1212,5 +975,5 @@ class PublishUprevChangesStage(NonHaltingBuilderStage):
   def _PerformStage(self):
     commands.UprevPush(self._build_root,
                        self._build_config['board'],
-                       BuilderStage.push_overlays,
+                       bs.BuilderStage.push_overlays,
                        self._options.debug)
