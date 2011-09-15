@@ -105,15 +105,6 @@ OutOfProcessPPAPITest.PostMessage
 # Flakily times out, http://crbug.com/92527
 NamedInterfaceTest.BasicNamedInterface
 
-# Consistently timing out. http://crbug.com/92630
-AutomationProxyTest.Cookies
-AutomationProxyTest.GetActiveTabIndex
-AutomationProxyTest.GetBrowserWindow
-AutomationProxyTest.GetBrowserWindowCount
-AutomationProxyTest.GetTab
-AutomationProxyTest.GetTabCount
-BookmarksUITest.TwoCommandsOneTab
-
 # These tests fail due to timeouts and hang the UI test runner,
 # http://crbug.com/61579
 LocaleTestsDa.TestStart
