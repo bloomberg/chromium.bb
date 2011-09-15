@@ -10,6 +10,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browsing_data_remover.h"
 #include "chrome/browser/character_encoding.h"
+#include "chrome/browser/chrome_benchmarking_message_filter.h"
 #include "chrome/browser/chrome_plugin_message_filter.h"
 #include "chrome/browser/chrome_quota_permission_context.h"
 #include "chrome/browser/chrome_worker_message_filter.h"
@@ -172,6 +173,8 @@ void ChromeContentBrowserClient::BrowserRenderProcessHostCreated(
   host->channel()->AddFilter(
       new SearchProviderInstallStateMessageFilter(id, profile));
   host->channel()->AddFilter(new SpellCheckMessageFilter(id));
+  host->channel()->AddFilter(new ChromeBenchmarkingMessageFilter(
+      id, profile, profile->GetRequestContextForRenderProcess(id)));
 
   host->Send(new ChromeViewMsg_SetIsIncognitoProcess(
       profile->IsOffTheRecord()));
@@ -335,6 +338,7 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
       switches::kProfilingFile,
       switches::kProfilingFlush,
       switches::kSilentDumpOnDCHECK,
+      switches::kEnableBenchmarking,
     };
 
     command_line->CopySwitchesFrom(browser_command_line, kSwitchNames,
@@ -368,6 +372,12 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
     command_line->CopySwitchesFrom(browser_command_line, kSwitchNames,
                                    arraysize(kSwitchNames));
   }
+
+  // The command line switch kEnableBenchmarking needs to be specified along
+  // with the kEnableStatsTable switch to ensure that the stats table global
+  // is initialized correctly.
+  if (command_line->HasSwitch(switches::kEnableBenchmarking))
+    DCHECK(command_line->HasSwitch(switches::kEnableStatsTable));
 }
 
 std::string ChromeContentBrowserClient::GetApplicationLocale() {

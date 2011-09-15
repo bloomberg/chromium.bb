@@ -430,8 +430,6 @@
 
         # These files used to be built in the webcore target, but moved here
         # since part of glue.
-        '../extensions/v8/benchmarking_extension.cc',
-        '../extensions/v8/benchmarking_extension.h',
         '../extensions/v8/gc_extension.cc',
         '../extensions/v8/gc_extension.h',
         '../extensions/v8/heap_profiler_extension.cc',

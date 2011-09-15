@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_EXTENSIONS_V8_BENCHMARKING_EXTENSION_H_
-#define WEBKIT_EXTENSIONS_V8_BENCHMARKING_EXTENSION_H_
+#ifndef CHROME_RENDERER_V8_BENCHMARKING_EXTENSION_H_
+#define CHROME_RENDERER_V8_BENCHMARKING_EXTENSION_H_
 #pragma once
 
 namespace v8 {
@@ -22,4 +22,5 @@ class BenchmarkingExtension {
 
 }  // namespace extensions_v8
 
-#endif  // WEBKIT_EXTENSIONS_V8_BENCHMARKING_EXTENSION_H_
+#endif  // CHROME_RENDERER_V8_BENCHMARKING_EXTENSION_H_
+

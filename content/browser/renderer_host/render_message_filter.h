@@ -191,14 +191,9 @@ class RenderMessageFilter : public BrowserMessageFilter {
                            bool cache_in_browser,
                            TransportDIB::Handle* result);
   void OnFreeTransportDIB(TransportDIB::Id dib_id);
-  void OnCloseCurrentConnections();
-  void OnSetCacheMode(bool enabled);
-  void OnClearCache(bool preserve_ssl_host_info, IPC::Message* reply_msg);
-  void OnClearHostResolverCache(int* result);
   void OnCacheableMetadataAvailable(const GURL& url,
                                     double expected_response_time,
                                     const std::vector<char>& data);
-  void OnEnableSpdy(bool enable);
   void OnKeygen(uint32 key_size_index, const std::string& challenge_string,
                 const GURL& url, IPC::Message* reply_msg);
   void OnKeygenOnWorkerThread(

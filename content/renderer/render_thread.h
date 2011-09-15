@@ -190,26 +190,6 @@ class CONTENT_EXPORT RenderThread : public RenderThreadBase,
     idle_notification_delay_in_s_ = idle_notification_delay_in_s;
   }
 
-  // Sends a message to the browser to close all connections.
-  void CloseCurrentConnections();
-
-  // Sends a message to the browser to enable or disable the disk cache.
-  void SetCacheMode(bool enabled);
-
-  // Sends a message to the browser to clear the disk cache.
-  // |preserve_ssl_host_info| is a flag indicating if the cache should purge
-  // entries related to cached SSL information.
-  void ClearCache(bool preserve_ssl_host_info);
-
-  // Sends a message to the browser to clear thed host cache.
-  void ClearHostResolverCache();
-
-  // Sends a message to the browser to clear the predictor cache.
-  void ClearPredictorCache();
-
-  // Sends a message to the browser to enable/disable spdy.
-  void EnableSpdy(bool enable);
-
   // Synchronously establish a channel to the GPU plugin if not previously
   // established or if it has been lost (for example if the GPU plugin crashed).
   // If there is a pending asynchronous request, it will be completed by the

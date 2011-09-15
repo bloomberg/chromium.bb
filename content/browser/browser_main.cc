@@ -192,8 +192,6 @@ void BrowserMainParts::EarlyInitialization() {
   SetupSandbox(parsed_command_line());
 #endif
 
-  if (parsed_command_line().HasSwitch(switches::kEnableBenchmarking))
-    base::FieldTrial::EnableBenchmarking();
   if (parsed_command_line().HasSwitch(switches::kDisableSSLFalseStart))
     net::SSLConfigService::DisableFalseStart();
   if (parsed_command_line().HasSwitch(switches::kEnableSSLCachedInfo))

@@ -352,6 +352,7 @@ extern const char kExposePrivateExtensionApi[];
 
 extern const char kDisablePrintPreview[];
 extern const char kEnablePrintPreview[];
+extern const char kEnableBenchmarking[];
 
 bool IsPrintPreviewEnabled();
 

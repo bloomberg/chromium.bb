@@ -1209,6 +1209,9 @@ const char kDisablePrintPreview[]           = "disable-print-preview";
 // kDisablePrintPreview overrides this.
 const char kEnablePrintPreview[]            = "enable-print-preview";
 
+// Enables the benchmarking extensions.
+const char kEnableBenchmarking[]            = "enable-benchmarking";
+
 bool IsPrintPreviewEnabled() {
   if (CommandLine::ForCurrentProcess()->HasSwitch(kDisablePrintPreview))
     return false;

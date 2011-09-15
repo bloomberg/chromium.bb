@@ -2026,41 +2026,6 @@ IPC_SYNC_MESSAGE_CONTROL3_1(ViewHostMsg_Keygen,
                             std::string /* signed public key and challenge */)
 
 // Message sent from the renderer to the browser to request that the browser
-// close all sockets.  Used for debugging/testing.
-IPC_MESSAGE_CONTROL0(ViewHostMsg_CloseCurrentConnections)
-
-// Message sent from the renderer to the browser to request that the browser
-// enable or disable the cache.  Used for debugging/testing.
-IPC_MESSAGE_CONTROL1(ViewHostMsg_SetCacheMode,
-                     bool /* enabled */)
-
-// Message sent from the renderer to the browser to request that the browser
-// clear the cache.  Used for debugging/testing.
-// |preserve_ssl_host_info| controls whether clearing the cache will preserve
-// persisted SSL information stored in the cache.
-// |result| is the returned status from the operation.
-IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_ClearCache,
-                            bool /* preserve_ssl_host_info */,
-                            int /* result */)
-
-// Message sent from the renderer to the browser to request that the browser
-// clear the host cache.  Used for debugging/testing.
-// |result| is the returned status from the operation.
-IPC_SYNC_MESSAGE_CONTROL0_1(ViewHostMsg_ClearHostResolverCache,
-                            int /* result */)
-
-// Message sent from the renderer to the browser to request that the browser
-// clear the predictor cache.  Used for debugging/testing.
-// |result| is the returned status from the operation.
-IPC_SYNC_MESSAGE_CONTROL0_1(ViewHostMsg_ClearPredictorCache,
-                            int /* result */)
-
-// Message sent from the renderer to the browser to request that the browser
-// enable or disable spdy.  Used for debugging/testing/benchmarking.
-IPC_MESSAGE_CONTROL1(ViewHostMsg_EnableSpdy,
-                     bool /* enable */)
-
-// Message sent from the renderer to the browser to request that the browser
 // cache |data| associated with |url|.
 IPC_MESSAGE_CONTROL3(ViewHostMsg_DidGenerateCacheableMetadata,
                      GURL /* url */,

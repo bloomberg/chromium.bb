@@ -157,8 +157,7 @@ void InitializeStatsTable(base::ProcessId browser_pid,
   // Chrome.  These lines can be commented out to effectively turn
   // counters 'off'.  The table is created and exists for the life
   // of the process.  It is not cleaned up.
-  if (command_line.HasSwitch(switches::kEnableStatsTable) ||
-      command_line.HasSwitch(switches::kEnableBenchmarking)) {
+  if (command_line.HasSwitch(switches::kEnableStatsTable)) {
     // NOTIMPLEMENTED: we probably need to shut this down correctly to avoid
     // leaking shared memory regions on posix platforms.
     std::string statsfile =

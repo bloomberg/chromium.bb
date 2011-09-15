@@ -174,9 +174,6 @@ const char kEnableAccessibility[]           = "enable-accessibility";
 // Turns on extremely verbose logging of accessibility events.
 const char kEnableAccessibilityLogging[]    = "enable-accessibility-logging";
 
-// Enables the benchmarking extensions.
-const char kEnableBenchmarking[]            = "enable-benchmarking";
-
 // Enable DNS side checking of certificates. Still experimental, should only
 // be used by developers at the current time.
 const char kEnableDNSCertProvenanceChecking[] =

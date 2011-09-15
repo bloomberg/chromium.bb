@@ -556,7 +556,6 @@ void BrowserRenderProcessHost::PropagateBrowserCommandLineToRenderer(
     switches::kDisableWebSockets,
     switches::kEnableAccessibilityLogging,
     switches::kEnableAdaptive,
-    switches::kEnableBenchmarking,
     switches::kEnableDCHECK,
     switches::kEnableGPUServiceLogging,
     switches::kEnableGPUClientLogging,

@@ -215,29 +215,8 @@ bool IsProtocolSupportedForMedia(const GURL& url);
 // the form language-country (e.g., en-US or pt-BR).
 std::string GetWebKitLocale();
 
-// Close current connections.  Used for debugging.
-void CloseCurrentConnections();
-
-// Enable or disable the disk cache.  Used for debugging.
-void SetCacheMode(bool enabled);
-
-// Clear the disk cache.  Used for debugging.
-// |preserve_ssl_host_info| indicates whether disk cache entries related to
-// SSL information should be purged.
-void ClearCache(bool preserve_ssl_host_info);
-
-// Clear the host resolver cache.  Used for debugging.
-void ClearHostResolverCache();
-
-// Clear the predictor cache (for DNS prefetch and preconnect).  Used for
-// debugging.
-void ClearPredictorCache();
-
 // Returns true if the embedder is running in single process mode.
 bool IsSingleProcess();
-
-// Enables/Disables Spdy for requests afterwards. Used for benchmarking.
-void EnableSpdy(bool enable);
 
 #if defined(OS_LINUX)
 // Return a read-only file descriptor to the font which best matches the given

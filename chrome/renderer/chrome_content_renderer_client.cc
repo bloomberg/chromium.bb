@@ -28,6 +28,7 @@
 #include "chrome/renderer/autofill/password_autofill_manager.h"
 #include "chrome/renderer/automation/automation_renderer_helper.h"
 #include "chrome/renderer/automation/dom_automation_v8_extension.h"
+#include "chrome/renderer/benchmarking_extension.h"
 #include "chrome/renderer/blocked_plugin.h"
 #include "chrome/renderer/chrome_ppapi_interfaces.h"
 #include "chrome/renderer/chrome_render_process_observer.h"
@@ -186,6 +187,10 @@ void ChromeContentRendererClient::RenderThreadStarted() {
           switches::kDomAutomationController)) {
     thread->RegisterExtension(DomAutomationV8Extension::Get());
   }
+
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableBenchmarking))
+    thread->RegisterExtension(extensions_v8::BenchmarkingExtension::Get());
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableIPCFuzzing)) {

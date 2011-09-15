@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/extensions/v8/benchmarking_extension.h"
+#include "chrome/renderer/benchmarking_extension.h"
 
 #include "base/metrics/stats_table.h"
 #include "base/time.h"
+#include "chrome/common/benchmarking_messages.h"
+#include "content/common/child_thread.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCache.h"
 #include "v8/include/v8.h"
 #include "webkit/glue/webkit_glue.h"
@@ -100,7 +102,8 @@ class BenchmarkingWrapper : public v8::Extension {
   }
 
   static v8::Handle<v8::Value> CloseConnections(const v8::Arguments& args) {
-    webkit_glue::CloseCurrentConnections();
+    ChildThread::current()->Send(
+        new ChromeViewHostMsg_CloseCurrentConnections());
     return v8::Undefined();
   }
 
@@ -108,20 +111,26 @@ class BenchmarkingWrapper : public v8::Extension {
     bool preserve_ssl_host_entries = false;
     if (args.Length() && args[0]->IsBoolean())
       preserve_ssl_host_entries = args[0]->BooleanValue();
-    webkit_glue::ClearCache(preserve_ssl_host_entries);
+    int rv;
+    ChildThread::current()->Send(new ChromeViewHostMsg_ClearCache(
+        preserve_ssl_host_entries, &rv));
     WebCache::clear();
     return v8::Undefined();
   }
 
   static v8::Handle<v8::Value> ClearHostResolverCache(
       const v8::Arguments& args) {
-    webkit_glue::ClearHostResolverCache();
+    int rv;
+    ChildThread::current()->Send(
+        new ChromeViewHostMsg_ClearHostResolverCache(&rv));
     return v8::Undefined();
   }
 
   static v8::Handle<v8::Value> ClearPredictorCache(
       const v8::Arguments& args) {
-    webkit_glue::ClearPredictorCache();
+    int rv;
+    ChildThread::current()->Send(new ChromeViewHostMsg_ClearPredictorCache(
+        &rv));
     return v8::Undefined();
   }
 
@@ -129,7 +138,8 @@ class BenchmarkingWrapper : public v8::Extension {
     if (!args.Length() || !args[0]->IsBoolean())
       return v8::Undefined();
 
-    webkit_glue::EnableSpdy(args[0]->BooleanValue());
+    ChildThread::current()->Send(new ChromeViewHostMsg_EnableSpdy(
+        args[0]->BooleanValue()));
     return v8::Undefined();
   }
 

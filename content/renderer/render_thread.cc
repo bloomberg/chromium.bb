@@ -66,7 +66,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "v8/include/v8.h"
-#include "webkit/extensions/v8/benchmarking_extension.h"
 #include "webkit/extensions/v8/playback_extension.h"
 #include "webkit/glue/webkit_glue.h"
 
@@ -432,9 +431,6 @@ void RenderThread::EnsureWebKitInitialized() {
   webkit_glue::EnableWebCoreLogChannels(
       command_line.GetSwitchValueASCII(switches::kWebCoreLogChannels));
 
-  if (command_line.HasSwitch(switches::kEnableBenchmarking))
-    RegisterExtension(extensions_v8::BenchmarkingExtension::Get());
-
   if (command_line.HasSwitch(switches::kPlaybackMode) ||
       command_line.HasSwitch(switches::kRecordMode) ||
       command_line.HasSwitch(switches::kNoJsRandomness)) {
@@ -585,33 +581,6 @@ void RenderThread::OnCreateNewView(const ViewMsg_New_Params& params) {
       params.view_id,
       params.session_storage_namespace_id,
       params.frame_name);
-}
-
-void RenderThread::CloseCurrentConnections() {
-  Send(new ViewHostMsg_CloseCurrentConnections());
-}
-
-void RenderThread::SetCacheMode(bool enabled) {
-  Send(new ViewHostMsg_SetCacheMode(enabled));
-}
-
-void RenderThread::ClearCache(bool preserve_ssl_host_info) {
-  int rv;
-  Send(new ViewHostMsg_ClearCache(preserve_ssl_host_info, &rv));
-}
-
-void RenderThread::ClearHostResolverCache() {
-  int rv;
-  Send(new ViewHostMsg_ClearHostResolverCache(&rv));
-}
-
-void RenderThread::ClearPredictorCache() {
-  int rv;
-  Send(new ViewHostMsg_ClearPredictorCache(&rv));
-}
-
-void RenderThread::EnableSpdy(bool enable) {
-  Send(new ViewHostMsg_EnableSpdy(enable));
 }
 
 GpuChannelHost* RenderThread::EstablishGpuChannelSync(

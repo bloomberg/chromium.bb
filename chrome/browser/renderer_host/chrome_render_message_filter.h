@@ -119,7 +119,6 @@ class ChromeRenderMessageFilter : public BrowserMessageFilter {
                                  ContentSetting* setting);
   void OnCanTriggerClipboardRead(const GURL& url, bool* allowed);
   void OnCanTriggerClipboardWrite(const GURL& url, bool* allowed);
-  void OnClearPredictorCache(int* result);
   void OnGetCookies(const GURL& url,
                     const GURL& first_party_for_cookies,
                     IPC::Message* reply_msg);

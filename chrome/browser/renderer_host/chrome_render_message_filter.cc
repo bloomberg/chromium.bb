@@ -29,7 +29,6 @@
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/common/url_constants.h"
-#include "content/common/view_messages.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
@@ -139,7 +138,6 @@ bool ChromeRenderMessageFilter::OnMessageReceived(const IPC::Message& message,
                         OnCanTriggerClipboardRead)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_CanTriggerClipboardWrite,
                         OnCanTriggerClipboardWrite)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_ClearPredictorCache, OnClearPredictorCache)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -510,15 +508,6 @@ void ChromeRenderMessageFilter::OnCanTriggerClipboardWrite(const GURL& url,
   *allowed = url.SchemeIs(chrome::kExtensionScheme) ||
       (extension &&
        extension->HasAPIPermission(ExtensionAPIPermission::kClipboardWrite));
-}
-
-void ChromeRenderMessageFilter::OnClearPredictorCache(int* result) {
-  // This function is disabled unless the user has enabled
-  // benchmarking extensions.
-  chrome_browser_net::Predictor* predictor = profile_->GetNetworkPredictor();
-  if (predictor)
-    predictor->DiscardAllResults();
-  *result = 0;
 }
 
 void ChromeRenderMessageFilter::OnGetCookies(

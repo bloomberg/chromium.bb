@@ -53,21 +53,6 @@ std::string GetWebKitLocale() {
   return "en-US";
 }
 
-void CloseCurrentConnections() {
-}
-
-void SetCacheMode(bool enabled) {
-}
-
-void ClearCache(bool preserve_ssl_info) {
-}
-
-void ClearHostResolverCache() {
-}
-
-void ClearPredictorCache() {
-}
-
 std::string BuildUserAgent(bool mimic_windows) {
   return webkit_glue::BuildUserAgentHelper(mimic_windows,
                                            "DumpRenderTree/0.0.0.0");

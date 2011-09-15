@@ -639,30 +639,6 @@ std::string GetWebKitLocale() {
   return "en-US";
 }
 
-void CloseCurrentConnections() {
-  // Used in benchmarking,  Ignored for test_shell.
-}
-
-void SetCacheMode(bool enabled) {
-  // Used in benchmarking,  Ignored for test_shell.
-}
-
-void ClearCache(bool preserve_ssl_entries) {
-  // Used in benchmarking,  Ignored for test_shell.
-}
-
-void ClearHostResolverCache() {
-  // Used in benchmarking,  Ignored for test_shell.
-}
-
-void ClearPredictorCache() {
-  // Used in benchmarking,  Ignored for test_shell.
-}
-
-void EnableSpdy(bool enable) {
-  // Used in benchmarking,  Ignored for test_shell.
-}
-
 std::string BuildUserAgent(bool mimic_windows) {
   return webkit_glue::BuildUserAgentHelper(mimic_windows, "Chrome/0.0.0.0");
 }

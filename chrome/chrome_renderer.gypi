@@ -56,6 +56,8 @@
         'renderer/automation/dom_automation_controller.h',
         'renderer/automation/dom_automation_v8_extension.cc',
         'renderer/automation/dom_automation_v8_extension.h',
+        'renderer/benchmarking_extension.cc',
+        'renderer/benchmarking_extension.h',
         'renderer/extensions/bindings_utils.cc',
         'renderer/extensions/bindings_utils.h',
         'renderer/extensions/chrome_app_bindings.cc',

@@ -43,10 +43,7 @@
 #include "net/base/io_buffer.h"
 #include "net/base/keygen_handler.h"
 #include "net/base/mime_util.h"
-#include "net/base/net_errors.h"
-#include "net/disk_cache/disk_cache.h"
 #include "net/http/http_cache.h"
-#include "net/http/http_network_layer.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNotificationPresenter.h"
@@ -102,20 +99,6 @@ class RenderMessageCompletionCallback {
  private:
   scoped_refptr<RenderMessageFilter> filter_;
   IPC::Message* reply_msg_;
-};
-
-class ClearCacheCompletion : public RenderMessageCompletionCallback,
-                             public net::CompletionCallback {
- public:
-  ClearCacheCompletion(RenderMessageFilter* filter,
-                       IPC::Message* reply_msg)
-      : RenderMessageCompletionCallback(filter, reply_msg) {
-  }
-
-  virtual void RunWithParams(const Tuple1<int>& params) {
-    ViewHostMsg_ClearCache::WriteReplyParams(reply_msg(), params.a);
-    SendReplyAndDeleteThis();
-  }
 };
 
 class OpenChannelToPpapiPluginCallback : public RenderMessageCompletionCallback,
@@ -180,55 +163,6 @@ class OpenChannelToPpapiBrokerCallback : public PpapiBrokerProcessHost::Client {
   scoped_refptr<RenderMessageFilter> filter_;
   int routing_id_;
   int request_id_;
-};
-
-// Class to assist with clearing out the cache when we want to preserve
-// the sslhostinfo entries.  It's not very efficient, but its just for debug.
-class DoomEntriesHelper {
- public:
-  explicit DoomEntriesHelper(disk_cache::Backend* backend)
-      : backend_(backend),
-        entry_(NULL),
-        iter_(NULL),
-        ALLOW_THIS_IN_INITIALIZER_LIST(callback_(this,
-            &DoomEntriesHelper::CacheCallback)),
-        user_callback_(NULL) {
-  }
-
-  void ClearCache(ClearCacheCompletion* callback) {
-    user_callback_ = callback;
-    return CacheCallback(net::OK);  // Start clearing the cache.
-  }
-
- private:
-  void CacheCallback(int result) {
-    do {
-      if (result != net::OK) {
-        user_callback_->RunWithParams(Tuple1<int>(result));
-        delete this;
-        return;
-      }
-
-      if (entry_) {
-        // Doom all entries except those with snapstart information.
-        std::string key = entry_->GetKey();
-        if (key.find("sslhostinfo:") != 0) {
-          entry_->Doom();
-          backend_->EndEnumeration(&iter_);
-          iter_ = NULL;  // We invalidated our iterator - start from the top!
-        }
-        entry_->Close();
-        entry_ = NULL;
-      }
-      result = backend_->OpenNextEntry(&iter_, &entry_, &callback_);
-    } while (result != net::ERR_IO_PENDING);
-  }
-
-  disk_cache::Backend* backend_;
-  disk_cache::Entry* entry_;
-  void* iter_;
-  net::CompletionCallbackImpl<DoomEntriesHelper> callback_;
-  ClearCacheCompletion* user_callback_;
 };
 
 }  // namespace
@@ -414,15 +348,8 @@ bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message,
     IPC_MESSAGE_HANDLER(ViewHostMsg_AllocTransportDIB, OnAllocTransportDIB)
     IPC_MESSAGE_HANDLER(ViewHostMsg_FreeTransportDIB, OnFreeTransportDIB)
 #endif
-    IPC_MESSAGE_HANDLER(ViewHostMsg_CloseCurrentConnections,
-                        OnCloseCurrentConnections)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_SetCacheMode, OnSetCacheMode)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_ClearCache, OnClearCache)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_ClearHostResolverCache,
-                        OnClearHostResolverCache)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidGenerateCacheableMetadata,
                         OnCacheableMetadataAvailable)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_EnableSpdy, OnEnableSpdy)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_Keygen, OnKeygen)
     IPC_MESSAGE_HANDLER(ViewHostMsg_AsyncOpenFile, OnAsyncOpenFile)
     IPC_MESSAGE_HANDLER(ViewHostMsg_GetHardwareSampleRate,
@@ -710,85 +637,6 @@ void RenderMessageFilter::OnFreeTransportDIB(
 }
 #endif
 
-bool RenderMessageFilter::CheckBenchmarkingEnabled() const {
-  static bool checked = false;
-  static bool result = false;
-  if (!checked) {
-    const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-    result = command_line.HasSwitch(switches::kEnableBenchmarking);
-    checked = true;
-  }
-  return result;
-}
-
-void RenderMessageFilter::OnCloseCurrentConnections() {
-  // This function is disabled unless the user has enabled
-  // benchmarking extensions.
-  if (!CheckBenchmarkingEnabled())
-    return;
-  request_context_->GetURLRequestContext()->
-      http_transaction_factory()->GetCache()->CloseAllConnections();
-}
-
-void RenderMessageFilter::OnSetCacheMode(bool enabled) {
-  // This function is disabled unless the user has enabled
-  // benchmarking extensions.
-  if (!CheckBenchmarkingEnabled())
-    return;
-
-  net::HttpCache::Mode mode = enabled ?
-      net::HttpCache::NORMAL : net::HttpCache::DISABLE;
-  net::HttpCache* http_cache = request_context_->GetURLRequestContext()->
-      http_transaction_factory()->GetCache();
-  http_cache->set_mode(mode);
-}
-
-void RenderMessageFilter::OnClearCache(bool preserve_ssl_host_info,
-                                       IPC::Message* reply_msg) {
-  // This function is disabled unless the user has enabled
-  // benchmarking extensions.
-  int rv = -1;
-  if (CheckBenchmarkingEnabled()) {
-    disk_cache::Backend* backend = request_context_->GetURLRequestContext()->
-        http_transaction_factory()->GetCache()->GetCurrentBackend();
-    if (backend) {
-      ClearCacheCompletion* callback =
-          new ClearCacheCompletion(this, reply_msg);
-      if (preserve_ssl_host_info) {
-        DoomEntriesHelper* helper = new DoomEntriesHelper(backend);
-        helper->ClearCache(callback);  // Will self clean.
-        return;
-      } else {
-        rv = backend->DoomAllEntries(callback);
-        if (rv == net::ERR_IO_PENDING) {
-          // The callback will send the reply.
-          return;
-        }
-        // Completed synchronously, no need for the callback.
-        delete callback;
-      }
-    }
-  }
-  ViewHostMsg_ClearCache::WriteReplyParams(reply_msg, rv);
-  Send(reply_msg);
-}
-
-void RenderMessageFilter::OnClearHostResolverCache(int* result) {
-  // This function is disabled unless the user has enabled
-  // benchmarking extensions.
-  *result = -1;
-  DCHECK(CheckBenchmarkingEnabled());
-  net::HostResolverImpl* host_resolver_impl =
-      request_context_->GetURLRequestContext()->
-      host_resolver()->GetAsHostResolverImpl();
-  if (host_resolver_impl) {
-    net::HostCache* cache = host_resolver_impl->cache();
-    DCHECK(cache);
-    cache->clear();
-    *result = 0;
-  }
-}
-
 bool RenderMessageFilter::CheckPreparsedJsCachingEnabled() const {
   static bool checked = false;
   static bool result = false;
@@ -815,16 +663,6 @@ void RenderMessageFilter::OnCacheableMetadataAvailable(
   memcpy(buf->data(), &data.front(), data.size());
   cache->WriteMetadata(
       url, base::Time::FromDoubleT(expected_response_time), buf, data.size());
-}
-
-// TODO(lzheng): This only enables spdy over ssl. Enable spdy for http
-// when needed.
-void RenderMessageFilter::OnEnableSpdy(bool enable) {
-  if (enable) {
-    net::HttpNetworkLayer::EnableSpdy("npn,force-alt-protocols");
-  } else {
-    net::HttpNetworkLayer::EnableSpdy("npn-http");
-  }
 }
 
 void RenderMessageFilter::OnKeygen(uint32 key_size_index,

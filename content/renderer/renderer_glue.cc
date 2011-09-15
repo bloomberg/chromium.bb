@@ -225,32 +225,8 @@ WebSocketStreamHandleBridge* WebSocketStreamHandleBridge::Create(
   return dispatcher->CreateBridge(handle, delegate);
 }
 
-void CloseCurrentConnections() {
-  RenderThread::current()->CloseCurrentConnections();
-}
-
-void SetCacheMode(bool enabled) {
-  RenderThread::current()->SetCacheMode(enabled);
-}
-
-void ClearCache(bool preserve_ssl_host_info) {
-  RenderThread::current()->ClearCache(preserve_ssl_host_info);
-}
-
-void ClearHostResolverCache() {
-  RenderThread::current()->ClearHostResolverCache();
-}
-
-void ClearPredictorCache() {
-  RenderThread::current()->ClearPredictorCache();
-}
-
 bool IsSingleProcess() {
   return CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess);
-}
-
-void EnableSpdy(bool enable) {
-  RenderThread::current()->EnableSpdy(enable);
 }
 
 #if defined(OS_LINUX)
