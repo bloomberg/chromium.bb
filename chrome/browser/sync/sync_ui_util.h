@@ -37,11 +37,13 @@ enum MessageType {
 
 // Create status and link labels for the current status labels and link text
 // by querying |service|.
+// |status_label| may contain an HTML-formatted link.
 MessageType GetStatusLabels(ProfileSyncService* service,
                             string16* status_label,
                             string16* link_label);
 
 // Same as above but for use specifically on the New Tab Page.
+// |status_label| may contain an HTML-formatted link.
 MessageType GetStatusLabelsForNewTabPage(ProfileSyncService* service,
                                          string16* status_label,
                                          string16* link_label);

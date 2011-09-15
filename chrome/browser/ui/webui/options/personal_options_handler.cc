@@ -239,21 +239,6 @@ void PersonalOptionsHandler::OnStateChanged() {
   bool sync_setup_completed = service->HasSyncSetupCompleted();
   bool status_has_error = sync_ui_util::GetStatusLabels(
       service, &status_label, &link_label) == sync_ui_util::SYNC_ERROR;
-  browser_sync::SyncBackendHost::StatusSummary summary =
-      service->QuerySyncStatusSummary();
-
-  // TODO(jhawkins): This is terribly hacky. Sync should pass us this state, but
-  // we have to fix the other callers of
-  // sync_ui_util::GetSyncedStateStatusLabel() to handle returned HTML.
-  if (!status_has_error &&
-      summary == browser_sync::SyncBackendHost::Status::READY &&
-      service->HasSyncSetupCompleted()) {
-    string16 user_name(service->GetAuthenticatedUsername());
-    status_label.assign(l10n_util::GetStringFUTF16(
-        IDS_SYNC_ACCOUNT_SYNCING_TO_USER,
-        user_name,
-        ASCIIToUTF16(chrome::kSyncGoogleDashboardURL)));
-  }
 
   string16 start_stop_button_label;
   bool is_start_stop_button_visible = false;

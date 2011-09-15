@@ -79,11 +79,9 @@ string16 GetSyncedStateStatusLabel(ProfileSyncService* service) {
     return label;
 
   return l10n_util::GetStringFUTF16(
-      ProfileManager::IsMultipleProfilesEnabled() ?
-          IDS_PROFILES_SYNCED_TO_USER_WITH_TIME :
-          IDS_SYNC_ACCOUNT_SYNCED_TO_USER_WITH_TIME,
+      IDS_SYNC_ACCOUNT_SYNCING_TO_USER,
       user_name,
-      service->GetLastSyncedTimeString());
+      ASCIIToUTF16(chrome::kSyncGoogleDashboardURL));
 }
 
 void GetStatusForActionableError(
