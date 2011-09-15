@@ -6,40 +6,45 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/threading/thread.h"
+#include "base/test/test_timeouts.h"
 #include "base/timer.h"
-#include "chrome/browser/sync/glue/database_model_worker.h"
+#include "chrome/browser/sync/glue/browser_thread_model_worker.h"
 #include "content/browser/browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::OneShotTimer;
 using base::Thread;
 using base::TimeDelta;
-using browser_sync::DatabaseModelWorker;
+using browser_sync::BrowserThreadModelWorker;
+using browser_sync::GROUP_DB;
 
 namespace {
 
-class DatabaseModelWorkerTest : public testing::Test {
+class BrowserThreadModelWorkerTest : public testing::Test {
  public:
-  DatabaseModelWorkerTest() :
+  BrowserThreadModelWorkerTest() :
       did_do_work_(false),
       db_thread_(BrowserThread::DB),
       io_thread_(BrowserThread::IO, &io_loop_),
       ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {}
 
   bool did_do_work() { return did_do_work_; }
-  DatabaseModelWorker* worker() { return worker_.get(); }
-  OneShotTimer<DatabaseModelWorkerTest>* timer() { return &timer_; }
-  ScopedRunnableMethodFactory<DatabaseModelWorkerTest>* factory() {
+  BrowserThreadModelWorker* worker() { return worker_.get(); }
+  OneShotTimer<BrowserThreadModelWorkerTest>* timer() { return &timer_; }
+  ScopedRunnableMethodFactory<BrowserThreadModelWorkerTest>* factory() {
     return &method_factory_;
   }
 
   // Schedule DoWork to be executed on the DB thread and have the test fail if
-  // DoWork hasn't executed within 10 seconds.
+  // DoWork hasn't executed within action_timeout_ms() ms.
   void ScheduleWork() {
     scoped_ptr<Callback0::Type> c(NewCallback(this,
-        &DatabaseModelWorkerTest::DoWork));
-    timer()->Start(FROM_HERE, TimeDelta::FromSeconds(10),
-                   this, &DatabaseModelWorkerTest::Timeout);
+        &BrowserThreadModelWorkerTest::DoWork));
+    timer()->Start(
+        FROM_HERE,
+        TimeDelta::FromMilliseconds(TestTimeouts::action_timeout_ms()),
+        this,
+        &BrowserThreadModelWorkerTest::Timeout);
     worker()->DoWorkAndWaitUntilDone(c.get());
   }
 
@@ -63,7 +68,7 @@ class DatabaseModelWorkerTest : public testing::Test {
  protected:
   virtual void SetUp() {
     db_thread_.Start();
-    worker_ = new DatabaseModelWorker();
+    worker_ = new BrowserThreadModelWorker(BrowserThread::DB, GROUP_DB);
   }
 
   virtual void Teardown() {
@@ -73,19 +78,19 @@ class DatabaseModelWorkerTest : public testing::Test {
 
  private:
   bool did_do_work_;
-  scoped_refptr<DatabaseModelWorker> worker_;
-  OneShotTimer<DatabaseModelWorkerTest> timer_;
+  scoped_refptr<BrowserThreadModelWorker> worker_;
+  OneShotTimer<BrowserThreadModelWorkerTest> timer_;
 
   BrowserThread db_thread_;
   MessageLoopForIO io_loop_;
   BrowserThread io_thread_;
 
-  ScopedRunnableMethodFactory<DatabaseModelWorkerTest> method_factory_;
+  ScopedRunnableMethodFactory<BrowserThreadModelWorkerTest> method_factory_;
 };
 
-TEST_F(DatabaseModelWorkerTest, DoesWorkOnDatabaseThread) {
+TEST_F(BrowserThreadModelWorkerTest, DoesWorkOnDatabaseThread) {
   MessageLoop::current()->PostTask(FROM_HERE, factory()->NewRunnableMethod(
-      &DatabaseModelWorkerTest::ScheduleWork));
+      &BrowserThreadModelWorkerTest::ScheduleWork));
   MessageLoop::current()->Run();
   EXPECT_TRUE(did_do_work());
 }

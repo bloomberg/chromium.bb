@@ -79,7 +79,7 @@ TEST_F(SyncBackendRegistrarTest, ConstructorEmpty) {
   {
     std::vector<ModelSafeWorker*> workers;
     registrar.GetWorkers(&workers);
-    EXPECT_EQ(3u, workers.size());
+    EXPECT_EQ(4u, workers.size());
   }
   ExpectRoutingInfo(&registrar, ModelSafeRoutingInfo());
   ExpectHasProcessorsForTypes(&registrar, ModelTypeSet());
@@ -98,7 +98,7 @@ TEST_F(SyncBackendRegistrarTest, ConstructorNonEmpty) {
   {
     std::vector<ModelSafeWorker*> workers;
     registrar.GetWorkers(&workers);
-    EXPECT_EQ(3u, workers.size());
+    EXPECT_EQ(4u, workers.size());
   }
   {
     ModelSafeRoutingInfo expected_routing_info;

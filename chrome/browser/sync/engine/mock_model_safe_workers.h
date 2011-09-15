@@ -24,6 +24,11 @@ class MockDBModelWorker : public ModelSafeWorker {
   virtual ModelSafeGroup GetModelSafeGroup();
 };
 
+class MockFileModelWorker : public ModelSafeWorker {
+ public:
+  virtual ModelSafeGroup GetModelSafeGroup();
+};
+
 class MockModelSafeWorkerRegistrar : public ModelSafeWorkerRegistrar {
  public:
   virtual ~MockModelSafeWorkerRegistrar();

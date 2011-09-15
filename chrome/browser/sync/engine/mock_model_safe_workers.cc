@@ -10,6 +10,8 @@ ModelSafeGroup MockUIModelWorker::GetModelSafeGroup() { return GROUP_UI; }
 
 ModelSafeGroup MockDBModelWorker::GetModelSafeGroup() { return GROUP_DB; }
 
+ModelSafeGroup MockFileModelWorker::GetModelSafeGroup() { return GROUP_FILE; }
+
 MockModelSafeWorkerRegistrar::~MockModelSafeWorkerRegistrar() {}
 
 // static

@@ -59,6 +59,8 @@ std::string ModelSafeGroupToString(ModelSafeGroup group) {
       return "GROUP_UI";
     case GROUP_DB:
       return "GROUP_DB";
+    case GROUP_FILE:
+      return "GROUP_FILE";
     case GROUP_HISTORY:
       return "GROUP_HISTORY";
     case GROUP_PASSIVE:

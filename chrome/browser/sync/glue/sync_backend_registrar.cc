@@ -11,7 +11,7 @@
 #include "base/message_loop.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/glue/change_processor.h"
-#include "chrome/browser/sync/glue/database_model_worker.h"
+#include "chrome/browser/sync/glue/browser_thread_model_worker.h"
 #include "chrome/browser/sync/glue/history_model_worker.h"
 #include "chrome/browser/sync/glue/password_model_worker.h"
 #include "chrome/browser/sync/glue/ui_model_worker.h"
@@ -31,6 +31,8 @@ bool IsOnThreadForGroup(ModelSafeGroup group) {
       return BrowserThread::CurrentlyOn(BrowserThread::UI);
     case GROUP_DB:
       return BrowserThread::CurrentlyOn(BrowserThread::DB);
+    case GROUP_FILE:
+      return BrowserThread::CurrentlyOn(BrowserThread::FILE);
     case GROUP_HISTORY:
       // TODO(ncarter): How to determine this?
       return true;
@@ -57,7 +59,10 @@ SyncBackendRegistrar::SyncBackendRegistrar(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   CHECK(profile_);
   DCHECK(sync_loop_);
-  workers_[GROUP_DB] = new DatabaseModelWorker();
+  workers_[GROUP_DB] =
+      new BrowserThreadModelWorker(BrowserThread::DB, GROUP_DB);
+  workers_[GROUP_FILE] =
+      new BrowserThreadModelWorker(BrowserThread::FILE, GROUP_FILE);
   workers_[GROUP_UI] = ui_worker_;
   workers_[GROUP_PASSIVE] = new ModelSafeWorker();
 
