@@ -226,17 +226,15 @@ void TabContentsSSLHelper::SelectClientCertificate(
     DCHECK(filter->IsType(Value::TYPE_DICTIONARY));
     DictionaryValue* filter_dict = static_cast<DictionaryValue*>(filter.get());
 
-    // Get all client certificates that match the criterias in |filter_dict|.
     const std::vector<scoped_refptr<net::X509Certificate> >& all_client_certs =
         cert_request_info->client_certs;
-    std::vector<scoped_refptr<net::X509Certificate> > matching_client_certs;
     for (size_t i = 0; i < all_client_certs.size(); ++i) {
-      if (CertMatchesFilter(*all_client_certs[i], *filter_dict))
-        matching_client_certs.push_back(all_client_certs[i]);
+      if (CertMatchesFilter(*all_client_certs[i], *filter_dict)) {
+        selected_cert = all_client_certs[i];
+        // Use the first certificate that is matched by the filter.
+        break;
+      }
     }
-
-    if (matching_client_certs.size() == 1)
-      selected_cert = matching_client_certs[0];
   }
 
   if (selected_cert) {
