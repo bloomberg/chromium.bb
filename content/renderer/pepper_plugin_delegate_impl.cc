@@ -333,47 +333,17 @@ void PlatformAudioImpl::OnLowLatencyCreated(
   }
 }
 
-class DispatcherDelegate : public ppapi::proxy::ProxyChannel::Delegate {
- public:
-  virtual ~DispatcherDelegate() {}
-
-  // ProxyChannel::Delegate implementation.
-  virtual base::MessageLoopProxy* GetIPCMessageLoop() {
-    // This is called only in the renderer so we know we have a child process.
-    DCHECK(ChildProcess::current()) << "Must be in the renderer.";
-    return ChildProcess::current()->io_message_loop_proxy();
-  }
-  virtual base::WaitableEvent* GetShutdownEvent() {
-    DCHECK(ChildProcess::current()) << "Must be in the renderer.";
-    return ChildProcess::current()->GetShutDownEvent();
-  }
-};
-
-class HostDispatcherWrapper
+class DispatcherWrapper
     : public webkit::ppapi::PluginDelegate::OutOfProcessProxy {
  public:
-  HostDispatcherWrapper() {}
-  virtual ~HostDispatcherWrapper() {}
+  DispatcherWrapper() {}
+  virtual ~DispatcherWrapper() {}
 
-  bool Init(base::ProcessHandle plugin_process_handle,
+  bool Init(RenderView* render_view,
+            base::ProcessHandle plugin_process_handle,
             const IPC::ChannelHandle& channel_handle,
             PP_Module pp_module,
-            ppapi::proxy::Dispatcher::GetInterfaceFunc local_get_interface,
-            const ppapi::Preferences& preferences) {
-    dispatcher_delegate_.reset(new DispatcherDelegate);
-    dispatcher_.reset(new ppapi::proxy::HostDispatcher(
-        plugin_process_handle, pp_module, local_get_interface));
-
-    if (!dispatcher_->InitHostWithChannel(
-            dispatcher_delegate_.get(),
-            channel_handle, true, preferences)) {
-      dispatcher_.reset();
-      dispatcher_delegate_.reset();
-      return false;
-    }
-    dispatcher_->channel()->SetRestrictDispatchToSameChannel(true);
-    return true;
-  }
+            ppapi::proxy::Dispatcher::GetInterfaceFunc local_get_interface);
 
   // OutOfProcessProxy implementation.
   virtual const void* GetProxiedInterface(const char* name) {
@@ -388,7 +358,6 @@ class HostDispatcherWrapper
 
  private:
   scoped_ptr<ppapi::proxy::HostDispatcher> dispatcher_;
-  scoped_ptr<ppapi::proxy::ProxyChannel::Delegate> dispatcher_delegate_;
 };
 
 class QuotaCallbackTranslator : public QuotaDispatcher::Callback {
@@ -468,6 +437,26 @@ class PlatformVideoCaptureImpl
 
 }  // namespace
 
+bool DispatcherWrapper::Init(
+    RenderView* render_view,
+    base::ProcessHandle plugin_process_handle,
+    const IPC::ChannelHandle& channel_handle,
+    PP_Module pp_module,
+    ppapi::proxy::Dispatcher::GetInterfaceFunc local_get_interface) {
+  dispatcher_.reset(new ppapi::proxy::HostDispatcher(
+      plugin_process_handle, pp_module, local_get_interface));
+
+  if (!dispatcher_->InitHostWithChannel(
+          PepperPluginRegistry::GetInstance(),
+          channel_handle, true,
+          ppapi::Preferences(render_view->webkit_preferences()))) {
+    dispatcher_.reset();
+    return false;
+  }
+  dispatcher_->channel()->SetRestrictDispatchToSameChannel(true);
+  return true;
+}
+
 BrokerDispatcherWrapper::BrokerDispatcherWrapper() {
 }
 
@@ -477,15 +466,13 @@ BrokerDispatcherWrapper::~BrokerDispatcherWrapper() {
 bool BrokerDispatcherWrapper::Init(
     base::ProcessHandle plugin_process_handle,
     const IPC::ChannelHandle& channel_handle) {
-  dispatcher_delegate_.reset(new DispatcherDelegate);
   dispatcher_.reset(
       new ppapi::proxy::BrokerHostDispatcher(plugin_process_handle));
 
-  if (!dispatcher_->InitBrokerWithChannel(dispatcher_delegate_.get(),
+  if (!dispatcher_->InitBrokerWithChannel(PepperPluginRegistry::GetInstance(),
                                           channel_handle,
                                           true)) {
     dispatcher_.reset();
-    dispatcher_delegate_.reset();
     return false;
   }
   dispatcher_->channel()->SetRestrictDispatchToSameChannel(true);
@@ -711,13 +698,12 @@ PepperPluginDelegateImpl::CreatePepperPluginModule(
   module = new webkit::ppapi::PluginModule(info->name, path,
                                            PepperPluginRegistry::GetInstance());
   PepperPluginRegistry::GetInstance()->AddLiveModule(path, module);
-  scoped_ptr<HostDispatcherWrapper> dispatcher(new HostDispatcherWrapper);
+  scoped_ptr<DispatcherWrapper> dispatcher(new DispatcherWrapper);
   if (!dispatcher->Init(
-          plugin_process_handle,
-          channel_handle,
+          render_view_,
+          plugin_process_handle, channel_handle,
           module->pp_module(),
-          webkit::ppapi::PluginModule::GetLocalGetInterfaceFunc(),
-          GetPreferences()))
+          webkit::ppapi::PluginModule::GetLocalGetInterfaceFunc()))
     return scoped_refptr<webkit::ppapi::PluginModule>();
   module->InitAsProxied(dispatcher.release());
   return module;

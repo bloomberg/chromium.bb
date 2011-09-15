@@ -34,8 +34,6 @@ class PPAPI_PROXY_EXPORT ProxyChannel
 
   class Delegate {
    public:
-    virtual ~Delegate() {}
-
     // Returns the dedicated message loop for processing IPC requests.
     virtual base::MessageLoopProxy* GetIPCMessageLoop() = 0;
 
