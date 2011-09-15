@@ -17,6 +17,9 @@
 
 namespace {
 
+// The Registry hive where to look for external extensions.
+const HKEY kRegRoot = HKEY_LOCAL_MACHINE;
+
 // The Registry subkey that contains information about external extensions.
 const char kRegistryExtensions[] = "Software\\Google\\Chrome\\Extensions";
 
@@ -46,37 +49,19 @@ void ExternalRegistryExtensionLoader::LoadOnFileThread() {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   scoped_ptr<DictionaryValue> prefs(new DictionaryValue);
 
-  // A map of IDs, to weed out duplicates between HKCU and HKLM.
-  std::set<string16> keys;
-  base::win::RegistryKeyIterator iterator_machine_key(
-      HKEY_LOCAL_MACHINE, ASCIIToWide(kRegistryExtensions).c_str());
-  for (; iterator_machine_key.Valid(); ++iterator_machine_key)
-    keys.insert(iterator_machine_key.Name());
-  base::win::RegistryKeyIterator iterator_user_key(
-      HKEY_CURRENT_USER, ASCIIToWide(kRegistryExtensions).c_str());
-  for (; iterator_user_key.Valid(); ++iterator_user_key)
-    keys.insert(iterator_user_key.Name());
-
-  // Iterate over the keys found, first trying HKLM, then HKCU, as per Windows
-  // policy conventions. We only fall back to HKCU if the HKLM key cannot be
-  // opened, not if the data within the key is invalid, for example.
-  for (std::set<string16>::const_iterator it = keys.begin();
-       it != keys.end(); ++it) {
+  base::win::RegistryKeyIterator iterator(
+      kRegRoot, ASCIIToWide(kRegistryExtensions).c_str());
+  for (; iterator.Valid(); ++iterator) {
     base::win::RegKey key;
-    string16 key_path = ASCIIToWide(kRegistryExtensions);
+    std::wstring key_path = ASCIIToWide(kRegistryExtensions);
     key_path.append(L"\\");
-    key_path.append(*it);
-    if (key.Open(HKEY_LOCAL_MACHINE,
-                 key_path.c_str(), KEY_READ) != ERROR_SUCCESS) {
-      if (key.Open(HKEY_CURRENT_USER,
-                   key_path.c_str(), KEY_READ) != ERROR_SUCCESS) {
-        LOG(ERROR) << "Unable to read registry key at path (HKLM & HKCU): "
-                   << key_path << ".";
-        continue;
-      }
+    key_path.append(iterator.Name());
+    if (key.Open(kRegRoot, key_path.c_str(), KEY_READ) != ERROR_SUCCESS) {
+      LOG(ERROR) << "Unable to read registry key at path: " << key_path << ".";
+      continue;
     }
 
-    string16 extension_path_str;
+    std::wstring extension_path_str;
     if (key.ReadValue(kRegistryExtensionPath, &extension_path_str)
         != ERROR_SUCCESS) {
       // TODO(erikkay): find a way to get this into about:extensions
@@ -108,7 +93,7 @@ void ExternalRegistryExtensionLoader::LoadOnFileThread() {
       continue;
     }
 
-    string16 extension_version;
+    std::wstring extension_version;
     if (key.ReadValue(kRegistryExtensionVersion, &extension_version)
         != ERROR_SUCCESS) {
       // TODO(erikkay): find a way to get this into about:extensions
@@ -117,7 +102,7 @@ void ExternalRegistryExtensionLoader::LoadOnFileThread() {
       continue;
     }
 
-    std::string id = WideToASCII(*it);
+    std::string id = WideToASCII(iterator.Name());
     StringToLowerASCII(&id);
     if (!Extension::IdIsValid(id)) {
       LOG(ERROR) << "Invalid id value " << id
