@@ -148,10 +148,9 @@ const NSTimeInterval kTearDuration = 0.333;
     } else if (type == NSLeftMouseDragged) {
       [self continueDrag:theEvent];
     } else if (type == NSLeftMouseUp) {
-      [self endDrag:theEvent];
-      // Call -mouseUp: after -endDrag: just in case, to avoid triggering
-      // the |inRapidClosureMode| block in TabView's -mouseUp:.
+      DCHECK(![tab inRapidClosureMode]);
       [[tab view] mouseUp:theEvent];
+      [self endDrag:theEvent];
       break;
     } else {
       // TODO(viettrungluu): [crbug.com/23830] We can receive right-mouse-ups
@@ -328,7 +327,7 @@ const NSTimeInterval kTearDuration = 0.333;
   if (tearProgress < 1) {
     // If the tear animation is not complete, call back to ourself with the
     // same event to animate even if the mouse isn't moving. We need to make
-    // sure these get cancelled in mouseUp:.
+    // sure these get cancelled in -endDrag:.
     [NSObject cancelPreviousPerformRequestsWithTarget:self];
     [self performSelector:@selector(continueDrag:)
                withObject:theEvent
