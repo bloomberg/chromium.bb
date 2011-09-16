@@ -286,7 +286,7 @@ class TaskManagerView : public views::ButtonListener,
   virtual bool CanMaximize() const;
   virtual bool ExecuteWindowsCommand(int command_id);
   virtual std::wstring GetWindowTitle() const;
-  virtual std::wstring GetWindowName() const;
+  virtual std::string GetWindowName() const;
   virtual int GetDialogButtons() const;
   virtual void WindowClosing();
   virtual views::View* GetContentsView();
@@ -634,7 +634,7 @@ bool TaskManagerView::ExecuteWindowsCommand(int command_id) {
     // Save the state.
     if (g_browser_process->local_state()) {
       DictionaryPrefUpdate update(g_browser_process->local_state(),
-                                  WideToUTF8(GetWindowName()).c_str());
+                                  GetWindowName().c_str());
       DictionaryValue* window_preferences = update.Get();
       window_preferences->SetBoolean("always_on_top", is_always_on_top_);
     }
@@ -648,8 +648,8 @@ std::wstring TaskManagerView::GetWindowTitle() const {
   return UTF16ToWide(l10n_util::GetStringUTF16(IDS_TASK_MANAGER_TITLE));
 }
 
-std::wstring TaskManagerView::GetWindowName() const {
-  return UTF8ToWide(prefs::kTaskManagerWindowPlacement);
+std::string TaskManagerView::GetWindowName() const {
+  return prefs::kTaskManagerWindowPlacement;
 }
 
 int TaskManagerView::GetDialogButtons() const {
@@ -775,8 +775,7 @@ bool TaskManagerView::GetSavedAlwaysOnTopState(bool* always_on_top) const {
     return false;
 
   const DictionaryValue* dictionary =
-      g_browser_process->local_state()->GetDictionary(
-          WideToUTF8(GetWindowName()).c_str());
+      g_browser_process->local_state()->GetDictionary(GetWindowName().c_str());
   return dictionary &&
       dictionary->GetBoolean("always_on_top", always_on_top) && always_on_top;
 }

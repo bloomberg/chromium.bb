@@ -96,7 +96,7 @@ class VIEWS_EXPORT WidgetDelegate {
 
   // Returns the window's name identifier. Used to identify this window for
   // state restoration.
-  virtual std::wstring GetWindowName() const;
+  virtual std::string GetWindowName() const;
 
   // Saves the window's bounds and "show" state. By default this uses the
   // process' local state keyed by window name (See GetWindowName above). This

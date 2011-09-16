@@ -93,13 +93,13 @@ bool WidgetDelegate::ExecuteWindowsCommand(int command_id) {
   return false;
 }
 
-std::wstring WidgetDelegate::GetWindowName() const {
-  return std::wstring();
+std::string WidgetDelegate::GetWindowName() const {
+  return std::string();
 }
 
 void WidgetDelegate::SaveWindowPlacement(const gfx::Rect& bounds,
                                          ui::WindowShowState show_state) {
-  std::wstring window_name = GetWindowName();
+  std::string window_name = GetWindowName();
   if (!ViewsDelegate::views_delegate || window_name.empty())
     return;
 
@@ -110,7 +110,7 @@ void WidgetDelegate::SaveWindowPlacement(const gfx::Rect& bounds,
 bool WidgetDelegate::GetSavedWindowPlacement(
     gfx::Rect* bounds,
     ui::WindowShowState* show_state) const {
-  std::wstring window_name = GetWindowName();
+  std::string window_name = GetWindowName();
   if (!ViewsDelegate::views_delegate || window_name.empty())
     return false;
 

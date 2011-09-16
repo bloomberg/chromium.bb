@@ -59,15 +59,15 @@ views::View* ChromeViewsDelegate::GetDefaultParentView() {
 }
 
 void ChromeViewsDelegate::SaveWindowPlacement(const views::Widget* window,
-                                              const std::wstring& window_name,
+                                              const std::string& window_name,
                                               const gfx::Rect& bounds,
                                               ui::WindowShowState show_state) {
   PrefService* prefs = GetPrefsForWindow(window);
   if (!prefs)
     return;
 
-  DCHECK(prefs->FindPreference(WideToUTF8(window_name).c_str()));
-  DictionaryPrefUpdate update(prefs, WideToUTF8(window_name).c_str());
+  DCHECK(prefs->FindPreference(window_name.c_str()));
+  DictionaryPrefUpdate update(prefs, window_name.c_str());
   DictionaryValue* window_preferences = update.Get();
   window_preferences->SetInteger("left", bounds.x());
   window_preferences->SetInteger("top", bounds.y());
@@ -87,16 +87,15 @@ void ChromeViewsDelegate::SaveWindowPlacement(const views::Widget* window,
 }
 
 bool ChromeViewsDelegate::GetSavedWindowPlacement(
-    const std::wstring& window_name,
+    const std::string& window_name,
     gfx::Rect* bounds,
     ui::WindowShowState* show_state) const {
   PrefService* prefs = g_browser_process->local_state();
   if (!prefs)
     return false;
 
-  DCHECK(prefs->FindPreference(WideToUTF8(window_name).c_str()));
-  const DictionaryValue* dictionary =
-      prefs->GetDictionary(WideToUTF8(window_name).c_str());
+  DCHECK(prefs->FindPreference(window_name.c_str()));
+  const DictionaryValue* dictionary = prefs->GetDictionary(window_name.c_str());
   int left, top, right, bottom;
   if (!dictionary || !dictionary->GetInteger("left", &left) ||
       !dictionary->GetInteger("top", &top) ||

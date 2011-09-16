@@ -392,7 +392,7 @@ class BrowserView : public BrowserBubbleHost,
   virtual SkBitmap GetWindowIcon() OVERRIDE;
   virtual bool ShouldShowWindowIcon() const OVERRIDE;
   virtual bool ExecuteWindowsCommand(int command_id) OVERRIDE;
-  virtual std::wstring GetWindowName() const OVERRIDE;
+  virtual std::string GetWindowName() const OVERRIDE;
   virtual void SaveWindowPlacement(const gfx::Rect& bounds,
                                    ui::WindowShowState show_state) OVERRIDE;
   virtual bool GetSavedWindowPlacement(

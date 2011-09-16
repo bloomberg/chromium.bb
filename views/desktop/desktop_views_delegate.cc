@@ -33,13 +33,13 @@ View* DesktopViewsDelegate::GetDefaultParentView() {
 }
 
 void DesktopViewsDelegate::SaveWindowPlacement(const Widget* widget,
-                                               const std::wstring& window_name,
+                                               const std::string& window_name,
                                                const gfx::Rect& bounds,
                                                ui::WindowShowState show_state) {
 }
 
 bool DesktopViewsDelegate::GetSavedWindowPlacement(
-    const std::wstring& window_name,
+    const std::string& window_name,
     gfx::Rect* bounds,
     ui::WindowShowState* show_state) const {
   return false;

@@ -50,14 +50,14 @@ class VIEWS_EXPORT ViewsDelegate {
   // Saves the position, size and "show" state for the window with the
   // specified name.
   virtual void SaveWindowPlacement(const Widget* widget,
-                                   const std::wstring& window_name,
+                                   const std::string& window_name,
                                    const gfx::Rect& bounds,
                                    ui::WindowShowState show_state) = 0;
 
   // Retrieves the saved position and size and "show" state for the window with
   // the specified name.
   virtual bool GetSavedWindowPlacement(
-    const std::wstring& window_name,
+    const std::string& window_name,
     gfx::Rect* bounds,
     ui::WindowShowState* show_state) const = 0;
 

@@ -1648,8 +1648,8 @@ bool BrowserView::ExecuteWindowsCommand(int command_id) {
   return browser_->ExecuteCommandIfEnabled(command_id);
 }
 
-std::wstring BrowserView::GetWindowName() const {
-  return UTF8ToWide(browser_->GetWindowPlacementKey());
+std::string BrowserView::GetWindowName() const {
+  return browser_->GetWindowPlacementKey();
 }
 
 void BrowserView::SaveWindowPlacement(const gfx::Rect& bounds,

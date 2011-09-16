@@ -36,19 +36,18 @@ class TestViewsDelegate : public views::ViewsDelegate {
     return NULL;
   }
 
-  virtual views::View* GetDefaultParentView() OVERRIDE
-  {
+  virtual views::View* GetDefaultParentView() OVERRIDE {
     return NULL;
   }
 
   virtual void SaveWindowPlacement(const views::Widget* widget,
-                                   const std::wstring& window_name,
+                                   const std::string& window_name,
                                    const gfx::Rect& bounds,
                                    ui::WindowShowState show_state) OVERRIDE {
   }
 
   virtual bool GetSavedWindowPlacement(
-      const std::wstring& window_name,
+      const std::string& window_name,
       gfx::Rect* bounds,
       ui::WindowShowState* show_state) const OVERRIDE {
     return false;
@@ -58,17 +57,15 @@ class TestViewsDelegate : public views::ViewsDelegate {
       views::View* view, ui::AccessibilityTypes::Event event_type) OVERRIDE {
   }
 
-  virtual void NotifyMenuItemFocused(
-      const std::wstring& menu_name,
-      const std::wstring& menu_item_name,
-      int item_index,
-      int item_count,
-      bool has_submenu) OVERRIDE {
+  virtual void NotifyMenuItemFocused(const std::wstring& menu_name,
+                                     const std::wstring& menu_item_name,
+                                     int item_index,
+                                     int item_count,
+                                     bool has_submenu) OVERRIDE {
   }
 
 #if defined(OS_WIN)
-  virtual HICON GetDefaultWindowIcon() const OVERRIDE
-  {
+  virtual HICON GetDefaultWindowIcon() const OVERRIDE {
     return NULL;
   }
 #endif

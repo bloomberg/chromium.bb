@@ -32,13 +32,13 @@ View* TestViewsDelegate::GetDefaultParentView() {
 }
 
 void TestViewsDelegate::SaveWindowPlacement(const Widget* window,
-                                            const std::wstring& window_name,
+                                            const std::string& window_name,
                                             const gfx::Rect& bounds,
                                             ui::WindowShowState show_state) {
 }
 
 bool TestViewsDelegate::GetSavedWindowPlacement(
-    const std::wstring& window_name,
+    const std::string& window_name,
     gfx::Rect* bounds,
     ui:: WindowShowState* show_state) const {
   return false;
