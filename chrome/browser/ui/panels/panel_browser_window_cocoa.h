@@ -88,7 +88,7 @@ class PanelBrowserWindowCocoa : public NativePanel {
   // top-left of the primary screen. They have to be converted to Cocoa
   // screen coordinates before calling Cocoa API.
   gfx::Rect bounds_;
-  int restored_height_;
+  int restored_height_;  // Panel's full height when expanded.
 
   PanelWindowControllerCocoa* controller_;  // Weak, owns us.
   bool is_shown_;  // Panel is hidden on creation, Show() changes that forever.

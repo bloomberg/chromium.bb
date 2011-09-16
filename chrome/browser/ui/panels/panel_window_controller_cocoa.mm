@@ -110,6 +110,15 @@ static BOOL g_reportAnimationStatus = NO;
 
   [titlebar_view_ attach];
 
+  // Set initial size of the window to match the size of the panel to give
+  // the renderer the proper size to work with earlier, avoiding a resize
+  // after the window is revealed.
+  gfx::Rect panelBounds = windowShim_->GetPanelBounds();
+  NSRect frame = [window frame];
+  frame.size.width = panelBounds.width();
+  frame.size.height = panelBounds.height();
+  [window setFrame:frame display:NO];
+
   // Attach the RenderWigetHostView to the view hierarchy, it will render
   // HTML content.
   [[window contentView] addSubview:[self tabContentsView]];
@@ -144,9 +153,10 @@ static BOOL g_reportAnimationStatus = NO;
 - (void)revealAnimatedWithFrame:(const NSRect&)frame {
   NSWindow* window = [self window];  // This ensures loading the nib.
 
-  // Temporarily disable auto-resizing of the TabContents view to make animation
-  // smoother and avoid rendering of HTML content at random intermediate sizes.
-  [self disableTabContentsViewAutosizing];
+  // Disable subview resizing while resizing the window to avoid renderer
+  // resizes during intermediate stages of animation.
+  NSView* contentView = [window contentView];
+  [contentView setAutoresizesSubviews:NO];
 
   // We grow the window from the bottom up to produce a 'reveal' animation.
   NSRect startFrame = NSMakeRect(NSMinX(frame), NSMinY(frame),
@@ -157,8 +167,7 @@ static BOOL g_reportAnimationStatus = NO;
   [window orderFrontRegardless];
   [window setFrame:frame display:YES animate:YES];
 
-  // Resume auto-resizing of the TabContents view.
-  [self enableTabContentsViewAutosizing];
+  [contentView setAutoresizesSubviews:YES];
 }
 
 - (void)updateTitleBar {

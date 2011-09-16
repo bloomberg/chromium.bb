@@ -13,13 +13,10 @@
 #include "chrome/browser/ui/panels/panel_browser_view.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
 #include "chrome/browser/ui/panels/panel_mouse_watcher_win.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/test/base/ui_test_utils.h"
 #include "grit/generated_resources.h"
-#include "net/base/net_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/animation/slide_animation.h"
@@ -29,9 +26,6 @@
 #include "views/controls/label.h"
 #include "views/controls/link.h"
 #include "views/controls/textfield/textfield.h"
-
-const FilePath::CharType* kUpdateSizeTestFile =
-    FILE_PATH_LITERAL("update-preferred-size.html");
 
 class PanelBrowserViewTest : public BasePanelBrowserTest {
  public:
@@ -319,57 +313,6 @@ class PanelBrowserViewTest : public BasePanelBrowserTest {
 
     panel->Close();
   }
-
-  void TestUpdatePreferredSize() {
-    PanelManager::GetInstance()->enable_auto_sizing(true);
-
-    // Create a test panel with tab contents loaded.
-    CreatePanelParams params("PanelTest1", gfx::Rect(0, 0, 100, 100),
-                             SHOW_AS_ACTIVE);
-    params.url = GURL(chrome::kAboutBlankURL);
-    Panel* panel = CreatePanelWithParams(params);
-
-    // Load the test page.
-    ui_test_utils::NavigateToURL(panel->browser(),
-        ui_test_utils::GetTestUrl(FilePath(FilePath::kCurrentDirectory),
-                                  FilePath(kUpdateSizeTestFile)));
-    gfx::Rect initial_bounds = panel->GetBounds();
-    EXPECT_EQ(100, initial_bounds.width());
-    EXPECT_EQ(100, initial_bounds.height());
-
-    // Expand the test page.
-    EXPECT_TRUE(ui_test_utils::ExecuteJavaScript(
-        panel->browser()->GetSelectedTabContents()->render_view_host(),
-        std::wstring(),
-        L"changeSize(50);"));
-
-    // Wait till the bounds get changed.
-    gfx::Rect bounds_on_grow;
-    while ((bounds_on_grow = panel->GetBounds()) == initial_bounds) {
-      MessageLoop::current()->PostTask(FROM_HERE, new MessageLoop::QuitTask());
-      MessageLoop::current()->RunAllPending();
-    }
-    EXPECT_GT(bounds_on_grow.width(), initial_bounds.width());
-    EXPECT_EQ(bounds_on_grow.height(), initial_bounds.height());
-
-    // Shrink the test page.
-    EXPECT_TRUE(ui_test_utils::ExecuteJavaScript(
-        panel->browser()->GetSelectedTabContents()->render_view_host(),
-        std::wstring(),
-        L"changeSize(-30);"));
-
-    // Wait till the bounds get changed.
-    gfx::Rect bounds_on_shrink;
-    while ((bounds_on_shrink = panel->GetBounds()) == bounds_on_grow) {
-      MessageLoop::current()->PostTask(FROM_HERE, new MessageLoop::QuitTask());
-      MessageLoop::current()->RunAllPending();
-    }
-    EXPECT_LT(bounds_on_shrink.width(), bounds_on_grow.width());
-    EXPECT_GT(bounds_on_shrink.width(), initial_bounds.width());
-    EXPECT_EQ(bounds_on_shrink.height(), initial_bounds.height());
-
-    panel->Close();
-  }
 };
 
 // Panel is not supported for Linux view yet.
@@ -468,12 +411,12 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserViewTest, SetBoundsAnimation) {
   Panel* panel = CreatePanel("PanelTest");
   PanelBrowserView* browser_view = GetBrowserView(panel);
 
-  // Validate that animation should be triggered when SetBounds is called.
+  // Validate that animation should be triggered when bounds are changed.
   gfx::Rect target_bounds(browser_view->GetBounds());
   target_bounds.Offset(20, -30);
   target_bounds.set_width(target_bounds.width() + 100);
   target_bounds.set_height(target_bounds.height() + 50);
-  browser_view->SetBounds(target_bounds);
+  browser_view->SetPanelBounds(target_bounds);
   ASSERT_TRUE(browser_view->bounds_animator_.get());
   EXPECT_TRUE(browser_view->bounds_animator_->is_animating());
   EXPECT_NE(browser_view->GetBounds(), target_bounds);
@@ -509,9 +452,5 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserViewTest, DISABLED_DrawAttention) {
 
 IN_PROC_BROWSER_TEST_F(PanelBrowserViewTest, ChangeAutoHideTaskBarThickness) {
   TestChangeAutoHideTaskBarThickness();
-}
-
-IN_PROC_BROWSER_TEST_F(PanelBrowserViewTest, UpdatePreferredSize) {
-  TestUpdatePreferredSize();
 }
 #endif

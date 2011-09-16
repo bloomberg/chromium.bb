@@ -495,6 +495,16 @@ void Panel::Observe(int type,
                     const NotificationDetails& details) {
   switch (type) {
     case content::NOTIFICATION_TAB_ADDED:
+      // We also need to know when the render view host changes in order
+      // to turn on preferred size changed notifications in the new
+      // render view host. However, we cannot register for
+      // NOTIFICATION_TAB_CONTENTS_SWAPPED until we actually have a
+      // tab content so we register for it here.
+      registrar_.Add(this,
+                     content::NOTIFICATION_TAB_CONTENTS_SWAPPED,
+                     Source<TabContents>(browser()->GetSelectedTabContents()));
+      // Fall-thru to update render view host.
+
     case content::NOTIFICATION_TAB_CONTENTS_SWAPPED: {
       RenderViewHost* render_view_host = GetRenderViewHost();
       DCHECK(render_view_host);

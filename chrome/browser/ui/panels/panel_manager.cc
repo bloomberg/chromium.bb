@@ -123,7 +123,7 @@ Panel* PanelManager::CreatePanel(Browser* browser) {
 
   const Extension* extension = NULL;
   int x;
-  while ((x = GetRightMostAvaialblePosition() - width) <
+  while ((x = GetRightMostAvailablePosition() - width) <
          adjusted_work_area_.x() ) {
     if (!extension)
       extension = Panel::GetExtensionFromBrowser(browser);
@@ -147,7 +147,7 @@ int PanelManager::GetMaxPanelHeight() const {
   return static_cast<int>(adjusted_work_area_.height() * kPanelMaxHeightFactor);
 }
 
-int PanelManager::GetRightMostAvaialblePosition() const {
+int PanelManager::GetRightMostAvailablePosition() const {
   return panels_.empty() ? adjusted_work_area_.right() :
       (panels_.back()->GetBounds().x() - kPanelsHorizontalSpacing);
 }
@@ -326,7 +326,7 @@ void PanelManager::OnPreferredWindowSizeChanged(
   if (new_width < panel->min_size().width())
     new_width = panel->min_size().width();
 
-  int right_most_available_position = GetRightMostAvaialblePosition();
+  int right_most_available_position = GetRightMostAvailablePosition();
   if (new_width - bounds.width() > right_most_available_position)
     new_width = bounds.width() + right_most_available_position;
 
@@ -361,13 +361,11 @@ void PanelManager::OnPreferredWindowSizeChanged(
     new_height = panel->min_size().height();
 
   if (new_height != restored_height) {
-    // If the panel is not expanded, we only need to save the new restored
-    // height.
+    panel->SetRestoredHeight(new_height);
+    // Only need to adjust bounds height when panel is expanded.
     if (panel->expansion_state() == Panel::EXPANDED) {
       bounds.set_y(bounds.y() - new_height + bounds.height());
       bounds.set_height(new_height);
-    } else {
-      panel->SetRestoredHeight(new_height);
     }
   }
 
@@ -510,19 +508,17 @@ void PanelManager::OnAutoHidingDesktopBarVisibilityChanged(
 
 void PanelManager::Rearrange(Panels::iterator iter_to_start,
                              int rightmost_position) {
-  if (iter_to_start == panels_.end())
-    return;
+  if (iter_to_start != panels_.end()) {
+    for (Panels::iterator iter = iter_to_start; iter != panels_.end(); ++iter) {
+      Panel* panel = *iter;
+      gfx::Rect new_bounds(panel->GetBounds());
+      new_bounds.set_x(rightmost_position - new_bounds.width());
+      new_bounds.set_y(adjusted_work_area_.bottom() - new_bounds.height());
+      if (new_bounds != panel->GetBounds())
+        panel->SetPanelBounds(new_bounds);
 
-  for (Panels::iterator iter = iter_to_start; iter != panels_.end(); ++iter) {
-    Panel* panel = *iter;
-
-    gfx::Rect new_bounds(panel->GetBounds());
-    new_bounds.set_x(rightmost_position - new_bounds.width());
-    new_bounds.set_y(adjusted_work_area_.bottom() - new_bounds.height());
-    if (new_bounds != panel->GetBounds())
-      panel->SetPanelBounds(new_bounds);
-
-    rightmost_position = new_bounds.x() - kPanelsHorizontalSpacing;
+      rightmost_position = new_bounds.x() - kPanelsHorizontalSpacing;
+    }
   }
 
   UpdateMaxSizeForAllPanels();
@@ -553,9 +549,9 @@ void PanelManager::UpdateMaxSizeForAllPanels() {
        iter != panels_.end(); ++iter) {
     Panel* panel = *iter;
     // A panel can at most grow to take over all the available space that is
-    // returned by GetRightMostAvaialblePosition.
+    // returned by GetRightMostAvailablePosition.
     int width_can_grow_to =
-        panel->GetBounds().width() + GetRightMostAvaialblePosition();
+        panel->GetBounds().width() + GetRightMostAvailablePosition();
     panel->SetMaxSize(gfx::Size(
         std::min(width_can_grow_to, GetMaxPanelWidth()),
         GetMaxPanelHeight()));

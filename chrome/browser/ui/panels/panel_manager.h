@@ -141,7 +141,7 @@ class PanelManager : public AutoHidingDesktopBar::Observer,
 
   int GetMaxPanelWidth() const;
   int GetMaxPanelHeight() const;
-  int GetRightMostAvaialblePosition() const;
+  int GetRightMostAvailablePosition() const;
 
   // Updates the maximum size of each panel as the result of adding, removing,
   // or sizing panels.

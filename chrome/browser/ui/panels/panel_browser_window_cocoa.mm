@@ -51,6 +51,7 @@ PanelBrowserWindowCocoa::PanelBrowserWindowCocoa(Browser* browser,
   : browser_(browser),
     panel_(panel),
     bounds_(bounds),
+    restored_height_(bounds.height()),
     is_shown_(false),
     has_find_bar_(false) {
   controller_ = [[PanelWindowControllerCocoa alloc] initWithBrowserWindow:this];
@@ -90,7 +91,11 @@ gfx::Rect PanelBrowserWindowCocoa::GetPanelBounds() const {
 // |bounds| is the platform-independent screen coordinates, with (0,0) at
 // top-left of the primary screen.
 void PanelBrowserWindowCocoa::SetPanelBounds(const gfx::Rect& bounds) {
+  if (bounds_ == bounds)
+    return;
+
   bounds_ = bounds;
+
   NSRect frame = ConvertCoordinatesToCocoa(bounds);
   [controller_ setPanelFrame:frame];
 
@@ -245,18 +250,21 @@ void PanelBrowserWindowCocoa::didCloseNativeWindow() {
   controller_ = NULL;
 }
 
+// TODO(jennb): This does not handle zoomed UI properly yet.
 gfx::Size PanelBrowserWindowCocoa::GetNonClientAreaExtent() const {
-  NOTIMPLEMENTED();
-  return gfx::Size();
+  NSWindow* window = [controller_ window];
+  NSRect window_frame = [window frame];
+  NSRect content_frame = [window contentRectForFrameRect:window_frame];
+  return gfx::Size(NSWidth(window_frame) - NSWidth(content_frame),
+                   NSHeight(window_frame) - NSHeight(content_frame));
 }
 
 int PanelBrowserWindowCocoa::GetRestoredHeight() const {
-  NOTIMPLEMENTED();
-  return 0;
+  return restored_height_;
 }
 
 void PanelBrowserWindowCocoa::SetRestoredHeight(int height) {
-  NOTIMPLEMENTED();
+  restored_height_ = height;
 }
 
 // NativePanelTesting implementation.

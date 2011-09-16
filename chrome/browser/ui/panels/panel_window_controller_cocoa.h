@@ -60,7 +60,7 @@ class PanelBrowserWindowCocoa;
 - (NSView*)tabContentsView;
 
 // Sometimes (when we animate the size of the window) we want to stop resizing
-// the TabContents's cocoa view to avoid unnecessary churn and issues
+// the TabContents' cocoa view to avoid unnecessary rendering and issues
 // that can be caused by sizes near 0.
 - (void)disableTabContentsViewAutosizing;
 - (void)enableTabContentsViewAutosizing;

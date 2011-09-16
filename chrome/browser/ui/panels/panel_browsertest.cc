@@ -20,6 +20,8 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/download/download_manager.h"
 #include "content/browser/net/url_request_mock_http_job.h"
+#include "content/browser/tab_contents/tab_contents.h"
+#include "content/common/url_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class PanelBrowserTest : public BasePanelBrowserTest {
@@ -757,6 +759,59 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, CreateSettingsMenu) {
   TestCreateSettingsMenuForExtension(
       FILE_PATH_LITERAL("extension2"), Extension::INVALID,
       "http://home", "options.html");
+}
+
+IN_PROC_BROWSER_TEST_F(PanelBrowserTest, AutoResize) {
+  PanelManager::GetInstance()->enable_auto_sizing(true);
+
+  // Create a test panel with tab contents loaded.
+  CreatePanelParams params("PanelTest1", gfx::Rect(0, 0, 100, 100),
+                           SHOW_AS_ACTIVE);
+  params.url = GURL(chrome::kAboutBlankURL);
+  Panel* panel = CreatePanelWithParams(params);
+
+  // Load the test page.
+  const FilePath::CharType* kUpdateSizeTestFile =
+      FILE_PATH_LITERAL("update-preferred-size.html");
+  ui_test_utils::NavigateToURL(panel->browser(),
+      ui_test_utils::GetTestUrl(FilePath(FilePath::kCurrentDirectory),
+                                FilePath(kUpdateSizeTestFile)));
+  gfx::Rect initial_bounds = panel->GetBounds();
+  EXPECT_EQ(100, initial_bounds.width());
+  EXPECT_EQ(100, initial_bounds.height());
+
+  // Expand the test page.
+  EXPECT_TRUE(ui_test_utils::ExecuteJavaScript(
+      panel->browser()->GetSelectedTabContents()->render_view_host(),
+      std::wstring(),
+      L"changeSize(50);"));
+
+  // Wait until the bounds get changed.
+  gfx::Rect bounds_on_grow;
+  while ((bounds_on_grow = panel->GetBounds()) == initial_bounds) {
+    MessageLoop::current()->PostTask(FROM_HERE, new MessageLoop::QuitTask());
+    MessageLoop::current()->RunAllPending();
+  }
+  EXPECT_GT(bounds_on_grow.width(), initial_bounds.width());
+  EXPECT_EQ(bounds_on_grow.height(), initial_bounds.height());
+
+  // Shrink the test page.
+  EXPECT_TRUE(ui_test_utils::ExecuteJavaScript(
+      panel->browser()->GetSelectedTabContents()->render_view_host(),
+      std::wstring(),
+      L"changeSize(-30);"));
+
+  // Wait until the bounds get changed.
+  gfx::Rect bounds_on_shrink;
+  while ((bounds_on_shrink = panel->GetBounds()) == bounds_on_grow) {
+    MessageLoop::current()->PostTask(FROM_HERE, new MessageLoop::QuitTask());
+    MessageLoop::current()->RunAllPending();
+  }
+  EXPECT_LT(bounds_on_shrink.width(), bounds_on_grow.width());
+  EXPECT_GT(bounds_on_shrink.width(), initial_bounds.width());
+  EXPECT_EQ(bounds_on_shrink.height(), initial_bounds.height());
+
+  panel->Close();
 }
 
 #if defined(TOOLKIT_GTK)
