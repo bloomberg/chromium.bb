@@ -525,11 +525,10 @@ ThumbnailGenerator* BrowserProcessImpl::GetThumbnailGenerator() {
   return &thumbnail_generator_;
 }
 
-AutomationProviderList* BrowserProcessImpl::InitAutomationProviderList() {
+AutomationProviderList* BrowserProcessImpl::GetAutomationProviderList() {
   DCHECK(CalledOnValidThread());
-  if (automation_provider_list_.get() == NULL) {
-    automation_provider_list_.reset(AutomationProviderList::GetInstance());
-  }
+  if (automation_provider_list_.get() == NULL)
+    automation_provider_list_.reset(new AutomationProviderList());
   return automation_provider_list_.get();
 }
 

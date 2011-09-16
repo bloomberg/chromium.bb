@@ -155,7 +155,7 @@ class BrowserProcess {
 
   virtual ThumbnailGenerator* GetThumbnailGenerator() = 0;
 
-  virtual AutomationProviderList* InitAutomationProviderList() = 0;
+  virtual AutomationProviderList* GetAutomationProviderList() = 0;
 
   virtual void InitDevToolsHttpProtocolHandler(
       Profile* profile,

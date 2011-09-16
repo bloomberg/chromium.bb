@@ -220,6 +220,10 @@ TEST_F(RunInBackgroundTest, RunInBackgroundBasicTest) {
   ASSERT_TRUE(automation()->OpenNewBrowserWindow(Browser::TYPE_TABBED, true));
   ASSERT_TRUE(automation()->GetBrowserWindowCount(&window_count));
   EXPECT_EQ(1, window_count);
+  // Set the shutdown type to 'SESSION_ENDING' since we are running in
+  // background mode and neither closing all the windows nor quitting will
+  // shut down the browser.
+  set_shutdown_type(ProxyLauncher::SESSION_ENDING);
 }
 
 // Tests to ensure that the browser continues running in the background after

@@ -782,14 +782,21 @@ void TestingAutomationProvider::ExecuteBrowserCommandAsync(int handle,
                                                            int command,
                                                            bool* success) {
   *success = false;
-  if (browser_tracker_->ContainsHandle(handle)) {
-    Browser* browser = browser_tracker_->GetResource(handle);
-    if (browser->command_updater()->SupportsCommand(command) &&
-        browser->command_updater()->IsCommandEnabled(command)) {
-      browser->ExecuteCommand(command);
-      *success = true;
-    }
+  if (!browser_tracker_->ContainsHandle(handle)) {
+    LOG(WARNING) << "Browser tracker does not contain handle: " << handle;
+    return;
   }
+  Browser* browser = browser_tracker_->GetResource(handle);
+  if (!browser->command_updater()->SupportsCommand(command)) {
+    LOG(WARNING) << "Browser does not support command: " << command;
+    return;
+  }
+  if (!browser->command_updater()->IsCommandEnabled(command)) {
+    LOG(WARNING) << "Browser command not enabled: " << command;
+    return;
+  }
+  browser->ExecuteCommand(command);
+  *success = true;
 }
 
 void TestingAutomationProvider::ExecuteBrowserCommand(
@@ -6190,7 +6197,8 @@ void TestingAutomationProvider::CreateNewAutomationProvider(
     return;
   }
   provider->SetExpectedTabCount(0);
-  g_browser_process->InitAutomationProviderList()->AddProvider(provider);
+  DCHECK(g_browser_process);
+  g_browser_process->GetAutomationProviderList()->AddProvider(provider);
   reply.SendSuccess(NULL);
 }
 
@@ -6346,5 +6354,6 @@ void TestingAutomationProvider::OnRedirectQueryComplete(
 }
 
 void TestingAutomationProvider::OnRemoveProvider() {
-  AutomationProviderList::GetInstance()->RemoveProvider(this);
+  if (g_browser_process)
+    g_browser_process->GetAutomationProviderList()->RemoveProvider(this);
 }

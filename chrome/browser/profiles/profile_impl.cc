@@ -392,12 +392,17 @@ void ProfileImpl::DoFinalInit() {
   // Initialize the BackgroundModeManager - this has to be done here before
   // InitExtensions() is called because it relies on receiving notifications
   // when extensions are loaded. BackgroundModeManager is not needed under
-  // ChromeOS because Chrome is always running (no need for special keep-alive
-  // or launch-on-startup support).
-#if !defined(OS_CHROMEOS)
-  if (g_browser_process->background_mode_manager())
-    g_browser_process->background_mode_manager()->RegisterProfile(this);
+  // ChromeOS because Chrome is always running, no need for special keep-alive
+  // or launch-on-startup support unless kKeepAliveForTest is set.
+  bool init_background_mode_manager = true;
+#if defined(OS_CHROMEOS)
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kKeepAliveForTest))
+    init_background_mode_manager = false;
 #endif
+  if (init_background_mode_manager) {
+    if (g_browser_process->background_mode_manager())
+      g_browser_process->background_mode_manager()->RegisterProfile(this);
+  }
 
   extension_info_map_ = new ExtensionInfoMap();
 

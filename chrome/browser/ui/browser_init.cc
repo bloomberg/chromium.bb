@@ -1505,8 +1505,7 @@ bool BrowserInit::CreateAutomationProvider(const std::string& channel_id,
     return false;
   automation->SetExpectedTabCount(expected_tabs);
 
-  AutomationProviderList* list =
-      g_browser_process->InitAutomationProviderList();
+  AutomationProviderList* list = g_browser_process->GetAutomationProviderList();
   DCHECK(list);
   list->AddProvider(automation);
 

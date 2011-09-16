@@ -254,6 +254,7 @@ void ProxyLauncher::QuitBrowser() {
         automation()->GetBrowserWindow(0);
     EXPECT_TRUE(browser_proxy.get());
     if (browser_proxy.get()) {
+      EXPECT_TRUE(browser_proxy->is_valid());
       EXPECT_TRUE(browser_proxy->ApplyAccelerator(IDC_CLOSE_WINDOW));
       browser_proxy = NULL;
     }

@@ -165,7 +165,7 @@ IntranetRedirectDetector* TestingBrowserProcess::intranet_redirect_detector() {
   return NULL;
 }
 
-AutomationProviderList* TestingBrowserProcess::InitAutomationProviderList() {
+AutomationProviderList* TestingBrowserProcess::GetAutomationProviderList() {
   return NULL;
 }
 

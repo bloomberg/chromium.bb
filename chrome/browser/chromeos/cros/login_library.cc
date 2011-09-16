@@ -37,12 +37,7 @@ class LoginLibraryImpl : public LoginLibrary {
   }
 
   void EmitLoginPromptReady() {
-    if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-      BrowserThread::PostTask(
-          BrowserThread::UI, FROM_HERE,
-          NewRunnableMethod(this, &LoginLibraryImpl::EmitLoginPromptReady));
-      return;
-    }
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     chromeos::EmitLoginPromptReady();
   }
 

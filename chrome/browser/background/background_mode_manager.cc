@@ -406,7 +406,8 @@ void BackgroundModeManager::EndKeepAliveForStartup() {
 void BackgroundModeManager::StartBackgroundMode() {
   // Don't bother putting ourselves in background mode if we're already there
   // or if background mode is disabled.
-  if (in_background_mode_ || !IsBackgroundModePrefEnabled())
+  if (in_background_mode_ ||
+      (!IsBackgroundModePrefEnabled() && !keep_alive_for_test_))
     return;
 
   // Mark ourselves as running in background mode.
@@ -606,6 +607,8 @@ bool BackgroundModeManager::IsBackgroundModePermanentlyDisabled(
   // always disabled on chromeos since chrome is always running on that
   // platform, making it superfluous.
 #if defined(OS_CHROMEOS)
+  if (command_line->HasSwitch(switches::kKeepAliveForTest))
+      return false;
   return true;
 #else
   bool background_mode_disabled =

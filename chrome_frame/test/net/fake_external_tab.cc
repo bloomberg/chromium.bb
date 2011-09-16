@@ -375,11 +375,10 @@ void CFUrlRequestUnittestRunner::OnConnectAutomationProviderToChannel(
   Profile* profile = g_browser_process->profile_manager()->
       GetDefaultProfile(fake_chrome_.user_data());
 
-  AutomationProviderList* list =
-      g_browser_process->InitAutomationProviderList();
+  AutomationProviderList* list = g_browser_process->GetAutomationProviderList();
   DCHECK(list);
-  list->AddProvider(TestAutomationProvider::NewAutomationProvider(profile,
-      channel_id, this));
+  list->AddProvider(
+      TestAutomationProvider::NewAutomationProvider(profile, channel_id, this));
 }
 
 void CFUrlRequestUnittestRunner::OnInitialTabLoaded() {

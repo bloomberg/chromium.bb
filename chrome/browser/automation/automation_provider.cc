@@ -129,7 +129,6 @@ AutomationProvider::AutomationProvider(Profile* profile)
   metric_event_duration_observer_.reset(new MetricEventDurationObserver());
   extension_test_result_observer_.reset(
       new ExtensionTestResultNotificationObserver(this));
-  g_browser_process->AddRefModule();
 
   TRACE_EVENT_END_ETW("AutomationProvider::AutomationProvider", 0, "");
 }
@@ -137,8 +136,6 @@ AutomationProvider::AutomationProvider(Profile* profile)
 AutomationProvider::~AutomationProvider() {
   if (channel_.get())
     channel_->Close();
-
-  g_browser_process->ReleaseModule();
 }
 
 bool AutomationProvider::InitializeChannel(const std::string& channel_id) {
@@ -458,7 +455,7 @@ void AutomationProvider::OnChannelError() {
     VLOG(1) << "Error reinitializing AutomationProvider channel.";
   }
   VLOG(1) << "AutomationProxy went away, shutting down app.";
-  AutomationProviderList::GetInstance()->RemoveProvider(this);
+  g_browser_process->GetAutomationProviderList()->RemoveProvider(this);
 }
 
 bool AutomationProvider::Send(IPC::Message* msg) {

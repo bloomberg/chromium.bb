@@ -14,6 +14,7 @@ class AutomationProvider;
 // Stores a list of all AutomationProvider objects.
 class AutomationProviderList {
  public:
+  AutomationProviderList();
   ~AutomationProviderList();
   typedef std::vector<AutomationProvider*> list_type;
   typedef list_type::iterator iterator;
@@ -35,13 +36,9 @@ class AutomationProviderList {
     return automation_providers_.size();
   }
 
-  static AutomationProviderList* GetInstance();
-
  private:
-  AutomationProviderList();
   void OnLastProviderRemoved();
   list_type automation_providers_;
-  static AutomationProviderList* instance_;
 
   DISALLOW_COPY_AND_ASSIGN(AutomationProviderList);
 };

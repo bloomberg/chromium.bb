@@ -9,8 +9,6 @@
 #include "base/logging.h"
 #include "chrome/browser/automation/automation_provider.h"
 
-AutomationProviderList* AutomationProviderList::instance_ = NULL;
-
 AutomationProviderList::AutomationProviderList() {
 }
 
@@ -20,7 +18,6 @@ AutomationProviderList::~AutomationProviderList() {
     (*iter)->Release();
     iter = automation_providers_.erase(iter);
   }
-  instance_ = NULL;
 }
 
 bool AutomationProviderList::AddProvider(AutomationProvider* provider) {
@@ -40,12 +37,4 @@ bool AutomationProviderList::RemoveProvider(AutomationProvider* provider) {
     return true;
   }
   return false;
-}
-
-AutomationProviderList* AutomationProviderList::GetInstance() {
-  if (!instance_) {
-    instance_ = new AutomationProviderList;
-  }
-  DCHECK(NULL != instance_);
-  return instance_;
 }
