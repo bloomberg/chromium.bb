@@ -175,6 +175,10 @@
         {
           'target_name': 'mini_installer',
           'type': 'executable',
+          # Disable precompiled headers for this project, to avoid
+          # linker errors when building with VS 2008.
+          'msvs_precompiled_header': '',
+          'msvs_precompiled_source': '',
           'sources': [
             'mini_installer/chrome.release',
             'mini_installer/chrome_appid.cc',
