@@ -232,7 +232,7 @@
           'direct_dependent_settings': {
             'product_name': '>(_target_name)',
             'conditions': [
-              ['OS=="linux" or OS=="freebsd" or OS=="openbsd" or OS=="solaris"', {
+              ['OS=="linux" or OS=="freebsd" or OS=="openbsd" or OS=="solaris" or OS=="android"', {
                 'cflags': ['-fvisibility=hidden'],
                 'type': 'shared_library',
                 # -gstabs, used in the official builds, causes an ICE. Simply remove
