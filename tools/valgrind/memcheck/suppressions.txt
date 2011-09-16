@@ -4793,6 +4793,20 @@
    fun:_ZNK7WebCore16FontPlatformData12harfbuzzFaceEv
    fun:_ZN7WebCore21ComplexTextController21setupFontForScriptRunEv
 }
+{
+   bug_96773a
+   Memcheck:Value4
+   ...
+   fun:vorbis_decode_frame
+   fun:avcodec_decode_audio3
+}
+{
+   bug_96773b
+   Memcheck:Value8
+   ...
+   fun:vorbis_decode_frame
+   fun:avcodec_decode_audio3
+}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
