@@ -117,6 +117,10 @@ class PPB_URLLoader_Impl : public ::ppapi::Resource,
   bool RecordDownloadProgress() const;
   bool RecordUploadProgress() const;
 
+  // Calls SetDefersLoading on the current load. This encapsulates the logic
+  // differences between document loads and regular ones.
+  void SetDefersLoading(bool defers_loading);
+
   void FinishLoading(int32_t done_status);
 
   // If true, then the plugin instance is a full-frame plugin and we're just
@@ -128,7 +132,15 @@ class PPB_URLLoader_Impl : public ::ppapi::Resource,
   // change the request info resource out from under us.
   ::ppapi::PPB_URLRequestInfo_Data request_data_;
 
+  // The loader associated with this request. MAY BE NULL.
+  //
+  // This will be NULL if the load hasn't been opened yet, or if this is a main
+  // document loader (when registered as a mime type). Therefore, you should
+  // always NULL check this value before using it. In the case of a main
+  // document load, you would call the functions on the document to cancel the
+  // load, etc. since there is no loader.
   scoped_ptr<WebKit::WebURLLoader> loader_;
+
   scoped_refptr<PPB_URLResponseInfo_Impl> response_info_;
   scoped_refptr<TrackedCompletionCallback> pending_callback_;
   std::deque<char> buffer_;

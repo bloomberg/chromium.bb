@@ -96,6 +96,11 @@ void PPB_URLLoader_Impl::InstanceWasDeleted() {
 
 int32_t PPB_URLLoader_Impl::Open(PP_Resource request_id,
                                  PP_CompletionCallback callback) {
+  // Main document loads are already open, so don't allow people to open them
+  // again.
+  if (main_document_loader_)
+    return PP_ERROR_INPROGRESS;
+
   EnterResourceNoLock<PPB_URLRequestInfo_API> enter_request(request_id, true);
   if (enter_request.failed())
     return PP_ERROR_BADARGUMENT;
@@ -156,7 +161,7 @@ int32_t PPB_URLLoader_Impl::FollowRedirect(PP_CompletionCallback callback) {
 
   WebURL redirect_url = GURL(response_info_->redirect_url());
 
-  loader_->setDefersLoading(false);  // Allow the redirect to continue.
+  SetDefersLoading(false);  // Allow the redirect to continue.
   RegisterCallback(callback);
   return PP_OK_COMPLETIONPENDING;
 }
@@ -233,10 +238,8 @@ int32_t PPB_URLLoader_Impl::FinishStreamingToFile(
     return done_status_;
 
   is_streaming_to_file_ = true;
-  if (is_asynchronous_load_suspended_) {
-    loader_->setDefersLoading(false);
-    is_asynchronous_load_suspended_ = false;
-  }
+  if (is_asynchronous_load_suspended_)
+    SetDefersLoading(false);
 
   // Wait for didFinishLoading / didFail.
   RegisterCallback(callback);
@@ -267,7 +270,7 @@ void PPB_URLLoader_Impl::willSendRequest(
     const WebURLResponse& redirect_response) {
   if (!request_data_.follow_redirects) {
     SaveResponse(redirect_response);
-    loader_->setDefersLoading(true);
+    SetDefersLoading(true);
     RunCallback(PP_OK);
   }
 }
@@ -303,6 +306,7 @@ void PPB_URLLoader_Impl::didReceiveData(WebURLLoader* loader,
                                         const char* data,
                                         int data_length,
                                         int encoded_data_length) {
+  // Note that |loader| will be NULL for document loads.
   bytes_received_ += data_length;
   UpdateStatus();
 
@@ -323,8 +327,7 @@ void PPB_URLLoader_Impl::didReceiveData(WebURLLoader* loader,
       (buffer_.size() >= static_cast<size_t>(
           request_data_.prefetch_buffer_upper_threshold))) {
     DVLOG(1) << "Suspending async load - buffer size: " << buffer_.size();
-    loader->setDefersLoading(true);
-    is_asynchronous_load_suspended_ = true;
+    SetDefersLoading(true);
   }
 }
 
@@ -351,6 +354,16 @@ void PPB_URLLoader_Impl::didFail(WebURLLoader* loader,
   }
 
   FinishLoading(pp_error);
+}
+
+void PPB_URLLoader_Impl::SetDefersLoading(bool defers_loading) {
+  if (loader_.get()) {
+    loader_->setDefersLoading(defers_loading);
+    is_asynchronous_load_suspended_ = defers_loading;
+  }
+
+  // TODO(brettw) bug 96770: We need a way to set the defers loading flag on
+  // main document loads (when the loader_ is null).
 }
 
 void PPB_URLLoader_Impl::FinishLoading(int32_t done_status) {
@@ -410,8 +423,7 @@ size_t PPB_URLLoader_Impl::FillUserBuffer() {
       buffer_.size() <= static_cast<size_t>(
           request_data_.prefetch_buffer_lower_threshold)) {
     DVLOG(1) << "Resuming async load - buffer size: " << buffer_.size();
-    loader_->setDefersLoading(false);
-    is_asynchronous_load_suspended_ = false;
+    SetDefersLoading(false);
   }
 
   // Reset for next time.
