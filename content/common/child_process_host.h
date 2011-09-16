@@ -121,10 +121,17 @@ class CONTENT_EXPORT ChildProcessHost : public IPC::Channel::Listener,
   const std::string& channel_id() { return channel_id_; }
   IPC::Channel* channel() { return channel_.get(); }
 
-  // Called when the child process goes away.
+  // Called when the child process goes away. See OnChildDisconnected().
   virtual void OnChildDied();
+
+  // Called when the child process unexpected closes the IPC channel. The
+  // default action is to call OnChildDied(). Subclasses might want to override
+  // this behavior.
+  virtual void OnChildDisconnected();
+
   // Notifies the derived class that we told the child process to kill itself.
   virtual void ShutdownStarted();
+
   // Subclasses can implement specific notification methods.
   virtual void Notify(int type);
 

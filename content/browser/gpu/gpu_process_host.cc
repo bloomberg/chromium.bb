@@ -501,7 +501,7 @@ void GpuProcessHost::OnChildDied() {
                               content::RESULT_CODE_LAST_CODE);
   }
 
-  BrowserChildProcessHost::OnChildDied();
+  ChildProcessHost::OnChildDied();
 }
 
 void GpuProcessHost::OnProcessCrashed(int exit_code) {

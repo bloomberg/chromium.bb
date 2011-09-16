@@ -93,6 +93,7 @@
 
 #if defined(OS_WIN)
 #include <objbase.h>
+#include "base/synchronization/waitable_event.h"
 #include "content/common/section_util_win.h"
 #endif
 
@@ -650,7 +651,7 @@ bool BrowserRenderProcessHost::FastShutdownIfPossible() {
     return false;
 
   child_process_launcher_.reset();
-  ProcessDied();
+  ProcessDied(base::TERMINATION_STATUS_NORMAL_TERMINATION, 0, false);
   fast_shutdown_started_ = true;
   return true;
 }
@@ -801,15 +802,6 @@ void BrowserRenderProcessHost::OnChannelConnected(int32 peer_pid) {
 }
 
 void BrowserRenderProcessHost::OnChannelError() {
-  ProcessDied();
-}
-
-void BrowserRenderProcessHost::ProcessDied() {
-  // Our child process has died.  If we didn't expect it, it's a crash.
-  // In any case, we need to let everyone know it's gone.
-  // The OnChannelError notification can fire multiple times due to nested sync
-  // calls to a renderer. If we don't have a valid channel here it means we
-  // already handled the error.
   if (!channel_.get())
     return;
 
@@ -821,15 +813,54 @@ void BrowserRenderProcessHost::ProcessDied() {
       child_process_launcher_->GetChildTerminationStatus(&exit_code) :
       base::TERMINATION_STATUS_NORMAL_TERMINATION;
 
+#if defined(OS_WIN)
+  if (!run_renderer_in_process()) {
+    if (status == base::TERMINATION_STATUS_STILL_RUNNING) {
+      HANDLE process = child_process_launcher_->GetHandle();
+      child_process_watcher_.StartWatching(
+          new base::WaitableEvent(process), this);
+      return;
+    }
+  }
+#endif
+  ProcessDied(status, exit_code, false);
+}
+
+// Called when the renderer process handle has been signaled.
+void BrowserRenderProcessHost::OnWaitableEventSignaled(
+    base::WaitableEvent* waitable_event) {
+#if defined (OS_WIN)
+  DCHECK(child_process_launcher_.get());
+  int exit_code = 0;
+  base::TerminationStatus status =
+      child_process_launcher_->GetChildTerminationStatus(&exit_code);
+  ProcessDied(status, exit_code, true);
+#endif
+}
+
+void BrowserRenderProcessHost::ProcessDied(
+    base::TerminationStatus status, int exit_code, bool was_alive) {
+  // Our child process has died.  If we didn't expect it, it's a crash.
+  // In any case, we need to let everyone know it's gone.
+  // The OnChannelError notification can fire multiple times due to nested sync
+  // calls to a renderer. If we don't have a valid channel here it means we
+  // already handled the error.
+
   if (status == base::TERMINATION_STATUS_PROCESS_CRASHED ||
       status == base::TERMINATION_STATUS_ABNORMAL_TERMINATION) {
     UMA_HISTOGRAM_PERCENTAGE("BrowserRenderProcessHost.ChildCrashes",
                              is_extension_process_ ? 2 : 1);
-  }
-
-  if (status == base::TERMINATION_STATUS_PROCESS_WAS_KILLED) {
+    if (was_alive) {
+      UMA_HISTOGRAM_PERCENTAGE("BrowserRenderProcessHost.ChildCrashesWasAlive",
+                               is_extension_process_ ? 2 : 1);
+    }
+  } else if (status == base::TERMINATION_STATUS_PROCESS_WAS_KILLED) {
     UMA_HISTOGRAM_PERCENTAGE("BrowserRenderProcessHost.ChildKills",
                              is_extension_process_ ? 2 : 1);
+    if (was_alive) {
+      UMA_HISTOGRAM_PERCENTAGE("BrowserRenderProcessHost.ChildKillsWasAlive",
+                               is_extension_process_ ? 2 : 1);
+    }
   }
 
   RendererClosedDetails details(status, exit_code, is_extension_process_);
