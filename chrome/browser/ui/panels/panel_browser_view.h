@@ -92,6 +92,7 @@ class PanelBrowserView : public BrowserView,
   virtual bool IsPanelActive() const OVERRIDE;
   virtual gfx::NativeWindow GetNativePanelHandle() OVERRIDE;
   virtual void UpdatePanelTitleBar() OVERRIDE;
+  virtual void UpdatePanelLoadingAnimations(bool should_animate) OVERRIDE;
   virtual void ShowTaskManagerForPanel() OVERRIDE;
   virtual FindBar* CreatePanelFindBar() OVERRIDE;
   virtual void NotifyPanelOnUserChangedTheme() OVERRIDE;
@@ -133,6 +134,9 @@ class PanelBrowserView : public BrowserView,
 
   // Location the mouse was pressed at. Used to detect drag and drop.
   gfx::Point mouse_pressed_point_;
+
+  // Timestamp when the mouse was pressed. Used to detect long click.
+  base::TimeTicks mouse_pressed_time_;
 
   // Is the titlebar currently being dragged?  That is, has the cursor
   // moved more than kDragThreshold away from its starting position?

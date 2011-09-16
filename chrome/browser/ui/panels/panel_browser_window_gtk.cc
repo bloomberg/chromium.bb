@@ -162,6 +162,10 @@ void PanelBrowserWindowGtk::UpdatePanelTitleBar() {
   UpdateTitleBar();
 }
 
+void PanelBrowserWindowGtk::UpdatePanelLoadingAnimations(bool should_animate) {
+  UpdateLoadingAnimations(should_animate);
+}
+
 void PanelBrowserWindowGtk::ShowTaskManagerForPanel() {
   ShowTaskManager();
 }

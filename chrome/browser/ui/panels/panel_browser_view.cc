@@ -19,6 +19,10 @@ namespace {
 // This value is experimental and subjective.
 const int kSetBoundsAnimationMs = 180;
 
+// The threshold to differentiate the short click and long click.
+const base::TimeDelta kShortClickThresholdMs =
+    base::TimeDelta::FromMilliseconds(200);
+
 // Delay before click-to-minimize is allowed after the attention has been
 // cleared.
 const base::TimeDelta kSuspendMinimizeOnClickIntervalMs =
@@ -144,9 +148,15 @@ void PanelBrowserView::OnWidgetActivationChanged(views::Widget* widget,
 
   GetFrameView()->OnFocusChanged(focused);
 
-  // Clear the attention state if the panel is on focus.
-  if (is_drawing_attention_ && focused_)
-    StopDrawingAttention();
+  if (focused_) {
+    // Expand the panel if needed.
+    if (panel_->expansion_state() == Panel::MINIMIZED)
+      panel_->SetExpansionState(Panel::EXPANDED);
+
+    // Clear the attention state if needed.
+    if (is_drawing_attention_)
+      StopDrawingAttention();
+  }
 }
 
 bool PanelBrowserView::AcceleratorPressed(
@@ -262,6 +272,10 @@ void PanelBrowserView::UpdatePanelTitleBar() {
   UpdateTitleBar();
 }
 
+void PanelBrowserView::UpdatePanelLoadingAnimations(bool should_animate) {
+  UpdateLoadingAnimations(should_animate);
+}
+
 void PanelBrowserView::ShowTaskManagerForPanel() {
   ShowTaskManager();
 }
@@ -350,6 +364,7 @@ PanelBrowserFrameView* PanelBrowserView::GetFrameView() const {
 bool PanelBrowserView::OnTitlebarMousePressed(const gfx::Point& location) {
   mouse_pressed_ = true;
   mouse_pressed_point_ = location;
+  mouse_pressed_time_ = base::TimeTicks::Now();
   mouse_dragging_state_ = NO_DRAGGING;
   return true;
 }
@@ -387,6 +402,10 @@ bool PanelBrowserView::OnTitlebarMouseReleased() {
                                kSuspendMinimizeOnClickIntervalMs) {
     return true;
   }
+
+  // Do not minimize the panel if it is long click.
+  if (base::TimeTicks::Now() - mouse_pressed_time_ > kShortClickThresholdMs)
+    return true;
 
   Panel::ExpansionState new_expansion_state =
     (panel_->expansion_state() != Panel::EXPANDED) ? Panel::EXPANDED

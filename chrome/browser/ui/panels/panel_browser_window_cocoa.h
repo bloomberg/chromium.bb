@@ -40,6 +40,7 @@ class PanelBrowserWindowCocoa : public NativePanel {
   virtual bool IsPanelActive() const OVERRIDE;
   virtual gfx::NativeWindow GetNativePanelHandle() OVERRIDE;
   virtual void UpdatePanelTitleBar() OVERRIDE;
+  virtual void UpdatePanelLoadingAnimations(bool should_animate) OVERRIDE;
   virtual void ShowTaskManagerForPanel() OVERRIDE;
   virtual FindBar* CreatePanelFindBar() OVERRIDE;
   virtual void NotifyPanelOnUserChangedTheme() OVERRIDE;

@@ -55,6 +55,7 @@ class NativePanel {
   virtual bool IsPanelActive() const = 0;
   virtual gfx::NativeWindow GetNativePanelHandle() = 0;
   virtual void UpdatePanelTitleBar() = 0;
+  virtual void UpdatePanelLoadingAnimations(bool should_animate) = 0;
   virtual void ShowTaskManagerForPanel() = 0;
   virtual FindBar* CreatePanelFindBar() = 0;
   virtual void NotifyPanelOnUserChangedTheme() = 0;

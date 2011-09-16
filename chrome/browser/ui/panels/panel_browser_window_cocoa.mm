@@ -173,6 +173,11 @@ void PanelBrowserWindowCocoa::UpdatePanelTitleBar() {
   [controller_ updateTitleBar];
 }
 
+void PanelBrowserWindowCocoa::UpdatePanelLoadingAnimations(
+    bool should_animate) {
+  // TODO(jianli): to be implemented.
+}
+
 void PanelBrowserWindowCocoa::ShowTaskManagerForPanel() {
   NOTIMPLEMENTED();
 }

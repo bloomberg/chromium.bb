@@ -245,6 +245,7 @@ PanelBrowserFrameView::PanelBrowserFrameView(BrowserFrame* frame,
   title_icon_ = new TabIconView(this);
   title_icon_->set_is_light(true);
   AddChildView(title_icon_);
+  title_icon_->Update();
 
   title_label_ = new views::Label(std::wstring());
   title_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);

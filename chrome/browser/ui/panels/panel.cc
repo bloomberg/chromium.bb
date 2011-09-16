@@ -185,7 +185,7 @@ void Panel::UpdateDevTools() {
 }
 
 void Panel::UpdateLoadingAnimations(bool should_animate) {
-  // TODO(jennb): Implement.
+  native_panel_->UpdatePanelLoadingAnimations(should_animate);
 }
 
 void Panel::SetStarredState(bool is_starred) {
