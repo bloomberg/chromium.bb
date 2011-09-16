@@ -45,8 +45,6 @@ class MiniInstallTest : public testing::Test {
     const CommandLine* cmd = CommandLine::ForCurrentProcess();
     std::wstring build =
         cmd->GetSwitchValueNative(switches::kInstallerTestBuild);
-    if (build.empty())
-      build = L"latest";
     chrome_frame_ = cmd->HasSwitch(installer::switches::kChromeFrame);
 
     CleanTheSystem();

@@ -22,6 +22,7 @@
 #include "chrome/test/mini_installer_test/mini_installer_test_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+
 // Change current directory so that chrome.dll from current folder
 // will not be used as fall back.
 bool MiniInstallerTestUtil::ChangeCurrentDirectory(FilePath* current_path) {
@@ -69,196 +70,11 @@ bool IsNewer(const FileInfo& file_rbegin, const FileInfo& file_rend) {
   return (file_rbegin.creation_time_ > file_rend.creation_time_);
 }
 
-bool MiniInstallerTestUtil::GetCommandForTagging(
-    std::wstring *return_command) {
-  std::wstring tagged_installer_path = MiniInstallerTestUtil::GetFilePath(
-      mini_installer_constants::kStandaloneInstaller);
-  FilePath standalone_installer_path;
-  if (!MiniInstallerTestUtil::GetStandaloneInstallerPath(
-          &standalone_installer_path)) {
-    return false;
-  }
-
-  *return_command = base::StringPrintf(L"%ls %ls %ls %ls",
-      mini_installer_constants::kChromeApplyTagExe,
-      standalone_installer_path.value().c_str(),
-      tagged_installer_path.c_str(),
-      mini_installer_constants::kChromeApplyTagParameters);
-  VLOG(1) << "Command to run Apply tag: " << *return_command;
-  return true;
-}
-
-std::wstring MiniInstallerTestUtil::GetFilePath(const wchar_t* exe_name) {
+FilePath MiniInstallerTestUtil::GetFilePath(const wchar_t* exe_name) {
   FilePath installer_path;
   PathService::Get(base::DIR_EXE, &installer_path);
   installer_path = installer_path.Append(exe_name);
-  return installer_path.value();
-}
-
-// This method will first call GetLatestFile to get the list of all
-// builds, sorted on creation time. Then goes through each build folder
-// until it finds the installer file that matches the pattern argument.
-bool MiniInstallerTestUtil::GetInstaller(const wchar_t* pattern,
-    std::wstring *path, const wchar_t* channel_type, bool chrome_frame) {
-  FileInfoList builds_list;
-  FileInfoList exe_list;
-  std::wstring chrome_diff_installer(
-      mini_installer_constants::kChromeDiffInstallerLocation);
-
-  chrome_diff_installer.append(L"*");
-  if (!GetLatestFile(chrome_diff_installer.c_str(),
-                     channel_type, &builds_list))
-    return false;
-
-  FileInfoList::const_reverse_iterator builds_list_size = builds_list.rbegin();
-  while (builds_list_size != builds_list.rend()) {
-    path->assign(mini_installer_constants::kChromeDiffInstallerLocation);
-    file_util::AppendToPath(path, builds_list_size->name_);
-    file_util::AppendToPath(path, mini_installer_constants::kWinFolder);
-    std::wstring installer_path(path->c_str());
-    file_util::AppendToPath(&installer_path, L"*.exe");
-    if (!GetLatestFile(installer_path.c_str(), pattern, &exe_list)) {
-      ++builds_list_size;
-    } else {
-      file_util::AppendToPath(path, exe_list.at(0).name_.c_str());
-      if (!file_util::PathExists(FilePath::FromWStringHack(*path))) {
-        ++builds_list_size;
-      } else {
-        break;
-      }
-    }
-  }
-  return file_util::PathExists(FilePath::FromWStringHack(*path));
-}
-
-// This method will get the latest installer filename from the directory.
-bool MiniInstallerTestUtil::GetLatestFile(const wchar_t* file_name,
-    const wchar_t* pattern, FileInfoList *file_details) {
-
-  WIN32_FIND_DATA find_file_data;
-  HANDLE file_handle = FindFirstFile(file_name, &find_file_data);
-  if (file_handle == INVALID_HANDLE_VALUE) {
-    VLOG(1) << "Handle is invalid.";
-    return false;
-  }
-  BOOL ret = TRUE;
-  bool return_val = false;
-  while (ret) {
-    std::wstring search_path = find_file_data.cFileName;
-    size_t position_found = search_path.find(pattern);
-    if (position_found != -1) {
-      std::wstring extension = FilePath(file_name).Extension();
-      if ((base::strcasecmp(WideToUTF8(extension).c_str(), ".exe")) == 0) {
-        file_details->push_back(FileInfo(find_file_data.cFileName, 0));
-        return_val = true;
-        break;
-      } else {
-        FILETIME file_time = find_file_data.ftCreationTime;
-        base::Time creation_time = base::Time::FromFileTime(file_time);
-        file_details->push_back(FileInfo(find_file_data.cFileName,
-                                static_cast<int>(creation_time.ToDoubleT())));
-        return_val = true;
-      }
-    }
-    ret = FindNextFile(file_handle, &find_file_data);
-  }
-  std::sort(file_details->rbegin(), file_details->rend(), &IsNewer);
-  FindClose(file_handle);
-  return return_val;
-}
-
-// This method retrieves the previous build version for the given diff
-// installer path.
-bool MiniInstallerTestUtil::GetPreviousBuildNumber(const std::wstring& path,
-                                                   std::wstring *build_number) {
-
-  std::wstring diff_name = FilePath(path).BaseName().value();
-  // We want to remove 'from_', so add its length to found index (which is 5)
-  std::wstring::size_type start_position = diff_name.find(L"from_") + 5;
-  std::wstring::size_type end_position = diff_name.find(L"_c");
-  std::wstring::size_type size = end_position - start_position;
-
-  std::wstring build_no = diff_name.substr(start_position, size);
-
-  // Search for a build folder with this build suffix.
-  std::wstring pattern = L"*" + build_no;
-
-  file_util::FileEnumerator files(FilePath(
-      mini_installer_constants::kChromeDiffInstallerLocation),
-      false, file_util::FileEnumerator::DIRECTORIES, pattern);
-  FilePath folder = files.Next();
-  if (folder.empty())
-    return false;
-
-  build_number->assign(folder.BaseName().value());
-  return true;
-}
-
-
-// This method will get the previous full installer path
-// from given diff installer path. It will first get the
-// filename from the diff installer path, gets the previous
-// build information from the filename, then computes the
-// path for previous full installer.
-bool MiniInstallerTestUtil::GetPreviousFullInstaller(
-    const std::wstring& diff_path, std::wstring *previous, bool chrome_frame) {
-  std::wstring build_no;
-
-  if (!GetPreviousBuildNumber(diff_path, &build_no))
-    return false;
-
-  std::vector<std::wstring> build_version;
-  base::SplitString(build_no, '.', &build_version);
-  if (build_version.size() < 4)
-    return false;
-
-  std::wstring name = build_version[2] + L"." + build_version[3] +
-      mini_installer_constants::kFullInstallerPattern + L".exe";
-
-  // Create the full installer path.
-  FilePath installer = FilePath(
-      mini_installer_constants::kChromeDiffInstallerLocation);
-  installer =
-     installer.Append(build_no)
-         .Append(mini_installer_constants::kWinFolder).Append(name);
-  previous->assign(installer.value());
-
-  return file_util::PathExists(installer);
-}
-
-bool MiniInstallerTestUtil::GetStandaloneInstallerPath(FilePath* path) {
-  const CommandLine* cmd = CommandLine::ForCurrentProcess();
-  std::wstring build =
-      cmd->GetSwitchValueNative(switches::kInstallerTestBuild);
-  std::wstring standalone_installer(
-      mini_installer_constants::kChromeStandAloneInstallerLocation);
-  standalone_installer.append(L"\\" + build + L"\\win\\");
-
-  // Get the file name.
-  std::vector<std::wstring> tokenizedBuildNumber;
-  Tokenize(build, L".", &tokenizedBuildNumber);
-  std::wstring standalone_installer_filename = base::StringPrintf(
-      L"%ls%ls_%ls.exe", mini_installer_constants::kUntaggedInstallerPattern,
-          tokenizedBuildNumber[2].c_str(), tokenizedBuildNumber[3].c_str());
-  standalone_installer.append(standalone_installer_filename);
-
-  FilePath filename(standalone_installer);
-  if (!file_util::PathExists(filename))
-    return false;
-  *path = filename;
-  return true;
-}
-
-bool MiniInstallerTestUtil::GetStandaloneVersion(
-    std::wstring* version) {
-  const CommandLine* cmd = CommandLine::ForCurrentProcess();
-  std::wstring build =
-      cmd->GetSwitchValueNative(switches::kInstallerTestBuild);
-  if (build.empty())
-    return false;
-  *version = build;
-  VLOG(1) << "Standalone installer version: " << *version;
-  return true;
+  return installer_path;
 }
 
 void MiniInstallerTestUtil::SendEnterKeyToWindow() {
@@ -297,7 +113,7 @@ bool MiniInstallerTestUtil::VerifyProcessClose(
     const wchar_t* process_name) {
   int timer = 0;
   if (base::GetProcessCount(process_name, NULL) > 0) {
-    VLOG(1) << "Waiting for this process to end: " << process_name;
+    LOG(INFO) << "Waiting for this process to end: " << process_name;
     while ((base::GetProcessCount(process_name, NULL) > 0) &&
            (timer < TestTimeouts::large_test_timeout_ms())) {
       base::PlatformThread::Sleep(200);

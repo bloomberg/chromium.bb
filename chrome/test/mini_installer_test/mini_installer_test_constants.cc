@@ -64,7 +64,7 @@ const wchar_t kChromeApplyTagExe[] =
 const wchar_t kChromeApplyTagParameters[] =
     L"\"appguid={8A69D345-D564-463C-AFF1-A69D9E530F96}"
     L"&appname=Chrome&needsadmin=false\"";
-const wchar_t kChromeDiffInstallerLocation[] =
+const wchar_t kChromeInstallersLocation[] =
     L"\\\\172.24.6.7\\shares\\chromeclient\\builds\\chrome\\";
 
 }  // namespace mini_installer_constants

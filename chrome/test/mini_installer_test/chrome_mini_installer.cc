@@ -4,6 +4,8 @@
 
 #include "chrome/test/mini_installer_test/chrome_mini_installer.h"
 
+#include <algorithm>
+
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
@@ -23,58 +25,86 @@
 
 using base::win::RegKey;
 
+namespace {
+
+struct FilePathInfo {
+  file_util::FileEnumerator::FindInfo info;
+  FilePath path;
+};
+
+bool CompareDate(const FilePathInfo& a,
+                 const FilePathInfo& b) {
+#if defined(OS_POSIX)
+  return a.info.stat.st_mtime > b.info.stat.st_mtime;
+#elif defined(OS_WIN)
+  if (a.info.ftLastWriteTime.dwHighDateTime ==
+      b.info.ftLastWriteTime.dwHighDateTime) {
+    return a.info.ftLastWriteTime.dwLowDateTime >
+           b.info.ftLastWriteTime.dwLowDateTime;
+  } else {
+    return a.info.ftLastWriteTime.dwHighDateTime >
+           b.info.ftLastWriteTime.dwHighDateTime;
+  }
+#endif
+}
+
+// Get list of file |type| matching |pattern| in |root|.
+// The list is sorted in last modified date order.
+// Return true if files/directories are found.
+bool FindMatchingFiles(const FilePath& root,
+    const FilePath::StringType& pattern,
+    file_util::FileEnumerator::FileType type,
+    std::vector<FilePath>* paths) {
+  file_util::FileEnumerator files(root, false, type, pattern);
+  std::vector<FilePathInfo> matches;
+  for (FilePath current = files.Next(); !current.empty();
+      current = files.Next()) {
+    FilePathInfo entry;
+    files.GetFindInfo(&entry.info);
+    entry.path = current;
+    matches.push_back(entry);
+  }
+
+  if (matches.empty())
+    return false;
+
+  std::sort(matches.begin(), matches.end(), CompareDate);
+  std::vector<FilePathInfo>::iterator current;
+  for (current = matches.begin(); current != matches.end(); ++current) {
+    paths->push_back(current->path);
+  }
+  return true;
+}
+
+bool FindNewestMatchingFile(const FilePath& root,
+    const FilePath::StringType& pattern,
+    file_util::FileEnumerator::FileType type,
+    FilePath* path) {
+  std::vector<FilePath> paths;
+  if (FindMatchingFiles(root, pattern, type, &paths)) {
+    *path = paths[0];
+    return true;
+  }
+  return false;
+}
+
+}  // namespace
+
 ChromeMiniInstaller::ChromeMiniInstaller(const std::wstring& install_type,
                                          bool is_chrome_frame)
     : is_chrome_frame_(is_chrome_frame),
-      install_type_(install_type),
-      has_diff_installer_(false),
-      has_full_installer_(false),
-      has_prev_installer_(false) {
-  installer_name_ = base::StringPrintf(L"%ls (%ls)",
-      mini_installer_constants::kChromeBuildType, install_type_.c_str());
-}
+      install_type_(install_type) {}
 
-void ChromeMiniInstaller::SetBuildUnderTest(const std::wstring& build) {
-  // Locate the full, diff, and previous installers.
-  const wchar_t * build_prefix;
-  if (LowerCaseEqualsASCII(build, "dev"))
-    build_prefix = mini_installer_constants::kDevChannelBuild;
-  else if (LowerCaseEqualsASCII(build, "stable"))
-    build_prefix = mini_installer_constants::kStableChannelBuild;
-  else if (LowerCaseEqualsASCII(build, "latest"))
-    build_prefix = L"";
-  else
-    build_prefix = build.c_str();
-
-  // Do not fail here if cannot find the installer. Set the bool and allow
-  // to fail in the particular test.
-  has_full_installer_ = MiniInstallerTestUtil::GetInstaller(
-      mini_installer_constants::kFullInstallerPattern,
-      &full_installer_, build_prefix, is_chrome_frame_);
-  has_diff_installer_ = MiniInstallerTestUtil::GetInstaller(
-      mini_installer_constants::kDiffInstallerPattern,
-      &diff_installer_, build_prefix, is_chrome_frame_);
-
-  if (has_diff_installer_) {
-    has_prev_installer_ = MiniInstallerTestUtil::GetPreviousFullInstaller(
-        diff_installer_, &prev_installer_, is_chrome_frame_);
-  }
-
-  // Find the version names. The folder two-levels up from the installer
-  // is named this.
-  if (has_full_installer_) {
-    FilePath folder = FilePath(full_installer_).DirName().DirName();
-    curr_version_ = folder.BaseName().value();
-  }
-  if (has_prev_installer_) {
-    FilePath folder = FilePath(prev_installer_).DirName().DirName();
-    prev_version_ = folder.BaseName().value();
+void ChromeMiniInstaller::SetBuildUnderTest(
+    const std::wstring& build) {
+  if (!LocateInstallers(build)) {
+    LOG(WARNING) << "Could not find one or more installers.";
   }
 }
 
 // Installs Chrome.
 void ChromeMiniInstaller::Install() {
-  std::wstring installer_path = MiniInstallerTestUtil::GetFilePath(
+  FilePath installer_path = MiniInstallerTestUtil::GetFilePath(
       mini_installer_constants::kChromeMiniInstallerExecutable);
   InstallMiniInstaller(false, installer_path);
 }
@@ -83,13 +113,13 @@ void ChromeMiniInstaller::Install() {
 // nightly location, install it and over install with specified install_type.
 void ChromeMiniInstaller::OverInstallOnFullInstaller(
     const std::wstring& install_type, bool should_start_ie) {
-  ASSERT_TRUE(has_full_installer_ && has_diff_installer_ &&
-      has_prev_installer_);
+  ASSERT_TRUE(!full_installer_.empty() && !diff_installer_.empty() &&
+              !previous_installer_.empty());
 
   if (should_start_ie)
     LaunchIE(L"http://www.google.com");
 
-  InstallMiniInstaller(false, prev_installer_);
+  InstallMiniInstaller(false, previous_installer_);
 
   std::wstring got_prev_version;
   GetChromeVersionFromRegistry(&got_prev_version);
@@ -97,29 +127,29 @@ void ChromeMiniInstaller::OverInstallOnFullInstaller(
 
   if (install_type == mini_installer_constants::kDiffInstall) {
     printf("\nOver installing with latest differential installer: %ls\n",
-           diff_installer_.c_str());
+           diff_installer_.value());
     InstallMiniInstaller(true, diff_installer_);
 
   } else if (install_type == mini_installer_constants::kFullInstall) {
     printf("\nOver installing with latest full insatller: %ls\n",
-           full_installer_.c_str());
+           full_installer_.value());
     InstallMiniInstaller(true, full_installer_);
   }
 
   std::wstring got_curr_version;
   GetChromeVersionFromRegistry(&got_curr_version);
 
-  if (got_prev_version == prev_version_ &&
-      got_curr_version == curr_version_) {
-    printf("\n The over install was successful. Here are the values:\n");
-    printf("\n full installer value: %ls and diff installer value is %ls\n",
-           prev_version_.c_str(), curr_version_.c_str());
+  if (got_prev_version == previous_build_ &&
+      got_curr_version == current_build_) {
+    LOG(INFO) << "The over install was successful.\n"
+              << "Full installer: " << previous_build_;
+    LOG(INFO) << "Diff installer: " << current_build_;
   } else {
-    printf("\n The over install was not successful. Here are the values:\n");
-    printf("\n Expected full installer value: %ls and actual value is %ls\n",
-           prev_version_.c_str(), got_prev_version.c_str());
-    printf("\n Expected diff installer value: %ls and actual value is %ls\n",
-           curr_version_.c_str(), got_curr_version.c_str());
+    LOG(INFO) << "The over install was not successful.\n"
+              << "Expected full installer value: " << previous_build_;
+    LOG(INFO) << "Actual value is: " << got_prev_version;
+    LOG(INFO) << "Expected diff: " << current_build_
+              << "Actual value is: " << got_curr_version;
     FAIL();
   }
 }
@@ -127,20 +157,21 @@ void ChromeMiniInstaller::OverInstallOnFullInstaller(
 // This method will get the latest full installer from nightly location
 // and installs it.
 void ChromeMiniInstaller::InstallFullInstaller(bool over_install) {
-  ASSERT_TRUE(has_full_installer_);
-  InstallMiniInstaller(over_install, full_installer_);
+  if (!full_installer_.empty())
+    InstallMiniInstaller(over_install, full_installer_);
 }
 
 // Installs the Chrome mini-installer, checks the registry and shortcuts.
 void ChromeMiniInstaller::InstallMiniInstaller(bool over_install,
-                                               const std::wstring& path) {
-  printf("\nChrome will be installed at %ls level\n", install_type_.c_str());
-  printf("\nWill proceed with the test only if this path exists: %ls\n\n",
-         path.c_str());
+                                               const FilePath& path) {
+  LOG(INFO) << "Chrome will be installed at "
+            << install_type_ << "level.";
+  LOG(INFO) << "Will proceed with the test only if this path exists: "
+            << path.value();
 
-  FilePath exe_path(path);
-  ASSERT_TRUE(file_util::PathExists(exe_path)) << path << " does not exist.";
-  LaunchInstaller(path, exe_path.BaseName().value().c_str());
+  ASSERT_TRUE(file_util::PathExists(path)) << path.value()
+                                           << " does not exist.";
+  LaunchInstaller(path, path.BaseName().value().c_str());
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
   ASSERT_TRUE(CheckRegistryKey(dist->GetVersionKey())) << dist->GetVersionKey()
                                                        << " does not exist.";
@@ -155,24 +186,39 @@ void ChromeMiniInstaller::InstallMiniInstaller(bool over_install,
 // that the installed version is correct.
 void ChromeMiniInstaller::InstallStandaloneInstaller() {
   file_util::Delete(mini_installer_constants::kStandaloneInstaller, true);
-  std::wstring tag_installer_command;
-  ASSERT_TRUE(MiniInstallerTestUtil::GetCommandForTagging(
-      &tag_installer_command));
+  CommandLine tag_installer_command =
+      ChromeMiniInstaller::GetCommandForTagging();
+  ASSERT_FALSE(tag_installer_command.GetCommandLineString().empty());
   base::LaunchOptions options;
   options.wait = true;
   base::LaunchProcess(tag_installer_command, options, NULL);
-  std::wstring installer_path = MiniInstallerTestUtil::GetFilePath(
+  FilePath installer_path = MiniInstallerTestUtil::GetFilePath(
       mini_installer_constants::kStandaloneInstaller);
   InstallMiniInstaller(false, installer_path);
   ASSERT_TRUE(VerifyStandaloneInstall());
   file_util::Delete(mini_installer_constants::kStandaloneInstaller, true);
 }
 
+CommandLine ChromeMiniInstaller::GetCommandForTagging() {
+  FilePath tagged_installer = MiniInstallerTestUtil::GetFilePath(
+      mini_installer_constants::kStandaloneInstaller);
+  if (standalone_installer_.empty())
+    return CommandLine::FromString(L"");
+  CommandLine command = CommandLine::FromString(
+      base::StringPrintf(L"%ls %ls %ls %ls",
+      mini_installer_constants::kChromeApplyTagExe,
+      standalone_installer_.value().c_str(),
+      tagged_installer.value().c_str(),
+      mini_installer_constants::kChromeApplyTagParameters));
+  LOG(INFO) << "Tagging command: " << command.GetCommandLineString();
+  return command;
+}
+
 // Installs chromesetup.exe, waits for the install to finish and then
 // checks the registry and shortcuts.
 void ChromeMiniInstaller::InstallMetaInstaller() {
   // Install Google Chrome through meta installer.
-  LaunchInstaller(mini_installer_constants::kChromeMetaInstallerExe,
+  LaunchInstaller(FilePath(mini_installer_constants::kChromeMetaInstallerExe),
                   mini_installer_constants::kChromeSetupExecutable);
   ASSERT_TRUE(MiniInstallerTestUtil::VerifyProcessClose(
       mini_installer_constants::kChromeMetaInstallerExecutable));
@@ -590,9 +636,9 @@ HKEY ChromeMiniInstaller::GetRootRegistryKey() {
 }
 
 // Launches the chrome installer and waits for it to end.
-void ChromeMiniInstaller::LaunchInstaller(const std::wstring& path,
+void ChromeMiniInstaller::LaunchInstaller(const FilePath& path,
                                           const wchar_t* process_name) {
-  ASSERT_TRUE(file_util::PathExists(FilePath(path)));
+  ASSERT_TRUE(file_util::PathExists(path));
   std::wstring launch_args;
   if (is_chrome_frame_) {
     launch_args.append(L" --do-not-create-shortcuts");
@@ -605,8 +651,8 @@ void ChromeMiniInstaller::LaunchInstaller(const std::wstring& path,
   }
 
   base::ProcessHandle app_handle;
-  base::LaunchProcess(L"\"" + path + L"\"" + launch_args, base::LaunchOptions(),
-                      &app_handle);
+  base::LaunchProcess(L"\"" + path.value() + L"\"" + launch_args,
+                      base::LaunchOptions(), &app_handle);
 
   printf("Waiting while this process is running  %ls ....\n", process_name);
   MiniInstallerTestUtil::VerifyProcessLaunch(process_name, true);
@@ -614,13 +660,13 @@ void ChromeMiniInstaller::LaunchInstaller(const std::wstring& path,
 }
 
 // Gets the path to launch Chrome.
-bool ChromeMiniInstaller::GetChromeLaunchPath(std::wstring* launch_path) {
+bool ChromeMiniInstaller::GetChromeLaunchPath(FilePath* launch_path) {
   std::wstring path;
   path = GetChromeInstallDirectoryLocation();
   file_util::AppendToPath(&path, mini_installer_constants::kChromeAppDir);
   file_util::AppendToPath(&path, installer::kChromeExe);
-  launch_path->assign(path);
-  return file_util::PathExists(FilePath(path));
+  *launch_path = FilePath(path);
+  return file_util::PathExists(*launch_path);
 }
 
 // Launch Chrome to see if it works after overinstall. Then close it.
@@ -636,9 +682,9 @@ void ChromeMiniInstaller::LaunchAndCloseChrome(bool over_install) {
 
 // This method will get Chrome exe path and launch it.
 void ChromeMiniInstaller::VerifyChromeLaunch(bool expected_status) {
-  std::wstring launch_path;
+  FilePath launch_path;
   GetChromeLaunchPath(&launch_path);
-  LaunchBrowser(launch_path, L"", installer::kChromeExe, expected_status);
+  LaunchBrowser(launch_path, L"", expected_status);
 }
 
 // Verifies Chrome/Chrome Frame install.
@@ -698,14 +744,18 @@ void ChromeMiniInstaller::LaunchIE(const std::wstring& navigate_url) {
 }
 
 // This method will launch any requested browser.
-void ChromeMiniInstaller::LaunchBrowser(const std::wstring& launch_path,
-                                        const std::wstring& launch_args,
-                                        const std::wstring& process_name,
+void ChromeMiniInstaller::LaunchBrowser(const FilePath& path,
+                                        const std::wstring& args,
                                         bool expected_status) {
-  base::LaunchProcess(L"\"" + launch_path + L"\"" + L" " + launch_args,
-                      base::LaunchOptions(), NULL);
+  LOG(INFO) << "Browser executable: " << path.value();
+  bool launched = base::LaunchProcess(
+      L"\"" + path.value() + L"\"" + L" " + args,
+      base::LaunchOptions(), NULL);
+  if (!launched) {
+    LOG(ERROR) << "Could not launch process: " << path.BaseName().value();
+  }
   base::PlatformThread::Sleep(1000);
-  MiniInstallerTestUtil::VerifyProcessLaunch(process_name.c_str(),
+  MiniInstallerTestUtil::VerifyProcessLaunch(path.BaseName().value().c_str(),
                                              expected_status);
 }
 
@@ -734,11 +784,84 @@ bool ChromeMiniInstaller::VerifyOverInstall(
 
 // This method will verify if the installed build is correct.
 bool ChromeMiniInstaller::VerifyStandaloneInstall() {
-  std::wstring reg_key_value_returned, standalone_installer_version;
-  MiniInstallerTestUtil::GetStandaloneVersion(&standalone_installer_version);
+  std::wstring reg_key_value_returned;
   GetChromeVersionFromRegistry(&reg_key_value_returned);
-  if (standalone_installer_version.compare(reg_key_value_returned) == 0)
+  if (current_build_.compare(reg_key_value_returned) == 0)
     return true;
   else
     return false;
+}
+
+// Search all the specified |build| directory to find the latest
+// diff and full installers. |build| can be empty.
+bool ChromeMiniInstaller::LocateInstallers(
+    const std::wstring& build) {
+  FilePath::StringType full_installer_pattern =
+      FILE_PATH_LITERAL("*_chrome_installer*");
+  FilePath::StringType diff_installer_pattern = FILE_PATH_LITERAL("*_from_*");
+  FilePath root(mini_installer_constants::kChromeInstallersLocation);
+  std::vector<FilePath> paths;
+  if (!FindMatchingFiles(root, build,
+      file_util::FileEnumerator::DIRECTORIES, &paths)) {
+    return false;
+  }
+
+  // Find full and diff installers;
+  std::vector<FilePath>::const_iterator dir;
+  for (dir = paths.begin(); dir != paths.end(); ++dir) {
+    FilePath windir = dir->Append(
+        mini_installer_constants::kWinFolder);
+    if (FindNewestMatchingFile(windir, full_installer_pattern,
+            file_util::FileEnumerator::FILES, &full_installer_) &&
+        FindNewestMatchingFile(windir, diff_installer_pattern,
+            file_util::FileEnumerator::FILES, &diff_installer_)) {
+      break;
+    }
+  }
+
+  // Set current build directory.
+  if (full_installer_.empty() || diff_installer_.empty())
+    return false;
+
+  current_build_ =
+      full_installer_.DirName().DirName().BaseName().value();
+
+  // Find previous full installer.
+  std::vector<std::wstring> tokenized_name;
+  Tokenize(diff_installer_.BaseName().value(),
+      L"_", &tokenized_name);
+  std::wstring build_pattern = base::StringPrintf(
+      L"*%ls", tokenized_name[2].c_str());
+  std::vector<FilePath> previous_build;
+  if (FindMatchingFiles(diff_installer_.DirName().DirName().DirName(),
+      build_pattern, file_util::FileEnumerator::DIRECTORIES,
+      &previous_build)) {
+    FilePath windir = previous_build.at(0).Append(
+        mini_installer_constants::kWinFolder);
+    FindNewestMatchingFile(windir, full_installer_pattern,
+        file_util::FileEnumerator::FILES, &previous_installer_);
+  }
+
+  if (previous_installer_.empty())
+    return false;
+  previous_build_ =
+        previous_installer_.DirName().DirName().BaseName().value();
+
+  // Get standalone installer.
+  FilePath standalone_installer(
+      mini_installer_constants::kChromeStandAloneInstallerLocation);
+
+  // Get the file name.
+  std::vector<std::wstring> tokenizedBuildNumber;
+  Tokenize(current_build_, L".", &tokenizedBuildNumber);
+  std::wstring standalone_installer_filename = base::StringPrintf(
+      L"%ls%ls_%ls.exe", mini_installer_constants::kUntaggedInstallerPattern,
+          tokenizedBuildNumber[2].c_str(), tokenizedBuildNumber[3].c_str());
+  standalone_installer = standalone_installer.Append(current_build_)
+      .Append(mini_installer_constants::kWinFolder)
+      .Append(standalone_installer_filename);
+
+  standalone_installer_ = standalone_installer;
+
+  return !standalone_installer_.empty();
 }

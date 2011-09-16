@@ -10,7 +10,6 @@
 #define CHROME_TEST_MINI_INSTALLER_TEST_MINI_INSTALLER_TEST_UTIL_H_
 #pragma once
 
-#include <windows.h>
 #include <vector>
 
 #include "base/basictypes.h"
@@ -51,43 +50,8 @@ class MiniInstallerTestUtil {
   // 'message' to it.
   static bool CloseWindow(const wchar_t* window_name, UINT message);
 
-  // This method will get the latest installer based on the passed 'pattern' and
-  // 'channel_type' arguments. The 'pattern' argument decides if the requested
-  // installer is full or differential. The 'channel_type' parameter decides if
-  // the build is stable/dev/beta.
-  static bool GetInstaller(const wchar_t* pattern, std::wstring *name,
-                           const wchar_t* channel_type, bool chrome_frame);
-
-  // This method will create a command line to run apply tag.
-  static bool GetCommandForTagging(std::wstring *return_command);
-
   // Returns the directory containing exe_name.
-  static std::wstring GetFilePath(const wchar_t* exe_name);
-
-
-  // This method will get the list of all folders or files based on the passed
-  // 'path' and 'pattern' argument. The 'pattern' argument decides if the
-  // requested file is a full or a differential installer.
-  static bool GetLatestFile(const wchar_t* path, const wchar_t* pattern,
-                            FileInfoList *file_name);
-
-  // This method retrieves the previous build version for the given diff
-  // installer path.
-  static bool GetPreviousBuildNumber(const std::wstring& path,
-      std::wstring *build_number);
-
-  // This method will get the previous full installer based on 'diff_file'
-  // and 'channel_type' arguments. The 'channel_type'
-  // parameter decides if the build is stable/dev/beta. The 'diff_file'
-  // parameter will hold the latest diff installer name.
-  static bool GetPreviousFullInstaller(const std::wstring& diff_file,
-      std::wstring *previous, bool chrome_frame);
-
-  // Find stand alone installer path.
-  static bool GetStandaloneInstallerPath(FilePath* path);
-
-  // This method will get the version number from the filename.
-  static bool GetStandaloneVersion(std::wstring* version);
+  static FilePath GetFilePath(const wchar_t* exe_name);
 
   // This method will send enter key to window in the foreground.
   static void SendEnterKeyToWindow();

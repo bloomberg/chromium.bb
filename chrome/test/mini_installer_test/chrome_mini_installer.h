@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,14 +10,13 @@
 #include <string>
 
 #include "base/basictypes.h"
-
-class FilePath;
+#include "base/file_path.h"
+#include "base/command_line.h"
 
 // This class has methods to install and uninstall Chrome mini installer.
 class ChromeMiniInstaller {
  public:
   ChromeMiniInstaller(const std::wstring& install_type, bool is_chrome_frame);
-
   ~ChromeMiniInstaller() {}
 
   enum RepairChrome {
@@ -46,8 +45,7 @@ class ChromeMiniInstaller {
   void InstallMetaInstaller();
 
   // Installs Chrome Mini Installer.
-  void InstallMiniInstaller(bool over_install = false,
-                            const std::wstring& path = L"");
+  void InstallMiniInstaller(bool over_install, const FilePath& path);
 
   // This will test the standalone installer.
   void InstallStandaloneInstaller();
@@ -111,7 +109,7 @@ class ChromeMiniInstaller {
   FilePath GetUserDataDirPath();
 
   // Gets the path to launch Chrome.
-  bool GetChromeLaunchPath(std::wstring* launch_path);
+  bool GetChromeLaunchPath(FilePath* launch_path);
 
   // This method will get Chrome.exe path and launch it.
   void VerifyChromeLaunch(bool expected_status);
@@ -131,16 +129,15 @@ class ChromeMiniInstaller {
   void LaunchIE(const std::wstring& navigate_url);
 
   // Launches the chrome installer and waits for it to end.
-  void LaunchInstaller(const std::wstring& install_path,
+  void LaunchInstaller(const FilePath& path,
                        const wchar_t* process_name);
 
   // Verifies if Chrome launches after install.
   void LaunchAndCloseChrome(bool over_install);
 
   // Launches any requested browser.
-  void LaunchBrowser(const std::wstring& launch_path,
-                     const std::wstring& launch_arg,
-                     const std::wstring& process_name,
+  void LaunchBrowser(const FilePath& path,
+                     const std::wstring& args,
                      bool expected_status);
 
   // Compares the registry key values after overinstall.
@@ -150,25 +147,25 @@ class ChromeMiniInstaller {
   // This method will verify if the installed build is correct.
   bool VerifyStandaloneInstall();
 
+  // Get all the latest installers base on last modified date.
+  bool LocateInstallers(const std::wstring& build);
+
+  // This method will create a command line to run apply tag.
+  CommandLine GetCommandForTagging();
+
   // This variable holds the install type.
   // Install type can be either system or user level.
   std::wstring install_type_;
 
   bool is_chrome_frame_;
 
-  // Name of the browser (Chrome or Chromium) and install type (sys or user)
-  std::wstring installer_name_;
+  FilePath full_installer_;
+  FilePath diff_installer_;
+  FilePath previous_installer_;
+  FilePath standalone_installer_;
 
-  // The full path to the various installers.
-  std::wstring full_installer_, diff_installer_, prev_installer_;
-
-  // Whether the path to the associated installer could be found.
-  // This is because we do not want to assert that these paths exist
-  // except in the tests that use them.
-  bool has_full_installer_, has_diff_installer_, has_prev_installer_;
-
-  // The version string of the current and previous builds.
-  std::wstring curr_version_, prev_version_;
+  // Build numbers.
+  std::wstring current_build_, previous_build_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeMiniInstaller);
 };

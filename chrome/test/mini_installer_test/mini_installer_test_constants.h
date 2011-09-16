@@ -56,7 +56,7 @@ extern const wchar_t kIEProcessName[];
 // Google Chrome meta installer location.
 extern const wchar_t kChromeApplyTagExe[];
 extern const wchar_t kChromeApplyTagParameters[];
-extern const wchar_t kChromeDiffInstallerLocation[];
+extern const wchar_t kChromeInstallersLocation[];
 extern const wchar_t kChromeMetaInstallerExe[];
 extern const wchar_t kChromeStandAloneInstallerLocation[];
 }  // namespace mini_installer_constants
