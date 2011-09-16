@@ -11,6 +11,7 @@
         {
           'target_name' : 'mach_override',
           'type': 'static_library',
+          'toolsets': ['host', 'target'],
           'sources': [
             'mach_override.c',
             'mach_override.h',
