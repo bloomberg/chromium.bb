@@ -76,7 +76,9 @@ mozc	us	ja
 mozc-jp	jp	ja	!defined(TOUCH_UI)
 mozc-dv	us(dvorak)	ja	!defined(TOUCH_UI)
 xkb:jp::jpn	jp	jpn	!defined(TOUCH_UI)
-zinnia-japanese	handwriting-vk,jp	ja	defined(TOUCH_UI)
+#TODO(yusukes): re-enable after the refactoring that broke listing multiple
+#               layouts is fixed.
+#zinnia-japanese	handwriting-vk,jp	ja	defined(TOUCH_UI)
 
 # Russian
 xkb:ru::rus	ru	rus	!defined(TOUCH_UI)
