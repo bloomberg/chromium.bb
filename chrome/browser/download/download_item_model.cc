@@ -26,7 +26,7 @@ DownloadItemModel::DownloadItemModel(DownloadItem* download)
 }
 
 void DownloadItemModel::CancelTask() {
-  download_->Cancel(true /* update history service */);
+  download_->Cancel();
 }
 
 string16 DownloadItemModel::GetStatusText() {

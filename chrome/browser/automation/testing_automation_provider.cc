@@ -3120,7 +3120,7 @@ void TestingAutomationProvider::PerformActionOnDownload(
   } else if (action == "cancel") {
     selected_item->AddObserver(new AutomationProviderDownloadUpdatedObserver(
         this, reply_message, false));
-    selected_item->Cancel(true);
+    selected_item->Cancel();
   } else {
     AutomationJSONReply(this, reply_message)
         .SendError(StringPrintf("Invalid action '%s' given.", action.c_str()));

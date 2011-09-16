@@ -105,8 +105,7 @@ void DownloadManager::Shutdown() {
       // from all queues.
       download->Delete(DownloadItem::DELETE_DUE_TO_BROWSER_SHUTDOWN);
     } else if (download->IsPartialDownload()) {
-      download->Cancel(false);
-      delegate_->UpdateItemInPersistentStore(download);
+      download->Cancel();
     }
   }
 
@@ -498,23 +497,19 @@ void DownloadManager::OnDownloadRenamedToFinalName(int download_id,
   delegate_->UpdatePathForItemInPersistentStore(item, full_path);
 }
 
-void DownloadManager::CancelDownload(int32 download_id) {
-  DownloadItem* download = GetActiveDownload(download_id);
-  // A cancel at the right time could remove the download from the
-  // |active_downloads_| map before we get here.
-  if (!download)
-    return;
-
-  download->Cancel(true);
-}
-
-void DownloadManager::DownloadCancelledInternal(DownloadItem* download) {
+void DownloadManager::DownloadStopped(DownloadItem* download) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  CHECK(ContainsKey(active_downloads_, download->id()));
 
   VLOG(20) << __FUNCTION__ << "()"
            << " download = " << download->DebugString(true);
 
-  RemoveFromActiveList(download);
+  in_progress_.erase(download->id());
+  active_downloads_.erase(download->id());
+  UpdateDownloadProgress();  // Reflect removal from in_progress_.
+  if (download->db_handle() != DownloadItem::kUninitializedHandle)
+    delegate_->UpdateItemInPersistentStore(download);
+
   // This function is called from the DownloadItem, so DI state
   // should already have been updated.
   AssertQueueStateConsistent(download);
@@ -536,9 +531,7 @@ void DownloadManager::OnDownloadError(int32 download_id,
            << " size = " << size
            << " download = " << download->DebugString(true);
 
-  RemoveFromActiveList(download);
-  download->Interrupted(size, error);
-  download->OffThreadCancel(file_manager_);
+  download->Interrupt(size, error);
 }
 
 DownloadItem* DownloadManager::GetActiveDownload(int32 download_id) {
@@ -553,20 +546,6 @@ DownloadItem* DownloadManager::GetActiveDownload(int32 download_id) {
   DCHECK_EQ(download_id, download->id());
 
   return download;
-}
-
-void DownloadManager::RemoveFromActiveList(DownloadItem* download) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(download);
-
-  // Clean up will happen when the history system create callback runs if we
-  // don't have a valid db_handle yet.
-  if (download->db_handle() != DownloadItem::kUninitializedHandle) {
-    in_progress_.erase(download->id());
-    active_downloads_.erase(download->id());
-    UpdateDownloadProgress();  // Reflect removal from in_progress_.
-    delegate_->UpdateItemInPersistentStore(download);
-  }
 }
 
 void DownloadManager::UpdateDownloadProgress() {
@@ -598,14 +577,9 @@ int DownloadManager::RemoveDownloadItems(
   return num_deleted;
 }
 
-void DownloadManager::RemoveDownload(int64 download_handle) {
-  DownloadMap::iterator it = history_downloads_.find(download_handle);
-  if (it == history_downloads_.end())
-    return;
-
-  // Make history update.
-  DownloadItem* download = it->second;
-  delegate_->RemoveItemFromPersistentStore(download);
+void DownloadManager::RemoveDownload(DownloadItem* download) {
+  // Make history update.  Ignores if db_handle isn't in history.
+  delegate_->RemoveItemFromPersistentStore(download->db_handle());
 
   // Remove from our tables and delete.
   int downloads_count = RemoveDownloadItems(DownloadVector(1, download));
@@ -755,12 +729,7 @@ void DownloadManager::FileSelectionCanceled(void* params) {
   VLOG(20) << __FUNCTION__ << "()"
            << " download = " << download->DebugString(true);
 
-  // TODO(ahendrickson) -- This currently has no effect, as the download is
-  // not put on the active list until the file selection is complete.  Need
-  // to put it on the active list earlier in the process.
-  RemoveFromActiveList(download);
-
-  download->OffThreadCancel(file_manager_);
+  download->Cancel();
 }
 
 // Operations posted to us from the history service ----------------------------
@@ -831,8 +800,22 @@ void DownloadManager::OnDownloadItemAddedToPersistentStore(int32 download_id,
                                                            int64 db_handle) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DownloadItem* download = GetActiveDownloadItem(download_id);
-  if (!download)
+  if (!download) {
+    // The download was cancelled while the persistent store was entering it.
+    // We resolve this race by turning around and deleting it in the
+    // persistent store (implicitly treating it as a failure in download
+    // initiation, which is appropriate as the only places the cancel could
+    // have come from were in resolving issues (like the file name) which
+    // we need to have resolved for persistent store insertion).
+
+    // Make sure we haven't already been shutdown (the callback raced
+    // with shutdown), as that would mean that we no longer have access
+    // to the persistent store.  In that case, the history will be cleaned up
+    // on next persistent store query.
+    if (shutdown_needed_)
+      delegate_->RemoveItemFromPersistentStore(db_handle);
     return;
+  }
 
   VLOG(20) << __FUNCTION__ << "()" << " db_handle = " << db_handle
            << " download_id = " << download_id
@@ -843,27 +826,10 @@ void DownloadManager::OnDownloadItemAddedToPersistentStore(int32 download_id,
   base::debug::Alias(&largest_handle);
   CHECK(!ContainsKey(history_downloads_, db_handle));
 
+  CHECK(download->IsInProgress());
   AddDownloadItemToHistory(download, db_handle);
 
-  // If the download is still in progress, try to complete it.
-  //
-  // Otherwise, download has been cancelled or interrupted before we've
-  // received the DB handle.  We post one final message to the history
-  // service so that it can be properly in sync with the DownloadItem's
-  // completion status, and also inform any observers so that they get
-  // more than just the start notification.
-  if (download->IsInProgress()) {
-    MaybeCompleteDownload(download);
-  } else {
-    // TODO(rdsmith): Convert to DCHECK() when http://crbug.com/84508
-    // is fixed.
-    CHECK(download->IsCancelled())
-        << " download = " << download->DebugString(true);
-    in_progress_.erase(download_id);
-    active_downloads_.erase(download_id);
-    delegate_->UpdateItemInPersistentStore(download);
-    download->UpdateObservers();
-  }
+  MaybeCompleteDownload(download);
 }
 
 void DownloadManager::ShowDownloadInBrowser(DownloadItem* download) {
@@ -900,6 +866,16 @@ DownloadItem* DownloadManager::GetDownloadItem(int download_id) {
       return item;
   }
   return NULL;
+}
+
+void DownloadManager::GetInProgressDownloads(
+    std::vector<DownloadItem*>* result) {
+  DCHECK(result);
+
+  for (DownloadMap::iterator it = active_downloads_.begin();
+       it != active_downloads_.end(); ++it) {
+    result->push_back(it->second);
+  }
 }
 
 DownloadItem* DownloadManager::GetActiveDownloadItem(int download_id) {
