@@ -837,9 +837,10 @@ class InputMethodManagerImpl : public HotkeyManager::Observer,
 
       // If the hardware is for US, show US Qwerty virtual keyboard.
       // If it's for France, show Azerty one.
-      const std::string fallback_id = GetHardwareInputMethodId();
+      const std::string fallback_id = GetInputMethodUtil()->
+          GetHardwareInputMethodId();
       const InputMethodDescriptor* fallback_desc =
-          GetInputMethodDescriptorFromId(fallback_id);
+          GetInputMethodUtil()->GetInputMethodDescriptorFromId(fallback_id);
 
       DCHECK(fallback_desc);
       const std::vector<std::string>& fallback_layouts_vector =
