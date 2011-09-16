@@ -314,7 +314,7 @@ void DownloadsDOMHandler::HandleCancel(const ListValue* args) {
   CountDownloadsDOMEvents(DOWNLOADS_DOM_EVENT_CANCEL);
   DownloadItem* file = GetDownloadByValue(args);
   if (file)
-    file->Cancel();
+    file->Cancel(true);
 }
 
 void DownloadsDOMHandler::HandleClearAll(const ListValue* args) {

@@ -68,7 +68,7 @@ class ChromeDownloadManagerDelegate
   virtual void UpdatePathForItemInPersistentStore(
       DownloadItem* item,
       const FilePath& new_path) OVERRIDE;
-  virtual void RemoveItemFromPersistentStore(int64 db_handle) OVERRIDE;
+  virtual void RemoveItemFromPersistentStore(DownloadItem* item) OVERRIDE;
   virtual void RemoveItemsFromPersistentStoreBetween(
       const base::Time remove_begin,
       const base::Time remove_end) OVERRIDE;

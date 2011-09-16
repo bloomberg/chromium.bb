@@ -674,7 +674,7 @@ class DownloadObserver : public DownloadManager::Observer {
       return;
 
     EXPECT_EQ(1U, downloads.size());
-    downloads.front()->Cancel();  // Don't actually need to download it.
+    downloads.front()->Cancel(false);  // Don't actually need to download it.
 
     saw_download_ = true;
     EXPECT_TRUE(waiting_);

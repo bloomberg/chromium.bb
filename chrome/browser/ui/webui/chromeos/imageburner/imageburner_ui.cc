@@ -509,7 +509,7 @@ void WebUIHandler::ProcessError(int message_id) {
       // We don't want to process Download Cancelled signal.
       active_download_item_->RemoveObserver(this);
       if (active_download_item_->IsPartialDownload())
-        active_download_item_->Cancel();
+        active_download_item_->Cancel(true);
       active_download_item_->Delete(DownloadItem::DELETE_DUE_TO_USER_DISCARD);
       active_download_item_ = NULL;
       CleanupDownloadObjects();

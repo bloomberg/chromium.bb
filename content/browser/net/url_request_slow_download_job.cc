@@ -10,11 +10,9 @@
 #include "base/string_util.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/io_buffer.h"
-#include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_filter.h"
-#include "net/url_request/url_request_status.h"
 
 const int kFirstDownloadSize = 1024 * 35;
 const int kSecondDownloadSize = 1024 * 10;
@@ -25,18 +23,9 @@ const char URLRequestSlowDownloadJob::kKnownSizeUrl[] =
   "http://url.handled.by.slow.download/download-known-size";
 const char URLRequestSlowDownloadJob::kFinishDownloadUrl[] =
   "http://url.handled.by.slow.download/download-finish";
-const char URLRequestSlowDownloadJob::kErrorFinishDownloadUrl[] =
-  "http://url.handled.by.slow.download/download-error";
 
 std::vector<URLRequestSlowDownloadJob*>
-    URLRequestSlowDownloadJob::pending_requests_;
-
-// Return whether this is the finish or error URL.
-static bool IsCompletionUrl(const GURL& url) {
-  if (url.spec() == URLRequestSlowDownloadJob::kFinishDownloadUrl)
-    return true;
-  return (url.spec() == URLRequestSlowDownloadJob::kErrorFinishDownloadUrl);
-}
+    URLRequestSlowDownloadJob::kPendingRequests;
 
 void URLRequestSlowDownloadJob::Start() {
   MessageLoop::current()->PostTask(
@@ -54,8 +43,6 @@ void URLRequestSlowDownloadJob::AddUrlHandler() {
                         &URLRequestSlowDownloadJob::Factory);
   filter->AddUrlHandler(GURL(kFinishDownloadUrl),
                         &URLRequestSlowDownloadJob::Factory);
-  filter->AddUrlHandler(GURL(kErrorFinishDownloadUrl),
-                        &URLRequestSlowDownloadJob::Factory);
 }
 
 /*static */
@@ -63,23 +50,19 @@ net::URLRequestJob* URLRequestSlowDownloadJob::Factory(
     net::URLRequest* request,
     const std::string& scheme) {
   URLRequestSlowDownloadJob* job = new URLRequestSlowDownloadJob(request);
-  if (!IsCompletionUrl(request->url()))
-    URLRequestSlowDownloadJob::pending_requests_.push_back(job);
+  if (request->url().spec() != kFinishDownloadUrl)
+    URLRequestSlowDownloadJob::kPendingRequests.push_back(job);
   return job;
 }
 
 /* static */
-void URLRequestSlowDownloadJob::FinishPendingRequests(bool error) {
+void URLRequestSlowDownloadJob::FinishPendingRequests() {
   typedef std::vector<URLRequestSlowDownloadJob*> JobList;
-  for (JobList::iterator it = pending_requests_.begin(); it !=
-       pending_requests_.end(); ++it) {
-    if (error) {
-      (*it)->set_should_error_download();
-    } else {
-      (*it)->set_should_finish_download();
-    }
+  for (JobList::iterator it = kPendingRequests.begin(); it !=
+       kPendingRequests.end(); ++it) {
+    (*it)->set_should_finish_download();
   }
-  pending_requests_.clear();
+  kPendingRequests.clear();
 }
 
 URLRequestSlowDownloadJob::URLRequestSlowDownloadJob(net::URLRequest* request)
@@ -87,21 +70,19 @@ URLRequestSlowDownloadJob::URLRequestSlowDownloadJob(net::URLRequest* request)
       first_download_size_remaining_(kFirstDownloadSize),
       should_finish_download_(false),
       should_send_second_chunk_(false),
-      should_error_download_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {}
 
 void URLRequestSlowDownloadJob::StartAsync() {
-  if (IsCompletionUrl(request_->url())) {
-    URLRequestSlowDownloadJob::FinishPendingRequests(
-        request_->url().spec() == kErrorFinishDownloadUrl);
-  }
+  if (LowerCaseEqualsASCII(kFinishDownloadUrl, request_->url().spec().c_str()))
+    URLRequestSlowDownloadJob::FinishPendingRequests();
 
   NotifyHeadersComplete();
 }
 
 bool URLRequestSlowDownloadJob::ReadRawData(net::IOBuffer* buf, int buf_size,
                                             int *bytes_read) {
-  if (IsCompletionUrl(request_->url())) {
+  if (LowerCaseEqualsASCII(kFinishDownloadUrl,
+                           request_->url().spec().c_str())) {
     *bytes_read = 0;
     return true;
   }
@@ -151,9 +132,6 @@ void URLRequestSlowDownloadJob::CheckDoneStatus() {
     should_send_second_chunk_ = true;
     SetStatus(net::URLRequestStatus());
     NotifyReadComplete(kSecondDownloadSize);
-  } else if (should_error_download_) {
-    NotifyDone(
-        net::URLRequestStatus(net::URLRequestStatus::FAILED, net::ERR_FAILED));
   } else {
     MessageLoop::current()->PostDelayedTask(
         FROM_HERE,
@@ -176,7 +154,8 @@ void URLRequestSlowDownloadJob::GetResponseInfoConst(
     net::HttpResponseInfo* info) const {
   // Send back mock headers.
   std::string raw_headers;
-  if (IsCompletionUrl(request_->url())) {
+  if (LowerCaseEqualsASCII(kFinishDownloadUrl,
+                           request_->url().spec().c_str())) {
     raw_headers.append(
       "HTTP/1.1 200 OK\n"
       "Content-type: text/plain\n");
@@ -186,7 +165,7 @@ void URLRequestSlowDownloadJob::GetResponseInfoConst(
       "Content-type: application/octet-stream\n"
       "Cache-Control: max-age=0\n");
 
-    if (request_->url().spec() == kKnownSizeUrl) {
+    if (LowerCaseEqualsASCII(kKnownSizeUrl, request_->url().spec().c_str())) {
       raw_headers.append(base::StringPrintf(
           "Content-Length: %d\n",
           kFirstDownloadSize + kSecondDownloadSize));

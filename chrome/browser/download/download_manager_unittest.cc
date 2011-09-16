@@ -534,7 +534,7 @@ TEST_F(DownloadManagerTest, DownloadInterruptTest) {
                                        simple_size,
                                        simple_total));
 
-  download->Cancel();
+  download->Cancel(true);
 
   EXPECT_TRUE(observer->hit_state(DownloadItem::IN_PROGRESS));
   EXPECT_TRUE(observer->hit_state(DownloadItem::INTERRUPTED));
@@ -630,7 +630,7 @@ TEST_F(DownloadManagerTest, DownloadFileErrorTest) {
             download_item_model->GetStatusText());
 
   // Clean up.
-  download->Cancel();
+  download->Cancel(true);
   message_loop_.RunAllPending();
 }
 
@@ -676,10 +676,10 @@ TEST_F(DownloadManagerTest, DownloadCancelTest) {
 
   download_file->AppendDataToFile(kTestData, kTestDataLen);
 
-  download->Cancel();
+  download->Cancel(false);
   message_loop_.RunAllPending();
 
-  EXPECT_TRUE(GetActiveDownloadItem(0) == NULL);
+  EXPECT_TRUE(GetActiveDownloadItem(0) != NULL);
   EXPECT_TRUE(observer->hit_state(DownloadItem::IN_PROGRESS));
   EXPECT_TRUE(observer->hit_state(DownloadItem::CANCELLED));
   EXPECT_FALSE(observer->hit_state(DownloadItem::INTERRUPTED));
