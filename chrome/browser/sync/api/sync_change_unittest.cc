@@ -6,10 +6,11 @@
 
 #include <string>
 
+#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
-#include "testing/gtest/include/gtest/gtest.h"
 #include "chrome/browser/sync/protocol/preference_specifics.pb.h"
 #include "chrome/browser/sync/protocol/proto_value_conversions.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 using browser_sync::EntitySpecificsToValue;
 

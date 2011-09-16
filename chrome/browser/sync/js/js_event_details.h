@@ -10,14 +10,13 @@
 
 #include <string>
 
-#include "base/memory/ref_counted.h"
 #include "base/values.h"
-#include "chrome/browser/sync/util/shared_value.h"
+#include "chrome/browser/sync/util/immutable.h"
 
 namespace browser_sync {
 
-// A thread-safe wrapper around an immutable DictionaryValue.  Used
-// for passing around event details to different threads.
+// A thin wrapper around Immutable<DictionaryValue>.  Used for passing
+// around event details to different threads.
 class JsEventDetails {
  public:
   // Uses an empty dictionary.
@@ -35,10 +34,10 @@ class JsEventDetails {
   // Copy constructor and assignment operator welcome.
 
  private:
-  typedef SharedValue<DictionaryValue, HasSwapMemFnTraits<DictionaryValue> >
-      SharedDictionaryValue;
+  typedef Immutable<DictionaryValue, HasSwapMemFnByPtr<DictionaryValue> >
+      ImmutableDictionaryValue;
 
-  scoped_refptr<const SharedDictionaryValue> details_;
+  ImmutableDictionaryValue details_;
 };
 
 }  // namespace browser_sync

@@ -6,34 +6,43 @@
 
 #include "chrome/browser/sync/protocol/sync.pb.h"
 
-SyncData::SharedSyncEntity::SharedSyncEntity(
-    sync_pb::SyncEntity* sync_entity)
-    : sync_entity_(new sync_pb::SyncEntity()){
-  sync_entity_->Swap(sync_entity);
+void SyncData::ImmutableSyncEntityTraits::InitializeWrapper(
+    Wrapper* wrapper) {
+  *wrapper = new sync_pb::SyncEntity();
 }
 
-const sync_pb::SyncEntity& SyncData::SharedSyncEntity::sync_entity() const {
-  return *sync_entity_;
+void SyncData::ImmutableSyncEntityTraits::DestroyWrapper(
+    Wrapper* wrapper) {
+  delete *wrapper;
 }
 
-SyncData::SharedSyncEntity::~SharedSyncEntity() {}
-
-
-SyncData::SyncData()
-    : is_local_(true) {
+const sync_pb::SyncEntity& SyncData::ImmutableSyncEntityTraits::Unwrap(
+    const Wrapper& wrapper) {
+  return *wrapper;
 }
 
-SyncData::~SyncData() {
+sync_pb::SyncEntity* SyncData::ImmutableSyncEntityTraits::UnwrapMutable(
+    Wrapper* wrapper) {
+  return *wrapper;
 }
+
+void SyncData::ImmutableSyncEntityTraits::Swap(sync_pb::SyncEntity* t1,
+                                               sync_pb::SyncEntity* t2) {
+  t1->Swap(t2);
+}
+
+SyncData::SyncData() : is_valid_(false), is_local_(true) {}
+
+SyncData::SyncData(sync_pb::SyncEntity* entity, bool is_local)
+    : is_valid_(true), is_local_(is_local), immutable_entity_(entity) {}
+
+SyncData::~SyncData() {}
 
 // Static.
 SyncData SyncData::CreateLocalData(const std::string& sync_tag) {
   sync_pb::SyncEntity entity;
   entity.set_client_defined_unique_tag(sync_tag);
-  SyncData a;
-  a.shared_entity_ = new SharedSyncEntity(&entity);
-  a.is_local_ = true;
-  return a;
+  return SyncData(&entity, true);
 }
 
 // Static.
@@ -45,10 +54,7 @@ SyncData SyncData::CreateLocalData(
   entity.set_client_defined_unique_tag(sync_tag);
   entity.set_non_unique_name(non_unique_title);
   entity.mutable_specifics()->CopyFrom(specifics);
-  SyncData a;
-  a.shared_entity_ = new SharedSyncEntity(&entity);
-  a.is_local_ = true;
-  return a;
+  return SyncData(&entity, true);
 }
 
 // Static.
@@ -64,18 +70,15 @@ SyncData SyncData::CreateRemoteData(
     const sync_pb::EntitySpecifics& specifics) {
   sync_pb::SyncEntity entity;
   entity.mutable_specifics()->CopyFrom(specifics);
-  SyncData a;
-  a.shared_entity_ = new SharedSyncEntity(&entity);
-  a.is_local_ = false;
-  return a;
+  return SyncData(&entity, false);
 }
 
 bool SyncData::IsValid() const {
-  return (shared_entity_.get() != NULL);
+  return is_valid_;
 }
 
 const sync_pb::EntitySpecifics& SyncData::GetSpecifics() const {
-  return shared_entity_->sync_entity().specifics();
+  return immutable_entity_.Get().specifics();
 }
 
 syncable::ModelType SyncData::GetDataType() const {
@@ -84,13 +87,13 @@ syncable::ModelType SyncData::GetDataType() const {
 
 const std::string& SyncData::GetTag() const {
   DCHECK(is_local_);
-  return shared_entity_->sync_entity().client_defined_unique_tag();
+  return immutable_entity_.Get().client_defined_unique_tag();
 }
 
 const std::string& SyncData::GetTitle() const {
   // TODO(zea): set this for data coming from the syncer too.
-  DCHECK(shared_entity_->sync_entity().has_non_unique_name());
-  return shared_entity_->sync_entity().non_unique_name();
+  DCHECK(immutable_entity_.Get().has_non_unique_name());
+  return immutable_entity_.Get().non_unique_name();
 }
 
 bool SyncData::IsLocal() const {

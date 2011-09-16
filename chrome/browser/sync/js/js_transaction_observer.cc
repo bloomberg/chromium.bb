@@ -60,7 +60,7 @@ const size_t kMutationLimit = 300;
 void JsTransactionObserver::OnTransactionMutate(
     const tracked_objects::Location& location,
     const syncable::WriterTag& writer,
-    const syncable::SharedEntryKernelMutationMap& mutations,
+    const syncable::ImmutableEntryKernelMutationMap& mutations,
     const syncable::ModelTypeBitSet& models_with_changes) {
   DCHECK(non_thread_safe_.CalledOnValidThread());
   if (!event_handler_.IsInitialized()) {

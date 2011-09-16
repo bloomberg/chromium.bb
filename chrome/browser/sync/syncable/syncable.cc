@@ -90,24 +90,6 @@ std::string WriterTagToString(WriterTag writer_tag) {
 
 #undef ENUM_CASE
 
-SharedEntryKernelMutationMap::SharedEntryKernelMutationMap()
-    : mutations_(new SharedMutationMap()) {}
-
-SharedEntryKernelMutationMap::SharedEntryKernelMutationMap(
-    EntryKernelMutationMap* mutations)
-    : mutations_(new SharedMutationMap(mutations)) {}
-
-SharedEntryKernelMutationMap::~SharedEntryKernelMutationMap() {}
-
-const EntryKernelMutationMap& SharedEntryKernelMutationMap::Get() const {
-  return mutations_->Get();
-}
-
-void SharedEntryKernelMutationMap::MutationMapTraits::Swap(
-    EntryKernelMutationMap* mutations1, EntryKernelMutationMap* mutations2) {
-  mutations1->swap(*mutations2);
-}
-
 namespace {
 
 DictionaryValue* EntryKernelMutationToValue(
@@ -1228,7 +1210,7 @@ void WriteTransaction::SaveOriginal(const EntryKernel* entry) {
   }
 }
 
-SharedEntryKernelMutationMap WriteTransaction::RecordMutations() {
+ImmutableEntryKernelMutationMap WriteTransaction::RecordMutations() {
   dirkernel_->transaction_mutex.AssertAcquired();
   for (syncable::EntryKernelMutationMap::iterator it = mutations_.begin();
        it != mutations_.end(); ++it) {
@@ -1239,11 +1221,11 @@ SharedEntryKernelMutationMap WriteTransaction::RecordMutations() {
     }
     it->second.mutated = *kernel;
   }
-  return SharedEntryKernelMutationMap(&mutations_);
+  return ImmutableEntryKernelMutationMap(&mutations_);
 }
 
 void WriteTransaction::UnlockAndNotify(
-    const SharedEntryKernelMutationMap& mutations) {
+    const ImmutableEntryKernelMutationMap& mutations) {
   // Work while transaction mutex is held.
   ModelTypeBitSet models_with_changes;
   bool has_mutations = !mutations.Get().empty();
@@ -1259,7 +1241,7 @@ void WriteTransaction::UnlockAndNotify(
 }
 
 ModelTypeBitSet WriteTransaction::NotifyTransactionChangingAndEnding(
-    const SharedEntryKernelMutationMap& mutations) {
+    const ImmutableEntryKernelMutationMap& mutations) {
   dirkernel_->transaction_mutex.AssertAcquired();
   DCHECK(!mutations.Get().empty());
 
@@ -1289,7 +1271,7 @@ void WriteTransaction::NotifyTransactionComplete(
 }
 
 WriteTransaction::~WriteTransaction() {
-  const SharedEntryKernelMutationMap& mutations = RecordMutations();
+  const ImmutableEntryKernelMutationMap& mutations = RecordMutations();
 
   if (OFF != kInvariantCheckLevel) {
     const bool full_scan = (FULL_DB_VERIFICATION == kInvariantCheckLevel);

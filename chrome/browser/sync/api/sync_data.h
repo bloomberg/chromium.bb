@@ -9,14 +9,13 @@
 #include <string>
 #include <vector>
 
-#include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/sync/syncable/model_type.h"
+#include "chrome/browser/sync/util/immutable.h"
 
 namespace sync_pb {
 class EntitySpecifics;
 class SyncEntity;
-}
+}  // namespace sync_pb
 
 typedef syncable::ModelType SyncDataType;
 
@@ -77,30 +76,37 @@ class SyncData {
   // TODO(zea): Query methods for other sync properties: parent, successor, etc.
 
  private:
-  // A reference counted immutable SyncEntity.
-  class SharedSyncEntity : public
-      base::RefCountedThreadSafe<SharedSyncEntity> {
-   public:
-    // Takes ownership of |sync_entity|'s contents.
-    explicit SharedSyncEntity(sync_pb::SyncEntity* sync_entity);
+  // Necessary since we forward-declare sync_pb::SyncEntity; see
+  // comments in immutable.h.
+  struct ImmutableSyncEntityTraits {
+    typedef sync_pb::SyncEntity* Wrapper;
 
-    // Returns immutable reference to local sync entity.
-    const sync_pb::SyncEntity& sync_entity() const;
+    static void InitializeWrapper(Wrapper* wrapper);
 
-   private:
-    friend class base::RefCountedThreadSafe<SharedSyncEntity>;
+    static void DestroyWrapper(Wrapper* wrapper);
 
-    // Private due to ref counting.
-    ~SharedSyncEntity();
+    static const sync_pb::SyncEntity& Unwrap(const Wrapper& wrapper);
 
-    scoped_ptr<sync_pb::SyncEntity> sync_entity_;
+    static sync_pb::SyncEntity* UnwrapMutable(Wrapper* wrapper);
+
+    static void Swap(sync_pb::SyncEntity* t1, sync_pb::SyncEntity* t2);
   };
 
-  // The actual shared sync entity being held.
-  scoped_refptr<SharedSyncEntity> shared_entity_;
+  typedef browser_sync::Immutable<
+    sync_pb::SyncEntity, ImmutableSyncEntityTraits>
+      ImmutableSyncEntity;
+
+  // Clears |entity|.
+  SyncData(sync_pb::SyncEntity* entity, bool is_local);
+
+  // Whether this SyncData holds valid data.
+  bool is_valid_;
 
   // Whether this data originated locally or from the syncer (remote data).
   bool is_local_;
+
+  // The actual shared sync entity being held.
+  ImmutableSyncEntity immutable_entity_;
 };
 
 #endif  // CHROME_BROWSER_SYNC_API_SYNC_DATA_H_

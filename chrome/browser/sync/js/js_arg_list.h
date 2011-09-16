@@ -10,14 +10,13 @@
 
 #include <string>
 
-#include "base/memory/ref_counted.h"
 #include "base/values.h"
-#include "chrome/browser/sync/util/shared_value.h"
+#include "chrome/browser/sync/util/immutable.h"
 
 namespace browser_sync {
 
-// A thread-safe wrapper around an immutable ListValue.  Used for
-// passing around argument lists to different threads.
+// A thin wrapper around Immutable<ListValue>.  Used for passing
+// around argument lists to different threads.
 class JsArgList {
  public:
   // Uses an empty argument list.
@@ -35,9 +34,9 @@ class JsArgList {
   // Copy constructor and assignment operator welcome.
 
  private:
-  typedef SharedValue<ListValue, HasSwapMemFnTraits<ListValue> >
-      SharedListValue;
-  scoped_refptr<const SharedListValue> args_;
+  typedef Immutable<ListValue, HasSwapMemFnByPtr<ListValue> >
+      ImmutableListValue;
+  ImmutableListValue args_;
 };
 
 }  // namespace browser_sync

@@ -8,16 +8,14 @@
 
 namespace browser_sync {
 
-JsEventDetails::JsEventDetails()
-    : details_(new SharedDictionaryValue()) {}
+JsEventDetails::JsEventDetails() {}
 
-JsEventDetails::JsEventDetails(DictionaryValue* details)
-    : details_(new SharedDictionaryValue(details)) {}
+JsEventDetails::JsEventDetails(DictionaryValue* details) : details_(details) {}
 
 JsEventDetails::~JsEventDetails() {}
 
 const DictionaryValue& JsEventDetails::Get() const {
-  return details_->Get();
+  return details_.Get();
 }
 
 std::string JsEventDetails::ToString() const {

@@ -23,7 +23,7 @@ class TransactionObserver {
   virtual void OnTransactionMutate(
       const tracked_objects::Location& location,
       const WriterTag& writer,
-      const SharedEntryKernelMutationMap& mutations,
+      const ImmutableEntryKernelMutationMap& mutations,
       const ModelTypeBitSet& models_with_changes) = 0;
   virtual void OnTransactionEnd(
       const tracked_objects::Location& location,

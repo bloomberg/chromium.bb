@@ -2949,6 +2949,7 @@
         'browser/sync/util/data_encryption_unittest.cc',
         'browser/sync/util/extensions_activity_monitor_unittest.cc',
         'browser/sync/util/protobuf_unittest.cc',
+        'browser/sync/util/immutable_unittest.cc',
         'browser/sync/util/user_settings_unittest.cc',
         'browser/sync/util/weak_handle_unittest.cc',
       ],

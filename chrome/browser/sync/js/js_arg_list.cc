@@ -8,15 +8,14 @@
 
 namespace browser_sync {
 
-JsArgList::JsArgList() : args_(new SharedListValue()) {}
+JsArgList::JsArgList() {}
 
-JsArgList::JsArgList(ListValue* args)
-    : args_(new SharedListValue(args)) {}
+JsArgList::JsArgList(ListValue* args) : args_(args) {}
 
 JsArgList::~JsArgList() {}
 
 const ListValue& JsArgList::Get() const {
-  return args_->Get();
+  return args_.Get();
 }
 
 std::string JsArgList::ToString() const {

@@ -32,7 +32,7 @@
 #include "chrome/browser/sync/syncable/syncable_id.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/util/dbgq.h"
-#include "chrome/browser/sync/util/shared_value.h"
+#include "chrome/browser/sync/util/immutable.h"
 
 struct PurgeInfo;
 
@@ -563,29 +563,8 @@ struct EntryKernelMutation {
 };
 typedef std::map<int64, EntryKernelMutation> EntryKernelMutationMap;
 
-// A thread-safe wrapper around an immutable mutation map.  Used for
-// passing around mutation maps without incurring lots of copies.
-class SharedEntryKernelMutationMap {
- public:
-  SharedEntryKernelMutationMap();
-  // Takes over the data in |mutations|, leaving |mutations| empty.
-  explicit SharedEntryKernelMutationMap(EntryKernelMutationMap* mutations);
-
-  ~SharedEntryKernelMutationMap();
-
-  const EntryKernelMutationMap& Get() const;
-
- private:
-  struct MutationMapTraits {
-    static void Swap(EntryKernelMutationMap* mutations1,
-                     EntryKernelMutationMap* mutations2);
-  };
-
-  typedef browser_sync::SharedValue<EntryKernelMutationMap, MutationMapTraits>
-      SharedMutationMap;
-
-  scoped_refptr<const SharedMutationMap> mutations_;
-};
+typedef browser_sync::Immutable<EntryKernelMutationMap>
+    ImmutableEntryKernelMutationMap;
 
 // Caller owns the return value.
 base::ListValue* EntryKernelMutationMapToValue(
@@ -1188,12 +1167,12 @@ class WriteTransaction : public BaseTransaction {
 
  private:
   // Clears |mutations_|.
-  SharedEntryKernelMutationMap RecordMutations();
+  ImmutableEntryKernelMutationMap RecordMutations();
 
-  void UnlockAndNotify(const SharedEntryKernelMutationMap& mutations);
+  void UnlockAndNotify(const ImmutableEntryKernelMutationMap& mutations);
 
   ModelTypeBitSet NotifyTransactionChangingAndEnding(
-      const SharedEntryKernelMutationMap& mutations);
+      const ImmutableEntryKernelMutationMap& mutations);
 
   // Only the original fields are filled in until |RecordMutations()|.
   // We use a mutation map instead of a kernel set to avoid copying.
