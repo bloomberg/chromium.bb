@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <base/logging.h>
 #include <base/memory/scoped_ptr.h>
 #include <gtest/gtest.h>
 
@@ -10,6 +11,33 @@
 namespace gestures {
 
 class GesturesTest : public ::testing::Test {};
+
+TEST(GesturesTest, GestureStringTest) {
+  Gesture null;
+  EXPECT_TRUE(strstr(null.String().c_str(), "null"));
+
+  Gesture move(kGestureMove, 1.0, 2.0, 3.0, 4.0);
+  EXPECT_TRUE(strstr(move.String().c_str(), "1"));
+  EXPECT_TRUE(strstr(move.String().c_str(), "2"));
+  EXPECT_TRUE(strstr(move.String().c_str(), "3"));
+  EXPECT_TRUE(strstr(move.String().c_str(), "4"));
+
+  Gesture scroll(kGestureScroll, 1.0, 2.0, 3.0, 4.0);
+  EXPECT_TRUE(strstr(scroll.String().c_str(), "1"));
+  EXPECT_TRUE(strstr(scroll.String().c_str(), "2"));
+  EXPECT_TRUE(strstr(scroll.String().c_str(), "3"));
+  EXPECT_TRUE(strstr(scroll.String().c_str(), "4"));
+
+  Gesture buttons(kGestureButtonsChange, 1.0, 2.0, 3, 4);
+  EXPECT_TRUE(strstr(buttons.String().c_str(), "1"));
+  EXPECT_TRUE(strstr(buttons.String().c_str(), "2"));
+  EXPECT_TRUE(strstr(buttons.String().c_str(), "3"));
+  EXPECT_TRUE(strstr(buttons.String().c_str(), "4"));
+
+  Gesture contact_initiated;
+  contact_initiated.type = kGestureTypeContactInitiated;
+  EXPECT_TRUE(strstr(contact_initiated.String().c_str(), "nitiated"));
+}
 
 TEST(GesturesTest, GestureEqTest) {
   Gesture null;

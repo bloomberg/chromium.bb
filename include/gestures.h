@@ -9,6 +9,8 @@
 #include <sys/time.h>
 
 #ifdef __cplusplus
+#include <string>
+
 #include <base/basictypes.h>
 #include <base/scoped_ptr.h>
 extern "C" {
@@ -116,6 +118,7 @@ struct Gesture {
   // Create Move/Scroll gesture
 #ifdef GESTURES_INTERNAL
   Gesture() : start_time(0), end_time(0), type(kGestureTypeNull) {}
+  std::string String() const;
   bool operator==(const Gesture& that) const;
   bool operator!=(const Gesture& that) const { return !(*this == that); };
 #endif  // GESTURES_INTERNAL

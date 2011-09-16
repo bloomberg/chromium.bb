@@ -6,12 +6,16 @@
 
 #include <sys/time.h>
 
+#include <base/string_util.h>
+
 #include "gestures/include/accel_filter_interpreter.h"
 #include "gestures/include/immediate_interpreter.h"
 #include "gestures/include/integral_gesture_filter_interpreter.h"
 #include "gestures/include/logging.h"
 #include "gestures/include/lookahead_filter_interpreter.h"
 #include "gestures/include/scaling_filter_interpreter.h"
+
+using std::string;
 
 // C API:
 
@@ -34,6 +38,28 @@ const FingerState* HardwareState::GetFingerState(short tracking_id) const {
       return &fingers[i];
   }
   return NULL;
+}
+
+string Gesture::String() const {
+  switch (type) {
+    default:
+      return "(Gesture type: null)";
+    case kGestureTypeContactInitiated:
+      return StringPrintf("(Gesture type: contactInitiated "
+                          "start: %f stop: %f)", start_time, end_time);
+    case kGestureTypeMove:
+      return StringPrintf("(Gesture type: move start: %f stop: %f "
+                          "dx: %f dy: %f)", start_time, end_time,
+                          details.move.dx, details.move.dy);
+    case kGestureTypeScroll:
+      return StringPrintf("(Gesture type: scroll start: %f stop: %f "
+                          "dx: %f dy: %f)", start_time, end_time,
+                          details.scroll.dx, details.scroll.dy);
+    case kGestureTypeButtonsChange:
+      return StringPrintf("(Gesture type: buttons start: %f stop: "
+                          "%f down: %d up: %d)", start_time, end_time,
+                          details.buttons.down, details.buttons.up);
+  }
 }
 
 namespace {
