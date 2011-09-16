@@ -26,16 +26,6 @@ void JsTransactionObserver::SetJsEventHandler(
   event_handler_ = event_handler;
 }
 
-namespace {
-
-std::string GetLocationString(const tracked_objects::Location& location) {
-  return std::string(location.function_name()) + "@" +
-      location.file_name() + ":" +
-      base::IntToString(location.line_number());
-}
-
-}  // namespace
-
 void JsTransactionObserver::OnTransactionStart(
     const tracked_objects::Location& location,
     const syncable::WriterTag& writer) {
@@ -44,7 +34,7 @@ void JsTransactionObserver::OnTransactionStart(
     return;
   }
   DictionaryValue details;
-  details.SetString("location", GetLocationString(location));
+  details.SetString("location", location.ToString());
   details.SetString("writer", syncable::WriterTagToString(writer));
   HandleJsEvent(FROM_HERE, "onTransactionStart", JsEventDetails(&details));
 }
@@ -67,7 +57,7 @@ void JsTransactionObserver::OnTransactionMutate(
     return;
   }
   DictionaryValue details;
-  details.SetString("location", GetLocationString(location));
+  details.SetString("location", location.ToString());
   details.SetString("writer", syncable::WriterTagToString(writer));
   Value* mutations_value = NULL;
   const size_t mutations_size = mutations.Get().size();
@@ -93,7 +83,7 @@ void JsTransactionObserver::OnTransactionEnd(
     return;
   }
   DictionaryValue details;
-  details.SetString("location", GetLocationString(location));
+  details.SetString("location", location.ToString());
   details.SetString("writer", syncable::WriterTagToString(writer));
   HandleJsEvent(FROM_HERE, "onTransactionEnd", JsEventDetails(&details));
 }

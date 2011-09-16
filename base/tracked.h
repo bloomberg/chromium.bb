@@ -68,6 +68,8 @@ class BASE_EXPORT Location {
   int line_number()             const { return line_number_; }
   const void* program_counter() const { return program_counter_; }
 
+  std::string ToString() const;
+
   void Write(bool display_filename, bool display_function_name,
              std::string* output) const;
 

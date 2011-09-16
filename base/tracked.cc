@@ -13,6 +13,7 @@ void* _ReturnAddress();
 
 #include "base/tracked.h"
 
+#include "base/string_number_conversions.h"
 #include "base/stringprintf.h"
 #include "base/tracked_objects.h"
 
@@ -37,6 +38,11 @@ Location::Location()
       file_name_("Unknown"),
       line_number_(-1),
       program_counter_(NULL) {
+}
+
+std::string Location::ToString() const {
+  return std::string(function_name_) + "@" + file_name_ + ":" +
+      base::IntToString(line_number_);
 }
 
 void Location::Write(bool display_filename, bool display_function_name,

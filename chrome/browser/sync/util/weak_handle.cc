@@ -22,24 +22,11 @@ bool WeakHandleCoreBase::IsOnOwnerThread() const {
 
 WeakHandleCoreBase::~WeakHandleCoreBase() {}
 
-namespace {
-
-// TODO(akalin): Merge with similar function in
-// js_transaction_observer.cc.
-std::string GetLocationString(const tracked_objects::Location& location) {
-  std::ostringstream oss;
-  oss << location.function_name() << "@"
-      << location.file_name() << ":" << location.line_number();
-  return oss.str();
-}
-
-}  // namespace
-
 void WeakHandleCoreBase::PostToOwnerThread(
     const tracked_objects::Location& from_here,
     const base::Closure& fn) const {
   if (!owner_loop_proxy_->PostTask(from_here, fn)) {
-    VLOG(1) << "Could not post task from " << GetLocationString(from_here);
+    VLOG(1) << "Could not post task from " << from_here.ToString();
   }
 }
 
