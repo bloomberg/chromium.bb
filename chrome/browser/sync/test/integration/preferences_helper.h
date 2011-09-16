@@ -31,6 +31,11 @@ void ChangeBooleanPref(int index, const char* pref_name);
 // |verifier| if DisableVerifier() hasn't been called.
 void ChangeIntegerPref(int index, const char* pref_name, int new_value);
 
+// Changes the value of the int64 preference with name |pref_name| in the
+// profile with index |index| to |new_value|. Also changes its value in
+// |verifier| if DisableVerifier() hasn't been called.
+void ChangeInt64Pref(int index, const char* pref_name, int64 new_value);
+
 // Changes the value of the double preference with name |pref_name| in the
 // profile with index |index| to |new_value|. Also changes its value in
 // |verifier| if DisableVerifier() hasn't been called.
@@ -74,6 +79,11 @@ bool BooleanPrefMatches(const char* pref_name) WARN_UNUSED_RESULT;
 // same value across all profiles. Also checks |verifier| if DisableVerifier()
 // hasn't been called.
 bool IntegerPrefMatches(const char* pref_name) WARN_UNUSED_RESULT;
+
+// Used to verify that the int64 preference with name |pref_name| has the
+// same value across all profiles. Also checks |verifier| if DisableVerifier()
+// hasn't been called.
+bool Int64PrefMatches(const char* pref_name) WARN_UNUSED_RESULT;
 
 // Used to verify that the double preference with name |pref_name| has the
 // same value across all profiles. Also checks |verifier| if DisableVerifier()

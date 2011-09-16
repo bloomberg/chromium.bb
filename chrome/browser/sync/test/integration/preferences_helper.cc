@@ -37,6 +37,12 @@ void ChangeIntegerPref(int index, const char* pref_name, int new_value) {
     GetVerifierPrefs()->SetInteger(pref_name, new_value);
 }
 
+void ChangeInt64Pref(int index, const char* pref_name, int64 new_value) {
+  GetPrefs(index)->SetInt64(pref_name, new_value);
+  if (test()->use_verifier())
+    GetVerifierPrefs()->SetInt64(pref_name, new_value);
+}
+
 void ChangeDoublePref(int index, const char* pref_name, double new_value) {
   GetPrefs(index)->SetDouble(pref_name, new_value);
   if (test()->use_verifier())
@@ -117,6 +123,23 @@ bool IntegerPrefMatches(const char* pref_name) {
   }
   for (int i = 0; i < test()->num_clients(); ++i) {
     if (reference_value != GetPrefs(i)->GetInteger(pref_name)) {
+      LOG(ERROR) << "Integer preference " << pref_name << " mismatched in"
+                 << " profile " << i << ".";
+      return false;
+    }
+  }
+  return true;
+}
+
+bool Int64PrefMatches(const char* pref_name) {
+  int64 reference_value;
+  if (test()->use_verifier()) {
+    reference_value = GetVerifierPrefs()->GetInt64(pref_name);
+  } else {
+    reference_value = GetPrefs(0)->GetInt64(pref_name);
+  }
+  for (int i = 0; i < test()->num_clients(); ++i) {
+    if (reference_value != GetPrefs(i)->GetInt64(pref_name)) {
       LOG(ERROR) << "Integer preference " << pref_name << " mismatched in"
                  << " profile " << i << ".";
       return false;
