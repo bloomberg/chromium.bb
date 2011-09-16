@@ -22,6 +22,7 @@
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/zygote_host_linux.h"
+#include "content/common/notification_service.h"
 
 #if !defined(OS_CHROMEOS)
 #error This file only meant to be compiled on ChromeOS
@@ -59,6 +60,12 @@ OomPriorityManager* OomPriorityManager::GetInstance() {
 
 OomPriorityManager::OomPriorityManager() {
   renderer_stats_.reserve(32);  // 99% of users have < 30 tabs open
+  registrar_.Add(this,
+      content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
+      NotificationService::AllSources());
+  registrar_.Add(this,
+      content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
+      NotificationService::AllSources());
 }
 
 OomPriorityManager::~OomPriorityManager() {
@@ -117,6 +124,23 @@ bool OomPriorityManager::CompareRendererStats(RendererStats first,
   return first.memory_used < second.memory_used;
 }
 
+void OomPriorityManager::Observe(int type, const NotificationSource& source,
+                                    const NotificationDetails& details) {
+  base::ProcessHandle handle = 0;
+  base::AutoLock pid_to_oom_score_autolock(pid_to_oom_score_lock_);
+  switch (type) {
+    case content::NOTIFICATION_RENDERER_PROCESS_CLOSED:
+    case content::NOTIFICATION_RENDERER_PROCESS_TERMINATED: {
+      handle = Source<RenderProcessHost>(source)->GetHandle();
+      pid_to_oom_score_.erase(handle);
+      break;
+    }
+    default:
+      NOTREACHED() << L"Received unexpected notification";
+      break;
+  }
+}
+
 // Here we collect most of the information we need to sort the
 // existing renderers in priority order, and hand out oom_score_adj
 // scores based on that sort order.
@@ -166,6 +190,7 @@ void OomPriorityManager::AdjustOomPriorities() {
 void OomPriorityManager::DoAdjustOomPriorities() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   base::AutoLock renderer_stats_autolock(renderer_stats_lock_);
+  base::AutoLock pid_to_oom_score_autolock(pid_to_oom_score_lock_);
   for (StatsList::iterator stats_iter = renderer_stats_.begin();
        stats_iter != renderer_stats_.end(); ++stats_iter) {
     scoped_ptr<ProcessMetrics> metrics(ProcessMetrics::CreateProcessMetrics(
@@ -212,12 +237,21 @@ void OomPriorityManager::DoAdjustOomPriorities() {
       static_cast<float>(kPriorityRange) / renderer_stats_.size();
   float priority = chrome::kLowestRendererOomScore;
   std::set<base::ProcessHandle> already_seen;
+  int score = 0;
+  ProcessScoreMap::iterator it;
   for (StatsList::iterator iterator = renderer_stats_.begin();
        iterator != renderer_stats_.end(); ++iterator) {
     if (already_seen.find(iterator->renderer_handle) == already_seen.end()) {
       already_seen.insert(iterator->renderer_handle);
-      ZygoteHost::GetInstance()->AdjustRendererOOMScore(
-          iterator->renderer_handle, static_cast<int>(priority + 0.5f));
+      // If a process has the same score as the newly calculated value,
+      // do not set it.
+      score = static_cast<int>(priority + 0.5f);
+      it = pid_to_oom_score_.find(iterator->renderer_handle);
+      if (it == pid_to_oom_score_.end() || it->second != score) {
+        ZygoteHost::GetInstance()->AdjustRendererOOMScore(
+            iterator->renderer_handle, score);
+        pid_to_oom_score_[iterator->renderer_handle] = score;
+      }
       priority += priority_increment;
     }
   }

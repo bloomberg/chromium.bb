@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/hash_tables.h"
 #include "base/memory/singleton.h"
 #include "base/process.h"
 #include "base/string16.h"
@@ -14,6 +15,8 @@
 #include "base/task.h"
 #include "base/time.h"
 #include "base/timer.h"
+#include "content/common/notification_observer.h"
+#include "content/common/notification_registrar.h"
 
 namespace browser {
 
@@ -29,7 +32,7 @@ namespace browser {
 // of priority.  We round the idle times to the nearest few minutes
 // (see BUCKET_INTERVAL_MINUTES in the source) so that we can bucket
 // them, as no two tabs will have exactly the same idle time.
-class OomPriorityManager {
+class OomPriorityManager : public NotificationObserver {
  public:
   static OomPriorityManager* GetInstance();
 
@@ -42,7 +45,7 @@ class OomPriorityManager {
 
  private:
   OomPriorityManager();
-  ~OomPriorityManager();
+  virtual ~OomPriorityManager();
   friend struct DefaultSingletonTraits<OomPriorityManager>;
 
   struct RendererStats {
@@ -56,6 +59,7 @@ class OomPriorityManager {
     string16 title;
   };
   typedef std::vector<RendererStats> StatsList;
+  typedef base::hash_map<base::ProcessHandle, int> ProcessScoreMap;
 
   // Posts DoAdjustOomPriorities task to the file thread.  Called when
   // the timer fires.
@@ -66,10 +70,18 @@ class OomPriorityManager {
 
   static bool CompareRendererStats(RendererStats first, RendererStats second);
 
+  virtual void Observe(int type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
+
   base::RepeatingTimer<OomPriorityManager> timer_;
   // renderer_stats_ is used on both UI and file threads.
   base::Lock renderer_stats_lock_;
   StatsList renderer_stats_;
+  // map maintaining the process - oom_score map.
+  base::Lock pid_to_oom_score_lock_;
+  ProcessScoreMap pid_to_oom_score_;
+  NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(OomPriorityManager);
 };
