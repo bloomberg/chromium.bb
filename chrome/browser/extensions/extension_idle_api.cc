@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/extension_idle_api.h"
 
 #include <string>
+#include <map>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -30,16 +31,67 @@ const int kThrottleInterval = 1;  // Number of seconds to throttle idle checks
                                   // for. Return the previously checked idle
                                   // state if the next check is faster than this
 const int kMinThreshold = 15;  // In seconds.  Set >1 sec for security concerns.
-const int kMaxThreshold = 60*60;  // One hours, in seconds.  Not set arbitrarily
-                                  // high for security concerns.
+const int kMaxThreshold = 4*60*60;  // Four hours, in seconds. Not set
+                                    // arbitrarily high for security concerns.
+const unsigned int kMaxCacheSize = 100;  // Number of state queries to cache.
 
-struct ExtensionIdlePollingData {
-  IdleState state;
+struct TimeStampedIdleState {
+  IdleState idle_state;
   double timestamp;
+  TimeStampedIdleState() : idle_state(IDLE_STATE_UNKNOWN), timestamp(0) {
+  }
+  TimeStampedIdleState(IdleState state, double time) : idle_state(state),
+                                                       timestamp(time) {
+  }
+};
+
+typedef std::map<int, TimeStampedIdleState> CachedStateMap;
+
+class ExtensionIdlePollingData {
+ public:
+  ExtensionIdlePollingData() {
+  }
+
+  void Update(int threshold, IdleState new_state) {
+    CleanUp();
+    cached_answer_[threshold] = TimeStampedIdleState(new_state,
+        base::Time::Now().ToDoubleT());
+  }
+
+  bool ShouldThrottle(int threshold) {
+    if (cached_answer_[threshold].idle_state == IDLE_STATE_UNKNOWN)
+      return false;
+    double delta = base::Time::Now().ToDoubleT() -
+        cached_answer_[threshold].timestamp;
+    if (delta < kThrottleInterval)
+      return true;
+    else
+      return false;
+  }
+
+  IdleState GetCachedAnswer(int threshold) {
+    return cached_answer_[threshold].idle_state;
+  }
+ private:
+  void CleanUp() {
+    if (cached_answer_.size() > kMaxCacheSize) {
+      double now = base::Time::Now().ToDoubleT();
+      for (CachedStateMap::iterator it = cached_answer_.begin();
+             it != cached_answer_.end(); ++it) {
+          if (now - it->second.timestamp > kThrottleInterval)
+            cached_answer_.erase(it);
+      }
+    }
+    if (cached_answer_.size() > kMaxCacheSize) {
+      cached_answer_.clear();
+    }
+  }
+
+  CachedStateMap cached_answer_;
 };
 
 // Used to throttle excessive calls to query for idle state
-ExtensionIdlePollingData polling_data = {IDLE_STATE_UNKNOWN, 0};
+ExtensionIdlePollingData polling_data;
 
 // Internal class which is used to poll for changes in the system idle state.
 class ExtensionIdlePollingTask {
@@ -76,6 +128,8 @@ void ExtensionIdlePollingTask::IdleStateCallback(IdleState current_state) {
     ExtensionIdleEventRouter::OnIdleStateChange(profile_, current_state);
 
   ExtensionIdlePollingTask::poll_task_running_ = false;
+
+  polling_data.Update(threshold_, current_state);
 
   // Startup another polling task as we exit.
   if (current_state != IDLE_STATE_ACTIVE)
@@ -126,16 +180,6 @@ int CheckThresholdBounds(int timeout) {
   if (timeout > kMaxThreshold) return kMaxThreshold;
   return timeout;
 }
-
-bool ShouldThrottle() {
-  double now = base::Time::Now().ToDoubleT();
-  double delta = now - polling_data.timestamp;
-  polling_data.timestamp = now;
-  if (delta < kThrottleInterval)
-    return false;
-  else
-    return true;
-}
 };  // namespace
 
 void ExtensionIdleQueryStateFunction::IdleStateCallback(int threshold,
@@ -147,7 +191,7 @@ void ExtensionIdleQueryStateFunction::IdleStateCallback(int threshold,
   }
 
   result_.reset(CreateIdleValue(state));
-  polling_data.state = state;
+  polling_data.Update(threshold, state);
   SendResponse(true);
 }
 
@@ -156,17 +200,12 @@ bool ExtensionIdleQueryStateFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &threshold));
   threshold = CheckThresholdBounds(threshold);
 
-  if (ShouldThrottle()) {
-    if (polling_data.state != IDLE_STATE_UNKNOWN) {
-      result_.reset(CreateIdleValue(polling_data.state));
-      SendResponse(true);
-      return true;
-    }
-    // We cannot get the idle state right now, we're already checking for idle
-    // from a previous call, so continue with normal idle check instead.
+  if (polling_data.ShouldThrottle(threshold)) {
+    result_.reset(CreateIdleValue(polling_data.GetCachedAnswer(threshold)));
+    SendResponse(true);
+    return true;
   }
 
-  polling_data.state = IDLE_STATE_UNKNOWN;
   CalculateIdleState(threshold,
       base::Bind(&ExtensionIdleQueryStateFunction::IdleStateCallback,
                  this, threshold));
