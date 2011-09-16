@@ -486,7 +486,7 @@ void TestFlush() {
   // Invalid args -> PP_ERROR_BAD..., no callback.
   EXPECT(PP_ERROR_BADRESOURCE == PPBGraphics2D()->Flush(kInvalidResource, cc));
   EXPECT(PP_ERROR_BADRESOURCE == PPBGraphics2D()->Flush(kNotAResource, cc));
-  EXPECT(PP_ERROR_BADARGUMENT ==
+  EXPECT(PP_ERROR_BLOCKS_MAIN_THREAD ==
          PPBGraphics2D()->Flush(graphics2d, PP_BlockUntilComplete()));
 
   // Valid args -> PP_OK_COMPLETIONPENDING, expect callback.

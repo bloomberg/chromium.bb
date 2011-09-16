@@ -62,7 +62,7 @@ int32_t PPB_Surface3D_Impl::SwapBuffers(PP_CompletionCallback callback) {
   if (!callback.func) {
     // Blocking SwapBuffers isn't supported (since we have to be on the main
     // thread).
-    return PP_ERROR_BADARGUMENT;
+    return PP_ERROR_BLOCKS_MAIN_THREAD;
   }
 
   if (swap_callback_.get() && !swap_callback_->completed()) {

@@ -378,7 +378,7 @@ void PPB_URLLoader_Impl::FinishLoading(int32_t done_status) {
 int32_t PPB_URLLoader_Impl::ValidateCallback(PP_CompletionCallback callback) {
   // We only support non-blocking calls.
   if (!callback.func)
-    return PP_ERROR_BADARGUMENT;
+    return PP_ERROR_BLOCKS_MAIN_THREAD;
 
   if (pending_callback_.get() && !pending_callback_->completed())
     return PP_ERROR_INPROGRESS;

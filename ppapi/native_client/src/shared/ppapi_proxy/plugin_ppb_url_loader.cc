@@ -60,7 +60,7 @@ int32_t Open(PP_Resource loader,
   int32_t callback_id =
       CompletionCallbackTable::Get()->AddCallback(callback);
   if (callback_id == 0)  // Just like Chrome, for now disallow blocking calls.
-    return PP_ERROR_BADARGUMENT;
+    return PP_ERROR_BLOCKS_MAIN_THREAD;
 
   int32_t pp_error;
   NaClSrpcError srpc_result =
@@ -80,7 +80,7 @@ int32_t FollowRedirect(PP_Resource loader,
   int32_t callback_id =
       CompletionCallbackTable::Get()->AddCallback(callback);
   if (callback_id == 0)  // Just like Chrome, for now disallow blocking calls.
-    return PP_ERROR_BADARGUMENT;
+    return PP_ERROR_BLOCKS_MAIN_THREAD;
 
   int32_t pp_error;
   NaClSrpcError srpc_result =
@@ -167,7 +167,7 @@ int32_t ReadResponseBody(PP_Resource loader,
   int32_t callback_id =
       CompletionCallbackTable::Get()->AddCallback(callback, buffer);
   if (callback_id == 0)  // Just like Chrome, for now disallow blocking calls.
-    return PP_ERROR_BADARGUMENT;
+    return PP_ERROR_BLOCKS_MAIN_THREAD;
 
   int32_t pp_error_or_bytes;
   NaClSrpcError srpc_result =
@@ -195,7 +195,7 @@ int32_t FinishStreamingToFile(PP_Resource loader,
   int32_t callback_id =
       CompletionCallbackTable::Get()->AddCallback(callback);
   if (callback_id == 0)  // Just like Chrome, for now disallow blocking calls.
-    return PP_ERROR_BADARGUMENT;
+    return PP_ERROR_BLOCKS_MAIN_THREAD;
 
   int32_t pp_error;
   NaClSrpcError srpc_result =

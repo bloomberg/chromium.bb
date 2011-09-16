@@ -209,8 +209,10 @@ PP_Bool FlashTCPSocket::GetRemoteAddress(PP_Flash_NetAddress* remote_addr) {
 int32_t FlashTCPSocket::SSLHandshake(const char* server_name,
                                      uint16_t server_port,
                                      PP_CompletionCallback callback) {
-  if (!server_name || !callback.func)
+  if (!server_name)
     return PP_ERROR_BADARGUMENT;
+  if (!callback.func)
+    return PP_ERROR_BLOCKS_MAIN_THREAD;
 
   if (connection_state_ != CONNECTED)
     return PP_ERROR_FAILED;
@@ -230,8 +232,10 @@ int32_t FlashTCPSocket::SSLHandshake(const char* server_name,
 int32_t FlashTCPSocket::Read(char* buffer,
                              int32_t bytes_to_read,
                              PP_CompletionCallback callback) {
-  if (!buffer || bytes_to_read <= 0 || !callback.func)
+  if (!buffer || bytes_to_read <= 0)
     return PP_ERROR_BADARGUMENT;
+  if (!callback.func)
+    return PP_ERROR_BLOCKS_MAIN_THREAD;
 
   if (!IsConnected())
     return PP_ERROR_FAILED;
@@ -251,8 +255,10 @@ int32_t FlashTCPSocket::Read(char* buffer,
 int32_t FlashTCPSocket::Write(const char* buffer,
                               int32_t bytes_to_write,
                               PP_CompletionCallback callback) {
-  if (!buffer || bytes_to_write <= 0 || !callback.func)
+  if (!buffer || bytes_to_write <= 0)
     return PP_ERROR_BADARGUMENT;
+  if (!callback.func)
+    return PP_ERROR_BLOCKS_MAIN_THREAD;
 
   if (!IsConnected())
     return PP_ERROR_FAILED;
@@ -365,7 +371,7 @@ int32_t FlashTCPSocket::ConnectWithMessage(IPC::Message* msg,
                                            PP_CompletionCallback callback) {
   scoped_ptr<IPC::Message> msg_deletor(msg);
   if (!callback.func)
-    return PP_ERROR_BADARGUMENT;
+    return PP_ERROR_BLOCKS_MAIN_THREAD;
   if (connection_state_ != BEFORE_CONNECT)
     return PP_ERROR_FAILED;
   if (connect_callback_.func)

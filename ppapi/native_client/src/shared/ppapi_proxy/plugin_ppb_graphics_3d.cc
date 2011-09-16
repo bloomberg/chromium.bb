@@ -238,7 +238,7 @@ int32_t PluginGraphics3D::SwapBuffers(PP_Resource graphics3d_id,
 
   int32_t callback_id = CompletionCallbackTable::Get()->AddCallback(callback);
   if (callback_id == 0)  // Just like Chrome, for now disallow blocking calls.
-    return PP_ERROR_BADARGUMENT;
+    return PP_ERROR_BLOCKS_MAIN_THREAD;
 
   int32_t pp_error;
   NaClSrpcError retval =

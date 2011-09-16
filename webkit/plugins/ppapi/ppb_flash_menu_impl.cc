@@ -135,10 +135,8 @@ int32_t PPB_Flash_Menu_Impl::Show(const PP_Point* location,
   if (!location)
     return PP_ERROR_BADARGUMENT;
 
-  if (!callback.func) {
-    NOTIMPLEMENTED();
-    return PP_ERROR_BADARGUMENT;
-  }
+  if (!callback.func)
+    return PP_ERROR_BLOCKS_MAIN_THREAD;
 
   if (callback_.get() && !callback_->completed())
     return PP_ERROR_INPROGRESS;

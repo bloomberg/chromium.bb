@@ -162,6 +162,8 @@ PP_Resource PPB_FileRef_Impl::GetParent() {
 
 int32_t PPB_FileRef_Impl::MakeDirectory(PP_Bool make_ancestors,
                                         PP_CompletionCallback callback) {
+  if (!callback.func)
+    return PP_ERROR_BLOCKS_MAIN_THREAD;
   if (!IsValidNonExternalFileSystem())
     return PP_ERROR_NOACCESS;
 
@@ -179,8 +181,11 @@ int32_t PPB_FileRef_Impl::MakeDirectory(PP_Bool make_ancestors,
 int32_t PPB_FileRef_Impl::Touch(PP_Time last_access_time,
                                 PP_Time last_modified_time,
                                 PP_CompletionCallback callback) {
+  if (!callback.func)
+    return PP_ERROR_BLOCKS_MAIN_THREAD;
   if (!IsValidNonExternalFileSystem())
     return PP_ERROR_NOACCESS;
+
   PluginInstance* plugin_instance = ResourceHelper::GetPluginInstance(this);
   if (!plugin_instance)
     return PP_ERROR_FAILED;
@@ -195,8 +200,11 @@ int32_t PPB_FileRef_Impl::Touch(PP_Time last_access_time,
 }
 
 int32_t PPB_FileRef_Impl::Delete(PP_CompletionCallback callback) {
+  if (!callback.func)
+    return PP_ERROR_BLOCKS_MAIN_THREAD;
   if (!IsValidNonExternalFileSystem())
     return PP_ERROR_NOACCESS;
+
   PluginInstance* plugin_instance = ResourceHelper::GetPluginInstance(this);
   if (!plugin_instance)
     return PP_ERROR_FAILED;
@@ -210,6 +218,8 @@ int32_t PPB_FileRef_Impl::Delete(PP_CompletionCallback callback) {
 
 int32_t PPB_FileRef_Impl::Rename(PP_Resource new_pp_file_ref,
                                  PP_CompletionCallback callback) {
+  if (!callback.func)
+    return PP_ERROR_BLOCKS_MAIN_THREAD;
   EnterResourceNoLock<PPB_FileRef_API> enter(new_pp_file_ref, true);
   if (enter.failed())
     return PP_ERROR_BADRESOURCE;

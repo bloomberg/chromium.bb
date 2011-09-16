@@ -134,7 +134,7 @@ void TestOpen() {
     pp_error = ppb_file_system->Open(file_system, kSize,
                                      PP_BlockUntilComplete());
     ppb_core->ReleaseResource(file_system);
-    EXPECT(pp_error == PP_ERROR_BADARGUMENT);
+    EXPECT(pp_error == PP_ERROR_BLOCKS_MAIN_THREAD);
 #endif
 
     // Test success for asynchronous open.

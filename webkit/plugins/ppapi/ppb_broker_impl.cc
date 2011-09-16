@@ -56,7 +56,7 @@ PPB_Broker_API* PPB_Broker_Impl::AsPPB_Broker_API() {
 int32_t PPB_Broker_Impl::Connect(PP_CompletionCallback connect_callback) {
   if (!connect_callback.func) {
     // Synchronous calls are not supported.
-    return PP_ERROR_BADARGUMENT;
+    return PP_ERROR_BLOCKS_MAIN_THREAD;
   }
 
   // TODO(ddorwin): Return PP_ERROR_FAILED if plugin is in-process.

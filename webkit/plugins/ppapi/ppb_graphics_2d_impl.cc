@@ -285,14 +285,12 @@ void PPB_Graphics2D_Impl::ReplaceContents(PP_Resource image_data) {
 }
 
 int32_t PPB_Graphics2D_Impl::Flush(PP_CompletionCallback callback) {
+  if (!callback.func)
+    return PP_ERROR_BLOCKS_MAIN_THREAD;
+
   // Don't allow more than one pending flush at a time.
   if (HasPendingFlush())
     return PP_ERROR_INPROGRESS;
-
-  // TODO(brettw) check that the current thread is not the main one and
-  // implement blocking flushes in this case.
-  if (!callback.func)
-    return PP_ERROR_BADARGUMENT;
 
   bool nothing_visible = true;
   for (size_t i = 0; i < queued_operations_.size(); i++) {

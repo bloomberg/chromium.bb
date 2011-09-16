@@ -124,7 +124,7 @@ int32_t Graphics2D::Flush(PP_CompletionCallback callback) {
   // For now, disallow blocking calls. We'll need to add support for other
   // threads to this later.
   if (!callback.func)
-    return PP_ERROR_BADARGUMENT;
+    return PP_ERROR_BLOCKS_MAIN_THREAD;
 
   if (current_flush_callback_.func)
     return PP_ERROR_INPROGRESS;  // Can't have >1 flush pending.

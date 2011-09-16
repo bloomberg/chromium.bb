@@ -79,6 +79,8 @@ PPB_DirectoryReader_API* PPB_DirectoryReader_Impl::AsPPB_DirectoryReader_API() {
 int32_t PPB_DirectoryReader_Impl::GetNextEntry(
     PP_DirectoryEntry_Dev* entry,
     PP_CompletionCallback callback) {
+  if (!callback.func)
+    return PP_ERROR_BLOCKS_MAIN_THREAD;
   if (directory_ref_->GetFileSystemType() == PP_FILESYSTEMTYPE_EXTERNAL)
     return PP_ERROR_FAILED;
 

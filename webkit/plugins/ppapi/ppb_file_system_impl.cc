@@ -53,6 +53,9 @@ PPB_FileSystem_API* PPB_FileSystem_Impl::AsPPB_FileSystem_API() {
 
 int32_t PPB_FileSystem_Impl::Open(int64_t expected_size,
                                   PP_CompletionCallback callback) {
+  if (!callback.func)
+    return PP_ERROR_BLOCKS_MAIN_THREAD;
+
   // Should not allow multiple opens.
   if (called_open_)
     return PP_ERROR_INPROGRESS;

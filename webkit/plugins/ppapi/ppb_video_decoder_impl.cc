@@ -117,6 +117,9 @@ bool PPB_VideoDecoder_Impl::Init(
 int32_t PPB_VideoDecoder_Impl::Decode(
     const PP_VideoBitstreamBuffer_Dev* bitstream_buffer,
     PP_CompletionCallback callback) {
+  if (!callback.func)
+    return PP_ERROR_BLOCKS_MAIN_THREAD;
+
   if (!platform_video_decoder_)
     return PP_ERROR_BADRESOURCE;
 
@@ -166,6 +169,9 @@ void PPB_VideoDecoder_Impl::ReusePictureBuffer(int32_t picture_buffer_id) {
 }
 
 int32_t PPB_VideoDecoder_Impl::Flush(PP_CompletionCallback callback) {
+  if (!callback.func)
+    return PP_ERROR_BLOCKS_MAIN_THREAD;
+
   if (!platform_video_decoder_)
     return PP_ERROR_BADRESOURCE;
 
@@ -178,6 +184,9 @@ int32_t PPB_VideoDecoder_Impl::Flush(PP_CompletionCallback callback) {
 }
 
 int32_t PPB_VideoDecoder_Impl::Reset(PP_CompletionCallback callback) {
+  if (!callback.func)
+    return PP_ERROR_BLOCKS_MAIN_THREAD;
+
   if (!platform_video_decoder_)
     return PP_ERROR_BADRESOURCE;
 

@@ -231,6 +231,8 @@ int32_t PPB_Transport_Impl::SetProperty(PP_TransportProperty property,
 }
 
 int32_t PPB_Transport_Impl::Connect(PP_CompletionCallback callback) {
+  if (!callback.func)
+    return PP_ERROR_BLOCKS_MAIN_THREAD;
   if (!p2p_transport_.get())
     return PP_ERROR_FAILED;
 
@@ -259,6 +261,8 @@ int32_t PPB_Transport_Impl::Connect(PP_CompletionCallback callback) {
 
 int32_t PPB_Transport_Impl::GetNextAddress(PP_Var* address,
                                            PP_CompletionCallback callback) {
+  if (!callback.func)
+    return PP_ERROR_BLOCKS_MAIN_THREAD;
   if (!p2p_transport_.get())
     return PP_ERROR_FAILED;
 
@@ -295,6 +299,8 @@ int32_t PPB_Transport_Impl::ReceiveRemoteAddress(PP_Var address) {
 
 int32_t PPB_Transport_Impl::Recv(void* data, uint32_t len,
                                  PP_CompletionCallback callback) {
+  if (!callback.func)
+    return PP_ERROR_BLOCKS_MAIN_THREAD;
   if (!p2p_transport_.get())
     return PP_ERROR_FAILED;
 
@@ -322,6 +328,8 @@ int32_t PPB_Transport_Impl::Recv(void* data, uint32_t len,
 
 int32_t PPB_Transport_Impl::Send(const void* data, uint32_t len,
                                  PP_CompletionCallback callback) {
+  if (!callback.func)
+    return PP_ERROR_BLOCKS_MAIN_THREAD;
   if (!p2p_transport_.get())
     return PP_ERROR_FAILED;
 

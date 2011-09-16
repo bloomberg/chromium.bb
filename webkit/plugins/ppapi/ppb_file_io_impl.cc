@@ -315,10 +315,8 @@ int32_t PPB_FileIO_Impl::CommonCallValidation(bool should_be_open,
                                               OperationType new_op,
                                               PP_CompletionCallback callback) {
   // Only asynchronous operation is supported.
-  if (!callback.func) {
-    NOTIMPLEMENTED();
-    return PP_ERROR_BADARGUMENT;
-  }
+  if (!callback.func)
+    return PP_ERROR_BLOCKS_MAIN_THREAD;
 
   if (should_be_open) {
     if (file_ == base::kInvalidPlatformFileValue)

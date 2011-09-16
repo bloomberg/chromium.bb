@@ -157,10 +157,12 @@ PP_TimeTicks GetTickTime() {
 void CallOnMainThread(int delay_in_msec,
                       PP_CompletionCallback callback,
                       int32_t result) {
-  GetMainThreadMessageLoop()->PostDelayedTask(
-      FROM_HERE,
-      NewRunnableFunction(callback.func, callback.user_data, result),
-      delay_in_msec);
+  if (callback.func) {
+    GetMainThreadMessageLoop()->PostDelayedTask(
+        FROM_HERE,
+        NewRunnableFunction(callback.func, callback.user_data, result),
+        delay_in_msec);
+  }
 }
 
 PP_Bool IsMainThread() {

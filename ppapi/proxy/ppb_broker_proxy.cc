@@ -98,7 +98,7 @@ PPB_Broker_API* Broker::AsPPB_Broker_API() {
 int32_t Broker::Connect(PP_CompletionCallback connect_callback) {
   if (!connect_callback.func) {
     // Synchronous calls are not supported.
-    return PP_ERROR_BADARGUMENT;
+    return PP_ERROR_BLOCKS_MAIN_THREAD;
   }
 
   if (current_connect_callback_.func)

@@ -83,6 +83,9 @@ PPB_FileChooser_API* FileChooser::AsPPB_FileChooser_API() {
 }
 
 int32_t FileChooser::Show(const PP_CompletionCallback& callback) {
+  if (!callback.func)
+    return PP_ERROR_BLOCKS_MAIN_THREAD;
+
   if (current_show_callback_.func)
     return PP_ERROR_INPROGRESS;  // Can't show more than once.
 

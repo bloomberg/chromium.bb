@@ -24,10 +24,10 @@ int32_t StreamAsFile(PP_Instance instance,
   int32_t callback_id =
       CompletionCallbackTable::Get()->AddCallback(callback);
   if (callback_id == 0)
-    return PP_ERROR_BADARGUMENT;
+    return PP_ERROR_BLOCKS_MAIN_THREAD;
 
   NaClSrpcError srpc_result = NaClFileRpcClient::StreamAsFile(
-          GetMainSrpcChannel(), instance, const_cast<char*>(url), callback_id);
+      GetMainSrpcChannel(), instance, const_cast<char*>(url), callback_id);
   DebugPrintf("NaClFile::StreamAsFile: %s\n", NaClSrpcErrorString(srpc_result));
 
   if (srpc_result == NACL_SRPC_RESULT_OK)

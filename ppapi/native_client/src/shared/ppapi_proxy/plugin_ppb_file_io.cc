@@ -66,7 +66,7 @@ int32_t Open(PP_Resource file_io,
   int32_t callback_id =
       CompletionCallbackTable::Get()->AddCallback(callback);
   if (callback_id == 0)  // Just like Chrome, for now disallow blocking calls.
-    return PP_ERROR_BADARGUMENT;
+    return PP_ERROR_BLOCKS_MAIN_THREAD;
 
   int32_t pp_error;
   NaClSrpcError srpc_result =
@@ -90,7 +90,7 @@ int32_t Query(PP_Resource file_io,
               struct PP_CompletionCallback callback) {
   DebugPrintf("PPB_FileIO::Query: file_io=%"NACL_PRIu32"\n", file_io);
   if (callback.func == 0)  // Just like Chrome, for now disallow blocking calls.
-    return PP_ERROR_BADARGUMENT;
+    return PP_ERROR_BLOCKS_MAIN_THREAD;
 
   int32_t callback_id = CompletionCallbackTable::Get()->AddCallback(
       callback, reinterpret_cast<char*>(info));
@@ -130,7 +130,7 @@ int32_t Touch(PP_Resource file_io,
   int32_t callback_id =
       CompletionCallbackTable::Get()->AddCallback(callback);
   if (callback_id == 0)  // Just like Chrome, for now disallow blocking calls.
-    return PP_ERROR_BADARGUMENT;
+    return PP_ERROR_BLOCKS_MAIN_THREAD;
 
 
   int32_t pp_error = PP_ERROR_FAILED;
@@ -165,7 +165,7 @@ int32_t Read(PP_Resource file_io,
   int32_t callback_id =
       CompletionCallbackTable::Get()->AddCallback(callback, buffer);
   if (callback_id == 0)  // Just like Chrome, for now disallow blocking calls.
-    return PP_ERROR_BADARGUMENT;
+    return PP_ERROR_BLOCKS_MAIN_THREAD;
 
   int32_t pp_error_or_bytes;
   NaClSrpcError srpc_result =
@@ -202,7 +202,7 @@ int32_t Write(PP_Resource file_io,
   int32_t callback_id =
       CompletionCallbackTable::Get()->AddCallback(callback);
   if (callback_id == 0)  // Just like Chrome, for now disallow blocking calls.
-    return PP_ERROR_BADARGUMENT;
+    return PP_ERROR_BLOCKS_MAIN_THREAD;
 
   int32_t pp_error_or_bytes = PP_ERROR_FAILED;
   NaClSrpcError srpc_result = PpbFileIORpcClient::PPB_FileIO_Write(
@@ -231,7 +231,7 @@ int32_t SetLength(PP_Resource file_io,
   int32_t callback_id =
       CompletionCallbackTable::Get()->AddCallback(callback);
   if (callback_id == 0)  // Just like Chrome, for now disallow blocking calls.
-    return PP_ERROR_BADARGUMENT;
+    return PP_ERROR_BLOCKS_MAIN_THREAD;
 
   int32_t pp_error = PP_ERROR_FAILED;
   NaClSrpcError srpc_result = PpbFileIORpcClient::PPB_FileIO_SetLength(
@@ -256,7 +256,7 @@ int32_t Flush(PP_Resource file_io,
   int32_t callback_id =
       CompletionCallbackTable::Get()->AddCallback(callback);
   if (callback_id == 0)  // Just like Chrome, for now disallow blocking calls.
-    return PP_ERROR_BADARGUMENT;
+    return PP_ERROR_BLOCKS_MAIN_THREAD;
 
   int32_t pp_error = PP_ERROR_FAILED;
   NaClSrpcError srpc_result = PpbFileIORpcClient::PPB_FileIO_Flush(

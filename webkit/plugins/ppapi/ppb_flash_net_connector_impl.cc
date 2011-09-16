@@ -43,10 +43,8 @@ int32_t PPB_Flash_NetConnector_Impl::ConnectTcp(
   if (!socket_out)
     return PP_ERROR_BADARGUMENT;
 
-  if (!callback.func) {
-    NOTIMPLEMENTED();
-    return PP_ERROR_BADARGUMENT;
-  }
+  if (!callback.func)
+    return PP_ERROR_BLOCKS_MAIN_THREAD;
 
   if (callback_.get() && !callback_->completed())
     return PP_ERROR_INPROGRESS;
@@ -80,10 +78,8 @@ int32_t PPB_Flash_NetConnector_Impl::ConnectTcpAddress(
   if (!socket_out)
     return PP_ERROR_BADARGUMENT;
 
-  if (!callback.func) {
-    NOTIMPLEMENTED();
-    return PP_ERROR_BADARGUMENT;
-  }
+  if (!callback.func)
+    return PP_ERROR_BLOCKS_MAIN_THREAD;
 
   if (callback_.get() && !callback_->completed())
     return PP_ERROR_INPROGRESS;

@@ -1579,7 +1579,7 @@ int32_t PluginInstance::LockMouse(PP_Instance instance,
                                   PP_CompletionCallback callback) {
   if (!callback.func) {
     // Don't support synchronous call.
-    return PP_ERROR_BADARGUMENT;
+    return PP_ERROR_BLOCKS_MAIN_THREAD;
   }
   if (lock_mouse_callback_.func)
     return PP_ERROR_INPROGRESS;

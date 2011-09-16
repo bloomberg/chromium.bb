@@ -153,7 +153,7 @@ int32_t Flush(PP_Resource graphics_2d,
   int32_t callback_id =
       CompletionCallbackTable::Get()->AddCallback(callback);
   if (callback_id == 0)  // Just like Chrome, for now disallow blocking calls.
-    return PP_ERROR_BADARGUMENT;
+    return PP_ERROR_BLOCKS_MAIN_THREAD;
 
   int32_t pp_error;
   NaClSrpcError srpc_result =

@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From pp_errors.idl modified Sat Jul 16 16:50:26 2011. */
+/* From pp_errors.idl modified Wed Sep 14 08:34:03 2011. */
 
 #ifndef PPAPI_C_PP_ERRORS_H_
 #define PPAPI_C_PP_ERRORS_H_
@@ -22,7 +22,10 @@
  */
 /**
  * This enumeration contains enumerators of all PPAPI error codes.
- * Errors are negative valued.
+ *
+ * Errors are negative valued. Callers should treat all negative values as a
+ * failure, even if it's not in the list, since the possible errors are likely
+ * to expand and change over time.
  */
 enum {
   /**
@@ -38,11 +41,19 @@ enum {
    * available.
    */
   PP_OK_COMPLETIONPENDING = -1,
-  /** This value indicates failure for unspecified reasons. */
+  /**This value indicates failure for unspecified reasons. */
   PP_ERROR_FAILED = -2,
   /**
    * This value indicates failure due to an asynchronous operation being
-   * interrupted, typically as a result of user action.
+   * interrupted. The most common cause of this error code is destroying a
+   * resource that still has a callback pending. All callbacks are guaranteed
+   * to execute, so any callbacks pending on a destroyed resource will be
+   * issued with PP_ERROR_ABORTED.
+   *
+   * If you get an aborted notification that you aren't expecting, check to
+   * make sure that the resource you're using is still in scope. A common
+   * mistake is to create a resource on the stack, which will destroy the
+   * resource as soon as the function returns.
    */
   PP_ERROR_ABORTED = -3,
   /** This value indicates failure due to an invalid argument. */
@@ -69,6 +80,19 @@ enum {
    * The requested command is not supported by the browser.
    */
   PP_ERROR_NOTSUPPORTED = -12,
+  /**
+   * Returned if you try to use a null completion callback to "block until
+   * complete" on the main thread. Blocking the main thread is not permitted
+   * to keep the browser responsive (otherwise, you may not be able to handle
+   * input events, and there are reentrancy and deadlock issues).
+   *
+   * The goal is to provide blocking calls from background threads, but PPAPI
+   * calls on background threads are not currently supported. Until this
+   * support is complete, you must either do asynchronous operations on the
+   * main thread, or provide an adaptor for a blocking background thread to
+   * execute the operaitions on the main thread.
+   */
+  PP_ERROR_BLOCKS_MAIN_THREAD = -13,
   PP_ERROR_FILENOTFOUND = -20,
   /** This value indicates failure due to a file that already exists. */
   PP_ERROR_FILEEXISTS = -21,
