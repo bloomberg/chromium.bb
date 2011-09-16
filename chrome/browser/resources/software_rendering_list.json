@@ -52,7 +52,7 @@
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "1.18",
+  "version": "1.19",
   "entries": [
     {
       "id": 1,
@@ -401,6 +401,29 @@
         "op": "<=",
         "number": "8.15.10.2202"
       },
+      "blacklist": [
+        "all"
+      ]
+    },
+    {
+      "id": 27,
+      "description": "Disable open source drivers for ATI/AMD cards in Linux.",
+      "cr_bugs": [95934],
+      "os": {
+        "type": "linux"
+      },
+      "driver_vendor": {
+        "op": "contains",
+        "value": "SGI"
+      },
+      "exceptions": [
+        {
+          "vendor_id": "0x8086"
+        },
+        {
+          "vendor_id": "0x10de"
+        }
+      ],
       "blacklist": [
         "all"
       ]
