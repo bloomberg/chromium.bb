@@ -1,0 +1,89 @@
+# -*- python -*-
+# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+Import('env')
+
+if (not env.Bit('bitcode')):
+  flags = ['-mfpmath=sse', '-msse2', '-O3', '-ffast-math',
+           '-fomit-frame-pointer']
+  env.Append(CCFLAGS=flags)
+  env.Append(CXXFLAGS=flags)
+
+earthlib = env.ComponentLibrary('earthlib', ['earth.cc'])
+
+# build, C then C++
+cobj=['pepper_c.c']
+c_nexe_name = 'earth_c_%s' % env.get('TARGET_FULLARCH')
+cnexe = env.ComponentProgram(c_nexe_name, cobj,
+                            EXTRA_LIBS=['earthlib',
+                                        '${PPAPI_LIBS}',
+                                        'm', 'pthread'])
+env.Publish(c_nexe_name, 'run', ['earth_c.html'])
+
+node = env.DemoSelLdrNacl('demo_earth_c', cnexe, args=[])
+# Note: Make this available from top level
+Alias('demo_earth_c', node)
+
+ccobj=['pepper_cc.cc']
+cc_nexe_name = 'earth_cc_%s' % env.get('TARGET_FULLARCH')
+ccnexe = env.ComponentProgram(cc_nexe_name, ccobj,
+                            EXTRA_LIBS=['earthlib',
+                                        '${PPAPI_LIBS}',
+                                        'ppapi_cpp',
+                                        'm', 'pthread'])
+env.Publish(cc_nexe_name, 'run', ['earth_cc.html'])
+
+node = env.DemoSelLdrNacl('demo_earth_cc', ccnexe, args=[])
+# Note: Make this available from top level
+Alias('demo_earth_cc', node)
+
+
+# Validator tests, C then C++, but not for glibc
+# TODO(bradchen): enable these tests when ncval works with glibc DSOs
+if not env.Bit('nacl_glibc'):
+  node = env.CommandValidatorTestNacl(
+    'earth_test_val_c.out',
+    image=[cnexe],
+    )
+  env.AddNodeToTestSuite(node, ['validator_tests', 'small_tests'],
+                         'run_earth_c')
+  node = env.CommandValidatorTestNacl(
+    'earth_test_val_cc.out',
+    image=[ccnexe],
+    )
+  env.AddNodeToTestSuite(node, ['validator_tests', 'small_tests'],
+                         'run_earth_cc')
+
+# TODO(robertm): enable arm support ASAP
+if env.Bit('target_arm'):
+  Return()
+
+# browser tests, C then C++
+
+node = env.PPAPIBrowserTester(
+    'earth_browser_test_c.out',
+    url='earth_c.html',
+    nmfs=['earth_c.nmf'],
+    files=[cnexe,
+           env.File('earth_c.html'),
+           env.File('earth_c.nmf'),
+           ]
+    )
+
+env.AddNodeToTestSuite(node, ['chrome_browser_tests'], 'earth_browser_test_c',
+                       is_broken=env.Bit('nacl_glibc'))
+
+node = env.PPAPIBrowserTester(
+    'earth_browser_test_cc.out',
+    url='earth_cc.html',
+    nmfs=['earth_cc.nmf'],
+    files=[ccnexe,
+           env.File('earth_cc.html'),
+           env.File('earth_cc.nmf'),
+           ]
+    )
+
+env.AddNodeToTestSuite(node, ['chrome_browser_tests'], 'earth_browser_test_cc',
+                       is_broken=env.Bit('nacl_glibc'))

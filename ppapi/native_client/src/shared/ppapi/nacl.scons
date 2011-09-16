@@ -1,0 +1,47 @@
+# -*- python -*-
+# Copyright 2011 The Native Client Authors.  All rights reserved.
+# Use of this source code is governed by a BSD-style license that can
+# be found in the LICENSE file.
+
+import os
+import gyp_extract
+
+Import('env')
+
+# Underlay $SOURCE_ROOT/ppapi in this directory.
+Dir('.').addRepository(Dir('#/../ppapi'))
+
+# TODO(ncbray): reenable
+# http://code.google.com/p/nativeclient/issues/detail?id=1643
+env.FilterOut(CCFLAGS=['-Wswitch-enum'])
+
+# Load ppapi_cpp.gypi
+ppapi_cpp_gypi = gyp_extract.LoadGypFile(
+    env.File('$SOURCE_ROOT/ppapi/ppapi_cpp.gypi').abspath)
+
+# From ppapi_cpp.gypi:ppapi_cpp_objects:.*\.cc
+# From ppapi_cpp.gypi:ppapi_cpp:.*\.cc
+cpp_sources = (
+    gyp_extract.GypTargetSources(
+        ppapi_cpp_gypi, 'ppapi_cpp_objects', '.*\.cc') +
+    gyp_extract.GypTargetSources(
+        ppapi_cpp_gypi, 'ppapi_cpp', '.*\.cc')
+)
+libppapi_cpp = env.NaClSdkLibrary('libppapi_cpp', cpp_sources)
+env.AddLibraryToSdk(libppapi_cpp)
+
+env.Append(CPPPATH=[
+    '$SOURCE_ROOT/ppapi/lib/gl/gles2',
+    '$SOURCE_ROOT/ppapi/lib/gl/include',
+    ])
+
+# Load ppapi_gl.gypi
+ppapi_gl_gypi = gyp_extract.LoadGypFile(
+    env.File('$SOURCE_ROOT/ppapi/ppapi_gl.gypi').abspath)
+
+# From ppapi_gl.gypi:ppapi_gles2:.*\.c
+gles2_sources = gyp_extract.GypTargetSources(
+    ppapi_gl_gypi, 'ppapi_gles2', '.*\.c')
+libppapi_gles2 = env.NaClSdkLibrary('libppapi_gles2', gles2_sources)
+
+env.AddLibraryToSdk(libppapi_gles2)

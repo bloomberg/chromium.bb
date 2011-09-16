@@ -1,0 +1,30 @@
+// This file is an example of a working manifest file for the earth_c
+// example. Note that the library names, including the eight-digit version
+// number, must match the libraries available to the application.
+//
+// At the time this file was committed, the earth example was broken due to
+// this issue: http://code.google.com/p/nativeclient/issues/detail?id=2202
+// As a work around, specify 'usesysconf="false"' in the HTML file.
+{
+  "program": {
+    "x86-32": {"url": "lib/runnable-ld.so"},
+    "x86-64": {"url": "lib/runnable-ld.so"},
+    "arm":    {"url": "lib/runnable-ld.so"}
+  },
+  "files": {
+    "lib/runnable-ld.so" : { "x86-32" : { "url": "lib/runnable-ld.so"}},
+    "lib/libc.so.b0c62cad" : { "x86-32" : { "url": "lib/libc.so.b0c62cad"}},
+    "lib/libm.so.b0c62cad" : { "x86-32" : { "url": "lib/libm.so.b0c62cad"}},
+    "lib/libgcc_s.so.1" : { "x86-32" : { "url": "lib/libgcc_s.so.1"}},
+    "lib/libpthread.so.b0c62cad" :
+       { "x86-32" : { "url": "lib/libpthread.so.b0c62cad"}},
+    "lib/libstdc++.so.6" : { "x86-32" : { "url": "lib/libstdc++.so.6"}},
+    "lib/libplatform.so" : { "x86-32" : { "url": "lib/libplatform.so"}},
+    "lib/libgio.so" : { "x86-32" : { "url": "lib/libgio.so"}},
+    "main.nexe": {
+      "x86-32": {"url": "earth_c_x86-32.nexe"},
+      "x86-64": {"url": "earth_c_x86-64.nexe"},
+      "arm": {"url": "earth_c_arm.nexe"}
+    }
+  }
+}

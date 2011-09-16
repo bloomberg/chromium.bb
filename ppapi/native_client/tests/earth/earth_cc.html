@@ -1,0 +1,58 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+  <!-- Copyright 2011 Google Inc.  All rights reserved. -->
+  <head>
+    <META HTTP-EQUIV="Pragma" CONTENT="no-cache" />
+    <META HTTP-EQUIV="Expires" CONTENT="-1" />
+    <script type="text/javascript" src="nacltest.js"></script>
+    <script type="application/x-javascript">
+      //<![CDATA[
+function setupTests(tester, plugin) {
+  tester.addAsyncTest('smoke', function(status) {
+    status.setTimeout(function() {
+      // '' means there was no error.
+      status.assertEqual(plugin.lastError, '');
+      status.pass(); // Async tests require an explicit pass.
+    }, 2000);
+  });
+}
+      //]]>
+    </script>
+    <title>Native Client Rotating Globe</title>
+</head>
+
+<body>
+
+<h1>Native Client Rotating Globe - C++</h1>
+ <p>
+    Image Credit:
+    NASA Goddard Space Flight Center Image by Reto Stöckli (land surface,
+    shallow water, clouds). Enhancements by Robert Simmon (ocean color,
+    compositing, 3D globes, animation).
+    Data and technical support: MODIS Land Group; MODIS Science Data,
+    Support Team; MODIS Atmosphere Group; MODIS Ocean Group Additional data:
+    USGS EROS Data Center (topography); USGS Terrestrial Remote Sensing
+    Flagstaff Field Center (Antarctica); Defense Meteorological
+    Satellite Program (city lights).
+ </p>
+
+<embed name="nacl_module_c"
+       id="earth_cc_nexe"
+       width=512 height=512
+       src="earth_cc.nmf"
+       type="application/x-nacl"
+       usesysconf="true">
+
+    <script type="text/javascript">
+      //<![CDATA[
+      var tester = new Tester();
+      setupTests(tester, $('earth_cc_nexe'));
+      tester.waitFor($('earth_cc_nexe'));
+      tester.run();
+      //]]>
+    </script>
+
+</body>
+</html>
+
