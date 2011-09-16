@@ -4218,12 +4218,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_PLUGINS_NO_PLUGINS" desc="Text that indicates that no plugins are installed">
         No plugins are installed
       </message>
-      <message name="IDS_PLUGINS_DISABLED_HEADER" desc="Text right before the plugins disabled body text.">
-        Plugin preferences have been disabled.
-      </message>
-      <message name="IDS_PLUGINS_DISABLED_TEXT" desc="Text at the top of the about:plugins page on profiles launched after the first profile, warning that they may not control plugins during this browser session.">
-        There are multiple simultaneous users of Chrome on this computer. Only the first user to launch Chrome can modify these preferences. Sorry about that!
-      </message>
 
       <!-- about:policy -->
       <message name="IDS_POLICY_TITLE" desc="The title for the about:policies page.">

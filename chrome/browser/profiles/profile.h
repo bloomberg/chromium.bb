@@ -524,10 +524,6 @@ class Profile : public content::BrowserContext {
     return restored_last_session_;
   }
 
-  bool first_launched() const {
-    return first_launched_;
-  }
-
   // Stop sending accessibility events until ResumeAccessibilityEvents().
   // Calls to Pause nest; no events will be sent until the number of
   // Resume calls matches the number of Pause calls received.
@@ -574,9 +570,6 @@ class Profile : public content::BrowserContext {
   static net::URLRequestContextGetter* GetDefaultRequestContext();
 
   bool restored_last_session_;
-
-  // True only for the very first profile launched in a Chrome session.
-  bool first_launched_;
 
   // Accessibility events will only be propagated when the pause
   // level is zero.  PauseAccessibilityEvents and ResumeAccessibilityEvents

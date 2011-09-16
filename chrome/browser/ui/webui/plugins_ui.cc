@@ -41,7 +41,7 @@ using webkit::WebPluginInfo;
 
 namespace {
 
-ChromeWebUIDataSource* CreatePluginsUIHTMLSource(bool enable_controls) {
+ChromeWebUIDataSource* CreatePluginsUIHTMLSource() {
   ChromeWebUIDataSource* source =
       new ChromeWebUIDataSource(chrome::kChromeUIPluginsHost);
 
@@ -74,13 +74,6 @@ ChromeWebUIDataSource* CreatePluginsUIHTMLSource(bool enable_controls) {
   source->AddLocalizedString("disable", IDS_PLUGINS_DISABLE);
   source->AddLocalizedString("enable", IDS_PLUGINS_ENABLE);
   source->AddLocalizedString("noPlugins", IDS_PLUGINS_NO_PLUGINS);
-
-  if (!enable_controls) {
-    source->AddLocalizedString("pluginsDisabledHeader",
-                               IDS_PLUGINS_DISABLED_HEADER);
-    source->AddLocalizedString("pluginsDisabledText",
-                               IDS_PLUGINS_DISABLED_TEXT);
-  }
 
   source->set_json_path("strings.js");
   source->add_resource_path("plugins.js", IDR_PLUGINS_JS);
@@ -390,11 +383,9 @@ PluginsUI::PluginsUI(TabContents* contents) : ChromeWebUI(contents) {
   AddMessageHandler((new PluginsDOMHandler())->Attach(this));
 
   // Set up the chrome://plugins/ source.
-  // TODO(bauerb): Remove |enable_controls| & co.
-  bool enable_controls = true;
   Profile* profile = Profile::FromBrowserContext(contents->browser_context());
   profile->GetChromeURLDataManager()->AddDataSource(
-      CreatePluginsUIHTMLSource(enable_controls));
+      CreatePluginsUIHTMLSource());
 }
 
 

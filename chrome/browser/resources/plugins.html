@@ -12,11 +12,6 @@
   <div id="header"><h1 i18n-content="pluginsTitle">TITLE</h1></div>
 
   <div id="pluginTemplate">
-     
-    <div id="disabled-container" jsdisplay="!preferenceControlsEnabled()">
-      <span id="disabled-header" i18n-content="pluginsDisabledHeader"></span>
-      <span i18n-content="pluginsDisabledText"></span>
-    </div>
 
     <div id="container" class="vbox-container">
     <div id="top" class="wbox">
@@ -123,16 +118,14 @@
                         <a
                           class="disable-plugin-link"
                           jsvalues=".path:path"
-                          jsdisplay="enabledMode == 'enabledByUser' &&
-                                     preferenceControlsEnabled()"
+                          jsdisplay="enabledMode == 'enabledByUser'"
                           href="#"
                           i18n-content="disable"
                           >DISABLE</a>
                         <a
                           class="enable-plugin-link"
                           jsvalues=".path:path"
-                          jsdisplay="enabledMode == 'disabledByUser' &&
-                                     preferenceControlsEnabled()"
+                          jsdisplay="enabledMode == 'disabledByUser'"
                           href="#"
                           i18n-content="enable"
                           >ENABLE</a>
@@ -182,16 +175,14 @@
               <a
                 class="disable-group-link"
                 jsvalues=".path:name"
-                jsdisplay="enabledMode == 'enabledByUser' &&
-                           preferenceControlsEnabled()"
+                jsdisplay="enabledMode == 'enabledByUser'"
                 href="#"
                 i18n-content="disable"
                 >DISABLE</a>
               <a
                 class="enable-group-link"
                 jsvalues=".path:name"
-                jsdisplay="enabledMode == 'disabledByUser' &&
-                           preferenceControlsEnabled()"
+                jsdisplay="enabledMode == 'disabledByUser'"
                 href="#"
                 i18n-content="enable"
                 >ENABLE</a>
@@ -213,7 +204,6 @@
     </div>
   </div>
 </div>
-<script src="chrome://resources/js/local_strings.js"></script>    
 <script src="chrome://plugins/plugins.js"></script>
 <script src="chrome://plugins/strings.js"></script>
 <script src="chrome://resources/js/i18n_template.js"></script>

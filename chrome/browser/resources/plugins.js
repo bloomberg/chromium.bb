@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-var localStrings = new LocalStrings();
-
 /**
  * This variable structure is here to document the structure that the template
  * expects to correctly populate the page.
@@ -237,13 +235,6 @@ function shouldDisplayPluginDescription(plugin) {
 function isPluginEnabled(plugin) {
   return plugin.enabledMode == 'enabledByUser' ||
          plugin.enabledMode == 'enabledByPolicy';
-}
-
-/**
- * Determines whether buttons to enable/disable plugins are displayed or not.
- */
-function preferenceControlsEnabled() {
-  return !localStrings.getString('pluginsDisabledText');
 }
 
 // Unfortunately, we don't have notifications for plugin (list) status changes
