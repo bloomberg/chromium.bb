@@ -144,12 +144,14 @@ class MimeWriter {
   }
 
   // Append key/value pair, splitting value into chunks no larger than
-  // kMaxCrashChunkSize. The msg_type string will have a counter suffix to
-  // distinguish each chunk.
+  // |chunk_size|. |chunk_size| cannot be greater than |kMaxCrashChunkSize|.
+  // The msg_type string will have a counter suffix to distinguish each chunk.
   void AddPairDataInChunks(const char* msg_type,
                            size_t msg_type_size,
                            const char* msg_data,
-                           size_t msg_data_size);
+                           size_t msg_data_size,
+                           size_t chunk_size,
+                           bool strip_trailing_spaces);
 
   // Add binary file dump. Currently this is only done once, so the name is
   // fixed.
@@ -168,6 +170,7 @@ class MimeWriter {
   void AddString(const char* str) {
     AddItem(str, my_strlen(str));
   }
+  void AddItemWithoutTrailingSpaces(const void* base, size_t size);
 
   struct kernel_iovec iov_[kIovCapacity];
   int iov_index_;
@@ -216,7 +219,12 @@ void MimeWriter::AddPairData(const char* msg_type,
 void MimeWriter::AddPairDataInChunks(const char* msg_type,
                                      size_t msg_type_size,
                                      const char* msg_data,
-                                     size_t msg_data_size) {
+                                     size_t msg_data_size,
+                                     size_t chunk_size,
+                                     bool strip_trailing_spaces) {
+  if (chunk_size > kMaxCrashChunkSize)
+    return;
+
   unsigned i = 0;
   size_t done = 0, msg_length = msg_data_size;
 
@@ -225,7 +233,7 @@ void MimeWriter::AddPairDataInChunks(const char* msg_type,
     const unsigned num_len = my_int_len(++i);
     my_itos(num, i, num_len);
 
-    size_t chunk_len = std::min((size_t)kMaxCrashChunkSize, msg_length);
+    size_t chunk_len = std::min(chunk_size, msg_length);
 
     AddString(g_form_data_msg);
     AddItem(msg_type, msg_type_size);
@@ -233,7 +241,11 @@ void MimeWriter::AddPairDataInChunks(const char* msg_type,
     AddString(g_quote_msg);
     AddString(g_rn);
     AddString(g_rn);
-    AddItem(msg_data + done, chunk_len);
+    if (strip_trailing_spaces) {
+      AddItemWithoutTrailingSpaces(msg_data + done, chunk_len);
+    } else {
+      AddItem(msg_data + done, chunk_len);
+    }
     AddString(g_rn);
     AddBoundary();
     Flush();
@@ -263,6 +275,16 @@ void MimeWriter::AddItem(const void* base, size_t size) {
   iov_[iov_index_].iov_base = const_cast<void*>(base);
   iov_[iov_index_].iov_len = size;
   ++iov_index_;
+}
+
+void MimeWriter::AddItemWithoutTrailingSpaces(const void* base, size_t size) {
+  while (size > 0) {
+    const char* c = static_cast<const char*>(base) + size - 1;
+    if (*c != ' ')
+      break;
+    size--;
+  }
+  AddItem(base, size);
 }
 
 }  // namespace
@@ -389,35 +411,57 @@ pid_t HandleCrashDump(const BreakpadInfo& info) {
   //   abcdef \r\n
   //   BOUNDARY \r\n
   //
+  //   zero or one:
+  //   Content-Disposition: form-data; name="num-views" \r\n \r\n
+  //   3 \r\n
+  //   BOUNDARY \r\n
+  //
+  //   zero or one:
+  //   Content-Disposition: form-data; name="num-extensions" \r\n \r\n
+  //   5 \r\n
+  //   BOUNDARY \r\n
+  //
+  //   zero to 10:
+  //   Content-Disposition: form-data; name="extension-1" \r\n \r\n
+  //   abcdefghijklmnopqrstuvwxyzabcdef \r\n
+  //   BOUNDARY \r\n
+  //
+  //   zero or one:
+  //   Content-Disposition: form-data; name="num-switches" \r\n \r\n
+  //   5 \r\n
+  //   BOUNDARY \r\n
+  //
+  //   zero to 15:
+  //   Content-Disposition: form-data; name="switch-1" \r\n \r\n
+  //   --foo \r\n
+  //   BOUNDARY \r\n
+  //
   //   Content-Disposition: form-data; name="dump"; filename="dump" \r\n
   //   Content-Type: application/octet-stream \r\n \r\n
   //   <dump contents>
   //   \r\n BOUNDARY -- \r\n
 
-  #if defined(OS_CHROMEOS)
-  static const char chrome_product_msg[] = "Chrome_ChromeOS";
-  #else  // OS_LINUX
-  static const char chrome_product_msg[] = "Chrome_Linux";
-  #endif
-  static const char version_msg[] = PRODUCT_VERSION;
-  static const char prod_msg[] = "prod";
-  static const char ver_msg[] = "ver";
-  static const char guid_msg[] = "guid";
-  static const char url_chunk_msg[] = "url-chunk-";
-  static const char process_time_msg[] = "ptime";
-  static const char process_type_msg[] = "ptype";
-  static const char distro_msg[] = "lsb-release";
-
   MimeWriter writer(fd, mime_boundary);
+  {
+#if defined(OS_CHROMEOS)
+    static const char chrome_product_msg[] = "Chrome_ChromeOS";
+#else  // OS_LINUX
+    static const char chrome_product_msg[] = "Chrome_Linux";
+#endif
+    static const char version_msg[] = PRODUCT_VERSION;
+    static const char prod_msg[] = "prod";
+    static const char ver_msg[] = "ver";
+    static const char guid_msg[] = "guid";
 
-  writer.AddBoundary();
-  writer.AddPairString(prod_msg, chrome_product_msg);
-  writer.AddBoundary();
-  writer.AddPairString(ver_msg, version_msg);
-  writer.AddBoundary();
-  writer.AddPairString(guid_msg, info.guid);
-  writer.AddBoundary();
-  writer.Flush();
+    writer.AddBoundary();
+    writer.AddPairString(prod_msg, chrome_product_msg);
+    writer.AddBoundary();
+    writer.AddPairString(ver_msg, version_msg);
+    writer.AddBoundary();
+    writer.AddPairString(guid_msg, info.guid);
+    writer.AddBoundary();
+    writer.Flush();
+  }
 
   if (info.process_start_time > 0) {
     struct kernel_timeval tv;
@@ -429,6 +473,7 @@ pid_t HandleCrashDump(const BreakpadInfo& info) {
         const unsigned time_len = my_uint64_len(time);
         my_uint64tos(time_str, time, time_len);
 
+        static const char process_time_msg[] = "ptime";
         writer.AddPairData(process_time_msg, sizeof(process_time_msg) - 1,
                            time_str, time_len);
         writer.AddBoundary();
@@ -438,6 +483,7 @@ pid_t HandleCrashDump(const BreakpadInfo& info) {
   }
 
   if (info.process_type_length) {
+    static const char process_type_msg[] = "ptype";
     writer.AddPairString(process_type_msg, info.process_type);
     writer.AddBoundary();
     writer.Flush();
@@ -466,16 +512,73 @@ pid_t HandleCrashDump(const BreakpadInfo& info) {
   }
 
   if (info.distro_length) {
+    static const char distro_msg[] = "lsb-release";
     writer.AddPairString(distro_msg, info.distro);
     writer.AddBoundary();
     writer.Flush();
   }
 
-  // For rendererers and plugins.
+  // For renderers and plugins.
   if (info.crash_url_length) {
+    static const char url_chunk_msg[] = "url-chunk-";
     static const unsigned kMaxUrlLength = 8 * MimeWriter::kMaxCrashChunkSize;
     writer.AddPairDataInChunks(url_chunk_msg, sizeof(url_chunk_msg) - 1,
-        info.crash_url, std::min(info.crash_url_length, kMaxUrlLength));
+        info.crash_url, std::min(info.crash_url_length, kMaxUrlLength),
+        MimeWriter::kMaxCrashChunkSize, false /* Don't strip whitespaces. */);
+  }
+
+  unsigned num_views_len = my_strlen(child_process_logging::g_num_views);
+  if (num_views_len) {
+    static const char num_views_msg[] = "num-views";
+    writer.AddPairString(num_views_msg, child_process_logging::g_num_views);
+    writer.AddBoundary();
+    writer.Flush();
+  }
+
+  unsigned num_extensions_len =
+      my_strlen(child_process_logging::g_num_extensions);
+  if (num_extensions_len) {
+    static const char num_extensions_msg[] = "num-extensions";
+    writer.AddPairString(num_extensions_msg,
+                         child_process_logging::g_num_extensions);
+    writer.AddBoundary();
+    writer.Flush();
+  }
+
+  unsigned extension_ids_len =
+      my_strlen(child_process_logging::g_extension_ids);
+  if (extension_ids_len) {
+    static const char extension_msg[] = "extension-";
+    static const unsigned kMaxExtensionsLen =
+        kMaxReportedActiveExtensions * child_process_logging::kExtensionLen;
+    writer.AddPairDataInChunks(extension_msg, sizeof(extension_msg) - 1,
+        child_process_logging::g_extension_ids,
+        std::min(extension_ids_len, kMaxExtensionsLen),
+        child_process_logging::kExtensionLen,
+        false /* Don't strip whitespace. */);
+  }
+
+  unsigned num_switches_len =
+      my_strlen(child_process_logging::g_num_switches);
+  if (num_switches_len) {
+    static const char num_switches_msg[] = "num-switches";
+    writer.AddPairString(num_switches_msg,
+                         child_process_logging::g_num_switches);
+    writer.AddBoundary();
+    writer.Flush();
+  }
+
+  unsigned switches_len =
+      my_strlen(child_process_logging::g_switches);
+  if (switches_len) {
+    static const char switch_msg[] = "switch-";
+    static const unsigned kMaxSwitchLen =
+        kMaxSwitches * child_process_logging::kSwitchLen;
+    writer.AddPairDataInChunks(switch_msg, sizeof(switch_msg) - 1,
+        child_process_logging::g_switches,
+        std::min(switches_len, kMaxSwitchLen),
+        child_process_logging::kSwitchLen,
+        true /* Strip whitespace since switches are padded to kSwitchLen. */);
   }
 
   writer.AddFileDump(dump_data, st.st_size);
