@@ -3,9 +3,9 @@ include_rules = [
   "-chrome/browser/sync/notifier",
   "-chrome/browser/sync/sessions",
   "-chrome/browser/sync/syncable",
-  "-chrome/browser/sync/util",
 
   "+chrome/browser/sync/internal_api",
+  "+chrome/browser/sync/util",
 
   # Should these live in their own "includes" (e.g) directory(ies)?
   # Bug 19878.

@@ -12,7 +12,7 @@
 #include "base/compiler_specific.h"
 #include "base/threading/non_thread_safe.h"
 #include "chrome/browser/sync/syncable/transaction_observer.h"
-#include "chrome/browser/sync/weak_handle.h"
+#include "chrome/browser/sync/util/weak_handle.h"
 
 namespace tracked_objects {
 class Location;

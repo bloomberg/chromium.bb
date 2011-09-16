@@ -21,7 +21,7 @@
 #include "chrome/browser/sync/sessions/session_state.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/test/engine/test_user_share.h"
-#include "chrome/browser/sync/weak_handle.h"
+#include "chrome/browser/sync/util/weak_handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace browser_sync {

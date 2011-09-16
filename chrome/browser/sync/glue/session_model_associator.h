@@ -28,7 +28,7 @@
 #include "chrome/browser/sync/glue/synced_window_delegate.h"
 #include "chrome/browser/sync/protocol/session_specifics.pb.h"
 #include "chrome/browser/sync/syncable/model_type.h"
-#include "chrome/browser/sync/weak_handle.h"
+#include "chrome/browser/sync/util/weak_handle.h"
 
 class Profile;
 class ProfileSyncService;

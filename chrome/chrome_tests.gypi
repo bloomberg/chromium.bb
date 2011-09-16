@@ -2950,7 +2950,7 @@
         'browser/sync/util/extensions_activity_monitor_unittest.cc',
         'browser/sync/util/protobuf_unittest.cc',
         'browser/sync/util/user_settings_unittest.cc',
-        'browser/sync/weak_handle_unittest.cc',
+        'browser/sync/util/weak_handle_unittest.cc',
       ],
       'include_dirs': [
         '..',

@@ -14,7 +14,7 @@
 #include "chrome/browser/sync/js/js_controller.h"
 #include "chrome/browser/sync/js/js_event_handler.h"
 #include "chrome/browser/sync/js/js_reply_handler.h"
-#include "chrome/browser/sync/weak_handle.h"
+#include "chrome/browser/sync/util/weak_handle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace base {

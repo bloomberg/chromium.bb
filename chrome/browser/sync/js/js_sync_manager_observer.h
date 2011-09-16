@@ -11,7 +11,7 @@
 #include "base/basictypes.h"
 #include "chrome/browser/sync/internal_api/sync_manager.h"
 #include "chrome/browser/sync/protocol/sync_protocol_error.h"
-#include "chrome/browser/sync/weak_handle.h"
+#include "chrome/browser/sync/util/weak_handle.h"
 
 namespace tracked_objects {
 class Location;

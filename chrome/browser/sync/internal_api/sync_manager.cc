@@ -44,7 +44,6 @@
 #include "chrome/browser/sync/syncable/model_type_payload_map.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 #include "chrome/browser/sync/util/cryptographer.h"
-#include "chrome/browser/sync/weak_handle.h"
 #include "chrome/common/chrome_switches.h"
 #include "net/base/network_change_notifier.h"
 

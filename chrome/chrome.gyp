@@ -718,8 +718,8 @@
         'browser/sync/util/user_settings.h',
         'browser/sync/util/user_settings_posix.cc',
         'browser/sync/util/user_settings_win.cc',
-        'browser/sync/weak_handle.cc',
-        'browser/sync/weak_handle.h',
+        'browser/sync/util/weak_handle.cc',
+        'browser/sync/util/weak_handle.h',
       ],
       'include_dirs': [
         '..',

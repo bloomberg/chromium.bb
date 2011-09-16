@@ -44,8 +44,8 @@
 //   void OnIOError(IOError err) { DCHECK(CalledOnValidThread(); ... }
 // };
 
-#ifndef CHROME_BROWSER_SYNC_WEAK_HANDLE_H_
-#define CHROME_BROWSER_SYNC_WEAK_HANDLE_H_
+#ifndef CHROME_BROWSER_SYNC_UTIL_WEAK_HANDLE_H_
+#define CHROME_BROWSER_SYNC_UTIL_WEAK_HANDLE_H_
 #pragma once
 
 #include <cstddef>
@@ -358,4 +358,4 @@ WeakHandle<T> MakeWeakHandle(const base::WeakPtr<T>& ptr) {
 
 }  // namespace browser_sync
 
-#endif  // CHROME_BROWSER_SYNC_WEAK_HANDLE_H_
+#endif  // CHROME_BROWSER_SYNC_UTIL_WEAK_HANDLE_H_
