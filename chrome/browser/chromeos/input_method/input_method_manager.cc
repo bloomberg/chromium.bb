@@ -141,7 +141,8 @@ class InputMethodManagerImpl : public HotkeyManager::Observer,
         candidate_window_controller_(NULL),
 #endif
         shutting_down_(false),
-        ibus_daemon_process_handle_(base::kNullProcessHandle) {
+        ibus_daemon_process_handle_(base::kNullProcessHandle),
+        xkeyboard_(util_) {
     // Observe APP_TERMINATING to stop input method daemon gracefully.
     // We should not use APP_EXITING here since logout might be canceled by
     // JavaScript after APP_EXITING is sent (crosbug.com/11055).
@@ -206,7 +207,7 @@ class InputMethodManagerImpl : public HotkeyManager::Observer,
     for (size_t i = 0; i < active_input_method_ids_.size(); ++i) {
       const std::string& input_method_id = active_input_method_ids_[i];
       const InputMethodDescriptor* descriptor =
-          GetInputMethodDescriptorFromId(input_method_id);
+          util_.GetInputMethodDescriptorFromId(input_method_id);
       if (descriptor) {
         result->push_back(*descriptor);
       } else {
@@ -242,7 +243,7 @@ class InputMethodManagerImpl : public HotkeyManager::Observer,
     // If the input method daemon is not running and the specified input
     // method is a keyboard layout, switch the keyboard directly.
     if (ibus_daemon_process_handle_ == base::kNullProcessHandle &&
-        IsKeyboardLayout(input_method_id)) {
+        InputMethodUtil::IsKeyboardLayout(input_method_id)) {
       // We shouldn't use SetCurrentKeyboardLayoutByName() here. See
       // comments at ChangeCurrentInputMethod() for details.
       ChangeCurrentInputMethodFromId(input_method_id);
@@ -417,6 +418,10 @@ class InputMethodManagerImpl : public HotkeyManager::Observer,
     UpdateVirtualKeyboardUI();
   }
 
+  virtual InputMethodUtil* GetInputMethodUtil() {
+    return &util_;
+  }
+
   virtual XKeyboard* GetXKeyboard() {
     return &xkeyboard_;
   }
@@ -483,7 +488,7 @@ class InputMethodManagerImpl : public HotkeyManager::Observer,
       return false;
     }
     for (size_t i = 0; i < value.string_list_value.size(); ++i) {
-      if (!IsKeyboardLayout(value.string_list_value[i])) {
+      if (!InputMethodUtil::IsKeyboardLayout(value.string_list_value[i])) {
         return false;
       }
     }
@@ -879,8 +884,8 @@ class InputMethodManagerImpl : public HotkeyManager::Observer,
   // Changes the current input method from the given input method ID.
   // This function is just a wrapper of ChangeCurrentInputMethod().
   void ChangeCurrentInputMethodFromId(const std::string& input_method_id) {
-    const InputMethodDescriptor* descriptor = GetInputMethodDescriptorFromId(
-        input_method_id);
+    const InputMethodDescriptor* descriptor =
+        util_.GetInputMethodDescriptorFromId(input_method_id);
     if (descriptor) {
       ChangeCurrentInputMethod(*descriptor);
     } else {
@@ -1255,6 +1260,10 @@ class InputMethodManagerImpl : public HotkeyManager::Observer,
   // information. e.g. "mozc-jp" to XK_ZenkakuHankaku, "mozc-jp" to XK_Henkan.
   std::multimap<std::string,
                 const InputMethodSpecificHotkeySetting*> extra_hotkeys_;
+
+  // An object which provides miscellaneous input method utility functions. Note
+  // that |util_| is required to initialize |xkeyboard_|.
+  InputMethodUtil util_;
 
   // An object for switching XKB layouts and keyboard status like caps lock and
   // auto-repeat interval.

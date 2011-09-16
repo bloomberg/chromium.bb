@@ -203,10 +203,13 @@ ListValue* VirtualKeyboardManagerHandler::CreateVirtualKeyboardList(
       layout_list->Append(dictionary);
 
       // Set layout id as well as its human readable form.
+      ime::InputMethodManager* manager = ime::InputMethodManager::GetInstance();
       const ime::InputMethodDescriptor* desc =
-          ime::GetInputMethodDescriptorFromXkbId(layout_id);
+          manager->GetInputMethodUtil()->GetInputMethodDescriptorFromXkbId(
+              layout_id);
       const std::string layout_name = desc ?
-          ime::GetInputMethodDisplayNameFromId(desc->id()) : layout_id;
+          manager->GetInputMethodUtil()->GetInputMethodDisplayNameFromId(
+              desc->id()) : layout_id;
       dictionary->SetString("layout", layout_id);
       dictionary->SetString("layoutName", layout_name);
 

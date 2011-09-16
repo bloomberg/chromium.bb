@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_WEBUI_OPTIONS_CHROMEOS_CROS_LANGUAGE_OPTIONS_HANDLER_H_
 #pragma once
 
-#include "chrome/browser/chromeos/input_method/input_method_util.h"
+#include "chrome/browser/chromeos/input_method/ibus_controller.h"
 #include "chrome/browser/ui/webui/options/language_options_handler.h"
 
 namespace chromeos {

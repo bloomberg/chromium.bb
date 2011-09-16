@@ -26,6 +26,7 @@ namespace chromeos {
 namespace input_method {
 
 class HotkeyManager;
+class InputMethodUtil;
 class VirtualKeyboard;
 class XKeyboard;
 
@@ -192,6 +193,9 @@ class InputMethodManager {
   // Returns an X keyboard object which could be used to change the current XKB
   // layout, change the caps lock status, and set the auto repeat rate/interval.
   virtual XKeyboard* GetXKeyboard() = 0;
+
+  // Returns a InputMethodUtil object.
+  virtual InputMethodUtil* GetInputMethodUtil() = 0;
 
   // Returns a hotkey manager object which could be used to detect Control+space
   // and Shift+Alt key presses.

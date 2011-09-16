@@ -116,10 +116,10 @@ const size_t kMappingFromIdToIndicatorTextLen =
     ARRAYSIZE_UNSAFE(kMappingFromIdToIndicatorText);
 
 // Returns the language name for the given |language_code|.
-std::wstring GetLanguageName(const std::string& language_code) {
+string16 GetLanguageName(const std::string& language_code) {
   const string16 language_name = l10n_util::GetDisplayNameForLocale(
       language_code, g_browser_process->GetApplicationLocale(), true);
-  return UTF16ToWide(language_name);
+  return language_name;
 }
 
 }  // namespace
@@ -312,17 +312,18 @@ string16 InputMethodMenu::GetLabelAt(int index) const {
     return l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_LANGUAGES_CUSTOMIZE);
   }
 
-  std::wstring name;
+  string16 name;
   if (IndexIsInInputMethodList(index)) {
     name = GetTextForMenu(input_method_descriptors_->at(index));
   } else if (GetPropertyIndex(index, &index)) {
     InputMethodManager* manager = InputMethodManager::GetInstance();
     const input_method::ImePropertyList& property_list =
         manager->current_ime_properties();
-    return input_method::GetStringUTF16(property_list.at(index).label);
+    return manager->GetInputMethodUtil()->TranslateString(
+        property_list.at(index).label);
   }
 
-  return WideToUTF16(name);
+  return name;
 }
 
 void InputMethodMenu::ActivatedAt(int index) {
@@ -497,8 +498,8 @@ void InputMethodMenu::ActiveInputMethodsChanged(
 void InputMethodMenu::UpdateUIFromInputMethod(
     const input_method::InputMethodDescriptor& input_method,
     size_t num_active_input_methods) {
-  const std::wstring name = GetTextForIndicator(input_method);
-  const string16 tooltip = WideToUTF16Hack(GetTextForMenu(input_method));
+  const string16 name = GetTextForIndicator(input_method);
+  const string16 tooltip = GetTextForMenu(input_method);
   UpdateUI(input_method.id(), name, tooltip, num_active_input_methods);
 }
 
@@ -590,25 +591,30 @@ bool InputMethodMenu::IndexPointsToConfigureImeMenuItem(int index) const {
           (model_->GetCommandIdAt(index) == COMMAND_ID_CUSTOMIZE_LANGUAGE));
 }
 
-std::wstring InputMethodMenu::GetTextForIndicator(
+string16 InputMethodMenu::GetTextForIndicator(
     const input_method::InputMethodDescriptor& input_method) {
+  input_method::InputMethodManager* manager =
+      input_method::InputMethodManager::GetInstance();
+
   // For the status area, we use two-letter, upper-case language code like
   // "US" and "JP".
-  std::wstring text;
+  string16 text;
 
   // Check special cases first.
   for (size_t i = 0; i < kMappingFromIdToIndicatorTextLen; ++i) {
     if (kMappingFromIdToIndicatorText[i].input_method_id == input_method.id()) {
-      text = UTF8ToWide(kMappingFromIdToIndicatorText[i].indicator_text);
+      text = UTF8ToUTF16(kMappingFromIdToIndicatorText[i].indicator_text);
       break;
     }
   }
 
   // Display the keyboard layout name when using a keyboard layout.
-  if (text.empty() && input_method::IsKeyboardLayout(input_method.id())) {
+  if (text.empty() &&
+      input_method::InputMethodUtil::IsKeyboardLayout(input_method.id())) {
     const size_t kMaxKeyboardLayoutNameLen = 2;
-    const std::wstring keyboard_layout = UTF8ToWide(
-        input_method::GetKeyboardLayoutName(input_method.id()));
+    const string16 keyboard_layout =
+        UTF8ToUTF16(manager->GetInputMethodUtil()->GetKeyboardLayoutName(
+            input_method.id()));
     text = StringToUpperASCII(keyboard_layout).substr(
         0, kMaxKeyboardLayoutNameLen);
   }
@@ -622,7 +628,8 @@ std::wstring InputMethodMenu::GetTextForIndicator(
   if (text.empty()) {
     const size_t kMaxLanguageNameLen = 2;
     std::string language_code =
-        input_method::GetLanguageCodeFromDescriptor(input_method);
+        manager->GetInputMethodUtil()->GetLanguageCodeFromDescriptor(
+            input_method);
 
     // Use "CN" for simplified Chinese and "TW" for traditonal Chinese,
     // rather than "ZH".
@@ -634,42 +641,39 @@ std::wstring InputMethodMenu::GetTextForIndicator(
       }
     }
 
-    text = StringToUpperASCII(UTF8ToWide(language_code)).substr(
+    text = StringToUpperASCII(UTF8ToUTF16(language_code)).substr(
         0, kMaxLanguageNameLen);
   }
   DCHECK(!text.empty());
   return text;
 }
 
-std::wstring InputMethodMenu::GetTextForMenu(
+string16 InputMethodMenu::GetTextForMenu(
     const input_method::InputMethodDescriptor& input_method) {
   // We don't show language here.  Name of keyboard layout or input method
   // usually imply (or explicitly include) its language.
 
-  // Special case for Dutch, French and German: these languages have multiple
-  // keyboard layouts and share the same laout of keyboard (Belgian). We need to
-  // show explicitly the language for the layout.
-  // For Arabic, Amharic, and Indic languages: they share "Standard Input
-  // Method".
-  const std::string language_code
-      = input_method::GetLanguageCodeFromDescriptor(input_method);
-  std::wstring text;
-  if (language_code == "am" ||
-      language_code == "ar" ||
-      language_code == "bn" ||
+  input_method::InputMethodManager* manager =
+      input_method::InputMethodManager::GetInstance();
+
+  // Special case for German, French and Dutch: these languages have multiple
+  // keyboard layouts and share the same layout of keyboard (Belgian). We need
+  // to show explicitly the language for the layout. For Arabic, Amharic, and
+  // Indic languages: they share "Standard Input Method".
+  const string16 standard_input_method_text = l10n_util::GetStringUTF16(
+      IDS_OPTIONS_SETTINGS_LANGUAGES_M17N_STANDARD_INPUT_METHOD);
+  const std::string language_code =
+      manager->GetInputMethodUtil()->GetLanguageCodeFromDescriptor(
+          input_method);
+
+  string16 text =
+      manager->GetInputMethodUtil()->TranslateString(input_method.id());
+  if (text == standard_input_method_text ||
       language_code == "de" ||
       language_code == "fr" ||
-      language_code == "gu" ||
-      language_code == "hi" ||
-      language_code == "kn" ||
-      language_code == "ml" ||
-      language_code == "mr" ||
-      language_code == "nl" ||
-      language_code == "ta" ||
-      language_code == "te") {
-    text = GetLanguageName(language_code) + L" - ";
+      language_code == "nl") {
+    text = GetLanguageName(language_code) + UTF8ToUTF16(" - ") + text;
   }
-  text += input_method::GetString(input_method.id());
 
   DCHECK(!text.empty());
   return text;

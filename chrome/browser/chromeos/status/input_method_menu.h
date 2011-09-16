@@ -110,12 +110,12 @@ class InputMethodMenu : public views::ViewMenuDelegate,
 
   // Returns a string for the indicator on top right corner of the Chrome
   // window. The method is public for unit tests.
-  static std::wstring GetTextForIndicator(
+  static string16 GetTextForIndicator(
       const input_method::InputMethodDescriptor& input_method);
 
   // Returns a string for the drop-down menu and the tooltip for the indicator.
   // The method is public for unit tests.
-  static std::wstring GetTextForMenu(
+  static string16 GetTextForMenu(
       const input_method::InputMethodDescriptor& input_method);
 
  protected:
@@ -126,7 +126,7 @@ class InputMethodMenu : public views::ViewMenuDelegate,
   // Updates UI of a container of the menu (e.g. the "US" menu button in the
   // status area). Sub classes have to implement the interface for their own UI.
   virtual void UpdateUI(const std::string& input_method_id,  // e.g. "mozc"
-                        const std::wstring& name,  // e.g. "US", "INTL"
+                        const string16& name,  // e.g. "US", "INTL"
                         const string16& tooltip,
                         size_t num_active_input_methods) = 0;
 

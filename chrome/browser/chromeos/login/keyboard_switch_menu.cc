@@ -25,7 +25,7 @@ KeyboardSwitchMenu::KeyboardSwitchMenu()
 ////////////////////////////////////////////////////////////////////////////////
 // InputMethodMenu::InputMethodMenuHost implementation.
 void KeyboardSwitchMenu::UpdateUI(const std::string& input_method_id,
-                                  const std::wstring& name,
+                                  const string16& name,
                                   const string16& tooltip,
                                   size_t num_active_input_methods) {
   // Update all view hierarchies so that the new input method name is shown in
@@ -66,8 +66,9 @@ string16 KeyboardSwitchMenu::GetCurrentKeyboardName() const {
           << "name of the current input method";
   input_method::InputMethodManager* manager =
       input_method::InputMethodManager::GetInstance();
-  return UTF8ToUTF16(input_method::GetInputMethodDisplayNameFromId(
-      manager->current_input_method().id()));
+  return UTF8ToUTF16(
+      manager->GetInputMethodUtil()->GetInputMethodDisplayNameFromId(
+          manager->current_input_method().id()));
 }
 
 }  // namespace chromeos

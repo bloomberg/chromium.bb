@@ -168,13 +168,17 @@ bool InputMethodEngineImpl::Init(InputMethodEngine::Observer* observer,
   ibus_id_ += engine_id;
 
   std::string layout;
+  input_method::InputMethodManager* manager =
+      input_method::InputMethodManager::GetInstance();
 
   if (!layouts.empty()) {
     layout = JoinString(layouts, ',');
   } else {
-    const std::string fallback_id = input_method::GetHardwareInputMethodId();
+    const std::string fallback_id =
+        manager->GetInputMethodUtil()->GetHardwareInputMethodId();
     const input_method::InputMethodDescriptor* fallback_desc =
-        input_method::GetInputMethodDescriptorFromId(fallback_id);
+        manager->GetInputMethodUtil()->GetInputMethodDescriptorFromId(
+            fallback_id);
     layout = fallback_desc->keyboard_layout();
   }
 
@@ -191,11 +195,7 @@ bool InputMethodEngineImpl::Init(InputMethodEngine::Observer* observer,
 
   observer_ = observer;
   engine_id_ = engine_id;
-  input_method::InputMethodManager::GetInstance()->AddActiveIme(ibus_id_,
-                                                                engine_name,
-                                                                layouts,
-                                                                language);
-
+  manager->AddActiveIme(ibus_id_, engine_name, layouts, language);
   return true;
 }
 

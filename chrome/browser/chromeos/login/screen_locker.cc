@@ -126,7 +126,7 @@ class ScreenLockObserver : public chromeos::ScreenLockLibrary::Observer,
           active_input_method_list(manager->GetActiveInputMethods());
 
       const std::string hardware_keyboard_id =
-          chromeos::input_method::GetHardwareInputMethodId();
+          manager->GetInputMethodUtil()->GetHardwareInputMethodId();
       // We'll add the hardware keyboard if it's not included in
       // |active_input_method_list| so that the user can always use the hardware
       // keyboard on the screen locker.
@@ -139,7 +139,8 @@ class ScreenLockObserver : public chromeos::ScreenLockLibrary::Observer,
             active_input_method_list->at(i).id();
         saved_active_input_method_list_.push_back(input_method_id);
         // Skip if it's not a keyboard layout.
-        if (!chromeos::input_method::IsKeyboardLayout(input_method_id))
+        if (!chromeos::input_method::InputMethodUtil::IsKeyboardLayout(
+                input_method_id))
           continue;
         value.string_list_value.push_back(input_method_id);
         if (input_method_id == hardware_keyboard_id) {

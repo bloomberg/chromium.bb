@@ -24,7 +24,7 @@ class KeyboardSwitchMenu : public InputMethodMenu {
 
   // InputMethodMenu::InputMethodMenuHost implementation.
   virtual void UpdateUI(const std::string& input_method_id,
-                        const std::wstring& name,
+                        const string16& name,
                         const string16& tooltip,
                         size_t num_active_input_methods) OVERRIDE;
   virtual bool ShouldSupportConfigUI() OVERRIDE;

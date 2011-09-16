@@ -45,9 +45,13 @@ struct ModifierKeyPair {
 };
 typedef std::vector<ModifierKeyPair> ModifierMap;
 
+class InputMethodUtil;
+
 class XKeyboard {
  public:
-  XKeyboard();
+  // Note: at this moment, classes other than InputMethodManager should not
+  // instantiate the XKeyboard class.
+  explicit XKeyboard(const InputMethodUtil& util);
   ~XKeyboard();
 
   // Sets the current keyboard layout to |layout_name|. This function does not

@@ -51,7 +51,7 @@ const int64 kPolicyServiceInitializationDelayMilliseconds = 100;
 
 // Determines the hardware keyboard from the given locale code
 // and the OEM layout information, and saves it to "Locale State".
-// The information will be used in input_method::GetHardwareInputMethodId().
+// The information will be used in InputMethodUtil::GetHardwareInputMethodId().
 void DetermineAndSaveHardwareKeyboard(const std::string& locale,
                                       const std::string& oem_layout) {
   std::string layout;
@@ -59,9 +59,11 @@ void DetermineAndSaveHardwareKeyboard(const std::string& locale,
     // If the OEM layout information is provided, use it.
     layout = oem_layout;
   } else {
+    chromeos::input_method::InputMethodManager* manager =
+        chromeos::input_method::InputMethodManager::GetInstance();
     // Otherwise, determine the hardware keyboard from the locale.
     std::vector<std::string> input_method_ids;
-    if (chromeos::input_method::GetInputMethodIdsFromLanguageCode(
+    if (manager->GetInputMethodUtil()->GetInputMethodIdsFromLanguageCode(
             locale,
             chromeos::input_method::kKeyboardLayoutsOnly,
             &input_method_ids)) {
@@ -227,8 +229,10 @@ void ShowLoginWizard(const std::string& first_screen_name,
 
   // The login screen will enable alternate keyboard layouts, but we don't want
   // to start the IME process unless one is selected.
-  chromeos::input_method::InputMethodManager::GetInstance()->
-      SetDeferImeStartup(true);
+  chromeos::input_method::InputMethodManager* manager =
+      chromeos::input_method::InputMethodManager::GetInstance();
+  manager->SetDeferImeStartup(true);
+
   // Tell the window manager that the user isn't logged in.
   chromeos::WmIpc::instance()->SetLoggedInProperty(false);
 
@@ -243,9 +247,9 @@ void ShowLoginWizard(const std::string& first_screen_name,
     if (initial_input_method_id.empty()) {
       // If kPreferredKeyboardLayout is not specified, use the hardware layout.
       initial_input_method_id =
-          chromeos::input_method::GetHardwareInputMethodId();
+          manager->GetInputMethodUtil()->GetHardwareInputMethodId();
     }
-    chromeos::input_method::EnableInputMethods(
+    manager->GetInputMethodUtil()->EnableInputMethods(
         locale, chromeos::input_method::kKeyboardLayoutsOnly,
         initial_input_method_id);
   }
@@ -274,10 +278,10 @@ void ShowLoginWizard(const std::string& first_screen_name,
     if (!prefs->HasPrefPath(prefs::kApplicationLocale)) {
       std::string locale = chromeos::WizardController::GetInitialLocale();
       prefs->SetString(prefs::kApplicationLocale, locale);
-      chromeos::input_method::EnableInputMethods(
+      manager->GetInputMethodUtil()->EnableInputMethods(
           locale,
           chromeos::input_method::kKeyboardLayoutsOnly,
-          chromeos::input_method::GetHardwareInputMethodId());
+          manager->GetInputMethodUtil()->GetHardwareInputMethodId());
       base::ThreadRestrictions::ScopedAllowIO allow_io;
       const std::string loaded_locale =
           ResourceBundle::ReloadSharedInstance(locale);
@@ -316,10 +320,10 @@ void ShowLoginWizard(const std::string& first_screen_name,
       // initial locale and save it in preferences.
       DetermineAndSaveHardwareKeyboard(locale, layout);
       // Then, enable the hardware keyboard.
-      chromeos::input_method::EnableInputMethods(
+      manager->GetInputMethodUtil()->EnableInputMethods(
           locale,
           chromeos::input_method::kKeyboardLayoutsOnly,
-          chromeos::input_method::GetHardwareInputMethodId());
+          manager->GetInputMethodUtil()->GetHardwareInputMethodId());
       // Reloading resource bundle causes us to do blocking IO on UI thread.
       // Temporarily allow it until we fix http://crosbug.com/11102
       base::ThreadRestrictions::ScopedAllowIO allow_io;

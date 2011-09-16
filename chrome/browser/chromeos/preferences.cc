@@ -39,6 +39,9 @@ Preferences::~Preferences() {}
 
 // static
 void Preferences::RegisterUserPrefs(PrefService* prefs) {
+  input_method::InputMethodManager* manager =
+      input_method::InputMethodManager::GetInstance();
+
   prefs->RegisterBooleanPref(prefs::kTapToClickEnabled,
                              false,
                              PrefService::SYNCABLE_PREF);
@@ -83,9 +86,10 @@ void Preferences::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterStringPref(prefs::kLanguagePreferredLanguages,
                             kFallbackInputMethodLocale,
                             PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterStringPref(prefs::kLanguagePreloadEngines,
-                            input_method::GetHardwareInputMethodId(),
-                            PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterStringPref(
+      prefs::kLanguagePreloadEngines,
+      manager->GetInputMethodUtil()->GetHardwareInputMethodId(),
+      PrefService::UNSYNCABLE_PREF);
   for (size_t i = 0; i < language_prefs::kNumChewingBooleanPrefs; ++i) {
     prefs->RegisterBooleanPref(
         language_prefs::kChewingBooleanPrefs[i].pref_name,

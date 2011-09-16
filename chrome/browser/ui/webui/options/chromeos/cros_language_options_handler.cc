@@ -13,6 +13,7 @@
 #include "base/values.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -85,15 +86,20 @@ void CrosLanguageOptionsHandler::RegisterMessages() {
 
 ListValue* CrosLanguageOptionsHandler::GetInputMethodList(
     const input_method::InputMethodDescriptors& descriptors) {
+  input_method::InputMethodManager* manager =
+      input_method::InputMethodManager::GetInstance();
+
   ListValue* input_method_list = new ListValue();
 
   for (size_t i = 0; i < descriptors.size(); ++i) {
     const input_method::InputMethodDescriptor& descriptor =
         descriptors[i];
     const std::string language_code =
-        input_method::GetLanguageCodeFromDescriptor(descriptor);
+        manager->GetInputMethodUtil()->GetLanguageCodeFromDescriptor(
+            descriptor);
     const std::string display_name =
-        input_method::GetInputMethodDisplayNameFromId(descriptor.id());
+        manager->GetInputMethodUtil()->GetInputMethodDisplayNameFromId(
+            descriptor.id());
 
     DictionaryValue* dictionary = new DictionaryValue();
     dictionary->SetString("id", descriptor.id());
@@ -124,12 +130,16 @@ ListValue* CrosLanguageOptionsHandler::GetInputMethodList(
 
 ListValue* CrosLanguageOptionsHandler::GetLanguageList(
     const input_method::InputMethodDescriptors& descriptors) {
+  input_method::InputMethodManager* manager =
+      input_method::InputMethodManager::GetInstance();
+
   std::set<std::string> language_codes;
   // Collect the language codes from the supported input methods.
   for (size_t i = 0; i < descriptors.size(); ++i) {
     const input_method::InputMethodDescriptor& descriptor = descriptors[i];
     const std::string language_code =
-        input_method::GetLanguageCodeFromDescriptor(descriptor);
+        manager->GetInputMethodUtil()->GetLanguageCodeFromDescriptor(
+            descriptor);
     language_codes.insert(language_code);
   }
   // Collect the language codes from kExtraLanguages.
@@ -153,9 +163,10 @@ ListValue* CrosLanguageOptionsHandler::GetLanguageList(
   for (std::set<std::string>::const_iterator iter = language_codes.begin();
        iter != language_codes.end(); ++iter) {
     const string16 display_name =
-        input_method::GetLanguageDisplayNameFromCode(*iter);
+        input_method::InputMethodUtil::GetLanguageDisplayNameFromCode(*iter);
     const string16 native_display_name =
-        input_method::GetLanguageNativeDisplayNameFromCode(*iter);
+        input_method::InputMethodUtil::GetLanguageNativeDisplayNameFromCode(
+            *iter);
     display_names.push_back(display_name);
     language_map[display_name] =
         std::make_pair(*iter, native_display_name);

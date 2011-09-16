@@ -12,13 +12,12 @@
 #include "unicode/uloc.h"
 
 #include "base/basictypes.h"
-#include "base/hash_tables.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/singleton.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/input_method/ibus_controller.h"
 #include "chrome/browser/chromeos/input_method/ibus_input_methods.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/language_preferences.h"
@@ -32,86 +31,6 @@ namespace chromeos {
 namespace input_method {
 
 namespace {
-
-// Map from language code to associated input method IDs, etc.
-typedef std::multimap<std::string, std::string> LanguageCodeToIdsMap;
-// Map from input method ID to associated input method descriptor.
-typedef std::map<std::string, InputMethodDescriptor>
-InputMethodIdToDescriptorMap;
-// Map from XKB layout ID to associated input method descriptor.
-typedef std::map<std::string, InputMethodDescriptor> XkbIdToDescriptorMap;
-
-struct IdMaps {
-  scoped_ptr<LanguageCodeToIdsMap> language_code_to_ids;
-  scoped_ptr<std::map<std::string, std::string> > id_to_language_code;
-  scoped_ptr<InputMethodIdToDescriptorMap> id_to_descriptor;
-  scoped_ptr<XkbIdToDescriptorMap> xkb_id_to_descriptor;
-
-  // Returns the singleton instance.
-  static IdMaps* GetInstance() {
-    return Singleton<IdMaps>::get();
-  }
-
-  void ReloadMaps() {
-    scoped_ptr<InputMethodDescriptors> supported_input_methods(
-        InputMethodDescriptor::GetSupportedInputMethods());
-    if (supported_input_methods->size() <= 1) {
-      LOG(ERROR) << "GetSupportedInputMethods returned a fallback ID";
-      // TODO(yusukes): Handle this error in nicer way.
-    }
-
-    // Clear the existing maps.
-    language_code_to_ids->clear();
-    id_to_language_code->clear();
-    id_to_descriptor->clear();
-    xkb_id_to_descriptor->clear();
-
-    for (size_t i = 0; i < supported_input_methods->size(); ++i) {
-      const InputMethodDescriptor& input_method =
-          supported_input_methods->at(i);
-      const std::string language_code =
-          GetLanguageCodeFromDescriptor(input_method);
-      language_code_to_ids->insert(
-          std::make_pair(language_code, input_method.id()));
-      // Remember the pairs.
-      id_to_language_code->insert(
-          std::make_pair(input_method.id(), language_code));
-      id_to_descriptor->insert(
-          std::make_pair(input_method.id(), input_method));
-      if (IsKeyboardLayout(input_method.id())) {
-        xkb_id_to_descriptor->insert(
-            std::make_pair(input_method.keyboard_layout(), input_method));
-      }
-    }
-
-    // Go through the languages listed in kExtraLanguages.
-    for (size_t i = 0; i < kExtraLanguagesLength; ++i) {
-      const char* language_code = kExtraLanguages[i].language_code;
-      const char* input_method_id = kExtraLanguages[i].input_method_id;
-      InputMethodIdToDescriptorMap::const_iterator iter =
-          id_to_descriptor->find(input_method_id);
-      // If the associated input method descriptor is found, add the
-      // language code and the input method.
-      if (iter != id_to_descriptor->end()) {
-        const InputMethodDescriptor& input_method = iter->second;
-        language_code_to_ids->insert(
-            std::make_pair(language_code, input_method.id()));
-      }
-    }
-  }
-
- private:
-  IdMaps() : language_code_to_ids(new LanguageCodeToIdsMap),
-             id_to_language_code(new std::map<std::string, std::string>),
-             id_to_descriptor(new InputMethodIdToDescriptorMap),
-             xkb_id_to_descriptor(new XkbIdToDescriptorMap) {
-    ReloadMaps();
-  }
-
-  friend struct DefaultSingletonTraits<IdMaps>;
-
-  DISALLOW_COPY_AND_ASSIGN(IdMaps);
-};
 
 const struct EnglishToResouceId {
   const char* english_string_from_ibus;
@@ -296,49 +215,15 @@ struct CompareLanguageCodesByLanguageName
 
   // Calling GetLanguageDisplayNameFromCode() in the comparator is not
   // efficient, but acceptable as the function is cheap, and the language
-  // list is short (about 40 at most).
+  // list is short (about 60 at most).
   bool operator()(const std::string& s1, const std::string& s2) const {
-    const string16 key1 =
-        GetLanguageDisplayNameFromCode(s1);
-    const string16 key2 =
-        GetLanguageDisplayNameFromCode(s2);
+    const string16 key1 = InputMethodUtil::GetLanguageDisplayNameFromCode(s1);
+    const string16 key2 = InputMethodUtil::GetLanguageDisplayNameFromCode(s2);
     return l10n_util::StringComparator<string16>(collator_)(key1, key2);
   }
 
  private:
   icu::Collator* collator_;
-};
-
-bool GetLocalizedString(const std::string& english_string,
-                        string16 *out_string) {
-  DCHECK(out_string);
-
-  // Initialize the primary map if needed.
-  typedef base::hash_map<std::string, int> HashType;
-  static HashType* english_to_resource_id = NULL;
-  if (!english_to_resource_id) {
-    // We don't free this map.
-    english_to_resource_id = new HashType(kEnglishToResourceIdArraySize);
-    for (size_t i = 0; i < kEnglishToResourceIdArraySize; ++i) {
-      const EnglishToResouceId& map_entry = kEnglishToResourceIdArray[i];
-      const bool result = english_to_resource_id->insert(std::make_pair(
-          map_entry.english_string_from_ibus, map_entry.resource_id)).second;
-      DCHECK(result) << "Duplicated string is found: "
-                     << map_entry.english_string_from_ibus;
-    }
-  }
-
-  HashType::const_iterator iter = english_to_resource_id->find(english_string);
-  if (iter == english_to_resource_id->end()) {
-    // TODO(yusukes): Write Autotest which checks if all display names and all
-    // property names for supported input methods are listed in the resource
-    // ID array (crosbug.com/4572).
-    LOG(ERROR) << "Resource ID is not found for: " << english_string;
-    return false;
-  }
-
-  *out_string = l10n_util::GetStringUTF16(iter->second);
-  return true;
 };
 
 }  // namespace
@@ -360,37 +245,55 @@ const ExtraLanguage kExtraLanguages[] = {
 };
 const size_t kExtraLanguagesLength = arraysize(kExtraLanguages);
 
-std::wstring GetString(const std::string& english_string) {
-  string16 localized_string;
-  if (GetLocalizedString(english_string, &localized_string)) {
-    return UTF16ToWide(localized_string);
+InputMethodUtil::InputMethodUtil() {
+  ReloadInternalMaps();
+
+  // Initialize a map from English string to Chrome string resource ID as well.
+  for (size_t i = 0; i < kEnglishToResourceIdArraySize; ++i) {
+    const EnglishToResouceId& map_entry = kEnglishToResourceIdArray[i];
+    const bool result = english_to_resource_id_.insert(std::make_pair(
+        map_entry.english_string_from_ibus, map_entry.resource_id)).second;
+    DCHECK(result) << "Duplicated string is found: "
+                   << map_entry.english_string_from_ibus;
   }
-  return UTF8ToWide(english_string);
 }
 
-std::string GetStringUTF8(const std::string& english_string) {
-  string16 localized_string;
-  if (GetLocalizedString(english_string, &localized_string)) {
-    return UTF16ToUTF8(localized_string);
-  }
-  return english_string;
+InputMethodUtil::~InputMethodUtil() {
 }
 
-string16 GetStringUTF16(const std::string& english_string) {
+bool InputMethodUtil::TranslateStringInternal(
+    const std::string& english_string, string16 *out_string) const {
+  DCHECK(out_string);
+  HashType::const_iterator iter = english_to_resource_id_.find(english_string);
+  if (iter == english_to_resource_id_.end()) {
+    // TODO(yusukes): Write Autotest which checks if all display names and all
+    // property names for supported input methods are listed in the resource
+    // ID array (crosbug.com/4572).
+    LOG(ERROR) << "Resource ID is not found for: " << english_string;
+    return false;
+  }
+
+  *out_string = l10n_util::GetStringUTF16(iter->second);
+  return true;
+}
+
+string16 InputMethodUtil::TranslateString(
+    const std::string& english_string) const {
   string16 localized_string;
-  if (GetLocalizedString(english_string, &localized_string)) {
+  if (TranslateStringInternal(english_string, &localized_string)) {
     return localized_string;
   }
   return UTF8ToUTF16(english_string);
 }
 
-bool StringIsSupported(const std::string& english_string) {
+bool InputMethodUtil::StringIsSupported(
+    const std::string& english_string) const {
   string16 localized_string;
-  return GetLocalizedString(english_string, &localized_string);
+  return TranslateStringInternal(english_string, &localized_string);
 }
 
-std::string NormalizeLanguageCode(
-    const std::string& language_code) {
+std::string InputMethodUtil::NormalizeLanguageCode(
+    const std::string& language_code) const {
   // Some ibus engines return locale codes like "zh_CN" as language codes.
   // Normalize these to like "zh-CN".
   if (language_code.size() >= 5 && language_code[2] == '_') {
@@ -429,13 +332,14 @@ std::string NormalizeLanguageCode(
   return two_letter_code;
 }
 
-bool IsKeyboardLayout(const std::string& input_method_id) {
+// static
+bool InputMethodUtil::IsKeyboardLayout(const std::string& input_method_id) {
   const bool kCaseInsensitive = false;
   return StartsWithASCII(input_method_id, "xkb:", kCaseInsensitive);
 }
 
-std::string GetLanguageCodeFromDescriptor(
-    const InputMethodDescriptor& descriptor) {
+std::string InputMethodUtil::GetLanguageCodeFromDescriptor(
+    const InputMethodDescriptor& descriptor) const {
   // Handle some Chinese input methods as zh-CN/zh-TW, rather than zh.
   // TODO: we should fix this issue in engines rather than here.
   if (descriptor.language_code() == "zh") {
@@ -470,50 +374,54 @@ std::string GetLanguageCodeFromDescriptor(
   return language_code;
 }
 
-std::string GetLanguageCodeFromInputMethodId(
-    const std::string& input_method_id) {
+std::string InputMethodUtil::GetLanguageCodeFromInputMethodId(
+    const std::string& input_method_id) const {
   // The code should be compatible with one of codes used for UI languages,
   // defined in app/l10_util.cc.
   const char kDefaultLanguageCode[] = "en-US";
   std::map<std::string, std::string>::const_iterator iter
-      = IdMaps::GetInstance()->id_to_language_code->find(input_method_id);
-  return (iter == IdMaps::GetInstance()->id_to_language_code->end()) ?
+      = id_to_language_code_.find(input_method_id);
+  return (iter == id_to_language_code_.end()) ?
       // Returning |kDefaultLanguageCode| here is not for Chrome OS but for
       // Ubuntu where the ibus-xkb-layouts engine could be missing.
       kDefaultLanguageCode : iter->second;
 }
 
-std::string GetKeyboardLayoutName(const std::string& input_method_id) {
+std::string InputMethodUtil::GetKeyboardLayoutName(
+    const std::string& input_method_id) const {
   InputMethodIdToDescriptorMap::const_iterator iter
-      = IdMaps::GetInstance()->id_to_descriptor->find(input_method_id);
-  return (iter == IdMaps::GetInstance()->id_to_descriptor->end()) ?
+      = id_to_descriptor_.find(input_method_id);
+  return (iter == id_to_descriptor_.end()) ?
       "" : iter->second.keyboard_layout();
 }
 
-std::string GetInputMethodDisplayNameFromId(
-    const std::string& input_method_id) {
-  const std::string display_name = GetStringUTF8(input_method_id);
+std::string InputMethodUtil::GetInputMethodDisplayNameFromId(
+    const std::string& input_method_id) const {
+  string16 display_name;
+  if (TranslateStringInternal(input_method_id, &display_name)) {
+    return UTF16ToUTF8(display_name);
+  }
   // Return an empty string if the display name is not found.
-  return display_name == input_method_id ? "" : display_name;
+  return "";
 }
 
-const InputMethodDescriptor* GetInputMethodDescriptorFromId(
-    const std::string& input_method_id) {
+const InputMethodDescriptor* InputMethodUtil::GetInputMethodDescriptorFromId(
+    const std::string& input_method_id) const {
   InputMethodIdToDescriptorMap::const_iterator iter
-      = IdMaps::GetInstance()->id_to_descriptor->find(input_method_id);
-  return (iter == IdMaps::GetInstance()->id_to_descriptor->end()) ?
-      NULL : &(iter->second);
+      = id_to_descriptor_.find(input_method_id);
+  return (iter == id_to_descriptor_.end()) ? NULL : &(iter->second);
 }
 
-const InputMethodDescriptor* GetInputMethodDescriptorFromXkbId(
-    const std::string& xkb_id) {
+const InputMethodDescriptor* InputMethodUtil::GetInputMethodDescriptorFromXkbId(
+    const std::string& xkb_id) const {
   InputMethodIdToDescriptorMap::const_iterator iter
-      = IdMaps::GetInstance()->xkb_id_to_descriptor->find(xkb_id);
-  return (iter == IdMaps::GetInstance()->xkb_id_to_descriptor->end()) ?
-      NULL : &(iter->second);
+      = xkb_id_to_descriptor_.find(xkb_id);
+  return (iter == xkb_id_to_descriptor_.end()) ? NULL : &(iter->second);
 }
 
-string16 GetLanguageDisplayNameFromCode(const std::string& language_code) {
+// static
+string16 InputMethodUtil::GetLanguageDisplayNameFromCode(
+    const std::string& language_code) {
   if (!g_browser_process) {
     return string16();
   }
@@ -521,12 +429,15 @@ string16 GetLanguageDisplayNameFromCode(const std::string& language_code) {
       language_code, g_browser_process->GetApplicationLocale(), true);
 }
 
-string16 GetLanguageNativeDisplayNameFromCode(
+// static
+string16 InputMethodUtil::GetLanguageNativeDisplayNameFromCode(
     const std::string& language_code) {
   return l10n_util::GetDisplayNameForLocale(language_code, language_code, true);
 }
 
-void SortLanguageCodesByNames(std::vector<std::string>* language_codes) {
+// static
+void InputMethodUtil::SortLanguageCodesByNames(
+    std::vector<std::string>* language_codes) {
   if (!g_browser_process) {
     return;
   }
@@ -543,20 +454,20 @@ void SortLanguageCodesByNames(std::vector<std::string>* language_codes) {
             CompareLanguageCodesByLanguageName(collator.get()));
 }
 
-bool GetInputMethodIdsFromLanguageCode(
+bool InputMethodUtil::GetInputMethodIdsFromLanguageCode(
     const std::string& normalized_language_code,
     InputMethodType type,
-    std::vector<std::string>* out_input_method_ids) {
+    std::vector<std::string>* out_input_method_ids) const {
   return GetInputMethodIdsFromLanguageCodeInternal(
-      *IdMaps::GetInstance()->language_code_to_ids,
+      language_code_to_ids_,
       normalized_language_code, type, out_input_method_ids);
 }
 
-bool GetInputMethodIdsFromLanguageCodeInternal(
+bool InputMethodUtil::GetInputMethodIdsFromLanguageCodeInternal(
     const std::multimap<std::string, std::string>& language_code_to_ids,
     const std::string& normalized_language_code,
     InputMethodType type,
-    std::vector<std::string>* out_input_method_ids) {
+    std::vector<std::string>* out_input_method_ids) const {
   DCHECK(out_input_method_ids);
   out_input_method_ids->clear();
 
@@ -578,10 +489,10 @@ bool GetInputMethodIdsFromLanguageCodeInternal(
   return result;
 }
 
-void GetFirstLoginInputMethodIds(
+void InputMethodUtil::GetFirstLoginInputMethodIds(
     const std::string& language_code,
     const InputMethodDescriptor& current_input_method,
-    std::vector<std::string>* out_input_method_ids) {
+    std::vector<std::string>* out_input_method_ids) const {
   out_input_method_ids->clear();
 
   // First, add the current keyboard layout (one used on the login screen).
@@ -627,9 +538,9 @@ void GetFirstLoginInputMethodIds(
   }
 }
 
-void GetLanguageCodesFromInputMethodIds(
+void InputMethodUtil::GetLanguageCodesFromInputMethodIds(
     const std::vector<std::string>& input_method_ids,
-    std::vector<std::string>* out_language_codes) {
+    std::vector<std::string>* out_language_codes) const {
   out_language_codes->clear();
 
   for (size_t i = 0; i < input_method_ids.size(); ++i) {
@@ -650,8 +561,10 @@ void GetLanguageCodesFromInputMethodIds(
   }
 }
 
-void EnableInputMethods(const std::string& language_code, InputMethodType type,
-                        const std::string& initial_input_method_id) {
+void InputMethodUtil::EnableInputMethods(
+    const std::string& language_code,
+    InputMethodType type,
+    const std::string& initial_input_method_id) {
   std::vector<std::string> candidates;
   // Add input methods associated with the language.
   GetInputMethodIdsFromLanguageCode(language_code, type, &candidates);
@@ -693,7 +606,7 @@ void EnableInputMethods(const std::string& language_code, InputMethodType type,
   }
 }
 
-std::string GetHardwareInputMethodId() {
+std::string InputMethodUtil::GetHardwareInputMethodId() const {
   if (!(g_browser_process && g_browser_process->local_state())) {
     // This shouldn't happen but just in case.
     LOG(ERROR) << "Local state is not yet ready";
@@ -720,11 +633,55 @@ std::string GetHardwareInputMethodId() {
   return input_method_id;
 }
 
-void ReloadInternalMaps() {
-  IdMaps::GetInstance()->ReloadMaps();
+void InputMethodUtil::ReloadInternalMaps() {
+  scoped_ptr<InputMethodDescriptors> supported_input_methods(
+      InputMethodDescriptor::GetSupportedInputMethods());
+  if (supported_input_methods->size() <= 1) {
+    LOG(ERROR) << "GetSupportedInputMethods returned a fallback ID";
+    // TODO(yusukes): Handle this error in nicer way.
+  }
+
+  // Clear the existing maps.
+  language_code_to_ids_.clear();
+  id_to_language_code_.clear();
+  id_to_descriptor_.clear();
+  xkb_id_to_descriptor_.clear();
+
+  for (size_t i = 0; i < supported_input_methods->size(); ++i) {
+    const InputMethodDescriptor& input_method =
+        supported_input_methods->at(i);
+    const std::string language_code =
+        GetLanguageCodeFromDescriptor(input_method);
+    language_code_to_ids_.insert(
+        std::make_pair(language_code, input_method.id()));
+    // Remember the pairs.
+    id_to_language_code_.insert(
+        std::make_pair(input_method.id(), language_code));
+    id_to_descriptor_.insert(
+        std::make_pair(input_method.id(), input_method));
+    if (IsKeyboardLayout(input_method.id())) {
+      xkb_id_to_descriptor_.insert(
+          std::make_pair(input_method.keyboard_layout(), input_method));
+    }
+  }
+
+  // Go through the languages listed in kExtraLanguages.
+  for (size_t i = 0; i < kExtraLanguagesLength; ++i) {
+    const char* language_code = kExtraLanguages[i].language_code;
+    const char* input_method_id = kExtraLanguages[i].input_method_id;
+    InputMethodIdToDescriptorMap::const_iterator iter =
+        id_to_descriptor_.find(input_method_id);
+    // If the associated input method descriptor is found, add the language
+    // code and the input method.
+    if (iter != id_to_descriptor_.end()) {
+      const InputMethodDescriptor& input_method = iter->second;
+      language_code_to_ids_.insert(
+          std::make_pair(language_code, input_method.id()));
+    }
+  }
 }
 
-void OnLocaleChanged() {
+void InputMethodUtil::OnLocaleChanged() {
   ReloadInternalMaps();
 }
 

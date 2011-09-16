@@ -855,9 +855,8 @@ void LoginUtilsImpl::SetFirstLoginPrefs(PrefService* prefs) {
   input_method::InputMethodManager* manager =
       input_method::InputMethodManager::GetInstance();
   std::vector<std::string> input_method_ids;
-  input_method::GetFirstLoginInputMethodIds(locale,
-                                            manager->current_input_method(),
-                                            &input_method_ids);
+  manager->GetInputMethodUtil()->GetFirstLoginInputMethodIds(
+      locale, manager->current_input_method(), &input_method_ids);
   // Save the input methods in the user's preferences.
   StringPrefMember language_preload_engines;
   language_preload_engines.Init(prefs::kLanguagePreloadEngines,
@@ -876,7 +875,7 @@ void LoginUtilsImpl::SetFirstLoginPrefs(PrefService* prefs) {
   // UI language is set to French. In this case, we should set "fr,en"
   // to the preferred languages preference.
   std::vector<std::string> candidates;
-  input_method::GetLanguageCodesFromInputMethodIds(
+  manager->GetInputMethodUtil()->GetLanguageCodesFromInputMethodIds(
       input_method_ids, &candidates);
   for (size_t i = 0; i < candidates.size(); ++i) {
     const std::string& candidate = candidates[i];

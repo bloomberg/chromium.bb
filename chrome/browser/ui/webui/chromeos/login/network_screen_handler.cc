@@ -216,8 +216,8 @@ ListValue* NetworkScreenHandler::GetInputMethods() {
   for (size_t i = 0; i < input_methods->size(); ++i) {
     DictionaryValue* input_method = new DictionaryValue;
     input_method->SetString("value", input_methods->at(i).id());
-    input_method->SetString("title",
-      WideToUTF16(InputMethodMenu::GetTextForMenu(input_methods->at(i))));
+    input_method->SetString(
+        "title", InputMethodMenu::GetTextForMenu(input_methods->at(i)));
     input_method->SetBoolean("selected",
         input_methods->at(i).id() == current_input_method_id);
     input_methods_list->Append(input_method);

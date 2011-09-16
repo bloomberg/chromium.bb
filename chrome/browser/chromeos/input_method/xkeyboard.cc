@@ -96,18 +96,18 @@ const char* kCapsLockRemapped[] = {
 
 }  // namespace
 
-XKeyboard::XKeyboard() {
+XKeyboard::XKeyboard(const InputMethodUtil& util) {
   for (size_t i = 0; i < arraysize(kCustomizableKeys); ++i) {
     ModifierKey key = kCustomizableKeys[i];
     current_modifier_map_.push_back(ModifierKeyPair(key, key));
   }
   for (size_t i = 0; i < arraysize(kKeepRightAltInputMethods); ++i) {
     keep_right_alt_xkb_layout_names_.insert(
-        GetKeyboardLayoutName(kKeepRightAltInputMethods[i]));
+        util.GetKeyboardLayoutName(kKeepRightAltInputMethods[i]));
   }
   for (size_t i = 0; i < arraysize(kCapsLockRemapped); ++i) {
     caps_lock_remapped_xkb_layout_names_.insert(
-        GetKeyboardLayoutName(kCapsLockRemapped[i]));
+        util.GetKeyboardLayoutName(kCapsLockRemapped[i]));
   }
 }
 
