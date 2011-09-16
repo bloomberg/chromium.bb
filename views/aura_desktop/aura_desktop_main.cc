@@ -32,6 +32,8 @@ class DemoWindowDelegate : public aura::WindowDelegate {
   explicit DemoWindowDelegate(SkColor color) : color_(color) {}
 
   // Overridden from aura::WindowDelegate:
+  virtual void OnBoundsChanged(const gfx::Rect& old_bounds,
+                               const gfx::Rect& new_bounds) OVERRIDE {}
   virtual void OnFocus() OVERRIDE {}
   virtual void OnBlur() OVERRIDE {}
   virtual bool OnKeyEvent(aura::KeyEvent* event) OVERRIDE {

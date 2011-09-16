@@ -10,6 +10,9 @@
 #include "views/widget/widget_delegate.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
+namespace aura_shell {
+namespace internal {
+
 class DesktopBackgroundView : public views::WidgetDelegateView {
  public:
   DesktopBackgroundView();
@@ -19,10 +22,14 @@ class DesktopBackgroundView : public views::WidgetDelegateView {
   // Overridden from views::View:
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
   virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) OVERRIDE;
+  virtual bool OnMousePressed(const views::MouseEvent& event) OVERRIDE;
 
   SkBitmap wallpaper_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopBackgroundView);
 };
+
+}  // namespace internal
+}  // namespace aura_shell
 
 #endif  // UI_AURA_SHELL_DESKTOP_BACKGROUND_VIEW_H_

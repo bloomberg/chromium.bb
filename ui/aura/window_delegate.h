@@ -9,6 +9,7 @@
 namespace gfx {
 class Canvas;
 class Point;
+class Rect;
 }
 
 namespace aura {
@@ -19,6 +20,10 @@ class MouseEvent;
 // Delegate interface for aura::Window.
 class WindowDelegate {
  public:
+  // Called when the Window's position and/or size changes.
+  virtual void OnBoundsChanged(const gfx::Rect& old_bounds,
+                               const gfx::Rect& new_bounds) = 0;
+
   // Sent to the Window's delegate when the Window gains or loses focus.
   virtual void OnFocus() = 0;
   virtual void OnBlur() = 0;

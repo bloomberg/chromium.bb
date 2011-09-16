@@ -25,6 +25,7 @@ namespace aura {
 
 class Desktop;
 class KeyEvent;
+class LayoutManager;
 class MouseEvent;
 class WindowDelegate;
 class WindowManager;
@@ -64,6 +65,10 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
   // Changes the visibility of the window.
   void SetVisibility(Visibility visibility);
   Visibility visibility() const { return visibility_; }
+
+  // Assigns a LayoutManager to size and place child windows.
+  // The Window takes ownership of the LayoutManager.
+  void SetLayoutManager(LayoutManager* layout_manager);
 
   // Changes the bounds of the window.
   void SetBounds(const gfx::Rect& bounds, int anim_ms);
@@ -155,6 +160,7 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
   int id_;
 
   scoped_ptr<WindowManager> window_manager_;
+  scoped_ptr<LayoutManager> layout_manager_;
 
   void* user_data_;
 

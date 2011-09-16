@@ -9,6 +9,7 @@
 #endif
 
 #include "base/logging.h"
+#include "ui/gfx/native_widget_types.h"
 
 namespace gfx {
 

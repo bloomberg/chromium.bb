@@ -18,7 +18,7 @@ namespace aura {
 Desktop* Desktop::instance_ = NULL;
 
 Desktop::Desktop()
-    : host_(aura::DesktopHost::Create(gfx::Rect(200, 200, 1024, 768))),
+    : host_(aura::DesktopHost::Create(gfx::Rect(200, 200, 1280, 1024))),
       ALLOW_THIS_IN_INITIALIZER_LIST(schedule_paint_(this)) {
   DCHECK(MessageLoopForUI::current())
       << "The UI message loop must be initialized first.";

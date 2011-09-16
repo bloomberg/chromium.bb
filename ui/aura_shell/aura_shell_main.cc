@@ -7,22 +7,27 @@
 #include "base/i18n/icu_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
-#include "third_party/skia/include/core/SkXfermode.h"
 #include "ui/aura/desktop.h"
-#include "ui/aura/desktop_host.h"
-#include "ui/aura/window.h"
-#include "ui/aura/window_delegate.h"
+#include "ui/aura_shell/desktop_layout_manager.h"
+#include "ui/aura_shell/shell_factory.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
-#include "ui/gfx/canvas.h"
-#include "ui/gfx/canvas_skia.h"
-#include "ui/gfx/rect.h"
-#include "views/widget/widget.h"
-#include "views/widget/widget_delegate.h"
 
-#if !defined(OS_WIN)
-#include "ui/aura/hit_test.h"
-#endif
+namespace aura_shell {
+namespace internal {
+
+void InitDesktopWindow() {
+  aura::Window* desktop_window = aura::Desktop::GetInstance()->window();
+  DesktopLayoutManager* desktop_layout =
+      new DesktopLayoutManager(desktop_window);
+  desktop_window->SetLayoutManager(desktop_layout);
+
+  desktop_layout->set_background_widget(CreateDesktopBackground());
+  desktop_layout->set_launcher_widget(CreateLauncher());
+}
+
+}  // namespace internal
+}  // namespace aura_shell
 
 int main(int argc, char** argv) {
   CommandLine::Init(argc, argv);
@@ -40,6 +45,8 @@ int main(int argc, char** argv) {
 
   // Create the message-loop here before creating the desktop.
   MessageLoop message_loop(MessageLoop::TYPE_UI);
+
+  aura_shell::internal::InitDesktopWindow();
 
   aura::Desktop::GetInstance()->Run();
 

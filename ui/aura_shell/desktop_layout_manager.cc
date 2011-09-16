@@ -7,12 +7,16 @@
 #include "ui/aura/window.h"
 #include "views/widget/widget.h"
 
+namespace aura_shell {
+namespace internal {
+
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopLayoutManager, public:
 
 DesktopLayoutManager::DesktopLayoutManager(aura::Window* owner)
     : owner_(owner),
-      background_widget_(NULL) {
+      background_widget_(NULL),
+      launcher_widget_(NULL) {
 }
 
 DesktopLayoutManager::~DesktopLayoutManager() {
@@ -24,4 +28,14 @@ DesktopLayoutManager::~DesktopLayoutManager() {
 void DesktopLayoutManager::OnWindowResized() {
   background_widget_->SetBounds(
       gfx::Rect(owner_->bounds().width(), owner_->bounds().height()));
+
+  gfx::Rect launcher_bounds = launcher_widget_->GetWindowScreenBounds();
+  launcher_widget_->SetBounds(
+      gfx::Rect(owner_->bounds().width() / 2 - launcher_bounds.width() / 2,
+                owner_->bounds().bottom() - launcher_bounds.height(),
+                launcher_bounds.width(),
+                launcher_bounds.height()));
 }
+
+}  // namespace internal
+}  // namespace aura_shell

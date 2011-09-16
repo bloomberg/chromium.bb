@@ -17,6 +17,9 @@ namespace views {
 class Widget;
 }
 
+namespace aura_shell {
+namespace internal {
+
 class DesktopLayoutManager : public aura::LayoutManager {
  public:
   explicit DesktopLayoutManager(aura::Window* owner);
@@ -26,14 +29,22 @@ class DesktopLayoutManager : public aura::LayoutManager {
     background_widget_ = background_widget;
   }
 
+  void set_launcher_widget(views::Widget* launcher_widget) {
+    launcher_widget_ = launcher_widget;
+  }
+
  private:
   // Overridden from aura::LayoutManager:
   virtual void OnWindowResized() OVERRIDE;
 
   aura::Window* owner_;
   views::Widget* background_widget_;
+  views::Widget* launcher_widget_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopLayoutManager);
 };
+
+}  // namespace internal
+}  // namespace aura_shell
 
 #endif  // UI_AURA_SHELL_DESKTOP_LAYOUT_MANAGER_H_

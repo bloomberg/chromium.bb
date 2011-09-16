@@ -118,6 +118,14 @@
         <include name="IDR_MENU_ARROW" file="menu_arrow.png" type="BINDATA" />
         <include name="IDR_MENU_CHECK" file="menu_check.png" type="BINDATA" />
       </if>
+      
+      <!-- Images only used by Aura. -->
+      <if expr="pp_ifdef('use_aura')">
+        <include name="IDR_AURA_LAUNCHER_ICON_CHROME" file="aura/chromium-48.png" type="BINDATA" />
+        <include name="IDR_AURA_LAUNCHER_ICON_APPLIST" file="aura/applist.png" type="BINDATA" />
+        <include name="IDR_AURA_STATUS_MOCK" file="aura/statusbar.png" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPER" file="aura/damask.png" type="BINDATA" />
+      </if>      
     </includes>
   </release>
 </grit>

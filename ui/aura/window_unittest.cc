@@ -30,6 +30,8 @@ class WindowDelegateImpl : public WindowDelegate {
   virtual ~WindowDelegateImpl() {}
 
   // Overriden from WindowDelegate:
+  virtual void OnBoundsChanged(const gfx::Rect& old_bounds,
+                               const gfx::Rect& new_bounds) OVERRIDE {}
   virtual void OnFocus() OVERRIDE {}
   virtual void OnBlur() OVERRIDE {}
   virtual bool OnKeyEvent(KeyEvent* event) OVERRIDE {

@@ -2,13 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_AURA_SHELL_STATUS_AREA_VIEW_H_
-#define UI_AURA_SHELL_STATUS_AREA_VIEW_H_
-#pragma once
+#include "ui/aura_shell/launcher/launcher_button.h"
 
 namespace aura_shell {
 namespace internal {
+
+LauncherButton::LauncherButton(views::ButtonListener* listener)
+    : views::ImageButton(listener) {
+}
+
+LauncherButton::~LauncherButton() {
+}
+
 }  // namespace internal
 }  // namespace aura_shell
-
-#endif  // UI_AURA_SHELL_STATUS_AREA_VIEW_H_

@@ -2351,7 +2351,7 @@ class TestCompositor : public ui::Compositor {
   virtual ui::Texture* CreateTexture() OVERRIDE {
     return new TestTexture();
   }
-  virtual void OnNotifyStart() OVERRIDE {}
+  virtual void OnNotifyStart(bool clear) OVERRIDE {}
   virtual void OnNotifyEnd() OVERRIDE {}
   virtual void Blur(const gfx::Rect& bounds) OVERRIDE {}
 

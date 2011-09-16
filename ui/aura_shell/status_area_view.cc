@@ -3,3 +3,8 @@
 // found in the LICENSE file.
 
 #include "ui/aura_shell/status_area_view.h"
+
+namespace aura_shell {
+namespace internal {
+}  // namespace internal
+}  // namespace aura_shell

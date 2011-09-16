@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "ui/aura/desktop.h"
 #include "ui/aura/event.h"
+#include "ui/aura/layout_manager.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/aura/window_manager.h"
 #include "ui/gfx/canvas_skia.h"
@@ -59,12 +60,21 @@ void Window::SetVisibility(Visibility visibility) {
     SchedulePaint();
 }
 
+void Window::SetLayoutManager(LayoutManager* layout_manager) {
+  layout_manager_.reset(layout_manager);
+}
+
 void Window::SetBounds(const gfx::Rect& bounds, int anim_ms) {
   // TODO: support anim_ms
   // TODO: funnel this through the Desktop.
   bool was_move = bounds_.size() == bounds.size();
+  gfx::Rect old_bounds = bounds_;
   bounds_ = bounds;
   layer_->SetBounds(bounds);
+  if (layout_manager_.get())
+    layout_manager_->OnWindowResized();
+  if (delegate_)
+    delegate_->OnBoundsChanged(old_bounds, bounds_);
   if (was_move)
     SchedulePaintInRect(gfx::Rect());
   else
