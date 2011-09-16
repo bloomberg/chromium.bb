@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_INTENTS_INTENTS_MODEL_H_
-#define CHROME_BROWSER_UI_INTENTS_INTENTS_MODEL_H_
+#ifndef CHROME_BROWSER_UI_INTENTS_WEB_INTENTS_MODEL_H_
+#define CHROME_BROWSER_UI_INTENTS_WEB_INTENTS_MODEL_H_
 #pragma once
 
 #include "base/values.h"
@@ -17,12 +17,12 @@ class WebIntentsRegistry;
 // children are TYPE_SERVICE nodes with title=origin, and
 // will be of type ServiceTreeNode with data on individual
 // services.
-class IntentsTreeNode : public ui::TreeNode<IntentsTreeNode> {
+class WebIntentsTreeNode : public ui::TreeNode<WebIntentsTreeNode> {
  public:
-  IntentsTreeNode();
-  explicit IntentsTreeNode(const string16& title);
+  WebIntentsTreeNode();
+  explicit WebIntentsTreeNode(const string16& title);
 
-  virtual ~IntentsTreeNode();
+  virtual ~WebIntentsTreeNode();
 
   enum NodeType {
     TYPE_ROOT,
@@ -33,8 +33,8 @@ class IntentsTreeNode : public ui::TreeNode<IntentsTreeNode> {
   NodeType Type() const { return type_; }
 
  protected:
-  IntentsTreeNode(const string16& title, NodeType type)
-      : ui::TreeNode<IntentsTreeNode>(title),
+  WebIntentsTreeNode(const string16& title, NodeType type)
+      : ui::TreeNode<WebIntentsTreeNode>(title),
         type_(type) {}
 
  private:
@@ -42,7 +42,7 @@ class IntentsTreeNode : public ui::TreeNode<IntentsTreeNode> {
 };
 
 // Tree node representing particular services presented by an origin.
-class ServiceTreeNode : public IntentsTreeNode {
+class ServiceTreeNode : public WebIntentsTreeNode {
  public:
   explicit ServiceTreeNode(const string16& title);
   virtual ~ServiceTreeNode();
@@ -76,30 +76,30 @@ class ServiceTreeNode : public IntentsTreeNode {
 };
 
 // UI-backing tree model of the data in the WebIntentsRegistry.
-class IntentsModel : public ui::TreeNodeModel<IntentsTreeNode>,
-                     public WebIntentsRegistry::Consumer {
+class WebIntentsModel : public ui::TreeNodeModel<WebIntentsTreeNode>,
+                        public WebIntentsRegistry::Consumer {
  public:
   // Because nodes are fetched in a background thread, they are not
   // present at the time the Model is created. The Model then notifies its
   // observers for every item added.
   class Observer : public ui::TreeModelObserver {
    public:
-    virtual void TreeModelBeginBatch(IntentsModel* model) {}
-    virtual void TreeModelEndBatch(IntentsModel* model) {}
+    virtual void TreeModelBeginBatch(WebIntentsModel* model) {}
+    virtual void TreeModelEndBatch(WebIntentsModel* model) {}
   };
 
-  explicit IntentsModel(WebIntentsRegistry* intents_registry);
-  virtual ~IntentsModel();
+  explicit WebIntentsModel(WebIntentsRegistry* intents_registry);
+  virtual ~WebIntentsModel();
 
-  void AddIntentsTreeObserver(Observer* observer);
-  void RemoveIntentsTreeObserver(Observer* observer);
+  void AddWebIntentsTreeObserver(Observer* observer);
+  void RemoveWebIntentsTreeObserver(Observer* observer);
 
-  string16 GetTreeNodeId(IntentsTreeNode* node);
-  IntentsTreeNode* GetTreeNode(std::string path_id);
-  void GetChildNodeList(IntentsTreeNode* parent, int start, int count,
+  string16 GetTreeNodeId(WebIntentsTreeNode* node);
+  WebIntentsTreeNode* GetTreeNode(std::string path_id);
+  void GetChildNodeList(WebIntentsTreeNode* parent, int start, int count,
                         base::ListValue* nodes);
-  void GetIntentsTreeNodeDictionary(const IntentsTreeNode& node,
-                                    base::DictionaryValue* dict);
+  void GetWebIntentsTreeNodeDictionary(const WebIntentsTreeNode& node,
+                                       base::DictionaryValue* dict);
 
   virtual void OnIntentsQueryDone(
       WebIntentsRegistry::QueryID query_id,
@@ -125,4 +125,4 @@ class IntentsModel : public ui::TreeNodeModel<IntentsTreeNode>,
   int batch_update_;
 };
 
-#endif  // CHROME_BROWSER_UI_INTENTS_INTENTS_MODEL_H_
+#endif  // CHROME_BROWSER_UI_INTENTS_WEB_INTENTS_MODEL_H_

@@ -9,13 +9,13 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/intents/web_intents_registry.h"
 #include "chrome/browser/webdata/web_data_service.h"
-#include "chrome/browser/ui/intents/intents_model.h"
+#include "chrome/browser/ui/intents/web_intents_model.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/models/tree_node_model.h"
 
-class IntentsModelTest : public testing::Test {
+class WebIntentsModelTest : public testing::Test {
  public:
-  IntentsModelTest()
+  WebIntentsModelTest()
       : ui_thread_(BrowserThread::UI, &message_loop_),
         db_thread_(BrowserThread::DB) {}
 
@@ -73,13 +73,13 @@ class IntentsModelTest : public testing::Test {
   ScopedTempDir temp_dir_;
 };
 
-class WaitingIntentsObserver : public IntentsModel::Observer {
+class WaitingWebIntentsObserver : public WebIntentsModel::Observer {
  public:
-  WaitingIntentsObserver() : event_(true, false), added_(0) {}
+  WaitingWebIntentsObserver() : event_(true, false), added_(0) {}
 
-  virtual void TreeModelBeginBatch(IntentsModel* model) {}
+  virtual void TreeModelBeginBatch(WebIntentsModel* model) {}
 
-  virtual void TreeModelEndBatch(IntentsModel* model) {
+  virtual void TreeModelEndBatch(WebIntentsModel* model) {
     event_.Signal();
      MessageLoop::current()->Quit();
   }
@@ -110,19 +110,19 @@ class WaitingIntentsObserver : public IntentsModel::Observer {
   int added_;
 };
 
-TEST_F(IntentsModelTest, NodeIDs) {
+TEST_F(WebIntentsModelTest, NodeIDs) {
   LoadRegistry();
-  WaitingIntentsObserver obs;
-  IntentsModel intents_model(&registry_);
-  intents_model.AddIntentsTreeObserver(&obs);
+  WaitingWebIntentsObserver obs;
+  WebIntentsModel intents_model(&registry_);
+  intents_model.AddWebIntentsTreeObserver(&obs);
   obs.Wait();
 
-  IntentsTreeNode* n1 = new IntentsTreeNode(ASCIIToUTF16("origin"));
+  WebIntentsTreeNode* n1 = new WebIntentsTreeNode(ASCIIToUTF16("origin"));
   intents_model.Add(intents_model.GetRoot(), n1,
                     intents_model.GetRoot()->child_count());
   EXPECT_EQ(ASCIIToUTF16("origin"), intents_model.GetTreeNodeId(n1));
 
-  IntentsTreeNode* ncheck = intents_model.GetTreeNode("origin");
+  WebIntentsTreeNode* ncheck = intents_model.GetTreeNode("origin");
   EXPECT_EQ(ncheck, n1);
 
   base::ListValue nodes;
@@ -153,21 +153,21 @@ TEST_F(IntentsModelTest, NodeIDs) {
   EXPECT_FALSE(bval);
 }
 
-TEST_F(IntentsModelTest, LoadFromWebData) {
+TEST_F(WebIntentsModelTest, LoadFromWebData) {
   LoadRegistry();
-  WaitingIntentsObserver obs;
-  IntentsModel intents_model(&registry_);
-  intents_model.AddIntentsTreeObserver(&obs);
+  WaitingWebIntentsObserver obs;
+  WebIntentsModel intents_model(&registry_);
+  intents_model.AddWebIntentsTreeObserver(&obs);
   obs.Wait();
   EXPECT_EQ(3, obs.added_);
 
-  IntentsTreeNode* node = intents_model.GetTreeNode("www.google.com");
-  ASSERT_NE(static_cast<IntentsTreeNode*>(NULL), node);
-  EXPECT_EQ(IntentsTreeNode::TYPE_ORIGIN, node->Type());
+  WebIntentsTreeNode* node = intents_model.GetTreeNode("www.google.com");
+  ASSERT_NE(static_cast<WebIntentsTreeNode*>(NULL), node);
+  EXPECT_EQ(WebIntentsTreeNode::TYPE_ORIGIN, node->Type());
   EXPECT_EQ(ASCIIToUTF16("www.google.com"), node->GetTitle());
   EXPECT_EQ(1, node->child_count());
   node = node->GetChild(0);
-  ASSERT_EQ(IntentsTreeNode::TYPE_SERVICE, node->Type());
+  ASSERT_EQ(WebIntentsTreeNode::TYPE_SERVICE, node->Type());
   ServiceTreeNode* snode = static_cast<ServiceTreeNode*>(node);
   EXPECT_EQ(ASCIIToUTF16("Google"), snode->ServiceName());
   EXPECT_EQ(ASCIIToUTF16("SHARE"), snode->Action());
@@ -178,7 +178,7 @@ TEST_F(IntentsModelTest, LoadFromWebData) {
   EXPECT_EQ(ASCIIToUTF16("text/url"), stype);
 
   node = intents_model.GetTreeNode("www.digg.com");
-  ASSERT_NE(static_cast<IntentsTreeNode*>(NULL), node);
-  EXPECT_EQ(IntentsTreeNode::TYPE_ORIGIN, node->Type());
+  ASSERT_NE(static_cast<WebIntentsTreeNode*>(NULL), node);
+  EXPECT_EQ(WebIntentsTreeNode::TYPE_ORIGIN, node->Type());
   EXPECT_EQ(ASCIIToUTF16("www.digg.com"), node->GetTitle());
 }

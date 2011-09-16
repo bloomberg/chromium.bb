@@ -29,7 +29,7 @@
 #include "chrome/browser/ui/webui/options/extension_settings_handler.h"
 #include "chrome/browser/ui/webui/options/font_settings_handler.h"
 #include "chrome/browser/ui/webui/options/import_data_handler.h"
-#include "chrome/browser/ui/webui/options/intents_settings_handler.h"
+#include "chrome/browser/ui/webui/options/web_intents_settings_handler.h"
 #include "chrome/browser/ui/webui/options/language_options_handler.h"
 #include "chrome/browser/ui/webui/options/manage_profile_handler.h"
 #include "chrome/browser/ui/webui/options/options_sync_setup_handler.h"
@@ -214,7 +214,7 @@ OptionsUI::OptionsUI(TabContents* contents)
   AddOptionsPageUIHandler(localized_strings, new CookiesViewHandler());
   AddOptionsPageUIHandler(localized_strings, new ExtensionSettingsHandler());
   AddOptionsPageUIHandler(localized_strings, new FontSettingsHandler());
-  AddOptionsPageUIHandler(localized_strings, new IntentsSettingsHandler());
+  AddOptionsPageUIHandler(localized_strings, new WebIntentsSettingsHandler());
 #if defined(OS_CHROMEOS)
   AddOptionsPageUIHandler(localized_strings,
                           new chromeos::CrosLanguageOptionsHandler());

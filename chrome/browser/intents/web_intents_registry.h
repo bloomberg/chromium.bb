@@ -55,7 +55,7 @@ class WebIntentsRegistry
   // WebIntentsRegistry.
   friend class WebIntentsRegistryFactory;
   friend class WebIntentsRegistryTest;
-  friend class IntentsModelTest;
+  friend class WebIntentsModelTest;
 
   WebIntentsRegistry();
   virtual ~WebIntentsRegistry();

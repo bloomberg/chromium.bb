@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/options/intents_settings_handler.h"
+#include "chrome/browser/ui/webui/options/web_intents_settings_handler.h"
 
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
@@ -20,15 +20,15 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "ui/base/l10n/l10n_util.h"
 
-IntentsSettingsHandler::IntentsSettingsHandler()
+WebIntentsSettingsHandler::WebIntentsSettingsHandler()
     : web_intents_registry_(NULL),
       batch_update_(false) {
 }
 
-IntentsSettingsHandler::~IntentsSettingsHandler() {
+WebIntentsSettingsHandler::~WebIntentsSettingsHandler() {
 }
 
-void IntentsSettingsHandler::GetLocalizedValues(
+void WebIntentsSettingsHandler::GetLocalizedValues(
     DictionaryValue* localized_strings) {
   DCHECK(localized_strings);
 
@@ -44,77 +44,77 @@ void IntentsSettingsHandler::GetLocalizedValues(
                 IDS_INTENTS_MANAGER_WINDOW_TITLE);
 }
 
-void IntentsSettingsHandler::RegisterMessages() {
+void WebIntentsSettingsHandler::RegisterMessages() {
   web_ui_->RegisterMessageCallback("removeIntent",
-      NewCallback(this, &IntentsSettingsHandler::RemoveIntent));
+      NewCallback(this, &WebIntentsSettingsHandler::RemoveIntent));
   web_ui_->RegisterMessageCallback("loadIntents",
-      NewCallback(this, &IntentsSettingsHandler::LoadChildren));
+      NewCallback(this, &WebIntentsSettingsHandler::LoadChildren));
 }
 
-void IntentsSettingsHandler::TreeNodesAdded(ui::TreeModel* model,
-                                            ui::TreeModelNode* parent,
-                                            int start,
-                                            int count) {
+void WebIntentsSettingsHandler::TreeNodesAdded(ui::TreeModel* model,
+                                               ui::TreeModelNode* parent,
+                                               int start,
+                                               int count) {
   SendChildren(intents_tree_model_->GetRoot());
 }
 
-void IntentsSettingsHandler::TreeNodesRemoved(ui::TreeModel* model,
-                                              ui::TreeModelNode* parent,
-                                              int start,
-                                              int count) {
+void WebIntentsSettingsHandler::TreeNodesRemoved(ui::TreeModel* model,
+                                                 ui::TreeModelNode* parent,
+                                                 int start,
+                                                 int count) {
   SendChildren(intents_tree_model_->GetRoot());
 }
 
-void IntentsSettingsHandler::TreeModelBeginBatch(IntentsModel* model) {
+void WebIntentsSettingsHandler::TreeModelBeginBatch(WebIntentsModel* model) {
   batch_update_ = true;
 }
 
-void IntentsSettingsHandler::TreeModelEndBatch(IntentsModel* model) {
+void WebIntentsSettingsHandler::TreeModelEndBatch(WebIntentsModel* model) {
   batch_update_ = false;
 
   SendChildren(intents_tree_model_->GetRoot());
 }
 
-void IntentsSettingsHandler::EnsureIntentsModelCreated() {
+void WebIntentsSettingsHandler::EnsureWebIntentsModelCreated() {
   if (intents_tree_model_.get()) return;
 
   Profile* profile = Profile::FromWebUI(web_ui_);
   web_data_service_ = profile->GetWebDataService(Profile::EXPLICIT_ACCESS);
   web_intents_registry_ = WebIntentsRegistryFactory::GetForProfile(profile);
   web_intents_registry_->Initialize(web_data_service_.get());
-  intents_tree_model_.reset(new IntentsModel(web_intents_registry_));
-  intents_tree_model_->AddIntentsTreeObserver(this);
+  intents_tree_model_.reset(new WebIntentsModel(web_intents_registry_));
+  intents_tree_model_->AddWebIntentsTreeObserver(this);
 }
 
-void IntentsSettingsHandler::RemoveIntent(const base::ListValue* args) {
+void WebIntentsSettingsHandler::RemoveIntent(const base::ListValue* args) {
   std::string node_path;
   if (!args->GetString(0, &node_path)) {
     return;
   }
 
-  EnsureIntentsModelCreated();
+  EnsureWebIntentsModelCreated();
 
-  IntentsTreeNode* node = intents_tree_model_->GetTreeNode(node_path);
-  if (node->Type() == IntentsTreeNode::TYPE_ORIGIN) {
+  WebIntentsTreeNode* node = intents_tree_model_->GetTreeNode(node_path);
+  if (node->Type() == WebIntentsTreeNode::TYPE_ORIGIN) {
     RemoveOrigin(node);
-  } else if (node->Type() == IntentsTreeNode::TYPE_SERVICE) {
+  } else if (node->Type() == WebIntentsTreeNode::TYPE_SERVICE) {
     ServiceTreeNode* snode = static_cast<ServiceTreeNode*>(node);
     RemoveService(snode);
   }
 }
 
-void IntentsSettingsHandler::RemoveOrigin(IntentsTreeNode* node) {
+void WebIntentsSettingsHandler::RemoveOrigin(WebIntentsTreeNode* node) {
   // TODO(gbillock): This is a known batch update. Worth optimizing?
   while (!node->empty()) {
-    IntentsTreeNode* cnode = node->GetChild(0);
-    CHECK(cnode->Type() == IntentsTreeNode::TYPE_SERVICE);
+    WebIntentsTreeNode* cnode = node->GetChild(0);
+    CHECK(cnode->Type() == WebIntentsTreeNode::TYPE_SERVICE);
     ServiceTreeNode* snode = static_cast<ServiceTreeNode*>(cnode);
     RemoveService(snode);
   }
   delete intents_tree_model_->Remove(node->parent(), node);
 }
 
-void IntentsSettingsHandler::RemoveService(ServiceTreeNode* snode) {
+void WebIntentsSettingsHandler::RemoveService(ServiceTreeNode* snode) {
   WebIntentData provider;
   provider.service_url = GURL(snode->ServiceUrl());
   provider.action = snode->Action();
@@ -129,8 +129,8 @@ void IntentsSettingsHandler::RemoveService(ServiceTreeNode* snode) {
   delete intents_tree_model_->Remove(snode->parent(), snode);
 }
 
-void IntentsSettingsHandler::LoadChildren(const base::ListValue* args) {
-  EnsureIntentsModelCreated();
+void WebIntentsSettingsHandler::LoadChildren(const base::ListValue* args) {
+  EnsureWebIntentsModelCreated();
 
   std::string node_path;
   if (!args->GetString(0, &node_path)) {
@@ -138,11 +138,11 @@ void IntentsSettingsHandler::LoadChildren(const base::ListValue* args) {
     return;
   }
 
-  IntentsTreeNode* node = intents_tree_model_->GetTreeNode(node_path);
+  WebIntentsTreeNode* node = intents_tree_model_->GetTreeNode(node_path);
   SendChildren(node);
 }
 
-void IntentsSettingsHandler::SendChildren(IntentsTreeNode* parent) {
+void WebIntentsSettingsHandler::SendChildren(WebIntentsTreeNode* parent) {
   // Early bailout during batch updates. We'll get one after the batch concludes
   // with batch_update_ set false.
   if (batch_update_) return;
