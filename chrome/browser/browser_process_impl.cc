@@ -315,6 +315,7 @@ unsigned int BrowserProcessImpl::ReleaseModule() {
     // Allow UI and IO threads to do blocking IO on shutdown, since we do a lot
     // of it on shutdown for valid reasons.
     base::ThreadRestrictions::SetIOAllowed(true);
+    CHECK(!BrowserList::GetLastActive());
     io_thread()->message_loop()->PostTask(
         FROM_HERE,
         NewRunnableFunction(&base::ThreadRestrictions::SetIOAllowed, true));
