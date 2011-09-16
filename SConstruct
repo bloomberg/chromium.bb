@@ -1322,6 +1322,7 @@ def PPAPIBrowserTester(env,
                        nmfs=None,
                        map_files=(),
                        extensions=(),
+                       mime_types=(),
                        timeout=20,
                        log_verbosity=2,
                        args=(),
@@ -1341,8 +1342,8 @@ def PPAPIBrowserTester(env,
 
   # Lint the extra arguments that are being passed to the tester.
   special_args = ['--ppapi_plugin', '--sel_ldr', '--irt_library', '--file',
-                  '--map_file', '--extension', '--tool', '--browser_flag',
-                  '--test_arg']
+                  '--map_file', '--extension', '--mime_type', '--tool',
+                  '--browser_flag', '--test_arg']
   for arg_name in special_args:
     if arg_name in args:
       raise Exception('%s: %r is a test argument provided by the SCons test'
@@ -1376,6 +1377,8 @@ def PPAPIBrowserTester(env,
     command.extend(['--extension', extension])
   for dest_path, dep_file in map_files:
     command.extend(['--map_file', dest_path, dep_file])
+  for file_ext, mime_type in mime_types:
+    command.extend(['--mime_type', file_ext, mime_type])
   command.extend(['--serving_dir', '${NACL_SDK_LIB}'])
   command.extend(['--serving_dir', '${LIB_DIR}'])
   if not nmfs is None:

@@ -4,6 +4,7 @@
 
 import BaseHTTPServer
 import cgi
+import mimetypes
 import os
 import os.path
 import posixpath
@@ -54,6 +55,19 @@ class RequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
     if not path.endswith('favicon.ico') and not self.server.allow_404:
       self.server.listener.ServerError('Cannot find file \'%s\'' % path)
     return path
+
+  def guess_type(self, path):
+      # We store the extension -> MIME type mapping in the server instead of the
+      # request handler so we that can add additional mapping entries via the
+      # command line.
+      base, ext = posixpath.splitext(path)
+      if ext in self.server.extensions_mapping:
+          return self.server.extensions_mapping[ext]
+      ext = ext.lower()
+      if ext in self.server.extensions_mapping:
+          return self.server.extensions_mapping[ext]
+      else:
+          return self.server.extensions_mapping['']
 
   def SendRPCResponse(self, response):
     self.send_response(200)
@@ -176,10 +190,11 @@ class RequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
 class Server(BaseHTTPServer.HTTPServer):
 
   def Configure(
-    self, file_mapping, redirect_mapping, allow_404, bandwidth, listener,
-    serving_dirs=[]):
+    self, file_mapping, redirect_mapping, extensions_mapping, allow_404,
+    bandwidth, listener, serving_dirs=[]):
     self.file_mapping = file_mapping
     self.redirect_mapping = redirect_mapping
+    self.extensions_mapping.update(extensions_mapping)
     self.allow_404 = allow_404
     self.bandwidth = bandwidth
     self.listener = listener
@@ -211,4 +226,9 @@ class Server(BaseHTTPServer.HTTPServer):
 
 
 def Create(host, port):
-  return Server((host, port), RequestHandler)
+  server = Server((host, port), RequestHandler)
+  server.extensions_mapping = mimetypes.types_map.copy()
+  server.extensions_mapping.update({
+    '': 'application/octet-stream' # Default
+  })
+  return server

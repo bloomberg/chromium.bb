@@ -66,6 +66,10 @@ def BuildArgParser():
                     'made visible in the root directory.  '
                     '"--file path/to/foo.html" is equivalent to '
                     '"--map_file foo.html path/to/foo.html"')
+  parser.add_option('--mime_type', dest='mime_types', action='append',
+                    type='string', nargs=2, default=[], metavar='DEST SRC',
+                    help='Map file extension SRC to MIME type DEST when '
+                    'serving it from the HTTP server.')
   parser.add_option('-u', '--url', dest='url', action='store',
                     type='string', default=None,
                     help='The webpage to load.')
@@ -151,6 +155,9 @@ def Run(url, options):
   for server_path, real_path in file_mapping.iteritems():
     if not os.path.exists(real_path):
       raise AssertionError('\'%s\' does not exist.' % real_path)
+  mime_types = {}
+  for ext, mime_type in options.mime_types:
+    mime_types['.' + ext] = mime_type
 
   def ShutdownCallback():
     server.TestingEnded()
@@ -160,6 +167,7 @@ def Run(url, options):
   listener = browsertester.rpclistener.RPCListener(ShutdownCallback)
   server.Configure(file_mapping,
                    dict(options.map_redirects),
+                   mime_types,
                    options.allow_404,
                    options.bandwidth,
                    listener,
