@@ -37,7 +37,7 @@ namespace {
 typedef std::multimap<std::string, std::string> LanguageCodeToIdsMap;
 // Map from input method ID to associated input method descriptor.
 typedef std::map<std::string, InputMethodDescriptor>
-    InputMethodIdToDescriptorMap;
+InputMethodIdToDescriptorMap;
 // Map from XKB layout ID to associated input method descriptor.
 typedef std::map<std::string, InputMethodDescriptor> XkbIdToDescriptorMap;
 
@@ -54,7 +54,7 @@ struct IdMaps {
 
   void ReloadMaps() {
     scoped_ptr<InputMethodDescriptors> supported_input_methods(
-        GetSupportedInputMethods());
+        InputMethodDescriptor::GetSupportedInputMethods());
     if (supported_input_methods->size() <= 1) {
       LOG(ERROR) << "GetSupportedInputMethods returned a fallback ID";
       // TODO(yusukes): Handle this error in nicer way.
@@ -697,7 +697,7 @@ std::string GetHardwareInputMethodId() {
   if (!(g_browser_process && g_browser_process->local_state())) {
     // This shouldn't happen but just in case.
     LOG(ERROR) << "Local state is not yet ready";
-    return GetFallbackInputMethodDescriptor().id();
+    return InputMethodDescriptor::GetFallbackInputMethodDescriptor().id();
   }
 
   PrefService* local_state = g_browser_process->local_state();
@@ -706,7 +706,7 @@ std::string GetHardwareInputMethodId() {
     // BrowserMain::InitializeLocalState and that method is not called during
     // unittests.
     LOG(ERROR) << prefs::kHardwareKeyboardLayout << " is not registered";
-    return GetFallbackInputMethodDescriptor().id();
+    return InputMethodDescriptor::GetFallbackInputMethodDescriptor().id();
   }
 
   const std::string input_method_id =
@@ -715,28 +715,9 @@ std::string GetHardwareInputMethodId() {
     // This is totally fine if it's empty. The hardware keyboard layout is
     // not stored if startup_manifest.json (OEM customization data) is not
     // present (ex. Cr48 doen't have that file).
-    return GetFallbackInputMethodDescriptor().id();
+    return InputMethodDescriptor::GetFallbackInputMethodDescriptor().id();
   }
   return input_method_id;
-}
-
-InputMethodDescriptor GetFallbackInputMethodDescriptor() {
-  return InputMethodDescriptor::CreateInputMethodDescriptor(
-      "xkb:us::eng", "us", "eng");
-}
-
-InputMethodDescriptors* GetSupportedInputMethods() {
-  InputMethodDescriptors* input_methods = new InputMethodDescriptors;
-  for (size_t i = 0; i < arraysize(kIBusEngines); ++i) {
-    if (InputMethodIdIsWhitelisted(kIBusEngines[i].input_method_id)) {
-      input_methods->push_back(
-          InputMethodDescriptor::CreateInputMethodDescriptor(
-              kIBusEngines[i].input_method_id,
-              kIBusEngines[i].xkb_layout_id,
-              kIBusEngines[i].language_code));
-    }
-  }
-  return input_methods;
 }
 
 void ReloadInternalMaps() {

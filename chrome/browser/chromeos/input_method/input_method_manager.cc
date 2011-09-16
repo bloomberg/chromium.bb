@@ -18,7 +18,6 @@
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/input_method/hotkey_manager.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/input_method/virtual_keyboard_selector.h"
@@ -224,7 +223,8 @@ class InputMethodManagerImpl : public HotkeyManager::Observer,
     // returns the fallback input method descriptor.
     if (result->empty()) {
       LOG(WARNING) << "No active input methods found.";
-      result->push_back(GetFallbackInputMethodDescriptor());
+      result->push_back(
+          InputMethodDescriptor::GetFallbackInputMethodDescriptor());
     }
     return result;
   }
@@ -325,9 +325,8 @@ class InputMethodManagerImpl : public HotkeyManager::Observer,
                             const std::string& language) {
     std::string virtual_layouts = JoinString(layouts, ',');
 
-    extra_input_method_ids_[id] =
-        InputMethodDescriptor::CreateInputMethodDescriptor(
-            id, virtual_layouts, language);
+    extra_input_method_ids_[id] = ibus_controller_->CreateInputMethodDescriptor(
+        id, virtual_layouts, language);
     active_input_method_ids_.push_back(id);
     // TODO(yusukes): Call UpdateInputMethodSpecificHotkeys() here once IME
     // extension supports hotkeys.
@@ -360,14 +359,14 @@ class InputMethodManagerImpl : public HotkeyManager::Observer,
 
   virtual InputMethodDescriptor previous_input_method() const {
     if (previous_input_method_.id().empty()) {
-      return GetFallbackInputMethodDescriptor();
+      return InputMethodDescriptor::GetFallbackInputMethodDescriptor();
     }
     return previous_input_method_;
   }
 
   virtual InputMethodDescriptor current_input_method() const {
     if (current_input_method_.id().empty()) {
-      return GetFallbackInputMethodDescriptor();
+      return InputMethodDescriptor::GetFallbackInputMethodDescriptor();
     }
     return current_input_method_;
   }

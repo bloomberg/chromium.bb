@@ -9,7 +9,6 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string_util.h"
-#include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/input_method/ibus_engine_controller.h"
 #include "chrome/browser/chromeos/input_method/ibus_keymap.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"

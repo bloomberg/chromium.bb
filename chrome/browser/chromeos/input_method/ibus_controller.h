@@ -16,16 +16,14 @@
 namespace chromeos {
 namespace input_method {
 
+class InputMethodDescriptor;
+typedef std::vector<InputMethodDescriptor> InputMethodDescriptors;
+
 // A structure which represents an input method.
 class InputMethodDescriptor {
  public:
   InputMethodDescriptor();
   ~InputMethodDescriptor();
-
-  static InputMethodDescriptor CreateInputMethodDescriptor(
-      const std::string& id,
-      const std::string& raw_layout,
-      const std::string& language_code);
 
   bool operator==(const InputMethodDescriptor& other) const {
     return (id() == other.id());
@@ -41,8 +39,21 @@ class InputMethodDescriptor {
   }
   const std::string& language_code() const { return language_code_; }
 
+  // Returns the fallback input method descriptor (the very basic US
+  // keyboard). This function is mostly used for testing, but may be used
+  // as the fallback, when there is no other choice.
+  static InputMethodDescriptor GetFallbackInputMethodDescriptor();
+
+  // Gets all input method engines that are supported, including ones not
+  // active.  Caller has to delete the returned list. This function never
+  // returns NULL.
+  static InputMethodDescriptors* GetSupportedInputMethods();
+
  private:
-  // Do not call this function directly. Use CreateInputMethodDescriptor().
+  friend class InputMethodDescriptorHelper;  // see the constructor below.
+
+  // Do not call this function directly.
+  // Use IBusController::CreateInputMethodDescriptor().
   InputMethodDescriptor(const std::string& in_id,
                         const std::string& in_keyboard_layout,
                         const std::string& in_virtual_keyboard_layouts,
@@ -61,7 +72,6 @@ class InputMethodDescriptor {
   // "t" is used for languages in the "Others" category.
   std::string language_code_;
 };
-typedef std::vector<InputMethodDescriptor> InputMethodDescriptors;
 
 // A structure which represents a property for an input method engine. For
 // details, please check a comment for the LanguageRegisterImePropertiesFunction
@@ -237,13 +247,24 @@ class IBusController {
   // Clears the last N handwriting strokes. Pass zero for clearing all strokes.
   // TODO(yusukes): Currently ibus-daemon only accepts 0 for |n_strokes|.
   virtual void CancelHandwriting(int n_strokes) = 0;
-};
 
-//
-// FUNCTIONS BELOW ARE ONLY FOR UNIT TESTS. DO NOT USE THEM.
-//
-bool InputMethodIdIsWhitelisted(const std::string& input_method_id);
-bool XkbLayoutIsSupported(const std::string& xkb_layout);
+  // Creates an InputMethodDescriptor object. |raw_layout| is a comma-separated
+  // list of XKB and virtual keyboard layouts.
+  // (e.g. "special-us-virtual-keyboard-for-the-input-method,us")
+  virtual InputMethodDescriptor CreateInputMethodDescriptor(
+      const std::string& id,
+      const std::string& raw_layout,
+      const std::string& language_code) = 0;
+
+  //
+  // FUNCTIONS BELOW ARE ONLY FOR UNIT TESTS. DO NOT USE THEM.
+  //
+  // Returns true if |input_method_id| is whitelisted.
+  virtual bool InputMethodIdIsWhitelisted(
+      const std::string& input_method_id) = 0;
+  // Returns true if |xkb_layout| is supported.
+  virtual bool XkbLayoutIsSupported(const std::string& xkb_layout) = 0;
+};
 
 }  // namespace input_method
 }  // namespace chromeos

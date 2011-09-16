@@ -62,7 +62,7 @@ void CrosLanguageOptionsHandler::GetLocalizedValues(
 
   // GetSupportedInputMethods() never return NULL.
   scoped_ptr<input_method::InputMethodDescriptors> descriptors(
-      input_method::GetSupportedInputMethods());
+      input_method::InputMethodDescriptor::GetSupportedInputMethods());
   localized_strings->Set("languageList", GetLanguageList(*descriptors));
   localized_strings->Set("inputMethodList", GetInputMethodList(*descriptors));
 }

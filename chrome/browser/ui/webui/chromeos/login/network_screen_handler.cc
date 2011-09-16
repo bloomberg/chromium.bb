@@ -179,7 +179,7 @@ ListValue* NetworkScreenHandler::GetLanguageList() {
   const std::string app_locale = g_browser_process->GetApplicationLocale();
   // GetSupportedInputMethods() never returns NULL.
   scoped_ptr<input_method::InputMethodDescriptors> descriptors(
-      input_method::GetSupportedInputMethods());
+      input_method::InputMethodDescriptor::GetSupportedInputMethods());
   ListValue* languages_list =
       CrosLanguageOptionsHandler::GetLanguageList(*descriptors);
   for (size_t i = 0; i < languages_list->GetSize(); ++i) {

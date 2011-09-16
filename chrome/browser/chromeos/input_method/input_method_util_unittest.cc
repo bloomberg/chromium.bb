@@ -6,8 +6,9 @@
 
 #include <string>
 
+#include "base/scoped_ptr.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/input_method/ibus_controller.h"
 #include "grit/generated_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -32,26 +33,21 @@ namespace chromeos {
 namespace input_method {
 
 namespace {
-InputMethodDescriptor GetDesc(const std::string& id,
+
+InputMethodDescriptor GetDesc(IBusController* controller,
+                              const std::string& id,
                               const std::string& raw_layout,
                               const std::string& language_code) {
-  return InputMethodDescriptor::CreateInputMethodDescriptor(
-      id, raw_layout, language_code);
+  return controller->CreateInputMethodDescriptor(id, raw_layout, language_code);
 }
+
 }  // namespace
 
 class InputMethodUtilTest : public testing::Test {
  public:
   static void SetUpTestCase() {
-    // Reload the internal maps before running tests, with the stub
-    // libcros enabled, so that test data is loaded properly.
-    ScopedStubCrosEnabler stub_cros_enabler;
     ReloadInternalMaps();
   }
-
- private:
-  // Ensure we always use the stub libcros in each test.
-  ScopedStubCrosEnabler stub_cros_enabler_;
 };
 
 TEST_F(InputMethodUtilTest, TestGetStringUTF8) {
@@ -100,20 +96,21 @@ TEST_F(InputMethodUtilTest, TestIsKeyboardLayout) {
 }
 
 TEST_F(InputMethodUtilTest, TestGetLanguageCodeFromDescriptor) {
+  scoped_ptr<IBusController> controller(IBusController::Create());
   EXPECT_EQ("ja", GetLanguageCodeFromDescriptor(
-      GetDesc("mozc", "us", "ja")));
+      GetDesc(controller.get(), "mozc", "us", "ja")));
   EXPECT_EQ("zh-TW", GetLanguageCodeFromDescriptor(
-      GetDesc("mozc-chewing", "us", "zh")));
+      GetDesc(controller.get(), "mozc-chewing", "us", "zh")));
   EXPECT_EQ("zh-TW", GetLanguageCodeFromDescriptor(
-      GetDesc("m17n:zh:cangjie", "us", "zh")));
+      GetDesc(controller.get(), "m17n:zh:cangjie", "us", "zh")));
   EXPECT_EQ("zh-TW", GetLanguageCodeFromDescriptor(
-      GetDesc("m17n:zh:quick", "us", "zh")));
+      GetDesc(controller.get(), "m17n:zh:quick", "us", "zh")));
   EXPECT_EQ("zh-CN", GetLanguageCodeFromDescriptor(
-      GetDesc("pinyin", "us", "zh")));
+      GetDesc(controller.get(), "pinyin", "us", "zh")));
   EXPECT_EQ("en-US", GetLanguageCodeFromDescriptor(
-      GetDesc("xkb:us::eng", "us", "eng")));
+      GetDesc(controller.get(), "xkb:us::eng", "us", "eng")));
   EXPECT_EQ("en-UK", GetLanguageCodeFromDescriptor(
-      GetDesc("xkb:uk::eng", "us", "eng")));
+      GetDesc(controller.get(), "xkb:uk::eng", "us", "eng")));
 }
 
 TEST_F(InputMethodUtilTest, TestGetKeyboardLayoutName) {

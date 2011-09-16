@@ -11,28 +11,32 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/input_method/ibus_controller.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/ui/webui/options/chromeos/cros_language_options_handler.h"
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_CHROMEOS)
 
+using chromeos::input_method::IBusController;
 using chromeos::input_method::InputMethodDescriptor;
 using chromeos::input_method::InputMethodDescriptors;
 
-static InputMethodDescriptor GetDesc(const std::string& id,
+static InputMethodDescriptor GetDesc(IBusController* controller,
+                                     const std::string& id,
                                      const std::string& raw_layout,
                                      const std::string& language_code) {
-  return InputMethodDescriptor::CreateInputMethodDescriptor(
-      id, raw_layout, language_code);
+  return controller->CreateInputMethodDescriptor(id, raw_layout, language_code);
 }
 
 static InputMethodDescriptors CreateInputMethodDescriptors() {
+  scoped_ptr<IBusController> controller(IBusController::Create());
+
   InputMethodDescriptors descriptors;
-  descriptors.push_back(GetDesc("xkb:us::eng", "us", "eng"));
-  descriptors.push_back(GetDesc("xkb:fr::fra", "fr", "fra"));
-  descriptors.push_back(GetDesc("xkb:be::fra", "be", "fr"));
-  descriptors.push_back(GetDesc("mozc", "us", "ja"));
+  descriptors.push_back(GetDesc(controller.get(), "xkb:us::eng", "us", "eng"));
+  descriptors.push_back(GetDesc(controller.get(), "xkb:fr::fra", "fr", "fra"));
+  descriptors.push_back(GetDesc(controller.get(), "xkb:be::fra", "be", "fr"));
+  descriptors.push_back(GetDesc(controller.get(), "mozc", "us", "ja"));
   return descriptors;
 }
 

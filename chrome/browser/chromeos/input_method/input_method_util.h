@@ -166,16 +166,6 @@ void EnableInputMethods(const std::string& language_code, InputMethodType type,
 // Returns the input method ID of the hardware keyboard.
 std::string GetHardwareInputMethodId();
 
-// Returns the fallback input method descriptor (the very basic US
-// keyboard). This function is mostly used for testing, but may be used
-// as the fallback, when there is no other choice.
-InputMethodDescriptor GetFallbackInputMethodDescriptor();
-
-// Gets all input method engines that are supported, including ones not
-// active.  Caller has to delete the returned list. This function never
-// returns NULL.
-InputMethodDescriptors* GetSupportedInputMethods();
-
 // This function should be called when Chrome's application locale is
 // changed, so that the internal maps of this library is reloaded.
 void OnLocaleChanged();
