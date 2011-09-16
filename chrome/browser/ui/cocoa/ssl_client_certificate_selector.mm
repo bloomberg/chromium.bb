@@ -32,6 +32,32 @@
 @end
 
 namespace {
+class NotificationProxy;
+}  // namespace
+
+@interface SSLClientCertificateSelectorCocoa : NSObject {
+ @private
+  // The handler to report back to.
+  scoped_refptr<SSLClientAuthHandler> handler_;
+  // The certificate request we serve.
+  scoped_refptr<net::SSLCertRequestInfo> certRequestInfo_;
+  // The list of identities offered to the user.
+  scoped_nsobject<NSMutableArray> identities_;
+  // The corresponding list of certificates.
+  std::vector<scoped_refptr<net::X509Certificate> > certificates_;
+  // The currently open dialog.
+  ConstrainedWindow* window_;
+  // A C++ object to proxy SSLClientAuthObserver notifications to us.
+  scoped_ptr<NotificationProxy> observer_;
+}
+
+- (id)initWithHandler:(SSLClientAuthHandler*)handler
+      certRequestInfo:(net::SSLCertRequestInfo*)certRequestInfo;
+- (void)onNotification;
+- (void)displayDialog:(TabContentsWrapper*)wrapper;
+@end
+
+namespace {
 
 class ConstrainedSFChooseIdentityPanel
     : public ConstrainedWindowMacDelegateSystemSheet {
@@ -56,6 +82,11 @@ class ConstrainedSFChooseIdentityPanel
       [sheet() _dismissWithCode:NSFileHandlingPanelCancelButton];
     }
 
+    // Now that the panel has closed, release it. Note that the autorelease is
+    // needed. After this callback returns, the panel is still accessed, so a
+    // normal release crashes.
+    [sheet() autorelease];
+
     delete this;
   }
 
@@ -79,26 +110,25 @@ class ConstrainedSFChooseIdentityPanel
   DISALLOW_COPY_AND_ASSIGN(ConstrainedSFChooseIdentityPanel);
 };
 
+class NotificationProxy : public SSLClientAuthObserver {
+ public:
+  NotificationProxy(net::SSLCertRequestInfo* cert_request_info,
+                    SSLClientAuthHandler* handler,
+                    SSLClientCertificateSelectorCocoa* controller)
+      : SSLClientAuthObserver(cert_request_info, handler),
+        controller_(controller) {
+  }
+
+  // SSLClientAuthObserver implementation:
+  virtual void OnCertSelectedByNotification() {
+    [controller_ onNotification];
+  }
+
+ private:
+  SSLClientCertificateSelectorCocoa* controller_;
+};
+
 }  // namespace
-
-@interface SSLClientCertificateSelectorCocoa : NSObject {
- @private
-  // The handler to report back to.
-  scoped_refptr<SSLClientAuthHandler> handler_;
-  // The certificate request we serve.
-  scoped_refptr<net::SSLCertRequestInfo> certRequestInfo_;
-  // The list of identities offered to the user.
-  scoped_nsobject<NSMutableArray> identities_;
-  // The corresponding list of certificates.
-  std::vector<scoped_refptr<net::X509Certificate> > certificates_;
-  // The currently open dialog.
-  ConstrainedWindow* window_;
-}
-
-- (id)initWithHandler:(SSLClientAuthHandler*)handler
-      certRequestInfo:(net::SSLCertRequestInfo*)certRequestInfo;
-- (void)displayDialog:(TabContentsWrapper*)wrapper;
-@end
 
 namespace browser {
 
@@ -126,6 +156,7 @@ void ShowSSLClientCertificateSelector(
     handler_ = handler;
     certRequestInfo_ = certRequestInfo;
     window_ = NULL;
+    observer_.reset(new NotificationProxy(certRequestInfo, handler, self));
   }
   return self;
 }
@@ -146,15 +177,19 @@ void ShowSSLClientCertificateSelector(
   }
 
   // Finally, tell the backend which identity (or none) the user selected.
-  handler_->CertificateSelected(cert);
+  observer_->StopObserving();
+  if (handler_) {
+    handler_->CertificateSelected(cert);
+    handler_ = NULL;
+  }
   // Close the constrained window.
   DCHECK(window_);
   window_->CloseConstrainedWindow();
+}
 
-  // Now that the panel has closed, release it. Note that the autorelease is
-  // needed. After this callback returns, the panel is still accessed, so a
-  // normal release crashes.
-  [panel autorelease];
+- (void)onNotification {
+  handler_ = NULL;
+  window_->CloseConstrainedWindow();
 }
 
 - (void)displayDialog:(TabContentsWrapper*)wrapper {
@@ -196,9 +231,10 @@ void ShowSSLClientCertificateSelector(
           panel, self,
           @selector(sheetDidEnd:returnCode:context:),
           identities_, title));
+  observer_->StartObserving();
   // Note: SFChooseIdentityPanel does not take a reference to itself while the
-  // sheet is open. Don't release the ownership claim until the sheet has ended
-  // in |-sheetDidEnd:returnCode:context:|.
+  // sheet is open. ConstrainedSFChooseIdentityPanel will release ownership
+  // on destruction.
 }
 
 @end
