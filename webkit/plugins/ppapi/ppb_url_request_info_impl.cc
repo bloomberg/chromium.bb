@@ -61,48 +61,10 @@ bool IsValidToken(const std::string& token) {
   return true;
 }
 
-// A header string containing any of the following fields will cause
-// an error. The list comes from the XMLHttpRequest standard.
-// http://www.w3.org/TR/XMLHttpRequest/#the-setrequestheader-method
-const char* const kForbiddenHeaderFields[] = {
-  "accept-charset",
-  "accept-encoding",
-  "connection",
-  "content-length",
-  "cookie",
-  "cookie2",
-  "content-transfer-encoding",
-  "date",
-  "expect",
-  "host",
-  "keep-alive",
-  "origin",
-  "referer",
-  "te",
-  "trailer",
-  "transfer-encoding",
-  "upgrade",
-  "user-agent",
-  "via",
-};
-
-bool IsValidHeaderField(const std::string& name) {
-  for (size_t i = 0; i < arraysize(kForbiddenHeaderFields); ++i) {
-    if (LowerCaseEqualsASCII(name, kForbiddenHeaderFields[i]))
-      return false;
-  }
-  if (StartsWithASCII(name, "proxy-", false))
-    return false;
-  if (StartsWithASCII(name, "sec-", false))
-    return false;
-
-  return true;
-}
-
 bool AreValidHeaders(const std::string& headers) {
   net::HttpUtil::HeadersIterator it(headers.begin(), headers.end(), "\n");
   while (it.GetNext()) {
-    if (!IsValidHeaderField(it.name()))
+    if (!net::HttpUtil::IsSafeHeader(it.name()))
       return false;
   }
   return true;

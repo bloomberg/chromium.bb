@@ -5,14 +5,20 @@
 #include "chrome/browser/extensions/extension_downloads_api.h"
 
 #include <algorithm>
+#include <cctype>
 #include <iterator>
 #include <set>
 #include <string>
 
+#include "base/bind.h"
+#include "base/callback.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/stl_util.h"
+#include "base/string16.h"
+#include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_util.h"
@@ -23,11 +29,14 @@
 #include "chrome/browser/icon_manager.h"
 #include "chrome/browser/renderer_host/chrome_render_message_filter.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "content/browser/download/download_file_manager.h"
 #include "content/browser/download/download_item.h"
+#include "content/browser/download/download_types.h"
+#include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
+#include "net/http/http_util.h"
+#include "net/url_request/url_request.h"
 
 namespace constants = extension_downloads_api_constants;
 
@@ -74,50 +83,140 @@ AsyncDownloadsFunction::function() const {
 }
 
 DownloadsDownloadFunction::DownloadsDownloadFunction()
-  : AsyncDownloadsFunction(DOWNLOADS_FUNCTION_DOWNLOAD),
-    save_as_(false),
-    extra_headers_(NULL),
-    rdh_(NULL),
-    resource_context_(NULL),
-    render_process_host_id_(0),
-    render_view_host_routing_id_(0) {
+  : AsyncDownloadsFunction(DOWNLOADS_FUNCTION_DOWNLOAD) {
 }
 
 DownloadsDownloadFunction::~DownloadsDownloadFunction() {}
 
+DownloadsDownloadFunction::IOData::IOData()
+  : save_as(false),
+    extra_headers(NULL),
+    method("GET"),
+    rdh(NULL),
+    resource_context(NULL),
+    render_process_host_id(0),
+    render_view_host_routing_id(0) {
+}
+
+DownloadsDownloadFunction::IOData::~IOData() {}
+
 bool DownloadsDownloadFunction::ParseArgs() {
   base::DictionaryValue* options = NULL;
+  std::string url;
+  iodata_.reset(new IOData());
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &options));
-  EXTENSION_FUNCTION_VALIDATE(options->GetString(constants::kUrlKey, &url_));
+  EXTENSION_FUNCTION_VALIDATE(options->GetString(constants::kUrlKey, &url));
+  iodata_->url = GURL(url);
+  if (!iodata_->url.is_valid()) {
+    error_ = constants::kInvalidURL;
+    return false;
+  }
   if (options->HasKey(constants::kFilenameKey))
     EXTENSION_FUNCTION_VALIDATE(options->GetString(
-        constants::kFilenameKey, &filename_));
+        constants::kFilenameKey, &iodata_->filename));
+  // TODO(benjhayden): More robust validation of filename.
+  if (((iodata_->filename[0] == L'.') && (iodata_->filename[1] == L'.')) ||
+      (iodata_->filename[0] == L'/')) {
+    error_ = constants::kGenericError;
+    return false;
+  }
   if (options->HasKey(constants::kSaveAsKey))
     EXTENSION_FUNCTION_VALIDATE(options->GetBoolean(
-        constants::kSaveAsKey, &save_as_));
+        constants::kSaveAsKey, &iodata_->save_as));
   if (options->HasKey(constants::kMethodKey))
     EXTENSION_FUNCTION_VALIDATE(options->GetString(
-        constants::kMethodKey, &method_));
+        constants::kMethodKey, &iodata_->method));
+  // It's ok to use a pointer to extra_headers without DeepCopy()ing because
+  // |args_| (which owns *extra_headers) is guaranteed to live as long as
+  // |this|.
   if (options->HasKey(constants::kHeadersKey))
-    EXTENSION_FUNCTION_VALIDATE(options->GetDictionary(
-        constants::kHeadersKey, &extra_headers_));
+    EXTENSION_FUNCTION_VALIDATE(options->GetList(
+        constants::kHeadersKey, &iodata_->extra_headers));
   if (options->HasKey(constants::kBodyKey))
     EXTENSION_FUNCTION_VALIDATE(options->GetString(
-        constants::kBodyKey, &post_body_));
-  rdh_ = g_browser_process->resource_dispatcher_host();
-  TabContents* tab_contents = BrowserList::GetLastActive()
-    ->GetSelectedTabContentsWrapper()->tab_contents();
-  resource_context_ = &profile()->GetResourceContext();
-  render_process_host_id_ = tab_contents->GetRenderProcessHost()->id();
-  render_view_host_routing_id_ = tab_contents->render_view_host()
-    ->routing_id();
-  VLOG(1) << __FUNCTION__ << " " << url_;
-  error_ = constants::kNotImplemented;
-  return false;
+        constants::kBodyKey, &iodata_->post_body));
+  if (iodata_->extra_headers != NULL) {
+    for (size_t index = 0; index < iodata_->extra_headers->GetSize(); ++index) {
+      base::DictionaryValue* header = NULL;
+      std::string name, value;
+      EXTENSION_FUNCTION_VALIDATE(iodata_->extra_headers->GetDictionary(
+            index, &header));
+      EXTENSION_FUNCTION_VALIDATE(header->GetString(
+            constants::kHeaderNameKey, &name));
+      EXTENSION_FUNCTION_VALIDATE(header->GetString(
+            constants::kHeaderValueKey, &value));
+      if (!net::HttpUtil::IsSafeHeader(name)) {
+        error_ = constants::kGenericError;
+        return false;
+      }
+    }
+  }
+  iodata_->rdh = g_browser_process->resource_dispatcher_host();
+  iodata_->resource_context = &profile()->GetResourceContext();
+  iodata_->render_process_host_id = render_view_host()->process()->id();
+  iodata_->render_view_host_routing_id = render_view_host()->routing_id();
+  return true;
 }
 
 void DownloadsDownloadFunction::RunInternal() {
-  NOTIMPLEMENTED();
+  VLOG(1) << __FUNCTION__ << " " << iodata_->url.spec();
+  if (!BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, NewRunnableMethod(
+          this, &DownloadsDownloadFunction::BeginDownloadOnIOThread))) {
+    error_ = constants::kGenericError;
+    SendResponse(error_.empty());
+  }
+}
+
+void DownloadsDownloadFunction::BeginDownloadOnIOThread() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DVLOG(1) << __FUNCTION__ << " " << iodata_->url.spec();
+  DownloadSaveInfo save_info;
+  // TODO(benjhayden) Ensure that this filename is interpreted as a path
+  // relative to the default downloads directory without allowing '..'.
+  save_info.suggested_name = iodata_->filename;
+  net::URLRequest* request = new net::URLRequest(iodata_->url, iodata_->rdh);
+  request->set_method(iodata_->method);
+  if (iodata_->extra_headers != NULL) {
+    for (size_t index = 0; index < iodata_->extra_headers->GetSize(); ++index) {
+      base::DictionaryValue* header = NULL;
+      std::string name, value;
+      CHECK(iodata_->extra_headers->GetDictionary(index, &header));
+      CHECK(header->GetString("name", &name));
+      CHECK(header->GetString("value", &value));
+      request->SetExtraRequestHeaderByName(name, value, false/*overwrite*/);
+    }
+  }
+  if (!iodata_->post_body.empty()) {
+    request->AppendBytesToUpload(iodata_->post_body.data(),
+                                 iodata_->post_body.size());
+  }
+  iodata_->rdh->BeginDownload(
+      request,
+      save_info,
+      iodata_->save_as,
+      base::Bind(&DownloadsDownloadFunction::OnStarted, this),
+      iodata_->render_process_host_id,
+      iodata_->render_view_host_routing_id,
+      *(iodata_->resource_context));
+  iodata_.reset();
+}
+
+void DownloadsDownloadFunction::OnStarted(int dl_id, net::Error error) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  VLOG(1) << __FUNCTION__ << " " << dl_id << " " << error;
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, NewRunnableMethod(
+      this, &DownloadsDownloadFunction::RespondOnUIThread, dl_id, error));
+}
+
+void DownloadsDownloadFunction::RespondOnUIThread(int dl_id, net::Error error) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  VLOG(1) << __FUNCTION__;
+  if (dl_id >= 0) {
+    result_.reset(base::Value::CreateIntegerValue(dl_id));
+  } else {
+    error_ = net::ErrorToString(error);
+  }
+  SendResponse(error_.empty());
 }
 
 DownloadsSearchFunction::DownloadsSearchFunction()
@@ -127,7 +226,7 @@ DownloadsSearchFunction::DownloadsSearchFunction()
 DownloadsSearchFunction::~DownloadsSearchFunction() {}
 
 bool DownloadsSearchFunction::ParseArgs() {
-  DictionaryValue* query_json = NULL;
+  base::DictionaryValue* query_json = NULL;
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &query_json));
   error_ = constants::kNotImplemented;
   return false;
@@ -198,7 +297,7 @@ DownloadsEraseFunction::DownloadsEraseFunction()
 DownloadsEraseFunction::~DownloadsEraseFunction() {}
 
 bool DownloadsEraseFunction::ParseArgs() {
-  DictionaryValue* query_json = NULL;
+  base::DictionaryValue* query_json = NULL;
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &query_json));
   error_ = constants::kNotImplemented;
   return false;

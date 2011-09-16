@@ -583,13 +583,17 @@ void RenderMessageFilter::OnDownloadUrl(const IPC::Message& message,
   bool prompt_for_save_location = false;
   DownloadSaveInfo save_info;
   save_info.suggested_name = suggested_name;
-  resource_dispatcher_host_->BeginDownload(url,
-                                           referrer,
-                                           save_info,
-                                           prompt_for_save_location,
-                                           render_process_id_,
-                                           message.routing_id(),
-                                           resource_context_);
+  net::URLRequest* request = new net::URLRequest(
+      url, resource_dispatcher_host_);
+  request->set_referrer(referrer.spec());
+  resource_dispatcher_host_->BeginDownload(
+      request,
+      save_info,
+      prompt_for_save_location,
+      DownloadResourceHandler::OnStartedCallback(),
+      render_process_id_,
+      message.routing_id(),
+      resource_context_);
   download_stats::RecordDownloadCount(
       download_stats::INITIATED_BY_RENDERER_COUNT);
 }

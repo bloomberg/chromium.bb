@@ -4301,23 +4301,13 @@
             "optional": true
           }
         }
-      },
-      {
-        "id": "DownloadResponse",
-        "type": "object",
-        "nodoc": true,
-        "description": "This object is transformed into two callback parameters for the callback to download().",
-        "properties": {
-          "id": {"type": "integer", "optional": true},
-          "error": {"type": "integer", "optional": true}
-        }
       }
     ],
     "functions": [
       {
         "name": "download",
         "type": "function",
-        "description": "Download a URL. If the URL uses the HTTP[S] protocol, then the request will include all cookies currently set for its hostname. If the download started successfully, |callback| will be called with the new DownloadItem’s |id| and |error|=undefined. If there was an error starting the download, then |callback| will be called with |downloadId|=undefined and an |error| code integer. If the URL’s hostname is not specified in the |permissions| section of the extension’s manifest, then the |error| object will indicate that the extension does not have permission to access that hostname.",
+        "description": "Download a URL. If the URL uses the HTTP[S] protocol, then the request will include all cookies currently set for its hostname. If the download started successfully, |callback| will be called with the new DownloadItem’s |id|. If there was an error starting the download, then |callback| will be called with |downloadId|=undefined and chrome.extension.lastError will be set. If the URL’s hostname is not specified in the |permissions| section of the extension’s manifest, then the |chrome.extensions.lastError| object will indicate that the extension does not have permission to access that hostname.",
         "parameters": [
           {"$ref": "DownloadOptions"},
           {
@@ -4325,7 +4315,7 @@
             "type": "function",
             "optional": true,
             "parameters": [
-              {"$ref": "DownloadResponse"}
+              {"name": "id", "type": "integer"}
             ]
           }
         ]

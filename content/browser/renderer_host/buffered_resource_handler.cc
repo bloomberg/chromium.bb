@@ -318,6 +318,7 @@ bool BufferedResourceHandler::CompleteResponseStarted(int request_id,
                                   host_->download_file_manager(),
                                   request_,
                                   false,
+                                  DownloadResourceHandler::OnStartedCallback(),
                                   DownloadSaveInfo()));
 
     if (host_->delegate()) {

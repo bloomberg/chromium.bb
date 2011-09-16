@@ -10,32 +10,38 @@
 
 namespace extension_downloads_api_constants {
 
+// Error messages
 extern const char kNotImplemented[];
 extern const char kGenericError[];
-extern const char kUrlKey[];
-extern const char kFilenameKey[];
-extern const char kSaveAsKey[];
-extern const char kMethodKey[];
-extern const char kHeadersKey[];
+extern const char kInvalidURL[];
+
+// Parameter keys
 extern const char kBodyKey[];
-extern const char kDangerSafe[];
-extern const char kDangerFile[];
-extern const char kDangerUrl[];
-extern const char kStateInProgress[];
-extern const char kStateComplete[];
-extern const char kStateInterrupted[];
-extern const char kIdKey[];
-extern const char kDangerKey[];
-extern const char kDangerAcceptedKey[];
-extern const char kStateKey[];
-extern const char kPausedKey[];
-extern const char kMimeKey[];
-extern const char kStartTimeKey[];
-extern const char kEndTimeKey[];
 extern const char kBytesReceivedKey[];
-extern const char kTotalBytesKey[];
-extern const char kFileSizeKey[];
+extern const char kDangerAcceptedKey[];
+extern const char kDangerFile[];
+extern const char kDangerKey[];
+extern const char kDangerSafe[];
+extern const char kDangerUrl[];
+extern const char kEndTimeKey[];
 extern const char kErrorKey[];
+extern const char kFileSizeKey[];
+extern const char kFilenameKey[];
+extern const char kHeaderNameKey[];
+extern const char kHeaderValueKey[];
+extern const char kHeadersKey[];
+extern const char kIdKey[];
+extern const char kMethodKey[];
+extern const char kMimeKey[];
+extern const char kPausedKey[];
+extern const char kSaveAsKey[];
+extern const char kStartTimeKey[];
+extern const char kStateComplete[];
+extern const char kStateInProgress[];
+extern const char kStateInterrupted[];
+extern const char kStateKey[];
+extern const char kTotalBytesKey[];
+extern const char kUrlKey[];
 
 const char* DangerString(DownloadItem::DangerType danger);
 

@@ -39,8 +39,15 @@ void BeginDownload(
     int render_process_id,
     int render_view_id,
     const content::ResourceContext* context) {
+  net::URLRequest* request = new net::URLRequest(url, resource_dispatcher_host);
+  request->set_referrer(referrer.spec());
   resource_dispatcher_host->BeginDownload(
-      url, referrer, save_info, true, render_process_id, render_view_id,
+      request,
+      save_info,
+      true,
+      DownloadResourceHandler::OnStartedCallback(),
+      render_process_id,
+      render_view_id,
       *context);
 }
 

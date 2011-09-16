@@ -2275,6 +2275,7 @@
         'browser/extensions/extension_crash_recovery_browsertest.cc',
         'browser/extensions/extension_debugger_apitest.cc',
         'browser/extensions/extension_decode_jpeg_apitest.cc',
+        'browser/extensions/extension_downloads_apitest.cc',
         'browser/extensions/extension_file_browser_private_apitest.cc',
         'browser/extensions/extension_fileapi_apitest.cc',
         'browser/extensions/extension_gallery_install_apitest.cc',

@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/timer.h"
 #include "content/browser/download/download_file.h"
@@ -25,6 +26,10 @@ class URLRequest;
 // Forwards data to the download thread.
 class DownloadResourceHandler : public ResourceHandler {
  public:
+  typedef base::Callback<void(int/*download_id*/, net::Error)>
+    OnStartedCallback;
+
+  // started_cb will be called exactly once.
   DownloadResourceHandler(ResourceDispatcherHost* rdh,
                           int render_process_host_id,
                           int render_view_id,
@@ -33,6 +38,7 @@ class DownloadResourceHandler : public ResourceHandler {
                           DownloadFileManager* download_file_manager,
                           net::URLRequest* request,
                           bool save_as,
+                          const OnStartedCallback& started_cb,
                           const DownloadSaveInfo& save_info);
 
   virtual bool OnUploadProgress(int request_id, uint64 position, uint64 size);
@@ -74,6 +80,7 @@ class DownloadResourceHandler : public ResourceHandler {
   virtual ~DownloadResourceHandler();
 
   void StartPauseTimer();
+  void CallStartedCB(net::Error error);
 
   int download_id_;
   GlobalRequestID global_id_;
@@ -84,6 +91,7 @@ class DownloadResourceHandler : public ResourceHandler {
   DownloadFileManager* download_file_manager_;
   net::URLRequest* request_;
   bool save_as_;  // Request was initiated via "Save As" by the user.
+  OnStartedCallback started_cb_;
   DownloadSaveInfo save_info_;
   scoped_ptr<DownloadBuffer> buffer_;
   ResourceDispatcherHost* rdh_;

@@ -6,32 +6,38 @@
 
 namespace extension_downloads_api_constants {
 
+// Error messages
 const char kNotImplemented[] = "NotImplemented";
 const char kGenericError[] = "I'm afraid I can't do that.";
-const char kUrlKey[] = "url";
-const char kFilenameKey[] = "filename";
-const char kSaveAsKey[] = "saveAs";
-const char kMethodKey[] = "method";
-const char kHeadersKey[] = "headers";
+const char kInvalidURL[] = "Invalid URL";
+
+// Parameter keys
 const char kBodyKey[] = "body";
-const char kDangerSafe[] = "safe";
-const char kDangerFile[] = "file";
-const char kDangerUrl[] = "url";
-const char kStateInProgress[] = "in_progress";
-const char kStateComplete[] = "complete";
-const char kStateInterrupted[] = "interrupted";
-const char kIdKey[] = "id";
-const char kDangerKey[] = "danger";
-const char kDangerAcceptedKey[] = "dangerAccepted";
-const char kStateKey[] = "state";
-const char kPausedKey[] = "paused";
-const char kMimeKey[] = "mime";
-const char kStartTimeKey[] = "startTime";
-const char kEndTimeKey[] = "endTime";
 const char kBytesReceivedKey[] = "bytesReceived";
-const char kTotalBytesKey[] = "totalBytes";
-const char kFileSizeKey[] = "fileSize";
+const char kDangerAcceptedKey[] = "dangerAccepted";
+const char kDangerFile[] = "file";
+const char kDangerKey[] = "danger";
+const char kDangerSafe[] = "safe";
+const char kDangerUrl[] = "url";
+const char kEndTimeKey[] = "endTime";
 const char kErrorKey[] = "error";
+const char kFileSizeKey[] = "fileSize";
+const char kFilenameKey[] = "filename";
+const char kHeaderNameKey[] = "name";
+const char kHeaderValueKey[] = "value";
+const char kHeadersKey[] = "headers";
+const char kIdKey[] = "id";
+const char kMethodKey[] = "method";
+const char kMimeKey[] = "mime";
+const char kPausedKey[] = "paused";
+const char kSaveAsKey[] = "saveAs";
+const char kStartTimeKey[] = "startTime";
+const char kStateComplete[] = "complete";
+const char kStateInProgress[] = "in_progress";
+const char kStateInterrupted[] = "interrupted";
+const char kStateKey[] = "state";
+const char kTotalBytesKey[] = "totalBytes";
+const char kUrlKey[] = "url";
 
 const char* DangerString(DownloadItem::DangerType danger) {
   switch (danger) {

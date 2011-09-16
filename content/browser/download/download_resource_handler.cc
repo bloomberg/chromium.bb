@@ -34,6 +34,7 @@ DownloadResourceHandler::DownloadResourceHandler(
     DownloadFileManager* download_file_manager,
     net::URLRequest* request,
     bool save_as,
+    const DownloadResourceHandler::OnStartedCallback& started_cb,
     const DownloadSaveInfo& save_info)
     : download_id_(-1),
       global_id_(render_process_host_id, request_id),
@@ -42,6 +43,7 @@ DownloadResourceHandler::DownloadResourceHandler(
       download_file_manager_(download_file_manager),
       request_(request),
       save_as_(save_as),
+      started_cb_(started_cb),
       save_info_(save_info),
       buffer_(new DownloadBuffer),
       rdh_(rdh),
@@ -97,6 +99,8 @@ bool DownloadResourceHandler::OnResponseStarted(int request_id,
   // TODO(ahendrickson) -- Get the last modified time and etag, so we can
   // resume downloading.
 
+  CallStartedCB(net::OK);
+
   std::string content_type_header;
   if (!response->response_head.headers ||
       !response->response_head.headers->GetMimeType(&content_type_header))
@@ -117,6 +121,14 @@ bool DownloadResourceHandler::OnResponseStarted(int request_id,
   rdh_->PauseRequest(global_id_.child_id, global_id_.request_id, true);
 
   return true;
+}
+
+void DownloadResourceHandler::CallStartedCB(net::Error error) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  if (started_cb_.is_null())
+    return;
+  started_cb_.Run(download_id_, error);
+  started_cb_.Reset();
 }
 
 bool DownloadResourceHandler::OnWillStart(int request_id,
@@ -177,6 +189,8 @@ bool DownloadResourceHandler::OnResponseCompleted(
            << " status.error() = " << status.error();
   net::Error error_code = (status.status() == net::URLRequestStatus::FAILED) ?
       static_cast<net::Error>(status.error()) : net::OK;
+  if (download_id_ == -1)
+    CallStartedCB(error_code);
   // We transfer ownership to |DownloadFileManager| to delete |buffer_|,
   // so that any functions queued up on the FILE thread are executed
   // before deletion.

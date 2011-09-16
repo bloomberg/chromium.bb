@@ -22,6 +22,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
 #include "base/timer.h"
+#include "content/browser/download/download_resource_handler.h"
 #include "content/browser/renderer_host/resource_queue.h"
 #include "content/common/child_process_info.h"
 #include "content/common/content_export.h"
@@ -79,14 +80,17 @@ class CONTENT_EXPORT ResourceDispatcherHost : public net::URLRequest::Delegate {
                          bool* message_was_ok);
 
   // Initiates a download by explicit request of the renderer, e.g. due to
-  // alt-clicking a link.
-  void BeginDownload(const GURL& url,
-                     const GURL& referrer,
-                     const DownloadSaveInfo& save_info,
-                     bool prompt_for_save_location,
-                     int process_unique_id,
-                     int route_id,
-                     const content::ResourceContext& context);
+  // alt-clicking a link.  If |request| is malformed or not permitted or the RDH
+  // is shutting down, then |started_cb| will be called immediately. There is no
+  // situation in which |started_cb| will never be called.
+  void BeginDownload(
+      net::URLRequest* request,  // ownership is taken
+      const DownloadSaveInfo& save_info,
+      bool prompt_for_save_location,
+      const DownloadResourceHandler::OnStartedCallback& started_cb,
+      int child_id,
+      int route_id,
+      const content::ResourceContext& context);
 
   // Initiates a save file from the browser process (as opposed to a resource
   // request from the renderer or another child process).

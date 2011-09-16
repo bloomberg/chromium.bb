@@ -10,7 +10,9 @@
 #include <set>
 #include <string>
 
+#include "base/file_path.h"
 #include "base/memory/singleton.h"
+#include "base/string16.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "content/browser/download/download_item.h"
 #include "content/browser/download/download_manager.h"
@@ -102,17 +104,27 @@ class DownloadsDownloadFunction : public AsyncDownloadsFunction {
   virtual void RunInternal() OVERRIDE;
 
  private:
-  std::string url_;
-  std::string filename_;
-  bool save_as_;
-  base::DictionaryValue* extra_headers_;
-  std::string method_;
-  std::string post_body_;
+  struct IOData {
+   public:
+    IOData();
+    ~IOData();
 
-  ResourceDispatcherHost* rdh_;
-  const content::ResourceContext* resource_context_;
-  int render_process_host_id_;
-  int render_view_host_routing_id_;
+    GURL url;
+    string16 filename;
+    bool save_as;
+    base::ListValue* extra_headers;
+    std::string method;
+    std::string post_body;
+    ResourceDispatcherHost* rdh;
+    const content::ResourceContext* resource_context;
+    int render_process_host_id;
+    int render_view_host_routing_id;
+  };
+  void BeginDownloadOnIOThread();
+  void OnStarted(int dl_id, net::Error error);
+  void RespondOnUIThread(int dl_id, net::Error error);
+
+  scoped_ptr<IOData> iodata_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadsDownloadFunction);
 };

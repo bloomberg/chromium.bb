@@ -794,25 +794,35 @@ void ResourceDispatcherHost::OnDidLoadResourceFromMemoryCache(
 
 // We are explicitly forcing the download of 'url'.
 void ResourceDispatcherHost::BeginDownload(
-    const GURL& url,
-    const GURL& referrer,
+    net::URLRequest* request,
     const DownloadSaveInfo& save_info,
     bool prompt_for_save_location,
+    const DownloadResourceHandler::OnStartedCallback& started_cb,
     int child_id,
     int route_id,
     const content::ResourceContext& context) {
-  if (is_shutdown_)
+  static const int kInvalidDownloadId = -1;
+  scoped_ptr<net::URLRequest> delete_request(request);
+  // If DownloadResourceHandler is not begun, then started_cb must be called
+  // here in order to satisfy its semantics.
+  if (is_shutdown_) {
+    if (!started_cb.is_null())
+      started_cb.Run(kInvalidDownloadId, net::ERR_INSUFFICIENT_RESOURCES);
+    // Time and RDH are resources that are running out.
     return;
+  }
+  const GURL& url = request->original_url();
+  request->set_referrer(MaybeStripReferrer(GURL(request->referrer())).spec());
 
   // Check if the renderer is permitted to request the requested URL.
   if (!ChildProcessSecurityPolicy::GetInstance()->
           CanRequestURL(child_id, url)) {
     VLOG(1) << "Denied unauthorized download request for "
             << url.possibly_invalid_spec();
+    if (!started_cb.is_null())
+      started_cb.Run(kInvalidDownloadId, net::ERR_ACCESS_DENIED);
     return;
   }
-
-  net::URLRequest* request = new net::URLRequest(url, this);
 
   request_id_--;
 
@@ -825,6 +835,7 @@ void ResourceDispatcherHost::BeginDownload(
                                   download_file_manager_.get(),
                                   request,
                                   prompt_for_save_location,
+                                  started_cb,
                                   save_info));
 
   if (delegate_) {
@@ -834,15 +845,14 @@ void ResourceDispatcherHost::BeginDownload(
   }
 
   const net::URLRequestContext* request_context = context.request_context();
-
   if (!request_context->job_factory()->IsHandledURL(url)) {
     VLOG(1) << "Download request for unsupported protocol: "
             << url.possibly_invalid_spec();
+    if (!started_cb.is_null())
+      started_cb.Run(kInvalidDownloadId, net::ERR_ACCESS_DENIED);
     return;
   }
 
-  request->set_method("GET");
-  request->set_referrer(MaybeStripReferrer(referrer).spec());
   request->set_context(context.request_context());
   request->set_load_flags(request->load_flags() |
       net::LOAD_IS_DOWNLOAD);
@@ -851,7 +861,7 @@ void ResourceDispatcherHost::BeginDownload(
       CreateRequestInfo(handler, child_id, route_id, true, context);
   SetRequestInfo(request, extra_info);  // Request takes ownership.
 
-  BeginRequestInternal(request);
+  BeginRequestInternal(delete_request.release());
 }
 
 // This function is only used for saving feature.
