@@ -16,8 +16,8 @@ namespace switches {
 CONTENT_EXPORT extern const char kAllowFileAccessFromFiles[];
 CONTENT_EXPORT extern const char kAllowRunningInsecureContent[];
 extern const char kAllowSandboxDebugging[];
-extern const char kBrowserAssertTest[];
-extern const char kBrowserCrashTest[];
+CONTENT_EXPORT extern const char kBrowserAssertTest[];
+CONTENT_EXPORT extern const char kBrowserCrashTest[];
 extern const char kBrowserSubprocessPath[];
 // TODO(jam): this doesn't belong in content.
 CONTENT_EXPORT extern const char kChromeFrame[];
@@ -77,7 +77,6 @@ extern const char kEnablePreparsedJsCaching[];
 extern const char kEnableSSLCachedInfo[];
 extern const char kEnableSandboxLogging[];
 extern const char kEnableSeccompSandbox[];
-extern const char kEnableStatsTable[];
 CONTENT_EXPORT extern const char kEnableStatsTable[];
 CONTENT_EXPORT extern const char kEnableTcpFastOpen[];
 extern const char kEnableVideoFullscreen[];

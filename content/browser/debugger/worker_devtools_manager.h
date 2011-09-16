@@ -9,6 +9,7 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
+#include "content/common/content_export.h"
 
 namespace IPC {
 class Message;
@@ -23,7 +24,7 @@ class WorkerDevToolsManager {
   static WorkerDevToolsManager* GetInstance();
 
   // Called on the UI thread.
-  static DevToolsAgentHost* GetDevToolsAgentHostForWorker(
+  static CONTENT_EXPORT DevToolsAgentHost* GetDevToolsAgentHostForWorker(
       int worker_process_id,
       int worker_route_id);
 

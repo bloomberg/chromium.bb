@@ -8,6 +8,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "content/common/content_export.h"
 
 class BrowserThread;
 class CommandLine;
@@ -66,7 +67,7 @@ namespace content {
 //    method with a well-defined purpose. (Likewise, if you're adding to an
 //    existing chunk which makes it longer than one or two lines, please move
 //    the code out into a separate method.)
-class BrowserMainParts {
+class CONTENT_EXPORT BrowserMainParts {
  public:
   explicit BrowserMainParts(const MainFunctionParams& parameters);
   virtual ~BrowserMainParts();

@@ -9,13 +9,14 @@
 #include <string>
 
 #include "build/build_config.h"
+#include "content/common/content_export.h"
 
 struct MainFunctionParams;
 class ZygoteForkDelegate;
 
 namespace content {
 
-class ContentMainDelegate {
+class CONTENT_EXPORT ContentMainDelegate {
  public:
   virtual ~ContentMainDelegate();
 
