@@ -56,11 +56,6 @@ class ScreenRotation : public ui::AnimationDelegate,
                  float new_degrees);
   virtual ~ScreenRotation();
 
-  // Use this function to change the target orientation mid animation. The
-  // currently running transition will complete at the same time as it was going
-  // to originally, but in a different orientation.
-  void SetTarget(float degrees);
-
   // Aborts the animation by skipping to the end and applying the final
   // transform before calling |Finalize|.
   void Stop();
@@ -119,10 +114,6 @@ class ScreenRotation : public ui::AnimationDelegate,
 
   // The target orientation.
   float new_degrees_;
-
-  // We keep track of the last step of the animation in case we change our
-  // target in the middle and have to create a new transition from last_t_ to 1
-  float last_t_;
 
   // The target size for |view_|
   gfx::Size new_size_;

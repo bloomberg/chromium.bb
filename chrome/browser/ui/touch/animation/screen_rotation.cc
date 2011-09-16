@@ -41,7 +41,6 @@ ScreenRotation::ScreenRotation(views::View* view,
       listener_(listener),
       old_degrees_(old_degrees),
       new_degrees_(new_degrees),
-      last_t_(0.0),
       duration_(kDefaultTransitionDurationMs),
       animation_started_(false),
       animation_stopped_(false) {
@@ -62,14 +61,6 @@ ScreenRotation::ScreenRotation(views::View* view,
 ScreenRotation::~ScreenRotation() {
   if (view_->layer())
     view_->layer()->compositor()->RemoveObserver(this);
-}
-
-void ScreenRotation::SetTarget(float degrees) {
-  if (new_degrees_ == degrees)
-    return;
-
-  new_degrees_ = degrees;
-  Init();
 }
 
 void ScreenRotation::Stop() {
@@ -94,8 +85,8 @@ void ScreenRotation::Stop() {
 
 void ScreenRotation::AnimationProgressed(const ui::Animation* anim) {
   TRACE_EVENT0("ScreenRotation", "step");
-  last_t_ = static_cast<float>(anim->GetCurrentValue());
-  view_->layer()->SetTransform(interpolated_transform_->Interpolate(last_t_));
+  view_->layer()->SetTransform(interpolated_transform_->Interpolate(
+      anim->GetCurrentValue()));
   widget_->SchedulePaintInRect(widget_->GetClientAreaScreenBounds());
 }
 
@@ -176,25 +167,13 @@ void ScreenRotation::Init() {
   scoped_ptr<ui::InterpolatedTransform> scale_up(
       new ui::InterpolatedScale(1.0f, 1.0f / scale_factor, 0.5f, 1.0f));
 
-  scoped_ptr<ui::InterpolatedTransform> transition(
+  interpolated_transform_.reset(
       new ui::InterpolatedConstantTransform(current_transform));
 
   scale_up->SetChild(scale_down.release());
   translation->SetChild(scale_up.release());
   rotation->SetChild(translation.release());
-  transition->SetChild(rotation.release());
-
-  if (interpolated_transform_.get()) {
-    // We are in the middle of a transition. In this case, we need to create
-    // an interpolated transform that gets us from where we are to the target
-    // transform.
-    ui::Transform target = transition->Interpolate(1.0);
-    interpolated_transform_.reset(
-        new ui::InterpolatedTRSTransform(
-            current_transform, target, last_t_, 1.0));
-  } else {
-    interpolated_transform_.reset(transition.release());
-  }
+  interpolated_transform_->SetChild(rotation.release());
 }
 
 void ScreenRotation::Start() {

@@ -45,10 +45,15 @@ class ScreenRotationSetter : public views::LayerPropertySetter,
   // target orientation of this rotation.
   scoped_ptr<ScreenRotation> rotation_;
 
-  // If a call to set bounds happens during a rotation its effect is delayed
+  // If a call to SetBounds happens during a rotation its effect is delayed
   // until the rotation completes. If this happens several times, only the last
   // call to SetBounds will have any effect.
   scoped_ptr<gfx::Rect> pending_bounds_;
+
+  // If a call to SetTransform happens during a rotation its effect is delayed
+  // until the rotation completes. If this happens several times, only the last
+  // call to SetTransform will have any effect.
+  scoped_ptr<ui::Transform> pending_transform_;
 
   // The screen rotation setter is associated with a view so that the view's
   // bounds may be set when the animation completes.
@@ -71,22 +76,18 @@ void ScreenRotationSetter::Uninstalled(ui::Layer* layer) OVERRIDE {
 
 void ScreenRotationSetter::SetTransform(ui::Layer* layer,
                                         const ui::Transform& transform) {
-  float degrees;
-  if (!ui::InterpolatedTransform::FactorTRS(transform, NULL, &degrees, NULL))
-    return;
-
   if (rotation_.get()) {
-    rotation_->SetTarget(SymmetricRound(degrees));
+    pending_transform_.reset(new ui::Transform(transform));
   } else {
-    float old_degrees;
-    if (ui::InterpolatedTransform::FactorTRS(layer->transform(),
-                                             NULL,
-                                             &old_degrees,
-                                             NULL)) {
+    float new_degrees, old_degrees;
+    if (ui::InterpolatedTransform::FactorTRS(transform,
+                                             NULL, &new_degrees, NULL) &&
+        ui::InterpolatedTransform::FactorTRS(layer->transform(),
+                                             NULL, &old_degrees, NULL)) {
       rotation_.reset(new ScreenRotation(view_,
                                          this,
                                          SymmetricRound(old_degrees),
-                                         SymmetricRound(degrees)));
+                                         SymmetricRound(new_degrees)));
     }
   }
 }
@@ -105,15 +106,23 @@ void ScreenRotationSetter::OnScreenRotationCompleted(
     const gfx::Rect& final_bounds) {
   // destroy the animation.
   rotation_.reset();
+
   if (pending_bounds_.get() && view_->layer()) {
     // If there are any pending bounds changes, they will have already been
     // applied to the view, and are waiting to be applied to the layer.
     view_->layer()->SetBounds(*pending_bounds_);
     pending_bounds_.reset();
-  } else {
+  } else if (!final_bounds.IsEmpty()) {
     // Otherwise we may have new bounds as the result of the completed screen
     // rotation. Apply these to the view.
     view_->SetBoundsRect(final_bounds);
+  }
+
+  if (pending_transform_.get() && view_->layer()) {
+    // If there is a pending transformation, we need to initiate another
+    // animation.
+    SetTransform(view_->layer(), *pending_transform_);
+    pending_transform_.reset();
   }
 }
 
