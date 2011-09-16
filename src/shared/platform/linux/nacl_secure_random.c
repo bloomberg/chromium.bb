@@ -64,7 +64,7 @@ static int NaClSecureRngCtorCommon(struct NaClSecureRng *self,
   memset(self->counter, 0, sizeof self->counter);
   self->nvalid = 0;
 
-  memset(key, 0, AES_BLOCK_SIZE * 8);
+  memset(key, 0, AES_BLOCK_SIZE);
   return 1;
 }
 
