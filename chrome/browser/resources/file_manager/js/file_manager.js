@@ -11,6 +11,10 @@ var g_slideshow_data = null;
 
 const GALLERY_ENABLED = true;
 
+// If directory files changes too often, don't rescan directory more than once
+// per specified interval
+const SIMULTANEOUS_RESCAN_INTERVAL = 1000;
+
 /**
  * FileManager constructor.
  *
@@ -52,6 +56,9 @@ function FileManager(dialogDom, filesystem, rootEntries) {
 
   // True if we should filter out files that start with a dot.
   this.filterFiles_ = true;
+  this.subscribedOnDirectoryChanges_ = false;
+  this.pendingRescanQueue_ = [];
+  this.rescanRunning_ = false;
 
   this.commands_ = {};
 
@@ -108,6 +115,8 @@ function FileManager(dialogDom, filesystem, rootEntries) {
                                      this.onCopyProgress_.bind(this));
 
   window.addEventListener('popstate', this.onPopState_.bind(this));
+  window.addEventListener('unload', this.onUnload_.bind(this));
+
   this.addEventListener('directory-changed',
                         this.onDirectoryChanged_.bind(this));
   this.addEventListener('selection-summarized',
@@ -118,6 +127,9 @@ function FileManager(dialogDom, filesystem, rootEntries) {
   this.mountRequests_ = [];
   chrome.fileBrowserPrivate.onMountCompleted.addListener(
       this.onMountCompleted_.bind(this));
+
+  chrome.fileBrowserPrivate.onFileChanged.addListener(
+    this.onFileChanged_.bind(this));
 
   var self = this;
 
@@ -2677,6 +2689,26 @@ FileManager.prototype = {
     this.document_.title = this.currentDirEntry_.fullPath;
 
     var self = this;
+
+    if (this.subscribedOnDirectoryChanges_) {
+      chrome.fileBrowserPrivate.removeFileWatch(event.previousDirEntry.toURL(),
+          function(result) {
+            if (!result) {
+              console.log('Failed to remove file watch');
+            }
+          });
+    }
+
+    if (event.newDirEntry.fullPath != '/') {
+      this.subscribedOnDirectoryChanges_ = true;
+      chrome.fileBrowserPrivate.addFileWatch(event.newDirEntry.toURL(),
+        function(result) {
+          if (!result) {
+            console.log('Failed to add file watch');
+          }
+      });
+    }
+
     this.rescanDirectory_(function() {
         if (event.selectedEntry)
           self.selectEntry(event.selectedEntry);
@@ -2696,93 +2728,49 @@ FileManager.prototype = {
   };
 
   /**
+   * Rescans directory later.
+   * This method should be used if we just want rescan but not actually now.
+   * This helps us not to flood queue with rescan requests.
+   *
+   * @param opt_callback
+   * @param opt_onError
+   */
+   FileManager.prototype.rescanDirectoryLater_ = function(opt_callback,
+                                                          opt_onError) {
+    // It might be massive change, so let's note somehow, that we need
+    // rescanning and then wait some time
+
+    if (this.pendingRescanQueue_.length == 0) {
+      this.pendingRescanQueue_.push({onSuccess:opt_callback,
+                                     onError:opt_onError});
+
+      // If rescan isn't going to run without
+      // our interruption, then say that we need to run it
+      if (!this.rescanRunning_) {
+        setTimeout(this.rescanDirectory_.bind(this),
+            SIMULTANEOUS_RESCAN_INTERVAL);
+      }
+    }
+   }
+
+
+  /**
    * Rescans the current directory, refreshing the list. It decreases the
    * probability that two such calls are pending simultaneously.
    *
-   * @param {function()} opt_callback Optional function to invoke when the
-   *     rescan is complete.
-   * @param {string} delayMS Delay during which next rescanDirectory calls
-   *     can happen.
-   */
-
-  FileManager.prototype.rescanDirectory_ = function(opt_callback, delayMS) {
-    var self = this;
-    function done(count) {
-      // Variable count is introduced because we only want to do callbacks, that
-      // were in the queue at the moment of rescanDirectoryNow invocation.
-      while (count--) {
-        var callback = self.rescanDirectory_.callbacks.shift();
-        callback();
-      }
-    }
-
-    // callbacks is a queue of callbacks that need to be called after rescaning
-    // directory is done. We push callback to the end and pop form the front.
-    // When we get to actually call rescanDirectoryNow_ we need to remember how
-    // many callbacks were in a queue at the time, not to call callbacks that
-    // arrived in the middle of execution (they may depend on rescaning being
-    // done after they called rescanDirectory_).
-    if (!this.rescanDirectory_.callbacks)
-      this.rescanDirectory_.callbacks = [];
-
-    if (opt_callback)
-      this.rescanDirectory_.callbacks.push(opt_callback);
-
-    delayMS = delayMS || 100;
-
-    // Assumes rescanDirectoryNow_ takes less than 100 ms. If not there is
-    // a possible overlap between two calls.
-    if (delayMS < 100)
-      delayMS = 100;
-
-    if (this.rescanDirectory_.handle)
-      clearTimeout(this.rescanDirectory_.handle);
-    var currentQueueLength = self.rescanDirectory_.callbacks.length;
-    this.rescanDirectory_.handle = setTimeout(function () {
-        self.rescanDirectoryNow_(function() {
-            done(currentQueueLength);
-          });
-      }, delayMS);
-  };
-
-  /**
-   * Rescans the current directory immediately, refreshing the list. Should NOT
-   * be used in most cases. Instead use rescanDirectory_.
+   * This method tries to queue request if rescan is already running, and
+   * processes this request later. Anyway callback would be called after
+   * processing.
+   *
+   * If no rescan is running, then method starts rescanning immediately.
    *
    * @param {function()} opt_callback Optional function to invoke when the
    *     rescan is complete.
+   *
+   * @param {function()} opt_onError Optional function to invoke when the
+   *     rescan fails.
    */
-  FileManager.prototype.rescanDirectoryNow_ = function(opt_callback) {
-    var self = this;
-    var reader;
-
-    function onReadSome(entries) {
-      if (entries.length == 0) {
-        if (opt_callback)
-          opt_callback();
-        return;
-      }
-
-      // Splice takes the to-be-spliced-in array as individual parameters,
-      // rather than as an array, so we need to perform some acrobatics...
-      var spliceArgs = [].slice.call(entries);
-
-      // Hide files that start with a dot ('.').
-      // TODO(rginda): User should be able to override this.  Support for other
-      // commonly hidden patterns might be nice too.
-      if (self.filterFiles_) {
-        spliceArgs = spliceArgs.filter(function(e) {
-          return e.name.substr(0, 1) != '.';
-        });
-      }
-
-      spliceArgs.unshift(0, 0);  // index, deleteCount
-      self.dataModel_.splice.apply(self.dataModel_, spliceArgs);
-
-      // Keep reading until entries.length is 0.
-      reader.readEntries(onReadSome);
-    };
-
+  FileManager.prototype.rescanDirectory_ = function(opt_callback, opt_onError) {
     // Updated when a user clicks on the label of a file, used to detect
     // when a click is eligible to trigger a rename.  Can be null, or
     // an object with 'path' and 'date' properties.
@@ -2795,9 +2783,90 @@ FileManager.prototype = {
     this.updateBreadcrumbs_();
 
     if (this.currentDirEntry_.fullPath != '/') {
+      // Add current request to pending result list
+      this.pendingRescanQueue_.push({
+            onSuccess:opt_callback,
+            onError:opt_onError
+          });
+
+      if (this.rescanRunning_)
+        return;
+
+      this.rescanRunning_ = true;
+
+      // The current list of callbacks is saved and reset.  Subsequent
+      // calls to rescanDirectory_ while we're still pending will be
+      // saved and will cause an additional rescan to happen after a delay.
+      var callbacks = this.pendingRescanQueue_;
+
+      this.pendingRescanQueue_ = [];
+
+      var self = this;
+      var reader;
+
+      function onError() {
+        if (self.pendingRescanQueue_.length > 0) {
+          setTimeout(self.rescanDirectory_.bind(self),
+              SIMULTANEOUS_RESCAN_INTERVAL);
+        }
+
+        self.rescanRunning_ = false;
+
+        for (var i= 0; i < callbacks.length; i++) {
+          if (callbacks[i].onError)
+            try {
+              callbacks[i].onError();
+            } catch (ex) {
+              console.error('Caught exception while notifying about error: ' +
+                          name, ex);
+            }
+        }
+      }
+
+      function onReadSome(entries) {
+        if (entries.length == 0) {
+          if (self.pendingRescanQueue_.length > 0) {
+            setTimeout(self.rescanDirectory_.bind(self),
+                SIMULTANEOUS_RESCAN_INTERVAL);
+          }
+
+          self.rescanRunning_ = false;
+          for (var i= 0; i < callbacks.length; i++) {
+            if (callbacks[i].onSuccess)
+              try {
+                callbacks[i].onSuccess();
+              } catch (ex) {
+                console.error('Caught exception while notifying about error: ' +
+                            name, ex);
+              }
+          }
+
+          return;
+        }
+
+        // Splice takes the to-be-spliced-in array as individual parameters,
+        // rather than as an array, so we need to perform some acrobatics...
+        var spliceArgs = [].slice.call(entries);
+
+        // Hide files that start with a dot ('.').
+        // TODO(rginda): User should be able to override this. Support for other
+        // commonly hidden patterns might be nice too.
+        if (self.filterFiles_) {
+          spliceArgs = spliceArgs.filter(function(e) {
+              return e.name.substr(0, 1) != '.';
+            });
+        }
+
+        spliceArgs.unshift(0, 0);  // index, deleteCount
+        self.dataModel_.splice.apply(self.dataModel_, spliceArgs);
+
+        // Keep reading until entries.length is 0.
+        reader.readEntries(onReadSome, onError);
+      };
+
       // If not the root directory, just read the contents.
       reader = this.currentDirEntry_.createReader();
-      reader.readEntries(onReadSome);
+      reader.readEntries(onReadSome, onError);
       return;
     }
 
@@ -2806,7 +2875,7 @@ FileManager.prototype = {
     // harness) can't be enumerated yet.
     var spliceArgs = [].slice.call(this.rootEntries_);
     spliceArgs.unshift(0, 0);  // index, deleteCount
-    self.dataModel_.splice.apply(self.dataModel_, spliceArgs);
+    this.dataModel_.splice.apply(this.dataModel_, spliceArgs);
 
     if (opt_callback)
       opt_callback();
@@ -2856,6 +2925,23 @@ FileManager.prototype = {
       console.log('li not found', event);
       return;
     }
+  };
+
+  FileManager.prototype.onUnload_ = function(event) {
+    if (this.subscribedOnDirectoryChanges_) {
+      chrome.fileBrowserPrivate.removeFileWatch(event.previousDirEntry.toURL(),
+          function(result) {
+            if (!result) {
+              console.log('Failed to remove file watch');
+            }
+          });
+    }
+  };
+
+  FileManager.prototype.onFileChanged_ = function(event) {
+    // We receive a lot of events even in folders we are not interested in.
+    if (event.fileUrl == this.currentDirEntry_.toURL())
+      this.rescanDirectoryLater_();
   };
 
   /**

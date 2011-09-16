@@ -123,16 +123,15 @@ bool ExtensionFileBrowserEventRouter::AddFileWatch(
   base::AutoLock lock(lock_);
   WatcherMap::iterator iter = file_watchers_.find(local_path);
   if (iter == file_watchers_.end()) {
-    FileWatcherExtensions* watch = new FileWatcherExtensions(virtual_path,
-                                                             extension_id);
-    file_watchers_[local_path] = watch;
-    if (!watch->file_watcher->Watch(local_path, delegate_.get())) {
-      delete iter->second;
-      file_watchers_.erase(iter);
+    scoped_ptr<FileWatcherExtensions>
+        watch(new FileWatcherExtensions(virtual_path, extension_id));
+
+    if (watch->Watch(local_path, delegate_.get()))
+      file_watchers_[local_path] = watch.release();
+    else
       return false;
-    }
   } else {
-    iter->second->extensions.insert(extension_id);
+    iter->second->AddExtension(extension_id);
   }
   return true;
 }
@@ -145,8 +144,8 @@ void ExtensionFileBrowserEventRouter::RemoveFileWatch(
   if (iter == file_watchers_.end())
     return;
   // Remove the renderer process for this watch.
-  iter->second->extensions.erase(extension_id);
-  if (iter->second->extensions.empty()) {
+  iter->second->RemoveExtension(extension_id);
+  if (iter->second->GetRefCount() == 0) {
     delete iter->second;
     file_watchers_.erase(iter);
   }
@@ -218,22 +217,22 @@ void ExtensionFileBrowserEventRouter::HandleFileWatchNotification(
     NOTREACHED();
     return;
   }
-  DispatchFolderChangeEvent(iter->second->virtual_path, got_error,
-                            iter->second->extensions);
+  DispatchFolderChangeEvent(iter->second->GetVirtualPath(), got_error,
+                            iter->second->GetExtensions());
 }
 
 void ExtensionFileBrowserEventRouter::DispatchFolderChangeEvent(
     const FilePath& virtual_path, bool got_error,
-    const std::set<std::string>& extensions) {
+    const ExtensionFileBrowserEventRouter::ExtensionUsageRegistry& extensions) {
   if (!profile_) {
     NOTREACHED();
     return;
   }
 
-  for (std::set<std::string>::const_iterator iter = extensions.begin();
+  for (ExtensionUsageRegistry::const_iterator iter = extensions.begin();
        iter != extensions.end(); ++iter) {
     GURL target_origin_url(Extension::GetBaseURLFromExtensionId(
-        *iter));
+        iter->first));
     GURL base_url = fileapi::GetFileSystemRootURI(target_origin_url,
         fileapi::kFileSystemTypeExternal);
     GURL target_file_url = GURL(base_url.spec() + virtual_path.value());
@@ -248,7 +247,7 @@ void ExtensionFileBrowserEventRouter::DispatchFolderChangeEvent(
     base::JSONWriter::Write(&args, false /* pretty_print */, &args_json);
 
     profile_->GetExtensionEventRouter()->DispatchEventToExtension(
-        *iter, extension_event_names::kOnFileChanged, args_json,
+        iter->first, extension_event_names::kOnFileChanged, args_json,
         NULL, GURL());
   }
 }
@@ -461,4 +460,65 @@ void
 ExtensionFileBrowserEventRouter::FileWatcherDelegate::HandleFileWatchOnUIThread(
      const FilePath& local_path, bool got_error) {
   router_->HandleFileWatchNotification(local_path, got_error);
+}
+
+
+ExtensionFileBrowserEventRouter::FileWatcherExtensions::FileWatcherExtensions(
+    const FilePath& path, const std::string& extension_id) {
+  file_watcher.reset(new base::files::FilePathWatcher());
+  virtual_path = path;
+  AddExtension(extension_id);
+}
+
+void ExtensionFileBrowserEventRouter::FileWatcherExtensions::AddExtension(
+    const std::string& extension_id) {
+  ExtensionUsageRegistry::iterator it = extensions.find(extension_id);
+  if (it != extensions.end()) {
+    it->second++;
+  } else {
+    extensions.insert(ExtensionUsageRegistry::value_type(extension_id, 1));
+  }
+
+  ref_count++;
+}
+
+void ExtensionFileBrowserEventRouter::FileWatcherExtensions::RemoveExtension(
+    const std::string& extension_id) {
+  ExtensionUsageRegistry::iterator it = extensions.find(extension_id);
+
+  if (it != extensions.end()) {
+    // If entry found - decrease it's count and remove if necessary
+    if (0 == it->second--) {
+      extensions.erase(it);
+    }
+
+    ref_count--;
+  } else {
+    // Might be reference counting problem - e.g. if some component of
+    // extension subscribes/unsubscribes correctly, but other component
+    // only unsubscribes, developer of first one might receive this message
+    LOG(FATAL) << " Extension [" << extension_id
+        << "] tries to unsubscribe from folder [" << local_path.value()
+        << "] it isn't subscribed";
+  }
+}
+
+const ExtensionFileBrowserEventRouter::ExtensionUsageRegistry&
+ExtensionFileBrowserEventRouter::FileWatcherExtensions::GetExtensions() const {
+  return extensions;
+}
+
+unsigned int
+ExtensionFileBrowserEventRouter::FileWatcherExtensions::GetRefCount() const {
+  return ref_count;
+}
+
+const FilePath&
+ExtensionFileBrowserEventRouter::FileWatcherExtensions::GetVirtualPath() const {
+  return virtual_path;
+}
+
+bool ExtensionFileBrowserEventRouter::FileWatcherExtensions::Watch
+    (const FilePath& path, FileWatcherDelegate* delegate) {
+  return file_watcher->Watch(path, delegate);
 }

@@ -48,21 +48,6 @@ class ExtensionFileBrowserEventRouter
       const chromeos::MountLibrary::MountPointInfo& mount_info) OVERRIDE;
 
  private:
-  typedef struct FileWatcherExtensions {
-    FileWatcherExtensions(const FilePath& path,
-                          const std::string& extension_id) {
-      file_watcher.reset(new base::files::FilePathWatcher());
-      virtual_path = path;
-      extensions.insert(extension_id);
-    }
-    ~FileWatcherExtensions() {}
-    linked_ptr<base::files::FilePathWatcher> file_watcher;
-    FilePath local_path;
-    FilePath virtual_path;
-    std::set<std::string> extensions;
-  } FileWatcherProcess;
-  typedef std::map<FilePath, FileWatcherExtensions*> WatcherMap;
-
   // Helper class for passing through file watch notification events.
   class FileWatcherDelegate : public base::files::FilePathWatcher::Delegate {
    public:
@@ -77,6 +62,37 @@ class ExtensionFileBrowserEventRouter
 
     ExtensionFileBrowserEventRouter* router_;
   };
+
+  typedef std::map<std::string, int> ExtensionUsageRegistry;
+
+  class FileWatcherExtensions {
+   public:
+    FileWatcherExtensions(const FilePath& path,
+        const std::string& extension_id);
+
+    ~FileWatcherExtensions() {}
+
+    void AddExtension(const std::string& extension_id);
+
+    void RemoveExtension(const std::string& extension_id);
+
+    const ExtensionUsageRegistry& GetExtensions() const;
+
+    unsigned int GetRefCount() const;
+
+    const FilePath& GetVirtualPath() const;
+
+    bool Watch(const FilePath& path, FileWatcherDelegate* delegate);
+
+   private:
+    linked_ptr<base::files::FilePathWatcher> file_watcher;
+    FilePath local_path;
+    FilePath virtual_path;
+    ExtensionUsageRegistry extensions;
+    unsigned int ref_count;
+  };
+
+  typedef std::map<FilePath, FileWatcherExtensions*> WatcherMap;
 
   // USB mount event handlers.
   void OnDiskAdded(const chromeos::MountLibrary::Disk* disk);
@@ -95,7 +111,7 @@ class ExtensionFileBrowserEventRouter
 
   // Sends folder change event.
   void DispatchFolderChangeEvent(const FilePath& path, bool error,
-                                 const std::set<std::string>& extensions);
+                                 const ExtensionUsageRegistry& extensions);
 
   // Sends filesystem changed extension message to all renderers.
   void DispatchDiskEvent(const chromeos::MountLibrary::Disk* disk, bool added);
