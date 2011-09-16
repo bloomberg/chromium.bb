@@ -145,11 +145,6 @@ Widget::InitParams::InitParams(Type type)
 ////////////////////////////////////////////////////////////////////////////////
 // Widget, public:
 
-// static
-Widget::InitParams Widget::WindowInitParams() {
-  return InitParams(InitParams::TYPE_WINDOW);
-}
-
 Widget::Widget()
     : is_mouse_button_pressed_(false),
       last_mouse_event_was_move_(false),

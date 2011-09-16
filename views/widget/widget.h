@@ -159,7 +159,6 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
     NativeWidget* native_widget;
     bool top_level;
   };
-  static InitParams WindowInitParams();
 
   Widget();
   virtual ~Widget();
