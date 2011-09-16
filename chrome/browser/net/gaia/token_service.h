@@ -136,8 +136,12 @@ class TokenService : public GaiaAuthConsumer,
   const std::string& GetLsid() const;
   // Did we get a proper LSID?
   bool AreCredentialsValid() const;
-  // Do we have an OAuth access token and secret.
-  bool AreOAuthCredentialsValid() const;
+
+  // For services with their own auth routines, they can read the OAuth token
+  // and secret directly. Deprecated (in the sense of discouraged).
+  bool HasOAuthCredentials() const;
+  const std::string& GetOAuthToken() const;
+  const std::string& GetOAuthSecret() const;
 
   // Tokens will be fetched for all services(sync, talk) in the background.
   // Results come back via event channel. Services can also poll before events

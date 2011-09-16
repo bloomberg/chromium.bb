@@ -112,6 +112,9 @@ TEST_F(TokenServiceTest, SanityCheck) {
   EXPECT_TRUE(service_.HasLsid());
   EXPECT_EQ(service_.GetLsid(), "lsid");
   EXPECT_FALSE(service_.HasTokenForService("nonexistent service"));
+  EXPECT_TRUE(service_.HasOAuthCredentials());
+  EXPECT_EQ(service_.GetOAuthToken(), "oauth");
+  EXPECT_EQ(service_.GetOAuthSecret(), "secret");
 }
 
 TEST_F(TokenServiceTest, NoToken) {
@@ -215,11 +218,18 @@ TEST_F(TokenServiceTest, ResetSimple) {
   service_.OnIssueAuthTokenSuccess(GaiaConstants::kSyncService, "token");
   EXPECT_TRUE(service_.HasTokenForService(GaiaConstants::kSyncService));
   EXPECT_TRUE(service_.HasLsid());
+  service_.OnOAuthGetAccessTokenSuccess("token2", "secret");
+  service_.OnOAuthWrapBridgeSuccess(
+      GaiaConstants::kSyncServiceOAuth, "token3", "4321");
+  EXPECT_TRUE(service_.HasTokenForService(GaiaConstants::kSyncServiceOAuth));
+  EXPECT_TRUE(service_.HasOAuthCredentials());
 
   service_.ResetCredentialsInMemory();
 
   EXPECT_FALSE(service_.HasTokenForService(GaiaConstants::kSyncService));
   EXPECT_FALSE(service_.HasLsid());
+  EXPECT_FALSE(service_.HasTokenForService(GaiaConstants::kSyncServiceOAuth));
+  EXPECT_FALSE(service_.HasOAuthCredentials());
 }
 
 TEST_F(TokenServiceTest, ResetComplex) {
@@ -235,17 +245,29 @@ TEST_F(TokenServiceTest, ResetComplex) {
   EXPECT_FALSE(service_.HasTokenForService(GaiaConstants::kSyncServiceOAuth));
   EXPECT_FALSE(service_.HasTokenForService(GaiaConstants::kTalkService));
 
+  service_.OnOAuthWrapBridgeSuccess(
+      GaiaConstants::kSyncServiceOAuth, "erasemetoo", "1234");
+  EXPECT_TRUE(service_.HasTokenForService(GaiaConstants::kSyncService));
+  EXPECT_EQ(service_.GetTokenForService(GaiaConstants::kSyncService),
+            "eraseme");
+  EXPECT_TRUE(service_.HasTokenForService(GaiaConstants::kSyncServiceOAuth));
+  EXPECT_EQ(service_.GetTokenForService(GaiaConstants::kSyncServiceOAuth),
+            "erasemetoo");
+  EXPECT_FALSE(service_.HasTokenForService(GaiaConstants::kTalkService));
+
   service_.ResetCredentialsInMemory();
   EXPECT_FALSE(service_.HasTokenForService(GaiaConstants::kSyncService));
   EXPECT_FALSE(service_.HasTokenForService(GaiaConstants::kSyncServiceOAuth));
   EXPECT_FALSE(service_.HasTokenForService(GaiaConstants::kTalkService));
   EXPECT_FALSE(service_.HasLsid());
+  EXPECT_FALSE(service_.HasOAuthCredentials());
 
   // Now start using it again.
   service_.UpdateCredentials(credentials_);
   EXPECT_TRUE(service_.HasLsid());
   service_.StartFetchingTokens();
   service_.UpdateOAuthCredentials(oauth_token_, oauth_secret_);
+  EXPECT_TRUE(service_.HasOAuthCredentials());
   service_.StartFetchingOAuthTokens();
 
   service_.OnIssueAuthTokenSuccess(GaiaConstants::kSyncService, "token");
@@ -345,6 +367,7 @@ TEST_F(TokenServiceTest, WebDBLoadIntegration) {
   // Should result in DB write.
   service_.OnIssueAuthTokenSuccess(GaiaConstants::kSyncService, "token");
   EXPECT_EQ(1U, success_tracker_.size());
+  service_.OnOAuthGetAccessTokenSuccess("token1", "secret");
   service_.OnOAuthWrapBridgeSuccess(
       GaiaConstants::kSyncServiceOAuth, "token2", "3600");
   EXPECT_EQ(2U, success_tracker_.size());
@@ -365,6 +388,7 @@ TEST_F(TokenServiceTest, WebDBLoadIntegration) {
   EXPECT_TRUE(service_.HasTokenForService(GaiaConstants::kSyncServiceOAuth));
   EXPECT_FALSE(service_.HasTokenForService(GaiaConstants::kTalkService));
   EXPECT_TRUE(service_.HasLsid());
+  EXPECT_TRUE(service_.HasOAuthCredentials());
 }
 
 TEST_F(TokenServiceTest, MultipleLoadResetIntegration) {
@@ -375,12 +399,13 @@ TEST_F(TokenServiceTest, MultipleLoadResetIntegration) {
   EXPECT_FALSE(service_.HasTokenForService(GaiaConstants::kSyncService));
   EXPECT_FALSE(service_.HasLsid());
 
+  service_.OnOAuthGetAccessTokenSuccess("token2", "secret");
   service_.OnOAuthWrapBridgeSuccess(
-      GaiaConstants::kSyncServiceOAuth, "token2", "3600");
+      GaiaConstants::kSyncServiceOAuth, "token3", "3600");
   service_.ResetCredentialsInMemory();
   success_tracker_.Reset();
   EXPECT_FALSE(service_.HasTokenForService(GaiaConstants::kSyncServiceOAuth));
-  EXPECT_FALSE(service_.AreOAuthCredentialsValid());
+  EXPECT_FALSE(service_.HasOAuthCredentials());
 
   service_.LoadTokensFromDB();
   WaitForDBLoadCompletion();
@@ -393,6 +418,7 @@ TEST_F(TokenServiceTest, MultipleLoadResetIntegration) {
   EXPECT_TRUE(service_.HasTokenForService(GaiaConstants::kSyncServiceOAuth));
   EXPECT_FALSE(service_.HasTokenForService(GaiaConstants::kTalkService));
   EXPECT_TRUE(service_.HasLsid());
+  EXPECT_TRUE(service_.HasOAuthCredentials());
 
   // Reset it one more time so there's no surprises.
   service_.ResetCredentialsInMemory();
@@ -404,6 +430,8 @@ TEST_F(TokenServiceTest, MultipleLoadResetIntegration) {
   EXPECT_EQ(2U, success_tracker_.size());
   EXPECT_TRUE(service_.HasTokenForService(GaiaConstants::kSyncService));
   EXPECT_TRUE(service_.HasTokenForService(GaiaConstants::kSyncServiceOAuth));
+  EXPECT_TRUE(service_.HasLsid());
+  EXPECT_TRUE(service_.HasOAuthCredentials());
 }
 
 #ifndef NDEBUG

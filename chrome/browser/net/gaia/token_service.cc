@@ -160,16 +160,24 @@ bool TokenService::AreCredentialsValid() const {
   return !credentials_.lsid.empty() && !credentials_.sid.empty();
 }
 
-bool TokenService::AreOAuthCredentialsValid() const {
-  return !oauth_token_.empty() && !oauth_secret_.empty();
-}
-
 bool TokenService::HasLsid() const {
   return !credentials_.lsid.empty();
 }
 
 const std::string& TokenService::GetLsid() const {
   return credentials_.lsid;
+}
+
+bool TokenService::HasOAuthCredentials() const {
+  return !oauth_token_.empty() && !oauth_secret_.empty();
+}
+
+const std::string& TokenService::GetOAuthToken() const {
+  return oauth_token_;
+}
+
+const std::string& TokenService::GetOAuthSecret() const {
+  return oauth_secret_;
 }
 
 void TokenService::StartFetchingTokens() {
@@ -184,7 +192,7 @@ void TokenService::StartFetchingTokens() {
 
 void TokenService::StartFetchingOAuthTokens() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(AreOAuthCredentialsValid());
+  DCHECK(HasOAuthCredentials());
   for (int i = 0; i < kNumOAuthServices; i++) {
     oauth_fetchers_[i]->StartOAuthWrapBridge(oauth_token_,
                                              oauth_secret_,

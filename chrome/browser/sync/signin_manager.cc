@@ -96,7 +96,7 @@ void SigninManager::PrepareForOAuthSignin() {
   // The Sign out should clear the token service credentials.
   // Note: In CHROMEOS we might have valid credentials but still need to
   // set up 2-factor authentication.
-  DCHECK(!profile_->GetTokenService()->AreOAuthCredentialsValid());
+  DCHECK(!profile_->GetTokenService()->HasOAuthCredentials());
 #endif
 }
 
@@ -293,7 +293,7 @@ void SigninManager::OnUserInfoSuccess(const std::string& email) {
 
   // If |SignOut()| was called between the login start and |OnUserInfoSucess()|,
   // then the OAuth credentials would have been cleared.
-  if (!token_service->AreOAuthCredentialsValid())
+  if (!token_service->HasOAuthCredentials())
     return;
 
   VLOG(1) << "Sync signin for " << email << " is complete.";
@@ -310,7 +310,7 @@ void SigninManager::OnUserInfoSuccess(const std::string& email) {
       Source<Profile>(profile_),
       Details<const GoogleServiceSigninSuccessDetails>(&details));
 
-  DCHECK(token_service->AreOAuthCredentialsValid());
+  DCHECK(token_service->HasOAuthCredentials());
   token_service->StartFetchingOAuthTokens();
 }
 
