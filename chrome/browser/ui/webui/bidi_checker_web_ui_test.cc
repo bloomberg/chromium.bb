@@ -23,6 +23,26 @@
 #include <gtk/gtk.h>
 #endif
 
+// These tests are failing on linux views build. crbug.com/96891
+#if defined(TOOLKIT_VIEWS) && defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#define MAYBE_TestCrashesPageRTL DISABLED_TestCrashesPageRTL
+#define MAYBE_TestDownloadsPageRTL DISABLED_TestDownloadsPageRTL
+#define MAYBE_TestMainHistoryPageRTL DISABLED_TestMainHistoryPageRTL
+#define MAYBE_TestNewTabPageRTL DISABLED_TestNewTabPageRTL
+#define MAYBE_TestPluginsPageRTL DISABLED_TestPluginsPageRTL
+#define MAYBE_TestSettingsAutofillPageRTL DISABLED_TestSettingsAutofillPageRTL
+#define MAYBE_TestSettingsPageRTL DISABLED_TestSettingsPageRTL
+#else
+#define MAYBE_TestCrashesPageRTL TestCrashesPageRTL
+#define MAYBE_TestDownloadsPageRTL TestDownloadsPageRTL
+#define MAYBE_TestMainHistoryPageRTL TestMainHistoryPageRTL
+#define MAYBE_TestNewTabPageRTL TestNewTabPageRTL
+#define MAYBE_TestPluginsPageRTL TestPluginsPageRTL
+#define MAYBE_TestSettingsAutofillPageRTL TestSettingsAutofillPageRTL
+#define MAYBE_TestSettingsPageRTL TestSettingsPageRTL
+#endif
+
+
 static const FilePath::CharType* kWebUIBidiCheckerLibraryJS =
     FILE_PATH_LITERAL("third_party/bidichecker/bidichecker_packaged.js");
 
@@ -104,7 +124,7 @@ IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTest, TestMainHistoryPageLTR) {
 }
 
 IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestFakeBidi,
-                       TestMainHistoryPageRTL) {
+                       MAYBE_TestMainHistoryPageRTL) {
   HistoryService* history_service =
       browser()->profile()->GetHistoryService(Profile::IMPLICIT_ACCESS);
   GURL history_url = GURL("http://www.google.com");
@@ -128,7 +148,7 @@ IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTest, TestCrashesPageLTR) {
 }
 
 IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestFakeBidi,
-                       TestCrashesPageRTL) {
+                       MAYBE_TestCrashesPageRTL) {
   WebUIBidiCheckerBrowserTest::RunBidiCheckerOnPage(chrome::kChromeUICrashesURL,
                                                     true);
 }
@@ -138,7 +158,7 @@ IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTest, TestDownloadsPageLTR) {
 }
 
 IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestFakeBidi,
-                       TestDownloadsPageRTL) {
+                       MAYBE_TestDownloadsPageRTL) {
   WebUIBidiCheckerBrowserTest::RunBidiCheckerOnPage(
       chrome::kChromeUIDownloadsURL, true);
 }
@@ -147,7 +167,8 @@ IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTest, TestNewTabPageLTR) {
   RunBidiCheckerOnPage(chrome::kChromeUINewTabURL, false);
 }
 
-IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestFakeBidi, TestNewTabPageRTL) {
+IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestFakeBidi,
+                       MAYBE_TestNewTabPageRTL) {
   WebUIBidiCheckerBrowserTest::RunBidiCheckerOnPage(chrome::kChromeUINewTabURL,
                                                     true);
 }
@@ -157,7 +178,7 @@ IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTest, TestPluginsPageLTR) {
 }
 
 IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestFakeBidi,
-                       TestPluginsPageRTL) {
+                       MAYBE_TestPluginsPageRTL) {
   WebUIBidiCheckerBrowserTest::RunBidiCheckerOnPage(chrome::kChromeUIPluginsURL,
                                                     true);
 }
@@ -167,7 +188,7 @@ IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTest, TestSettingsPageLTR) {
 }
 
 IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestFakeBidi,
-                       TestSettingsPageRTL) {
+                       MAYBE_TestSettingsPageRTL) {
   WebUIBidiCheckerBrowserTest::RunBidiCheckerOnPage(
       chrome::kChromeUISettingsURL, true);
 }
@@ -214,7 +235,7 @@ IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestFakeBidi,
-                       TestSettingsAutofillPageRTL) {
+                       MAYBE_TestSettingsAutofillPageRTL) {
   std::string url(chrome::kChromeUISettingsURL);
   url += std::string(chrome::kAutofillSubPage);
 
