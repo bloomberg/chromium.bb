@@ -268,6 +268,7 @@ extern const char kTestType[];
 extern const char kTestingChannelID[];
 extern const char kTryChromeAgain[];
 extern const char kUninstall[];
+extern const char kUseMoreWebUI[];
 extern const char kUsePureViews[];
 extern const char kUseSpdy[];
 extern const char kIgnoreCertificateErrors[];

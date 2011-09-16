@@ -25,6 +25,7 @@
 #include "chrome/browser/ui/webui/history2_ui.h"
 #include "chrome/browser/ui/webui/history_ui.h"
 #include "chrome/browser/ui/webui/html_dialog_ui.h"
+#include "chrome/browser/ui/webui/hung_renderer_dialog_ui.h"
 #include "chrome/browser/ui/webui/media/media_internals_ui.h"
 #include "chrome/browser/ui/webui/net_internals_ui.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
@@ -69,12 +70,8 @@
 #include "chrome/browser/ui/webui/conflicts_ui.h"
 #endif
 
-#if defined(WEBUI_DIALOGS) && defined(OS_POSIX) && !defined(OS_MACOSX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
 #include "chrome/browser/ui/webui/certificate_viewer_ui.h"
-#endif
-
-#if defined(WEBUI_DIALOGS)
-#include "chrome/browser/ui/webui/hung_renderer_dialog_ui.h"
 #endif
 
 namespace {
@@ -151,15 +148,13 @@ static WebUIFactoryFunction GetWebUIFactoryFunction(Profile* profile,
     return &NewWebUI<BookmarksUI>;
   if (url.host() == chrome::kChromeUIBugReportHost)
     return &NewWebUI<BugReportUI>;
-#if defined(WEBUI_DIALOGS) && defined(OS_POSIX) && !defined(OS_MACOSX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
   if (url.host() == chrome::kChromeUICertificateViewerHost)
     return &NewWebUI<CertificateViewerUI>;
 #endif
-#if defined(WEBUI_DIALOGS)
   if (url.host() == chrome::kChromeUIHungRendererDialogHost) {
     return &NewWebUI<HungRendererDialogUI>;
   }
-#endif
   if (url.host() == chrome::kChromeUICrashesHost)
     return &NewWebUI<CrashesUI>;
   if (url.host() == chrome::kChromeUIDevToolsHost)

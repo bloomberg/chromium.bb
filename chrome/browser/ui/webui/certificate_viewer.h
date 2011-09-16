@@ -11,7 +11,8 @@
 #include "net/base/x509_certificate.h"
 #include "ui/gfx/native_widget_types.h"
 
-// Displays the WebUI certificate viewer dialog for the passed in certificate.
+// Displays the native or WebUI certificate viewer dialog for the given
+// certificate.
 void ShowCertificateViewer(gfx::NativeWindow parent,
                            net::X509Certificate*);
 

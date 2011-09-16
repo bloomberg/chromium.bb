@@ -24,6 +24,10 @@ class ChromeWebUI : public WebUI {
     return force_bookmark_bar_visible_;
   }
 
+  // IsMoreWebUI returns a command line flag that tracks whether to use
+  // available WebUI implementations of native dialogs.
+  static bool IsMoreWebUI();
+
  protected:
   void set_force_bookmark_bar_visible(bool value) {
     force_bookmark_bar_visible_ = value;

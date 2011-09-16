@@ -5,13 +5,15 @@
 #include "base/i18n/time_formatting.h"
 #include "base/utf_string_conversions.h"
 #include "base/string_number_conversions.h"
-#include "chrome/browser/ui/webui/certificate_viewer.h"
-#include "chrome/common/url_constants.h"
+#include "chrome/browser/certificate_viewer.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/gtk/certificate_dialogs.h"
-#include "chrome/browser/ui/browser_dialogs.h"
+#include "chrome/browser/ui/webui/certificate_viewer.h"
+#include "chrome/browser/ui/webui/chrome_web_ui.h"
 #include "chrome/common/net/x509_certificate_model.h"
+#include "chrome/common/url_constants.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "grit/generated_resources.h"
@@ -24,10 +26,14 @@ const int kDefaultHeight = 450;
 
 }  // namespace
 
-// Shows a certificate using the WebUI certificate viewer.
+// Shows a certificate using the native or WebUI certificate viewer.
 void ShowCertificateViewer(gfx::NativeWindow parent,
                            net::X509Certificate* cert) {
-  CertificateViewerDialog::ShowDialog(parent, cert);
+  if (ChromeWebUI::IsMoreWebUI()) {
+    CertificateViewerDialog::ShowDialog(parent, cert);
+  } else {
+    ShowNativeCertificateViewer(parent, cert);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

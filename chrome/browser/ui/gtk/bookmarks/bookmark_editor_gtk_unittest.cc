@@ -101,7 +101,7 @@ class BookmarkEditorGtkTest : public testing::Test {
 // Makes sure the tree model matches that of the bookmark bar model.
 TEST_F(BookmarkEditorGtkTest, ModelsMatch) {
   BookmarkEditorGtk editor(NULL, profile_.get(), NULL,
-                           BookmarkEditor::EditDetails(),
+                           BookmarkEditor::EditDetails::AddNodeInFolder(NULL),
                            BookmarkEditor::SHOW_TREE);
 
   // The root should have two or three children, one for the bookmark bar node,
@@ -148,7 +148,7 @@ TEST_F(BookmarkEditorGtkTest, ModelsMatch) {
 // Changes the title and makes sure parent/visual order doesn't change.
 TEST_F(BookmarkEditorGtkTest, EditTitleKeepsPosition) {
   BookmarkEditorGtk editor(NULL, profile_.get(), NULL,
-                           BookmarkEditor::EditDetails(GetNode("a")),
+                           BookmarkEditor::EditDetails::EditNode(GetNode("a")),
                            BookmarkEditor::SHOW_TREE);
   gtk_entry_set_text(GTK_ENTRY(editor.name_entry_), "new_a");
 
@@ -168,7 +168,7 @@ TEST_F(BookmarkEditorGtkTest, EditTitleKeepsPosition) {
 TEST_F(BookmarkEditorGtkTest, EditURLKeepsPosition) {
   Time node_time = GetNode("a")->date_added();
   BookmarkEditorGtk editor(NULL, profile_.get(), NULL,
-                           BookmarkEditor::EditDetails(GetNode("a")),
+                           BookmarkEditor::EditDetails::EditNode(GetNode("a")),
                            BookmarkEditor::SHOW_TREE);
   gtk_entry_set_text(GTK_ENTRY(editor.url_entry_),
                      GURL(base_path() + "new_a").spec().c_str());
@@ -189,7 +189,7 @@ TEST_F(BookmarkEditorGtkTest, EditURLKeepsPosition) {
 // Moves 'a' to be a child of the other node.
 TEST_F(BookmarkEditorGtkTest, ChangeParent) {
   BookmarkEditorGtk editor(NULL, profile_.get(), NULL,
-                           BookmarkEditor::EditDetails(GetNode("a")),
+                           BookmarkEditor::EditDetails::EditNode(GetNode("a")),
                            BookmarkEditor::SHOW_TREE);
 
   GtkTreeModel* store = GTK_TREE_MODEL(editor.tree_store_);
@@ -208,7 +208,7 @@ TEST_F(BookmarkEditorGtkTest, ChangeParent) {
 TEST_F(BookmarkEditorGtkTest, ChangeParentAndURL) {
   Time node_time = GetNode("a")->date_added();
   BookmarkEditorGtk editor(NULL, profile_.get(), NULL,
-                           BookmarkEditor::EditDetails(GetNode("a")),
+                           BookmarkEditor::EditDetails::EditNode(GetNode("a")),
                            BookmarkEditor::SHOW_TREE);
 
   gtk_entry_set_text(GTK_ENTRY(editor.url_entry_),
@@ -229,7 +229,7 @@ TEST_F(BookmarkEditorGtkTest, ChangeParentAndURL) {
 // Creates a new folder and moves a node to it.
 TEST_F(BookmarkEditorGtkTest, MoveToNewParent) {
   BookmarkEditorGtk editor(NULL, profile_.get(), NULL,
-                           BookmarkEditor::EditDetails(GetNode("a")),
+                           BookmarkEditor::EditDetails::EditNode(GetNode("a")),
                            BookmarkEditor::SHOW_TREE);
 
   GtkTreeIter bookmark_bar_node;
@@ -277,7 +277,7 @@ TEST_F(BookmarkEditorGtkTest, MoveToNewParent) {
 // Brings up the editor, creating a new URL on the bookmark bar.
 TEST_F(BookmarkEditorGtkTest, NewURL) {
   BookmarkEditorGtk editor(NULL, profile_.get(), NULL,
-                           BookmarkEditor::EditDetails(),
+                           BookmarkEditor::EditDetails::AddNodeInFolder(NULL),
                            BookmarkEditor::SHOW_TREE);
 
   gtk_entry_set_text(GTK_ENTRY(editor.url_entry_),
@@ -301,7 +301,7 @@ TEST_F(BookmarkEditorGtkTest, NewURL) {
 // Brings up the editor with no tree and modifies the url.
 TEST_F(BookmarkEditorGtkTest, ChangeURLNoTree) {
   BookmarkEditorGtk editor(NULL, profile_.get(), NULL,
-                           BookmarkEditor::EditDetails(
+                           BookmarkEditor::EditDetails::EditNode(
                                model_->other_node()->GetChild(0)),
                            BookmarkEditor::NO_TREE);
 
@@ -323,7 +323,7 @@ TEST_F(BookmarkEditorGtkTest, ChangeURLNoTree) {
 // Brings up the editor with no tree and modifies only the title.
 TEST_F(BookmarkEditorGtkTest, ChangeTitleNoTree) {
   BookmarkEditorGtk editor(NULL, profile_.get(), NULL,
-                           BookmarkEditor::EditDetails(
+                           BookmarkEditor::EditDetails::EditNode(
                                model_->other_node()->GetChild(0)),
                            BookmarkEditor::NO_TREE);
   gtk_entry_set_text(GTK_ENTRY(editor.name_entry_), "new_a");
