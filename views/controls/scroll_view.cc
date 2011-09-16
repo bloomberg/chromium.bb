@@ -18,6 +18,10 @@ class Viewport : public View {
   Viewport() {}
   virtual ~Viewport() {}
 
+  virtual std::string GetClassName() const {
+    return "views/Viewport";
+  }
+
   virtual void ScrollRectToVisible(const gfx::Rect& rect) {
     if (!has_children() || !parent())
       return;

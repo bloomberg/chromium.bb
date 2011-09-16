@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "base/gtest_prod_util.h"
 #include "views/controls/scrollbar/scroll_bar.h"
 #include "views/view.h"
 
@@ -31,6 +32,9 @@ class VIEWS_EXPORT NativeScrollBar : public ScrollBar {
   static int GetVerticalScrollBarWidth();
 
  private:
+  friend class NativeScrollBarTest;
+  FRIEND_TEST_ALL_PREFIXES(NativeScrollBarTest, Scrolling);
+
   // Overridden from View.
   virtual gfx::Size GetPreferredSize();
   virtual void Layout();
@@ -55,4 +59,3 @@ class VIEWS_EXPORT NativeScrollBar : public ScrollBar {
 }  // namespace views
 
 #endif  // VIEWS_CONTROLS_SCROLLBAR_NATIVE_SCROLL_BAR_H_
-
