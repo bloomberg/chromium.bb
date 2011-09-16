@@ -132,6 +132,9 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
     'ppapi/lib/gl/include': [
         'UNKNOWN',
     ],
+    'ppapi/native_client/tests/earth/earth_image.inc': [
+        'UNKNOWN',
+    ],
     'remoting/tools/gethosts.sh': [
         'UNKNOWN',
     ],
@@ -416,6 +419,7 @@ def main(options, args):
 
   print "Using base directory:", options.base_directory
   print "Checking:", start_dir
+  print
 
   licensecheck_path = os.path.abspath(os.path.join(options.base_directory,
                                                    'third_party',
@@ -474,7 +478,16 @@ def main(options, args):
     sys.exit(0)
   else:
     print "\nFAILED\n"
-    sys.exit(1)
+    print "Please read",
+    print "http://www.chromium.org/developers/adding-3rd-party-libraries"
+    print "for more info how to handle the failure."
+    print
+    print "Please respect OWNERS of checklicenses.py. Changes violating"
+    print "this requirement may be reverted."
+
+    # TODO(phajdan.jr): Switch back to exit(1) when it lands on buildbot.
+    # 88 is buildbot "warning" code, it doesn't turn the step red but orange.
+    sys.exit(88)
 
 
 if '__main__' == __name__:
