@@ -29,7 +29,7 @@ static const int kDefaultTimeout = 4000;
 
 // static
 int TooltipManager::GetTooltipHeight() {
-  DCHECK(tooltip_height_ > 0);
+  DCHECK_GT(tooltip_height_, 0);
   return tooltip_height_;
 }
 
@@ -65,7 +65,8 @@ int TooltipManager::GetMaxWidth(int x, int y) {
 
 TooltipManagerWin::TooltipManagerWin(Widget* widget)
     : widget_(widget),
-      last_mouse_pos_(-1,-1),
+      tooltip_hwnd_(NULL),
+      last_mouse_pos_(-1, -1),
       tooltip_showing_(false),
       last_tooltip_view_(NULL),
       last_view_out_of_sync_(false),
@@ -74,7 +75,6 @@ TooltipManagerWin::TooltipManagerWin(Widget* widget)
       ALLOW_THIS_IN_INITIALIZER_LIST(keyboard_tooltip_factory_(this)) {
   DCHECK(widget);
   DCHECK(widget->GetNativeView());
-  Init();
 }
 
 TooltipManagerWin::~TooltipManagerWin() {
@@ -85,6 +85,7 @@ TooltipManagerWin::~TooltipManagerWin() {
 }
 
 bool TooltipManagerWin::Init() {
+  DCHECK(!tooltip_hwnd_);
   // Create the tooltip control.
   tooltip_hwnd_ = CreateWindowEx(
       WS_EX_TRANSPARENT | l10n_util::GetExtendedTooltipStyles(),
@@ -100,7 +101,7 @@ bool TooltipManagerWin::Init() {
   // (just as long as its bigger than the monitor's width) as we clip to the
   // screen size before rendering.
   SendMessage(tooltip_hwnd_, TTM_SETMAXTIPWIDTH, 0,
-              std::numeric_limits<short>::max());
+              std::numeric_limits<int16>::max());
 
   // Add one tool that is used for all tooltips.
   toolinfo_.cbSize = sizeof(toolinfo_);
@@ -110,6 +111,7 @@ bool TooltipManagerWin::Init() {
   // Setting this tells windows to call GetParent() back (using a WM_NOTIFY
   // message) for the actual tooltip contents.
   toolinfo_.lpszText = LPSTR_TEXTCALLBACK;
+  toolinfo_.lpReserved = NULL;
   SetRectEmpty(&toolinfo_.rect);
   SendMessage(tooltip_hwnd_, TTM_ADDTOOL, 0, (LPARAM)&toolinfo_);
   return true;
@@ -227,7 +229,7 @@ bool TooltipManagerWin::SetTooltipPosition(int text_x, int text_y) {
   // doesn't, return false so that windows positions the tooltip at the
   // default location.
   gfx::Rect monitor_bounds =
-      views::GetMonitorBoundsForRect(gfx::Rect(bounds.left,bounds.right,
+      views::GetMonitorBoundsForRect(gfx::Rect(bounds.left, bounds.right,
                                                   0, 0));
   if (!monitor_bounds.Contains(gfx::Rect(bounds))) {
     return false;
@@ -335,7 +337,7 @@ void TooltipManagerWin::ShowKeyboardTooltip(View* focused_view) {
     return;
 
   SendMessage(keyboard_tooltip_hwnd_, TTM_SETMAXTIPWIDTH, 0,
-              std::numeric_limits<short>::max());
+              std::numeric_limits<int16>::max());
   int tooltip_width;
   int line_count;
   TrimTooltipToFit(&tooltip_text, &tooltip_width, &line_count,
@@ -345,7 +347,7 @@ void TooltipManagerWin::ShowKeyboardTooltip(View* focused_view) {
   memset(&keyboard_toolinfo, 0, sizeof(keyboard_toolinfo));
   keyboard_toolinfo.cbSize = sizeof(keyboard_toolinfo);
   keyboard_toolinfo.hwnd = GetParent();
-  keyboard_toolinfo.uFlags = TTF_TRACK | TTF_TRANSPARENT | TTF_IDISHWND ;
+  keyboard_toolinfo.uFlags = TTF_TRACK | TTF_TRANSPARENT | TTF_IDISHWND;
   keyboard_toolinfo.lpszText = const_cast<WCHAR*>(tooltip_text.c_str());
   SendMessage(keyboard_tooltip_hwnd_, TTM_ADDTOOL, 0,
               reinterpret_cast<LPARAM>(&keyboard_toolinfo));
