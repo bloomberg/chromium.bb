@@ -212,7 +212,7 @@ void SessionModelAssociator::ReassociateWindows(bool reload_tabs) {
     return;
   }
   header_node.SetSessionSpecifics(specifics);
-  if (waiting_for_change_) QuitLoopForTest();
+  if (waiting_for_change_) QuitLoopForSubtleTesting();
 }
 
 // Static.
@@ -231,7 +231,7 @@ void SessionModelAssociator::ReassociateTabs(
        ++i) {
     ReassociateTab(**i);
   }
-  if (waiting_for_change_) QuitLoopForTest();
+  if (waiting_for_change_) QuitLoopForSubtleTesting();
 }
 
 void SessionModelAssociator::ReassociateTab(const SyncedTabDelegate& tab) {
@@ -1001,7 +1001,7 @@ bool SessionModelAssociator::IsValidSessionTab(const SessionTab& tab) {
 }
 
 
-void SessionModelAssociator::QuitLoopForTest() {
+void SessionModelAssociator::QuitLoopForSubtleTesting() {
   if (waiting_for_change_) {
     VLOG(1) << "Quitting MessageLoop for test.";
     waiting_for_change_ = false;
@@ -1018,7 +1018,7 @@ void SessionModelAssociator::BlockUntilLocalChangeForTest(
   MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       test_method_factory_.NewRunnableMethod(
-          &SessionModelAssociator::QuitLoopForTest),
+          &SessionModelAssociator::QuitLoopForSubtleTesting),
       timeout_milliseconds);
 }
 

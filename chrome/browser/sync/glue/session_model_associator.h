@@ -425,7 +425,7 @@ class SessionModelAssociator
                                    sync_pb::SessionTab* session_tab);
 
   // For testing only.
-  void QuitLoopForTest();
+  void QuitLoopForSubtleTesting();
 
   // Unique client tag.
   std::string current_machine_tag_;
