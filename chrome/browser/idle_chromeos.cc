@@ -8,6 +8,7 @@
 #include "base/callback.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/power_library.h"
+#include "chrome/browser/screensaver_window_finder_linux.h"
 
 void CalculateIdleStateNotifier(unsigned int idle_treshold,
                                 IdleCallback notify,
@@ -34,6 +35,7 @@ void CalculateIdleState(unsigned int idle_threshold, IdleCallback notify) {
 }
 
 bool CheckIdleStateIsLocked() {
-  // TODO(sidor): Make it work.
-  return false;
+  // Usually the screensaver is used to lock the screen, so we do not need to
+  // check if the workstation is locked.
+  return ScreensaverWindowFinder::ScreensaverWindowExists();
 }
