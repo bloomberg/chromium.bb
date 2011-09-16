@@ -225,6 +225,10 @@ void ChildProcessHost::OnChildDied() {
   delete this;
 }
 
+void ChildProcessHost::OnChildDisconnected() {
+  OnChildDied();
+}
+
 void ChildProcessHost::ShutdownStarted() {
 }
 
@@ -301,7 +305,7 @@ void ChildProcessHost::ListenerHook::OnChannelError() {
     host_->filters_[i]->OnChannelError();
 
   // This will delete host_, which will also destroy this!
-  host_->OnChildDied();
+  host_->OnChildDisconnected();
 }
 
 void ChildProcessHost::ForceShutdown() {
