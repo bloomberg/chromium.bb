@@ -21,7 +21,7 @@ static const char* NaClErrorReporterSupportedNames[] = {
  * to use it, and it is part of the base libraries needed by sel_ldr.
  */
 const char* NaClErrorReporterSupportedName(NaClErrorReporterSupported kind) {
-  if ((0 <= kind) &&
+  if ((0 < kind) &&
       (kind < NACL_ARRAY_SIZE(NaClErrorReporterSupportedNames))) {
     return NaClErrorReporterSupportedNames[kind];
   }

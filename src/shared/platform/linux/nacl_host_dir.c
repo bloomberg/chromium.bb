@@ -1,7 +1,7 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -12,18 +12,19 @@
  * system call return interface of small negative numbers as errors.
  */
 
-#include <stdint.h>
-#include <string.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <errno.h>
-#include <sys/mman.h>
-#include <unistd.h>
 #include <dirent.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <limits.h>
 #include <linux/types.h>
 #include <linux/unistd.h>
-#include <limits.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <string.h>
+#include <sys/mman.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_host_desc.h"
@@ -50,8 +51,6 @@ int getdents(unsigned int fd, struct dirent* dirp, unsigned int count) {
   return syscall(SYS_getdents, fd, dirp, count);
 }
 #endif
-
-#define offsetof(T, member) (((char *) &((T *) 0)->member) - (char *) 0)
 
 struct linux_dirent {  /* offsets, ILP32 and LP64 */
   unsigned long  d_ino;             /*  0,  0 */

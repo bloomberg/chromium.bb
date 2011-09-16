@@ -54,8 +54,7 @@ static char const* const kPpWeakRefModuleName = "pp_weak_ref";
 template <typename R> pp::CompletionCallback WeakRefNewCallback(
     nacl::WeakRefAnchor* anchor,
     void callback_fn(nacl::WeakRef<R>* weak_data, int32_t err),
-    R* raw_data,
-    pp::CompletionCallback* out_cc) {
+    R* raw_data) {
   nacl::WeakRef<R>* wp = anchor->MakeWeakRef<R>(raw_data);
   // TODO(bsy): explore using another template to eliminate the
   // following cast, making things completely typesafe.

@@ -1,7 +1,7 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -64,7 +64,7 @@ static int NaClSecureRngCtorCommon(struct NaClSecureRng *self,
   memset(self->counter, 0, sizeof self->counter);
   self->nvalid = 0;
 
-  memset(key, 0, sizeof key);
+  memset(key, 0, AES_BLOCK_SIZE * 8);
   return 1;
 }
 
