@@ -18,6 +18,28 @@ chrome.test.runTests([
     chrome.test.succeed();
   },
 
+  // Tests that we can remove a listener and it goes away.
+  // http://crbug.com/96755
+  function removeListeners() {
+    function newCallback(value) {
+      return function(details) { console.log(value); };
+    }
+    var cb1 = newCallback(1);
+    var cb2 = newCallback(2);
+    var event = chrome.experimental.webRequest.onBeforeRequest;
+    event.addListener(cb1);
+    event.addListener(cb2);
+    chrome.test.assertTrue(event.hasListener(cb1));
+    chrome.test.assertTrue(event.hasListener(cb2));
+    event.removeListener(cb1);
+    chrome.test.assertFalse(event.hasListener(cb1));
+    chrome.test.assertTrue(event.hasListener(cb2));
+    event.removeListener(cb2);
+    chrome.test.assertFalse(event.hasListener(cb1));
+    chrome.test.assertFalse(event.hasListener(cb2));
+    chrome.test.succeed();
+  },
+
   // Tests that the extra parameters to addListener are checked for invalid
   // values.
   function specialEvents() {

@@ -255,7 +255,6 @@ var chrome = chrome || {};
     this.argSchemas_ = opt_argSchemas;
     this.extraArgSchemas_ = opt_extraArgSchemas;
     this.subEvents_ = [];
-    this.callbackMap_ = {};
   };
 
   // Test if the given callback is registered for this event.
@@ -283,7 +282,6 @@ var chrome = chrome || {};
         cb, opt_filter, opt_extraInfo, this.eventName_, subEventName);
 
     var subEvent = new chrome.Event(subEventName, this.argSchemas_);
-    this.subEvents_.push(subEvent);
     var subEventCallback = cb;
     if (opt_extraInfo && opt_extraInfo.indexOf("blocking") >= 0) {
       var eventName = this.eventName_;
@@ -300,7 +298,8 @@ var chrome = chrome || {};
         }
       };
     }
-    this.callbackMap_[cb] = subEventCallback;
+    this.subEvents_.push(
+        {subEvent: subEvent, callback: cb, subEventCallback: subEventCallback});
     subEvent.addListener(subEventCallback);
   };
 
@@ -311,17 +310,23 @@ var chrome = chrome || {};
       return;
     }
 
-    var subEventCallback = this.callbackMap_[cb];
-    this.subEvents_[idx].removeListener(subEventCallback);
-    if (!this.subEvents_[idx].hasListeners())
-      this.subEvents_.splice(idx, 1);
+    var e = this.subEvents_[idx];
+    e.subEvent.removeListener(e.subEventCallback);
+    if (e.subEvent.hasListeners()) {
+      console.error(
+          "Internal error: webRequest subEvent has orphaned listeners.");
+    }
+    this.subEvents_.splice(idx, 1);
   };
 
   chrome.WebRequestEvent.prototype.findListener_ = function(cb) {
-    var subEventCallback = this.callbackMap_[cb];
-    for (var i = 0; i < this.subEvents_.length; i++) {
-      if (this.subEvents_[i].findListener_(subEventCallback) > -1)
-        return i;
+    for (var i in this.subEvents_) {
+      var e = this.subEvents_[i];
+      if (e.callback === cb) {
+        if (e.subEvent.findListener_(e.subEventCallback) > -1)
+          return i;
+        console.error("Internal error: webRequest subEvent has no callback.");
+      }
     }
 
     return -1;

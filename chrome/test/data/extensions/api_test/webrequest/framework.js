@@ -226,8 +226,8 @@ function removeListeners() {
     // Note: We're poking at the internal event data, but it's easier than
     // the alternative. If this starts failing, we just need to update this
     // helper.
-    for (var cb in event.callbackMap_) {
-      event.removeListener(cb);
+    for (var i in event.subEvents_) {
+      event.removeListener(event.subEvents_[i].callback);
     }
     chrome.test.assertFalse(event.hasListeners());
   }
