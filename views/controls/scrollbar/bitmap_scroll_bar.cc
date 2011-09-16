@@ -162,7 +162,7 @@ class BitmapScrollBarThumb : public BaseScrollBarThumb {
   DISALLOW_COPY_AND_ASSIGN(BitmapScrollBarThumb);
 };
 
-}  // anonymous namespace
+}  // namespace
 
 ///////////////////////////////////////////////////////////////////////////////
 // BitmapScrollBar, public:

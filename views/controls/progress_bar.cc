@@ -127,7 +127,7 @@ void StrokeRoundRect(gfx::Canvas* canvas,
   canvas->AsCanvasSkia()->drawPath(path, paint);
 }
 
-}  // anonymous namespace
+}  // namespace
 
 namespace views {
 

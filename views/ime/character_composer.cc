@@ -260,7 +260,7 @@ int ComposeCheckerWithCompactTable::CompareSequenceSkipFront::operator()(
 // Main table.
 
 // This file is included here intentionally, instead of the top of the file,
-// because including this file outside the anonymous namespace will define a
+// because including this file outside the unnamed namespace will define a
 // global constant and contaminate the global namespace.
 #include "third_party/gtk+/gtk/gtkimcontextsimpleseqs.h"
 

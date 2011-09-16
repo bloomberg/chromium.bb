@@ -6,8 +6,8 @@
 
 #include <vector>
 
-#include "base/utf_string_conversions.h"
 #include "base/string_split.h"
+#include "base/utf_string_conversions.h"
 #include "ui/base/text/text_elider.h"
 
 namespace {
@@ -18,7 +18,7 @@ const size_t kMaxTooltipLength = 1024;
 // Maximum number of lines we allow in the tooltip.
 const size_t kMaxLines = 6;
 
-}  // anonymous namespace
+}  // namespace
 
 namespace views {
 
