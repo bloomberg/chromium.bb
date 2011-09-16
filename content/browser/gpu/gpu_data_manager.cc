@@ -61,6 +61,14 @@ DictionaryValue* NewDescriptionValuePair(const std::string& desc,
 }
 
 #if defined(OS_WIN)
+enum WinSubVersion {
+  kWinOthers = 0,
+  kWinXP,
+  kWinVista,
+  kWin7,
+  kNumWinSubVersions
+};
+
 // Output DxDiagNode tree as nested array of {description,value} pairs
 ListValue* DxDiagNodeToList(const DxDiagNode& node) {
   ListValue* list = new ListValue();
@@ -81,37 +89,31 @@ ListValue* DxDiagNodeToList(const DxDiagNode& node) {
   return list;
 }
 
-#endif  // OS_WIN
-
-std::string GetOSString() {
-  std::string rt;
-#if defined(OS_CHROMEOS)
-  rt = "ChromeOS";
-#elif defined(OS_WIN)
-  rt = "Win";
-  std::string version_str = base::SysInfo::OperatingSystemVersion();
-  size_t pos = version_str.find_first_not_of("0123456789.");
-  if (pos != std::string::npos)
-    version_str = version_str.substr(0, pos);
-  scoped_ptr<Version> os_version(Version::GetVersionFromString(version_str));
-  if (os_version.get() && os_version->components().size() >= 2) {
-    const std::vector<uint16>& version_numbers = os_version->components();
-    if (version_numbers[0] == 5)
-      rt += "XP";
-    else if (version_numbers[0] == 6 && version_numbers[1] == 0)
-      rt += "Vista";
-    else if (version_numbers[0] == 6 && version_numbers[1] == 1)
-      rt += "7";
+int GetGpuBlacklistHistogramValueWin(bool blocked) {
+  static WinSubVersion sub_version = kNumWinSubVersions;
+  if (sub_version == kNumWinSubVersions) {
+    sub_version = kWinOthers;
+    std::string version_str = base::SysInfo::OperatingSystemVersion();
+    size_t pos = version_str.find_first_not_of("0123456789.");
+    if (pos != std::string::npos)
+      version_str = version_str.substr(0, pos);
+    scoped_ptr<Version> os_version(Version::GetVersionFromString(version_str));
+    if (os_version.get() && os_version->components().size() >= 2) {
+      const std::vector<uint16>& version_numbers = os_version->components();
+      if (version_numbers[0] == 5)
+        sub_version = kWinXP;
+      else if (version_numbers[0] == 6 && version_numbers[1] == 0)
+        sub_version = kWinVista;
+      else if (version_numbers[0] == 6 && version_numbers[1] == 1)
+        sub_version = kWin7;
+    }
   }
-#elif defined(OS_LINUX)
-  rt = "Linux";
-#elif defined(OS_MACOSX)
-  rt = "Mac";
-#else
-  rt = "UnknownOS";
-#endif
-  return rt;
+  int entry_index = static_cast<int>(sub_version) * 2;
+  if (blocked)
+    entry_index++;
+  return entry_index;
 }
+#endif  // OS_WIN
 
 }  // namespace anonymous
 
@@ -425,12 +427,18 @@ void GpuDataManager::UpdateGpuFeatureFlags() {
       GpuFeatureFlags::kGpuFeatureAcceleratedCompositing,
       GpuFeatureFlags::kGpuFeatureWebgl
   };
-  const std::string kOSString = GetOSString();
   const std::string kGpuBlacklistFeatureHistogramNames[] = {
-      "GPU.BlacklistAccelerated2dCanvasTestResults" + kOSString,
-      "GPU.BlacklistAcceleratedCompositingTestResults" + kOSString,
-      "GPU.BlacklistWebglTestResults" + kOSString
+      "GPU.BlacklistFeatureTestResults.Accelerated2dCanvas",
+      "GPU.BlacklistFeatureTestResults.AcceleratedCompositing",
+      "GPU.BlacklistFeatureTestResults.Webgl"
   };
+#if defined(OS_WIN)
+  const std::string kGpuBlacklistFeatureHistogramNamesWin[] = {
+      "GPU.BlacklistFeatureTestResultsWin.Accelerated2dCanvas",
+      "GPU.BlacklistFeatureTestResultsWin.AcceleratedCompositing",
+      "GPU.BlacklistFeatureTestResultsWin.Webgl"
+  };
+#endif
   const size_t kNumFeatures =
       sizeof(kGpuFeatures) / sizeof(GpuFeatureFlags::GpuFeatureType);
   for (size_t i = 0; i < kNumFeatures; ++i) {
@@ -440,6 +448,14 @@ void GpuDataManager::UpdateGpuFeatureFlags() {
         kGpuBlacklistFeatureHistogramNames[i], 1, 2, 3,
         base::Histogram::kUmaTargetedHistogramFlag);
     histogram_pointer->Add((flags & kGpuFeatures[i]) ? 1 : 0);
+#if defined(OS_WIN)
+    histogram_pointer = base::LinearHistogram::FactoryGet(
+        kGpuBlacklistFeatureHistogramNamesWin[i],
+        1, kNumWinSubVersions * 2, kNumWinSubVersions * 2 + 1,
+        base::Histogram::kUmaTargetedHistogramFlag);
+    histogram_pointer->Add(
+        GetGpuBlacklistHistogramValueWin(flags & kGpuFeatures[i]));
+#endif
   }
 }
 
