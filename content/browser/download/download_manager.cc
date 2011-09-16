@@ -72,6 +72,7 @@ void DownloadManager::Shutdown() {
   shutdown_needed_ = false;
 
   FOR_EACH_OBSERVER(Observer, observers_, ManagerGoingDown());
+  // TODO(benjhayden): Consider clearing observers_.
 
   if (file_manager_) {
     BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,

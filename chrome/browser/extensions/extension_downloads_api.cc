@@ -322,12 +322,14 @@ ExtensionDownloadsEventRouter::ExtensionDownloadsEventRouter(
 }
 
 ExtensionDownloadsEventRouter::~ExtensionDownloadsEventRouter() {
-  if (manager_) manager_->RemoveObserver(this);
+  if (manager_ != NULL)
+    manager_->RemoveObserver(this);
 }
 
 void ExtensionDownloadsEventRouter::ModelChanged() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(manager_);
+  if (manager_ == NULL)
+    return;
   DownloadManager::DownloadVector current_vec;
   manager_->SearchDownloads(string16(), &current_vec);
   DownloadIdSet current_set;
@@ -369,6 +371,7 @@ void ExtensionDownloadsEventRouter::ModelChanged() {
 }
 
 void ExtensionDownloadsEventRouter::ManagerGoingDown() {
+  manager_->RemoveObserver(this);
   manager_ = NULL;
 }
 
