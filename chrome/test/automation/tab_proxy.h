@@ -88,9 +88,6 @@ class TabProxy : public AutomationResourceProxy,
   bool ExecuteAndExtractInt(const std::wstring& frame_xpath,
                             const std::wstring& jscript,
                             int* value) WARN_UNUSED_RESULT;
-  bool ExecuteAndExtractValue(const std::wstring& frame_xpath,
-                              const std::wstring& jscript,
-                              base::Value** value) WARN_UNUSED_RESULT;
 
   // Returns a DOMElementProxyRef to the tab's current DOM document.
   // This proxy is invalidated when the document changes.
@@ -403,6 +400,11 @@ class TabProxy : public AutomationResourceProxy,
   // Called when no longer tracking any objects. Used for reference counting
   // purposes.
   void LastObjectRemoved();
+
+  // Caller takes ownership over returned value.  Returns NULL on failure.
+  base::Value* ExecuteAndExtractValue(
+      const std::wstring& frame_xpath,
+      const std::wstring& jscript) WARN_UNUSED_RESULT;
 
  private:
   base::Lock list_lock_;  // Protects the observers_list_.
