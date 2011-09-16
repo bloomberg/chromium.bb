@@ -126,7 +126,7 @@ def BuildAndTest(options):
   subprocess.check_call([sys.executable,
                          os.path.join(script_dir, 'download_toolchains.py'),
                          '--x86-version', x86_rev,
-                         '--nacl-newlib-only'])
+                         '--no-pnacl', '--no-arm-trusted'])
 
   # Decide platform specifics.
   env = dict(os.environ)
@@ -219,10 +219,18 @@ def BuildAndTest(options):
 
   CleanTempDir()
 
-  sys.stdout.write('\n\nBuilding files needed for testing...\n\n')
-  RunCommand(cmd + ['do_not_run_tests=1', '-j8'], nacl_dir, env)
-  sys.stdout.write('\n\nRunning tests...\n\n')
-  RunCommand(cmd, nacl_dir, env)
+  if not options.disable_newlib:
+    sys.stdout.write('\n\nBuilding files needed for nacl-newlib testing...\n\n')
+    RunCommand(cmd + ['do_not_run_tests=1', '-j8'], nacl_dir, env)
+    sys.stdout.write('\n\nRunning nacl-newlib tests...\n\n')
+    RunCommand(cmd, nacl_dir, env)
+
+  if not options.disable_glibc:
+    sys.stdout.write('\n\nBuilding files needed for nacl-glibc testing...\n\n')
+    RunCommand(cmd + ['--nacl_glibc', 'do_not_run_tests=1', '-j8'], nacl_dir,
+               env)
+    sys.stdout.write('\n\nRunning nacl-glibc tests...\n\n')
+    RunCommand(cmd + ['--nacl_glibc'], nacl_dir, env)
 
 
 def MakeCommandLineParser():
@@ -231,6 +239,12 @@ def MakeCommandLineParser():
                     help='Debug/Release mode')
   parser.add_option('-j', dest='jobs', default=1, type='int',
                     help='Number of parallel jobs')
+  parser.add_option('--disable_glibc', dest='disable_glibc',
+                    action='store_true', default=False,
+                    help='Do not test using glibc.')
+  parser.add_option('--disable_newlib', dest='disable_newlib',
+                    action='store_true', default=False,
+                    help='Do not test using newlib.')
   parser.add_option('--disable_tests', dest='disable_tests',
                     type='string', default='',
                     help='Comma-separated list of tests to omit')

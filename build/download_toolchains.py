@@ -119,6 +119,12 @@ def Main(args):
       '--save-downloads-dir', dest='save_downloads_dir',
       default=None,
       help='(optional) preserve the toolchain archives to this dir')
+  parser.add_option(
+      '--no-pnacl', dest='no_pnacl', default=False, action='store_true',
+      help='Filter out PNaCl toolchains.')
+  parser.add_option(
+      '--no-arm-trusted', dest='no_arm_trusted', default=False,
+      action='store_true', help='Filter out trusted arm toolchains.')
 
   options, args = parser.parse_args(args)
   if args:
@@ -127,8 +133,15 @@ def Main(args):
   platform_fixed = download_utils.PlatformName()
   arch_fixed = download_utils.ArchName()
   flavors = toolchainbinaries.PLATFORM_MAPPING[platform_fixed][arch_fixed]
+  if options.no_pnacl:
+    flavors = [flavor for flavor in flavors
+               if not toolchainbinaries.IsPnaclFlavor(flavor)]
+  if options.no_arm_trusted:
+    flavors = [flavor for flavor in flavors
+               if not toolchainbinaries.IsArmTrustedFlavor(flavor)]
   if options.nacl_newlib_only:
-    flavors = [f for f in flavors if toolchainbinaries.IsNaClNewlibFlavor(f)]
+    flavors = [flavor for flavor in flavors
+               if toolchainbinaries.IsNaClNewlibFlavor(flavor)]
   for flavor in flavors:
     if toolchainbinaries.IsArmTrustedFlavor(flavor):
       version = options.arm_trusted_version
