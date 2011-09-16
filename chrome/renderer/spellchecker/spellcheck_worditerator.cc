@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -285,7 +285,7 @@ bool SpellcheckCharAttribute::OutputDefault(UChar c, string16* output) const {
 // SpellcheckWordIterator implementation:
 
 SpellcheckWordIterator::SpellcheckWordIterator()
-    : word_(NULL),
+    : text_(NULL),
       length_(0),
       position_(UBRK_DONE),
       attribute_(NULL),
@@ -298,37 +298,60 @@ SpellcheckWordIterator::~SpellcheckWordIterator() {
 
 bool SpellcheckWordIterator::Initialize(
     const SpellcheckCharAttribute* attribute,
-    const char16* word,
-    size_t length,
     bool allow_contraction) {
-  // Create a custom ICU break iterator used in this object.
+  // Create a custom ICU break iterator with empty text used in this object. (We
+  // allow setting text later so we can re-use this iterator.)
   DCHECK(attribute);
   UErrorCode open_status = U_ZERO_ERROR;
   UParseError parse_status;
   string16 rule(attribute->GetRuleSet(allow_contraction));
-  iterator_ = ubrk_openRules(rule.c_str(), rule.length(), word, length,
+  iterator_ = ubrk_openRules(rule.c_str(), rule.length(), NULL, 0,
                              &parse_status, &open_status);
   if (U_FAILURE(open_status))
     return false;
 
+  // Set the character attributes so we can normalize the words extracted by
+  // this iterator.
+  attribute_ = attribute;
+  return true;
+}
+
+bool SpellcheckWordIterator::IsInitialized() const {
+  // Return true if we have an ICU custom iterator.
+  return !!iterator_;
+}
+
+bool SpellcheckWordIterator::SetText(const char16* text, size_t length) {
+  DCHECK(!!iterator_);
+
+  // Set the text to be split by this iterator.
+  UErrorCode status = U_ZERO_ERROR;
+  ubrk_setText(iterator_, text, length, &status);
+  if (U_FAILURE(status))
+    return false;
+
+  // Retrieve the position to the first word in this text. We return false if
+  // this text does not have any words. (For example, The input text consists
+  // only of Chinese characters while the spellchecker language is English.)
   position_ = ubrk_first(iterator_);
   if (position_ == UBRK_DONE)
     return false;
 
-  word_ = word;
+  text_ = text;
   length_ = static_cast<int>(length);
-  attribute_ = attribute;
   return true;
 }
 
 bool SpellcheckWordIterator::GetNextWord(string16* word_string,
                                          int* word_start,
                                          int* word_length) {
+  DCHECK(!!text_ && length_ > 0);
+
   word_string->clear();
   *word_start = 0;
   *word_length = 0;
 
-  if (!word_ || position_ == UBRK_DONE)
+  if (!text_ || position_ == UBRK_DONE)
     return false;
 
   // Find a word that can be checked for spelling. Our rule sets filter out
@@ -374,7 +397,7 @@ bool SpellcheckWordIterator::Normalize(int input_start,
   // spellchecker and we need manual normalization as well. The normalized
   // text does not have to be NUL-terminated since its characters are copied to
   // string16, which adds a NUL character when we need.
-  icu::UnicodeString input(FALSE, &word_[input_start], input_length);
+  icu::UnicodeString input(FALSE, &text_[input_start], input_length);
   UErrorCode status = U_ZERO_ERROR;
   icu::UnicodeString output;
   icu::Normalizer::normalize(input, UNORM_NFKC, 0, output, status);

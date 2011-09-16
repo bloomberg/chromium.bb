@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -121,8 +121,9 @@ TEST(SpellcheckWordIteratorTest, SplitWord) {
 
     string16 input(WideToUTF16(kTestText));
     SpellcheckWordIterator iterator;
-    EXPECT_TRUE(iterator.Initialize(&attributes, input.c_str(), input.length(),
+    EXPECT_TRUE(iterator.Initialize(&attributes,
                                     kTestCases[i].allow_contraction));
+    EXPECT_TRUE(iterator.SetText(input.c_str(), input.length()));
 
     std::vector<string16> expected_words;
     base::SplitString(
@@ -151,8 +152,8 @@ TEST(SpellcheckWordIteratorTest, RuleSetConsistency) {
   string16 input(WideToUTF16(kTestText));
 
   SpellcheckWordIterator iterator;
-  EXPECT_TRUE(iterator.Initialize(&attributes, input.c_str(), input.length(),
-                                  true));
+  EXPECT_TRUE(iterator.Initialize(&attributes, true));
+  EXPECT_TRUE(iterator.SetText(input.c_str(), input.length()));
 
   // When SpellcheckWordIterator uses an inconsistent ICU ruleset, the following
   // iterator.GetNextWord() call gets stuck in an infinite loop. Therefore, this

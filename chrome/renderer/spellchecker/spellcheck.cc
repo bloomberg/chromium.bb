@@ -108,12 +108,13 @@ bool SpellCheck::SpellCheckWord(
   if (in_word_len == 0)
     return true;  // No input means always spelled correctly.
 
-  SpellcheckWordIterator word_iterator;
   string16 word;
   int word_start;
   int word_length;
-  word_iterator.Initialize(&character_attributes_, in_word, in_word_len, true);
-  while (word_iterator.GetNextWord(&word, &word_start, &word_length)) {
+  if (!text_iterator_.IsInitialized())
+    text_iterator_.Initialize(&character_attributes_, true);
+  text_iterator_.SetText(in_word, in_word_len);
+  while (text_iterator_.GetNextWord(&word, &word_start, &word_length)) {
     // Found a word (or a contraction) that the spellchecker can check the
     // spelling of.
     if (CheckSpelling(word, tag))
@@ -292,14 +293,14 @@ void SpellCheck::FillSuggestionList(
 // returns a concatenated word which is not in the selected dictionary
 // (e.g. "in'n'out") but each word is valid.
 bool SpellCheck::IsValidContraction(const string16& contraction, int tag) {
-  SpellcheckWordIterator word_iterator;
-  word_iterator.Initialize(&character_attributes_, contraction.c_str(),
-                           contraction.length(), false);
+  if (!contraction_iterator_.IsInitialized())
+    contraction_iterator_.Initialize(&character_attributes_, false);
+  contraction_iterator_.SetText(contraction.c_str(), contraction.length());
 
   string16 word;
   int word_start;
   int word_length;
-  while (word_iterator.GetNextWord(&word, &word_start, &word_length)) {
+  while (contraction_iterator_.GetNextWord(&word, &word_start, &word_length)) {
     if (!CheckSpelling(word, tag))
       return false;
   }

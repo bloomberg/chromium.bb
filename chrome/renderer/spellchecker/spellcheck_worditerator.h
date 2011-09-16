@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -96,7 +96,8 @@ class SpellcheckCharAttribute {
 //   // and retrieve them.
 //   SpellcheckWordIterator iterator;
 //   string16 text(UTF8ToUTF16("this is a test."));
-//   iterator.Initialize(&attribute, text.c_str(), text_.length(), true);
+//   iterator.Initialize(&attribute, true);
+//   iterator.SetText(text.c_str(), text_.length());
 //
 //   string16 word;
 //   int offset;
@@ -110,14 +111,20 @@ class SpellcheckWordIterator {
   SpellcheckWordIterator();
   ~SpellcheckWordIterator();
 
-  // Initializes a word-iterator object with the language-specific attribute and
-  // a multi-language text (it does not have to be NULL-terminated). If we need
-  // to split contractions and concatenated words, call this function with its
-  // 'allow_contraction' parameter false.
+  // Initializes a word-iterator object with the language-specific attribute. If
+  // we need to split contractions and concatenated words, call this function
+  // with its 'allow_contraction' parameter false. (This function uses lots of
+  // temporal memory to compile a custom word-break rule into an automaton.)
   bool Initialize(const SpellcheckCharAttribute* attribute,
-                  const char16* word,
-                  size_t length,
                   bool allow_contraction);
+
+  // Returns whether this word iterator is initialized.
+  bool IsInitialized() const;
+
+  // Set text to be iterated. (This text does not have to be NULL-terminated.)
+  // This function also resets internal state so we can reuse this iterator
+  // without calling Initialize().
+  bool SetText(const char16* text, size_t length);
 
   // Retrieves a word (or a contraction), stores its copy to 'word_string', and
   // stores the position and the length for input word to 'word_start'. Since
@@ -149,7 +156,7 @@ class SpellcheckWordIterator {
                  string16* output_string) const;
 
   // The pointer to the input string from which we are extracting words.
-  const char16* word_;
+  const char16* text_;
 
   // The length of the original string.
   int length_;

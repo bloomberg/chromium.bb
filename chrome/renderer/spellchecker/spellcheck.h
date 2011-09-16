@@ -122,6 +122,14 @@ class SpellCheck : public RenderProcessObserver {
   // are not supported by this SpellCheck object.
   SpellcheckCharAttribute character_attributes_;
 
+  // Represents word iterators used in this spellchecker. The |text_iterator_|
+  // splits text provided by WebKit into words, contractions, or concatenated
+  // words. The |contraction_iterator_| splits a concatenated word extracted by
+  // |text_iterator_| into word components so we can treat a concatenated word
+  // consisting only of correct words as a correct word.
+  SpellcheckWordIterator text_iterator_;
+  SpellcheckWordIterator contraction_iterator_;
+
   // Remember state for auto spell correct.
   bool auto_spell_correct_turned_on_;
 
