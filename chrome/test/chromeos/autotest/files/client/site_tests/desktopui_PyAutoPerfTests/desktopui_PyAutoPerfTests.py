@@ -71,6 +71,11 @@ class desktopui_PyAutoPerfTests(chrome_test.ChromeTestBase):
                           default=0,
                           help='Number of iterations for perf measurements. '
                                'Defaults to the value given in perf.py.')
+        parser.add_option('--max-timeouts', dest='max_timeouts', type='int',
+                          default=0,
+                          help='Maximum number of automation timeouts to '
+                               'ignore before failing the test. Defaults to '
+                               'the value given in perf.py.')
         # Preprocess the args to remove quotes before/after each one if they
         # exist.  This is necessary because arguments passed via
         # run_remote_tests.sh may be individually quoted, and those quotes must
@@ -100,6 +105,8 @@ class desktopui_PyAutoPerfTests(chrome_test.ChromeTestBase):
         environment = os.environ.copy()
         if options.num_iterations:
           environment['NUM_ITERATIONS'] = str(options.num_iterations)
+        if options.max_timeouts:
+          environment['MAX_TIMEOUT_COUNT'] = str(options.max_timeouts)
         proc = subprocess.Popen(
             functional_cmd, shell=True, stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT, env=environment)

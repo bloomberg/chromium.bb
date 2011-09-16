@@ -11,6 +11,14 @@ run for each of these tests is specified by |_DEFAULT_NUM_ITERATIONS|.
 That value can optionally be tweaked by setting an environment variable
 'NUM_ITERATIONS' to a positive integer, representing the number of iterations
 to run.
+
+Some tests rely on repeatedly appending tabs to Chrome.  Occasionally, these
+automation calls time out, thereby affecting the timing measurements (see issue
+crosbug.com/20503).  To work around this, the tests discard timing measurements
+that involve automation timeouts.  The value |_DEFAULT_MAX_TIMEOUT_COUNT|
+specifies the threshold number of timeouts that can be tolerated before the test
+fails.  To tweak this value, set environment variable 'MAX_TIMEOUT_COUNT' to the
+desired threshold value.
 """
 
 import BaseHTTPServer
@@ -37,6 +45,7 @@ class BasePerfTest(pyauto.PyUITest):
   """Base class for performance tests."""
 
   _DEFAULT_NUM_ITERATIONS = 50
+  _DEFAULT_MAX_TIMEOUT_COUNT = 10
   _PERF_OUTPUT_MARKER_PRE = '_PERF_PRE_'
   _PERF_OUTPUT_MARKER_POST = '_PERF_POST_'
 
@@ -44,14 +53,21 @@ class BasePerfTest(pyauto.PyUITest):
     """Performs necessary setup work before running each test."""
     self._num_iterations = self._DEFAULT_NUM_ITERATIONS
     if 'NUM_ITERATIONS' in os.environ:
-      try:
-        self._num_iterations = int(os.environ['NUM_ITERATIONS'])
-        if self._num_iterations <= 0:
-          raise ValueError('Environment variable NUM_ITERATIONS must be an '
-                           'integer > 0.')
-      except ValueError, e:
-        self.fail('Error processing environment variable: %s' % e)
+      self._num_iterations = int(os.environ['NUM_ITERATIONS'])
+    self._max_timeout_count = self._DEFAULT_MAX_TIMEOUT_COUNT
+    if 'MAX_TIMEOUT_COUNT' in os.environ:
+      self._max_timeout_count = int(os.environ['MAX_TIMEOUT_COUNT'])
+    self._timeout_count = 0
     pyauto.PyUITest.setUp(self)
+
+  def _AppendTab(self, url):
+    """Appends a tab and increments a counter if the automation call times out.
+
+    Args:
+      url: The string url to which the appended tab should be navigated.
+    """
+    if not self.AppendTab(pyauto.GURL(url)):
+      self._timeout_count += 1
 
   def _MeasureElapsedTime(self, python_command, num_invocations=1):
     """Measures time (in msec) to execute a python command one or more times.
@@ -140,8 +156,14 @@ class BasePerfTest(pyauto.PyUITest):
 
     timings = []
     for _ in range(self._num_iterations):
-      timings.append(self._MeasureElapsedTime(open_tab_command,
-                                              num_invocations=num_tabs))
+      orig_timeout_count = self._timeout_count
+      elapsed_time = self._MeasureElapsedTime(open_tab_command,
+                                              num_invocations=num_tabs)
+      # Only count the timing measurement if no automation call timed out.
+      if self._timeout_count == orig_timeout_count:
+        timings.append(elapsed_time)
+      self.assertTrue(self._timeout_count <= self._max_timeout_count,
+                      msg='Test exceeded automation timeout threshold.')
       self.assertEqual(1 + num_tabs, self.GetTabCount(),
                        msg='Did not open %d new tab(s).' % num_tabs)
       for _ in range(num_tabs):
@@ -155,10 +177,8 @@ class TabPerfTest(BasePerfTest):
 
   def testNewTab(self):
     """Measures time to open a new tab."""
-    self._RunNewTabTest(
-        'NewTabPage',
-        lambda: self.assertTrue(self.AppendTab(pyauto.GURL('chrome://newtab')),
-                                msg='Failed to append tab for new tab page.'))
+    self._RunNewTabTest('NewTabPage',
+                        lambda: self._AppendTab('chrome://newtab'))
 
   def testNewTabPdf(self):
     """Measures time to open a new tab navigated to a PDF file."""
@@ -167,10 +187,7 @@ class TabPerfTest(BasePerfTest):
                                     'TechCrunch.pdf')),
         msg='Missing required PDF data file.')
     url = self.GetFileURLForDataPath('pyauto_private', 'pdf', 'TechCrunch.pdf')
-    self._RunNewTabTest(
-        'NewTabPdfPage',
-        lambda: self.assertTrue(self.AppendTab(pyauto.GURL(url)),
-                                msg='Failed to append PDF tab.'))
+    self._RunNewTabTest('NewTabPdfPage', lambda: self._AppendTab(url))
 
   def testNewTabFlash(self):
     """Measures time to open a new tab navigated to a flash page."""
@@ -178,18 +195,12 @@ class TabPerfTest(BasePerfTest):
         os.path.exists(os.path.join(self.DataDir(), 'plugin', 'flash.swf')),
         msg='Missing required flash data file.')
     url = self.GetFileURLForDataPath('plugin', 'flash.swf')
-    self._RunNewTabTest(
-        'NewTabFlashPage',
-        lambda: self.assertTrue(self.AppendTab(pyauto.GURL(url)),
-                                msg='Failed to append flash tab.'))
+    self._RunNewTabTest('NewTabFlashPage', lambda: self._AppendTab(url))
 
   def test20Tabs(self):
     """Measures time to open 20 tabs."""
-    self._RunNewTabTest(
-        '20TabsNewTabPage',
-        lambda: self.assertTrue(self.AppendTab(pyauto.GURL('chrome://newtab')),
-                                msg='Failed to append tab for new tab page.'),
-        num_tabs=20)
+    self._RunNewTabTest('20TabsNewTabPage',
+                        lambda: self._AppendTab('chrome://newtab'), num_tabs=20)
 
 
 class BenchmarkPerfTest(BasePerfTest):
@@ -252,8 +263,7 @@ class LiveWebappLoadTest(BasePerfTest):
       return self.ExecuteJavascript(js, 0, 1)  # Window index 0, tab index 1.
 
     def _RunSingleGmailTabOpen():
-      self.assertTrue(self.AppendTab(pyauto.GURL('http://www.gmail.com')),
-                      msg='Failed to append tab for Gmail.')
+      self._AppendTab('http://www.gmail.com')
       self.assertTrue(self.WaitUntil(_SubstringExistsOnPage, timeout=120,
                                      expect_retval='true', retry_sleep=0.10),
                       msg='Timed out waiting for expected Gmail string.')
@@ -282,8 +292,7 @@ class LiveWebappLoadTest(BasePerfTest):
       return self.ExecuteJavascript(js, 0, 1)  # Window index 0, tab index 1.
 
     def _RunSingleCalendarTabOpen():
-      self.assertTrue(self.AppendTab(pyauto.GURL('http://calendar.google.com')),
-                      msg='Failed to append tab for Calendar.')
+      self._AppendTab('http://calendar.google.com')
       self.assertTrue(self.WaitUntil(_DivTitleStartsWith, timeout=120,
                                      expect_retval='true', retry_sleep=0.10),
                       msg='Timed out waiting for expected Calendar string.')
@@ -311,8 +320,7 @@ class LiveWebappLoadTest(BasePerfTest):
       return self.ExecuteJavascript(js, 0, 1)  # Window index 0, tab index 1.
 
     def _RunSingleDocsTabOpen():
-      self.assertTrue(self.AppendTab(pyauto.GURL('http://docs.google.com')),
-                      msg='Failed to append tab for Docs.')
+      self._AppendTab('http://docs.google.com')
       self.assertTrue(self.WaitUntil(_SubstringExistsOnPage, timeout=120,
                                      expect_retval='true', retry_sleep=0.10),
                       msg='Timed out waiting for expected Docs string.')
