@@ -1,5 +1,5 @@
 {
-  "name": "__MSG_PRODUCT_NAME_AND_VERSION__",
+  "name": "__MSG_PRODUCT_NAME__",
   "version": "1.0.UNIQUE_VERSION",
   "description": "__MSG_PRODUCT_DESCRIPTION__",
   "default_locale": "en",

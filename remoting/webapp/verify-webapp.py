@@ -67,10 +67,10 @@ def CheckFileForUnknownTag(filename, messages):
       matches = True
       if not tag in messages:
         result = False
-        print 'remoting/%s:%d: Error: Undefined tag: %s' % (filename, i + 1,
-                                                            tag)
+        print '%s/%s:%d: error: Undefined tag: %s' % \
+            (os.getcwd(), filename, i + 1, tag)
   if not matches:
-    print 'remoting/%s: Warning: No tags found' % filename
+    print '%s/%s:0: warning: No tags found' % (os.getcwd(), filename)
   f.close()
   return result
 
@@ -90,7 +90,8 @@ def main():
   warnings = False
   for tag in messages:
     if tag not in all_tags:
-      print 'Warning: ' + tag + ' is defined but not used'
+      print ('%s/%s:0: warning: %s is defined but not used') % \
+          (os.getcwd(), sys.argv[2], tag)
       warnings = True
   if warnings:
     print WARNING_MESSAGE

@@ -183,20 +183,6 @@
     "message": "Chromoting",
     "description": "The product name. Displayed in various Chromium pages, including the New Tab page, and displayed prominently on the app's main page."
   },
-  "PRODUCT_NAME_AND_VERSION": {
-    "message": "Chromoting v1.0",
-    "description": "The product name and version number. Displayed in Chromium's extensions page."
-  },
-  "REQUEST_FIREWALL_PERMISSION": {
-    "message": "$exe$ requires permission to accept incoming connections for Chromoting to function.",
-    "description": "Message displayed to the used if Chromoting detects that a firewall exception is required. The message will be presented in a dialog with two buttons: OK and Cancel.",
-    "placeholders": {
-      "exe": {
-        "content": "$1",
-        "example": "Chromium.exe"
-      }
-    }
-  },
   "SHARE_BUTTON": {
     "message": "Share This Computer",
     "description": "Label for the share button on the host-side. Clicking this button generates an access code to be conveyed to the client."
