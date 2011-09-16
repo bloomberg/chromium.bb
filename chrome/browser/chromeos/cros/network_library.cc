@@ -1634,6 +1634,8 @@ class NetworkLibraryImplBase : public NetworkLibrary  {
   // virtual GetIPConfigs implemented in derived classes.
   // virtual SetIPConfig implemented in derived classes.
   virtual void SwitchToPreferredNetwork() OVERRIDE;
+  virtual bool SetActiveNetwork(ConnectionType type,
+                                const std::string& service_path) OVERRIDE;
 
  protected:
   typedef ObserverList<NetworkObserver> NetworkObserverList;
@@ -1706,9 +1708,11 @@ class NetworkLibraryImplBase : public NetworkLibrary  {
   // Called from GetSignificantDataPlan.
   const CellularDataPlan* GetSignificantDataPlanFromVector(
       const CellularDataPlanVector* plans) const;
-  CellularNetwork::DataLeft GetDataLeft(CellularDataPlanVector* data_plans);
+  CellularNetwork::DataLeft GetDataLeft(
+      CellularDataPlanVector* data_plan_vector);
+  // Takes ownership of |data_plan|.
   void UpdateCellularDataPlan(const std::string& service_path,
-                              const CellularDataPlanList* data_plan_list);
+                              CellularDataPlanVector* data_plan_vector);
 
   // Network list management functions.
   void UpdateActiveNetwork(Network* network);
@@ -2257,8 +2261,9 @@ GetSignificantDataPlanFromVector(const CellularDataPlanVector* plans) const {
 }
 
 CellularNetwork::DataLeft NetworkLibraryImplBase::GetDataLeft(
-    CellularDataPlanVector* data_plans) {
-  const CellularDataPlan* plan = GetSignificantDataPlanFromVector(data_plans);
+    CellularDataPlanVector* data_plan_vector) {
+  const CellularDataPlan* plan =
+      GetSignificantDataPlanFromVector(data_plan_vector);
   if (!plan)
     return CellularNetwork::DATA_UNKNOWN;
   if (plan->plan_type == CELLULAR_DATA_PLAN_UNLIMITED) {
@@ -2288,25 +2293,15 @@ CellularNetwork::DataLeft NetworkLibraryImplBase::GetDataLeft(
 
 void NetworkLibraryImplBase::UpdateCellularDataPlan(
     const std::string& service_path,
-    const CellularDataPlanList* data_plan_list) {
+    CellularDataPlanVector* data_plan_vector) {
   VLOG(1) << "Updating cellular data plans for: " << service_path;
-  CellularDataPlanVector* data_plans = NULL;
   // Find and delete any existing data plans associated with |service_path|.
   CellularDataPlanMap::iterator found = data_plan_map_.find(service_path);
-  if (found != data_plan_map_.end()) {
-    data_plans = found->second;
-    data_plans->reset();  // This will delete existing data plans.
-  } else {
-    data_plans = new CellularDataPlanVector;
-    data_plan_map_[service_path] = data_plans;
-  }
-  for (size_t i = 0; i < data_plan_list->plans_size; ++i) {
-    const CellularDataPlanInfo* info(data_plan_list->GetCellularDataPlan(i));
-    CellularDataPlan* plan = new CellularDataPlan(*info);
-    data_plans->push_back(plan);
-    VLOG(2) << " Plan: " << plan->GetPlanDesciption()
-            << " : " << plan->GetDataRemainingDesciption();
-  }
+  if (found != data_plan_map_.end())
+    delete found->second;  // This will delete existing data plans.
+  // Takes ownership of |data_plan_vector|.
+  data_plan_map_[service_path] = data_plan_vector;
+
   // Now, update any matching cellular network's cached data
   CellularNetwork* cellular = FindCellularNetworkByPath(service_path);
   if (cellular) {
@@ -2315,7 +2310,7 @@ void NetworkLibraryImplBase::UpdateCellularDataPlan(
     if (cellular->needs_new_plan())
       data_left = CellularNetwork::DATA_NONE;
     else
-      data_left = GetDataLeft(data_plans);
+      data_left = GetDataLeft(data_plan_vector);
     VLOG(2) << " Data left: " << data_left
             << " Need plan: " << cellular->needs_new_plan();
     cellular->set_data_left(data_left);
@@ -2715,6 +2710,51 @@ void NetworkLibraryImplBase::SwitchToPreferredNetwork() {
   }
 }
 
+////////////////////////////////////////////////////////////////////////////
+// Testing functions.
+
+bool NetworkLibraryImplBase::SetActiveNetwork(
+    ConnectionType type, const std::string& service_path) {
+  Network* network = NULL;
+  if (!service_path.empty())
+    network = FindNetworkByPath(service_path);
+  if (network && network->type() != type) {
+    LOG(WARNING) << "SetActiveNetwork type mismatch for: " << network->name();
+    return false;
+  }
+
+  // Clear any existing active network matching |type|.
+  for (NetworkMap::iterator iter = network_map_.begin();
+       iter != network_map_.end(); ++iter) {
+    Network* other = iter->second;
+    if (other->type() == type)
+      other->set_is_active(false);
+  }
+  switch (type) {
+    case TYPE_ETHERNET:
+      ethernet_ = NULL;
+      break;
+    case TYPE_WIFI:
+      active_wifi_ = NULL;
+      break;
+    case TYPE_CELLULAR:
+      active_cellular_ = NULL;
+      break;
+    case TYPE_VPN:
+      active_virtual_ = NULL;
+      break;
+    default:
+      break;
+  }
+
+  if (!network)
+    return true;
+
+  // Set |network| to active.
+  network->set_is_active(true);
+  UpdateActiveNetwork(network);
+  return true;
+}
 
 ////////////////////////////////////////////////////////////////////////////
 // Network list management functions.
@@ -2732,25 +2772,33 @@ void NetworkLibraryImplBase::UpdateActiveNetwork(Network* network) {
     if (ethernet_enabled()) {
       // Set ethernet_ to the first connected ethernet service, or the first
       // disconnected ethernet service if none are connected.
-      if (ethernet_ == NULL || !ethernet_->connected())
+      if (ethernet_ == NULL || !ethernet_->connected()) {
         ethernet_ = static_cast<EthernetNetwork*>(network);
+        VLOG(2) << "Active ethernet -> " << ethernet_->name();
+      }
     }
   } else if (type == TYPE_WIFI) {
     if (wifi_enabled()) {
       // Set active_wifi_ to the first connected or connecting wifi service.
-      if (active_wifi_ == NULL && network->connecting_or_connected())
+      if (active_wifi_ == NULL && network->connecting_or_connected()) {
         active_wifi_ = static_cast<WifiNetwork*>(network);
+        VLOG(2) << "Active wifi -> " << active_wifi_->name();
+      }
     }
   } else if (type == TYPE_CELLULAR) {
     if (cellular_enabled()) {
       // Set active_cellular_ to first connected/connecting celluar service.
-      if (active_cellular_ == NULL && network->connecting_or_connected())
+      if (active_cellular_ == NULL && network->connecting_or_connected()) {
         active_cellular_ = static_cast<CellularNetwork*>(network);
+        VLOG(2) << "Active cellular -> " << active_cellular_->name();
+      }
     }
   } else if (type == TYPE_VPN) {
-    // Set active_virtual_ to the first connected or connecting vpn service.
-    if (active_virtual_ == NULL && network->connecting_or_connected())
+    // Set active_virtual_ to the first connected or connecting vpn service. {
+    if (active_virtual_ == NULL && network->connecting_or_connected()) {
       active_virtual_ = static_cast<VirtualNetwork*>(network);
+      VLOG(2) << "Active virtual -> " << active_virtual_->name();
+    }
   }
 }
 
@@ -2781,8 +2829,8 @@ void NetworkLibraryImplBase::DeleteNetwork(Network* network) {
     CellularDataPlanMap::iterator found =
         data_plan_map_.find(network->service_path());
     if (found != data_plan_map_.end()) {
-      CellularDataPlanVector* data_plans = found->second;
-      delete data_plans;
+      CellularDataPlanVector* data_plan_vector = found->second;
+      delete data_plan_vector;
       data_plan_map_.erase(found);
     }
   }
@@ -2982,7 +3030,6 @@ std::string NetworkLibraryImplBase::GetProfilePath(NetworkProfileType type) {
 // TODO(stevenjb): We should consider breaking this into multiple
 // notifications, e.g. connection state, devices, services, etc.
 void NetworkLibraryImplBase::NotifyNetworkManagerChanged(bool force_update) {
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // Cancel any pending signals.
   if (notify_task_) {
     notify_task_->Cancel();
@@ -3218,9 +3265,10 @@ class NetworkLibraryImplCros : public NetworkLibraryImplBase  {
   static void NetworkManagerUpdate(
       void* object, const char* manager_path, GHashTable* ghash);
 
-  static void DataPlanUpdateHandler(void* object,
-                                    const char* modem_service_path,
-                                    const CellularDataPlanList* dataplan);
+  static void DataPlanUpdateHandler(
+      void* object,
+      const char* modem_service_path,
+      const chromeos::CellularDataPlanList* data_plan_list);
 
   static void NetworkServiceUpdate(
       void* object, const char* service_path, GHashTable* ghash);
@@ -4044,14 +4092,24 @@ void NetworkLibraryImplCros::ParseNetworkManager(const DictionaryValue& dict) {
 void NetworkLibraryImplCros::DataPlanUpdateHandler(
     void* object,
     const char* modem_service_path,
-    const CellularDataPlanList* dataplan) {
+    const chromeos::CellularDataPlanList* data_plan_list) {
   DCHECK(CrosLibrary::Get()->libcros_loaded());
   NetworkLibraryImplCros* networklib =
       static_cast<NetworkLibraryImplCros*>(object);
   DCHECK(networklib);
-  if (modem_service_path && dataplan) {
+  if (modem_service_path && data_plan_list) {
+    // Copy contents of |data_plan_list| from libcros to |data_plan_vector|.
+    CellularDataPlanVector* data_plan_vector = new CellularDataPlanVector;
+    for (size_t i = 0; i < data_plan_list->plans_size; ++i) {
+      const CellularDataPlanInfo* info(data_plan_list->GetCellularDataPlan(i));
+      CellularDataPlan* plan = new CellularDataPlan(*info);
+      data_plan_vector->push_back(plan);
+      VLOG(2) << " Plan: " << plan->GetPlanDesciption()
+              << " : " << plan->GetDataRemainingDesciption();
+    }
+    // |data_plan_vector| will become owned by networklib.
     networklib->UpdateCellularDataPlan(std::string(modem_service_path),
-                                       dataplan);
+                                       data_plan_vector);
   }
 }
 
@@ -4589,6 +4647,8 @@ class NetworkLibraryImplStub : public NetworkLibraryImplBase {
   virtual void SetIPConfig(const NetworkIPConfig& ipconfig) OVERRIDE;
 
  private:
+  void AddStubNetwork(Network* network);
+
   std::string ip_address_;
   std::string hardware_address_;
   NetworkIPConfigVector ip_configs_;
@@ -4612,7 +4672,16 @@ NetworkLibraryImplStub::NetworkLibraryImplStub()
 NetworkLibraryImplStub::~NetworkLibraryImplStub() {
 }
 
+void NetworkLibraryImplStub::AddStubNetwork(Network* network) {
+  AddNetwork(network);
+  UpdateActiveNetwork(network);
+}
+
 void NetworkLibraryImplStub::Init() {
+  // Delete any existing networks (in case we call this more than once, e.g.
+  // from tests).
+  DeleteNetworks();
+
   is_locked_ = false;
 
   // Devices
@@ -4630,68 +4699,64 @@ void NetworkLibraryImplStub::Init() {
   // Networks
   DeleteNetworks();
 
+  // If these change, the expectations in network_library_unittest and
+  // network_menu_icon_unittest need to be changed also.
   ethernet_ = new EthernetNetwork("eth1");
+  ethernet_->set_name("Fake Ethernet");
   ethernet_->set_connected(true);
-  AddNetwork(ethernet_);
+  ethernet_->set_is_active(true);
+  AddStubNetwork(ethernet_);
 
-  WifiNetwork* wifi1 = new WifiNetwork("fw1");
-  wifi1->set_name("Fake WiFi Connected");
-  wifi1->set_strength(90);
-  wifi1->set_connected(false);
-  wifi1->set_connecting(true);
+  WifiNetwork* wifi1 = new WifiNetwork("wifi1");
+  wifi1->set_name("Fake WiFi1 Connected");
+  wifi1->set_strength(100);
+  wifi1->set_connected(true);
   wifi1->set_is_active(true);
   wifi1->set_encryption(SECURITY_NONE);
   wifi1->set_profile_type(PROFILE_SHARED);
-  AddNetwork(wifi1);
+  AddStubNetwork(wifi1);
 
-  WifiNetwork* wifi2 = new WifiNetwork("fw2");
-  wifi2->set_name("Fake WiFi");
+  WifiNetwork* wifi2 = new WifiNetwork("wifi2");
+  wifi2->set_name("Fake WiFi2 Connecting");
   wifi2->set_strength(70);
-  wifi2->set_connected(false);
+  wifi2->set_connecting(true);
   wifi2->set_encryption(SECURITY_NONE);
   wifi2->set_profile_type(PROFILE_SHARED);
-  AddNetwork(wifi2);
+  AddStubNetwork(wifi2);
 
-  WifiNetwork* wifi3 = new WifiNetwork("fw3");
-  wifi3->set_name("Fake WiFi Encrypted with a long name");
+  WifiNetwork* wifi3 = new WifiNetwork("wifi3");
+  wifi3->set_name("Fake WiFi3 Encrypted with a long name");
   wifi3->set_strength(60);
-  wifi3->set_connected(false);
   wifi3->set_encryption(SECURITY_WEP);
   wifi3->set_passphrase_required(true);
   wifi3->set_profile_type(PROFILE_USER);
-  AddNetwork(wifi3);
+  AddStubNetwork(wifi3);
 
-  WifiNetwork* wifi4 = new WifiNetwork("fw4");
-  wifi4->set_name("Fake WiFi 802.1x");
+  WifiNetwork* wifi4 = new WifiNetwork("wifi4");
+  wifi4->set_name("Fake WiFi4 802.1x");
   wifi4->set_strength(50);
-  wifi4->set_connected(false);
   wifi4->set_connectable(false);
   wifi4->set_encryption(SECURITY_8021X);
   wifi4->SetEAPMethod(EAP_METHOD_PEAP);
   wifi4->SetEAPIdentity("nobody@google.com");
   wifi4->SetEAPPassphrase("password");
-  AddNetwork(wifi4);
+  AddStubNetwork(wifi4);
 
-  WifiNetwork* wifi5 = new WifiNetwork("fw5");
-  wifi5->set_name("Fake WiFi UTF-8 SSID ");
-  wifi5->SetSsid("Fake WiFi UTF-8 SSID \u3042\u3044\u3046");
+  WifiNetwork* wifi5 = new WifiNetwork("wifi5");
+  wifi5->set_name("Fake WiFi5 UTF-8 SSID ");
+  wifi5->SetSsid("Fake WiFi5 UTF-8 SSID \u3042\u3044\u3046");
   wifi5->set_strength(25);
-  wifi5->set_connected(false);
-  AddNetwork(wifi5);
+  AddStubNetwork(wifi5);
 
-  WifiNetwork* wifi6 = new WifiNetwork("fw6");
-  wifi6->set_name("Fake WiFi latin-1 SSID ");
-  wifi6->SetSsid("Fake WiFi latin-1 SSID \xc0\xcb\xcc\xd6\xfb");
+  WifiNetwork* wifi6 = new WifiNetwork("wifi6");
+  wifi6->set_name("Fake WiFi6 latin-1 SSID ");
+  wifi6->SetSsid("Fake WiFi6 latin-1 SSID \xc0\xcb\xcc\xd6\xfb");
   wifi6->set_strength(20);
-  wifi6->set_connected(false);
-  AddNetwork(wifi6);
+  AddStubNetwork(wifi6);
 
-  active_wifi_ = wifi1;
-
-  CellularNetwork* cellular1 = new CellularNetwork("fc1");
-  cellular1->set_name("Fake Cellular");
+  CellularNetwork* cellular1 = new CellularNetwork("cellular1");
+  cellular1->set_name("Fake Cellular1 Connecting");
   cellular1->set_strength(70);
-  cellular1->set_connected(false);
   cellular1->set_connecting(true);
   cellular1->set_is_active(true);
   cellular1->set_activation_state(ACTIVATION_STATE_ACTIVATED);
@@ -4699,71 +4764,67 @@ void NetworkLibraryImplStub::Init() {
   cellular1->set_usage_url(std::string("http://www.google.com"));
   cellular1->set_network_technology(NETWORK_TECHNOLOGY_EVDO);
   cellular1->set_roaming_state(ROAMING_STATE_ROAMING);
+  AddStubNetwork(cellular1);
+
+  CellularNetwork* cellular2 = new CellularNetwork("cellular2");
+  cellular2->set_name("Fake Cellular2");
+  cellular2->set_strength(50);
+  cellular2->set_connected(false);
+  cellular2->set_activation_state(ACTIVATION_STATE_ACTIVATED);
+  cellular2->set_network_technology(NETWORK_TECHNOLOGY_UMTS);
+  AddStubNetwork(cellular2);
 
   CellularDataPlan* base_plan = new CellularDataPlan();
   base_plan->plan_name = "Base plan";
   base_plan->plan_type = CELLULAR_DATA_PLAN_METERED_BASE;
   base_plan->plan_data_bytes = 100ll * 1024 * 1024;
-  base_plan->data_bytes_used = 75ll * 1024 * 1024;
-  CellularDataPlanVector* data_plans = new CellularDataPlanVector();
-  data_plan_map_[cellular1->service_path()] = data_plans;
-  data_plans->push_back(base_plan);
+  base_plan->data_bytes_used = base_plan->plan_data_bytes / 4;
 
   CellularDataPlan* paid_plan = new CellularDataPlan();
   paid_plan->plan_name = "Paid plan";
   paid_plan->plan_type = CELLULAR_DATA_PLAN_METERED_PAID;
   paid_plan->plan_data_bytes = 5ll * 1024 * 1024 * 1024;
-  paid_plan->data_bytes_used = 3ll * 1024 * 1024 * 1024;
-  data_plans->push_back(paid_plan);
+  paid_plan->data_bytes_used = paid_plan->plan_data_bytes / 2;
 
-  AddNetwork(cellular1);
-  active_cellular_ = cellular1;
-
-  CellularNetwork* cellular2 = new CellularNetwork("fc2");
-  cellular2->set_name("Fake Cellular 2");
-  cellular2->set_strength(70);
-  cellular2->set_connected(true);
-  cellular2->set_activation_state(ACTIVATION_STATE_ACTIVATED);
-  cellular2->set_network_technology(NETWORK_TECHNOLOGY_UMTS);
-  AddNetwork(cellular2);
+  CellularDataPlanVector* data_plan_vector = new CellularDataPlanVector;
+  data_plan_vector->push_back(base_plan);
+  data_plan_vector->push_back(paid_plan);
+  UpdateCellularDataPlan(cellular1->service_path(), data_plan_vector);
 
   // VPNs
-  VirtualNetwork* vpn1 = new VirtualNetwork("fv1");
-  vpn1->set_name("Fake VPN Provider 1");
+  VirtualNetwork* vpn1 = new VirtualNetwork("vpn1");
+  vpn1->set_name("Fake VPN1");
   vpn1->set_server_hostname("vpn1server.fake.com");
   vpn1->set_provider_type(PROVIDER_TYPE_L2TP_IPSEC_PSK);
   vpn1->set_username("VPN User 1");
-  vpn1->set_connected(false);
-  AddNetwork(vpn1);
+  AddStubNetwork(vpn1);
 
-  VirtualNetwork* vpn2 = new VirtualNetwork("fv2");
-  vpn2->set_name("Fake VPN Provider 2");
+  VirtualNetwork* vpn2 = new VirtualNetwork("vpn2");
+  vpn2->set_name("Fake VPN2");
   vpn2->set_server_hostname("vpn2server.fake.com");
   vpn2->set_provider_type(PROVIDER_TYPE_L2TP_IPSEC_USER_CERT);
   vpn2->set_username("VPN User 2");
   vpn2->set_connected(true);
-  AddNetwork(vpn2);
+  vpn2->set_is_active(true);
+  AddStubNetwork(vpn2);
 
-  VirtualNetwork* vpn3 = new VirtualNetwork("fv3");
-  vpn3->set_name("Fake VPN Provider 3");
+  VirtualNetwork* vpn3 = new VirtualNetwork("vpn3");
+  vpn3->set_name("Fake VPN3");
   vpn3->set_server_hostname("vpn3server.fake.com");
   vpn3->set_provider_type(PROVIDER_TYPE_OPEN_VPN);
-  vpn3->set_connected(false);
-  AddNetwork(vpn3);
-
-  active_virtual_ = vpn2;
+  AddStubNetwork(vpn3);
 
   // Remembered Networks
   DeleteRememberedNetworks();
   NetworkProfile profile("default", PROFILE_SHARED);
-  profile.services.insert("fw2");
-  profile.services.insert("fv2");
+  profile.services.insert("wifi2");
+  profile.services.insert("vpn2");
   profile_list_.push_back(profile);
-  WifiNetwork* remembered_wifi2 = new WifiNetwork("fw2");
+  WifiNetwork* remembered_wifi2 = new WifiNetwork("wifi2");
   remembered_wifi2->set_name("Fake WiFi 2");
   remembered_wifi2->set_encryption(SECURITY_WEP);
   AddRememberedNetwork(remembered_wifi2);
-  VirtualNetwork* remembered_vpn2 = new VirtualNetwork("fv2");
+  VirtualNetwork* remembered_vpn2 = new VirtualNetwork("vpn2");
   remembered_vpn2->set_name("Fake VPN Provider 2");
   remembered_vpn2->set_server_hostname("vpn2server.fake.com");
   remembered_vpn2->set_provider_type(
@@ -4779,6 +4840,7 @@ void NetworkLibraryImplStub::Init() {
 // NetworkLibraryImplBase implementation.
 
 void NetworkLibraryImplStub::CallConnectToNetwork(Network* network) {
+  network->set_connected(true);
   NetworkConnectCompleted(network, CONNECT_SUCCESS);
 }
 
@@ -4880,7 +4942,7 @@ NetworkLibrary* NetworkLibrary::GetImpl(bool stub) {
   NetworkLibrary* impl;
   // If CrosLibrary failed to load, use the stub implementation, since the
   // cros implementation would crash on any libcros call.
-  if (!CrosLibrary::Get()->libcros_loaded()) {
+  if (!stub && !CrosLibrary::Get()->libcros_loaded()) {
     LOG(WARNING) << "NetworkLibrary: falling back to stub impl.";
     stub = true;
   }

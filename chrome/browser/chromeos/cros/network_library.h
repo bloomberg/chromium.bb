@@ -551,6 +551,16 @@ class Network {
  public:
   virtual ~Network();
 
+  // Test API for accessing setters in tests.
+  class TestApi {
+   public:
+    explicit TestApi(Network* network) : network_(network) {}
+    void SetConnected(bool connected) { network_->set_connected(connected); }
+   private:
+    Network* network_;
+  };
+  friend class TestApi;
+
   const std::string& service_path() const { return service_path_; }
   const std::string& name() const { return name_; }
   const std::string& device_path() const { return device_path_; }
@@ -880,6 +890,16 @@ typedef std::vector<VirtualNetwork*> VirtualNetworkVector;
 // Base class for networks of TYPE_WIFI or TYPE_CELLULAR.
 class WirelessNetwork : public Network {
  public:
+  // Test API for accessing setters in tests.
+  class TestApi {
+   public:
+    explicit TestApi(WirelessNetwork* network) : network_(network) {}
+    void SetStrength(int strength) { network_->set_strength(strength); }
+   private:
+    WirelessNetwork* network_;
+  };
+  friend class TestApi;
+
   int strength() const { return strength_; }
 
  protected:
@@ -917,6 +937,18 @@ class CellularNetwork : public WirelessNetwork {
     DATA_VERY_LOW,
     DATA_NONE
   };
+
+  // Test API for accessing setters in tests.
+  class TestApi {
+   public:
+    explicit TestApi(CellularNetwork* network) : network_(network) {}
+    void SetRoamingState(NetworkRoamingState roaming_state) {
+      network_->set_roaming_state(roaming_state);
+    }
+   private:
+    CellularNetwork* network_;
+  };
+  friend class TestApi;
 
   explicit CellularNetwork(const std::string& service_path);
   virtual ~CellularNetwork();
@@ -1036,6 +1068,18 @@ typedef std::vector<CellularNetwork*> CellularNetworkVector;
 // Class for networks of TYPE_WIFI.
 class WifiNetwork : public WirelessNetwork {
  public:
+  // Test API for accessing setters in tests.
+  class TestApi {
+   public:
+    explicit TestApi(WifiNetwork* network) : network_(network) {}
+    void SetEncryption(ConnectionSecurity encryption) {
+      network_->set_encryption(encryption);
+    }
+   private:
+    WifiNetwork* network_;
+  };
+  friend class TestApi;
+
   explicit WifiNetwork(const std::string& service_path);
   virtual ~WifiNetwork();
 
@@ -1641,6 +1685,14 @@ class NetworkLibrary {
   // network is not preferred. This should be called when the active profile
   // changes.
   virtual void SwitchToPreferredNetwork() = 0;
+
+  // This sets the active network for the network type. Note: priority order
+  // is unchanged (i.e. if a wifi network is set to active, but an ethernet
+  // network is still active, active_network() will still return the ethernet
+  // network). Other networks of the same type will become inactive.
+  // Used for testing.
+  virtual bool SetActiveNetwork(ConnectionType type,
+                                const std::string& service_path) = 0;
 
   // Factory function, creates a new instance and returns ownership.
   // For normal usage, access the singleton via CrosLibrary::Get().

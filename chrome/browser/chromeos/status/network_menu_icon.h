@@ -43,9 +43,21 @@ class NetworkMenuIcon : public ui::AnimationDelegate {
   const SkBitmap* GetIconAndText(string16* text);
 
   // ui::AnimationDelegate implementation.
-  virtual void AnimationProgressed(const ui::Animation* animation);
+  virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
 
   // Static functions for generating network icon bitmaps:
+
+  // Composites the bitmaps to generate a network icon.
+  static void GenerateBitmapFromComponents(
+      const SkBitmap* icon,
+      const SkBitmap* top_left_badge,
+      const SkBitmap* top_right_badge,
+      const SkBitmap* bottom_left_badge,
+      const SkBitmap* bottom_right_badge,
+      SkBitmap* result);
+
+  // Sets a blended bitmap for connecting images.
+  static void GenerateConnectingBitmap(const SkBitmap* source, SkBitmap* image);
 
   // Returns a bitmap associated with |network|, reflecting its current state.
   static const SkBitmap* GetBitmap(const Network* network);
@@ -53,15 +65,17 @@ class NetworkMenuIcon : public ui::AnimationDelegate {
   // Returns a bitmap representing an unconnected VPN.
   static const SkBitmap* GetVpnBitmap();
 
+ protected:
+  // Virtual for testing.
+  virtual double GetAnimation();
+
  private:
-  double GetAnimation();
   const Network* GetConnectingNetwork();
   void SetConnectingIcon(const Network* network, double animation);
   void SetIconAndText(string16* text);
 
   Mode mode_;
   Delegate* delegate_;
-  SkBitmap empty_badge_;
   SkBitmap empty_vpn_badge_;
   SkBitmap vpn_connecting_badge_;
   ui::ThrobAnimation animation_connecting_;

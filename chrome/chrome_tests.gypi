@@ -1187,6 +1187,8 @@
         'browser/chromeos/login/user_controller_unittest.cc',
         'browser/chromeos/login/wizard_accessibility_handler_unittest.cc',
         'browser/chromeos/mobile_config_unittest.cc',
+        'browser/chromeos/status/network_menu_icon.cc',
+        'browser/chromeos/status/network_menu_icon_unittest.cc',
         'browser/chromeos/system/name_value_pairs_parser_unittest.cc',
         'browser/chromeos/network_message_observer_unittest.cc',
         'browser/chromeos/notifications/desktop_notifications_unittest.cc',

@@ -221,8 +221,10 @@ class NetworkIcon {
     if (!network) {
       // If not a visible network, check for a remembered network.
       network = cros->FindRememberedNetworkByPath(service_path_);
-      if (!network)
+      if (!network) {
+        LOG(WARNING) << "Unable to find network:" << service_path_;
         return;
+      }
     }
     bool dirty = bitmap_.empty();
     if (state_ != network->state()) {
@@ -365,28 +367,13 @@ class NetworkIcon {
   void GenerateBitmap() {
     if (!icon_)
       return;
-
-    gfx::CanvasSkia canvas(icon_->width(), icon_->height(), false);
-    canvas.DrawBitmapInt(*icon_, 0, 0);
-
-    if (top_left_badge_) {
-      canvas.DrawBitmapInt(
-          *top_left_badge_, kBadgeLeftX, kBadgeTopY);
-    }
-    if (top_right_badge_) {
-      canvas.DrawBitmapInt(
-          *top_right_badge_, kBadgeRightX, kBadgeTopY);
-    }
-    if (bottom_left_badge_) {
-      canvas.DrawBitmapInt(
-          *bottom_left_badge_, kBadgeLeftX, kBadgeBottomY);
-    }
-    if (bottom_right_badge_) {
-      canvas.DrawBitmapInt(
-          *bottom_right_badge_, kBadgeRightX, kBadgeBottomY);
-    }
-
-    bitmap_ = canvas.ExtractBitmap();
+    NetworkMenuIcon::GenerateBitmapFromComponents(
+        icon_,
+        top_left_badge_,
+        top_right_badge_,
+        bottom_left_badge_,
+        bottom_right_badge_,
+        &bitmap_);
   }
 
   const SkBitmap* GetBitmap() const { return &bitmap_; }
@@ -431,11 +418,6 @@ NetworkMenuIcon::NetworkMenuIcon(Delegate* delegate, Mode mode)
       last_network_type_(TYPE_WIFI) {
   // Generate empty images for blending.
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  const SkBitmap* source_badge = rb.GetBitmapNamed(kArcsImages[0]);
-  empty_badge_.setConfig(SkBitmap::kARGB_8888_Config,
-                         source_badge->width(), source_badge->height(), 0);
-  empty_badge_.allocPixels();
-  empty_badge_.eraseARGB(0, 0, 0, 0);
   const SkBitmap* vpn_badge = rb.GetBitmapNamed(kVpnBadgeId);
   empty_vpn_badge_.setConfig(SkBitmap::kARGB_8888_Config,
                              vpn_badge->width(), vpn_badge->height(), 0);
@@ -521,8 +503,7 @@ void NetworkMenuIcon::SetConnectingIcon(const Network* network,
   if (images[index].empty()) {
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
     SkBitmap* source = rb.GetBitmapNamed(source_image_ids[1 + index]);
-    images[index] = SkBitmapOperations::CreateBlendedBitmap(
-        empty_badge_, *source, kConnectingImageAlpha);
+    NetworkMenuIcon::GenerateConnectingBitmap(source, &images[index]);
   }
   icon_->set_icon(&images[index]);
 }
@@ -651,9 +632,59 @@ void NetworkMenuIcon::SetIconAndText(string16* text) {
   }
 }
 
+////////////////////////////////////////////////////////////////////////////////
 // Static functions for generating network icon bitmaps:
 
-// Generatings an icon bitmap for a network's current state.
+// This defines how we assemble a network icon.
+void NetworkMenuIcon::GenerateBitmapFromComponents(
+    const SkBitmap* icon,
+    const SkBitmap* top_left_badge,
+    const SkBitmap* top_right_badge,
+    const SkBitmap* bottom_left_badge,
+    const SkBitmap* bottom_right_badge,
+    SkBitmap* result) {
+  DCHECK(icon);
+  DCHECK(result);
+  gfx::CanvasSkia canvas(icon->width(), icon->height(), false);
+  canvas.DrawBitmapInt(*icon, 0, 0);
+
+  if (top_left_badge) {
+    canvas.DrawBitmapInt(
+        *top_left_badge, kBadgeLeftX, kBadgeTopY);
+  }
+  if (top_right_badge) {
+    canvas.DrawBitmapInt(
+        *top_right_badge, kBadgeRightX, kBadgeTopY);
+  }
+  if (bottom_left_badge) {
+    canvas.DrawBitmapInt(
+        *bottom_left_badge, kBadgeLeftX, kBadgeBottomY);
+  }
+  if (bottom_right_badge) {
+    canvas.DrawBitmapInt(
+        *bottom_right_badge, kBadgeRightX, kBadgeBottomY);
+  }
+
+  *result = canvas.ExtractBitmap();
+}
+
+// We blend connecting icons with a black image to generate a faded icon.
+void NetworkMenuIcon::GenerateConnectingBitmap(
+    const SkBitmap* source, SkBitmap* image) {
+  static SkBitmap empty_badge;
+  if (empty_badge.empty()) {
+    empty_badge.setConfig(SkBitmap::kARGB_8888_Config,
+                          source->width(), source->height(), 0);
+    empty_badge.allocPixels();
+    empty_badge.eraseARGB(0, 0, 0, 0);
+  }
+  DCHECK(empty_badge.width() == source->width());
+  DCHECK(empty_badge.height() == source->height());
+  *image = SkBitmapOperations::CreateBlendedBitmap(
+      empty_badge, *source, kConnectingImageAlpha);
+}
+
+// Generates and caches an icon bitmap for a network's current state.
 const SkBitmap* NetworkMenuIcon::GetBitmap(const Network* network) {
   DCHECK(network);
   // Maintain a static (global) icon map. Note: Icons are never destroyed;
