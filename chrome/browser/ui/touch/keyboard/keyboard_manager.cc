@@ -268,8 +268,16 @@ void KeyboardWidget::AnimationProgressed(const ui::Animation* animation) {
 }
 
 void KeyboardWidget::AnimationEnded(const ui::Animation* animation) {
+  gfx::Rect keyboard_rect;
   if (animation_->GetCurrentValue() < 0.01)
     Widget::Hide();
+  else
+    keyboard_rect = GetWindowScreenBounds();
+
+  NotificationService::current()->Notify(
+      chrome::NOTIFICATION_KEYBOARD_VISIBLE_BOUNDS_CHANGED,
+      Source<KeyboardWidget>(this),
+      Details<gfx::Rect>(&keyboard_rect));
 }
 
 bool KeyboardWidget::OnMessageReceived(const IPC::Message& message) {

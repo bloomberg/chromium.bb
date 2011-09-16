@@ -14,10 +14,12 @@
 #include "base/task.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/native_web_keyboard_event_views.h"
 #include "chrome/common/render_messages.h"
 #include "content/browser/renderer_host/backing_store_skia.h"
 #include "content/browser/renderer_host/render_widget_host.h"
+#include "content/common/notification_service.h"
 #include "content/common/result_codes.h"
 #include "content/common/view_messages.h"
 #include "grit/ui_strings.h"
@@ -107,6 +109,9 @@ RenderWidgetHostViewViews::RenderWidgetHostViewViews(RenderWidgetHost* host)
 #if defined(TOUCH_UI)
   SetPaintToLayer(true);
   SetFillsBoundsOpaquely(true);
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_KEYBOARD_VISIBLE_BOUNDS_CHANGED,
+                 NotificationService::AllSources());
 #endif
 }
 
@@ -360,6 +365,28 @@ void RenderWidgetHostViewViews::SelectionChanged(const std::string& text,
           &RenderWidgetHostViewViews::UpdateTouchSelectionController),
         kTouchControllerUpdateDelay);
   }
+}
+
+void RenderWidgetHostViewViews::Observe(int type,
+                                        const NotificationSource& source,
+                                        const NotificationDetails& details) {
+#if defined(TOUCH_UI)
+  if (type != chrome::NOTIFICATION_KEYBOARD_VISIBLE_BOUNDS_CHANGED) {
+    NOTREACHED();
+    return;
+  }
+
+  gfx::Rect keyboard_rect = *Details<gfx::Rect>(details).ptr();
+
+  if (keyboard_rect != keyboard_rect_) {
+    keyboard_rect_ = keyboard_rect;
+    gfx::Rect screen_bounds = GetScreenBounds();
+    gfx::Rect intersecting_rect = screen_bounds.Intersect(keyboard_rect);
+    gfx::Rect available_rect = screen_bounds.Subtract(intersecting_rect);
+    host_->Send(new ViewMsg_ScrollFocusedEditableNodeIntoRect(
+        host_->routing_id(), available_rect));
+  }
+#endif
 }
 
 void RenderWidgetHostViewViews::ShowingContextMenu(bool showing) {

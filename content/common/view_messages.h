@@ -936,10 +936,10 @@ IPC_MESSAGE_ROUTED1(ViewMsg_SetFocus,
 IPC_MESSAGE_ROUTED1(ViewMsg_SetInitialFocus,
                     bool /* reverse */)
 
-// Tells the renderer to scroll the currently focused node into view only if
+// Tells the renderer to scroll the currently focused node into rect only if
 // the currently focused node is a Text node (textfield, text area or content
 // editable divs).
-IPC_MESSAGE_ROUTED0(ViewMsg_ScrollFocusedEditableNodeIntoView)
+IPC_MESSAGE_ROUTED1(ViewMsg_ScrollFocusedEditableNodeIntoRect, gfx::Rect)
 
 // Executes custom context menu action that was provided from WebKit.
 IPC_MESSAGE_ROUTED2(ViewMsg_CustomContextMenuAction,

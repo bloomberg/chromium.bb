@@ -874,6 +874,11 @@ enum NotificationType {
   // Sent when an API for set height of the keyboard is invoked from
   // JavaScript code.
   NOTIFICATION_SET_KEYBOARD_HEIGHT_INVOKED,
+
+  // Sent after the keyboard has been animated up or down. Source is the
+  // keyboard Widget, and Details is bounds of the keyboard in screen
+  // coordinates.
+  NOTIFICATION_KEYBOARD_VISIBLE_BOUNDS_CHANGED,
 #endif
 
   // Protocol Handler Registry -----------------------------------------------

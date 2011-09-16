@@ -678,8 +678,8 @@ bool RenderView::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_AllowBindings, OnAllowBindings)
     IPC_MESSAGE_HANDLER(ViewMsg_SetWebUIProperty, OnSetWebUIProperty)
     IPC_MESSAGE_HANDLER(ViewMsg_SetInitialFocus, OnSetInitialFocus)
-    IPC_MESSAGE_HANDLER(ViewMsg_ScrollFocusedEditableNodeIntoView,
-                        OnScrollFocusedEditableNodeIntoView)
+    IPC_MESSAGE_HANDLER(ViewMsg_ScrollFocusedEditableNodeIntoRect,
+                        OnScrollFocusedEditableNodeIntoRect)
     IPC_MESSAGE_HANDLER(ViewMsg_UpdateTargetURL_ACK, OnUpdateTargetURLAck)
     IPC_MESSAGE_HANDLER(ViewMsg_UpdateWebPreferences, OnUpdateWebPreferences)
     IPC_MESSAGE_HANDLER(ViewMsg_SetAltErrorPageURL, OnSetAltErrorPageURL)
@@ -1079,13 +1079,11 @@ void RenderView::OnSetInLiveResize(bool in_live_resize) {
 }
 #endif
 
-void RenderView::OnScrollFocusedEditableNodeIntoView() {
+void RenderView::OnScrollFocusedEditableNodeIntoRect(const gfx::Rect& rect) {
   WebKit::WebNode node = GetFocusedNode();
   if (!node.isNull()) {
     if (IsEditableNode(node))
-      // TODO(varunjain): Change webkit API to scroll a particular node into
-      // view and use that API here instead.
-      webview()->scrollFocusedNodeIntoView();
+      webview()->scrollFocusedNodeIntoRect(rect);
   }
 }
 

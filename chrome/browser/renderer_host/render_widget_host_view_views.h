@@ -13,6 +13,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/time.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
+#include "content/common/notification_observer.h"
+#include "content/common/notification_registrar.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "ui/gfx/native_widget_types.h"
 #include "views/controls/native/native_view_host.h"
@@ -37,7 +39,8 @@ struct NativeWebKeyboardEvent;
 // -----------------------------------------------------------------------------
 class RenderWidgetHostViewViews : public RenderWidgetHostView,
                                   public views::TouchSelectionClientView,
-                                  public views::TextInputClient {
+                                  public views::TextInputClient,
+                                  public NotificationObserver {
  public:
   // Internal class name.
   static const char kViewClassName[];
@@ -115,6 +118,11 @@ class RenderWidgetHostViewViews : public RenderWidgetHostView,
   // Overridden from views::TouchSelectionClientView.
   virtual void SelectRect(const gfx::Point& start,
                           const gfx::Point& end) OVERRIDE;
+
+  // Overriden from NotificationObserver
+  virtual void Observe(int type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details) OVERRIDE;
 
   // Overridden from ui::SimpleMenuModel::Delegate.
   virtual bool IsCommandIdChecked(int command_id) const OVERRIDE;
@@ -278,6 +286,9 @@ class RenderWidgetHostViewViews : public RenderWidgetHostView,
       update_touch_selection_;
 
 #if defined(TOUCH_UI)
+  // used to register for keyboard visiblity notificatons.
+  NotificationRegistrar registrar_;
+  gfx::Rect keyboard_rect_;
   std::map<uint64, scoped_refptr<AcceleratedSurfaceContainerTouch> >
       accelerated_surface_containers_;
 #endif

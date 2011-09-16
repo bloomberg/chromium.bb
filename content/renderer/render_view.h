@@ -843,7 +843,7 @@ class RenderView : public RenderWidget,
 #if defined(OS_MACOSX)
   void OnSetInLiveResize(bool in_live_resize);
 #endif
-  void OnScrollFocusedEditableNodeIntoView();
+  void OnScrollFocusedEditableNodeIntoRect(const gfx::Rect& rect);
   void OnSetPageEncoding(const std::string& encoding_name);
   void OnSetRendererPrefs(const RendererPreferences& renderer_prefs);
 #if defined(OS_MACOSX)
