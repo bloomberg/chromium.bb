@@ -17,7 +17,6 @@
 #include <utility>
 
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/singleton.h"
 #include "base/observer_list.h"
 #include "chrome/browser/chromeos/input_method/ibus_input_methods.h"
 #include "chrome/browser/chromeos/input_method/input_method_engine.h"

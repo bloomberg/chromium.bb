@@ -8,6 +8,7 @@
 #include <X11/Xlib.h>
 #include <X11/extensions/XInput2.h>
 
+#include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/input_method/xkeyboard.h"
 #include "ui/base/x/x11_util.h"
 
@@ -31,7 +32,7 @@ int GetXInputOpCode() {
 // Starts listening to the XI_HierarchyChanged events.
 void SelectXInputEvents() {
   XIEventMask evmask;
-  unsigned char mask[XIMaskLen(XI_LASTEVENT)] = {0};
+  unsigned char mask[XIMaskLen(XI_LASTEVENT)] = {};
   XISetMask(mask, XI_HierarchyChanged);
 
   evmask.deviceid = XIAllDevices;
@@ -49,7 +50,8 @@ void HandleHierarchyChangedEvent(XIHierarchyEvent* event) {
     if ((event->flags & XISlaveAdded) &&
         (info->use == XIFloatingSlave) &&
         (info->flags & XISlaveAdded)) {
-      chromeos::input_method::ReapplyCurrentKeyboardLayout();
+      chromeos::input_method::InputMethodManager::GetInstance()->
+          GetXKeyboard()->ReapplyCurrentKeyboardLayout();
       break;
     }
   }

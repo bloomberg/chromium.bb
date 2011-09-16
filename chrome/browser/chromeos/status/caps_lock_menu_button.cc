@@ -42,7 +42,7 @@ CapsLockMenuButton::CapsLockMenuButton(StatusAreaHost* host)
   SetIcon(*ResourceBundle::GetSharedInstance().GetBitmapNamed(
       IDR_STATUSBAR_CAPS_LOCK));
   UpdateTooltip();
-  UpdateUIFromCurrentCapsLock(input_method::CapsLockIsEnabled());
+  UpdateUIFromCurrentCapsLock(input_method::XKeyboard::CapsLockIsEnabled());
   SystemKeyEventListener::GetInstance()->AddCapsLockObserver(this);
 }
 
@@ -54,7 +54,7 @@ CapsLockMenuButton::~CapsLockMenuButton() {
 // views::View implementation:
 
 void CapsLockMenuButton::OnLocaleChanged() {
-  UpdateUIFromCurrentCapsLock(input_method::CapsLockIsEnabled());
+  UpdateUIFromCurrentCapsLock(input_method::XKeyboard::CapsLockIsEnabled());
 }
 
 ////////////////////////////////////////////////////////////////////////////////

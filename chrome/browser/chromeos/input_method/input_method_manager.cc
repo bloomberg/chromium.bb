@@ -380,7 +380,7 @@ class InputMethodManagerImpl : public HotkeyManager::Observer,
   }
 
   virtual void CancelHandwritingStrokes(int stroke_count) {
-    // TODO(yusukes): Rename the libcros function to CancelHandwritingStrokes.
+    // TODO(yusukes): Rename the function to CancelHandwritingStrokes.
     ibus_controller_->CancelHandwriting(stroke_count);
   }
 
@@ -417,6 +417,10 @@ class InputMethodManagerImpl : public HotkeyManager::Observer,
     UpdateVirtualKeyboardUI();
   }
 
+  virtual XKeyboard* GetXKeyboard() {
+    return &xkeyboard_;
+  }
+
   virtual HotkeyManager* GetHotkeyManager() {
     return &hotkey_manager_;
   }
@@ -439,7 +443,6 @@ class InputMethodManagerImpl : public HotkeyManager::Observer,
     }
   }
 
-  // Handles "Shift+Alt" hotkey.
   virtual void SwitchToNextInputMethod() {
     // Sanity checks.
     if (active_input_method_ids_.empty()) {
@@ -772,7 +775,7 @@ class InputMethodManagerImpl : public HotkeyManager::Observer,
       current_input_method_ = new_input_method;
 
       // Change the keyboard layout to a preferred layout for the input method.
-      if (!SetCurrentKeyboardLayoutByName(
+      if (!xkeyboard_.SetCurrentKeyboardLayoutByName(
               current_input_method_.keyboard_layout())) {
         LOG(ERROR) << "Failed to change keyboard layout to "
                    << current_input_method_.keyboard_layout();
@@ -949,8 +952,6 @@ class InputMethodManagerImpl : public HotkeyManager::Observer,
   // the daemon is started. Otherwise, e.g. the daemon is already started,
   // returns false.
   bool MaybeLaunchInputMethodDaemon() {
-    // CandidateWindowController requires libcros to be loaded. Besides,
-    // launching ibus-daemon without libcros loaded doesn't make sense.
     if (!should_launch_ime_) {
       return false;
     }
@@ -1254,6 +1255,11 @@ class InputMethodManagerImpl : public HotkeyManager::Observer,
   // information. e.g. "mozc-jp" to XK_ZenkakuHankaku, "mozc-jp" to XK_Henkan.
   std::multimap<std::string,
                 const InputMethodSpecificHotkeySetting*> extra_hotkeys_;
+
+  // An object for switching XKB layouts and keyboard status like caps lock and
+  // auto-repeat interval.
+  XKeyboard xkeyboard_;
+
   // An object which detects Control+space and Shift+Alt key presses.
   HotkeyManager hotkey_manager_;
 

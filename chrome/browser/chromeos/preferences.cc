@@ -350,7 +350,7 @@ void Preferences::NotifyPrefChanged(const std::string* pref_name) {
   }
   if (!pref_name || *pref_name == prefs::kLanguageXkbAutoRepeatEnabled) {
     const bool enabled = language_xkb_auto_repeat_enabled_.GetValue();
-    input_method::SetAutoRepeatEnabled(enabled);
+    input_method::XKeyboard::SetAutoRepeatEnabled(enabled);
   }
   if (!pref_name || ((*pref_name == prefs::kLanguageXkbAutoRepeatDelay) ||
                      (*pref_name == prefs::kLanguageXkbAutoRepeatInterval))) {
@@ -551,7 +551,8 @@ void Preferences::UpdateModifierKeyMapping() {
         input_method::ModifierKeyPair(
             input_method::kLeftAltKey,
             input_method::ModifierKey(alt_remap)));
-    input_method::RemapModifierKeys(modifier_map);
+    input_method::InputMethodManager::GetInstance()->GetXKeyboard()->
+        RemapModifierKeys(modifier_map);
   } else {
     LOG(ERROR) << "Failed to remap modifier keys. Unexpected value(s): "
                << search_remap << ", " << control_remap << ", " << alt_remap;
@@ -565,7 +566,7 @@ void Preferences::UpdateAutoRepeatRate() {
       language_xkb_auto_repeat_interval_pref_.GetValue();
   DCHECK(rate.initial_delay_in_ms > 0);
   DCHECK(rate.repeat_interval_in_ms > 0);
-  input_method::SetAutoRepeatRate(rate);
+  input_method::XKeyboard::SetAutoRepeatRate(rate);
 }
 
 void Preferences::UpdateVirturalKeyboardPreference(PrefService* prefs) {

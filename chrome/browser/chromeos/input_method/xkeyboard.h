@@ -6,9 +6,12 @@
 #define CHROME_BROWSER_CHROMEOS_INPUT_METHOD_XKEYBOARD_H_
 #pragma once
 
-#include <map>
+#include <queue>
+#include <set>
 #include <string>
 #include <vector>
+
+#include "base/basictypes.h"
 
 namespace chromeos {
 namespace input_method {
@@ -42,72 +45,96 @@ struct ModifierKeyPair {
 };
 typedef std::vector<ModifierKeyPair> ModifierMap;
 
-// Sets the current keyboard layout to |layout_name|. This function does not
-// change the current mapping of the modifier keys. Returns true on success.
-bool SetCurrentKeyboardLayoutByName(const std::string& layout_name);
+class XKeyboard {
+ public:
+  XKeyboard();
+  ~XKeyboard();
 
-// Sets the current keyboard layout again. We have to call the function every
-// time when "XI_HierarchyChanged" XInput2 event is sent to Chrome. See
-// xinput_hierarchy_changed_event_listener.h for details.
-bool ReapplyCurrentKeyboardLayout();
+  // Sets the current keyboard layout to |layout_name|. This function does not
+  // change the current mapping of the modifier keys. Returns true on success.
+  bool SetCurrentKeyboardLayoutByName(const std::string& layout_name);
 
-// Remaps modifier keys. This function does not change the current keyboard
-// layout. Returns true on success.
-// Notice: For now, you can't remap Left Control and Left Alt keys to CapsLock.
-bool RemapModifierKeys(const ModifierMap& modifier_map);
+  // Remaps modifier keys. This function does not change the current keyboard
+  // layout. Returns true on success. For now, you can't remap Left Control and
+  // Left Alt keys to caps lock.
+  bool RemapModifierKeys(const ModifierMap& modifier_map);
 
-// Turns on and off the auto-repeat of the keyboard. Returns true on success.
-// Do not call the function from non-UI threads.
-bool SetAutoRepeatEnabled(bool enabled);
+  // Sets the current keyboard layout again. We have to call the function every
+  // time when "XI_HierarchyChanged" XInput2 event is sent to Chrome. See
+  // xinput_hierarchy_changed_event_listener.h for details.
+  bool ReapplyCurrentKeyboardLayout();
 
-// Sets the auto-repeat rate of the keyboard, initial delay in ms, and repeat
-// interval in ms.  Returns true on success. Do not call the function from
-// non-UI threads.
-bool SetAutoRepeatRate(const AutoRepeatRate& rate);
+  // Turns on and off the auto-repeat of the keyboard. Returns true on success.
+  // Do not call the function from non-UI threads.
+  static bool SetAutoRepeatEnabled(bool enabled);
 
-//
-// WARNING: DO NOT USE FUNCTIONS/CLASSES/TYPEDEFS BELOW. They are only for
-// unittests. See the definitions in chromeos_keyboard.cc for details.
-//
+  // Sets the auto-repeat rate of the keyboard, initial delay in ms, and repeat
+  // interval in ms.  Returns true on success. Do not call the function from
+  // non-UI threads.
+  static bool SetAutoRepeatRate(const AutoRepeatRate& rate);
 
-// Converts |key| to a modifier key name which is used in
-// /usr/share/X11/xkb/symbols/chromeos.
-inline std::string ModifierKeyToString(ModifierKey key) {
-  switch (key) {
-    case kSearchKey:
-      return "search";
-    case kLeftControlKey:
-      return "leftcontrol";
-    case kLeftAltKey:
-      return "leftalt";
-    case kVoidKey:
-      return "disabled";
-    case kCapsLockKey:
-      return "capslock";
-    case kNumModifierKeys:
-      break;
-  }
-  return "";
-}
+  // Returns true if caps lock is enabled. Do not call the function from non-UI
+  // threads.
+  static bool CapsLockIsEnabled();
 
-// Creates a full XKB layout name like
-//   "gb(extd)+chromeos(leftcontrol_disabled_leftalt),us"
-// from modifier key mapping and |layout_name|, such as "us", "us(dvorak)", and
-// "gb(extd)". Returns an empty string on error.
-std::string CreateFullXkbLayoutName(const std::string& layout_name,
-                                    const ModifierMap& modifire_map);
+  // Sets the caps lock status to |enable_caps_lock|. Do not call the function
+  // from non-UI threads.
+  static void SetCapsLockEnabled(bool enabled);
 
-// Returns true if caps lock is enabled. Do not call the function from non-UI
-// threads.
-bool CapsLockIsEnabled();
+ protected:
+  // Creates a full XKB layout name like
+  //   "gb(extd)+chromeos(leftcontrol_disabled_leftalt),us"
+  // from modifier key mapping and |layout_name|, such as "us", "us(dvorak)",
+  // and "gb(extd)". Returns an empty string on error. This function is
+  // protected: for testability.
+  std::string CreateFullXkbLayoutName(const std::string& layout_name,
+                                      const ModifierMap& modifire_map);
 
-// Sets the caps lock status to |enable_caps_lock|. Do not call the function
-// from non-UI threads.
-void SetCapsLockEnabled(bool enabled);
+  // Returns true if |key| is in |modifier_map| as replacement. This function is
+  // protected: for testability.
+  static bool ContainsModifierKeyAsReplacement(const ModifierMap& modifier_map,
+                                               ModifierKey key);
 
-// Returns true if |key| is in |modifier_map| as replacement.
-bool ContainsModifierKeyAsReplacement(
-    const ModifierMap& modifier_map, ModifierKey key);
+ private:
+  // This function is used by SetLayout() and RemapModifierKeys(). Calls
+  // setxkbmap command if needed, and updates the last_full_layout_name_ cache.
+  bool SetLayoutInternal(const std::string& layout_name,
+                         const ModifierMap& modifier_map,
+                         bool force);
+
+  // Executes 'setxkbmap -layout ...' command asynchronously using a layout name
+  // in the |execute_queue_|. Do nothing if the queue is empty.
+  // TODO(yusukes): Use libxkbfile.so instead of the command (crosbug.com/13105)
+  void MaybeExecuteSetLayoutCommand();
+
+  // Returns true if the XKB layout uses the right Alt key for special purposes
+  // like AltGr.
+  bool KeepRightAlt(const std::string& xkb_layout_name) const;
+
+  // Returns true if the XKB layout uses the CapsLock key for special purposes.
+  // For example, since US Colemak layout uses the key as back space,
+  // KeepCapsLock("us(colemak)") would return true.
+  bool KeepCapsLock(const std::string& xkb_layout_name) const;
+
+  // Converts |key| to a modifier key name which is used in
+  // /usr/share/X11/xkb/symbols/chromeos.
+  static std::string ModifierKeyToString(ModifierKey key);
+
+  // Called when execve'd setxkbmap process exits.
+  static void OnSetLayoutFinish(pid_t pid, int status, XKeyboard* self);
+
+  // The XKB layout name which we set last time like "us" and "us(dvorak)".
+  std::string current_layout_name_;
+  // The mapping of modifier keys we set last time.
+  ModifierMap current_modifier_map_;
+  // A queue for executing setxkbmap one by one.
+  std::queue<std::string> execute_queue_;
+
+  std::set<std::string> keep_right_alt_xkb_layout_names_;
+  std::set<std::string> caps_lock_remapped_xkb_layout_names_;
+
+  DISALLOW_COPY_AND_ASSIGN(XKeyboard);
+};
 
 }  // namespace input_method
 }  // namespace chromeos

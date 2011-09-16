@@ -43,7 +43,7 @@ SystemKeyEventListener* SystemKeyEventListener::GetInstance() {
 
 SystemKeyEventListener::SystemKeyEventListener()
     : stopped_(false),
-      caps_lock_is_on_(input_method::CapsLockIsEnabled()),
+      caps_lock_is_on_(input_method::XKeyboard::CapsLockIsEnabled()),
       xkb_event_base_(0),
       audio_handler_(AudioHandler::GetInstance()) {
   WmMessageListener::GetInstance()->AddObserver(this);
@@ -258,7 +258,7 @@ bool SystemKeyEventListener::ProcessedXEvent(XEvent* xevent) {
         const bool other_mods_are_held =
             (xevent->xkey.state & ~(ShiftMask | LockMask));
         if (other_shift_is_held && !other_mods_are_held)
-          input_method::SetCapsLockEnabled(!caps_lock_is_on_);
+          input_method::XKeyboard::SetCapsLockEnabled(!caps_lock_is_on_);
       }
 
       // Only doing non-Alt/Shift/Ctrl modified keys

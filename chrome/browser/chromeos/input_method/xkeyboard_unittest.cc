@@ -28,6 +28,13 @@ namespace input_method {
 
 namespace {
 
+class TestableXKeyboard : public XKeyboard {
+ public:
+  // Change access rights.
+  using XKeyboard::CreateFullXkbLayoutName;
+  using XKeyboard::ContainsModifierKeyAsReplacement;
+};
+
 // Returns a ModifierMap object that contains the following mapping:
 // - kSearchKey is mapped to |search|.
 // - kLeftControl key is mapped to |control|.
@@ -67,116 +74,118 @@ bool DisplayAvailable() {
 
 // Tests CreateFullXkbLayoutName() function.
 TEST(XKeyboardTest, TestCreateFullXkbLayoutNameBasic) {
+  TestableXKeyboard xkey;
+
   // CreateFullXkbLayoutName should not accept an empty |layout_name|.
-  EXPECT_STREQ("", CreateFullXkbLayoutName(
+  EXPECT_STREQ("", xkey.CreateFullXkbLayoutName(
       "", GetMap(kVoidKey, kVoidKey, kVoidKey)).c_str());
 
   // CreateFullXkbLayoutName should not accept an empty ModifierMap.
-  EXPECT_STREQ("", CreateFullXkbLayoutName("us", ModifierMap()).c_str());
+  EXPECT_STREQ("", xkey.CreateFullXkbLayoutName("us", ModifierMap()).c_str());
 
   // CreateFullXkbLayoutName should not accept an incomplete ModifierMap.
   ModifierMap tmp_map = GetMap(kVoidKey, kVoidKey, kVoidKey);
   tmp_map.pop_back();
-  EXPECT_STREQ("", CreateFullXkbLayoutName("us", tmp_map).c_str());
+  EXPECT_STREQ("", xkey.CreateFullXkbLayoutName("us", tmp_map).c_str());
 
   // CreateFullXkbLayoutName should not accept redundant ModifierMaps.
   tmp_map = GetMap(kVoidKey, kVoidKey, kVoidKey);
   tmp_map.push_back(ModifierKeyPair(kSearchKey, kVoidKey));  // two search maps
-  EXPECT_STREQ("", CreateFullXkbLayoutName("us", tmp_map).c_str());
+  EXPECT_STREQ("", xkey.CreateFullXkbLayoutName("us", tmp_map).c_str());
   tmp_map = GetMap(kVoidKey, kVoidKey, kVoidKey);
   tmp_map.push_back(ModifierKeyPair(kLeftControlKey, kVoidKey));  // two ctrls
-  EXPECT_STREQ("", CreateFullXkbLayoutName("us", tmp_map).c_str());
+  EXPECT_STREQ("", xkey.CreateFullXkbLayoutName("us", tmp_map).c_str());
   tmp_map = GetMap(kVoidKey, kVoidKey, kVoidKey);
   tmp_map.push_back(ModifierKeyPair(kLeftAltKey, kVoidKey));  // two alts.
-  EXPECT_STREQ("", CreateFullXkbLayoutName("us", tmp_map).c_str());
+  EXPECT_STREQ("", xkey.CreateFullXkbLayoutName("us", tmp_map).c_str());
 
   // CreateFullXkbLayoutName should not accept invalid ModifierMaps.
   tmp_map = GetMap(kVoidKey, kVoidKey, kVoidKey);
   tmp_map.push_back(ModifierKeyPair(kVoidKey, kSearchKey));  // can't remap void
-  EXPECT_STREQ("", CreateFullXkbLayoutName("us", tmp_map).c_str());
+  EXPECT_STREQ("", xkey.CreateFullXkbLayoutName("us", tmp_map).c_str());
   tmp_map = GetMap(kVoidKey, kVoidKey, kVoidKey);
   tmp_map.push_back(ModifierKeyPair(kCapsLockKey, kSearchKey));  // ditto
-  EXPECT_STREQ("", CreateFullXkbLayoutName("us", tmp_map).c_str());
+  EXPECT_STREQ("", xkey.CreateFullXkbLayoutName("us", tmp_map).c_str());
 
   // CreateFullXkbLayoutName can remap Search/Ctrl/Alt to CapsLock.
   EXPECT_STREQ("us+chromeos(capslock_disabled_disabled)",
-               CreateFullXkbLayoutName(
+               xkey.CreateFullXkbLayoutName(
                    "us",
                    GetMap(kCapsLockKey, kVoidKey, kVoidKey)).c_str());
   EXPECT_STREQ("us+chromeos(disabled_capslock_disabled)",
-               CreateFullXkbLayoutName(
+               xkey.CreateFullXkbLayoutName(
                    "us",
                    GetMap(kVoidKey, kCapsLockKey, kVoidKey)).c_str());
   EXPECT_STREQ("us+chromeos(disabled_disabled_capslock)",
-               CreateFullXkbLayoutName(
+               xkey.CreateFullXkbLayoutName(
                    "us",
                    GetMap(kVoidKey, kVoidKey, kCapsLockKey)).c_str());
 
   // CreateFullXkbLayoutName should not accept non-alphanumeric characters
   // except "()-_".
-  EXPECT_STREQ("", CreateFullXkbLayoutName(
+  EXPECT_STREQ("", xkey.CreateFullXkbLayoutName(
       "us!", GetMap(kVoidKey, kVoidKey, kVoidKey)).c_str());
-  EXPECT_STREQ("", CreateFullXkbLayoutName(
+  EXPECT_STREQ("", xkey.CreateFullXkbLayoutName(
       "us; /bin/sh", GetMap(kVoidKey, kVoidKey, kVoidKey)).c_str());
   EXPECT_STREQ("ab-c_12+chromeos(disabled_disabled_disabled),us",
-               CreateFullXkbLayoutName(
+               xkey.CreateFullXkbLayoutName(
                    "ab-c_12",
                    GetMap(kVoidKey, kVoidKey, kVoidKey)).c_str());
 
   // CreateFullXkbLayoutName should not accept upper-case ascii characters.
-  EXPECT_STREQ("", CreateFullXkbLayoutName(
+  EXPECT_STREQ("", xkey.CreateFullXkbLayoutName(
       "US", GetMap(kVoidKey, kVoidKey, kVoidKey)).c_str());
 
   // CreateFullXkbLayoutName should accept lower-case ascii characters.
   for (int c = 'a'; c <= 'z'; ++c) {
-    EXPECT_STRNE("", CreateFullXkbLayoutName(
+    EXPECT_STRNE("", xkey.CreateFullXkbLayoutName(
         std::string(3, c),
         GetMap(kVoidKey, kVoidKey, kVoidKey)).c_str());
   }
 
   // CreateFullXkbLayoutName should accept numbers.
   for (int c = '0'; c <= '9'; ++c) {
-    EXPECT_STRNE("", CreateFullXkbLayoutName(
+    EXPECT_STRNE("", xkey.CreateFullXkbLayoutName(
         std::string(3, c),
         GetMap(kVoidKey, kVoidKey, kVoidKey)).c_str());
   }
 
   // CreateFullXkbLayoutName should accept a layout with a variant name.
   EXPECT_STREQ("us(dvorak)+chromeos(disabled_disabled_disabled)",
-               CreateFullXkbLayoutName(
+               xkey.CreateFullXkbLayoutName(
                    "us(dvorak)",
                    GetMap(kVoidKey, kVoidKey, kVoidKey)).c_str());
-  // TODO: Re-enable this when the stub is fixed to handle it.
-  // EXPECT_STREQ("gb(extd)+chromeos(disabled_disabled_disabled),us",
-  //              CreateFullXkbLayoutName(
-  //                  "gb(extd)",
-  //                  GetMap(kVoidKey, kVoidKey, kVoidKey)).c_str());
-  EXPECT_STREQ("gb(extd)+", CreateFullXkbLayoutName(
-      "gb(extd)",
-      GetMap(kVoidKey, kVoidKey, kVoidKey)).substr(0, 9).c_str());
-  EXPECT_STREQ("jp+", CreateFullXkbLayoutName(
-      "jp", GetMap(kVoidKey, kVoidKey, kVoidKey)).substr(0, 3).c_str());
+  EXPECT_STREQ("gb(extd)+chromeos(disabled_disabled_disabled_keepralt),us",
+                xkey.CreateFullXkbLayoutName(
+                    "gb(extd)",
+                    GetMap(kVoidKey, kVoidKey, kVoidKey)).c_str());
+  EXPECT_STREQ("jp+chromeos(disabled_disabled_disabled),us",
+               xkey.CreateFullXkbLayoutName(
+                   "jp",  // does not use AltGr, therefore no _keepralt.
+                   GetMap(kVoidKey, kVoidKey, kVoidKey)).c_str());
 
   // When the layout name is not "us", the second layout should be added.
-  EXPECT_EQ(std::string::npos, CreateFullXkbLayoutName(
+  EXPECT_EQ(std::string::npos, xkey.CreateFullXkbLayoutName(
       "us", GetMap(kVoidKey, kVoidKey, kVoidKey)).find(",us"));
-  EXPECT_EQ(std::string::npos, CreateFullXkbLayoutName(
+  EXPECT_EQ(std::string::npos, xkey.CreateFullXkbLayoutName(
       "us(dvorak)", GetMap(kVoidKey, kVoidKey, kVoidKey)).find(",us"));
-  EXPECT_NE(std::string::npos, CreateFullXkbLayoutName(
+  EXPECT_NE(std::string::npos, xkey.CreateFullXkbLayoutName(
       "gb(extd)", GetMap(kVoidKey, kVoidKey, kVoidKey)).find(",us"));
-  EXPECT_NE(std::string::npos, CreateFullXkbLayoutName(
+  EXPECT_NE(std::string::npos, xkey.CreateFullXkbLayoutName(
       "jp", GetMap(kVoidKey, kVoidKey, kVoidKey)).find(",us"));
 }
 
 TEST(XKeyboardTest, TestCreateFullXkbLayoutNameKeepCapsLock) {
+  TestableXKeyboard xkey;
+
   EXPECT_STREQ("us(colemak)+chromeos(search_disabled_disabled)",
-               CreateFullXkbLayoutName(
+               xkey.CreateFullXkbLayoutName(
                    "us(colemak)",
                    // The 1st kVoidKey should be ignored.
                    GetMap(kVoidKey, kVoidKey, kVoidKey)).c_str());
   EXPECT_STREQ("de(neo)+"
                "chromeos(search_leftcontrol_leftcontrol_keepralt),us",
-               CreateFullXkbLayoutName(
+               xkey.CreateFullXkbLayoutName(
                    // The 1st kLeftControlKey should be ignored.
                    "de(neo)", GetMap(kLeftControlKey,
                                      kLeftControlKey,
@@ -184,12 +193,14 @@ TEST(XKeyboardTest, TestCreateFullXkbLayoutNameKeepCapsLock) {
 }
 
 TEST(XKeyboardTest, TestCreateFullXkbLayoutNameKeepAlt) {
+  TestableXKeyboard xkey;
+
   EXPECT_STREQ("us(intl)+chromeos(disabled_disabled_disabled_keepralt)",
-               CreateFullXkbLayoutName(
+               xkey.CreateFullXkbLayoutName(
                    "us(intl)", GetMap(kVoidKey, kVoidKey, kVoidKey)).c_str());
   EXPECT_STREQ("kr(kr104)+"
                "chromeos(leftcontrol_leftcontrol_leftcontrol_keepralt),us",
-               CreateFullXkbLayoutName(
+               xkey.CreateFullXkbLayoutName(
                    "kr(kr104)", GetMap(kLeftControlKey,
                                        kLeftControlKey,
                                        kLeftControlKey)).c_str());
@@ -198,11 +209,13 @@ TEST(XKeyboardTest, TestCreateFullXkbLayoutNameKeepAlt) {
 // Tests if CreateFullXkbLayoutName and ExtractLayoutNameFromFullXkbLayoutName
 // functions could handle all combinations of modifier remapping.
 TEST(XKeyboardTest, TestCreateFullXkbLayoutNameModifierKeys) {
+  TestableXKeyboard xkey;
+
   std::set<std::string> layouts;
   for (int i = 0; i < static_cast<int>(kNumModifierKeys); ++i) {
     for (int j = 0; j < static_cast<int>(kNumModifierKeys); ++j) {
       for (int k = 0; k < static_cast<int>(kNumModifierKeys); ++k) {
-        const std::string layout = CreateFullXkbLayoutName(
+        const std::string layout = xkey.CreateFullXkbLayoutName(
             "us", GetMap(ModifierKey(i), ModifierKey(j), ModifierKey(k)));
         // CreateFullXkbLayoutName should succeed (i.e. should not return "".)
         EXPECT_STREQ("us+", layout.substr(0, 3).c_str())
@@ -218,32 +231,32 @@ TEST(XKeyboardTest, TestSetCapsLockIsEnabled) {
   if (!DisplayAvailable()) {
     return;
   }
-  const bool initial_lock_state = CapsLockIsEnabled();
-  SetCapsLockEnabled(true);
-  EXPECT_TRUE(CapsLockIsEnabled());
-  SetCapsLockEnabled(false);
-  EXPECT_FALSE(CapsLockIsEnabled());
-  SetCapsLockEnabled(true);
-  EXPECT_TRUE(CapsLockIsEnabled());
-  SetCapsLockEnabled(false);
-  EXPECT_FALSE(CapsLockIsEnabled());
-  SetCapsLockEnabled(initial_lock_state);
+  const bool initial_lock_state = XKeyboard::CapsLockIsEnabled();
+  XKeyboard::SetCapsLockEnabled(true);
+  EXPECT_TRUE(XKeyboard::CapsLockIsEnabled());
+  XKeyboard::SetCapsLockEnabled(false);
+  EXPECT_FALSE(XKeyboard::CapsLockIsEnabled());
+  XKeyboard::SetCapsLockEnabled(true);
+  EXPECT_TRUE(XKeyboard::CapsLockIsEnabled());
+  XKeyboard::SetCapsLockEnabled(false);
+  EXPECT_FALSE(XKeyboard::CapsLockIsEnabled());
+  XKeyboard::SetCapsLockEnabled(initial_lock_state);
 }
 
 TEST(XKeyboardTest, TestContainsModifierKeyAsReplacement) {
-  EXPECT_FALSE(ContainsModifierKeyAsReplacement(
+  EXPECT_FALSE(TestableXKeyboard::ContainsModifierKeyAsReplacement(
       GetMap(kVoidKey, kVoidKey, kVoidKey), kCapsLockKey));
-  EXPECT_TRUE(ContainsModifierKeyAsReplacement(
+  EXPECT_TRUE(TestableXKeyboard::ContainsModifierKeyAsReplacement(
       GetMap(kCapsLockKey, kVoidKey, kVoidKey), kCapsLockKey));
-  EXPECT_TRUE(ContainsModifierKeyAsReplacement(
+  EXPECT_TRUE(TestableXKeyboard::ContainsModifierKeyAsReplacement(
       GetMap(kVoidKey, kCapsLockKey, kVoidKey), kCapsLockKey));
-  EXPECT_TRUE(ContainsModifierKeyAsReplacement(
+  EXPECT_TRUE(TestableXKeyboard::ContainsModifierKeyAsReplacement(
       GetMap(kVoidKey, kVoidKey, kCapsLockKey), kCapsLockKey));
-  EXPECT_TRUE(ContainsModifierKeyAsReplacement(
+  EXPECT_TRUE(TestableXKeyboard::ContainsModifierKeyAsReplacement(
       GetMap(kCapsLockKey, kCapsLockKey, kVoidKey), kCapsLockKey));
-  EXPECT_TRUE(ContainsModifierKeyAsReplacement(
+  EXPECT_TRUE(TestableXKeyboard::ContainsModifierKeyAsReplacement(
       GetMap(kCapsLockKey, kCapsLockKey, kCapsLockKey), kCapsLockKey));
-  EXPECT_TRUE(ContainsModifierKeyAsReplacement(
+  EXPECT_TRUE(TestableXKeyboard::ContainsModifierKeyAsReplacement(
       GetMap(kSearchKey, kVoidKey, kVoidKey), kSearchKey));
 }
 

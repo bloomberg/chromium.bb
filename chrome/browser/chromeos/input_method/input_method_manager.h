@@ -27,6 +27,7 @@ namespace input_method {
 
 class HotkeyManager;
 class VirtualKeyboard;
+class XKeyboard;
 
 // This class manages input methodshandles.  Classes can add themselves as
 // observers. Clients can get an instance of this library class by:
@@ -187,6 +188,10 @@ class InputMethodManager {
   // Returns a multi map from layout name to virtual keyboard extension.
   virtual const std::multimap<std::string, const VirtualKeyboard*>&
   GetLayoutNameToKeyboardMapping() const = 0;
+
+  // Returns an X keyboard object which could be used to change the current XKB
+  // layout, change the caps lock status, and set the auto repeat rate/interval.
+  virtual XKeyboard* GetXKeyboard() = 0;
 
   // Returns a hotkey manager object which could be used to detect Control+space
   // and Shift+Alt key presses.
