@@ -35,6 +35,9 @@ function setupTests(tester, plugin) {
   tester.addAsyncTest('glInitializePPAPI', function(test) {
     testAndAssertStatus(test, 'Test_glInitializePPAPI');
   });
+  tester.addAsyncTest('Basic Setup', function(test) {
+    testAndAssertStatus(test, 'TestBasicSetup');
+  });
   tester.addAsyncTest('PPB_Graphics3D::SwapBuffers', function(test) {
     testAndAssertStatus(test, 'TestSwapBuffers', 'TestSwapCallback:PASSED');
   });
@@ -58,7 +61,7 @@ function setupTests(tester, plugin) {
     <h1>PPAPI PPB_Graphics3D Test</h1>
   NOTE: requires --enable-pepper-testing --enable-accelerated-plugins
   <br>
-  The rectangle below should fade from black to blue.
+  The rectangle below should fade from black to blue and from black to green.
   <br><br>
   <tr>
   <td>
