@@ -227,10 +227,8 @@ bool MenuButton::OnKeyPressed(const KeyEvent& event) {
     case ui::VKEY_RETURN:
     case ui::VKEY_UP:
     case ui::VKEY_DOWN: {
-      bool result = Activate();
-      if (GetFocusManager()->GetFocusedView() == NULL)
-        RequestFocus();
-      return result;
+      // WARNING: we may have been deleted by the time Activate returns.
+      return Activate();
     }
     default:
       break;

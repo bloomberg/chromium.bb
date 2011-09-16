@@ -112,7 +112,11 @@ void MenuRunnerImpl::Release() {
       empty_delegate_.reset(new MenuDelegate());
     menu_->set_delegate(empty_delegate_.get());
 
-    menu_->Cancel();
+    DCHECK(controller_);
+    // Release is invoked when MenuRunner is destroyed. Assume this is happening
+    // because the object referencing the menu has been destroyed and the menu
+    // button is no longer valid.
+    controller_->Cancel(MenuController::EXIT_DESTROYED);
   } else {
     delete this;
   }
