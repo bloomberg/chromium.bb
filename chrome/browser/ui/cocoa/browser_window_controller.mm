@@ -1629,6 +1629,10 @@ enum {
   if (responds) {
     const BookmarkNode* node = [sender node];
     if (node) {
+#if defined(WEBUI_DIALOGS)
+      DCHECK(browser_);
+      browser_->OpenBookmarkManagerEditNode(node->id());
+#else
       // A BookmarkEditorController is a sheet that owns itself, and
       // deallocates itself when closed.
       [[[BookmarkEditorController alloc]
@@ -1638,6 +1642,7 @@ enum {
                          node:node
                 configuration:BookmarkEditor::SHOW_TREE]
         runAsModalSheet];
+#endif
     }
   }
 }

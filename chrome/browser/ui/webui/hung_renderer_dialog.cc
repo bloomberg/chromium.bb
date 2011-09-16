@@ -8,13 +8,10 @@
 #include <vector>
 
 #include "base/json/json_reader.h"
-#include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
-#include "chrome/browser/ui/webui/html_dialog_ui.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/renderer_host/render_view_host.h"
@@ -22,6 +19,7 @@
 #include "content/common/result_codes.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "views/widget/widget.h"
 
 namespace {
 HungRendererDialog* g_instance = NULL;
@@ -32,21 +30,11 @@ const int kHungRendererDialogHeight = 200;
 namespace browser {
 
 void ShowHungRendererDialog(TabContents* contents) {
-  if (ChromeWebUI::IsMoreWebUI()) {
-    HungRendererDialog::ShowHungRendererDialog(contents);
-    return;
-  }
-
-  ShowNativeHungRendererDialog(contents);
+  HungRendererDialog::ShowHungRendererDialog(contents);
 }
 
 void HideHungRendererDialog(TabContents* contents) {
-  if (ChromeWebUI::IsMoreWebUI()) {
-    HungRendererDialog::HideHungRendererDialog(contents);
-    return;
-  }
-
-  HideNativeHungRendererDialog(contents);
+  HungRendererDialog::HideHungRendererDialog(contents);
 }
 
 }  // namespace browser
@@ -74,7 +62,6 @@ void HungRendererDialog::HideHungRendererDialog(TabContents* contents) {
 
 HungRendererDialog::HungRendererDialog()
     : contents_(NULL),
-      handler_(NULL),
       window_(NULL) {
 }
 
@@ -83,7 +70,6 @@ void HungRendererDialog::ShowDialog(TabContents* contents) {
   contents_ = contents;
   Browser* browser = BrowserList::GetLastActive();
   DCHECK(browser);
-  handler_ = new HungRendererDialogHandler(contents_);
   window_ = browser->BrowserShowHtmlDialog(this, NULL);
 }
 
@@ -97,8 +83,9 @@ void HungRendererDialog::HideDialog(TabContents* contents) {
   // We do this because the close dialog handler runs whether it is trigged by
   // the user closing the box, or by being closed externally with widget->Close.
   contents_ = NULL;
-  DCHECK(handler_);
-  handler_->CloseDialog();
+  views::Widget* widget = views::Widget::GetWidgetForNativeWindow(window_);
+  DCHECK(widget);
+  widget->Close();
 }
 
 bool HungRendererDialog::IsDialogModal() const {
@@ -115,7 +102,7 @@ GURL HungRendererDialog::GetDialogContentURL() const {
 
 void HungRendererDialog::GetWebUIMessageHandlers(
     std::vector<WebUIMessageHandler*>* handlers) const {
-  handlers->push_back(handler_);
+  handlers->push_back(new HungRendererDialogHandler(contents_));
 }
 
 void HungRendererDialog::GetDialogSize(gfx::Size* size) const {
@@ -166,11 +153,6 @@ bool HungRendererDialog::ShouldShowDialogTitle() const {
 HungRendererDialogHandler::HungRendererDialogHandler(
     TabContents* contents)
   : contents_(contents) {
-}
-
-void HungRendererDialogHandler::CloseDialog() {
-  DCHECK(web_ui_);
-  static_cast<HtmlDialogUI*>(web_ui_)->CloseDialog(NULL);
 }
 
 void HungRendererDialogHandler::RegisterMessages() {

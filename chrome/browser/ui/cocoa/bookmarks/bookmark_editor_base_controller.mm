@@ -60,11 +60,11 @@
 
 // static; implemented for each platform.  Update this function for new
 // classes derived from BookmarkEditorBaseController.
-void BookmarkEditor::ShowNative(gfx::NativeWindow parent_hwnd,
-                                Profile* profile,
-                                const BookmarkNode* parent,
-                                const EditDetails& details,
-                                Configuration configuration) {
+void BookmarkEditor::Show(gfx::NativeWindow parent_hwnd,
+                          Profile* profile,
+                          const BookmarkNode* parent,
+                          const EditDetails& details,
+                          Configuration configuration) {
   BookmarkEditorBaseController* controller = nil;
   if (details.type == EditDetails::NEW_FOLDER) {
     controller = [[BookmarkAllTabsController alloc]

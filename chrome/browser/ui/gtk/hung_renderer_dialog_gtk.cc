@@ -249,7 +249,7 @@ void HungRendererDialogGtk::OnResponse(GtkWidget* dialog, int response_id) {
 
 namespace browser {
 
-void ShowNativeHungRendererDialog(TabContents* contents) {
+void ShowHungRendererDialog(TabContents* contents) {
   if (!logging::DialogsAreSuppressed()) {
     if (!g_instance)
       g_instance = new HungRendererDialogGtk();
@@ -257,7 +257,7 @@ void ShowNativeHungRendererDialog(TabContents* contents) {
   }
 }
 
-void HideNativeHungRendererDialog(TabContents* contents) {
+void HideHungRendererDialog(TabContents* contents) {
   if (!logging::DialogsAreSuppressed() && g_instance)
     g_instance->EndForTabContents(contents);
 }

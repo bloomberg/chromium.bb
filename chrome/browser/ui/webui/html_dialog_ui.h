@@ -100,9 +100,6 @@ class HtmlDialogUI : public ChromeWebUI {
   explicit HtmlDialogUI(TabContents* tab_contents);
   virtual ~HtmlDialogUI();
 
-  // Close the dialog, passing the specified arguments to the close handler.
-  void CloseDialog(const base::ListValue* args);
-
   // Returns the PropertyBag accessor object used to write the delegate pointer
   // into the TabContents (see class-level comment above).
   static PropertyAccessor<HtmlDialogUIDelegate*>& GetPropertyAccessor();

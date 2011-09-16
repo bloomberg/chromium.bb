@@ -3113,12 +3113,13 @@ void Browser::BookmarkAllTabs() {
   BookmarkModel* model = profile()->GetBookmarkModel();
   DCHECK(model && model->IsLoaded());
 
-  BookmarkEditor::EditDetails details =
-      BookmarkEditor::EditDetails::AddFolder(model->GetParentForNewNodes());
+  BookmarkEditor::EditDetails details;
+  details.type = BookmarkEditor::EditDetails::NEW_FOLDER;
   bookmark_utils::GetURLsForOpenTabs(this, &(details.urls));
   DCHECK(!details.urls.empty());
 
-  BookmarkEditor::Show(window()->GetNativeHandle(), profile_, details,
+  BookmarkEditor::Show(window()->GetNativeHandle(), profile_,
+                       model->GetParentForNewNodes(),  details,
                        BookmarkEditor::SHOW_TREE);
 }
 

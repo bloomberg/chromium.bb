@@ -366,6 +366,7 @@ void BookmarkBubbleView::ShowEditor() {
   const BookmarkNode* node =
       profile_->GetBookmarkModel()->GetMostRecentlyAddedNodeForURL(url_);
 
+#if !defined(WEBUI_DIALOGS)
 #if defined(USE_AURA)
   NOTIMPLEMENTED();
   gfx::NativeView parent = NULL;
@@ -387,15 +388,22 @@ void BookmarkBubbleView::ShowEditor() {
       static_cast<views::NativeWidgetGtk*>(GetWidget()->native_widget())->
           GetTransientParent());
 #endif
+#endif
 
   // Even though we just hid the window, we need to invoke Close to schedule
   // the delete and all that.
   Close();
 
   if (node) {
-    BookmarkEditor::Show(parent, profile_,
-                         BookmarkEditor::EditDetails::EditNode(node),
+#if defined(WEBUI_DIALOGS)
+    Browser* browser = BrowserList::GetLastActiveWithProfile(profile_);
+    DCHECK(browser);
+    browser->OpenBookmarkManagerEditNode(node->id());
+#else
+    BookmarkEditor::Show(parent, profile_, NULL,
+                         BookmarkEditor::EditDetails(node),
                          BookmarkEditor::SHOW_TREE);
+#endif
   }
 }
 
