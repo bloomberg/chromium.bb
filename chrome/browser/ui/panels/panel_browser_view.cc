@@ -205,7 +205,7 @@ void PanelBrowserView::OnPanelExpansionStateChanged(
       height = GetFrameView()->NonClientTopBorderHeight();
       break;
     case Panel::MINIMIZED:
-      height = PanelBrowserFrameView::MinimizedPanelHeight();
+      height = PanelManager::minimized_panel_height();
 
       // Start the mouse watcher so that we can bring up the minimized panels.
       // TODO(jianli): Need to support mouse watching in ChromeOS.
@@ -305,7 +305,7 @@ void PanelBrowserView::StopDrawingAttention() {
   // user clicks on it to mean to clear the attention.
   attention_cleared_time_ = base::TimeTicks::Now();
 
-  // Bring up the titlebar.
+  // Restore the panel.
   if (panel_->expansion_state() == Panel::TITLE_ONLY)
     panel_->SetExpansionState(Panel::EXPANDED);
 
@@ -424,6 +424,9 @@ class NativePanelTestingWin : public NativePanelTesting {
   virtual void DragTitlebar(int delta_x, int delta_y) OVERRIDE;
   virtual void CancelDragTitlebar() OVERRIDE;
   virtual void FinishDragTitlebar() OVERRIDE;
+  virtual void SetMousePositionForMinimizeRestore(
+      const gfx::Point& point) OVERRIDE;
+  virtual int TitleOnlyHeight() const OVERRIDE;
 
   PanelBrowserView* panel_browser_view_;
 };
@@ -463,4 +466,14 @@ void NativePanelTestingWin::CancelDragTitlebar() {
 
 void NativePanelTestingWin::FinishDragTitlebar() {
   panel_browser_view_->OnTitlebarMouseReleased();
+}
+
+void NativePanelTestingWin::SetMousePositionForMinimizeRestore(
+    const gfx::Point& hover_point) {
+  NOTIMPLEMENTED();
+}
+
+int NativePanelTestingWin::TitleOnlyHeight() const {
+  NOTIMPLEMENTED();
+  return -1;
 }

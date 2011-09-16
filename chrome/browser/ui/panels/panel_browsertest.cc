@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/panels/native_panel.h"
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
+#include "chrome/browser/ui/panels/panel_mouse_watcher.h"
 #include "chrome/browser/ui/panels/panel_settings_menu_model.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -162,6 +163,13 @@ class PanelBrowserTest : public BasePanelBrowserTest {
     }
   }
 
+  void CheckExpansionStates(
+      std::vector<Panel::ExpansionState> expected_expansion_states) {
+    std::vector<Panel*> panels = PanelManager::GetInstance()->panels();
+    for (size_t i = 0; i < panels.size(); i++)
+      EXPECT_EQ(expected_expansion_states[i], panels[i]->expansion_state());
+  }
+
   void TestDragging(int delta_x,
                     int delta_y,
                     size_t drag_index,
@@ -193,10 +201,8 @@ class PanelBrowserTest : public BasePanelBrowserTest {
     if (drag_action & DRAG_ACTION_BEGIN) {
       // Trigger the mouse-pressed event.
       // All panels should remain in their original positions.
-      gfx::Point button_press_point(
-          panels[drag_index]->GetRestoredBounds().x(),
-          panels[drag_index]->GetRestoredBounds().y());
-      panel_testing_to_drag->PressLeftMouseButtonTitlebar(button_press_point);
+      panel_testing_to_drag->PressLeftMouseButtonTitlebar(
+          panels[drag_index]->GetRestoredBounds().origin());
       CheckPanelBounds(panels, test_begin_bounds);
     }
 
@@ -293,6 +299,136 @@ class PanelBrowserTest : public BasePanelBrowserTest {
                               expected_panel_menu_items);
 
     panel->Close();
+  }
+
+  void TestMinimizeRestore() {
+    std::vector<Panel*> panels = PanelManager::GetInstance()->panels();
+    std::vector<gfx::Rect> test_begin_bounds = GetAllPanelsBounds();
+    std::vector<gfx::Rect> expected_bounds = test_begin_bounds;
+    std::vector<Panel::ExpansionState> expected_expansion_states(
+        panels.size(), Panel::EXPANDED);
+    std::vector<NativePanelTesting*> native_panels_testing(panels.size());
+    for (size_t i = 0; i < panels.size(); ++i) {
+      native_panels_testing[i] =
+          NativePanelTesting::Create(panels[i]->native_panel());
+    }
+
+    // Test minimize.
+    for (size_t index = 0; index < panels.size(); ++index) {
+      // Press left mouse button.  Verify nothing changed.
+      native_panels_testing[index]->PressLeftMouseButtonTitlebar(
+          panels[index]->GetRestoredBounds().origin());
+      CheckPanelBounds(panels, expected_bounds);
+      CheckExpansionStates(expected_expansion_states);
+
+      // Release mouse button.  Verify minimized.
+      native_panels_testing[index]->ReleaseMouseButtonTitlebar();
+      expected_bounds[index].set_height(
+          PanelManager::minimized_panel_height());
+      expected_bounds[index].set_y(
+          test_begin_bounds[index].y() +
+          test_begin_bounds[index].height() -
+          PanelManager::minimized_panel_height());
+      expected_expansion_states[index] = Panel::MINIMIZED;
+      CheckPanelBounds(panels, expected_bounds);
+      CheckExpansionStates(expected_expansion_states);
+    }
+
+    // Setup bounds and expansion states for minimized and titlebar-only
+    // states.
+    std::vector<Panel::ExpansionState> titlebar_exposed_states(
+        panels.size(), Panel::TITLE_ONLY);
+    std::vector<gfx::Rect> minimized_bounds = expected_bounds;
+    std::vector<Panel::ExpansionState> minimized_states(
+        panels.size(), Panel::MINIMIZED);
+    std::vector<gfx::Rect> titlebar_exposed_bounds = test_begin_bounds;
+    for (size_t index = 0; index < panels.size(); ++index) {
+      titlebar_exposed_bounds[index].set_height(
+          native_panels_testing[index]->TitleOnlyHeight());
+      titlebar_exposed_bounds[index].set_y(
+          test_begin_bounds[index].y() +
+          test_begin_bounds[index].height() -
+          native_panels_testing[index]->TitleOnlyHeight());
+    }
+
+    // Test hover.  All panels are currently in minimized state.
+    CheckExpansionStates(minimized_states);
+    for (size_t index = 0; index < panels.size(); ++index) {
+      // Hover mouse on minimized panel.
+      // Verify titlebar is exposed on all panels.
+      gfx::Point hover_point(panels[index]->GetRestoredBounds().origin());
+      native_panels_testing[index]->SetMousePositionForMinimizeRestore(
+          hover_point);
+      CheckPanelBounds(panels, titlebar_exposed_bounds);
+      CheckExpansionStates(titlebar_exposed_states);
+
+      // Hover mouse above the panel. Verify all panels are minimized.
+      hover_point.set_y(panels[index]->GetRestoredBounds().y() - 10);
+      native_panels_testing[index]->SetMousePositionForMinimizeRestore(
+          hover_point);
+      CheckPanelBounds(panels, minimized_bounds);
+      CheckExpansionStates(minimized_states);
+
+      // Hover mouse below minimized panel.
+      // Verify titlebar is exposed on all panels.
+      hover_point.set_y(panels[index]->GetRestoredBounds().y() +
+                        panels[index]->GetRestoredBounds().height() + 5);
+      native_panels_testing[index]->SetMousePositionForMinimizeRestore(
+          hover_point);
+      CheckPanelBounds(panels, titlebar_exposed_bounds);
+      CheckExpansionStates(titlebar_exposed_states);
+
+      // Hover below titlebar exposed panel.  Verify nothing changed.
+      hover_point.set_y(panels[index]->GetRestoredBounds().y() +
+                        panels[index]->GetRestoredBounds().height() + 6);
+      native_panels_testing[index]->SetMousePositionForMinimizeRestore(
+          hover_point);
+      CheckPanelBounds(panels, titlebar_exposed_bounds);
+      CheckExpansionStates(titlebar_exposed_states);
+
+      // Hover mouse above panel.  Verify all panels are minimized.
+      hover_point.set_y(panels[index]->GetRestoredBounds().y() - 10);
+      native_panels_testing[index]->SetMousePositionForMinimizeRestore(
+          hover_point);
+      CheckPanelBounds(panels, minimized_bounds);
+      CheckExpansionStates(minimized_states);
+    }
+
+    // Test restore.  All panels are currently in minimized state.
+    for (size_t index = 0; index < panels.size(); ++index) {
+      // Hover on the last panel.  This is to test the case of clicking on the
+      // panel when it's in titlebar exposed state.
+      if (index == panels.size() - 1) {
+        native_panels_testing[index]->SetMousePositionForMinimizeRestore(
+            minimized_bounds[index].origin());
+      }
+
+      // Click minimized or title bar exposed panel as the case may be.
+      // Verify panel is restored to its original size.
+      native_panels_testing[index]->PressLeftMouseButtonTitlebar(
+          panels[index]->GetRestoredBounds().origin());
+      native_panels_testing[index]->ReleaseMouseButtonTitlebar();
+      expected_bounds[index].set_height(
+          test_begin_bounds[index].height());
+      expected_bounds[index].set_y(test_begin_bounds[index].y());
+      expected_expansion_states[index] = Panel::EXPANDED;
+      CheckPanelBounds(panels, expected_bounds);
+      CheckExpansionStates(expected_expansion_states);
+
+      // Hover again on the last panel which is now restored, to reset the
+      // titlebar exposed state.
+      if (index == panels.size() - 1) {
+        native_panels_testing[index]->SetMousePositionForMinimizeRestore(
+            minimized_bounds[index].origin());
+      }
+    }
+
+    // The below could be separate tests, just adding a TODO here for tracking.
+    // TODO(prasadt): Add test for dragging when in titlebar exposed state.
+    // TODO(prasadt): Add test in presence of auto hiding task bar.
+
+    for (size_t i = 0; i < panels.size(); ++i)
+      delete native_panels_testing[i];
   }
 };
 
@@ -621,6 +757,31 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, CreateSettingsMenu) {
   TestCreateSettingsMenuForExtension(
       FILE_PATH_LITERAL("extension2"), Extension::INVALID,
       "http://home", "options.html");
+}
+
+#if defined(TOOLKIT_GTK)
+#define MAYBE_MinimizeRestore MinimizeRestore
+#else
+#define MAYBE_MinimizeRestore DISABLED_MinimizeRestore
+#endif
+
+IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MAYBE_MinimizeRestore) {
+  // Disable mouse watcher.  We'll simulate mouse movements for test.
+  PanelMouseWatcher::GetInstance()->EnableTestingMode();
+
+  // Test with one panel.
+  CreatePanelWithBounds("PanelTest1", gfx::Rect(0, 0, 100, 100));
+  TestMinimizeRestore();
+
+  // Test with two panels.
+  CreatePanelWithBounds("PanelTest2", gfx::Rect(0, 0, 110, 110));
+  TestMinimizeRestore();
+
+  // Test with three panels.
+  CreatePanelWithBounds("PanelTest3", gfx::Rect(0, 0, 120, 120));
+  TestMinimizeRestore();
+
+  PanelManager::GetInstance()->RemoveAll();
 }
 
 class PanelDownloadTest : public PanelBrowserTest {

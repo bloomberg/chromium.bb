@@ -265,6 +265,10 @@ class NativePanelTestingCocoa : public NativePanelTesting {
   virtual void DragTitlebar(int delta_x, int delta_y) OVERRIDE;
   virtual void CancelDragTitlebar() OVERRIDE;
   virtual void FinishDragTitlebar() OVERRIDE;
+  virtual void SetMousePositionForMinimizeRestore(
+      const gfx::Point& point) OVERRIDE;
+  virtual int TitleOnlyHeight() const OVERRIDE;
+
  private:
   PanelTitlebarViewCocoa* titlebar();
   // Weak, assumed always to outlive this test API object.
@@ -305,3 +309,12 @@ void NativePanelTestingCocoa::FinishDragTitlebar() {
   [titlebar() finishDragTitlebar];
 }
 
+void NativePanelTestingCocoa::SetMousePositionForMinimizeRestore(
+    const gfx::Point& hover_point) {
+  NOTIMPLEMENTED();
+}
+
+int NativePanelTestingCocoa::TitleOnlyHeight() const {
+  NOTIMPLEMENTED();
+  return -1;
+}

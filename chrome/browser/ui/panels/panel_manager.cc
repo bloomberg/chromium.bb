@@ -16,15 +16,9 @@ namespace {
 // Invalid panel index.
 const size_t kInvalidPanelIndex = static_cast<size_t>(-1);
 
-// Minimum width and height of a panel.
-// Note: The minimum size of a widget (see widget.cc) is fixed to 100x100.
-// TODO(jianli): Need to fix this to support smaller panel.
-const int kPanelMinWidthPixels = 100;
-const int kPanelMinHeightPixels = 100;
-
 // Default width and height of a panel.
-const int kPanelDefaultWidthPixels = 240;
-const int kPanelDefaultHeightPixels = 290;
+const int kPanelDefaultWidth = 240;
+const int kPanelDefaultHeight = 290;
 
 // Maxmium width and height of a panel based on the factor of the working
 // area.
@@ -106,20 +100,20 @@ Panel* PanelManager::CreatePanel(Browser* browser) {
   int height = browser->override_bounds().height();
 
   if (width == 0 && height == 0) {
-    width = kPanelDefaultWidthPixels;
-    height = kPanelDefaultHeightPixels;
+    width = kPanelDefaultWidth;
+    height = kPanelDefaultHeight;
   }
 
   int max_panel_width = GetMaxPanelWidth();
   int max_panel_height = GetMaxPanelHeight();
 
-  if (width < kPanelMinWidthPixels)
-    width = kPanelMinWidthPixels;
+  if (width < kPanelMinWidth)
+    width = kPanelMinWidth;
   else if (width > max_panel_width)
     width = max_panel_width;
 
-  if (height < kPanelMinHeightPixels)
-    height = kPanelMinHeightPixels;
+  if (height < kPanelMinHeight)
+    height = kPanelMinHeight;
   else if (height > max_panel_height)
     height = max_panel_height;
 

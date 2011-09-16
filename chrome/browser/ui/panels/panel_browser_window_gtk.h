@@ -74,7 +74,20 @@ class PanelBrowserWindowGtk : public BrowserWindowGtk,
   virtual void SetRestoredHeight(int height) OVERRIDE;
 
  private:
-  void SetBoundsImpl();
+  // Resize the window as specified by the bounds. Move the window to the
+  // specified location only if "move" is true. We set the window gravity to be
+  // GDK_GRAVITY_SOUTH_EAST which means the window is anchored to the bottom
+  // right corner on resize, making it unnecessary to move the window if the
+  // bottom right corner is unchanged, for example when we minimize to the
+  // bottom. Moving can actually result in the wrong behavior.
+  //   - Say window is 100x100 with x,y=900,900 on a 1000x1000 screen.
+  //   - Say you minimize the window to 100x3 and move it to 900,997 to keep it
+  //     anchored to the bottom.
+  //   - resize is an async operation and the window manager will decide that
+  //     the move will take the window off screen and it won't honor the
+  //     request.
+  //   - When resize finally happens, you'll have a 100x3 window a x,y=900,900.
+  void SetBoundsImpl(const gfx::Rect& bounds, bool move);
 
   // MessageLoop::Observer implementation:
   virtual void WillProcessEvent(GdkEvent* event) OVERRIDE;
@@ -84,6 +97,10 @@ class PanelBrowserWindowGtk : public BrowserWindowGtk,
   void DestroyDragWidget();
   void EndDrag(bool canceled);
   void CleanupDragDrop();
+
+  int TitleOnlyHeight() const {
+    return titlebar_widget()->allocation.height;
+  }
 
   CHROMEGTK_CALLBACK_1(PanelBrowserWindowGtk, gboolean,
                        OnTitlebarButtonPressEvent, GdkEventButton*);
@@ -132,6 +149,10 @@ class PanelBrowserWindowGtk : public BrowserWindowGtk,
 
   scoped_ptr<PanelSettingsMenuModel> settings_menu_model_;
   scoped_ptr<MenuGtk> settings_menu_;
+
+  // Stores the original height of the panel so we can restore it after it's
+  // been minimized.
+  int restored_height_;
 
   DISALLOW_COPY_AND_ASSIGN(PanelBrowserWindowGtk);
 };
