@@ -33,7 +33,8 @@ RenderWidgetHostView* TabContentsViewWin::CreateViewForWidget(
     delete view_;  // TODO(jam): need to do anything else?
 
   view_ = new RenderWidgetHostViewWin(render_widget_host);
-  view_->Show();
+  view_->CreateWnd(GetNativeView());
+  view_->ShowWindow(SW_SHOW);
   return view_;
 }
 

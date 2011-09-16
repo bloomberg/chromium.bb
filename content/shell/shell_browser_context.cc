@@ -22,10 +22,11 @@
 #include "content/browser/ssl/ssl_host_state.h"
 #include "content/shell/shell_browser_main.h"
 #include "net/base/cert_verifier.h"
+#include "net/base/cookie_monster.h"
 #include "net/base/default_origin_bound_cert_store.h"
 #include "net/base/dnsrr_resolver.h"
 #include "net/base/host_resolver.h"
-#include "net/http/http_auth_handler_factory.h"
+#include "net/http/http_auth_handler_factory.gh"
 #include "net/http/http_cache.h"
 #include "net/base/origin_bound_cert_service.h"
 #include "net/base/ssl_config_service_defaults.h"
@@ -118,6 +119,9 @@ class ShellURLRequestContextGetter : public net::URLRequestContextGetter {
           main_backend);
       main_http_factory_.reset(main_cache);
 
+      scoped_refptr<net::CookieStore> cookie_store =
+          new net::CookieMonster(NULL, NULL);
+
       url_request_context_ = new net::URLRequestContext();
       job_factory_.reset(new net::URLRequestJobFactory);
       url_request_context_->set_job_factory(job_factory_.get());
@@ -126,6 +130,7 @@ class ShellURLRequestContextGetter : public net::URLRequestContextGetter {
           origin_bound_cert_service_.get());
       url_request_context_->set_dnsrr_resolver(dnsrr_resolver_.get());
       url_request_context_->set_proxy_service(proxy_service_.get());
+      url_request_context_->set_cookie_store(cookie_store);
     }
 
     return url_request_context_;
