@@ -10,18 +10,22 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/gtest_prod_util.h"
 #include "base/task.h"
-#include "chrome/renderer/autofill/form_manager.h"
+#include "chrome/renderer/autofill/form_cache.h"
 #include "chrome/renderer/page_click_listener.h"
 #include "content/renderer/render_view_observer.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebAutofillClient.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebNode.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputElement.h"
-#include "webkit/glue/form_data.h"
-#include "webkit/glue/form_field.h"
 
 namespace webkit_glue {
+struct FormData;
 struct FormDataPredictions;
+struct FormField;
+}
+
+namespace WebKit {
+class WebNode;
 }
 
 namespace autofill {
@@ -33,8 +37,8 @@ class PasswordAutofillManager;
 // This code was originally part of RenderView.
 // Note that Autofill encompasses:
 // - single text field suggestions, that we usually refer to as Autocomplete,
-// - password form fill, refered to as password Autofill, and
-// - entire form fill based on one field entry, referred to as form Autofill.
+// - password form fill, refered to as Password Autofill, and
+// - entire form fill based on one field entry, referred to as Form Autofill.
 
 class AutofillAgent : public RenderViewObserver,
                       public PageClickListener,
@@ -49,25 +53,6 @@ class AutofillAgent : public RenderViewObserver,
   // use this signal to re-scan the page for forms.
   void FrameTranslated(WebKit::WebFrame* frame);
 
-  // WebKit::WebAutofillClient implementation.  Public for tests.
-  virtual void didAcceptAutofillSuggestion(const WebKit::WebNode& node,
-                                           const WebKit::WebString& value,
-                                           const WebKit::WebString& label,
-                                           int unique_id,
-                                           unsigned index);
-  virtual void didSelectAutofillSuggestion(const WebKit::WebNode& node,
-                                           const WebKit::WebString& value,
-                                           const WebKit::WebString& label,
-                                           int unique_id);
-  virtual void didClearAutofillSelection(const WebKit::WebNode& node);
-  virtual void removeAutocompleteSuggestion(const WebKit::WebString& name,
-                                            const WebKit::WebString& value);
-  virtual void textFieldDidEndEditing(const WebKit::WebInputElement& element);
-  virtual void textFieldDidChange(const WebKit::WebInputElement& element);
-  virtual void textFieldDidReceiveKeyDown(
-      const WebKit::WebInputElement& element,
-      const WebKit::WebKeyboardEvent& event);
-
  private:
   enum AutofillAction {
     AUTOFILL_NONE,     // No state set.
@@ -75,18 +60,40 @@ class AutofillAgent : public RenderViewObserver,
     AUTOFILL_PREVIEW,  // Preview the Autofill form data.
   };
 
-  // RenderView::Observer implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message);
-  virtual void DidFinishDocumentLoad(WebKit::WebFrame* frame);
-  virtual void FrameDetached(WebKit::WebFrame* frame);
-  virtual void FrameWillClose(WebKit::WebFrame* frame);
+  // RenderView::Observer:
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual void DidFinishDocumentLoad(WebKit::WebFrame* frame) OVERRIDE;
+  virtual void FrameDetached(WebKit::WebFrame* frame) OVERRIDE;
+  virtual void FrameWillClose(WebKit::WebFrame* frame) OVERRIDE;
   virtual void WillSubmitForm(WebKit::WebFrame* frame,
-                              const WebKit::WebFormElement& form);
+                              const WebKit::WebFormElement& form) OVERRIDE;
 
-  // PageClickListener implementation:
+  // PageClickListener:
   virtual bool InputElementClicked(const WebKit::WebInputElement& element,
                                    bool was_focused,
-                                   bool is_focused);
+                                   bool is_focused) OVERRIDE;
+
+  // WebKit::WebAutofillClient:
+  virtual void didAcceptAutofillSuggestion(const WebKit::WebNode& node,
+                                           const WebKit::WebString& value,
+                                           const WebKit::WebString& label,
+                                           int unique_id,
+                                           unsigned index) OVERRIDE;
+  virtual void didSelectAutofillSuggestion(const WebKit::WebNode& node,
+                                           const WebKit::WebString& value,
+                                           const WebKit::WebString& label,
+                                           int unique_id) OVERRIDE;
+  virtual void didClearAutofillSelection(const WebKit::WebNode& node) OVERRIDE;
+  virtual void removeAutocompleteSuggestion(
+      const WebKit::WebString& name,
+      const WebKit::WebString& value) OVERRIDE;
+  virtual void textFieldDidEndEditing(
+      const WebKit::WebInputElement& element) OVERRIDE;
+  virtual void textFieldDidChange(
+      const WebKit::WebInputElement& element) OVERRIDE;
+  virtual void textFieldDidReceiveKeyDown(
+      const WebKit::WebInputElement& element,
+      const WebKit::WebKeyboardEvent& event) OVERRIDE;
 
   void OnSuggestionsReturned(int query_id,
                              const std::vector<string16>& values,
@@ -137,9 +144,9 @@ class AutofillAgent : public RenderViewObserver,
       webkit_glue::FormData* form,
       webkit_glue::FormField* field) WARN_UNUSED_RESULT;
 
-  FormManager form_manager_;
+  FormCache form_cache_;
 
-  PasswordAutofillManager* password_autofill_manager_;
+  PasswordAutofillManager* password_autofill_manager_;  // WEAK reference.
 
   // The ID of the last request sent for form field Autofill.  Used to ignore
   // out of date responses.
@@ -168,6 +175,13 @@ class AutofillAgent : public RenderViewObserver,
   bool has_shown_autofill_popup_for_current_edit_;
 
   ScopedRunnableMethodFactory<AutofillAgent> method_factory_;
+
+  friend class PasswordAutofillManagerTest;
+  FRIEND_TEST_ALL_PREFIXES(RenderViewTest, SendForms);
+  FRIEND_TEST_ALL_PREFIXES(RenderViewTest, FillFormElement);
+  FRIEND_TEST_ALL_PREFIXES(PasswordAutofillManagerTest, WaitUsername);
+  FRIEND_TEST_ALL_PREFIXES(PasswordAutofillManagerTest, SuggestionAccept);
+  FRIEND_TEST_ALL_PREFIXES(PasswordAutofillManagerTest, SuggestionSelect);
 
   DISALLOW_COPY_AND_ASSIGN(AutofillAgent);
 };

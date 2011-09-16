@@ -24,7 +24,6 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/renderer/autofill/autofill_agent.h"
-#include "chrome/renderer/autofill/form_manager.h"
 #include "chrome/renderer/autofill/password_autofill_manager.h"
 #include "chrome/renderer/automation/automation_renderer_helper.h"
 #include "chrome/renderer/automation/dom_automation_v8_extension.h"
@@ -84,7 +83,6 @@
 #include "webkit/plugins/ppapi/plugin_module.h"
 
 using autofill::AutofillAgent;
-using autofill::FormManager;
 using autofill::PasswordAutofillManager;
 using WebKit::WebCache;
 using WebKit::WebDataSource;

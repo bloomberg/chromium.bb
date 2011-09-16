@@ -46,8 +46,10 @@
       'sources': [
         'renderer/autofill/autofill_agent.cc',
         'renderer/autofill/autofill_agent.h',
-        'renderer/autofill/form_manager.cc',
-        'renderer/autofill/form_manager.h',
+        'renderer/autofill/form_autofill_util.cc',
+        'renderer/autofill/form_autofill_util.h',
+        'renderer/autofill/form_cache.cc',
+        'renderer/autofill/form_cache.h',
         'renderer/autofill/password_autofill_manager.cc',
         'renderer/autofill/password_autofill_manager.h',
         'renderer/automation/automation_renderer_helper.cc',

@@ -9,14 +9,15 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/common/autofill_messages.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/renderer/autofill/form_autofill_util.h"
 #include "chrome/renderer/autofill/password_autofill_manager.h"
 #include "content/renderer/render_view.h"
 #include "grit/generated_resources.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFormControlElement.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebInputElement.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebNode.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -78,7 +79,7 @@ void AutofillAgent::DidFinishDocumentLoad(WebFrame* frame) {
   // The document has now been fully loaded.  Scan for forms to be sent up to
   // the browser.
   std::vector<webkit_glue::FormData> forms;
-  form_manager_.ExtractForms(*frame, &forms);
+  form_cache_.ExtractForms(*frame, &forms);
 
   if (!forms.empty()) {
     Send(new AutofillHostMsg_FormsSeen(routing_id(), forms,
@@ -87,24 +88,23 @@ void AutofillAgent::DidFinishDocumentLoad(WebFrame* frame) {
 }
 
 void AutofillAgent::FrameDetached(WebFrame* frame) {
-  form_manager_.ResetFrame(*frame);
+  form_cache_.ResetFrame(*frame);
 }
 
 void AutofillAgent::FrameWillClose(WebFrame* frame) {
-  form_manager_.ResetFrame(*frame);
+  form_cache_.ResetFrame(*frame);
 }
 
 void AutofillAgent::WillSubmitForm(WebFrame* frame,
                                    const WebFormElement& form) {
   FormData form_data;
-  if (FormManager::WebFormElementToFormData(
-          form,
-          WebFormControlElement(),
-          FormManager::REQUIRE_AUTOCOMPLETE,
-          static_cast<FormManager::ExtractMask>(
-              FormManager::EXTRACT_VALUE | FormManager::EXTRACT_OPTION_TEXT),
-          &form_data,
-          NULL)) {
+  if (WebFormElementToFormData(form,
+                               WebFormControlElement(),
+                               REQUIRE_AUTOCOMPLETE,
+                               static_cast<ExtractMask>(
+                                   EXTRACT_VALUE | EXTRACT_OPTION_TEXT),
+                               &form_data,
+                               NULL)) {
     Send(new AutofillHostMsg_FormSubmitted(routing_id(), form_data,
                                            base::TimeTicks::Now()));
   }
@@ -140,7 +140,7 @@ void AutofillAgent::didAcceptAutofillSuggestion(const WebNode& node,
              index == static_cast<unsigned>(suggestions_clear_index_)) {
     // User selected 'Clear form'.
     DCHECK(node == autofill_query_element_);
-    form_manager_.ClearFormWithElement(autofill_query_element_);
+    form_cache_.ClearFormWithElement(autofill_query_element_);
   } else if (!unique_id) {
     // User selected an Autocomplete entry, so we fill directly.
     WebInputElement element = node.toConst<WebInputElement>();
@@ -174,8 +174,8 @@ void AutofillAgent::didClearAutofillSelection(const WebNode& node) {
     return;
 
   if (!autofill_query_element_.isNull() && node == autofill_query_element_) {
-    FormManager::ClearPreviewedFormWithElement(autofill_query_element_,
-                                               was_query_node_autofilled_);
+    ClearPreviewedFormWithElement(autofill_query_element_,
+                                  was_query_node_autofilled_);
   } else {
     // TODO(isherman): There seem to be rare cases where this code *is*
     // reachable: see [ http://crbug.com/96321#c6 ].  Ideally we would
@@ -292,7 +292,7 @@ void AutofillAgent::OnSuggestionsReturned(int query_id,
   // The form has been auto-filled, so give the user the chance to clear the
   // form.  Append the 'Clear form' menu item.
   if (has_autofill_item &&
-      FormManager::FormWithElementIsAutofilled(autofill_query_element_)) {
+      FormWithElementIsAutofilled(autofill_query_element_)) {
     v.push_back(l10n_util::GetStringUTF16(IDS_AUTOFILL_CLEAR_FORM_MENU_ITEM));
     l.push_back(string16());
     i.push_back(string16());
@@ -332,12 +332,12 @@ void AutofillAgent::OnFormDataFilled(int query_id,
 
   switch (autofill_action_) {
     case AUTOFILL_FILL:
-      FormManager::FillForm(form, autofill_query_element_);
+      FillForm(form, autofill_query_element_);
       Send(new AutofillHostMsg_DidFillAutofillFormData(routing_id(),
                                                        base::TimeTicks::Now()));
       break;
     case AUTOFILL_PREVIEW:
-      FormManager::PreviewForm(form, autofill_query_element_);
+      PreviewForm(form, autofill_query_element_);
       Send(new AutofillHostMsg_DidPreviewAutofillFormData(routing_id()));
       break;
     default:
@@ -349,7 +349,7 @@ void AutofillAgent::OnFormDataFilled(int query_id,
 void AutofillAgent::OnFieldTypePredictionsAvailable(
     const std::vector<FormDataPredictions>& forms) {
   for (size_t i = 0; i < forms.size(); ++i) {
-    form_manager_.ShowPredictions(forms[i]);
+    form_cache_.ShowPredictions(forms[i]);
   }
 }
 
@@ -401,9 +401,7 @@ void AutofillAgent::QueryAutofillSuggestions(const WebInputElement& element,
   if (!FindFormAndFieldForNode(element, &form, &field)) {
     // If we didn't find the cached form, at least let autocomplete have a shot
     // at providing suggestions.
-    FormManager::WebFormControlElementToFormField(element,
-                                                  FormManager::EXTRACT_VALUE,
-                                                  &field);
+    WebFormControlElementToFormField(element, EXTRACT_VALUE, &field);
   }
 
   Send(new AutofillHostMsg_QueryFormFieldAutofill(
@@ -431,8 +429,7 @@ bool AutofillAgent::FindFormAndFieldForNode(const WebNode& node,
                                             webkit_glue::FormData* form,
                                             webkit_glue::FormField* field) {
   const WebInputElement& element = node.toConst<WebInputElement>();
-  return
-      FormManager::FindFormAndFieldForFormControlElement(element, form, field);
+  return FindFormAndFieldForFormControlElement(element, form, field);
 }
 
 }  // namespace autofill

@@ -170,10 +170,6 @@ class PasswordAutofillManagerTest : public RenderViewTest {
   DISALLOW_COPY_AND_ASSIGN(PasswordAutofillManagerTest);
 };
 
-}
-
-using autofill::PasswordAutofillManagerTest;
-
 // Tests that the password login is autocompleted as expected when the browser
 // sends back the password info.
 TEST_F(PasswordAutofillManagerTest, InitialAutocomplete) {
@@ -422,3 +418,5 @@ TEST_F(PasswordAutofillManagerTest, SuggestionSelect) {
   // Autocomplete should not have kicked in.
   CheckTextFieldsState("", false, "", false);
 }
+
+}  // namespace autofill

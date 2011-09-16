@@ -19,6 +19,8 @@ using WebKit::WebString;
 using webkit_glue::FormData;
 using webkit_glue::FormField;
 
+namespace autofill {
+
 TEST_F(RenderViewTest, SendForms) {
   // Don't want any delay for form state sync changes. This will still post a
   // message so updates will get coalesced, but as soon as we spin the message
@@ -155,3 +157,5 @@ TEST_F(RenderViewTest, FillFormElement) {
   ASSERT_EQ(static_cast<IPC::Message*>(NULL), message2);
   EXPECT_EQ(firstname.value(), WebKit::WebString::fromUTF8("David"));
 }
+
+}  // namespace autofill
