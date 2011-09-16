@@ -175,6 +175,8 @@
         'renderer/spellchecker/spellcheck.h',
         'renderer/spellchecker/spellcheck_worditerator.cc',
         'renderer/spellchecker/spellcheck_worditerator.h',
+        'renderer/static_v8_external_string_resource.cc',
+        'renderer/static_v8_external_string_resource.h',
         'renderer/translate_helper.cc',
         'renderer/translate_helper.h',
         'renderer/visitedlink_slave.cc',

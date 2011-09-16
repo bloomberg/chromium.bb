@@ -31,6 +31,7 @@
 #include "chrome/renderer/extensions/js_only_v8_extensions.h"
 #include "chrome/renderer/extensions/renderer_extension_bindings.h"
 #include "chrome/renderer/extensions/user_script_slave.h"
+#include "chrome/renderer/static_v8_external_string_resource.h"
 #include "content/renderer/render_view.h"
 #include "content/renderer/render_view_visitor.h"
 #include "grit/common_resources.h"
@@ -40,6 +41,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "v8/include/v8.h"
 #include "webkit/glue/webkit_glue.h"
 
@@ -189,7 +191,10 @@ class ExtensionImpl : public ExtensionBase {
  private:
   static v8::Handle<v8::Value> GetExtensionAPIDefinition(
       const v8::Arguments& args) {
-    return v8::String::New(GetStringResource(IDR_EXTENSION_API_JSON));
+    return v8::String::NewExternal(
+        new StaticV8ExternalAsciiStringResource(
+            ResourceBundle::GetSharedInstance().GetRawDataResource(
+                IDR_EXTENSION_API_JSON)));
   }
 
   static v8::Handle<v8::Value> GetExtensionViews(const v8::Arguments& args) {
