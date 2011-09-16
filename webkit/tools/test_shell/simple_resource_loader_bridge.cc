@@ -40,6 +40,7 @@
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
 #include "base/memory/ref_counted.h"
+#include "base/string_util.h"
 #include "base/time.h"
 #include "base/timer.h"
 #include "base/threading/thread.h"
@@ -48,6 +49,7 @@
 #include "net/base/file_stream.h"
 #include "net/base/io_buffer.h"
 #include "net/base/load_flags.h"
+#include "net/base/mime_util.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
 #include "net/base/static_cookie_policy.h"
@@ -101,6 +103,17 @@ TestShellRequestContextParams* g_request_context_params = NULL;
 TestShellRequestContext* g_request_context = NULL;
 base::Thread* g_cache_thread = NULL;
 bool g_accept_all_cookies = false;
+
+struct FileOverHTTPParams {
+  FileOverHTTPParams(std::string in_file_path_template, GURL in_http_prefix)
+      : file_path_template(in_file_path_template),
+        http_prefix(in_http_prefix) {}
+
+  std::string file_path_template;
+  GURL http_prefix;
+};
+
+FileOverHTTPParams* g_file_over_http_params = NULL;
 
 //-----------------------------------------------------------------------------
 
@@ -191,6 +204,7 @@ class RequestProxy : public net::URLRequest::Delegate,
     peer_ = peer;
     owner_loop_ = MessageLoop::current();
 
+    ConvertRequestParamsForFileOverHTTPIfNeeded(params);
     // proxy over to the io thread
     g_io_thread->message_loop()->PostTask(FROM_HERE, NewRunnableMethod(
         this, &RequestProxy::AsyncStart, params));
@@ -421,6 +435,8 @@ class RequestProxy : public net::URLRequest::Delegate,
     DCHECK(request->status().is_success());
     ResourceResponseInfo info;
     PopulateResponseInfo(request, &info);
+    // For file protocol, should never have the redirect situation.
+    DCHECK(!ConvertResponseInfoForFileOverHTTPIfNeeded(request, &info));
     OnReceivedRedirect(new_url, info, defer_redirect);
   }
 
@@ -428,8 +444,14 @@ class RequestProxy : public net::URLRequest::Delegate,
     if (request->status().is_success()) {
       ResourceResponseInfo info;
       PopulateResponseInfo(request, &info);
-      OnReceivedResponse(info);
-      AsyncReadData();  // start reading
+      // If encountering error when requesting the file, cancel the request.
+      if (ConvertResponseInfoForFileOverHTTPIfNeeded(request, &info) &&
+          failed_file_request_status_.get()) {
+        AsyncCancel();
+      } else {
+        OnReceivedResponse(info);
+        AsyncReadData();  // start reading
+      }
     } else {
       Done();
     }
@@ -486,7 +508,12 @@ class RequestProxy : public net::URLRequest::Delegate,
       upload_progress_timer_.Stop();
     }
     DCHECK(request_.get());
-    OnCompletedRequest(request_->status(), std::string(), base::Time());
+    // If |failed_file_request_status_| is not empty, which means the request
+    // was a file request and encountered an error, then we need to use the
+    // |failed_file_request_status_|. Otherwise use request_'s status.
+    OnCompletedRequest(failed_file_request_status_.get() ?
+                       *failed_file_request_status_ : request_->status(),
+                       std::string(), base::Time());
     request_.reset();  // destroy on the io thread
   }
 
@@ -541,6 +568,84 @@ class RequestProxy : public net::URLRequest::Delegate,
         &info->appcache_manifest_url);
   }
 
+  // Called on owner thread
+  void ConvertRequestParamsForFileOverHTTPIfNeeded(RequestParams* params) {
+    // Reset the status.
+    file_url_prefix_ .clear();
+    failed_file_request_status_.reset();
+    // Only do this when enabling file-over-http and request is file scheme.
+    if (!g_file_over_http_params || !params->url.SchemeIsFile())
+      return;
+
+    // For file protocol, method must be GET or NULL.
+    DCHECK(params->method == "GET" || params->method.empty());
+    // File protocol doesn't support upload.
+    DCHECK(!params->upload);
+    DCHECK(params->referrer.is_empty());
+    DCHECK(!params->download_to_file);
+
+    // "GET" is the only method we allow.
+    params->method = "GET";
+    std::string original_request = params->url.spec();
+    std::string::size_type found =
+        original_request.find(g_file_over_http_params->file_path_template);
+    if (found == std::string::npos)
+      return;
+    found += g_file_over_http_params->file_path_template.size();
+    file_url_prefix_ = original_request.substr(0, found);
+    original_request.replace(0, found,
+        g_file_over_http_params->http_prefix.spec());
+    params->url = GURL(original_request);
+    params->first_party_for_cookies = params->url;
+    // For file protocol, nerver use cache.
+    params->load_flags = net::LOAD_BYPASS_CACHE;
+  }
+
+  // Called on IO thread.
+  bool ConvertResponseInfoForFileOverHTTPIfNeeded(net::URLRequest* request,
+      ResourceResponseInfo* info) {
+    // Only do this when enabling file-over-http and request url
+    // matches the http prefix for file-over-http feature.
+    if (!g_file_over_http_params || file_url_prefix_.empty())
+      return false;
+    std::string original_request = request->url().spec();
+    std::string http_prefix = g_file_over_http_params->http_prefix.spec();
+    DCHECK(!original_request.empty() &&
+           StartsWithASCII(original_request, http_prefix, true));
+    // Get the File URL.
+    original_request.replace(0, http_prefix.size(), file_url_prefix_);
+
+    FilePath file_path;
+    if (!net::FileURLToFilePath(GURL(original_request), &file_path)) {
+      NOTREACHED();
+    }
+
+    info->mime_type.clear();
+    DCHECK(info->headers);
+    int status_code = info->headers->response_code();
+    // File protocol does not support response headers.
+    info->headers = NULL;
+    if (200 == status_code) {
+      // Don't use the MIME type from HTTP server, use net::GetMimeTypeFromFile
+      // instead.
+      net::GetMimeTypeFromFile(file_path, &info->mime_type);
+    } else {
+      // If the file does not exist, immediately call OnCompletedRequest with
+      // setting URLRequestStatus to FAILED.
+      DCHECK(status_code == 404 || status_code == 403);
+      if (status_code == 404) {
+        failed_file_request_status_.reset(
+            new net::URLRequestStatus(net::URLRequestStatus::FAILED,
+                                      net::ERR_FILE_NOT_FOUND));
+      } else {
+        failed_file_request_status_.reset(
+            new net::URLRequestStatus(net::URLRequestStatus::FAILED,
+                                      net::ERR_ACCESS_DENIED));
+      }
+    }
+    return true;
+  }
+
   scoped_ptr<net::URLRequest> request_;
 
   // Support for request.download_to_file behavior.
@@ -567,6 +672,11 @@ class RequestProxy : public net::URLRequest::Delegate,
   // Info used to determine whether or not to send an upload progress update.
   uint64 last_upload_position_;
   base::TimeTicks last_upload_ticks_;
+
+  // Save the real FILE URL prefix for the FILE URL which converts to HTTP URL.
+  std::string file_url_prefix_;
+  // Save a failed file request status to pass it to webkit.
+  scoped_ptr<net::URLRequestStatus> failed_file_request_status_;
 };
 
 //-----------------------------------------------------------------------------
@@ -834,6 +944,11 @@ void SimpleResourceLoaderBridge::Shutdown() {
   } else {
     delete g_request_context_params;
     g_request_context_params = NULL;
+
+    if (g_file_over_http_params) {
+      delete g_file_over_http_params;
+      g_file_over_http_params = NULL;
+    }
   }
 }
 
@@ -913,4 +1028,14 @@ scoped_refptr<base::MessageLoopProxy>
     return NULL;
   }
   return g_io_thread->message_loop_proxy();
+}
+
+// static
+void SimpleResourceLoaderBridge::AllowFileOverHTTP(
+    const std::string& file_path_template, const GURL& http_prefix) {
+  DCHECK(!file_path_template.empty());
+  DCHECK(http_prefix.is_valid() &&
+         (http_prefix.SchemeIs("http") || http_prefix.SchemeIs("https")));
+  g_file_over_http_params = new FileOverHTTPParams(file_path_template,
+                                                   http_prefix);
 }

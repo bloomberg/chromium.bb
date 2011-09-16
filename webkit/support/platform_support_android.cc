@@ -10,8 +10,10 @@
 #include "base/path_service.h"
 #include "base/string16.h"
 #include "base/string_piece.h"
+#include "googleurl/src/gurl.h"
 #include "grit/webkit_resources.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "webkit/tools/test_shell/simple_resource_loader_bridge.h"
 
 namespace webkit_support {
 
@@ -27,6 +29,18 @@ void AfterInitialize(bool unit_test_mode) {
   PathService::Get(base::DIR_EXE, &data_path);
   data_path = data_path.Append("DumpRenderTree.pak");
   ResourceBundle::InitSharedInstanceForTest(data_path);
+
+  // We enable file-over-http to bridge the file protocol to http protocol
+  // in here, which can
+  // (1) run the layout tests on android target device, but never need to
+  // push the test files and corresponding resources to device, which saves
+  // huge running time.
+  // (2) still run non-http layout (tests not under LayoutTests/http) tests
+  // via file protocol without breaking test environment / convention of webkit
+  // layout tests, which are followed by current all webkit ports.
+  SimpleResourceLoaderBridge::AllowFileOverHTTP(
+      "third_party/WebKit/LayoutTests/",
+      GURL("http://127.0.0.1:8000/all-tests/"));
 }
 
 void BeforeShutdown() {
