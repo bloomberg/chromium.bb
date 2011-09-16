@@ -3373,12 +3373,6 @@
    fun:_ZN14NewTabObserver7ObserveEiRK18NotificationSourceRK19NotificationDetails
 }
 {
-   bug_75247
-   Memcheck:Leak
-   fun:_Znw*
-   fun:*AutofillDownloadTestHelper*
-}
-{
    bug_75641
    Memcheck:Param
    write(buf)

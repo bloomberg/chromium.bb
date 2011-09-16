@@ -91,7 +91,7 @@ class AutofillDownloadManager : public URLFetcher::Delegate {
                      AutofillRequestType request_type);
 
  private:
-  friend class AutofillDownloadTestHelper;  // unit-test.
+  friend class AutofillDownloadTest;
   FRIEND_TEST_ALL_PREFIXES(AutofillDownloadTest, QueryAndUploadTest);
 
   struct FormRequestData;
