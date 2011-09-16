@@ -571,7 +571,35 @@ function resolveSupportId(supportId) {
       headers);
 }
 
-remoting.doTryConnect = function() {
+remoting.tryConnect = function() {
+  if (remoting.oauth2.needsNewAccessToken()) {
+    remoting.oauth2.refreshAccessToken(function(xhr) {
+      if (remoting.oauth2.needsNewAccessToken()) {
+        // Failed to get access token
+        remoting.debug.log('tryConnect: OAuth2 token fetch failed');
+        showConnectError_(remoting.ClientError.OAUTH_FETCH_FAILED);
+        return;
+      }
+      remoting.tryConnectWithAccessToken();
+    });
+  } else {
+    remoting.tryConnectWithAccessToken();
+  }
+}
+
+remoting.tryConnectWithAccessToken = function() {
+  if (!remoting.wcsLoader) {
+    remoting.wcsLoader = new remoting.WcsLoader();
+  }
+  remoting.wcsLoader.start(
+      remoting.oauth2.getAccessToken(),
+      function(setToken) {
+        remoting.oauth2.callWithToken(setToken);
+      },
+      remoting.tryConnectWithWcs);
+}
+
+remoting.tryConnectWithWcs = function() {
   var accessCode = document.getElementById('access-code-entry').value;
   remoting.accessCode = normalizeAccessCode_(accessCode);
   // At present, only 12-digit access codes are supported, of which the first
@@ -583,22 +611,6 @@ remoting.doTryConnect = function() {
     var supportId = remoting.accessCode.substring(0, kSupportIdLen);
     remoting.setMode(remoting.AppMode.CLIENT_CONNECTING);
     resolveSupportId(supportId);
-  }
-}
-
-remoting.tryConnect = function() {
-  if (remoting.oauth2.needsNewAccessToken()) {
-    remoting.oauth2.refreshAccessToken(function(xhr) {
-      if (remoting.oauth2.needsNewAccessToken()) {
-        // Failed to get access token
-        remoting.debug.log('tryConnect: OAuth2 token fetch failed');
-        showConnectError_(remoting.ClientError.OAUTH_FETCH_FAILED);
-        return;
-      }
-      remoting.doTryConnect();
-    });
-  } else {
-    remoting.doTryConnect();
   }
 }
 

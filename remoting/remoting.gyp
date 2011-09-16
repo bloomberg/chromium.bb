@@ -113,6 +113,8 @@
       'webapp/me2mom/scale-to-fit.png',
       'webapp/me2mom/spinner.gif',
       'webapp/me2mom/toolbar.css',
+      'webapp/me2mom/wcs.js',
+      'webapp/me2mom/wcs_loader.js',
       'webapp/me2mom/xhr.js',
       'resources/chromoting128.png',
       'resources/chromoting16.png',

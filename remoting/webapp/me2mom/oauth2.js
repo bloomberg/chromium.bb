@@ -162,11 +162,15 @@ remoting.OAuth2.prototype.processTokenResponse_ = function(xhr) {
       this.setRefreshToken(tokens['refresh_token']);
     }
 
-    // Offset by 30 seconds to account for RTT issues.
-    // TODO(ajwong): See if this is necessary, or of the protocol already
-    // accounts for RTT.
+    // Offset by 120 seconds so that we can guarantee that the token
+    // we return will be valid for at least 2 minutes.
+    // If the access token is to be useful, this object must make some
+    // guarantee as to how long the token will be valid for.
+    // The choice of 2 minutes is arbitrary, but that length of time
+    // is part of the contract satisfied by callWithToken().
+    // Offset by a further 30 seconds to account for RTT issues.
     this.setAccessToken(tokens['access_token'],
-                        tokens['expires_in'] * 1000 + Date.now() - 30000);
+        (tokens['expires_in'] - (120 + 30)) * 1000 + Date.now());
   } else {
     console.log('Failed to get tokens. Status: ' + xhr.status +
                 ' response: ' + xhr.responseText);
@@ -250,6 +254,8 @@ remoting.OAuth2.prototype.exchangeCodeForToken = function(code, onDone) {
  *
  * This will refresh the access token if necessary.  If the access token
  * cannot be refreshed, an error is thrown.
+ *
+ * The access token will remain valid for at least 2 minutes.
  *
  * @param {function({token: string, expiration: number}):void} myfunc
  *        Function to invoke with access token.

@@ -148,7 +148,7 @@ remoting.ClientSession.prototype.createPluginAndConnect =
 
   // TODO(garykac): Clean exit if |connect| isn't a function.
   if (typeof this.plugin.connect === 'function') {
-    this.registerConnection_(oauth2AccessToken);
+    this.connectPluginToWcs_(oauth2AccessToken);
   } else {
     remoting.debug.log('ERROR: remoting plugin not loaded');
     this.setState_(remoting.ClientSession.State.UNKNOWN_PLUGIN_ERROR);
@@ -177,21 +177,24 @@ remoting.ClientSession.prototype.removePlugin = function() {
  * @return {void} Nothing.
  */
 remoting.ClientSession.prototype.disconnect = function() {
+  if (remoting.wcs) {
+    remoting.wcs.setOnIq(function(stanza) {});
+  }
   this.removePlugin();
-  var parameters = {
-    'to': this.hostJid,
-    'payload_xml':
-        '<jingle xmlns="urn:xmpp:jingle:1"' +
-               ' action="session-terminate"' +
-               ' initiator="' + this.clientJid + '"' +
-               ' sid="' + this.sessionId + '">' +
+  this.sendIq_(
+      '<cli:iq ' +
+          'to="' + this.hostJid + '" ' +
+          'type="set" ' +
+          'id="session-terminate" ' +
+          'xmlns:cli="jabber:client">' +
+        '<jingle ' +
+            'xmlns="urn:xmpp:jingle:1" ' +
+            'action="session-terminate" ' +
+            'initiator="' + this.clientJid + '" ' +
+            'sid="' + this.sessionId + '">' +
           '<reason><success/></reason>' +
-        '</jingle>',
-    'id': 'session_terminate',
-    'type': 'set',
-    'host_jid': this.hostJid
-  };
-  this.sendIqWithParameters_(parameters);
+        '</jingle>' +
+      '</cli:iq>');
 };
 
 /**
@@ -203,70 +206,24 @@ remoting.ClientSession.prototype.disconnect = function() {
  */
 remoting.ClientSession.prototype.sendIq_ = function(msg) {
   remoting.debug.log('Sending Iq: ' + msg);
-
-  // Extract the top level fields of the Iq packet.
-  // TODO(ajwong): Can the plugin just return these fields broken out.
+  // Extract the session id, so we can close the session later.
   var parser = new DOMParser();
   var iqNode = parser.parseFromString(msg, 'text/xml').firstChild;
   var jingleNode = iqNode.firstChild;
-  var serializer = new XMLSerializer();
-  var parameters = {
-    'to': iqNode.getAttribute('to') || '',
-    'payload_xml': serializer.serializeToString(jingleNode),
-    'id': iqNode.getAttribute('id') || '1',
-    'type': iqNode.getAttribute('type'),
-    'host_jid': this.hostJid
-  };
-
-  this.sendIqWithParameters_(parameters);
-
   if (jingleNode) {
     var action = jingleNode.getAttribute('action');
     if (jingleNode.nodeName == 'jingle' && action == 'session-initiate') {
-      // The session id is needed in order to close the session later.
       this.sessionId = jingleNode.getAttribute('sid');
     }
   }
-};
 
-/**
- * Sends an IQ stanza via the http xmpp proxy.
- *
- * @private
- * @param {(string|Object.<string>)} parameters Parameters to include.
- * @return {void} Nothing.
- */
-remoting.ClientSession.prototype.sendIqWithParameters_ = function(parameters) {
-  remoting.xhr.post(this.HTTP_XMPP_PROXY_ + '/sendIq', function(xhr) {},
-                    parameters, {}, true);
-};
-
-/**
- * Executes a poll loop on the server for more IQ packet to feed to the plugin.
- *
- * @private
- * @return {void} Nothing.
- */
-remoting.ClientSession.prototype.feedIq_ = function() {
-  var that = this;
-
-  var onIq = function(xhr) {
-    if (xhr.status == 200) {
-      remoting.debug.log('Receiving Iq: --' + xhr.responseText + '--');
-      that.plugin.onIq(xhr.responseText);
-    }
-    if (xhr.status == 200 || xhr.status == 204) {
-      // Poll again.
-      that.feedIq_();
-    } else {
-      remoting.debug.log('HttpXmpp gateway returned code: ' + xhr.status);
-      that.plugin.disconnect();
-      that.setState_(remoting.ClientSession.State.CONNECTION_FAILED);
-    }
+  // Send the stanza.
+  if (remoting.wcs) {
+    remoting.wcs.sendIq(msg);
+  } else {
+    remoting.debug.log('Tried to send IQ before WCS was ready.');
+    this.setState_(remoting.ClientSession.State.CONNECTION_FAILED);
   }
-
-  remoting.xhr.get(this.HTTP_XMPP_PROXY_ + '/readIq', onIq,
-                   {'host_jid': this.hostJid}, {}, true);
 };
 
 /**
@@ -280,45 +237,30 @@ remoting.ClientSession.prototype.isPluginVersionSupported_ = function(plugin) {
 };
 
 /**
- * Registers a new connection with the HttpXmpp proxy.
+ * Connects the plugin to WCS.
  *
  * @private
  * @param {string} oauth2AccessToken A valid OAuth2 access token.
  * @return {void} Nothing.
  */
-remoting.ClientSession.prototype.registerConnection_ =
+remoting.ClientSession.prototype.connectPluginToWcs_ =
     function(oauth2AccessToken) {
-  var parameters = {
-    'host_jid': this.hostJid,
-    'username': this.email,
-    'password': oauth2AccessToken
-  };
-
+  this.clientJid = remoting.wcs.getJid();
+  if (this.clientJid == '') {
+    remoting.debug.log('Tried to connect without a full JID.');
+  }
   var that = this;
-  var onRegistered = function(xhr) {
-    if (xhr.status != 200) {
-      remoting.debug.log('FailedToConnect: --' + xhr.responseText +
-                         '-- (status=' + xhr.status + ')');
-      that.setState_(remoting.ClientSession.State.CONNECTION_FAILED);
-      return;
-    }
-
-    remoting.debug.log('Receiving Iq: --' + xhr.responseText + '--');
-    that.clientJid = xhr.responseText;
-
-    if (remoting.useP2pApi) {
-      that.plugin.connect(that.hostJid, that.hostPublicKey, that.clientJid,
-                          that.accessCode, remoting.useP2pApi);
-    } else {
-      that.plugin.connect(that.hostJid, that.hostPublicKey, that.clientJid,
-                          that.accessCode);
-    }
-
-    that.feedIq_();
-  };
-
-  remoting.xhr.post(this.HTTP_XMPP_PROXY_ + '/newConnection',
-                    onRegistered, parameters, {}, true);
+  remoting.wcs.setOnIq(function(stanza) {
+      remoting.debug.log('Receiving Iq: ' + stanza);
+      that.plugin.onIq(stanza);
+  });
+  if (remoting.useP2pApi) {
+    this.plugin.connect(this.hostJid, this.hostPublicKey, this.clientJid,
+                        this.accessCode, remoting.useP2pApi);
+  } else {
+    that.plugin.connect(this.hostJid, this.hostPublicKey, this.clientJid,
+                        this.accessCode);
+  }
 };
 
 /**
