@@ -92,9 +92,6 @@ class NativePanelTesting {
   virtual void DragTitlebar(int delta_x, int delta_y) = 0;
   virtual void CancelDragTitlebar() = 0;
   virtual void FinishDragTitlebar() = 0;
-  virtual void SetMousePositionForMinimizeRestore(const gfx::Point& point) = 0;
-
-  virtual int TitleOnlyHeight() const = 0;
 };
 
 #endif  // CHROME_BROWSER_UI_PANELS_NATIVE_PANEL_H_

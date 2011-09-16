@@ -52,6 +52,9 @@ const int kIconSize = 16;
 // The spacing in pixels between buttons or the button and the adjacent control.
 const int kButtonSpacing = 6;
 
+// The panel can be minimized to 3-pixel lines.
+const int kMinimizedPanelHeight = 3;
+
 // Colors used in painting the titlebar for drawing attention.
 const SkColor kBackgroundColorForAttention = 0xfffa983a;
 const SkColor kTitleTextColorForAttention = SK_ColorWHITE;
@@ -465,6 +468,10 @@ int PanelBrowserFrameView::NonClientTopBorderHeight() const {
   return kFrameBorderThickness + kTitlebarHeight + kClientEdgeThickness;
 }
 
+int PanelBrowserFrameView::MinimizedPanelHeight() {
+  return kMinimizedPanelHeight;
+}
+
 gfx::Size PanelBrowserFrameView::NonClientAreaSize() const {
   return gfx::Size(NonClientBorderThickness() * 2,
                    NonClientTopBorderHeight() + NonClientBorderThickness());
@@ -526,7 +533,7 @@ void PanelBrowserFrameView::PaintFrameBorder(gfx::Canvas* canvas) {
   canvas->TileImageInt(*theme_frame, 0, 0, width(), height());
 
   // No need to paint other stuff if panel is minimized.
-  if (height() <= PanelManager::minimized_panel_height())
+  if (height() <= kMinimizedPanelHeight)
     return;
 
   // Draw the top border.
@@ -572,7 +579,7 @@ void PanelBrowserFrameView::PaintClientEdge(gfx::Canvas* canvas) {
   int client_area_top = client_view_bounds_.y();
 
   // No need to paint other stuff if panel is minimized.
-  if (height() <= PanelManager::minimized_panel_height())
+  if (height() <= kMinimizedPanelHeight)
     return;
 
   // Draw the top edge.

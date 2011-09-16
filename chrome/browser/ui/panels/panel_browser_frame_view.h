@@ -45,6 +45,9 @@ class PanelBrowserFrameView : public BrowserNonClientFrameView,
   // frame, any title area, and any connected client edge.
   int NonClientTopBorderHeight() const;
 
+  // Returns the height of the panel in minimized state.
+  static int MinimizedPanelHeight();
+
   // Returns the size of the non-client area, that is, the window size minus
   // the size of the client area.
   gfx::Size NonClientAreaSize() const;

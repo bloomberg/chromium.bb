@@ -34,7 +34,7 @@ class Panel : public BrowserWindow, public NotificationObserver {
    EXPANDED,
    // The panel is shown with the title-bar only.
    TITLE_ONLY,
-   // The panel is shown with 3-pixel line.
+   // The panel is shown with 3-pxiel line.
    MINIMIZED
   };
 

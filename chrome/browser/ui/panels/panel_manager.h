@@ -28,8 +28,6 @@ class PanelManager : public AutoHidingDesktopBar::Observer,
   // Returns a single instance.
   static PanelManager* GetInstance();
 
-  static int minimized_panel_height() { return kMinimizedPanelHeight; }
-
   virtual ~PanelManager();
 
   // Called when the display is changed, i.e. work area is updated.
@@ -187,15 +185,6 @@ class PanelManager : public AutoHidingDesktopBar::Observer,
   bool auto_sizing_enabled_;
 
   static const int kPanelsHorizontalSpacing = 4;
-
-  // Minimum width and height of a panel.
-  // Note: The minimum size of a widget (see widget.cc) is fixed to 100x100.
-  // TODO(jianli): Need to fix this to support smaller panel.
-  static const int kPanelMinWidth = 100;
-  static const int kPanelMinHeight = 100;
-
-  // The panel can be minimized to 3-pixel lines.
-  static const int kMinimizedPanelHeight = 3;
 
   DISALLOW_COPY_AND_ASSIGN(PanelManager);
 };

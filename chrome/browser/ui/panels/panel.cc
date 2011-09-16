@@ -374,10 +374,8 @@ void Panel::UserChangedTheme() {
 }
 
 int Panel::GetExtraRenderViewHeight() const {
-  // This is currently used only on Linux and that returns the height for
-  // optional elements like bookmark bar, download bar etc.  Not applicable to
-  // panels.
-  return 0;
+  NOTIMPLEMENTED();
+  return -1;
 }
 
 void Panel::TabContentsFocused(TabContents* tab_contents) {
