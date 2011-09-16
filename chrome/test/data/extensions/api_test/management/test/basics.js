@@ -52,7 +52,8 @@ var tests = [
                 { "description": "a short description" });
       checkItemInList(items, "enabled_app", true, true,
                 { "appLaunchUrl": "http://www.google.com/",
-                  "offlineEnabled": true });
+                  "offlineEnabled": true,
+                  "updateUrl": "http://example.com/update.xml" });
       checkItemInList(items, "disabled_app", false, true);
       checkItemInList(items, "enabled_extension", true, false,
                      { "homepageUrl": "http://example.com/" });

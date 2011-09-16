@@ -6428,7 +6428,12 @@
             "optional": true
           },
           "homepageUrl": {
-            "description": "The URL of the homepage of this extension or app",
+            "description": "The URL of the homepage of this extension or app.",
+            "type": "string",
+            "optional": true
+          },
+          "updateUrl": {
+            "description": "The update URL of this extension or app.",
             "type": "string",
             "optional": true
           },

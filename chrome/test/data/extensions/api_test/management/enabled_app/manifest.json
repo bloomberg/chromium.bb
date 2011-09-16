@@ -6,5 +6,6 @@
       "web_url": "http://www.google.com"
     }
   },
-  "offline_enabled": true
+  "offline_enabled": true,
+  "update_url": "http://example.com/update.xml"
 }

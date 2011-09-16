@@ -36,7 +36,7 @@ namespace {
 const char kAppLaunchUrlKey[] = "appLaunchUrl";
 const char kDescriptionKey[] = "description";
 const char kEnabledKey[] = "enabled";
-const char kHomepageURLKey[] = "homepageUrl";
+const char kHomepageUrlKey[] = "homepageUrl";
 const char kIconsKey[] = "icons";
 const char kIdKey[] = "id";
 const char kIsAppKey[] = "isApp";
@@ -46,6 +46,7 @@ const char kOptionsUrlKey[] = "optionsUrl";
 const char kPermissionsKey[] = "permissions";
 const char kMayDisableKey[] = "mayDisable";
 const char kSizeKey[] = "size";
+const char kUpdateUrlKey[] = "updateUrl";
 const char kUrlKey[] = "url";
 const char kVersionKey[] = "version";
 
@@ -75,8 +76,12 @@ static DictionaryValue* CreateExtensionInfo(const Extension& extension,
   info->SetString(kDescriptionKey, extension.description());
   info->SetString(kOptionsUrlKey,
                   extension.options_url().possibly_invalid_spec());
-  info->SetString(kHomepageURLKey,
+  info->SetString(kHomepageUrlKey,
                   extension.GetHomepageURL().possibly_invalid_spec());
+  if (!extension.update_url().is_empty()) {
+    info->SetString(kUpdateUrlKey,
+                    extension.update_url().possibly_invalid_spec());
+  }
   if (extension.is_app())
     info->SetString(kAppLaunchUrlKey,
                     extension.GetFullLaunchURL().possibly_invalid_spec());
