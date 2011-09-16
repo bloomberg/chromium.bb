@@ -25,6 +25,10 @@ class GLSurface;
 
 namespace gpu {
 class GpuScheduler;
+
+namespace gles2 {
+class GLES2Decoder;
+}
 }
 
 class ImageTransportSurface {
@@ -71,6 +75,7 @@ class ImageTransportHelper : public IPC::Channel::Listener {
 
  private:
   gpu::GpuScheduler* Scheduler();
+  gpu::gles2::GLES2Decoder* Decoder();
 
   // IPC::Message handlers.
   void OnSetSurfaceACK(uint64 surface_id);

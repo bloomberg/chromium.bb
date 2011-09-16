@@ -48,35 +48,11 @@ bool GLSurface::InitializeOneOff() {
   return true;
 }
 
-// TODO(apatrick): support ViewGLSurface on mac.
-#if 0
 scoped_refptr<GLSurface> GLSurface::CreateViewGLSurface(
+    bool software,
     gfx::PluginWindowHandle window) {
-  switch (GetGLImplementation()) {
-    case kGLImplementationOSMesaGL: {
-      scoped_refptr<GLSurface> surface(
-          new NativeViewGLSurfaceOSMesa(window));
-      if (!surface->Initialize())
-        return NULL;
-
-      return surface;
-    }
-    case kGLImplementationDesktopGL: {
-      scoped_refptr<GLSurface> surface(new NativeViewGLSurfaceCGL(
-          window));
-      if (!surface->Initialize())
-        return NULL;
-
-      return surface;
-    }
-    case kGLImplementationMockGL:
-      return new GLSurfaceStub;
-    default:
-      NOTREACHED();
-      return NULL;
-  }
+  return CreateOffscreenGLSurface(software, gfx::Size(1, 1));
 }
-#endif
 
 scoped_refptr<GLSurface> GLSurface::CreateOffscreenGLSurface(
     bool software,

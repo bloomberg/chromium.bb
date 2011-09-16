@@ -134,8 +134,8 @@ void GpuVideoDecodeAccelerator::OnAssignPictureBuffers(
       const std::vector<int32>& buffer_ids,
       const std::vector<uint32>& texture_ids,
       const std::vector<gfx::Size>& sizes) {
-  DCHECK(stub_ && stub_->scheduler());  // Ensure already Initialize()'d.
-  gpu::gles2::GLES2Decoder* command_decoder = stub_->scheduler()->decoder();
+  DCHECK(stub_ && stub_->decoder());  // Ensure already Initialize()'d.
+  gpu::gles2::GLES2Decoder* command_decoder = stub_->decoder();
 
   std::vector<media::PictureBuffer> buffers;
   for (uint32 i = 0; i < buffer_ids.size(); ++i) {
