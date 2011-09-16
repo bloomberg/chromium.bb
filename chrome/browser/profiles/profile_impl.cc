@@ -801,6 +801,18 @@ ProfileImpl::~ProfileImpl() {
   if (top_sites_.get())
     top_sites_->Shutdown();
 
+  if (bookmark_bar_model_.get()) {
+    // It's possible that bookmarks haven't loaded and history is waiting for
+    // bookmarks to complete loading. In such a situation history can't shutdown
+    // (meaning if we invoked history_service_->Cleanup now, we would
+    // deadlock). To break the deadlock we tell BookmarkModel it's about to be
+    // deleted so that it can release the signal history is waiting on, allowing
+    // history to shutdown (history_service_->Cleanup to complete). In such a
+    // scenario history sees an incorrect view of bookmarks, but it's better
+    // than a deadlock.
+    bookmark_bar_model_->Cleanup();
+  }
+
   if (history_service_.get())
     history_service_->Cleanup();
 
@@ -809,15 +821,6 @@ ProfileImpl::~ProfileImpl() {
     default_request_context_ = NULL;
   }
 
-  if (bookmark_bar_model_.get()) {
-    // It's possible that bookmarks haven't loaded and history is waiting for
-    // bookmarks to complete loading. In such a situation history can't
-    // shutdown. To break the deadlock we tell BookmarkModel it's about to be
-    // deleted so that it can release the signal history is waiting on, allowing
-    // history to shutdown. In such a scenario history sees an incorrect view of
-    // bookmarks, but it's better than a deadlock.
-    bookmark_bar_model_->Cleanup();
-  }
   // HistoryService may call into the BookmarkModel, as such we need to
   // delete HistoryService before the BookmarkModel. The destructor for
   // HistoryService will join with HistoryService's backend thread so that
