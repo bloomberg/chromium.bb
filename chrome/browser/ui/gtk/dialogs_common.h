@@ -19,6 +19,8 @@ class SelectFileDialogImpl : public SelectFileDialog {
  public:
   // Factory method for creating a GTK-styled SelectFileDialogImpl
   static SelectFileDialogImpl* NewSelectFileDialogImplGTK(Listener* listener);
+  // Factory method for creating a KDE-styled SelectFileDialogImpl
+  static SelectFileDialogImpl* NewSelectFileDialogImplKDE(Listener* listener);
 
   // BaseShellDialog implementation.
   virtual bool IsRunning(gfx::NativeWindow parent_window) const;
@@ -67,4 +69,5 @@ class SelectFileDialogImpl : public SelectFileDialog {
 };
 
 #endif  // CHROME_BROWSER_UI_GTK_DIALOGS_COMMON_H_
+
 
