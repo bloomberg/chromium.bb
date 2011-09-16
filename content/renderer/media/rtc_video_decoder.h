@@ -40,7 +40,8 @@ class RTCVideoDecoder
                           media::StatisticsCallback* stat_callback) OVERRIDE;
   virtual void ProduceVideoFrame(
       scoped_refptr<media::VideoFrame> video_frame) OVERRIDE;
-  virtual gfx::Size natural_size() OVERRIDE;
+  virtual int width() OVERRIDE;
+  virtual int height() OVERRIDE;
 
   // cricket::VideoRenderer implementation
   virtual bool SetSize(int width, int height, int reserved) OVERRIDE;
@@ -62,7 +63,8 @@ class RTCVideoDecoder
   };
 
   MessageLoop* message_loop_;
-  gfx::Size visible_size_;
+  size_t width_;
+  size_t height_;
   std::string url_;
   DecoderState state_;
   std::deque<scoped_refptr<media::VideoFrame> > frame_queue_available_;

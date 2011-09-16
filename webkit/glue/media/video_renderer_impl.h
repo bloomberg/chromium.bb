@@ -68,8 +68,8 @@ class VideoRendererImpl : public WebVideoRenderer {
   media::VideoFrame* last_converted_frame_;
   base::TimeDelta last_converted_timestamp_;
 
-  // The natural size of the video.
-  gfx::Size natural_size_;
+  // The size of the video.
+  gfx::Size video_size_;
 
   // Whether we're logging video presentation timestamps (PTS).
   bool pts_logging_;

@@ -23,9 +23,10 @@ using ::testing::StrictMock;
 
 namespace media {
 
-static const gfx::Size kCodedSize(320, 240);
-static const gfx::Rect kVisibleRect(320, 240);
-static const gfx::Size kNaturalSize(522, 288);
+static const size_t kWidth = 320;
+static const size_t kHeight = 240;
+static const size_t kSurfaceWidth = 522;
+static const size_t kSurfaceHeight = 288;
 static const AVRational kFrameRate = { 100, 1 };
 
 ACTION_P2(DemuxComplete, engine, buffer) {
@@ -37,12 +38,12 @@ class FFmpegVideoDecodeEngineTest
       public VideoDecodeEngine::EventHandler {
  public:
   FFmpegVideoDecodeEngineTest()
-      : config_(kCodecVP8, kCodedSize, kVisibleRect, kNaturalSize,
+      : config_(kCodecVP8, kWidth, kHeight, kSurfaceWidth, kSurfaceHeight,
                 kFrameRate.num, kFrameRate.den, NULL, 0) {
     CHECK(FFmpegGlue::GetInstance());
 
     // Setup FFmpeg structures.
-    frame_buffer_.reset(new uint8[kCodedSize.GetArea()]);
+    frame_buffer_.reset(new uint8[kWidth * kHeight]);
 
     test_engine_.reset(new FFmpegVideoDecodeEngine());
 
@@ -104,13 +105,10 @@ class FFmpegVideoDecodeEngineTest
     CallProduceVideoFrame();
     CallProduceVideoFrame();
 
-    size_t expected_width = static_cast<size_t>(kVisibleRect.width());
-    size_t expected_height = static_cast<size_t>(kVisibleRect.height());
-
-    EXPECT_EQ(expected_width, video_frame_a->width());
-    EXPECT_EQ(expected_height, video_frame_a->height());
-    EXPECT_EQ(expected_width, video_frame_b->width());
-    EXPECT_EQ(expected_height, video_frame_b->height());
+    EXPECT_EQ(kSurfaceWidth, video_frame_a->width());
+    EXPECT_EQ(kSurfaceHeight, video_frame_a->height());
+    EXPECT_EQ(kSurfaceWidth, video_frame_b->width());
+    EXPECT_EQ(kSurfaceHeight, video_frame_b->height());
   }
 
   // VideoDecodeEngine::EventHandler implementation.
@@ -127,9 +125,11 @@ class FFmpegVideoDecodeEngineTest
   MOCK_METHOD0(OnError, void());
 
   void CallProduceVideoFrame() {
-    test_engine_->ProduceVideoFrame(VideoFrame::CreateFrame(
-        VideoFrame::YV12, kVisibleRect.width(), kVisibleRect.height(),
-        kNoTimestamp, kNoTimestamp));
+    test_engine_->ProduceVideoFrame(VideoFrame::CreateFrame(VideoFrame::YV12,
+                                                            kWidth,
+                                                            kHeight,
+                                                            kNoTimestamp,
+                                                            kNoTimestamp));
   }
 
  protected:
@@ -149,8 +149,9 @@ TEST_F(FFmpegVideoDecodeEngineTest, Initialize_Normal) {
 }
 
 TEST_F(FFmpegVideoDecodeEngineTest, Initialize_FindDecoderFails) {
-  VideoDecoderConfig config(kUnknown, kCodedSize, kVisibleRect, kNaturalSize,
-                            kFrameRate.num, kFrameRate.den, NULL, 0);
+  VideoDecoderConfig config(kUnknown, kWidth, kHeight, kSurfaceWidth,
+                            kSurfaceHeight, kFrameRate.num, kFrameRate.den,
+                            NULL, 0);
   // Test avcodec_find_decoder() returning NULL.
   VideoCodecInfo info;
   EXPECT_CALL(*this, OnInitializeComplete(_))
@@ -161,8 +162,8 @@ TEST_F(FFmpegVideoDecodeEngineTest, Initialize_FindDecoderFails) {
 
 TEST_F(FFmpegVideoDecodeEngineTest, Initialize_OpenDecoderFails) {
   // Specify Theora w/o extra data so that avcodec_open() fails.
-  VideoDecoderConfig config(kCodecTheora, kCodedSize, kVisibleRect,
-                            kNaturalSize, kFrameRate.num, kFrameRate.den,
+  VideoDecoderConfig config(kCodecTheora, kWidth, kHeight, kSurfaceWidth,
+                            kSurfaceHeight, kFrameRate.num, kFrameRate.den,
                             NULL, 0);
   VideoCodecInfo info;
   EXPECT_CALL(*this, OnInitializeComplete(_))

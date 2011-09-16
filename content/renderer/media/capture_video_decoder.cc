@@ -50,8 +50,12 @@ void CaptureVideoDecoder::ProduceVideoFrame(
           &CaptureVideoDecoder::ProduceVideoFrameOnDecoderThread, video_frame));
 }
 
-gfx::Size CaptureVideoDecoder::natural_size() {
-  return gfx::Size(capability_.width, capability_.height);
+int CaptureVideoDecoder::width() {
+  return capability_.width;
+}
+
+int CaptureVideoDecoder::height() {
+  return capability_.height;
 }
 
 void CaptureVideoDecoder::Play(media::FilterCallback* callback) {
@@ -219,8 +223,7 @@ void CaptureVideoDecoder::OnBufferReadyOnDecoderThread(
   if (buf->width != capability_.width || buf->height != capability_.height) {
     capability_.width = buf->width;
     capability_.height = buf->height;
-    host()->SetNaturalVideoSize(
-        gfx::Size(capability_.width, capability_.height));
+    host()->SetVideoSize(capability_.width, capability_.height);
   }
 
   // Check if there's a size change.
@@ -239,9 +242,6 @@ void CaptureVideoDecoder::OnBufferReadyOnDecoderThread(
 
   uint8* buffer = buf->memory_pointer;
 
-  // Assume YV12 format.
-  // TODO(vrk): This DCHECK fails in content_unittests ... it should not!
-  // DCHECK(capability_.raw_type == media::VideoFrame::YV12);
   int y_width = capability_.width;
   int y_height = capability_.height;
   int uv_width = capability_.width / 2;

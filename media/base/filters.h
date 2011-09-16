@@ -35,7 +35,6 @@
 #include "media/base/media_export.h"
 #include "media/base/pipeline_status.h"
 #include "media/base/video_frame.h"
-#include "ui/gfx/size.h"
 
 namespace media {
 
@@ -181,14 +180,15 @@ class MEDIA_EXPORT VideoDecoder : public Filter {
     consume_video_frame_callback_ = callback;
   }
 
-  // Returns the natural width and height of decoded video in pixels.
+  // Returns the width and height of decoded video in pixels.
   //
   // Clients should NOT rely on these values to remain constant. Instead, use
   // the width/height from decoded video frames themselves.
   //
   // TODO(scherkus): why not rely on prerolling and decoding a single frame to
   // get dimensions?
-  virtual gfx::Size natural_size() = 0;
+  virtual int width() = 0;
+  virtual int height() = 0;
 
  protected:
   // Executes the permanent callback to pass off decoded video.

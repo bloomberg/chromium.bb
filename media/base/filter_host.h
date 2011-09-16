@@ -53,8 +53,8 @@ class MEDIA_EXPORT FilterHost {
   // be played.
   virtual void SetBufferedBytes(int64 buffered_bytes) = 0;
 
-  // Sets the natural size of the video output in pixel units.
-  virtual void SetNaturalVideoSize(const gfx::Size& size) = 0;
+  // Sets the size of the video output in pixel units.
+  virtual void SetVideoSize(size_t width, size_t height) = 0;
 
   // Sets the flag to indicate that we are doing streaming.
   virtual void SetStreaming(bool streaming) = 0;

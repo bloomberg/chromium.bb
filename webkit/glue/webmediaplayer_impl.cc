@@ -399,9 +399,9 @@ bool WebMediaPlayerImpl::hasAudio() const {
 WebKit::WebSize WebMediaPlayerImpl::naturalSize() const {
   DCHECK(MessageLoop::current() == main_loop_);
 
-  gfx::Size size;
-  pipeline_->GetNaturalVideoSize(&size);
-  return WebKit::WebSize(size);
+  size_t width, height;
+  pipeline_->GetVideoSize(&width, &height);
+  return WebKit::WebSize(width, height);
 }
 
 bool WebMediaPlayerImpl::paused() const {

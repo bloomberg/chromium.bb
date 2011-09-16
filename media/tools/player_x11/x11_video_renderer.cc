@@ -94,8 +94,8 @@ bool X11VideoRenderer::OnInitialize(media::VideoDecoder* decoder) {
   LOG(INFO) << "Initializing X11 Renderer...";
 
   // Resize the window to fit that of the video.
-  int width = decoder->natural_size().width();
-  int height = decoder->natural_size().height();
+  int width = decoder->width();
+  int height = decoder->height();
   XResizeWindow(display_, window_, width, height);
 
   // Allocate an XImage for caching RGB result.

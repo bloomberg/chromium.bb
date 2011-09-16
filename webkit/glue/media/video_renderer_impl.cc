@@ -21,9 +21,9 @@ VideoRendererImpl::VideoRendererImpl(bool pts_logging)
 VideoRendererImpl::~VideoRendererImpl() {}
 
 bool VideoRendererImpl::OnInitialize(media::VideoDecoder* decoder) {
-  natural_size_ = decoder->natural_size();
+  video_size_.SetSize(decoder->width(), decoder->height());
   bitmap_.setConfig(SkBitmap::kARGB_8888_Config,
-                    natural_size_.width(), natural_size_.height());
+                    decoder->width(), decoder->height());
   bitmap_.allocPixels();
   bitmap_.eraseRGB(0x00, 0x00, 0x00);
   bitmap_.setIsVolatile(true);
@@ -162,12 +162,12 @@ void VideoRendererImpl::SlowPaint(media::VideoFrame* video_frame,
   SkMatrix matrix;
   matrix.setTranslate(static_cast<SkScalar>(dest_rect.x()),
                       static_cast<SkScalar>(dest_rect.y()));
-  if (dest_rect.width()  != natural_size_.width() ||
-      dest_rect.height() != natural_size_.height()) {
+  if (dest_rect.width()  != video_size_.width() ||
+      dest_rect.height() != video_size_.height()) {
     matrix.preScale(SkIntToScalar(dest_rect.width()) /
-                    SkIntToScalar(natural_size_.width()),
+                    SkIntToScalar(video_size_.width()),
                     SkIntToScalar(dest_rect.height()) /
-                    SkIntToScalar(natural_size_.height()));
+                    SkIntToScalar(video_size_.height()));
   }
   SkPaint paint;
   paint.setFlags(SkPaint::kFilterBitmap_Flag);
