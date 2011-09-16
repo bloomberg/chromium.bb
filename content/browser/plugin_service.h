@@ -155,7 +155,8 @@ class CONTENT_EXPORT PluginService
       const GURL& url,
       const GURL& page_url,
       const std::string& mime_type,
-      PluginProcessHost::Client* client);
+      PluginProcessHost::Client* client,
+      const content::ResourceContext* resource_context);
 
   // Helper so we can finish opening the channel after looking up the
   // plugin.

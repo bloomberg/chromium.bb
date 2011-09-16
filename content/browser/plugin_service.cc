@@ -296,7 +296,7 @@ void PluginService::OpenChannelToNpapiPlugin(
       NewRunnableMethod(
           this, &PluginService::GetAllowedPluginForOpenChannelToPlugin,
           render_process_id, render_view_id, url, page_url, mime_type,
-          client));
+          client, &client->GetResourceContext()));
 }
 
 void PluginService::OpenChannelToPpapiPlugin(
@@ -333,12 +333,14 @@ void PluginService::GetAllowedPluginForOpenChannelToPlugin(
     const GURL& url,
     const GURL& page_url,
     const std::string& mime_type,
-    PluginProcessHost::Client* client) {
+    PluginProcessHost::Client* client,
+    const content::ResourceContext* resource_context) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK(resource_context);
   webkit::WebPluginInfo info;
   bool allow_wildcard = true;
   bool found = GetPluginInfo(
-      render_process_id, render_view_id, client->GetResourceContext(),
+      render_process_id, render_view_id, *resource_context,
       url, page_url, mime_type, allow_wildcard,
       NULL, &info, NULL);
   FilePath plugin_path;
