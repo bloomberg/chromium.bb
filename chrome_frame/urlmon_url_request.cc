@@ -470,7 +470,8 @@ STDMETHODIMP UrlmonUrlRequest::GetBindInfo(DWORD* bind_flags,
   }
 
   if (bind_info->dwBindVerb == BINDVERB_POST ||
-      bind_info->dwBindVerb == BINDVERB_PUT) {
+      bind_info->dwBindVerb == BINDVERB_PUT ||
+      post_data_len() > 0) {
     // Bypass caching proxies on upload requests and avoid writing responses to
     // the browser's cache.
     *bind_flags |= BINDF_GETNEWESTVERSION | BINDF_PRAGMA_NO_CACHE;
