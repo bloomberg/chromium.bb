@@ -85,13 +85,11 @@ namespace {
 // Usually a new tab is expected where this function is used,
 // however users should be able to open a tab in background
 // or in a new window.
-WindowOpenDisposition ForceNewTabDispositionFromEventFventFlags(
+WindowOpenDisposition ForceNewTabDispositionFromEventFlags(
     int event_flags) {
   WindowOpenDisposition disposition =
       browser::DispositionFromEventFlags(event_flags);
-  if (disposition == CURRENT_TAB)
-    return NEW_FOREGROUND_TAB;
-  return disposition;
+  return disposition == CURRENT_TAB ? NEW_FOREGROUND_TAB : disposition;
 }
 
 bool IsCustomItemEnabled(const std::vector<WebMenuItem>& items, int id) {
@@ -1457,7 +1455,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
         UserMetricsAction("RegisterProtocolHandler.ContextMenu_Open"));
     int handlerIndex = id - IDC_CONTENT_CONTEXT_PROTOCOL_HANDLER_FIRST;
     WindowOpenDisposition disposition =
-        ForceNewTabDispositionFromEventFventFlags(event_flags);
+        ForceNewTabDispositionFromEventFlags(event_flags);
     OpenURL(
         handlers[handlerIndex].TranslateUrl(params_.link_url),
         params_.frame_url.is_empty() ? params_.page_url : params_.frame_url,
@@ -1712,7 +1710,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
     case IDC_CONTENT_CONTEXT_SEARCHWEBFOR:
     case IDC_CONTENT_CONTEXT_GOTOURL: {
       WindowOpenDisposition disposition =
-          ForceNewTabDispositionFromEventFventFlags(event_flags);
+          ForceNewTabDispositionFromEventFlags(event_flags);
       OpenURL(selection_navigation_url_,
               GURL(),
               params_.frame_id,
@@ -1751,7 +1749,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
 
     case IDC_CONTENT_CONTEXT_LANGUAGE_SETTINGS: {
       WindowOpenDisposition disposition =
-          ForceNewTabDispositionFromEventFventFlags(event_flags);
+          ForceNewTabDispositionFromEventFlags(event_flags);
       std::string url = std::string(chrome::kChromeUISettingsURL) +
           chrome::kLanguageOptionsSubPage;
       OpenURL(GURL(url), GURL(), 0, disposition, PageTransition::LINK);
@@ -1786,7 +1784,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       UserMetrics::RecordAction(
           UserMetricsAction("RegisterProtocolHandler.ContextMenu_Settings"));
       WindowOpenDisposition disposition =
-          ForceNewTabDispositionFromEventFventFlags(event_flags);
+          ForceNewTabDispositionFromEventFlags(event_flags);
       std::string url = std::string(chrome::kChromeUISettingsURL) +
           chrome::kHandlerSettingsSubPage;
       OpenURL(GURL(url), GURL(), 0, disposition, PageTransition::LINK);
