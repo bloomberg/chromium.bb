@@ -81,7 +81,8 @@ FilePath TestServer::HTTPSOptions::GetCertificateFile() const {
 
 TestServer::TestServer(Type type, const FilePath& document_root)
     : type_(type),
-      started_(false) {
+      started_(false),
+      log_to_console_(false) {
   Init(document_root);
 }
 
@@ -89,7 +90,8 @@ TestServer::TestServer(const HTTPSOptions& https_options,
                        const FilePath& document_root)
     : https_options_(https_options),
       type_(TYPE_HTTPS),
-      started_(false) {
+      started_(false),
+      log_to_console_(false) {
   Init(document_root);
 }
 
@@ -278,6 +280,10 @@ void TestServer::Init(const FilePath& document_root) {
                        .Append(FILE_PATH_LITERAL("data"))
                        .Append(FILE_PATH_LITERAL("ssl"))
                        .Append(FILE_PATH_LITERAL("certificates"));
+
+  // TODO(battre) Remove this after figuring out why the TestServer is flaky.
+  // http://crbug.com/96594
+  log_to_console_ = true;
 }
 
 bool TestServer::SetPythonPath() {
@@ -354,7 +360,7 @@ bool TestServer::AddCommandLineArguments(CommandLine* command_line) const {
   command_line->AppendArgNative(FILE_PATH_LITERAL("--data-dir=") +
                                 document_root_.value());
 
-  if (VLOG_IS_ON(1)) {
+  if (VLOG_IS_ON(1) || log_to_console_) {
     command_line->AppendArg("--log-to-console");
   }
 
