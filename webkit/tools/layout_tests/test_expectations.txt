@@ -6,14 +6,3 @@
 // until the changes can be landed upstream.
 
 // PLEASE DO NOT LEAVE ENTRIES IN THIS FILE FOR MORE THAN 24 HRS.
-
-BUG_LEVIN : http/tests/loading/307-after-303-after-post.html = PASS TEXT
-BUG_LEVIN : http/tests/security/mixedContent/insecure-image-in-main-frame.html = PASS TEXT
-BUG_LEVIN : http/tests/security/mixedContent/insecure-script-in-iframe.html = PASS TEXT
-
-BUG_DPRANKE LINUX DEBUG : inspector/debugger/scripts-sorting.html = TIMEOUT
-BUG_DPRANKE LINUX : http/tests/inspector/network/download.html = TIMEOUT PASS
-BUG_DPRANKE LINUX DEBUG : http/tests/websocket/tests/hybi/reserved-bits.html = TIMEOUT PASS
-BUG_DPRANKE : platform/chromium/fast/text/text-stroke-with-border.html = IMAGE+TEXT PASS
-BUG_DPRANKE SNOWLEOPARD : svg/zoom/page/zoom-svg-through-object-with-percentage-size.xhtml = IMAGE+TEXT
-
