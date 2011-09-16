@@ -1,20 +1,21 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "ipc/ipc_sync_message_filter.h"
 
 #include "base/logging.h"
-#include "base/message_loop.h"
+#include "base/message_loop_proxy.h"
 #include "base/synchronization/waitable_event.h"
 #include "ipc/ipc_sync_message.h"
+
+using base::MessageLoopProxy;
 
 namespace IPC {
 
 SyncMessageFilter::SyncMessageFilter(base::WaitableEvent* shutdown_event)
     : channel_(NULL),
-      listener_loop_(MessageLoop::current()),
-      io_loop_(NULL),
+      listener_loop_(MessageLoopProxy::current()),
       shutdown_event_(shutdown_event) {
 }
 
@@ -47,8 +48,8 @@ bool SyncMessageFilter::Send(Message* message) {
     base::AutoLock auto_lock(lock_);
     // Can't use this class on the main thread or else it can lead to deadlocks.
     // Also by definition, can't use this on IO thread since we're blocking it.
-    DCHECK(MessageLoop::current() != listener_loop_);
-    DCHECK(MessageLoop::current() != io_loop_);
+    DCHECK(MessageLoopProxy::current() != listener_loop_);
+    DCHECK(MessageLoopProxy::current() != io_loop_);
     pending_sync_messages_.insert(&pending_message);
   }
 
@@ -94,7 +95,7 @@ void SyncMessageFilter::SignalAllEvents() {
 void SyncMessageFilter::OnFilterAdded(Channel* channel) {
   channel_ = channel;
   base::AutoLock auto_lock(lock_);
-  io_loop_ = MessageLoop::current();
+  io_loop_ = MessageLoopProxy::current();
 }
 
 void SyncMessageFilter::OnChannelError() {

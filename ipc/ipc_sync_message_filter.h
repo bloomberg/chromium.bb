@@ -14,10 +14,9 @@
 #include <set>
 
 namespace base {
+class MessageLoopProxy;
 class WaitableEvent;
 }
-
-class MessageLoop;
 
 namespace IPC {
 
@@ -51,8 +50,11 @@ class IPC_EXPORT SyncMessageFilter : public ChannelProxy::MessageFilter,
   // The channel to which this filter was added.
   Channel* channel_;
 
-  MessageLoop* listener_loop_;  // The process's main thread.
-  MessageLoop* io_loop_;  // The message loop where the Channel lives.
+  // The process's main thread.
+  scoped_refptr<base::MessageLoopProxy> listener_loop_;
+
+  // The message loop where the Channel lives.
+  scoped_refptr<base::MessageLoopProxy> io_loop_;
 
   typedef std::set<PendingSyncMsg*> PendingSyncMessages;
   PendingSyncMessages pending_sync_messages_;
