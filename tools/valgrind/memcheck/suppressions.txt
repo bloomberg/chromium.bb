@@ -2312,31 +2312,6 @@
    fun:_Z16DispatchToMethodI24BrowserRenderProcessHostMS0_FvRKSsESsEvPT_T0_RK6Tuple1IT1_E
 }
 {
-   bug_51822
-   Memcheck:Leak
-   fun:malloc
-   fun:_ZN3WTF10fastMallocEj
-   fun:_ZN3WTF13FastAllocBasenwEj
-   fun:_NPN_RegisterObject
-   fun:_ZN7WebCore25createV8ObjectForNPObjectEP8NPObjectS1_
-   fun:_ZN7WebCore16ScriptController18bindToWindowObjectEPNS_5FrameERKN3WTF6StringEP8NPObject
-   fun:_ZN6WebKit12WebFrameImpl18bindToWindowObjectERKNS_9WebStringEP8NPObject
-   fun:_ZN13CppBoundClass16BindToJavascriptEPN6WebKit8WebFrameERKSs
-   ...
-   fun:_ZN19TestWebViewDelegate20didClearWindowObjectEPN6WebKit8WebFrameE
-   fun:_ZN6WebKit21FrameLoaderClientImpl35dispatchDidClearWindowObjectInWorldEPN7WebCore15DOMWrapperWorldE
-   fun:_ZN7WebCore11FrameLoader35dispatchDidClearWindowObjectInWorldEPNS_15DOMWrapperWorldE
-   fun:_ZN7WebCore16V8DOMWindowShell19initContextIfNeededEv
-   fun:_ZN7WebCore7V8Proxy16mainWorldContextEv
-   fun:_ZN7WebCore7V8Proxy16mainWorldContextEPNS_5FrameE
-   fun:_ZN7WebCore16ScriptController18bindToWindowObjectEPNS_5FrameERKN3WTF6StringEP8NPObject
-   fun:_ZN6WebKit12WebFrameImpl18bindToWindowObjectERKNS_9WebStringEP8NPObject
-   fun:_ZN13CppBoundClass16BindToJavascriptEPN6WebKit8WebFrameERKSs
-   fun:_ZN23AccessibilityController16BindToJavascriptEPN6WebKit8WebFrameERKSs
-   fun:_ZN9TestShell21BindJSObjectsToWindowEPN6WebKit8WebFrameE
-   fun:_ZN19TestWebViewDelegate20didClearWindowObjectEPN6WebKit8WebFrameE
-}
-{
    bug_52831
    Memcheck:Leak
    fun:_Znw*
