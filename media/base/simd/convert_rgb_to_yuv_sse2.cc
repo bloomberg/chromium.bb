@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/base/yuv_convert.h"
-#include "media/base/yuv_convert_internal.h"
-#include "media/base/yuv_row.h"
+#include "build/build_config.h"
+#include "media/base/simd/convert_rgb_to_yuv.h"
+#include "media/base/simd/yuv_to_rgb_table.h"
 
-#if defined(_MSC_VER)
+#if defined(COMPILER_MSVC)
 #include <intrin.h>
 #else
 #include <mmintrin.h>
@@ -84,6 +84,8 @@ static inline void ConvertRGBToYUV_V2H2(const uint8* rgb_buf_1,
   int sum_g = 0;
   int sum_r = 0;
   int r, g, b;
+
+
 
   CONVERT_Y(rgb_buf_1, y_buf_1);
   CONVERT_Y(rgb_buf_1, y_buf_1);

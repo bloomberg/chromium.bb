@@ -2,8 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/base/yuv_convert.h"
-#include "media/base/yuv_convert_internal.h"
+#include "media/base/simd/convert_rgb_to_yuv.h"
 
 namespace media {
 
@@ -76,32 +75,6 @@ void ConvertRGB24ToYUV_C(const uint8* rgbframe,
     if (i % 2 == 0) {
       uplane += uvstride;
       vplane += uvstride;
-    }
-  }
-}
-
-void ConvertYUY2ToYUV_C(const uint8* src,
-                        uint8* yplane,
-                        uint8* uplane,
-                        uint8* vplane,
-                        int width,
-                        int height) {
-  for (int i = 0; i < height / 2; ++i) {
-    for (int j = 0; j < (width / 2); ++j) {
-      yplane[0] = src[0];
-      *uplane = src[1];
-      yplane[1] = src[2];
-      *vplane = src[3];
-      src += 4;
-      yplane += 2;
-      uplane++;
-      vplane++;
-    }
-    for (int j = 0; j < (width / 2); ++j) {
-      yplane[0] = src[0];
-      yplane[1] = src[2];
-      src += 4;
-      yplane += 2;
     }
   }
 }
