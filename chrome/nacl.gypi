@@ -358,6 +358,17 @@
           'sources': [],
         },
       ],
+      'conditions': [
+        ['OS=="win"', {
+          'targets': [
+            {
+              'target_name': 'nacl_win64',
+              'type': 'none',
+              'sources': [],
+            },
+          ],
+        }],
+      ],
     }],
   ],
 }
