@@ -12,7 +12,6 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/process.h"
-#include "base/synchronization/waitable_event_watcher.h"
 #include "base/timer.h"
 #include "content/browser/child_process_launcher.h"
 #include "content/browser/renderer_host/render_process_host.h"
@@ -24,7 +23,6 @@ class RenderWidgetHelper;
 
 namespace base {
 class SharedMemory;
-class WaitableEvent;
 }
 
 // Implements a concrete RenderProcessHost for the browser process for talking
@@ -42,8 +40,7 @@ class WaitableEvent;
 // are correlated with IDs. This way, the Views and the corresponding ViewHosts
 // communicate through the two process objects.
 class BrowserRenderProcessHost : public RenderProcessHost,
-                                 public ChildProcessLauncher::Client,
-                                 public base::WaitableEventWatcher::Delegate {
+                                 public ChildProcessLauncher::Client {
  public:
   explicit BrowserRenderProcessHost(content::BrowserContext* browser_context);
   virtual ~BrowserRenderProcessHost();
@@ -79,10 +76,6 @@ class BrowserRenderProcessHost : public RenderProcessHost,
   // ChildProcessLauncher::Client implementation.
   virtual void OnProcessLaunched();
 
-  // base::WaitableEventWatcher::Delegate implementation.
-  virtual void OnWaitableEventSignaled(
-      base::WaitableEvent* waitable_event) OVERRIDE;
-
  private:
   friend class VisitRelayingRenderProcessHost;
 
@@ -109,11 +102,8 @@ class BrowserRenderProcessHost : public RenderProcessHost,
   // Callers can reduce the RenderProcess' priority.
   void SetBackgrounded(bool backgrounded);
 
-  // Handle termination of our process. |was_alive| indicates that when we
-  // tried to retrieve the exit code the process had not finished yet.
-  void ProcessDied(base::TerminationStatus status,
-                   int exit_code,
-                   bool was_alive);
+  // Handle termination of our process.
+  void ProcessDied();
 
   // The count of currently visible widgets.  Since the host can be a container
   // for multiple widgets, it uses this count to determine when it should be
@@ -159,11 +149,6 @@ class BrowserRenderProcessHost : public RenderProcessHost,
   // messages that are sent once the process handle is available.  This is
   // because the queued messages may have dependencies on the init messages.
   std::queue<IPC::Message*> queued_messages_;
-
-#if defined(OS_WIN)
-  // Used to wait until the renderer dies to get an accurrate exit code.
-  base::WaitableEventWatcher child_process_watcher_;
-#endif
 
   DISALLOW_COPY_AND_ASSIGN(BrowserRenderProcessHost);
 };

@@ -8,15 +8,10 @@
 
 #include <list>
 
-#include "base/synchronization/waitable_event_watcher.h"
 #include "content/browser/child_process_launcher.h"
 #include "content/common/child_process_host.h"
 #include "content/common/child_process_info.h"
 #include "content/common/content_export.h"
-
-namespace base {
-class WaitableEvent;
-}
 
 // Plugins/workers and other child processes that live on the IO thread should
 // derive from this class.
@@ -26,13 +21,9 @@ class WaitableEvent;
 class CONTENT_EXPORT BrowserChildProcessHost :
     public ChildProcessHost,
     public ChildProcessInfo,
-    public ChildProcessLauncher::Client,
-    public base::WaitableEventWatcher::Delegate {
+    public ChildProcessLauncher::Client {
  public:
   virtual ~BrowserChildProcessHost();
-
-  virtual void OnWaitableEventSignaled(
-      base::WaitableEvent* waitable_event) OVERRIDE;
 
   // Terminates all child processes and deletes each ChildProcessHost instance.
   static void TerminateAll();
@@ -96,7 +87,7 @@ class CONTENT_EXPORT BrowserChildProcessHost :
   virtual base::TerminationStatus GetChildTerminationStatus(int* exit_code);
 
   // Overrides from ChildProcessHost
-  virtual void OnChildDisconnected();
+  virtual void OnChildDied();
   virtual void ShutdownStarted();
   virtual void Notify(int type);
   // Extends the base class implementation and removes this host from
@@ -120,10 +111,6 @@ class CONTENT_EXPORT BrowserChildProcessHost :
   };
   ClientHook client_;
   scoped_ptr<ChildProcessLauncher> child_process_;
-#if defined(OS_WIN)
-  base::WaitableEventWatcher child_watcher_;
-#endif
-  bool disconnect_was_alive_;
 };
 
 #endif  // CONTENT_BROWSER_BROWSER_CHILD_PROCESS_HOST_H_
