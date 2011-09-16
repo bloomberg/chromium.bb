@@ -71,6 +71,11 @@ remoting::DisconnectWindow* remoting::DisconnectWindow::Create() {
 @synthesize disconnectWindow = disconnectWindow_;
 @synthesize username = username_;
 
+- (void)close {
+  self.host = NULL;
+  [super close];
+}
+
 - (id)initWithHost:(remoting::ChromotingHost*)host
             window:(remoting::DisconnectWindowMac*)disconnectWindow
           username:(NSString*)username {
