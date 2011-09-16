@@ -77,7 +77,7 @@ class CommandBufferHelperTest : public testing::Test {
         .WillRepeatedly(
             Invoke(do_jump_command_.get(), &DoJumpCommand::DoCommand));
 
-    gpu_scheduler_.reset(new GpuScheduler(
+    gpu_scheduler_.reset(GpuScheduler::CreateForTests(
         command_buffer_.get(), NULL, parser_));
     command_buffer_->SetPutOffsetChangeCallback(NewCallback(
         gpu_scheduler_.get(), &GpuScheduler::PutChanged));

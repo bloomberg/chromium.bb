@@ -356,7 +356,7 @@ void GpuChannel::OnCreateTransportTexture(int32 context_route_id,
    int32 route_id = GenerateRouteID();
 
    scoped_ptr<TransportTexture> transport(
-       new TransportTexture(this, channel_.get(), stub->decoder(),
+       new TransportTexture(this, channel_.get(), stub->scheduler()->decoder(),
                             host_id, route_id));
    router_.AddRoute(route_id, transport.get());
    transport_textures_.AddWithID(transport.release(), route_id);

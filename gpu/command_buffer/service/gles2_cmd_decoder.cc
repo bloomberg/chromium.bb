@@ -2362,8 +2362,9 @@ void GLES2DecoderImpl::Destroy() {
 
   if (context_.get()) {
     context_->ReleaseCurrent(NULL);
-    context_ = NULL;
+    context_->Destroy();
   }
+  context_ = NULL;
 
   offscreen_target_frame_buffer_.reset();
   offscreen_target_color_texture_.reset();

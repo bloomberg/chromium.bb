@@ -51,7 +51,7 @@ class BaseFencedAllocatorTest : public testing::Test {
                                 0,
                                 api_mock_.get());
 
-    gpu_scheduler_.reset(new GpuScheduler(
+    gpu_scheduler_.reset(GpuScheduler::CreateForTests(
         command_buffer_.get(), NULL, parser_));
     command_buffer_->SetPutOffsetChangeCallback(NewCallback(
         gpu_scheduler_.get(), &GpuScheduler::PutChanged));

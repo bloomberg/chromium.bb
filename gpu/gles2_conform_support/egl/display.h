@@ -7,14 +7,8 @@
 
 #include <EGL/egl.h>
 
+#include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "gpu/command_buffer/client/gles2_cmd_helper.h"
-#include "gpu/command_buffer/service/command_buffer_service.h"
-#include "gpu/command_buffer/service/gpu_scheduler.h"
-#include "gpu/command_buffer/service/gles2_cmd_decoder.h"
-#include "ui/gfx/gl/gl_context.h"
-#include "ui/gfx/gl/gl_surface.h"
-#include "ui/gfx/native_widget_types.h"
 
 namespace gpu {
 class CommandBufferService;
@@ -67,9 +61,6 @@ class Display {
   bool is_initialized_;
   scoped_ptr<gpu::CommandBufferService> command_buffer_;
   scoped_ptr<gpu::GpuScheduler> gpu_scheduler_;
-  scoped_ptr<gpu::gles2::GLES2Decoder> decoder_;
-  scoped_refptr<gfx::GLContext> gl_context_;
-  scoped_refptr<gfx::GLSurface> gl_surface_;
   scoped_ptr<gpu::gles2::GLES2CmdHelper> gles2_cmd_helper_;
   int32 transfer_buffer_id_;
 

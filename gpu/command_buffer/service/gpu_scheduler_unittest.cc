@@ -46,7 +46,7 @@ class GpuSchedulerTest : public testing::Test {
 
     async_api_.reset(new StrictMock<AsyncAPIMock>);
 
-    decoder_.reset(new gles2::MockGLES2Decoder());
+    decoder_ = new gles2::MockGLES2Decoder();
 
     parser_ = new CommandParser(buffer_,
                                 kRingBufferEntries,
@@ -55,9 +55,13 @@ class GpuSchedulerTest : public testing::Test {
                                 0,
                                 async_api_.get());
 
-    scheduler_.reset(new gpu::GpuScheduler(command_buffer_.get(),
-                                           decoder_.get(),
-                                           parser_));
+    scheduler_.reset(gpu::GpuScheduler::CreateForTests(command_buffer_.get(),
+                                                       decoder_,
+                                                       parser_));
+
+    EXPECT_CALL(*decoder_, Destroy())
+      .Times(1)
+      .RetiresOnSaturation();
   }
 
   virtual void TearDown() {
@@ -76,7 +80,7 @@ class GpuSchedulerTest : public testing::Test {
   scoped_ptr<base::SharedMemory> shared_memory_;
   Buffer shared_memory_buffer_;
   int32* buffer_;
-  scoped_ptr<gles2::MockGLES2Decoder> decoder_;
+  gles2::MockGLES2Decoder* decoder_;
   CommandParser* parser_;
   scoped_ptr<AsyncAPIMock> async_api_;
   scoped_ptr<GpuScheduler> scheduler_;
@@ -138,6 +142,19 @@ TEST_F(GpuSchedulerTest, ProcessesTwoCommands) {
   EXPECT_CALL(*async_api_, DoCommand(8, 0, &buffer_[2]))
     .WillOnce(Return(error::kNoError));
   EXPECT_CALL(*command_buffer_, SetGetOffset(3));
+
+  scheduler_->PutChanged();
+}
+
+TEST_F(GpuSchedulerTest, SchedulerSetsTheGLContext) {
+  EXPECT_CALL(*decoder_, MakeCurrent())
+    .WillOnce(Return(true))
+    .WillOnce(Return(true));
+
+  CommandBuffer::State state;
+  state.put_offset = 0;
+  EXPECT_CALL(*command_buffer_, GetState())
+    .WillRepeatedly(Return(state));
 
   scheduler_->PutChanged();
 }

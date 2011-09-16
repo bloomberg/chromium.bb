@@ -8,11 +8,13 @@
 
 #if defined(ENABLE_GPU)
 
+#include <queue>
 #include <string>
 #include <vector>
 
 #include "base/id_map.h"
 #include "base/memory/weak_ptr.h"
+#include "base/process.h"
 #include "base/task.h"
 #include "content/common/gpu/media/gpu_video_decode_accelerator.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
@@ -20,15 +22,8 @@
 #include "gpu/command_buffer/service/gpu_scheduler.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_message.h"
-#include "ui/gfx/gl/gl_context.h"
-#include "ui/gfx/gl/gl_surface.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/size.h"
-#include "ui/gfx/surface/transport_dib.h"
-
-#if defined(OS_MACOSX)
-#include "ui/gfx/surface/accelerated_surface_mac.h"
-#endif
 
 class GpuChannel;
 class GpuWatchdog;
@@ -63,7 +58,7 @@ class GpuCommandBufferStub
   // Whether this command buffer can currently handle IPC messages.
   bool IsScheduled();
 
-  gpu::gles2::GLES2Decoder* decoder() const { return decoder_.get(); }
+  // Get the GLContext associated with this object.
   gpu::GpuScheduler* scheduler() const { return scheduler_.get(); }
 
   // Identifies the renderer process.
@@ -76,28 +71,19 @@ class GpuCommandBufferStub
   // to the same renderer process.
   int32 route_id() const { return route_id_; }
 
+#if defined(OS_WIN)
+  // Called only by the compositor window's window proc
+  void OnCompositorWindowPainted();
+#endif  // defined(OS_WIN)
+
   void ViewResized();
 
 #if defined(OS_MACOSX)
   // Called only by the GpuChannel.
   void AcceleratedSurfaceBuffersSwapped(uint64 swap_buffers_count);
-
-  // Needed only on Mac OS X, which does not render into an on-screen
-  // window and therefore requires the backing store to be resized
-  // manually. Returns an opaque identifier for the new backing store.
-  // There are two versions of this method: one for use with the IOSurface
-  // available in Mac OS X 10.6; and, one for use with the
-  // TransportDIB-based version used on Mac OS X 10.5.
-  virtual TransportDIB::Handle SetWindowSizeForTransportDIB(
-      const gfx::Size& size);
-  virtual void SetTransportDIBAllocAndFree(
-      Callback2<size_t, TransportDIB::Handle*>::Type* allocator,
-      Callback1<TransportDIB::Id>::Type* deallocator);
-#endif
+#endif  // defined(OS_MACOSX)
 
  private:
-  void Destroy();
-
   // Cleans up and sends reply if OnInitialize failed.
   void OnInitializeFailed(IPC::Message* reply_message);
 
@@ -133,10 +119,6 @@ class GpuCommandBufferStub
 
 #if defined(OS_MACOSX)
   void OnSwapBuffers();
-
-  // Returns the id of the current surface that is being rendered to
-  // (or 0 if no such surface has been created).
-  uint64 GetSurfaceId();
 #endif
 
   void OnCommandProcessed();
@@ -168,10 +150,7 @@ class GpuCommandBufferStub
   int32 render_view_id_;
 
   scoped_ptr<gpu::CommandBufferService> command_buffer_;
-  scoped_ptr<gpu::gles2::GLES2Decoder> decoder_;
   scoped_ptr<gpu::GpuScheduler> scheduler_;
-  scoped_refptr<gfx::GLContext> context_;
-  scoped_refptr<gfx::GLSurface> surface_;
 
   // SetParent may be called before Initialize, in which case we need to keep
   // around the parent stub, so that Initialize can set the parent correctly.
@@ -179,25 +158,11 @@ class GpuCommandBufferStub
   uint32 parent_texture_for_initialization_;
 
   GpuWatchdog* watchdog_;
+  ScopedRunnableMethodFactory<GpuCommandBufferStub> task_factory_;
 
   // Zero or more video decoders owned by this stub, keyed by their
   // decoder_route_id.
   IDMap<GpuVideoDecodeAccelerator, IDMapOwnPointer> video_decoders_;
-
-#if defined(OS_MACOSX)
-  // To prevent the GPU process from overloading the browser process,
-  // we need to track the number of swap buffers calls issued and
-  // acknowledged per on-screen context, and keep the GPU from getting
-  // too far ahead of the browser. Note that this
-  // is also predicated on a flow control mechanism between the
-  // renderer and GPU processes.
-  uint64 swap_buffers_count_;
-  uint64 acknowledged_swap_buffers_count_;
-  scoped_ptr<AcceleratedSurface> accelerated_surface_;
-  scoped_ptr<Callback0::Type> wrapped_swap_buffers_callback_;
-#endif
-
-  ScopedRunnableMethodFactory<GpuCommandBufferStub> task_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuCommandBufferStub);
 };

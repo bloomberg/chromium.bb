@@ -6,7 +6,10 @@
 
 #include <vector>
 #include "gpu/command_buffer/client/gles2_lib.h"
+#include "gpu/command_buffer/service/command_buffer_service.h"
 #include "gpu/command_buffer/service/context_group.h"
+#include "gpu/command_buffer/service/gles2_cmd_decoder.h"
+#include "gpu/command_buffer/service/gpu_scheduler.h"
 #include "gpu/gles2_conform_support/egl/config.h"
 #include "gpu/gles2_conform_support/egl/surface.h"
 
@@ -28,20 +31,22 @@ Display::~Display() {
 }
 
 bool Display::Initialize() {
-  scoped_ptr<gpu::CommandBufferService> command_buffer(
-      new gpu::CommandBufferService);
+  using gpu::CommandBufferService;
+  scoped_ptr<CommandBufferService> command_buffer(new CommandBufferService);
   if (!command_buffer->Initialize(kCommandBufferSize))
     return false;
 
+  using gpu::Buffer;
   int32 transfer_buffer_id =
       command_buffer->CreateTransferBuffer(kTransferBufferSize, -1);
-  gpu::Buffer transfer_buffer =
+  Buffer transfer_buffer =
       command_buffer->GetTransferBuffer(transfer_buffer_id);
   if (transfer_buffer.ptr == NULL)
     return false;
 
-  scoped_ptr<gpu::gles2::GLES2CmdHelper> cmd_helper(
-      new gpu::gles2::GLES2CmdHelper(command_buffer.get()));
+  using gpu::gles2::GLES2CmdHelper;
+  scoped_ptr<GLES2CmdHelper> cmd_helper(
+      new GLES2CmdHelper(command_buffer.get()));
   if (!cmd_helper->Initialize(kCommandBufferSize))
     return false;
 
@@ -101,39 +106,19 @@ EGLSurface Display::CreateWindowSurface(EGLConfig config,
     return EGL_NO_SURFACE;
   }
 
-  gpu::gles2::ContextGroup::Ref group(new gpu::gles2::ContextGroup(true));
-
-  decoder_.reset(gpu::gles2::GLES2Decoder::Create(group.get()));
-  if (!decoder_.get())
-    return EGL_NO_SURFACE;
-
-  gpu_scheduler_.reset(new gpu::GpuScheduler(command_buffer_.get(),
-                                             decoder_.get(),
-                                             NULL));
-
-  decoder_->set_engine(gpu_scheduler_.get());
-
-  gl_surface_ = gfx::GLSurface::CreateViewGLSurface(false, win);
-  if (!gl_surface_.get())
-    return EGL_NO_SURFACE;
-
-  gl_context_ = gfx::GLContext::CreateGLContext(NULL, gl_surface_.get());
-  if (!gl_context_.get())
-    return EGL_NO_SURFACE;
-
+  using gpu::GpuScheduler;
   std::vector<int32> attribs;
-  if (!decoder_->Initialize(gl_surface_.get(),
-                            gl_context_.get(),
-                            gfx::Size(),
-                            gpu::gles2::DisallowedExtensions(),
-                            NULL,
-                            attribs)) {
+  gpu::gles2::ContextGroup::Ref group(new gpu::gles2::ContextGroup(true));
+  scoped_ptr<GpuScheduler> gpu_scheduler(
+      GpuScheduler::Create(command_buffer_.get(), group.get()));
+  if (!gpu_scheduler->Initialize(
+      win, gfx::Size(), false, gpu::gles2::DisallowedExtensions(), NULL,
+      attribs, NULL))
     return EGL_NO_SURFACE;
-  }
 
   command_buffer_->SetPutOffsetChangeCallback(
-      NewCallback(gpu_scheduler_.get(), &gpu::GpuScheduler::PutChanged));
-
+      NewCallback(gpu_scheduler.get(), &GpuScheduler::PutChanged));
+  gpu_scheduler_.reset(gpu_scheduler.release());
   surface_.reset(new Surface(win));
 
   return surface_.get();
@@ -142,9 +127,6 @@ EGLSurface Display::CreateWindowSurface(EGLConfig config,
 void Display::DestroySurface(EGLSurface surface) {
   DCHECK(IsValidSurface(surface));
   gpu_scheduler_.reset();
-  decoder_.reset();
-  gl_surface_ = NULL;
-  gl_context_ = NULL;
   surface_.reset();
 }
 
@@ -170,7 +152,8 @@ EGLContext Display::CreateContext(EGLConfig config,
   gpu::Buffer buffer = command_buffer_->GetTransferBuffer(transfer_buffer_id_);
   DCHECK(buffer.ptr != NULL);
   bool share_resources = share_ctx != NULL;
-  context_.reset(new gpu::gles2::GLES2Implementation(
+  using gpu::gles2::GLES2Implementation;
+  context_.reset(new GLES2Implementation(
       gles2_cmd_helper_.get(),
       buffer.size,
       buffer.ptr,
@@ -178,8 +161,10 @@ EGLContext Display::CreateContext(EGLConfig config,
       share_resources,
       true));
 
-  context_->EnableFeatureCHROMIUM("pepper3d_allow_buffers_on_multiple_targets");
-  context_->EnableFeatureCHROMIUM("pepper3d_support_fixed_attribs");
+  context_->EnableFeatureCHROMIUM(
+      "pepper3d_allow_buffers_on_multiple_targets");
+  context_->EnableFeatureCHROMIUM(
+      "pepper3d_support_fixed_attribs");
 
   return context_.get();
 }
