@@ -48,6 +48,7 @@
 #include "content/renderer/external_popup_menu.h"
 #include "content/renderer/geolocation_dispatcher.h"
 #include "content/renderer/gpu/webgraphicscontext3d_command_buffer_impl.h"
+#include "content/renderer/intents_dispatcher.h"
 #include "content/renderer/load_progress_tracker.h"
 #include "content/renderer/media/audio_message_filter.h"
 #include "content/renderer/media/audio_renderer_impl.h"
@@ -406,6 +407,7 @@ RenderView::RenderView(RenderThreadBase* render_thread,
     decrement_shared_popup_at_destruction_ = false;
   }
 
+  intents_dispatcher_ = new IntentsDispatcher(this);
   notification_provider_ = new NotificationProvider(this);
 
   render_thread_->AddRoute(routing_id_, this);
@@ -740,6 +742,7 @@ bool RenderView::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_SetHistoryLengthAndPrune,
                         OnSetHistoryLengthAndPrune)
     IPC_MESSAGE_HANDLER(ViewMsg_EnableViewSourceMode, OnEnableViewSourceMode)
+    IPC_MESSAGE_HANDLER(IntentsMsg_WebIntentReply, OnWebIntentReply);
 
     // Have the super handle all other messages.
     IPC_MESSAGE_UNHANDLED(handled = RenderWidget::OnMessageReceived(message))
@@ -4505,6 +4508,14 @@ void RenderView::startActivity(const WebKit::WebString& action,
                                int intent_id) {
   RenderThread::current()->Send(new ViewHostMsg_WebIntentDispatch(
       routing_id_, action, type, data, intent_id));
+}
+
+void RenderView::OnWebIntentReply(
+    IntentsMsg_WebIntentReply_Type::Value reply_type,
+    const WebKit::WebString& data,
+    int intent_id) {
+  // TODO(gbillock): Implement once the webkit side lands.
+  LOG(INFO) << "RenderView got reply to intent type " << reply_type;
 }
 
 bool RenderView::IsNonLocalTopLevelNavigation(

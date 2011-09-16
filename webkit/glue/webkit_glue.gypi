@@ -425,6 +425,8 @@
         'weburlloader_impl.h',
         'webvideoframe_impl.cc',
         'webvideoframe_impl.h',
+        'web_intent_data.cc',
+        'web_intent_data.h',
         'window_open_disposition.h',
         'window_open_disposition.cc',
 

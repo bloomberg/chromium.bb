@@ -131,6 +131,7 @@
     'common/indexed_db_messages.h',
     'common/indexed_db_param_traits.cc',
     'common/indexed_db_param_traits.h',
+    'common/intents_messages.h',
     'common/json_value_serializer.cc',
     'common/json_value_serializer.h',
     'common/mac/attributed_string_coder.h',

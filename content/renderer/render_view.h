@@ -25,6 +25,7 @@
 #include "content/renderer/renderer_webcookiejar_impl.h"
 #include "content/common/content_export.h"
 #include "content/common/edit_command.h"
+#include "content/common/intents_messages.h"
 #include "content/common/navigation_gesture.h"
 #include "content/common/page_zoom.h"
 #include "content/common/renderer_preferences.h"
@@ -60,6 +61,7 @@ class ExternalPopupMenu;
 class FilePath;
 class GeolocationDispatcher;
 class GURL;
+class IntentsDispatcher;
 class LoadProgressTracker;
 class MediaStreamImpl;
 class NavigationState;
@@ -440,6 +442,10 @@ class RenderView : public RenderWidget,
                              const WebKit::WebString& type,
                              const WebKit::WebString& data,
                              int intent_id);
+  virtual void OnWebIntentReply(
+      IntentsMsg_WebIntentReply_Type::Value reply_type,
+      const WebKit::WebString& data,
+      int intent_id);
 
   // WebKit::WebFrameClient implementation -------------------------------------
 
@@ -1137,6 +1143,9 @@ class RenderView : public RenderWidget,
 
   // The geolocation dispatcher attached to this view, lazily initialized.
   GeolocationDispatcher* geolocation_dispatcher_;
+
+  // The intents dispatcher attached to this view. Not lazily initialized.
+  IntentsDispatcher* intents_dispatcher_;
 
   // The speech dispatcher attached to this view, lazily initialized.
   SpeechInputDispatcher* speech_input_dispatcher_;

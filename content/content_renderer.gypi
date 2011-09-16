@@ -57,6 +57,8 @@
         'renderer/gpu/webgraphicscontext3d_command_buffer_impl.h',
         'renderer/indexed_db_dispatcher.cc',
         'renderer/indexed_db_dispatcher.h',
+        'renderer/intents_dispatcher.cc',
+        'renderer/intents_dispatcher.h',
         'renderer/load_progress_tracker.cc',
         'renderer/load_progress_tracker.h',
         'renderer/media/audio_device.cc',

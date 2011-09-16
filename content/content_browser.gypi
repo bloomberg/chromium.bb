@@ -256,6 +256,8 @@
         'browser/in_process_webkit/webkit_context.h',
         'browser/in_process_webkit/webkit_thread.cc',
         'browser/in_process_webkit/webkit_thread.h',
+        'browser/intents/intent_injector.cc',
+        'browser/intents/intent_injector.h',
         'browser/javascript_dialogs.h',
         'browser/load_from_memory_cache_details.cc',
         'browser/load_from_memory_cache_details.h',

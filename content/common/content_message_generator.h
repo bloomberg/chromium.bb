@@ -19,6 +19,7 @@
 #include "content/common/geolocation_messages.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/indexed_db_messages.h"
+#include "content/common/intents_messages.h"
 #include "content/common/media/audio_messages.h"
 #include "content/common/media/media_stream_messages.h"
 #include "content/common/media/video_capture_messages.h"
