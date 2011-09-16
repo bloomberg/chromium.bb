@@ -139,7 +139,9 @@ bool GlobalErrorBubbleView::CloseOnEscape() {
 }
 
 bool GlobalErrorBubbleView::FadeInOnShow() {
-  return true;
+  // TODO(sail): Enabling fade causes the window to be disabled for some
+  // reason. Until this is fixed we need to disable fade.
+  return false;
 }
 
 void GlobalError::ShowBubbleView(Browser* browser, GlobalError* error) {
