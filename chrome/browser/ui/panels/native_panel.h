@@ -11,6 +11,7 @@
 
 class FindBar;
 class NativePanelTesting;
+class PanelMouseWatcher;
 
 namespace gfx {
 class Rect;
@@ -84,6 +85,7 @@ class NativePanel {
 class NativePanelTesting {
  public:
   static NativePanelTesting* Create(NativePanel* native_panel);
+  static PanelMouseWatcher* GetPanelMouseWatcherInstance();
 
   // clang gives error on delete if the destructor is not virtual.
   virtual ~NativePanelTesting() {}
@@ -93,6 +95,9 @@ class NativePanelTesting {
   virtual void DragTitlebar(int delta_x, int delta_y) = 0;
   virtual void CancelDragTitlebar() = 0;
   virtual void FinishDragTitlebar() = 0;
+  virtual void SetMousePositionForMinimizeRestore(const gfx::Point& point) = 0;
+
+  virtual int TitleOnlyHeight() const = 0;
 };
 
 #endif  // CHROME_BROWSER_UI_PANELS_NATIVE_PANEL_H_
