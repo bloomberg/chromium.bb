@@ -8,6 +8,7 @@
 #include "base/file_util.h"
 #include "base/format_macros.h"
 #include "base/i18n/case_conversion.h"
+#include "base/i18n/string_search.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/stringprintf.h"
@@ -614,8 +615,8 @@ bool DownloadItem::MatchesQuery(const string16& query) const {
 
   DCHECK_EQ(query, base::i18n::ToLower(query));
 
-  string16 url_raw(base::i18n::ToLower(UTF8ToUTF16(GetURL().spec())));
-  if (url_raw.find(query) != string16::npos)
+  string16 url_raw(UTF8ToUTF16(GetURL().spec()));
+  if (base::i18n::StringSearchIgnoringCaseAndAccents(query, url_raw))
     return true;
 
   // TODO(phajdan.jr): write a test case for the following code.
@@ -627,17 +628,12 @@ bool DownloadItem::MatchesQuery(const string16& query) const {
   TabContents* tab = request_handle_.GetTabContents();
   if (tab)
     languages = content::GetContentClient()->browser()->GetAcceptLangs(tab);
-  string16 url_formatted(
-      base::i18n::ToLower(net::FormatUrl(GetURL(), languages)));
-  if (url_formatted.find(query) != string16::npos)
+  string16 url_formatted(net::FormatUrl(GetURL(), languages));
+  if (base::i18n::StringSearchIgnoringCaseAndAccents(query, url_formatted))
     return true;
 
-  string16 path(base::i18n::ToLower(full_path().LossyDisplayName()));
-  // This shouldn't just do a substring match; it is wrong for Unicode
-  // due to normalization and we have a fancier search-query system
-  // used elsewhere.
-  // http://code.google.com/p/chromium/issues/detail?id=71982
-  return (path.find(query) != string16::npos);
+  string16 path(full_path().LossyDisplayName());
+  return base::i18n::StringSearchIgnoringCaseAndAccents(query, path);
 }
 
 void DownloadItem::SetFileCheckResults(const DownloadStateInfo& state) {
