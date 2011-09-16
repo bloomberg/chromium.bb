@@ -46,7 +46,9 @@ class MEDIA_EXPORT AudioRendererBase : public AudioRenderer {
  protected:
   // Subclasses should return true if they were able to initialize, false
   // otherwise.
-  virtual bool OnInitialize(const AudioDecoderConfig& config) = 0;
+  virtual bool OnInitialize(int bits_per_channel,
+                            ChannelLayout channel_layout,
+                            int sample_rate) = 0;
 
   // Called by Stop().  Subclasses should perform any necessary cleanup during
   // this time, such as stopping any running threads.

@@ -60,11 +60,13 @@ void NullAudioRenderer::ThreadMain() {
   }
 }
 
-bool NullAudioRenderer::OnInitialize(const AudioDecoderConfig& config) {
+bool NullAudioRenderer::OnInitialize(int bits_per_channel,
+                                     ChannelLayout channel_layout,
+                                     int sample_rate) {
   // Calculate our bytes per millisecond value and allocate our buffer.
   bytes_per_millisecond_ =
-      (ChannelLayoutToChannelCount(config.channel_layout) * config.sample_rate *
-       config.bits_per_channel / 8) / base::Time::kMillisecondsPerSecond;
+      (ChannelLayoutToChannelCount(channel_layout) * sample_rate *
+       bits_per_channel / 8) / base::Time::kMillisecondsPerSecond;
   buffer_size_ = bytes_per_millisecond_ * kBufferSizeInMilliseconds;
   buffer_.reset(new uint8[buffer_size_]);
   DCHECK(buffer_.get());

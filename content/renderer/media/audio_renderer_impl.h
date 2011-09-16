@@ -85,7 +85,9 @@ class AudioRendererImpl
  protected:
   // Methods called on audio renderer thread ----------------------------------
   // These methods are called from AudioRendererBase.
-  virtual bool OnInitialize(const media::AudioDecoderConfig& config);
+  virtual bool OnInitialize(int bits_per_channel,
+                            ChannelLayout channel_layout,
+                            int sample_rate);
   virtual void OnStop();
 
   // Called when the decoder completes a Read().

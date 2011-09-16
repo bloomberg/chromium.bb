@@ -154,10 +154,12 @@ class AudioRendererImplTest
     // Setup expectations for initialization.
     decoder_ = new media::MockAudioDecoder();
 
-    ON_CALL(*decoder_, config())
-      .WillByDefault(Return(media::AudioDecoderConfig(16,
-                                                      CHANNEL_LAYOUT_MONO,
-                                                      44100)));
+    EXPECT_CALL(*decoder_, bits_per_channel())
+        .WillRepeatedly(Return(16));
+    EXPECT_CALL(*decoder_, channel_layout())
+        .WillRepeatedly(Return(CHANNEL_LAYOUT_MONO));
+    EXPECT_CALL(*decoder_, sample_rate())
+        .WillRepeatedly(Return(44100));
 
     // Create and initialize the audio renderer.
     renderer_ = new TestAudioRendererImpl();
@@ -344,4 +346,3 @@ TEST_F(AudioRendererImplTest, UpdateEarliestEndTime) {
   renderer_->Stop(media::NewExpectedCallback());
   WaitForIOThreadCompletion();
 }
-

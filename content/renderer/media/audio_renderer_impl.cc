@@ -83,9 +83,11 @@ void AudioRendererImpl::UpdateEarliestEndTime(int bytes_filled,
   }
 }
 
-bool AudioRendererImpl::OnInitialize(const media::AudioDecoderConfig& config) {
-  AudioParameters params(config);
-  params.format = AudioParameters::AUDIO_PCM_LINEAR;
+bool AudioRendererImpl::OnInitialize(int bits_per_channel,
+                                     ChannelLayout channel_layout,
+                                     int sample_rate) {
+  AudioParameters params(AudioParameters::AUDIO_PCM_LINEAR, channel_layout,
+                         sample_rate, bits_per_channel, 0);
 
   bytes_per_second_ = params.GetBytesPerSecond();
 

@@ -104,15 +104,14 @@ void AudioRendererBase::Initialize(AudioDecoder* decoder,
 
   // Initialize our algorithm with media properties, initial playback rate,
   // and a callback to request more reads from the data source.
-  AudioDecoderConfig config = decoder_->config();
-  algorithm_->Initialize(ChannelLayoutToChannelCount(config.channel_layout),
-                         config.sample_rate,
-                         config.bits_per_channel,
-                         0.0f,
-                         cb);
+  ChannelLayout channel_layout = decoder_->channel_layout();
+  int channels = ChannelLayoutToChannelCount(channel_layout);
+  int bits_per_channel = decoder_->bits_per_channel();
+  int sample_rate = decoder_->sample_rate();
+  algorithm_->Initialize(channels, sample_rate, bits_per_channel, 0.0f, cb);
 
   // Give the subclass an opportunity to initialize itself.
-  if (!OnInitialize(config)) {
+  if (!OnInitialize(bits_per_channel, channel_layout, sample_rate)) {
     host()->SetError(PIPELINE_ERROR_INITIALIZATION_FAILED);
     callback->Run();
     return;

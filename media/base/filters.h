@@ -31,7 +31,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
-#include "media/base/audio_decoder_config.h"
+#include "media/base/channel_layout.h"
 #include "media/base/media_export.h"
 #include "media/base/pipeline_status.h"
 #include "media/base/video_frame.h"
@@ -215,8 +215,6 @@ class MEDIA_EXPORT AudioDecoder : public Filter {
   virtual void Initialize(DemuxerStream* stream, FilterCallback* callback,
                           StatisticsCallback* stats_callback) = 0;
 
-  virtual AudioDecoderConfig config() = 0;
-
   // Renderer provides an output buffer for Decoder to write to. These buffers
   // will be recycled to renderer via the permanent callback.
   //
@@ -229,6 +227,11 @@ class MEDIA_EXPORT AudioDecoder : public Filter {
       const ConsumeAudioSamplesCB& callback) {
     consume_audio_samples_callback_ = callback;
   }
+
+  // Returns various information about the decoded audio format.
+  virtual int bits_per_channel() = 0;
+  virtual ChannelLayout channel_layout() = 0;
+  virtual int sample_rate() = 0;
 
  protected:
   AudioDecoder();

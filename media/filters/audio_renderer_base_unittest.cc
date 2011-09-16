@@ -31,7 +31,7 @@ class MockAudioRendererBase : public AudioRendererBase {
   MOCK_METHOD1(SetVolume, void(float volume));
 
   // AudioRendererBase implementation.
-  MOCK_METHOD1(OnInitialize, bool(const AudioDecoderConfig& config));
+  MOCK_METHOD3(OnInitialize, bool(int, ChannelLayout, int));
   MOCK_METHOD0(OnStop, void());
 
   // Used for verifying check points during tests.
@@ -57,9 +57,12 @@ class AudioRendererBaseTest : public ::testing::Test {
         .WillRepeatedly(Invoke(this, &AudioRendererBaseTest::EnqueueCallback));
 
     // Set up audio properties.
-    ON_CALL(*decoder_, config())
-        .WillByDefault(Return(AudioDecoderConfig(16, CHANNEL_LAYOUT_MONO,
-                                                 44100)));
+    ON_CALL(*decoder_, bits_per_channel())
+        .WillByDefault(Return(16));
+    ON_CALL(*decoder_, channel_layout())
+        .WillByDefault(Return(CHANNEL_LAYOUT_MONO));
+    ON_CALL(*decoder_, sample_rate())
+        .WillByDefault(Return(44100));
   }
 
   virtual ~AudioRendererBaseTest() {
@@ -93,7 +96,7 @@ TEST_F(AudioRendererBaseTest, Initialize_Failed) {
   InSequence s;
 
   // Our subclass will fail when asked to initialize.
-  EXPECT_CALL(*renderer_, OnInitialize(_))
+  EXPECT_CALL(*renderer_, OnInitialize(_, _, _))
       .WillOnce(Return(false));
 
   // We expect to receive an error.
@@ -108,7 +111,7 @@ TEST_F(AudioRendererBaseTest, Initialize_Successful) {
   InSequence s;
 
   // Then our subclass will be asked to initialize.
-  EXPECT_CALL(*renderer_, OnInitialize(_))
+  EXPECT_CALL(*renderer_, OnInitialize(_, _, _))
       .WillOnce(Return(true));
 
   // Initialize, we shouldn't have any reads.
@@ -136,7 +139,7 @@ TEST_F(AudioRendererBaseTest, OneCompleteReadCycle) {
   InSequence s;
 
   // Then our subclass will be asked to initialize.
-  EXPECT_CALL(*renderer_, OnInitialize(_))
+  EXPECT_CALL(*renderer_, OnInitialize(_, _, _))
       .WillOnce(Return(true));
 
   // Initialize, we shouldn't have any reads.
