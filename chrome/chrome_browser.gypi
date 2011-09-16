@@ -1085,6 +1085,8 @@
         'browser/extensions/extension_settings_storage.h',
         'browser/extensions/extension_settings_storage_cache.cc',
         'browser/extensions/extension_settings_storage_cache.h',
+        'browser/extensions/extension_settings_storage_quota_enforcer.cc',
+        'browser/extensions/extension_settings_storage_quota_enforcer.h',
         'browser/extensions/extension_settings_leveldb_storage.cc',
         'browser/extensions/extension_settings_leveldb_storage.h',
         'browser/extensions/extension_service.cc',

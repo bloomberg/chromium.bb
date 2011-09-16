@@ -2310,6 +2310,7 @@
         'browser/extensions/extension_settings_cached_leveldb_storage_unittest.cc',
         'browser/extensions/extension_settings_cached_noop_storage_unittest.cc',
         'browser/extensions/extension_settings_leveldb_storage_unittest.cc',
+        'browser/extensions/extension_settings_quota_unittest.cc',
         'browser/extensions/extension_settings_storage_unittest.h',
         'browser/extensions/extension_settings_storage_unittest.cc',
         'browser/extensions/extension_sidebar_apitest.cc',
