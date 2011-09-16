@@ -242,6 +242,9 @@
 0x2e08637d43bc3450	EditSearchEngines
 0x9a2fdef24427ff67	EmailPageLocation
 0xfef46e5063ce3dc7	Exit
+0xdf56dffe242f621a	Extensions.ExtensionInstalled
+0x4f07c158c8047ab9	Extensions.ExtensionUninstalled
+0xa295e3ad39bbacc0	Extensions.WebStoreLaunch
 0x4cfa6c981549e990	Find
 0x058404d575478e31	FindNext
 0xca56592cf013fc40	FindPrevious
@@ -1178,6 +1181,8 @@
 0x1cdc076b28f70afa	Undo
 0xc1a39b6a60f8b2f8	Unlink
 0xbcd41ce97e3c5568	UpdateChrome
+0x0746723e6884a2fb	Updater.ServerCertificateChanged
+0x169dd0fd613963e8	Updater.ServerCertificateFailed
 0x9b4b5afb2e791f23	UpgradeCheck_AlreadyUpToDate
 0x27b72192736f904d	UpgradeCheck_AlreadyUpgraded
 0x7a54d49f1f7db4ee	UpgradeCheck_Done

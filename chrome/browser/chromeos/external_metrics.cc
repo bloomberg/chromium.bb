@@ -46,6 +46,8 @@ void ExternalMetrics::Start() {
   valid_user_actions_.insert("Accel_PrevWindow_F5");
   valid_user_actions_.insert("Accel_BrightnessDown_F6");
   valid_user_actions_.insert("Accel_BrightnessUp_F7");
+  valid_user_actions_.insert("Updater.ServerCertificateChanged");
+  valid_user_actions_.insert("Updater.ServerCertificateFailed");
 
   ScheduleCollector();
 }

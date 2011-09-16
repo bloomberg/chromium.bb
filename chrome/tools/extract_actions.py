@@ -215,6 +215,10 @@ def AddChromeOSActions(actions):
   actions.add('Accel_BrightnessDown_F6')
   actions.add('Accel_BrightnessUp_F7')
 
+  # Actions sent by Chrome OS update engine.
+  actions.add('Updater.ServerCertificateChanged')
+  actions.add('Updater.ServerCertificateFailed')
+
 def GrepForActions(path, actions):
   """Grep a source file for calls to UserMetrics functions.
 
