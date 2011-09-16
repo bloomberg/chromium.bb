@@ -23,7 +23,7 @@
 #include "ppapi/c/dev/ppb_layer_compositor_dev.h"
 #include "ppapi/c/dev/ppb_surface_3d_dev.h"
 #include "ppapi/c/ppb_graphics_3d.h"
-#include "ppapi/c/ppb_opengles.h"
+#include "ppapi/c/ppb_opengles2.h"
 #include "ppapi/c/trusted/ppb_graphics_3d_trusted.h"
 
 namespace ppapi_proxy {

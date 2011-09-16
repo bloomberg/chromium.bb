@@ -10,7 +10,7 @@
 #include "native_client/src/shared/ppapi_proxy/plugin_resource.h"
 #include "ppapi/c/pp_graphics_3d.h"
 #include "ppapi/c/ppb_graphics_3d.h"
-#include "ppapi/c/ppb_opengles.h"
+#include "ppapi/c/ppb_opengles2.h"
 #include "ppapi/c/pp_instance.h"
 
 namespace gpu {
