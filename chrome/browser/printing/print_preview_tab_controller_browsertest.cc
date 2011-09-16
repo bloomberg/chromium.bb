@@ -220,7 +220,7 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewTabControllerBrowserTest,
   ui_test_utils::NavigateToURL(&p);
 
 
-#if defined(OS_LINUX) && defined(TOOLKIT_VIEWS)
+#if defined(OS_CHROMEOS)
   // Navigate() should have opened a new tab on CrOS.
   EXPECT_EQ(browser(), p.browser);
   EXPECT_EQ(Browser::TYPE_TABBED, p.browser->type());
@@ -241,7 +241,7 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewTabControllerBrowserTest,
   EXPECT_TRUE(preview_tab);
 
   int tab_position = kTabCount;
-#if defined(OS_LINUX) && defined(TOOLKIT_VIEWS)
+#if defined(OS_CHROMEOS)
   // Increment position since CrOS opened a new tab instead of a popup.
   tab_position++;
 #endif
