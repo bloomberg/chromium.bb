@@ -312,7 +312,7 @@ class TestingProfile : public Profile {
   void CreateTestingPrefService();
 
   // The favicon service. Only created if CreateFaviconService is invoked.
-  scoped_refptr<FaviconService> favicon_service_;
+  scoped_ptr<FaviconService> favicon_service_;
 
   // The history service. Only created if CreateHistoryService is invoked.
   scoped_refptr<HistoryService> history_service_;

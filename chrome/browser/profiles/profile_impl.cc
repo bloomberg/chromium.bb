@@ -823,7 +823,7 @@ ProfileImpl::~ProfileImpl() {
 
   // FaviconService depends on HistoryServce so make sure we delete
   // HistoryService first.
-  favicon_service_ = NULL;
+  favicon_service_.reset();
 
   if (extension_message_service_)
     extension_message_service_->DestroyingProfile();
@@ -1061,8 +1061,7 @@ const content::ResourceContext& ProfileImpl::GetResourceContext() {
 FaviconService* ProfileImpl::GetFaviconService(ServiceAccessType sat) {
   if (!favicon_service_created_) {
     favicon_service_created_ = true;
-    scoped_refptr<FaviconService> service(new FaviconService(this));
-    favicon_service_.swap(service);
+    favicon_service_.reset(new FaviconService(this));
   }
   return favicon_service_.get();
 }

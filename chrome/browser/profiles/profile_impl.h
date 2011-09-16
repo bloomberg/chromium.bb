@@ -237,7 +237,7 @@ class ProfileImpl : public Profile,
   scoped_refptr<ChromeDownloadManagerDelegate> download_manager_delegate_;
   scoped_refptr<DownloadManager> download_manager_;
   scoped_refptr<HistoryService> history_service_;
-  scoped_refptr<FaviconService> favicon_service_;
+  scoped_ptr<FaviconService> favicon_service_;
   scoped_ptr<AutocompleteClassifier> autocomplete_classifier_;
   scoped_refptr<history::ShortcutsBackend> shortcuts_backend_;
   scoped_refptr<WebDataService> web_data_service_;

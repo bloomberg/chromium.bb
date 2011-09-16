@@ -24,10 +24,11 @@ class Profile;
 //
 // This service is thread safe. Each request callback is invoked in the
 // thread that made the request.
-class FaviconService : public CancelableRequestProvider,
-                       public base::RefCountedThreadSafe<FaviconService> {
+class FaviconService : public CancelableRequestProvider {
  public:
   explicit FaviconService(Profile* profile);
+
+  virtual ~FaviconService();
 
   // Callback for GetFavicon. If we have previously inquired about the favicon
   // for this URL, |know_favicon| will be true, and the rest of the fields will
@@ -93,9 +94,7 @@ class FaviconService : public CancelableRequestProvider,
                   history::IconType icon_type);
 
  private:
-  friend class base::RefCountedThreadSafe<FaviconService>;
 
-  virtual ~FaviconService();
 
   Profile* profile_;
 

@@ -201,8 +201,7 @@ TestingProfile::~TestingProfile() {
 }
 
 void TestingProfile::CreateFaviconService() {
-  favicon_service_ = NULL;
-  favicon_service_ = new FaviconService(this);
+  favicon_service_.reset(new FaviconService(this));
 }
 
 void TestingProfile::CreateHistoryService(bool delete_file, bool no_db) {
@@ -257,9 +256,7 @@ void TestingProfile::DestroyTopSites() {
 }
 
 void TestingProfile::DestroyFaviconService() {
-  if (!favicon_service_.get())
-    return;
-  favicon_service_ = NULL;
+  favicon_service_.reset();
 }
 
 void TestingProfile::CreateBookmarkModel(bool delete_file) {
