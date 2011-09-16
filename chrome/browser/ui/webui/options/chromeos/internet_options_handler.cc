@@ -945,7 +945,8 @@ void InternetOptionsHandler::ButtonClickCallback(const ListValue* args) {
   int type = atoi(str_type.c_str());
   if (type == chromeos::TYPE_ETHERNET) {
     const chromeos::EthernetNetwork* ether = cros_->ethernet_network();
-    PopulateDictionaryDetails(ether);
+    if (ether)
+      PopulateDictionaryDetails(ether);
   } else if (type == chromeos::TYPE_WIFI) {
     HandleWifiButtonClick(service_path, command);
   } else if (type == chromeos::TYPE_CELLULAR) {
