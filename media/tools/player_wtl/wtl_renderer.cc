@@ -13,7 +13,8 @@ WtlVideoRenderer::WtlVideoRenderer(WtlVideoWindow* window)
 WtlVideoRenderer::~WtlVideoRenderer() {}
 
 bool WtlVideoRenderer::OnInitialize(media::VideoDecoder* decoder) {
-  window_->SetSize(decoder->width(), decoder->height());
+  window_->SetSize(
+      decoder->natural_size().width(), decoder->natural_size().height());
   return true;
 }
 

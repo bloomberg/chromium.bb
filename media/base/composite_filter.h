@@ -27,15 +27,16 @@ class MEDIA_EXPORT CompositeFilter : public Filter {
   bool AddFilter(scoped_refptr<Filter> filter);
 
   // media::Filter methods.
-  virtual void set_host(FilterHost* host);
-  virtual FilterHost* host();
-  virtual void Play(FilterCallback* play_callback);
-  virtual void Pause(FilterCallback* pause_callback);
-  virtual void Flush(FilterCallback* flush_callback);
-  virtual void Stop(FilterCallback* stop_callback);
-  virtual void SetPlaybackRate(float playback_rate);
-  virtual void Seek(base::TimeDelta time, const FilterStatusCB& seek_cb);
-  virtual void OnAudioRendererDisabled();
+  virtual void set_host(FilterHost* host) OVERRIDE;
+  virtual FilterHost* host() OVERRIDE;
+  virtual void Play(FilterCallback* play_callback) OVERRIDE;
+  virtual void Pause(FilterCallback* pause_callback) OVERRIDE;
+  virtual void Flush(FilterCallback* flush_callback) OVERRIDE;
+  virtual void Stop(FilterCallback* stop_callback) OVERRIDE;
+  virtual void SetPlaybackRate(float playback_rate) OVERRIDE;
+  virtual void Seek(
+      base::TimeDelta time, const FilterStatusCB& seek_cb) OVERRIDE;
+  virtual void OnAudioRendererDisabled() OVERRIDE;
 
  protected:
   virtual ~CompositeFilter();

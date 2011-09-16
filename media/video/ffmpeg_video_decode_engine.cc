@@ -61,8 +61,8 @@ void FFmpegVideoDecodeEngine::Initialize(
   codec_context_->pix_fmt = PIX_FMT_YUV420P;
   codec_context_->codec_type = AVMEDIA_TYPE_VIDEO;
   codec_context_->codec_id = VideoCodecToCodecID(config.codec());
-  codec_context_->coded_width = config.width();
-  codec_context_->coded_height = config.height();
+  codec_context_->coded_width = config.coded_size().width();
+  codec_context_->coded_height = config.coded_size().height();
 
   frame_rate_numerator_ = config.frame_rate_numerator();
   frame_rate_denominator_ = config.frame_rate_denominator();
@@ -104,8 +104,7 @@ void FFmpegVideoDecodeEngine::Initialize(
   av_frame_.reset(avcodec_alloc_frame());
   VideoCodecInfo info;
   info.success = false;
-  info.surface_width = config.surface_width();
-  info.surface_height = config.surface_height();
+  info.natural_size = config.natural_size();
 
   // If we do not have enough buffers, we will report error too.
   frame_queue_available_.clear();
@@ -114,8 +113,8 @@ void FFmpegVideoDecodeEngine::Initialize(
   for (size_t i = 0; i < Limits::kMaxVideoFrames; ++i) {
     scoped_refptr<VideoFrame> video_frame =
         VideoFrame::CreateFrame(VideoFrame::YV12,
-                                config.surface_width(),
-                                config.surface_height(),
+                                config.visible_rect().width(),
+                                config.visible_rect().height(),
                                 kNoTimestamp,
                                 kNoTimestamp);
     frame_queue_available_.push_back(video_frame);

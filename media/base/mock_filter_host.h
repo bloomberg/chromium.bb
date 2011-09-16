@@ -32,7 +32,7 @@ class MockFilterHost : public FilterHost {
   MOCK_METHOD1(SetBufferedTime, void(base::TimeDelta buffered_time));
   MOCK_METHOD1(SetTotalBytes, void(int64 total_bytes));
   MOCK_METHOD1(SetBufferedBytes, void(int64 buffered_bytes));
-  MOCK_METHOD2(SetVideoSize, void(size_t width, size_t height));
+  MOCK_METHOD1(SetNaturalVideoSize, void(const gfx::Size& size));
   MOCK_METHOD1(SetStreaming, void(bool streamed));
   MOCK_METHOD1(SetLoaded, void(bool loaded));
   MOCK_METHOD1(SetNetworkActivity, void(bool network_activity));
