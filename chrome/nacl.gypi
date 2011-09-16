@@ -65,7 +65,7 @@
               'python', 'build_nacl_irt.py', '--outdir', '<(PRODUCT_DIR)',
             ],
             'irt_inputs_cmd':
-                'python build_nacl_irt.py --inputs',
+                'python build_nacl_irt.py --inputs --cheap',
           },
           'dependencies': [
             'chrome_resources',

@@ -45,6 +45,80 @@ def RelativePath(path, base):
   return os.sep.join(rel_parts)
 
 
+def CrawlDirectorySources(path, dst_set):
+  """Find all source files under a directory
+
+  Ignores all directories starting with a dot.
+  Args:
+    path: path to walk
+    dst_set: a set to add the files found to.
+  """
+  for root, dirs, files in os.walk(path, topdown=True):
+    for d in dirs:
+      if d.startswith('.'):
+        dirs.remove(d)
+    for f in files:
+      if os.path.splitext(f)[1] in ['.cc', '.c', '.S', '.h', '.x']:
+        dst_set.add(os.path.join(root, f))
+
+
+def PrintRelativePaths(inputs):
+  """Print a set of file paths in sorted order relative to SRC_DIR.
+
+  Args:
+    inputs: a set of absolute paths.
+  """
+  # Check that everything exists and make it script relative.
+  # Exclude things above SRC_DIR.
+  rel_inputs = set()
+  for f in inputs:
+    nf = os.path.join(NACL_DIR, f)
+    if not os.path.exists(nf):
+      raise Exception('missing input file "%s"' % nf)
+    # If the relative path from SRC_DIR to the file starts with ../ ignore it.
+    # (i.e. the file is outside the client).
+    if RelativePath(nf, SRC_DIR).startswith('..' + os.sep):
+      continue
+    rel_inputs.add(RelativePath(nf, SCRIPT_DIR).replace(os.sep, '/'))
+  # Print it sorted.
+  rel_inputs = sorted(list(rel_inputs))
+  for f in rel_inputs:
+    print f
+
+
+def CheapPrintInputs():
+  """Approximate the inputs to the nacl irt build step cheaply."""
+  inputs = set()
+  for base in [
+      'base',
+      'build',
+      'gpu/GLES2',
+      'gpu/KHR',
+      'gpu/command_buffer',
+      'native_client/src/include',
+      'native_client/src/shared/gio',
+      'native_client/src/shared/imc',
+      'native_client/src/shared/platform',
+      'native_client/src/shared/srpc',
+      'native_client/src/third_party/dlmalloc',
+      'native_client/src/third_party/valgrind',
+      'native_client/src/trusted/desc',
+      'native_client/src/trusted/nacl_base',
+      'native_client/src/trusted/service_runtime',
+      'native_client/src/untrusted/irt',
+      'native_client/src/untrusted/nacl',
+      'native_client/src/untrusted/pthread',
+      'native_client/src/untrusted/stubs',
+      'ppapi/c',
+      'ppapi/cpp',
+      'ppapi/native_client/src/shared/ppapi_proxy',
+      'ui/gfx/gl',
+      ]:
+    CrawlDirectorySources(os.path.join(SRC_DIR, base), inputs)
+  inputs.add(os.path.join(SRC_DIR, 'DEPS'))
+  PrintRelativePaths(inputs)
+
+
 def PrintInputs(platforms):
   """Print all the transitive inputs required to build the IRT.
 
@@ -102,22 +176,8 @@ def PrintInputs(platforms):
           os.path.exists(os.path.join(PPAPI_NACL_DIR, filename))):
         filename = '../ppapi/native_client/' + filename
       inputs.add(filename)
-  # Check that everything exists and make it script relative.
-  # Exclude things above SRC_DIR.
-  rel_inputs = set()
-  for f in inputs:
-    nf = os.path.join(NACL_DIR, f)
-    if not os.path.exists(nf):
-      raise Exception('missing input file "%s"' % nf)
-    # If the relative path from SRC_DIR to the file starts with ../ ignore it.
-    # (i.e. the file is outside the client).
-    if RelativePath(nf, SRC_DIR).startswith('..' + os.sep):
-      continue
-    rel_inputs.add(RelativePath(nf, SCRIPT_DIR).replace(os.sep, '/'))
-  # Print it sorted.
-  rel_inputs = sorted(list(rel_inputs))
-  for f in rel_inputs:
-    print f
+  # Print it.
+  PrintRelativePaths(inputs)
 
 
 def BuildIRT(platforms, out_dir):
@@ -189,6 +249,9 @@ def Main(argv):
   parser.add_option('--inputs', dest='inputs', default=False,
                     action='store_true',
                     help='only emit the transitive inputs to the irt build')
+  parser.add_option('--cheap', dest='cheap', default=False,
+                    action='store_true',
+                    help='use an approximation of the IRT\'s inputs')
   parser.add_option('--platform', dest='platforms', action='append',
                     default=[],
                     help='add a platform to build for (x86-32|x86-64)')
@@ -201,7 +264,10 @@ def Main(argv):
     sys.exit(1)
 
   if options.inputs:
-    PrintInputs(options.platforms)
+    if options.cheap:
+      CheapPrintInputs()
+    else:
+      PrintInputs(options.platforms)
   else:
     BuildIRT(options.platforms, options.outdir)
 
