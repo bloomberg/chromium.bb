@@ -227,8 +227,12 @@ def _SetEnvForPnacl(env, root):
   pnacl_nm = binprefix + 'nm' + binext
   pnacl_ranlib = binprefix + 'ranlib' + binext
 
-  pnacl_cc = binprefix + 'gcc' + binext
-  pnacl_cxx = binprefix + 'g++' + binext
+  if env.Bit('pnacl_use_clang'):
+    pnacl_cc = binprefix + 'clang' + binext
+    pnacl_cxx = binprefix + 'clang++' + binext
+  else:
+    pnacl_cc = binprefix + 'gcc' + binext
+    pnacl_cxx = binprefix + 'g++' + binext
   pnacl_ld = binprefix + 'ld' + binext
   pnacl_disass = binprefix + 'dis' + binext
   pnacl_strip = binprefix + 'strip' + binext

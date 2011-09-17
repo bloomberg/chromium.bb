@@ -310,6 +310,9 @@ def SetUpArgumentBits(env):
   BitFromArgument(env, 'use_sandboxed_translator', default=False,
     desc='use pnacl sandboxed translator for linking (not available for arm)')
 
+  BitFromArgument(env, 'pnacl_use_clang', default=False,
+    desc='use pnacl-clang/clang++ instead of pnacl-gcc/g++')
+
   # This only controls whether the sandboxed translator is itself dynamically
   # linked, not whether it generates dynamic nexes (or links against glibc)
   #  --nacl_glibc should still control that.
@@ -2807,10 +2810,15 @@ target_variant_map = [
     ('nacl_pic', 'pic'),
     ('use_sandboxed_translator', 'sbtc'),
     ('nacl_glibc', 'glibc'),
+    ('pnacl_use_clang', 'clang'),
     ]
 for variant_bit, variant_suffix in target_variant_map:
   if nacl_env.Bit(variant_bit):
     nacl_env['TARGET_VARIANT'] += '-' + variant_suffix
+
+if nacl_env.Bit('pnacl_use_clang') and not nacl_env.Bit('bitcode'):
+  print "\n ERROR: pnacl_use_clang=1 does not make sense without bitcode=1\n"
+  sys.exit(-1)
 
 if nacl_env.Bit('irt'):
   # Since the default linking layout is compatible with IRT loading now,
