@@ -538,6 +538,14 @@ bool ProxyConfigServiceImpl::UIMakeActiveNetworkCurrent() {
 void ProxyConfigServiceImpl::UISetUseSharedProxies(bool use_shared) {
   // Should be called from UI thread.
   CheckCurrentlyOnUIThread();
+
+  // Reset all UI-related variables so that the next opening of proxy
+  // configuration dialog of any network will trigger javascript reloading of
+  // (possibly) new proxy settings.
+  current_ui_network_.clear();
+  current_ui_network_name_.clear();
+  current_ui_config_ = ProxyConfig();
+
   if (use_shared_proxies_ == use_shared) {
     VLOG(1) << "same use_shared_proxies = " << use_shared_proxies_;
     return;
