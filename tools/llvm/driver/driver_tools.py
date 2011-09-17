@@ -167,6 +167,9 @@ INITIAL_ENV = {
   'LLVM_GCC'      : '${LLVM_GCC_PREFIX}gcc${EXEC_EXT}',
   'LLVM_GXX'      : '${LLVM_GCC_PREFIX}g++${EXEC_EXT}',
 
+  'CLANG'         : '${BASE_LLVM_BIN}/clang${EXEC_EXT}',
+  'CLANGXX'       : '${BASE_LLVM_BIN}/clang++${EXEC_EXT}',
+
   'LLVM_OPT'      : '${BASE_LLVM_BIN}/opt${EXEC_EXT}',
   'LLVM_LLC'      : '${BASE_LLVM_BIN}/llc${EXEC_EXT}',
   'LLVM_LD'       : '${BASE_LLVM_BIN}/llvm-ld${EXEC_EXT}',

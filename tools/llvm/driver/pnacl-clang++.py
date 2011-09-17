@@ -13,7 +13,7 @@ from driver_tools import *
 
 
 def main(argv):
-  RunDriver('pnacl-driver', ['--pnacl-gxx'] + argv)
+  RunDriver('pnacl-driver', ['--pnacl-clangxx'] + argv)
   return 0
 
 if __name__ == "__main__":
