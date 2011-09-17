@@ -82,8 +82,6 @@ set-master-revision() {
   utman svn-update-llvm-master
   utman svn-checkout-llvm-gcc-master
   utman svn-update-llvm-gcc-master
-
-  check-revisions
 }
 
 get-upstream() {
@@ -103,6 +101,8 @@ merge-all() {
 
   set-master-revision
   get-upstream
+
+  check-revisions
 
   assert-clean
 
@@ -175,6 +175,25 @@ check-revisions() {
   if [ "${llvm_gcc_rev}" -ne "${MERGE_REVISION}" ]; then
     Fatal "llvm-gcc-master revision does not match"
   fi
+
+  # Make sure MERGE_REVISION >= upstream_vendor_rev
+  local upstream_vendor_rev="$(get-upstream-vendor-revision)"
+  if [ "${#upstream_vendor_rev}" -lt 6 ] ||
+     [ "${#upstream_vendor_rev}" -gt 7 ]; then
+    Fatal "Invalid upstream revision '${upstream_vendor_rev}'"
+  fi
+  if [ "${MERGE_REVISION}" -lt "${upstream_vendor_rev}" ]; then
+    Fatal "Trying to merge with an prior revision of LLVM"
+  fi
+}
+
+get-upstream-vendor-revision() {
+  spushd "${TC_SRC_UPSTREAM}"
+  # This must match the commit message in commit-vendor()
+  hg head vendor |
+    grep 'Updating vendor' |
+    sed 's/.*Updating vendor to r\([0-9]\+\)$/\1/g'
+  spopd
 }
 
 #+ generate-pre-diff     - Generate vendor:pnacl diff prior to merge
@@ -219,6 +238,7 @@ commit-vendor() {
 
   StepBanner "Committing vendor branch"
   spushd "${TC_SRC_UPSTREAM}"
+  # This commit message must match the regex in get-upstream-vendor-revision()
   hg "${HG_CONFIG[@]}" commit -m "Updating vendor to r${MERGE_REVISION}"
   spopd
 }
