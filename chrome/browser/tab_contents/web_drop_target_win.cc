@@ -103,6 +103,10 @@ DWORD WebDropTarget::OnDragEnter(IDataObject* data_object,
                                  DWORD effects) {
   current_rvh_ = tab_contents_->render_view_host();
 
+  if (!tab_) {
+    tab_ = TabContentsWrapper::GetCurrentWrapperForContents(tab_contents_);
+    DCHECK(tab_);
+  }
   // Don't pass messages to the renderer if an interstitial page is showing
   // because we don't want the interstitial page to navigate.  Instead,
   // pass the messages on to a separate interstitial DropTarget handler.
@@ -126,10 +130,6 @@ DWORD WebDropTarget::OnDragEnter(IDataObject* data_object,
       gfx::Point(cursor_position.x, cursor_position.y),
       web_drag_utils_win::WinDragOpMaskToWebDragOpMask(effects));
 
-  if (!tab_) {
-    tab_ = TabContentsWrapper::GetCurrentWrapperForContents(tab_contents_);
-    DCHECK(tab_);
-  }
   // This is non-null if tab_contents_ is showing an ExtensionWebUI with
   // support for (at the moment experimental) drag and drop extensions.
   if (tab_->bookmark_tab_helper()->GetBookmarkDragDelegate()) {
