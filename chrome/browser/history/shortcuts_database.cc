@@ -21,7 +21,8 @@ using base::Time;
 
 namespace {
 
-const char *kShortcutsDBName = "omni_box_shortcuts";
+// Using define instead of const char, so I could use ## in the statements.
+#define kShortcutsDBName "omni_box_shortcuts"
 
 // The maximum length allowed for form data.
 const size_t kMaxDataLength = 2048;  // 2K is a hard limit on URLs URI.
@@ -103,32 +104,18 @@ bool ShortcutsDatabase::Init() {
   if (!db_.Open(database_path_))
     return false;
 
-  if (!db_.DoesTableExist(kShortcutsDBName)) {
-    if (!db_.Execute(base::StringPrintf(
-                     "CREATE TABLE %s ( "
-                     "id VARCHAR PRIMARY KEY, "
-                     "text VARCHAR, "
-                     "url VARCHAR, "
-                     "contents VARCHAR, "
-                     "contents_class VARCHAR, "
-                     "description VARCHAR, "
-                     "description_class VARCHAR, "
-                     "last_access_time INTEGER, "
-                     "number_of_hits INTEGER)", kShortcutsDBName).c_str())) {
-      NOTREACHED();
-      return false;
-    }
-  }
+  if (!EnsureTable())
+    return false;
   return true;
 }
 
 bool ShortcutsDatabase::AddShortcut(
-    const shortcuts_provider::Shortcut &shortcut) {
-  sql::Statement s(db_.GetUniqueStatement(base::StringPrintf(
-      "INSERT INTO %s"
+    const shortcuts_provider::Shortcut& shortcut) {
+  sql::Statement s(db_.GetCachedStatement(SQL_FROM_HERE,
+      "INSERT INTO " kShortcutsDBName
       " (id, text, url, contents, contents_class, description,"
       " description_class, last_access_time, number_of_hits) "
-      "VALUES (?,?,?,?,?,?,?,?,?)", kShortcutsDBName).c_str()));
+      "VALUES (?,?,?,?,?,?,?,?,?)"));
   if (!s) {
     NOTREACHED();
     return false;
@@ -143,13 +130,13 @@ bool ShortcutsDatabase::AddShortcut(
 }
 
 bool ShortcutsDatabase::UpdateShortcut(
-    const shortcuts_provider::Shortcut &shortcut) {
-  sql::Statement s(db_.GetUniqueStatement(base::StringPrintf(
-      "UPDATE %s "
+    const shortcuts_provider::Shortcut& shortcut) {
+  sql::Statement s(db_.GetCachedStatement(SQL_FROM_HERE,
+    "UPDATE " kShortcutsDBName " "
       "SET id=?, text=?, url=?, contents=?, contents_class=?,"
       "     description=?, description_class=?, last_access_time=?,"
       "     number_of_hits=? "
-      "WHERE id=?", kShortcutsDBName).c_str()));
+      "WHERE id=?"));
   if (!s) {
     NOTREACHED() << "Statement prepare failed";
     return false;
@@ -180,15 +167,29 @@ bool ShortcutsDatabase::DeleteShortcutsWithUrl(
   return DeleteShortcut("url", shortcut_url_spec, db_);
 }
 
+bool ShortcutsDatabase::DeleteAllShortcuts() {
+  sql::Statement s(db_.GetCachedStatement(SQL_FROM_HERE,
+      "DROP TABLE " kShortcutsDBName));
+  if (!s) {
+    NOTREACHED() << "Statement prepare failed";
+    return false;
+  }
+
+  if (!s.Run())
+    return false;
+  EnsureTable();
+  db_.Execute("VACUUM");
+  return true;
+}
 
 // Loads all of the shortcuts.
 bool ShortcutsDatabase::LoadShortcuts(
     std::map<std::string, shortcuts_provider::Shortcut>* shortcuts) {
   DCHECK(shortcuts);
-  sql::Statement s(db_.GetUniqueStatement(base::StringPrintf(
+  sql::Statement s(db_.GetCachedStatement(SQL_FROM_HERE,
       "SELECT id, text, url, contents, contents_class, "
       "description, description_class, last_access_time, number_of_hits "
-      "FROM %s", kShortcutsDBName).c_str()));
+      "FROM " kShortcutsDBName));
   if (!s) {
     NOTREACHED() << "Statement prepare failed";
     return false;
@@ -197,6 +198,26 @@ bool ShortcutsDatabase::LoadShortcuts(
   while (s.Step()) {
     shortcuts->insert(std::make_pair(s.ColumnString(0),
                                      ShortcutFromStatement(s)));
+  }
+  return true;
+}
+
+bool ShortcutsDatabase::EnsureTable() {
+  if (!db_.DoesTableExist(kShortcutsDBName)) {
+    if (!db_.Execute(base::StringPrintf(
+                     "CREATE TABLE %s ( "
+                     "id VARCHAR PRIMARY KEY, "
+                     "text VARCHAR, "
+                     "url VARCHAR, "
+                     "contents VARCHAR, "
+                     "contents_class VARCHAR, "
+                     "description VARCHAR, "
+                     "description_class VARCHAR, "
+                     "last_access_time INTEGER, "
+                     "number_of_hits INTEGER)", kShortcutsDBName).c_str())) {
+      NOTREACHED();
+      return false;
+    }
   }
   return true;
 }

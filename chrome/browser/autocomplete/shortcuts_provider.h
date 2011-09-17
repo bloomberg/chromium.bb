@@ -51,10 +51,6 @@ class ShortcutsProvider
 
   // ShortcutsBackendObserver:
   virtual void OnShortcutsLoaded() OVERRIDE;
-  virtual void OnShortcutAddedOrUpdated(
-      const shortcuts_provider::Shortcut& shortcut) OVERRIDE;
-  virtual void OnShortcutsRemoved(
-      const std::vector<std::string>& shortcut_ids) OVERRIDE;
 
   void DeleteMatchesWithURLs(const std::set<GURL>& urls);
   void DeleteShortcutsWithURLs(const std::set<GURL>& urls);
@@ -65,7 +61,7 @@ class ShortcutsProvider
   AutocompleteMatch ShortcutToACMatch(
       const AutocompleteInput& input,
       const string16& terms,
-      shortcuts_provider::ShortcutMap::iterator it);
+      shortcuts_provider::ShortcutMap::const_iterator it);
 
   // Given |text| and a corresponding base set of classifications
   // |original_class|, adds ACMatchClassification::MATCH markers for all
@@ -85,25 +81,16 @@ class ShortcutsProvider
 
   // Returns iterator to first item in |shortcuts_map_| matching |keyword|.
   // Returns shortcuts_map_.end() if there are no matches.
-  shortcuts_provider::ShortcutMap::iterator FindFirstMatch(
+  shortcuts_provider::ShortcutMap::const_iterator FindFirstMatch(
       const string16& keyword);
 
   static int CalculateScore(const string16& terms,
                             const shortcuts_provider::Shortcut& shortcut);
-
-  // Loads shortcuts from the backend.
-  void LoadShortcuts();
+  // For unit-test only.
+  void set_shortcuts_backend(history::ShortcutsBackend* shortcuts_backend);
 
   std::string languages_;
-
-  // The following two maps are duplicated from the ShortcutsBackend. If any
-  // of the copies of ShortcutProvider makes a change and calls ShortcutBackend
-  // the change will be committed to storage and to the back-end's copy on the
-  // DB thread and propagated back to all copies of provider, so eventually they
-  // all are going to be in sync.
-  shortcuts_provider::ShortcutMap shortcuts_map_;
-  // This is a helper map for quick access to a shortcut by guid.
-  shortcuts_provider::GuidToShortcutsIteratorMap guid_map_;
+  bool initialized_;
 
   scoped_refptr<history::ShortcutsBackend> shortcuts_backend_;
 };

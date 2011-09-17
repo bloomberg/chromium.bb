@@ -10,12 +10,11 @@
 #include <string>
 #include <vector>
 
-#include "base/atomicops.h"
 #include "base/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/observer_list_threadsafe.h"
+#include "base/observer_list.h"
 #include "base/string16.h"
 #include "base/synchronization/lock.h"
 #include "chrome/browser/autocomplete/shortcuts_provider_shortcut.h"
@@ -34,7 +33,8 @@ class ShortcutsBackend : public base::RefCountedThreadSafe<ShortcutsBackend>,
                          public NotificationObserver {
  public:
   // |profile| is necessary for profile notifications only and can be NULL in
-  // unit-tests.
+  // unit-tests. |db_folder_path| could be an empty path only in unit-tests as
+  // well. It means there is no database created, all things are done in memory.
   ShortcutsBackend(const FilePath& db_folder_path, Profile* profile);
   virtual ~ShortcutsBackend();
 
@@ -44,13 +44,8 @@ class ShortcutsBackend : public base::RefCountedThreadSafe<ShortcutsBackend>,
    public:
     // Called after the database is loaded and Init() completed.
     virtual void OnShortcutsLoaded() = 0;
-    // This callback is called when addition or change was processed by the
-    // database.
-    virtual void OnShortcutAddedOrUpdated(
-        const shortcuts_provider::Shortcut& shortcut) = 0;
-    // Called when shortcuts are removed from the database.
-    virtual void OnShortcutsRemoved(
-        const std::vector<std::string>& shortcut_ids) = 0;
+    // Called when shortcuts changed (added/updated/removed) in the database.
+    virtual void OnShortcutsChanged() {}
    protected:
     virtual ~ShortcutsBackendObserver() {}
   };
@@ -61,11 +56,13 @@ class ShortcutsBackend : public base::RefCountedThreadSafe<ShortcutsBackend>,
 
   bool initialized() const { return current_state_ == INITIALIZED; }
 
+  // All of the public functions *must* be called on UI thread only!
+
   // Adds the Shortcut to the database.
-  bool AddShortcut(shortcuts_provider::Shortcut shortcut);
+  bool AddShortcut(const shortcuts_provider::Shortcut& shortcut);
 
   // Updates timing and selection count for the Shortcut.
-  bool UpdateShortcut(shortcuts_provider::Shortcut shortcut);
+  bool UpdateShortcut(const shortcuts_provider::Shortcut& shortcut);
 
   // Deletes the Shortcuts with the id.
   bool DeleteShortcutsWithIds(const std::vector<std::string>& shortcut_ids);
@@ -73,35 +70,32 @@ class ShortcutsBackend : public base::RefCountedThreadSafe<ShortcutsBackend>,
   // Deletes the Shortcuts with the url.
   bool DeleteShortcutsWithUrl(const GURL& shortcut_url);
 
-  // Replaces the contents of |shortcuts| with the backend's from the database.
-  bool GetShortcuts(shortcuts_provider::ShortcutMap* shortcuts);
+  // Deletes all of the shortcuts.
+  bool DeleteAllShortcuts();
+
+  const shortcuts_provider::ShortcutMap& shortcuts_map() const {
+    return shortcuts_map_;
+  }
+
+  const shortcuts_provider::GuidToShortcutsIteratorMap& guid_map() const {
+    return guid_map_;
+  }
 
   void AddObserver(ShortcutsBackendObserver* obs) {
-    observer_list_->AddObserver(obs);
+    observer_list_.AddObserver(obs);
   }
 
   void RemoveObserver(ShortcutsBackendObserver* obs) {
-    observer_list_->RemoveObserver(obs);
+    observer_list_.RemoveObserver(obs);
   }
 
  private:
   // Internal initialization of the back-end. Posted by Init() to the DB thread.
-  // On completion notifies all back-end observers asyncronously on their own
-  // thread.
+  // On completion posts InitCompleted() back to UI thread.
   void InitInternal();
-  // Internal addition or update of a shortcut. Posted by AddShortcut() or
-  // UpdateShortcut() to the DB thread. On completion notifies all back-end
-  // observers asyncronously on their own thread.
-  void AddOrUpdateShortcutInternal(shortcuts_provider::Shortcut shortcut,
-                                   bool add);
-  // Internal deletion of shortcuts. Posted by DeleteShortcutsWithIds() to the
-  // DB thread. On completion notifies all back-end observers asyncronously on
-  // their own thread.
-  void DeleteShortcutsWithIdsInternal(std::vector<std::string> shortcut_ids);
-  // Internal deletion of shortcut with the url. Posted by
-  // DeleteShortcutsWithUrl() to the DB thread. On completion notifies all
-  // back-end observers asyncronously on their own thread.
-  void DeleteShortcutsWithUrlInternal(std::string shortcut_url);
+
+  // Finishes initialization on UI thread, notifies all observers.
+  void InitCompleted();
 
   // NotificationObserver:
   virtual void Observe(int type,
@@ -114,19 +108,24 @@ class ShortcutsBackend : public base::RefCountedThreadSafe<ShortcutsBackend>,
     INITIALIZED,  // Initialization completed, all accessors can be safely
                   // called.
   };
-  // |current_state_| has values of CurrentState enum.
-  volatile base::subtle::Atomic32 current_state_;
-  scoped_refptr<ObserverListThreadSafe<ShortcutsBackendObserver> >
-      observer_list_;
-  ShortcutsDatabase db_;
+  CurrentState current_state_;
+  ObserverList<ShortcutsBackendObserver> observer_list_;
+  scoped_refptr<ShortcutsDatabase> db_;
+
+  // The |temp_shortcuts_map_| and |temp_guid_map_| used for temporary storage
+  // between InitInternal() and InitComplete() to avoid doing a potentially huge
+  // copy.
+  scoped_ptr<shortcuts_provider::ShortcutMap> temp_shortcuts_map_;
+  scoped_ptr<shortcuts_provider::GuidToShortcutsIteratorMap> temp_guid_map_;
 
   shortcuts_provider::ShortcutMap shortcuts_map_;
   // This is a helper map for quick access to a shortcut by guid.
   shortcuts_provider::GuidToShortcutsIteratorMap guid_map_;
 
-  base::Lock data_access_lock_;
-
   NotificationRegistrar notification_registrar_;
+
+  // For some unit-test only.
+  bool no_db_access_;
 
   DISALLOW_COPY_AND_ASSIGN(ShortcutsBackend);
 };

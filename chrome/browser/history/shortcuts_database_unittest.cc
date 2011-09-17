@@ -59,18 +59,18 @@ class ShortcutsDatabaseTest : public testing::Test {
   void AddAll();
 
   ScopedTempDir temp_dir_;
-  scoped_ptr<ShortcutsDatabase> db_;
+  scoped_refptr<ShortcutsDatabase> db_;
 };
 
 void ShortcutsDatabaseTest::SetUp() {
   ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-  db_.reset(new ShortcutsDatabase(temp_dir_.path()));
+  db_ = new ShortcutsDatabase(temp_dir_.path());
   ASSERT_TRUE(db_->Init());
   ClearDB();
 }
 
 void ShortcutsDatabaseTest::TearDown() {
-  db_.reset();
+  db_ = NULL;
 }
 
 void ShortcutsDatabaseTest::ClearDB() {
@@ -183,6 +183,16 @@ TEST_F(ShortcutsDatabaseTest, LoadShortcuts) {
         static_cast<int>(i)));
     EXPECT_TRUE(shortcuts.find(shortcut_test_db[i].guid) != shortcuts.end());
   }
+}
+
+TEST_F(ShortcutsDatabaseTest, DeleteAllShortcuts) {
+  AddAll();
+  std::map<std::string, Shortcut> shortcuts;
+  EXPECT_TRUE(db_->LoadShortcuts(&shortcuts));
+  EXPECT_EQ(arraysize(shortcut_test_db), shortcuts.size());
+  EXPECT_TRUE(db_->DeleteAllShortcuts());
+  EXPECT_TRUE(db_->LoadShortcuts(&shortcuts));
+  EXPECT_EQ(0U, shortcuts.size());
 }
 
 }  // namespace history

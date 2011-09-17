@@ -61,11 +61,12 @@ ShortcutsProvider::ShortcutsProvider(ACProviderListener* listener,
                                      Profile* profile)
     : AutocompleteProvider(listener, profile, "ShortcutsProvider"),
       languages_(profile_->GetPrefs()->GetString(prefs::kAcceptLanguages)),
+      initialized_(false),
       shortcuts_backend_(profile->GetShortcutsBackend()) {
   if (shortcuts_backend_.get()) {
     shortcuts_backend_->AddObserver(this);
     if (shortcuts_backend_->initialized())
-      LoadShortcuts();
+      initialized_ = true;
   }
 }
 
@@ -79,6 +80,9 @@ void ShortcutsProvider::Start(const AutocompleteInput& input,
   matches_.clear();
 
   if (input.type() == AutocompleteInput::INVALID)
+    return;
+
+  if (!initialized_)
     return;
 
   base::TimeTicks start_time = base::TimeTicks::Now();
@@ -114,29 +118,7 @@ void ShortcutsProvider::DeleteMatch(const AutocompleteMatch& match) {
 }
 
 void ShortcutsProvider::OnShortcutsLoaded() {
-  LoadShortcuts();
-}
-
-void ShortcutsProvider::OnShortcutAddedOrUpdated(const Shortcut& shortcut) {
-  shortcuts_provider::GuidToShortcutsIteratorMap::iterator it =
-      guid_map_.find(shortcut.id);
-  if (it != guid_map_.end()) {
-    shortcuts_map_.erase(it->second);
-  }
-  guid_map_[shortcut.id] = shortcuts_map_.insert(
-      std::make_pair(base::i18n::ToLower(shortcut.text), shortcut));
-}
-
-void ShortcutsProvider::OnShortcutsRemoved(
-    const std::vector<std::string>& shortcuts_ids) {
-  for (size_t i = 0; i < shortcuts_ids.size(); ++i) {
-    shortcuts_provider::GuidToShortcutsIteratorMap::iterator it =
-        guid_map_.find(shortcuts_ids[i]);
-    if (it != guid_map_.end()) {
-      shortcuts_map_.erase(it->second);
-      guid_map_.erase(it);
-    }
-  }
+  initialized_ = true;
 }
 
 void ShortcutsProvider::DeleteMatchesWithURLs(const std::set<GURL>& urls) {
@@ -145,13 +127,6 @@ void ShortcutsProvider::DeleteMatchesWithURLs(const std::set<GURL>& urls) {
 }
 
 void ShortcutsProvider::DeleteShortcutsWithURLs(const std::set<GURL>& urls) {
-  for (ShortcutMap::iterator it = shortcuts_map_.begin();
-       it != shortcuts_map_.end();) {
-    if (urls.find(it->second.url) != urls.end())
-      shortcuts_map_.erase(it++);
-    else
-      ++it;
-  }
   if (!shortcuts_backend_.get())
     return;  // We are off the record.
   for (std::set<GURL>::const_iterator url = urls.begin(); url != urls.end();
@@ -165,8 +140,8 @@ void ShortcutsProvider::GetMatches(const AutocompleteInput& input) {
   string16 term_string(base::i18n::ToLower(input.text()));
   DCHECK(!term_string.empty());
 
-  for (ShortcutMap::iterator it = FindFirstMatch(term_string);
-       it != shortcuts_map_.end() &&
+  for (ShortcutMap::const_iterator it = FindFirstMatch(term_string);
+       it != shortcuts_backend_->shortcuts_map().end() &&
             StartsWith(it->first, term_string, true); ++it)
     matches_.push_back(ShortcutToACMatch(input, term_string, it));
   std::partial_sort(matches_.begin(),
@@ -182,7 +157,7 @@ void ShortcutsProvider::GetMatches(const AutocompleteInput& input) {
 AutocompleteMatch ShortcutsProvider::ShortcutToACMatch(
     const AutocompleteInput& input,
     const string16& term_string,
-    ShortcutMap::iterator it) {
+    ShortcutMap::const_iterator it) {
   AutocompleteMatch match(this, CalculateScore(term_string, it->second),
                           true, AutocompleteMatch::HISTORY_TITLE);
   match.destination_url = it->second.url;
@@ -280,13 +255,15 @@ ACMatchClassifications ShortcutsProvider::ClassifyAllMatchesInString(
   return output;
 }
 
-ShortcutMap::iterator ShortcutsProvider::FindFirstMatch(
+ShortcutMap::const_iterator ShortcutsProvider::FindFirstMatch(
     const string16& keyword) {
-  ShortcutMap::iterator it = shortcuts_map_.lower_bound(keyword);
+  ShortcutMap::const_iterator it =
+      shortcuts_backend_->shortcuts_map().lower_bound(keyword);
   // Lower bound not necessarily matches the keyword, check for item pointed by
   // the lower bound iterator to at least start with keyword.
-  return ((it == shortcuts_map_.end()) ||
-    StartsWith(it->first, keyword, true)) ? it : shortcuts_map_.end();
+  return ((it == shortcuts_backend_->shortcuts_map().end()) ||
+    StartsWith(it->first, keyword, true)) ? it :
+    shortcuts_backend_->shortcuts_map().end();
 }
 
 // static
@@ -320,11 +297,11 @@ int ShortcutsProvider::CalculateScore(const string16& terms,
       0.5);
 }
 
-void ShortcutsProvider::LoadShortcuts() {
-  DCHECK(shortcuts_backend_.get());
-  guid_map_.clear();
-  CHECK(shortcuts_backend_->GetShortcuts(&shortcuts_map_));
-  for (shortcuts_provider::ShortcutMap::iterator it = shortcuts_map_.begin();
-       it != shortcuts_map_.end(); ++it)
-    guid_map_[it->second.id] = it;
+void ShortcutsProvider::set_shortcuts_backend(
+    history::ShortcutsBackend* shortcuts_backend) {
+  DCHECK(shortcuts_backend);
+  shortcuts_backend_ = shortcuts_backend;
+  shortcuts_backend_->AddObserver(this);
+  if (shortcuts_backend_->initialized())
+    initialized_ = true;
 }

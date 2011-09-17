@@ -12,6 +12,7 @@
 
 #include "base/file_path.h"
 #include "base/gtest_prod_util.h"
+#include "base/memory/ref_counted.h"
 #include "base/string16.h"
 #include "chrome/browser/autocomplete/shortcuts_provider_shortcut.h"
 #include "googleurl/src/gurl.h"
@@ -37,7 +38,7 @@ namespace history {
 //   last_access_time    Time the entry was accessed last, stored in seconds,
 //                       UTC.
 //   number_of_hits      Number of times that the entry has been selected.
-class ShortcutsDatabase {
+class ShortcutsDatabase : public base::RefCountedThreadSafe<ShortcutsDatabase> {
  public:
   explicit ShortcutsDatabase(const FilePath& folder_path);
   virtual ~ShortcutsDatabase();
@@ -45,10 +46,10 @@ class ShortcutsDatabase {
   bool Init();
 
   // Adds the ShortcutsProvider::Shortcut to the database.
-  bool AddShortcut(const shortcuts_provider::Shortcut &shortcut);
+  bool AddShortcut(const shortcuts_provider::Shortcut& shortcut);
 
   // Updates timing and selection count for the ShortcutsProvider::Shortcut.
-  bool UpdateShortcut(const shortcuts_provider::Shortcut &shortcut);
+  bool UpdateShortcut(const shortcuts_provider::Shortcut& shortcut);
 
   // Deletes the ShortcutsProvider::Shortcuts with the id.
   bool DeleteShortcutsWithIds(const std::vector<std::string>& shortcut_ids);
@@ -56,11 +57,17 @@ class ShortcutsDatabase {
   // Deletes the ShortcutsProvider::Shortcuts with the url.
   bool DeleteShortcutsWithUrl(const std::string& shortcut_url_spec);
 
+  // Deletes all of the ShortcutsProvider::Shortcuts.
+  bool DeleteAllShortcuts();
+
   // Loads all of the shortcuts.
   bool LoadShortcuts(
       std::map<std::string, shortcuts_provider::Shortcut>* shortcuts);
 
  private:
+  // Ensures that the table is present.
+  bool EnsureTable();
+
   friend class ShortcutsDatabaseTest;
   FRIEND_TEST_ALL_PREFIXES(ShortcutsDatabaseTest, AddShortcut);
   FRIEND_TEST_ALL_PREFIXES(ShortcutsDatabaseTest, UpdateShortcut);
