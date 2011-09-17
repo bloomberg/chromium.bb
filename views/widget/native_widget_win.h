@@ -619,9 +619,8 @@ class VIEWS_EXPORT NativeWidgetWin : public ui::WindowImpl,
   DWORD drag_frame_saved_window_style_;
   DWORD drag_frame_saved_window_ex_style_;
 
-  // Represents the number of ScopedRedrawLocks active against this widget.
-  // If this is greater than zero, the widget should be locked against updates.
-  int lock_updates_count_;
+  // True if updates to this window are currently locked.
+  bool lock_updates_;
 
   // The window styles of the window before updates were locked.
   DWORD saved_window_style_;
@@ -650,9 +649,6 @@ class VIEWS_EXPORT NativeWidgetWin : public ui::WindowImpl,
 
   // The compositor for accelerated drawing.
   scoped_refptr<ui::Compositor> compositor_;
-
-  // TODO(msw): Remove debugging code for crbug.com/95727
-  bool* destroyed_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeWidgetWin);
 };
