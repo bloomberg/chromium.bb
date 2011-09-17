@@ -41,6 +41,9 @@ const int kMaxPanelHeight = 400;
 // The duration for a new notification to become stale.
 const int kStaleTimeoutInSeconds = 10;
 
+// Panel Background color
+const SkColor kPanelBackground = 0xFFEEEEEE;
+
 using chromeos::BalloonViewImpl;
 using chromeos::NotificationPanel;
 
@@ -687,7 +690,7 @@ void NotificationPanel::Init() {
   balloon_container_.reset(new BalloonContainer(1));
   balloon_container_->set_parent_owned(false);
   balloon_container_->set_background(
-      views::Background::CreateSolidBackground(ResourceBundle::frame_color));
+      views::Background::CreateSolidBackground(kPanelBackground));
 
   scroll_view_.reset(new views::ScrollView());
   scroll_view_->set_focusable(true);
