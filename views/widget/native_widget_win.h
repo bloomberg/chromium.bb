@@ -513,10 +513,12 @@ class VIEWS_EXPORT NativeWidgetWin : public ui::WindowImpl,
   // frame windows.
   void ResetWindowRegion(bool force);
 
-  // Calls the default WM_NCACTIVATE handler with the specified activation
-  // value, safely wrapping the call in a ScopedRedrawLock to prevent frame
-  // flicker.
-  LRESULT CallDefaultNCActivateHandler(BOOL active);
+  // Calls DefWindowProc, safely wrapping the call in a ScopedRedrawLock to
+  // prevent frame flicker. DefWindowProc handling can otherwise render the
+  // classic-look window title bar directly.
+  LRESULT DefWindowProcWithRedrawLock(UINT message,
+                                      WPARAM w_param,
+                                      LPARAM l_param);
 
   // Stops ignoring SetWindowPos() requests (see below).
   void StopIgnoringPosChanges() { ignore_window_pos_changes_ = false; }
@@ -619,8 +621,9 @@ class VIEWS_EXPORT NativeWidgetWin : public ui::WindowImpl,
   DWORD drag_frame_saved_window_style_;
   DWORD drag_frame_saved_window_ex_style_;
 
-  // True if updates to this window are currently locked.
-  bool lock_updates_;
+  // Represents the number of ScopedRedrawLocks active against this widget.
+  // If this is greater than zero, the widget should be locked against updates.
+  int lock_updates_count_;
 
   // The window styles of the window before updates were locked.
   DWORD saved_window_style_;
@@ -649,6 +652,11 @@ class VIEWS_EXPORT NativeWidgetWin : public ui::WindowImpl,
 
   // The compositor for accelerated drawing.
   scoped_refptr<ui::Compositor> compositor_;
+
+  // This flag can be initialized and checked after certain operations (such as
+  // DefWindowProc) to avoid stack-controlled NativeWidgetWin operations (such
+  // as unlocking the Window with a ScopedRedrawLock) after Widget destruction.
+  bool* destroyed_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeWidgetWin);
 };
