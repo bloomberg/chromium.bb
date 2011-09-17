@@ -415,3 +415,5 @@ cr.define('mobile', function() {
   };
 
 });
+
+disableTextSelectAndDrag();
