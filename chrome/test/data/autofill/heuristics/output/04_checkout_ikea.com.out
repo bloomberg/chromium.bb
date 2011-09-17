@@ -11,5 +11,5 @@ PHONE_HOME_WHOLE_NUMBER | phone1 | Primary Tel Number: |
 UNKNOWN_TYPE | phone1ext | Ext: (Optional) | 
 PHONE_HOME_WHOLE_NUMBER | phone2 | Alternative Number: | 
 UNKNOWN_TYPE | phone2ext | Ext: (Optional) | 
-PHONE_FAX_WHOLE_NUMBER | fax1 | Fax Number: (Optional) | 
+UNKNOWN_TYPE | fax1 | Fax Number: (Optional) | 
 UNKNOWN_TYPE | fax1ext | Ext: (Optional) | 

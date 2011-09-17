@@ -14,5 +14,3 @@ EMAIL_ADDRESS | em2 | 전자 우편: |
 EMAIL_ADDRESS | em3 | e-mail 주소 | 
 PHONE_HOME_WHOLE_NUMBER | ph | 전화 번호: | 
 PHONE_HOME_WHOLE_NUMBER | ph2 | 휴대폰번호: | 
-PHONE_FAX_WHOLE_NUMBER | fx | 팩스번호: | 
-PHONE_FAX_WHOLE_NUMBER | fx2 | 팩스: | 

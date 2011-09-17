@@ -87,9 +87,11 @@ struct FormField;
 //                      associated with a profile.
 //
 //   guid               The guid string that identifies the profile to which
-//                      the phone or fax number belongs.
-//   type               An integer constant designating either phone or fax type
-//                      of the number.
+//                      the phone number belongs.
+//   type               An integer constant designating either phone type of the
+//                      number.
+//                      TODO(jhawkins): Remove the type column and migrate the
+//                      database.
 //   number
 //
 // autofill_profiles_trash

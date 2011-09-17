@@ -8,7 +8,6 @@ ADDRESS_HOME_ZIP | zc | Почтовый Индекс: |
 ADDRESS_HOME_STATE | st | область: | 
 EMAIL_ADDRESS | em | Электронной Почты: | 
 PHONE_HOME_WHOLE_NUMBER | ph | телефон: | 
-PHONE_FAX_WHOLE_NUMBER | fx | факс: | 
 CREDIT_CARD_NAME | c1 | Имя владельца карты: | 
 CREDIT_CARD_NUMBER | c2 | Номер кредитной карты: | 
 CREDIT_CARD_EXP_MONTH | c3 | Срок действия карты : | 

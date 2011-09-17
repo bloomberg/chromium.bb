@@ -103,11 +103,8 @@ bool IsValidFieldTypeAndValue(const std::set<AutofillFieldType>& types_seen,
   // This indicates ambiguous data or miscategorization of types.
   // Make an exception for PHONE_HOME_NUMBER however as both prefix and
   // suffix are stored against this type.
-  if (types_seen.count(field_type) &&
-      field_type != PHONE_HOME_NUMBER &&
-      field_type != PHONE_FAX_NUMBER) {
+  if (types_seen.count(field_type) && field_type != PHONE_HOME_NUMBER)
     return false;
-  }
 
   // Abandon the import if an email address value shows up in a field that is
   // not an email address.
@@ -217,8 +214,7 @@ bool PersonalDataManager::ImportFormData(
 
   // We only set complete phone, so aggregate phone parts in these vars and set
   // complete at the end.
-  PhoneNumber::PhoneCombineHelper home(AutofillType::PHONE_HOME);
-  PhoneNumber::PhoneCombineHelper fax(AutofillType::PHONE_FAX);
+  PhoneNumber::PhoneCombineHelper home;
 
   for (size_t i = 0; i < form.field_count(); ++i) {
     const AutofillField* field = form.field(i);
@@ -253,9 +249,9 @@ bool PersonalDataManager::ImportFormData(
     } else {
       // We need to store phone data in the variables, before building the whole
       // number at the end. The rest of the fields are set "as is".
-      // If the fields are not the phone fields in question both home.SetInfo()
-      // and fax.SetInfo() are going to return false.
-      if (!home.SetInfo(field_type, value) && !fax.SetInfo(field_type, value))
+      // If the fields are not the phone fields in question home.SetInfo() is
+      // going to return false.
+      if (!home.SetInfo(field_type, value))
         imported_profile->SetCanonicalizedInfo(field_type, value);
 
       // Reject profiles with invalid country information.
@@ -267,22 +263,12 @@ bool PersonalDataManager::ImportFormData(
     }
   }
 
-  // Construct the phone and fax numbers.  Reject the profile if either number
-  // is invalid.
+  // Construct the phone number. Reject the profile if the number is invalid.
   if (imported_profile.get() && !home.IsEmpty()) {
     string16 constructed_number;
     if (!home.ParseNumber(imported_profile->CountryCode(),
                           &constructed_number) ||
         !imported_profile->SetCanonicalizedInfo(PHONE_HOME_WHOLE_NUMBER,
-                                                constructed_number)) {
-      imported_profile.reset();
-    }
-  }
-  if (imported_profile.get() && !fax.IsEmpty()) {
-    string16 constructed_number;
-    if (!fax.ParseNumber(imported_profile->CountryCode(),
-                         &constructed_number) ||
-        !imported_profile->SetCanonicalizedInfo(PHONE_FAX_WHOLE_NUMBER,
                                                 constructed_number)) {
       imported_profile.reset();
     }

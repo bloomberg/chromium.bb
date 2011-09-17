@@ -222,7 +222,6 @@ IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTest,
       "",
       "66183",
       "\xD7\x99\xD7\xA9\xD7\xA8\xD7\x90\xD7\x9C",
-      "0000",
       "0000");
 
   PersonalDataManager* personal_data_manager =
@@ -254,8 +253,7 @@ IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestFakeBidi,
                                 "Texas",
                                 "78744",
                                 "United States",
-                                "5125551234",
-                                "5125550000");
+                                "5125551234");
 
   PersonalDataManager* personal_data_manager =
       browser()->profile()->GetPersonalDataManager();

@@ -96,7 +96,7 @@ AutofillProfile CreateAutofillProfile(ProfileType type) {
           "Marion", "Mitchell", "Morrison",
           "johnwayne@me.xyz", "Fox",
           "123 Zoo St.", "unit 5", "Hollywood", "CA",
-          "91601", "US", "12345678910", "01987654321");
+          "91601", "US", "12345678910");
       break;
     case PROFILE_HOMER:
       autofill_test::SetProfileInfoWithGuid(&profile,
@@ -104,19 +104,19 @@ AutofillProfile CreateAutofillProfile(ProfileType type) {
           "Homer", "J.", "Simpson",
           "homer@abc.com", "SNPP",
           "1 Main St", "PO Box 1", "Springfield", "MA",
-          "94101", "US", "14155551212", "14155551313");
+          "94101", "US", "14155551212");
       break;
     case PROFILE_FRASIER:
       autofill_test::SetProfileInfoWithGuid(&profile,
           "9A5E6872-6198-4688-BF75-0016E781BB0A",
           "Frasier", "Winslow", "Crane",
           "", "randomness", "", "Apt. 4", "Seattle", "WA",
-          "99121", "US", "0000000000", "ABCDEFGHIJK");
+          "99121", "US", "0000000000");
       break;
     case PROFILE_NULL:
       autofill_test::SetProfileInfoWithGuid(&profile,
           "FE461507-7E13-4198-8E66-74C7DB6D8322",
-          "", "", "", "", "", "", "", "", "", "", "", "", "");
+          "", "", "", "", "", "", "", "", "", "", "", "");
       break;
   }
   return profile;

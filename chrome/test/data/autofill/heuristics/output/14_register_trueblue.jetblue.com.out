@@ -13,7 +13,7 @@ PHONE_HOME_WHOLE_NUMBER | accountData.phone | Phone number: |
 UNKNOWN_TYPE | accountData.phoneType | Phone number: | M
 PHONE_HOME_WHOLE_NUMBER | accountData.alternatePhone | Alternate phone: | 
 UNKNOWN_TYPE | accountData.alternatePhoneType | Alternate phone: | 
-PHONE_FAX_WHOLE_NUMBER | accountData.fax | Fax: | 
+UNKNOWN_TYPE | accountData.fax | Fax: | 
 EMAIL_ADDRESS | accountData.email | Email address: | 
 EMAIL_ADDRESS | accountData.confirmEmail | Confirm email: | 
 UNKNOWN_TYPE | accountData.entrollmentCode | Enrollment code: | 

@@ -40,8 +40,11 @@ message AutofillProfileSpecifics {
   optional string address_home_zip = 11;
   optional string address_home_country = 12;
 
-  // Phone + fax.
+  // Phone.
   optional string phone_home_whole_number = 13;
+
+  // Deprecated.
+  // TODO(jhawkins): Determine if this is safe to remove.
   optional string phone_fax_whole_number = 14;
 }
 

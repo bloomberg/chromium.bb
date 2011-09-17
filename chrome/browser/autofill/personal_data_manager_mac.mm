@@ -91,7 +91,7 @@ void AuxiliaryProfilesImpl::GetAddressBookMeCard() {
       // Fill in email information.
       GetAddressBookEmail(me, addressLabelRaw, profile.get());
 
-      // Fill in phone and fax number information.
+      // Fill in phone number information.
       GetAddressBookPhoneNumbers(me, addressLabelRaw, profile.get());
 
       profiles_.push_back(profile.release());
@@ -182,7 +182,7 @@ void AuxiliaryProfilesImpl::GetAddressBookEmail(
 }
 
 // Fills in telephone numbers.  Each of these are special cases.
-// We match four cases: home/tel, home/fax, work/tel, work/fax.
+// We match two cases: home/tel, work/tel.
 // Note, we traverse in reverse order so that top values in address book
 // take priority.
 void AuxiliaryProfilesImpl::GetAddressBookPhoneNumbers(
@@ -199,21 +199,11 @@ void AuxiliaryProfilesImpl::GetAddressBookPhoneNumbers(
       string16 homePhone = base::SysNSStringToUTF16(
           [phoneNumbers valueAtIndex:reverseK]);
       profile->SetInfo(PHONE_HOME_WHOLE_NUMBER, homePhone);
-    } else if ([addressLabelRaw isEqualToString:kABAddressHomeLabel] &&
-               [phoneLabelRaw isEqualToString:kABPhoneHomeFAXLabel]) {
-      string16 homeFax = base::SysNSStringToUTF16(
-          [phoneNumbers valueAtIndex:reverseK]);
-      profile->SetInfo(PHONE_FAX_WHOLE_NUMBER, homeFax);
     } else if ([addressLabelRaw isEqualToString:kABAddressWorkLabel] &&
                [phoneLabelRaw isEqualToString:kABPhoneWorkLabel]) {
       string16 workPhone = base::SysNSStringToUTF16(
           [phoneNumbers valueAtIndex:reverseK]);
       profile->SetInfo(PHONE_HOME_WHOLE_NUMBER, workPhone);
-    } else if ([addressLabelRaw isEqualToString:kABAddressWorkLabel] &&
-               [phoneLabelRaw isEqualToString:kABPhoneWorkFAXLabel]) {
-      string16 workFax = base::SysNSStringToUTF16(
-          [phoneNumbers valueAtIndex:reverseK]);
-      profile->SetInfo(PHONE_FAX_WHOLE_NUMBER, workFax);
     } else if ([phoneLabelRaw isEqualToString:kABPhoneMobileLabel] ||
                [phoneLabelRaw isEqualToString:kABPhoneMainLabel]) {
       string16 phone = base::SysNSStringToUTF16(

@@ -21,11 +21,6 @@ class AutofillProfile;
 class PhoneNumber : public FormGroup {
  public:
   explicit PhoneNumber(AutofillProfile* profile);
-  // The |profile| can be NULL; but if so, clients should avoid calling
-  // |GetInfo()| or |SetInfo()|.  This is typically only useful if you want to
-  // call into the |GetNumberType()| (etc.) functions.
-  PhoneNumber(AutofillType::FieldTypeGroup phone_group,
-              AutofillProfile* profile);
   PhoneNumber(const PhoneNumber& number);
   virtual ~PhoneNumber();
 
@@ -48,18 +43,10 @@ class PhoneNumber : public FormGroup {
   static const size_t kSuffixOffset = 3;
   static const size_t kSuffixLength = 4;
 
-  // The following functions should return the field type for each part of the
-  // phone number.  Currently, these are either fax or home phone number types.
-  AutofillFieldType GetNumberType() const;
-  AutofillFieldType GetCityCodeType() const;
-  AutofillFieldType GetCountryCodeType() const;
-  AutofillFieldType GetCityAndNumberType() const;
-  AutofillFieldType GetWholeNumberType() const;
-
-  // The class used to combine home phone or fax parts into a whole number.
+  // The class used to combine home phone parts into a whole number.
   class PhoneCombineHelper {
    public:
-    explicit PhoneCombineHelper(AutofillType::FieldTypeGroup phone_group);
+    PhoneCombineHelper();
     ~PhoneCombineHelper();
 
     // If |type| is a phone field type, saves the |value| accordingly and
@@ -77,7 +64,6 @@ class PhoneNumber : public FormGroup {
     string16 city_;
     string16 phone_;
     string16 whole_number_;
-    AutofillType::FieldTypeGroup phone_group_;
   };
 
  private:
@@ -96,8 +82,6 @@ class PhoneNumber : public FormGroup {
   // since the last time the cache was updated.
   void UpdateCacheIfNeeded() const;
 
-  // Phone group -  currently it is PHONE_HOME and PHONE_FAX.
-  AutofillType::FieldTypeGroup phone_group_;
   // The phone number.
   string16 number_;
   // Profile which stores the locale used as hint when normalizing the number.

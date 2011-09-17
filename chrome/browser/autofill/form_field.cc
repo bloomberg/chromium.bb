@@ -55,7 +55,7 @@ void FormField::ParseFormFields(const std::vector<AutofillField*>& fields,
   // Email pass.
   ParseFormFieldsPass(EmailField::Parse, &remaining_fields, map);
 
-  // Phone/fax pass.
+  // Phone pass.
   ParseFormFieldsPass(PhoneField::Parse, &remaining_fields, map);
 
   // Address pass.

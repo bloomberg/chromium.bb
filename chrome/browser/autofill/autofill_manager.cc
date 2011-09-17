@@ -971,8 +971,7 @@ void AutofillManager::GetProfileSuggestions(
         // Phone numbers could be split in US forms, so field value could be
         // either prefix or suffix of the phone.
         bool matched_phones = false;
-        if ((type == PHONE_HOME_NUMBER || type == PHONE_FAX_NUMBER) &&
-            !field_value_lower_case.empty() &&
+        if (type == PHONE_HOME_NUMBER && !field_value_lower_case.empty() &&
             (profile_value_lower_case.find(field_value_lower_case) !=
              string16::npos)) {
           matched_phones = true;

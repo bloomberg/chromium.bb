@@ -197,43 +197,6 @@ bool UpdateFromAutocompleteType(const string16& autocomplete_type,
     return true;
   }
 
-  if (autocomplete_type == ASCIIToUTF16("fax-full")) {
-    field->set_heuristic_type(PHONE_FAX_WHOLE_NUMBER);
-    return true;
-  }
-
-  if (autocomplete_type == ASCIIToUTF16("fax-country-code")) {
-    field->set_heuristic_type(PHONE_FAX_COUNTRY_CODE);
-    return true;
-  }
-
-  if (autocomplete_type == ASCIIToUTF16("fax-national")) {
-    field->set_heuristic_type(PHONE_FAX_CITY_AND_NUMBER);
-    return true;
-  }
-
-  if (autocomplete_type == ASCIIToUTF16("fax-area-code")) {
-    field->set_heuristic_type(PHONE_FAX_CITY_CODE);
-    return true;
-  }
-
-  if (autocomplete_type == ASCIIToUTF16("fax-local")) {
-    field->set_heuristic_type(PHONE_FAX_NUMBER);
-    return true;
-  }
-
-  if (autocomplete_type == ASCIIToUTF16("fax-local-prefix")) {
-    field->set_heuristic_type(PHONE_FAX_NUMBER);
-    field->set_phone_part(AutofillField::PHONE_PREFIX);
-    return true;
-  }
-
-  if (autocomplete_type == ASCIIToUTF16("fax-local-suffix")) {
-    field->set_heuristic_type(PHONE_FAX_NUMBER);
-    field->set_phone_part(AutofillField::PHONE_SUFFIX);
-    return true;
-  }
-
   if (autocomplete_type == ASCIIToUTF16("cc-full-name")) {
     field->set_heuristic_type(CREDIT_CARD_NAME);
     return true;
@@ -694,8 +657,6 @@ void FormStructure::LogQualityMetrics(
       // international numbers.
       if (*it == PHONE_HOME_CITY_AND_NUMBER)
         collapsed_field_types.insert(PHONE_HOME_WHOLE_NUMBER);
-      else if (*it == PHONE_FAX_CITY_AND_NUMBER)
-        collapsed_field_types.insert(PHONE_FAX_WHOLE_NUMBER);
       else
         collapsed_field_types.insert(AutofillType::GetEquivalentFieldType(*it));
     }
@@ -978,12 +939,9 @@ void FormStructure::IdentifySections() {
     bool already_saw_current_type = seen_types.count(current_type) > 0;
 
     // Forms often ask for multiple phone numbers -- e.g. both a daytime and
-    // evening phone number.  Our phone and fax number detection is also
-    // generally a little off.  Hence, ignore both field types as a signal here.
-    AutofillType::FieldTypeGroup current_type_group =
-        AutofillType(current_type).group();
-    if (current_type_group == AutofillType::PHONE_HOME ||
-        current_type_group == AutofillType::PHONE_FAX)
+    // evening phone number.  Our phone number detection is also generally a
+    // little off.  Hence, ignore this field type as a signal here.
+    if (AutofillType(current_type).group() == AutofillType::PHONE_HOME)
       already_saw_current_type = false;
 
     // Some forms have adjacent fields of the same type.  Two common examples:

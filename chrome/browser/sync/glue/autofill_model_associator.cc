@@ -506,8 +506,6 @@ bool AutofillModelAssociator::FillProfileWithServerData(
   diff = MergeField(p, ADDRESS_HOME_ZIP, s.address_home_zip()) || diff;
   diff = MergeField(p, EMAIL_ADDRESS, s.email_address()) || diff;
   diff = MergeField(p, COMPANY_NAME, s.company_name()) || diff;
-  diff = MergeField(p, PHONE_FAX_WHOLE_NUMBER, s.phone_fax_whole_number())
-      || diff;
   diff = MergeField(p, PHONE_HOME_WHOLE_NUMBER, s.phone_home_whole_number())
       || diff;
   return diff;

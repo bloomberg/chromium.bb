@@ -8,7 +8,6 @@ ADDRESS_HOME_ZIP | zc | CEP: |
 ADDRESS_HOME_STATE | st | Estado: | 
 EMAIL_ADDRESS | em | email: | 
 PHONE_HOME_WHOLE_NUMBER | ph | Telefone: | 
-PHONE_FAX_WHOLE_NUMBER | fx | Fax Number: | 
 CREDIT_CARD_NAME | c1 | Nome do cartão: | 
 CREDIT_CARD_NUMBER | c2 | Número do cartão: | 
 CREDIT_CARD_EXP_MONTH | c3 | Data de validade: | 

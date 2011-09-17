@@ -8,7 +8,6 @@ ADDRESS_HOME_ZIP | zc | 郵遞區號: |
 ADDRESS_HOME_STATE | st | 地區: | 
 EMAIL_ADDRESS | em | 電郵地址: | 
 PHONE_HOME_WHOLE_NUMBER | ph | 電話: | 
-PHONE_FAX_WHOLE_NUMBER | fx | 傳真: | 
 CREDIT_CARD_NAME | c1 | 持卡人姓名: | 
 CREDIT_CARD_NUMBER | c2 | 信用卡卡號: | 
 CREDIT_CARD_EXP_MONTH | c3 | 月: | 

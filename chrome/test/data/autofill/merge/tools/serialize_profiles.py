@@ -74,10 +74,7 @@ def main():
 
   for profile in cursor:
     guid = profile[0]
-    if int(profile[1]) == 0:
-      profiles[guid].append(("PHONE_HOME_WHOLE_NUMBER", profile[2]))
-    else:
-      profiles[guid].append(("PHONE_FAX_WHOLE_NUMBER", profile[2]))
+    profiles[guid].append(("PHONE_HOME_WHOLE_NUMBER", profile[2]))
 
   print SerializeProfiles(profiles.values())
 

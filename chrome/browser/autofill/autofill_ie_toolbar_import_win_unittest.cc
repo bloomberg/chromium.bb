@@ -53,9 +53,6 @@ ValueDescription profile2[] = {
   { L"name_last", L"Doe" },
   { L"email", L"janedoe@test.com" },
   { L"company_name", L"Testcompany" },
-  { L"phone_fax_number", L"555-6666" },
-  { L"phone_fax_city_code", L"812" },
-  { L"phone_fax_country_code", L"7" },
 };
 
 ValueDescription credit_card[] = {
@@ -177,10 +174,6 @@ TEST_F(AutofillIeToolbarImportTest, TestAutofillImport) {
   EXPECT_EQ(profile2[1].value, profiles[0].GetInfo(NAME_LAST));
   EXPECT_EQ(profile2[2].value, profiles[0].GetInfo(EMAIL_ADDRESS));
   EXPECT_EQ(profile2[3].value, profiles[0].GetInfo(COMPANY_NAME));
-  EXPECT_EQ(profile2[6].value, profiles[0].GetInfo(PHONE_FAX_COUNTRY_CODE));
-  EXPECT_EQ(profile2[5].value, profiles[0].GetInfo(PHONE_FAX_CITY_CODE));
-  EXPECT_EQ(L"5556666", profiles[0].GetInfo(PHONE_FAX_NUMBER));
-  EXPECT_EQ(L"+7 812 555-66-66", profiles[0].GetInfo(PHONE_FAX_WHOLE_NUMBER));
 
   ASSERT_EQ(1U, credit_cards.size());
   EXPECT_EQ(credit_card[0].value, credit_cards[0].GetInfo(CREDIT_CARD_NAME));

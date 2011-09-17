@@ -52,16 +52,12 @@ AutofillType::AutofillTypeDefinition kAutofillTypeDefinitions[] = {
   { AutofillType::NO_GROUP, AutofillType::NO_SUBGROUP },
   { AutofillType::NO_GROUP, AutofillType::NO_SUBGROUP },
 
-  // PHONE_FAX_NUMBER
-  { AutofillType::PHONE_FAX, AutofillType::PHONE_NUMBER },
-  // PHONE_FAX_CITY_CODE
-  { AutofillType::PHONE_FAX, AutofillType::PHONE_CITY_CODE },
-  // PHONE_FAX_COUNTRY_CODE
-  { AutofillType::PHONE_FAX, AutofillType::PHONE_COUNTRY_CODE },
-  // PHONE_FAX_CITY_AND_NUMBER
-  { AutofillType::PHONE_FAX, AutofillType::PHONE_CITY_AND_NUMBER },
-  // PHONE_FAX_WHOLE_NUMBER
-  { AutofillType::PHONE_FAX, AutofillType::PHONE_WHOLE_NUMBER },
+  // Fax numbers (values [20,24]) are deprecated.
+  { AutofillType::NO_GROUP, AutofillType::NO_SUBGROUP },
+  { AutofillType::NO_GROUP, AutofillType::NO_SUBGROUP },
+  { AutofillType::NO_GROUP, AutofillType::NO_SUBGROUP },
+  { AutofillType::NO_GROUP, AutofillType::NO_SUBGROUP },
+  { AutofillType::NO_GROUP, AutofillType::NO_SUBGROUP },
 
   // Cell phone numbers (values [25, 29]) are deprecated.
   { AutofillType::NO_GROUP, AutofillType::NO_SUBGROUP },
@@ -231,16 +227,6 @@ std::string AutofillType::FieldTypeToString(AutofillFieldType type) {
       return "PHONE_HOME_CITY_AND_NUMBER";
     case PHONE_HOME_WHOLE_NUMBER:
       return "PHONE_HOME_WHOLE_NUMBER";
-    case PHONE_FAX_NUMBER:
-      return "PHONE_FAX_NUMBER";
-    case PHONE_FAX_CITY_CODE:
-      return "PHONE_FAX_CITY_CODE";
-    case PHONE_FAX_COUNTRY_CODE:
-      return "PHONE_FAX_COUNTRY_CODE";
-    case PHONE_FAX_CITY_AND_NUMBER:
-      return "PHONE_FAX_CITY_AND_NUMBER";
-    case PHONE_FAX_WHOLE_NUMBER:
-      return "PHONE_FAX_WHOLE_NUMBER";
     case ADDRESS_HOME_LINE1:
       return "ADDRESS_HOME_LINE1";
     case ADDRESS_HOME_LINE2:
@@ -327,16 +313,6 @@ AutofillFieldType AutofillType::StringToFieldType(const std::string& str) {
     return PHONE_HOME_CITY_AND_NUMBER;
   if (str == "PHONE_HOME_WHOLE_NUMBER")
     return PHONE_HOME_WHOLE_NUMBER;
-  if (str == "PHONE_FAX_NUMBER")
-    return PHONE_FAX_NUMBER;
-  if (str == "PHONE_FAX_CITY_CODE")
-    return PHONE_FAX_CITY_CODE;
-  if (str == "PHONE_FAX_COUNTRY_CODE")
-    return PHONE_FAX_COUNTRY_CODE;
-  if (str == "PHONE_FAX_CITY_AND_NUMBER")
-    return PHONE_FAX_CITY_AND_NUMBER;
-  if (str == "PHONE_FAX_WHOLE_NUMBER")
-    return PHONE_FAX_WHOLE_NUMBER;
   if (str == "ADDRESS_HOME_LINE1")
     return ADDRESS_HOME_LINE1;
   if (str == "ADDRESS_HOME_LINE2")

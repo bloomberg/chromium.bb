@@ -37,36 +37,9 @@ class PhoneField : public FormField {
   FRIEND_TEST_ALL_PREFIXES(PhoneFieldTest, ThreePartPhoneNumber);
   FRIEND_TEST_ALL_PREFIXES(PhoneFieldTest, ThreePartPhoneNumberPrefixSuffix);
   FRIEND_TEST_ALL_PREFIXES(PhoneFieldTest, ThreePartPhoneNumberPrefixSuffix2);
-  FRIEND_TEST_ALL_PREFIXES(PhoneFieldTest, ParseOneLineFax);
-  FRIEND_TEST_ALL_PREFIXES(PhoneFieldTest, ParseTwoLineFax);
-  FRIEND_TEST_ALL_PREFIXES(PhoneFieldTest, ThreePartFaxNumberPrefixSuffix);
   FRIEND_TEST_ALL_PREFIXES(PhoneFieldTest, CountryAndCityAndPhoneNumber);
 
   PhoneField();
-
-  enum PhoneType {
-    PHONE_TYPE_FIRST = 0,
-    HOME_PHONE = PHONE_TYPE_FIRST,
-    FAX_PHONE,
-
-    // Must be last.
-    PHONE_TYPE_MAX,
-  };
-
-  // Some field names are different for phone and fax.
-  string16 GetCountryRegex() const;
-  // This string includes all area code separators, including NoText.
-  string16 GetAreaRegex() const;
-  // Separator of the area code in the case fields are formatted without
-  // any text indicating what fields are (e.g. field1 "(" field2 ")" field3 "-"
-  // field4 means Country Code, Area Code, Prefix, Suffix)
-  string16 GetAreaNoTextRegex() const;
-  string16 GetPhoneRegex() const;
-  string16 GetPrefixSeparatorRegex() const;
-  string16 GetPrefixRegex() const;
-  string16 GetSuffixSeparatorRegex() const;
-  string16 GetSuffixRegex() const;
-  string16 GetExtensionRegex() const;
 
   // This is for easy description of the possible parsing paths of the phone
   // fields.
@@ -91,19 +64,8 @@ class PhoneField : public FormField {
   // |iter| - in/out. Form field iterator, points to the first field that is
   //   attempted to be parsed. If parsing successful, points to the first field
   //   after parsed fields.
-  // |regular_phone| - true if the parsed phone is a HOME phone, false
-  //   otherwise.
-  static bool ParseInternal(PhoneField* field,
-                            AutofillScanner* scanner,
-                            bool regular_phone);
-
-  void SetPhoneType(PhoneType phone_type);
-
-  // Field types are different as well, so we create a temporary phone number,
-  // to get relevant field types.
-  scoped_ptr<PhoneNumber> number_;
-  PhoneType phone_type_;
-
+  // TODO(isherman): This method doc is out of date.
+  static bool ParseInternal(PhoneField* field, AutofillScanner* scanner);
 
   // Parsed fields.
   enum PhonePart {

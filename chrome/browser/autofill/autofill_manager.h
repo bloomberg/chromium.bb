@@ -194,17 +194,17 @@ class AutofillManager : public TabContentsObserver,
                                webkit_glue::FormField* field);
 
   // Set |field|'s value based on |cached_field|'s type and contents of the
-  // |profile|.  The |variant| parameter specifies which value in a multi-valued
+  // |profile|. The |variant| parameter specifies which value in a multi-valued
   // profile.
   void FillFormField(const AutofillProfile& profile,
                      const AutofillField& cached_field,
                      size_t variant,
                      webkit_glue::FormField* field);
 
-  // Set |field|'s value for phone/fax number based on contents of the
-  // |profile|.  The |cached_field| specifies the type of the phone and whether
-  // this is a phone prefix or suffix.  The |variant| parameter specifies which
-  // value in a multi-valued profile.
+  // Set |field|'s value for phone number based on contents of the |profile|.
+  // The |cached_field| specifies the type of the phone and whether this is a
+  // phone prefix or suffix.  The |variant| parameter specifies which value in a
+  // multi-valued profile.
   void FillPhoneNumberField(const AutofillProfile& profile,
                             const AutofillField& cached_field,
                             size_t variant,
@@ -223,8 +223,8 @@ class AutofillManager : public TabContentsObserver,
   void UpdateInitialInteractionTimestamp(
       const base::TimeTicks& interaction_timestamp);
 
-  // Send our current field type predictions to the renderer.
-  // This is a no-op if the appropriate command-line flag is not set.
+  // Send our current field type predictions to the renderer. This is a no-op if
+  // the appropriate command-line flag is not set.
   void SendAutofillTypePredictions(
       const std::vector<FormStructure*>& forms) const;
 

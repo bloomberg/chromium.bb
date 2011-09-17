@@ -38,7 +38,6 @@ class DatasetConverter(object):
     u'ADDRESS_HOME_ZIP',
     u'ADDRESS_HOME_COUNTRY',
     u'PHONE_HOME_WHOLE_NUMBER',
-    u'PHONE_FAX_WHOLE_NUMBER',
   ]
   _record_length = len(_fields)
   _output_pattern = u'{'
@@ -59,16 +58,14 @@ class DatasetConverter(object):
       (?P<EMAIL_ADDRESS>.*?)\|(?P<COMPANY_NAME>.*?)\|(?P<ADDRESS_HOME_LINE1>.*?)
       \|(?P<ADDRESS_HOME_LINE2>.*?)\|(?P<ADDRESS_HOME_CITY>.*?)\|
       (?P<ADDRESS_HOME_STATE>.*?)\|(?P<ADDRESS_HOME_ZIP>.*?)\|
-      (?P<ADDRESS_HOME_COUNTRY>.*?)\|
-      (?P<PHONE_HOME_WHOLE_NUMBER>.*?)\|(?P<PHONE_FAX_WHOLE_NUMBER>.*?)$'
+      (?P<ADDRESS_HOME_COUNTRY>.*?)\|(?P<PHONE_HOME_WHOLE_NUMBER>.*?)$'
 
     Full ouput pattern:
       "{u'NAME_FIRST': u'%s', u'NAME_MIDDLE': u'%s', u'NAME_LAST': u'%s',
       u'EMAIL_ADDRESS': u'%s', u'COMPANY_NAME': u'%s', u'ADDRESS_HOME_LINE1':
       u'%s', u'ADDRESS_HOME_LINE2': u'%s', u'ADDRESS_HOME_CITY': u'%s',
       u'ADDRESS_HOME_STATE': u'%s', u'ADDRESS_HOME_ZIP': u'%s',
-      u'ADDRESS_HOME_COUNTRY': u'%s', u'PHONE_HOME_WHOLE_NUMBER': u'%s',
-      u'PHONE_FAX_WHOLE_NUMBER': u'%s',},"
+      u'ADDRESS_HOME_COUNTRY': u'%s', u'PHONE_HOME_WHOLE_NUMBER': u'%s',},"
 
     Args:
       input_filename: name and path of the input dataset.

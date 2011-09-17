@@ -39,8 +39,7 @@ const AutofillFieldType kProfileFieldTypes[] = {
   ADDRESS_HOME_STATE,
   ADDRESS_HOME_ZIP,
   ADDRESS_HOME_COUNTRY,
-  PHONE_HOME_WHOLE_NUMBER,
-  PHONE_FAX_WHOLE_NUMBER,
+  PHONE_HOME_WHOLE_NUMBER
 };
 
 // Serializes the |profiles| into a string.

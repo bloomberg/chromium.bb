@@ -188,7 +188,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientAutofillSyncTest, SameProfileWithConflict) {
 
   AutofillProfile profile0 = CreateAutofillProfile(PROFILE_HOMER);
   AutofillProfile profile1 = CreateAutofillProfile(PROFILE_HOMER);
-  profile1.SetInfo(PHONE_FAX_WHOLE_NUMBER, ASCIIToUTF16("1234567890"));
+  profile1.SetInfo(PHONE_HOME_WHOLE_NUMBER, ASCIIToUTF16("1234567890"));
 
   AddProfile(0, profile0);
   AddProfile(1, profile1);

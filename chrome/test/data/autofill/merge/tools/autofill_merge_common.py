@@ -67,8 +67,6 @@ def ColumnNameToFieldType(column_name):
     field_type = "ADDRESS_HOME_COUNTRY"
   elif column_name == "phone":
     field_type = "PHONE_HOME_WHOLE_NUMBER"
-  elif column_name == "fax":
-    field_type = "PHONE_FAX_WHOLE_NUMBER"
   else:
     raise UnknownColumnNameException(column_name)
 

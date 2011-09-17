@@ -40,14 +40,7 @@ void StripPunctuation(string16* number) {
 }  // namespace
 
 PhoneNumber::PhoneNumber(AutofillProfile* profile)
-    : phone_group_(AutofillType::NO_GROUP),
-      profile_(profile) {
-}
-
-PhoneNumber::PhoneNumber(AutofillType::FieldTypeGroup phone_group,
-                         AutofillProfile* profile)
-    : phone_group_(phone_group),
-      profile_(profile) {
+    : profile_(profile) {
 }
 
 PhoneNumber::PhoneNumber(const PhoneNumber& number) : FormGroup() {
@@ -59,7 +52,7 @@ PhoneNumber::~PhoneNumber() {}
 PhoneNumber& PhoneNumber::operator=(const PhoneNumber& number) {
   if (this == &number)
     return *this;
-  phone_group_ = number.phone_group_;
+
   number_ = number.number_;
   profile_ = number.profile_;
   cached_parsed_phone_ = number.cached_parsed_phone_;
@@ -67,31 +60,31 @@ PhoneNumber& PhoneNumber::operator=(const PhoneNumber& number) {
 }
 
 void PhoneNumber::GetSupportedTypes(FieldTypeSet* supported_types) const {
-  supported_types->insert(GetWholeNumberType());
-  supported_types->insert(GetNumberType());
-  supported_types->insert(GetCityCodeType());
-  supported_types->insert(GetCityAndNumberType());
-  supported_types->insert(GetCountryCodeType());
+  supported_types->insert(PHONE_HOME_WHOLE_NUMBER);
+  supported_types->insert(PHONE_HOME_NUMBER);
+  supported_types->insert(PHONE_HOME_CITY_CODE);
+  supported_types->insert(PHONE_HOME_CITY_AND_NUMBER);
+  supported_types->insert(PHONE_HOME_COUNTRY_CODE);
 }
 
 string16 PhoneNumber::GetInfo(AutofillFieldType type) const {
-  if (type == GetWholeNumberType())
+  if (type == PHONE_HOME_WHOLE_NUMBER)
     return number_;
 
   UpdateCacheIfNeeded();
   if (!cached_parsed_phone_.IsValidNumber())
     return string16();
 
-  if (type == GetNumberType())
+  if (type == PHONE_HOME_NUMBER)
     return cached_parsed_phone_.GetNumber();
 
-  if (type == GetCityCodeType())
+  if (type == PHONE_HOME_CITY_CODE)
     return cached_parsed_phone_.GetCityCode();
 
-  if (type == GetCountryCodeType())
+  if (type == PHONE_HOME_COUNTRY_CODE)
     return cached_parsed_phone_.GetCountryCode();
 
-  if (type == GetCityAndNumberType()) {
+  if (type == PHONE_HOME_CITY_AND_NUMBER) {
     string16 city_and_local(cached_parsed_phone_.GetCityCode());
     city_and_local.append(cached_parsed_phone_.GetNumber());
     return city_and_local;
@@ -101,10 +94,6 @@ string16 PhoneNumber::GetInfo(AutofillFieldType type) const {
 }
 
 void PhoneNumber::SetInfo(AutofillFieldType type, const string16& value) {
-  // Store the group the first time we set some info.
-  if (phone_group_ == AutofillType::NO_GROUP)
-    phone_group_ = AutofillType(type).group();
-
   FieldTypeSubGroup subgroup = AutofillType(type).subgroup();
   if (subgroup != AutofillType::PHONE_CITY_AND_NUMBER &&
       subgroup != AutofillType::PHONE_WHOLE_NUMBER) {
@@ -123,7 +112,7 @@ void PhoneNumber::SetInfo(AutofillFieldType type, const string16& value) {
 // If the phone cannot be normalized, returns the stored value verbatim.
 string16 PhoneNumber::GetCanonicalizedInfo(AutofillFieldType type) const {
   string16 phone = GetInfo(type);
-  if (type != GetWholeNumberType())
+  if (type != PHONE_HOME_WHOLE_NUMBER)
     return phone;
 
   string16 normalized_phone = autofill_i18n::NormalizePhoneNumber(phone,
@@ -150,19 +139,19 @@ void PhoneNumber::GetMatchingTypes(const string16& text,
   FormGroup::GetMatchingTypes(stripped_text, matching_types);
 
   // For US numbers, also compare to the three-digit prefix and the four-digit
-  // suffix, since websites often split numbers into these two fields.
-  string16 number = GetCanonicalizedInfo(GetNumberType());
+  // suffix, since web sites often split numbers into these two fields.
+  string16 number = GetCanonicalizedInfo(PHONE_HOME_NUMBER);
   if (locale() == "US" && number.size() == (kPrefixLength + kSuffixLength)) {
     string16 prefix = number.substr(kPrefixOffset, kPrefixLength);
     string16 suffix = number.substr(kSuffixOffset, kSuffixLength);
     if (text == prefix || text == suffix)
-      matching_types->insert(GetNumberType());
+      matching_types->insert(PHONE_HOME_NUMBER);
   }
 
-  string16 whole_number = GetCanonicalizedInfo(GetWholeNumberType());
+  string16 whole_number = GetCanonicalizedInfo(PHONE_HOME_WHOLE_NUMBER);
   if (!whole_number.empty() &&
       autofill_i18n::NormalizePhoneNumber(text, locale()) == whole_number) {
-    matching_types->insert(GetWholeNumberType());
+    matching_types->insert(PHONE_HOME_WHOLE_NUMBER);
   }
 }
 
@@ -190,59 +179,7 @@ void PhoneNumber::UpdateCacheIfNeeded() const {
     cached_parsed_phone_ = autofill_i18n::PhoneObject(number_, locale());
 }
 
-AutofillFieldType PhoneNumber::GetNumberType() const {
-  if (phone_group_ == AutofillType::PHONE_HOME)
-    return PHONE_HOME_NUMBER;
-  else if (phone_group_ == AutofillType::PHONE_FAX)
-    return PHONE_FAX_NUMBER;
-  else
-    NOTREACHED();
-  return UNKNOWN_TYPE;
-}
-
-AutofillFieldType PhoneNumber::GetCityCodeType() const {
-  if (phone_group_ == AutofillType::PHONE_HOME)
-    return PHONE_HOME_CITY_CODE;
-  else if (phone_group_ == AutofillType::PHONE_FAX)
-    return PHONE_FAX_CITY_CODE;
-  else
-    NOTREACHED();
-  return UNKNOWN_TYPE;
-}
-
-AutofillFieldType PhoneNumber::GetCountryCodeType() const {
-  if (phone_group_ == AutofillType::PHONE_HOME)
-    return PHONE_HOME_COUNTRY_CODE;
-  else if (phone_group_ == AutofillType::PHONE_FAX)
-    return PHONE_FAX_COUNTRY_CODE;
-  else
-    NOTREACHED();
-  return UNKNOWN_TYPE;
-}
-
-AutofillFieldType PhoneNumber::GetCityAndNumberType() const {
-  if (phone_group_ == AutofillType::PHONE_HOME)
-    return PHONE_HOME_CITY_AND_NUMBER;
-  else if (phone_group_ == AutofillType::PHONE_FAX)
-    return PHONE_FAX_CITY_AND_NUMBER;
-  else
-    NOTREACHED();
-  return UNKNOWN_TYPE;
-}
-
-AutofillFieldType PhoneNumber::GetWholeNumberType() const {
-  if (phone_group_ == AutofillType::PHONE_HOME)
-    return PHONE_HOME_WHOLE_NUMBER;
-  else if (phone_group_ == AutofillType::PHONE_FAX)
-    return PHONE_FAX_WHOLE_NUMBER;
-  else
-    NOTREACHED();
-  return UNKNOWN_TYPE;
-}
-
-PhoneNumber::PhoneCombineHelper::PhoneCombineHelper(
-    AutofillType::FieldTypeGroup phone_group)
-    : phone_group_(phone_group) {
+PhoneNumber::PhoneCombineHelper::PhoneCombineHelper() {
 }
 
 PhoneNumber::PhoneCombineHelper::~PhoneCombineHelper() {
@@ -250,29 +187,27 @@ PhoneNumber::PhoneCombineHelper::~PhoneCombineHelper() {
 
 bool PhoneNumber::PhoneCombineHelper::SetInfo(AutofillFieldType field_type,
                                               const string16& value) {
-  PhoneNumber temp(phone_group_, NULL);
-
-  if (field_type == temp.GetCountryCodeType()) {
+  if (field_type == PHONE_HOME_COUNTRY_CODE) {
     country_ = value;
     return true;
   }
 
-  if (field_type == temp.GetCityCodeType()) {
+  if (field_type == PHONE_HOME_CITY_CODE) {
     city_ = value;
     return true;
   }
 
-  if (field_type == temp.GetCityAndNumberType()) {
+  if (field_type == PHONE_HOME_CITY_AND_NUMBER) {
     phone_ = value;
     return true;
   }
 
-  if (field_type == temp.GetWholeNumberType()) {
+  if (field_type == PHONE_HOME_WHOLE_NUMBER) {
     whole_number_ = value;
     return true;
   }
 
-  if (field_type == temp.GetNumberType()) {
+  if (field_type == PHONE_HOME_NUMBER) {
     phone_.append(value);
     return true;
   }

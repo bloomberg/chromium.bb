@@ -117,8 +117,8 @@ void SetValueList(const ListValue* list,
   profile->SetMultiInfo(type, values);
 }
 
-// Pulls the phone (or fax) number |index|, |phone_number_list|, and
-// |country_code| from the |args| input.
+// Pulls the phone number |index|, |phone_number_list|, and |country_code| from
+// the |args| input.
 void ExtractPhoneNumberInformation(const ListValue* args,
                                    size_t* index,
                                    ListValue** phone_number_list,
@@ -253,9 +253,6 @@ void AutofillOptionsHandler::RegisterMessages() {
   web_ui_->RegisterMessageCallback(
       "validatePhoneNumbers",
       NewCallback(this, &AutofillOptionsHandler::ValidatePhoneNumbers));
-  web_ui_->RegisterMessageCallback(
-      "validateFaxNumbers",
-      NewCallback(this, &AutofillOptionsHandler::ValidateFaxNumbers));
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -282,16 +279,12 @@ void AutofillOptionsHandler::SetAddressOverlayStrings(
       l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_COUNTRY));
   localized_strings->SetString("phoneLabel",
       l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_PHONE));
-  localized_strings->SetString("faxLabel",
-      l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_FAX));
   localized_strings->SetString("emailLabel",
       l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_EMAIL));
   localized_strings->SetString("addNewNamePlaceholder",
       l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_ADD_NEW_NAME));
   localized_strings->SetString("addNewPhonePlaceholder",
       l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_ADD_NEW_PHONE));
-  localized_strings->SetString("addNewFaxPlaceholder",
-      l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_ADD_NEW_FAX));
   localized_strings->SetString("addNewEmailPlaceholder",
       l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_ADD_NEW_EMAIL));
 
@@ -405,8 +398,6 @@ void AutofillOptionsHandler::LoadAddressEditor(const ListValue* args) {
   address.SetString("country", profile->CountryCode());
   GetValueList(*profile, PHONE_HOME_WHOLE_NUMBER, &list);
   address.Set("phone", list.release());
-  GetValueList(*profile, PHONE_FAX_WHOLE_NUMBER, &list);
-  address.Set("fax", list.release());
   GetValueList(*profile, EMAIL_ADDRESS, &list);
   address.Set("email", list.release());
 
@@ -482,8 +473,6 @@ void AutofillOptionsHandler::SetAddress(const ListValue* args) {
   if (args->GetList(9, &list_value))
     SetValueList(list_value, PHONE_HOME_WHOLE_NUMBER, &profile);
   if (args->GetList(10, &list_value))
-    SetValueList(list_value, PHONE_FAX_WHOLE_NUMBER, &profile);
-  if (args->GetList(11, &list_value))
     SetValueList(list_value, EMAIL_ADDRESS, &profile);
 
   if (!guid::IsValidGUID(profile.guid())) {
@@ -533,15 +522,4 @@ void AutofillOptionsHandler::ValidatePhoneNumbers(const ListValue* args) {
 
   web_ui_->CallJavascriptFunction(
     "AutofillEditAddressOverlay.setValidatedPhoneNumbers", *list_value);
-}
-
-void AutofillOptionsHandler::ValidateFaxNumbers(const ListValue* args) {
-  if (!personal_data_->IsDataLoaded())
-    return;
-
-  ListValue* list_value = NULL;
-  ValidatePhoneArguments(args, &list_value);
-
-  web_ui_->CallJavascriptFunction(
-      "AutofillEditAddressOverlay.setValidatedFaxNumbers", *list_value);
 }

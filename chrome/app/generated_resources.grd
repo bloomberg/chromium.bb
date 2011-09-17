@@ -7928,9 +7928,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_AUTOFILL_DIALOG_ADDRESS_SUMMARY_SEPARATOR" desc="The separator character used in the summary of an address.">
         , '''
       </message>
-      <message name="IDS_AUTOFILL_DIALOG_ADDRESS_SUMMARY_FAX_FORMAT" desc="This is a format of a fax number to differentiate it with regular phone. $1=number">
-        fax:#<ph name="FAX">$1<ex>1(123)123-4567</ex></ph>
-      </message>
       <message name="IDS_CREDIT_CARD_NUMBER_PREVIEW_FORMAT"
                desc="Credit card preview format">
         <ph name="OBFUSCATED_CC_NUMBER">$1<ex>************1234</ex>
@@ -8003,17 +8000,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_AUTOFILL_DIALOG_PHONE" desc="The label of the Phone entry.">
         Phone
       </message>
-      <message name="IDS_AUTOFILL_DIALOG_FAX" desc="The label of the Fax entry.">
-        Fax
-      </message>
       <message name="IDS_AUTOFILL_DIALOG_ADD_NEW_NAME" desc="The placeholder text of the name field.">
         Add new name
       </message>
       <message name="IDS_AUTOFILL_DIALOG_ADD_NEW_PHONE" desc="The placeholder text of the phone field.">
         Add new phone
-      </message>
-      <message name="IDS_AUTOFILL_DIALOG_ADD_NEW_FAX" desc="The placeholder text of the fax field.">
-        Add new fax
       </message>
       <message name="IDS_AUTOFILL_DIALOG_ADD_NEW_EMAIL" desc="The placeholder text of the email field.">
         Add new email

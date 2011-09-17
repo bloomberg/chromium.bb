@@ -287,10 +287,6 @@ TEST(FormStructureTest, HeuristicsContactInfo) {
   field.name = ASCIIToUTF16("phone");
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Fax");
-  field.name = ASCIIToUTF16("fax");
-  form.fields.push_back(field);
-
   field.label = ASCIIToUTF16("Address");
   field.name = ASCIIToUTF16("address");
   form.fields.push_back(field);
@@ -313,8 +309,8 @@ TEST(FormStructureTest, HeuristicsContactInfo) {
   EXPECT_TRUE(form_structure->IsAutofillable(true));
 
   // Expect the correct number of fields.
-  ASSERT_EQ(9U, form_structure->field_count());
-  ASSERT_EQ(8U, form_structure->autofill_count());
+  ASSERT_EQ(8U, form_structure->field_count());
+  ASSERT_EQ(7U, form_structure->autofill_count());
 
   // First name.
   EXPECT_EQ(NAME_FIRST, form_structure->field(0)->heuristic_type());
@@ -325,16 +321,14 @@ TEST(FormStructureTest, HeuristicsContactInfo) {
   // Phone.
   EXPECT_EQ(PHONE_HOME_WHOLE_NUMBER,
       form_structure->field(3)->heuristic_type());
-  // Fax.
-  EXPECT_EQ(PHONE_FAX_WHOLE_NUMBER, form_structure->field(4)->heuristic_type());
   // Address.
-  EXPECT_EQ(ADDRESS_HOME_LINE1, form_structure->field(5)->heuristic_type());
+  EXPECT_EQ(ADDRESS_HOME_LINE1, form_structure->field(4)->heuristic_type());
   // City.
-  EXPECT_EQ(ADDRESS_HOME_CITY, form_structure->field(6)->heuristic_type());
+  EXPECT_EQ(ADDRESS_HOME_CITY, form_structure->field(5)->heuristic_type());
   // Zip.
-  EXPECT_EQ(ADDRESS_HOME_ZIP, form_structure->field(7)->heuristic_type());
+  EXPECT_EQ(ADDRESS_HOME_ZIP, form_structure->field(6)->heuristic_type());
   // Submit.
-  EXPECT_EQ(UNKNOWN_TYPE, form_structure->field(8)->heuristic_type());
+  EXPECT_EQ(UNKNOWN_TYPE, form_structure->field(7)->heuristic_type());
 }
 
 // Verify that we can correctly process the |autocompletetype| attribute.
@@ -396,7 +390,7 @@ TEST(FormStructureTest, HeuristicsAutocompletetypePhones) {
 
   field.label = string16();
   field.name = ASCIIToUTF16("field3");
-  field.autocomplete_type = ASCIIToUTF16("fax-local-suffix");
+  field.autocomplete_type = ASCIIToUTF16("phone-local-suffix");
   form.fields.push_back(field);
 
   form_structure.reset(new FormStructure(form));
@@ -412,7 +406,7 @@ TEST(FormStructureTest, HeuristicsAutocompletetypePhones) {
   EXPECT_EQ(PHONE_HOME_NUMBER, form_structure->field(1)->heuristic_type());
   EXPECT_EQ(AutofillField::PHONE_PREFIX,
             form_structure->field(1)->phone_part());
-  EXPECT_EQ(PHONE_FAX_NUMBER, form_structure->field(2)->heuristic_type());
+  EXPECT_EQ(PHONE_HOME_NUMBER, form_structure->field(2)->heuristic_type());
   EXPECT_EQ(AutofillField::PHONE_SUFFIX,
             form_structure->field(2)->phone_part());
 }
@@ -755,10 +749,6 @@ TEST(FormStructureTest, HeuristicsLabelsOnly) {
   field.name = string16();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Fax");
-  field.name = string16();
-  form.fields.push_back(field);
-
   field.label = ASCIIToUTF16("Address");
   field.name = string16();
   form.fields.push_back(field);
@@ -779,8 +769,8 @@ TEST(FormStructureTest, HeuristicsLabelsOnly) {
   form_structure.reset(new FormStructure(form));
   form_structure->DetermineHeuristicTypes();
   EXPECT_TRUE(form_structure->IsAutofillable(true));
-  ASSERT_EQ(9U, form_structure->field_count());
-  ASSERT_EQ(8U, form_structure->autofill_count());
+  ASSERT_EQ(8U, form_structure->field_count());
+  ASSERT_EQ(7U, form_structure->autofill_count());
 
   // First name.
   EXPECT_EQ(NAME_FIRST, form_structure->field(0)->heuristic_type());
@@ -791,16 +781,14 @@ TEST(FormStructureTest, HeuristicsLabelsOnly) {
   // Phone.
   EXPECT_EQ(PHONE_HOME_WHOLE_NUMBER,
       form_structure->field(3)->heuristic_type());
-  // Fax.
-  EXPECT_EQ(PHONE_FAX_WHOLE_NUMBER, form_structure->field(4)->heuristic_type());
   // Address.
-  EXPECT_EQ(ADDRESS_HOME_LINE1, form_structure->field(5)->heuristic_type());
+  EXPECT_EQ(ADDRESS_HOME_LINE1, form_structure->field(4)->heuristic_type());
   // Address Line 2.
-  EXPECT_EQ(ADDRESS_HOME_LINE2, form_structure->field(6)->heuristic_type());
+  EXPECT_EQ(ADDRESS_HOME_LINE2, form_structure->field(5)->heuristic_type());
   // Zip.
-  EXPECT_EQ(ADDRESS_HOME_ZIP, form_structure->field(7)->heuristic_type());
+  EXPECT_EQ(ADDRESS_HOME_ZIP, form_structure->field(6)->heuristic_type());
   // Submit.
-  EXPECT_EQ(UNKNOWN_TYPE, form_structure->field(8)->heuristic_type());
+  EXPECT_EQ(UNKNOWN_TYPE, form_structure->field(7)->heuristic_type());
 }
 
 TEST(FormStructureTest, HeuristicsCreditCardInfo) {
@@ -1493,13 +1481,6 @@ TEST(FormStructureTest, EncodeUploadRequest) {
   form.fields.push_back(field);
   possible_field_types.push_back(FieldTypeSet());
   possible_field_types.back().insert(ADDRESS_HOME_COUNTRY);
-
-  field.label = ASCIIToUTF16("Fax");
-  field.name = ASCIIToUTF16("fax");
-  field.form_control_type = ASCIIToUTF16("tel");
-  form.fields.push_back(field);
-  possible_field_types.push_back(FieldTypeSet());
-  possible_field_types.back().insert(PHONE_FAX_WHOLE_NUMBER);
   form_structure.reset(new FormStructure(form));
 
   ASSERT_EQ(form_structure->field_count(), possible_field_types.size());
@@ -1516,35 +1497,32 @@ TEST(FormStructureTest, EncodeUploadRequest) {
   available_field_types.insert(ADDRESS_BILLING_LINE2);
   available_field_types.insert(EMAIL_ADDRESS);
   available_field_types.insert(PHONE_HOME_WHOLE_NUMBER);
-  available_field_types.insert(PHONE_FAX_WHOLE_NUMBER);
 
   std::string encoded_xml;
   EXPECT_TRUE(form_structure->EncodeUploadRequest(available_field_types, false,
                                                   &encoded_xml));
   EXPECT_EQ("<\?xml version=\"1.0\" encoding=\"UTF-8\"\?>"
             "<autofillupload clientversion=\"6.1.1715.1442/en (GGLL)\" "
-            "formsignature=\"7641728017676399335\" autofillused=\"false\" "
-            "datapresent=\"144200830e\">"
+            "formsignature=\"8736493185895608956\" autofillused=\"false\" "
+            "datapresent=\"144200030e\">"
             "<field signature=\"3763331450\" autofilltype=\"3\"/>"
             "<field signature=\"3494530716\" autofilltype=\"5\"/>"
             "<field signature=\"1029417091\" autofilltype=\"9\"/>"
             "<field signature=\"466116101\" autofilltype=\"14\"/>"
             "<field signature=\"2799270304\" autofilltype=\"36\"/>"
-            "<field signature=\"1876771436\" autofilltype=\"24\"/>"
             "</autofillupload>",
             encoded_xml);
   EXPECT_TRUE(form_structure->EncodeUploadRequest(available_field_types, true,
                                                   &encoded_xml));
   EXPECT_EQ("<\?xml version=\"1.0\" encoding=\"UTF-8\"\?>"
             "<autofillupload clientversion=\"6.1.1715.1442/en (GGLL)\" "
-            "formsignature=\"7641728017676399335\" autofillused=\"true\" "
-            "datapresent=\"144200830e\">"
+            "formsignature=\"8736493185895608956\" autofillused=\"true\" "
+            "datapresent=\"144200030e\">"
             "<field signature=\"3763331450\" autofilltype=\"3\"/>"
             "<field signature=\"3494530716\" autofilltype=\"5\"/>"
             "<field signature=\"1029417091\" autofilltype=\"9\"/>"
             "<field signature=\"466116101\" autofilltype=\"14\"/>"
             "<field signature=\"2799270304\" autofilltype=\"36\"/>"
-            "<field signature=\"1876771436\" autofilltype=\"24\"/>"
             "</autofillupload>",
             encoded_xml);
 
@@ -1570,14 +1548,13 @@ TEST(FormStructureTest, EncodeUploadRequest) {
                                                   &encoded_xml));
   EXPECT_EQ("<\?xml version=\"1.0\" encoding=\"UTF-8\"\?>"
             "<autofillupload clientversion=\"6.1.1715.1442/en (GGLL)\" "
-            "formsignature=\"12226592129574322128\" autofillused=\"false\" "
-            "datapresent=\"144200830e\">"
+            "formsignature=\"7816485729218079147\" autofillused=\"false\" "
+            "datapresent=\"144200030e\">"
             "<field signature=\"3763331450\" autofilltype=\"3\"/>"
             "<field signature=\"3494530716\" autofilltype=\"5\"/>"
             "<field signature=\"1029417091\" autofilltype=\"9\"/>"
             "<field signature=\"466116101\" autofilltype=\"14\"/>"
             "<field signature=\"2799270304\" autofilltype=\"36\"/>"
-            "<field signature=\"1876771436\" autofilltype=\"24\"/>"
             "<field signature=\"509334676\" autofilltype=\"30\"/>"
             "<field signature=\"509334676\" autofilltype=\"31\"/>"
             "<field signature=\"509334676\" autofilltype=\"37\"/>"
@@ -1686,8 +1663,8 @@ TEST(FormStructureTest, CheckDataPresence) {
             encoded_xml);
 
   // All supported non-credit card types available.
-  // datapresent should be "1f7e0f8378000008" == trimmmed(0x1f7e0f8378000008) ==
-  //     0b0001111101111110000011111000001101111000000000000000000000001000
+  // datapresent should be "1f7e000378000008" == trimmmed(0x1f7e000378000008) ==
+  //     0b0001111101111110000000000000001101111000000000000000000000001000
   // The set bits are:
   //  3 == NAME_FIRST
   //  4 == NAME_MIDDLE
@@ -1700,11 +1677,6 @@ TEST(FormStructureTest, CheckDataPresence) {
   // 12 == PHONE_HOME_COUNTRY_CODE,
   // 13 == PHONE_HOME_CITY_AND_NUMBER,
   // 14 == PHONE_HOME_WHOLE_NUMBER,
-  // 20 == PHONE_FAX_NUMBER,
-  // 21 == PHONE_FAX_CITY_CODE,
-  // 22 == PHONE_FAX_COUNTRY_CODE,
-  // 23 == PHONE_FAX_CITY_AND_NUMBER,
-  // 24 == PHONE_FAX_WHOLE_NUMBER,
   // 30 == ADDRESS_HOME_LINE1
   // 31 == ADDRESS_HOME_LINE2
   // 33 == ADDRESS_HOME_CITY
@@ -1724,11 +1696,6 @@ TEST(FormStructureTest, CheckDataPresence) {
   available_field_types.insert(PHONE_HOME_COUNTRY_CODE);
   available_field_types.insert(PHONE_HOME_CITY_AND_NUMBER);
   available_field_types.insert(PHONE_HOME_WHOLE_NUMBER);
-  available_field_types.insert(PHONE_FAX_NUMBER);
-  available_field_types.insert(PHONE_FAX_CITY_CODE);
-  available_field_types.insert(PHONE_FAX_COUNTRY_CODE);
-  available_field_types.insert(PHONE_FAX_CITY_AND_NUMBER);
-  available_field_types.insert(PHONE_FAX_WHOLE_NUMBER);
   available_field_types.insert(ADDRESS_HOME_LINE1);
   available_field_types.insert(ADDRESS_HOME_LINE2);
   available_field_types.insert(ADDRESS_HOME_CITY);
@@ -1742,7 +1709,7 @@ TEST(FormStructureTest, CheckDataPresence) {
   EXPECT_EQ("<\?xml version=\"1.0\" encoding=\"UTF-8\"\?>"
             "<autofillupload clientversion=\"6.1.1715.1442/en (GGLL)\""
             " formsignature=\"6402244543831589061\" autofillused=\"false\""
-            " datapresent=\"1f7e0f8378000008\">"
+            " datapresent=\"1f7e000378000008\">"
             "<field signature=\"1089846351\" autofilltype=\"1\"/>"
             "<field signature=\"2404144663\" autofilltype=\"1\"/>"
             "<field signature=\"420638584\" autofilltype=\"1\"/>"
@@ -1782,8 +1749,8 @@ TEST(FormStructureTest, CheckDataPresence) {
             encoded_xml);
 
   // All supported types available.
-  // datapresent should be "1f7e0f8378001fc8" == trimmmed(0x1f7e0f8378001fc8) ==
-  //     0b0001111101111110000011111000001101111000000000000001111111001000
+  // datapresent should be "1f7e000378001fc8" == trimmmed(0x1f7e000378001fc8) ==
+  //     0b0001111101111110000000000000001101111000000000000001111111001000
   // The set bits are:
   //  3 == NAME_FIRST
   //  4 == NAME_MIDDLE
@@ -1796,11 +1763,6 @@ TEST(FormStructureTest, CheckDataPresence) {
   // 12 == PHONE_HOME_COUNTRY_CODE,
   // 13 == PHONE_HOME_CITY_AND_NUMBER,
   // 14 == PHONE_HOME_WHOLE_NUMBER,
-  // 20 == PHONE_FAX_NUMBER,
-  // 21 == PHONE_FAX_CITY_CODE,
-  // 22 == PHONE_FAX_COUNTRY_CODE,
-  // 23 == PHONE_FAX_CITY_AND_NUMBER,
-  // 24 == PHONE_FAX_WHOLE_NUMBER,
   // 30 == ADDRESS_HOME_LINE1
   // 31 == ADDRESS_HOME_LINE2
   // 33 == ADDRESS_HOME_CITY
@@ -1827,11 +1789,6 @@ TEST(FormStructureTest, CheckDataPresence) {
   available_field_types.insert(PHONE_HOME_COUNTRY_CODE);
   available_field_types.insert(PHONE_HOME_CITY_AND_NUMBER);
   available_field_types.insert(PHONE_HOME_WHOLE_NUMBER);
-  available_field_types.insert(PHONE_FAX_NUMBER);
-  available_field_types.insert(PHONE_FAX_CITY_CODE);
-  available_field_types.insert(PHONE_FAX_COUNTRY_CODE);
-  available_field_types.insert(PHONE_FAX_CITY_AND_NUMBER);
-  available_field_types.insert(PHONE_FAX_WHOLE_NUMBER);
   available_field_types.insert(ADDRESS_HOME_LINE1);
   available_field_types.insert(ADDRESS_HOME_LINE2);
   available_field_types.insert(ADDRESS_HOME_CITY);
@@ -1852,7 +1809,7 @@ TEST(FormStructureTest, CheckDataPresence) {
   EXPECT_EQ("<\?xml version=\"1.0\" encoding=\"UTF-8\"\?>"
             "<autofillupload clientversion=\"6.1.1715.1442/en (GGLL)\""
             " formsignature=\"6402244543831589061\" autofillused=\"false\""
-            " datapresent=\"1f7e0f8378001fc8\">"
+            " datapresent=\"1f7e000378001fc8\">"
             "<field signature=\"1089846351\" autofilltype=\"1\"/>"
             "<field signature=\"2404144663\" autofilltype=\"1\"/>"
             "<field signature=\"420638584\" autofilltype=\"1\"/>"

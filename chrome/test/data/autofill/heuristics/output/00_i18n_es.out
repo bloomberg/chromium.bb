@@ -8,7 +8,6 @@ ADDRESS_HOME_ZIP | zc | Código Postal: |
 ADDRESS_HOME_STATE | st | Provincia: | 
 EMAIL_ADDRESS | em | E-mail: | 
 PHONE_HOME_WHOLE_NUMBER | ph | Teléfono: | 
-PHONE_FAX_WHOLE_NUMBER | fx | Fax: | 
 CREDIT_CARD_NAME | c1 | Nombre de Tarjeta: | 
 CREDIT_CARD_NUMBER | c2 | Número de Tarjeta: | 
 CREDIT_CARD_EXP_MONTH | c3 | Fecha de Expiración: | 

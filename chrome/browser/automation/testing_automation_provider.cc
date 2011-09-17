@@ -5068,9 +5068,6 @@ std::map<AutofillFieldType, std::string>
   autofill_type_to_string[PHONE_HOME_CITY_CODE] = "PHONE_HOME_CITY_CODE";
   autofill_type_to_string[PHONE_HOME_WHOLE_NUMBER] =
       "PHONE_HOME_WHOLE_NUMBER";
-  autofill_type_to_string[PHONE_FAX_COUNTRY_CODE] = "PHONE_FAX_COUNTRY_CODE";
-  autofill_type_to_string[PHONE_FAX_CITY_CODE] = "PHONE_FAX_CITY_CODE";
-  autofill_type_to_string[PHONE_FAX_WHOLE_NUMBER] = "PHONE_FAX_WHOLE_NUMBER";
   return autofill_type_to_string;
 }
 

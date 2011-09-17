@@ -7,7 +7,6 @@ ADDRESS_HOME_ZIP | zc | 邮编: |
 ADDRESS_HOME_STATE | st | 省: | 
 EMAIL_ADDRESS | em | 邮箱: | 
 PHONE_HOME_WHOLE_NUMBER | ph | 电话: | 
-PHONE_FAX_WHOLE_NUMBER | fx | 传真: | 
 CREDIT_CARD_NAME | c1 | 持卡人姓名： | 
 CREDIT_CARD_NUMBER | c2 | 信用卡号码： | 
 CREDIT_CARD_EXP_MONTH | c3 | 月： | 

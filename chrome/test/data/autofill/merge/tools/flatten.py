@@ -11,7 +11,7 @@ def main():
 
   COLUMNS = ['First name', 'Middle name', 'Last name', 'Email', 'Company name',
              'Address line 1', 'Address line 2', 'City', 'State', 'ZIP code',
-             'Country', 'Phone', 'Fax']
+             'Country', 'Phone']
 
   if len(sys.argv) != 2:
     print "Usage: python flatten.py <path/to/serialized_profiles>"

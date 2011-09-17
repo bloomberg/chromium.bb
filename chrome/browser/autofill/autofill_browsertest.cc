@@ -77,8 +77,7 @@ class AutofillTest : public InProcessBrowserTest {
     autofill_test::SetProfileInfo(
         &profile, "Milton", "C.", "Waddams",
         "red.swingline@initech.com", "Initech", "4120 Freidrich Lane",
-        "Basement", "Austin", "Texas", "78744", "United States", "5125551234",
-        "5125550000");
+        "Basement", "Austin", "Texas", "78744", "United States", "5125551234");
 
     PersonalDataManager* personal_data_manager =
         browser()->profile()->GetPersonalDataManager();

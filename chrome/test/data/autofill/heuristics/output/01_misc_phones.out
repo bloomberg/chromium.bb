@@ -25,24 +25,3 @@ PHONE_HOME_CITY_CODE | hphone1c | ( |
 PHONE_HOME_NUMBER | hphone2c | ) | 
 PHONE_HOME_NUMBER | hphone3c | - | 
 UNKNOWN_TYPE | hphone4c | ext.: | 
-PHONE_FAX_WHOLE_NUMBER | fax | Fax: | 
-PHONE_FAX_CITY_CODE | faxareacode1 | Area Code: | 
-PHONE_FAX_NUMBER | fax1 | Fax: | 
-PHONE_FAX_CITY_CODE | hfax1 | Fax: | 
-PHONE_FAX_NUMBER | hfax2 | - | 
-PHONE_FAX_NUMBER | hfax3 | - | 
-UNKNOWN_TYPE | hfax4 | ext.: | 
-PHONE_FAX_CITY_CODE | hfax1a | Fax:        ( | 
-PHONE_FAX_NUMBER | hfax2a | ) | 
-PHONE_FAX_NUMBER | hfax3a | - | 
-UNKNOWN_TYPE | hfax4a | ext.: | 
-PHONE_FAX_COUNTRY_CODE | hfax0b | Fax: | 
-PHONE_FAX_CITY_CODE | hfax1b |  | 
-PHONE_FAX_NUMBER | hfax2b | - | 
-PHONE_FAX_NUMBER | hfax3b | - | 
-UNKNOWN_TYPE | hfax4 | ext.: | 
-PHONE_FAX_COUNTRY_CODE | hfax0c | Fax: | 
-PHONE_FAX_CITY_CODE | hfax1c | ( | 
-PHONE_FAX_NUMBER | hfax2c | ) | 
-PHONE_FAX_NUMBER | hfax3c | - | 
-UNKNOWN_TYPE | hfax4c | ext.: | 

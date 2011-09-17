@@ -104,20 +104,19 @@ class TestPersonalDataManager : public PersonalDataManager {
                                   "Presley", "theking@gmail.com", "RCA",
                                   "3734 Elvis Presley Blvd.", "Apt. 10",
                                   "Memphis", "Tennessee", "38116", "USA",
-                                  "12345678901", "");
+                                  "12345678901");
     profile->set_guid("00000000-0000-0000-0000-000000000001");
     profiles->push_back(profile);
     profile = new AutofillProfile;
     autofill_test::SetProfileInfo(profile, "Charles", "Hardin",
                                   "Holley", "buddy@gmail.com", "Decca",
                                   "123 Apple St.", "unit 6", "Lubbock",
-                                  "Texas", "79401", "USA", "23456789012",
-                                  "");
+                                  "Texas", "79401", "USA", "23456789012");
     profile->set_guid("00000000-0000-0000-0000-000000000002");
     profiles->push_back(profile);
     profile = new AutofillProfile;
-    autofill_test::SetProfileInfo(profile, "", "", "", "", "", "", "",
-                                  "", "", "", "", "", "");
+    autofill_test::SetProfileInfo(profile, "", "", "", "", "", "", "", "", "",
+                                  "", "", "");
     profile->set_guid("00000000-0000-0000-0000-000000000003");
     profiles->push_back(profile);
   }
@@ -186,9 +185,6 @@ void CreateTestAddressFormData(FormData* form) {
   form->fields.push_back(field);
   autofill_test::CreateTestFormField(
       "Phone Number", "phonenumber", "", "tel", &field);
-  form->fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "Fax", "fax", "", "text", &field);
   form->fields.push_back(field);
   autofill_test::CreateTestFormField(
       "Email", "email", "", "email", &field);
@@ -287,7 +283,6 @@ void ExpectFilledForm(int page_id,
                       const char* postal_code,
                       const char* country,
                       const char* phone,
-                      const char* fax,
                       const char* email,
                       const char* name_on_card,
                       const char* card_number,
@@ -297,7 +292,7 @@ void ExpectFilledForm(int page_id,
                       bool has_credit_card_fields,
                       bool use_month_type) {
   // The number of fields in the address and credit card forms created above.
-  const size_t kAddressFormSize = 12;
+  const size_t kAddressFormSize = 11;
   const size_t kCreditCardFormSize = use_month_type ? 3 : 4;
 
   EXPECT_EQ(expected_page_id, page_id);
@@ -340,10 +335,8 @@ void ExpectFilledForm(int page_id,
                       filled_form.fields[8]);
     ExpectFilledField("Phone Number", "phonenumber", phone, "tel",
                       filled_form.fields[9]);
-    ExpectFilledField("Fax", "fax", fax, "text",
-                      filled_form.fields[10]);
     ExpectFilledField("Email", "email", email, "email",
-                      filled_form.fields[11]);
+                      filled_form.fields[10]);
   }
 
   if (has_credit_card_fields) {
@@ -376,7 +369,7 @@ void ExpectFilledAddressFormElvis(int page_id,
                                   bool has_credit_card_fields) {
   ExpectFilledForm(page_id, filled_form, expected_page_id, "Elvis", "Aaron",
                    "Presley", "3734 Elvis Presley Blvd.", "Apt. 10", "Memphis",
-                   "Tennessee", "38116", "United States", "12345678901", "",
+                   "Tennessee", "38116", "United States", "12345678901",
                    "theking@gmail.com", "", "", "", "", true,
                    has_credit_card_fields, false);
 }
@@ -386,7 +379,7 @@ void ExpectFilledCreditCardFormElvis(int page_id,
                                      int expected_page_id,
                                      bool has_address_fields) {
   ExpectFilledForm(page_id, filled_form, expected_page_id,
-                   "", "", "", "", "", "", "", "", "", "", "", "",
+                   "", "", "", "", "", "", "", "", "", "", "",
                    "Elvis Presley", "4234567890123456", "04", "2012",
                    has_address_fields, true, false);
 }
@@ -398,7 +391,7 @@ void ExpectFilledCreditCardYearMonthWithYearMonth(int page_id,
                                               const char* year,
                                               const char* month) {
   ExpectFilledForm(page_id, filled_form, expected_page_id,
-                   "", "", "", "", "", "", "", "", "", "", "", "",
+                   "", "", "", "", "", "", "", "", "", "", "",
                    "Miku Hatsune", "4234567890654321", month, year,
                    has_address_fields, true, true);
 }
@@ -1371,8 +1364,8 @@ TEST_F(AutofillManagerTest, GetFieldSuggestionsWithDuplicateValues) {
 
   // |profile| will be owned by the mock PersonalDataManager.
   AutofillProfile* profile = new AutofillProfile;
-  autofill_test::SetProfileInfo(profile, "Elvis", "", "", "", "",
-                                "", "", "", "", "", "", "", "");
+  autofill_test::SetProfileInfo(profile, "Elvis", "", "", "", "", "", "", "",
+                                "", "", "", "");
   profile->set_guid("00000000-0000-0000-0000-000000000101");
   autofill_manager_->AddProfile(profile);
 
@@ -1415,7 +1408,7 @@ TEST_F(AutofillManagerTest, GetFieldSuggestionsForMultiValuedProfileUnfilled) {
   // |profile| will be owned by the mock PersonalDataManager.
   AutofillProfile* profile = new AutofillProfile;
   autofill_test::SetProfileInfo(profile, "Elvis", "", "Presley", "me@x.com", "",
-                                "", "", "", "", "", "", "", "");
+                                "", "", "", "", "", "", "");
   profile->set_guid("00000000-0000-0000-0000-000000000101");
   std::vector<string16> multi_values(2);
   multi_values[0] = ASCIIToUTF16("Elvis Presley");
@@ -2060,8 +2053,8 @@ TEST_F(AutofillManagerTest, FillAutofilledForm) {
   {
     SCOPED_TRACE("Address");
     ExpectFilledForm(page_id, results, kDefaultPageID,
-                     "Elvis", "", "", "", "", "", "", "", "", "", "", "",
-                     "", "", "", "", true, true, false);
+                     "Elvis", "", "", "", "", "", "", "", "", "", "", "", "",
+                     "", "", true, true, false);
   }
 
   // Now fill the credit card data.
@@ -2096,8 +2089,8 @@ TEST_F(AutofillManagerTest, FillAutofilledForm) {
   {
     SCOPED_TRACE("Credit card 2");
     ExpectFilledForm(page_id, results, kPageID3,
-                   "", "", "", "", "", "", "", "", "", "", "", "",
-                   "", "", "", "2012", true, true, false);
+                     "", "", "", "", "", "", "", "", "", "", "", "", "", "",
+                     "2012", true, true, false);
   }
 }
 
@@ -2255,15 +2248,16 @@ TEST_F(AutofillManagerTest, FormChangesRemoveField) {
 
 // Test that we can still fill a form when a field has been added to it.
 TEST_F(AutofillManagerTest, FormChangesAddField) {
-  // The offset of the fax field in the address form.
-  const int kFaxFieldOffset = 10;
+  // The offset of the phone field in the address form.
+  const int kPhoneFieldOffset = 9;
 
   // Set up our form data.
   FormData form;
   CreateTestAddressFormData(&form);
 
-  // Remove the fax field -- we'll add it back later.
-  std::vector<FormField>::iterator pos = form.fields.begin() + kFaxFieldOffset;
+  // Remove the phone field -- we'll add it back later.
+  std::vector<FormField>::iterator pos =
+      form.fields.begin() + kPhoneFieldOffset;
   FormField field = *pos;
   pos = form.fields.erase(pos);
 
@@ -2747,8 +2741,7 @@ TEST_F(AutofillManagerTest, DeterminePossibleFieldTypesForUploadStressTest) {
                                   StringPrintf("%d 1st st.", i).c_str(),
                                   "",
                                   "Memphis", "Tennessee", "38116", "USA",
-                                  StringPrintf("650234%04d", i).c_str(),
-                                  "");
+                                  StringPrintf("650234%04d", i).c_str());
     profile->set_guid(
         StringPrintf("00000000-0000-0000-0001-00000000%04d", i).c_str());
     test_personal_data_->AddProfile(profile);

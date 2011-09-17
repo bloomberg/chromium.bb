@@ -1783,8 +1783,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       'NAME_FIRST', 'NAME_MIDDLE', 'NAME_LAST', 'EMAIL_ADDRESS',
       'COMPANY_NAME', 'ADDRESS_HOME_LINE1', 'ADDRESS_HOME_LINE2',
       'ADDRESS_HOME_CITY', 'ADDRESS_HOME_STATE', 'ADDRESS_HOME_ZIP',
-      'ADDRESS_HOME_COUNTRY', 'PHONE_HOME_WHOLE_NUMBER',
-      'PHONE_FAX_WHOLE_NUMBER'
+      'ADDRESS_HOME_COUNTRY', 'PHONE_HOME_WHOLE_NUMBER'
 
       credit_cards: (optional) a list of dictionaries representing each credit
       card to add. Example:

@@ -50,7 +50,7 @@ cr.define('options', function() {
 
     /**
      * Creates, decorates and initializes the multi-value lists for full name,
-     * phone, fax, and email.
+     * phone, and email.
      * @private
      */
     createMultiValueLists_: function() {
@@ -60,10 +60,6 @@ cr.define('options', function() {
 
       list = $('phone-list');
       options.autofillOptions.AutofillPhoneValuesList.decorate(list);
-      list.autoExpands = true;
-
-      list = $('fax-list');
-      options.autofillOptions.AutofillFaxValuesList.decorate(list);
       list.autoExpands = true;
 
       list = $('email-list');
@@ -123,10 +119,8 @@ cr.define('options', function() {
       address[8] = $('country').value;
       list = $('phone-list');
       address[9] = list.dataModel.slice(0, list.dataModel.length - 1);
-      list = $('fax-list');
-      address[10] = list.dataModel.slice(0, list.dataModel.length - 1);
       list = $('email-list');
-      address[11] = list.dataModel.slice(0, list.dataModel.length - 1);
+      address[10] = list.dataModel.slice(0, list.dataModel.length - 1);
 
       chrome.send('setAddress', address);
     },
@@ -164,7 +158,7 @@ cr.define('options', function() {
           !$('addr-line-1').value && !$('addr-line-2').value &&
           !$('city').value && !$('state').value && !$('postal-code').value &&
           !$('country').value && $('phone-list').items.length <= 1 &&
-          $('fax-list').items.length <= 1 && $('email-list').items.length <= 1;
+          $('email-list').items.length <= 1;
       $('autofill-edit-address-apply-button').disabled = disabled;
     },
 
@@ -248,7 +242,6 @@ cr.define('options', function() {
       $('postal-code').value = '';
       $('country').value = '';
       this.setMultiValueList_('phone-list', []);
-      this.setMultiValueList_('fax-list', []);
       this.setMultiValueList_('email-list', []);
 
       this.countryChanged_();
@@ -279,7 +272,6 @@ cr.define('options', function() {
       $('postal-code').value = address['postalCode'];
       $('country').value = address['country'];
       this.setMultiValueList_('phone-list', address['phone']);
-      this.setMultiValueList_('fax-list', address['fax']);
       this.setMultiValueList_('email-list', address['email']);
 
       this.countryChanged_();
@@ -300,11 +292,6 @@ cr.define('options', function() {
 
   AutofillEditAddressOverlay.setValidatedPhoneNumbers = function(numbers) {
     AutofillEditAddressOverlay.getInstance().setMultiValueList_('phone-list',
-                                                                numbers);
-  };
-
-  AutofillEditAddressOverlay.setValidatedFaxNumbers = function(numbers) {
-    AutofillEditAddressOverlay.getInstance().setMultiValueList_('fax-list',
                                                                 numbers);
   };
 

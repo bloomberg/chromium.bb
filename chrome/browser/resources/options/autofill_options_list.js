@@ -366,32 +366,6 @@ cr.define('options.autofillOptions', function() {
     },
   };
 
-  /**
-   * Create a new value list for fax number validation.
-   * @constructor
-   * @extends {options.AutofillValuesList}
-   */
-  var AutofillFaxValuesList = cr.ui.define('list');
-
-  AutofillFaxValuesList.prototype = {
-    __proto__: AutofillValuesList.prototype,
-
-    decorate: function() {
-      AutofillValuesList.prototype.decorate.call(this);
-    },
-
-    /** @inheritDoc */
-    validateAndSave: function(index, remove, value) {
-      var numbers = this.dataModel.slice(0, this.dataModel.length - 1);
-      numbers.splice(index, remove, value);
-      var info = new Array();
-      info[0] = index;
-      info[1] = numbers;
-      info[2] = $('country').value;
-      chrome.send('validateFaxNumbers', info);
-    },
-  };
-
   return {
     AddressListItem: AddressListItem,
     CreditCardListItem: CreditCardListItem,
@@ -401,6 +375,5 @@ cr.define('options.autofillOptions', function() {
     AutofillCreditCardList: AutofillCreditCardList,
     AutofillValuesList: AutofillValuesList,
     AutofillPhoneValuesList: AutofillPhoneValuesList,
-    AutofillFaxValuesList: AutofillFaxValuesList,
   };
 });

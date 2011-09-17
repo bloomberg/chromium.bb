@@ -263,8 +263,6 @@ bool AutofillProfileSyncableService::OverwriteProfileWithServerData(
                     specifics.address_home_zip()) || diff;
   diff = MergeField(profile, EMAIL_ADDRESS, specifics.email_address()) || diff;
   diff = MergeField(profile, COMPANY_NAME, specifics.company_name()) || diff;
-  diff = MergeField(profile, PHONE_FAX_WHOLE_NUMBER,
-                    specifics.phone_fax_whole_number()) || diff;
   diff = MergeField(profile, PHONE_HOME_WHOLE_NUMBER,
                     specifics.phone_home_whole_number()) || diff;
   return diff;
@@ -297,8 +295,6 @@ void AutofillProfileSyncableService::WriteAutofillProfile(
       ADDRESS_HOME_ZIP)));
   specifics->set_email_address(UTF16ToUTF8(profile.GetInfo(EMAIL_ADDRESS)));
   specifics->set_company_name(UTF16ToUTF8(profile.GetInfo(COMPANY_NAME)));
-  specifics->set_phone_fax_whole_number(UTF16ToUTF8(profile.GetInfo(
-      PHONE_FAX_WHOLE_NUMBER)));
   specifics->set_phone_home_whole_number(UTF16ToUTF8(profile.GetInfo(
       PHONE_HOME_WHOLE_NUMBER)));
 }

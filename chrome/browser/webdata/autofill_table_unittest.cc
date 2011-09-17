@@ -559,7 +559,6 @@ TEST_F(AutofillTableTest, AutofillProfile) {
   home_profile.SetInfo(ADDRESS_HOME_ZIP, ASCIIToUTF16("90025"));
   home_profile.SetInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("US"));
   home_profile.SetInfo(PHONE_HOME_WHOLE_NUMBER, ASCIIToUTF16("18181234567"));
-  home_profile.SetInfo(PHONE_FAX_WHOLE_NUMBER, ASCIIToUTF16("1915243678"));
 
   Time pre_creation_time = Time::Now();
   EXPECT_TRUE(db.GetAutofillTable()->AddAutofillProfile(home_profile));
@@ -640,7 +639,6 @@ TEST_F(AutofillTableTest, AutofillProfile) {
   billing_profile.SetInfo(ADDRESS_HOME_ZIP, ASCIIToUTF16("10011"));
   billing_profile.SetInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("United States"));
   billing_profile.SetInfo(PHONE_HOME_WHOLE_NUMBER, ASCIIToUTF16("18181230000"));
-  billing_profile.SetInfo(PHONE_FAX_WHOLE_NUMBER, ASCIIToUTF16("1915240000"));
   Time pre_modification_time_2 = Time::Now();
   EXPECT_TRUE(db.GetAutofillTable()->UpdateAutofillProfileMulti(
       billing_profile));
@@ -820,47 +818,6 @@ TEST_F(AutofillTableTest, AutofillProfileMultiValuePhone) {
   // Delete values.
   set_values.clear();
   p.SetMultiInfo(PHONE_HOME_WHOLE_NUMBER, set_values);
-  EXPECT_TRUE(db.GetAutofillTable()->UpdateAutofillProfileMulti(p));
-  ASSERT_TRUE(db.GetAutofillTable()->GetAutofillProfile(p.guid(), &db_profile));
-  EXPECT_EQ(p, *db_profile);
-  EXPECT_EQ(0, p.CompareMulti(*db_profile));
-  EXPECT_EQ(string16(), db_profile->GetInfo(EMAIL_ADDRESS));
-  delete db_profile;
-}
-
-TEST_F(AutofillTableTest, AutofillProfileMultiValueFax) {
-  WebDatabase db;
-  ASSERT_EQ(sql::INIT_OK, db.Init(file_));
-
-  AutofillProfile p;
-  const string16 kJohnDoe(ASCIIToUTF16("4151112222"));
-  const string16 kJohnPDoe(ASCIIToUTF16("4151113333"));
-  std::vector<string16> set_values;
-  set_values.push_back(kJohnDoe);
-  set_values.push_back(kJohnPDoe);
-  p.SetMultiInfo(PHONE_FAX_WHOLE_NUMBER, set_values);
-
-  EXPECT_TRUE(db.GetAutofillTable()->AddAutofillProfile(p));
-
-  AutofillProfile* db_profile;
-  ASSERT_TRUE(db.GetAutofillTable()->GetAutofillProfile(p.guid(), &db_profile));
-  EXPECT_EQ(p, *db_profile);
-  EXPECT_EQ(0, p.CompareMulti(*db_profile));
-  delete db_profile;
-
-  // Update the values.
-  const string16 kNoOne(ASCIIToUTF16("4151110000"));
-  set_values[1] = kNoOne;
-  p.SetMultiInfo(PHONE_FAX_WHOLE_NUMBER, set_values);
-  EXPECT_TRUE(db.GetAutofillTable()->UpdateAutofillProfileMulti(p));
-  ASSERT_TRUE(db.GetAutofillTable()->GetAutofillProfile(p.guid(), &db_profile));
-  EXPECT_EQ(p, *db_profile);
-  EXPECT_EQ(0, p.CompareMulti(*db_profile));
-  delete db_profile;
-
-  // Delete values.
-  set_values.clear();
-  p.SetMultiInfo(PHONE_FAX_WHOLE_NUMBER, set_values);
   EXPECT_TRUE(db.GetAutofillTable()->UpdateAutofillProfileMulti(p));
   ASSERT_TRUE(db.GetAutofillTable()->GetAutofillProfile(p.guid(), &db_profile));
   EXPECT_EQ(p, *db_profile);
@@ -1071,7 +1028,6 @@ TEST_F(AutofillTableTest, UpdateAutofillProfile) {
   profile.SetInfo(ADDRESS_HOME_ZIP, ASCIIToUTF16("90025"));
   profile.SetInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("US"));
   profile.SetInfo(PHONE_HOME_WHOLE_NUMBER, ASCIIToUTF16("18181234567"));
-  profile.SetInfo(PHONE_FAX_WHOLE_NUMBER, ASCIIToUTF16("1915243678"));
   db.GetAutofillTable()->AddAutofillProfile(profile);
 
   // Set a mocked value for the profile's creation time.

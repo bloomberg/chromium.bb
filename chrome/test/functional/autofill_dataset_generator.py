@@ -104,7 +104,6 @@ class DatasetGenerator(object):
       [u'ADDRESS_HOME_ZIP', self.GenerateZip],
       [u'ADDRESS_HOME_COUNTRY', u'United States'],
       [u'PHONE_HOME_WHOLE_NUMBER', None],
-      [u'PHONE_FAX_WHOLE_NUMBER', u'6501234555'],
     ]
 
     self.next_dict = {}

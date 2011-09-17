@@ -92,7 +92,7 @@ class AutofillTest(pyauto.PyUITest):
   def testAutofillInvalid(self):
     """Test filling in invalid values for profiles are saved as-is.
 
-    Phone/Fax information entered into the prefs UI is not validated or rejected
+    Phone information entered into the prefs UI is not validated or rejected
     except for duplicates.
     """
     # First try profiles with invalid ZIP input.
@@ -101,14 +101,13 @@ class AutofillTest(pyauto.PyUITest):
                        'ADDRESS_HOME_STATE': ['CA',],
                        'ADDRESS_HOME_ZIP': ['my_zip',],
                        'ADDRESS_HOME_COUNTRY': ['United States',]}
-    # Add invalid data for phone and fax fields.
+    # Add invalid data for phone field.
     with_invalid = without_invalid.copy()
     with_invalid['PHONE_HOME_WHOLE_NUMBER'] = ['Invalid_Phone_Number',]
-    with_invalid['PHONE_FAX_WHOLE_NUMBER'] = ['Invalid_Fax_Number',]
     self.FillAutofillProfile(profiles=[with_invalid])
     self.assertNotEqual(
         [without_invalid], self.GetAutofillProfile()['profiles'],
-        msg='Phone/Fax data entered into prefs UI is validated.')
+        msg='Phone data entered into prefs UI is validated.')
 
   def testAutofillPrefsStringSavedAsIs(self):
     """Test invalid credit card numbers typed in prefs should be saved as-is."""

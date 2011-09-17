@@ -13,7 +13,7 @@ def main():
 
   COLUMNS = ['GUID', 'LABEL', 'FIRST_NAME', 'MIDDLE_NAME', 'LAST_NAME', 'EMAIL',
              'COMPANY_NAME', 'ADDRESS_LINE_1', 'ADDRESS_LINE_2', 'CITY',
-             'STATE', 'ZIPCODE', 'COUNTRY', 'PHONE', 'FAX', 'DATE_MODIFIED']
+             'STATE', 'ZIPCODE', 'COUNTRY', 'PHONE', 'DATE_MODIFIED']
 
   if len(sys.argv) != 2:
     print ("Usage: python reserialize_profiles_from_query.py "

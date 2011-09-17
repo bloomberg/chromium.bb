@@ -11,9 +11,9 @@ PHONE_HOME_CITY_CODE | addrsForm[0].phoneNumber1 | *Phone Number: |
 PHONE_HOME_NUMBER | addrsForm[0].phoneNumber2 | - | 
 PHONE_HOME_NUMBER | addrsForm[0].phoneNumber3 | - | 
 UNKNOWN_TYPE | addrsForm[0].phoneNumber4 | ext. | 
-PHONE_FAX_CITY_CODE | addrsForm[0].faxNumber1 | Fax: | 
-PHONE_FAX_NUMBER | addrsForm[0].faxNumber2 | - | 
-PHONE_FAX_NUMBER | addrsForm[0].faxNumber3 | - | 
+UNKNOWN_TYPE | addrsForm[0].faxNumber1 | Fax: | 
+UNKNOWN_TYPE | addrsForm[0].faxNumber2 | - | 
+UNKNOWN_TYPE | addrsForm[0].faxNumber3 | - | 
 EMAIL_ADDRESS | addrsForm[0].email | *Email Address: | 
 UNKNOWN_TYPE | paymentFormInfo.creditCardType | Credit Card Type: |  
 CREDIT_CARD_NUMBER | paymentFormInfo.creditCardNumber | Credit Card Number: | 

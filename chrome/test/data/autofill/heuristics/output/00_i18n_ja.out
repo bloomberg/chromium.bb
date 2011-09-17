@@ -8,7 +8,6 @@ ADDRESS_HOME_ZIP | zc | 郵便番号: |
 ADDRESS_HOME_STATE | st | 都道府県: | 
 EMAIL_ADDRESS | em | メールアドレス: | 
 PHONE_HOME_WHOLE_NUMBER | ph | 電話番号: | 
-PHONE_FAX_WHOLE_NUMBER | fx | ファックス: | 
 CREDIT_CARD_NAME | c1 | 名前（フルネーム）: | 
 CREDIT_CARD_NUMBER | c2 | カード番号: | 
 CREDIT_CARD_EXP_MONTH | c3 | 有効期限: | 
