@@ -78,9 +78,9 @@ class DestroyTrackingDelegateImpl : public WindowDelegateImpl {
   }
 
  private:
-  bool in_destroying_;
   int destroying_count_;
   int destroyed_count_;
+  bool in_destroying_;
 
   DISALLOW_COPY_AND_ASSIGN(DestroyTrackingDelegateImpl);
 };
@@ -268,8 +268,7 @@ TEST_F(WindowTest, DestroyTest) {
   {
     scoped_ptr<Window> parent(
         CreateTestWindowWithDelegate(&parent_delegate, 0, gfx::Rect(), NULL));
-    Window* child = CreateTestWindowWithDelegate(&child_delegate, 0,
-                                                 gfx::Rect(), parent.get());
+    CreateTestWindowWithDelegate(&child_delegate, 0, gfx::Rect(), parent.get());
   }
   // Both the parent and child should have been destroyed.
   EXPECT_EQ(1, parent_delegate.destroying_count());
