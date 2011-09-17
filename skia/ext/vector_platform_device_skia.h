@@ -40,7 +40,7 @@ class VectorPlatformDeviceSkia : public PlatformDevice, public SkPDFDevice {
   virtual void DrawToNativeContext(CGContext* context, int x, int y,
                                    const CGRect* src_rect);
   virtual CGContextRef GetBitmapContext();
-#elif defined(OS_LINUX)
+#elif defined(OS_LINUX) || defined(OS_ANDROID)
   virtual void DrawToNativeContext(PlatformSurface surface, int x, int y,
                                    const PlatformRect* src_rect);
 #endif

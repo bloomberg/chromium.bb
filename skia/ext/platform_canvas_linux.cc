@@ -4,8 +4,6 @@
 
 #include "skia/ext/platform_canvas.h"
 
-#include <cairo/cairo.h>
-
 #include "skia/ext/bitmap_platform_device.h"
 #include "skia/ext/platform_device.h"
 #include "third_party/skia/include/core/SkTypes.h"
@@ -25,6 +23,7 @@ PlatformCanvas::PlatformCanvas(int width, int height, bool is_opaque,
 
 PlatformCanvas::~PlatformCanvas() {
 }
+
 bool PlatformCanvas::initialize(int width, int height, bool is_opaque,
                                 uint8_t* data) {
   return initializeWithDevice(BitmapPlatformDevice::Create(

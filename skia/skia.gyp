@@ -664,8 +664,9 @@
         '../third_party/skia/include/images/SkMovie.h',
         '../third_party/skia/include/images/SkPageFlipper.h',
 
-        'ext/bitmap_platform_device.cc',
         'ext/bitmap_platform_device.h',
+        'ext/bitmap_platform_device_android.cc',
+        'ext/bitmap_platform_device_android.h',
         'ext/bitmap_platform_device_data.h',
         'ext/bitmap_platform_device_linux.cc',
         'ext/bitmap_platform_device_linux.h',
@@ -751,6 +752,14 @@
             '../third_party/skia/src/ports/SkFontHost_gamma_none.cpp',
             '../third_party/skia/src/ports/SkFontHost_tables.cpp',
           ],
+        }],
+        [ 'OS == "android"', {
+          'sources/': [
+            ['include', 'ext/platform_device_linux.cc'],
+            ['include', 'ext/platform_canvas_linux.cc'],
+          ],
+        }, { # OS != "android"
+          'sources/': [ ['exclude', '_android\\.(cc|cpp)$'] ],
         }],
         [ 'OS != "win"', {
           'sources/': [ ['exclude', '_win\\.(cc|cpp)$'] ],

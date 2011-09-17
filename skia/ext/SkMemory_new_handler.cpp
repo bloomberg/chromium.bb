@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -49,6 +49,10 @@ void sk_free(void* p) {
 
 void* sk_malloc_flags(size_t size, unsigned flags) {
     void* p;
+#if defined(ANDROID)
+    // Android doesn't have std::set_new_handler.
+    p = malloc(size);
+#else
     if (!(flags & SK_MALLOC_THROW)) {
       SkAutoMutexAcquire lock(gSkNewHandlerMutex);
       std::new_handler old_handler = std::set_new_handler(NULL);
@@ -57,6 +61,7 @@ void* sk_malloc_flags(size_t size, unsigned flags) {
     } else {
       p = malloc(size);
     }
+#endif
     if (p == NULL) {
         if (flags & SK_MALLOC_THROW) {
             sk_throw();
@@ -64,4 +69,3 @@ void* sk_malloc_flags(size_t size, unsigned flags) {
     }
     return p;
 }
-

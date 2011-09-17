@@ -46,6 +46,10 @@ typedef cairo_rectangle_t PlatformRect;
 #elif defined(OS_MACOSX)
 typedef CGContextRef PlatformSurface;
 typedef CGRect PlatformRect;
+#elif defined(ANDROID)
+// TODO(tonyg): FIX TYPES!
+typedef void* PlatformSurface;
+typedef void* PlatformRect;
 #endif
 
 // The following routines provide accessor points for the functionality

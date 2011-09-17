@@ -15,7 +15,8 @@
 #include "skia/ext/bitmap_platform_device_mac.h"
 #elif defined(__linux__) || defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__sun)
 #include "skia/ext/bitmap_platform_device_linux.h"
+#elif defined(ANDROID)
+#include "skia/ext/bitmap_platform_device_android.h"
 #endif
 
 #endif  // SKIA_EXT_BITMAP_PLATFORM_DEVICE_H_
-
