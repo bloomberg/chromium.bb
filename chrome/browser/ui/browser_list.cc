@@ -10,6 +10,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_shutdown.h"
+#include "chrome/browser/metrics/thread_watcher.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/printing/background_printing_manager.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -503,8 +504,13 @@ void BrowserList::ExitCleanly() {
 }
 #endif
 
-// static
-void BrowserList::SessionEnding() {
+static void TimeLimitedSessionEnding() {
+  // Start watching for hang during shutdown, and crash it if takes too long.
+  // We disarm when |shutdown_watcher| object is destroyed, which is when we
+  // exit this function.
+  ShutdownWatcherHelper shutdown_watcher;
+  shutdown_watcher.Arm(base::TimeDelta::FromSeconds(90));
+
   // EndSession is invoked once per frame. Only do something the first time.
   static bool already_ended = false;
   // We may get called in the middle of shutdown, e.g. http://crbug.com/70852
@@ -534,6 +540,11 @@ void BrowserList::SessionEnding() {
 
   // And shutdown.
   browser_shutdown::Shutdown();
+}
+
+// static
+void BrowserList::SessionEnding() {
+  TimeLimitedSessionEnding();
 
 #if defined(OS_WIN)
   // At this point the message loop is still running yet we've shut everything

@@ -1496,11 +1496,25 @@ bool MetricsService::UmaMetricsProperlyShutdown() {
   return clean_shutdown_status_ == CLEANLY_SHUTDOWN;
 }
 
+// For use in hack in LogCleanShutdown.
+static void Signal(base::WaitableEvent* event) {
+  event->Signal();
+}
+
 void MetricsService::LogCleanShutdown() {
   // Redundant hack to write pref ASAP.
   PrefService* pref = g_browser_process->local_state();
   pref->SetBoolean(prefs::kStabilityExitedCleanly, true);
   pref->SavePersistentPrefs();
+  // Hack: TBD: Remove this wait.
+  // We are so concerned that the pref gets written, we are now willing to stall
+  // the UI thread until we get assurance that a pref-writing task has
+  // completed.
+  base::WaitableEvent done_writing(false, false);
+  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
+      NewRunnableFunction(Signal, &done_writing));
+  done_writing.TimedWait(base::TimeDelta::FromHours(1));
+
   // Redundant setting to assure that we always reset this value at shutdown
   // (and that we don't use some alternate path, and not call LogCleanShutdown).
   clean_shutdown_status_ = CLEANLY_SHUTDOWN;
