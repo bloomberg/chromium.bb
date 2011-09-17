@@ -4,6 +4,7 @@
 
 #include "views/examples/message_box_example.h"
 
+#include "base/utf_string_conversions.h"
 #include "views/controls/message_box_view.h"
 #include "views/layout/grid_layout.h"
 #include "views/view.h"
@@ -56,7 +57,7 @@ void MessageBoxExample::ButtonPressed(views::Button* sender,
                                       const views::Event& event) {
   if (sender == status_) {
     message_box_view_->SetCheckBoxLabel(
-        BoolToOnOff(message_box_view_->IsCheckBoxSelected()));
+        ASCIIToWide(BoolToOnOff(message_box_view_->IsCheckBoxSelected())));
     PrintStatus(message_box_view_->IsCheckBoxSelected() ?
        "Check Box Selected" : "Check Box Not Selected");
   } else if (sender == toggle_) {

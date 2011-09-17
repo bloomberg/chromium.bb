@@ -41,8 +41,8 @@ class ExampleBase {
   void PrintStatus(const char* format, ...);
 
   // Converts an boolean value to "on" or "off".
-  const wchar_t* BoolToOnOff(bool value) {
-    return value ? L"on" : L"off";
+  const char* BoolToOnOff(bool value) {
+    return value ? "on" : "off";
   }
 
  private:

@@ -55,10 +55,10 @@ void RadioButtonExample::ButtonPressed(views::Button* sender,
     radio_buttons_[2]->SetChecked(true);
   } else if (sender == status_) {
     // Show the state of radio buttons.
-    PrintStatus("Group: 1:%ls, 2:%ls, 3:%ls",
-        BoolToOnOff(radio_buttons_[0]->checked()),
-        BoolToOnOff(radio_buttons_[1]->checked()),
-        BoolToOnOff(radio_buttons_[2]->checked()));
+    PrintStatus("Group: 1:%s, 2:%s, 3:%s",
+                BoolToOnOff(radio_buttons_[0]->checked()),
+                BoolToOnOff(radio_buttons_[1]->checked()),
+                BoolToOnOff(radio_buttons_[2]->checked()));
   } else {
     PrintStatus("Pressed! count:%d", ++count_);
   }
