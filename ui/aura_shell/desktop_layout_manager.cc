@@ -16,7 +16,8 @@ namespace internal {
 DesktopLayoutManager::DesktopLayoutManager(aura::Window* owner)
     : owner_(owner),
       background_widget_(NULL),
-      launcher_widget_(NULL) {
+      launcher_widget_(NULL),
+      status_area_widget_(NULL) {
 }
 
 DesktopLayoutManager::~DesktopLayoutManager() {
@@ -35,6 +36,13 @@ void DesktopLayoutManager::OnWindowResized() {
                 owner_->bounds().bottom() - launcher_bounds.height(),
                 launcher_bounds.width(),
                 launcher_bounds.height()));
+
+  gfx::Rect status_area_bounds = status_area_widget_->GetWindowScreenBounds();
+  status_area_widget_->SetBounds(
+      gfx::Rect(owner_->bounds().right() - status_area_bounds.width(),
+                0,
+                status_area_bounds.width(),
+                status_area_bounds.height()));
 }
 
 }  // namespace internal

@@ -21,6 +21,8 @@ AURA_SHELL_EXPORT views::Widget* CreateDesktopBackground();
 
 AURA_SHELL_EXPORT views::Widget* CreateLauncher();
 
+AURA_SHELL_EXPORT views::Widget* CreateStatusArea();
+
 }  // namespace internal
 }  // namespace aura_shell
 

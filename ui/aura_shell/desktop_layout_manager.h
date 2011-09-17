@@ -33,6 +33,10 @@ class AURA_SHELL_EXPORT DesktopLayoutManager : public aura::LayoutManager {
     launcher_widget_ = launcher_widget;
   }
 
+  void set_status_area_widget(views::Widget* status_area_widget) {
+    status_area_widget_ = status_area_widget;
+  }
+
  private:
   // Overridden from aura::LayoutManager:
   virtual void OnWindowResized() OVERRIDE;
@@ -40,6 +44,7 @@ class AURA_SHELL_EXPORT DesktopLayoutManager : public aura::LayoutManager {
   aura::Window* owner_;
   views::Widget* background_widget_;
   views::Widget* launcher_widget_;
+  views::Widget* status_area_widget_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopLayoutManager);
 };

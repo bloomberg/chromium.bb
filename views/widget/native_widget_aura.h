@@ -133,6 +133,10 @@ class NativeWidgetAura : public internal::NativeWidgetPrivate,
   // See class documentation for Widget in widget.h for a note about ownership.
   Widget::InitParams::Ownership ownership_;
 
+  // The following factory is used for calls to close the NativeWidgetAura
+  // instance.
+  ScopedRunnableMethodFactory<NativeWidgetAura> close_widget_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(NativeWidgetAura);
 };
 

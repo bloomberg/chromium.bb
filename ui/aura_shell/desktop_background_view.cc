@@ -33,13 +33,12 @@ void DesktopBackgroundView::OnPaint(gfx::Canvas* canvas) {
   canvas->TileImageInt(wallpaper_, 0, 0, width(), height());
 }
 
-void DesktopBackgroundView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
-  LOG(WARNING) << "Here";
+bool DesktopBackgroundView::OnMousePressed(const views::MouseEvent& event) {
+  return true;
 }
 
-bool DesktopBackgroundView::OnMousePressed(const views::MouseEvent& event) {
+void DesktopBackgroundView::OnMouseReleased(const views::MouseEvent& event) {
   SampleWindow::CreateSampleWindow();
-  return true;
 }
 
 AURA_SHELL_EXPORT views::Widget* CreateDesktopBackground() {

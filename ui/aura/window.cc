@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "ui/aura/desktop.h"
 #include "ui/aura/event.h"
+#include "ui/aura/focus_manager.h"
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/aura/window_manager.h"
@@ -30,6 +31,14 @@ Window::~Window() {
   // Let the delegate know we're in the processing of destroying.
   if (delegate_)
     delegate_->OnWindowDestroying();
+
+  // Update the FocusManager in case we were focused. This must be done before
+  // we are removed from the hierarchy otherwise we won't be able to find the
+  // FocusManager.
+  internal::FocusManager* focus_manager = GetFocusManager();
+  if (focus_manager && focus_manager->focused_window() == this)
+    focus_manager->SetFocusedWindow(NULL);
+
   // Then destroy the children.
   while (!children_.empty()) {
     Window* child = children_[0];

@@ -25,7 +25,8 @@ namespace views {
 NativeWidgetAura::NativeWidgetAura(internal::NativeWidgetDelegate* delegate)
     : delegate_(delegate),
       ALLOW_THIS_IN_INITIALIZER_LIST(window_(new aura::Window(this))),
-      ownership_(Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET) {
+      ownership_(Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET),
+      ALLOW_THIS_IN_INITIALIZER_LIST(close_widget_factory_(this)) {
 }
 
 NativeWidgetAura::~NativeWidgetAura() {
@@ -240,11 +241,17 @@ void NativeWidgetAura::SetShape(gfx::NativeRegion region) {
 }
 
 void NativeWidgetAura::Close() {
-  NOTIMPLEMENTED();
+  Hide();
+
+  if (close_widget_factory_.empty()) {
+    MessageLoop::current()->PostTask(FROM_HERE,
+        close_widget_factory_.NewRunnableMethod(
+            &NativeWidgetAura::CloseNow));
+  }
 }
 
 void NativeWidgetAura::CloseNow() {
-  NOTIMPLEMENTED();
+  delete window_;
 }
 
 void NativeWidgetAura::EnableClose(bool enable) {
@@ -341,7 +348,8 @@ void NativeWidgetAura::RunShellDrag(View* view,
 }
 
 void NativeWidgetAura::SchedulePaintInRect(const gfx::Rect& rect) {
-  window_->SchedulePaintInRect(rect);
+  if (window_)
+    window_->SchedulePaintInRect(rect);
 }
 
 void NativeWidgetAura::SetCursor(gfx::NativeCursor cursor) {
@@ -407,6 +415,7 @@ void NativeWidgetAura::OnWindowDestroying() {
 }
 
 void NativeWidgetAura::OnWindowDestroyed() {
+  window_ = NULL;
   delegate_->OnNativeWidgetDestroyed();
   if (ownership_ == Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET)
     delete this;
@@ -457,6 +466,8 @@ NativeWidgetPrivate* NativeWidgetPrivate::GetNativeWidgetForNativeWindow(
 // static
 NativeWidgetPrivate* NativeWidgetPrivate::GetTopLevelNativeWidget(
     gfx::NativeView native_view) {
+  if (!native_view)
+    return NULL;
   aura::Window* toplevel = native_view;
   aura::Window* parent = native_view->parent();
   while (parent) {

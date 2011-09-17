@@ -93,6 +93,16 @@
         '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources.rc',
         '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources_standard/ui_resources_standard.rc',
       ],
+    },
+    # It's convenient for aura_shell developers to be able to build all
+    # compositor and aura targets from within this solution.
+    {
+      'target_name': 'convenience',
+      'type': 'none',
+      'dependencies': [
+        '../gfx/compositor/compositor.gyp:*',
+        '../aura/aura.gyp:*',
+      ],
     },     
   ],
 }

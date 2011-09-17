@@ -24,6 +24,7 @@ void InitDesktopWindow() {
 
   desktop_layout->set_background_widget(CreateDesktopBackground());
   desktop_layout->set_launcher_widget(CreateLauncher());
+  desktop_layout->set_status_area_widget(CreateStatusArea());
 }
 
 }  // namespace internal
