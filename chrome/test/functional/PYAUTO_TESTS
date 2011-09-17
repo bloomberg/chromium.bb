@@ -134,6 +134,9 @@
       '-autofill.AutofillTest.testProfilesNotMergedWhenNoMinAddressData',
       # crbug.com/95141
       '-enterprise.EnterpriseTest.testDisable3DAPI',
+      # crbug.com/96896
+      '-enterprise.EnterpriseTest.testDisabledPlugins',
+      '-enterprise.EnterpriseTest.testEnabledPlugins',
       # Some download test fails on win official builder, only thru buildbot
       # when downloading the small zip file.
       # crbug.com/91225
