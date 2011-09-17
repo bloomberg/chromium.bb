@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/memory/singleton.h"
+#include "base/message_loop.h"
 #include "base/string_util.h"
 #include "media/base/data_buffer.h"
 #include "media/base/filters.h"

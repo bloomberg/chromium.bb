@@ -6,8 +6,10 @@
 
 #include <deque>
 
+#include "base/message_loop.h"
 #include "base/task.h"
 #include "media/base/callback.h"
+#include "media/base/demuxer.h"
 #include "media/base/filter_host.h"
 #include "media/base/filters.h"
 #include "media/base/limits.h"

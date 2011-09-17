@@ -9,12 +9,14 @@
 #include <string>
 
 #include "base/gtest_prod_util.h"
+#include "base/synchronization/lock.h"
 #include "base/time.h"
 #include "media/base/filters.h"
 #include "media/base/video_frame.h"
-#include "media/filters/decoder_base.h"
 #include "third_party/libjingle/source/talk/session/phone/mediachannel.h"
 #include "third_party/libjingle/source/talk/session/phone/videorenderer.h"
+
+class MessageLoop;
 
 namespace cricket {
 class VideoFrame;

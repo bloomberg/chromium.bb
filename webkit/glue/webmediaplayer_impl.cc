@@ -7,6 +7,7 @@
 #include <limits>
 #include <string>
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "media/base/composite_data_source_factory.h"
