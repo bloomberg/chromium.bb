@@ -137,6 +137,8 @@
       # crbug.com/96896
       '-enterprise.EnterpriseTest.testDisabledPlugins',
       '-enterprise.EnterpriseTest.testEnabledPlugins',
+      # crbug.com/96934
+      '-execute_javascript.ExecuteJavascriptTest.testExecuteJavascriptInExtension',
       # Some download test fails on win official builder, only thru buildbot
       # when downloading the small zip file.
       # crbug.com/91225
