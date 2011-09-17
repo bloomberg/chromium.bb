@@ -38,8 +38,7 @@ class GenericChangeProcessor : public ChangeProcessor,
   // Build and store a list of all changes into |syncer_changes_|.
   virtual void ApplyChangesFromSyncModel(
       const sync_api::BaseTransaction* trans,
-      const sync_api::SyncManager::ChangeRecord* changes,
-      int change_count) OVERRIDE;
+      const sync_api::ImmutableChangeRecordList& changes) OVERRIDE;
   // Passes |syncer_changes_|, built in ApplyChangesFromSyncModel, onto
   // |local_service_| by way of it's ProcessSyncChanges method.
   virtual void CommitChangesFromSyncModel() OVERRIDE;

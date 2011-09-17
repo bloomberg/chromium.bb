@@ -121,9 +121,8 @@ ChangeReorderBuffer::ChangeReorderBuffer() {
 ChangeReorderBuffer::~ChangeReorderBuffer() {
 }
 
-void ChangeReorderBuffer::GetAllChangesInTreeOrder(
-    const BaseTransaction* sync_trans,
-    vector<ChangeRecord>* changelist) {
+ImmutableChangeRecordList ChangeReorderBuffer::GetAllChangesInTreeOrder(
+    const BaseTransaction* sync_trans) {
   syncable::BaseTransaction* trans = sync_trans->GetWrappedTrans();
 
   // Step 1: Iterate through the operations, doing three things:
@@ -132,6 +131,8 @@ void ChangeReorderBuffer::GetAllChangesInTreeOrder(
   // (c) Construct a set of all parent nodes of any position changes.
   set<int64> parents_of_position_changes;
   Traversal traversal;
+
+  ChangeRecordList changelist;
 
   OperationMap::const_iterator i;
   for (i = operations_.begin(); i != operations_.end(); ++i) {
@@ -143,7 +144,7 @@ void ChangeReorderBuffer::GetAllChangesInTreeOrder(
         record.specifics = specifics_[record.id];
       if (extra_data_.find(record.id) != extra_data_.end())
         record.extra = extra_data_[record.id];
-      changelist->push_back(record);
+      changelist.push_back(record);
     } else {
       traversal.ExpandToInclude(trans, i->first);
       if (i->second == OP_ADD ||
@@ -181,7 +182,7 @@ void ChangeReorderBuffer::GetAllChangesInTreeOrder(
         record.specifics = specifics_[record.id];
       if (extra_data_.find(record.id) != extra_data_.end())
         record.extra = extra_data_[record.id];
-      changelist->push_back(record);
+      changelist.push_back(record);
     }
 
     // Now add the children of |next| to |to_visit|.
@@ -215,6 +216,8 @@ void ChangeReorderBuffer::GetAllChangesInTreeOrder(
       }
     }
   }
+
+  return ImmutableChangeRecordList(&changelist);
 }
 
 }  // namespace sync_api

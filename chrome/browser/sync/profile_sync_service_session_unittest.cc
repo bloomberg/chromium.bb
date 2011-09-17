@@ -19,9 +19,9 @@
 #include "chrome/browser/sync/glue/session_data_type_controller.h"
 #include "chrome/browser/sync/glue/session_model_associator.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
+#include "chrome/browser/sync/internal_api/change_record.h"
 #include "chrome/browser/sync/internal_api/read_node.h"
 #include "chrome/browser/sync/internal_api/read_transaction.h"
-#include "chrome/browser/sync/internal_api/sync_manager.h"
 #include "chrome/browser/sync/internal_api/write_transaction.h"
 #include "chrome/browser/sync/profile_sync_factory_mock.h"
 #include "chrome/browser/sync/profile_sync_test_util.h"
@@ -49,7 +49,7 @@ using browser_sync::SessionChangeProcessor;
 using browser_sync::SessionDataTypeController;
 using browser_sync::SessionModelAssociator;
 using browser_sync::SyncBackendHost;
-using sync_api::SyncManager;
+using sync_api::ChangeRecord;
 using testing::_;
 using testing::Return;
 using browser_sync::TestIdFactory;
@@ -355,13 +355,13 @@ TEST_F(ProfileSyncServiceSessionTest, UpdatedSyncNodeActionUpdate) {
   ASSERT_TRUE(task.success());
   int64 node_id = model_associator_->GetSyncIdFromSessionTag(
       model_associator_->GetCurrentMachineTag());
-  scoped_ptr<SyncManager::ChangeRecord> record(new SyncManager::ChangeRecord);
-  record->action = SyncManager::ChangeRecord::ACTION_UPDATE;
-  record->id = node_id;
   ASSERT_FALSE(notified_of_update_);
   {
     sync_api::WriteTransaction trans(FROM_HERE, sync_service_->GetUserShare());
-    change_processor_->ApplyChangesFromSyncModel(&trans, record.get(), 1);
+    change_processor_->ApplyChangesFromSyncModel(
+        &trans,
+        ProfileSyncServiceTestHelper::MakeSingletonChangeRecordList(
+            node_id, ChangeRecord::ACTION_UPDATE));
   }
   ASSERT_TRUE(notified_of_update_);
 }
@@ -374,13 +374,13 @@ TEST_F(ProfileSyncServiceSessionTest, UpdatedSyncNodeActionAdd) {
 
   int64 node_id = model_associator_->GetSyncIdFromSessionTag(
       model_associator_->GetCurrentMachineTag());
-  scoped_ptr<SyncManager::ChangeRecord> record(new SyncManager::ChangeRecord);
-  record->action = SyncManager::ChangeRecord::ACTION_ADD;
-  record->id = node_id;
   ASSERT_FALSE(notified_of_update_);
   {
     sync_api::WriteTransaction trans(FROM_HERE, sync_service_->GetUserShare());
-    change_processor_->ApplyChangesFromSyncModel(&trans, record.get(), 1);
+    change_processor_->ApplyChangesFromSyncModel(
+        &trans,
+        ProfileSyncServiceTestHelper::MakeSingletonChangeRecordList(
+            node_id, ChangeRecord::ACTION_ADD));
   }
   ASSERT_TRUE(notified_of_update_);
 }
@@ -393,13 +393,13 @@ TEST_F(ProfileSyncServiceSessionTest, UpdatedSyncNodeActionDelete) {
 
   int64 node_id = model_associator_->GetSyncIdFromSessionTag(
       model_associator_->GetCurrentMachineTag());
-  scoped_ptr<SyncManager::ChangeRecord> record(new SyncManager::ChangeRecord);
-  record->action = SyncManager::ChangeRecord::ACTION_DELETE;
-  record->id = node_id;
   ASSERT_FALSE(notified_of_update_);
   {
     sync_api::WriteTransaction trans(FROM_HERE, sync_service_->GetUserShare());
-    change_processor_->ApplyChangesFromSyncModel(&trans, record.get(), 1);
+    change_processor_->ApplyChangesFromSyncModel(
+        &trans,
+        ProfileSyncServiceTestHelper::MakeSingletonChangeRecordList(
+            node_id, ChangeRecord::ACTION_DELETE));
   }
   ASSERT_TRUE(notified_of_update_);
 }

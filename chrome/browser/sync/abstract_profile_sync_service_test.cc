@@ -32,11 +32,13 @@ using syncable::UNIQUE_SERVER_TAG;
 using syncable::UNITTEST;
 using syncable::WriteTransaction;
 
+/* static */
 const std::string ProfileSyncServiceTestHelper::GetTagForType(
     ModelType model_type) {
   return syncable::ModelTypeToRootTag(model_type);
 }
 
+/* static */
 bool ProfileSyncServiceTestHelper::CreateRoot(
     ModelType model_type, UserShare* user_share,
     TestIdFactory* ids) {
@@ -67,6 +69,17 @@ bool ProfileSyncServiceTestHelper::CreateRoot(
   node.Put(SPECIFICS, specifics);
 
   return true;
+}
+
+/* static */
+sync_api::ImmutableChangeRecordList
+    ProfileSyncServiceTestHelper::MakeSingletonChangeRecordList(
+        int64 node_id, sync_api::ChangeRecord::Action action) {
+  sync_api::ChangeRecord record;
+  record.action = action;
+  record.id = node_id;
+  sync_api::ChangeRecordList records(1, record);
+  return sync_api::ImmutableChangeRecordList(&records);
 }
 
 AbstractProfileSyncServiceTest::AbstractProfileSyncServiceTest()

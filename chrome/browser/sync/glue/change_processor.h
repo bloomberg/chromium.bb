@@ -7,7 +7,7 @@
 #pragma once
 
 #include "chrome/browser/sync/glue/sync_backend_host.h"
-#include "chrome/browser/sync/internal_api/sync_manager.h"
+#include "chrome/browser/sync/internal_api/change_record.h"
 
 class Profile;
 
@@ -40,8 +40,7 @@ class ChangeProcessor {
   // how to interpret and process |changes|.
   virtual void ApplyChangesFromSyncModel(
       const sync_api::BaseTransaction* trans,
-      const sync_api::SyncManager::ChangeRecord* changes,
-      int change_count) = 0;
+      const sync_api::ImmutableChangeRecordList& changes) = 0;
 
   // The changes found in ApplyChangesFromSyncModel may be too slow to be
   // performed while holding a [Read/Write]Transaction lock or may interact

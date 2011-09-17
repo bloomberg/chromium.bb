@@ -241,28 +241,6 @@ TEST_F(JsSyncManagerObserverTest, OnEncryptionComplete) {
   PumpLoop();
 }
 
-TEST_F(JsSyncManagerObserverTest, OnMigrationNeededForTypes) {
-  DictionaryValue expected_details;
-  ListValue* type_values = new ListValue();
-  expected_details.Set("types", type_values);
-  syncable::ModelTypeSet types;
-
-  for (int i = syncable::FIRST_REAL_MODEL_TYPE;
-       i < syncable::MODEL_TYPE_COUNT; ++i) {
-    syncable::ModelType type = syncable::ModelTypeFromInt(i);
-    types.insert(type);
-    type_values->Append(Value::CreateStringValue(
-        syncable::ModelTypeToString(type)));
-  }
-
-  EXPECT_CALL(mock_js_event_handler_,
-              HandleJsEvent("onMigrationNeededForTypes",
-                           HasDetailsAsDictionary(expected_details)));
-
-  js_sync_manager_observer_.OnMigrationNeededForTypes(types);
-  PumpLoop();
-}
-
 namespace {
 
 // Makes a node of the given model type.  Returns the id of the
@@ -290,7 +268,7 @@ TEST_F(JsSyncManagerObserverTest, OnChangesApplied) {
   // We don't test with passwords as that requires additional setup.
 
   // Build a list of example ChangeRecords.
-  sync_api::SyncManager::ChangeRecord changes[syncable::MODEL_TYPE_COUNT];
+  sync_api::ChangeRecord changes[syncable::MODEL_TYPE_COUNT];
   for (int i = syncable::AUTOFILL_PROFILE;
        i < syncable::MODEL_TYPE_COUNT; ++i) {
     changes[i].id =
@@ -298,15 +276,15 @@ TEST_F(JsSyncManagerObserverTest, OnChangesApplied) {
     switch (i % 3) {
       case 0:
         changes[i].action =
-            sync_api::SyncManager::ChangeRecord::ACTION_ADD;
+            sync_api::ChangeRecord::ACTION_ADD;
         break;
       case 1:
         changes[i].action =
-            sync_api::SyncManager::ChangeRecord::ACTION_UPDATE;
+            sync_api::ChangeRecord::ACTION_UPDATE;
         break;
       default:
         changes[i].action =
-            sync_api::SyncManager::ChangeRecord::ACTION_DELETE;
+            sync_api::ChangeRecord::ACTION_DELETE;
         break;
     }
     {
@@ -343,9 +321,12 @@ TEST_F(JsSyncManagerObserverTest, OnChangesApplied) {
   for (int i = syncable::AUTOFILL_PROFILE;
        i < syncable::MODEL_TYPE_COUNT; ++i) {
     sync_api::ReadTransaction trans(FROM_HERE, test_user_share.user_share());
-    js_sync_manager_observer_.OnChangesApplied(syncable::ModelTypeFromInt(i),
-                                               &trans, &changes[i],
-                                               syncable::MODEL_TYPE_COUNT - i);
+    sync_api::ChangeRecordList
+        local_changes(changes + i, changes + arraysize(changes));
+    js_sync_manager_observer_.OnChangesApplied(
+        syncable::ModelTypeFromInt(i),
+        &trans,
+        sync_api::ImmutableChangeRecordList(&local_changes));
   }
 
   test_user_share.TearDown();

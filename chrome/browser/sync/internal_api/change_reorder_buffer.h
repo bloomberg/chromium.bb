@@ -15,13 +15,13 @@
 
 #include "base/memory/linked_ptr.h"
 #include "chrome/browser/sync/internal_api/base_transaction.h"
-#include "chrome/browser/sync/internal_api/sync_manager.h"
+#include "chrome/browser/sync/internal_api/change_record.h"
 #include "chrome/browser/sync/protocol/sync.pb.h"
 
 namespace sync_api {
 
 // ChangeReorderBuffer is a utility type which accepts an unordered set
-// of changes (via its Push methods), and yields a vector of ChangeRecords
+// of changes (via its Push methods), and yields an ImmutableChangeRecordList
 // (via the GetAllChangesInTreeOrder method) that are in the order that
 // the SyncObserver expects them to be. A buffer is initially empty.
 //
@@ -39,9 +39,6 @@ namespace sync_api {
 //      its children.
 class ChangeReorderBuffer {
  public:
-  typedef SyncManager::ChangeRecord ChangeRecord;
-  typedef SyncManager::ExtraPasswordChangeRecordData ExtraChangeRecordData;
-
   ChangeReorderBuffer();
   ~ChangeReorderBuffer();
 
@@ -69,8 +66,8 @@ class ChangeReorderBuffer {
                                          OP_UPDATE_PROPERTIES_ONLY;
   }
 
-  void SetExtraDataForId(int64 id, ExtraChangeRecordData* extra) {
-    extra_data_[id] = make_linked_ptr<ExtraChangeRecordData>(extra);
+  void SetExtraDataForId(int64 id, ExtraPasswordChangeRecordData* extra) {
+    extra_data_[id] = make_linked_ptr<ExtraPasswordChangeRecordData>(extra);
   }
 
   void SetSpecificsForId(int64 id, const sync_pb::EntitySpecifics& specifics) {
@@ -90,8 +87,8 @@ class ChangeReorderBuffer {
   // Output a reordered list of changes to |changelist| using the items that
   // were pushed into the reorder buffer. |sync_trans| is used to determine the
   // ordering.
-  void GetAllChangesInTreeOrder(const BaseTransaction* sync_trans,
-                                std::vector<ChangeRecord>* changelist);
+  ImmutableChangeRecordList
+      GetAllChangesInTreeOrder(const BaseTransaction* sync_trans);
 
  private:
   class Traversal;
@@ -103,7 +100,8 @@ class ChangeReorderBuffer {
   };
   typedef std::map<int64, Operation> OperationMap;
   typedef std::map<int64, sync_pb::EntitySpecifics> SpecificsMap;
-  typedef std::map<int64, linked_ptr<ExtraChangeRecordData> > ExtraDataMap;
+  typedef std::map<int64, linked_ptr<ExtraPasswordChangeRecordData> >
+      ExtraDataMap;
 
   // Stores the items that have been pushed into the buffer, and the type of
   // operation that was associated with them.

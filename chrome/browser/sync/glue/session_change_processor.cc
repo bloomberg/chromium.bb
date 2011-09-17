@@ -13,8 +13,8 @@
 #include "chrome/browser/extensions/extension_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/glue/session_model_associator.h"
+#include "chrome/browser/sync/internal_api/change_record.h"
 #include "chrome/browser/sync/internal_api/read_node.h"
-#include "chrome/browser/sync/internal_api/sync_manager.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -185,8 +185,7 @@ void SessionChangeProcessor::Observe(int type,
 
 void SessionChangeProcessor::ApplyChangesFromSyncModel(
     const sync_api::BaseTransaction* trans,
-    const sync_api::SyncManager::ChangeRecord* changes,
-    int change_count) {
+    const sync_api::ImmutableChangeRecordList& changes) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (!running()) {
     return;
@@ -201,10 +200,11 @@ void SessionChangeProcessor::ApplyChangesFromSyncModel(
     return;
   }
 
-  for (int i = 0; i < change_count; ++i) {
-    const sync_api::SyncManager::ChangeRecord& change = changes[i];
-    sync_api::SyncManager::ChangeRecord::Action action(change.action);
-    if (sync_api::SyncManager::ChangeRecord::ACTION_DELETE == action) {
+  for (sync_api::ChangeRecordList::const_iterator it =
+           changes.Get().begin(); it != changes.Get().end(); ++it) {
+    const sync_api::ChangeRecord& change = *it;
+    sync_api::ChangeRecord::Action action(change.action);
+    if (sync_api::ChangeRecord::ACTION_DELETE == action) {
       // Deletions should only be for a foreign client itself, and hence affect
       // the header node, never a tab node.
       sync_api::ReadNode node(trans);

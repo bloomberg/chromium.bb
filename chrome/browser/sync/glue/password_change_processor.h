@@ -45,8 +45,7 @@ class PasswordChangeProcessor : public ChangeProcessor,
   // sync_api model -> WebDataService change application.
   virtual void ApplyChangesFromSyncModel(
       const sync_api::BaseTransaction* trans,
-      const sync_api::SyncManager::ChangeRecord* changes,
-      int change_count) OVERRIDE;
+      const sync_api::ImmutableChangeRecordList& changes) OVERRIDE;
 
   // Commit changes buffered during ApplyChanges. We must commit them to the
   // password store only after the sync_api transaction is released, else there

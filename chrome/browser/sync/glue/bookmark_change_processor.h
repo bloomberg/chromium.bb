@@ -8,11 +8,11 @@
 
 #include <vector>
 
+#include "base/compiler_specific.h"
 #include "chrome/browser/bookmarks/bookmark_model_observer.h"
 #include "chrome/browser/sync/glue/bookmark_model_associator.h"
 #include "chrome/browser/sync/glue/change_processor.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
-#include "chrome/browser/sync/internal_api/sync_manager.h"
 
 namespace sync_api {
 class WriteNode;
@@ -59,8 +59,7 @@ class BookmarkChangeProcessor : public BookmarkModelObserver,
   // the sync model to the bookmarks model.
   virtual void ApplyChangesFromSyncModel(
       const sync_api::BaseTransaction* trans,
-      const sync_api::SyncManager::ChangeRecord* changes,
-      int change_count);
+      const sync_api::ImmutableChangeRecordList& changes) OVERRIDE;
 
   // The following methods are static and hence may be invoked at any time,
   // and do not depend on having a running ChangeProcessor.

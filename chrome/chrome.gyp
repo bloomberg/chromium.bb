@@ -499,6 +499,8 @@
         'browser/sync/internal_api/base_node.h',
         'browser/sync/internal_api/base_transaction.cc',
         'browser/sync/internal_api/base_transaction.h',
+        'browser/sync/internal_api/change_record.cc',
+        'browser/sync/internal_api/change_record.h',
         'browser/sync/internal_api/change_reorder_buffer.cc',
         'browser/sync/internal_api/change_reorder_buffer.h',
         'browser/sync/internal_api/configure_reason.h',

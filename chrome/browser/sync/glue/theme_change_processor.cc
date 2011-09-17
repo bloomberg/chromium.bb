@@ -8,8 +8,8 @@
 #include "base/tracked.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/glue/theme_util.h"
+#include "chrome/browser/sync/internal_api/change_record.h"
 #include "chrome/browser/sync/internal_api/read_node.h"
-#include "chrome/browser/sync/internal_api/sync_manager.h"
 #include "chrome/browser/sync/internal_api/write_node.h"
 #include "chrome/browser/sync/internal_api/write_transaction.h"
 #include "chrome/browser/sync/protocol/theme_specifics.pb.h"
@@ -64,8 +64,7 @@ void ThemeChangeProcessor::Observe(int type,
 
 void ThemeChangeProcessor::ApplyChangesFromSyncModel(
     const sync_api::BaseTransaction* trans,
-    const sync_api::SyncManager::ChangeRecord* changes,
-    int change_count) {
+    const sync_api::ImmutableChangeRecordList& changes) {
   if (!running()) {
     return;
   }
@@ -74,20 +73,20 @@ void ThemeChangeProcessor::ApplyChangesFromSyncModel(
   // generates multiple changes.  When we fix syncapi to not do that,
   // we can remove the extra logic below.  See:
   // http://code.google.com/p/chromium/issues/detail?id=41696 .
-  if (change_count < 1) {
-    std::string err("Unexpected change_count: ");
-    err += change_count;
-    error_handler()->OnUnrecoverableError(FROM_HERE, err);
+  if (changes.Get().empty()) {
+    error_handler()->OnUnrecoverableError(FROM_HERE,
+                                          "Change list unexpectedly empty");
     return;
   }
-  if (change_count > 1) {
+  const size_t change_count = changes.Get().size();
+  if (change_count > 1u) {
     LOG(WARNING) << change_count << " theme changes detected; "
                  << "only applying the last one";
   }
-  const sync_api::SyncManager::ChangeRecord& change =
-      changes[change_count - 1];
-  if (change.action != sync_api::SyncManager::ChangeRecord::ACTION_UPDATE &&
-      change.action != sync_api::SyncManager::ChangeRecord::ACTION_DELETE) {
+  const sync_api::ChangeRecord& change =
+      changes.Get()[change_count - 1];
+  if (change.action != sync_api::ChangeRecord::ACTION_UPDATE &&
+      change.action != sync_api::ChangeRecord::ACTION_DELETE) {
     std::string err = "strange theme change.action " + change.action;
     error_handler()->OnUnrecoverableError(FROM_HERE, err);
     return;
@@ -95,7 +94,7 @@ void ThemeChangeProcessor::ApplyChangesFromSyncModel(
   sync_pb::ThemeSpecifics theme_specifics;
   // If the action is a delete, simply use the default values for
   // ThemeSpecifics, which would cause the default theme to be set.
-  if (change.action != sync_api::SyncManager::ChangeRecord::ACTION_DELETE) {
+  if (change.action != sync_api::ChangeRecord::ACTION_DELETE) {
     sync_api::ReadNode node(trans);
     if (!node.InitByIdLookup(change.id)) {
       error_handler()->OnUnrecoverableError(FROM_HERE,

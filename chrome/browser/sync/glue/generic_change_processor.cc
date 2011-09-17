@@ -9,9 +9,9 @@
 #include "chrome/browser/sync/api/syncable_service.h"
 #include "chrome/browser/sync/api/sync_change.h"
 #include "chrome/browser/sync/api/sync_error.h"
+#include "chrome/browser/sync/internal_api/change_record.h"
 #include "chrome/browser/sync/internal_api/read_node.h"
 #include "chrome/browser/sync/internal_api/read_transaction.h"
-#include "chrome/browser/sync/internal_api/sync_manager.h"
 #include "chrome/browser/sync/internal_api/write_node.h"
 #include "chrome/browser/sync/internal_api/write_transaction.h"
 #include "chrome/browser/sync/unrecoverable_error_handler.h"
@@ -35,20 +35,18 @@ GenericChangeProcessor::~GenericChangeProcessor() {
 
 void GenericChangeProcessor::ApplyChangesFromSyncModel(
     const sync_api::BaseTransaction* trans,
-    const sync_api::SyncManager::ChangeRecord* changes,
-    int change_count) {
+    const sync_api::ImmutableChangeRecordList& changes) {
   DCHECK(running());
   DCHECK(syncer_changes_.empty());
-  for (int i = 0; i < change_count; ++i) {
+  for (sync_api::ChangeRecordList::const_iterator it =
+           changes.Get().begin(); it != changes.Get().end(); ++it) {
     SyncChange::SyncChangeType action;
     sync_pb::EntitySpecifics const* specifics = NULL;
-    if (sync_api::SyncManager::ChangeRecord::ACTION_DELETE ==
-        changes[i].action) {
+    if (sync_api::ChangeRecord::ACTION_DELETE == it->action) {
       action = SyncChange::ACTION_DELETE;
-      specifics = &changes[i].specifics;
+      specifics = &it->specifics;
       DCHECK(specifics);
-    } else if (sync_api::SyncManager::ChangeRecord::ACTION_ADD ==
-               changes[i].action) {
+    } else if (sync_api::ChangeRecord::ACTION_ADD == it->action) {
       action = SyncChange::ACTION_ADD;
     } else {  // ACTION_UPDATE.
       action = SyncChange::ACTION_UPDATE;
@@ -56,9 +54,9 @@ void GenericChangeProcessor::ApplyChangesFromSyncModel(
     if (!specifics) {
       // Need to load from node.
       sync_api::ReadNode read_node(trans);
-      if (!read_node.InitByIdLookup(changes[i].id)) {
+      if (!read_node.InitByIdLookup(it->id)) {
         error_handler()->OnUnrecoverableError(FROM_HERE, "Failed to look up "
-            " data for received change with id " + changes[i].id);
+            " data for received change with id " + it->id);
         return;
       }
       syncer_changes_.push_back(SyncChange(action,

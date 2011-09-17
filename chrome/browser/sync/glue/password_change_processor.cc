@@ -13,6 +13,7 @@
 #include "chrome/browser/password_manager/password_store.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/glue/password_model_associator.h"
+#include "chrome/browser/sync/internal_api/change_record.h"
 #include "chrome/browser/sync/internal_api/read_node.h"
 #include "chrome/browser/sync/internal_api/write_node.h"
 #include "chrome/browser/sync/internal_api/write_transaction.h"
@@ -132,8 +133,7 @@ void PasswordChangeProcessor::Observe(int type,
 
 void PasswordChangeProcessor::ApplyChangesFromSyncModel(
     const sync_api::BaseTransaction* trans,
-    const sync_api::SyncManager::ChangeRecord* changes,
-    int change_count) {
+    const sync_api::ImmutableChangeRecordList& changes) {
   DCHECK(expected_loop_ == MessageLoop::current());
   if (!running())
     return;
@@ -148,45 +148,45 @@ void PasswordChangeProcessor::ApplyChangesFromSyncModel(
   DCHECK(deleted_passwords_.empty() && new_passwords_.empty() &&
          updated_passwords_.empty());
 
-  for (int i = 0; i < change_count; ++i) {
-    if (sync_api::SyncManager::ChangeRecord::ACTION_DELETE ==
-        changes[i].action) {
-      DCHECK(changes[i].specifics.HasExtension(sync_pb::password))
+  for (sync_api::ChangeRecordList::const_iterator it =
+           changes.Get().begin(); it != changes.Get().end(); ++it) {
+    if (sync_api::ChangeRecord::ACTION_DELETE ==
+        it->action) {
+      DCHECK(it->specifics.HasExtension(sync_pb::password))
           << "Password specifics data not present on delete!";
-      DCHECK(changes[i].extra.get());
-      sync_api::SyncManager::ExtraPasswordChangeRecordData* extra =
-          changes[i].extra.get();
+      DCHECK(it->extra.get());
+      sync_api::ExtraPasswordChangeRecordData* extra =
+          it->extra.get();
       const sync_pb::PasswordSpecificsData& password = extra->unencrypted();
       webkit_glue::PasswordForm form;
       PasswordModelAssociator::CopyPassword(password, &form);
       deleted_passwords_.push_back(form);
-      model_associator_->Disassociate(changes[i].id);
+      model_associator_->Disassociate(it->id);
       continue;
     }
 
     sync_api::ReadNode sync_node(trans);
-    if (!sync_node.InitByIdLookup(changes[i].id)) {
+    if (!sync_node.InitByIdLookup(it->id)) {
       error_handler()->OnUnrecoverableError(FROM_HERE,
           "Password node lookup failed.");
       return;
     }
 
     // Check that the changed node is a child of the passwords folder.
-    DCHECK(password_root.GetId() == sync_node.GetParentId());
-    DCHECK(syncable::PASSWORDS == sync_node.GetModelType());
+    DCHECK_EQ(password_root.GetId(), sync_node.GetParentId());
+    DCHECK_EQ(syncable::PASSWORDS, sync_node.GetModelType());
 
     const sync_pb::PasswordSpecificsData& password_data =
         sync_node.GetPasswordSpecifics();
     webkit_glue::PasswordForm password;
     PasswordModelAssociator::CopyPassword(password_data, &password);
 
-    if (sync_api::SyncManager::ChangeRecord::ACTION_ADD == changes[i].action) {
+    if (sync_api::ChangeRecord::ACTION_ADD == it->action) {
       std::string tag(PasswordModelAssociator::MakeTag(password));
       model_associator_->Associate(&tag, sync_node.GetId());
       new_passwords_.push_back(password);
     } else {
-      DCHECK(sync_api::SyncManager::ChangeRecord::ACTION_UPDATE ==
-             changes[i].action);
+      DCHECK_EQ(sync_api::ChangeRecord::ACTION_UPDATE, it->action);
       updated_passwords_.push_back(password);
     }
   }

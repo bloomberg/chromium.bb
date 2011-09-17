@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/tracked.h"
 #include "base/values.h"
+#include "chrome/browser/sync/internal_api/change_record.h"
 #include "chrome/browser/sync/js/js_arg_list.h"
 #include "chrome/browser/sync/js/js_event_details.h"
 #include "chrome/browser/sync/js/js_event_handler.h"
@@ -31,8 +32,7 @@ void JsSyncManagerObserver::SetJsEventHandler(
 void JsSyncManagerObserver::OnChangesApplied(
     syncable::ModelType model_type,
     const sync_api::BaseTransaction* trans,
-    const sync_api::SyncManager::ChangeRecord* changes,
-    int change_count) {
+    const sync_api::ImmutableChangeRecordList& changes) {
   if (!event_handler_.IsInitialized()) {
     return;
   }
@@ -40,8 +40,9 @@ void JsSyncManagerObserver::OnChangesApplied(
   details.SetString("modelType", syncable::ModelTypeToString(model_type));
   ListValue* change_values = new ListValue();
   details.Set("changes", change_values);
-  for (int i = 0; i < change_count; ++i) {
-    change_values->Append(changes[i].ToValue(trans));
+  for (sync_api::ChangeRecordList::const_iterator it =
+           changes.Get().begin(); it != changes.Get().end(); ++it) {
+    change_values->Append(it->ToValue(trans));
   }
   HandleJsEvent(FROM_HERE, "onChangesApplied", JsEventDetails(&details));
 }
@@ -115,17 +116,6 @@ void JsSyncManagerObserver::OnEncryptionComplete(
   details.Set("encryptedTypes",
                syncable::ModelTypeSetToValue(encrypted_types));
   HandleJsEvent(FROM_HERE, "onEncryptionComplete", JsEventDetails(&details));
-}
-
-void JsSyncManagerObserver::OnMigrationNeededForTypes(
-    const syncable::ModelTypeSet& types) {
-  if (!event_handler_.IsInitialized()) {
-    return;
-  }
-  DictionaryValue details;
-  details.Set("types", syncable::ModelTypeSetToValue(types));
-  HandleJsEvent(FROM_HERE, "onMigrationNeededForTypes",
-                JsEventDetails(&details));
 }
 
 void JsSyncManagerObserver::OnActionableError(

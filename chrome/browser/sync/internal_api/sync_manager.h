@@ -6,12 +6,12 @@
 #define CHROME_BROWSER_SYNC_INTERNAL_API_SYNC_MANAGER_H_
 
 #include <string>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/callback_old.h"
-#include "base/memory/linked_ptr.h"
+#include "chrome/browser/sync/internal_api/change_record.h"
 #include "chrome/browser/sync/internal_api/configure_reason.h"
-#include "chrome/browser/sync/protocol/password_specifics.pb.h"
 #include "chrome/browser/sync/protocol/sync_protocol_error.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/util/weak_handle.h"
@@ -36,10 +36,6 @@ struct SyncSessionSnapshot;
 namespace sync_notifier {
 class SyncNotifier;
 }  // namespace sync_notifier
-
-namespace sync_pb {
-class PasswordSpecificsData;
-}  // namespace sync_pb
 
 namespace sync_api {
 
@@ -80,45 +76,6 @@ class SyncManager {
   // SyncInternal contains the implementation of SyncManager, while abstracting
   // internal types from clients of the interface.
   class SyncInternal;
-
-  // TODO(zea): One day get passwords playing nicely with the rest of encryption
-  // and get rid of this.
-  class ExtraPasswordChangeRecordData {
-   public:
-    ExtraPasswordChangeRecordData();
-    explicit ExtraPasswordChangeRecordData(
-        const sync_pb::PasswordSpecificsData& data);
-    virtual ~ExtraPasswordChangeRecordData();
-
-    // Transfers ownership of the DictionaryValue to the caller.
-    virtual base::DictionaryValue* ToValue() const;
-
-    const sync_pb::PasswordSpecificsData& unencrypted() const;
-   private:
-    sync_pb::PasswordSpecificsData unencrypted_;
-  };
-
-  // ChangeRecord indicates a single item that changed as a result of a sync
-  // operation.  This gives the sync id of the node that changed, and the type
-  // of change.  To get the actual property values after an ADD or UPDATE, the
-  // client should get the node with InitByIdLookup(), using the provided id.
-  struct ChangeRecord {
-    enum Action {
-      ACTION_ADD,
-      ACTION_DELETE,
-      ACTION_UPDATE,
-    };
-    ChangeRecord();
-    ~ChangeRecord();
-
-    // Transfers ownership of the DictionaryValue to the caller.
-    base::DictionaryValue* ToValue(const BaseTransaction* trans) const;
-
-    int64 id;
-    Action action;
-    sync_pb::EntitySpecifics specifics;
-    linked_ptr<ExtraPasswordChangeRecordData> extra;
-  };
 
   // Status encapsulates detailed state about the internals of the SyncManager.
   struct Status {
@@ -241,10 +198,10 @@ class SyncManager {
     // forward dependencies.  But since deletions come before reparent
     // operations, a delete may temporarily orphan a node that is
     // updated later in the list.
-    virtual void OnChangesApplied(syncable::ModelType model_type,
-                                  const BaseTransaction* trans,
-                                  const ChangeRecord* changes,
-                                  int change_count) = 0;
+    virtual void OnChangesApplied(
+        syncable::ModelType model_type,
+        const BaseTransaction* trans,
+        const ImmutableChangeRecordList& changes) = 0;
 
     // OnChangesComplete gets called when the TransactionComplete event is
     // posted (after OnChangesApplied finishes), after the transaction lock

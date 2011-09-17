@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "chrome/browser/sync/internal_api/sync_manager.h"
 #include "chrome/browser/sync/protocol/sync_protocol_error.h"
 #include "chrome/browser/sync/util/weak_handle.h"
@@ -34,26 +35,25 @@ class JsSyncManagerObserver : public sync_api::SyncManager::Observer {
   virtual void OnChangesApplied(
       syncable::ModelType model_type,
       const sync_api::BaseTransaction* trans,
-      const sync_api::SyncManager::ChangeRecord* changes,
-      int change_count);
-  virtual void OnChangesComplete(syncable::ModelType model_type);
+      const sync_api::ImmutableChangeRecordList& changes) OVERRIDE;
+  virtual void OnChangesComplete(syncable::ModelType model_type) OVERRIDE;
   virtual void OnSyncCycleCompleted(
-      const sessions::SyncSessionSnapshot* snapshot);
-  virtual void OnAuthError(const GoogleServiceAuthError& auth_error);
-  virtual void OnUpdatedToken(const std::string& token);
-  virtual void OnPassphraseRequired(sync_api::PassphraseRequiredReason reason);
-  virtual void OnPassphraseAccepted(const std::string& bootstrap_token);
+      const sessions::SyncSessionSnapshot* snapshot) OVERRIDE;
+  virtual void OnAuthError(const GoogleServiceAuthError& auth_error) OVERRIDE;
+  virtual void OnUpdatedToken(const std::string& token) OVERRIDE;
+  virtual void OnPassphraseRequired(
+      sync_api::PassphraseRequiredReason reason) OVERRIDE;
+  virtual void OnPassphraseAccepted(
+      const std::string& bootstrap_token) OVERRIDE;
   virtual void OnEncryptionComplete(
-      const syncable::ModelTypeSet& encrypted_types);
+      const syncable::ModelTypeSet& encrypted_types) OVERRIDE;
   virtual void OnInitializationComplete(
-      const WeakHandle<JsBackend>& js_backend,
-      bool success);
-  virtual void OnStopSyncingPermanently();
-  virtual void OnClearServerDataSucceeded();
-  virtual void OnClearServerDataFailed();
-  virtual void OnMigrationNeededForTypes(const syncable::ModelTypeSet& types);
+      const WeakHandle<JsBackend>& js_backend, bool success) OVERRIDE;
+  virtual void OnStopSyncingPermanently() OVERRIDE;
+  virtual void OnClearServerDataSucceeded() OVERRIDE;
+  virtual void OnClearServerDataFailed() OVERRIDE;
   virtual void OnActionableError(
-      const browser_sync::SyncProtocolError& sync_protocol_error);
+      const browser_sync::SyncProtocolError& sync_protocol_error) OVERRIDE;
 
  private:
   void HandleJsEvent(const tracked_objects::Location& from_here,

@@ -11,6 +11,7 @@
 #include "chrome/browser/history/history_notifications.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/glue/typed_url_model_associator.h"
+#include "chrome/browser/sync/internal_api/change_record.h"
 #include "chrome/browser/sync/internal_api/read_node.h"
 #include "chrome/browser/sync/internal_api/write_node.h"
 #include "chrome/browser/sync/internal_api/write_transaction.h"
@@ -184,8 +185,7 @@ bool TypedUrlChangeProcessor::ShouldSyncVisit(
 
 void TypedUrlChangeProcessor::ApplyChangesFromSyncModel(
     const sync_api::BaseTransaction* trans,
-    const sync_api::SyncManager::ChangeRecord* changes,
-    int change_count) {
+    const sync_api::ImmutableChangeRecordList& changes) {
   DCHECK(expected_loop_ == MessageLoop::current());
   if (!running())
     return;
@@ -201,22 +201,23 @@ void TypedUrlChangeProcessor::ApplyChangesFromSyncModel(
          pending_new_visits_.empty() && pending_deleted_visits_.empty() &&
          pending_updated_urls_.empty() && pending_deleted_urls_.empty());
 
-  for (int i = 0; i < change_count; ++i) {
-    if (sync_api::SyncManager::ChangeRecord::ACTION_DELETE ==
-        changes[i].action) {
-      DCHECK(changes[i].specifics.HasExtension(sync_pb::typed_url)) <<
+  for (sync_api::ChangeRecordList::const_iterator it =
+           changes.Get().begin(); it != changes.Get().end(); ++it) {
+    if (sync_api::ChangeRecord::ACTION_DELETE ==
+        it->action) {
+      DCHECK(it->specifics.HasExtension(sync_pb::typed_url)) <<
           "Typed URL delete change does not have necessary specifics.";
-      GURL url(changes[i].specifics.GetExtension(sync_pb::typed_url).url());
+      GURL url(it->specifics.GetExtension(sync_pb::typed_url).url());
       pending_deleted_urls_.push_back(url);
       // It's OK to disassociate here (before the items are actually deleted)
       // as we're guaranteed to either get a CommitChanges call or we'll hit
       // an unrecoverable error which will blow away the model associator.
-      model_associator_->Disassociate(changes[i].id);
+      model_associator_->Disassociate(it->id);
       continue;
     }
 
     sync_api::ReadNode sync_node(trans);
-    if (!sync_node.InitByIdLookup(changes[i].id)) {
+    if (!sync_node.InitByIdLookup(it->id)) {
       error_handler()->OnUnrecoverableError(FROM_HERE,
           "TypedUrl node lookup failed.");
       return;
@@ -230,7 +231,7 @@ void TypedUrlChangeProcessor::ApplyChangesFromSyncModel(
         sync_node.GetTypedUrlSpecifics());
     GURL url(typed_url.url());
 
-    if (sync_api::SyncManager::ChangeRecord::ACTION_ADD == changes[i].action) {
+    if (sync_api::ChangeRecord::ACTION_ADD == it->action) {
       DCHECK(typed_url.visits_size());
       if (!typed_url.visits_size()) {
         continue;
@@ -240,7 +241,7 @@ void TypedUrlChangeProcessor::ApplyChangesFromSyncModel(
       TypedUrlModelAssociator::UpdateURLRowFromTypedUrlSpecifics(
           typed_url, &new_url);
 
-      model_associator_->Associate(&new_url.url().spec(), changes[i].id);
+      model_associator_->Associate(&new_url.url().spec(), it->id);
       pending_new_urls_.push_back(new_url);
 
       std::vector<history::VisitInfo> added_visits;
@@ -255,8 +256,7 @@ void TypedUrlChangeProcessor::ApplyChangesFromSyncModel(
           std::pair<GURL, std::vector<history::VisitInfo> >(
               url, added_visits));
     } else {
-      DCHECK_EQ(sync_api::SyncManager::ChangeRecord::ACTION_UPDATE,
-                changes[i].action);
+      DCHECK_EQ(sync_api::ChangeRecord::ACTION_UPDATE, it->action);
       history::URLRow old_url;
       if (!history_backend_->GetURL(url, &old_url)) {
         LOG(ERROR) << "Could not fetch history row for " << url;

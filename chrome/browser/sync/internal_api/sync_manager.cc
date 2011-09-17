@@ -5,7 +5,6 @@
 #include "chrome/browser/sync/internal_api/sync_manager.h"
 
 #include <string>
-#include <vector>
 
 #include "base/base64.h"
 #include "base/command_line.h"
@@ -48,7 +47,6 @@
 #include "net/base/network_change_notifier.h"
 
 using std::string;
-using std::vector;
 
 using base::TimeDelta;
 using browser_sync::AllStatus;
@@ -111,73 +109,6 @@ GetUpdatesCallerInfo::GetUpdatesSource GetSourceFromReason(
 } // namespace
 
 namespace sync_api {
-
-SyncManager::ChangeRecord::ChangeRecord()
-    : id(kInvalidId), action(ACTION_ADD) {}
-
-SyncManager::ChangeRecord::~ChangeRecord() {}
-
-DictionaryValue* SyncManager::ChangeRecord::ToValue(
-    const BaseTransaction* trans) const {
-  DictionaryValue* value = new DictionaryValue();
-  std::string action_str;
-  switch (action) {
-    case ACTION_ADD:
-      action_str = "Add";
-      break;
-    case ACTION_DELETE:
-      action_str = "Delete";
-      break;
-    case ACTION_UPDATE:
-      action_str = "Update";
-      break;
-    default:
-      NOTREACHED();
-      action_str = "Unknown";
-      break;
-  }
-  value->SetString("action", action_str);
-  Value* node_value = NULL;
-  if (action == ACTION_DELETE) {
-    DictionaryValue* node_dict = new DictionaryValue();
-    node_dict->SetString("id", base::Int64ToString(id));
-    node_dict->Set("specifics",
-                    browser_sync::EntitySpecificsToValue(specifics));
-    if (extra.get()) {
-      node_dict->Set("extra", extra->ToValue());
-    }
-    node_value = node_dict;
-  } else {
-    ReadNode node(trans);
-    if (node.InitByIdLookup(id)) {
-      node_value = node.GetDetailsAsValue();
-    }
-  }
-  if (!node_value) {
-    NOTREACHED();
-    node_value = Value::CreateNullValue();
-  }
-  value->Set("node", node_value);
-  return value;
-}
-
-SyncManager::ExtraPasswordChangeRecordData::ExtraPasswordChangeRecordData() {}
-
-SyncManager::ExtraPasswordChangeRecordData::ExtraPasswordChangeRecordData(
-    const sync_pb::PasswordSpecificsData& data)
-    : unencrypted_(data) {
-}
-
-SyncManager::ExtraPasswordChangeRecordData::~ExtraPasswordChangeRecordData() {}
-
-DictionaryValue* SyncManager::ExtraPasswordChangeRecordData::ToValue() const {
-  return browser_sync::PasswordSpecificsDataToValue(unencrypted_);
-}
-
-const sync_pb::PasswordSpecificsData&
-    SyncManager::ExtraPasswordChangeRecordData::unencrypted() const {
-  return unencrypted_;
-}
 
 //////////////////////////////////////////////////////////////////////////
 // SyncManager's implementation: SyncManager::SyncInternal
@@ -1431,14 +1362,14 @@ ModelTypeBitSet SyncManager::SyncInternal::HandleTransactionEndingChangeEvent(
     if (change_buffers_[i].IsEmpty())
       continue;
 
-    vector<ChangeRecord> ordered_changes;
-    change_buffers_[i].GetAllChangesInTreeOrder(&read_trans, &ordered_changes);
-    if (!ordered_changes.empty()) {
+    ImmutableChangeRecordList ordered_changes =
+        change_buffers_[i].GetAllChangesInTreeOrder(&read_trans);
+    if (!ordered_changes.Get().empty()) {
       ObserverList<SyncManager::Observer> temp_obs_list;
       CopyObservers(&temp_obs_list);
       FOR_EACH_OBSERVER(SyncManager::Observer, temp_obs_list,
-          OnChangesApplied(syncable::ModelTypeFromInt(i), &read_trans,
-                           &ordered_changes[0], ordered_changes.size()));
+                        OnChangesApplied(syncable::ModelTypeFromInt(i),
+                                         &read_trans, ordered_changes));
       models_with_changes.set(i, true);
     }
     change_buffers_[i].Clear();

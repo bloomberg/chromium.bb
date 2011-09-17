@@ -24,9 +24,9 @@
 #include "chrome/browser/sync/api/sync_error.h"
 #include "chrome/browser/sync/glue/bookmark_change_processor.h"
 #include "chrome/browser/sync/glue/bookmark_model_associator.h"
+#include "chrome/browser/sync/internal_api/change_record.h"
 #include "chrome/browser/sync/internal_api/read_node.h"
 #include "chrome/browser/sync/internal_api/read_transaction.h"
-#include "chrome/browser/sync/internal_api/sync_manager.h"
 #include "chrome/browser/sync/internal_api/write_node.h"
 #include "chrome/browser/sync/internal_api/write_transaction.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
@@ -160,8 +160,8 @@ class FakeServerChange {
     node.SetTitle(title);
     if (!is_folder)
       node.SetURL(GURL(url));
-    sync_api::SyncManager::ChangeRecord record;
-    record.action = sync_api::SyncManager::ChangeRecord::ACTION_ADD;
+    sync_api::ChangeRecord record;
+    record.action = sync_api::ChangeRecord::ACTION_ADD;
     record.id = node.GetId();
     changes_.push_back(record);
     return node.GetId();
@@ -197,8 +197,8 @@ class FakeServerChange {
       EXPECT_FALSE(node.InitByIdLookup(id));
     }
 
-    sync_api::SyncManager::ChangeRecord record;
-    record.action = sync_api::SyncManager::ChangeRecord::ACTION_DELETE;
+    sync_api::ChangeRecord record;
+    record.action = sync_api::ChangeRecord::ACTION_DELETE;
     record.id = id;
     // Deletions are always first in the changelist, but we can't actually do
     // WriteNode::Remove() on the node until its children are moved. So, as
@@ -241,11 +241,11 @@ class FakeServerChange {
 
   // Pass the fake change list to |service|.
   void ApplyPendingChanges(ChangeProcessor* processor) {
-    processor->ApplyChangesFromSyncModel(trans_,
-        changes_.size() ? &changes_[0] : NULL, changes_.size());
+    processor->ApplyChangesFromSyncModel(
+        trans_, sync_api::ImmutableChangeRecordList(&changes_));
   }
 
-  const std::vector<sync_api::SyncManager::ChangeRecord>& changes() {
+  const sync_api::ChangeRecordList& changes() {
     return changes_;
   }
 
@@ -256,10 +256,10 @@ class FakeServerChange {
     // Coalesce multi-property edits.
     if (!changes_.empty() && changes_.back().id == id &&
         changes_.back().action ==
-        sync_api::SyncManager::ChangeRecord::ACTION_UPDATE)
+        sync_api::ChangeRecord::ACTION_UPDATE)
       return;
-    sync_api::SyncManager::ChangeRecord record;
-    record.action = sync_api::SyncManager::ChangeRecord::ACTION_UPDATE;
+    sync_api::ChangeRecord record;
+    record.action = sync_api::ChangeRecord::ACTION_UPDATE;
     record.id = id;
     changes_.push_back(record);
   }
@@ -268,7 +268,7 @@ class FakeServerChange {
   sync_api::WriteTransaction *trans_;
 
   // The change list we construct.
-  std::vector<sync_api::SyncManager::ChangeRecord> changes_;
+  sync_api::ChangeRecordList changes_;
 };
 
 class MockUnrecoverableErrorHandler : public UnrecoverableErrorHandler {
@@ -618,7 +618,7 @@ TEST_F(ProfileSyncServiceBookmarkTest, ServerChangeProcessing) {
   int64 u6 = adds.AddURL(L"Sync1", "http://www.syncable.edu/",
                          synced_bookmarks_id(), 0);
 
-  std::vector<sync_api::SyncManager::ChangeRecord>::const_iterator it;
+  sync_api::ChangeRecordList::const_iterator it;
   // The bookmark model shouldn't yet have seen any of the nodes of |adds|.
   for (it = adds.changes().begin(); it != adds.changes().end(); ++it)
     ExpectBrowserNodeUnknown(it->id);
@@ -707,7 +707,7 @@ TEST_F(ProfileSyncServiceBookmarkTest, ServerChangeRequiringFosterParent) {
   int64 f6 = adds.AddFolder(L"f6",      f1, u5);   //     + f6
   int64 u7 = adds.AddURL(   L"u7", url, f0, f1);   //   + u7        NOLINT
 
-  std::vector<sync_api::SyncManager::ChangeRecord>::const_iterator it;
+  sync_api::ChangeRecordList::const_iterator it;
   // The bookmark model shouldn't yet have seen any of the nodes of |adds|.
   for (it = adds.changes().begin(); it != adds.changes().end(); ++it)
     ExpectBrowserNodeUnknown(it->id);

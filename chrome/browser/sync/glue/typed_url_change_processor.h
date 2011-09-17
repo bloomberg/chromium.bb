@@ -52,8 +52,7 @@ class TypedUrlChangeProcessor : public ChangeProcessor,
   // sync_api model -> WebDataService change application.
   virtual void ApplyChangesFromSyncModel(
       const sync_api::BaseTransaction* trans,
-      const sync_api::SyncManager::ChangeRecord* changes,
-      int change_count) OVERRIDE;
+      const sync_api::ImmutableChangeRecordList& changes) OVERRIDE;
 
   // Commit changes here, after we've released the transaction lock to avoid
   // jank.

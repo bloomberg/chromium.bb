@@ -18,9 +18,9 @@
 #include "chrome/browser/sync/glue/preference_data_type_controller.h"
 #include "chrome/browser/sync/glue/syncable_service_adapter.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
+#include "chrome/browser/sync/internal_api/change_record.h"
 #include "chrome/browser/sync/internal_api/read_node.h"
 #include "chrome/browser/sync/internal_api/read_transaction.h"
-#include "chrome/browser/sync/internal_api/sync_manager.h"
 #include "chrome/browser/sync/internal_api/write_node.h"
 #include "chrome/browser/sync/internal_api/write_transaction.h"
 #include "chrome/browser/sync/profile_sync_test_util.h"
@@ -40,7 +40,7 @@ using browser_sync::GenericChangeProcessor;
 using browser_sync::PreferenceDataTypeController;
 using browser_sync::SyncBackendHost;
 using browser_sync::SyncableServiceAdapter;
-using sync_api::SyncManager;
+using sync_api::ChangeRecord;
 using testing::_;
 using testing::Invoke;
 using testing::Return;
@@ -172,14 +172,6 @@ class ProfileSyncServicePreferenceTest
       return WriteSyncedValue(name, value, &node);
 
     return sync_api::kInvalidId;
-  }
-
-  SyncManager::ChangeRecord* MakeChangeRecord(int64 node_id,
-      SyncManager::ChangeRecord::Action action) {
-    SyncManager::ChangeRecord* record = new SyncManager::ChangeRecord();
-    record->action = action;
-    record->id = node_id;
-    return record;
   }
 
   bool IsSynced(const std::string& pref_name) {
@@ -387,11 +379,12 @@ TEST_F(ProfileSyncServicePreferenceTest, UpdatedSyncNodeActionUpdate) {
   scoped_ptr<Value> expected(Value::CreateStringValue(example_url1_));
   int64 node_id = SetSyncedValue(prefs::kHomePage, *expected);
   ASSERT_NE(node_id, sync_api::kInvalidId);
-  scoped_ptr<SyncManager::ChangeRecord> record(MakeChangeRecord(
-      node_id, SyncManager::ChangeRecord::ACTION_UPDATE));
   {
     sync_api::WriteTransaction trans(FROM_HERE, service_->GetUserShare());
-    change_processor_->ApplyChangesFromSyncModel(&trans, record.get(), 1);
+    change_processor_->ApplyChangesFromSyncModel(
+        &trans,
+        ProfileSyncServiceTestHelper::MakeSingletonChangeRecordList(
+            node_id, ChangeRecord::ACTION_UPDATE));
   }
   change_processor_->CommitChangesFromSyncModel();
 
@@ -407,11 +400,12 @@ TEST_F(ProfileSyncServicePreferenceTest, UpdatedSyncNodeActionAdd) {
   scoped_ptr<Value> expected(Value::CreateStringValue(example_url0_));
   int64 node_id = SetSyncedValue(prefs::kHomePage, *expected);
   ASSERT_NE(node_id, sync_api::kInvalidId);
-  scoped_ptr<SyncManager::ChangeRecord> record(MakeChangeRecord(
-      node_id, SyncManager::ChangeRecord::ACTION_ADD));
   {
     sync_api::WriteTransaction trans(FROM_HERE, service_->GetUserShare());
-    change_processor_->ApplyChangesFromSyncModel(&trans, record.get(), 1);
+    change_processor_->ApplyChangesFromSyncModel(
+        &trans,
+        ProfileSyncServiceTestHelper::MakeSingletonChangeRecordList(
+            node_id, ChangeRecord::ACTION_ADD));
   }
   change_processor_->CommitChangesFromSyncModel();
 
@@ -429,11 +423,12 @@ TEST_F(ProfileSyncServicePreferenceTest, UpdatedSyncNodeUnknownPreference) {
   scoped_ptr<Value> expected(Value::CreateStringValue(example_url0_));
   int64 node_id = SetSyncedValue("unknown preference", *expected);
   ASSERT_NE(node_id, sync_api::kInvalidId);
-  scoped_ptr<SyncManager::ChangeRecord> record(MakeChangeRecord(
-      node_id, SyncManager::ChangeRecord::ACTION_UPDATE));
   {
     sync_api::WriteTransaction trans(FROM_HERE, service_->GetUserShare());
-    change_processor_->ApplyChangesFromSyncModel(&trans, record.get(), 1);
+    change_processor_->ApplyChangesFromSyncModel(
+        &trans,
+        ProfileSyncServiceTestHelper::MakeSingletonChangeRecordList(
+            node_id, ChangeRecord::ACTION_UPDATE));
   }
   change_processor_->CommitChangesFromSyncModel();
 
@@ -463,11 +458,12 @@ TEST_F(ProfileSyncServicePreferenceTest, ManagedPreferences) {
       Value::CreateStringValue("http://crbug.com"));
   int64 node_id = SetSyncedValue(prefs::kHomePage, *sync_value);
   ASSERT_NE(node_id, sync_api::kInvalidId);
-  scoped_ptr<SyncManager::ChangeRecord> record(MakeChangeRecord(
-      node_id, SyncManager::ChangeRecord::ACTION_UPDATE));
   {
     sync_api::WriteTransaction trans(FROM_HERE, service_->GetUserShare());
-    change_processor_->ApplyChangesFromSyncModel(&trans, record.get(), 1);
+    change_processor_->ApplyChangesFromSyncModel(
+        &trans,
+        ProfileSyncServiceTestHelper::MakeSingletonChangeRecordList(
+            node_id, ChangeRecord::ACTION_UPDATE));
   }
   change_processor_->CommitChangesFromSyncModel();
 
@@ -525,11 +521,12 @@ TEST_F(ProfileSyncServicePreferenceTest,
       Value::CreateStringValue("http://example.com/sync"));
   int64 node_id = SetSyncedValue(prefs::kHomePage, *sync_value);
   ASSERT_NE(node_id, sync_api::kInvalidId);
-  scoped_ptr<SyncManager::ChangeRecord> record(MakeChangeRecord(
-      node_id, SyncManager::ChangeRecord::ACTION_ADD));
   {
     sync_api::WriteTransaction trans(FROM_HERE, service_->GetUserShare());
-    change_processor_->ApplyChangesFromSyncModel(&trans, record.get(), 1);
+    change_processor_->ApplyChangesFromSyncModel(
+        &trans,
+        ProfileSyncServiceTestHelper::MakeSingletonChangeRecordList(
+            node_id, ChangeRecord::ACTION_ADD));
   }
   change_processor_->CommitChangesFromSyncModel();
 

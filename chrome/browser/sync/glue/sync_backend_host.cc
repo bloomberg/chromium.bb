@@ -24,7 +24,6 @@
 #include "chrome/browser/sync/glue/http_bridge.h"
 #include "chrome/browser/sync/internal_api/base_transaction.h"
 #include "chrome/browser/sync/internal_api/read_transaction.h"
-#include "chrome/browser/sync/internal_api/sync_manager.h"
 #include "chrome/browser/sync/glue/sync_backend_registrar.h"
 #include "chrome/browser/sync/notifier/sync_notifier.h"
 #include "chrome/browser/sync/protocol/sync.pb.h"
@@ -371,8 +370,7 @@ SyncBackendHost::Core::~Core() {
 void SyncBackendHost::Core::OnChangesApplied(
     syncable::ModelType model_type,
     const sync_api::BaseTransaction* trans,
-    const sync_api::SyncManager::ChangeRecord* changes,
-    int change_count) {
+    const sync_api::ImmutableChangeRecordList& changes) {
   if (!host_ || !host_->frontend_) {
     DCHECK(false) << "OnChangesApplied called after Shutdown?";
     return;
@@ -381,7 +379,7 @@ void SyncBackendHost::Core::OnChangesApplied(
   if (!processor)
     return;
 
-  processor->ApplyChangesFromSyncModel(trans, changes, change_count);
+  processor->ApplyChangesFromSyncModel(trans, changes);
 }
 
 void SyncBackendHost::Core::OnChangesComplete(

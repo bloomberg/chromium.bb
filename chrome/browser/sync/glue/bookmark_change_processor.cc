@@ -15,6 +15,7 @@
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sync/internal_api/change_record.h"
 #include "chrome/browser/sync/internal_api/read_node.h"
 #include "chrome/browser/sync/internal_api/write_node.h"
 #include "chrome/browser/sync/internal_api/write_transaction.h"
@@ -355,8 +356,7 @@ int BookmarkChangeProcessor::CalculateBookmarkModelInsertionIndex(
 // model.
 void BookmarkChangeProcessor::ApplyChangesFromSyncModel(
     const sync_api::BaseTransaction* trans,
-    const sync_api::SyncManager::ChangeRecord* changes,
-    int change_count) {
+    const sync_api::ImmutableChangeRecordList& changes) {
   if (!running())
     return;
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -386,17 +386,22 @@ void BookmarkChangeProcessor::ApplyChangesFromSyncModel(
   // A parent to hold nodes temporarily orphaned by parent deletion.  It is
   // lazily created inside the loop.
   const BookmarkNode* foster_parent = NULL;
-  for (int i = 0; i < change_count; ++i) {
+
+  // Whether we have passed all the deletes (which should be at the
+  // front of the list).
+  bool passed_deletes = false;
+  for (sync_api::ChangeRecordList::const_iterator it =
+           changes.Get().begin(); it != changes.Get().end(); ++it) {
     const BookmarkNode* dst =
-        model_associator_->GetChromeNodeFromSyncId(changes[i].id);
+        model_associator_->GetChromeNodeFromSyncId(it->id);
     // Ignore changes to the permanent top-level nodes.  We only care about
     // their children.
     if (model->is_permanent_node(dst))
       continue;
-    if (changes[i].action ==
-        sync_api::SyncManager::ChangeRecord::ACTION_DELETE) {
+    if (it->action ==
+        sync_api::ChangeRecord::ACTION_DELETE) {
       // Deletions should always be at the front of the list.
-      DCHECK(i == 0 || changes[i-1].action == changes[i].action);
+      DCHECK(!passed_deletes);
       // Children of a deleted node should not be deleted; they may be
       // reparented by a later change record.  Move them to a temporary place.
       if (!dst) // Can't do anything if we can't find the chrome node.
@@ -414,18 +419,19 @@ void BookmarkChangeProcessor::ApplyChangesFromSyncModel(
         }
       }
       DCHECK_EQ(dst->child_count(), 0) << "Node being deleted has children";
-      model_associator_->Disassociate(changes[i].id);
+      model_associator_->Disassociate(it->id);
       int index = parent->GetIndexOf(dst);
       if (index > -1)
         model->Remove(parent, index);
       dst = NULL;
     } else {
-      DCHECK_EQ((changes[i].action ==
-          sync_api::SyncManager::ChangeRecord::ACTION_ADD), (dst == NULL))
+      DCHECK_EQ((it->action ==
+          sync_api::ChangeRecord::ACTION_ADD), (dst == NULL))
           << "ACTION_ADD should be seen if and only if the node is unknown.";
+      passed_deletes = true;
 
       sync_api::ReadNode src(trans);
-      if (!src.InitByIdLookup(changes[i].id)) {
+      if (!src.InitByIdLookup(it->id)) {
         error_handler()->OnUnrecoverableError(FROM_HERE,
             "ApplyModelChanges was passed a bad ID");
         return;

@@ -23,6 +23,7 @@
 #include "chrome/browser/password_manager/encryptor.h"
 #include "chrome/browser/sync/engine/model_safe_worker.h"
 #include "chrome/browser/sync/engine/nigori_util.h"
+#include "chrome/browser/sync/internal_api/change_record.h"
 #include "chrome/browser/sync/internal_api/http_post_provider_factory.h"
 #include "chrome/browser/sync/internal_api/http_post_provider_interface.h"
 #include "chrome/browser/sync/internal_api/read_node.h"
@@ -556,20 +557,19 @@ TEST_F(SyncApiTest, BaseNodeGetDetailsAsValue) {
 
 namespace {
 
-void ExpectChangeRecordActionValue(SyncManager::ChangeRecord::Action
-                                       expected_value,
+void ExpectChangeRecordActionValue(ChangeRecord::Action expected_value,
                                    const DictionaryValue& value,
                                    const std::string& key) {
   std::string str_value;
   EXPECT_TRUE(value.GetString(key, &str_value));
   switch (expected_value) {
-    case SyncManager::ChangeRecord::ACTION_ADD:
+    case ChangeRecord::ACTION_ADD:
       EXPECT_EQ("Add", str_value);
       break;
-    case SyncManager::ChangeRecord::ACTION_UPDATE:
+    case ChangeRecord::ACTION_UPDATE:
       EXPECT_EQ("Update", str_value);
       break;
-    case SyncManager::ChangeRecord::ACTION_DELETE:
+    case ChangeRecord::ACTION_DELETE:
       EXPECT_EQ("Delete", str_value);
       break;
     default:
@@ -578,10 +578,10 @@ void ExpectChangeRecordActionValue(SyncManager::ChangeRecord::Action
   }
 }
 
-void CheckNonDeleteChangeRecordValue(const SyncManager::ChangeRecord& record,
+void CheckNonDeleteChangeRecordValue(const ChangeRecord& record,
                                      const DictionaryValue& value,
                                      BaseTransaction* trans) {
-  EXPECT_NE(SyncManager::ChangeRecord::ACTION_DELETE, record.action);
+  EXPECT_NE(ChangeRecord::ACTION_DELETE, record.action);
   ExpectChangeRecordActionValue(record.action, value, "action");
   {
     ReadNode node(trans);
@@ -591,9 +591,9 @@ void CheckNonDeleteChangeRecordValue(const SyncManager::ChangeRecord& record,
   }
 }
 
-void CheckDeleteChangeRecordValue(const SyncManager::ChangeRecord& record,
+void CheckDeleteChangeRecordValue(const ChangeRecord& record,
                                   const DictionaryValue& value) {
-  EXPECT_EQ(SyncManager::ChangeRecord::ACTION_DELETE, record.action);
+  EXPECT_EQ(ChangeRecord::ACTION_DELETE, record.action);
   ExpectChangeRecordActionValue(record.action, value, "action");
   DictionaryValue* node_value = NULL;
   EXPECT_TRUE(value.GetDictionary("node", &node_value));
@@ -615,7 +615,7 @@ void CheckDeleteChangeRecordValue(const SyncManager::ChangeRecord& record,
 }
 
 class MockExtraChangeRecordData
-    : public SyncManager::ExtraPasswordChangeRecordData {
+    : public ExtraPasswordChangeRecordData {
  public:
   MOCK_CONST_METHOD0(ToValue, DictionaryValue*());
 };
@@ -636,8 +636,8 @@ TEST_F(SyncApiTest, ChangeRecordToValue) {
   // Add
   {
     ReadTransaction trans(FROM_HERE, test_user_share_.user_share());
-    SyncManager::ChangeRecord record;
-    record.action = SyncManager::ChangeRecord::ACTION_ADD;
+    ChangeRecord record;
+    record.action = ChangeRecord::ACTION_ADD;
     record.id = 1;
     record.specifics = child_specifics;
     record.extra.reset(new StrictMock<MockExtraChangeRecordData>());
@@ -648,8 +648,8 @@ TEST_F(SyncApiTest, ChangeRecordToValue) {
   // Update
   {
     ReadTransaction trans(FROM_HERE, test_user_share_.user_share());
-    SyncManager::ChangeRecord record;
-    record.action = SyncManager::ChangeRecord::ACTION_UPDATE;
+    ChangeRecord record;
+    record.action = ChangeRecord::ACTION_UPDATE;
     record.id = child_id;
     record.specifics = child_specifics;
     record.extra.reset(new StrictMock<MockExtraChangeRecordData>());
@@ -660,8 +660,8 @@ TEST_F(SyncApiTest, ChangeRecordToValue) {
   // Delete (no extra)
   {
     ReadTransaction trans(FROM_HERE, test_user_share_.user_share());
-    SyncManager::ChangeRecord record;
-    record.action = SyncManager::ChangeRecord::ACTION_DELETE;
+    ChangeRecord record;
+    record.action = ChangeRecord::ACTION_DELETE;
     record.id = child_id + 1;
     record.specifics = child_specifics;
     scoped_ptr<DictionaryValue> value(record.ToValue(&trans));
@@ -671,8 +671,8 @@ TEST_F(SyncApiTest, ChangeRecordToValue) {
   // Delete (with extra)
   {
     ReadTransaction trans(FROM_HERE, test_user_share_.user_share());
-    SyncManager::ChangeRecord record;
-    record.action = SyncManager::ChangeRecord::ACTION_DELETE;
+    ChangeRecord record;
+    record.action = ChangeRecord::ACTION_DELETE;
     record.id = child_id + 1;
     record.specifics = child_specifics;
 
@@ -731,11 +731,10 @@ class TestHttpPostProviderFactory : public HttpPostProviderFactory {
 
 class SyncManagerObserverMock : public SyncManager::Observer {
  public:
-  MOCK_METHOD4(OnChangesApplied,
+  MOCK_METHOD3(OnChangesApplied,
                void(ModelType,
                     const BaseTransaction*,
-                    const SyncManager::ChangeRecord*,
-                    int));  // NOLINT
+                    const ImmutableChangeRecordList&));  // NOLINT
   MOCK_METHOD1(OnChangesComplete, void(ModelType));  // NOLINT
   MOCK_METHOD1(OnSyncCycleCompleted,
                void(const SyncSessionSnapshot*));  // NOLINT
@@ -747,7 +746,6 @@ class SyncManagerObserverMock : public SyncManager::Observer {
   MOCK_METHOD1(OnPassphraseAccepted, void(const std::string&));  // NOLINT
   MOCK_METHOD0(OnStopSyncingPermanently, void());  // NOLINT
   MOCK_METHOD1(OnUpdatedToken, void(const std::string&));  // NOLINT
-  MOCK_METHOD1(OnMigrationNeededForTypes, void(const ModelTypeSet&));
   MOCK_METHOD0(OnClearServerDataFailed, void());  // NOLINT
   MOCK_METHOD0(OnClearServerDataSucceeded, void());  // NOLINT
   MOCK_METHOD1(OnEncryptionComplete, void(const ModelTypeSet&));  // NOLINT
@@ -828,7 +826,7 @@ class SyncManagerTest : public testing::Test,
     GetModelSafeRoutingInfo(&routes);
     for (ModelSafeRoutingInfo::iterator i = routes.begin(); i != routes.end();
          ++i) {
-      EXPECT_CALL(observer_, OnChangesApplied(i->first, _, _, 1))
+      EXPECT_CALL(observer_, OnChangesApplied(i->first, _, _))
           .RetiresOnSaturation();
       EXPECT_CALL(observer_, OnChangesComplete(i->first))
           .RetiresOnSaturation();

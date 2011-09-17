@@ -262,8 +262,7 @@ class SyncBackendHost {
     virtual void OnChangesApplied(
         syncable::ModelType model_type,
         const sync_api::BaseTransaction* trans,
-        const sync_api::SyncManager::ChangeRecord* changes,
-        int change_count) OVERRIDE;
+        const sync_api::ImmutableChangeRecordList& changes) OVERRIDE;
     virtual void OnChangesComplete(
         syncable::ModelType model_type) OVERRIDE;
     virtual void OnSyncCycleCompleted(
