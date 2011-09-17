@@ -93,15 +93,6 @@ class FlashTest(pyauto.PyUITest):
     # Verify shockwave flash process not present.
     self._AssertFlashProcessNotPresent()
 
-  def testYouTubeVideo(self):
-    """Verify able to watch youtube.com."""
-    youtube_url = 'http://www.youtube.com/watch?v=0QRO3gKj3qw'
-    # Verify no flash process is present.
-    self._AssertFlashProcessNotPresent()
-    # Play YouTube video.
-    self.NavigateToURL(youtube_url)
-    self._AssertFlashProcessPresent()
-
   def testFlashIncognitoMode(self):
     """Verify we can play flash on an incognito window."""
     if self.IsMac():
