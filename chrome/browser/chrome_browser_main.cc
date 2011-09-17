@@ -52,7 +52,6 @@
 #include "chrome/browser/net/chrome_dns_cert_provenance_checker_factory.h"
 #include "chrome/browser/net/chrome_net_log.h"
 #include "chrome/browser/net/predictor.h"
-#include "chrome/browser/net/sdch_dictionary_fetcher.h"
 #include "chrome/browser/plugin_prefs.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -99,6 +98,7 @@
 #include "grit/platform_locale_settings.h"
 #include "net/base/cookie_monster.h"
 #include "net/base/net_module.h"
+#include "net/base/sdch_manager.h"
 #include "net/http/http_basic_stream.h"
 #include "net/http/http_network_layer.h"
 #include "net/http/http_stream_factory.h"
@@ -166,7 +166,6 @@
 #include "chrome/installer/util/shell_util.h"
 #include "content/browser/user_metrics.h"
 #include "net/base/net_util.h"
-#include "net/base/sdch_manager.h"
 #include "printing/printed_document.h"
 #include "ui/base/l10n/l10n_util_win.h"
 #include "ui/gfx/platform_font_win.h"
@@ -1710,33 +1709,31 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunInternal() {
   browser_process_->google_url_tracker();
   browser_process_->intranet_redirect_detector();
 
-  // Prepare for memory caching of SDCH dictionaries.
-  // Perform A/B test to measure global impact of SDCH support.
-  // Set up a field trial to see what disabling SDCH does to latency of page
-  // layout globally.
-  base::FieldTrial::Probability kSDCH_DIVISOR = 1000;
-  base::FieldTrial::Probability kSDCH_DISABLE_PROBABILITY = 1;  // 0.1% prob.
-  // After June 30, 2011 builds, it will always be in default group.
-  scoped_refptr<base::FieldTrial> sdch_trial(
-      new base::FieldTrial("GlobalSdch", kSDCH_DIVISOR, "global_enable_sdch",
-          2011, 6, 30));
-  int sdch_enabled = sdch_trial->kDefaultGroupNumber;
+  // Disable SDCH filtering if switches::kEnableSdch is 0.
+  int sdch_enabled = 1;
+  if (parsed_command_line().HasSwitch(switches::kEnableSdch)) {
+    base::StringToInt(parsed_command_line().GetSwitchValueASCII(
+        switches::kEnableSdch), &sdch_enabled);
+    if (!sdch_enabled)
+      net::SdchManager::EnableSdchSupport(false);
+  }
+  if (sdch_enabled) {
+    // Perform A/B test to measure global impact of SDCH support.
+    // Set up a field trial to see what disabling SDCH does to latency of page
+    // layout globally.
+    base::FieldTrial::Probability kSDCH_DIVISOR = 1000;
+    base::FieldTrial::Probability kSDCH_DISABLE_PROBABILITY = 1;  // 0.1% prob.
+    // After March 31, 2012 builds, it will always be in default group.
+    scoped_refptr<base::FieldTrial> sdch_trial(
+        new base::FieldTrial("GlobalSdch", kSDCH_DIVISOR, "global_enable_sdch",
+            2012, 3, 31));
+    int sdch_enabled_group = sdch_trial->kDefaultGroupNumber;
 
-  // Use default of "" so that all domains are supported.
-  std::string sdch_supported_domain("");
-  if (parsed_command_line().HasSwitch(switches::kSdchFilter)) {
-    sdch_supported_domain =
-        parsed_command_line().GetSwitchValueASCII(switches::kSdchFilter);
-  } else {
     sdch_trial->AppendGroup("global_disable_sdch",
                             kSDCH_DISABLE_PROBABILITY);
-    if (sdch_enabled != sdch_trial->group())
-      sdch_supported_domain = "never_enabled_sdch_for_any_domain";
+    if (sdch_enabled_group != sdch_trial->group())
+      net::SdchManager::EnableSdchSupport(false);
   }
-
-  net::SdchManager sdch_manager;  // Singleton database.
-  sdch_manager.set_sdch_fetcher(new SdchDictionaryFetcher);
-  sdch_manager.EnableSdchSupport(sdch_supported_domain);
 
   InstallJankometer(parsed_command_line());
 

@@ -26,6 +26,7 @@
 #include "chrome/browser/net/passive_log_collector.h"
 #include "chrome/browser/net/pref_proxy_config_service.h"
 #include "chrome/browser/net/proxy_service_factory.h"
+#include "chrome/browser/net/sdch_dictionary_fetcher.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -43,6 +44,7 @@
 #include "net/base/mapped_host_resolver.h"
 #include "net/base/net_util.h"
 #include "net/base/origin_bound_cert_service.h"
+#include "net/base/sdch_manager.h"
 #include "net/dns/async_host_resolver.h"
 #include "net/ftp/ftp_network_layer.h"
 #include "net/http/http_auth_filter.h"
@@ -343,7 +345,9 @@ IOThread::IOThread(
       net_log_(net_log),
       extension_event_router_forwarder_(extension_event_router_forwarder),
       globals_(NULL),
+      sdch_manager_(new net::SdchManager()),
       ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
+  sdch_manager_->set_sdch_fetcher(new SdchDictionaryFetcher);
   // We call RegisterPrefs() here (instead of inside browser_prefs.cc) to make
   // sure that everything is initialized in the right order.
   RegisterPrefs(local_state);
@@ -367,6 +371,9 @@ IOThread::IOThread(
 }
 
 IOThread::~IOThread() {
+  delete sdch_manager_;
+  sdch_manager_ = NULL;
+
   if (pref_proxy_config_tracker_)
     pref_proxy_config_tracker_->DetachFromPrefService();
   // We cannot rely on our base class to stop the thread since we want our

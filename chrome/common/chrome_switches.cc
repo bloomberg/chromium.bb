@@ -905,12 +905,11 @@ const char kSbDisableAutoUpdate[] = "safebrowsing-disable-auto-update";
 const char kSbDisableDownloadProtection[] =
     "safebrowsing-disable-download-protection";
 
-// Enable support for SDCH filtering (dictionary based expansion of content).
-// Optional argument is *the* only domain name that will have SDCH suppport.
-// Default is  "-enable-sdch" to advertise SDCH on all domains.
-// Sample usage with argument: "-enable-sdch=.google.com"
+// Controls the support for SDCH filtering (dictionary based expansion of
+// content). By default SDCH filtering is enabled. To disable SDCH filtering,
+// use "--enable-sdch=0" as command line argument.
 // SDCH is currently only supported server-side for searches on google.com.
-const char kSdchFilter[]                    = "enable-sdch";
+const char kEnableSdch[]                   = "enable-sdch";
 
 // Enables the showing of an info-bar instructing user they can search directly
 // from the omnibox.

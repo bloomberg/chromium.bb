@@ -40,6 +40,7 @@ class NetworkDelegate;
 class OriginBoundCertService;
 class ProxyConfigService;
 class ProxyService;
+class SdchManager;
 class SSLConfigService;
 class URLRequestContext;
 class URLRequestContextGetter;
@@ -178,6 +179,8 @@ class IOThread : public BrowserProcessSubThread {
 
   scoped_refptr<net::URLRequestContextGetter>
       system_url_request_context_getter_;
+
+  net::SdchManager* sdch_manager_;
 
   ScopedRunnableMethodFactory<IOThread> method_factory_;
 
