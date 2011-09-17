@@ -135,8 +135,7 @@
  * This is independent of any alignment requirement for actual TLS data,
  * which might be more or less than this.
  */
-size_t __nacl_tp_alignment(void);
-#define __nacl_tp_alignment()           __builtin_nacl_tp_alignment()
+size_t __nacl_tp_alignment(void) asm("llvm.nacl.tp.alignment");
 
 /*
  * Signed offset from $tp to the beginning of TLS data.
@@ -144,8 +143,7 @@ size_t __nacl_tp_alignment(void);
  * The address ($tp + __nacl_tp_tls_offset(tls_size))
  * is what gets initialized with the .tdata image.
  */
-ptrdiff_t __nacl_tp_tls_offset(size_t tls_size);
-#define __nacl_tp_tls_offset(size)      __builtin_nacl_tp_tls_offset(size)
+ptrdiff_t __nacl_tp_tls_offset(size_t tls_size) asm("llvm.nacl.tp.tls.offset");
 
 /*
  * Signed offset from $tp to the thread library's private thread data block.
@@ -153,9 +151,7 @@ ptrdiff_t __nacl_tp_tls_offset(size_t tls_size);
  * is stored.  On some machines it's required that the first word of this
  * be a pointer with value $tp.
  */
-ptrdiff_t __nacl_tp_tdb_offset(size_t tdb_size);
-#define __nacl_tp_tdb_offset(size)      __builtin_nacl_tp_tdb_offset(size)
-
+ptrdiff_t __nacl_tp_tdb_offset(size_t tdb_size) asm("llvm.nacl.tp.tdb.offset");
 
 /*
  * This actually has nothing whatsoever to do with TLS and doesn't really
@@ -166,8 +162,7 @@ ptrdiff_t __nacl_tp_tdb_offset(size_t tdb_size);
  * thread.  (On machines such as x86, this is the place where the return
  * address of the thread function would go.)
  */
-size_t __nacl_thread_stack_padding(void);
-#define __nacl_thread_stack_padding()   __builtin_nacl_thread_stack_padding()
+size_t __nacl_thread_stack_padding(void) asm("llvm.nacl.thread.stack.padding");
 
 #elif defined(__i386__) || defined(__x86_64__)
 
