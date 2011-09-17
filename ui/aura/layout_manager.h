@@ -6,10 +6,12 @@
 #define UI_AURA_LAYOUT_MANAGER_H_
 #pragma once
 
+#include "ui/aura_shell/aura_shell_export.h"
+
 namespace aura {
 
 // An interface implemented by an object that places child windows.
-class LayoutManager {
+class AURA_SHELL_EXPORT LayoutManager {
  public:
   virtual ~LayoutManager() {}
 

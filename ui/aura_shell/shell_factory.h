@@ -6,6 +6,8 @@
 #define UI_AURA_SHELL_SHELL_FACTORY_H_
 #pragma once
 
+#include "ui/aura_shell/aura_shell_export.h"
+
 namespace views {
 class Widget;
 }
@@ -15,9 +17,9 @@ namespace internal {
 
 // Declarations of shell component factory functions.
 
-views::Widget* CreateDesktopBackground();
+AURA_SHELL_EXPORT views::Widget* CreateDesktopBackground();
 
-views::Widget* CreateLauncher();
+AURA_SHELL_EXPORT views::Widget* CreateLauncher();
 
 }  // namespace internal
 }  // namespace aura_shell

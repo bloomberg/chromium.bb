@@ -6,6 +6,7 @@
 
 #include "grit/ui_resources.h"
 #include "ui/aura/desktop.h"
+#include "ui/aura_shell/aura_shell_export.h"
 #include "ui/aura_shell/sample_window.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
@@ -41,7 +42,7 @@ bool DesktopBackgroundView::OnMousePressed(const views::MouseEvent& event) {
   return true;
 }
 
-views::Widget* CreateDesktopBackground() {
+AURA_SHELL_EXPORT views::Widget* CreateDesktopBackground() {
   views::Widget* desktop_widget = new views::Widget;
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_CONTROL);
   params.bounds = gfx::Rect(0, 0, 1024, 768);

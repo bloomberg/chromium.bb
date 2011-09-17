@@ -5,6 +5,7 @@
 #include "ui/aura_shell/launcher/launcher_view.h"
 
 #include "ui/aura/desktop.h"
+#include "ui/aura_shell/aura_shell_export.h"
 #include "ui/aura_shell/launcher/launcher_button.h"
 #include "ui/gfx/canvas.h"
 #include "views/widget/widget.h"
@@ -33,7 +34,7 @@ void LauncherView::ButtonPressed(views::Button* sender,
                                  const views::Event& event) {
 }
 
-views::Widget* CreateLauncher() {
+AURA_SHELL_EXPORT views::Widget* CreateLauncher() {
   views::Widget* launcher_widget = new views::Widget;
   views::Widget::InitParams params2(views::Widget::InitParams::TYPE_CONTROL);
   params2.bounds = gfx::Rect(0, 0, 300, 64);

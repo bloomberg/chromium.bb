@@ -20,7 +20,7 @@ class Widget;
 namespace aura_shell {
 namespace internal {
 
-class DesktopLayoutManager : public aura::LayoutManager {
+class AURA_SHELL_EXPORT DesktopLayoutManager : public aura::LayoutManager {
  public:
   explicit DesktopLayoutManager(aura::Window* owner);
   virtual ~DesktopLayoutManager();
