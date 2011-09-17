@@ -116,7 +116,7 @@ deps_os = {
         'src/third_party/lighttpd':
             Var('git_url') + '/chromium/deps/lighttpd.git@9dfa55d15937a688a92cbf2b7a8621b0927d06eb',
         'src/third_party/nss':
-            Var('git_url') + '/chromium/deps/nss.git@757ce69ea9b9de83ff490e2fc2f6257baa492f40',
+            Var('git_url') + '/chromium/deps/nss.git@a98c4381b8965aa43102d30b7a450f01f7935203',
         'src/third_party/pdfsqueeze':
             Var('git_url') + '/external/pdfsqueeze.git@a2470ff9fcc9d399a1c0ac58e8b1df6f46143801',
         'src/third_party/swig/mac':
@@ -152,7 +152,7 @@ deps_os = {
         'src/third_party/mingw-w64/mingw/bin':
             Var('git_url') + '/native_client/src/third_party/mingw-w64/mingw/bin.git@f8d5ecca68faf1f7dad0a1b4905519e3732ecc21',
         'src/third_party/nss':
-            Var('git_url') + '/chromium/deps/nss.git@757ce69ea9b9de83ff490e2fc2f6257baa492f40',
+            Var('git_url') + '/chromium/deps/nss.git@a98c4381b8965aa43102d30b7a450f01f7935203',
         'src/third_party/pefile':
             Var('git_url') + '/external/pefile.git@d0ca75794f69f1d09fd6d31d40ba2f1e9b3b7fb4',
         'src/third_party/psyco_win32':
