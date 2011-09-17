@@ -254,8 +254,8 @@ def BuildScript(status, context):
         SCons(context, browser_test=True,
               args=['SILENT=1', 'irt=0', 'chrome_browser_tests'])
 
-    with Step('pyauto_tests', status, halt_on_fail=False):
-      SCons(context, browser_test=True, args=['SILENT=1', 'pyauto_tests'])
+#    with Step('pyauto_tests', status, halt_on_fail=False):
+#      SCons(context, browser_test=True, args=['SILENT=1', 'pyauto_tests'])
 
   if do_dso_tests:
     with Step('dynamic_library_browser_tests', status, halt_on_fail=False):
