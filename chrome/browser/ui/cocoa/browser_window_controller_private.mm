@@ -683,7 +683,9 @@ willPositionSheet:(NSWindow*)sheet
     return;
 
   if (presentationMode) {
-    BOOL showDropdown = forceDropdown || [self floatingBarHasFocus];
+    BOOL fullscreen_for_tab = browser_->is_fullscreen_for_tab();
+    BOOL showDropdown = !fullscreen_for_tab &&
+        (forceDropdown || [self floatingBarHasFocus]);
     NSView* contentView = [[self window] contentView];
     presentationModeController_.reset(
         [[PresentationModeController alloc] initWithBrowserController:self]);
@@ -790,6 +792,30 @@ willPositionSheet:(NSWindow*)sheet
                                      : [toolbarController_ view]];
 }
 
+- (void)showFullscreenExitBubbleIfNecessary {
+  if (!browser_->is_fullscreen_for_tab()) {
+    return;
+  }
+
+  [presentationModeController_ ensureOverlayHiddenWithAnimation:NO delay:NO];
+
+  fullscreenExitBubbleController_.reset(
+      [[FullscreenExitBubbleController alloc] initWithOwner:self
+                                                    browser:browser_.get()]);
+  NSView* contentView = [[self window] contentView];
+  CGFloat maxWidth = NSWidth([contentView frame]);
+  CGFloat maxY = NSMaxY([[[self window] contentView] frame]);
+  [fullscreenExitBubbleController_
+      positionInWindowAtTop:maxY width:maxWidth];
+  [contentView addSubview:[fullscreenExitBubbleController_ view]
+      positioned:NSWindowAbove relativeTo:[self tabContentArea]];
+}
+
+- (void)destroyFullscreenExitBubbleIfNecessary {
+  [[fullscreenExitBubbleController_ view] removeFromSuperview];
+  fullscreenExitBubbleController_.reset();
+}
+
 - (void)contentViewDidResize:(NSNotification*)notification {
   [self layoutSubviews];
 }
@@ -827,6 +853,7 @@ willPositionSheet:(NSWindow*)sheet
   NSWindow* window = [self window];
   savedRegularWindowFrame_ = [window frame];
   BOOL mode = [self shouldUsePresentationModeWhenEnteringFullscreen];
+  mode = mode || browser_->is_fullscreen_for_tab();
   [self setPresentationModeInternal:mode forceDropdown:NO];
 }
 

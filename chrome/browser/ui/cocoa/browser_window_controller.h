@@ -19,6 +19,7 @@
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_controller.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bubble_controller.h"
 #import "chrome/browser/ui/cocoa/browser_command_executor.h"
+#import "chrome/browser/ui/cocoa/fullscreen_exit_bubble_controller.h"
 #import "chrome/browser/ui/cocoa/tab_contents/tab_contents_controller.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_controller.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_window_controller.h"
@@ -73,6 +74,8 @@ class TabContents;
   scoped_nsobject<SidebarController> sidebarController_;
   scoped_nsobject<PreviewableContentsController> previewableContentsController_;
   scoped_nsobject<PresentationModeController> presentationModeController_;
+  scoped_nsobject<FullscreenExitBubbleController>
+      fullscreenExitBubbleController_;
 
   // Strong. StatusBubble is a special case of a strong reference that
   // we don't wrap in a scoped_ptr because it is acting the same

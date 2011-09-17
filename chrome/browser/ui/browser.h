@@ -831,6 +831,10 @@ class Browser : public TabHandlerDelegate,
   bool is_app() const;
   bool is_devtools() const;
 
+  // True when the current tab is in fullscreen mode, requested by
+  // webkitRequestFullScreen.
+  bool is_fullscreen_for_tab() const { return fullscreened_tab_ != NULL; }
+
  protected:
   // Wrapper for the factory method in BrowserWindow. This allows subclasses to
   // set their own window.
@@ -844,6 +848,7 @@ class Browser : public TabHandlerDelegate,
   FRIEND_TEST_ALL_PREFIXES(BrowserTest, AppIdSwitch);
   FRIEND_TEST_ALL_PREFIXES(BrowserTest, TestNewTabExitsFullscreen);
   FRIEND_TEST_ALL_PREFIXES(BrowserTest, TestTabExitsItselfFromFullscreen);
+  FRIEND_TEST_ALL_PREFIXES(BrowserTest, TabEntersPresentationModeFromWindowed);
   FRIEND_TEST_ALL_PREFIXES(BrowserInitTest, OpenAppShortcutNoPref);
   FRIEND_TEST_ALL_PREFIXES(BrowserInitTest, OpenAppShortcutWindowPref);
   FRIEND_TEST_ALL_PREFIXES(BrowserInitTest, OpenAppShortcutTabPref);
@@ -1413,10 +1418,11 @@ class Browser : public TabHandlerDelegate,
 
   BookmarkBar::State bookmark_bar_state_;
 
-  // Tab to notify when the browser exits fullscreen mode.
+  // If there is currently a tab in fullscreen mode (entered via
+  // webkitRequestFullScreen), this is its wrapper.
   TabContentsWrapper* fullscreened_tab_;
 
-  // True if the current tab is in fullscreen mode.
+  // True if the current tab entered fullscreen mode via webkitRequestFullScreen
   bool tab_caused_fullscreen_;
 
   DISALLOW_COPY_AND_ASSIGN(Browser);

@@ -245,6 +245,7 @@
                 'app/nibs/FindBar.xib',
                 'app/nibs/FirstRunBubble.xib',
                 'app/nibs/FirstRunDialog.xib',
+                'app/nibs/FullscreenExitBubble.xib',
                 'app/nibs/GlobalErrorBubble.xib',
                 'app/nibs/HungRendererDialog.xib',
                 'app/nibs/HttpAuthLoginSheet.xib',

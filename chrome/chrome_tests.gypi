@@ -1609,6 +1609,7 @@
         'browser/ui/cocoa/focus_tracker_unittest.mm',
         'browser/ui/cocoa/framed_browser_window_unittest.mm',
         'browser/ui/cocoa/fullscreen_window_unittest.mm',
+        'browser/ui/cocoa/fullscreen_exit_bubble_controller_unittest.mm',
         'browser/ui/cocoa/gradient_button_cell_unittest.mm',
         'browser/ui/cocoa/history_menu_bridge_unittest.mm',
         'browser/ui/cocoa/history_menu_cocoa_controller_unittest.mm',

@@ -6,6 +6,9 @@
 
 #include "base/compiler_specific.h"
 #include "base/file_path.h"
+#if defined(OS_MACOSX)
+#include "base/mac/mac_util.h"
+#endif
 #include "base/sys_info.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -823,6 +826,36 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, TestTabExitsItselfFromFullscreen) {
   ui_test_utils::WaitForNotification(chrome::NOTIFICATION_FULLSCREEN_CHANGED);
   ASSERT_FALSE(browser()->window()->IsFullscreen());
 }
+
+#if defined(OS_MACOSX)
+IN_PROC_BROWSER_TEST_F(BrowserTest, TabEntersPresentationModeFromWindowed) {
+  ASSERT_TRUE(test_server()->Start());
+
+  AddTabAtIndex(0, GURL("about:blank"), PageTransition::TYPED);
+
+  TabContents* fullscreen_tab = browser()->GetSelectedTabContents();
+
+  EXPECT_FALSE(browser()->window()->IsFullscreen());
+  EXPECT_FALSE(browser()->window()->InPresentationMode());
+  browser()->ToggleFullscreenModeForTab(fullscreen_tab, true);
+  ui_test_utils::WaitForNotification(chrome::NOTIFICATION_FULLSCREEN_CHANGED);
+  ASSERT_TRUE(browser()->window()->IsFullscreen());
+  ASSERT_TRUE(browser()->window()->InPresentationMode());
+  browser()->TogglePresentationMode();
+  ui_test_utils::WaitForNotification(chrome::NOTIFICATION_FULLSCREEN_CHANGED);
+  ASSERT_FALSE(browser()->window()->IsFullscreen());
+  ASSERT_FALSE(browser()->window()->InPresentationMode());
+
+  if (base::mac::IsOSLionOrLater()) {
+    // Test that tab fullscreen mode doesn't make presentation mode the default
+    // on Lion.
+    browser()->ToggleFullscreenMode();
+    ui_test_utils::WaitForNotification(chrome::NOTIFICATION_FULLSCREEN_CHANGED);
+    ASSERT_TRUE(browser()->window()->IsFullscreen());
+    ASSERT_FALSE(browser()->window()->InPresentationMode());
+  }
+}
+#endif
 
 // Chromeos defaults to restoring the last session, so this test isn't
 // applicable.

@@ -43,6 +43,10 @@
 // call even when not in presentation mode.
 - (CGFloat)floatingBarHeight;
 
+// Shows the informational "how to exit fullscreen" bubble.
+- (void)showFullscreenExitBubbleIfNecessary;
+- (void)destroyFullscreenExitBubbleIfNecessary;
+
 // Lays out the presentation mode toggle button at the top right corner of the
 // overlay.  Creates the button if needed, and removes it if it is not needed.
 // This method is safe to call on all OS versions.
