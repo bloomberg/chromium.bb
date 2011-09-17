@@ -1,4 +1,4 @@
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2009 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -92,7 +92,6 @@
         'image_info_unittest.cc',
         'run_all_unittests.cc',
         'streams_unittest.cc',
-        'versioning_unittest.cc',
         'third_party/paged_array_unittest.cc'
       ],
       'dependencies': [
