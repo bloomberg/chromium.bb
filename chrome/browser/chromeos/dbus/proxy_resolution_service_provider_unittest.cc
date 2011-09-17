@@ -193,7 +193,7 @@ class ProxyResolutionServiceProviderTest : public testing::Test {
       const std::string& method_name,
       dbus::ExportedObject::MethodCallCallback method_callback,
       dbus::ExportedObject::OnExportedCallback on_exported_callback) {
-    if (interface_name == kLibCrosServiceInterface,
+    if (interface_name == kLibCrosServiceInterface &&
         method_name == kResolveNetworkProxy) {
       // Tell the call back that the method is exported successfully.
       on_exported_callback.Run(interface_name, method_name, true);
