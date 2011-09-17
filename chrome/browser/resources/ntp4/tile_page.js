@@ -709,7 +709,10 @@ cr.define('ntp4', function() {
               'black ' + (this.tileGrid_.clientWidth - leftMargin) + 'px, ' +
               'transparent ' + (this.tileGrid_.clientWidth - leftMargin +
                                 fadeDistance) + 'px, ' +
-              'transparent)';
+              'transparent) ' +
+              // Need to set mask-box-image-slice property due to a WebKit bug.
+              // Details at: http://crbug.com/96851
+              ' 100%';
       this.tileGrid_.style.WebkitMaskBoxImage = gradient;
     },
 
