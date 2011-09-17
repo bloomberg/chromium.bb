@@ -19,8 +19,6 @@
 #include "net/url_request/url_request_context.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/cros/cros_library.h"
-#include "chrome/browser/chromeos/cros/libcros_service_library.h"
 #include "chrome/browser/chromeos/proxy_config_service.h"
 #endif  // defined(OS_CHROMEOS)
 
@@ -104,12 +102,6 @@ net::ProxyService* ProxyServiceFactory::CreateProxyService(
         num_pac_threads,
         net_log);
   }
-
-#if defined(OS_CHROMEOS)
-  if (chromeos::CrosLibrary::Get()->EnsureLoaded()) {
-    chromeos::CrosLibrary::Get()->GetLibCrosServiceLibrary()->StartService();
-  }
-#endif  // defined(OS_CHROMEOS)
 
   return proxy_service;
 }

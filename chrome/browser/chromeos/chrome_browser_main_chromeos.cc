@@ -11,6 +11,7 @@
 #include "base/message_loop.h"
 #include "chrome/browser/chromeos/boot_times_loader.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
 #include "chrome/browser/chromeos/net/cros_network_change_notifier_factory.h"
 #include "chrome/browser/chromeos/sensors_source_chromeos.h"
 #include "chrome/browser/defaults.h"
@@ -67,7 +68,10 @@ ChromeBrowserMainPartsChromeos::ChromeBrowserMainPartsChromeos(
     const MainFunctionParams& parameters)
     : ChromeBrowserMainPartsGtk(parameters) {
 }
+
 ChromeBrowserMainPartsChromeos::~ChromeBrowserMainPartsChromeos() {
+  chromeos::DBusThreadManager::Shutdown();
+
   if (!parameters().ui_task && chromeos::CrosLibrary::Get())
     chromeos::CrosLibrary::Shutdown();
 
@@ -116,4 +120,8 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopStart() {
     message_loop->PostTask(FROM_HERE,
                            base::Bind(&DoDeferredSensorsInit, sensors_source_));
   }
+
+  // Initialize DBusThreadManager for the browser. This must be done after
+  // the main message loop is started, as it uses the message loop.
+  chromeos::DBusThreadManager::Initialize();
 }
