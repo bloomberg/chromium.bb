@@ -11,8 +11,11 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/compiler_specific.h"
+#include "chrome/installer/util/registry_key_backup.h"
 #include "chrome/installer/util/work_item.h"
+
+class RegistryKeyBackup;
 
 // A WorkItem subclass that deletes a registry key at the given path.  Be aware
 // that in the event of rollback the key's values and subkeys are restored but
@@ -21,12 +24,11 @@ class DeleteRegKeyWorkItem : public WorkItem {
  public:
   virtual ~DeleteRegKeyWorkItem();
 
-  virtual bool Do();
+  virtual bool Do() OVERRIDE;
 
-  virtual void Rollback();
+  virtual void Rollback() OVERRIDE;
 
  private:
-  class RegKeyBackup;
   friend class WorkItem;
 
   DeleteRegKeyWorkItem(HKEY predefined_root, const std::wstring& path);
@@ -39,7 +41,7 @@ class DeleteRegKeyWorkItem : public WorkItem {
   std::wstring path_;
 
   // Backup of the deleted key.
-  scoped_ptr<RegKeyBackup> backup_;
+  RegistryKeyBackup backup_;
 
   DISALLOW_COPY_AND_ASSIGN(DeleteRegKeyWorkItem);
 };

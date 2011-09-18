@@ -5,6 +5,7 @@
 #include "chrome/installer/util/work_item.h"
 
 #include "chrome/installer/util/conditional_work_item_list.h"
+#include "chrome/installer/util/copy_reg_key_work_item.h"
 #include "chrome/installer/util/copy_tree_work_item.h"
 #include "chrome/installer/util/create_dir_work_item.h"
 #include "chrome/installer/util/create_reg_key_work_item.h"
@@ -20,6 +21,14 @@ WorkItem::WorkItem() : ignore_failure_(false) {
 }
 
 WorkItem::~WorkItem() {
+}
+
+CopyRegKeyWorkItem* WorkItem::CreateCopyRegKeyWorkItem(
+    HKEY predefined_root,
+    const std::wstring& source_key_path,
+    const std::wstring& dest_key_path) {
+  return new CopyRegKeyWorkItem(predefined_root, source_key_path,
+                                dest_key_path);
 }
 
 CopyTreeWorkItem* WorkItem::CreateCopyTreeWorkItem(

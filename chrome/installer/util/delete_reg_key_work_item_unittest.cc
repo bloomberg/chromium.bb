@@ -8,85 +8,59 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/win/registry.h"
 #include "chrome/installer/util/delete_reg_key_work_item.h"
+#include "chrome/installer/util/registry_test_data.h"
 #include "chrome/installer/util/work_item.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::win::RegKey;
 
-namespace {
-wchar_t test_root[] = L"SOFTWARE\\TmpTmp";
-}
-
 class DeleteRegKeyWorkItemTest : public testing::Test {
  protected:
-  virtual void SetUp() {
-    // Create a temporary key for testing
-    RegKey key(HKEY_CURRENT_USER, L"", KEY_ALL_ACCESS);
-    key.DeleteKey(test_root);
-    ASSERT_NE(ERROR_SUCCESS, key.Open(HKEY_CURRENT_USER, test_root, KEY_READ));
-    ASSERT_EQ(ERROR_SUCCESS, key.Create(HKEY_CURRENT_USER, test_root,
-                                        KEY_READ));
+  static void TearDownTestCase() {
+    logging::CloseLogFile();
   }
 
-  virtual void TearDown() {
-    logging::CloseLogFile();
-    // Clean up the temporary key
-    RegKey key(HKEY_CURRENT_USER, L"", KEY_ALL_ACCESS);
-    ASSERT_EQ(ERROR_SUCCESS, key.DeleteKey(test_root));
+  virtual void SetUp() {
+    ASSERT_TRUE(test_data_.Initialize(HKEY_CURRENT_USER, L"SOFTWARE\\TmpTmp"));
   }
+
+  RegistryTestData test_data_;
 };
 
 // Test that deleting a key that doesn't exist succeeds, and that rollback does
 // nothing.
 TEST_F(DeleteRegKeyWorkItemTest, TestNoKey) {
+  const std::wstring key_paths[] = {
+    std::wstring(test_data_.base_path() + L"\\NoKeyHere"),
+    std::wstring(test_data_.base_path() + L"\\NoKeyHere\\OrHere")
+  };
   RegKey key;
-  std::wstring key_name(std::wstring(test_root) + L"\\NoKeyHere");
-  EXPECT_NE(ERROR_SUCCESS, key.Open(HKEY_CURRENT_USER, key_name.c_str(),
-                                    KEY_READ));
-  scoped_ptr<DeleteRegKeyWorkItem> item(
-      WorkItem::CreateDeleteRegKeyWorkItem(HKEY_CURRENT_USER, key_name));
-  EXPECT_TRUE(item->Do());
-  EXPECT_NE(ERROR_SUCCESS, key.Open(HKEY_CURRENT_USER, key_name.c_str(),
-                                    KEY_READ));
-  item->Rollback();
-  item.reset();
-  EXPECT_NE(ERROR_SUCCESS, key.Open(HKEY_CURRENT_USER, key_name.c_str(),
-                                    KEY_READ));
-}
-
-// Test that deleting a subkey of a key that doesn't exist succeeds, and that
-// rollback does nothing.
-TEST_F(DeleteRegKeyWorkItemTest, TestNoSubkey) {
-  RegKey key;
-  std::wstring key_name(std::wstring(test_root) + L"\\NoKeyHere\\OrHere");
-  EXPECT_NE(ERROR_SUCCESS, key.Open(HKEY_CURRENT_USER, key_name.c_str(),
-                                    KEY_READ));
-  scoped_ptr<DeleteRegKeyWorkItem> item(
-      WorkItem::CreateDeleteRegKeyWorkItem(HKEY_CURRENT_USER, key_name));
-  EXPECT_TRUE(item->Do());
-  EXPECT_NE(ERROR_SUCCESS, key.Open(HKEY_CURRENT_USER, key_name.c_str(),
-                                    KEY_READ));
-  item->Rollback();
-  item.reset();
-  EXPECT_NE(ERROR_SUCCESS, key.Open(HKEY_CURRENT_USER, key_name.c_str(),
-                                    KEY_READ));
+  for (size_t i = 0; i < arraysize(key_paths); ++i) {
+    const std::wstring& key_path = key_paths[i];
+    scoped_ptr<DeleteRegKeyWorkItem> item(
+        WorkItem::CreateDeleteRegKeyWorkItem(test_data_.root_key(), key_path));
+    EXPECT_TRUE(item->Do());
+    EXPECT_NE(ERROR_SUCCESS, key.Open(test_data_.root_key(), key_path.c_str(),
+                                      KEY_READ));
+    item->Rollback();
+    item.reset();
+    EXPECT_NE(ERROR_SUCCESS, key.Open(test_data_.root_key(), key_path.c_str(),
+                                      KEY_READ));
+  }
 }
 
 // Test that deleting an empty key succeeds, and that rollback brings it back.
 TEST_F(DeleteRegKeyWorkItemTest, TestEmptyKey) {
   RegKey key;
-  std::wstring key_name(std::wstring(test_root) + L"\\EmptyKey");
-  EXPECT_EQ(ERROR_SUCCESS, key.Create(HKEY_CURRENT_USER, key_name.c_str(),
-                                      KEY_WRITE));
-  key.Close();
+  const std::wstring& key_path = test_data_.empty_key_path();
   scoped_ptr<DeleteRegKeyWorkItem> item(
-      WorkItem::CreateDeleteRegKeyWorkItem(HKEY_CURRENT_USER, key_name));
+      WorkItem::CreateDeleteRegKeyWorkItem(test_data_.root_key(), key_path));
   EXPECT_TRUE(item->Do());
-  EXPECT_NE(ERROR_SUCCESS, key.Open(HKEY_CURRENT_USER, key_name.c_str(),
+  EXPECT_NE(ERROR_SUCCESS, key.Open(test_data_.root_key(), key_path.c_str(),
                                     KEY_READ));
   item->Rollback();
   item.reset();
-  EXPECT_EQ(ERROR_SUCCESS, key.Open(HKEY_CURRENT_USER, key_name.c_str(),
+  EXPECT_EQ(ERROR_SUCCESS, key.Open(test_data_.root_key(), key_path.c_str(),
                                     KEY_READ));
 }
 
@@ -94,29 +68,15 @@ TEST_F(DeleteRegKeyWorkItemTest, TestEmptyKey) {
 // brings them all back.
 TEST_F(DeleteRegKeyWorkItemTest, TestNonEmptyKey) {
   RegKey key;
-  std::wstring key_name(std::wstring(test_root) + L"\\NonEmptyKey");
-  EXPECT_EQ(ERROR_SUCCESS, key.Create(HKEY_CURRENT_USER, key_name.c_str(),
-                                      KEY_WRITE));
-  EXPECT_EQ(ERROR_SUCCESS, key.WriteValue(NULL, key_name.c_str()));
-  EXPECT_EQ(ERROR_SUCCESS, key.CreateKey(L"Subkey", KEY_WRITE));
-  EXPECT_EQ(ERROR_SUCCESS, key.WriteValue(L"SomeValue", 1U));
-  key.Close();
+  const std::wstring& key_path = test_data_.non_empty_key_path();
   scoped_ptr<DeleteRegKeyWorkItem> item(
-      WorkItem::CreateDeleteRegKeyWorkItem(HKEY_CURRENT_USER, key_name));
+      WorkItem::CreateDeleteRegKeyWorkItem(test_data_.root_key(), key_path));
   EXPECT_TRUE(item->Do());
-  EXPECT_NE(ERROR_SUCCESS, key.Open(HKEY_CURRENT_USER, key_name.c_str(),
+  EXPECT_NE(ERROR_SUCCESS, key.Open(test_data_.root_key(), key_path.c_str(),
                                     KEY_READ));
   item->Rollback();
   item.reset();
-  EXPECT_EQ(ERROR_SUCCESS, key.Open(HKEY_CURRENT_USER, key_name.c_str(),
-                                    KEY_READ));
-  std::wstring str_value;
-  EXPECT_EQ(ERROR_SUCCESS, key.ReadValue(NULL, &str_value));
-  EXPECT_EQ(key_name, str_value);
-  EXPECT_EQ(ERROR_SUCCESS, key.OpenKey(L"Subkey", KEY_READ));
-  DWORD dw_value = 0;
-  EXPECT_EQ(ERROR_SUCCESS, key.ReadValueDW(L"SomeValue", &dw_value));
-  EXPECT_EQ(1U, dw_value);
+  test_data_.ExpectMatchesNonEmptyKey(test_data_.root_key(), key_path.c_str());
 }
 
 // Test that deleting a key with subkeys we can't delete fails, and that
@@ -125,8 +85,8 @@ TEST_F(DeleteRegKeyWorkItemTest, TestNonEmptyKey) {
 // http://crbug.com/74654
 TEST_F(DeleteRegKeyWorkItemTest, DISABLED_TestUndeletableKey) {
   RegKey key;
-  std::wstring key_name(std::wstring(test_root) + L"\\UndeletableKey");
-  EXPECT_EQ(ERROR_SUCCESS, key.Create(HKEY_CURRENT_USER, key_name.c_str(),
+  std::wstring key_name(test_data_.base_path() + L"\\UndeletableKey");
+  EXPECT_EQ(ERROR_SUCCESS, key.Create(test_data_.root_key(), key_name.c_str(),
                                       KEY_WRITE));
   EXPECT_EQ(ERROR_SUCCESS, key.WriteValue(NULL, key_name.c_str()));
   DWORD dw_value = 1;
@@ -153,13 +113,13 @@ TEST_F(DeleteRegKeyWorkItemTest, DISABLED_TestUndeletableKey) {
   subkey.Close();
   key.Close();
   scoped_ptr<DeleteRegKeyWorkItem> item(
-      WorkItem::CreateDeleteRegKeyWorkItem(HKEY_CURRENT_USER, key_name));
+      WorkItem::CreateDeleteRegKeyWorkItem(test_data_.root_key(), key_name));
   EXPECT_FALSE(item->Do());
-  EXPECT_EQ(ERROR_SUCCESS, key.Open(HKEY_CURRENT_USER, key_name.c_str(),
+  EXPECT_EQ(ERROR_SUCCESS, key.Open(test_data_.root_key(), key_name.c_str(),
                                     KEY_QUERY_VALUE));
   item->Rollback();
   item.reset();
-  EXPECT_EQ(ERROR_SUCCESS, key.Open(HKEY_CURRENT_USER, key_name.c_str(),
+  EXPECT_EQ(ERROR_SUCCESS, key.Open(test_data_.root_key(), key_name.c_str(),
                                     KEY_QUERY_VALUE));
   std::wstring str_value;
   EXPECT_EQ(ERROR_SUCCESS, key.ReadValue(NULL, &str_value));

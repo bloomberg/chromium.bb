@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/file_path.h"
 #include "chrome/installer/util/logging_installer.h"
+#include "chrome/installer/util/copy_reg_key_work_item.h"
 #include "chrome/installer/util/copy_tree_work_item.h"
 #include "chrome/installer/util/create_dir_work_item.h"
 #include "chrome/installer/util/create_reg_key_work_item.h"
@@ -70,6 +71,16 @@ void WorkItemList::Rollback() {
 void WorkItemList::AddWorkItem(WorkItem* work_item) {
   DCHECK(status_ == ADD_ITEM);
   list_.push_back(work_item);
+}
+
+WorkItem* WorkItemList::AddCopyRegKeyWorkItem(
+    HKEY predefined_root,
+    const std::wstring& source_key_path,
+    const std::wstring& dest_key_path) {
+  WorkItem* item = WorkItem::CreateCopyRegKeyWorkItem(
+      predefined_root, source_key_path, dest_key_path);
+  AddWorkItem(item);
+  return item;
 }
 
 WorkItem* WorkItemList::AddCopyTreeWorkItem(

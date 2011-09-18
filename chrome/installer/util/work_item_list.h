@@ -37,6 +37,11 @@ class WorkItemList : public WorkItem {
   // Once a WorkItem is added to the list. The list owns the WorkItem.
   virtual void AddWorkItem(WorkItem* work_item);
 
+  // Add a CopyRegKeyWorkItem that recursively copies a given registry key.
+  virtual WorkItem* AddCopyRegKeyWorkItem(HKEY predefined_root,
+                                          const std::wstring& source_key_path,
+                                          const std::wstring& dest_key_path);
+
   // Add a CopyTreeWorkItem to the list of work items.
   // See the NOTE in the documentation for the CopyTreeWorkItem class for
   // special considerations regarding |temp_dir|.
@@ -102,11 +107,11 @@ class WorkItemList : public WorkItem {
 
   // Add a SetRegValueWorkItem that sets a registry value with REG_QWORD type
   // at the key with specified path.
-  WorkItem* AddSetRegValueWorkItem(HKEY predefined_root,
-                                   const std::wstring& key_path,
-                                   const std::wstring& value_name,
-                                   int64 value_data,
-                                   bool overwrite);
+  virtual WorkItem* AddSetRegValueWorkItem(HKEY predefined_root,
+                                           const std::wstring& key_path,
+                                           const std::wstring& value_name,
+                                           int64 value_data,
+                                           bool overwrite);
 
   // Add a SelfRegWorkItem that registers or unregisters a DLL at the
   // specified path. If user_level_registration is true, then alternate

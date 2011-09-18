@@ -17,6 +17,7 @@
 
 #include "base/basictypes.h"
 
+class CopyRegKeyWorkItem;
 class CopyTreeWorkItem;
 class CreateDirWorkItem;
 class CreateRegKeyWorkItem;
@@ -57,6 +58,12 @@ class WorkItem {
   };
 
   virtual ~WorkItem();
+
+  // Create a CopyRegKeyWorkItem that recursively copies a given registry key.
+  static CopyRegKeyWorkItem* CreateCopyRegKeyWorkItem(
+      HKEY predefined_root,
+      const std::wstring& source_key_path,
+      const std::wstring& dest_key_path);
 
   // Create a CopyTreeWorkItem that recursively copies a file system hierarchy
   // from source path to destination path.
