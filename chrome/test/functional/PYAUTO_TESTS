@@ -237,10 +237,6 @@
       '-search_engines.SearchEnginesTest.testDiscoverSearchEngine',
       # Keychain popups make sync tests difficult on Mac.  crbug.com/49378
       '-sync',
-      # crbug.com/87837
-      '-plugins.PluginsTest.testBlockPluginException',
-      '-plugins.PluginsTest.testDisableEnableAllPlugins',
-      '-plugins.PluginsTest.testKillAndReloadAllPlugins',
     ],
 
     'linux': [  # linux != chromeos
