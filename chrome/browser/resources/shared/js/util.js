@@ -108,6 +108,21 @@ function swapDomNodes(a, b) {
   aParent.insertBefore(b, afterA);
 }
 
+/**
+ * Disables text selection and dragging.
+ */
+function disableTextSelectAndDrag() {
+  // Disable text selection.
+  document.onselectstart = function(e) {
+    e.preventDefault();
+  }
+
+  // Disable dragging.
+  document.ondragstart = function(e) {
+    e.preventDefault();
+  }
+}
+
 // Handle click on a link. If the link points to a chrome: or file: url, then
 // call into the browser to do the navigation.
 document.addEventListener('click', function(e) {
