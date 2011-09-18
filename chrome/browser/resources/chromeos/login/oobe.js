@@ -595,6 +595,14 @@ cr.define('cr.ui', function() {
 
 var Oobe = cr.ui.Oobe;
 
-disableTextSelectAndDrag();
+// Disable text selection.
+document.onselectstart = function(e) {
+  e.preventDefault();
+}
+
+// Disable dragging.
+document.ondragstart = function(e) {
+  e.preventDefault();
+}
 
 document.addEventListener('DOMContentLoaded', cr.ui.Oobe.initialize);
