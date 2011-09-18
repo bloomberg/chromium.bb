@@ -6,7 +6,7 @@
 
 // TODO(shess): Provide a mapping from reply_msg->routing_id() to HWND
 // so that we can eliminate the NativeViewId parameter.
-
+#if defined(OS_WIN)
 void RenderMessageFilter::OnGetWindowRect(gfx::NativeViewId window_id,
                                           gfx::Rect* rect) {
   // TODO(beng):
@@ -26,3 +26,4 @@ void RenderMessageFilter::OnGetScreenInfo(gfx::NativeViewId view,
   // TODO(beng):
   NOTIMPLEMENTED();
 }
+#endif // OS_WIN

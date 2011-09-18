@@ -288,6 +288,10 @@ gfx::NativeCursor NativeTextfieldViews::GetCursor(const MouseEvent& event) {
   static HCURSOR ibeam = LoadCursor(NULL, IDC_IBEAM);
   static HCURSOR arrow = LoadCursor(NULL, IDC_ARROW);
   return text_cursor ? ibeam : arrow;
+#elif defined(USE_AURA)
+  // TODO(saintlou):
+  (void)text_cursor;
+  return NULL;
 #else
   return text_cursor ? gfx::GetCursor(GDK_XTERM) : NULL;
 #endif

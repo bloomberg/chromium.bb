@@ -32,7 +32,7 @@ class NativeWidgetView;
 class RootView;
 }
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(USE_AURA)
 VIEWS_EXPORT bool IsClientMouseEvent(const views::NativeEvent& native_event);
 VIEWS_EXPORT bool IsNonClientMouseEvent(const views::NativeEvent& native_event);
 #endif

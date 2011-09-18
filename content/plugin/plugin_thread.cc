@@ -74,7 +74,9 @@ PluginThread::PluginThread()
           switches::kPluginPath);
 
   lazy_tls.Pointer()->Set(this);
-#if defined(TOOLKIT_USES_GTK)
+#if defined(USE_AURA)
+  // TODO(saintlou):
+#elif defined(TOOLKIT_USES_GTK)
   {
     // XEmbed plugins assume they are hosted in a Gtk application, so we need
     // to initialize Gtk in the plugin process.

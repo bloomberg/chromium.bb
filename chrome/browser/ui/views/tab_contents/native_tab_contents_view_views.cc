@@ -88,3 +88,13 @@ void NativeTabContentsViewViews::SetDragCursor(
 views::NativeWidget* NativeTabContentsViewViews::AsNativeWidget() {
   return this;
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// NativeTabContentsView, public:
+#if defined(USE_AURA)
+// static
+NativeTabContentsView* NativeTabContentsView::CreateNativeTabContentsView(
+    internal::NativeTabContentsViewDelegate* delegate) {
+  return new NativeTabContentsViewViews(delegate);
+}
+#endif

@@ -11,7 +11,7 @@
 #include "chrome/browser/themes/theme_service.h"
 #include "content/common/notification_service.h"
 
-#if defined(TOOLKIT_USES_GTK)
+#if defined(TOOLKIT_USES_GTK) && !defined(USE_AURA)
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #endif
 
@@ -45,7 +45,7 @@ ThemeServiceFactory::~ThemeServiceFactory() {}
 ProfileKeyedService* ThemeServiceFactory::BuildServiceInstanceFor(
     Profile* profile) const {
   ThemeService* provider = NULL;
-#if defined(TOOLKIT_USES_GTK)
+#if defined(TOOLKIT_USES_GTK) && !defined(USE_AURA)
   provider = new GtkThemeService;
 #else
   provider = new ThemeService;

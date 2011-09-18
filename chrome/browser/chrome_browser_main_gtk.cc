@@ -86,6 +86,9 @@ void ChromeBrowserMainPartsGtk::PreEarlyInitialization() {
 }
 
 void ChromeBrowserMainPartsGtk::DetectRunningAsRoot() {
+#if defined(USE_AURA)
+  // TODO(saintlou):
+#else
   if (geteuid() == 0) {
     const CommandLine& command_line = *CommandLine::ForCurrentProcess();
     if (parsed_command_line().HasSwitch(switches::kUserDataDir))
@@ -124,6 +127,7 @@ void ChromeBrowserMainPartsGtk::DetectRunningAsRoot() {
     gtk_widget_destroy(dialog);
     exit(EXIT_FAILURE);
   }
+#endif
 }
 
 namespace content {

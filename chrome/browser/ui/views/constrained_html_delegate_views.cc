@@ -122,6 +122,10 @@ ConstrainedWindow* ConstrainedHtmlUI::CreateConstrainedHtmlDialog(
     Profile* profile,
     HtmlDialogUIDelegate* delegate,
     TabContentsWrapper* container) {
+#if defined(USE_AURA)
+  // TODO(saintlou): Another atrocious hack until we get PureView version.
+  return NULL;
+#else
   ConstrainedHtmlDelegateViews* constrained_delegate =
       new ConstrainedHtmlDelegateViews(profile, delegate);
   ConstrainedWindow* constrained_window =
@@ -129,4 +133,5 @@ ConstrainedWindow* ConstrainedHtmlUI::CreateConstrainedHtmlDialog(
                                  constrained_delegate);
   constrained_delegate->set_window(constrained_window);
   return constrained_window;
+#endif
 }

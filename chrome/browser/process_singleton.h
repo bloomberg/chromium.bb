@@ -166,8 +166,10 @@ class ProcessSingleton : public base::NonThreadSafe {
 
   // Helper class for linux specific messages.  LinuxWatcher is ref counted
   // because it posts messages between threads.
+#if !defined(USE_AURA)
   class LinuxWatcher;
   scoped_refptr<LinuxWatcher> watcher_;
+#endif
 #elif defined(OS_MACOSX)
   // Path in file system to the lock.
   FilePath lock_path_;

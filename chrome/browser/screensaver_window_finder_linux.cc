@@ -17,11 +17,15 @@ ScreensaverWindowFinder::ScreensaverWindowFinder()
 }
 
 bool ScreensaverWindowFinder::ScreensaverWindowExists() {
+#if defined(USE_AURA)
+  return false;
+#else
   gdk_error_trap_push();
   ScreensaverWindowFinder finder;
   gtk_util::EnumerateTopLevelWindows(&finder);
   bool got_error = gdk_error_trap_pop();
   return finder.exists_ && !got_error;
+#endif
 }
 
 bool ScreensaverWindowFinder::ShouldStopIterating(XID window) {

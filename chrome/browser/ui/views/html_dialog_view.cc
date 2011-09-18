@@ -207,7 +207,9 @@ void HtmlDialogView::MoveContents(TabContents* source, const gfx::Rect& pos) {
 // We don't handle global keyboard shortcuts here, but that's fine since
 // they're all browser-specific. (This may change in the future.)
 void HtmlDialogView::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
-#if defined(OS_WIN)
+#if defined(USE_AURA)
+  // TODO(saintlou): Need to provide some Aura handling.
+#elif defined(OS_WIN)
   // Any unhandled keyboard/character messages should be defproced.
   // This allows stuff like F10, etc to work correctly.
   DefWindowProc(event.os_event.hwnd, event.os_event.message,

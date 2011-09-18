@@ -23,6 +23,14 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/size.h"
 
+#if defined(USE_AURA) && !defined(OS_CHROMEOS)
+// TODO(saintlou): This is another big fat hack like in the FileSelector.
+namespace chrome {
+const char kChromeUIHttpAuthHost[] = "http-auth";
+const char kChromeUIHttpAuthURL[] = "chrome://http-auth/";
+} // namespace chrome
+#endif
+
 class LoginHandlerSource : public ChromeURLDataManager::DataSource {
  public:
   LoginHandlerSource()

@@ -37,6 +37,9 @@ gfx::NativeCursor ResizeArea::GetCursor(const MouseEvent& event) {
 #if defined(OS_WIN)
   static HCURSOR g_resize_cursor = LoadCursor(NULL, IDC_SIZEWE);
   return g_resize_cursor;
+#elif defined(USE_AURA)
+  // TODO(saintlou):
+  return NULL;
 #elif defined(OS_LINUX)
   return gfx::GetCursor(GDK_SB_H_DOUBLE_ARROW);
 #endif

@@ -1037,7 +1037,7 @@ Browser* BrowserInit::LaunchWithProfile::OpenTabsInBrowser(
   if (!browser || !browser->is_type_tabbed()) {
     browser = Browser::Create(profile_);
   } else {
-#if defined(TOOLKIT_GTK)
+#if defined(TOOLKIT_GTK) && !defined(USE_AURA)
     // Setting the time of the last action on the window here allows us to steal
     // focus, which is what the user wants when opening a new tab in an existing
     // browser window.

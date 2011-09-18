@@ -610,7 +610,7 @@ void ThemeService::NotifyThemeChanged() {
 #endif  // OS_MACOSX
 }
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(USE_AURA)
 void ThemeService::FreePlatformCaches() {
   // Views (Skia) has no platform image cache to clear.
 }

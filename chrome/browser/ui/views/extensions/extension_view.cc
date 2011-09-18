@@ -12,7 +12,7 @@
 
 #if defined(OS_WIN)
 #include "content/browser/renderer_host/render_widget_host_view_win.h"
-#elif defined(TOUCH_UI)
+#elif defined(TOUCH_UI) || defined(USE_AURA)
 #include "chrome/browser/renderer_host/render_widget_host_view_views.h"
 #elif defined(TOOLKIT_USES_GTK)
 #include "content/browser/renderer_host/render_widget_host_view_gtk.h"

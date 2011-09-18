@@ -33,6 +33,11 @@ PanelBrowserView::~PanelBrowserView() {}
 // PanelBrowserView functions
 
 void PanelBrowserView::LimitBounds(gfx::Rect* bounds) const {
+#if defined(USE_AURA)
+  // TODO(saintlou): Need PureViews panels?
+  bounds->set_width(kPanelDefaultWidthPixels);
+  bounds->set_height(kPanelDefaultHeightPixels);
+#else
   GdkScreen* screen = gtk_widget_get_screen(GetWidget()->GetNativeView());
   int max_width = gdk_screen_get_width(screen) * kPanelMaxWidthFactor;
   int max_height = gdk_screen_get_height(screen) * kPanelMaxHeightFactor;
@@ -51,6 +56,7 @@ void PanelBrowserView::LimitBounds(gfx::Rect* bounds) const {
     bounds->set_height(kPanelMinHeightPixels);
   else if (bounds->height() > max_height)
     bounds->set_height(max_height);
+#endif
 }
 
 
@@ -101,8 +107,12 @@ void PanelBrowserView::UpdateTitleBar() {
 
 void PanelBrowserView::SetCreatorView(PanelBrowserView* creator) {
   DCHECK(creator);
+#if defined(USE_AURA)
+  // TODO(saintlou): Need PureViews
+#else
   GtkWindow* window = creator->GetNativeHandle();
   creator_xid_ = ui::GetX11WindowFromGtkWidget(GTK_WIDGET(window));
+#endif
 }
 
 WindowOpenDisposition PanelBrowserView::GetDispositionForPopupBounds(

@@ -4,12 +4,14 @@
 
 #include "chrome/browser/ui/tabs/dock_info.h"
 
-#include "base/win/scoped_gdi_object.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "ui/gfx/screen.h"
+#if defined(OS_WIN)
+#include "base/win/scoped_gdi_object.h"
+#endif
 
 // DockInfo -------------------------------------------------------------------
 

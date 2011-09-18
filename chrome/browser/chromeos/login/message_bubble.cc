@@ -172,7 +172,7 @@ MessageBubble* MessageBubble::ShowNoGrab(
   return bubble;
 }
 
-#if !defined(TOUCH_UI)
+#if !defined(TOUCH_UI) && !defined(USE_AURA)
 void MessageBubble::OnActiveChanged() {
   if (parent_ && IsActive()) {
     // Show the parent.
@@ -192,7 +192,7 @@ void MessageBubble::Close() {
   Bubble::Close();
 }
 
-#if !defined(TOUCH_UI)
+#if !defined(TOUCH_UI) && !defined(USE_AURA)
 gboolean MessageBubble::OnButtonPress(GtkWidget* widget,
                                       GdkEventButton* event) {
   NativeWidgetGtk::OnButtonPress(widget, event);

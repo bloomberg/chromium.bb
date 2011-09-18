@@ -22,6 +22,13 @@
 
 namespace {
 
+// static
+guint32 XTimeNow() {
+  struct timespec ts;
+  clock_gettime(CLOCK_MONOTONIC, &ts);
+  return ts.tv_sec * 1000 + ts.tv_nsec / 1000000;
+}
+
 class EventWaiter : public MessageLoopForUI::Observer {
  public:
   EventWaiter(Task* task, GdkEventType type, int count)
@@ -66,7 +73,7 @@ void FakeAMouseMotionEvent(gint x, gint y) {
   GdkEvent* event = gdk_event_new(GDK_MOTION_NOTIFY);
 
   event->motion.send_event = false;
-  event->motion.time = gtk_util::XTimeNow();
+  event->motion.time = XTimeNow();
 
   GtkWidget* grab_widget = gtk_grab_get_current();
   if (grab_widget) {
@@ -178,7 +185,7 @@ bool SendMouseEvents(MouseButton type, int state) {
   GdkEvent* event = gdk_event_new(GDK_BUTTON_PRESS);
 
   event->button.send_event = false;
-  event->button.time = gtk_util::XTimeNow();
+  event->button.time = XTimeNow();
 
   gint x, y;
   GtkWidget* grab_widget = gtk_grab_get_current();
@@ -247,7 +254,7 @@ bool SendMouseClick(MouseButton type) {
 
 #if defined(TOOLKIT_VIEWS)
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) && !defined(USE_AURA)
 void OnConfigure(GtkWidget* gtk_widget, GdkEvent* event, gpointer data) {
   views::Widget* widget = static_cast<views::Widget*>(data);
   gfx::Rect actual = widget->GetWindowScreenBounds();
@@ -275,7 +282,7 @@ void SynchronizeWidgetSize(views::Widget* widget) {
 
 void MoveMouseToCenterAndPress(views::View* view, MouseButton button,
                                int state, Task* task) {
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) && !defined(USE_AURA)
   // X is asynchronous and we need to wait until the window gets
   // resized to desired size.
   SynchronizeWidgetSize(view->GetWidget());

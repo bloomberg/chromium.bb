@@ -1945,12 +1945,6 @@ void Browser::FocusSearch() {
 
 void Browser::OpenFile() {
   UserMetrics::RecordAction(UserMetricsAction("OpenFile"));
-#if defined(OS_CHROMEOS) && !defined(FILE_MANAGER_EXTENSION)
-  FileBrowseUI::OpenPopup(profile_,
-                          "",
-                          FileBrowseUI::kPopupWidth,
-                          FileBrowseUI::kPopupHeight);
-#else
   if (!select_file_dialog_.get())
     select_file_dialog_ = SelectFileDialog::Create(this);
 
@@ -1963,7 +1957,6 @@ void Browser::OpenFile() {
                                   NULL, 0, FILE_PATH_LITERAL(""),
                                   GetSelectedTabContents(),
                                   parent_window, NULL);
-#endif
 }
 
 void Browser::OpenCreateShortcutsDialog() {
@@ -3674,7 +3667,9 @@ void Browser::OnStartDownload(TabContents* source, DownloadItem* download) {
     return;
 
   if (DisplayOldDownloadsUI()) {
-#if defined(OS_CHROMEOS)
+#if defined(USE_AURA)
+  // TODO(saintlou): There is no implementation for Aura.
+#elif defined(OS_CHROMEOS)
     // Don't show content browser for extension/theme downloads from gallery.
     ExtensionService* service = profile_->GetExtensionService();
     if (!ChromeDownloadManagerDelegate::IsExtensionDownload(download) ||

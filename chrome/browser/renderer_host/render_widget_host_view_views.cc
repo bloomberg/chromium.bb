@@ -40,10 +40,16 @@
 #include <gtk/gtk.h>
 #include <gtk/gtkwindow.h>
 #include <gdk/gdkx.h>
+#include "content/browser/renderer_host/gtk_window_utils.h"
+#include "views/widget/native_widget_gtk.h"
 #endif
 
 #if defined(TOUCH_UI)
 #include "chrome/browser/renderer_host/accelerated_surface_container_touch.h"
+#endif
+
+#if defined(OS_POSIX)
+#include "content/browser/renderer_host/gtk_window_utils.h"
 #endif
 
 static const int kMaxWindowWidth = 4000;
@@ -770,7 +776,7 @@ void RenderWidgetHostViewViews::OnPaint(gfx::Canvas* canvas) {
   paint_rect = paint_rect.Intersect(invalid_rect_);
 
   if (backing_store) {
-#if defined(TOOLKIT_USES_GTK)
+#if defined(TOOLKIT_USES_GTK) && !defined(USE_AURA)
     // Only render the widget if it is attached to a window; there's a short
     // period where this object isn't attached to a window but hasn't been
     // Destroy()ed yet and it receives paint messages...
@@ -790,7 +796,7 @@ void RenderWidgetHostViewViews::OnPaint(gfx::Canvas* canvas) {
         // TODO(sad)
         NOTIMPLEMENTED();
       }
-#if defined(TOOLKIT_USES_GTK)
+#if defined(TOOLKIT_USES_GTK) && !defined(USE_AURA)
     }
 #endif
     if (!whiteout_start_time_.is_null()) {
@@ -901,3 +907,107 @@ void RenderWidgetHostViewViews::UpdateTouchSelectionController() {
     touch_selection_controller_->SelectionChanged(selection_start_,
                                                   selection_end_);
 }
+
+#if !defined(OS_WIN)
+void RenderWidgetHostViewViews::UpdateCursor(const WebCursor& cursor) {
+  // Optimize the common case, where the cursor hasn't changed.
+  // However, we can switch between different pixmaps, so only on the
+  // non-pixmap branch.
+  if (current_cursor_.GetCursorType() != GDK_CURSOR_IS_PIXMAP &&
+      current_cursor_.GetCursorType() == cursor.GetCursorType()) {
+    return;
+  }
+
+  current_cursor_ = cursor;
+  ShowCurrentCursor();
+}
+
+void RenderWidgetHostViewViews::ShowCurrentCursor() {
+#if !defined(USE_AURA)
+  // The widget may not have a window. If that's the case, abort mission. This
+  // is the same issue as that explained above in Paint().
+  if (!GetInnerNativeView() || !GetInnerNativeView()->window)
+    return;
+#endif
+
+  native_cursor_ = current_cursor_.GetNativeCursor();
+}
+
+gfx::NativeView RenderWidgetHostViewViews::GetInnerNativeView() const {
+#if defined(USE_AURA)
+  return NULL;
+#else
+  const views::View* view = NULL;
+  if (views::ViewsDelegate::views_delegate)
+    view = views::ViewsDelegate::views_delegate->GetDefaultParentView();
+  if (!view)
+    view = this;
+
+  // TODO(sad): Ideally this function should be equivalent to GetNativeView, and
+  // NativeWidgetGtk-specific function call should not be necessary.
+  const views::Widget* widget = view->GetWidget();
+  const views::NativeWidget* native = widget ? widget->native_widget() : NULL;
+  return native ? static_cast<const views::NativeWidgetGtk*>(native)->
+      window_contents() : NULL;
+#endif
+}
+#endif  // !OS_WIN
+
+#if defined(TOOLKIT_USES_GTK)
+void RenderWidgetHostViewViews::CreatePluginContainer(
+    gfx::PluginWindowHandle id) {
+  // TODO(anicolao): plugin_container_manager_.CreatePluginContainer(id);
+}
+
+void RenderWidgetHostViewViews::DestroyPluginContainer(
+    gfx::PluginWindowHandle id) {
+  // TODO(anicolao): plugin_container_manager_.DestroyPluginContainer(id);
+}
+
+void RenderWidgetHostViewViews::AcceleratedCompositingActivated(
+    bool activated) {
+  // TODO(anicolao): figure out if we need something here
+  if (activated)
+    NOTIMPLEMENTED();
+}
+#endif  // TOOLKIT_USES_GTK
+
+#if defined(OS_POSIX)
+void RenderWidgetHostViewViews::GetDefaultScreenInfo(
+    WebKit::WebScreenInfo* results) {
+  NOTIMPLEMENTED();
+}
+
+void RenderWidgetHostViewViews::GetScreenInfo(WebKit::WebScreenInfo* results) {
+#if !defined(USE_AURA)
+  views::Widget* widget = GetWidget() ? GetWidget()->GetTopLevelWidget() : NULL;
+  if (widget)
+    content::GetScreenInfoFromNativeWindow(widget->GetNativeView()->window,
+                                           results);
+#endif
+}
+
+gfx::Rect RenderWidgetHostViewViews::GetRootWindowBounds() {
+  views::Widget* widget = GetWidget() ? GetWidget()->GetTopLevelWidget() : NULL;
+  return widget ? widget->GetWindowScreenBounds() : gfx::Rect();
+}
+#endif
+
+#if !defined(TOUCH_UI) && !defined(OS_WIN)
+gfx::PluginWindowHandle RenderWidgetHostViewViews::GetCompositingSurface() {
+  // TODO(oshima): The original implementation was broken as
+  // GtkNativeViewManager doesn't know about NativeWidgetGtk. Figure
+  // out if this makes sense without compositor. If it does, then find
+  // out the right way to handle.
+  NOTIMPLEMENTED();
+  return gfx::kNullPluginWindow;
+}
+#endif
+
+#if defined(USE_AURA)
+// static
+RenderWidgetHostView* RenderWidgetHostView::CreateViewForWidget(
+    RenderWidgetHost* widget) {
+  return new RenderWidgetHostViewViews(widget);
+}
+#endif

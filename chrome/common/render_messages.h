@@ -52,7 +52,7 @@ enum ViewHostMsg_JavaScriptStressTestControl_Commands {
 
 namespace IPC {
 
-#if defined(OS_POSIX)
+#if defined(OS_POSIX) && !defined(USE_AURA)
 
 // TODO(port): this shouldn't exist. However, the plugin stuff is really using
 // HWNDS (NativeView), and making Windows calls based on them. I've not figured
@@ -75,7 +75,7 @@ struct ParamTraits<gfx::NativeView> {
   }
 };
 
-#endif  // defined(OS_POSIX)
+#endif  // defined(OS_POSIX) && !defined(USE_AURA)
 
 template <>
 struct ParamTraits<ContentSettings> {

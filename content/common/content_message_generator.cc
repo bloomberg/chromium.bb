@@ -14,7 +14,7 @@
 #include "ipc/struct_destructor_macros.h"
 #include "content/common/content_message_generator.h"
 
-#if defined(USE_AURA)
+#if defined(USE_AURA) && defined(OS_WIN)
 #include "ui/gfx/native_widget_types.h"
 
 namespace IPC {

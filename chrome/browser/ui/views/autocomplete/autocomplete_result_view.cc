@@ -139,6 +139,12 @@ SkColor AutocompleteResultView::GetColor(ResultViewState state,
     colors[SELECTED][BACKGROUND] = color_utils::GetSysSkColor(COLOR_HIGHLIGHT);
     colors[NORMAL][TEXT] = color_utils::GetSysSkColor(COLOR_WINDOWTEXT);
     colors[SELECTED][TEXT] = color_utils::GetSysSkColor(COLOR_HIGHLIGHTTEXT);
+#elif defined(USE_AURA)
+    // TODO(beng): source from theme provider.
+    colors[NORMAL][BACKGROUND] = SK_ColorWHITE;
+    colors[SELECTED][BACKGROUND] = SK_ColorBLUE;
+    colors[NORMAL][TEXT] = SK_ColorBLACK;
+    colors[SELECTED][TEXT] = SK_ColorWHITE;
 #elif defined(TOOLKIT_USES_GTK)
     GdkColor bg_color, selected_bg_color, text_color, selected_text_color;
     gtk_util::GetTextColors(

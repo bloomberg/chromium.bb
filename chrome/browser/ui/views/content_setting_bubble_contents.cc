@@ -88,6 +88,9 @@ gfx::NativeCursor ContentSettingBubbleContents::Favicon::GetCursor(
 #if defined(OS_WIN)
   static HCURSOR g_hand_cursor = LoadCursor(NULL, IDC_HAND);
   return g_hand_cursor;
+#elif defined(USE_AURA)
+  // TODO(saintlou):
+  return NULL;
 #elif defined(TOOLKIT_USES_GTK)
   return gfx::GetCursor(GDK_HAND2);
 #endif

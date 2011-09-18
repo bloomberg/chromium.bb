@@ -346,11 +346,14 @@ void SSLClientCertificateSelector::OnComboBoxChanged(GtkWidget* combo_box) {
 }
 
 void SSLClientCertificateSelector::OnViewClicked(GtkWidget* button) {
+#if !defined(USE_AURA)
+  // TODO(saintlou): need to port to Views.
   net::X509Certificate* cert = GetSelectedCert();
   if (cert) {
     GtkWidget* toplevel = gtk_widget_get_toplevel(root_widget_.get());
     ShowCertificateViewer(GTK_WINDOW(toplevel), cert);
   }
+#endif
 }
 
 void SSLClientCertificateSelector::OnCancelClicked(GtkWidget* button) {

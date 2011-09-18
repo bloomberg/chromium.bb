@@ -85,8 +85,10 @@ void BackgroundModeManager::DisplayAppInstalledNotification(
 }
 
 string16 BackgroundModeManager::GetPreferencesMenuLabel() {
+#if !defined(USE_AURA)
   string16 result = gtk_util::GetStockPreferencesMenuLabel();
   if (!result.empty())
     return result;
+#endif
   return l10n_util::GetStringUTF16(IDS_PREFERENCES);
 }

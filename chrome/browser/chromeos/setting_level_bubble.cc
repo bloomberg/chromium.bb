@@ -59,6 +59,10 @@ namespace chromeos {
 // TODO(glotov): remove this in favor of enabling Bubble class act
 // without |parent| specified. crosbug.com/4025
 static views::Widget* GetToplevelWidget() {
+#if defined(USE_AURA)
+  // TODO(saintlou): Need to fix in PureViews.
+  return WebUILoginDisplay::GetLoginWindow();
+#else
   GtkWindow* window = NULL;
 
   // We just use the default profile here -- this gets overridden as needed
@@ -80,6 +84,7 @@ static views::Widget* GetToplevelWidget() {
     return views::Widget::GetWidgetForNativeWindow(window);
   else
     return WebUILoginDisplay::GetLoginWindow();
+#endif
 }
 
 SettingLevelBubble::SettingLevelBubble(SkBitmap* increase_icon,

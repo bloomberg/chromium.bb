@@ -10,7 +10,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/mac/WebScreenInfoFactory.h"
 #endif
 
-#if defined(TOUCH_UI)
+#if defined(TOUCH_UI) || defined(USE_AURA)
 #include <gdk/gdkx.h>
 #include <gtk/gtk.h>
 
@@ -29,7 +29,7 @@ void RenderWidgetHostView::GetDefaultScreenInfo(
 
 // TODO(erg): move this to render_widget_host_view_views_gtk.cc when if it
 // moves to content.
-#if defined(TOUCH_UI)
+#if defined(TOUCH_UI) || defined(USE_AURA)
 // static
 void RenderWidgetHostView::GetDefaultScreenInfo(
     WebKit::WebScreenInfo* results) {

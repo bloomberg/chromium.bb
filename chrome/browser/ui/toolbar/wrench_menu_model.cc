@@ -499,6 +499,8 @@ void WrenchMenuModel::Build() {
 
 #if defined(OS_MACOSX)
   AddItemWithStringId(IDC_OPTIONS, IDS_PREFERENCES);
+#elif defined(USE_AURA)
+  AddItemWithStringId(IDC_OPTIONS, IDS_PREFERENCES);
 #elif defined(TOOLKIT_USES_GTK)
   string16 preferences = gtk_util::GetStockPreferencesMenuLabel();
   if (!preferences.empty())

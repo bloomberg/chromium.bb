@@ -1244,7 +1244,7 @@ bool BrowserView::PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
   views::FocusManager* focus_manager = GetFocusManager();
   DCHECK(focus_manager);
 
-#if defined(TOOLKIT_USES_GTK) && !defined(TOUCH_UI)
+#if defined(TOOLKIT_USES_GTK) && !(defined(TOUCH_UI) || defined(USE_AURA))
   // Views and WebKit use different tables for GdkEventKey -> views::KeyEvent
   // conversion. We need to use View's conversion table here to keep consistent
   // behavior with views::FocusManager::OnKeyEvent() method.
@@ -1309,7 +1309,7 @@ bool BrowserView::PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
 
 void BrowserView::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
   // TODO(ben): figure out why are these two code paths so different
-#if defined(TOOLKIT_USES_GTK) && !defined(TOUCH_UI)
+#if defined(TOOLKIT_USES_GTK) && !(defined(TOUCH_UI) || defined(USE_AURA))
   HandleWebKeyboardEvent(GetWidget(), event);
 #else
   unhandled_keyboard_event_handler_.HandleKeyboardEvent(event,

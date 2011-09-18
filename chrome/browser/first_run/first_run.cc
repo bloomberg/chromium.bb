@@ -319,7 +319,9 @@ bool FirstRun::ProcessMasterPreferences(const FilePath& user_data_dir,
       installer::master_preferences::kDistroImportBookmarksFromFilePref,
       &import_bookmarks_path);
 
-#if defined(OS_WIN)
+#if defined(USE_AURA)
+  // TODO(saintlou):
+#elif defined(OS_WIN)
   if (!IsOrganicFirstRun()) {
     // If search engines aren't explicitly imported, don't import.
     if (!(out_prefs->do_import_items & importer::SEARCH_ENGINES)) {

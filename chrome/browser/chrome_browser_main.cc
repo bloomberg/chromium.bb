@@ -151,7 +151,6 @@
 // progress and should not be taken as an indication of a real refactoring.
 
 #if defined(OS_WIN)
-
 #include "base/environment.h"  // For PreRead experiment.
 #include "base/win/windows_version.h"
 #include "chrome/browser/browser_trial.h"
@@ -1327,6 +1326,10 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunInternal() {
   if (!parsed_command_line().HasSwitch(switches::kViewsDesktop))
     CommandLine::ForCurrentProcess()->AppendSwitchASCII(switches::kViewsDesktop,
                                                         "other");
+#elif defined(USE_AURA) && defined(OS_LINUX)
+  // Always add the --views-desktop flag, if not already set.
+  if (!parsed_command_line().HasSwitch(switches::kViewsDesktop))
+    CommandLine::ForCurrentProcess()->AppendSwitch(switches::kViewsDesktop);
 #endif
 
   // Convert active labs into switches. Modifies the current command line.

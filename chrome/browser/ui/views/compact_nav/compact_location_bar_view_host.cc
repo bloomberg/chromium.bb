@@ -146,7 +146,7 @@ void MouseObserver::StopObserving(MessageLoopForUI* loop) {
 }
 
 bool MouseObserver::IsMouseEvent(const views::NativeEvent& native_event) {
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(USE_AURA)
   return views::IsClientMouseEvent(native_event) ||
          views::IsNonClientMouseEvent(native_event);
 #elif defined(OS_LINUX)

@@ -20,7 +20,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "content/browser/browser_thread.h"
 
-#if defined(TOOLKIT_USES_GTK) && !defined(OS_CHROMEOS)
+#if defined(TOOLKIT_USES_GTK) && !defined(OS_CHROMEOS) && !defined(USE_AURA)
 #include "chrome/browser/printing/print_dialog_gtk.h"
 #endif
 
@@ -255,7 +255,7 @@ void ChromeBrowserMainPartsPosix::PostMainMessageLoopStart() {
   action.sa_handler = SIGHUPHandler;
   CHECK(sigaction(SIGHUP, &action, NULL) == 0);
 
-#if defined(TOOLKIT_USES_GTK) && !defined(OS_CHROMEOS)
+#if defined(TOOLKIT_USES_GTK) && !defined(OS_CHROMEOS) && !defined(USE_AURA)
   printing::PrintingContextCairo::SetCreatePrintDialogFunction(
       &PrintDialogGtk::CreatePrintDialog);
 #endif

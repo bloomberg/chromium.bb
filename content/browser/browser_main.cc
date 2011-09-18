@@ -291,7 +291,12 @@ void BrowserMainParts::InitializeToolkit() {
   // TODO(satorux, stevenjb): remove this once it is no longer needed.
   dbus_g_thread_init();
 #endif
+#if defined(USE_AURA)
+  // TODO(saintlou): We still need some GTK at the lowest level, so init here.
+  gtk_init(NULL, NULL);
+#else
   gfx::GtkInitFromCommandLine(parameters().command_line_);
+#endif
   SetUpGLibLogHandler();
 #endif
 

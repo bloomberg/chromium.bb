@@ -100,6 +100,9 @@ gfx::NativeCursor SingleSplitView::GetCursor(const MouseEvent& event) {
   static HCURSOR we_resize_cursor = LoadCursor(NULL, IDC_SIZEWE);
   static HCURSOR ns_resize_cursor = LoadCursor(NULL, IDC_SIZENS);
   return is_horizontal_ ? we_resize_cursor : ns_resize_cursor;
+#elif defined(USE_AURA)
+  // TODO(saintlou):
+  return NULL;
 #elif defined(OS_LINUX)
   return gfx::GetCursor(is_horizontal_ ? GDK_SB_H_DOUBLE_ARROW :
                                          GDK_SB_V_DOUBLE_ARROW);

@@ -19,11 +19,13 @@ BubbleWindowViews::BubbleWindowViews(BubbleWindowStyle style)
 }
 
 void BubbleWindowViews::SetBackgroundColor() {
-  // TODO(saintlou): Once Views are truly pure the code below needs to be
+#if !defined(USE_AURA)
+   // TODO(saintlou): Once Views are truly pure the code below needs to be
   // removed and replaced by the corresponding Views code.
   GdkColor background_color =
       gfx::SkColorToGdkColor(kBubbleWindowBackgroundColor);
   gtk_widget_modify_bg(GetNativeView(), GTK_STATE_NORMAL, &background_color);
+#endif
 }
 
 views::NonClientFrameView* BubbleWindowViews::CreateNonClientFrameView() {

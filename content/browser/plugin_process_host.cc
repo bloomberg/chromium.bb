@@ -102,7 +102,9 @@ void PluginProcessHost::OnReparentPluginWindow(HWND window, HWND parent) {
 void PluginProcessHost::OnMapNativeViewId(gfx::NativeViewId id,
                                           gfx::PluginWindowHandle* output) {
   *output = 0;
+#if !defined(USE_AURA)
   GtkNativeViewManager::GetInstance()->GetXIDForId(output, id);
+#endif
 }
 #endif  // defined(TOOLKIT_USES_GTK)
 

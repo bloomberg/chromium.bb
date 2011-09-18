@@ -89,7 +89,7 @@ class MessageBubble : public Bubble,
   // Overridden from views::LinkListener:
   virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
 
-#if !defined(TOUCH_UI)
+#if !defined(TOUCH_UI) && !defined(USE_AURA)
   // Overridden from NativeWidgetGtk.
   virtual void OnActiveChanged() OVERRIDE;
   virtual void SetMouseCapture() OVERRIDE;

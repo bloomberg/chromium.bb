@@ -11,7 +11,7 @@
 #include "content/browser/renderer_host/render_widget_host_view_win.h"
 #endif
 #if defined(TOOLKIT_USES_GTK)
-#if defined(TOUCH_UI)
+#if defined(TOUCH_UI) || defined(USE_AURA)
 #include "chrome/browser/renderer_host/render_widget_host_view_views.h"
 #else
 #include "content/browser/renderer_host/render_widget_host_view_gtk.h"

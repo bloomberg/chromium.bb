@@ -50,8 +50,11 @@ BookmarkFolderEditorController::BookmarkFolderEditorController(
       l10n_util::GetStringUTF16(IDS_BOOKMARK_EDITOR_NEW_FOLDER_NAME) :
       node_->GetTitle();
 
+#if !defined(USE_AURA)
+  // TODO(saintlou): We seem to be missing a pure Views implemntation.
   dialog_ = InputWindowDialog::Create(wnd, title, label, contents, this);
   dialog_->Show();
+#endif
 }
 
 bool BookmarkFolderEditorController::IsValid(const string16& text) {

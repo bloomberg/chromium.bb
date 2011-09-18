@@ -277,7 +277,11 @@ RenderWidgetFullscreenPepper::CreateContext3D() {
   }
   if (!context_)
     return NULL;
+#ifdef ENABLE_GPU
   return new PlatformContext3DImpl(context_);
+#else
+  return NULL;
+#endif
 }
 
 void RenderWidgetFullscreenPepper::DidInitiatePaint() {

@@ -17,8 +17,12 @@ bool AcceleratorHandler::Dispatch(const MSG& msg) {
 }
 #else
 base::MessagePumpDispatcher::DispatchStatus AcceleratorHandler::Dispatch(
-    XEvent* xev) {
+    XEvent*) {
   return base::MessagePumpDispatcher::EVENT_IGNORED;
+}
+
+bool DispatchXEvent(XEvent* xev) {
+  return false;
 }
 #endif  // defined(OS_WIN)
 

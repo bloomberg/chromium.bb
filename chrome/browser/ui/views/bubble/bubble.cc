@@ -111,6 +111,7 @@ void Bubble::AnimationProgressed(const ui::Animation* animation) {
       animation_->GetCurrentValue() * 255);
 #if defined(USE_AURA)
   // TODO(beng):
+  (void)opacity;
   NOTIMPLEMENTED();
 #elif defined(OS_WIN)
   SetLayeredWindowAttributes(GetNativeView(), 0,
@@ -160,7 +161,9 @@ Bubble::Bubble()
 #if defined(OS_CHROMEOS)
 Bubble::Bubble(views::Widget::InitParams::Type type,
                bool show_while_screen_is_locked)
-#if defined(TOUCH_UI)
+#if defined(USE_AURA)
+    : views::NativeWidgetAura(new views::Widget),
+#elif defined(TOUCH_UI)
     : views::NativeWidgetViews(new views::Widget),
 #else
     : views::NativeWidgetGtk(new views::Widget),

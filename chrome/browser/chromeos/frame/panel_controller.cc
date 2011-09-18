@@ -179,6 +179,9 @@ void PanelController::Init(bool initial_focus,
                            const gfx::Rect& window_bounds,
                            XID creator_xid,
                            WmIpcPanelUserResizeType resize_type) {
+#if defined(USE_AURA)
+  // TODO(saintlou): Need PureView for panels.
+#else
   gfx::Rect title_bounds(0, 0, window_bounds.width(), kTitleHeight);
 
   title_window_ = new views::Widget;
@@ -214,6 +217,7 @@ void PanelController::Init(bool initial_focus,
   title_window_->SetContentsView(title_content_);
   UpdateTitleBar();
   title_window_->Show();
+#endif
 }
 
 void PanelController::UpdateTitleBar() {
@@ -264,7 +268,7 @@ bool PanelController::TitleMousePressed(const views::MouseEvent& event) {
   mouse_down_offset_y_ = event.y();
   dragging_ = false;
 
-#if !defined(TOUCH_UI)
+#if !defined(TOUCH_UI) && !defined(USE_AURA)
   const GdkEvent* gdk_event = event.native_event();
   GdkEventButton last_button_event = gdk_event->button;
   mouse_down_abs_x_ = last_button_event.x_root;

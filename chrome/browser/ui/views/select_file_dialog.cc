@@ -33,7 +33,7 @@ const int kSaveCompletePageIndex = 2;
 }  // namespace
 
 // Implementation of SelectFileDialog that shows an UI for choosing a file
-// or folder using FileBrowseUI.
+// or folder.
 class SelectFileDialogImpl : public SelectFileDialog {
  public:
   explicit SelectFileDialogImpl(Listener* listener);
@@ -325,8 +325,12 @@ string16 SelectFileDialogImpl::FileBrowseDelegate::GetDialogTitle() const {
 }
 
 GURL SelectFileDialogImpl::FileBrowseDelegate::GetDialogContentURL() const {
+#if defined(USE_AURA)
+  // TODO(saintlou): The current SelectFileDialogImpl assumes chromeos==1
+  std::string url_string;
+#else
   std::string url_string(chrome::kChromeUIFileBrowseURL);
-
+#endif
   return GURL(url_string);
 }
 
@@ -343,6 +347,11 @@ void SelectFileDialogImpl::FileBrowseDelegate::GetDialogSize(
 }
 
 std::string SelectFileDialogImpl::FileBrowseDelegate::GetDialogArgs() const {
+#if defined(USE_AURA)
+  // TODO(saintlou): The current SelectFileDialogImpl does not seem to work
+  // when chromeos==0.
+  return std::string();
+#else
   // SelectFile inputs as json.
   //   {
   //     "type"            : "open",   // (or "open_multiple", "save", "folder"
@@ -424,6 +433,7 @@ std::string SelectFileDialogImpl::FileBrowseDelegate::GetDialogArgs() const {
       exts_list.c_str(),
       desc_list.c_str(),
       file_type_index_);
+#endif
 }
 
 void SelectFileDialogImpl::FileBrowseDelegate::OnDialogClosed(
@@ -445,6 +455,9 @@ void SelectFileDialogImpl::FileBrowseDelegateHandler::RegisterMessages() {
 
 void SelectFileDialogImpl::FileBrowseDelegateHandler::HandleSetDialogTitle(
     const ListValue* args) {
+#if !defined(USE_AURA)
+  // TODO(saintlou): The current SelectFileDialogImpl does not seem to work
+  // when chromeos==0.
   std::wstring new_title = UTF16ToWideHack(ExtractStringValue(args));
   if (new_title != delegate_->title_) {
     delegate_->title_ = new_title;
@@ -463,4 +476,5 @@ void SelectFileDialogImpl::FileBrowseDelegateHandler::HandleSetDialogTitle(
     containing_view->GetWindow()->UpdateWindowTitle();
     containing_view->GetWindow()->non_client_view()->SchedulePaint();
   }
+#endif
 }

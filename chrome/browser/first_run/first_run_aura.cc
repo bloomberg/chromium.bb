@@ -9,15 +9,16 @@
 #include "chrome/browser/importer/importer_host.h"
 #include "chrome/browser/importer/importer_list.h"
 
-bool FirstRun::LaunchSetupWithParam(const std::string& param,
-                                    const std::wstring& value,
-                                    int* ret_code) {
+#if defined(OS_WIN)
+bool FirstRun::WriteEULAtoTempFile(FilePath* eula_path) {
   // TODO(beng):
   NOTIMPLEMENTED();
   return true;
 }
 
-bool FirstRun::WriteEULAtoTempFile(FilePath* eula_path) {
+bool FirstRun::LaunchSetupWithParam(const std::string& param,
+                                    const std::wstring& value,
+                                    int* ret_code) {
   // TODO(beng):
   NOTIMPLEMENTED();
   return true;
@@ -27,6 +28,53 @@ void FirstRun::DoDelayedInstallExtensions() {
   // TODO(beng):
   NOTIMPLEMENTED();
 }
+
+bool FirstRun::ImportSettings(Profile* profile,
+                              scoped_refptr<ImporterHost> importer_host,
+                              scoped_refptr<ImporterList> importer_list,
+                              int items_to_import) {
+  return ImportSettings(
+      profile,
+      importer_list->GetSourceProfileAt(0).importer_type,
+      items_to_import,
+      FilePath(),
+      false,
+      NULL);
+}
+
+bool FirstRun::ImportSettings(Profile* profile,
+                              int importer_type,
+                              int items_to_import,
+                              const FilePath& import_bookmarks_path,
+                              bool skip_first_run_ui,
+                              gfx::NativeWindow parent_window) {
+  // TODO(beng):
+  NOTIMPLEMENTED();
+  return false;
+}
+
+int FirstRun::ImportFromBrowser(Profile* profile,
+                                const CommandLine& cmdline) {
+  // TODO(beng):
+  NOTIMPLEMENTED();
+  return 0;
+}
+#else
+// static
+bool FirstRun::ImportBookmarks(const FilePath& import_bookmarks_path) {
+  // TODO(beng):
+  NOTIMPLEMENTED();
+  return true;
+}
+
+namespace first_run {
+void ShowFirstRunDialog(Profile* profile,
+                        bool randomize_search_engine_experiment) {
+  // TODO(saintlou):
+  NOTIMPLEMENTED();
+}
+} // namespace first_run
+#endif
 
 // static
 void FirstRun::PlatformSetup() {
@@ -48,35 +96,4 @@ FilePath FirstRun::MasterPrefsPath() {
   return FilePath();
 }
 
-// static
-bool FirstRun::ImportSettings(Profile* profile,
-                              int importer_type,
-                              int items_to_import,
-                              const FilePath& import_bookmarks_path,
-                              bool skip_first_run_ui,
-                              gfx::NativeWindow parent_window) {
-  // TODO(beng):
-  NOTIMPLEMENTED();
-  return false;
-}
 
-// static
-bool FirstRun::ImportSettings(Profile* profile,
-                              scoped_refptr<ImporterHost> importer_host,
-                              scoped_refptr<ImporterList> importer_list,
-                              int items_to_import) {
-  return ImportSettings(
-      profile,
-      importer_list->GetSourceProfileAt(0).importer_type,
-      items_to_import,
-      FilePath(),
-      false,
-      NULL);
-}
-
-int FirstRun::ImportFromBrowser(Profile* profile,
-                                const CommandLine& cmdline) {
-  // TODO(beng):
-  NOTIMPLEMENTED();
-  return 0;
-}
