@@ -91,7 +91,7 @@ class RenderWidgetHostViewViews : public RenderWidgetHostView,
   virtual BackingStore* AllocBackingStore(const gfx::Size& size) OVERRIDE;
   virtual void SetBackground(const SkBitmap& background) OVERRIDE;
 #if defined(OS_POSIX)
-  virtual void GetDefaultScreenInfo(WebKit::WebScreenInfo* results) OVERRIDE;
+  virtual void GetDefaultScreenInfo(WebKit::WebScreenInfo* results);
   virtual void GetScreenInfo(WebKit::WebScreenInfo* results) OVERRIDE;
   virtual gfx::Rect GetRootWindowBounds() OVERRIDE;
 #endif
