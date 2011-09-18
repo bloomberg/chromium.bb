@@ -91,7 +91,20 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
     'chrome/test/data/layout_tests/LayoutTests': [
         'UNKNOWN',
     ],
+    'chrome/test/data/plugin': [
+        'UNKNOWN',
+    ],
     'courgette/third_party/bsdiff_create.cc': [
+        'UNKNOWN',
+    ],
+    'data/mozilla_js_tests': [
+        'UNKNOWN',
+    ],
+    'data/page_cycler': [
+        'UNKNOWN',
+        'GPL (v2 or later)',
+    ],
+    'data/tab_switching': [
         'UNKNOWN',
     ],
     'googleurl': [
@@ -361,6 +374,9 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
     'third_party/zlib/trees.h': [
         'UNKNOWN',
     ],
+    'third_party/WebKit/LayoutTests/fast/xsl': [
+        'MPL (v1.1)',
+    ],
     'tools/dromaeo_benchmark_runner/dromaeo_benchmark_runner.py': [
         'UNKNOWN',
     ],
@@ -398,6 +414,9 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
         'UNKNOWN',
     ],
     'v8/test/cctest': [
+        'UNKNOWN',
+    ],
+    'webkit/data/ico_decoder': [
         'UNKNOWN',
     ],
 }
