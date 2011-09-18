@@ -1025,24 +1025,6 @@ var chrome = chrome || {};
       return newArgs;
     };
 
-    apiFunctions["experimental.offscreenTabs.sendKeyboardEvent"].
-        updateArgumentsPreValidate = function() {
-      // Delete properties that are objects in order to be able to serialize.
-      var arg1 = arguments[1];
-
-      for (prop in arg1) {
-        if (typeof arg1[prop] == "object")
-          delete arg1[prop];
-      }
-
-      return arguments;
-    };
-
-    apiFunctions["experimental.offscreenTabs.sendMouseEvent"].
-        updateArgumentsPreValidate =
-      apiFunctions["experimental.offscreenTabs.sendKeyboardEvent"].
-          updateArgumentsPreValidate;
-
     apiFunctions["omnibox.sendSuggestions"].updateArgumentsPostValidate =
         function(requestId, userSuggestions) {
       var suggestions = [];

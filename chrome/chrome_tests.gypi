@@ -2305,7 +2305,6 @@
         'browser/extensions/extension_metrics_apitest.cc',
         'browser/extensions/extension_module_apitest.cc',
         'browser/extensions/extension_nacl_browsertest.cc',
-        'browser/extensions/extension_offscreen_tabs_apitest.cc',
         'browser/extensions/extension_omnibox_apitest.cc',
         'browser/extensions/extension_override_apitest.cc',
         'browser/extensions/extension_preference_apitest.cc',
