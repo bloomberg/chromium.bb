@@ -8,7 +8,7 @@
 #include <map>
 #include <string>
 
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
 #include "base/values.h"
 #include "policy/configuration_policy_type.h"

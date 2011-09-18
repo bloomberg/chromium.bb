@@ -4,7 +4,7 @@
 
 #include "chrome/browser/chromeos/status/input_method_menu.h"
 
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/input_method/ibus_controller.h"
 #include "chrome/test/base/testing_browser_process.h"

@@ -4,7 +4,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/compositor/compositor_observer.h"

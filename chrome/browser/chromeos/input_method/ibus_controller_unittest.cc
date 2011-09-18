@@ -5,7 +5,7 @@
 #include "chrome/browser/chromeos/input_method/ibus_controller.h"
 
 #include "base/logging.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(TOUCH_UI)

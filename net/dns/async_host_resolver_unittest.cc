@@ -5,7 +5,7 @@
 #include "net/dns/async_host_resolver.h"
 
 #include "base/bind.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "net/base/host_cache.h"
 #include "net/base/net_log.h"
 #include "net/base/rand_callback.h"

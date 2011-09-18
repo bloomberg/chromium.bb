@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_WEBUI_POLICY_UI_H_
 #pragma once
 
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/time.h"
 #include "base/values.h"
 #include "chrome/browser/policy/cloud_policy_data_store.h"

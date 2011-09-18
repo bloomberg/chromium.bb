@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/file_util.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/scoped_temp_dir.h"
 #include "chrome/browser/extensions/extension_creator_filter.h"
 #include "testing/gtest/include/gtest/gtest.h"

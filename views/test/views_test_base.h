@@ -8,8 +8,8 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
-#include "base/scoped_ptr.h"
 #include "views/test/test_views_delegate.h"
 
 namespace views {

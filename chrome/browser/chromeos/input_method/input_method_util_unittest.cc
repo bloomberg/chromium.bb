@@ -6,7 +6,7 @@
 
 #include <string>
 
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/input_method/ibus_controller.h"
 #include "grit/generated_resources.h"

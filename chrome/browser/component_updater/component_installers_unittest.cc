@@ -6,7 +6,7 @@
 
 #include "base/file_path.h"
 #include "base/file_util.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "chrome/common/chrome_paths.h"
 #include "content/browser/browser_thread.h"

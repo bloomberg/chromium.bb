@@ -5,7 +5,7 @@
 #ifndef PPAPI_PPB_IMAGE_DATA_PROXY_H_
 #define PPAPI_PPB_IMAGE_DATA_PROXY_H_
 
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_instance.h"

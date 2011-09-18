@@ -8,8 +8,8 @@
 
 #include "base/compiler_specific.h"
 #include "base/mac/scoped_cftyperef.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop_proxy.h"
-#include "base/scoped_ptr.h"
 #include "base/sys_string_conversions.h"
 #include "base/values.h"
 

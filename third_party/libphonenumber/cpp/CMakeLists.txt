@@ -314,7 +314,7 @@ install (FILES
 
 install (FILES
   "src/base/basictypes.h"
-  "src/base/scoped_ptr.h"
+  "src/base/memory/scoped_ptr.h"
   "src/base/singleton.h"
   DESTINATION include/phonenumbers/base/
 )
