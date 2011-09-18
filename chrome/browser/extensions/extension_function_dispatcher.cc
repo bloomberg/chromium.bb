@@ -32,6 +32,7 @@
 #include "chrome/browser/extensions/extension_management_api.h"
 #include "chrome/browser/extensions/extension_metrics_module.h"
 #include "chrome/browser/extensions/extension_module.h"
+#include "chrome/browser/extensions/extension_offscreen_tabs_module.h"
 #include "chrome/browser/extensions/extension_omnibox_api.h"
 #include "chrome/browser/extensions/extension_page_actions_module.h"
 #include "chrome/browser/extensions/extension_permissions_api.h"
@@ -447,6 +448,16 @@ void FactoryRegistry::ResetFunctions() {
   RegisterFunction<DownloadsAcceptDangerFunction>();
   RegisterFunction<DownloadsShowFunction>();
   RegisterFunction<DownloadsDragFunction>();
+
+  // Experimental Offscreen Tabs
+  RegisterFunction<CreateOffscreenTabFunction>();
+  RegisterFunction<GetOffscreenTabFunction>();
+  RegisterFunction<GetAllOffscreenTabFunction>();
+  RegisterFunction<RemoveOffscreenTabFunction>();
+  RegisterFunction<SendKeyboardEventOffscreenTabFunction>();
+  RegisterFunction<SendMouseEventOffscreenTabFunction>();
+  RegisterFunction<ToDataUrlOffscreenTabFunction>();
+  RegisterFunction<UpdateOffscreenTabFunction>();
 }
 
 void FactoryRegistry::GetAllNames(std::vector<std::string>* names) {

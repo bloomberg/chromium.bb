@@ -60,6 +60,15 @@
     "chrome.experimental.devtools.network.onRequestFinished": "experimental.devtools.network.html#event-onRequestFinished",
     "chrome.experimental.devtools.panels.create": "experimental.devtools.panels.html#method-create",
     "chrome.experimental.infobars.show": "experimental.infobars.html#method-show",
+    "chrome.experimental.offscreenTabs.create": "experimental.offscreenTabs.html#method-create",
+    "chrome.experimental.offscreenTabs.get": "experimental.offscreenTabs.html#method-get",
+    "chrome.experimental.offscreenTabs.getAll": "experimental.offscreenTabs.html#method-getAll",
+    "chrome.experimental.offscreenTabs.onUpdated": "experimental.offscreenTabs.html#event-onUpdated",
+    "chrome.experimental.offscreenTabs.remove": "experimental.offscreenTabs.html#method-remove",
+    "chrome.experimental.offscreenTabs.sendKeyboardEvent": "experimental.offscreenTabs.html#method-sendKeyboardEvent",
+    "chrome.experimental.offscreenTabs.sendMouseEvent": "experimental.offscreenTabs.html#method-sendMouseEvent",
+    "chrome.experimental.offscreenTabs.toDataUrl": "experimental.offscreenTabs.html#method-toDataUrl",
+    "chrome.experimental.offscreenTabs.update": "experimental.offscreenTabs.html#method-update",
     "chrome.experimental.permissions.contains": "experimental.permissions.html#method-contains",
     "chrome.experimental.permissions.getAll": "experimental.permissions.html#method-getAll",
     "chrome.experimental.permissions.onAdded": "experimental.permissions.html#event-onAdded",
@@ -848,7 +857,7 @@
         "devtools.js",
         "manifest.json"
       ],
-      "source_hash": "b607f6ca8f1ccf4343766b480ae21bb220dd949c",
+      "source_hash": "4d6a2fc67a692883e75a427b416bf782eda57cee",
       "zip_path": "examples\/api\/devtools\/network\/chrome-firephp.zip"
     },
     {
@@ -1199,7 +1208,7 @@
         "info.html",
         "manifest.json"
       ],
-      "source_hash": "c746d9114348f4b414c1ec05e988e2807feb963a",
+      "source_hash": "672f49ed8edbe0829c7ba5a1d890b4440b157991",
       "zip_path": "examples\/extensions\/imageinfo.zip"
     },
     {

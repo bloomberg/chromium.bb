@@ -8450,5 +8450,341 @@
         ]
       }
     ]
+  },
+  {
+    "namespace": "experimental.offscreenTabs",
+    "types": [
+      {
+        "id": "OffscreenTab",
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer", 
+            "minimum": 0, 
+            "description": "The ID of the offscreen tab. Tab IDs are unique within a browser session."
+          },
+          "url": {
+            "type": 
+            "string", 
+            "description": "URL of the offscreen tab."
+          },
+          "width": {
+            "type": "integer", 
+            "minimum": 0, 
+            "description": "Width of the window."
+          },
+          "height": {
+            "type": "integer", 
+            "minimum": 0, 
+            "description": "Height of the window."
+          }
+        }
+      }
+    ],
+    "functions": [
+      {
+        "name": "create",
+        "type": "function",
+        "description": "Creates a new offscreen tab.",
+        "parameters": [
+          {
+            "name": "createProperties",
+            "type": "object",
+            "properties": {
+              "url": {
+                "type": "string",
+                "description": "The URL to navigate the offscreen tab to initially. Fully-qualified URLs must include a scheme (i.e. 'http://www.google.com', not 'www.google.com'). Relative URLs will be relative to the current page within the extension."
+              },
+              "width": {
+                "type": "integer",
+                "optional": true,
+                "minimum": 0,
+                "description": "Width of the offscreen tab. Defaults to width of the current tab."
+              },
+              "height": {
+                "type": "integer",
+                "optional": true,
+                "minimum": 0,
+                "description": "Height of the offscreen tab. Defaults to height of the current tab."
+              }
+            }
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "optional": true,      
+            "parameters": [
+              {
+                "name": "offscreenTab",
+                "$ref": "OffscreenTab",
+                "optional": true,
+                "description": "Details of the offscreen tab."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "get",
+        "type": "function",
+        "description": "Gets details about the specified offscreen tab.",
+        "parameters": [
+          {
+            "name": "offscreenTabId",
+            "type": "integer",
+            "minimum": 0,
+            "description": "ID of the offscreen tab."
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "parameters": [
+              {
+                "name": "offscreenTab",
+                "$ref": "OffscreenTab",
+                "description": "Details of the offscreen tab."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "getAll",
+        "type": "function",
+        "description": "Gets an array of all offscreen tabs.",
+        "parameters": [
+          {
+            "name": "callback",
+            "type": "function",
+            "parameters": [
+              {
+                "name": "offscreenTabs",
+                "type": "array", 
+                "items": { 
+                  "$ref": "OffscreenTab" 
+                } 
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "remove",
+        "type": "function",
+        "description": "Removes an offscreen tab.",
+        "parameters": [
+          {
+            "name": "offscreenTabId",
+            "type": "integer",
+            "minimum": 0,
+            "description": "ID of the offscreen tab."
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "optional": true
+          }
+        ]
+      },
+      {
+        "name": "sendMouseEvent",
+        "type": "function",
+        "description": "Dispatches a mouse event in the offscreen tab.",
+        "parameters": [
+          {
+            "name": "offscreenTabId",
+            "type": "integer",
+            "minimum": 0,
+            "description": "ID of the offscreen tab."
+          },
+          {
+            "name": "mouseEvent",
+            "type": "any",
+            "description": "A JavaScript MouseEvent object. Supported event types: <i>mousedown</i>, <i>mouseup</i>, <i>click</i>, <i>mousemove</i>, <i>mousewheel</i>."
+          },
+          {
+            "name": "x",
+            "type": "integer",
+            "optional": true,
+            "minimum": 0,
+            "description": "X position of where the mouse event should be dispatched on the offscreen web page. Not required in the case of a mousewheel event."
+          },
+          {
+            "name": "y",
+            "type": "integer",
+            "optional": true,
+            "minimum": 0,
+            "description": "Y position of where the mouse event should be dispatched on the offscreen web page. Not required in the case of a mousewheel event."
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "optional": true,
+            "parameters": [
+              {
+                "name": "offscreenTab",
+                "$ref": "OffscreenTab",
+                "description": "Details of the offscreen tab."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "sendKeyboardEvent",
+        "type": "function",
+        "description": "Dispatches a keyboard event in the offscreen tab.",
+        "parameters": [
+          {
+            "name": "offscreenTabId",
+            "type": "integer",
+            "minimum": 0,
+            "description": "ID of the offscreen tab."
+          },
+          {
+            "name": "keyboardEvent",
+            "type": "any",
+            "description": "A JavaScript KeyboardEvent object. Supported event types: <i>keydown</i>, <i>keyup</i>, <i>keypress</i>. Note, only <i>keypress</i> produces a visible result on screen."
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "optional": true,  
+            "parameters": [
+              {
+                "name": "offscreenTab",
+                "$ref": "OffscreenTab",
+                "description": "Details of the offscreen tab."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "toDataUrl",
+        "type": "function",
+        "description": "Captures the visible area of an offscreen tab. ",
+        "parameters": [
+          {
+            "name": "offscreenTabId",
+            "type": "integer",
+            "minimum": 0,
+            "description": "The ID of the offscreen tab."
+          },
+          {
+            "name": "options",
+            "type": "object",
+            "optional": true,
+            "description": "Set parameters of image capture, such as the format of the resulting image.",
+            "properties": {
+              "format": {
+                "type": "string",
+                "optional": true,
+                "enum": ["jpeg", "png"],
+                "description": "The format of the resulting image. Default is jpeg."
+              },
+              "quality": {
+                "type": "integer",
+                "optional": true,
+                "minimum": 0,
+                "maximum": 100,
+                "description": "When format is 'jpeg', controls the quality of the resulting image. This value is ignored for PNG images. As quality is decreased, the resulting image will have more visual artifacts, and the number of bytes needed to store it will decrease."
+              }
+            }
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "parameters": [
+              {
+                "name": "dataUrl",
+                "type": "string",
+                "description": "A data URL which encodes an image of the visible area of the captured offscreen tab. May be assigned to the 'src' property of an HTML Image element or WebGL texture source for display."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "update",
+        "type": "function",
+        "description": "Modifies the properties of an offscreen tab. Properties that are not specified in updateProperties are not modified.",
+        "parameters": [
+          {
+            "name": "offscreenTabId",
+            "type": "integer", 
+            "minimum": 0,
+            "description": "The ID of the offscreen tab."
+          },
+          {
+            "name": "updateProperties",
+            "type": "object",
+            "properties": {
+              "url": {
+                "type": "string",
+                "optional": true,
+                "description": "The URL the offscreen tab is displaying."
+              },
+              "width": {
+                "type": "integer",
+                "optional": true,
+                "minimum": 0,
+                "description": "Width of the window."
+              },
+              "height": {
+                "type": "integer",
+                "optional": true,
+                "minimum": 0,
+                "description": "Height of the window."
+              }
+            }
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "optional": true,
+            "parameters": [
+              {
+                "name": "offscreenTab",
+                "$ref": "OffscreenTab",
+                "description": "Details of the offscreen tab."
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "events": [
+      {
+        "name": "onUpdated",
+        "type": "function",
+        "description": "Fires when an offscreen tab is updated. ",
+        "parameters": [
+          {
+            "name": "offscreenTabId",
+            "type": "integer",
+            "minimum": 0,
+            "description": "ID of the updated offscreen tab"
+          },
+          {
+            "name": "changeInfo",
+            "type": "object",
+            "description": "Lists the changes to the state of the offscreen tab that was updated.",
+            "properties": {
+              "url": {
+                "type": "string",
+                "optional": true,
+                "description": "The offscreen tab's URL if it has changed."
+              }
+            }
+          },
+          {
+            "name": "offscreenTab",
+            "$ref": "OffscreenTab",
+            "description": "Details of the offscreen tab."
+          }
+        ]
+      }
+    ]
   }
 ]

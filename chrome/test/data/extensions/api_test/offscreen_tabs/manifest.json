@@ -1,0 +1,10 @@
+{
+  "name": "chrome.experimental.offscreenTabs API test",
+  "description": "",
+  "version": "1",  
+  "background_page": "test.html",
+    "permissions": [
+      "experimental",
+      "*://*/*"
+    ]
+}

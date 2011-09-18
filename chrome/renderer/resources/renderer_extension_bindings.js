@@ -318,6 +318,7 @@ var chrome = chrome || {};
       "experimental.input",
       "experimental.inputUI",
       "experimental.metrics",
+      "experimental.offscreenTabs",
       "experimental.permissions",
       "experimental.settings",
       "experimental.popup",
