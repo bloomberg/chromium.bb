@@ -6,9 +6,9 @@
 #define VIEWS_CONTROLS_NATIVE_CONTROL_WIN_H_
 #pragma once
 
-#include "base/memory/scoped_ptr.h"
+#include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_vector.h"
-#include "views/controls/combobox/combobox.h"
 #include "views/controls/native/native_view_host.h"
 #include "views/widget/child_window_message_processor.h"
 
@@ -25,24 +25,26 @@ class NativeControlWin : public ChildWindowMessageProcessor,
   NativeControlWin();
   virtual ~NativeControlWin();
 
-  // Overridden from ChildWindowMessageProcessor:
-  virtual bool ProcessMessage(UINT message,
-                              WPARAM w_param,
-                              LPARAM l_param,
-                              LRESULT* result);
-
   // Called by our subclassed window procedure when a WM_KEYDOWN message is
   // received by the HWND created by an object derived from NativeControlWin.
   // Returns true if the key was processed, false otherwise.
   virtual bool OnKeyDown(int vkey) { return false; }
 
+  // Overridden from ChildWindowMessageProcessor:
+  virtual bool ProcessMessage(UINT message,
+                              WPARAM w_param,
+                              LPARAM l_param,
+                              LRESULT* result) OVERRIDE;
+
   // Overridden from View:
-  virtual void OnEnabledChanged();
+  virtual void OnEnabledChanged() OVERRIDE;
 
  protected:
-  virtual void ViewHierarchyChanged(bool is_add, View *parent, View *child);
-  virtual void VisibilityChanged(View* starting_from, bool is_visible);
-  virtual void OnFocus();
+  virtual void ViewHierarchyChanged(bool is_add,
+                                    View* parent,
+                                    View* child) OVERRIDE;
+  virtual void VisibilityChanged(View* starting_from, bool is_visible) OVERRIDE;
+  virtual void OnFocus() OVERRIDE;
 
   // Called by the containing NativeWidgetWin when a WM_CONTEXTMENU message is
   // received from the HWND created by an object derived from NativeControlWin.
@@ -96,4 +98,4 @@ class NativeControlWin : public ChildWindowMessageProcessor,
 
 }  // namespace views
 
-#endif  // #ifndef VIEWS_CONTROLS_NATIVE_CONTROL_WIN_H_
+#endif  // VIEWS_CONTROLS_NATIVE_CONTROL_WIN_H_

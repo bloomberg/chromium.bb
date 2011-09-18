@@ -11,14 +11,15 @@
 #include "ui/base/l10n/l10n_util_win.h"
 #include "ui/base/view_prop.h"
 #include "ui/base/win/hwnd_util.h"
+#include "views/controls/combobox/combobox.h"
 #include "views/focus/focus_manager.h"
 #include "views/widget/widget.h"
 
 using ui::ViewProp;
 
-namespace views {
+const char kNativeControlWinKey[] = "__NATIVE_CONTROL_WIN__";
 
-static const char* const kNativeControlWinKey = "__NATIVE_CONTROL_WIN__";
+namespace views {
 
 ////////////////////////////////////////////////////////////////////////////////
 // NativeControlWin, public:
@@ -108,7 +109,7 @@ void NativeControlWin::OnFocus() {
   // a native win32 control, we don't always send a native (MSAA)
   // focus notification.
   bool send_native_event =
-      parent_view->GetClassName() != views::Combobox::kViewClassName &&
+      parent_view->GetClassName() != Combobox::kViewClassName &&
       parent_view->HasFocus();
 
   // Send the accessibility focus notification.
