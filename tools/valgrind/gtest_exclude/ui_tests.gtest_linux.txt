@@ -16,7 +16,7 @@ PPAPITest.Transport
 WorkerFileSystemTest.ResolveURLHttpTests
 # Leaking memory due to flakiness. http://crbug.com/31739
 SessionHistoryTest.BasicBackForward
-
 # Times out on CrOS pretty often. http://crbug.com/92535
 AutomatedUITestBase.FindInPage
-
+# Fails consistently. http://crbug.com/97107
+RunInBackgroundTest.RunInBackgroundBasicTest
