@@ -17,6 +17,7 @@
 #include "base/timer.h"
 #include "content/common/content_export.h"
 #include "content/common/native_web_keyboard_event.h"
+#include "content/common/page_zoom.h"
 #include "content/common/property_bag.h"
 #include "ipc/ipc_channel.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
@@ -40,6 +41,7 @@ class WebInputEvent;
 class WebMouseEvent;
 struct WebCompositionUnderline;
 struct WebScreenInfo;
+struct WebFindOptions;
 }
 
 class BackingStore;
@@ -372,6 +374,30 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Channel::Listener,
   // Notification that the user has made some kind of input that could
   // perform an action. See OnUserGesture for more details.
   void StartUserGesture();
+
+  // Changes the zoom level for the current main frame.
+  void Zoom(PageZoom::Function zoom_function);
+
+  // Reloads the current focused frame.
+  void ReloadFrame();
+
+  // Finds text on a page.
+  void Find(int request_id, const string16& search_text,
+            const WebKit::WebFindOptions& options);
+
+  // Stops loading the page.
+  void Stop();
+
+  // Requests the renderer to evaluate an xpath to a frame and insert css
+  // into that frame's document.
+  void InsertCSS(const string16& frame_xpath, const std::string& css);
+
+  // Tells the renderer not to add scrollbars with height and width below a
+  // threshold.
+  void DisableScrollbarsForThreshold(const gfx::Size& size);
+
+  // Instructs the RenderView to send back updates to the preferred size.
+  void EnablePreferredSizeMode(int flags);
 
  protected:
   // Internal implementation of the public Forward*Event() methods.

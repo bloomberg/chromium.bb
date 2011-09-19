@@ -84,9 +84,8 @@ void FindTabHelper::StartFinding(string16 search_string,
   options.forward = forward_direction;
   options.matchCase = case_sensitive;
   options.findNext = find_next;
-  tab_contents()->render_view_host()->Send(new ViewMsg_Find(
-      tab_contents()->render_view_host()->routing_id(),
-      current_find_request_id_, find_text_, options));
+  tab_contents()->render_view_host()->Find(current_find_request_id_,
+                                           find_text_, options);
 }
 
 void FindTabHelper::StopFinding(

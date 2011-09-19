@@ -1878,7 +1878,7 @@ void Browser::Zoom(PageZoom::Function zoom_function) {
   UserMetrics::RecordAction(kActions[zoom_function - PageZoom::ZOOM_OUT]);
   TabContentsWrapper* tab_contents = GetSelectedTabContentsWrapper();
   RenderViewHost* host = tab_contents->render_view_host();
-  host->Send(new ViewMsg_Zoom(host->routing_id(), zoom_function));
+  host->Zoom(zoom_function);
 }
 
 void Browser::FocusToolbar() {

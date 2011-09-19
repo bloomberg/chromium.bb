@@ -1651,7 +1651,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
     }
 
     case IDC_CONTENT_CONTEXT_RELOADFRAME:
-      rvh->Send(new ViewMsg_ReloadFrame(rvh->routing_id()));
+      rvh->ReloadFrame();
       break;
 
     case IDC_CONTENT_CONTEXT_VIEWFRAMESOURCE:

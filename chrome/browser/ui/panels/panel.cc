@@ -508,9 +508,8 @@ void Panel::Observe(int type,
     case content::NOTIFICATION_TAB_CONTENTS_SWAPPED: {
       RenderViewHost* render_view_host = GetRenderViewHost();
       DCHECK(render_view_host);
-      render_view_host->Send(new ViewMsg_EnablePreferredSizeChangedMode(
-          render_view_host->routing_id(),
-          kPreferredSizeWidth | kPreferredSizeHeightThisIsSlow));
+      render_view_host->EnablePreferredSizeMode(
+          kPreferredSizeWidth | kPreferredSizeHeightThisIsSlow);
       RequestRenderViewHostToDisableScrollbars(render_view_host);
       break;
     }
@@ -532,10 +531,9 @@ void Panel::RequestRenderViewHostToDisableScrollbars(
   DCHECK(render_view_host);
 
   gfx::Size non_client_size = native_panel_->GetNonClientAreaExtent();
-  render_view_host->Send(new ViewMsg_DisableScrollbarsForSmallWindows(
-      render_view_host->routing_id(),
+  render_view_host->DisableScrollbarsForThreshold(
       gfx::Size(max_size_.width() - non_client_size.width(),
-                max_size_.height() - non_client_size.height())));
+                max_size_.height() - non_client_size.height()));
 }
 
 Browser* Panel::browser() const {

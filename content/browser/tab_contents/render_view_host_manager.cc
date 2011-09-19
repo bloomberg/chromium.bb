@@ -125,7 +125,7 @@ RenderViewHost* RenderViewHostManager::Navigate(const NavigationEntry& entry) {
 }
 
 void RenderViewHostManager::Stop() {
-  render_view_host_->Send(new ViewMsg_Stop(render_view_host_->routing_id()));
+  render_view_host_->Stop();
 
   // If we are cross-navigating, we should stop the pending renderers.  This
   // will lead to a DidFailProvisionalLoad, which will properly destroy them.

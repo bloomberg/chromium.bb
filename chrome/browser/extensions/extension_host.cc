@@ -346,14 +346,12 @@ void ExtensionHost::InsertInfobarCSS() {
       ResourceBundle::GetSharedInstance().GetRawDataResource(
       IDR_EXTENSIONS_INFOBAR_CSS));
 
-  render_view_host()->Send(new ViewMsg_CSSInsertRequest(
-      render_view_host()->routing_id(), string16(), css.as_string()));
+  render_view_host()->InsertCSS(string16(), css.as_string());
 }
 
 void ExtensionHost::DisableScrollbarsForSmallWindows(
     const gfx::Size& size_limit) {
-  render_view_host()->Send(new ViewMsg_DisableScrollbarsForSmallWindows(
-      render_view_host()->routing_id(), size_limit));
+  render_view_host()->DisableScrollbarsForThreshold(size_limit);
 }
 
 void ExtensionHost::DidStopLoading() {
@@ -796,8 +794,7 @@ void ExtensionHost::RenderViewCreated(RenderViewHost* render_view_host) {
 
   if (extension_host_type_ == ViewType::EXTENSION_POPUP ||
       extension_host_type_ == ViewType::EXTENSION_INFOBAR) {
-    render_view_host->Send(new ViewMsg_EnablePreferredSizeChangedMode(
-        render_view_host->routing_id(),
-        kPreferredSizeWidth | kPreferredSizeHeightThisIsSlow));
+        render_view_host->EnablePreferredSizeMode(
+            kPreferredSizeWidth | kPreferredSizeHeightThisIsSlow);
   }
 }

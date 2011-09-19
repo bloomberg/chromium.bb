@@ -81,12 +81,11 @@ void BalloonHost::Close(RenderViewHost* render_view_host) {
 }
 
 void BalloonHost::RenderViewCreated(RenderViewHost* render_view_host) {
-  render_view_host->Send(new ViewMsg_DisableScrollbarsForSmallWindows(
-      render_view_host->routing_id(), balloon_->min_scrollbar_size()));
+  render_view_host->DisableScrollbarsForThreshold(
+      balloon_->min_scrollbar_size());
   render_view_host->WasResized();
-  render_view_host->Send(new ViewMsg_EnablePreferredSizeChangedMode(
-      render_view_host->routing_id(),
-      kPreferredSizeWidth | kPreferredSizeHeightThisIsSlow));
+  render_view_host->EnablePreferredSizeMode(
+      kPreferredSizeWidth | kPreferredSizeHeightThisIsSlow);
 }
 
 void BalloonHost::RenderViewReady(RenderViewHost* render_view_host) {

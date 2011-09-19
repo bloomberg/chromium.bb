@@ -521,10 +521,9 @@ void AutomationProvider::SendFindRequest(
   options.forward = forward;
   options.matchCase = match_case;
   options.findNext = find_next;
-  tab_contents->render_view_host()->Send(new ViewMsg_Find(
-      tab_contents->render_view_host()->routing_id(),
+  tab_contents->render_view_host()->Find(
       FindInPageNotificationObserver::kFindInPageRequestId, search_string,
-      options));
+      options);
 }
 
 class SetProxyConfigTask : public Task {
@@ -712,7 +711,7 @@ void AutomationProvider::StopAsync(int tab_handle) {
     return;
   }
 
-  view->Send(new ViewMsg_Stop(view->routing_id()));
+  view->Stop();
 }
 
 void AutomationProvider::OnSetPageFontSize(int tab_handle,

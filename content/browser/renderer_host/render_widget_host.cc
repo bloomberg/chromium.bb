@@ -1254,3 +1254,34 @@ void RenderWidgetHost::ActivateDeferredPluginHandles() {
 void RenderWidgetHost::StartUserGesture() {
   OnUserGesture();
 }
+
+void RenderWidgetHost::Zoom(PageZoom::Function zoom_function) {
+  Send(new ViewMsg_Zoom(routing_id(), zoom_function));
+}
+
+void RenderWidgetHost::ReloadFrame() {
+  Send(new ViewMsg_ReloadFrame(routing_id()));
+}
+
+void RenderWidgetHost::Find(int request_id, const string16& search_text,
+                            const WebKit::WebFindOptions& options) {
+  Send(new ViewMsg_Find(routing_id(), request_id, search_text, options));
+}
+
+void RenderWidgetHost::Stop() {
+  Send(new ViewMsg_Stop(routing_id()));
+}
+
+void RenderWidgetHost::InsertCSS(const string16& frame_xpath,
+                                 const std::string& css) {
+  Send(new ViewMsg_CSSInsertRequest(routing_id(), frame_xpath, css));
+}
+
+void RenderWidgetHost::DisableScrollbarsForThreshold(const gfx::Size& size) {
+  Send(new ViewMsg_DisableScrollbarsForSmallWindows(routing_id(), size));
+}
+
+void RenderWidgetHost::EnablePreferredSizeMode(int flags) {
+  Send(new ViewMsg_EnablePreferredSizeChangedMode(routing_id(), flags));
+}
+

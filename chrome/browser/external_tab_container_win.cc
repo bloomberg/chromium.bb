@@ -1037,13 +1037,13 @@ bool ExternalTabContainer::AcceleratorPressed(
   int command_id = iter->second;
   switch (command_id) {
     case IDC_ZOOM_PLUS:
-      host->Send(new ViewMsg_Zoom(host->routing_id(), PageZoom::ZOOM_IN));
+      host->Zoom(PageZoom::ZOOM_IN);
       break;
     case IDC_ZOOM_NORMAL:
-      host->Send(new ViewMsg_Zoom(host->routing_id(), PageZoom::RESET));
+      host->Zoom(PageZoom::RESET);
       break;
     case IDC_ZOOM_MINUS:
-      host->Send(new ViewMsg_Zoom(host->routing_id(), PageZoom::ZOOM_OUT));
+      host->Zoom(PageZoom::ZOOM_OUT);
       break;
     case IDC_DEV_TOOLS:
       DevToolsWindow::ToggleDevToolsWindow(

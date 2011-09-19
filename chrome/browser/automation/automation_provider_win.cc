@@ -467,7 +467,7 @@ void AutomationProvider::OnSetZoomLevel(int handle, int zoom_level) {
     if (tab->tab_contents() && tab->tab_contents()->render_view_host()) {
       RenderViewHost* host = tab->tab_contents()->render_view_host();
       PageZoom::Function zoom = static_cast<PageZoom::Function>(zoom_level);
-      host->Send(new ViewMsg_Zoom(host->routing_id(), zoom));
+      host->Zoom(zoom);
     }
   }
 }

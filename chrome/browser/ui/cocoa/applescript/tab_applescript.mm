@@ -227,7 +227,7 @@
     return;
   }
 
-  view->Send(new ViewMsg_Stop(view->routing_id()));
+  view->Stop();
 }
 
 - (void)handlesPrintScriptCommand:(NSScriptCommand*)command {

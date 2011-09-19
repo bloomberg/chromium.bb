@@ -151,8 +151,7 @@ void OpenUsingReader(TabContentsWrapper* tab,
       tab->render_view_host()->routing_id(),
       tab->tab_contents()->GetURL(),
       plugin);
-  tab->render_view_host()->Send(new ViewMsg_ReloadFrame(
-      tab->render_view_host()->routing_id()));
+  tab->render_view_host()->ReloadFrame();
 
   if (new_delegate) {
     if (old_delegate) {
