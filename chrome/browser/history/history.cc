@@ -135,6 +135,7 @@ HistoryService::HistoryService(Profile* profile)
     : thread_(new base::Thread(kHistoryThreadName)),
       profile_(profile),
       backend_loaded_(false),
+      current_backend_id_(-1),
       bookmark_service_(NULL),
       no_db_(false),
       needs_top_sites_migration_(false) {
