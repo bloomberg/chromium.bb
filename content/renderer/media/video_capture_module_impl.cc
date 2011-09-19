@@ -6,13 +6,6 @@
 
 #include "content/renderer/media/video_capture_impl_manager.h"
 
-// static
-webrtc::VideoCaptureModule* webrtc::VideoCaptureModule::Create(
-    const WebRtc_Word32 id, const WebRtc_UWord8* device_unique_id_utf8) {
-  NOTREACHED();
-  return NULL;
-}
-
 VideoCaptureModuleImpl::VideoCaptureModuleImpl(
     const media::VideoCaptureSessionId id,
     VideoCaptureImplManager* vc_manager)

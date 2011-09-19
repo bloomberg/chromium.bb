@@ -8,20 +8,6 @@
 
 static const char* kLocalDeviceName = "chromecamera";
 
-// static
-webrtc::VideoCaptureModule::DeviceInfo*
-webrtc::VideoCaptureModule::CreateDeviceInfo(const WebRtc_Word32 id) {
-  return new VideoCaptureModuleImplDeviceInfo(id);
-}
-
-// static
-void webrtc::VideoCaptureModule::DestroyDeviceInfo(
-    webrtc::VideoCaptureModule::DeviceInfo* device_info) {
-  VideoCaptureModuleImplDeviceInfo* dev_info =
-      static_cast<VideoCaptureModuleImplDeviceInfo*>(device_info);
-  delete dev_info;
-}
-
 VideoCaptureModuleImplDeviceInfo::VideoCaptureModuleImplDeviceInfo(
     const WebRtc_Word32 id) {
 }

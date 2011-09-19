@@ -236,10 +236,10 @@
         }],
         ['enable_webrtc==1', {
           'dependencies': [
-            '../third_party/webrtc/modules/video_capture/main/source/video_capture.gyp:video_capture_module',
+            '../third_party/webrtc/modules/modules.gyp:video_capture_module',
             '../third_party/webrtc/system_wrappers/source/system_wrappers.gyp:system_wrappers',
-            '../third_party/webrtc/video_engine/main/source/video_engine_core.gyp:video_engine_core',
-            '../third_party/webrtc/voice_engine/main/source/voice_engine_core.gyp:voice_engine_core',
+            '../third_party/webrtc/video_engine/video_engine.gyp:video_engine_core',
+            '../third_party/webrtc/voice_engine/voice_engine.gyp:voice_engine_core',
           ],
           'sources': [
             'renderer/media/video_capture_module_impl.cc',
