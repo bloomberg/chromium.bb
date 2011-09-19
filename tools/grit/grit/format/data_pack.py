@@ -19,11 +19,18 @@ from grit.node import message
 from grit.node import misc
 
 
-FILE_FORMAT_VERSION = 3
-HEADER_LENGTH = 2 * 4  # Two uint32s. (file version and number of entries)
+PACK_FILE_VERSION = 4
+HEADER_LENGTH = 2 * 4 + 1  # Two uint32s. (file version, number of entries) and
+                           # one uint8 (encoding of text resources)
+BINARY, UTF8, UTF16 = range(3)
 
 class WrongFileVersion(Exception):
   pass
+
+class DataPackContents:
+  def __init__(self, resources, encoding):
+    self.resources = resources
+    self.encoding = encoding
 
 class DataPack(interface.ItemFormatter):
   '''Writes out the data pack file format (platform agnostic resource file).'''
@@ -36,9 +43,9 @@ class DataPack(interface.ItemFormatter):
     nodes = DataPack.GetDataNodes(item)
     data = {}
     for node in nodes:
-      id, value = node.GetDataPackPair(lang)
+      id, value = node.GetDataPackPair(lang, UTF8)
       data[id] = value
-    return DataPack.WriteDataPackToString(data)
+    return DataPack.WriteDataPackToString(data, UTF8)
 
   @staticmethod
   def GetDataNodes(item):
@@ -63,13 +70,15 @@ class DataPack(interface.ItemFormatter):
     original_data = data
 
     # Read the header.
-    version, num_entries = struct.unpack("<II", data[:HEADER_LENGTH])
-    if version != FILE_FORMAT_VERSION:
+    version, num_entries, encoding = struct.unpack("<IIB",
+                                                   data[:HEADER_LENGTH])
+    if version != PACK_FILE_VERSION:
+      print "Wrong file version in ", input_file
       raise WrongFileVersion
 
     resources = {}
     if num_entries == 0:
-      return resources
+      return DataPackContents(resources, encoding)
 
     # Read the index and data.
     data = data[HEADER_LENGTH:]
@@ -80,18 +89,18 @@ class DataPack(interface.ItemFormatter):
       next_id, next_offset = struct.unpack("<HI", data[:kIndexEntrySize])
       resources[id] = original_data[offset:next_offset]
 
-    return resources
+    return DataPackContents(resources, encoding)
 
   @staticmethod
-  def WriteDataPackToString(resources):
+  def WriteDataPackToString(resources, encoding):
     """Write a map of id=>data into a string in the data pack format and return
     it."""
     ids = sorted(resources.keys())
     ret = []
 
     # Write file header.
-    ret.append(struct.pack("<II", FILE_FORMAT_VERSION, len(ids)))
-    HEADER_LENGTH = 2 * 4             # Two uint32s.
+    ret.append(struct.pack("<IIB", PACK_FILE_VERSION, len(ids), encoding))
+    HEADER_LENGTH = 2 * 4 + 1            # Two uint32s and one uint8.
 
     # Each entry is a uint16 + a uint32s. We have one extra entry for the last
     # item.
@@ -111,10 +120,10 @@ class DataPack(interface.ItemFormatter):
     return ''.join(ret)
 
   @staticmethod
-  def WriteDataPack(resources, output_file):
+  def WriteDataPack(resources, output_file, encoding):
     """Write a map of id=>data into output_file as a data pack."""
     file = open(output_file, "wb")
-    content = DataPack.WriteDataPackToString(resources)
+    content = DataPack.WriteDataPackToString(resources, encoding)
     file.write(content)
 
   @staticmethod
@@ -122,25 +131,37 @@ class DataPack(interface.ItemFormatter):
     """Write a new data pack to |output_file| based on a list of filenames
     (|input_files|)"""
     resources = {}
+    encoding = None
     for filename in input_files:
-      new_resources = DataPack.ReadDataPack(filename)
+      new_content = DataPack.ReadDataPack(filename)
 
-      # Make sure we have no duplicates.
-      duplicate_keys = set(new_resources.keys()) & set(resources.keys())
+      # Make sure we have no dups.
+      duplicate_keys = set(new_content.resources.keys()) & set(resources.keys())
       if len(duplicate_keys) != 0:
         raise exceptions.KeyError("Duplicate keys: " +
                                   str(list(duplicate_keys)))
 
-      resources.update(new_resources)
+      # Make sure encoding is consistent.
+      if encoding in (None, BINARY):
+        encoding = new_content.encoding
+      elif new_content.encoding not in (BINARY, encoding):
+          raise exceptions.KeyError("Inconsistent encodings: " +
+                                    str(encoding) + " vs " +
+                                    str(new_content.encoding))
 
-    DataPack.WriteDataPack(resources, output_file)
+      resources.update(new_content.resources)
+
+    # Encoding is 0 for BINARY, 1 for UTF8 and 2 for UTF16
+    if encoding is None:
+      encoding = BINARY
+    DataPack.WriteDataPack(resources, output_file, encoding)
 
 def main():
   # Just write a simple file.
   data = { 1: "", 4: "this is id 4", 6: "this is id 6", 10: "" }
-  WriteDataPack(data, "datapack1.pak")
+  DataPack.WriteDataPack(data, "datapack1.pak", UTF8)
   data2 = { 1000: "test", 5: "five" }
-  WriteDataPack(data2, "datapack2.pak")
+  DataPack.WriteDataPack(data2, "datapack2.pak", UTF8)
   print "wrote datapack1 and datapack2 to current directory."
 
 if __name__ == '__main__':

@@ -27,31 +27,6 @@
 using testing::_;
 using testing::Mock;
 
-// TODO(port): port this test to POSIX.
-#if defined(OS_WIN)
-TEST(PrefServiceTest, LocalizedPrefs) {
-  TestingPrefService prefs;
-  const char kBoolean[] = "boolean";
-  const char kInteger[] = "integer";
-  const char kString[] = "string";
-  prefs.RegisterLocalizedBooleanPref(kBoolean, IDS_LOCALE_BOOL);
-  prefs.RegisterLocalizedIntegerPref(kInteger, IDS_LOCALE_INT);
-  prefs.RegisterLocalizedStringPref(kString, IDS_LOCALE_STRING);
-
-  // The locale default should take preference over the user default.
-  EXPECT_FALSE(prefs.GetBoolean(kBoolean));
-  EXPECT_EQ(1, prefs.GetInteger(kInteger));
-  EXPECT_EQ("hello", prefs.GetString(kString));
-
-  prefs.SetBoolean(kBoolean, true);
-  EXPECT_TRUE(prefs.GetBoolean(kBoolean));
-  prefs.SetInteger(kInteger, 5);
-  EXPECT_EQ(5, prefs.GetInteger(kInteger));
-  prefs.SetString(kString, "foo");
-  EXPECT_EQ("foo", prefs.GetString(kString));
-}
-#endif
-
 TEST(PrefServiceTest, NoObserverFire) {
   TestingPrefService prefs;
 

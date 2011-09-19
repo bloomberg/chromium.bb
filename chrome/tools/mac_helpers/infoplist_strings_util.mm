@@ -78,12 +78,24 @@ NSString* LoadStringFromDataPack(ui::DataPack* data_pack,
   NSString* result = nil;
   base::StringPiece data;
   if (data_pack->GetStringPiece(resource_id, &data)) {
-    // Data pack encodes strings as UTF16.
-    result =
-        [[[NSString alloc] initWithBytes:data.data()
-                                  length:data.length()
-                                encoding:NSUTF16LittleEndianStringEncoding]
-         autorelease];
+    // Data pack encodes strings as either UTF8 or UTF16.
+    if (data_pack->GetTextEncodingType() == ui::DataPack::UTF8) {
+      result =
+          [[[NSString alloc] initWithBytes:data.data()
+                                    length:data.length()
+                                  encoding:NSUTF8StringEncoding]
+           autorelease];
+    } else if (data_pack->GetTextEncodingType() == ui::DataPack::UTF16) {
+      result =
+          [[[NSString alloc] initWithBytes:data.data()
+                                    length:data.length()
+                                  encoding:NSUTF16LittleEndianStringEncoding]
+           autorelease];
+    } else {
+      fprintf(stderr, "ERROR: requested string %s from binary data pack\n",
+              resource_id_str);
+      exit(1);
+    }
   }
   if (!result) {
     fprintf(stderr, "ERROR: failed to load string %s for lang %s\n",
