@@ -258,7 +258,6 @@ class ResourceDispatcherHostTest : public testing::Test,
  public:
   ResourceDispatcherHostTest()
       : ui_thread_(BrowserThread::UI, &message_loop_),
-        file_thread_(BrowserThread::FILE, &message_loop_),
         io_thread_(BrowserThread::IO, &message_loop_),
         ALLOW_THIS_IN_INITIALIZER_LIST(filter_(new ForwardingFilter(this))),
         host_(ResourceQueue::DelegateSet()),
@@ -387,7 +386,6 @@ class ResourceDispatcherHostTest : public testing::Test,
 
   MessageLoopForIO message_loop_;
   BrowserThread ui_thread_;
-  BrowserThread file_thread_;
   BrowserThread io_thread_;
   scoped_refptr<ForwardingFilter> filter_;
   ResourceDispatcherHost host_;
