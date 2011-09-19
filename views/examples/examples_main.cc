@@ -6,7 +6,6 @@
 
 #include "base/at_exit.h"
 #include "base/command_line.h"
-#include "base/i18n/icu_util.h"
 #include "base/process_util.h"
 #include "base/utf_string_conversions.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -50,45 +49,9 @@ ExamplesMain::ExamplesMain()
 
 ExamplesMain::~ExamplesMain() {}
 
-bool ExamplesMain::CanResize() const {
-  return true;
-}
-
-views::View* ExamplesMain::GetContentsView() {
-  return contents_;
-}
-
-void ExamplesMain::WindowClosing() {
-  MessageLoopForUI::current()->Quit();
-}
-
-views::Widget* ExamplesMain::GetWidget() {
-  return contents_->GetWidget();
-}
-
-const views::Widget* ExamplesMain::GetWidget() const {
-  return contents_->GetWidget();
-}
-
-void ExamplesMain::SetStatus(const std::string& status) {
-  status_label_->SetText(UTF8ToWide(status));
-}
-
-void ExamplesMain::Run() {
-  base::EnableTerminationOnHeapCorruption();
-
-  // The exit manager is in charge of calling the dtors of singleton objects.
-  base::AtExitManager exit_manager;
-
-  ui::RegisterPathProvider();
-  icu_util::Initialize();
-
-  ResourceBundle::InitSharedInstance("en-US");
-
-  MessageLoop main_message_loop(MessageLoop::TYPE_UI);
-
-  // Creates a window with the tabbed pane for each examples, and
-  // a label to print messages from each examples.
+void ExamplesMain::CreateWindow() {
+  // Creates a window with the tabbed pane for each example,
+  // and a label to print messages from each example.
   DCHECK(contents_ == NULL) << "Run called more than once.";
   contents_ = new views::View();
   contents_->set_background(views::Background::CreateStandardPanelBackground());
@@ -169,12 +132,34 @@ void ExamplesMain::Run() {
   AddExample(&widget_example);
 
   window->Show();
-  views::AcceleratorHandler accelerator_handler;
-  MessageLoopForUI::current()->Run(&accelerator_handler);
+}
+
+void ExamplesMain::SetStatus(const std::string& status) {
+  status_label_->SetText(UTF8ToWide(status));
 }
 
 void ExamplesMain::AddExample(ExampleBase* example) {
   tabbed_pane_->AddTab(example->GetExampleTitle(), example->GetExampleView());
+}
+
+bool ExamplesMain::CanResize() const {
+  return true;
+}
+
+views::View* ExamplesMain::GetContentsView() {
+  return contents_;
+}
+
+void ExamplesMain::WindowClosing() {
+  MessageLoopForUI::current()->Quit();
+}
+
+views::Widget* ExamplesMain::GetWidget() {
+  return contents_->GetWidget();
+}
+
+const views::Widget* ExamplesMain::GetWidget() const {
+  return contents_->GetWidget();
 }
 
 }  // namespace examples
@@ -188,9 +173,19 @@ int main(int argc, char** argv) {
   g_type_init();
   gtk_init(&argc, &argv);
 #endif
-  views::TestViewsDelegate delegate;
-
   CommandLine::Init(argc, argv);
+
+  base::EnableTerminationOnHeapCorruption();
+
+  // The exit manager is in charge of calling the dtors of singleton objects.
+  base::AtExitManager exit_manager;
+
+  ui::RegisterPathProvider();
+  ui::ResourceBundle::InitSharedInstance("en-US");
+
+  MessageLoop main_message_loop(MessageLoop::TYPE_UI);
+
+  views::TestViewsDelegate delegate;
 
   // We do not use this header: chrome/common/chrome_switches.h
   // because that would create a bad dependency back on Chrome.
@@ -198,7 +193,10 @@ int main(int argc, char** argv) {
       CommandLine::ForCurrentProcess()->HasSwitch("use-pure-views"));
 
   examples::ExamplesMain main;
-  main.Run();
+  main.CreateWindow();
+
+  views::AcceleratorHandler accelerator_handler;
+  MessageLoopForUI::current()->Run(&accelerator_handler);
 
 #if defined(OS_WIN)
   OleUninitialize();
