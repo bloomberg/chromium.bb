@@ -284,8 +284,13 @@ class MessageWriter {
   // function.
   void AppendArrayOfBytes(const uint8* values, size_t length);
 
+  // Appends the array of strings. Arrays of strings are often used for
+  // exchanging lists of names hence it's worth having a specialized
+  // function.
+  void AppendArrayOfStrings(const std::vector<std::string>& strings);
+
   // Appends the array of object paths. Arrays of object paths are often
-  // used to exchanging object paths, hence it's worth having a
+  // used when exchanging object paths, hence it's worth having a
   // specialized function.
   void AppendArrayOfObjectPaths(const std::vector<std::string>& object_paths);
 
@@ -370,6 +375,14 @@ class MessageReader {
   // |bytes| must be copied if the contents will be referenced after the
   // MessageReader is destroyed.
   bool PopArrayOfBytes(uint8** bytes, size_t* length);
+
+  // Gets the array of strings at the current iterator position.
+  // Returns true and advances the iterator on success.
+  //
+  // Arrays of strings are often used to communicate with D-Bus
+  // services like KWallet, hence it's worth having a specialized
+  // function.
+  bool PopArrayOfStrings(std::vector<std::string>* strings);
 
   // Gets the array of object paths at the current iterator position.
   // Returns true and advances the iterator on success.

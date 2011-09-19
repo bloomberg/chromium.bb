@@ -166,9 +166,30 @@ TEST(MessageTest, ArrayOfBytes) {
   ASSERT_TRUE(reader.PopArrayOfBytes(&output_bytes, &length));
   ASSERT_FALSE(reader.HasMoreData());
   ASSERT_EQ(3U, length);
-  ASSERT_EQ(1, output_bytes[0]);
-  ASSERT_EQ(2, output_bytes[1]);
-  ASSERT_EQ(3, output_bytes[2]);
+  EXPECT_EQ(1, output_bytes[0]);
+  EXPECT_EQ(2, output_bytes[1]);
+  EXPECT_EQ(3, output_bytes[2]);
+}
+
+TEST(MessageTest, ArrayOfStrings) {
+  scoped_ptr<dbus::Response> message(dbus::Response::CreateEmpty());
+  dbus::MessageWriter writer(message.get());
+  std::vector<std::string> strings;
+  strings.push_back("fee");
+  strings.push_back("fie");
+  strings.push_back("foe");
+  strings.push_back("fum");
+  writer.AppendArrayOfStrings(strings);
+
+  dbus::MessageReader reader(message.get());
+  std::vector<std::string> output_strings;
+  ASSERT_TRUE(reader.PopArrayOfStrings(&output_strings));
+  ASSERT_FALSE(reader.HasMoreData());
+  ASSERT_EQ(4U, output_strings.size());
+  EXPECT_EQ("fee", output_strings[0]);
+  EXPECT_EQ("fie", output_strings[1]);
+  EXPECT_EQ("foe", output_strings[2]);
+  EXPECT_EQ("fum", output_strings[3]);
 }
 
 TEST(MessageTest, ArrayOfObjectPaths) {
@@ -185,9 +206,9 @@ TEST(MessageTest, ArrayOfObjectPaths) {
   ASSERT_TRUE(reader.PopArrayOfObjectPaths(&output_object_paths));
   ASSERT_FALSE(reader.HasMoreData());
   ASSERT_EQ(3U, output_object_paths.size());
-  ASSERT_EQ("/object/path/1", output_object_paths[0]);
-  ASSERT_EQ("/object/path/2", output_object_paths[1]);
-  ASSERT_EQ("/object/path/3", output_object_paths[2]);
+  EXPECT_EQ("/object/path/1", output_object_paths[0]);
+  EXPECT_EQ("/object/path/2", output_object_paths[1]);
+  EXPECT_EQ("/object/path/3", output_object_paths[2]);
 }
 
 // Test that an array can be properly written and read. We only have this
