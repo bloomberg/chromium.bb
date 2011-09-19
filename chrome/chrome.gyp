@@ -1379,7 +1379,7 @@
           'target_name': 'chrome_version_resources',
           'type': 'none',
           'dependencies': [
-            '../build/util/build_util.gyp:lastchange',
+            '../build/util/build_util.gyp:lastchange#target',
           ],
           'direct_dependent_settings': {
             'include_dirs': [
@@ -1440,7 +1440,7 @@
           'type': 'none',
           'hard_dependency': 1,
           'dependencies': [
-            '../build/util/build_util.gyp:lastchange',
+            '../build/util/build_util.gyp:lastchange#target',
           ],
           'actions': [
             {
