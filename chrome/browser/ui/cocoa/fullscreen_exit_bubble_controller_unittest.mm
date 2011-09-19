@@ -4,7 +4,7 @@
 
 #import "chrome/browser/ui/cocoa/fullscreen_exit_bubble_controller.h"
 
-#include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
+#include "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #include "testing/gtest_mac.h"
 #include "ui/base/models/accelerator_cocoa.h"
 
