@@ -139,15 +139,9 @@ void BookmarkContextMenuController::ExecuteCommand(int id) {
       }
 
       if (selection_[0]->is_url()) {
-#if defined(WEBUI_DIALOGS)
-        Browser* browser = BrowserList::GetLastActiveWithProfile(profile_);
-        DCHECK(browser);
-        browser->OpenBookmarkManagerEditNode(selection_[0]->id());
-#else
-        BookmarkEditor::Show(parent_window_, profile_, parent_,
-                             BookmarkEditor::EditDetails(selection_[0]),
-                             BookmarkEditor::SHOW_TREE);
-#endif
+        BookmarkEditor::Show(parent_window_, profile_,
+            BookmarkEditor::EditDetails::EditNode(selection_[0]),
+            BookmarkEditor::SHOW_TREE);
       } else {
         BookmarkFolderEditorController::Show(profile_, parent_window_,
             selection_[0], -1,
@@ -172,17 +166,12 @@ void BookmarkContextMenuController::ExecuteCommand(int id) {
       UserMetrics::RecordAction(
           UserMetricsAction("BookmarkBar_ContextMenu_Add"));
 
-#if defined(WEBUI_DIALOGS)
-      Browser* browser = BrowserList::GetLastActiveWithProfile(profile_);
-      DCHECK(browser);
-      browser->OpenBookmarkManagerAddNodeIn(selection_[0]->id());
-#else
       // TODO: this should honor the index from GetParentForNewNodes.
       BookmarkEditor::Show(
           parent_window_, profile_,
-          bookmark_utils::GetParentForNewNodes(parent_, selection_, NULL),
-          BookmarkEditor::EditDetails(), BookmarkEditor::SHOW_TREE);
-#endif
+          BookmarkEditor::EditDetails::AddNodeInFolder(
+              bookmark_utils::GetParentForNewNodes(parent_, selection_, NULL)),
+          BookmarkEditor::SHOW_TREE);
       break;
     }
 

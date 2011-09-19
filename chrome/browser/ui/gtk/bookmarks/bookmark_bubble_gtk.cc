@@ -309,25 +309,17 @@ void BookmarkBubbleGtk::ShowEditor() {
   // Commit any edits now.
   ApplyEdits();
 
-#if !defined(WEBUI_DIALOGS)
   // Closing might delete us, so we'll cache what we need on the stack.
   Profile* profile = profile_;
   GtkWindow* toplevel = GTK_WINDOW(gtk_widget_get_toplevel(anchor_));
-#endif
 
   // Close the bubble, deleting the C++ objects, etc.
   bubble_->Close();
 
   if (node) {
-#if defined(WEBUI_DIALOGS)
-    Browser* browser = BrowserList::GetLastActiveWithProfile(profile_);
-    DCHECK(browser);
-    browser->OpenBookmarkManagerEditNode(node->id());
-#else
-    BookmarkEditor::Show(toplevel, profile, NULL,
-                         BookmarkEditor::EditDetails(node),
+    BookmarkEditor::Show(toplevel, profile,
+                         BookmarkEditor::EditDetails::EditNode(node),
                          BookmarkEditor::SHOW_TREE);
-#endif
   }
 }
 

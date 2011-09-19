@@ -51,6 +51,10 @@ void ShowExtensionInstalledBubble(const Extension* extension,
 void ShowHungRendererDialog(TabContents* contents);
 void HideHungRendererDialog(TabContents* contents);
 
+// Native implementations of hung renderer dialogs.
+void ShowNativeHungRendererDialog(TabContents* contents);
+void HideNativeHungRendererDialog(TabContents* contents);
+
 } // namespace browser
 
 #endif  // CHROME_BROWSER_UI_BROWSER_DIALOGS_H_

@@ -15,6 +15,7 @@
 #include "ui/gfx/native_widget_types.h"
 
 class TabContents;
+class HungRendererDialogHandler;
 
 class HungRendererDialog : private HtmlDialogUIDelegate {
  public:
@@ -49,6 +50,9 @@ class HungRendererDialog : private HtmlDialogUIDelegate {
   // The tab contents.
   TabContents* contents_;
 
+  // The dialog handler.
+  HungRendererDialogHandler* handler_;
+
   // The dialog window.
   gfx::NativeWindow window_;
 
@@ -60,6 +64,8 @@ class HungRendererDialog : private HtmlDialogUIDelegate {
 class HungRendererDialogHandler : public WebUIMessageHandler {
  public:
   explicit HungRendererDialogHandler(TabContents* contents);
+
+  void CloseDialog();
 
   // Overridden from WebUIMessageHandler
   virtual void RegisterMessages();

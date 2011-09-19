@@ -2822,7 +2822,6 @@
         'browser/ui/gtk/certificate_dialogs.cc',
         'browser/ui/gtk/certificate_dialogs.h',
         'browser/ui/gtk/certificate_viewer.cc',
-        'browser/ui/gtk/certificate_viewer.h',
         'browser/ui/gtk/chrome_gtk_frame.cc',
         'browser/ui/gtk/chrome_gtk_frame.h',
         'browser/ui/gtk/collected_cookies_gtk.cc',
@@ -4116,36 +4115,14 @@
             '../ui/aura/aura.gyp:aura',
           ],
         }],
-        ['webui_dialogs == 1', {
-          'defines': [
-            'WEBUI_DIALOGS',
-          ],
-        }],
-        # Exclude WebUI certificate viewer if not POSIX, mac (these OS's have
-        # native certificate viewers) or WebUI dialogs are disabled.
-        ['webui_dialogs == 0 or os_posix == 0 or OS == "mac"', {
+        # Exclude WebUI certificate viewer if not POSIX or mac (these OS's have
+        # native certificate viewers).
+        ['os_posix == 0 or OS == "mac"', {
           'sources/': [
             ['exclude', '^browser/ui/webui/certificate_viewer.cc'],
             ['exclude', '^browser/ui/webui/certificate_viewer.h'],
             ['exclude', '^browser/ui/webui/certificate_viewer_ui.cc'],
             ['exclude', '^browser/ui/webui/certificate_viewer_ui.h'],
-          ],
-        }],
-        # Exclude other WebUI dialogs if WebUI dialogs are disabled.
-        ['webui_dialogs == 0', {
-          'sources/': [
-            ['exclude', '^browser/ui/webui/hung_renderer_dialog.cc'],
-            ['exclude', '^browser/ui/webui/hung_renderer_dialog.h'],
-            ['exclude', '^browser/ui/webui/hung_renderer_dialog_ui.cc'],
-            ['exclude', '^browser/ui/webui/hung_renderer_dialog_ui.h'],
-          ],
-        }],
-        ['webui_dialogs == 1', {
-          'sources/': [
-            ['exclude', '^browser/ui/gtk/certificate_viewer.cc'],
-            ['exclude', '^browser/ui/gtk/certificate_viewer.h'],
-            ['exclude', '^browser/ui/gtk/hung_renderer_dialog_gtk.cc'],
-            ['exclude', '^browser/ui/gtk/hung_renderer_dialog_gtk.h'],
           ],
         }],
         ['toolkit_uses_gtk == 1', {
@@ -4472,7 +4449,6 @@
                 ['include', '^browser/ui/gtk/certificate_dialogs.cc'],
                 ['include', '^browser/ui/gtk/certificate_dialogs.h'],
                 ['include', '^browser/ui/gtk/certificate_viewer.cc'],
-                ['include', '^browser/ui/gtk/certificate_viewer.h'],
                 ['include', '^browser/ui/gtk/chrome_gtk_frame.cc'],
                 ['include', '^browser/ui/gtk/chrome_gtk_frame.h'],
                 ['include', '^browser/ui/gtk/collected_cookies_gtk.cc'],
@@ -4783,15 +4759,6 @@
                 ['exclude', '^browser/ui/panels/panel_browser_window_gtk.cc'],
                 ['exclude', '^browser/ui/panels/panel_browser_window_gtk.h'],
                 ['exclude', '^browser/ui/panels/panel_mouse_watcher_gtk.cc'],
-              ],
-            }],
-            # Exclude the GTK versions of dialogs if webui_dialogs are enabled.
-            ['webui_dialogs==1', {
-              'sources/': [
-                ['exclude', '^browser/ui/gtk/certificate_viewer.cc'],
-                ['exclude', '^browser/ui/gtk/certificate_viewer.h'],
-                ['exclude', '^browser/ui/gtk/hung_renderer_dialog_gtk.cc'],
-                ['exclude', '^browser/ui/gtk/hung_renderer_dialog_gtk.cc.h'],
               ],
             }],
             # Exclude these toolkit_views specific files again.
