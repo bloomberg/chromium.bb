@@ -15,23 +15,8 @@ namespace ui {
 
 namespace {
 
-// Simple class that exits the current message loop when compositing finishes.
-class CompositingEndedObserver : public CompositorObserver {
- public:
-  CompositingEndedObserver() {}
-  virtual ~CompositingEndedObserver() {}
-
-  // Overridden from CompositorObserver:
-  virtual void OnCompositingEnded() OVERRIDE {
-    MessageLoop::current()->Quit();
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(CompositingEndedObserver);
-};
-
 class TestLayerDelegate : public LayerDelegate {
-public:
+ public:
   explicit TestLayerDelegate(Layer* owner) : owner_(owner), color_index_(0) {}
   virtual ~TestLayerDelegate() {}
 
@@ -52,7 +37,7 @@ public:
     color_index_ = ++color_index_ % colors_.size();
   }
 
-private:
+ private:
   Layer* owner_;
   std::vector<SkColor> colors_;
   int color_index_;
@@ -80,14 +65,20 @@ class LayerTest : public testing::Test {
     return window_->GetCompositor();
   }
 
-  Layer* CreateLayer() {
-    return new Layer(GetCompositor());
+  Layer* CreateLayer(Layer::TextureParam texture_param) {
+    return new Layer(GetCompositor(), texture_param);
   }
 
   Layer* CreateColorLayer(SkColor color, const gfx::Rect& bounds) {
-    Layer* layer = CreateLayer();
+    Layer* layer = CreateLayer(Layer::LAYER_HAS_TEXTURE);
     layer->SetBounds(bounds);
     PaintColorToLayer(layer, color);
+    return layer;
+  }
+
+  Layer* CreateNoTextureLayer(const gfx::Rect& bounds) {
+    Layer* layer = CreateLayer(Layer::LAYER_HAS_NO_TEXTURE);
+    layer->SetBounds(bounds);
     return layer;
   }
 
@@ -110,7 +101,7 @@ class LayerTest : public testing::Test {
   }
 
   void RunPendingMessages() {
-    MessageLoopForUI::current()->Run(NULL);
+    MessageLoopForUI::current()->RunAllPending();
   }
 
  private:
@@ -120,26 +111,26 @@ class LayerTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(LayerTest);
 };
 
-class LayerQuitOnCompositedTest : public LayerTest {
+class DrawTreeLayerDelegate : public LayerDelegate {
  public:
-  LayerQuitOnCompositedTest() {}
-  virtual ~LayerQuitOnCompositedTest() {}
+  DrawTreeLayerDelegate() : painted_(false) {}
+  virtual ~DrawTreeLayerDelegate() {}
 
-  // Overridden from LayerTest:
-  virtual void SetUp() OVERRIDE {
-    LayerTest::SetUp();
-    GetCompositor()->AddObserver(&compositor_observer_);
+  void Reset() {
+    painted_ = false;
   }
 
-  virtual void TearDown() OVERRIDE {
-    LayerTest::TearDown();
-    GetCompositor()->RemoveObserver(&compositor_observer_);
+  bool painted() const { return painted_; }
+
+  // Overridden from LayerDelegate:
+  virtual void OnPaintLayer(gfx::Canvas* canvas) OVERRIDE {
+    painted_ = true;
   }
 
  private:
-  CompositingEndedObserver compositor_observer_;
+  bool painted_;
 
-  DISALLOW_COPY_AND_ASSIGN(LayerQuitOnCompositedTest);
+  DISALLOW_COPY_AND_ASSIGN(DrawTreeLayerDelegate);
 };
 
 }
@@ -219,7 +210,7 @@ TEST_F(LayerTest, ConvertPointToLayer_Medium) {
   EXPECT_EQ(point2_in_l3_coords, point2_in_l1_coords);
 }
 
-TEST_F(LayerQuitOnCompositedTest, Delegate) {
+TEST_F(LayerTest, Delegate) {
   scoped_ptr<Layer> l1(CreateColorLayer(SK_ColorBLACK,
                                         gfx::Rect(20, 20, 400, 400)));
   TestLayerDelegate delegate(l1.get());
@@ -246,33 +237,7 @@ TEST_F(LayerQuitOnCompositedTest, Delegate) {
   EXPECT_EQ(delegate.paint_size(), gfx::Size(50, 50));
 }
 
-namespace {
-
-class DrawTreeLayerDelegate : public LayerDelegate {
- public:
-  DrawTreeLayerDelegate() : painted_(false) {}
-  virtual ~DrawTreeLayerDelegate() {}
-
-  void Reset() {
-    painted_ = false;
-  }
-
-  bool painted() const { return painted_; }
-
-  // Overridden from LayerDelegate:
-  virtual void OnPaintLayer(gfx::Canvas* canvas) OVERRIDE {
-    painted_ = true;
-  }
-
- private:
-  bool painted_;
-
-  DISALLOW_COPY_AND_ASSIGN(DrawTreeLayerDelegate);
-};
-
-}  // namespace
-
-TEST_F(LayerQuitOnCompositedTest, DrawTree) {
+TEST_F(LayerTest, DrawTree) {
   scoped_ptr<Layer> l1(CreateColorLayer(SK_ColorRED,
                                         gfx::Rect(20, 20, 400, 400)));
   scoped_ptr<Layer> l2(CreateColorLayer(SK_ColorBLUE,
@@ -296,6 +261,43 @@ TEST_F(LayerQuitOnCompositedTest, DrawTree) {
   EXPECT_FALSE(d1.painted());
   EXPECT_TRUE(d2.painted());
   EXPECT_FALSE(d3.painted());
+}
+
+// Tests no-texture Layers.
+// Create this hierarchy:
+// L1 - red
+// +-- L2 - NO TEXTURE
+// |   +-- L3 - yellow
+// +-- L4 - magenta
+//
+TEST_F(LayerTest, HierarchyNoTexture) {
+  scoped_ptr<Layer> l1(CreateColorLayer(SK_ColorRED,
+                                        gfx::Rect(20, 20, 400, 400)));
+  scoped_ptr<Layer> l2(CreateNoTextureLayer(gfx::Rect(10, 10, 350, 350)));
+  scoped_ptr<Layer> l3(CreateColorLayer(SK_ColorYELLOW,
+                                        gfx::Rect(5, 5, 25, 25)));
+  scoped_ptr<Layer> l4(CreateColorLayer(SK_ColorMAGENTA,
+                                        gfx::Rect(300, 300, 100, 100)));
+
+  l1->Add(l2.get());
+  l1->Add(l4.get());
+  l2->Add(l3.get());
+
+  DrawTreeLayerDelegate d2;
+  l2->set_delegate(&d2);
+  DrawTreeLayerDelegate d3;
+  l3->set_delegate(&d3);
+
+  GetCompositor()->set_root_layer(l1.get());
+
+  l2->SchedulePaint(gfx::Rect(5, 5, 5, 5));
+  l3->SchedulePaint(gfx::Rect(5, 5, 5, 5));
+  RunPendingMessages();
+
+  // |d2| should not have received a paint notification since it has no texture.
+  EXPECT_FALSE(d2.painted());
+  // |d3| should have received a paint notification.
+  EXPECT_TRUE(d3.painted());
 }
 
 }  // namespace ui

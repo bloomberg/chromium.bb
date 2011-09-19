@@ -23,6 +23,17 @@ Layer::Layer(Compositor* compositor)
       delegate_(NULL) {
 }
 
+Layer::Layer(Compositor* compositor, TextureParam texture_param)
+    : compositor_(compositor),
+      texture_(texture_param == LAYER_HAS_TEXTURE ?
+          compositor->CreateTexture() : NULL),
+      parent_(NULL),
+      visible_(true),
+      fills_bounds_opaquely_(false),
+      layer_updated_externally_(false),
+      delegate_(NULL) {
+}
+
 Layer::~Layer() {
   if (parent_)
     parent_->Remove(this);
@@ -103,13 +114,9 @@ void Layer::SetFillsBoundsOpaquely(bool fills_bounds_opaquely) {
 }
 
 void Layer::SetExternalTexture(ui::Texture* texture) {
-  if (texture == NULL) {
-    layer_updated_externally_ = false;
-    texture_ = compositor_->CreateTexture();
-  } else {
-    layer_updated_externally_ = true;
-    texture_ = texture;
-  }
+  DCHECK(texture);
+  layer_updated_externally_ = true;
+  texture_ = texture;
 }
 
 void Layer::SetCanvas(const SkCanvas& canvas, const gfx::Point& origin) {
@@ -123,6 +130,9 @@ void Layer::SchedulePaint(const gfx::Rect& invalid_rect) {
 }
 
 void Layer::Draw() {
+  if (!texture_.get())
+    return;
+
   UpdateLayerCanvas();
 
   ui::TextureDrawParams texture_draw_params;

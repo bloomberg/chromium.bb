@@ -1111,7 +1111,8 @@ void View::SetFillsBoundsOpaquely(bool fills_bounds_opaquely) {
 }
 
 bool View::SetExternalTexture(ui::Texture* texture) {
-  if (!texture && !layer_helper_.get())
+  DCHECK(texture);
+  if (!layer_helper_.get())
     return true;
 
   if (!layer_helper_.get())
@@ -1120,10 +1121,8 @@ bool View::SetExternalTexture(ui::Texture* texture) {
 
   // Child views must not paint into the external texture. So make sure each
   // child view has its own layer to paint into.
-  if (texture) {
-    for (Views::iterator i = children_.begin(); i != children_.end(); ++i)
-      (*i)->SetPaintToLayer(true);
-  }
+  for (Views::iterator i = children_.begin(); i != children_.end(); ++i)
+    (*i)->SetPaintToLayer(true);
 
   SchedulePaintInRect(GetLocalBounds());
 

@@ -24,13 +24,21 @@ class Texture;
 
 // Layer manages a texture, transform and a set of child Layers. Any View that
 // has enabled layers ends up creating a Layer to manage the texture.
+// A Layer can also be created without a texture, in which case it renders
+// nothing and is simply used as a node in a hierarchy of layers.
 //
 // NOTE: unlike Views, each Layer does *not* own its children views. If you
 // delete a Layer and it has children, the parent of each child layer is set to
 // NULL, but the children are not deleted.
 class COMPOSITOR_EXPORT Layer {
  public:
+  enum TextureParam {
+    LAYER_HAS_NO_TEXTURE = 0,
+    LAYER_HAS_TEXTURE = 1
+  };
+
   explicit Layer(Compositor* compositor);
+  Layer(Compositor* compositor, TextureParam texture_param);
   ~Layer();
 
   LayerDelegate* delegate() { return delegate_; }
@@ -81,9 +89,13 @@ class COMPOSITOR_EXPORT Layer {
   const Compositor* compositor() const { return compositor_; }
   Compositor* compositor() { return compositor_; }
 
-  // Passing NULL will cause the layer to get a texture from its compositor.
-  void SetExternalTexture(ui::Texture* texture);
   const ui::Texture* texture() const { return texture_.get(); }
+
+  // |texture| cannot be NULL, and this function cannot be called more than
+  // once.
+  // TODO(beng): This can be removed from the API when we are in a
+  //             single-compositor world.
+  void SetExternalTexture(ui::Texture* texture);
 
   // Resets the canvas of the texture.
   void SetCanvas(const SkCanvas& canvas, const gfx::Point& origin);

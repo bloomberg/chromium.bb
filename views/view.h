@@ -967,7 +967,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // passes the texture to a layer associated with the view. While an external
   // texture is set, the view will not update the layer contents.
   //
-  // Passing NULL resets to default behavior.
+  // |texture| cannot be NULL.
   //
   // Returns false if it cannot create a layer to which to assign the texture.
   bool SetExternalTexture(ui::Texture* texture);
