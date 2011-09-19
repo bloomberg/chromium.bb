@@ -30,10 +30,10 @@ const EXIF_TAG_Y_DIMENSION = 0xA003;
 /**
  * The Exif metadata encoder.
  * Uses the metadata format as defined by ExifParser.
- * @param {Object} metadata
+ * @param {Object} original_metadata
  */
-function ExifEncoder(metadata) {
-  this.metadata_ = metadata || {};
+function ExifEncoder(original_metadata) {
+  ImageEncoder.MetadataEncoder.apply(this, arguments);
 
   this.ifd_ = this.metadata_.ifd;
   if (!this.ifd_)
@@ -67,6 +67,7 @@ ExifEncoder.prototype.setImageData = function(canvas) {
   ExifEncoder.findOrCreateTag(exif, EXIF_TAG_Y_DIMENSION).value = canvas.height;
 
   // Always save in default orientation.
+  delete this.metadata_.imageTransform;
   ExifEncoder.findOrCreateTag(image, EXIF_TAG_ORIENTATION).value = 1;
 };
 
@@ -100,6 +101,7 @@ ExifEncoder.prototype.setThumbnailData = function(canvas, dataURL) {
     this.ifd_.thumbnail = null;
     this.metadata_.thumbnailURL = null;
   }
+  delete this.metadata_.thumbnailTransform;
 };
 
 /**

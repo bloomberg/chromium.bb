@@ -49,8 +49,9 @@
       ];
 
       (function() {
-        // Switch to 'test harness' mode when loading from a file url.
-        var isHarness = document.location.protocol == 'file:';
+        // Switch to 'test harness' mode when loading from a file or http url.
+        var isHarness = document.location.protocol == 'file:' ||
+                        document.location.protocol == 'http:';
 
         // In test harness mode we load resources from relative dirs.
         var prefix = isHarness ? '../shared/' : 'chrome://resources/';

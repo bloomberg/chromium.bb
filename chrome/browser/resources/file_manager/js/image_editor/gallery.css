@@ -18,11 +18,19 @@ body {
 
 .gallery > .close {
   position: absolute;
+  padding: 1px 5px 1px 21px;
   right: 10px;
   top: 10px;
   height: 20px;
   color: white;
   cursor: pointer;
+  background-image: url(../../images/gallery/close_x.png);
+  background-repeat: no-repeat;
+  background-position: 5px center;
+}
+
+.gallery > .close:hover {
+  background-color: rgba(81,81,81,1);
 }
 
 .gallery > .image-container {
@@ -120,38 +128,39 @@ body {
 
 .gallery .edit-bar {
   -webkit-box-flex: 0;
-  width: 60%;
+  max-width: 60%;
   height: 100%;
   color: white;
   display: -webkit-box;
   -webkit-box-orient: horizontal;
-  -webkit-transition: width 0.5s ease-in-out;
+  -webkit-transition: max-width 0.5s ease-in-out;
 }
 
-.gallery .edit-bar > .toolbar {
+.gallery .edit-bar > .edit-main{
+  display: -webkit-box;
+  -webkit-box-orient: horizontal;
   opacity: 1.0;
   -webkit-transition: opacity 0.25s ease-in-out 0.25s;
 }
 
 .gallery .edit-bar[hidden] {
-  width: 0%;
-  -webkit-transition: width 0.5s ease-in-out;
+  max-width: 0%;
+  -webkit-transition: max-width 0.5s ease-in-out;
 }
 
-.gallery .edit-bar[hidden] > .toolbar {
+.gallery .edit-bar[hidden] > .edit-main{
   opacity: 0;
   -webkit-transition: opacity 0.25s ease-in-out;
 }
 
-.gallery .edit-bar[hidden] > .toolbar[hidden] {
+.gallery .edit-bar[hidden] > .edit-main[hidden] {
   display: none;
 }
 
-.gallery > .toolbar > .button {
+.gallery > .toolbar .button {
   -webkit-box-flex: 0;
-  padding: 10px;
+  padding: 10px 10px 10px 33px;
   cursor: pointer;
-  width: 75px;
   margin: 10px 5px;
 
   display: -webkit-box;
@@ -160,27 +169,63 @@ body {
   -webkit-box-pack: end;
 
   background-repeat: no-repeat;
-  background-position: left center;
+  background-position: 5px center;
 }
 
-.gallery > .toolbar > .button {
+.gallery > .toolbar .button {
   background-color: rgba(0,0,0,0);
   color: white;
 }
 
-.gallery > .toolbar > .button:hover {
+.gallery > .toolbar .button:hover {
   background-color: rgba(31,31,31,1);
   color: white;
 }
 
-.gallery > .toolbar > .button[pressed] {
+.gallery > .toolbar .button[pressed] {
   background-color: rgba(240,240,240,1);
   color: black;
 }
 
-.gallery > .toolbar > .button[pressed]:hover {
+.gallery > .toolbar .button[pressed]:hover {
   background-color: rgba(240,240,240,1);
   color: black;
+}
+
+.gallery > .toolbar .button.autofix {
+  background-image: url(../../images/gallery/icon_autofix.png);
+}
+
+.gallery > .toolbar .button.autofix[pressed] {
+  background-image: url(../../images/gallery/icon_autofix_selected.png);
+}
+
+.gallery > .toolbar .button.crop {
+  background-image: url(../../images/gallery/icon_crop.png);
+}
+
+.gallery > .toolbar .button.crop[pressed] {
+  background-image: url(../../images/gallery/icon_crop_selected.png);
+}
+
+.gallery > .toolbar .button.exposure {
+  background-image: url(../../images/gallery/icon_brightness.png);
+}
+
+.gallery > .toolbar .button.exposure[pressed] {
+  background-image: url(../../images/gallery/icon_brightness_selected.png);
+}
+
+.gallery > .toolbar .button.rotate {
+  background-image: url(../../images/gallery/icon_rotate.png);
+}
+
+.gallery > .toolbar .button.rotate[pressed] {
+  background-image: url(../../images/gallery/icon_rotate_selected.png);
+}
+
+.gallery > .toolbar .button.undo {
+  background-image: url(../../images/gallery/icon_undo.png);
 }
 
 .gallery > .toolbar > .button.edit {
@@ -197,4 +242,53 @@ body {
 
 .gallery > .toolbar > .button.share[pressed] {
   background-image: url(../../images/gallery/icon_share_selected.png);
+}
+
+.gallery .edit-modal {
+  position: absolute;
+  left: 0;
+  bottom: 53px;
+  height: 30px;
+  color: black;
+  background-color: white;
+  display: -webkit-box;
+  -webkit-box-orient: horizontal;
+}
+
+.gallery .edit-modal[hidden] {
+  display: none;
+}
+
+.gallery .edit-modal > .button.mode {
+  color: black;
+  background-color: rgba(240,240,240,1);
+  padding: 0 5px 0 30px;
+  margin: 2px 2px;
+
+  background-repeat: no-repeat;
+  background-position: 5px center;
+}
+
+.gallery .edit-modal > .button.mode:hover {
+  background-color: rgba(200,200,200,1);
+}
+
+.gallery .edit-modal .button.ok {
+  background-image: url(../../images/gallery/icon_ok_check.png);
+}
+
+.gallery .edit-modal .button.cancel {
+  background-image: url(../../images/gallery/icon_cancel_x.png);
+}
+
+.gallery .edit-modal > .label {
+  padding: 0 10px;
+
+  display: -webkit-box;
+  -webkit-box-orient: horizontal;
+  -webkit-box-align: center;
+}
+
+.gallery .edit-modal > .range {
+  margin: 4px 10px 4px 0;
 }

@@ -7,7 +7,7 @@
  */
 
 ImageEditor.Mode.Resize = function() {
-  ImageEditor.Mode.call(this, 'Resize');
+  ImageEditor.Mode.call(this, 'resize');
 };
 
 ImageEditor.Mode.Resize.prototype = {__proto__: ImageEditor.Mode.prototype};
@@ -36,21 +36,24 @@ ImageEditor.Mode.Resize.prototype.commit = function() {
  */
 
 ImageEditor.Mode.Rotate = function() {
-  ImageEditor.Mode.call(this, 'Rotate');
+  ImageEditor.Mode.call(this, 'rotate');
 };
 
 ImageEditor.Mode.Rotate.prototype = {__proto__: ImageEditor.Mode.prototype};
 
 ImageEditor.Mode.register(ImageEditor.Mode.Rotate);
 
+ImageEditor.Mode.Rotate.prototype.cleanUpCaches = function() {
+  this.backup_ = null;
+  this.transform_ = null;
+};
+
 ImageEditor.Mode.Rotate.prototype.commit = function() {};
 
 ImageEditor.Mode.Rotate.prototype.rollback = function() {
   if (this.backup_) {
     this.getContent().setCanvas(this.backup_);
-    this.backup_ = null;
   }
-  this.transform_ = null;
 };
 
 ImageEditor.Mode.Rotate.prototype.createTools = function(toolbar) {
@@ -309,11 +312,31 @@ ImageEditor.Mode.Rotate.Transform.prototype.apply = function(
 };
 
 /**
+ * Instant rotate.
+ * @constructor
+ */
+ImageEditor.Mode.InstantRotate = function() {
+  ImageEditor.Mode.Rotate.apply(this, arguments);
+};
+
+ImageEditor.Mode.InstantRotate.prototype =
+    {__proto__: ImageEditor.Mode.Rotate.prototype};
+
+ImageEditor.Mode.InstantRotate.prototype.oneClick = function() {
+  this.tiltRange_ = {
+    getValue: function() { return 0 },
+    setValue: function() {}
+  };
+  this.modifyTransform(1, 1, 1);
+  this.getBuffer().getViewport().fitImage();
+};
+
+/**
  * Crop mode.
  */
 
 ImageEditor.Mode.Crop = function() {
-  ImageEditor.Mode.call(this, "Crop");
+  ImageEditor.Mode.call(this, 'crop');
 };
 
 ImageEditor.Mode.Crop.prototype = {__proto__: ImageEditor.Mode.prototype};
@@ -340,10 +363,6 @@ ImageEditor.Mode.Crop.prototype.commit = function() {
 
   this.getContent().setCanvas(newCanvas);
   this.getViewport().fitImage();
-};
-
-ImageEditor.Mode.Crop.prototype.rollback = function() {
-  this.createDefaultCrop();
 };
 
 ImageEditor.Mode.Crop.prototype.createDefaultCrop = function() {

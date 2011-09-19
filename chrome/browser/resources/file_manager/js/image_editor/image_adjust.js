@@ -7,8 +7,8 @@
  * but do not modify the image dimensions.
  * @constructor
  */
-ImageEditor.Mode.Adjust = function(displayName) {
-  ImageEditor.Mode.call(this, displayName);
+ImageEditor.Mode.Adjust = function(arglist) {
+  ImageEditor.Mode.apply(this, arguments);
   this.viewportGeneration_ = 0;
 };
 
@@ -61,7 +61,7 @@ ImageEditor.Mode.Adjust.prototype.commit = function() {
       });
 };
 
-ImageEditor.Mode.Adjust.prototype.rollback = function() {
+ImageEditor.Mode.Adjust.prototype.cleanUpCaches = function() {
   this.filter_ = null;
   this.previewImageData_ = null;
 };
@@ -133,7 +133,7 @@ ImageEditor.Mode.Adjust.prototype.draw = function(context) {
  */
 
 ImageEditor.Mode.Adjust.prototype.createFilter = function(options) {
-  return filter.create(this.displayName.toLowerCase(), options);
+  return filter.create(this.name, options);
 };
 
 ImageEditor.Mode.Adjust.prototype.getPreviewRect = function(rect) {
@@ -170,11 +170,6 @@ ImageEditor.Mode.ColorFilter.prototype.setUp = function() {
       new ImageEditor.Mode.Histogram(this.getViewport(), this.getContent());
 };
 
-ImageEditor.Mode.ColorFilter.prototype.draw = function(context) {
-  ImageEditor.Mode.Adjust.prototype.draw.apply(this, arguments);
-  this.histogram_.draw(context);
-};
-
 ImageEditor.Mode.ColorFilter.prototype.getPreviewRect = function(rect) {
   return rect;
 };
@@ -186,9 +181,9 @@ ImageEditor.Mode.ColorFilter.prototype.createFilter = function(options) {
   return filterFunc;
 };
 
-ImageEditor.Mode.ColorFilter.prototype.rollback = function() {
-  ImageEditor.Mode.Adjust.prototype.rollback.apply(this, arguments);
-  this.histogram_.update(null);
+ImageEditor.Mode.ColorFilter.prototype.cleanUpUI = function() {
+  ImageEditor.Mode.Adjust.prototype.cleanUpUI.apply(this, arguments);
+  this.histogram_ = null;
 };
 
 /**
@@ -281,7 +276,7 @@ ImageEditor.Mode.Histogram.prototype.draw = function(context) {
  * @constructor
  */
 ImageEditor.Mode.Exposure = function() {
-  ImageEditor.Mode.ColorFilter.call(this, 'Exposure');
+  ImageEditor.Mode.ColorFilter.call(this, 'exposure');
 };
 
 ImageEditor.Mode.Exposure.prototype =
@@ -299,7 +294,7 @@ ImageEditor.Mode.Exposure.prototype.createTools = function(toolbar) {
  * @constructor
  */
 ImageEditor.Mode.Autofix = function() {
-  ImageEditor.Mode.ColorFilter.call(this, 'Autofix');
+  ImageEditor.Mode.ColorFilter.call(this, 'autofix');
 };
 
 ImageEditor.Mode.Autofix.prototype =
@@ -309,9 +304,26 @@ ImageEditor.Mode.register(ImageEditor.Mode.Autofix);
 
 ImageEditor.Mode.Autofix.prototype.createTools = function(toolbar) {
   var self = this;
-  toolbar.addButton('Apply', function() {
-    self.update({histogram: self.histogram_.getData()});
-  });
+  toolbar.addButton('Apply', this.apply.bind(this));
+};
+
+ImageEditor.Mode.Autofix.prototype.apply = function() {
+  this.update({histogram: this.histogram_.getData()});
+};
+
+/**
+ * Instant Autofix.
+ * @constructor
+ */
+ImageEditor.Mode.InstantAutofix = function() {
+  ImageEditor.Mode.Autofix.apply(this, arguments);
+};
+
+ImageEditor.Mode.InstantAutofix.prototype =
+    {__proto__: ImageEditor.Mode.Autofix.prototype};
+
+ImageEditor.Mode.InstantAutofix.prototype.oneClick = function() {
+  this.apply();
 };
 
 /**
@@ -319,7 +331,7 @@ ImageEditor.Mode.Autofix.prototype.createTools = function(toolbar) {
  * @constructor
  */
 ImageEditor.Mode.Blur = function() {
-  ImageEditor.Mode.Adjust.call(this, 'Blur');
+  ImageEditor.Mode.Adjust.call(this, 'blur');
 };
 
 ImageEditor.Mode.Blur.prototype =
@@ -337,7 +349,7 @@ ImageEditor.Mode.Blur.prototype.createTools = function(toolbar) {
  * @constructor
  */
 ImageEditor.Mode.Sharpen = function() {
-  ImageEditor.Mode.Adjust.call(this, 'Sharpen');
+  ImageEditor.Mode.Adjust.call(this, 'sharpen');
 };
 
 ImageEditor.Mode.Sharpen.prototype =

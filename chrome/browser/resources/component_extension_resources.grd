@@ -73,6 +73,18 @@
         <include name="IDR_FILE_MANAGER_IMG_GALLERY_EDIT_SELECTED" file="file_manager/images/gallery/icon_edit_selected.png" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_IMG_GALLERY_SHARE" file="file_manager/images/gallery/icon_share.png" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_IMG_GALLERY_SHARE_SELECTED" file="file_manager/images/gallery/icon_share_selected.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_IMG_GALLERY_AUTOFIX" file="file_manager/images/gallery/icon_autofix.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_IMG_GALLERY_AUTOFIX_SELECTED" file="file_manager/images/gallery/icon_autofix_selected.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_IMG_GALLERY_CROP" file="file_manager/images/gallery/icon_crop.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_IMG_GALLERY_CROP_SELECTED" file="file_manager/images/gallery/icon_crop_selected.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_IMG_GALLERY_BRIGHTNESS" file="file_manager/images/gallery/icon_brightness.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_IMG_GALLERY_BRIGHTNESS_SELECTED" file="file_manager/images/gallery/icon_brightness_selected.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_IMG_GALLERY_ROTATE" file="file_manager/images/gallery/icon_rotate.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_IMG_GALLERY_ROTATE_SELECTED" file="file_manager/images/gallery/icon_rotate_selected.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_IMG_GALLERY_UNDO" file="file_manager/images/gallery/icon_undo.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_IMG_GALLERY_OK" file="file_manager/images/gallery/icon_ok_check.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_IMG_GALLERY_CANCEL" file="file_manager/images/gallery/icon_cancel_x.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_IMG_GALLERY_CLOSE" file="file_manager/images/gallery/close_x.png" type="BINDATA" />
 
         <include name="IDR_FILE_MANAGER_ICON_DETAIL_VIEW" file="file_manager/images/icon-detail-view.png" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_ICON_THUMB_VIEW" file="file_manager/images/icon-thumb-view.png" type="BINDATA" />

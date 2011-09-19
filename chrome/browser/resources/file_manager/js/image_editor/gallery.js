@@ -24,14 +24,32 @@ function Gallery(container, closeCallback, metadataProvider) {
 Gallery.open = function(
     parentDirEntry, urls, closeCallback, metadataProvider) {
   var container = document.querySelector('.gallery');
+  container.innerHTML = '';
   var gallery = new Gallery(container, closeCallback, metadataProvider);
   gallery.load(parentDirEntry, urls);
 };
 
-// TODO(dgozman): localization.
-Gallery.CLOSE_LABEL = 'Close';
-Gallery.EDIT_LABEL = 'Edit';
-Gallery.SHARE_LABEL = 'Share';
+// TODO(kaznacheev): localization.
+Gallery.displayStrings = {
+  close: 'Close',
+  edit: 'Edit',
+  share: 'Share',
+  autofix: 'Auto-fix',
+  crop: 'Crop',
+  exposure: 'Brightness / contrast',
+  brightness: 'Brightness',
+  contrast: 'Contrast',
+  rotate: 'Rotate',
+  undo: 'Undo'
+};
+
+
+Gallery.editorModes = [
+  ImageEditor.Mode.InstantAutofix,
+  ImageEditor.Mode.Crop,
+  ImageEditor.Mode.Exposure,
+  ImageEditor.Mode.InstantRotate
+];
 
 Gallery.FADE_TIMEOUT = 5000;
 
@@ -42,7 +60,7 @@ Gallery.prototype.initDom_ = function() {
 
   this.closeButton_ = doc.createElement('div');
   this.closeButton_.className = 'close';
-  this.closeButton_.textContent = Gallery.CLOSE_LABEL;
+  this.closeButton_.textContent = Gallery.displayStrings['close'];
   this.closeButton_.addEventListener('click', this.onClose_.bind(this));
   this.container_.appendChild(this.closeButton_);
 
@@ -63,24 +81,37 @@ Gallery.prototype.initDom_ = function() {
 
   this.editButton_ = doc.createElement('div');
   this.editButton_.className = 'button edit';
-  this.editButton_.textContent = Gallery.EDIT_LABEL;
+  this.editButton_.textContent = Gallery.displayStrings['edit'];
   this.editButton_.addEventListener('click', this.onEdit_.bind(this));
   this.toolbar_.appendChild(this.editButton_);
 
   this.shareButton_ = doc.createElement('div');
   this.shareButton_.className = 'button share';
-  this.shareButton_.textContent = Gallery.SHARE_LABEL;
+  this.shareButton_.textContent = Gallery.displayStrings['share'];
   this.shareButton_.addEventListener('click', this.onShare_.bind(this));
   this.toolbar_.appendChild(this.shareButton_);
 
-  this.editor_ = new ImageEditor(this.imageContainer_, this.editBar_,
-      null /*saveCallback*/, null /*closeCallback*/);
+  this.editBarMain_  = doc.createElement('div');
+  this.editBarMain_.className = 'edit-main';
+  this.editBarMain_.setAttribute('hidden', 'hidden');
+  this.editBar_.appendChild(this.editBarMain_);
+
+  this.editBarMode_  = doc.createElement('div');
+  this.editBarMode_.className = 'edit-modal';
+  this.editBarMode_.setAttribute('hidden', 'hidden');
+  this.editBar_.appendChild(this.editBarMode_);
+
+  this.editor_ = new ImageEditor(
+      this.imageContainer_,
+      this.editBarMain_,
+      this.editBarMode_,
+      Gallery.editorModes,
+      Gallery.displayStrings);
 };
 
 Gallery.prototype.load = function(parentDirEntry, urls) {
   this.editBar_.setAttribute('hidden', 'hidden');
-  // Firstchild is the toolbar with buttons, which should be hidden at start.
-  this.editBar_.firstChild.setAttribute('hidden', 'hidden');
+  this.editBarMain_.setAttribute('hidden', 'hidden');
   this.editButton_.removeAttribute('pressed');
   this.shareButton_.removeAttribute('pressed');
   this.toolbar_.removeAttribute('hidden');
@@ -104,46 +135,55 @@ Gallery.prototype.saveChanges_ = function(opt_callback) {
   }
 
   var currentItem = this.currentItem_;
-  var newFile = currentItem.isOriginal();
-  var name = currentItem.getCopyName();
 
+  var metadataEncoder = this.editor_.encodeMetadata();
   var canvas = this.editor_.getBuffer().getContent().detachCanvas();
-  var metadata = this.editor_.getMetadata();
-  currentItem.overrideContent(canvas, metadata);
 
-  var self = this;
+  currentItem.overrideContent(canvas, metadataEncoder.getMetadata());
 
-  function onSuccess(url) {
-    console.log('Saved from gallery', name);
-    // Force the metadata provider to reread the metadata from the file.
-    self.metadataProvider_.reset(url);
-    currentItem.onSaveSuccess(url);
+  if (currentItem.isFromLocalFile()) {
+    var newFile = currentItem.isOriginal();
+    var name = currentItem.getCopyName();
+
+    var self = this;
+
+    function onSuccess(url) {
+      console.log('Saved from gallery', name);
+      // Force the metadata provider to reread the metadata from the file.
+      self.metadataProvider_.reset(url);
+      currentItem.onSaveSuccess(url);
+      if (opt_callback) opt_callback();
+    }
+
+    function onError(error) {
+      console.log('Error saving from gallery', name, error);
+      currentItem.onSaveError(error);
+      if (opt_callback) opt_callback();
+    }
+
+    this.parentDirEntry_.getFile(
+        name, {create: newFile, exclusive: newFile}, function(fileEntry) {
+          fileEntry.createWriter(function(fileWriter) {
+            function writeContent() {
+              fileWriter.onwriteend = onSuccess.bind(null, fileEntry.toURL());
+              fileWriter.write(ImageEncoder.getBlob(canvas, metadataEncoder));
+            }
+            fileWriter.onerror = onError;
+            if (newFile) {
+              writeContent();
+            } else {
+              fileWriter.onwriteend = writeContent;
+              fileWriter.truncate(0);
+            }
+          },
+      onError);
+    }, onError);
+  } else {
+    // This branch is needed only for gallery_demo.js
+    currentItem.onSaveSuccess(
+        canvas.toDataURL(metadataEncoder.getMetadata().mimeType));
     if (opt_callback) opt_callback();
   }
-
-  function onError(error) {
-    console.log('Error saving from gallery', name, error);
-    currentItem.onSaveError(error);
-    if (opt_callback) opt_callback();
-  }
-
-  this.parentDirEntry_.getFile(
-      name, {create: newFile, exclusive: newFile}, function(fileEntry) {
-        fileEntry.createWriter(function(fileWriter) {
-          function writeContent() {
-            fileWriter.onwriteend = onSuccess.bind(null, fileEntry.toURL());
-            fileWriter.write(ImageEncoder.getBlob(canvas, metadata));
-          }
-          fileWriter.onerror = onError;
-          if (newFile) {
-            writeContent();
-          } else {
-            fileWriter.onwriteend = writeContent;
-            fileWriter.truncate(0);
-          }
-        },
-    onError);
-  }, onError);
 };
 
 
@@ -166,19 +206,20 @@ Gallery.prototype.onSelect_ = function(item) {
 Gallery.prototype.onEdit_ = function(event) {
   var self = this;
   if (this.editing_) {
+    this.editor_.onModeLeave();
     this.editBar_.setAttribute('hidden', 'hidden');
     this.editButton_.removeAttribute('pressed');
     this.editing_ = false;
     this.initiateFading_();
     window.setTimeout(function() {
       // Hide the toolbar, so it will not overlap with buttons.
-      self.editBar_.firstChild.setAttribute('hidden', 'hidden');
+      self.editBarMain_.setAttribute('hidden', 'hidden');
       self.ribbon_.redraw();
     }, 500);
   } else {
     this.cancelFading_();
     // Show the toolbar.
-    this.editBar_.firstChild.removeAttribute('hidden');
+    this.editBarMain_.removeAttribute('hidden');
     // Use setTimeout, so computed style will be recomputed.
     window.setTimeout(function() {
       self.editBar_.removeAttribute('hidden');
@@ -379,6 +420,10 @@ Ribbon.Item.prototype.select = function(on) {
 // TODO: Localize?
 Ribbon.Item.COPY_SIGNATURE = '_Edited_';
 
+Ribbon.Item.prototype.isFromLocalFile = function () {
+  return this.url_.indexOf('filesystem:') == 0;
+};
+
 Ribbon.Item.prototype.getCopyName = function () {
   // When saving a modified image we never overwrite the original file (the one
   // that existed prior to opening the Gallery. Instead we save to a file named
@@ -424,35 +469,35 @@ Ribbon.Item.prototype.getCopyName = function () {
 };
 
 // The url and metadata stored in the item are not valid while the modified
-// image is being saved. Use cached data instead.
+// image is being saved. Use the results of the latest edit instead.
 
 Ribbon.Item.prototype.overrideContent = function(canvas, metadata) {
-  this.cachedCanvas_ = canvas;
-  this.cachedMetadata_ = metadata;
+  this.canvas_ = canvas;
+  this.backupMetadata_ = this.metadata_;
+  this.setMetadata(metadata);
 };
 
 Ribbon.Item.prototype.getContent = function () {
-  return this.cachedCanvas_ || this.url_;
+  return this.canvas_ || this.url_;
 };
 
 Ribbon.Item.prototype.getMetadata = function () {
-  return this.cachedMetadata_ || this.metadata_;
+  return this.metadata_;
 };
 
 Ribbon.Item.prototype.onSaveSuccess = function(url) {
-  this.setMetadata(this.cachedMetadata_);
-
   this.url_ = url;
-  delete this.cachedCanvas_;
-  delete this.cachedMetadata_;
+  delete this.backupMetadata_;
+  delete this.canvas_;
 };
 
 Ribbon.Item.prototype.onSaveError = function(error) {
   // TODO(kaznacheev): notify the user that the file write failed and
   // suggest ways to rescue the modified image (retry/save elsewhere).
-  // For now - just drop the modified content.
-  delete this.cachedCanvas_;
-  delete this.cachedMetadata_;
+  // For now - just drop the modified content and revert the thumbnail.
+  this.setMetadata(this.backupMetadata_);
+  delete this.backupMetadata_;
+  delete this.canvas_;
 };
 
 Ribbon.Item.prototype.setMetadata = function(metadata) {

@@ -16,26 +16,48 @@ ImageEncoder.registerMetadataEncoder = function(constructor, mimeType) {
 };
 
 /**
- * Create a metadata encoder for a given mime type.
- * @param {Object} metadata
+ * Create a metadata encoder.
+ *
+ * The encoder will own and modify a copy of the original metadata.
+ *
+ * @param {Object} metadata Original metadata
  * @return {ImageEncoder.MetadataEncoder}
  */
 ImageEncoder.createMetadataEncoder = function(metadata) {
   var constructor = ImageEncoder.metadataEncoders[metadata.mimeType];
-  return constructor ? new constructor(metadata) : null;
+  return constructor ? new constructor(ImageUtil.deepCopy(metadata)) : null;
 };
+
+
+/**
+ * Create a metadata encoder object holding a copy of metadata
+ * modified according to the properties of the supplied image.
+ *
+ * @param {Object} metadata Original metadata
+ * @param {HTMLCanvasElement} canvas
+ * @param {number} quality Encoding quality (defaults to 1)
+ */
+ImageEncoder.encodeMetadata = function(metadata, canvas, quality) {
+  var encoder = ImageEncoder.createMetadataEncoder(metadata);
+  if (encoder) {
+    encoder.setImageData(canvas);
+    ImageEncoder.encodeThumbnail(canvas, encoder, quality);
+  }
+  return encoder;
+};
+
 
 /**
  * Return a blob with the encoded image with metadata inserted.
  * @param {HTMLCanvasElement} canvas The canvas with the image to be encoded.
- * @param canvas
- * @param {Object} metadata
+ * @param {ImageEncoder.MetadataEncoder} metadataEncoder
+ * @param {number} quality
  * @return {Blob}
  */
-ImageEncoder.getBlob = function(canvas, metadata) {
+ImageEncoder.getBlob = function(canvas, metadataEncoder, quality) {
   var blobBuilder = new WebKitBlobBuilder();
-  ImageEncoder.buildBlob(blobBuilder, canvas, metadata.mimeType, 1,
-      ImageEncoder.createMetadataEncoder(metadata));
+  ImageEncoder.buildBlob(blobBuilder, canvas,
+      metadataEncoder, metadataEncoder.getMetadata().mimeType, quality);
   return blobBuilder.getBlob();
 };
 
@@ -48,7 +70,7 @@ ImageEncoder.getBlob = function(canvas, metadata) {
  * @param {Number} quality (0..1], Encoding quality, default is 0.5
  */
 ImageEncoder.buildBlob = function(
-    blobBuilder, canvas, mimeType, quality, metadataEncoder) {
+    blobBuilder, canvas, metadataEncoder, mimeType, quality) {
 
   quality = quality || 0.5;
 
@@ -56,8 +78,6 @@ ImageEncoder.buildBlob = function(
 
   ImageUtil.trace.resetTimer('blob');
   if (metadataEncoder) {
-    metadataEncoder.setImageData(canvas);
-    ImageEncoder.encodeThumbnail(canvas, mimeType, quality, metadataEncoder);
     var metadataRange = metadataEncoder.findInsertionRange(encodedImage);
 
     blobBuilder.append(ImageEncoder.stringToArrayBuffer(
@@ -96,12 +116,10 @@ ImageEncoder.encodeImage = function(canvas, mimeType, quality) {
 /**
  * Create a thumbnail and pass it to the metadata encoder.
  * @param {HTMLCanvasElement} canvas
- * @param {String} mimeType
- * @param {Number} quality
  * @param {ImageEncoder.MetadataEncoder} metadataEncoder
+ * @param {number} quality Image encoding quality
  */
-ImageEncoder.encodeThumbnail =
-    function(canvas, mimeType, quality, metadataEncoder) {
+ImageEncoder.encodeThumbnail = function(canvas, metadataEncoder, quality) {
   var thumbnailCanvas;
   var thumbnailURL;
 
@@ -114,6 +132,8 @@ ImageEncoder.encodeThumbnail =
     // Empirical formula with reasonable behavior:
     // 10K for 1Mpix, 30K for 5Mpix, 50K for 9Mpix and up.
     var maxEncodedSize = 5000 * Math.min(10, 1 + pixelCount / 1000000);
+
+    var mimeType = metadataEncoder.getMetadata().mimeType;
 
     thumbnailURL = ImageEncoder.getThumbnailURL(
         thumbnailCanvas, mimeType, quality * 0.9, maxEncodedSize);
@@ -184,15 +204,23 @@ ImageEncoder.stringToArrayBuffer = function(string, from, to) {
 };
 
 /**
- * A base class for a metadata writer.
+ * A base class for a metadata encoder.
+ *
+ * @param {Object} original_metadata
  */
-ImageEncoder.MetadataEncoder = function() {};
+ImageEncoder.MetadataEncoder = function(original_metadata) {
+  this.metadata_ = ImageUtil.deepCopy(original_metadata) || {};
+};
+
+ImageEncoder.MetadataEncoder.prototype.getMetadata = function() {
+  return this.metadata_;
+};
 
 /**
  * @param {HTMLCanvasElement|Object} canvas Canvas or or anything with
  *                                          width and height properties.
  */
-ImageEncoder.MetadataEncoder.prototype.setImageData = function(canvas) {}
+ImageEncoder.MetadataEncoder.prototype.setImageData = function(canvas) {};
 
 /**
  * @param {HTMLCanvasElement|Object} canvas Canvas or or anything with

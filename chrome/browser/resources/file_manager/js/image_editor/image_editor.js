@@ -6,14 +6,17 @@
  * ImageEditor is the top level object that holds together and connects
  * everything needed for image editing.
  * @param {HTMLElement} container
- * @param {function(Blob)} saveCallback
- * @param {function()} closeCallback
- * @param {HTMLElement} toolbarContainer
+ * @param {HTMLElement} mainToolbarContainer
+ * @param {HTMLElement} modeToolbarContainer
+ * @param {Array.<ImageEditor.Mode>} tools
+ * @param {Object} displayStrings
  */
-function ImageEditor(container, toolbarContainer, saveCallback, closeCallback) {
+function ImageEditor(
+    container, mainToolbarContainer, modeToolbarContainer,
+    tools, displayStrings) {
   this.container_ = container;
-  this.saveCallback_ = saveCallback;
-  this.closeCallback_ = closeCallback;
+  this.tools_ = tools || ImageEditor.Mode.constructors;
+  this.displayStrings_ = displayStrings;
 
   this.container_.innerHTML = '';
 
@@ -35,9 +38,13 @@ function ImageEditor(container, toolbarContainer, saveCallback, closeCallback) {
 
   this.panControl_ = new ImageEditor.MouseControl(canvas, this.getBuffer());
 
-  this.toolbar_ = new ImageEditor.Toolbar(toolbarContainer,
-      this.onOptionsChange.bind(this));
-  this.initToolbar();
+  this.mainToolbar_ = new ImageEditor.Toolbar(
+      mainToolbarContainer, displayStrings);
+
+  this.modeToolbar_ = new ImageEditor.Toolbar(
+      modeToolbarContainer, displayStrings, this.onOptionsChange.bind(this));
+
+  this.createToolButtons();
 }
 
 /**
@@ -74,19 +81,28 @@ ImageEditor.open = function(saveCallback, closeCallback, source, opt_metadata) {
  * @param {Object} opt_metadata
  */
 ImageEditor.prototype.load = function(source, opt_metadata) {
-  this.onModeCancel();
-  this.metadata_ = opt_metadata || {};
-  this.getBuffer().load(source, this.metadata_.imageTransform);
-
-  // The image buffer already did the adjustment for the orientation,
-  // so the transform data is no longer relevant.
-  delete this.metadata_.imageTransform;
-  delete this.metadata_.thumbnailTransform;
-
+  this.onModeLeave();
+  this.originalSource_ = source;
+  this.originalMetadata_ = opt_metadata || {};
+  this.getBuffer().load(
+      this.originalSource_, this.originalMetadata_.imageTransform);
   this.modified_ = false;
 };
 
-ImageEditor.prototype.getMetadata = function() { return this.metadata_ };
+ImageEditor.prototype.reload = function() {
+  this.load(this.originalSource_, this.originalMetadata_);
+};
+
+/**
+ * Create a metadata encoder object that holds metadata corresponding to
+ * the current image.
+ *
+ * @param {number} quality
+ */
+ImageEditor.prototype.encodeMetadata = function(quality) {
+  return ImageEncoder.encodeMetadata(this.originalMetadata_,
+      this.getBuffer().getContent().getCanvas(), quality || 1);
+};
 
 ImageEditor.prototype.isModified = function() { return this.modified_ };
 
@@ -113,14 +129,6 @@ ImageEditor.prototype.close = function() {
   this.closeCallback_();
 };
 
-/**
- * Encode the current image into a blob and pass it to the save callback.
- */
-ImageEditor.prototype.save = function() {
-  this.saveCallback_(ImageEncoder.getBlob(
-      this.getBuffer().getContent().getCanvas(), this.metadata_));
-};
-
 ImageEditor.prototype.onOptionsChange = function(options) {
   ImageUtil.trace.resetTimer('update');
   if (this.currentMode_)
@@ -128,11 +136,8 @@ ImageEditor.prototype.onOptionsChange = function(options) {
   ImageUtil.trace.reportTimer('update');
 };
 
-ImageEditor.prototype.initToolbar = function() {
-  this.toolbar_.clear();
-
-  this.createModeButtons();
-  this.toolbar_.addButton('Save', this.save.bind(this, true));
+ImageEditor.prototype.getDisplayString = function(key) {
+  return this.displayStrings_[key] || key;
 };
 
 /**
@@ -141,8 +146,9 @@ ImageEditor.prototype.initToolbar = function() {
  * mode-specific tools.
  */
 
-ImageEditor.Mode = function(displayName) {
-  this.displayName = displayName;
+ImageEditor.Mode = function(name, displayName) {
+  this.name = name;
+  this.displayName = displayName || name;
 };
 
 ImageEditor.Mode.prototype = {__proto__: ImageBuffer.Overlay.prototype };
@@ -164,7 +170,7 @@ ImageEditor.Mode.prototype.getContent = function() {
 };
 
 /**
- * Called after the instantiation.
+ * Called before entering the mode.
  */
 ImageEditor.Mode.prototype.setUp = function(buffer) {
   this.buffer_ = buffer;
@@ -179,11 +185,16 @@ ImageEditor.Mode.prototype.setUp = function(buffer) {
 ImageEditor.Mode.prototype.createTools = function(toolbar) {};
 
 /**
- * Called before exiting the mode. Do the cleanup here.
+ * Called before exiting the mode.
  */
-ImageEditor.Mode.prototype.cleanUp = function() {
+ImageEditor.Mode.prototype.cleanUpUI = function() {
   this.buffer_.removeOverlay(this);
 };
+
+/**
+ * Called after exiting the mode.
+ */
+ImageEditor.Mode.prototype.cleanUpCaches = function() {};
 
 /**
  * Called when any of the controls changed its value.
@@ -207,60 +218,74 @@ ImageEditor.Mode.register = function(constructor) {
   ImageEditor.Mode.constructors.push(constructor);
 };
 
-ImageEditor.prototype.createModeButtons = function() {
-  for (var i = 0; i != ImageEditor.Mode.constructors.length; i++) {
-    var mode = new ImageEditor.Mode.constructors[i];
-    this.toolbar_.
-        addButton(mode.displayName, this.onModeEnter.bind(this, mode));
+ImageEditor.prototype.createToolButtons = function() {
+  this.mainToolbar_.clear();
+  for (var i = 0; i != this.tools_.length; i++) {
+    var mode = new this.tools_[i];
+    this.mainToolbar_.addButton(this.getDisplayString(mode.name),
+        this.onModeEnter.bind(this, mode), mode.name);
   }
+  this.mainToolbar_.addButton(this.getDisplayString('undo'),
+      this.reload.bind(this), 'undo');
 };
 
 /**
  * The user clicked on the mode button.
  */
-ImageEditor.prototype.onModeEnter = function(mode) {
-  this.toolbar_.clear();
+ImageEditor.prototype.onModeEnter = function(mode, event) {
+  var previousMode = this.currentMode_;
+  this.onModeLeave(false);
 
-  this.toolbar_.addLabel(mode.displayName);
+  if (previousMode == mode) return;
+
+  this.currentTool_ = event.target;
+  this.currentTool_.setAttribute('pressed', 'pressed');
 
   this.currentMode_ = mode;
   this.currentMode_.setUp(this.getBuffer());
-  this.currentMode_.createTools(this.toolbar_);
 
-  this.toolbar_.addButton('Reset', this.onModeReset.bind(this)),
-  this.toolbar_.addButton('OK', this.onModeCancel.bind(this, true)),
-  this.toolbar_.addButton('Cancel', this.onModeCancel.bind(this, false));
+  if (this.currentMode_.oneClick) {
+    this.currentMode_.oneClick();
+    this.onModeLeave(true);
+    return;
+  }
+
+  this.modeToolbar_.clear();
+  this.currentMode_.createTools(this.modeToolbar_);
+
+  this.modeToolbar_.addButton(this.getDisplayString('OK'),
+      this.onModeLeave.bind(this, true), 'mode', 'ok'),
+  this.modeToolbar_.addButton(this.getDisplayString('Cancel'),
+      this.onModeLeave.bind(this, false), 'mode', 'cancel');
+
+  this.modeToolbar_.show(this.currentTool_);
 
   this.getBuffer().repaint();
 };
 
 /**
- * The user clicked on 'Cancel'.
+ * The user clicked on 'OK' or 'Cancel' or on a different mode button.
  */
-ImageEditor.prototype.onModeCancel = function(save) {
+ImageEditor.prototype.onModeLeave = function(save) {
   if (!this.currentMode_) return;
 
-  this.currentMode_.cleanUp();
+  this.modeToolbar_.hide();
+
+  this.currentMode_.cleanUpUI();
   if (save) {
     this.currentMode_.commit();
     this.modified_ = true;
   } else {
     this.currentMode_.rollback();
   }
+  this.currentMode_.cleanUpCaches();
   this.currentMode_ = null;
 
+  this.currentTool_.removeAttribute('pressed');
+  this.currentTool_ = null;
+
   this.getBuffer().repaint();
 
-  this.initToolbar();
-};
-
-/**
- * The user clicked on 'Reset'.
- */
-ImageEditor.prototype.onModeReset = function() {
-  this.toolbar_.reset();
-  this.currentMode_.rollback();
-  this.getBuffer().repaint();
 };
 
 /**
@@ -468,11 +493,14 @@ ImageEditor.MouseControl.prototype.onMouseMove = function(e) {
  * A toolbar for the ImageEditor.
  * @constructor
  */
-ImageEditor.Toolbar = function (parent, updateCallback) {
-  this.wrapper_ = parent.ownerDocument.createElement('div');
-  this.wrapper_.className = 'toolbar';
-  parent.appendChild(this.wrapper_);
+ImageEditor.Toolbar = function(parent, displayStrings, updateCallback) {
+  this.wrapper_ = parent;
+  this.displayStrings_ = displayStrings;
   this.updateCallback_ = updateCallback;
+};
+
+ImageEditor.Toolbar.prototype.getDisplayString = function(key) {
+  return this.displayStrings_[key] || key;
 };
 
 ImageEditor.Toolbar.prototype.clear = function() {
@@ -490,13 +518,17 @@ ImageEditor.Toolbar.prototype.add = function(element) {
 
 ImageEditor.Toolbar.prototype.addLabel = function(text) {
   var label = this.create_('span');
-  label.textContent = text;
+  label.textContent = this.getDisplayString(text);
   return this.add(label);
 };
 
-ImageEditor.Toolbar.prototype.addButton = function(text, handler) {
-  var button = this.create_('button');
-  button.textContent = text;
+ImageEditor.Toolbar.prototype.addButton = function(
+    text, handler, opt_class1, opt_class2) {
+  var button = this.create_('div');
+  button.classList.add('button');
+  if (opt_class1) button.classList.add(opt_class1);
+  if (opt_class2) button.classList.add(opt_class2);
+  button.textContent = this.getDisplayString(text);
   button.addEventListener('click', handler, false);
   return this.add(button);
 };
@@ -508,23 +540,26 @@ ImageEditor.Toolbar.prototype.addButton = function(text, handler) {
  * @param {number} max Max value of the options.
  * @param {number} scale A number to multiply by when setting
  *                       min/value/max in DOM.
+ * @param {Boolean} opt_showNumeric True if numeric value should be displayed.
  */
 ImageEditor.Toolbar.prototype.addRange = function(
-    name, min, value, max, scale) {
+    name, min, value, max, scale, opt_showNumeric) {
   var self = this;
 
   scale = scale || 1;
 
   var range = this.create_('input');
 
+  range.className = 'range';
   range.type = 'range';
   range.name = name;
   range.min = Math.ceil(min * scale);
   range.max = Math.floor(max * scale);
 
-  var label = this.create_('span');
+  var numeric = this.create_('div');
+  numeric.className = 'numeric';
   function mirror() {
-    label.textContent = Math.round(range.getValue() * scale) / scale;
+    numeric.textContent = Math.round(range.getValue() * scale) / scale;
   }
 
   range.setValue = function(newValue) {
@@ -549,11 +584,12 @@ ImageEditor.Toolbar.prototype.addRange = function(
 
   range.setValue(value);
 
-  var descr = this.create_('span');
-  descr.textContent = name;
-  this.add(descr);
-  this.add(range);
+  var label = this.create_('div');
+  label.textContent = this.getDisplayString(name);
+  label.className = 'label';
   this.add(label);
+  this.add(range);
+  if (opt_showNumeric) this.add(numeric);
 
   return range;
 };
@@ -571,4 +607,21 @@ ImageEditor.Toolbar.prototype.reset = function() {
   for (var child = this.wrapper_.firstChild; child; child = child.nextSibling) {
     if (child.reset) child.reset();
   }
+};
+
+ImageEditor.Toolbar.prototype.show = function(parentButton) {
+  this.wrapper_.removeAttribute('hidden');
+
+  this.wrapper_.style.left = '0';
+
+  var parentRect = parentButton.getBoundingClientRect();
+  var wrapperRect = this.wrapper_.getBoundingClientRect();
+
+  // Align the horizontal center of the toolbar with the center of the parent.
+  this.wrapper_.style.left =
+      (parentRect.left + (parentRect.width - wrapperRect.width) / 2) + 'px';
+};
+
+ImageEditor.Toolbar.prototype.hide = function() {
+  this.wrapper_.setAttribute('hidden', 'hidden');
 };
