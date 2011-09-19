@@ -11,9 +11,9 @@
 #include "views/layout/layout_constants.h"
 #include "views/views_delegate.h"
 #include "views/window/client_view.h"
-#if defined(OS_WIN)
-#include "views/widget/native_widget_win.h"
-#else
+#if defined(USE_AURA)
+#include "views/widget/native_widget_aura.h"
+#elif defined(TOOLKIT_USES_GTK)
 #include "views/widget/native_widget_gtk.h"
 #endif
 #include "views/widget/widget.h"
@@ -114,7 +114,11 @@ void BubbleView::AnimationProgressed(const ui::Animation* animation) {
 
     SkColor opacity = static_cast<SkColor>(
         animation->GetCurrentValue() * 255);
-#if defined(OS_WIN)
+#if defined(USE_AURA)
+    NOTIMPLEMENTED();
+    // TODO: probably a good idea to make this a Widget API method rather than
+    //       directly manipulating the native widget here.
+#elif defined(OS_WIN)
     SetLayeredWindowAttributes(GetWidget()->GetNativeView(), 0,
                                static_cast<byte>(opacity), LWA_ALPHA);
 #else

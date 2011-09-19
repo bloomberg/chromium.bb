@@ -21,7 +21,7 @@
 namespace views {
 
 #if (defined(TOUCH_UI) && !defined(USE_WAYLAND)) \
-    || (!defined(WIN_OS) && defined(USE_AURA))
+    || (!defined(OS_WIN) && defined(USE_AURA))
 // Dispatch an XEvent to the RootView. Return true if the event was dispatched
 // and handled, false otherwise.
 bool VIEWS_EXPORT DispatchXEvent(XEvent* xevent);
