@@ -39,7 +39,11 @@ class GlobalErrorService : public ProfileKeyedService {
 
   // Gets the badge icon resource ID for the first error with a badge.
   // Returns 0 if no such error exists.
-  int GetFirstBadgeResourceID();
+  int GetFirstBadgeResourceID() const;
+
+  // Gets the first error that has a bubble view which hasn't been shown yet.
+  // Returns NULL if no such error exists.
+  GlobalError* GetFirstGlobalErrorWithBubbleView() const;
 
   // Gets all errors.
   const std::vector<GlobalError*>& errors() { return errors_; }

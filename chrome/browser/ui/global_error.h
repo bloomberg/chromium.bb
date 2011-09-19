@@ -35,6 +35,8 @@ class GlobalError {
 
   // Returns true if a bubble view should be shown.
   virtual bool HasBubbleView() = 0;
+  // Returns true if the bubble view has been shown.
+  virtual bool HasShownBubbleView();
   // Called to show the bubble view.
   virtual void ShowBubbleView(Browser* browser);
   // Returns the resource ID for bubble view icon.
@@ -57,9 +59,11 @@ class GlobalError {
 
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(GlobalError);
-
   static void ShowBubbleView(Browser* browser, GlobalError* error);
+
+  bool has_shown_bubble_view_;
+
+  DISALLOW_COPY_AND_ASSIGN(GlobalError);
 };
 
 #endif  // CHROME_BROWSER_UI_GLOBAL_ERROR_H_

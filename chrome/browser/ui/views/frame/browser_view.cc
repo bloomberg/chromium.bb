@@ -645,6 +645,8 @@ void BrowserView::Show() {
   RestoreFocus();
 
   frame_->Show();
+
+  browser()->OnWindowDidShow();
 }
 
 void BrowserView::ShowInactive() {

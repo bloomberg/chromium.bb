@@ -835,6 +835,9 @@ class Browser : public TabHandlerDelegate,
   // webkitRequestFullScreen.
   bool is_fullscreen_for_tab() const { return fullscreened_tab_ != NULL; }
 
+  // Called each time the browser window is shown.
+  void OnWindowDidShow();
+
  protected:
   // Wrapper for the factory method in BrowserWindow. This allows subclasses to
   // set their own window.
@@ -1424,6 +1427,9 @@ class Browser : public TabHandlerDelegate,
 
   // True if the current tab entered fullscreen mode via webkitRequestFullScreen
   bool tab_caused_fullscreen_;
+
+  // True if the browser window has been shown at least once.
+  bool window_has_shown_;
 
   DISALLOW_COPY_AND_ASSIGN(Browser);
 };

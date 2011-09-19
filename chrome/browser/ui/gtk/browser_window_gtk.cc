@@ -657,6 +657,8 @@ void BrowserWindowGtk::Show() {
   // area, then undo it so that the render view can later adjust its own
   // size.
   gtk_widget_set_size_request(contents_container_->widget(), -1, -1);
+
+  browser()->OnWindowDidShow();
 }
 
 void BrowserWindowGtk::ShowInactive() {

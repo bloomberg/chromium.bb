@@ -95,6 +95,9 @@
 #include "chrome/browser/ui/find_bar/find_bar.h"
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
+#include "chrome/browser/ui/global_error.h"
+#include "chrome/browser/ui/global_error_service.h"
+#include "chrome/browser/ui/global_error_service_factory.h"
 #include "chrome/browser/ui/intents/web_intent_picker_controller.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
 #include "chrome/browser/ui/panels/panel.h"
@@ -277,7 +280,8 @@ Browser::Browser(Type type, Profile* profile)
               new BrowserSyncedWindowDelegate(this))),
       bookmark_bar_state_(BookmarkBar::HIDDEN),
       fullscreened_tab_(NULL),
-      tab_caused_fullscreen_(false) {
+      tab_caused_fullscreen_(false),
+      window_has_shown_(false) {
   registrar_.Add(this, content::NOTIFICATION_SSL_VISIBLE_STATE_CHANGED,
                  NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UPDATE_DISABLED,
@@ -511,33 +515,8 @@ void Browser::InitBrowserWindow() {
     UseCompactNavigationBarChanged();
   }
 
-  // Show the First Run information bubble if we've been told to.
   PrefService* local_state = g_browser_process->local_state();
-  if (!local_state)
-    return;
-  if (local_state->FindPreference(prefs::kShouldShowFirstRunBubble) &&
-      local_state->GetBoolean(prefs::kShouldShowFirstRunBubble)) {
-    FirstRun::BubbleType bubble_type = FirstRun::LARGE_BUBBLE;
-    if (local_state->
-        FindPreference(prefs::kShouldUseOEMFirstRunBubble) &&
-        local_state->GetBoolean(prefs::kShouldUseOEMFirstRunBubble)) {
-      bubble_type = FirstRun::OEM_BUBBLE;
-    } else if (local_state->
-        FindPreference(prefs::kShouldUseMinimalFirstRunBubble) &&
-        local_state->GetBoolean(prefs::kShouldUseMinimalFirstRunBubble)) {
-      bubble_type = FirstRun::MINIMAL_BUBBLE;
-    }
-    // Reset the preference so we don't show the bubble for subsequent windows.
-    local_state->ClearPref(prefs::kShouldShowFirstRunBubble);
-    window_->GetLocationBar()->ShowFirstRunBubble(bubble_type);
-
-    // Suppress ntp4 bubble if first run bubble will be shown on the same page.
-    PrefService* prefs = profile_->GetPrefs();
-    if (prefs->GetBoolean(prefs::kHomePageIsNewTabPage)) {
-      prefs->SetBoolean(prefs::kNTP4SuppressIntroOnce, true);
-    }
-  }
-  if (local_state->FindPreference(
+  if (local_state && local_state->FindPreference(
       prefs::kAutofillPersonalDataManagerFirstRun) &&
       local_state->GetBoolean(prefs::kAutofillPersonalDataManagerFirstRun)) {
     // Notify PDM that this is a first run.
@@ -5258,4 +5237,48 @@ void Browser::ShowSyncSetup() {
 
 void Browser::ToggleSpeechInput() {
   GetSelectedTabContentsWrapper()->render_view_host()->ToggleSpeechInput();
+}
+
+void Browser::OnWindowDidShow() {
+  if (window_has_shown_)
+    return;
+  window_has_shown_ = true;
+
+  bool did_show_bubble = false;
+
+  // Show the First Run information bubble if we've been told to.
+  PrefService* local_state = g_browser_process->local_state();
+  if (local_state &&
+      local_state->FindPreference(prefs::kShouldShowFirstRunBubble) &&
+      local_state->GetBoolean(prefs::kShouldShowFirstRunBubble)) {
+    FirstRun::BubbleType bubble_type = FirstRun::LARGE_BUBBLE;
+    if (local_state->
+        FindPreference(prefs::kShouldUseOEMFirstRunBubble) &&
+        local_state->GetBoolean(prefs::kShouldUseOEMFirstRunBubble)) {
+      bubble_type = FirstRun::OEM_BUBBLE;
+    } else if (local_state->
+        FindPreference(prefs::kShouldUseMinimalFirstRunBubble) &&
+        local_state->GetBoolean(prefs::kShouldUseMinimalFirstRunBubble)) {
+      bubble_type = FirstRun::MINIMAL_BUBBLE;
+    }
+    // Reset the preference so we don't show the bubble for subsequent windows.
+    local_state->ClearPref(prefs::kShouldShowFirstRunBubble);
+    window_->GetLocationBar()->ShowFirstRunBubble(bubble_type);
+    did_show_bubble = true;
+  } else if (is_type_tabbed()) {
+    GlobalErrorService* service =
+        GlobalErrorServiceFactory::GetForProfile(profile());
+    GlobalError* error = service->GetFirstGlobalErrorWithBubbleView();
+    if (error) {
+      error->ShowBubbleView(this);
+      did_show_bubble = true;
+    }
+  }
+
+  // Suppress ntp4 bubble if another bubble will be shown on the same page.
+  if (did_show_bubble) {
+    PrefService* prefs = profile_->GetPrefs();
+    if (prefs->GetBoolean(prefs::kHomePageIsNewTabPage))
+      prefs->SetBoolean(prefs::kNTP4SuppressIntroOnce, true);
+  }
 }

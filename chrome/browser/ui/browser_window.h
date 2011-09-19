@@ -48,6 +48,7 @@ class BrowserWindow {
   virtual ~BrowserWindow() {}
 
   // Show the window, or activates it if it's already visible.
+  // Browser::OnWindowDidShow should be called after showing the window.
   virtual void Show() = 0;
 
   // Show the window, but do not activate it. Does nothing if window

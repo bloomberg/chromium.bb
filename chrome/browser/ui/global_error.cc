@@ -8,7 +8,7 @@
 #include "grit/theme_resources.h"
 #include "grit/theme_resources_standard.h"
 
-GlobalError::GlobalError() {
+GlobalError::GlobalError() : has_shown_bubble_view_(false) {
 }
 
 GlobalError::~GlobalError() {
@@ -22,7 +22,12 @@ int GlobalError::MenuItemIconResourceID() {
   return IDR_UPDATE_MENU4;
 }
 
+bool GlobalError::HasShownBubbleView() {
+  return has_shown_bubble_view_;
+}
+
 void GlobalError::ShowBubbleView(Browser* browser) {
+  has_shown_bubble_view_ = true;
   ShowBubbleView(browser, this);
 }
 

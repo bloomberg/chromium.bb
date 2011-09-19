@@ -118,6 +118,8 @@ void BrowserWindowCocoa::Show() {
   // Restore window animation behavior.
   if (did_save_animation_behavior)
     [window() setAnimationBehavior:saved_animation_behavior];
+
+  browser_->OnWindowDidShow();
 }
 
 void BrowserWindowCocoa::ShowInactive() {

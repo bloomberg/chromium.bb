@@ -35,7 +35,7 @@ GlobalError* GlobalErrorService::GetGlobalErrorByMenuItemCommandID(
   return NULL;
 }
 
-int GlobalErrorService::GetFirstBadgeResourceID() {
+int GlobalErrorService::GetFirstBadgeResourceID() const {
   for (std::vector<GlobalError*>::const_iterator
        it = errors_.begin(); it != errors_.end(); ++it) {
     GlobalError* error = *it;
@@ -43,4 +43,14 @@ int GlobalErrorService::GetFirstBadgeResourceID() {
       return error->GetBadgeResourceID();
   }
   return 0;
+}
+
+GlobalError* GlobalErrorService::GetFirstGlobalErrorWithBubbleView() const {
+  for (std::vector<GlobalError*>::const_iterator
+       it = errors_.begin(); it != errors_.end(); ++it) {
+    GlobalError* error = *it;
+    if (error->HasBubbleView() && !error->HasShownBubbleView())
+      return error;
+  }
+  return NULL;
 }
