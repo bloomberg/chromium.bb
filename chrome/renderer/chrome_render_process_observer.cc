@@ -163,7 +163,7 @@ DWORD WINAPI GetFontDataPatch(HDC hdc,
     LOGFONT logfont;
     if (GetObject(font, sizeof(LOGFONT), &logfont)) {
       std::vector<char> font_data;
-      if (RenderThread::current()->Send(new ViewHostMsg_PreCacheFont(logfont)))
+      if (RenderThread::PreCacheFont(logfont))
         rv = GetFontData(hdc, table, offset, buffer, length);
     }
   }

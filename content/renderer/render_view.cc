@@ -584,11 +584,9 @@ void RenderView::PluginCrashed(const FilePath& plugin_path) {
 WebPlugin* RenderView::CreatePluginNoCheck(WebFrame* frame,
                                            const WebPluginParams& params) {
   webkit::WebPluginInfo info;
-  bool found;
   std::string mime_type;
-  Send(new ViewHostMsg_GetPluginInfo(
-      routing_id_, params.url, frame->top()->document().url(),
-      params.mimeType.utf8(), &found, &info, &mime_type));
+  bool found = GetPluginInfo(params.url, frame->top()->document().url(),
+                             params.mimeType.utf8(), &info, &mime_type);
   if (!found)
     return NULL;
 
@@ -622,6 +620,25 @@ void RenderView::RegisterPluginDelegate(WebPluginDelegateProxy* delegate) {
 
 void RenderView::UnregisterPluginDelegate(WebPluginDelegateProxy* delegate) {
   plugin_delegates_.erase(delegate);
+}
+
+bool RenderView::GetPluginInfo(const GURL& url,
+                               const GURL& page_url,
+                               const std::string& mime_type,
+                               webkit::WebPluginInfo* plugin_info,
+                               std::string* actual_mime_type) {
+  bool found = false;
+  Send(new ViewHostMsg_GetPluginInfo(
+      routing_id_, url, page_url, mime_type, &found, plugin_info,
+      actual_mime_type));
+  return found;
+}
+
+base::SharedMemoryHandle RenderView::HostAllocateSharedMemoryBuffer(
+    uint32 buffer_size) {
+  base::SharedMemoryHandle mem_handle;
+  Send(new ViewHostMsg_AllocateSharedMemoryBuffer(buffer_size, &mem_handle));
+  return mem_handle;
 }
 
 bool RenderView::OnMessageReceived(const IPC::Message& message) {
@@ -1581,8 +1598,7 @@ void RenderView::didExecuteCommand(const WebString& command_name) {
       StartsWithASCII(name, "Insert", true) ||
       StartsWithASCII(name, "Delete", true))
     return;
-  RenderThread::current()->Send(
-      new ViewHostMsg_UserMetricsRecordAction(name));
+  RenderThread::RecordUserMetrics(name);
 }
 
 void RenderView::SendPendingAccessibilityNotifications() {

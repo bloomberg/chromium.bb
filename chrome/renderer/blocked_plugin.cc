@@ -11,6 +11,7 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/plugin_uma.h"
 #include "content/common/view_messages.h"
+#include "content/renderer/render_thread.h"
 #include "content/renderer/render_view.h"
 #include "grit/generated_resources.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebContextMenuData.h"
@@ -159,16 +160,16 @@ void BlockedPlugin::ContextMenuAction(unsigned id) {
   if (g_last_active_menu != this)
     return;
   if (id == kMenuActionLoad) {
-    Send(new ViewHostMsg_UserMetricsRecordAction("Plugin_Load_Menu"));
+    RenderThread::RecordUserMetrics("Plugin_Load_Menu");
     LoadPlugin();
   } else if (id == kMenuActionRemove) {
-    Send(new ViewHostMsg_UserMetricsRecordAction("Plugin_Hide_Menu"));
+    RenderThread::RecordUserMetrics("Plugin_Hide_Menu");
     HidePlugin();
   }
 }
 
 void BlockedPlugin::OnLoadBlockedPlugins() {
-  Send(new ViewHostMsg_UserMetricsRecordAction("Plugin_Load_UI"));
+  RenderThread::RecordUserMetrics("Plugin_Load_UI");
   LoadPlugin();
 }
 
@@ -206,12 +207,12 @@ void BlockedPlugin::LoadPlugin() {
 }
 
 void BlockedPlugin::Load(const CppArgumentList& args, CppVariant* result) {
-  Send(new ViewHostMsg_UserMetricsRecordAction("Plugin_Load_Click"));
+  RenderThread::RecordUserMetrics("Plugin_Load_Click");
   LoadPlugin();
 }
 
 void BlockedPlugin::Hide(const CppArgumentList& args, CppVariant* result) {
-  Send(new ViewHostMsg_UserMetricsRecordAction("Plugin_Hide_Click"));
+  RenderThread::RecordUserMetrics("Plugin_Hide_Click");
   HidePlugin();
 }
 

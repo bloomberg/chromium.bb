@@ -510,6 +510,19 @@ void RenderThread::EnsureWebKitInitialized() {
   FOR_EACH_OBSERVER(RenderProcessObserver, observers_, WebKitInitialized());
 }
 
+// static
+void RenderThread::RecordUserMetrics(const std::string& action) {
+  RenderThread::current()->Send(
+      new ViewHostMsg_UserMetricsRecordAction(action));
+}
+
+#if defined(OS_WIN)
+// static
+bool RenderThread::PreCacheFont(const LOGFONT& log_font) {
+  return RenderThread::current()->Send(new ViewHostMsg_PreCacheFont(log_font));
+}
+#endif  // OS_WIN
+
 bool RenderThread::OnControlMessageReceived(const IPC::Message& msg) {
   ObserverListBase<RenderProcessObserver>::Iterator it(observers_);
   RenderProcessObserver* observer;

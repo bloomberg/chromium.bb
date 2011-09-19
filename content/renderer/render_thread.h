@@ -220,6 +220,15 @@ class CONTENT_EXPORT RenderThread : public RenderThreadBase,
   // We initialize WebKit as late as possible.
   void EnsureWebKitInitialized();
 
+  // Helper function to send over a string to be recorded by user metrics
+  static void RecordUserMetrics(const std::string& action);
+
+#if defined(OS_WIN)
+  // Request that the given font be loaded by the browser so it's cached by the
+  // OS. Please see ChildProcessHost::PreCacheFont for details.
+  static bool PreCacheFont(const LOGFONT& log_font);
+#endif  // OS_WIN
+
  private:
   virtual bool OnControlMessageReceived(const IPC::Message& msg);
 

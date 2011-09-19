@@ -37,7 +37,6 @@
 
 #if defined(OS_POSIX)
 #include "base/process_util.h"
-#include "content/common/view_messages.h"
 #endif
 
 #if defined(USE_SKIA)
@@ -1211,8 +1210,8 @@ bool PrintWebViewHelper::CopyMetafileDataToSharedMem(
     printing::Metafile* metafile,
     base::SharedMemoryHandle* shared_mem_handle) {
   uint32 buf_size = metafile->GetDataSize();
-  base::SharedMemoryHandle mem_handle;
-  Send(new ViewHostMsg_AllocateSharedMemoryBuffer(buf_size, &mem_handle));
+  base::SharedMemoryHandle mem_handle =
+      render_view()->HostAllocateSharedMemoryBuffer(buf_size);
   if (base::SharedMemory::IsHandleValid(mem_handle)) {
     base::SharedMemory shared_buf(mem_handle, false);
     if (shared_buf.Map(buf_size)) {

@@ -9,7 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "chrome/common/print_messages.h"
-#include "content/common/view_messages.h"
+#include "content/renderer/render_view.h"
 #include "printing/metafile.h"
 #include "printing/metafile_impl.h"
 #include "printing/metafile_skia_wrapper.h"
@@ -93,9 +93,8 @@ bool PrintWebViewHelper::PrintPages(const PrintMsg_PrintPages_Params& params,
   printed_page_params.data_size = 0;
   printed_page_params.document_cookie = params.params.document_cookie;
 
-  base::SharedMemoryHandle shared_mem_handle;
-  Send(new ViewHostMsg_AllocateSharedMemoryBuffer(buf_size,
-                                                  &shared_mem_handle));
+  base::SharedMemoryHandle shared_mem_handle =
+      render_view()->HostAllocateSharedMemoryBuffer(buf_size);
   if (!base::SharedMemory::IsHandleValid(shared_mem_handle)) {
     NOTREACHED() << "AllocateSharedMemoryBuffer returned bad handle";
     return false;

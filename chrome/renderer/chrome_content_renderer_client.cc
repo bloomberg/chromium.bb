@@ -59,7 +59,6 @@
 #include "chrome/renderer/spellchecker/spellcheck_provider.h"
 #include "chrome/renderer/translate_helper.h"
 #include "chrome/renderer/visitedlink_slave.h"
-#include "content/common/view_messages.h"
 #include "content/renderer/render_thread.h"
 #include "content/renderer/render_view.h"
 #include "grit/generated_resources.h"
@@ -287,16 +286,16 @@ WebPlugin* ChromeContentRendererClient::CreatePluginImpl(
       WebFrame* frame,
       const WebPluginParams& original_params,
       bool* is_default_plugin) {
-  bool found = false;
   *is_default_plugin = false;
   CommandLine* cmd = CommandLine::ForCurrentProcess();
   webkit::WebPluginInfo info;
   GURL url(original_params.url);
   std::string orig_mime_type = original_params.mimeType.utf8();
   std::string actual_mime_type;
-  render_view->Send(new ViewHostMsg_GetPluginInfo(
-      render_view->routing_id(), url, frame->top()->document().url(),
-      orig_mime_type, &found, &info, &actual_mime_type));
+
+  bool found = render_view->GetPluginInfo(
+      url, frame->top()->document().url(), orig_mime_type, &info,
+      &actual_mime_type);
 
   if (!found)
     return NULL;
@@ -470,14 +469,12 @@ WebPlugin* ChromeContentRendererClient::CreatePluginImpl(
 
   observer->DidBlockContentType(CONTENT_SETTINGS_TYPE_PLUGINS, resource);
   if (plugin_setting == CONTENT_SETTING_ASK) {
-    render_view->Send(
-        new ViewHostMsg_UserMetricsRecordAction("Plugin_ClickToPlay"));
+    RenderThread::RecordUserMetrics("Plugin_ClickToPlay");
     return CreatePluginPlaceholder(
         render_view, frame, params, *group, IDR_CLICK_TO_PLAY_PLUGIN_HTML,
         IDS_PLUGIN_LOAD, false, true);
   } else {
-    render_view->Send(
-        new ViewHostMsg_UserMetricsRecordAction("Plugin_Blocked"));
+    RenderThread::RecordUserMetrics("Plugin_Blocked");
     return CreatePluginPlaceholder(
         render_view, frame, params, *group, IDR_BLOCKED_PLUGIN_HTML,
         IDS_PLUGIN_BLOCKED, false, true);

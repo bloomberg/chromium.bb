@@ -8,7 +8,6 @@
 #include "base/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/common/render_messages.h"
-#include "content/common/view_messages.h"
 #include "content/renderer/pepper_plugin_delegate_impl.h"
 #include "content/renderer/render_thread.h"
 #include "grit/webkit_resources.h"
@@ -305,8 +304,7 @@ void UserMetricsRecordAction(PP_Var action) {
   scoped_refptr<ppapi::StringVar> action_str(
       ppapi::StringVar::FromPPVar(action));
   if (action_str) {
-    RenderThread::current()->Send(
-        new ViewHostMsg_UserMetricsRecordAction(action_str->value()));
+    RenderThread::RecordUserMetrics(action_str->value());
   }
 }
 
