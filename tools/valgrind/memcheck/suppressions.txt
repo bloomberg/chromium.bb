@@ -2086,69 +2086,6 @@
    fun:*CreateSpdyHeadersFromHttpRequestERKN3net15HttpRequestInfoEPSt3mapISsSsSt4lessISsESaISt4pairIKSsSsEEE
 }
 {
-   bug_48130_a
-   Memcheck:Leak
-   fun:_Znw*
-   fun:*IdMapsC1Ev
-   ...
-   fun:*IdMapsE22DefaultSingletonTraitsIS1_ES1_E3getEv
-   fun:_ZN8chromeos12input_method33GetInputMethodIdsFromLanguageCodeERKSsNS0_15InputMethodTypeEPSt6vectorISsSaISsEE
-   fun:_ZN8chromeos11Preferences4InitEP11PrefService
-   fun:_ZN11ProfileImplC1ERK8FilePath
-   fun:_ZN7Profile13CreateProfileERK8FilePath
-   fun:_ZN14ProfileManager13CreateProfileERK8FilePath
-}
-{
-   bug_48130_b
-   Memcheck:Leak
-   fun:_Znw*
-   ...
-   fun:*AddInputMethodToMapsERKSsRKN8chromeos21InputMethodDescriptorE
-   ...
-   fun:_ZN8chromeos12input_method33GetInputMethodIdsFromLanguageCodeERKSsNS0_15InputMethodTypeEPSt6vectorISsSaISsEE
-   fun:_ZN8chromeos11Preferences4InitEP11PrefService
-   fun:_ZN11ProfileImplC1ERK8FilePath
-   fun:_ZN7Profile13CreateProfileERK8FilePath
-   fun:_ZN14ProfileManager13CreateProfileERK8FilePath
-}
-{
-   bug_48130_c
-   Memcheck:Leak
-   fun:_Znw*
-   ...
-   fun:*IdMapsC1Ev
-   ...
-   fun:*IdMapsE22DefaultSingletonTraitsIS1_ES1_E3getEv
-   fun:_ZN8chromeos12input_method31GetInputMethodDisplayNameFromIdERKSs
-   fun:_ZN22LanguageOptionsHandler18GetInputMethodListEv
-   fun:_ZN22LanguageOptionsHandler18GetLocalizedValuesEP15DictionaryValue
-   fun:_ZN9OptionsUI23AddOptionsPageUIHandlerEP15DictionaryValueP20OptionsPageUIHandler
-   fun:_ZN9OptionsUIC1EP11TabContents
-}
-{
-   bug_48130_d
-   Memcheck:Leak
-   fun:_Znw*
-   ...
-   fun:_Z11TrimStringTISsE13TrimPositionsRKT_PKNS1_10value_typeES0_PS1_
-   fun:_Z19TrimWhitespaceASCIIRKSs13TrimPositionsPSs
-   fun:_Z14TrimWhitespaceRKSs13TrimPositionsPSs
-   fun:_ZN4baseL12SplitStringTISsEEvRKT_NS1_10value_typeEbPSt6vectorIS1_SaIS1_EE
-   fun:_ZN4base11SplitStringERKSscPSt6vectorISsSaISsEE
-   fun:_ZN8chromeos12input_method21InputMethodDescriptorC1ERKSsS3_S3_S3_
-   fun:_ZN8chromeos12input_method21InputMethodDescriptor27CreateInputMethodDescriptorERKSsS3_S3_
-   fun:_ZN8chromeos12input_method24GetSupportedInputMethodsEv
-   fun:_ZN8chromeos12input_method12_GLOBAL__N_16IdMaps10ReloadMapsEv
-   fun:_ZN8chromeos12input_method12_GLOBAL__N_16IdMapsC1Ev
-   fun:_ZN22DefaultSingletonTraitsIN8chromeos12input_method12_GLOBAL__N_16IdMapsEE3NewEv
-   fun:_ZN9SingletonIN8chromeos12input_method12_GLOBAL__N_16IdMapsE22DefaultSingletonTraitsIS3_ES3_E3getEv
-   fun:_ZN8chromeos12input_method12_GLOBAL__N_16IdMaps11GetInstanceEv
-   fun:_ZN8chromeos12input_method30GetInputMethodDescriptorFromIdERKSs
-   fun:_ZN8chromeos12input_method22InputMethodManagerImpl30ChangeCurrentInputMethodFromIdERKSs
-   fun:_ZN8chromeos12input_method22InputMethodManagerImpl32MaybeChangeCurrentKeyboardLayoutERKSsS3_RKNS0_14ImeConfigValueE
-   fun:_ZN8chromeos12input_method22InputMethodManagerImpl12SetImeConfigERKSsS3_RKNS0_14ImeConfigValueE
-}
-{
    bug_49279_a
    Memcheck:Leak
    fun:_Znw*
