@@ -638,9 +638,11 @@ class XcodeSettings(object):
   def _Test(self, test_key, cond_key, default):
     return self._Settings().get(test_key, default) == cond_key
 
-  def _Appendf(self, lst, test_key, format_str):
+  def _Appendf(self, lst, test_key, format_str, default=None):
     if test_key in self._Settings():
       lst.append(format_str % str(self._Settings()[test_key]))
+    elif default:
+      lst.append(format_str % str(default))
 
   def _WarnUnimplemented(self, test_key):
     if test_key in self._Settings():
@@ -803,7 +805,7 @@ class XcodeSettings(object):
     if self._Test('GCC_ENABLE_PASCAL_STRINGS', 'YES', default='YES'):
       cflags.append('-mpascal-strings')
 
-    self._Appendf(cflags, 'GCC_OPTIMIZATION_LEVEL', '-O%s')
+    self._Appendf(cflags, 'GCC_OPTIMIZATION_LEVEL', '-O%s', default='s')
 
     if self._Test('GCC_GENERATE_DEBUGGING_SYMBOLS', 'YES', default='YES'):
       dbg_format = self._Settings().get('DEBUG_INFORMATION_FORMAT', 'dwarf')
@@ -834,15 +836,13 @@ class XcodeSettings(object):
 
     # TODO:
     self._WarnUnimplemented('ARCHS')
-    self._WarnUnimplemented('COPY_PHASE_STRIP')
-    self._WarnUnimplemented('DEPLOYMENT_POSTPROCESSING')
+    if self._Test('COPY_PHASE_STRIP', 'YES', default='NO'):
+      self._WarnUnimplemented('COPY_PHASE_STRIP')
     self._WarnUnimplemented('GCC_DEBUGGING_SYMBOLS')
     self._WarnUnimplemented('GCC_ENABLE_OBJC_EXCEPTIONS')
     self._WarnUnimplemented('GCC_ENABLE_OBJC_GC')
     self._WarnUnimplemented('INFOPLIST_PREPROCESS')
     self._WarnUnimplemented('INFOPLIST_PREPROCESSOR_DEFINITIONS')
-    self._WarnUnimplemented('STRIPFLAGS')
-    self._WarnUnimplemented('STRIP_INSTALLED_PRODUCT')
 
     # TODO: Do not hardcode arch. Supporting fat binaries will be annoying.
     cflags.append('-arch i386')
@@ -1022,6 +1022,39 @@ class XcodeSettings(object):
             "(target %s)" % (setting, spec['target_name']))
     if result is None:
       return default
+    return result
+
+  def GetStripPostbuilds(self, configname, output_binary):
+    """Returns a list of shell commands that contain the shell commands
+    neccessary to strip this target's binary. These should be run as postbuilds
+    before the actual postbuilds run."""
+    self.configname = configname
+
+    result = []
+    if (self._Test('DEPLOYMENT_POSTPROCESSING', 'YES', default='NO') and
+        self._Test('STRIP_INSTALLED_PRODUCT', 'YES', default='NO')):
+
+      default_strip_style = 'debugging'
+      if self._IsBundle():
+        default_strip_style = 'non-global'
+      elif self.spec['type'] == 'executable':
+        default_strip_style = 'all'
+
+      strip_style = self._Settings().get('STRIP_STYLE', default_strip_style)
+      strip_flags = {
+        'all': '',
+        'non-global': '-x',
+        'debugging': '-S',
+      }[strip_style]
+
+      explicit_strip_flags = self._Settings().get('STRIPFLAGS', '')
+      if explicit_strip_flags:
+        strip_flags += ' ' + explicit_strip_flags
+
+      result.append('echo STRIP\\(%s\\)' % self.spec['target_name'])
+      result.append('strip %s %s' % (strip_flags, output_binary))
+
+    self.configname = None
     return result
 
 
@@ -1844,11 +1877,20 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
                          order_only = True,
                          multiple_output_trick = False)
 
+    has_any_strip = False
     if self.type not in ('settings', 'none'):
       for configname in sorted(configs.keys()):
         config = configs[configname]
         if self.flavor == 'mac':
           ldflags = self.xcode_settings.GetLdflags(self, configname)
+
+          # STRIP_$(BUILDTYPE) is added to postbuilds later on.
+          strip_postbuilds = self.xcode_settings.GetStripPostbuilds(
+              configname, self.output_binary)
+          if strip_postbuilds:
+            has_any_strip = True
+            self.WriteLn('%s: STRIP_%s := %s' % (self.output, configname,
+                  gyp.common.EncodePOSIXShellList(strip_postbuilds)))
         else:
           ldflags = config.get('ldflags', [])
           # Compute an rpath for this output if needed.
@@ -1874,6 +1916,8 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
 
     postbuilds = []
     if self.flavor == 'mac':
+      if has_any_strip:
+        postbuilds.append('$(STRIP_$(BUILDTYPE))')
       # Postbuild actions. Like actions, but implicitly depend on the target's
       # output.
       for postbuild in spec.get('postbuilds', []):
@@ -1885,14 +1929,20 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
         # absolutified. Else, it's in the PATH (e.g. install_name_tool, ln).
         if os.path.sep in shell_list[0]:
           shell_list[0] = self.Absolutify(shell_list[0])
-        postbuilds.append('%s' % gyp.common.EncodePOSIXShellList(shell_list))
+        postbuilds.append(gyp.common.EncodePOSIXShellList(shell_list))
+
+    if postbuilds:
+      self.WriteXcodeEnv(self.output, spec)  # For postbuilds
+      for i in xrange(len(postbuilds)):
+        if not postbuilds[i].startswith('$'):
+          postbuilds[i] = EscapeShellArgument(postbuilds[i])
+      self.WriteLn('%s: builddir := $(abs_builddir)' % self.output)
+      self.WriteLn('%s: POSTBUILDS := %s' % (self.output, ' '.join(postbuilds)))
 
     # A bundle directory depends on its dependencies such as bundle resources
     # and bundle binary. When all dependencies have been built, the bundle
     # needs to be packaged.
     if self.is_mac_bundle:
-      self.WriteXcodeEnv(self.output, spec)  # For postbuilds
-
       # If the framework doesn't contain a binary, then nothing depends
       # on the actions -- make the framework depend on them directly too.
       self.WriteDependencyOnExtraOutputs(self.output, extra_outputs)
@@ -1910,8 +1960,7 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
 
       # Bundle postbuilds can depend on the whole bundle, so run them after
       # the bundle is packaged, not already after the bundle binary is done.
-      for postbuild in postbuilds:
-        self.WriteLn('\t@' + postbuild)
+      self.WriteLn('\t@for p in $(POSTBUILDS); do eval $$p; done')
       postbuilds = []  # Don't write postbuilds for target's output.
 
       # Needed by test/mac/gyptest-rebuild.py.
@@ -1929,11 +1978,6 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
           'on the bundle, not the binary (target \'%s\')' % self.target)
       assert 'product_dir' not in spec, ('Postbuilds do not work with '
           'custom product_dir')
-      self.WriteXcodeEnv(self.output_binary, spec)  # For postbuilds
-      postbuilds = [EscapeShellArgument(p) for p in postbuilds]
-      self.WriteLn('%s: builddir := $(abs_builddir)' % self.output_binary)
-      self.WriteLn('%s: POSTBUILDS := %s' % (
-          self.output_binary, ' '.join(postbuilds)))
 
     if self.type == 'executable':
       self.WriteLn(
