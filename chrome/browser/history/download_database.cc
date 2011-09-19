@@ -10,6 +10,7 @@
 #include "base/file_path.h"
 #include "base/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "content/browser/browser_thread.h"
 #include "content/browser/download/download_item.h"
 #include "content/browser/download/download_persistent_store_info.h"
 #include "sql/statement.h"
@@ -54,7 +55,8 @@ FilePath ColumnFilePath(sql::Statement& statement, int col) {
 
 }  // namespace
 
-DownloadDatabase::DownloadDatabase() {
+DownloadDatabase::DownloadDatabase()
+    : owning_thread_set_(false) {
 }
 
 DownloadDatabase::~DownloadDatabase() {
@@ -147,6 +149,13 @@ bool DownloadDatabase::CleanUpInProgressEntries() {
 
 int64 DownloadDatabase::CreateDownload(
     const DownloadPersistentStoreInfo& info) {
+  if (owning_thread_set_) {
+    CHECK_EQ(owning_thread_, base::PlatformThread::CurrentId());
+  } else {
+    owning_thread_ = base::PlatformThread::CurrentId();
+    owning_thread_set_ = true;
+  }
+
   sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
       "INSERT INTO downloads "
       "(full_path, url, start_time, received_bytes, total_bytes, state) "
@@ -161,8 +170,14 @@ int64 DownloadDatabase::CreateDownload(
   statement.BindInt64(4, info.total_bytes);
   statement.BindInt(5, info.state);
 
-  if (statement.Run())
-    return GetDB().GetLastInsertRowId();
+  if (statement.Run()) {
+    int64 id = GetDB().GetLastInsertRowId();
+
+    CHECK_EQ(0u, returned_ids_.count(id));
+    returned_ids_.insert(id);
+
+    return id;
+  }
   return 0;
 }
 
@@ -174,10 +189,36 @@ void DownloadDatabase::RemoveDownload(DownloadID db_handle) {
 
   statement.BindInt64(0, db_handle);
   statement.Run();
+
+  returned_ids_.erase(db_handle);
 }
 
 void DownloadDatabase::RemoveDownloadsBetween(base::Time delete_begin,
                                               base::Time delete_end) {
+  time_t start_time = delete_begin.ToTimeT();
+  time_t end_time = delete_end.ToTimeT();
+
+  // TODO(rdsmith): Remove when http://crbug.com/96627 is resolved.
+  {
+    sql::Statement dbg_statement(GetDB().GetCachedStatement(
+        SQL_FROM_HERE,
+        "SELECT id FROM downloads WHERE start_time >= ? AND start_time < ? "
+        "AND (State = ? OR State = ? OR State = ?)"));
+    if (!dbg_statement)
+      return;
+    dbg_statement.BindInt64(0, start_time);
+    dbg_statement.BindInt64(
+        1,
+        end_time ? end_time : std::numeric_limits<int64>::max());
+    dbg_statement.BindInt(2, DownloadItem::COMPLETE);
+    dbg_statement.BindInt(3, DownloadItem::CANCELLED);
+    dbg_statement.BindInt(4, DownloadItem::INTERRUPTED);
+    while (dbg_statement.Step()) {
+      int64 id_to_delete = dbg_statement.ColumnInt64(0);
+      returned_ids_.erase(id_to_delete);
+    }
+  }
+
   // This does not use an index. We currently aren't likely to have enough
   // downloads where an index by time will give us a lot of benefit.
   sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
@@ -186,8 +227,6 @@ void DownloadDatabase::RemoveDownloadsBetween(base::Time delete_begin,
   if (!statement)
     return;
 
-  time_t start_time = delete_begin.ToTimeT();
-  time_t end_time = delete_end.ToTimeT();
   statement.BindInt64(0, start_time);
   statement.BindInt64(
       1,

@@ -6,7 +6,10 @@
 #define CHROME_BROWSER_HISTORY_DOWNLOAD_DATABASE_H_
 #pragma once
 
+#include <set>
+
 #include "chrome/browser/history/history_types.h"
+#include "base/threading/platform_thread.h"
 
 struct DownloadPersistentStoreInfo;
 class FilePath;
@@ -63,6 +66,11 @@ class DownloadDatabase {
   bool DropDownloadTable();
 
  private:
+  // TODO(rdsmith): Remove after http://crbug.com/96627 has been resolved.
+  std::set<int64> returned_ids_;
+  bool owning_thread_set_;
+  base::PlatformThreadId owning_thread_;
+
   DISALLOW_COPY_AND_ASSIGN(DownloadDatabase);
 };
 

@@ -848,6 +848,11 @@ void DownloadManager::OnDownloadItemAddedToPersistentStore(int32 download_id,
   // TODO(rdsmith): Remove after http://crbug.com/85408 resolved.
   int64 largest_handle = largest_db_handle_in_history_;
   base::debug::Alias(&largest_handle);
+  int32 matching_item_download_id
+      = (ContainsKey(history_downloads_, db_handle) ?
+         history_downloads_[db_handle]->id() : 0);
+  base::debug::Alias(&matching_item_download_id);
+
   CHECK(!ContainsKey(history_downloads_, db_handle));
 
   AddDownloadItemToHistory(download, db_handle);
