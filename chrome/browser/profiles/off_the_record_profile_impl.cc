@@ -251,7 +251,10 @@ net::TransportSecurityState*
         CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
             switches::kHstsHosts));
     transport_security_loader_ =
-        new TransportSecurityPersister(true /* readonly */);
+       new TransportSecurityPersister(transport_security_state_.get(),
+                                      GetPath(),
+                                      true /* readonly */);
+    transport_security_loader_->Init();
   }
 
   return transport_security_state_.get();
