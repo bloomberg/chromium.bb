@@ -2120,6 +2120,11 @@
             ['exclude', '^browser/importer/'],
           ],
         }],
+        ['OS=="linux"', {
+          'sources': [
+            'browser/ui/webui/print_preview_handler_unittest.cc',
+          ],
+        }],
       ],
     },
     {
