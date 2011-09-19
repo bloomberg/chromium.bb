@@ -150,6 +150,14 @@ bool ExamplesMain::CanResize() const {
   return true;
 }
 
+bool ExamplesMain::CanMaximize() const {
+  return true;
+}
+
+std::wstring ExamplesMain::GetWindowTitle() const {
+  return L"Views Examples";
+}
+
 views::View* ExamplesMain::GetContentsView() {
   return contents_;
 }
