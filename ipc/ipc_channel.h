@@ -146,7 +146,13 @@ class IPC_EXPORT Channel : public Message::Sender {
   // On POSIX an IPC::Channel wraps a socketpair(), this method returns the
   // FD # for the client end of the socket.
   // This method may only be called on the server side of a channel.
+  // This method can be called on any thread.
   int GetClientFileDescriptor() const;
+
+  // Same as GetClientFileDescriptor, but transfers the ownership of the
+  // file descriptor to the caller.
+  // This method can be called on any thread.
+  int TakeClientFileDescriptor();
 
   // On POSIX an IPC::Channel can either wrap an established socket, or it
   // can wrap a socket that is listening for connections. Currently an

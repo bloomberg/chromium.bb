@@ -102,15 +102,9 @@ class PipeMap {
 
   // Remove the mapping for the given channel id. No error is signaled if the
   // channel_id doesn't exist
-  void RemoveAndClose(const std::string& channel_id) {
+  void Remove(const std::string& channel_id) {
     base::AutoLock locked(lock_);
-
-    ChannelToFDMap::iterator i = map_.find(channel_id);
-    if (i != map_.end()) {
-      if (HANDLE_EINTR(close(i->second)) < 0)
-        PLOG(ERROR) << "close " << channel_id;
-      map_.erase(i);
-    }
+    map_.erase(channel_id);
   }
 
   // Insert a mapping from @channel_id to @fd. It's a fatal error to insert a
@@ -403,7 +397,7 @@ bool Channel::ChannelImpl::CreatePipe(
         // Case 3 from comment above.
         // We only allow one connection.
         local_pipe = HANDLE_EINTR(dup(local_pipe));
-        PipeMap::GetInstance()->RemoveAndClose(pipe_name_);
+        PipeMap::GetInstance()->Remove(pipe_name_);
       } else {
         // Case 4a from comment above.
         // Guard against inappropriate reuse of the initial IPC channel.  If
@@ -426,6 +420,7 @@ bool Channel::ChannelImpl::CreatePipe(
         LOG(ERROR) << "Server already exists for " << pipe_name_;
         return false;
       }
+      base::AutoLock lock(client_pipe_lock_);
       if (!SocketPair(&local_pipe, &client_pipe_))
         return false;
       PipeMap::GetInstance()->Insert(pipe_name_, client_pipe_);
@@ -529,10 +524,7 @@ bool Channel::ChannelImpl::ProcessIncomingMessages() {
     }
     DCHECK(bytes_read);
 
-    if (client_pipe_ != -1) {
-      PipeMap::GetInstance()->RemoveAndClose(pipe_name_);
-      client_pipe_ = -1;
-    }
+    CloseClientFileDescriptor();
 
     // a pointer to an array of |num_wire_fds| file descriptors from the read
     const int* wire_fds = NULL;
@@ -916,8 +908,29 @@ bool Channel::ChannelImpl::Send(Message* message) {
   return true;
 }
 
-int Channel::ChannelImpl::GetClientFileDescriptor() const {
+int Channel::ChannelImpl::GetClientFileDescriptor() {
+  base::AutoLock lock(client_pipe_lock_);
   return client_pipe_;
+}
+
+int Channel::ChannelImpl::TakeClientFileDescriptor() {
+  base::AutoLock lock(client_pipe_lock_);
+  int fd = client_pipe_;
+  if (client_pipe_ != -1) {
+    PipeMap::GetInstance()->Remove(pipe_name_);
+    client_pipe_ = -1;
+  }
+  return fd;
+}
+
+void Channel::ChannelImpl::CloseClientFileDescriptor() {
+  base::AutoLock lock(client_pipe_lock_);
+  if (client_pipe_ != -1) {
+    PipeMap::GetInstance()->Remove(pipe_name_);
+    if (HANDLE_EINTR(close(client_pipe_)) < 0)
+      PLOG(ERROR) << "close " << pipe_name_;
+    client_pipe_ = -1;
+  }
 }
 
 bool Channel::ChannelImpl::AcceptsConnections() const {
@@ -1173,10 +1186,7 @@ void Channel::ChannelImpl::Close() {
     server_listen_connection_watcher_.StopWatchingFileDescriptor();
   }
 
-  if (client_pipe_ != -1) {
-    PipeMap::GetInstance()->RemoveAndClose(pipe_name_);
-    client_pipe_ = -1;
-  }
+  CloseClientFileDescriptor();
 }
 
 //------------------------------------------------------------------------------
@@ -1208,6 +1218,10 @@ bool Channel::Send(Message* message) {
 
 int Channel::GetClientFileDescriptor() const {
   return channel_impl_->GetClientFileDescriptor();
+}
+
+int Channel::TakeClientFileDescriptor() {
+  return channel_impl_->TakeClientFileDescriptor();
 }
 
 bool Channel::AcceptsConnections() const {

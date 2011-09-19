@@ -157,7 +157,8 @@ class IPC_EXPORT ChannelProxy : public Message::Sender {
 
 #if defined(OS_POSIX)
   // Calls through to the underlying channel's methods.
-  int GetClientFileDescriptor() const;
+  int GetClientFileDescriptor();
+  int TakeClientFileDescriptor();
   bool GetClientEuid(uid_t* client_euid) const;
 #endif  // defined(OS_POSIX)
 

@@ -7,6 +7,7 @@
 #include <utility>  // For std::pair.
 
 #include "base/command_line.h"
+#include "base/file_util.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
@@ -115,10 +116,14 @@ class ChildProcessLauncher::Context
 #endif
       CommandLine* cmd_line) {
     scoped_ptr<CommandLine> cmd_line_deleter(cmd_line);
+
     base::ProcessHandle handle = base::kNullProcessHandle;
 #if defined(OS_WIN)
     handle = sandbox::StartProcessWithAccess(cmd_line, exposed_dir);
 #elif defined(OS_POSIX)
+    // We need to close the client end of the IPC channel
+    // to reliably detect child termination.
+    file_util::ScopedFD ipcfd_closer(&ipcfd);
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
     // On Linux, we need to add some extra file descriptors for crash handling.

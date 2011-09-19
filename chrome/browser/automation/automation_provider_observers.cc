@@ -100,12 +100,15 @@ class InitialLoadObserver::TabTime {
 InitialLoadObserver::InitialLoadObserver(size_t tab_count,
                                          AutomationProvider* automation)
     : automation_(automation->AsWeakPtr()),
+      crashed_tab_count_(0),
       outstanding_tab_count_(tab_count),
       init_time_(base::TimeTicks::Now()) {
   if (outstanding_tab_count_ > 0) {
     registrar_.Add(this, content::NOTIFICATION_LOAD_START,
                    NotificationService::AllSources());
     registrar_.Add(this, content::NOTIFICATION_LOAD_STOP,
+                   NotificationService::AllSources());
+    registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
                    NotificationService::AllSources());
   }
 }
@@ -128,12 +131,37 @@ void InitialLoadObserver::Observe(int type,
         finished_tabs_.insert(source.map_key());
         iter->second.set_stop_time(base::TimeTicks::Now());
       }
-      if (outstanding_tab_count_ == finished_tabs_.size())
-        ConditionMet();
+    }
+  } else if (type == content::NOTIFICATION_RENDERER_PROCESS_CLOSED) {
+    base::TerminationStatus status =
+        Details<RenderProcessHost::RendererClosedDetails>(details)->status;
+    switch (status) {
+      case base::TERMINATION_STATUS_NORMAL_TERMINATION:
+        break;
+
+      case base::TERMINATION_STATUS_ABNORMAL_TERMINATION:
+      case base::TERMINATION_STATUS_PROCESS_WAS_KILLED:
+      case base::TERMINATION_STATUS_PROCESS_CRASHED:
+        crashed_tab_count_++;
+        break;
+
+      case base::TERMINATION_STATUS_STILL_RUNNING:
+        LOG(ERROR) << "Got RENDERER_PROCESS_CLOSED notification, "
+                   << "but the process is still running. We may miss further "
+                   << "crash notification, resulting in hangs.";
+        break;
+
+      default:
+        LOG(ERROR) << "Unhandled termination status " << status;
+        NOTREACHED();
+        break;
     }
   } else {
     NOTREACHED();
   }
+
+  if (finished_tabs_.size() + crashed_tab_count_ >= outstanding_tab_count_)
+    ConditionMet();
 }
 
 DictionaryValue* InitialLoadObserver::GetTimingInformation() const {

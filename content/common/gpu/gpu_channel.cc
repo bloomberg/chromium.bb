@@ -396,11 +396,11 @@ std::string GpuChannel::GetChannelName() {
 }
 
 #if defined(OS_POSIX)
-int GpuChannel::GetRendererFileDescriptor() {
-  int fd = -1;
-  if (channel_.get()) {
-    fd = channel_->GetClientFileDescriptor();
+int GpuChannel::TakeRendererFileDescriptor() {
+  if (!channel_.get()) {
+    NOTREACHED();
+    return -1;
   }
-  return fd;
+  return channel_->TakeClientFileDescriptor();
 }
 #endif  // defined(OS_POSIX)

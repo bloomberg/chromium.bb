@@ -432,15 +432,9 @@ scoped_refptr<BrowserProxy> AutomationProxy::GetLastActiveBrowserWindow() {
   return ProxyObjectFromHandle<BrowserProxy>(handle);
 }
 
-#if defined(OS_POSIX)
-base::file_handle_mapping_vector AutomationProxy::fds_to_map() const {
-  base::file_handle_mapping_vector map;
-  const int ipcfd = channel_->GetClientFileDescriptor();
-  if (ipcfd > -1)
-    map.push_back(std::make_pair(ipcfd, kPrimaryIPCChannel + 3));
-  return map;
+IPC::SyncChannel* AutomationProxy::channel() {
+  return channel_.get();
 }
-#endif  // defined(OS_POSIX)
 
 bool AutomationProxy::Send(IPC::Message* message) {
   return Send(message,

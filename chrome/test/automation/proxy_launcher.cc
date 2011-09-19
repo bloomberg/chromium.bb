@@ -26,6 +26,7 @@
 #include "content/common/child_process_info.h"
 #include "content/common/debug_flags.h"
 #include "ipc/ipc_channel.h"
+#include "ipc/ipc_descriptors.h"
 #include "sql/connection.h"
 
 namespace {
@@ -109,11 +110,11 @@ bool ProxyLauncher::WaitForBrowserLaunch(bool wait_for_initial_loads) {
       return false;
     }
   } else {
-    // TODO(phajdan.jr): We should get rid of this sleep, but some tests
-    // "rely" on it, e.g. AssertionTest.Assertion and CheckFalseTest.CheckFails.
-    // Those tests do not wait in any way until the crash gets noticed,
-    // so it's possible for the browser to exit before the tested crash happens.
+#if defined(OS_WIN)
+    // TODO(phajdan.jr): Get rid of this Sleep when logging_chrome_uitest
+    // stops "relying" on it.
     base::PlatformThread::Sleep(TestTimeouts::action_timeout_ms());
+#endif
   }
 
   if (!automation()->SetFilteredInet(ShouldFilterInet())) {
@@ -198,7 +199,7 @@ bool ProxyLauncher::LaunchBrowser(const LaunchState& state) {
   if (!state.setup_profile_callback.is_null())
     state.setup_profile_callback.Run();
 
-  if (!LaunchBrowserHelper(state, false, &process_)) {
+  if (!LaunchBrowserHelper(state, true, false, &process_)) {
     LOG(ERROR) << "LaunchBrowserHelper failed.";
     return false;
   }
@@ -210,7 +211,7 @@ bool ProxyLauncher::LaunchBrowser(const LaunchState& state) {
 #if !defined(OS_MACOSX)
 bool ProxyLauncher::LaunchAnotherBrowserBlockUntilClosed(
     const LaunchState& state) {
-  return LaunchBrowserHelper(state, true, NULL);
+  return LaunchBrowserHelper(state, false, true, NULL);
 }
 #endif
 
@@ -435,7 +436,9 @@ void ProxyLauncher::PrepareTestCommandline(CommandLine* command_line,
   command_line->AppendSwitch(switches::kUnlimitedQuotaForFiles);
 }
 
-bool ProxyLauncher::LaunchBrowserHelper(const LaunchState& state, bool wait,
+bool ProxyLauncher::LaunchBrowserHelper(const LaunchState& state,
+                                        bool main_launch,
+                                        bool wait,
                                         base::ProcessHandle* process) {
   CommandLine command_line(state.command);
 
@@ -459,8 +462,8 @@ bool ProxyLauncher::LaunchBrowserHelper(const LaunchState& state, bool wait,
             << browser_wrapper;
   }
 
-  // TODO(phajdan.jr): Only run it for "main" browser launch.
-  browser_launch_time_ = base::TimeTicks::Now();
+  if (main_launch)
+    browser_launch_time_ = base::TimeTicks::Now();
 
   base::LaunchOptions options;
   options.wait = wait;
@@ -468,10 +471,14 @@ bool ProxyLauncher::LaunchBrowserHelper(const LaunchState& state, bool wait,
 #if defined(OS_WIN)
   options.start_hidden = !state.show_window;
 #elif defined(OS_POSIX)
+  int ipcfd = -1;
+  file_util::ScopedFD ipcfd_closer(&ipcfd);
   base::file_handle_mapping_vector fds;
-  if (automation_proxy_.get())
-    fds = automation_proxy_->fds_to_map();
-  options.fds_to_remap = &fds;
+  if (main_launch && automation_proxy_.get()) {
+    ipcfd = automation_proxy_->channel()->TakeClientFileDescriptor();
+    fds.push_back(std::make_pair(ipcfd, kPrimaryIPCChannel + 3));
+    options.fds_to_remap = &fds;
+  }
 #endif
 
   return base::LaunchProcess(command_line, options, process);

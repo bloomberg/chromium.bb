@@ -330,7 +330,7 @@ bool BrowserRenderProcessHost::Init(bool is_accessibility_enabled) {
 #elif defined(OS_POSIX)
         renderer_prefix.empty(),
         base::environment_vector(),
-        channel_->GetClientFileDescriptor(),
+        channel_->TakeClientFileDescriptor(),
 #endif
         cmd_line,
         this));
@@ -940,6 +940,7 @@ void BrowserRenderProcessHost::OnProcessLaunched() {
       OnChannelError();
       return;
     }
+
     child_process_launcher_->SetProcessBackgrounded(backgrounded_);
   }
 

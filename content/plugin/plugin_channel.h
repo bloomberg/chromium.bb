@@ -51,7 +51,9 @@ class PluginChannel : public PluginChannelBase {
   void set_incognito(bool value) { incognito_ = value; }
 
 #if defined(OS_POSIX)
-  int renderer_fd() const { return channel_->GetClientFileDescriptor(); }
+  int TakeRendererFileDescriptor() {
+    return channel_->TakeClientFileDescriptor();
+  }
 #endif
 
  protected:

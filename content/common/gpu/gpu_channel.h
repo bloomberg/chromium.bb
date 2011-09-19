@@ -62,7 +62,7 @@ class GpuChannel : public IPC::Channel::Listener,
   std::string GetChannelName();
 
 #if defined(OS_POSIX)
-  int GetRendererFileDescriptor();
+  int TakeRendererFileDescriptor();
 #endif  // defined(OS_POSIX)
 
   base::ProcessHandle renderer_process() const {

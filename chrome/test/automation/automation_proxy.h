@@ -222,9 +222,7 @@ class AutomationProxy : public IPC::Channel::Listener,
                             const std::string& password) WARN_UNUSED_RESULT;
 #endif
 
-#if defined(OS_POSIX)
-  base::file_handle_mapping_vector fds_to_map() const;
-#endif
+  IPC::SyncChannel* channel();
 
   // AutomationMessageSender implementation.
   virtual bool Send(IPC::Message* message) WARN_UNUSED_RESULT;

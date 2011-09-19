@@ -94,7 +94,7 @@ void BrowserChildProcessHost::Launch(
 #elif defined(OS_POSIX)
       use_zygote,
       environ,
-      channel()->GetClientFileDescriptor(),
+      channel()->TakeClientFileDescriptor(),
 #endif
       cmd_line,
       &client_));

@@ -109,6 +109,7 @@ class InitialLoadObserver : public NotificationObserver {
   NotificationRegistrar registrar_;
 
   base::WeakPtr<AutomationProvider> automation_;
+  size_t crashed_tab_count_;
   size_t outstanding_tab_count_;
   base::TimeTicks init_time_;
   TabTimeMap loading_tabs_;

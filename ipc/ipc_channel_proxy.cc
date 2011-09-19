@@ -376,16 +376,22 @@ void ChannelProxy::ClearIPCMessageLoop() {
 #if defined(OS_POSIX) && !defined(OS_NACL)
 // See the TODO regarding lazy initialization of the channel in
 // ChannelProxy::Init().
-// We assume that IPC::Channel::GetClientFileDescriptorMapping() is thread-safe.
-int ChannelProxy::GetClientFileDescriptor() const {
-  Channel *channel = context_.get()->channel_.get();
+int ChannelProxy::GetClientFileDescriptor() {
+  Channel* channel = context_.get()->channel_.get();
   // Channel must have been created first.
   DCHECK(channel) << context_.get()->channel_id_;
   return channel->GetClientFileDescriptor();
 }
 
+int ChannelProxy::TakeClientFileDescriptor() {
+  Channel* channel = context_.get()->channel_.get();
+  // Channel must have been created first.
+  DCHECK(channel) << context_.get()->channel_id_;
+  return channel->TakeClientFileDescriptor();
+}
+
 bool ChannelProxy::GetClientEuid(uid_t* client_euid) const {
-  Channel *channel = context_.get()->channel_.get();
+  Channel* channel = context_.get()->channel_.get();
   // Channel must have been created first.
   DCHECK(channel) << context_.get()->channel_id_;
   return channel->GetClientEuid(client_euid);

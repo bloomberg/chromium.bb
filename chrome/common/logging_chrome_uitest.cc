@@ -84,16 +84,14 @@ TEST_F(ChromeLoggingTest, EnvironmentLogFileName) {
 #endif
 
 #if !defined(NDEBUG)  // We don't have assertions in release builds.
-// Tests whether we correctly fail on browser assertions during tests.
+// Tests whether we correctly fail on renderer assertions during tests.
 class AssertionTest : public UITest {
  protected:
-  AssertionTest() : UITest() {
-    // Initial loads will never complete due to assertion.
+  AssertionTest() {
+#if defined(OS_WIN)
+    // TODO(phajdan.jr): Make crash notifications on launch work on Win.
     wait_for_initial_loads_ = false;
-
-    // We're testing the renderer rather than the browser assertion here,
-    // because the browser assertion would flunk the test during SetUp()
-    // (since TAU wouldn't be able to find the browser window).
+#endif
     launch_arguments_.AppendSwitch(switches::kRendererAssertTest);
   }
 };
@@ -116,13 +114,11 @@ TEST_F(AssertionTest, Assertion) {
 // Only works on Linux in Release mode with CHROME_HEADLESS=1
 class CheckFalseTest : public UITest {
  protected:
-  CheckFalseTest() : UITest() {
-    // Initial loads will never complete due to assertion.
+  CheckFalseTest() {
+#if defined(OS_WIN)
+    // TODO(phajdan.jr): Make crash notifications on launch work on Win.
     wait_for_initial_loads_ = false;
-
-    // We're testing the renderer rather than the browser assertion here,
-    // because the browser assertion would flunk the test during SetUp()
-    // (since TAU wouldn't be able to find the browser window).
+#endif
     launch_arguments_.AppendSwitch(switches::kRendererCheckFalseTest);
   }
 };
@@ -144,10 +140,11 @@ TEST_F(CheckFalseTest, CheckFails) {
 // Tests whether we correctly fail on browser crashes during UI Tests.
 class RendererCrashTest : public UITest {
  protected:
-  RendererCrashTest() : UITest() {
-    // Initial loads will never complete due to crash.
+  RendererCrashTest() {
+#if defined(OS_WIN)
+    // TODO(phajdan.jr): Make crash notifications on launch work on Win.
     wait_for_initial_loads_ = false;
-
+#endif
     launch_arguments_.AppendSwitch(switches::kRendererCrashTest);
   }
 };

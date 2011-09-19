@@ -166,6 +166,7 @@ class ProxyLauncher {
                               bool include_testing_id);
 
   bool LaunchBrowserHelper(const LaunchState& state,
+                           bool main_launch,
                            bool wait,
                            base::ProcessHandle* process) WARN_UNUSED_RESULT;
 
