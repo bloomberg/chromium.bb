@@ -7,7 +7,6 @@
 
 #import <Cocoa/Cocoa.h>
 
-#import "chrome/browser/ui/cocoa/background_gradient_view.h"
 #import "chrome/browser/ui/cocoa/tracking_area.h"
 
 @class CrTrackingArea;
@@ -33,7 +32,7 @@ enum PanelDragState {
   PANEL_DRAG_SUPPRESSED  // Ignore drag events until PANEL_DRAG_CAN_START.
 };
 
-@interface PanelTitlebarViewCocoa : BackgroundGradientView {
+@interface PanelTitlebarViewCocoa : NSView {
  @private
   IBOutlet PanelWindowControllerCocoa* controller_;
   IBOutlet NSTextField* title_;

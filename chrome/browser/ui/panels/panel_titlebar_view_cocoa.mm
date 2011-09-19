@@ -11,14 +11,16 @@
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "chrome/browser/themes/theme_service.h"
 #import "chrome/browser/ui/cocoa/hover_image_button.h"
+#import "chrome/browser/ui/cocoa/nsview_additions.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
 #import "chrome/browser/ui/cocoa/tracking_area.h"
 #import "chrome/browser/ui/panels/panel_window_controller_cocoa.h"
+#include "grit/theme_resources_standard.h"
 #import "third_party/GTM/AppKit/GTMNSBezierPath+RoundRect.h"
-#include "ui/base/theme_provider.h"
 #include "ui/gfx/mac/nsimage_cache.h"
+#include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 
-const int kRoundedCornerSize = 6;
+const int kRoundedCornerSize = 3;
 const int kCloseButtonLeftPadding = 8;
 
 // Used to implement TestingAPI
@@ -72,11 +74,66 @@ static NSEvent* MakeMouseEvent(NSEventType type, NSPoint point) {
                          bottomLeftCornerRadius:0.0
                         bottomRightCornerRadius:0.0];
   [path addClip];
+
   NSPoint phase = [[self window] themePatternPhase];
   [[NSGraphicsContext currentContext] setPatternPhase:phase];
-  [self drawBackgroundWithOpaque:YES];
 
-  ui::ThemeProvider* theme = [[self window] themeProvider];
+  ThemeService* theme =
+      static_cast<ThemeService*>([[self window] themeProvider]);
+
+  NSColor* backgroundColor = nil;
+  // When using the default theme, we fall back to the default system colors
+  // instead of trying to use the tab coloring, since using the tab coloring
+  // results in focused panel titlebars that are light and unfocused panel
+  // titlebars that are dark, which is the opposite of all other window
+  // titlebars on Mac.
+  if (theme && !theme->UsingDefaultTheme()) {
+      if ([[self window] isMainWindow]) {
+        backgroundColor = theme->GetNSImageColorNamed(IDR_THEME_TOOLBAR, true);
+      } else {
+        // Based on -[TabView drawRect:], we need to make sure the theme has an
+        // IDR_THEME_TAB_BACKGROUND or IDR_THEME_FRAME resource; otherwise,
+        // we'll potentially end up with a bizarre looking blue background for
+        // inactive tabs, which looks really out of place on a Mac.
+        BOOL hasBackgroundImage =
+            (theme->HasCustomImage(IDR_THEME_TAB_BACKGROUND) ||
+             theme->HasCustomImage(IDR_THEME_FRAME));
+        if (hasBackgroundImage) {
+          backgroundColor =
+              theme->GetNSImageColorNamed(IDR_THEME_TAB_BACKGROUND, true);
+        }
+      }
+  }
+
+  if (backgroundColor) {
+    [backgroundColor set];
+    NSRectFillUsingOperation([self bounds], NSCompositeSourceOver);
+  } else {
+    // Temporarily reset the pattern phase to (0, 0). We want to anchor the
+    // titlebar gradient to match the default system look.
+    gfx::ScopedNSGraphicsContextSaveGState scopedGState;
+    [[NSGraphicsContext currentContext] setPatternPhase:NSMakePoint(0, 0)];
+    [[[self window] backgroundColor] set];
+    NSRectFillUsingOperation([self bounds], NSCompositeSourceOver);
+  }
+
+
+  // Draw the divider stroke.
+  NSColor* strokeColor = nil;
+  if (theme) {
+    strokeColor = [[self window] isMainWindow]
+        ? theme->GetNSColor(ThemeService::COLOR_TOOLBAR_STROKE, true)
+        : theme->GetNSColor(ThemeService::COLOR_TOOLBAR_STROKE_INACTIVE, true);
+  } else {
+    strokeColor = [NSColor blackColor];
+  }
+  NSRect borderRect, contentRect;
+  NSDivideRect([self bounds], &borderRect, &contentRect, [self cr_lineWidth],
+               NSMinYEdge);
+  [strokeColor set];
+  NSRectFillUsingOperation(borderRect, NSCompositeSourceOver);
+
+  // Update the panel title text color as appropriate.
   NSColor* titleColor = nil;
   if (theme)
     titleColor = [[self window] isMainWindow]
