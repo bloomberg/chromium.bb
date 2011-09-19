@@ -133,7 +133,7 @@ void ExamplesMain::Init() {
   AddExample(&widget_example);
 
   MenuExample menu_example(this);
-  AddExample(&widget_example);
+  AddExample(&menu_example);
 
   window->Show();
 }
