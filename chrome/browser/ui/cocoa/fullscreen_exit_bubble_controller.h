@@ -17,7 +17,7 @@ class Browser;
 // how to escape fullscreen mode. The bubble only appears when a tab requests
 // fullscreen mode via webkitRequestFullScreen().
 @interface FullscreenExitBubbleController :
-    NSViewController<NSTextViewDelegate> {
+    NSViewController<NSTextViewDelegate, NSAnimationDelegate> {
  @private
   BrowserWindowController* owner_;  // weak
   Browser* browser_; // weak
