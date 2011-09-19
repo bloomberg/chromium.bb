@@ -74,17 +74,18 @@ class HistoryService::BackendDelegate : public HistoryBackend::Delegate {
         message_loop_(MessageLoop::current()) {
   }
 
-  virtual void NotifyProfileError(sql::InitStatus init_status) OVERRIDE {
+  virtual void NotifyProfileError(int backend_id,
+                                  sql::InitStatus init_status) OVERRIDE {
     // Send to the history service on the main thread.
     message_loop_->PostTask(FROM_HERE, NewRunnableMethod(history_service_.get(),
-        &HistoryService::NotifyProfileError, init_status));
+        &HistoryService::NotifyProfileError, backend_id, init_status));
   }
 
-  virtual void SetInMemoryBackend(
+  virtual void SetInMemoryBackend(int backend_id,
       history::InMemoryHistoryBackend* backend) OVERRIDE {
     // Send the backend to the history service on the main thread.
     message_loop_->PostTask(FROM_HERE, NewRunnableMethod(history_service_.get(),
-        &HistoryService::SetInMemoryBackend, backend));
+        &HistoryService::SetInMemoryBackend, backend_id, backend));
   }
 
   virtual void BroadcastNotifications(
@@ -102,14 +103,14 @@ class HistoryService::BackendDelegate : public HistoryBackend::Delegate {
         &HistoryService::BroadcastNotifications, type, details));
   }
 
-  virtual void DBLoaded() OVERRIDE {
+  virtual void DBLoaded(int backend_id) OVERRIDE {
     message_loop_->PostTask(FROM_HERE, NewRunnableMethod(history_service_.get(),
-        &HistoryService::OnDBLoaded));
+        &HistoryService::OnDBLoaded, backend_id));
   }
 
-  virtual void StartTopSitesMigration() OVERRIDE {
+  virtual void StartTopSitesMigration(int backend_id) OVERRIDE {
     message_loop_->PostTask(FROM_HERE, NewRunnableMethod(history_service_.get(),
-        &HistoryService::StartTopSitesMigration));
+        &HistoryService::StartTopSitesMigration, backend_id));
   }
 
  private:
@@ -124,6 +125,7 @@ HistoryService::HistoryService()
     : thread_(new base::Thread(kHistoryThreadName)),
       profile_(NULL),
       backend_loaded_(false),
+      current_backend_id_(-1),
       bookmark_service_(NULL),
       no_db_(false),
       needs_top_sites_migration_(false) {
@@ -700,8 +702,12 @@ bool HistoryService::CanAddURL(const GURL& url) {
   return true;
 }
 
-void HistoryService::SetInMemoryBackend(
+void HistoryService::SetInMemoryBackend(int backend_id,
     history::InMemoryHistoryBackend* mem_backend) {
+  if (!history_backend_ || current_backend_id_ != backend_id) {
+    VLOG(1) << "Message from obsolete backend";
+    return;
+  }
   DCHECK(!in_memory_backend_.get()) << "Setting mem DB twice";
   in_memory_backend_.reset(mem_backend);
 
@@ -709,7 +715,12 @@ void HistoryService::SetInMemoryBackend(
   in_memory_backend_->AttachToHistoryService(profile_);
 }
 
-void HistoryService::NotifyProfileError(sql::InitStatus init_status) {
+void HistoryService::NotifyProfileError(int backend_id,
+                                        sql::InitStatus init_status) {
+  if (!history_backend_ || current_backend_id_ != backend_id) {
+    VLOG(1) << "Message from obsolete backend";
+    return;
+  }
   ShowProfileErrorDialog(
       (init_status == sql::INIT_FAILURE) ?
       IDS_COULDNT_OPEN_PROFILE_ERROR : IDS_PROFILE_TOO_NEW_ERROR);
@@ -763,8 +774,10 @@ void HistoryService::LoadBackendIfNecessary() {
   if (!thread_ || history_backend_)
     return;  // Failed to init, or already started loading.
 
+  ++current_backend_id_;
   scoped_refptr<HistoryBackend> backend(
       new HistoryBackend(history_dir_,
+                         current_backend_id_,
                          new BackendDelegate(this),
                          bookmark_service_));
   history_backend_.swap(backend);
@@ -778,7 +791,11 @@ void HistoryService::LoadBackendIfNecessary() {
   ScheduleAndForget(PRIORITY_UI, &HistoryBackend::Init, languages, no_db_);
 }
 
-void HistoryService::OnDBLoaded() {
+void HistoryService::OnDBLoaded(int backend_id) {
+  if (!history_backend_ || current_backend_id_ != backend_id) {
+    VLOG(1) << "Message from obsolete backend";
+    return;
+  }
   backend_loaded_ = true;
   NotificationService::current()->Notify(chrome::NOTIFICATION_HISTORY_LOADED,
                                          Source<Profile>(profile_),
@@ -791,7 +808,11 @@ void HistoryService::OnDBLoaded() {
   }
 }
 
-void HistoryService::StartTopSitesMigration() {
+void HistoryService::StartTopSitesMigration(int backend_id) {
+  if (!history_backend_ || current_backend_id_ != backend_id) {
+    VLOG(1) << "Message from obsolete backend";
+    return;
+  }
   needs_top_sites_migration_ = true;
   if (thread_ && profile_) {
     // We don't want to force creation of TopSites.

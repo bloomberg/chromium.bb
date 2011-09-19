@@ -566,7 +566,7 @@ class HistoryService : public CancelableRequestProvider,
 
   // Starts the TopSites migration in the HistoryThread. Called by the
   // BackendDelegate.
-  void StartTopSitesMigration();
+  void StartTopSitesMigration(int backend_id);
 
   // Called by TopSites after the thumbnails were read and it is safe
   // to delete the thumbnails DB.
@@ -634,7 +634,7 @@ class HistoryService : public CancelableRequestProvider,
 
   // Notification from the backend that it has finished loading. Sends
   // notification (NOTIFY_HISTORY_LOADED) and sets backend_loaded_ to true.
-  void OnDBLoaded();
+  void OnDBLoaded(int backend_id);
 
   // Favicon -------------------------------------------------------------------
 
@@ -679,10 +679,11 @@ class HistoryService : public CancelableRequestProvider,
 
   // Sets the in-memory URL database. This is called by the backend once the
   // database is loaded to make it available.
-  void SetInMemoryBackend(history::InMemoryHistoryBackend* mem_backend);
+  void SetInMemoryBackend(int backend_id,
+                          history::InMemoryHistoryBackend* mem_backend);
 
   // Called by our BackendDelegate when there is a problem reading the database.
-  void NotifyProfileError(sql::InitStatus init_status);
+  void NotifyProfileError(int backend_id, sql::InitStatus init_status);
 
   // Call to schedule a given task for running on the history thread with the
   // specified priority. The task will have ownership taken.
@@ -861,6 +862,10 @@ class HistoryService : public CancelableRequestProvider,
   // Has the backend finished loading? The backend is loaded once Init has
   // completed.
   bool backend_loaded_;
+
+  // The id of the current backend. This is only valid when history_backend_
+  // is not NULL.
+  int current_backend_id_;
 
   // Cached values from Init(), used whenever we need to reload the backend.
   FilePath history_dir_;

@@ -199,9 +199,11 @@ class HistoryBackend::URLQuerier {
 // HistoryBackend --------------------------------------------------------------
 
 HistoryBackend::HistoryBackend(const FilePath& history_dir,
+                               int id,
                                Delegate* delegate,
                                BookmarkService* bookmark_service)
     : delegate_(delegate),
+      id_(id),
       history_dir_(history_dir),
       ALLOW_THIS_IN_INITIALIZER_LIST(expirer_(this, bookmark_service)),
       recent_redirects_(kMaxRedirectCount),
@@ -244,7 +246,7 @@ HistoryBackend::~HistoryBackend() {
 void HistoryBackend::Init(const std::string& languages, bool force_fail) {
   if (!force_fail)
     InitImpl(languages);
-  delegate_->DBLoaded();
+  delegate_->DBLoaded(id_);
 }
 
 void HistoryBackend::SetOnBackendDestroyTask(MessageLoop* message_loop,
@@ -537,7 +539,7 @@ void HistoryBackend::InitImpl(const std::string& languages) {
     case sql::INIT_FAILURE:
       // A NULL db_ will cause all calls on this object to notice this error
       // and to not continue.
-      delegate_->NotifyProfileError(status);
+      delegate_->NotifyProfileError(id_, status);
       db_.reset();
       return;
     default:
@@ -548,7 +550,8 @@ void HistoryBackend::InitImpl(const std::string& languages) {
   // main thread.
   InMemoryHistoryBackend* mem_backend = new InMemoryHistoryBackend;
   if (mem_backend->Init(history_name, history_dir_, db_.get(), languages))
-    delegate_->SetInMemoryBackend(mem_backend);  // Takes ownership of pointer.
+    delegate_->SetInMemoryBackend(id_, mem_backend);  // Takes ownership of
+                                                      // pointer.
   else
     delete mem_backend;  // Error case, run without the in-memory DB.
   db_->BeginExclusiveMode();  // Must be after the mem backend read the data.
@@ -598,7 +601,7 @@ void HistoryBackend::InitImpl(const std::string& languages) {
 
   if (db_->GetNeedsThumbnailMigration()) {
     VLOG(1) << "Starting TopSites migration";
-    delegate_->StartTopSitesMigration();
+    delegate_->StartTopSitesMigration(id_);
   }
 
   // Archived database.

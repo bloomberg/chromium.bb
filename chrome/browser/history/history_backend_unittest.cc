@@ -55,12 +55,14 @@ class HistoryBackendTestDelegate : public HistoryBackend::Delegate {
  public:
   explicit HistoryBackendTestDelegate(HistoryBackendTest* test) : test_(test) {}
 
-  virtual void NotifyProfileError(sql::InitStatus init_status) OVERRIDE {}
-  virtual void SetInMemoryBackend(InMemoryHistoryBackend* backend) OVERRIDE;
+  virtual void NotifyProfileError(int backend_id,
+                                  sql::InitStatus init_status) OVERRIDE {}
+  virtual void SetInMemoryBackend(int backend_id,
+                                  InMemoryHistoryBackend* backend) OVERRIDE;
   virtual void BroadcastNotifications(int type,
                                       HistoryDetails* details) OVERRIDE;
-  virtual void DBLoaded() OVERRIDE;
-  virtual void StartTopSitesMigration() OVERRIDE;
+  virtual void DBLoaded(int backend_id) OVERRIDE;
+  virtual void StartTopSitesMigration(int backend_id) OVERRIDE;
 
  private:
   // Not owned by us.
@@ -155,6 +157,7 @@ class HistoryBackendTest : public testing::Test {
                                            &test_dir_))
       return;
     backend_ = new HistoryBackend(test_dir_,
+                                  0,
                                   new HistoryBackendTestDelegate(this),
                                   &bookmark_model_);
     backend_->Init(std::string(), false);
@@ -167,7 +170,7 @@ class HistoryBackendTest : public testing::Test {
     file_util::Delete(test_dir_, true);
   }
 
-  void SetInMemoryBackend(InMemoryHistoryBackend* backend) {
+  void SetInMemoryBackend(int backend_id, InMemoryHistoryBackend* backend) {
     mem_backend_.reset(backend);
   }
 
@@ -185,9 +188,9 @@ class HistoryBackendTest : public testing::Test {
   FilePath test_dir_;
 };
 
-void HistoryBackendTestDelegate::SetInMemoryBackend(
+void HistoryBackendTestDelegate::SetInMemoryBackend(int backend_id,
     InMemoryHistoryBackend* backend) {
-  test_->SetInMemoryBackend(backend);
+  test_->SetInMemoryBackend(backend_id, backend);
 }
 
 void HistoryBackendTestDelegate::BroadcastNotifications(
@@ -196,11 +199,11 @@ void HistoryBackendTestDelegate::BroadcastNotifications(
   test_->BroadcastNotifications(type, details);
 }
 
-void HistoryBackendTestDelegate::DBLoaded() {
+void HistoryBackendTestDelegate::DBLoaded(int backend_id) {
   test_->loaded_ = true;
 }
 
-void HistoryBackendTestDelegate::StartTopSitesMigration() {
+void HistoryBackendTestDelegate::StartTopSitesMigration(int backend_id) {
   test_->backend_->MigrateThumbnailsDatabase();
 }
 
@@ -882,6 +885,7 @@ TEST_F(HistoryBackendTest, MigrationVisitSource) {
   ASSERT_TRUE(file_util::CopyFile(old_history_path, new_history_file));
 
   backend_ = new HistoryBackend(new_history_path,
+                                0,
                                 new HistoryBackendTestDelegate(this),
                                 &bookmark_model_);
   backend_->Init(std::string(), false);
