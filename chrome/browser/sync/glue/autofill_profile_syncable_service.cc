@@ -397,7 +397,7 @@ void AutofillProfileSyncableService::ActOnChange(
     LOG(WARNING) << "[AUTOFILL SYNC]"
                  << " Failed processing change:"
                  << " Error:" << error.message()
-                 << " Guid:" << change.profile()->guid();
+                 << " Guid:" << change.key();
   }
 }
 

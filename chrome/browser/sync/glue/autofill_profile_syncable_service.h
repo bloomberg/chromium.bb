@@ -95,6 +95,8 @@ class AutofillProfileSyncableService
   FRIEND_TEST_ALL_PREFIXES(AutofillProfileSyncableServiceTest, GetAllSyncData);
   FRIEND_TEST_ALL_PREFIXES(AutofillProfileSyncableServiceTest,
                            ProcessSyncChanges);
+  FRIEND_TEST_ALL_PREFIXES(AutofillProfileSyncableServiceTest,
+                           ActOnChange);
 
   // The map of the guid to profiles owned by the |profiles_| vector.
   typedef std::map<std::string, AutofillProfile*> GUIDToProfileMap;

@@ -9,6 +9,7 @@
 #include "chrome/browser/sync/internal_api/syncapi_mock.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 #include "chrome/browser/sync/syncable/syncable_mock.h"
+#include "chrome/browser/webdata/autofill_change.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -240,6 +241,24 @@ TEST_F(AutofillProfileSyncableServiceTest, ProcessSyncChanges) {
       FROM_HERE, change_list);
 
   EXPECT_FALSE(error.IsSet());
+}
+
+TEST_F(AutofillProfileSyncableServiceTest, ActOnChange) {
+  std::string guid1 = "EDC609ED-7EEE-4F27-B00C-423242A9C44B";
+  std::string guid2 = "EDC609ED-7EEE-4F27-B00C-423242A9C44C";
+
+  AutofillProfile profile(guid1);
+  profile.SetInfo(NAME_FIRST, UTF8ToUTF16("Jane"));
+  AutofillProfileChange change1(AutofillProfileChange::ADD, guid1, &profile);
+  AutofillProfileChange change2(AutofillProfileChange::REMOVE, guid2, NULL);
+  ON_CALL(sync_processor_, ProcessSyncChanges(_, _))
+      .WillByDefault(Return(SyncError(FROM_HERE, std::string("an error"),
+                                      syncable::AUTOFILL_PROFILE)));
+
+  MockAutofillProfileSyncableService::AutoSetSyncProcessor temp(
+      &autofill_syncable_service_, &sync_processor_);
+  autofill_syncable_service_.ActOnChange(change1);
+  autofill_syncable_service_.ActOnChange(change2);
 }
 
 }  // namespace browser_sync
