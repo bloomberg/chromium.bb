@@ -1,7 +1,7 @@
 /*
- * Copyright 2009 The Native Client Authors.  All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -27,9 +27,9 @@
 #define MMAP_SIZE     4096
 
 #ifdef DEBUG_SHM_AND_MMAP
-# define dprintf(arglist) do { printf arglist; } while (0)
+# define DPRINTF(arglist) do { printf arglist; } while (0)
 #else
-# define dprintf(arglist) do { ; } while (0)
+# define DPRINTF(arglist) do { ; } while (0)
 #endif
 
 static void FillWithPattern(void   *memory,
@@ -77,7 +77,7 @@ int NaClPlatformQualifySysVShmId(int shm_id) {
   struct shmid_ds shm_ds;
 
   shm_addr = shmat(shm_id, (const void *) NULL, 0);
-  dprintf(("shmat -> %p\n", shm_addr));
+  DPRINTF(("shmat -> %p\n", shm_addr));
   if (NULL == shm_addr) {
     perror("platform_qualify: sysv_shm_and_mmap: shmat");
     return 2;
@@ -97,7 +97,7 @@ int NaClPlatformQualifySysVShmId(int shm_id) {
   }
 
   mmap_addr = (void *) ((uintptr_t) shm_addr + MMAP_OFFSET);
-  dprintf(("mmap addr %p\n", mmap_addr));
+  DPRINTF(("mmap addr %p\n", mmap_addr));
   if (MAP_FAILED == mmap(mmap_addr,
                          MMAP_SIZE,
                          PROT_READ | PROT_WRITE,
@@ -107,7 +107,7 @@ int NaClPlatformQualifySysVShmId(int shm_id) {
     perror("platform_qualify: sysv_shm_and_mmap: mmap");
     return 5;
   }
-  dprintf(("mmap succeeded\n"));
+  DPRINTF(("mmap succeeded\n"));
   /*
    * Splitting an shmat mapping will increase the shm_nattch count by 1.
    */
@@ -126,7 +126,7 @@ int NaClPlatformQualifySysVShmId(int shm_id) {
   FillWithPattern(mmap_addr, MMAP_SIZE, 1);
 
   shm_addr2 = shmat(shm_id, (const void *) NULL, 0);
-  dprintf(("shmat -> %p\n", shm_addr2));
+  DPRINTF(("shmat -> %p\n", shm_addr2));
   if (NULL == shm_addr2) {
     perror("platform_qualify: sysv_shm_and_mmap: shmat 2nd time\n");
     return 8;
@@ -222,7 +222,7 @@ int NaClPlatformQualifySysVShmAndMmapHasProblems(void) {
   shm_id = shmget(IPC_PRIVATE,
                   SYSVSHM_SIZE,
                   IPC_CREAT | IPC_EXCL | S_IRUSR | S_IWUSR);
-  dprintf(("shmget -> %d\n", shm_id));
+  DPRINTF(("shmget -> %d\n", shm_id));
 
   if (-1 == shm_id) {
     perror("platform_qualify: sysv_shm_and_mmap: shmget");
@@ -243,4 +243,3 @@ int NaClPlatformQualifySysVShmAndMmapHasProblems(void) {
 
   return err_code;
 }
-
