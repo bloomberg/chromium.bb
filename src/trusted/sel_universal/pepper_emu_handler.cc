@@ -130,7 +130,7 @@ static UserEvent* GetNextEvent(bool poll) {
         CHECK(!IsInvalidEvent(event));
         if (!IsInputEvent(event)) {
           Global.next_sync_event = event;
-          return false;
+          return NULL;
         } else {
           Global.events_ready_to_go.push(event);
         }

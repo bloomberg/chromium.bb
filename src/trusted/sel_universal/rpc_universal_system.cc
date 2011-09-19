@@ -59,10 +59,6 @@ class AddressMap {
 
 AddressMap GlobalAddressMap;
 
-uintptr_t Align(uintptr_t start, uintptr_t alignment) {
-  return (start + alignment - 1) & ~(alignment - 1);
-}
-
 
 uintptr_t MapShmem(nacl::DescWrapper* desc) {
   void* addr;

@@ -1,7 +1,7 @@
 /*
- * Copyright 2008 The Native Client Authors.  All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -16,7 +16,7 @@
 uint16_t NaClGetCs(void) {
   uint16_t seg1;
 
-  asm("mov %%cs, %0;" : "=r" (seg1) : );
+  __asm__("mov %%cs, %0;" : "=r" (seg1) : );
   return seg1;
 }
 
@@ -26,59 +26,59 @@ uint16_t NaClGetCs(void) {
 uint16_t NaClGetDs(void) {
   uint16_t seg1;
 
-  asm("mov %%ds, %0" : "=r" (seg1) : );
+  __asm__("mov %%ds, %0" : "=r" (seg1) : );
   return seg1;
 }
 
 
 void NaClSetDs(uint16_t   seg1) {
-  asm("movw %0, %%ds;" : : "r" (seg1));
+  __asm__("movw %0, %%ds;" : : "r" (seg1));
 }
 
 
 uint16_t NaClGetEs(void) {
   uint16_t seg1;
 
-  asm("mov %%es, %0" : "=r" (seg1) : );
+  __asm__("mov %%es, %0" : "=r" (seg1) : );
   return seg1;
 }
 
 
 void NaClSetEs(uint16_t   seg1) {
-  asm("movw %0, %%es;" : : "r" (seg1));
+  __asm__("movw %0, %%es;" : : "r" (seg1));
 }
 
 
 uint16_t NaClGetFs(void) {
   uint16_t seg1;
 
-  asm("mov %%fs, %0" : "=r" (seg1) : );
+  __asm__("mov %%fs, %0" : "=r" (seg1) : );
   return seg1;
 }
 
 
 void NaClSetFs(uint16_t seg1) {
-  asm("movw %0, %%fs;" : : "r" (seg1));
+  __asm__("movw %0, %%fs;" : : "r" (seg1));
 }
 
 
 uint16_t NaClGetGs(void) {
   uint16_t seg1;
 
-  asm("mov %%gs, %0" : "=r" (seg1) : );
+  __asm__("mov %%gs, %0" : "=r" (seg1) : );
   return seg1;
 }
 
 
 void NaClSetGs(uint16_t seg1) {
-  asm("movw %0, %%gs;" : : "r" (seg1));
+  __asm__("movw %0, %%gs;" : : "r" (seg1));
 }
 
 
 uint16_t NaClGetSs(void) {
   uint16_t seg1;
 
-  asm("mov %%ss, %0" : "=r" (seg1) : );
+  __asm__("mov %%ss, %0" : "=r" (seg1) : );
   return seg1;
 }
 
@@ -87,7 +87,7 @@ uint16_t NaClGetSs(void) {
 nacl_reg_t NaClGetStackPtr(void) {
   nacl_reg_t esp;
 
-  asm("movl %%esp, %0" : "=r" (esp) : );
+  __asm__("movl %%esp, %0" : "=r" (esp) : );
   return esp;
 }
 #elif NACL_BUILD_SUBARCH == 64
@@ -95,7 +95,7 @@ nacl_reg_t NaClGetStackPtr(void) {
 nacl_reg_t NaClGetStackPtr(void) {
   nacl_reg_t rsp;
 
-  asm("mov %%rsp, %0" : "=r" (rsp) : );
+  __asm__("mov %%rsp, %0" : "=r" (rsp) : );
   return rsp;
 }
 
@@ -107,7 +107,7 @@ nacl_reg_t NaClGetStackPtr(void) {
 uint32_t NaClGetEbx(void) {
   uint32_t  ebx;
 
-  asm("movl %%ebx, %0" : "=r" (ebx) : );
+  __asm__("movl %%ebx, %0" : "=r" (ebx) : );
   return ebx;
 }
 

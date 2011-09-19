@@ -1,8 +1,9 @@
 /*
- * Copyright 2009 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
+
 /*
  * Linux thread priority support.
  */
@@ -16,8 +17,7 @@
 #include "native_client/src/trusted/service_runtime/include/sys/nacl_nice.h"
 
 static void handle_warning_en(const int en, const char *s) {
-  const int kMaxErrorString = 256;
-  char errs[kMaxErrorString];
+  char errs[256];
   NaClLog(LOG_WARNING, "%s: %s\n", s, strerror_r(en, errs, sizeof(errs)));
 }
 

@@ -1693,7 +1693,7 @@ static void __attribute__ ((noinline)) _ovly_debug_event (void) {
    * It's not enough to declare a function noinline.
    * GCC will still look inside the function to see if it's worth calling.
    */
-  asm volatile ("");
+  __asm__ volatile ("");
 }
 
 #endif
