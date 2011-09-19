@@ -1519,20 +1519,28 @@ bool WillHandleBrowserAboutURL(GURL* url,
     return false;
 
   std::string host(url->host());
+  std::string path;
   // Replace about with chrome-urls.
   if (host == chrome::kChromeUIAboutHost)
     host = chrome::kChromeUIChromeURLsHost;
   // Replace cache with view-http-cache.
-  if (host == chrome::kChromeUICacheHost)
+  if (host == chrome::kChromeUICacheHost) {
     host = chrome::kChromeUINetworkViewCacheHost;
   // Replace gpu with gpu-internals.
-  else if (host == chrome::kChromeUIGpuHost)
+  } else if (host == chrome::kChromeUIGpuHost) {
     host = chrome::kChromeUIGpuInternalsHost;
   // Replace sync with sync-internals (for legacy reasons).
-  else if (host == chrome::kChromeUISyncHost)
+  } else if (host == chrome::kChromeUISyncHost) {
     host = chrome::kChromeUISyncInternalsHost;
+  // Redirect chrome://extensions to chrome://settings/extensions.
+  } else if (host == chrome::kChromeUIExtensionsHost) {
+    host = chrome::kChromeUISettingsHost;
+    path = chrome::kExtensionsSubPage;
+  }
   GURL::Replacements replacements;
   replacements.SetHostStr(host);
+  if (!path.empty())
+    replacements.SetPathStr(path);
   *url = url->ReplaceComponents(replacements);
 
   // Handle URLs to crash the browser or wreck the gpu process.

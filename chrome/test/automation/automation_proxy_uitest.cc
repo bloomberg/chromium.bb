@@ -513,7 +513,7 @@ TEST_F(AutomationProxyTest, AcceleratorExtensions) {
 
   ASSERT_TRUE(window->RunCommand(IDC_MANAGE_EXTENSIONS));
 
-  EXPECT_EQ("chrome://settings/extensionSettings", GetActiveTabURL().spec());
+  EXPECT_EQ("chrome://settings/extensions", GetActiveTabURL().spec());
 }
 
 TEST_F(AutomationProxyTest, AcceleratorHistory) {

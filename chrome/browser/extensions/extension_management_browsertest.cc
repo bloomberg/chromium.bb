@@ -145,20 +145,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, InstallRequiresConfirm) {
   UninstallExtension("ldnnhddmnhbkjipkidpdiheffobcpfmf");
 }
 
-// Tests that installing and uninstalling extensions don't crash with an
-// incognito window open.
-IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, Incognito) {
-  // Open an incognito window to the extensions management page.  We just
-  // want to make sure that we don't crash while playing with extensions when
-  // this guy is around.
-  ui_test_utils::OpenURLOffTheRecord(browser()->profile(),
-                                     GURL(chrome::kChromeUIExtensionsURL));
-
-  ASSERT_TRUE(InstallExtensionWithUIAutoConfirm(
-      test_data_dir_.AppendASCII("good.crx"), 1, browser()->profile()));
-  UninstallExtension("ldnnhddmnhbkjipkidpdiheffobcpfmf");
-}
-
 // Tests the process of updating an extension to one that requires higher
 // permissions.
 IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, UpdatePermissions) {

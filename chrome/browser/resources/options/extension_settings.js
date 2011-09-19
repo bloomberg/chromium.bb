@@ -17,7 +17,7 @@ cr.define('options', function() {
    */
   function ExtensionSettings() {
     OptionsPage.call(this,
-                     'extensionSettings',
+                     'extensions',
                      templateData.extensionSettingsTitle,
                      'extension-settings');
   }
