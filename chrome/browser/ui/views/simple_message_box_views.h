@@ -53,7 +53,7 @@ class SimpleMessageBoxViews : public views::DialogDelegate,
   virtual std::wstring GetDialogButtonLabel(
       MessageBoxFlags::DialogButton button) const OVERRIDE;
 
-  // Overridden from views::WindowDelegate:
+  // Overridden from views::WidgetDelegate:
   virtual bool ShouldShowWindowTitle() const OVERRIDE;
   virtual std::wstring GetWindowTitle() const OVERRIDE;
   virtual void DeleteDelegate() OVERRIDE;

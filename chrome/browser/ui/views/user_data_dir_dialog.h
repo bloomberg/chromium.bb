@@ -33,7 +33,7 @@ class UserDataDirDialog : public views::DialogDelegate,
 
   FilePath user_data_dir() const { return user_data_dir_; }
 
-  // views::DialogDelegate Methods:
+  // views::DialogDelegate methods:
   virtual std::wstring GetDialogButtonLabel(
       MessageBoxFlags::DialogButton button) const OVERRIDE;
   virtual std::wstring GetWindowTitle() const OVERRIDE;
@@ -41,16 +41,16 @@ class UserDataDirDialog : public views::DialogDelegate,
   virtual bool Accept() OVERRIDE;
   virtual bool Cancel() OVERRIDE;
 
-  // views::WindowDelegate Methods:
+  // views::WidgetDelegate methods:
   virtual bool IsModal() const OVERRIDE { return false; }
   virtual views::View* GetContentsView() OVERRIDE;
   virtual views::Widget* GetWidget() OVERRIDE;
   virtual const views::Widget* GetWidget() const OVERRIDE;
 
-  // MessageLoop::Dispatcher Method:
+  // MessageLoop::Dispatcher method:
   virtual bool Dispatch(const MSG& msg) OVERRIDE;
 
-  // SelectFileDialog::Listener Methods:
+  // SelectFileDialog::Listener methods:
   virtual void FileSelected(const FilePath& path,
                             int index,
                             void* params) OVERRIDE;

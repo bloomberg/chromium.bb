@@ -51,7 +51,7 @@ class ExtensionUninstallDialogView : public views::DialogDelegateView {
   }
 
  private:
-  // views::DialogDelegate:
+  // views::DialogDelegateView:
   virtual std::wstring GetDialogButtonLabel(
       MessageBoxFlags::DialogButton button) const OVERRIDE {
     switch (button) {
@@ -81,7 +81,7 @@ class ExtensionUninstallDialogView : public views::DialogDelegateView {
     return true;
   }
 
-  // views::WindowDelegate:
+  // views::WidgetDelegate:
   virtual bool IsModal() const OVERRIDE { return true; }
   virtual std::wstring GetWindowTitle() const OVERRIDE {
     return UTF16ToWide(

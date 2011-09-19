@@ -141,7 +141,7 @@ std::wstring JSModalDialogViews::GetDialogButtonLabel(
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// JSModalDialogViews, views::WindowDelegate implementation:
+// JSModalDialogViews, views::WidgetDelegate implementation:
 
 bool JSModalDialogViews::IsModal() const {
   return true;

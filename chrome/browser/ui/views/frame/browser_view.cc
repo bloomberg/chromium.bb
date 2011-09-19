@@ -1572,7 +1572,7 @@ void BrowserView::ExecuteCommand(int command_id) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// BrowserView, views::WindowDelegate implementation:
+// BrowserView, views::WidgetDelegate implementation:
 
 bool BrowserView::CanResize() const {
   return true;

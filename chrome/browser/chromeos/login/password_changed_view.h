@@ -48,7 +48,7 @@ class PasswordChangedView : public views::DialogDelegateView,
   virtual bool Accept();
   virtual int GetDialogButtons() const;
 
-  // views::WindowDelegate:
+  // views::WidgetDelegate:
   virtual View* GetInitiallyFocusedView();
   virtual bool IsModal() const;
   virtual views::View* GetContentsView();

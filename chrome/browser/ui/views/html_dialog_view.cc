@@ -10,8 +10,8 @@
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/views/window.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/native_web_keyboard_event.h"
 #include "content/common/content_notification_types.h"
+#include "content/common/native_web_keyboard_event.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_source.h"
 #include "ui/base/keycodes/keyboard_codes.h"
@@ -86,7 +86,7 @@ void HtmlDialogView::ViewHierarchyChanged(
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// HtmlDialogView, views::WindowDelegate implementation:
+// HtmlDialogView, views::WidgetDelegate implementation:
 
 bool HtmlDialogView::CanResize() const {
   return true;

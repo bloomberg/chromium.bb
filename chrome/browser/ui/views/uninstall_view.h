@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,20 +26,20 @@ class UninstallView : public views::ButtonListener,
   explicit UninstallView(int& user_selection);
   virtual ~UninstallView();
 
-  // Overridden from views::DialogDelegate:
+  // Overridden form views::ButtonListener.
+  virtual void ButtonPressed(views::Button* sender, const views::Event& event);
+
+  // Overridden from views::DialogDelegateView:
   virtual bool Accept();
   virtual bool Cancel();
   virtual std::wstring GetDialogButtonLabel(
       MessageBoxFlags::DialogButton button) const;
 
-  // Overridden form views::ButtonListener.
-  virtual void ButtonPressed(views::Button* sender, const views::Event& event);
-
-  // Overridden from views::WindowDelegate:
+  // Overridden from views::WidgetDelegate:
   virtual std::wstring GetWindowTitle() const;
   virtual views::View* GetContentsView();
 
-  // Overridden from ui::ComboboxModel.
+  // Overridden from ui::ComboboxModel:
   virtual int GetItemCount();
   virtual string16 GetItemAt(int index);
 

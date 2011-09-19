@@ -70,14 +70,14 @@ class ExtensionInstallDialogView : public views::DialogDelegateView,
   virtual ~ExtensionInstallDialogView();
 
  private:
-  // views::DialogDelegate:
+  // views::DialogDelegateView:
   virtual std::wstring GetDialogButtonLabel(
       MessageBoxFlags::DialogButton button) const OVERRIDE;
   virtual int GetDefaultDialogButton() const OVERRIDE;
   virtual bool Cancel() OVERRIDE;
   virtual bool Accept() OVERRIDE;
 
-  // views::WindowDelegate:
+  // views::WidgetDelegate:
   virtual bool IsModal() const OVERRIDE;
   virtual std::wstring GetWindowTitle() const OVERRIDE;
   virtual views::View* GetContentsView() OVERRIDE;

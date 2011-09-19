@@ -37,13 +37,13 @@ class TakePhotoDialog : public views::DialogDelegateView,
   explicit TakePhotoDialog(Delegate* delegate);
   virtual ~TakePhotoDialog();
 
-  // views::DialogDelegate overrides.
+  // views::DialogDelegateView overrides.
   virtual bool IsDialogButtonEnabled(
       MessageBoxFlags::DialogButton button) const;
   virtual bool Cancel();
   virtual bool Accept();
 
-  // views::WindowDelegate overrides.
+  // views::WidgetDelegate overrides.
   virtual bool IsModal() const;
   virtual views::View* GetContentsView();
 

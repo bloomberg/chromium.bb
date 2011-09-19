@@ -234,7 +234,7 @@ class HungRendererDialogView : public views::DialogDelegateView,
   void ShowForTabContents(TabContents* contents);
   void EndForTabContents(TabContents* contents);
 
-  // views::WindowDelegate overrides:
+  // views::DialogDelegateView overrides:
   virtual std::wstring GetWindowTitle() const OVERRIDE;
   virtual void WindowClosing() OVERRIDE;
   virtual int GetDialogButtons() const OVERRIDE;

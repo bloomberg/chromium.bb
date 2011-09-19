@@ -54,7 +54,7 @@ class AboutIPCDialog : public views::DialogDelegateView,
   // IPC::Logging::Consumer implementation.
   virtual void Log(const IPC::LogData& data);
 
-  // views::WindowDelegate (via view::DialogDelegate).
+  // views::WidgetDelegate (via views::DialogDelegateView).
   virtual bool CanResize() const;
 
   // views::ButtonListener.
