@@ -116,7 +116,7 @@ class InstantTest : public InProcessBrowserTest {
 
     // When the page loads, the initial searchBox values are set and only a
     // resize will have been sent.
-    ASSERT_EQ("true 0 0 0 1 d false d false 1 1",
+    ASSERT_EQ("true 0 0 0 true d false d false 1 1",
               GetSearchStateAsString(preview_, false));
   }
 
@@ -183,7 +183,7 @@ class InstantTest : public InProcessBrowserTest {
   // window.onsubmitcalls
   // window.oncancelcalls
   // window.onchangecalls
-  // window.onresizecalls
+  // 'true' if window.onresizecalls has been sent, otherwise false.
   // window.beforeLoadSearchBox.value
   // window.beforeLoadSearchBox.verbatim
   // window.chrome.searchBox.value
@@ -254,12 +254,12 @@ class InstantTest : public InProcessBrowserTest {
       return "fail";
     }
 
-    return StringPrintf("%s %d %d %d %d %s %s %s %s %d %d",
+    return StringPrintf("%s %d %d %d %s %s %s %s %s %d %d",
                         sv ? "true" : "false",
                         onsubmitcalls,
                         oncancelcalls,
                         onchangecalls,
-                        onresizecalls,
+                        onresizecalls ? "true" : "false",
                         before_load_value.c_str(),
                         before_load_verbatim ? "true" : "false",
                         value.c_str(),
@@ -317,8 +317,7 @@ class InstantTest : public InProcessBrowserTest {
 #if defined(OS_LINUX)
 IN_PROC_BROWSER_TEST_F(InstantTest, DISABLED_OnChangeEvent) {
 #else
-// http://crbug.com/85387
-IN_PROC_BROWSER_TEST_F(InstantTest, FLAKY_OnChangeEvent) {
+IN_PROC_BROWSER_TEST_F(InstantTest, OnChangeEvent) {
 #endif  // !OS_LINUX
   ASSERT_TRUE(test_server()->Start());
   EnableInstant();
@@ -342,7 +341,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, FLAKY_OnChangeEvent) {
             browser()->instant()->GetCurrentURL().spec());
 
   // Check that the value is reflected and onchange is called.
-  EXPECT_EQ("true 0 0 1 1 d false def false 3 3",
+  EXPECT_EQ("true 0 0 1 true d false def false 3 3",
             GetSearchStateAsString(preview_, true));
 }
 
@@ -734,8 +733,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, HideOn403) {
 #if defined(OS_LINUX)
 IN_PROC_BROWSER_TEST_F(InstantTest, DISABLED_OnSubmitEvent) {
 #else
-// http://crbug.com/85387
-IN_PROC_BROWSER_TEST_F(InstantTest, FLAKY_OnSubmitEvent) {
+IN_PROC_BROWSER_TEST_F(InstantTest, OnSubmitEvent) {
 #endif  // !OS_LINUX
   ASSERT_TRUE(test_server()->Start());
   EnableInstant();
@@ -759,11 +757,11 @@ IN_PROC_BROWSER_TEST_F(InstantTest, FLAKY_OnSubmitEvent) {
   ASSERT_EQ(2, contents->controller().entry_count());
 
   // Check that the value is reflected and onsubmit is called.
-  EXPECT_EQ("true 1 0 1 1 d false defghi true 3 3",
+  EXPECT_EQ("true 1 0 1 true d false defghi true 3 3",
             GetSearchStateAsString(preview_, true));
 
   // Make sure the searchbox values were reset.
-  EXPECT_EQ("true 1 0 1 1 d false  false 0 0",
+  EXPECT_EQ("true 1 0 1 true d false  false 0 0",
             GetSearchStateAsString(preview_, false));
 }
 
@@ -772,8 +770,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, FLAKY_OnSubmitEvent) {
 #if defined(OS_LINUX)
 IN_PROC_BROWSER_TEST_F(InstantTest, DISABLED_OnCancelEvent) {
 #else
-// http://crbug.com/85387
-IN_PROC_BROWSER_TEST_F(InstantTest, FLAKY_OnCancelEvent) {
+IN_PROC_BROWSER_TEST_F(InstantTest, OnCancelEvent) {
 #endif  // !OS_LINUX
   ASSERT_TRUE(test_server()->Start());
   EnableInstant();
@@ -794,11 +791,11 @@ IN_PROC_BROWSER_TEST_F(InstantTest, FLAKY_OnCancelEvent) {
   ASSERT_TRUE(contents);
 
   // Check that the value is reflected and oncancel is called.
-  EXPECT_EQ("true 0 1 1 1 d false def false 3 3",
+  EXPECT_EQ("true 0 1 1 true d false def false 3 3",
             GetSearchStateAsString(preview_, true));
 
   // Make sure the searchbox values were reset.
-  EXPECT_EQ("true 0 1 1 1 d false  false 0 0",
+  EXPECT_EQ("true 0 1 1 true d false  false 0 0",
             GetSearchStateAsString(preview_, false));
 }
 
