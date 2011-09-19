@@ -120,7 +120,7 @@ static void NCDecoderStateInternalError(NCDecoderState* tthis) {
 static void ErrorSegmentation(NCDecoderInst* dinst) {
   NCDecoderState* dstate = dinst->dstate;
   NaClErrorReporter* reporter = dstate->error_reporter;
-  reporter->printf(dstate->error_reporter, "ErrorSegmentation\n");
+  (*reporter->printf)(dstate->error_reporter, "ErrorSegmentation\n");
   /* When the decoder is used by the NaCl validator    */
   /* the validator provides an error handler that does */
   /* the necessary bookeeping to track these errors.   */
@@ -130,7 +130,7 @@ static void ErrorSegmentation(NCDecoderInst* dinst) {
 static void ErrorInternal(NCDecoderInst* dinst) {
   NCDecoderState* dstate = dinst->dstate;
   NaClErrorReporter* reporter = dstate->error_reporter;
-  reporter->printf(reporter, "ErrorInternal\n");
+  (*reporter->printf)(reporter, "ErrorInternal\n");
   /* When the decoder is used by the NaCl validator    */
   /* the validator provides an error handler that does */
   /* the necessary bookeeping to track these errors.   */
@@ -600,7 +600,7 @@ void NCDecoderStateSetErrorReporter(NCDecoderState* this,
     default:
       break;
   }
-  reporter->printf(
+  (*reporter->printf)(
       reporter,
       "*** FATAL: using unsupported error reporter! ***\n"
       "*** NCDecoderInstErrorReporter expected but found %s***\n",
@@ -630,7 +630,7 @@ Bool NCDecoderStateDecode(NCDecoderState* this) {
     ConsumeNextInstruction(dinst);
     if (this->memory.overflow_count) {
       NaClPcAddress newpc = dinst->vpc + dinst->inst.bytes.length;
-      this->error_reporter->printf(
+      (*this->error_reporter->printf)(
           this->error_reporter,
           "%"NACL_PRIxNaClPcAddress" > %"NACL_PRIxNaClPcAddress
           " (read overflow of %d bytes)\n",
@@ -723,7 +723,7 @@ Bool NCDecoderStatePairDecode(NCDecoderStatePair* tthis) {
      */
     if (new_dinst->vpc > new_vlimit) {
       NaClErrorReporter* reporter = new_dinst->dstate->error_reporter;
-      reporter->printf(
+      (*reporter->printf)(
           reporter,
           "%"NACL_PRIxNaClPcAddress" > %"NACL_PRIxNaClPcAddress"\n",
           new_dinst->vpc, new_vlimit);

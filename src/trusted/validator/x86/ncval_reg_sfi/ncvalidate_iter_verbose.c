@@ -44,7 +44,7 @@ void NaClValidatorStateSetErrorReporter(NaClValidatorState *state,
     default:
       break;
   }
-  reporter->printf(
+  (*reporter->printf)(
       reporter,
       "*** FATAL: using unsupported error reporter! ***\n",
       "*** NaClInstStateErrorReporter expected but found %s ***\n",

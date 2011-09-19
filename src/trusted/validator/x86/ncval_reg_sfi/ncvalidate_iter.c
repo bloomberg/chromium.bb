@@ -189,7 +189,7 @@ static void NaClRecordErrorReported(NaClValidatorState *state, int level) {
     --(state->quit_after_error_count);
     state->quit = NaClValidatorQuit(state);
     if (state->quit_after_error_count == 0) {
-      state->error_reporter->printf(
+      (*state->error_reporter->printf)(
           state->error_reporter,
           "%sError limit reached. Validator quitting!\n",
           NaClLogLevelLabel(LOG_INFO));

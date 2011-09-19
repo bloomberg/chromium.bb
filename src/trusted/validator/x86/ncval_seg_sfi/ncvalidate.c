@@ -45,14 +45,14 @@
 #define vprint(vstate, args) \
   do { \
     NaClErrorReporter* reporter = vstate->dstate.error_reporter; \
-    reporter->printf args; \
+    (*reporter->printf) args;                                    \
   } while (0)
 #else
 #define vprint(vstate, args) \
   do { \
     if (0) { \
       NaClErrorReporter* reporter = vstate->dstate.error_reporter; \
-      reporter->printf args; \
+      (*reporter->printf) args;                                    \
     } \
   } while (0)
 /* allows DCE but compiler can still do format string checks */
@@ -79,12 +79,12 @@ static void ValidatePrintError(const NaClPcAddress addr, const char *msg,
                                struct NCValidatorState *vstate) {
   if (vstate->num_diagnostics != 0) {
     NaClErrorReporter* reporter = vstate->dstate.error_reporter;
-    reporter->printf(
+    (*reporter->printf)(
         reporter,
         "VALIDATOR: %"NACL_PRIxNaClPcAddress": %s\n", addr, msg);
     --(vstate->num_diagnostics);
     if (vstate->num_diagnostics == 0) {
-      reporter->printf(
+      (*reporter->printf)(
           reporter,
           "VALIDATOR: Error limit reached, turning off diagnostics!\n");
     }
@@ -130,19 +130,19 @@ static void PrintOpcodeHisto(struct NCValidatorState *vstate) {
   int printed_in_this_row = 0;
   NaClErrorReporter* reporter = vstate->dstate.error_reporter;
   if (!VERBOSE) return;
-  reporter->printf(reporter, "\nOpcode Histogram;\n");
+  (*reporter->printf)(reporter, "\nOpcode Histogram;\n");
   for (i = 0; i < 256; ++i) {
     if (0 != vstate->opcodehisto[i]) {
-      reporter->printf(reporter, "%d\t0x%02x\t", vstate->opcodehisto[i], i);
+      (*reporter->printf)(reporter, "%d\t0x%02x\t", vstate->opcodehisto[i], i);
       ++printed_in_this_row;
       if (printed_in_this_row > 3) {
         printed_in_this_row = 0;
-        reporter->printf(reporter, "\n");
+        (*reporter->printf)(reporter, "\n");
       }
     }
   }
   if (0 != printed_in_this_row) {
-    reporter->printf(reporter, "\n");
+    (*reporter->printf)(reporter, "\n");
   }
 }
 #else
@@ -245,33 +245,34 @@ void NCStatsPrint(struct NCValidatorState *vstate) {
   if (!VERBOSE || (vstate == NULL)) return;
   reporter = vstate->dstate.error_reporter;
   PrintOpcodeHisto(vstate);
-  reporter->printf(reporter, "Analysis Summary:\n");
-  reporter->printf(reporter, "%d Checked instructions\n",
-                   vstate->stats.instructions);
-  reporter->printf(reporter, "%d checked jump targets\n",
-                   vstate->stats.checktarget);
-  reporter->printf(
+  (*reporter->printf)(reporter, "Analysis Summary:\n");
+  (*reporter->printf)(reporter, "%d Checked instructions\n",
+                      vstate->stats.instructions);
+  (*reporter->printf)(reporter, "%d checked jump targets\n",
+                      vstate->stats.checktarget);
+  (*reporter->printf)(
       reporter, "%d calls/jumps need dynamic checking (%0.2f%%)\n",
       vstate->stats.targetindirect,
       vstate->stats.instructions ?
       100.0 * vstate->stats.targetindirect/vstate->stats.instructions : 0);
-  reporter->printf(reporter, "\nProblems:\n");
-  reporter->printf(reporter, "%d illegal instructions\n",
+  (*reporter->printf)(reporter, "\nProblems:\n");
+  (*reporter->printf)(reporter, "%d illegal instructions\n",
                    vstate->stats.illegalinst);
-  reporter->printf(reporter, "%d bad jump targets\n", vstate->stats.badtarget);
-  reporter->printf(
+  (*reporter->printf)(reporter,
+                      "%d bad jump targets\n", vstate->stats.badtarget);
+  (*reporter->printf)(
       reporter, "%d illegal unprotected indirect jumps (including ret)\n",
       vstate->stats.unsafeindirect);
-  reporter->printf(reporter, "%d instruction alignment defects\n",
-                   vstate->stats.badalignment);
-  reporter->printf(reporter, "%d segmentation errors\n",
-                   vstate->stats.segfaults);
-  reporter->printf(reporter, "%d bad prefix\n",
-                   vstate->stats.badprefix);
-  reporter->printf(reporter, "%d bad instruction length\n",
-                   vstate->stats.badinstlength);
-  reporter->printf(reporter, "%d internal errors\n",
-                   vstate->stats.internalerrors);
+  (*reporter->printf)(reporter, "%d instruction alignment defects\n",
+                      vstate->stats.badalignment);
+  (*reporter->printf)(reporter, "%d segmentation errors\n",
+                      vstate->stats.segfaults);
+  (*reporter->printf)(reporter, "%d bad prefix\n",
+                      vstate->stats.badprefix);
+  (*reporter->printf)(reporter, "%d bad instruction length\n",
+                      vstate->stats.badinstlength);
+  (*reporter->printf)(reporter, "%d internal errors\n",
+                      vstate->stats.internalerrors);
 }
 
 /***********************************************************************/
