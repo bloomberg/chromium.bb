@@ -1095,7 +1095,12 @@ def CMDchange(args):
                 "---Repository Root: " + change_info.GetLocalRoot() + "\n"
                 "---Paths in this changelist (" + change_info.name + "):\n")
   separator2 = "\n\n---Paths modified but not in any changelist:\n\n"
-  text = (description + separator1 + '\n' +
+  
+  description_to_write = description
+  if sys.platform == 'win32':
+    description_to_write = description.replace('\n', '\r\n')
+  
+  text = (description_to_write + separator1 + '\n' +
           '\n'.join([f[0] + f[1] for f in change_info.GetFiles()]))
 
   if change_info.Exists():
@@ -1136,6 +1141,10 @@ def CMDchange(args):
 
   # Update the CL description if it has changed.
   new_description = split_result[0]
+  
+  if sys.platform == 'win32':
+    new_description = new_description.replace('\r\n', '\n')
+  
   cl_files_text = split_result[1]
   if new_description != description or override_description:
     change_info.description = new_description
