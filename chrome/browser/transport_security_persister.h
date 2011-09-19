@@ -34,53 +34,44 @@
 #define CHROME_BROWSER_TRANSPORT_SECURITY_PERSISTER_H_
 #pragma once
 
-#include <string>
-
 #include "base/file_path.h"
 #include "base/memory/ref_counted.h"
-#include "chrome/common/important_file_writer.h"
-#include "content/browser/browser_thread.h"
+#include "base/task.h"
 #include "net/base/transport_security_state.h"
 
 class TransportSecurityPersister
-    : public base::RefCountedThreadSafe<TransportSecurityPersister,
-                                        BrowserThread::DeleteOnUIThread>,
-      public net::TransportSecurityState::Delegate,
-      public ImportantFileWriter::DataSerializer {
+    : public base::RefCountedThreadSafe<TransportSecurityPersister>,
+      public net::TransportSecurityState::Delegate {
  public:
-  TransportSecurityPersister(net::TransportSecurityState* state,
-                             const FilePath& profile_path,
-                             bool readonly);
-
-  // Starts transport security data load on a background thread.
-  // Must be called on the UI thread right after construction.
-  void Init();
+  explicit TransportSecurityPersister(bool readonly);
+  void Initialize(net::TransportSecurityState* state,
+                  const FilePath& profile_path);
 
   // Called by the TransportSecurityState when it changes its state.
   virtual void StateIsDirty(net::TransportSecurityState*);
 
-  // ImportantFileWriter::DataSerializer:
-  virtual bool SerializeData(std::string* data);
-
  private:
-  friend struct BrowserThread::DeleteOnThread<BrowserThread::UI>;
-  friend class DeleteTask<TransportSecurityPersister>;
+  friend class base::RefCountedThreadSafe<TransportSecurityPersister>;
 
   virtual ~TransportSecurityPersister();
 
   void Load();
   void CompleteLoad(const std::string& state);
 
-  // IO thread only.
-  scoped_refptr<net::TransportSecurityState> transport_security_state_;
+  void Save();
+  void CompleteSave(const std::string& state);
 
-  // Helper for safely writing the data.
-  ImportantFileWriter writer_;
+  // Used on the IO thread to coalesce writes to disk.
+  ScopedRunnableMethodFactory<TransportSecurityPersister> save_coalescer_;
+
+  scoped_refptr<net::TransportSecurityState>
+      transport_security_state_;  // IO thread only.
+
+  // The path to the file in which we store the serialised state.
+  FilePath state_file_;
 
   // Whether or not we're in read-only mode.
-  const bool readonly_;
-
-  DISALLOW_COPY_AND_ASSIGN(TransportSecurityPersister);
+  bool readonly_;
 };
 
 #endif  // CHROME_BROWSER_TRANSPORT_SECURITY_PERSISTER_H_

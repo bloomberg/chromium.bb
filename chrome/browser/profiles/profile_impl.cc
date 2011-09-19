@@ -957,10 +957,9 @@ net::TransportSecurityState*
         CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
             switches::kHstsHosts));
     transport_security_persister_ =
-        new TransportSecurityPersister(transport_security_state_.get(),
-                                       path_,
-                                       false /* read-write */);
-    transport_security_persister_->Init();
+        new TransportSecurityPersister(false /* read-write */);
+    transport_security_persister_->Initialize(
+        transport_security_state_.get(), path_);
   }
 
   return transport_security_state_.get();
