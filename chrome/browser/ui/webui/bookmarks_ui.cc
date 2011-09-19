@@ -7,13 +7,7 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/singleton.h"
 #include "base/message_loop.h"
-#include "base/string_number_conversions.h"
-#include "base/stringprintf.h"
-#include "chrome/browser/bookmarks/bookmark_editor.h"
-#include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/browser_thread.h"
@@ -21,8 +15,6 @@
 #include "grit/theme_resources.h"
 #include "grit/theme_resources_standard.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "googleurl/src/gurl.h"
-
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -67,34 +59,4 @@ BookmarksUI::BookmarksUI(TabContents* contents) : ChromeWebUI(contents) {
 RefCountedMemory* BookmarksUI::GetFaviconResourceBytes() {
   return ResourceBundle::GetSharedInstance().
       LoadDataResourceBytes(IDR_BOOKMARKS_FAVICON);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-//
-// BookmarkEditor
-//
-////////////////////////////////////////////////////////////////////////////////
-
-// static
-void BookmarkEditor::ShowWebUI(Profile* profile,
-                               const EditDetails& details) {
-  GURL url(chrome::kChromeUIBookmarksURL);
-  if (details.type == EditDetails::EXISTING_NODE) {
-    DCHECK(details.existing_node);
-    url = url.Resolve(StringPrintf("/#e=%s",
-        base::Int64ToString(details.existing_node->id()).c_str()));
-  } else if (details.type == EditDetails::NEW_URL) {
-    DCHECK(details.parent_node);
-    url = url.Resolve(StringPrintf("/#a=%s",
-        base::Int64ToString(details.parent_node->id()).c_str()));
-  } else {
-    NOTREACHED() << "Unhandled bookmark edit details type";
-  }
-  // Get parent browser object.
-  Browser* browser = BrowserList::GetLastActiveWithProfile(profile);
-  DCHECK(browser);
-  browser::NavigateParams params(
-      browser->GetSingletonTabNavigateParams(url));
-  params.path_behavior = browser::NavigateParams::IGNORE_AND_NAVIGATE;
-  browser->ShowSingletonTabOverwritingNTP(params);
 }

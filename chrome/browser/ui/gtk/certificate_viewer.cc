@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/ui/gtk/certificate_viewer.h"
+
 #include <gtk/gtk.h>
 
 #include <algorithm>
@@ -12,7 +14,6 @@
 #include "base/string_number_conversions.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/certificate_viewer.h"
 #include "chrome/browser/ui/gtk/certificate_dialogs.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/common/net/x509_certificate_model.h"
@@ -21,7 +22,6 @@
 #include "ui/base/gtk/gtk_hig_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/gtk_util.h"
-#include "ui/gfx/native_widget_types.h"
 
 namespace {
 
@@ -708,14 +708,14 @@ void CertificateViewer::Show() {
 
 } // namespace
 
-void ShowNativeCertificateViewer(gfx::NativeWindow parent,
-                                 net::X509Certificate::OSCertHandle cert) {
+void ShowCertificateViewer(gfx::NativeWindow parent,
+                           net::X509Certificate::OSCertHandle cert) {
   net::X509Certificate::OSCertHandles cert_chain;
   x509_certificate_model::GetCertChainFromCert(cert, &cert_chain);
   (new CertificateViewer(parent, cert_chain))->Show();
 }
 
-void ShowNativeCertificateViewer(gfx::NativeWindow parent,
-                                 net::X509Certificate* cert) {
-  ShowNativeCertificateViewer(parent, cert->os_cert_handle());
+void ShowCertificateViewer(gfx::NativeWindow parent,
+                           net::X509Certificate* cert) {
+  ShowCertificateViewer(parent, cert->os_cert_handle());
 }

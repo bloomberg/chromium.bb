@@ -29,10 +29,6 @@ HtmlDialogUI::~HtmlDialogUI() {
   // and the HTML dialogs won't swap WebUIs anyway since they don't navigate.
 }
 
-void HtmlDialogUI::CloseDialog(const base::ListValue* args) {
-  OnDialogClosed(args);
-}
-
 // static
 PropertyAccessor<HtmlDialogUIDelegate*>& HtmlDialogUI::GetPropertyAccessor() {
   return g_html_dialog_ui_property_accessor.Get();
@@ -71,8 +67,8 @@ void HtmlDialogUI::OnDialogClosed(const ListValue* args) {
       tab_contents()->property_bag());
   if (delegate) {
     std::string json_retval;
-    if (args && !args->empty() && !args->GetString(0, &json_retval))
-      NOTREACHED() << "Could not read JSON argument";
+    if (!args->GetString(0, &json_retval))
+      NOTREACHED() << "Could not read JSON arguments";
 
     (*delegate)->OnDialogClosed(json_retval);
   }

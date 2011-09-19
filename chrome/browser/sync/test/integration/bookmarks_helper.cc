@@ -406,14 +406,14 @@ const BookmarkNode* SetURL(int profile,
     bookmark_utils::ApplyEditsWithNoFolderChange(
         GetVerifierBookmarkModel(),
         v_node->parent(),
-        BookmarkEditor::EditDetails::EditNode(v_node),
+        BookmarkEditor::EditDetails(v_node),
         v_node->GetTitle(),
         new_url);
   }
   return bookmark_utils::ApplyEditsWithNoFolderChange(
       GetBookmarkModel(profile),
       node->parent(),
-      BookmarkEditor::EditDetails::EditNode(node),
+      BookmarkEditor::EditDetails(node),
       node->GetTitle(),
       new_url);
 }

@@ -215,7 +215,7 @@ class TabContentsObserverBridge : public TabContentsObserver {
 
 namespace browser {
 
-void ShowNativeHungRendererDialog(TabContents* contents) {
+void ShowHungRendererDialog(TabContents* contents) {
   if (!logging::DialogsAreSuppressed()) {
     if (!g_instance)
       g_instance = [[HungRendererController alloc]
@@ -224,7 +224,7 @@ void ShowNativeHungRendererDialog(TabContents* contents) {
   }
 }
 
-void HideNativeHungRendererDialog(TabContents* contents) {
+void HideHungRendererDialog(TabContents* contents) {
   if (!logging::DialogsAreSuppressed() && g_instance)
     [g_instance endForTabContents:contents];
 }

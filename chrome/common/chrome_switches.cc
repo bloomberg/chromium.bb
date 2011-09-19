@@ -999,10 +999,6 @@ const char kTryChromeAgain[]                = "try-chrome-again";
 // Runs un-installation steps that were done by chrome first-run.
 const char kUninstall[]                     = "uninstall";
 
-// Use WebUI versions of dialogs when available (rather than platform native
-// implementations).
-const char kUseMoreWebUI[]                  = "use-more-webui";
-
 // Use a pure Views implementation when available (rather rather than platform
 // native implementation such as GTK).
 const char kUsePureViews[]                  = "use-pure-views";
