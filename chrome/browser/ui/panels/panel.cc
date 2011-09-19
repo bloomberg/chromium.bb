@@ -381,7 +381,7 @@ int Panel::GetExtraRenderViewHeight() const {
 }
 
 void Panel::TabContentsFocused(TabContents* tab_contents) {
-  NOTIMPLEMENTED();
+  native_panel_->PanelTabContentsFocused(tab_contents);
 }
 
 void Panel::ShowPageInfo(Profile* profile,

@@ -12,6 +12,7 @@
 class FindBar;
 class NativePanelTesting;
 class PanelMouseWatcher;
+class TabContents;
 
 namespace gfx {
 class Rect;
@@ -60,6 +61,7 @@ class NativePanel {
   virtual void ShowTaskManagerForPanel() = 0;
   virtual FindBar* CreatePanelFindBar() = 0;
   virtual void NotifyPanelOnUserChangedTheme() = 0;
+  virtual void PanelTabContentsFocused(TabContents* tab_contents) = 0;
   virtual void DrawAttention() = 0;
   virtual bool IsDrawingAttention() const = 0;
   virtual bool PreHandlePanelKeyboardEvent(

@@ -96,6 +96,7 @@ class PanelBrowserView : public BrowserView,
   virtual void ShowTaskManagerForPanel() OVERRIDE;
   virtual FindBar* CreatePanelFindBar() OVERRIDE;
   virtual void NotifyPanelOnUserChangedTheme() OVERRIDE;
+  virtual void PanelTabContentsFocused(TabContents* tab_contents) OVERRIDE;
   virtual void DrawAttention() OVERRIDE;
   virtual bool IsDrawingAttention() const OVERRIDE;
   virtual bool PreHandlePanelKeyboardEvent(
@@ -152,6 +153,10 @@ class PanelBrowserView : public BrowserView,
   // Timestamp to prevent minimizing the panel when the user clicks the titlebar
   // to clear the attension state.
   base::TimeTicks attention_cleared_time_;
+
+  // The last view that had focus in the panel. This is saved so that focus can
+  // be restored properly when a drag ends.
+  views::View* old_focused_view_;
 
   DISALLOW_COPY_AND_ASSIGN(PanelBrowserView);
 };

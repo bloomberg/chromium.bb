@@ -219,6 +219,10 @@ void PanelBrowserWindowGtk::NotifyPanelOnUserChangedTheme() {
   UserChangedTheme();
 }
 
+void PanelBrowserWindowGtk::PanelTabContentsFocused(TabContents* tab_contents) {
+  TabContentsFocused(tab_contents);
+}
+
 void PanelBrowserWindowGtk::DrawAttention() {
   NOTIMPLEMENTED();
 }

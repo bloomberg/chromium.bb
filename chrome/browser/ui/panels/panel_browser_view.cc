@@ -46,7 +46,8 @@ PanelBrowserView::PanelBrowserView(Browser* browser, Panel* panel,
     focused_(false),
     mouse_pressed_(false),
     mouse_dragging_state_(NO_DRAGGING),
-    is_drawing_attention_(false) {
+    is_drawing_attention_(false),
+    old_focused_view_(NULL) {
 }
 
 PanelBrowserView::~PanelBrowserView() {
@@ -165,6 +166,11 @@ bool PanelBrowserView::AcceleratorPressed(
     OnTitlebarMouseCaptureLost();
     return true;
   }
+
+  // No other accelerator is allowed when the drag begins.
+  if (mouse_dragging_state_ == DRAGGING_STARTED)
+    return true;
+
   return BrowserView::AcceleratorPressed(accelerator);
 }
 
@@ -288,6 +294,10 @@ void PanelBrowserView::NotifyPanelOnUserChangedTheme() {
   UserChangedTheme();
 }
 
+void PanelBrowserView::PanelTabContentsFocused(TabContents* tab_contents) {
+  TabContentsFocused(tab_contents);
+}
+
 void PanelBrowserView::DrawAttention() {
   // Don't draw attention for active panel.
   if (is_drawing_attention_ || focused_)
@@ -377,6 +387,11 @@ bool PanelBrowserView::OnTitlebarMouseDragged(const gfx::Point& location) {
   int delta_y = location.y() - mouse_pressed_point_.y();
   if (mouse_dragging_state_ == NO_DRAGGING &&
       ExceededDragThreshold(delta_x, delta_y)) {
+    // When a drag begins, we do not want to the client area to still receive
+    // the focus.
+    old_focused_view_ = GetFocusManager()->GetFocusedView();
+    GetFocusManager()->SetFocusedView(GetFrameView());
+
     panel_->manager()->StartDragging(panel_.get());
     mouse_dragging_state_ = DRAGGING_STARTED;
   }
@@ -386,8 +401,15 @@ bool PanelBrowserView::OnTitlebarMouseDragged(const gfx::Point& location) {
 }
 
 bool PanelBrowserView::OnTitlebarMouseReleased() {
-  if (mouse_dragging_state_ == DRAGGING_STARTED)
+  if (mouse_dragging_state_ == DRAGGING_STARTED) {
+    // When a drag ends, restore the focus.
+    if (old_focused_view_) {
+      GetFocusManager()->SetFocusedView(old_focused_view_);
+      old_focused_view_ = NULL;
+    }
+
     return EndDragging(false);
+  }
 
   // If the panel drag was cancelled before the mouse is released, do not treat
   // this as a click.

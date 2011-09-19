@@ -200,6 +200,11 @@ void PanelBrowserWindowCocoa::NotifyPanelOnUserChangedTheme() {
   NOTIMPLEMENTED();
 }
 
+void PanelBrowserWindowCocoa::PanelTabContentsFocused(
+    TabContents* tab_contents) {
+  // TODO(jianli): to be implemented.
+}
+
 void PanelBrowserWindowCocoa::DrawAttention() {
   NOTIMPLEMENTED();
 }
