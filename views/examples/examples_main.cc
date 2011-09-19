@@ -49,7 +49,7 @@ ExamplesMain::ExamplesMain()
 
 ExamplesMain::~ExamplesMain() {}
 
-void ExamplesMain::CreateWindow() {
+void ExamplesMain::Init() {
   // Creates a window with the tabbed pane for each example,
   // and a label to print messages from each example.
   DCHECK(contents_ == NULL) << "Run called more than once.";
@@ -193,7 +193,7 @@ int main(int argc, char** argv) {
       CommandLine::ForCurrentProcess()->HasSwitch("use-pure-views"));
 
   examples::ExamplesMain main;
-  main.CreateWindow();
+  main.Init();
 
   views::AcceleratorHandler accelerator_handler;
   MessageLoopForUI::current()->Run(&accelerator_handler);

@@ -28,7 +28,7 @@ class ExamplesMain : public views::WidgetDelegate {
   virtual ~ExamplesMain();
 
   // Creates all the examples and shows the window.
-  void CreateWindow();
+  void Init();
 
   // Prints a message in the status area, at the bottom of the window.
   void SetStatus(const std::string& status);
