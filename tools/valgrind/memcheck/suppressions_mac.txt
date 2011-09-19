@@ -821,33 +821,6 @@
    fun:_ZN14WebDataService29InitializeDatabaseIfNecessaryEv
 }
 {
-   bug_52364_a
-   Memcheck:Value4
-   fun:_ZNK10CMMConvLut7ConvertER10CMMMinBitsP14CMMRuntimeInfomm
-   fun:_Z16CMMProcessBitmapP15CMMBitmapParams
-   fun:DoMatchBitmap
-   fun:CWMatchBitmap
-   fun:ConvertImageGeneric
-   fun:CMSColorWorldConvertData
-   fun:CMSTransformConvertData
-   fun:CGCMSInterfaceTransformConvertData
-   fun:CGColorTransformConvertData
-}
-{
-   bug_52364_b
-   Memcheck:Cond
-   fun:_ZNK10CMMMtxOnly10ConvertMinE10CMM3x3Type10CMM3x1TypeR12CMMMinBuffermm
-   fun:_ZNK21CMMConvMatrixTemplateI10CMMMtxOnly22CMMConvGrayToRGBMatrixE7ConvertER10CMMMinBitsP14CMMRuntimeInfomm
-   fun:_Z16CMMProcessBitmapP15CMMBitmapParams
-   fun:DoMatchBitmap
-   fun:CWMatchBitmap
-   fun:ConvertImageGeneric
-   fun:CMSColorWorldConvertData
-   fun:CMSTransformConvertData
-   fun:CGCMSInterfaceTransformConvertData
-   fun:CGColorTransformConvertData
-}
-{
    bug_52681_a
    Memcheck:Leak
    fun:_Znw*
