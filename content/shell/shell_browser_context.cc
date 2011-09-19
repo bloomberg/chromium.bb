@@ -171,8 +171,10 @@ class ShellURLRequestContextGetter : public net::URLRequestContextGetter {
 
 class ShellResourceContext : public content::ResourceContext {
  public:
-  ShellResourceContext(ShellURLRequestContextGetter* getter)
-      : getter_(getter) {
+  ShellResourceContext(ShellURLRequestContextGetter* getter,
+                       ChromeBlobStorageContext* blob_storage_context)
+      : getter_(getter),
+        blob_storage_context_(blob_storage_context) {
   }
 
  private:
@@ -183,9 +185,11 @@ class ShellResourceContext : public content::ResourceContext {
   void InitializeInternal() {
     set_request_context(getter_->GetURLRequestContext());
     set_host_resolver(getter_->host_resolver());
+    set_blob_storage_context(blob_storage_context_);
   }
 
   scoped_refptr<ShellURLRequestContextGetter> getter_;
+  scoped_refptr<ChromeBlobStorageContext> blob_storage_context_;
 };
 
 class ShellGeolocationPermissionContext : public GeolocationPermissionContext {
@@ -292,7 +296,8 @@ net::URLRequestContextGetter*
 const ResourceContext& ShellBrowserContext::GetResourceContext()  {
   if (!resource_context_.get()) {
     resource_context_.reset(new ShellResourceContext(
-        static_cast<ShellURLRequestContextGetter*>(GetRequestContext())));
+        static_cast<ShellURLRequestContextGetter*>(GetRequestContext()),
+        GetBlobStorageContext()));
   }
   return *resource_context_.get();
 }
