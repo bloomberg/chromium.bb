@@ -372,9 +372,10 @@ bool ChromeRenderViewObserver::allowFileSystem(WebFrame* frame) {
   return content_settings_->AllowFileSystem(frame);
 }
 
-bool ChromeRenderViewObserver::allowImages(WebFrame* frame,
-                                          bool enabled_per_settings) {
-  return content_settings_->AllowImages(frame, enabled_per_settings);
+bool ChromeRenderViewObserver::allowImage(WebFrame* frame,
+                                          bool enabled_per_settings,
+                                          const WebURL& image_url) {
+  return content_settings_->AllowImage(frame, enabled_per_settings, image_url);
 }
 
 bool ChromeRenderViewObserver::allowIndexedDB(WebFrame* frame,

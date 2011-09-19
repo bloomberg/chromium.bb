@@ -171,7 +171,9 @@ class TestWebViewDelegate : public WebKit::WebViewClient,
   virtual WebKit::WebApplicationCacheHost* createApplicationCacheHost(
       WebKit::WebFrame*, WebKit::WebApplicationCacheHostClient*);
   virtual bool allowPlugins(WebKit::WebFrame* frame, bool enabled_per_settings);
-  virtual bool allowImages(WebKit::WebFrame* frame, bool enabled_per_settings);
+  virtual bool allowImage(WebKit::WebFrame* frame,
+                          bool enabled_per_settings,
+                          const WebKit::WebURL& image_url);
   virtual void loadURLExternally(
       WebKit::WebFrame*, const WebKit::WebURLRequest&,
       WebKit::WebNavigationPolicy);

@@ -73,8 +73,9 @@ class ChromeRenderViewObserver : public RenderViewObserver,
                              const WebKit::WebString& display_name,
                              unsigned long estimated_size) OVERRIDE;
   virtual bool allowFileSystem(WebKit::WebFrame* frame) OVERRIDE;
-  virtual bool allowImages(WebKit::WebFrame* frame,
-                           bool enabled_per_settings) OVERRIDE;
+  virtual bool allowImage(WebKit::WebFrame* frame,
+                          bool enabled_per_settings,
+                          const WebKit::WebURL& image_url) OVERRIDE;
   virtual bool allowIndexedDB(WebKit::WebFrame* frame,
                               const WebKit::WebString& name,
                               const WebKit::WebSecurityOrigin& origin) OVERRIDE;

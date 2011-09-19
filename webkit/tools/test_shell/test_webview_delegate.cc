@@ -677,8 +677,9 @@ bool TestWebViewDelegate::allowPlugins(WebFrame* frame,
   return enabled_per_settings && shell_->allow_plugins();
 }
 
-bool TestWebViewDelegate::allowImages(WebFrame* frame,
-                                      bool enabled_per_settings) {
+bool TestWebViewDelegate::allowImage(WebFrame* frame,
+                                     bool enabled_per_settings,
+                                     const WebURL& image_url) {
   return enabled_per_settings && shell_->allow_images();
 }
 

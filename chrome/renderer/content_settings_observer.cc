@@ -15,6 +15,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrameClient.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebURL.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 
 using WebKit::WebDataSource;
@@ -22,6 +23,7 @@ using WebKit::WebFrame;
 using WebKit::WebFrameClient;
 using WebKit::WebSecurityOrigin;
 using WebKit::WebString;
+using WebKit::WebURL;
 using WebKit::WebView;
 
 namespace {
@@ -194,8 +196,9 @@ bool ContentSettingsObserver::AllowFileSystem(WebFrame* frame) {
   return result;
 }
 
-bool ContentSettingsObserver::AllowImages(WebFrame* frame,
-                                          bool enabled_per_settings) {
+bool ContentSettingsObserver::AllowImage(WebFrame* frame,
+                                         bool enabled_per_settings,
+                                         const WebURL& image_url) {
   if (enabled_per_settings &&
       AllowContentType(CONTENT_SETTINGS_TYPE_IMAGES)) {
     return true;
