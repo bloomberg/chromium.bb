@@ -118,6 +118,7 @@ void BubbleView::AnimationProgressed(const ui::Animation* animation) {
     NOTIMPLEMENTED();
     // TODO: probably a good idea to make this a Widget API method rather than
     //       directly manipulating the native widget here.
+    (void) opacity;
 #elif defined(OS_WIN)
     SetLayeredWindowAttributes(GetWidget()->GetNativeView(), 0,
                                static_cast<byte>(opacity), LWA_ALPHA);
