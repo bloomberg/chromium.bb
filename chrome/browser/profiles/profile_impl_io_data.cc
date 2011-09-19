@@ -46,7 +46,12 @@ ProfileImplIOData::Handle::~Handle() {
   if (extensions_request_context_getter_)
     extensions_request_context_getter_->CleanupOnUIThread();
 
-  io_data_->predictor_->ShutdownOnUIThread(profile_->GetPrefs());
+  // TODO(rlp): Remove CHECKs once we have determined the cause for flakiness
+  // during predictor shutdown. See http://crosbug.com/20407.
+  CHECK(profile_ != NULL);
+  PrefService* user_prefs = profile_->GetPrefs();
+  CHECK(io_data_->predictor_.get() != NULL);
+  io_data_->predictor_->ShutdownOnUIThread(user_prefs);
 
   // Clean up all isolated app request contexts.
   for (ChromeURLRequestContextGetterMap::iterator iter =
