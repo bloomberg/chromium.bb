@@ -354,6 +354,8 @@ class LoginUtilsImpl : public LoginUtils,
       bool has_cookies,
       LoginUtils::Delegate* delegate) OVERRIDE;
 
+  virtual void DelegateDeleted(Delegate* delegate) OVERRIDE;
+
   // Invoked after the tmpfs is successfully mounted.
   // Launches a browser in the incognito mode.
   virtual void CompleteOffTheRecordLogin(const GURL& start_url) OVERRIDE;
@@ -550,6 +552,11 @@ void LoginUtilsImpl::PrepareProfile(
   // The default profile will have been changed because the ProfileManager
   // will process the notification that the UserManager sends out.
   ProfileManager::CreateDefaultProfileAsync(this);
+}
+
+void LoginUtilsImpl::DelegateDeleted(Delegate* delegate) {
+  if (delegate_ == delegate)
+    delegate_ = NULL;
 }
 
 void LoginUtilsImpl::OnProfileCreated(Profile* user_profile, Status status) {

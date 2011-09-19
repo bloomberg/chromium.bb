@@ -99,6 +99,8 @@ class MockLoginUtils : public LoginUtils {
                               bool has_cookies,
                               Delegate* delegate);
 
+  virtual void DelegateDeleted(Delegate* delegate);
+
   virtual void CompleteOffTheRecordLogin(const GURL& start_url) {}
 
   virtual void SetFirstLoginPrefs(PrefService* prefs) {}

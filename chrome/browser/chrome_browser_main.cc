@@ -492,6 +492,10 @@ class StubLogin : public chromeos::LoginStatusConsumer,
         std::string());
   }
 
+  ~StubLogin() {
+    chromeos::LoginUtils::Get()->DelegateDeleted(this);
+  }
+
   void OnLoginFailure(const chromeos::LoginFailure& error) {
     LOG(ERROR) << "Login Failure: " << error.GetErrorString();
     delete this;

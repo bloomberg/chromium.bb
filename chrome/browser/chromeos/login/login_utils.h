@@ -51,6 +51,7 @@ class LoginUtils {
 
   // Loads and prepares profile for the session. Fires |delegate| in the end.
   // If |pending_requests| is true, there's a pending online auth request.
+  // Also see DelegateDeleted method.
   virtual void PrepareProfile(
       const std::string& username,
       const std::string& password,
@@ -59,6 +60,9 @@ class LoginUtils {
       bool using_oauth,
       bool has_cookies,
       Delegate* delegate) = 0;
+
+  // Invalidates |delegate|, which was passed to PrepareProfile method call.
+  virtual void DelegateDeleted(Delegate* delegate) = 0;
 
   // Invoked after the tmpfs is successfully mounted.
   // Asks session manager to restart Chrome in Browse Without Sign In mode.

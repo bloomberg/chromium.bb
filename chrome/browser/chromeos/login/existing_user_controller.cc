@@ -134,6 +134,8 @@ void ExistingUserController::Observe(int type,
 // ExistingUserController, private:
 
 ExistingUserController::~ExistingUserController() {
+  LoginUtils::Get()->DelegateDeleted(this);
+
   if (current_controller_ == this) {
     current_controller_ = NULL;
   } else {
