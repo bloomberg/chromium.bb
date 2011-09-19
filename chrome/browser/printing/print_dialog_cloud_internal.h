@@ -158,7 +158,8 @@ class CloudPrintHtmlDialogDelegate : public HtmlDialogUIDelegate {
                                const string16& print_job_title,
                                const string16& print_ticket,
                                const std::string& file_type,
-                               bool modal);
+                               bool modal,
+                               bool delete_on_close);
   virtual ~CloudPrintHtmlDialogDelegate();
 
   // HTMLDialogUIDelegate implementation:
@@ -182,9 +183,11 @@ class CloudPrintHtmlDialogDelegate : public HtmlDialogUIDelegate {
   CloudPrintHtmlDialogDelegate(CloudPrintFlowHandler* flow_handler,
                                int width, int height,
                                const std::string& json_arguments,
-                               bool modal);
+                               bool modal,
+                               bool delete_on_close);
   void Init(int width, int height, const std::string& json_arguments);
 
+  bool delete_on_close_;
   CloudPrintFlowHandler* flow_handler_;
   bool modal_;
   mutable bool owns_flow_handler_;
@@ -200,7 +203,8 @@ void CreateDialogImpl(const FilePath& path_to_file,
                       const string16& print_job_title,
                       const string16& print_ticket,
                       const std::string& file_type,
-                      bool modal);
+                      bool modal,
+                      bool delete_on_close);
 
 void Delete(const FilePath& path_to_file);
 

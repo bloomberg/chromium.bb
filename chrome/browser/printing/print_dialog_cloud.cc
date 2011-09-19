@@ -442,8 +442,10 @@ CloudPrintHtmlDialogDelegate::CloudPrintHtmlDialogDelegate(
     const string16& print_job_title,
     const string16& print_ticket,
     const std::string& file_type,
-    bool modal)
-    : flow_handler_(new CloudPrintFlowHandler(path_to_file,
+    bool modal,
+    bool delete_on_close)
+    : delete_on_close_(delete_on_close),
+      flow_handler_(new CloudPrintFlowHandler(path_to_file,
                                               print_job_title,
                                               print_ticket,
                                               file_type)),
@@ -458,8 +460,10 @@ CloudPrintHtmlDialogDelegate::CloudPrintHtmlDialogDelegate(
     CloudPrintFlowHandler* flow_handler,
     int width, int height,
     const std::string& json_arguments,
-    bool modal)
-    : flow_handler_(flow_handler),
+    bool modal,
+    bool delete_on_close)
+    : delete_on_close_(delete_on_close),
+      flow_handler_(flow_handler),
       modal_(modal),
       owns_flow_handler_(true) {
   Init(width, height, json_arguments);
@@ -526,8 +530,7 @@ void CloudPrintHtmlDialogDelegate::OnDialogClosed(
   // Get the final dialog size and store it.
   flow_handler_->StoreDialogClientSize();
 
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kCloudPrintDeleteFile)) {
+  if (delete_on_close_) {
     BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
         NewRunnableFunction(&internal_cloud_print_helpers::Delete,
                             path_to_file_));
@@ -555,12 +558,36 @@ bool CloudPrintHtmlDialogDelegate::HandleContextMenu(
   return true;
 }
 
+void CreatePrintDialogForBytesImpl(scoped_refptr<RefCountedBytes> data,
+                                   const string16& print_job_title,
+                                   const string16& print_ticket,
+                                   const std::string& file_type,
+                                   bool modal) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  // TODO(abodenha@chromium.org) Writing the PDF to a file before printing
+  // is wasteful.  Modify the dialog flow to pull PDF data from memory.
+  // See http://code.google.com/p/chromium/issues/detail?id=44093
+  FilePath path;
+  if (file_util::CreateTemporaryFile(&path)) {
+    file_util::WriteFile(path,
+                         reinterpret_cast<const char*>(data->front()),
+                         data->size());
+  }
+  print_dialog_cloud::CreatePrintDialogForFile(path,
+                                               print_job_title,
+                                               print_ticket,
+                                               file_type,
+                                               modal,
+                                               true);
+}
+
 // Called from the UI thread, starts up the dialog.
 void CreateDialogImpl(const FilePath& path_to_file,
                       const string16& print_job_title,
                       const string16& print_ticket,
                       const std::string& file_type,
-                      bool modal) {
+                      bool modal,
+                      bool delete_on_close) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   Browser* browser = BrowserList::GetLastActive();
 
@@ -599,7 +626,7 @@ void CreateDialogImpl(const FilePath& path_to_file,
   HtmlDialogUIDelegate* dialog_delegate =
       new internal_cloud_print_helpers::CloudPrintHtmlDialogDelegate(
           path_to_file, width, height, std::string(), job_title, print_ticket,
-          file_type, modal);
+          file_type, modal, delete_on_close);
   if (modal) {
     DCHECK(browser);
     browser->BrowserShowHtmlDialog(dialog_delegate, NULL);
@@ -627,7 +654,8 @@ void CreatePrintDialogForFile(const FilePath& path_to_file,
                               const string16& print_job_title,
                               const string16& print_ticket,
                               const std::string& file_type,
-                              bool modal) {
+                              bool modal,
+                              bool delete_on_close) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE) ||
          BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -638,7 +666,28 @@ void CreatePrintDialogForFile(const FilePath& path_to_file,
                           print_job_title,
                           print_ticket,
                           file_type,
-                          modal));
+                          modal,
+                          delete_on_close));
+}
+
+void CreatePrintDialogForBytes(scoped_refptr<RefCountedBytes> data,
+                               const string16& print_job_title,
+                               const string16& print_ticket,
+                               const std::string& file_type,
+                               bool modal) {
+  // TODO(abodenha@chromium.org) Avoid cloning the PDF data.  Make use of a
+  // shared memory object instead.
+  // http://code.google.com/p/chromium/issues/detail?id=44093
+  scoped_refptr<RefCountedBytes> cloned_data(new RefCountedBytes(data->data()));
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
+      NewRunnableFunction(
+          &internal_cloud_print_helpers::CreatePrintDialogForBytesImpl,
+          cloned_data,
+          print_job_title,
+          print_ticket,
+          file_type,
+          modal));
 }
 
 bool CreatePrintDialogFromCommandLine(const CommandLine& command_line) {
@@ -665,11 +714,15 @@ bool CreatePrintDialogFromCommandLine(const CommandLine& command_line) {
             switches::kCloudPrintFileType);
       }
 
+      bool delete_on_close = CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kCloudPrintDeleteFile);
+
       print_dialog_cloud::CreatePrintDialogForFile(cloud_print_file,
                                                    print_job_title,
                                                    print_job_print_ticket,
                                                    file_type,
-                                                   false);
+                                                   false,
+                                                   delete_on_close);
       return true;
     }
   }

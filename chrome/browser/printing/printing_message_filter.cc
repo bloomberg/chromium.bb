@@ -172,7 +172,8 @@ void PrintingMessageFilter::OnTempFileForPrintingWritten(int sequence_number) {
         string16(),
         string16(),
         std::string("application/pdf"),
-        true);
+        true,
+        false);
   else
     NOTIMPLEMENTED();
 
