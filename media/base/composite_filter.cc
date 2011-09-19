@@ -18,22 +18,22 @@ class CompositeFilter::FilterHostImpl : public FilterHost {
   FilterHost* host();
 
   // media::FilterHost methods.
-  virtual void SetError(PipelineStatus error);
-  virtual base::TimeDelta GetTime() const;
-  virtual base::TimeDelta GetDuration() const;
-  virtual void SetTime(base::TimeDelta time);
-  virtual void SetDuration(base::TimeDelta duration);
-  virtual void SetBufferedTime(base::TimeDelta buffered_time);
-  virtual void SetTotalBytes(int64 total_bytes);
-  virtual void SetBufferedBytes(int64 buffered_bytes);
-  virtual void SetVideoSize(size_t width, size_t height);
-  virtual void SetStreaming(bool streaming);
-  virtual void NotifyEnded();
-  virtual void SetLoaded(bool loaded);
-  virtual void SetNetworkActivity(bool network_activity);
-  virtual void DisableAudioRenderer();
-  virtual void SetCurrentReadPosition(int64 offset);
-  virtual int64 GetCurrentReadPosition();
+  virtual void SetError(PipelineStatus error) OVERRIDE;
+  virtual base::TimeDelta GetTime() const OVERRIDE;
+  virtual base::TimeDelta GetDuration() const OVERRIDE;
+  virtual void SetTime(base::TimeDelta time) OVERRIDE;
+  virtual void SetDuration(base::TimeDelta duration) OVERRIDE;
+  virtual void SetBufferedTime(base::TimeDelta buffered_time) OVERRIDE;
+  virtual void SetTotalBytes(int64 total_bytes) OVERRIDE;
+  virtual void SetBufferedBytes(int64 buffered_bytes) OVERRIDE;
+  virtual void SetNaturalVideoSize(const gfx::Size& size) OVERRIDE;
+  virtual void SetStreaming(bool streaming) OVERRIDE;
+  virtual void NotifyEnded() OVERRIDE;
+  virtual void SetLoaded(bool loaded) OVERRIDE;
+  virtual void SetNetworkActivity(bool network_activity) OVERRIDE;
+  virtual void DisableAudioRenderer() OVERRIDE;
+  virtual void SetCurrentReadPosition(int64 offset) OVERRIDE;
+  virtual int64 GetCurrentReadPosition() OVERRIDE;
 
  private:
   CompositeFilter* parent_;
@@ -526,9 +526,9 @@ void CompositeFilter::FilterHostImpl::SetBufferedBytes(int64 buffered_bytes) {
   host_->SetBufferedBytes(buffered_bytes);
 }
 
-void CompositeFilter::FilterHostImpl::SetVideoSize(size_t width,
-                                                   size_t height) {
-  host_->SetVideoSize(width, height);
+void CompositeFilter::FilterHostImpl::SetNaturalVideoSize(
+    const gfx::Size& size) {
+  host_->SetNaturalVideoSize(size);
 }
 
 void CompositeFilter::FilterHostImpl::SetStreaming(bool streaming) {

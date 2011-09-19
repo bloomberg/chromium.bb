@@ -10,6 +10,7 @@
 #include "media/base/media_export.h"
 #include "media/base/video_decoder_config.h"
 #include "media/base/video_frame.h"
+#include "ui/gfx/size.h"
 
 class MessageLoop;
 
@@ -24,11 +25,8 @@ struct VideoCodecInfo {
   // Other parameter is only meaningful when this is true.
   bool success;
 
-  // Can be different with container's value.
-  uint32 surface_width;
-
-  // Can be different with container's value.
-  uint32 surface_height;
+  // Natural dimensions of video. May be different from coded and visible sizes.
+  gfx::Size natural_size;
 };
 
 class MEDIA_EXPORT VideoDecodeEngine {

@@ -33,8 +33,7 @@ using media::VideoFrame;
 RTCVideoDecoder::RTCVideoDecoder(MessageLoop* message_loop,
                                  const std::string& url)
     : message_loop_(message_loop),
-      width_(176),
-      height_(144),
+      visible_size_(176, 144),
       url_(url),
       state_(kUnInitialized) {
 }
@@ -127,9 +126,10 @@ void RTCVideoDecoder::Seek(base::TimeDelta time, const FilterStatusCB& cb) {
 
   state_ = kSeeking;
   // Create output buffer pool and pass the frames to renderer
-  // so that the renderer can complete the seeking
+  // so that the renderer can complete the seeking.
   for (size_t i = 0; i < Limits::kMaxVideoFrames; ++i) {
-    VideoFrameReady(VideoFrame::CreateBlackFrame(width_, height_));
+    VideoFrameReady(VideoFrame::CreateBlackFrame(
+        visible_size_.width(), visible_size_.height()));
   }
 
   state_ = kNormal;
@@ -151,19 +151,16 @@ void RTCVideoDecoder::ProduceVideoFrame(
   frame_queue_available_.push_back(video_frame);
 }
 
-int RTCVideoDecoder::width() {
-  return width_;
-}
-
-int RTCVideoDecoder::height() {
-  return height_;
+gfx::Size RTCVideoDecoder::natural_size() {
+  // TODO(vrk): Return natural size when aspect ratio support is implemented.
+  return visible_size_;
 }
 
 bool RTCVideoDecoder::SetSize(int width, int height, int reserved) {
-  width_ = width;
-  height_ = height;
+  visible_size_.SetSize(width, height);
 
-  host()->SetVideoSize(width_, height_);
+  // TODO(vrk): Provide natural size when aspect ratio support is implemented.
+  host()->SetNaturalVideoSize(visible_size_);
   return true;
 }
 
@@ -173,7 +170,7 @@ bool RTCVideoDecoder::RenderFrame(const cricket::VideoFrame* frame) {
   if (state_ != kNormal)
     return true;
 
-  // This is called from another thread
+  // This is called from another thread.
   scoped_refptr<VideoFrame> video_frame;
   {
     base::AutoLock auto_lock(lock_);
@@ -184,16 +181,24 @@ bool RTCVideoDecoder::RenderFrame(const cricket::VideoFrame* frame) {
     frame_queue_available_.pop_front();
   }
 
-  // Check if there's a size change
-  if (video_frame->width() != width_ || video_frame->height() != height_) {
-    // Allocate new buffer based on the new size
+  // Check if there's a size change.
+  // TODO(vrk): Remove casts when media::VideoFrame is updated with gfx::Sizes
+  // for width/height.
+  if (video_frame->width() != static_cast<size_t>(visible_size_.width()) ||
+      video_frame->height() != static_cast<size_t>(visible_size_.height())) {
+    // Allocate new buffer based on the new size.
     video_frame = VideoFrame::CreateFrame(VideoFrame::YV12,
-                                          width_,
-                                          height_,
+                                          visible_size_.width(),
+                                          visible_size_.height(),
                                           kNoTimestamp,
                                           kNoTimestamp);
   }
 
+  // Only YV12 frames are supported.
+  DCHECK(video_frame->format() == VideoFrame::YV12);
+  // Aspect ratio unsupported; DCHECK when there are non-square pixels.
+  DCHECK(frame->GetPixelWidth() == 1);
+  DCHECK(frame->GetPixelHeight() == 1);
   video_frame->SetTimestamp(host()->GetTime());
   video_frame->SetDuration(base::TimeDelta::FromMilliseconds(30));
 

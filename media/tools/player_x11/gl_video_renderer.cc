@@ -128,7 +128,8 @@ bool GlVideoRenderer::OnInitialize(media::VideoDecoder* decoder) {
   LOG(INFO) << "Initializing GL Renderer...";
 
   // Resize the window to fit that of the video.
-  XResizeWindow(display_, window_, decoder->width(), decoder->height());
+  XResizeWindow(display_, window_, decoder->natural_size().width(),
+                decoder->natural_size().height());
 
   gl_context_ = InitGLContext(display_, window_);
   if (!gl_context_)

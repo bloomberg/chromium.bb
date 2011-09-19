@@ -161,8 +161,8 @@ TEST_F(RTCVideoDecoderTest, Initialize_Successful) {
 
   // Test that the output media format is an uncompressed video surface that
   // matches the dimensions specified by RTC.
-  EXPECT_EQ(kWidth, decoder_->width());
-  EXPECT_EQ(kHeight, decoder_->height());
+  EXPECT_EQ(kWidth, decoder_->natural_size().width());
+  EXPECT_EQ(kHeight, decoder_->natural_size().height());
 }
 
 TEST_F(RTCVideoDecoderTest, DoSeek) {
@@ -216,15 +216,16 @@ TEST_F(RTCVideoDecoderTest, DoSetSize) {
 
   int new_width = kWidth * 2;
   int new_height = kHeight * 2;
+  gfx::Size new_natural_size(new_width, new_height);
   int new_reserved = 0;
 
   EXPECT_CALL(host_,
-              SetVideoSize(new_width, new_height)).WillRepeatedly(Return());
+              SetNaturalVideoSize(new_natural_size)).WillRepeatedly(Return());
 
   decoder_->SetSize(new_width, new_height, new_reserved);
 
-  EXPECT_EQ(new_width, decoder_->width());
-  EXPECT_EQ(new_height, decoder_->height());
+  EXPECT_EQ(new_width, decoder_->natural_size().width());
+  EXPECT_EQ(new_height, decoder_->natural_size().height());
 
   message_loop_.RunAllPending();
 }
