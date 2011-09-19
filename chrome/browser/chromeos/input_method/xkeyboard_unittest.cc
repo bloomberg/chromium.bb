@@ -169,10 +169,6 @@ TEST(XKeyboardTest, TestCreateFullXkbLayoutNameBasic) {
                testee.xkey_.CreateFullXkbLayoutName(
                    "us(dvorak)",
                    GetMap(kVoidKey, kVoidKey, kVoidKey)).c_str());
-  EXPECT_STREQ("gb(extd)+chromeos(disabled_disabled_disabled_keepralt),us",
-                testee.xkey_.CreateFullXkbLayoutName(
-                    "gb(extd)",
-                    GetMap(kVoidKey, kVoidKey, kVoidKey)).c_str());
   EXPECT_STREQ("jp+chromeos(disabled_disabled_disabled),us",
                testee.xkey_.CreateFullXkbLayoutName(
                    "jp",  // does not use AltGr, therefore no _keepralt.
@@ -204,6 +200,10 @@ TEST(XKeyboardTest, TestCreateFullXkbLayoutNameKeepCapsLock) {
                    "de(neo)", GetMap(kLeftControlKey,
                                      kLeftControlKey,
                                      kLeftControlKey)).c_str());
+  EXPECT_STREQ("gb(extd)+chromeos(disabled_disabled_disabled_keepralt),us",
+                testee.xkey_.CreateFullXkbLayoutName(
+                    "gb(extd)",
+                    GetMap(kVoidKey, kVoidKey, kVoidKey)).c_str());
 }
 
 TEST(XKeyboardTest, TestCreateFullXkbLayoutNameKeepAlt) {
