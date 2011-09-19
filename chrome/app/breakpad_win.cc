@@ -75,6 +75,9 @@ static size_t g_num_of_views_offset;
 static size_t g_num_switches_offset;
 static size_t g_switches_offset;
 
+// Maximum length for plugin path to include in plugin crash reports.
+const size_t kMaxPluginPathLength = 256;
+
 // Dumps the current process memory.
 extern "C" void __declspec(dllexport) __cdecl DumpProcess() {
   if (g_breakpad)
@@ -99,6 +102,26 @@ static void SetIntegerValue(size_t offset, int value) {
                 google_breakpad::CustomInfoEntry::kValueMaxLength);
 }
 
+bool IsBoringCommandLineSwitch(const std::wstring& flag) {
+  return StartsWith(flag, L"--channel=", true) ||
+
+         // No point to including this since we already have a ptype field.
+         StartsWith(flag, L"--type=", true) ||
+
+         // Not particularly interesting
+         StartsWith(flag, L"--flash-broker=", true) ||
+
+         // Just about everything has this, don't bother.
+         StartsWith(flag, L"/prefetch:", true) ||
+
+         // We handle the plugin path separately since it is usually too big
+         // to fit in the switches (limited to 63 characters).
+         StartsWith(flag, L"--plugin-path=", true) ||
+
+         // This is too big so we end up truncating it anyway.
+         StartsWith(flag, L"--force-fieldtest=", true);
+}
+
 extern "C" void __declspec(dllexport) __cdecl SetCommandLine(
     const CommandLine* command_line) {
   if (!g_custom_entries)
@@ -111,18 +134,49 @@ extern "C" void __declspec(dllexport) __cdecl SetCommandLine(
   size_t argv_i = 1;
   size_t num_added = 0;
 
-  for (; argv_i < argv.size() && num_added < kMaxSwitches;
-       ++argv_i, ++num_added) {
-    // TODO(eroman): Filter out flags which aren't useful and just add bloat
-    //               to the report.
+  for (; argv_i < argv.size() && num_added < kMaxSwitches; ++argv_i) {
+    // Don't bother including boring command line switches in crash reports.
+    if (IsBoringCommandLineSwitch(argv[argv_i]))
+      continue;
+
     base::wcslcpy((*g_custom_entries)[g_switches_offset + num_added].value,
                   argv[argv_i].c_str(),
                   google_breakpad::CustomInfoEntry::kValueMaxLength);
+    num_added++;
   }
 
   // Make note of the total number of switches. This is useful in case we have
   // truncated at kMaxSwitches, to see how many were unaccounted for.
   SetIntegerValue(g_num_switches_offset, static_cast<int>(argv.size()) - 1);
+}
+
+// Appends the plugin path to |g_custom_entries|.
+void SetPluginPath(const std::wstring& path) {
+  DCHECK(g_custom_entries);
+
+  if (path.size() > kMaxPluginPathLength) {
+    // If the path is too long, truncate from the start rather than the end,
+    // since we want to be able to recover the DLL name.
+    SetPluginPath(path.substr(path.size() - kMaxPluginPathLength));
+    return;
+  }
+
+  // The chunk size without terminator.
+  const size_t kChunkSize = static_cast<size_t>(
+      google_breakpad::CustomInfoEntry::kValueMaxLength - 1);
+
+  int chunk_index = 0;
+  size_t chunk_start = 0;  // Current position inside |path|
+
+  for (chunk_start = 0; chunk_start < path.size(); chunk_index++) {
+    size_t chunk_length = std::min(kChunkSize, path.size() - chunk_start);
+
+    g_custom_entries->push_back(google_breakpad::CustomInfoEntry(
+        base::StringPrintf(L"plugin-path-chunk-%i", chunk_index + 1).c_str(),
+        path.substr(chunk_start, chunk_length).c_str()));
+
+    chunk_start += chunk_length;
+  }
 }
 
 // Returns the custom info structure based on the dll in parameter and the
@@ -233,6 +287,13 @@ google_breakpad::CustomClientInfo* GetCustomInfo(const std::wstring& dll_path,
     for (int i = 0; i < kMaxUrlChunks; ++i) {
       g_custom_entries->push_back(google_breakpad::CustomInfoEntry(
           base::StringPrintf(L"url-chunk-%i", i + 1).c_str(), L""));
+    }
+
+    if (type == L"plugin") {
+      std::wstring plugin_path =
+          CommandLine::ForCurrentProcess()->GetSwitchValueNative("plugin-path");
+      if (!plugin_path.empty())
+        SetPluginPath(plugin_path);
     }
   } else {
     g_custom_entries->push_back(
