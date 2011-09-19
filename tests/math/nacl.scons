@@ -7,16 +7,19 @@ Import('env')
 
 #--- Version that tests errno conditions
 
-float_math_obj = env.ComponentObject('float_math', 'float_math.c')
-float_math_nexe = env.ComponentProgram('float_math',
+# Note: -fno-math-errno is the default on Clang, and some versions of gcc.
+errno_env = env.Clone()
+errno_env.Append(CCFLAGS=['-fmath-errno'])
+float_math_obj = errno_env.ComponentObject('float_math', 'float_math.c')
+float_math_nexe = errno_env.ComponentProgram('float_math',
                                        float_math_obj,
                                        EXTRA_LIBS=['m', '${NONIRT_LIBS}'])
-node = env.CommandSelLdrTestNacl(
+node = errno_env.CommandSelLdrTestNacl(
   'float_math.out',
   float_math_nexe,
   exit_status='55',
   )
-env.AddNodeToTestSuite(node,
+errno_env.AddNodeToTestSuite(node,
                        ['small_tests'],
                        'run_float_math_test')
 
@@ -39,4 +42,4 @@ node = noerrno_env.CommandSelLdrTestNacl(
   )
 noerrno_env.AddNodeToTestSuite(node,
                                ['small_tests'],
-                              'run_float_math_noerrno_test')
+                               'run_float_math_noerrno_test')

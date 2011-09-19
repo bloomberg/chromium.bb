@@ -235,10 +235,10 @@ static void nc_free_memory_block_mu(nc_thread_memory_block_type_t type,
 
 static void nc_release_basic_data_mu(nc_basic_thread_data_t *basic_data) {
   if (NACL_PTHREAD_ILLEGAL_THREAD_ID != basic_data->thread_id) {
-    HASH_REMOVE(&__nc_thread_threads,
-                basic_data->thread_id,
-                nc_basic_thread_data,
-                hash_entry);
+    (void)HASH_REMOVE(&__nc_thread_threads,
+                      basic_data->thread_id,
+                      nc_basic_thread_data,
+                      hash_entry);
   }
   /* join_condvar can be initialized only if tls_node exists */
   pthread_cond_destroy(&basic_data->join_condvar);

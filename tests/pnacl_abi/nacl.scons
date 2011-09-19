@@ -25,12 +25,20 @@ TESTS = ['small_structs_by_value.c',
          'vaarg.c',
          ]
 
+if env.Bit('pnacl_use_clang'):
+  # Enable when Clang's bitcode output is correct and stable
+  #frontend = 'clang'
+  Return()
+else:
+  frontend = 'llvmgcc'
+
 for src in TESTS:
    name = src.split('.')[0]
    node = env.ComponentObject(name + '.o', src)
+   stdout_golden = env.File('%s.%s.stdout' % (name, frontend))
    test = env.CommandTest(name + '.out',
                           ['${DISASS}', '-o', '-', node],
-                          stdout_golden=env.File(name + '.stdout'),
+                          stdout_golden=stdout_golden,
                           filter_regex='"; ModuleID = "',
                           filter_inverse='true',
                           )

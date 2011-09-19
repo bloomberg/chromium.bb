@@ -55,8 +55,8 @@ EXTRA_ENV = {
                   '-U__ARM_FP16__ -U__MAVERICK__ -U__XSCALE__ -U__IWMMXT__ ' +
                   '-U__ARM_EABI__ -U__ARM_ARCH_7A__',
 
-  'BIAS_NONE'   : '${REMOVE_BIAS}',
-  'BIAS_ARM'    : '',
+  'BIAS_NONE'   : '${FRONTEND==GNU ? ${REMOVE_BIAS}}',
+  'BIAS_ARM'    : '-D__arm__ -D__ARM_ARCH_7A__ -D__ARMEL__',
   'BIAS_X8632'  : '${REMOVE_BIAS} ' +
                   '-D__i386__ -D__i386 -D__i686 -D__i686__ -D__pentium4__',
   'BIAS_X8664'  : '${REMOVE_BIAS} ' +
@@ -64,9 +64,10 @@ EXTRA_ENV = {
 
   'OPT_LEVEL'   : '0',
   'CC_FLAGS'    : '-O${OPT_LEVEL} ' +
-                  '-nostdinc -DNACL_LINUX=1 -D__native_client__=1 ' +
-                  '-D__pnacl__=1 ${BIAS_%BIAS%} ${CC_FLAGS_%FRONTEND%}',
-  'CC_FLAGS_GNU'  : '-fuse-llvm-va-arg -Werror-portable-llvm',
+                  '-nostdinc -DNACL_LINUX=1 ${BIAS_%BIAS%} ' +
+                  '${CC_FLAGS_%FRONTEND%}',
+  'CC_FLAGS_GNU'  : '-D__native_client__=1 -D__pnacl__=1 ' +
+                    '-fuse-llvm-va-arg -Werror-portable-llvm',
   'CC_FLAGS_CLANG': '-ccc-host-triple le32-unknown-nacl',
 
   'ISYSTEM'        : '${ISYSTEM_USER} ${ISYSTEM_BUILTIN}',
@@ -74,11 +75,20 @@ EXTRA_ENV = {
   'ISYSTEM_USER'   : '',  # System include directories specified by
                           # using the -isystem flag.
 
+
+  'ISYSTEM_CLANG':
+      '${BASE_LLVM}/lib/clang/3.0/include ' +
+      # Fall back to gcc include, for unwind.h
+      '${BASE_LLVM_GCC}/lib/gcc/arm-none-linux-gnueabi/4.2.1/include',
+
+  'ISYSTEM_GNU'  :
+      '${BASE_LLVM_GCC}/lib/gcc/arm-none-linux-gnueabi/4.2.1/include ' +
+      '${BASE_LLVM_GCC}/' +
+        'lib/gcc/arm-none-linux-gnueabi/4.2.1/install-tools/include',
+
   'ISYSTEM_newlib' :
     '${BASE_SDK}/include ' +
-    '${BASE_LLVM_GCC}/lib/gcc/arm-none-linux-gnueabi/4.2.1/include ' +
-    '${BASE_LLVM_GCC}/' +
-      'lib/gcc/arm-none-linux-gnueabi/4.2.1/install-tools/include ' +
+    '${ISYSTEM_%FRONTEND%} ' +
     '${BASE_LIBSTDCPP}/include/c++/4.2.1 ' +
     '${BASE_LIBSTDCPP}/include/c++/4.2.1/arm-none-linux-gnueabi ' +
     '${BASE_INCLUDE} ' +
@@ -87,9 +97,7 @@ EXTRA_ENV = {
   'ISYSTEM_glibc' :
     '${BASE_SDK}/include ' +
     '${BASE_GLIBC}/include ' +
-    '${BASE_LLVM_GCC}/lib/gcc/arm-none-linux-gnueabi/4.2.1/include ' +
-    '${BASE_LLVM_GCC}/' +
-      'lib/gcc/arm-none-linux-gnueabi/4.2.1/install-tools/include ' +
+    '${ISYSTEM_%FRONTEND%} ' +
     '${BASE_LIBSTDCPP}/include/c++/4.2.1 ' +
     '${BASE_LIBSTDCPP}/include/c++/4.2.1/arm-none-linux-gnueabi',
 

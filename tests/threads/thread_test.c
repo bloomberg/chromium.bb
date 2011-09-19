@@ -641,7 +641,7 @@ static enum { COMPARE_AND_SWAP, FETCH_AND_ADD } intrinsic;
 
 static void* WorkerThread(void *data) {
   volatile AtomicInt32* counter = (volatile AtomicInt32*) data;
-  volatile int bogus;
+  volatile int bogus = 0;
   static int backoff[8] = { 8, 16, 32, 64, 128, 256, 1024, 2048 };
   int success = 0;
 

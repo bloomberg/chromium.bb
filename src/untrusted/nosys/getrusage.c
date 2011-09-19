@@ -15,7 +15,7 @@
 
 int getrusage(int who, struct rusage *usage) {
   errno = ENOSYS;
-  return NULL;
+  return -1;
 }
 
 #include "native_client/src/untrusted/nosys/warning.h"

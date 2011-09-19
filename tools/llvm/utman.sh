@@ -1087,6 +1087,7 @@ llvm-configure() {
   mkdir -p "${objdir}"
   spushd "${objdir}"
 
+  llvm-link-clang
   # The --with-binutils-include is to allow llvm to build the gold plugin
   local binutils_include="${TC_SRC_BINUTILS}/binutils-2.20/include"
   RunWithLog "llvm.configure" \
@@ -1124,10 +1125,9 @@ llvm-needs-configure() {
 }
 
 llvm-needs-make() {
-  local srcdir="${TC_SRC_LLVM}"
   local objdir="${TC_BUILD_LLVM}"
-
-  ts-modified "${srcdir}" "${objdir}"
+  ts-modified "${TC_SRC_LLVM}" "${objdir}" ||
+    ts-modified "${TC_SRC_CLANG}" "${objdir}"
   return $?
 }
 
@@ -1137,6 +1137,7 @@ llvm-make() {
 
   local srcdir="${TC_SRC_LLVM}"
   local objdir="${TC_BUILD_LLVM}"
+  llvm-link-clang
 
   spushd "${objdir}"
 
@@ -1160,6 +1161,7 @@ llvm-install() {
   StepBanner "LLVM" "Install"
 
   spushd "${TC_BUILD_LLVM}"
+  llvm-link-clang
   RunWithLog llvm.install \
        make ${MAKE_OPTS} install
   spopd

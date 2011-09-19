@@ -143,9 +143,9 @@ https://www.securecoding.cert.org/confluence/display/seccode/ \
 */
 
 /* Check exceptions communicated by the "old" errno mechanism */
-#define CHECK_TRIPPED_ERRNO(expr)                                 \
-  (errno = 0,                                                            \
-   expr,                                                         \
+#define CHECK_TRIPPED_ERRNO(expr)                             \
+  (errno = 0,                                                 \
+   (void)expr,                                                \
    (0 != errno ? 0 : (printf("%s - errno %d not set at %d\n", \
                       #expr, errno, __LINE__), 1)))
 
