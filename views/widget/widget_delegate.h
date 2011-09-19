@@ -20,6 +20,7 @@ class Rect;
 }
 
 namespace views {
+class BubbleDelegate;
 class ClientView;
 class DialogDelegate;
 class NonClientFrameView;
@@ -49,6 +50,7 @@ class VIEWS_EXPORT WidgetDelegate {
   // Moved from WindowDelegate: ------------------------------------------------
   // TODO(beng): sort
 
+  virtual BubbleDelegate* AsBubbleDelegate();
   virtual DialogDelegate* AsDialogDelegate();
 
   // Returns true if the window can ever be resized.
@@ -177,4 +179,3 @@ class VIEWS_EXPORT WidgetDelegateView : public WidgetDelegate, public View {
 }  // namespace views
 
 #endif  // VIEWS_WIDGET_WIDGET_DELEGATE_H_
-

@@ -13,6 +13,7 @@
 #include "views/controls/button/text_button.h"
 #include "views/controls/label.h"
 #include "views/controls/tabbed_pane/tabbed_pane.h"
+#include "views/examples/bubble_example.h"
 #include "views/examples/button_example.h"
 #include "views/examples/combobox_example.h"
 #include "views/examples/double_split_view_example.h"
@@ -89,6 +90,9 @@ void ExamplesMain::Init() {
 
   ButtonExample button_example(this);
   AddExample(&button_example);
+
+  BubbleExample bubble_example(this);
+  AddExample(&bubble_example);
 
   ThrobberExample throbber_example(this);
   AddExample(&throbber_example);

@@ -2253,6 +2253,10 @@ void NativeWidgetWin::SetInitParams(const Widget::InitParams& params) {
     case Widget::InitParams::TYPE_WINDOW_FRAMELESS:
       style |= WS_POPUP;
       break;
+    case Widget::InitParams::TYPE_BUBBLE:
+      style |= WS_POPUP;
+      style |= WS_CLIPCHILDREN;
+      break;
     case Widget::InitParams::TYPE_POPUP:
       style |= WS_POPUP;
       ex_style |= WS_EX_TOOLWINDOW;
