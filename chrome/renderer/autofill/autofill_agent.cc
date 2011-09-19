@@ -57,6 +57,7 @@ AutofillAgent::AutofillAgent(
       was_query_node_autofilled_(false),
       suggestions_clear_index_(-1),
       suggestions_options_index_(-1),
+      has_shown_autofill_popup_for_current_edit_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
   render_view->webview()->setAutofillClient(this);
 }
