@@ -51,8 +51,7 @@ char buffer[kMaxFileSize];
 uint32_t buffer_pos = 0;
 
 const char kKnownFileContents[] =
-    "This is not an actual pdf file, just a "
-    "test file so we can verify HandleDocumentLoad.";
+    "This is just a test file so we can verify HandleDocumentLoad.";
 
 void ReadCallback(void* user_data, int32_t pp_error_or_bytes) {
   PP_Resource url_loader = reinterpret_cast<PP_Resource>(user_data);

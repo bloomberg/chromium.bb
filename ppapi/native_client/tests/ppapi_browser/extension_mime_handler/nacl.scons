@@ -6,9 +6,7 @@
 # Test loading a NaCl-enabled Chrome Extension.  This also covers parts
 # of {ppb,ppp}_instance interfaces that are not testable any other way.
 
-# The extension registers the nacl module as a content handler for
-# application/pdf because it's easy to override that known type, but the
-# actual file we use is a plain text file with a .pdf file extension.
+# The extension registers the nacl module as a content handler for foo/bar.
 
 Import('env')
 
@@ -37,15 +35,16 @@ dest_copy.append(env.CopyLibsForExtension(
 
 env.Depends(env.Alias(nexe), dest_copy)
 
-# Publish the html,js, and pdf.
+# Publish the html and dat.
 env.Publish(nexe, 'run',
             ['ppapi_extension_mime_handler.html',
-             'mime_test_data.pdf'])
+             'mime_test_data.dat'])
 
 node = env.PPAPIBrowserTester('ppapi_extension_mime_handler.out',
     url='ppapi_extension_mime_handler.html',
     nmfs=['${TEST_DIR}/ppapi_extension_mime_handler.nmf'],
     extensions=[env.Dir('$STAGING_DIR/ppapi_extension_mime_handler')],
+    mime_types=[('dat', 'foo/bar')],
     files=env.ExtractPublishedFiles(nexe))
 
 env.Depends(node, dest_copy)
