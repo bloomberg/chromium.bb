@@ -2804,6 +2804,8 @@ bool Browser::IsReservedCommandOrKey(int command_id,
   }
 #endif
 
+  if (window_->IsFullscreen() && command_id == IDC_FULLSCREEN)
+    return true;
   return command_id == IDC_CLOSE_TAB ||
          command_id == IDC_CLOSE_WINDOW ||
          command_id == IDC_NEW_INCOGNITO_WINDOW ||
