@@ -72,8 +72,7 @@ node = env.PPAPIBrowserTester(
            ]
     )
 
-env.AddNodeToTestSuite(node, ['chrome_browser_tests'], 'earth_browser_test_c',
-                       is_broken=env.Bit('nacl_glibc'))
+env.AddNodeToTestSuite(node, ['chrome_browser_tests'], 'earth_browser_test_c')
 
 node = env.PPAPIBrowserTester(
     'earth_browser_test_cc.out',
@@ -85,5 +84,4 @@ node = env.PPAPIBrowserTester(
            ]
     )
 
-env.AddNodeToTestSuite(node, ['chrome_browser_tests'], 'earth_browser_test_cc',
-                       is_broken=env.Bit('nacl_glibc'))
+env.AddNodeToTestSuite(node, ['chrome_browser_tests'], 'earth_browser_test_cc')

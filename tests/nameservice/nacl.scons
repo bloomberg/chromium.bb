@@ -84,5 +84,4 @@ node = env.PPAPIBrowserTester(
 env.AddNodeToTestSuite(node,
                        ['chrome_browser_tests'],
                        'run_pm_nameservice_chrome_browser_test',
-                       is_broken=env.PPAPIBrowserTesterIsBroken() or
-                                 env.Bit('nacl_glibc'))
+                       is_broken=env.PPAPIBrowserTesterIsBroken())
