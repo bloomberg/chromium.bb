@@ -465,7 +465,7 @@ cr.define('options', function() {
 
     // Reverse the button strip for views. See the documentation of
     // reverseButtonStrip_() for an explanation of why this is necessary.
-    if (document.documentElement.toolkit == 'views')
+    if (cr.isViews)
       this.reverseButtonStrip_(overlay);
 
     overlay.tab = undefined;
