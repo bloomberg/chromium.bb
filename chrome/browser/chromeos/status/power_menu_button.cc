@@ -316,6 +316,10 @@ void PowerMenuButton::OnLocaleChanged() {
 // PowerMenuButton, views::ViewMenuDelegate implementation:
 
 void PowerMenuButton::RunMenu(views::View* source, const gfx::Point& pt) {
+  // Explicitly query the power status.
+  if (CrosLibrary::Get()->EnsureLoaded())
+    CrosLibrary::Get()->GetPowerLibrary()->RequestStatusUpdate();
+
   views::MenuItemView* menu = new views::MenuItemView(this);
   // MenuRunner takes ownership of |menu|.
   menu_runner_.reset(new views::MenuRunner(menu));

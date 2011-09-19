@@ -109,6 +109,13 @@ class PowerLibraryImpl : public PowerLibrary {
     if (CrosLibrary::Get()->EnsureLoaded())
       chromeos::RequestShutdown();
   }
+
+  virtual void RequestStatusUpdate() OVERRIDE {
+    // TODO(stevenjb): chromeos::RetrievePowerInformation has been deprecated;
+    // we should add a mechanism to immediately request an update, probably
+    // when we migrate the DBus code from libcros to here.
+  }
+
   // End PowerLibrary implementation.
 
  private:
@@ -190,13 +197,8 @@ class PowerLibraryStubImpl : public PowerLibrary {
  public:
   PowerLibraryStubImpl()
       : discharging_(true),
-        battery_percentage_(20),
+        battery_percentage_(80),
         pause_count_(0) {
-    timer_.Start(
-        FROM_HERE,
-        base::TimeDelta::FromMilliseconds(100),
-        this,
-        &PowerLibraryStubImpl::Update);
   }
 
   virtual ~PowerLibraryStubImpl() {}
@@ -245,9 +247,25 @@ class PowerLibraryStubImpl : public PowerLibrary {
     callback->Run(0);
     delete callback;
   }
+
   virtual void EnableScreenLock(bool enable) OVERRIDE {}
+
   virtual void RequestRestart() OVERRIDE {}
+
   virtual void RequestShutdown() OVERRIDE {}
+
+  virtual void RequestStatusUpdate() OVERRIDE {
+    if (!timer_.IsRunning()) {
+      timer_.Start(
+          FROM_HERE,
+          base::TimeDelta::FromMilliseconds(100),
+          this,
+          &PowerLibraryStubImpl::Update);
+    } else {
+      timer_.Stop();
+    }
+  }
+
   // End PowerLibrary implementation.
 
  private:

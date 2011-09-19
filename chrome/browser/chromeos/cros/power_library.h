@@ -68,6 +68,9 @@ class PowerLibrary {
   // Requests shutdown of the system.
   virtual void RequestShutdown() = 0;
 
+  // UI initiated request for status update.
+  virtual void RequestStatusUpdate() = 0;
+
   // Factory function, creates a new instance and returns ownership.
   // For normal usage, access the singleton via CrosLibrary::Get().
   static PowerLibrary* GetImpl(bool stub);
