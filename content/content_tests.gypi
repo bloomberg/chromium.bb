@@ -189,6 +189,7 @@
           'target_name': 'omx_video_decode_accelerator_unittest',
           'type': 'executable',
           'dependencies': [
+            '../base/base.gyp:base',
             'content',
             '../testing/gtest.gyp:gtest',
           ],
