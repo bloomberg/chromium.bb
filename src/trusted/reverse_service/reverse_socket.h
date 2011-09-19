@@ -43,6 +43,11 @@ class ReverseSocket {
 
   ~ReverseSocket();  // dtor will delete conn_cap
 
+  bool StartServiceCb(void (*exit_cb)(void *server_instance_data,
+                                      int  server_loop_ret),
+                      void *server_instance_data);
+
+  /* StartService just invokes StartServiceCb with exit_cb boudn to NULL */
   bool StartService(void* server_instance_data);
 
  private:

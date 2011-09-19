@@ -553,6 +553,25 @@ NaClErrorCode NaClWaitForLoadModuleStatus(struct NaClApp *nap) NACL_WUR;
 
 NaClErrorCode NaClWaitForStartModuleCommand(struct NaClApp *nap) NACL_WUR;
 
+/*
+ * NaClBlockIfCommandChannelExists is used during error exit.  If
+ * there is a secure command channel, we sent an RPC reply with the
+ * reason that the nexe was rejected.  If we exit immediately, that
+ * reply may still be in-flight and the various channel closure (esp
+ * reverse channels, if those were set up) may be detected first by
+ * the controlling process on the other end of the command channel or
+ * reverse channel.  When channel closure wins the race against the
+ * RPC reply, it would result in a crash being reported, rather than
+ * the error code carried in the RPC reply.  We want to ensure that
+ * the RPC reply to get processed.  Instead of allowing the service
+ * runtime process to exit, we block the main thread and wait for the
+ * hard-shutdown on the command channel or command channel closure.
+ *
+ * If there is no command channel, NaClBlockIfCommandChannelExists
+ * just returns immediately.
+ */
+void NaClBlockIfCommandChannelExists(struct NaClApp *nap);
+
 void NaClFillMemoryRegionWithHalt(void *start, size_t size);
 
 void NaClFillTrampolineRegion(struct NaClApp *nap);

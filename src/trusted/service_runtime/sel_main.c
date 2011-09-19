@@ -163,7 +163,7 @@ int main(int  argc,
   struct NaClApp                *nap;
 
   struct GioFile                gout;
-  NaClErrorCode                 errcode;
+  NaClErrorCode                 errcode = LOAD_INTERNAL;
   struct GioMemoryFileSnapshot  blob_file;
 
   int                           ret_code;
@@ -855,6 +855,17 @@ int main(int  argc,
     printf("Dumping vmmap.\n"); fflush(stdout);
     PrintVmmap(nap);
     fflush(stdout);
+  }
+  /*
+   * If there is a secure command channel, we sent an RPC reply with
+   * the reason that the nexe was rejected.  If we exit now, that
+   * reply may still be in-flight and the various channel closure (esp
+   * reverse channel) may be detected first.  This would result in a
+   * crash being reported, rather than the error in the RPC reply.
+   * Instead, we wait for the hard-shutdown on the command channel.
+   */
+  if (LOAD_OK != errcode) {
+    NaClBlockIfCommandChannelExists(nap);
   }
 
  done_file_dtor:

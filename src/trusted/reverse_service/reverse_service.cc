@@ -52,7 +52,7 @@ void AddChannel(NaClSrpcRpc* rpc,
   UNREFERENCED_PARAMETER(in_args);
 
   NaClLog(4, "Entered AddChannel\n");
-  out_args[0]->u.bval = service->Start();
+  out_args[0]->u.bval = service->Start(false);
   NaClLog(4, "Leaving AddChannel\n");
   rpc->result = NACL_SRPC_RESULT_OK;
 }
@@ -402,9 +402,24 @@ ReverseService::~ReverseService() {
 }
 
 
-bool ReverseService::Start() {
+static void RevServiceCbBinder(void *state,
+                               int  server_loop_ret) {
+  ReverseService *obj = reinterpret_cast<ReverseService *>(state);
+
+  UNREFERENCED_PARAMETER(server_loop_ret);
+  obj->reverse_interface()->ReportCrash();
+}
+
+
+bool ReverseService::Start(bool crash_report) {
   NaClLog(4, "Entered ReverseService::Start\n");
-  return service_socket_->StartService(reinterpret_cast<void*>(this));
+  if (crash_report) {
+    return service_socket_->StartServiceCb(RevServiceCbBinder,
+                                           reinterpret_cast<void*>(this));
+  } else {
+    return service_socket_->StartServiceCb(NULL,
+                                           reinterpret_cast<void*>(this));
+  }
 }
 
 void ReverseService::WaitForServiceThreadsToExit() {

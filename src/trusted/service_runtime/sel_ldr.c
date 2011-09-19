@@ -19,6 +19,7 @@
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/shared/platform/nacl_sync.h"
 #include "native_client/src/shared/platform/nacl_sync_checked.h"
+#include "native_client/src/shared/platform/nacl_time.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 
 
@@ -56,6 +57,7 @@
 #include "native_client/src/trusted/threading/nacl_thread_interface.h"
 
 #include "native_client/src/trusted/service_runtime/include/sys/stat.h"
+#include "native_client/src/trusted/service_runtime/include/sys/time.h"
 
 #include "native_client/src/trusted/simple_service/nacl_simple_rservice.h"
 #include "native_client/src/trusted/simple_service/nacl_simple_service.h"
@@ -1130,6 +1132,17 @@ NaClErrorCode NaClWaitForStartModuleCommand(struct NaClApp *nap) {
   NaClLog(4, "NaClWaitForStartModuleCommand finished\n");
 
   return status;
+}
+
+void NaClBlockIfCommandChannelExists(struct NaClApp *nap) {
+  if (NULL != nap->secure_service) {
+    for (;;) {
+      struct nacl_abi_timespec req;
+      req.tv_sec = 1000;
+      req.tv_nsec = 0;
+      NaClNanosleep(&req, (struct nacl_abi_timespec *) NULL);
+    }
+  }
 }
 
 

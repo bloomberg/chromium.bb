@@ -1,7 +1,7 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 #include <string.h>
@@ -26,6 +26,15 @@ namespace nacl {
 SelLdrLauncher::~SelLdrLauncher() {
   CloseHandlesAfterLaunch();
   if (kInvalidHandle != child_process_) {
+    // Ensure child process (service runtime) is kaput.  NB: we might
+    // close the command channel (or use the hard_shutdown RPC) rather
+    // than killing the process to allow the service runtime to do
+    // clean up, but the plugin should be responsible for that and we
+    // shouldn't introduce any timeout wait in a dtor.  Currently,
+    // ServiceRuntime::Shutdown kills the subprocess before closing
+    // the command channel, so we aren't providing the opportunity for
+    // a more graceful shutdown.
+    KillChildProcess();
     CloseHandle(child_process_);
   }
   if (kInvalidHandle != channel_) {

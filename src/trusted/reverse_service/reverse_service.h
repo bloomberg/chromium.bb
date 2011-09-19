@@ -1,3 +1,4 @@
+/* -*- c++ -*- */
 /*
  * Copyright (c) 2011 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
@@ -70,7 +71,22 @@ class ReverseService : public RefCountBase {
     return reinterpret_cast<ReverseService*>(RefCountBase::Ref());
   }
 
-  bool Start();
+  // Start starts the reverse service by initiating a connection on
+  // the conn_cap and spawning a service thread using the
+  // ReverseInterface rif, both provided in the ctor.
+  //
+  // If |crash_report| is true, then the ReportCrash virtual function
+  // will be invoked when the reverse channel is closed.  Typically
+  // this is needed only in one (the "primary" or "bootstrap")
+  // instance of the reverse service, since additional channels
+  // created are often used for and are under application program
+  // control, and the untrusted application should be able to close
+  // those channels without generating a false crash report.
+  bool Start(bool crash_report);
+
+  bool Start() {
+    return Start(true);
+  }
 
   void WaitForServiceThreadsToExit();
 

@@ -33,6 +33,15 @@ SelLdrLauncher::~SelLdrLauncher() {
   CloseHandlesAfterLaunch();
   if (kInvalidHandle != child_process_) {
     int status;
+    // Ensure child process (service runtime) is kaput.  NB: we might
+    // close the command channel (or use the hard_shutdown RPC) rather
+    // than killing the process to allow the service runtime to do
+    // clean up, but the plugin should be responsible for that and we
+    // shouldn't introduce any timeout wait in a dtor.  Currently,
+    // ServiceRuntime::Shutdown kills the subprocess before closing
+    // the command channel, so we aren't providing the opportunity for
+    // a more graceful shutdown.
+    KillChildProcess();
     waitpid(child_process_, &status, 0);
   }
   if (kInvalidHandle != channel_) {
@@ -112,6 +121,14 @@ bool SelLdrLauncher::LaunchFromCommandLine() {
 }
 
 bool SelLdrLauncher::KillChildProcess() {
+  if (kInvalidHandle == child_process_) {
+    // It is incorrect to use the kill syscall on kInvalidHandle as
+    // the pid, since using -1 as pid is defined by POSIX.1-2001 to
+    // send the signal (SIGKILL) to every process that the calling
+    // process may send signals to (except for init), which is
+    // Definitely Not What Was Intended for this.
+    return true;
+  }
   return 0 == kill(child_process_, SIGKILL);
   // We cannot set child_process_ to kInvalidHandle since we will want to wait
   // on its exit status.

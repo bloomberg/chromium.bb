@@ -105,8 +105,8 @@ void NaClMainForChromium(int handle_count, const NaClHandle *handles,
   const char **envp;
   struct NaClApp state;
   int export_addr_to = kSrpcFd; /* Used to be set by -X. */
-  struct NaClApp *nap;
-  NaClErrorCode errcode;
+  struct NaClApp *nap = &state;
+  NaClErrorCode errcode = LOAD_INTERNAL;
   int ret_code = 1;
   struct NaClEnvCleanser env_cleanser;
   int skip_qualification;
@@ -128,10 +128,9 @@ void NaClMainForChromium(int handle_count, const NaClHandle *handles,
 
   if (!NaClAppCtor(&state)) {
     fprintf(stderr, "Error while constructing app state\n");
-    goto done;
+    goto done_ctor;
   }
 
-  nap = &state;
   errcode = LOAD_OK;
 
   NaClAppInitialDescriptorHookup(nap);
@@ -296,6 +295,20 @@ void NaClMainForChromium(int handle_count, const NaClHandle *handles,
 
  done:
   fflush(stdout);
+
+  /*
+   * If there is a secure command channel, we sent an RPC reply with
+   * the reason that the nexe was rejected.  If we exit now, that
+   * reply may still be in-flight and the various channel closure (esp
+   * reverse channel) may be detected first.  This would result in a
+   * crash being reported, rather than the error in the RPC reply.
+   * Instead, we wait for the hard-shutdown on the command channel.
+   */
+  if (LOAD_OK != errcode) {
+    NaClBlockIfCommandChannelExists(nap);
+  }
+
+ done_ctor:
 
   NaClAllModulesFini();
 
