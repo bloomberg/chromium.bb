@@ -107,7 +107,7 @@ void ScreenRotation::AnimationEnded(const ui::Animation* anim) {
   animation_stopped_ = true;
 }
 
-void ScreenRotation::OnCompositingEnded() {
+void ScreenRotation::OnCompositingEnded(ui::Compositor* compositor) {
   DoPendingWork();
 }
 

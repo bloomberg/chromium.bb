@@ -140,7 +140,10 @@ class TestRenderWidgetHostView : public RenderWidgetHostView {
 #if defined(TOUCH_UI)
   virtual void AcceleratedSurfaceSetIOSurface(
       int32 width, int32 height, uint64 surface_id) { }
-  virtual void AcceleratedSurfaceBuffersSwapped(uint64 surface_id) { }
+  virtual void AcceleratedSurfaceBuffersSwapped(
+      uint64 surface_id,
+      int32 route_id,
+      int gpu_host_id) OVERRIDE {}
   virtual void AcceleratedSurfaceRelease(uint64 surface_id) { }
 #endif
 

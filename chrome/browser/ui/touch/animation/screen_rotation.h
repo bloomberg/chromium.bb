@@ -66,7 +66,7 @@ class ScreenRotation : public ui::AnimationDelegate,
   virtual void AnimationProgressed(const ui::Animation* anim) OVERRIDE;
 
   // Implementation of ui::CompositorObserver
-  void OnCompositingEnded() OVERRIDE;
+  void OnCompositingEnded(ui::Compositor* compositor) OVERRIDE;
 
   // Initializes |interpolated_transform_|, |new_origin_|, |new_size_|, and
   // (if it has not already been initialized) |old_transform_|

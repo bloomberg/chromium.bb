@@ -127,6 +127,10 @@ void GpuProcessHostUIShim::DidDestroyAcceleratedSurface(int renderer_id,
   Send(new GpuMsg_DestroyCommandBuffer(renderer_id, render_view_id));
 }
 
+#endif
+
+#if defined(OS_MACOSX) || defined(TOUCH_UI)
+
 void GpuProcessHostUIShim::SendToGpuHost(int host_id, IPC::Message* msg) {
   GpuProcessHostUIShim* ui_shim = FromID(host_id);
   if (!ui_shim) {
@@ -274,8 +278,9 @@ void GpuProcessHostUIShim::OnAcceleratedSurfaceBuffersSwapped(
       host_id_,
       params.swap_buffers_count);
 #elif defined(TOUCH_UI)
-  view->AcceleratedSurfaceBuffersSwapped(params.surface_id);
-  Send(new AcceleratedSurfaceMsg_BuffersSwappedACK(params.route_id));
+  // view must send ACK message after next composite
+  view->AcceleratedSurfaceBuffersSwapped(
+      params.surface_id, params.route_id, host_id_);
 #endif
 }
 

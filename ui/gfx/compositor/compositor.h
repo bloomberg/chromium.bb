@@ -118,10 +118,11 @@ class COMPOSITOR_EXPORT Compositor : public base::RefCounted<Compositor> {
   // Returns the size of the widget that is being drawn to.
   const gfx::Size& size() { return size_; }
 
-  // Layers do not own observers. It is the responsibility of the observer to
-  // remove itself when it is done observing.
+  // Compositor does not own observers. It is the responsibility of the
+  // observer to remove itself when it is done observing.
   void AddObserver(CompositorObserver* observer);
   void RemoveObserver(CompositorObserver* observer);
+  bool HasObserver(CompositorObserver* observer);
 
  protected:
   Compositor(CompositorDelegate* delegate, const gfx::Size& size);

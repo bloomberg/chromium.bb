@@ -35,6 +35,10 @@ void Compositor::RemoveObserver(CompositorObserver* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
+bool Compositor::HasObserver(CompositorObserver* observer) {
+  return observer_list_.HasObserver(observer);
+}
+
 void Compositor::NotifyStart(bool clear) {
   OnNotifyStart(clear);
 }
@@ -43,7 +47,7 @@ void Compositor::NotifyEnd() {
   OnNotifyEnd();
   FOR_EACH_OBSERVER(CompositorObserver,
                     observer_list_,
-                    OnCompositingEnded());
+                    OnCompositingEnded(this));
 }
 
 }  // namespace ui

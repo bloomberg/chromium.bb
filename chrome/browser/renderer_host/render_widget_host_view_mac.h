@@ -287,7 +287,7 @@ class RenderWidgetHostViewMac : public RenderWidgetHostView {
       int renderer_id,
       int32 route_id,
       int gpu_host_id,
-      uint64 swap_buffers_count);
+      uint64 swap_buffers_count) OVERRIDE;
   virtual void GpuRenderingStateDidChange() OVERRIDE;
   virtual void GetScreenInfo(WebKit::WebScreenInfo* results) OVERRIDE;
   virtual gfx::Rect GetRootWindowBounds() OVERRIDE;

@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "base/process_util.h"
+#include "base/callback.h"
 #include "content/common/content_export.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -272,7 +273,10 @@ class RenderWidgetHostView {
 #if defined(TOUCH_UI)
   virtual void AcceleratedSurfaceSetIOSurface(
       int32 width, int32 height, uint64 surface_id) = 0;
-  virtual void AcceleratedSurfaceBuffersSwapped(uint64 surface_id) = 0;
+  virtual void AcceleratedSurfaceBuffersSwapped(
+      uint64 surface_id,
+      int32 route_id,
+      int gpu_host_id) = 0;
   virtual void AcceleratedSurfaceRelease(uint64 surface_id) = 0;
 #endif
 

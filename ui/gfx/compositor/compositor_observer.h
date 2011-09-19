@@ -8,11 +8,13 @@
 
 namespace ui {
 
+class Compositor;
+
 // A compositor observer is notified when compositing completes.
 class CompositorObserver {
  public:
   // Called when compositing completes.
-  virtual void OnCompositingEnded() = 0;
+  virtual void OnCompositingEnded(Compositor* compositor) = 0;
 
  protected:
   virtual ~CompositorObserver() {}

@@ -16,6 +16,7 @@
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
+#include "ui/gfx/compositor/compositor_observer.h"
 #include "ui/gfx/native_widget_types.h"
 #include "views/controls/native/native_view_host.h"
 #include "views/events/event.h"
@@ -38,6 +39,9 @@ struct NativeWebKeyboardEvent;
 // See comments in render_widget_host_view.h about this class and its members.
 // -----------------------------------------------------------------------------
 class RenderWidgetHostViewViews : public RenderWidgetHostView,
+#if defined(TOUCH_UI)
+                                  public ui::CompositorObserver,
+#endif
                                   public views::TouchSelectionClientView,
                                   public views::TextInputClient,
                                   public NotificationObserver {
@@ -177,8 +181,14 @@ class RenderWidgetHostViewViews : public RenderWidgetHostView,
 #if defined(TOUCH_UI)
   virtual void AcceleratedSurfaceSetIOSurface(
       int32 width, int32 height, uint64 surface_id) OVERRIDE;
-  virtual void AcceleratedSurfaceBuffersSwapped(uint64 surface_id) OVERRIDE;
+  virtual void AcceleratedSurfaceBuffersSwapped(
+      uint64 surface_id,
+      int32 route_id,
+      int gpu_host_id) OVERRIDE;
   virtual void AcceleratedSurfaceRelease(uint64 surface_id) OVERRIDE;
+
+  // CompositorObserver implementation:
+  virtual void OnCompositingEnded(ui::Compositor* compositor) OVERRIDE;
 #endif
 
  protected:
@@ -279,6 +289,10 @@ class RenderWidgetHostViewViews : public RenderWidgetHostView,
   bool has_composition_text_;
 
   string16 tooltip_text_;
+
+#if defined(TOUCH_UI)
+  std::vector< base::Callback<void(void)> > on_compositing_ended_callbacks_;
+#endif
 
   scoped_ptr<views::TouchSelectionController> touch_selection_controller_;
   gfx::Point selection_start_;

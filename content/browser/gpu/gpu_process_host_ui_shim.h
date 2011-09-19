@@ -79,9 +79,12 @@ class GpuProcessHostUIShim
 #if defined(OS_MACOSX)
   // Notify the GPU process that an accelerated surface was destroyed.
   void DidDestroyAcceleratedSurface(int renderer_id, int32 render_view_id);
+#endif
 
+#if defined(OS_MACOSX) || defined(TOUCH_UI)
   // TODO(apatrick): Remove this when mac does not use AcceleratedSurfaces for
   // when running the GPU thread in the browser process.
+  // This is now also used in TOUCH_UI builds.
   static void SendToGpuHost(int host_id, IPC::Message* msg);
 #endif
 
