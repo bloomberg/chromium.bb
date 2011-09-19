@@ -41,7 +41,7 @@ class AppCacheDiskCache::EntryImpl : public Entry {
   }
   virtual void Close() {
     disk_cache_entry_->Close();
-    disk_cache_entry_ = NULL;
+    delete this;
   }
 
  private:
