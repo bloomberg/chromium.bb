@@ -197,11 +197,6 @@ class PageCyclerTest : public UIPerfTest {
     pages->assign(UTF8ToWide(cookie));
     ASSERT_FALSE(pages->empty());
 
-    // Wait for the report.html to be loaded.
-    ASSERT_TRUE(WaitUntilCookieValue(
-        tab.get(), test_url, "__navigated_to_report",
-        TestTimeouts::action_max_timeout_ms(), "1"));
-
     // Get the timing cookie value from the DOM automation.
     std::wstring wcookie;
     ASSERT_TRUE(tab->ExecuteAndExtractString(L"",
@@ -447,18 +442,20 @@ TEST_F(PageCyclerReferenceTest, name) { \
 
 // This macro simplifies setting up regular and reference build tests
 // for HTML5 database tests.
+// FLAKY http://crbug.com/67918
 #define PAGE_CYCLER_DATABASE_TESTS(test, name) \
-TEST_F(PageCyclerDatabaseTest, Database##name##File) { \
+TEST_F(PageCyclerDatabaseTest, FLAKY_Database##name##File) { \
   RunTest(test, test, false); \
 } \
-TEST_F(PageCyclerDatabaseReferenceTest, Database##name##File) { \
+TEST_F(PageCyclerDatabaseReferenceTest, FLAKY_Database##name##File) { \
   RunTest(test, test, false); \
 }
 
 // This macro simplifies setting up regular and reference build tests
 // for HTML5 Indexed DB tests.
+// FLAKY http://crbug.com/67918
 #define PAGE_CYCLER_IDB_TESTS(test, name) \
-TEST_F(PageCyclerIndexedDatabaseTest, IndexedDB##name##File) { \
+TEST_F(PageCyclerIndexedDatabaseTest, FLAKY_IndexedDB##name##File) { \
   RunTest(test, test, false); \
 } \
 TEST_F(PageCyclerIndexedDatabaseReferenceTest, IndexedDB##name##File) { \
