@@ -10,11 +10,7 @@
 #include "base/string_util.h"
 #include "net/base/net_errors.h"
 #include "net/base/io_buffer.h"
-#include "net/disk_cache/disk_cache.h"
-#include "webkit/appcache/appcache_disk_cache.h"
 #include "webkit/appcache/appcache_service.h"
-
-using disk_cache::Entry;
 
 namespace appcache {
 
@@ -76,7 +72,7 @@ HttpResponseInfoIOBuffer::~HttpResponseInfoIOBuffer() {}
 // AppCacheResponseIO ----------------------------------------------
 
 AppCacheResponseIO::AppCacheResponseIO(
-    int64 response_id, AppCacheDiskCache* disk_cache)
+    int64 response_id, AppCacheDiskCacheInterface* disk_cache)
     : response_id_(response_id), disk_cache_(disk_cache),
       entry_(NULL), buffer_len_(0), user_callback_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
@@ -111,7 +107,7 @@ void AppCacheResponseIO::ReadRaw(int index, int offset,
                                  net::IOBuffer* buf, int buf_len) {
   DCHECK(entry_);
   raw_callback_->AddRef();  // Balanced in OnRawIOComplete.
-  int rv = entry_->ReadData(index, offset, buf, buf_len, raw_callback_);
+  int rv = entry_->Read(index, offset, buf, buf_len, raw_callback_);
   if (rv != net::ERR_IO_PENDING) {
     raw_callback_->Release();
     ScheduleIOCompletionCallback(rv);
@@ -121,10 +117,8 @@ void AppCacheResponseIO::ReadRaw(int index, int offset,
 void AppCacheResponseIO::WriteRaw(int index, int offset,
                                  net::IOBuffer* buf, int buf_len) {
   DCHECK(entry_);
-  const bool kTruncate = true;
   raw_callback_->AddRef();  // Balanced in OnRawIOComplete.
-  int rv = entry_->WriteData(index, offset, buf, buf_len, raw_callback_,
-                             kTruncate);
+  int rv = entry_->Write(index, offset, buf, buf_len, raw_callback_);
   if (rv != net::ERR_IO_PENDING) {
     raw_callback_->Release();
     ScheduleIOCompletionCallback(rv);
@@ -141,7 +135,7 @@ void AppCacheResponseIO::OnRawIOComplete(int result) {
 // AppCacheResponseReader ----------------------------------------------
 
 AppCacheResponseReader::AppCacheResponseReader(
-    int64 response_id, AppCacheDiskCache* disk_cache)
+    int64 response_id, AppCacheDiskCacheInterface* disk_cache)
     : AppCacheResponseIO(response_id, disk_cache),
       range_offset_(0), range_length_(kint32max),
       read_position_(0) {
@@ -169,7 +163,7 @@ void AppCacheResponseReader::ContinueReadInfo() {
     return;
   }
 
-  int size = entry_->GetDataSize(kResponseInfoIndex);
+  int size = entry_->GetSize(kResponseInfoIndex);
   if (size <= 0) {
     ScheduleIOCompletionCallback(net::ERR_CACHE_MISS);
     return;
@@ -230,7 +224,7 @@ void AppCacheResponseReader::OnIOComplete(int result) {
       // Also return the size of the response body
       DCHECK(entry_);
       info_buffer_->response_data_size =
-          entry_->GetDataSize(kResponseContentIndex);
+          entry_->GetSize(kResponseContentIndex);
     } else {
       read_position_ += result;
     }
@@ -275,7 +269,7 @@ void AppCacheResponseReader::OnOpenEntryComplete(int rv) {
 // AppCacheResponseWriter ----------------------------------------------
 
 AppCacheResponseWriter::AppCacheResponseWriter(
-    int64 response_id, AppCacheDiskCache* disk_cache)
+    int64 response_id, AppCacheDiskCacheInterface* disk_cache)
     : AppCacheResponseIO(response_id, disk_cache),
       info_size_(0), write_position_(0), write_amount_(0),
       creation_phase_(INITIAL_ATTEMPT) {

@@ -11,20 +11,15 @@
 #include "base/task.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/completion_callback.h"
-#include "net/disk_cache/disk_cache.h"
 #include "net/http/http_response_info.h"
 #include "webkit/appcache/appcache_interfaces.h"
 
 namespace net {
 class IOBuffer;
 }
-namespace disk_cache {
-class Entry;
-};
 
 namespace appcache {
 
-class AppCacheDiskCache;
 class AppCacheService;
 
 static const int kUnkownResponseDataSize = -1;
@@ -72,6 +67,32 @@ struct HttpResponseInfoIOBuffer
   virtual ~HttpResponseInfoIOBuffer();
 };
 
+// Low level storage api used by the response reader and writer.
+class AppCacheDiskCacheInterface {
+ public:
+  class Entry {
+   public:
+    virtual int Read(int index, int64 offset, net::IOBuffer* buf, int buf_len,
+                     net::CompletionCallback* completion_callback) = 0;
+    virtual int Write(int index, int64 offset, net::IOBuffer* buf, int buf_len,
+                      net::CompletionCallback* completion_callback) = 0;
+    virtual int64 GetSize(int index) = 0;
+    virtual void Close() = 0;
+   protected:
+    virtual ~Entry() {}
+  };
+
+  virtual int CreateEntry(int64 key, Entry** entry,
+                          net::CompletionCallback* callback) = 0;
+  virtual int OpenEntry(int64 key, Entry** entry,
+                        net::CompletionCallback* callback) = 0;
+  virtual int DoomEntry(int64 key, net::CompletionCallback* callback) = 0;
+
+ protected:
+  friend class base::RefCounted<AppCacheDiskCacheInterface>;
+  virtual ~AppCacheDiskCacheInterface() {}
+};
+
 // Common base class for response reader and writer.
 class AppCacheResponseIO {
  public:
@@ -88,7 +109,7 @@ class AppCacheResponseIO {
     EntryCallback(T* object,  void (T::* method)(int))
         : BaseClass(object, method), entry_ptr_(NULL) {}
 
-    disk_cache::Entry* entry_ptr_;  // Accessed directly.
+    AppCacheDiskCacheInterface::Entry* entry_ptr_;  // Accessed directly.
    private:
     ~EntryCallback() {
       if (entry_ptr_)
@@ -96,7 +117,8 @@ class AppCacheResponseIO {
     }
   };
 
-  AppCacheResponseIO(int64 response_id, AppCacheDiskCache* disk_cache);
+  AppCacheResponseIO(int64 response_id,
+                     AppCacheDiskCacheInterface* disk_cache);
 
   virtual void OnIOComplete(int result) = 0;
 
@@ -107,8 +129,8 @@ class AppCacheResponseIO {
   void WriteRaw(int index, int offset, net::IOBuffer* buf, int buf_len);
 
   const int64 response_id_;
-  AppCacheDiskCache* disk_cache_;
-  disk_cache::Entry* entry_;
+  AppCacheDiskCacheInterface* disk_cache_;
+  AppCacheDiskCacheInterface::Entry* entry_;
   scoped_refptr<HttpResponseInfoIOBuffer> info_buffer_;
   scoped_refptr<net::IOBuffer> buffer_;
   int buffer_len_;
@@ -167,7 +189,8 @@ class AppCacheResponseReader : public AppCacheResponseIO {
   friend class MockAppCacheStorage;
 
   // Should only be constructed by the storage class.
-  AppCacheResponseReader(int64 response_id, AppCacheDiskCache* disk_cache);
+  AppCacheResponseReader(int64 response_id,
+                         AppCacheDiskCacheInterface* disk_cache);
 
   virtual void OnIOComplete(int result);
   void ContinueReadInfo();
@@ -228,7 +251,8 @@ class AppCacheResponseWriter : public AppCacheResponseIO {
   };
 
   // Should only be constructed by the storage class.
-  AppCacheResponseWriter(int64 response_id, AppCacheDiskCache* disk_cache);
+  AppCacheResponseWriter(int64 response_id,
+                         AppCacheDiskCacheInterface* disk_cache);
 
   virtual void OnIOComplete(int result);
   void ContinueWriteInfo();
