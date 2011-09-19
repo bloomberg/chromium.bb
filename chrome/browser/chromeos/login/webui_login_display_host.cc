@@ -17,7 +17,7 @@ namespace chromeos {
 namespace {
 
 // URL which corresponds to the login WebUI.
-const char kLoginURL[] = "chrome://login";
+const char kLoginURL[] = "chrome://oobe/login";
 // URL which corresponds to the OOBE WebUI.
 const char kOobeURL[] = "chrome://oobe";
 
@@ -104,7 +104,7 @@ void WebUILoginDisplayHost::StartWizard(const std::string& first_screen_name,
 
 void WebUILoginDisplayHost::StartSignInScreen() {
   if (!login_window_)
-    LoadURL(GURL(kOobeURL));
+    LoadURL(GURL(kLoginURL));
 
   BaseLoginDisplayHost::StartSignInScreen();
   GetOobeUI()->ShowSigninScreen();

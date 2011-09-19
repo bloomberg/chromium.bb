@@ -270,9 +270,11 @@ void WebUILoginView::OnRenderHostCreated(RenderViewHost* host) {
 }
 
 void WebUILoginView::OnTabMainFrameLoaded() {
+  VLOG(1) << "WebUI login main frame loaded.";
 }
 
 void WebUILoginView::OnTabMainFrameFirstRender() {
+  VLOG(1) << "WebUI login main frame rendered.";
   InitStatusArea();
 
   if (host_window_frozen_) {

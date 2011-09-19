@@ -1,0 +1,162 @@
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+/**
+ * @fileoverview Login UI based on a stripped down OOBE controller.
+ * TODO(xiyuan): Refactoring this to get a better structure.
+ */
+
+var localStrings = new LocalStrings();
+
+cr.define('cr.ui', function() {
+  var DisplayManager = cr.ui.login.DisplayManager;
+
+  /**
+  * Constructs an Out of box controller. It manages initialization of screens,
+  * transitions, error messages display.
+  * @extends {DisplayManager}
+  * @constructor
+  */
+  function Oobe() {
+  }
+
+  cr.addSingletonGetter(Oobe);
+
+  Oobe.prototype = {
+    __proto__: DisplayManager.prototype,
+  };
+
+  /**
+   * Initializes the OOBE flow.  This will cause all C++ handlers to
+   * be invoked to do final setup.
+   */
+  Oobe.initialize = function() {
+    login.AccountPickerScreen.register();
+    login.GaiaSigninScreen.register();
+    oobe.UserImageScreen.register();
+    login.OfflineMessageScreen.register();
+
+    cr.ui.Bubble.decorate($('bubble'));
+    login.HeaderBar.decorate($('login-header-bar'));
+
+    chrome.send('screenStateInitialize', []);
+  };
+
+  /**
+   * Handle accelerators. These are passed from native code instead of a JS
+   * event handler in order to make sure that embedded iframes cannot swallow
+   * them.
+   * @param {string} name Accelerator name.
+   */
+  Oobe.handleAccelerator = function(name) {
+    Oobe.getInstance().handleAccelerator(name);
+  };
+
+  /**
+   * Shows the given screen.
+   * @param {Object} screen Screen params dict, e.g. {id: screenId, data: data}
+   */
+  Oobe.showScreen = function(screen) {
+    Oobe.getInstance().showScreen(screen);
+  };
+
+  /**
+   * Dummy Oobe functions not present with stripped login UI.
+   */
+  Oobe.enableContinueButton = function(enable) {};
+  Oobe.setUsageStats = function(checked) {};
+  Oobe.setOemEulaUrl = function(oemEulaUrl) {};
+  Oobe.setUpdateProgress = function(progress) {};
+  Oobe.setUpdateMessage = function(message) {};
+  Oobe.showUpdateCurtain = function(enable) {};
+  Oobe.setTpmPassword = function(password) {}
+  Oobe.reloadContent = function(data) {}
+
+  /**
+   * Update body class to switch between OOBE UI and Login UI.
+   */
+  Oobe.showOobeUI = function(showOobe) {
+    if (showOobe) {
+      document.body.classList.remove('login-display');
+    } else {
+      document.body.classList.add('login-display');
+      Oobe.getInstance().prepareForLoginDisplay_();
+    }
+
+    // Don't show header bar for OOBE.
+    Oobe.getInstance().headerHidden = showOobe;
+  };
+
+  /**
+   * Shows signin UI.
+   * @param {string} opt_email An optional email for signin UI.
+   */
+  Oobe.showSigninUI = function(opt_email) {
+    DisplayManager.showSigninUI(opt_email);
+  };
+
+  /**
+   * Resets sign-in input fields.
+   */
+  Oobe.resetSigninUI = function() {
+    DisplayManager.resetSigninUI();
+  };
+
+  /**
+   * Shows sign-in error bubble.
+   * @param {number} loginAttempts Number of login attemps tried.
+   * @param {string} message Error message to show.
+   * @param {string} link Text to use for help link.
+   * @param {number} helpId Help topic Id associated with help link.
+   */
+  Oobe.showSignInError = function(loginAttempts, message, link, helpId) {
+    DisplayManager.showSignInError(loginAttempts, message, link, helpId);
+  };
+
+  /**
+   * Clears error bubble.
+   */
+  Oobe.clearErrors = function() {
+    DisplayManager.clearErrors();
+  };
+
+  /**
+   * Handles login success notification.
+   */
+  Oobe.onLoginSuccess = function(username) {
+    if (Oobe.getInstance().currentScreen.id == SCREEN_ACCOUNT_PICKER) {
+      // TODO(nkostylev): Enable animation back when session start jank
+      // is reduced. See http://crosbug.com/11116 http://crosbug.com/18307
+      // $('pod-row').startAuthenticatedAnimation();
+    }
+  };
+
+  /**
+   * Sets text content for a div with |labelId|.
+   * @param {string} labelId Id of the label div.
+   * @param {string} labelText Text for the label.
+   */
+  Oobe.setLabelText = function(labelId, labelText) {
+    DisplayManager.setLabelText(labelId, labelText);
+  };
+
+  // Export
+  return {
+    Oobe: Oobe
+  };
+});
+
+var Oobe = cr.ui.Oobe;
+
+// Disable text selection.
+document.onselectstart = function(e) {
+  e.preventDefault();
+}
+
+// Disable dragging.
+document.ondragstart = function(e) {
+  e.preventDefault();
+}
+
+document.addEventListener('DOMContentLoaded', cr.ui.Oobe.initialize);
