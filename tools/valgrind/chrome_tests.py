@@ -29,6 +29,8 @@ class BuildDirNotFound(Exception): pass
 class BuildDirAmbiguous(Exception): pass
 
 class ChromeTests:
+  SLOW_TOOLS = ["memcheck", "tsan", "tsan_rv", "drmemory"]
+
   def __init__(self, options, args, test):
     if ':' in test:
       (self._test, self._gtest_filter) = test.split(':', 1)
@@ -130,8 +132,12 @@ class ChromeTests:
     gtest_files_dir = os.path.join(path_utils.ScriptDir(), "gtest_exclude")
 
     gtest_filter_files = [
-        os.path.join(gtest_files_dir, name + ".gtest.txt"),
         os.path.join(gtest_files_dir, name + ".gtest-%s.txt" % tool.ToolName())]
+    # Use ".gtest.txt" files only for slow tools, as they now contain
+    # Valgrind- and Dr.Memory-specific filters.
+    # TODO(glider): rename the files to ".gtest_slow.txt"
+    if tool.ToolName() in ChromeTests.SLOW_TOOLS:
+      gtest_filter_files += [os.path.join(gtest_files_dir, name + ".gtest.txt")]
     for platform_suffix in common.PlatformNames():
       gtest_filter_files += [
         os.path.join(gtest_files_dir, name + ".gtest_%s.txt" % platform_suffix),
