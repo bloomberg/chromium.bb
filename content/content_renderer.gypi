@@ -22,10 +22,6 @@
       ],
       'include_dirs': [
         '..',
-        # Adding two webrtc-includes here to avoid adding a deeper dependency than required.
-        # TODO(henrika): to be removed when "proper" WebRTC-dependency is added to this target.
-        '../third_party/webrtc',
-        '../third_party/webrtc/modules/interface',
       ],
       'sources': [
         'renderer/active_notification_tracker.cc',
@@ -88,8 +84,6 @@
         'renderer/media/video_capture_impl_manager.h',
         'renderer/media/video_capture_message_filter.cc',
         'renderer/media/video_capture_message_filter.h',
-        'renderer/media/webrtc_audio_device_impl.cc',
-        'renderer/media/webrtc_audio_device_impl.h',
         'renderer/mhtml_generator.cc',
         'renderer/mhtml_generator.h',
         'renderer/navigation_state.cc',
@@ -244,8 +238,8 @@
           'sources': [
             'renderer/media/video_capture_module_impl.cc',
             'renderer/media/video_capture_module_impl.h',
-            'renderer/media/video_capture_module_impl_device_info.cc',
-            'renderer/media/video_capture_module_impl_device_info.h',
+            'renderer/media/webrtc_audio_device_impl.cc',
+            'renderer/media/webrtc_audio_device_impl.h',
           ],
         }],
       ],
