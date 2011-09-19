@@ -39,13 +39,13 @@ EXTRA_ENV = {
                       '${PIC && ARCH==X8664 && LIBMODE_NEWLIB ? ' +
                       '  -force-tls-non-pic }',
   'LLC_FLAGS_ARM'    :
-    # The following options might come in hand and are left here as comments:
+    # The following options might come in handy and are left here as comments:
     # TODO(robertm): describe their purpose
     #     '-soft-float -aeabi-calls -sfi-zero-mask',
     # NOTE: we need a fairly high fudge factor because of
     # some vfp instructions which only have a 9bit offset
     ('-arm-reserve-r9 -sfi-disable-cp -arm_static_tls ' +
-     '-sfi-store -sfi-stack -sfi-branch -sfi-data ' +
+     '-sfi-load -sfi-store -sfi-stack -sfi-branch -sfi-data ' +
      '-no-inline-jumptables'),
 
   'LLC_FLAGS_X8632' : '',
