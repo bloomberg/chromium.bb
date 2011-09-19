@@ -167,6 +167,9 @@ BrowserMainParts::BrowserMainParts(const MainFunctionParams& parameters)
 }
 
 BrowserMainParts::~BrowserMainParts() {
+#if defined(OS_WIN)
+  OleUninitialize();
+#endif
 }
 
 void BrowserMainParts::EarlyInitialization() {
