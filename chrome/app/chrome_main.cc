@@ -430,7 +430,6 @@ class ChromeMainDelegate : public content::ContentMainDelegate {
 #if defined(OS_MACOSX)
   void InitMacCrashReporter(const CommandLine& command_line,
                             const std::string& process_type) {
-
     // TODO(mark): Right now, InitCrashReporter() needs to be called after
     // CommandLine::Init() and chrome::RegisterPathProvider().  Ideally,
     // Breakpad initialization could occur sooner, preferably even before the
@@ -615,15 +614,15 @@ class ChromeMainDelegate : public content::ContentMainDelegate {
       // only do this when ResourcesBundle has been initialized).
       SetMacProcessName(process_type);
 #endif  // defined(OS_MACOSX)
+    }
 
 #if defined(USE_LINUX_BREAKPAD)
-      // Needs to be called after we have chrome::DIR_USER_DATA.  BrowserMain
-      // sets this up for the browser process in a different manner. Zygotes
-      // need to call InitCrashReporter() in RunZygote().
-      if (!process_type.empty() && process_type != switches::kZygoteProcess)
-        InitCrashReporter();
+    // Needs to be called after we have chrome::DIR_USER_DATA.  BrowserMain
+    // sets this up for the browser process in a different manner. Zygotes
+    // need to call InitCrashReporter() in RunZygote().
+    if (!process_type.empty() && process_type != switches::kZygoteProcess)
+      InitCrashReporter();
 #endif
-    }
 
 #if defined(OS_CHROMEOS)
     // Read and cache ChromeOS version from file,
