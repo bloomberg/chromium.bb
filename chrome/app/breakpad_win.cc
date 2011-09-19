@@ -182,7 +182,8 @@ void SetPluginPath(const std::wstring& path) {
 // Returns the custom info structure based on the dll in parameter and the
 // process type.
 google_breakpad::CustomClientInfo* GetCustomInfo(const std::wstring& dll_path,
-                                                 const std::wstring& type) {
+                                                 const std::wstring& type,
+                                                 const std::wstring& channel) {
   scoped_ptr<FileVersionInfo>
       version_info(FileVersionInfo::CreateFileVersionInfo(FilePath(dll_path)));
 
@@ -221,6 +222,8 @@ google_breakpad::CustomClientInfo* GetCustomInfo(const std::wstring& dll_path,
       google_breakpad::CustomInfoEntry(L"plat", L"Win32"));
   g_custom_entries->push_back(
       google_breakpad::CustomInfoEntry(L"ptype", type.c_str()));
+  g_custom_entries->push_back(
+      google_breakpad::CustomInfoEntry(L"channel", channel.c_str()));
 
   if (!special_build.empty())
     g_custom_entries->push_back(
@@ -574,9 +577,17 @@ static DWORD __stdcall InitCrashReporterThread(void* param) {
   scoped_ptr<CrashReporterInfo> info(
       reinterpret_cast<CrashReporterInfo*>(param));
 
+  bool is_per_user_install =
+      InstallUtil::IsPerUserInstall(info->dll_path.c_str());
+
+  std::wstring channel_string;
+  GoogleUpdateSettings::GetChromeChannelAndModifiers(!is_per_user_install,
+                                                     &channel_string);
+
   // GetCustomInfo can take a few milliseconds to get the file information, so
   // we do it here so it can run in a separate thread.
-  info->custom_info = GetCustomInfo(info->dll_path, info->process_type);
+  info->custom_info = GetCustomInfo(info->dll_path, info->process_type,
+                                    channel_string);
 
   google_breakpad::ExceptionHandler::MinidumpCallback callback = NULL;
   LPTOP_LEVEL_EXCEPTION_FILTER default_filter = NULL;
@@ -600,8 +611,6 @@ static DWORD __stdcall InitCrashReporterThread(void* param) {
       ((command.HasSwitch(switches::kNoErrorDialogs) ||
       GetEnvironmentVariable(
           ASCIIToWide(env_vars::kHeadless).c_str(), NULL, 0)));
-  bool is_per_user_install =
-      InstallUtil::IsPerUserInstall(info->dll_path.c_str());
 
   std::wstring pipe_name;
   if (use_crash_service) {
@@ -659,9 +668,6 @@ static DWORD __stdcall InitCrashReporterThread(void* param) {
     dump_type = kFullDumpType;
   } else {
     // Capture more detail in crash dumps for beta and dev channel builds.
-    string16 channel_string;
-    GoogleUpdateSettings::GetChromeChannelAndModifiers(!is_per_user_install,
-                                                       &channel_string);
     if (channel_string == L"dev" || channel_string == L"beta" ||
         channel_string == GoogleChromeSxSDistribution::ChannelName())
       dump_type = kLargerDumpType;
