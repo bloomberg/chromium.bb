@@ -1919,12 +1919,8 @@ static void NaClInstPrintInternal(struct Gio* f, Bool as_array_element,
           inst->opcode_ext);
   gprintf(f, "%u, %"NACL_PRIuS", ",
           inst->num_operands, NaClOpOffset(inst->operands));
-  NaClPrintInstOffset(f, (index < 0) ? NULL : inst->next_rule);
-  if (as_array_element) {
-    gprintf(f, "  }%s\n", index < 0 ? ";" : ",");
-  } else {
-    gprintf(f, "  };\n");
-  }
+  NaClPrintInstOffset(f, inst->next_rule);
+  gprintf(f, "  }%c\n", as_array_element ? ',' : ';');
 }
 
 /* Generate header information, based on the executable name in argv0,
