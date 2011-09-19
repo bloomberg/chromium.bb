@@ -205,6 +205,7 @@
 0x2aeb39c03cc86464	CreateLink
 0x1225d110ef7fba17	CreateProfile
 0x30604f84327d0ae5	CreateShortcut
+0xfdf6ee64a0588855	Cryptohome.PKCS11InitFail
 0xeb334dca00e390e0	Cut
 0xb94d8a074eddd267	Debugger
 0xf2a6c498fb90ee34	Delete

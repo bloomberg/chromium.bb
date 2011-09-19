@@ -219,6 +219,9 @@ def AddChromeOSActions(actions):
   actions.add('Updater.ServerCertificateChanged')
   actions.add('Updater.ServerCertificateFailed')
 
+  # Actions sent by Chrome OS cryptohome.
+  actions.add('Cryptohome.PKCS11InitFail')
+
 def GrepForActions(path, actions):
   """Grep a source file for calls to UserMetrics functions.
 
