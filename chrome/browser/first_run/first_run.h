@@ -17,10 +17,11 @@
 class CommandLine;
 class FilePath;
 class GURL;
-class Profile;
-class ProcessSingleton;
 class ImporterHost;
 class ImporterList;
+class Profile;
+class ProcessSingleton;
+class TemplateURLService;
 
 // This class contains the chrome first-run installation actions needed to
 // fully test the custom installer. It also contains the opposite actions to
@@ -130,6 +131,9 @@ class FirstRun {
   // True if special circumstances should prevent the search engine ballot from
   // being shown.
   static bool SearchEngineSelectorDisallowed();
+
+  // Whether the search engine selection dialog should be shown on first run.
+  static bool ShouldShowSearchEngineSelector(const TemplateURLService* model);
 
   // -- Platform-specific functions --
 

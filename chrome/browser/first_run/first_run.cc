@@ -462,6 +462,12 @@ bool FirstRun::SearchEngineSelectorDisallowed() {
 }
 
 // static
+bool FirstRun::ShouldShowSearchEngineSelector(const TemplateURLService* model) {
+  return !SearchEngineSelectorDisallowed() &&
+         model && !model->is_default_search_managed();
+}
+
+// static
 bool FirstRun::SetOEMFirstRunBubblePref() {
   PrefService* local_state = g_browser_process->local_state();
   if (!local_state)

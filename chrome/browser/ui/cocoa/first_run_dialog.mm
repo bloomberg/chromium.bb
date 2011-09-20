@@ -151,8 +151,7 @@ void ShowFirstRunDialog(Profile* profile,
   // If the default search is not managed via policy, ask the user to
   // choose a default.
   TemplateURLService* model = TemplateURLServiceFactory::GetForProfile(profile);
-  if (!FirstRun::SearchEngineSelectorDisallowed() ||
-      (model && !model->is_default_search_managed())) {
+  if (FirstRun::ShouldShowSearchEngineSelector(model)) {
     ShowSearchEngineSelectionDialog(profile,
                                     randomize_search_engine_experiment);
   }

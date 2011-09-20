@@ -111,9 +111,7 @@ bool FirstRunDialog::Show(Profile* profile,
   const TemplateURLService* search_engines_model =
       TemplateURLServiceFactory::GetForProfile(profile);
   bool show_search_engines_dialog =
-      !FirstRun::SearchEngineSelectorDisallowed() &&
-      search_engines_model &&
-      !search_engines_model->is_default_search_managed();
+      FirstRun::ShouldShowSearchEngineSelector(search_engines_model);
 
 #if defined(GOOGLE_CHROME_BUILD)
   // If the metrics reporting is managed, we won't ask.
