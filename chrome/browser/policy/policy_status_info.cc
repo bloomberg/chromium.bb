@@ -4,19 +4,19 @@
 
 #include "chrome/browser/policy/policy_status_info.h"
 
-#include <algorithm>
+#include <string>
 
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
 
 namespace policy {
 
-const std::string PolicyStatusInfo::kLevelDictPath = "level";
-const std::string PolicyStatusInfo::kNameDictPath = "name";
-const std::string PolicyStatusInfo::kSetDictPath = "set";
-const std::string PolicyStatusInfo::kSourceTypeDictPath = "sourceType";
-const std::string PolicyStatusInfo::kStatusDictPath = "status";
-const std::string PolicyStatusInfo::kValueDictPath = "value";
+const char PolicyStatusInfo::kLevelDictPath[] = "level";
+const char PolicyStatusInfo::kNameDictPath[] = "name";
+const char PolicyStatusInfo::kSetDictPath[] = "set";
+const char PolicyStatusInfo::kSourceTypeDictPath[] = "sourceType";
+const char PolicyStatusInfo::kStatusDictPath[] = "status";
+const char PolicyStatusInfo::kValueDictPath[] = "value";
 
 // PolicyStatusInfo
 PolicyStatusInfo::PolicyStatusInfo()
@@ -49,12 +49,12 @@ DictionaryValue* PolicyStatusInfo::GetDictionaryValue() const {
   string16 status_message = status == ENFORCED ? ASCIIToUTF16("ok")
                                                : error_message;
   DictionaryValue* result = new DictionaryValue();
-  result->SetString(kNameDictPath, name);
-  result->SetString(kLevelDictPath, level_string);
-  result->SetString(kSourceTypeDictPath, source_type_string);
-  result->Set(kValueDictPath, value->DeepCopy());
-  result->SetBoolean(kSetDictPath, level != LEVEL_UNDEFINED);
-  result->SetString(kStatusDictPath, status_message);
+  result->SetString(std::string(kNameDictPath), name);
+  result->SetString(std::string(kLevelDictPath), level_string);
+  result->SetString(std::string(kSourceTypeDictPath), source_type_string);
+  result->Set(std::string(kValueDictPath), value->DeepCopy());
+  result->SetBoolean(std::string(kSetDictPath), level != LEVEL_UNDEFINED);
+  result->SetString(std::string(kStatusDictPath), status_message);
 
   return result;
 }
@@ -69,21 +69,18 @@ bool PolicyStatusInfo::Equals(const PolicyStatusInfo* other_info) const {
 }
 
 // static
-string16 PolicyStatusInfo::GetSourceTypeString(PolicySourceType source_type) {
-  static string16 strings[] = { ASCIIToUTF16("user"),
-                                ASCIIToUTF16("device"),
-                                ASCIIToUTF16("undefined") };
+string16 PolicyStatusInfo::GetSourceTypeString(
+    PolicySourceType source_type) {
+  static const char* strings[] = { "user", "device", "undefined" };
   DCHECK(static_cast<size_t>(source_type) < arraysize(strings));
-  return strings[source_type];
+  return ASCIIToUTF16(strings[source_type]);
 }
 
 // static
 string16 PolicyStatusInfo::GetPolicyLevelString(PolicyLevel level) {
-  static string16 strings[] = { ASCIIToUTF16("mandatory"),
-                                ASCIIToUTF16("recommended"),
-                                ASCIIToUTF16("undefined") };
+  static const char* strings[] = { "mandatory", "recommended", "undefined" };
   DCHECK(static_cast<size_t>(level) < arraysize(strings));
-  return strings[level];
+  return ASCIIToUTF16(strings[level]);
 }
 
 } // namespace policy

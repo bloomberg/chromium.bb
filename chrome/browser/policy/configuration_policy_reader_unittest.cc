@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <string>
+
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
@@ -31,15 +33,15 @@ class ConfigurationPolicyReaderTest : public testing::Test {
   DictionaryValue* CreateDictionary(const char* policy_name,
                                     Value* policy_value) {
     DictionaryValue* dict = new DictionaryValue();
-    dict->SetString(
-        PolicyStatusInfo::kNameDictPath, ASCIIToUTF16(policy_name));
-    dict->SetString(PolicyStatusInfo::kLevelDictPath,
+    dict->SetString(std::string(PolicyStatusInfo::kNameDictPath),
+                    ASCIIToUTF16(policy_name));
+    dict->SetString(std::string(PolicyStatusInfo::kLevelDictPath),
         PolicyStatusInfo::GetPolicyLevelString(PolicyStatusInfo::MANDATORY));
-    dict->SetString(PolicyStatusInfo::kSourceTypeDictPath,
+    dict->SetString(std::string(PolicyStatusInfo::kSourceTypeDictPath),
         PolicyStatusInfo::GetSourceTypeString(PolicyStatusInfo::USER));
-    dict->Set(PolicyStatusInfo::kValueDictPath, policy_value);
-    dict->SetBoolean(PolicyStatusInfo::kSetDictPath, true);
-    dict->SetString(PolicyStatusInfo::kStatusDictPath, status_ok_);
+    dict->Set(std::string(PolicyStatusInfo::kValueDictPath), policy_value);
+    dict->SetBoolean(std::string(PolicyStatusInfo::kSetDictPath), true);
+    dict->SetString(std::string(PolicyStatusInfo::kStatusDictPath), status_ok_);
 
     return dict;
   }
@@ -207,15 +209,16 @@ class PolicyStatusTest : public testing::Test {
   DictionaryValue* CreateDictionary(const char* name,
                                     PolicyStatusInfo::PolicyLevel level) {
     DictionaryValue* value = new DictionaryValue();
-    value->SetString(PolicyStatusInfo::kNameDictPath, ASCIIToUTF16(name));
-    value->SetString(PolicyStatusInfo::kLevelDictPath,
+    value->SetString(std::string(PolicyStatusInfo::kNameDictPath),
+                     ASCIIToUTF16(name));
+    value->SetString(std::string(PolicyStatusInfo::kLevelDictPath),
                      PolicyStatusInfo::GetPolicyLevelString(level));
-    value->SetString(PolicyStatusInfo::kSourceTypeDictPath,
-                     PolicyStatusInfo::GetSourceTypeString(
-                        PolicyStatusInfo::USER));
-    value->SetBoolean(PolicyStatusInfo::kValueDictPath, true);
-    value->SetBoolean(PolicyStatusInfo::kSetDictPath, true);
-    value->SetString(PolicyStatusInfo::kStatusDictPath, status_ok_);
+    value->SetString(std::string(PolicyStatusInfo::kSourceTypeDictPath),
+        PolicyStatusInfo::GetSourceTypeString(PolicyStatusInfo::USER));
+    value->SetBoolean(std::string(PolicyStatusInfo::kValueDictPath), true);
+    value->SetBoolean(std::string(PolicyStatusInfo::kSetDictPath), true);
+    value->SetString(std::string(PolicyStatusInfo::kStatusDictPath),
+                     status_ok_);
 
     return value;
   }
@@ -227,7 +230,7 @@ class PolicyStatusTest : public testing::Test {
     dict->SetString(PolicyStatusInfo::kNameDictPath,
                     ASCIIToUTF16(policy_name));
     if (defined) {
-      dict->SetString(PolicyStatusInfo::kLevelDictPath,
+      dict->SetString(std::string(PolicyStatusInfo::kLevelDictPath),
                       PolicyStatusInfo::GetPolicyLevelString(level));
     }
   }
@@ -260,25 +263,27 @@ TEST_F(PolicyStatusTest, GetPolicyStatusListSetPolicies) {
   EXPECT_EQ(policy_list_size_, status_list->GetSize());
 
   scoped_ptr<DictionaryValue> undefined_dict(new DictionaryValue());
-  undefined_dict->SetString(PolicyStatusInfo::kLevelDictPath,
+  undefined_dict->SetString(std::string(PolicyStatusInfo::kLevelDictPath),
                             PolicyStatusInfo::GetPolicyLevelString(
                                 PolicyStatusInfo::LEVEL_UNDEFINED));
-  undefined_dict->SetString(PolicyStatusInfo::kSourceTypeDictPath,
+  undefined_dict->SetString(std::string(PolicyStatusInfo::kSourceTypeDictPath),
                             PolicyStatusInfo::GetSourceTypeString(
                                 PolicyStatusInfo::SOURCE_TYPE_UNDEFINED));
-  undefined_dict->Set(PolicyStatusInfo::kValueDictPath,
+  undefined_dict->Set(std::string(PolicyStatusInfo::kValueDictPath),
                       Value::CreateNullValue());
-  undefined_dict->SetBoolean(PolicyStatusInfo::kSetDictPath, false);
-  undefined_dict->SetString(PolicyStatusInfo::kStatusDictPath, string16());
+  undefined_dict->SetBoolean(std::string(PolicyStatusInfo::kSetDictPath),
+                             false);
+  undefined_dict->SetString(std::string(PolicyStatusInfo::kStatusDictPath),
+                            string16());
 
   scoped_ptr<DictionaryValue> defined_dict(new DictionaryValue());
-  defined_dict->SetString(PolicyStatusInfo::kSourceTypeDictPath,
-                          PolicyStatusInfo::GetSourceTypeString(
-                              PolicyStatusInfo::USER));
-  defined_dict->Set(PolicyStatusInfo::kValueDictPath,
+  defined_dict->SetString(std::string(PolicyStatusInfo::kSourceTypeDictPath),
+      PolicyStatusInfo::GetSourceTypeString(PolicyStatusInfo::USER));
+  defined_dict->Set(std::string(PolicyStatusInfo::kValueDictPath),
                     Value::CreateBooleanValue(true));
-  defined_dict->SetBoolean(PolicyStatusInfo::kSetDictPath, true);
-  defined_dict->SetString(PolicyStatusInfo::kStatusDictPath, status_ok_);
+  defined_dict->SetBoolean(std::string(PolicyStatusInfo::kSetDictPath), true);
+  defined_dict->SetString(std::string(PolicyStatusInfo::kStatusDictPath),
+                          status_ok_);
 
   for (const PolicyDefinitionList::Entry* entry = policy_list_->begin;
        entry != policy_list_->end; ++entry) {
@@ -292,7 +297,8 @@ TEST_F(PolicyStatusTest, GetPolicyStatusListSetPolicies) {
       string16 value;
       ASSERT_TRUE((*status_entry)->IsType(Value::TYPE_DICTIONARY));
       DictionaryValue* dict = static_cast<DictionaryValue*>(*status_entry);
-      ASSERT_TRUE(dict->GetString(PolicyStatusInfo::kNameDictPath, &value));
+      ASSERT_TRUE(dict->GetString(std::string(PolicyStatusInfo::kNameDictPath),
+                                  &value));
 
       if (value == name) {
         status_dict = *status_entry;
