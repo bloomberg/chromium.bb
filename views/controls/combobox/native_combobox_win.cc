@@ -49,15 +49,14 @@ void NativeComboboxWin::UpdateFromModel() {
   int max_width = 0;
   int num_items = combobox_->model()->GetItemCount();
   for (int i = 0; i < num_items; ++i) {
-    std::wstring text = UTF16ToWide(combobox_->model()->GetItemAt(i));
+    string16 text = combobox_->model()->GetItemAt(i);
 
     // Inserting the Unicode formatting characters if necessary so that the
     // text is displayed correctly in right-to-left UIs.
     base::i18n::AdjustStringForLocaleDirection(&text);
-    const wchar_t* text_ptr = text.c_str();
 
     SendMessage(native_view(), CB_ADDSTRING, 0,
-                reinterpret_cast<LPARAM>(text_ptr));
+                reinterpret_cast<LPARAM>(UTF16ToWide(text).c_str()));
     max_width = std::max(max_width, font.GetStringWidth(text));
   }
   content_width_ = max_width;
