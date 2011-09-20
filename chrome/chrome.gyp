@@ -229,13 +229,6 @@
           },
           'includes': [ '../build/grit_action.gypi' ],
         },
-      ],
-      'includes': [ '../build/grit_target.gypi' ],
-    },
-    {
-      'target_name': 'theme_resources_large',
-      'type': 'none',
-      'actions': [
         {
           'action_name': 'theme_resources_large',
           'variables': {
@@ -243,13 +236,6 @@
           },
           'includes': [ '../build/grit_action.gypi' ],
         },
-      ],
-      'includes': [ '../build/grit_target.gypi' ],
-    },
-    {
-      'target_name': 'theme_resources_standard',
-      'type': 'none',
-      'actions': [
         {
           'action_name': 'theme_resources_standard',
           'variables': {
@@ -405,7 +391,6 @@
         'chrome_resources',
         'chrome_strings',
         'theme_resources',
-        'theme_resources_standard',
         '../base/base.gyp:base',
         '../content/content.gyp:content_browser',
         '../net/net.gyp:http_server',
@@ -1487,7 +1472,6 @@
           'type': 'static_library',
           'dependencies': [
             'theme_resources',
-            'theme_resources_standard',
             '../base/base.gyp:test_support_base',
             '../skia/skia.gyp:skia',
             '../testing/gtest.gyp:gtest',
@@ -1591,8 +1575,6 @@
           'default_plugin/default_plugin.gyp:default_plugin_resources',
           'platform_locale_settings',
           'theme_resources',
-          'theme_resources_standard',
-          'theme_resources_large',
           '<(DEPTH)/net/net.gyp:net_resources',
           '<(DEPTH)/ui/base/strings/ui_strings.gyp:ui_strings',
           '<(DEPTH)/ui/ui.gyp:gfx_resources',

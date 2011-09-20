@@ -29,7 +29,6 @@
         'common_net',
         'default_plugin/default_plugin.gyp:default_plugin',
         'theme_resources',
-        'theme_resources_standard',
         '../base/base.gyp:base',
         '../base/base.gyp:base_i18n',
         '../base/base.gyp:base_static',
