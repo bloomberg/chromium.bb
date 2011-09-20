@@ -141,6 +141,9 @@ class CONTENT_EXPORT RenderThread : public RenderThreadBase,
   // execution context (corresponding to WebFrame::frameForCurrentContext).
   static int32 RoutingIDForCurrentContext();
 
+  // Returns the locale string to be used in WebKit.
+  static std::string GetLocale();
+
   // Overridden from RenderThreadBase.
   virtual bool Send(IPC::Message* msg);
   virtual void AddRoute(int32 routing_id, IPC::Channel::Listener* listener);

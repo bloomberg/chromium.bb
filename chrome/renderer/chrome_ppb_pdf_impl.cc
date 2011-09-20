@@ -233,7 +233,7 @@ void SearchString(PP_Instance instance,
 
   UErrorCode status = U_ZERO_ERROR;
   UStringSearch* searcher = usearch_open(
-      term, -1, string, -1, webkit_glue::GetWebKitLocale().c_str(), 0,
+      term, -1, string, -1, RenderThread::GetLocale().c_str(), 0,
       &status);
   DCHECK(status == U_ZERO_ERROR || status == U_USING_FALLBACK_WARNING ||
          status == U_USING_DEFAULT_WARNING);

@@ -635,10 +635,6 @@ bool IsProtocolSupportedForMedia(const GURL& url) {
   return false;
 }
 
-std::string GetWebKitLocale() {
-  return "en-US";
-}
-
 std::string BuildUserAgent(bool mimic_windows) {
   return webkit_glue::BuildUserAgentHelper(mimic_windows, "Chrome/0.0.0.0");
 }

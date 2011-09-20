@@ -243,19 +243,6 @@ bool GetFontTable(int fd, uint32_t table, uint8_t* output,
 }
 #endif
 
-std::string GetWebKitLocale() {
-  // The browser process should have passed the locale to the renderer via the
-  // --lang command line flag.  In single process mode, this will return the
-  // wrong value.  TODO(tc): Fix this for single process mode.
-  const CommandLine& parsed_command_line = *CommandLine::ForCurrentProcess();
-  const std::string& lang =
-      parsed_command_line.GetSwitchValueASCII(switches::kLang);
-  DCHECK(!lang.empty() ||
-      (!parsed_command_line.HasSwitch(switches::kRendererProcess) &&
-       !parsed_command_line.HasSwitch(switches::kPluginProcess)));
-  return lang;
-}
-
 string16 GetLocalizedString(int message_id) {
   return content::GetContentClient()->GetLocalizedString(message_id);
 }

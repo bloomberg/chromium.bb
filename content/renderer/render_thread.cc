@@ -65,6 +65,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebStorageEventDispatcher.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
+#include "ui/base/ui_base_switches.h"
 #include "v8/include/v8.h"
 #include "webkit/extensions/v8/playback_extension.h"
 #include "webkit/glue/webkit_glue.h"
@@ -254,6 +255,19 @@ RenderThread::~RenderThread() {
 
 RenderThread* RenderThread::current() {
   return lazy_tls.Pointer()->Get();
+}
+
+std::string RenderThread::GetLocale() {
+  // The browser process should have passed the locale to the renderer via the
+  // --lang command line flag.  In single process mode, this will return the
+  // wrong value.  TODO(tc): Fix this for single process mode.
+  const CommandLine& parsed_command_line = *CommandLine::ForCurrentProcess();
+  const std::string& lang =
+      parsed_command_line.GetSwitchValueASCII(switches::kLang);
+  DCHECK(!lang.empty() ||
+      (!parsed_command_line.HasSwitch(switches::kRendererProcess) &&
+       !parsed_command_line.HasSwitch(switches::kPluginProcess)));
+  return lang;
 }
 
 int32 RenderThread::RoutingIDForCurrentContext() {

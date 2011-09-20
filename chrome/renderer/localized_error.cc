@@ -11,6 +11,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/common/extensions/extension_set.h"
+#include "content/renderer/render_thread.h"
 #include "googleurl/src/gurl.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -592,7 +593,8 @@ void LocalizedError::GetStrings(const WebKit::WebURLError& error,
     if (learn_more_url.is_valid()) {
       // Add the language parameter to the URL.
       std::string query = learn_more_url.query() + "&hl=" +
-          webkit_glue::GetWebKitLocale();
+          RenderThread::GetLocale();
+
       GURL::Replacements repl;
       repl.SetQueryStr(query);
       learn_more_url = learn_more_url.ReplaceComponents(repl);
