@@ -374,7 +374,7 @@ deps_os = {
       (Var("googlecode_url") % "linux-syscall-support") + "/trunk/lss@3",
 
     "src/third_party/openssl":
-      "/trunk/deps/third_party/openssl@94299",
+      "/trunk/deps/third_party/openssl@101988",
 
     "src/third_party/WebKit/Tools/gdb":
       Var("webkit_trunk") + "/Tools/gdb@" + Var("webkit_revision"),
