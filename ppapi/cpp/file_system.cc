@@ -21,6 +21,9 @@ template <> const char* interface_name<PPB_FileSystem>() {
 
 }  // namespace
 
+FileSystem::FileSystem() {
+}
+
 FileSystem::FileSystem(Instance* instance,
                        PP_FileSystemType type) {
   if (!has_interface<PPB_FileSystem>())

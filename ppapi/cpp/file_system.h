@@ -26,6 +26,10 @@ class FileRef;
 /// associated with a file.
 class FileSystem : public Resource {
  public:
+  /// Constructs an is_null() filesystem resource. If you use this constructor,
+  /// you will have to assign it to a "real" FileSystem object before you can
+  /// use it.
+  FileSystem();
 
   /// This constructor creates a file system object of the given type.
   ///
