@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/pickle.h"
 #include "base/stl_util.h"
@@ -54,39 +55,35 @@ NativeBackendKWallet::~NativeBackendKWallet() {
   // destroyed before that occurs, but that's OK.
   if (session_bus_.get()) {
     BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-                            NewRunnableMethod(
-                                session_bus_.get(),
-                                &dbus::Bus::ShutdownAndBlock));
+                            base::Bind(&dbus::Bus::ShutdownAndBlock,
+                                       session_bus_.get()));
   }
 }
 
 bool NativeBackendKWallet::Init() {
+  // Without the |optional_bus| parameter, a real bus will be instantiated.
+  return InitWithBus(scoped_refptr<dbus::Bus>());
+}
+
+bool NativeBackendKWallet::InitWithBus(scoped_refptr<dbus::Bus> optional_bus) {
   // We must synchronously do a few DBus calls to figure out if initialization
   // succeeds, but later, we'll want to do most work on the DB thread. So we
   // have to do the initialization on the DB thread here too, and wait for it.
-  scoped_refptr<dbus::Bus> optional_bus;  // Will construct its own.
   bool success = false;
   base::WaitableEvent event(false, false);
+  // NativeBackendKWallet isn't reference counted, but we wait for InitWithBus
+  // to finish, so we can safely use base::Unretained here.
   BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-                          NewRunnableMethod(
-                              this, &NativeBackendKWallet::InitWithBus,
-                              optional_bus, &event, &success));
+                          base::Bind(&NativeBackendKWallet::InitOnDBThread,
+                                     base::Unretained(this),
+                                     optional_bus, &event, &success));
   event.Wait();
   return success;
 }
 
-// NativeBackendKWallet isn't reference counted, but the one place we post a
-// message to it (in InitWithBus below) waits for the task to run. So we can
-// disable needing reference counting safely here.
-template<>
-struct RunnableMethodTraits<NativeBackendKWallet> {
-  void RetainCallee(NativeBackendKWallet*) {}
-  void ReleaseCallee(NativeBackendKWallet*) {}
-};
-
-void NativeBackendKWallet::InitWithBus(scoped_refptr<dbus::Bus> optional_bus,
-                                       base::WaitableEvent* event,
-                                       bool* success) {
+void NativeBackendKWallet::InitOnDBThread(scoped_refptr<dbus::Bus> optional_bus,
+                                          base::WaitableEvent* event,
+                                          bool* success) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
   DCHECK(!session_bus_.get());
   if (optional_bus.get()) {
@@ -101,11 +98,13 @@ void NativeBackendKWallet::InitWithBus(scoped_refptr<dbus::Bus> optional_bus,
   }
   kwallet_proxy_ =
       session_bus_->GetObjectProxy(kKWalletServiceName, kKWalletPath);
-  // kwalletd may not be running. If it fails to initialize, try to start it
-  // and then try to initialize it again. (Note the short-circuit evaluation.)
-  *success = (InitWallet() || (StartKWalletd() && InitWallet()));
-  if (event)
-    event->Signal();
+  // kwalletd may not be running. If we get a temporary failure initializing it,
+  // try to start it and then try again. (Note the short-circuit evaluation.)
+  const InitResult result = InitWallet();
+  *success = (result == INIT_SUCCESS ||
+              (result == TEMPORARY_FAIL &&
+               StartKWalletd() && InitWallet() == INIT_SUCCESS));
+  event->Signal();
 }
 
 bool NativeBackendKWallet::StartKWalletd() {
@@ -118,14 +117,12 @@ bool NativeBackendKWallet::StartKWalletd() {
   dbus::MethodCall method_call(kKLauncherInterface,
                                "start_service_by_desktop_name");
   dbus::MessageWriter builder(&method_call);
-  dbus::MessageWriter empty(&method_call);
-  builder.AppendString("kwalletd");  // serviceName
-  builder.OpenArray("s", &empty);    // urls
-  builder.CloseContainer(&empty);
-  builder.OpenArray("s", &empty);    // envs
-  builder.CloseContainer(&empty);
-  builder.AppendString("");          // startup_id
-  builder.AppendBool(false);         // blind
+  std::vector<std::string> empty;
+  builder.AppendString("kwalletd");     // serviceName
+  builder.AppendArrayOfStrings(empty);  // urls
+  builder.AppendArrayOfStrings(empty);  // envs
+  builder.AppendString("");             // startup_id
+  builder.AppendBool(false);            // blind
   scoped_ptr<dbus::Response> response(
       klauncher->CallMethodAndBlock(
           &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT));
@@ -153,7 +150,7 @@ bool NativeBackendKWallet::StartKWalletd() {
   return true;
 }
 
-bool NativeBackendKWallet::InitWallet() {
+NativeBackendKWallet::InitResult NativeBackendKWallet::InitWallet() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
   {
     // Check that KWallet is enabled.
@@ -163,19 +160,19 @@ bool NativeBackendKWallet::InitWallet() {
             &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT));
     if (!response.get()) {
       LOG(ERROR) << "Error contacting kwalletd (isEnabled)";
-      return false;
+      return TEMPORARY_FAIL;
     }
     dbus::MessageReader reader(response.get());
     bool enabled = false;
     if (!reader.PopBool(&enabled)) {
       LOG(ERROR) << "Error reading response from kwalletd (isEnabled): "
                  << response->ToString();
-      return false;
+      return PERMANENT_FAIL;
     }
     // Not enabled? Don't use KWallet. But also don't warn here.
     if (!enabled) {
       VLOG(1) << "kwalletd reports that KWallet is not enabled.";
-      return false;
+      return PERMANENT_FAIL;
     }
   }
 
@@ -187,17 +184,17 @@ bool NativeBackendKWallet::InitWallet() {
             &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT));
     if (!response.get()) {
       LOG(ERROR) << "Error contacting kwalletd (networkWallet)";
-      return false;
+      return TEMPORARY_FAIL;
     }
     dbus::MessageReader reader(response.get());
     if (!reader.PopString(&wallet_name_)) {
       LOG(ERROR) << "Error reading response from kwalletd (networkWallet): "
                  << response->ToString();
-      return false;
+      return PERMANENT_FAIL;
     }
   }
 
-  return true;
+  return INIT_SUCCESS;
 }
 
 bool NativeBackendKWallet::AddLogin(const PasswordForm& form) {
@@ -524,20 +521,10 @@ bool NativeBackendKWallet::GetAllLogins(PasswordFormList* forms,
       return false;
     }
     dbus::MessageReader reader(response.get());
-    dbus::MessageReader array(response.get());
-    if (!reader.PopArray(&array)) {
+    if (!reader.PopArrayOfStrings(&realm_list)) {
       LOG(ERROR) << "Error reading response from kwalletd (entryList): "
                  << response->ToString();
       return false;
-    }
-    while (array.HasMoreData()) {
-      std::string realm;
-      if (!array.PopString(&realm)) {
-        LOG(ERROR) << "Error reading response from kwalletd (entryList): "
-                   << response->ToString();
-        return false;
-      }
-      realm_list.push_back(realm);
     }
   }
 
@@ -880,6 +867,14 @@ void NativeBackendKWallet::MigrateToProfileSpecificLogins() {
     if (!AddLogin(*forms[i]))
       ok = false;
     delete forms[i];
+  }
+  if (forms.empty()) {
+    // If there were no logins to migrate, we do an extra call to WalletHandle()
+    // for its side effect of attempting to create the profile-specific folder.
+    // This is not strictly necessary, but it's safe and helps in testing.
+    wallet_handle = WalletHandle();
+    if (wallet_handle == kInvalidKWalletHandle)
+      ok = false;
   }
 
   if (ok) {

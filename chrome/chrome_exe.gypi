@@ -127,7 +127,6 @@
             # Chromium functionality directly into the executable.
             '<@(chromium_dependencies)',
             # Needed for chrome_main.cc initialization of libraries.
-            '../build/linux/system.gyp:dbus-glib',
             '../build/linux/system.gyp:gtk',
             # Needed to use the master_preferences functions
             'installer_util',

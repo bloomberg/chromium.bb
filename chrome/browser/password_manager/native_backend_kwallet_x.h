@@ -47,22 +47,37 @@ class NativeBackendKWallet : public PasswordStoreX::NativeBackend {
       const base::Time& delete_begin, const base::Time& delete_end) OVERRIDE;
   virtual bool GetLogins(const webkit_glue::PasswordForm& form,
                          PasswordFormList* forms) OVERRIDE;
-  virtual bool GetLoginsCreatedBetween(const base::Time& delete_begin,
-                                       const base::Time& delete_end,
+  virtual bool GetLoginsCreatedBetween(const base::Time& get_begin,
+                                       const base::Time& get_end,
                                        PasswordFormList* forms) OVERRIDE;
   virtual bool GetAutofillableLogins(PasswordFormList* forms) OVERRIDE;
   virtual bool GetBlacklistLogins(PasswordFormList* forms) OVERRIDE;
 
  protected:
+  // Invalid handle returned by WalletHandle().
+  static const int kInvalidKWalletHandle = -1;
+
   // Internally used by Init(), but also for testing to provide a mock bus.
-  void InitWithBus(scoped_refptr<dbus::Bus> optional_bus,
-                   base::WaitableEvent* event,
-                   bool* success);
+  bool InitWithBus(scoped_refptr<dbus::Bus> optional_bus);
+
+  // Deserializes a list of PasswordForms from the wallet.
+  static void DeserializeValue(const std::string& signon_realm,
+                               const Pickle& pickle,
+                               PasswordFormList* forms);
 
  private:
+  enum InitResult {
+    INIT_SUCCESS,    // Init succeeded.
+    TEMPORARY_FAIL,  // Init failed, but might succeed after StartKWalletd().
+    PERMANENT_FAIL   // Init failed, and is not likely to work later either.
+  };
+
   // Initialization.
   bool StartKWalletd();
-  bool InitWallet();
+  InitResult InitWallet();
+  void InitOnDBThread(scoped_refptr<dbus::Bus> optional_bus,
+                      base::WaitableEvent* event,
+                      bool* success);
 
   // Reads PasswordForms from the wallet that match the given signon_realm.
   bool GetLoginsList(PasswordFormList* forms,
@@ -110,11 +125,6 @@ class NativeBackendKWallet : public PasswordStoreX::NativeBackend {
   static bool CheckSerializedValue(const uint8_t* byte_array, size_t length,
                                    const std::string& realm);
 
-  // Deserializes a list of PasswordForms from the wallet.
-  static void DeserializeValue(const std::string& signon_realm,
-                               const Pickle& pickle,
-                               PasswordFormList* forms);
-
   // Convenience function to read a GURL from a Pickle. Assumes the URL has
   // been written as a std::string. Returns true on success.
   static bool ReadGURL(const Pickle& pickle, void** iter, GURL* url);
@@ -133,9 +143,6 @@ class NativeBackendKWallet : public PasswordStoreX::NativeBackend {
   static const char kKLauncherServiceName[];
   static const char kKLauncherPath[];
   static const char kKLauncherInterface[];
-
-  // Invalid handle returned by WalletHandle().
-  static const int kInvalidKWalletHandle = -1;
 
   // Generates a profile-specific folder name based on profile_id_.
   std::string GetProfileSpecificFolderName() const;
