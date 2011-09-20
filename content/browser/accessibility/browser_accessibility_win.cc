@@ -2293,7 +2293,7 @@ void BrowserAccessibilityWin::IntAttributeToIA2(
 }
 
 string16 BrowserAccessibilityWin::Escape(const string16& str) {
-  return EscapeQueryParamValueUTF8(str, false);
+  return net::EscapeQueryParamValueUTF8(str, false);
 }
 
 const string16& BrowserAccessibilityWin::TextForIAccessibleText() {

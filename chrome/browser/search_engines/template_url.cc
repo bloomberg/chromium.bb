@@ -9,8 +9,8 @@
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/metrics/field_trial.h"
-#include "base/stringprintf.h"
 #include "base/string_number_conversions.h"
+#include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/search_engines/search_engine_type.h"
 #include "chrome/browser/search_engines/search_terms_data.h"
@@ -356,10 +356,10 @@ std::string TemplateURLRef::ReplaceSearchTermsUsingTermsData(
       }
     }
     if (input_encoding.empty()) {
-      encoded_terms = EscapeQueryParamValueUTF8(terms, true);
+      encoded_terms = net::EscapeQueryParamValueUTF8(terms, true);
       if (!original_query_for_suggestion.empty()) {
         encoded_original_query =
-            EscapeQueryParamValueUTF8(original_query_for_suggestion, true);
+            net::EscapeQueryParamValueUTF8(original_query_for_suggestion, true);
       }
       input_encoding = "UTF-8";
     }
