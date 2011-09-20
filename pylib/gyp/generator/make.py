@@ -679,8 +679,12 @@ class XcodeSettings(object):
     valid for bundles."""
     assert self._IsBundle()
     if self.spec['type'] in ('loadable_module', 'shared_library'):
+      default_wrapper_extension = {
+        'loadable_module': 'bundle',
+        'shared_library': 'framework',
+      }[self.spec['type']]
       wrapper_extension = self.GetPerTargetSetting(
-          'WRAPPER_EXTENSION', default='framework')
+          'WRAPPER_EXTENSION', default=default_wrapper_extension)
       return '.' + self.spec.get('product_extension', wrapper_extension)
     elif self.spec['type'] == 'executable':
       return '.app'
@@ -831,12 +835,7 @@ class XcodeSettings(object):
       elif dbg_format == 'stabs':
         raise NotImplementedError('stabs debug format is not supported yet.')
       elif dbg_format == 'dwarf-with-dsym':
-        # TODO(thakis): this is needed for mac_breakpad chromium builds, but not
-        # for regular chromium builds.
-        # -gdwarf-2 as well, but needs to invoke dsymutil after linking too:
-        #   dsymutil build/Default/TestAppGyp.app/Contents/MacOS/TestAppGyp \
-        #       -o build/Default/TestAppGyp.app.dSYM
-        raise NotImplementedError('dsym debug format is not supported yet.')
+        cflags.append('-gdwarf-2')
       else:
         raise NotImplementedError('Unknown debug format %s' % dbg_format)
 
@@ -1041,7 +1040,7 @@ class XcodeSettings(object):
       return default
     return result
 
-  def GetStripPostbuilds(self, configname, output_binary):
+  def _GetStripPostbuilds(self, configname, output_binary):
     """Returns a list of shell commands that contain the shell commands
     neccessary to strip this target's binary. These should be run as postbuilds
     before the actual postbuilds run."""
@@ -1073,6 +1072,31 @@ class XcodeSettings(object):
 
     self.configname = None
     return result
+
+  def _GetDebugPostbuilds(self, configname, output, output_binary):
+    """Returns a list of shell commands that contain the shell commands
+    neccessary to massage this target's debug information. These should be run
+    as postbuilds before the actual postbuilds run."""
+    self.configname = configname
+
+    # For static libraries, no dSYMs are created.
+    result = []
+    if (self._Test('GCC_GENERATE_DEBUGGING_SYMBOLS', 'YES', default='YES') and
+        self._Test(
+            'DEBUG_INFORMATION_FORMAT', 'dwarf-with-dsym', default='dwarf') and
+        self.spec['type'] != 'static_library'):
+      result.append('echo DSYMUTIL\\(%s\\)' % self.spec['target_name'])
+      result.append('dsymutil %s -o %s' % (output_binary, output + '.dSYM'))
+
+    self.configname = None
+    return result
+
+  def GetTargetPostbuilds(self, configname, output, output_binary):
+    """Returns a list of shell commands that contain the shell commands
+    to run as postbuilds for this target, before the actual postbuilds."""
+    # dSYMs need to build before stripping happens.
+    return (self._GetDebugPostbuilds(configname, output, output_binary) +
+            self._GetStripPostbuilds(configname, output_binary))
 
 
 class MacPrefixHeader(object):
@@ -1894,20 +1918,22 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
                          order_only = True,
                          multiple_output_trick = False)
 
-    has_any_strip = False
+    has_target_postbuilds = False
     if self.type not in ('settings', 'none'):
       for configname in sorted(configs.keys()):
         config = configs[configname]
         if self.flavor == 'mac':
           ldflags = self.xcode_settings.GetLdflags(self, configname)
 
-          # STRIP_$(BUILDTYPE) is added to postbuilds later on.
-          strip_postbuilds = self.xcode_settings.GetStripPostbuilds(
-              configname, self.output_binary)
-          if strip_postbuilds:
-            has_any_strip = True
-            self.WriteLn('%s: STRIP_%s := %s' % (self.output, configname,
-                  gyp.common.EncodePOSIXShellList(strip_postbuilds)))
+          # TARGET_POSTBUILDS_$(BUILDTYPE) is added to postbuilds later on.
+          target_postbuilds = self.xcode_settings.GetTargetPostbuilds(
+              configname, self.output, self.output_binary)
+          if target_postbuilds:
+            has_target_postbuilds = True
+            self.WriteLn('%s: TARGET_POSTBUILDS_%s := %s' %
+                (self.output,
+                 configname,
+                 gyp.common.EncodePOSIXShellList(target_postbuilds)))
         else:
           ldflags = config.get('ldflags', [])
           # Compute an rpath for this output if needed.
@@ -1933,8 +1959,8 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
 
     postbuilds = []
     if self.flavor == 'mac':
-      if has_any_strip:
-        postbuilds.append('$(STRIP_$(BUILDTYPE))')
+      if has_target_postbuilds:
+        postbuilds.append('$(TARGET_POSTBUILDS_$(BUILDTYPE))')
       # Postbuild actions. Like actions, but implicitly depend on the target's
       # output.
       for postbuild in spec.get('postbuilds', []):
