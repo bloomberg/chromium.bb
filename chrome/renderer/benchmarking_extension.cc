@@ -4,13 +4,14 @@
 
 #include "chrome/renderer/benchmarking_extension.h"
 
+#include "base/command_line.h"
 #include "base/metrics/stats_table.h"
 #include "base/time.h"
 #include "chrome/common/benchmarking_messages.h"
 #include "content/common/child_thread.h"
+#include "content/common/content_switches.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCache.h"
 #include "v8/include/v8.h"
-#include "webkit/glue/webkit_glue.h"
 
 using WebKit::WebCache;
 
@@ -158,7 +159,8 @@ class BenchmarkingWrapper : public v8::Extension {
   }
 
   static v8::Handle<v8::Value> IsSingleProcess(const v8::Arguments& args) {
-    return v8::Boolean::New(webkit_glue::IsSingleProcess());
+    return v8::Boolean::New(
+       CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess));
   }
 
   static v8::Handle<v8::Value> HiResTime(const v8::Arguments& args) {

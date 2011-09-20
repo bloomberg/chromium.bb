@@ -639,10 +639,6 @@ std::string BuildUserAgent(bool mimic_windows) {
   return webkit_glue::BuildUserAgentHelper(mimic_windows, "Chrome/0.0.0.0");
 }
 
-bool IsSingleProcess() {
-  return true;
-}
-
 #if defined(OS_LINUX)
 int MatchFontWithFallback(const std::string& face, bool bold,
                           bool italic, int charset) {

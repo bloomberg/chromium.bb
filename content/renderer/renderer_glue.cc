@@ -225,10 +225,6 @@ WebSocketStreamHandleBridge* WebSocketStreamHandleBridge::Create(
   return dispatcher->CreateBridge(handle, delegate);
 }
 
-bool IsSingleProcess() {
-  return CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess);
-}
-
 #if defined(OS_LINUX)
 int MatchFontWithFallback(const std::string& face, bool bold,
                           bool italic, int charset) {
