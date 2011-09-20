@@ -418,14 +418,8 @@ void NTPResourceCache::CreateNewTabHTML() {
 
   // If the user has preferences for a start and end time for a promo from
   // the server, and this promo string exists, set the localized string.
-  if (profile_->GetPrefs()->FindPreference(prefs::kNTPPromoStart) &&
-      profile_->GetPrefs()->FindPreference(prefs::kNTPPromoEnd) &&
-      profile_->GetPrefs()->FindPreference(prefs::kNTPPromoLine) &&
-      PromoResourceServiceUtil::CanShowPromo(profile_) &&
-      InDateRange(profile_->GetPrefs()->GetDouble(prefs::kNTPPromoStart),
-                  profile_->GetPrefs()->GetDouble(prefs::kNTPPromoEnd))) {
-    localized_strings.SetString(
-        "serverpromo",
+  if (PromoResourceService::CanShowNotificationPromo(profile_)) {
+    localized_strings.SetString("serverpromo",
         profile_->GetPrefs()->GetString(prefs::kNTPPromoLine));
     UserMetrics::RecordAction(UserMetricsAction("NTPPromoShown"));
   }

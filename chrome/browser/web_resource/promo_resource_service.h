@@ -11,18 +11,13 @@
 #include "chrome/browser/web_resource/web_resource_service.h"
 #include "chrome/common/chrome_version_info.h"
 
+namespace base {
+  class DictionaryValue;
+}
+
 class AppsPromoLogoFetcher;
 class PrefService;
 class Profile;
-
-namespace PromoResourceServiceUtil {
-
-// Certain promotions should only be shown to certain classes of users. This
-// function will change to reflect each kind of promotion.
-bool CanShowPromo(Profile* profile);
-
-}  // namespace PromoResourceServiceUtil
-
 // A PromoResourceService fetches data from a web resource server to be used to
 // dynamically change the appearance of the New Tab Page. For example, it has
 // been used to fetch "tips" to be displayed on the NTP, or to display
@@ -34,8 +29,8 @@ bool CanShowPromo(Profile* profile);
 class PromoResourceService
     : public WebResourceService {
  public:
-  static bool IsBuildTargeted(chrome::VersionInfo::Channel channel,
-                              int builds_targeted);
+  // Checks for conditions to show promo: start/end times, channel, etc.
+  static bool CanShowNotificationPromo(Profile* profile);
 
   static void RegisterPrefs(PrefService* local_state);
 
@@ -47,8 +42,9 @@ class PromoResourceService
   static const char* kDefaultPromoResourceServer;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(PromoResourceServiceTest, IsBuildTargeted);
   FRIEND_TEST_ALL_PREFIXES(PromoResourceServiceTest, UnpackLogoSignal);
-  FRIEND_TEST_ALL_PREFIXES(PromoResourceServiceTest, UnpackPromoSignal);
+  FRIEND_TEST_ALL_PREFIXES(PromoResourceServiceTest, UnpackNotificationSignal);
   FRIEND_TEST_ALL_PREFIXES(PromoResourceServiceTest, UnpackWebStoreSignal);
   FRIEND_TEST_ALL_PREFIXES(
       PromoResourceServiceTest, UnpackPartialWebStoreSignal);
@@ -59,7 +55,6 @@ class PromoResourceService
   FRIEND_TEST_ALL_PREFIXES(
       PromoResourceServiceTest, UnpackWebStoreSignalHttpLogo);
 
-
   // Identifies types of Chrome builds for promo targeting.
   enum BuildType {
     NO_BUILD = 0,
@@ -67,6 +62,7 @@ class PromoResourceService
     BETA_BUILD = 1 << 1,
     STABLE_BUILD = 1 << 2,
     CANARY_BUILD = 1 << 3,
+    ALL_BUILDS = (1 << 4) - 1,
   };
 
   virtual ~PromoResourceService();
@@ -78,6 +74,9 @@ class PromoResourceService
   std::string GetPromoLocale();
 
   void Init();
+
+  static bool IsBuildTargeted(chrome::VersionInfo::Channel channel,
+                              int builds_targeted);
 
   // Returns true if |builds_targeted| includes the release channel Chrome
   // belongs to. For testing purposes, you can override the current channel
@@ -108,7 +107,7 @@ class PromoResourceService
   //       {
   //         "answer_id": "1067976",
   //         "name": "promo_start",
-  //         "question": "1:24",
+  //         "question": "1:24:10",
   //         "tooltip":
   //       "Click \u003ca href=http://www.google.com\u003ehere\u003c/a\u003e!",
   //         "inproduct": "10/8/09 12:00",
@@ -134,12 +133,14 @@ class PromoResourceService
   // promotional line is given by the "inproduct" line.
   // For "promo_start", the promotional line itself is given in the "tooltip"
   // field. The "question" field gives the type of builds that should be shown
-  // this promo (see the BuildType enum in web_resource_service.cc) and the
-  // number of hours that each promo group should see it, separated by ":".
-  // For example, "7:24" would indicate that all builds should see the promo,
-  // and each group should see it for 24 hours.
+  // this promo (see the BuildType enum in web_resource_service.cc), the
+  // number of hours that each promo group should see it, and the maximum promo
+  // group that should see it, separated by ":".
+  // For example, "7:24:5" would indicate that all groups with ids less than 5,
+  // and with dev, beta and stable builds, should see the promo. The groups
+  // ramp up so 1 additional group sees the promo every 24 hours.
   //
-  void UnpackPromoSignal(const base::DictionaryValue& parsed_json);
+  void UnpackNotificationSignal(const base::DictionaryValue& parsed_json);
 
   // Unpack the promo resource as a custom logo signal. Expects a start and end
   // signal. Delivery will be in json in the form of:
@@ -201,12 +202,46 @@ class PromoResourceService
   //   answer_id: the promo's id
   void UnpackWebStoreSignal(const base::DictionaryValue& parsed_json);
 
+  // Parse the answers array element.
+  void ParseNotification(base::DictionaryValue* a_dic,
+                         std::string* promo_start_string,
+                         std::string* promo_end_string);
+
+  // Set notification promo params from a question string, which is of the form
+  // <build_type>:<time_slice>:<max_group>.
+  void SetNotificationParams(base::DictionaryValue* a_dic);
+
+  // Extract the notification promo text from the tooltip string.
+  void SetNotificationLine(base::DictionaryValue* a_dic);
+
+  // Check if this notification promo is new based on start/end times,
+  // and trigger events accordingly.
+  void CheckForNewNotification(const std::string& promo_start_string,
+                               const std::string& promo_end_string);
+
+  // Calculate the notification promo times, taking into account our group, and
+  // the group time slice.
+  void ParseNewNotificationTimes(const std::string& promo_start_string,
+                                 const std::string& promo_end_string,
+                                 double* promo_start,
+                                 double* promo_end);
+
+  // Calculates notification promo start time with group-based time slice
+  // offset.
+  static double GetNotificationStartTime(PrefService* prefs);
+
+  // Create a new notification promo group.
+  int ResetNotificationGroup();
+
+  // Get saved notification promo times.
+  void GetCurrentNotificationTimes(double* old_promo_start,
+                                   double* old_promo_end);
+
+  // Actions on receiving a new notification promo.
+  void OnNewNotification(double promo_start, double promo_end);
+
   // The profile this service belongs to.
   Profile* profile_;
-
-  // Gets mutable dictionary attached to user's preferences, so that we
-  // can write resource data back to user's pref file.
-  base::DictionaryValue* web_resource_cache_;
 
   // Overrides the current Chrome release channel for testing purposes.
   chrome::VersionInfo::Channel channel_;

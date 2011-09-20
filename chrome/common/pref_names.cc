@@ -1277,13 +1277,16 @@ const char kNTPPromoBuild[] = "ntp.promo_build";
 // True if user has explicitly closed the promo line.
 const char kNTPPromoClosed[] = "ntp.promo_closed";
 
-// Users are randomly divided into 16 groups in order to slowly roll out
+// Users are randomly divided into 100 groups in order to slowly roll out
 // special promos.
 const char kNTPPromoGroup[] = "ntp.promo_group";
 
 // Amount of time each promo group should be shown a promo that is being slowly
 // rolled out, in hours.
 const char kNTPPromoGroupTimeSlice[] = "ntp.promo_group_timeslice";
+
+// Number of groups to roll out this promo to.
+const char kNTPPromoGroupMax[] = "ntp.promo_group_max";
 
 // Promo line from server.
 const char kNTPPromoLine[] = "ntp.promo_line";
