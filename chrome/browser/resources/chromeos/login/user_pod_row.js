@@ -122,6 +122,7 @@ cr.define('login', function() {
       } else {
         this.imageElement.title = userDict.emailAddress;
         this.passwordElement.hidden = false;
+        this.passwordElement.setAttribute('aria-label', userDict.emailAddress);
         this.enterButtonElement.hidden = true;
       }
     },
