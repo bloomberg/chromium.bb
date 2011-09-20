@@ -235,9 +235,7 @@ static const int kInitializationDelaySeconds = 30;
 static const int kMaxHistogramGatheringWaitDuration = 60000;  // 60 seconds.
 
 // The maximum number of events in a log uploaded to the UMA server.
-// TBD(jar): hack test to NOT send any events, to see if this helps reduce
-// the number of bloated logs.
-static const int kEventLimit = 0;
+static const int kEventLimit = 2400;
 
 // If an upload fails, and the transmission was over this byte count, then we
 // will discard the log, and not try to retransmit it.  We also don't persist
