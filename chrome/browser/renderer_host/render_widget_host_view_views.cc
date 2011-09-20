@@ -777,7 +777,7 @@ void RenderWidgetHostViewViews::OnPaint(gfx::Canvas* canvas) {
   paint_rect = paint_rect.Intersect(invalid_rect_);
 
   if (backing_store) {
-#if defined(TOOLKIT_USES_GTK) && !defined(USE_AURA)
+#if defined(TOOLKIT_USES_GTK)
     // Only render the widget if it is attached to a window; there's a short
     // period where this object isn't attached to a window but hasn't been
     // Destroy()ed yet and it receives paint messages...
@@ -797,7 +797,7 @@ void RenderWidgetHostViewViews::OnPaint(gfx::Canvas* canvas) {
         // TODO(sad)
         NOTIMPLEMENTED();
       }
-#if defined(TOOLKIT_USES_GTK) && !defined(USE_AURA)
+#if defined(TOOLKIT_USES_GTK)
     }
 #endif
     if (!whiteout_start_time_.is_null()) {

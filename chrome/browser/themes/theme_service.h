@@ -147,7 +147,7 @@ class ThemeService : public base::NonThreadSafe,
   virtual bool ShouldUseNativeFrame() const;
   virtual bool HasCustomImage(int id) const;
   virtual RefCountedMemory* GetRawData(int id) const;
-#if defined(TOOLKIT_USES_GTK) && !defined(USE_AURA)
+#if defined(TOOLKIT_USES_GTK)
   // GdkPixbufs returned by GetPixbufNamed and GetRTLEnabledPixbufNamed are
   // shared instances owned by the theme provider and should not be freed.
   virtual GdkPixbuf* GetPixbufNamed(int id) const;

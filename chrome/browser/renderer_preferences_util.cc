@@ -8,7 +8,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 
-#if defined(TOOLKIT_USES_GTK) && !defined(USE_AURA)
+#if defined(TOOLKIT_USES_GTK)
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #endif
@@ -16,10 +16,10 @@
 namespace renderer_preferences_util {
 
 void UpdateFromSystemSettings(RendererPreferences* prefs, Profile* profile) {
-#if defined(TOOLKIT_USES_GTK) && !defined(USE_AURA)
+#if defined(TOOLKIT_USES_GTK)
   gtk_util::UpdateGtkFontSettings(prefs);
 
-#if !defined(OS_CHROMEOS) && !defined(USE_AURA)
+#if !defined(OS_CHROMEOS)
   GtkThemeService* theme_service = GtkThemeService::GetFrom(profile);
 
   prefs->focus_ring_color = theme_service->get_focus_ring_color();
@@ -40,9 +40,9 @@ void UpdateFromSystemSettings(RendererPreferences* prefs, Profile* profile) {
   prefs->active_selection_fg_color = SK_ColorBLACK;
   prefs->inactive_selection_bg_color = SkColorSetRGB(0xEA, 0xEA, 0xEA);
   prefs->inactive_selection_fg_color = SK_ColorBLACK;
-#endif  // defined(OS_CHROMEOS) && defined(USE_AURA)
+#endif  // defined(OS_CHROMEOS)
 
-#endif  // defined(TOOLKIT_USES_GTK) && defined(USE_AURA)
+#endif  // defined(TOOLKIT_USES_GTK)
 
   prefs->enable_referrers =
       profile->GetPrefs()->GetBoolean(prefs::kEnableReferrers);

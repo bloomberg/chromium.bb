@@ -204,7 +204,7 @@ bool RenderWidgetHost::OnMessageReceived(const IPC::Message &msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_AcceleratedSurfaceBuffersSwapped,
                         OnAcceleratedSurfaceBuffersSwapped)
 #endif
-#if defined(TOOLKIT_USES_GTK) && !defined(USE_AURA)
+#if defined(TOOLKIT_USES_GTK)
     IPC_MESSAGE_HANDLER(ViewHostMsg_CreatePluginContainer,
                         OnMsgCreatePluginContainer)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DestroyPluginContainer,
@@ -1105,7 +1105,7 @@ void RenderWidgetHost::OnMsgDidActivateAcceleratedCompositing(bool activated) {
 #elif defined(OS_WIN)
   if (view_)
     view_->ShowCompositorHostWindow(is_accelerated_compositing_active_);
-#elif defined(TOOLKIT_USES_GTK) && !defined(USE_AURA)
+#elif defined(TOOLKIT_USES_GTK)
   if (view_)
     view_->AcceleratedCompositingActivated(activated);
 #endif

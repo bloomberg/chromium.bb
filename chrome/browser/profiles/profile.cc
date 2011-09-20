@@ -62,7 +62,7 @@
 #include "webkit/database/database_tracker.h"
 #include "webkit/quota/quota_manager.h"
 
-#if defined(TOOLKIT_USES_GTK) && !defined(USE_AURA)
+#if defined(TOOLKIT_USES_GTK)
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #endif
 
@@ -140,7 +140,7 @@ void Profile::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(prefs::kSpeechInputCensorResults,
                              true,
                              PrefService::UNSYNCABLE_PREF);
-#if defined(TOOLKIT_USES_GTK) & !defined(USE_AURA)
+#if defined(TOOLKIT_USES_GTK)
   prefs->RegisterBooleanPref(prefs::kUsesSystemTheme,
                              GtkThemeService::DefaultUsesSystemTheme(),
                              PrefService::UNSYNCABLE_PREF);
