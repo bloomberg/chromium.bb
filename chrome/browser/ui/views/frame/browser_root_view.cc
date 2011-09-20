@@ -19,11 +19,6 @@
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/l10n/l10n_util.h"
-#if defined(TOUCH_UI)
-#include "content/common/content_notification_types.h"
-#include "content/common/notification_service.h"
-#include "views/ime/input_method.h"
-#endif
 
 // static
 const char BrowserRootView::kViewClassName[] =
