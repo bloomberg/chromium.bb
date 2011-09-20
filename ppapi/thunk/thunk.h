@@ -19,6 +19,7 @@
 #define PROXIED_IFACE IFACE
 #define UNPROXIED_IFACE IFACE
 
+#include "ppapi/thunk/interfaces_ppb_private.h"
 #include "ppapi/thunk/interfaces_ppb_public_stable.h"
 #include "ppapi/thunk/interfaces_ppb_public_dev.h"
 

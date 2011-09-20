@@ -95,6 +95,7 @@
         'c/private/ppb_flash.h',
         'c/private/ppb_flash_clipboard.h',
         'c/private/ppb_flash_file.h',
+        'c/private/ppb_flash_fullscreen.h',
         'c/private/ppb_flash_menu.h',
         'c/private/ppb_flash_net_connector.h',
         'c/private/ppb_flash_tcp_socket.h',
@@ -243,6 +244,8 @@
         'cpp/dev/scriptable_object_deprecated.cc',
 
         # Private interfaces.
+        'cpp/private/flash_fullscreen.cc',
+        'cpp/private/flash_fullscreen.h',
         'cpp/private/instance_private.cc',
         'cpp/private/instance_private.h',
         'cpp/private/var_private.cc',

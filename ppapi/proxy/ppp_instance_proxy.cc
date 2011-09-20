@@ -6,10 +6,10 @@
 
 #include <algorithm>
 
-#include "ppapi/c/dev/ppb_fullscreen_dev.h"
 #include "ppapi/c/pp_var.h"
 #include "ppapi/c/ppb_core.h"
 #include "ppapi/c/ppp_instance.h"
+#include "ppapi/c/private/ppb_flash_fullscreen.h"
 #include "ppapi/proxy/host_dispatcher.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
 #include "ppapi/proxy/plugin_resource_tracker.h"
@@ -48,9 +48,9 @@ void DidChangeView(PP_Instance instance,
                    const PP_Rect* position,
                    const PP_Rect* clip) {
   HostDispatcher* dispatcher = HostDispatcher::GetForInstance(instance);
-  const PPB_Fullscreen_Dev* fullscreen_interface =
-      static_cast<const PPB_Fullscreen_Dev*>(
-          dispatcher->local_get_interface()(PPB_FULLSCREEN_DEV_INTERFACE));
+  const PPB_FlashFullscreen* fullscreen_interface =
+      static_cast<const PPB_FlashFullscreen*>(
+          dispatcher->local_get_interface()(PPB_FLASHFULLSCREEN_INTERFACE));
   DCHECK(fullscreen_interface);
   PP_Bool fullscreen = fullscreen_interface->IsFullscreen(instance);
   dispatcher->Send(

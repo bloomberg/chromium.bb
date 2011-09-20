@@ -9,6 +9,7 @@
 
 PROXIED_API(PPB_Broker)
 
-PROXIED_IFACE(PPB_Broker, PPB_BROKER_TRUSTED_INTERFACE_0_2, PPB_Broker)
+PROXIED_IFACE(PPB_Broker, PPB_BROKER_TRUSTED_INTERFACE_0_2, PPB_BrokerTrusted)
+PROXIED_IFACE(PPB_Instance, PPB_FLASHFULLSCREEN_INTERFACE, PPB_FlashFullscreen)
 
 #include "ppapi/thunk/interfaces_postamble.h"

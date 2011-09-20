@@ -52,7 +52,7 @@ const PPB_BrokerTrusted g_ppb_broker_thunk = {
 
 }  // namespace
 
-const PPB_BrokerTrusted* GetPPB_Broker_Thunk() {
+const PPB_BrokerTrusted* GetPPB_BrokerTrusted_Thunk() {
   return &g_ppb_broker_thunk;
 }
 

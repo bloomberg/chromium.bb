@@ -4,7 +4,6 @@
 
 #include "ppapi/proxy/ppb_instance_proxy.h"
 
-#include "ppapi/c/dev/ppb_fullscreen_dev.h"
 #include "ppapi/c/dev/ppb_mouse_lock_dev.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/pp_var.h"
@@ -84,10 +83,10 @@ bool PPB_Instance_Proxy::OnMessageReceived(const IPC::Message& msg) {
                         OnMsgLogWithSource)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_PostMessage,
                         OnMsgPostMessage)
-    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_SetFullscreen,
-                        OnMsgSetFullscreen)
-    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_GetScreenSize,
-                        OnMsgGetScreenSize)
+    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_FlashSetFullscreen,
+                        OnMsgFlashSetFullscreen)
+    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_FlashGetScreenSize,
+                        OnMsgFlashGetScreenSize)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_RequestInputEvents,
                         OnMsgRequestInputEvents)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_ClearInputEvents,
@@ -182,7 +181,7 @@ void PPB_Instance_Proxy::SelectedFindResultChanged(PP_Instance instance,
   NOTIMPLEMENTED();  // Not proxied yet.
 }
 
-PP_Bool PPB_Instance_Proxy::IsFullscreen(PP_Instance instance) {
+PP_Bool PPB_Instance_Proxy::FlashIsFullscreen(PP_Instance instance) {
   InstanceData* data = static_cast<PluginDispatcher*>(dispatcher())->
       GetInstanceData(instance);
   if (!data)
@@ -190,18 +189,18 @@ PP_Bool PPB_Instance_Proxy::IsFullscreen(PP_Instance instance) {
   return data->fullscreen;
 }
 
-PP_Bool PPB_Instance_Proxy::SetFullscreen(PP_Instance instance,
-                                          PP_Bool fullscreen) {
+PP_Bool PPB_Instance_Proxy::FlashSetFullscreen(PP_Instance instance,
+                                               PP_Bool fullscreen) {
   PP_Bool result = PP_FALSE;
-  dispatcher()->Send(new PpapiHostMsg_PPBInstance_SetFullscreen(
+  dispatcher()->Send(new PpapiHostMsg_PPBInstance_FlashSetFullscreen(
       INTERFACE_ID_PPB_INSTANCE, instance, fullscreen, &result));
   return result;
 }
 
-PP_Bool PPB_Instance_Proxy::GetScreenSize(PP_Instance instance,
-                                          PP_Size* size) {
+PP_Bool PPB_Instance_Proxy::FlashGetScreenSize(PP_Instance instance,
+                                               PP_Size* size) {
   PP_Bool result = PP_FALSE;
-  dispatcher()->Send(new PpapiHostMsg_PPBInstance_GetScreenSize(
+  dispatcher()->Send(new PpapiHostMsg_PPBInstance_FlashGetScreenSize(
       INTERFACE_ID_PPB_INSTANCE, instance, &result, size));
   return result;
 }
@@ -350,20 +349,20 @@ void PPB_Instance_Proxy::OnMsgLogWithSource(PP_Instance instance,
   }
 }
 
-void PPB_Instance_Proxy::OnMsgSetFullscreen(PP_Instance instance,
-                                            PP_Bool fullscreen,
-                                            PP_Bool* result) {
+void PPB_Instance_Proxy::OnMsgFlashSetFullscreen(PP_Instance instance,
+                                                 PP_Bool fullscreen,
+                                                 PP_Bool* result) {
   EnterInstanceNoLock enter(instance, false);
   if (enter.succeeded())
-    *result = enter.functions()->SetFullscreen(instance, fullscreen);
+    *result = enter.functions()->FlashSetFullscreen(instance, fullscreen);
 }
 
-void PPB_Instance_Proxy::OnMsgGetScreenSize(PP_Instance instance,
-                                            PP_Bool* result,
-                                            PP_Size* size) {
+void PPB_Instance_Proxy::OnMsgFlashGetScreenSize(PP_Instance instance,
+                                                 PP_Bool* result,
+                                                 PP_Size* size) {
   EnterInstanceNoLock enter(instance, false);
   if (enter.succeeded())
-    *result = enter.functions()->GetScreenSize(instance, size);
+    *result = enter.functions()->FlashGetScreenSize(instance, size);
 }
 
 void PPB_Instance_Proxy::OnMsgRequestInputEvents(PP_Instance instance,

@@ -822,11 +822,11 @@ IPC_MESSAGE_ROUTED4(PpapiHostMsg_PPBInstance_LogWithSource,
                     int /* log_level */,
                     ppapi::proxy::SerializedVar /* source */,
                     ppapi::proxy::SerializedVar /* value */)
-IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBInstance_SetFullscreen,
+IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBInstance_FlashSetFullscreen,
                            PP_Instance /* instance */,
                            PP_Bool /* fullscreen */,
                            PP_Bool /* result */)
-IPC_SYNC_MESSAGE_ROUTED1_2(PpapiHostMsg_PPBInstance_GetScreenSize,
+IPC_SYNC_MESSAGE_ROUTED1_2(PpapiHostMsg_PPBInstance_FlashGetScreenSize,
                            PP_Instance /* instance */,
                            PP_Bool /* result */,
                            PP_Size /* size */)

@@ -11,7 +11,6 @@
 #include "base/utf_string_conversions.h"
 #include "ppapi/c/dev/ppb_console_dev.h"
 #include "ppapi/c/dev/ppb_find_dev.h"
-#include "ppapi/c/dev/ppb_fullscreen_dev.h"
 #include "ppapi/c/dev/ppb_memory_dev.h"
 #include "ppapi/c/dev/ppb_zoom_dev.h"
 #include "ppapi/c/dev/ppp_find_dev.h"
@@ -1506,17 +1505,18 @@ void PluginInstance::SelectedFindResultChanged(PP_Instance instance,
   delegate_->SelectedFindResultChanged(find_identifier_, index);
 }
 
-PP_Bool PluginInstance::IsFullscreen(PP_Instance instance) {
+PP_Bool PluginInstance::FlashIsFullscreen(PP_Instance instance) {
   return PP_FromBool(fullscreen_);
 }
 
-PP_Bool PluginInstance::SetFullscreen(PP_Instance instance,
-                                      PP_Bool fullscreen) {
+PP_Bool PluginInstance::FlashSetFullscreen(PP_Instance instance,
+                                           PP_Bool fullscreen) {
   SetFullscreen(PP_ToBool(fullscreen), true);
   return PP_TRUE;
 }
 
-PP_Bool PluginInstance::GetScreenSize(PP_Instance instance, PP_Size* size) {
+PP_Bool PluginInstance::FlashGetScreenSize(PP_Instance instance,
+                                           PP_Size* size) {
   gfx::Size screen_size = delegate()->GetScreenSize();
   *size = PP_MakeSize(screen_size.width(), screen_size.height());
   return PP_TRUE;

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "ppapi/c/dev/ppb_fullscreen_dev.h"
+#include "ppapi/c/private/ppb_flash_fullscreen.h"
 #include "ppapi/thunk/thunk.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_instance_api.h"
@@ -14,27 +15,27 @@ namespace thunk {
 namespace {
 
 PP_Bool IsFullscreen(PP_Instance instance) {
-  EnterFunction<PPB_Instance_FunctionAPI> enter(instance, true);
+  EnterInstance enter(instance);
   if (enter.failed())
     return PP_FALSE;
   return enter.functions()->FlashIsFullscreen(instance);
 }
 
 PP_Bool SetFullscreen(PP_Instance instance, PP_Bool fullscreen) {
-  EnterFunction<PPB_Instance_FunctionAPI> enter(instance, true);
+  EnterInstance enter(instance);
   if (enter.failed())
     return PP_FALSE;
   return enter.functions()->FlashSetFullscreen(instance, fullscreen);
 }
 
 PP_Bool GetScreenSize(PP_Instance instance, PP_Size* size) {
-  EnterFunction<PPB_Instance_FunctionAPI> enter(instance, true);
+  EnterInstance enter(instance);
   if (enter.failed())
     return PP_FALSE;
   return enter.functions()->FlashGetScreenSize(instance, size);
 }
 
-const PPB_Fullscreen_Dev g_ppb_fullscreen_thunk = {
+const PPB_FlashFullscreen g_ppb_flash_fullscreen_thunk = {
   &IsFullscreen,
   &SetFullscreen,
   &GetScreenSize
@@ -42,8 +43,8 @@ const PPB_Fullscreen_Dev g_ppb_fullscreen_thunk = {
 
 }  // namespace
 
-const PPB_Fullscreen_Dev* GetPPB_Fullscreen_Dev_Thunk() {
-  return &g_ppb_fullscreen_thunk;
+const PPB_FlashFullscreen* GetPPB_FlashFullscreen_Thunk() {
+  return &g_ppb_flash_fullscreen_thunk;
 }
 
 }  // namespace thunk

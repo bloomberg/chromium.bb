@@ -1,0 +1,48 @@
+/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+
+/**
+ * This file defines the <code>PPB_FlashFullscreen</code> interface.
+ */
+
+label Chrome {
+  M16 = 0.1
+};
+
+interface PPB_FlashFullscreen {
+  /**
+   * Checks whether the plugin instance is currently in fullscreen mode.
+   */
+  PP_Bool IsFullscreen(
+      [in] PP_Instance instance);
+
+  /**
+   * Switches the plugin instance to/from fullscreen mode. Returns PP_TRUE on
+   * success, PP_FALSE on failure.
+   *
+   * This unbinds the current Graphics2D or Surface3D. Pending flushes and
+   * swapbuffers will execute as if the resource was off-screen.  The transition
+   * is asynchronous. During the transition, IsFullscreen will return PP_False,
+   * and no Graphics2D or Surface3D can be bound. The transition ends at the
+   * next DidChangeView.
+   *
+   * Note: when switching to and from fullscreen, Context3D and Surface3D
+   * resources need to be re-created. This is a current limitation that will be
+   * lifted in a later revision.
+   */
+  PP_Bool SetFullscreen(
+      [in] PP_Instance instance,
+      [in] PP_Bool fullscreen);
+
+  /**
+   * Gets the size of the screen. When going fullscreen, the instance will be
+   * resized to that size.
+   */
+  PP_Bool GetScreenSize(
+      [in] PP_Instance instance,
+      [out] PP_Size size);
+};
+
