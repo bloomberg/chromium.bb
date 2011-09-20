@@ -21,6 +21,7 @@
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/chromeos/boot_times_loader.h"
 #include "chrome/browser/chromeos/cros/login_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
@@ -1128,6 +1129,9 @@ void LoginUtils::Set(LoginUtils* mock) {
 
 void LoginUtils::DoBrowserLaunch(Profile* profile,
                                  LoginDisplayHost* login_host) {
+  if (browser_shutdown::IsTryingToQuit())
+    return;
+
   BootTimesLoader::Get()->AddLoginTimeMarker("BrowserLaunched", false);
 
   VLOG(1) << "Launching browser...";
