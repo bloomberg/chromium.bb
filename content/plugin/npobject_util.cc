@@ -5,9 +5,9 @@
 #include "content/plugin/npobject_util.h"
 
 #include "base/string_util.h"
+#include "content/common/np_channel_base.h"
 #include "content/common/plugin_messages.h"
 #include "content/plugin/npobject_proxy.h"
-#include "content/plugin/plugin_channel_base.h"
 #include "third_party/npapi/bindings/nphostapi.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebBindings.h"
 #include "webkit/plugins/npapi/plugin_host.h"
@@ -87,8 +87,7 @@ static bool NPN_EvaluatePatch(NPP npp,
 static void NPN_SetExceptionPatch(NPObject *obj, const NPUTF8 *message) {
   std::string message_str(message);
   if (IsPluginProcess()) {
-    PluginChannelBase* renderer_channel =
-        PluginChannelBase::GetCurrentChannel();
+    NPChannelBase* renderer_channel = NPChannelBase::GetCurrentChannel();
     if (renderer_channel)
       renderer_channel->Send(new PluginHostMsg_SetException(message_str));
   } else {
@@ -145,7 +144,7 @@ NPIdentifier CreateNPIdentifier(const NPIdentifier_Param& param) {
 }
 
 void CreateNPVariantParam(const NPVariant& variant,
-                          PluginChannelBase* channel,
+                          NPChannelBase* channel,
                           NPVariant_Param* param,
                           bool release,
                           gfx::NativeViewId containing_window,
@@ -219,7 +218,7 @@ void CreateNPVariantParam(const NPVariant& variant,
 }
 
 bool CreateNPVariant(const NPVariant_Param& param,
-                     PluginChannelBase* channel,
+                     NPChannelBase* channel,
                      NPVariant* result,
                      gfx::NativeViewId containing_window,
                      const GURL& page_url) {

@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -18,7 +18,7 @@
 
 class GURL;
 class NPObjectProxy;
-class PluginChannelBase;
+class NPChannelBase;
 
 struct _NPVariant;
 struct NPIdentifier_Param;
@@ -47,7 +47,7 @@ NPIdentifier CreateNPIdentifier(const  NPIdentifier_Param& param);
 // If release is true, the NPVariant object is released (except if
 // it contains an NPObject, since the stub will manage its lifetime).
 void CreateNPVariantParam(const NPVariant& variant,
-                          PluginChannelBase* channel,
+                          NPChannelBase* channel,
                           NPVariant_Param* param,
                           bool release,
                           gfx::NativeViewId containing_window,
@@ -56,7 +56,7 @@ void CreateNPVariantParam(const NPVariant& variant,
 // Creates an NPVariant from the marshalled object.
 // Returns true on success.
 bool CreateNPVariant(const NPVariant_Param& param,
-                     PluginChannelBase* channel,
+                     NPChannelBase* channel,
                      NPVariant* result,
                      gfx::NativeViewId containing_window,
                      const GURL& page_url);

@@ -11,7 +11,7 @@
 #include "base/memory/scoped_handle.h"
 #include "base/process.h"
 #include "build/build_config.h"
-#include "content/plugin/plugin_channel_base.h"
+#include "content/common/np_channel_base.h"
 #include "content/plugin/webplugin_delegate_stub.h"
 
 namespace base {
@@ -20,7 +20,7 @@ class WaitableEvent;
 
 // Encapsulates an IPC channel between the plugin process and one renderer
 // process.  On the renderer side there's a corresponding PluginChannelHost.
-class PluginChannel : public PluginChannelBase {
+class PluginChannel : public NPChannelBase {
  public:
   // Get a new PluginChannel object for the current process to talk to the
   // given renderer process. The renderer ID is an opaque unique ID generated
@@ -63,7 +63,7 @@ class PluginChannel : public PluginChannelBase {
 
   virtual void CleanUp();
 
-  // Overrides PluginChannelBase::Init.
+  // Overrides NPChannelBase::Init.
   virtual bool Init(base::MessageLoopProxy* ipc_message_loop,
                    bool create_pipe_now);
 
@@ -75,7 +75,7 @@ class PluginChannel : public PluginChannelBase {
 
   virtual bool OnControlMessageReceived(const IPC::Message& msg);
 
-  static PluginChannelBase* ClassFactory() { return new PluginChannel(); }
+  static NPChannelBase* ClassFactory() { return new PluginChannel(); }
 
   void OnCreateInstance(const std::string& mime_type, int* instance_id);
   void OnDestroyInstance(int instance_id, IPC::Message* reply_msg);

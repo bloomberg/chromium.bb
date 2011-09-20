@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -55,7 +55,7 @@ IPC::Channel::Listener* NPObjectProxy::GetChannelListener() {
 }
 
 NPObjectProxy::NPObjectProxy(
-    PluginChannelBase* channel,
+    NPChannelBase* channel,
     int route_id,
     gfx::NativeViewId containing_window,
     const GURL& page_url)
@@ -79,7 +79,7 @@ NPObjectProxy::~NPObjectProxy() {
   }
 }
 
-NPObject* NPObjectProxy::Create(PluginChannelBase* channel,
+NPObject* NPObjectProxy::Create(NPChannelBase* channel,
                                 int route_id,
                                 gfx::NativeViewId containing_window,
                                 const GURL& page_url) {
@@ -187,7 +187,7 @@ bool NPObjectProxy::NPInvokePrivate(NPP npp,
 
   // Note: This instance can get destroyed in the context of
   // Send so addref the channel in this scope.
-  scoped_refptr<PluginChannelBase> channel_copy = proxy->channel_;
+  scoped_refptr<NPChannelBase> channel_copy = proxy->channel_;
   std::vector<NPVariant_Param> args_param;
   for (unsigned int i = 0; i < arg_count; ++i) {
     NPVariant_Param param;
@@ -277,7 +277,7 @@ bool NPObjectProxy::NPGetProperty(NPObject *obj,
   CreateNPIdentifierParam(name, &name_param);
 
   NPVariant_Param param;
-  scoped_refptr<PluginChannelBase> channel(proxy->channel_);
+  scoped_refptr<NPChannelBase> channel(proxy->channel_);
 
   GURL page_url = proxy->page_url_;
   proxy->Send(new NPObjectMsg_GetProperty(
@@ -415,7 +415,7 @@ bool NPObjectProxy::NPNConstruct(NPObject *obj,
 
   // Note: This instance can get destroyed in the context of
   // Send so addref the channel in this scope.
-  scoped_refptr<PluginChannelBase> channel_copy = proxy->channel_;
+  scoped_refptr<NPChannelBase> channel_copy = proxy->channel_;
   std::vector<NPVariant_Param> args_param;
   for (unsigned int i = 0; i < arg_count; ++i) {
     NPVariant_Param param;
@@ -490,7 +490,7 @@ bool NPObjectProxy::NPNEvaluate(NPP npp,
           channel->GetModalDialogEvent(proxy->containing_window_));
     }
   }
-  scoped_refptr<PluginChannelBase> channel(proxy->channel_);
+  scoped_refptr<NPChannelBase> channel(proxy->channel_);
 
   GURL page_url = proxy->page_url_;
   proxy->Send(msg);

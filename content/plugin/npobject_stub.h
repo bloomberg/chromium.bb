@@ -13,12 +13,12 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "content/plugin/npobject_base.h"
+#include "content/common/npobject_base.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_channel.h"
 #include "ui/gfx/native_widget_types.h"
 
-class PluginChannelBase;
+class NPChannelBase;
 struct NPIdentifier_Param;
 struct NPObject;
 struct NPVariant_Param;
@@ -32,7 +32,7 @@ class NPObjectStub : public IPC::Channel::Listener,
                      public NPObjectBase {
  public:
   NPObjectStub(NPObject* npobject,
-               PluginChannelBase* channel,
+               NPChannelBase* channel,
                int route_id,
                gfx::NativeViewId containing_window,
                const GURL& page_url);
@@ -84,7 +84,7 @@ class NPObjectStub : public IPC::Channel::Listener,
 
  private:
   NPObject* npobject_;
-  scoped_refptr<PluginChannelBase> channel_;
+  scoped_refptr<NPChannelBase> channel_;
   int route_id_;
   gfx::NativeViewId containing_window_;
 

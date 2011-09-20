@@ -10,13 +10,13 @@
 #pragma once
 
 #include "base/memory/ref_counted.h"
-#include "content/plugin/npobject_base.h"
+#include "content/common/npobject_base.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_channel.h"
 #include "third_party/npapi/bindings/npruntime.h"
 #include "ui/gfx/native_widget_types.h"
 
-class PluginChannelBase;
+class NPChannelBase;
 struct NPObject;
 
 // When running a plugin in a different process from the renderer, we need to
@@ -24,7 +24,7 @@ struct NPObject;
 // as a plugin can get an NPObject for the window, and a page can get an
 // NPObject for the plugin.  In the process that interacts with the NPobject we
 // give it an NPObjectProxy instead.  All calls to it are sent across an IPC
-// channel (specifically, a PluginChannelBase).  The NPObjectStub on the other
+// channel (specifically, a NPChannelBase).  The NPObjectStub on the other
 // side translates the IPC messages into calls to the actual NPObject, and
 // returns the marshalled result.
 class NPObjectProxy : public IPC::Channel::Listener,
@@ -33,7 +33,7 @@ class NPObjectProxy : public IPC::Channel::Listener,
  public:
   virtual ~NPObjectProxy();
 
-  static NPObject* Create(PluginChannelBase* channel,
+  static NPObject* Create(NPChannelBase* channel,
                           int route_id,
                           gfx::NativeViewId containing_window,
                           const GURL& page_url);
@@ -41,7 +41,7 @@ class NPObjectProxy : public IPC::Channel::Listener,
   // IPC::Message::Sender implementation:
   virtual bool Send(IPC::Message* msg);
   int route_id() { return route_id_; }
-  PluginChannelBase* channel() { return channel_; }
+  NPChannelBase* channel() { return channel_; }
 
   // The next 9 functions are called on NPObjects from the plugin and browser.
   static bool NPHasMethod(NPObject *obj,
@@ -96,7 +96,7 @@ class NPObjectProxy : public IPC::Channel::Listener,
   virtual IPC::Channel::Listener* GetChannelListener();
 
  private:
-  NPObjectProxy(PluginChannelBase* channel,
+  NPObjectProxy(NPChannelBase* channel,
                 int route_id,
                 gfx::NativeViewId containing_window,
                 const GURL& page_url);
@@ -112,7 +112,7 @@ class NPObjectProxy : public IPC::Channel::Listener,
   static void NPPInvalidate(NPObject *obj);
   static NPClass npclass_proxy_;
 
-  scoped_refptr<PluginChannelBase> channel_;
+  scoped_refptr<NPChannelBase> channel_;
   int route_id_;
   gfx::NativeViewId containing_window_;
 

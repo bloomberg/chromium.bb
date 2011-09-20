@@ -126,7 +126,7 @@ PluginThread::~PluginThread() {
     base::UnloadNativeLibrary(preloaded_plugin_module_);
     preloaded_plugin_module_ = NULL;
   }
-  PluginChannelBase::CleanupChannels();
+  NPChannelBase::CleanupChannels();
   webkit::npapi::PluginLib::UnloadAllPlugins();
 
   if (webkit_glue::ShouldForcefullyTerminatePluginProcess())

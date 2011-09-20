@@ -74,7 +74,7 @@
 #include "content/plugin/plugin_channel.h"
 #else
 #include "base/memory/scoped_handle.h"
-#include "content/plugin/plugin_channel_base.h"
+#include "content/common/np_channel_base.h"
 #endif
 
 #if defined(OS_WIN)
@@ -245,7 +245,7 @@ RenderThread::~RenderThread() {
   // TODO(port)
 #if defined(OS_WIN)
   // Clean up plugin channels before this thread goes away.
-  PluginChannelBase::CleanupChannels();
+  NPChannelBase::CleanupChannels();
   // Don't call COM if the renderer is in the sandbox.
   if (RenderProcessImpl::InProcessPlugins())
     CoUninitialize();

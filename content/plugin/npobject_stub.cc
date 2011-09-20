@@ -7,18 +7,19 @@
 #include "content/common/content_client.h"
 #include "content/common/plugin_messages.h"
 #include "content/plugin/npobject_util.h"
-#include "content/plugin/plugin_channel_base.h"
 #include "content/plugin/plugin_thread.h"
 #include "third_party/npapi/bindings/npapi.h"
 #include "third_party/npapi/bindings/npruntime.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebBindings.h"
 #include "webkit/plugins/npapi/plugin_constants_win.h"
 
+class NPChannelBase;
+
 using WebKit::WebBindings;
 
 NPObjectStub::NPObjectStub(
     NPObject* npobject,
-    PluginChannelBase* channel,
+    NPChannelBase* channel,
     int route_id,
     gfx::NativeViewId containing_window,
     const GURL& page_url)

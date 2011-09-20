@@ -1,11 +1,12 @@
-// Copyright (c) 2006-2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Base interface implemented by NPObjectProxy and NPObjectStub
+// Base interface used by NPChannelBase and implemented by NPObjectProxy and
+// NPObjectStub.
 
-#ifndef CONTENT_PLUGIN_NPOBJECT_BASE_H_
-#define CONTENT_PLUGIN_NPOBJECT_BASE_H_
+#ifndef CONTENT_COMMON_NPOBJECT_BASE_H_
+#define CONTENT_COMMON_NPOBJECT_BASE_H_
 #pragma once
 
 #include "ipc/ipc_channel.h"
@@ -24,4 +25,4 @@ class NPObjectBase {
   virtual IPC::Channel::Listener* GetChannelListener() = 0;
 };
 
-#endif  // CONTENT_PLUGIN_NPOBJECT_BASE_H_
+#endif  // CONTENT_COMMON_NPOBJECT_BASE_H_

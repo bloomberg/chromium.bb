@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,7 +7,7 @@
 #pragma once
 
 #include "base/hash_tables.h"
-#include "content/plugin/plugin_channel_base.h"
+#include "content/common/np_channel_base.h"
 #include "ipc/ipc_channel_handle.h"
 
 class IsListeningFilter;
@@ -15,7 +15,7 @@ class NPObjectBase;
 
 // Encapsulates an IPC channel between the renderer and one plugin process.
 // On the plugin side there's a corresponding PluginChannel.
-class PluginChannelHost : public PluginChannelBase {
+class PluginChannelHost : public NPChannelBase {
  public:
   static PluginChannelHost* GetPluginChannelHost(
       const IPC::ChannelHandle& channel_handle,
@@ -38,7 +38,7 @@ class PluginChannelHost : public PluginChannelBase {
   static bool IsListening();
 
   static void Broadcast(IPC::Message* message) {
-    PluginChannelBase::Broadcast(message);
+    NPChannelBase::Broadcast(message);
   }
 
   bool expecting_shutdown() { return expecting_shutdown_; }
@@ -48,7 +48,7 @@ class PluginChannelHost : public PluginChannelBase {
   PluginChannelHost();
   virtual ~PluginChannelHost();
 
-  static PluginChannelBase* ClassFactory() { return new PluginChannelHost(); }
+  static NPChannelBase* ClassFactory() { return new PluginChannelHost(); }
 
   virtual bool OnControlMessageReceived(const IPC::Message& message);
   void OnSetException(const std::string& message);
