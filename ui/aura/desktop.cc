@@ -34,6 +34,15 @@ Desktop::~Desktop() {
     instance_ = NULL;
 }
 
+void Desktop::Init() {
+  window_->Init();
+  compositor()->set_root_layer(window_->layer());
+#if defined(USE_X11)
+  // TODO(oshima): Implement configure notify and remove this.
+  OnHostResized(host_->GetSize());
+#endif
+}
+
 void Desktop::Show() {
   host_->Show();
 }
@@ -76,8 +85,7 @@ void Desktop::ScheduleCompositorPaint() {
 Desktop* Desktop::GetInstance() {
   if (!instance_) {
     instance_ = new Desktop;
-    instance_->window_->Init();
-    instance_->compositor()->set_root_layer(instance_->window_->layer());
+    instance_->Init();
   }
   return instance_;
 }

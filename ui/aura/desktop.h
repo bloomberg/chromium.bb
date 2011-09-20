@@ -29,6 +29,9 @@ class AURA_EXPORT Desktop : public ui::CompositorDelegate {
   Desktop();
   ~Desktop();
 
+  // Initializes the desktop.
+  void Init();
+
   // Shows the desktop host.
   void Show();
 

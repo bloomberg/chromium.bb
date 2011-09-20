@@ -292,8 +292,8 @@ void BrowserMainParts::InitializeToolkit() {
   dbus_g_thread_init();
 #endif
 #if defined(USE_AURA)
-  // TODO(saintlou): We still need some GTK at the lowest level, so init here.
-  gtk_init(NULL, NULL);
+  // TODO(oshima|saintlou): Remove this once we remove gtk from build
+  base::MessagePumpX::DisableGtkMessagePump();
 #else
   gfx::GtkInitFromCommandLine(parameters().command_line_);
 #endif

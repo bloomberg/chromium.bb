@@ -9,6 +9,8 @@
 #endif
 
 #include "base/logging.h"
+#include "ui/aura/desktop.h"
+#include "ui/aura/window.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace gfx {
@@ -26,20 +28,22 @@ gfx::Point Screen::GetCursorScreenPoint() {
 
 // static
 gfx::Rect Screen::GetMonitorWorkAreaNearestWindow(gfx::NativeWindow window) {
-  NOTIMPLEMENTED();
-  return gfx::Rect();
+  // TODO(oshima): Take window into account. Support multiple monitors.
+  aura::Window* desktop_window = aura::Desktop::GetInstance()->window();
+  return desktop_window->bounds();
 }
 
 // static
 gfx::Rect Screen::GetMonitorAreaNearestWindow(gfx::NativeWindow window) {
-  NOTIMPLEMENTED();
-  return gfx::Rect();
+  // TODO(oshima): Fix this for aura desktop.
+  return GetMonitorAreaNearestWindow(window);
 }
 
 static gfx::Rect GetMonitorAreaOrWorkAreaNearestPoint(const gfx::Point& point,
                                                       bool work_area) {
-  NOTIMPLEMENTED();
-  return gfx::Rect();
+  // TODO(oshima): Take point/work_area into account. Support multiple monitors.
+  aura::Window* desktop_window = aura::Desktop::GetInstance()->window();
+  return desktop_window->bounds();
 }
 
 // static
