@@ -66,10 +66,12 @@ class SpeechSynthesisLibraryStubImpl : public SpeechSynthesisLibrary {
 
 // static
 SpeechSynthesisLibrary* SpeechSynthesisLibrary::GetImpl(bool stub) {
+  SpeechSynthesisLibrary* impl;
   if (stub)
-    return new SpeechSynthesisLibraryStubImpl();
+    impl = new SpeechSynthesisLibraryStubImpl();
   else
-    return new SpeechSynthesisLibraryImpl();
+    impl = new SpeechSynthesisLibraryImpl();
+  return impl;
 }
 
 }  // namespace chromeos

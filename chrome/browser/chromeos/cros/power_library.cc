@@ -38,12 +38,11 @@ class PowerLibraryImpl : public PowerLibrary {
 
   // Begin PowerLibrary implementation.
   virtual void Init() OVERRIDE {
-    if (CrosLibrary::Get()->EnsureLoaded()) {
-      power_status_connection_ =
-          chromeos::MonitorPowerStatus(&PowerStatusChangedHandler, this);
-      resume_status_connection_ =
-          chromeos::MonitorResume(&SystemResumedHandler, this);
-    }
+    DCHECK(CrosLibrary::Get()->libcros_loaded());
+    power_status_connection_ =
+        chromeos::MonitorPowerStatus(&PowerStatusChangedHandler, this);
+    resume_status_connection_ =
+        chromeos::MonitorResume(&SystemResumedHandler, this);
   }
 
   virtual void AddObserver(Observer* observer) OVERRIDE {
@@ -85,9 +84,6 @@ class PowerLibraryImpl : public PowerLibrary {
   }
 
   virtual void EnableScreenLock(bool enable) OVERRIDE {
-    if (!CrosLibrary::Get()->EnsureLoaded())
-      return;
-
     // Make sure we run on FILE thread becuase chromeos::EnableScreenLock
     // would write power manager config file to disk.
     if (!BrowserThread::CurrentlyOn(BrowserThread::FILE)) {
@@ -101,13 +97,11 @@ class PowerLibraryImpl : public PowerLibrary {
   }
 
   virtual void RequestRestart() OVERRIDE {
-    if (CrosLibrary::Get()->EnsureLoaded())
-      chromeos::RequestRestart();
+    chromeos::RequestRestart();
   }
 
   virtual void RequestShutdown() OVERRIDE {
-    if (CrosLibrary::Get()->EnsureLoaded())
-      chromeos::RequestShutdown();
+    chromeos::RequestShutdown();
   }
 
   virtual void RequestStatusUpdate() OVERRIDE {

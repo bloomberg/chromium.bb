@@ -22,6 +22,7 @@ class MockMountLibrary : public MountLibrary {
   MockMountLibrary();
   virtual ~MockMountLibrary();
 
+  MOCK_METHOD0(Init, void(void));
   MOCK_METHOD1(AddObserver, void(MountLibrary::Observer*));
   MOCK_METHOD1(RemoveObserver, void(MountLibrary::Observer*));
   MOCK_CONST_METHOD0(disks, const MountLibrary::DiskMap&(void));

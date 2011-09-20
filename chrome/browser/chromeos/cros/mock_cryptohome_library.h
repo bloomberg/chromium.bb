@@ -24,6 +24,7 @@ class MockCryptohomeLibrary : public CryptohomeLibrary {
 
   void SetUp(bool outcome, int code);
 
+  MOCK_METHOD0(Init, void(void));
   MOCK_METHOD2(CheckKey, bool(const std::string& user_email,
                               const std::string& passhash));
   MOCK_METHOD3(AsyncCheckKey, bool(const std::string& user_email,

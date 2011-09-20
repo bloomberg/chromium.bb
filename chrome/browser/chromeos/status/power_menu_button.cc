@@ -161,9 +161,7 @@ class PowerMenuButton::StatusView : public View {
     SkBitmap image;
 
     bool draw_percentage_text = false;
-    if (!CrosLibrary::Get()->EnsureLoaded()) {
-      image = GetUnknownImage(LARGE);
-    } else if (!menu_button_->battery_is_present_) {
+    if (!menu_button_->battery_is_present_) {
       image = GetMissingImage(LARGE);
     } else {
       image = GetImage(
@@ -317,8 +315,7 @@ void PowerMenuButton::OnLocaleChanged() {
 
 void PowerMenuButton::RunMenu(views::View* source, const gfx::Point& pt) {
   // Explicitly query the power status.
-  if (CrosLibrary::Get()->EnsureLoaded())
-    CrosLibrary::Get()->GetPowerLibrary()->RequestStatusUpdate();
+  CrosLibrary::Get()->GetPowerLibrary()->RequestStatusUpdate();
 
   views::MenuItemView* menu = new views::MenuItemView(this);
   // MenuRunner takes ownership of |menu|.
@@ -358,31 +355,23 @@ void PowerMenuButton::PowerChanged(PowerLibrary* obj) {
 
 void PowerMenuButton::UpdateIconAndLabelInfo() {
   PowerLibrary* cros = CrosLibrary::Get()->GetPowerLibrary();
-  if (!cros)
-    return;
 
-  bool cros_loaded = CrosLibrary::Get()->EnsureLoaded();
-  if (cros_loaded) {
-    battery_is_present_ = cros->battery_is_present();
-    line_power_on_ = cros->line_power_on();
+  battery_is_present_ = cros->battery_is_present();
+  line_power_on_ = cros->line_power_on();
 
-    // If fully charged, always show 100% even if internal number is a bit less.
-    if (cros->battery_fully_charged()) {
-      // We always call cros->battery_percentage() for test predictability.
-      cros->battery_percentage();
-      battery_percentage_ = 100.0;
-    } else {
-      battery_percentage_ = cros->battery_percentage();
-    }
-
-    UpdateBatteryTime(&battery_time_to_full_, cros->battery_time_to_full());
-    UpdateBatteryTime(&battery_time_to_empty_, cros->battery_time_to_empty());
+  // If fully charged, always show 100% even if internal number is a bit less.
+  if (cros->battery_fully_charged()) {
+    // We always call cros->battery_percentage() for test predictability.
+    cros->battery_percentage();
+    battery_percentage_ = 100.0;
+  } else {
+    battery_percentage_ = cros->battery_percentage();
   }
 
-  if (!cros_loaded) {
-    battery_index_ = -1;
-    SetIcon(GetUnknownImage(SMALL));
-  } else if (!battery_is_present_) {
+  UpdateBatteryTime(&battery_time_to_full_, cros->battery_time_to_full());
+  UpdateBatteryTime(&battery_time_to_empty_, cros->battery_time_to_empty());
+
+  if (!battery_is_present_) {
     battery_index_ = -1;
     SetIcon(GetMissingImage(SMALL));
   } else {

@@ -18,9 +18,12 @@
 #include "chrome/browser/chromeos/cros/update_library.h"
 #include "third_party/cros/chromeos_cros_api.h"
 
+// Pass !libcros_loaded_ to GetDefaultImpl instead of use_stub_impl_ so that
+// we load the stub impl regardless of whether use_stub was specified or the
+// library failed to load.
 #define DEFINE_GET_LIBRARY_METHOD(class_prefix, var_prefix)                    \
 class_prefix##Library* CrosLibrary::Get##class_prefix##Library() {             \
-  return var_prefix##_lib_.GetDefaultImpl(use_stub_impl_);                     \
+  return var_prefix##_lib_.GetDefaultImpl(!libcros_loaded_);                   \
 }
 
 #define DEFINE_SET_LIBRARY_METHOD(class_prefix, var_prefix)                    \
@@ -57,10 +60,12 @@ void CrosLibrary::Initialize(bool use_stub) {
   }
   // Attempt to load libcros here, so that we can log, show warnings, and
   // set load_error_string_ immediately.
-  if (g_cros_library->LoadLibcros())
+  if (g_cros_library->LoadLibcros()) {
     VLOG(1) << "CrosLibrary Initialized, version = " << kCrosAPIVersion;
-  else
-    LOG(WARNING) << "CrosLibrary failed to Initialize.";
+  } else {
+    LOG(WARNING) << "CrosLibrary failed to Initialize."
+                 << " Will use stub implementations.";
+  }
 }
 
 // static

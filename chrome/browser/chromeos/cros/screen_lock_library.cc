@@ -28,10 +28,9 @@ class ScreenLockLibraryImpl : public ScreenLockLibrary {
 
   // Begin ScreenLockLibrary implementation.
   virtual void Init() OVERRIDE {
-    if (CrosLibrary::Get()->EnsureLoaded()) {
-      screen_lock_connection_ =
-          chromeos::MonitorScreenLock(&ScreenLockedHandler, this);
-    }
+    DCHECK(CrosLibrary::Get()->libcros_loaded());
+    screen_lock_connection_ =
+        chromeos::MonitorScreenLock(&ScreenLockedHandler, this);
   }
 
   virtual void AddObserver(Observer* observer) OVERRIDE {

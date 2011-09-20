@@ -25,8 +25,6 @@ LoginLibrary::~LoginLibrary() {}
 class LoginLibraryImpl : public LoginLibrary {
  public:
   LoginLibraryImpl() : job_restart_request_(NULL) {
-    CHECK(CrosLibrary::Get() && CrosLibrary::Get()->libcros_loaded());
-    Init();
   }
 
   virtual ~LoginLibraryImpl() {
@@ -36,44 +34,52 @@ class LoginLibraryImpl : public LoginLibrary {
     }
   }
 
-  void EmitLoginPromptReady() {
+  virtual void Init() OVERRIDE {
+    DCHECK(CrosLibrary::Get()->libcros_loaded());
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    session_connection_ = chromeos::MonitorSession(&Handler, this);
+  }
+
+  virtual void EmitLoginPromptReady() OVERRIDE {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     chromeos::EmitLoginPromptReady();
   }
 
-  void RequestRetrievePolicy(RetrievePolicyCallback callback, void* delegate) {
+  virtual void RequestRetrievePolicy(
+      RetrievePolicyCallback callback, void* delegate) OVERRIDE {
     DCHECK(callback) << "must provide a callback to RequestRetrievePolicy()";
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     chromeos::RetrievePolicy(callback, delegate);
   }
 
-  void RequestStorePolicy(const std::string& policy,
-                          StorePolicyCallback callback,
-                          void* delegate) {
+  virtual void RequestStorePolicy(const std::string& policy,
+                                  StorePolicyCallback callback,
+                                  void* delegate) OVERRIDE {
     DCHECK(callback) << "must provide a callback to StorePolicy()";
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     chromeos::StorePolicy(policy.c_str(), policy.length(), callback, delegate);
   }
 
-  bool StartSession(const std::string& user_email,
-                    const std::string& unique_id /* unused */) {
+  virtual bool StartSession(
+      const std::string& user_email,
+      const std::string& unique_id /* unused */) OVERRIDE {
     // only pass unique_id through once we use it for something.
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     return chromeos::StartSession(user_email.c_str(), "");
   }
 
-  bool StopSession(const std::string& unique_id /* unused */) {
+  virtual bool StopSession(const std::string& unique_id /* unused */) OVERRIDE {
     // only pass unique_id through once we use it for something.
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     return chromeos::StopSession("");
   }
 
-  bool RestartEntd() {
+  virtual bool RestartEntd() OVERRIDE {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     return chromeos::RestartEntd();
   }
 
-  bool RestartJob(int pid, const std::string& command_line) {
+  virtual bool RestartJob(int pid, const std::string& command_line) OVERRIDE {
     if (job_restart_request_) {
       NOTREACHED();
       return false;
@@ -172,11 +178,6 @@ class LoginLibraryImpl : public LoginLibrary {
     }
   }
 
-  void Init() {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-    session_connection_ = chromeos::MonitorSession(&Handler, this);
-  }
-
   void CompleteSetOwnerKey(bool value) {
     VLOG(1) << "Owner key generation: " << (value ? "success" : "fail");
     int result =
@@ -221,20 +222,30 @@ class LoginLibraryStubImpl : public LoginLibrary {
   LoginLibraryStubImpl() {}
   virtual ~LoginLibraryStubImpl() {}
 
-  void EmitLoginPromptReady() { }
-  void RequestRetrievePolicy(RetrievePolicyCallback callback, void* delegate) {
+  virtual void Init() OVERRIDE {}
+
+  virtual void EmitLoginPromptReady() OVERRIDE {}
+  virtual void RequestRetrievePolicy(
+      RetrievePolicyCallback callback, void* delegate) OVERRIDE {
     callback(delegate, "", 0);
   }
-  void RequestStorePolicy(const std::string& policy,
-                          StorePolicyCallback callback,
-                          void* delegate) {
+  virtual void RequestStorePolicy(const std::string& policy,
+                                  StorePolicyCallback callback,
+                                  void* delegate) OVERRIDE {
     callback(delegate, true);
   }
-  bool StartSession(const std::string& user_email,
-                    const std::string& unique_id /* unused */) { return true; }
-  bool StopSession(const std::string& unique_id /* unused */) { return true; }
-  bool RestartJob(int pid, const std::string& command_line) { return true; }
-  bool RestartEntd() { return true; }
+  virtual bool StartSession(
+      const std::string& user_email,
+      const std::string& unique_id /* unused */) OVERRIDE {
+    return true;
+  }
+  virtual bool StopSession(const std::string& unique_id /* unused */) OVERRIDE {
+    return true;
+  }
+  virtual bool RestartJob(int pid, const std::string& command_line) OVERRIDE {
+    return true;
+  }
+  virtual bool RestartEntd() OVERRIDE { return true; }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(LoginLibraryStubImpl);
@@ -242,13 +253,13 @@ class LoginLibraryStubImpl : public LoginLibrary {
 
 // static
 LoginLibrary* LoginLibrary::GetImpl(bool stub) {
+  LoginLibrary* impl;
   if (stub)
-    return new LoginLibraryStubImpl();
+    impl = new LoginLibraryStubImpl();
   else
-    return new LoginLibraryImpl();
+    impl = new LoginLibraryImpl();
+  impl->Init();
+  return impl;
 }
 
 }  // namespace chromeos
-
-// Needed for NewRunnableMethod() call above.
-DISABLE_RUNNABLE_METHOD_REFCOUNT(chromeos::LoginLibraryImpl);

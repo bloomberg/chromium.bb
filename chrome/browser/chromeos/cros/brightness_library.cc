@@ -28,11 +28,10 @@ class BrightnessLibraryImpl : public BrightnessLibrary {
 
   // Begin BrightnessLibrary implementation.
   virtual void Init() OVERRIDE {
-    if (CrosLibrary::Get()->EnsureLoaded()) {
-      CHECK(!brightness_connection_) << "Already intialized";
-      brightness_connection_ =
-          chromeos::MonitorBrightnessV2(&BrightnessChangedHandler, this);
-    }
+    DCHECK(CrosLibrary::Get()->libcros_loaded());
+    CHECK(!brightness_connection_) << "Already intialized";
+    brightness_connection_ =
+        chromeos::MonitorBrightnessV2(&BrightnessChangedHandler, this);
   }
 
   virtual void AddObserver(Observer* observer) OVERRIDE {
@@ -44,13 +43,11 @@ class BrightnessLibraryImpl : public BrightnessLibrary {
   }
 
   virtual void DecreaseScreenBrightness(bool allow_off) OVERRIDE {
-    if (chromeos::DecreaseScreenBrightness)
-      chromeos::DecreaseScreenBrightness(allow_off);
+    chromeos::DecreaseScreenBrightness(allow_off);
   }
 
   virtual void IncreaseScreenBrightness() OVERRIDE {
-    if (chromeos::IncreaseScreenBrightness)
-      chromeos::IncreaseScreenBrightness();
+    chromeos::IncreaseScreenBrightness();
   }
   // End BrightnessLibrary implementation.
 

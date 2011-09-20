@@ -28,6 +28,8 @@ class CryptohomeLibrary {
   CryptohomeLibrary();
   virtual ~CryptohomeLibrary();
 
+  virtual void Init() = 0;
+
   // Asks cryptohomed to try to find the cryptohome for |user_email| and then
   // use |passhash| to unlock the key.
   virtual bool CheckKey(const std::string& user_email,

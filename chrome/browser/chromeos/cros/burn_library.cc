@@ -88,11 +88,6 @@ BurnLibraryImpl::BurnLibraryImpl() : unzipping_(false),
                                      cancelled_(false),
                                      burning_(false),
                                      block_burn_signals_(false) {
-  if (CrosLibrary::Get()->EnsureLoaded()) {
-    Init();
-  } else {
-    LOG(ERROR) << "Cros Library has not been loaded";
-  }
 }
 
 BurnLibraryImpl::~BurnLibraryImpl() {
@@ -102,7 +97,9 @@ BurnLibraryImpl::~BurnLibraryImpl() {
 }
 
 void BurnLibraryImpl::Init() {
-  burn_status_connection_ = MonitorBurnStatus(&BurnStatusChangedHandler, this);
+  DCHECK(CrosLibrary::Get()->libcros_loaded());
+  burn_status_connection_ =
+      chromeos::MonitorBurnStatus(&BurnStatusChangedHandler, this);
 }
 
 void BurnLibraryImpl::AddObserver(Observer* observer) {
@@ -254,6 +251,7 @@ class BurnLibraryStubImpl : public BurnLibrary {
   virtual ~BurnLibraryStubImpl() {}
 
   // BurnLibrary overrides.
+  virtual void Init() OVERRIDE {}
   virtual void AddObserver(Observer* observer) OVERRIDE {}
   virtual void RemoveObserver(Observer* observer) OVERRIDE {}
   virtual void DoBurn(const FilePath& source_path,
@@ -268,10 +266,13 @@ class BurnLibraryStubImpl : public BurnLibrary {
 
 // static
 BurnLibrary* BurnLibrary::GetImpl(bool stub) {
+  BurnLibrary* impl;
   if (stub)
-    return new BurnLibraryStubImpl();
+    impl = new BurnLibraryStubImpl();
   else
-    return new BurnLibraryImpl();
+    impl = new BurnLibraryImpl();
+  impl->Init();
+  return impl;
 }
 
 }  // namespace chromeos
@@ -279,4 +280,3 @@ BurnLibrary* BurnLibrary::GetImpl(bool stub) {
 // Allows InvokeLater without adding refcounting. This class is a Singleton and
 // won't be deleted until it's last InvokeLater is run.
 DISABLE_RUNNABLE_METHOD_REFCOUNT(chromeos::BurnLibraryImpl);
-

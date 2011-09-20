@@ -20,37 +20,40 @@ namespace chromeos {
 // This class handles the interaction with the ChromeOS cryptohome library APIs.
 class CryptohomeLibraryImpl : public CryptohomeLibrary {
  public:
-  CryptohomeLibraryImpl() {
-    if (CrosLibrary::Get()->EnsureLoaded())
-      Init();
-  }
+  CryptohomeLibraryImpl() {}
   virtual ~CryptohomeLibraryImpl() {}
 
-  bool CheckKey(const std::string& user_email, const std::string& passhash) {
+  virtual void Init() OVERRIDE {
+    DCHECK(CrosLibrary::Get()->libcros_loaded());
+    cryptohome_connection_ = chromeos::CryptohomeMonitorSession(&Handler, this);
+  }
+
+  virtual bool CheckKey(
+      const std::string& user_email, const std::string& passhash) OVERRIDE {
     return chromeos::CryptohomeCheckKey(user_email.c_str(), passhash.c_str());
   }
 
-  bool AsyncCheckKey(const std::string& user_email,
-                     const std::string& passhash,
-                     Delegate* d) {
+  virtual bool AsyncCheckKey(const std::string& user_email,
+                             const std::string& passhash,
+                             Delegate* d) OVERRIDE {
     return CacheCallback(
         chromeos::CryptohomeAsyncCheckKey(user_email.c_str(), passhash.c_str()),
         d,
         "Couldn't initiate async check of user's key.");
   }
 
-  bool MigrateKey(const std::string& user_email,
-                  const std::string& old_hash,
-                  const std::string& new_hash) {
+  virtual bool MigrateKey(const std::string& user_email,
+                          const std::string& old_hash,
+                          const std::string& new_hash) OVERRIDE {
     return chromeos::CryptohomeMigrateKey(user_email.c_str(),
                                           old_hash.c_str(),
                                           new_hash.c_str());
   }
 
-  bool AsyncMigrateKey(const std::string& user_email,
+  virtual bool AsyncMigrateKey(const std::string& user_email,
                        const std::string& old_hash,
                        const std::string& new_hash,
-                       Delegate* d) {
+                       Delegate* d) OVERRIDE {
     return CacheCallback(
         chromeos::CryptohomeAsyncMigrateKey(user_email.c_str(),
                                             old_hash.c_str(),
@@ -59,18 +62,18 @@ class CryptohomeLibraryImpl : public CryptohomeLibrary {
         "Couldn't initiate aync migration of user's key");
   }
 
-  bool Mount(const std::string& user_email,
-             const std::string& passhash,
-             int* error_code) {
+  virtual bool Mount(const std::string& user_email,
+                     const std::string& passhash,
+                     int* error_code) OVERRIDE {
     return chromeos::CryptohomeMountAllowFail(user_email.c_str(),
                                               passhash.c_str(),
                                               error_code);
   }
 
-  bool AsyncMount(const std::string& user_email,
-                  const std::string& passhash,
-                  const bool create_if_missing,
-                  Delegate* d) {
+  virtual bool AsyncMount(const std::string& user_email,
+                          const std::string& passhash,
+                          const bool create_if_missing,
+                          Delegate* d) OVERRIDE {
     return CacheCallback(
         chromeos::CryptohomeAsyncMountSafe(user_email.c_str(),
                                            passhash.c_str(),
@@ -81,36 +84,37 @@ class CryptohomeLibraryImpl : public CryptohomeLibrary {
         "Couldn't initiate async mount of cryptohome.");
   }
 
-  bool MountForBwsi(int* error_code) {
+  virtual bool MountForBwsi(int* error_code) OVERRIDE {
     return chromeos::CryptohomeMountGuest(error_code);
   }
 
-  bool AsyncMountForBwsi(Delegate* d) {
+  virtual bool AsyncMountForBwsi(Delegate* d) OVERRIDE {
     return CacheCallback(chromeos::CryptohomeAsyncMountGuest(),
                          d,
                          "Couldn't initiate async mount of cryptohome.");
   }
 
-  bool Unmount() {
+  virtual bool Unmount() OVERRIDE {
     return chromeos::CryptohomeUnmount();
   }
 
-  bool Remove(const std::string& user_email) {
+  virtual bool Remove(const std::string& user_email) OVERRIDE {
     return chromeos::CryptohomeRemove(user_email.c_str());
   }
 
-  bool AsyncRemove(const std::string& user_email, Delegate* d) {
+  virtual bool AsyncRemove(
+      const std::string& user_email, Delegate* d) OVERRIDE {
     return CacheCallback(
         chromeos::CryptohomeAsyncRemove(user_email.c_str()),
         d,
         "Couldn't initiate async removal of cryptohome.");
   }
 
-  bool IsMounted() {
+  virtual bool IsMounted() OVERRIDE {
     return chromeos::CryptohomeIsMounted();
   }
 
-  CryptohomeBlob GetSystemSalt() {
+  virtual CryptohomeBlob GetSystemSalt() OVERRIDE {
     CryptohomeBlob system_salt;
     char* salt_buf;
     int salt_len;
@@ -127,37 +131,38 @@ class CryptohomeLibraryImpl : public CryptohomeLibrary {
     return system_salt;
   }
 
-  bool AsyncDoAutomaticFreeDiskSpaceControl(Delegate* d) {
+  virtual bool AsyncDoAutomaticFreeDiskSpaceControl(Delegate* d) OVERRIDE {
     return CacheCallback(
         chromeos::CryptohomeAsyncDoAutomaticFreeDiskSpaceControl(),
         d,
         "Couldn't do automatic free disk space control.");
   }
 
-  bool AsyncSetOwnerUser(const std::string& username, Delegate* d) {
+  virtual bool AsyncSetOwnerUser(
+      const std::string& username, Delegate* d) OVERRIDE {
     return CacheCallback(
         chromeos::CryptohomeAsyncSetOwnerUser(username.c_str()),
         d,
         "Couldn't do set owner user in Cryptohomed.");
   }
 
-  bool TpmIsReady() {
+  virtual bool TpmIsReady() OVERRIDE {
     return chromeos::CryptohomeTpmIsReady();
   }
 
-  bool TpmIsEnabled() {
+  virtual bool TpmIsEnabled() OVERRIDE {
     return chromeos::CryptohomeTpmIsEnabled();
   }
 
-  bool TpmIsOwned() {
+  virtual bool TpmIsOwned() OVERRIDE {
     return chromeos::CryptohomeTpmIsOwned();
   }
 
-  bool TpmIsBeingOwned() {
+  virtual bool TpmIsBeingOwned() OVERRIDE {
     return chromeos::CryptohomeTpmIsBeingOwned();
   }
 
-  bool TpmGetPassword(std::string* password) {
+  virtual bool TpmGetPassword(std::string* password) OVERRIDE {
     char *password_buf;
     bool result = chromeos::CryptohomeTpmGetPasswordSafe(&password_buf);
     *password = password_buf;
@@ -165,15 +170,16 @@ class CryptohomeLibraryImpl : public CryptohomeLibrary {
     return result;
   }
 
-  void TpmCanAttemptOwnership() {
+  virtual void TpmCanAttemptOwnership() OVERRIDE {
     chromeos::CryptohomeTpmCanAttemptOwnership();
   }
 
-  void TpmClearStoredPassword() {
+  virtual void TpmClearStoredPassword() OVERRIDE {
     chromeos::CryptohomeTpmClearStoredPassword();
   }
 
-  bool InstallAttributesGet(const std::string& name, std::string* value) {
+  virtual bool InstallAttributesGet(
+      const std::string& name, std::string* value) OVERRIDE {
     char* local_value;
     bool done =
         chromeos::CryptohomeInstallAttributesGet(name.c_str(), &local_value);
@@ -184,40 +190,42 @@ class CryptohomeLibraryImpl : public CryptohomeLibrary {
     return done;
   }
 
-  bool InstallAttributesSet(const std::string& name, const std::string& value) {
+  virtual bool InstallAttributesSet(
+      const std::string& name, const std::string& value) OVERRIDE {
     return chromeos::CryptohomeInstallAttributesSet(name.c_str(),
                                                     value.c_str());
   }
 
-  int InstallAttributesCount() {
+  virtual int InstallAttributesCount() OVERRIDE {
     return chromeos::CryptohomeInstallAttributesCount();
   }
 
-  bool InstallAttributesFinalize() {
+  virtual bool InstallAttributesFinalize() OVERRIDE {
     return chromeos::CryptohomeInstallAttributesFinalize();
   }
 
-  bool InstallAttributesIsReady() {
+  virtual bool InstallAttributesIsReady() OVERRIDE {
     return chromeos::CryptohomeInstallAttributesIsReady();
   }
 
-  bool InstallAttributesIsSecure() {
+  virtual bool InstallAttributesIsSecure() OVERRIDE {
     return chromeos::CryptohomeInstallAttributesIsSecure();
   }
 
-  bool InstallAttributesIsInvalid() {
+  virtual bool InstallAttributesIsInvalid() OVERRIDE {
     return chromeos::CryptohomeInstallAttributesIsInvalid();
   }
 
-  bool InstallAttributesIsFirstInstall() {
+  virtual bool InstallAttributesIsFirstInstall() OVERRIDE {
     return chromeos::CryptohomeInstallAttributesIsFirstInstall();
   }
 
-  void Pkcs11GetTpmTokenInfo(std::string* label, std::string* user_pin) {
+  virtual void Pkcs11GetTpmTokenInfo(
+      std::string* label, std::string* user_pin) OVERRIDE {
     chromeos::CryptohomePkcs11GetTpmTokenInfo(label, user_pin);
   }
 
-  bool Pkcs11IsTpmTokenReady() {
+  virtual bool Pkcs11IsTpmTokenReady() OVERRIDE {
     return chromeos::CryptohomePkcs11IsTpmTokenReady();
   }
 
@@ -227,10 +235,6 @@ class CryptohomeLibraryImpl : public CryptohomeLibrary {
     CryptohomeLibraryImpl* library =
         reinterpret_cast<CryptohomeLibraryImpl*>(cryptohome_library);
     library->Dispatch(event);
-  }
-
-  void Init() {
-    cryptohome_connection_ = chromeos::CryptohomeMonitorSession(&Handler, this);
   }
 
   void Dispatch(const chromeos::CryptohomeAsyncCallStatus& event) {
@@ -268,38 +272,41 @@ class CryptohomeLibraryStubImpl : public CryptohomeLibrary {
     : locked_(false) {}
   virtual ~CryptohomeLibraryStubImpl() {}
 
-  bool CheckKey(const std::string& user_email, const std::string& passhash) {
+  virtual void Init() OVERRIDE {}
+
+  virtual bool CheckKey(
+      const std::string& user_email, const std::string& passhash) OVERRIDE {
     return true;
   }
 
-  bool AsyncCheckKey(const std::string& user_email,
+  virtual bool AsyncCheckKey(const std::string& user_email,
+                             const std::string& passhash,
+                             Delegate* callback) OVERRIDE {
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        NewRunnableFunction(&DoStubCallback, callback));
+    return true;
+  }
+
+  virtual bool MigrateKey(const std::string& user_email,
+                          const std::string& old_hash,
+                          const std::string& new_hash) OVERRIDE {
+    return true;
+  }
+
+  virtual bool AsyncMigrateKey(const std::string& user_email,
+                               const std::string& old_hash,
+                               const std::string& new_hash,
+                               Delegate* callback) OVERRIDE {
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        NewRunnableFunction(&DoStubCallback, callback));
+    return true;
+  }
+
+  virtual bool Mount(const std::string& user_email,
                      const std::string& passhash,
-                     Delegate* callback) {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        NewRunnableFunction(&DoStubCallback, callback));
-    return true;
-  }
-
-  bool MigrateKey(const std::string& user_email,
-                  const std::string& old_hash,
-                  const std::string& new_hash) {
-    return true;
-  }
-
-  bool AsyncMigrateKey(const std::string& user_email,
-                       const std::string& old_hash,
-                       const std::string& new_hash,
-                       Delegate* callback) {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        NewRunnableFunction(&DoStubCallback, callback));
-    return true;
-  }
-
-  bool Mount(const std::string& user_email,
-             const std::string& passhash,
-             int* error_code) {
+                     int* error_code) OVERRIDE {
     // For testing password change.
     if (user_email ==
         CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
@@ -311,47 +318,48 @@ class CryptohomeLibraryStubImpl : public CryptohomeLibrary {
     return true;
   }
 
-  bool AsyncMount(const std::string& user_email,
-                  const std::string& passhash,
-                  const bool create_if_missing,
-                  Delegate* callback) {
+  virtual bool AsyncMount(const std::string& user_email,
+                          const std::string& passhash,
+                          const bool create_if_missing,
+                          Delegate* callback) OVERRIDE {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         NewRunnableFunction(&DoStubCallback, callback));
     return true;
   }
 
-  bool MountForBwsi(int* error_code) {
+  virtual bool MountForBwsi(int* error_code) OVERRIDE {
     return true;
   }
 
-  bool AsyncMountForBwsi(Delegate* callback) {
+  virtual bool AsyncMountForBwsi(Delegate* callback) OVERRIDE {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         NewRunnableFunction(&DoStubCallback, callback));
     return true;
   }
 
-  bool Unmount() {
+  virtual bool Unmount() OVERRIDE {
     return true;
   }
 
-  bool Remove(const std::string& user_email) {
+  virtual bool Remove(const std::string& user_email) OVERRIDE {
     return true;
   }
 
-  bool AsyncRemove(const std::string& user_email, Delegate* callback) {
+  virtual bool AsyncRemove(
+      const std::string& user_email, Delegate* callback) OVERRIDE {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         NewRunnableFunction(&DoStubCallback, callback));
     return true;
   }
 
-  bool IsMounted() {
+  virtual bool IsMounted() OVERRIDE {
     return true;
   }
 
-  CryptohomeBlob GetSystemSalt() {
+  virtual CryptohomeBlob GetSystemSalt() OVERRIDE {
     CryptohomeBlob salt = CryptohomeBlob();
     for (size_t i = 0; i < strlen(kStubSystemSalt); i++)
       salt.push_back(static_cast<unsigned char>(kStubSystemSalt[i]));
@@ -359,14 +367,16 @@ class CryptohomeLibraryStubImpl : public CryptohomeLibrary {
     return salt;
   }
 
-  bool AsyncDoAutomaticFreeDiskSpaceControl(Delegate* callback) {
+  virtual bool AsyncDoAutomaticFreeDiskSpaceControl(
+      Delegate* callback) OVERRIDE {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         NewRunnableFunction(&DoStubCallback, callback));
     return true;
   }
 
-  bool AsyncSetOwnerUser(const std::string& username, Delegate* callback) {
+  virtual bool AsyncSetOwnerUser(
+      const std::string& username, Delegate* callback) OVERRIDE {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         NewRunnableFunction(&DoStubCallback, callback));
@@ -374,33 +384,34 @@ class CryptohomeLibraryStubImpl : public CryptohomeLibrary {
   }
 
   // Tpm begin ready after 20-th call.
-  bool TpmIsReady() {
+  virtual bool TpmIsReady() OVERRIDE {
     static int counter = 0;
     return ++counter > 20;
   }
 
-  bool TpmIsEnabled() {
+  virtual bool TpmIsEnabled() OVERRIDE {
     return true;
   }
 
-  bool TpmIsOwned() {
+  virtual bool TpmIsOwned() OVERRIDE {
     return true;
   }
 
-  bool TpmIsBeingOwned() {
+  virtual bool TpmIsBeingOwned() OVERRIDE {
     return true;
   }
 
-  bool TpmGetPassword(std::string* password) {
+  virtual bool TpmGetPassword(std::string* password) OVERRIDE {
     *password = "Stub-TPM-password";
     return true;
   }
 
-  void TpmCanAttemptOwnership() {}
+  virtual void TpmCanAttemptOwnership() OVERRIDE {}
 
-  void TpmClearStoredPassword() {}
+  virtual void TpmClearStoredPassword() OVERRIDE {}
 
-  bool InstallAttributesGet(const std::string& name, std::string* value) {
+  virtual bool InstallAttributesGet(
+      const std::string& name, std::string* value) OVERRIDE {
     if (install_attrs_.find(name) != install_attrs_.end()) {
       *value = install_attrs_[name];
       return true;
@@ -408,43 +419,44 @@ class CryptohomeLibraryStubImpl : public CryptohomeLibrary {
     return false;
   }
 
-  bool InstallAttributesSet(const std::string& name, const std::string& value) {
+  virtual bool InstallAttributesSet(
+      const std::string& name, const std::string& value) OVERRIDE {
     install_attrs_[name] = value;
     return true;
   }
 
-  int InstallAttributesCount() {
+  virtual int InstallAttributesCount() OVERRIDE {
     return install_attrs_.size();
   }
 
-  bool InstallAttributesFinalize() {
+  virtual bool InstallAttributesFinalize() OVERRIDE {
     locked_ = true;
     return true;
   }
 
-  bool InstallAttributesIsReady() {
+  virtual bool InstallAttributesIsReady() OVERRIDE {
     return true;
   }
 
-  bool InstallAttributesIsSecure() {
+  virtual bool InstallAttributesIsSecure() OVERRIDE {
     return false;
   }
 
-  bool InstallAttributesIsInvalid() {
+  virtual bool InstallAttributesIsInvalid() OVERRIDE {
     return false;
   }
 
-  bool InstallAttributesIsFirstInstall() {
+  virtual bool InstallAttributesIsFirstInstall() OVERRIDE {
     return !locked_;
   }
 
-  void Pkcs11GetTpmTokenInfo(std::string* label,
-                             std::string* user_pin) {
+  virtual void Pkcs11GetTpmTokenInfo(std::string* label,
+                             std::string* user_pin) OVERRIDE {
     *label = "Stub TPM Token";
     *user_pin = "012345";
   }
 
-  bool Pkcs11IsTpmTokenReady() { return true; }
+  virtual bool Pkcs11IsTpmTokenReady() OVERRIDE { return true; }
 
  private:
   static void DoStubCallback(Delegate* callback) {
@@ -462,10 +474,13 @@ CryptohomeLibrary::~CryptohomeLibrary() {}
 
 // static
 CryptohomeLibrary* CryptohomeLibrary::GetImpl(bool stub) {
+  CryptohomeLibrary* impl;
   if (stub)
-    return new CryptohomeLibraryStubImpl();
+    impl = new CryptohomeLibraryStubImpl();
   else
-    return new CryptohomeLibraryImpl();
+    impl = new CryptohomeLibraryImpl();
+  impl->Init();
+  return impl;
 }
 
 } // namespace chromeos

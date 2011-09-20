@@ -17,6 +17,9 @@ namespace chromeos {
 class LoginLibrary {
  public:
   virtual ~LoginLibrary();
+
+  virtual void Init() = 0;
+
   // Requests that the Upstart signal login-prompt-ready be emitted.
   virtual void EmitLoginPromptReady() = 0;
 

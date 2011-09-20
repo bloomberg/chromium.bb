@@ -177,6 +177,7 @@ class MountLibrary {
   };
 
   virtual ~MountLibrary() {}
+  virtual void Init() = 0;
   virtual void AddObserver(Observer* observer) = 0;
   virtual void RemoveObserver(Observer* observer) = 0;
   virtual const DiskMap& disks() const = 0;

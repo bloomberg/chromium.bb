@@ -4940,18 +4940,11 @@ void NetworkLibraryImplStub::SetIPConfig(const NetworkIPConfig& ipconfig) {
 // static
 NetworkLibrary* NetworkLibrary::GetImpl(bool stub) {
   NetworkLibrary* impl;
-  // If CrosLibrary failed to load, use the stub implementation, since the
-  // cros implementation would crash on any libcros call.
-  if (!stub && !CrosLibrary::Get()->libcros_loaded()) {
-    LOG(WARNING) << "NetworkLibrary: falling back to stub impl.";
-    stub = true;
-  }
   if (stub)
     impl = new NetworkLibraryImplStub();
   else
     impl = new NetworkLibraryImplCros();
   impl->Init();
-
   return impl;
 }
 
