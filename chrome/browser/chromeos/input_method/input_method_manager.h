@@ -19,6 +19,7 @@
 #include "base/time.h"
 #include "base/timer.h"
 #include "chrome/browser/chromeos/input_method/ibus_controller.h"
+#include "chrome/browser/chromeos/input_method/input_method_util.h"
 
 class GURL;
 
@@ -26,7 +27,6 @@ namespace chromeos {
 namespace input_method {
 
 class HotkeyManager;
-class InputMethodUtil;
 class VirtualKeyboard;
 class XKeyboard;
 
@@ -103,6 +103,26 @@ class InputMethodManager {
 
   // Changes the current input method to |input_method_id|.
   virtual void ChangeInputMethod(const std::string& input_method_id) = 0;
+
+  // Enables input methods (e.g. Chinese, Japanese) and keyboard layouts (e.g.
+  // US qwerty, US dvorak, French azerty) that are necessary for the language
+  // code and then switches to |initial_input_method_id| if the string is not
+  // empty. For example, if |language_code| is "en-US", US qwerty and US dvorak
+  // layouts would be enabled. Likewise, for Germany locale, US qwerty layout
+  // and several keyboard layouts for Germany would be enabled.
+  // If |type| is kAllInputMethods, all keyboard layouts and all input methods
+  // are enabled. If it's kKeyboardLayoutsOnly, only keyboard layouts are
+  // enabled. For example, for Japanese, xkb:jp::jpn is enabled when
+  // kKeyboardLayoutsOnly, and xkb:jp::jpn, mozc, mozc-jp, mozc-dv are enabled
+  // when kAllInputMethods.
+  //
+  // Note that this function does not save the input methods in the user's
+  // preferences, as this function is designed for the login screen and the
+  // screen locker, where we shouldn't change the user's preferences.
+  virtual void EnableInputMethods(
+      const std::string& language_code,
+      InputMethodType type,
+      const std::string& initial_input_method_id) = 0;
 
   // Sets whether the input method property specified by |key| is activated. If
   // |activated| is true, activates the property. If |activate| is false,

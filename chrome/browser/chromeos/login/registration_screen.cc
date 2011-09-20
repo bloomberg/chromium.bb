@@ -106,8 +106,7 @@ void RegistrationScreen::OnPageLoaded() {
     const std::string locale = g_browser_process->GetApplicationLocale();
     input_method::InputMethodManager* manager =
         input_method::InputMethodManager::GetInstance();
-    manager->GetInputMethodUtil()->EnableInputMethods(
-        locale, input_method::kAllInputMethods, "");
+    manager->EnableInputMethods(locale, input_method::kAllInputMethods, "");
   }
   view()->ShowPageContent();
 }
@@ -165,8 +164,7 @@ void RegistrationScreen::CloseScreen(ScreenObserver::ExitCodes code) {
     const std::string locale = g_browser_process->GetApplicationLocale();
     input_method::InputMethodManager* manager =
         input_method::InputMethodManager::GetInstance();
-    manager->GetInputMethodUtil()->EnableInputMethods(
-        locale, input_method::kKeyboardLayoutsOnly, "");
+    manager->EnableInputMethods(locale, input_method::kKeyboardLayoutsOnly, "");
   }
   delegate()->GetObserver()->OnExit(code);
 }

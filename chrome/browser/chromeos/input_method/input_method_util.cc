@@ -18,7 +18,6 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/input_method/ibus_input_methods.h"
-#include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/language_preferences.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/pref_names.h"
@@ -559,51 +558,6 @@ void InputMethodUtil::GetLanguageCodesFromInputMethodIds(
                    language_code) == 0) {
       out_language_codes->push_back(language_code);
     }
-  }
-}
-
-void InputMethodUtil::EnableInputMethods(
-    const std::string& language_code,
-    InputMethodType type,
-    const std::string& initial_input_method_id) {
-  std::vector<std::string> candidates;
-  // Add input methods associated with the language.
-  GetInputMethodIdsFromLanguageCode(language_code, type, &candidates);
-  // Add the hardware keyboard as well. We should always add this so users
-  // can use the hardware keyboard on the login screen and the screen locker.
-  candidates.push_back(GetHardwareInputMethodId());
-
-  std::vector<std::string> input_method_ids;
-  // First, add the initial input method ID, if it's requested, to
-  // input_method_ids, so it appears first on the list of active input
-  // methods at the input language status menu.
-  if (!initial_input_method_id.empty()) {
-    input_method_ids.push_back(initial_input_method_id);
-  }
-
-  // Add candidates to input_method_ids, while skipping duplicates.
-  for (size_t i = 0; i < candidates.size(); ++i) {
-    const std::string& candidate = candidates[i];
-    // Not efficient, but should be fine, as the two vectors are very
-    // short (2-5 items).
-    if (std::count(input_method_ids.begin(), input_method_ids.end(),
-                   candidate) == 0) {
-      input_method_ids.push_back(candidate);
-    }
-  }
-
-  // Update ibus-daemon setting. Here, we don't save the input method list
-  // in the user's preferences.
-  ImeConfigValue value;
-  value.type = ImeConfigValue::kValueTypeStringList;
-  value.string_list_value = input_method_ids;
-  InputMethodManager* manager = InputMethodManager::GetInstance();
-  manager->SetImeConfig(language_prefs::kGeneralSectionName,
-                        language_prefs::kPreloadEnginesConfigName, value);
-
-  // Finaly, change to the initial input method, as needed.
-  if (!initial_input_method_id.empty()) {
-    manager->ChangeInputMethod(initial_input_method_id);
   }
 }
 

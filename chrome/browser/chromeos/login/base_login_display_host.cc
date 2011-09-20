@@ -249,7 +249,7 @@ void ShowLoginWizard(const std::string& first_screen_name,
       initial_input_method_id =
           manager->GetInputMethodUtil()->GetHardwareInputMethodId();
     }
-    manager->GetInputMethodUtil()->EnableInputMethods(
+    manager->EnableInputMethods(
         locale, chromeos::input_method::kKeyboardLayoutsOnly,
         initial_input_method_id);
   }
@@ -278,7 +278,7 @@ void ShowLoginWizard(const std::string& first_screen_name,
     if (!prefs->HasPrefPath(prefs::kApplicationLocale)) {
       std::string locale = chromeos::WizardController::GetInitialLocale();
       prefs->SetString(prefs::kApplicationLocale, locale);
-      manager->GetInputMethodUtil()->EnableInputMethods(
+      manager->EnableInputMethods(
           locale,
           chromeos::input_method::kKeyboardLayoutsOnly,
           manager->GetInputMethodUtil()->GetHardwareInputMethodId());
@@ -320,7 +320,7 @@ void ShowLoginWizard(const std::string& first_screen_name,
       // initial locale and save it in preferences.
       DetermineAndSaveHardwareKeyboard(locale, layout);
       // Then, enable the hardware keyboard.
-      manager->GetInputMethodUtil()->EnableInputMethods(
+      manager->EnableInputMethods(
           locale,
           chromeos::input_method::kKeyboardLayoutsOnly,
           manager->GetInputMethodUtil()->GetHardwareInputMethodId());

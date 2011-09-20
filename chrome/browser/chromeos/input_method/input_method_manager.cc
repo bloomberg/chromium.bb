@@ -262,6 +262,50 @@ class InputMethodManagerImpl : public HotkeyManager::Observer,
     }
   }
 
+  virtual void EnableInputMethods(const std::string& language_code,
+                                  InputMethodType type,
+                                  const std::string& initial_input_method_id) {
+    std::vector<std::string> candidates;
+    // Add input methods associated with the language.
+    util_.GetInputMethodIdsFromLanguageCode(language_code, type, &candidates);
+    // Add the hardware keyboard as well. We should always add this so users
+    // can use the hardware keyboard on the login screen and the screen locker.
+    candidates.push_back(util_.GetHardwareInputMethodId());
+
+    std::vector<std::string> input_method_ids;
+    // First, add the initial input method ID, if it's requested, to
+    // input_method_ids, so it appears first on the list of active input
+    // methods at the input language status menu.
+    if (!initial_input_method_id.empty()) {
+      input_method_ids.push_back(initial_input_method_id);
+    }
+
+    // Add candidates to input_method_ids, while skipping duplicates.
+    for (size_t i = 0; i < candidates.size(); ++i) {
+      const std::string& candidate = candidates[i];
+      // Not efficient, but should be fine, as the two vectors are very
+      // short (2-5 items).
+      if (std::count(input_method_ids.begin(), input_method_ids.end(),
+                     candidate) == 0) {
+        input_method_ids.push_back(candidate);
+      }
+    }
+
+    // Update ibus-daemon setting. Here, we don't save the input method list
+    // in the user's preferences.
+    ImeConfigValue value;
+    value.type = ImeConfigValue::kValueTypeStringList;
+    value.string_list_value = input_method_ids;
+    SetImeConfig(language_prefs::kGeneralSectionName,
+                 language_prefs::kPreloadEnginesConfigName,
+                 value);
+
+    // Finaly, change to the initial input method, as needed.
+    if (!initial_input_method_id.empty()) {
+      ChangeInputMethod(initial_input_method_id);
+    }
+  }
+
   virtual void SetImePropertyActivated(const std::string& key,
                                        bool activated) {
     DCHECK(!key.empty());
