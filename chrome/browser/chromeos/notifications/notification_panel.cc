@@ -459,6 +459,9 @@ void NotificationPanel::Show() {
 
     panel_widget_->SetContentsView(scroll_view_.get());
 
+#if defined(USE_ONLY_PURE_VIEWS)
+    native->AttachToView(balloon_container_.get());
+#else
     // Add the view port after scroll_view is attached to the panel widget.
     ViewportWidget* viewport_widget = new ViewportWidget(this);
     container_host_ = viewport_widget;
@@ -469,7 +472,7 @@ void NotificationPanel::Show() {
     // so that window_contents does not get deleted when detached.
     g_object_ref(viewport_widget->GetNativeView());
     native->Attach(viewport_widget->GetNativeView());
-
+#endif
     UnregisterNotification();
     panel_controller_.reset(
         new PanelController(this, GTK_WINDOW(panel_widget_->GetNativeView())));
@@ -485,15 +488,18 @@ void NotificationPanel::Show() {
 void NotificationPanel::Hide() {
   balloon_container_->DismissAllNonSticky();
   if (panel_widget_) {
-    container_host_->GetRootView()->RemoveChildView(balloon_container_.get());
+    if (container_host_)
+      container_host_->GetRootView()->RemoveChildView(balloon_container_.get());
 
     views::NativeViewHost* native =
         static_cast<views::NativeViewHost*>(scroll_view_->GetContents());
     native->Detach();
     scroll_view_->SetContents(NULL);
-    container_host_->Hide();
-    container_host_->CloseNow();
-    container_host_ = NULL;
+    if (container_host_) {
+      container_host_->Hide();
+      container_host_->CloseNow();
+      container_host_ = NULL;
+    }
 
     UnregisterNotification();
     panel_controller_->Close();

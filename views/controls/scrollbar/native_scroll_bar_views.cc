@@ -374,11 +374,11 @@ gfx::Rect NativeScrollBarViews::GetTrackBounds() const {
 
   if (native_scroll_bar_->IsHorizontal()) {
     bounds.set_x(bounds.x() + size.width());
-    bounds.set_width(bounds.width() - 2 * size.width());
+    bounds.set_width(std::max(0, bounds.width() - 2 * size.width()));
     bounds.set_height(thumb->GetPreferredSize().height());
   } else {
     bounds.set_y(bounds.y() + size.height());
-    bounds.set_height(bounds.height() - 2 * size.height());
+    bounds.set_height(std::max(0, bounds.height() - 2 * size.height()));
     bounds.set_width(thumb->GetPreferredSize().width());
   }
 
