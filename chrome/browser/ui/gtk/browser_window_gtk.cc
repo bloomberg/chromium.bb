@@ -1449,6 +1449,8 @@ gboolean BrowserWindowGtk::OnWindowState(GtkWidget* sender,
       UpdateCustomFrame();
       toolbar_->Hide();
       tabstrip_->Hide();
+      if (bookmark_bar_.get())
+        gtk_widget_hide(bookmark_bar_->widget());
       bool is_kiosk =
           CommandLine::ForCurrentProcess()->HasSwitch(switches::kKioskMode);
       if (!is_kiosk) {
