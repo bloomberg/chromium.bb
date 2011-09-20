@@ -11,20 +11,25 @@
 #include "content/browser/tab_contents/tab_contents_delegate.h"
 
 TabContentsViewWin::TabContentsViewWin(TabContents* tab_contents)
-    : tab_contents_(tab_contents),
+    : parent_(NULL),
+      tab_contents_(tab_contents),
       view_(NULL) {
 }
 
 TabContentsViewWin::~TabContentsViewWin() {
 }
 
-void TabContentsViewWin::CreateView(const gfx::Size& initial_size) {
-  // temporary until we specify parent
-  set_window_style(WS_CAPTION | WS_VISIBLE | WS_SYSMENU);
-  set_window_ex_style(WS_EX_APPWINDOW);
+void TabContentsViewWin::SetParent(HWND parent) {
+  DCHECK(!parent_);
+  parent_ = parent;
 
-  // TODO(jam): specify a correct parent!
-  Init(NULL, gfx::Rect(initial_size));
+  set_window_style(WS_VISIBLE | WS_CHILD | WS_CLIPCHILDREN | WS_CLIPSIBLINGS);
+
+  Init(parent_, gfx::Rect(initial_size_));
+}
+
+void TabContentsViewWin::CreateView(const gfx::Size& initial_size) {
+  initial_size_ = initial_size;
 }
 
 RenderWidgetHostView* TabContentsViewWin::CreateViewForWidget(
@@ -48,8 +53,7 @@ gfx::NativeView TabContentsViewWin::GetContentNativeView() const {
 }
 
 gfx::NativeWindow TabContentsViewWin::GetTopLevelNativeWindow() const {
-  // TODO(jam): return parent!
-  return NULL;
+  return parent_;
 }
 
 void TabContentsViewWin::GetContainerBounds(gfx::Rect *out) const {
@@ -211,10 +215,18 @@ void TabContentsViewWin::TakeFocus(bool reverse) {
     tab_contents_->delegate()->TakeFocus(reverse);
 }
 
-LRESULT TabContentsViewWin::OnClose(UINT message,
-                                    WPARAM wparam,
-                                    LPARAM lparam,
-                                    BOOL& handled) {
-  MessageLoop::current()->Quit();
+LRESULT TabContentsViewWin::OnWindowPosChanged(
+    UINT message, WPARAM wparam, LPARAM lparam, BOOL& handled) {
+  WINDOWPOS* window_pos = reinterpret_cast<WINDOWPOS*>(lparam);
+  if (window_pos->flags & SWP_NOSIZE)
+    return 0;
+
+  gfx::Size size(window_pos->cx, window_pos->cy);
+  if (tab_contents_->interstitial_page())
+    tab_contents_->interstitial_page()->SetSize(size);
+  RenderWidgetHostView* rwhv = tab_contents_->GetRenderWidgetHostView();
+  if (rwhv)
+    rwhv->SetSize(size);
+
   return 0;
 }

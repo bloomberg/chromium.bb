@@ -18,8 +18,10 @@ class TabContentsViewWin : public TabContentsView,
   explicit TabContentsViewWin(TabContents* tab_contents);
   virtual ~TabContentsViewWin();
 
+  void SetParent(HWND parent);
+
   BEGIN_MSG_MAP_EX(TabContentsViewWin)
-    MESSAGE_HANDLER(WM_CLOSE, OnClose)
+    MESSAGE_HANDLER(WM_WINDOWPOSCHANGED, OnWindowPosChanged)
   END_MSG_MAP()
 
   // Overridden from TabContentsView:
@@ -75,8 +77,12 @@ class TabContentsViewWin : public TabContentsView,
   virtual void TakeFocus(bool reverse) OVERRIDE;
 
  private:
-  // Window message handlers.
-  LRESULT OnClose(UINT message, WPARAM wparam, LPARAM lparam, BOOL& handled);
+  LRESULT OnWindowPosChanged(
+      UINT message, WPARAM wparam, LPARAM lparam, BOOL& handled);
+
+  HWND parent_;
+
+  gfx::Size initial_size_;
 
   // The TabContents whose contents we display.
   TabContents* tab_contents_;

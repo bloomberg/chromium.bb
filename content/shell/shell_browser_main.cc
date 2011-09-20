@@ -9,11 +9,11 @@
 #include "base/threading/thread_restrictions.h"
 #include "content/browser/browser_process_sub_thread.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
-#include "content/browser/tab_contents/tab_contents.h"
-#include "content/browser/tab_contents/navigation_controller.h"
 #include "content/common/page_transition_types.h"
+#include "content/shell/shell.h"
 #include "content/shell/shell_browser_context.h"
 #include "content/shell/shell_content_browser_client.h"
+#include "net/base/net_module.h"
 #include "ui/base/clipboard/clipboard.h"
 
 namespace content {
@@ -61,17 +61,10 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
 
   browser_context_.reset(new ShellBrowserContext(this));
 
-  tab_contents_.reset(new TabContents(
-      browser_context_.get(),
-      NULL,
-      MSG_ROUTING_NONE,
-      NULL,
-      NULL));
-  tab_contents_->controller().LoadURL(
-      GURL("http://www.google.com"),
-      GURL(),
-      PageTransition::TYPED,
-      std::string());
+  Shell::PlatformInitialize();
+  net::NetModule::SetResourceProvider(Shell::PlatformResourceProvider);
+
+  Shell::CreateNewWindow(browser_context_.get());
 }
 
 ResourceDispatcherHost* ShellBrowserMainParts::GetResourceDispatcherHost() {
@@ -79,6 +72,7 @@ ResourceDispatcherHost* ShellBrowserMainParts::GetResourceDispatcherHost() {
     ResourceQueue::DelegateSet resource_queue_delegates;
     resource_dispatcher_host_.reset(
         new ResourceDispatcherHost(resource_queue_delegates));
+    resource_dispatcher_host_->Initialize();
   }
   return resource_dispatcher_host_.get();
 }

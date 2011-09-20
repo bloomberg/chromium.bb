@@ -10,7 +10,6 @@
 #include "content/browser/browser_main.h"
 
 class ResourceDispatcherHost;
-class TabContents;
 
 namespace base {
 class Thread;
@@ -39,7 +38,6 @@ class ShellBrowserMainParts : public BrowserMainParts {
 
  private:
   scoped_ptr<ShellBrowserContext> browser_context_;
-  scoped_ptr<TabContents> tab_contents_;
 
   scoped_ptr<ResourceDispatcherHost> resource_dispatcher_host_;
   scoped_ptr<ui::Clipboard> clipboard_;
