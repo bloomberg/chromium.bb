@@ -137,8 +137,7 @@ void SigninManager::StartSignIn(const std::string& username,
   // user when the GAIA service token is ready for use.  Only do this if we
   // are not running in ChomiumOS, since it handles pre-login itself.
 #if !defined(OS_CHROMEOS)
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableAutologin) &&
-      profile_->GetPrefs()->GetBoolean(prefs::kAutologinEnabled)) {
+  if (profile_->GetPrefs()->GetBoolean(prefs::kAutologinEnabled)) {
     registrar_.Add(this,
                    chrome::NOTIFICATION_TOKEN_AVAILABLE,
                    Source<TokenService>(profile_->GetTokenService()));
