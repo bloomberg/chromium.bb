@@ -995,6 +995,9 @@ bool AutocompleteEditModel::DoInstant(const AutocompleteMatch& match,
 
   TabContentsWrapper* tab = controller_->GetTabContentsWrapper();
 
+  if (!tab)
+    return false;
+
   bool instant_is_active = false;
   if (user_input_in_progress() && popup_->IsOpen()) {
     if (match.destination_url == PermanentURL()) {
