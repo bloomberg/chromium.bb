@@ -58,7 +58,7 @@ static const char* const kAcceptLanguageList[] = {
   "de-DE",  // German (Germany)
   "el",     // Greek
   "en",     // English
-  "en-AU",  // English (Austrailia)
+  "en-AU",  // English (Australia)
   "en-CA",  // English (Canada)
   "en-GB",  // English (UK)
   "en-NZ",  // English (New Zealand)
@@ -268,15 +268,29 @@ bool CheckAndResolveLocale(const std::string& locale,
     std::string tmp_locale(lang);
     // Map es-RR other than es-ES to es-419 (Chrome's Latin American
     // Spanish locale).
-    if (LowerCaseEqualsASCII(lang, "es") && !LowerCaseEqualsASCII(region, "es"))
+    if (LowerCaseEqualsASCII(lang, "es") &&
+        !LowerCaseEqualsASCII(region, "es")) {
       tmp_locale.append("-419");
-    else if (LowerCaseEqualsASCII(lang, "zh")) {
+    } else if (LowerCaseEqualsASCII(lang, "zh")) {
       // Map zh-HK and zh-MO to zh-TW. Otherwise, zh-FOO is mapped to zh-CN.
       if (LowerCaseEqualsASCII(region, "hk") ||
           LowerCaseEqualsASCII(region, "mo")) { // Macao
         tmp_locale.append("-TW");
       } else {
         tmp_locale.append("-CN");
+      }
+    } else if (LowerCaseEqualsASCII(lang, "en")) {
+      // Map Australian, Canadian, New Zealand and South African English
+      // to British English for now.
+      // TODO(jungshik): en-CA may have to change sides once
+      // we have OS locale separate from app locale (Chrome's UI language).
+      if (LowerCaseEqualsASCII(region, "au") ||
+          LowerCaseEqualsASCII(region, "ca") ||
+          LowerCaseEqualsASCII(region, "nz") ||
+          LowerCaseEqualsASCII(region, "za")) {
+        tmp_locale.append("-GB");
+      } else {
+        tmp_locale.append("-US");
       }
     }
     if (IsLocaleAvailable(tmp_locale)) {
