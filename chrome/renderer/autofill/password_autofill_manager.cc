@@ -460,7 +460,11 @@ void PasswordAutofillManager::GetSuggestions(
 bool PasswordAutofillManager::ShowSuggestionPopup(
     const webkit_glue::PasswordFormFillData& fill_data,
     const WebKit::WebInputElement& user_input) {
-  WebKit::WebView* webview = user_input.document().frame()->view();
+  WebKit::WebFrame* frame = user_input.document().frame();
+  if (!frame)
+    return false;
+
+  WebKit::WebView* webview = frame->view();
   if (!webview)
     return false;
 
