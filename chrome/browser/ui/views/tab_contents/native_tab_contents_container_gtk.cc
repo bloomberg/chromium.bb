@@ -13,7 +13,6 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "views/focus/focus_manager.h"
-#include "views/views_delegate.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 // NativeTabContentsContainerGtk, public:
@@ -63,7 +62,6 @@ views::View* NativeTabContentsContainerGtk::GetView() {
 
 void NativeTabContentsContainerGtk::TabContentsFocused(
     TabContents* tab_contents) {
-#if !defined(TOUCH_UI)
   // Called when the tab contents native view gets focused (typically through a
   // user click).  We make ourself the focused view, so the focus is restored
   // properly when the browser window is deactivated/reactivated.
@@ -73,9 +71,6 @@ void NativeTabContentsContainerGtk::TabContentsFocused(
     return;
   }
   focus_manager->SetFocusedView(this);
-#else
-  // no native views in TOUCH_UI, so don't steal the focus
-#endif
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -147,8 +142,7 @@ void NativeTabContentsContainerGtk::GetAccessibleState(
 // static
 NativeTabContentsContainer* NativeTabContentsContainer::CreateNativeContainer(
     TabContentsContainer* container) {
-  if (views::Widget::IsPureViews() &&
-      views::ViewsDelegate::views_delegate->GetDefaultParentView())
+  if (views::Widget::IsPureViews())
     return new NativeTabContentsContainerViews(container);
   return new NativeTabContentsContainerGtk(container);
 }

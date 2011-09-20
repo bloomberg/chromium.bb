@@ -205,7 +205,8 @@ void RenderWidgetHostViewViews::SetSize(const gfx::Size& size) {
 }
 
 void RenderWidgetHostViewViews::SetBounds(const gfx::Rect& rect) {
-  NOTIMPLEMENTED();
+  // TODO(oshima): chromeos/touch doesn't allow moving window.
+  SetSize(rect.size());
 }
 
 gfx::NativeView RenderWidgetHostViewViews::GetNativeView() const {
@@ -780,7 +781,7 @@ void RenderWidgetHostViewViews::OnPaint(gfx::Canvas* canvas) {
     // Only render the widget if it is attached to a window; there's a short
     // period where this object isn't attached to a window but hasn't been
     // Destroy()ed yet and it receives paint messages...
-    if (GetInnerNativeView()->window) {
+    if (IsReadyToPaint()) {
 #endif
       if (!visually_deemphasized_) {
         // In the common case, use XCopyArea. We don't draw more than once, so
@@ -926,31 +927,34 @@ void RenderWidgetHostViewViews::ShowCurrentCursor() {
 #if !defined(USE_AURA)
   // The widget may not have a window. If that's the case, abort mission. This
   // is the same issue as that explained above in Paint().
-  if (!GetInnerNativeView() || !GetInnerNativeView()->window)
+  if (!IsReadyToPaint())
     return;
 #endif
 
   native_cursor_ = current_cursor_.GetNativeCursor();
 }
 
-gfx::NativeView RenderWidgetHostViewViews::GetInnerNativeView() const {
+bool RenderWidgetHostViewViews::IsReadyToPaint() {
 #if defined(USE_AURA)
-  return NULL;
+  return false;
 #else
-  const views::View* view = NULL;
-  if (views::ViewsDelegate::views_delegate)
-    view = views::ViewsDelegate::views_delegate->GetDefaultParentView();
-  if (!view)
-    view = this;
+  views::Widget* top = NULL;
 
-  // TODO(sad): Ideally this function should be equivalent to GetNativeView, and
-  // NativeWidgetGtk-specific function call should not be necessary.
-  const views::Widget* widget = view->GetWidget();
-  const views::NativeWidget* native = widget ? widget->native_widget() : NULL;
-  return native ? static_cast<const views::NativeWidgetGtk*>(native)->
-      window_contents() : NULL;
+  // TODO(oshima): move this functionality to Widget.
+  if (views::ViewsDelegate::views_delegate &&
+      views::ViewsDelegate::views_delegate->GetDefaultParentView()) {
+    top = views::ViewsDelegate::views_delegate->GetDefaultParentView()->
+        GetWidget();
+  } else {
+    top = GetWidget() ? GetWidget()->GetTopLevelWidget() : NULL;
+  }
+
+  return top ?
+      !!(static_cast<const views::NativeWidgetGtk*>(top->native_widget())->
+         window_contents()->window) : false;
 #endif
 }
+
 #endif  // !OS_WIN
 
 #if defined(TOOLKIT_USES_GTK)

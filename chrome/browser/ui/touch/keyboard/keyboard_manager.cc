@@ -13,12 +13,10 @@
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/views/dom_view.h"
-#include "chrome/browser/ui/views/tab_contents/tab_contents_view_touch.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/site_instance.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_observer.h"
 #include "content/common/notification_service.h"
 #include "ui/base/animation/animation_delegate.h"
@@ -158,6 +156,7 @@ KeyboardWidget::KeyboardWidget()
 
   // Initialize the widget first.
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
+  params.keep_on_top = true;
   params.transparent = true;
   params.bounds = GetKeyboardPosition(keyboard_height_);
   Init(params);
@@ -220,7 +219,6 @@ void KeyboardWidget::ShowKeyboardForWidget(views::Widget* widget) {
       transform_->Interpolate(animation_->GetCurrentValue()));
   animation_->Show();
 
-  MoveToTop();
   Show();
 
   bool visible = true;

@@ -9,6 +9,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/compositor/layer.h"
 #include "ui/gfx/font.h"
+#include "ui/gfx/screen.h"
 #include "views/widget/native_widget_delegate.h"
 
 #if defined(OS_WIN)
@@ -368,6 +369,10 @@ bool NativeWidgetAura::ConvertPointFromAncestor(const Widget* ancestor,
                                                 gfx::Point* point) const {
   NOTIMPLEMENTED();
   return false;
+}
+
+gfx::Rect NativeWidgetAura::GetWorkAreaBoundsInScreen() const {
+  return gfx::Screen::GetMonitorWorkAreaNearestWindow(GetNativeView());
 }
 
 ////////////////////////////////////////////////////////////////////////////////

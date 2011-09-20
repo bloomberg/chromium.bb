@@ -159,6 +159,8 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
     // The Widget will not construct a default one. Default is NULL.
     NativeWidget* native_widget;
     bool top_level;
+    // When set NativeWidgetViews will create its own layer.
+    bool create_layer;
   };
 
   Widget();
@@ -567,6 +569,9 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // and has a focus manager and input method object associated with it.
   // TYPE_CONTROL and TYPE_TOOLTIP is not considered top level.
   bool is_top_level() const { return is_top_level_; }
+
+  // Returns the bounds of work area in the screen that Widget belongs to.
+  gfx::Rect GetWorkAreaBoundsInScreen() const;
 
   // Overridden from NativeWidgetDelegate:
   virtual bool IsModal() const OVERRIDE;

@@ -25,11 +25,39 @@ NativeTabContentsViewViews::~NativeTabContentsViewViews() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// NativeTabContentsViewViews, NativeWidgetViews implementation:
+void NativeTabContentsViewViews::OnBoundsChanged(
+    const gfx::Rect& new_bounds, const gfx::Rect& old_bounds) {
+  // TODO(oshima): Find out if we need to adjust constrained window.
+  delegate_->OnNativeTabContentsViewSized(new_bounds.size());
+  views::NativeWidgetViews::OnBoundsChanged(new_bounds, old_bounds);
+}
+
+bool NativeTabContentsViewViews::OnMouseEvent(const views::MouseEvent& event) {
+  if (!delegate_->IsShowingSadTab()) {
+    switch (event.type()) {
+      case ui::ET_MOUSE_EXITED:
+        delegate_->OnNativeTabContentsViewMouseMove(false);
+        break;
+      case ui::ET_MOUSE_MOVED:
+        delegate_->OnNativeTabContentsViewMouseMove(true);
+        break;
+      default:
+        // TODO(oshima): mouse wheel
+        break;
+    }
+  }
+  // Pass all mouse event to renderer.
+  return views::NativeWidgetViews::OnMouseEvent(event);
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // NativeTabContentsViewViews, NativeTabContentsView implementation:
 
 void NativeTabContentsViewViews::InitNativeTabContentsView() {
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_CONTROL);
   params.native_widget = this;
+  params.create_layer = false;
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   GetWidget()->Init(params);
 }
@@ -91,7 +119,8 @@ views::NativeWidget* NativeTabContentsViewViews::AsNativeWidget() {
 
 ////////////////////////////////////////////////////////////////////////////////
 // NativeTabContentsView, public:
-#if defined(USE_AURA)
+#if defined(USE_AURA) || defined(TOUCH_UI)
+// TODO(oshima): The above implies pure views only
 // static
 NativeTabContentsView* NativeTabContentsView::CreateNativeTabContentsView(
     internal::NativeTabContentsViewDelegate* delegate) {

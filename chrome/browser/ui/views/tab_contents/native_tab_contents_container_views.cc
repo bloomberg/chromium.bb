@@ -67,12 +67,9 @@ views::View* NativeTabContentsContainerViews::GetView() {
 
 void NativeTabContentsContainerViews::TabContentsFocused(
     TabContents* tab_contents) {
-  views::FocusManager* focus_manager = GetFocusManager();
-  if (!focus_manager) {
-    NOTREACHED();
-    return;
-  }
-  focus_manager->SetFocusedView(this);
+  // This is called from RWHVViews::OnFocus, which means
+  // the focus manager already set focus to RWHVViews, so don't
+  // Update focus manager.
 }
 
 ////////////////////////////////////////////////////////////////////////////////

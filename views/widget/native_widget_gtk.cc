@@ -1332,6 +1332,10 @@ bool NativeWidgetGtk::ConvertPointFromAncestor(
   return false;
 }
 
+gfx::Rect NativeWidgetGtk::GetWorkAreaBoundsInScreen() const {
+  return gfx::Screen::GetMonitorWorkAreaNearestWindow(GetNativeView());
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // NativeWidgetGtk, protected:
 
@@ -2133,22 +2137,20 @@ bool Widget::ConvertRect(const Widget* source,
   DCHECK(target);
   DCHECK(rect);
 
-  GtkWidget* source_widget = source->GetNativeView();
-  GtkWidget* target_widget = target->GetNativeView();
-  if (source_widget == target_widget)
-    return true;
+  // TODO(oshima): Add check if source and target belongs to the same
+  // screen.
 
-  if (!source_widget || !target_widget)
+  if (source == target)
+    return true;
+  if (!source || !target)
     return false;
 
-  GdkRectangle gdk_rect = rect->ToGdkRectangle();
-  if (gtk_widget_translate_coordinates(source_widget, target_widget,
-                                       gdk_rect.x, gdk_rect.y,
-                                       &gdk_rect.x, &gdk_rect.y)) {
-    *rect = gdk_rect;
-    return true;
-  }
-  return false;
+  gfx::Point source_point = source->GetWindowScreenBounds().origin();
+  gfx::Point target_point = target->GetWindowScreenBounds().origin();
+
+  rect->set_origin(
+      source_point.Subtract(target_point).Add(rect->origin()));
+  return true;
 }
 
 namespace internal {

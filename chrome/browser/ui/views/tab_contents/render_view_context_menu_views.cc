@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/ui/views/tab_contents/tab_contents_view_views.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
@@ -15,13 +16,6 @@
 #include "views/controls/menu/menu_item_view.h"
 #include "views/controls/menu/menu_model_adapter.h"
 #include "views/controls/menu/menu_runner.h"
-
-#if defined(TOUCH_UI)
-#include "chrome/browser/ui/views/tab_contents/tab_contents_view_touch.h"
-#include "views/widget/widget.h"
-#else
-#include "chrome/browser/ui/views/tab_contents/tab_contents_view_views.h"
-#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 // RenderViewContextMenuViews, public:
@@ -37,17 +31,9 @@ RenderViewContextMenuViews::~RenderViewContextMenuViews() {
 }
 
 void RenderViewContextMenuViews::RunMenuAt(int x, int y) {
-#if defined(TOUCH_UI)
-  // TODO(oshima): Eliminate this once TabContentsViewTouch is replaced
-  // with TabContentsViewViews.
-  TabContentsViewTouch* touch =
-      static_cast<TabContentsViewTouch*>(source_tab_contents_->view());
-  views::Widget* parent = touch->GetWidget()->GetTopLevelWidget();
-#else
   TabContentsViewViews* tab =
       static_cast<TabContentsViewViews*>(source_tab_contents_->view());
   views::Widget* parent = tab->GetTopLevelWidget();
-#endif
   if (menu_runner_->RunMenuAt(parent, NULL,
           gfx::Rect(gfx::Point(x, y), gfx::Size()),
           views::MenuItemView::TOPLEFT, views::MenuRunner::HAS_MNEMONICS) ==

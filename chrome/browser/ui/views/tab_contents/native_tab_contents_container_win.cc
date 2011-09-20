@@ -12,7 +12,6 @@
 #include "content/browser/tab_contents/interstitial_page.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "ui/base/accessibility/accessible_view_state.h"
-#include "views/views_delegate.h"
 #include "views/focus/focus_manager.h"
 #include "views/focus/widget_focus_manager.h"
 
@@ -158,8 +157,7 @@ gfx::NativeViewAccessible
 // static
 NativeTabContentsContainer* NativeTabContentsContainer::CreateNativeContainer(
     TabContentsContainer* container) {
-  if (views::Widget::IsPureViews() &&
-      views::ViewsDelegate::views_delegate->GetDefaultParentView())
+  if (views::Widget::IsPureViews())
     return new NativeTabContentsContainerViews(container);
   return new NativeTabContentsContainerWin(container);
 }
