@@ -109,9 +109,6 @@ class ChromeRenderMessageFilter : public BrowserMessageFilter {
                          const GURL& origin_url,
                          const GURL& top_origin_url,
                          bool* allowed);
-  void OnAllowImage(const GURL& top_origin_url,
-                    const GURL& image_url,
-                    bool* allowed);
   void OnAllowIndexedDB(int render_view_id,
                         const GURL& origin_url,
                         const GURL& top_origin_url,

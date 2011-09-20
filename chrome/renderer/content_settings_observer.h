@@ -63,9 +63,6 @@ class ContentSettingsObserver
   void DidNotAllowPlugins(WebKit::WebFrame* frame);
   void DidNotAllowScript(WebKit::WebFrame* frame);
 
-  // To be used in tests
-  static void SetAllowAllImages(bool allow);
-
  private:
   // RenderViewObserver implementation.
   virtual bool OnMessageReceived(const IPC::Message& message);
@@ -101,14 +98,7 @@ class ContentSettingsObserver
   typedef std::pair<GURL, bool> StoragePermissionsKey;
   std::map<StoragePermissionsKey, bool> cached_storage_permissions_;
 
-  // Caches the result of AllowImages.
-  typedef std::pair<GURL, GURL> ImagePermissionsKey;
-  std::map<ImagePermissionsKey, bool> cached_image_permissions_;
-
   bool plugins_temporarily_allowed_;
-
-  // To be used in tests
-  static bool allow_all_images_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentSettingsObserver);
 };

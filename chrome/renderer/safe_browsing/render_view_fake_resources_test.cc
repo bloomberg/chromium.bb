@@ -11,7 +11,6 @@
 #include "base/shared_memory.h"
 #include "base/time.h"
 #include "chrome/common/render_messages.h"
-#include "chrome/renderer/content_settings_observer.h"
 #include "chrome/renderer/mock_render_process.h"
 #include "content/common/dom_storage_common.h"
 #include "content/common/main_function_params.h"
@@ -58,9 +57,6 @@ bool RenderViewFakeResourcesTest::Visit(RenderView* render_view) {
 }
 
 void RenderViewFakeResourcesTest::SetUp() {
-  // Make ContentSettingObserver bypass IPC.
-  ContentSettingsObserver::SetAllowAllImages(true);
-
   // Set up the renderer.  This code is largely adapted from
   // render_view_test.cc and renderer_main.cc.  Note that we use a
   // MockRenderProcess (because we don't need to use IPC for painting),
@@ -98,8 +94,6 @@ void RenderViewFakeResourcesTest::SetUp() {
 }
 
 void RenderViewFakeResourcesTest::TearDown() {
-  ContentSettingsObserver::SetAllowAllImages(false);
-
   // Try very hard to collect garbage before shutting down.
   GetMainFrame()->collectGarbage();
   GetMainFrame()->collectGarbage();
