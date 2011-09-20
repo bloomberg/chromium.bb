@@ -603,6 +603,9 @@
           ],
         }],
         ['chromeos==1', {
+          'dependencies': [
+            '../build/linux/system.gyp:dbus-glib',
+          ],
           'sources!': [
             'browser/renderer_host/gtk_key_bindings_handler.cc',
             'browser/renderer_host/gtk_key_bindings_handler.h',
