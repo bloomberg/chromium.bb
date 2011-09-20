@@ -52,6 +52,7 @@
 #include "chrome/browser/sidebar/sidebar_manager.h"
 #include "chrome/browser/status_icons/status_tray.h"
 #include "chrome/browser/tab_closeable_state_watcher.h"
+#include "chrome/browser/tab_contents/thumbnail_generator.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/web_resource/gpu_blacklist_updater.h"
 #include "chrome/common/chrome_constants.h"
@@ -72,6 +73,7 @@
 #include "content/browser/child_process_security_policy.h"
 #include "content/browser/debugger/devtools_manager.h"
 #include "content/browser/download/download_file_manager.h"
+#include "content/browser/download/download_status_updater.h"
 #include "content/browser/download/mhtml_generation_manager.h"
 #include "content/browser/download/save_file_manager.h"
 #include "content/browser/gpu/gpu_process_host_ui_shim.h"
@@ -148,7 +150,9 @@ BrowserProcessImpl::BrowserProcessImpl(const CommandLine& command_line)
       module_ref_count_(0),
       did_start_(false),
       checked_for_new_frames_(false),
-      using_new_frames_(false) {
+      using_new_frames_(false),
+      thumbnail_generator_(new ThumbnailGenerator),
+      download_status_updater_(new DownloadStatusUpdater) {
   g_browser_process = this;
   clipboard_.reset(new ui::Clipboard);
 
@@ -536,7 +540,7 @@ IconManager* BrowserProcessImpl::icon_manager() {
 }
 
 ThumbnailGenerator* BrowserProcessImpl::GetThumbnailGenerator() {
-  return &thumbnail_generator_;
+  return thumbnail_generator_.get();
 }
 
 AutomationProviderList* BrowserProcessImpl::GetAutomationProviderList() {
@@ -616,7 +620,7 @@ void BrowserProcessImpl::SetApplicationLocale(const std::string& locale) {
 }
 
 DownloadStatusUpdater* BrowserProcessImpl::download_status_updater() {
-  return &download_status_updater_;
+  return download_status_updater_.get();
 }
 
 DownloadRequestLimiter* BrowserProcessImpl::download_request_limiter() {

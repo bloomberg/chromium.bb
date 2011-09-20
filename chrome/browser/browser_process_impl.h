@@ -21,8 +21,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/browser/prefs/pref_member.h"
-#include "chrome/browser/tab_contents/thumbnail_generator.h"
-#include "content/browser/download/download_status_updater.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 #include "ipc/ipc_message.h"
@@ -269,12 +267,12 @@ class BrowserProcessImpl : public BrowserProcess,
 
   // This service just sits around and makes thumbnails for tabs. It does
   // nothing in the constructor so we don't have to worry about lazy init.
-  ThumbnailGenerator thumbnail_generator_;
+  scoped_ptr<ThumbnailGenerator> thumbnail_generator_;
 
   // Download status updates (like a changing application icon on dock/taskbar)
   // are global per-application. DownloadStatusUpdater does no work in the ctor
   // so we don't have to worry about lazy initialization.
-  DownloadStatusUpdater download_status_updater_;
+  scoped_ptr<DownloadStatusUpdater> download_status_updater_;
 
   scoped_refptr<DownloadRequestLimiter> download_request_limiter_;
 
