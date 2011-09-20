@@ -212,6 +212,7 @@ void FlashDOMHandler::MaybeRespondToPage() {
     case base::win::VERSION_VISTA: os_label += " Vista"; break;
     case base::win::VERSION_SERVER_2008: os_label += " Server 2008"; break;
     case base::win::VERSION_WIN7: os_label += " 7"; break;
+    case base::win::VERSION_WIN8: os_label += " 8"; break;
     default:  os_label += " UNKNOWN"; break;
   }
   os_label += " SP" + base::IntToString(os->service_pack().major);

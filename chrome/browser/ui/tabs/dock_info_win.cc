@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/tabs/dock_info.h"
 
 #include "base/win/scoped_gdi_object.h"
+#include "base/win/windows_version.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -146,9 +147,14 @@ class LocalProcessWindowFinder : public BaseWindowFinder {
   static HWND GetProcessWindowAtPoint(const gfx::Point& screen_loc,
                                       const std::set<HWND>& ignore) {
     LocalProcessWindowFinder finder(screen_loc, ignore);
+    // Windows 8 has a window that appears first in the list of iterated
+    // windows, yet is not visually on top of everything.
+    // TODO(sky): figure out a better way to ignore this window.
     if (finder.result_ &&
-        TopMostFinder::IsTopMostWindowAtPoint(finder.result_, screen_loc,
-                                              ignore)) {
+        ((base::win::OSInfo::GetInstance()->version() >=
+          base::win::VERSION_WIN8) ||
+         TopMostFinder::IsTopMostWindowAtPoint(finder.result_, screen_loc,
+                                               ignore))) {
       return finder.result_;
     }
     return NULL;
