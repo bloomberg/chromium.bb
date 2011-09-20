@@ -8,7 +8,9 @@
 
 #include <string>
 
+#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/scoped_temp_dir.h"
 #include "content/browser/content_browser_client.h"
 
 namespace content {
@@ -16,6 +18,7 @@ namespace content {
 // Base for unit tests that need to mock the ContentBrowserClient.
 class MockContentBrowserClient : public ContentBrowserClient {
  public:
+  MockContentBrowserClient();
   virtual ~MockContentBrowserClient();
 
   virtual BrowserMainParts* CreateBrowserMainParts(
@@ -137,6 +140,12 @@ class MockContentBrowserClient : public ContentBrowserClient {
       crypto::CryptoModuleBlockingPasswordDelegate* GetCryptoPasswordDelegate(
           const GURL& url) OVERRIDE;
 #endif
+
+ private:
+  // Temporary directory for GetDefaultDownloadDirectory.
+  ScopedTempDir download_dir_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockContentBrowserClient);
 };
 
 }  // namespace content

@@ -4,7 +4,6 @@
 
 #include "base/file_util.h"
 #include "base/message_loop.h"
-#include "base/scoped_temp_dir.h"
 #include "base/string_number_conversions.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/download/download_create_info.h"
@@ -42,7 +41,6 @@ class DownloadFileTest : public testing::Test {
   }
 
   virtual void SetUp() {
-    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     download_manager_delegate_.reset(new MockDownloadManagerDelegate());
     download_manager_ = new MockDownloadManager(
         download_manager_delegate_.get(), &download_status_updater_);
@@ -94,9 +92,6 @@ class DownloadFileTest : public testing::Test {
   }
 
  protected:
-  // Temporary directory for renamed downloads.
-  ScopedTempDir temp_dir_;
-
   DownloadStatusUpdater download_status_updater_;
   scoped_ptr<MockDownloadManagerDelegate> download_manager_delegate_;
   scoped_refptr<DownloadManager> download_manager_;

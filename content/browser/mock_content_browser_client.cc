@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/logging.h"
 #include "base/file_path.h"
 #include "content/browser/webui/empty_web_ui_factory.h"
 #include "content/test/test_tab_contents_view.h"
@@ -15,6 +16,9 @@
 #include "webkit/glue/webpreferences.h"
 
 namespace content {
+
+MockContentBrowserClient::MockContentBrowserClient() {
+}
 
 MockContentBrowserClient::~MockContentBrowserClient() {
 }
@@ -250,7 +254,11 @@ void MockContentBrowserClient::ClearCookies(RenderViewHost* rvh) {
 }
 
 FilePath MockContentBrowserClient::GetDefaultDownloadDirectory() {
-  return FilePath();
+  if (!download_dir_.IsValid()) {
+    bool result = download_dir_.CreateUniqueTempDir();
+    CHECK(result);
+  }
+  return download_dir_.path();
 }
 
 net::URLRequestContextGetter*

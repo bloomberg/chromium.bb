@@ -1830,8 +1830,6 @@
         'test/base/v8_unit_test.h',
         'test/data/resource.rc',
         'tools/convert_dict/convert_dict_unittest.cc',
-        '../content/browser/debugger/devtools_manager_unittest.cc',
-        '../content/browser/download/download_file_unittest.cc',
         '../content/browser/in_process_webkit/dom_storage_unittest.cc',
         '../content/browser/in_process_webkit/indexed_db_quota_client_unittest.cc',
         '../content/browser/renderer_host/render_widget_host_unittest.cc',
