@@ -432,6 +432,10 @@ cr.define('cr.ui', function() {
 
     // Update headers & buttons.
     Oobe.updateHeadersAndButtons();
+
+    // Trigger network drop-down to reload its state
+    // so that strings are reloaded.
+    cr.ui.DropDown.refresh();
   }
 
   /**

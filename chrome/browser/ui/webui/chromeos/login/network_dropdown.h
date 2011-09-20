@@ -40,6 +40,11 @@ class NetworkDropdown : public NetworkMenu::Delegate,
   // NetworkLibrary::NetworkManagerObserver implementation:
   virtual void OnNetworkManagerChanged(NetworkLibrary* cros) OVERRIDE;
 
+  // Refreshes control state. Usually there's no need to do it manually
+  // as control refreshes itself on network state change.
+  // Should be called on language change.
+  void Refresh();
+
  protected:
   // LoginHtmlDialog::Delegate implementation:
   virtual void OnDialogClosed() OVERRIDE;

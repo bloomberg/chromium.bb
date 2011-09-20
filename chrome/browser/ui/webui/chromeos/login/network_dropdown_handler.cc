@@ -16,6 +16,7 @@ namespace {
 const char kJsApiNetworkItemChosen[] = "networkItemChosen";
 const char kJsApiNetworkDropdownShow[] = "networkDropdownShow";
 const char kJsApiNetworkDropdownHide[] = "networkDropdownHide";
+const char kJsApiNetworkDropdownRefresh[] = "networkDropdownRefresh";
 
 }  // namespace
 
@@ -43,6 +44,8 @@ void NetworkDropdownHandler::RegisterMessages() {
       NewCallback(this, &NetworkDropdownHandler::HandleNetworkDropdownShow));
   web_ui_->RegisterMessageCallback(kJsApiNetworkDropdownHide,
       NewCallback(this, &NetworkDropdownHandler::HandleNetworkDropdownHide));
+  web_ui_->RegisterMessageCallback(kJsApiNetworkDropdownRefresh,
+      NewCallback(this, &NetworkDropdownHandler::HandleNetworkDropdownRefresh));
 }
 
 void NetworkDropdownHandler::HandleNetworkItemChosen(
@@ -63,13 +66,22 @@ void NetworkDropdownHandler::HandleNetworkDropdownShow(
     NOTREACHED();
 
   dropdown_.reset(new NetworkDropdown(
-        web_ui_, WebUILoginDisplay::GetLoginWindow()->GetNativeWindow()));
+      web_ui_, WebUILoginDisplay::GetLoginWindow()->GetNativeWindow()));
 }
 
 void NetworkDropdownHandler::HandleNetworkDropdownHide(
     const base::ListValue* args) {
   DCHECK(args->GetSize() == 0);
   dropdown_.reset();
+}
+
+void NetworkDropdownHandler::HandleNetworkDropdownRefresh(
+    const base::ListValue* args) {
+  DCHECK(args->GetSize() == 0);
+  // Since language change is async,
+  // we may in theory be on another screen during this call.
+  if (dropdown_.get())
+    dropdown_->Refresh();
 }
 
 }  // namespace chromeos

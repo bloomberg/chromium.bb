@@ -32,6 +32,8 @@ class NetworkDropdownHandler : public BaseScreenHandler {
   void HandleNetworkDropdownShow(const base::ListValue* args);
   // Handles network drop-down hiding.
   void HandleNetworkDropdownHide(const base::ListValue* args);
+  // Handles network drop-down refresh.
+  void HandleNetworkDropdownRefresh(const base::ListValue* args);
 
   scoped_ptr<NetworkDropdown> dropdown_;
 
