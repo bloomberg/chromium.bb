@@ -132,16 +132,14 @@ class InputMethodManagerImpl : public HotkeyManager::Observer,
                                public IBusController::Observer {
  public:
   InputMethodManagerImpl()
-      : ibus_controller_(NULL),
+      : ibus_controller_(IBusController::Create()),
         should_launch_ime_(false),
         ime_connected_(false),
         defer_ime_startup_(false),
         enable_auto_ime_shutdown_(true),
-#if !defined(TOUCH_UI)
-        candidate_window_controller_(NULL),
-#endif
         shutting_down_(false),
         ibus_daemon_process_handle_(base::kNullProcessHandle),
+        util_(ibus_controller_->GetSupportedInputMethods()),
         xkeyboard_(util_) {
     // Observe APP_TERMINATING to stop input method daemon gracefully.
     // We should not use APP_EXITING here since logout might be canceled by
@@ -153,7 +151,6 @@ class InputMethodManagerImpl : public HotkeyManager::Observer,
     notification_registrar_.Add(this, content::NOTIFICATION_APP_TERMINATING,
                                 NotificationService::AllSources());
 
-    ibus_controller_.reset(IBusController::Create());
     // The observer should be added before Connect() so we can capture the
     // initial connection change.
     ibus_controller_->AddObserver(this);
@@ -233,6 +230,10 @@ class InputMethodManagerImpl : public HotkeyManager::Observer,
   virtual size_t GetNumActiveInputMethods() {
     scoped_ptr<InputMethodDescriptors> input_methods(GetActiveInputMethods());
     return input_methods->size();
+  }
+
+  virtual InputMethodDescriptors* GetSupportedInputMethods() {
+    return ibus_controller_->GetSupportedInputMethods();
   }
 
   virtual void ChangeInputMethod(const std::string& input_method_id) {

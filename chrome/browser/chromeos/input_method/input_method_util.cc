@@ -17,7 +17,6 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/input_method/ibus_controller.h"
 #include "chrome/browser/chromeos/input_method/ibus_input_methods.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/language_preferences.h"
@@ -245,7 +244,9 @@ const ExtraLanguage kExtraLanguages[] = {
 };
 const size_t kExtraLanguagesLength = arraysize(kExtraLanguages);
 
-InputMethodUtil::InputMethodUtil() {
+InputMethodUtil::InputMethodUtil(
+    InputMethodDescriptors* supported_input_methods)
+    : supported_input_methods_(supported_input_methods) {
   ReloadInternalMaps();
 
   // Initialize a map from English string to Chrome string resource ID as well.
@@ -634,9 +635,7 @@ std::string InputMethodUtil::GetHardwareInputMethodId() const {
 }
 
 void InputMethodUtil::ReloadInternalMaps() {
-  scoped_ptr<InputMethodDescriptors> supported_input_methods(
-      InputMethodDescriptor::GetSupportedInputMethods());
-  if (supported_input_methods->size() <= 1) {
+  if (supported_input_methods_->size() <= 1) {
     LOG(ERROR) << "GetSupportedInputMethods returned a fallback ID";
     // TODO(yusukes): Handle this error in nicer way.
   }
@@ -647,9 +646,9 @@ void InputMethodUtil::ReloadInternalMaps() {
   id_to_descriptor_.clear();
   xkb_id_to_descriptor_.clear();
 
-  for (size_t i = 0; i < supported_input_methods->size(); ++i) {
+  for (size_t i = 0; i < supported_input_methods_->size(); ++i) {
     const InputMethodDescriptor& input_method =
-        supported_input_methods->at(i);
+        supported_input_methods_->at(i);
     const std::string language_code =
         GetLanguageCodeFromDescriptor(input_method);
     language_code_to_ids_.insert(

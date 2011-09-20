@@ -101,13 +101,22 @@ XKeyboard::XKeyboard(const InputMethodUtil& util) {
     ModifierKey key = kCustomizableKeys[i];
     current_modifier_map_.push_back(ModifierKeyPair(key, key));
   }
+  std::string layout;
   for (size_t i = 0; i < arraysize(kKeepRightAltInputMethods); ++i) {
-    keep_right_alt_xkb_layout_names_.insert(
-        util.GetKeyboardLayoutName(kKeepRightAltInputMethods[i]));
+    layout = util.GetKeyboardLayoutName(kKeepRightAltInputMethods[i]);
+    // The empty check is necessary since TOUCH_UI build does not support some
+    // of the kKeepRightAltInputMethods elements. For example, when TOUCH_UI is
+    // defined, util.GetKeyboardLayoutName("xkb:us:intl:eng") would return "".
+    if (!layout.empty()) {
+      keep_right_alt_xkb_layout_names_.insert(layout);
+    }
   }
   for (size_t i = 0; i < arraysize(kCapsLockRemapped); ++i) {
-    caps_lock_remapped_xkb_layout_names_.insert(
-        util.GetKeyboardLayoutName(kCapsLockRemapped[i]));
+    layout = util.GetKeyboardLayoutName(kCapsLockRemapped[i]);
+    // The empty check is for TOUCH_UI build. See above.
+    if (!layout.empty()) {
+      caps_lock_remapped_xkb_layout_names_.insert(layout);
+    }
   }
 }
 

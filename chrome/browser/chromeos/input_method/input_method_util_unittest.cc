@@ -43,6 +43,9 @@ InputMethodDescriptor GetDesc(IBusController* controller,
 
 class TestableInputMethodUtil : public InputMethodUtil {
  public:
+  explicit TestableInputMethodUtil(InputMethodDescriptors* methods)
+      : InputMethodUtil(methods) {
+  }
   // Change access rights.
   using InputMethodUtil::StringIsSupported;
   using InputMethodUtil::GetInputMethodIdsFromLanguageCodeInternal;
@@ -54,8 +57,14 @@ class TestableInputMethodUtil : public InputMethodUtil {
 
 class InputMethodUtilTest : public testing::Test {
  public:
+  InputMethodUtilTest()
+      : controller_(IBusController::Create()),
+        util_(controller_->GetSupportedInputMethods()) {
+  }
   static void SetUpTestCase() {
   }
+
+  scoped_ptr<IBusController> controller_;
   TestableInputMethodUtil util_;
 };
 

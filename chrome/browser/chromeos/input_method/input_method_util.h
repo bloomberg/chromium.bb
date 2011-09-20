@@ -13,6 +13,8 @@
 
 #include "base/string16.h"
 #include "base/hash_tables.h"
+#include "base/memory/scoped_ptr.h"
+#include "chrome/browser/chromeos/input_method/ibus_controller.h"
 
 namespace chromeos {
 namespace input_method {
@@ -32,12 +34,13 @@ enum InputMethodType {
   kAllInputMethods,
 };
 
-class InputMethodDescriptor;
-
 // A class which provides miscellaneous input method utility functions.
 class InputMethodUtil {
  public:
-  InputMethodUtil();
+  // |supported_input_methods| is a list of all input methods supported,
+  // including ones not active. The list is used to initialize member variables
+  // in this class. The class takes ownership of |supported_input_methods|.
+  explicit InputMethodUtil(InputMethodDescriptors* supported_input_methods);
   ~InputMethodUtil();
 
   // Converts a string sent from IBus IME engines, which is written in English,
@@ -200,6 +203,9 @@ class InputMethodUtil {
  private:
   bool TranslateStringInternal(const std::string& english_string,
                                string16 *out_string) const;
+
+  // All input methods that are supported, including ones not active.
+  scoped_ptr<InputMethodDescriptors> supported_input_methods_;
 
   // Map from language code to associated input method IDs, etc.
   typedef std::multimap<std::string, std::string> LanguageCodeToIdsMap;

@@ -18,11 +18,16 @@ namespace input_method {
 
 class InputMethodDescriptor;
 typedef std::vector<InputMethodDescriptor> InputMethodDescriptors;
+class InputMethodWhitelist;
 
 // A structure which represents an input method.
 class InputMethodDescriptor {
  public:
   InputMethodDescriptor();
+  InputMethodDescriptor(const InputMethodWhitelist& whitelist,
+                        const std::string& in_id,
+                        const std::string& in_raw_layout,
+                        const std::string& in_language_code);
   ~InputMethodDescriptor();
 
   bool operator==(const InputMethodDescriptor& other) const {
@@ -44,21 +49,7 @@ class InputMethodDescriptor {
   // as the fallback, when there is no other choice.
   static InputMethodDescriptor GetFallbackInputMethodDescriptor();
 
-  // Gets all input method engines that are supported, including ones not
-  // active.  Caller has to delete the returned list. This function never
-  // returns NULL.
-  static InputMethodDescriptors* GetSupportedInputMethods();
-
  private:
-  friend class InputMethodDescriptorHelper;  // see the constructor below.
-
-  // Do not call this function directly.
-  // Use IBusController::CreateInputMethodDescriptor().
-  InputMethodDescriptor(const std::string& in_id,
-                        const std::string& in_keyboard_layout,
-                        const std::string& in_virtual_keyboard_layouts,
-                        const std::string& in_language_code);
-
   // An ID that identifies an input method engine (e.g., "t:latn-post",
   // "pinyin", "hangul").
   std::string id_;
@@ -255,6 +246,11 @@ class IBusController {
       const std::string& id,
       const std::string& raw_layout,
       const std::string& language_code) = 0;
+
+  // Gets all input method engines that are supported, including ones not
+  // active.  Caller has to delete the returned list. This function never
+  // returns NULL.
+  virtual InputMethodDescriptors* GetSupportedInputMethods() = 0;
 
   //
   // FUNCTIONS BELOW ARE ONLY FOR UNIT TESTS. DO NOT USE THEM.

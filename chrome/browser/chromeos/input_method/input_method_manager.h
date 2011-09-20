@@ -89,6 +89,10 @@ class InputMethodManager {
   virtual void RemoveVirtualKeyboardObserver(
       VirtualKeyboardObserver* observer) = 0;
 
+  // Returns all input methods that are supported, including ones not active.
+  // Caller has to delete the returned list. This function never returns NULL.
+  virtual InputMethodDescriptors* GetSupportedInputMethods() = 0;
+
   // Returns the list of input methods we can select (i.e. active). If the cros
   // library is not found or IBus/DBus daemon is not alive, this function
   // returns a fallback input method list (and never returns NULL).

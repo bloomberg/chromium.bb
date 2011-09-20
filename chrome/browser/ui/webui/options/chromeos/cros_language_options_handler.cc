@@ -61,9 +61,11 @@ void CrosLanguageOptionsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_LANGUAGES_VIRTUAL_KEYBOARD_BUTTON));
 
+  input_method::InputMethodManager* manager =
+      input_method::InputMethodManager::GetInstance();
   // GetSupportedInputMethods() never return NULL.
   scoped_ptr<input_method::InputMethodDescriptors> descriptors(
-      input_method::InputMethodDescriptor::GetSupportedInputMethods());
+      manager->GetSupportedInputMethods());
   localized_strings->Set("languageList", GetLanguageList(*descriptors));
   localized_strings->Set("inputMethodList", GetInputMethodList(*descriptors));
 }
