@@ -52,6 +52,8 @@ cr.define('options', function() {
                                                 this.handleMouseDownUpOnClose_);
       this.closeButtonElement_.addEventListener('mouseup',
                                                 this.handleMouseDownUpOnClose_);
+      this.closeButtonElement_.addEventListener('focus',
+                                                this.handleFocus_.bind(this));
       this.appendChild(this.closeButtonElement_);
     },
 
@@ -72,6 +74,18 @@ cr.define('options', function() {
     set deletable(value) {
       this.deletable_ = value;
       this.closeButtonElement_.disabled = !value;
+    },
+
+    /**
+     * Called when a focusable child element receives focus. Selects this item
+     * in the list selection model.
+     * @private
+     */
+    handleFocus_: function() {
+      var list = this.parentNode;
+      var index = list.getIndexOfListItem(this);
+      list.selectionModel.selectedIndex = index;
+      list.selectionModel.anchorIndex = index;
     },
 
     /**

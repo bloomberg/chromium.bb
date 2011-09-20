@@ -83,18 +83,6 @@ cr.define('options', function() {
     },
 
     /**
-     * Called when the input element receives focus. Selects this item in the
-     * list selection model.
-     * @private
-     */
-    handleFocus_: function() {
-      var list = this.parentNode;
-      var index = list.getIndexOfListItem(this);
-      list.selectionModel.selectedIndex = index;
-      list.selectionModel.anchorIndex = index;
-    },
-
-    /**
      * Called when this element gains or loses 'lead' status. Updates editing
      * mode accordingly.
      * @private
@@ -142,7 +130,7 @@ cr.define('options', function() {
         if (focusElement) {
           window.setTimeout(function() {
             // Make sure we are still in edit mode by the time we execute.
-            if (self.editing && self.focusPlaceholder) {
+            if (self.editing) {
               focusElement.focus();
               focusElement.select();
             }

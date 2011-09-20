@@ -858,12 +858,6 @@ cr.define('cr.ui', function() {
 
       var autoExpands = this.autoExpands_;
       var firstIndex = autoExpands ? 0 : this.getIndexForListOffset_(scrollTop);
-      // This is a bit tricky. We take the minimum of the available items to
-      // show and the number we want to show, so as not to go off the end of the
-      // list. For the number we want to show, we take the maximum of the number
-      // that would fit without a differently-sized lead item, and with one. We
-      // do this so that if the size of the lead item changes without a scroll
-      // event to trigger redrawing the list, we won't end up with empty space.
       var itemsInViewPort = this.getItemsInViewPort(itemHeight, firstIndex,
           scrollTop);
       var lastIndex = firstIndex + itemsInViewPort;
