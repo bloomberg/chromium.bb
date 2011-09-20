@@ -14,7 +14,7 @@ vars = {
   "chrome_rev": "101752",
   "chromium_trunk": "http://src.chromium.org/svn/trunk",
   "googlecode_url": "http://%s.googlecode.com/svn",
-  "gtest_rev": "594",
+  "gtest_rev": "364",
   "gyp_rev": "1046",
   "lcov_rev": "54822",
   "native_client_trunk": "http://src.chromium.org/native_client/trunk",
