@@ -110,12 +110,12 @@ void GpuVideoDecodeAccelerator::Initialize(
   DCHECK(!init_done_msg_);
   DCHECK(init_done_msg);
 #if defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL)
-  DCHECK(stub_ && stub_->scheduler());
+  DCHECK(stub_ && stub_->decoder());
   init_done_msg_ = init_done_msg;
   OmxVideoDecodeAccelerator* omx_decoder = new OmxVideoDecodeAccelerator(this);
   omx_decoder->SetEglState(
       gfx::GLSurfaceEGL::GetHardwareDisplay(),
-      stub_->scheduler()->decoder()->GetGLContext()->GetHandle());
+      stub_->decoder()->GetGLContext()->GetHandle());
   video_decode_accelerator_ = omx_decoder;
   video_decode_accelerator_->Initialize(profile);
 #else
@@ -134,8 +134,8 @@ void GpuVideoDecodeAccelerator::OnAssignPictureBuffers(
       const std::vector<int32>& buffer_ids,
       const std::vector<uint32>& texture_ids,
       const std::vector<gfx::Size>& sizes) {
-  DCHECK(stub_ && stub_->scheduler());  // Ensure already Initialize()'d.
-  gpu::gles2::GLES2Decoder* command_decoder = stub_->scheduler()->decoder();
+  DCHECK(stub_ && stub_->decoder());  // Ensure already Initialize()'d.
+  gpu::gles2::GLES2Decoder* command_decoder = stub_->decoder();
 
   std::vector<media::PictureBuffer> buffers;
   for (uint32 i = 0; i < buffer_ids.size(); ++i) {

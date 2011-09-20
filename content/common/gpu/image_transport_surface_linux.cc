@@ -425,11 +425,11 @@ ImageTransportHelper::~ImageTransportHelper() {
 }
 
 bool ImageTransportHelper::Initialize() {
-  gpu::GpuScheduler* scheduler = Scheduler();
-  if (!scheduler)
+  gpu::gles2::GLES2Decoder* decoder = Decoder();
+  if (!decoder)
     return false;
 
-  scheduler->SetResizeCallback(
+  decoder->SetResizeCallback(
        NewCallback(this, &ImageTransportHelper::Resize));
 
   return true;
@@ -505,6 +505,19 @@ gpu::GpuScheduler* ImageTransportHelper::Scheduler() {
     return NULL;
 
   return stub->scheduler();
+}
+
+gpu::gles2::GLES2Decoder* ImageTransportHelper::Decoder() {
+  GpuChannel* channel = manager_->LookupChannel(renderer_id_);
+  if (!channel)
+    return NULL;
+
+  GpuCommandBufferStub* stub =
+      channel->LookupCommandBuffer(command_buffer_id_);
+  if (!stub)
+    return NULL;
+
+  return stub->decoder();
 }
 
 #endif  // defined(USE_GPU)

@@ -217,10 +217,7 @@
         'command_buffer/service/gl_utils.h',
         'command_buffer/service/gpu_scheduler.h',
         'command_buffer/service/gpu_scheduler.cc',
-        'command_buffer/service/gpu_scheduler_linux.cc',
-        'command_buffer/service/gpu_scheduler_mac.cc',
         'command_buffer/service/gpu_scheduler_mock.h',
-        'command_buffer/service/gpu_scheduler_win.cc',
         'command_buffer/service/id_manager.h',
         'command_buffer/service/id_manager.cc',
         'command_buffer/service/mocks.h',
@@ -333,20 +330,6 @@
       ],
     },
     {
-      'target_name': 'gles2_demo_lib',
-      'type': 'static_library',
-      'dependencies': [
-        'command_buffer_client',
-        'gles2_c_lib',
-      ],
-      'sources': [
-        'command_buffer/client/gles2_demo_c.h',
-        'command_buffer/client/gles2_demo_c.c',
-        'command_buffer/client/gles2_demo_cc.h',
-        'command_buffer/client/gles2_demo_cc.cc',
-      ],
-    },
-    {
       'target_name': 'gpu_ipc',
       'type': 'static_library',
       'dependencies': [
@@ -362,33 +345,5 @@
         'ipc/gpu_command_buffer_traits.h',
       ],
     },
-  ],
-  'conditions': [
-    ['OS == "win"',
-      {
-        'targets': [
-          {
-            'target_name': 'gles2_demo',
-            'type': 'executable',
-            'dependencies': [
-              '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
-              'command_buffer_service',
-              'gles2_demo_lib',
-            ],
-            'sources': [
-              'command_buffer/client/gles2_demo.cc',
-            ],
-            'msvs_settings': {
-              'VCLinkerTool': {
-                # 0 == not set
-                # 1 == /SUBSYSTEM:CONSOLE
-                # 2 == /SUBSYSTEM:WINDOWS
-               'SubSystem': '2',
-              },
-            },
-          },
-        ],
-      },
-    ],
   ],
 }

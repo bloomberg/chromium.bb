@@ -19,119 +19,32 @@ using ::base::SharedMemory;
 
 namespace gpu {
 
-GpuScheduler* GpuScheduler::Create(CommandBuffer* command_buffer,
-                                   gles2::ContextGroup* group) {
-  DCHECK(command_buffer);
-
-  gles2::GLES2Decoder* decoder = gles2::GLES2Decoder::Create(group);
-
-  GpuScheduler* scheduler = new GpuScheduler(command_buffer,
-                                             decoder,
-                                             NULL);
-
-  decoder->set_engine(scheduler);
-
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableGPUServiceLogging)) {
-    decoder->set_debug(true);
+GpuScheduler::GpuScheduler(CommandBuffer* command_buffer,
+                           gles2::GLES2Decoder* decoder,
+                           CommandParser* parser)
+    : command_buffer_(command_buffer),
+      decoder_(decoder),
+      parser_(parser),
+      unscheduled_count_(0) {
+  // Map the ring buffer and create the parser.
+  if (!parser) {
+    Buffer ring_buffer = command_buffer_->GetRingBuffer();
+    if (ring_buffer.ptr) {
+      parser_.reset(new CommandParser(ring_buffer.ptr,
+                                      ring_buffer.size,
+                                      0,
+                                      ring_buffer.size,
+                                      0,
+                                      decoder_));
+    } else {
+      parser_.reset(new CommandParser(NULL, 0, 0, 0, 0,
+                                      decoder_));
+    }
   }
-
-  return scheduler;
-}
-
-GpuScheduler* GpuScheduler::CreateForTests(CommandBuffer* command_buffer,
-                                           gles2::GLES2Decoder* decoder,
-                                           CommandParser* parser) {
-  DCHECK(command_buffer);
-  GpuScheduler* scheduler = new GpuScheduler(command_buffer,
-                                             decoder,
-                                             parser);
-
-  return scheduler;
 }
 
 GpuScheduler::~GpuScheduler() {
-  Destroy();
 }
-
-bool GpuScheduler::InitializeCommon(
-    const scoped_refptr<gfx::GLSurface>& surface,
-    const scoped_refptr<gfx::GLContext>& context,
-    const gfx::Size& size,
-    const gles2::DisallowedExtensions& disallowed_extensions,
-    const char* allowed_extensions,
-    const std::vector<int32>& attribs) {
-  DCHECK(context);
-
-  if (!context->MakeCurrent(surface))
-    return false;
-
-#if !defined(OS_MACOSX) && !defined(TOUCH_UI)
-  // Set up swap interval for onscreen contexts.
-  if (!surface->IsOffscreen()) {
-    if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableGpuVsync))
-      context->SetSwapInterval(0);
-    else
-      context->SetSwapInterval(1);
-  }
-#endif
-
-  // Map the ring buffer and create the parser.
-  Buffer ring_buffer = command_buffer_->GetRingBuffer();
-  if (ring_buffer.ptr) {
-    parser_.reset(new CommandParser(ring_buffer.ptr,
-                                    ring_buffer.size,
-                                    0,
-                                    ring_buffer.size,
-                                    0,
-                                    decoder_.get()));
-  } else {
-    parser_.reset(new CommandParser(NULL, 0, 0, 0, 0,
-                                    decoder_.get()));
-  }
-
-  // Initialize the decoder with either the view or pbuffer GLContext.
-  // TODO(apatrick): The GpuScheduler should know nothing about the surface the
-  // decoder is rendering to. Get rid of the surface parameter.
-  if (!decoder_->Initialize(surface,
-                            context,
-                            size,
-                            disallowed_extensions,
-                            allowed_extensions,
-                            attribs)) {
-    LOG(ERROR) << "GpuScheduler::InitializeCommon failed because decoder "
-               << "failed to initialize.";
-    Destroy();
-    return false;
-  }
-
-  return true;
-}
-
-void GpuScheduler::DestroyCommon() {
-  if (decoder_.get()) {
-    decoder_->MakeCurrent();
-    decoder_->Destroy();
-    decoder_.reset();
-  }
-
-  parser_.reset();
-}
-
-bool GpuScheduler::SetParent(GpuScheduler* parent_scheduler,
-                             uint32 parent_texture_id) {
-  if (parent_scheduler)
-    return decoder_->SetParent(parent_scheduler->decoder_.get(),
-                               parent_texture_id);
-  else
-    return decoder_->SetParent(NULL, 0);
-}
-
-#if defined(OS_MACOSX)
-namespace {
-const unsigned int kMaxOutstandingSwapBuffersCallsPerOnscreenContext = 1;
-}
-#endif
 
 void GpuScheduler::PutChanged() {
   TRACE_EVENT1("gpu", "GpuScheduler:PutChanged", "this", this);
@@ -142,23 +55,6 @@ void GpuScheduler::PutChanged() {
   parser_->set_put(state.put_offset);
   if (state.error != error::kNoError)
     return;
-
-  if (decoder_.get()) {
-    if (!decoder_->MakeCurrent()) {
-      LOG(ERROR) << "Context lost because MakeCurrent failed.";
-      command_buffer_->SetContextLostReason(decoder_->GetContextLostReason());
-      command_buffer_->SetParseError(error::kLostContext);
-      return;
-    }
-  }
-
-#if defined(OS_MACOSX)
-  bool do_rate_limiting = surface_.get() != NULL;
-
-  // Don't swamp the browser process with SwapBuffers calls it can't handle.
-  DCHECK(!do_rate_limiting ||
-         swap_buffers_count_ - acknowledged_swap_buffers_count_ == 0);
-#endif
 
   error::Error error = error::kNoError;
   while (!parser_->IsEmpty()) {
@@ -226,28 +122,9 @@ int32 GpuScheduler::GetGetOffset() {
   return parser_->get();
 }
 
-void GpuScheduler::SetResizeCallback(
-    Callback1<gfx::Size>::Type* callback) {
-  decoder_->SetResizeCallback(callback);
-}
-
 void GpuScheduler::SetCommandProcessedCallback(
     Callback0::Type* callback) {
   command_processed_callback_.reset(callback);
-}
-
-GpuScheduler::GpuScheduler(CommandBuffer* command_buffer,
-                           gles2::GLES2Decoder* decoder,
-                           CommandParser* parser)
-    : command_buffer_(command_buffer),
-      decoder_(decoder),
-      parser_(parser),
-      unscheduled_count_(0),
-#if defined(OS_MACOSX)
-      swap_buffers_count_(0),
-      acknowledged_swap_buffers_count_(0),
-#endif
-      method_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
 }
 
 }  // namespace gpu
