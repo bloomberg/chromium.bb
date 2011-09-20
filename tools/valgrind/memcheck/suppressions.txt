@@ -4485,53 +4485,6 @@
    fun:_ZN20ComponentUpdaterTest17RegisterComponentEP12CrxComponentNS_14TestComponentsERK7Version
    fun:_ZN42ComponentUpdaterTest_ProdVersionCheck_Test8TestBodyEv
 }
-
-{
-   bug_96342a
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN24ExtensionSettingsHandler27HandleRequestExtensionsDataEPKN4base9ListValueE
-   fun:_ZN24ExtensionSettingsHandler28MaybeUpdateAfterNotificationEv
-   fun:_ZN24ExtensionSettingsHandler7ObserveEiRK18NotificationSourceRK19NotificationDetails
-   fun:_ZN19NotificationService6NotifyEiRK18NotificationSourceRK19NotificationDetails
-   fun:_ZN14RenderViewHostD0Ev
-   fun:_ZN16RenderWidgetHost7DestroyEv
-   fun:_ZN16RenderWidgetHost8ShutdownEv
-   fun:_ZN14RenderViewHost8ShutdownEv
-   fun:_ZN21RenderViewHostManagerD1Ev
-   fun:_ZN11TabContentsD0Ev
-   ...
-   fun:_ZN7Browser15OnWindowClosingEv
-}
-{
-   bug_96342b
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN24ExtensionSettingsHandler27HandleRequestExtensionsDataEPKN4base9ListValueE
-   fun:_ZN24ExtensionSettingsHandler28MaybeUpdateAfterNotificationEv
-   fun:_ZN24ExtensionSettingsHandler7ObserveEiRK18NotificationSourceRK19NotificationDetails
-   fun:_ZN19NotificationService6NotifyEiRK18NotificationSourceRK19NotificationDetails
-   fun:_ZN20NavigationController30NotifyNavigationEntryCommittedEPN7content20LoadCommittedDetailsE
-   fun:_ZN20NavigationController19RendererDidNavigateERK32ViewHostMsg_FrameNavigate_ParamsPN7content20LoadCommittedDetailsE
-   fun:_ZN11TabContents11DidNavigateEP14RenderViewHostRK32ViewHostMsg_FrameNavigate_Params
-   fun:_ZN14RenderViewHost13OnMsgNavigateERKN3IPC7MessageE
-   fun:_ZN14RenderViewHost17OnMessageReceivedERKN3IPC7MessageE
-   fun:_ZN24BrowserRenderProcessHost17OnMessageReceivedERKN3IPC7MessageE
-}
-{
-   bug_96342c
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN9__gnu_cxx13new_allocatorISt13_Rb_tree_nodeISt4pairIKSsPN4base5ValueEEEE8allocateEjPKv
-   fun:_ZNSt8_Rb_treeISsSt4pairIKSsPN4base5ValueEESt10_Select1stIS5_ESt4lessISsESaIS5_EE11_M_get_nodeEv
-   fun:_ZNSt8_Rb_treeISsSt4pairIKSsPN4base5ValueEESt10_Select1stIS5_ESt4lessISsESaIS5_EE14_M_create_nodeERKS5_
-   fun:_ZNSt8_Rb_treeISsSt4pairIKSsPN4base5ValueEESt10_Select1stIS5_ESt4lessISsESaIS5_EE10_M_insert_EPKSt18_Rb_tree_node_baseSE_RKS5_
-   ...
-   fun:_ZN24ExtensionSettingsHandler27HandleRequestExtensionsDataEPKN4base9ListValueE
-   fun:_ZN24ExtensionSettingsHandler28MaybeUpdateAfterNotificationEv
-   fun:_ZN24ExtensionSettingsHandler7ObserveEiRK18NotificationSourceRK19NotificationDetails
-   fun:_ZN19NotificationService6NotifyEiRK18NotificationSourceRK19NotificationDetails
-}
 {
    bug_96363
    Memcheck:Leak
