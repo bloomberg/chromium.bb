@@ -286,6 +286,11 @@ bool Widget::IsDebugPaintEnabled() {
   return debug_paint;
 }
 
+// static
+bool Widget::RequiresNonClientView(InitParams::Type type) {
+  return type == InitParams::TYPE_WINDOW || type == InitParams::TYPE_BUBBLE;
+}
+
 void Widget::Init(const InitParams& params) {
   is_top_level_ = params.top_level ||
       (!params.child &&
@@ -304,8 +309,7 @@ void Widget::Init(const InitParams& params) {
         internal::NativeWidgetPrivate::IsMouseButtonDown();
   }
   native_widget_->InitNativeWidget(params);
-  if (params.type == InitParams::TYPE_WINDOW ||
-      params.type == InitParams::TYPE_BUBBLE) {
+  if (RequiresNonClientView(params.type)) {
     non_client_view_ = new NonClientView;
     non_client_view_->SetFrameView(CreateNonClientFrameView());
     // Create the ClientView, add it to the NonClientView and add the

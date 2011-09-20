@@ -232,6 +232,9 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   static void SetDebugPaintEnabled(bool enabled);
   static bool IsDebugPaintEnabled();
 
+  // Returns true if the specified type requires a NonClientView.
+  static bool RequiresNonClientView(InitParams::Type type);
+
   void Init(const InitParams& params);
 
   // Returns the gfx::NativeView associated with this Widget.

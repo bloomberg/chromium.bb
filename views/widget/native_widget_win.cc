@@ -391,7 +391,8 @@ NativeWidgetWin::NativeWidgetWin(internal::NativeWidgetDelegate* delegate)
       last_monitor_(NULL),
       is_right_mouse_pressed_on_caption_(false),
       restored_enabled_(false),
-      destroyed_(NULL) {
+      destroyed_(NULL),
+      has_non_client_view_(false) {
 }
 
 NativeWidgetWin::~NativeWidgetWin() {
@@ -2099,7 +2100,7 @@ int NativeWidgetWin::GetShowState() const {
 gfx::Insets NativeWidgetWin::GetClientAreaInsets() const {
   // Returning an empty Insets object causes the default handling in
   // NativeWidgetWin::OnNCCalcSize() to be invoked.
-  if (GetWidget()->ShouldUseNativeFrame())
+  if (!has_non_client_view_ || GetWidget()->ShouldUseNativeFrame())
     return gfx::Insets();
 
   if (IsMaximized()) {
@@ -2271,6 +2272,8 @@ void NativeWidgetWin::SetInitParams(const Widget::InitParams& params) {
   set_initial_class_style(class_style);
   set_window_style(window_style() | style);
   set_window_ex_style(window_ex_style() | ex_style);
+
+  has_non_client_view_ = Widget::RequiresNonClientView(params.type);
 }
 
 void NativeWidgetWin::RedrawInvalidRect() {

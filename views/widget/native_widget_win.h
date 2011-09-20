@@ -658,6 +658,11 @@ class VIEWS_EXPORT NativeWidgetWin : public ui::WindowImpl,
   // as unlocking the Window with a ScopedRedrawLock) after Widget destruction.
   bool* destroyed_;
 
+  // True if the widget is going to have a non_client_view. We cache this value
+  // rather than asking the Widget for the non_client_view so that we know at
+  // Init time, before the Widget has created the NonClientView.
+  bool has_non_client_view_;
+
   DISALLOW_COPY_AND_ASSIGN(NativeWidgetWin);
 };
 
