@@ -2480,6 +2480,11 @@
             'browser/ui/webui/print_preview.js',
           ],
         }],
+        ['disable_nacl==1', {
+          'sources!': [
+            'browser/extensions/extension_nacl_browsertest.cc',
+          ],
+        }],
         ['touchui==1', {
           'sources': [
             'browser/ui/touch/keyboard/keyboard_manager_browsertest.cc',
