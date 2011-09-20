@@ -265,7 +265,18 @@ NAME_ARM_OPT() {
 NAME_ARM_DBG() {
   echo "hardy64-marm-narm-dbg/rev_${BUILDBOT_GOT_REVISION}"
 }
-readonly NAME_ARM_TRY="nacl-arm_opt/None"
+NAME_ARM_TRY_UPLOAD() {
+  echo -n "arm/"
+  echo -n "${BUILDBOT_BUILDERNAME}/"
+  echo -n "${BUILDBOT_SLAVENAME}/"
+  echo -n "${BUILDBOT_BUILDNUMBER}"
+}
+NAME_ARM_TRY_DOWNLOAD() {
+  echo -n "arm/"
+  echo -n "${BUILDBOT_TRIGGERED_BY_BUILDERNAME}/"
+  echo -n "${BUILDBOT_TRIGGERED_BY_SLAVENAME}/"
+  echo -n "${BUILDBOT_TRIGGERED_BY_BUILDNUMBER}"
+}
 
 mode-buildbot-arm() {
   FAIL_FAST=false
@@ -299,7 +310,7 @@ mode-buildbot-arm-opt() {
 mode-buildbot-arm-try() {
   mode-buildbot-arm "--mode=opt-host,nacl"
   archive-for-hw-bots \
-      nativeclient-trybot/between_builders/${NAME_ARM_TRY}/build.tgz
+      nativeclient-trybot/between_builders/$(NAME_ARM_TRY_UPLOAD)/build.tgz
 }
 
 mode-buildbot-arm-hw() {
@@ -327,7 +338,7 @@ mode-buildbot-arm-hw-opt() {
 
 mode-buildbot-arm-hw-try() {
   unarchive-for-hw-bots \
-      nativeclient-trybot/between_builders/${NAME_ARM_TRY}/build.tgz
+      nativeclient-trybot/between_builders/$(NAME_ARM_TRY_DOWNLOAD)/build.tgz
   mode-buildbot-arm-hw "--mode=opt-host,nacl"
 }
 

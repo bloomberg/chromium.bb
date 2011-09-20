@@ -156,6 +156,17 @@ BOT_ASSIGNMENT = {
         'bash buildbot/buildbot_pnacl.sh mode-buildbot-arm-try',
     'nacl-arm_hw_opt':
         'bash buildbot/buildbot_pnacl.sh mode-buildbot-arm-hw-try',
+    # Pnacl scons trybots
+    'nacl-arm_opt_panda':
+        'bash buildbot/buildbot_pnacl.sh mode-buildbot-arm-try',
+    'nacl-arm_hw_opt_panda':
+        'bash buildbot/buildbot_pnacl.sh mode-buildbot-arm-hw-try',
+    # Pnacl perf scons trybots
+    # TODO(sehr): hook these up to something useful.
+    'nacl-arm_perf_panda':
+        'bash buildbot/buildbot_pnacl.sh mode-buildbot-arm-try',
+    'nacl-arm_hw_perf_panda':
+        'bash buildbot/buildbot_pnacl.sh mode-buildbot-arm-hw-try',
     # TODO(bradnelson): Eliminate this non-sharded trybot
     'nacl-lucid64-pnacl1':
         'bash buildbot/buildbot_pnacl.sh mode-trybot',
