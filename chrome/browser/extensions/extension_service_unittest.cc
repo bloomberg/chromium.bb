@@ -1958,6 +1958,12 @@ TEST_F(ExtensionServiceTest, FromWebStore) {
   service_->ReloadExtensions();
   extension = service_->extensions()->at(0);
   ASSERT_TRUE(extension->from_webstore());
+
+  // Upgrade to version 2.0
+  path = data_dir_.AppendASCII("good2.crx");
+  UpdateExtension(good_crx, path, ENABLED);
+  ValidatePrefKeyCount(1);
+  ValidateBooleanPref(good_crx, "from_webstore", true);
 }
 
 // Test upgrading a signed extension.

@@ -804,6 +804,8 @@ bool ExtensionService::UpdateExtension(
     installer->set_install_source(extension->location());
   if (pending_extension_info.install_silently())
     installer->set_allow_silent_install(true);
+  if (extension && extension->from_webstore())
+    installer->set_is_gallery_install(true);
   installer->set_delete_source(true);
   installer->set_original_url(download_url);
   installer->set_install_cause(extension_misc::INSTALL_CAUSE_UPDATE);
