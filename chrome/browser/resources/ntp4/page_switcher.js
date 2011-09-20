@@ -53,13 +53,18 @@ cr.define('ntp4', function() {
 
     doDragEnter: function(e) {
       this.scheduleDelayedSwitch_();
+      this.doDragOver(e);
     },
 
     doDragLeave: function(e) {
       this.cancelDelayedSwitch_();
     },
 
-    doDragOver: function(e) {},
+    doDragOver: function(e) {
+      e.preventDefault();
+      var targetPage = ntp4.getCardSlider().currentCardValue;
+      targetPage.setDropEffect(e.dataTransfer);
+    },
 
     doDrop: function(e) {
       e.stopPropagation();
