@@ -120,13 +120,13 @@ _VERSIONS_INT_SUFFIX = '/chromeos/manifest-versions'
 MANIFEST_VERSIONS_INT_URL = constants.GERRIT_INT_SSH_URL + _VERSIONS_INT_SUFFIX
 
 
-def _IsInternalBuild(git_url):
-  """Returns whether the url is for the internal source.
+def IsInternalBuild(config):
+  """Returns whether a build config is an internal config.
 
   Args:
-    git_url: The url of the manifest used to checkout the source
+    config: The build configuration dictionary to test.
   """
-  return git_url == MANIFEST_INT_URL
+  return config['git_url'] == MANIFEST_INT_URL
 
 
 default = {

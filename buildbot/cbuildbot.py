@@ -713,7 +713,7 @@ def main(argv=None):
     if options.buildbot:
       parser.error('Please specify a buildroot with the --buildroot option.')
     else:
-      internal = cbuildbot_config._IsInternalBuild(build_config['git_url'])
+      internal = cbuildbot_config.IsInternalBuild(build_config)
       options.buildroot = _DetermineDefaultBuildRoot(internal)
       # We use a marker file in the buildroot to indicate the user has consented
       # to using this directory.

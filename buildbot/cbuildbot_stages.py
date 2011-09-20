@@ -128,7 +128,7 @@ class ManifestVersionedSyncStage(bs.BuilderStage):
   manifest_manager = None
 
   def _GetManifestVersionsRepoUrl(self):
-    if cbuildbot_config._IsInternalBuild(self._build_config['git_url']):
+    if cbuildbot_config.IsInternalBuild(self._build_config):
       return cbuildbot_config.MANIFEST_VERSIONS_INT_URL
     else:
       return cbuildbot_config.MANIFEST_VERSIONS_URL
@@ -237,7 +237,7 @@ class CommitQueueSyncStage(LKGMCandidateSyncStage):
     assert isinstance(self.manifest_manager, lkgm_manager.LKGMManager), \
         'Manifest manager instantiated with wrong class.'
 
-    internal = cbuildbot_config._IsInternalBuild(self._build_config['git_url'])
+    internal = cbuildbot_config.IsInternalBuild(self._build_config)
     if self._build_config['master']:
       try:
         # In order to acquire a pool, we need an initialized buildroot.
