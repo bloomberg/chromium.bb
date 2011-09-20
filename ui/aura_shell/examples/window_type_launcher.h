@@ -39,6 +39,7 @@ class WindowTypeLauncher : public views::WidgetDelegateView,
                              const views::Event& event) OVERRIDE;
 
   views::NativeTextButton* create_button_;
+  views::NativeTextButton* bubble_button_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowTypeLauncher);
 };

@@ -6,6 +6,7 @@
 
 #include "base/utf_string_conversions.h"
 #include "ui/aura/window.h"
+#include "ui/aura_shell/examples/example_factory.h"
 #include "ui/aura_shell/examples/toplevel_window.h"
 #include "ui/gfx/canvas.h"
 #include "views/controls/button/text_button.h"
@@ -16,8 +17,11 @@ namespace examples {
 
 WindowTypeLauncher::WindowTypeLauncher()
     : ALLOW_THIS_IN_INITIALIZER_LIST(
-    create_button_(new views::NativeTextButton(this, L"Create Window"))) {
+          create_button_(new views::NativeTextButton(this, L"Create Window"))),
+      ALLOW_THIS_IN_INITIALIZER_LIST(bubble_button_(
+          new views::NativeTextButton(this, L"Create Pointy Bubble"))) {
   AddChildView(create_button_);
+  AddChildView(bubble_button_);
 }
 
 WindowTypeLauncher::~WindowTypeLauncher() {
@@ -28,10 +32,16 @@ void WindowTypeLauncher::OnPaint(gfx::Canvas* canvas) {
 }
 
 void WindowTypeLauncher::Layout() {
-  gfx::Size button_ps = create_button_->GetPreferredSize();
+  gfx::Size create_button_ps = create_button_->GetPreferredSize();
   gfx::Rect local_bounds = GetLocalBounds();
-  create_button_->SetBounds(5, local_bounds.bottom() - button_ps.height() - 5,
-                            button_ps.width(), button_ps.height());
+  create_button_->SetBounds(
+      5, local_bounds.bottom() - create_button_ps.height() - 5,
+      create_button_ps.width(), create_button_ps.height());
+
+  gfx::Size bubble_button_ps = bubble_button_->GetPreferredSize();
+  bubble_button_->SetBounds(
+      5, create_button_->y() - bubble_button_ps.height() - 5,
+      bubble_button_ps.width(), bubble_button_ps.height());
 }
 
 gfx::Size WindowTypeLauncher::GetPreferredSize() {
@@ -48,8 +58,14 @@ std::wstring WindowTypeLauncher::GetWindowTitle() const {
 
 void WindowTypeLauncher::ButtonPressed(views::Button* sender,
                                        const views::Event& event) {
-  if (sender == create_button_)
+  if (sender == create_button_) {
     ToplevelWindow::CreateToplevelWindow();
+  } else if (sender == bubble_button_) {
+    gfx::Point origin = bubble_button_->bounds().origin();
+    views::View::ConvertPointToWidget(bubble_button_->parent(), &origin);
+    origin.Offset(10, bubble_button_->height() - 10);
+    CreatePointyBubble(GetWidget()->GetNativeWindow(), origin);
+  }
 }
 
 void InitWindowTypeLauncher() {

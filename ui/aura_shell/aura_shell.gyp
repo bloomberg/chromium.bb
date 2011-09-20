@@ -88,6 +88,8 @@
       ],
       'sources': [
         'aura_shell_main.cc',
+        'examples/bubble.cc',
+        'examples/example_factory.h',
         'examples/toplevel_window.cc',
         'examples/toplevel_window.h',
         'examples/window_type_launcher.cc',
