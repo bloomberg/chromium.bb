@@ -31,6 +31,15 @@ sync_pb::PasswordSpecificsData* DecryptPasswordSpecifics(
 // The list of names which are reserved for use by the server.
 static const char* kForbiddenServerNames[] = { "", ".", ".." };
 
+// When taking a name from the syncapi, append a space if it matches the
+// pattern of a server-illegal name followed by zero or more spaces.
+void SyncAPINameToServerName(const std::string& sync_api_name,
+                             std::string* out) {
+  *out = sync_api_name;
+  if (IsNameServerIllegalAfterTrimming(*out))
+    out->append(" ");
+}
+
 // Checks whether |name| is a server-illegal name followed by zero or more space
 // characters.  The three server-illegal names are the empty string, dot, and
 // dot-dot.  Very long names (>255 bytes in UTF-8 Normalization Form C) are

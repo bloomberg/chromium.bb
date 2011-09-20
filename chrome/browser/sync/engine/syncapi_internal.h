@@ -24,6 +24,9 @@ sync_pb::PasswordSpecificsData* DecryptPasswordSpecifics(
     const sync_pb::EntitySpecifics& specifics,
     browser_sync::Cryptographer* crypto);
 
+void SyncAPINameToServerName(const std::string& sync_api_name,
+                             std::string* out);
+
 bool IsNameServerIllegalAfterTrimming(const std::string& name);
 
 bool AreSpecificsEqual(const browser_sync::Cryptographer* cryptographer,

@@ -7,6 +7,7 @@
 #include "base/base64.h"
 #include "base/sha1.h"
 #include "base/string_number_conversions.h"
+#include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/sync/engine/syncapi_internal.h"
 #include "chrome/browser/sync/internal_api/base_transaction.h"
@@ -103,10 +104,13 @@ bool BaseNode::DecryptIfNecessary() {
         !GetTitle().empty()) {  // Last check ensures this isn't a new node.
       // We need to fill in the title.
       std::string title = GetTitle();
+      std::string server_legal_title;
+      SyncAPINameToServerName(title, &server_legal_title);
       VLOG(1) << "Reading from legacy bookmark, manually returning title "
               << title;
       unencrypted_data_.CopyFrom(specifics);
-      unencrypted_data_.MutableExtension(sync_pb::bookmark)->set_title(title);
+      unencrypted_data_.MutableExtension(sync_pb::bookmark)->set_title(
+          server_legal_title);
     }
     return true;
   }

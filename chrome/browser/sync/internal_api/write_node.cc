@@ -32,18 +32,6 @@ namespace sync_api {
 
 static const char kDefaultNameForNewNodes[] = " ";
 
-//////////////////////////////////////////////////////////////////////////
-// Static helper functions.
-
-// When taking a name from the syncapi, append a space if it matches the
-// pattern of a server-illegal name followed by zero or more spaces.
-static void SyncAPINameToServerName(const std::wstring& sync_api_name,
-                                    std::string* out) {
-  *out = WideToUTF8(sync_api_name);
-  if (IsNameServerIllegalAfterTrimming(*out))
-    out->append(" ");
-}
-
 bool WriteNode::UpdateEntryWithEncryption(
     browser_sync::Cryptographer* cryptographer,
     const sync_pb::EntitySpecifics& new_specifics,
@@ -122,7 +110,7 @@ void WriteNode::SetIsFolder(bool folder) {
 void WriteNode::SetTitle(const std::wstring& title) {
   sync_pb::EntitySpecifics specifics = GetEntitySpecifics();
   std::string server_legal_name;
-  SyncAPINameToServerName(title, &server_legal_name);
+  SyncAPINameToServerName(WideToUTF8(title), &server_legal_name);
 
   string old_name = entry_->Get(syncable::NON_UNIQUE_NAME);
 

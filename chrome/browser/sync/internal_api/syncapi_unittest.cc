@@ -24,6 +24,7 @@
 #include "chrome/browser/sync/engine/model_safe_worker.h"
 #include "chrome/browser/sync/engine/nigori_util.h"
 #include "chrome/browser/sync/internal_api/change_record.h"
+#include "chrome/browser/sync/engine/syncapi_internal.h"
 #include "chrome/browser/sync/internal_api/http_post_provider_factory.h"
 #include "chrome/browser/sync/internal_api/http_post_provider_interface.h"
 #include "chrome/browser/sync/internal_api/read_node.h"
@@ -1493,17 +1494,25 @@ TEST_F(SyncManagerTest, SetPassphraseWithEmptyPasswordNode) {
 // Friended by WriteNode, so can't be in an anonymouse namespace.
 TEST_F(SyncManagerTest, EncryptBookmarksWithLegacyData) {
   EXPECT_TRUE(SetUpEncryption());
-  std::string title = "Google";
+  std::string title;
+  SyncAPINameToServerName("Google", &title);
   std::string url = "http://www.google.com";
+  std::string raw_title2 = "..";  // An invalid cosmo title.
+  std::string title2;
+  SyncAPINameToServerName(raw_title2, &title2);
+  std::string url2 = "http://www.bla.com";
 
   // Create a bookmark using the legacy format.
-  int64 node1 = MakeNode(sync_manager_.GetUserShare(),
-           syncable::BOOKMARKS,
-           "testtag");
+  int64 node_id1 = MakeNode(sync_manager_.GetUserShare(),
+      syncable::BOOKMARKS,
+      "testtag");
+  int64 node_id2 = MakeNode(sync_manager_.GetUserShare(),
+      syncable::BOOKMARKS,
+      "testtag2");
   {
     WriteTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
     WriteNode node(&trans);
-    EXPECT_TRUE(node.InitByIdLookup(node1));
+    EXPECT_TRUE(node.InitByIdLookup(node_id1));
 
     sync_pb::EntitySpecifics entity_specifics;
     entity_specifics.MutableExtension(sync_pb::bookmark)->set_url(url);
@@ -1512,16 +1521,36 @@ TEST_F(SyncManagerTest, EncryptBookmarksWithLegacyData) {
     // Set the old style title.
     syncable::MutableEntry* node_entry = node.entry_;
     node_entry->Put(syncable::NON_UNIQUE_NAME, title);
+
+    WriteNode node2(&trans);
+    EXPECT_TRUE(node2.InitByIdLookup(node_id2));
+
+    sync_pb::EntitySpecifics entity_specifics2;
+    entity_specifics2.MutableExtension(sync_pb::bookmark)->set_url(url2);
+    node2.SetEntitySpecifics(entity_specifics2);
+
+    // Set the old style title.
+    syncable::MutableEntry* node_entry2 = node2.entry_;
+    node_entry2->Put(syncable::NON_UNIQUE_NAME, title2);
   }
 
   {
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
     ReadNode node(&trans);
-    EXPECT_TRUE(node.InitByIdLookup(node1));
+    EXPECT_TRUE(node.InitByIdLookup(node_id1));
     EXPECT_EQ(syncable::BOOKMARKS, node.GetModelType());
     EXPECT_EQ(title, node.GetTitle());
     EXPECT_EQ(title, node.GetBookmarkSpecifics().title());
     EXPECT_EQ(url, node.GetBookmarkSpecifics().url());
+
+    ReadNode node2(&trans);
+    EXPECT_TRUE(node2.InitByIdLookup(node_id2));
+    EXPECT_EQ(syncable::BOOKMARKS, node2.GetModelType());
+    // We should de-canonicalize the title in GetTitle(), but the title in the
+    // specifics should be stored in the server legal form.
+    EXPECT_EQ(raw_title2, node2.GetTitle());
+    EXPECT_EQ(title2, node2.GetBookmarkSpecifics().title());
+    EXPECT_EQ(url2, node2.GetBookmarkSpecifics().url());
   }
 
   {
@@ -1545,11 +1574,20 @@ TEST_F(SyncManagerTest, EncryptBookmarksWithLegacyData) {
                                                    true /* is encrypted */));
 
     ReadNode node(&trans);
-    EXPECT_TRUE(node.InitByIdLookup(node1));
+    EXPECT_TRUE(node.InitByIdLookup(node_id1));
     EXPECT_EQ(syncable::BOOKMARKS, node.GetModelType());
     EXPECT_EQ(title, node.GetTitle());
     EXPECT_EQ(title, node.GetBookmarkSpecifics().title());
     EXPECT_EQ(url, node.GetBookmarkSpecifics().url());
+
+    ReadNode node2(&trans);
+    EXPECT_TRUE(node2.InitByIdLookup(node_id2));
+    EXPECT_EQ(syncable::BOOKMARKS, node2.GetModelType());
+    // We should de-canonicalize the title in GetTitle(), but the title in the
+    // specifics should be stored in the server legal form.
+    EXPECT_EQ(raw_title2, node2.GetTitle());
+    EXPECT_EQ(title2, node2.GetBookmarkSpecifics().title());
+    EXPECT_EQ(url2, node2.GetBookmarkSpecifics().url());
   }
 }
 
