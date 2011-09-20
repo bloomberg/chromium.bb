@@ -1983,17 +1983,6 @@
    fun:_ZNK7WebCore17HTMLPlugInElement11getInstanceEv
 }
 {
-   bug_42958_d
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN13NPObjectProxy10NPAllocateEP4_NPPP7NPClass
-   fun:_NPN_CreateObject
-   fun:_ZN6WebKit11WebBindings12createObjectEP4_NPPP7NPClass
-   fun:_ZN13NPObjectProxy6CreateEP13NPChannelBaseiiRK4GURL
-   fun:_ZN14WebPluginProxy23GetWindowScriptNPObjectEv
-   fun:NPN_GetValue
-}
-{
    bug_43471
    Memcheck:Leak
    fun:_Znw*
@@ -3016,7 +3005,6 @@
    fun:_ZN13NPObjectProxy10NPAllocateEP4_NPPP7NPClass
    fun:_NPN_CreateObject
    fun:_ZN6WebKit11WebBindings12createObjectEP4_NPPP7NPClass
-   fun:_ZN13NPObjectProxy6CreateEP17NPChannelBaseiiRK4GURL
 }
 {
    Bug_69934_b
