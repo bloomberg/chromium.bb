@@ -27,12 +27,12 @@
 #include "content/common/db_message_filter.h"
 #include "content/common/dom_storage_messages.h"
 #include "content/common/gpu/gpu_messages.h"
+#include "content/common/npobject_util.h"
 #include "content/common/plugin_messages.h"
 #include "content/common/renderer_preferences.h"
 #include "content/common/resource_messages.h"
 #include "content/common/view_messages.h"
 #include "content/common/web_database_observer_impl.h"
-#include "content/plugin/npobject_util.h"
 #include "content/renderer/content_renderer_client.h"
 #include "content/renderer/devtools_agent_filter.h"
 #include "content/renderer/gpu/gpu_channel_host.h"
@@ -72,7 +72,6 @@
 // TODO(port)
 #if defined(OS_WIN)
 #include "content/common/child_process_messages.h"
-#include "content/plugin/plugin_channel.h"
 #else
 #include "base/memory/scoped_handle.h"
 #include "content/common/np_channel_base.h"

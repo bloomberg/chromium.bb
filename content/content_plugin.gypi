@@ -16,12 +16,6 @@
         # All .cc, .h, .m, and .mm files under plugins except for tests and
         # mocks.
         'plugin/content_plugin_client.h',
-        'plugin/npobject_proxy.cc',
-        'plugin/npobject_proxy.h',
-        'plugin/npobject_stub.cc',
-        'plugin/npobject_stub.h',
-        'plugin/npobject_util.cc',
-        'plugin/npobject_util.h',
         'plugin/plugin_channel.cc',
         'plugin/plugin_channel.h',
         'plugin/plugin_interpose_util_mac.mm',

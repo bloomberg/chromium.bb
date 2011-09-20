@@ -5,8 +5,8 @@
 // A proxy for NPObject that sends all calls to the object to an NPObjectStub
 // running in a different process.
 
-#ifndef CONTENT_PLUGIN_NPOBJECT_PROXY_H_
-#define CONTENT_PLUGIN_NPOBJECT_PROXY_H_
+#ifndef CONTENT_COMMON_NPOBJECT_PROXY_H_
+#define CONTENT_COMMON_NPOBJECT_PROXY_H_
 #pragma once
 
 #include "base/memory/ref_counted.h"
@@ -120,4 +120,4 @@ class NPObjectProxy : public IPC::Channel::Listener,
   GURL page_url_;
 };
 
-#endif  // CONTENT_PLUGIN_NPOBJECT_PROXY_H_
+#endif  // CONTENT_COMMON_NPOBJECT_PROXY_H_

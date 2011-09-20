@@ -5,8 +5,8 @@
 // A class that receives IPC messages from an NPObjectProxy and calls the real
 // NPObject.
 
-#ifndef CONTENT_PLUGIN_NPOBJECT_STUB_H_
-#define CONTENT_PLUGIN_NPOBJECT_STUB_H_
+#ifndef CONTENT_COMMON_NPOBJECT_STUB_H_
+#define CONTENT_COMMON_NPOBJECT_STUB_H_
 #pragma once
 
 #include <vector>
@@ -92,4 +92,4 @@ class NPObjectStub : public IPC::Channel::Listener,
   GURL page_url_;
 };
 
-#endif  // CONTENT_PLUGIN_NPOBJECT_STUB_H_
+#endif  // CONTENT_COMMON_NPOBJECT_STUB_H_

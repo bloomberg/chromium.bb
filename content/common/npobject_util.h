@@ -4,8 +4,8 @@
 //
 // Helper functions that are used by the NPObject proxy and stub.
 
-#ifndef CONTENT_PLUGIN_NPOBJECT_UTIL_H_
-#define CONTENT_PLUGIN_NPOBJECT_UTIL_H_
+#ifndef CONTENT_COMMON_NPOBJECT_UTIL_H_
+#define CONTENT_COMMON_NPOBJECT_UTIL_H_
 #pragma once
 
 #include "build/build_config.h"
@@ -14,7 +14,7 @@
 #include <windows.h>
 #endif
 
-#include "content/plugin/npobject_stub.h"
+#include "content/common/npobject_stub.h"
 
 class GURL;
 class NPObjectProxy;
@@ -70,4 +70,4 @@ bool CreateNPVariant(const NPVariant_Param& param,
 HANDLE GetMessageBoxEvent(HWND hwnd);
 #endif  // defined(OS_WIN)
 
-#endif  // CONTENT_PLUGIN_NPOBJECT_UTIL_H_
+#endif  // CONTENT_COMMON_NPOBJECT_UTIL_H_

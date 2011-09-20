@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/plugin/npobject_util.h"
+#include "content/common/npobject_util.h"
 
 #include "base/string_util.h"
 #include "content/common/np_channel_base.h"
+#include "content/common/npobject_proxy.h"
 #include "content/common/plugin_messages.h"
-#include "content/plugin/npobject_proxy.h"
 #include "third_party/npapi/bindings/nphostapi.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebBindings.h"
 #include "webkit/plugins/npapi/plugin_host.h"
