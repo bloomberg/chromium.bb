@@ -30,9 +30,13 @@ class ContextGroup;
 class GLES2Util;
 
 struct DisallowedExtensions {
-  DisallowedExtensions() : multisampling(false) {}
+  DisallowedExtensions()
+      : multisampling(false),
+        driver_bug_workarounds(false) {
+  }
 
   bool multisampling;
+  bool driver_bug_workarounds;
 };
 
 // This class implements the AsyncAPIInterface interface, decoding GLES2

@@ -40,6 +40,7 @@ extern const char kDisableFileSystem[];
 extern const char kDisableGeolocation[];
 CONTENT_EXPORT extern const char kDisableGLMultisampling[];
 extern const char kDisableGLSLTranslator[];
+extern const char kDisableGpuDriverBugWorkarounds[];
 extern const char kDisableGpuSandbox[];
 extern const char kDisableGpuWatchdog[];
 CONTENT_EXPORT extern const char kDisableHangMonitor[];

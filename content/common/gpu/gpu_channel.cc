@@ -43,6 +43,8 @@ GpuChannel::GpuChannel(GpuChannelManager* gpu_channel_manager,
   log_messages_ = command_line->HasSwitch(switches::kLogPluginMessages);
   disallowed_extensions_.multisampling =
       command_line->HasSwitch(switches::kDisableGLMultisampling);
+  disallowed_extensions_.driver_bug_workarounds =
+      command_line->HasSwitch(switches::kDisableGpuDriverBugWorkarounds);
 }
 
 GpuChannel::~GpuChannel() {

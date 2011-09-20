@@ -70,7 +70,8 @@ namespace gles2 {
 
 ShaderTranslator::ShaderTranslator()
     : compiler_(NULL),
-      implementation_is_glsl_es_(false) {
+      implementation_is_glsl_es_(false),
+      needs_built_in_function_emulation_(false) {
 }
 
 ShaderTranslator::~ShaderTranslator() {
@@ -78,10 +79,13 @@ ShaderTranslator::~ShaderTranslator() {
     ShDestruct(compiler_);
 }
 
-bool ShaderTranslator::Init(ShShaderType shader_type,
-                            ShShaderSpec shader_spec,
-                            const ShBuiltInResources* resources,
-                            bool implementation_is_glsl_es) {
+bool ShaderTranslator::Init(
+    ShShaderType shader_type,
+    ShShaderSpec shader_spec,
+    const ShBuiltInResources* resources,
+    ShaderTranslatorInterface::GlslImplementationType glsl_implementation_type,
+    ShaderTranslatorInterface::GlslBuiltInFunctionBehavior
+        glsl_built_in_function_behavior) {
   // Make sure Init is called only once.
   DCHECK(compiler_ == NULL);
   DCHECK(shader_type == SH_FRAGMENT_SHADER || shader_type == SH_VERTEX_SHADER);
@@ -92,11 +96,13 @@ bool ShaderTranslator::Init(ShShaderType shader_type,
     return false;
 
   ShShaderOutput shader_output =
-      implementation_is_glsl_es ? SH_ESSL_OUTPUT : SH_GLSL_OUTPUT;
+      (glsl_implementation_type == kGlslES ? SH_ESSL_OUTPUT : SH_GLSL_OUTPUT);
 
   compiler_ = ShConstructCompiler(
       shader_type, shader_spec, shader_output, resources);
-  implementation_is_glsl_es_ = implementation_is_glsl_es;
+  implementation_is_glsl_es_ = (glsl_implementation_type == kGlslES);
+  needs_built_in_function_emulation_ =
+      (glsl_built_in_function_behavior == kGlslBuiltInFunctionEmulated);
   return compiler_ != NULL;
 }
 
@@ -109,6 +115,8 @@ bool ShaderTranslator::Translate(const char* shader) {
   bool success = false;
   int compile_options =
       SH_OBJECT_CODE | SH_ATTRIBUTES_UNIFORMS | SH_MAP_LONG_VARIABLE_NAMES;
+  if (needs_built_in_function_emulation_)
+    compile_options |= SH_EMULATE_BUILT_IN_FUNCTIONS;
   if (ShCompile(compiler_, &shader, 1, compile_options)) {
     success = true;
     // Get translated shader.

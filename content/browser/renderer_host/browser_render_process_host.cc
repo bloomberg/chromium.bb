@@ -544,6 +544,7 @@ void BrowserRenderProcessHost::PropagateBrowserCommandLineToRenderer(
     switches::kDisableGeolocation,
     switches::kDisableGLMultisampling,
     switches::kDisableGLSLTranslator,
+    switches::kDisableGpuDriverBugWorkarounds,
     switches::kDisableGpuVsync,
     switches::kDisableIndexedDatabase,
     switches::kDisableJavaScriptI18NAPI,

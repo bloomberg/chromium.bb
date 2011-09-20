@@ -1322,6 +1322,7 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   GLenum reset_status_;
 
   bool needs_mac_nvidia_driver_workaround_;
+  bool needs_glsl_built_in_function_emulation_;
 
   DISALLOW_COPY_AND_ASSIGN(GLES2DecoderImpl);
 };
@@ -1682,7 +1683,8 @@ GLES2DecoderImpl::GLES2DecoderImpl(ContextGroup* group)
       frame_number_(0),
       has_arb_robustness_(false),
       reset_status_(GL_NO_ERROR),
-      needs_mac_nvidia_driver_workaround_(false) {
+      needs_mac_nvidia_driver_workaround_(false),
+      needs_glsl_built_in_function_emulation_(false) {
   DCHECK(group);
 
   attrib_0_value_.v[0] = 0.0f;
@@ -1936,12 +1938,19 @@ bool GLES2DecoderImpl::Initialize(
 
   has_arb_robustness_ = context->HasExtension("GL_ARB_robustness");
 
+  if (!disallowed_extensions_.driver_bug_workarounds) {
 #if defined(OS_MACOSX)
-  const char* vendor_str = reinterpret_cast<const char*>(
-      glGetString(GL_VENDOR));
-  needs_mac_nvidia_driver_workaround_ =
-      vendor_str && strstr(vendor_str, "NVIDIA");
+    const char* vendor_str = reinterpret_cast<const char*>(
+        glGetString(GL_VENDOR));
+    needs_mac_nvidia_driver_workaround_ =
+        vendor_str && strstr(vendor_str, "NVIDIA");
+    needs_glsl_built_in_function_emulation_ =
+        vendor_str && (strstr(vendor_str, "ATI") || strstr(vendor_str, "AMD"));
+#elif defined(OS_WIN)
+    if (gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2)
+      needs_glsl_built_in_function_emulation_ = true;
 #endif
+  }
 
   if (!InitializeShaderTranslator()) {
     return false;
@@ -1985,17 +1994,24 @@ bool GLES2DecoderImpl::InitializeShaderTranslator() {
   vertex_translator_.reset(new ShaderTranslator);
   ShShaderSpec shader_spec = feature_info_->feature_flags().chromium_webglsl ?
       SH_WEBGL_SPEC : SH_GLES2_SPEC;
-  bool is_glsl_es =
-      gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2;
+  ShaderTranslatorInterface::GlslImplementationType implementation_type =
+      gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2 ?
+          ShaderTranslatorInterface::kGlslES : ShaderTranslatorInterface::kGlsl;
+  ShaderTranslatorInterface::GlslBuiltInFunctionBehavior function_behavior =
+      needs_glsl_built_in_function_emulation_ ?
+          ShaderTranslatorInterface::kGlslBuiltInFunctionEmulated :
+          ShaderTranslatorInterface::kGlslBuiltInFunctionOriginal;
   if (!vertex_translator_->Init(
-          SH_VERTEX_SHADER, shader_spec, &resources, is_glsl_es)) {
+          SH_VERTEX_SHADER, shader_spec, &resources,
+          implementation_type, function_behavior)) {
     LOG(ERROR) << "Could not initialize vertex shader translator.";
     Destroy();
     return false;
   }
   fragment_translator_.reset(new ShaderTranslator);
   if (!fragment_translator_->Init(
-          SH_FRAGMENT_SHADER, shader_spec, &resources, is_glsl_es)) {
+          SH_FRAGMENT_SHADER, shader_spec, &resources,
+          implementation_type, function_behavior)) {
     LOG(ERROR) << "Could not initialize fragment shader translator.";
     Destroy();
     return false;

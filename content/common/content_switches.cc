@@ -92,6 +92,10 @@ const char kDisableGLMultisampling[]        = "disable-gl-multisampling";
 // Disable the GLSL translator.
 const char kDisableGLSLTranslator[]         = "disable-glsl-translator";
 
+// Disable workarounds for various GPU driver bugs.
+const char kDisableGpuDriverBugWorkarounds[] =
+    "disable-gpu-driver-bug-workarounds";
+
 // Disable the GPU process sandbox.
 const char kDisableGpuSandbox[]             = "disable-gpu-sandbox";
 

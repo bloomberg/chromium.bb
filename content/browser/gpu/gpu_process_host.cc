@@ -544,6 +544,7 @@ bool GpuProcessHost::LaunchGpuProcess() {
   static const char* const kSwitchNames[] = {
     switches::kDisableBreakpad,
     switches::kDisableGLMultisampling,
+    switches::kDisableGpuDriverBugWorkarounds,
     switches::kDisableGpuSandbox,
     switches::kDisableGpuVsync,
     switches::kDisableGpuWatchdog,

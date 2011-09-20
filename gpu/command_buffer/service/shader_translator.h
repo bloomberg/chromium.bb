@@ -19,6 +19,16 @@ namespace gles2 {
 // validates GLSL ES 2.0 shaders on a true GLSL ES implementation.
 class ShaderTranslatorInterface {
  public:
+  enum GlslImplementationType {
+    kGlsl,
+    kGlslES
+  };
+
+  enum GlslBuiltInFunctionBehavior {
+    kGlslBuiltInFunctionOriginal,
+    kGlslBuiltInFunctionEmulated
+  };
+
   virtual ~ShaderTranslatorInterface() { }
 
   // Initializes the translator.
@@ -27,7 +37,8 @@ class ShaderTranslatorInterface {
       ShShaderType shader_type,
       ShShaderSpec shader_spec,
       const ShBuiltInResources* resources,
-      bool implementation_is_glsl_es) = 0;
+      GlslImplementationType glsl_implementation_type,
+      GlslBuiltInFunctionBehavior glsl_built_in_function_behavior) = 0;
 
   // Translates the given shader source.
   // Returns true if translation is successful, false otherwise.
@@ -71,7 +82,8 @@ class ShaderTranslator : public ShaderTranslatorInterface {
       ShShaderType shader_type,
       ShShaderSpec shader_spec,
       const ShBuiltInResources* resources,
-      bool implementation_is_glsl_es);
+      GlslImplementationType glsl_implementation_type,
+      GlslBuiltInFunctionBehavior glsl_built_in_function_behavior);
 
   // Overridden from ShaderTranslatorInterface.
   virtual bool Translate(const char* shader);
@@ -93,6 +105,7 @@ class ShaderTranslator : public ShaderTranslatorInterface {
   VariableMap attrib_map_;
   VariableMap uniform_map_;
   bool implementation_is_glsl_es_;
+  bool needs_built_in_function_emulation_;
 
   DISALLOW_COPY_AND_ASSIGN(ShaderTranslator);
 };

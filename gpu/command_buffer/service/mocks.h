@@ -76,11 +76,12 @@ class MockShaderTranslator : public ShaderTranslatorInterface {
   MockShaderTranslator();
   virtual ~MockShaderTranslator();
 
-  MOCK_METHOD4(Init, bool(
+  MOCK_METHOD5(Init, bool(
       ShShaderType shader_type,
       ShShaderSpec shader_spec,
       const ShBuiltInResources* resources,
-      bool implementation_is_glsl_es));
+      GlslImplementationType glsl_implementation_type,
+      GlslBuiltInFunctionBehavior glsl_built_in_function_behavior));
   MOCK_METHOD1(Translate, bool(const char* shader));
   MOCK_CONST_METHOD0(translated_shader, const char*());
   MOCK_CONST_METHOD0(info_log, const char*());
