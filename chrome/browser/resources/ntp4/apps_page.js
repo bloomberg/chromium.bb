@@ -188,10 +188,7 @@ cr.define('ntp4', function() {
         this.useSmallIcon_ = true;
 
       var appImg = this.ownerDocument.createElement('img');
-      // This is temporary (setIcon/loadIcon will overwrite it) but is visible
-      // before the page is shown (e.g. if switching from most visited to
-      // bookmarks).
-      appImg.src = 'chrome://theme/IDR_APP_DEFAULT_ICON';
+      appImg.classList.add('invisible');
       this.appImg_ = appImg;
       this.setIcon();
       appImgContainer.appendChild(appImg);
@@ -284,7 +281,7 @@ cr.define('ntp4', function() {
       }
 
       this.appImgSrc_ = src;
-      this.classList.add('default-icon');
+      this.classList.add('icon-loading');
     },
 
     /**
@@ -292,10 +289,12 @@ cr.define('ntp4', function() {
      * icon resource.
      */
     loadIcon: function() {
-      if (this.appImgSrc_)
+      if (this.appImgSrc_) {
         this.appImg_.src = this.appImgSrc_;
-      this.appImgSrc_ = null;
-      this.classList.remove('default-icon');
+        this.appImg_.classList.remove('invisible');
+        this.appImgSrc_ = null;
+      }
+      this.classList.remove('icon-loading');
     },
 
     // Shows a notification text below the app icon and stuffs the attributes
@@ -610,7 +609,7 @@ cr.define('ntp4', function() {
      * @private
      */
     onCardSelected_: function(e) {
-      var apps = this.querySelectorAll('.app.default-icon');
+      var apps = this.querySelectorAll('.app.icon-loading');
       for (var i = 0; i < apps.length; i++) {
         apps[i].loadIcon();
       }
