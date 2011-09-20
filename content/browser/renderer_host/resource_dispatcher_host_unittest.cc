@@ -324,8 +324,6 @@ class ResourceDispatcherHostTest : public testing::Test,
 
   void CompleteStartRequest(int request_id);
 
-  int GetOutstandingRequestsMemoryCost();
-
   void EnsureTestSchemeIsAllowed() {
     static bool have_white_listed_test_scheme = false;
 
@@ -441,10 +439,6 @@ void ResourceDispatcherHostTest::CompleteStartRequest(int request_id) {
     URLRequestTestDelayedStartJob::CompleteStart(req);
 }
 
-int ResourceDispatcherHostTest::GetOutstandingRequestsMemoryCost() {
-  return host_.GetOutstandingRequestsMemoryCost(filter_->child_id());
-}
-
 void CheckSuccessfulRequest(const std::vector<IPC::Message>& messages,
                             const std::string& reference_data) {
   // A successful request will have received 4 messages:
@@ -487,7 +481,7 @@ void CheckSuccessfulRequest(const std::vector<IPC::Message>& messages,
 
 // Tests whether many messages get dispatched properly.
 TEST_F(ResourceDispatcherHostTest, TestMany) {
-  EXPECT_EQ(0, GetOutstandingRequestsMemoryCost());
+  EXPECT_EQ(0, host_.GetOutstandingRequestsMemoryCost(0));
 
   MakeTestRequest(0, 1, net::URLRequestTestJob::test_url_1());
   MakeTestRequest(0, 2, net::URLRequestTestJob::test_url_2());
@@ -496,7 +490,7 @@ TEST_F(ResourceDispatcherHostTest, TestMany) {
   // flush all the pending requests
   while (net::URLRequestTestJob::ProcessOnePendingMessage()) {}
 
-  EXPECT_EQ(0, GetOutstandingRequestsMemoryCost());
+  EXPECT_EQ(0, host_.GetOutstandingRequestsMemoryCost(0));
 
   // sorts out all the messages we saw by request
   ResourceIPCAccumulator::ClassifiedMessages msgs;
@@ -513,7 +507,7 @@ TEST_F(ResourceDispatcherHostTest, TestMany) {
 // Tests whether messages get canceled properly. We issue three requests,
 // cancel one of them, and make sure that each sent the proper notifications.
 TEST_F(ResourceDispatcherHostTest, Cancel) {
-  EXPECT_EQ(0, GetOutstandingRequestsMemoryCost());
+  EXPECT_EQ(0, host_.GetOutstandingRequestsMemoryCost(0));
 
   MakeTestRequest(0, 1, net::URLRequestTestJob::test_url_1());
   MakeTestRequest(0, 2, net::URLRequestTestJob::test_url_2());
@@ -524,7 +518,7 @@ TEST_F(ResourceDispatcherHostTest, Cancel) {
   while (net::URLRequestTestJob::ProcessOnePendingMessage()) {}
   MessageLoop::current()->RunAllPending();
 
-  EXPECT_EQ(0, GetOutstandingRequestsMemoryCost());
+  EXPECT_EQ(0, host_.GetOutstandingRequestsMemoryCost(0));
 
   ResourceIPCAccumulator::ClassifiedMessages msgs;
   accum_.GetClassifiedMessages(&msgs);
@@ -551,7 +545,7 @@ TEST_F(ResourceDispatcherHostTest, Cancel) {
 }
 
 TEST_F(ResourceDispatcherHostTest, PausedStartError) {
-  EXPECT_EQ(0, GetOutstandingRequestsMemoryCost());
+  EXPECT_EQ(0, host_.GetOutstandingRequestsMemoryCost(0));
 
   SetDelayedStartJobGeneration(true);
   MakeTestRequest(0, 1, net::URLRequestTestJob::test_url_error());
@@ -566,7 +560,7 @@ TEST_F(ResourceDispatcherHostTest, PausedStartError) {
 }
 
 TEST_F(ResourceDispatcherHostTest, PausedCancel) {
-  EXPECT_EQ(0, GetOutstandingRequestsMemoryCost());
+  EXPECT_EQ(0, host_.GetOutstandingRequestsMemoryCost(0));
 
   // Test cancel when paused after request start.
   MakeTestRequest(0, 1, net::URLRequestTestJob::test_url_2());
@@ -577,7 +571,7 @@ TEST_F(ResourceDispatcherHostTest, PausedCancel) {
   while (net::URLRequestTestJob::ProcessOnePendingMessage()) {}
   MessageLoop::current()->RunAllPending();
 
-  EXPECT_EQ(0, GetOutstandingRequestsMemoryCost());
+  EXPECT_EQ(0, host_.GetOutstandingRequestsMemoryCost(0));
 
   ResourceIPCAccumulator::ClassifiedMessages msgs;
   accum_.GetClassifiedMessages(&msgs);
@@ -629,7 +623,7 @@ TEST_F(ResourceDispatcherHostTest, TestProcessCancel) {
   ResourceHostMsg_Request request = CreateResourceRequest(
       "GET", ResourceType::SUB_RESOURCE, net::URLRequestTestJob::test_url_1());
 
-  EXPECT_EQ(0, GetOutstandingRequestsMemoryCost());
+  EXPECT_EQ(0, host_.GetOutstandingRequestsMemoryCost(0));
 
   MakeTestRequest(test_filter.get(), 0, 1,
                   net::URLRequestTestJob::test_url_1());
@@ -663,7 +657,7 @@ TEST_F(ResourceDispatcherHostTest, TestProcessCancel) {
   while (net::URLRequestTestJob::ProcessOnePendingMessage()) {}
 
   EXPECT_EQ(0, host_.pending_requests());
-  EXPECT_EQ(0, GetOutstandingRequestsMemoryCost());
+  EXPECT_EQ(0, host_.GetOutstandingRequestsMemoryCost(filter_->child_id()));
 
   // The test delegate should not have gotten any messages after being canceled.
   ASSERT_EQ(0, test_filter->received_after_canceled_);
@@ -677,7 +671,7 @@ TEST_F(ResourceDispatcherHostTest, TestProcessCancel) {
 
 // Tests blocking and resuming requests.
 TEST_F(ResourceDispatcherHostTest, TestBlockingResumingRequests) {
-  EXPECT_EQ(0, GetOutstandingRequestsMemoryCost());
+  EXPECT_EQ(0, host_.GetOutstandingRequestsMemoryCost(filter_->child_id()));
 
   host_.BlockRequestsForRoute(filter_->child_id(), 1);
   host_.BlockRequestsForRoute(filter_->child_id(), 2);
@@ -728,7 +722,7 @@ TEST_F(ResourceDispatcherHostTest, TestBlockingResumingRequests) {
   KickOffRequest();
   while (net::URLRequestTestJob::ProcessOnePendingMessage()) {}
 
-  EXPECT_EQ(0, GetOutstandingRequestsMemoryCost());
+  EXPECT_EQ(0, host_.GetOutstandingRequestsMemoryCost(filter_->child_id()));
 
   msgs.clear();
   accum_.GetClassifiedMessages(&msgs);
@@ -739,7 +733,7 @@ TEST_F(ResourceDispatcherHostTest, TestBlockingResumingRequests) {
 
 // Tests blocking and canceling requests.
 TEST_F(ResourceDispatcherHostTest, TestBlockingCancelingRequests) {
-  EXPECT_EQ(0, GetOutstandingRequestsMemoryCost());
+  EXPECT_EQ(0, host_.GetOutstandingRequestsMemoryCost(filter_->child_id()));
 
   host_.BlockRequestsForRoute(filter_->child_id(), 1);
 
@@ -766,7 +760,7 @@ TEST_F(ResourceDispatcherHostTest, TestBlockingCancelingRequests) {
   KickOffRequest();
   while (net::URLRequestTestJob::ProcessOnePendingMessage()) {}
 
-  EXPECT_EQ(0, GetOutstandingRequestsMemoryCost());
+  EXPECT_EQ(0, host_.GetOutstandingRequestsMemoryCost(filter_->child_id()));
 
   msgs.clear();
   accum_.GetClassifiedMessages(&msgs);
@@ -897,7 +891,7 @@ TEST_F(ResourceDispatcherHostTest, IncrementOutstandingRequestsMemoryCost) {
 // Test that when too many requests are outstanding for a particular
 // render_process_host_id, any subsequent request from it fails.
 TEST_F(ResourceDispatcherHostTest, TooManyOutstandingRequests) {
-  EXPECT_EQ(0, GetOutstandingRequestsMemoryCost());
+  EXPECT_EQ(0, host_.GetOutstandingRequestsMemoryCost(filter_->child_id()));
 
   // Expected cost of each request as measured by
   // ResourceDispatcherHost::CalculateApproximateMemoryCost().
@@ -940,7 +934,7 @@ TEST_F(ResourceDispatcherHostTest, TooManyOutstandingRequests) {
   while (net::URLRequestTestJob::ProcessOnePendingMessage()) {}
   MessageLoop::current()->RunAllPending();
 
-  EXPECT_EQ(0, GetOutstandingRequestsMemoryCost());
+  EXPECT_EQ(0, host_.GetOutstandingRequestsMemoryCost(filter_->child_id()));
 
   // Sorts out all the messages we saw by request.
   ResourceIPCAccumulator::ClassifiedMessages msgs;
@@ -984,7 +978,7 @@ TEST_F(ResourceDispatcherHostTest, TooManyOutstandingRequests) {
 
 // Tests that we sniff the mime type for a simple request.
 TEST_F(ResourceDispatcherHostTest, MimeSniffed) {
-  EXPECT_EQ(0, GetOutstandingRequestsMemoryCost());
+  EXPECT_EQ(0, host_.GetOutstandingRequestsMemoryCost(0));
 
   std::string response("HTTP/1.1 200 OK\n\n");
   std::string raw_headers(net::HttpUtil::AssembleRawHeaders(response.data(),
@@ -997,7 +991,8 @@ TEST_F(ResourceDispatcherHostTest, MimeSniffed) {
 
   // Flush all pending requests.
   while (net::URLRequestTestJob::ProcessOnePendingMessage()) {}
-  EXPECT_EQ(0, GetOutstandingRequestsMemoryCost());
+
+  EXPECT_EQ(0, host_.GetOutstandingRequestsMemoryCost(0));
 
   // Sorts out all the messages we saw by request.
   ResourceIPCAccumulator::ClassifiedMessages msgs;
@@ -1011,7 +1006,7 @@ TEST_F(ResourceDispatcherHostTest, MimeSniffed) {
 
 // Tests that we don't sniff the mime type when the server provides one.
 TEST_F(ResourceDispatcherHostTest, MimeNotSniffed) {
-  EXPECT_EQ(0, GetOutstandingRequestsMemoryCost());
+  EXPECT_EQ(0, host_.GetOutstandingRequestsMemoryCost(0));
 
   std::string response("HTTP/1.1 200 OK\n"
                        "Content-type: image/jpeg\n\n");
@@ -1025,7 +1020,8 @@ TEST_F(ResourceDispatcherHostTest, MimeNotSniffed) {
 
   // Flush all pending requests.
   while (net::URLRequestTestJob::ProcessOnePendingMessage()) {}
-  EXPECT_EQ(0, GetOutstandingRequestsMemoryCost());
+
+  EXPECT_EQ(0, host_.GetOutstandingRequestsMemoryCost(0));
 
   // Sorts out all the messages we saw by request.
   ResourceIPCAccumulator::ClassifiedMessages msgs;
@@ -1039,7 +1035,7 @@ TEST_F(ResourceDispatcherHostTest, MimeNotSniffed) {
 
 // Tests that we don't sniff the mime type when there is no message body.
 TEST_F(ResourceDispatcherHostTest, MimeNotSniffed2) {
-  EXPECT_EQ(0, GetOutstandingRequestsMemoryCost());
+  EXPECT_EQ(0, host_.GetOutstandingRequestsMemoryCost(0));
 
   std::string response("HTTP/1.1 304 Not Modified\n\n");
   std::string raw_headers(net::HttpUtil::AssembleRawHeaders(response.data(),
@@ -1052,7 +1048,8 @@ TEST_F(ResourceDispatcherHostTest, MimeNotSniffed2) {
 
   // Flush all pending requests.
   while (net::URLRequestTestJob::ProcessOnePendingMessage()) {}
-  EXPECT_EQ(0, GetOutstandingRequestsMemoryCost());
+
+  EXPECT_EQ(0, host_.GetOutstandingRequestsMemoryCost(0));
 
   // Sorts out all the messages we saw by request.
   ResourceIPCAccumulator::ClassifiedMessages msgs;
@@ -1065,7 +1062,7 @@ TEST_F(ResourceDispatcherHostTest, MimeNotSniffed2) {
 }
 
 TEST_F(ResourceDispatcherHostTest, MimeSniff204) {
-  EXPECT_EQ(0, GetOutstandingRequestsMemoryCost());
+  EXPECT_EQ(0, host_.GetOutstandingRequestsMemoryCost(0));
 
   std::string response("HTTP/1.1 204 No Content\n\n");
   std::string raw_headers(net::HttpUtil::AssembleRawHeaders(response.data(),
@@ -1078,7 +1075,8 @@ TEST_F(ResourceDispatcherHostTest, MimeSniff204) {
 
   // Flush all pending requests.
   while (net::URLRequestTestJob::ProcessOnePendingMessage()) {}
-  EXPECT_EQ(0, GetOutstandingRequestsMemoryCost());
+
+  EXPECT_EQ(0, host_.GetOutstandingRequestsMemoryCost(0));
 
   // Sorts out all the messages we saw by request.
   ResourceIPCAccumulator::ClassifiedMessages msgs;
@@ -1092,7 +1090,7 @@ TEST_F(ResourceDispatcherHostTest, MimeSniff204) {
 
 // Tests for crbug.com/31266 (Non-2xx + application/octet-stream).
 TEST_F(ResourceDispatcherHostTest, ForbiddenDownload) {
-  EXPECT_EQ(0, GetOutstandingRequestsMemoryCost());
+  EXPECT_EQ(0, host_.GetOutstandingRequestsMemoryCost(0));
 
   std::string response("HTTP/1.1 403 Forbidden\n"
                        "Content-disposition: attachment; filename=blah\n"
@@ -1110,7 +1108,8 @@ TEST_F(ResourceDispatcherHostTest, ForbiddenDownload) {
 
   // Flush all pending requests.
   while (net::URLRequestTestJob::ProcessOnePendingMessage()) {}
-  EXPECT_EQ(0, GetOutstandingRequestsMemoryCost());
+
+  EXPECT_EQ(0, host_.GetOutstandingRequestsMemoryCost(0));
 
   // Sorts out all the messages we saw by request.
   ResourceIPCAccumulator::ClassifiedMessages msgs;
@@ -1169,8 +1168,7 @@ TEST_F(ResourceDispatcherHostTest, IgnoreCancelForDownloads) {
   EXPECT_EQ(1, host_.pending_requests());
 
   while (net::URLRequestTestJob::ProcessOnePendingMessage()) {}
-  message_loop_.RunAllPending();
-  EXPECT_EQ(0, GetOutstandingRequestsMemoryCost());
+  EXPECT_EQ(0, host_.GetOutstandingRequestsMemoryCost(0));
 }
 
 TEST_F(ResourceDispatcherHostTest, CancelRequestsForContext) {
