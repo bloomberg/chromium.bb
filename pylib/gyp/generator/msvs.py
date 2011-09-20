@@ -2642,7 +2642,7 @@ def _VerifySourcesExist(sources, root_dir):
       if '$' not in source:
         full_path = os.path.join(root_dir, source)
         if not os.path.exists(full_path):
-          print 'Error: Missing input file ' + full_path
+          print 'Warning: Missing input file ' + full_path
 
 
 def _GetMSBuildSources(spec, sources, exclusions, extension_to_rule_name,
