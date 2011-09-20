@@ -21,7 +21,7 @@ deps = {
     'src/googleurl':
         Var('git_url') + '/external/google-url.git@290665e5ec3f648c6d94f0a4e2d0f1c603f65b84',
     'src/native_client':
-        Var('git_url') + '/native_client/src/native_client.git@10219fc840ae97b2a66b1f8d9b3d924c696259f8',
+        Var('git_url') + '/native_client/src/native_client.git@acd3f95d95aeaeba2e47a13806d51584956f9483',
     'src/sdch/open-vcdiff':
         Var('git_url') + '/external/open-vcdiff.git@f1dd933c4e47a65889b4bba2a5f58b12aac53383',
     'src/seccompsandbox':
@@ -129,7 +129,7 @@ deps_os = {
         'src/third_party/lss':
             Var('git_url') + '/external/linux-syscall-support/lss.git@d4ba6b8d8c6ab24825d11d4e5b69920c41b36880',
         'src/third_party/openssl':
-            Var('git_url') + '/chromium/deps/openssl.git@29e645c65f3c148d8f3e9107ea1d8fb9fcb43cca',
+            Var('git_url') + '/chromium/deps/openssl.git@c12e2b6979ff54c83f69bf85f8915388ee2c668c',
         'src/third_party/swig/linux':
             Var('git_url') + '/chromium/deps/swig/linux.git@866b8e0e0e0cfe99ebe608260030916ca0c3f92d',
         'src/third_party/xdg-utils':
