@@ -28,6 +28,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSize.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURL.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebVideoFrame.h"
+#include "v8/include/v8.h"
 #include "webkit/glue/media/buffered_data_source.h"
 #include "webkit/glue/media/simple_data_source.h"
 #include "webkit/glue/media/media_stream_client.h"
@@ -42,6 +43,16 @@ using WebKit::WebSize;
 using media::PipelineStatus;
 
 namespace {
+
+// Amount of extra memory used by each player instance reported to V8.
+// It is not exact number -- first, it differs on different platforms,
+// and second, it is very hard to calculate. Instead, use some arbitrary
+// value that will cause garbage collection from time to time. We don't want
+// it to happen on every allocation, but don't want 5k players to sit in memory
+// either. Looks that chosen constant achieves both goals, at least for audio
+// objects. (Do not worry about video objects yet, JS programs do not create
+// thousands of them...)
+const int kPlayerExtraMemory = 1024 * 1024;
 
 // Limits the range of playback rate.
 //
@@ -121,6 +132,19 @@ bool WebMediaPlayerImpl::Initialize(
   if (!pipeline_message_loop) {
     NOTREACHED() << "Could not start PipelineThread";
     return false;
+  }
+
+  // Let V8 know we started new thread if we did not did it yet.
+  // Made separate task to avoid deletion of player currently being created.
+  // Also, delaying GC until after player starts gets rid of starting lag --
+  // collection happens in parallel with playing.
+  // TODO(enal): remove when we get rid of per-audio-stream thread.
+  if (destructor_or_task_had_run_.get() == NULL) {
+    destructor_or_task_had_run_ = new DestructorOrTaskHadRun();
+    main_loop_->PostTask(
+        FROM_HERE,
+        NewRunnableFunction(WebMediaPlayerImpl::UsesExtraMemoryTask,
+                            destructor_or_task_had_run_));
   }
 
   pipeline_ = new media::PipelineImpl(pipeline_message_loop, media_log_);
@@ -817,6 +841,15 @@ void WebMediaPlayerImpl::Destroy() {
     media::PipelineStatusNotification note;
     pipeline_->Stop(note.Callback());
     note.Wait();
+
+    // Let V8 know we are not using extra resources anymore.
+    if (destructor_or_task_had_run_.get() != NULL) {
+      if (destructor_or_task_had_run_->value())
+        v8::V8::AdjustAmountOfExternalAllocatedMemory(-kPlayerExtraMemory);
+      else
+        destructor_or_task_had_run_->set_value(true);
+    }
+    destructor_or_task_had_run_ = NULL;
   }
 
   message_loop_factory_.reset();
@@ -833,6 +866,14 @@ WebKit::WebMediaPlayerClient* WebMediaPlayerImpl::GetClient() {
   DCHECK(MessageLoop::current() == main_loop_);
   DCHECK(client_);
   return client_;
+}
+
+void WebMediaPlayerImpl::UsesExtraMemoryTask(
+    scoped_refptr<DestructorOrTaskHadRun> destructor_or_task_had_run) {
+  if (!destructor_or_task_had_run->value()) {
+    v8::V8::AdjustAmountOfExternalAllocatedMemory(kPlayerExtraMemory);
+    destructor_or_task_had_run->set_value(true);
+  }
 }
 
 }  // namespace webkit_glue
