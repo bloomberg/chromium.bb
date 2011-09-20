@@ -4,14 +4,11 @@
 
 #include "base/message_pump_x.h"
 
+#include <gdk/gdkx.h>
 #include <X11/extensions/XInput2.h>
 
 #include "base/basictypes.h"
 #include "base/message_loop.h"
-
-#if defined(TOOLKIT_USES_GTK)
-#include <gdk/gdkx.h>
-#endif
 
 namespace {
 
@@ -43,6 +40,10 @@ GSourceFuncs XSourceFuncs = {
   NULL
 };
 
+// A flag to disable GTK's message pump. This is intermediate step
+// to remove gtk and will be removed once migration is complete.
+bool use_gtk_message_pump = true;
+
 // The opcode used for checking events.
 int xiopcode = -1;
 
@@ -50,17 +51,11 @@ int xiopcode = -1;
 // connection to the display and owns it.
 Display* g_xdisplay = NULL;
 
-#if defined(TOOLKIT_USES_GTK)
-// A flag to disable GTK's message pump. This is intermediate step
-// to remove gtk and will be removed once migration is complete.
-bool use_gtk_message_pump = true;
-
 gboolean PlaceholderDispatch(GSource* source,
                              GSourceFunc cb,
                              gpointer data) {
   return TRUE;
 }
-#endif  // defined(TOOLKIT_USES_GTK)
 
 void InitializeXInput2(void) {
   Display* display = base::MessagePumpX::GetDefaultXDisplay();
@@ -88,62 +83,57 @@ void InitializeXInput2(void) {
 namespace base {
 
 MessagePumpX::MessagePumpX() : MessagePumpGlib(),
-#if defined(TOOLKIT_USES_GTK)
+    x_source_(NULL),
     gdksource_(NULL),
     dispatching_event_(false),
     capture_x_events_(0),
-    capture_gdk_events_(0),
-#endif
-    x_source_(NULL) {
-  InitializeXInput2();
-#if defined(TOOLKIT_USES_GTK)
+    capture_gdk_events_(0) {
   if (use_gtk_message_pump) {
     gdk_window_add_filter(NULL, &GdkEventFilter, this);
     gdk_event_handler_set(&EventDispatcherX, this, NULL);
   } else {
-    InitXSource();
+    GPollFD* x_poll = new GPollFD();
+    x_poll->fd = ConnectionNumber(g_xdisplay);
+    x_poll->events = G_IO_IN;
+
+    x_source_ = g_source_new(&XSourceFuncs, sizeof(GSource));
+    g_source_add_poll(x_source_, x_poll);
+    g_source_set_can_recurse(x_source_, FALSE);
+    g_source_attach(x_source_, g_main_context_default());
   }
+
+  InitializeXInput2();
   if (use_gtk_message_pump)
     InitializeEventsToCapture();
-#else
-  InitXSource();
-#endif
 }
 
 MessagePumpX::~MessagePumpX() {
-#if defined(TOOLKIT_USES_GTK)
   if (use_gtk_message_pump) {
     gdk_window_remove_filter(NULL, &GdkEventFilter, this);
     gdk_event_handler_set(reinterpret_cast<GdkEventFunc>(gtk_main_do_event),
         this, NULL);
-    return;
+  } else {
+    g_source_destroy(x_source_);
+    g_source_unref(x_source_);
+    XCloseDisplay(g_xdisplay);
+    g_xdisplay = NULL;
   }
-#endif
-
-  g_source_destroy(x_source_);
-  g_source_unref(x_source_);
-  XCloseDisplay(g_xdisplay);
-  g_xdisplay = NULL;
 }
 
-#if defined(TOOLKIT_USES_GTK)
 // static
 void MessagePumpX::DisableGtkMessagePump() {
   use_gtk_message_pump = false;
+  g_xdisplay = XOpenDisplay(NULL);
 }
-#endif
 
 // static
 Display* MessagePumpX::GetDefaultXDisplay() {
-#if defined(TOOLKIT_USES_GTK)
   if (use_gtk_message_pump) {
     static GdkDisplay* display = gdk_display_get_default();
     return display ? GDK_DISPLAY_XDISPLAY(display) : NULL;
+  } else {
+    return g_xdisplay;
   }
-#endif
-  if (!g_xdisplay)
-    g_xdisplay = XOpenDisplay(NULL);
-  return g_xdisplay;
 }
 
 // static
@@ -151,24 +141,9 @@ bool MessagePumpX::HasXInput2() {
   return xiopcode != -1;
 }
 
-void MessagePumpX::InitXSource() {
-  DCHECK(!x_source_);
-  GPollFD* x_poll = new GPollFD();
-  x_poll->fd = ConnectionNumber(g_xdisplay);
-  x_poll->events = G_IO_IN;
-
-  x_source_ = g_source_new(&XSourceFuncs, sizeof(GSource));
-  g_source_add_poll(x_source_, x_poll);
-  g_source_set_can_recurse(x_source_, FALSE);
-  g_source_attach(x_source_, g_main_context_default());
-}
-
 bool MessagePumpX::ShouldCaptureXEvent(XEvent* xev) {
-  return
-#if defined(TOOLKIT_USES_GTK)
-      (!use_gtk_message_pump || capture_x_events_[xev->type]) &&
-#endif
-      (xev->type != GenericEvent || xev->xcookie.extension == xiopcode);
+  return (!use_gtk_message_pump || capture_x_events_[xev->type])
+      && (xev->type != GenericEvent || xev->xcookie.extension == xiopcode);
 }
 
 bool MessagePumpX::ProcessXEvent(XEvent* xev) {
@@ -212,19 +187,16 @@ bool MessagePumpX::RunOnce(GMainContext* context, bool block) {
       XNextEvent(display, &xev);
       if (ProcessXEvent(&xev))
         return true;
-#if defined(TOOLKIT_USES_GTK)
     } else if (use_gtk_message_pump && gdksource_) {
       // TODO(sad): A couple of extra events can still sneak in during this.
       // Those should be sent back to the X queue from the dispatcher
       // EventDispatcherX.
       gdksource_->source_funcs->dispatch = gdkdispatcher_;
       g_main_context_iteration(context, FALSE);
-#endif
     }
   }
 
   bool retvalue;
-#if defined(TOOLKIT_USES_GTK)
   if (gdksource_ && use_gtk_message_pump) {
     // Replace the dispatch callback of the GDK event source temporarily so that
     // it doesn't read events from X.
@@ -240,14 +212,10 @@ bool MessagePumpX::RunOnce(GMainContext* context, bool block) {
   } else {
     retvalue = g_main_context_iteration(context, block);
   }
-#else
-  retvalue = g_main_context_iteration(context, block);
-#endif
 
   return retvalue;
 }
 
-#if defined(TOOLKIT_USES_GTK)
 GdkFilterReturn MessagePumpX::GdkEventFilter(GdkXEvent* gxevent,
                                              GdkEvent* gevent,
                                              gpointer data) {
@@ -311,13 +279,11 @@ void MessagePumpX::InitializeEventsToCapture(void) {
   capture_x_events_[GenericEvent] = true;
 }
 
-COMPILE_ASSERT(XLASTEvent >= LASTEvent, XLASTEvent_too_small);
-
-#endif  // defined(TOOLKIT_USES_GTK)
-
 MessagePumpObserver::EventStatus
     MessagePumpObserver::WillProcessXEvent(XEvent* xev) {
   return EVENT_CONTINUE;
 }
+
+COMPILE_ASSERT(XLASTEvent >= LASTEvent, XLASTEvent_too_small);
 
 }  // namespace base
