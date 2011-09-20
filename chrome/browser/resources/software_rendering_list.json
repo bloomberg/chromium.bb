@@ -52,7 +52,7 @@
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "1.19",
+  "version": "1.20",
   "entries": [
     {
       "id": 1,
@@ -361,48 +361,6 @@
       },
       "blacklist": [
         "accelerated_2d_canvas"
-      ]
-    },
-    {
-      "id": 25,
-      "description": "Some Intel GMA X4500/HD family of chipsets (0x2a42, 0x2a43) in Win7 requires driver 15.17.11.2202 or newer.",
-      "cr_bugs": [94268],
-      "os": {
-        "type": "win",
-        "version": {
-          "op": "=",
-          "number": "6.1"
-        }
-      },
-      "vendor_id": "0x8086",
-      "device_id": ["0x2a42", "0x2a43"],
-      "driver_version": {
-        "op": "<",
-        "number": "8.15.10.2202"
-      },
-      "blacklist": [
-        "all"
-      ]
-    },
-    {
-      "id": 26,
-      "description": "Some Intel GMA X4500/HD family of chipsets (0x0042, 0x0046) in Win7 requires drivers newer than 15.17.11.2202",
-      "cr_bugs": [91445, 94269],
-      "os": {
-        "type": "win",
-        "version": {
-          "op": "=",
-          "number": "6.1"
-        }
-      },
-      "vendor_id": "0x8086",
-      "device_id": ["0x0042", "0x0046"],
-      "driver_version": {
-        "op": "<=",
-        "number": "8.15.10.2202"
-      },
-      "blacklist": [
-        "all"
       ]
     },
     {
