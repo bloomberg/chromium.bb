@@ -153,6 +153,7 @@ bool WebPluginDelegateImpl::WindowedCreatePlugin() {
     window_.ws_info = new NPSetWindowCallbackStruct;
   NPSetWindowCallbackStruct* extra =
       static_cast<NPSetWindowCallbackStruct*>(window_.ws_info);
+  extra->type = NP_SETWINDOW;
   extra->display = GDK_DISPLAY();
   extra->visual = DefaultVisual(GDK_DISPLAY(), 0);
   extra->depth = DefaultDepth(GDK_DISPLAY(), 0);
