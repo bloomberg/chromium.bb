@@ -560,9 +560,21 @@ bool Sandbox::EnableSandbox(SandboxProcessType sandbox_type,
 void Sandbox::GetCanonicalSandboxPath(FilePath* path) {
   int fd = HANDLE_EINTR(open(path->value().c_str(), O_RDONLY));
   if (fd < 0) {
+    // Start temporary debugging code.
     base::mac::SetCrashKeyValue(
         @"errno", [NSString stringWithFormat:@"%d", errno]);
     base::mac::SetCrashKeyValue(@"homedir", NSHomeDirectory());
+    int fd2 = HANDLE_EINTR(
+                  open([NSHomeDirectory() fileSystemRepresentation], O_RDONLY));
+    base::mac::SetCrashKeyValue(
+        @"errno2", [NSString stringWithFormat:@"%d", errno]);
+    file_util::ScopedFD file_closer2(&fd2);
+
+    if (fd2 < 0)
+      base::mac::SetCrashKeyValue(@"alternateOpen", @"fail");
+    else
+      base::mac::SetCrashKeyValue(@"alternateOpen", @"success");
+    // End temporary debugging code.
 
     PLOG(FATAL) << "GetCanonicalSandboxPath() failed for: "
                 << path->value();
