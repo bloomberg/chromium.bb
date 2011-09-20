@@ -444,12 +444,6 @@ const char kSQLiteIndexedDatabase[]         = "indexeddb-use-sqlite";
 // Runs the security test for the renderer sandbox.
 const char kTestSandbox[]                   = "test-sandbox";
 
-// Grant unlimited quota to store files to this process.
-// Used for testing Pepper's FileRef/FileIO/FileSystem implementations.
-// DO NOT USE FOR OTHER PURPOSES.
-// TODO(dumi): remove the switch when we have a real quota implementation.
-const char kUnlimitedQuotaForFiles[]        = "unlimited-quota-for-files";
-
 // A string used to override the default user agent with a custom one.
 const char kUserAgent[]                     = "user-agent";
 

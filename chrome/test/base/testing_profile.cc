@@ -553,7 +553,6 @@ fileapi::FileSystemContext* TestingProfile::GetFileSystemContext() {
       GetPath(),
       IsOffTheRecord(),
       true,  // Allow file access from files.
-      true,  // Unlimited quota.
       NULL);
   }
   return file_system_context_.get();

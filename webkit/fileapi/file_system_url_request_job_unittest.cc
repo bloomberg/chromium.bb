@@ -81,8 +81,7 @@ class FileSystemURLRequestJobTest : public testing::Test {
             base::MessageLoopProxy::current(),
             base::MessageLoopProxy::current(),
             special_storage_policy_, NULL,
-            FilePath(), false /* is_incognito */,
-            false, true,
+            FilePath(), false /* is_incognito */, true /* allow_file_access */,
             new FileSystemPathManager(
                 base::MessageLoopProxy::current(),
                 temp_dir_.path(), NULL, false, false));

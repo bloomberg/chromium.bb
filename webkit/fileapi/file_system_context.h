@@ -45,13 +45,10 @@ class FileSystemContext
       const FilePath& profile_path,
       bool is_incognito,
       bool allow_file_access_from_files,
-      bool unlimited_quota,
       FileSystemPathManager* path_manager);
   ~FileSystemContext();
 
   // This method can be called on any thread.
-  bool IsStorageUnlimited(const GURL& origin);
-
   bool DeleteDataForOriginOnFileThread(const GURL& origin_url);
   bool DeleteDataForOriginAndTypeOnFileThread(const GURL& origin_url,
                                               FileSystemType type);
@@ -74,10 +71,7 @@ class FileSystemContext
   scoped_refptr<base::MessageLoopProxy> file_message_loop_;
   scoped_refptr<base::MessageLoopProxy> io_message_loop_;
 
-  scoped_refptr<quota::SpecialStoragePolicy> special_storage_policy_;
   scoped_refptr<quota::QuotaManagerProxy> quota_manager_proxy_;
-  const bool allow_file_access_from_files_;
-  const bool unlimited_quota_;
 
   scoped_ptr<FileSystemPathManager> path_manager_;
 

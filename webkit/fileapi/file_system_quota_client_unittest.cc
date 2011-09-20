@@ -57,8 +57,7 @@ class FileSystemQuotaClientTest : public testing::Test {
             base::MessageLoopProxy::current(),
             base::MessageLoopProxy::current(),
             NULL, NULL,
-            FilePath(), false /* is_incognito */,
-            false, true,
+            FilePath(), false /* is_incognito */, true /* allow_file_access */,
             new MockFileSystemPathManager(data_dir_.path()));
   }
 

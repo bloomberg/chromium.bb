@@ -112,19 +112,12 @@ void FileWriterDelegate::OnGetFileInfoAndCallStartUpdate(
   }
   int64 allowed_bytes_growth =
       file_system_operation_context()->allowed_bytes_growth();
-  if (allowed_bytes_growth == QuotaFileUtil::kNoLimit ||
-      file_system_operation_->file_system_context()->IsStorageUnlimited(
-          file_system_operation_context()->src_origin_url())) {
-    // TODO(kinuko): kNoLimit is kint64max therefore all the calculation/
-    // comparison with the value should just work, but we should drop
-    // such implicit assumption and should use an explicit boolean flag
-    // or something.
-    allowed_bytes_to_write_ = QuotaFileUtil::kNoLimit;
-  } else {
-    if (allowed_bytes_growth < 0)
-      allowed_bytes_growth = 0;
-    allowed_bytes_to_write_ = file_info.size - offset_ + allowed_bytes_growth;
-  }
+  if (allowed_bytes_growth < 0)
+    allowed_bytes_growth = 0;
+  int64 overlap = file_info.size - offset_;
+  allowed_bytes_to_write_ = allowed_bytes_growth;
+  if (kint64max - overlap > allowed_bytes_growth)
+    allowed_bytes_to_write_ += overlap;
   size_ = file_info.size;
   file_stream_.reset(new net::FileStream(file_,
       base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_WRITE |

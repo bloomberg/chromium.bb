@@ -455,32 +455,4 @@ class FileWriterDelegateUnlimitedTest : public FileWriterDelegateTest {
   virtual void SetUpTestHelper(const FilePath& path) OVERRIDE;
 };
 
-void FileWriterDelegateUnlimitedTest::SetUpTestHelper(const FilePath& path) {
-  quota_file_util_.reset(QuotaFileUtil::CreateDefault());
-  test_helper_.SetUp(
-      path,
-      false /* incognito */,
-      true /* unlimited */,
-      NULL /* quota manager proxy */,
-      quota_file_util_.get());
-}
-
-TEST_F(FileWriterDelegateUnlimitedTest, WriteWithQuota) {
-  const GURL kBlobURL("blob:with-unlimited");
-  content_ = kData;
-
-  // Set small allowed_growth bytes
-  PrepareForWrite(kBlobURL, 0, 10);
-
-  // We shouldn't fail as the context is configured as 'unlimited'.
-  file_writer_delegate_->Start(file_, request_.get());
-  MessageLoop::current()->Run();
-  EXPECT_EQ(kDataSize, test_helper_.GetCachedOriginUsage());
-  EXPECT_EQ(ComputeCurrentOriginUsage(),
-            test_helper_.GetCachedOriginUsage());
-  EXPECT_EQ(kDataSize, result_->bytes_written());
-  EXPECT_EQ(base::PLATFORM_FILE_OK, result_->status());
-  EXPECT_TRUE(result_->complete());
-}
-
 }  // namespace fileapi

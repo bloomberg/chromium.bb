@@ -151,7 +151,6 @@ class SandboxMountPointProviderMigrationTest : public testing::Test {
         data_dir_.path(),
         false,  // incognito
         true,  // allow_file_access_from_files
-        true,  // unlimited quota
         path_manager_);
   }
 

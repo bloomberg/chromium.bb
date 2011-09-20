@@ -46,7 +46,7 @@ class MockQuotaManager : public QuotaManager {
       origin_(origin),
       type_(type),
       usage_(0),
-      quota_(QuotaFileUtil::kNoLimit),
+      quota_(kint64max),
       accessed_(0) {}
 
   virtual void GetUsageAndQuota(

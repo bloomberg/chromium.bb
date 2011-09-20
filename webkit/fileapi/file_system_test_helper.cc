@@ -79,7 +79,6 @@ void FileSystemTestOriginHelper::SetUp(
       base_dir,
       incognito_mode,
       true /* allow_file_access_from_files */,
-      unlimited_quota,
       NULL);
 
   DCHECK(file_system_context_->path_manager());

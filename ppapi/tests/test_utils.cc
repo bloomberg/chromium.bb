@@ -21,8 +21,6 @@ std::string ReportError(const char* method, int32_t error) {
   sprintf(error_as_string, "%d", static_cast<int>(error));
   std::string result = method + std::string(" failed with error: ") +
       error_as_string;
-  if (error == PP_ERROR_NOSPACE)
-    result += ". Did you run the test with --unlimited-quota-for-files?";
   return result;
 }
 

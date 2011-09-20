@@ -126,14 +126,7 @@ void FileSystemOperation::CreateFile(const GURL& path,
 
 void FileSystemOperation::DelayedCreateFileForQuota(
     quota::QuotaStatusCode status, int64 usage, int64 quota) {
-  if (file_system_context()->IsStorageUnlimited(
-          file_system_operation_context()->src_origin_url()) ||
-      quota == QuotaFileUtil::kNoLimit) {
-    file_system_operation_context_.set_allowed_bytes_growth(
-        QuotaFileUtil::kNoLimit);
-  } else {
-    file_system_operation_context_.set_allowed_bytes_growth(quota - usage);
-  }
+  file_system_operation_context_.set_allowed_bytes_growth(quota - usage);
 
   quota_util_helper_.reset(new ScopedQuotaUtilHelper(
       file_system_context(),
@@ -178,14 +171,7 @@ void FileSystemOperation::CreateDirectory(const GURL& path,
 
 void FileSystemOperation::DelayedCreateDirectoryForQuota(
     quota::QuotaStatusCode status, int64 usage, int64 quota) {
-  if (file_system_context()->IsStorageUnlimited(
-          file_system_operation_context()->src_origin_url()) ||
-      quota == QuotaFileUtil::kNoLimit) {
-    file_system_operation_context_.set_allowed_bytes_growth(
-        QuotaFileUtil::kNoLimit);
-  } else {
-    file_system_operation_context_.set_allowed_bytes_growth(quota - usage);
-  }
+  file_system_operation_context_.set_allowed_bytes_growth(quota - usage);
 
   quota_util_helper_.reset(new ScopedQuotaUtilHelper(
       file_system_context(),
@@ -237,14 +223,7 @@ void FileSystemOperation::Copy(const GURL& src_path,
 
 void FileSystemOperation::DelayedCopyForQuota(quota::QuotaStatusCode status,
                                               int64 usage, int64 quota) {
-  if (file_system_context()->IsStorageUnlimited(
-          file_system_operation_context()->dest_origin_url()) ||
-      quota == QuotaFileUtil::kNoLimit) {
-    file_system_operation_context_.set_allowed_bytes_growth(
-        QuotaFileUtil::kNoLimit);
-  } else {
-    file_system_operation_context_.set_allowed_bytes_growth(quota - usage);
-  }
+  file_system_operation_context_.set_allowed_bytes_growth(quota - usage);
 
   quota_util_helper_.reset(new ScopedQuotaUtilHelper(
       file_system_context(),
@@ -295,14 +274,7 @@ void FileSystemOperation::Move(const GURL& src_path,
 
 void FileSystemOperation::DelayedMoveForQuota(quota::QuotaStatusCode status,
                                               int64 usage, int64 quota) {
-  if (file_system_context()->IsStorageUnlimited(
-          file_system_operation_context()->dest_origin_url()) ||
-      quota == QuotaFileUtil::kNoLimit) {
-    file_system_operation_context_.set_allowed_bytes_growth(
-        QuotaFileUtil::kNoLimit);
-  } else {
-    file_system_operation_context_.set_allowed_bytes_growth(quota - usage);
-  }
+  file_system_operation_context_.set_allowed_bytes_growth(quota - usage);
 
   quota_util_helper_.reset(new ScopedQuotaUtilHelper(
       file_system_context(),
@@ -476,14 +448,7 @@ void FileSystemOperation::Write(
 
 void FileSystemOperation::DelayedWriteForQuota(quota::QuotaStatusCode status,
                                                int64 usage, int64 quota) {
-  if (file_system_context()->IsStorageUnlimited(
-          file_system_operation_context()->src_origin_url()) ||
-      quota == QuotaFileUtil::kNoLimit) {
-    file_system_operation_context_.set_allowed_bytes_growth(
-        QuotaFileUtil::kNoLimit);
-  } else {
-    file_system_operation_context_.set_allowed_bytes_growth(quota - usage);
-  }
+  file_system_operation_context_.set_allowed_bytes_growth(quota - usage);
 
   quota_util_helper_.reset(new ScopedQuotaUtilHelper(
       file_system_context(),
@@ -525,14 +490,7 @@ void FileSystemOperation::Truncate(const GURL& path, int64 length) {
 
 void FileSystemOperation::DelayedTruncateForQuota(quota::QuotaStatusCode status,
                                                   int64 usage, int64 quota) {
-  if (file_system_context()->IsStorageUnlimited(
-          file_system_operation_context()->src_origin_url()) ||
-      quota == QuotaFileUtil::kNoLimit) {
-    file_system_operation_context_.set_allowed_bytes_growth(
-        QuotaFileUtil::kNoLimit);
-  } else {
-    file_system_operation_context_.set_allowed_bytes_growth(quota - usage);
-  }
+  file_system_operation_context_.set_allowed_bytes_growth(quota - usage);
 
   quota_util_helper_.reset(new ScopedQuotaUtilHelper(
       file_system_context(),
@@ -622,14 +580,7 @@ void FileSystemOperation::OpenFile(const GURL& path,
 
 void FileSystemOperation::DelayedOpenFileForQuota(quota::QuotaStatusCode status,
                                                   int64 usage, int64 quota) {
-  if (file_system_context()->IsStorageUnlimited(
-          file_system_operation_context()->dest_origin_url()) ||
-      quota == QuotaFileUtil::kNoLimit) {
-    file_system_operation_context_.set_allowed_bytes_growth(
-        QuotaFileUtil::kNoLimit);
-  } else {
-    file_system_operation_context_.set_allowed_bytes_growth(quota - usage);
-  }
+  file_system_operation_context_.set_allowed_bytes_growth(quota - usage);
 
   quota_util_helper_.reset(new ScopedQuotaUtilHelper(
       file_system_context(),
@@ -678,29 +629,27 @@ void FileSystemOperation::Cancel(FileSystemOperation* cancel_operation_ptr) {
   }
 }
 
-bool FileSystemOperation::GetUsageAndQuotaThenCallback(
+void FileSystemOperation::GetUsageAndQuotaThenCallback(
     const GURL& origin_url,
     quota::QuotaManager::GetUsageAndQuotaCallback* callback) {
   quota::QuotaManagerProxy* quota_manager_proxy =
       file_system_context()->quota_manager_proxy();
-  if (quota_manager_proxy && quota_manager_proxy->quota_manager() &&
-      file_system_operation_context_.src_type() != kFileSystemTypeExternal) {
-    quota_manager_proxy->quota_manager()->GetUsageAndQuota(
-        file_system_operation_context_.src_origin_url(),
-        FileSystemTypeToQuotaStorageType(
-            file_system_operation_context_.src_type()),
-        callback);
-  } else {
-    if (file_system_context()->IsStorageUnlimited(origin_url)) {
-      callback->Run(quota::kQuotaStatusOk, 0, QuotaFileUtil::kNoLimit);
-      delete callback;
-    } else {
-      dispatcher_->DidFail(base::PLATFORM_FILE_ERROR_NO_SPACE);
-      delete callback;
-      return false;
-    }
+  if (!quota_manager_proxy ||
+      !file_system_context()->GetQuotaUtil(
+          file_system_operation_context_.src_type())) {
+    // If we don't have the quota manager or the requested filesystem type
+    // does not support quota, we should be able to let it go.
+    callback->Run(quota::kQuotaStatusOk, 0, kint64max);
+    delete callback;
+    return;
   }
-  return true;
+  DCHECK(quota_manager_proxy);
+  DCHECK(quota_manager_proxy->quota_manager());
+  quota_manager_proxy->quota_manager()->GetUsageAndQuota(
+      file_system_operation_context_.src_origin_url(),
+      FileSystemTypeToQuotaStorageType(
+          file_system_operation_context_.src_type()),
+      callback);
 }
 
 void FileSystemOperation::DidGetRootPath(

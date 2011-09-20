@@ -23,7 +23,5 @@ scoped_refptr<fileapi::FileSystemContext> CreateFileSystemContext(
       is_incognito,
       CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kAllowFileAccessFromFiles),
-      CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kUnlimitedQuotaForFiles),
       NULL);
 }

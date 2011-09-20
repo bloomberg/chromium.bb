@@ -109,7 +109,7 @@ class FileSystemOperation {
   friend class FileSystemTestOriginHelper;
   friend class FileSystemQuotaTest;
 
-  bool GetUsageAndQuotaThenCallback(
+  void GetUsageAndQuotaThenCallback(
       const GURL& origin_url,
       quota::QuotaManager::GetUsageAndQuotaCallback* callback);
 

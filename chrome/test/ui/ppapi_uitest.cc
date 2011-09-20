@@ -52,11 +52,6 @@ class PPAPITest : public UITest {
     // by default.
     launch_arguments_.AppendSwitch(switches::kEnablePepperTesting);
 
-    // Give unlimited quota for files to Pepper tests.
-    // TODO(dumi): remove this switch once we have a quota management
-    // system in place.
-    launch_arguments_.AppendSwitch(switches::kUnlimitedQuotaForFiles);
-
     // Smooth scrolling confuses the scrollbar test.
     launch_arguments_.AppendSwitch(switches::kDisableSmoothScrolling);
   }
