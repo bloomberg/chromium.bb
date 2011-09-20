@@ -35,15 +35,14 @@ class NewTabPageHandler : public WebUIMessageHandler {
   // message is displayed.
   void HandleIntroMessageSeen(const ListValue* args);
 
-  // Callback for "introMessageSuppressed". This is called when ntp4 intro
-  // message has been suppressed.
-  static void HandleIntroMessageSuppressed(PrefService* prefs);
-
   // Register NTP preferences.
   static void RegisterUserPrefs(PrefService* prefs);
 
   // Registers values (strings etc.) for the page.
   static void GetLocalizedValues(Profile* profile, DictionaryValue* values);
+
+  // Permanently dismiss the ntp4 bubble for new users.
+  static void DismissIntroMessage(PrefService* prefs);
 
  private:
   // The purpose of this enum is to track which page on the NTP is showing.

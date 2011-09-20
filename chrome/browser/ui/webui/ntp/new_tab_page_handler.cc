@@ -66,18 +66,11 @@ void NewTabPageHandler::HandleIntroMessageSeen(const ListValue* args) {
 }
 
 // static
-void NewTabPageHandler::HandleIntroMessageSuppressed(PrefService* prefs) {
-  prefs->ClearPref(prefs::kNTP4SuppressIntroOnce);
-}
-
-// static
 void NewTabPageHandler::RegisterUserPrefs(PrefService* prefs) {
   // TODO(estade): should be syncable.
   prefs->RegisterIntegerPref(prefs::kNTPShownPage, APPS_PAGE_ID,
                              PrefService::UNSYNCABLE_PREF);
   prefs->RegisterIntegerPref(prefs::kNTP4IntroDisplayCount, 0,
-                             PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterBooleanPref(prefs::kNTP4SuppressIntroOnce, false,
                              PrefService::UNSYNCABLE_PREF);
 }
 
@@ -98,16 +91,15 @@ void NewTabPageHandler::GetLocalizedValues(Profile* profile,
 
   int intro_displays = prefs->GetInteger(prefs::kNTP4IntroDisplayCount);
   if (intro_displays <= kIntroDisplayMax) {
-    if (prefs->GetBoolean(prefs::kNTP4SuppressIntroOnce)) {
-      // Clear pref so the bubble is only suppressed once.
-      MessageLoop::current()->PostTask(FROM_HERE,
-        base::Bind(&NewTabPageHandler::HandleIntroMessageSuppressed, prefs));
-    } else {
-      values->SetString("ntp4_intro_message",
-                        l10n_util::GetStringUTF16(IDS_NTP4_INTRO_MESSAGE));
-      values->SetString("ntp4_intro_url", kNTP4IntroURL);
-      values->SetString("learn_more",
-                        l10n_util::GetStringUTF16(IDS_LEARN_MORE));
-    }
+    values->SetString("ntp4_intro_message",
+                      l10n_util::GetStringUTF16(IDS_NTP4_INTRO_MESSAGE));
+    values->SetString("ntp4_intro_url", kNTP4IntroURL);
+    values->SetString("learn_more",
+                      l10n_util::GetStringUTF16(IDS_LEARN_MORE));
   }
+}
+
+// static
+void NewTabPageHandler::DismissIntroMessage(PrefService* prefs) {
+  prefs->SetInteger(prefs::kNTP4IntroDisplayCount, kIntroDisplayMax + 1);
 }

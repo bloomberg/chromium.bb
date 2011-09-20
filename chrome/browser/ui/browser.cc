@@ -109,6 +109,7 @@
 #include "chrome/browser/ui/tabs/tab_menu_model.h"
 #include "chrome/browser/ui/web_applications/web_app_ui.h"
 #include "chrome/browser/ui/webui/bug_report_ui.h"
+#include "chrome/browser/ui/webui/ntp/new_tab_page_handler.h"
 #include "chrome/browser/ui/webui/options/content_settings_handler.h"
 #include "chrome/browser/ui/window_sizer.h"
 #include "chrome/browser/upgrade_detector.h"
@@ -526,6 +527,10 @@ void Browser::InitBrowserWindow() {
     // Reset the preference so we don't call it again for subsequent windows.
     local_state->ClearPref(prefs::kAutofillPersonalDataManagerFirstRun);
   }
+
+  // Permanently dismiss ntp4 bubble for new users.
+  if (FirstRun::IsChromeFirstRun())
+    NewTabPageHandler::DismissIntroMessage(profile_->GetPrefs());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -5273,12 +5278,5 @@ void Browser::OnWindowDidShow() {
       error->ShowBubbleView(this);
       did_show_bubble = true;
     }
-  }
-
-  // Suppress ntp4 bubble if another bubble will be shown on the same page.
-  if (did_show_bubble) {
-    PrefService* prefs = profile_->GetPrefs();
-    if (prefs->GetBoolean(prefs::kHomePageIsNewTabPage))
-      prefs->SetBoolean(prefs::kNTP4SuppressIntroOnce, true);
   }
 }
