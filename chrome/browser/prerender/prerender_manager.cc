@@ -6,7 +6,6 @@
 
 #include <string>
 
-#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/time.h"
@@ -17,6 +16,7 @@
 #include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/prerender/prerender_condition.h"
 #include "chrome/browser/prerender/prerender_contents.h"
+#include "chrome/browser/prerender/prerender_field_trial.h"
 #include "chrome/browser/prerender/prerender_final_status.h"
 #include "chrome/browser/prerender/prerender_histograms.h"
 #include "chrome/browser/prerender/prerender_history.h"
@@ -269,8 +269,7 @@ bool PrerenderManager::AddPrerenderFromLinkRelPrerender(int process_id,
 }
 
 bool PrerenderManager::AddPrerenderFromOmnibox(const GURL& url) {
-  CommandLine* cl = CommandLine::ForCurrentProcess();
-  if (!cl->HasSwitch(switches::kPrerenderFromOmnibox))
+  if (!IsOmniboxEnabled(profile_))
     return false;
 
   return AddPrerender(ORIGIN_OMNIBOX, std::make_pair(-1, -1), url, GURL());
@@ -952,12 +951,13 @@ void PrerenderManager::ScheduleDeleteOldTabContents(
   }
 }
 
-Value* PrerenderManager::GetAsValue() const {
+DictionaryValue* PrerenderManager::GetAsValue() const {
   DCHECK(CalledOnValidThread());
   DictionaryValue* dict_value = new DictionaryValue();
   dict_value->Set("history", prerender_history_->GetEntriesAsValue());
   dict_value->Set("active", GetActivePrerendersAsValue());
   dict_value->SetBoolean("enabled", enabled_);
+  dict_value->SetBoolean("omnibox_enabled", IsOmniboxEnabled(profile_));
   // If prerender is disabled via a flag this method is not even called.
   if (IsControlGroup())
     dict_value->SetString("disabled_reason", "(Disabled for testing)");

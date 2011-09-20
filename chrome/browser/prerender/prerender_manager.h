@@ -28,6 +28,10 @@
 class Profile;
 class TabContents;
 
+namespace base {
+class DictionaryValue;
+}
+
 #if defined(COMPILER_GCC)
 
 namespace __gnu_cxx {
@@ -176,7 +180,7 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   // Returns a Value object containing the active pages being prerendered, and
   // a history of pages which were prerendered. The caller is responsible for
   // deleting the return value.
-  base::Value* GetAsValue() const;
+  base::DictionaryValue* GetAsValue() const;
 
   // Clears the data indicated by which bits of clear_flags are set.
   //

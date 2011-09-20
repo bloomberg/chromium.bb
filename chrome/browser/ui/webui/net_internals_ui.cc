@@ -640,12 +640,12 @@ void NetInternalsMessageHandler::OnEnableHttpThrottling(const ListValue* list) {
 void NetInternalsMessageHandler::OnGetPrerenderInfo(const ListValue* list) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  Value* value = NULL;
+  DictionaryValue* value = NULL;
   prerender::PrerenderManager* prerender_manager = prerender_manager_.get();
   if (!prerender_manager) {
-    DictionaryValue* dict_value = new DictionaryValue();
-    dict_value->SetBoolean("enabled", false);
-    value = dict_value;
+    value = new DictionaryValue();
+    value->SetBoolean("enabled", false);
+    value->SetBoolean("omnibox_enabled", false);
   } else {
     value = prerender_manager->GetAsValue();
   }

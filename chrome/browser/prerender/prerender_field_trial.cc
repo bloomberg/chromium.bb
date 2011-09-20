@@ -8,12 +8,18 @@
 #include "base/logging.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
-#include "content/browser/renderer_host/resource_dispatcher_host.h"
+#include "chrome/browser/metrics/metrics_service.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prerender/prerender_manager.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
-
+#include "content/browser/renderer_host/resource_dispatcher_host.h"
 
 namespace prerender {
+
+// If the command line contains the --prerender-from-omnibox switch, enable
+// prerendering from the Omnibox. If not, enter the user into a field trial.
+void ConfigurePrerenderFromOmnibox();
 
 void ConfigurePrefetchAndPrerender(const CommandLine& command_line) {
   enum PrerenderOption {
@@ -117,6 +123,46 @@ void ConfigurePrefetchAndPrerender(const CommandLine& command_line) {
   UMA_HISTOGRAM_ENUMERATION("Prerender.Sessions",
                             PrerenderManager::GetMode(),
                             PrerenderManager::PRERENDER_MODE_MAX);
+
+  ConfigurePrerenderFromOmnibox();
+}
+
+void ConfigurePrerenderFromOmnibox() {
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kPrerenderFromOmnibox)) {
+    const base::FieldTrial::Probability kDivisor = 100;
+    const base::FieldTrial::Probability kEnabledProbability = 10;
+
+    scoped_refptr<base::FieldTrial> trial(
+        new base::FieldTrial("PrerenderFromOmnibox", kDivisor,
+                             "OmniboxPrerenderDisabled", 2012, 8, 30));
+
+    trial->AppendGroup("OmniboxPrerenderEnabled", kEnabledProbability);
+  }
+}
+
+bool IsOmniboxEnabled(Profile* profile) {
+  if (!profile || profile->IsOffTheRecord())
+    return false;
+
+  if (!PrerenderManager::IsPrerenderingPossible())
+    return false;
+
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kPrerenderFromOmnibox)) {
+    return true;
+  }
+
+  if (!MetricsServiceHelper::IsMetricsReportingEnabled())
+    return false;
+
+  const int group = base::FieldTrialList::FindValue("PrerenderFromOmnibox");
+  if (group == base::FieldTrial::kNotFinalized ||
+      group == base::FieldTrial::kDefaultGroupNumber) {
+    return false;
+  }
+
+  return true;
 }
 
 }  // namespace prerender

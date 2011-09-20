@@ -32,6 +32,7 @@ class HistogramSynchronizer;
 class MetricsLogBase;
 class MetricsReportingScheduler;
 class PrefService;
+class Profile;
 class TemplateURLService;
 
 namespace base {
@@ -39,9 +40,14 @@ class DictionaryValue;
 class ListValue;
 }
 
+namespace prerender {
+bool IsOmniboxEnabled(Profile* profile);
+}
+
 namespace webkit {
 struct WebPluginInfo;
 }
+
 
 class MetricsService : public NotificationObserver,
                        public URLFetcher::Delegate,
@@ -456,6 +462,7 @@ class MetricsService : public NotificationObserver,
 class MetricsServiceHelper {
  private:
   friend class InstantFieldTrial;
+  friend bool prerender::IsOmniboxEnabled(Profile* profile);
 
   // Returns true if prefs::kMetricsReportingEnabled is set.
   static bool IsMetricsReportingEnabled();

@@ -7,7 +7,6 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/command_line.h"
 #include "base/metrics/histogram.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
@@ -24,6 +23,7 @@
 #include "chrome/browser/instant/instant_controller.h"
 #include "chrome/browser/net/predictor.h"
 #include "chrome/browser/net/url_fixer_upper.h"
+#include "chrome/browser/prerender/prerender_field_trial.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
@@ -208,6 +208,7 @@ bool AutocompleteEditModel::AcceptCurrentInstantPreview() {
 
 void AutocompleteEditModel::OnChanged() {
   const AutocompleteMatch current_match = CurrentMatch();
+
   string16 suggested_text;
 
   // Confer with the NetworkActionPredictor to determine what action, if any,
@@ -220,10 +221,8 @@ void AutocompleteEditModel::OnChanged() {
   bool might_support_instant = false;
   if (!DoInstant(current_match, &suggested_text, &might_support_instant)) {
     // Ignore the recommended action if Omnibox prerendering is not enabled.
-    if (!CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kPrerenderFromOmnibox)) {
+    if (!prerender::IsOmniboxEnabled(profile_))
       recommended_action = NetworkActionPredictor::ACTION_NONE;
-    }
 
     switch (recommended_action) {
       case NetworkActionPredictor::ACTION_PRERENDER:
@@ -835,10 +834,8 @@ void AutocompleteEditModel::OnResultChanged(bool default_match_changed) {
             match->fill_into_edit.substr(match->inline_autocomplete_offset);
       }
 
-      if (!CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kPrerenderFromOmnibox)) {
+      if (!prerender::IsOmniboxEnabled(profile_))
         DoPreconnect(*match);
-      }
 
       // We could prefetch the alternate nav URL, if any, but because there
       // can be many of these as a user types an initial series of characters,

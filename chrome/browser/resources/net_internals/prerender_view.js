@@ -11,6 +11,7 @@ var PrerenderView = (function() {
   // IDs for special HTML elements in prerender_view.html
   var MAIN_BOX_ID = 'prerender-view-tab-content';
   var ENABLED_SPAN_ID = 'prerender-view-enabled-span';
+  var OMNIBOX_ENABLED_SPAN_ID = 'prerender-view-omnibox-enabled-span';
   var HISTORY_DIV_ID = 'prerender-view-history-div';
   var ACTIVE_DIV_ID = 'prerender-view-active-div';
 
@@ -28,6 +29,7 @@ var PrerenderView = (function() {
 
     g_browser.addPrerenderInfoObserver(this);
     this.prerenderEnabledSpan_ = $(ENABLED_SPAN_ID);
+    this.prerenderOmniboxEnabledSpan_ = $(OMNIBOX_ENABLED_SPAN_ID);
     this.prerenderHistoryDiv_ = $(HISTORY_DIV_ID);
     this.prerenderActiveDiv_ = $(ACTIVE_DIV_ID);
   }
@@ -47,6 +49,7 @@ var PrerenderView = (function() {
 
     onPrerenderInfoChanged: function(prerenderInfo) {
       this.prerenderEnabledSpan_.textContent = '';
+      this.prerenderOmniboxEnabledSpan_.textContent = '';
       this.prerenderHistoryDiv_.innerHTML = '';
       this.prerenderActiveDiv_.innerHTML = '';
 
@@ -57,6 +60,11 @@ var PrerenderView = (function() {
           this.prerenderEnabledSpan_.textContent +=
               ' ' + prerenderInfo.disabled_reason;
         }
+      }
+
+      if (prerenderInfo && ('omnibox_enabled' in prerenderInfo)) {
+        this.prerenderOmniboxEnabledSpan_.textContent =
+            prerenderInfo.omnibox_enabled.toString();
       }
 
       if (!isValidPrerenderInfo(prerenderInfo))
