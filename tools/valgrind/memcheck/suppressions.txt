@@ -3489,26 +3489,6 @@
    fun:_ZN27TestURLRequestContextGetter20GetURLRequestContextEv
 }
 {
-   bug_79933b
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN9__gnu_cxx13new_allocatorIPN3net16SSLConfigService8Observer*
-   fun:_ZNSt12_Vector_baseIPN3net16SSLConfigService8Observer*
-   fun:_ZNSt6vectorIPN3net16SSLConfigService8ObserverESaIS3_EE13_M_insert_auxEN9__gnu_cxx17__normal_iteratorIPS3_S5_EERKS3_
-   fun:_ZNSt6vectorIPN3net16SSLConfigService8ObserverESaIS3_EE9push_backERKS3_
-   fun:_ZN16ObserverListBaseIN3net16SSLConfigService8ObserverEE11AddObserverEPS2_
-   fun:_ZN3net16SSLConfigService11AddObserverEPNS0_8ObserverE
-   ...
-   fun:_ZN8notifier26ProxyResolvingClientSocketC1ERK13scoped_refptrIN3net23URLRequestContextGetterEERKNS2_9SSLConfigERKNS2_12HostPortPairE
-   fun:_ZN8notifier23XmppClientSocketFactory27CreateTransportClientSocketERKN3net12HostPortPairE
-   fun:_ZN8notifier17ChromeAsyncSocket7ConnectERKN9talk_base13SocketAddressE
-   fun:_ZN4buzz10XmppClient21ProcessStartXmppLoginEv
-   fun:_ZN4buzz10XmppClient7ProcessEi
-   fun:_ZN9talk_base4Task4StepEv
-   fun:_ZN9talk_base10TaskRunner16InternalRunTasksEb
-   fun:_ZN9talk_base10TaskRunner8RunTasksEv
-}
-{
    bug_80174
    Memcheck:Leak
    fun:_Znw*
@@ -3578,6 +3558,26 @@
    Memcheck:Leak
    fun:_Znw*
    fun:_ZN16RenderWidgetHost9WasHiddenEv
+}
+{
+   bug_80654
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN9__gnu_cxx13new_allocatorIPN3net16SSLConfigService8Observer*
+   fun:_ZNSt12_Vector_baseIPN3net16SSLConfigService8Observer*
+   fun:_ZNSt6vectorIPN3net16SSLConfigService8ObserverESaIS3_EE13_M_insert_auxEN9__gnu_cxx17__normal_iteratorIPS3_S5_EERKS3_
+   fun:_ZNSt6vectorIPN3net16SSLConfigService8ObserverESaIS3_EE9push_backERKS3_
+   fun:_ZN16ObserverListBaseIN3net16SSLConfigService8ObserverEE11AddObserverEPS2_
+   fun:_ZN3net16SSLConfigService11AddObserverEPNS0_8ObserverE
+   ...
+   fun:_ZN8notifier26ProxyResolvingClientSocketC1ERK13scoped_refptrIN3net23URLRequestContextGetterEERKNS2_9SSLConfigERKNS2_12HostPortPairE
+   fun:_ZN8notifier23XmppClientSocketFactory27CreateTransportClientSocketERKN3net12HostPortPairE
+   fun:_ZN8notifier17ChromeAsyncSocket7ConnectERKN9talk_base13SocketAddressE
+   fun:_ZN4buzz10XmppClient21ProcessStartXmppLoginEv
+   fun:_ZN4buzz10XmppClient7ProcessEi
+   fun:_ZN9talk_base4Task4StepEv
+   fun:_ZN9talk_base10TaskRunner16InternalRunTasksEb
+   fun:_ZN9talk_base10TaskRunner8RunTasksEv
 }
 {
    bug_80663
