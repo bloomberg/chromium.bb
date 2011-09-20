@@ -175,6 +175,21 @@
         {
           'target_name': 'mini_installer',
           'type': 'executable',
+          'configurations': {
+            'Debug': {
+              # Disable precompiled headers for this project, to avoid
+              # linker errors when building with VS 2008.
+              #
+              # Note that putting this in the 'target_defaults'
+              # section earlier in the file does not successfully
+              # override the 'target_defaults' brought in by the
+              # build/win_precompile.gypi file, so the overriding
+              # needs to be done here, directly in the mini_installer
+              # target.
+              'msvs_precompiled_header': '',
+              'msvs_precompiled_source': '',
+            },
+          },
           'sources': [
             'mini_installer/chrome.release',
             'mini_installer/chrome_appid.cc',
