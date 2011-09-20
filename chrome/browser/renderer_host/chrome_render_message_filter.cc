@@ -131,6 +131,7 @@ bool ChromeRenderMessageFilter::OnMessageReceived(const IPC::Message& message,
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_AllowDatabase, OnAllowDatabase)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_AllowDOMStorage, OnAllowDOMStorage)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_AllowFileSystem, OnAllowFileSystem)
+    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_AllowImage, OnAllowImage)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_AllowIndexedDB, OnAllowIndexedDB)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_GetPluginContentSetting,
                         OnGetPluginContentSetting)
@@ -462,6 +463,14 @@ void ChromeRenderMessageFilter::OnAllowFileSystem(int render_view_id,
       NewRunnableFunction(
           &TabSpecificContentSettings::FileSystemAccessed,
           render_process_id_, render_view_id, origin_url, !*allowed));
+}
+
+void ChromeRenderMessageFilter::OnAllowImage(const GURL& top_origin_url,
+                                             const GURL& image_url,
+                                             bool* allowed) {
+  ContentSetting setting = host_content_settings_map_->GetContentSetting(
+      top_origin_url, image_url, CONTENT_SETTINGS_TYPE_IMAGES, "");
+  *allowed = setting != CONTENT_SETTING_BLOCK;
 }
 
 void ChromeRenderMessageFilter::OnAllowIndexedDB(int render_view_id,

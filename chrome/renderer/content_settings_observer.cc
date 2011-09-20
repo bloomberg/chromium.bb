@@ -54,6 +54,7 @@ static bool IsWhitelistedForContentSettings(WebFrame* frame) {
 }  // namespace
 
 ContentSettings ContentSettingsObserver::default_settings_;
+bool ContentSettingsObserver::allow_all_images_ = false;
 
 ContentSettingsObserver::ContentSettingsObserver(RenderView* render_view)
     : RenderViewObserver(render_view),
@@ -120,7 +121,7 @@ void ContentSettingsObserver::DidCommitProvisionalLoad(
   NavigationState* state = NavigationState::FromDataSource(frame->dataSource());
   if (!state->was_within_same_page()) {
     // Clear "block" flags for the new page. This needs to happen before any of
-    // allowScripts(), allowImages(), allowPlugins() is called for the new page
+    // allowScripts(), allowImage(), allowPlugins() is called for the new page
     // so that these functions can correctly detect that a piece of content
     // flipped from "not blocked" to "blocked".
     ClearBlockedContentSettings();
@@ -199,16 +200,40 @@ bool ContentSettingsObserver::AllowFileSystem(WebFrame* frame) {
 bool ContentSettingsObserver::AllowImage(WebFrame* frame,
                                          bool enabled_per_settings,
                                          const WebURL& image_url) {
-  if (enabled_per_settings &&
-      AllowContentType(CONTENT_SETTINGS_TYPE_IMAGES)) {
+  // Shortcut for tests
+  if (allow_all_images_)
     return true;
-  }
 
   if (IsWhitelistedForContentSettings(frame))
     return true;
 
-  DidBlockContentType(CONTENT_SETTINGS_TYPE_IMAGES, std::string());
-  return false;  // Other protocols fall through here.
+  if (frame->document().securityOrigin().isEmpty() ||
+      frame->top()->document().securityOrigin().isEmpty()) {
+    DidBlockContentType(CONTENT_SETTINGS_TYPE_IMAGES, std::string());
+    return false;  // Uninitialized document.
+  }
+
+  ImagePermissionsKey key(
+      GURL(image_url),
+      GURL(frame->top()->document().securityOrigin().toString()));
+
+  bool result = false;
+  std::map<ImagePermissionsKey, bool>::const_iterator permissions =
+      cached_image_permissions_.find(key);
+  if (permissions != cached_image_permissions_.end()) {
+    result = permissions->second;
+  } else {
+    Send(new ChromeViewHostMsg_AllowImage(
+        GURL(frame->top()->document().securityOrigin().toString()),
+        GURL(image_url),
+        &result));
+    cached_image_permissions_[key] = result;
+  }
+
+  if (!result)
+    DidBlockContentType(CONTENT_SETTINGS_TYPE_IMAGES, std::string());
+
+  return result;
 }
 
 bool ContentSettingsObserver::AllowIndexedDB(WebFrame* frame,
@@ -274,6 +299,11 @@ void ContentSettingsObserver::DidNotAllowScript(WebFrame* frame) {
   DidBlockContentType(CONTENT_SETTINGS_TYPE_JAVASCRIPT, std::string());
 }
 
+// static
+void ContentSettingsObserver::SetAllowAllImages(bool allow) {
+  allow_all_images_ = allow;
+}
+
 void ContentSettingsObserver::OnSetContentSettingsForLoadingURL(
     const GURL& url,
     const ContentSettings& content_settings) {
@@ -295,4 +325,5 @@ void ContentSettingsObserver::ClearBlockedContentSettings() {
   for (size_t i = 0; i < arraysize(content_blocked_); ++i)
     content_blocked_[i] = false;
   cached_storage_permissions_.clear();
+  cached_image_permissions_.clear();
 }

@@ -355,6 +355,13 @@ IPC_SYNC_MESSAGE_CONTROL3_1(ChromeViewHostMsg_AllowFileSystem,
                             GURL /* top origin url */,
                             bool /* allowed */)
 
+// Sent by the renderer process to check whether displaying images is
+// allowed by content settings.
+IPC_SYNC_MESSAGE_CONTROL2_1(ChromeViewHostMsg_AllowImage,
+                            GURL /* top origin url */,
+                            GURL /* image_url */,
+                            bool /* allowed */)
+
 // Sent by the renderer process to check whether access to Indexed DBis
 // granted by content settings.
 IPC_SYNC_MESSAGE_CONTROL4_1(ChromeViewHostMsg_AllowIndexedDB,
