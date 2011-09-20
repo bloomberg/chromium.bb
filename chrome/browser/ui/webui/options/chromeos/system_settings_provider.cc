@@ -156,13 +156,13 @@ string16 GetExemplarCity(const icu::TimeZone& zone) {
   scoped_ptr_malloc<UResourceBundle, UResClose> zone_item(
       ures_getByKey(zone_strings, zone_id_str.c_str(), NULL, &status));
   icu::UnicodeString city;
-  if (U_FAILURE(status))
-    goto fallback;
-  city = icu::ures_getUnicodeStringByKey(zone_item.get(), "ec", &status);
-  if (U_SUCCESS(status))
-    return string16(city.getBuffer(), city.length());
+  if (!U_FAILURE(status)) {
+    city = icu::ures_getUnicodeStringByKey(zone_item.get(), "ec", &status);
+    if (U_SUCCESS(status))
+      return string16(city.getBuffer(), city.length());
+  }
 
- fallback:
+  // Fallback case in case of failure.
   ReplaceSubstringsAfterOffset(&zone_id_str, 0, ":", "/");
   // Take the last component of a timezone id (e.g. 'Baz' in 'Foo/Bar/Baz').
   // Depending on timezones, keeping all but the 1st component
