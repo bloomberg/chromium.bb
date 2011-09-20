@@ -12,6 +12,7 @@
 }
 
 #images-grid img {
+  background-color: white;
   height: 64px;
   vertical-align: middle;
   width: 64px;

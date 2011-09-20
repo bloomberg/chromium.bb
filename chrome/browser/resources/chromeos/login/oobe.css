@@ -262,6 +262,7 @@ html[dir=rtl]  .step.left {
 }
 
 #user-image-grid img {
+  background-color: white;
   height: 50px;
   vertical-align: middle;
   width: 50px;
