@@ -8,9 +8,6 @@
  */
 const global = this;
 
-// TODO(estade): This should be removed and calls replaced with cr.isMac
-const IS_MAC = /^Mac/.test(navigator.platform);
-
 /**
  * Alias for document.getElementById.
  * @param {string} id The ID of the element to find.

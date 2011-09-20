@@ -149,8 +149,8 @@ cr.define('ntp4', function() {
      * Allow blacklisting most visited site using the keyboard.
      */
     handleKeyDown_: function(e) {
-      if (!IS_MAC && e.keyCode == 46 || // Del
-          IS_MAC && e.metaKey && e.keyCode == 8) { // Cmd + Backspace
+      if (!cr.isMac && e.keyCode == 46 || // Del
+          cr.isMac && e.metaKey && e.keyCode == 8) { // Cmd + Backspace
         this.blacklist_();
       }
     },
