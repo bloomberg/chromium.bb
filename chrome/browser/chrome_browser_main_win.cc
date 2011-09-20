@@ -39,6 +39,14 @@
 #include "views/focus/accelerator_handler.h"
 #include "views/widget/widget.h"
 
+namespace content {
+
+void DidEndMainMessageLoop() {
+  OleUninitialize();
+}
+
+}
+
 namespace {
 
 typedef HRESULT (STDAPICALLTYPE* RegisterApplicationRestartProc)(

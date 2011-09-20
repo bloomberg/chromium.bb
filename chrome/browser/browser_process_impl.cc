@@ -90,8 +90,6 @@
 
 #if defined(OS_WIN)
 #include "views/focus/view_storage.h"
-#elif defined(OS_MACOSX)
-#include "chrome/browser/chrome_browser_main_mac.h"
 #endif
 
 #if defined(IPC_MESSAGE_LOG_ENABLED)
@@ -321,12 +319,8 @@ unsigned int BrowserProcessImpl::ReleaseModule() {
     io_thread()->message_loop()->PostTask(
         FROM_HERE,
         NewRunnableFunction(&base::ThreadRestrictions::SetIOAllowed, true));
-
-#if defined(OS_MACOSX)
     MessageLoop::current()->PostTask(
-        FROM_HERE,
-        NewRunnableFunction(ChromeBrowserMainPartsMac::DidEndMainMessageLoop));
-#endif
+        FROM_HERE, NewRunnableFunction(content::DidEndMainMessageLoop));
     MessageLoop::current()->Quit();
   }
   return module_ref_count_;
