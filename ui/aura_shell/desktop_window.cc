@@ -10,20 +10,6 @@
 
 namespace aura_shell {
 
-namespace internal {
-
-aura::Window* CreateToplevelWindowContainer() {
-  aura::Window* container = new aura::internal::ToplevelWindowContainer;
-  container->Init();
-  container->SetBounds(gfx::Rect(0, 0, 1024, 768), 0);
-  container->SetVisibility(aura::Window::VISIBILITY_SHOWN);
-  container->SetParent(aura::Desktop::GetInstance()->window());
-  aura::Desktop::GetInstance()->set_toplevel_window_container(container);
-  return container;
-}
-
-}  // namespace internal
-
 void InitDesktopWindow() {
   aura::Window* desktop_window = aura::Desktop::GetInstance()->window();
   internal::DesktopLayoutManager* desktop_layout =
@@ -33,7 +19,9 @@ void InitDesktopWindow() {
   // The order of creation here is important to establish the z-index:
   desktop_layout->set_background_widget(internal::CreateDesktopBackground());
   desktop_layout->set_toplevel_window_container(
-      internal::CreateToplevelWindowContainer());
+      aura::Desktop::GetInstance()->toplevel_window_container());
+  desktop_window->MoveChildToFront(
+      aura::Desktop::GetInstance()->toplevel_window_container());
   desktop_layout->set_launcher_widget(internal::CreateLauncher());
   desktop_layout->set_status_area_widget(internal::CreateStatusArea());
 }

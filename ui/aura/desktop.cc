@@ -8,6 +8,7 @@
 #include "base/message_loop.h"
 #include "ui/aura/desktop_host.h"
 #include "ui/aura/root_window.h"
+#include "ui/aura/toplevel_window_container.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/compositor/compositor.h"
 #include "ui/gfx/compositor/layer.h"
@@ -18,7 +19,7 @@ namespace aura {
 Desktop* Desktop::instance_ = NULL;
 
 Desktop::Desktop()
-    : toplevel_window_container_(NULL),
+    : toplevel_window_container_(new aura::internal::ToplevelWindowContainer),
       host_(aura::DesktopHost::Create(gfx::Rect(200, 200, 1280, 1024))),
       ALLOW_THIS_IN_INITIALIZER_LIST(schedule_paint_(this)) {
   DCHECK(MessageLoopForUI::current())
@@ -38,6 +39,10 @@ Desktop::~Desktop() {
 void Desktop::Init() {
   window_->Init();
   compositor()->set_root_layer(window_->layer());
+  toplevel_window_container_->Init();
+  toplevel_window_container_->SetBounds(gfx::Rect(0, 0, 1280, 1024), 0);
+  toplevel_window_container_->SetVisibility(aura::Window::VISIBILITY_SHOWN);
+  toplevel_window_container_->SetParent(window_.get());
 #if defined(USE_X11)
   // TODO(oshima): Implement configure notify and remove this.
   OnHostResized(host_->GetSize());

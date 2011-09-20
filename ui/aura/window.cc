@@ -126,6 +126,10 @@ void Window::MoveChildToFront(Window* child) {
   // TODO(beng): this obviously has to handle different window types.
   children_.insert(children_.begin() + children_.size(), child);
   SchedulePaintInRect(gfx::Rect());
+
+  ui::Layer* parent_layer = child->layer()->parent();
+  parent_layer->Remove(child->layer());
+  parent_layer->Add(child->layer());
 }
 
 void Window::AddChild(Window* child) {

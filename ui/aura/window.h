@@ -40,6 +40,8 @@ class FocusManager;
 // TODO(beng): resolve ownership.
 class AURA_EXPORT Window : public ui::LayerDelegate {
  public:
+  typedef std::vector<Window*> Windows;
+
   enum Visibility {
     // Don't display the window onscreen and don't let it receive mouse
     // events. This is the default.
@@ -102,6 +104,8 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
   void AddChild(Window* child);
   void RemoveChild(Window* child);
 
+  const Windows& children() const { return children_; }
+
   static void ConvertPointToWindow(Window* source,
                                    Window* target,
                                    gfx::Point* point);
@@ -137,8 +141,6 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
   void* user_data() const { return user_data_; }
 
  private:
-  typedef std::vector<Window*> Windows;
-
   // If SchedulePaint has been invoked on the Window the delegate is notified.
   void UpdateLayerCanvas();
 

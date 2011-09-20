@@ -23,6 +23,7 @@ class EventFilter {
   // Try to handle |event| (before the owner's delegate gets a chance to).
   // Returns true if the event was handled by the WindowManager and should not
   // be forwarded to the owner's delegate.
+  // Default implementation for ET_MOUSE_PRESSED focuses the window.
   virtual bool OnMouseEvent(Window* target, MouseEvent* event);
 
  protected:

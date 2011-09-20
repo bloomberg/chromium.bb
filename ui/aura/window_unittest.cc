@@ -12,6 +12,7 @@
 #include "ui/aura/root_window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/gfx/canvas_skia.h"
+#include "ui/gfx/compositor/layer.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 
 #if !defined(OS_WIN)
@@ -218,7 +219,7 @@ TEST_F(WindowTest, GetEventHandlerForPoint) {
       CreateTestWindow(SK_ColorGRAY, 13, gfx::Rect(5, 470, 50, 50), w1.get()));
 
   Window* desktop = Desktop::GetInstance()->window();
-  EXPECT_EQ(desktop, desktop->GetEventHandlerForPoint(gfx::Point(5, 5)));
+  EXPECT_EQ(NULL, desktop->GetEventHandlerForPoint(gfx::Point(5, 5)));
   EXPECT_EQ(w1.get(), desktop->GetEventHandlerForPoint(gfx::Point(11, 11)));
   EXPECT_EQ(w11.get(), desktop->GetEventHandlerForPoint(gfx::Point(16, 16)));
   EXPECT_EQ(w111.get(), desktop->GetEventHandlerForPoint(gfx::Point(21, 21)));
@@ -275,6 +276,33 @@ TEST_F(WindowTest, DestroyTest) {
   EXPECT_EQ(1, parent_delegate.destroyed_count());
   EXPECT_EQ(1, child_delegate.destroying_count());
   EXPECT_EQ(1, child_delegate.destroyed_count());
+}
+
+// Make sure MoveChildToFront moves both the window and layer to the front.
+TEST_F(WindowTest, MoveChildToFront) {
+  Window parent(NULL);
+  parent.Init();
+  Window child1(NULL);
+  child1.Init();
+  Window child2(NULL);
+  child2.Init();
+
+  child1.SetParent(&parent);
+  child2.SetParent(&parent);
+  ASSERT_EQ(2u, parent.children().size());
+  EXPECT_EQ(&child1, parent.children()[0]);
+  EXPECT_EQ(&child2, parent.children()[1]);
+  ASSERT_EQ(2u, parent.layer()->children().size());
+  EXPECT_EQ(child1.layer(), parent.layer()->children()[0]);
+  EXPECT_EQ(child2.layer(), parent.layer()->children()[1]);
+
+  parent.MoveChildToFront(&child1);
+  ASSERT_EQ(2u, parent.children().size());
+  EXPECT_EQ(&child1, parent.children()[1]);
+  EXPECT_EQ(&child2, parent.children()[0]);
+  ASSERT_EQ(2u, parent.layer()->children().size());
+  EXPECT_EQ(child1.layer(), parent.layer()->children()[1]);
+  EXPECT_EQ(child2.layer(), parent.layer()->children()[0]);
 }
 
 }  // namespace internal

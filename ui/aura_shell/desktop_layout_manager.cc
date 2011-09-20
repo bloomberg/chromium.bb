@@ -15,6 +15,7 @@ namespace internal {
 
 DesktopLayoutManager::DesktopLayoutManager(aura::Window* owner)
     : owner_(owner),
+      toplevel_window_container_(NULL),
       background_widget_(NULL),
       launcher_widget_(NULL),
       status_area_widget_(NULL) {

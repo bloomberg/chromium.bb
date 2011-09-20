@@ -5,7 +5,6 @@
 #include "ui/aura/toplevel_window_event_filter.h"
 
 #include "ui/aura/event.h"
-#include "ui/aura/focus_manager.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 
@@ -27,9 +26,6 @@ bool ToplevelWindowEventFilter::OnMouseEvent(Window* target,
                                              MouseEvent* event) {
   switch (event->type()) {
     case ui::ET_MOUSE_PRESSED:
-      // TODO(beng): some windows (e.g. disabled ones, tooltips, etc) may not be
-      //             focusable.
-      target->GetFocusManager()->SetFocusedWindow(target);
       window_component_ =
           target->delegate()->GetNonClientComponent(event->location());
       MoveWindowToFront(target);
@@ -53,7 +49,7 @@ bool ToplevelWindowEventFilter::OnMouseEvent(Window* target,
     default:
       break;
   }
-  return false;
+  return EventFilter::OnMouseEvent(target, event);
 }
 
 void ToplevelWindowEventFilter::MoveWindowToFront(Window* target) {
