@@ -135,6 +135,8 @@ static void GLibLogHandler(const gchar* log_domain,
              strstr(log_domain, "<unknown>")) {
     LOG(ERROR) << "DBus call timeout or out of memory: "
                << "http://crosbug.com/15496";
+  } else if (strstr(message, "XDG_RUNTIME_DIR variable not set")) {
+    LOG(ERROR) << message << " (http://bugs.chromium.org/97293)";
   } else {
     LOG(DFATAL) << log_domain << ": " << message;
   }
