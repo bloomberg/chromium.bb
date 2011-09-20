@@ -729,12 +729,14 @@ bool ProfileSyncServiceHarness::IsSynced() {
     return false;
   }
   const SyncSessionSnapshot* snap = GetLastSessionSnapshot();
+  const ProfileSyncService::Status status = GetStatus();
   // TODO(rsimha): Remove additional checks of snap->has_more_to_sync and
   // snap->unsynced_count once http://crbug.com/48989 is fixed.
   bool is_synced = snap &&
       snap->num_blocking_conflicting_updates == 0 &&
       ServiceIsPushingChanges() &&
-      GetStatus().notifications_enabled &&
+      status.notifications_enabled &&
+      status.summary != sync_api::SyncManager::Status::SYNCING &&
       !service()->HasUnsyncedItems() &&
       !snap->has_more_to_sync &&
       snap->unsynced_count == 0 &&
@@ -945,7 +947,7 @@ std::string ProfileSyncServiceHarness::GetClientInfoString(
   os << profile_debug_name_ << ": " << message << ": ";
   if (service()) {
     const SyncSessionSnapshot* snap = GetLastSessionSnapshot();
-    const ProfileSyncService::Status& status = GetStatus();
+    const ProfileSyncService::Status status = GetStatus();
     if (snap) {
       // Capture select info from the sync session snapshot and syncer status.
       os << "has_more_to_sync: "
