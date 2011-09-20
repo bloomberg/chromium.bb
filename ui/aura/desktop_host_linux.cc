@@ -59,7 +59,8 @@ DesktopHostLinux::DesktopHostLinux(const gfx::Rect& bounds)
   long event_mask = ButtonPressMask | ButtonReleaseMask |
                     KeyPressMask | KeyReleaseMask |
                     ExposureMask | VisibilityChangeMask |
-                    StructureNotifyMask | PropertyChangeMask;
+                    StructureNotifyMask | PropertyChangeMask |
+                    PointerMotionMask;
   XSelectInput(xdisplay_, xwindow_, event_mask);
   XFlush(xdisplay_);
 }
