@@ -4,6 +4,7 @@
 
 #include "ui/aura_shell/desktop_background_view.h"
 
+#include "base/utf_string_conversions.h"
 #include "grit/ui_resources.h"
 #include "ui/aura/desktop.h"
 #include "ui/aura_shell/aura_shell_export.h"
@@ -42,7 +43,8 @@ AURA_SHELL_EXPORT views::Widget* CreateDesktopBackground() {
   desktop_widget->Init(params);
   desktop_widget->SetContentsView(view);
   desktop_widget->Show();
-  desktop_widget->GetNativeView()->set_name(L"DesktopBackgroundView");
+  desktop_widget->GetNativeView()->set_name(
+      ASCIIToUTF16("DesktopBackgroundView"));
   return desktop_widget;
 }
 

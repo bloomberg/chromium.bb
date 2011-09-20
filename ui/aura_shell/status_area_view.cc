@@ -4,6 +4,7 @@
 
 #include "ui/aura_shell/status_area_view.h"
 
+#include "base/utf_string_conversions.h"
 #include "grit/ui_resources.h"
 #include "ui/aura/desktop.h"
 #include "ui/aura_shell/aura_shell_export.h"
@@ -40,7 +41,7 @@ AURA_SHELL_EXPORT views::Widget* CreateStatusArea() {
   widget->Init(params);
   widget->SetContentsView(status_area_view);
   widget->Show();
-  widget->GetNativeView()->set_name(L"StatusAreaView");
+  widget->GetNativeView()->set_name(ASCIIToUTF16("StatusAreaView"));
   return widget;
 }
 

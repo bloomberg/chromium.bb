@@ -4,6 +4,7 @@
 
 #include "ui/aura_shell/launcher/launcher_view.h"
 
+#include "base/utf_string_conversions.h"
 #include "ui/aura/desktop.h"
 #include "ui/aura_shell/aura_shell_export.h"
 #include "ui/aura_shell/launcher/launcher_button.h"
@@ -44,7 +45,7 @@ AURA_SHELL_EXPORT views::Widget* CreateLauncher() {
   launcher_widget->Init(params2);
   launcher_widget->SetContentsView(launcher_view);
   launcher_widget->Show();
-  launcher_widget->GetNativeView()->set_name(L"LauncherView");
+  launcher_widget->GetNativeView()->set_name(ASCIIToUTF16("LauncherView"));
   return launcher_widget;
 }
 

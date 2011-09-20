@@ -4,6 +4,7 @@
 
 #include "ui/aura_shell/examples/toplevel_window.h"
 
+#include "base/utf_string_conversions.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/canvas.h"
 #include "views/widget/widget.h"
@@ -16,7 +17,7 @@ void ToplevelWindow::CreateToplevelWindow() {
   views::Widget* widget =
       views::Widget::CreateWindowWithBounds(new ToplevelWindow,
                                             gfx::Rect(120, 150, 400, 300));
-  widget->GetNativeView()->set_name(L"Examples:ToplevelWindow");
+  widget->GetNativeView()->set_name(ASCIIToUTF16("Examples:ToplevelWindow"));
   widget->Show();
 }
 
