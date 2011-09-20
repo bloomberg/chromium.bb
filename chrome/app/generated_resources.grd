@@ -10779,6 +10779,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
     <message name="IDS_FILEBROWSER_ERROR_TITLE" desc="Title text of an error message prompt.">
       Error
     </message>
+    <message name="IDS_FILEBROWSER_ERROR_VIEWING_FILE_TITLE" desc="Title of error message propmt when user attempts to open a non-supported file in file browser.">
+      <ph name="FILENAME">$1</ph>
+    </message>
+    <message name="IDS_FILEBROWSER_ERROR_VIEWING_FILE" desc="Error message when user attempts to open a non-supported file in file browser.">
+      To view this file, convert it to a format that's viewable on the web. For example, you can upload it to Google Docs.
+    </message>
     <message name="IDS_FILEBROWSER_ERROR_UNKNOWN_FILE_TYPE" desc="Error message when user attempts to open a file of unknown type in file browser.">
       <ph name="FILENAME">$1</ph> - Unknown file type.
     </message>

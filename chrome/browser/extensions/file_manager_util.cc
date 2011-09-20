@@ -263,9 +263,11 @@ void FileManagerUtil::ViewItem(const FilePath& full_path, bool enqueue) {
       NewRunnableFunction(
           &browser::ShowErrorBox,
           static_cast<gfx::NativeWindow>(NULL),
-          l10n_util::GetStringUTF16(IDS_FILEBROWSER_ERROR_TITLE),
-          l10n_util::GetStringFUTF16(IDS_FILEBROWSER_ERROR_UNKNOWN_FILE_TYPE,
-                                     UTF8ToUTF16(full_path.BaseName().value()))
+          l10n_util::GetStringFUTF16(
+              IDS_FILEBROWSER_ERROR_VIEWING_FILE_TITLE,
+              UTF8ToUTF16(full_path.BaseName().value())),
+          l10n_util::GetStringUTF16(
+              IDS_FILEBROWSER_ERROR_VIEWING_FILE)
           ));
 }
 
