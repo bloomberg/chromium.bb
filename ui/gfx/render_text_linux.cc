@@ -123,13 +123,19 @@ void RenderTextLinux::Draw(Canvas* canvas) {
 }
 
 SelectionModel RenderTextLinux::FindCursorPosition(const Point& point) {
-  // TODO(xji): when points outside of text, return HOME/END position.
   PangoLayout* layout = EnsureLayout();
 
   if (text().empty())
     return SelectionModel(0, 0, SelectionModel::LEADING);
 
   Point p(ToTextPoint(point));
+
+  // When the point is outside of text, return HOME/END position.
+  if (p.x() < 0)
+    return LeftEndSelectionModel();
+  else if (p.x() > GetStringWidth())
+    return RightEndSelectionModel();
+
   int caret_pos, trailing;
   pango_layout_xy_to_index(layout, p.x() * PANGO_SCALE, p.y() * PANGO_SCALE,
                            &caret_pos, &trailing);
@@ -212,7 +218,7 @@ SelectionModel RenderTextLinux::LeftEndSelectionModel() {
         return SelectionModel(text().length(), caret, SelectionModel::LEADING);
       } else {  // RTL.
         size_t caret = Utf16IndexOfAdjacentGrapheme(item->offset + item->length,
-                                                    PREVIOUS);
+                                                    false);
         return SelectionModel(text().length(), caret, SelectionModel::TRAILING);
       }
     }
@@ -227,7 +233,7 @@ SelectionModel RenderTextLinux::RightEndSelectionModel() {
       PangoItem* item = last_visual_run->item;
       if (item->analysis.level % 2 == 0) {  // LTR.
         size_t caret = Utf16IndexOfAdjacentGrapheme(item->offset + item->length,
-                                                    PREVIOUS);
+                                                    false);
         return SelectionModel(text().length(), caret, SelectionModel::TRAILING);
       } else {  // RTL.
         size_t caret = Utf8IndexToUtf16Index(item->offset);
@@ -238,16 +244,18 @@ SelectionModel RenderTextLinux::RightEndSelectionModel() {
   return SelectionModel(0, 0, SelectionModel::LEADING);
 }
 
-size_t RenderTextLinux::GetIndexOfPreviousGrapheme(size_t position) {
+bool RenderTextLinux::IsCursorablePosition(size_t position) {
+  if (position == 0 && text().empty())
+    return true;
+
   EnsureLayout();
-  size_t index = Utf16IndexToUtf8Index(position);
-  return Utf16IndexOfAdjacentGrapheme(index, PREVIOUS);
+  return (position >= 0 && position < static_cast<size_t>(num_log_attrs_) &&
+          log_attrs_[position].is_cursor_position);
 }
 
-size_t RenderTextLinux::GetIndexOfNextGrapheme(size_t position) {
+size_t RenderTextLinux::IndexOfAdjacentGrapheme(size_t index, bool next) {
   EnsureLayout();
-  size_t index = Utf16IndexToUtf8Index(position);
-  return Utf16IndexOfAdjacentGrapheme(index, NEXT);
+  return Utf16IndexOfAdjacentGrapheme(Utf16IndexToUtf8Index(index), next);
 }
 
 GSList* RenderTextLinux::GetRunContainingPosition(size_t position) const {
@@ -266,12 +274,12 @@ GSList* RenderTextLinux::GetRunContainingPosition(size_t position) const {
 
 size_t RenderTextLinux::Utf8IndexOfAdjacentGrapheme(
     size_t utf8_index_of_current_grapheme,
-    RelativeLogicalPosition pos) const {
+    bool next) const {
   const char* ch = layout_text_ + utf8_index_of_current_grapheme;
   int char_offset = static_cast<int>(g_utf8_pointer_to_offset(layout_text_,
                                                               ch));
   int start_char_offset = char_offset;
-  if (pos == PREVIOUS) {
+  if (!next) {
     if (char_offset > 0) {
       do {
         --char_offset;
@@ -292,23 +300,23 @@ size_t RenderTextLinux::Utf8IndexOfAdjacentGrapheme(
 
 size_t RenderTextLinux::Utf16IndexOfAdjacentGrapheme(
     size_t utf8_index_of_current_grapheme,
-    RelativeLogicalPosition pos) const {
+    bool next) const {
   size_t utf8_index = Utf8IndexOfAdjacentGrapheme(
-      utf8_index_of_current_grapheme, pos);
+      utf8_index_of_current_grapheme, next);
   return Utf8IndexToUtf16Index(utf8_index);
 }
 
 SelectionModel RenderTextLinux::FirstSelectionModelInsideRun(
     const PangoItem* item) const {
   size_t caret = Utf8IndexToUtf16Index(item->offset);
-  size_t cursor = Utf16IndexOfAdjacentGrapheme(item->offset, NEXT);
+  size_t cursor = Utf16IndexOfAdjacentGrapheme(item->offset, true);
   return SelectionModel(cursor, caret, SelectionModel::TRAILING);
 }
 
 SelectionModel RenderTextLinux::LastSelectionModelInsideRun(
     const PangoItem* item) const {
   size_t caret = Utf16IndexOfAdjacentGrapheme(item->offset + item->length,
-                                              PREVIOUS);
+                                              false);
   return SelectionModel(caret, caret, SelectionModel::LEADING);
 }
 

@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <string>
+#include <vector>
+
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -15,6 +18,7 @@
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/keycodes/keyboard_codes.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/render_text.h"
 #include "views/controls/textfield/native_textfield_views.h"
 #include "views/controls/textfield/textfield.h"
@@ -87,6 +91,8 @@ class GetTextHelper {
 
   DISALLOW_COPY_AND_ASSIGN(GetTextHelper);
 };
+
+const char16 kHebrewLetterSamekh = 0x05E1;
 
 }  // namespace
 
@@ -215,6 +221,19 @@ class NativeTextfieldViewsTest : public ViewsTestBase,
     SendKeyEvent(key_code, false, false);
   }
 
+  void SendKeyEvent(char16 ch) {
+    if (ch < 0x80) {
+      ui::KeyboardCode code =
+          ch == ' ' ? ui::VKEY_SPACE :
+          static_cast<ui::KeyboardCode>(ui::VKEY_A + ch - 'a');
+      SendKeyEvent(code);
+    } else {
+      KeyEvent event(ui::ET_KEY_PRESSED, ui::VKEY_UNKNOWN, 0);
+      event.set_character(ch);
+      input_method_->DispatchKeyEvent(event);
+    }
+  }
+
   View* GetFocusedView() {
     return widget_->GetFocusManager()->GetFocusedView();
   }
@@ -223,6 +242,45 @@ class NativeTextfieldViewsTest : public ViewsTestBase,
     gfx::RenderText* render_text = textfield_view_->GetRenderText();
     return render_text->GetCursorBounds(
         gfx::SelectionModel(cursor_pos), false).x();
+  }
+
+  // Get the current cursor bounds.
+  gfx::Rect GetCursorBounds() {
+    gfx::RenderText* render_text = textfield_view_->GetRenderText();
+    gfx::Rect bounds = render_text->GetUpdatedCursorBounds();
+    return bounds;
+  }
+
+  // Get the cursor bounds of |sel|.
+  gfx::Rect GetCursorBounds(const gfx::SelectionModel& sel) {
+    gfx::RenderText* render_text = textfield_view_->GetRenderText();
+    gfx::Rect bounds = render_text->GetCursorBounds(sel, true);
+    return bounds;
+  }
+
+  gfx::Rect GetDisplayRect() {
+    return textfield_view_->GetRenderText()->display_rect();
+  }
+
+  // Mouse click on the point whose x-axis is |bound|'s x plus |x_offset| and
+  // y-axis is in the middle of |bound|'s vertical range.
+  void MouseClick(const gfx::Rect bound, int x_offset) {
+    int x = bound.x() +  x_offset;
+    int y = bound.y() + bound.height() / 2;
+    MouseEvent click(ui::ET_MOUSE_PRESSED, x, y, ui::EF_LEFT_BUTTON_DOWN);
+    textfield_view_->OnMousePressed(click);
+    MouseEvent release(ui::ET_MOUSE_RELEASED, x, y, ui::EF_LEFT_BUTTON_DOWN);
+    textfield_view_->OnMouseReleased(release);
+  }
+
+  // This is to avoid double/triple click.
+  void NonClientMouseClick() {
+    MouseEvent click(ui::ET_MOUSE_PRESSED, 0, 0,
+                     ui::EF_LEFT_BUTTON_DOWN | ui::EF_IS_NON_CLIENT);
+    textfield_view_->OnMousePressed(click);
+    MouseEvent release(ui::ET_MOUSE_RELEASED, 0, 0,
+                       ui::EF_LEFT_BUTTON_DOWN | ui::EF_IS_NON_CLIENT);
+    textfield_view_->OnMouseReleased(release);
   }
 
   // Wrap for visibility in test classes.
@@ -1139,6 +1197,342 @@ TEST_F(NativeTextfieldViewsTest, UndoRedoTest) {
   EXPECT_STR_EQ("123", textfield_->text());
   SendKeyEvent(ui::VKEY_Y, false, true);
   EXPECT_STR_EQ("ab3", textfield_->text());
+}
+
+TEST_F(NativeTextfieldViewsTest, TextCursorDisplayTest) {
+  InitTextfield(Textfield::STYLE_DEFAULT);
+  // LTR-RTL string in LTR context.
+  SendKeyEvent('a');
+  EXPECT_STR_EQ("a", textfield_->text());
+  int x = GetCursorBounds().x();
+  int prev_x = x;
+
+  SendKeyEvent('b');
+  EXPECT_STR_EQ("ab", textfield_->text());
+  x = GetCursorBounds().x();
+  EXPECT_LT(prev_x, x);
+  prev_x = x;
+
+  SendKeyEvent(0x05E1);
+  EXPECT_EQ(WideToUTF16(L"ab\x05E1"), textfield_->text());
+  x = GetCursorBounds().x();
+  EXPECT_EQ(prev_x, x);
+
+  SendKeyEvent(0x05E2);
+  EXPECT_EQ(WideToUTF16(L"ab\x05E1\x5E2"), textfield_->text());
+  x = GetCursorBounds().x();
+  EXPECT_EQ(prev_x, x);
+
+  // Clear text.
+  SendKeyEvent(ui::VKEY_A, false, true);
+  SendKeyEvent('\n');
+
+  // RTL-LTR string in LTR context.
+  SendKeyEvent(0x05E1);
+  EXPECT_EQ(WideToUTF16(L"\x05E1"), textfield_->text());
+  x = GetCursorBounds().x();
+  EXPECT_EQ(GetDisplayRect().x(), x);
+  prev_x = x;
+
+  SendKeyEvent(0x05E2);
+  EXPECT_EQ(WideToUTF16(L"\x05E1\x05E2"), textfield_->text());
+  x = GetCursorBounds().x();
+  EXPECT_EQ(prev_x, x);
+
+  SendKeyEvent('a');
+  EXPECT_EQ(WideToUTF16(L"\x05E1\x5E2"L"a"), textfield_->text());
+  x = GetCursorBounds().x();
+  EXPECT_LT(prev_x, x);
+  prev_x = x;
+
+  SendKeyEvent('b');
+  EXPECT_EQ(WideToUTF16(L"\x05E1\x5E2"L"ab"), textfield_->text());
+  x = GetCursorBounds().x();
+  EXPECT_LT(prev_x, x);
+}
+
+TEST_F(NativeTextfieldViewsTest, TextCursorDisplayInRTLTest) {
+  std::string locale = l10n_util::GetApplicationLocale("");
+  base::i18n::SetICUDefaultLocale("he");
+
+  InitTextfield(Textfield::STYLE_DEFAULT);
+  // LTR-RTL string in RTL context.
+  SendKeyEvent('a');
+  EXPECT_STR_EQ("a", textfield_->text());
+  int x = GetCursorBounds().x();
+  EXPECT_EQ(GetDisplayRect().right() - 1, x);
+  int prev_x = x;
+
+  SendKeyEvent('b');
+  EXPECT_STR_EQ("ab", textfield_->text());
+  x = GetCursorBounds().x();
+  EXPECT_EQ(prev_x, x);
+
+  SendKeyEvent(0x05E1);
+  EXPECT_EQ(WideToUTF16(L"ab\x05E1"), textfield_->text());
+  x = GetCursorBounds().x();
+  EXPECT_GT(prev_x, x);
+  prev_x = x;
+
+  SendKeyEvent(0x05E2);
+  EXPECT_EQ(WideToUTF16(L"ab\x05E1\x5E2"), textfield_->text());
+  x = GetCursorBounds().x();
+  EXPECT_GT(prev_x, x);
+
+  SendKeyEvent(ui::VKEY_A, false, true);
+  SendKeyEvent('\n');
+
+  // RTL-LTR string in RTL context.
+  SendKeyEvent(0x05E1);
+  EXPECT_EQ(WideToUTF16(L"\x05E1"), textfield_->text());
+  x = GetCursorBounds().x();
+  prev_x = x;
+
+  SendKeyEvent(0x05E2);
+  EXPECT_EQ(WideToUTF16(L"\x05E1\x05E2"), textfield_->text());
+  x = GetCursorBounds().x();
+  EXPECT_GT(prev_x, x);
+  prev_x = x;
+
+  SendKeyEvent('a');
+  EXPECT_EQ(WideToUTF16(L"\x05E1\x5E2"L"a"), textfield_->text());
+  x = GetCursorBounds().x();
+#if defined(OS_WIN)
+  // In Windows, the text is always in LTR directionality even in RTL UI.
+  // TODO(xji): it should change if we fix the directionality in Window's
+  // NativeTextfieldViews
+  EXPECT_LT(prev_x, x);
+#else
+  EXPECT_EQ(prev_x, x);
+#endif
+  prev_x = x;
+
+  SendKeyEvent('b');
+  EXPECT_EQ(WideToUTF16(L"\x05E1\x5E2"L"ab"), textfield_->text());
+  x = GetCursorBounds().x();
+  EXPECT_EQ(prev_x, x);
+
+  // Reset locale.
+  base::i18n::SetICUDefaultLocale(locale);
+}
+
+TEST_F(NativeTextfieldViewsTest, HitInsideTextAreaTest) {
+  InitTextfield(Textfield::STYLE_DEFAULT);
+  textfield_->SetText(WideToUTF16(L"ab\x05E1\x5E2"));
+  std::vector<gfx::Rect> cursor_bounds;
+
+  // Save each cursor bound.
+  gfx::SelectionModel sel(0, 0, gfx::SelectionModel::LEADING);
+  cursor_bounds.push_back(GetCursorBounds(sel));
+
+  sel = gfx::SelectionModel(1, 0, gfx::SelectionModel::TRAILING);
+  gfx::Rect bound = GetCursorBounds(sel);
+  sel = gfx::SelectionModel(1, 1, gfx::SelectionModel::LEADING);
+  EXPECT_EQ(bound, GetCursorBounds(sel));
+  cursor_bounds.push_back(bound);
+
+  sel = gfx::SelectionModel(2, 1, gfx::SelectionModel::TRAILING);
+  bound = GetCursorBounds(sel);
+  sel = gfx::SelectionModel(4, 3, gfx::SelectionModel::TRAILING);
+  EXPECT_EQ(bound, GetCursorBounds(sel));
+  cursor_bounds.push_back(bound);
+
+  sel = gfx::SelectionModel(3, 2, gfx::SelectionModel::TRAILING);
+  bound = GetCursorBounds(sel);
+  sel = gfx::SelectionModel(3, 3, gfx::SelectionModel::LEADING);
+  EXPECT_EQ(bound, GetCursorBounds(sel));
+  cursor_bounds.push_back(bound);
+
+  sel = gfx::SelectionModel(2, 2, gfx::SelectionModel::LEADING);
+  bound = GetCursorBounds(sel);
+  sel = gfx::SelectionModel(4, 2, gfx::SelectionModel::LEADING);
+  EXPECT_EQ(bound, GetCursorBounds(sel));
+  cursor_bounds.push_back(bound);
+
+  // Expected cursor position when clicking left and right of each character.
+  size_t cursor_pos_expected[] = {0, 1, 1, 2, 4, 3, 3, 2};
+
+  int index = 0;
+  for (int i = 0; i < static_cast<int>(cursor_bounds.size() - 1); ++i) {
+    int half_width = (cursor_bounds[i + 1].x() - cursor_bounds[i].x()) / 2;
+    MouseClick(cursor_bounds[i], half_width / 2);
+    EXPECT_EQ(cursor_pos_expected[index++], textfield_->GetCursorPosition());
+
+    // To avoid trigger double click. Not using sleep() since it takes longer
+    // for the test to run if using sleep().
+    NonClientMouseClick();
+
+    MouseClick(cursor_bounds[i + 1], - (half_width / 2));
+    EXPECT_EQ(cursor_pos_expected[index++], textfield_->GetCursorPosition());
+
+    NonClientMouseClick();
+  }
+}
+
+TEST_F(NativeTextfieldViewsTest, HitOutsideTextAreaTest) {
+  InitTextfield(Textfield::STYLE_DEFAULT);
+
+  // LTR-RTL string in LTR context.
+  textfield_->SetText(WideToUTF16(L"ab\x05E1\x5E2"));
+
+  SendKeyEvent(ui::VKEY_HOME);
+  gfx::Rect bound = GetCursorBounds();
+  MouseClick(bound, -10);
+  EXPECT_EQ(bound, GetCursorBounds());
+
+  SendKeyEvent(ui::VKEY_END);
+  bound = GetCursorBounds();
+  MouseClick(bound, 10);
+  EXPECT_EQ(bound, GetCursorBounds());
+
+  NonClientMouseClick();
+
+  // RTL-LTR string in LTR context.
+  textfield_->SetText(WideToUTF16(L"\x05E1\x5E2"L"ab"));
+
+  SendKeyEvent(ui::VKEY_HOME);
+  bound = GetCursorBounds();
+#if defined(OS_WIN)
+  MouseClick(bound, -10);
+#else
+  MouseClick(bound, 10);
+#endif
+  EXPECT_EQ(bound, GetCursorBounds());
+
+  SendKeyEvent(ui::VKEY_END);
+  bound = GetCursorBounds();
+#if defined(OS_WIN)
+  MouseClick(bound, 10);
+#else
+  MouseClick(bound, -10);
+#endif
+  EXPECT_EQ(bound, GetCursorBounds());
+}
+
+TEST_F(NativeTextfieldViewsTest, HitOutsideTextAreaInRTLTest) {
+  std::string locale = l10n_util::GetApplicationLocale("");
+  base::i18n::SetICUDefaultLocale("he");
+
+  InitTextfield(Textfield::STYLE_DEFAULT);
+
+  // RTL-LTR string in RTL context.
+  textfield_->SetText(WideToUTF16(L"\x05E1\x5E2"L"ab"));
+  SendKeyEvent(ui::VKEY_HOME);
+  gfx::Rect bound = GetCursorBounds();
+  MouseClick(bound, 10);
+  EXPECT_EQ(bound, GetCursorBounds());
+
+  SendKeyEvent(ui::VKEY_END);
+  bound = GetCursorBounds();
+  MouseClick(bound, -10);
+  EXPECT_EQ(bound, GetCursorBounds());
+
+  NonClientMouseClick();
+
+  // LTR-RTL string in RTL context.
+  textfield_->SetText(WideToUTF16(L"ab\x05E1\x5E2"));
+  SendKeyEvent(ui::VKEY_HOME);
+  bound = GetCursorBounds();
+#if defined(OS_WIN)
+  MouseClick(bound, 10);
+#else
+  MouseClick(bound, -10);
+#endif
+  EXPECT_EQ(bound, GetCursorBounds());
+
+  SendKeyEvent(ui::VKEY_END);
+  bound = GetCursorBounds();
+#if defined(OS_WIN)
+  MouseClick(bound, -10);
+#else
+  MouseClick(bound, 10);
+#endif
+  EXPECT_EQ(bound, GetCursorBounds());
+
+  // Reset locale.
+  base::i18n::SetICUDefaultLocale(locale);
+}
+
+// This verifies that |bound| is contained by |display|. |bound|'s right edge
+// must be less than |diaplay|'s right edge.
+void OverflowCursorBoundTestVerifier(const gfx::Rect& display,
+                                     const gfx::Rect& bound) {
+  EXPECT_LE(display.x(), bound.x());
+  EXPECT_GT(display.right(), bound.right());
+  EXPECT_LE(display.y(), bound.y());
+  EXPECT_GE(display.bottom(), bound.bottom());
+}
+
+TEST_F(NativeTextfieldViewsTest, OverflowTest) {
+  InitTextfield(Textfield::STYLE_DEFAULT);
+
+  string16 str;
+  for (int i = 0; i < 500; ++i)
+    SendKeyEvent('a');
+  SendKeyEvent(kHebrewLetterSamekh);
+  gfx::Rect bound = GetCursorBounds();
+  gfx::Rect display = GetDisplayRect();
+  OverflowCursorBoundTestVerifier(display, bound);
+
+  // Test mouse pointing.
+  MouseClick(bound, -1);
+  EXPECT_EQ(500U, textfield_->GetCursorPosition());
+
+  // Clear text.
+  SendKeyEvent(ui::VKEY_A, false, true);
+  SendKeyEvent('\n');
+
+  for (int i = 0; i < 500; ++i)
+    SendKeyEvent(kHebrewLetterSamekh);
+  SendKeyEvent('a');
+  bound = GetCursorBounds();
+  display = GetDisplayRect();
+  OverflowCursorBoundTestVerifier(display, bound);
+
+  MouseClick(bound, -1);
+  EXPECT_EQ(501U, textfield_->GetCursorPosition());
+}
+
+TEST_F(NativeTextfieldViewsTest, OverflowInRTLTest) {
+  std::string locale = l10n_util::GetApplicationLocale("");
+  base::i18n::SetICUDefaultLocale("he");
+
+  InitTextfield(Textfield::STYLE_DEFAULT);
+
+  string16 str;
+  for (int i = 0; i < 500; ++i)
+    SendKeyEvent('a');
+  SendKeyEvent(kHebrewLetterSamekh);
+  gfx::Rect bound = GetCursorBounds();
+  gfx::Rect display = GetDisplayRect();
+  OverflowCursorBoundTestVerifier(display, bound);
+
+  MouseClick(bound, 1);
+  EXPECT_EQ(501U, textfield_->GetCursorPosition());
+
+  // Clear text.
+  SendKeyEvent(ui::VKEY_A, false, true);
+  SendKeyEvent('\n');
+
+  for (int i = 0; i < 500; ++i)
+    SendKeyEvent(kHebrewLetterSamekh);
+  SendKeyEvent('a');
+  bound = GetCursorBounds();
+  display = GetDisplayRect();
+  OverflowCursorBoundTestVerifier(display, bound);
+
+  MouseClick(bound, 1);
+#if defined(OS_WIN)
+  // In Windows, the text is always in LTR directionality even in RTL UI.
+  // TODO(xji): it should change if we fix the directionality in Window's
+  // NativeTextfieldViews
+  EXPECT_EQ(0U, textfield_->GetCursorPosition());
+#else
+  EXPECT_EQ(500U, textfield_->GetCursorPosition());
+#endif
+
+  // Reset locale.
+  base::i18n::SetICUDefaultLocale(locale);
 }
 
 }  // namespace views
