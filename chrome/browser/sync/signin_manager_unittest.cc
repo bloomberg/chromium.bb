@@ -33,6 +33,7 @@ class SigninManagerTest : public TokenServiceTestHarness {
   }
 
   virtual void TearDown() OVERRIDE {
+    TokenServiceTestHarness::TearDown();
     browser_sync::SetIsUsingOAuthForTest(originally_using_oauth_);
   }
 
