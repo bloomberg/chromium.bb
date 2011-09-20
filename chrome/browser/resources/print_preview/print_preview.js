@@ -35,6 +35,9 @@ var defaultOrLastUsedPrinterName = '';
 // True when a pending print preview request exists.
 var hasPendingPreviewRequest = false;
 
+// True when the first page is loaded in the plugin.
+var isFirstPageLoaded = false;
+
 // The ID of the last preview request.
 var lastPreviewRequestID = -1;
 
@@ -452,25 +455,6 @@ function requestToPrintDocument() {
 }
 
 /**
- * Asks the browser to print the pending preview PDF that just finished
- * loading.
- */
-function requestToPrintPendingDocument() {
-  hasPendingPrintDocumentRequest = false;
-  if (getSelectedPrinterName() == PRINT_WITH_CLOUD_PRINT) {
-    chrome.send('printWithCloudPrint');
-    return;
-  }
-
-  if (!areSettingsValid()) {
-    if (isTabHidden)
-      cancelPendingPrintRequest();
-    return;
-  }
-  sendPrintDocumentRequest();
-}
-
-/**
  * Sends a message to cancel the pending print request.
  */
 function cancelPendingPrintRequest() {
@@ -492,7 +476,6 @@ function sendPrintDocumentRequest() {
  * Loads the selected preview pages.
  */
 function loadSelectedPages() {
-  hasPendingPreviewRequest = false;
   pageSettings.updatePageSelection();
   var pageSet = pageSettings.previouslySelectedPages;
   var pageCount = pageSet.length;
@@ -524,6 +507,7 @@ function requestPrintPreview() {
   printSettings.save();
   layoutSettings.updateState();
   isPrintReadyMetafileReady = false;
+  isFirstPageLoaded = false;
 
   var totalPageCount = pageSettings.totalPageCount;
   if (!previewModifiable && totalPageCount > 0)
@@ -884,7 +868,9 @@ function onPDFLoad() {
   }
   $('pdf-viewer').fitToHeight();
   cr.dispatchSimpleEvent(document, 'PDFLoaded');
-  hideOverlayLayer();
+  isFirstPageLoaded = true;
+  checkAndHideOverlayLayerIfValid();
+  sendPrintDocumentRequestIfNeeded();
 }
 
 function setPluginPreviewPageCount() {
@@ -917,6 +903,22 @@ function onDidGetDefaultPageLayout(pageLayout) {
 }
 
 /**
+ * This function sends a request to hide the overlay layer only if there is no
+ * pending print document request and we are not waiting for the print ready
+ * metafile.
+ */
+function checkAndHideOverlayLayerIfValid() {
+  var selectedPrinter = getSelectedPrinterName();
+  var printToPDF = selectedPrinter == PRINT_TO_PDF;
+  var printWithCloudPrint = selectedPrinter == PRINT_WITH_CLOUD_PRINT;
+  if ((printToPDF || printWithCloudPrint || !previewModifiable) &&
+      !isPrintReadyMetafileReady && hasPendingPrintDocumentRequest) {
+    return;
+  }
+  hideOverlayLayer();
+}
+
+/**
  * Called when no pipelining previewed pages.
  * @param {string} previewUid Preview unique identifier.
  * @param {number} previewResponseId The preview request id that resulted in
@@ -925,15 +927,16 @@ function onDidGetDefaultPageLayout(pageLayout) {
 function reloadPreviewPages(previewUid, previewResponseId) {
   if (!isExpectedPreviewResponse(previewResponseId))
     return;
-  hasPendingPreviewRequest = false;
-  isPrintReadyMetafileReady = true;
 
   cr.dispatchSimpleEvent(document, 'updatePrintButton');
-  hideOverlayLayer();
+  checkAndHideOverlayLayerIfValid();
   var pageSet = pageSettings.previouslySelectedPages;
   for (var i = 0; i < pageSet.length; i++)
     $('pdf-viewer').loadPreviewPage(getPageSrcURL(previewUid, pageSet[i]-1), i);
-  // TODO(dpapad): handle pending print file requests.
+
+  hasPendingPreviewRequest = false;
+  isPrintReadyMetafileReady = true;
+  sendPrintDocumentRequestIfNeeded();
 }
 
 /**
@@ -961,13 +964,17 @@ function onDidPreviewPage(pageNumber, previewUid, previewResponseId) {
     return;
 
   currentPreviewUid = previewUid;
-  if (pageIndex == 0) {
+  if (pageIndex == 0)
     createPDFPlugin(pageNumber);
-    hasPendingPreviewRequest = false;
-  }
 
   $('pdf-viewer').loadPreviewPage(
       getPageSrcURL(previewUid, pageNumber), pageIndex);
+
+  if (pageIndex + 1 == pageSettings.previouslySelectedPages.length) {
+    hasPendingPreviewRequest = false;
+    if (pageIndex != 0)
+      sendPrintDocumentRequestIfNeeded();
+  }
 }
 
 /**
@@ -982,19 +989,53 @@ function onDidPreviewPage(pageNumber, previewUid, previewResponseId) {
 function updatePrintPreview(previewUid, previewResponseId) {
   if (!isExpectedPreviewResponse(previewResponseId))
     return;
-  hasPendingPreviewRequest = false;
   isPrintReadyMetafileReady = true;
 
   if (!previewModifiable) {
     // If the preview is not modifiable the plugin has not been created yet.
     currentPreviewUid = previewUid;
+    hasPendingPreviewRequest = false;
     createPDFPlugin(PRINT_READY_DATA_INDEX);
   }
 
   cr.dispatchSimpleEvent(document, 'updatePrintButton');
+  if (previewModifiable)
+    sendPrintDocumentRequestIfNeeded();
+}
 
-  if (hasPendingPrintDocumentRequest)
-    requestToPrintPendingDocument();
+/**
+ * Checks to see if the requested print data is available for printing  and
+ * sends a print document request if needed.
+ */
+function sendPrintDocumentRequestIfNeeded() {
+  if (!hasPendingPrintDocumentRequest || !isFirstPageLoaded)
+    return;
+
+  // If the selected printer is PRINT_TO_PDF or PRINT_WITH_CLOUD_PRINT or
+  // the preview source is not modifiable, we need the print ready data for
+  // printing. If the preview source is modifiable, we need to wait till all
+  // the requested pages are loaded in the plugin for printing.
+  var selectedPrinter = getSelectedPrinterName();
+  var printToPDF = selectedPrinter == PRINT_TO_PDF;
+  var printWithCloudPrint = selectedPrinter == PRINT_WITH_CLOUD_PRINT;
+  if (((printToPDF || !previewModifiable || printWithCloudPrint) &&
+           !isPrintReadyMetafileReady) ||
+      (previewModifiable && hasPendingPreviewRequest)) {
+    return;
+  }
+
+  hasPendingPrintDocumentRequest = false;
+  if (printWithCloudPrint) {
+    chrome.send('printWithCloudPrint');
+    return;
+  }
+
+  if (!areSettingsValid()) {
+    if (isTabHidden)
+      cancelPendingPrintRequest();
+    return;
+  }
+  sendPrintDocumentRequest();
 }
 
 /**

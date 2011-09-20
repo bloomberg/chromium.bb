@@ -102,9 +102,6 @@ function showLoadingAnimation() {
  * Hides the |overlay-layer| and any messages currently displayed.
  */
 function hideOverlayLayer() {
-  if (hasPendingPrintDocumentRequest)
-    return;
-
   var overlayLayer = $('overlay-layer');
   overlayLayer.addEventListener('webkitTransitionEnd', loadingAnimationCleanup);
   var pdfViewer = $('pdf-viewer');
