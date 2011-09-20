@@ -108,7 +108,7 @@ class MenuError : public BaseError {
 
 // Test adding errors to the global error service.
 TEST(GlobalErrorServiceTest, AddError) {
-  scoped_ptr<GlobalErrorService> service(new GlobalErrorService);
+  scoped_ptr<GlobalErrorService> service(new GlobalErrorService(NULL));
   EXPECT_EQ(0u, service->errors().size());
 
   BaseError* error1 = new BaseError;
@@ -130,7 +130,7 @@ TEST(GlobalErrorServiceTest, AddError) {
 
 // Test removing errors from the global error service.
 TEST(GlobalErrorServiceTest, RemoveError) {
-  scoped_ptr<GlobalErrorService> service(new GlobalErrorService);
+  scoped_ptr<GlobalErrorService> service(new GlobalErrorService(NULL));
   BaseError error1;
   service->AddGlobalError(&error1);
   BaseError error2;
@@ -155,7 +155,7 @@ TEST(GlobalErrorServiceTest, GetMenuItem) {
   MenuError* error2 = new MenuError(2);
   MenuError* error3 = new MenuError(3);
 
-  GlobalErrorService service;
+  GlobalErrorService service(NULL);
   service.AddGlobalError(error1);
   service.AddGlobalError(error2);
   service.AddGlobalError(error3);
@@ -171,7 +171,7 @@ TEST(GlobalErrorServiceTest, GetBadgeID) {
   BadgeError error2(2);
   BadgeError* error3 = new BadgeError(3);
 
-  GlobalErrorService service;
+  GlobalErrorService service(NULL);
   EXPECT_EQ(0, service.GetFirstBadgeResourceID());
 
   service.AddGlobalError(error1);

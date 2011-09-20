@@ -27,7 +27,7 @@ GlobalErrorServiceFactory::~GlobalErrorServiceFactory() {
 
 ProfileKeyedService* GlobalErrorServiceFactory::BuildServiceInstanceFor(
     Profile* profile) const {
-  return new GlobalErrorService();
+  return new GlobalErrorService(profile);
 }
 
 bool GlobalErrorServiceFactory::ServiceRedirectedInIncognito() {

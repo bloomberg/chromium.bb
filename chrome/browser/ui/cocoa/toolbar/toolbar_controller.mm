@@ -81,7 +81,8 @@ const CGFloat kWrenchMenuLeftPadding = 3.0;
 
 }  // namespace
 
-@interface ToolbarController(Private)
+@interface ToolbarController()
+@property(assign, nonatomic) Browser* browser;
 - (void)addAccessibilityDescriptions;
 - (void)initCommandStatus:(CommandUpdater*)commands;
 - (void)prefChanged:(std::string*)prefName;
@@ -128,6 +129,8 @@ class NotificationBridge : public NotificationObserver {
       : controller_(controller) {
     registrar_.Add(this, chrome::NOTIFICATION_UPGRADE_RECOMMENDED,
                    NotificationService::AllSources());
+    registrar_.Add(this, chrome::NOTIFICATION_GLOBAL_ERRORS_CHANGED,
+                   Source<Profile>([controller browser]->profile()));
   }
 
   // Overridden from NotificationObserver:
@@ -139,6 +142,7 @@ class NotificationBridge : public NotificationObserver {
         [controller_ prefChanged:Details<std::string>(details).ptr()];
         break;
       case chrome::NOTIFICATION_UPGRADE_RECOMMENDED:
+      case chrome::NOTIFICATION_GLOBAL_ERRORS_CHANGED:
         [controller_ badgeWrenchMenuIfNeeded];
         break;
       default:
@@ -155,6 +159,8 @@ class NotificationBridge : public NotificationObserver {
 }  // namespace ToolbarControllerInternal
 
 @implementation ToolbarController
+
+@synthesize browser = browser_;
 
 - (id)initWithModel:(ToolbarModel*)model
            commands:(CommandUpdater*)commands

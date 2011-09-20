@@ -100,6 +100,9 @@ BrowserToolbarGtk::BrowserToolbarGtk(Browser* browser, BrowserWindowGtk* window)
   registrar_.Add(this,
                  chrome::NOTIFICATION_UPGRADE_RECOMMENDED,
                  NotificationService::AllSources());
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_GLOBAL_ERRORS_CHANGED,
+                 Source<Profile>(browser_->profile()));
 }
 
 BrowserToolbarGtk::~BrowserToolbarGtk() {
@@ -380,7 +383,8 @@ void BrowserToolbarGtk::Observe(int type,
     }
 
     UpdateRoundedness();
-  } else if (type == chrome::NOTIFICATION_UPGRADE_RECOMMENDED) {
+  } else if (type == chrome::NOTIFICATION_UPGRADE_RECOMMENDED ||
+             type == chrome::NOTIFICATION_GLOBAL_ERRORS_CHANGED) {
     // Redraw the wrench menu to update the badge.
     gtk_widget_queue_draw(wrench_menu_button_->widget());
   } else if (type == content::NOTIFICATION_ZOOM_LEVEL_CHANGED) {

@@ -12,6 +12,7 @@
 #include "chrome/browser/profiles/profile_keyed_service.h"
 
 class GlobalError;
+class Profile;
 
 // This service manages a list of errors that are meant to be shown globally.
 // If an error applies to an entire profile and not just to a tab then the
@@ -20,7 +21,9 @@ class GlobalError;
 //   - a sync error occurred
 class GlobalErrorService : public ProfileKeyedService {
  public:
-  GlobalErrorService();
+  // Constructs a GlobalErrorService object for the given profile. The profile
+  // maybe NULL for tests.
+  explicit GlobalErrorService(Profile* profile);
   virtual ~GlobalErrorService();
 
   // Adds the given error to the list of global errors and displays it on
@@ -48,8 +51,14 @@ class GlobalErrorService : public ProfileKeyedService {
   // Gets all errors.
   const std::vector<GlobalError*>& errors() { return errors_; }
 
+  // Post a notification that a global error has changed and that the error UI
+  // should update it self. Pass NULL for the given error to mean all error UIs
+  // should update.
+  void NotifyErrorsChanged(GlobalError* error);
+
  private:
   std::vector<GlobalError*> errors_;
+  Profile* profile_;
 
   DISALLOW_COPY_AND_ASSIGN(GlobalErrorService);
 };

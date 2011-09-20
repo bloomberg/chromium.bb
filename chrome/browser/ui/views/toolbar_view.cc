@@ -112,6 +112,8 @@ ToolbarView::ToolbarView(Browser* browser)
   registrar_.Add(this,
                  chrome::NOTIFICATION_MODULE_INCOMPATIBILITY_BADGE_CHANGE,
                  NotificationService::AllSources());
+  registrar_.Add(this, chrome::NOTIFICATION_GLOBAL_ERRORS_CHANGED,
+                 Source<Profile>(browser_->profile()));
 }
 
 ToolbarView::~ToolbarView() {
@@ -399,16 +401,22 @@ void ToolbarView::ButtonPressed(views::Button* sender,
 void ToolbarView::Observe(int type,
                           const NotificationSource& source,
                           const NotificationDetails& details) {
-  if (type == chrome::NOTIFICATION_PREF_CHANGED) {
-    std::string* pref_name = Details<std::string>(details).ptr();
-    if (*pref_name == prefs::kShowHomeButton) {
-      Layout();
-      SchedulePaint();
+  switch (type) {
+    case chrome::NOTIFICATION_PREF_CHANGED: {
+      std::string* pref_name = Details<std::string>(details).ptr();
+      if (*pref_name == prefs::kShowHomeButton) {
+        Layout();
+        SchedulePaint();
+      }
+      break;
     }
-  } else if (
-        type == chrome::NOTIFICATION_UPGRADE_RECOMMENDED ||
-        type == chrome::NOTIFICATION_MODULE_INCOMPATIBILITY_BADGE_CHANGE) {
-    UpdateAppMenuBadge();
+    case chrome::NOTIFICATION_UPGRADE_RECOMMENDED:
+    case chrome::NOTIFICATION_MODULE_INCOMPATIBILITY_BADGE_CHANGE:
+    case chrome::NOTIFICATION_GLOBAL_ERRORS_CHANGED:
+      UpdateAppMenuBadge();
+      break;
+    default:
+      NOTREACHED();
   }
 }
 

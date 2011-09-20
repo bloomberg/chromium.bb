@@ -8,8 +8,10 @@
 
 #include "base/stl_util.h"
 #include "chrome/browser/ui/global_error.h"
+#include "chrome/common/chrome_notification_types.h"
+#include "content/common/notification_service.h"
 
-GlobalErrorService::GlobalErrorService() {
+GlobalErrorService::GlobalErrorService(Profile* profile) : profile_(profile) {
 }
 
 GlobalErrorService::~GlobalErrorService() {
@@ -18,10 +20,12 @@ GlobalErrorService::~GlobalErrorService() {
 
 void GlobalErrorService::AddGlobalError(GlobalError* error) {
   errors_.push_back(error);
+  NotifyErrorsChanged(error);
 }
 
 void GlobalErrorService::RemoveGlobalError(GlobalError* error) {
   errors_.erase(std::find(errors_.begin(), errors_.end(), error));
+  NotifyErrorsChanged(error);
 }
 
 GlobalError* GlobalErrorService::GetGlobalErrorByMenuItemCommandID(
@@ -53,4 +57,11 @@ GlobalError* GlobalErrorService::GetFirstGlobalErrorWithBubbleView() const {
       return error;
   }
   return NULL;
+}
+
+void GlobalErrorService::NotifyErrorsChanged(GlobalError* error) {
+  NotificationService::current()->Notify(
+      chrome::NOTIFICATION_GLOBAL_ERRORS_CHANGED,
+      Source<Profile>(profile_),
+      Details<GlobalError>(error));
 }
