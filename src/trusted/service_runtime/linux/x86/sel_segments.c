@@ -117,6 +117,6 @@ uint32_t NaClGetEbx(void) {
  */
 tick_t get_ticks() {
   tick_t  t = 0;
-  asm volatile("rdtsc" : "=A" (t));
+  __asm__ volatile("rdtsc" : "=A" (t));
   return t;
 }
