@@ -98,6 +98,7 @@ class TestWebKitPlatformSupport :
   // Mock out the WebAudioDevice since the real one
   // talks with the browser process.
   virtual double audioHardwareSampleRate();
+  virtual size_t audioHardwareBufferSize();
   virtual WebKit::WebAudioDevice* createAudioDevice(size_t bufferSize,
       unsigned numberOfChannels, double sampleRate,
       WebKit::WebAudioDevice::RenderCallback*);

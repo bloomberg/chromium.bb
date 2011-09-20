@@ -385,6 +385,10 @@ double TestWebKitPlatformSupport::audioHardwareSampleRate() {
   return 44100.0;
 }
 
+size_t TestWebKitPlatformSupport::audioHardwareBufferSize() {
+  return 128;
+}
+
 WebKit::WebAudioDevice* TestWebKitPlatformSupport::createAudioDevice(
     size_t bufferSize, unsigned numberOfChannels, double sampleRate,
     WebKit::WebAudioDevice::RenderCallback*) {
