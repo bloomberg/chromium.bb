@@ -11,9 +11,14 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "build/build_config.h"
 #include "chrome/browser/printing/print_view_manager_observer.h"
 #include "chrome/browser/ui/shell_dialogs.h"
 #include "content/browser/webui/web_ui.h"
+
+#if defined(USE_CUPS) && !defined(OS_MACOSX)
+typedef struct cups_option_s cups_option_t;
+#endif
 
 class FilePath;
 class PrintSystemTaskProxy;
@@ -28,6 +33,19 @@ class StringValue;
 namespace printing {
 class PrintBackend;
 }
+
+#if defined(USE_CUPS) && !defined(OS_MACOSX)
+namespace printingInternal {
+
+// Helper function to parse the lpoptions custom settings. |num_options| and
+// |options| will be updated if the custom settings for |printer_name| are
+// found, otherwise nothing is done.
+// NOTE: This function is declared here so it can be exposed for unit testing.
+void parse_lpoptions(const FilePath& filepath, const std::string& printer_name,
+                     int* num_options, cups_option_t** options);
+
+}
+#endif
 
 // The handler for Javascript messages related to the print preview dialog.
 class PrintPreviewHandler : public WebUIMessageHandler,

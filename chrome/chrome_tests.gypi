@@ -2115,6 +2115,14 @@
             ['exclude', '^browser/importer/'],
           ],
         }],
+        ['use_cups==1 and OS!="mac"', {
+          'defines': [
+            'USE_CUPS',
+          ],
+          'sources': [
+            'browser/ui/webui/print_preview_handler_unittest.cc',
+          ],
+        }],
       ],
     },
     {

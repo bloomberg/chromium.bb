@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/print_preview_handler.h"
 
+#include <ctype.h>
 #include <string>
 
 #include "base/base64.h"
@@ -15,6 +16,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
+#include "base/string_split.h"
+#include "base/string_util.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/utf_string_conversions.h"
@@ -53,6 +56,91 @@
 #include <cups/ppd.h>
 
 #include "base/file_util.h"
+#endif
+
+#if defined(USE_CUPS) && !defined(OS_MACOSX)
+namespace printingInternal {
+
+void parse_lpoptions(const FilePath& filepath, const std::string& printer_name,
+                     int* num_options, cups_option_t** options) {
+  std::string content;
+  if (!file_util::ReadFileToString(filepath, &content))
+    return;
+
+  const char kDest[] = "dest";
+  const char kDefault[] = "default";
+  size_t kDestLen = sizeof(kDest) - 1;
+  size_t kDefaultLen = sizeof(kDefault) - 1;
+  std::vector <std::string> lines;
+  base::SplitString(content, '\n', &lines);
+
+  for (size_t i = 0; i < lines.size(); ++i) {
+    std::string line = lines[i];
+    if (line.empty())
+      continue;
+
+    if (base::strncasecmp (line.c_str(), kDefault, kDefaultLen) == 0 &&
+        isspace(line[kDefaultLen])) {
+      line = line.substr(kDefaultLen);
+    } else if (base::strncasecmp (line.c_str(), kDest, kDestLen) == 0 &&
+               isspace(line[kDestLen])) {
+      line = line.substr(kDestLen);
+    } else {
+      continue;
+    }
+
+    TrimWhitespaceASCII(line, TRIM_ALL, &line);
+    if (line.empty())
+      continue;
+
+    size_t space_found = line.find(' ');
+    if (space_found == std::string::npos)
+      continue;
+
+    std::string name = line.substr(0, space_found);
+    if (name.empty())
+      continue;
+
+    if (base::strncasecmp(printer_name.c_str(), name.c_str(),
+                          name.length()) != 0) {
+      continue;  // This is not the required printer.
+    }
+
+    line = line.substr(space_found + 1);
+    TrimWhitespaceASCII(line, TRIM_ALL, &line);  // Remove extra spaces.
+    if (line.empty())
+      continue;
+    // Parse the selected printer custom options.
+    *num_options = cupsParseOptions(line.c_str(), 0, options);
+  }
+}
+
+void mark_lpoptions(const std::string& printer_name, ppd_file_t** ppd) {
+  cups_option_t* options = NULL;
+  int num_options = 0;
+  ppdMarkDefaults(*ppd);
+
+  const char kSystemLpOptionPath[] = "/etc/cups/lpoptions";
+  const char kUserLpOptionPath[] = ".cups/lpoptions";
+
+  std::vector<FilePath> file_locations;
+  file_locations.push_back(FilePath(kSystemLpOptionPath));
+  file_locations.push_back(FilePath(
+      file_util::GetHomeDir().Append(kUserLpOptionPath)));
+
+  for (std::vector<FilePath>::const_iterator it = file_locations.begin();
+       it != file_locations.end(); ++it) {
+    num_options = 0;
+    options = NULL;
+    parse_lpoptions(*it, printer_name, &num_options, &options);
+    if (num_options > 0 && options) {
+      cupsMarkOptions(*ppd, num_options, options);
+      cupsFreeOptions(num_options, options);
+    }
+  }
+}
+
+}  // printingInternal namespace
 #endif
 
 namespace {
@@ -307,6 +395,9 @@ class PrintSystemTaskProxy
 
     ppd_file_t* ppd = ppdOpenFile(ppd_file_path.value().c_str());
     if (ppd) {
+#if !defined(OS_MACOSX)
+      printingInternal::mark_lpoptions(printer_name, &ppd);
+#endif
       ppd_attr_t* attr = ppdFindAttr(ppd, kColorDevice, NULL);
       if (attr && attr->value)
         supports_color = ppd->color_device;
