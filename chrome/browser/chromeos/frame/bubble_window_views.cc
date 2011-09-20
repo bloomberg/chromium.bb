@@ -20,7 +20,7 @@ BubbleWindowViews::BubbleWindowViews(BubbleWindowStyle style)
 
 void BubbleWindowViews::SetBackgroundColor() {
 #if !defined(USE_AURA)
-   // TODO(saintlou): Once Views are truly pure the code below needs to be
+  // TODO(saintlou): Once Views are truly pure the code below needs to be
   // removed and replaced by the corresponding Views code.
   GdkColor background_color =
       gfx::SkColorToGdkColor(kBubbleWindowBackgroundColor);

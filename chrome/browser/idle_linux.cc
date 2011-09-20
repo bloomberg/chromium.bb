@@ -6,7 +6,10 @@
 
 #include "base/basictypes.h"
 #include "chrome/browser/idle_query_linux.h"
-#include "chrome/browser/screensaver_window_finder_linux.h"
+
+#if !defined(USE_AURA)
+#include "chrome/browser/screensaver_window_finder_gtk.h"
+#endif
 
 void CalculateIdleState(unsigned int idle_threshold, IdleCallback notify) {
   if (CheckIdleStateIsLocked()) {
@@ -24,5 +27,9 @@ void CalculateIdleState(unsigned int idle_threshold, IdleCallback notify) {
 bool CheckIdleStateIsLocked() {
   // Usually the screensaver is used to lock the screen, so we do not need to
   // check if the workstation is locked.
+#if defined(USE_AURA)
+  return false;
+#else
   return ScreensaverWindowFinder::ScreensaverWindowExists();
+#endif
 }

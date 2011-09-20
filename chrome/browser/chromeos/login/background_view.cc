@@ -129,10 +129,6 @@ views::Widget* BackgroundView::CreateWindowContainingView(
     const gfx::Rect& bounds,
     const GURL& background_url,
     BackgroundView** view) {
-#if defined(USE_AURA)
-  // TODO(saintlou):
-  return NULL;
-#else
   Widget* window = new Widget;
   Widget::InitParams params(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   params.bounds = bounds;
@@ -154,7 +150,6 @@ views::Widget* BackgroundView::CreateWindowContainingView(
   LoginUtils::Get()->SetBackgroundView(*view);
 
   return window;
-#endif
 }
 
 void BackgroundView::CreateModalPopup(views::WidgetDelegate* view) {

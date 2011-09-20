@@ -128,7 +128,9 @@ class ProcessSingleton : public base::NonThreadSafe {
   bool locked_;
   gfx::NativeWindow foreground_window_;
 
-#if defined(OS_WIN)
+#if defined(USE_AURA)
+  // TODO(saintlou): The process_singleton_aura.cc is still a stub.
+#elif defined(OS_WIN)
   // This ugly behemoth handles startup commands sent from another process.
   LRESULT OnCopyData(HWND hwnd, const COPYDATASTRUCT* cds);
 
@@ -166,10 +168,8 @@ class ProcessSingleton : public base::NonThreadSafe {
 
   // Helper class for linux specific messages.  LinuxWatcher is ref counted
   // because it posts messages between threads.
-#if !defined(USE_AURA)
   class LinuxWatcher;
   scoped_refptr<LinuxWatcher> watcher_;
-#endif
 #elif defined(OS_MACOSX)
   // Path in file system to the lock.
   FilePath lock_path_;

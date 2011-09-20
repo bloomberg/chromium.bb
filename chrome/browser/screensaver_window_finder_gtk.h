@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SCREENSAVER_WINDOW_FINDER_LINUX_H_
-#define CHROME_BROWSER_SCREENSAVER_WINDOW_FINDER_LINUX_H_
+#ifndef CHROME_BROWSER_SCREENSAVER_WINDOW_FINDER_GTK_H_
+#define CHROME_BROWSER_SCREENSAVER_WINDOW_FINDER_GTK_H_
 #pragma once
 
 #include "ui/base/x/x11_util.h"
@@ -28,4 +28,4 @@ class ScreensaverWindowFinder : public ui::EnumerateWindowsDelegate {
 };
 
 
-#endif  // CHROME_BROWSER_SCREENSAVER_WINDOW_FINDER_LINUX_H_
+#endif  // CHROME_BROWSER_SCREENSAVER_WINDOW_FINDER_GTK_H_

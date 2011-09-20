@@ -34,9 +34,7 @@ PanelBrowserView::~PanelBrowserView() {}
 
 void PanelBrowserView::LimitBounds(gfx::Rect* bounds) const {
 #if defined(USE_AURA)
-  // TODO(saintlou): Need PureViews panels?
-  bounds->set_width(kPanelDefaultWidthPixels);
-  bounds->set_height(kPanelDefaultHeightPixels);
+  // TODO(saintlou): Need PureViews
 #else
   GdkScreen* screen = gtk_widget_get_screen(GetWidget()->GetNativeView());
   int max_width = gdk_screen_get_width(screen) * kPanelMaxWidthFactor;

@@ -179,9 +179,6 @@ void PanelController::Init(bool initial_focus,
                            const gfx::Rect& window_bounds,
                            XID creator_xid,
                            WmIpcPanelUserResizeType resize_type) {
-#if defined(USE_AURA)
-  // TODO(saintlou): Need PureView for panels.
-#else
   gfx::Rect title_bounds(0, 0, window_bounds.width(), kTitleHeight);
 
   title_window_ = new views::Widget;
@@ -190,6 +187,8 @@ void PanelController::Init(bool initial_focus,
   params.transparent = true;
   params.bounds = title_bounds;
   title_window_->Init(params);
+
+#if !defined(USE_AURA)
   gtk_widget_set_size_request(title_window_->GetNativeView(),
                               title_bounds.width(), title_bounds.height());
   title_ = title_window_->GetNativeView();
@@ -212,12 +211,12 @@ void PanelController::Init(bool initial_focus,
 
   client_event_handler_id_ = g_signal_connect(
       panel_, "client-event", G_CALLBACK(OnPanelClientEvent), this);
+#endif // !USE_AURA
 
   title_content_ = new TitleContentView(this);
   title_window_->SetContentsView(title_content_);
   UpdateTitleBar();
   title_window_->Show();
-#endif
 }
 
 void PanelController::UpdateTitleBar() {

@@ -81,9 +81,6 @@ ThrobberHostView::~ThrobberHostView() {
 }
 
 void ThrobberHostView::StartThrobber() {
-#if defined(USE_AURA)
-  // TODO(saintlou): Is this still in use with the new WebUI anyway?
-#else
   StopThrobber();
 
   views::Widget* host_widget = host_view_->GetWidget();
@@ -120,7 +117,6 @@ void ThrobberHostView::StartThrobber() {
   // WM can ignore bounds before widget is shown.
   throbber_widget_->SetBounds(throbber_bounds);
   throbber->Start();
-#endif
 }
 
 void ThrobberHostView::StopThrobber() {
