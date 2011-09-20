@@ -92,7 +92,8 @@ class PluginReverseInterface: public nacl::ReverseInterface {
  public:
   PluginReverseInterface(nacl::WeakRefAnchor* anchor,
                          Plugin* plugin,
-                         pp::CompletionCallback init_done_cb);
+                         pp::CompletionCallback init_done_cb,
+                         pp::CompletionCallback crash_cb);
 
   virtual ~PluginReverseInterface();
 
@@ -107,6 +108,8 @@ class PluginReverseInterface: public nacl::ReverseInterface {
   virtual bool OpenManifestEntry(nacl::string url_key, int32_t* out_desc);
 
   virtual bool CloseManifestEntry(int32_t desc);
+
+  virtual void ReportCrash();
 
  protected:
   virtual void Log_MainThreadContinuation(LogToJavaScriptConsoleResource* p,
@@ -133,6 +136,7 @@ class PluginReverseInterface: public nacl::ReverseInterface {
   bool shutting_down_;
 
   pp::CompletionCallback init_done_cb_;
+  pp::CompletionCallback crash_cb_;
 };
 
 //  ServiceRuntime abstracts a NativeClient sel_ldr instance.
@@ -141,7 +145,8 @@ class ServiceRuntime {
   // TODO(sehr): This class should also implement factory methods, using the
   // Start method below.
   ServiceRuntime(Plugin* plugin,
-                 pp::CompletionCallback init_done_cb);
+                 pp::CompletionCallback init_done_cb,
+                 pp::CompletionCallback crash_cb);
   // The destructor terminates the sel_ldr process.
   ~ServiceRuntime();
 

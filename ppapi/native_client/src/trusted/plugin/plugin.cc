@@ -617,10 +617,12 @@ void Plugin::ShutDownSubprocesses() {
 bool Plugin::LoadNaClModuleCommon(nacl::DescWrapper* wrapper,
                                   NaClSubprocess* subprocess,
                                   ErrorInfo* error_info,
-                                  pp::CompletionCallback init_done_cb) {
+                                  pp::CompletionCallback init_done_cb,
+                                  pp::CompletionCallback crash_cb) {
   ServiceRuntime* new_service_runtime = new(std::nothrow) ServiceRuntime(
       this,
-      init_done_cb);
+      init_done_cb,
+      crash_cb);
   subprocess->set_service_runtime(new_service_runtime);
   PLUGIN_PRINTF(("Plugin::LoadNaClModuleCommon (service_runtime=%p)\n",
                  static_cast<void*>(new_service_runtime)));
@@ -689,14 +691,15 @@ bool Plugin::StartJSObjectProxy(NaClSubprocess* subprocess,
 
 bool Plugin::LoadNaClModule(nacl::DescWrapper* wrapper,
                             ErrorInfo* error_info,
-                            pp::CompletionCallback init_done_cb) {
+                            pp::CompletionCallback init_done_cb,
+                            pp::CompletionCallback crash_cb) {
   // Before forking a new sel_ldr process, ensure that we do not leak
   // the ServiceRuntime object for an existing subprocess, and that any
   // associated listener threads do not go unjoined because if they
   // outlive the Plugin object, they will not be memory safe.
   ShutDownSubprocesses();
   if (!(LoadNaClModuleCommon(wrapper, &main_subprocess_, error_info,
-                             init_done_cb))) {
+                             init_done_cb, crash_cb))) {
     return false;
   }
   PLUGIN_PRINTF(("Plugin::LoadNaClModule (%s)\n",
@@ -726,10 +729,15 @@ NaClSubprocessId Plugin::LoadHelperNaClModule(nacl::DescWrapper* wrapper,
   }
 
   if (!(LoadNaClModuleCommon(wrapper, nacl_subprocess.get(), error_info,
+                             pp::BlockUntilComplete(),
                              pp::BlockUntilComplete())
         // We need not wait for the init_done callback.  We can block
         // here in StartSrpcServicesCommon, since helper NaCl modules
         // are spawned from a private thread.
+        //
+        // TODO(bsy): if helper module crashes, we should abort.
+        // crash_cb is not used here, so we are relying on crashes
+        // being detected in StartSrpcServicesCommon or later.
         //
         // NB: More refactoring might be needed, however, if helper
         // NaCl modules have their own manifest.  Currently the
@@ -925,6 +933,7 @@ Plugin::Plugin(PP_Instance pp_instance)
       argv_(NULL),
       main_subprocess_(kMainSubprocessId, NULL, NULL),
       nacl_ready_state_(UNSENT),
+      nexe_error_reported_(false),
       wrapper_factory_(NULL),
       last_error_string_(""),
       ppapi_proxy_(NULL),
@@ -1141,7 +1150,8 @@ void Plugin::NexeFileDidOpen(int32_t pp_error) {
   NaClLog(4, "NexeFileDidOpen: invoking LoadNaClModule\n");
   bool was_successful = LoadNaClModule(
       wrapper.get(), &error_info,
-      callback_factory_.NewCallback(&Plugin::NexeFileDidOpenContinuation));
+      callback_factory_.NewCallback(&Plugin::NexeFileDidOpenContinuation),
+      callback_factory_.NewCallback(&Plugin::NexeDidCrash));
 
   if (!was_successful) {
     ReportLoadError(error_info);
@@ -1176,6 +1186,33 @@ void Plugin::NexeFileDidOpenContinuation(int32_t pp_error) {
   NaClLog(4, "Leaving NexeFileDidOpenContinuation\n");
 }
 
+void Plugin::NexeDidCrash(int32_t pp_error) {
+  PLUGIN_PRINTF(("Plugin::NexeDidCrash (pp_error=%"NACL_PRId32")\n",
+                 pp_error));
+  if (pp_error != PP_OK) {
+    PLUGIN_PRINTF(("Plugin::NexeDidCrash: CallOnMainThread callback with"
+                   " non-PP_OK arg -- SHOULD NOT HAPPEN\n"));
+  }
+  PLUGIN_PRINTF(("Plugin::NexeDidCrash: crash event!\n"));
+  // If the crash occurs during load, we just want to report an error
+  // that fits into our load progress event grammar.  If the crash
+  // occurs after loaded/loadend, then we use ReportDeadNexe to send a
+  // "crash" event.
+  if (nexe_error_reported()) {
+    PLUGIN_PRINTF(("Plugin::NexeDidCrash: error already reported;"
+                   " suppressing\n"));
+    return;
+  }
+  if (nacl_ready_state() == DONE) {
+    ReportDeadNexe();
+  } else {
+    ErrorInfo error_info;
+    error_info.SetReport(ERROR_START_PROXY_CRASH,  // Not quite right.
+                         "Nexe crashed during startup");
+    ReportLoadError(error_info);
+  }
+}
+
 void Plugin::BitcodeDidTranslate(int32_t pp_error) {
   PLUGIN_PRINTF(("Plugin::BitcodeDidTranslate (pp_error=%"NACL_PRId32")\n",
                  pp_error));
@@ -1194,7 +1231,8 @@ void Plugin::BitcodeDidTranslate(int32_t pp_error) {
   ErrorInfo error_info;
   bool was_successful = LoadNaClModule(
       wrapper.get(), &error_info,
-      callback_factory_.NewCallback(&Plugin::BitcodeDidTranslateContinuation));
+      callback_factory_.NewCallback(&Plugin::BitcodeDidTranslateContinuation),
+      pp::BlockUntilComplete());
 
   if (!was_successful) {
     ReportLoadError(error_info);
@@ -1341,11 +1379,15 @@ void Plugin::ReportDeadNexe() {
         "NaCl.ModuleUptime.Crash",
         (crash_time - ready_time_) / NACL_MICROS_PER_MILLI);
 
+    nacl::string message = nacl::string("NaCl module crashed");
+    set_last_error_string(message);
+    browser_interface()->AddToConsole(this, message);
+
     EnqueueProgressEvent("crash",
                          LENGTH_IS_NOT_COMPUTABLE,
                          kUnknownBytes,
                          kUnknownBytes);
-    CHECK(ppapi_proxy_ != NULL && !ppapi_proxy_->is_valid());
+    CHECK(ppapi_proxy_ == NULL || !ppapi_proxy_->is_valid());
     ShutdownProxy();
   }
   // else ReportLoadError() and ReportAbortError() will be used by loading code
@@ -1735,6 +1777,7 @@ void Plugin::ReportLoadError(const ErrorInfo& error_info) {
                  error_info.message().c_str()));
   // Set the readyState attribute to indicate we need to start over.
   set_nacl_ready_state(DONE);
+  set_nexe_error_reported(true);
   // Report an error in lastError and on the JavaScript console.
   nacl::string message = nacl::string("NaCl module load failed: ") +
       error_info.message();
@@ -1760,6 +1803,7 @@ void Plugin::ReportLoadAbort() {
   PLUGIN_PRINTF(("Plugin::ReportLoadAbort\n"));
   // Set the readyState attribute to indicate we need to start over.
   set_nacl_ready_state(DONE);
+  set_nexe_error_reported(true);
   // Report an error in lastError and on the JavaScript console.
   nacl::string error_string("NaCl module load failed: user aborted");
   set_last_error_string(error_string);

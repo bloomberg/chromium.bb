@@ -56,11 +56,13 @@ namespace plugin {
 PluginReverseInterface::PluginReverseInterface(
     nacl::WeakRefAnchor* anchor,
     Plugin* plugin,
-    pp::CompletionCallback init_done_cb)
+    pp::CompletionCallback init_done_cb,
+    pp::CompletionCallback crash_cb)
       : anchor_(anchor),
         plugin_(plugin),
         shutting_down_(false),
-        init_done_cb_(init_done_cb) {
+        init_done_cb_(init_done_cb),
+        crash_cb_(crash_cb) {
   NaClXMutexCtor(&mu_);
   NaClXCondVarCtor(&cv_);
 }
@@ -71,9 +73,11 @@ PluginReverseInterface::~PluginReverseInterface() {
 }
 
 void PluginReverseInterface::ShutDown() {
+  NaClLog(4, "PluginReverseInterface::Shutdown: entered\n");
   nacl::MutexLocker take(&mu_);
   shutting_down_ = true;
   NaClXCondVarBroadcast(&cv_);
+  NaClLog(4, "PluginReverseInterface::Shutdown: broadcasted, exiting\n");
 }
 
 void PluginReverseInterface::Log(nacl::string message) {
@@ -321,8 +325,21 @@ void PluginReverseInterface::CloseManifestEntry_MainThreadContinuation(
   // cls automatically deleted
 }
 
+void PluginReverseInterface::ReportCrash() {
+  NaClLog(0, "PluginReverseInterface::ReportCrash\n");
+  if (crash_cb_.pp_completion_callback().func != NULL) {
+    NaClLog(0, "PluginReverseInterface::ReportCrash: invoking CB\n");
+    pp::Module::Get()->core()->CallOnMainThread(0, crash_cb_, PP_OK);
+  } else {
+    NaClLog(0,
+            "PluginReverseInterface::ReportCrash:"
+            " crash_cb_ not valid, skipping\n");
+  }
+}
+
 ServiceRuntime::ServiceRuntime(Plugin* plugin,
-                               pp::CompletionCallback init_done_cb)
+                               pp::CompletionCallback init_done_cb,
+                               pp::CompletionCallback crash_cb)
     : plugin_(plugin),
       browser_interface_(plugin->browser_interface()),
       reverse_service_(NULL),
@@ -331,7 +348,7 @@ ServiceRuntime::ServiceRuntime(Plugin* plugin,
       async_send_desc_(NULL),
       anchor_(new nacl::WeakRefAnchor()),
       rev_interface_(new PluginReverseInterface(anchor_, plugin,
-                                                init_done_cb)) {
+                                                init_done_cb, crash_cb)) {
   NaClSrpcChannelInitialize(&command_channel_);
 }
 

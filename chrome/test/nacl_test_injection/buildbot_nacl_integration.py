@@ -56,10 +56,7 @@ def Main(args):
         'run_fault_pm_nameservice_chrome_browser_test',
         'run_fault_pq_os_pm_nameservice_chrome_browser_test',
         'run_fault_pq_dep_pm_nameservice_chrome_browser_test',
-        'run_inbrowser_untrusted_crash_test',
         ])
-    if sys.platform.startswith('linux'):
-      tests_to_disable.append('run_inbrowser_crash_in_syscall_test')
 
   if sys.platform == 'darwin':
     # The following test is failing on Mac OS X 10.5.  This may be
