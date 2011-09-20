@@ -2,41 +2,41 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/aura_shell/sample_window.h"
+#include "ui/aura_shell/examples/toplevel_window.h"
 
 #include "ui/aura/window.h"
 #include "ui/gfx/canvas.h"
 #include "views/widget/widget.h"
 
 namespace aura_shell {
-namespace internal {
+namespace examples {
 
 // static
-void SampleWindow::CreateSampleWindow() {
+void ToplevelWindow::CreateToplevelWindow() {
   views::Widget* widget =
-      views::Widget::CreateWindowWithBounds(new SampleWindow,
+      views::Widget::CreateWindowWithBounds(new ToplevelWindow,
                                             gfx::Rect(120, 150, 400, 300));
-  widget->GetNativeView()->set_name(L"SampleWindow");
+  widget->GetNativeView()->set_name(L"Examples:ToplevelWindow");
   widget->Show();
 }
 
-SampleWindow::SampleWindow() {
+ToplevelWindow::ToplevelWindow() {
 }
 
-SampleWindow::~SampleWindow() {
+ToplevelWindow::~ToplevelWindow() {
 }
 
-void SampleWindow::OnPaint(gfx::Canvas* canvas) {
+void ToplevelWindow::OnPaint(gfx::Canvas* canvas) {
   canvas->FillRectInt(SK_ColorDKGRAY, 0, 0, width(), height());
 }
 
-std::wstring SampleWindow::GetWindowTitle() const {
-  return L"Sample Window";
+std::wstring ToplevelWindow::GetWindowTitle() const {
+  return L"Examples: Toplevel Window";
 }
 
-views::View* SampleWindow::GetContentsView() {
+views::View* ToplevelWindow::GetContentsView() {
   return this;
 }
 
-}  // namespace internal
+}  // namespace examples
 }  // namespace aura_shell

@@ -2,22 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_AURA_SHELL_SAMPLE_WINDOW_H_
-#define UI_AURA_SHELL_SAMPLE_WINDOW_H_
+#ifndef UI_AURA_SHELL_EXAMPLES_TOPLEVEL_WINDOW_H_
+#define UI_AURA_SHELL_EXAMPLES_TOPLEVEL_WINDOW_H_
 #pragma once
 
 #include "views/widget/widget_delegate.h"
 
 namespace aura_shell {
-namespace internal {
+namespace examples {
 
-class SampleWindow : public views::WidgetDelegateView {
+class ToplevelWindow : public views::WidgetDelegateView {
  public:
-  static void CreateSampleWindow();
+  static void CreateToplevelWindow();
 
  private:
-  SampleWindow();
-  virtual ~SampleWindow();
+  ToplevelWindow();
+  virtual ~ToplevelWindow();
 
   // Overridden from views::View:
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
@@ -26,10 +26,10 @@ class SampleWindow : public views::WidgetDelegateView {
   virtual std::wstring GetWindowTitle() const OVERRIDE;
   virtual View* GetContentsView() OVERRIDE;
 
-  DISALLOW_COPY_AND_ASSIGN(SampleWindow);
+  DISALLOW_COPY_AND_ASSIGN(ToplevelWindow);
 };
 
-}  // namespace internal
+}  // namespace examples
 }  // namespace aura_shell
 
-#endif  // UI_AURA_SHELL_SAMPLE_WINDOW_H_
+#endif  // UI_AURA_SHELL_EXAMPLES_TOPLEVEL_WINDOW_H_

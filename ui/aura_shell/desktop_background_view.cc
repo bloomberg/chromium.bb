@@ -7,7 +7,6 @@
 #include "grit/ui_resources.h"
 #include "ui/aura/desktop.h"
 #include "ui/aura_shell/aura_shell_export.h"
-#include "ui/aura_shell/sample_window.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "views/widget/widget.h"
@@ -31,14 +30,6 @@ DesktopBackgroundView::~DesktopBackgroundView() {
 
 void DesktopBackgroundView::OnPaint(gfx::Canvas* canvas) {
   canvas->TileImageInt(wallpaper_, 0, 0, width(), height());
-}
-
-bool DesktopBackgroundView::OnMousePressed(const views::MouseEvent& event) {
-  return true;
-}
-
-void DesktopBackgroundView::OnMouseReleased(const views::MouseEvent& event) {
-  SampleWindow::CreateSampleWindow();
 }
 
 AURA_SHELL_EXPORT views::Widget* CreateDesktopBackground() {

@@ -31,6 +31,8 @@ int main(int argc, char** argv) {
 
   aura_shell::InitDesktopWindow();
 
+  aura_shell::examples::InitWindowTypeLauncher();
+
   aura::Desktop::GetInstance()->Run();
 
   delete aura::Desktop::GetInstance();

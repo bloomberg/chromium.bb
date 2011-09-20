@@ -18,13 +18,16 @@ namespace aura_shell {
 
 AURA_SHELL_EXPORT void InitDesktopWindow();
 
-namespace internal {
+namespace examples {
+void InitWindowTypeLauncher();
+}  // namespace examples
 
+namespace internal {
 views::Widget* CreateDesktopBackground();
 views::Widget* CreateLauncher();
 views::Widget* CreateStatusArea();
-
 }  // namespace internal
+
 }  // namespace aura_shell
 
 
