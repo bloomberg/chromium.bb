@@ -148,7 +148,8 @@ PluginChannel* PluginChannel::GetPluginChannel(
           IPC::Channel::MODE_SERVER,
           ClassFactory,
           ipc_message_loop,
-          false));
+          false,
+          ChildProcess::current()->GetShutDownEvent()));
 
   if (channel)
     channel->renderer_id_ = renderer_id;
@@ -324,8 +325,9 @@ void PluginChannel::CleanUp() {
 }
 
 bool PluginChannel::Init(base::MessageLoopProxy* ipc_message_loop,
-                         bool create_pipe_now) {
-  if (!NPChannelBase::Init(ipc_message_loop, create_pipe_now))
+                         bool create_pipe_now,
+                         base::WaitableEvent* shutdown_event) {
+  if (!NPChannelBase::Init(ipc_message_loop, create_pipe_now, shutdown_event))
     return false;
 
   channel_->AddFilter(filter_.get());

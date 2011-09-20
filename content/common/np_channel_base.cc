@@ -10,7 +10,6 @@
 #include "base/hash_tables.h"
 #include "base/lazy_instance.h"
 #include "base/string_number_conversions.h"
-#include "content/common/child_process.h"
 #include "ipc/ipc_sync_message.h"
 
 #if defined(OS_POSIX)
@@ -29,7 +28,7 @@ static int next_pipe_id = 0;
 NPChannelBase* NPChannelBase::GetChannel(
     const IPC::ChannelHandle& channel_handle, IPC::Channel::Mode mode,
     ChannelFactory factory, base::MessageLoopProxy* ipc_message_loop,
-    bool create_pipe_now) {
+    bool create_pipe_now, base::WaitableEvent* shutdown_event) {
   scoped_refptr<NPChannelBase> channel;
   std::string channel_key = channel_handle.name;
   ChannelMap::const_iterator iter = g_channels_.find(channel_key);
@@ -48,7 +47,7 @@ NPChannelBase* NPChannelBase::GetChannel(
       channel->channel_handle_.name.append(base::IntToString(next_pipe_id++));
     }
     channel->mode_ = mode;
-    if (channel->Init(ipc_message_loop, create_pipe_now)) {
+    if (channel->Init(ipc_message_loop, create_pipe_now, shutdown_event)) {
       g_channels_[channel_key] = channel;
     } else {
       channel = NULL;
@@ -112,10 +111,11 @@ NPObjectBase* NPChannelBase::GetNPObjectListenerForRoute(int route_id) {
 }
 
 bool NPChannelBase::Init(base::MessageLoopProxy* ipc_message_loop,
-                         bool create_pipe_now) {
+                         bool create_pipe_now,
+                         base::WaitableEvent* shutdown_event) {
   channel_.reset(new IPC::SyncChannel(
       channel_handle_, mode_, this, ipc_message_loop, create_pipe_now,
-      ChildProcess::current()->GetShutDownEvent()));
+      shutdown_event));
   channel_valid_ = true;
   return true;
 }

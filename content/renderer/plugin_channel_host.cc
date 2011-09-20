@@ -4,6 +4,7 @@
 
 #include "content/renderer/plugin_channel_host.h"
 
+#include "content/common/child_process.h"
 #include "content/common/npobject_base.h"
 #include "content/common/plugin_messages.h"
 
@@ -76,7 +77,8 @@ PluginChannelHost* PluginChannelHost::GetPluginChannelHost(
           IPC::Channel::MODE_CLIENT,
           ClassFactory,
           ipc_message_loop,
-          true));
+          true,
+          ChildProcess::current()->GetShutDownEvent()));
   return result;
 }
 
@@ -87,8 +89,10 @@ PluginChannelHost::~PluginChannelHost() {
 }
 
 bool PluginChannelHost::Init(base::MessageLoopProxy* ipc_message_loop,
-                             bool create_pipe_now) {
-  bool ret = NPChannelBase::Init(ipc_message_loop, create_pipe_now);
+                             bool create_pipe_now,
+                             base::WaitableEvent* shutdown_event) {
+  bool ret =
+      NPChannelBase::Init(ipc_message_loop, create_pipe_now, shutdown_event);
   is_listening_filter_ = new IsListeningFilter;
   channel_->AddFilter(is_listening_filter_);
   return ret;

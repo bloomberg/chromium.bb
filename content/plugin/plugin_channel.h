@@ -65,7 +65,8 @@ class PluginChannel : public NPChannelBase {
 
   // Overrides NPChannelBase::Init.
   virtual bool Init(base::MessageLoopProxy* ipc_message_loop,
-                   bool create_pipe_now);
+                    bool create_pipe_now,
+                    base::WaitableEvent* shutdown_event);
 
  private:
   class MessageFilter;

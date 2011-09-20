@@ -22,7 +22,8 @@ class PluginChannelHost : public NPChannelBase {
       base::MessageLoopProxy* ipc_message_loop);
 
   virtual bool Init(base::MessageLoopProxy* ipc_message_loop,
-                    bool create_pipe_now);
+                    bool create_pipe_now,
+                    base::WaitableEvent* shutdown_event);
 
   virtual int GenerateRouteID();
 

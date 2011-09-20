@@ -115,7 +115,7 @@ class NPChannelBase : public IPC::Channel::Listener,
   static NPChannelBase* GetChannel(
       const IPC::ChannelHandle& channel_handle, IPC::Channel::Mode mode,
       ChannelFactory factory, base::MessageLoopProxy* ipc_message_loop,
-      bool create_pipe_now);
+      bool create_pipe_now, base::WaitableEvent* shutdown_event);
 
   // Sends a message to all instances.
   static void Broadcast(IPC::Message* message);
@@ -138,7 +138,8 @@ class NPChannelBase : public IPC::Channel::Listener,
   }
 
   virtual bool Init(base::MessageLoopProxy* ipc_message_loop,
-                    bool create_pipe_now);
+                    bool create_pipe_now,
+                    base::WaitableEvent* shutdown_event);
 
   scoped_ptr<IPC::SyncChannel> channel_;
 
