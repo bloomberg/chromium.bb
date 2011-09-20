@@ -169,6 +169,10 @@ class SigninScreenHandler : public BaseScreenHandler,
 
   // True if dns cache cleanup is done.
   bool dns_cleared_;
+
+  // True if DNS cache task is already running.
+  bool dns_clear_task_running_;
+
   // True if cookie jar cleanup is done.
   bool cookies_cleared_;
 
@@ -185,7 +189,6 @@ class SigninScreenHandler : public BaseScreenHandler,
   std::string test_user_;
   std::string test_pass_;
 
-  CancelableTask* clear_dns_task_;
   BrowsingDataRemover* cookie_remover_;
 
   ScopedRunnableMethodFactory<SigninScreenHandler> method_factory_;

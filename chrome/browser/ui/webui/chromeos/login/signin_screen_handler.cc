@@ -9,6 +9,7 @@
 #include "base/task.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/power_library.h"
@@ -66,31 +67,26 @@ std::string SanitizeEmail(const std::string& email) {
 namespace chromeos {
 
 // Clears DNS cache on IO thread.
-class ClearDnsCacheTaskOnIOThread : public CancelableTask {
+class ClearDnsCacheTaskOnIOThread : public Task {
  public:
   ClearDnsCacheTaskOnIOThread(Task* callback, IOThread* io_thread)
-      : callback_(callback), io_thread_(io_thread), should_run_(true)  {
+      : callback_(callback), io_thread_(io_thread) {
   }
   virtual ~ClearDnsCacheTaskOnIOThread() {}
 
-  // CancelableTask overrides.
+  // Task overrides.
   virtual void Run() OVERRIDE {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    if (!should_run_)
-      return;
+    if (browser_shutdown::IsTryingToQuit())
+     return;
 
     io_thread_->globals()->dnsrr_resolver.get()->OnIPAddressChanged();
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, callback_);
   }
 
-  virtual void Cancel() OVERRIDE {
-    should_run_ = false;
-  }
-
  private:
   Task* callback_;
   IOThread* io_thread_;
-  bool should_run_;
   DISALLOW_COPY_AND_ASSIGN(ClearDnsCacheTaskOnIOThread);
 };
 
@@ -100,19 +96,18 @@ SigninScreenHandler::SigninScreenHandler()
       show_on_init_(false),
       oobe_ui_(false),
       dns_cleared_(false),
+      dns_clear_task_running_(false),
       cookies_cleared_(false),
       extension_driven_(
           CommandLine::ForCurrentProcess()->HasSwitch(
               switches::kWebUILogin)),
-      clear_dns_task_(NULL),
       cookie_remover_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
   delegate_->SetWebUIHandler(this);
 }
 
 SigninScreenHandler::~SigninScreenHandler() {
-  if (clear_dns_task_)
-    clear_dns_task_->Cancel();
+  method_factory_.RevokeAll();
   if (cookie_remover_)
     cookie_remover_->RemoveObserver(this);
 }
@@ -250,7 +245,7 @@ void SigninScreenHandler::OnBrowsingDataRemoverDone() {
 
 void SigninScreenHandler::OnDnsCleared() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  clear_dns_task_ = NULL;
+  dns_clear_task_running_ = false;
   dns_cleared_ = true;
   ShowSigninScreenIfReady();
 }
@@ -459,17 +454,15 @@ void SigninScreenHandler::HandleCreateAccount(const base::ListValue* args) {
 }
 
 void SigninScreenHandler::StartClearingDnsCache() {
-  if (!g_browser_process->io_thread())
+  if (dns_clear_task_running_ || !g_browser_process->io_thread())
     return;
-  dns_cleared_ = false;
-  if (clear_dns_task_)
-    clear_dns_task_->Cancel();
-  method_factory_.RevokeAll();
 
-  clear_dns_task_ = new ClearDnsCacheTaskOnIOThread(
+  dns_cleared_ = false;
+  ClearDnsCacheTaskOnIOThread* clear_dns_task = new ClearDnsCacheTaskOnIOThread(
       method_factory_.NewRunnableMethod(&SigninScreenHandler::OnDnsCleared),
       g_browser_process->io_thread());
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, clear_dns_task_);
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, clear_dns_task);
+  dns_clear_task_running_ = true;
 }
 
 void SigninScreenHandler::StartClearingCookies() {
