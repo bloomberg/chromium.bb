@@ -5,6 +5,7 @@
 #include "ui/aura/root_window.h"
 
 #include "base/logging.h"
+#include "base/utf_string_conversions.h"
 #include "ui/aura/event.h"
 #include "ui/aura/focus_manager.h"
 #include "ui/aura/window_delegate.h"
@@ -17,7 +18,7 @@ RootWindow::RootWindow()
     : Window(NULL),
       mouse_pressed_handler_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(focus_manager_(new FocusManager(this))) {
-  set_name(L"RootWindow");
+  set_name(ASCIIToUTF16("RootWindow"));
 }
 
 RootWindow::~RootWindow() {

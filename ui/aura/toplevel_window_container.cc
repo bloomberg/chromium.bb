@@ -4,6 +4,7 @@
 
 #include "ui/aura/toplevel_window_container.h"
 
+#include "base/utf_string_conversions.h"
 #include "ui/aura/toplevel_window_event_filter.h"
 
 namespace aura {
@@ -11,7 +12,7 @@ namespace internal {
 
 ToplevelWindowContainer::ToplevelWindowContainer()
     : Window(NULL) {
-  set_name(L"ToplevelWindowContainer");
+  set_name(ASCIIToUTF16("ToplevelWindowContainer"));
   SetEventFilter(new ToplevelWindowEventFilter(this));
 }
 
