@@ -164,9 +164,15 @@ BrowserMainParts::BrowserMainParts(const MainFunctionParams& parameters)
     : parameters_(parameters),
       parsed_command_line_(parameters.command_line_),
       result_code_(content::RESULT_CODE_NORMAL_EXIT) {
+#if defined(OS_WIN)
+  OleInitialize(NULL);
+#endif
 }
 
 BrowserMainParts::~BrowserMainParts() {
+#if defined(OS_WIN)
+  OleUninitialize();
+#endif
 }
 
 void BrowserMainParts::EarlyInitialization() {
@@ -219,8 +225,6 @@ void BrowserMainParts::MainMessageLoopStart() {
   PreMainMessageLoopStart();
 
 #if defined(OS_WIN)
-  OleInitialize(NULL);
-
   // If we're running tests (ui_task is non-null), then the ResourceBundle
   // has already been initialized.
   if (!parameters().ui_task) {

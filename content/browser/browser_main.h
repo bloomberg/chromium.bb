@@ -125,12 +125,6 @@ class CONTENT_EXPORT BrowserMainParts {
   DISALLOW_COPY_AND_ASSIGN(BrowserMainParts);
 };
 
-// Perform platform-specific work that needs to be done after the main event
-// loop has ended. The embedder must be sure to call this.
-// TODO(jam): change this so that content calls it so that we don't depend on
-// the embedder.
-void DidEndMainMessageLoop();
-
 }  // namespace content
 
 #endif  // CONTENT_BROWSER_BROWSER_MAIN_H_
