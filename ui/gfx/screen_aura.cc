@@ -36,7 +36,7 @@ gfx::Rect Screen::GetMonitorWorkAreaNearestWindow(gfx::NativeWindow window) {
 // static
 gfx::Rect Screen::GetMonitorAreaNearestWindow(gfx::NativeWindow window) {
   // TODO(oshima): Fix this for aura desktop.
-  return GetMonitorAreaNearestWindow(window);
+  return GetMonitorWorkAreaNearestWindow(window);
 }
 
 static gfx::Rect GetMonitorAreaOrWorkAreaNearestPoint(const gfx::Point& point,
