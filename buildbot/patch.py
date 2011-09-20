@@ -66,6 +66,9 @@ class GerritPatch(Patch):
   def __init__(self, patch_dict, internal):
     """Construct a GerritPatch object from Gerrit query results.
 
+    Gerrit query JSON fields are documented at:
+    http://gerrit-documentation.googlecode.com/svn/Documentation/2.2.1/json.html
+
     Args:
       patch_dict: A dictionary containing the parsed JSON gerrit query results.
       internal: Whether the CL is an internal CL.
@@ -83,6 +86,13 @@ class GerritPatch(Patch):
     self.owner, _, _ = patch_dict['owner']['email'].partition('@')
     self.gerrit_number = patch_dict['number']
     self.url = patch_dict['url']
+    # status - Current state of this change.  Can be one of
+    # ['NEW', 'SUBMITTED', 'MERGED', 'ABANDONED'].
+    self.status = patch_dict['status']
+
+  def IsAlreadyMerged(self):
+    """Returns whether the patch has already been merged in Gerrit."""
+    return self.status == 'MERGED'
 
   def _RebasePatch(self, buildroot, project_dir, trivial):
     """Rebase patch fetched from gerrit onto constants.PATCH_BRANCH.

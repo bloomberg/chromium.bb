@@ -115,6 +115,9 @@ def _PreProcessPatches(gerrit_patches, local_patches, tracking_branch):
   try:
     if gerrit_patches:
       gerrit_patch_info = cros_patch.GetGerritPatchInfo(gerrit_patches)
+      for patch in gerrit_patch_info:
+        if patch.IsAlreadyMerged():
+          cros_lib.Warning('Patch %s has already been merged.' % str(patch))
 
     if local_patches:
       local_patch_info = cros_patch.PrepareLocalPatches(local_patches,
