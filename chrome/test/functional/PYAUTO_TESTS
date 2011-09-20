@@ -226,6 +226,8 @@
       '-omnibox.OmniboxTest.testOmniboxSearchHistory',
       # Keychain popups make autofill/password tests difficult: crbug.com/49378
       '-passwords',
+      # crbug.com/97140
+      '-plugins.PluginsTest.testDisableEnableAllPlugins',
       # crbug.com/95142
       '-process_count.ProcessCountTest.testProcessCountExtensionProcess',
       # WebDriver requires python 2.6, which mac pyauto does not use yet.
