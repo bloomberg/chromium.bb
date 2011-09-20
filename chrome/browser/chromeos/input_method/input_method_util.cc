@@ -609,7 +609,7 @@ void InputMethodUtil::EnableInputMethods(
 std::string InputMethodUtil::GetHardwareInputMethodId() const {
   if (!(g_browser_process && g_browser_process->local_state())) {
     // This shouldn't happen but just in case.
-    LOG(ERROR) << "Local state is not yet ready";
+    VLOG(1) << "Local state is not yet ready";
     return InputMethodDescriptor::GetFallbackInputMethodDescriptor().id();
   }
 
