@@ -112,7 +112,10 @@ cr.define('oobe', function() {
      * URL.
      */
     onBeforeShow: function(data) {
-      this.signin_url_ = data.signin_url;
+      var url = data.signin_url;
+      if (data.gaiaOrigin)
+        url += '?gaiaOrigin=' + encodeURIComponent(data.gaiaOrigin);
+      this.signin_url_ = url;
       $('oauth-enroll-signin-frame').contentWindow.location.href =
           this.signin_url_;
       this.showStep('signin');

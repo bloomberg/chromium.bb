@@ -96,6 +96,8 @@ cr.define('login', function() {
                   ', opt_email=' + data.email);
 
       var params = [];
+      if (data.gaiaOrigin)
+        params.push('gaiaOrigin=' + encodeURIComponent(data.gaiaOrigin));
       if (data.hl)
         params.push('hl=' + encodeURIComponent(data.hl));
       if (data.email)

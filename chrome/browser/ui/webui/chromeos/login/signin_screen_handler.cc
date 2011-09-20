@@ -18,6 +18,7 @@
 #include "chrome/browser/chromeos/user_cros_settings_provider.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/net/gaia/gaia_urls.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_service.h"
@@ -272,6 +273,7 @@ void SigninScreenHandler::ShowSigninScreenIfReady() {
       UserCrosSettingsProvider::cached_allow_new_user());
   params.SetBoolean("guestSignin",
       UserCrosSettingsProvider::cached_allow_guest());
+  params.SetString("gaiaOrigin", GaiaUrls::GetInstance()->gaia_origin_url());
 
   // Test automation data:
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
