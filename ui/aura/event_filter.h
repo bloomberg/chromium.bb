@@ -6,8 +6,7 @@
 #define UI_AURA_EVENT_FILTER_H_
 #pragma once
 
-#include "base/logging.h"
-#include "ui/gfx/point.h"
+#include "base/basictypes.h"
 
 namespace aura {
 
