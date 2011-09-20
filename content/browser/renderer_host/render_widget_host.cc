@@ -55,6 +55,21 @@ static const int kHungRendererDelayMs = 20000;
 // in trailing scrolls after the user ends their input.
 static const int kMaxTimeBetweenWheelMessagesMs = 250;
 
+namespace {
+
+// Returns |true| if the two wheel events should be coalesced.
+bool ShouldCoalesceMouseWheelEvents(const WebMouseWheelEvent& last_event,
+                                    const WebMouseWheelEvent& new_event) {
+  return last_event.modifiers == new_event.modifiers &&
+         last_event.scrollByPage == new_event.scrollByPage &&
+         last_event.hasPreciseScrollingDeltas
+             == new_event.hasPreciseScrollingDeltas &&
+         last_event.phase == new_event.phase &&
+         last_event.momentumPhase == new_event.momentumPhase;
+}
+
+}  // namespace
+
 ///////////////////////////////////////////////////////////////////////////////
 // RenderWidgetHost
 
@@ -537,10 +552,8 @@ void RenderWidgetHost::ForwardWheelEvent(
   // which many, very small wheel events are sent).
   if (mouse_wheel_pending_) {
     if (coalesced_mouse_wheel_events_.empty() ||
-        coalesced_mouse_wheel_events_.back().modifiers
-            != wheel_event.modifiers ||
-        coalesced_mouse_wheel_events_.back().scrollByPage
-            != wheel_event.scrollByPage) {
+        !ShouldCoalesceMouseWheelEvents(coalesced_mouse_wheel_events_.back(),
+                                        wheel_event)) {
       coalesced_mouse_wheel_events_.push_back(wheel_event);
     } else {
       WebMouseWheelEvent* last_wheel_event =
