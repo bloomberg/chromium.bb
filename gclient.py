@@ -211,8 +211,8 @@ class Dependency(GClientKeywords, gclient_utils.WorkItem):
     # Interestingly enough, the following condition only works in the case we
     # want: self is a 2nd level node. 3nd level node wouldn't need this since
     # they already have their parent as a requirement.
-    if self.parent in self.root_parent().dependencies:
-      root_deps = self.root_parent().dependencies
+    root_deps = self.root.dependencies
+    if self.parent in root_deps:
       for i in range(0, root_deps.index(self.parent)):
         value = root_deps[i]
         if value.name:
@@ -230,7 +230,7 @@ class Dependency(GClientKeywords, gclient_utils.WorkItem):
             if j.should_process:
               yield j
 
-      for obj in yield_full_tree(self.root_parent()):
+      for obj in yield_full_tree(self.root):
         if obj is self or not obj.name:
           continue
         # Step 1: Find any requirements self may need.
@@ -277,7 +277,7 @@ class Dependency(GClientKeywords, gclient_utils.WorkItem):
         raise gclient_utils.Error(
             'Couldn\'t find %s in %s, referenced by %s (parent: %s)\n%s' % (
                 sub_target, ref.name, self.name, self.parent.name,
-                str(self.root_parent())))
+                str(self.root)))
 
       # Call LateOverride() again.
       parsed_url = found_dep.LateOverride(found_dep.url)
@@ -295,7 +295,7 @@ class Dependency(GClientKeywords, gclient_utils.WorkItem):
         parent_url = self.parent.parsed_url
         if isinstance(parent_url, self.FileImpl):
           parent_url = parent_url.file_location
-        scm = gclient_scm.CreateSCM(parent_url, self.root_dir(), None)
+        scm = gclient_scm.CreateSCM(parent_url, self.root.root_dir, None)
         parsed_url = scm.FullUrlForRelativeUrl(url)
       else:
         parsed_url = url
@@ -326,7 +326,7 @@ class Dependency(GClientKeywords, gclient_utils.WorkItem):
       'Var': var.Lookup,
       'deps_os': {},
     }
-    filepath = os.path.join(self.root_dir(), self.name, self.deps_file)
+    filepath = os.path.join(self.root.root_dir, self.name, self.deps_file)
     if not os.path.isfile(filepath):
       logging.info('%s: No %s file found at %s' % (self.name, self.deps_file,
                                                    filepath))
@@ -342,9 +342,9 @@ class Dependency(GClientKeywords, gclient_utils.WorkItem):
     # load os specific dependencies if defined.  these dependencies may
     # override or extend the values defined by the 'deps' member.
     if 'deps_os' in local_scope:
-      for deps_os_key in self.enforced_os():
+      for deps_os_key in self.root.enforced_os:
         os_deps = local_scope['deps_os'].get(deps_os_key, {})
-        if len(self.enforced_os()) > 1:
+        if len(self.root.enforced_os) > 1:
           # Ignore any conflict when including deps for more than one
           # platform, so we collect the broadest set of dependencies
           # available. We may end up with the wrong revision of something for
@@ -450,7 +450,7 @@ class Dependency(GClientKeywords, gclient_utils.WorkItem):
         if not command in (None, 'cleanup', 'diff', 'pack', 'status'):
           options.revision = self.parsed_url.GetRevision()
           scm = gclient_scm.SVNWrapper(self.parsed_url.GetPath(),
-                                       self.root_dir(),
+                                       self.root.root_dir,
                                        self.name)
           scm.RunCommand('updatesingle', options,
                          args + [self.parsed_url.GetFilename()],
@@ -460,7 +460,8 @@ class Dependency(GClientKeywords, gclient_utils.WorkItem):
         options = copy.copy(options)
         options.revision = revision_overrides.get(self.name)
         maybeGetParentRevision(options)
-        scm = gclient_scm.CreateSCM(self.parsed_url, self.root_dir(), self.name)
+        scm = gclient_scm.CreateSCM(
+            self.parsed_url, self.root.root_dir, self.name)
         scm.RunCommand(command, options, args, self._file_list)
         maybeConvertToDateRevision(options)
         self._file_list = [os.path.join(self.name, f.strip())
@@ -490,7 +491,7 @@ class Dependency(GClientKeywords, gclient_utils.WorkItem):
       if (options.force or
           isinstance(self.parsed_url, self.FileImpl) or
           gclient_scm.GetScmName(self.parsed_url) in ('git', None) or
-          os.path.isdir(os.path.join(self.root_dir(), self.name, '.git'))):
+          os.path.isdir(os.path.join(self.root.root_dir, self.name, '.git'))):
         for hook_dict in self.deps_hooks:
           self._RunHookAction(hook_dict, [])
       else:
@@ -502,7 +503,7 @@ class Dependency(GClientKeywords, gclient_utils.WorkItem):
           if not os.path.isabs(file_list[i]):
             continue
 
-          prefix = os.path.commonprefix([self.root_dir().lower(),
+          prefix = os.path.commonprefix([self.root.root_dir.lower(),
                                          file_list[i].lower()])
           file_list[i] = file_list[i][len(prefix):]
 
@@ -542,19 +543,13 @@ class Dependency(GClientKeywords, gclient_utils.WorkItem):
 
     try:
       gclient_utils.CheckCallAndFilterAndHeader(
-          command, cwd=self.root_dir(), always=True)
+          command, cwd=self.root.root_dir, always=True)
     except (gclient_utils.Error, subprocess2.CalledProcessError), e:
       # Use a discrete exit status code of 2 to indicate that a hook action
       # failed.  Users of this script may wish to treat hook action failures
       # differently from VC failures.
       print >> sys.stderr, 'Error: %s' % str(e)
       sys.exit(2)
-
-  def root_dir(self):
-    return self.parent.root_dir()
-
-  def enforced_os(self):
-    return self.parent.enforced_os()
 
   def recursion_limit(self):
     return self.parent.recursion_limit() - 1
@@ -615,12 +610,13 @@ class Dependency(GClientKeywords, gclient_utils.WorkItem):
       i = i.parent
     return out
 
-  def root_parent(self):
-    """Returns the root object, normally a GClient object."""
-    d = self
-    while d.parent:
-      d = d.parent
-    return d
+  @property
+  def root(self):
+    """Returns the root node, a GClient object."""
+    if not self.parent:
+      # This line is to signal pylint that it could be a GClient instance.
+      return self or GClient(None, None)
+    return self.parent.root
 
 
 class GClient(Dependency):
@@ -680,7 +676,7 @@ solutions = [
       enforced_os = [self.DEPS_OS_CHOICES.get(sys.platform, 'unix')]
     if 'all' in enforced_os:
       enforced_os = self.DEPS_OS_CHOICES.itervalues()
-    self._enforced_os = list(set(enforced_os))
+    self._enforced_os = tuple(set(enforced_os))
     self._root_dir = root_dir
     self.config_content = None
 
@@ -713,7 +709,7 @@ solutions = [
     self.deps_parsed = True
 
   def SaveConfig(self):
-    gclient_utils.FileWrite(os.path.join(self.root_dir(),
+    gclient_utils.FileWrite(os.path.join(self.root_dir,
                                          self._options.config_filename),
                             self.config_content)
 
@@ -752,7 +748,7 @@ solutions = [
         result += '  %s: %s,\n' % (pprint.pformat(entry.name),
             pprint.pformat(entry.parsed_url))
     result += '}\n'
-    file_path = os.path.join(self.root_dir(), self._options.entries_filename)
+    file_path = os.path.join(self.root_dir, self._options.entries_filename)
     logging.info(result)
     gclient_utils.FileWrite(file_path, result)
 
@@ -764,7 +760,7 @@ solutions = [
       entries file hasn't been created yet.
     """
     scope = {}
-    filename = os.path.join(self.root_dir(), self._options.entries_filename)
+    filename = os.path.join(self.root_dir, self._options.entries_filename)
     if not os.path.exists(filename):
       return {}
     try:
@@ -842,11 +838,11 @@ solutions = [
           continue
         # Fix path separator on Windows.
         entry_fixed = entry.replace('/', os.path.sep)
-        e_dir = os.path.join(self.root_dir(), entry_fixed)
+        e_dir = os.path.join(self.root_dir, entry_fixed)
         # Use entry and not entry_fixed there.
         if entry not in entries and os.path.exists(e_dir):
           file_list = []
-          scm = gclient_scm.CreateSCM(prev_url, self.root_dir(), entry_fixed)
+          scm = gclient_scm.CreateSCM(prev_url, self.root_dir, entry_fixed)
           scm.status(self._options, [], file_list)
           modified_files = file_list != []
           if (not self._options.delete_unversioned_trees or
@@ -859,7 +855,7 @@ solutions = [
           else:
             # Delete the entry
             print('\n________ deleting \'%s\' in \'%s\'' % (
-                entry_fixed, self.root_dir()))
+                entry_fixed, self.root_dir))
             gclient_utils.RemoveDirectory(e_dir)
       # record the current list of entries for next time
       self._SaveEntries()
@@ -883,7 +879,7 @@ solutions = [
       else:
         original_url = dep.parsed_url
       url, _ = gclient_utils.SplitUrlRevision(original_url)
-      scm = gclient_scm.CreateSCM(original_url, self.root_dir(), dep.name)
+      scm = gclient_scm.CreateSCM(original_url, self.root_dir, dep.name)
       if not os.path.isdir(scm.checkout_path):
         return None
       return '%s@%s' % (url, scm.revinfo(self._options, [], None))
@@ -931,10 +927,12 @@ solutions = [
     """No DEPS to parse for a .gclient file."""
     raise gclient_utils.Error('Internal error')
 
+  @property
   def root_dir(self):
     """Root directory of gclient checkout."""
     return self._root_dir
 
+  @property
   def enforced_os(self):
     """What deps_os entries that are to be parsed."""
     return self._enforced_os
