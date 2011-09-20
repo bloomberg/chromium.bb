@@ -311,7 +311,7 @@ cr.define('ntp4', function() {
         wrapper.hidden = true;
       }
 
-      if (this.id === ROOT_NODE_ID && !tile_count)
+      if (this.id === ROOT_NODE_ID && !tile_count && !cr.isChromeOS)
         this.showImportPromo_();
     },
 
