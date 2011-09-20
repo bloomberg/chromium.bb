@@ -1258,9 +1258,9 @@ def GenerateManifestFunc(target, source, env):
   if 'files' not in obj:
     obj['files'] = {}
   for lib_name in lib_names:
-    obj['files']['lib/' + lib_name] = {}
-    obj['files']['lib/' + lib_name][arch] = {}
-    obj['files']['lib/' + lib_name][arch]['url'] = lib_name
+    obj['files'][lib_name] = {}
+    obj['files'][lib_name][arch] = {}
+    obj['files'][lib_name][arch]['url'] = lib_name
   obj['files']['main.nexe'] = {}
   for k, v in obj['program'].items():
     obj['files']['main.nexe'][k] = v.copy()

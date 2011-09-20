@@ -63,7 +63,7 @@ def generate_nmf(env, target, source):
   return 0
 
 def make_mappings(libdir, libs):
-  return [('lib/%s' % lib, env.File(os.path.join(libdir, lib))) for lib in libs]
+  return [('%s' % lib, env.File(os.path.join(libdir, lib))) for lib in libs]
 
 file_mapping = (make_mappings('${NACL_SDK_LIB}', toolchain_libraries) +
                 make_mappings('${LIB_DIR}', nacl_libraries))
