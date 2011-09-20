@@ -247,6 +247,16 @@ bool MessagePumpX::RunOnce(GMainContext* context, bool block) {
   return retvalue;
 }
 
+bool MessagePumpX::WillProcessXEvent(XEvent* xevent) {
+  ObserverListBase<MessagePumpObserver>::Iterator it(observers());
+  MessagePumpObserver* obs;
+  while ((obs = it.GetNext()) != NULL) {
+    if (obs->WillProcessXEvent(xevent))
+      return true;
+  }
+  return false;
+}
+
 #if defined(TOOLKIT_USES_GTK)
 GdkFilterReturn MessagePumpX::GdkEventFilter(GdkXEvent* gxevent,
                                              GdkEvent* gevent,
@@ -260,16 +270,6 @@ GdkFilterReturn MessagePumpX::GdkEventFilter(GdkXEvent* gxevent,
   }
   CHECK(use_gtk_message_pump) << "GdkEvent:" << gevent->type;
   return GDK_FILTER_CONTINUE;
-}
-
-bool MessagePumpX::WillProcessXEvent(XEvent* xevent) {
-  ObserverListBase<MessagePumpObserver>::Iterator it(observers());
-  MessagePumpObserver* obs;
-  while ((obs = it.GetNext()) != NULL) {
-    if (obs->WillProcessXEvent(xevent))
-      return true;
-  }
-  return false;
 }
 
 void MessagePumpX::EventDispatcherX(GdkEvent* event, gpointer data) {
