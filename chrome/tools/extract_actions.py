@@ -45,7 +45,8 @@ KNOWN_COMPUTED_USERS = (
   'cros_language_options_handler.cc', # languages and input methods in CrOS
   'about_flags.cc', # do not generate a warning; see AddAboutFlagsActions()
   'external_metrics.cc',  # see AddChromeOSActions()
-  'core_options_handler.cc'  # see AddWebUIActions()
+  'core_options_handler.cc',  # see AddWebUIActions()
+  'browser_render_process_host.cc'  # see AddRendererActions()
 )
 
 # Language codes used in Chrome. The list should be updated when a new
@@ -312,8 +313,8 @@ def WalkDirectory(root_path, actions, extensions, callback):
       if ext in extensions:
         callback(os.path.join(path, file), actions)
 
-def GrepForMsgActions(path, actions):
-  """Grep a source file for ViewHostMsg_UserMetricsRecordAction.
+def GrepForRendererActions(path, actions):
+  """Grep a source file for calls to RenderThread::RecordUserMetrics.
 
   Arguments:
     path: path to the file
@@ -322,7 +323,7 @@ def GrepForMsgActions(path, actions):
   # We look for the ViewHostMsg_UserMetricsRecordAction constructor.
   # This should be on one line.
   action_re = re.compile(
-      r'[^a-zA-Z]ViewHostMsg_UserMetricsRecordAction\("([^"]*)')
+      r'[^a-zA-Z]RenderThread::RecordUserMetrics\("([^"]*)')
   line_number = 0
   for line in open(path):
     match = action_re.search(line)
@@ -360,8 +361,8 @@ def AddWebUIActions(actions):
                                 'resources')
   WalkDirectory(resources_root, actions, ('.html'), GrepForWebUIActions)
 
-def AddMsgActions(actions):
-  """Add user actions sent via ViewHostMsg_UserMetricsRecordAction.
+def AddRendererActions(actions):
+  """Add user actions sent via calls to RenderThread::RecordUserMetrics.
 
   Arguments:
     actions: set of actions to add to.
@@ -371,8 +372,10 @@ def AddMsgActions(actions):
   chrome_renderer_root = os.path.join(path_utils.ScriptDir(), '..', 'renderer')
   content_renderer_root = os.path.join(path_utils.ScriptDir(), '..', '..',
       'content', 'renderer')
-  WalkDirectory(chrome_renderer_root, actions, EXTENSIONS, GrepForMsgActions)
-  WalkDirectory(content_renderer_root, actions, EXTENSIONS, GrepForMsgActions)
+  WalkDirectory(chrome_renderer_root, actions, EXTENSIONS,
+                GrepForRendererActions)
+  WalkDirectory(content_renderer_root, actions, EXTENSIONS,
+                GrepForRendererActions)
 
 def main(argv):
   if '--hash' in argv:
@@ -401,7 +404,7 @@ def main(argv):
   # AddWebKitEditorActions(actions)
   AddAboutFlagsActions(actions)
   AddWebUIActions(actions)
-  AddMsgActions(actions)
+  AddRendererActions(actions)
 
   AddLiteralActions(actions)
 
