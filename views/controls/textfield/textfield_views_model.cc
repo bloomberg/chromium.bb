@@ -320,10 +320,7 @@ void TextfieldViewsModel::Append(const string16& text) {
   if (HasCompositionText())
     ConfirmCompositionText();
   size_t save = GetCursorPosition();
-  if (render_text_->GetTextDirection() == base::i18n::LEFT_TO_RIGHT)
-    MoveCursorRight(gfx::LINE_BREAK, false);
-  else
-    MoveCursorLeft(gfx::LINE_BREAK, false);
+  MoveCursorRight(gfx::LINE_BREAK, false);
   InsertText(text);
   render_text_->SetCursorPosition(save);
   ClearSelection();
@@ -341,9 +338,7 @@ bool TextfieldViewsModel::Delete() {
   }
   if (GetText().length() > GetCursorPosition()) {
     size_t cursor_position = GetCursorPosition();
-    size_t next_grapheme_index =
-        render_text_->GetIndexOfNextGrapheme(cursor_position);
-    ExecuteAndRecordDelete(cursor_position, next_grapheme_index, true);
+    ExecuteAndRecordDelete(cursor_position, cursor_position + 1, true);
     return true;
   }
   return false;
@@ -661,7 +656,7 @@ void TextfieldViewsModel::ReplaceTextInternal(const string16& text,
   } else if (!HasSelection()) {
     size_t cursor = GetCursorPosition();
     gfx::SelectionModel sel(render_text_->selection_model());
-    sel.set_selection_start(render_text_->GetIndexOfNextGrapheme(cursor));
+    sel.set_selection_start(cursor + text.length());
     render_text_->MoveCursorTo(sel);
   }
   // Edit history is recorded in InsertText.

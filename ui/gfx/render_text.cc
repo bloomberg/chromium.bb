@@ -247,12 +247,6 @@ bool RenderText::MoveCursorTo(const SelectionModel& selection_model) {
     sel.set_caret_pos(end.caret_pos());
     sel.set_caret_placement(end.caret_placement());
   }
-
-  if (!IsCursorablePosition(sel.selection_start()) ||
-      !IsCursorablePosition(sel.selection_end()) ||
-      !IsCursorablePosition(sel.caret_pos()))
-    return false;
-
   bool changed = !sel.Equals(selection_model_);
   SetSelectionModel(sel);
   return changed;
@@ -287,28 +281,41 @@ void RenderText::SelectAll() {
   SetSelectionModel(sel);
 }
 
+// TODO(xji): it does not work for languages do not use space as word breaker,
+// such as Chinese. Should use BreakIterator.
 void RenderText::SelectWord() {
+  size_t selection_start = GetSelectionStart();
   size_t cursor_position = GetCursorPosition();
+  // First we setup selection_start_ and selection_end_. There are so many cases
+  // because we try to emulate what select-word looks like in a gtk textfield.
+  // See associated testcase for different cases.
+  if (cursor_position > 0 && cursor_position < text().length()) {
+    if (u_isalnum(text()[cursor_position])) {
+      selection_start = cursor_position;
+      cursor_position++;
+    } else
+      selection_start = cursor_position - 1;
+  } else if (cursor_position == 0) {
+    selection_start = cursor_position;
+    if (text().length() > 0)
+      cursor_position++;
+  } else {
+    selection_start = cursor_position - 1;
+  }
 
-  base::i18n::BreakIterator iter(text(), base::i18n::BreakIterator::BREAK_WORD);
-  bool success = iter.Init();
-  DCHECK(success);
-  if (!success)
-    return;
-
-  size_t selection_start = cursor_position;
-  for (; selection_start != 0; --selection_start) {
-    if (iter.IsStartOfWord(selection_start) ||
-        iter.IsEndOfWord(selection_start))
+  // Now we move selection_start_ to beginning of selection. Selection boundary
+  // is defined as the position where we have alpha-num character on one side
+  // and non-alpha-num char on the other side.
+  for (; selection_start > 0; selection_start--) {
+    if (IsPositionAtWordSelectionBoundary(selection_start))
       break;
   }
 
-  if (selection_start == cursor_position)
-    ++cursor_position;
-
-  for (; cursor_position < text().length(); ++cursor_position) {
-    if (iter.IsEndOfWord(cursor_position) ||
-        iter.IsStartOfWord(cursor_position))
+  // Now we move selection_end_ to end of selection. Selection boundary
+  // is defined as the position where we have alpha-num character on one side
+  // and non-alpha-num char on the other side.
+  for (; cursor_position < text().length(); cursor_position++) {
+    if (IsPositionAtWordSelectionBoundary(cursor_position))
       break;
   }
 
@@ -455,10 +462,6 @@ const Rect& RenderText::GetUpdatedCursorBounds() {
   return cursor_bounds_;
 }
 
-size_t RenderText::GetIndexOfNextGrapheme(size_t position) {
-  return IndexOfAdjacentGrapheme(position, true);
-}
-
 RenderText::RenderText()
     : text_(),
       selection_model_(),
@@ -554,7 +557,8 @@ SelectionModel RenderText::RightEndSelectionModel() {
 }
 
 size_t RenderText::GetIndexOfPreviousGrapheme(size_t position) {
-  return IndexOfAdjacentGrapheme(position, false);
+  // TODO(msw): Handle complex script.
+  return std::max(static_cast<long>(position - 1), static_cast<long>(0));
 }
 
 std::vector<Rect> RenderText::GetSubstringBounds(size_t from, size_t to) {
@@ -628,10 +632,13 @@ void RenderText::MoveCursorTo(size_t position, bool select) {
   SelectionModel::CaretPlacement placement = (caret_pos == cursor) ?
       SelectionModel::LEADING : SelectionModel::TRAILING;
   size_t selection_start = select ? GetSelectionStart() : cursor;
-  if (IsCursorablePosition(cursor)) {
-    SelectionModel sel(selection_start, cursor, caret_pos, placement);
-    SetSelectionModel(sel);
-  }
+  SelectionModel sel(selection_start, cursor, caret_pos, placement);
+  SetSelectionModel(sel);
+}
+
+bool RenderText::IsPositionAtWordSelectionBoundary(size_t pos) {
+  return pos == 0 || (u_isalnum(text()[pos - 1]) && !u_isalnum(text()[pos])) ||
+      (!u_isalnum(text()[pos - 1]) && u_isalnum(text()[pos]));
 }
 
 void RenderText::UpdateCachedBoundsAndOffset() {

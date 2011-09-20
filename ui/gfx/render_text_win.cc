@@ -237,6 +237,10 @@ SelectionModel RenderTextWin::RightEndSelectionModel() {
   return SelectionModel(cursor, caret, placement);
 }
 
+size_t RenderTextWin::GetIndexOfPreviousGrapheme(size_t position) {
+  return IndexOfAdjacentGrapheme(position, false);
+}
+
 std::vector<Rect> RenderTextWin::GetSubstringBounds(size_t from, size_t to) {
   ui::Range range(from, to);
   DCHECK(ui::Range(0, text().length()).Contains(range));
@@ -289,41 +293,6 @@ std::vector<Rect> RenderTextWin::GetSubstringBounds(size_t from, size_t to) {
     }
   }
   return bounds;
-}
-
-bool RenderTextWin::IsCursorablePosition(size_t position) {
-  if (position == 0 || position == text().length())
-    return true;
-
-  size_t run_index = GetRunContainingPosition(position);
-  if (run_index >= runs_.size())
-    return false;
-
-  internal::TextRun* run = runs_[run_index];
-  size_t start = run->range.start();
-  if (position == start)
-    return true;
-  return run->logical_clusters[position - start] !=
-         run->logical_clusters[position - start - 1];
-}
-
-size_t RenderTextWin::IndexOfAdjacentGrapheme(size_t index, bool next) {
-  size_t run_index = GetRunContainingPosition(index);
-  internal::TextRun* run = run_index < runs_.size() ? runs_[run_index] : NULL;
-  long start = run ? run->range.start() : 0;
-  long length = run ? run->range.length() : text().length();
-  long ch = index - start;
-  WORD cluster = run ? run->logical_clusters[ch] : 0;
-
-  if (!next) {
-    do {
-      ch--;
-    } while (ch >= 0 && run && run->logical_clusters[ch] == cluster);
-  } else {
-    while (ch < length && run && run->logical_clusters[ch] == cluster)
-      ch++;
-  }
-  return std::max(static_cast<long>(std::min(ch, length) + start), 0L);
 }
 
 void RenderTextWin::ItemizeLogicalText() {
@@ -492,16 +461,34 @@ size_t RenderTextWin::GetRunContainingPoint(const Point& point) const {
   return run;
 }
 
+size_t RenderTextWin::IndexOfAdjacentGrapheme(size_t index, bool next) const {
+  size_t run_index = GetRunContainingPosition(index);
+  internal::TextRun* run = run_index < runs_.size() ? runs_[run_index] : NULL;
+  long start = run ? run->range.start() : 0;
+  long length = run ? run->range.length() : text().length();
+  long ch = index - start;
+  WORD cluster = run ? run->logical_clusters[ch] : 0;
+
+  if (!next) {
+    do {
+      ch--;
+    } while (ch >= 0 && run && run->logical_clusters[ch] == cluster);
+  } else {
+    while (ch < length && run && run->logical_clusters[ch] == cluster)
+      ch++;
+  }
+  return std::max(static_cast<long>(std::min(ch, length) + start), 0L);
+}
 
 SelectionModel RenderTextWin::FirstSelectionModelInsideRun(
-    internal::TextRun* run) {
+    internal::TextRun* run) const {
   size_t caret = run->range.start();
   size_t cursor = IndexOfAdjacentGrapheme(caret, true);
   return SelectionModel(cursor, caret, SelectionModel::TRAILING);
 }
 
 SelectionModel RenderTextWin::LastSelectionModelInsideRun(
-    internal::TextRun* run) {
+    internal::TextRun* run) const {
   size_t caret = IndexOfAdjacentGrapheme(run->range.end(), false);
   return SelectionModel(caret, caret, SelectionModel::LEADING);
 }

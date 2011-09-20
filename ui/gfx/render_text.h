@@ -193,9 +193,7 @@ class UI_EXPORT RenderText {
   // Set the selection_model_ to the value of |selection|.
   // The selection model components are modified if invalid.
   // Returns true if the cursor position or selection range changed.
-  // If |selectin_start_| or |selection_end_| or |caret_pos_| in
-  // |selection_model| is not a cursorable position (not on grapheme boundary),
-  // it is a NO-OP and returns false.
+  // TODO(xji): need to check the cursor is set at grapheme boundary.
   bool MoveCursorTo(const SelectionModel& selection_model);
 
   // Move the cursor to the position associated with the clicked point.
@@ -256,9 +254,6 @@ class UI_EXPORT RenderText {
   // Subsequent text, cursor, or bounds changes may invalidate returned values.
   const Rect& GetUpdatedCursorBounds();
 
-  // Get the logical index of the grapheme following the argument |position|.
-  virtual size_t GetIndexOfNextGrapheme(size_t position);
-
  protected:
   RenderText();
 
@@ -293,10 +288,6 @@ class UI_EXPORT RenderText {
   // TODO(msw) Re-evaluate this function's necessity and signature.
   virtual std::vector<Rect> GetSubstringBounds(size_t from, size_t to);
 
-  // Return true if cursor can appear in front of the character at |position|,
-  // which means it is a grapheme boundary or the first character in the text.
-  virtual bool IsCursorablePosition(size_t position) = 0;
-
   // Apply composition style (underline) to composition range and selection
   // style (foreground) to selection range.
   void ApplyCompositionAndSelectionStyles(StyleRanges* style_ranges) const;
@@ -314,19 +305,15 @@ class UI_EXPORT RenderText {
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, ApplyStyleRange);
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, StyleRangesAdjust);
 
-  // Return an index belonging to the |next| or previous logical grapheme.
-  // The return value is bounded by 0 and the text length, inclusive.
-  virtual size_t IndexOfAdjacentGrapheme(size_t index, bool next) = 0;
-
   // Sets the selection model, the argument is assumed to be valid.
   void SetSelectionModel(const SelectionModel& selection_model);
 
   // Set the cursor to |position|, with the caret trailing the previous
   // grapheme, or if there is no previous grapheme, leading the cursor position.
   // If |select| is false, the selection start is moved to the same position.
-  // If the |position| is not a cursorable position (not on grapheme boundary),
-  // it is a NO-OP.
   void MoveCursorTo(size_t position, bool select);
+
+  bool IsPositionAtWordSelectionBoundary(size_t pos);
 
   // Update the cached bounds and display offset to ensure that the current
   // cursor is within the visible display area.
