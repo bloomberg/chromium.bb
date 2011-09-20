@@ -46,6 +46,12 @@ void NativeWidgetView::CalculateOffsetToAncestorWithLayer(
   View::CalculateOffsetToAncestorWithLayer(offset, layer_parent);
 }
 
+#if !defined(NDEBUG)
+std::string NativeWidgetView::PrintViewGraph(bool first) {
+  return DoPrintViewGraph(first, GetAssociatedWidget()->GetRootView());
+}
+#endif
+
 void NativeWidgetView::ViewHierarchyChanged(bool is_add,
                                             View* parent,
                                             View* child) {

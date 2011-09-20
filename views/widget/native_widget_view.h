@@ -45,6 +45,10 @@ class VIEWS_EXPORT NativeWidgetView : public View {
       gfx::Point* offset,
       ui::Layer** layer_parent) OVERRIDE;
 
+#if !defined(NDEBUG)
+  virtual std::string PrintViewGraph(bool first) OVERRIDE;
+#endif
+
  private:
   // Overridden from View:
   virtual void ViewHierarchyChanged(bool is_add,

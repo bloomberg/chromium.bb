@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
+#include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "third_party/skia/include/core/SkRect.h"
 #include "ui/base/accessibility/accessibility_types.h"
@@ -17,6 +18,7 @@
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/compositor/compositor.h"
 #include "ui/gfx/compositor/layer.h"
+#include "ui/gfx/interpolated_transform.h"
 #include "ui/gfx/path.h"
 #include "ui/gfx/point3.h"
 #include "ui/gfx/transform.h"
@@ -1281,6 +1283,135 @@ bool View::InDrag() {
   return widget ? widget->dragged_view() == this : false;
 }
 
+// Debugging -------------------------------------------------------------------
+
+#if !defined(NDEBUG)
+
+std::string View::PrintViewGraph(bool first) {
+  return DoPrintViewGraph(first, this);
+}
+
+std::string View::DoPrintViewGraph(bool first, View* view_with_children) {
+  // 64-bit pointer = 16 bytes of hex + "0x" + '\0' = 19.
+  const size_t kMaxPointerStringLength = 19;
+
+  std::string result;
+
+  if (first)
+    result.append("digraph {\n");
+
+  // Node characteristics.
+  char p[kMaxPointerStringLength];
+
+  size_t baseNameIndex = GetClassName().find_last_of('/');
+  if (baseNameIndex == std::string::npos)
+    baseNameIndex = 0;
+  else
+    baseNameIndex++;
+
+  char bounds_buffer[512];
+
+  // Information about current node.
+  base::snprintf(p, arraysize(bounds_buffer), "%p", view_with_children);
+  result.append("  N");
+  result.append(p+2);
+  result.append(" [label=\"");
+
+  result.append(GetClassName().substr(baseNameIndex).c_str());
+
+  base::snprintf(bounds_buffer,
+                 arraysize(bounds_buffer),
+                 "\\n bounds: (%d, %d), (%dx%d)",
+                 this->bounds().x(),
+                 this->bounds().y(),
+                 this->bounds().width(),
+                 this->bounds().height());
+  result.append(bounds_buffer);
+
+  if (layer() && !layer()->hole_rect().IsEmpty()) {
+    base::snprintf(bounds_buffer,
+                   arraysize(bounds_buffer),
+                   "\\n hole bounds: (%d, %d), (%dx%d)",
+                   layer()->hole_rect().x(),
+                   layer()->hole_rect().y(),
+                   layer()->hole_rect().width(),
+                   layer()->hole_rect().height());
+    result.append(bounds_buffer);
+  }
+
+  if (GetTransform().HasChange()) {
+    gfx::Point translation;
+    float rotation;
+    gfx::Point3f scale;
+    if (ui::InterpolatedTransform::FactorTRS(GetTransform(),
+                                             &translation,
+                                             &rotation,
+                                             &scale)) {
+      if (translation != gfx::Point(0, 0)) {
+        base::snprintf(bounds_buffer,
+                       arraysize(bounds_buffer),
+                       "\\n translation: (%d, %d)",
+                       translation.x(),
+                       translation.y());
+        result.append(bounds_buffer);
+      }
+
+      if (fabs(rotation) > 1e-5) {
+        base::snprintf(bounds_buffer,
+                       arraysize(bounds_buffer),
+                       "\\n rotation: %3.2f", rotation);
+        result.append(bounds_buffer);
+      }
+
+      if (scale.AsPoint() != gfx::Point(0, 0)) {
+        base::snprintf(bounds_buffer,
+                       arraysize(bounds_buffer),
+                       "\\n scale: (%2.4f, %2.4f)",
+                       scale.x(),
+                       scale.y());
+        result.append(bounds_buffer);
+      }
+    }
+  }
+
+  result.append("\"");
+  if (!parent_)
+    result.append(", shape=box");
+  if (layer()) {
+    if (layer()->texture())
+      result.append(", color=green");
+    else
+      result.append(", color=red");
+
+    if (layer()->fills_bounds_opaquely())
+      result.append(", style=filled");
+  }
+  result.append("]\n");
+
+  // Link to parent.
+  if (parent_) {
+    char pp[kMaxPointerStringLength];
+
+    base::snprintf(pp, kMaxPointerStringLength, "%p", parent_);
+    result.append("  N");
+    result.append(pp+2);
+    result.append(" -> N");
+    result.append(p+2);
+    result.append("\n");
+  }
+
+  // Children.
+  for (int i = 0, count = view_with_children->child_count(); i < count; ++i)
+    result.append(view_with_children->child_at(i)->PrintViewGraph(false));
+
+  if (first)
+    result.append("}\n");
+
+  return result;
+}
+
+#endif
+
 ////////////////////////////////////////////////////////////////////////////////
 // View, private:
 
@@ -1905,62 +2036,5 @@ void View::DoDrag(const MouseEvent& event, const gfx::Point& press_pt) {
   // the RootView can detect it and avoid calling us back.
   GetWidget()->RunShellDrag(this, data, drag_operations);
 }
-
-// Debugging -------------------------------------------------------------------
-
-#if defined(TOUCH_DEBUG)
-std::string View::PrintViewGraph(bool first) {
-  // 64-bit pointer = 16 bytes of hex + "0x" + '\0' = 19.
-  const size_t kMaxPointerStringLength = 19;
-
-  std::string result;
-
-  if (first)
-    result.append("digraph {\n");
-
-  // Node characteristics.
-  char p[kMaxPointerStringLength];
-
-  size_t baseNameIndex = GetClassName().find_last_of('/');
-  if (baseNameIndex == std::string::npos)
-    baseNameIndex = 0;
-  else
-    baseNameIndex++;
-
-  // Information about current node.
-  snprintf(p, kMaxPointerStringLength, "%p", this);
-  result.append("  N");
-  result.append(p+2);
-  result.append(" [label=\"");
-  result.append(GetClassName().substr(baseNameIndex).c_str());
-  result.append("\"");
-  if (!parent_)
-    result.append(", shape=box");
-  if (layer())
-    result.append(", color=green");
-  result.append("]\n");
-
-  // Link to parent.
-  if (parent_) {
-    char pp[kMaxPointerStringLength];
-
-    snprintf(pp, kMaxPointerStringLength, "%p", parent_);
-    result.append("  N");
-    result.append(pp+2);
-    result.append(" -> N");
-    result.append(p+2);
-    result.append("\n");
-  }
-
-  // Children.
-  for (int i = 0, count = child_count(); i < count; ++i)
-    result.append(child_at(i)->PrintViewGraph(false));
-
-  if (first)
-    result.append("}\n");
-
-  return result;
-}
-#endif
 
 }  // namespace views
