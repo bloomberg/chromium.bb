@@ -22,6 +22,10 @@
 #include "ipc/ipc_switches.h"
 #include "webkit/glue/webkit_glue.h"
 
+#if defined(OS_WIN)
+#include "content/common/handle_enumerator_win.h"
+#endif
+
 ChildThread::ChildThread() {
   channel_name_ = CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
       switches::kProcessChannelID);
@@ -158,6 +162,7 @@ bool ChildThread::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ChildProcessMsg_SetIPCLoggingEnabled,
                         OnSetIPCLoggingEnabled)
 #endif
+    IPC_MESSAGE_HANDLER(ChildProcessMsg_DumpHandles, OnDumpHandles)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -190,6 +195,20 @@ void ChildThread::OnSetIPCLoggingEnabled(bool enable) {
     IPC::Logging::GetInstance()->Disable();
 }
 #endif  //  IPC_MESSAGE_LOG_ENABLED
+
+void ChildThread::OnDumpHandles() {
+#if defined(OS_WIN)
+  scoped_refptr<content::HandleEnumerator> handle_enum(
+      new content::HandleEnumerator(
+          CommandLine::ForCurrentProcess()->HasSwitch(
+              switches::kAuditAllHandles)));
+  handle_enum->EnumerateHandles();
+  Send(new ChildProcessHostMsg_DumpHandlesDone);
+  return;
+#endif
+
+  NOTIMPLEMENTED();
+}
 
 ChildThread* ChildThread::current() {
   return ChildProcess::current()->main_thread();

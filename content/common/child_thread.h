@@ -87,6 +87,8 @@ class CONTENT_EXPORT ChildThread : public IPC::Channel::Listener,
   virtual void OnSetIPCLoggingEnabled(bool enable);
 #endif
 
+  virtual void OnDumpHandles();
+
   void set_on_channel_error_called(bool on_channel_error_called) {
     on_channel_error_called_ = on_channel_error_called;
   }

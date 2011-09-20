@@ -2,19 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/handle_enumerator_win.h"
+#include "content/common/handle_enumerator_win.h"
 
 #include <windows.h>
 #include <map>
 
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/process.h"
 #include "base/process_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/windows_version.h"
-#include "content/browser/browser_child_process_host.h"
-#include "content/browser/browser_thread.h"
-#include "content/browser/renderer_host/render_process_host.h"
+#include "content/common/content_switches.h"
 #include "content/common/result_codes.h"
 #include "sandbox/src/handle_table.h"
 
@@ -53,16 +52,17 @@ HandleTypeMap& MakeHandleTypeMap() {
 
 namespace content {
 
-const wchar_t kNtdllDllName[] = L"ntdll.dll";
 const size_t kMaxHandleNameLength = 1024;
 
 void HandleEnumerator::EnumerateHandles() {
   sandbox::HandleTable handles;
-
-  string16 output = ProcessTypeString(type_);
-  output.append(ASCIIToUTF16(" Process - Handles at shutdown:\n"));
+  std::string process_type =
+      CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kProcessType);
+  string16 output = ASCIIToUTF16(process_type);
+  output.append(ASCIIToUTF16(" process - Handles at shutdown:\n"));
   for (sandbox::HandleTable::Iterator sys_handle
-      = handles.HandlesForProcess(::GetProcessId(handle_));
+      = handles.HandlesForProcess(::GetCurrentProcessId());
       sys_handle != handles.end(); ++sys_handle) {
     HandleType current_type = StringToHandleType(sys_handle->Type());
     if (!all_handles_ && (current_type != ProcessHandle &&
@@ -83,116 +83,6 @@ void HandleEnumerator::EnumerateHandles() {
         sys_handle->handle_entry()->GrantedAccess);
   }
   LOG(INFO) << output;
-}
-
-void HandleEnumerator::RunHandleEnumeration() {
-  DCHECK(status_ == Starting);
-  if (BrowserThread::CurrentlyOn(BrowserThread::IO))
-    FindProcessOnIOThread();
-  else if (BrowserThread::CurrentlyOn(BrowserThread::UI))
-    FindProcessOnUIThread();
-  else
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        NewRunnableMethod(this,
-                          &HandleEnumerator::FindProcessOnIOThread));
-}
-
-void HandleEnumerator::FindProcessOnIOThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-
-  for (BrowserChildProcessHost::Iterator iter; !iter.Done(); ++iter) {
-    if (iter->handle() == handle_) {
-      type_ = iter->type();
-      status_ = Finished;
-      break;
-    }
-  }
-
-  if (status_ == Starting) {
-    status_ = InProgress;
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        NewRunnableMethod(this,
-                          &HandleEnumerator::FindProcessOnUIThread));
-  } else {
-    status_ = Finished;
-    BrowserThread::PostTask(
-        BrowserThread::PROCESS_LAUNCHER, FROM_HERE,
-        NewRunnableMethod(this,
-            &HandleEnumerator::EnumerateHandlesAndTerminateProcess));
-  }
-}
-
-void HandleEnumerator::FindProcessOnUIThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  for (RenderProcessHost::iterator renderer_iter(
-       RenderProcessHost::AllHostsIterator()); !renderer_iter.IsAtEnd();
-       renderer_iter.Advance()) {
-    RenderProcessHost* render_process_host = renderer_iter.GetCurrentValue();
-    if (render_process_host->GetHandle() == handle_) {
-      type_ = ChildProcessInfo::RENDER_PROCESS;
-      status_ = Finished;
-      break;
-    }
-  }
-
-  if (status_ == Starting) {
-    status_ = InProgress;
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        NewRunnableMethod(this,
-                          &HandleEnumerator::FindProcessOnIOThread));
-  } else {
-    status_ = Finished;
-    BrowserThread::PostTask(
-        BrowserThread::PROCESS_LAUNCHER, FROM_HERE,
-        NewRunnableMethod(this,
-            &HandleEnumerator::EnumerateHandlesAndTerminateProcess));
-  }
-}
-
-void HandleEnumerator::EnumerateHandlesAndTerminateProcess() {
-  HandleEnumerator::EnumerateHandles();
-  base::Process process(handle_);
-  process.Terminate(content::RESULT_CODE_NORMAL_EXIT);
-  process.Close();
-}
-
-string16 ProcessTypeString(ChildProcessInfo::ProcessType process_type) {
-  switch (process_type) {
-    case ChildProcessInfo::UNKNOWN_PROCESS:
-      return ASCIIToUTF16("Unknown");
-    case ChildProcessInfo::BROWSER_PROCESS:
-      return ASCIIToUTF16("Browser");
-    case ChildProcessInfo::RENDER_PROCESS:
-      return ASCIIToUTF16("Renderer");
-    case ChildProcessInfo::PLUGIN_PROCESS:
-      return ASCIIToUTF16("Plugin");
-    case ChildProcessInfo::WORKER_PROCESS:
-      return ASCIIToUTF16("Worker");
-    case ChildProcessInfo::NACL_LOADER_PROCESS:
-      return ASCIIToUTF16("NaCL Loader");
-    case ChildProcessInfo::UTILITY_PROCESS:
-      return ASCIIToUTF16("Utility");
-    case ChildProcessInfo::PROFILE_IMPORT_PROCESS:
-      return ASCIIToUTF16("Profile Import");
-    case ChildProcessInfo::ZYGOTE_PROCESS:
-      return ASCIIToUTF16("Zygote");
-    case ChildProcessInfo::SANDBOX_HELPER_PROCESS:
-      return ASCIIToUTF16("Sandbox Helper");
-    case ChildProcessInfo::NACL_BROKER_PROCESS:
-      return ASCIIToUTF16("NaCL Broker");
-    case ChildProcessInfo::GPU_PROCESS:
-      return ASCIIToUTF16("GPU");
-    case ChildProcessInfo::PPAPI_PLUGIN_PROCESS:
-      return ASCIIToUTF16("Pepper Plugin");
-    case ChildProcessInfo::PPAPI_BROKER_PROCESS:
-      return ASCIIToUTF16("Pepper Broker");
-    default:
-      return string16();
-  }
 }
 
 HandleType StringToHandleType(const string16& type) {

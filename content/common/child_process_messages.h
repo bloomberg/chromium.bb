@@ -40,6 +40,9 @@ IPC_MESSAGE_CONTROL0(ChildProcessMsg_EndTracing)
 // Sent to all child processes to get trace buffer fullness.
 IPC_MESSAGE_CONTROL0(ChildProcessMsg_GetTraceBufferPercentFull)
 
+// Sent to child processes to dump their handle table.
+IPC_MESSAGE_CONTROL0(ChildProcessMsg_DumpHandles)
+
 ////////////////////////////////////////////////////////////////////////////////
 // Messages sent from the child process to the browser.
 
@@ -59,6 +62,9 @@ IPC_MESSAGE_CONTROL1(ChildProcessHostMsg_TraceDataCollected,
 // Reply to ChildProcessMsg_GetTraceBufferPercentFull.
 IPC_MESSAGE_CONTROL1(ChildProcessHostMsg_TraceBufferPercentFullReply,
                      float /*trace buffer percent full*/)
+
+// Reply to ChildProcessMsg_DumpHandles when handle table dump is complete.
+IPC_MESSAGE_CONTROL0(ChildProcessHostMsg_DumpHandlesDone)
 
 #if defined(OS_WIN)
 // Request that the given font be loaded by the host so it's cached by the

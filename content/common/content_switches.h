@@ -16,6 +16,8 @@ namespace switches {
 CONTENT_EXPORT extern const char kAllowFileAccessFromFiles[];
 CONTENT_EXPORT extern const char kAllowRunningInsecureContent[];
 extern const char kAllowSandboxDebugging[];
+extern const char kAuditHandles[];
+extern const char kAuditAllHandles[];
 CONTENT_EXPORT extern const char kBrowserAssertTest[];
 CONTENT_EXPORT extern const char kBrowserCrashTest[];
 extern const char kBrowserSubprocessPath[];
@@ -157,11 +159,6 @@ extern const char kWebWorkerShareProcesses[];
 CONTENT_EXPORT extern const char kWorkerProcess[];
 CONTENT_EXPORT extern const char kZygoteCmdPrefix[];
 CONTENT_EXPORT extern const char kZygoteProcess[];
-
-#if defined(OS_WIN)
-extern const char kAuditHandles[];
-extern const char kAuditAllHandles[];
-#endif
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
 extern const char kScrollPixels[];

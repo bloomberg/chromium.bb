@@ -104,6 +104,9 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Channel::Sender,
   // See Attach()
   void Release(int listener_id);
 
+  // Schedules the host for deletion and removes it from the all_hosts list.
+  void Cleanup();
+
   // Listeners should call this when they've sent a "Close" message and
   // they're waiting for a "Close_ACK", so that if the renderer process
   // goes away we'll know that it was intentional rather than a crash.
@@ -212,6 +215,9 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Channel::Sender,
   // function does nothing.  The current implementation uses TerminateProcess.
   // Returns True if it was able to do fast shutdown.
   virtual bool FastShutdownIfPossible() = 0;
+
+  // Dump the child process' handle table before shutting down.
+  virtual void DumpHandles() = 0;
 
   // Returns the process object associated with the child process.  In certain
   // tests or single-process mode, this will actually represent the current

@@ -17,6 +17,13 @@ const char kAllowRunningInsecureContent[]   = "allow-running-insecure-content";
 // Allows debugging of sandboxed processes (see zygote_main_linux.cc).
 const char kAllowSandboxDebugging[]         = "allow-sandbox-debugging";
 
+// Enumerates and prints a child process' most dangerous handles when it
+// is terminated.
+const char kAuditHandles[]                  = "enable-handle-auditing";
+
+// The same as kAuditHandles except all handles are enumerated.
+const char kAuditAllHandles[]               = "enable-handle-auditing-all";
+
 // Causes the browser process to throw an assertion on startup.
 const char kBrowserAssertTest[]             = "assert-test";
 
@@ -483,15 +490,6 @@ const char kZygoteCmdPrefix[]               = "zygote-cmd-prefix";
 
 // Causes the process to run as a renderer zygote.
 const char kZygoteProcess[]                 = "zygote";
-
-#if defined(OS_WIN)
-// Enumerates and prints a child process' most dangerous handles when it
-// is terminated.
-const char kAuditHandles[]                  = "enable-handle-auditing";
-
-// The same as kAuditHandles except all handles are enumerated.
-const char kAuditAllHandles[]               = "enable-handle-auditing-all";
-#endif
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
 // Specify the amount the trackpad should scroll by.

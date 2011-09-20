@@ -123,6 +123,8 @@
     'common/gpu/media/gpu_video_decode_accelerator.h',
     'common/gpu/transport_texture.cc',
     'common/gpu/transport_texture.h',
+    'common/handle_enumerator_win.cc',
+    'common/handle_enumerator_win.h',
     'common/hi_res_timer_manager_posix.cc',
     'common/hi_res_timer_manager_win.cc',
     'common/hi_res_timer_manager.h',

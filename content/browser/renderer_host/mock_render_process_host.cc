@@ -74,6 +74,9 @@ bool MockRenderProcessHost::FastShutdownIfPossible() {
   return true;
 }
 
+void MockRenderProcessHost::DumpHandles() {
+}
+
 base::ProcessHandle MockRenderProcessHost::GetHandle() {
   return base::kNullProcessHandle;
 }

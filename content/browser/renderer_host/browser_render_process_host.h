@@ -62,6 +62,7 @@ class BrowserRenderProcessHost : public RenderProcessHost,
   virtual void WidgetHidden();
   virtual int VisibleWidgetCount() const;
   virtual bool FastShutdownIfPossible();
+  virtual void DumpHandles();
   virtual base::ProcessHandle GetHandle();
   virtual TransportDIB* GetTransportDIB(TransportDIB::Id dib_id);
   virtual void SetCompositingSurface(
@@ -91,6 +92,7 @@ class BrowserRenderProcessHost : public RenderProcessHost,
 
   // Control message handlers.
   void OnShutdownRequest();
+  void OnDumpHandlesDone();
   void SuddenTerminationChanged(bool enabled);
   void OnUserMetricsRecordAction(const std::string& action);
   void OnRevealFolderInOS(const FilePath& path);

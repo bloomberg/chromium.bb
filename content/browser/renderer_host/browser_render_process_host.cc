@@ -530,6 +530,8 @@ void BrowserRenderProcessHost::PropagateBrowserCommandLineToRenderer(
   static const char* const kSwitchNames[] = {
     // We propagate the Chrome Frame command line here as well in case the
     // renderer is not run in the sandbox.
+    switches::kAuditAllHandles,
+    switches::kAuditHandles,
     switches::kChromeFrame,
     switches::kDisable3DAPIs,
     switches::kDisableAcceleratedCompositing,
@@ -657,6 +659,15 @@ bool BrowserRenderProcessHost::FastShutdownIfPossible() {
   return true;
 }
 
+void BrowserRenderProcessHost::DumpHandles() {
+#if defined(OS_WIN)
+  Send(new ChildProcessMsg_DumpHandles());
+  return;
+#endif
+
+  NOTIMPLEMENTED();
+}
+
 // This is a platform specific function for mapping a transport DIB given its id
 TransportDIB* BrowserRenderProcessHost::MapTransportDIB(
     TransportDIB::Id dib_id) {
@@ -757,6 +768,8 @@ bool BrowserRenderProcessHost::OnMessageReceived(const IPC::Message& msg) {
     IPC_BEGIN_MESSAGE_MAP_EX(BrowserRenderProcessHost, msg, msg_is_ok)
       IPC_MESSAGE_HANDLER(ChildProcessHostMsg_ShutdownRequest,
                           OnShutdownRequest)
+      IPC_MESSAGE_HANDLER(ChildProcessHostMsg_DumpHandlesDone,
+                          OnDumpHandlesDone)
       IPC_MESSAGE_HANDLER(ViewHostMsg_SuddenTerminationChanged,
                           SuddenTerminationChanged)
       IPC_MESSAGE_HANDLER(ViewHostMsg_UserMetricsRecordAction,
@@ -900,6 +913,10 @@ void BrowserRenderProcessHost::OnShutdownRequest() {
       Source<RenderProcessHost>(this), NotificationService::NoDetails());
 
   Send(new ChildProcessMsg_Shutdown());
+}
+
+void BrowserRenderProcessHost::OnDumpHandlesDone() {
+  Cleanup();
 }
 
 void BrowserRenderProcessHost::SuddenTerminationChanged(bool enabled) {

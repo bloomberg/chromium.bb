@@ -4,12 +4,14 @@
 
 #include "content/browser/renderer_host/render_process_host.h"
 
+#include "base/command_line.h"
 #include "base/rand_util.h"
 #include "base/sys_info.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/child_process_security_policy.h"
 #include "content/common/child_process_info.h"
 #include "content/common/content_constants.h"
+#include "content/common/content_switches.h"
 #include "content/common/notification_service.h"
 
 namespace {
@@ -128,6 +130,23 @@ void RenderProcessHost::Release(int listener_id) {
   // Make sure that all associated resource requests are stopped.
   CancelResourceRequests(listener_id);
 
+#if defined(OS_WIN)
+  // Dump the handle table if handle auditing is enabled.
+  const CommandLine& browser_command_line =
+      *CommandLine::ForCurrentProcess();
+  if (browser_command_line.HasSwitch(switches::kAuditHandles) ||
+      browser_command_line.HasSwitch(switches::kAuditAllHandles)) {
+    DumpHandles();
+
+    // We wait to close the channels until the child process has finished
+    // dumping handles and sends us ChildProcessHostMsg_DumpHandlesDone.
+    return;
+  }
+#endif
+  Cleanup();
+}
+
+void RenderProcessHost::Cleanup() {
   // When no other owners of this object, we can delete ourselves
   if (listeners_.IsEmpty()) {
     NotificationService::current()->Notify(
