@@ -44,6 +44,35 @@ class ProxyResolverInterface;
 //                         like "PROXY cache.example.com:12345"
 //   - string:error_message - error message. Empty if successful.
 //
+// This service can be manually tested using dbus-monitor and
+// dbus-send. For instance, you can resolve proxy configuration for
+// http://www.gmail.com/ as follows:
+//
+// 1. Open a terminal and run the following:
+//
+//   % dbus-monitor --system interface=org.chromium.TestInterface
+//
+// 2. Open another terminal and run the following:
+//
+//   % dbus-send --system --type=method_call \
+//       --dest=org.chromium.LibCrosService \
+//       /org/chromium/LibCrosService \
+//       org.chromium.LibCrosServiceInterface.ResolveNetworkProxy \
+//       string:http://www.gmail.com/ \
+//       string:org.chromium.TestInterface \
+//       string:TestSignal
+//
+// 3. Go back to the original terminal and check the output which should
+// look like:
+//
+// signal sender=:1.23 -> dest=(null destination) serial=12345
+// path=/org/chromium/LibCrosService; interface=org.chromium.TestInterface;
+// member=TestSignal
+//   string "http://www.gmail.com/"
+//   string "PROXY proxy.example.com:8080"
+//   string ""
+//
+
 class ProxyResolutionServiceProvider
     : public CrosDBusService::ServiceProviderInterface {
  public:
