@@ -44,7 +44,8 @@
 // --------------------------------------------------------------------|-----
 // Keyword (non-substituting or in keyword UI mode, exact match)       | 1500
 // Extension App (exact match)                                         | 1425
-// HistoryURL (exact or inline autocomplete match)                     | 1400
+// HistoryURL (exact or inline autocomplete match)                     | 1410
+// HistoryURL intranet url never visited                               | 1400
 // Search Primary Provider (past query in history within 2 days)       | 1399**
 // Search Primary Provider (what you typed)                            | 1300
 // HistoryURL (what you typed)                                         | 1200
@@ -69,7 +70,8 @@
 // --------------------------------------------------------------------|-----
 // Keyword (non-substituting or in keyword UI mode, exact match)       | 1500
 // Extension App (exact match)                                         | 1425
-// HistoryURL (exact or inline autocomplete match)                     | 1400
+// HistoryURL (exact or inline autocomplete match)                     | 1410
+// HistoryURL intranet url never visited                               | 1400
 // Search Primary Provider (past query in history within 2 days)       | 1399**
 // HistoryURL (what you typed)                                         | 1200
 // Extension App (inexact match)                                       | 1175*~
@@ -94,7 +96,8 @@
 // --------------------------------------------------------------------|-----
 // Keyword (non-substituting or in keyword UI mode, exact match)       | 1500
 // Extension App (exact match)                                         | 1425
-// HistoryURL (exact or inline autocomplete match)                     | 1400
+// HistoryURL (exact or inline autocomplete match)                     | 1410
+// HistoryURL intranet url never visited                               | 1400
 // HistoryURL (what you typed)                                         | 1200
 // Extension App (inexact match)                                       | 1175*~
 // Keyword (substituting, exact match)                                 | 1100
@@ -116,7 +119,6 @@
 // Keyword (non-substituting or in keyword UI mode, exact match)       | 1500
 // Keyword (substituting, exact match)                                 | 1450
 // Extension App (exact match)                                         | 1425
-// HistoryURL (exact or inline autocomplete match)                     | 1400
 // Search Primary Provider (past query in history within 2 days)       | 1399**
 // Search Primary Provider (what you typed)                            | 1300
 // Extension App (inexact match)                                       | 1175*~

@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/autocomplete/history_url_provider.h"
+
+#include <algorithm>
+
 #include "base/file_util.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
@@ -9,7 +13,6 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/history_quick_provider.h"
-#include "chrome/browser/autocomplete/history_url_provider.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -94,7 +97,19 @@ struct TestURLInfo {
 
   // URLs used by EmptyVisits.
   {"http://pandora.com/", "Pandora", 2, 2},
-  {"http://p/", "p", 0, 0},
+  // This entry is explicitly added more recently than
+  // history::kLowQualityMatchAgeLimitInDays.
+  // {"http://p/", "p", 0, 0},
+
+  // For intranet based tests.
+  {"http://intra/one", "Intranet", 2, 2},
+  {"http://intra/two", "Intranet two", 1, 1},
+  {"http://intra/three", "Intranet three", 2, 2},
+  {"http://moo/bar", "Intranet moo", 1, 1},
+
+  {"http://x.com/one", "Intranet", 2, 2},
+  {"http://x.com/two", "Intranet two", 1, 1},
+  {"http://x.com/three", "Intranet three", 2, 2},
 };
 
 class HistoryURLProviderTest : public testing::Test,
@@ -102,7 +117,8 @@ class HistoryURLProviderTest : public testing::Test,
  public:
   HistoryURLProviderTest()
       : ui_thread_(BrowserThread::UI, &message_loop_),
-        file_thread_(BrowserThread::FILE, &message_loop_) {
+        file_thread_(BrowserThread::FILE, &message_loop_),
+        sort_matches_(false) {
     HistoryQuickProvider::set_disabled(true);
   }
 
@@ -143,6 +159,8 @@ class HistoryURLProviderTest : public testing::Test,
   scoped_ptr<TestingProfile> profile_;
   HistoryService* history_service_;
   scoped_refptr<HistoryURLProvider> autocomplete_;
+  // Should the matches be sorted and duplicates removed?
+  bool sort_matches_;
 };
 
 class HistoryURLProviderTestNoDB : public HistoryURLProviderTest {
@@ -189,6 +207,12 @@ void HistoryURLProviderTest::FillData() {
                                          visit_time, false,
                                          history::SOURCE_BROWSED);
   }
+
+  history_service_->AddPageWithDetails(
+      GURL("http://p/"), UTF8ToUTF16("p"), 0, 0,
+      Time::Now() -
+      TimeDelta::FromDays(history::kLowQualityMatchAgeLimitInDays - 1),
+      false, history::SOURCE_BROWSED);
 }
 
 void HistoryURLProviderTest::RunTest(const string16 text,
@@ -203,6 +227,15 @@ void HistoryURLProviderTest::RunTest(const string16 text,
     MessageLoop::current()->Run();
 
   matches_ = autocomplete_->matches();
+  if (sort_matches_) {
+    std::sort(matches_.begin(), matches_.end(),
+              &AutocompleteMatch::DestinationSortFunc);
+    matches_.erase(std::unique(matches_.begin(), matches_.end(),
+                               &AutocompleteMatch::DestinationsEqual),
+                   matches_.end());
+    std::sort(matches_.begin(), matches_.end(),
+              &AutocompleteMatch::MoreRelevant);
+  }
   ASSERT_EQ(num_results, matches_.size()) << "Input text: " << text
                                           << "\nTLD: \"" << desired_tld << "\"";
   for (size_t i = 0; i < num_results; ++i)
@@ -539,6 +572,61 @@ TEST_F(HistoryURLProviderTest, IntranetURLsWithPaths) {
         test_cases[i].has_output ? output : NULL,
         test_cases[i].has_output ? 1 : 0);
   }
+}
+
+// Makes sure autocompletion happens for intranet sites that have been
+// previoulsy visited.
+TEST_F(HistoryURLProviderTest, IntranetURLCompletion) {
+  sort_matches_ = true;
+
+  const std::string expected1[] = {
+    "http://intra/three",
+    "http://intra/two",
+  };
+  ASSERT_NO_FATAL_FAILURE(RunTest(ASCIIToUTF16("intra/t"), string16(), false,
+                                  expected1, arraysize(expected1)));
+  EXPECT_EQ(1410, matches_[0].relevance);
+  EXPECT_EQ(900, matches_[1].relevance);
+
+  const std::string expected2[] = {
+    "http://moo/b",
+    "http://moo/bar",
+  };
+  ASSERT_NO_FATAL_FAILURE(RunTest(ASCIIToUTF16("moo/b"), string16(), false,
+                                  expected2, arraysize(expected2)));
+  // The what you typed match should be 1400, otherwise the search what you
+  // typed match is going to be first.
+  EXPECT_EQ(1400, matches_[0].relevance);
+
+  const std::string expected3[] = {
+    "http://intra/one",
+    "http://intra/three",
+    "http://intra/two",
+  };
+  RunTest(ASCIIToUTF16("intra"), string16(), false, expected3,
+          arraysize(expected3));
+
+  const std::string expected4[] = {
+    "http://intra/one",
+    "http://intra/three",
+    "http://intra/two",
+  };
+  RunTest(ASCIIToUTF16("intra/"), string16(), false, expected4,
+          arraysize(expected4));
+
+  const std::string expected5[] = {
+    "http://intra/one",
+  };
+  ASSERT_NO_FATAL_FAILURE(RunTest(ASCIIToUTF16("intra/o"), string16(), false,
+                                  expected5, arraysize(expected5)));
+  EXPECT_EQ(1410, matches_[0].relevance);
+
+  const std::string expected6[] = {
+    "http://intra/x",
+  };
+  ASSERT_NO_FATAL_FAILURE(RunTest(ASCIIToUTF16("intra/x"), string16(), false,
+                                  expected6, arraysize(expected6)));
+  EXPECT_EQ(1400, matches_[0].relevance);
 }
 
 TEST_F(HistoryURLProviderTest, CrashDueToFixup) {

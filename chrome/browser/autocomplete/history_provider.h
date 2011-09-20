@@ -24,12 +24,6 @@ class HistoryProvider : public AutocompleteProvider {
   virtual void DeleteMatch(const AutocompleteMatch& match) OVERRIDE;
 
  protected:
-  enum MatchType {
-    NORMAL,
-    WHAT_YOU_TYPED,
-    INLINE_AUTOCOMPLETE
-  };
-
   HistoryProvider(ACProviderListener* listener,
                   Profile* profile,
                   const char* name);

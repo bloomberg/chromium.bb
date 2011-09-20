@@ -174,6 +174,14 @@ class HistoryURLProvider : public HistoryProvider {
   void QueryComplete(HistoryURLProviderParams* params_gets_deleted);
 
  private:
+  enum MatchType {
+    NORMAL,
+    WHAT_YOU_TYPED,
+    INLINE_AUTOCOMPLETE,
+    UNVISITED_INTRANET,  // An intranet site that has never been visited.
+  };
+  class VisitClassifier;
+
   ~HistoryURLProvider();
 
   // Returns the set of prefixes to use for prefixes_.
@@ -212,6 +220,7 @@ class HistoryURLProvider : public HistoryProvider {
   // when culling redirects to/from it).  Returns whether a match was promoted.
   bool FixupExactSuggestion(history::URLDatabase* db,
                             const AutocompleteInput& input,
+                            const VisitClassifier& classifier,
                             AutocompleteMatch* match,
                             history::HistoryMatches* matches) const;
 

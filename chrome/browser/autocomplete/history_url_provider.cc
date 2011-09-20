@@ -203,6 +203,93 @@ bool CompareHistoryMatch(const history::HistoryMatch& a,
 
 }  // namespace
 
+// VisitClassifier is used to classify the type of visit to a particular url.
+class HistoryURLProvider::VisitClassifier {
+ public:
+  enum Type {
+    INVALID,             // Navigations to the URL are not allowed.
+    UNVISITED,           // A navigable URL for which we have no visit data.
+    UNVISITED_INTRANET,  // A URL which is UNVISITED but which is known to
+                         // refer to a visited intranet host.
+    VISITED,             // The site has been previously visited.
+  };
+
+  VisitClassifier(HistoryURLProvider* provider,
+                  const AutocompleteInput& input,
+                  history::URLDatabase* db);
+
+  // Returns the type of visit for the specified input.
+  Type type() const { return type_; }
+
+  // Returns the URLRow for the visit.
+  const history::URLRow& url_row() const { return url_row_; }
+
+ private:
+  HistoryURLProvider* provider_;
+  history::URLDatabase* db_;
+  Type type_;
+  history::URLRow url_row_;
+
+  DISALLOW_COPY_AND_ASSIGN(VisitClassifier);
+};
+
+HistoryURLProvider::VisitClassifier::VisitClassifier(
+    HistoryURLProvider* provider,
+    const AutocompleteInput& input,
+    history::URLDatabase* db)
+    : provider_(provider),
+      db_(db),
+      type_(INVALID) {
+  const GURL& url = input.canonicalized_url();
+  // Detect email addresses.  These cases will look like "http://user@site/",
+  // and because the history backend strips auth creds, we'll get a bogus exact
+  // match below if the user has visited "site".
+  if (!url.is_valid() ||
+      ((input.type() == AutocompleteInput::UNKNOWN) &&
+       input.parts().username.is_nonempty() &&
+       !input.parts().password.is_nonempty() &&
+       !input.parts().path.is_nonempty()))
+    return;
+
+  if (db_->GetRowForURL(url, &url_row_)) {
+    type_ = VISITED;
+    return;
+  }
+
+  if (provider_->CanFindIntranetURL(db_, input)) {
+    // The user typed an intranet hostname that they've visited (albeit with a
+    // different port and/or path) before.
+    url_row_ = history::URLRow(url);
+    type_ = UNVISITED_INTRANET;
+    return;
+  }
+
+  // Tricky corner case: The user has visited intranet site "foo", but not
+  // internet site "www.foo.com".  He types in foo (getting an exact match),
+  // then tries to hit ctrl-enter.  When pressing ctrl, the what-you-typed match
+  // ("www.foo.com") doesn't show up in history, and thus doesn't get a promoted
+  // relevance, but a different match from the input ("foo") does, and gets
+  // promoted for inline autocomplete.  Thus instead of getting "www.foo.com",
+  // the user still gets "foo" (and, before hitting enter, probably gets an
+  // odd-looking inline autocomplete of "/").
+  //
+  // We detect this crazy case as follows:
+  // * If the what-you-typed match is not in the history DB,
+  // * and the user has specified a TLD,
+  // * and the input _without_ the TLD _is_ in the history DB,
+  // * ...then just before pressing "ctrl" the best match we supplied was the
+  //   what-you-typed match, so stick with it by promoting this.
+  if (input.desired_tld().empty())
+    return;
+  GURL destination_url(URLFixerUpper::FixupURL(UTF16ToUTF8(input.text()),
+                                               std::string()));
+  if (!db_->GetRowForURL(destination_url, NULL))
+    return;
+  // If we got here, then we hit the tricky corner case.
+  url_row_ = history::URLRow(url);
+  type_ = UNVISITED;
+}
+
 HistoryURLProviderParams::HistoryURLProviderParams(
     const AutocompleteInput& input,
     bool trim_http,
@@ -277,6 +364,7 @@ void HistoryURLProvider::ExecuteWithDB(history::HistoryBackend* backend,
 void HistoryURLProvider::DoAutocomplete(history::HistoryBackend* backend,
                                         history::URLDatabase* db,
                                         HistoryURLProviderParams* params) {
+  VisitClassifier classifier(this, params->input, db);
   // Create a What You Typed match, which we'll need below.
   //
   // We display this to the user when there's a reasonable chance they actually
@@ -290,9 +378,10 @@ void HistoryURLProvider::DoAutocomplete(history::HistoryBackend* backend,
       params->input.canonicalized_url().is_valid() &&
       (params->input.type() != AutocompleteInput::QUERY) &&
       ((params->input.type() != AutocompleteInput::UNKNOWN) ||
-          !params->trim_http ||
-          url_util::FindAndCompareScheme(UTF16ToUTF8(params->input.text()),
-                                         chrome::kHttpsScheme, NULL));
+       (classifier.type() == VisitClassifier::UNVISITED_INTRANET) ||
+       !params->trim_http ||
+       url_util::FindAndCompareScheme(UTF16ToUTF8(params->input.text()),
+                                      chrome::kHttpsScheme, NULL));
   AutocompleteMatch what_you_typed_match(SuggestExactInput(params->input,
                                                            params->trim_http));
 
@@ -338,7 +427,7 @@ void HistoryURLProvider::DoAutocomplete(history::HistoryBackend* backend,
   // SuggestExactInput() succeeded in constructing a valid match.
   if (what_you_typed_match.is_history_what_you_typed_match &&
       (!backend || !params->dont_suggest_exact_input) &&
-      FixupExactSuggestion(db, params->input, &what_you_typed_match,
+      FixupExactSuggestion(db, params->input, classifier, &what_you_typed_match,
                            &history_matches)) {
     // Got an exact match for the user's input.  Treat it as the best match
     // regardless of the input type.
@@ -436,6 +525,9 @@ int HistoryURLProvider::CalculateRelevance(AutocompleteInput::Type input_type,
                                            size_t match_number) {
   switch (match_type) {
     case INLINE_AUTOCOMPLETE:
+      return 1410;
+
+    case UNVISITED_INTRANET:
       return 1400;
 
     case WHAT_YOU_TYPED:
@@ -593,76 +685,57 @@ AutocompleteMatch HistoryURLProvider::SuggestExactInput(
 bool HistoryURLProvider::FixupExactSuggestion(
     history::URLDatabase* db,
     const AutocompleteInput& input,
+    const VisitClassifier& classifier,
     AutocompleteMatch* match,
     history::HistoryMatches* matches) const {
   DCHECK(match != NULL);
   DCHECK(matches != NULL);
 
-  // Detect email addresses.  These cases will look like "http://user@site/",
-  // and because the history backend strips auth creds, we'll get a bogus exact
-  // match below if the user has visited "site".
-  if ((input.type() == AutocompleteInput::UNKNOWN) &&
-      input.parts().username.is_nonempty() &&
-      !input.parts().password.is_nonempty() &&
-      !input.parts().path.is_nonempty())
-    return false;
-
-  history::URLRow info;
   MatchType type = INLINE_AUTOCOMPLETE;
-  if (!db->GetRowForURL(match->destination_url, &info)) {
-    if (CanFindIntranetURL(db, input)) {
-      // The user typed an intranet hostname that they've visited (albeit with a
-      // different port and/or path) before.  Continuing ensures this input will
-      // be treated as a navigation.
-    } else {
-      // Tricky corner case: The user has visited intranet site "foo", but not
-      // internet site "www.foo.com".  He types in foo (getting an exact match),
-      // then tries to hit ctrl-enter.  When pressing ctrl, the what-you-typed
-      // match ("www.foo.com") doesn't show up in history, and thus doesn't get
-      // a promoted relevance, but a different match from the input ("foo")
-      // does, and gets promoted for inline autocomplete.  Thus instead of
-      // getting "www.foo.com", the user still gets "foo" (and, before hitting
-      // enter, probably gets an odd-looking inline autocomplete of "/").
-      //
-      // We detect this crazy case as follows:
-      // * If the what-you-typed match is not in the history DB,
-      // * and the user has specified a TLD,
-      // * and the input _without_ the TLD _is_ in the history DB,
-      // * ...then just before pressing "ctrl" the best match we supplied was
-      //   the what-you-typed match, so stick with it by promoting this.
-      if (input.desired_tld().empty())
-        return false;
-      GURL destination_url(URLFixerUpper::FixupURL(UTF16ToUTF8(input.text()),
-                                                   std::string()));
-      if (!db->GetRowForURL(destination_url, NULL))
-        return false;
-      // If we got here, then we hit the tricky corner case.
-    }
-    info = history::URLRow(match->destination_url);
-  } else {
-    // We have data for this match, use it.
-    match->deletable = true;
-    match->description = info.title();
-    AutocompleteMatch::ClassifyMatchInString(input.text(),
-        info.title(),
-        ACMatchClassification::NONE, &match->description_class);
-    if (!info.typed_count()) {
-      // If we reach here, we must be in the second pass, and we must not have
-      // promoted this match as an exact match during the first pass.  That
-      // means it will have been outscored by the "search what you typed match".
-      // We need to maintain that ordering in order to not make the destination
-      // for the user's typing change depending on when they hit enter.  So
-      // lower the score here enough to let the search provider continue to
-      // outscore this match.
-      type = WHAT_YOU_TYPED;
-    }
+  switch (classifier.type()) {
+    case VisitClassifier::INVALID:
+      return false;
+    case VisitClassifier::VISITED:
+      // We have data for this match, use it.
+      match->deletable = true;
+      match->description = classifier.url_row().title();
+      AutocompleteMatch::ClassifyMatchInString(
+          input.text(),
+          classifier.url_row().title(),
+          ACMatchClassification::NONE, &match->description_class);
+      if (!classifier.url_row().typed_count()) {
+        // If we reach here, we must be in the second pass, and we must not have
+        // promoted this match as an exact match during the first pass.  That
+        // means it will have been outscored by the "search what you typed
+        // match".  We need to maintain that ordering in order to not make the
+        // destination for the user's typing change depending on when they hit
+        // enter.  So lower the score here enough to let the search provider
+        // continue to outscore this match.
+        type = WHAT_YOU_TYPED;
+      }
+      break;
+    case VisitClassifier::UNVISITED_INTRANET:
+      type = UNVISITED_INTRANET;
+      break;
+    default:
+      DCHECK_EQ(VisitClassifier::UNVISITED, classifier.type());
+      break;
   }
 
-  // Promote as an exact match.
   match->relevance = CalculateRelevance(input.type(), type, 0);
 
+  if (type == UNVISITED_INTRANET && !matches->empty()) {
+    // If there are any other matches, then don't promote this match here, in
+    // hopes the caller will be able to inline autocomplete a better suggestion.
+    // DoAutocomplete() will fall back on this match if inline autocompletion
+    // fails.  This matches how we react to never-visited URL inputs in the non-
+    // intranet case.
+    return false;
+  }
+
   // Put it on the front of the HistoryMatches for redirect culling.
-  EnsureMatchPresent(info, string16::npos, false, matches, true);
+  EnsureMatchPresent(classifier.url_row(), string16::npos, false, matches,
+                     true);
   return true;
 }
 
