@@ -231,6 +231,9 @@ FakeExternalTab::~FakeExternalTab() {
 
 void FakeExternalTab::Initialize() {
   DCHECK(g_browser_process == NULL);
+
+  notificaton_service_.reset(new NotificationService);
+
   base::SystemMonitor system_monitor;
 
   icu_util::Initialize();
@@ -559,8 +562,6 @@ int main(int argc, char** argv) {
 
   google_breakpad::scoped_ptr<google_breakpad::ExceptionHandler> breakpad(
       InitializeCrashReporting(HEADLESS));
-
-  NotificationService service;
 
   // TODO(tommi): Stuff be broke. Needs a fixin'.
   // This is awkward: the TestSuite derived CFUrlRequestUnittestRunner contains
