@@ -144,7 +144,8 @@ def GetPyAutoURLs( base_url, os, arch, revision):
 
 
 def EvalDepsFile(path):
-  scope = {'Var': lambda name: scope['vars'][name]}
+  scope = {'Var': lambda name: scope['vars'][name],
+           'File': lambda name: name}
   execfile(path, {}, scope)
   return scope
 

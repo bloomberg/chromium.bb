@@ -14,8 +14,8 @@ vars = {
   "chrome_rev": "101752",
   "chromium_trunk": "http://src.chromium.org/svn/trunk",
   "googlecode_url": "http://%s.googlecode.com/svn",
-  "gtest_rev": "364",
-  "gyp_rev": "906",
+  "gtest_rev": "594",
+  "gyp_rev": "1046",
   "lcov_rev": "54822",
   "native_client_trunk": "http://src.chromium.org/native_client/trunk",
   "o3d_trunk": "http://o3d.googlecode.com/svn/trunk",
@@ -26,6 +26,11 @@ vars = {
 }
 
 deps = {
+  # This gets us Chromium's DEPS file as ../DEPS, which is where it
+  # needs to be when we run ../tools/clang/scripts/update.sh and it
+  # wants to grep clang_revision out of it.
+  ".":
+    File(Var("chromium_trunk") + "/src/DEPS@" + Var("chrome_rev")),
   "base":
     Var("chromium_trunk") + "/src/base@" + Var("chrome_rev"),
   "build":
@@ -87,6 +92,8 @@ deps = {
     Var("chromium_trunk") + "/src/third_party/tlslite@" + Var("chrome_rev"),
   "third_party/zlib":
     Var("native_client_trunk") + "/src/third_party/zlib@" + Var("tools_rev"),
+  "tools/clang":
+    Var("chromium_trunk") + "/src/tools/clang@" + Var("chrome_rev"),
   "tools/gyp":
     "http://gyp.googlecode.com/svn/trunk@" + Var("gyp_rev"),
   "tools/valgrind":

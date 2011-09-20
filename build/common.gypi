@@ -1,4 +1,4 @@
-# Copyright (c) 2009 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -22,6 +22,9 @@
     # executable's image.  Setting this to 0 is needed to use an experimental
     # Linux-Mac cross compiler distcc farm.
     'chromium_mac_pch%': 1,
+
+    # Set this to true when building with Clang.
+    'clang%': 0,
 
     # Set to 1 to enable code coverage.  In addition to build changes
     # (e.g. extra CFLAGS), also creates a new target in the src/chrome
@@ -222,6 +225,25 @@
           }],
         ],
       # TODO(jrg): options for code coverage on Windows
+      }],
+      ['clang==1', {
+        'cflags': [
+          '-Wheader-hygiene',
+          # Clang spots more unused functions.
+          '-Wno-unused-function',
+          # Don't die on dtoa code that uses a char as an array index.
+          '-Wno-char-subscripts',
+          # Especially needed for gtest macros using enum values from Mac
+          # system headers.
+          # TODO(pkasting): In C++11 this is legal, so this should be
+          # removed when we change to that.  (This is also why we don't
+          # bother fixing all these cases today.)
+          '-Wno-unnamed-type-template-args',
+        ],
+        'cflags!': [
+          # Clang doesn't seem to know know this flag.
+          '-mfpmath=sse',
+        ],
       }],
     ],
     'default_configuration': 'Debug',
@@ -569,6 +591,13 @@
               '-fdata-sections',
               '-ffunction-sections',
             ],
+            'conditions': [
+              ['clang==1', {
+                'cflags!': [
+                  '-fno-ident',
+                ],
+              }],
+            ],
           },
         },
         'variants': {
@@ -619,15 +648,39 @@
           'conditions': [
             ['chromium_mac_pch', {'GCC_PRECOMPILE_PREFIX_HEADER': 'YES'},
                                  {'GCC_PRECOMPILE_PREFIX_HEADER': 'NO'}],
+            ['clang==1', {
+              'CC': '$(SOURCE_ROOT)/<(clang_dir)/clang',
+              'LDPLUSPLUS': '$(SOURCE_ROOT)/<(clang_dir)/clang++',
+              'GCC_VERSION': 'com.apple.compilers.llvm.clang.1_0',
+              'WARNING_CFLAGS': [
+                '-Wheader-hygiene',
+                # Don't die on dtoa code that uses a char as an array index.
+                # This is required solely for base/third_party/dmg_fp/dtoa.cc.
+                '-Wno-char-subscripts',
+                # Clang spots more unused functions.
+                '-Wno-unused-function',
+                # See comments on this flag higher up in this file.
+                '-Wno-unnamed-type-template-args',
+                # TODO(thakis): Reenable once the one instance this warns on
+                # is fixed.
+                '-Wno-parentheses',
+              ],
+            }],
             ['nacl_standalone==1', {
               # If part of the Chromium build, use the Chromium default.
               # Otherwise, when building standalone, use this.
-              'MACOSX_DEPLOYMENT_TARGET': '10.4',  # -mmacosx-version-min=10.4
+              'MACOSX_DEPLOYMENT_TARGET': '10.5', # -mmacosx-version-min=10.5
               'SDKROOT': 'macosx10.5',            # -isysroot
             }],
           ],
         },
         'conditions': [
+          ['clang==1', {
+            'variables': {
+              'clang_dir':
+                '<(DEPTH)/third_party/llvm-build/Release+Asserts/bin',
+            },
+          }],
           ['nacl_standalone==1 and nacl_strict_warnings==1', {
             'xcode_settings': {
               # TODO(gregoryd): remove the condition when the issues in
@@ -854,6 +907,16 @@
           },
         },
       },
+    }],
+    ['clang==1 and nacl_standalone==1', {
+      'make_global_settings': [
+        ['CC', 'third_party/llvm-build/Release+Asserts/bin/clang'],
+        ['CXX', 'third_party/llvm-build/Release+Asserts/bin/clang++'],
+        ['LINK', '$(CXX)'],
+        ['CC.host', '$(CC)'],
+        ['CXX.host', '$(CXX)'],
+        ['LINK.host', '$(LINK)'],
+      ],
     }],
   ],
   'scons_settings': {

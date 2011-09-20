@@ -42,6 +42,8 @@ def ParseStandardCommandLine(context):
   parser.add_option('--inside-toolchain', dest='inside_toolchain',
                     default=bool(os.environ.get('INSIDE_TOOLCHAIN')),
                     action='store_true', help='Inside toolchain build.')
+  parser.add_option('--clang', dest='clang', default=False,
+                    action='store_true', help='Build trusted code with Clang.')
 
   options, args = parser.parse_args()
 
@@ -65,9 +67,13 @@ def ParseStandardCommandLine(context):
   context['platform'] = platform
   context['mode'] = mode
   context['bits'] = bits
+  context['clang'] = options.clang
   # TODO(ncbray) turn derived values into methods.
   context['gyp_mode'] = {'opt': 'Release', 'dbg': 'Debug'}[mode]
   context['gyp_arch'] = {'32': 'ia32', '64': 'x64'}[bits]
+  context['gyp_vars'] = []
+  if context['clang']:
+    context['gyp_vars'].append('clang=1')
   context['vc_arch'] = {'32': 'x86', '64': 'x64'}[bits]
   context['default_scons_platform'] = 'x86-'+bits
   context['default_scons_mode'] = [mode + '-host', 'nacl']
@@ -249,6 +255,7 @@ def SCons(context, mode=None, platform=None, parallel=False, browser_test=False,
       '--mode='+','.join(mode),
       'platform='+platform,
       ])
+  if context['clang']: cmd.append('--clang')
   if context['use_glibc']: cmd.append('--nacl_glibc')
   # Append used-specified arguments.
   cmd.extend(args)

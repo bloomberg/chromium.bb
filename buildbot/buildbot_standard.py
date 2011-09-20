@@ -82,12 +82,16 @@ def SetupWindowsEnvironment(context):
   context['msvc'] = msvc
 
 
+def SetupGypDefines(context, extra_vars=[]):
+  context.SetEnv('GYP_DEFINES', ' '.join(context['gyp_vars'] + extra_vars))
+
+
 def SetupLinuxEnvironment(context):
-  context.SetEnv('GYP_DEFINES', 'target_arch='+context['gyp_arch'])
+  SetupGypDefines(context, ['target_arch='+context['gyp_arch']])
 
 
 def SetupMacEnvironment(context):
-  pass
+  SetupGypDefines(context)
 
 
 def SetupContextVars(context):
@@ -175,7 +179,11 @@ def BuildScript(status, context):
         gclient = 'gclient'
       Command(context, cmd=[gclient, 'runhooks', '--force'])
 
-  # Make sure out Gyp build is working.
+  if context['clang']:
+    with Step('update_clang', status):
+      Command(context, cmd=['../tools/clang/scripts/update.sh'])
+
+  # Make sure our Gyp build is working.
   with Step('gyp_compile', status):
     if context.Windows():
       Command(

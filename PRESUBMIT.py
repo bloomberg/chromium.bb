@@ -131,6 +131,9 @@ def GetPreferredTrySlaves():
       'nacl-win64_newlib_opt',
       'nacl-win64_glibc_opt',
       'nacl-arm_opt',
+      # Clang bots
+      'nacl-lucid_64-newlib-dbg-clang',
+      'nacl-mac10.6-newlib-dbg-clang',
       # pnacl scons bots
       'nacl-lucid_64-newlib-arm_qemu-pnacl',
       'nacl-lucid_64-newlib-x86_32-pnacl',

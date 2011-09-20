@@ -431,6 +431,12 @@ pre_base_env = Environment(
 )
 
 # ----------------------------------------------------------
+# CLANG
+# ----------------------------------------------------------
+DeclareBit('clang', 'Use clang to build trusted code')
+pre_base_env.SetBitFromOption('clang', False)
+
+# ----------------------------------------------------------
 # CODE COVERAGE
 # ----------------------------------------------------------
 DeclareBit('coverage_enabled', 'The build should be instrumented to generate'
@@ -2319,7 +2325,16 @@ Automagically generated help:
 """)
 
 # ---------------------------------------------------------
+
+def SetupClang(env):
+  env['CLANG_DIR'] = '${SOURCE_ROOT}/third_party/llvm-build/Release+Asserts/bin'
+  env['CC'] = '${CLANG_DIR}/clang'
+  env['CXX'] = '${CLANG_DIR}/clang++'
+
 def GenerateOptimizationLevels(env):
+  if env.Bit('clang'):
+    SetupClang(env)
+
   # Generate debug variant.
   debug_env = env.Clone(tools = ['target_debug'])
   debug_env['OPTIMIZATION_LEVEL'] = 'dbg'
@@ -2454,17 +2469,16 @@ def MakeUnixLikeEnv():
   unix_like_env.Prepend(
     CFLAGS = ['-std=gnu99', '-Wdeclaration-after-statement' ],
     CCFLAGS = [
-      # '-malign-double',
-      '-Wall',
-      '-pedantic',
-      '-Wextra',
-      '-Wno-long-long',
-      '-Wswitch-enum',
-      '-Wsign-compare',
-      '-fvisibility=hidden',
-      '-fstack-protector',
-      '--param', 'ssp-buffer-size=4',
-    ] + werror_flags,
+        # '-malign-double',
+        '-Wall',
+        '-pedantic',
+        '-Wextra',
+        '-Wno-long-long',
+        '-Wswitch-enum',
+        '-Wsign-compare',
+        '-fvisibility=hidden',
+        '-fstack-protector',
+        ] + werror_flags,
     CXXFLAGS=['-std=c++98'],
     LIBPATH=['/usr/lib'],
     LIBS = ['pthread'],
@@ -2472,6 +2486,9 @@ def MakeUnixLikeEnv():
                   ['__STDC_FORMAT_MACROS', '1'],
                   ],
   )
+
+  if not unix_like_env.Bit('clang'):
+    unix_like_env.Append(CCFLAGS=['--param', 'ssp-buffer-size=4'])
 
   if unix_like_env.Bit('use_libcrypto'):
     unix_like_env.Append(LIBS=['crypto'])

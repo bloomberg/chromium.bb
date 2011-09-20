@@ -72,6 +72,12 @@ BOT_ASSIGNMENT = {
     'lucid-64-bare-glibc-opt':
         python + ' buildbot/buildbot_standard.py opt 64 glibc',
 
+    # Clang.
+    'lucid_64-newlib-dbg-clang':
+      python + ' buildbot/buildbot_standard.py dbg 64 newlib --clang',
+    'mac10.6-newlib-dbg-clang':
+      python + ' buildbot/buildbot_standard.py dbg 64 newlib --clang',
+
     # PNaCl.
     'lucid_64-newlib-arm_qemu-pnacl-dbg':
         'bash buildbot/buildbot_pnacl.sh mode-buildbot-arm-dbg',
@@ -151,6 +157,11 @@ BOT_ASSIGNMENT = {
         'bash buildbot/buildbot_valgrind.sh newlib',
     'nacl-lucid64_glibc_dbg_valgrind':
         'bash buildbot/buildbot_valgrind.sh glibc',
+    # Clang trybots.
+    'nacl-lucid_64-newlib-dbg-clang':
+        python + ' buildbot/buildbot_standard.py dbg 64 newlib --clang',
+    'nacl-mac10.6-newlib-dbg-clang':
+        python + ' buildbot/buildbot_standard.py dbg 64 newlib --clang',
     # Pnacl scons trybots
     'nacl-arm_opt':
         'bash buildbot/buildbot_pnacl.sh mode-buildbot-arm-try',
