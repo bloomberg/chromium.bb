@@ -14,7 +14,6 @@
 class TabContentsWrapper;
 namespace views {
 class MenuButton;
-class MenuRunner;
 }
 
 class ExtensionInfoBar : public InfoBarView,
@@ -29,9 +28,11 @@ class ExtensionInfoBar : public InfoBarView,
   virtual ~ExtensionInfoBar();
 
   // InfoBarView:
-  virtual void Layout();
-  virtual void ViewHierarchyChanged(bool is_add, View* parent, View* child);
-  virtual int ContentMinimumWidth() const;
+  virtual void Layout() OVERRIDE;
+  virtual void ViewHierarchyChanged(bool is_add,
+                                    View* parent,
+                                    View* child) OVERRIDE;
+  virtual int ContentMinimumWidth() const OVERRIDE;
 
   // ImageLoadingTracker::Observer:
   virtual void OnImageLoaded(SkBitmap* image,
@@ -56,8 +57,6 @@ class ExtensionInfoBar : public InfoBarView,
 
   // Keeps track of images being loaded on the File thread.
   ImageLoadingTracker tracker_;
-
-  scoped_ptr<views::MenuRunner> menu_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionInfoBar);
 };

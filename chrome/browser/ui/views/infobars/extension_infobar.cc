@@ -18,8 +18,6 @@
 #include "ui/gfx/canvas_skia.h"
 #include "views/controls/button/menu_button.h"
 #include "views/controls/menu/menu_item_view.h"
-#include "views/controls/menu/menu_model_adapter.h"
-#include "views/controls/menu/menu_runner.h"
 #include "views/widget/widget.h"
 
 // ExtensionInfoBarDelegate ----------------------------------------------------
@@ -148,14 +146,9 @@ void ExtensionInfoBar::RunMenu(View* source, const gfx::Point& pt) {
       browser();
   scoped_refptr<ExtensionContextMenuModel> options_menu_contents =
       new ExtensionContextMenuModel(extension, browser, NULL);
-  views::MenuModelAdapter options_menu_delegate(options_menu_contents.get());
-  menu_runner_.reset(new views::MenuRunner(options_menu_delegate.CreateMenu()));
-  gfx::Point screen_point;
-  views::View::ConvertPointToScreen(menu_, &screen_point);
-  if (menu_runner_->RunMenuAt(GetWidget(), menu_,
-          gfx::Rect(screen_point, menu_->size()), views::MenuItemView::TOPLEFT,
-          views::MenuRunner::HAS_MNEMONICS) == views::MenuRunner::MENU_DELETED)
-    return;
+  DCHECK_EQ(source, menu_);
+  RunMenuAt(options_menu_contents.get(), menu_, views::MenuItemView::TOPLEFT);
+  // TODO(pkasting): this may be deleted after rewrite.
 }
 
 ExtensionInfoBarDelegate* ExtensionInfoBar::GetDelegate() {

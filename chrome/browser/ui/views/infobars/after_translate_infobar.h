@@ -14,7 +14,6 @@
 class TranslateInfoBarDelegate;
 namespace views {
 class MenuButton;
-class MenuRunner;
 }
 
 class AfterTranslateInfoBar : public TranslateInfoBarBase,
@@ -27,15 +26,18 @@ class AfterTranslateInfoBar : public TranslateInfoBarBase,
   virtual ~AfterTranslateInfoBar();
 
   // TranslateInfoBarBase:
-  virtual void Layout();
-  virtual void ViewHierarchyChanged(bool is_add, View* parent, View* child);
-  virtual void ButtonPressed(views::Button* sender, const views::Event& event);
-  virtual int ContentMinimumWidth() const;
-  virtual void OriginalLanguageChanged();
-  virtual void TargetLanguageChanged();
+  virtual void Layout() OVERRIDE;
+  virtual void ViewHierarchyChanged(bool is_add,
+                                    View* parent,
+                                    View* child) OVERRIDE;
+  virtual void ButtonPressed(views::Button* sender,
+                             const views::Event& event) OVERRIDE;
+  virtual int ContentMinimumWidth() const OVERRIDE;
+  virtual void OriginalLanguageChanged() OVERRIDE;
+  virtual void TargetLanguageChanged() OVERRIDE;
 
   // ViewMenuDelegate:
-  virtual void RunMenu(View* source, const gfx::Point& pt);
+  virtual void RunMenu(View* source, const gfx::Point& pt) OVERRIDE;
 
   // The text displayed in the infobar is something like:
   // "Translated from <lang1> to <lang2> [more text in some languages]"
@@ -53,8 +55,6 @@ class AfterTranslateInfoBar : public TranslateInfoBarBase,
   LanguagesMenuModel original_language_menu_model_;
   LanguagesMenuModel target_language_menu_model_;
   OptionsMenuModel options_menu_model_;
-
-  scoped_ptr<views::MenuRunner> menu_runner_;
 
   // True if the target language comes before the original one.
   bool swapped_language_buttons_;

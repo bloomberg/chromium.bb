@@ -14,7 +14,6 @@
 class TranslateInfoBarDelegate;
 namespace views {
 class MenuButton;
-class MenuRunner;
 }
 
 class BeforeTranslateInfoBar : public TranslateInfoBarBase,
@@ -27,14 +26,17 @@ class BeforeTranslateInfoBar : public TranslateInfoBarBase,
   virtual ~BeforeTranslateInfoBar();
 
   // TranslateInfoBarBase:
-  virtual void Layout();
-  virtual void ButtonPressed(views::Button* sender, const views::Event& event);
-  virtual void ViewHierarchyChanged(bool is_add, View* parent, View* child);
-  virtual int ContentMinimumWidth() const;
-  virtual void OriginalLanguageChanged();
+  virtual void Layout() OVERRIDE;
+  virtual void ButtonPressed(views::Button* sender,
+                             const views::Event& event) OVERRIDE;
+  virtual void ViewHierarchyChanged(bool is_add,
+                                    View* parent,
+                                    View* child) OVERRIDE;
+  virtual int ContentMinimumWidth() const OVERRIDE;
+  virtual void OriginalLanguageChanged() OVERRIDE;
 
   // views::ViewMenuDelegate:
-  virtual void RunMenu(View* source, const gfx::Point& pt);
+  virtual void RunMenu(View* source, const gfx::Point& pt) OVERRIDE;
 
   // The text displayed in the infobar is something like:
   // "The page is in <lang>. Would you like to translate it?"
@@ -52,8 +54,6 @@ class BeforeTranslateInfoBar : public TranslateInfoBarBase,
 
   LanguagesMenuModel languages_menu_model_;
   OptionsMenuModel options_menu_model_;
-
-  scoped_ptr<views::MenuRunner> menu_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(BeforeTranslateInfoBar);
 };

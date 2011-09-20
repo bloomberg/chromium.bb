@@ -30,10 +30,13 @@ class ConfirmInfoBar : public InfoBarView,
   virtual ~ConfirmInfoBar();
 
   // InfoBarView:
-  virtual void Layout();
-  virtual void ViewHierarchyChanged(bool is_add, View* parent, View* child);
-  virtual void ButtonPressed(views::Button* sender, const views::Event& event);
-  virtual int ContentMinimumWidth() const;
+  virtual void Layout() OVERRIDE;
+  virtual void ViewHierarchyChanged(bool is_add,
+                                    View* parent,
+                                    View* child) OVERRIDE;
+  virtual void ButtonPressed(views::Button* sender,
+                             const views::Event& event) OVERRIDE;
+  virtual int ContentMinimumWidth() const OVERRIDE;
 
   // views::LinkListener:
   virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;

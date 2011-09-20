@@ -12,8 +12,12 @@
 #include "chrome/browser/tab_contents/infobar_container.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "views/controls/button/button.h"
+#include "views/controls/menu/menu_item_view.h"
 #include "views/focus/focus_manager.h"
 
+namespace ui {
+class MenuModel;
+}
 namespace views {
 class ExternalFocusTracker;
 class ImageButton;
@@ -22,6 +26,7 @@ class Label;
 class Link;
 class LinkListener;
 class MenuButton;
+class MenuRunner;
 class TextButton;
 class ViewMenuDelegate;
 }
@@ -83,6 +88,12 @@ class InfoBarView : public InfoBar,
   // Convenience getter.
   const InfoBarContainer::Delegate* container_delegate() const;
 
+  // Show a menu at the specified position. By invoking this InfobarView ensures
+  // the menu is destroyed at the appropriate time.
+  void RunMenuAt(ui::MenuModel* menu_model,
+                 views::MenuButton* button,
+                 views::MenuItemView::AnchorPosition anchor);
+
  private:
   static const int kHorizontalPadding;
 
@@ -114,6 +125,9 @@ class InfoBarView : public InfoBar,
   // above.
   SkPath fill_path_;
   SkPath stroke_path_;
+
+  // Used to run the menu.
+  scoped_ptr<views::MenuRunner> menu_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(InfoBarView);
 };

@@ -17,10 +17,13 @@ class TranslateMessageInfoBar : public TranslateInfoBarBase {
   virtual ~TranslateMessageInfoBar();
 
   // TranslateInfoBarBase:
-  virtual void Layout();
-  virtual void ViewHierarchyChanged(bool is_add, View* parent, View* child);
-  virtual void ButtonPressed(views::Button* sender, const views::Event& event);
-  virtual int ContentMinimumWidth() const;
+  virtual void Layout() OVERRIDE;
+  virtual void ViewHierarchyChanged(bool is_add,
+                                    View* parent,
+                                    View* child) OVERRIDE;
+  virtual void ButtonPressed(views::Button* sender,
+                             const views::Event& event) OVERRIDE;
+  virtual int ContentMinimumWidth() const OVERRIDE;
 
   views::Label* label_;
   views::TextButton* button_;
