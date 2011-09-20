@@ -271,7 +271,11 @@ void PrintPreviewTabController::OnNavEntryCommitted(
 
 // static
 bool PrintPreviewTabController::IsPrintPreviewTab(TabContentsWrapper* tab) {
-  const GURL& url = tab->tab_contents()->GetURL();
+  return IsPrintPreviewURL(tab->tab_contents()->GetURL());
+}
+
+// static
+bool PrintPreviewTabController::IsPrintPreviewURL(const GURL& url) {
   return (url.SchemeIs(chrome::kChromeUIScheme) &&
           url.host() == chrome::kChromeUIPrintHost);
 }

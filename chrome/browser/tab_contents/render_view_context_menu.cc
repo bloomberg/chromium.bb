@@ -28,6 +28,7 @@
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/printing/print_preview_tab_controller.h"
 #include "chrome/browser/printing/print_view_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_io_data.h"
@@ -1188,10 +1189,11 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
       if (!local_state->GetBoolean(prefs::kAllowFileSelectionDialogs))
         return false;
 
-      return (params_.media_flags &
-              WebContextMenuData::MediaCanSave) &&
-             params_.src_url.is_valid() &&
-             ProfileIOData::IsHandledProtocol(params_.src_url.scheme());
+      const GURL& url = params_.src_url;
+      return (params_.media_flags & WebContextMenuData::MediaCanSave) &&
+          url.is_valid() && ProfileIOData::IsHandledProtocol(url.scheme()) &&
+          // Do not save the preview PDF on the print preview page.
+          !(printing::PrintPreviewTabController::IsPrintPreviewURL(url));
     }
 
     case IDC_CONTENT_CONTEXT_OPENAVNEWTAB:
