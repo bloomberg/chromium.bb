@@ -14,6 +14,7 @@
 #include "ui/gfx/path.h"
 #include "views/widget/widget_delegate.h"
 #include "views/window/client_view.h"
+#include "views/window/window_resources.h"
 #include "views/window/window_shape.h"
 
 #if defined(OS_LINUX)

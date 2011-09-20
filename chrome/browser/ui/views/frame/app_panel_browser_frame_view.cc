@@ -21,7 +21,6 @@
 #include "views/controls/button/image_button.h"
 #include "views/widget/widget.h"
 #include "views/widget/widget_delegate.h"
-#include "views/window/window_resources.h"
 
 #if !defined(OS_WIN)
 #include "views/window/hit_test.h"

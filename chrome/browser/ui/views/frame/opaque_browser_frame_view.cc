@@ -39,7 +39,6 @@
 #include "views/controls/button/image_button.h"
 #include "views/controls/image_view.h"
 #include "views/widget/root_view.h"
-#include "views/window/window_resources.h"
 #include "views/window/window_shape.h"
 
 #if !defined(OS_WIN)
