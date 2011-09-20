@@ -139,7 +139,7 @@ class GClientKeywords(object):
 class Dependency(GClientKeywords, gclient_utils.WorkItem):
   """Object that represents a dependency checkout."""
 
-  def __init__(self, parent, name, url, safesync_url, custom_deps,
+  def __init__(self, parent, name, url, safesync_url, managed, custom_deps,
                custom_vars, deps_file, should_process):
     # Warning: this function can be called from any thread. Both
     # self.dependencies and self.requirements are read and modified from
@@ -157,6 +157,13 @@ class Dependency(GClientKeywords, gclient_utils.WorkItem):
     self.url = url
 
     # These are only set in .gclient and not in DEPS files.
+    # 'managed' determines whether or not this dependency is synced/updated by
+    # gclient after gclient checks it out initially.  The difference between
+    # 'managed' and 'should_process' (defined below) is that the user specifies
+    # 'managed' via the --unmanaged command-line flag or a .gclient config,
+    # where 'should_process' is dynamically set by gclient if it goes over its
+    # recursion limit and controls gclient's behavior so it does not misbehave.
+    self.managed = managed
     self.custom_vars = custom_vars or {}
     self.custom_deps = custom_deps or {}
     self.deps_hooks = []
@@ -402,7 +409,7 @@ class Dependency(GClientKeywords, gclient_utils.WorkItem):
                 'Dependency %s specified more than once:\n  %s\nvs\n  %s' %
                 (name, tree[name].hierarchy(), self.hierarchy()))
       self.dependencies.append(Dependency(self, name, url, None, None, None,
-          self.deps_file, should_process))
+          None, self.deps_file, should_process))
     logging.debug('Loaded: %s' % str(self))
 
   # Arguments number differs from overridden method
@@ -662,6 +669,7 @@ solutions = [
   { "name"        : "%(solution_name)s",
     "url"         : "%(solution_url)s",
     "deps_file"   : "%(deps_file)s",
+    "managed"     : %(managed)s,
     "custom_deps" : {
     },
     "safesync_url": "%(safesync_url)s",
@@ -673,6 +681,7 @@ solutions = [
   { "name"        : "%(solution_name)s",
     "url"         : "%(solution_url)s",
     "deps_file"   : "%(deps_file)s",
+    "managed"     : %(managed)s,
     "custom_deps" : {
 %(solution_deps)s    },
     "safesync_url": "%(safesync_url)s",
@@ -689,8 +698,8 @@ solutions = [
     # Do not change previous behavior. Only solution level and immediate DEPS
     # are processed.
     self._recursion_limit = 2
-    Dependency.__init__(self, None, None, None, None, None, None, 'unused',
-                        True)
+    Dependency.__init__(self, None, None, None, None, True, None, None,
+                        'unused', True)
     self._options = options
     if options.deps_os:
       enforced_os = options.deps_os.split(',')
@@ -719,6 +728,7 @@ solutions = [
         self.dependencies.append(Dependency(
             self, s['name'], s['url'],
             s.get('safesync_url', None),
+            s.get('managed', True),
             s.get('custom_deps', {}),
             s.get('custom_vars', {}),
             s.get('deps_file', 'DEPS'),
@@ -748,12 +758,13 @@ solutions = [
     return client
 
   def SetDefaultConfig(self, solution_name, deps_file, solution_url,
-                       safesync_url):
+                       safesync_url, managed=True):
     self.SetConfig(self.DEFAULT_CLIENT_FILE_TEXT % {
       'solution_name': solution_name,
       'solution_url': solution_url,
       'deps_file': deps_file,
       'safesync_url' : safesync_url,
+      'managed': managed,
     })
 
   def _SaveEntries(self):
@@ -799,13 +810,14 @@ solutions = [
     # Do not check safesync_url if one or more --revision flag is specified.
     if not self._options.revisions:
       for s in self.dependencies:
-        if not s.safesync_url:
-          continue
-        handle = urllib.urlopen(s.safesync_url)
-        rev = handle.read().strip()
-        handle.close()
-        if len(rev):
-          self._options.revisions.append('%s@%s' % (s.name, rev))
+        if not s.managed:
+          self._options.revisions.append('%s@unmanaged' % s.name)
+        elif s.safesync_url:
+          handle = urllib.urlopen(s.safesync_url)
+          rev = handle.read().strip()
+          handle.close()
+          if len(rev):
+            self._options.revisions.append('%s@%s' % (s.name, rev))
     if not self._options.revisions:
       return revision_overrides
     solutions_names = [s.name for s in self.dependencies]
@@ -929,6 +941,7 @@ solutions = [
             'solution_url': d.url,
             'deps_file': d.deps_file,
             'safesync_url' : d.safesync_url or '',
+            'managed': d.managed,
             'solution_deps': ''.join(custom_deps),
         }
       # Print the snapshot configuration file
@@ -1048,6 +1061,11 @@ URL.
   parser.add_option('--deps-file', default='DEPS',
                     help='overrides the default name for the DEPS file for the'
                          'main solutions and all sub-dependencies')
+  parser.add_option('--unmanaged', action='store_true', default=False,
+                    help='overrides the default behavior to make it possible '
+                         'to have the main solution untouched by gclient '
+                         '(gclient will check out unmanaged dependencies but '
+                         'will never sync them)')
   parser.add_option('--git-deps', action='store_true',
                     help='sets the deps file to ".DEPS.git" instead of "DEPS"')
   (options, args) = parser.parse_args(args)
@@ -1073,7 +1091,8 @@ URL.
     safesync_url = ''
     if len(args) > 1:
       safesync_url = args[1]
-    client.SetDefaultConfig(name, deps_file, base_url, safesync_url)
+    client.SetDefaultConfig(name, deps_file, base_url, safesync_url,
+                            managed=not options.unmanaged)
   client.SaveConfig()
   return 0
 

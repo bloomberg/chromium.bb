@@ -442,8 +442,8 @@ class SVNWrapperTestCase(BaseTestCase):
         ('________ found .hg directory; skipping %s\n' % self.relpath))
 
 
-class GitWrapperTestCase(GCBaseTestCase, StdoutCheck, TestCaseUtils,
-                         unittest.TestCase):
+class BaseGitWrapperTestCase(GCBaseTestCase, StdoutCheck, TestCaseUtils,
+                             unittest.TestCase):
   """This class doesn't use pymox."""
   class OptionsObject(object):
     def __init__(self, verbose=False, revision=None):
@@ -543,6 +543,8 @@ from :3
     unittest.TestCase.tearDown(self)
     rmtree(self.root_dir)
 
+
+class ManagedGitWrapperTestCase(BaseGitWrapperTestCase):
   def testDir(self):
     members = [
         'FullUrlForRelativeUrl', 'GetRevisionDate', 'RunCommand',
@@ -821,6 +823,64 @@ from :3
                                 relpath=self.relpath)
     rev_info = scm.revinfo(options, (), None)
     self.assertEquals(rev_info, '069c602044c5388d2d15c3f875b057c852003458')
+
+
+class UnmanagedGitWrapperTestCase(BaseGitWrapperTestCase):
+  def testUpdateCheckout(self):
+    if not self.enabled:
+      return
+    options = self.Options(verbose=True)
+    root_dir = gclient_scm.os.path.realpath(tempfile.mkdtemp())
+    relpath = 'foo'
+    base_path = join(root_dir, relpath)
+    url = join(self.base_path, '.git')
+    try:
+      scm = gclient_scm.CreateSCM(url=url, root_dir=root_dir,
+                                  relpath=relpath)
+      file_list = []
+      options.revision = 'unmanaged'
+      scm.update(options, (), file_list)
+      self.assertEquals(len(file_list), 2)
+      self.assert_(gclient_scm.os.path.isfile(join(base_path, 'a')))
+      self.assertEquals(scm.revinfo(options, (), None),
+                        '069c602044c5388d2d15c3f875b057c852003458')
+    finally:
+      rmtree(root_dir)
+    msg1 = (
+        "\n_____ foo at refs/heads/master\n\n"
+        "________ running 'git clone -b master --verbose %s %s' in '%s'\n"
+        "Initialized empty Git repository in %s\n") % (
+          join(self.root_dir, '.', '.git'),
+          join(root_dir, 'foo'),
+          root_dir,
+          join(gclient_scm.os.path.realpath(root_dir), 'foo', '.git') + '/')
+    msg2 = (
+        "\n_____ foo at refs/heads/master\n\n"
+        "________ running 'git clone -b master --verbose %s %s' in '%s'\n"
+        "Cloning into %s...\ndone.\n") % (
+          join(self.root_dir, '.', '.git'),
+          join(root_dir, 'foo'),
+          root_dir,
+          join(gclient_scm.os.path.realpath(root_dir), 'foo'))
+    out = sys.stdout.getvalue()
+    sys.stdout.close()
+    sys.stdout = self._old_stdout
+    self.assertTrue(out in (msg1, msg2), (out, msg1, msg2))
+
+  def testUpdateUpdate(self):
+    if not self.enabled:
+      return
+    options = self.Options()
+    expected_file_list = []
+    scm = gclient_scm.CreateSCM(url=self.url, root_dir=self.root_dir,
+                                relpath=self.relpath)
+    file_list = []
+    options.revision = 'unmanaged'
+    scm.update(options, (), file_list)
+    self.assertEquals(file_list, expected_file_list)
+    self.assertEquals(scm.revinfo(options, (), None),
+                      '069c602044c5388d2d15c3f875b057c852003458')
+    self.checkstdout('________ unmanaged solution; skipping .\n')
 
 
 if __name__ == '__main__':

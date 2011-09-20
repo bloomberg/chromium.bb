@@ -174,9 +174,13 @@ class GitWrapper(SCMWrapper):
     url, deps_revision = gclient_utils.SplitUrlRevision(self.url)
     rev_str = ""
     revision = deps_revision
+    managed = True
     if options.revision:
       # Override the revision number.
       revision = str(options.revision)
+    if revision == 'unmanaged':
+      revision = None
+      managed = False
     if not revision:
       revision = default_rev
 
@@ -216,6 +220,10 @@ class GitWrapper(SCMWrapper):
         # Make the output a little prettier. It's nice to have some whitespace
         # between projects when cloning.
         print('')
+      return
+
+    if not managed:
+      print ('________ unmanaged solution; skipping %s' % self.relpath)
       return
 
     if not os.path.exists(os.path.join(self.checkout_path, '.git')):
@@ -735,14 +743,19 @@ class SVNWrapper(SCMWrapper):
     url, revision = gclient_utils.SplitUrlRevision(self.url)
     # Keep the original unpinned url for reference in case the repo is switched.
     base_url = url
+    managed = True
     if options.revision:
       # Override the revision number.
       revision = str(options.revision)
     if revision:
-      forced_revision = True
-      # Reconstruct the url.
-      url = '%s@%s' % (url, revision)
-      rev_str = ' at %s' % revision
+      if revision != 'unmanaged':
+        forced_revision = True
+        # Reconstruct the url.
+        url = '%s@%s' % (url, revision)
+        rev_str = ' at %s' % revision
+      else:
+        managed = False
+        revision = None
     else:
       forced_revision = False
       rev_str = ''
@@ -752,6 +765,10 @@ class SVNWrapper(SCMWrapper):
       command = ['checkout', url, self.checkout_path]
       command = self._AddAdditionalUpdateFlags(command, options, revision)
       self._RunAndGetFileList(command, options, file_list, self._root_dir)
+      return
+
+    if not managed:
+      print ('________ unmanaged solution; skipping %s' % self.relpath)
       return
 
     # Get the existing scm url and the revision number of the current checkout.

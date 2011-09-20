@@ -199,7 +199,7 @@ class GclientTest(trial_dir.TestCase):
     # Invalid urls causes pain when specifying requirements. Make sure it's
     # auto-fixed.
     d = gclient.Dependency(
-        None, 'name', 'proto://host/path/@revision', None, None,
+        None, 'name', 'proto://host/path/@revision', None, None, None,
         None, '', True)
     self.assertEquals('proto://host/path@revision', d.url)
 
@@ -210,23 +210,25 @@ class GclientTest(trial_dir.TestCase):
     options, _ = parser.parse_args([])
     obj = gclient.GClient('foo', options)
     obj.dependencies.append(
-        gclient.Dependency(obj, 'foo', 'url', None, None, None, 'DEPS', True))
+        gclient.Dependency(obj, 'foo', 'url', None, None, None, None, 'DEPS',
+                           True))
     obj.dependencies.append(
-        gclient.Dependency(obj, 'bar', 'url', None, None, None, 'DEPS', True))
+        gclient.Dependency(obj, 'bar', 'url', None, None, None, None, 'DEPS',
+                           True))
     obj.dependencies[0].dependencies.append(
         gclient.Dependency(
-          obj.dependencies[0], 'foo/dir1', 'url', None, None, None, 'DEPS',
-          True))
+          obj.dependencies[0], 'foo/dir1', 'url', None, None, None, None,
+          'DEPS', True))
     obj.dependencies[0].dependencies.append(
         gclient.Dependency(
           obj.dependencies[0], 'foo/dir2',
-          gclient.GClientKeywords.FromImpl('bar'), None, None, None, 'DEPS',
-          True))
+          gclient.GClientKeywords.FromImpl('bar'), None, None, None, None,
+          'DEPS', True))
     obj.dependencies[0].dependencies.append(
         gclient.Dependency(
           obj.dependencies[0], 'foo/dir3',
-          gclient.GClientKeywords.FileImpl('url'), None, None, None, 'DEPS',
-          True))
+          gclient.GClientKeywords.FileImpl('url'), None, None, None, None,
+          'DEPS', True))
     obj.dependencies[0]._file_list.append('foo')
     self.assertEquals(434, len(str(obj)), '%d\n%s' % (len(str(obj)), str(obj)))
 
