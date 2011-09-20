@@ -35,14 +35,14 @@ class PRINTING_EXPORT PrintSettings {
   bool Equals(const PrintSettings& rhs) const;
 
   void set_landscape(bool landscape) { landscape_ = landscape; }
-  void set_printer_name(const std::wstring& printer_name) {
+  void set_printer_name(const string16& printer_name) {
     printer_name_ = printer_name;
   }
-  const std::wstring& printer_name() const { return printer_name_; }
-  void set_device_name(const std::wstring& device_name) {
+  const string16& printer_name() const { return printer_name_; }
+  void set_device_name(const string16& device_name) {
     device_name_ = device_name;
   }
-  const std::wstring& device_name() const { return device_name_; }
+  const string16& device_name() const { return device_name_; }
   void set_dpi(int dpi) { dpi_ = dpi; }
   int dpi() const { return dpi_; }
   void set_supports_alpha_blend(bool supports_alpha_blend) {
@@ -110,10 +110,10 @@ class PRINTING_EXPORT PrintSettings {
   // Settings that can't be changed without side-effects.
 
   // Printer name as shown to the user.
-  std::wstring printer_name_;
+  string16 printer_name_;
 
   // Printer device name as opened by the OS.
-  std::wstring device_name_;
+  string16 device_name_;
 
   // Page setup in device units.
   PageSetup page_setup_device_units_;

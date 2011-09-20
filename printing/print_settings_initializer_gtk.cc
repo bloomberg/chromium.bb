@@ -7,7 +7,7 @@
 #include <gtk/gtk.h>
 #include <gtk/gtkprinter.h>
 
-#include "base/string_piece.h"
+#include "base/string16.h"
 #include "base/utf_string_conversions.h"
 #include "printing/print_settings.h"
 #include "printing/units.h"
@@ -25,10 +25,9 @@ void PrintSettingsInitializerGtk::InitPrintSettings(
   DCHECK(page_setup);
   DCHECK(print_settings);
 
-  // TODO(jhawkins): |printer_name_| and |device_name_| should be string16.
-  base::StringPiece name(
-      reinterpret_cast<const char*>(gtk_print_settings_get_printer(settings)));
-  print_settings->set_printer_name(UTF8ToWide(name));
+  string16 name(UTF8ToUTF16(static_cast<const char*>(
+      gtk_print_settings_get_printer(settings))));
+  print_settings->set_printer_name(name);
   print_settings->set_device_name(print_settings->printer_name());
   print_settings->ranges = new_ranges;
   print_settings->selection_only = print_selection_only;

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,9 +19,9 @@ void PrintSettingsInitializerMac::InitPrintSettings(
   DCHECK(print_settings);
 
   print_settings->set_printer_name(
-      base::SysCFStringRefToWide(PMPrinterGetName(printer)));
+      base::SysCFStringRefToUTF16(PMPrinterGetName(printer)));
   print_settings->set_device_name(
-      base::SysCFStringRefToWide(PMPrinterGetID(printer)));
+      base::SysCFStringRefToUTF16(PMPrinterGetID(printer)));
   print_settings->ranges = new_ranges;
 
   PMOrientation orientation = kPMPortrait;
