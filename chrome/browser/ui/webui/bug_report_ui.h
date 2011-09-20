@@ -7,15 +7,9 @@
 
 #include <string>
 
-#include "chrome/browser/ui/views/window.h"
 #include "chrome/browser/ui/webui/html_dialog_ui.h"
 
-namespace gfx {
-class Rect;
-}  // namespace gfx
-
 class Browser;
-class NSWindow;
 class TabContents;
 
 namespace browser {
