@@ -4,6 +4,7 @@
 
 #include "ui/aura_shell/sample_window.h"
 
+#include "ui/aura/window.h"
 #include "ui/gfx/canvas.h"
 #include "views/widget/widget.h"
 
@@ -12,8 +13,11 @@ namespace internal {
 
 // static
 void SampleWindow::CreateSampleWindow() {
-  views::Widget::CreateWindowWithBounds(new SampleWindow,
-                                        gfx::Rect(120, 150, 400, 300))->Show();
+  views::Widget* widget =
+      views::Widget::CreateWindowWithBounds(new SampleWindow,
+                                            gfx::Rect(120, 150, 400, 300));
+  widget->GetNativeView()->set_name(L"SampleWindow");
+  widget->Show();
 }
 
 SampleWindow::SampleWindow() {

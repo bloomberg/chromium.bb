@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/string16.h"
 #include "ui/aura/aura_export.h"
 #include "ui/gfx/compositor/layer_delegate.h"
 #include "ui/gfx/rect.h"
@@ -28,7 +29,7 @@ class KeyEvent;
 class LayoutManager;
 class MouseEvent;
 class WindowDelegate;
-class WindowManager;
+class EventFilter;
 
 namespace internal {
 class FocusManager;
@@ -59,6 +60,9 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
   int id() const { return id_; }
   void set_id(int id) { id_ = id; }
 
+  const string16& name() const { return name_; }
+  void set_name(const string16& name) { name_ = name; }
+
   ui::Layer* layer() { return layer_.get(); }
   const ui::Layer* layer() const { return layer_.get(); }
 
@@ -86,7 +90,7 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
   Window* parent() { return parent_; }
 
   // Returns true if this Window is the container for toplevel windows.
-  virtual bool IsTopLevelWindowContainer() const;
+  virtual bool IsToplevelWindowContainer() const;
 
   // Move the specified child of this Window to the front of the z-order.
   // TODO(beng): this is (obviously) feeble.
@@ -101,6 +105,9 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
   static void ConvertPointToWindow(Window* source,
                                    Window* target,
                                    gfx::Point* point);
+
+  // Window takes ownership of the EventFilter.
+  void SetEventFilter(EventFilter* event_filter);
 
   // Handles a mouse event. Returns true if handled.
   bool OnMouseEvent(MouseEvent* event);
@@ -158,8 +165,9 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
   Windows children_;
 
   int id_;
+  string16 name_;
 
-  scoped_ptr<WindowManager> window_manager_;
+  scoped_ptr<EventFilter> event_filter_;
   scoped_ptr<LayoutManager> layout_manager_;
 
   void* user_data_;

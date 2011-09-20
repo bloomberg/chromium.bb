@@ -34,6 +34,7 @@
         'desktop_background_view.h',
         'desktop_layout_manager.cc',
         'desktop_layout_manager.h',
+        'desktop_window.cc',
         'launcher/launcher_view.cc',
         'launcher/launcher_view.h',
         'launcher/launcher_button.cc',

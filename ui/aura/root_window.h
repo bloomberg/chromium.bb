@@ -27,7 +27,6 @@ class RootWindow : public Window {
   bool HandleKeyEvent(const KeyEvent& event);
 
   // Overridden from Window:
-  virtual bool IsTopLevelWindowContainer() const OVERRIDE;
   virtual FocusManager* GetFocusManager() OVERRIDE;
 
  private:

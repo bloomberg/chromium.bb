@@ -17,6 +17,7 @@ RootWindow::RootWindow()
     : Window(NULL),
       mouse_pressed_handler_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(focus_manager_(new FocusManager(this))) {
+  set_name(L"RootWindow");
 }
 
 RootWindow::~RootWindow() {
@@ -44,10 +45,6 @@ bool RootWindow::HandleKeyEvent(const KeyEvent& event) {
     return GetFocusManager()->focused_window()->OnKeyEvent(&translated_event);
   }
   return false;
-}
-
-bool RootWindow::IsTopLevelWindowContainer() const {
-  return true;
 }
 
 FocusManager* RootWindow::GetFocusManager() {

@@ -12,16 +12,17 @@ namespace views {
 class Widget;
 }
 
-namespace aura_shell {
-namespace internal {
-
 // Declarations of shell component factory functions.
 
-AURA_SHELL_EXPORT views::Widget* CreateDesktopBackground();
+namespace aura_shell {
 
-AURA_SHELL_EXPORT views::Widget* CreateLauncher();
+AURA_SHELL_EXPORT void InitDesktopWindow();
 
-AURA_SHELL_EXPORT views::Widget* CreateStatusArea();
+namespace internal {
+
+views::Widget* CreateDesktopBackground();
+views::Widget* CreateLauncher();
+views::Widget* CreateStatusArea();
 
 }  // namespace internal
 }  // namespace aura_shell

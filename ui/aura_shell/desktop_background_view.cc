@@ -51,6 +51,7 @@ AURA_SHELL_EXPORT views::Widget* CreateDesktopBackground() {
   desktop_widget->Init(params);
   desktop_widget->SetContentsView(view);
   desktop_widget->Show();
+  desktop_widget->GetNativeView()->set_name(L"DesktopBackgroundView");
   return desktop_widget;
 }
 

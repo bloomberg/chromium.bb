@@ -9,10 +9,10 @@
 #include "base/logging.h"
 #include "ui/aura/desktop.h"
 #include "ui/aura/event.h"
+#include "ui/aura/event_filter.h"
 #include "ui/aura/focus_manager.h"
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/window_delegate.h"
-#include "ui/aura/window_manager.h"
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/compositor/compositor.h"
 #include "ui/gfx/compositor/layer.h"
@@ -55,7 +55,10 @@ Window::~Window() {
 }
 
 void Window::Init() {
-  layer_.reset(new ui::Layer(Desktop::GetInstance()->compositor()));
+  ui::Layer::TextureParam param = ui::Layer::LAYER_HAS_NO_TEXTURE;
+  if (delegate_)
+    param = ui::Layer::LAYER_HAS_TEXTURE;
+  layer_.reset(new ui::Layer(Desktop::GetInstance()->compositor(), param));
   layer_->set_delegate(this);
 }
 
@@ -106,10 +109,10 @@ void Window::SetParent(Window* parent) {
   if (parent)
     parent->AddChild(this);
   else
-    Desktop::GetInstance()->window()->AddChild(this);
+    Desktop::GetInstance()->toplevel_window_container()->AddChild(this);
 }
 
-bool Window::IsTopLevelWindowContainer() const {
+bool Window::IsToplevelWindowContainer() const {
   return false;
 }
 
@@ -148,10 +151,17 @@ void Window::ConvertPointToWindow(Window* source,
   ui::Layer::ConvertPointToLayer(source->layer(), target->layer(), point);
 }
 
+void Window::SetEventFilter(EventFilter* event_filter) {
+  event_filter_.reset(event_filter);
+}
+
 bool Window::OnMouseEvent(MouseEvent* event) {
-  if (!window_manager_.get())
-    window_manager_.reset(new WindowManager(this));
-  return window_manager_->OnMouseEvent(event) || delegate_->OnMouseEvent(event);
+  if (!parent_)
+    return false;
+  if (!parent_->event_filter_.get())
+    parent_->SetEventFilter(new EventFilter(parent_));
+  return parent_->event_filter_->OnMouseEvent(this, event) ||
+      delegate_->OnMouseEvent(event);
 }
 
 bool Window::OnKeyEvent(KeyEvent* event) {
@@ -172,10 +182,13 @@ Window* Window::GetEventHandlerForPoint(const gfx::Point& point) {
       continue;
     gfx::Point point_in_child_coords(point);
     Window::ConvertPointToWindow(this, child, &point_in_child_coords);
-    if (child->HitTest(point_in_child_coords))
-      return child->GetEventHandlerForPoint(point_in_child_coords);
+    if (child->HitTest(point_in_child_coords)) {
+      Window* handler = child->GetEventHandlerForPoint(point_in_child_coords);
+      if (handler)
+        return handler;
+    }
   }
-  return this;
+  return delegate_ ? this : NULL;
 }
 
 internal::FocusManager* Window::GetFocusManager() {
@@ -187,8 +200,7 @@ void Window::SchedulePaint() {
 }
 
 void Window::OnPaintLayer(gfx::Canvas* canvas) {
-  if (delegate_)
-    delegate_->OnPaint(canvas);
+  delegate_->OnPaint(canvas);
 }
 
 }  // namespace aura

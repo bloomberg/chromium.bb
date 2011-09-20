@@ -58,6 +58,11 @@ class AURA_EXPORT Desktop : public ui::CompositorDelegate {
 
   Window* window() { return window_.get(); }
 
+  Window* toplevel_window_container() { return toplevel_window_container_; }
+  void set_toplevel_window_container(Window* toplevel_window_container) {
+    toplevel_window_container_ = toplevel_window_container;
+  }
+
   static Desktop* GetInstance();
 
  private:
@@ -67,6 +72,7 @@ class AURA_EXPORT Desktop : public ui::CompositorDelegate {
   scoped_refptr<ui::Compositor> compositor_;
 
   scoped_ptr<internal::RootWindow> window_;
+  Window* toplevel_window_container_;
 
   scoped_ptr<DesktopHost> host_;
 

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_AURA_WINDOW_MANAGER_H_
-#define UI_AURA_WINDOW_MANAGER_H_
+#ifndef UI_AURA_EVENT_FILTER_H_
+#define UI_AURA_EVENT_FILTER_H_
 #pragma once
 
 #include "base/logging.h"
@@ -16,32 +16,25 @@ class MouseEvent;
 
 // An object that filters events sent to an owner window, potentially performing
 // adjustments to the window's position, size and z-index.
-//
-// TODO(beng): Make this into an interface so we can have specializations for
-//             different types of Window and product.
-class WindowManager {
+class EventFilter {
  public:
-  explicit WindowManager(Window* owner);
-  ~WindowManager();
+  explicit EventFilter(Window* owner);
+  virtual ~EventFilter();
 
   // Try to handle |event| (before the owner's delegate gets a chance to).
   // Returns true if the event was handled by the WindowManager and should not
   // be forwarded to the owner's delegate.
-  bool OnMouseEvent(MouseEvent* event);
+  virtual bool OnMouseEvent(Window* target, MouseEvent* event);
+
+ protected:
+  Window* owner() { return owner_; }
 
  private:
-  // Moves the owner window and all of its parents to the front of their
-  // respective z-orders.
-  void MoveWindowToFront();
-
   Window* owner_;
-  gfx::Point mouse_down_offset_;
-  gfx::Point window_location_;
-  int window_component_;
 
-  DISALLOW_COPY_AND_ASSIGN(WindowManager);
+  DISALLOW_COPY_AND_ASSIGN(EventFilter);
 };
 
 }  // namespace aura
 
-#endif  // UI_AURA_WINDOW_MANAGER_H_
+#endif  // UI_AURA_EVENT_FILTER_H_

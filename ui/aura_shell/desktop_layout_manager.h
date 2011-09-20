@@ -25,6 +25,10 @@ class AURA_SHELL_EXPORT DesktopLayoutManager : public aura::LayoutManager {
   explicit DesktopLayoutManager(aura::Window* owner);
   virtual ~DesktopLayoutManager();
 
+  void set_toplevel_window_container(aura::Window* toplevel_window_container) {
+    toplevel_window_container_ = toplevel_window_container;
+  }
+
   void set_background_widget(views::Widget* background_widget) {
     background_widget_ = background_widget;
   }
@@ -42,6 +46,7 @@ class AURA_SHELL_EXPORT DesktopLayoutManager : public aura::LayoutManager {
   virtual void OnWindowResized() OVERRIDE;
 
   aura::Window* owner_;
+  aura::Window* toplevel_window_container_;
   views::Widget* background_widget_;
   views::Widget* launcher_widget_;
   views::Widget* status_area_widget_;

@@ -27,8 +27,11 @@ DesktopLayoutManager::~DesktopLayoutManager() {
 // DesktopLayoutManager, aura::LayoutManager implementation:
 
 void DesktopLayoutManager::OnWindowResized() {
-  background_widget_->SetBounds(
-      gfx::Rect(owner_->bounds().width(), owner_->bounds().height()));
+  gfx::Rect fullscreen_bounds =
+      gfx::Rect(owner_->bounds().width(), owner_->bounds().height());
+  toplevel_window_container_->SetBounds(fullscreen_bounds, 0);
+
+  background_widget_->SetBounds(fullscreen_bounds);
 
   gfx::Rect launcher_bounds = launcher_widget_->GetWindowScreenBounds();
   launcher_widget_->SetBounds(

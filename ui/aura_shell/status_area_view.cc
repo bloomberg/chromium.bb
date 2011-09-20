@@ -40,6 +40,7 @@ AURA_SHELL_EXPORT views::Widget* CreateStatusArea() {
   widget->Init(params);
   widget->SetContentsView(status_area_view);
   widget->Show();
+  widget->GetNativeView()->set_name(L"StatusAreaView");
   return widget;
 }
 

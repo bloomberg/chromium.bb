@@ -476,7 +476,7 @@ NativeWidgetPrivate* NativeWidgetPrivate::GetTopLevelNativeWidget(
   aura::Window* toplevel = native_view;
   aura::Window* parent = native_view->parent();
   while (parent) {
-    if (parent->IsTopLevelWindowContainer())
+    if (parent->IsToplevelWindowContainer())
       return GetNativeWidgetForNativeView(toplevel);
     toplevel = parent;
     parent = parent->parent();

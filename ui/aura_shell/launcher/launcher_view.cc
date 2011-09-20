@@ -44,6 +44,7 @@ AURA_SHELL_EXPORT views::Widget* CreateLauncher() {
   launcher_widget->Init(params2);
   launcher_widget->SetContentsView(launcher_view);
   launcher_widget->Show();
+  launcher_widget->GetNativeView()->set_name(L"LauncherView");
   return launcher_widget;
 }
 
