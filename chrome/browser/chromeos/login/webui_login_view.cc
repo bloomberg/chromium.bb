@@ -10,6 +10,8 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/accessibility_util.h"
+#include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/cros/login_library.h"
 #include "chrome/browser/chromeos/login/proxy_settings_dialog.h"
 #include "chrome/browser/chromeos/login/webui_login_display.h"
 #include "chrome/browser/chromeos/status/clock_menu_button.h"
@@ -24,6 +26,7 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
+#include "views/desktop/desktop_window_view.h"
 #include "views/widget/native_widget_gtk.h"
 #include "views/widget/widget.h"
 
@@ -282,6 +285,21 @@ void WebUILoginView::OnTabMainFrameFirstRender() {
     views::NativeWidgetGtk::UpdateFreezeUpdatesProperty(
         GetNativeWindow(), false);
   }
+
+  bool emit_login_visible = false;
+
+  // In aura or views-desktop environment, there will be no window-manager. So
+  // chrome needs to emit the 'login-prompt-visible' signal. This needs to
+  // happen here, after the page has completed rendering itself.
+#if defined(USE_AURA)
+  emit_login_visible = true;
+#else
+  if (views::desktop::DesktopWindowView::desktop_window_view)
+    emit_login_visible = true;
+#endif
+  if (emit_login_visible && chromeos::CrosLibrary::Get()->EnsureLoaded())
+    chromeos::CrosLibrary::Get()->GetLoginLibrary()->EmitLoginPromptVisible();
+
 }
 
 void WebUILoginView::InitStatusArea() {

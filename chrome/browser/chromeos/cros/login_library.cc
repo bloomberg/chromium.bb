@@ -45,6 +45,11 @@ class LoginLibraryImpl : public LoginLibrary {
     chromeos::EmitLoginPromptReady();
   }
 
+  virtual void EmitLoginPromptVisible() OVERRIDE {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    chromeos::EmitLoginPromptVisible();
+  }
+
   virtual void RequestRetrievePolicy(
       RetrievePolicyCallback callback, void* delegate) OVERRIDE {
     DCHECK(callback) << "must provide a callback to RequestRetrievePolicy()";
@@ -225,6 +230,7 @@ class LoginLibraryStubImpl : public LoginLibrary {
   virtual void Init() OVERRIDE {}
 
   virtual void EmitLoginPromptReady() OVERRIDE {}
+  virtual void EmitLoginPromptVisible() OVERRIDE {}
   virtual void RequestRetrievePolicy(
       RetrievePolicyCallback callback, void* delegate) OVERRIDE {
     callback(delegate, "", 0);

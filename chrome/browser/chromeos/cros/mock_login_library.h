@@ -20,6 +20,7 @@ class MockLoginLibrary : public LoginLibrary {
 
   MOCK_METHOD0(Init, void(void));
   MOCK_METHOD0(EmitLoginPromptReady, void(void));
+  MOCK_METHOD0(EmitLoginPromptVisible, void(void));
   MOCK_METHOD2(RequestRetrievePolicy, void(RetrievePolicyCallback, void*));
   MOCK_METHOD3(RequestStorePolicy, void(const std::string&,
                                         StorePolicyCallback,

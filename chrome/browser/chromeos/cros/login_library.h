@@ -23,6 +23,11 @@ class LoginLibrary {
   // Requests that the Upstart signal login-prompt-ready be emitted.
   virtual void EmitLoginPromptReady() = 0;
 
+  // Requests that the Upstart signal login-prompt-visible be emitted. This is
+  // currently used only with views-desktop or aura environments. In the normal
+  // environment, the chromeos-wm emits the signal.
+  virtual void EmitLoginPromptVisible() = 0;
+
   virtual void RequestRetrievePolicy(RetrievePolicyCallback callback,
                                      void* delegate_string) = 0;
 
