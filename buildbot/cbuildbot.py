@@ -723,6 +723,7 @@ def main(argv=None):
   if options.buildbot:
     _RunBuildStagesWrapper(bot_id, options, build_config)
   else:
+    build_config = cbuildbot_config.OverrideConfigForTrybot(build_config)
     _RunBuildStagesWithSudoProcess(bot_id, options, build_config)
 
 

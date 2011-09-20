@@ -105,7 +105,7 @@ git_sync -- Boolean that enables parameter --git-sync for prebuilt.py.
 """
 
 import constants
-
+import copy
 
 GS_PATH_DEFAULT = 'default' # Means gs://chromeos-archive/ + bot_id
 
@@ -127,6 +127,24 @@ def IsInternalBuild(config):
     config: The build configuration dictionary to test.
   """
   return config['git_url'] == MANIFEST_INT_URL
+
+
+def OverrideConfigForTrybot(config):
+  """Apply trybot-specific configuration settings.
+
+  Args:
+    config:  The build configuration dictionary to override.  The dictionary is
+             not modified.
+
+  Returns:
+    A build configuration dictionary with the overrides applied.
+  """
+  copy_config = copy.copy(config)
+  copy_config['uprev'] = True
+  if IsInternalBuild(config):
+    copy_config['overlays'] = 'both'
+
+  return copy_config
 
 
 default = {
