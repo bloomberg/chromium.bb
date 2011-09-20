@@ -1213,13 +1213,20 @@ void WriteTransaction::SaveOriginal(const EntryKernel* entry) {
 ImmutableEntryKernelMutationMap WriteTransaction::RecordMutations() {
   dirkernel_->transaction_mutex.AssertAcquired();
   for (syncable::EntryKernelMutationMap::iterator it = mutations_.begin();
-       it != mutations_.end(); ++it) {
+       it != mutations_.end();) {
     EntryKernel* kernel = directory()->GetEntryByHandle(it->first);
     if (!kernel) {
       NOTREACHED();
       continue;
     }
-    it->second.mutated = *kernel;
+    if (kernel->is_dirty()) {
+      it->second.mutated = *kernel;
+      ++it;
+    } else {
+      DCHECK(!it->second.original.is_dirty());
+      // Not actually mutated, so erase from |mutations_|.
+      mutations_.erase(it++);
+    }
   }
   return ImmutableEntryKernelMutationMap(&mutations_);
 }
