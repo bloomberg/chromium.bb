@@ -7,6 +7,7 @@
 #pragma once
 
 #include "ui/aura/window.h"
+#include "ui/aura/aura_export.h"
 
 namespace aura {
 namespace internal {
@@ -14,7 +15,7 @@ namespace internal {
 class FocusManager;
 
 // A Window subclass that groups top-level windows.
-class ToplevelWindowContainer : public Window {
+class AURA_EXPORT ToplevelWindowContainer : public Window {
  public:
   ToplevelWindowContainer();
   virtual ~ToplevelWindowContainer();
