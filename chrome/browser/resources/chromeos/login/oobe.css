@@ -604,7 +604,53 @@ button {
   -webkit-transition: 0.25s opacity;
 }
 
-html[dir=rtl] #header {
+#login-header-bar {
+  padding: 5px 8px;
+}
+
+#login-header-bar button,
+#login-header-bar button:active,
+#login-header-bar button:focus,
+#login-header-bar button:hover {
+  -webkit-box-shadow: none;
+  background: transparent none;
+  border: 0;
+  color: #666;
+  cursor: pointer;
+  height: 24px;
+  margin: 0;
+  min-width: 0;
+  padding: 0;
+  vertical-align: middle;
+}
+
+.header-bar-item {
+  -webkit-padding-start: 15px;
+  background-image: url('chrome://theme/IDR_DIVIDER_VERT');
+  background-position: left center;
+  background-repeat: no-repeat;
+  display: inline-block;
+  height: 24px;
+}
+
+#login-header-bar #shutdown-button {
+  -webkit-padding-start: 24px;
+  background-image: url('chrome://theme/IDR_ICON_POWER20');
+  background-position: left center;
+  background-repeat: no-repeat;
+}
+
+#login-header-bar #add-user-button {
+  -webkit-padding-start: 24px;
+  background-image: url('chrome://theme/IDR_ICON_ADD_USER20');
+  background-position: left center;
+  background-repeat: no-repeat;
+}
+
+html[dir=rtl] .header-bar-item,
+html[dir=rtl] #header,
+html[dir=rtl] #login-header-bar #shutdown-button,
+html[dir=rtl] #login-header-bar #add-user-button {
   background-position: right center;
 }
 

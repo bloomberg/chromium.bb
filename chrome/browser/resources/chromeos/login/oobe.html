@@ -7,12 +7,11 @@
 <link rel="stylesheet" href="chrome://resources/css/select.css">
 <link rel="stylesheet" href="chrome://resources/css/throbber.css">
 <link rel="stylesheet" href="bubble.css">
-<link rel="stylesheet" href="header_bar.css">
 <link rel="stylesheet" href="network_dropdown.css">
 <link rel="stylesheet" href="oobe.css">
 <link rel="stylesheet" href="screen_account_picker.css">
-<link rel="stylesheet" href="screen_gaia_signin.css">
 <link rel="stylesheet" href="screen_offline_message.css">
+<link rel="stylesheet" href="screen_signin.css">
 <link rel="stylesheet" href="spinner.css">
 <link rel="stylesheet" href="user_pod_row.css">
 <script src="chrome://resources/js/cr.js"></script>
@@ -29,8 +28,6 @@
 <script src="chrome://resources/js/util.js"></script>
 <script src="../user_images_grid.js"></script>
 <script src="bubble.js"></script>
-<script src="display_manager.js"></script>
-<script src="header_bar.js"></script>
 <script src="network_dropdown.js"></script>
 <script src="oobe.js"></script>
 <script src="oobe_screen_eula.js"></script>
@@ -42,10 +39,17 @@
 <script src="screen_account_picker.js"></script>
 <script src="screen_gaia_signin.js"></script>
 <script src="screen_offline_message.js"></script>
+<script src="screen_signin.js"></script>
 <script src="user_pod_row.js"></script>
 </head>
 <body i18n-values=".style.fontFamily:fontfamily;">
-  <include src="header_bar.html">
+  <div id="login-header-bar" hidden>
+    <button id="shutdown-button" i18n-content="shutDown"></button>
+    <div id="add-user-header-bar-item" class="header-bar-item">
+      <button id="add-user-button" i18n-content="addUser"></button>
+      <button id="cancel-add-user-button" i18n-content="cancel" hidden></button>
+    </div>
+  </div>
   <div id="outer-container">
     <div id="oobe" class="faded">
       <div id="header">
@@ -60,6 +64,7 @@
         <include src="oobe_screen_enrollment.html">
         <include src="oobe_screen_oauth_enrollment.html">
         <include src="oobe_screen_user_image.html">
+        <include src="screen_signin.html">
         <include src="screen_gaia_signin.html">
         <include src="screen_account_picker.html">
         <include src="screen_offline_message.html">
@@ -91,7 +96,10 @@
     </div>
   </div>
   <div id="bubble" class="bubble faded" hidden></div>
-  <include src="version.html">
   <include src="user_pod_template.html">
+  <div id="version-labels">
+    <div id="version"></div>
+    <div id="boot-times"></div>
+  </div>
 </body>
 </html>

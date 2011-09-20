@@ -36,9 +36,6 @@
 
 namespace {
 
-// Path for a stripped down login page that does not have OOBE elements.
-const char kLoginPath[] = "login";
-
 // Path for the enterprise enrollment gaia page hosting.
 const char kEnterpriseEnrollmentGaiaLoginPath[] = "gaialogin";
 
@@ -80,11 +77,6 @@ void OobeUIHTMLSource::StartDataRequest(const std::string& path,
   if (path.empty()) {
     static const base::StringPiece html(
         ResourceBundle::GetSharedInstance().GetRawDataResource(IDR_OOBE_HTML));
-    response = jstemplate_builder::GetI18nTemplateHtml(
-        html, localized_strings_.get());
-  } else if (path == kLoginPath) {
-    static const base::StringPiece html(
-        ResourceBundle::GetSharedInstance().GetRawDataResource(IDR_LOGIN_HTML));
     response = jstemplate_builder::GetI18nTemplateHtml(
         html, localized_strings_.get());
   } else if (path == kEnterpriseEnrollmentGaiaLoginPath) {

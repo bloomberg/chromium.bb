@@ -3,6 +3,13 @@
  * found in the LICENSE file.
  */
 
+#signin {
+  -webkit-box-align: center;
+  -webkit-box-pack: center;
+  display: -webkit-box;
+  overflow: hidden;
+}
+
 #gaia-signin {
   -webkit-box-align: center;
   -webkit-box-pack: center;
@@ -53,4 +60,10 @@ html[dir=rtl] #signin-right {
   position: absolute;
   right: 0;
   top: 0;
+}
+
+#email,
+#password {
+  display: block;
+  margin-bottom: 20px;
 }

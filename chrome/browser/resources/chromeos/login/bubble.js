@@ -63,7 +63,7 @@ cr.define('cr.ui', function() {
       const HORIZONTAL_PADDING = 10;
       const VERTICAL_PADDING = 5;
 
-      var elementOrigin = cr.ui.login.DisplayManager.getOffset(el);
+      var elementOrigin = Oobe.getOffset(el);
       var anchorX = elementOrigin.left + HORIZONTAL_PADDING;
       var anchorY = elementOrigin.top + el.offsetHeight + VERTICAL_PADDING;
 
