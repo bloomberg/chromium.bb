@@ -22,7 +22,7 @@ class ExtensionCreatorFilterTest : public PlatformTest {
     filter_ = new ExtensionCreatorFilter();
   }
 
-  FilePath CreateTestFile(const FilePath& file_path) {
+  FilePath CreateEmptyTestFile(const FilePath& file_path) {
     FilePath test_file(test_dir_.Append(file_path));
     FilePath temp_file;
     EXPECT_TRUE(file_util::CreateTemporaryFileInDir(test_dir_, &temp_file));
@@ -46,13 +46,18 @@ TEST_F(ExtensionCreatorFilterTest, NormalCases) {
   const struct UnaryBooleanTestData cases[] = {
     { FILE_PATH_LITERAL("foo"), true },
     { FILE_PATH_LITERAL(".foo"), false },
+    { FILE_PATH_LITERAL("~foo"), true },
+    { FILE_PATH_LITERAL("foo~"), false },
+    { FILE_PATH_LITERAL("#foo"), true },
+    { FILE_PATH_LITERAL("foo#"), true },
+    { FILE_PATH_LITERAL("#foo#"), false },
     { FILE_PATH_LITERAL(".svn"), false },
     { FILE_PATH_LITERAL("__MACOSX"), false },
   };
 
   for (size_t i = 0; i < arraysize(cases); ++i) {
     FilePath input(cases[i].input);
-    FilePath test_file(CreateTestFile(input));
+    FilePath test_file(CreateEmptyTestFile(input));
     bool observed = filter_->ShouldPackageFile(test_file);
 
     EXPECT_EQ(cases[i].expected, observed) <<
@@ -81,7 +86,7 @@ TEST_F(ExtensionCreatorFilterTest, WindowsHiddenFiles) {
   for (size_t i = 0; i < arraysize(cases); ++i) {
     FilePath input(cases[i].input_char);
     bool should_hide = cases[i].input_bool;
-    FilePath test_file(CreateTestFile(input));
+    FilePath test_file(CreateEmptyTestFile(input));
 
     if (should_hide) {
       SetFileAttributes(test_file.value().c_str(), FILE_ATTRIBUTE_HIDDEN);
@@ -94,4 +99,3 @@ TEST_F(ExtensionCreatorFilterTest, WindowsHiddenFiles) {
 #endif
 
 }  // namespace
-

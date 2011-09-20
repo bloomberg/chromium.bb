@@ -12,10 +12,27 @@
 
 bool ExtensionCreatorFilter::ShouldPackageFile(const FilePath& file_path) {
   const FilePath& base_name = file_path.BaseName();
-
-  if (base_name.BaseName().value()[0] == '.') {
+  if (base_name.empty()) {
     return false;
   }
+
+  FilePath::CharType first_character = base_name.value()[0];
+  FilePath::CharType last_character =
+      base_name.value()[base_name.value().length() - 1];
+
+  // dotfile
+  if (first_character == '.') {
+    return false;
+  }
+  // Emacs backup file
+  if (last_character == '~') {
+    return false;
+  }
+  // Emacs auto-save file
+  if (first_character == '#' && last_character == '#') {
+    return false;
+  }
+  // Magic OS X file
   if (base_name.value() == FILE_PATH_LITERAL("__MACOSX")) {
     return false;
   }
