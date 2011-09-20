@@ -1,7 +1,7 @@
 /*
- * Copyright 2009 The Native Client Authors.  All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 #include <stdio.h>
@@ -13,10 +13,10 @@ int main() {
   int num_errors = 0;
 
 #define TEST(T, M, V, fmt) do {                                \
-    printf("%s: expect %" fmt "\n", #T, V);                    \
+    printf("%s: expect %" fmt "\n", #T, (T) V);                \
     if (M(T) != V) {                                           \
       printf("Error: " #M " is %" fmt ", expected %" fmt "\n", \
-             M(T), V);                                         \
+             M(T), (T) V);                                     \
       ++num_errors;                                            \
     } else {                                                   \
       printf("OK\n");                                          \
@@ -46,9 +46,9 @@ int main() {
 #undef TEST
 
   /* port_win and/or local system defns */
-#define TEST(MAX_VAL_MACRO,EXPECTED_VALUE, FMT) do {  \
+#define TEST(T, MAX_VAL_MACRO,EXPECTED_VALUE, FMT) do {  \
     printf("expected %"FMT", actual %"FMT"\n",        \
-           EXPECTED_VALUE, MAX_VAL_MACRO);            \
+           (T) EXPECTED_VALUE, (T) MAX_VAL_MACRO);    \
     if (EXPECTED_VALUE != MAX_VAL_MACRO) {            \
       ++num_errors;                                   \
       printf("Error\n");                              \
@@ -57,25 +57,25 @@ int main() {
     }                                                 \
   } while (0)
 
-  TEST(UINT8_MAX, 255, NACL_PRIu8);
+  TEST(uint8_t, UINT8_MAX, 255, NACL_PRIu8);
 
-  TEST(INT8_MAX, 127, NACL_PRId8);
-  TEST(INT8_MIN, -128, NACL_PRId8);
+  TEST(int8_t, INT8_MAX, 127, NACL_PRId8);
+  TEST(int8_t, INT8_MIN, -128, NACL_PRId8);
 
-  TEST(UINT16_MAX, 65535, NACL_PRIu16);
+  TEST(uint16_t, UINT16_MAX, 65535, NACL_PRIu16);
 
-  TEST(INT16_MAX, 32767, NACL_PRId16);
-  TEST(INT16_MIN, -32768, NACL_PRId16);
+  TEST(int16_t, INT16_MAX, 32767, NACL_PRId16);
+  TEST(int16_t, INT16_MIN, -32768, NACL_PRId16);
 
-  TEST(UINT32_MAX, 4294967295U, NACL_PRIu32);
+  TEST(uint32_t, UINT32_MAX, 4294967295U, NACL_PRIu32);
 
-  TEST(INT32_MAX, 2147483647, NACL_PRId32);
-  TEST(INT32_MIN, -2147483647-1, NACL_PRId32);
+  TEST(int32_t, INT32_MAX, 2147483647, NACL_PRId32);
+  TEST(int32_t, INT32_MIN, -2147483647-1, NACL_PRId32);
 
-  TEST(UINT64_MAX, (uint64_t) 18446744073709551615ULL, NACL_PRIu64);
+  TEST(uint64_t, UINT64_MAX, (uint64_t) 18446744073709551615ULL, NACL_PRIu64);
 
-  TEST(INT64_MAX, (int64_t) 9223372036854775807LL, NACL_PRId64);
-  TEST(INT64_MIN, (int64_t) -9223372036854775807LL-1, NACL_PRId64);
+  TEST(int64_t, INT64_MAX, (int64_t) 9223372036854775807LL, NACL_PRId64);
+  TEST(int64_t, INT64_MIN, (int64_t) -9223372036854775807LL-1, NACL_PRId64);
 
   if (0 != num_errors) {
     printf("FAILED\n");
