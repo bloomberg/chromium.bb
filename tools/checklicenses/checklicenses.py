@@ -33,6 +33,8 @@ WHITELISTED_LICENSES = [
     'BSD (2 clause)',
     'BSD (2 clause) MIT/X11 (BSD like)',
     'BSD (3 clause)',
+    'BSD (3 clause) ISC',
+    'BSD (3 clause) LGPL (v2.1 or later) (with incorrect FSF address)',
     'BSD (3 clause) MIT/X11 (BSD like)',
     'BSD (4 clause)',
     'BSD-like',
@@ -59,6 +61,7 @@ WHITELISTED_LICENSES = [
     'LGPL (v2.1 or later)',
     'LGPL (v2.1 or later) (with incorrect FSF address)',
     'MPL (v1.0) LGPL (v2 or later) (with incorrect FSF address)',
+    'MPL (v1.1)',
     'MPL (v1.1) BSD-like',
     'MPL (v1.1) BSD-like GPL (unversioned/unknown version)',
     'MPL (v1.1) GPL (unversioned/unknown version)',
@@ -122,8 +125,22 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
     'native_client': [
         'UNKNOWN',
     ],
-    'native_client/toolchain/linux_x86_newlib': [
+    'native_client/toolchain': [
+        'BSD GPL (v2 or later) (with incorrect FSF address)',
+        'BSD (2 clause) GPL (v2 or later)',
+        'BSL (v1.0) GPL',
         'GPL',
+        'GPL (with incorrect FSF address)',
+        'GPL (unversioned/unknown version)',
+        'GPL (v2)',
+
+        # TODO(phajdan.jr): Make licensecheck not print the comma after v2.
+        'GPL (v2,)',
+
+        'GPL (v2 or later)',
+        'GPL (v2 or later) (with incorrect FSF address)',
+
+        # TODO(phajdan.jr): Make licensecheck not print the comma after 3.1.
         'GPL (v3.1,)',
     ],
     'net/disk_cache/hash.cc': [
@@ -374,9 +391,6 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
     'third_party/zlib/trees.h': [
         'UNKNOWN',
     ],
-    'third_party/WebKit/LayoutTests/fast/xsl': [
-        'MPL (v1.1)',
-    ],
     'tools/dromaeo_benchmark_runner/dromaeo_benchmark_runner.py': [
         'UNKNOWN',
     ],
@@ -504,9 +518,7 @@ def main(options, args):
     print "Please respect OWNERS of checklicenses.py. Changes violating"
     print "this requirement may be reverted."
 
-    # TODO(phajdan.jr): Switch back to exit(1) when it lands on buildbot.
-    # 88 is buildbot "warning" code, it doesn't turn the step red but orange.
-    sys.exit(88)
+    sys.exit(1)
 
 
 if '__main__' == __name__:
