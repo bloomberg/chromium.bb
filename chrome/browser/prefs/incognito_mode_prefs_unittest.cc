@@ -58,9 +58,17 @@ typedef IncognitoModePrefsTest IncognitoModePrefsDeathTest;
 TEST_F(IncognitoModePrefsDeathTest, GetAvailabilityBadValue) {
   prefs_.SetUserPref(prefs::kIncognitoModeAvailability,
                      Value::CreateIntegerValue(-1));
+#if defined(NDEBUG) && defined(DCHECK_ALWAYS_ON)
+  EXPECT_DEATH({
+    IncognitoModePrefs::Availability availability =
+        IncognitoModePrefs::GetAvailability(&prefs_);
+    EXPECT_EQ(IncognitoModePrefs::ENABLED, availability);
+  }, "");
+#else
   EXPECT_DEBUG_DEATH({
     IncognitoModePrefs::Availability availability =
         IncognitoModePrefs::GetAvailability(&prefs_);
     EXPECT_EQ(IncognitoModePrefs::ENABLED, availability);
   }, "");
+#endif
 }

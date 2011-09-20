@@ -77,6 +77,11 @@ TEST_F(BrowserMainTest, WarmConnectionFieldTrial_Invalid) {
     bw.reset(ccbc.CreateBrowserMainParts(*params));
   }
   ChromeBrowserMainParts* cbw = static_cast<ChromeBrowserMainParts*>(bw.get());
+#if defined(NDEBUG) && defined(DCHECK_ALWAYS_ON)
+  EXPECT_DEATH(cbw->WarmConnectionFieldTrial(),
+                     "Not a valid socket reuse policy group");
+#else
   EXPECT_DEBUG_DEATH(cbw->WarmConnectionFieldTrial(),
                      "Not a valid socket reuse policy group");
+#endif
 }

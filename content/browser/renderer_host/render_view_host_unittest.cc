@@ -143,7 +143,7 @@ TEST_F(RenderViewHostTest, StartDragging) {
 }
 
 // The test that follow trigger DCHECKS in debug build.
-#if defined(NDEBUG)
+#if defined(NDEBUG) && !defined(DCHECK_ALWAYS_ON)
 
 // Test that when we fail to de-serialize a message, RenderViewHost calls the
 // ReceivedBadMessage() handler.
@@ -182,4 +182,4 @@ TEST_F(RenderViewHostTest, BadMessageHandlerInputEventAck) {
   EXPECT_EQ(1, process()->bad_msg_count());
 }
 
-#endif  // NDEBUG
+#endif

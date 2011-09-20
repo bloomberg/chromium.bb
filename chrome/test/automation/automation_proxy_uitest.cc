@@ -97,7 +97,7 @@ TEST_F(AutomationProxyTest, GetBrowserWindowCount) {
   int window_count = 0;
   EXPECT_TRUE(automation()->GetBrowserWindowCount(&window_count));
   EXPECT_EQ(1, window_count);
-#ifdef NDEBUG
+#if defined(NDEBUG) && !defined(DCHECK_ALWAYS_ON)
   ASSERT_FALSE(automation()->GetBrowserWindowCount(NULL));
 #endif
 }

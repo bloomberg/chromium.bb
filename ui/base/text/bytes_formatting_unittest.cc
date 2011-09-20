@@ -20,7 +20,7 @@ TEST(BytesFormattingTest, GetByteDisplayUnits) {
     {10LL*1024*1024*1024, DATA_UNITS_GIBIBYTE},
     {10LL*1024*1024*1024*1024, DATA_UNITS_TEBIBYTE},
     {~(1LL<<63), DATA_UNITS_PEBIBYTE},
-#ifdef NDEBUG
+#if defined(NDEBUG) && !defined(DCHECK_ALWAYS_ON)
     {-1, DATA_UNITS_BYTE},
 #endif
   };
@@ -63,7 +63,7 @@ TEST(BytesFormattingTest, FormatBytes) {
      "1.9", "1.9 GB"},
     {10LL*1024*1024*1024, DATA_UNITS_GIBIBYTE, "10.0", "10.0 GB"},
     {100LL*1024*1024*1024, DATA_UNITS_GIBIBYTE, "100", "100 GB"},
-#ifdef NDEBUG
+#if defined(NDEBUG) && !defined(DCHECK_ALWAYS_ON)
     {-1, DATA_UNITS_BYTE, "", ""},
 #endif
   };

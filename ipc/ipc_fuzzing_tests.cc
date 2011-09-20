@@ -290,7 +290,7 @@ TEST_F(IPCFuzzingTest, SanityTest) {
 // In debug this triggers an assertion and in release it is ignored(!!). Right
 // after we generate another valid IPC to make sure framing is working
 // properly.
-#ifdef NDEBUG
+#if defined(NDEBUG) && !defined(DCHECK_ALWAYS_ON)
 TEST_F(IPCFuzzingTest, MsgBadPayloadShort) {
   FuzzerClientListener listener;
   IPC::Channel chan(kFuzzerChannel, IPC::Channel::MODE_SERVER,
@@ -314,7 +314,7 @@ TEST_F(IPCFuzzingTest, MsgBadPayloadShort) {
   EXPECT_TRUE(base::WaitForSingleProcess(server_process, 5000));
   base::CloseProcessHandle(server_process);
 }
-#endif  // NDEBUG
+#endif
 
 // This test uses a payload that has too many arguments, but so the payload
 // size is big enough so the unpacking routine does not generate an error as
@@ -392,7 +392,7 @@ TEST_F(IPCFuzzingTest, MsgMapExMacro) {
   EXPECT_TRUE(server.OnMessageReceived(*msg));
   delete msg;
 
-#ifdef NDEBUG
+#if defined(NDEBUG) && !defined(DCHECK_ALWAYS_ON)
   // Test a bad message.
   msg = new IPC::Message(MSG_ROUTING_CONTROL, MsgClassSI::ID,
                          IPC::Message::PRIORITY_NORMAL);

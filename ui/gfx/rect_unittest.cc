@@ -26,9 +26,9 @@ TEST(RectTest, Contains) {
     {0, 0, 10, 10, 10, 5, false},
     {0, 0, 10, 10, -1, -1, false},
     {0, 0, 10, 10, 50, 50, false},
-  #ifdef NDEBUG
+  #if defined(NDEBUG) && !defined(DCHECK_ALWAYS_ON)
     {0, 0, -10, -10, 0, 0, false},
-  #endif  // NDEBUG
+  #endif
   };
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(contains_cases); ++i) {
     const ContainsCase& value = contains_cases[i];
