@@ -1784,13 +1784,6 @@ IPC_SYNC_MESSAGE_CONTROL1_3(ViewHostMsg_LoadFont,
                            uint32 /* font id */)
 #endif
 
-#if defined(OS_WIN)
-// Request that the given font be loaded by the browser so it's cached by the
-// OS. Please see ChildProcessHost::PreCacheFont for details.
-IPC_SYNC_MESSAGE_CONTROL1_0(ViewHostMsg_PreCacheFont,
-                            LOGFONT /* font data */)
-#endif  // defined(OS_WIN)
-
 // Returns WebScreenInfo corresponding to the view.
 // TODO(shess): Provide a mapping from reply_msg->routing_id() to
 // HWND so that we can eliminate the NativeViewId parameter.

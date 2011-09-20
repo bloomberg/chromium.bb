@@ -47,6 +47,7 @@
 #include "webkit/gpu/webgraphicscontext3d_in_process_impl.h"
 
 #if defined(OS_WIN)
+#include "content/common/child_process_messages.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/win/WebSandboxSupport.h"
 #endif
 
@@ -444,7 +445,8 @@ bool RendererWebKitPlatformSupportImpl::SandboxSupport::ensureFontLoaded(
     HFONT font) {
   LOGFONT logfont;
   GetObject(font, sizeof(LOGFONT), &logfont);
-  return RenderThread::current()->Send(new ViewHostMsg_PreCacheFont(logfont));
+  return RenderThread::current()->Send(
+      new ChildProcessHostMsg_PreCacheFont(logfont));
 }
 
 #elif defined(OS_MACOSX)

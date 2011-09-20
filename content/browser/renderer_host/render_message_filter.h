@@ -78,6 +78,9 @@ class RenderMessageFilter : public BrowserMessageFilter {
 
   // IPC::ChannelProxy::MessageFilter methods:
   virtual void OnChannelClosing() OVERRIDE;
+#if defined (OS_WIN)
+  virtual void OnChannelError() OVERRIDE;
+#endif
 
   // BrowserMessageFilter methods:
   virtual void OverrideThreadForMessage(const IPC::Message& message,
@@ -148,6 +151,9 @@ class RenderMessageFilter : public BrowserMessageFilter {
   // Cache fonts for the renderer. See RenderMessageFilter::OnPreCacheFont
   // implementation for more details.
   void OnPreCacheFont(const LOGFONT& font);
+
+  // Release fonts cached for renderer.
+  void OnReleaseCachedFonts();
 #endif
 
   void OnGetPlugins(bool refresh,

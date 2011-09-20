@@ -59,3 +59,13 @@ IPC_MESSAGE_CONTROL1(ChildProcessHostMsg_TraceDataCollected,
 // Reply to ChildProcessMsg_GetTraceBufferPercentFull.
 IPC_MESSAGE_CONTROL1(ChildProcessHostMsg_TraceBufferPercentFullReply,
                      float /*trace buffer percent full*/)
+
+#if defined(OS_WIN)
+// Request that the given font be loaded by the host so it's cached by the
+// OS. Please see ChildProcessHost::PreCacheFont for details.
+IPC_SYNC_MESSAGE_CONTROL1_0(ChildProcessHostMsg_PreCacheFont,
+                            LOGFONT /* font data */)
+
+// Release the cached font
+IPC_MESSAGE_CONTROL0(ChildProcessHostMsg_ReleaseCachedFonts)
+#endif  // defined(OS_WIN)

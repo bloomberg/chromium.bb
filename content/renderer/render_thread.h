@@ -227,6 +227,9 @@ class CONTENT_EXPORT RenderThread : public RenderThreadBase,
   // Request that the given font be loaded by the browser so it's cached by the
   // OS. Please see ChildProcessHost::PreCacheFont for details.
   static bool PreCacheFont(const LOGFONT& log_font);
+
+  // Release cached font.
+  static bool ReleaseCachedFonts();
 #endif  // OS_WIN
 
  private:

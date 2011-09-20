@@ -64,6 +64,7 @@
 #endif
 #if defined(OS_WIN)
 #include "content/common/child_process_host.h"
+#include "content/common/child_process_messages.h"
 #endif
 
 using net::CookieStore;
@@ -285,6 +286,12 @@ void RenderMessageFilter::OnChannelClosing() {
   plugin_host_clients_.clear();
 }
 
+#if defined (OS_WIN)
+void RenderMessageFilter::OnChannelError() {
+  ChildProcessHost::ReleaseCachedFonts(render_process_id_);
+}
+#endif
+
 void RenderMessageFilter::OverrideThreadForMessage(const IPC::Message& message,
                                                    BrowserThread::ID* thread) {
   switch (message.type()) {
@@ -313,7 +320,9 @@ bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message,
     IPC_MESSAGE_HANDLER(ViewHostMsg_GetRootWindowRect, OnGetRootWindowRect)
 
     // This hack is Windows-specific.
-    IPC_MESSAGE_HANDLER(ViewHostMsg_PreCacheFont, OnPreCacheFont)
+    IPC_MESSAGE_HANDLER(ChildProcessHostMsg_PreCacheFont, OnPreCacheFont)
+    IPC_MESSAGE_HANDLER(ChildProcessHostMsg_ReleaseCachedFonts,
+                        OnReleaseCachedFonts)
 #endif
 
     IPC_MESSAGE_HANDLER(ViewHostMsg_GenerateRoutingID, OnGenerateRoutingID)
@@ -494,7 +503,11 @@ void RenderMessageFilter::OnLoadFont(const FontDescriptor& font,
 
 #if defined(OS_WIN)  // This hack is Windows-specific.
 void RenderMessageFilter::OnPreCacheFont(const LOGFONT& font) {
-  ChildProcessHost::PreCacheFont(font);
+  ChildProcessHost::PreCacheFont(font, render_process_id_);
+}
+
+void RenderMessageFilter::OnReleaseCachedFonts() {
+  ChildProcessHost::ReleaseCachedFonts(render_process_id_);
 }
 #endif  // OS_WIN
 

@@ -27,6 +27,7 @@
 #include "base/path_service.h"
 #include "base/win/iat_patch_function.h"
 #include "base/win/scoped_handle.h"
+#include "content/common/child_process_messages.h"
 #include "content/common/content_switches.h"
 #include "content/common/sandbox_init_wrapper.h"
 #include "printing/emf_win.h"
@@ -223,8 +224,11 @@ DWORD WINAPI UtilityProcess_GetFontDataPatch(
     if (GetObject(font, sizeof(LOGFONT), &logfont)) {
       std::vector<char> font_data;
       if (UtilityThread::current()->Send(
-              new ChromeUtilityHostMsg_PreCacheFont(logfont)))
+              new ChildProcessHostMsg_PreCacheFont(logfont))) {
         rv = GetFontData(hdc, table, offset, buffer, length);
+        UtilityThread::current()->Send(
+            new ChildProcessHostMsg_ReleaseCachedFonts());
+      }
     }
   }
   return rv;

@@ -165,6 +165,7 @@ DWORD WINAPI GetFontDataPatch(HDC hdc,
       std::vector<char> font_data;
       if (RenderThread::PreCacheFont(logfont))
         rv = GetFontData(hdc, table, offset, buffer, length);
+        RenderThread::ReleaseCachedFonts();
     }
   }
   return rv;

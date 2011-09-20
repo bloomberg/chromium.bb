@@ -20,6 +20,7 @@
 #if defined(OS_WIN)
 #include "base/memory/scoped_ptr.h"
 #include "base/win/scoped_handle.h"
+#include "content/common/child_process_messages.h"
 #include "printing/emf_win.h"
 #endif
 
@@ -29,6 +30,7 @@ ServiceUtilityProcessHost::ServiceUtilityProcessHost(
           client_(client),
           client_message_loop_proxy_(client_message_loop_proxy),
           waiting_for_reply_(false) {
+  process_id_ = ChildProcessInfo::GenerateChildProcessUniqueId();
 }
 
 ServiceUtilityProcessHost::~ServiceUtilityProcessHost() {
@@ -144,7 +146,9 @@ bool ServiceUtilityProcessHost::OnMessageReceived(const IPC::Message& message) {
   bool msg_is_ok = false;
   IPC_BEGIN_MESSAGE_MAP_EX(ServiceUtilityProcessHost, message, msg_is_ok)
 #if defined(OS_WIN)  // This hack is Windows-specific.
-    IPC_MESSAGE_HANDLER(ChromeUtilityHostMsg_PreCacheFont, OnPreCacheFont)
+    IPC_MESSAGE_HANDLER(ChildProcessHostMsg_PreCacheFont, OnPreCacheFont)
+    IPC_MESSAGE_HANDLER(ChildProcessHostMsg_ReleaseCachedFonts,
+                        OnReleaseCachedFonts)
 #endif
     IPC_MESSAGE_HANDLER(
         ChromeUtilityHostMsg_RenderPDFPagesToMetafile_Succeeded,
@@ -166,7 +170,11 @@ bool ServiceUtilityProcessHost::MessageForClient(const IPC::Message& message) {
 
 #if defined(OS_WIN)  // This hack is Windows-specific.
 void ServiceUtilityProcessHost::OnPreCacheFont(const LOGFONT& font) {
-  PreCacheFont(font);
+  PreCacheFont(font, process_id_);
+}
+
+void ServiceUtilityProcessHost::OnReleaseCachedFonts() {
+  ReleaseCachedFonts(process_id_);
 }
 #endif  // OS_WIN
 

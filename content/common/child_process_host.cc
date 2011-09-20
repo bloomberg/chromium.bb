@@ -66,6 +66,14 @@ FilePath TransformPathForFeature(const FilePath& path,
 }  // namespace
 #endif  // OS_MACOSX
 
+#if defined (OS_WIN)
+// Types used in PreCacheFont
+namespace {
+typedef std::vector<string16> FontNameVector;
+typedef std::map<int, FontNameVector> PidToFontNames;
+}
+#endif  // OS_WIN
+
 ChildProcessHost::ChildProcessHost()
     : ALLOW_THIS_IN_INITIALIZER_LIST(listener_(this)),
       opening_channel_(false) {
@@ -131,27 +139,39 @@ FilePath ChildProcessHost::GetChildPath(int flags) {
 }
 
 #if defined(OS_WIN)
+ChildProcessHost::FontCache::CacheElement::CacheElement()
+    : font_(NULL), dc_(NULL), ref_count_(0) {
+}
+
+ChildProcessHost::FontCache::CacheElement::~CacheElement() {
+  if (font_) {
+    DeleteObject(font_);
+  }
+  if (dc_) {
+    DeleteDC(dc_);
+  }
+}
+
+ChildProcessHost::FontCache::FontCache() {
+}
+
+ChildProcessHost::FontCache::~FontCache() {
+}
+
 // static
-void ChildProcessHost::PreCacheFont(LOGFONT font) {
-  // If a child process is running in a sandbox, GetTextMetrics()
-  // can sometimes fail. If a font has not been loaded
-  // previously, GetTextMetrics() will try to load the font
-  // from the font file. However, the sandboxed process does
-  // not have permissions to access any font files and
-  // the call fails. So we make the browser pre-load the
-  // font for us by using a dummy call to GetTextMetrics of
-  // the same font.
+ChildProcessHost::FontCache* ChildProcessHost::FontCache::GetInstance() {
+  return Singleton<ChildProcessHost::FontCache>::get();
+}
 
-  // Maintain a circular queue for the fonts and DCs to be cached.
-  // font_index maintains next available location in the queue.
-  static const int kFontCacheSize = 32;
-  static HFONT fonts[kFontCacheSize] = {0};
-  static HDC hdcs[kFontCacheSize] = {0};
-  static size_t font_index = 0;
+void ChildProcessHost::FontCache::PreCacheFont(LOGFONT font, int process_id) {
+  typedef std::map<string16, ChildProcessHost::FontCache::CacheElement>
+          FontNameToElement;
 
-  UMA_HISTOGRAM_COUNTS_100("Memory.CachedFontAndDC",
-      fonts[kFontCacheSize-1] ? kFontCacheSize : static_cast<int>(font_index));
+  base::AutoLock lock(mutex_);
 
+  // Fetch the font into memory.
+  // No matter the font is cached or not, we load it to avoid GDI swapping out
+  // that font file.
   HDC hdc = GetDC(NULL);
   HFONT font_handle = CreateFontIndirect(&font);
   DCHECK(NULL != font_handle);
@@ -163,15 +183,84 @@ void ChildProcessHost::PreCacheFont(LOGFONT font) {
   BOOL ret = GetTextMetrics(hdc, &tm);
   DCHECK(ret);
 
-  if (fonts[font_index] || hdcs[font_index]) {
-    // We already have too many fonts, we will delete one and take it's place.
-    DeleteObject(fonts[font_index]);
-    ReleaseDC(NULL, hdcs[font_index]);
+  string16 font_name = font.lfFaceName;
+  int ref_count_inc = 1;
+  FontNameVector::iterator it =
+      std::find(process_id_font_map_[process_id].begin(),
+                process_id_font_map_[process_id].end(),
+                font_name);
+  if (it == process_id_font_map_[process_id].end()) {
+    // Requested font is new to cache.
+    process_id_font_map_[process_id].push_back(font_name);
+  } else {
+    ref_count_inc = 0;
   }
 
-  fonts[font_index] = font_handle;
-  hdcs[font_index] = hdc;
-  font_index = (font_index + 1) % kFontCacheSize;
+  if (cache_[font_name].ref_count_ == 0) {  // Requested font is new to cache.
+    cache_[font_name].ref_count_ = 1;
+  } else {  // Requested font is already in cache, release old handles.
+    DeleteObject(cache_[font_name].font_);
+    DeleteDC(cache_[font_name].dc_);
+  }
+  cache_[font_name].font_ = font_handle;
+  cache_[font_name].dc_ = hdc;
+  cache_[font_name].ref_count_ += ref_count_inc;
+}
+
+void ChildProcessHost::FontCache::ReleaseCachedFonts(int process_id) {
+  typedef std::map<string16, ChildProcessHost::FontCache::CacheElement>
+          FontNameToElement;
+
+  base::AutoLock lock(mutex_);
+
+  PidToFontNames::iterator it;
+  it = process_id_font_map_.find(process_id);
+  if (it == process_id_font_map_.end()) {
+    return;
+  }
+
+  for (FontNameVector::iterator i = it->second.begin(), e = it->second.end();
+                                i != e; ++i) {
+    FontNameToElement::iterator element;
+    element = cache_.find(*i);
+    if (element != cache_.end()) {
+      --((*element).second.ref_count_);
+    }
+  }
+
+  process_id_font_map_.erase(it);
+  for (FontNameToElement::iterator i = cache_.begin(); i != cache_.end(); ) {
+    if (i->second.ref_count_ == 0) {
+      cache_.erase(i++);
+    } else {
+      ++i;
+    }
+  }
+}
+
+// static
+void ChildProcessHost::PreCacheFont(LOGFONT font, int pid) {
+  // If a child process is running in a sandbox, GetTextMetrics()
+  // can sometimes fail. If a font has not been loaded
+  // previously, GetTextMetrics() will try to load the font
+  // from the font file. However, the sandboxed process does
+  // not have permissions to access any font files and
+  // the call fails. So we make the browser pre-load the
+  // font for us by using a dummy call to GetTextMetrics of
+  // the same font.
+  // This means the browser process just loads the font into memory so that
+  // when GDI attempt to query that font info in child process, it does not
+  // need to load that file, hence no permission issues there.  Therefore,
+  // when a font is asked to be cached, we always recreates the font object
+  // to avoid the case that an in-cache font is swapped out by GDI.
+  ChildProcessHost::FontCache::GetInstance()->PreCacheFont(font, pid);
+}
+
+// static
+void ChildProcessHost::ReleaseCachedFonts(int pid) {
+  // Release cached fonts that requested from a pid by decrementing the ref
+  // count.  When ref count is zero, the handles are released.
+  ChildProcessHost::FontCache::GetInstance()->ReleaseCachedFonts(pid);
 }
 #endif  // OS_WIN
 

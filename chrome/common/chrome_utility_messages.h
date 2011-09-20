@@ -143,13 +143,6 @@ IPC_MESSAGE_CONTROL1(ChromeUtilityHostMsg_RenderPDFPagesToMetafile_Succeeded,
 // Reply when an error occured rendering the PDF.
 IPC_MESSAGE_CONTROL0(ChromeUtilityHostMsg_RenderPDFPagesToMetafile_Failed)
 
-#if defined(OS_WIN)
-// Request that the given font be loaded by the host so it's cached by the
-// OS. Please see ChildProcessHost::PreCacheFont for details.
-IPC_SYNC_MESSAGE_CONTROL1_0(ChromeUtilityHostMsg_PreCacheFont,
-                            LOGFONT /* font data */)
-#endif  // defined(OS_WIN)
-
 // Reply when the utility process successfully parsed a JSON string.
 //
 // WARNING: The result can be of any Value subclass type, but we can't easily

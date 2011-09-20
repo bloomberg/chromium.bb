@@ -71,6 +71,7 @@
 
 // TODO(port)
 #if defined(OS_WIN)
+#include "content/common/child_process_messages.h"
 #include "content/plugin/plugin_channel.h"
 #else
 #include "base/memory/scoped_handle.h"
@@ -519,7 +520,14 @@ void RenderThread::RecordUserMetrics(const std::string& action) {
 #if defined(OS_WIN)
 // static
 bool RenderThread::PreCacheFont(const LOGFONT& log_font) {
-  return RenderThread::current()->Send(new ViewHostMsg_PreCacheFont(log_font));
+  return RenderThread::current()->Send(
+      new ChildProcessHostMsg_PreCacheFont(log_font));
+}
+
+// static
+bool RenderThread::ReleaseCachedFonts() {
+  return RenderThread::current()->Send(
+      new ChildProcessHostMsg_ReleaseCachedFonts());
 }
 #endif  // OS_WIN
 
