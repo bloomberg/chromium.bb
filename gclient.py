@@ -146,24 +146,30 @@ class Dependency(GClientKeywords, gclient_utils.WorkItem):
     # multiple threads at the same time. Sad.
     GClientKeywords.__init__(self)
     gclient_utils.WorkItem.__init__(self, name)
-    self.parent = parent
+
+    # These are not mutable:
+    self._parent = parent
+    self._safesync_url = safesync_url
+    self._deps_file = deps_file
+    self._should_process = should_process
+
+    # This is in both .gclient and DEPS files:
     self.url = url
-    self.parsed_url = None
-    # These 2 are only set in .gclient and not in DEPS files.
-    self.safesync_url = safesync_url
+
+    # These are only set in .gclient and not in DEPS files.
     self.custom_vars = custom_vars or {}
     self.custom_deps = custom_deps or {}
     self.deps_hooks = []
+
+    # Calculates properties:
+    self.parsed_url = None
     self.dependencies = []
-    self.deps_file = deps_file
     # A cache of the files affected by the current operation, necessary for
     # hooks.
     self._file_list = []
     # If it is not set to True, the dependency wasn't processed for its child
     # dependency, i.e. its DEPS wasn't read.
     self.deps_parsed = False
-    # This dependency should be processed, i.e. checked out
-    self.should_process = should_process
     # This dependency has been processed, i.e. checked out
     self.processed = False
     # This dependency had its hook run
@@ -258,7 +264,9 @@ class Dependency(GClientKeywords, gclient_utils.WorkItem):
           overriden_url))
       return overriden_url
     elif isinstance(url, self.FromImpl):
-      ref = [dep for dep in self.tree(True) if url.module_name == dep.name]
+      ref = [
+          dep for dep in self.root.subtree(True) if url.module_name == dep.name
+      ]
       if not ref:
         raise gclient_utils.Error('Failed to find one reference to %s. %s' % (
             url.module_name, ref))
@@ -379,9 +387,9 @@ class Dependency(GClientKeywords, gclient_utils.WorkItem):
         raise gclient_utils.Error(
             'The same name "%s" appears multiple times in the deps section' %
                 name)
-      should_process = self.recursion_limit() > 0 and self.should_process
+      should_process = self.recursion_limit and self.should_process
       if should_process:
-        tree = dict((d.name, d) for d in self.tree(False))
+        tree = dict((d.name, d) for d in self.root.subtree(False))
         if name in tree:
           if url == tree[name].url:
             logging.info('Won\'t process duplicate dependency %s' % tree[name])
@@ -466,8 +474,22 @@ class Dependency(GClientKeywords, gclient_utils.WorkItem):
         maybeConvertToDateRevision(options)
         self._file_list = [os.path.join(self.name, f.strip())
                            for f in self._file_list]
+
+      # TODO(phajdan.jr): We should know exactly when the paths are absolute.
+      # Convert all absolute paths to relative.
+      for i in range(len(self._file_list)):
+        # It depends on the command being executed (like runhooks vs sync).
+        if not os.path.isabs(self._file_list[i]):
+          continue
+        prefix = os.path.commonprefix(
+            [self.root.root_dir.lower(), self._file_list[i].lower()])
+        self._file_list[i] = self._file_list[i][len(prefix):]
+        # Strip any leading path separators.
+        while (self._file_list[i].startswith('\\') or
+                self._file_list[i].startswith('/')):
+          self._file_list[i] = self._file_list[i][1:]
     self.processed = True
-    if self.recursion_limit() > 0:
+    if self.recursion_limit:
       # Then we can parse the DEPS file.
       self.ParseDepsFile()
 
@@ -479,7 +501,7 @@ class Dependency(GClientKeywords, gclient_utils.WorkItem):
     """Evaluates all hooks, running actions as needed. run()
     must have been called before to load the DEPS."""
     assert self.hooks_ran == False
-    if not self.should_process or self.recursion_limit() <= 0:
+    if not self.should_process or not self.recursion_limit:
       # Don't run the hook when it is above recursion_limit.
       return
     # If "--force" was specified, run all hooks regardless of what files have
@@ -495,28 +517,11 @@ class Dependency(GClientKeywords, gclient_utils.WorkItem):
         for hook_dict in self.deps_hooks:
           self._RunHookAction(hook_dict, [])
       else:
-        # TODO(phajdan.jr): We should know exactly when the paths are absolute.
-        # Convert all absolute paths to relative.
-        file_list = self.file_list()
-        for i in range(len(file_list)):
-          # It depends on the command being executed (like runhooks vs sync).
-          if not os.path.isabs(file_list[i]):
-            continue
-
-          prefix = os.path.commonprefix([self.root.root_dir.lower(),
-                                         file_list[i].lower()])
-          file_list[i] = file_list[i][len(prefix):]
-
-          # Strip any leading path separators.
-          while (file_list[i].startswith('\\') or
-                 file_list[i].startswith('/')):
-            file_list[i] = file_list[i][1:]
-
         # Run hooks on the basis of whether the files from the gclient operation
         # match each hook's pattern.
         for hook_dict in self.deps_hooks:
           pattern = re.compile(hook_dict['pattern'])
-          matching_file_list = [f for f in file_list if pattern.search(f)]
+          matching_file_list = [f for f in self.file_list if pattern.search(f)]
           if matching_file_list:
             self._RunHookAction(hook_dict, matching_file_list)
     for s in self.dependencies:
@@ -551,12 +556,6 @@ class Dependency(GClientKeywords, gclient_utils.WorkItem):
       print >> sys.stderr, 'Error: %s' % str(e)
       sys.exit(2)
 
-  def recursion_limit(self):
-    return self.parent.recursion_limit() - 1
-
-  def tree(self, include_all):
-    return self.parent.tree(include_all)
-
   def subtree(self, include_all):
     """Breadth first"""
     result = []
@@ -574,11 +573,34 @@ class Dependency(GClientKeywords, gclient_utils.WorkItem):
     # None is a valid return value to disable a dependency.
     return self.custom_deps.get(name, url)
 
+  @property
+  def recursion_limit(self):
+    """Returns > 0 if this dependency is not too recursed to be processed."""
+    return max(self.parent.recursion_limit - 1, 0)
+
+  @property
+  def deps_file(self):
+    return self._deps_file
+
+  @property
+  def safesync_url(self):
+    return self._safesync_url
+
+  @property
+  def should_process(self):
+    """True if this dependency should be processed, i.e. checked out."""
+    return self._should_process
+
+  @property
+  def parent(self):
+    return self._parent
+
+  @property
   def file_list(self):
     result = self._file_list[:]
     for d in self.dependencies:
-      result.extend(d.file_list())
-    return result
+      result.extend(d.file_list)
+    return tuple(result)
 
   def __str__(self):
     out = []
@@ -690,7 +712,7 @@ solutions = [
       gclient_utils.SyntaxErrorToError('.gclient', e)
     for s in config_dict.get('solutions', []):
       try:
-        tree = dict((d.name, d) for d in self.tree(False))
+        tree = dict((d.name, d) for d in self.root.subtree(False))
         if s['name'] in tree:
           raise gclient_utils.Error(
               'Dependency %s specified more than once in .gclient' % s['name'])
@@ -742,7 +764,7 @@ solutions = [
     # Sometimes pprint.pformat will use {', sometimes it'll use { ' ... It
     # makes testing a bit too fun.
     result = 'entries = {\n'
-    for entry in self.tree(False):
+    for entry in self.root.subtree(False):
       # Skip over File() dependencies as we can't version them.
       if not isinstance(entry.parsed_url, self.FileImpl):
         result += '  %s: %s,\n' % (pprint.pformat(entry.name),
@@ -831,7 +853,7 @@ solutions = [
       # Notify the user if there is an orphaned entry in their working copy.
       # Only delete the directory if there are no changes in it, and
       # delete_unversioned_trees is set to true.
-      entries = [i.name for i in self.tree(False) if i.url]
+      entries = [i.name for i in self.root.subtree(False) if i.url]
       for entry, prev_url in self._ReadEntries().iteritems():
         if not prev_url:
           # entry must have been overridden via .gclient custom_deps
@@ -913,7 +935,7 @@ solutions = [
       print(self.DEFAULT_SNAPSHOT_FILE_TEXT % {'solution_list': new_gclient})
     else:
       entries = {}
-      for d in self.tree(False):
+      for d in self.root.subtree(False):
         if self._options.actual:
           entries[d.name] = GetURLAndRev(d)
         else:
@@ -937,13 +959,10 @@ solutions = [
     """What deps_os entries that are to be parsed."""
     return self._enforced_os
 
+  @property
   def recursion_limit(self):
     """How recursive can each dependencies in DEPS file can load DEPS file."""
     return self._recursion_limit
-
-  def tree(self, include_all):
-    """Returns a flat list of all the dependencies."""
-    return self.subtree(include_all)
 
 
 #### gclient commands.
