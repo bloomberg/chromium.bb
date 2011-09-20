@@ -98,7 +98,6 @@ hr.bottom {
 }
 
 #header span,
-#logging span,
 #user-image-screen-curtain p,
 .label {
   cursor: default;
@@ -240,6 +239,16 @@ html[dir=rtl]  .step.left {
   clear: both;
   font-size: small;
   margin-top: 20px;
+  width: 500px;
+}
+
+#logging div {
+  display: table-cell;
+  vertical-align: middle;
+}
+
+#usage-stats {
+  -webkit-margin-end: 10px;
 }
 
 #user-image-grid {
