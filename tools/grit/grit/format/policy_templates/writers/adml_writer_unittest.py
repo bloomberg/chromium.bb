@@ -184,9 +184,7 @@ class AdmlWriterTest(xml_writer_base_unittest.XmlWriterBaseTest):
     expected_output = (
         '<presentation id="IntPolicyStub">\n'
         '  <decimalTextBox refId="IntPolicyStub">\n'
-        '    <label>\n'
-        '      Int policy label\n'
-        '    </label>\n'
+        '    Int policy label:\n'
         '  </decimalTextBox>\n'
         '</presentation>')
     self.AssertXMLEquals(output, expected_output)
