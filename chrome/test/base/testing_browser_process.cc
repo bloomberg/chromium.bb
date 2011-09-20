@@ -135,6 +135,10 @@ chromeos::ProxyConfigServiceImpl*
 TestingBrowserProcess::chromeos_proxy_config_service_impl() {
   return NULL;
 }
+
+browser::OomPriorityManager* TestingBrowserProcess::oom_priority_manager() {
+  return NULL;
+}
 #endif  // defined(OS_CHROMEOS)
 
 ui::Clipboard* TestingBrowserProcess::clipboard() {

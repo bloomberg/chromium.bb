@@ -37,7 +37,7 @@ class PluginDataRemover;
 class RemoteDebuggingServer;
 class TabCloseableStateWatcher;
 
-namespace policy{
+namespace policy {
 class BrowserPolicyConnector;
 };
 
@@ -72,6 +72,7 @@ class BrowserProcessImpl : public BrowserProcess,
 #if defined(OS_CHROMEOS)
   virtual chromeos::ProxyConfigServiceImpl*
       chromeos_proxy_config_service_impl() OVERRIDE;
+  virtual browser::OomPriorityManager* oom_priority_manager() OVERRIDE;
 #endif  // defined(OS_CHROMEOS)
   virtual ExtensionEventRouterForwarder*
         extension_event_router_forwarder() OVERRIDE;
@@ -311,6 +312,7 @@ class BrowserProcessImpl : public BrowserProcess,
 #if defined(OS_CHROMEOS)
   scoped_refptr<chromeos::ProxyConfigServiceImpl>
       chromeos_proxy_config_service_impl_;
+  scoped_ptr<browser::OomPriorityManager> oom_priority_manager_;
 #endif
 
   // Per-process listener for online state changes.

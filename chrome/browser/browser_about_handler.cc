@@ -686,7 +686,7 @@ std::string AboutDiscards() {
       "interesting tab may be discarded if we run out of physical memory.</p>");
 
   std::vector<string16> titles =
-      browser::OomPriorityManager::GetInstance()->GetTabTitles();
+      g_browser_process->oom_priority_manager()->GetTabTitles();
   if (!titles.empty()) {
     output.append("<ol>");
     std::vector<string16>::iterator it = titles.begin();

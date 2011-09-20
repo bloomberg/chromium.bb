@@ -53,11 +53,6 @@ OomPriorityManager::RendererStats::RendererStats()
 OomPriorityManager::RendererStats::~RendererStats() {
 }
 
-// static
-OomPriorityManager* OomPriorityManager::GetInstance() {
-  return Singleton<OomPriorityManager>::get();
-}
-
 OomPriorityManager::OomPriorityManager() {
   renderer_stats_.reserve(32);  // 99% of users have < 30 tabs open
   registrar_.Add(this,

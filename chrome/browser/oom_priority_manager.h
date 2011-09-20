@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "base/hash_tables.h"
-#include "base/memory/singleton.h"
 #include "base/process.h"
 #include "base/string16.h"
 #include "base/synchronization/lock.h"
@@ -34,7 +33,8 @@ namespace browser {
 // them, as no two tabs will have exactly the same idle time.
 class OomPriorityManager : public NotificationObserver {
  public:
-  static OomPriorityManager* GetInstance();
+  OomPriorityManager();
+  virtual ~OomPriorityManager();
 
   void Start();
   void Stop();
@@ -44,10 +44,6 @@ class OomPriorityManager : public NotificationObserver {
   std::vector<string16> GetTabTitles();
 
  private:
-  OomPriorityManager();
-  virtual ~OomPriorityManager();
-  friend struct DefaultSingletonTraits<OomPriorityManager>;
-
   struct RendererStats {
     RendererStats();
     ~RendererStats();

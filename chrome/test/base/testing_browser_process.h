@@ -79,6 +79,7 @@ class TestingBrowserProcess : public BrowserProcess {
 #if defined(OS_CHROMEOS)
   virtual chromeos::ProxyConfigServiceImpl*
       chromeos_proxy_config_service_impl() OVERRIDE;
+  virtual browser::OomPriorityManager* oom_priority_manager() OVERRIDE;
 #endif  // defined(OS_CHROMEOS)
 
   virtual ui::Clipboard* clipboard() OVERRIDE;
