@@ -73,7 +73,7 @@ class CertificateManagerModel {
   // |not_imported| should be checked for any certificates that were not
   // imported.
   bool ImportCACerts(const net::CertificateList& certificates,
-                     unsigned int trust_bits,
+                     net::CertDatabase::TrustBits trust_bits,
                      net::CertDatabase::ImportCertFailureList* not_imported);
 
   // Import server certificate.  The first cert should be the server cert.  Any
@@ -94,7 +94,7 @@ class CertificateManagerModel {
   // Returns true on success or false on failure.
   bool SetCertTrust(const net::X509Certificate* cert,
                     net::CertType type,
-                    unsigned int trust_bits);
+                    net::CertDatabase::TrustBits trust_bits);
 
   // Delete the cert.  Returns true on success.  |cert| is still valid when this
   // function returns.

@@ -464,13 +464,14 @@ void CertificateManagerHandler::GetCATrust(const ListValue* args) {
     return;
   }
 
-  int trust = certificate_manager_model_->cert_db().GetCertTrust(
-      cert, net::CA_CERT);
-  using base::FundamentalValue;
-  FundamentalValue ssl_value(bool(trust & net::CertDatabase::TRUSTED_SSL));
-  FundamentalValue email_value(bool(trust & net::CertDatabase::TRUSTED_EMAIL));
-  FundamentalValue obj_sign_value(
-      bool(trust & net::CertDatabase::TRUSTED_OBJ_SIGN));
+  net::CertDatabase::TrustBits trust_bits =
+      certificate_manager_model_->cert_db().GetCertTrust(cert, net::CA_CERT);
+  base::FundamentalValue ssl_value(
+      static_cast<bool>(trust_bits & net::CertDatabase::TRUSTED_SSL));
+  base::FundamentalValue email_value(
+      static_cast<bool>(trust_bits & net::CertDatabase::TRUSTED_EMAIL));
+  base::FundamentalValue obj_sign_value(
+      static_cast<bool>(trust_bits & net::CertDatabase::TRUSTED_OBJ_SIGN));
   web_ui_->CallJavascriptFunction(
       "CertificateEditCaTrustOverlay.populateTrust",
       ssl_value, email_value, obj_sign_value);
