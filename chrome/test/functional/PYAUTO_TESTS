@@ -268,6 +268,10 @@
       # ==================================================
       # Disabled tests that need to be investigated/fixed.
       # ==================================================
+      # crbug.com/97179
+      '-enterprise.EnterpriseTest.testAlwaysAuthorizePlugins',
+      '-enterprise.EnterpriseTest.testDisabledPlugins',
+      '-enterprise.EnterpriseTest.testEnabledPlugins',
       # crbug.com/91225
       '-find_in_page.FindMatchTests.testSearchInPDF',
       # crbug.com/91226
