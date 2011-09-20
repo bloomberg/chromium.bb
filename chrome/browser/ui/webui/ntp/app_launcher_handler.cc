@@ -261,6 +261,14 @@ void AppLauncherHandler::RegisterMessages() {
 void AppLauncherHandler::Observe(int type,
                                  const NotificationSource& source,
                                  const NotificationDetails& details) {
+  if (type == chrome::NOTIFICATION_APP_INSTALLED_TO_NTP &&
+          NewTabUI::NTP4Enabled()) {
+    highlight_app_id_ = *Details<const std::string>(details).ptr();
+    if (has_loaded_apps_)
+      SetAppToBeHighlighted();
+    return;
+  }
+
   if (ignore_changes_ || !has_loaded_apps_)
     return;
 
@@ -284,14 +292,7 @@ void AppLauncherHandler::Observe(int type,
       }
       break;
     }
-    case chrome::NOTIFICATION_APP_INSTALLED_TO_NTP: {
-      if (!NewTabUI::NTP4Enabled())
-        break;
 
-      highlight_app_id_ = *Details<const std::string>(details).ptr();
-      SetAppToBeHighlighted();
-      break;
-    }
     case chrome::NOTIFICATION_EXTENSION_LOADED: {
       const Extension* extension = Details<const Extension>(details).ptr();
       if (!extension->is_app())
