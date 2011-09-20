@@ -19,6 +19,15 @@ class OptionsUITest : public UITest {
   OptionsUITest() {
     dom_automation_enabled_ = true;
   }
+
+  void AssertIsOptionsPage(TabProxy* tab) {
+    std::wstring title;
+    ASSERT_TRUE(tab->GetTabTitle(&title));
+    string16 expected_title = l10n_util::GetStringUTF16(IDS_SETTINGS_TITLE);
+    // The only guarantee we can make about the title of a settings tab is that
+    // it should contain IDS_SETTINGS_TITLE somewhere.
+    ASSERT_FALSE(WideToUTF16Hack(title).find(expected_title) == string16::npos);
+  }
 };
 
 TEST_F(OptionsUITest, LoadOptionsByURL) {
@@ -28,25 +37,15 @@ TEST_F(OptionsUITest, LoadOptionsByURL) {
   scoped_refptr<TabProxy> tab = browser->GetActiveTab();
   ASSERT_TRUE(tab.get());
 
-  // Navigate to the settings tab and block until complete.
-  const GURL& url = GURL(chrome::kChromeUISettingsURL);
-  ASSERT_EQ(AUTOMATION_MSG_NAVIGATION_SUCCESS,
-      tab->NavigateToURLBlockUntilNavigationsComplete(url, 1)) << url.spec();
-
-  // Verify that the page title is correct.
-  // The only guarantee we can make about the title of a settings tab is that
-  // it should contain IDS_SETTINGS_TITLE somewhere.
-  std::wstring title;
-  EXPECT_TRUE(tab->GetTabTitle(&title));
-  string16 expected_title = l10n_util::GetStringUTF16(IDS_SETTINGS_TITLE);
-  EXPECT_NE(WideToUTF16Hack(title).find(expected_title), string16::npos);
+  NavigateToURL(GURL(chrome::kChromeUISettingsURL));
+  AssertIsOptionsPage(tab);
 
   // Check navbar's existence.
   bool navbar_exist = false;
-  EXPECT_TRUE(tab->ExecuteAndExtractBool(L"",
+  ASSERT_TRUE(tab->ExecuteAndExtractBool(L"",
       L"domAutomationController.send("
       L"!!document.getElementById('navbar'))", &navbar_exist));
-  EXPECT_EQ(true, navbar_exist);
+  ASSERT_EQ(true, navbar_exist);
 
   // Check section headers in navbar.
   // For ChromeOS, there should be 1 + 7:
@@ -60,10 +59,10 @@ TEST_F(OptionsUITest, LoadOptionsByURL) {
   const int kExpectedSections = 1 + 4;
 #endif
   int num_of_sections = 0;
-  EXPECT_TRUE(tab->ExecuteAndExtractInt(L"",
+  ASSERT_TRUE(tab->ExecuteAndExtractInt(L"",
       L"domAutomationController.send("
       L"document.getElementById('navbar').children.length)", &num_of_sections));
-  EXPECT_EQ(kExpectedSections, num_of_sections);
+  ASSERT_EQ(kExpectedSections, num_of_sections);
 }
 
 }  // namespace
