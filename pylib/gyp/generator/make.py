@@ -399,6 +399,23 @@ command_changed = $(or $(subst $(cmd_$(1)),,$(cmd_$(call replace_spaces,$@))),\\
 #   $| -- order-only dependencies
 prereq_changed = $(filter-out FORCE_DO_CMD,$(filter-out $|,$?))
 
+# Helper that executes all postbuilds, and deletes the output file when done
+# if any of the postbuilds failed.
+define do_postbuilds
+  @E=0;\\
+  for p in $(POSTBUILDS); do\\
+    eval $$p;\\
+    F=$$?;\\
+    if [ $$F -ne 0 ]; then\\
+      E=$$F;\\
+    fi;\\
+  done;\\
+  if [ $$E -ne 0 ]; then\\
+    rm -rf "$@";\\
+    exit $$E;\\
+  fi
+endef
+
 # do_cmd: run a command via the above cmd_foo names, if necessary.
 # Should always run for a given target to handle command-line changes.
 # Second argument, if non-zero, makes it do asm/C/C++ dependency munging.
@@ -419,7 +436,7 @@ $(if $(or $(command_changed),$(prereq_changed)),
   @$(call exact_echo,$(call escape_vars,cmd_$(call replace_spaces,$@) := $(cmd_$(1)))) > $(depfile)
   @$(if $(2),$(fixup_dep))
   $(if $(and $(3), $(POSTBUILDS)),
-    @for p in $(POSTBUILDS); do eval $$p; done
+    $(call do_postbuilds)
   )
 )
 endef
@@ -1929,6 +1946,10 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
         # absolutified. Else, it's in the PATH (e.g. install_name_tool, ln).
         if os.path.sep in shell_list[0]:
           shell_list[0] = self.Absolutify(shell_list[0])
+
+          # "script.sh" -> "./script.sh"
+          if not os.path.sep in shell_list[0]:
+            shell_list[0] = os.path.join('.', shell_list[0])
         postbuilds.append(gyp.common.EncodePOSIXShellList(shell_list))
 
     if postbuilds:
@@ -1960,7 +1981,7 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
 
       # Bundle postbuilds can depend on the whole bundle, so run them after
       # the bundle is packaged, not already after the bundle binary is done.
-      self.WriteLn('\t@for p in $(POSTBUILDS); do eval $$p; done')
+      self.WriteLn('\t@$(call do_postbuilds)')
       postbuilds = []  # Don't write postbuilds for target's output.
 
       # Needed by test/mac/gyptest-rebuild.py.
