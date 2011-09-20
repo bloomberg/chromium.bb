@@ -235,7 +235,9 @@ static const int kInitializationDelaySeconds = 30;
 static const int kMaxHistogramGatheringWaitDuration = 60000;  // 60 seconds.
 
 // The maximum number of events in a log uploaded to the UMA server.
-static const int kEventLimit = 2400;
+// TBD(jar): hack test to NOT send any events, to see if this helps reduce
+// the number of bloated logs.
+static const int kEventLimit = 0;
 
 // If an upload fails, and the transmission was over this byte count, then we
 // will discard the log, and not try to retransmit it.  We also don't persist
@@ -863,11 +865,9 @@ void MetricsService::StopRecording() {
   if (!current_log_)
     return;
 
-  current_log_->set_hardware_class(hardware_class_);  // Adds to ongoing logs.
-
   // TODO(jar): Integrate bounds on log recording more consistently, so that we
   // can stop recording logs that are too big much sooner.
-  if (current_log_->num_events() > kEventLimit) {
+  if (current_log_->num_events() >= kEventLimit) {
     UMA_HISTOGRAM_COUNTS("UMA.Discarded Log Events",
                          current_log_->num_events());
     current_log_->CloseLog();
@@ -875,6 +875,8 @@ void MetricsService::StopRecording() {
     current_log_ = NULL;
     StartRecording();  // Start trivial log to hold our histograms.
   }
+
+  current_log_->set_hardware_class(hardware_class_);  // Adds to ongoing logs.
 
   // Put incremental data (histogram deltas, and realtime stats deltas) at the
   // end of all log transmissions (initial log handles this separately).
