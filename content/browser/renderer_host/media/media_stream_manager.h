@@ -30,6 +30,7 @@
 
 namespace media_stream {
 
+class AudioInputDeviceManager;
 class MediaStreamDeviceSettings;
 class MediaStreamRequester;
 class VideoCaptureManager;
@@ -48,6 +49,9 @@ class MediaStreamManager
 
   // Used to access VideoCaptuerManager.
   VideoCaptureManager* video_capture_manager();
+
+  // Used to access AudioInputDeviceManager.
+  AudioInputDeviceManager* audio_input_device_manager();
 
   // GenerateStream opens new media devices according to |components|. The
   // request is identified using |label|, which is pointing to an already
@@ -113,7 +117,6 @@ class MediaStreamManager
   MediaStreamManager();
 
   VideoCaptureManager* video_capture_manager_;
-  // TODO(mflodman) Add AudioInputManager.
 
   // Keeps track of device types currently being enumerated to not enumerate
   // when not necessary.

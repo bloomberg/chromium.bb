@@ -12,12 +12,14 @@ namespace media_stream {
 
 class AudioInputDeviceManagerEventHandler {
  public:
-  // Used to start the device referenced by session id and index.
-  virtual void OnStartDevice(int session_id, int index) = 0;
+  // Called by AudioInputDeviceManager to create an audio stream using the
+  // device index when the device has been started.
+  virtual void OnDeviceStarted(int session_id, int index) = 0;
 
-  // Used to stop the device referenced by session id. This method is used
-  // only when users call Close() without calling Stop() on a started device.
-  virtual void OnStopDevice(int session_id) = 0;
+  // Called by AudioInputDeviceManager to stop the audio stream when a device
+  // has been stopped. This method is used only when users call Close() without
+  // calling Stop() on a started device.
+  virtual void OnDeviceStopped(int session_id) = 0;
 
   virtual ~AudioInputDeviceManagerEventHandler() {}
 };

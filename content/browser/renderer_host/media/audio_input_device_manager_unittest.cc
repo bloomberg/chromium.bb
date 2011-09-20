@@ -52,8 +52,8 @@ class MockAudioInputDeviceManagerEventHandler
   MockAudioInputDeviceManagerEventHandler() {}
   virtual ~MockAudioInputDeviceManagerEventHandler() {}
 
-  MOCK_METHOD2(OnStartDevice, void(int, int));
-  MOCK_METHOD1(OnStopDevice, void(int));
+  MOCK_METHOD2(OnDeviceStarted, void(int, int));
+  MOCK_METHOD1(OnDeviceStopped, void(int));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockAudioInputDeviceManagerEventHandler);
@@ -294,7 +294,7 @@ TEST_F(AudioInputDeviceManagerTest, StartAndStopDevice) {
                                                session_id[index]))
         .Times(1);
     EXPECT_CALL(*audio_input_event_handler,
-                OnStartDevice(session_id[index], index))
+                OnDeviceStarted(session_id[index], index))
         .Times(1);
     EXPECT_CALL(*audio_input_listener_, Closed(kAudioCapture,
                                                session_id[index]))
@@ -332,12 +332,12 @@ TEST_F(AudioInputDeviceManagerTest, CloseWithoutStopDevice) {
                                                session_id[index]))
         .Times(1);
     EXPECT_CALL(*audio_input_event_handler,
-                OnStartDevice(session_id[index], index))
+                OnDeviceStarted(session_id[index], index))
         .Times(1);
     // Event Handler should get a stop device notification as no stop is called
     // before closing the device.
     EXPECT_CALL(*audio_input_event_handler,
-                OnStopDevice(session_id[index]))
+                OnDeviceStopped(session_id[index]))
         .Times(1);
     EXPECT_CALL(*audio_input_listener_, Closed(kAudioCapture,
                                                session_id[index]))
@@ -381,10 +381,10 @@ TEST_F(AudioInputDeviceManagerTest, StartDeviceTwice) {
   EXPECT_CALL(*audio_input_listener_, Opened(kAudioCapture, second_session_id))
       .Times(1);
   EXPECT_CALL(*first_audio_input_event_handler,
-              OnStartDevice(first_session_id, 0))
+              OnDeviceStarted(first_session_id, 0))
       .Times(1);
   EXPECT_CALL(*second_audio_input_event_handler,
-              OnStartDevice(second_session_id, 0))
+              OnDeviceStarted(second_session_id, 0))
       .Times(1);
   EXPECT_CALL(*audio_input_listener_, Closed(kAudioCapture, first_session_id))
       .Times(1);

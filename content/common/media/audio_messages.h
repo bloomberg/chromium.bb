@@ -88,6 +88,11 @@ IPC_MESSAGE_CONTROL2(AudioMsg_NotifyStreamStateChanged,
                      int /* stream id */,
                      AudioStreamState /* new state */)
 
+// Notification message sent from browser to renderer for state update.
+IPC_MESSAGE_CONTROL2(AudioInputMsg_NotifyStreamStateChanged,
+                     int /* stream id */,
+                     AudioStreamState /* new state */)
+
 IPC_MESSAGE_CONTROL2(AudioMsg_NotifyStreamVolume,
                      int /* stream id */,
                      double /* volume */)
@@ -95,6 +100,10 @@ IPC_MESSAGE_CONTROL2(AudioMsg_NotifyStreamVolume,
 IPC_MESSAGE_CONTROL2(AudioInputMsg_NotifyStreamVolume,
                      int /* stream id */,
                      double /* volume */)
+
+IPC_MESSAGE_CONTROL2(AudioInputMsg_NotifyDeviceStarted,
+                     int /* stream id */,
+                     int /* device_index */)
 
 // Messages sent from the renderer to the browser.
 
@@ -159,3 +168,9 @@ IPC_MESSAGE_CONTROL2(AudioHostMsg_SetVolume,
 IPC_MESSAGE_CONTROL2(AudioInputHostMsg_SetVolume,
                      int /* stream_id */,
                      double /* volume */)
+
+// Start the device referenced by the session_id for the input stream specified
+// by stream_id.
+IPC_MESSAGE_CONTROL2(AudioInputHostMsg_StartDevice,
+                     int /* stream_id */,
+                     int /* session_id */)

@@ -16,6 +16,7 @@
 #include "base/id_map.h"
 #include "base/shared_memory.h"
 #include "base/sync_socket.h"
+#include "content/common/media/audio_stream_state.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "media/audio/audio_buffers_state.h"
 
@@ -34,6 +35,13 @@ class AudioInputMessageFilter : public IPC::ChannelProxy::MessageFilter {
     // Called when notification of input stream volume is received from the
     // browser process.
     virtual void OnVolume(double volume) = 0;
+
+    // Called when state of an input stream has changed in the browser process.
+    virtual void OnStateChanged(AudioStreamState state) = 0;
+
+    // Called when the device referenced by the index has been started in
+    // the browswer process.
+    virtual void OnDeviceReady(int index) = 0;
 
    protected:
     virtual ~Delegate() {}
@@ -70,6 +78,13 @@ class AudioInputMessageFilter : public IPC::ChannelProxy::MessageFilter {
 
   // Notification of volume property of an audio input stream.
   void OnStreamVolume(int stream_id, double volume);
+
+  // Received when internal state of browser process' audio input stream has
+  // changed.
+  void OnStreamStateChanged(int stream_id, AudioStreamState state);
+
+  // Notification of the opened device of an audio session.
+  void OnDeviceStarted(int stream_id, int index);
 
   // A map of stream ids to delegates.
   IDMap<Delegate> delegates_;

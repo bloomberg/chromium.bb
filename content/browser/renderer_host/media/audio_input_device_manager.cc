@@ -11,8 +11,8 @@
 
 namespace media_stream {
 
-const int AudioInputDeviceManager::kFakeOpenSessionId = 0;
-const int AudioInputDeviceManager::kInvalidSessionId = -1;
+const int AudioInputDeviceManager::kFakeOpenSessionId = 1;
+const int AudioInputDeviceManager::kInvalidSessionId = 0;
 const int AudioInputDeviceManager::kInvalidDevice = -1;
 const int AudioInputDeviceManager::kDefaultDeviceIndex = 0;
 
@@ -111,14 +111,14 @@ void AudioInputDeviceManager::Start(
   // And we do not store the info for the kFakeOpenSessionId but return
   // the callback immediately.
   if (session_id == kFakeOpenSessionId) {
-    event_handler->OnStartDevice(session_id, kDefaultDeviceIndex);
+    event_handler->OnDeviceStarted(session_id, kDefaultDeviceIndex);
     return;
   }
 
   // If session has been started, post a callback with an error.
   if (event_handlers_.find(session_id) != event_handlers_.end()) {
     // Session has been started, post a callback with error.
-    event_handler->OnStartDevice(session_id, kInvalidDevice);
+    event_handler->OnDeviceStarted(session_id, kInvalidDevice);
     return;
   }
 
@@ -265,7 +265,7 @@ void AudioInputDeviceManager::ClosedOnIOThread(int session_id) {
   EventHandlerMap::iterator it = event_handlers_.find(session_id);
   if (it != event_handlers_.end()) {
     // The device hasn't been stopped, send stop signal.
-    it->second->OnStopDevice(session_id);
+    it->second->OnDeviceStopped(session_id);
     event_handlers_.erase(session_id);
   }
   listener_->Closed(kAudioCapture, session_id);
@@ -286,8 +286,8 @@ void AudioInputDeviceManager::StartedOnIOThread(int session_id, int index) {
   if (it == event_handlers_.end())
     return;
 
-  // Post a callback through the event handler to start the device.
-  it->second->OnStartDevice(session_id, index);
+  // Post a callback through the event handler to create an audio stream.
+  it->second->OnDeviceStarted(session_id, index);
 }
 
 void AudioInputDeviceManager::StoppedOnIOThread(int session_id) {

@@ -43,6 +43,10 @@ bool AudioInputMessageFilter::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(AudioInputMsg_NotifyLowLatencyStreamCreated,
                         OnLowLatencyStreamCreated)
     IPC_MESSAGE_HANDLER(AudioInputMsg_NotifyStreamVolume, OnStreamVolume)
+    IPC_MESSAGE_HANDLER(AudioInputMsg_NotifyStreamStateChanged,
+                        OnStreamStateChanged)
+    IPC_MESSAGE_HANDLER(AudioInputMsg_NotifyDeviceStarted,
+                        OnDeviceStarted)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -94,6 +98,27 @@ void AudioInputMessageFilter::OnStreamVolume(int stream_id, double volume) {
     return;
   }
   delegate->OnVolume(volume);
+}
+
+void AudioInputMessageFilter::OnStreamStateChanged(
+    int stream_id, AudioStreamState state) {
+  Delegate* delegate = delegates_.Lookup(stream_id);
+  if (!delegate) {
+    DLOG(WARNING) << "Got audio stream event for a non-existent or removed"
+        " audio renderer.";
+    return;
+  }
+  delegate->OnStateChanged(state);
+}
+
+void AudioInputMessageFilter::OnDeviceStarted(int stream_id, int index) {
+  Delegate* delegate = delegates_.Lookup(stream_id);
+  if (!delegate) {
+    DLOG(WARNING) << "Got audio stream event for a non-existent or removed"
+        " audio renderer.";
+    return;
+  }
+  delegate->OnDeviceReady(index);
 }
 
 int32 AudioInputMessageFilter::AddDelegate(Delegate* delegate) {

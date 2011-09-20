@@ -20,10 +20,14 @@
 // A WebRtcAudioDeviceImpl instance implements the abstract interface
 // webrtc::AudioDeviceModule which makes it possible for a user (e.g. webrtc::
 // VoiceEngine) to register this class as an external AudioDeviceModule (ADM).
-// The user can then call WebRtcAudioDeviceImpl::StartPlayout() and
-// WebRtcAudioDeviceImpl::StartRecording() from the render process
-// to initiate and start audio rendering and capturing in the browser process.
-// IPC is utilized to set up the media streams.
+// Then WebRtcAudioDeviceImpl::SetSessionId() needs to be called to set the
+// session id that tells which device to use. The user can either get the
+// session id from the MediaStream or use a value of 1 (AudioInputDeviceManager
+// ::kFakeOpenSessionId), the later will open the default device without going
+// through the MediaStream. The user can then call WebRtcAudioDeviceImpl::
+// StartPlayout() and WebRtcAudioDeviceImpl::StartRecording() from the render
+// process to initiate and start audio rendering and capturing in the browser
+// process. IPC is utilized to set up the media streams.
 //
 // Usage example:
 //
@@ -32,6 +36,7 @@
 //   {
 //      scoped_refptr<WebRtcAudioDeviceImpl> external_adm;
 //      external_adm = new WebRtcAudioDeviceImpl();
+//      external_adm->SetSessionId(1);
 //      VoiceEngine* voe = VoiceEngine::Create();
 //      VoEBase* base = VoEBase::GetInterface(voe);
 //      base->Init(external_adm);
@@ -88,7 +93,8 @@
 class WebRtcAudioDeviceImpl
     : public webrtc::AudioDeviceModule,
       public AudioDevice::RenderCallback,
-      public AudioInputDevice::CaptureCallback {
+      public AudioInputDevice::CaptureCallback,
+      public AudioInputDevice::CaptureEventHandler {
  public:
   // Methods called on main render thread.
   WebRtcAudioDeviceImpl();
@@ -111,6 +117,10 @@ class WebRtcAudioDeviceImpl
   virtual void Capture(const std::vector<float*>& audio_data,
                        size_t number_of_frames,
                        size_t audio_delay_milliseconds) OVERRIDE;
+
+  // AudioInputDevice::CaptureEventHandler implementation.
+  virtual void OnDeviceStarted(int device_index);
+  virtual void OnDeviceStopped();
 
   // webrtc::Module implementation.
   virtual int32_t Version(char* version,
@@ -238,6 +248,9 @@ class WebRtcAudioDeviceImpl
   virtual int32_t SetLoudspeakerStatus(bool enable) OVERRIDE;
   virtual int32_t GetLoudspeakerStatus(bool* enabled) const OVERRIDE;
 
+  // Sets the session id.
+  void SetSessionId(int session_id);
+
   // Accessors.
   size_t input_buffer_size() const { return input_buffer_size_; }
   size_t output_buffer_size() const { return output_buffer_size_; }
@@ -292,6 +305,13 @@ class WebRtcAudioDeviceImpl
   webrtc::AudioDeviceModule::ErrorCode last_error_;
 
   base::TimeTicks last_process_time_;
+
+  // Id of the media session to be started, it tells which device to be used
+  // on the input/capture side.
+  int session_id_;
+
+  // Protect |recording_|.
+  base::Lock lock_;
 
   int bytes_per_sample_;
 

@@ -15,17 +15,22 @@
 AudioInputDevice::AudioInputDevice(size_t buffer_size,
                                    int channels,
                                    double sample_rate,
-                                   CaptureCallback* callback)
-    : buffer_size_(buffer_size),
-      channels_(channels),
-      bits_per_sample_(16),
-      sample_rate_(sample_rate),
-      callback_(callback),
+                                   CaptureCallback* callback,
+                                   CaptureEventHandler* event_handler)
+    : callback_(callback),
+      event_handler_(event_handler),
       audio_delay_milliseconds_(0),
       volume_(1.0),
-      stream_id_(0) {
+      stream_id_(0),
+      session_id_(0),
+      pending_device_ready_(false) {
   filter_ = RenderThread::current()->audio_input_message_filter();
   audio_data_.reserve(channels);
+  audio_parameters_.format = AudioParameters::AUDIO_PCM_LINEAR;
+  audio_parameters_.channels = channels;
+  audio_parameters_.sample_rate = static_cast<int>(sample_rate);
+  audio_parameters_.bits_per_sample = 16;
+  audio_parameters_.samples_per_packet = buffer_size;
   for (int i = 0; i < channels; ++i) {
     float* channel_data = new float[buffer_size];
     audio_data_.push_back(channel_data);
@@ -36,23 +41,23 @@ AudioInputDevice::~AudioInputDevice() {
   // TODO(henrika): The current design requires that the user calls
   // Stop before deleting this class.
   CHECK_EQ(0, stream_id_);
-  for (int i = 0; i < channels_; ++i)
+  for (int i = 0; i < audio_parameters_.channels; ++i)
     delete [] audio_data_[i];
 }
 
 void AudioInputDevice::Start() {
   VLOG(1) << "Start()";
-  AudioParameters params;
-  // TODO(henrika): add support for low-latency mode?
-  params.format = AudioParameters::AUDIO_PCM_LINEAR;
-  params.channels = channels_;
-  params.sample_rate = static_cast<int>(sample_rate_);
-  params.bits_per_sample = bits_per_sample_;
-  params.samples_per_packet = buffer_size_;
-
   ChildProcess::current()->io_message_loop()->PostTask(
       FROM_HERE,
-      NewRunnableMethod(this, &AudioInputDevice::InitializeOnIOThread, params));
+      NewRunnableMethod(this, &AudioInputDevice::InitializeOnIOThread));
+}
+
+void AudioInputDevice::SetDevice(int session_id) {
+  VLOG(1) << "SetDevice (session_id=" << session_id << ")";
+  ChildProcess::current()->io_message_loop()->PostTask(
+      FROM_HERE,
+      NewRunnableMethod(this, &AudioInputDevice::SetSessionIdOnIOThread,
+                        session_id));
 }
 
 bool AudioInputDevice::Stop() {
@@ -99,7 +104,7 @@ bool AudioInputDevice::GetVolume(double* volume) {
   return false;
 }
 
-void AudioInputDevice::InitializeOnIOThread(const AudioParameters& params) {
+void AudioInputDevice::InitializeOnIOThread() {
   DCHECK(MessageLoop::current() == ChildProcess::current()->io_message_loop());
   // Make sure we don't call Start() more than once.
   DCHECK_EQ(0, stream_id_);
@@ -107,7 +112,21 @@ void AudioInputDevice::InitializeOnIOThread(const AudioParameters& params) {
     return;
 
   stream_id_ = filter_->AddDelegate(this);
-  Send(new AudioInputHostMsg_CreateStream(stream_id_, params, true));
+  // If |session_id_| is not specified, it will directly create the stream;
+  // otherwise it will send a AudioInputHostMsg_StartDevice msg to the browser
+  // and create the stream when getting a OnDeviceReady() callback.
+  if (!session_id_) {
+    Send(new AudioInputHostMsg_CreateStream(stream_id_, audio_parameters_,
+                                            true));
+  } else {
+    Send(new AudioInputHostMsg_StartDevice(stream_id_, session_id_));
+    pending_device_ready_ = true;
+  }
+}
+
+void AudioInputDevice::SetSessionIdOnIOThread(int session_id) {
+  DCHECK(MessageLoop::current() == ChildProcess::current()->io_message_loop());
+  session_id_ = session_id;
 }
 
 void AudioInputDevice::StartOnIOThread() {
@@ -126,7 +145,10 @@ void AudioInputDevice::ShutDownOnIOThread(base::WaitableEvent* completion) {
 
   filter_->RemoveDelegate(stream_id_);
   Send(new AudioInputHostMsg_CloseStream(stream_id_));
+
   stream_id_ = 0;
+  session_id_ = 0;
+  pending_device_ready_ = false;
 
   completion->Signal();
 }
@@ -178,6 +200,65 @@ void AudioInputDevice::OnVolume(double volume) {
   NOTIMPLEMENTED();
 }
 
+void AudioInputDevice::OnStateChanged(AudioStreamState state) {
+  DCHECK(MessageLoop::current() == ChildProcess::current()->io_message_loop());
+  switch (state) {
+    case kAudioStreamPaused:
+      // Do nothing if the stream has been closed.
+      if (!stream_id_)
+        return;
+
+      filter_->RemoveDelegate(stream_id_);
+
+      // Joining the audio thread will be quite soon, since the stream has
+      // been closed before.
+      if (audio_thread_.get()) {
+        socket_->Close();
+        audio_thread_->Join();
+        audio_thread_.reset(NULL);
+      }
+
+      if (event_handler_)
+        event_handler_->OnDeviceStopped();
+
+      stream_id_ = 0;
+      pending_device_ready_ = false;
+      break;
+    case kAudioStreamPlaying:
+      NOTIMPLEMENTED();
+      break;
+    case kAudioStreamError:
+      DLOG(WARNING) << "AudioInputDevice::OnStateChanged(kError)";
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
+}
+
+void AudioInputDevice::OnDeviceReady(int index) {
+  DCHECK(MessageLoop::current() == ChildProcess::current()->io_message_loop());
+  VLOG(1) << "OnDeviceReady (index=" << index << ")";
+
+  // Takes care of the case when Stop() is called before OnDeviceReady().
+  if (!pending_device_ready_)
+    return;
+
+  // -1 means no device has been started.
+  if (index == -1) {
+    filter_->RemoveDelegate(stream_id_);
+    stream_id_ = 0;
+  } else {
+    Send(new AudioInputHostMsg_CreateStream(
+        stream_id_, audio_parameters_, true));
+  }
+
+  pending_device_ready_ = false;
+  // Notify the client that the device has been started.
+  if (event_handler_)
+    event_handler_->OnDeviceStarted(index);
+}
+
 void AudioInputDevice::Send(IPC::Message* message) {
   filter_->Send(message);
 }
@@ -188,8 +269,10 @@ void AudioInputDevice::Run() {
   audio_thread_->SetThreadPriority(base::kThreadPriority_RealtimeAudio);
 
   int pending_data;
-  const int samples_per_ms = static_cast<int>(sample_rate_) / 1000;
-  const int bytes_per_ms = channels_ * (bits_per_sample_ / 8) * samples_per_ms;
+  const int samples_per_ms =
+      static_cast<int>(audio_parameters_.sample_rate) / 1000;
+  const int bytes_per_ms = audio_parameters_.channels *
+      (audio_parameters_.bits_per_sample / 8) * samples_per_ms;
 
   while (sizeof(pending_data) == socket_->Receive(&pending_data,
                                                   sizeof(pending_data)) &&
@@ -209,7 +292,7 @@ void AudioInputDevice::FireCaptureCallback() {
   if (!callback_)
       return;
 
-  const size_t number_of_frames = buffer_size_;
+  const size_t number_of_frames = audio_parameters_.samples_per_packet;
 
   // Read 16-bit samples from shared memory (browser writes to it).
   int16* input_audio = static_cast<int16*>(shared_memory_data());
@@ -217,10 +300,11 @@ void AudioInputDevice::FireCaptureCallback() {
 
   // Deinterleave each channel and convert to 32-bit floating-point
   // with nominal range -1.0 -> +1.0.
-  for (int channel_index = 0; channel_index < channels_; ++channel_index) {
+  for (int channel_index = 0; channel_index < audio_parameters_.channels;
+       ++channel_index) {
     media::DeinterleaveAudioChannel(input_audio,
                                     audio_data_[channel_index],
-                                    channels_,
+                                    audio_parameters_.channels,
                                     channel_index,
                                     bytes_per_sample,
                                     number_of_frames);

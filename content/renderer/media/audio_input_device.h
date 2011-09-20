@@ -12,18 +12,32 @@
 //           |                                  |
 //           v                  IPC             v
 // AudioInputRendererHost  <---------> AudioInputMessageFilter
+//           ^
+//           |
+//           v
+// AudioInputDeviceManager
 //
 // Transportation of audio samples from the browser to the render process
 // is done by using shared memory in combination with a sync socket pair
 // to generate a low latency transport. The AudioInputDevice user registers
 // an AudioInputDevice::CaptureCallback at construction and will be called
 // by the AudioInputDevice with recorded audio from the underlying audio layers.
+// The session ID is used by the AudioInputRendererHost to start the device
+// referenced by this ID.
 //
 // State sequences:
 //
 //            Task [IO thread]                  IPC [IO thread]
 //
+// Sequence where session_id has not been set using SetDevice():
 // Start -> InitializeOnIOThread -----> AudioInputHostMsg_CreateStream ------->
+//     <- OnLowLatencyCreated <- AudioInputMsg_NotifyLowLatencyStreamCreated <-
+//       ---> StartOnIOThread ---------> AudioInputHostMsg_PlayStream -------->
+//
+// Sequence where session_id has been set using SetDevice():
+// Start ->  InitializeOnIOThread --> AudioInputHostMsg_StartDevice --->
+//      <---- OnStarted <-------------- AudioInputMsg_NotifyDeviceStarted <----
+//       -> OnDeviceReady ------------> AudioInputHostMsg_CreateStream ------->
 //     <- OnLowLatencyCreated <- AudioInputMsg_NotifyLowLatencyStreamCreated <-
 //       ---> StartOnIOThread ---------> AudioInputHostMsg_PlayStream -------->
 //
@@ -48,6 +62,7 @@
 //
 // - Start() is asynchronous/non-blocking.
 // - Stop() is synchronous/blocking.
+// - SetDevice() is asynchronous/non-blocking.
 // - The user must call Stop() before deleting the class instance.
 
 #ifndef CONTENT_RENDERER_MEDIA_AUDIO_INPUT_DEVICE_H_
@@ -61,8 +76,7 @@
 #include "base/shared_memory.h"
 #include "base/threading/simple_thread.h"
 #include "content/renderer/media/audio_input_message_filter.h"
-
-struct AudioParameters;
+#include "media/audio/audio_parameters.h"
 
 // TODO(henrika): This class is based on the AudioDevice class and it has
 // many components in common. Investigate potential for re-factoring.
@@ -83,12 +97,31 @@ class AudioInputDevice
     virtual ~CaptureCallback() {}
   };
 
+  class CaptureEventHandler {
+   public:
+    // Notification to the client that the device with the specific index has
+    // been started. This callback is triggered as a result of StartDevice().
+    virtual void OnDeviceStarted(int device_index) = 0;
+
+    // Notification to the client that the device has been stopped.
+    virtual void OnDeviceStopped() = 0;
+
+   protected:
+    virtual ~CaptureEventHandler() {}
+  };
+
   // Methods called on main render thread -------------------------------------
   AudioInputDevice(size_t buffer_size,
                    int channels,
                    double sample_rate,
-                   CaptureCallback* callback);
+                   CaptureCallback* callback,
+                   CaptureEventHandler* event_handler);
   virtual ~AudioInputDevice();
+
+  // Specify the |session_id| to query which device to use. This method is
+  // asynchronous/non-blocking.
+  // Start() will use the second sequence if this method is called before.
+  void SetDevice(int session_id);
 
   // Starts audio capturing. This method is asynchronous/non-blocking.
   // TODO(henrika): add support for notification when recording has started.
@@ -107,8 +140,8 @@ class AudioInputDevice
   // Returns |true| on success.
   bool GetVolume(double* volume);
 
-  double sample_rate() const { return sample_rate_; }
-  size_t buffer_size() const { return buffer_size_; }
+  double sample_rate() const { return audio_parameters_.sample_rate; }
+  size_t buffer_size() const { return audio_parameters_.samples_per_packet; }
 
   // Methods called on IO thread ----------------------------------------------
   // AudioInputMessageFilter::Delegate impl., called by AudioInputMessageFilter
@@ -116,13 +149,16 @@ class AudioInputDevice
                                    base::SyncSocket::Handle socket_handle,
                                    uint32 length);
   virtual void OnVolume(double volume);
+  virtual void OnStateChanged(AudioStreamState state);
+  virtual void OnDeviceReady(int index);
 
  private:
   // Methods called on IO thread ----------------------------------------------
   // The following methods are tasks posted on the IO thread that needs to
   // be executed on that thread. They interact with AudioInputMessageFilter and
   // sends IPC messages on that thread.
-  void InitializeOnIOThread(const AudioParameters& params);
+  void InitializeOnIOThread();
+  void SetSessionIdOnIOThread(int session_id);
   void StartOnIOThread();
   void ShutDownOnIOThread(base::WaitableEvent* completion);
   void SetVolumeOnIOThread(double volume);
@@ -137,12 +173,10 @@ class AudioInputDevice
   virtual void Run();
 
   // Format
-  size_t buffer_size_;  // in sample-frames
-  int channels_;
-  int bits_per_sample_;
-  double sample_rate_;
+  AudioParameters audio_parameters_;
 
   CaptureCallback* callback_;
+  CaptureEventHandler* event_handler_;
 
   // The client callback receives captured audio here.
   std::vector<float*> audio_data_;
@@ -168,6 +202,14 @@ class AudioInputDevice
 
   // Our stream ID on the message filter. Only modified on the IO thread.
   int32 stream_id_;
+
+  // The media session ID used to identify which input device to be started.
+  // Only modified on the IO thread.
+  int session_id_;
+
+  // State variable used to indicate it is waiting for a OnDeviceReady()
+  // callback. Only modified on the IO thread.
+  bool pending_device_ready_;
 
   scoped_ptr<base::SharedMemory> shared_memory_;
   scoped_ptr<base::SyncSocket> socket_;

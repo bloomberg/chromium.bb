@@ -25,6 +25,7 @@ WebRtcAudioDeviceImpl::WebRtcAudioDeviceImpl()
       output_delay_ms_(0),
       last_error_(AudioDeviceModule::kAdmErrNone),
       last_process_time_(base::TimeTicks::Now()),
+      session_id_(0),
       initialized_(false),
       playing_(false),
       recording_(false) {
@@ -157,6 +158,25 @@ void WebRtcAudioDeviceImpl::Capture(
     accumulated_audio_samples += samples_per_10_msec;
     audio_byte_buffer += bytes_per_10_msec;
   }
+}
+
+void WebRtcAudioDeviceImpl::OnDeviceStarted(int device_index) {
+  VLOG(1) << "OnDeviceStarted (device_index=" << device_index << ")";
+  // -1 is an invalid device index. Do nothing if a valid device has
+  // been started. Otherwise update the |recording_| state to false.
+  if (device_index != -1)
+    return;
+
+  base::AutoLock auto_lock(lock_);
+  if (recording_)
+    recording_ = false;
+}
+
+void WebRtcAudioDeviceImpl::OnDeviceStopped() {
+  VLOG(1) << "OnDeviceStopped";
+  base::AutoLock auto_lock(lock_);
+  if (recording_)
+    recording_ = false;
 }
 
 int32_t WebRtcAudioDeviceImpl::Version(char* version,
@@ -352,7 +372,7 @@ int32_t WebRtcAudioDeviceImpl::Init() {
 
   // Create and configure the audio capturing client.
   audio_input_device_ = new AudioInputDevice(
-      input_buffer_size, input_channels, output_sample_rate, this);
+      input_buffer_size, input_channels, output_sample_rate, this, this);
 #if defined(OS_MACOSX)
   // We create the input device for Mac as well but the performance
   // will be very bad.
@@ -549,12 +569,22 @@ int32_t WebRtcAudioDeviceImpl::StartRecording() {
     LOG(ERROR) << "Audio transport is missing";
     return -1;
   }
+
+  if (session_id_ <= 0) {
+    LOG(WARNING) << session_id_ << " is an invalid session id.";
+    return -1;
+  }
+
+  base::AutoLock auto_lock(lock_);
   if (recording_) {
     // webrtc::VoiceEngine assumes that it is OK to call Start() twice and
     // that the call is ignored the second time.
     LOG(WARNING) << "Recording is already active";
     return 0;
   }
+
+  // Specify the session_id which is mapped to a certain device.
+  audio_input_device_->SetDevice(session_id_);
   audio_input_device_->Start();
   recording_ = true;
   return 0;
@@ -563,6 +593,8 @@ int32_t WebRtcAudioDeviceImpl::StartRecording() {
 int32_t WebRtcAudioDeviceImpl::StopRecording() {
   VLOG(1) << "StopRecording()";
   DCHECK(audio_input_device_);
+
+  base::AutoLock auto_lock(lock_);
   if (!recording_) {
     // webrtc::VoiceEngine assumes that it is OK to call Stop() just in case.
     LOG(WARNING) << "Recording was already stopped";
@@ -891,4 +923,8 @@ int32_t WebRtcAudioDeviceImpl::SetLoudspeakerStatus(bool enable) {
 int32_t WebRtcAudioDeviceImpl::GetLoudspeakerStatus(bool* enabled) const {
   NOTIMPLEMENTED();
   return -1;
+}
+
+void WebRtcAudioDeviceImpl::SetSessionId(int session_id) {
+  session_id_ = session_id;
 }

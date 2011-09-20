@@ -5,6 +5,42 @@
 // AudioInputRendererHost serves audio related requests from audio capturer
 // which lives inside the render process and provide access to audio hardware.
 //
+// OnCreateStream() request is only available in the low latency mode. It will
+// creates a shared memory, a SyncWriter and a AudioInputController for the
+// input stream.
+
+// OnCloseStream() will close the input stream.
+//
+// Create stream sequence:
+//
+// OnCreateStream -> AudioInputController::CreateLowLatency() ->
+// DoCompleteCreation -> AudioInputMsg_NotifyLowLatencyStreamCreated
+//
+// Close stream sequence:
+// OnCloseStream -> AudioInputController::Close
+//
+// For the OnStartDevice() request, AudioInputRendererHost starts the device
+// referenced by the session id, and a OnDeviceStarted() callback with the
+// index of the opened device will be received later. Then it will send a IPC
+// message to notify the renderer that the device is ready, so that renderer
+// can continue with the OnCreateStream() request.
+//
+// OnDeviceStopped() is called when the user closes the device through
+// AudioInputDeviceManager without calling Stop() before. What
+// AudioInputRenderHost::OnDeviceStopped() does is to send a IPC mesaage to
+// notify the renderer in order to stop the stream.
+//
+// Start device sequence:
+//
+// OnStartDevice -> AudioInputDeviceManager::Start ->
+// AudioInputDeviceManagerEventHandler::OnDeviceStarted ->
+// AudioInputMsg_NotifyDeviceStarted
+//
+// Shutdown device sequence:
+//
+// OnDeviceStopped -> CloseAndDeleteStream
+//                    AudioInputMsg_NotifyStreamStateChanged
+//
 // This class is owned by BrowserRenderProcessHost and instantiated on UI
 // thread. All other operations and method calls happen on IO thread, so we
 // need to be extra careful about the lifetime of this object. AudioManager is a
@@ -28,6 +64,7 @@
 #include "base/shared_memory.h"
 #include "content/browser/browser_message_filter.h"
 #include "content/browser/browser_thread.h"
+#include "content/browser/renderer_host/media/audio_input_device_manager_event_handler.h"
 #include "media/audio/audio_input_controller.h"
 #include "media/audio/audio_io.h"
 #include "media/audio/simple_sources.h"
@@ -37,7 +74,8 @@ struct AudioParameters;
 
 class AudioInputRendererHost
     : public BrowserMessageFilter,
-      public media::AudioInputController::EventHandler {
+      public media::AudioInputController::EventHandler,
+      public media_stream::AudioInputDeviceManagerEventHandler {
  public:
   struct AudioEntry {
     AudioEntry();
@@ -60,8 +98,6 @@ class AudioInputRendererHost
     bool pending_close;
   };
 
-  typedef std::map<int, AudioEntry*> AudioEntryMap;
-
   // Called from UI thread from the owner of this object.
   AudioInputRendererHost();
 
@@ -80,6 +116,10 @@ class AudioInputRendererHost
                       const uint8* data,
                       uint32 size);
 
+  // media_stream::AudioInputDeviceManagerEventHandler implementation.
+  virtual void OnDeviceStarted(int session_id, int index);
+  virtual void OnDeviceStopped(int session_id);
+
  private:
   // TODO(henrika): extend test suite (compare AudioRenderHost)
   friend class BrowserThread;
@@ -88,6 +128,10 @@ class AudioInputRendererHost
   virtual ~AudioInputRendererHost();
 
   // Methods called on IO thread ----------------------------------------------
+
+  // Start the audio input device with the session id. If the device
+  // starts successfully, it will trigger OnDeviceStarted() callback.
+  void OnStartDevice(int stream_id, int session_id);
 
   // Audio related IPC message handlers.
   // Creates an audio input stream with the specified format. If this call is
@@ -139,6 +183,9 @@ class AudioInputRendererHost
   // Delete audio entry and close the related audio input stream.
   void DeleteEntryOnError(AudioEntry* entry);
 
+  // Stop the device and delete its audio session entry.
+  void StopAndDeleteDevice(int stream_id);
+
   // A helper method to look up a AudioEntry identified by |stream_id|.
   // Returns NULL if not found.
   AudioEntry* LookupById(int stream_id);
@@ -148,8 +195,17 @@ class AudioInputRendererHost
   // event is received.
   AudioEntry* LookupByController(media::AudioInputController* controller);
 
+  // A helper method to look up a session identified by |stream_id|.
+  // Returns 0 if not found.
+  int LookupSessionById(int stream_id);
+
   // A map of stream IDs to audio sources.
+  typedef std::map<int, AudioEntry*> AudioEntryMap;
   AudioEntryMap audio_entries_;
+
+  // A map of session IDs to audio session sources.
+  typedef std::map<int, int> SessionEntryMap;
+  SessionEntryMap session_entries_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioInputRendererHost);
 };
