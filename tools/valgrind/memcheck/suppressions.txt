@@ -3840,17 +3840,6 @@
    fun:_ZN3net73HttpNetworkTransactionTest_ErrorResponseTofHttpsConnectViaHttpsProxy_Test8TestBodyEv
 }
 {
-   bug_88735
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZNK23ProtocolHandlerRegistry14MaybeCreateJobEPN3net10URLRequestE
-   fun:_Z*11MakeRequestRK4GURLP23ProtocolHandlerRegistry
-   fun:_Z18DispatchToFunctionIPFvRK4GURLP23ProtocolHandlerRegistryES0_13scoped_refptrIS3_EEvT_RK6Tuple2IT0_T1_E
-   fun:_ZN16RunnableFunctionIPFvRK4GURLP23ProtocolHandlerRegistryE6Tuple2IS0_13scoped_refptrIS3_EEE3RunEv
-   fun:*18TaskClosureAdapter3RunEv
-   fun:_ZN4base8internal8Invoker1*15InvokerStorage1*18TaskClosureAdapterEFvvEPS4_EES6_E8DoInvokeEPNS0_18InvokerStorageBaseE
-}
-{
    bug_88640_a
    Memcheck:Leak
    fun:_Znw*
