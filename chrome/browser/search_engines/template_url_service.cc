@@ -729,7 +729,13 @@ SyncError TemplateURLService::MergeDataAndStartSyncing(
     DCHECK(sync_turl.get());
     const TemplateURL* local_turl = GetTemplateURLForGUID(iter->first);
 
-    if (local_turl) {
+    if (sync_turl->sync_guid().empty()) {
+      // Due to a bug, older search engine entries with no sync GUID
+      // may have been uploaded to the server.  This is bad data, so
+      // just delete it.
+      new_changes.push_back(
+          SyncChange(SyncChange::ACTION_DELETE, iter->second));
+    } else if (local_turl) {
       // This local search engine is already synced. If the timestamp differs
       // from Sync, we need to update locally or to the cloud. Note that if the
       // timestamps are equal, we touch neither.

@@ -9,6 +9,7 @@
 #include "chrome/browser/sync/api/syncable_service.h"
 #include "chrome/browser/sync/api/sync_change.h"
 #include "chrome/browser/sync/api/sync_error.h"
+#include "chrome/browser/sync/internal_api/base_node.h"
 #include "chrome/browser/sync/internal_api/change_record.h"
 #include "chrome/browser/sync/internal_api/read_node.h"
 #include "chrome/browser/sync/internal_api/read_transaction.h"
@@ -40,30 +41,25 @@ void GenericChangeProcessor::ApplyChangesFromSyncModel(
   DCHECK(syncer_changes_.empty());
   for (sync_api::ChangeRecordList::const_iterator it =
            changes.Get().begin(); it != changes.Get().end(); ++it) {
-    SyncChange::SyncChangeType action;
-    sync_pb::EntitySpecifics const* specifics = NULL;
-    if (sync_api::ChangeRecord::ACTION_DELETE == it->action) {
-      action = SyncChange::ACTION_DELETE;
-      specifics = &it->specifics;
-      DCHECK(specifics);
-    } else if (sync_api::ChangeRecord::ACTION_ADD == it->action) {
-      action = SyncChange::ACTION_ADD;
-    } else {  // ACTION_UPDATE.
-      action = SyncChange::ACTION_UPDATE;
-    }
-    if (!specifics) {
-      // Need to load from node.
+    if (it->action == sync_api::ChangeRecord::ACTION_DELETE) {
+      syncer_changes_.push_back(
+          SyncChange(SyncChange::ACTION_DELETE,
+                     SyncData::CreateRemoteData(it->id, it->specifics)));
+    } else {
+      SyncChange::SyncChangeType action =
+          (it->action == sync_api::ChangeRecord::ACTION_ADD) ?
+          SyncChange::ACTION_ADD : SyncChange::ACTION_UPDATE;
+      // Need to load specifics from node.
       sync_api::ReadNode read_node(trans);
       if (!read_node.InitByIdLookup(it->id)) {
         error_handler()->OnUnrecoverableError(FROM_HERE, "Failed to look up "
             " data for received change with id " + it->id);
         return;
       }
-      syncer_changes_.push_back(SyncChange(action,
-          SyncData::CreateRemoteData(read_node.GetEntitySpecifics())));
-    } else {
       syncer_changes_.push_back(
-          SyncChange(action, SyncData::CreateRemoteData(*specifics)));
+          SyncChange(action,
+                     SyncData::CreateRemoteData(
+                         it->id, read_node.GetEntitySpecifics())));
     }
   }
 }
@@ -95,6 +91,9 @@ SyncError GenericChangeProcessor::GetSyncDataForType(
     return error;
   }
 
+  // TODO(akalin): We'll have to do a tree traversal for bookmarks.
+  DCHECK_NE(type, syncable::BOOKMARKS);
+
   int64 sync_child_id = root.GetFirstChildId();
   while (sync_child_id != sync_api::kInvalidId) {
     sync_api::ReadNode sync_child_node(&trans);
@@ -105,11 +104,35 @@ SyncError GenericChangeProcessor::GetSyncDataForType(
       return error;
     }
     current_sync_data->push_back(SyncData::CreateRemoteData(
-        sync_child_node.GetEntitySpecifics()));
+        sync_child_node.GetId(), sync_child_node.GetEntitySpecifics()));
     sync_child_id = sync_child_node.GetSuccessorId();
   }
   return SyncError();
 }
+
+namespace {
+
+bool AttemptDelete(const SyncChange& change, sync_api::WriteNode* node) {
+  DCHECK_EQ(change.change_type(), SyncChange::ACTION_DELETE);
+  if (change.sync_data().IsLocal()) {
+    const std::string& tag = change.sync_data().GetTag();
+    if (tag.empty()) {
+      return false;
+    }
+    if (!node->InitByClientTagLookup(
+            change.sync_data().GetDataType(), tag)) {
+      return false;
+    }
+  } else {
+    if (!node->InitByIdLookup(change.sync_data().GetRemoteId())) {
+      return false;
+    }
+  }
+  node->Remove();
+  return true;
+}
+
+}  // namespace
 
 SyncError GenericChangeProcessor::ProcessSyncChanges(
     const tracked_objects::Location& from_here,
@@ -125,9 +148,7 @@ SyncError GenericChangeProcessor::ProcessSyncChanges(
     std::string type_str = syncable::ModelTypeToString(type);
     sync_api::WriteNode sync_node(&trans);
     if (change.change_type() == SyncChange::ACTION_DELETE) {
-      if (change.sync_data().GetTag() == "" ||
-          !sync_node.InitByClientTagLookup(change.sync_data().GetDataType(),
-                                           change.sync_data().GetTag())) {
+      if (!AttemptDelete(change, &sync_node)) {
         NOTREACHED();
         SyncError error(FROM_HERE,
                         "Failed to delete " + type_str + " node.",
@@ -136,7 +157,6 @@ SyncError GenericChangeProcessor::ProcessSyncChanges(
                                               error.message());
         return error;
       }
-      sync_node.Remove();
     } else if (change.change_type() == SyncChange::ACTION_ADD) {
       // TODO(sync): Handle other types of creation (custom parents, folders,
       // etc.).

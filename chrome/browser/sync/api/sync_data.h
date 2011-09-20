@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/basictypes.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/util/immutable.h"
 
@@ -47,9 +48,7 @@ class SyncData {
 
   // Helper methods for creating SyncData objects originating from the syncer.
   static SyncData CreateRemoteData(
-      const sync_pb::SyncEntity& entity);
-  static SyncData CreateRemoteData(
-      const sync_pb::EntitySpecifics& specifics);
+      int64 id, const sync_pb::EntitySpecifics& specifics);
 
   // Whether this SyncData holds valid data. The only way to have a SyncData
   // without valid data is to use the default constructor.
@@ -69,6 +68,9 @@ class SyncData {
   // Returns the non unique title (for debugging). Currently only set for data
   // going TO the syncer, not from.
   const std::string& GetTitle() const;
+
+  // Should only be called by sync code when IsLocal() is false.
+  int64 GetRemoteId() const;
 
   // Whether this sync data is for local data or data coming from the syncer.
   bool IsLocal() const;
@@ -97,13 +99,13 @@ class SyncData {
       ImmutableSyncEntity;
 
   // Clears |entity|.
-  SyncData(sync_pb::SyncEntity* entity, bool is_local);
+  SyncData(int64 id, sync_pb::SyncEntity* entity);
 
   // Whether this SyncData holds valid data.
   bool is_valid_;
 
-  // Whether this data originated locally or from the syncer (remote data).
-  bool is_local_;
+  // Equal to sync_api::kInvalidId iff this is local.
+  int64 id_;
 
   // The actual shared sync entity being held.
   ImmutableSyncEntity immutable_entity_;
