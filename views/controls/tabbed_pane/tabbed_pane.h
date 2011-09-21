@@ -75,9 +75,6 @@ class VIEWS_EXPORT TabbedPane : public View {
   // The tabbed-pane's class name.
   static const char kViewClassName[];
 
-  // Creates the native wrapper.
-  void CreateWrapper();
-
   // We support Ctrl+Tab and Ctrl+Shift+Tab to navigate tabbed option pages.
   void LoadAccelerators();
 

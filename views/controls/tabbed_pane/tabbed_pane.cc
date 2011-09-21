@@ -71,10 +71,6 @@ gfx::Size TabbedPane::GetPreferredSize() {
       native_tabbed_pane_->GetPreferredSize() : gfx::Size();
 }
 
-void TabbedPane::CreateWrapper() {
-  native_tabbed_pane_ = NativeTabbedPaneWrapper::CreateNativeWrapper(this);
-}
-
 void TabbedPane::LoadAccelerators() {
   // Ctrl+Shift+Tab
   AddAccelerator(views::Accelerator(ui::VKEY_TAB, true, true, false));
@@ -89,7 +85,9 @@ void TabbedPane::Layout() {
 
 void TabbedPane::ViewHierarchyChanged(bool is_add, View* parent, View* child) {
   if (is_add && !native_tabbed_pane_) {
-    CreateWrapper();
+    // The native wrapper's lifetime will be managed by the view hierarchy after
+    // we call AddChildView.
+    native_tabbed_pane_ = NativeTabbedPaneWrapper::CreateNativeWrapper(this);
     AddChildView(native_tabbed_pane_->GetView());
     LoadAccelerators();
   }
