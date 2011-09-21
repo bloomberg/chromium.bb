@@ -175,7 +175,7 @@ void NativeWidgetAura::GetWindowPlacement(
   NOTIMPLEMENTED();
 }
 
-void NativeWidgetAura::SetWindowTitle(const std::wstring& title) {
+void NativeWidgetAura::SetWindowTitle(const string16& title) {
   NOTIMPLEMENTED();
 }
 

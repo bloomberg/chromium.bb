@@ -87,7 +87,7 @@ gfx::NativeWindow NativeTabContentsViewViews::GetTopLevelNativeWindow() const {
   return NULL;
 }
 
-void NativeTabContentsViewViews::SetPageTitle(const std::wstring& title) {
+void NativeTabContentsViewViews::SetPageTitle(const string16& title) {
   SetWindowTitle(title);
 }
 

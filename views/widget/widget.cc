@@ -675,7 +675,7 @@ void Widget::UpdateWindowTitle() {
     window_title = WideToUTF16(widget_delegate_->GetWindowTitle());
   }
   base::i18n::AdjustStringForLocaleDirection(&window_title);
-  native_widget_->SetWindowTitle(UTF16ToWide(window_title));
+  native_widget_->SetWindowTitle(window_title);
 }
 
 void Widget::UpdateWindowIcon() {

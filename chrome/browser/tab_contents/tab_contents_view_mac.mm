@@ -173,7 +173,7 @@ void TabContentsViewMac::RenderViewCreated(RenderViewHost* host) {
   host->EnablePreferredSizeMode(kPreferredSizeWidth);
 }
 
-void TabContentsViewMac::SetPageTitle(const std::wstring& title) {
+void TabContentsViewMac::SetPageTitle(const string16& title) {
   // Meaningless on the Mac; widgets don't have a "title" attribute
 }
 

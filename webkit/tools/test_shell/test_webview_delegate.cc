@@ -836,9 +836,7 @@ void TestWebViewDelegate::didClearWindowObject(WebFrame* frame) {
 
 void TestWebViewDelegate::didReceiveTitle(
     WebFrame* frame, const WebString& title, WebTextDirection direction) {
-  std::wstring wtitle = UTF16ToWideHack(title);
-
-  SetPageTitle(wtitle);
+  SetPageTitle(title);
 }
 
 void TestWebViewDelegate::didFinishDocumentLoad(WebFrame* frame) {

@@ -281,7 +281,7 @@ void NativeWidgetViews::GetWindowPlacement(
   *show_state = ui::SHOW_STATE_NORMAL;
 }
 
-void NativeWidgetViews::SetWindowTitle(const std::wstring& title) {
+void NativeWidgetViews::SetWindowTitle(const string16& title) {
 }
 
 void NativeWidgetViews::SetWindowIcons(const SkBitmap& window_icon,

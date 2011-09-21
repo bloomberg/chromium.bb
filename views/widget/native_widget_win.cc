@@ -688,7 +688,7 @@ void NativeWidgetWin::GetWindowPlacement(
   }
 }
 
-void NativeWidgetWin::SetWindowTitle(const std::wstring& title) {
+void NativeWidgetWin::SetWindowTitle(const string16& title) {
   SetWindowText(GetNativeView(), title.c_str());
   SetAccessibleName(title);
 }

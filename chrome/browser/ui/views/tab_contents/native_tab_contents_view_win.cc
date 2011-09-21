@@ -129,7 +129,7 @@ gfx::NativeWindow NativeTabContentsViewWin::GetTopLevelNativeWindow() const {
   return ::GetAncestor(GetNativeView(), GA_ROOT);
 }
 
-void NativeTabContentsViewWin::SetPageTitle(const std::wstring& title) {
+void NativeTabContentsViewWin::SetPageTitle(const string16& title) {
   // It's possible to get this after the hwnd has been destroyed.
   if (GetNativeView())
     ::SetWindowText(GetNativeView(), title.c_str());

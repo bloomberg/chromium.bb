@@ -1008,7 +1008,7 @@ void NativeWidgetGtk::GetWindowPlacement(
   // Do nothing for now. ChromeOS isn't yet saving window placement.
 }
 
-void NativeWidgetGtk::SetWindowTitle(const std::wstring& title) {
+void NativeWidgetGtk::SetWindowTitle(const string16& title) {
   // We don't have a window title on ChromeOS (right now).
 }
 

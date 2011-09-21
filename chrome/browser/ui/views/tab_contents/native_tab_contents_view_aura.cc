@@ -67,7 +67,7 @@ gfx::NativeWindow NativeTabContentsViewAura::GetTopLevelNativeWindow() const {
   return NULL;
 }
 
-void NativeTabContentsViewAura::SetPageTitle(const std::wstring& title) {
+void NativeTabContentsViewAura::SetPageTitle(const string16& title) {
   // TODO(beng):
   NOTIMPLEMENTED();
 }

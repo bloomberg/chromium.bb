@@ -171,7 +171,7 @@ class VIEWS_EXPORT NativeWidgetGtk : public internal::NativeWidgetPrivate,
   virtual void GetWindowPlacement(
       gfx::Rect* bounds,
       ui::WindowShowState* show_state) const OVERRIDE;
-  virtual void SetWindowTitle(const std::wstring& title) OVERRIDE;
+  virtual void SetWindowTitle(const string16& title) OVERRIDE;
   virtual void SetWindowIcons(const SkBitmap& window_icon,
                               const SkBitmap& app_icon) OVERRIDE;
   virtual void SetAccessibleName(const std::wstring& name) OVERRIDE;

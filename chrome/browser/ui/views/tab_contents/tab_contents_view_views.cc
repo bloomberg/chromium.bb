@@ -119,7 +119,7 @@ void TabContentsViewViews::StartDragging(const WebDropData& drop_data,
   native_tab_contents_view_->StartDragging(drop_data, ops, image, image_offset);
 }
 
-void TabContentsViewViews::SetPageTitle(const std::wstring& title) {
+void TabContentsViewViews::SetPageTitle(const string16& title) {
   native_tab_contents_view_->SetPageTitle(title);
 }
 

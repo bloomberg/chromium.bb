@@ -216,9 +216,9 @@ void TestWebViewDelegate::ShowJavaScriptAlert(const std::wstring& message) {
   [alert runModal];
 }
 
-void TestWebViewDelegate::SetPageTitle(const std::wstring& title) {
+void TestWebViewDelegate::SetPageTitle(const string16& title) {
   [[shell_->webViewHost()->view_handle() window]
-      setTitle:[NSString stringWithUTF8String:WideToUTF8(title).c_str()]];
+      setTitle:[NSString stringWithUTF8String:UTF16ToUTF8(title).c_str()]];
 }
 
 void TestWebViewDelegate::SetAddressBarURL(const GURL& url) {

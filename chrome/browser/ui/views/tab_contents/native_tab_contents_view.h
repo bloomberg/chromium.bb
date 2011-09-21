@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "base/string16.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDragOperation.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -40,7 +41,7 @@ class NativeTabContentsView {
 
   virtual gfx::NativeWindow GetTopLevelNativeWindow() const = 0;
 
-  virtual void SetPageTitle(const std::wstring& title) = 0;
+  virtual void SetPageTitle(const string16& title) = 0;
 
   virtual void StartDragging(const WebDropData& drop_data,
                              WebKit::WebDragOperationsMask ops,

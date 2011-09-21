@@ -85,7 +85,7 @@ gfx::NativeWindow TestTabContentsView::GetTopLevelNativeWindow() const {
 void TestTabContentsView::GetContainerBounds(gfx::Rect *out) const {
 }
 
-void TestTabContentsView::SetPageTitle(const std::wstring& title) {
+void TestTabContentsView::SetPageTitle(const string16& title) {
 }
 
 void TestTabContentsView::OnTabCrashed(base::TerminationStatus status,

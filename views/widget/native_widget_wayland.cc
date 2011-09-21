@@ -251,7 +251,7 @@ void NativeWidgetWayland::GetWindowPlacement(
   NOTIMPLEMENTED();
 }
 
-void NativeWidgetWayland::SetWindowTitle(const std::wstring& title) {
+void NativeWidgetWayland::SetWindowTitle(const string16& title) {
 }
 
 void NativeWidgetWayland::SetWindowIcons(const SkBitmap& window_icon,

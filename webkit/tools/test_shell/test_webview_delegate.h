@@ -334,7 +334,7 @@ class TestWebViewDelegate : public WebKit::WebViewClient,
 
   // Called the title of the page changes.
   // Can be used to update the title of the window.
-  void SetPageTitle(const std::wstring& title);
+  void SetPageTitle(const string16& title);
 
   // Called when the URL of the page changes.
   // Extracts the URL and forwards on to SetAddressBarURL().

@@ -1377,7 +1377,7 @@ bool TabContents::UpdateTitleForEntry(NavigationEntry* entry,
   }
 
   // Lastly, set the title for the view.
-  view_->SetPageTitle(UTF16ToWideHack(final_title));
+  view_->SetPageTitle(final_title);
 
   TitleUpdatedDetails details(entry, explicit_set);
 

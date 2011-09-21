@@ -186,12 +186,12 @@ void TabContentsViewGtk::GetContainerBounds(gfx::Rect* out) const {
                requested_size_.width(), requested_size_.height());
 }
 
-void TabContentsViewGtk::SetPageTitle(const std::wstring& title) {
+void TabContentsViewGtk::SetPageTitle(const string16& title) {
   // Set the window name to include the page title so it's easier to spot
   // when debugging (e.g. via xwininfo -tree).
   gfx::NativeView content_view = GetContentNativeView();
   if (content_view && content_view->window)
-    gdk_window_set_title(content_view->window, WideToUTF8(title).c_str());
+    gdk_window_set_title(content_view->window, UTF16ToUTF8(title).c_str());
 }
 
 void TabContentsViewGtk::OnTabCrashed(base::TerminationStatus status,

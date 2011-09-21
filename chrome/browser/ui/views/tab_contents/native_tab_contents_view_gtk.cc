@@ -146,11 +146,11 @@ gfx::NativeWindow NativeTabContentsViewGtk::GetTopLevelNativeWindow() const {
   return window ? GTK_WINDOW(window) : NULL;
 }
 
-void NativeTabContentsViewGtk::SetPageTitle(const std::wstring& title) {
+void NativeTabContentsViewGtk::SetPageTitle(const string16& title) {
   // Set the window name to include the page title so it's easier to spot
   // when debugging (e.g. via xwininfo -tree).
   if (GDK_IS_WINDOW(GetNativeView()->window))
-    gdk_window_set_title(GetNativeView()->window, WideToUTF8(title).c_str());
+    gdk_window_set_title(GetNativeView()->window, UTF16ToUTF8(title).c_str());
 }
 
 void NativeTabContentsViewGtk::StartDragging(const WebDropData& drop_data,
