@@ -40,6 +40,7 @@ class NotificationSource;
 class Profile;
 class ProfileSyncFactory;
 class SigninManager;
+class SyncGlobalError;
 struct ChromeCookieDetails;
 
 namespace browser_sync {
@@ -485,6 +486,8 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // the user about them any more.
   void AcknowledgeSyncedTypes();
 
+  SyncGlobalError* sync_global_error() { return sync_global_error_.get(); }
+
  protected:
   // Used by test classes that derive from ProfileSyncService.
   virtual browser_sync::SyncBackendHost* GetBackendForTest();
@@ -672,6 +675,9 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // This is the last |SyncProtocolError| we received from the server that had
   // an action set on it.
   browser_sync::SyncProtocolError last_actionable_error_;
+
+  // This is used to show sync errors in the wrench menu.
+  scoped_ptr<SyncGlobalError> sync_global_error_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileSyncService);
 };

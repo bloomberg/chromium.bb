@@ -2159,6 +2159,8 @@
         'browser/sync/retry_verifier.h',
         'browser/sync/signin_manager.cc',
         'browser/sync/signin_manager.h',
+        'browser/sync/sync_global_error.cc',
+        'browser/sync/sync_global_error.h',
         'browser/sync/sync_setup_flow.cc',
         'browser/sync/sync_setup_flow.h',
         'browser/sync/sync_setup_flow_handler.h',

@@ -39,11 +39,14 @@
 #include "chrome/browser/sync/js/js_event_details.h"
 #include "chrome/browser/sync/profile_sync_factory.h"
 #include "chrome/browser/sync/signin_manager.h"
+#include "chrome/browser/sync/sync_global_error.h"
 #include "chrome/browser/sync/util/cryptographer.h"
 #include "chrome/browser/sync/util/oauth.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/global_error_service.h"
+#include "chrome/browser/ui/global_error_service_factory.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
@@ -447,6 +450,13 @@ void ProfileSyncService::StartUp() {
   // we'll want to start from a fresh SyncDB, so delete any old one that might
   // be there.
   InitializeBackend(!HasSyncSetupCompleted());
+
+  if (!sync_global_error_.get()) {
+    sync_global_error_.reset(new SyncGlobalError(this));
+    GlobalErrorServiceFactory::GetForProfile(profile_)->AddGlobalError(
+        sync_global_error_.get());
+    AddObserver(sync_global_error_.get());
+  }
 }
 
 void ProfileSyncService::Shutdown(bool sync_disabled) {
@@ -490,6 +500,13 @@ void ProfileSyncService::Shutdown(bool sync_disabled) {
   passphrase_required_reason_ = sync_api::REASON_PASSPHRASE_NOT_REQUIRED;
   last_attempted_user_email_.clear();
   last_auth_error_ = GoogleServiceAuthError::None();
+
+  if (sync_global_error_.get()) {
+    GlobalErrorServiceFactory::GetForProfile(profile_)->RemoveGlobalError(
+        sync_global_error_.get());
+    RemoveObserver(sync_global_error_.get());
+    sync_global_error_.reset(NULL);
+  }
 }
 
 void ProfileSyncService::ClearServerData() {

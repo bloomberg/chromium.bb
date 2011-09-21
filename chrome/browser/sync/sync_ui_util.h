@@ -48,6 +48,12 @@ MessageType GetStatusLabelsForNewTabPage(ProfileSyncService* service,
                                          string16* status_label,
                                          string16* link_label);
 
+// Gets various labels for the sync global error based on the sync error state.
+MessageType GetStatusLabelsForSyncGlobalError(ProfileSyncService* service,
+                                              string16* menu_item_label,
+                                              string16* bubble_message,
+                                              string16* bubble_accept_label);
+
 MessageType GetStatus(ProfileSyncService* service);
 
 // Determines whether or not the sync error button should be visible.
@@ -77,5 +83,6 @@ void AddIntSyncDetail(base::ListValue* details,
 
 void AddStringSyncDetails(ListValue* details, const std::string& stat_name,
                           const std::string& stat_value);
+
 }  // namespace sync_ui_util
 #endif  // CHROME_BROWSER_SYNC_SYNC_UI_UTIL_H_
