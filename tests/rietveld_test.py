@@ -281,6 +281,70 @@ class RietveldTest(unittest.TestCase):
     # TODO(maruel): Change with no diff, only svn property change:
     # http://codereview.chromium.org/6462019/
 
+  def test_search_all_empty(self):
+    url = (
+        '/search?format=json'
+        '&base=base'
+        '&created_after=2010-01-02'
+        '&created_before=2010-01-01'
+        '&modified_after=2010-02-02'
+        '&modified_before=2010-02-01'
+        '&owner=owner%40example.com'
+        '&reviewer=reviewer%40example.com'
+        '&closed=2'
+        '&commit=2'
+        '&private=2'
+        '&keys_only=True'
+        '&with_messages=True'
+        '&limit=23')
+    self.requests = [
+        (url, '{}'),
+    ]
+    results = list(self.rietveld.search(
+      'owner@example.com',
+      'reviewer@example.com',
+      'base',
+      True,
+      True,
+      True,
+      '2010-01-01',
+      '2010-01-02',
+      '2010-02-01',
+      '2010-02-02',
+      23,
+      True,
+      True,
+      ))
+    self.assertEquals([], results)
+
+  def test_results_cursor(self):
+    # Verify cursor iteration is transparent.
+    self.requests = [
+        ('/search?format=json&base=base',
+          rietveld.json.dumps({
+            'cursor': 'MY_CURSOR',
+            'results': [{'foo': 'bar'}, {'foo': 'baz'}],
+            })),
+        ('/search?format=json&base=base&cursor=MY_CURSOR',
+          rietveld.json.dumps({
+            'cursor': 'NEXT',
+            'results': [{'foo': 'prout'}],
+            })),
+        ('/search?format=json&base=base&cursor=NEXT',
+          rietveld.json.dumps({
+            'cursor': 'VOID',
+            'results': [],
+            })),
+    ]
+    expected = [
+        {'foo': 'bar'},
+        {'foo': 'baz'},
+        {'foo': 'prout'},
+    ]
+    for i in self.rietveld.search(base='base'):
+      self.assertEquals(expected.pop(0), i)
+    self.assertEquals([], expected)
+
 
 if __name__ == '__main__':
   logging.basicConfig(level=logging.ERROR)

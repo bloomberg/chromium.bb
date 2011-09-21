@@ -242,6 +242,64 @@ class Rietveld(object):
         ('xsrf_token', self.xsrf_token()),
         (flag, value)])
 
+  def search(
+      self,
+      owner=None, reviewer=None,
+      base=None,
+      closed=None, private=None, commit=None,
+      created_before=None, created_after=None,
+      modified_before=None, modified_after=None,
+      per_request=None, keys_only=False,
+      with_messages=False):
+    """Yields search results."""
+    # These are expected to be strings.
+    string_keys = {
+        'owner': owner,
+        'reviewer': reviewer,
+        'base': base,
+        'created_before': created_before,
+        'created_after': created_after,
+        'modified_before': modified_before,
+        'modified_after': modified_after,
+    }
+    # These are either None, False or True.
+    three_state_keys = {
+      'closed': closed,
+      'private': private,
+      'commit': commit,
+    }
+
+    url = '/search?format=json'
+    # Sort the keys mainly to ease testing.
+    for key in sorted(string_keys):
+      value = string_keys[key]
+      if value:
+        url += '&%s=%s' % (key, urllib2.quote(value))
+    for key in sorted(three_state_keys):
+      value = three_state_keys[key]
+      if value is not None:
+        url += '&%s=%d' % (key, int(value) + 1)
+
+    if keys_only:
+      url += '&keys_only=True'
+    if with_messages:
+      url += '&with_messages=True'
+    if per_request:
+      url += '&limit=%d' % per_request
+
+    cursor = ''
+    while True:
+      output = self.get(url + cursor)
+      if output.startswith('<'):
+        # It's an error message. Return as no result.
+        break
+      data = json.loads(output) or {}
+      if not data.get('results'):
+        break
+      for i in data['results']:
+        yield i
+      cursor = '&cursor=%s' % data['cursor']
+
   def get(self, request_path, **kwargs):
     kwargs.setdefault('payload', None)
     return self._send(request_path, **kwargs)
