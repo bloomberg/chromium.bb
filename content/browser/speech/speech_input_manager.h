@@ -5,7 +5,11 @@
 #ifndef CONTENT_BROWSER_SPEECH_SPEECH_INPUT_MANAGER_H_
 #define CONTENT_BROWSER_SPEECH_SPEECH_INPUT_MANAGER_H_
 
+#include <map>
+#include <string>
+
 #include "base/basictypes.h"
+#include "content/browser/speech/speech_recognizer.h"
 #include "content/common/content_export.h"
 #include "content/common/speech_input_result.h"
 #include "ui/gfx/rect.h"
@@ -16,7 +20,7 @@ namespace speech_input {
 // handles requests received from various render views and makes sure only one
 // of them can use speech recognition at a time. It also sends recognition
 // results and status events to the render views when required.
-class SpeechInputManager {
+class SpeechInputManager : public SpeechRecognizerDelegate {
  public:
   // Implemented by the dispatcher host to relay events to the render views.
   class Delegate {
@@ -54,18 +58,94 @@ class SpeechInputManager {
                                 const gfx::Rect& element_rect,
                                 const std::string& language,
                                 const std::string& grammar,
-                                const std::string& origin_url)  = 0;
-  virtual void CancelRecognition(int caller_id) = 0;
-  virtual void StopRecording(int caller_id) = 0;
+                                const std::string& origin_url);
+  virtual void CancelRecognition(int caller_id);
+  virtual void CancelAllRequestsWithDelegate(Delegate* delegate);
+  virtual void StopRecording(int caller_id);
 
-  virtual void CancelAllRequestsWithDelegate(Delegate* delegate) = 0;
+  // SpeechRecognizer::Delegate methods.
+  virtual void DidStartReceivingAudio(int caller_id);
+  virtual void SetRecognitionResult(int caller_id,
+                                    bool error,
+                                    const SpeechInputResultArray& result);
+  virtual void DidCompleteRecording(int caller_id);
+  virtual void DidCompleteRecognition(int caller_id);
+  virtual void OnRecognizerError(int caller_id,
+                                 SpeechRecognizer::ErrorCode error);
+  virtual void DidCompleteEnvironmentEstimation(int caller_id);
+  virtual void SetInputVolume(int caller_id, float volume, float noise_volume);
 
   void set_censor_results(bool censor) { censor_results_ = censor; }
 
   bool censor_results() { return censor_results_; }
 
+ protected:
+  // The pure virtual methods are used for displaying the current state of
+  // recognition and for fetching optional request information.
+
+  // Get the optional request information if available.
+  virtual void GetRequestInfo(bool* can_report_metrics,
+                              std::string* request_info) = 0;
+
+  // Called when recognition has been requested from point |element_rect_| on
+  // the view port for the given caller.
+  virtual void ShowRecognitionRequested(int caller_id,
+                                        int render_process_id,
+                                        int render_view_id,
+                                        const gfx::Rect& element_rect) = 0;
+
+  // Called when recognition is starting up.
+  virtual void ShowWarmUp(int caller_id) = 0;
+
+  // Called when recognition has started.
+  virtual void ShowRecognizing(int caller_id) = 0;
+
+  // Called when recording has started.
+  virtual void ShowRecording(int caller_id) = 0;
+
+  // Continuously updated with the current input volume.
+  virtual void ShowInputVolume(int caller_id,
+                               float volume,
+                               float noise_volume) = 0;
+
+  // Called when no microphone has been found.
+  virtual void ShowNoMicError(int caller_id) = 0;
+
+  // Called when there has been a error with the recognition.
+  virtual void ShowRecognizerError(int caller_id,
+                                   SpeechRecognizer::ErrorCode error) = 0;
+
+  // Called when recognition has ended or has been canceled.
+  virtual void DoClose(int caller_id) = 0;
+
+  // Cancels recognition for the specified caller if it is active.
+  void OnFocusChanged(int caller_id);
+
+  bool HasPendingRequest(int caller_id) const;
+
+  // Starts/restarts recognition for an existing request.
+  void StartRecognitionForRequest(int caller_id);
+
+  void CancelRecognitionAndInformDelegate(int caller_id);
+
  private:
+  struct SpeechInputRequest {
+    SpeechInputRequest();
+    ~SpeechInputRequest();
+
+    Delegate* delegate;
+    scoped_refptr<SpeechRecognizer> recognizer;
+    bool is_active;  // Set to true when recording or recognition is going on.
+  };
+
+  Delegate* GetDelegate(int caller_id) const;
+
+  typedef std::map<int, SpeechInputRequest> SpeechRecognizerMap;
+  SpeechRecognizerMap requests_;
+  std::string request_info_;
+  bool can_report_metrics_;
   bool censor_results_;
+  int recording_caller_id_;
 };
 
 // This typedef is to workaround the issue with certain versions of

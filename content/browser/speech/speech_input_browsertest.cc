@@ -92,6 +92,24 @@ class FakeSpeechInputManager : public SpeechInputManager {
     did_cancel_all_ = true;
   }
 
+ protected:
+  virtual void GetRequestInfo(bool* can_report_metrics,
+                              std::string* request_info) {}
+  virtual void ShowRecognitionRequested(int caller_id,
+                                        int render_process_id,
+                                        int render_view_id,
+                                        const gfx::Rect& element_rect) {}
+  virtual void ShowWarmUp(int caller_id) {}
+  virtual void ShowRecognizing(int caller_id) {}
+  virtual void ShowRecording(int caller_id)  {}
+  virtual void ShowInputVolume(int caller_id,
+                               float volume,
+                               float noise_volume) {}
+  virtual void ShowNoMicError(int caller_id) {}
+  virtual void ShowRecognizerError(int caller_id,
+                                   SpeechRecognizer::ErrorCode error) {}
+  virtual void DoClose(int caller_id) {}
+
  private:
   void SetFakeRecognitionResult() {
     if (caller_id_) {  // Do a check in case we were cancelled..
