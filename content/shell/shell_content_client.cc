@@ -5,6 +5,7 @@
 #include "content/shell/shell_content_client.h"
 
 #include "base/string_piece.h"
+#include "webkit/glue/user_agent.h"
 
 namespace content {
 
@@ -30,7 +31,7 @@ bool ShellContentClient::CanHandleWhileSwappedOut(const IPC::Message& msg) {
 }
 
 std::string ShellContentClient::GetUserAgent(bool mimic_windows) const {
-  return std::string();
+  return webkit_glue::BuildUserAgentHelper(mimic_windows, "Chrome/15.16.17.18");
 }
 
 string16 ShellContentClient::GetLocalizedString(int message_id) const {
