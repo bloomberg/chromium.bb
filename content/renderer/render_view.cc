@@ -4520,8 +4520,12 @@ void RenderView::startActivity(const WebKit::WebString& action,
                                const WebKit::WebString& type,
                                const WebKit::WebString& data,
                                int intent_id) {
-  RenderThread::current()->Send(new ViewHostMsg_WebIntentDispatch(
-      routing_id_, action, type, data, intent_id));
+  webkit_glue::WebIntentData intent_data;
+  intent_data.action = action;
+  intent_data.type = type;
+  intent_data.data = data;
+  Send(new IntentsHostMsg_WebIntentDispatch(
+      routing_id_, intent_data, intent_id));
 }
 
 void RenderView::OnWebIntentReply(

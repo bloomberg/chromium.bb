@@ -40,28 +40,28 @@ class WebIntentsModelTest : public testing::Test {
 
   void LoadRegistry() {
     {
-      WebIntentData provider;
-      provider.service_url = GURL("http://www.google.com/share");
-      provider.action = ASCIIToUTF16("SHARE");
-      provider.type = ASCIIToUTF16("text/url");
-      provider.title = ASCIIToUTF16("Google");
-      registry_.RegisterIntentProvider(provider);
+      WebIntentServiceData service;
+      service.service_url = GURL("http://www.google.com/share");
+      service.action = ASCIIToUTF16("SHARE");
+      service.type = ASCIIToUTF16("text/url");
+      service.title = ASCIIToUTF16("Google");
+      registry_.RegisterIntentProvider(service);
     }
     {
-      WebIntentData provider;
-      provider.service_url = GURL("http://picasaweb.google.com/share");
-      provider.action = ASCIIToUTF16("EDIT");
-      provider.type = ASCIIToUTF16("image/*");
-      provider.title = ASCIIToUTF16("Picasa");
-      registry_.RegisterIntentProvider(provider);
+      WebIntentServiceData service;
+      service.service_url = GURL("http://picasaweb.google.com/share");
+      service.action = ASCIIToUTF16("EDIT");
+      service.type = ASCIIToUTF16("image/*");
+      service.title = ASCIIToUTF16("Picasa");
+      registry_.RegisterIntentProvider(service);
     }
     {
-      WebIntentData provider;
-      provider.service_url = GURL("http://www.digg.com/share");
-      provider.action = ASCIIToUTF16("SHARE");
-      provider.type = ASCIIToUTF16("text/url");
-      provider.title = ASCIIToUTF16("Digg");
-      registry_.RegisterIntentProvider(provider);
+      WebIntentServiceData service;
+      service.service_url = GURL("http://www.digg.com/share");
+      service.action = ASCIIToUTF16("SHARE");
+      service.type = ASCIIToUTF16("text/url");
+      service.title = ASCIIToUTF16("Digg");
+      registry_.RegisterIntentProvider(service);
     }
   }
 

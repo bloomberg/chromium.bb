@@ -23,7 +23,7 @@ class TabContentsWrapper;
 class WebDataService;
 class WebIntentPicker;
 class WebIntentPickerFactory;
-struct WebIntentData;
+struct WebIntentServiceData;
 
 // Controls the creation of the WebIntentPicker UI and forwards the user's
 // intent handler choice back to the TabContents object.
@@ -59,7 +59,8 @@ class WebIntentPickerController : public NotificationObserver,
   int pending_async_count() const { return pending_async_count_; }
 
   // Called from the WebIntentDataFetcher when intent data is available.
-  void OnWebIntentDataAvailable(const std::vector<WebIntentData>& intent_data);
+  void OnWebIntentDataAvailable(
+      const std::vector<WebIntentServiceData>& intent_data);
 
   // Called from the FaviconDataFetcher when a favicon is available.
   void OnFaviconDataAvailable(size_t index, const SkBitmap& icon_bitmap);

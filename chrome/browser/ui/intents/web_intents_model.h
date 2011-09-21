@@ -103,7 +103,7 @@ class WebIntentsModel : public ui::TreeNodeModel<WebIntentsTreeNode>,
 
   virtual void OnIntentsQueryDone(
       WebIntentsRegistry::QueryID query_id,
-      const std::vector<WebIntentData>& intents) OVERRIDE;
+      const std::vector<WebIntentServiceData>& intents) OVERRIDE;
 
  private:
   // Loads the data model from the WebIntentsRegistry.

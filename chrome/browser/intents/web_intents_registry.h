@@ -8,7 +8,7 @@
 
 #include "base/hash_tables.h"
 #include "base/memory/ref_counted.h"
-#include "chrome/browser/intents/web_intent_data.h"
+#include "chrome/browser/intents/web_intent_service_data.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/browser/webdata/web_data_service.h"
 
@@ -28,7 +28,7 @@ class WebIntentsRegistry
     // Notifies the observer that the intents request has been completed.
     virtual void OnIntentsQueryDone(
         QueryID query_id,
-        const std::vector<WebIntentData>& intents) = 0;
+        const std::vector<WebIntentServiceData>& intents) = 0;
 
    protected:
     virtual ~Consumer() {}
@@ -38,10 +38,10 @@ class WebIntentsRegistry
   void Initialize(scoped_refptr<WebDataService> wds);
 
   // Registers a web intent provider.
-  virtual void RegisterIntentProvider(const WebIntentData& intent);
+  virtual void RegisterIntentProvider(const WebIntentServiceData& intent);
 
   // Removes a web intent provider from the registry.
-  void UnregisterIntentProvider(const WebIntentData& intent);
+  void UnregisterIntentProvider(const WebIntentServiceData& intent);
 
   // Requests all intent providers matching |action|.
   // |consumer| must not be NULL.

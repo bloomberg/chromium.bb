@@ -170,13 +170,11 @@ class ExternalTabContainer : public TabContentsDelegate,
                                      const string16& action,
                                      const string16& type,
                                      const string16& href,
-                                     const string16& title);
+                                     const string16& title) OVERRIDE;
   virtual void WebIntentDispatch(TabContents* tab,
                                  int routing_id,
-                                 const string16& action,
-                                 const string16& type,
-                                 const string16& data,
-                                 int intent_id);
+                                 const webkit_glue::WebIntentData& intent,
+                                 int intent_id) OVERRIDE;
   virtual void FindReply(TabContents* tab,
                          int request_id,
                          int number_of_matches,

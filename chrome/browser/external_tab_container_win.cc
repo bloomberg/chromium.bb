@@ -767,12 +767,11 @@ void ExternalTabContainer::RegisterIntentHandler(TabContents* tab,
   Browser::RegisterIntentHandlerHelper(tab, action, type, href, title);
 }
 
-void ExternalTabContainer::WebIntentDispatch(TabContents* tab,
-                                             int routing_id,
-                                             const string16& action,
-                                             const string16& type,
-                                             const string16& data,
-                                             int intent_id) {
+void ExternalTabContainer::WebIntentDispatch(
+    TabContents* tab,
+    int routing_id,
+    const webkit_glue::WebIntentData& intent,
+    int intent_id) {
   // TODO(binji) How do we want to display the WebIntentPicker bubble if there
   // is no BrowserWindow?
 }

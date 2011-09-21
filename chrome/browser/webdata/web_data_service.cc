@@ -221,17 +221,19 @@ WebDataService::Handle WebDataService::GetWebAppImages(
 //
 //////////////////////////////////////////////////////////////////////////////
 
-void WebDataService::AddWebIntent(const WebIntentData& intent) {
-  GenericRequest<WebIntentData>* request = new GenericRequest<WebIntentData>(
-      this, GetNextRequestHandle(), NULL, intent);
+void WebDataService::AddWebIntent(const WebIntentServiceData& service) {
+  GenericRequest<WebIntentServiceData>* request =
+      new GenericRequest<WebIntentServiceData>(
+          this, GetNextRequestHandle(), NULL, service);
   RegisterRequest(request);
   ScheduleTask(NewRunnableMethod(this, &WebDataService::AddWebIntentImpl,
                                  request));
 }
 
-void WebDataService::RemoveWebIntent(const WebIntentData& intent) {
-  GenericRequest<WebIntentData>* request = new GenericRequest<WebIntentData>(
-      this, GetNextRequestHandle(), NULL, intent);
+void WebDataService::RemoveWebIntent(const WebIntentServiceData& service) {
+  GenericRequest<WebIntentServiceData>* request =
+      new GenericRequest<WebIntentServiceData>(
+          this, GetNextRequestHandle(), NULL, service);
   RegisterRequest(request);
   ScheduleTask(NewRunnableMethod(this, &WebDataService::RemoveWebIntentImpl,
                                  request));
@@ -841,21 +843,22 @@ void WebDataService::GetWebAppImagesImpl(GenericRequest<GURL>* request) {
 ////////////////////////////////////////////////////////////////////////////////
 
 void WebDataService::RemoveWebIntentImpl(
-    GenericRequest<WebIntentData>* request) {
+    GenericRequest<WebIntentServiceData>* request) {
   InitializeDatabaseIfNecessary();
   if (db_ && !request->IsCancelled(NULL)) {
-    const WebIntentData& intent = request->arg();
-    db_->GetWebIntentsTable()->RemoveWebIntent(intent);
+    const WebIntentServiceData& service = request->arg();
+    db_->GetWebIntentsTable()->RemoveWebIntent(service);
     ScheduleCommit();
   }
   request->RequestComplete();
 }
 
-void WebDataService::AddWebIntentImpl(GenericRequest<WebIntentData>* request) {
+void WebDataService::AddWebIntentImpl(
+    GenericRequest<WebIntentServiceData>* request) {
   InitializeDatabaseIfNecessary();
   if (db_ && !request->IsCancelled(NULL)) {
-    const WebIntentData& intent = request->arg();
-    db_->GetWebIntentsTable()->SetWebIntent(intent);
+    const WebIntentServiceData& service = request->arg();
+    db_->GetWebIntentsTable()->SetWebIntent(service);
     ScheduleCommit();
   }
   request->RequestComplete();
@@ -865,10 +868,11 @@ void WebDataService::AddWebIntentImpl(GenericRequest<WebIntentData>* request) {
 void WebDataService::GetWebIntentsImpl(GenericRequest<string16>* request) {
   InitializeDatabaseIfNecessary();
   if (db_ && !request->IsCancelled(NULL)) {
-    std::vector<WebIntentData> result;
+    std::vector<WebIntentServiceData> result;
     db_->GetWebIntentsTable()->GetWebIntents(request->arg(), &result);
     request->SetResult(
-        new WDResult<std::vector<WebIntentData> >(WEB_INTENTS_RESULT, result));
+        new WDResult<std::vector<WebIntentServiceData> >(
+            WEB_INTENTS_RESULT, result));
   }
   request->RequestComplete();
 }
@@ -877,10 +881,11 @@ void WebDataService::GetAllWebIntentsImpl(
     GenericRequest<std::string>* request) {
   InitializeDatabaseIfNecessary();
   if (db_ && !request->IsCancelled(NULL)) {
-    std::vector<WebIntentData> result;
+    std::vector<WebIntentServiceData> result;
     db_->GetWebIntentsTable()->GetAllWebIntents(&result);
     request->SetResult(
-        new WDResult<std::vector<WebIntentData> >(WEB_INTENTS_RESULT, result));
+        new WDResult<std::vector<WebIntentServiceData> >(
+            WEB_INTENTS_RESULT, result));
   }
   request->RequestComplete();
 }

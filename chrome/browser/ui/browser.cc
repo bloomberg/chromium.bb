@@ -156,6 +156,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/point.h"
 #include "webkit/glue/webkit_glue.h"
+#include "webkit/glue/web_intent_data.h"
 #include "webkit/glue/window_open_disposition.h"
 
 #if defined(OS_WIN)
@@ -2485,13 +2486,13 @@ void Browser::RegisterIntentHandlerHelper(TabContents* tab,
     service_url = url.Resolve(href);
   }
 
-  WebIntentData intent;
-  intent.service_url = service_url;
-  intent.action = action;
-  intent.type = type;
-  intent.title = title;
+  WebIntentServiceData service;
+  service.service_url = service_url;
+  service.action = action;
+  service.type = type;
+  service.title = title;
   tcw->infobar_tab_helper()->AddInfoBar(
-      new RegisterIntentHandlerInfoBarDelegate(tab, intent));
+      new RegisterIntentHandlerInfoBarDelegate(tab, service));
 }
 
 // static
@@ -3834,9 +3835,7 @@ void Browser::RegisterIntentHandler(TabContents* tab,
 
 void Browser::WebIntentDispatch(TabContents* tab,
                                 int routing_id,
-                                const string16& action,
-                                const string16& type,
-                                const string16& data,
+                                const webkit_glue::WebIntentData& intent,
                                 int intent_id) {
   if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableWebIntents))
     return;
@@ -3845,7 +3844,7 @@ void Browser::WebIntentDispatch(TabContents* tab,
       TabContentsWrapper::GetCurrentWrapperForContents(tab);
 
   tcw->web_intent_picker_controller()->ShowDialog(window()->GetNativeHandle(),
-                                                  action, type);
+                                                  intent.action, intent.type);
 }
 
 void Browser::FindReply(TabContents* tab,

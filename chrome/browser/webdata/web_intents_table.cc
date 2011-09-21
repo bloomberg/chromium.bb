@@ -10,22 +10,23 @@
 #include "sql/statement.h"
 
 namespace {
-bool ExtractIntents(sql::Statement* s, std::vector<WebIntentData>* intents) {
+bool ExtractIntents(sql::Statement* s,
+                    std::vector<WebIntentServiceData>* services) {
   DCHECK(s);
   while (s->Step()) {
-    WebIntentData intent;
+    WebIntentServiceData service;
     string16 tmp = s->ColumnString16(0);
-    intent.service_url = GURL(tmp);
+    service.service_url = GURL(tmp);
 
-    intent.action = s->ColumnString16(1);
-    intent.type = s->ColumnString16(2);
-    intent.title = s->ColumnString16(3);
+    service.action = s->ColumnString16(1);
+    service.type = s->ColumnString16(2);
+    service.title = s->ColumnString16(3);
     tmp = s->ColumnString16(4);
      // Default to window disposition.
-    intent.disposition = WebIntentData::DISPOSITION_WINDOW;
+    service.disposition = WebIntentServiceData::DISPOSITION_WINDOW;
     if (tmp == ASCIIToUTF16("inline"))
-      intent.disposition = WebIntentData::DISPOSITION_INLINE;
-    intents->push_back(intent);
+      service.disposition = WebIntentServiceData::DISPOSITION_INLINE;
+    services->push_back(service);
   }
   return true;
 }
@@ -68,8 +69,9 @@ bool WebIntentsTable::IsSyncable() {
   return false;
 }
 
-bool WebIntentsTable::GetWebIntents(const string16& action,
-                                    std::vector<WebIntentData>* intents) {
+bool WebIntentsTable::GetWebIntents(
+    const string16& action,
+    std::vector<WebIntentServiceData>* intents) {
   DCHECK(intents);
   sql::Statement s(db_->GetUniqueStatement(
       "SELECT service_url, action, type, title, disposition FROM web_intents "
@@ -83,7 +85,8 @@ bool WebIntentsTable::GetWebIntents(const string16& action,
   return ExtractIntents(&s, intents);
 }
 
-bool WebIntentsTable::GetAllWebIntents(std::vector<WebIntentData>* intents) {
+bool WebIntentsTable::GetAllWebIntents(
+    std::vector<WebIntentServiceData>* intents) {
   DCHECK(intents);
   sql::Statement s(db_->GetUniqueStatement(
       "SELECT service_url, action, type, title, disposition FROM web_intents"));
@@ -95,7 +98,7 @@ bool WebIntentsTable::GetAllWebIntents(std::vector<WebIntentData>* intents) {
   return ExtractIntents(&s, intents);
 }
 
-bool WebIntentsTable::SetWebIntent(const WebIntentData& intent) {
+bool WebIntentsTable::SetWebIntent(const WebIntentServiceData& intent) {
   sql::Statement s(db_->GetUniqueStatement(
       "INSERT OR REPLACE INTO web_intents "
       "(service_url, type, action, title, disposition) "
@@ -107,7 +110,7 @@ bool WebIntentsTable::SetWebIntent(const WebIntentData& intent) {
 
   // Default to window disposition.
   string16 disposition = ASCIIToUTF16("window");
-  if (intent.disposition == WebIntentData::DISPOSITION_INLINE)
+  if (intent.disposition == WebIntentServiceData::DISPOSITION_INLINE)
     disposition = ASCIIToUTF16("inline");
   s.BindString(0, intent.service_url.spec());
   s.BindString16(1, intent.type);
@@ -120,7 +123,7 @@ bool WebIntentsTable::SetWebIntent(const WebIntentData& intent) {
 // TODO(jhawkins): Investigate the need to remove rows matching only
 // |intent.service_url|. It's unlikely the user will be given the ability to
 // remove at the granularity of actions or types.
-bool WebIntentsTable::RemoveWebIntent(const WebIntentData& intent) {
+bool WebIntentsTable::RemoveWebIntent(const WebIntentServiceData& intent) {
   sql::Statement s(db_->GetUniqueStatement(
       "DELETE FROM web_intents "
       "WHERE service_url = ? AND action = ? AND type = ?"));
@@ -134,4 +137,3 @@ bool WebIntentsTable::RemoveWebIntent(const WebIntentData& intent) {
   s.BindString16(2, intent.type);
   return s.Run();
 }
-

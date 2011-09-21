@@ -46,3 +46,8 @@ IPC_MESSAGE_ROUTED3(IntentsMsg_WebIntentReply,
                     IntentsMsg_WebIntentReply_Type::Value /* reply type */,
                     string16 /* payload data */,
                     int /* intent ID */)
+
+// Route the startActivity Intents call from a page to the service picker.
+IPC_MESSAGE_ROUTED2(IntentsHostMsg_WebIntentDispatch,
+                    webkit_glue::WebIntentData,
+                    int /* intent ID */)

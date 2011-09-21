@@ -115,17 +115,17 @@ void WebIntentsSettingsHandler::RemoveOrigin(WebIntentsTreeNode* node) {
 }
 
 void WebIntentsSettingsHandler::RemoveService(ServiceTreeNode* snode) {
-  WebIntentData provider;
-  provider.service_url = GURL(snode->ServiceUrl());
-  provider.action = snode->Action();
+  WebIntentServiceData service;
+  service.service_url = GURL(snode->ServiceUrl());
+  service.action = snode->Action();
   string16 stype;
   if (snode->Types().GetString(0, &stype)) {
-    provider.type = stype;  // Really need to iterate here.
+    service.type = stype;  // Really need to iterate here.
   }
-  provider.title = snode->ServiceName();
+  service.title = snode->ServiceName();
   LOG(INFO) << "Removing service " << snode->ServiceName()
             << " " << snode->ServiceUrl();
-  web_intents_registry_->UnregisterIntentProvider(provider);
+  web_intents_registry_->UnregisterIntentProvider(service);
   delete intents_tree_model_->Remove(snode->parent(), snode);
 }
 

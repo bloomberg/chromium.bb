@@ -48,8 +48,8 @@ void WebIntentsRegistry::OnWebDataServiceRequestDone(
   queries_.erase(it);
 
   // TODO(groby): Filtering goes here.
-  std::vector<WebIntentData> intents = static_cast<
-      const WDResult<std::vector<WebIntentData> >*>(result)->GetValue();
+  std::vector<WebIntentServiceData> intents = static_cast<
+      const WDResult<std::vector<WebIntentServiceData> >*>(result)->GetValue();
 
   query->consumer_->OnIntentsQueryDone(query->query_id_, intents);
   delete query;
@@ -84,12 +84,14 @@ WebIntentsRegistry::QueryID WebIntentsRegistry::GetAllIntentProviders(
   return query->query_id_;
 }
 
-void WebIntentsRegistry::RegisterIntentProvider(const WebIntentData& intent) {
+void WebIntentsRegistry::RegisterIntentProvider(
+    const WebIntentServiceData& service) {
   DCHECK(wds_.get());
-  wds_->AddWebIntent(intent);
+  wds_->AddWebIntent(service);
 }
 
-void WebIntentsRegistry::UnregisterIntentProvider(const WebIntentData& intent) {
+void WebIntentsRegistry::UnregisterIntentProvider(
+    const WebIntentServiceData& service) {
   DCHECK(wds_.get());
-  wds_->RemoveWebIntent(intent);
+  wds_->RemoveWebIntent(service);
 }

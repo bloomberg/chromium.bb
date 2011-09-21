@@ -46,10 +46,11 @@ class WebIntentsRegistryTest : public testing::Test {
 // terminates UI thread when callback is invoked.
 class TestConsumer: public WebIntentsRegistry::Consumer {
  public:
-   virtual void OnIntentsQueryDone(WebIntentsRegistry::QueryID id,
-                                   const std::vector<WebIntentData>& intents) {
+   virtual void OnIntentsQueryDone(
+       WebIntentsRegistry::QueryID id,
+       const std::vector<WebIntentServiceData>& services) {
      DCHECK(id == expected_id_);
-     intents_ = intents;
+     services_ = services;
 
      DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
      MessageLoop::current()->Quit();
@@ -63,67 +64,67 @@ class TestConsumer: public WebIntentsRegistry::Consumer {
    }
 
    WebIntentsRegistry::QueryID expected_id_;  // QueryID callback is tied to.
-   std::vector<WebIntentData> intents_;  // Result data from callback.
+   std::vector<WebIntentServiceData> services_;  // Result data from callback.
 };
 
 TEST_F(WebIntentsRegistryTest, BasicTests) {
-  WebIntentData intent;
-  intent.service_url = GURL("http://google.com");
-  intent.action = ASCIIToUTF16("share");
-  intent.type = ASCIIToUTF16("image/*");
-  intent.title = ASCIIToUTF16("Google's Sharing Service");
+  WebIntentServiceData service;
+  service.service_url = GURL("http://google.com");
+  service.action = ASCIIToUTF16("share");
+  service.type = ASCIIToUTF16("image/*");
+  service.title = ASCIIToUTF16("Google's Sharing Service");
 
-  registry_.RegisterIntentProvider(intent);
+  registry_.RegisterIntentProvider(service);
 
-  intent.type = ASCIIToUTF16("video/*");
-  registry_.RegisterIntentProvider(intent);
+  service.type = ASCIIToUTF16("video/*");
+  registry_.RegisterIntentProvider(service);
 
-  intent.action = ASCIIToUTF16("search");
-  registry_.RegisterIntentProvider(intent);
+  service.action = ASCIIToUTF16("search");
+  registry_.RegisterIntentProvider(service);
 
   TestConsumer consumer;
   consumer.expected_id_ = registry_.GetIntentProviders(ASCIIToUTF16("share"),
                                                        &consumer);
   consumer.WaitForData();
-  EXPECT_EQ(2U, consumer.intents_.size());
+  EXPECT_EQ(2U, consumer.services_.size());
 
   consumer.expected_id_ = registry_.GetIntentProviders(ASCIIToUTF16("search"),
                                                        &consumer);
   consumer.WaitForData();
-  EXPECT_EQ(1U, consumer.intents_.size());
+  EXPECT_EQ(1U, consumer.services_.size());
 
-  intent.action = ASCIIToUTF16("share");
-  intent.type = ASCIIToUTF16("image/*");
-  registry_.UnregisterIntentProvider(intent);
+  service.action = ASCIIToUTF16("share");
+  service.type = ASCIIToUTF16("image/*");
+  registry_.UnregisterIntentProvider(service);
 
   consumer.expected_id_ = registry_.GetIntentProviders(ASCIIToUTF16("share"),
                                                        &consumer);
   consumer.WaitForData();
-  EXPECT_EQ(1U, consumer.intents_.size());
+  EXPECT_EQ(1U, consumer.services_.size());
 }
 
 TEST_F(WebIntentsRegistryTest, GetAllIntents) {
-  WebIntentData intent;
-  intent.service_url = GURL("http://google.com");
-  intent.action = ASCIIToUTF16("share");
-  intent.type = ASCIIToUTF16("image/*");
-  intent.title = ASCIIToUTF16("Google's Sharing Service");
-  registry_.RegisterIntentProvider(intent);
+  WebIntentServiceData service;
+  service.service_url = GURL("http://google.com");
+  service.action = ASCIIToUTF16("share");
+  service.type = ASCIIToUTF16("image/*");
+  service.title = ASCIIToUTF16("Google's Sharing Service");
+  registry_.RegisterIntentProvider(service);
 
-  intent.action = ASCIIToUTF16("search");
-  registry_.RegisterIntentProvider(intent);
+  service.action = ASCIIToUTF16("search");
+  registry_.RegisterIntentProvider(service);
 
   TestConsumer consumer;
   consumer.expected_id_ = registry_.GetAllIntentProviders(&consumer);
   consumer.WaitForData();
-  ASSERT_EQ(2U, consumer.intents_.size());
+  ASSERT_EQ(2U, consumer.services_.size());
 
-  if (consumer.intents_[0].action != ASCIIToUTF16("share"))
-    std::swap(consumer.intents_[0],consumer.intents_[1]);
+  if (consumer.services_[0].action != ASCIIToUTF16("share"))
+    std::swap(consumer.services_[0],consumer.services_[1]);
 
-  intent.action = ASCIIToUTF16("share");
-  EXPECT_EQ(intent, consumer.intents_[0]);
+  service.action = ASCIIToUTF16("share");
+  EXPECT_EQ(service, consumer.services_[0]);
 
-  intent.action = ASCIIToUTF16("search");
-  EXPECT_EQ(intent, consumer.intents_[1]);
+  service.action = ASCIIToUTF16("search");
+  EXPECT_EQ(service, consumer.services_[1]);
 }

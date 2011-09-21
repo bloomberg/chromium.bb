@@ -10,7 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/string16.h"
-#include "chrome/browser/intents/web_intent_data.h"
+#include "chrome/browser/intents/web_intent_service_data.h"
 #include "chrome/browser/webdata/web_database_table.h"
 
 class GURL;
@@ -40,17 +40,17 @@ class WebIntentsTable : public WebDatabaseTable {
 
   // Adds a web intent to the WebIntents table. If intent already exists,
   // replaces it.
-  bool SetWebIntent(const WebIntentData& intent);
+  bool SetWebIntent(const WebIntentServiceData& intent);
 
   // Retrieve all intents from WebIntents table that match |action|.
   bool GetWebIntents(const string16& action,
-                     std::vector<WebIntentData>* intents);
+                     std::vector<WebIntentServiceData>* intents);
 
   // Retrieve all intents from WebIntents table.
-  bool GetAllWebIntents(std::vector<WebIntentData>* intents);
+  bool GetAllWebIntents(std::vector<WebIntentServiceData>* intents);
 
   // Removes intent from WebIntents table - must match all parameters exactly.
-  bool RemoveWebIntent(const WebIntentData& intent);
+  bool RemoveWebIntent(const WebIntentServiceData& intent);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebIntentsTable);

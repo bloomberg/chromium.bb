@@ -14,11 +14,11 @@
 #include "ui/base/l10n/l10n_util.h"
 
 RegisterIntentHandlerInfoBarDelegate::RegisterIntentHandlerInfoBarDelegate(
-    TabContents* tab_contents, const WebIntentData& intent)
+    TabContents* tab_contents, const WebIntentServiceData& service)
     : ConfirmInfoBarDelegate(tab_contents),
       tab_contents_(tab_contents),
       profile_(Profile::FromBrowserContext(tab_contents->browser_context())),
-      intent_(intent) {
+      service_(service) {
 }
 
 InfoBarDelegate::Type
@@ -29,15 +29,15 @@ InfoBarDelegate::Type
 string16 RegisterIntentHandlerInfoBarDelegate::GetMessageText() const {
   return l10n_util::GetStringFUTF16(
       IDS_REGISTER_INTENT_HANDLER_CONFIRM,
-      intent_.title,
-      UTF8ToUTF16(intent_.service_url.host()));
+      service_.title,
+      UTF8ToUTF16(service_.service_url.host()));
 }
 
 string16 RegisterIntentHandlerInfoBarDelegate::GetButtonLabel(
     InfoBarButton button) const {
   if (button == BUTTON_OK) {
     return l10n_util::GetStringFUTF16(IDS_REGISTER_INTENT_HANDLER_ACCEPT,
-                                      UTF8ToUTF16(intent_.service_url.host()));
+                                      UTF8ToUTF16(service_.service_url.host()));
   }
 
   DCHECK(button == BUTTON_CANCEL);
@@ -47,7 +47,7 @@ string16 RegisterIntentHandlerInfoBarDelegate::GetButtonLabel(
 bool RegisterIntentHandlerInfoBarDelegate::Accept() {
   WebIntentsRegistry* registry =
       WebIntentsRegistryFactory::GetForProfile(profile_);
-  registry->RegisterIntentProvider(intent_);
+  registry->RegisterIntentProvider(service_);
   return true;
 }
 

@@ -7,7 +7,7 @@
 #include <vector>
 
 #include "chrome/browser/favicon/favicon_service.h"
-#include "chrome/browser/intents/web_intent_data.h"
+#include "chrome/browser/intents/web_intent_service_data.h"
 #include "chrome/browser/intents/web_intents_registry.h"
 #include "chrome/browser/intents/web_intents_registry_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -42,7 +42,8 @@ class WebIntentPickerController::WebIntentDataFetcher
                        WebIntentsRegistry* web_intents_registry);
   ~WebIntentDataFetcher();
 
-  // Asynchronously fetches WebIntentData for the given |action| |type| pair.
+  // Asynchronously fetches WebIntentServiceData for the given
+  // |action|, |type| pair.
   void Fetch(const string16& action, const string16& type);
 
   // Cancels the WebDataService request.
@@ -52,7 +53,7 @@ class WebIntentPickerController::WebIntentDataFetcher
   // WebIntentsRegistry::Consumer implementation.
   virtual void OnIntentsQueryDone(
       WebIntentsRegistry::QueryID,
-      const std::vector<WebIntentData>& intents) OVERRIDE;
+      const std::vector<WebIntentServiceData>& intents) OVERRIDE;
 
   // A weak pointer to the picker controller.
   WebIntentPickerController* controller_;
@@ -155,7 +156,7 @@ void WebIntentPickerController::OnCancelled() {
 }
 
 void WebIntentPickerController::OnWebIntentDataAvailable(
-    const std::vector<WebIntentData>& intent_data) {
+    const std::vector<WebIntentServiceData>& intent_data) {
   urls_.clear();
   for (size_t i = 0; i < intent_data.size(); ++i) {
     urls_.push_back(intent_data[i].service_url);
@@ -207,7 +208,7 @@ void WebIntentPickerController::WebIntentDataFetcher::Fetch(
 
 void WebIntentPickerController::WebIntentDataFetcher::OnIntentsQueryDone(
     WebIntentsRegistry::QueryID,
-    const std::vector<WebIntentData>& intents) {
+    const std::vector<WebIntentServiceData>& intents) {
   controller_->OnWebIntentDataAvailable(intents);
   query_id_ = -1;
 }

@@ -7,7 +7,7 @@
 #include "chrome/browser/intents/register_intent_handler_infobar_delegate.h"
 #include "chrome/browser/intents/web_intents_registry.h"
 #include "chrome/browser/intents/web_intents_registry_factory.h"
-#include "chrome/browser/intents/web_intent_data.h"
+#include "chrome/browser/intents/web_intent_service_data.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/browser/browser_thread.h"
@@ -20,7 +20,7 @@ namespace {
 
 class MockWebIntentsRegistry : public WebIntentsRegistry {
  public:
-  MOCK_METHOD1(RegisterIntentProvider, void(const WebIntentData&));
+  MOCK_METHOD1(RegisterIntentProvider, void(const WebIntentServiceData&));
 };
 
 ProfileKeyedService* BuildMockWebIntentsRegistry(Profile* profile) {
@@ -67,13 +67,13 @@ class RegisterIntentHandlerInfoBarDelegateTest
 };
 
 TEST_F(RegisterIntentHandlerInfoBarDelegateTest, Accept) {
-  WebIntentData intent;
-  intent.service_url = GURL("google.com");
-  intent.action = ASCIIToUTF16("http://webintents.org/share");
-  intent.type = ASCIIToUTF16("text/url");
-  RegisterIntentHandlerInfoBarDelegate delegate(tab_contents_.get(), intent);
+  WebIntentServiceData service;
+  service.service_url = GURL("google.com");
+  service.action = ASCIIToUTF16("http://webintents.org/share");
+  service.type = ASCIIToUTF16("text/url");
+  RegisterIntentHandlerInfoBarDelegate delegate(tab_contents_.get(), service);
 
-  EXPECT_CALL(*web_intents_registry_, RegisterIntentProvider(intent));
+  EXPECT_CALL(*web_intents_registry_, RegisterIntentProvider(service));
   delegate.Accept();
 }
 

@@ -42,6 +42,7 @@
 #include "content/common/bindings_policy.h"
 #include "content/common/content_client.h"
 #include "content/common/content_restriction.h"
+#include "content/common/intents_messages.h"
 #include "content/common/navigation_types.h"
 #include "content/common/notification_service.h"
 #include "content/common/url_constants.h"
@@ -52,6 +53,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "webkit/glue/password_form.h"
+#include "webkit/glue/web_intent_data.h"
 #include "webkit/glue/webpreferences.h"
 
 #if defined(OS_MACOSX)
@@ -277,6 +279,8 @@ bool TabContents::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   bool message_is_ok = true;
   IPC_BEGIN_MESSAGE_MAP_EX(TabContents, message, message_is_ok)
+    IPC_MESSAGE_HANDLER(IntentsHostMsg_WebIntentDispatch,
+                        OnWebIntentDispatch)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidStartProvisionalLoadForFrame,
                         OnDidStartProvisionalLoadForFrame)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidRedirectProvisionalLoad,
@@ -304,8 +308,6 @@ bool TabContents::OnMessageReceived(const IPC::Message& message) {
                         OnRegisterProtocolHandler)
     IPC_MESSAGE_HANDLER(ViewHostMsg_RegisterIntentHandler,
                         OnRegisterIntentHandler)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_WebIntentDispatch,
-                        OnWebIntentDispatch)
     IPC_MESSAGE_HANDLER(ViewHostMsg_Find_Reply, OnFindReply)
     IPC_MESSAGE_HANDLER(ViewHostMsg_CrashedPlugin, OnCrashedPlugin)
     IPC_MESSAGE_HANDLER(ViewHostMsg_AppCacheAccessed, OnAppCacheAccessed)
@@ -1136,12 +1138,9 @@ void TabContents::OnRegisterIntentHandler(const string16& action,
 }
 
 void TabContents::OnWebIntentDispatch(const IPC::Message& message,
-                                      const string16& action,
-                                      const string16& type,
-                                      const string16& data,
+                                      const webkit_glue::WebIntentData& intent,
                                       int intent_id) {
-  delegate()->WebIntentDispatch(this, message.routing_id(), action, type,
-                                data, intent_id);
+  delegate()->WebIntentDispatch(this, message.routing_id(), intent, intent_id);
 }
 
 void TabContents::OnFindReply(int request_id,

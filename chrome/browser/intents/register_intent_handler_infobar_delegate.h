@@ -8,7 +8,7 @@
 
 #include "base/basictypes.h"
 #include "base/string16.h"
-#include "chrome/browser/intents/web_intent_data.h"
+#include "chrome/browser/intents/web_intent_service_data.h"
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
 
 class Profile;
@@ -19,7 +19,7 @@ class TabContents;
 class RegisterIntentHandlerInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
   RegisterIntentHandlerInfoBarDelegate(TabContents* tab_contents,
-                                       const WebIntentData& intent);
+                                       const WebIntentServiceData& service);
 
   // ConfirmInfoBarDelegate implementation.
   virtual Type GetInfoBarType() const OVERRIDE;
@@ -37,7 +37,7 @@ class RegisterIntentHandlerInfoBarDelegate : public ConfirmInfoBarDelegate {
   Profile* profile_;
 
   // The cached intent data bundle passed up from the renderer.
-  WebIntentData intent_;
+  WebIntentServiceData service_;
 
   DISALLOW_COPY_AND_ASSIGN(RegisterIntentHandlerInfoBarDelegate);
 };

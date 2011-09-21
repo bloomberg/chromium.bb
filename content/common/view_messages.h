@@ -2048,13 +2048,6 @@ IPC_MESSAGE_ROUTED4(ViewHostMsg_RegisterIntentHandler,
                     string16 /* href */,
                     string16 /* title */)
 
-// Route the startActivity Intents call from a page to the service picker.
-IPC_MESSAGE_ROUTED4(ViewHostMsg_WebIntentDispatch,
-                    string16 /* action */,
-                    string16 /* type */,
-                    string16 /* payload data */,
-                    int /* intent ID */)
-
 // Stores new inspector setting in the profile.
 // TODO(jam): this should be in the chrome module
 IPC_MESSAGE_ROUTED2(ViewHostMsg_UpdateInspectorSetting,

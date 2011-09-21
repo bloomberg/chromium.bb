@@ -39,6 +39,9 @@
 namespace gfx {
 class Rect;
 }
+namespace webkit_glue {
+struct WebIntentData;
+}
 
 class DownloadItem;
 class LoadNotificationDetails;
@@ -574,9 +577,7 @@ class CONTENT_EXPORT TabContents : public PageNavigator,
                                const string16& href,
                                const string16& title);
   void OnWebIntentDispatch(const IPC::Message& message,
-                           const string16& action,
-                           const string16& type,
-                           const string16& data,
+                           const webkit_glue::WebIntentData& intent,
                            int intent_id);
   void OnFindReply(int request_id, int number_of_matches,
                    const gfx::Rect& selection_rect, int active_match_ordinal,

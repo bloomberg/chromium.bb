@@ -10,7 +10,7 @@
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/favicon/favicon_service.h"
-#include "chrome/browser/intents/web_intent_data.h"
+#include "chrome/browser/intents/web_intent_service_data.h"
 #include "chrome/browser/intents/web_intents_registry.h"
 #include "chrome/browser/intents/web_intents_registry_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -147,11 +147,11 @@ class WebIntentPickerControllerTest : public TabContentsWrapperTestHarness {
  protected:
   void AddWebIntentService(const string16& action,
                            const GURL& service_url) {
-    WebIntentData web_intent_data;
-    web_intent_data.action = action;
-    web_intent_data.type = kType;
-    web_intent_data.service_url = service_url;
-    web_data_service_->AddWebIntent(web_intent_data);
+    WebIntentServiceData web_intent_service_data;
+    web_intent_service_data.action = action;
+    web_intent_service_data.type = kType;
+    web_intent_service_data.service_url = service_url;
+    web_data_service_->AddWebIntent(web_intent_service_data);
   }
 
   void AddFaviconForURL(const GURL& url) {

@@ -121,20 +121,20 @@ void WebIntentsModel::LoadModel() {
 
 void WebIntentsModel::OnIntentsQueryDone(
     WebIntentsRegistry::QueryID query_id,
-    const std::vector<WebIntentData>& intents) {
-  for (size_t i = 0; i < intents.size(); ++i) {
+    const std::vector<WebIntentServiceData>& services) {
+  for (size_t i = 0; i < services.size(); ++i) {
     // Eventually do some awesome sorting, grouping, clustering stuff here.
     // For now, just stick it in the model flat.
     WebIntentsTreeNode* n = new WebIntentsTreeNode(ASCIIToUTF16(
-        intents[i].service_url.host()));
+        services[i].service_url.host()));
     ServiceTreeNode* ns = new ServiceTreeNode(ASCIIToUTF16(
-        intents[i].service_url.host()));
-    ns->SetServiceName(intents[i].title);
-    ns->SetServiceUrl(ASCIIToUTF16(intents[i].service_url.spec()));
-    GURL icon_url = intents[i].service_url.GetOrigin().Resolve("/favicon.ico");
+        services[i].service_url.host()));
+    ns->SetServiceName(services[i].title);
+    ns->SetServiceUrl(ASCIIToUTF16(services[i].service_url.spec()));
+    GURL icon_url = services[i].service_url.GetOrigin().Resolve("/favicon.ico");
     ns->SetIconUrl(ASCIIToUTF16(icon_url.spec()));
-    ns->SetAction(intents[i].action);
-    ns->AddType(intents[i].type);
+    ns->SetAction(services[i].action);
+    ns->AddType(services[i].type);
     // Won't generate a notification. OK for now as the next line will.
     n->Add(ns, 0);
     Add(GetRoot(), n, GetRoot()->child_count());

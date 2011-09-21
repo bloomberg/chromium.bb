@@ -3,16 +3,16 @@
 // found in the LICENSE file.
 
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/intents/web_intent_data.h"
+#include "chrome/browser/intents/web_intent_service_data.h"
 #include <ostream>
 
-WebIntentData::WebIntentData()
-    : disposition(WebIntentData::DISPOSITION_WINDOW) {
+WebIntentServiceData::WebIntentServiceData()
+    : disposition(WebIntentServiceData::DISPOSITION_WINDOW) {
 }
 
-WebIntentData::~WebIntentData() {}
+WebIntentServiceData::~WebIntentServiceData() {}
 
-bool WebIntentData::operator==(const WebIntentData& other) const {
+bool WebIntentServiceData::operator==(const WebIntentServiceData& other) const {
   return (service_url == other.service_url &&
           action == other.action &&
           type == other.type &&
@@ -21,7 +21,7 @@ bool WebIntentData::operator==(const WebIntentData& other) const {
 }
 
 std::ostream& operator<<(::std::ostream& os,
-                         const WebIntentData& intent) {
+                         const WebIntentServiceData& intent) {
   return os <<
          "{" << intent.service_url <<
          ", " << UTF16ToUTF8(intent.action) <<

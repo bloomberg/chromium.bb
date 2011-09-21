@@ -32,6 +32,10 @@ namespace history {
 class HistoryAddPageArgs;
 }
 
+namespace webkit_glue {
+struct WebIntentData;
+}
+
 struct ContextMenuParams;
 struct OpenURLParams;
 class DownloadItem;
@@ -335,9 +339,7 @@ class CONTENT_EXPORT TabContentsDelegate {
   // WebIntent notification handler.
   virtual void WebIntentDispatch(TabContents* tab,
                                  int routing_id,
-                                 const string16& action,
-                                 const string16& type,
-                                 const string16& data,
+                                 const webkit_glue::WebIntentData& intent,
                                  int intent_id);
 
   // Result of string search in the page. This includes the number of matches

@@ -154,7 +154,8 @@ class WebIntentsConsumer: public WebDataServiceConsumer {
     if (result) {
       DCHECK(result->GetType() == WEB_INTENTS_RESULT);
       intents = static_cast<
-          const WDResult<std::vector<WebIntentData> >*>(result)->GetValue();
+          const WDResult<std::vector<WebIntentServiceData> >*>(result)->
+              GetValue();
     }
 
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -168,7 +169,8 @@ class WebIntentsConsumer: public WebDataServiceConsumer {
     MessageLoop::current()->Run();
   }
 
-  std::vector<WebIntentData> intents; // Result data from completion callback.
+  // Result data from completion callback.
+  std::vector<WebIntentServiceData> intents;
 };
 
 TEST_F(WebDataServiceAutofillTest, FormFillAdd) {
@@ -601,14 +603,14 @@ TEST_F(WebDataServiceTest, WebIntents) {
   WebIntentsConsumer::WaitUntilCalled();
   EXPECT_EQ(0U, consumer.intents.size());
 
-  WebIntentData intent;
-  intent.service_url = GURL("http://google.com");
-  intent.action = ASCIIToUTF16("share");
-  intent.type = ASCIIToUTF16("image/*");
-  wds_->AddWebIntent(intent);
+  WebIntentServiceData service;
+  service.service_url = GURL("http://google.com");
+  service.action = ASCIIToUTF16("share");
+  service.type = ASCIIToUTF16("image/*");
+  wds_->AddWebIntent(service);
 
-  intent.type = ASCIIToUTF16("video/*");
-  wds_->AddWebIntent(intent);
+  service.type = ASCIIToUTF16("video/*");
+  wds_->AddWebIntent(service);
 
   wds_->GetWebIntents(ASCIIToUTF16("share"), &consumer);
   WebIntentsConsumer::WaitUntilCalled();
@@ -617,37 +619,37 @@ TEST_F(WebDataServiceTest, WebIntents) {
   if (consumer.intents[0].type != ASCIIToUTF16("image/*"))
     std::swap(consumer.intents[0],consumer.intents[1]);
 
-  EXPECT_EQ(intent.service_url, consumer.intents[0].service_url);
-  EXPECT_EQ(intent.action, consumer.intents[0].action);
+  EXPECT_EQ(service.service_url, consumer.intents[0].service_url);
+  EXPECT_EQ(service.action, consumer.intents[0].action);
   EXPECT_EQ(ASCIIToUTF16("image/*"), consumer.intents[0].type);
-  EXPECT_EQ(intent.service_url, consumer.intents[1].service_url);
-  EXPECT_EQ(intent.action, consumer.intents[1].action);
-  EXPECT_EQ(intent.type, consumer.intents[1].type);
+  EXPECT_EQ(service.service_url, consumer.intents[1].service_url);
+  EXPECT_EQ(service.action, consumer.intents[1].action);
+  EXPECT_EQ(service.type, consumer.intents[1].type);
 
-  intent.type = ASCIIToUTF16("image/*");
-  wds_->RemoveWebIntent(intent);
+  service.type = ASCIIToUTF16("image/*");
+  wds_->RemoveWebIntent(service);
 
   wds_->GetWebIntents(ASCIIToUTF16("share"), &consumer);
   WebIntentsConsumer::WaitUntilCalled();
   ASSERT_EQ(1U, consumer.intents.size());
 
-  intent.type = ASCIIToUTF16("video/*");
-  EXPECT_EQ(intent.service_url, consumer.intents[0].service_url);
-  EXPECT_EQ(intent.action, consumer.intents[0].action);
-  EXPECT_EQ(intent.type, consumer.intents[0].type);
+  service.type = ASCIIToUTF16("video/*");
+  EXPECT_EQ(service.service_url, consumer.intents[0].service_url);
+  EXPECT_EQ(service.action, consumer.intents[0].action);
+  EXPECT_EQ(service.type, consumer.intents[0].type);
 }
 
 TEST_F(WebDataServiceTest, WebIntentsGetAll) {
   WebIntentsConsumer consumer;
 
-  WebIntentData intent;
-  intent.service_url = GURL("http://google.com");
-  intent.action = ASCIIToUTF16("share");
-  intent.type = ASCIIToUTF16("image/*");
-  wds_->AddWebIntent(intent);
+  WebIntentServiceData service;
+  service.service_url = GURL("http://google.com");
+  service.action = ASCIIToUTF16("share");
+  service.type = ASCIIToUTF16("image/*");
+  wds_->AddWebIntent(service);
 
-  intent.action = ASCIIToUTF16("edit");
-  wds_->AddWebIntent(intent);
+  service.action = ASCIIToUTF16("edit");
+  wds_->AddWebIntent(service);
 
   wds_->GetAllWebIntents(&consumer);
   WebIntentsConsumer::WaitUntilCalled();
@@ -656,8 +658,7 @@ TEST_F(WebDataServiceTest, WebIntentsGetAll) {
   if (consumer.intents[0].action != ASCIIToUTF16("edit"))
     std::swap(consumer.intents[0],consumer.intents[1]);
 
-  EXPECT_EQ(intent, consumer.intents[0]);
-  intent.action = ASCIIToUTF16("share");
-  EXPECT_EQ(intent, consumer.intents[1]);
+  EXPECT_EQ(service, consumer.intents[0]);
+  service.action = ASCIIToUTF16("share");
+  EXPECT_EQ(service, consumer.intents[1]);
 }
-

@@ -29,7 +29,7 @@ class SkBitmap;
 class Task;
 class TemplateURL;
 class WebDatabase;
-struct WebIntentData;
+struct WebIntentServiceData;
 
 namespace base {
 class Thread;
@@ -350,10 +350,10 @@ class WebDataService
   //////////////////////////////////////////////////////////////////////////////
 
   // Adds a web intent provider registration.
-  void AddWebIntent(const WebIntentData& intent);
+  void AddWebIntent(const WebIntentServiceData& service);
 
   // Removes a web intent provider registration.
-  void RemoveWebIntent(const WebIntentData& intent);
+  void RemoveWebIntent(const WebIntentServiceData& service);
 
   // Get all web intent providers registered for the specified |action|.
   // |consumer| must not be NULL.
@@ -590,8 +590,8 @@ class WebDataService
   // Web Intents.
   //
   //////////////////////////////////////////////////////////////////////////////
-  void AddWebIntentImpl(GenericRequest<WebIntentData>* request);
-  void RemoveWebIntentImpl(GenericRequest<WebIntentData>* request);
+  void AddWebIntentImpl(GenericRequest<WebIntentServiceData>* request);
+  void RemoveWebIntentImpl(GenericRequest<WebIntentServiceData>* request);
   void GetWebIntentsImpl(GenericRequest<string16>* request);
   void GetAllWebIntentsImpl(GenericRequest<std::string>* request);
 

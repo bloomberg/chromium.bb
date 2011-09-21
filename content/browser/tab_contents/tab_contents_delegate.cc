@@ -11,6 +11,7 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/url_constants.h"
 #include "ui/gfx/rect.h"
+#include "webkit/glue/web_intent_data.h"
 
 TabContentsDelegate::TabContentsDelegate() {
 }
@@ -309,12 +310,11 @@ void TabContentsDelegate::RegisterIntentHandler(TabContents* tab,
                                                 const string16& title) {
 }
 
-void TabContentsDelegate::WebIntentDispatch(TabContents* tab,
-                                            int routing_id,
-                                            const string16& action,
-                                            const string16& type,
-                                            const string16& data,
-                                            int intent_id) {
+void TabContentsDelegate::WebIntentDispatch(
+    TabContents* tab,
+    int routing_id,
+    const webkit_glue::WebIntentData& intent,
+    int intent_id) {
 }
 
 void TabContentsDelegate::FindReply(TabContents* tab,
