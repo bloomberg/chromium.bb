@@ -858,10 +858,10 @@ void ChromeBrowserMainParts::SpdyFieldTrial() {
     const base::FieldTrial::Probability kSpdyDivisor = 100;
     base::FieldTrial::Probability npnhttp_probability = 5;
 
-    // After June 30, 2011 builds, it will always be in default group.
+    // After June 30, 2013 builds, it will always be in default group.
     scoped_refptr<base::FieldTrial> trial(
         new base::FieldTrial(
-            "SpdyImpact", kSpdyDivisor, "npn_with_spdy", 2011, 6, 30));
+            "SpdyImpact", kSpdyDivisor, "npn_with_spdy", 2013, 6, 30));
 
     // npn with spdy support is the default.
     int npn_spdy_grp = trial->kDefaultGroupNumber;
@@ -892,11 +892,11 @@ void ChromeBrowserMainParts::SpdyFieldTrial() {
   const base::FieldTrial::Probability kSpdyCwndMin16 = 20;  // no less than 16
   const base::FieldTrial::Probability kSpdyCwndMin10 = 20;  // no less than 10
 
-  // After June 30, 2011 builds, it will always be in default group
+  // After June 30, 2013 builds, it will always be in default group
   // (cwndDynamic).
   scoped_refptr<base::FieldTrial> trial(
       new base::FieldTrial(
-          "SpdyCwnd", kSpdyCwndDivisor, "cwndDynamic", 2011, 6, 30));
+          "SpdyCwnd", kSpdyCwndDivisor, "cwndDynamic", 2013, 6, 30));
 
   trial->AppendGroup("cwnd10", kSpdyCwnd10);
   trial->AppendGroup("cwnd16", kSpdyCwnd16);
