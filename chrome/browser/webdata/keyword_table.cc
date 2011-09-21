@@ -189,7 +189,10 @@ bool KeywordTable::GetKeywords(std::vector<TemplateURL*>* urls) {
 
     template_url->set_last_modified(Time::FromTimeT(s.ColumnInt64(17)));
 
-    template_url->set_sync_guid(s.ColumnString(18));
+    // If the persisted sync_guid was empty, we ignore it and allow the TURL to
+    // keep its generated GUID.
+    if (!s.ColumnString(18).empty())
+      template_url->set_sync_guid(s.ColumnString(18));
 
     urls->push_back(template_url);
   }
