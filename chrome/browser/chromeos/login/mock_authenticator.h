@@ -31,19 +31,17 @@ class MockAuthenticator : public Authenticator {
         expected_password_(expected_password) {
   }
 
-  virtual bool CompleteLogin(Profile* profile,
+  virtual void CompleteLogin(Profile* profile,
                              const std::string& username,
                              const std::string& password);
 
-  // Returns true after posting task to UI thread to call OnLoginSuccess().
-  // This is called on the FILE thread now, so we need to do this.
-  virtual bool AuthenticateToLogin(Profile* profile,
+  virtual void AuthenticateToLogin(Profile* profile,
                                    const std::string& username,
                                    const std::string& password,
                                    const std::string& login_token,
                                    const std::string& login_captcha);
 
-  virtual bool AuthenticateToUnlock(const std::string& username,
+  virtual void AuthenticateToUnlock(const std::string& username,
                                     const std::string& password);
 
   virtual void LoginOffTheRecord();

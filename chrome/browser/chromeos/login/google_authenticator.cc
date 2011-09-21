@@ -117,7 +117,7 @@ void GoogleAuthenticator::ClearClientLoginAttempt() {
   login_token_.clear();
   login_captcha_.clear();
 }
-bool GoogleAuthenticator::CompleteLogin(Profile* profile,
+void GoogleAuthenticator::CompleteLogin(Profile* profile,
                                         const std::string& username,
                                         const std::string& password) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -130,10 +130,9 @@ bool GoogleAuthenticator::CompleteLogin(Profile* profile,
       NewRunnableMethod(this,
                         &GoogleAuthenticator::OnLoginSuccess,
                         GaiaAuthConsumer::ClientLoginResult(), false));
-  return true;
 }
 
-bool GoogleAuthenticator::AuthenticateToLogin(
+void GoogleAuthenticator::AuthenticateToLogin(
     Profile* profile,
     const std::string& username,
     const std::string& password,
@@ -154,10 +153,9 @@ bool GoogleAuthenticator::AuthenticateToLogin(
   // Will be used for retries.
   PrepareClientLoginAttempt(password, login_token, login_captcha);
   TryClientLogin();
-  return true;
 }
 
-bool GoogleAuthenticator::AuthenticateToUnlock(const std::string& username,
+void GoogleAuthenticator::AuthenticateToUnlock(const std::string& username,
                                                const std::string& password) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   username_.assign(Canonicalize(username));
@@ -172,7 +170,6 @@ bool GoogleAuthenticator::AuthenticateToUnlock(const std::string& username,
       BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(this, &GoogleAuthenticator::CheckOffline,
                         LoginFailure(LoginFailure::UNLOCK_FAILED)));
-  return true;
 }
 
 void GoogleAuthenticator::LoginOffTheRecord() {

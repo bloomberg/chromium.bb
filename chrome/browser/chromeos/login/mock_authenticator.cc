@@ -6,7 +6,7 @@
 
 namespace chromeos {
 
-bool MockAuthenticator::AuthenticateToLogin(Profile* profile,
+void MockAuthenticator::AuthenticateToLogin(Profile* profile,
                                  const std::string& username,
                                  const std::string& password,
                                  const std::string& login_token,
@@ -15,26 +15,23 @@ bool MockAuthenticator::AuthenticateToLogin(Profile* profile,
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
         NewRunnableMethod(this, &MockAuthenticator::OnLoginSuccess,
                           GaiaAuthConsumer::ClientLoginResult(), false));
-    return true;
   }
   GoogleServiceAuthError error(
       GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(this, &MockAuthenticator::OnLoginFailure,
                         LoginFailure::FromNetworkAuthFailure(error)));
-  return false;
 }
 
-bool MockAuthenticator::CompleteLogin(Profile* profile,
+void MockAuthenticator::CompleteLogin(Profile* profile,
                                       const std::string& username,
                                       const std::string& password) {
-  return false;
 }
 
-bool MockAuthenticator::AuthenticateToUnlock(const std::string& username,
+void MockAuthenticator::AuthenticateToUnlock(const std::string& username,
                                   const std::string& password) {
-  return AuthenticateToLogin(NULL /* not used */, username, password,
-                             std::string(), std::string());
+  AuthenticateToLogin(NULL /* not used */, username, password,
+                      std::string(), std::string());
 }
 
 void MockAuthenticator::LoginOffTheRecord() {

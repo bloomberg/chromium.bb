@@ -105,7 +105,7 @@ ParallelAuthenticator::ParallelAuthenticator(LoginStatusConsumer* consumer)
 
 ParallelAuthenticator::~ParallelAuthenticator() {}
 
-bool ParallelAuthenticator::AuthenticateToLogin(
+void ParallelAuthenticator::AuthenticateToLogin(
     Profile* profile,
     const std::string& username,
     const std::string& password,
@@ -143,10 +143,9 @@ bool ParallelAuthenticator::AuthenticateToLogin(
       NewRunnableMethod(this,
                         &ParallelAuthenticator::LoadLocalaccount,
                         std::string(kLocalaccountFile)));
-  return true;
 }
 
-bool ParallelAuthenticator::CompleteLogin(Profile* profile,
+void ParallelAuthenticator::CompleteLogin(Profile* profile,
                                           const std::string& username,
                                           const std::string& password) {
   std::string canonicalized = Authenticator::Canonicalize(username);
@@ -188,10 +187,9 @@ bool ParallelAuthenticator::CompleteLogin(Profile* profile,
       NewRunnableMethod(this,
                         &ParallelAuthenticator::LoadLocalaccount,
                         std::string(kLocalaccountFile)));
-  return true;
 }
 
-bool ParallelAuthenticator::AuthenticateToUnlock(const std::string& username,
+void ParallelAuthenticator::AuthenticateToUnlock(const std::string& username,
                                                  const std::string& password) {
   current_state_.reset(
       new AuthAttemptState(Authenticator::Canonicalize(username),
@@ -207,7 +205,6 @@ bool ParallelAuthenticator::AuthenticateToUnlock(const std::string& username,
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(key_checker_.get(), &CryptohomeOp::Initiate));
-  return true;
 }
 
 void ParallelAuthenticator::LoginOffTheRecord() {

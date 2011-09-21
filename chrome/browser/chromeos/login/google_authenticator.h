@@ -46,8 +46,7 @@ class GoogleAuthenticator : public Authenticator, public GaiaAuthConsumer {
   // a callback to consumer_->OnLoginSuccess() with the |username| and a vector
   // of authentication cookies or a callback to consumer_->OnLoginFailure() with
   // an error message.
-  // Returns true if the attempt gets sent successfully and false if not.
-  virtual bool CompleteLogin(Profile* profile,
+  virtual void CompleteLogin(Profile* profile,
                              const std::string& username,
                              const std::string& password) OVERRIDE;
 
@@ -62,9 +61,7 @@ class GoogleAuthenticator : public Authenticator, public GaiaAuthConsumer {
   // NOTE: We do not allow HOSTED accounts to log in.  In the event that
   // we are asked to authenticate valid HOSTED account creds, we will
   // call OnLoginFailure() with HOSTED_NOT_ALLOWED.
-  //
-  // Returns true if the attempt gets sent successfully and false if not.
-  virtual bool AuthenticateToLogin(Profile* profile,
+  virtual void AuthenticateToLogin(Profile* profile,
                                    const std::string& username,
                                    const std::string& password,
                                    const std::string& login_token,
@@ -74,7 +71,7 @@ class GoogleAuthenticator : public Authenticator, public GaiaAuthConsumer {
   // authenticate to the cached credentials. This will never contact
   // the server even if it's online. The auth result is sent to
   // LoginStatusConsumer in a same way as AuthenticateToLogin does.
-  virtual bool AuthenticateToUnlock(const std::string& username,
+  virtual void AuthenticateToUnlock(const std::string& username,
                                     const std::string& password) OVERRIDE;
 
   // Initiates incognito ("browse without signing in") login.
