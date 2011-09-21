@@ -1,8 +1,7 @@
 # -*- python -*-
-# Copyright 2008 The Native Client Authors.  All rights reserved.
-# Use of this source code is governed by a BSD-style license that can
-# be found in the LICENSE file.
-
+# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 
 Import('env')
 
@@ -26,6 +25,11 @@ if env.Bit('linux') or env.Bit('mac'):
   #
   # testing/gtest/src/gtest-all.cc skips an enum value
   env.FilterOut(CCFLAGS=['-pedantic', '-Wswitch-enum'])
+
+if env.Bit('linux') or env.Bit('clang'):
+  # because of: testing/gtest/src/gtest-printers.cc:291: error:
+  # comparison of unsigned expression >= 0 is always true [-Wtype-limits]
+  env.Append(CCFLAGS=['-Wno-type-limits'])
 
 # NOTE: this makes use of the overlay from the toplevel SConstruct
 env.ComponentLibrary('gtest',

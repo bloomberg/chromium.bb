@@ -91,6 +91,11 @@ if env.Bit('linux'):
       CXXFLAGS=['-fno-rtti', '-Weffc++'])
   gtest_env.Prepend(CPPPATH=['${SOURCE_ROOT}/testing/gtest/include'])
 
+  # gtest is incompatible with static linking due to obscure libstdc++
+  # linking interactions.
+  # See http://code.google.com/p/nativeclient/issues/detail?id=1987
+  gtest_env.FilterOut(LINKFLAGS=['-static'])
+
   # Do NOT name this program 'validator_tests' because this is the same name as
   # a test suite, and scons will run that test suite if it ever builds
   # a program of the same name.

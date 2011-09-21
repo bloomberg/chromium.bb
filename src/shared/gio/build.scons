@@ -1,7 +1,7 @@
 # -*- python -*-
-# Copyright 2009 The Native Client Authors.  All rights reserved.
-# Use of this source code is governed by a BSD-style license that can
-# be found in the LICENSE file.
+# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 
 import tempfile # for gio_test
 
@@ -27,6 +27,12 @@ env.DualLibrary('gio',
 
 if not env.CrossToolsBuild():
   gtest_env = env.Clone()
+
+  # gtest is incompatible with static linking due to obscure libstdc++
+  # linking interactions.
+  # See http://code.google.com/p/nativeclient/issues/detail?id=1987
+  gtest_env.FilterOut(LINKFLAGS=['-static'])
+
   if gtest_env.Bit('linux') or gtest_env.Bit('mac'):
     # because of: gtest-typed-test.h:236:46: error:
     # anonymous variadic macros were introduced in C99
