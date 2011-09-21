@@ -8,6 +8,8 @@
 #include <string>
 #include <vector>
 
+#include "base/basictypes.h"
+
 namespace net {
 class Socket;
 }  // namespace net
@@ -79,6 +81,9 @@ class P2PTransport {
 
     // TCP ACK delay.
     int tcp_ack_delay_ms;
+
+    // Disable TCP-based transport when set to true.
+    bool disable_tcp_transport;
   };
 
   virtual ~P2PTransport() {}

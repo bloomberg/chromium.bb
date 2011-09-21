@@ -143,6 +143,11 @@ void PepperStreamChannel::Connect(pp::Instance* pp_instance,
     }
   }
 
+  if (transport->SetProperty(PP_TRANSPORTPROPERTY_DISABLE_TCP_TRANSPORT,
+                             pp::Var(true)) != PP_OK) {
+    LOG(ERROR) << "Failed to set DISABLE_TCP_TRANSPORT flag.";
+  }
+
   channel_ = new PepperTransportSocketAdapter(transport, name_, this);
   owned_channel_.reset(channel_);
 

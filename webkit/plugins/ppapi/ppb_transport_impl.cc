@@ -223,6 +223,13 @@ int32_t PPB_Transport_Impl::SetProperty(PP_TransportProperty property,
       break;
     }
 
+    case PP_TRANSPORTPROPERTY_DISABLE_TCP_TRANSPORT: {
+      if (value.type != PP_VARTYPE_BOOL)
+        return PP_ERROR_BADARGUMENT;
+      config_.disable_tcp_transport = PP_ToBool(value.value.as_bool);
+      break;
+    }
+
     default:
       return PP_ERROR_BADARGUMENT;
   }

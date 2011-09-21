@@ -11,6 +11,7 @@
 #include "content/renderer/p2p/host_address_request.h"
 #include "jingle/glue/utils.h"
 #include "net/base/ip_endpoint.h"
+#include "ppapi/c/dev/ppb_transport_dev.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURLError.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURLLoader.h"
@@ -59,6 +60,10 @@ P2PPortAllocator::P2PPortAllocator(
       web_frame_(web_frame),
       socket_dispatcher_(socket_dispatcher),
       config_(config) {
+  uint32 flags = 0;
+  if (config_.disable_tcp_transport)
+    flags |= cricket::PORTALLOCATOR_DISABLE_TCP;
+  set_flags(flags);
 }
 
 P2PPortAllocator::~P2PPortAllocator() {
@@ -257,11 +262,11 @@ void P2PPortAllocatorSession::AddConfig() {
       talk_base::SocketAddress address(relay_ip_.ip(), relay_udp_port_);
       ports.push_back(cricket::ProtocolAddress(address, cricket::PROTO_UDP));
     }
-    if (relay_tcp_port_ > 0) {
+    if (relay_tcp_port_ > 0 && !allocator_->config_.disable_tcp_transport) {
       talk_base::SocketAddress address(relay_ip_.ip(), relay_tcp_port_);
       ports.push_back(cricket::ProtocolAddress(address, cricket::PROTO_TCP));
     }
-    if (relay_ssltcp_port_ > 0) {
+    if (relay_ssltcp_port_ > 0 && !allocator_->config_.disable_tcp_transport) {
       talk_base::SocketAddress address(relay_ip_.ip(), relay_ssltcp_port_);
       ports.push_back(cricket::ProtocolAddress(address, cricket::PROTO_SSLTCP));
     }

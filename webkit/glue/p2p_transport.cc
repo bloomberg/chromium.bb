@@ -13,7 +13,8 @@ P2PTransport::Config::Config()
       tcp_receive_window(0),
       tcp_send_window(0),
       tcp_no_delay(false),
-      tcp_ack_delay_ms(0) {
+      tcp_ack_delay_ms(0),
+      disable_tcp_transport(false) {
 }
 
 P2PTransport::Config::~Config() {

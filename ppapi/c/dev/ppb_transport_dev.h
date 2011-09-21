@@ -53,7 +53,11 @@ typedef enum {
   PP_TRANSPORTPROPERTY_TCP_NO_DELAY = 7,
 
   // Delay for ACK packets in milliseconds. By default set to 100ms.
-  PP_TRANSPORTPROPERTY_TCP_ACK_DELAY = 8
+  PP_TRANSPORTPROPERTY_TCP_ACK_DELAY = 8,
+
+  // Boolean value that disables TCP-based transports when set to
+  // true. By default set to false.
+  PP_TRANSPORTPROPERTY_DISABLE_TCP_TRANSPORT = 9
 } PP_TransportProperty;
 PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_TransportProperty, 4);
 
