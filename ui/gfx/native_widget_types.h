@@ -80,6 +80,8 @@ typedef struct _GdkRegion GdkRegion;
 typedef struct _GtkWidget GtkWidget;
 typedef struct _GtkWindow GtkWindow;
 typedef struct _cairo cairo_t;
+#elif defined(OS_ANDROID)
+class ChromeView;
 #endif
 class SkBitmap;
 
@@ -134,6 +136,15 @@ typedef cairo_t* NativeDrawingContext;
 typedef GdkCursor* NativeCursor;
 typedef GtkWidget* NativeMenu;
 typedef GdkRegion* NativeRegion;
+typedef void* NativeViewAccessible;
+#elif defined(OS_ANDROID)
+typedef void* NativeFont;
+typedef ChromeView* NativeView;
+typedef ChromeView* NativeWindow;
+typedef void* NativeEditView;
+typedef void* NativeDrawingContext;
+typedef void* NativeCursor;
+typedef void* NativeMenu;
 typedef void* NativeViewAccessible;
 #endif
 
