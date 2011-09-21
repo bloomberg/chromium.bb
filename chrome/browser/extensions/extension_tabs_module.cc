@@ -30,6 +30,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/window_sizer.h"
+#include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
@@ -495,7 +496,7 @@ bool CreateWindowFunction::RunImpl() {
   Profile* window_profile = profile();
   Browser::Type window_type = Browser::TYPE_TABBED;
   bool focused = true;
-  std::string app_name;
+  std::string extension_id;
 
   if (args) {
     // Any part of the bounds can optionally be set by the caller.
@@ -556,12 +557,12 @@ bool CreateWindowFunction::RunImpl() {
                                                   &type_str));
       if (type_str == keys::kWindowTypeValuePopup) {
         window_type = Browser::TYPE_POPUP;
-        app_name = GetExtension()->id();
+        extension_id = GetExtension()->id();
       } else if (type_str == keys::kWindowTypeValuePanel) {
         if (GetExtension()->HasAPIPermission(
                 ExtensionAPIPermission::kExperimental)) {
           window_type = Browser::TYPE_PANEL;
-          app_name = GetExtension()->id();
+          extension_id = GetExtension()->id();
         } else {
           error_ = errors::kExperimentalFeature;
           return false;
@@ -573,12 +574,13 @@ bool CreateWindowFunction::RunImpl() {
   }
 
   Browser* new_window;
-  if (app_name.empty()) {
+  if (extension_id.empty()) {
     new_window = Browser::CreateForType(window_type, window_profile);
     new_window->window()->SetBounds(window_bounds);
   } else {
     new_window = Browser::CreateForApp(
-        window_type, app_name,
+        window_type,
+        web_app::GenerateApplicationNameFromExtensionId(extension_id),
         (window_type == Browser::TYPE_PANEL ? panel_bounds : popup_bounds),
         window_profile);
   }
