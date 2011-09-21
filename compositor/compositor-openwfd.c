@@ -689,7 +689,7 @@ backend_init(struct wl_display *display, char *options)
 			seat = value;
 			break;
 		case 2:
-			tty = value;
+			tty = strtol(value, NULL, 0);
 			break;
 		}
 	}
