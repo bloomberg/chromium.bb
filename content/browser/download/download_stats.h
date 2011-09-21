@@ -64,6 +64,9 @@ enum DownloadCountTypes {
   // Counts iterations of the BaseFile::AppendDataToFile() loop.
   WRITE_LOOP_COUNT,
 
+  // Counts interruptions that happened at the end of the download.
+  INTERRUPTED_AT_END_COUNT,
+
   DOWNLOAD_COUNT_TYPES_LAST_ENTRY
 };
 

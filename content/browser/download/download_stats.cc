@@ -61,7 +61,14 @@ void RecordDownloadInterrupted(int error, int64 received, int64 total) {
                                 1,
                                 kMaxKb,
                                 kBuckets);
-    if (delta_bytes >= 0) {
+    if (delta_bytes == 0) {
+      RecordDownloadCount(INTERRUPTED_AT_END_COUNT);
+      UMA_HISTOGRAM_CUSTOM_ENUMERATION(
+          "Download.InterruptedAtEndError",
+          -error,
+          base::CustomHistogram::ArrayToCustomRanges(
+              kAllNetErrorCodes, arraysize(kAllNetErrorCodes)));
+    } else if (delta_bytes > 0) {
       UMA_HISTOGRAM_CUSTOM_COUNTS("Download.InterruptedOverrunBytes",
                                   delta_bytes,
                                   1,
