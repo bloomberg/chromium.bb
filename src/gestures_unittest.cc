@@ -11,6 +11,82 @@ namespace gestures {
 
 class GesturesTest : public ::testing::Test {};
 
+TEST(GesturesTest, GestureEqTest) {
+  Gesture null;
+  Gesture null2;
+  EXPECT_TRUE(null == null2);
+  EXPECT_FALSE(null != null2);
+
+  Gesture move(kGestureMove, 1.0, 2.0, 3.0, 4.0);
+  Gesture move2(kGestureMove, 1.0, 2.0, 3.0, 4.0);
+  Gesture move_ne0(kGestureMove, 9.0, 2.0, 3.0, 4.0);
+  Gesture move_ne1(kGestureMove, 1.0, 9.0, 3.0, 4.0);
+  Gesture move_ne2(kGestureMove, 1.0, 2.0, 9.0, 4.0);
+  Gesture move_ne3(kGestureMove, 1.0, 2.0, 3.0, 9.0);
+  EXPECT_TRUE(move == move2);
+  EXPECT_FALSE(move == move_ne0);
+  EXPECT_FALSE(move == move_ne1);
+  EXPECT_FALSE(move == move_ne2);
+  EXPECT_FALSE(move == move_ne3);
+  EXPECT_FALSE(move != move2);
+  EXPECT_TRUE(move != move_ne0);
+  EXPECT_TRUE(move != move_ne1);
+  EXPECT_TRUE(move != move_ne2);
+  EXPECT_TRUE(move != move_ne3);
+
+  Gesture scroll(kGestureScroll, 1.0, 2.0, 3.0, 4.0);
+  Gesture scroll2(kGestureScroll, 1.0, 2.0, 3.0, 4.0);
+  Gesture scroll_ne0(kGestureScroll, 9.0, 2.0, 3.0, 4.0);
+  Gesture scroll_ne1(kGestureScroll, 1.0, 9.0, 3.0, 4.0);
+  Gesture scroll_ne2(kGestureScroll, 1.0, 2.0, 9.0, 4.0);
+  Gesture scroll_ne3(kGestureScroll, 1.0, 2.0, 3.0, 9.0);
+  EXPECT_TRUE(scroll == scroll2);
+  EXPECT_FALSE(scroll == scroll_ne0);
+  EXPECT_FALSE(scroll == scroll_ne1);
+  EXPECT_FALSE(scroll == scroll_ne2);
+  EXPECT_FALSE(scroll == scroll_ne3);
+  EXPECT_FALSE(scroll != scroll2);
+  EXPECT_TRUE(scroll != scroll_ne0);
+  EXPECT_TRUE(scroll != scroll_ne1);
+  EXPECT_TRUE(scroll != scroll_ne2);
+  EXPECT_TRUE(scroll != scroll_ne3);
+
+  Gesture buttons(kGestureButtonsChange, 1.0, 2.0, 3, 4);
+  Gesture buttons2(kGestureButtonsChange, 1.0, 2.0, 3, 4);
+  Gesture buttons_ne0(kGestureButtonsChange, 9.0, 2.0, 3, 4);
+  Gesture buttons_ne1(kGestureButtonsChange, 1.0, 9.0, 3, 4);
+  Gesture buttons_ne2(kGestureButtonsChange, 1.0, 2.0, 9, 4);
+  Gesture buttons_ne3(kGestureButtonsChange, 1.0, 2.0, 3, 9);
+  EXPECT_TRUE(buttons == buttons2);
+  EXPECT_FALSE(buttons == buttons_ne0);
+  EXPECT_FALSE(buttons == buttons_ne1);
+  EXPECT_FALSE(buttons == buttons_ne2);
+  EXPECT_FALSE(buttons == buttons_ne3);
+  EXPECT_FALSE(buttons != buttons2);
+  EXPECT_TRUE(buttons != buttons_ne0);
+  EXPECT_TRUE(buttons != buttons_ne1);
+  EXPECT_TRUE(buttons != buttons_ne2);
+  EXPECT_TRUE(buttons != buttons_ne3);
+
+  Gesture contact_initiated;
+  contact_initiated.type = kGestureTypeContactInitiated;
+  Gesture contact_initiated2;
+  contact_initiated2.type = kGestureTypeContactInitiated;
+  EXPECT_TRUE(contact_initiated == contact_initiated2);
+  EXPECT_FALSE(contact_initiated != contact_initiated2);
+
+  // Compare different types, should all fail to equate
+  Gesture* gs[] = { &null, &move, &scroll, &buttons, &contact_initiated };
+  for (size_t i = 0; i < arraysize(gs); ++i) {
+    for (size_t j = 0; j < arraysize(gs); ++j) {
+      if (i == j)
+        continue;
+      EXPECT_FALSE(*gs[i] == *gs[j]) << "i=" << i << ", j=" << j;
+      EXPECT_TRUE(*gs[i] != *gs[j]) << "i=" << i << ", j=" << j;
+    }
+  }
+}
+
 TEST(GesturesTest, SimpleTest) {
   // Simple allocate/free test
   scoped_ptr<GestureInterpreter> gs(NewGestureInterpreter());

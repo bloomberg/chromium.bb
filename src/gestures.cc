@@ -36,6 +36,41 @@ const FingerState* HardwareState::GetFingerState(short tracking_id) const {
   return NULL;
 }
 
+namespace {
+bool FloatEq(float a, float b) {
+  return fabsf(a - b) <= 1e-5;
+}
+bool DoubleEq(float a, float b) {
+  return fabsf(a - b) <= 1e-8;
+}
+}  // namespace {}
+
+bool Gesture::operator==(const Gesture& that) const {
+  if (type != that.type)
+    return false;
+  switch (type) {
+    default:  // fall through
+      return true;
+    case kGestureTypeContactInitiated:
+      return true;
+    case kGestureTypeMove:
+      return DoubleEq(start_time, that.start_time) &&
+          DoubleEq(end_time, that.end_time) &&
+          FloatEq(details.move.dx, that.details.move.dx) &&
+          FloatEq(details.move.dy, that.details.move.dy);
+    case kGestureTypeScroll:
+      return DoubleEq(start_time, that.start_time) &&
+          DoubleEq(end_time, that.end_time) &&
+          FloatEq(details.scroll.dx, that.details.scroll.dx) &&
+          FloatEq(details.scroll.dy, that.details.scroll.dy);
+    case kGestureTypeButtonsChange:
+      return DoubleEq(start_time, that.start_time) &&
+          DoubleEq(end_time, that.end_time) &&
+          details.buttons.down == that.details.buttons.down &&
+          details.buttons.up == that.details.buttons.up;
+  }
+}
+
 GestureInterpreter* NewGestureInterpreterImpl(int version) {
   if (version < kMinSupportedVersion) {
     Err("Client too old. It's using version %d"
