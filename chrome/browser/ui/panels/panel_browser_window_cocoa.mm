@@ -112,7 +112,7 @@ void PanelBrowserWindowCocoa::OnPanelExpansionStateChanged(
       height = restored_height_;
       break;
     case Panel::TITLE_ONLY:
-      height = [controller_ titlebarHeightInScreeenCoordinates];
+      height = [controller_ titlebarHeightInScreenCoordinates];
       break;
     case Panel::MINIMIZED:
       height = 3;  // TODO(dimich) merge with GTK patch which defines it better.

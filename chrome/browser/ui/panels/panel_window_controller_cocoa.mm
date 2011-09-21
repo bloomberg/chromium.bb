@@ -408,7 +408,7 @@ static BOOL g_reportAnimationStatus = NO;
     panel->SetExpansionState(newExpansionState);
 }
 
-- (int)titlebarHeightInScreeenCoordinates {
+- (int)titlebarHeightInScreenCoordinates {
   NSView* titlebar = [self titlebarView];
   return NSHeight([titlebar convertRect:[titlebar bounds] toView:nil]);
 }

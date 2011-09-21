@@ -94,7 +94,7 @@ class PanelBrowserWindowCocoa;
 - (PanelTitlebarViewCocoa*)titlebarView;
 // Returns the height of titlebar, used to show the titlebar in
 // "Draw Attention" state.
-- (int)titlebarHeightInScreeenCoordinates;
+- (int)titlebarHeightInScreenCoordinates;
 
 // Invoked when user clicks on the titlebar. Flips Minimized/Restored states.
 - (void)flipExpansionState;
