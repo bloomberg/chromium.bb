@@ -1087,6 +1087,17 @@ void HistoryBackend::GetMostRecentKeywordSearchTerms(
 
 // Downloads -------------------------------------------------------------------
 
+void HistoryBackend::GetNextDownloadId(
+    scoped_refptr<DownloadNextIdRequest> request) {
+  if (request->canceled()) return;
+  if (db_.get()) {
+    request->value = db_->next_download_id();
+  } else {
+    request->value = 0;
+  }
+  request->ForwardResult(DownloadNextIdRequest::TupleType(request->value));
+}
+
 // Get all the download entries from the database.
 void HistoryBackend::QueryDownloads(
     scoped_refptr<DownloadQueryRequest> request) {

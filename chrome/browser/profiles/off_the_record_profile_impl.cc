@@ -115,6 +115,16 @@ void OffTheRecordProfileImpl::Init() {
 }
 
 OffTheRecordProfileImpl::~OffTheRecordProfileImpl() {
+  // Shutdown the DownloadManager here in the dtor as ProfileImpl does to
+  // guarantee that it happens before the last scoped_refptr<DM> is reaped.
+  // DownloadManager is lazily created, so check before accessing it.
+  if (download_manager_.get()) {
+    // Drop our download manager so we forget about all the downloads made
+    // in incognito mode.
+    download_manager_->Shutdown();
+    download_manager_ = NULL;
+  }
+
   NotificationService::current()->Notify(
     chrome::NOTIFICATION_PROFILE_DESTROYED, Source<Profile>(this),
     NotificationService::NoDetails());
@@ -523,22 +533,10 @@ void OffTheRecordProfileImpl::InitChromeOSPreferences() {
 }
 #endif  // defined(OS_CHROMEOS)
 
-void OffTheRecordProfileImpl::ExitedOffTheRecordMode() {
-  // DownloadManager is lazily created, so check before accessing it.
-  if (download_manager_.get()) {
-    // Drop our download manager so we forget about all the downloads made
-    // in incognito mode.
-    download_manager_->Shutdown();
-    download_manager_ = NULL;
-  }
-}
-
 void OffTheRecordProfileImpl::OnBrowserAdded(const Browser* browser) {
 }
 
 void OffTheRecordProfileImpl::OnBrowserRemoved(const Browser* browser) {
-  if (BrowserList::GetBrowserCount(this) == 0)
-    ExitedOffTheRecordMode();
 }
 
 ChromeBlobStorageContext* OffTheRecordProfileImpl::GetBlobStorageContext() {

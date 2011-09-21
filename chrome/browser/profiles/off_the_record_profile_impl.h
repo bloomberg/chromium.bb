@@ -113,7 +113,6 @@ class OffTheRecordProfileImpl : public Profile,
   virtual void InitChromeOSPreferences() OVERRIDE;
 #endif  // defined(OS_CHROMEOS)
 
-  virtual void ExitedOffTheRecordMode();
   virtual void OnBrowserAdded(const Browser* browser) OVERRIDE;
   virtual void OnBrowserRemoved(const Browser* browser) OVERRIDE;
   virtual ChromeBlobStorageContext* GetBlobStorageContext() OVERRIDE;

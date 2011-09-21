@@ -32,6 +32,7 @@
 #include "net/base/net_errors.h"
 
 class DownloadFileManager;
+class DownloadId;
 class DownloadManager;
 struct DownloadCreateInfo;
 struct DownloadPersistentStoreInfo;
@@ -124,7 +125,7 @@ class CONTENT_EXPORT DownloadItem {
                const FilePath& path,
                const GURL& url,
                bool is_otr,
-               int download_id);
+               DownloadId download_id);
 
   virtual ~DownloadItem();
 
@@ -275,6 +276,7 @@ class CONTENT_EXPORT DownloadItem {
   }
   int64 received_bytes() const { return received_bytes_; }
   int32 id() const { return download_id_; }
+  DownloadId global_id() const;
   base::Time start_time() const { return start_time_; }
   void set_db_handle(int64 handle) { db_handle_ = handle; }
   int64 db_handle() const { return db_handle_; }

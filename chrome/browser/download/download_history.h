@@ -27,6 +27,11 @@ class DownloadHistory {
   explicit DownloadHistory(Profile* profile);
   ~DownloadHistory();
 
+  // Retrieves the next_id counter from the sql meta_table.
+  // Should be much faster than Load so that we may delay downloads until after
+  // this call with minimal performance penalty.
+  void GetNextId(HistoryService::DownloadNextIdCallback* callback);
+
   // Retrieves DownloadCreateInfos saved in the history.
   void Load(HistoryService::DownloadQueryCallback* callback);
 

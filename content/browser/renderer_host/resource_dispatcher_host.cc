@@ -33,7 +33,6 @@
 #include "content/browser/download/save_file_resource_handler.h"
 #include "content/browser/in_process_webkit/webkit_thread.h"
 #include "content/browser/plugin_service.h"
-#include "content/browser/resource_context.h"
 #include "content/browser/renderer_host/async_resource_handler.h"
 #include "content/browser/renderer_host/buffered_resource_handler.h"
 #include "content/browser/renderer_host/cross_site_resource_handler.h"
@@ -49,6 +48,7 @@
 #include "content/browser/renderer_host/resource_queue.h"
 #include "content/browser/renderer_host/resource_request_details.h"
 #include "content/browser/renderer_host/sync_resource_handler.h"
+#include "content/browser/resource_context.h"
 #include "content/browser/ssl/ssl_client_auth_handler.h"
 #include "content/browser/ssl/ssl_manager.h"
 #include "content/browser/worker_host/worker_service.h"
@@ -801,18 +801,22 @@ void ResourceDispatcherHost::BeginDownload(
     int child_id,
     int route_id,
     const content::ResourceContext& context) {
-  static const int kInvalidDownloadId = -1;
   scoped_ptr<net::URLRequest> delete_request(request);
   // If DownloadResourceHandler is not begun, then started_cb must be called
   // here in order to satisfy its semantics.
   if (is_shutdown_) {
     if (!started_cb.is_null())
-      started_cb.Run(kInvalidDownloadId, net::ERR_INSUFFICIENT_RESOURCES);
+      started_cb.Run(DownloadId::Invalid(), net::ERR_INSUFFICIENT_RESOURCES);
     // Time and RDH are resources that are running out.
     return;
   }
   const GURL& url = request->original_url();
+  const net::URLRequestContext* request_context = context.request_context();
   request->set_referrer(MaybeStripReferrer(GURL(request->referrer())).spec());
+  request->set_method("GET");
+  request->set_context(request_context);
+  request->set_load_flags(request->load_flags() |
+      net::LOAD_IS_DOWNLOAD);
 
   // Check if the renderer is permitted to request the requested URL.
   if (!ChildProcessSecurityPolicy::GetInstance()->
@@ -820,11 +824,13 @@ void ResourceDispatcherHost::BeginDownload(
     VLOG(1) << "Denied unauthorized download request for "
             << url.possibly_invalid_spec();
     if (!started_cb.is_null())
-      started_cb.Run(kInvalidDownloadId, net::ERR_ACCESS_DENIED);
+      started_cb.Run(DownloadId::Invalid(), net::ERR_ACCESS_DENIED);
     return;
   }
 
   request_id_--;
+
+  DownloadId dl_id = context.next_download_id_thunk().Run();
 
   scoped_refptr<ResourceHandler> handler(
       new DownloadResourceHandler(this,
@@ -832,6 +838,7 @@ void ResourceDispatcherHost::BeginDownload(
                                   route_id,
                                   request_id_,
                                   url,
+                                  dl_id,
                                   download_file_manager_.get(),
                                   request,
                                   prompt_for_save_location,
@@ -844,18 +851,13 @@ void ResourceDispatcherHost::BeginDownload(
         false);
   }
 
-  const net::URLRequestContext* request_context = context.request_context();
   if (!request_context->job_factory()->IsHandledURL(url)) {
     VLOG(1) << "Download request for unsupported protocol: "
             << url.possibly_invalid_spec();
     if (!started_cb.is_null())
-      started_cb.Run(kInvalidDownloadId, net::ERR_ACCESS_DENIED);
+      started_cb.Run(DownloadId::Invalid(), net::ERR_ACCESS_DENIED);
     return;
   }
-
-  request->set_context(context.request_context());
-  request->set_load_flags(request->load_flags() |
-      net::LOAD_IS_DOWNLOAD);
 
   ResourceDispatcherHostRequestInfo* extra_info =
       CreateRequestInfo(handler, child_id, route_id, true, context);

@@ -31,12 +31,13 @@ DownloadResourceHandler::DownloadResourceHandler(
     int render_view_id,
     int request_id,
     const GURL& url,
+    DownloadId dl_id,
     DownloadFileManager* download_file_manager,
     net::URLRequest* request,
     bool save_as,
     const DownloadResourceHandler::OnStartedCallback& started_cb,
     const DownloadSaveInfo& save_info)
-    : download_id_(-1),
+    : download_id_(dl_id),
       global_id_(render_process_host_id, request_id),
       render_view_id_(render_view_id),
       content_length_(0),
@@ -48,6 +49,7 @@ DownloadResourceHandler::DownloadResourceHandler(
       buffer_(new DownloadBuffer),
       rdh_(rdh),
       is_paused_(false) {
+  DCHECK(dl_id.IsValid());
   download_stats::RecordDownloadCount(download_stats::UNTHROTTLED_COUNT);
 }
 
@@ -68,6 +70,7 @@ bool DownloadResourceHandler::OnRequestRedirected(int request_id,
 // Send the download creation information to the download thread.
 bool DownloadResourceHandler::OnResponseStarted(int request_id,
                                                 ResourceResponse* response) {
+  DCHECK(download_id_.IsValid());
   VLOG(20) << __FUNCTION__ << "()" << DebugString()
            << " request_id = " << request_id;
   download_start_time_ = base::TimeTicks::Now();
@@ -80,15 +83,19 @@ bool DownloadResourceHandler::OnResponseStarted(int request_id,
   const ResourceDispatcherHostRequestInfo* request_info =
     ResourceDispatcherHost::InfoForRequest(request_);
 
-  download_id_ = download_file_manager_->GetNextId();
-
   // Deleted in DownloadManager.
   DownloadCreateInfo* info = new DownloadCreateInfo(FilePath(), GURL(),
       base::Time::Now(), 0, content_length_, DownloadItem::IN_PROGRESS,
-      download_id_, request_info->has_user_gesture(),
+      download_id_.local(), request_info->has_user_gesture(),
       request_info->transition_type());
   info->url_chain = request_->url_chain();
   info->referrer_url = GURL(request_->referrer());
+  info->start_time = base::Time::Now();
+  info->received_bytes = 0;
+  info->total_bytes = content_length_;
+  info->state = DownloadItem::IN_PROGRESS;
+  info->download_id = download_id_.local();
+  info->has_user_gesture = request_info->has_user_gesture();
   info->request_handle = DownloadRequestHandle(rdh_,
                                                global_id_.child_id,
                                                render_view_id_,
@@ -189,7 +196,7 @@ bool DownloadResourceHandler::OnResponseCompleted(
            << " status.error() = " << status.error();
   net::Error error_code = (status.status() == net::URLRequestStatus::FAILED) ?
       static_cast<net::Error>(status.error()) : net::OK;
-  if (download_id_ == -1)
+  if (!download_id_.IsValid())
     CallStartedCB(error_code);
   // We transfer ownership to |DownloadFileManager| to delete |buffer_|,
   // so that any functions queued up on the FILE thread are executed
@@ -270,7 +277,7 @@ std::string DownloadResourceHandler::DebugString() const {
                             " save_info_.file_path = \"%" PRFilePath "\""
                             " }",
                             request_->url().spec().c_str(),
-                            download_id_,
+                            download_id_.local(),
                             global_id_.child_id,
                             global_id_.request_id,
                             render_view_id_,

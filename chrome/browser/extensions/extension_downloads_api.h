@@ -121,7 +121,7 @@ class DownloadsDownloadFunction : public AsyncDownloadsFunction {
     int render_view_host_routing_id;
   };
   void BeginDownloadOnIOThread();
-  void OnStarted(int dl_id, net::Error error);
+  void OnStarted(DownloadId dl_id, net::Error error);
   void RespondOnUIThread(int dl_id, net::Error error);
 
   scoped_ptr<IOData> iodata_;

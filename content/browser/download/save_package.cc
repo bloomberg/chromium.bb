@@ -263,15 +263,12 @@ bool SavePackage::Init() {
     return false;
   }
 
-  ResourceDispatcherHost* rdh =
-      content::GetContentClient()->browser()->GetResourceDispatcherHost();
-
   // Create the download item, and add ourself as an observer.
   download_ = new DownloadItem(download_manager_,
                                saved_main_file_path_,
                                page_url_,
                                browser_context->IsOffTheRecord(),
-                               rdh->download_file_manager()->GetNextId());
+                               download_manager_->GetNextId());
   download_->AddObserver(this);
 
   // Transfer ownership to the download manager.

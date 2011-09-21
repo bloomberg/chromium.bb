@@ -201,11 +201,12 @@ void DownloadsDownloadFunction::BeginDownloadOnIOThread() {
   iodata_.reset();
 }
 
-void DownloadsDownloadFunction::OnStarted(int dl_id, net::Error error) {
+void DownloadsDownloadFunction::OnStarted(DownloadId dl_id, net::Error error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   VLOG(1) << __FUNCTION__ << " " << dl_id << " " << error;
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, NewRunnableMethod(
-      this, &DownloadsDownloadFunction::RespondOnUIThread, dl_id, error));
+      this, &DownloadsDownloadFunction::RespondOnUIThread,
+      dl_id.local(), error));
 }
 
 void DownloadsDownloadFunction::RespondOnUIThread(int dl_id, net::Error error) {

@@ -5,8 +5,12 @@
 #include "chrome/browser/download/download_throttling_resource_handler.h"
 
 #include "base/logging.h"
+#include "content/browser/download/download_id.h"
+#include "content/browser/download/download_resource_handler.h"
 #include "content/browser/download/download_stats.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
+#include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
+#include "content/browser/resource_context.h"
 #include "content/common/resource_response.h"
 #include "net/base/io_buffer.h"
 #include "net/base/mime_sniffer.h"

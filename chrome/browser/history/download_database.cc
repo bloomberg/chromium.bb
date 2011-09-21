@@ -53,10 +53,15 @@ FilePath ColumnFilePath(sql::Statement& statement, int col) {
 
 #endif
 
+// Key in the meta_table containing the next id to use for a new download in
+// this profile.
+static const char kNextDownloadId[] = "next_download_id";
+
 }  // namespace
 
 DownloadDatabase::DownloadDatabase()
-    : owning_thread_set_(false) {
+    : owning_thread_set_(false),
+      next_id_(0) {
 }
 
 DownloadDatabase::~DownloadDatabase() {
@@ -75,6 +80,8 @@ bool DownloadDatabase::InitDownloadTable() {
         "state INTEGER NOT NULL)"))
       return false;
   }
+  meta_table_.Init(&GetDB(), 0, 0);
+  meta_table_.GetValue(kNextDownloadId, &next_id_);
   return true;
 }
 
@@ -175,6 +182,9 @@ int64 DownloadDatabase::CreateDownload(
 
     CHECK_EQ(0u, returned_ids_.count(id));
     returned_ids_.insert(id);
+
+    // TODO(benjhayden) if(info.id>next_id_){setvalue;next_id_=info.id;}
+    meta_table_.SetValue(kNextDownloadId, ++next_id_);
 
     return id;
   }

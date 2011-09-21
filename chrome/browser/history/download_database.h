@@ -8,8 +8,9 @@
 
 #include <set>
 
-#include "chrome/browser/history/history_types.h"
 #include "base/threading/platform_thread.h"
+#include "chrome/browser/history/history_types.h"
+#include "sql/meta_table.h"
 
 struct DownloadPersistentStoreInfo;
 class FilePath;
@@ -26,6 +27,8 @@ class DownloadDatabase {
   // Must call InitDownloadTable before using any other functions.
   DownloadDatabase();
   virtual ~DownloadDatabase();
+
+  int next_download_id() const { return next_id_; }
 
   // Get all the downloads from the database.
   void QueryDownloads(std::vector<DownloadPersistentStoreInfo>* results);
@@ -70,6 +73,9 @@ class DownloadDatabase {
   std::set<int64> returned_ids_;
   bool owning_thread_set_;
   base::PlatformThreadId owning_thread_;
+
+  int next_id_;
+  sql::MetaTable meta_table_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadDatabase);
 };

@@ -23,7 +23,6 @@
 class BaseDownloadItemModel;
 class CrxInstaller;
 class DownloadItem;
-class DownloadManager;
 class GURL;
 class Profile;
 class ResourceDispatcherHost;

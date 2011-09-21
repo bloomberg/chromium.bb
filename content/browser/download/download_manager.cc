@@ -6,11 +6,15 @@
 
 #include <iterator>
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/file_util.h"
 #include "base/i18n/case_conversion.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
+#include "base/stringprintf.h"
+#include "base/synchronization/lock.h"
+#include "base/sys_string_conversions.h"
 #include "base/task.h"
 #include "build/build_config.h"
 #include "content/browser/browser_context.h"
@@ -57,17 +61,22 @@ DownloadManager::DownloadManager(DownloadManagerDelegate* delegate,
                                  DownloadStatusUpdater* status_updater)
     : shutdown_needed_(false),
       browser_context_(NULL),
+      next_id_(0),
       file_manager_(NULL),
-      status_updater_(status_updater->AsWeakPtr()),
+      status_updater_((status_updater != NULL)
+                      ? status_updater->AsWeakPtr()
+                      : base::WeakPtr<DownloadStatusUpdater>()),
       delegate_(delegate),
       largest_db_handle_in_history_(DownloadItem::kUninitializedHandle) {
-  if (status_updater_)
+  // NOTE(benjhayden): status_updater may be NULL when using
+  // TestingBrowserProcess.
+  if (status_updater_.get() != NULL)
     status_updater_->AddDelegate(this);
 }
 
 DownloadManager::~DownloadManager() {
   DCHECK(!shutdown_needed_);
-  if (status_updater_)
+  if (status_updater_.get() != NULL)
     status_updater_->RemoveDelegate(this);
 }
 
@@ -183,6 +192,30 @@ void DownloadManager::SearchDownloads(const string16& query,
     if (download_item->MatchesQuery(query_lower))
       result->push_back(download_item);
   }
+}
+
+void DownloadManager::OnPersistentStoreGetNextId(int next_id) {
+  DVLOG(1) << __FUNCTION__ << " " << next_id;
+  base::AutoLock lock(next_id_lock_);
+  // TODO(benjhayden) Delay Profile initialization until here, and set next_id_
+  // = next_id. The '+=' works for now because these ids are not yet persisted
+  // to the database. GetNextId() can allocate zero or more ids starting from 0,
+  // then this callback can increment next_id_, and the items with lower ids
+  // won't clash with any other items even though there may be items loaded from
+  // the history because items from the history don't have valid ids.
+  next_id_ += next_id;
+}
+
+DownloadId DownloadManager::GetNextId() {
+  // May be called on any thread via the GetNextIdThunk.
+  // TODO(benjhayden) If otr, forward to parent DM.
+  base::AutoLock lock(next_id_lock_);
+  return DownloadId(this, next_id_++);
+}
+
+DownloadManager::GetNextIdThunkType DownloadManager::GetNextIdThunk() {
+  // TODO(benjhayden) If otr, forward to parent DM.
+  return base::Bind(&DownloadManager::GetNextId, this);
 }
 
 // Query the history service for information about all persisted downloads.
@@ -336,7 +369,7 @@ void DownloadManager::ContinueDownloadWithPath(DownloadItem* download,
       BrowserThread::FILE, FROM_HERE,
       NewRunnableMethod(
           file_manager_, &DownloadFileManager::RenameInProgressDownloadFile,
-          download->id(), download_path));
+          download->global_id(), download_path));
 
   download->Rename(download_path);
 
@@ -493,10 +526,10 @@ void DownloadManager::OnDownloadRenamedToFinalName(int download_id,
     DCHECK_EQ(0, uniquifier) << "We should not uniquify SAFE downloads twice";
   }
 
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      NewRunnableMethod(
-          file_manager_, &DownloadFileManager::CompleteDownload, download_id));
+  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE, NewRunnableMethod(
+      file_manager_,
+      &DownloadFileManager::CompleteDownload,
+      item->global_id()));
 
   if (uniquifier)
     item->set_path_uniquifier(uniquifier);

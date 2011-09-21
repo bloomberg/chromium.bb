@@ -60,6 +60,8 @@ void ChromeDownloadManagerDelegate::SetDownloadManager(DownloadManager* dm) {
   download_history_.reset(new DownloadHistory(profile_));
   download_history_->Load(
       NewCallback(dm, &DownloadManager::OnPersistentStoreQueryComplete));
+  download_history_->GetNextId(
+      NewCallback(dm, &DownloadManager::OnPersistentStoreGetNextId));
 }
 
 void ChromeDownloadManagerDelegate::Shutdown() {
