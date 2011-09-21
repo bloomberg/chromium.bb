@@ -9,10 +9,12 @@ var chrome = chrome || {};
 (function() {
   native function GetExtensionAPIDefinition();
   native function StartRequest();
-  native function GetCurrentPageActions(extensionId);
-  native function GetExtensionViews();
   native function GetChromeHidden();
   native function GetNextRequestId();
+  native function Print();
+
+  native function GetCurrentPageActions(extensionId);
+  native function GetExtensionViews();
   native function GetNextContextMenuId();
   native function GetNextTtsEventId();
   native function OpenChannelToTab();
@@ -21,7 +23,6 @@ var chrome = chrome || {};
   native function GetUniqueSubEventName(eventName);
   native function GetLocalFileSystem(name, path);
   native function DecodeJPEG(jpeg_image);
-  native function Print();
 
   var chromeHidden = GetChromeHidden();
 
@@ -130,24 +131,6 @@ var chrome = chrome || {};
     return undefined;
   };
 
-  chromeHidden.setViewType = function(type) {
-    var modeClass = "chrome-" + type;
-    var className = document.documentElement.className;
-    if (className && className.length) {
-      var classes = className.split(" ");
-      var new_classes = [];
-      classes.forEach(function(cls) {
-        if (cls.indexOf("chrome-") != 0) {
-          new_classes.push(cls);
-        }
-      });
-      new_classes.push(modeClass);
-      document.documentElement.className = new_classes.join(" ");
-    } else {
-      document.documentElement.className = modeClass;
-    }
-  };
-
   function prepareRequest(args, argSchemas) {
     var request = {};
     var argCount = args.length;
@@ -199,39 +182,6 @@ var chrome = chrome || {};
         (request.callback || opt_args.customCallback) ? true : false;
     return nativeFunction(functionName, sargs, requestId, hasCallback,
                           opt_args.forIOThread);
-  }
-
-  // Helper function for positioning pop-up windows relative to DOM objects.
-  // Returns the absolute position of the given element relative to the hosting
-  // browser frame.
-  function findAbsolutePosition(domElement) {
-    var left = domElement.offsetLeft;
-    var top = domElement.offsetTop;
-
-    // Ascend through the parent hierarchy, taking into account object nesting
-    // and scoll positions.
-    for (var parentElement = domElement.offsetParent; parentElement;
-         parentElement = parentElement.offsetParent) {
-      left += parentElement.offsetLeft;
-      top += parentElement.offsetTop;
-
-      left -= parentElement.scrollLeft;
-      top -= parentElement.scrollTop;
-    }
-
-    return {
-      top: top,
-      left: left
-    };
-  }
-
-  // Returns the coordiates of the rectangle encompassing the domElement,
-  // in browser coordinates relative to the frame hosting the element.
-  function getAbsoluteRect(domElement) {
-    var rect = findAbsolutePosition(domElement);
-    rect.width = domElement.offsetWidth || 0;
-    rect.height = domElement.offsetHeight || 0;
-    return rect;
   }
 
   // --- Setup additional api's not currently handled in common/extensions/api
@@ -710,7 +660,6 @@ var chrome = chrome || {};
 
           var eventName = apiDef.namespace + "." + eventDef.name;
           if (apiDef.namespace == "experimental.webRequest") {
-            // WebRequest events have a special structure.
             module[eventDef.name] = new chrome.WebRequestEvent(eventName,
                 eventDef.parameters, eventDef.extraParameters);
           } else {
