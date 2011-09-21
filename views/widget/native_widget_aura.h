@@ -7,6 +7,7 @@
 #pragma once
 
 #include "ui/aura/window_delegate.h"
+#include "views/views_export.h"
 #include "views/widget/native_widget_private.h"
 
 namespace aura {
@@ -18,8 +19,8 @@ class Font;
 
 namespace views {
 
-class NativeWidgetAura : public internal::NativeWidgetPrivate,
-                         public aura::WindowDelegate {
+class VIEWS_EXPORT NativeWidgetAura : public internal::NativeWidgetPrivate,
+                                      public aura::WindowDelegate {
  public:
   explicit NativeWidgetAura(internal::NativeWidgetDelegate* delegate);
   virtual ~NativeWidgetAura();
