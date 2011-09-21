@@ -153,6 +153,19 @@ cr.define('options', function() {
     $('suggest-gallery').hidden = true;
     $('get-more-extensions-container').hidden = true;
 
+    // Append extension count to extensionSettingsTitle and frame
+    // the extension header string. If there are no extensions loaded
+    // then display title as Extensions only.
+    $('extension-settings-header').hidden = false;
+    $('dev-toggle').hidden = false;
+    var extensionSettingsHeader = templateData.extensionSettingsTitle;
+    if (extensionsData.extensions.length > 0) {
+      extensionSettingsHeader = templateData.extensionSettingsTitle + " (" +
+          extensionsData.extensions.length + ")";
+    }
+
+    $('extension-settings-header').innerText = extensionSettingsHeader;
+
     if (extensionsData.extensions.length > 0) {
       // Enforce order specified in the data or (if equal) then sort by
       // extension name (case-insensitive).
