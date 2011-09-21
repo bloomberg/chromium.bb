@@ -355,6 +355,9 @@ bool FormStructure::EncodeUploadRequest(
   *encoded_xml = kXMLDeclaration;
   *encoded_xml += autofill_request_xml.Str().c_str();
 
+  // To enable this logging, run with the flag --vmodule="form_structure=2".
+  VLOG(2) << "\n" << *encoded_xml;
+
   return true;
 }
 
