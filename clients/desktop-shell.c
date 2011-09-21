@@ -46,14 +46,12 @@ struct desktop {
 
 struct panel {
 	struct window *window;
-	struct wl_list item_list;
-	struct panel_item *focus;
 };
 
 struct panel_item {
-	struct wl_list link;
+	struct item *item;
+	struct panel *panel;
 	cairo_surface_t *icon;
-	int x, y, width, height;
 	int pressed;
 	const char *path;
 };
@@ -88,41 +86,38 @@ panel_activate_item(struct panel *panel, struct panel_item *item)
 	}
 }
 
-static struct panel_item *
-panel_find_item(struct panel *panel, int32_t x, int32_t y)
-{
-	struct panel_item *item;
-
-	wl_list_for_each(item, &panel->item_list, link) {
-		if (item->x <= x && x < item->x + item->width &&
-		    item->y <= y && y < item->y + item->height) {
-			return item;
-		}
-	}
-
-	return NULL;
-}
-
 static void
-panel_draw_item(struct panel *panel, cairo_t *cr, struct panel_item *item)
+panel_draw_item(struct item *item, void *data)
 {
-	int x, y;
+	cairo_t *cr = data;
+	struct panel_item *pi;
+	int x, y, width, height;
+	double dx, dy;
 
-	if (item->pressed) {
-		x = item->x + 1;
-		y = item->y + 1;
-	} else {
-		x = item->x;
-		y = item->y;
+	pi = item_get_user_data(item);
+	width = cairo_image_surface_get_width(pi->icon);
+	height = cairo_image_surface_get_height(pi->icon);
+	x = 0;
+	y = -height / 2;
+	if (pi->pressed) {
+		x++;
+		y++;
 	}
 
-	cairo_set_source_surface(cr, item->icon, x, y);
+	dx = x;
+	dy = y;
+	cairo_user_to_device(cr, &dx, &dy);
+	item_set_allocation(item, dx, dy, width, height);
+
+	cairo_set_source_surface(cr, pi->icon, x, y);
 	cairo_paint(cr);
 
-	if (panel->focus == item) {
+	if (window_get_focus_item(pi->panel->window) == item) {
 		cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, 0.4);
-		cairo_mask_surface(cr, item->icon, x, y);
+		cairo_mask_surface(cr, pi->icon, x, y);
 	}
+
+	cairo_translate(cr, width + 10, 0);
 }
 
 static void
@@ -130,8 +125,6 @@ panel_redraw_handler(struct window *window, void *data)
 {
 	cairo_surface_t *surface;
 	cairo_t *cr;
-	struct panel *panel = window_get_user_data(window);
-	struct panel_item *item;
 
 	window_draw(window);
 	surface = window_get_surface(window);
@@ -141,8 +134,8 @@ panel_redraw_handler(struct window *window, void *data)
 	cairo_paint(cr);
 
 	cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
-	wl_list_for_each(item, &panel->item_list, link)
-		panel_draw_item(panel, cr, item);
+	cairo_translate(cr, 10, 32 / 2);
+	window_for_each_item(window, panel_draw_item, cr);
 
 	cairo_destroy(cr);
 	cairo_surface_destroy(surface);
@@ -150,54 +143,10 @@ panel_redraw_handler(struct window *window, void *data)
 }
 
 static void
-panel_set_focus(struct panel *panel, struct panel_item *focus)
+panel_item_focus_handler(struct window *window,
+			 struct item *focus, void *data)
 {
-	if (focus == panel->focus)
-		return;
-
-	panel->focus = focus;
-	window_schedule_redraw(panel->window);
-}
-
-static int
-panel_enter_handler(struct window *window,
-		    struct input *input, uint32_t time,
-		    int32_t x, int32_t y, void *data)
-{
-	struct panel *panel = data;
-	struct panel_item *item;
-
-	item = panel_find_item(panel, x, y);
-	panel_set_focus(panel, item);
-
-	return POINTER_LEFT_PTR;
-}
-
-static void
-panel_leave_handler(struct window *window,
-		    struct input *input, uint32_t time, void *data)
-{
-	struct panel *panel = data;
-
-	panel_set_focus(panel, NULL);
-}
-
-static int
-panel_motion_handler(struct window *window,
-		     struct input *input, uint32_t time,
-		     int32_t x, int32_t y,
-		     int32_t sx, int32_t sy, void *data)
-{
-	struct panel *panel = data;
-	struct panel_item *item;
-
-	if (panel->focus && panel->focus->pressed)
-		return POINTER_LEFT_PTR;
-
-	item = panel_find_item(panel, sx, sy);
-	panel_set_focus(panel, item);
-
-	return POINTER_LEFT_PTR;
+	window_schedule_redraw(window);
 }
 
 static void
@@ -206,20 +155,15 @@ panel_button_handler(struct window *window,
 		     int button, int state, void *data)
 {
 	struct panel *panel = data;
-	struct panel_item *item;
-	int32_t x, y;
+	struct panel_item *pi;
+	struct item *focus;
 
-	if (panel->focus && button == BTN_LEFT) {
-		panel->focus->pressed = state;
+	focus = window_get_focus_item(panel->window);
+	if (focus && button == BTN_LEFT) {
+		pi = item_get_user_data(focus);
 		window_schedule_redraw(panel->window);
-
-		if (state == 0) {
-			panel_activate_item(panel, panel->focus);
-
-			input_get_position(input, &x, &y);
-			item = panel_find_item(panel, x, y);
-			panel_set_focus(panel, item);
-		}
+		if (state == 0)
+			panel_activate_item(panel, pi);
 	}
 }
 
@@ -230,7 +174,6 @@ panel_create(struct display *display)
 
 	panel = malloc(sizeof *panel);
 	memset(panel, 0, sizeof *panel);
-	wl_list_init(&panel->item_list);
 
 	panel->window = window_create(display, 0, 0);
 
@@ -239,10 +182,8 @@ panel_create(struct display *display)
 	window_set_redraw_handler(panel->window, panel_redraw_handler);
 	window_set_custom(panel->window);
 	window_set_user_data(panel->window, panel);
-	window_set_enter_handler(panel->window, panel_enter_handler);
-	window_set_leave_handler(panel->window, panel_leave_handler);
-	window_set_motion_handler(panel->window, panel_motion_handler);
 	window_set_button_handler(panel->window, panel_button_handler);
+	window_set_item_focus_handler(panel->window, panel_item_focus_handler);
 
 	return panel;
 }
@@ -256,27 +197,8 @@ panel_add_item(struct panel *panel, const char *icon, const char *path)
 	memset(item, 0, sizeof *item);
 	item->icon = cairo_image_surface_create_from_png(icon);
 	item->path = strdup(path);
-	wl_list_insert(panel->item_list.prev, &item->link);
-
-	item->width = cairo_image_surface_get_width(item->icon);
-	item->height = cairo_image_surface_get_height(item->icon);
-}
-
-static void
-panel_allocate(struct panel *panel, int width, int height)
-{
-	struct panel_item *item;
-	int x;
-
-	window_set_child_size(panel->window, width, height);
-	window_schedule_redraw(panel->window);
-
-	x = 10;
-	wl_list_for_each(item, &panel->item_list, link) {
-		item->x = x;
-		item->y = (height - item->height) / 2;
-		x += item->width + 10;
-	}
+	item->panel = panel;
+	window_add_item(panel->window, item);
 }
 
 static void
@@ -324,7 +246,8 @@ desktop_shell_configure(void *data,
 	struct desktop *desktop = data;
 
 	if (surface == window_get_wl_surface(desktop->panel->window)) {
-		panel_allocate(desktop->panel, width, 32);
+		window_set_child_size(desktop->panel->window, width, 32);
+		window_schedule_redraw(desktop->panel->window);
 	} else if (surface == window_get_wl_surface(desktop->background)) {
 		background_draw(desktop->background,
 				width, height, desktop->background_path);

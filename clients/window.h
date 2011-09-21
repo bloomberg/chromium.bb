@@ -29,6 +29,9 @@
 #include <cairo.h>
 
 struct window;
+struct item;
+struct display;
+struct input;
 
 struct task {
 	void (*run)(struct task *task, uint32_t events);
@@ -41,9 +44,6 @@ struct rectangle {
 	int32_t width;
 	int32_t height;
 };
-
-struct display;
-struct input;
 
 struct display *
 display_create(int *argc, char **argv[], const GOptionEntry *option_entries);
@@ -156,6 +156,9 @@ typedef int (*window_motion_handler_t)(struct window *window,
 				       int32_t x, int32_t y,
 				       int32_t sx, int32_t sy, void *data);
 
+typedef void (*window_item_focus_handler_t)(struct window *window,
+					    struct item *focus, void *data);
+
 struct window *
 window_create(struct display *display, int32_t width, int32_t height);
 struct window *
@@ -164,6 +167,17 @@ window_create_transient(struct display *display, struct window *parent,
 
 void
 window_destroy(struct window *window);
+
+struct item *
+window_add_item(struct window *window, void *data);
+
+typedef void (*item_func_t)(struct item *item, void *data);
+
+void
+window_for_each_item(struct window *window, item_func_t func, void *data);
+
+struct item *
+window_get_focus_item(struct window *window);
 
 void
 window_move(struct window *window, struct input *input, uint32_t time);
@@ -265,6 +279,10 @@ window_set_keyboard_focus_handler(struct window *window,
 				  window_keyboard_focus_handler_t handler);
 
 void
+window_set_item_focus_handler(struct window *window,
+			      window_item_focus_handler_t handler);
+
+void
 window_set_title(struct window *window, const char *title);
 
 const char *
@@ -276,6 +294,16 @@ window_create_drag(struct window *window);
 void
 window_activate_drag(struct wl_drag *drag, struct window *window,
 		     struct input *input, uint32_t time);
+
+void
+item_get_allocation(struct item *item, struct rectangle *allocation);
+
+void
+item_set_allocation(struct item *item,
+		    int32_t x, int32_t y, int32_t width, int32_t height);
+
+void *
+item_get_user_data(struct item *item);
 
 void
 input_get_position(struct input *input, int32_t *x, int32_t *y);
