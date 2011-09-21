@@ -82,7 +82,8 @@ class VIEWS_EXPORT Combobox : public View {
 
  protected:
   // Overridden from View:
-  virtual void ViewHierarchyChanged(bool is_add, View* parent,
+  virtual void ViewHierarchyChanged(bool is_add,
+                                    View* parent,
                                     View* child) OVERRIDE;
   virtual std::string GetClassName() const OVERRIDE;
 

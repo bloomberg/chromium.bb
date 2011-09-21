@@ -126,9 +126,10 @@ void Combobox::GetAccessibleState(ui::AccessibleViewState* state) {
   state->count = model()->GetItemCount();
 }
 
-void Combobox::ViewHierarchyChanged(bool is_add, View* parent,
-                                    View* child) {
+void Combobox::ViewHierarchyChanged(bool is_add, View* parent, View* child) {
   if (is_add && !native_wrapper_ && GetWidget()) {
+    // The native wrapper's lifetime will be managed by the view hierarchy after
+    // we call AddChildView.
     native_wrapper_ = NativeComboboxWrapper::CreateWrapper(this);
     AddChildView(native_wrapper_->GetView());
   }
