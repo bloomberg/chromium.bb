@@ -56,7 +56,9 @@
 // Error messages.
 const char kFileError[] = "File error %d";
 const char kInvalidFileUrl[] = "Invalid file URL";
+#ifdef OS_CHROMEOS
 const char kVolumeDevicePathNotFound[] = "Device path not found";
+#endif
 
 #ifdef OS_CHROMEOS
 // Volume type strings.
@@ -541,21 +543,15 @@ void FileWatchBrowserFunctionBase::RunFileWatchOperationOnFileThread(
 bool AddFileWatchBrowserFunction::PerformFileWatchOperation(
     const FilePath& local_path, const FilePath& virtual_path,
     const std::string& extension_id) {
-#if defined(OS_CHROMEOS)
   return profile_->GetExtensionService()->file_browser_event_router()->
       AddFileWatch(local_path, virtual_path, extension_id);
-#else
-  return true;
-#endif  // OS_CHROMEOS
 }
 
 bool RemoveFileWatchBrowserFunction::PerformFileWatchOperation(
     const FilePath& local_path, const FilePath& unused,
     const std::string& extension_id) {
-#if defined(OS_CHROMEOS)
   profile_->GetExtensionService()->file_browser_event_router()->
       RemoveFileWatch(local_path, extension_id);
-#endif
   return true;
 }
 
@@ -1181,7 +1177,6 @@ bool AddMountFunction::RunImpl() {
   UrlList file_paths;
   file_paths.push_back(GURL(file_url));
 
-#if defined(OS_CHROMEOS)
   chromeos::MountPathOptions options;
   if (args_->GetSize() == 3) {
     DictionaryValue *dict;
@@ -1208,7 +1203,6 @@ bool AddMountFunction::RunImpl() {
       NewRunnableMethod(this,
           &AddMountFunction::GetLocalPathsOnFileThread,
           file_paths, reinterpret_cast<void*>(params)));
-#endif  // OS_CHROMEOS
 
   return true;
 }
@@ -1217,19 +1211,19 @@ void AddMountFunction::GetLocalPathsResponseOnUIThread(
     const FilePathList& files, void* context) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(context);
+  scoped_ptr<MountParamaters> params(
+      reinterpret_cast<MountParamaters*>(context));
 
   if (!files.size()) {
     SendResponse(false);
     return;
   }
 
-#ifdef OS_CHROMEOS
-  scoped_ptr<MountParamaters> params(
-      reinterpret_cast<MountParamaters*>(context));
   const std::string& mount_type_str = params->mount_type;
   const chromeos::MountPathOptions& options = params->mount_options;
   FilePath::StringType source_file = files[0].value();
 
+#ifdef OS_CHROMEOS
   chromeos::MountLibrary *mount_lib =
       chromeos::CrosLibrary::Get()->GetMountLibrary();
 
@@ -1582,10 +1576,8 @@ bool FileDialogStringsFunction::RunImpl() {
       l10n_util::GetStringUTF16(IDS_CERT_MANAGER_VIEW_CERT_BUTTON));
   dict->SetString("PLAY_MEDIA",
       l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_PLAY));
-#if defined(OS_CHROMEOS)
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableArchives))
     dict->SetString("ENABLE_ARCHIVES", "true");
-#endif
 
   return true;
 }

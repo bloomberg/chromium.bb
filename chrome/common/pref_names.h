@@ -207,6 +207,7 @@ extern const char kLabsMediaplayerEnabled[];
 extern const char kEnableScreenLock[];
 extern const char kShowPlanNotifications[];
 extern const char kShow3gPromoNotification[];
+extern const char kLastUsedFileBrowserHandlers[];
 extern const char kUseSharedProxies[];
 extern const char kOAuth1Token[];
 extern const char kOAuth1Secret[];
@@ -376,7 +377,6 @@ extern const char kSaveFileDefaultDirectory[];
 extern const char kSaveFileType[];
 
 extern const char kAllowFileSelectionDialogs[];
-extern const char kLastUsedFileBrowserHandlers[];
 
 extern const char kSelectFileLastDirectory[];
 

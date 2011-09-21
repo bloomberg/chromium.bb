@@ -195,6 +195,10 @@ void Preferences::RegisterUserPrefs(PrefService* prefs) {
                              true,
                              PrefService::UNSYNCABLE_PREF);
 
+  // The map of timestamps of the last used file browser handlers.
+  prefs->RegisterDictionaryPref(prefs::kLastUsedFileBrowserHandlers,
+                                PrefService::UNSYNCABLE_PREF);
+
   // Use shared proxies default to off.
   prefs->RegisterBooleanPref(prefs::kUseSharedProxies,
                              false,
