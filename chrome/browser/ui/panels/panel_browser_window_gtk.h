@@ -41,6 +41,7 @@ class PanelBrowserWindowGtk : public BrowserWindowGtk,
   virtual void SaveWindowPosition() OVERRIDE;
   virtual void SetGeometryHints() OVERRIDE;
   virtual bool UseCustomFrame() OVERRIDE;
+  virtual void OnSizeChanged(int width, int height) OVERRIDE;
 
   // Overridden from NativePanel:
   virtual void ShowPanel() OVERRIDE;
@@ -76,12 +77,12 @@ class PanelBrowserWindowGtk : public BrowserWindowGtk,
   virtual void SetRestoredHeight(int height) OVERRIDE;
 
  private:
-  // Resize the window as specified by the bounds. Move the window to the
-  // specified location only if "move" is true. We set the window gravity to be
-  // GDK_GRAVITY_SOUTH_EAST which means the window is anchored to the bottom
-  // right corner on resize, making it unnecessary to move the window if the
-  // bottom right corner is unchanged, for example when we minimize to the
-  // bottom. Moving can actually result in the wrong behavior.
+  // Resize the window as specified by the bounds.
+  // Panels use window gravity of GDK_GRAVITY_SOUTH_EAST which means the
+  // window is anchored to the bottom right corner on resize, making it
+  // unnecessary to move the window if the bottom right corner is unchanged.
+  // For example, when we minimize to the bottom, moving can actually
+  // result in the wrong behavior.
   //   - Say window is 100x100 with x,y=900,900 on a 1000x1000 screen.
   //   - Say you minimize the window to 100x3 and move it to 900,997 to keep it
   //     anchored to the bottom.
@@ -89,7 +90,9 @@ class PanelBrowserWindowGtk : public BrowserWindowGtk,
   //     the move will take the window off screen and it won't honor the
   //     request.
   //   - When resize finally happens, you'll have a 100x3 window a x,y=900,900.
-  void SetBoundsImpl(const gfx::Rect& bounds, bool move);
+  // Set |force_move| to true to force a move regardless. Otherwise, the
+  // window is only moved if the bottom right corner is being changed.
+  void SetBoundsImpl(const gfx::Rect& bounds, bool force_move);
 
   // MessageLoop::Observer implementation:
   virtual void WillProcessEvent(GdkEvent* event) OVERRIDE;
@@ -155,6 +158,10 @@ class PanelBrowserWindowGtk : public BrowserWindowGtk,
   // Stores the original height of the panel so we can restore it after it's
   // been minimized.
   int restored_height_;
+
+  // False until the window has been allocated and the size of browser window
+  // frame around the content is known.
+  bool non_client_area_size_known_;
 
   DISALLOW_COPY_AND_ASSIGN(PanelBrowserWindowGtk);
 };

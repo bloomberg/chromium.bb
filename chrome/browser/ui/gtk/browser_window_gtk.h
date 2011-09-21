@@ -250,6 +250,12 @@ class BrowserWindowGtk : public BrowserWindow,
   // Returns |true| if we should use the custom frame.
   virtual bool UseCustomFrame();
 
+  // Called when the window size changed.
+  virtual void OnSizeChanged(int width, int height);
+
+  // Returns the size of the window frame around the client content area.
+  gfx::Size GetNonClientFrameSize() const;
+
   // Top level window.
   GtkWindow* window_;
   // GtkAlignment that holds the interior components of the chromium window.
@@ -292,9 +298,6 @@ class BrowserWindowGtk : public BrowserWindow,
   // Set up background color of the window (depends on if we're incognito or
   // not).
   void SetBackgroundColor();
-
-  // Called when the window size changed.
-  void OnSizeChanged(int width, int height);
 
   // Applies the window shape to if we're in custom drawing mode.
   void UpdateWindowShape(int width, int height);

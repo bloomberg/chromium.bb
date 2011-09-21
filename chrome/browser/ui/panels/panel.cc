@@ -536,6 +536,10 @@ void Panel::RequestRenderViewHostToDisableScrollbars(
                 max_size_.height() - non_client_size.height()));
 }
 
+void Panel::OnNonClientExtentAvailable() {
+  RequestRenderViewHostToDisableScrollbars(GetRenderViewHost());
+}
+
 Browser* Panel::browser() const {
   return native_panel_->GetPanelBrowser();
 }

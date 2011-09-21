@@ -1898,6 +1898,13 @@ void BrowserWindowGtk::UpdateCustomFrame() {
   UpdateWindowShape(bounds_.width(), bounds_.height());
 }
 
+gfx::Size BrowserWindowGtk::GetNonClientFrameSize() const {
+  return gfx::Size(window_container_->allocation.width -
+                   render_area_floating_container_->allocation.width,
+                   window_container_->allocation.height -
+                   render_area_floating_container_->allocation.height);
+}
+
 void BrowserWindowGtk::SaveWindowPosition() {
   // Browser::SaveWindowPlacement is used for session restore.
   ui::WindowShowState show_state = ui::SHOW_STATE_NORMAL;

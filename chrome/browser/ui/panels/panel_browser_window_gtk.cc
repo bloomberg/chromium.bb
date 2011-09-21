@@ -28,7 +28,8 @@ PanelBrowserWindowGtk::PanelBrowserWindowGtk(Browser* browser,
       drag_end_factory_(this),
       panel_(panel),
       bounds_(bounds),
-      restored_height_(bounds.height()) {
+      restored_height_(bounds.height()),
+      non_client_area_size_known_(false) {
 }
 
 PanelBrowserWindowGtk::~PanelBrowserWindowGtk() {
@@ -99,12 +100,21 @@ void PanelBrowserWindowGtk::SetGeometryHints() {
   gtk_window_set_geometry_hints(
       window(), GTK_WIDGET(window()), &hints, GDK_HINT_MIN_SIZE);
 
-  SetBoundsImpl(bounds_, true);
+  SetBoundsImpl(bounds_, true);  // Force a move to set the initial position.
 }
 
 void PanelBrowserWindowGtk::SetBounds(const gfx::Rect& bounds) {
   // This should never be called.
   DLOG(WARNING) << "Unexpected call to PanelBrowserWindowGtk::SetBounds()";
+}
+
+void PanelBrowserWindowGtk::OnSizeChanged(int width, int height) {
+  BrowserWindowGtk::OnSizeChanged(width, height);
+
+  if (!non_client_area_size_known_) {
+    non_client_area_size_known_ = true;
+    panel_->OnNonClientExtentAvailable();
+  }
 }
 
 bool PanelBrowserWindowGtk::UseCustomFrame() {
@@ -135,7 +145,7 @@ gfx::Rect PanelBrowserWindowGtk::GetPanelBounds() const {
 
 void PanelBrowserWindowGtk::SetPanelBounds(const gfx::Rect& bounds) {
   if (bounds != bounds_)
-    SetBoundsImpl(bounds, true);
+    SetBoundsImpl(bounds, false);  // Only move if necessary.
 }
 
 void PanelBrowserWindowGtk::OnPanelExpansionStateChanged(
@@ -166,11 +176,7 @@ void PanelBrowserWindowGtk::OnPanelExpansionStateChanged(
       expansion_state);
   bounds.set_y(bottom - height);
   bounds.set_height(height);
-
-  // Do not move the window when expansion state changes.  Just change the size.
-  // Because of GDK_GRAVITY_SOUTH_EAST gravity, the window will stay docked to
-  // the bottom.
-  SetBoundsImpl(bounds, false);
+  SetBoundsImpl(bounds, false);  // Only move if necessary.
 }
 
 bool PanelBrowserWindowGtk::ShouldBringUpPanelTitlebar(int mouse_x,
@@ -251,20 +257,26 @@ void PanelBrowserWindowGtk::DestroyPanelBrowser() {
 }
 
 gfx::Size PanelBrowserWindowGtk::GetNonClientAreaExtent() const {
-  NOTIMPLEMENTED();
-  return gfx::Size();
+  return GetNonClientFrameSize();
 }
 
 int PanelBrowserWindowGtk::GetRestoredHeight() const {
-  NOTIMPLEMENTED();
-  return 0;
+  return restored_height_;
 }
 
 void PanelBrowserWindowGtk::SetRestoredHeight(int height) {
-  NOTIMPLEMENTED();
+  restored_height_ = height;
 }
 
-void PanelBrowserWindowGtk::SetBoundsImpl(const gfx::Rect& bounds, bool move) {
+void PanelBrowserWindowGtk::SetBoundsImpl(const gfx::Rect& bounds,
+                                          bool force_move) {
+  // Only move if required by caller, or if bottom right corner will change.
+  // Panels use window gravity of GDK_GRAVITY_SOUTH_EAST which means the
+  // window is anchored to the bottom right corner on resize, making it
+  // unnecessary to move the window if the bottom right corner is unchanged.
+  bool move = force_move || bounds.right() != bounds_.right() ||
+      bounds.bottom() != bounds_.bottom();
+
   bounds_ = bounds;
   if (move)
     gtk_window_move(window_, bounds.x(), bounds.y());
