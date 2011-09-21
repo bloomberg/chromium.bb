@@ -161,7 +161,7 @@ BOT_ASSIGNMENT = {
     'nacl-lucid_64-newlib-dbg-clang':
         python + ' buildbot/buildbot_standard.py dbg 64 newlib --clang',
     'nacl-mac10.6-newlib-dbg-clang':
-        python + ' buildbot/buildbot_standard.py dbg 64 newlib --clang',
+        python + ' buildbot/buildbot_standard.py dbg 32 newlib --clang',
     # Pnacl scons trybots
     'nacl-arm_opt':
         'bash buildbot/buildbot_pnacl.sh mode-buildbot-arm-try',
