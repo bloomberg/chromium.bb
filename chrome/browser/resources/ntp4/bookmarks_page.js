@@ -299,13 +299,14 @@ cr.define('ntp4', function() {
       for (var i = 0; i < tile_count; i++)
         this.appendTile(new Bookmark(items[i]), false);
 
-      var link = $('bookmarks-top-link-wrapper').querySelector('a');
-      link.href = 'chrome://bookmarks/#' + this.id;
+      var folder_id = this.id == ROOT_NODE_ID ? BOOKMARKS_BAR_ID : this.id;
+      var top_link = $('bookmarks-top-link-wrapper').querySelector('a');
+      top_link.href = 'chrome://bookmarks/#' + folder_id;
 
       var wrapper = $('bookmarks-bottom-link-wrapper');
       if (items.length > MAX_BOOKMARK_TILES) {
-        var link = wrapper.querySelector('a');
-        link.href = 'chrome://bookmarks/#' + this.id;
+        var bottom_link = wrapper.querySelector('a');
+        bottom_link.href = 'chrome://bookmarks/#' + folder_id;
         wrapper.hidden = false;
       } else {
         wrapper.hidden = true;
