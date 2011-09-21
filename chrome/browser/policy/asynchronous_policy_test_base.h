@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_POLICY_ASYNCHRONOUS_POLICY_TEST_BASE_H_
 #pragma once
 
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "chrome/browser/policy/asynchronous_policy_provider.h"
 #include "content/browser/browser_thread.h"

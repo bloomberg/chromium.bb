@@ -8,7 +8,6 @@
 
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
-#include "base/values.h"
 #include "chrome/browser/policy/enterprise_metrics.h"
 #include "chrome/browser/policy/policy_notifier.h"
 

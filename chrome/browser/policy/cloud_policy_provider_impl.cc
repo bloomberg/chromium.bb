@@ -4,9 +4,6 @@
 
 #include "chrome/browser/policy/cloud_policy_provider_impl.h"
 
-#include <set>
-
-#include "base/values.h"
 #include "chrome/browser/policy/configuration_policy_pref_store.h"
 
 namespace policy {

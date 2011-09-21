@@ -7,8 +7,12 @@
 #include "base/logging.h"
 #include "chrome/browser/chromeos/cros/cryptohome_library.h"
 
-static const char kAttrEnterpriseOwned[] = "enterprise.owned";
-static const char kAttrEnterpriseUser[] = "enterprise.user";
+namespace {
+
+const char kAttrEnterpriseOwned[] = "enterprise.owned";
+const char kAttrEnterpriseUser[] = "enterprise.user";
+
+}  // namespace
 
 namespace policy {
 

@@ -6,9 +6,20 @@
 #define CHROME_BROWSER_POLICY_FILE_BASED_POLICY_LOADER_H_
 #pragma once
 
-#include "base/files/file_path_watcher.h"
+#include "base/compiler_specific.h"
+#include "base/file_path.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/time.h"
 #include "chrome/browser/policy/asynchronous_policy_loader.h"
 #include "chrome/browser/policy/file_based_policy_provider.h"
+
+namespace base {
+namespace files {
+
+class FilePathWatcher;
+
+}  // namespace files
+}  // namespace base
 
 namespace policy {
 
@@ -18,11 +29,11 @@ namespace policy {
 // the watched file is in flux.
 class FileBasedPolicyLoader : public AsynchronousPolicyLoader {
  public:
-  FileBasedPolicyLoader(
+  explicit FileBasedPolicyLoader(
       FileBasedPolicyProvider::ProviderDelegate* provider_delegate);
 
   // AsynchronousPolicyLoader overrides:
-  virtual void Reload();
+  virtual void Reload() OVERRIDE;
 
   void OnFilePathChanged(const FilePath& path);
   void OnFilePathError(const FilePath& path);
@@ -39,8 +50,8 @@ class FileBasedPolicyLoader : public AsynchronousPolicyLoader {
 
   // Creates the file path watcher and configures it to watch
   // |config_file_path_|.  Must be called on the file thread.
-  virtual void InitOnFileThread();
-  virtual void StopOnFileThread();
+  virtual void InitOnFileThread() OVERRIDE;
+  virtual void StopOnFileThread() OVERRIDE;
 
  private:
   // Checks whether policy information is safe to read. If not, returns false

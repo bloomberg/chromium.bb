@@ -11,11 +11,10 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "chrome/browser/policy/device_management_backend.h"
+#include "base/memory/ref_counted.h"
+#include "base/task.h"
 #include "content/common/net/url_fetcher.h"
 #include "googleurl/src/gurl.h"
-
-class Profile;
 
 namespace net {
 class URLRequestContextGetter;
@@ -23,7 +22,7 @@ class URLRequestContextGetter;
 
 namespace policy {
 
-class DeviceManagementBackendImpl;
+class DeviceManagementBackend;
 
 // The device management service is responsible for everything related to
 // communication with the device management server. It creates the backends
@@ -86,7 +85,7 @@ class DeviceManagementService : public URLFetcher::Delegate {
                                   const net::URLRequestStatus& status,
                                   int response_code,
                                   const net::ResponseCookies& cookies,
-                                  const std::string& data);
+                                  const std::string& data) OVERRIDE;
 
   // Does the actual initialization using the request context specified for
   // |PrepareInitialization|. This will also fire any pending network requests.

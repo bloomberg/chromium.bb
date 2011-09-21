@@ -4,7 +4,9 @@
 
 #include "chrome/browser/policy/file_based_policy_loader.h"
 
-#include "base/compiler_specific.h"
+#include "base/files/file_path_watcher.h"
+#include "base/memory/ref_counted.h"
+#include "base/values.h"
 #include "content/browser/browser_thread.h"
 
 using ::base::files::FilePathWatcher;

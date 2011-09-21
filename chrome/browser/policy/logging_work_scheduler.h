@@ -10,7 +10,10 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/callback.h"
+#include "base/compiler_specific.h"
 #include "base/memory/linked_ptr.h"
+#include "base/task.h"
 #include "chrome/browser/policy/delayed_work_scheduler.h"
 
 // Utilities for testing users of DelayedWorkScheduler. There are no
@@ -108,8 +111,9 @@ class LoggingWorkScheduler : public DelayedWorkScheduler {
   explicit LoggingWorkScheduler(EventLogger* logger);
   virtual ~LoggingWorkScheduler();
 
-  virtual void PostDelayedWork(const base::Closure& callback, int64 delay);
-  virtual void CancelDelayedWork();
+  virtual void PostDelayedWork(const base::Closure& callback, int64 delay)
+      OVERRIDE;
+  virtual void CancelDelayedWork() OVERRIDE;
 
  private:
   EventLogger* logger_;
@@ -125,7 +129,8 @@ class DummyWorkScheduler : public DelayedWorkScheduler {
   DummyWorkScheduler();
   virtual ~DummyWorkScheduler();
 
-  virtual void PostDelayedWork(const base::Closure& callback, int64 delay);
+  virtual void PostDelayedWork(const base::Closure& callback, int64 delay)
+      OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DummyWorkScheduler);

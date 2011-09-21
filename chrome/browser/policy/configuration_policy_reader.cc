@@ -7,7 +7,9 @@
 #include <map>
 #include <vector>
 
+#include "base/logging.h"
 #include "base/stl_util.h"
+#include "base/string16.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
@@ -77,10 +79,7 @@ void ConfigurationPolicyStatusKeeper::GetPoliciesFromProvider(
   PolicyMap::const_iterator policy = policies->begin();
   for ( ; policy != policies->end(); ++policy) {
     string16 name = PolicyStatus::GetPolicyName(policy->first);
-
-    if (name == string16()) {
-      NOTREACHED();
-    }
+    DCHECK(!name.empty());
 
     // TODO(simo) actually determine whether the policy is a user or a device
     // one and whether the policy could be enforced or not once this information
@@ -153,7 +152,7 @@ ConfigurationPolicyReader*
       g_browser_process->browser_policy_connector();
   return new ConfigurationPolicyReader(
       connector->GetRecommendedPlatformProvider(),
-          PolicyStatusInfo::RECOMMENDED);
+      PolicyStatusInfo::RECOMMENDED);
 }
 
 // static
@@ -180,10 +179,8 @@ void ConfigurationPolicyReader::Refresh() {
   if (!provider_)
     return;
 
-  // Read policy state into a new keeper and swap out old keeper.
-  scoped_ptr<ConfigurationPolicyStatusKeeper> new_keeper(
+  policy_keeper_.reset(
       new ConfigurationPolicyStatusKeeper(provider_, policy_level_));
-  policy_keeper_.reset(new_keeper.release());
 
   FOR_EACH_OBSERVER(Observer, observers_, OnPolicyValuesChanged());
 }
@@ -250,7 +247,7 @@ ListValue* PolicyStatus::GetPolicyStatusList(bool* any_policies_set) const {
 string16 PolicyStatus::GetPolicyName(ConfigurationPolicyType policy_type) {
   static std::map<ConfigurationPolicyType, string16> name_map;
   static const ConfigurationPolicyProvider::PolicyDefinitionList*
-      supported_policies;
+      supported_policies = NULL;
 
   if (!supported_policies) {
     supported_policies =

@@ -9,6 +9,7 @@
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/policy/configuration_policy_pref_store.h"
 #include "chrome/browser/policy/configuration_policy_provider_mac.h"
+#include "chrome/browser/policy/policy_map.h"
 #include "chrome/browser/preferences_mock_mac.h"
 #include "policy/policy_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"

@@ -8,7 +8,6 @@
 
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/threading/non_thread_safe.h"
 #include "chrome/browser/policy/cloud_policy_data_store.h"
 #include "chrome/browser/policy/proto/device_management_backend.pb.h"

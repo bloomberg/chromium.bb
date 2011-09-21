@@ -20,7 +20,6 @@ namespace {
 const char kTestUser[] = "test@example.com";
 
 using ::chromeos::SignedSettings;
-using ::chromeos::SignedSettingsHelper;
 using ::testing::_;
 using ::testing::InSequence;
 

@@ -9,7 +9,6 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/task.h"
 #include "chrome/browser/policy/cloud_policy_data_store.h"
@@ -17,13 +16,11 @@
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 
-class FilePath;
 class TestingBrowserProcess;
 class TokenService;
 
 namespace policy {
 
-class CloudPolicyDataStore;
 class CloudPolicyProvider;
 class CloudPolicySubsystem;
 class ConfigurationPolicyProvider;

@@ -7,7 +7,6 @@
 #pragma once
 
 #include "base/memory/ref_counted.h"
-#include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "chrome/browser/policy/configuration_policy_provider.h"
 
@@ -39,7 +38,7 @@ class AsynchronousPolicyProvider
   virtual ~AsynchronousPolicyProvider();
 
   // ConfigurationPolicyProvider implementation.
-  virtual bool Provide(PolicyMap* map);
+  virtual bool Provide(PolicyMap* map) OVERRIDE;
 
   // For tests to trigger reloads.
   scoped_refptr<AsynchronousPolicyLoader> loader();
@@ -50,8 +49,10 @@ class AsynchronousPolicyProvider
 
  private:
   // ConfigurationPolicyProvider overrides:
-  virtual void AddObserver(ConfigurationPolicyProvider::Observer* observer);
-  virtual void RemoveObserver(ConfigurationPolicyProvider::Observer* observer);
+  virtual void AddObserver(ConfigurationPolicyProvider::Observer* observer)
+      OVERRIDE;
+  virtual void RemoveObserver(ConfigurationPolicyProvider::Observer* observer)
+      OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(AsynchronousPolicyProvider);
 };

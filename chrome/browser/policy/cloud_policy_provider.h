@@ -7,10 +7,11 @@
 #pragma once
 
 #include "base/basictypes.h"
-#include "chrome/browser/policy/cloud_policy_cache_base.h"
 #include "chrome/browser/policy/configuration_policy_provider.h"
 
 namespace policy {
+
+class CloudPolicyCacheBase;
 
 // A policy provider having multiple backend caches, combining their relevant
 // PolicyMaps and keeping the result cached. The underlying caches are kept as

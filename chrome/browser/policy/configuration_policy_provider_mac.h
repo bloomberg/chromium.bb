@@ -8,7 +8,8 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/policy/file_based_policy_provider.h"
-#include "chrome/browser/preferences_mac.h"
+
+class MacPreferences;
 
 namespace policy {
 
@@ -23,8 +24,8 @@ class MacPreferencesPolicyProviderDelegate
   virtual ~MacPreferencesPolicyProviderDelegate();
 
   // FileBasedPolicyLoader::Delegate implementation.
-  virtual DictionaryValue* Load();
-  virtual base::Time GetLastModification();
+  virtual DictionaryValue* Load() OVERRIDE;
+  virtual base::Time GetLastModification() OVERRIDE;
 
  private:
   // In order to access the application preferences API, the names and values of
@@ -41,8 +42,7 @@ class MacPreferencesPolicyProviderDelegate
 
 // An implementation of |ConfigurationPolicyProvider| using the mechanism
 // provided by Mac OS X's managed preferences.
-class ConfigurationPolicyProviderMac
-    : public FileBasedPolicyProvider {
+class ConfigurationPolicyProviderMac : public FileBasedPolicyProvider {
  public:
   explicit ConfigurationPolicyProviderMac(
       const ConfigurationPolicyProvider::PolicyDefinitionList* policy_list);

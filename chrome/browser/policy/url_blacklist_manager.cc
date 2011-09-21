@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/stl_util.h"
 #include "base/string_number_conversions.h"
-#include "base/string_util.h"
 #include "base/values.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -84,60 +83,6 @@ URLBlacklist::URLBlacklist() {
 
 URLBlacklist::~URLBlacklist() {
   STLDeleteValues(&host_filters_);
-}
-
-void URLBlacklist::AddFilter(const std::string& filter, bool block) {
-  std::string scheme;
-  std::string host;
-  uint16 port;
-  std::string path;
-  SchemeFlag flag;
-  bool match_subdomains = true;
-
-  if (!FilterToComponents(filter, &scheme, &host, &port, &path)) {
-    LOG(WARNING) << "Invalid filter, ignoring: " << filter;
-    return;
-  }
-
-  if (!SchemeToFlag(scheme, &flag)) {
-    LOG(WARNING) << "Unsupported scheme in filter, ignoring filter: " << filter;
-    return;
-  }
-
-  // Special syntax to disable subdomain matching.
-  if (!host.empty() && host[0] == '.') {
-    host.erase(0, 1);
-    match_subdomains = false;
-  }
-
-  // Try to find an existing PathFilter with the same path prefix, port and
-  // match_subdomains value.
-  PathFilterList* list;
-  HostFilterTable::iterator host_filter = host_filters_.find(host);
-  if (host_filter == host_filters_.end()) {
-    list = new PathFilterList;
-    host_filters_[host] = list;
-  } else {
-    list = host_filter->second;
-  }
-  PathFilterList::iterator it;
-  for (it = list->begin(); it != list->end(); ++it) {
-    if (it->port == port && it->match_subdomains == match_subdomains &&
-        it->path_prefix == path)
-      break;
-  }
-  PathFilter* path_filter;
-  if (it == list->end()) {
-    list->push_back(PathFilter(path, port, match_subdomains));
-    path_filter = &list->back();
-  } else {
-    path_filter = &(*it);
-  }
-
-  if (block)
-    path_filter->blocked_schemes |= flag;
-  else
-    path_filter->allowed_schemes |= flag;
 }
 
 void URLBlacklist::Block(const std::string& filter) {
@@ -293,6 +238,60 @@ bool URLBlacklist::FilterToComponents(const std::string& filter,
     path->clear();
 
   return true;
+}
+
+void URLBlacklist::AddFilter(const std::string& filter, bool block) {
+  std::string scheme;
+  std::string host;
+  uint16 port;
+  std::string path;
+  SchemeFlag flag;
+  bool match_subdomains = true;
+
+  if (!FilterToComponents(filter, &scheme, &host, &port, &path)) {
+    LOG(WARNING) << "Invalid filter, ignoring: " << filter;
+    return;
+  }
+
+  if (!SchemeToFlag(scheme, &flag)) {
+    LOG(WARNING) << "Unsupported scheme in filter, ignoring filter: " << filter;
+    return;
+  }
+
+  // Special syntax to disable subdomain matching.
+  if (!host.empty() && host[0] == '.') {
+    host.erase(0, 1);
+    match_subdomains = false;
+  }
+
+  // Try to find an existing PathFilter with the same path prefix, port and
+  // match_subdomains value.
+  PathFilterList* list;
+  HostFilterTable::iterator host_filter = host_filters_.find(host);
+  if (host_filter == host_filters_.end()) {
+    list = new PathFilterList;
+    host_filters_[host] = list;
+  } else {
+    list = host_filter->second;
+  }
+  PathFilterList::iterator it;
+  for (it = list->begin(); it != list->end(); ++it) {
+    if (it->port == port && it->match_subdomains == match_subdomains &&
+        it->path_prefix == path)
+      break;
+  }
+  PathFilter* path_filter;
+  if (it == list->end()) {
+    list->push_back(PathFilter(path, port, match_subdomains));
+    path_filter = &list->back();
+  } else {
+    path_filter = &(*it);
+  }
+
+  if (block)
+    path_filter->blocked_schemes |= flag;
+  else
+    path_filter->allowed_schemes |= flag;
 }
 
 URLBlacklistManager::URLBlacklistManager(PrefService* pref_service)

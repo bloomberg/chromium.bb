@@ -6,11 +6,9 @@
 #define CHROME_BROWSER_POLICY_MOCK_DEVICE_MANAGEMENT_BACKEND_H_
 #pragma once
 
-#include <map>
 #include <string>
 
 #include "base/time.h"
-#include "base/values.h"
 #include "chrome/browser/policy/device_management_backend.h"
 #include "chrome/browser/policy/proto/cloud_policy.pb.h"
 #include "chrome/browser/policy/proto/device_management_backend.pb.h"

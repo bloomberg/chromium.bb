@@ -4,9 +4,11 @@
 
 #include "chrome/browser/policy/device_management_service.h"
 
+#include "base/message_loop.h"
+#include "base/message_loop_proxy.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/io_thread.h"
 #include "chrome/browser/net/chrome_net_log.h"
+#include "chrome/browser/policy/device_management_backend.h"
 #include "chrome/browser/policy/device_management_backend_impl.h"
 #include "content/browser/browser_thread.h"
 #include "net/base/cookie_monster.h"
@@ -14,7 +16,6 @@
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/base/ssl_config_service_defaults.h"
-#include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_network_layer.h"
 #include "net/proxy/proxy_service.h"
 #include "net/url_request/url_request_context.h"
@@ -36,7 +37,7 @@ class DeviceManagementRequestContext : public net::URLRequestContext {
 
  private:
   // Overridden from net::URLRequestContext:
-  virtual const std::string& GetUserAgent(const GURL& url) const;
+  virtual const std::string& GetUserAgent(const GURL& url) const OVERRIDE;
 };
 
 DeviceManagementRequestContext::DeviceManagementRequestContext(
@@ -75,13 +76,14 @@ const std::string& DeviceManagementRequestContext::GetUserAgent(
 class DeviceManagementRequestContextGetter
     : public net::URLRequestContextGetter {
  public:
-  DeviceManagementRequestContextGetter(
+  explicit DeviceManagementRequestContextGetter(
       net::URLRequestContextGetter* base_context_getter)
       : base_context_getter_(base_context_getter) {}
 
   // Overridden from net::URLRequestContextGetter:
-  virtual net::URLRequestContext* GetURLRequestContext();
-  virtual scoped_refptr<base::MessageLoopProxy> GetIOMessageLoopProxy() const;
+  virtual net::URLRequestContext* GetURLRequestContext() OVERRIDE;
+  virtual scoped_refptr<base::MessageLoopProxy> GetIOMessageLoopProxy()
+      const OVERRIDE;
 
  private:
   scoped_refptr<net::URLRequestContext> context_;

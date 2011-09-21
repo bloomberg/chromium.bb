@@ -8,22 +8,28 @@
 
 #include <string>
 
-#include "base/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/values.h"
 #include "chrome/browser/policy/cloud_policy_cache_base.h"
 #include "chrome/browser/policy/user_policy_disk_cache.h"
 
-namespace em = enterprise_management;
+class FilePath;
 
 namespace enterprise_management {
+
 class CachedCloudPolicyResponse;
 // <Old-style policy support> (see comment below)
 class GenericValue;
 // </Old-style policy support>
+
 }  // namespace enterprise_management
 
 namespace policy {
+
+namespace em = enterprise_management;
+
+class PolicyMap;
 
 // CloudPolicyCacheBase implementation that persists policy information
 // into the file specified by the c'tor parameter |backing_file_path|.

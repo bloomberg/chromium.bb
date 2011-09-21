@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_POLICY_CLOUD_POLICY_PROVIDER_IMPL_H_
 #pragma once
 
+#include <vector>
+
 #include "base/observer_list.h"
 #include "chrome/browser/policy/cloud_policy_cache_base.h"
 #include "chrome/browser/policy/cloud_policy_provider.h"

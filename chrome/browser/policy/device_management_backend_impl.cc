@@ -7,10 +7,6 @@
 #include <utility>
 #include <vector>
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
-#include <sys/utsname.h>
-#endif
-
 #include "base/metrics/histogram.h"
 #include "base/stringprintf.h"
 #include "base/sys_info.h"
@@ -84,8 +80,6 @@ const char kMachineInfoHWClass[] = "hardware_class";
 const char kMachineInfoBoard[] = "CHROMEOS_RELEASE_BOARD";
 #endif
 
-}  // namespace
-
 // Helper class for URL query parameter encoding/decoding.
 class URLQueryParameters {
  public:
@@ -123,6 +117,8 @@ std::string URLQueryParameters::Encode() {
   }
   return result;
 }
+
+}  // namespace
 
 // A base class containing the common code for the jobs created by the backend
 // implementation. Subclasses provide custom code for handling actual register,
@@ -322,7 +318,7 @@ class DeviceManagementRegisterJob : public DeviceManagementJobBase {
 
  private:
   // DeviceManagementJobBase overrides.
-  virtual void OnError(DeviceManagementBackend::ErrorCode error) {
+  virtual void OnError(DeviceManagementBackend::ErrorCode error) OVERRIDE {
     MetricToken sample;
     switch (error) {
       case DeviceManagementBackend::kErrorRequestInvalid:
@@ -351,7 +347,8 @@ class DeviceManagementRegisterJob : public DeviceManagementJobBase {
     UMA_HISTOGRAM_ENUMERATION(kMetricToken, sample, kMetricTokenSize);
     delegate_->OnError(error);
   }
-  virtual void OnResponse(const em::DeviceManagementResponse& response) {
+  virtual void OnResponse(
+      const em::DeviceManagementResponse& response) OVERRIDE {
     UMA_HISTOGRAM_ENUMERATION(kMetricToken, kMetricTokenFetchResponseReceived,
                               kMetricTokenSize);
     delegate_->HandleRegisterResponse(response.register_response());
@@ -385,10 +382,11 @@ class DeviceManagementUnregisterJob : public DeviceManagementJobBase {
 
  private:
   // DeviceManagementJobBase overrides.
-  virtual void OnError(DeviceManagementBackend::ErrorCode error) {
+  virtual void OnError(DeviceManagementBackend::ErrorCode error) OVERRIDE {
     delegate_->OnError(error);
   }
-  virtual void OnResponse(const em::DeviceManagementResponse& response) {
+  virtual void OnResponse(
+      const em::DeviceManagementResponse& response) OVERRIDE {
     delegate_->HandleUnregisterResponse(response.unregister_response());
   }
 
@@ -423,7 +421,7 @@ class DeviceManagementPolicyJob : public DeviceManagementJobBase {
 
  private:
   // DeviceManagementJobBase overrides.
-  virtual void OnError(DeviceManagementBackend::ErrorCode error) {
+  virtual void OnError(DeviceManagementBackend::ErrorCode error) OVERRIDE {
     MetricPolicy sample;
     switch (error) {
       case DeviceManagementBackend::kErrorRequestInvalid:
@@ -446,7 +444,8 @@ class DeviceManagementPolicyJob : public DeviceManagementJobBase {
     UMA_HISTOGRAM_ENUMERATION(kMetricPolicy, sample, kMetricPolicySize);
     delegate_->OnError(error);
   }
-  virtual void OnResponse(const em::DeviceManagementResponse& response) {
+  virtual void OnResponse(
+      const em::DeviceManagementResponse& response) OVERRIDE {
     UMA_HISTOGRAM_ENUMERATION(kMetricPolicy, kMetricPolicyFetchResponseReceived,
                               kMetricPolicySize);
     delegate_->HandlePolicyResponse(response.policy_response());

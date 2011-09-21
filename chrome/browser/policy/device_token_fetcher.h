@@ -7,16 +7,16 @@
 #pragma once
 
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/policy/delayed_work_scheduler.h"
 #include "chrome/browser/policy/device_management_backend.h"
-#include "chrome/browser/policy/policy_notifier.h"
 #include "chrome/browser/policy/proto/device_management_backend.pb.h"
 
 namespace policy {
 
 class CloudPolicyCacheBase;
 class CloudPolicyDataStore;
+class DelayedWorkScheduler;
 class DeviceManagementService;
+class PolicyNotifier;
 
 namespace em = enterprise_management;
 
@@ -124,6 +124,8 @@ class DeviceTokenFetcher
   CloudPolicyDataStore* data_store_;
 
   scoped_ptr<DelayedWorkScheduler> scheduler_;
+
+  DISALLOW_COPY_AND_ASSIGN(DeviceTokenFetcher);
 };
 
 }  // namespace policy

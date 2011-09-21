@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/policy/user_policy_disk_cache.h"
+
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/task.h"
 #include "chrome/browser/policy/enterprise_metrics.h"
 #include "chrome/browser/policy/proto/device_management_local.pb.h"
-#include "chrome/browser/policy/user_policy_disk_cache.h"
 #include "content/browser/browser_thread.h"
 
 namespace {

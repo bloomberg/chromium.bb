@@ -6,6 +6,7 @@
 
 #include "base/file_util.h"
 #include "base/metrics/histogram.h"
+#include "base/task.h"
 #include "chrome/browser/policy/enterprise_metrics.h"
 #include "chrome/browser/policy/proto/device_management_local.pb.h"
 #include "content/browser/browser_thread.h"
@@ -48,7 +49,7 @@ void UserPolicyTokenLoader::Load() {
 }
 
 void UserPolicyTokenLoader::Store(const std::string& token,
-                                 const std::string& device_id) {
+                                  const std::string& device_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,

@@ -10,9 +10,7 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
-#include "chrome/browser/policy/policy_map.h"
 #include "policy/configuration_policy_type.h"
 
 namespace policy {

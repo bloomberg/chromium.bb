@@ -83,4 +83,4 @@ string16 PolicyStatusInfo::GetPolicyLevelString(PolicyLevel level) {
   return ASCIIToUTF16(strings[level]);
 }
 
-} // namespace policy
+}  // namespace policy

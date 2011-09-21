@@ -7,11 +7,15 @@
 #pragma once
 
 #include "base/memory/ref_counted.h"
-#include "base/message_loop.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
+#include "base/time.h"
 #include "base/values.h"
 #include "chrome/browser/policy/asynchronous_policy_provider.h"
 #include "chrome/browser/policy/configuration_policy_provider.h"
+
+class CancelableTask;
+class MessageLoop;
 
 namespace policy {
 
@@ -20,9 +24,8 @@ namespace policy {
 class AsynchronousPolicyLoader
     : public base::RefCountedThreadSafe<AsynchronousPolicyLoader> {
  public:
-  explicit AsynchronousPolicyLoader(
-      AsynchronousPolicyProvider::Delegate* delegate,
-      int reload_interval_minutes);
+  AsynchronousPolicyLoader(AsynchronousPolicyProvider::Delegate* delegate,
+                           int reload_interval_minutes);
 
   // Triggers initial policy load.
   virtual void Init();

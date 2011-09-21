@@ -5,10 +5,11 @@
 #include "chrome/browser/policy/testing_policy_url_fetcher_factory.h"
 
 #include "base/bind.h"
-#include "base/callback.h"
 #include "chrome/browser/policy/logging_work_scheduler.h"
+#include "googleurl/src/gurl.h"
 #include "googleurl/src/url_parse.h"
 #include "net/http/http_request_headers.h"
+#include "net/url_request/url_request.h"
 #include "net/url_request/url_request_status.h"
 
 namespace {
@@ -41,7 +42,7 @@ class TestingPolicyURLFetcher : public URLFetcher {
       URLFetcher::RequestType request_type,
       URLFetcher::Delegate* delegate);
 
-  virtual void Start();
+  virtual void Start() OVERRIDE;
   void Respond();
 
  private:

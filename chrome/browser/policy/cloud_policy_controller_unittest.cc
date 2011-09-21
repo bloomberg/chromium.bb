@@ -5,6 +5,7 @@
 #include "chrome/browser/policy/cloud_policy_controller.h"
 
 #include "base/message_loop.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/scoped_temp_dir.h"
 #include "chrome/browser/policy/cloud_policy_data_store.h"
 #include "chrome/browser/policy/device_token_fetcher.h"
@@ -21,10 +22,7 @@
 namespace policy {
 
 using ::testing::AnyNumber;
-using ::testing::AtLeast;
 using ::testing::InSequence;
-using ::testing::Mock;
-using ::testing::Return;
 using ::testing::_;
 
 class MockDeviceTokenFetcher : public DeviceTokenFetcher {
@@ -239,4 +237,5 @@ TEST_F(CloudPolicyControllerTest, InvalidSerialNumber) {
   CreateNewController();
   loop_.RunAllPending();
 }
+
 }  // namespace policy

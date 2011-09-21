@@ -5,9 +5,9 @@
 #include "chrome/browser/policy/browser_policy_connector.h"
 
 #include "base/command_line.h"
+#include "base/file_path.h"
 #include "base/path_service.h"
 #include "chrome/browser/net/gaia/token_service.h"
-#include "chrome/browser/policy/cloud_policy_data_store.h"
 #include "chrome/browser/policy/cloud_policy_provider.h"
 #include "chrome/browser/policy/cloud_policy_provider_impl.h"
 #include "chrome/browser/policy/cloud_policy_subsystem.h"
@@ -425,4 +425,4 @@ ConfigurationPolicyProvider*
 #endif
 }
 
-}  // namespace
+}  // namespace policy

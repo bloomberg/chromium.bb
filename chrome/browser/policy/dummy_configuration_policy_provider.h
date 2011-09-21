@@ -11,15 +11,13 @@
 
 namespace policy {
 
-class ConfigurationPolicyStoreInterface;
-
 class DummyConfigurationPolicyProvider : public ConfigurationPolicyProvider {
  public:
   explicit DummyConfigurationPolicyProvider(
       const PolicyDefinitionList* policy_list);
   virtual ~DummyConfigurationPolicyProvider();
 
-  virtual bool Provide(PolicyMap* map);
+  virtual bool Provide(PolicyMap* map) OVERRIDE;
 
  private:
   // ConfigurationPolicyProvider overrides:

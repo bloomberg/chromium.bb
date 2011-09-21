@@ -4,11 +4,6 @@
 
 #include "chrome/browser/policy/delayed_work_scheduler.h"
 
-#include <algorithm>
-
-#include "base/logging.h"
-#include "base/message_loop.h"
-
 namespace policy {
 
 DelayedWorkScheduler::DelayedWorkScheduler() {

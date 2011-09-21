@@ -5,22 +5,17 @@
 #include "chrome/browser/policy/configuration_policy_pref_store.h"
 
 #include <map>
-#include <set>
 #include <string>
 #include <vector>
 
-#include "base/command_line.h"
-#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/string16.h"
 #include "base/string_util.h"
-#include "base/utf_string_conversions.h"
-#include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
-#include "chrome/browser/policy/configuration_policy_provider.h"
+#include "chrome/browser/policy/policy_map.h"
 #include "chrome/browser/policy/policy_path_parser.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/prefs/pref_value_map.h"
@@ -28,7 +23,6 @@
 #include "chrome/browser/search_engines/search_terms_data.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/common/pref_names.h"
-#include "content/common/notification_service.h"
 #include "policy/policy_constants.h"
 
 namespace policy {
@@ -398,8 +392,7 @@ void ConfigurationPolicyPrefKeeper::Apply(PolicyMap* policies) {
         ApplyAutofillPolicy(current->first, value) ||
         ApplyDownloadDirPolicy(current->first, value) ||
         ApplyDiskCacheDirPolicy(current->first, value) ||
-        ApplyFileSelectionDialogsPolicy(current->first,
-                                        value) ||
+        ApplyFileSelectionDialogsPolicy(current->first, value) ||
         ApplyDefaultSearchPolicy(current->first, value) ||
         ApplyIncognitoModePolicy(current->first, value) ||
         ApplyBookmarksPolicy(current->first, value) ||
@@ -1254,7 +1247,7 @@ void ConfigurationPolicyPrefStore::Refresh() {
       new ConfigurationPolicyPrefKeeper(provider_));
   std::vector<std::string> changed_prefs;
   new_keeper->GetDifferingPrefPaths(policy_keeper_.get(), &changed_prefs);
-  policy_keeper_.reset(new_keeper.release());
+  policy_keeper_.swap(new_keeper);
 
   // Send out change notifications.
   for (std::vector<std::string>::const_iterator pref(changed_prefs.begin());

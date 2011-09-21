@@ -6,9 +6,6 @@
 #define CHROME_BROWSER_POLICY_CONFIGURATION_POLICY_PREF_STORE_H_
 #pragma once
 
-#include <set>
-#include <string>
-
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"

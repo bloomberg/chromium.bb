@@ -15,6 +15,7 @@
 #include "chrome/browser/policy/asynchronous_policy_loader.h"
 #include "chrome/browser/policy/configuration_policy_pref_store.h"
 #include "chrome/browser/policy/configuration_policy_provider_win.h"
+#include "chrome/browser/policy/policy_map.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/browser_thread.h"
 #include "policy/policy_constants.h"

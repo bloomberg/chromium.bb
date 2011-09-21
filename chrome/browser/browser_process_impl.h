@@ -166,8 +166,6 @@ class BrowserProcessImpl : public BrowserProcess,
   void CreateStatusTray();
   void CreateBackgroundModeManager();
 
-  bool IsSafeBrowsingDetectionServiceEnabled();
-
   void ApplyDisabledSchemesPolicy();
   void ApplyAllowCrossOriginAuthPromptPolicy();
 

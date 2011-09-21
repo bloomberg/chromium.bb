@@ -6,12 +6,8 @@
 #define CHROME_BROWSER_POLICY_MOCK_CONFIGURATION_POLICY_PROVIDER_H_
 #pragma once
 
-#include <map>
-#include <utility>
-
 #include "chrome/browser/policy/configuration_policy_provider.h"
 #include "chrome/browser/policy/policy_map.h"
-#include "testing/gmock/include/gmock/gmock.h"
 
 namespace policy {
 
@@ -28,14 +24,15 @@ class MockConfigurationPolicyProvider : public ConfigurationPolicyProvider {
   void SetInitializationComplete(bool initialization_complete);
 
   // ConfigurationPolicyProvider method overrides.
-  virtual bool Provide(PolicyMap* policies);
-  virtual bool IsInitializationComplete() const;
+  virtual bool Provide(PolicyMap* policies) OVERRIDE;
+  virtual bool IsInitializationComplete() const OVERRIDE;
 
  private:
   // ConfigurationPolicyProvider overrides:
-  virtual void AddObserver(ConfigurationPolicyProvider::Observer* observer) {}
+  virtual void AddObserver(
+      ConfigurationPolicyProvider::Observer* observer) OVERRIDE {}
   virtual void RemoveObserver(
-      ConfigurationPolicyProvider::Observer* observer) {}
+      ConfigurationPolicyProvider::Observer* observer) OVERRIDE {}
 
   PolicyMap policy_map_;
   bool initialization_complete_;

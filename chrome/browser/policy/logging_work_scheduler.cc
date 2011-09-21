@@ -6,7 +6,7 @@
 
 #include <algorithm>
 
-#include "base/compiler_specific.h"
+#include "base/message_loop.h"
 #include "content/browser/browser_thread.h"
 
 namespace policy {

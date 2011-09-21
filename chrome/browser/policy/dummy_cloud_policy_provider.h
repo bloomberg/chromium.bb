@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_POLICY_DUMMY_CLOUD_POLICY_PROVIDER_H_
 #pragma once
 
+#include "base/observer_list.h"
 #include "chrome/browser/policy/cloud_policy_provider.h"
 
 namespace policy {

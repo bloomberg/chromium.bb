@@ -11,13 +11,15 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 
-namespace em = enterprise_management;
-
 namespace enterprise_management {
+
 class CachedCloudPolicyResponse;
+
 }
 
 namespace policy {
+
+namespace em = enterprise_management;
 
 // Handles the on-disk cache file used by UserPolicyCache. This class handles
 // the necessary thread switching and may outlive the associated UserPolicyCache

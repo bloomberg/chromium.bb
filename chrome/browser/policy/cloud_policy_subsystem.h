@@ -72,9 +72,6 @@ class CloudPolicySubsystem
                        CloudPolicyCacheBase* policy_cache);
   virtual ~CloudPolicySubsystem();
 
-  // net::NetworkChangeNotifier::IPAddressObserver:
-  virtual void OnIPAddressChanged() OVERRIDE;
-
   // Initializes the subsystem. The first network request will only be made
   // after |delay_milliseconds|. It can be scheduled to be happen earlier by
   // calling |ScheduleInitialization|.
@@ -126,7 +123,10 @@ class CloudPolicySubsystem
   // NotificationObserver overrides.
   virtual void Observe(int type,
                        const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const NotificationDetails& details) OVERRIDE;
+
+  // net::NetworkChangeNotifier::IPAddressObserver:
+  virtual void OnIPAddressChanged() OVERRIDE;
 
   // Name of the preference to read the refresh rate from.
   const char* refresh_pref_name_;

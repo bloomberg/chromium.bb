@@ -4,7 +4,6 @@
 
 #include "chrome/browser/policy/configuration_policy_provider.h"
 
-#include "base/values.h"
 #include "chrome/browser/policy/policy_map.h"
 
 namespace policy {

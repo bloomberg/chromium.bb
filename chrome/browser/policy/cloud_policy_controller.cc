@@ -5,20 +5,40 @@
 #include "chrome/browser/policy/cloud_policy_controller.h"
 
 #include <algorithm>
+#include <string>
 
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/rand_util.h"
 #include "base/string_util.h"
+#include "base/time.h"
 #include "chrome/browser/policy/cloud_policy_cache_base.h"
 #include "chrome/browser/policy/cloud_policy_subsystem.h"
+#include "chrome/browser/policy/delayed_work_scheduler.h"
 #include "chrome/browser/policy/device_management_service.h"
+#include "chrome/browser/policy/device_token_fetcher.h"
 #include "chrome/browser/policy/enterprise_metrics.h"
+#include "chrome/browser/policy/policy_notifier.h"
 #include "chrome/browser/policy/proto/device_management_constants.h"
 #include "chrome/common/guid.h"
 
 namespace {
+
+// The maximum ratio in percent of the policy refresh rate we use for adjusting
+// the policy refresh time instant. The rationale is to avoid load spikes from
+// many devices that were set up in sync for some reason.
+const int kPolicyRefreshDeviationFactorPercent = 10;
+// Maximum deviation we are willing to accept.
+const int64 kPolicyRefreshDeviationMaxInMilliseconds = 30 * 60 * 1000;
+
+// These are the base values for delays before retrying after an error. They
+// will be doubled each time they are used.
+const int64 kPolicyRefreshErrorDelayInMilliseconds =
+    5 * 60 * 1000;  // 5 minutes.
+
+// Default value for the policy refresh rate.
+const int kPolicyRefreshRateInMilliseconds = 3 * 60 * 60 * 1000;  // 3 hours.
 
 // Domain names that are known not to be managed.
 // We don't register the device when such a user logs in.
@@ -44,27 +64,11 @@ bool CanBeInManagedDomain(const std::string& username) {
   return true;
 }
 
-}
+}  // namespace
 
 namespace policy {
 
 namespace em = enterprise_management;
-
-// The maximum ratio in percent of the policy refresh rate we use for adjusting
-// the policy refresh time instant. The rationale is to avoid load spikes from
-// many devices that were set up in sync for some reason.
-static const int kPolicyRefreshDeviationFactorPercent = 10;
-// Maximum deviation we are willing to accept.
-static const int64 kPolicyRefreshDeviationMaxInMilliseconds = 30 * 60 * 1000;
-
-// These are the base values for delays before retrying after an error. They
-// will be doubled each time they are used.
-static const int64 kPolicyRefreshErrorDelayInMilliseconds =
-    5 * 60 * 1000;  // 5 minutes
-
-// Default value for the policy refresh rate.
-static const int kPolicyRefreshRateInMilliseconds =
-    3 * 60 * 60 * 1000;  // 3 hours.
 
 CloudPolicyController::CloudPolicyController(
     DeviceManagementService* service,

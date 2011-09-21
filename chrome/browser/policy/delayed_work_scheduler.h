@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_POLICY_DELAYED_WORK_SCHEDULER_H_
 #pragma once
 
+#include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/timer.h"
 

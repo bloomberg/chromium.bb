@@ -23,16 +23,21 @@ class NotificationDetails;
 class NotificationSource;
 class PrefService;
 
-namespace base {
-class ListValue;
-}
-
 namespace policy {
 
 // Contains a set of filters to block and allow certain URLs, and matches GURLs
 // against this set. The filters are currently kept in memory.
 class URLBlacklist {
  public:
+  // A constant mapped to a scheme that can be filtered.
+  enum SchemeFlag {
+    SCHEME_HTTP   = 1 << 0,
+    SCHEME_HTTPS  = 1 << 1,
+    SCHEME_FTP    = 1 << 2,
+
+    SCHEME_ALL    = (1 << 3) - 1,
+  };
+
   URLBlacklist();
   virtual ~URLBlacklist();
 
@@ -45,15 +50,6 @@ class URLBlacklist {
 
   // Returns true if the URL is blocked.
   bool IsURLBlocked(const GURL& url) const;
-
-  // A constant mapped to a scheme that can be filtered.
-  enum SchemeFlag {
-    SCHEME_HTTP   = 1 << 0,
-    SCHEME_HTTPS  = 1 << 1,
-    SCHEME_FTP    = 1 << 2,
-
-    SCHEME_ALL    = (1 << 3) - 1,
-  };
 
   // Returns true if |scheme| is a scheme that can be filtered. Returns true
   // and sets |flag| to SCHEME_ALL if |scheme| is empty.
@@ -71,8 +67,6 @@ class URLBlacklist {
                                  uint16* port,
                                  std::string* path);
  private:
-  void AddFilter(const std::string& filter, bool block);
-
   struct PathFilter {
     explicit PathFilter(const std::string& path, uint16 port, bool match)
         : path_prefix(path),
@@ -90,6 +84,8 @@ class URLBlacklist {
 
   typedef std::vector<PathFilter> PathFilterList;
   typedef base::hash_map<std::string, PathFilterList*> HostFilterTable;
+
+  void AddFilter(const std::string& filter, bool block);
 
   HostFilterTable host_filters_;
 

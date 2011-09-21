@@ -10,6 +10,7 @@
 
 namespace policy {
 
+class CloudPolicyCacheBase;
 class CloudPolicyDataStore;
 class EventLogger;
 

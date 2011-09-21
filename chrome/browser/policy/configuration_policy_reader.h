@@ -11,6 +11,7 @@
 #include "base/values.h"
 #include "chrome/browser/policy/configuration_policy_provider.h"
 #include "chrome/browser/policy/policy_status_info.h"
+#include "policy/configuration_policy_type.h"
 
 namespace policy {
 
@@ -39,8 +40,8 @@ class ConfigurationPolicyReader : public ConfigurationPolicyProvider::Observer {
   virtual ~ConfigurationPolicyReader();
 
   // ConfigurationPolicyProvider::Observer methods:
-  virtual void OnUpdatePolicy();
-  virtual void OnProviderGoingAway();
+  virtual void OnUpdatePolicy() OVERRIDE;
+  virtual void OnProviderGoingAway() OVERRIDE;
 
   // Methods to handle Observers. |observer| must be non-NULL.
   void AddObserver(Observer* observer);
