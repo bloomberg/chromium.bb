@@ -42,6 +42,7 @@ class WindowDelegateImpl : public WindowDelegate {
     return HTCLIENT;
   }
   virtual bool OnMouseEvent(MouseEvent* event) OVERRIDE { return false; }
+  virtual void OnCaptureLost() OVERRIDE {}
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {}
   virtual void OnWindowDestroying() OVERRIDE {}
   virtual void OnWindowDestroyed() OVERRIDE {}
@@ -104,6 +105,34 @@ class ChildWindowDelegateImpl : public DestroyTrackingDelegateImpl {
   DestroyTrackingDelegateImpl* parent_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(ChildWindowDelegateImpl);
+};
+
+// Used in verifying mouse capture.
+class CaptureWindowDelegateImpl : public WindowDelegateImpl {
+ public:
+  explicit CaptureWindowDelegateImpl()
+      : capture_lost_count_(0),
+        mouse_event_count_(0) {
+  }
+
+  int capture_lost_count() const { return capture_lost_count_; }
+  void set_capture_lost_count(int value) { capture_lost_count_ = value; }
+  int mouse_event_count() const { return mouse_event_count_; }
+  void set_mouse_event_count(int value) { mouse_event_count_ = value; }
+
+  virtual bool OnMouseEvent(MouseEvent* event) OVERRIDE {
+    mouse_event_count_++;
+    return false;
+  }
+  virtual void OnCaptureLost() OVERRIDE {
+    capture_lost_count_++;
+  }
+
+ private:
+  int capture_lost_count_;
+  int mouse_event_count_;
+
+  DISALLOW_COPY_AND_ASSIGN(CaptureWindowDelegateImpl);
 };
 
 // A simple WindowDelegate implementation for these tests. It owns itself
@@ -305,6 +334,56 @@ TEST_F(WindowTest, MoveChildToFront) {
   EXPECT_EQ(child2.layer(), parent.layer()->children()[0]);
 }
 
+// Various destruction assertions.
+TEST_F(WindowTest, CaptureTests) {
+  Desktop* desktop = Desktop::GetInstance();
+  CaptureWindowDelegateImpl delegate;
+  scoped_ptr<Window> window(CreateTestWindowWithDelegate(
+      &delegate, 0, gfx::Rect(0, 0, 20, 20), NULL));
+  EXPECT_FALSE(window->HasCapture());
+
+  // Do a capture.
+  window->SetCapture();
+  EXPECT_TRUE(window->HasCapture());
+  EXPECT_EQ(0, delegate.capture_lost_count());
+
+  desktop->OnMouseEvent(MouseEvent(ui::ET_MOUSE_PRESSED, gfx::Point(50, 50),
+                                   ui::EF_LEFT_BUTTON_DOWN));
+  EXPECT_EQ(1, delegate.mouse_event_count());
+  desktop->OnMouseEvent(MouseEvent(ui::ET_MOUSE_RELEASED, gfx::Point(50, 50),
+                                   ui::EF_LEFT_BUTTON_DOWN));
+  EXPECT_EQ(2, delegate.mouse_event_count());
+  delegate.set_mouse_event_count(0);
+
+  window->ReleaseCapture();
+  EXPECT_FALSE(window->HasCapture());
+  EXPECT_EQ(1, delegate.capture_lost_count());
+
+  desktop->OnMouseEvent(MouseEvent(ui::ET_MOUSE_PRESSED, gfx::Point(50, 50),
+                                   ui::EF_LEFT_BUTTON_DOWN));
+  EXPECT_EQ(0, delegate.mouse_event_count());
+}
+
+// Verifies capture is reset when a window is destroyed.
+TEST_F(WindowTest, ReleaseCaptureOnDestroy) {
+  Desktop* desktop = Desktop::GetInstance();
+  RootWindow* root = static_cast<RootWindow*>(desktop->window());
+  CaptureWindowDelegateImpl delegate;
+  scoped_ptr<Window> window(CreateTestWindowWithDelegate(
+      &delegate, 0, gfx::Rect(0, 0, 20, 20), NULL));
+  EXPECT_FALSE(window->HasCapture());
+
+  // Do a capture.
+  window->SetCapture();
+  EXPECT_TRUE(window->HasCapture());
+
+  // Destroy the window.
+  window.reset();
+
+  // Make sure the root doesn't reference the window anymore.
+  EXPECT_EQ(NULL, root->mouse_pressed_handler());
+  EXPECT_EQ(NULL, root->capture_window());
+}
+
 }  // namespace internal
 }  // namespace aura
-

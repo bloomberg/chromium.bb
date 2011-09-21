@@ -25,14 +25,15 @@ class Layer;
 namespace aura {
 
 class Desktop;
+class EventFilter;
 class KeyEvent;
 class LayoutManager;
 class MouseEvent;
 class WindowDelegate;
-class EventFilter;
 
 namespace internal {
 class FocusManager;
+class RootWindow;
 }
 
 // Aura window implementation. Interesting events are sent to the
@@ -140,10 +141,21 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
   void set_user_data(void* user_data) { user_data_ = user_data; }
   void* user_data() const { return user_data_; }
 
- private:
-  // If SchedulePaint has been invoked on the Window the delegate is notified.
-  void UpdateLayerCanvas();
+  // Does a mouse capture on the window. This does nothing if the window isn't
+  // showing (VISIBILITY_SHOWN) or isn't contained in a valid window hierarchy.
+  void SetCapture();
 
+  // Releases a mouse capture.
+  void ReleaseCapture();
+
+  // Returns true if this window has a mouse capture.
+  bool HasCapture();
+
+ protected:
+  // Returns the RootWindow or NULL if we don't yet have a RootWindow.
+  virtual internal::RootWindow* GetRoot();
+
+ private:
   // Schedules a paint for the Window's entire bounds.
   void SchedulePaint();
 

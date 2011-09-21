@@ -36,6 +36,9 @@ class WindowDelegate {
 
   virtual bool OnMouseEvent(MouseEvent* event) = 0;
 
+  // Invoked when mouse capture is lost on the window.
+  virtual void OnCaptureLost() = 0;
+
   // Asks the delegate to paint window contents into the supplied canvas.
   virtual void OnPaint(gfx::Canvas* canvas) = 0;
 

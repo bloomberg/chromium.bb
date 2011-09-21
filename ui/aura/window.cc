@@ -19,6 +19,8 @@
 
 namespace aura {
 
+using internal::RootWindow;
+
 Window::Window(WindowDelegate* delegate)
     : delegate_(delegate),
       visibility_(VISIBILITY_HIDDEN),
@@ -32,12 +34,10 @@ Window::~Window() {
   if (delegate_)
     delegate_->OnWindowDestroying();
 
-  // Update the FocusManager in case we were focused. This must be done before
-  // we are removed from the hierarchy otherwise we won't be able to find the
-  // FocusManager.
-  internal::FocusManager* focus_manager = GetFocusManager();
-  if (focus_manager && focus_manager->focused_window() == this)
-    focus_manager->SetFocusedWindow(NULL);
+  // Let the root know so that it can remove any references to us.
+  RootWindow* root = GetRoot();
+  if (root)
+    root->WindowDestroying(this);
 
   // Then destroy the children.
   while (!children_.empty()) {
@@ -70,6 +70,8 @@ void Window::SetVisibility(Visibility visibility) {
   layer_->set_visible(visibility_ != VISIBILITY_HIDDEN);
   if (layer_->visible())
     SchedulePaint();
+  if (visibility_ != VISIBILITY_SHOWN)
+    ReleaseCapture();
 }
 
 void Window::SetLayoutManager(LayoutManager* layout_manager) {
@@ -197,6 +199,34 @@ Window* Window::GetEventHandlerForPoint(const gfx::Point& point) {
 
 internal::FocusManager* Window::GetFocusManager() {
   return parent_ ? parent_->GetFocusManager() : NULL;
+}
+
+void Window::SetCapture() {
+  if (visibility_ != VISIBILITY_SHOWN)
+    return;
+
+  RootWindow* root = GetRoot();
+  if (!root)
+    return;
+
+  root->SetCapture(this);
+}
+
+void Window::ReleaseCapture() {
+  RootWindow* root = GetRoot();
+  if (!root)
+    return;
+
+  root->ReleaseCapture(this);
+}
+
+bool Window::HasCapture() {
+  RootWindow* root = GetRoot();
+  return root && root->capture_window() == this;
+}
+
+internal::RootWindow* Window::GetRoot() {
+  return parent_ ? parent_->GetRoot() : NULL;
 }
 
 void Window::SchedulePaint() {

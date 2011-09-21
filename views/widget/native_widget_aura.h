@@ -122,6 +122,7 @@ class NativeWidgetAura : public internal::NativeWidgetPrivate,
   virtual bool OnKeyEvent(aura::KeyEvent* event) OVERRIDE;
   virtual int GetNonClientComponent(const gfx::Point& point) const OVERRIDE;
   virtual bool OnMouseEvent(aura::MouseEvent* event) OVERRIDE;
+  virtual void OnCaptureLost() OVERRIDE;
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
   virtual void OnWindowDestroying() OVERRIDE;
   virtual void OnWindowDestroyed() OVERRIDE;

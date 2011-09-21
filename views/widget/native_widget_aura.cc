@@ -149,16 +149,15 @@ void NativeWidgetAura::SendNativeAccessibilityEvent(
 }
 
 void NativeWidgetAura::SetMouseCapture() {
-  NOTIMPLEMENTED();
+  window_->SetCapture();
 }
 
 void NativeWidgetAura::ReleaseMouseCapture() {
-  NOTIMPLEMENTED();
+  window_->ReleaseCapture();
 }
 
 bool NativeWidgetAura::HasMouseCapture() const {
-  //NOTIMPLEMENTED();
-  return false;
+  return window_->HasCapture();
 }
 
 InputMethod* NativeWidgetAura::CreateInputMethod() {
@@ -409,6 +408,10 @@ int NativeWidgetAura::GetNonClientComponent(const gfx::Point& point) const {
 
 bool NativeWidgetAura::OnMouseEvent(aura::MouseEvent* event) {
   return delegate_->OnMouseEvent(MouseEvent(event));
+}
+
+void NativeWidgetAura::OnCaptureLost() {
+  delegate_->OnMouseCaptureLost();
 }
 
 void NativeWidgetAura::OnPaint(gfx::Canvas* canvas) {

@@ -17,7 +17,8 @@ namespace internal {
 RootWindow::RootWindow()
     : Window(NULL),
       mouse_pressed_handler_(NULL),
-      ALLOW_THIS_IN_INITIALIZER_LIST(focus_manager_(new FocusManager(this))) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(focus_manager_(new FocusManager(this))),
+      capture_window_(NULL) {
   set_name(ASCIIToUTF16("RootWindow"));
 }
 
@@ -25,7 +26,8 @@ RootWindow::~RootWindow() {
 }
 
 bool RootWindow::HandleMouseEvent(const MouseEvent& event) {
-  Window* target = mouse_pressed_handler_;
+  Window* target =
+      mouse_pressed_handler_ ? mouse_pressed_handler_ : capture_window_;
   if (!target)
     target = GetEventHandlerForPoint(event.location());
   if (event.type() == ui::ET_MOUSE_PRESSED && !mouse_pressed_handler_)
@@ -48,8 +50,51 @@ bool RootWindow::HandleKeyEvent(const KeyEvent& event) {
   return false;
 }
 
+void RootWindow::SetCapture(Window* window) {
+  if (capture_window_ == window)
+    return;
+
+  if (capture_window_ && capture_window_->delegate())
+    capture_window_->delegate()->OnCaptureLost();
+  capture_window_ = window;
+
+  if (capture_window_ && mouse_pressed_handler_) {
+    // Make all subsequent mouse events go to the capture window. We shouldn't
+    // need to send an event here as OnCaptureLost should take care of that.
+    mouse_pressed_handler_ = capture_window_;
+  }
+}
+
+void RootWindow::ReleaseCapture(Window* window) {
+  if (capture_window_ != window)
+    return;
+
+  if (capture_window_ && capture_window_->delegate())
+    capture_window_->delegate()->OnCaptureLost();
+  capture_window_ = NULL;
+}
+
+void RootWindow::WindowDestroying(Window* window) {
+  // Update the FocusManager if the window was focused.
+  internal::FocusManager* focus_manager = GetFocusManager();
+  if (focus_manager && focus_manager->focused_window() == window)
+    focus_manager->SetFocusedWindow(NULL);
+
+  // When a window is being destroyed it's likely that the WindowDelegate won't
+  // want events, so we reset the mouse_pressed_handler_ and capture_window_ and
+  // don't sent it release/capture lost events.
+  if (mouse_pressed_handler_ == window)
+    mouse_pressed_handler_ = NULL;
+  if (capture_window_ == window)
+    capture_window_ = NULL;
+}
+
 FocusManager* RootWindow::GetFocusManager() {
   return focus_manager_.get();
+}
+
+internal::RootWindow* RootWindow::GetRoot() {
+  return this;
 }
 
 }  // namespace internal
