@@ -64,9 +64,6 @@ enum DownloadCountTypes {
   // Counts iterations of the BaseFile::AppendDataToFile() loop.
   WRITE_LOOP_COUNT,
 
-  // Downloads that were removed by the user.
-  REMOVED_COUNT,
-
   DOWNLOAD_COUNT_TYPES_LAST_ENTRY
 };
 

@@ -65,7 +65,7 @@ void MockDownloadManagerDelegate::UpdatePathForItemInPersistentStore(
 }
 
 void MockDownloadManagerDelegate::RemoveItemFromPersistentStore(
-    int64 db_handle) {
+    DownloadItem* item) {
 }
 
 void MockDownloadManagerDelegate::RemoveItemsFromPersistentStoreBetween(

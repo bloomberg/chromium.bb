@@ -84,7 +84,7 @@ class DownloadManagerDelegate {
 
   // Notifies the delegate that it should remove the download item from its
   // persistent store.
-  virtual void RemoveItemFromPersistentStore(int64 db_handle) = 0;
+  virtual void RemoveItemFromPersistentStore(DownloadItem* item) = 0;
 
   // Notifies the delegate to remove downloads from the given time range.
   virtual void RemoveItemsFromPersistentStoreBetween(

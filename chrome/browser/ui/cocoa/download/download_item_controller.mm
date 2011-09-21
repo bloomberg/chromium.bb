@@ -353,7 +353,7 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
                            base::Time::Now() - creationTime_);
   DownloadItem* download = bridge_->download_model()->download();
   if (download->IsPartialDownload())
-    download->Cancel();
+    download->Cancel(true);
   download->Delete(DownloadItem::DELETE_DUE_TO_USER_DISCARD);
   // WARNING: we are deleted at this point.  Don't access 'this'.
 }

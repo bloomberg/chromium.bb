@@ -60,7 +60,6 @@ const FilePath kLargeThemePath(FILE_PATH_LITERAL("extensions/theme2.crx"));
 enum DangerousDownloadAction {
   ON_DANGEROUS_DOWNLOAD_ACCEPT,  // Accept the download
   ON_DANGEROUS_DOWNLOAD_DENY,  // Deny the download
-  ON_DANGEROUS_DOWNLOAD_IGNORE,  // Don't do anything; calling code will handle.
   ON_DANGEROUS_DOWNLOAD_FAIL  // Fail if a dangerous download is seen
 };
 
@@ -76,7 +75,7 @@ void DenyDangerousDownload(scoped_refptr<DownloadManager> download_manager,
                            int32 download_id) {
   DownloadItem* download = download_manager->GetDownloadItem(download_id);
   ASSERT_TRUE(download->IsPartialDownload());
-  download->Cancel();
+  download->Cancel(true);
   download->Delete(DownloadItem::DELETE_DUE_TO_USER_DISCARD);
 }
 
@@ -95,10 +94,8 @@ void DenyDangerousDownload(scoped_refptr<DownloadManager> download_manager,
 class DownloadsObserver : public DownloadManager::Observer,
                           public DownloadItem::Observer {
  public:
-  typedef std::set<DownloadItem::DownloadState> StateSet;
-
   // Create an object that will be considered finished when |wait_count|
-  // download items have entered any states in |download_finished_states|.
+  // download items have entered state |download_finished_state|.
   // If |finish_on_select_file| is true, the object will also be
   // considered finished if the DownloadManager raises a
   // SelectFileDialogDisplayed() notification.
@@ -107,21 +104,20 @@ class DownloadsObserver : public DownloadManager::Observer,
   // to treat as completion events.
   DownloadsObserver(DownloadManager* download_manager,
                     size_t wait_count,
-                    StateSet download_finished_states,
+                    DownloadItem::DownloadState download_finished_state,
                     bool finish_on_select_file,
                     DangerousDownloadAction dangerous_download_action)
       : download_manager_(download_manager),
         wait_count_(wait_count),
         finished_downloads_at_construction_(0),
         waiting_(false),
-        download_finished_states_(download_finished_states),
+        download_finished_state_(download_finished_state),
         finish_on_select_file_(finish_on_select_file),
         select_file_dialog_seen_(false),
         dangerous_download_action_(dangerous_download_action) {
     download_manager_->AddObserver(this);  // Will call initial ModelChanged().
     finished_downloads_at_construction_ = finished_downloads_.size();
-    EXPECT_TRUE(download_finished_states.find(DownloadItem::REMOVING) ==
-                download_finished_states.end())
+    EXPECT_NE(DownloadItem::REMOVING, download_finished_state)
         << "Waiting for REMOVING is not supported.  Try COMPLETE.";
   }
 
@@ -200,16 +196,12 @@ class DownloadsObserver : public DownloadManager::Observer,
           ADD_FAILURE() << "Unexpected dangerous download item.";
           break;
 
-        case ON_DANGEROUS_DOWNLOAD_IGNORE:
-          break;
-
         default:
           NOTREACHED();
       }
     }
 
-    if (download_finished_states_.find(download->state()) !=
-        download_finished_states_.end()) {
+    if (download->state() == download_finished_state_) {
       DownloadInFinalState(download);
     }
   }
@@ -312,8 +304,8 @@ class DownloadsObserver : public DownloadManager::Observer,
   // all downloads completing.
   bool waiting_;
 
-  // The states on which to consider the DownloadItem finished.
-  StateSet download_finished_states_;
+  // The state on which to consider the DownloadItem finished.
+  DownloadItem::DownloadState download_finished_state_;
 
   // True if we should transition the DownloadsObserver to finished if
   // the select file dialog comes up.
@@ -331,36 +323,121 @@ class DownloadsObserver : public DownloadManager::Observer,
   DISALLOW_COPY_AND_ASSIGN(DownloadsObserver);
 };
 
-// Ping through an arbitrary set of threads.  Must be run from the UI
-// thread.
-class ThreadPinger : public base::RefCountedThreadSafe<ThreadPinger> {
+// WaitForFlush() returns after:
+//      * There are no IN_PROGRESS download items remaining on the
+//        DownloadManager.
+//      * There have been two round trip messages through the file and
+//        IO threads.
+// This almost certainly means that a Download cancel has propagated through
+// the system.
+class DownloadsFlushObserver
+    : public DownloadManager::Observer,
+      public DownloadItem::Observer,
+      public base::RefCountedThreadSafe<DownloadsFlushObserver> {
  public:
-  ThreadPinger(const BrowserThread::ID ids[], size_t num_ids) :
-      next_thread_index_(0u),
-      ids_(ids, ids + num_ids) {}
+  explicit DownloadsFlushObserver(DownloadManager* download_manager)
+      : download_manager_(download_manager),
+        waiting_for_zero_inprogress_(true) {}
 
-  void Ping() {
-    if (ids_.size() == 0)
-      return;
-    NextThread();
+  void WaitForFlush() {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    download_manager_->AddObserver(this);
     ui_test_utils::RunMessageLoop();
   }
 
- private:
-  void NextThread() {
-    if (next_thread_index_ == ids_.size()) {
-      BrowserThread::PostTask(
-          BrowserThread::UI, FROM_HERE, new MessageLoop::QuitTask());
-    } else {
-      BrowserThread::ID next_id(ids_[next_thread_index_++]);
-      BrowserThread::PostTask(
-          next_id, FROM_HERE,
-          NewRunnableMethod(this, &ThreadPinger::NextThread));
+  // DownloadsManager observer methods.
+  virtual void ModelChanged() {
+    // Model has changed, so there may be more DownloadItems to observe.
+    CheckDownloadsInProgress(true);
+  }
+
+  // DownloadItem observer methods.
+  virtual void OnDownloadUpdated(DownloadItem* download) {
+    // No change in DownloadItem set on manager.
+    CheckDownloadsInProgress(false);
+  }
+  virtual void OnDownloadOpened(DownloadItem* download) {}
+
+ protected:
+  friend class base::RefCountedThreadSafe<DownloadsFlushObserver>;
+
+  virtual ~DownloadsFlushObserver() {
+    download_manager_->RemoveObserver(this);
+    for (std::set<DownloadItem*>::iterator it = downloads_observed_.begin();
+         it != downloads_observed_.end(); ++it) {
+      (*it)->RemoveObserver(this);
     }
   }
 
-  size_t next_thread_index_;
-  std::vector<BrowserThread::ID> ids_;
+ private:
+  // If we're waiting for that flush point, check the number
+  // of downloads in the IN_PROGRESS state and take appropriate
+  // action.  If requested, also observes all downloads while iterating.
+  void CheckDownloadsInProgress(bool observe_downloads) {
+    if (waiting_for_zero_inprogress_) {
+      int count = 0;
+
+      std::vector<DownloadItem*> downloads;
+      download_manager_->SearchDownloads(string16(), &downloads);
+      std::vector<DownloadItem*>::iterator it = downloads.begin();
+      for (; it != downloads.end(); ++it) {
+        if ((*it)->state() == DownloadItem::IN_PROGRESS)
+          count++;
+        if (observe_downloads) {
+          if (downloads_observed_.find(*it) == downloads_observed_.end()) {
+            (*it)->AddObserver(this);
+          }
+          // Download items are forever, and we don't want to make
+          // assumptions about future state transitions, so once we
+          // start observing them, we don't stop until destruction.
+        }
+      }
+
+      if (count == 0) {
+        waiting_for_zero_inprogress_ = false;
+        // Stop observing DownloadItems.  We maintain the observation
+        // of DownloadManager so that we don't have to independently track
+        // whether we are observing it for conditional destruction.
+        for (std::set<DownloadItem*>::iterator it = downloads_observed_.begin();
+             it != downloads_observed_.end(); ++it) {
+          (*it)->RemoveObserver(this);
+        }
+        downloads_observed_.clear();
+
+        // Trigger next step.  We need to go past the IO thread twice, as
+        // there's a self-task posting in the IO thread cancel path.
+        BrowserThread::PostTask(
+            BrowserThread::FILE, FROM_HERE,
+            NewRunnableMethod(this,
+                              &DownloadsFlushObserver::PingFileThread, 2));
+      }
+    }
+  }
+
+  void PingFileThread(int cycle) {
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        NewRunnableMethod(this, &DownloadsFlushObserver::PingIOThread,
+                          cycle));
+  }
+
+  void PingIOThread(int cycle) {
+    if (--cycle) {
+      BrowserThread::PostTask(
+          BrowserThread::UI, FROM_HERE,
+          NewRunnableMethod(this, &DownloadsFlushObserver::PingFileThread,
+                            cycle));
+    } else {
+      BrowserThread::PostTask(
+          BrowserThread::UI, FROM_HERE, new MessageLoop::QuitTask());
+    }
+  }
+
+  DownloadManager* download_manager_;
+  std::set<DownloadItem*> downloads_observed_;
+  bool waiting_for_zero_inprogress_;
+
+  DISALLOW_COPY_AND_ASSIGN(DownloadsFlushObserver);
 };
 
 // Collect the information from FILE and IO threads needed for the Cancel
@@ -429,39 +506,6 @@ class PickSuggestedFileDelegate : public ChromeDownloadManagerDelegate {
     if (download_manager_)
       download_manager_->FileSelected(suggested_path, data);
   }
-};
-
-// Don't respond to ChooseDownloadPath until a cancel is requested
-// out of band.  Can handle only one outstanding request at a time
-// for a download path.
-class BlockCancelFileDelegate : public ChromeDownloadManagerDelegate {
- public:
-  explicit BlockCancelFileDelegate(Profile* profile)
-      : ChromeDownloadManagerDelegate(profile),
-        choose_download_path_called_(false),
-        choose_download_path_data_(NULL) {
-    SetDownloadManager(profile->GetDownloadManager());
-  }
-
-  virtual void ChooseDownloadPath(TabContents* tab_contents,
-                                  const FilePath& suggested_path,
-                                  void* data) OVERRIDE {
-    CHECK(!choose_download_path_called_);
-    choose_download_path_called_ = true;
-    choose_download_path_data_ = data;
-  }
-
-  void CancelOutstandingDownloadPathRequest() {
-    if (choose_download_path_called_) {
-      if (download_manager_)
-        download_manager_->FileSelectionCanceled(choose_download_path_data_);
-      choose_download_path_called_ = false;
-      choose_download_path_data_ = NULL;
-    }
-  }
- private:
-  bool choose_download_path_called_;
-  void *choose_download_path_data_;
 };
 
 // Get History Information.
@@ -581,25 +625,6 @@ class MockDownloadOpeningObserver : public DownloadManager::Observer {
   DISALLOW_COPY_AND_ASSIGN(MockDownloadOpeningObserver);
 };
 
-static const DownloadItem::DownloadState kTerminalStates[] = {
-  DownloadItem::CANCELLED,
-  DownloadItem::INTERRUPTED,
-  DownloadItem::COMPLETE,
-};
-
-static const DownloadItem::DownloadState kInProgressStates[] = {
-  DownloadItem::IN_PROGRESS,
-};
-
-static const BrowserThread::ID kIOFileX2ThreadList[] = {
-  BrowserThread::IO, BrowserThread::FILE,
-  BrowserThread::IO, BrowserThread::FILE };
-
-static const BrowserThread::ID kExternalTerminationThreadList[] = {
-  BrowserThread::IO, BrowserThread::IO, BrowserThread::FILE };
-
-// Not in anonymous namespace so that friend class from DownloadManager
-// can target it.
 class DownloadTest : public InProcessBrowserTest {
  public:
   enum SelectExpectation {
@@ -682,12 +707,6 @@ class DownloadTest : public InProcessBrowserTest {
     return true;
   }
 
-  // For tests that want to test system reaction to files
-  // going away underneath them.
-  void DeleteDownloadsDirectory() {
-    EXPECT_TRUE(downloads_directory_.Delete());
-  }
-
   DownloadPrefs* GetDownloadPrefs(Browser* browser) {
     return DownloadPrefs::FromDownloadManager(
         browser->profile()->GetDownloadManager());
@@ -704,26 +723,9 @@ class DownloadTest : public InProcessBrowserTest {
         browser->profile()->GetDownloadManager();
     return new DownloadsObserver(
         download_manager, num_downloads,
-        DownloadsObserver::StateSet(
-            kTerminalStates, kTerminalStates + arraysize(kTerminalStates)),
+        DownloadItem::COMPLETE,  // Really done
         true,                    // Bail on select file
         ON_DANGEROUS_DOWNLOAD_FAIL);
-  }
-
-  // Create a DownloadsObserver that will wait for the
-  // specified number of downloads to finish, and is
-  // ok with dangerous downloads.  Note that use of this
-  // waiter is conditional on accepting the dangerous download.
-  DownloadsObserver* CreateDangerousWaiter(
-      Browser* browser, int num_downloads) {
-    DownloadManager* download_manager =
-        browser->profile()->GetDownloadManager();
-    return new DownloadsObserver(
-        download_manager, num_downloads,
-        DownloadsObserver::StateSet(
-            kTerminalStates, kTerminalStates + arraysize(kTerminalStates)),
-        true,                   // Bail on select file
-        ON_DANGEROUS_DOWNLOAD_IGNORE);
   }
 
   // Create a DownloadsObserver that will wait for the
@@ -734,11 +736,9 @@ class DownloadTest : public InProcessBrowserTest {
         browser->profile()->GetDownloadManager();
     return new DownloadsObserver(
         download_manager, num_downloads,
-        DownloadsObserver::StateSet(
-            kInProgressStates,
-            kInProgressStates + arraysize(kInProgressStates)),
+        DownloadItem::IN_PROGRESS,      // Has started
         true,                           // Bail on select file
-        ON_DANGEROUS_DOWNLOAD_IGNORE);
+        ON_DANGEROUS_DOWNLOAD_FAIL);
   }
 
   // Create a DownloadsObserver that will wait for the
@@ -749,13 +749,11 @@ class DownloadTest : public InProcessBrowserTest {
       int num_downloads,
       DownloadItem::DownloadState final_state,
       DangerousDownloadAction dangerous_download_action) {
-    DownloadsObserver::StateSet states;
-    states.insert(final_state);
     DownloadManager* download_manager =
         browser->profile()->GetDownloadManager();
     return new DownloadsObserver(
         download_manager, num_downloads,
-        states,
+        final_state,
         true,                         // Bail on select file
         dangerous_download_action);
   }
@@ -910,33 +908,10 @@ class DownloadTest : public InProcessBrowserTest {
     return true;
   }
 
-  void GetPersistentDownloads(Browser* browser,
-                              std::vector<DownloadItem*>* downloads) {
+  void GetDownloads(Browser* browser, std::vector<DownloadItem*>* downloads) {
     DCHECK(downloads);
-    downloads->clear();
     DownloadManager* manager = browser->profile()->GetDownloadManager();
     manager->SearchDownloads(string16(), downloads);
-  }
-
-  void GetInProgressDownloads(Browser* browser,
-                              std::vector<DownloadItem*>* downloads) {
-    downloads->clear();
-    DCHECK(downloads);
-    DownloadManager* manager = browser->profile()->GetDownloadManager();
-    manager->GetInProgressDownloads(downloads);
-  }
-
-  size_t NumberInProgressDownloads(Browser* browser) {
-    std::vector<DownloadItem*> downloads;
-    browser->profile()->GetDownloadManager()->GetInProgressDownloads(
-        &downloads);
-    return downloads.size();
-  }
-
-  void WaitForIOFileX2() {
-    scoped_refptr<ThreadPinger> pinger(
-        new ThreadPinger(kIOFileX2ThreadList, arraysize(kIOFileX2ThreadList)));
-    pinger->Ping();
   }
 
   // Check that the download UI (shelf on non-chromeos or panel on chromeos)
@@ -1006,39 +981,6 @@ class DownloadTest : public InProcessBrowserTest {
     browser->profile()->SetDownloadManagerDelegate(new_delegate);
   }
 
-  // Arrange for select file calls on the given browser from the
-  // download manager to block until explicitly released.
-  // Note that the returned pointer is non-owning; the lifetime
-  // of the object will be that of the profile.
-  BlockCancelFileDelegate* BlockSelectFile(Browser* browser) {
-    BlockCancelFileDelegate* new_delegate =
-        new BlockCancelFileDelegate(browser->profile());
-
-    DownloadManager* manager = browser->profile()->GetDownloadManager();
-
-    new_delegate->SetDownloadManager(manager);
-    manager->set_delegate(new_delegate);
-
-    // Gives ownership to Profile.
-    browser->profile()->SetDownloadManagerDelegate(new_delegate);
-
-    return new_delegate;
-  }
-
-  // Wait for an external termination (e.g. signalling
-  // URLRequestSlowDownloadJob to return an error) to propagate through
-  // this sytem.  This involves hopping over to the IO thread (twice,
-  // because of possible self-posts from URLRequestJob) then
-  // chasing the (presumed) notification through the download
-  // system (FILE->UI).
-  void WaitForExternalTermination() {
-    scoped_refptr<ThreadPinger> pinger(
-        new ThreadPinger(
-            kExternalTerminationThreadList,
-            arraysize(kExternalTerminationThreadList)));
-    pinger->Ping();
-  }
-
  private:
   // Location of the test data.
   FilePath test_dir_;
@@ -1105,8 +1047,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadMimeTypeSelect) {
       new DownloadsObserver(
           browser()->profile()->GetDownloadManager(),
           1,
-          DownloadsObserver::StateSet(
-              kTerminalStates, kTerminalStates + arraysize(kTerminalStates)),
+          DownloadItem::COMPLETE,  // Really done
           false,                   // Continue on select file.
           ON_DANGEROUS_DOWNLOAD_FAIL));
   ui_test_utils::NavigateToURLWithDisposition(
@@ -1115,166 +1056,10 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadMimeTypeSelect) {
   observer->WaitForFinished();
   EXPECT_TRUE(observer->select_file_dialog_seen());
 
+  // Check state.
   EXPECT_EQ(1, browser()->tab_count());
   CheckDownload(browser(), file, file);
   CheckDownloadUI(browser(), true, true, file);
-}
-
-// Put up a Select File dialog when the file is downloaded, due to
-// prompt_for_download==true argument to InitialSetup().
-// Confirm that we can cancel the download in that state.
-IN_PROC_BROWSER_TEST_F(DownloadTest, CancelAtFileSelection) {
-  ASSERT_TRUE(InitialSetup(true));
-  FilePath file(FILE_PATH_LITERAL("download-test1.lib"));
-  GURL url(URLRequestMockHTTPJob::GetMockUrl(file));
-
-  BlockCancelFileDelegate* delegate = BlockSelectFile(browser());
-
-  // Download the file and wait.  We expect the Select File dialog to appear.
-  DownloadAndWait(browser(), url, EXPECT_SELECT_DIALOG);
-
-  std::vector<DownloadItem*> active_downloads, history_downloads;
-  GetInProgressDownloads(browser(), &active_downloads);
-  ASSERT_EQ(1u, active_downloads.size());
-  EXPECT_EQ(DownloadItem::IN_PROGRESS, active_downloads[0]->state());
-  GetPersistentDownloads(browser(), &history_downloads);
-  EXPECT_EQ(0u, history_downloads.size());
-
-  // This should remove the download as it hasn't yet been entered into
-  // the history.
-  active_downloads[0]->Cancel();
-  MessageLoopForUI::current()->RunAllPending();
-
-  GetInProgressDownloads(browser(), &active_downloads);
-  EXPECT_EQ(0u, active_downloads.size());
-  GetPersistentDownloads(browser(), &history_downloads);
-  EXPECT_EQ(0u, history_downloads.size());
-
-  // Check state.
-  EXPECT_EQ(1, browser()->tab_count());
-  // Since we exited while the Select File dialog was visible, there should not
-  // be anything in the download shelf and so it should not be visible.
-  CheckDownloadUI(browser(), false, false, FilePath());
-
-  // Return from file selection to release allocated data.
-  delegate->CancelOutstandingDownloadPathRequest();
-}
-
-// Put up a Select File dialog when the file is downloaded, due to
-// prompt_for_download==true argument to InitialSetup().
-// Confirm that we can cancel the download as if the user had hit cancel.
-IN_PROC_BROWSER_TEST_F(DownloadTest, CancelFromFileSelection) {
-  ASSERT_TRUE(InitialSetup(true));
-  FilePath file(FILE_PATH_LITERAL("download-test1.lib"));
-  GURL url(URLRequestMockHTTPJob::GetMockUrl(file));
-
-  BlockCancelFileDelegate* delegate = BlockSelectFile(browser());
-
-  // Download the file and wait.  We expect the Select File dialog to appear.
-  DownloadAndWait(browser(), url, EXPECT_SELECT_DIALOG);
-
-  std::vector<DownloadItem*> active_downloads, history_downloads;
-  GetInProgressDownloads(browser(), &active_downloads);
-  ASSERT_EQ(1u, active_downloads.size());
-  EXPECT_EQ(DownloadItem::IN_PROGRESS, active_downloads[0]->state());
-  GetPersistentDownloads(browser(), &history_downloads);
-  EXPECT_EQ(0u, history_downloads.size());
-
-  // (Effectively) Click the Cancel button.  This should remove the download
-  // as it hasn't yet been entered into the history.
-  delegate->CancelOutstandingDownloadPathRequest();
-  MessageLoopForUI::current()->RunAllPending();
-
-  GetInProgressDownloads(browser(), &active_downloads);
-  EXPECT_EQ(0u, active_downloads.size());
-  GetPersistentDownloads(browser(), &history_downloads);
-  EXPECT_EQ(0u, history_downloads.size());
-
-  // Check state.
-  EXPECT_EQ(1, browser()->tab_count());
-  // Since we exited while the Select File dialog was visible, there should not
-  // be anything in the download shelf and so it should not be visible.
-  CheckDownloadUI(browser(), false, false, FilePath());
-}
-
-// Put up a Select File dialog when the file is downloaded, due to
-// prompt_for_download==true argument to InitialSetup().
-// Confirm that we can remove the download in that state.
-IN_PROC_BROWSER_TEST_F(DownloadTest, RemoveFromFileSelection) {
-  ASSERT_TRUE(InitialSetup(true));
-  FilePath file(FILE_PATH_LITERAL("download-test1.lib"));
-  GURL url(URLRequestMockHTTPJob::GetMockUrl(file));
-
-  BlockCancelFileDelegate* delegate = BlockSelectFile(browser());
-
-  // Download the file and wait.  We expect the Select File dialog to appear.
-  DownloadAndWait(browser(), url, EXPECT_SELECT_DIALOG);
-
-  std::vector<DownloadItem*> active_downloads, history_downloads;
-  GetInProgressDownloads(browser(), &active_downloads);
-  ASSERT_EQ(1u, active_downloads.size());
-  EXPECT_EQ(DownloadItem::IN_PROGRESS, active_downloads[0]->state());
-  GetPersistentDownloads(browser(), &history_downloads);
-  EXPECT_EQ(0u, history_downloads.size());
-
-  // Confirm the file can be successfully removed from the select file
-  // dialog blocked state.
-  active_downloads[0]->Remove();
-  MessageLoopForUI::current()->RunAllPending();
-
-  GetInProgressDownloads(browser(), &active_downloads);
-  EXPECT_EQ(0u, active_downloads.size());
-  GetPersistentDownloads(browser(), &history_downloads);
-  EXPECT_EQ(0u, history_downloads.size());
-
-  EXPECT_EQ(1, browser()->tab_count());
-  // Since we exited while the Select File dialog was visible, there should not
-  // be anything in the download shelf and so it should not be visible.
-  CheckDownloadUI(browser(), false, false, FilePath());
-
-  // Return from file selection to release allocated data.
-  delegate->CancelOutstandingDownloadPathRequest();
-}
-
-// Put up a Select File dialog when the file is downloaded, due to
-// prompt_for_download==true argument to InitialSetup().
-// Confirm that an error coming in from the network works properly
-// when in that state.
-IN_PROC_BROWSER_TEST_F(DownloadTest, InterruptFromFileSelection) {
-  ASSERT_TRUE(InitialSetup(true));
-  GURL url(URLRequestSlowDownloadJob::kKnownSizeUrl);
-
-  BlockCancelFileDelegate* delegate = BlockSelectFile(browser());
-
-  // Download the file and wait.  We expect the Select File dialog to appear.
-  DownloadAndWait(browser(), url, EXPECT_SELECT_DIALOG);
-
-  std::vector<DownloadItem*> active_downloads, history_downloads;
-  GetInProgressDownloads(browser(), &active_downloads);
-  ASSERT_EQ(1u, active_downloads.size());
-  EXPECT_EQ(DownloadItem::IN_PROGRESS, active_downloads[0]->state());
-  GetPersistentDownloads(browser(), &history_downloads);
-  EXPECT_EQ(0u, history_downloads.size());
-
-  // Complete the download with error.
-  GURL error_url(URLRequestSlowDownloadJob::kErrorFinishDownloadUrl);
-  ui_test_utils::NavigateToURL(browser(), error_url);
-  MessageLoopForUI::current()->RunAllPending();
-  WaitForExternalTermination();
-
-  // Confirm that a download error before entry into history
-  // deletes the download.
-  GetInProgressDownloads(browser(), &active_downloads);
-  EXPECT_EQ(0u, active_downloads.size());
-  GetPersistentDownloads(browser(), &history_downloads);
-  EXPECT_EQ(0u, history_downloads.size());
-
-  // Since we exited while the Select File dialog was visible, there should not
-  // be anything in the download shelf and so it should not be visible.
-  CheckDownloadUI(browser(), false, false, FilePath());
-
-  // Return from file selection to release allocated data.
-  delegate->CancelOutstandingDownloadPathRequest();
 }
 
 // Access a file with a viewable mime-type, verify that a download
@@ -1676,37 +1461,25 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, NewWindow) {
   CheckDownload(browser(), file, file);
 }
 
-// Create a download, wait until it's visible on the DownloadManager,
-// then cancel it.
 IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadCancelled) {
   ASSERT_TRUE(InitialSetup(false));
   EXPECT_EQ(1, browser()->tab_count());
 
-  // The code below is slightly fragile.  Currently,
-  // the DownloadsObserver will only finish when the new download has
-  // reached the state of being entered into the history and being
-  // user-visible.  However, by the pure semantics of
+  // TODO(rdsmith): Fragile code warning!  The code below relies on the
+  // DownloadsObserver only finishing when the new download has reached
+  // the state of being entered into the history and being user-visible
+  // (that's what's required for the Remove to be valid and for the
+  // download shelf to be visible).  By the pure semantics of
   // DownloadsObserver, that's not guaranteed; DownloadItems are created
   // in the IN_PROGRESS state and made known to the DownloadManager
   // immediately, so any ModelChanged event on the DownloadManager after
-  // navigation would allow the observer to return.  At some point we'll
-  // probably change the DownloadManager to fire a ModelChanged event
-  // earlier in download processing.  This test should continue to work,
-  // as a cancel is valid at any point during download process.  However,
-  // at that point it'll be testing two different things, depending on
-  // what state the download item has reached when it is cancelled:
-  // a) cancelling from a pre-history entry when the only record of a
-  // download item is on the active_downloads_ queue, and b) cancelling
-  // from a post-history entry when the download is present on the
-  // history_downloads_ list.
-  //
-  // Note that the above is why we don't do any UI testing here--we don't
-  // know whether or not the download item has been made visible to the user.
-
-  // TODO(rdsmith): After we fire ModelChanged events at finer granularity,
-  // split this test into subtests that tests canceling from each separate
-  // download item state.  Also include UI testing as appropriate in those
-  // split tests.
+  // navigation would allow the observer to return.  However, the only
+  // ModelChanged() event the code will currently fire is in
+  // OnCreateDownloadEntryComplete, at which point the download item will
+  // be in the state we need.
+  // The right way to fix this is to create finer grained states on the
+  // DownloadItem, and wait for the state that indicates the item has been
+  // entered in the history and made visible in the UI.
 
   // Create a download, wait until it's started, and confirm
   // we're in the expected state.
@@ -1717,199 +1490,27 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadCancelled) {
   observer->WaitForFinished();
 
   std::vector<DownloadItem*> downloads;
-  GetPersistentDownloads(browser(), &downloads);
+  browser()->profile()->GetDownloadManager()->SearchDownloads(
+      string16(), &downloads);
   ASSERT_EQ(1u, downloads.size());
   ASSERT_EQ(DownloadItem::IN_PROGRESS, downloads[0]->state());
+  CheckDownloadUI(browser(), true, true, FilePath());
 
   // Cancel the download and wait for download system quiesce.
   downloads[0]->Delete(DownloadItem::DELETE_DUE_TO_USER_DISCARD);
-  ASSERT_EQ(0u, NumberInProgressDownloads(browser()));
-  WaitForIOFileX2();
+  scoped_refptr<DownloadsFlushObserver> flush_observer(
+      new DownloadsFlushObserver(browser()->profile()->GetDownloadManager()));
+  flush_observer->WaitForFlush();
 
   // Get the important info from other threads and check it.
   scoped_refptr<CancelTestDataCollector> info(new CancelTestDataCollector());
   info->WaitForDataCollected();
   EXPECT_EQ(0, info->rdh_pending_requests());
   EXPECT_EQ(0, info->dfm_pending_downloads());
-}
 
-// Do a dangerous download and confirm that the download does
-// not complete until user accept, and that all states are
-// correct along the way.
-IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadDangerous) {
-  ASSERT_TRUE(InitialSetup(false));
-  FilePath file(FILE_PATH_LITERAL("download-dangerous.jar"));
-  GURL url(URLRequestMockHTTPJob::GetMockUrl(file));
-
-  EXPECT_EQ(1, browser()->tab_count());
-
-  scoped_ptr<DownloadsObserver> observer(
-      CreateInProgressWaiter(browser(), 1));
-  ui_test_utils::NavigateToURL(browser(), url);
-  observer->WaitForFinished();
-
-  // We should have one download, in history, and it should
-  // still be dangerous.
-  std::vector<DownloadItem*> downloads;
-  GetPersistentDownloads(browser(), &downloads);
-  ASSERT_EQ(1u, downloads.size());
-  DownloadItem* download = downloads[0];
-  EXPECT_EQ(DownloadItem::IN_PROGRESS, download->state());
-  EXPECT_EQ(DownloadItem::DANGEROUS, download->safety_state());
-  EXPECT_EQ(DownloadItem::DANGEROUS_FILE, download->GetDangerType());
-  // In ChromeOS, popup will be up, but file name will be unrecognizable.
-  CheckDownloadUI(browser(), true, true, FilePath());
-
-  // See if accepting completes the download and changes the safety
-  // state.
-  scoped_ptr<DownloadsObserver> completion_observer(
-      CreateDangerousWaiter(browser(), 1));
-  AcceptDangerousDownload(browser()->profile()->GetDownloadManager(),
-                          download->id());
-  completion_observer->WaitForFinished();
-
-  GetPersistentDownloads(browser(), &downloads);
-  ASSERT_EQ(1u, downloads.size());
-  ASSERT_EQ(downloads[0], download);
-  EXPECT_EQ(DownloadItem::COMPLETE, download->state());
-  EXPECT_EQ(DownloadItem::DANGEROUS_BUT_VALIDATED, download->safety_state());
-  CheckDownloadUI(browser(), true, true, file);
-}
-
-// Confirm that a dangerous download that gets a file error before
-// completion ends in the right state (currently cancelled because file
-// errors are non-resumable).  Note that this is really testing
-// to make sure errors from the final rename are propagated properly.
-IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadDangerousFileError) {
-  ASSERT_TRUE(InitialSetup(false));
-  FilePath file(FILE_PATH_LITERAL("download-dangerous.jar"));
-  GURL url(URLRequestMockHTTPJob::GetMockUrl(file));
-
-  EXPECT_EQ(1, browser()->tab_count());
-
-  scoped_ptr<DownloadsObserver> observer(
-      CreateInProgressWaiter(browser(), 1));
-  ui_test_utils::NavigateToURL(browser(), url);
-  observer->WaitForFinished();
-
-  // We should have one download, in history, and it should
-  // still be dangerous.
-  std::vector<DownloadItem*> downloads;
-  GetPersistentDownloads(browser(), &downloads);
-  ASSERT_EQ(1u, downloads.size());
-  DownloadItem* download = downloads[0];
-  EXPECT_EQ(DownloadItem::IN_PROGRESS, download->state());
-  EXPECT_EQ(DownloadItem::DANGEROUS, download->safety_state());
-  EXPECT_EQ(DownloadItem::DANGEROUS_FILE, download->GetDangerType());
-  // In ChromeOS, popup will be up, but file name will be unrecognizable.
-  CheckDownloadUI(browser(), true, true, FilePath());
-
-  // Accept it after nuking the directory into which it's being downloaded;
-  // that should complete the download with an error.
-  DeleteDownloadsDirectory();
-  scoped_ptr<DownloadsObserver> completion_observer(
-      CreateDangerousWaiter(browser(), 1));
-  AcceptDangerousDownload(browser()->profile()->GetDownloadManager(),
-                          download->id());
-  completion_observer->WaitForFinished();
-
-  GetPersistentDownloads(browser(), &downloads);
-  ASSERT_EQ(1u, downloads.size());
-  ASSERT_EQ(downloads[0], download);
-  EXPECT_EQ(DownloadItem::INTERRUPTED, download->state());
-  EXPECT_EQ(DownloadItem::DANGEROUS_BUT_VALIDATED, download->safety_state());
-  // In ChromeOS, popup will still be up, but the file will have been
-  // deleted.
-  CheckDownloadUI(browser(), true, true, FilePath());
-}
-
-// Confirm that declining a dangerous download erases it from living memory.
-IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadDangerousDecline) {
-  ASSERT_TRUE(InitialSetup(false));
-  FilePath file(FILE_PATH_LITERAL("download-dangerous.jar"));
-  GURL url(URLRequestMockHTTPJob::GetMockUrl(file));
-
-  EXPECT_EQ(1, browser()->tab_count());
-
-  scoped_ptr<DownloadsObserver> observer(
-      CreateInProgressWaiter(browser(), 1));
-  ui_test_utils::NavigateToURL(browser(), url);
-  observer->WaitForFinished();
-
-  // We should have one download, in history, and it should
-  // still be dangerous.
-  std::vector<DownloadItem*> downloads;
-  GetPersistentDownloads(browser(), &downloads);
-  ASSERT_EQ(1u, downloads.size());
-  DownloadItem* download = downloads[0];
-  EXPECT_EQ(DownloadItem::IN_PROGRESS, download->state());
-  EXPECT_EQ(DownloadItem::DANGEROUS, download->safety_state());
-  EXPECT_EQ(DownloadItem::DANGEROUS_FILE, download->GetDangerType());
-  CheckDownloadUI(browser(), true, true, FilePath());
-
-  DenyDangerousDownload(browser()->profile()->GetDownloadManager(),
-                        download->id());
-
-  GetPersistentDownloads(browser(), &downloads);
-  ASSERT_EQ(0u, downloads.size());
-  CheckDownloadUI(browser(), false, true, FilePath());
-}
-
-// Fail a download with a network error partway through, and make sure the
-// state is INTERRUPTED and the error is propagated.
-IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadInterrupted) {
-  ASSERT_TRUE(InitialSetup(false));
-  GURL url(URLRequestSlowDownloadJob::kKnownSizeUrl);
-
-  scoped_ptr<DownloadsObserver> observer(
-      CreateInProgressWaiter(browser(), 1));
-  ui_test_utils::NavigateToURL(browser(), url);
-  observer->WaitForFinished();
-
-  DownloadItem* download1;
-  std::vector<DownloadItem*> downloads;
-  GetPersistentDownloads(browser(), &downloads);
-  ASSERT_EQ(1u, downloads.size());
-  download1 = downloads[0];
-  ASSERT_EQ(DownloadItem::IN_PROGRESS, download1->state());
-  FilePath filename;
-  net::FileURLToFilePath(url, &filename);
-  CheckDownloadUI(browser(), true, true,
-                  download_util::GetCrDownloadPath(filename.BaseName()));
-
-  // Fail the download
-  GURL error_url(URLRequestSlowDownloadJob::kErrorFinishDownloadUrl);
-  ui_test_utils::NavigateToURL(browser(), error_url);
-  MessageLoopForUI::current()->RunAllPending();
-  WaitForExternalTermination();
-
-  // Should still be visible, with INTERRUPTED state.
-  GetPersistentDownloads(browser(), &downloads);
-  ASSERT_EQ(1u, downloads.size());
-  DownloadItem* download = downloads[0];
-  ASSERT_EQ(download, download1);
-  ASSERT_EQ(DownloadItem::INTERRUPTED, download->state());
-  // TODO(rdsmith): Confirm error provided by URLRequest is shown
-  // in DownloadItem.
-  CheckDownloadUI(browser(), true, true, FilePath());
-
-  // Confirm cancel does nothing.
-  download->Cancel();
-  MessageLoopForUI::current()->RunAllPending();
-
-  GetPersistentDownloads(browser(), &downloads);
-  ASSERT_EQ(1u, downloads.size());
-  ASSERT_EQ(download, downloads[0]);
-  ASSERT_EQ(DownloadItem::INTERRUPTED, download->state());
-  CheckDownloadUI(browser(), true, true, FilePath());
-
-  // Confirm remove gets rid of it.
-  download->Remove();
-  download = NULL;
-  MessageLoopForUI::current()->RunAllPending();
-
-  GetPersistentDownloads(browser(), &downloads);
-  ASSERT_EQ(0u, downloads.size());
+  // Using "DownloadItem::Remove" follows the discard dangerous download path,
+  // which completely removes the browser from the shelf and closes the shelf
+  // if it was there. Download panel stays open on ChromeOS.
   CheckDownloadUI(browser(), false, true, FilePath());
 }
 
@@ -1927,7 +1528,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadHistoryCheck) {
 
   // Get details of what downloads have just happened.
   std::vector<DownloadItem*> downloads;
-  GetPersistentDownloads(browser(), &downloads);
+  GetDownloads(browser(), &downloads);
   ASSERT_EQ(1u, downloads.size());
   int64 db_handle = downloads[0]->db_handle();
 
@@ -2039,7 +1640,8 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, AutoOpen) {
 
   // Find the download and confirm it was opened.
   std::vector<DownloadItem*> downloads;
-  GetPersistentDownloads(browser(), &downloads);
+  browser()->profile()->GetDownloadManager()->SearchDownloads(
+      string16(), &downloads);
   ASSERT_EQ(1u, downloads.size());
   EXPECT_EQ(DownloadItem::COMPLETE, downloads[0]->state());
   EXPECT_TRUE(downloads[0]->opened());

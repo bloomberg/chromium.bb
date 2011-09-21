@@ -116,14 +116,14 @@ void DownloadHistory::UpdateDownloadPath(DownloadItem* download_item,
     hs->UpdateDownloadPath(new_path, download_item->db_handle());
 }
 
-void DownloadHistory::RemoveEntry(int64 db_handle) {
+void DownloadHistory::RemoveEntry(DownloadItem* download_item) {
   // No update necessary if the download was initiated while in incognito mode.
-  if (db_handle <= DownloadItem::kUninitializedHandle)
+  if (download_item->db_handle() <= DownloadItem::kUninitializedHandle)
     return;
 
   HistoryService* hs = profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
   if (hs)
-    hs->RemoveDownload(db_handle);
+    hs->RemoveDownload(download_item->db_handle());
 }
 
 void DownloadHistory::RemoveEntriesBetween(const base::Time remove_begin,
