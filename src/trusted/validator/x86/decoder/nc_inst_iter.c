@@ -12,14 +12,12 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <assert.h>
 
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/validator/x86/decoder/nc_inst_state.h"
 #include "native_client/src/trusted/validator/x86/decoder/nc_inst_state_internal.h"
 #include "native_client/src/trusted/validator/x86/decoder/nc_inst_trans.h"
 #include "native_client/src/trusted/validator/x86/decoder/ncop_exps.h"
-#include "native_client/src/trusted/validator/x86/nc_segment.h"
 
 /* To turn on debugging of instruction decoding, change value of
  * DEBUGGING to 1.
@@ -28,15 +26,13 @@
 
 #include "native_client/src/shared/utils/debugging.h"
 
+#include "native_client/src/trusted/validator/x86/decoder/nc_inst_iter_inl.c"
+
 static void NaClInstIterLogError(const char* error_message) {
   NaClLog(LOG_ERROR, "*ERROR* %s\n", error_message);
 }
 
-/* Default handler for errors while running instruction iterator.
- * Should only be called when caller has incorrectly called a
- * method.
- */
-static void NaClInstIterFatal(const char* error_message) {
+void NaClInstIterFatal(const char* error_message) {
   NaClInstIterLogError(error_message);
   exit(1);
 }
@@ -95,60 +91,30 @@ void NaClInstIterDestroy(NaClInstIter* iter) {
 }
 
 NaClInstState* NaClInstIterGetUndecodedState(NaClInstIter* iter) {
-  return &iter->buffer[iter->buffer_index];
+  return NaClInstIterGetUndecodedStateInline(iter);
 }
 
 NaClInstState* NaClInstIterGetState(NaClInstIter* iter) {
-  NaClInstState* state = NaClInstIterGetUndecodedState(iter);
-  if (NULL == state->inst) {
-    NaClDecodeInst(iter, state);
-  }
-  return state;
+  return NaClInstIterGetStateInline(iter);
 }
 
 Bool NaClInstIterHasLookbackState(NaClInstIter* iter, size_t distance) {
-  return distance < iter->buffer_size && distance <= iter->inst_count;
+  return NaClInstIterHasLookbackStateInline(iter, distance);
 }
 
 NaClInstState* NaClInstIterGetLookbackState(NaClInstIter* iter,
                                             size_t distance) {
-  NaClInstState* state;
-  assert(distance < iter->buffer_size);
-  assert(distance <= iter->inst_count);
-  state = &iter->buffer[((iter->buffer_index + iter->buffer_size) - distance)
-                        % iter->buffer_size];
-  if (NULL == state->inst) {
-    NaClDecodeInst(iter, state);
-  }
-  return state;
+  return NaClInstIterGetLookbackStateInline(iter, distance);
 }
 
 Bool NaClInstIterHasNext(NaClInstIter* iter) {
-  DEBUG(NaClLog(LOG_INFO, "iter has next index %"NACL_PRIxNaClMemorySize
-                " < %"NACL_PRIxNaClMemorySize"\n",
-                iter->index, iter->segment->size));
-  return iter->index < iter->segment->size;
+  return NaClInstIterHasNextInline(iter);
 }
 
 void NaClInstIterAdvance(NaClInstIter* iter) {
-  if (iter->index >= iter->segment->size) {
-    NaClInstIterFatal("NaClInstIterAdvance with no next element.");
-  }
-  NaClInstIterGetState(iter);
-  iter->index += iter->memory.read_length;
-  ++iter->inst_count;
-  iter->buffer_index = (iter->buffer_index + 1) % iter->buffer_size;
-  DEBUG(
-      NaClLog(LOG_INFO,
-              "iter advance: index %"NACL_PRIxNaClMemorySize", "
-              "buffer index %"NACL_PRIuS"\n",
-              iter->index, iter->buffer_index));
-  iter->buffer[iter->buffer_index].inst = NULL;
+  NaClInstIterAdvanceInline(iter);
 }
 
 uint8_t* NaClInstIterGetInstMemory(NaClInstIter* iter) {
-  if (iter->index >= iter->segment->size) {
-    NaClInstIterFatal("NaClInstIterGetInstMemory with no next element.");
-  }
-  return iter->segment->mbase + iter->index;
+  return NaClInstIterGetInstMemoryInline(iter);
 }

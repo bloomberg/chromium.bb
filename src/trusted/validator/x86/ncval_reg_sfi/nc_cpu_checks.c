@@ -15,12 +15,13 @@
 
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/validator/x86/nacl_cpuid.h"
-#include "native_client/src/trusted/validator/x86/decoder/nc_inst_iter.h"
 #include "native_client/src/trusted/validator/x86/decoder/nc_inst_state.h"
 #include "native_client/src/trusted/validator/x86/decoder/nc_inst_state_internal.h"
 #include "native_client/src/trusted/validator/x86/ncval_reg_sfi/ncvalidate_iter.h"
 #include "native_client/src/trusted/validator/x86/ncval_reg_sfi/ncvalidate_iter_internal.h"
 #include "native_client/src/trusted/validator/x86/nc_segment.h"
+
+#include "native_client/src/trusted/validator/x86/decoder/nc_inst_iter_inl.c"
 
 typedef struct NaClCpuCheckState {
   /* The standard CPU features. */
@@ -171,7 +172,7 @@ void NaClCpuCheck(struct NaClValidatorState* state,
   }
   if (squash_me) {
     /* Replace all bytes with the stop instruction. */
-    memset(NaClInstIterGetInstMemory(iter), kNaClFullStop,
+    memset(NaClInstIterGetInstMemoryInline(iter), kNaClFullStop,
            NaClInstStateLength(inst_state));
   }
 }

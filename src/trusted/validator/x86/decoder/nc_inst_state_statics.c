@@ -27,6 +27,8 @@
 #include "native_client/src/trusted/validator/x86/ncinstbuffer-inl.h"
 #include "native_client/src/trusted/validator/x86/nc_segment.h"
 
+#include "native_client/src/trusted/validator/x86/x86_insts_inl.c"
+
 EXTERN_C_BEGIN
 
 /* Given the current location of the instruction iterator, initialize
@@ -449,7 +451,7 @@ static Bool NaClConsumeModRm(NaClInstState* state) {
     /* Note: Some instructions only allow values where the ModRm mod field
      * is 0x3. Others only allow values where the ModRm mod field isn't 0x3.
      */
-    if (modrm_mod(byte) == 0x3) {
+    if (modrm_modInline(byte) == 0x3) {
       if (NaClHasBit(state->inst->flags, NACL_IFLAG(ModRmModIsnt0x3))) {
         DEBUG(NaClLog(LOG_INFO, "Can't match, modrm mod field is 0x3\n"));
         return FALSE;
@@ -461,7 +463,7 @@ static Bool NaClConsumeModRm(NaClInstState* state) {
       }
     }
     if ((NaClHasBit(state->inst->flags, NACL_IFLAG(ModRmRegSOperand))) &&
-        (modrm_reg(byte) > 5)) {
+        (modrm_regInline(byte) > 5)) {
       DEBUG(NaClLog(LOG_INFO,
                     "Can't match, modrm reg field doesn't index segment\n"));
       return FALSE;
@@ -478,22 +480,22 @@ static Bool NaClConsumeModRm(NaClInstState* state) {
      */
     if (state->inst->flags & NACL_IFLAG(OpcodeInModRm)) {
       const NaClInst* inst = state->inst;
-      if (modrm_opcode(state->modrm) !=
+      if (modrm_opcodeInline(state->modrm) !=
           NaClGetOpcodeInModRm(inst->opcode_ext)) {
         DEBUG(
             NaClLog(LOG_INFO,
                     "Discarding, opcode in mrm byte (%02"NACL_PRIx8") "
                     "does not match\n",
-                    modrm_opcode(state->modrm)));
+                    modrm_opcodeInline(state->modrm)));
         return FALSE;
       }
       if (state->inst->flags & NACL_IFLAG(OpcodeInModRmRm)) {
-        if (modrm_rm(state->modrm) !=
+        if (modrm_rmInline(state->modrm) !=
             NaClGetOpcodeInModRmRm(inst->opcode_ext)) {
           DEBUG(NaClLog(LOG_INFO,
                         "Discarding, opcode in mrm rm field (%02"NACL_PRIx8") "
                         "does not match\n",
-                        modrm_rm(state->modrm)));
+                        modrm_rmInline(state->modrm)));
           return FALSE;
         }
       }
@@ -510,7 +512,8 @@ static Bool NaClInstRequiresSib(NaClInstState* state) {
    */
   return (Bool)
       (NaClInstRequiresModRm(state) && (16 != state->address_size) &&
-       (modrm_rm(state->modrm) == 0x04 && modrm_mod(state->modrm) != 0x3));
+       (modrm_rmInline(state->modrm) ==
+        0x04 && modrm_modInline(state->modrm) != 0x3));
 }
 
 /* Consume the SIB byte of the instruction, if applicable. Aborts the pattern
@@ -532,7 +535,7 @@ static Bool NaClConsumeSib(NaClInstState* state) {
     /* Read the SIB byte and record. */
     state->sib = NCInstBytesReadInline(&state->bytes);
     DEBUG(NaClLog(LOG_INFO, "sib = %02"NACL_PRIx8"\n", state->sib));
-    if (sib_base(state->sib) == 0x05 && modrm_mod(state->modrm) > 2) {
+    if (sib_base(state->sib) == 0x05 && modrm_modInline(state->modrm) > 2) {
       DEBUG(NaClLog(LOG_INFO,
                     "Sib byte implies modrm.mod field <= 2, match fails\n"));
       return FALSE;
@@ -545,9 +548,9 @@ static int NaClGetNumDispBytes(NaClInstState* state) {
   if (NaClInstRequiresModRm(state)) {
     if (16 == state->address_size) {
       /* Corresponding to table 2-1 of the Intel manual. */
-      switch (modrm_mod(state->modrm)) {
+      switch (modrm_modInline(state->modrm)) {
         case 0x0:
-          if (modrm_rm(state->modrm) == 0x06) {
+          if (modrm_rmInline(state->modrm) == 0x06) {
             return 4;  /* disp16 */
           }
           break;
@@ -562,9 +565,9 @@ static int NaClGetNumDispBytes(NaClInstState* state) {
       /* Note: in 64-bit mode, 64-bit addressing is treated the same as 32-bit
        * addressing. Hence, this section covers the 32-bit addressing.
        */
-      switch(modrm_mod(state->modrm)) {
+      switch(modrm_modInline(state->modrm)) {
         case 0x0:
-          if (modrm_rm(state->modrm) == 0x05) {
+          if (modrm_rmInline(state->modrm) == 0x05) {
             return 4;  /* disp32 */
           } else if (state->has_sib && sib_base(state->sib) == 0x5) {
             return 4;

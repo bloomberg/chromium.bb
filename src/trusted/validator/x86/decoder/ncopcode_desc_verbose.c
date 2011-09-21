@@ -13,6 +13,8 @@
 
 #include "native_client/src/trusted/validator/x86/decoder/nc_decode_tables.h"
 
+#include "native_client/src/trusted/validator/x86/decoder/ncopcode_desc_inl.c"
+
 void NaClInstPrint(struct Gio* f,
                    const NaClDecodeTables* tables,
                    const NaClInst* inst) {
@@ -33,7 +35,7 @@ void NaClInstPrint(struct Gio* f,
     int i;
     gprintf(f, "    %s", NaClMnemonicName(inst->name));
     for (i = 0; i < inst->num_operands; ++i) {
-      const NaClOp* op = NaClGetInstOperand(tables, inst, i);
+      const NaClOp* op = NaClGetInstOperandInline(tables, inst, i);
       if (NULL == op->format_string) continue;
       if (is_first) {
         is_first = FALSE;
@@ -49,4 +51,12 @@ void NaClInstPrint(struct Gio* f,
       NaClOpPrint(f, NaClGetInstOperand(tables, inst, i));
     }
   }
+}
+
+/* Dummy routine to allow unreferenced NaClGetInstNumberOperandsInline
+ * inline.
+ */
+uint8_t NaClNcopcodeDescVerboseDummyNaClGetInstNumberOperands(
+    const NaClInst* inst) {
+  return NaClGetInstNumberOperandsInline(inst);
 }

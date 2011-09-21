@@ -20,6 +20,9 @@
 #include "native_client/src/trusted/validator/x86/decoder/ncop_exps.h"
 #include "native_client/src/trusted/validator/x86/nacl_regs.h"
 
+#include "native_client/src/trusted/validator/x86/decoder/ncopcode_desc_inl.c"
+#include "native_client/src/trusted/validator/x86/x86_insts_inl.c"
+
 #if NACL_TARGET_SUBARCH == 64
 # include "native_client/src/trusted/validator/x86/decoder/gen/nc_subregs_64.h"
 #else
@@ -85,22 +88,22 @@ static NaClOpKind NaClGetSegmentPrefixReg(NaClInstState* state,
 }
 
 /* Return the segment register to use if DS is the default. */
-static NaClOpKind NaClGetDsSegmentReg(NaClInstState* state) {
+static INLINE NaClOpKind NaClGetDsSegmentReg(NaClInstState* state) {
   return NaClGetSegmentPrefixReg(state, RegDS);
 }
 
 /* Return the segment register to use if ES is the default. */
-static NaClOpKind NaClGetEsSegmentReg(NaClInstState* state) {
+static INLINE NaClOpKind NaClGetEsSegmentReg(NaClInstState* state) {
   return NaClGetSegmentPrefixReg(state, RegES);
 }
 
 /* Append the given expression node onto the given vector of expression
  * nodes. Returns the appended expression node.
  */
-static NaClExp* NaClAppendExp(NaClExpKind kind,
-                              int32_t value,
-                              NaClExpFlags flags,
-                              NaClExpVector* vector) {
+static INLINE NaClExp* NaClAppendExp(NaClExpKind kind,
+                                     int32_t value,
+                                     NaClExpFlags flags,
+                                     NaClExpVector* vector) {
   NaClExp* node;
   assert(vector->number_expr_nodes < NACL_MAX_EXPS);
   node = &vector->node[vector->number_expr_nodes++];
@@ -163,8 +166,8 @@ static NaClOpKind NaClGetMnemonicSegmentRegister(NaClInstState* state) {
 /* Append the given constant onto the given vector of expression
  * nodes. Returns the appended expression node.
  */
-static NaClExp* NaClAppendConst(uint64_t value, NaClExpFlags flags,
-                                NaClExpVector* vector) {
+static INLINE NaClExp* NaClAppendConst(uint64_t value, NaClExpFlags flags,
+                                       NaClExpVector* vector) {
   uint32_t val1;
   uint32_t val2;
   DEBUG(
@@ -467,7 +470,7 @@ static NaClExpFlags NaClGetRegSize(NaClOpKind register_name) {
 /* Appends the given kind of register onto the vector of expression nodes.
  * Returns the appended register.
  */
-static NaClExp* NaClAppendReg(NaClOpKind r, NaClExpVector* vector) {
+static INLINE NaClExp* NaClAppendReg(NaClOpKind r, NaClExpVector* vector) {
   NaClExp* node;
   DEBUG(NaClLog(LOG_INFO, "append register %s\n", NaClOpKindName(r)));
   node = NaClAppendExp(ExprRegister, r, NaClGetRegSize(r), vector);
@@ -479,8 +482,8 @@ static NaClExp* NaClAppendReg(NaClOpKind r, NaClExpVector* vector) {
  * the appropriate register onto the vector of expression nodes.
  * Returns the appended register
  */
-static NaClExp* NaClAppendRegKind(NaClInstState* state,
-                                  NaClRegKind kind, int reg_index) {
+static INLINE NaClExp* NaClAppendRegKind(NaClInstState* state,
+                                         NaClRegKind kind, int reg_index) {
   DEBUG(NaClLog(LOG_INFO, "NaClAppendRegKind(%d, %d) = %s\n",
                 (int) kind, reg_index, NaClRegKindName(kind)));
   return NaClAppendReg(NaClLookupReg(state, kind, reg_index), &state->nodes);
@@ -526,7 +529,7 @@ static NaClRegKind NaClExtractOpRegKind(NaClInstState* state,
 /* Given an address of the corresponding opcode instruction of the
  * given state, return what kind of register should be used.
  */
-static NaClRegKind NaClExtractAddressRegKind(NaClInstState* state) {
+static INLINE NaClRegKind NaClExtractAddressRegKind(NaClInstState* state) {
   if (state->address_size == 16) {
     return RegSize16;
   } else if (state->address_size == 64) {
@@ -609,13 +612,13 @@ static NaClExp* NaClAppendModRmSegmentReg(NaClInstState* state) {
     RegUnknown,
     RegUnknown
   };
-  return NaClAppendReg(seg[modrm_reg(state->modrm)], &state->nodes);
+  return NaClAppendReg(seg[modrm_regInline(state->modrm)], &state->nodes);
 }
 
 /* For the given instruction state, and the corresponding 3-bit specification
  * of a register, update it to a 4-bit specification, based on the REX.R bit.
  */
-static int NaClGetRexRReg(NaClInstState* state, int reg) {
+static INLINE int NaClGetRexRReg(NaClInstState* state, int reg) {
   DEBUG(NaClLog(LOG_INFO, "Get GenRexRRegister %d\n", reg));
   if (NACL_TARGET_SUBARCH == 64 && (state->rexprefix & 0x4)) {
     reg += 8;
@@ -626,7 +629,7 @@ static int NaClGetRexRReg(NaClInstState* state, int reg) {
 /* For the given instruction state, and the corresponding 3-bit specification
  * of a register, update it to a 4-bit specification, based on the REX.X bit.
  */
-static int NaClGetRexXReg(NaClInstState* state, int reg) {
+static INLINE int NaClGetRexXReg(NaClInstState* state, int reg) {
   DEBUG(NaClLog(LOG_INFO, "Get GenRexXRegister\n"));
   if (NACL_TARGET_SUBARCH == 64 && (state->rexprefix & 0x2)) {
     reg += 8;
@@ -637,7 +640,7 @@ static int NaClGetRexXReg(NaClInstState* state, int reg) {
 /* For the given instruction state, and the corresponding 3-bit specification
  * of a register, update it to a 4-bit specification, based on the REX.B bit.
  */
-static int NaClGetRexBReg(NaClInstState* state, int reg) {
+static INLINE int NaClGetRexBReg(NaClInstState* state, int reg) {
   DEBUG(NaClLog(LOG_INFO, "Get GenRexBRegister\n"));
   if (NACL_TARGET_SUBARCH == 64 && (state->rexprefix & 0x1)) {
     DEBUG(NaClLog(LOG_INFO, "rexprefix == %02x\n", state->rexprefix));
@@ -649,17 +652,17 @@ static int NaClGetRexBReg(NaClInstState* state, int reg) {
 /* Return the general purpose register associated with the modrm.reg
  * field.
  */
-static int NaClGetGenRegRegister(NaClInstState* state) {
+static INLINE int NaClGetGenRegRegister(NaClInstState* state) {
   DEBUG(NaClLog(LOG_INFO, "Get GenRegRegister\n"));
-  return NaClGetRexRReg(state, modrm_reg(state->modrm));
+  return NaClGetRexRReg(state, modrm_regInline(state->modrm));
 }
 
 /* Return the general purpose register associated with the modrm.rm
  * field.
  */
-static int NaClGetGenRmRegister(NaClInstState* state) {
+static INLINE int NaClGetGenRmRegister(NaClInstState* state) {
   DEBUG(NaClLog(LOG_INFO, "Get GenRmRegister\n"));
-  return NaClGetRexBReg(state, modrm_rm(state->modrm));
+  return NaClGetRexBReg(state, modrm_rmInline(state->modrm));
 }
 
 /* Get the register index from the difference of the opcode, and
@@ -692,8 +695,9 @@ typedef struct NaClDisplacement {
   NaClExpFlags flags;
 } NaClDisplacement;
 
-static void NaClInitializeDisplacement(uint64_t value, NaClExpFlags flags,
-                                       NaClDisplacement* displacement) {
+static INLINE void NaClInitializeDisplacement(
+    uint64_t value, NaClExpFlags flags,
+    NaClDisplacement* displacement) {
   displacement->value = value;
   displacement->flags = flags;
 }
@@ -991,7 +995,7 @@ static NaClOpKind NaClGetSibBase(NaClInstState* state) {
   int base = sib_base(state->sib);
   NaClOpKind base_reg = RegUnknown;
   if (0x5 == base) {
-    switch (modrm_mod(state->modrm)) {
+    switch (modrm_modInline(state->modrm)) {
       case 0:
         break;
       case 1:
@@ -1117,7 +1121,7 @@ static NaClExp* NaClAppendES_EDI(NaClInstState* state) {
 static NaClExp* NaClAppendMod00EffectiveAddress(
     NaClInstState* state, const NaClOp* operand) {
   DEBUG(NaClLog(LOG_INFO, "Translate modrm(%02x).mod == 00\n", state->modrm));
-  switch (modrm_rm(state->modrm)) {
+  switch (modrm_rmInline(state->modrm)) {
     case 4:
       return NaClAppendSib(state);
     case 5:
@@ -1159,7 +1163,7 @@ static NaClExp* NaClAppendMod00EffectiveAddress(
 static NaClExp* NaClAppendMod01EffectiveAddress(
     NaClInstState* state, const NaClOp* operand) {
   DEBUG(NaClLog(LOG_INFO, "Translate modrm(%02x).mod == 01\n", state->modrm));
-  if (4 == modrm_rm(state->modrm)) {
+  if (4 == modrm_rmInline(state->modrm)) {
     return NaClAppendSib(state);
   } else {
     NaClDisplacement displacement;
@@ -1184,7 +1188,7 @@ static NaClExp* NaClAppendMod01EffectiveAddress(
 static NaClExp* NaClAppendMod10EffectiveAddress(
     NaClInstState* state, const NaClOp* operand) {
   DEBUG(NaClLog(LOG_INFO, "Translate modrm(%02x).mod == 10\n", state->modrm));
-  if (4 == modrm_rm(state->modrm)) {
+  if (4 == modrm_rmInline(state->modrm)) {
     return NaClAppendSib(state);
   } else {
     NaClDisplacement displacement;
@@ -1251,7 +1255,7 @@ static NaClExp* NaClAppendBasedOnAddressSize(NaClOpKind reg_2b,
 static NaClExp* NaClAppendEffectiveAddress(
     NaClInstState* state, const NaClOp* operand,
     NaClModRmRegKind modrm_reg_kind) {
-  switch(modrm_mod(state->modrm)) {
+  switch(modrm_modInline(state->modrm)) {
     case 0:
       return NaClAppendMod00EffectiveAddress(state, operand);
     case 1:
@@ -1563,15 +1567,17 @@ static NaClExp* NaClAddOpSetUse(NaClExp* node, const NaClOp* operand) {
 }
 
 void NaClBuildExpVector(struct NaClInstState* state) {
-  int i;
+  uint8_t i;
+  uint8_t num_ops;
   DEBUG(NaClLog(LOG_INFO,
                 "building expression vector for pc = %"NACL_PRIxNaClPcAddress
                 ":\n",
                 NaClInstStateVpc(state)));
-  for (i = 0; i < state->inst->num_operands; i++) {
+  num_ops = NaClGetInstNumberOperandsInline(state->inst);
+  for (i = 0; i < num_ops; i++) {
     NaClExp* n;
-    const NaClOp* op = NaClGetInstOperand(state->decoder_tables,
-                                          state->inst, i);
+    const NaClOp* op = NaClGetInstOperandInline(state->decoder_tables,
+                                                state->inst, i);
     DEBUG(NaClLog(LOG_INFO, "translating operand %d:\n", i));
     n = NaClAppendExp(OperandReference, i, 0, &state->nodes);
     if (op->flags & NACL_OPFLAG(OpImplicit)) {

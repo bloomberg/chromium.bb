@@ -13,8 +13,6 @@
 #include "native_client/src/trusted/validator/x86/ncval_reg_sfi/nc_protect_base.h"
 
 #include "native_client/src/shared/platform/nacl_log.h"
-#include "native_client/src/trusted/validator/x86/decoder/ncop_exps.h"
-#include "native_client/src/trusted/validator/x86/decoder/nc_inst_iter.h"
 #include "native_client/src/trusted/validator/x86/decoder/nc_inst_state_internal.h"
 #include "native_client/src/trusted/validator/x86/decoder/nc_inst_trans.h"
 #include "native_client/src/trusted/validator/x86/ncval_reg_sfi/ncvalidate_iter.h"
@@ -28,6 +26,10 @@
 #define DEBUGGING 0
 
 #include "native_client/src/shared/utils/debugging.h"
+
+#include "native_client/src/trusted/validator/x86/decoder/ncopcode_desc_inl.c"
+#include "native_client/src/trusted/validator/x86/decoder/ncop_exps_inl.c"
+#include "native_client/src/trusted/validator/x86/decoder/nc_inst_iter_inl.c"
 
 /* Defines locals used by the NaClBaseRegisterValidator to
  * record registers set in the current instruction, that are
@@ -141,13 +143,13 @@ static Bool NaClIsAddOrSubBoundedConstFromEsp(NaClInstState* state) {
   const NaClInst* inst = NaClInstStateInst(state);
   NaClExpVector* vector = NaClInstStateExpVector(state);
   return (InstAdd == inst->name || InstSub == inst->name) &&
-      2 == NaClGetInstNumberOperands(inst) &&
+      2 == NaClGetInstNumberOperandsInline(inst) &&
       /* Note: Since the vector contains a list of operand expressions, the
        * first operand reference is always at index zero, and its first child
        * (where the register would be defined) is at index 1.
        */
       ExprRegister == vector->node[1].kind &&
-      RegESP == NaClGetExpRegister(&vector->node[1]) &&
+      RegESP == NaClGetExpRegisterInline(&vector->node[1]) &&
       /* Note: Since the first subtree is a register operand, it uses
        * nodes 0 and 1 in the vector (node 0 is the operand reference, and
        * node 1 is its child defining a register value). The second operand
@@ -164,7 +166,7 @@ static Bool NaClIsLeaAddressRegPlusRbase(NaClValidatorState* state,
   const NaClInst* inst = NaClInstStateInst(inst_state);
   assert((RegRSP == reg) || (RegRBP == reg));
   if (InstLea == inst->name &&
-      2 == NaClGetInstNumberOperands(inst)) {
+      2 == NaClGetInstNumberOperandsInline(inst)) {
     NaClExpVector* vector = NaClInstStateExpVector(inst_state);
     int op2_index =
         NaClGetExpKidIndex(vector,
@@ -215,8 +217,8 @@ static Bool NaClAcceptRegMoveLea32To64(struct NaClValidatorState* state,
   NaClInstState* inst_state = state->cur_inst_state;
   assert((RegRSP == reg) || (RegRBP == reg));
   if (NaClOperandOneIsRegisterSet(inst_state, reg) &&
-      NaClInstIterHasLookbackState(iter, 1)) {
-    NaClInstState* prev_inst = NaClInstIterGetLookbackState(iter, 1);
+      NaClInstIterHasLookbackStateInline(iter, 1)) {
+    NaClInstState* prev_inst = NaClInstIterGetLookbackStateInline(iter, 1);
     if (NaClAssignsRegisterWithZeroExtends(
             prev_inst, NaClGet32For64BitReg(reg)) &&
         NaClIsLeaAddressRegPlusRbase(state, inst_state, reg)) {
@@ -323,9 +325,9 @@ static void NaClCheckRspAssignments(struct NaClValidatorState* state,
                 state->decoder_tables,
                 inst, inst_name, vector, RegRSP,
                 state->base_register) &&
-            NaClInstIterHasLookbackState(iter, 1)) {
+            NaClInstIterHasLookbackStateInline(iter, 1)) {
           NaClInstState* prev_inst =
-              NaClInstIterGetLookbackState(iter, 1);
+              NaClInstIterGetLookbackStateInline(iter, 1);
           if (NaClAssignsRegisterWithZeroExtends(prev_inst, RegESP)
               || (inst_name == InstAdd &&
                   NaClIsAddOrSubBoundedConstFromEsp(prev_inst))) {
@@ -421,9 +423,9 @@ static void NaClCheckRbpAssignments(struct NaClValidatorState* state,
   NaClExpVector* vector = state->cur_inst_vector;
   switch (inst_name) {
     case InstAdd:
-      if (NaClInstIterHasLookbackState(iter, 1)) {
+      if (NaClInstIterHasLookbackStateInline(iter, 1)) {
         NaClInstState* prev_state =
-            NaClInstIterGetLookbackState(iter, 1);
+            NaClInstIterGetLookbackStateInline(iter, 1);
         if (NaClIsBinarySetUsingRegisters(
                 state->decoder_tables,
                 inst, InstAdd, vector,
@@ -500,7 +502,7 @@ void NaClBaseRegisterValidator(struct NaClValidatorState* state,
     NaClExp* node = &vector->node[i];
     if (ExprRegister == node->kind) {
       if (node->flags & NACL_EFLAG(ExprSet)) {
-        NaClOpKind reg_name = NaClGetExpRegister(node);
+        NaClOpKind reg_name = NaClGetExpRegisterInline(node);
 
         /* If reached, found an assignment to a register.
          * Check if its one that we care about (i.e.

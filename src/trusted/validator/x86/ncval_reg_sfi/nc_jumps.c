@@ -14,8 +14,6 @@
 #include "native_client/src/trusted/validator/x86/ncval_reg_sfi/nc_jumps.h"
 
 #include "native_client/src/shared/platform/nacl_log.h"
-#include "native_client/src/trusted/validator/x86/decoder/ncop_exps.h"
-#include "native_client/src/trusted/validator/x86/decoder/nc_inst_iter.h"
 #include "native_client/src/trusted/validator/x86/decoder/nc_inst_state_internal.h"
 #include "native_client/src/trusted/validator/x86/decoder/nc_inst_trans.h"
 #include "native_client/src/trusted/validator/x86/ncval_reg_sfi/address_sets.h"
@@ -28,6 +26,10 @@
 #define DEBUGGING 0
 
 #include "native_client/src/shared/utils/debugging.h"
+
+#include "native_client/src/trusted/validator/x86/decoder/ncop_exps_inl.c"
+#include "native_client/src/trusted/validator/x86/decoder/nc_inst_iter_inl.c"
+#include "native_client/src/trusted/validator/x86/ncval_reg_sfi/address_sets_inl.c"
 
 Bool NACL_FLAGS_identity_mask = FALSE;
 
@@ -88,7 +90,7 @@ static void NaClAddJumpToJumpSets(NaClValidatorState* state,
     DEBUG(NaClLog(LOG_INFO, "Add jump to target: %"NACL_PRIxNaClPcAddress
                   " -> %"NACL_PRIxNaClPcAddress"\n",
                   from_address, to_address));
-    NaClAddressSetAdd(jump_sets->actual_targets, to_address, state);
+    NaClAddressSetAddInline(jump_sets->actual_targets, to_address, state);
   }
   /* The range check may not be strictly necessary given that we have
    * guard regions around the sandbox address space, but it shouldn't
@@ -202,7 +204,7 @@ static void NaClAddRegisterJumpIndirect64(NaClValidatorState* state,
   NaClOpKind and_reg, and_64_reg, jump_reg, middle_reg;
   NaClExpVector* nodes;
   NaClExp* node;
-  jump_reg = NaClGetExpRegister(reg);
+  jump_reg = NaClGetExpRegisterInline(reg);
   DEBUG(NaClLog(LOG_INFO, "checking indirect jump: ");
         NaClInstStateInstPrint(NaClLogGetGio(), inst);
         gprintf(NaClLogGetGio(), "jump_reg = %s\n", NaClOpKindName(jump_reg)));
@@ -212,8 +214,8 @@ static void NaClAddRegisterJumpIndirect64(NaClValidatorState* state,
    */
   do {
     /* Check and in 3 instruction sequence. */
-    if (!NaClInstIterHasLookbackState(iter, 2)) break;
-    and_state = NaClInstIterGetLookbackState(iter, 2);
+    if (!NaClInstIterHasLookbackStateInline(iter, 2)) break;
+    and_state = NaClInstIterGetLookbackStateInline(iter, 2);
     DEBUG(NaClLog(LOG_INFO, "and?: ");
           NaClInstStateInstPrint(NaClLogGetGio(), and_state));
     and_inst = NaClInstStateInst(and_state);
@@ -230,7 +232,7 @@ static void NaClAddRegisterJumpIndirect64(NaClValidatorState* state,
     nodes = NaClInstStateExpVector(and_state);
     node = &nodes->node[op_1];
     if (ExprRegister != node->kind) break;
-    and_reg = NaClGetExpRegister(node);
+    and_reg = NaClGetExpRegisterInline(node);
     DEBUG(NaClLog(LOG_INFO, "and_reg = %s\n", NaClOpKindName(and_reg)));
     and_64_reg = NaClGet64For32BitReg(and_reg);
     DEBUG(NaClLog(LOG_INFO, "and_64_reg = %s\n", NaClOpKindName(and_64_reg)));
@@ -246,7 +248,7 @@ static void NaClAddRegisterJumpIndirect64(NaClValidatorState* state,
     DEBUG(NaClLog(LOG_INFO, "is mask constant\n"));
 
     /* Check middle (i.e. lea/add) instruction in 3 instruction sequence. */
-    middle_state = NaClInstIterGetLookbackState(iter, 1);
+    middle_state = NaClInstIterGetLookbackStateInline(iter, 1);
     DEBUG(NaClLog(LOG_INFO, "middle inst: ");
           NaClInstStateInstPrint(NaClLogGetGio(), middle_state));
     middle_inst = NaClInstStateInst(middle_state);
@@ -263,7 +265,7 @@ static void NaClAddRegisterJumpIndirect64(NaClValidatorState* state,
     if (ExprRegister != node->kind) break;
 
     /* Compare the middle destination register to the jump register. */
-    middle_reg = NaClGetExpRegister(node);
+    middle_reg = NaClGetExpRegisterInline(node);
     DEBUG(NaClLog(LOG_INFO, "middle reg = %s\n", NaClOpKindName(middle_reg)));
     if (middle_reg != jump_reg) break;
 
@@ -336,13 +338,13 @@ static void NaClAddRegisterJumpIndirect32(NaClValidatorState* state,
   NaClExpVector* nodes;
   NaClExp* node;
   assert(ExprRegister == reg->kind);
-  jump_reg = NaClGetExpRegister(reg);
+  jump_reg = NaClGetExpRegisterInline(reg);
 
   /* Do the following block exactly once. */
   do {
     /* Check that the jump is preceded with an AND. */
-    if (!NaClInstIterHasLookbackState(iter, 1)) break;
-    and_state = NaClInstIterGetLookbackState(iter, 1);
+    if (!NaClInstIterHasLookbackStateInline(iter, 1)) break;
+    and_state = NaClInstIterGetLookbackStateInline(iter, 1);
     and_inst = NaClInstStateInst(and_state);
     if (((and_state->num_opcode_bytes == 0) ||
          (0x83 != and_state->bytes.byte[and_state->num_prefix_bytes])) ||
@@ -356,7 +358,7 @@ static void NaClAddRegisterJumpIndirect32(NaClValidatorState* state,
     nodes = NaClInstStateExpVector(and_state);
     node = &nodes->node[op_1];
     if (ExprRegister != node->kind) break;
-    and_reg = NaClGetExpRegister(node);
+    and_reg = NaClGetExpRegisterInline(node);
     if (jump_reg != and_reg) break;
 
     /* Check that the mask is ok. */
@@ -484,7 +486,7 @@ static void NaClRememberIp(NaClValidatorState* state,
     DEBUG(NaClLog(LOG_INFO,
                   "Add possible jump address: %"NACL_PRIxNaClPcAddress"\n",
                   pc));
-    NaClAddressSetAdd(jump_sets->possible_targets, pc, state);
+    NaClAddressSetAddInline(jump_sets->possible_targets, pc, state);
   }
 }
 
@@ -635,6 +637,6 @@ void NaClMarkInstructionJumpIllegal(struct NaClValidatorState* state,
                   "Mark instruction as jump illegal: %"NACL_PRIxNaClPcAddress
                  "\n",
                  pc));
-    NaClAddressSetAdd(jump_sets->removed_targets, pc, state);
+    NaClAddressSetAddInline(jump_sets->removed_targets, pc, state);
   }
 }

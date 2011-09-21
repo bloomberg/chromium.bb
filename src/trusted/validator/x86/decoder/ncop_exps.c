@@ -31,6 +31,9 @@
 
 #include "native_client/src/shared/utils/debugging.h"
 
+#include "native_client/src/trusted/validator/x86/decoder/ncopcode_desc_inl.c"
+#include "native_client/src/trusted/validator/x86/decoder/ncop_exps_inl.c"
+
 void NaClPrintExpFlags(struct Gio* file, NaClExpFlags flags) {
   if (flags == 0) {
     gprintf(file, "0");
@@ -76,8 +79,7 @@ int NaClExpKindRank(NaClExpKind kind) {
 
 /* Returns the register defined by the given node. */
 NaClOpKind NaClGetExpRegister(NaClExp* node) {
-  assert(node->kind == ExprRegister);
-  return (NaClOpKind) node->value;
+  return NaClGetExpRegisterInline(node);
 }
 
 /* Returns the name of the register defined by the indexed node in the
@@ -85,7 +87,7 @@ NaClOpKind NaClGetExpRegister(NaClExp* node) {
  */
 NaClOpKind NaClGetExpVectorRegister(NaClExpVector* vector,
                                     int node) {
-  return NaClGetExpRegister(&vector->node[node]);
+  return NaClGetExpRegisterInline(&vector->node[node]);
 }
 
 static int NaClPrintDisassembledExp(struct Gio* file,
@@ -168,7 +170,7 @@ static void NaClPrintDisassembledRegKind(struct Gio* file, NaClOpKind reg) {
 }
 
 static INLINE void NaClPrintDisassembledReg(struct Gio* file, NaClExp* node) {
-  NaClPrintDisassembledRegKind(file, NaClGetExpRegister(node));
+  NaClPrintDisassembledRegKind(file, NaClGetExpRegisterInline(node));
 }
 
 void NaClExpVectorPrint(struct Gio* file, NaClExpVector* vector) {
@@ -306,7 +308,7 @@ static Bool NaClHasSegmentOverride(NaClExpVector* vector,
     int seg_index = seg_addr_index + 1;
     NaClExp* node = &vector->node[seg_index];
     if ((ExprRegister == node->kind) &&
-        (seg_reg != NaClGetExpRegister(node))) {
+        (seg_reg != NaClGetExpRegisterInline(node))) {
       return TRUE;
     }
   }
@@ -395,8 +397,9 @@ static void NaClPrintDisassembled(struct Gio* file,
        */
       if (NaClHasBit(inst->flags, NACL_IFLAG(PartialInstruction)) &&
           node->kind == OperandReference) {
-        const NaClOp* op = NaClGetInstOperand(state->decoder_tables,
-                                              inst, (uint8_t) node->value);
+        const NaClOp* op =
+            NaClGetInstOperandInline(state->decoder_tables,
+                                     inst, (uint8_t) node->value);
         if (NaClHasBit(op->flags, (NACL_OPFLAG(OpSet) |
                                    NACL_OPFLAG(OpUse) |
                                    NACL_OPFLAG(OperandZeroExtends_v)))) {
@@ -606,4 +609,11 @@ Bool NaClIsExpNegativeConstant(NaClExpVector* vector, int index) {
       break;
   }
   return FALSE;
+}
+
+/* Dummy routine to allow unreferenced NaClGetInstNumberOperandsInline
+ * inline.
+ */
+uint8_t NaClNcopExpsDummyNaClGetInstNumberOperands(const NaClInst* inst) {
+  return NaClGetInstNumberOperandsInline(inst);
 }

@@ -19,6 +19,8 @@
 #include "native_client/src/trusted/validator/x86/decoder/gen/ncopcode_operand_flag_impl.h"
 #include "native_client/src/trusted/validator/x86/decoder/nc_decode_tables.h"
 
+#include "native_client/src/trusted/validator/x86/decoder/ncopcode_desc_inl.c"
+
 uint8_t NaClGetOpcodeInModRm(uint8_t opcode_ext) {
   return opcode_ext & 0x0F;
 }
@@ -32,13 +34,12 @@ uint8_t NaClGetOpcodePlusR(uint8_t opcode_ext) {
 }
 
 uint8_t NaClGetInstNumberOperands(const NaClInst* inst) {
-  return inst->num_operands;
+  return NaClGetInstNumberOperandsInline(inst);
 }
 
 const NaClOp* NaClGetInstOperand(const NaClDecodeTables* tables,
                                  const NaClInst* inst, uint8_t index) {
-  assert(index < inst->num_operands);
-  return &tables->operands_table[inst->operands_offset + index];
+  return NaClGetInstOperandInline(tables, inst, index);
 }
 
 /* Print out the opcode operand flags in a simplified (i.e. more human readable)

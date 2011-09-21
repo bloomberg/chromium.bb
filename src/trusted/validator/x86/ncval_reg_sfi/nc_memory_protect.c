@@ -7,10 +7,8 @@
 #include "native_client/src/trusted/validator/x86/ncval_reg_sfi/nc_memory_protect.h"
 
 #include "native_client/src/shared/platform/nacl_log.h"
-#include "native_client/src/trusted/validator/x86/decoder/nc_inst_iter.h"
 #include "native_client/src/trusted/validator/x86/decoder/nc_inst_state.h"
 #include "native_client/src/trusted/validator/x86/decoder/nc_inst_trans.h"
-#include "native_client/src/trusted/validator/x86/decoder/ncop_exps.h"
 #include "native_client/src/trusted/validator/x86/ncval_reg_sfi/ncvalidate_iter.h"
 #include "native_client/src/trusted/validator/x86/ncval_reg_sfi/ncvalidate_iter_internal.h"
 #include "native_client/src/trusted/validator/x86/ncval_reg_sfi/ncvalidate_utils.h"
@@ -21,7 +19,10 @@
  */
 #define DEBUGGING 0
 
+#include "native_client/src/trusted/validator/x86/decoder/nc_inst_iter_inl.c"
 #include "native_client/src/shared/utils/debugging.h"
+
+#include "native_client/src/trusted/validator/x86/decoder/ncop_exps_inl.c"
 
 /*
  * When true, check both uses and sets of memory. When false, only
@@ -53,7 +54,7 @@ static Bool IsPossibleSandboxingNode(NaClExp* node) {
  *    print_messages - True if this routine is responsable for printing
  *      error messages if the memory offset isn't NACL compliant.
  */
-static Bool NaClIsValidMemOffset(
+static INLINE Bool NaClIsValidMemOffset(
     NaClValidatorState* state,
     NaClInstIter* iter,
     int lookback_index,
@@ -101,15 +102,15 @@ static Bool NaClIsValidMemOffset(
   DEBUG(NaClLog(LOG_INFO, "  => base register is valid\n"));
   index_reg_index = base_reg_index + NaClExpWidth(vector, base_reg_index);
   index_reg_node = &vector->node[index_reg_index];
-  index_reg = NaClGetExpRegister(index_reg_node);
+  index_reg = NaClGetExpRegisterInline(index_reg_node);
   DEBUG(NaClLog(LOG_INFO, "index reg = %s\n", NaClOpKindName(index_reg)));
   if (RegUnknown != index_reg) {
     Bool index_reg_is_good = FALSE;
     if ((base_reg != RegRIP) &&
         (index_reg_node->flags & NACL_EFLAG(ExprSize64)) &&
-        NaClInstIterHasLookbackState(iter, lookback_index + 1)) {
+        NaClInstIterHasLookbackStateInline(iter, lookback_index + 1)) {
       NaClInstState* prev_inst =
-          NaClInstIterGetLookbackState(iter, lookback_index + 1);
+          NaClInstIterGetLookbackStateInline(iter, lookback_index + 1);
       DEBUG_OR_ERASE({
           struct Gio* g = NaClLogGetGio();
           NaClLog(LOG_INFO, "prev inst:\n");
@@ -208,9 +209,9 @@ void NaClMemoryReferenceValidator(NaClValidatorState* state,
           case RegES:
           case RegSS:
             /* Check that we match lea constraints. */
-            if (NaClInstIterHasLookbackState(iter, 1)) {
+            if (NaClInstIterHasLookbackStateInline(iter, 1)) {
               NaClInstState* prev_inst_state =
-                  NaClInstIterGetLookbackState(iter, 1);
+                  NaClInstIterGetLookbackStateInline(iter, 1);
               const NaClInst* prev_inst = NaClInstStateInst(prev_inst_state);
               DEBUG(NaClLog(LOG_INFO, "look at previous\n"));
               if (InstLea == prev_inst->name) {
@@ -265,7 +266,7 @@ void NaClMemoryReferenceValidator(NaClValidatorState* state,
                                  "Segment memory reference not allowed\n");
       } else if (UndefinedExp == node->kind ||
                  (ExprRegister == node->kind &&
-                  RegUnknown == NaClGetExpRegister(node))) {
+                  RegUnknown == NaClGetExpRegisterInline(node))) {
         /* First rule out case where the index registers of the memory
          * offset may be unknown.
          */

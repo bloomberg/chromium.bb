@@ -5,7 +5,7 @@
  */
 
 /*
- * decoding.h - Holds common utilties for decoding x86 instructions.
+ * x86_insts.h - Holds common utilties for decoding x86 instructions.
  */
 
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_X86_INSTS_H__

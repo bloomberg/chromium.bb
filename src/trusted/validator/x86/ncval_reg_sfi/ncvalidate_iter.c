@@ -19,7 +19,6 @@
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/validator/x86/decoder/ncop_exps.h"
 #include "native_client/src/trusted/validator/x86/decoder/nc_inst_state_internal.h"
-#include "native_client/src/trusted/validator/x86/decoder/nc_inst_iter.h"
 #include "native_client/src/trusted/validator/x86/halt_trim.h"
 #include "native_client/src/trusted/validator/x86/nc_segment.h"
 #include "native_client/src/trusted/validator/x86/ncval_reg_sfi/ncvalidate_iter_internal.h"
@@ -34,6 +33,8 @@
 #define DEBUGGING 0
 
 #include "native_client/src/shared/utils/debugging.h"
+
+#include "native_client/src/trusted/validator/x86/decoder/nc_inst_iter_inl.c"
 
 /* When >= 0, only print that many errors before quiting. When
  * < 0, print all errors.
@@ -564,8 +565,8 @@ void NaClValidateSegment(uint8_t *mbase, NaClPcAddress vbase,
         NaClValidatorMessage(LOG_ERROR, state, "Not enough memory\n");
         break;
       }
-      for (; NaClInstIterHasNext(iter); NaClInstIterAdvance(iter)) {
-        state->cur_inst_state = NaClInstIterGetState(iter);
+      for (; NaClInstIterHasNextInline(iter); NaClInstIterAdvanceInline(iter)) {
+        state->cur_inst_state = NaClInstIterGetStateInline(iter);
         state->cur_inst = NaClInstStateInst(state->cur_inst_state);
         state->cur_inst_vector = NaClInstStateExpVector(state->cur_inst_state);
         NaClApplyValidators(state, iter);
@@ -635,8 +636,8 @@ static Bool NaClValidateInstReplacement(NaClInstIter *iter_old,
   uint32_t i;
   Bool inst_changed = FALSE;
 
-  istate_old = NaClInstIterGetState(iter_old);
-  istate_new = NaClInstIterGetState(iter_new);
+  istate_old = NaClInstIterGetStateInline(iter_old);
+  istate_new = NaClInstIterGetStateInline(iter_new);
 
   /* Location/length must match */
   if (istate_new->vpc != istate_old->vpc ||
@@ -777,10 +778,10 @@ void NaClValidateSegmentPair(uint8_t *mbase_old, uint8_t *mbase_new,
     iter_new = NaClInstIterCreateWithLookback(state->decoder_tables,
                                               &segment_new, kLookbackSize);
     if (NULL == iter_new) break;
-    while (NaClInstIterHasNext(iter_old) &&
-           NaClInstIterHasNext(iter_new)) {
+    while (NaClInstIterHasNextInline(iter_old) &&
+           NaClInstIterHasNextInline(iter_new)) {
       Bool inst_changed;
-      state->cur_inst_state = NaClInstIterGetState(iter_new);
+      state->cur_inst_state = NaClInstIterGetStateInline(iter_new);
       state->cur_inst = NaClInstStateInst(state->cur_inst_state);
       state->cur_inst_vector = NaClInstStateExpVector(state->cur_inst_state);
       inst_changed = NaClValidateInstReplacement(iter_old, iter_new, state);
@@ -789,11 +790,11 @@ void NaClValidateSegmentPair(uint8_t *mbase_old, uint8_t *mbase_new,
       else
         NaClRememberIpOnly(state, iter_new);
       if (state->quit) break;
-      NaClInstIterAdvance(iter_old);
-      NaClInstIterAdvance(iter_new);
+      NaClInstIterAdvanceInline(iter_old);
+      NaClInstIterAdvanceInline(iter_new);
     }
-    if (NaClInstIterHasNext(iter_old) ||
-        NaClInstIterHasNext(iter_new)) {
+    if (NaClInstIterHasNextInline(iter_old) ||
+        NaClInstIterHasNextInline(iter_new)) {
       NaClValidatorMessage(
           LOG_ERROR, state,
           "Code modification: code segments have different "

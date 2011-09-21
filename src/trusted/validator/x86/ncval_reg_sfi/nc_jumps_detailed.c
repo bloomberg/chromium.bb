@@ -12,11 +12,12 @@
 #include "native_client/src/trusted/validator/x86/ncval_reg_sfi/nc_jumps_detailed.h"
 
 #include "native_client/src/shared/platform/nacl_log.h"
-#include "native_client/src/trusted/validator/x86/decoder/nc_inst_iter.h"
 #include "native_client/src/trusted/validator/x86/decoder/nc_inst_state_internal.h"
 #include "native_client/src/trusted/validator/x86/ncval_reg_sfi/ncvalidate_iter.h"
 #include "native_client/src/trusted/validator/x86/ncval_reg_sfi/ncvalidate_iter_internal.h"
 #include "native_client/src/trusted/validator/x86/ncval_reg_sfi/nc_jumps.h"
+
+#include "native_client/src/trusted/validator/x86/decoder/nc_inst_iter_inl.c"
 
 /* Returns true if the given address is within the code segment.
  */
@@ -134,8 +135,9 @@ void NaClJumpValidatorSummarizeDetailed(NaClValidatorState* state,
                            "Not enough memory to check jumps\n");
       break;
     }
-    for (; NaClInstIterHasNext(check_iter); NaClInstIterAdvance(check_iter)) {
-      NaClInstState* inst_state = NaClInstIterGetState(check_iter);
+    for (; NaClInstIterHasNextInline(check_iter);
+         NaClInstIterAdvanceInline(check_iter)) {
+      NaClInstState* inst_state = NaClInstIterGetStateInline(check_iter);
       NaClInstLayoutCheck(state, inst_state, jump_sets);
     }
     NaClInstIterDestroy(check_iter);

@@ -6,6 +6,8 @@
 
 #include "native_client/src/trusted/validator/x86/x86_insts.h"
 
+#include "native_client/src/trusted/validator/x86/x86_insts_inl.c"
+
 /* Defines the range of possible (initial) opcodes for x87 instructions. */
 const uint8_t kFirstX87Opcode = 0xd8;
 const uint8_t kLastX87Opcode = 0xdf;
@@ -20,10 +22,21 @@ const uint8_t k3DNowOpcodeByte2 = 0x0f;
 const int kMaxPrefixBytes = 4;
 
 /* Accessors for the ModRm byte. */
-uint8_t modrm_mod(uint8_t modrm) { return ((modrm >> 6) & 0x03);}
-uint8_t modrm_rm(uint8_t modrm) { return (modrm & 0x07); }
-uint8_t modrm_reg(uint8_t modrm) { return ((modrm >> 3) & 0x07); }
-uint8_t modrm_opcode(uint8_t modrm) { return modrm_reg(modrm); }
+uint8_t modrm_mod(uint8_t modrm) {
+  return modrm_modInline(modrm);
+}
+
+uint8_t modrm_rm(uint8_t modrm) {
+  return modrm_rmInline(modrm);
+}
+
+uint8_t modrm_reg(uint8_t modrm) {
+  return modrm_regInline(modrm);
+}
+
+uint8_t modrm_opcode(uint8_t modrm) {
+  return modrm_opcodeInline(modrm);
+}
 
 /* Accessors for the Sib byte. */
 uint8_t sib_ss(uint8_t sib) { return ((sib >> 6) & 0x03); }
