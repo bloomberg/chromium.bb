@@ -148,9 +148,7 @@ Widget::InitParams::InitParams(Type type)
 // Widget, public:
 
 Widget::Widget()
-    : is_mouse_button_pressed_(false),
-      last_mouse_event_was_move_(false),
-      native_widget_(NULL),
+    : native_widget_(NULL),
       widget_delegate_(NULL),
       non_client_view_(NULL),
       dragged_view_(NULL),
@@ -164,7 +162,9 @@ Widget::Widget()
       minimum_size_(100, 100),
       focus_on_creation_(true),
       is_top_level_(false),
-      native_widget_initialized_(false) {
+      native_widget_initialized_(false),
+      is_mouse_button_pressed_(false),
+      last_mouse_event_was_move_(false) {
 }
 
 Widget::~Widget() {

@@ -610,9 +610,6 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   virtual View* GetFocusTraversableParentView() OVERRIDE;
 
  protected:
-  // TODO(beng): Remove NativeWidgetGtk's dependence on the mouse state flags.
-  friend class NativeWidgetGtk;
-
   // Creates the RootView to be used within this Widget. Subclasses may override
   // to create custom RootViews that do specialized event processing.
   // TODO(beng): Investigate whether or not this is needed.
@@ -623,20 +620,10 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // TODO(beng): remove once we fold those objects onto this one.
   void DestroyRootView();
 
-  // TODO(beng): Remove NativeWidgetGtk's dependence on these:
-  // TODO(msw): Make this mouse state member private.
-  // If true, the mouse is currently down.
-  bool is_mouse_button_pressed_;
-
-  // TODO(beng): Remove NativeWidgetGtk's dependence on these:
-  // TODO(msw): Make these mouse state members private.
-  // The following are used to detect duplicate mouse move events and not
-  // deliver them. Displaying a window may result in the system generating
-  // duplicate move events even though the mouse hasn't moved.
-  bool last_mouse_event_was_move_;
-  gfx::Point last_mouse_event_position_;
-
  private:
+  // TODO(beng): Remove NativeWidgetGtk's dependence on the mouse state flags.
+  friend class NativeWidgetGtk;
+
   friend class NativeTextfieldViewsTest;
   friend class NativeComboboxViewsTest;
   friend class ScopedEvent;
@@ -739,6 +726,17 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
 
   // Tracks whether native widget has been initialized.
   bool native_widget_initialized_;
+
+  // TODO(beng): Remove NativeWidgetGtk's dependence on these:
+  // If true, the mouse is currently down.
+  bool is_mouse_button_pressed_;
+
+  // TODO(beng): Remove NativeWidgetGtk's dependence on these:
+  // The following are used to detect duplicate mouse move events and not
+  // deliver them. Displaying a window may result in the system generating
+  // duplicate move events even though the mouse hasn't moved.
+  bool last_mouse_event_was_move_;
+  gfx::Point last_mouse_event_position_;
 
   DISALLOW_COPY_AND_ASSIGN(Widget);
 };
