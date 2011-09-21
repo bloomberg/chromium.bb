@@ -415,11 +415,7 @@ void GKRMethod::OnOperationGetList(GnomeKeyringResult result, GList* list,
 
 // GKRMethod isn't reference counted, but it always outlasts runnable
 // methods against it because the caller waits for those methods to run.
-template<>
-struct RunnableMethodTraits<GKRMethod> {
-  void RetainCallee(GKRMethod*) {}
-  void ReleaseCallee(GKRMethod*) {}
-};
+DISABLE_RUNNABLE_METHOD_REFCOUNT(GKRMethod);
 
 NativeBackendGnome::NativeBackendGnome(LocalProfileId id, PrefService* prefs)
     : profile_id_(id), prefs_(prefs) {

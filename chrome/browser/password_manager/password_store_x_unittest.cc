@@ -270,11 +270,7 @@ void InitExpectedForms(bool autofillable, size_t count, VectorOfForms* forms) {
 
 // LoginDatabase isn't reference counted, but in these unit tests that won't be
 // a problem as it always outlives the threads we post tasks to.
-template<>
-struct RunnableMethodTraits<LoginDatabase> {
-  void RetainCallee(LoginDatabase*) {}
-  void ReleaseCallee(LoginDatabase*) {}
-};
+DISABLE_RUNNABLE_METHOD_REFCOUNT(LoginDatabase);
 
 enum BackendType {
   NO_BACKEND,

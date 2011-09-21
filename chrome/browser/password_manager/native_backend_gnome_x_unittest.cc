@@ -275,11 +275,7 @@ class MockGnomeKeyringLoader : public GnomeKeyringLoader {
 
 // NativeBackendGnome isn't reference counted, but in these unit tests that
 // won't be a problem as it always outlives the threads we post tasks to.
-template<>
-struct RunnableMethodTraits<NativeBackendGnome> {
-  void RetainCallee(NativeBackendGnome*) {}
-  void ReleaseCallee(NativeBackendGnome*) {}
-};
+DISABLE_RUNNABLE_METHOD_REFCOUNT(NativeBackendGnome);
 
 class NativeBackendGnomeTest : public testing::Test {
  protected:

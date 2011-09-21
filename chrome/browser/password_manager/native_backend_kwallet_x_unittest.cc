@@ -490,11 +490,7 @@ TEST_F(NativeBackendKWalletTest, BasicStartup) {
 
 // NativeBackendKWallet isn't reference counted, but in these unit tests that
 // won't be a problem as it always outlives the threads we post tasks to.
-template<>
-struct RunnableMethodTraits<NativeBackendKWalletStub> {
-  void RetainCallee(NativeBackendKWalletStub*) {}
-  void ReleaseCallee(NativeBackendKWalletStub*) {}
-};
+DISABLE_RUNNABLE_METHOD_REFCOUNT(NativeBackendKWalletStub);
 
 TEST_F(NativeBackendKWalletTest, BasicAddLogin) {
   // Pretend that the migration has already taken place.
