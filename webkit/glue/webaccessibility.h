@@ -248,7 +248,9 @@ struct WebAccessibility {
   ~WebAccessibility();
 
 #ifndef NDEBUG
-  std::string DebugString(bool recursive);
+  std::string DebugString(bool recursive,
+                          int render_routing_id,
+                          int notification_type);
 #endif
 
  private:

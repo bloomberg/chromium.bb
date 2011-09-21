@@ -1626,8 +1626,10 @@ void RenderView::SendPendingAccessibilityNotifications() {
 
 #ifndef NDEBUG
     if (accessibility_logging_) {
-      LOG(INFO) << "Accessibility update: \n"
-                << param.acc_obj.DebugString(true);
+      LOG(INFO) << "Accessibility update:\n"
+                << param.acc_obj.DebugString(true,
+                    routing_id_,
+                    pending_accessibility_notifications_[i].type);
     }
 #endif
   }
