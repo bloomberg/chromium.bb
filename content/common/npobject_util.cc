@@ -15,8 +15,7 @@
 
 using WebKit::WebBindings;
 
-// true if the current process is a plugin process, false if it's a renderer
-// process.
+// true if the current process is a plugin process, false otherwise.
 static bool g_plugin_process;
 
 namespace {

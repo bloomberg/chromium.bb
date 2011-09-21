@@ -69,9 +69,8 @@ static base::LazyInstance<base::ThreadLocalPointer<PluginThread> > lazy_tls(
 
 PluginThread::PluginThread()
     : preloaded_plugin_module_(NULL) {
-  plugin_path_ =
-      CommandLine::ForCurrentProcess()->GetSwitchValuePath(
-          switches::kPluginPath);
+  FilePath plugin_path = CommandLine::ForCurrentProcess()->GetSwitchValuePath(
+      switches::kPluginPath);
 
   lazy_tls.Pointer()->Set(this);
 #if defined(USE_AURA)
@@ -101,10 +100,10 @@ PluginThread::PluginThread()
   PatchNPNFunctions();
 
   // Preload the library to avoid loading, unloading then reloading
-  preloaded_plugin_module_ = base::LoadNativeLibrary(plugin_path_, NULL);
+  preloaded_plugin_module_ = base::LoadNativeLibrary(plugin_path, NULL);
 
   scoped_refptr<webkit::npapi::PluginLib> plugin(
-      webkit::npapi::PluginLib::CreatePluginLib(plugin_path_));
+      webkit::npapi::PluginLib::CreatePluginLib(plugin_path));
   if (plugin.get()) {
     plugin->NP_Initialize();
     // For OOP plugins the plugin dll will be unloaded during process shutdown

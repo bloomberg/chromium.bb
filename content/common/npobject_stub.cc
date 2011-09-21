@@ -4,16 +4,16 @@
 
 #include "content/common/npobject_stub.h"
 
+#include "base/command_line.h"
 #include "content/common/content_client.h"
+#include "content/common/content_switches.h"
+#include "content/common/np_channel_base.h"
 #include "content/common/npobject_util.h"
 #include "content/common/plugin_messages.h"
-#include "content/plugin/plugin_thread.h"
 #include "third_party/npapi/bindings/npapi.h"
 #include "third_party/npapi/bindings/npruntime.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebBindings.h"
 #include "webkit/plugins/npapi/plugin_constants_win.h"
-
-class NPChannelBase;
 
 using WebKit::WebBindings;
 
@@ -242,8 +242,11 @@ void NPObjectStub::OnSetProperty(const NPIdentifier_Param& name,
   if (IsPluginProcess()) {
     if (npobject_->_class->setProperty) {
 #if defined(OS_WIN)
+      static FilePath plugin_path =
+          CommandLine::ForCurrentProcess()->GetSwitchValuePath(
+              switches::kPluginPath);
       static std::wstring filename = StringToLowerASCII(
-          PluginThread::current()->plugin_path().BaseName().value());
+          plugin_path.BaseName().value());
       static NPIdentifier fullscreen =
           WebBindings::getStringIdentifier("fullScreen");
       if (filename == webkit::npapi::kNewWMPPlugin && id == fullscreen) {

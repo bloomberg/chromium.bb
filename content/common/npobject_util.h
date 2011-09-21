@@ -31,8 +31,7 @@ typedef void *NPIdentifier;
 // plugin instances are initialized.
 void PatchNPNFunctions();
 
-// Returns true if the current process is a plugin process, or false if it's a
-// renderer process.
+// Returns true if the current process is a plugin process, or false otherwise.
 bool IsPluginProcess();
 
 // Creates an object similar to NPIdentifier that can be marshalled.

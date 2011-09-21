@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -28,8 +28,6 @@ class PluginThread : public ChildThread {
   // Returns the one plugin thread.
   static PluginThread* current();
 
-  FilePath plugin_path() { return plugin_path_; }
-
  private:
   virtual bool OnControlMessageReceived(const IPC::Message& msg);
 
@@ -44,9 +42,6 @@ class PluginThread : public ChildThread {
 
   // The plugin module which is preloaded in Init
   base::NativeLibrary preloaded_plugin_module_;
-
-  // Points to the plugin file that this process hosts.
-  FilePath plugin_path_;
 
   DISALLOW_COPY_AND_ASSIGN(PluginThread);
 };
