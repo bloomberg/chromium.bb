@@ -53,6 +53,14 @@ void AutofillField::set_heuristic_type(AutofillFieldType type) {
   }
 }
 
+void AutofillField::set_server_type(AutofillFieldType type) {
+  // Chrome no longer supports fax numbers, but the server still does.
+  if (type >= PHONE_FAX_NUMBER && type <= PHONE_FAX_WHOLE_NUMBER)
+    return;
+
+  server_type_ = type;
+}
+
 AutofillFieldType AutofillField::type() const {
   if (server_type_ != NO_SERVER_DATA)
     return server_type_;

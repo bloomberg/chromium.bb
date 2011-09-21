@@ -37,7 +37,7 @@ class AutofillField : public webkit_glue::FormField {
   // Sets the heuristic type of this field, validating the input.
   void set_section(const string16& section) { section_ = section; }
   void set_heuristic_type(AutofillFieldType type);
-  void set_server_type(AutofillFieldType type) { server_type_ = type; }
+  void set_server_type(AutofillFieldType type);
   void set_possible_types(const FieldTypeSet& possible_types) {
     possible_types_ = possible_types;
   }
