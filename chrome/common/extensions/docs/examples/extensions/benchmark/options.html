@@ -7,7 +7,7 @@
   <script src="jquery/jquery-1.4.2.min.js" type="text/javascript"></script>
   <script src="jquery/jquery.flot.min.js" type="text/javascript"></script>
   <script src="jquery/jquery.flot.dashes.js" type="text/javascript"></script>
-  <script src="util/table2CSV.js" type="text/javascript"></script> 
+  <script src="util/table2CSV.js" type="text/javascript"></script>
   <script src="util/sorttable.js" type="text/javascript"></script>
 
 <style>
@@ -201,10 +201,10 @@ var FULL_VIEW = "Hide Details";
 // Called when clicking button "Show More Details/Hide Details".
 function expand() {
   if (document.getElementById("expand").value == BRIEF_VIEW) {
-    // From biref view to detailed view.	  
+    // From biref view to detailed view.
     var headers = document.getElementsByTagName(THTAG);
     var cells = document.getElementsByTagName(TDTAG);
-    
+
     // Display the hidden metrics (both headers and data cells).
     for (var i = 0; i < headers.length; i++) {
       if (headers[i].style.display == NONE_DISPLAY) {
@@ -230,17 +230,17 @@ function expand() {
         headers[i].style.display = NONE_DISPLAY;
       }
     }
-    
+
     for (i = 0; i < cells.length; i++) {
       if (cells[i].style.display == CELL_DISPLAY) {
         cells[i].style.display = NONE_DISPLAY;
       }
     }
-    
+
     document.getElementById("expand").value = BRIEF_VIEW;
   }
-  
-  // Use cookie to store current expand/hide status. 
+
+  // Use cookie to store current expand/hide status.
   var lastValue = document.getElementById("expand").value;
   document.cookie = "lastValue=" + lastValue;
 }
@@ -251,7 +251,7 @@ function restoreTable() {
   if (document.cookie == "lastValue=Hide Details") {
     var headers = document.getElementsByTagName(THTAG);
     var cells = document.getElementsByTagName(TDTAG);
-    
+
     for (var i = 0; i < headers.length; i++) {
       if (headers[i].style.display == NONE_DISPLAY) {
         headers[i].style.display = CELL_DISPLAY;
@@ -288,15 +288,15 @@ function PData() {
       var avgA = Array.avg(arr);
       for (var i = 1; i <= this.countA; i++) {
         this.avgA.push([i, avgA]);
-      }       
+      }
     } else if (cha == 'B') {
       var avgB = Array.avg(arr);
       for (var i = 1; i <= this.countB; i++) {
         this.avgB.push([i, avgB]);
-      } 
+      }
     }
   }
-  
+
   this.setMax = function (arr, cha) {
     if (cha == 'A') {
       this.maxA = Array.max(arr);
@@ -304,22 +304,22 @@ function PData() {
       this.maxB = Array.max(arr);
     }
   }
-   
+
   // Add an entry to the array.
   this.addArr = function (val, cha) {
     if (cha == 'A') {
       this.countA++;
-      this.A.push([this.countA, val]); 
+      this.A.push([this.countA, val]);
     } else if (cha == 'B') {
       this.countB++;
       this.B.push([this.countB, val]);
     }
   }
-  
+
   // Plot the graph at the specified place.
   this.plot = function (placeholder) {
     $.plot(placeholder,
-      [// Line A 
+      [// Line A
        {
          data: this.A,
          label: "A's " + this.yAxis + " in " + this.countA + " " + this.xAxis,
@@ -330,9 +330,9 @@ function PData() {
            show: true
          }
        },
-       
+
        // Line B
-       { 
+       {
          data: this.B,
          label: "B's " + this.yAxis + " in " + this.countB + " " + this.xAxis,
          points: {
@@ -342,17 +342,17 @@ function PData() {
            show: true
          }
        },
-       
+
        // Line avgA
-       { 
+       {
          data: this.avgA,
          label: "A's avg " + this.yAxis,
          dashes: {
            show: true
          }
        },
-       
-       // Line avgB 
+
+       // Line avgB
        {
          data: this.avgB,
          label: "B's avg " + this.yAxis,
@@ -360,16 +360,16 @@ function PData() {
            show: true
          }
        }],
-       
+
        // Axis and legend setup.
-       { xaxis: { 
+       { xaxis: {
            max: this.countA > this.countB ? this.countA : this.countB,
            tickSize: 1,
            tickDecimals: 0
          },
          yaxis: {
            // Leave some space for legend.
-           max: this.maxA > this.maxB ? this.maxA * 1.5 : this.maxB * 1.5 
+           max: this.maxA > this.maxB ? this.maxA * 1.5 : this.maxB * 1.5
          },
          legend: {
            backgroundOpacity: 0
@@ -382,15 +382,15 @@ function PData() {
 function compare() {
   var checkboxArr = document.getElementsByName("checkboxArr");
   var radioArr = document.getElementsByName("radioArr");
- 
+
   if (checkAmount(checkboxArr) != 2) {
     alert("please select two rows to compare");
     return;
   }
- 
+
   var rowIndexArr = getSelectedIndex(checkboxArr);
   var colIndexArr = getSelectedIndex(radioArr);
-  // To this point, it is for sure that rowIndexArr has two elements 
+  // To this point, it is for sure that rowIndexArr has two elements
   // while colIndexArr has one.
   var selectedRowA = rowIndexArr[0];
   var selectedRowB = rowIndexArr[1];
@@ -401,18 +401,18 @@ function compare() {
   var selectedA = getSelectedResults(data,selectedRowA,selectedCol);
   var selectedB = getSelectedResults(data,selectedRowB,selectedCol);
   var yAxis = getMetricName(selectedCol);
- 
+
   // Indicate A and B on selected rows.
   checkboxArr[selectedRowA].parentElement.firstChild.data = "A";
   checkboxArr[selectedRowB].parentElement.firstChild.data = "B";
- 
+
   plot(selectedA, selectedB, yAxis);
 }
 
 // Show the comparison graph.
 function plot(A, B, axis) {
   var plotData = new PData();
-  
+
   plotData.setYAxis(axis);
   for (var i = 0; i < A.length; i++) {
     plotData.addArr(A[i],'A');
@@ -426,7 +426,7 @@ function plot(A, B, axis) {
   plotData.setMax(B,'B');
 
   var placeholder = document.getElementById("placeholder");
-  placeholder.style.display = "";  
+  placeholder.style.display = "";
   plotData.plot(placeholder);
 }
 
@@ -447,9 +447,9 @@ function getMetricName (index) {
       return "Paint Time";
     case METRIC.TOTAL:
       return "Total Load Time";
-    case METRIC.REQUESTS: 
+    case METRIC.REQUESTS:
       return "# Requests";
-    case METRIC.CONNECTS: 
+    case METRIC.CONNECTS:
       return "# Connects";
     case METRIC.READKB:
       return "Read KB";
@@ -460,11 +460,11 @@ function getMetricName (index) {
     case METRIC.WRITEKBPS:
       return "Write KBps";
     default:
-      return ""; 
+      return "";
   }
 }
 
-// Get the results with a specific row (data set) and column (metric). 
+// Get the results with a specific row (data set) and column (metric).
 function getSelectedResults(arr, rowIndex, colIndex) {
   switch (colIndex) {
     case METRIC.STARTLOAD:
@@ -494,10 +494,10 @@ function getSelectedResults(arr, rowIndex, colIndex) {
   }
 }
 
-// Ensure only two data sets (rows) are selected. 
+// Ensure only two data sets (rows) are selected.
 function checkAmount(arr) {
   var amount = 0;
-  for (var i = 0; i < arr.length; i++) { 
+  for (var i = 0; i < arr.length; i++) {
     if (arr[i].checked) {
       amount++;
     }
@@ -542,7 +542,7 @@ function clearIndicator () {
 
 // Enable/Disable buttons according to checkbox change.
 function checkSelected () {
-  var checkboxArr = document.getElementsByName("checkboxArr"); 
+  var checkboxArr = document.getElementsByName("checkboxArr");
   if (checkAmount(checkboxArr) !=0) {
     document.getElementById("clearSelected").disabled = false;
     document.getElementById("compare").disabled = false;
@@ -561,7 +561,7 @@ function computeDisplayResults(data) {
   for (var i = 0; i < count; i++) {
     var obj = data.data[i];
     obj.displayTime = setDisplayTime(obj.timestamp);
-    var resultList = obj.totalResults; 
+    var resultList = obj.totalResults;
     obj.mean = Array.avg(resultList);
     obj.stddev = Array.stddev(resultList);
     obj.stderr = obj.stddev / Math.sqrt(obj.iterations);
@@ -582,7 +582,7 @@ function computeDisplayResults(data) {
     obj.displayRequests = Array.avg(obj.requests);
     obj.displayConnects = Array.avg(obj.connects);
     obj.displaySpdySessions = Array.avg(obj.spdySessions);
-    
+
     obj.displayDomNum = obj.domNum;
     obj.displayMaxDepth = obj.maxDepth;
     obj.displayMinDepth = obj.minDepth;
@@ -599,12 +599,12 @@ function setDisplayTime(ts) {
   var hrs = ts.getHours();
   var mins = ts.getMinutes();
   var secs = ts.getSeconds();
-  
+
   mon = ( mon < 10 ? "0" : "" ) + mon;
   date = ( date < 10 ? "0" : "" ) + date;
   mins = ( mins < 10 ? "0" : "" ) + mins;
   secs = ( secs < 10 ? "0" : "" ) + secs;
-  
+
   return (year + "/" + mon + "/" + date + " " + hrs + ":" + mins + ":" + secs);
 }
 
@@ -741,7 +741,7 @@ function jsinit() {
   }
 
   // Activate loading Urls from local file.
-  document.getElementById('files').addEventListener('change', 
+  document.getElementById('files').addEventListener('change',
                                                     handleFileSelect, false);
 }
 
@@ -791,7 +791,7 @@ function showConfirm() {
   var r = confirm("Are you sure to clear results?");
   if (r) {
     // Find out the event source element.
-    var evtSrc = window.event.srcElement; 
+    var evtSrc = window.event.srcElement;
     if (evtSrc.value == "Clear Selected") {
       clearSelected();
     } else if (evtSrc.value == "Clear All") {
@@ -808,7 +808,7 @@ function clearSelected() {
   var currIndex;
   for (var i = 0; i < rowIndexArr.length; i++) {
     currIndex = rowIndexArr[i];
-    // Update the index of the original row in the modified array. 
+    // Update the index of the original row in the modified array.
     currIndex -= i;
     extension.results.data.splice(currIndex, 1);
     document.location.reload(true);
@@ -829,9 +829,9 @@ function clearResults() {
 }
 
 // Export html table into CSV format.
-function export() {
+function exportHtml() {
   var checkboxArr = document.getElementsByName("checkboxArr");
-  var rowNum = checkboxArr.length + 1; // # of data rows plus total-stats row. 
+  var rowNum = checkboxArr.length + 1; // # of data rows plus total-stats row.
   $('#t').table2CSV(rowNum);
 }
 
@@ -854,7 +854,7 @@ function toggle(id) {
 
 <h1>Configuration <a href="http://sites.google.com/a/chromium.org/dev/chrome-benchmarking-extension" target="_blank" style="float:right"><font size="4%">Help</font></a></h1>
 
-<span>Iterations</span> 
+<span>Iterations</span>
 <input id="iterations" type="text" style="text-align:right" size="4">
 Clear Connections?<input id="clearconns" type="checkbox">
 Clear Cache?<input id="clearcache" type="checkbox">
@@ -875,7 +875,7 @@ Enable Spdy?<input id="enablespdy" type="checkbox">
 <input id="expand" type="button" value="Show More Details" onclick="expand()">
 <input id="clearSelected" type="button" value="Clear Selected" disabled="true" onclick="showConfirm()">
 <input id="clearAll" type="button" value="Clear All" onclick="showConfirm()">
-<input type="button" value="Export As .csv" onclick="export()">
+<input type="button" value="Export As .csv" onclick="exportHtml()">
 <table id="t" class="sortable" width="100%">
   <tr>
   <th width=35 class="nobg"></th>
