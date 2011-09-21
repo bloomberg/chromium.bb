@@ -16,7 +16,7 @@
     <script type="text/javascript" src="js/api_page_generator.js"></script>
     <script type="text/javascript" src="js/bootstrap.js"></script>
     <script type="text/javascript" src="js/sidebar.js"></script>
-  <title>chrome.experimental.devtools.network
+  <title>chrome.experimental.devtools.console
 API - Google Chrome Extensions - Google Code</title></head>
   <body>  <div id="gc-container" class="labs">
       <div id="devModeWarning">
@@ -251,30 +251,23 @@ API - Google Chrome Extensions - Google Code</title></head>
 
     <div class="g-unit" id="gc-pagecontent">
       <div id="pageTitle">
-        <h1 class="page_title">chrome.experimental.devtools.network
+        <h1 class="page_title">chrome.experimental.devtools.console
 API</h1>
       </div>
         <!-- TABLE OF CONTENTS -->
         <div id="toc">
           <h2>Contents</h2>
           <ol>
-            <li>
-              <a href="#H2-0">Notes</a>
+            <li style="display: none; ">
+              <a>h2Name</a>
               <ol>
-                <li style="display: none; ">
-                  <a>h3Name</a>
-                </li>
-              </ol>
-            </li><li>
-              <a href="#overview-examples">Examples</a>
-              <ol>
-                <li style="display: none; ">
+                <li>
                   <a>h3Name</a>
                 </li>
               </ol>
             </li>
               <li>
-                <a href="#apiReference">API reference: chrome.experimental.devtools.network</a>
+                <a href="#apiReference">API reference: chrome.experimental.devtools.console</a>
                 <ol>
                   <li style="display: none; ">
                     <a href="#properties">Properties</a>
@@ -288,7 +281,9 @@ API</h1>
                     <a href="#global-methods">Methods</a>
                     <ol>
                       <li>
-                        <a href="#method-getHAR">getHAR</a>
+                        <a href="#method-addMessage">addMessage</a>
+                      </li><li>
+                        <a href="#method-getMessages">getMessages</a>
                       </li>
                     </ol>
                   </li>
@@ -296,9 +291,7 @@ API</h1>
                     <a href="#global-events">Events</a>
                     <ol>
                       <li>
-                        <a href="#event-onNavigated">onNavigated</a>
-                      </li><li>
-                        <a href="#event-onRequestFinished">onRequestFinished</a>
+                        <a href="#event-onMessageAdded">onMessageAdded</a>
                       </li>
                     </ol>
                   </li>
@@ -306,7 +299,9 @@ API</h1>
                     <a href="#types">Types</a>
                     <ol>
                       <li>
-                        <a href="#type-Request">Request</a>
+                        <a href="#type-ConsoleMessage">ConsoleMessage</a>
+                      </li><li>
+                        <a href="#type-Severity">Severity</a>
                       </li>
                     </ol>
                   </li>
@@ -323,62 +318,22 @@ API</h1>
 
         <!-- STATIC CONTENT PLACEHOLDER -->
         <div id="static"><!-- BEGIN AUTHORED CONTENT -->
-<div id="pageData-name" class="pageData">chrome.experimental.devtools.network
+<div id="pageData-name" class="pageData">chrome.experimental.devtools.console
 API</div>
-<p id="classSummary">
-Use the <code>chrome.experimental.devtools.network</code> module to retrieve
-the information about network requests displayed by DevTools' Network panel.
-</p><p>
-See <a href="experimental.devtools.html">DevTools APIs summary</a> for
-general introduction to using Developer Tools APIs.
-</p>
-
-<a name="H2-0"></a><h2>Notes</h2>
-
 <p>
-Network requests information is represented in the HTTP Archive format
-(<em>HAR</em>). The description of HAR is outside of scope of this document,
-please refer to <a href="http://groups.google.com/group/http-archive-specification/web/har-1-2-spec">
-HAR v1.2 Specification</a>.
-</p><p>
-In terms of HAR, the
-<code>chrome.experimental.devtools.network.getHAR()</code> method returns
-entire <em>HAR log</em>, while
-<code>chrome.experimental.devtools.network.onRequestFinished</code> event
-provides <em>HAR entry</em> as an argument to the event callback.
+Use <code>chrome.experimental.devtools.console</code> to retrieve messages from
+the inspected page console and post messages there. <code>getMessages()</code>
+returns the list of messages on the console, <code>onMessageAdded</code>
+event provides notifications on new messages, and <code>addMessage()</code>
+allows an extension to add new messages.
 </p>
-<p>Note that request content is not provided as part of HAR for efficieny
-reasons. You may call request's <code>getContent()</code> method to retrieve
-content.
-</p><p>Some requests may be missing in the array of entries returned by <code>
-getHAR()</code> in case Developer Tools window was opened after the page was
-loaded — reload the page to get all requests. In general, the list of
-requests returned by <code>getHAR()</code> should match that displayed by
-the Network panel.
-</p><h2 id="overview-examples">Examples</h2>
-
-<p>The following code logs URLs of all images larger than 40KB as they are
-loaded:</p>
-
-<pre>chrome.experimental.devtools.network.onRequestFinished.addListener(
-    function(request) {
-      if (request.response.bodySize &gt; 40*1024)
-      experimental.chrome.devtools.log("Large image: " + request.request.url);
-});
-</pre>
-
-<p>
-You can find more examples that use this API in
-<a href="samples.html#devtools.network">Samples</a>.
-</p>
-
 <!-- END AUTHORED CONTENT -->
 </div>
 
         <!-- API PAGE -->
         <div class="apiPage">
         <a name="apiReference"></a>
-        <h2>API reference: chrome.experimental.devtools.network</h2>
+        <h2>API reference: chrome.experimental.devtools.console</h2>
 
           <!-- PROPERTIES -->
           <div class="apiGroup" style="display: none; ">
@@ -405,17 +360,215 @@ You can find more examples that use this API in
 
             <!-- iterates over all functions -->
             <div class="apiItem">
-              <a name="method-getHAR"></a> <!-- method-anchor -->
-              <h4>getHAR</h4>
+              <a name="method-addMessage"></a> <!-- method-anchor -->
+              <h4>addMessage</h4>
 
               <div class="summary"><span style="display: none; ">void</span>
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.experimental.devtools.network.getHAR</span>(<span class="null"><span style="display: none; ">, </span><span>function</span>
+                  <span>chrome.experimental.devtools.console.addMessage</span>(<span class="null"><span style="display: none; ">, </span><span>Severity</span>
+                      <var><span>severity</span></var></span><span class="null"><span>, </span><span>string</span>
+                      <var><span>text</span></var></span>)</div>
+
+              <div class="description">
+                <p class="todo" style="display: none; ">Undocumented.</p>
+                <p>Adds a message to the console.</p>
+
+                <!-- PARAMETERS -->
+                <h4>Parameters</h4>
+                <dl>
+                  <div>
+                    <div>
+          <dt>
+            <var>severity</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional" style="display: none; ">optional</span>
+                    <span class="enum" style="display: none; ">enumerated</span>
+                    <span id="typeTemplate">
+                      <span>
+                        <a href="experimental.devtools.console.html#type-Severity">Severity</a>
+                      </span>
+                      <span style="display: none; ">
+                        <span>
+                          array of <span><span></span></span>
+                        </span>
+                        <span>paramType</span>
+                        <span></span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
+          <dd class="todo" style="display: none; ">
+            Undocumented.
+          </dd>
+          <dd>The severity of the message.</dd>
+          <dd style="display: none; ">
+            This parameter was added in version
+            <b><span></span></b>.
+            You must omit this parameter in earlier versions,
+            and you may omit it in any version.  If you require this
+            parameter, the manifest key
+            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
+            can ensure that your extension won't be run in an earlier browser version.
+          </dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd style="display: none; ">
+            <dl>
+              <div>
+                <div>
+                </div>
+              </div>
+            </dl>
+          </dd>
+
+          <!-- OBJECT METHODS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+          <!-- OBJECT EVENT FIELDS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+          <!-- FUNCTION PARAMETERS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+        </div>
+                  </div><div>
+                    <div>
+          <dt>
+            <var>text</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional" style="display: none; ">optional</span>
+                    <span class="enum" style="display: none; ">enumerated</span>
+                    <span id="typeTemplate">
+                      <span style="display: none; ">
+                        <a> Type</a>
+                      </span>
+                      <span>
+                        <span style="display: none; ">
+                          array of <span><span></span></span>
+                        </span>
+                        <span>string</span>
+                        <span style="display: none; "></span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
+          <dd class="todo" style="display: none; ">
+            Undocumented.
+          </dd>
+          <dd>The text of the message.</dd>
+          <dd style="display: none; ">
+            This parameter was added in version
+            <b><span></span></b>.
+            You must omit this parameter in earlier versions,
+            and you may omit it in any version.  If you require this
+            parameter, the manifest key
+            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
+            can ensure that your extension won't be run in an earlier browser version.
+          </dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd style="display: none; ">
+            <dl>
+              <div>
+                <div>
+                </div>
+              </div>
+            </dl>
+          </dd>
+
+          <!-- OBJECT METHODS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+          <!-- OBJECT EVENT FIELDS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+          <!-- FUNCTION PARAMETERS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+        </div>
+                  </div>
+                </dl>
+
+                <!-- RETURNS -->
+                <h4 style="display: none; ">Returns</h4>
+                <dl>
+                  <div style="display: none; ">
+                    <div>
+                    </div>
+                  </div>
+                </dl>
+
+                <!-- CALLBACK -->
+                <div style="display: none; ">
+                  <div>
+                  <h4>Callback function</h4>
+                  <p>
+                    The callback <em>parameter</em> should specify a function
+                    that looks like this:
+                  </p>
+                  <p>
+                    If you specify the <em>callback</em> parameter, it should
+                    specify a function that looks like this:
+                  </p>
+
+                  <!-- Note: intentionally longer 80 columns -->
+                  <pre>function(<span>Type param1, Type param2</span>) <span class="subdued">{...}</span>;</pre>
+                  <dl>
+                    <div>
+                      <div>
+                      </div>
+                    </div>
+                  </dl>
+                  </div>
+                </div>
+
+                <!-- MIN_VERSION -->
+                <p style="display: none; ">
+                  This function was added in version <b><span></span></b>.
+                  If you require this function, the manifest key
+                  <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
+                  can ensure that your extension won't be run in an earlier browser version.
+                </p>
+              </div> <!-- /description -->
+
+            </div><div class="apiItem">
+              <a name="method-getMessages"></a> <!-- method-anchor -->
+              <h4>getMessages</h4>
+
+              <div class="summary"><span style="display: none; ">void</span>
+                  <!-- Note: intentionally longer 80 columns -->
+                  <span>chrome.experimental.devtools.console.getMessages</span>(<span class="null"><span style="display: none; ">, </span><span>function</span>
                       <var><span>callback</span></var></span>)</div>
 
               <div class="description">
                 <p class="todo" style="display: none; ">Undocumented.</p>
-                <p>Returns HAR archive that contains all known network requests.</p>
+                <p>Retrieves console messages.</p>
 
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>
@@ -514,12 +667,12 @@ You can find more examples that use this API in
                   </p>
 
                   <!-- Note: intentionally longer 80 columns -->
-                  <pre>function(<span>object har</span>) <span class="subdued">{...}</span>;</pre>
+                  <pre>function(<span>array of ConsoleMessage messages</span>) <span class="subdued">{...}</span>;</pre>
                   <dl>
                     <div>
                       <div>
           <dt>
-            <var>har</var>
+            <var>messages</var>
               <em>
 
                 <!-- TYPE -->
@@ -532,10 +685,21 @@ You can find more examples that use this API in
                         <a> Type</a>
                       </span>
                       <span>
-                        <span style="display: none; ">
+                        <span>
+                          array of <span><span>
+                      <span>
+                        <a href="experimental.devtools.console.html#type-ConsoleMessage">ConsoleMessage</a>
+                      </span>
+                      <span style="display: none; ">
+                        <span>
                           array of <span><span></span></span>
                         </span>
-                        <span>object</span>
+                        <span>paramType</span>
+                        <span></span>
+                      </span>
+                    </span></span>
+                        </span>
+                        <span style="display: none; ">paramType</span>
                         <span style="display: none; "></span>
                       </span>
                     </span>
@@ -547,7 +711,7 @@ You can find more examples that use this API in
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>A HAR archive. See HAR specification for details.</dd>
+          <dd>Console messages.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -608,17 +772,17 @@ You can find more examples that use this API in
             <h3>Events</h3>
             <!-- iterates over all events -->
             <div class="apiItem">
-              <a name="event-onNavigated"></a>
-              <h4>onNavigated</h4>
+              <a name="event-onMessageAdded"></a>
+              <h4>onMessageAdded</h4>
 
               <div class="summary">
                 <!-- Note: intentionally longer 80 columns -->
-                <span class="subdued">chrome.experimental.devtools.network.</span><span>onNavigated</span><span class="subdued">.addListener</span>(function(<span>string url</span>) <span class="subdued">{...}</span><span></span>);
+                <span class="subdued">chrome.experimental.devtools.console.</span><span>onMessageAdded</span><span class="subdued">.addListener</span>(function(<span>ConsoleMessage message</span>) <span class="subdued">{...}</span><span></span>);
               </div>
 
               <div class="description">
                 <p class="todo" style="display: none; ">Undocumented.</p>
-                <p>Fired when the inspected window navigates to a new page.</p>
+                <p>Fired when a new message is added to the console.</p>
 
                 <!-- LISTENER PARAMETERS -->
                 <div>
@@ -627,117 +791,7 @@ You can find more examples that use this API in
                     <div>
                       <div>
           <dt>
-            <var>url</var>
-              <em>
-
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
-                    <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
-                      <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
-                        <span>string</span>
-                        <span style="display: none; "></span>
-                      </span>
-                    </span>
-                  )
-                </div>
-
-              </em>
-          </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
-          <dd>URL of the new page.</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
-          <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
-          <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
-          <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
-          <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
-        </div>
-                    </div>
-                  </dl>
-                </div>
-
-                <!-- EXTRA PARAMETERS -->
-                <div style="display: none; ">
-                  <h4>Extra parameters to addListener</h4>
-                  <dl>
-                    <div>
-                      <div>
-                      </div>
-                    </div>
-                  </dl>
-                </div>
-
-                <!-- LISTENER RETURN VALUE -->
-                <h4 style="display: none; ">Listener returns</h4>
-                <dl>
-                  <div style="display: none; ">
-                    <div>
-                    </div>
-                  </div>
-                </dl>
-
-              </div> <!-- /description -->
-            </div><div class="apiItem">
-              <a name="event-onRequestFinished"></a>
-              <h4>onRequestFinished</h4>
-
-              <div class="summary">
-                <!-- Note: intentionally longer 80 columns -->
-                <span class="subdued">chrome.experimental.devtools.network.</span><span>onRequestFinished</span><span class="subdued">.addListener</span>(function(<span>Request request</span>) <span class="subdued">{...}</span><span></span>);
-              </div>
-
-              <div class="description">
-                <p class="todo" style="display: none; ">Undocumented.</p>
-                <p>Fired when a network request is finished and all request data are available.</p>
-
-                <!-- LISTENER PARAMETERS -->
-                <div>
-                  <h4>Listener parameters</h4>
-                  <dl>
-                    <div>
-                      <div>
-          <dt>
-            <var>request</var>
+            <var>message</var>
               <em>
 
                 <!-- TYPE -->
@@ -747,7 +801,7 @@ You can find more examples that use this API in
                     <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
                       <span>
-                        <a href="experimental.devtools.network.html#type-Request">Request</a>
+                        <a href="experimental.devtools.console.html#type-ConsoleMessage">ConsoleMessage</a>
                       </span>
                       <span style="display: none; ">
                         <span>
@@ -762,10 +816,12 @@ You can find more examples that use this API in
 
               </em>
           </dt>
-          <dd class="todo" style="display: none; ">
+          <dd class="todo">
             Undocumented.
           </dd>
-          <dd>Description of a network request in the form of a HAR entry. See HAR specification for details.</dd>
+          <dd style="display: none; ">
+            Description of this parameter from the json schema.
+          </dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -838,8 +894,8 @@ You can find more examples that use this API in
 
             <!-- iterates over all types -->
             <div class="apiItem">
-              <a name="type-Request"></a>
-              <h4>Request</h4>
+              <a name="type-ConsoleMessage"></a>
+              <h4>ConsoleMessage</h4>
 
               <div>
           <dt>
@@ -871,7 +927,7 @@ You can find more examples that use this API in
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>Represents a network request for a document resource (script, image etc). See HAR Specification for reference.</dd>
+          <dd>A console message.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -883,42 +939,12 @@ You can find more examples that use this API in
           </dd>
 
           <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
-          <!-- OBJECT METHODS -->
           <dd>
-            <div class="apiGroup">
-            <a name="global-Request-methods"></a>
-            <h3>Methods of Request</h3>
-
-            <!-- iterates over all functions -->
-            <div class="apiItem">
-              <a name="method-Request-getContent"></a> <!-- method-anchor -->
-              <h4>getContent</h4>
-
-              <div class="summary"><span style="display: none; ">void</span>
-                  <!-- Note: intentionally longer 80 columns -->
-                  <span>request.getContent</span>(<span class="null"><span style="display: none; ">, </span><span>function</span>
-                      <var><span>callback</span></var></span>)</div>
-
-              <div class="description">
-                <p class="todo" style="display: none; ">Undocumented.</p>
-                <p>Returns content of the response body.</p>
-
-                <!-- PARAMETERS -->
-                <h4>Parameters</h4>
-                <dl>
-                  <div>
-                    <div>
+            <dl>
+              <div>
+                <div>
           <dt>
-            <var>callback</var>
+            <var>severity</var>
               <em>
 
                 <!-- TYPE -->
@@ -927,15 +953,15 @@ You can find more examples that use this API in
                     <span class="optional" style="display: none; ">optional</span>
                     <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
+                        <a href="experimental.devtools.console.html#type-Severity">Severity</a>
+                      </span>
+                      <span style="display: none; ">
+                        <span>
                           array of <span><span></span></span>
                         </span>
-                        <span>function</span>
-                        <span style="display: none; "></span>
+                        <span>paramType</span>
+                        <span></span>
                       </span>
                     </span>
                   )
@@ -946,7 +972,7 @@ You can find more examples that use this API in
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>A function that is called upon request completion.</dd>
+          <dd>Message severity.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -983,38 +1009,10 @@ You can find more examples that use this API in
           </dd>
 
         </div>
-                  </div>
-                </dl>
-
-                <!-- RETURNS -->
-                <h4 style="display: none; ">Returns</h4>
-                <dl>
-                  <div style="display: none; ">
-                    <div>
-                    </div>
-                  </div>
-                </dl>
-
-                <!-- CALLBACK -->
+              </div><div>
                 <div>
-                  <div>
-                  <h4>Callback function</h4>
-                  <p>
-                    The callback <em>parameter</em> should specify a function
-                    that looks like this:
-                  </p>
-                  <p style="display: none; ">
-                    If you specify the <em>callback</em> parameter, it should
-                    specify a function that looks like this:
-                  </p>
-
-                  <!-- Note: intentionally longer 80 columns -->
-                  <pre>function(<span>string content, string encoding</span>) <span class="subdued">{...}</span>;</pre>
-                  <dl>
-                    <div>
-                      <div>
           <dt>
-            <var>content</var>
+            <var>text</var>
               <em>
 
                 <!-- TYPE -->
@@ -1042,7 +1040,7 @@ You can find more examples that use this API in
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>Content of the response body (potentially encoded).</dd>
+          <dd>The text of the console message, as represented by the first argument to the console.log() or a similar method (no parameter substitution  performed).</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -1079,10 +1077,217 @@ You can find more examples that use this API in
           </dd>
 
         </div>
-                    </div><div>
-                      <div>
+              </div><div>
+                <div>
           <dt>
-            <var>encoding</var>
+            <var>url</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span class="enum" style="display: none; ">enumerated</span>
+                    <span id="typeTemplate">
+                      <span style="display: none; ">
+                        <a> Type</a>
+                      </span>
+                      <span>
+                        <span style="display: none; ">
+                          array of <span><span></span></span>
+                        </span>
+                        <span>string</span>
+                        <span style="display: none; "></span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
+          <dd class="todo" style="display: none; ">
+            Undocumented.
+          </dd>
+          <dd>The URL of the script that originated the message, if available.</dd>
+          <dd style="display: none; ">
+            This parameter was added in version
+            <b><span></span></b>.
+            You must omit this parameter in earlier versions,
+            and you may omit it in any version.  If you require this
+            parameter, the manifest key
+            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
+            can ensure that your extension won't be run in an earlier browser version.
+          </dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd style="display: none; ">
+            <dl>
+              <div>
+                <div>
+                </div>
+              </div>
+            </dl>
+          </dd>
+
+          <!-- OBJECT METHODS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+          <!-- OBJECT EVENT FIELDS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+          <!-- FUNCTION PARAMETERS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+        </div>
+              </div><div>
+                <div>
+          <dt>
+            <var>line</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span class="enum" style="display: none; ">enumerated</span>
+                    <span id="typeTemplate">
+                      <span style="display: none; ">
+                        <a> Type</a>
+                      </span>
+                      <span>
+                        <span style="display: none; ">
+                          array of <span><span></span></span>
+                        </span>
+                        <span>number</span>
+                        <span style="display: none; "></span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
+          <dd class="todo" style="display: none; ">
+            Undocumented.
+          </dd>
+          <dd>The number of the line where the message originated, if available.</dd>
+          <dd style="display: none; ">
+            This parameter was added in version
+            <b><span></span></b>.
+            You must omit this parameter in earlier versions,
+            and you may omit it in any version.  If you require this
+            parameter, the manifest key
+            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
+            can ensure that your extension won't be run in an earlier browser version.
+          </dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd style="display: none; ">
+            <dl>
+              <div>
+                <div>
+                </div>
+              </div>
+            </dl>
+          </dd>
+
+          <!-- OBJECT METHODS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+          <!-- OBJECT EVENT FIELDS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+          <!-- FUNCTION PARAMETERS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+        </div>
+              </div>
+            </dl>
+          </dd>
+
+          <!-- OBJECT METHODS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+          <!-- OBJECT EVENT FIELDS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+          <!-- FUNCTION PARAMETERS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+        </div>
+
+            </div><div class="apiItem">
+              <a name="type-Severity"></a>
+              <h4>Severity</h4>
+
+              <div>
+          <dt>
+            <var style="display: none; ">paramName</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional" style="display: none; ">optional</span>
+                    <span class="enum" style="display: none; ">enumerated</span>
+                    <span id="typeTemplate">
+                      <span style="display: none; ">
+                        <a> Type</a>
+                      </span>
+                      <span>
+                        <span style="display: none; ">
+                          array of <span><span></span></span>
+                        </span>
+                        <span>object</span>
+                        <span style="display: none; "></span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <dd style="display: none; ">
+            Description of this parameter from the json schema.
+          </dd>
+          <dd style="display: none; ">
+            This parameter was added in version
+            <b><span></span></b>.
+            You must omit this parameter in earlier versions,
+            and you may omit it in any version.  If you require this
+            parameter, the manifest key
+            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
+            can ensure that your extension won't be run in an earlier browser version.
+          </dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd>
+            <dl>
+              <div>
+                <div>
+          <dt>
+            <var>Tip</var>
               <em>
 
                 <!-- TYPE -->
@@ -1107,10 +1312,12 @@ You can find more examples that use this API in
 
               </em>
           </dt>
-          <dd class="todo" style="display: none; ">
+          <dd class="todo">
             Undocumented.
           </dd>
-          <dd>Empty if content is not encoded, encoding name otherwise. Currently, only base64 is supported.</dd>
+          <dd style="display: none; ">
+            Description of this parameter from the json schema.
+          </dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -1147,23 +1354,293 @@ You can find more examples that use this API in
           </dd>
 
         </div>
-                    </div>
-                  </dl>
-                  </div>
+              </div><div>
+                <div>
+          <dt>
+            <var>Debug</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional" style="display: none; ">optional</span>
+                    <span class="enum" style="display: none; ">enumerated</span>
+                    <span id="typeTemplate">
+                      <span style="display: none; ">
+                        <a> Type</a>
+                      </span>
+                      <span>
+                        <span style="display: none; ">
+                          array of <span><span></span></span>
+                        </span>
+                        <span>string</span>
+                        <span style="display: none; "></span>
+                      </span>
+                    </span>
+                  )
                 </div>
 
-                <!-- MIN_VERSION -->
-                <p style="display: none; ">
-                  This function was added in version <b><span></span></b>.
-                  If you require this function, the manifest key
-                  <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-                  can ensure that your extension won't be run in an earlier browser version.
-                </p>
-              </div> <!-- /description -->
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <dd style="display: none; ">
+            Description of this parameter from the json schema.
+          </dd>
+          <dd style="display: none; ">
+            This parameter was added in version
+            <b><span></span></b>.
+            You must omit this parameter in earlier versions,
+            and you may omit it in any version.  If you require this
+            parameter, the manifest key
+            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
+            can ensure that your extension won't be run in an earlier browser version.
+          </dd>
 
-            </div>  <!-- /apiItem -->
+          <!-- OBJECT PROPERTIES -->
+          <dd style="display: none; ">
+            <dl>
+              <div>
+                <div>
+                </div>
+              </div>
+            </dl>
+          </dd>
 
-          </div>
+          <!-- OBJECT METHODS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+          <!-- OBJECT EVENT FIELDS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+          <!-- FUNCTION PARAMETERS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+        </div>
+              </div><div>
+                <div>
+          <dt>
+            <var>Log</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional" style="display: none; ">optional</span>
+                    <span class="enum" style="display: none; ">enumerated</span>
+                    <span id="typeTemplate">
+                      <span style="display: none; ">
+                        <a> Type</a>
+                      </span>
+                      <span>
+                        <span style="display: none; ">
+                          array of <span><span></span></span>
+                        </span>
+                        <span>string</span>
+                        <span style="display: none; "></span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <dd style="display: none; ">
+            Description of this parameter from the json schema.
+          </dd>
+          <dd style="display: none; ">
+            This parameter was added in version
+            <b><span></span></b>.
+            You must omit this parameter in earlier versions,
+            and you may omit it in any version.  If you require this
+            parameter, the manifest key
+            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
+            can ensure that your extension won't be run in an earlier browser version.
+          </dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd style="display: none; ">
+            <dl>
+              <div>
+                <div>
+                </div>
+              </div>
+            </dl>
+          </dd>
+
+          <!-- OBJECT METHODS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+          <!-- OBJECT EVENT FIELDS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+          <!-- FUNCTION PARAMETERS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+        </div>
+              </div><div>
+                <div>
+          <dt>
+            <var>Warning</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional" style="display: none; ">optional</span>
+                    <span class="enum" style="display: none; ">enumerated</span>
+                    <span id="typeTemplate">
+                      <span style="display: none; ">
+                        <a> Type</a>
+                      </span>
+                      <span>
+                        <span style="display: none; ">
+                          array of <span><span></span></span>
+                        </span>
+                        <span>string</span>
+                        <span style="display: none; "></span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <dd style="display: none; ">
+            Description of this parameter from the json schema.
+          </dd>
+          <dd style="display: none; ">
+            This parameter was added in version
+            <b><span></span></b>.
+            You must omit this parameter in earlier versions,
+            and you may omit it in any version.  If you require this
+            parameter, the manifest key
+            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
+            can ensure that your extension won't be run in an earlier browser version.
+          </dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd style="display: none; ">
+            <dl>
+              <div>
+                <div>
+                </div>
+              </div>
+            </dl>
+          </dd>
+
+          <!-- OBJECT METHODS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+          <!-- OBJECT EVENT FIELDS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+          <!-- FUNCTION PARAMETERS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+        </div>
+              </div><div>
+                <div>
+          <dt>
+            <var>Error</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional" style="display: none; ">optional</span>
+                    <span class="enum" style="display: none; ">enumerated</span>
+                    <span id="typeTemplate">
+                      <span style="display: none; ">
+                        <a> Type</a>
+                      </span>
+                      <span>
+                        <span style="display: none; ">
+                          array of <span><span></span></span>
+                        </span>
+                        <span>string</span>
+                        <span style="display: none; "></span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <dd style="display: none; ">
+            Description of this parameter from the json schema.
+          </dd>
+          <dd style="display: none; ">
+            This parameter was added in version
+            <b><span></span></b>.
+            You must omit this parameter in earlier versions,
+            and you may omit it in any version.  If you require this
+            parameter, the manifest key
+            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
+            can ensure that your extension won't be run in an earlier browser version.
+          </dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd style="display: none; ">
+            <dl>
+              <div>
+                <div>
+                </div>
+              </div>
+            </dl>
+          </dd>
+
+          <!-- OBJECT METHODS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+          <!-- OBJECT EVENT FIELDS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+          <!-- FUNCTION PARAMETERS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+        </div>
+              </div>
+            </dl>
+          </dd>
+
+          <!-- OBJECT METHODS -->
+          <dd style="display: none; ">
+            <div></div>
           </dd>
 
           <!-- OBJECT EVENT FIELDS -->

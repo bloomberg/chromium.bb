@@ -56,6 +56,13 @@ The <code>reload()</code> may be used to reload the inspected page.
 Additionally, a user agent string may be specifcied, which will cause Chrome
 to use the given string in the User-Agent HTTP header while fetching the page
 and its resources, and return it to the scripts running in that page.
+</p><p>
+Use the <code>getResources()</code> call and the <code>onResourceContent</code>
+event to obtain the list of resources (documents, stylesheets, scripts, images
+etc) within the inspected page. The <code>getContent()</code> and <code
+>setContent()</code> methods of the <code>Resource</code> class along with the
+<code>onResourceContentCommitted</code> event may be used to support
+modification of the resource content, e.g. by an external editor.
 </p>
 
 <h2 id="overview-examples">Examples</h2>
