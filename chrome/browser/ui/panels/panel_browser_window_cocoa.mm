@@ -10,6 +10,7 @@
 #import "chrome/browser/ui/cocoa/browser_window_utils.h"
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
+#include "chrome/browser/ui/panels/panel_mouse_watcher.h"
 #import "chrome/browser/ui/panels/panel_titlebar_view_cocoa.h"
 #import "chrome/browser/ui/panels/panel_window_controller_cocoa.h"
 #include "content/common/native_web_keyboard_event.h"
@@ -58,6 +59,9 @@ PanelBrowserWindowCocoa::PanelBrowserWindowCocoa(Browser* browser,
 }
 
 PanelBrowserWindowCocoa::~PanelBrowserWindowCocoa() {
+  PanelMouseWatcher* watcher = PanelMouseWatcher::GetInstance();
+  if (watcher->IsSubscribed(this))
+    watcher->RemoveSubscriber(this);
 }
 
 bool PanelBrowserWindowCocoa::isClosed() {
@@ -109,13 +113,15 @@ void PanelBrowserWindowCocoa::OnPanelExpansionStateChanged(
   int height;  // New height of the Panel in screen coordinates.
   switch (expansion_state) {
     case Panel::EXPANDED:
+      PanelMouseWatcher::GetInstance()->RemoveSubscriber(this);
       height = restored_height_;
       break;
     case Panel::TITLE_ONLY:
       height = [controller_ titlebarHeightInScreenCoordinates];
       break;
     case Panel::MINIMIZED:
-      height = 3;  // TODO(dimich) merge with GTK patch which defines it better.
+      PanelMouseWatcher::GetInstance()->AddSubscriber(this);
+      height = PanelManager::minimized_panel_height();
       break;
     default:
       NOTREACHED();
@@ -133,10 +139,11 @@ void PanelBrowserWindowCocoa::OnPanelExpansionStateChanged(
   SetPanelBounds(bounds);
 }
 
+// Coordinates are in gfx coordinate system (screen, with 0,0 at the top left).
 bool PanelBrowserWindowCocoa::ShouldBringUpPanelTitlebar(int mouse_x,
                                                          int mouse_y) const {
-  NOTIMPLEMENTED();
-  return false;
+  return bounds_.x() <= mouse_x && mouse_x <= bounds_.right() &&
+      mouse_y >= bounds_.y();
 }
 
 void PanelBrowserWindowCocoa::ClosePanel() {
@@ -300,7 +307,7 @@ NativePanelTesting* NativePanelTesting::Create(NativePanel* native_panel) {
 
 // static
 PanelMouseWatcher* NativePanelTesting::GetPanelMouseWatcherInstance() {
-  return NULL;
+  return PanelMouseWatcher::GetInstance();
 }
 
 NativePanelTestingCocoa::NativePanelTestingCocoa(NativePanel* native_panel)
@@ -332,12 +339,13 @@ void NativePanelTestingCocoa::FinishDragTitlebar() {
   [titlebar() finishDragTitlebar];
 }
 
+// TODO(dimich) this method is platform-independent. Reuse it.
 void NativePanelTestingCocoa::SetMousePositionForMinimizeRestore(
     const gfx::Point& hover_point) {
-  NOTIMPLEMENTED();
+  PanelMouseWatcher::GetInstance()->HandleMouseMovement(hover_point);
+  MessageLoopForUI::current()->RunAllPending();
 }
 
 int NativePanelTestingCocoa::TitleOnlyHeight() const {
-  NOTIMPLEMENTED();
-  return -1;
+  return [native_panel_window_->controller_ titlebarHeightInScreeenCoordinates];
 }

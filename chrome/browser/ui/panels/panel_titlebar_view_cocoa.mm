@@ -24,7 +24,9 @@ const int kRoundedCornerSize = 3;
 const int kCloseButtonLeftPadding = 8;
 
 // Used to implement TestingAPI
-static NSEvent* MakeMouseEvent(NSEventType type, NSPoint point) {
+static NSEvent* MakeMouseEvent(NSEventType type,
+                               NSPoint point,
+                               int clickCount) {
   return [NSEvent mouseEventWithType:type
                             location:point
                        modifierFlags:0
@@ -32,7 +34,7 @@ static NSEvent* MakeMouseEvent(NSEventType type, NSPoint point) {
                         windowNumber:0
                              context:nil
                          eventNumber:0
-                          clickCount:0
+                          clickCount:clickCount
                             pressure:0.0];
 }
 
@@ -347,12 +349,12 @@ static NSEvent* MakeMouseEvent(NSEventType type, NSPoint point) {
 }
 
 - (void)pressLeftMouseButtonTitlebar {
-  NSEvent* event = MakeMouseEvent(NSLeftMouseDown, NSZeroPoint);
+  NSEvent* event = MakeMouseEvent(NSLeftMouseDown, NSZeroPoint, 0);
   [self mouseDown:event];
 }
 
 - (void)releaseLeftMouseButtonTitlebar {
-  NSEvent* event = MakeMouseEvent(NSLeftMouseUp, NSZeroPoint);
+  NSEvent* event = MakeMouseEvent(NSLeftMouseUp, NSZeroPoint, 1);
   [self mouseUp:event];
 }
 

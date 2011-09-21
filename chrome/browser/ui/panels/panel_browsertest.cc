@@ -306,6 +306,12 @@ class PanelBrowserTest : public BasePanelBrowserTest {
   }
 
   void TestMinimizeRestore() {
+    // This constant is used to generate a point 'sufficiently higher then
+    // top edge of the panel'. On some platforms (Mac) we extend hover area
+    // a bit above the minimized panel as well, so it takes significant
+    // distance to 'move mouse out' of the hover-sensitive area.
+    const int kFarEnoughFromHoverArea = 153;
+
     std::vector<Panel*> panels = PanelManager::GetInstance()->panels();
     std::vector<gfx::Rect> test_begin_bounds = GetAllPanelsBounds();
     std::vector<gfx::Rect> expected_bounds = test_begin_bounds;
@@ -367,7 +373,8 @@ class PanelBrowserTest : public BasePanelBrowserTest {
       CheckExpansionStates(titlebar_exposed_states);
 
       // Hover mouse above the panel. Verify all panels are minimized.
-      hover_point.set_y(panels[index]->GetRestoredBounds().y() - 10);
+      hover_point.set_y(
+          panels[index]->GetRestoredBounds().y() - kFarEnoughFromHoverArea);
       native_panels_testing[index]->SetMousePositionForMinimizeRestore(
           hover_point);
       CheckPanelBounds(panels, minimized_bounds);
@@ -391,7 +398,8 @@ class PanelBrowserTest : public BasePanelBrowserTest {
       CheckExpansionStates(titlebar_exposed_states);
 
       // Hover mouse above panel.  Verify all panels are minimized.
-      hover_point.set_y(panels[index]->GetRestoredBounds().y() - 10);
+      hover_point.set_y(
+          panels[index]->GetRestoredBounds().y() - kFarEnoughFromHoverArea);
       native_panels_testing[index]->SetMousePositionForMinimizeRestore(
           hover_point);
       CheckPanelBounds(panels, minimized_bounds);
@@ -816,7 +824,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, AutoResize) {
   panel->Close();
 }
 
-#if defined(TOOLKIT_GTK)
+#if defined(TOOLKIT_GTK) || defined(OS_MACOSX)
 #define MAYBE_MinimizeRestore MinimizeRestore
 #else
 #define MAYBE_MinimizeRestore DISABLED_MinimizeRestore

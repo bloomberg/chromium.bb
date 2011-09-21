@@ -11,6 +11,7 @@ PanelMouseWatcher::PanelMouseWatcher()
 }
 
 PanelMouseWatcher::~PanelMouseWatcher() {
+  DCHECK(subscribers_.size() == 0);
 }
 
 void PanelMouseWatcher::AddSubscriber(NativePanel* native_panel) {

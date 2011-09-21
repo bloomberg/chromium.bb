@@ -87,6 +87,7 @@ class NativePanel {
 class NativePanelTesting {
  public:
   static NativePanelTesting* Create(NativePanel* native_panel);
+  // TODO(dimich) Remove this method, there is PanelMouseWatcher::GetInstance().
   static PanelMouseWatcher* GetPanelMouseWatcherInstance();
 
   // clang gives error on delete if the destructor is not virtual.
