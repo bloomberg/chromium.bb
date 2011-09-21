@@ -296,6 +296,28 @@ class FormatDeviceFunction
   DECLARE_EXTENSION_FUNCTION_NAME("fileBrowserPrivate.formatDevice");
 };
 
+class GetSizeStatsFunction
+    : public FileBrowserFunction {
+ public:
+  GetSizeStatsFunction();
+
+ protected:
+  virtual ~GetSizeStatsFunction();
+
+  // FileBrowserFunction overrides.
+  virtual bool RunImpl() OVERRIDE;
+  virtual void GetLocalPathsResponseOnUIThread(const FilePathList& files,
+                                               void* context) OVERRIDE;
+
+ private:
+  void GetSizeStatsCallbackOnUIThread(const char* mount_path,
+                                      size_t total_size_kb,
+                                      size_t remaining_size_kb);
+  void CallGetSizeStatsOnFileThread(const char* mount_path);
+
+  DECLARE_EXTENSION_FUNCTION_NAME("fileBrowserPrivate.getSizeStats");
+};
+
 // Retrieves devices meta-data. Expects volume's device path as an argument.
 class GetVolumeMetadataFunction
     : public SyncExtensionFunction {

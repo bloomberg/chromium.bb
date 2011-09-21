@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/cros/mount_library.h"
 
 #include <set>
+#include <sys/statvfs.h>
 #include <vector>
 
 #include "base/message_loop.h"
@@ -200,6 +201,25 @@ class MountLibraryImpl : public MountLibrary {
     CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     libcros_proxy_->CallUnmountPath(mount_path, &UnmountMountPointCallback,
                                     this);
+  }
+
+  virtual void GetSizeStatsOnFileThread(const char* mount_path,
+      size_t* total_size_kb, size_t* remaining_size_kb) OVERRIDE {
+    CHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+
+    uint64_t total_size_uint64 = 0;
+    uint64_t remaining_size_uint64 = 0;
+
+    struct statvfs stat;
+    if (statvfs(mount_path, &stat) == 0) {
+      total_size_uint64 =
+          static_cast<uint64_t>(stat.f_blocks) * stat.f_frsize;
+      remaining_size_uint64 =
+          static_cast<uint64_t>(stat.f_bfree) * stat.f_frsize;
+    }
+
+    *total_size_kb = static_cast<size_t>(total_size_uint64 / 1024);
+    *remaining_size_kb = static_cast<size_t>(remaining_size_uint64 / 1024);
   }
 
   virtual void FormatUnmountedDevice(const char* file_path) OVERRIDE {
@@ -789,6 +809,8 @@ class MountLibraryStubImpl : public MountLibrary {
   virtual void MountPath(const char* source_path, MountType type,
                          const MountPathOptions& options) OVERRIDE {}
   virtual void UnmountPath(const char* mount_path) OVERRIDE {}
+  virtual void GetSizeStatsOnFileThread(const char* mount_path,
+      size_t* total_size_kb, size_t* remaining_size_kb) OVERRIDE {}
   virtual void FormatUnmountedDevice(const char* device_path) OVERRIDE {}
   virtual void FormatMountedDevice(const char* mount_path) OVERRIDE {}
   virtual void UnmountDeviceRecursive(const char* device_path,

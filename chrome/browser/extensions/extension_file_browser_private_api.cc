@@ -1315,6 +1315,79 @@ bool GetMountPointsFunction::RunImpl() {
   return true;
 }
 
+GetSizeStatsFunction::GetSizeStatsFunction() {
+}
+
+GetSizeStatsFunction::~GetSizeStatsFunction() {
+}
+
+bool GetSizeStatsFunction::RunImpl() {
+  if (args_->GetSize() != 1) {
+    return false;
+  }
+
+  std::string mount_url;
+  if (!args_->GetString(0, &mount_url))
+    return false;
+
+  UrlList mount_paths;
+  mount_paths.push_back(GURL(mount_url));
+
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
+      NewRunnableMethod(this,
+          &GetSizeStatsFunction::GetLocalPathsOnFileThread,
+          mount_paths, reinterpret_cast<void*>(NULL)));
+  return true;
+}
+
+void GetSizeStatsFunction::GetLocalPathsResponseOnUIThread(
+    const FilePathList& files, void* context) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  if (files.size() != 1) {
+    SendResponse(false);
+    return;
+  }
+
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
+      NewRunnableMethod(this,
+          &GetSizeStatsFunction::CallGetSizeStatsOnFileThread,
+          files[0].value().c_str()));
+}
+
+void GetSizeStatsFunction::CallGetSizeStatsOnFileThread(
+    const char* mount_path) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+
+  size_t total_size_kb = 0;
+  size_t remaining_size_kb = 0;
+#ifdef OS_CHROMEOS
+  chromeos::CrosLibrary::Get()->GetMountLibrary()->GetSizeStatsOnFileThread(
+      mount_path, &total_size_kb, &remaining_size_kb);
+#endif
+
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      NewRunnableMethod(this,
+          &GetSizeStatsFunction::GetSizeStatsCallbackOnUIThread,
+          mount_path, total_size_kb, remaining_size_kb));
+}
+
+void GetSizeStatsFunction::GetSizeStatsCallbackOnUIThread(
+    const char* mount_path, size_t total_size_kb, size_t remaining_size_kb) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  base::DictionaryValue* sizes = new base::DictionaryValue();
+  result_.reset(sizes);
+
+  sizes->SetInteger("totalSizeKB", total_size_kb);
+  sizes->SetInteger("remainingSizeKB", remaining_size_kb);
+
+  SendResponse(true);
+}
+
 FormatDeviceFunction::FormatDeviceFunction() {
 }
 

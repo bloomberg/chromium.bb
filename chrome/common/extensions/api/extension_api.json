@@ -6755,6 +6755,21 @@
         }
       },
       {
+        "id": "MountPointSizeStats",
+        "type": "object",
+        "description": "Information about total and remaining size on the mount point.",
+        "properties": {
+          "totalSizeKB": {
+            "type": "integer",
+            "description": "Total available size on the mount point."
+          },
+          "remainingSizeKB": {
+            "type": "integer",
+            "description": "Remaining available size on the mount point."
+          }
+        }
+      },
+      {
         "id": "VolumeMetadata",
         "type": "object",
         "description": "Mounted disk volume metadata.",
@@ -7140,6 +7155,29 @@
                 "type": "array",
                 "items": {"$ref": "MountPointInfo"},
                 "description": "The list of MountPointInfo representing mounted devices."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "getSizeStats",
+        "description": "Retrieves total and remaining size of a mount point.",
+        "parameters": [
+          {
+            "name": "mountPath",
+            "type": "string",
+            "description": "Mount point path."
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "optional": false,
+            "parameters": [
+              {
+                "name" : "sizeStats",
+                "$ref": "MountPointSizeStats",
+                "description": "Name/value pairs of size stats."
               }
             ]
           }

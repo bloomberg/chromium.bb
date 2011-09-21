@@ -383,6 +383,7 @@ void FactoryRegistry::ResetFunctions() {
   RegisterFunction<AddMountFunction>();
   RegisterFunction<RemoveMountFunction>();
   RegisterFunction<GetMountPointsFunction>();
+  RegisterFunction<GetSizeStatsFunction>();
   RegisterFunction<FormatDeviceFunction>();
   RegisterFunction<ViewFilesFunction>();
 

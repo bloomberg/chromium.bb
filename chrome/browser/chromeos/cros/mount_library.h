@@ -190,6 +190,11 @@ class MountLibrary {
   // |path| is device's mount path.
   virtual void UnmountPath(const char* path) = 0;
 
+  // Retrieves total and remaining available size on |mount_path|.
+  virtual void GetSizeStatsOnFileThread(const char* mount_path,
+                                        size_t* total_size_kb,
+                                        size_t* remaining_size_kb) = 0;
+
   // Formats device given its file path.
   // Example: file_path: /dev/sdb1
   virtual void FormatUnmountedDevice(const char* file_path) = 0;
