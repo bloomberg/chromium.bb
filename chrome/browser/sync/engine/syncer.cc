@@ -23,13 +23,13 @@
 #include "chrome/browser/sync/engine/store_timestamps_command.h"
 #include "chrome/browser/sync/engine/syncer_end_command.h"
 #include "chrome/browser/sync/engine/syncer_types.h"
+#include "chrome/browser/sync/engine/syncer_util.h"
 #include "chrome/browser/sync/engine/syncproto.h"
 #include "chrome/browser/sync/engine/verify_updates_command.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/syncable-inl.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 
-using base::Time;
 using base::TimeDelta;
 using sync_pb::ClientCommand;
 using syncable::Blob;
@@ -344,8 +344,8 @@ void CopyServerFields(syncable::Entry* src, syncable::MutableEntry* dest) {
 void ClearServerData(syncable::MutableEntry* entry) {
   entry->Put(SERVER_NON_UNIQUE_NAME, "");
   entry->Put(SERVER_PARENT_ID, syncable::GetNullId());
-  entry->Put(SERVER_MTIME, Time());
-  entry->Put(SERVER_CTIME, Time());
+  entry->Put(SERVER_MTIME, 0);
+  entry->Put(SERVER_CTIME, 0);
   entry->Put(SERVER_VERSION, 0);
   entry->Put(SERVER_IS_DIR, false);
   entry->Put(SERVER_IS_DEL, false);

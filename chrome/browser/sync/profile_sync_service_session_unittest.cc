@@ -11,7 +11,6 @@
 #include "base/scoped_temp_dir.h"
 #include "base/stl_util.h"
 #include "base/task.h"
-#include "base/time.h"
 #include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sessions/session_service_test_helper.h"
@@ -316,8 +315,8 @@ TEST_F(ProfileSyncServiceSessionTest, WriteForeignSessionToNode) {
 
   // Update the server with the session specifics.
   {
-    model_associator_->AssociateForeignSpecifics(meta_specifics, base::Time());
-    model_associator_->AssociateForeignSpecifics(tab_specifics, base::Time());
+    model_associator_->AssociateForeignSpecifics(meta_specifics, 0);
+    model_associator_->AssociateForeignSpecifics(tab_specifics, 0);
   }
 
   // Check that the foreign session was associated and retrieve the data.

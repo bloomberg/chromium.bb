@@ -11,11 +11,11 @@
 
 #include "base/string_util.h"
 #include "chrome/browser/sync/engine/syncer_proto_util.h"
+#include "chrome/browser/sync/engine/syncer_util.h"
 #include "chrome/browser/sync/protocol/bookmark_specifics.pb.h"
 #include "chrome/browser/sync/sessions/sync_session.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 #include "chrome/browser/sync/syncable/syncable_changes_version.h"
-#include "chrome/browser/sync/util/time.h"
 
 using std::set;
 using std::string;
@@ -172,8 +172,10 @@ void BuildCommitCommand::ExecuteImpl(SyncSession* session) {
       DCHECK(id.ServerKnows()) << meta_entry;
       sync_entry->set_version(meta_entry.Get(syncable::BASE_VERSION));
     }
-    sync_entry->set_ctime(TimeToProtoTime(meta_entry.Get(syncable::CTIME)));
-    sync_entry->set_mtime(TimeToProtoTime(meta_entry.Get(syncable::MTIME)));
+    sync_entry->set_ctime(ClientTimeToServerTime(
+        meta_entry.Get(syncable::CTIME)));
+    sync_entry->set_mtime(ClientTimeToServerTime(
+        meta_entry.Get(syncable::MTIME)));
 
     // Deletion is final on the server, let's move things and then delete them.
     if (meta_entry.Get(IS_DEL)) {

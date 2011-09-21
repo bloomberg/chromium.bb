@@ -1150,14 +1150,6 @@ TEST_F(SyncableDirectoryTest, TestSimpleFieldsPreservedDuringSaveChanges) {
               update_post_save.ref((Int64Field)i))
               << "int64 field #" << i << " changed during save/load";
   }
-  for ( ; i < TIME_FIELDS_END ; ++i) {
-    EXPECT_EQ(create_pre_save.ref((TimeField)i),
-              create_post_save.ref((TimeField)i))
-              << "time field #" << i << " changed during save/load";
-    EXPECT_EQ(update_pre_save.ref((TimeField)i),
-              update_post_save.ref((TimeField)i))
-              << "time field #" << i << " changed during save/load";
-  }
   for ( ; i < ID_FIELDS_END ; ++i) {
     EXPECT_EQ(create_pre_save.ref((IdField)i),
               create_post_save.ref((IdField)i))

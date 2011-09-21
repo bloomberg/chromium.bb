@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,15 +23,15 @@ static const ColumnSpec g_metas_columns[] = {
   {"metahandle", "bigint primary key ON CONFLICT FAIL"},
   {"base_version", "bigint default " CHANGES_VERSION_STRING},
   {"server_version", "bigint default 0"},
-  {"server_position_in_parent", "bigint default 0"},
-  // This is the item ID that we store for the embedding application.
-  {"local_external_id", "bigint default 0"},
-  // These timestamps are kept in the same format as that of the
-  // protocol (ms since Unix epoch).
+  // These timestamps are kept in native file timestamp format.  It is
+  // up to the syncer to translate to Java time when syncing.
   {"mtime", "bigint default 0"},
   {"server_mtime", "bigint default 0"},
   {"ctime", "bigint default 0"},
   {"server_ctime", "bigint default 0"},
+  {"server_position_in_parent", "bigint default 0"},
+  // This is the item ID that we store for the embedding application.
+  {"local_external_id", "bigint default 0"},
   //////////////////////////////////////
   // Ids
   {"id", "varchar(255) default \"r\""},

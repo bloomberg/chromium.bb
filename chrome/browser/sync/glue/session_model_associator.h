@@ -18,7 +18,6 @@
 #include "base/observer_list.h"
 #include "base/stringprintf.h"
 #include "base/threading/non_thread_safe.h"
-#include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/sessions/session_id.h"
 #include "chrome/browser/sessions/session_service.h"
@@ -141,7 +140,7 @@ class SessionModelAssociator
 
   // Load and associate window and tab data for a foreign session
   bool AssociateForeignSpecifics(const sync_pb::SessionSpecifics& specifics,
-                                 const base::Time& modification_time);
+                                 int64 modification_time);
 
   // Removes a foreign session from our internal bookkeeping.
   void DisassociateForeignSession(const std::string& foreign_session_tag);
@@ -376,13 +375,13 @@ class SessionModelAssociator
   static void PopulateSessionWindowFromSpecifics(
       const std::string& foreign_session_tag,
       const sync_pb::SessionWindow& window,
-      const base::Time& mtime,
+      const int64 mtime,
       SessionWindow* session_window,
       SyncedSessionTracker* tracker);
 
   // Used to populate a session tab from the session specifics tab provided.
   static void PopulateSessionTabFromSpecifics(const sync_pb::SessionTab& tab,
-                                              const base::Time& mtime,
+                                              const int64 mtime,
                                               SessionTab* session_tab);
 
   // Used to populate a session tab from the session specifics tab provided.

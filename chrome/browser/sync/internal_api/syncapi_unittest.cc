@@ -50,7 +50,6 @@
 #include "chrome/browser/sync/syncable/syncable_id.h"
 #include "chrome/browser/sync/test/engine/test_user_share.h"
 #include "chrome/browser/sync/util/cryptographer.h"
-#include "chrome/browser/sync/util/time.h"
 #include "chrome/test/base/values_test_util.h"
 #include "content/browser/browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -95,13 +94,6 @@ void ExpectInt64Value(int64 expected_value,
   int64 val = 0;
   EXPECT_TRUE(base::StringToInt64(int64_str, &val));
   EXPECT_EQ(expected_value, val);
-}
-
-void ExpectTimeValue(const base::Time& expected_value,
-                     const DictionaryValue& value, const std::string& key) {
-  std::string time_str;
-  EXPECT_TRUE(value.GetString(key, &time_str));
-  EXPECT_EQ(browser_sync::GetTimeDebugString(expected_value), time_str);
 }
 
 // Makes a non-folder child of the root node.  Returns the id of the
@@ -521,7 +513,7 @@ void CheckNodeValue(const BaseNode& node, const DictionaryValue& value,
   }
   if (is_detailed) {
     ExpectInt64Value(node.GetParentId(), value, "parentId");
-    ExpectTimeValue(node.GetModificationTime(), value, "modificationTime");
+    ExpectInt64Value(node.GetModificationTime(), value, "modificationTime");
     ExpectInt64Value(node.GetExternalId(), value, "externalId");
     ExpectInt64Value(node.GetPredecessorId(), value, "predecessorId");
     ExpectInt64Value(node.GetSuccessorId(), value, "successorId");

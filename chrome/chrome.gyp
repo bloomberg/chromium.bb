@@ -701,8 +701,6 @@
         'browser/sync/util/oauth.h',
         'browser/sync/util/sqlite_utils.cc',
         'browser/sync/util/sqlite_utils.h',
-        'browser/sync/util/time.cc',
-        'browser/sync/util/time.h',
         'browser/sync/util/user_settings.cc',
         'browser/sync/util/user_settings.h',
         'browser/sync/util/user_settings_posix.cc',

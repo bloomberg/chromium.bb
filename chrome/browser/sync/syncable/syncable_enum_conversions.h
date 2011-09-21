@@ -24,8 +24,6 @@ const char* GetBaseVersionString(BaseVersion base_version);
 
 const char* GetInt64FieldString(Int64Field int64_field);
 
-const char* GetTimeFieldString(TimeField time_field);
-
 const char* GetIdFieldString(IdField id_field);
 
 const char* GetIndexedBitFieldString(IndexedBitField indexed_bit_field);

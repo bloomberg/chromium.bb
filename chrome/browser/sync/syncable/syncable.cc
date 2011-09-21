@@ -4,6 +4,20 @@
 
 #include "chrome/browser/sync/syncable/syncable.h"
 
+#include "build/build_config.h"
+
+#include <sys/stat.h>
+#if defined(OS_POSIX)
+#include <sys/time.h>
+#endif
+#include <sys/types.h>
+#include <time.h>
+#if defined(OS_MACOSX)
+#include <CoreFoundation/CoreFoundation.h>
+#elif defined(OS_WIN)
+#include <shlwapi.h>  // for PathMatchSpec
+#endif
+
 #include <algorithm>
 #include <cstring>
 #include <functional>
@@ -128,6 +142,25 @@ ListValue* EntryKernelMutationMapToValue(
   return list;
 }
 
+int64 Now() {
+#if defined(OS_WIN)
+  FILETIME filetime;
+  SYSTEMTIME systime;
+  GetSystemTime(&systime);
+  SystemTimeToFileTime(&systime, &filetime);
+  // MSDN recommends converting via memcpy like this.
+  LARGE_INTEGER n;
+  memcpy(&n, &filetime, sizeof(filetime));
+  return n.QuadPart;
+#elif defined(OS_POSIX)
+  struct timeval tv;
+  gettimeofday(&tv, NULL);
+  return static_cast<int64>(tv.tv_sec);
+#else
+#error NEED OS SPECIFIC Now() implementation
+#endif
+}
+
 namespace {
 
 // A ScopedIndexUpdater temporarily removes an entry from an index,
@@ -212,10 +245,7 @@ bool ParentIdAndHandleIndexer::ShouldInclude(const EntryKernel* a) {
 // EntryKernel
 
 EntryKernel::EntryKernel() : dirty_(false) {
-  // Everything else should already be default-initialized.
-  for (int i = INT64_FIELDS_BEGIN; i < INT64_FIELDS_END; ++i) {
-    int64_fields[i] = 0;
-  }
+  memset(int64_fields, 0, sizeof(int64_fields));
 }
 
 EntryKernel::~EntryKernel() {}
@@ -277,10 +307,6 @@ StringValue* Int64ToValue(int64 i) {
   return Value::CreateStringValue(base::Int64ToString(i));
 }
 
-StringValue* TimeToValue(const base::Time& t) {
-  return Value::CreateStringValue(browser_sync::GetTimeDebugString(t));
-}
-
 StringValue* IdToValue(const Id& id) {
   return id.ToValue();
 }
@@ -301,11 +327,6 @@ DictionaryValue* EntryKernel::ToValue() const {
   SetFieldValues(*this, kernel_info,
                  &GetInt64FieldString, &Int64ToValue,
                  BASE_VERSION + 1, INT64_FIELDS_END - 1);
-
-  // Time fields.
-  SetFieldValues(*this, kernel_info,
-                 &GetTimeFieldString, &TimeToValue,
-                 TIME_FIELDS_BEGIN, TIME_FIELDS_END - 1);
 
   // ID fields.
   SetFieldValues(*this, kernel_info,
@@ -587,6 +608,21 @@ void Directory::GetChildHandlesByHandle(
 
 EntryKernel* Directory::GetRootEntry() {
   return GetEntryById(Id());
+}
+
+void ZeroFields(EntryKernel* entry, int first_field) {
+  int i = first_field;
+  // Note that bitset<> constructor sets all bits to zero, and strings
+  // initialize to empty.
+  for ( ; i < INT64_FIELDS_END; ++i)
+    entry->put(static_cast<Int64Field>(i), 0);
+  for ( ; i < ID_FIELDS_END; ++i)
+    entry->mutable_ref(static_cast<IdField>(i)).Clear();
+  for ( ; i < BIT_FIELDS_END; ++i)
+    entry->put(static_cast<BitField>(i), false);
+  if (i < PROTO_FIELDS_END)
+    i = PROTO_FIELDS_END;
+  entry->clear_dirty(NULL);
 }
 
 void Directory::InsertEntry(EntryKernel* entry) {
@@ -1403,13 +1439,14 @@ MutableEntry::MutableEntry(WriteTransaction* trans, Create,
 
 void MutableEntry::Init(WriteTransaction* trans, const Id& parent_id,
                         const string& name) {
-  kernel_ = new EntryKernel();
+  kernel_ = new EntryKernel;
+  ZeroFields(kernel_, BEGIN_FIELDS);
   kernel_->put(ID, trans->directory_->NextId());
   kernel_->put(META_HANDLE, trans->directory_->NextMetahandle());
   kernel_->mark_dirty(trans->directory_->kernel_->dirty_metahandles);
   kernel_->put(PARENT_ID, parent_id);
   kernel_->put(NON_UNIQUE_NAME, name);
-  const base::Time& now = base::Time::Now();
+  const int64 now = Now();
   kernel_->put(CTIME, now);
   kernel_->put(MTIME, now);
   // We match the database defaults here
@@ -1429,7 +1466,8 @@ MutableEntry::MutableEntry(WriteTransaction* trans, CreateNewUpdateItem,
     kernel_ = NULL;  // already have an item with this ID.
     return;
   }
-  kernel_ = new EntryKernel();
+  kernel_ = new EntryKernel;
+  ZeroFields(kernel_, BEGIN_FIELDS);
   kernel_->put(ID, id);
   kernel_->put(META_HANDLE, trans->directory_->NextMetahandle());
   kernel_->mark_dirty(trans->directory_->kernel_->dirty_metahandles);
@@ -1499,15 +1537,6 @@ bool MutableEntry::Put(Int64Field field, const int64& value) {
     } else {
       kernel_->put(field, value);
     }
-    kernel_->mark_dirty(dir()->kernel_->dirty_metahandles);
-  }
-  return true;
-}
-
-bool MutableEntry::Put(TimeField field, const base::Time& value) {
-  DCHECK(kernel_);
-  if (kernel_->ref(field) != value) {
-    kernel_->put(field, value);
     kernel_->mark_dirty(dir()->kernel_->dirty_metahandles);
   }
   return true;
@@ -1884,11 +1913,6 @@ std::ostream& operator<<(std::ostream& os, const Entry& entry) {
   for (i = BEGIN_FIELDS; i < INT64_FIELDS_END; ++i) {
     os << g_metas_columns[i].name << ": "
        << kernel->ref(static_cast<Int64Field>(i)) << ", ";
-  }
-  for ( ; i < TIME_FIELDS_END; ++i) {
-    os << g_metas_columns[i].name << ": "
-       << browser_sync::GetTimeDebugString(
-           kernel->ref(static_cast<TimeField>(i))) << ", ";
   }
   for ( ; i < ID_FIELDS_END; ++i) {
     os << g_metas_columns[i].name << ": "

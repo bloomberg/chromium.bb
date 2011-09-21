@@ -41,11 +41,6 @@ TEST_F(SyncableEnumConversionsTest, GetInt64FieldString) {
       GetInt64FieldString, BASE_VERSION + 1, INT64_FIELDS_END - 1);
 }
 
-TEST_F(SyncableEnumConversionsTest, GetTimeFieldString) {
-  TestEnumStringFunction(
-      GetTimeFieldString, TIME_FIELDS_BEGIN, TIME_FIELDS_END - 1);
-}
-
 TEST_F(SyncableEnumConversionsTest, GetIdFieldString) {
   TestEnumStringFunction(
       GetIdFieldString, ID_FIELDS_BEGIN, ID_FIELDS_END - 1);

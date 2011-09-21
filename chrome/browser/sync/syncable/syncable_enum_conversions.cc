@@ -48,23 +48,13 @@ const char* GetInt64FieldString(Int64Field int64_field) {
                      BASE_VERSION + 1, INT64_FIELDS_END - 1);
   switch (int64_field) {
     ENUM_CASE(SERVER_VERSION);
-    ENUM_CASE(SERVER_POSITION_IN_PARENT);
-    ENUM_CASE(LOCAL_EXTERNAL_ID);
-    case INT64_FIELDS_END: break;
-  }
-  NOTREACHED();
-  return "";
-}
-
-const char* GetTimeFieldString(TimeField time_field) {
-  ASSERT_ENUM_BOUNDS(SERVER_VERSION, LOCAL_EXTERNAL_ID,
-                     BASE_VERSION + 1, INT64_FIELDS_END - 1);
-  switch (time_field) {
     ENUM_CASE(MTIME);
     ENUM_CASE(SERVER_MTIME);
     ENUM_CASE(CTIME);
     ENUM_CASE(SERVER_CTIME);
-    case TIME_FIELDS_END: break;
+    ENUM_CASE(SERVER_POSITION_IN_PARENT);
+    ENUM_CASE(LOCAL_EXTERNAL_ID);
+    case INT64_FIELDS_END: break;
   }
   NOTREACHED();
   return "";

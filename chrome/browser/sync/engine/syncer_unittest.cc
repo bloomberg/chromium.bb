@@ -18,7 +18,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/string_number_conversions.h"
 #include "base/stringprintf.h"
-#include "base/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/sync/engine/conflict_resolver.h"
 #include "chrome/browser/sync/engine/get_commit_ids_command.h"
@@ -40,7 +39,6 @@
 #include "chrome/browser/sync/test/engine/test_directory_setter_upper.h"
 #include "chrome/browser/sync/test/engine/test_id_factory.h"
 #include "chrome/browser/sync/test/engine/test_syncable_utils.h"
-#include "chrome/browser/sync/util/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::TimeDelta;
@@ -316,10 +314,9 @@ class SyncerTest : public testing::Test,
         entry.Put(syncable::SPECIFICS, DefaultBookmarkSpecifics());
         // Set the time to 30 seconds in the future to reduce the chance of
         // flaky tests.
-        const base::Time& now_plus_30s =
-            base::Time::Now() + base::TimeDelta::FromSeconds(30);
-        const base::Time& now_minus_2h =
-            base::Time::Now() - base::TimeDelta::FromHours(2);
+        int64 now_server_time = ClientTimeToServerTime(syncable::Now());
+        int64 now_plus_30s = ServerTimeToClientTime(now_server_time + 30000);
+        int64 now_minus_2h = ServerTimeToClientTime(now_server_time - 7200000);
         entry.Put(syncable::MTIME, now_plus_30s);
         for (size_t i = 0 ; i < arraysize(test->features) ; ++i) {
           switch (test->features[i]) {
@@ -897,8 +894,9 @@ TEST_F(SyncerTest, TestCommitListOrderingDeleteMovedItems) {
 TEST_F(SyncerTest, TestCommitListOrderingWithNesting) {
   ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
   ASSERT_TRUE(dir.good());
-  const base::Time& now_minus_2h =
-      base::Time::Now() - base::TimeDelta::FromHours(2);
+  int64 now_server_time = ClientTimeToServerTime(syncable::Now());
+  int64 now_minus_2h = ServerTimeToClientTime(now_server_time - 7200000);
+
   {
     WriteTransaction wtrans(FROM_HERE, UNITTEST, dir);
     {
@@ -1972,7 +1970,7 @@ TEST_F(SyncerTest, DoublyChangedWithResolver) {
 TEST_F(SyncerTest, CommitsUpdateDoesntAlterEntry) {
   ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
   CHECK(dir.good());
-  const base::Time& test_time = ProtoTimeToTime(123456);
+  int64 test_time = 123456;
   int64 entry_metahandle;
   {
     WriteTransaction wtrans(FROM_HERE, UNITTEST, dir);

@@ -23,7 +23,6 @@
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 #include "chrome/browser/sync/syncable/syncable_changes_version.h"
-#include "chrome/browser/sync/util/time.h"
 
 using syncable::BASE_VERSION;
 using syncable::Blob;
@@ -426,8 +425,10 @@ void SyncerUtil::UpdateServerFieldsFromUpdate(
   target->Put(SERVER_PARENT_ID, update.parent_id());
   target->Put(SERVER_NON_UNIQUE_NAME, name);
   target->Put(SERVER_VERSION, update.version());
-  target->Put(SERVER_CTIME, ProtoTimeToTime(update.ctime()));
-  target->Put(SERVER_MTIME, ProtoTimeToTime(update.mtime()));
+  target->Put(SERVER_CTIME,
+      ServerTimeToClientTime(update.ctime()));
+  target->Put(SERVER_MTIME,
+      ServerTimeToClientTime(update.mtime()));
   target->Put(SERVER_IS_DIR, update.IsFolder());
   if (update.has_server_defined_unique_tag()) {
     const std::string& tag = update.server_defined_unique_tag();
@@ -494,7 +495,8 @@ bool SyncerUtil::ServerAndLocalOrdersMatch(syncable::Entry* entry) {
 
 // static
 bool SyncerUtil::ServerAndLocalEntriesMatch(syncable::Entry* entry) {
-  if (entry->Get(CTIME) != entry->Get(SERVER_CTIME)) {
+  if (!ClientAndServerTimeMatch(
+        entry->Get(CTIME), ClientTimeToServerTime(entry->Get(SERVER_CTIME)))) {
     LOG(WARNING) << "Client and server time mismatch";
     return false;
   }
@@ -528,11 +530,12 @@ bool SyncerUtil::ServerAndLocalEntriesMatch(syncable::Entry* entry) {
     return true;
   // For historical reasons, a folder's MTIME changes when its contents change.
   // TODO(ncarter): Remove the special casing of MTIME.
-  if (entry->Get(MTIME) != entry->Get(SERVER_MTIME)) {
+  bool time_match = ClientAndServerTimeMatch(entry->Get(MTIME),
+      ClientTimeToServerTime(entry->Get(SERVER_MTIME)));
+  if (!time_match) {
     LOG(WARNING) << "Time mismatch";
-    return false;
   }
-  return true;
+  return time_match;
 }
 
 // static

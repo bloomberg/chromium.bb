@@ -13,6 +13,7 @@
 #include <string>
 #include <vector>
 
+#include "build/build_config.h"
 #include "chrome/browser/sync/engine/syncer.h"
 #include "chrome/browser/sync/engine/syncer_types.h"
 #include "chrome/browser/sync/syncable/syncable.h"
@@ -138,6 +139,43 @@ class SyncerUtil {
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(SyncerUtil);
 };
+
+#ifndef OS_WIN
+
+// time.h on Linux and Mac both return seconds since the epoch, this should
+// be converted to milliseconds.
+inline int64 ServerTimeToClientTime(int64 server_time) {
+  return server_time / GG_LONGLONG(1000);
+}
+
+inline int64 ClientTimeToServerTime(int64 client_time) {
+  return client_time * GG_LONGLONG(1000);
+}
+
+// As we truncate server times on the client for posix and on the server for
+// windows we need two ClientAndServerTimeMatch fucntions.
+inline bool ClientAndServerTimeMatch(int64 client_time, int64 server_time) {
+  // Compare at the coarser timescale (client)
+  return client_time == ServerTimeToClientTime(server_time);
+}
+#else
+// The sync server uses Java Times (ms since 1970)
+// and the client uses FILETIMEs (ns since 1601) so we need to convert
+// between the timescales.
+// TODO(sync): Fix this. No need to use two timescales.
+inline int64 ServerTimeToClientTime(int64 server_time) {
+  return server_time * GG_LONGLONG(10000) + GG_LONGLONG(116444736000000000);
+}
+
+inline int64 ClientTimeToServerTime(int64 client_time) {
+  return (client_time - GG_LONGLONG(116444736000000000)) / GG_LONGLONG(10000);
+}
+
+inline bool ClientAndServerTimeMatch(int64 client_time, int64 server_time) {
+  // Compare at the coarser timescale (server)
+  return ClientTimeToServerTime(client_time) == server_time;
+}
+#endif
 
 }  // namespace browser_sync
 

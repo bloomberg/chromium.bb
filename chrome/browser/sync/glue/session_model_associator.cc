@@ -198,7 +198,7 @@ void SessionModelAssociator::ReassociateWindows(bool reload_tabs) {
         PopulateSessionWindowFromSpecifics(
             local_tag,
             window_s,
-            base::Time::Now(),
+            base::Time::Now().ToInternalValue(),
             current_session->windows[window_num++],
             &synced_session_tracker_);
       }
@@ -338,7 +338,7 @@ bool SessionModelAssociator::WriteTabContentsToSyncModel(
                                             tab_s->tab_id(),
                                             false);
   PopulateSessionTabFromSpecifics(*tab_s,
-                                  base::Time::Now(),
+                                  base::Time::Now().ToInternalValue(),
                                   session_tab);
   return true;
 }
@@ -581,7 +581,7 @@ bool SessionModelAssociator::UpdateAssociationsFromSyncModel(
 
     const sync_pb::SessionSpecifics& specifics =
         sync_node.GetSessionSpecifics();
-    const base::Time& modification_time = sync_node.GetModificationTime();
+    const int64 modification_time = sync_node.GetModificationTime();
     if (specifics.session_tag() != GetCurrentMachineTag()) {
       if (!AssociateForeignSpecifics(specifics, modification_time)) {
         return false;
@@ -620,7 +620,7 @@ bool SessionModelAssociator::UpdateAssociationsFromSyncModel(
 
 bool SessionModelAssociator::AssociateForeignSpecifics(
     const sync_pb::SessionSpecifics& specifics,
-    const base::Time& modification_time) {
+    const int64 modification_time) {
   DCHECK(CalledOnValidThread());
   std::string foreign_session_tag = specifics.session_tag();
   if (foreign_session_tag == GetCurrentMachineTag() && !setup_for_test_)
@@ -714,7 +714,7 @@ void SessionModelAssociator::PopulateSessionHeaderFromSpecifics(
 void SessionModelAssociator::PopulateSessionWindowFromSpecifics(
     const std::string& session_tag,
     const sync_pb::SessionWindow& specifics,
-    const base::Time& mtime,
+    int64 mtime,
     SessionWindow* session_window,
     SyncedSessionTracker* tracker) {
   if (specifics.has_window_id())
@@ -729,7 +729,7 @@ void SessionModelAssociator::PopulateSessionWindowFromSpecifics(
       session_window->type = 2;
     }
   }
-  session_window->timestamp = mtime;
+  session_window->timestamp = base::Time::FromInternalValue(mtime);
   session_window->tabs.resize(specifics.tab_size());
   for (int i = 0; i < specifics.tab_size(); i++) {
     SessionID::id_type tab_id = specifics.tab(i);
@@ -741,7 +741,7 @@ void SessionModelAssociator::PopulateSessionWindowFromSpecifics(
 // Static
 void SessionModelAssociator::PopulateSessionTabFromSpecifics(
     const sync_pb::SessionTab& specifics,
-    const base::Time& mtime,
+    const int64 mtime,
     SessionTab* tab) {
   if (specifics.has_tab_id())
     tab->tab_id.set_id(specifics.tab_id());
@@ -755,7 +755,7 @@ void SessionModelAssociator::PopulateSessionTabFromSpecifics(
     tab->pinned = specifics.pinned();
   if (specifics.has_extension_app_id())
     tab->extension_app_id = specifics.extension_app_id();
-  tab->timestamp = mtime;
+  tab->timestamp = base::Time::FromInternalValue(mtime);
   tab->navigations.clear();  // In case we are reusing a previous SessionTab.
   for (int i = 0; i < specifics.navigation_size(); i++) {
     AppendSessionTabNavigation(specifics.navigation(i), &tab->navigations);
