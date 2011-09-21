@@ -4,6 +4,7 @@
 
 #include "content/shell/shell_content_renderer_client.h"
 
+#include "content/renderer/render_view.h"
 #include "v8/include/v8.h"
 
 namespace content {
@@ -32,7 +33,7 @@ WebKit::WebPlugin* ShellContentRendererClient::CreatePlugin(
     RenderView* render_view,
     WebKit::WebFrame* frame,
     const WebKit::WebPluginParams& params) {
-  return NULL;
+  return render_view->CreatePluginNoCheck(frame, params);
 }
 
 void ShellContentRendererClient::ShowErrorPage(RenderView* render_view,

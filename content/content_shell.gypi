@@ -22,6 +22,7 @@
         'content_worker',
         '../skia/skia.gyp:skia',
         '../ui/ui.gyp:ui',
+        '../v8/tools/gyp/v8.gyp:v8',
       ],
       'include_dirs': [
         '..',
