@@ -18,6 +18,7 @@ struct FormDataPredictions;
 }  // namespace webkit_glue
 
 namespace WebKit {
+class WebDocument;
 class WebFormControlElement;
 class WebFrame;
 class WebInputElement;
@@ -52,7 +53,7 @@ class FormCache {
 
  private:
   // The cached web frames.
-  std::set<const WebKit::WebFrame*> web_frames_;
+  std::set<WebKit::WebDocument> web_documents_;
 
   // The cached initial values for <select> elements.
   std::map<const WebKit::WebSelectElement, string16> initial_select_values_;

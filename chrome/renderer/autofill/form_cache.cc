@@ -22,6 +22,7 @@
 #include "webkit/glue/form_field.h"
 #include "webkit/glue/form_field_predictions.h"
 
+using WebKit::WebDocument;
 using WebKit::WebFormControlElement;
 using WebKit::WebFormElement;
 using WebKit::WebFrame;
@@ -59,12 +60,17 @@ FormCache::~FormCache() {
 
 void FormCache::ExtractForms(const WebFrame& frame,
                              std::vector<FormData>* forms) {
-  // Reset the vector of FormElements for this frame.
+  // Reset the cache for this frame.
   ResetFrame(frame);
-  web_frames_.insert(&frame);
+
+  WebDocument document = frame.document();
+  if (document.isNull())
+    return;
+
+  web_documents_.insert(document);
 
   WebVector<WebFormElement> web_forms;
-  frame.document().forms(web_forms);
+  document.forms(web_forms);
 
   size_t num_fields_seen = 0;
   for (size_t i = 0; i < web_forms.size(); ++i) {
@@ -105,20 +111,37 @@ void FormCache::ExtractForms(const WebFrame& frame,
 }
 
 void FormCache::ResetFrame(const WebFrame& frame) {
-  web_frames_.erase(&frame);
+  std::vector<WebDocument> documents_to_delete;
+  for (std::set<WebDocument>::const_iterator it = web_documents_.begin();
+       it != web_documents_.end(); ++it) {
+    const WebFrame* document_frame = it->frame();
+    if (!document_frame || document_frame == &frame)
+      documents_to_delete.push_back(*it);
+  }
 
-  std::vector<WebSelectElement> to_delete;
+  for (std::vector<WebDocument>::const_iterator it =
+           documents_to_delete.begin();
+       it != documents_to_delete.end(); ++it) {
+    web_documents_.erase(*it);
+  }
+
+  std::vector<WebSelectElement> select_values_to_delete;
   for (std::map<const WebSelectElement, string16>::const_iterator it =
            initial_select_values_.begin();
        it != initial_select_values_.end(); ++it) {
     WebFormElement form_element = it->first.form();
-    if (form_element.isNull() || form_element.document().frame() == &frame)
-      to_delete.push_back(it->first);
+    if (form_element.isNull()) {
+      select_values_to_delete.push_back(it->first);
+    } else {
+      const WebFrame* element_frame = form_element.document().frame();
+      if (!element_frame || element_frame == &frame)
+        select_values_to_delete.push_back(it->first);
+    }
   }
 
   for (std::vector<WebSelectElement>::const_iterator it =
-           to_delete.begin();
-       it != to_delete.end(); ++it) {
+           select_values_to_delete.begin();
+       it != select_values_to_delete.end(); ++it) {
     initial_select_values_.erase(*it);
   }
 }
@@ -170,10 +193,10 @@ bool FormCache::ShowPredictions(const FormDataPredictions& form) {
   // Find the form.
   bool found_form = false;
   WebFormElement form_element;
-  for (std::set<const WebFrame*>::const_iterator it = web_frames_.begin();
-       it != web_frames_.end() && !found_form; ++it) {
+  for (std::set<WebDocument>::const_iterator it = web_documents_.begin();
+       it != web_documents_.end() && !found_form; ++it) {
     WebVector<WebFormElement> web_forms;
-    (*it)->document().forms(web_forms);
+    it->forms(web_forms);
 
     for (size_t i = 0; i < web_forms.size(); ++i) {
       form_element = web_forms[i];
