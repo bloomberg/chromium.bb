@@ -13,10 +13,7 @@
 #include "base/string_number_conversions.h"
 #include "base/test/test_file_util.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/browser_shutdown.h"
-#include "chrome/browser/intranet_redirect_detector.h"
 #include "chrome/browser/io_thread.h"
-#include "chrome/browser/net/url_request_mock_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
@@ -47,17 +44,11 @@
 #include "base/system_monitor/system_monitor.h"
 #endif
 
-#if defined(OS_WIN)
-#include "chrome/browser/ui/views/frame/browser_frame_win.h"
-#endif
-
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/audio_handler.h"
 #endif
 
 extern int BrowserMain(const MainFunctionParams&);
-
-const char kUnitTestShowWindows[] = "show-windows";
 
 // Passed as value of kTestType.
 static const char kBrowserTestType[] = "browser";
@@ -106,11 +97,6 @@ void InProcessBrowserTest::SetUp() {
   ASSERT_TRUE(SetUpUserDataDirectory())
       << "Could not set up user data directory.";
 
-  // Don't delete the resources when BrowserMain returns. Many ui classes
-  // cache SkBitmaps in a static field so that if we delete the resource
-  // bundle we'll crash.
-  browser_shutdown::delete_resources_on_shutdown = false;
-
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   // Allow subclasses to change the command line before running any tests.
   SetUpCommandLine(command_line);
@@ -133,13 +119,7 @@ void InProcessBrowserTest::SetUp() {
   file_util::CreateDirectory(log_dir);
 #endif  // defined(OS_CHROMEOS)
 
-  SandboxInitWrapper sandbox_wrapper;
-  MainFunctionParams params(*command_line, sandbox_wrapper, NULL);
-  params.ui_task =
-      NewRunnableMethod(this, &InProcessBrowserTest::RunTestOnMainThreadLoop);
-
-  host_resolver_ = new net::RuleBasedHostResolverProc(
-      new IntranetRedirectHostResolverProc(NULL));
+  host_resolver_ = new net::RuleBasedHostResolverProc(NULL);
 
   // Something inside the browser does this lookup implicitly. Make it fail
   // to avoid external dependency. It won't break the tests.
@@ -152,8 +132,12 @@ void InProcessBrowserTest::SetUp() {
   net::ScopedDefaultHostResolverProc scoped_host_resolver_proc(
       host_resolver_.get());
 
-  SetUpInProcessBrowserTestFixture();
+  SandboxInitWrapper sandbox_wrapper;
+  MainFunctionParams params(*command_line, sandbox_wrapper, NULL);
+  params.ui_task =
+      NewRunnableMethod(this, &InProcessBrowserTest::RunTestOnMainThreadLoop);
 
+  SetUpInProcessBrowserTestFixture();
   BrowserMain(params);
   TearDownInProcessBrowserTestFixture();
 }
@@ -161,12 +145,6 @@ void InProcessBrowserTest::SetUp() {
 void InProcessBrowserTest::PrepareTestCommandLine(CommandLine* command_line) {
   // Propagate commandline settings from test_launcher_utils.
   test_launcher_utils::PrepareBrowserCommandLineForTests(command_line);
-
-#if defined(OS_WIN)
-  // Hide windows on show.
-  if (!command_line->HasSwitch(kUnitTestShowWindows) && !show_window_)
-    BrowserFrameWin::SetShowState(SW_HIDE);
-#endif
 
   if (dom_automation_enabled_)
     command_line->AppendSwitch(switches::kDomAutomationController);
@@ -221,12 +199,6 @@ bool InProcessBrowserTest::CreateUserDataDirectory() {
 
 void InProcessBrowserTest::TearDown() {
   DCHECK(!g_browser_process);
-
-  browser_shutdown::delete_resources_on_shutdown = true;
-
-#if defined(OS_WIN)
-  BrowserFrameWin::SetShowState(-1);
-#endif
 }
 
 void InProcessBrowserTest::AddTabAtIndexToBrowser(
@@ -310,24 +282,9 @@ void InProcessBrowserTest::RunTestOnMainThreadLoop() {
 
   // Pump startup related events.
   MessageLoopForUI::current()->RunAllPending();
-
-  // In the long term it would be great if we could use a TestingProfile
-  // here and only enable services you want tested, but that requires all
-  // consumers of Profile to handle NULL services.
-  Profile* profile = ProfileManager::GetDefaultProfile();
-  if (!profile) {
-    // We should only be able to get here if the profile already exists and
-    // has been created.
-    NOTREACHED();
-    return;
-  }
   pool.Recycle();
 
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      NewRunnableFunction(chrome_browser_net::SetUrlRequestMocksEnabled, true));
-
-  browser_ = CreateBrowser(profile);
+  browser_ = CreateBrowser(ProfileManager::GetDefaultProfile());
   pool.Recycle();
 
   // Pump any pending events that were created as a result of creating a

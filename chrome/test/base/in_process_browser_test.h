@@ -67,9 +67,6 @@ class RuleBasedHostResolverProc;
 // By default InProcessBrowserTest creates a single Browser (as returned from
 // the CreateBrowser method). You can obviously create more as needed.
 
-// Browsers created while InProcessBrowserTest is running are shown hidden. Use
-// the command line switch --show-windows to make them visible when debugging.
-//
 // InProcessBrowserTest disables the sandbox when running.
 //
 // See ui_test_utils for a handful of methods designed for use with this class.

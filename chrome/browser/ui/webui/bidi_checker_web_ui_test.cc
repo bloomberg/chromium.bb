@@ -82,11 +82,11 @@ WebUIBidiCheckerBrowserTestFakeBidi::~WebUIBidiCheckerBrowserTestFakeBidi() {}
 
 WebUIBidiCheckerBrowserTestFakeBidi::WebUIBidiCheckerBrowserTestFakeBidi() {}
 
-void WebUIBidiCheckerBrowserTestFakeBidi::SetUpInProcessBrowserTestFixture() {
-  WebUIBidiCheckerBrowserTest::SetUpInProcessBrowserTestFixture();
+void WebUIBidiCheckerBrowserTestFakeBidi::SetUpOnMainThread() {
+  WebUIBidiCheckerBrowserTest::SetUpOnMainThread();
   FilePath pak_path;
   app_locale_ = base::i18n::GetConfiguredLocale();
-  PathService::Get(base::FILE_MODULE, &pak_path);
+  ASSERT_TRUE(PathService::Get(base::FILE_MODULE, &pak_path));
   pak_path = pak_path.DirName();
   pak_path = pak_path.AppendASCII("pseudo_locales");
   pak_path = pak_path.AppendASCII("fake-bidi");
@@ -98,9 +98,8 @@ void WebUIBidiCheckerBrowserTestFakeBidi::SetUpInProcessBrowserTestFixture() {
 #endif
 }
 
-void
-WebUIBidiCheckerBrowserTestFakeBidi::TearDownInProcessBrowserTestFixture() {
-  WebUIBidiCheckerBrowserTest::TearDownInProcessBrowserTestFixture();
+void WebUIBidiCheckerBrowserTestFakeBidi::CleanUpOnMainThread() {
+  WebUIBidiCheckerBrowserTest::CleanUpOnMainThread();
 #if defined(OS_POSIX) && defined(TOOLKIT_USES_GTK)
   gtk_widget_set_default_direction(GTK_TEXT_DIR_LTR);
 #endif

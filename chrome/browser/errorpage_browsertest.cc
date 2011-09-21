@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/net/url_request_mock_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -56,6 +58,13 @@ class ErrorPageTest : public InProcessBrowserTest {
     NavigateHistoryAndWaitForTitle(expected_title,
                                    num_navigations,
                                    HISTORY_NAVIGATE_FORWARD);
+  }
+
+ protected:
+  void SetUpOnMainThread() OVERRIDE {
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(&chrome_browser_net::SetUrlRequestMocksEnabled, true));
   }
 
  private:

@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
+#include "chrome/browser/net/url_request_mock_util.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -853,6 +855,15 @@ class PanelDownloadTest : public PanelBrowserTest {
         prefs::kDownloadDefaultDirectory,
         downloads_directory_.path());
     return true;
+  }
+
+ protected:
+  void SetUpOnMainThread() OVERRIDE {
+    PanelBrowserTest::SetUpOnMainThread();
+
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(&chrome_browser_net::SetUrlRequestMocksEnabled, true));
   }
 
  private:

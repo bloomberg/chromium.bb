@@ -35,8 +35,10 @@ class WebUIBidiCheckerBrowserTestFakeBidi : public WebUIBidiCheckerBrowserTest {
 
  protected:
   WebUIBidiCheckerBrowserTestFakeBidi();
-  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE;
-  virtual void TearDownInProcessBrowserTestFixture() OVERRIDE;
+
+  virtual void SetUpOnMainThread() OVERRIDE;
+  virtual void CleanUpOnMainThread() OVERRIDE;
+
   // The app locale before we change it
   std::string app_locale_;
 };
