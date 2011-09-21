@@ -265,21 +265,21 @@ void AutofillOptionsHandler::SetAddressOverlayStrings(
     DictionaryValue* localized_strings) {
   localized_strings->SetString("autofillEditAddressTitle",
       l10n_util::GetStringUTF16(IDS_AUTOFILL_EDIT_ADDRESS_CAPTION));
-  localized_strings->SetString("fullNameLabel",
+  localized_strings->SetString("autofillFullNameLabel",
       l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_FULL_NAME));
-  localized_strings->SetString("companyNameLabel",
+  localized_strings->SetString("autofillCompanyNameLabel",
       l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_COMPANY_NAME));
-  localized_strings->SetString("addrLine1Label",
+  localized_strings->SetString("autofillAddrLine1Label",
       l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_ADDRESS_LINE_1));
-  localized_strings->SetString("addrLine2Label",
+  localized_strings->SetString("autofillAddrLine2Label",
       l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_ADDRESS_LINE_2));
-  localized_strings->SetString("cityLabel",
+  localized_strings->SetString("autofillCityLabel",
       l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_CITY));
-  localized_strings->SetString("countryLabel",
+  localized_strings->SetString("autofillCountryLabel",
       l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_COUNTRY));
-  localized_strings->SetString("phoneLabel",
+  localized_strings->SetString("autofillPhoneLabel",
       l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_PHONE));
-  localized_strings->SetString("emailLabel",
+  localized_strings->SetString("autofillEmailLabel",
       l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_EMAIL));
   localized_strings->SetString("addNewNamePlaceholder",
       l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_ADD_NEW_NAME));
