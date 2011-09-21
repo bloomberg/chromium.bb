@@ -4,8 +4,8 @@
 
 // Patterns used in content setting rules.
 
-#ifndef CHROME_BROWSER_CONTENT_SETTINGS_CONTENT_SETTINGS_PATTERN_H_
-#define CHROME_BROWSER_CONTENT_SETTINGS_CONTENT_SETTINGS_PATTERN_H_
+#ifndef CHROME_COMMON_CONTENT_SETTINGS_PATTERN_H_
+#define CHROME_COMMON_CONTENT_SETTINGS_PATTERN_H_
 #pragma once
 
 #include <ostream>
@@ -254,4 +254,4 @@ inline std::ostream& operator<<(
   return out << pattern.ToString();
 }
 
-#endif  // CHROME_BROWSER_CONTENT_SETTINGS_CONTENT_SETTINGS_PATTERN_H_
+#endif  // CHROME_COMMON_CONTENT_SETTINGS_PATTERN_H_

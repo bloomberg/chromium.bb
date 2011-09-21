@@ -11,7 +11,7 @@
 
 #include "base/tuple.h"
 #include "base/memory/linked_ptr.h"
-#include "chrome/browser/content_settings/content_settings_pattern.h"
+#include "chrome/common/content_settings_pattern.h"
 #include "chrome/common/content_settings_types.h"
 
 class GURL;

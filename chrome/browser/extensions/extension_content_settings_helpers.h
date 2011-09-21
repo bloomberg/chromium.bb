@@ -8,8 +8,8 @@
 
 #include <string>
 
-#include "chrome/browser/content_settings/content_settings_pattern.h"
 #include "chrome/common/content_settings.h"
+#include "chrome/common/content_settings_pattern.h"
 
 namespace extension_content_settings_helpers {
 

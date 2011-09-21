@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/content_settings/content_settings_pattern.h"
+#include "chrome/common/content_settings_pattern.h"
 
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
-#include "chrome/browser/content_settings/content_settings_pattern_parser.h"
+#include "chrome/common/content_settings_pattern_parser.h"
 #include "chrome/common/url_constants.h"
 #include "net/base/dns_util.h"
 #include "net/base/net_util.h"

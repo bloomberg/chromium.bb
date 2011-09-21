@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CONTENT_SETTINGS_CONTENT_SETTINGS_PATTERN_PARSER_H_
-#define CHROME_BROWSER_CONTENT_SETTINGS_CONTENT_SETTINGS_PATTERN_PARSER_H_
+#ifndef CHROME_COMMON_CONTENT_SETTINGS_PATTERN_PARSER_H_
+#define CHROME_COMMON_CONTENT_SETTINGS_PATTERN_PARSER_H_
 
 #include <string>
 
 #include "base/basictypes.h"
-#include "chrome/browser/content_settings/content_settings_pattern.h"
+#include "chrome/common/content_settings_pattern.h"
 
 namespace content_settings {
 
@@ -38,4 +38,4 @@ class PatternParser {
 
 }  // namespace content_settings
 
-#endif  // CHROME_BROWSER_CONTENT_SETTINGS_CONTENT_SETTINGS_PATTERN_PARSER_H_
+#endif  // CHROME_COMMON_CONTENT_SETTINGS_PATTERN_PARSER_H_

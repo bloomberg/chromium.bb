@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/content_settings/content_settings_pattern_parser.h"
+#include "chrome/common/content_settings_pattern_parser.h"
 
 #include "base/string_util.h"
 #include "chrome/common/url_constants.h"

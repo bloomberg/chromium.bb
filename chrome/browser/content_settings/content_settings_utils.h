@@ -10,8 +10,8 @@
 
 #include "base/logging.h"
 #include "base/values.h"
-#include "chrome/browser/content_settings/content_settings_pattern.h"
 #include "chrome/common/content_settings.h"
+#include "chrome/common/content_settings_pattern.h"
 #include "chrome/common/content_settings_types.h"
 
 namespace content_settings {

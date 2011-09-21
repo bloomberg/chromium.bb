@@ -9,8 +9,8 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "chrome/browser/content_settings/content_settings_pattern.h"
 #include "chrome/common/content_settings.h"
+#include "chrome/common/content_settings_pattern.h"
 
 // Details for the CONTENT_SETTINGS_CHANGED notification. This is sent when
 // content settings change for at least one host. If settings change for more

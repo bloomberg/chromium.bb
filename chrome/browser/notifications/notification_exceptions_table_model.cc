@@ -9,10 +9,10 @@
 
 #include "base/auto_reset.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/content_settings/content_settings_pattern.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/content_settings.h"
+#include "chrome/common/content_settings_pattern.h"
 #include "chrome/common/content_settings_types.h"
 #include "chrome/common/url_constants.h"
 #include "content/common/notification_service.h"
