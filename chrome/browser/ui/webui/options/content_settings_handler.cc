@@ -447,6 +447,7 @@ void ContentSettingsHandler::UpdateOTRExceptionsViewFromModel(
     case CONTENT_SETTINGS_TYPE_GEOLOCATION:
     case CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
     case CONTENT_SETTINGS_TYPE_INTENTS:
+    case CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE:
       break;
     default:
       UpdateExceptionsViewFromOTRHostContentSettingsMap(type);
