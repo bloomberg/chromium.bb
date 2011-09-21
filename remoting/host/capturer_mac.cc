@@ -377,13 +377,14 @@ void CapturerMac::GlBlitFast(const VideoFrameBuffer& buffer,
     const int y_offset = (buffer_height - 1) * buffer.bytes_per_row();
     for(SkRegion::Iterator i(last_invalid_region_); !i.done(); i.next()) {
       SkIRect copy_rect = i.rect();
-      copy_rect.intersect(clip_rect);
-      CopyRect(last_buffer_ + y_offset,
-               -buffer.bytes_per_row(),
-               buffer.ptr() + y_offset,
-               -buffer.bytes_per_row(),
-               4,  // Bytes for pixel for RGBA.
-               copy_rect);
+      if (copy_rect.intersect(clip_rect)) {
+        CopyRect(last_buffer_ + y_offset,
+                 -buffer.bytes_per_row(),
+                 buffer.ptr() + y_offset,
+                 -buffer.bytes_per_row(),
+                 4,  // Bytes for pixel for RGBA.
+                 copy_rect);
+      }
     }
   }
   last_buffer_ = buffer.ptr();
@@ -404,13 +405,14 @@ void CapturerMac::GlBlitFast(const VideoFrameBuffer& buffer,
     const int y_offset = (buffer_height - 1) * buffer.bytes_per_row();
     for(SkRegion::Iterator i(region); !i.done(); i.next()) {
       SkIRect copy_rect = i.rect();
-      copy_rect.intersect(clip_rect);
-      CopyRect(ptr + y_offset,
-         -buffer.bytes_per_row(),
-         buffer.ptr() + y_offset,
-         -buffer.bytes_per_row(),
-         4,  // Bytes for pixel for RGBA.
-         copy_rect);
+      if (copy_rect.intersect(clip_rect)) {
+        CopyRect(ptr + y_offset,
+           -buffer.bytes_per_row(),
+           buffer.ptr() + y_offset,
+           -buffer.bytes_per_row(),
+           4,  // Bytes for pixel for RGBA.
+           copy_rect);
+      }
     }
   }
   if (!glUnmapBufferARB(GL_PIXEL_PACK_BUFFER_ARB)) {
@@ -460,13 +462,14 @@ void CapturerMac::CgBlit(const VideoFrameBuffer& buffer,
   // http://crbug.com/92354
   for(SkRegion::Iterator i(region); !i.done(); i.next()) {
     SkIRect copy_rect = i.rect();
-    copy_rect.intersect(clip_rect);
-    CopyRect(display_base_address,
-             src_bytes_per_row,
-             buffer.ptr(),
-             buffer.bytes_per_row(),
-             src_bytes_per_pixel,
-             copy_rect);
+    if (copy_rect.intersect(clip_rect)) {
+      CopyRect(display_base_address,
+               src_bytes_per_row,
+               buffer.ptr(),
+               buffer.bytes_per_row(),
+               src_bytes_per_pixel,
+               copy_rect);
+    }
   }
 }
 
