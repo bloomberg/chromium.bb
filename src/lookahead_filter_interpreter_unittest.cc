@@ -150,4 +150,63 @@ TEST(LookaheadFilterInterpreterTest, SimpleTest) {
   }
 }
 
+TEST(LookaheadFilterInterpreterTest, TimeGoesBackwardsTest) {
+  LookaheadFilterInterpreterTestInterpreter* base_interpreter =
+      new LookaheadFilterInterpreterTestInterpreter;
+  Gesture expected_movement = Gesture(kGestureMove,
+                                      0.0,  // start time
+                                      0.0,  // end time
+                                      1.0,  // dx
+                                      1.0);  // dy
+  base_interpreter->return_values_.push_back(expected_movement);
+  base_interpreter->return_values_.push_back(expected_movement);
+  LookaheadFilterInterpreter interpreter(base_interpreter);
+
+  HardwareProperties initial_hwprops = {
+    0, 0, 100, 100,  // left, top, right, bottom
+    1,  // x res (pixels/mm)
+    1,  // y res (pixels/mm)
+    133, 133, 2, 5,  // scrn DPI X, Y, max fingers, max_touch,
+    1, 0, 0  // t5r2, semi, button pad
+  };
+  interpreter.SetHardwareProperties(initial_hwprops);
+
+  FingerState fs = {
+    // TM, Tm, WM, Wm, pr, orient, x, y, id
+    0, 0, 0, 0, 1, 0, 20, 20, 1
+  };
+  HardwareState hs[] = {
+    // Initial state
+    { 9.00, 0, 1, 1, &fs },
+    // Time jumps backwards, then goes forwards
+    { 0.01, 0, 1, 1, &fs },
+    { 0.02, 0, 1, 1, &fs },
+    { 0.03, 0, 1, 1, &fs },
+    { 0.04, 0, 1, 1, &fs },
+    { 0.05, 0, 1, 1, &fs },
+    { 0.06, 0, 1, 1, &fs },
+    { 0.07, 0, 1, 1, &fs },
+    { 0.08, 0, 1, 1, &fs },
+    { 0.09, 0, 1, 1, &fs },
+    { 0.10, 0, 1, 1, &fs },
+    { 0.11, 0, 1, 1, &fs },
+    { 0.12, 0, 1, 1, &fs },
+    { 0.13, 0, 1, 1, &fs },
+    { 0.14, 0, 1, 1, &fs },
+    { 0.15, 0, 1, 1, &fs },
+    { 0.16, 0, 1, 1, &fs },
+    { 0.17, 0, 1, 1, &fs },
+    { 0.18, 0, 1, 1, &fs },
+    { 0.19, 0, 1, 1, &fs },
+    { 0.20, 0, 1, 1, &fs }
+  };
+  for (size_t i = 0; i < arraysize(hs); ++i) {
+    stime_t timeout_requested = -1.0;
+    Gesture* result = interpreter.SyncInterpret(&hs[i], &timeout_requested);
+    if (result && result->type == kGestureTypeMove)
+      return;  // Success!
+  }
+  ADD_FAILURE() << "Should have gotten a move gesture";
+}
+
 }  // namespace gestures

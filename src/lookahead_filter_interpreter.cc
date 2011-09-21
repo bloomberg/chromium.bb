@@ -30,6 +30,10 @@ Gesture* LookaheadFilterInterpreter::SyncInterpret(HardwareState* hwstate,
   // Push back into queue
   if (free_list_.Empty()) {
     Err("Can't accept new hwstate b/c we're out of nodes!");
+    Err("Now: %f, interpreter_due_ %f", hwstate->timestamp, interpreter_due_);
+    Err("Dump of queue:");
+    for (QState* it = queue_.Begin(); it != queue_.End(); it = it->next_)
+      Err("Due: %f%s", it->due_, it->completed_ ? " (c)" : "");
     return NULL;
   }
   QState* node = free_list_.PopFront();
@@ -37,6 +41,13 @@ Gesture* LookaheadFilterInterpreter::SyncInterpret(HardwareState* hwstate,
   double delay = max(0.0, min(kMaxDelay, delay_));
   node->due_ = hwstate->timestamp + delay;
   node->completed_ = false;
+  if (!queue_.Empty() && queue_.Tail()->due_ > node->due_) {
+    Err("Clock changed backwards. Clearing queue.");
+    do {
+      free_list_.PushBack(queue_.PopFront());
+    } while (!queue_.Empty());
+    interpreter_due_ = -1.0;
+  }
   queue_.PushBack(node);
 
   return HandleTimer(hwstate->timestamp, timeout);
