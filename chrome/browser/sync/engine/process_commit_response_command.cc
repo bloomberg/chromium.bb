@@ -16,6 +16,7 @@
 #include "chrome/browser/sync/sessions/sync_session.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/syncable.h"
+#include "chrome/browser/sync/util/time.h"
 
 using syncable::ScopedDirLookup;
 using syncable::WriteTransaction;
@@ -380,9 +381,9 @@ void ProcessCommitResponseCommand::UpdateServerFieldsAfterCommit(
   local_entry->Put(syncable::SERVER_SPECIFICS,
       committed_entry.specifics());
   local_entry->Put(syncable::SERVER_MTIME,
-      committed_entry.mtime());
+                   ProtoTimeToTime(committed_entry.mtime()));
   local_entry->Put(syncable::SERVER_CTIME,
-      committed_entry.ctime());
+                   ProtoTimeToTime(committed_entry.ctime()));
   local_entry->Put(syncable::SERVER_POSITION_IN_PARENT,
       entry_response.position_in_parent());
   // TODO(nick): The server doesn't set entry_response.server_parent_id in

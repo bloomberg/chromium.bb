@@ -73,8 +73,8 @@ class BaseNode {
   // different ID value.
   virtual int64 GetId() const;
 
-  // Returns the modification time of the object (in TimeTicks internal format).
-  int64 GetModificationTime() const;
+  // Returns the modification time of the object.
+  const base::Time& GetModificationTime() const;
 
   // Nodes are hierarchically arranged into a single-rooted tree.
   // InitByRootLookup on ReadNode allows access to the root. GetParentId is

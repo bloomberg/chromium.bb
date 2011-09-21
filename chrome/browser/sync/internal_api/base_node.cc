@@ -23,6 +23,7 @@
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 #include "chrome/browser/sync/syncable/syncable_id.h"
+#include "chrome/browser/sync/util/time.h"
 
 using syncable::SPECIFICS;
 using sync_pb::AutofillProfileSpecifics;
@@ -174,7 +175,7 @@ int64 BaseNode::GetId() const {
   return GetEntry()->Get(syncable::META_HANDLE);
 }
 
-int64 BaseNode::GetModificationTime() const {
+const base::Time& BaseNode::GetModificationTime() const {
   return GetEntry()->Get(syncable::MTIME);
 }
 
@@ -235,9 +236,9 @@ DictionaryValue* BaseNode::GetSummaryAsValue() const {
 
 DictionaryValue* BaseNode::GetDetailsAsValue() const {
   DictionaryValue* node_info = GetSummaryAsValue();
-  // TODO(akalin): Return time in a better format.
-  node_info->SetString("modificationTime",
-                       base::Int64ToString(GetModificationTime()));
+  node_info->SetString(
+      "modificationTime",
+      browser_sync::GetTimeDebugString(GetModificationTime()));
   node_info->SetString("parentId", base::Int64ToString(GetParentId()));
   // Specifics are already in the Entry value, so no need to duplicate
   // it here.
