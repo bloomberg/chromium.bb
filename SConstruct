@@ -275,9 +275,6 @@ def SetUpArgumentBits(env):
   BitFromArgument(env, 'pp', default=False,
     desc='Enable pretty printing')
 
-  BitFromArgument(env, 'dangerous_debug_disable_inner_sandbox',
-    default=False, desc='Make sel_ldr less strict')
-
   # By default SCons does not use the system's environment variables when
   # executing commands, to help isolate the build process.
   BitFromArgument(env, 'use_environ', arg_name='USE_ENVIRON',
@@ -2116,14 +2113,6 @@ def CustomCommandPrinter(cmd, targets, source, env):
 
 pre_base_env.Append(PRINT_CMD_LINE_FUNC=CustomCommandPrinter)
 
-# ----------------------------------------------------------
-# for generation of a promiscuous sel_ldr
-# ----------------------------------------------------------
-if pre_base_env.Bit('dangerous_debug_disable_inner_sandbox'):
-  pre_base_env.Append(
-      # NOTE: this also affects .S files
-      CPPDEFINES=['DANGEROUS_DEBUG_MODE_DISABLE_INNER_SANDBOX'],
-      )
 
 
 # ----------------------------------------------------------

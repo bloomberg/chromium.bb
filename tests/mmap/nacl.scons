@@ -14,7 +14,7 @@ node = env.CommandSelLdrTestNacl(
     mmap_test_nexe,
     args=[env.File('test-file')],
     stdout_golden=env.File('mmap_test.stdout'),
-    osenv='NACL_DANGEROUS_ENABLE_FILE_ACCESS=1')
+    sel_ldr_flags=['-a'])
 
 env.AddNodeToTestSuite(node,
                        ['small_tests', 'sel_ldr_tests'],

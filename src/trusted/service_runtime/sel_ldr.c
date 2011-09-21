@@ -195,10 +195,6 @@ int NaClAppWithSyscallTableCtor(struct NaClApp               *nap,
     nap->ignore_validator_result = 1;
     NaClLog(LOG_INFO, "DANGER: IGNORING VALIDATOR\n");
   }
-  if (IsEnvironmentVariableSet("NACL_DANGEROUS_ENABLE_FILE_ACCESS")) {
-    NaClInsecurelyBypassAllAclChecks();
-    NaClLog(LOG_INFO, "DANGER: ENABLED FILE ACCESS\n");
-  }
 
   if (!NaClMutexCtor(&nap->threads_mu)) {
     goto cleanup_name_service;
