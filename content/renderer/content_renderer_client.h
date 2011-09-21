@@ -95,12 +95,12 @@ class ContentRendererClient {
   virtual bool ShouldPumpEventsDuringCookieMessage() = 0;
 
   // See the corresponding functions in WebKit::WebFrameClient.
-  virtual void DidCreateScriptContext(WebKit::WebFrame* frame) = 0;
-  virtual void DidDestroyScriptContext(WebKit::WebFrame* frame) = 0;
-  virtual void DidCreateIsolatedScriptContext(
-      WebKit::WebFrame* frame,
-      int world_id,
-      v8::Handle<v8::Context> context) = 0;
+  virtual void DidCreateScriptContext(WebKit::WebFrame* frame,
+                                      v8::Handle<v8::Context> context,
+                                      int world_id) = 0;
+  virtual void WillReleaseScriptContext(WebKit::WebFrame* frame,
+                                        v8::Handle<v8::Context>,
+                                        int world_id) = 0;
 
   // See WebKit::WebKitPlatformSupport.
   virtual unsigned long long VisitedLinkHash(const char* canonical_url,

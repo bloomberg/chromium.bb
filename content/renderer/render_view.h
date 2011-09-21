@@ -571,11 +571,12 @@ class RenderView : public RenderWidget,
       const WebKit::WebURL& target);
   virtual void didAdoptURLLoader(WebKit::WebURLLoader* loader);
   virtual void didExhaustMemoryAvailableForScript(WebKit::WebFrame* frame);
-  virtual void didCreateScriptContext(WebKit::WebFrame* frame);
-  virtual void didDestroyScriptContext(WebKit::WebFrame* frame);
-  virtual void didCreateIsolatedScriptContext(WebKit::WebFrame* frame,
-                                              int world_id,
-                                              v8::Handle<v8::Context> context);
+  virtual void didCreateScriptContext(WebKit::WebFrame* frame,
+                                      v8::Handle<v8::Context>,
+                                      int world_id);
+  virtual void willReleaseScriptContext(WebKit::WebFrame* frame,
+                                        v8::Handle<v8::Context>,
+                                        int world_id);
   virtual void didUpdateLayout(WebKit::WebFrame* frame);
   virtual void didChangeScrollOffset(WebKit::WebFrame* frame);
   virtual void numberOfWheelEventHandlersChanged(unsigned num_handlers);

@@ -74,15 +74,11 @@ bool MockContentRendererClient::ShouldPumpEventsDuringCookieMessage() {
 }
 
 void MockContentRendererClient::DidCreateScriptContext(
-    WebKit::WebFrame* frame) {
+    WebKit::WebFrame* frame, v8::Handle<v8::Context> context, int world_id) {
 }
 
-void MockContentRendererClient::DidDestroyScriptContext(
-    WebKit::WebFrame* frame) {
-}
-
-void MockContentRendererClient::DidCreateIsolatedScriptContext(
-    WebKit::WebFrame* frame, int world_id, v8::Handle<v8::Context> context) {
+void MockContentRendererClient::WillReleaseScriptContext(
+    WebKit::WebFrame* frame, v8::Handle<v8::Context> context, int world_id) {
 }
 
 unsigned long long MockContentRendererClient::VisitedLinkHash(

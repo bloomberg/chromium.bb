@@ -2844,18 +2844,18 @@ void RenderView::didExhaustMemoryAvailableForScript(WebFrame* frame) {
   Send(new ViewHostMsg_JSOutOfMemory(routing_id_));
 }
 
-void RenderView::didCreateScriptContext(WebFrame* frame) {
-  content::GetContentClient()->renderer()->DidCreateScriptContext(frame);
+void RenderView::didCreateScriptContext(WebFrame* frame,
+                                        v8::Handle<v8::Context> context,
+                                        int world_id) {
+  content::GetContentClient()->renderer()->DidCreateScriptContext(
+      frame, context, world_id);
 }
 
-void RenderView::didDestroyScriptContext(WebFrame* frame) {
-  content::GetContentClient()->renderer()->DidDestroyScriptContext(frame);
-}
-
-void RenderView::didCreateIsolatedScriptContext(
-    WebFrame* frame, int world_id, v8::Handle<v8::Context> context) {
-  content::GetContentClient()->renderer()->DidCreateIsolatedScriptContext(
-      frame, world_id, context);
+void RenderView::willReleaseScriptContext(WebFrame* frame,
+                                          v8::Handle<v8::Context> context,
+                                          int world_id) {
+  content::GetContentClient()->renderer()->WillReleaseScriptContext(
+      frame, context, world_id);
 }
 
 void RenderView::didUpdateLayout(WebFrame* frame) {
