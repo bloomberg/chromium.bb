@@ -9,7 +9,6 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/media/media_player.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/simple_message_box.h"
 #include "chrome/browser/ui/browser.h"
@@ -23,6 +22,10 @@
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_mount_point_provider.h"
 #include "webkit/fileapi/file_system_util.h"
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/media/media_player.h"
+#endif
 
 #define FILEBROWSER_DOMAIN "hhaomjibdihmijegdhdafkllkbggdgoj"
 const char kFileBrowserDomain[] = FILEBROWSER_DOMAIN;
@@ -238,6 +241,7 @@ void FileManagerUtil::ViewItem(const FilePath& full_path, bool enqueue) {
       browser->AddSelectedTabWithURL(GURL(path), PageTransition::LINK);
     return;
   }
+#if defined(OS_CHROMEOS)
   if (IsSupportedAVExtension(ext.data())) {
     Browser* browser = BrowserList::GetLastActive();
     if (!browser)
@@ -249,6 +253,7 @@ void FileManagerUtil::ViewItem(const FilePath& full_path, bool enqueue) {
       mediaplayer->ForcePlayMediaFile(browser->profile(), full_path, NULL);
     return;
   }
+#endif  // OS_CHROMEOS
 
   // Unknown file type. Record UMA and show an error message.
   size_t extension_index = UMAExtensionIndex(ext.data(),

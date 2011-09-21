@@ -4,7 +4,11 @@
 
 #include "chrome/browser/ui/shell_dialogs.h"
 
+#include "chrome/browser/ui/views/file_manager_dialog.h"
+#include "content/browser/browser_thread.h"
+
 // static
 SelectFileDialog* SelectFileDialog::Create(Listener* listener) {
-  return NULL;
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  return new FileManagerDialog(listener);
 }

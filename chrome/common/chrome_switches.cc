@@ -1119,11 +1119,8 @@ const char kEnableArchives[]                = "enable-archives";
 #ifndef NDEBUG
 // Skips all other OOBE pages after user login.
 const char kOobeSkipPostLogin[]             = "oobe-skip-postlogin";
-
-// Enables overriding the path off file manager extension.
-const char kFileManagerExtensionPath[]      = "filemgr-ext-path";
-#endif
-#endif
+#endif  // NDEBUG
+#endif  // OS_CHROMEOS
 
 #if defined(OS_POSIX)
 // A flag, generated internally by Chrome for renderer and other helper process
@@ -1140,7 +1137,7 @@ const char kNoProcessSingletonDialog[]      = "no-process-singleton-dialog";
 // Specifies which password store to use (detect, default, gnome, kwallet).
 const char kPasswordStore[]                 = "password-store";
 #endif
-#endif
+#endif  // OS_POSIX
 
 #if defined(OS_MACOSX)
 // Enables the tabs expose feature ( http://crbug.com/50307 ).
@@ -1207,7 +1204,10 @@ const char kWebSocketLiveExperimentHost[]   = "websocket-live-experiment-host";
 // Debug only switch to give access to all private extension APIs to
 // any non-component extension that is requesting it.
 const char kExposePrivateExtensionApi[]   = "expose-private-extension-api";
-#endif
+
+// Enables overriding the path of file manager extension.
+const char kFileManagerExtensionPath[]      = "filemgr-ext-path";
+#endif  // NDEBUG
 
 // Disable print preview (Not exposed via about:flags. Only used for testing.)
 const char kDisablePrintPreview[]           = "disable-print-preview";

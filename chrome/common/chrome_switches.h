@@ -308,7 +308,6 @@ extern const char kAuthExtensionPath[];
 extern const char kEnableArchives[];
 #ifndef NDEBUG
 extern const char kOobeSkipPostLogin[];
-extern const char kFileManagerExtensionPath[];
 #endif
 #endif
 
@@ -350,6 +349,7 @@ extern const char kClearTokenService[];
 extern const char kSetToken[];
 extern const char kWebSocketLiveExperimentHost[];
 extern const char kExposePrivateExtensionApi[];
+extern const char kFileManagerExtensionPath[];
 #endif
 
 extern const char kDisablePrintPreview[];
