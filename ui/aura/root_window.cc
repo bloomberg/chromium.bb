@@ -17,6 +17,7 @@ namespace internal {
 RootWindow::RootWindow()
     : Window(NULL),
       mouse_pressed_handler_(NULL),
+      mouse_moved_handler_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(focus_manager_(new FocusManager(this))),
       capture_window_(NULL) {
   set_name(ASCIIToUTF16("RootWindow"));
@@ -30,10 +31,20 @@ bool RootWindow::HandleMouseEvent(const MouseEvent& event) {
       mouse_pressed_handler_ ? mouse_pressed_handler_ : capture_window_;
   if (!target)
     target = GetEventHandlerForPoint(event.location());
-  if (event.type() == ui::ET_MOUSE_PRESSED && !mouse_pressed_handler_)
-    mouse_pressed_handler_ = target;
-  if (event.type() == ui::ET_MOUSE_RELEASED)
-    mouse_pressed_handler_ = NULL;
+  switch (event.type()) {
+    case ui::ET_MOUSE_MOVED:
+      HandleMouseMoved(event, target);
+      break;
+    case ui::ET_MOUSE_PRESSED:
+      if (!mouse_pressed_handler_)
+        mouse_pressed_handler_ = target;
+      break;
+    case ui::ET_MOUSE_RELEASED:
+      mouse_pressed_handler_ = NULL;
+      break;
+    default:
+      break;
+  }
   if (target && target->delegate()) {
     MouseEvent translated_event(event, this, target);
     return target->OnMouseEvent(&translated_event);
@@ -85,6 +96,8 @@ void RootWindow::WindowDestroying(Window* window) {
   // don't sent it release/capture lost events.
   if (mouse_pressed_handler_ == window)
     mouse_pressed_handler_ = NULL;
+  if (mouse_moved_handler_ == window)
+    mouse_moved_handler_ = NULL;
   if (capture_window_ == window)
     capture_window_ = NULL;
 }
@@ -95,6 +108,25 @@ FocusManager* RootWindow::GetFocusManager() {
 
 internal::RootWindow* RootWindow::GetRoot() {
   return this;
+}
+
+void RootWindow::HandleMouseMoved(const MouseEvent& event, Window* target) {
+  if (target == mouse_moved_handler_)
+    return;
+
+  // Send an exited event.
+  if (mouse_moved_handler_ && mouse_moved_handler_->delegate()) {
+    MouseEvent translated_event(event, this, mouse_moved_handler_,
+                                ui::ET_MOUSE_EXITED);
+    mouse_moved_handler_->OnMouseEvent(&translated_event);
+  }
+  mouse_moved_handler_ = target;
+  // Send an entered event.
+  if (mouse_moved_handler_ && mouse_moved_handler_->delegate()) {
+    MouseEvent translated_event(event, this, mouse_moved_handler_,
+                                ui::ET_MOUSE_ENTERED);
+    mouse_moved_handler_->OnMouseEvent(&translated_event);
+  }
 }
 
 }  // namespace internal

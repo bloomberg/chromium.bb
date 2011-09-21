@@ -385,5 +385,65 @@ TEST_F(WindowTest, ReleaseCaptureOnDestroy) {
   EXPECT_EQ(NULL, root->capture_window());
 }
 
+class MouseEnterExitWindowDelegate : public WindowDelegateImpl {
+ public:
+  MouseEnterExitWindowDelegate() : entered_(false), exited_(false) {}
+
+  virtual bool OnMouseEvent(MouseEvent* event) OVERRIDE {
+    switch (event->type()) {
+      case ui::ET_MOUSE_ENTERED:
+        entered_ = true;
+        break;
+      case ui::ET_MOUSE_EXITED:
+        exited_ = true;
+        break;
+      default:
+        break;
+    }
+    return false;
+  }
+
+  bool entered() const { return entered_; }
+  bool exited() const { return exited_; }
+
+ private:
+  bool entered_;
+  bool exited_;
+
+  DISALLOW_COPY_AND_ASSIGN(MouseEnterExitWindowDelegate);
+};
+
+
+// Verifies that the WindowDelegate receives MouseExit and MouseEnter events for
+// mouse transitions from window to window.
+TEST_F(WindowTest, MouseEnterExit) {
+  Desktop* desktop = Desktop::GetInstance();
+
+  MouseEnterExitWindowDelegate d1;
+  scoped_ptr<Window> w1(
+      CreateTestWindowWithDelegate(&d1, 1, gfx::Rect(10, 10, 50, 50), NULL));
+  MouseEnterExitWindowDelegate d2;
+  scoped_ptr<Window> w2(
+      CreateTestWindowWithDelegate(&d2, 2, gfx::Rect(70, 70, 50, 50), NULL));
+
+  gfx::Point move_point = w1->bounds().CenterPoint();
+  Window::ConvertPointToWindow(w1->parent(), desktop->window(), &move_point);
+  desktop->OnMouseEvent(MouseEvent(ui::ET_MOUSE_MOVED, move_point, 0));
+
+  EXPECT_TRUE(d1.entered());
+  EXPECT_FALSE(d1.exited());
+  EXPECT_FALSE(d2.entered());
+  EXPECT_FALSE(d2.exited());
+
+  move_point = w2->bounds().CenterPoint();
+  Window::ConvertPointToWindow(w2->parent(), desktop->window(), &move_point);
+  desktop->OnMouseEvent(MouseEvent(ui::ET_MOUSE_MOVED, move_point, 0));
+
+  EXPECT_TRUE(d1.entered());
+  EXPECT_TRUE(d1.exited());
+  EXPECT_TRUE(d2.entered());
+  EXPECT_FALSE(d2.exited());
+}
+
 }  // namespace internal
 }  // namespace aura

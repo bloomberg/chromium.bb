@@ -38,6 +38,7 @@ class AURA_EXPORT Event {
   Event(ui::EventType type, int flags);
   Event(NativeEvent native_event, ui::EventType type, int flags);
   Event(const Event& copy);
+  void set_type(ui::EventType type) { type_ = type; }
 
  private:
   void operator=(const Event&);
@@ -83,6 +84,10 @@ class AURA_EXPORT MouseEvent : public LocatedEvent {
   // If source / target windows are provided, the model location will be
   // converted from |source| coordinate system to |target| coordinate system.
   MouseEvent(const MouseEvent& model, Window* source, Window* target);
+  MouseEvent(const MouseEvent& model,
+             Window* source,
+             Window* target,
+             ui::EventType type);
 
   // Used for synthetic events in testing.
   MouseEvent(ui::EventType type, const gfx::Point& location, int flags);

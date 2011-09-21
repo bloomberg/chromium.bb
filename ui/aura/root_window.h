@@ -50,7 +50,12 @@ class RootWindow : public Window {
   virtual internal::RootWindow* GetRoot() OVERRIDE;
 
  private:
+  // Called whenever the mouse moves, tracks the current |mouse_moved_handler_|,
+  // sending exited and entered events as its value changes.
+  void HandleMouseMoved(const MouseEvent& event, Window* target);
+
   Window* mouse_pressed_handler_;
+  Window* mouse_moved_handler_;
   scoped_ptr<FocusManager> focus_manager_;
   Window* capture_window_;
 
