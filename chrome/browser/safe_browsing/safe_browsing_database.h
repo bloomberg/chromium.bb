@@ -37,22 +37,24 @@ class SafeBrowsingDatabaseFactory {
   virtual ~SafeBrowsingDatabaseFactory() { }
   virtual SafeBrowsingDatabase* CreateSafeBrowsingDatabase(
       bool enable_download_protection,
-      bool enable_client_side_whitelist) = 0;
+      bool enable_client_side_whitelist,
+      bool enable_download_whitelist) = 0;
  private:
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingDatabaseFactory);
 };
 
 
 // Encapsulates on-disk databases that for safebrowsing. There are
-// three databases: browse, download and client-side detection (csd)
-// whitelist databases. The browse database contains information
-// about phishing and malware urls. The download database contains
+// four databases: browse, download, download whitelist and
+// client-side detection (csd) whitelist databases. The browse database contains
+// information about phishing and malware urls. The download database contains
 // URLs for bad binaries (e.g: those containing virus) and hash of
-// these downloaded contents. The csd whitelist database contains URLs
-// that will never be considered as phishing by the client-side
-// phishing detection. These on-disk databases are shared among all
-// profiles, as it doesn't contain user-specific data. This object is
-// not thread-safe, i.e. all its methods should be used on the same
+// these downloaded contents. The download whitelist contains whitelisted
+// download hosting sites as well as whitelisted binary signing certificates
+// etc.  The csd whitelist database contains URLs that will never be considered
+// as phishing by the client-side phishing detection. These on-disk databases
+// are shared among all profiles, as it doesn't contain user-specific data. This
+// object is not thread-safe, i.e. all its methods should be used on the same
 // thread that it was created on.
 class SafeBrowsingDatabase {
  public:
@@ -62,8 +64,11 @@ class SafeBrowsingDatabase {
   // feature.
   // |enable_client_side_whitelist| is used to control the csd whitelist
   // database feature.
+  // |enable_download_whitelist| is used to control the download whitelist
+  // database feature.
   static SafeBrowsingDatabase* Create(bool enable_download_protection,
-                                      bool enable_client_side_whitelist);
+                                      bool enable_client_side_whitelist,
+                                      bool enable_download_whitelist);
 
   // Makes the passed |factory| the factory used to instantiate
   // a SafeBrowsingDatabase. This is used for tests.
@@ -105,6 +110,16 @@ class SafeBrowsingDatabase {
   // only contains full-length hashes so we don't return any prefix hit.
   // This function should only be called from the IO thread.
   virtual bool ContainsCsdWhitelistedUrl(const GURL& url) = 0;
+
+  // The download whitelist is used for two purposes: a white-domain list of
+  // sites that are considered to host only harmless binaries as well as a
+  // whitelist of arbitrary strings such as hashed certificate authorities that
+  // are considered to be trusted.  The two methods below let you lookup
+  // the whitelist either for a URL or an arbitrary string.  These methods will
+  // return false if no match is found and true otherwise.
+  // This function could ONLY be accessed from the IO thread.
+  virtual bool ContainsDownloadWhitelistedUrl(const GURL& url) = 0;
+  virtual bool ContainsDownloadWhitelistedString(const std::string& str) = 0;
 
   // A database transaction should look like:
   //
@@ -154,6 +169,10 @@ class SafeBrowsingDatabase {
   static FilePath CsdWhitelistDBFilename(
       const FilePath& csd_whitelist_base_filename);
 
+  // Filename for download whitelist databsae.
+  static FilePath DownloadWhitelistDBFilename(
+      const FilePath& download_whitelist_base_filename);
+
   // Enumerate failures for histogramming purposes.  DO NOT CHANGE THE
   // ORDERING OF THESE VALUES.
   enum FailureType {
@@ -169,9 +188,8 @@ class SafeBrowsingDatabase {
     FAILURE_DATABASE_STORE_DELETE,
     FAILURE_DOWNLOAD_DATABASE_UPDATE_BEGIN,
     FAILURE_DOWNLOAD_DATABASE_UPDATE_FINISH,
-    FAILURE_CSD_WHITELIST_DATABASE_UPDATE_BEGIN,
-    FAILURE_CSD_WHITELIST_DATABASE_UPDATE_FINISH,
-
+    FAILURE_WHITELIST_DATABASE_UPDATE_BEGIN,
+    FAILURE_WHITELIST_DATABASE_UPDATE_FINISH,
     // Memory space for histograms is determined by the max.  ALWAYS
     // ADD NEW VALUES BEFORE THIS ONE.
     FAILURE_DATABASE_MAX
@@ -188,14 +206,15 @@ class SafeBrowsingDatabase {
 
 class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
  public:
-  // Create a database with a browse store, download store and
-  // csd_whitelist_store. Takes ownership of browse_store, download_store and
-  // csd_whitelist_store. When |download_store| is NULL, the database
-  // will ignore any operations related download (url hashes and
-  // binary hashes).  Same for the |csd_whitelist_store|.
+  // Create a database with a browse, download, download whitelist and
+  // csd whitelist store objects. Takes ownership of all the store objects.
+  // When |download_store| is NULL, the database will ignore any operations
+  // related download (url hashes and binary hashes).  The same is true for
+  // the |csd_whitelist_store| and |download_whitelist_store|.
   SafeBrowsingDatabaseNew(SafeBrowsingStore* browse_store,
                           SafeBrowsingStore* download_store,
-                          SafeBrowsingStore* csd_whitelist_store);
+                          SafeBrowsingStore* csd_whitelist_store,
+                          SafeBrowsingStore* download_whitelist_store);
 
   // Create a database with a browse store. This is a legacy interface that
   // useds Sqlite.
@@ -215,6 +234,8 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
                                    std::vector<SBPrefix>* prefix_hits);
   virtual bool ContainsDownloadHashPrefix(const SBPrefix& prefix);
   virtual bool ContainsCsdWhitelistedUrl(const GURL& url);
+  virtual bool ContainsDownloadWhitelistedUrl(const GURL& url);
+  virtual bool ContainsDownloadWhitelistedString(const std::string& str);
   virtual bool UpdateStarted(std::vector<SBListChunkRanges>* lists);
   virtual void InsertChunks(const std::string& list_name,
                             const SBChunkList& chunks);
@@ -227,8 +248,18 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
   friend class SafeBrowsingDatabaseTest;
   FRIEND_TEST(SafeBrowsingDatabaseTest, HashCaching);
 
-  // Return the browse_store_, download_store_ or csd_whitelist_store_
-  // based on list_id.
+  // A SafeBrowsing whitelist contains a list of whitelisted full-hashes (stored
+  // in a sorted vector) as well as a boolean flag indicating whether all
+  // lookups in the whitelist should be considered matches for safety.
+  typedef std::pair<std::vector<SBFullHash>, bool> SBWhitelist;
+
+  // Returns true if the whitelist is disabled or if any of the given hashes
+  // matches the whitelist.
+  bool ContainsWhitelistedHashes(const SBWhitelist& whitelist,
+                                 const std::vector<SBFullHash>& hashes);
+
+  // Return the browse_store_, download_store_, download_whitelist_store or
+  // csd_whitelist_store_ based on list_id.
   SafeBrowsingStore* GetStore(int list_id);
 
     // Deletes the files on disk.
@@ -240,14 +271,15 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
   // Writes the current bloom filter to disk.
   void WriteBloomFilter();
 
-  // Loads the given full-length hashes to the csd whitelist.  If the number
+  // Loads the given full-length hashes to the given whitelist.  If the number
   // of hashes is too large or if the kill switch URL is on the whitelist
-  // we will whitelist all URLs.
-  void LoadCsdWhitelist(const std::vector<SBAddFullHash>& full_hashes);
+  // we will whitelist everything.
+  void LoadWhitelist(const std::vector<SBAddFullHash>& full_hashes,
+                     SBWhitelist* whitelist);
 
-  // Call this method if an error occured with the csd whitelist.  This will
-  // result in all calls to ContainsCsdWhitelistedUrl() to returning true.
-  void CsdWhitelistAllUrls();
+  // Call this method if an error occured with the given whitelist.  This will
+  // result in all lookups to the whitelist to return true.
+  void WhitelistEverything(SBWhitelist* whitelist);
 
   // Helpers for handling database corruption.
   // |OnHandleCorruptDatabase()| runs |ResetDatabase()| and sets
@@ -267,7 +299,9 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
 
   void UpdateDownloadStore();
   void UpdateBrowseStore();
-  void UpdateCsdWhitelistStore();
+  void UpdateWhitelistStore(const FilePath& store_filename,
+                            SafeBrowsingStore* store,
+                            SBWhitelist* whitelist);
 
   // Helper function to compare addprefixes in download_store_ with |prefixes|.
   // The |list_bit| indicates which list (download url or download hash)
@@ -302,15 +336,13 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
   FilePath csd_whitelist_filename_;
   scoped_ptr<SafeBrowsingStore> csd_whitelist_store_;
 
-  // All the client-side phishing detection whitelist entries are loaded in
-  // a sorted vector.
-  std::vector<SBFullHash> csd_whitelist_;
+  // For the download whitelist chunks and full-length hashes.  This list only
+  // contains 256 bit hashes.
+  FilePath download_whitelist_filename_;
+  scoped_ptr<SafeBrowsingStore> download_whitelist_store_;
 
-  // If true, ContainsCsdWhitelistedUrl will always return true for all URLs.
-  // This is set to true if the csd whitelist is too large to be stored in
-  // memory, if the kill switch URL is on the csd whitelist or if there was
-  // an error during the most recent update.
-  bool csd_whitelist_all_urls_;
+  SBWhitelist csd_whitelist_;
+  SBWhitelist download_whitelist_;
 
   // Bloom filter generated from the add-prefixes in |browse_store_|.
   // Only browse_store_ requires the BloomFilter for fast query.

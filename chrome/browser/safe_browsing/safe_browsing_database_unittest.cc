@@ -366,9 +366,11 @@ TEST_F(SafeBrowsingDatabaseTest, ListNameForBrowseAndDownload) {
   SafeBrowsingStoreFile* browse_store = new SafeBrowsingStoreFile();
   SafeBrowsingStoreFile* download_store = new SafeBrowsingStoreFile();
   SafeBrowsingStoreFile* csd_whitelist_store = new SafeBrowsingStoreFile();
+  SafeBrowsingStoreFile* download_whitelist_store = new SafeBrowsingStoreFile();
   database_.reset(new SafeBrowsingDatabaseNew(browse_store,
                                               download_store,
-                                              csd_whitelist_store));
+                                              csd_whitelist_store,
+                                              download_whitelist_store));
   database_->Init(database_filename_);
 
   SBChunkList chunks;
@@ -410,10 +412,18 @@ TEST_F(SafeBrowsingDatabaseTest, ListNameForBrowseAndDownload) {
   chunks.push_back(chunk);
   database_->InsertChunks(safe_browsing_util::kCsdWhiteList, chunks);
 
+  chunk.hosts.clear();
+  InsertAddChunkHostFullHashes(&chunk, 6, "www.download.com/",
+                               "www.download.com/");
+
+  chunks.clear();
+  chunks.push_back(chunk);
+  database_->InsertChunks(safe_browsing_util::kDownloadWhiteList, chunks);
+
   database_->UpdateFinished(true);
 
   GetListsInfo(&lists);
-  EXPECT_EQ(5U, lists.size());
+  EXPECT_EQ(6U, lists.size());
   EXPECT_TRUE(lists[0].name == safe_browsing_util::kMalwareList);
   EXPECT_EQ(lists[0].adds, "1");
   EXPECT_TRUE(lists[0].subs.empty());
@@ -429,6 +439,9 @@ TEST_F(SafeBrowsingDatabaseTest, ListNameForBrowseAndDownload) {
   EXPECT_TRUE(lists[4].name == safe_browsing_util::kCsdWhiteList);
   EXPECT_EQ(lists[4].adds, "5");
   EXPECT_TRUE(lists[4].subs.empty());
+  EXPECT_TRUE(lists[5].name == safe_browsing_util::kDownloadWhiteList);
+  EXPECT_EQ(lists[5].adds, "6");
+  EXPECT_TRUE(lists[5].subs.empty());
   database_.reset();
 }
 
@@ -1052,7 +1065,7 @@ TEST_F(SafeBrowsingDatabaseTest, DISABLED_FileCorruptionHandling) {
   database_.reset();
   MessageLoop loop(MessageLoop::TYPE_DEFAULT);
   SafeBrowsingStoreFile* store = new SafeBrowsingStoreFile();
-  database_.reset(new SafeBrowsingDatabaseNew(store, NULL, NULL));
+  database_.reset(new SafeBrowsingDatabaseNew(store, NULL, NULL, NULL));
   database_->Init(database_filename_);
 
   // This will cause an empty database to be created.
@@ -1124,7 +1137,8 @@ TEST_F(SafeBrowsingDatabaseTest, ContainsDownloadUrl) {
   SafeBrowsingStoreFile* csd_whitelist_store = new SafeBrowsingStoreFile();
   database_.reset(new SafeBrowsingDatabaseNew(browse_store,
                                               download_store,
-                                              csd_whitelist_store));
+                                              csd_whitelist_store,
+                                              NULL));
   database_->Init(database_filename_);
 
   const char kEvil1Host[] = "www.evil1.com/";
@@ -1216,25 +1230,30 @@ TEST_F(SafeBrowsingDatabaseTest, ContainsDownloadUrl) {
   database_.reset();
 }
 
-// Checks that the csd-whitelist is handled properly.
-TEST_F(SafeBrowsingDatabaseTest, CsdWhitelist) {
+// Checks that the whitelists are handled properly.
+TEST_F(SafeBrowsingDatabaseTest, Whitelists) {
   database_.reset();
   MessageLoop loop(MessageLoop::TYPE_DEFAULT);
-  // We expect all calls to ContainsCsdWhitelistedUrl to be made from the IO
-  // thread.
+  // We expect all calls to ContainsCsdWhitelistedUrl in particular to be made
+  // from the IO thread.  In general the whitelist lookups are thread-safe.
   BrowserThread io_thread(BrowserThread::IO, &loop);
 
   // If the whitelist is disabled everything should match the whitelist.
   database_.reset(new SafeBrowsingDatabaseNew(new SafeBrowsingStoreFile(),
-                                              NULL, NULL));
+                                              NULL, NULL, NULL));
   database_->Init(database_filename_);
-  EXPECT_TRUE(database_->ContainsCsdWhitelistedUrl(
-      GURL(std::string("http://www.phishig.com/"))));
+  EXPECT_TRUE(database_->ContainsDownloadWhitelistedUrl(
+      GURL(std::string("http://www.phishing.com/"))));
+  EXPECT_TRUE(database_->ContainsDownloadWhitelistedUrl(
+      GURL(std::string("http://www.phishing.com/"))));
+  EXPECT_TRUE(database_->ContainsDownloadWhitelistedString("asdf"));
 
   SafeBrowsingStoreFile* browse_store = new SafeBrowsingStoreFile();
   SafeBrowsingStoreFile* csd_whitelist_store = new SafeBrowsingStoreFile();
+  SafeBrowsingStoreFile* download_whitelist_store = new SafeBrowsingStoreFile();
   database_.reset(new SafeBrowsingDatabaseNew(browse_store, NULL,
-                                              csd_whitelist_store));
+                                              csd_whitelist_store,
+                                              download_whitelist_store));
   database_->Init(database_filename_);
 
   const char kGood1Host[] = "www.good1.com/";
@@ -1244,20 +1263,41 @@ TEST_F(SafeBrowsingDatabaseTest, CsdWhitelist) {
   const char kGood2Host[] = "www.good2.com/";
   const char kGood2Url1[] = "www.good2.com/c";  // Should match '/c/bla'.
 
-  SBChunkList chunks;
+  // good3.com/a/b/c/d/e/f/g/ should match because it's a whitelist.
+  const char kGood3Host[] = "good3.com/";
+  const char kGood3Url1[] = "good3.com/";
+
+  const char kGoodString[] = "good_string";
+
+  SBChunkList download_chunks, csd_chunks;
   SBChunk chunk;
   // Add two simple chunks to the csd whitelist.
   InsertAddChunkHost2FullHashes(&chunk, 1, kGood1Host,
                                 kGood1Url1, kGood1Url2);
-  chunks.push_back(chunk);
+  csd_chunks.push_back(chunk);
 
   chunk.hosts.clear();
   InsertAddChunkHostFullHashes(&chunk, 2, kGood2Host, kGood2Url1);
-  chunks.push_back(chunk);
+  csd_chunks.push_back(chunk);
+
+  chunk.hosts.clear();
+  InsertAddChunkHostFullHashes(&chunk, 2, kGood2Host, kGood2Url1);
+  download_chunks.push_back(chunk);
+
+  chunk.hosts.clear();
+  InsertAddChunkHostFullHashes(&chunk, 3, kGoodString, kGoodString);
+  download_chunks.push_back(chunk);
+
+  chunk.hosts.clear();
+  InsertAddChunkHostFullHashes(&chunk, 4, kGood3Host, kGood3Url1);
+  download_chunks.push_back(chunk);
 
   std::vector<SBListChunkRanges> lists;
   EXPECT_TRUE(database_->UpdateStarted(&lists));
-  database_->InsertChunks(safe_browsing_util::kCsdWhiteList, chunks);
+  database_->InsertChunks(safe_browsing_util::kCsdWhiteList,
+                          csd_chunks);
+  database_->InsertChunks(safe_browsing_util::kDownloadWhiteList,
+                          download_chunks);
   database_->UpdateFinished(true);
 
   EXPECT_FALSE(database_->ContainsCsdWhitelistedUrl(
@@ -1286,16 +1326,42 @@ TEST_F(SafeBrowsingDatabaseTest, CsdWhitelist) {
   EXPECT_FALSE(database_->ContainsCsdWhitelistedUrl(
       GURL(std::string("http://www.google.com/"))));
 
+  EXPECT_TRUE(database_->ContainsDownloadWhitelistedUrl(
+      GURL(std::string("http://") + kGood2Url1 + "/c")));
+  EXPECT_TRUE(database_->ContainsDownloadWhitelistedUrl(
+      GURL(std::string("http://") + kGood2Url1 + "/c?bla")));
+  EXPECT_TRUE(database_->ContainsDownloadWhitelistedUrl(
+      GURL(std::string("http://") + kGood2Url1 + "/c/bla")));
+
+  EXPECT_TRUE(database_->ContainsDownloadWhitelistedUrl(
+      GURL(std::string("http://good3.com/a/b/c/d/e/f/g/"))));
+  EXPECT_TRUE(database_->ContainsDownloadWhitelistedUrl(
+      GURL(std::string("http://a.b.good3.com/"))));
+
+  EXPECT_FALSE(database_->ContainsDownloadWhitelistedString("asdf"));
+  EXPECT_TRUE(database_->ContainsDownloadWhitelistedString(kGoodString));
+
+  EXPECT_FALSE(database_->ContainsDownloadWhitelistedUrl(
+      GURL(std::string("http://www.google.com/"))));
+
   // Test that the kill-switch works as intended.
-  chunks.clear();
+  csd_chunks.clear();
+  download_chunks.clear();
   lists.clear();
-  SBChunk chunk2;
-  InsertAddChunkHostFullHashes(&chunk2, 3, "sb-ssl.google.com/",
+  chunk.hosts.clear();
+  InsertAddChunkHostFullHashes(&chunk, 5, "sb-ssl.google.com/",
                                "sb-ssl.google.com/safebrowsing/csd/killswitch");
-  chunks.push_back(chunk2);
+  csd_chunks.push_back(chunk);
+
+  chunk.hosts.clear();
+  InsertAddChunkHostFullHashes(&chunk, 5, "sb-ssl.google.com/",
+                               "sb-ssl.google.com/safebrowsing/csd/killswitch");
+  download_chunks.push_back(chunk);
 
   EXPECT_TRUE(database_->UpdateStarted(&lists));
-  database_->InsertChunks(safe_browsing_util::kCsdWhiteList, chunks);
+  database_->InsertChunks(safe_browsing_util::kCsdWhiteList, csd_chunks);
+  database_->InsertChunks(safe_browsing_util::kDownloadWhiteList,
+                          download_chunks);
   database_->UpdateFinished(true);
 
   EXPECT_TRUE(database_->ContainsCsdWhitelistedUrl(
@@ -1305,17 +1371,36 @@ TEST_F(SafeBrowsingDatabaseTest, CsdWhitelist) {
   EXPECT_TRUE(database_->ContainsCsdWhitelistedUrl(
       GURL(std::string("http://www.phishing_url.com/"))));
 
+  EXPECT_TRUE(database_->ContainsDownloadWhitelistedUrl(
+      GURL(std::string("https://") + kGood1Url2 + "/c.html")));
+  EXPECT_TRUE(database_->ContainsDownloadWhitelistedUrl(
+      GURL(std::string("http://www.google.com/"))));
+  EXPECT_TRUE(database_->ContainsDownloadWhitelistedUrl(
+      GURL(std::string("http://www.phishing_url.com/"))));
+
+  EXPECT_TRUE(database_->ContainsDownloadWhitelistedString("asdf"));
+  EXPECT_TRUE(database_->ContainsDownloadWhitelistedString(kGoodString));
+
   // Remove the kill-switch and verify that we can recover.
-  chunks.clear();
+  csd_chunks.clear();
+  download_chunks.clear();
   lists.clear();
   SBChunk sub_chunk;
-  InsertSubChunkHostFullHash(&sub_chunk, 1, 3,
+  InsertSubChunkHostFullHash(&sub_chunk, 1, 5,
                              "sb-ssl.google.com/",
                              "sb-ssl.google.com/safebrowsing/csd/killswitch");
-  chunks.push_back(sub_chunk);
+  csd_chunks.push_back(sub_chunk);
+
+  sub_chunk.hosts.clear();
+  InsertSubChunkHostFullHash(&sub_chunk, 1, 5,
+                             "sb-ssl.google.com/",
+                             "sb-ssl.google.com/safebrowsing/csd/killswitch");
+  download_chunks.push_back(sub_chunk);
 
   EXPECT_TRUE(database_->UpdateStarted(&lists));
-  database_->InsertChunks(safe_browsing_util::kCsdWhiteList, chunks);
+  database_->InsertChunks(safe_browsing_util::kCsdWhiteList, csd_chunks);
+  database_->InsertChunks(safe_browsing_util::kDownloadWhiteList,
+                          download_chunks);
   database_->UpdateFinished(true);
 
   EXPECT_TRUE(database_->ContainsCsdWhitelistedUrl(
@@ -1326,6 +1411,17 @@ TEST_F(SafeBrowsingDatabaseTest, CsdWhitelist) {
       GURL(std::string("http://www.google.com/"))));
   EXPECT_FALSE(database_->ContainsCsdWhitelistedUrl(
       GURL(std::string("http://www.phishing_url.com/"))));
+
+  EXPECT_TRUE(database_->ContainsDownloadWhitelistedUrl(
+      GURL(std::string("https://") + kGood2Url1 + "/c/bla")));
+  EXPECT_TRUE(database_->ContainsDownloadWhitelistedUrl(
+      GURL(std::string("https://good3.com/"))));
+  EXPECT_TRUE(database_->ContainsDownloadWhitelistedString(kGoodString));
+  EXPECT_FALSE(database_->ContainsDownloadWhitelistedUrl(
+      GURL(std::string("http://www.google.com/"))));
+  EXPECT_FALSE(database_->ContainsDownloadWhitelistedUrl(
+      GURL(std::string("http://www.phishing_url.com/"))));
+  EXPECT_FALSE(database_->ContainsDownloadWhitelistedString("asdf"));
 
   database_.reset();
 }
@@ -1439,7 +1535,7 @@ TEST_F(SafeBrowsingDatabaseTest, BinHashInsertLookup) {
   SafeBrowsingStoreFile* download_store = new SafeBrowsingStoreFile();
   database_.reset(new SafeBrowsingDatabaseNew(browse_store,
                                               download_store,
-                                              NULL));
+                                              NULL, NULL));
   database_->Init(database_filename_);
 
   SBChunkList chunks;

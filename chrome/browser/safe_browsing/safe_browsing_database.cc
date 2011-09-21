@@ -33,6 +33,9 @@ const FilePath::CharType kDownloadDBFile[] = FILE_PATH_LITERAL(" Download");
 // Filename suffix for client-side phishing detection whitelist store.
 const FilePath::CharType kCsdWhitelistDBFile[] =
     FILE_PATH_LITERAL(" Csd Whitelist");
+// Filename suffix for the download whitelist store.
+const FilePath::CharType kDownloadWhitelistDBFile[] =
+    FILE_PATH_LITERAL(" Download Whitelist");
 // Filename suffix for browse store.
 // TODO(lzheng): change to a better name when we change the file format.
 const FilePath::CharType kBrowseDBFile[] = FILE_PATH_LITERAL(" Bloom");
@@ -40,15 +43,15 @@ const FilePath::CharType kBrowseDBFile[] = FILE_PATH_LITERAL(" Bloom");
 // The maximum staleness for a cached entry.
 const int kMaxStalenessMinutes = 45;
 
-// Maximum number of entries we allow in the client-side phishing detection
-// whitelist.  If the whitelist on disk contains more entries then
-// ContainsCsdWhitelistedUrl will always return true.
-const size_t kMaxCsdWhitelistSize = 5000;
+// Maximum number of entries we allow in any of the whitelists.
+// If a whitelist on disk contains more entries then all lookups to
+// the whitelist will be considered a match.
+const size_t kMaxWhitelistSize = 5000;
 
-// If the hash of this exact expression is on the csd whitelist then
-// ContainsCsdWhitelistedUrl will always return true.
-const char kCsdKillSwitchUrl[] =
-    "sb-ssl.google.com/safebrowsing/csd/killswitch";
+// If the hash of this exact expression is on a whitelist then all
+// lookups to this whitelist will be considered a match.
+const char kWhitelistKillSwitchUrl[] =
+    "sb-ssl.google.com/safebrowsing/csd/killswitch";  // Don't change this!
 
 // To save space, the incoming |chunk_id| and |list_id| are combined
 // into an |encoded_chunk_id| for storage by shifting the |list_id|
@@ -71,7 +74,7 @@ int EncodeChunkId(const int chunk, const int list_id) {
 // |include_whitelist_hashes| is true we will generate additional path-prefixes
 // to match against the csd whitelist.  E.g., if the path-prefix /foo is on the
 // whitelist it should also match /foo/bar which is not the case for all the
-// other lists.
+// other lists.  We'll also always add a pattern for the empty path.
 // TODO(shess): This function is almost the same as
 // |CompareFullHashes()| in safe_browsing_util.cc, except that code
 // does an early exit on match.  Since match should be the infrequent
@@ -395,11 +398,13 @@ class SafeBrowsingDatabaseFactoryImpl : public SafeBrowsingDatabaseFactory {
  public:
   virtual SafeBrowsingDatabase* CreateSafeBrowsingDatabase(
       bool enable_download_protection,
-      bool enable_client_side_whitelist) {
+      bool enable_client_side_whitelist,
+      bool enable_download_whitelist) {
     return new SafeBrowsingDatabaseNew(
         new SafeBrowsingStoreFile,
         enable_download_protection ? new SafeBrowsingStoreFile : NULL,
-        enable_client_side_whitelist ? new SafeBrowsingStoreFile : NULL);
+        enable_client_side_whitelist ? new SafeBrowsingStoreFile : NULL,
+        enable_download_whitelist ? new SafeBrowsingStoreFile : NULL);
   }
 
   SafeBrowsingDatabaseFactoryImpl() { }
@@ -418,11 +423,13 @@ SafeBrowsingDatabaseFactory* SafeBrowsingDatabase::factory_ = NULL;
 // callers just construct things directly.
 SafeBrowsingDatabase* SafeBrowsingDatabase::Create(
     bool enable_download_protection,
-    bool enable_client_side_whitelist) {
+    bool enable_client_side_whitelist,
+    bool enable_download_whitelist) {
   if (!factory_)
     factory_ = new SafeBrowsingDatabaseFactoryImpl();
   return factory_->CreateSafeBrowsingDatabase(enable_download_protection,
-                                              enable_client_side_whitelist);
+                                              enable_client_side_whitelist,
+                                              enable_download_whitelist);
 }
 
 SafeBrowsingDatabase::~SafeBrowsingDatabase() {
@@ -452,6 +459,12 @@ FilePath SafeBrowsingDatabase::CsdWhitelistDBFilename(
   return FilePath(db_filename.value() + kCsdWhitelistDBFile);
 }
 
+// static
+FilePath SafeBrowsingDatabase::DownloadWhitelistDBFilename(
+    const FilePath& db_filename) {
+  return FilePath(db_filename.value() + kDownloadWhitelistDBFile);
+}
+
 SafeBrowsingStore* SafeBrowsingDatabaseNew::GetStore(const int list_id) {
   if (list_id == safe_browsing_util::PHISH ||
       list_id == safe_browsing_util::MALWARE) {
@@ -461,6 +474,8 @@ SafeBrowsingStore* SafeBrowsingDatabaseNew::GetStore(const int list_id) {
     return download_store_.get();
   } else if (list_id == safe_browsing_util::CSDWHITELIST) {
     return csd_whitelist_store_.get();
+  } else if (list_id == safe_browsing_util::DOWNLOADWHITELIST) {
+    return download_whitelist_store_.get();
   }
   return NULL;
 }
@@ -476,20 +491,24 @@ SafeBrowsingDatabaseNew::SafeBrowsingDatabaseNew()
       browse_store_(new SafeBrowsingStoreFile),
       download_store_(NULL),
       csd_whitelist_store_(NULL),
+      download_whitelist_store_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(reset_factory_(this)) {
   DCHECK(browse_store_.get());
   DCHECK(!download_store_.get());
   DCHECK(!csd_whitelist_store_.get());
+  DCHECK(!download_whitelist_store_.get());
 }
 
 SafeBrowsingDatabaseNew::SafeBrowsingDatabaseNew(
     SafeBrowsingStore* browse_store,
     SafeBrowsingStore* download_store,
-    SafeBrowsingStore* csd_whitelist_store)
+    SafeBrowsingStore* csd_whitelist_store,
+    SafeBrowsingStore* download_whitelist_store)
     : creation_loop_(MessageLoop::current()),
       browse_store_(browse_store),
       download_store_(download_store),
       csd_whitelist_store_(csd_whitelist_store),
+      download_whitelist_store_(download_whitelist_store),
       ALLOW_THIS_IN_INITIALIZER_LIST(reset_factory_(this)),
       corruption_detected_(false) {
   DCHECK(browse_store_.get());
@@ -505,6 +524,7 @@ void SafeBrowsingDatabaseNew::Init(const FilePath& filename_base) {
   DCHECK(browse_filename_.empty());
   DCHECK(download_filename_.empty());
   DCHECK(csd_whitelist_filename_.empty());
+  DCHECK(download_whitelist_filename_.empty());
 
   browse_filename_ = BrowseDBFilename(filename_base);
   bloom_filter_filename_ = BloomFilterForFilename(browse_filename_);
@@ -541,12 +561,29 @@ void SafeBrowsingDatabaseNew::Init(const FilePath& filename_base) {
     DVLOG(1) << "Init csd whitelist store: " << csd_whitelist_filename_.value();
     std::vector<SBAddFullHash> full_hashes;
     if (csd_whitelist_store_->GetAddFullHashes(&full_hashes)) {
-      LoadCsdWhitelist(full_hashes);
+      LoadWhitelist(full_hashes, &csd_whitelist_);
     } else {
-      CsdWhitelistAllUrls();
+      WhitelistEverything(&csd_whitelist_);
     }
   } else {
-    CsdWhitelistAllUrls();  // Just to be safe.
+    WhitelistEverything(&csd_whitelist_);  // Just to be safe.
+  }
+
+  if (download_whitelist_store_.get()) {
+    download_whitelist_filename_ = DownloadWhitelistDBFilename(filename_base);
+    download_whitelist_store_->Init(
+        download_whitelist_filename_,
+        NewCallback(this, &SafeBrowsingDatabaseNew::HandleCorruptDatabase));
+    DVLOG(1) << "Init download whitelist store: "
+             << download_whitelist_filename_.value();
+    std::vector<SBAddFullHash> full_hashes;
+    if (download_whitelist_store_->GetAddFullHashes(&full_hashes)) {
+      LoadWhitelist(full_hashes, &download_whitelist_);
+    } else {
+      WhitelistEverything(&download_whitelist_);
+    }
+  } else {
+    WhitelistEverything(&download_whitelist_);  // Just to be safe.
   }
 }
 
@@ -573,7 +610,8 @@ bool SafeBrowsingDatabaseNew::ResetDatabase() {
     prefix_set_.reset(new safe_browsing::PrefixSet(std::vector<SBPrefix>()));
   }
   // Wants to acquire the lock itself.
-  CsdWhitelistAllUrls();
+  WhitelistEverything(&csd_whitelist_);
+  WhitelistEverything(&download_whitelist_);
 
   return true;
 }
@@ -713,15 +751,35 @@ bool SafeBrowsingDatabaseNew::ContainsCsdWhitelistedUrl(const GURL& url) {
   // This method is theoretically thread-safe but we expect all calls to
   // originate from the IO thread.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  base::AutoLock l(lookup_lock_);
-  if (csd_whitelist_all_urls_)
-    return true;
-
   std::vector<SBFullHash> full_hashes;
   BrowseFullHashesToCheck(url, true, &full_hashes);
-  for (std::vector<SBFullHash>::const_iterator it = full_hashes.begin();
-       it != full_hashes.end(); ++it) {
-    if (std::binary_search(csd_whitelist_.begin(), csd_whitelist_.end(), *it))
+  return ContainsWhitelistedHashes(csd_whitelist_, full_hashes);
+}
+
+bool SafeBrowsingDatabaseNew::ContainsDownloadWhitelistedUrl(const GURL& url) {
+  std::vector<SBFullHash> full_hashes;
+  BrowseFullHashesToCheck(url, true, &full_hashes);
+  return ContainsWhitelistedHashes(download_whitelist_, full_hashes);
+}
+
+bool SafeBrowsingDatabaseNew::ContainsDownloadWhitelistedString(
+    const std::string& str) {
+  SBFullHash hash;
+  crypto::SHA256HashString(str, &hash, sizeof(hash));
+  std::vector<SBFullHash> hashes;
+  hashes.push_back(hash);
+  return ContainsWhitelistedHashes(download_whitelist_, hashes);
+}
+
+bool SafeBrowsingDatabaseNew::ContainsWhitelistedHashes(
+    const SBWhitelist& whitelist,
+    const std::vector<SBFullHash>& hashes) {
+  base::AutoLock l(lookup_lock_);
+  if (whitelist.second)
+    return true;
+  for (std::vector<SBFullHash>::const_iterator it = hashes.begin();
+       it != hashes.end(); ++it) {
+    if (std::binary_search(whitelist.first.begin(), whitelist.first.end(), *it))
       return true;
   }
   return false;
@@ -979,7 +1037,14 @@ bool SafeBrowsingDatabaseNew::UpdateStarted(
   }
 
   if (csd_whitelist_store_.get() && !csd_whitelist_store_->BeginUpdate()) {
-    RecordFailure(FAILURE_CSD_WHITELIST_DATABASE_UPDATE_BEGIN);
+    RecordFailure(FAILURE_WHITELIST_DATABASE_UPDATE_BEGIN);
+    HandleCorruptDatabase();
+    return false;
+  }
+
+  if (download_whitelist_store_.get() &&
+      !download_whitelist_store_->BeginUpdate()) {
+    RecordFailure(FAILURE_WHITELIST_DATABASE_UPDATE_BEGIN);
     HandleCorruptDatabase();
     return false;
   }
@@ -1001,6 +1066,14 @@ bool SafeBrowsingDatabaseNew::UpdateStarted(
     csd_whitelist_listnames.push_back(safe_browsing_util::kCsdWhiteList);
     UpdateChunkRanges(csd_whitelist_store_.get(),
                       csd_whitelist_listnames, lists);
+  }
+
+  if (download_whitelist_store_.get()) {
+    std::vector<std::string> download_whitelist_listnames;
+    download_whitelist_listnames.push_back(
+        safe_browsing_util::kDownloadWhiteList);
+    UpdateChunkRanges(download_whitelist_store_.get(),
+                      download_whitelist_listnames, lists);
   }
 
   corruption_detected_ = false;
@@ -1025,6 +1098,8 @@ void SafeBrowsingDatabaseNew::UpdateFinished(bool update_succeeded) {
       download_store_->CancelUpdate();
     if (csd_whitelist_store_.get())
       csd_whitelist_store_->CancelUpdate();
+    if (download_whitelist_store_.get())
+      download_whitelist_store_->CancelUpdate();
     return;
   }
 
@@ -1032,39 +1107,45 @@ void SafeBrowsingDatabaseNew::UpdateFinished(bool update_succeeded) {
   UpdateDownloadStore();
   // for browsing
   UpdateBrowseStore();
-  // for csd whitelist
-  UpdateCsdWhitelistStore();
+  // for csd and download whitelists.
+  UpdateWhitelistStore(csd_whitelist_filename_,
+                       csd_whitelist_store_.get(),
+                       &csd_whitelist_);
+  UpdateWhitelistStore(download_whitelist_filename_,
+                       download_whitelist_store_.get(),
+                       &download_whitelist_);
 }
 
-void SafeBrowsingDatabaseNew::UpdateCsdWhitelistStore() {
-  if (!csd_whitelist_store_.get())
+void SafeBrowsingDatabaseNew::UpdateWhitelistStore(
+    const FilePath& store_filename,
+    SafeBrowsingStore* store,
+    SBWhitelist* whitelist) {
+  if (!store)
     return;
 
-  // For the csd whitelist, we don't cache and save full hashes since all
+  // For the whitelists, we don't cache and save full hashes since all
   // hashes are already full.
   std::vector<SBAddFullHash> empty_add_hashes;
 
-  // Not needed for the csd whitelist.
+  // Not needed for the whitelists.
   std::set<SBPrefix> empty_miss_cache;
 
   // Note: prefixes will not be empty.  The current data store implementation
   // stores all full-length hashes as both full and prefix hashes.
   std::vector<SBAddPrefix> prefixes;
   std::vector<SBAddFullHash> full_hashes;
-  if (!csd_whitelist_store_->FinishUpdate(empty_add_hashes,
-                                          empty_miss_cache,
-                                          &prefixes,
-                                          &full_hashes)) {
-    RecordFailure(FAILURE_CSD_WHITELIST_DATABASE_UPDATE_FINISH);
-    CsdWhitelistAllUrls();
+  if (!store->FinishUpdate(empty_add_hashes, empty_miss_cache, &prefixes,
+                           &full_hashes)) {
+    RecordFailure(FAILURE_WHITELIST_DATABASE_UPDATE_FINISH);
+    WhitelistEverything(whitelist);
     return;
   }
 
 #if defined(OS_MACOSX)
-  base::mac::SetFileBackupExclusion(csd_whitelist_filename_);
+  base::mac::SetFileBackupExclusion(store_filename);
 #endif
 
-  LoadCsdWhitelist(full_hashes);
+  LoadWhitelist(full_hashes, whitelist);
 }
 
 void SafeBrowsingDatabaseNew::UpdateDownloadStore() {
@@ -1279,10 +1360,15 @@ bool SafeBrowsingDatabaseNew::Delete() {
   if (!r3)
     RecordFailure(FAILURE_DATABASE_STORE_DELETE);
 
-  const bool r4 = file_util::Delete(bloom_filter_filename_, false);
+  const bool r4 = download_whitelist_store_.get() ?
+      download_whitelist_store_->Delete() : true;
   if (!r4)
+    RecordFailure(FAILURE_DATABASE_STORE_DELETE);
+
+  const bool r5 = file_util::Delete(bloom_filter_filename_, false);
+  if (!r5)
     RecordFailure(FAILURE_DATABASE_FILTER_DELETE);
-  return r1 && r2 && r3 && r4;
+  return r1 && r2 && r3 && r4 && r5;
 }
 
 void SafeBrowsingDatabaseNew::WriteBloomFilter() {
@@ -1304,37 +1390,38 @@ void SafeBrowsingDatabaseNew::WriteBloomFilter() {
 #endif
 }
 
-void SafeBrowsingDatabaseNew::CsdWhitelistAllUrls() {
+void SafeBrowsingDatabaseNew::WhitelistEverything(SBWhitelist* whitelist) {
   base::AutoLock locked(lookup_lock_);
-  csd_whitelist_all_urls_ = true;
-  csd_whitelist_.clear();
+  whitelist->second = true;
+  whitelist->first.clear();
 }
 
-void SafeBrowsingDatabaseNew::LoadCsdWhitelist(
-    const std::vector<SBAddFullHash>& full_hashes) {
+void SafeBrowsingDatabaseNew::LoadWhitelist(
+    const std::vector<SBAddFullHash>& full_hashes,
+    SBWhitelist* whitelist) {
   DCHECK_EQ(creation_loop_, MessageLoop::current());
-  if (full_hashes.size() > kMaxCsdWhitelistSize) {
-    CsdWhitelistAllUrls();
+  if (full_hashes.size() > kMaxWhitelistSize) {
+    WhitelistEverything(whitelist);
     return;
   }
 
-  std::vector<SBFullHash> new_csd_whitelist;
+  std::vector<SBFullHash> new_whitelist;
   for (std::vector<SBAddFullHash>::const_iterator it = full_hashes.begin();
        it != full_hashes.end(); ++it) {
-    new_csd_whitelist.push_back(it->full_hash);
+    new_whitelist.push_back(it->full_hash);
   }
-  std::sort(new_csd_whitelist.begin(), new_csd_whitelist.end());
+  std::sort(new_whitelist.begin(), new_whitelist.end());
 
   SBFullHash kill_switch;
-  crypto::SHA256HashString(kCsdKillSwitchUrl, &kill_switch,
+  crypto::SHA256HashString(kWhitelistKillSwitchUrl, &kill_switch,
                            sizeof(kill_switch));
-  if (std::binary_search(new_csd_whitelist.begin(), new_csd_whitelist.end(),
+  if (std::binary_search(new_whitelist.begin(), new_whitelist.end(),
                          kill_switch)) {
     // The kill switch is whitelisted hence we whitelist all URLs.
-    CsdWhitelistAllUrls();
+    WhitelistEverything(whitelist);
   } else {
     base::AutoLock locked(lookup_lock_);
-    csd_whitelist_all_urls_ = false;
-    csd_whitelist_.swap(new_csd_whitelist);
+    whitelist->second = false;
+    whitelist->first.swap(new_whitelist);
   }
 }

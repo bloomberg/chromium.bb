@@ -170,6 +170,7 @@ const char kPhishingList[] = "goog-phish-shavar";
 const char kBinUrlList[] = "goog-badbinurl-shavar";
 const char kBinHashList[] = "goog-badbin-digestvar";
 const char kCsdWhiteList[] = "goog-csdwhite-sha256";
+const char kDownloadWhiteList[] = "goog-downloadwhite-digest256";
 
 int GetListId(const std::string& name) {
   int id;
@@ -183,6 +184,8 @@ int GetListId(const std::string& name) {
     id = BINHASH;
   } else if (name == safe_browsing_util::kCsdWhiteList) {
     id = CSDWHITELIST;
+  } else if (name == safe_browsing_util::kDownloadWhiteList) {
+    id = DOWNLOADWHITELIST;
   } else {
     id = INVALID;
   }
@@ -205,6 +208,9 @@ bool GetListName(int list_id, std::string* list) {
       break;
     case CSDWHITELIST:
       *list = safe_browsing_util::kCsdWhiteList;
+      break;
+    case DOWNLOADWHITELIST:
+      *list = safe_browsing_util::kDownloadWhiteList;
       break;
     default:
       return false;

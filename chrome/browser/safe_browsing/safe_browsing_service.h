@@ -495,6 +495,9 @@ class SafeBrowsingService
   // or not.
   bool enable_csd_whitelist_;
 
+  // Indicate if the download whitelist should be enabled or not.
+  bool enable_download_whitelist_;
+
   // The SafeBrowsing thread that runs database operations.
   //
   // Note: Functions that run on this thread should run synchronously and return

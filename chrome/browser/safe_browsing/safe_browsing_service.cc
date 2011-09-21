@@ -161,6 +161,7 @@ SafeBrowsingService::SafeBrowsingService()
       enabled_(false),
       enable_download_protection_(false),
       enable_csd_whitelist_(false),
+      enable_download_whitelist_(false),
       update_in_progress_(false),
       database_update_in_progress_(false),
       closing_database_(false),
@@ -687,7 +688,8 @@ SafeBrowsingDatabase* SafeBrowsingService::GetDatabase() {
 
   SafeBrowsingDatabase* database =
       SafeBrowsingDatabase::Create(enable_download_protection_,
-                                   enable_csd_whitelist_);
+                                   enable_csd_whitelist_,
+                                   enable_download_whitelist_);
 
   database->Init(path);
   {
@@ -906,6 +908,9 @@ void SafeBrowsingService::Start() {
         (local_state &&
          local_state->GetBoolean(prefs::kMetricsReportingEnabled))));
 #endif
+
+  enable_download_whitelist_ = cmdline->HasSwitch(
+      switches::kEnableImprovedDownloadProtection);
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,

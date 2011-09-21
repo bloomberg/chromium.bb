@@ -266,6 +266,8 @@ extern const char kBinUrlList[];
 extern const char kBinHashList[];
 // SafeBrowsing client-side detection whitelist list name.
 extern const char kCsdWhiteList[];
+// SafeBrowsing download whitelist list name.
+extern const char kDownloadWhiteList[];
 
 enum ListType {
   INVALID = -1,
@@ -274,6 +276,10 @@ enum ListType {
   BINURL = 2,
   BINHASH = 3,
   CSDWHITELIST = 4,
+  // SafeBrowsing lists are stored in pairs.  Keep ListType 5
+  // available for a potential second list that we would store in the
+  // csd-whitelist store file.
+  DOWNLOADWHITELIST = 6,
 };
 
 // Maps a list name to ListType.

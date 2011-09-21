@@ -446,6 +446,10 @@ const char kEnableFastback[]                = "enable-fastback";
 // testing, for example page cycler and layout tests.  See bug 1157243.
 const char kEnableFileCookies[]             = "enable-file-cookies";
 
+// Enable improved SafeBrowsing download protection.
+const char kEnableImprovedDownloadProtection[] =
+    "enable-improved-download-protection";
+
 // Enable the in-browser thumbnailing, which is more efficient than the
 // in-renderer thumbnailing, as we can use more information to determine
 // if we need to update thumbnails.
