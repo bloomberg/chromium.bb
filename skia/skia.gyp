@@ -743,16 +743,6 @@
             '../third_party/skia/src/utils/SkMatrix44.cpp',
           ],
         }],
-        [ 'toolkit_uses_gtk == 0', {
-          'sources/': [ ['exclude', '_(linux|gtk)\\.(cc|cpp)$'] ],
-          'sources!': [
-            '../third_party/skia/src/ports/SkFontHost_FreeType.cpp',
-            '../third_party/skia/src/ports/SkFontHost_TryeType_Tables.cpp',
-            '../third_party/skia/src/ports/SkFontHost_gamma_none.cpp',
-            '../third_party/skia/src/ports/SkFontHost_gamma_none.cpp',
-            '../third_party/skia/src/ports/SkFontHost_tables.cpp',
-          ],
-        }],
         [ 'OS == "android"', {
           'sources/': [
             ['include', 'ext/platform_device_linux.cc'],
@@ -779,9 +769,8 @@
             '../third_party/skia/src/opts/opts_check_SSE2.cpp'
           ],
         }],
-        [ 'toolkit_uses_gtk == 1', {
+        [ 'use_glib == 1', {
           'dependencies': [
-            '../build/linux/system.gyp:gdk',
             '../build/linux/system.gyp:fontconfig',
             '../build/linux/system.gyp:freetype2',
             '../third_party/harfbuzz/harfbuzz.gyp:harfbuzz',
@@ -798,6 +787,22 @@
           'defines': [
             'SK_MAX_SIZE_FOR_LCDTEXT=256',
           ],
+        }, {  # use_glib == 0
+          'sources/': [ ['exclude', '_linux\\.(cc|cpp)$'] ],
+          'sources!': [
+            '../third_party/skia/src/ports/SkFontHost_FreeType.cpp',
+            '../third_party/skia/src/ports/SkFontHost_TryeType_Tables.cpp',
+            '../third_party/skia/src/ports/SkFontHost_gamma_none.cpp',
+            '../third_party/skia/src/ports/SkFontHost_gamma_none.cpp',
+            '../third_party/skia/src/ports/SkFontHost_tables.cpp',
+          ],
+        }],
+        [ 'toolkit_uses_gtk == 1', {
+          'dependencies': [
+            '../build/linux/system.gyp:gdk',
+          ],
+        }, {  # toolkit_uses_gtk == 0
+          'sources/': [ ['exclude', '_gtk\\.(cc|cpp)$'] ],
         }],
         [ 'OS == "mac"', {
           'defines': [
