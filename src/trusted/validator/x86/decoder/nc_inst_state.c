@@ -18,6 +18,12 @@
  */
 #define DEBUGGING 0
 
+/*
+ * This .c file contains includes, static functions, and constants that are used
+ * in nc_inst_state.c, but have been factored out and put into this file, so
+ * that we can test them. That is, to allow nc_inst_state.c and
+ * nc_inst_state_Tests.cc to use them.
+ */
 #include "native_client/src/trusted/validator/x86/decoder/nc_inst_state_statics.c"
 
 /* Returns true if the parsed instruction may be replaceable with a (hard coded)
@@ -179,7 +185,7 @@ void NaClDecodeInst(NaClInstIter* iter, NaClInstState* state) {
     state->inst = state->decoder_tables->undefined;
     if (state->bytes.length == 0 && state->bytes.length < state->length_limit) {
       /* Make sure we eat at least one byte. */
-      NCInstBytesRead(&state->bytes);
+      NCInstBytesReadInline(&state->bytes);
     }
   }
 }

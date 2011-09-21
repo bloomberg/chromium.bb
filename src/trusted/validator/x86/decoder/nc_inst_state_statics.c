@@ -24,6 +24,7 @@
 #include "native_client/src/trusted/validator/x86/decoder/nc_inst_trans.h"
 #include "native_client/src/trusted/validator/x86/decoder/ncop_exps.h"
 #include "native_client/src/trusted/validator/x86/decoder/ncopcode_desc.h"
+#include "native_client/src/trusted/validator/x86/ncinstbuffer-inl.h"
 #include "native_client/src/trusted/validator/x86/nc_segment.h"
 
 EXTERN_C_BEGIN
@@ -128,10 +129,10 @@ static Bool NaClConsumePrefixBytes(NaClInstState* state) {
     /* Look up the corresponding prefix bit associated
      * with the next byte in the segment, and record it.
      */
-    next_byte = NCRemainingMemoryLookahead(state->bytes.memory,0);
+    next_byte = NCRemainingMemoryLookaheadInline(state->bytes.memory,0);
     prefix_form = state->decoder_tables->prefix_mask[next_byte];
     if (prefix_form == 0) break;
-    next_byte = NCInstBytesRead(&state->bytes);
+    next_byte = NCInstBytesReadInline(&state->bytes);
     DEBUG(NaClLog(LOG_INFO,
                   "Consume prefix[%d]: %02"NACL_PRIx8" => %"NACL_PRIx32"\n",
                   i, next_byte, prefix_form));
@@ -181,7 +182,7 @@ static void NaClConsume0F38XXNaClInstBytes(NaClInstState* state,
     return;
   }
 
-  desc->opcode_byte = NCInstBytesRead(&state->bytes);
+  desc->opcode_byte = NCInstBytesReadInline(&state->bytes);
   DEBUG(NaClLog(LOG_INFO, "Consume inst byte %02"NACL_PRIx8".\n",
                 desc->opcode_byte));
   if (NaClExcludesBit(state->prefix_mask, kPrefixREP)) {
@@ -217,7 +218,7 @@ static void NaClConsume0F3AXXNaClInstBytes(NaClInstState* state,
     return;
   }
 
-  desc->opcode_byte = NCInstBytesRead(&state->bytes);
+  desc->opcode_byte = NCInstBytesReadInline(&state->bytes);
   DEBUG(NaClLog(LOG_INFO, "Consume inst byte %02"NACL_PRIx8".\n",
                 desc->opcode_byte));
   if (NaClExcludesBit(state->prefix_mask, kPrefixREP) &&
@@ -279,7 +280,7 @@ static void NaClConsumeX87NaClInstBytes(NaClInstState* state,
     desc->matched_prefix =
         (NaClInstPrefix) (PrefixD8 +
                           (((unsigned) desc->opcode_byte) - 0xD8));
-    desc->opcode_byte = NCInstBytesRead(&state->bytes);
+    desc->opcode_byte = NCInstBytesReadInline(&state->bytes);
     DEBUG(NaClLog(LOG_INFO, "Consume inst byte %02"NACL_PRIx8".\n",
                   desc->opcode_byte));
     return;
@@ -305,13 +306,13 @@ static void NaClConsumeInstBytes(NaClInstState* state,
   /* Be sure that we don't exceed the segment length. */
   if (state->bytes.length >= state->length_limit) return;
 
-  desc->opcode_byte = NCInstBytesRead(&state->bytes);
+  desc->opcode_byte = NCInstBytesReadInline(&state->bytes);
   DEBUG(NaClLog(LOG_INFO, "Consume inst byte %02"NACL_PRIx8".\n",
                 desc->opcode_byte));
   switch (desc->opcode_byte) {
     case 0x0F:
       if (state->bytes.length >= state->length_limit) return;
-      desc->opcode_byte = NCInstBytesRead(&state->bytes);
+      desc->opcode_byte = NCInstBytesReadInline(&state->bytes);
       DEBUG(NaClLog(LOG_INFO, "Consume inst byte %02"NACL_PRIx8".\n",
                     desc->opcode_byte));
       switch (desc->opcode_byte) {
@@ -443,7 +444,7 @@ static Bool NaClConsumeModRm(NaClInstState* state) {
       DEBUG(NaClLog(LOG_INFO, "Can't read mod/rm, no more bytes!\n"));
       return FALSE;
     }
-    byte = NCInstBytesPeek(&state->bytes, 0);
+    byte = NCInstBytesPeekInline(&state->bytes, 0);
 
     /* Note: Some instructions only allow values where the ModRm mod field
      * is 0x3. Others only allow values where the ModRm mod field isn't 0x3.
@@ -465,7 +466,7 @@ static Bool NaClConsumeModRm(NaClInstState* state) {
                     "Can't match, modrm reg field doesn't index segment\n"));
       return FALSE;
     }
-    state->modrm = NCInstBytesRead(&state->bytes);
+    state->modrm = NCInstBytesReadInline(&state->bytes);
     state->num_disp_bytes = 0;
     state->first_disp_byte = 0;
     state->sib = 0;
@@ -529,7 +530,7 @@ static Bool NaClConsumeSib(NaClInstState* state) {
       return FALSE;
     }
     /* Read the SIB byte and record. */
-    state->sib = NCInstBytesRead(&state->bytes);
+    state->sib = NCInstBytesReadInline(&state->bytes);
     DEBUG(NaClLog(LOG_INFO, "sib = %02"NACL_PRIx8"\n", state->sib));
     if (sib_base(state->sib) == 0x05 && modrm_mod(state->modrm) > 2) {
       DEBUG(NaClLog(LOG_INFO,
@@ -601,7 +602,7 @@ static Bool NaClConsumeDispBytes(NaClInstState* state) {
     }
     /* Read the displacement bytes. */
     state->first_disp_byte = state->bytes.length;
-    NCInstBytesReadBytes(state->num_disp_bytes, &state->bytes);
+    NCInstBytesReadBytesInline(state->num_disp_bytes, &state->bytes);
   }
   return TRUE;
 }
@@ -668,7 +669,7 @@ static Bool NaClConsumeImmediateBytes(NaClInstState* state) {
     }
     /* Read the immediate bytes. */
     state->first_imm_byte = state->bytes.length;
-    NCInstBytesReadBytes(state->num_imm_bytes, &state->bytes);
+    NCInstBytesReadBytesInline(state->num_imm_bytes, &state->bytes);
   }
   /* Before returning, see if second immediate value specified. */
   state->num_imm2_bytes = NaClGetNumImmed2Bytes(state);
@@ -685,7 +686,7 @@ static Bool NaClConsumeImmediateBytes(NaClInstState* state) {
       return FALSE;
     }
     /* Read the immediate bytes. */
-    NCInstBytesReadBytes(state->num_imm2_bytes, &state->bytes);
+    NCInstBytesReadBytesInline(state->num_imm2_bytes, &state->bytes);
   }
   return TRUE;
 }
@@ -745,8 +746,8 @@ static Bool NaClValidatePrefixFlags(NaClInstState* state) {
  */
 static void NaClClearInstState(NaClInstState* state, uint8_t inst_length) {
   if (state->bytes.length != inst_length) {
-    NCInstBytesReset(&state->bytes);
-    NCInstBytesReadBytes(inst_length, &state->bytes);
+    NCInstBytesResetInline(&state->bytes);
+    NCInstBytesReadBytesInline(inst_length, &state->bytes);
   }
   state->modrm = 0;
   state->has_sib = FALSE;
@@ -765,7 +766,7 @@ static void NaClClearInstState(NaClInstState* state, uint8_t inst_length) {
 /* Move back to the beginning of the instruction, so that we can reparse. */
 static void NaClResetInstState(NaClInstState* state) {
   if (state->bytes.length > 0) {
-    NCInstBytesReset(&state->bytes);
+    NCInstBytesResetInline(&state->bytes);
   }
   state->num_prefix_bytes = 0;
   state->opcode_prefix = 0;
@@ -878,7 +879,7 @@ static Bool NaClConsumeHardCodedNop(NaClInstState* state) {
   const NaClInst* matching_inst = NULL;
   uint8_t matching_length = 0;
 
-  next_byte = NCInstByte(&state->bytes, next_length);
+  next_byte = NCInstByteInline(&state->bytes, next_length);
   next = state->decoder_tables->hard_coded;
 
   /* Find maximal match in trie. */
@@ -895,7 +896,7 @@ static Bool NaClConsumeHardCodedNop(NaClInstState* state) {
       if (next_length < state->length_limit) {
         next = next->success;
         if (next != NULL) {
-          next_byte = NCInstByte(&state->bytes, next_length);
+          next_byte = NCInstByteInline(&state->bytes, next_length);
         }
       } else {
         break;
@@ -917,7 +918,7 @@ static Bool NaClConsumeHardCodedNop(NaClInstState* state) {
      */
     NaClResetInstState(state);
     state->inst = matching_inst;
-    NCInstBytesReadBytes(matching_length, &state->bytes);
+    NCInstBytesReadBytesInline(matching_length, &state->bytes);
     DEBUG(NaClLog(LOG_INFO, "matched inst sequence [%d]!\n", matching_length));
     return TRUE;
   }
