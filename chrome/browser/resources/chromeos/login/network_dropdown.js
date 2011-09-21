@@ -24,17 +24,44 @@ cr.define('cr.ui', function() {
       this.selectedItem = null;
       // First item which could be selected.
       this.firstItem = null;
+      // Whether scroll has just happened.
+      this.scrollJustHappened = false;
+    },
+
+    /**
+     * Gets scroll action to be done for the item.
+     * @param {!Object} item Menu item.
+     * @return {integer} -1 for scroll up; 0 for no action; 1 for scroll down.
+     */
+    scrollAction: function(item) {
+      var thisTop = this.scrollTop;
+      var thisBottom = thisTop + this.offsetHeight;
+      var itemTop = item.offsetTop;
+      var itemBottom = itemTop + item.offsetHeight;
+      if (itemTop <= thisTop) return -1;
+      if (itemBottom >= thisBottom) return 1;
+      return 0;
     },
 
     /**
      * Selects new item.
      * @param {!Object} selectedItem Item to be selected.
+     * @param {boolean} mouseOver Is mouseover event triggered?
      */
-    selectItem: function(selectedItem) {
+    selectItem: function(selectedItem, mouseOver) {
+      if (mouseOver && this.scrollJustHappened) {
+        this.scrollJustHappened = false;
+        return;
+      }
       if (this.selectedItem)
         this.selectedItem.classList.remove('hover');
       selectedItem.classList.add('hover');
       this.selectedItem = selectedItem;
+      var action = this.scrollAction(selectedItem);
+      if (action != 0) {
+        selectedItem.scrollIntoView(action < 0);
+        this.scrollJustHappened = true;
+      }
     }
   };
 
@@ -76,7 +103,7 @@ cr.define('cr.ui', function() {
       this.firstElementChild.hidden = !show;
       this.container.hidden = !show;
       if (show)
-        this.container.selectItem(this.container.firstItem);
+        this.container.selectItem(this.container.firstItem, false);
     },
 
     /**
@@ -122,7 +149,7 @@ cr.define('cr.ui', function() {
         }
         this.createItem_(this.container, item);
       }
-      this.container.selectItem(this.container.firstItem);
+      this.container.selectItem(this.container.firstItem, false);
     },
 
     /**
@@ -181,7 +208,7 @@ cr.define('cr.ui', function() {
           this.parentNode.parentNode.titleButton.focus();
         });
         wrapperDiv.addEventListener('mouseover', function f(e) {
-          this.parentNode.selectItem(this);
+          this.parentNode.selectItem(this, true);
         });
         itemElement = wrapperDiv;
       }
@@ -264,7 +291,7 @@ cr.define('cr.ui', function() {
             if (!selected)
               selected = this.container.lastElementChild;
           } while (selected.iid < 0);
-          this.container.selectItem(selected);
+          this.container.selectItem(selected, false);
           break;
         }
         case 40: {  // Key down.
@@ -273,7 +300,7 @@ cr.define('cr.ui', function() {
             if (!selected)
               selected = this.container.firstItem;
           } while (selected.iid < 0);
-          this.container.selectItem(selected);
+          this.container.selectItem(selected, false);
           break;
         }
         case 27: {  // Esc.

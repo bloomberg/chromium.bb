@@ -618,7 +618,7 @@ html[dir=rtl] #header {
   background-position: right center;
 }
 
-body.login-display #oobe hr {
+body.login-display #oobe hr.shadow {
   -webkit-transition: all .8s ease;
   width: 1100px;  /* Necessary. Otherwise hr shrinks to 0 first when switching
                      from 640px to full width. */
