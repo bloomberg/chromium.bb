@@ -593,7 +593,7 @@ requests that are not targeted to <code>www.evil.com</code> do not need to be
 passed to the extension:</p>
 <pre>chrome.experimental.webRequest.onBeforeRequest.addListener(
   function(details) { return {cancel: true}; },
-  {"*://www.evil.com/*"},
+  {urls: ["*://www.evil.com/*"]},
   ["blocking"]);
 </pre>
 
