@@ -347,5 +347,5 @@ void NativePanelTestingCocoa::SetMousePositionForMinimizeRestore(
 }
 
 int NativePanelTestingCocoa::TitleOnlyHeight() const {
-  return [native_panel_window_->controller_ titlebarHeightInScreeenCoordinates];
+  return [native_panel_window_->controller_ titlebarHeightInScreenCoordinates];
 }
