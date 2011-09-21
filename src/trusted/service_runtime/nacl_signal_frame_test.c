@@ -1,7 +1,7 @@
 /*
- * Copyright 2011 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 #include <signal.h>
@@ -32,7 +32,7 @@
  */
 
 int main() {
-  size_t stack_size = 20 * 1024;
+  size_t stack_size = SIGSTKSZ;
   char *stack;
   stack_t st;
   int rc;
