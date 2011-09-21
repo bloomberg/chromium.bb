@@ -137,13 +137,13 @@ const char kPowerManagerDecreaseKeyboardBrightness[] =
 const char kPowerManagerIncreaseKeyboardBrightness[] =
     "IncreaseKeyboardBrightness";
 // Signals
-const char kRequestLockScreenSignal[] = "RequestLockScreen";
-const char kRequestRestartSignal[] = "RequestRestart";
+const char kRequestLockScreenMethod[] = "RequestLockScreen";
+const char kRequestRestartMethod[] = "RequestRestart";
 const char kRequestSuspendSignal[] = "RequestSuspend";
-const char kRequestShutdownSignal[] = "RequestShutdown";
-const char kRequestUnlockScreenSignal[] = "RequestUnlockScreen";
-const char kScreenIsLockedSignal[] = "ScreenIsLocked";
-const char kScreenIsUnlockedSignal[] = "ScreenIsUnlocked";
+const char kRequestShutdownMethod[] = "RequestShutdown";
+const char kRequestUnlockScreenMethod[] = "RequestUnlockScreen";
+const char kScreenIsLockedMethod[] = "ScreenIsLocked";
+const char kScreenIsUnlockedMethod[] = "ScreenIsUnlocked";
 const char kCleanShutdown[] = "CleanShutdown";
 const char kRegisterSuspendDelay[] = "RegisterSuspendDelay";
 const char kUnregisterSuspendDelay[] = "UnregisterSuspendDelay";
@@ -152,6 +152,13 @@ const char kSuspendReady[] = "SuspendReady";
 const char kBrightnessChangedSignal[] = "BrightnessChanged";
 const char kKeyboardBrightnessChangedSignal[] = "KeyboardBrightnessChanged";
 const char kPowerStateChangedSignal[] = "PowerStateChanged";
+// DEPRECATED
+const char kRequestLockScreenSignal[] = "RequestLockScreen";
+const char kRequestRestartSignal[] = "RequestRestart";
+const char kRequestShutdownSignal[] = "RequestShutdown";
+const char kRequestUnlockScreenSignal[] = "RequestUnlockScreen";
+const char kScreenIsLockedSignal[] = "ScreenIsLocked";
+const char kScreenIsUnlockedSignal[] = "ScreenIsUnlocked";
 }  // namespace power_manager
 
 namespace chromeos {
