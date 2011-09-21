@@ -20,6 +20,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/render_process_host.h"
+#include "content/browser/renderer_host/render_widget_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/zygote_host_linux.h"
 #include "content/common/notification_service.h"
@@ -43,6 +44,10 @@ namespace browser {
 // "equal".
 #define BUCKET_INTERVAL_MINUTES 10
 
+// The default interval in milliseconds to wait before setting the score of
+// currently focused tab.
+#define FOCUSED_TAB_SCORE_ADJUST_INTERVAL_MS 500
+
 OomPriorityManager::RendererStats::RendererStats()
   : is_pinned(false),
     is_selected(false),
@@ -53,13 +58,17 @@ OomPriorityManager::RendererStats::RendererStats()
 OomPriorityManager::RendererStats::~RendererStats() {
 }
 
-OomPriorityManager::OomPriorityManager() {
+OomPriorityManager::OomPriorityManager()
+  : focused_tab_pid_(0) {
   renderer_stats_.reserve(32);  // 99% of users have < 30 tabs open
   registrar_.Add(this,
       content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
       NotificationService::AllSources());
   registrar_.Add(this,
       content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
+      NotificationService::AllSources());
+  registrar_.Add(this,
+      content::NOTIFICATION_RENDER_WIDGET_VISIBILITY_CHANGED,
       NotificationService::AllSources());
 }
 
@@ -119,6 +128,19 @@ bool OomPriorityManager::CompareRendererStats(RendererStats first,
   return first.memory_used < second.memory_used;
 }
 
+void OomPriorityManager::AdjustFocusedTabScore() {
+  base::AutoLock pid_to_oom_score_autolock(pid_to_oom_score_lock_);
+  ZygoteHost::GetInstance()->AdjustRendererOOMScore(
+      focused_tab_pid_, chrome::kLowestRendererOomScore);
+  pid_to_oom_score_[focused_tab_pid_] = chrome::kLowestRendererOomScore;
+}
+
+void OomPriorityManager::OnFocusTabScoreAdjustmentTimeout() {
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
+      NewRunnableMethod(this, &OomPriorityManager::AdjustFocusedTabScore));
+}
+
 void OomPriorityManager::Observe(int type, const NotificationSource& source,
                                     const NotificationDetails& details) {
   base::ProcessHandle handle = 0;
@@ -128,6 +150,32 @@ void OomPriorityManager::Observe(int type, const NotificationSource& source,
     case content::NOTIFICATION_RENDERER_PROCESS_TERMINATED: {
       handle = Source<RenderProcessHost>(source)->GetHandle();
       pid_to_oom_score_.erase(handle);
+      break;
+    }
+    case content::NOTIFICATION_RENDER_WIDGET_VISIBILITY_CHANGED: {
+      bool visible = *Details<bool>(details).ptr();
+      if (visible) {
+        focused_tab_pid_ =
+            Source<RenderWidgetHost>(source).ptr()->process()->GetHandle();
+
+        // If the currently focused tab already has a lower score, do not
+        // set it. This can happen in case the newly focused tab is script
+        // connected to the previous tab.
+        ProcessScoreMap::iterator it;
+        it = pid_to_oom_score_.find(focused_tab_pid_);
+        if (it == pid_to_oom_score_.end()
+            || it->second != chrome::kLowestRendererOomScore) {
+          // By starting a timer we guarantee that the tab is focused for
+          // certain amount of time. Secondly, it also does not add overhead
+          // to the tab switching time.
+          if (focus_tab_score_adjust_timer_.IsRunning())
+            focus_tab_score_adjust_timer_.Reset();
+          else
+            focus_tab_score_adjust_timer_.Start(FROM_HERE,
+              TimeDelta::FromMilliseconds(FOCUSED_TAB_SCORE_ADJUST_INTERVAL_MS),
+              this, &OomPriorityManager::OnFocusTabScoreAdjustmentTimeout);
+        }
+      }
       break;
     }
     default:

@@ -61,8 +61,15 @@ class OomPriorityManager : public NotificationObserver {
   // the timer fires.
   void AdjustOomPriorities();
 
+  // Posts AdjustFocusedTabScore task to the file thread.
+  void OnFocusTabScoreAdjustmentTimeout();
+
   // Called by AdjustOomPriorities.  Runs on the file thread.
   void DoAdjustOomPriorities();
+
+  // Called when a tab comes into focus. Runs on the file thread.
+  // Sets the score of only the currently focused tab to the least value.
+  void AdjustFocusedTabScore();
 
   static bool CompareRendererStats(RendererStats first, RendererStats second);
 
@@ -71,13 +78,16 @@ class OomPriorityManager : public NotificationObserver {
                        const NotificationDetails& details);
 
   base::RepeatingTimer<OomPriorityManager> timer_;
+  base::OneShotTimer<OomPriorityManager> focus_tab_score_adjust_timer_;
   // renderer_stats_ is used on both UI and file threads.
   base::Lock renderer_stats_lock_;
   StatsList renderer_stats_;
-  // map maintaining the process - oom_score map.
+  // This lock is for pid_to_oom_score_ and focus_tab_pid_.
   base::Lock pid_to_oom_score_lock_;
+  // map maintaining the process - oom_score mapping.
   ProcessScoreMap pid_to_oom_score_;
   NotificationRegistrar registrar_;
+  base::ProcessHandle focused_tab_pid_;
 
   DISALLOW_COPY_AND_ASSIGN(OomPriorityManager);
 };
