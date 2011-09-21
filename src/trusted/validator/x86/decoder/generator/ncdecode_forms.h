@@ -149,7 +149,7 @@ typedef void (*NaClDefOperand)();
 
 /***************************************************************************
  * This section is the new API for defining instructions. It uses a string,
- * describing the instruction to model, In addition, a symbol table is passed
+ * describing the instruction to model. In addition, a symbol table is passed
  * in to define possible substitutions.
  *
  * The string defining the instruction is called an "opcode description string".
@@ -159,9 +159,9 @@ typedef void (*NaClDefOperand)();
  *   "06: Push {%@sp}, %es" - Defines (opcode 06) that pushes register es
  *   "07: Pop  {%@sp}, %es" - Defines (opcode 07) that pops into register es.
  *   "69/r: Imul $Gv, $Ev, $Iz" - Defines (opcode 69) a signed multiply.
- *   "0fba/7: Btc $Ev, $Ib" - Defines(opcode 0f ba, with opcode extension
+ *   "0fba/7: Btc $Ev, $Ib" - Defines (opcode 0f ba, with opcode extension
  *            7 in the modrm mod field) a bit test and complement.
- *   "90+@i: Xchg $r8v, $rAX" - Defines (opcode 90+i) exhange register/memory
+ *   "90+@i: Xchg $r8v, $rAX" - Defines (opcode 90+i) exchange register/memory
  *            with register.
  *
  * A (symbol table) substitution is defined as follows:
@@ -228,7 +228,7 @@ typedef void (*NaClDefOperand)();
  *   F - rFLAGS register.
  *   G - General purpose register specified by the ModRm reg field.
  *   I - Immediate value.
- *   J - The instruciton includes a relative offset that is added to the rIP
+ *   J - The instruction includes a relative offset that is added to the rIP
  *       register.
  *   M - A memory operand specified by the ModRM byte.
  *   O - The offset of an operand is encoded in the instruction. There is no
@@ -240,10 +240,10 @@ typedef void (*NaClDefOperand)();
  *   Q - 64 bit MMX register or memory operand specified by the ModRM byte.
  *       Memory addresses can be computed from a segment register, SIB byte,
  *       and/or displacement.
- *   R - General purpose register specified by the ModRM r/m field. The ModeRm
+ *   R - General purpose register specified by the ModRM r/m field. The ModRM
  *       mod field must be 11b.
  *   S - Segment register specified by the ModRM reg field.
- *   U - The R/Mfield of the ModR/M byte selects a 128-bit XMM register.
+ *   U - The R/M field of the ModR/M byte selects a 128-bit XMM register.
  *   V - 128-bit XMM register specified by the ModRM reg field.
  *   VR - 128-bit XMM register specified by the ModRM r/m field. The ModRM mod
  *       field must be 11b.
@@ -276,7 +276,7 @@ typedef void (*NaClDefOperand)();
  *
  * Note: SG is also not in the manual cited above. It has been added to deal
  * with the instructions lds, les, lfs, lgs, and lss, which generate a
- * segment address from a General puurpose register specified in the ModRm reg
+ * segment address from a General purpose register specified in the ModRm reg
  * field.
  *
  * Valid SIZEs are:
@@ -284,14 +284,14 @@ typedef void (*NaClDefOperand)();
  *       operand size. Used in the BOUND instruction.
  *   b - A byte, irrespective of the effective operand size.
  *   d - A doubleword (32-bits), irrespective of the effective operand size.
- *   dq - A douible-quadword (128 bits), irrespective of the effective operand
+ *   dq - A double-quadword (128 bits), irrespective of the effective operand
  *       size.
  *   p - A 32-bit or 48-bit far pointer, depending on the effective operand
  *       size.
  *   pd - A 128-bit double-precision floating point vector operand (packed
  *       double).
  *   pi - A 64-bit MMX operand (packed integer).
- *   ps - A 138-bit single precision floating point vector operand (packed
+ *   ps - A 128-bit single precision floating point vector operand (packed
  *        single).
  *   q - A quadword, irrespective of the effective operand size.
  *   s - A 6-byte or 10-byte pseudo-descriptor.
@@ -335,7 +335,7 @@ typedef void (*NaClDefOperand)();
  * additional model changes for the instruction being defined should
  * appear between these call pairs.
  *
- * For instructions not needing to do special touchups, a simplier Define form
+ * For instructions not needing to do special touchups, a simpler Define form
  * exists that simply dispatches calls to the corresponding Begin and End forms.
  ***************************************************************************/
 
