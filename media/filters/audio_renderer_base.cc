@@ -107,7 +107,7 @@ void AudioRendererBase::Initialize(AudioDecoder* decoder,
   ChannelLayout channel_layout = decoder_->channel_layout();
   int channels = ChannelLayoutToChannelCount(channel_layout);
   int bits_per_channel = decoder_->bits_per_channel();
-  int sample_rate = decoder_->sample_rate();
+  int sample_rate = decoder_->samples_per_second();
   algorithm_->Initialize(channels, sample_rate, bits_per_channel, 0.0f, cb);
 
   // Give the subclass an opportunity to initialize itself.

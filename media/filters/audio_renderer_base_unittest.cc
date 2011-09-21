@@ -61,7 +61,7 @@ class AudioRendererBaseTest : public ::testing::Test {
         .WillByDefault(Return(16));
     ON_CALL(*decoder_, channel_layout())
         .WillByDefault(Return(CHANNEL_LAYOUT_MONO));
-    ON_CALL(*decoder_, sample_rate())
+    ON_CALL(*decoder_, samples_per_second())
         .WillByDefault(Return(44100));
   }
 

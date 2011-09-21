@@ -217,6 +217,10 @@ AVStream* AdaptiveDemuxerStream::GetAVStream() {
   return current_stream()->GetAVStream();
 }
 
+const AudioDecoderConfig& AdaptiveDemuxerStream::audio_decoder_config() {
+  return current_stream()->audio_decoder_config();
+}
+
 DemuxerStream::Type AdaptiveDemuxerStream::type() {
   return current_stream()->type();
 }

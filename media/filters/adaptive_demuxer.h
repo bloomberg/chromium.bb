@@ -70,6 +70,7 @@ class AdaptiveDemuxerStream : public DemuxerStream {
   virtual Type type();
   virtual void EnableBitstreamConverter();
   virtual AVStream* GetAVStream();
+  virtual const AudioDecoderConfig& audio_decoder_config();
 
  private:
   // Returns a pointer to the current stream.

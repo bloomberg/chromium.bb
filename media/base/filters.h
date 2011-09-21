@@ -231,7 +231,7 @@ class MEDIA_EXPORT AudioDecoder : public Filter {
   // Returns various information about the decoded audio format.
   virtual int bits_per_channel() = 0;
   virtual ChannelLayout channel_layout() = 0;
-  virtual int sample_rate() = 0;
+  virtual int samples_per_second() = 0;
 
  protected:
   AudioDecoder();

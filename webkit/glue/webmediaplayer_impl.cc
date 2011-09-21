@@ -771,6 +771,7 @@ void WebMediaPlayerImpl::OnPipelineError(PipelineStatus error) {
     case media::DEMUXER_ERROR_COULD_NOT_PARSE:
     case media::DEMUXER_ERROR_NO_SUPPORTED_STREAMS:
     case media::DEMUXER_ERROR_COULD_NOT_CREATE_THREAD:
+    case media::DECODER_ERROR_NOT_SUPPORTED:
     case media::DATASOURCE_ERROR_URL_NOT_SUPPORTED:
       // Format error.
       SetNetworkState(WebMediaPlayer::FormatError);

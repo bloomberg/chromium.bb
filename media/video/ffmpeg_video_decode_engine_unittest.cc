@@ -149,8 +149,10 @@ TEST_F(FFmpegVideoDecodeEngineTest, Initialize_Normal) {
 }
 
 TEST_F(FFmpegVideoDecodeEngineTest, Initialize_FindDecoderFails) {
-  VideoDecoderConfig config(kUnknown, kCodedSize, kVisibleRect, kNaturalSize,
-                            kFrameRate.num, kFrameRate.den, NULL, 0);
+  VideoDecoderConfig config(kUnknownVideoCodec, kCodedSize, kVisibleRect,
+                            kNaturalSize, kFrameRate.num, kFrameRate.den,
+                            NULL, 0);
+
   // Test avcodec_find_decoder() returning NULL.
   VideoCodecInfo info;
   EXPECT_CALL(*this, OnInitializeComplete(_))

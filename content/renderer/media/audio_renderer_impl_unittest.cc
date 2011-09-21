@@ -158,7 +158,7 @@ class AudioRendererImplTest
         .WillRepeatedly(Return(16));
     EXPECT_CALL(*decoder_, channel_layout())
         .WillRepeatedly(Return(CHANNEL_LAYOUT_MONO));
-    EXPECT_CALL(*decoder_, sample_rate())
+    EXPECT_CALL(*decoder_, samples_per_second())
         .WillRepeatedly(Return(44100));
 
     // Create and initialize the audio renderer.
