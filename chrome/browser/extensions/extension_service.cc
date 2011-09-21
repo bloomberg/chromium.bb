@@ -581,14 +581,14 @@ ExtensionService::ExtensionService(Profile* profile,
                                    const CommandLine* command_line,
                                    const FilePath& install_directory,
                                    ExtensionPrefs* extension_prefs,
-                                   ExtensionSettings* extension_settings,
                                    bool autoupdate_enabled,
                                    bool extensions_enabled)
     : weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       method_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       profile_(profile),
       extension_prefs_(extension_prefs),
-      extension_settings_(extension_settings),
+      extension_settings_(
+          profile->GetPath().AppendASCII(kSettingsDirectoryName)),
       pending_extension_manager_(*ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       install_directory_(install_directory),
       extensions_enabled_(extensions_enabled),
@@ -1664,8 +1664,8 @@ ExtensionPrefs* ExtensionService::extension_prefs() {
   return extension_prefs_;
 }
 
-ExtensionSettings* ExtensionService::extension_settings() {
-  return extension_settings_;
+ExtensionSettingsUIWrapper* ExtensionService::extension_settings() {
+  return &extension_settings_;
 }
 
 ExtensionContentSettingsStore*

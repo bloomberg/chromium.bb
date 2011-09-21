@@ -347,13 +347,10 @@ ExtensionService* TestingProfile::CreateExtensionService(
       new ExtensionPrefs(GetPrefs(),
                          install_directory,
                          extension_pref_value_map_.get()));
-  extension_settings_ =
-      new ExtensionSettings(GetPath().AppendASCII("Extension Settings"));
   extension_service_.reset(new ExtensionService(this,
                                                 command_line,
                                                 install_directory,
                                                 extension_prefs_.get(),
-                                                extension_settings_.get(),
                                                 autoupdate_enabled,
                                                 true));
   return extension_service_.get();

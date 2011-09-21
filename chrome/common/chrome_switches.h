@@ -145,6 +145,9 @@ extern const char kEnableResourceContentSettings[];
 extern const char kEnableSearchProviderApiV2[];
 extern const char kEnableShortcutsProvider[];
 extern const char kEnableSmoothScrolling[];
+// TODO(kalman): Add to about:flags when UI for syncing extension settings has
+// been figured out.
+extern const char kEnableSyncExtensionSettings[];
 extern const char kEnableSyncOAuth[];
 extern const char kEnableSyncSearchEngines[];
 extern const char kEnableSyncTabs[];

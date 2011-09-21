@@ -11,6 +11,7 @@
 #include "chrome/browser/sync/protocol/app_specifics.pb.h"
 #include "chrome/browser/sync/protocol/autofill_specifics.pb.h"
 #include "chrome/browser/sync/protocol/bookmark_specifics.pb.h"
+#include "chrome/browser/sync/protocol/extension_setting_specifics.pb.h"
 #include "chrome/browser/sync/protocol/extension_specifics.pb.h"
 #include "chrome/browser/sync/protocol/nigori_specifics.pb.h"
 #include "chrome/browser/sync/protocol/password_specifics.pb.h"
@@ -61,6 +62,9 @@ void AddDefaultExtensionValue(syncable::ModelType datatype,
       break;
     case APPS:
       specifics->MutableExtension(sync_pb::app);
+      break;
+    case EXTENSION_SETTINGS:
+      specifics->MutableExtension(sync_pb::extension_setting);
       break;
     default:
       NOTREACHED() << "No known extension for model type.";
@@ -114,6 +118,9 @@ int GetExtensionFieldNumberFromModelType(ModelType model_type) {
       break;
     case APPS:
       return sync_pb::kAppFieldNumber;
+      break;
+    case EXTENSION_SETTINGS:
+      return sync_pb::kExtensionSettingFieldNumber;
       break;
     default:
       NOTREACHED() << "No known extension for model type.";
@@ -192,6 +199,9 @@ ModelType GetModelTypeFromSpecifics(const sync_pb::EntitySpecifics& specifics) {
   if (specifics.HasExtension(sync_pb::session))
     return SESSIONS;
 
+  if (specifics.HasExtension(sync_pb::extension_setting))
+    return EXTENSION_SETTINGS;
+
   return UNSPECIFIED;
 }
 
@@ -225,6 +235,8 @@ std::string ModelTypeToString(ModelType model_type) {
       return "Apps";
     case AUTOFILL_PROFILE:
       return "Autofill Profiles";
+    case EXTENSION_SETTINGS:
+      return "Extension settings";
     default:
       break;
   }
@@ -295,6 +307,8 @@ ModelType ModelTypeFromString(const std::string& model_type_string) {
     return SESSIONS;
   else if (model_type_string == "Apps")
     return APPS;
+  else if (model_type_string == "Extension settings")
+    return EXTENSION_SETTINGS;
   else
     NOTREACHED() << "No known model type corresponding to "
                  << model_type_string << ".";
@@ -387,6 +401,8 @@ std::string ModelTypeToRootTag(ModelType type) {
       return "google_chrome_apps";
     case AUTOFILL_PROFILE:
       return "google_chrome_autofill_profiles";
+    case EXTENSION_SETTINGS:
+      return "google_chrome_extension_settings";
     default:
       break;
   }
@@ -450,6 +466,10 @@ void PostTimeToTypeHistogram(ModelType model_type, base::TimeDelta time) {
         SYNC_FREQ_HISTOGRAM("Sync.FreqApps", time);
         return;
     }
+    case EXTENSION_SETTINGS: {
+        SYNC_FREQ_HISTOGRAM("Sync.FreqExtensionSettings", time);
+        return;
+    }
     default:
       LOG(ERROR) << "No known extension for model type.";
   }
@@ -467,6 +487,7 @@ const char kAutofillNotificationType[] = "AUTOFILL";
 const char kThemeNotificationType[] = "THEME";
 const char kTypedUrlNotificationType[] = "TYPED_URL";
 const char kExtensionNotificationType[] = "EXTENSION";
+const char kExtensionSettingNotificationType[] = "EXTENSION_SETTING";
 const char kNigoriNotificationType[] = "NIGORI";
 const char kAppNotificationType[] = "APP";
 const char kSearchEngineNotificationType[] = "SEARCH_ENGINE";
@@ -513,6 +534,9 @@ bool RealModelTypeToNotificationType(ModelType model_type,
     case AUTOFILL_PROFILE:
       *notification_type = kAutofillProfileNotificationType;
       return true;
+    case EXTENSION_SETTINGS:
+      *notification_type = kExtensionSettingNotificationType;
+      return true;
     default:
       break;
   }
@@ -557,6 +581,9 @@ bool NotificationTypeToRealModelType(const std::string& notification_type,
     return true;
   } else if (notification_type == kAutofillProfileNotificationType) {
     *model_type = AUTOFILL_PROFILE;
+    return true;
+  } else if (notification_type == kExtensionSettingNotificationType) {
+    *model_type = EXTENSION_SETTINGS;
     return true;
   }
   *model_type = UNSPECIFIED;

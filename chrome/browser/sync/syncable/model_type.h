@@ -74,6 +74,8 @@ enum ModelType {
   SESSIONS,
   // An app folder or an app object.
   APPS,
+  // A setting from the extension settings API.
+  EXTENSION_SETTINGS,
 
   MODEL_TYPE_COUNT,
 };

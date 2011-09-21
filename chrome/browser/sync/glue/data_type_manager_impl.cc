@@ -31,6 +31,7 @@ static const syncable::ModelType kStartOrder[] = {
   syncable::PREFERENCES,
   syncable::AUTOFILL,
   syncable::AUTOFILL_PROFILE,
+  syncable::EXTENSION_SETTINGS,
   syncable::EXTENSIONS,
   syncable::APPS,
   syncable::THEMES,

@@ -21,6 +21,7 @@ import urlparse
 import app_specifics_pb2
 import autofill_specifics_pb2
 import bookmark_specifics_pb2
+import extension_setting_specifics_pb2
 import extension_specifics_pb2
 import nigori_specifics_pb2
 import password_specifics_pb2
@@ -48,7 +49,8 @@ ALL_TYPES = (
     SEARCH_ENGINE,
     SESSION,
     THEME,
-    TYPED_URL) = range(13)
+    TYPED_URL,
+    EXTENSION_SETTINGS) = range(14)
 
 # Well-known server tag of the top level 'Google Chrome' folder.
 TOP_LEVEL_FOLDER_TAG = 'google_chrome'
@@ -60,6 +62,7 @@ SYNC_TYPE_TO_EXTENSION = {
     AUTOFILL: autofill_specifics_pb2.autofill,
     AUTOFILL_PROFILE: autofill_specifics_pb2.autofill_profile,
     BOOKMARK: bookmark_specifics_pb2.bookmark,
+    EXTENSION_SETTINGS: extension_setting_specifics_pb2.extension_setting,
     EXTENSIONS: extension_specifics_pb2.extension,
     NIGORI: nigori_specifics_pb2.nigori,
     PASSWORD: password_specifics_pb2.password,
@@ -384,6 +387,9 @@ class SyncDataModel(object):
                     parent_tag='google_chrome', sync_type=AUTOFILL),
       PermanentItem('google_chrome_autofill_profiles', name='Autofill Profiles',
                     parent_tag='google_chrome', sync_type=AUTOFILL_PROFILE),
+      PermanentItem('google_chrome_extension_settings',
+                    name='Extension Settings',
+                    parent_tag='google_chrome', sync_type=EXTENSION_SETTINGS),
       PermanentItem('google_chrome_extensions', name='Extensions',
                     parent_tag='google_chrome', sync_type=EXTENSIONS),
       PermanentItem('google_chrome_passwords', name='Passwords',

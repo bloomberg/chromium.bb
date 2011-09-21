@@ -28,8 +28,9 @@ class SettingsFunction : public AsyncExtensionFunction {
   bool UseResult(const ExtensionSettingsStorage::Result& storage_result);
 
  private:
-  // Component of RunImpl which runs on the FILE thread.
-  void RunOnFileThread();
+  // Called via PostTask from RunImpl.  Calls RunWithStorage and then
+  // SendReponse with its success value.
+  void RunWithSettingsOnFileThread(ExtensionSettings* settings);
 };
 
 class GetSettingsFunction : public SettingsFunction {

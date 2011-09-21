@@ -1366,6 +1366,7 @@ const char kSyncAutofillProfile[] = "sync.autofill_profile";
 const char kSyncThemes[] = "sync.themes";
 const char kSyncTypedUrls[] = "sync.typed_urls";
 const char kSyncExtensions[] = "sync.extensions";
+const char kSyncExtensionSettings[] = "sync.extension_settings";
 const char kSyncSearchEngines[] = "sync.search_engines";
 const char kSyncSessions[] = "sync.sessions";
 

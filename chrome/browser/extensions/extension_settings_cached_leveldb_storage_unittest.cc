@@ -7,8 +7,8 @@
 namespace {
 
 ExtensionSettingsStorage* Param(
-    ExtensionSettings* settings, const std::string& extension_id) {
-  return settings->GetStorageForTesting(
+    const ExtensionSettings& settings, const std::string& extension_id) {
+  return settings.GetStorageForTesting(
       ExtensionSettingsStorage::LEVELDB, true, extension_id);
 }
 

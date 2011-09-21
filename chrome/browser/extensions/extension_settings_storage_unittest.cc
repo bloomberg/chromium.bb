@@ -51,7 +51,9 @@ ExtensionSettingsStorageTest::ExtensionSettingsStorageTest()
       empty_dict_(new DictionaryValue),
       dict1_(new DictionaryValue),
       dict12_(new DictionaryValue),
-      dict123_(new DictionaryValue) {
+      dict123_(new DictionaryValue),
+      ui_thread_(BrowserThread::UI, MessageLoop::current()),
+      file_thread_(BrowserThread::FILE, MessageLoop::current()) {
   val1_.reset(Value::CreateStringValue(key1_ + "Value"));
   val2_.reset(Value::CreateStringValue(key2_ + "Value"));
   val3_.reset(Value::CreateStringValue(key3_ + "Value"));
@@ -77,17 +79,16 @@ ExtensionSettingsStorageTest::ExtensionSettingsStorageTest()
 ExtensionSettingsStorageTest::~ExtensionSettingsStorageTest() {}
 
 void ExtensionSettingsStorageTest::SetUp() {
-  ui_message_loop_.reset(new MessageLoopForUI());
-  ui_thread_.reset(
-      new BrowserThread(BrowserThread::UI, MessageLoop::current()));
-  file_thread_.reset(
-      new BrowserThread(BrowserThread::FILE, MessageLoop::current()));
+  ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+  settings_.reset(new ExtensionSettings(temp_dir_.path()));
+  storage_ = (GetParam())(*settings_, "fakeExtension");
+  ASSERT_TRUE(storage_ != NULL);
+}
 
-  FilePath temp_dir;
-  file_util::CreateNewTempDirectory(FilePath::StringType(), &temp_dir);
-  settings_ = new ExtensionSettings(temp_dir);
-  storage_ = (GetParam())(settings_.get(), "fakeExtension");
-  DCHECK(storage_ != NULL);
+void ExtensionSettingsStorageTest::TearDown() {
+  // Must do this explicitly here so that it's destroyed before the
+  // message loops are.
+  settings_.reset();
 }
 
 TEST_P(ExtensionSettingsStorageTest, GetWhenEmpty) {

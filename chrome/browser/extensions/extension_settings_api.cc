@@ -16,17 +16,14 @@ const char* kUnsupportedArgumentType = "Unsupported argument type";
 // SettingsFunction
 
 bool SettingsFunction::RunImpl() {
-  BrowserThread::PostTask(
-      BrowserThread::FILE,
-      FROM_HERE,
-      base::Bind(&SettingsFunction::RunOnFileThread, this));
+  profile()->GetExtensionService()->extension_settings()->RunWithSettings(
+      base::Bind(&SettingsFunction::RunWithSettingsOnFileThread, this));
   return true;
 }
 
-void SettingsFunction::RunOnFileThread() {
+void SettingsFunction::RunWithSettingsOnFileThread(
+    ExtensionSettings* settings) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  ExtensionSettings* settings =
-      profile()->GetExtensionService()->extension_settings();
   bool success = RunWithStorage(settings->GetStorage(extension_id()));
   BrowserThread::PostTask(
       BrowserThread::UI,

@@ -506,7 +506,6 @@ void ProfileImpl::InitExtensions(bool extensions_enabled) {
       CommandLine::ForCurrentProcess(),
       GetPath().AppendASCII(ExtensionService::kInstallDirectoryName),
       extension_prefs_.get(),
-      extension_settings_.get(),
       autoupdate_enabled,
       extensions_enabled));
 
@@ -982,9 +981,6 @@ void ProfileImpl::OnPrefsLoaded(bool success) {
       prefs_.get(),
       GetPath().AppendASCII(ExtensionService::kInstallDirectoryName),
       GetExtensionPrefValueMap()));
-
-  extension_settings_ = new ExtensionSettings(
-      GetPath().AppendASCII(ExtensionService::kSettingsDirectoryName));
 
   ProfileDependencyManager::GetInstance()->CreateProfileServices(this, false);
 

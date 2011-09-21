@@ -28,6 +28,7 @@
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_permissions_api.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
+#include "chrome/browser/extensions/extension_settings_ui_wrapper.h"
 #include "chrome/browser/extensions/extension_sync_data.h"
 #include "chrome/browser/extensions/extension_toolbar_model.h"
 #include "chrome/browser/extensions/extensions_quota_service.h"
@@ -56,7 +57,6 @@ class ExtensionInstallUI;
 class ExtensionManagementEventRouter;
 class ExtensionPreferenceEventRouter;
 class ExtensionServiceBackend;
-class ExtensionSettings;
 class ExtensionSyncData;
 class ExtensionToolbarModel;
 class ExtensionUpdater;
@@ -179,7 +179,6 @@ class ExtensionService
                    const CommandLine* command_line,
                    const FilePath& install_directory,
                    ExtensionPrefs* extension_prefs,
-                   ExtensionSettings* extension_settings,
                    bool autoupdate_enabled,
                    bool extensions_enabled);
 
@@ -440,7 +439,7 @@ class ExtensionService
   // ExtensionPrefs* mutable_extension_prefs().
   ExtensionPrefs* extension_prefs();
 
-  ExtensionSettings* extension_settings();
+  ExtensionSettingsUIWrapper* extension_settings();
 
   ExtensionContentSettingsStore* GetExtensionContentSettingsStore();
 
@@ -669,8 +668,8 @@ class ExtensionService
   // Preferences for the owning profile (weak reference).
   ExtensionPrefs* extension_prefs_;
 
-  // Settings for the owning profile (weak reference).
-  ExtensionSettings* extension_settings_;
+  // Settings for the owning profile.
+  ExtensionSettingsUIWrapper extension_settings_;
 
   // The current list of installed extensions.
   // TODO(aa): This should use chrome/common/extensions/extension_set.h.

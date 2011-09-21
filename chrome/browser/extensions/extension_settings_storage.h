@@ -35,7 +35,7 @@ class ExtensionSettingsStorage {
 
     // The dictionary result of the computation.  NULL does not imply invalid;
     // HasError() should be used to test this.
-    // Wwnership remains with with the Result.
+    // Ownership remains with with the Result.
     DictionaryValue* GetSettings() const;
 
     // Whether there was an error in the computation.  If so, the results of

@@ -494,6 +494,7 @@ extern const char kSyncAutofillProfile[];
 extern const char kSyncThemes[];
 extern const char kSyncTypedUrls[];
 extern const char kSyncExtensions[];
+extern const char kSyncExtensionSettings[];
 extern const char kSyncManaged[];
 extern const char kSyncSearchEngines[];
 extern const char kSyncSessions[];

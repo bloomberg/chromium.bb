@@ -15,6 +15,7 @@
 #include "chrome/browser/sync/protocol/autofill_specifics.pb.h"
 #include "chrome/browser/sync/protocol/bookmark_specifics.pb.h"
 #include "chrome/browser/sync/protocol/encryption.pb.h"
+#include "chrome/browser/sync/protocol/extension_setting_specifics.pb.h"
 #include "chrome/browser/sync/protocol/extension_specifics.pb.h"
 #include "chrome/browser/sync/protocol/nigori_specifics.pb.h"
 #include "chrome/browser/sync/protocol/password_specifics.pb.h"
@@ -213,6 +214,15 @@ DictionaryValue* BookmarkSpecificsToValue(
   return value;
 }
 
+DictionaryValue* ExtensionSettingSpecificsToValue(
+    const sync_pb::ExtensionSettingSpecifics& proto) {
+  DictionaryValue* value = new DictionaryValue();
+  SET_STR(extension_id);
+  SET_STR(key);
+  SET_STR(value);
+  return value;
+}
+
 DictionaryValue* ExtensionSpecificsToValue(
     const sync_pb::ExtensionSpecifics& proto) {
   DictionaryValue* value = new DictionaryValue();
@@ -242,6 +252,7 @@ DictionaryValue* NigoriSpecificsToValue(
   SET_BOOL(encrypt_search_engines);
   SET_BOOL(sync_tabs);
   SET_BOOL(encrypt_everything);
+  SET_BOOL(encrypt_extension_settings);
   return value;
 }
 
@@ -321,6 +332,7 @@ DictionaryValue* EntitySpecificsToValue(
   SET_EXTENSION(sync_pb, autofill_profile, AutofillProfileSpecificsToValue);
   SET_EXTENSION(sync_pb, bookmark, BookmarkSpecificsToValue);
   SET_EXTENSION(sync_pb, extension, ExtensionSpecificsToValue);
+  SET_EXTENSION(sync_pb, extension_setting, ExtensionSettingSpecificsToValue);
   SET_EXTENSION(sync_pb, nigori, NigoriSpecificsToValue);
   SET_EXTENSION(sync_pb, password, PasswordSpecificsToValue);
   SET_EXTENSION(sync_pb, preference, PreferenceSpecificsToValue);

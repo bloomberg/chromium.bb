@@ -34,7 +34,6 @@ class SpecialStoragePolicy;
 class AutocompleteClassifier;
 class BookmarkModel;
 class CommandLine;
-class ExtensionSettings;
 class ExtensionPrefs;
 class ExtensionPrefStore;
 class ExtensionPrefValueMap;
@@ -376,10 +375,6 @@ class TestingProfile : public Profile {
   // The Extension Preferences. Only created if CreateExtensionService is
   // invoked.
   scoped_ptr<ExtensionPrefs> extension_prefs_;
-
-  // The Extension settings. Only created if CreateExtensionService is
-  // invoked.
-  scoped_refptr<ExtensionSettings> extension_settings_;
 
   scoped_ptr<ExtensionService> extension_service_;
 

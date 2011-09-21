@@ -19,6 +19,7 @@ class AutofillSpecifics;
 class BookmarkSpecifics;
 class EncryptedData;
 class EntitySpecifics;
+class ExtensionSettingSpecifics;
 class ExtensionSpecifics;
 class NigoriSpecifics;
 class PasswordSpecifics;
@@ -84,6 +85,9 @@ base::DictionaryValue* AutofillProfileSpecificsToValue(
 
 base::DictionaryValue* BookmarkSpecificsToValue(
     const sync_pb::BookmarkSpecifics& bookmark_specifics);
+
+base::DictionaryValue* ExtensionSettingSpecificsToValue(
+    const sync_pb::ExtensionSettingSpecifics& extension_setting_specifics);
 
 base::DictionaryValue* ExtensionSpecificsToValue(
     const sync_pb::ExtensionSpecifics& extension_specifics);

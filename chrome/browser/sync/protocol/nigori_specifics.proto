@@ -65,6 +65,8 @@ message NigoriSpecifics {
   
   // If true, all current and future datatypes will be encrypted.
   optional bool encrypt_everything = 24;
+
+  optional bool encrypt_extension_settings = 25;
 }
 
 extend EntitySpecifics {

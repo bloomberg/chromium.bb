@@ -291,6 +291,8 @@ void Cryptographer::UpdateEncryptedTypesFromNigori(
     encrypted_types_.insert(syncable::THEMES);
   if (nigori.encrypt_typed_urls())
     encrypted_types_.insert(syncable::TYPED_URLS);
+  if (nigori.encrypt_extension_settings())
+    encrypted_types_.insert(syncable::EXTENSION_SETTINGS);
   if (nigori.encrypt_extensions())
     encrypted_types_.insert(syncable::EXTENSIONS);
   if (nigori.encrypt_search_engines())
@@ -324,6 +326,8 @@ void Cryptographer::UpdateNigoriFromEncryptedTypes(
   nigori->set_encrypt_themes(encrypted_types_.count(syncable::THEMES) > 0);
   nigori->set_encrypt_typed_urls(
       encrypted_types_.count(syncable::TYPED_URLS) > 0);
+  nigori->set_encrypt_extension_settings(
+      encrypted_types_.count(syncable::EXTENSION_SETTINGS) > 0);
   nigori->set_encrypt_extensions(
       encrypted_types_.count(syncable::EXTENSIONS) > 0);
   nigori->set_encrypt_search_engines(

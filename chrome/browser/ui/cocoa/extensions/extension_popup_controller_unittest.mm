@@ -9,7 +9,6 @@
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_settings.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #include "chrome/browser/ui/cocoa/extensions/extension_popup_controller.h"
@@ -38,12 +37,10 @@ class ExtensionTestingProfile : public TestingProfile {
     extension_prefs_.reset(new ExtensionPrefs(GetPrefs(),
                                               GetExtensionsInstallDir(),
                                               extension_pref_value_map_.get()));
-    extension_settings_ = new ExtensionSettings(GetExtensionsSettingsDir());
     service_.reset(new ExtensionService(this,
                                         CommandLine::ForCurrentProcess(),
                                         GetExtensionsInstallDir(),
                                         extension_prefs_.get(),
-                                        extension_settings_.get(),
                                         false,
                                         true));
     service_->set_extensions_enabled(true);
@@ -56,7 +53,6 @@ class ExtensionTestingProfile : public TestingProfile {
     manager_.reset();
     service_.reset();
     extension_prefs_.reset();
-    extension_settings_ = NULL;
   }
 
   virtual ExtensionProcessManager* GetExtensionProcessManager() {
@@ -70,7 +66,6 @@ class ExtensionTestingProfile : public TestingProfile {
  private:
   scoped_ptr<ExtensionProcessManager> manager_;
   scoped_ptr<ExtensionPrefs> extension_prefs_;
-  scoped_refptr<ExtensionSettings> extension_settings_;
   scoped_ptr<ExtensionService> service_;
   scoped_ptr<ExtensionPrefValueMap> extension_pref_value_map_;
 

@@ -503,6 +503,10 @@ const char kEnableShortcutsProvider[]       = "enable-shortcuts-provider";
 
 // On platforms that support it, enable smooth scroll animation.
 const char kEnableSmoothScrolling[]         = "enable-smooth-scrolling";
+
+// Enable syncing extension settings.
+const char kEnableSyncExtensionSettings[]   = "enable-sync-extension-settings";
+
 // Enable OAuth sign-in for sync.
 const char kEnableSyncOAuth[]               = "enable-sync-oauth";
 

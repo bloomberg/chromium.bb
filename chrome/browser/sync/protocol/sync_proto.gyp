@@ -16,6 +16,7 @@
         'app_specifics.proto',
         'autofill_specifics.proto',
         'bookmark_specifics.proto',
+        'extension_setting_specifics.proto',
         'extension_specifics.proto',
         'nigori_specifics.proto',
         'password_specifics.proto',

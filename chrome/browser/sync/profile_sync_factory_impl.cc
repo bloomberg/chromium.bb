@@ -4,6 +4,7 @@
 
 #include "base/command_line.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_settings.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
@@ -19,6 +20,7 @@
 #include "chrome/browser/sync/glue/bookmark_model_associator.h"
 #include "chrome/browser/sync/glue/data_type_manager_impl.h"
 #include "chrome/browser/sync/glue/extension_data_type_controller.h"
+#include "chrome/browser/sync/glue/extension_setting_data_type_controller.h"
 #include "chrome/browser/sync/glue/generic_change_processor.h"
 #include "chrome/browser/sync/glue/password_change_processor.h"
 #include "chrome/browser/sync/glue/password_data_type_controller.h"
@@ -42,6 +44,7 @@
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "content/browser/browser_thread.h"
 
 using browser_sync::AppDataTypeController;
 using browser_sync::AutofillChangeProcessor;
@@ -56,6 +59,7 @@ using browser_sync::DataTypeController;
 using browser_sync::DataTypeManager;
 using browser_sync::DataTypeManagerImpl;
 using browser_sync::ExtensionDataTypeController;
+using browser_sync::ExtensionSettingDataTypeController;
 using browser_sync::GenericChangeProcessor;
 using browser_sync::PasswordChangeProcessor;
 using browser_sync::PasswordDataTypeController;
@@ -153,6 +157,13 @@ void ProfileSyncFactoryImpl::RegisterDataTypes(ProfileSyncService* pss) {
         new SessionDataTypeController(this, profile_, pss));
   }
 
+  // Extension setting sync is disabled by default.  Register only if
+  // explicitly enabled.
+  if (command_line_->HasSwitch(switches::kEnableSyncExtensionSettings)) {
+    pss->RegisterDataTypeController(
+        new ExtensionSettingDataTypeController(this, profile_, pss));
+  }
+
   if (!command_line_->HasSwitch(switches::kDisableSyncAutofillProfile)) {
     pss->RegisterDataTypeController(
         new AutofillProfileDataTypeController(this, profile_));
@@ -241,6 +252,22 @@ ProfileSyncFactoryImpl::CreateBookmarkSyncComponents(
       new BookmarkChangeProcessor(model_associator,
                                   error_handler);
   return SyncComponents(model_associator, change_processor);
+}
+
+ProfileSyncFactory::SyncComponents
+ProfileSyncFactoryImpl::CreateExtensionSettingSyncComponents(
+    ExtensionSettings* extension_settings,
+    ProfileSyncService* profile_sync_service,
+    UnrecoverableErrorHandler* error_handler) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  sync_api::UserShare* user_share = profile_sync_service->GetUserShare();
+  GenericChangeProcessor* change_processor =
+      new GenericChangeProcessor(extension_settings, error_handler, user_share);
+  browser_sync::SyncableServiceAdapter* sync_service_adapter =
+      new browser_sync::SyncableServiceAdapter(syncable::EXTENSION_SETTINGS,
+                                               extension_settings,
+                                               change_processor);
+  return SyncComponents(sync_service_adapter, change_processor);
 }
 
 ProfileSyncFactory::SyncComponents
