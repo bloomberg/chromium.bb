@@ -460,10 +460,6 @@ SSLHostState* TestingProfile::GetSSLHostState() {
   return NULL;
 }
 
-net::TransportSecurityState* TestingProfile::GetTransportSecurityState() {
-  return NULL;
-}
-
 FaviconService* TestingProfile::GetFaviconService(ServiceAccessType access) {
   return favicon_service_.get();
 }
@@ -791,6 +787,10 @@ void TestingProfile::SetDownloadManagerDelegate(
 
 chrome_browser_net::Predictor* TestingProfile::GetNetworkPredictor() {
   return NULL;
+}
+
+void TestingProfile::DeleteTransportSecurityStateSince(base::Time time) {
+  NOTIMPLEMENTED();
 }
 
 PrefService* TestingProfile::GetOffTheRecordPrefs() {

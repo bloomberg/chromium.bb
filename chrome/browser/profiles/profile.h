@@ -40,7 +40,6 @@ class ShortcutsBackend;
 }
 
 namespace net {
-class TransportSecurityState;
 class SSLConfigService;
 }
 
@@ -89,7 +88,6 @@ class SSLConfigServiceManager;
 class SpellCheckHost;
 class TemplateURLFetcher;
 class TokenService;
-class TransportSecurityPersister;
 class UserScriptMaster;
 class UserStyleSheetWatcher;
 class VisitedLinkEventListener;
@@ -276,11 +274,6 @@ class Profile : public content::BrowserContext {
   // Accessor. The instance is created upon first access.
   virtual ExtensionSpecialStoragePolicy*
       GetExtensionSpecialStoragePolicy() = 0;
-
-  // Retrieves a pointer to the TransportSecurityState associated with
-  // this profile.  The TransportSecurityState is lazily created the
-  // first time that this method is called.
-  virtual net::TransportSecurityState* GetTransportSecurityState() = 0;
 
   // Retrieves a pointer to the FaviconService associated with this
   // profile.  The FaviconService is lazily created the first time
@@ -503,6 +496,11 @@ class Profile : public content::BrowserContext {
 
   // Returns the Predictor object used for dns prefetch.
   virtual chrome_browser_net::Predictor* GetNetworkPredictor() = 0;
+
+  // Deletes transport security state since |time|. The implementation
+  // is free to run this on a background thread, so when this method
+  // returns data is not guaranteed to be deleted.
+  virtual void DeleteTransportSecurityStateSince(base::Time time) = 0;
 
   std::string GetDebugName();
 

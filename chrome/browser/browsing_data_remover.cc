@@ -292,14 +292,7 @@ void BrowsingDataRemover::Remove(int remove_mask) {
   }
 
   // Also delete cached TransportSecurityState data.
-  if (profile_->GetTransportSecurityState()) {
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        NewRunnableMethod(
-            profile_->GetTransportSecurityState(),
-            &net::TransportSecurityState::DeleteSince,
-            delete_begin_));
-  }
+  profile_->DeleteTransportSecurityStateSince(delete_begin_);
 
   NotifyAndDeleteIfDone();
 }

@@ -58,6 +58,8 @@ class ProfileImplIOData : public ProfileIOData {
         GetIsolatedAppRequestContextGetter(
             const std::string& app_id) const;
 
+    void DeleteTransportSecurityStateSince(base::Time time);
+
    private:
     typedef base::hash_map<std::string,
                            scoped_refptr<ChromeURLRequestContextGetter> >

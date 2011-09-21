@@ -29,6 +29,7 @@ class HostZoomMap;
 class IOThread;
 class Profile;
 class ProtocolHandlerRegistry;
+class TransportSecurityPersister;
 
 namespace fileapi {
 class FileSystemContext;
@@ -112,6 +113,10 @@ class ProfileIOData {
     return &safe_browsing_enabled_;
   }
 
+  net::TransportSecurityState* transport_security_state() const {
+    return transport_security_state_.get();
+  }
+
  protected:
   class AppRequestContext : public ChromeURLRequestContext {
    public:
@@ -132,6 +137,7 @@ class ProfileIOData {
     ProfileParams();
     ~ProfileParams();
 
+    FilePath path;
     bool is_incognito;
     bool clear_local_state_on_exit;
     std::string accept_language;
@@ -140,7 +146,6 @@ class ProfileIOData {
     IOThread* io_thread;
     scoped_refptr<HostContentSettingsMap> host_content_settings_map;
     scoped_refptr<HostZoomMap> host_zoom_map;
-    scoped_refptr<net::TransportSecurityState> transport_security_state;
     scoped_refptr<net::SSLConfigService> ssl_config_service;
     scoped_refptr<net::CookieMonster::Delegate> cookie_monster_delegate;
     scoped_refptr<webkit_database::DatabaseTracker> database_tracker;
@@ -272,6 +277,7 @@ class ProfileIOData {
   mutable scoped_ptr<net::NetworkDelegate> network_delegate_;
   mutable scoped_ptr<net::DnsCertProvenanceChecker> dns_cert_checker_;
   mutable scoped_ptr<net::ProxyService> proxy_service_;
+  mutable scoped_refptr<net::TransportSecurityState> transport_security_state_;
   mutable scoped_ptr<net::URLRequestJobFactory> job_factory_;
 
   // Pointed to by ResourceContext.
@@ -290,6 +296,9 @@ class ProfileIOData {
       prerender_manager_getter_;
 
   mutable ResourceContext resource_context_;
+
+  mutable scoped_ptr<TransportSecurityPersister>
+      transport_security_persister_;
 
   // These are only valid in between LazyInitialize() and their accessor being
   // called.

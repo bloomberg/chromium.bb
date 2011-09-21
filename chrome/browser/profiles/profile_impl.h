@@ -58,7 +58,6 @@ class ProfileImpl : public Profile,
   virtual VisitedLinkMaster* GetVisitedLinkMaster();
   virtual UserScriptMaster* GetUserScriptMaster();
   virtual SSLHostState* GetSSLHostState();
-  virtual net::TransportSecurityState* GetTransportSecurityState();
   virtual ExtensionService* GetExtensionService();
   virtual ExtensionDevToolsManager* GetExtensionDevToolsManager();
   virtual ExtensionProcessManager* GetExtensionProcessManager();
@@ -124,6 +123,7 @@ class ProfileImpl : public Profile,
   virtual PromoCounter* GetInstantPromoCounter();
   virtual ChromeURLDataManager* GetChromeURLDataManager();
   virtual chrome_browser_net::Predictor* GetNetworkPredictor();
+  virtual void DeleteTransportSecurityStateSince(base::Time time);
 
 #if defined(OS_CHROMEOS)
   virtual void ChangeAppLocale(const std::string& locale, AppLocaleChangedVia);
@@ -209,10 +209,6 @@ class ProfileImpl : public Profile,
   scoped_refptr<ExtensionSpecialStoragePolicy>
       extension_special_storage_policy_;
   scoped_ptr<SSLHostState> ssl_host_state_;
-  scoped_refptr<net::TransportSecurityState>
-      transport_security_state_;
-  scoped_refptr<TransportSecurityPersister>
-      transport_security_persister_;
   scoped_ptr<prerender::PrerenderManager> prerender_manager_;
   scoped_ptr<NetPrefObserver> net_pref_observer_;
   scoped_ptr<TemplateURLFetcher> template_url_fetcher_;

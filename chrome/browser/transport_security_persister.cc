@@ -4,6 +4,7 @@
 
 #include "chrome/browser/transport_security_persister.h"
 
+#include "base/bind.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/message_loop.h"
@@ -12,6 +13,42 @@
 #include "content/browser/browser_thread.h"
 #include "net/base/transport_security_state.h"
 
+class TransportSecurityPersister::Loader {
+ public:
+  Loader(const base::WeakPtr<TransportSecurityPersister>& persister,
+         const FilePath& path)
+      : persister_(persister),
+        path_(path),
+        state_valid_(false) {
+  }
+
+  void Load() {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+    state_valid_ = file_util::ReadFileToString(path_, &state_);
+  }
+
+  void CompleteLoad() {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+    // Make sure we're deleted.
+    scoped_ptr<Loader> deleter(this);
+
+    if (!persister_ || !state_valid_)
+      return;
+    persister_->CompleteLoad(state_);
+  }
+
+ private:
+  base::WeakPtr<TransportSecurityPersister> persister_;
+
+  FilePath path_;
+
+  std::string state_;
+  bool state_valid_;
+
+  DISALLOW_COPY_AND_ASSIGN(Loader);
+};
+
 TransportSecurityPersister::TransportSecurityPersister(
     net::TransportSecurityState* state,
     const FilePath& profile_path,
@@ -19,38 +56,26 @@ TransportSecurityPersister::TransportSecurityPersister(
     : transport_security_state_(state),
       writer_(profile_path.AppendASCII("TransportSecurity"),
               BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE)),
-      readonly_(readonly) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+      readonly_(readonly),
+      weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   transport_security_state_->SetDelegate(this);
+
+  Loader* loader = new Loader(weak_ptr_factory_.GetWeakPtr(), writer_.path());
+  BrowserThread::PostTaskAndReply(
+      BrowserThread::FILE, FROM_HERE,
+      base::Bind(&Loader::Load, base::Unretained(loader)),
+      base::Bind(&Loader::CompleteLoad, base::Unretained(loader)));
 }
 
 TransportSecurityPersister::~TransportSecurityPersister() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
   if (writer_.HasPendingWrite())
     writer_.DoScheduledWrite();
 
   transport_security_state_->SetDelegate(NULL);
-}
-
-void TransportSecurityPersister::Init() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      NewRunnableMethod(this, &TransportSecurityPersister::Load));
-}
-
-void TransportSecurityPersister::Load() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-
-  std::string state;
-  if (!file_util::ReadFileToString(writer_.path(), &state))
-    return;
-
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      NewRunnableMethod(this,
-                        &TransportSecurityPersister::CompleteLoad,
-                        state));
 }
 
 void TransportSecurityPersister::CompleteLoad(const std::string& state) {
@@ -75,5 +100,6 @@ void TransportSecurityPersister::StateIsDirty(
 }
 
 bool TransportSecurityPersister::SerializeData(std::string* data) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   return transport_security_state_->Serialise(data);
 }

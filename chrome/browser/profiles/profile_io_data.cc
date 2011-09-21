@@ -33,6 +33,7 @@
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/transport_security_persister.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager_backend.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
@@ -194,6 +195,7 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
   PrefService* pref_service = profile->GetPrefs();
 
   scoped_ptr<ProfileParams> params(new ProfileParams);
+  params->path = profile->GetPath();
   params->is_incognito = profile->IsOffTheRecord();
   params->clear_local_state_on_exit =
       pref_service->GetBoolean(prefs::kClearSiteDataOnExit);
@@ -225,7 +227,6 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
 
   params->host_content_settings_map = profile->GetHostContentSettingsMap();
   params->host_zoom_map = profile->GetHostZoomMap();
-  params->transport_security_state = profile->GetTransportSecurityState();
   params->ssl_config_service = profile->GetSSLConfigService();
   base::Callback<Profile*(void)> profile_getter =
       base::Bind(&GetProfileOnUI, g_browser_process->profile_manager(),
@@ -429,6 +430,13 @@ void ProfileIOData::LazyInitialize() const {
           profile_params_->proxy_config_service.release(),
           command_line));
 
+  transport_security_state_ = new net::TransportSecurityState(
+      command_line.GetSwitchValueASCII(switches::kHstsHosts));
+  transport_security_persister_.reset(
+      new TransportSecurityPersister(transport_security_state_.get(),
+                                     profile_params_->path,
+                                     !profile_params_->is_incognito));
+
   // NOTE(willchan): Keep these protocol handlers in sync with
   // ProfileIOData::IsHandledProtocol().
   job_factory_.reset(new net::URLRequestJobFactory);
@@ -510,8 +518,6 @@ void ProfileIOData::ApplyProfileParamsToContext(
   context->set_accept_language(profile_params_->accept_language);
   context->set_accept_charset(profile_params_->accept_charset);
   context->set_referrer_charset(profile_params_->referrer_charset);
-  context->set_transport_security_state(
-      profile_params_->transport_security_state);
   context->set_ssl_config_service(profile_params_->ssl_config_service);
 }
 

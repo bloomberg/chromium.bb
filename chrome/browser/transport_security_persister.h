@@ -37,24 +37,20 @@
 #include <string>
 
 #include "base/file_path.h"
-#include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/common/important_file_writer.h"
-#include "content/browser/browser_thread.h"
 #include "net/base/transport_security_state.h"
 
+// Reads and updates on-disk TransportSecurity state.
+// Must be created, used and destroyed only on the IO thread.
 class TransportSecurityPersister
-    : public base::RefCountedThreadSafe<TransportSecurityPersister,
-                                        BrowserThread::DeleteOnUIThread>,
-      public net::TransportSecurityState::Delegate,
+    : public net::TransportSecurityState::Delegate,
       public ImportantFileWriter::DataSerializer {
  public:
   TransportSecurityPersister(net::TransportSecurityState* state,
                              const FilePath& profile_path,
                              bool readonly);
-
-  // Starts transport security data load on a background thread.
-  // Must be called on the UI thread right after construction.
-  void Init();
+  virtual ~TransportSecurityPersister();
 
   // Called by the TransportSecurityState when it changes its state.
   virtual void StateIsDirty(net::TransportSecurityState*);
@@ -63,15 +59,10 @@ class TransportSecurityPersister
   virtual bool SerializeData(std::string* data);
 
  private:
-  friend struct BrowserThread::DeleteOnThread<BrowserThread::UI>;
-  friend class DeleteTask<TransportSecurityPersister>;
+  class Loader;
 
-  virtual ~TransportSecurityPersister();
-
-  void Load();
   void CompleteLoad(const std::string& state);
 
-  // IO thread only.
   scoped_refptr<net::TransportSecurityState> transport_security_state_;
 
   // Helper for safely writing the data.
@@ -79,6 +70,8 @@ class TransportSecurityPersister
 
   // Whether or not we're in read-only mode.
   const bool readonly_;
+
+  base::WeakPtrFactory<TransportSecurityPersister> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(TransportSecurityPersister);
 };

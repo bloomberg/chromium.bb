@@ -146,6 +146,9 @@ void OffTheRecordProfileIOData::LazyInitializeInternal(
   ApplyProfileParamsToContext(main_context);
   ApplyProfileParamsToContext(extensions_context);
 
+  main_context->set_transport_security_state(transport_security_state());
+  extensions_context->set_transport_security_state(transport_security_state());
+
   main_context->set_net_log(io_thread->net_log());
   extensions_context->set_net_log(io_thread->net_log());
 

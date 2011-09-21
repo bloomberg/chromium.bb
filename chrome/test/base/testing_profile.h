@@ -166,7 +166,6 @@ class TestingProfile : public Profile {
       ExtensionSpecialStoragePolicy* extension_special_storage_policy);
   virtual ExtensionSpecialStoragePolicy* GetExtensionSpecialStoragePolicy();
   virtual SSLHostState* GetSSLHostState();
-  virtual net::TransportSecurityState* GetTransportSecurityState();
   virtual FaviconService* GetFaviconService(ServiceAccessType access);
   virtual HistoryService* GetHistoryService(ServiceAccessType access);
   virtual HistoryService* GetHistoryServiceWithoutCreating();
@@ -281,6 +280,7 @@ class TestingProfile : public Profile {
   virtual ChromeURLDataManager* GetChromeURLDataManager();
   virtual prerender::PrerenderManager* GetPrerenderManager();
   virtual chrome_browser_net::Predictor* GetNetworkPredictor();
+  virtual void DeleteTransportSecurityStateSince(base::Time time);
   virtual PrefService* GetOffTheRecordPrefs();
 
   // TODO(jam): remove me once webkit_context_unittest.cc doesn't use Profile

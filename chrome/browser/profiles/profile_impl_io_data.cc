@@ -29,6 +29,16 @@
 #include "net/http/http_cache.h"
 #include "net/url_request/url_request_job_factory.h"
 
+namespace {
+
+void DeleteTransportSecurityStateSinceOnIOThread(
+    ProfileImplIOData* io_data, base::Time time) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  io_data->transport_security_state()->DeleteSince(time);
+}
+
+}  // namespace
+
 ProfileImplIOData::Handle::Handle(Profile* profile)
     : io_data_(new ProfileImplIOData),
       profile_(profile),
@@ -176,6 +186,19 @@ ProfileImplIOData::Handle::GetIsolatedAppRequestContextGetter(
   return context;
 }
 
+void ProfileImplIOData::Handle::DeleteTransportSecurityStateSince(
+    base::Time time) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  LazyInitialize();
+
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(
+          &DeleteTransportSecurityStateSinceOnIOThread,
+          io_data_,
+          time));
+}
+
 void ProfileImplIOData::Handle::LazyInitialize() const {
   if (!initialized_) {
     io_data_->InitializeOnUIThread(profile_);
@@ -224,6 +247,11 @@ void ProfileImplIOData::LazyInitializeInternal(
   ApplyProfileParamsToContext(main_context);
   ApplyProfileParamsToContext(media_request_context_);
   ApplyProfileParamsToContext(extensions_context);
+
+  main_context->set_transport_security_state(transport_security_state());
+  media_request_context_->set_transport_security_state(
+      transport_security_state());
+  extensions_context->set_transport_security_state(transport_security_state());
 
   main_context->set_net_log(io_thread->net_log());
   media_request_context_->set_net_log(io_thread->net_log());

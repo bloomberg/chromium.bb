@@ -54,7 +54,6 @@ class OffTheRecordProfileImpl : public Profile,
   virtual ExtensionSpecialStoragePolicy*
       GetExtensionSpecialStoragePolicy() OVERRIDE;
   virtual SSLHostState* GetSSLHostState() OVERRIDE;
-  virtual net::TransportSecurityState* GetTransportSecurityState() OVERRIDE;
   virtual HistoryService* GetHistoryService(ServiceAccessType sat) OVERRIDE;
   virtual HistoryService* GetHistoryServiceWithoutCreating() OVERRIDE;
   virtual FaviconService* GetFaviconService(ServiceAccessType sat) OVERRIDE;
@@ -131,6 +130,7 @@ class OffTheRecordProfileImpl : public Profile,
   virtual PrefProxyConfigTracker* GetProxyConfigTracker() OVERRIDE;
   virtual prerender::PrerenderManager* GetPrerenderManager() OVERRIDE;
   virtual chrome_browser_net::Predictor* GetNetworkPredictor() OVERRIDE;
+  virtual void DeleteTransportSecurityStateSince(base::Time time) OVERRIDE;
 
   // NotificationObserver implementation.
   virtual void Observe(int type,
@@ -180,10 +180,6 @@ class OffTheRecordProfileImpl : public Profile,
   // profile.
   scoped_ptr<FindBarState> find_bar_state_;
 
-  // The TransportSecurityState that only stores enabled sites in memory.
-  scoped_refptr<net::TransportSecurityState>
-      transport_security_state_;
-
   // Time we were started.
   Time start_time_;
 
@@ -205,9 +201,6 @@ class OffTheRecordProfileImpl : public Profile,
   scoped_ptr<ChromeURLDataManager> chrome_url_data_manager_;
 
   scoped_refptr<quota::QuotaManager> quota_manager_;
-
-  // Used read-only.
-  scoped_refptr<TransportSecurityPersister> transport_security_loader_;
 
   DISALLOW_COPY_AND_ASSIGN(OffTheRecordProfileImpl);
 };

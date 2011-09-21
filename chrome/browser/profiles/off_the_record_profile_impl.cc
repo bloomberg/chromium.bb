@@ -244,22 +244,6 @@ SSLHostState* OffTheRecordProfileImpl::GetSSLHostState() {
   return ssl_host_state_.get();
 }
 
-net::TransportSecurityState*
-    OffTheRecordProfileImpl::GetTransportSecurityState() {
-  if (!transport_security_state_.get()) {
-    transport_security_state_ = new net::TransportSecurityState(
-        CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-            switches::kHstsHosts));
-    transport_security_loader_ =
-       new TransportSecurityPersister(transport_security_state_.get(),
-                                      GetPath(),
-                                      true /* readonly */);
-    transport_security_loader_->Init();
-  }
-
-  return transport_security_state_.get();
-}
-
 HistoryService* OffTheRecordProfileImpl::GetHistoryService(
     ServiceAccessType sat) {
   if (sat == EXPLICIT_ACCESS)
@@ -610,6 +594,11 @@ chrome_browser_net::Predictor* OffTheRecordProfileImpl::GetNetworkPredictor() {
   // We do not store information about websites visited in OTR profiles which
   // is necessary for a Predictor, so we do not have a Predictor at all.
   return NULL;
+}
+
+void OffTheRecordProfileImpl::DeleteTransportSecurityStateSince(
+    base::Time time) {
+  // No need to do anything here, our transport security state is read-only.
 }
 
 void OffTheRecordProfileImpl::Observe(int type,

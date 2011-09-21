@@ -950,22 +950,6 @@ SSLHostState* ProfileImpl::GetSSLHostState() {
   return ssl_host_state_.get();
 }
 
-net::TransportSecurityState*
-    ProfileImpl::GetTransportSecurityState() {
-  if (!transport_security_state_.get()) {
-    transport_security_state_ = new net::TransportSecurityState(
-        CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-            switches::kHstsHosts));
-    transport_security_persister_ =
-        new TransportSecurityPersister(transport_security_state_.get(),
-                                       path_,
-                                       false /* read-write */);
-    transport_security_persister_->Init();
-  }
-
-  return transport_security_state_.get();
-}
-
 void ProfileImpl::OnPrefsLoaded(bool success) {
   if (!success) {
     DCHECK(delegate_);
@@ -1826,6 +1810,10 @@ prerender::PrerenderManager* ProfileImpl::GetPrerenderManager() {
 
 chrome_browser_net::Predictor* ProfileImpl::GetNetworkPredictor() {
   return predictor_;
+}
+
+void ProfileImpl::DeleteTransportSecurityStateSince(base::Time time) {
+  io_data_.DeleteTransportSecurityStateSince(time);
 }
 
 SpellCheckProfile* ProfileImpl::GetSpellCheckProfile() {
