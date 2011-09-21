@@ -65,6 +65,10 @@ typedef void* GLeglImageOES;
 typedef HDC     EGLNativeDisplayType;
 typedef HBITMAP EGLNativePixmapType;
 typedef HWND    EGLNativeWindowType;
+#elif defined(OS_ANDROID)
+typedef void                       *EGLNativeDisplayType;
+typedef struct egl_native_pixmap_t *EGLNativePixmapType;
+typedef struct ANativeWindow       *EGLNativeWindowType;
 #elif defined(USE_WAYLAND)
 typedef struct wl_display     *EGLNativeDisplayType;
 typedef struct wl_egl_pixmap  *EGLNativePixmapType;

@@ -37,6 +37,7 @@
         'io_surface_support_mac.h',
         'surface_export.h',
         'transport_dib.h',
+        'transport_dib_android.cc',
         'transport_dib_linux.cc',
         'transport_dib_mac.cc',
         'transport_dib_win.cc',

@@ -9,7 +9,7 @@
 #include "base/basictypes.h"
 #include "ui/gfx/surface/surface_export.h"
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_ANDROID)
 #include "base/shared_memory.h"
 #endif
 
@@ -118,6 +118,20 @@ class SURFACE_EXPORT TransportDIB {
     static int fake_handle = 10;
     return fake_handle++;
   }
+#elif defined(OS_ANDROID)
+  typedef base::SharedMemoryHandle Handle;
+  typedef base::SharedMemoryHandle Id;
+
+  // Returns a default, invalid handle, that is meant to indicate a missing
+  // Transport DIB.
+  static Handle DefaultHandleValue() { return Handle(); }
+
+  // Returns a value that is ONLY USEFUL FOR TESTS WHERE IT WON'T BE
+  // ACTUALLY USED AS A REAL HANDLE.
+  static Handle GetFakeHandleForTest() {
+    static int fake_handle = 10;
+    return Handle(fake_handle++, false);
+  }
 #endif
 
   // Create a new TransportDIB, returning NULL on failure.
@@ -185,7 +199,7 @@ class SURFACE_EXPORT TransportDIB {
 
  private:
   TransportDIB();
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_ANDROID)
   explicit TransportDIB(base::SharedMemoryHandle dib);
   base::SharedMemory shared_memory_;
   uint32 sequence_num_;

@@ -109,7 +109,7 @@
         },
       ],
       'conditions': [
-        ['OS != "mac"', {
+        ['OS != "mac" and OS != "android"', {
           'sources': [
             'egl_util.cc',
             'egl_util.h',
