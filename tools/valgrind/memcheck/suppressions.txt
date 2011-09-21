@@ -2775,8 +2775,8 @@
    Memcheck:Value4
    fun:_itoa_word
    fun:vfprintf
-   fun:vsnprintf
-   fun:snprintf
+   fun:*vsnprintf*
+   fun:*snprintf*
    fun:_ZN7testing*PrintByteSegmentInObjectTo*
    fun:_ZN7testing*PrintBytesInObjectToImplEPKhjPSo
    fun:_ZN7testing9internal220PrintBytesInObjectToEPKhjPSo
@@ -2787,22 +2787,14 @@
    fun:_ZN7testing8internal7PrintToI*
    fun:_ZN7testing8internal16UniversalPrinterI*
    fun:_ZN7testing8internal14UniversalPrintI*
-   fun:_ZN7testing8internal19UniversalTersePrintI*
-   fun:_ZN7testing13PrintToStringI*
-   fun:_ZN7testing8internal25ParameterizedTestCaseInfoI*E13RegisterTestsEv
-   fun:_ZN7testing8internal29ParameterizedTestCaseRegistry13RegisterTestsEv
-   fun:_ZN7testing8internal12UnitTestImpl26RegisterParameterizedTestsEv
-   fun:_ZN7testing8internal12UnitTestImpl19PostFlagParsingInitEv
-   fun:_ZN7testing8internal18InitGoogleTestImplIcEEvPiPPT_
-   fun:_ZN7testing14InitGoogleTestEPiPPc
 }
 {
    bug_64887_c
    Memcheck:Cond
    fun:_itoa_word
    fun:vfprintf
-   fun:vsnprintf
-   fun:snprintf
+   fun:*vsnprintf*
+   fun:*snprintf*
    fun:_ZN7testing*PrintByteSegmentInObjectTo*
    fun:_ZN7testing*PrintBytesInObjectToImplEPKhjPSo
    fun:_ZN7testing9internal220PrintBytesInObjectToEPKhjPSo
@@ -2813,14 +2805,6 @@
    fun:_ZN7testing8internal7PrintToI*
    fun:_ZN7testing8internal16UniversalPrinterI*
    fun:_ZN7testing8internal14UniversalPrintI*
-   fun:_ZN7testing8internal19UniversalTersePrintI*
-   fun:_ZN7testing13PrintToStringI*
-   fun:_ZN7testing8internal25ParameterizedTestCaseInfoI*E13RegisterTestsEv
-   fun:_ZN7testing8internal29ParameterizedTestCaseRegistry13RegisterTestsEv
-   fun:_ZN7testing8internal12UnitTestImpl26RegisterParameterizedTestsEv
-   fun:_ZN7testing8internal12UnitTestImpl19PostFlagParsingInitEv
-   fun:_ZN7testing8internal18InitGoogleTestImplIcEEvPiPPT_
-   fun:_ZN7testing14InitGoogleTestEPiPPc
 }
 {
    bug_64887_d
