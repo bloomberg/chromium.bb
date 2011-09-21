@@ -17,12 +17,13 @@ class NullDirectoryChangeDelegate : public DirectoryChangeDelegate {
   virtual ~NullDirectoryChangeDelegate();
 
   virtual void HandleCalculateChangesChangeEventFromSyncApi(
-      const EntryKernelMutationMap& mutations,
+      const ImmutableWriteTransactionInfo& write_transaction_info,
       BaseTransaction* trans) OVERRIDE;
   virtual void HandleCalculateChangesChangeEventFromSyncer(
-      const EntryKernelMutationMap& mutations,
+      const ImmutableWriteTransactionInfo& write_transaction_info,
       BaseTransaction* trans) OVERRIDE;
   virtual ModelTypeBitSet HandleTransactionEndingChangeEvent(
+      const ImmutableWriteTransactionInfo& write_transaction_info,
       BaseTransaction* trans) OVERRIDE;
   virtual void HandleTransactionCompleteChangeEvent(
       const ModelTypeBitSet& models_with_changes) OVERRIDE;

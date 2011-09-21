@@ -5,6 +5,7 @@
 #include "chrome/browser/sync/glue/sync_backend_registrar.h"
 
 #include <algorithm>
+#include <cstddef>
 
 #include "base/compiler_specific.h"
 #include "base/logging.h"
@@ -198,26 +199,40 @@ void SyncBackendRegistrar::DeactivateDataType(syncable::ModelType type) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   base::AutoLock lock(lock_);
   ChangeProcessor* change_processor = GetProcessorUnsafe(type);
-  if (change_processor) {
+  if (change_processor)
     change_processor->Stop();
-  }
+
   routing_info_.erase(type);
   ignore_result(processors_.erase(type));
   DCHECK(!GetProcessorUnsafe(type));
 }
 
-ChangeProcessor* SyncBackendRegistrar::GetProcessor(
-    syncable::ModelType type) {
-  base::AutoLock lock(lock_);
-  ChangeProcessor* processor = GetProcessorUnsafe(type);
-  if (!processor) {
-    return NULL;
-  }
-  // We can only check if |processor| exists, as otherwise the type is
-  // mapped to GROUP_PASSIVE.
-  CHECK(IsCurrentThreadSafeForModel(type));
-  CHECK(processor->IsRunning());
-  return processor;
+bool SyncBackendRegistrar::IsTypeActivatedForTest(
+    syncable::ModelType type) const {
+  return GetProcessor(type) != NULL;
+}
+
+void SyncBackendRegistrar::OnChangesApplied(
+    syncable::ModelType model_type,
+    const sync_api::BaseTransaction* trans,
+    const sync_api::ImmutableChangeRecordList& changes) {
+  ChangeProcessor* processor = GetProcessor(model_type);
+  if (!processor)
+    return;
+
+  processor->ApplyChangesFromSyncModel(trans, changes);
+}
+
+void SyncBackendRegistrar::OnChangesComplete(
+    syncable::ModelType model_type) {
+  ChangeProcessor* processor = GetProcessor(model_type);
+  if (!processor)
+    return;
+
+  // This call just notifies the processor that it can commit; it
+  // already buffered any changes it plans to makes so needs no
+  // further information.
+  processor->CommitChangesFromSyncModel();
 }
 
 void SyncBackendRegistrar::GetWorkers(
@@ -237,8 +252,22 @@ void SyncBackendRegistrar::GetModelSafeRoutingInfo(
   out->swap(copy);
 }
 
+ChangeProcessor* SyncBackendRegistrar::GetProcessor(
+    syncable::ModelType type) const {
+  base::AutoLock lock(lock_);
+  ChangeProcessor* processor = GetProcessorUnsafe(type);
+  if (!processor)
+    return NULL;
+
+  // We can only check if |processor| exists, as otherwise the type is
+  // mapped to GROUP_PASSIVE.
+  CHECK(IsCurrentThreadSafeForModel(type));
+  CHECK(processor->IsRunning());
+  return processor;
+}
+
 ChangeProcessor* SyncBackendRegistrar::GetProcessorUnsafe(
-    syncable::ModelType type) {
+    syncable::ModelType type) const {
   lock_.AssertAcquired();
   std::map<syncable::ModelType, ChangeProcessor*>::const_iterator it =
       processors_.find(type);

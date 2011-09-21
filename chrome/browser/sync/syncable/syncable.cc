@@ -69,7 +69,6 @@ static const int kInvariantCheckMaxMs = 50;
 
 using std::string;
 
-
 namespace syncable {
 
 #define ENUM_CASE(x) case x: return #x; break
@@ -90,7 +89,40 @@ std::string WriterTagToString(WriterTag writer_tag) {
 
 #undef ENUM_CASE
 
-namespace {
+WriteTransactionInfo::WriteTransactionInfo(
+    int64 id,
+    tracked_objects::Location location,
+    WriterTag writer,
+    ImmutableEntryKernelMutationMap mutations)
+    : id(id),
+      location_string(location.ToString()),
+      writer(writer),
+      mutations(mutations) {}
+
+WriteTransactionInfo::WriteTransactionInfo()
+    : id(-1), writer(INVALID) {}
+
+WriteTransactionInfo::~WriteTransactionInfo() {}
+
+base::DictionaryValue* WriteTransactionInfo::ToValue(
+    size_t max_mutations_size) const {
+  DictionaryValue* dict = new DictionaryValue();
+  dict->SetString("id", base::Int64ToString(id));
+  dict->SetString("location", location_string);
+  dict->SetString("writer", WriterTagToString(writer));
+  Value* mutations_value = NULL;
+  const size_t mutations_size = mutations.Get().size();
+  if (mutations_size <= max_mutations_size) {
+    mutations_value = EntryKernelMutationMapToValue(mutations.Get());
+  } else {
+    mutations_value =
+        Value::CreateStringValue(
+            base::Uint64ToString(static_cast<uint64>(mutations_size)) +
+            " mutations");
+  }
+  dict->Set("mutations", mutations_value);
+  return dict;
+}
 
 DictionaryValue* EntryKernelMutationToValue(
     const EntryKernelMutation& mutation) {
@@ -99,8 +131,6 @@ DictionaryValue* EntryKernelMutationToValue(
   dict->Set("mutated", mutation.mutated.ToValue());
   return dict;
 }
-
-}  // namespace
 
 ListValue* EntryKernelMutationMapToValue(
     const EntryKernelMutationMap& mutations) {
@@ -375,6 +405,7 @@ Directory::Kernel::Kernel(const FilePath& db_path,
                           DirectoryChangeDelegate* delegate)
     : db_path(db_path),
       refcount(1),
+      next_write_transaction_id(0),
       name(name),
       metahandles_index(new Directory::MetahandlesIndex),
       ids_index(new Directory::IdsIndex),
@@ -1252,21 +1283,28 @@ ModelTypeBitSet WriteTransaction::NotifyTransactionChangingAndEnding(
   dirkernel_->transaction_mutex.AssertAcquired();
   DCHECK(!mutations.Get().empty());
 
+  WriteTransactionInfo write_transaction_info(
+      dirkernel_->next_write_transaction_id, from_here_, writer_, mutations);
+  ++dirkernel_->next_write_transaction_id;
+
+  ImmutableWriteTransactionInfo immutable_write_transaction_info(
+      &write_transaction_info);
   DirectoryChangeDelegate* const delegate = dirkernel_->delegate;
   if (writer_ == syncable::SYNCAPI) {
     delegate->HandleCalculateChangesChangeEventFromSyncApi(
-        mutations.Get(), this);
+        immutable_write_transaction_info, this);
   } else {
     delegate->HandleCalculateChangesChangeEventFromSyncer(
-        mutations.Get(), this);
+        immutable_write_transaction_info, this);
   }
 
   ModelTypeBitSet models_with_changes =
-      delegate->HandleTransactionEndingChangeEvent(this);
+      delegate->HandleTransactionEndingChangeEvent(
+          immutable_write_transaction_info, this);
 
   dirkernel_->observers->Notify(
-      &TransactionObserver::OnTransactionMutate,
-      from_here_, writer_, mutations, models_with_changes);
+      &TransactionObserver::OnTransactionWrite,
+      immutable_write_transaction_info, models_with_changes);
 
   return models_with_changes;
 }

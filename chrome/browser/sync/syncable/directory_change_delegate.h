@@ -24,14 +24,15 @@ namespace syncable {
 class DirectoryChangeDelegate {
  public:
   virtual void HandleCalculateChangesChangeEventFromSyncApi(
-      const EntryKernelMutationMap& mutations,
+      const ImmutableWriteTransactionInfo& write_transaction_info,
       BaseTransaction* trans) = 0;
   virtual void HandleCalculateChangesChangeEventFromSyncer(
-      const EntryKernelMutationMap& mutations,
+      const ImmutableWriteTransactionInfo& write_transaction_info,
       BaseTransaction* trans) = 0;
   // Must return the set of all ModelTypes that were modified in the
   // transaction.
   virtual ModelTypeBitSet HandleTransactionEndingChangeEvent(
+      const ImmutableWriteTransactionInfo& write_transaction_info,
       BaseTransaction* trans) = 0;
   virtual void HandleTransactionCompleteChangeEvent(
       const ModelTypeBitSet& models_with_changes) = 0;

@@ -17,7 +17,7 @@ ChangeRecord::ChangeRecord()
 
 ChangeRecord::~ChangeRecord() {}
 
-DictionaryValue* ChangeRecord::ToValue(const BaseTransaction* trans) const {
+DictionaryValue* ChangeRecord::ToValue() const {
   DictionaryValue* value = new DictionaryValue();
   std::string action_str;
   switch (action) {
@@ -36,27 +36,14 @@ DictionaryValue* ChangeRecord::ToValue(const BaseTransaction* trans) const {
       break;
   }
   value->SetString("action", action_str);
-  Value* node_value = NULL;
+  value->SetString("id", base::Int64ToString(id));
   if (action == ACTION_DELETE) {
-    DictionaryValue* node_dict = new DictionaryValue();
-    node_dict->SetString("id", base::Int64ToString(id));
-    node_dict->Set("specifics",
-                    browser_sync::EntitySpecificsToValue(specifics));
     if (extra.get()) {
-      node_dict->Set("extra", extra->ToValue());
+      value->Set("extra", extra->ToValue());
     }
-    node_value = node_dict;
-  } else {
-    ReadNode node(trans);
-    if (node.InitByIdLookup(id)) {
-      node_value = node.GetDetailsAsValue();
-    }
+    value->Set("specifics",
+               browser_sync::EntitySpecificsToValue(specifics));
   }
-  if (!node_value) {
-    NOTREACHED();
-    node_value = Value::CreateNullValue();
-  }
-  value->Set("node", node_value);
   return value;
 }
 

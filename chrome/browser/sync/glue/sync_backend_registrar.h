@@ -14,6 +14,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 #include "chrome/browser/sync/engine/model_safe_worker.h"
+#include "chrome/browser/sync/internal_api/sync_manager.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 
 class MessageLoop;
@@ -28,9 +29,11 @@ namespace browser_sync {
 class ChangeProcessor;
 class UIModelWorker;
 
-// A class to keep track of the workers and routing info for the
-// enabled sync types.
-class SyncBackendRegistrar : public ModelSafeWorkerRegistrar {
+// A class that keep track of the workers, change processors, and
+// routing info for the enabled sync types, and also routes change
+// events to the right processors.
+class SyncBackendRegistrar : public ModelSafeWorkerRegistrar,
+                             public sync_api::SyncManager::ChangeDelegate {
  public:
   // |initial_types| contains the initial set of types to sync
   // (initially put in the passive group).  |name| is used for
@@ -86,9 +89,17 @@ class SyncBackendRegistrar : public ModelSafeWorkerRegistrar {
   // surprising: see http://crbug.com/92804.
   void DeactivateDataType(syncable::ModelType type);
 
-  // Returns the change processor for the given model, or NULL if none
-  // exists.  Must be called from |group|'s native thread.
-  ChangeProcessor* GetProcessor(syncable::ModelType type);
+  // Returns true only between calls to ActivateDataType(type, ...)
+  // and DeactivateDataType(type).  Used only by tests.
+  bool IsTypeActivatedForTest(syncable::ModelType type) const;
+
+  // SyncManager::ChangeDelegate implementation.  May be called from
+  // any thread.
+  virtual void OnChangesApplied(
+      syncable::ModelType model_type,
+      const sync_api::BaseTransaction* trans,
+      const sync_api::ImmutableChangeRecordList& changes) OVERRIDE;
+  virtual void OnChangesComplete(syncable::ModelType model_type) OVERRIDE;
 
   // ModelSafeWorkerRegistrar implementation.  May be called from any
   // thread.
@@ -100,10 +111,14 @@ class SyncBackendRegistrar : public ModelSafeWorkerRegistrar {
   typedef std::map<ModelSafeGroup,
                    scoped_refptr<ModelSafeWorker> > WorkerMap;
 
+  // Returns the change processor for the given model, or NULL if none
+  // exists.  Must be called from |group|'s native thread.
+  ChangeProcessor* GetProcessor(syncable::ModelType type) const;
+
   // Must be called with |lock_| held.  Simply returns the change
   // processor for the given type, if it exists.  May be called from
   // any thread.
-  ChangeProcessor* GetProcessorUnsafe(syncable::ModelType type);
+  ChangeProcessor* GetProcessorUnsafe(syncable::ModelType type) const;
 
   // Return true if |model_type| lives on the current thread.  Must be
   // called with |lock_| held.  May be called on any thread.

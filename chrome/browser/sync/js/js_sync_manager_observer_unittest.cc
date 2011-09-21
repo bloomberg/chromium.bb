@@ -4,23 +4,16 @@
 
 #include "chrome/browser/sync/js/js_sync_manager_observer.h"
 
-#include <cstddef>
-
 #include "base/basictypes.h"
 #include "base/location.h"
 #include "base/message_loop.h"
 #include "base/values.h"
-#include "chrome/browser/sync/internal_api/read_node.h"
-#include "chrome/browser/sync/internal_api/read_transaction.h"
-#include "chrome/browser/sync/internal_api/write_node.h"
-#include "chrome/browser/sync/internal_api/write_transaction.h"
 #include "chrome/browser/sync/js/js_arg_list.h"
 #include "chrome/browser/sync/js/js_event_details.h"
 #include "chrome/browser/sync/js/js_test_util.h"
 #include "chrome/browser/sync/protocol/sync_protocol_error.h"
 #include "chrome/browser/sync/sessions/session_state.h"
 #include "chrome/browser/sync/syncable/model_type.h"
-#include "chrome/browser/sync/test/engine/test_user_share.h"
 #include "chrome/browser/sync/util/weak_handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -241,29 +234,8 @@ TEST_F(JsSyncManagerObserverTest, OnEncryptionComplete) {
   PumpLoop();
 }
 
-namespace {
-
-// Makes a node of the given model type.  Returns the id of the
-// newly-created node.
-int64 MakeNode(sync_api::UserShare* share, syncable::ModelType model_type) {
-  sync_api::WriteTransaction trans(FROM_HERE, share);
-  sync_api::ReadNode root_node(&trans);
-  root_node.InitByRootLookup();
-  sync_api::WriteNode node(&trans);
-  EXPECT_TRUE(node.InitUniqueByCreation(
-      model_type, root_node,
-      syncable::ModelTypeToString(model_type)));
-  node.SetIsFolder(false);
-  return node.GetId();
-}
-
-}  // namespace
-
 TEST_F(JsSyncManagerObserverTest, OnChangesApplied) {
   InSequence dummy;
-
-  TestUserShare test_user_share;
-  test_user_share.SetUp();
 
   // We don't test with passwords as that requires additional setup.
 
@@ -271,8 +243,7 @@ TEST_F(JsSyncManagerObserverTest, OnChangesApplied) {
   sync_api::ChangeRecord changes[syncable::MODEL_TYPE_COUNT];
   for (int i = syncable::AUTOFILL_PROFILE;
        i < syncable::MODEL_TYPE_COUNT; ++i) {
-    changes[i].id =
-        MakeNode(test_user_share.user_share(), syncable::ModelTypeFromInt(i));
+    changes[i].id = i;
     switch (i % 3) {
       case 0:
         changes[i].action =
@@ -287,12 +258,6 @@ TEST_F(JsSyncManagerObserverTest, OnChangesApplied) {
             sync_api::ChangeRecord::ACTION_DELETE;
         break;
     }
-    {
-      sync_api::ReadTransaction trans(FROM_HERE, test_user_share.user_share());
-      sync_api::ReadNode node(&trans);
-      EXPECT_TRUE(node.InitByIdLookup(changes[i].id));
-      changes[i].specifics = node.GetEntry()->Get(syncable::SPECIFICS);
-    }
   }
 
   // For each i, we call OnChangesApplied() with the first arg equal
@@ -306,11 +271,11 @@ TEST_F(JsSyncManagerObserverTest, OnChangesApplied) {
         syncable::ModelTypeToString(syncable::ModelTypeFromInt(i));
     DictionaryValue expected_details;
     expected_details.SetString("modelType", model_type_str);
+    expected_details.SetString("writeTransactionId", "0");
     ListValue* expected_changes = new ListValue();
     expected_details.Set("changes", expected_changes);
     for (int j = i; j < syncable::MODEL_TYPE_COUNT; ++j) {
-      sync_api::ReadTransaction trans(FROM_HERE, test_user_share.user_share());
-      expected_changes->Append(changes[j].ToValue(&trans));
+      expected_changes->Append(changes[j].ToValue());
     }
     EXPECT_CALL(mock_js_event_handler_,
                 HandleJsEvent("onChangesApplied",
@@ -320,16 +285,13 @@ TEST_F(JsSyncManagerObserverTest, OnChangesApplied) {
   // Fire OnChangesApplied() for each data type.
   for (int i = syncable::AUTOFILL_PROFILE;
        i < syncable::MODEL_TYPE_COUNT; ++i) {
-    sync_api::ReadTransaction trans(FROM_HERE, test_user_share.user_share());
     sync_api::ChangeRecordList
         local_changes(changes + i, changes + arraysize(changes));
     js_sync_manager_observer_.OnChangesApplied(
         syncable::ModelTypeFromInt(i),
-        &trans,
-        sync_api::ImmutableChangeRecordList(&local_changes));
+        0, sync_api::ImmutableChangeRecordList(&local_changes));
   }
 
-  test_user_share.TearDown();
   PumpLoop();
 }
 

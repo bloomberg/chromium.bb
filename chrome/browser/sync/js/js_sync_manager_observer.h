@@ -24,19 +24,23 @@ class JsEventDetails;
 class JsEventHandler;
 
 // Routes SyncManager events to a JsEventHandler.
-class JsSyncManagerObserver : public sync_api::SyncManager::Observer {
+class JsSyncManagerObserver
+    : public sync_api::SyncManager::ChangeObserver,
+      public sync_api::SyncManager::Observer {
  public:
   JsSyncManagerObserver();
   virtual ~JsSyncManagerObserver();
 
   void SetJsEventHandler(const WeakHandle<JsEventHandler>& event_handler);
 
-  // sync_api::SyncManager::Observer implementation.
+  // sync_api::SyncManager::ChangeObserver implementation.
   virtual void OnChangesApplied(
       syncable::ModelType model_type,
-      const sync_api::BaseTransaction* trans,
+      int64 write_transaction_id,
       const sync_api::ImmutableChangeRecordList& changes) OVERRIDE;
   virtual void OnChangesComplete(syncable::ModelType model_type) OVERRIDE;
+
+  // sync_api::SyncManager::Observer implementation.
   virtual void OnSyncCycleCompleted(
       const sessions::SyncSessionSnapshot* snapshot) OVERRIDE;
   virtual void OnAuthError(const GoogleServiceAuthError& auth_error) OVERRIDE;

@@ -47,29 +47,16 @@ const size_t kMutationLimit = 300;
 
 }  // namespace
 
-void JsTransactionObserver::OnTransactionMutate(
-    const tracked_objects::Location& location,
-    const syncable::WriterTag& writer,
-    const syncable::ImmutableEntryKernelMutationMap& mutations,
+void JsTransactionObserver::OnTransactionWrite(
+    const syncable::ImmutableWriteTransactionInfo& write_transaction_info,
     const syncable::ModelTypeBitSet& models_with_changes) {
   DCHECK(non_thread_safe_.CalledOnValidThread());
   if (!event_handler_.IsInitialized()) {
     return;
   }
   DictionaryValue details;
-  details.SetString("location", location.ToString());
-  details.SetString("writer", syncable::WriterTagToString(writer));
-  Value* mutations_value = NULL;
-  const size_t mutations_size = mutations.Get().size();
-  if (mutations_size <= kMutationLimit) {
-    mutations_value = syncable::EntryKernelMutationMapToValue(mutations.Get());
-  } else {
-    mutations_value =
-        Value::CreateStringValue(
-            base::Uint64ToString(static_cast<uint64>(mutations_size)) +
-            " mutations");
-  }
-  details.Set("mutations", mutations_value);
+  details.Set("writeTransactionInfo",
+              write_transaction_info.Get().ToValue(kMutationLimit));
   details.Set("modelsWithChanges",
               syncable::ModelTypeBitSetToValue(models_with_changes));
   HandleJsEvent(FROM_HERE, "onTransactionMutate", JsEventDetails(&details));

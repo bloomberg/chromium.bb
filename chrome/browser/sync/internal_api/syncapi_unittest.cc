@@ -40,6 +40,7 @@
 #include "chrome/browser/sync/notifier/sync_notifier.h"
 #include "chrome/browser/sync/notifier/sync_notifier_observer.h"
 #include "chrome/browser/sync/protocol/bookmark_specifics.pb.h"
+#include "chrome/browser/sync/protocol/extension_specifics.pb.h"
 #include "chrome/browser/sync/protocol/password_specifics.pb.h"
 #include "chrome/browser/sync/protocol/proto_value_conversions.h"
 #include "chrome/browser/sync/protocol/sync.pb.h"
@@ -73,7 +74,6 @@ using syncable::GetAllRealModelTypes;
 using syncable::kEncryptedString;
 using syncable::ModelType;
 using syncable::ModelTypeSet;
-using test::ExpectDictDictionaryValue;
 using test::ExpectDictStringValue;
 using testing::_;
 using testing::AnyNumber;
@@ -558,140 +558,6 @@ TEST_F(SyncApiTest, BaseNodeGetDetailsAsValue) {
 
 namespace {
 
-void ExpectChangeRecordActionValue(ChangeRecord::Action expected_value,
-                                   const DictionaryValue& value,
-                                   const std::string& key) {
-  std::string str_value;
-  EXPECT_TRUE(value.GetString(key, &str_value));
-  switch (expected_value) {
-    case ChangeRecord::ACTION_ADD:
-      EXPECT_EQ("Add", str_value);
-      break;
-    case ChangeRecord::ACTION_UPDATE:
-      EXPECT_EQ("Update", str_value);
-      break;
-    case ChangeRecord::ACTION_DELETE:
-      EXPECT_EQ("Delete", str_value);
-      break;
-    default:
-      NOTREACHED();
-      break;
-  }
-}
-
-void CheckNonDeleteChangeRecordValue(const ChangeRecord& record,
-                                     const DictionaryValue& value,
-                                     BaseTransaction* trans) {
-  EXPECT_NE(ChangeRecord::ACTION_DELETE, record.action);
-  ExpectChangeRecordActionValue(record.action, value, "action");
-  {
-    ReadNode node(trans);
-    EXPECT_TRUE(node.InitByIdLookup(record.id));
-    scoped_ptr<DictionaryValue> expected_details(node.GetDetailsAsValue());
-    ExpectDictDictionaryValue(*expected_details, value, "node");
-  }
-}
-
-void CheckDeleteChangeRecordValue(const ChangeRecord& record,
-                                  const DictionaryValue& value) {
-  EXPECT_EQ(ChangeRecord::ACTION_DELETE, record.action);
-  ExpectChangeRecordActionValue(record.action, value, "action");
-  DictionaryValue* node_value = NULL;
-  EXPECT_TRUE(value.GetDictionary("node", &node_value));
-  if (node_value) {
-    ExpectInt64Value(record.id, *node_value, "id");
-    scoped_ptr<DictionaryValue> expected_specifics_value(
-        browser_sync::EntitySpecificsToValue(record.specifics));
-    ExpectDictDictionaryValue(*expected_specifics_value,
-                              *node_value, "specifics");
-    scoped_ptr<DictionaryValue> expected_extra_value;
-    if (record.extra.get()) {
-      expected_extra_value.reset(record.extra->ToValue());
-    }
-    Value* extra_value = NULL;
-    EXPECT_EQ(record.extra.get() != NULL,
-              node_value->Get("extra", &extra_value));
-    EXPECT_TRUE(Value::Equals(extra_value, expected_extra_value.get()));
-  }
-}
-
-class MockExtraChangeRecordData
-    : public ExtraPasswordChangeRecordData {
- public:
-  MOCK_CONST_METHOD0(ToValue, DictionaryValue*());
-};
-
-}  // namespace
-
-TEST_F(SyncApiTest, ChangeRecordToValue) {
-  int64 child_id = MakeNode(test_user_share_.user_share(),
-                            syncable::BOOKMARKS, "testtag");
-  sync_pb::EntitySpecifics child_specifics;
-  {
-    ReadTransaction trans(FROM_HERE, test_user_share_.user_share());
-    ReadNode node(&trans);
-    EXPECT_TRUE(node.InitByIdLookup(child_id));
-    child_specifics = node.GetEntry()->Get(syncable::SPECIFICS);
-  }
-
-  // Add
-  {
-    ReadTransaction trans(FROM_HERE, test_user_share_.user_share());
-    ChangeRecord record;
-    record.action = ChangeRecord::ACTION_ADD;
-    record.id = 1;
-    record.specifics = child_specifics;
-    record.extra.reset(new StrictMock<MockExtraChangeRecordData>());
-    scoped_ptr<DictionaryValue> value(record.ToValue(&trans));
-    CheckNonDeleteChangeRecordValue(record, *value, &trans);
-  }
-
-  // Update
-  {
-    ReadTransaction trans(FROM_HERE, test_user_share_.user_share());
-    ChangeRecord record;
-    record.action = ChangeRecord::ACTION_UPDATE;
-    record.id = child_id;
-    record.specifics = child_specifics;
-    record.extra.reset(new StrictMock<MockExtraChangeRecordData>());
-    scoped_ptr<DictionaryValue> value(record.ToValue(&trans));
-    CheckNonDeleteChangeRecordValue(record, *value, &trans);
-  }
-
-  // Delete (no extra)
-  {
-    ReadTransaction trans(FROM_HERE, test_user_share_.user_share());
-    ChangeRecord record;
-    record.action = ChangeRecord::ACTION_DELETE;
-    record.id = child_id + 1;
-    record.specifics = child_specifics;
-    scoped_ptr<DictionaryValue> value(record.ToValue(&trans));
-    CheckDeleteChangeRecordValue(record, *value);
-  }
-
-  // Delete (with extra)
-  {
-    ReadTransaction trans(FROM_HERE, test_user_share_.user_share());
-    ChangeRecord record;
-    record.action = ChangeRecord::ACTION_DELETE;
-    record.id = child_id + 1;
-    record.specifics = child_specifics;
-
-    DictionaryValue extra_value;
-    extra_value.SetString("foo", "bar");
-    scoped_ptr<StrictMock<MockExtraChangeRecordData> > extra(
-        new StrictMock<MockExtraChangeRecordData>());
-    EXPECT_CALL(*extra, ToValue()).Times(2).WillRepeatedly(
-        Invoke(&extra_value, &DictionaryValue::DeepCopy));
-
-    record.extra.reset(extra.release());
-    scoped_ptr<DictionaryValue> value(record.ToValue(&trans));
-    CheckDeleteChangeRecordValue(record, *value);
-  }
-}
-
-namespace {
-
 class TestHttpPostProviderInterface : public HttpPostProviderInterface {
  public:
   virtual ~TestHttpPostProviderInterface() {}
@@ -732,11 +598,6 @@ class TestHttpPostProviderFactory : public HttpPostProviderFactory {
 
 class SyncManagerObserverMock : public SyncManager::Observer {
  public:
-  MOCK_METHOD3(OnChangesApplied,
-               void(ModelType,
-                    const BaseTransaction*,
-                    const ImmutableChangeRecordList&));  // NOLINT
-  MOCK_METHOD1(OnChangesComplete, void(ModelType));  // NOLINT
   MOCK_METHOD1(OnSyncCycleCompleted,
                void(const SyncSessionSnapshot*));  // NOLINT
   MOCK_METHOD2(OnInitializationComplete,
@@ -768,7 +629,8 @@ class SyncNotifierMock : public sync_notifier::SyncNotifier {
 };
 
 class SyncManagerTest : public testing::Test,
-                        public ModelSafeWorkerRegistrar {
+                        public ModelSafeWorkerRegistrar,
+                        public SyncManager::ChangeDelegate {
  protected:
   SyncManagerTest()
       : ui_thread_(BrowserThread::UI, &ui_loop_),
@@ -814,7 +676,7 @@ class SyncManagerTest : public testing::Test,
     sync_manager_.Init(temp_dir_.path(),
                        WeakHandle<JsEventHandler>(),
                        "bogus", 0, false,
-                       new TestHttpPostProviderFactory(), this, "bogus",
+                       new TestHttpPostProviderFactory(), this, this, "bogus",
                        credentials, sync_notifier_mock_, "",
                        true /* setup_for_test_mode */);
 
@@ -827,10 +689,6 @@ class SyncManagerTest : public testing::Test,
     GetModelSafeRoutingInfo(&routes);
     for (ModelSafeRoutingInfo::iterator i = routes.begin(); i != routes.end();
          ++i) {
-      EXPECT_CALL(observer_, OnChangesApplied(i->first, _, _))
-          .RetiresOnSaturation();
-      EXPECT_CALL(observer_, OnChangesComplete(i->first))
-          .RetiresOnSaturation();
       type_roots_[i->first] = MakeServerNodeForType(
           sync_manager_.GetUserShare(), i->first);
     }
@@ -846,17 +704,24 @@ class SyncManagerTest : public testing::Test,
   }
 
   // ModelSafeWorkerRegistrar implementation.
-  virtual void GetWorkers(std::vector<ModelSafeWorker*>* out) {
+  virtual void GetWorkers(std::vector<ModelSafeWorker*>* out) OVERRIDE {
     NOTIMPLEMENTED();
     out->clear();
   }
-  virtual void GetModelSafeRoutingInfo(ModelSafeRoutingInfo* out) {
+  virtual void GetModelSafeRoutingInfo(ModelSafeRoutingInfo* out) OVERRIDE {
     (*out)[syncable::NIGORI] = browser_sync::GROUP_PASSIVE;
     (*out)[syncable::BOOKMARKS] = browser_sync::GROUP_PASSIVE;
     (*out)[syncable::THEMES] = browser_sync::GROUP_PASSIVE;
     (*out)[syncable::SESSIONS] = browser_sync::GROUP_PASSIVE;
     (*out)[syncable::PASSWORDS] = browser_sync::GROUP_PASSIVE;
   }
+
+  virtual void OnChangesApplied(
+      syncable::ModelType model_type,
+      const BaseTransaction* trans,
+      const ImmutableChangeRecordList& changes) OVERRIDE {}
+
+  virtual void OnChangesComplete(syncable::ModelType model_type) OVERRIDE {}
 
   // Helper methods.
   bool SetUpEncryption() {

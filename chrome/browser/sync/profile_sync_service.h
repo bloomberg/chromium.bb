@@ -382,9 +382,6 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // server.
   bool HasUnsyncedItems() const;
 
-  // Logs the current unsynced items in the sync database. Useful for debugging.
-  void LogUnsyncedItems(int level) const;
-
   // Used by ProfileSyncServiceHarness.  May return NULL.
   browser_sync::BackendMigrator* GetBackendMigratorForTest();
 

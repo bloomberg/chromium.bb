@@ -1394,14 +1394,6 @@ bool ProfileSyncService::HasUnsyncedItems() const {
   return false;
 }
 
-void ProfileSyncService::LogUnsyncedItems(int level) const {
-  if (backend_.get() && backend_initialized_) {
-    return backend_->LogUnsyncedItems(level);
-  }
-  VLOG(level) << "Unsynced items not printed because backend is not "
-              << "initialized";
-}
-
 browser_sync::BackendMigrator*
     ProfileSyncService::GetBackendMigratorForTest() {
   return migrator_.get();

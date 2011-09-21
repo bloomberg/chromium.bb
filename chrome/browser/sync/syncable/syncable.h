@@ -8,6 +8,7 @@
 
 #include <algorithm>
 #include <bitset>
+#include <cstddef>
 #include <iosfwd>
 #include <limits>
 #include <map>
@@ -566,6 +567,48 @@ typedef std::map<int64, EntryKernelMutation> EntryKernelMutationMap;
 typedef browser_sync::Immutable<EntryKernelMutationMap>
     ImmutableEntryKernelMutationMap;
 
+// A WriteTransaction has a writer tag describing which body of code is doing
+// the write. This is defined up here since WriteTransactionInfo also contains
+// one.
+enum WriterTag {
+  INVALID,
+  SYNCER,
+  AUTHWATCHER,
+  UNITTEST,
+  VACUUM_AFTER_SAVE,
+  PURGE_ENTRIES,
+  SYNCAPI
+};
+
+// Make sure to update this if you update WriterTag.
+std::string WriterTagToString(WriterTag writer_tag);
+
+struct WriteTransactionInfo {
+  WriteTransactionInfo(int64 id,
+                       tracked_objects::Location location,
+                       WriterTag writer,
+                       ImmutableEntryKernelMutationMap mutations);
+  WriteTransactionInfo();
+  ~WriteTransactionInfo();
+
+  // Caller owns the return value.
+  base::DictionaryValue* ToValue(size_t max_mutations_size) const;
+
+  int64 id;
+  // TODO(akalin): Use Location when it becomes assignable.
+  std::string location_string;
+  WriterTag writer;
+  ImmutableEntryKernelMutationMap mutations;
+};
+
+typedef
+    browser_sync::Immutable<WriteTransactionInfo>
+    ImmutableWriteTransactionInfo;
+
+// Caller owns the return value.
+base::DictionaryValue* EntryKernelMutationToValue(
+    const EntryKernelMutation& mutation);
+
 // Caller owns the return value.
 base::ListValue* EntryKernelMutationMapToValue(
     const EntryKernelMutationMap& mutations);
@@ -639,22 +682,6 @@ template <typename Indexer>
 struct Index {
   typedef std::set<EntryKernel*, typename Indexer::Comparator> Set;
 };
-
-// a WriteTransaction has a writer tag describing which body of code is doing
-// the write. This is defined up here since DirectoryChangeEvent also contains
-// one.
-enum WriterTag {
-  INVALID,
-  SYNCER,
-  AUTHWATCHER,
-  UNITTEST,
-  VACUUM_AFTER_SAVE,
-  PURGE_ENTRIES,
-  SYNCAPI
-};
-
-// Make sure to update this if you update WriterTag.
-std::string WriterTagToString(WriterTag writer_tag);
 
 // The name Directory in this case means the entire directory
 // structure within a single user account.
@@ -999,6 +1026,9 @@ class Directory {
     // Implements ReadTransaction / WriteTransaction using a simple lock.
     base::Lock transaction_mutex;
 
+    // Protected by transaction_mutex.  Used by WriteTransactions.
+    int64 next_write_transaction_id;
+
     // The name of this directory.
     std::string const name;
 
@@ -1042,7 +1072,7 @@ class Directory {
 
     // A unique identifier for this account's cache db, used to generate
     // unique server IDs. No need to lock, only written at init time.
-    std::string cache_guid;
+    const std::string cache_guid;
 
     // It doesn't make sense for two threads to run SaveChanges at the same
     // time; this mutex protects that activity.

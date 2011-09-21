@@ -36,10 +36,8 @@ class JsTransactionObserver : public syncable::TransactionObserver {
   virtual void OnTransactionStart(
       const tracked_objects::Location& location,
       const syncable::WriterTag& writer) OVERRIDE;
-  virtual void OnTransactionMutate(
-      const tracked_objects::Location& location,
-      const syncable::WriterTag& writer,
-      const syncable::ImmutableEntryKernelMutationMap& mutations,
+  virtual void OnTransactionWrite(
+      const syncable::ImmutableWriteTransactionInfo& write_transaction_info,
       const syncable::ModelTypeBitSet& models_with_changes) OVERRIDE;
   virtual void OnTransactionEnd(
       const tracked_objects::Location& location,

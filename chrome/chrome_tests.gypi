@@ -2925,6 +2925,7 @@
         'browser/sync/engine/syncer_unittest.cc',
         'browser/sync/engine/syncproto_unittest.cc',
         'browser/sync/engine/verify_updates_command_unittest.cc',
+        'browser/sync/internal_api/change_record_unittest.cc',
         'browser/sync/internal_api/syncapi_mock.h',
         'browser/sync/internal_api/syncapi_server_connection_manager_unittest.cc',
         'browser/sync/internal_api/syncapi_unittest.cc',

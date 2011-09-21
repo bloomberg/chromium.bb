@@ -8,6 +8,7 @@
 
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/string_number_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/sync/internal_api/change_record.h"
 #include "chrome/browser/sync/js/js_arg_list.h"
@@ -29,21 +30,41 @@ void JsSyncManagerObserver::SetJsEventHandler(
   event_handler_ = event_handler;
 }
 
+namespace {
+
+// Max number of changes we attempt to convert to values (to avoid
+// running out of memory).
+const size_t kChangeLimit = 300;
+
+}  // namespace
+
 void JsSyncManagerObserver::OnChangesApplied(
     syncable::ModelType model_type,
-    const sync_api::BaseTransaction* trans,
+    int64 write_transaction_id,
     const sync_api::ImmutableChangeRecordList& changes) {
   if (!event_handler_.IsInitialized()) {
     return;
   }
   DictionaryValue details;
   details.SetString("modelType", syncable::ModelTypeToString(model_type));
-  ListValue* change_values = new ListValue();
-  details.Set("changes", change_values);
-  for (sync_api::ChangeRecordList::const_iterator it =
-           changes.Get().begin(); it != changes.Get().end(); ++it) {
-    change_values->Append(it->ToValue(trans));
+  details.SetString("writeTransactionId",
+                    base::Int64ToString(write_transaction_id));
+  Value* changes_value = NULL;
+  const size_t changes_size = changes.Get().size();
+  if (changes_size <= kChangeLimit) {
+    ListValue* changes_list = new ListValue();
+    for (sync_api::ChangeRecordList::const_iterator it =
+             changes.Get().begin(); it != changes.Get().end(); ++it) {
+      changes_list->Append(it->ToValue());
+    }
+    changes_value = changes_list;
+  } else {
+    changes_value =
+        Value::CreateStringValue(
+            base::Uint64ToString(static_cast<uint64>(changes_size)) +
+            " changes");
   }
+  details.Set("changes", changes_value);
   HandleJsEvent(FROM_HERE, "onChangesApplied", JsEventDetails(&details));
 }
 

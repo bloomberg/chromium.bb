@@ -9,15 +9,17 @@ namespace syncable {
 NullDirectoryChangeDelegate::~NullDirectoryChangeDelegate() {}
 
 void NullDirectoryChangeDelegate::HandleCalculateChangesChangeEventFromSyncApi(
-    const EntryKernelMutationMap& mutations,
+    const ImmutableWriteTransactionInfo& write_transaction_info,
     BaseTransaction* trans) {}
 
 void NullDirectoryChangeDelegate::HandleCalculateChangesChangeEventFromSyncer(
-    const EntryKernelMutationMap& mutations,
+    const ImmutableWriteTransactionInfo& write_transaction_info,
     BaseTransaction* trans) {}
 
-ModelTypeBitSet NullDirectoryChangeDelegate::HandleTransactionEndingChangeEvent(
-      BaseTransaction* trans) {
+ModelTypeBitSet
+    NullDirectoryChangeDelegate::HandleTransactionEndingChangeEvent(
+        const ImmutableWriteTransactionInfo& write_transaction_info,
+        BaseTransaction* trans) {
   return ModelTypeBitSet();
 }
 

@@ -20,10 +20,8 @@ class TransactionObserver {
   virtual void OnTransactionStart(
       const tracked_objects::Location& location,
       const WriterTag& writer) = 0;
-  virtual void OnTransactionMutate(
-      const tracked_objects::Location& location,
-      const WriterTag& writer,
-      const ImmutableEntryKernelMutationMap& mutations,
+  virtual void OnTransactionWrite(
+      const ImmutableWriteTransactionInfo& write_transaction_info,
       const ModelTypeBitSet& models_with_changes) = 0;
   virtual void OnTransactionEnd(
       const tracked_objects::Location& location,

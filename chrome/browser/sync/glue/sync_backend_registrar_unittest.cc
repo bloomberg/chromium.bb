@@ -17,6 +17,7 @@ namespace browser_sync {
 
 namespace {
 
+using ::testing::_;
 using ::testing::InSequence;
 using ::testing::Return;
 using ::testing::StrictMock;
@@ -53,15 +54,12 @@ class SyncBackendRegistrarTest : public testing::Test {
     EXPECT_EQ(expected_routing_info, routing_info);
   }
 
-  void ExpectHasProcessorsForTypes(SyncBackendRegistrar* registrar,
+  void ExpectHasProcessorsForTypes(const SyncBackendRegistrar& registrar,
                                    const ModelTypeSet& types) {
     for (int i = FIRST_REAL_MODEL_TYPE; i < MODEL_TYPE_COUNT; ++i) {
       ModelType model_type = ModelTypeFromInt(i);
-      if (types.count(model_type) > 0) {
-        EXPECT_TRUE(registrar->GetProcessor(model_type));
-      } else {
-        EXPECT_FALSE(registrar->GetProcessor(model_type));
-      }
+      EXPECT_EQ(types.count(model_type) > 0,
+                registrar.IsTypeActivatedForTest(model_type));
     }
   }
 
@@ -82,7 +80,7 @@ TEST_F(SyncBackendRegistrarTest, ConstructorEmpty) {
     EXPECT_EQ(4u, workers.size());
   }
   ExpectRoutingInfo(&registrar, ModelSafeRoutingInfo());
-  ExpectHasProcessorsForTypes(&registrar, ModelTypeSet());
+  ExpectHasProcessorsForTypes(registrar, ModelTypeSet());
   registrar.OnSyncerShutdownComplete();
   registrar.StopOnUIThread();
 }
@@ -107,7 +105,7 @@ TEST_F(SyncBackendRegistrarTest, ConstructorNonEmpty) {
     // Passwords dropped because of no password store.
     ExpectRoutingInfo(&registrar, expected_routing_info);
   }
-  ExpectHasProcessorsForTypes(&registrar, ModelTypeSet());
+  ExpectHasProcessorsForTypes(registrar, ModelTypeSet());
   registrar.OnSyncerShutdownComplete();
   registrar.StopOnUIThread();
 }
@@ -129,7 +127,7 @@ TEST_F(SyncBackendRegistrarTest, ConfigureDataTypes) {
     expected_routing_info[AUTOFILL] = GROUP_PASSIVE;
     ExpectRoutingInfo(&registrar, expected_routing_info);
   }
-  ExpectHasProcessorsForTypes(&registrar, ModelTypeSet());
+  ExpectHasProcessorsForTypes(registrar, ModelTypeSet());
 
   // Add and remove.
   ModelTypeSet types2;
@@ -142,25 +140,39 @@ TEST_F(SyncBackendRegistrarTest, ConfigureDataTypes) {
     expected_routing_info[THEMES] = GROUP_PASSIVE;
     ExpectRoutingInfo(&registrar, expected_routing_info);
   }
-  ExpectHasProcessorsForTypes(&registrar, ModelTypeSet());
+  ExpectHasProcessorsForTypes(registrar, ModelTypeSet());
 
   // Remove.
   EXPECT_TRUE(registrar.ConfigureDataTypes(ModelTypeSet(), types2).empty());
   ExpectRoutingInfo(&registrar, ModelSafeRoutingInfo());
-  ExpectHasProcessorsForTypes(&registrar, ModelTypeSet());
+  ExpectHasProcessorsForTypes(registrar, ModelTypeSet());
 
   registrar.OnSyncerShutdownComplete();
   registrar.StopOnUIThread();
+}
+
+void TriggerChanges(SyncBackendRegistrar* registrar, ModelType type) {
+  registrar->OnChangesApplied(type, NULL,
+                              sync_api::ImmutableChangeRecordList());
+  registrar->OnChangesComplete(type);
 }
 
 TEST_F(SyncBackendRegistrarTest, ActivateDeactivateUIDataType) {
   InSequence in_sequence;
   TestingProfile profile;
   SyncBackendRegistrar registrar(ModelTypeSet(), "test", &profile, &loop_);
+
+  // Should do nothing.
+  TriggerChanges(&registrar, BOOKMARKS);
+
   StrictMock<ChangeProcessorMock> change_processor_mock;
   EXPECT_CALL(change_processor_mock, StartImpl(&profile));
   EXPECT_CALL(change_processor_mock, IsRunning())
       .WillRepeatedly(Return(true));
+  EXPECT_CALL(change_processor_mock, ApplyChangesFromSyncModel(NULL, _));
+  EXPECT_CALL(change_processor_mock, IsRunning())
+      .WillRepeatedly(Return(true));
+  EXPECT_CALL(change_processor_mock, CommitChangesFromSyncModel());
   EXPECT_CALL(change_processor_mock, StopImpl());
   EXPECT_CALL(change_processor_mock, IsRunning())
       .WillRepeatedly(Return(false));
@@ -176,11 +188,16 @@ TEST_F(SyncBackendRegistrarTest, ActivateDeactivateUIDataType) {
     expected_routing_info[BOOKMARKS] = GROUP_UI;
     ExpectRoutingInfo(&registrar, expected_routing_info);
   }
-  ExpectHasProcessorsForTypes(&registrar, types);
+  ExpectHasProcessorsForTypes(registrar, types);
+
+  TriggerChanges(&registrar, BOOKMARKS);
 
   registrar.DeactivateDataType(BOOKMARKS);
   ExpectRoutingInfo(&registrar, ModelSafeRoutingInfo());
-  ExpectHasProcessorsForTypes(&registrar, ModelTypeSet());
+  ExpectHasProcessorsForTypes(registrar, ModelTypeSet());
+
+  // Should do nothing.
+  TriggerChanges(&registrar, BOOKMARKS);
 
   registrar.OnSyncerShutdownComplete();
   registrar.StopOnUIThread();
@@ -191,10 +208,18 @@ TEST_F(SyncBackendRegistrarTest, ActivateDeactivateNonUIDataType) {
   InSequence in_sequence;
   TestingProfile profile;
   SyncBackendRegistrar registrar(ModelTypeSet(), "test", &profile, &loop_);
+
+  // Should do nothing.
+  TriggerChanges(&registrar, AUTOFILL);
+
   StrictMock<ChangeProcessorMock> change_processor_mock;
   EXPECT_CALL(change_processor_mock, StartImpl(&profile));
   EXPECT_CALL(change_processor_mock, IsRunning())
       .WillRepeatedly(Return(true));
+  EXPECT_CALL(change_processor_mock, ApplyChangesFromSyncModel(NULL, _));
+  EXPECT_CALL(change_processor_mock, IsRunning())
+      .WillRepeatedly(Return(true));
+  EXPECT_CALL(change_processor_mock, CommitChangesFromSyncModel());
   EXPECT_CALL(change_processor_mock, StopImpl());
   EXPECT_CALL(change_processor_mock, IsRunning())
       .WillRepeatedly(Return(false));
@@ -210,18 +235,20 @@ TEST_F(SyncBackendRegistrarTest, ActivateDeactivateNonUIDataType) {
     expected_routing_info[AUTOFILL] = GROUP_DB;
     ExpectRoutingInfo(&registrar, expected_routing_info);
   }
-  ExpectHasProcessorsForTypes(&registrar, types);
+  ExpectHasProcessorsForTypes(registrar, types);
+
+  TriggerChanges(&registrar, AUTOFILL);
 
   registrar.DeactivateDataType(AUTOFILL);
   ExpectRoutingInfo(&registrar, ModelSafeRoutingInfo());
-  ExpectHasProcessorsForTypes(&registrar, ModelTypeSet());
+  ExpectHasProcessorsForTypes(registrar, ModelTypeSet());
+
+  // Should do nothing.
+  TriggerChanges(&registrar, AUTOFILL);
 
   registrar.OnSyncerShutdownComplete();
   registrar.StopOnUIThread();
 }
-
-// TODO(akalin): Add tests for non-UI non-passive data types (see
-// http://crbug.com/93456).
 
 }  // namespace
 

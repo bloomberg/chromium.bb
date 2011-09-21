@@ -13,7 +13,7 @@
 
 namespace base {
 class DictionaryValue;
-}  // namespace
+}  // namespace base
 
 namespace sync_api {
 
@@ -50,7 +50,7 @@ struct ChangeRecord {
   ~ChangeRecord();
 
   // Transfers ownership of the DictionaryValue to the caller.
-  base::DictionaryValue* ToValue(const BaseTransaction* trans) const;
+  base::DictionaryValue* ToValue() const;
 
   int64 id;
   Action action;
