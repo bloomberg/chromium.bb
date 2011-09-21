@@ -220,9 +220,13 @@ const char* kDesktopKeysToDelete[] = {
   NULL
 };
 
-const char* kDesktopEntry = "Desktop Entry";
+const char kDesktopEntry[] = "Desktop Entry";
 
-const char* kXdgOpenShebang = "#!/usr/bin/env xdg-open";
+const char kXdgOpenShebang[] = "#!/usr/bin/env xdg-open";
+
+const char kXdgSettings[] = "xdg-settings";
+const char kXdgSettingsDefaultBrowser[] = "default-web-browser";
+const char kXdgSettingsDefaultSchemeHandler[] = "default-url-scheme-handler";
 
 }  // namespace
 
@@ -293,12 +297,12 @@ bool SetDefaultWebClient(const std::string& protocol) {
   scoped_ptr<base::Environment> env(base::Environment::Create());
 
   std::vector<std::string> argv;
-  argv.push_back("xdg-settings");
+  argv.push_back(kXdgSettings);
   argv.push_back("set");
   if (protocol.empty()) {
-    argv.push_back("default-web-browser");
+    argv.push_back(kXdgSettingsDefaultBrowser);
   } else {
-    argv.push_back("default-url-scheme-handler");
+    argv.push_back(kXdgSettingsDefaultSchemeHandler);
     argv.push_back(protocol);
   }
   argv.push_back(ShellIntegration::GetDesktopName(env.get()));
@@ -306,7 +310,7 @@ bool SetDefaultWebClient(const std::string& protocol) {
   int exit_code;
   bool ran_ok = LaunchXdgUtility(argv, &exit_code);
   if (ran_ok && exit_code == EXIT_XDG_SETTINGS_SYNTAX_ERROR) {
-    if (GetChromeVersionOfScript("xdg-settings", &argv[0])) {
+    if (GetChromeVersionOfScript(kXdgSettings, &argv[0])) {
       ran_ok = LaunchXdgUtility(argv, &exit_code);
     }
   }
@@ -324,12 +328,12 @@ ShellIntegration::DefaultWebClientState GetIsDefaultWebClient(
   scoped_ptr<base::Environment> env(base::Environment::Create());
 
   std::vector<std::string> argv;
-  argv.push_back("xdg-settings");
+  argv.push_back(kXdgSettings);
   argv.push_back("check");
   if (protocol.empty()) {
-    argv.push_back("default-web-browser");
+    argv.push_back(kXdgSettingsDefaultBrowser);
   } else {
-    argv.push_back("default-url-scheme-handler");
+    argv.push_back(kXdgSettingsDefaultSchemeHandler);
     argv.push_back(protocol);
   }
   argv.push_back(ShellIntegration::GetDesktopName(env.get()));
@@ -339,7 +343,7 @@ ShellIntegration::DefaultWebClientState GetIsDefaultWebClient(
   bool ran_ok = base::GetAppOutputWithExitCode(CommandLine(argv), &reply,
                                                &success_code);
   if (ran_ok && success_code == EXIT_XDG_SETTINGS_SYNTAX_ERROR) {
-    if (GetChromeVersionOfScript("xdg_settings", &argv[0])) {
+    if (GetChromeVersionOfScript(kXdgSettings, &argv[0])) {
       ran_ok = base::GetAppOutputWithExitCode(CommandLine(argv), &reply,
                                               &success_code);
     }
@@ -386,9 +390,9 @@ ShellIntegration::IsDefaultProtocolClient(const std::string& protocol) {
 // static
 bool ShellIntegration::IsFirefoxDefaultBrowser() {
   std::vector<std::string> argv;
-  argv.push_back("xdg-settings");
+  argv.push_back(kXdgSettings);
   argv.push_back("get");
-  argv.push_back("default-web-browser");
+  argv.push_back(kXdgSettingsDefaultBrowser);
 
   std::string browser;
   // We don't care about the return value here.
