@@ -10,7 +10,8 @@ OBJECTS=\
 	$(OBJDIR)/immediate_interpreter.o \
 	$(OBJDIR)/integral_gesture_filter_interpreter.o \
 	$(OBJDIR)/lookahead_filter_interpreter.o \
-	$(OBJDIR)/scaling_filter_interpreter.o
+	$(OBJDIR)/scaling_filter_interpreter.o \
+	$(OBJDIR)/stuck_button_inhibitor_filter_interpreter.o
 
 TEST_OBJECTS=\
 	$(OBJDIR)/accel_filter_interpreter_unittest.o \
@@ -21,7 +22,8 @@ TEST_OBJECTS=\
 	$(OBJDIR)/lookahead_filter_interpreter_unittest.o \
 	$(OBJDIR)/map_unittest.o \
 	$(OBJDIR)/scaling_filter_interpreter_unittest.o \
-	$(OBJDIR)/set_unittest.o
+	$(OBJDIR)/set_unittest.o \
+	$(OBJDIR)/stuck_button_inhibitor_filter_interpreter_unittest.o
 
 TEST_MAIN=\
 	$(OBJDIR)/test_main.o
