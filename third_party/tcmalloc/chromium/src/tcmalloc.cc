@@ -1791,11 +1791,13 @@ void *(*__MALLOC_HOOK_VOLATILE __memalign_hook)(size_t, size_t, const void *) = 
 // to be hashed encoding of the location, so that they can't be copied over a
 // different region (by accident) without being detected (most of the time).
 
-// Uncomment the following define to turn on all the TCMalloc checking.
-// It will cost abotu 2% in performance, but it will catch double frees (most of
+// Enable the following define to turn on all the TCMalloc checking.
+// It will cost about 2% in performance, but it will catch double frees (most of
 // the time), and will often catch allocated-buffer overrun errors.  This
 // validation is only active when TCMalloc is used as the allocator.
-// #define TCMALLOC_VALIDATION
+#ifndef NDEBUG
+#define TCMALLOC_VALIDATION
+#endif
 
 #if !defined(TCMALLOC_VALIDATION)
 
