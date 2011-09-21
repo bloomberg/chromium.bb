@@ -51,7 +51,7 @@ void CreateBubble(const BubbleConfig& config,
   params.parent = parent;
   bubble_widget->Init(params);
   bubble_widget->client_view()->AsBubbleView()->AddChildView(
-      new views::Label(L"I am a " + config.label));
+      new views::Label(L"I am a " + UTF16ToWideHack(config.label)));
 }
 
 void CreatePointyBubble(gfx::NativeWindow parent, const gfx::Point& origin) {
