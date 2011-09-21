@@ -364,13 +364,6 @@ const Experiment kExperiments[] = {
   },
 #if defined(OS_CHROMEOS)
   {
-    "webui-login",
-    IDS_SYNC_SETUP_TITLE,
-    IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_ADVANCED_BUTTON,
-    kOsCrOS,
-    SINGLE_VALUE_TYPE(switches::kWebUILogin)
-  },
-  {
     "enable-archives",
     IDS_FILE_BROWSER_MOUNT_ARCHIVE,
     IDS_FILE_MANAGER,
