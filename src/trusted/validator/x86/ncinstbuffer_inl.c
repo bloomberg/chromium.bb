@@ -4,11 +4,10 @@
  * found in the LICENSE file.
  */
 
-/* ncinstbuffer-inl.h - Inline functions from ncinstbuffer.h to speed up
- * reading a code segment.
- *
- * Note: To use, one appends 'Inline' to one of the following functions
- * defined in ncinstbuffer.h:
+/* ncinstbuffer-inl.h - Holds nline functions for commonly used (simple)
+ * functions in ncinstbuffer.h. Used to speed up code. Inlineed routines
+ * correspond to the following functions in ncinstbuffer.h, but with an
+ * 'Inline' suffix:
  *
  *   NCRemainingMemoryAdvance
  *   NCRemainingMemoryReset
@@ -24,8 +23,8 @@
  * functions.
  */
 
-#ifndef NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCINSTBUFFER_INL_H__
-#define NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCINSTBUFFER_INL_H__
+#ifndef NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCINSTBUFFER_INL_C__
+#define NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCINSTBUFFER_INL_C__
 
 #include "native_client/src/trusted/validator/x86/ncinstbuffer.h"
 
@@ -169,4 +168,4 @@ static INLINE void NCInstBytesResetInline(NCInstBytes* buffer) {
   buffer->length = 0;
 }
 
-#endif  /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCINSTBUFFER_INL_H__ */
+#endif  /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCINSTBUFFER_INL_C__ */

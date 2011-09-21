@@ -6,7 +6,7 @@
 
 #include <stdio.h>
 
-#include "native_client/src/trusted/validator/x86/ncinstbuffer-inl.h"
+#include "native_client/src/trusted/validator/x86/ncinstbuffer.h"
 
 /* To turn on debugging of instruction decoding, change value of
  * DEBUGGING to 1.
@@ -14,6 +14,8 @@
 #define DEBUGGING 0
 
 #include "native_client/src/shared/utils/debugging.h"
+
+#include "native_client/src/trusted/validator/x86/ncinstbuffer_inl.c"
 
 void NCRemainingMemoryAdvance(NCRemainingMemory* memory) {
   NCRemainingMemoryAdvanceInline(memory);

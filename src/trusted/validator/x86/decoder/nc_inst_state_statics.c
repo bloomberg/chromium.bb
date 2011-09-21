@@ -24,9 +24,9 @@
 #include "native_client/src/trusted/validator/x86/decoder/nc_inst_trans.h"
 #include "native_client/src/trusted/validator/x86/decoder/ncop_exps.h"
 #include "native_client/src/trusted/validator/x86/decoder/ncopcode_desc.h"
-#include "native_client/src/trusted/validator/x86/ncinstbuffer-inl.h"
 #include "native_client/src/trusted/validator/x86/nc_segment.h"
 
+#include "native_client/src/trusted/validator/x86/ncinstbuffer_inl.c"
 #include "native_client/src/trusted/validator/x86/x86_insts_inl.c"
 
 EXTERN_C_BEGIN
