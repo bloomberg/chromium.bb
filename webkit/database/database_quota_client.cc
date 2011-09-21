@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "base/location.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop_proxy.h"
 #include "net/base/completion_callback.h"

@@ -6,11 +6,11 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 
+#include "base/location.h"
 #include "base/memory/ref_counted.h"
 #include "base/string16.h"
 #include "base/threading/thread.h"
 #include "base/time.h"
-#include "base/tracked.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/history/history_backend.h"
 #include "chrome/browser/history/history_notifications.h"

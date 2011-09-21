@@ -20,6 +20,7 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/global_descriptors_posix.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"

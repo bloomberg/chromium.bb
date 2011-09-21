@@ -6,7 +6,7 @@
 
 #include <string>
 
-#include "base/tracked.h"
+#include "base/location.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using std::string;

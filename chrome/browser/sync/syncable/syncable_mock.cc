@@ -4,7 +4,7 @@
 
 #include "chrome/browser/sync/syncable/syncable_mock.h"
 
-#include "base/tracked.h"
+#include "base/location.h"
 
 MockDirectory::MockDirectory() {
   InitKernel("myk", &delegate_);

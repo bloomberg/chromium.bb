@@ -13,6 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/task.h"
+#include "base/time.h"
 #include "googleurl/src/gurl.h"
 
 namespace appcache {

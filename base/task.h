@@ -10,7 +10,6 @@
 #include "base/debug/alias.h"
 #include "base/memory/raw_scoped_refptr_mismatch_checker.h"
 #include "base/memory/weak_ptr.h"
-#include "base/tracked.h"
 #include "base/tuple.h"
 
 namespace base {
@@ -22,7 +21,7 @@ const size_t kDeadTask = 0xDEAD7A53;
 // A task is a generic runnable thingy, usually used for running code on a
 // different thread or for scheduling future tasks off of the message loop.
 
-class BASE_EXPORT Task : public tracked_objects::Tracked {
+class BASE_EXPORT Task {
  public:
   Task();
   virtual ~Task();

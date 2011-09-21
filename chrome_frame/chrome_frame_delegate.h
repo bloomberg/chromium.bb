@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "base/file_path.h"
+#include "base/location.h"
 #include "base/synchronization/lock.h"
 #include "base/task.h"
 #include "chrome/common/automation_constants.h"
@@ -139,7 +140,6 @@ template <class T> class TaskMarshallerThroughWindowsMessages
   TaskMarshallerThroughWindowsMessages() {}
   virtual void PostTask(const tracked_objects::Location& from_here,
                         Task* task) {
-    task->SetBirthPlace(from_here);
     T* this_ptr = static_cast<T*>(this);
     if (this_ptr->IsWindow()) {
       this_ptr->AddRef();

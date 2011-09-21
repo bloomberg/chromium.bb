@@ -6,8 +6,8 @@
 
 #include <sstream>
 
+#include "base/location.h"
 #include "base/message_loop_proxy.h"
-#include "base/tracked.h"
 
 namespace browser_sync {
 

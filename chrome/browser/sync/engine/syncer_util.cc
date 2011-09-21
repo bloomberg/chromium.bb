@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-#include "base/tracked.h"
+#include "base/location.h"
 #include "chrome/browser/sync/engine/conflict_resolver.h"
 #include "chrome/browser/sync/engine/nigori_util.h"
 #include "chrome/browser/sync/engine/syncer_proto_util.h"

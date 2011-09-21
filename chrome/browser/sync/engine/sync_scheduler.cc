@@ -8,10 +8,10 @@
 #include <cstring>
 
 #include "base/compiler_specific.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/rand_util.h"
-#include "base/tracked.h"
 #include "chrome/browser/sync/engine/syncer.h"
 #include "chrome/browser/sync/protocol/sync.pb.h"
 #include "chrome/browser/sync/protocol/proto_enum_conversions.h"

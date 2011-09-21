@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_SYNC_API_SYNCABLE_SERVICE_MOCK_H_
 #pragma once
 
-#include "base/tracked.h"
+#include "base/location.h"
 #include "chrome/browser/sync/api/syncable_service.h"
 #include "chrome/browser/sync/api/sync_change.h"
 #include "testing/gmock/include/gmock/gmock.h"

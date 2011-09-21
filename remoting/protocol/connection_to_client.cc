@@ -5,6 +5,7 @@
 #include "remoting/protocol/connection_to_client.h"
 
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/message_loop_proxy.h"
 #include "google/protobuf/message.h"
 #include "net/base/io_buffer.h"

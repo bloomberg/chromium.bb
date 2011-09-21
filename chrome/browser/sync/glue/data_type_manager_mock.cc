@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/tracked.h"
+#include "base/location.h"
 #include "chrome/browser/sync/glue/data_type_manager_mock.h"
 #include "chrome/common/chrome_notification_types.h"
 

@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome_frame/external_tab.h"
 #include "base/lazy_instance.h"
-#include "base/tracked.h"
+#include "base/location.h"
+#include "chrome_frame/external_tab.h"
 #include "base/task.h"
 #include "base/synchronization/waitable_event.h"
 #include "chrome/common/automation_messages.h"

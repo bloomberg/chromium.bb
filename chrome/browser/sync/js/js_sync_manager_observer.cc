@@ -6,8 +6,8 @@
 
 #include <cstddef>
 
+#include "base/location.h"
 #include "base/logging.h"
-#include "base/tracked.h"
 #include "base/values.h"
 #include "chrome/browser/sync/internal_api/change_record.h"
 #include "chrome/browser/sync/js/js_arg_list.h"

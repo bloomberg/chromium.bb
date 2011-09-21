@@ -5,8 +5,8 @@
 #include <string>
 
 #include "base/format_macros.h"
+#include "base/location.h"
 #include "base/stringprintf.h"
-#include "base/tracked.h"
 #include "chrome/browser/sync/engine/apply_updates_command.h"
 #include "chrome/browser/sync/engine/nigori_util.h"
 #include "chrome/browser/sync/engine/syncer.h"

@@ -5,6 +5,7 @@
 #include "webkit/fileapi/file_system_quota_util.h"
 
 #include "base/compiler_specific.h"
+#include "base/location.h"
 #include "base/message_loop_proxy.h"
 
 namespace fileapi {

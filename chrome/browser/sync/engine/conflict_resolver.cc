@@ -8,8 +8,8 @@
 #include <map>
 #include <set>
 
+#include "base/location.h"
 #include "base/metrics/histogram.h"
-#include "base/tracked.h"
 #include "chrome/browser/sync/engine/syncer.h"
 #include "chrome/browser/sync/engine/syncer_util.h"
 #include "chrome/browser/sync/protocol/service_constants.h"

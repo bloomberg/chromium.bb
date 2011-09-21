@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/file_util.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_nsautorelease_pool.h"

@@ -6,9 +6,9 @@
 
 #include <string>
 
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/string_number_conversions.h"
-#include "base/tracked.h"
 #include "base/values.h"
 #include "chrome/browser/sync/js/js_event_details.h"
 #include "chrome/browser/sync/js/js_event_handler.h"

@@ -8,8 +8,8 @@
 
 #include <map>
 
+#include "base/location.h"
 #include "base/stringprintf.h"
-#include "base/tracked.h"
 #include "chrome/browser/sync/engine/syncer_proto_util.h"
 #include "chrome/browser/sync/protocol/bookmark_specifics.pb.h"
 #include "chrome/browser/sync/test/engine/test_id_factory.h"

@@ -11,7 +11,7 @@
 
 #include "base/basictypes.h"
 #include "base/format_macros.h"
-#include "base/tracked.h"
+#include "base/location.h"
 #include "chrome/browser/sync/engine/syncer_util.h"
 #include "chrome/browser/sync/engine/update_applicator.h"
 #include "chrome/browser/sync/sessions/sync_session.h"

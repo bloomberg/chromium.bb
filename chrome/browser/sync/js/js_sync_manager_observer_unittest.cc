@@ -7,8 +7,8 @@
 #include <cstddef>
 
 #include "base/basictypes.h"
+#include "base/location.h"
 #include "base/message_loop.h"
-#include "base/tracked.h"
 #include "base/values.h"
 #include "chrome/browser/sync/internal_api/read_node.h"
 #include "chrome/browser/sync/internal_api/read_transaction.h"

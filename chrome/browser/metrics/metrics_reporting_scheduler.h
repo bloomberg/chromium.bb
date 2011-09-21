@@ -9,6 +9,7 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/task.h"
+#include "base/time.h"
 
 // Scheduler task to drive a MetricsService object's uploading.
 class MetricsReportingScheduler {

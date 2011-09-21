@@ -5,8 +5,8 @@
 #include "chrome/browser/sync/glue/theme_model_associator.h"
 
 #include "base/basictypes.h"
+#include "base/location.h"
 #include "base/logging.h"
-#include "base/tracked.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/sync/api/sync_error.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"

@@ -5,6 +5,7 @@
 #include "net/dns/watching_file_reader.h"
 
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/message_loop_proxy.h"
 #include "base/threading/worker_pool.h"
 
@@ -134,4 +135,3 @@ void WatchingFileReader::OnReadJobFinished() {
 }
 
 }  // namespace net
-

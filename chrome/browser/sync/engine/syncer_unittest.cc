@@ -14,10 +14,10 @@
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/location.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/stringprintf.h"
 #include "base/string_number_conversions.h"
-#include "base/tracked.h"
+#include "base/stringprintf.h"
 #include "build/build_config.h"
 #include "chrome/browser/sync/engine/conflict_resolver.h"
 #include "chrome/browser/sync/engine/get_commit_ids_command.h"

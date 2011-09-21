@@ -4,7 +4,7 @@
 
 #include "chrome/browser/sync/util/logging.h"
 
-#include "base/tracked.h"
+#include "base/location.h"
 
 namespace browser_sync {
 

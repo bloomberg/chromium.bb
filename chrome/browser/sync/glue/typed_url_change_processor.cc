@@ -4,8 +4,8 @@
 
 #include "chrome/browser/sync/glue/typed_url_change_processor.h"
 
+#include "base/location.h"
 #include "base/string_util.h"
-#include "base/tracked.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/history/history_backend.h"
 #include "chrome/browser/history/history_notifications.h"

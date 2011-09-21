@@ -5,6 +5,7 @@
 #include "remoting/client/plugin/pepper_xmpp_proxy.h"
 
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/message_loop_proxy.h"
 #include "remoting/client/plugin/chromoting_scriptable_object.h"
 

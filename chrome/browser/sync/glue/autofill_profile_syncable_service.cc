@@ -4,8 +4,8 @@
 
 #include "chrome/browser/sync/glue/autofill_profile_syncable_service.h"
 
+#include "base/location.h"
 #include "base/logging.h"
-#include "base/tracked.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/api/sync_error.h"
@@ -414,4 +414,3 @@ AutofillProfileSyncableService::DataBundle::~DataBundle() {
 }
 
 }  // namespace browser_sync
-

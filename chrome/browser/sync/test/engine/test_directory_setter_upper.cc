@@ -6,8 +6,8 @@
 
 #include "base/compiler_specific.h"
 #include "base/file_util.h"
+#include "base/location.h"
 #include "base/string_util.h"
-#include "base/tracked.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 #include "testing/gtest/include/gtest/gtest.h"

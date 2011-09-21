@@ -7,21 +7,15 @@
 #if defined(COMPILER_MSVC)
 // MSDN says to #include <intrin.h>, but that breaks the VS2005 build.
 extern "C" {
-void* _ReturnAddress();
+  void* _ReturnAddress();
 }
 #endif
 
-#include "base/tracked.h"
-
+#include "base/location.h"
 #include "base/string_number_conversions.h"
 #include "base/stringprintf.h"
-#include "base/tracked_objects.h"
-
-using base::TimeTicks;
 
 namespace tracked_objects {
-
-//------------------------------------------------------------------------------
 
 Location::Location(const char* function_name,
                    const char* file_name,
@@ -89,65 +83,5 @@ BASE_EXPORT const void* GetProgramCounter() {
 
   return NULL;
 }
-
-//------------------------------------------------------------------------------
-
-#if !defined(TRACK_ALL_TASK_OBJECTS)
-
-Tracked::Tracked() : birth_program_counter_(NULL) {}
-Tracked::~Tracked() {}
-
-void Tracked::SetBirthPlace(const Location& from_here) {
-  birth_program_counter_ = from_here.program_counter();
-}
-
-const Location Tracked::GetBirthPlace() const {
-  static Location kNone("NoFunctionName", "NeedToSetBirthPlace", -1, NULL);
-  return kNone;
-}
-bool Tracked::MissingBirthPlace() const { return false; }
-void Tracked::ResetBirthTime() {}
-
-#else
-
-Tracked::Tracked()
-    : tracked_births_(NULL),
-      tracked_birth_time_(TimeTicks::Now()) {
-}
-
-Tracked::~Tracked() {
-  if (!ThreadData::IsActive() || !tracked_births_)
-    return;
-  ThreadData::current()->TallyADeath(*tracked_births_,
-                                     TimeTicks::Now() - tracked_birth_time_);
-}
-
-void Tracked::SetBirthPlace(const Location& from_here) {
-  if (!ThreadData::IsActive())
-    return;
-  if (tracked_births_)
-    tracked_births_->ForgetBirth();
-  ThreadData* current_thread_data = ThreadData::current();
-  if (!current_thread_data)
-    return;  // Shutdown started, and this thread wasn't registered.
-  tracked_births_ = current_thread_data->TallyABirth(from_here);
-
-  birth_program_counter_ = from_here.program_counter();
-}
-
-const Location Tracked::GetBirthPlace() const {
-  static Location kNone("UnknownFunctionName", "UnknownFile", -1, NULL);
-  return tracked_births_ ? tracked_births_->location() : kNone;
-}
-
-void Tracked::ResetBirthTime() {
-  tracked_birth_time_ = TimeTicks::Now();
-}
-
-bool Tracked::MissingBirthPlace() const {
-  return  !tracked_births_ || tracked_births_->location().line_number() == -1;
-}
-
-#endif  // !defined(TRACK_ALL_TASK_OBJECTS)
 
 }  // namespace tracked_objects

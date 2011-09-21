@@ -7,9 +7,9 @@
 #include <stack>
 #include <vector>
 
+#include "base/location.h"
 #include "base/string16.h"
 #include "base/string_util.h"
-#include "base/tracked.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"

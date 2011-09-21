@@ -4,6 +4,7 @@
 
 #include "ipc/ipc_sync_message_filter.h"
 
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/message_loop_proxy.h"
 #include "base/synchronization/waitable_event.h"

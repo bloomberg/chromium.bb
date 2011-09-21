@@ -5,6 +5,7 @@
 #include "remoting/protocol/jingle_session.h"
 
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/message_loop_proxy.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"

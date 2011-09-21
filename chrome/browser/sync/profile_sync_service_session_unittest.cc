@@ -5,12 +5,12 @@
 #include <map>
 #include <string>
 
+#include "base/location.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/scoped_temp_dir.h"
 #include "base/stl_util.h"
 #include "base/task.h"
-#include "base/tracked.h"
 #include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sessions/session_service_test_helper.h"

@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <algorithm>
 
+#include "base/location.h"
 #include "base/message_loop.h"
 #include "base/threading/thread.h"
 #include "base/values.h"

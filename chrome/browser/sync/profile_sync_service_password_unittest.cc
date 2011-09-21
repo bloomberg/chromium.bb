@@ -6,11 +6,11 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 
+#include "base/location.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task.h"
 #include "base/test/test_timeouts.h"
 #include "base/time.h"
-#include "base/tracked.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/password_manager/password_store.h"
 #include "chrome/browser/prefs/pref_service.h"

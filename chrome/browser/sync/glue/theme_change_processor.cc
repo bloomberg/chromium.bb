@@ -4,8 +4,8 @@
 
 #include "chrome/browser/sync/glue/theme_change_processor.h"
 
+#include "base/location.h"
 #include "base/logging.h"
-#include "base/tracked.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/glue/theme_util.h"
 #include "chrome/browser/sync/internal_api/change_record.h"

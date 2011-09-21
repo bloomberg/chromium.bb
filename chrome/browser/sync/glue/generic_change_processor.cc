@@ -4,7 +4,7 @@
 
 #include "chrome/browser/sync/glue/generic_change_processor.h"
 
-#include "base/tracked.h"
+#include "base/location.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/sync/api/syncable_service.h"
 #include "chrome/browser/sync/api/sync_change.h"

@@ -8,6 +8,7 @@
 #include "remoting/protocol/input_sender.h"
 
 #include "base/task.h"
+#include "base/time.h"
 #include "remoting/proto/event.pb.h"
 #include "remoting/proto/internal.pb.h"
 #include "remoting/protocol/buffered_socket_writer.h"

@@ -4,7 +4,7 @@
 
 #include "chrome/browser/sync/engine/apply_updates_command.h"
 
-#include "base/tracked.h"
+#include "base/location.h"
 #include "chrome/browser/sync/engine/update_applicator.h"
 #include "chrome/browser/sync/sessions/sync_session.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"

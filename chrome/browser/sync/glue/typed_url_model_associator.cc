@@ -7,8 +7,8 @@
 #include <algorithm>
 #include <set>
 
+#include "base/location.h"
 #include "base/logging.h"
-#include "base/tracked.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/history/history_backend.h"
 #include "chrome/browser/sync/api/sync_error.h"

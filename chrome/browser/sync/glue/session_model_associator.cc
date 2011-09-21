@@ -8,9 +8,9 @@
 #include <set>
 #include <utility>
 
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/sys_info.h"
-#include "base/tracked.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_service_factory.h"

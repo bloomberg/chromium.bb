@@ -4,8 +4,8 @@
 
 #include <vector>
 
+#include "base/location.h"
 #include "base/stringprintf.h"
-#include "base/tracked.h"
 #include "chrome/browser/sync/engine/mock_model_safe_workers.h"
 #include "chrome/browser/sync/engine/process_commit_response_command.h"
 #include "chrome/browser/sync/protocol/bookmark_specifics.pb.h"

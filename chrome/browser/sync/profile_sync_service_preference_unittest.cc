@@ -6,10 +6,10 @@
 #include <string>
 
 #include "base/json/json_reader.h"
+#include "base/location.h"
 #include "base/stl_util.h"
 #include "base/string_piece.h"
 #include "base/task.h"
-#include "base/tracked.h"
 #include "chrome/browser/prefs/pref_model_associator.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/sync/abstract_profile_sync_service_test.h"

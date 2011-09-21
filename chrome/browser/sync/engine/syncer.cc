@@ -4,9 +4,9 @@
 
 #include "chrome/browser/sync/engine/syncer.h"
 
+#include "base/location.h"
 #include "base/message_loop.h"
 #include "base/time.h"
-#include "base/tracked.h"
 #include "chrome/browser/sync/engine/apply_updates_command.h"
 #include "chrome/browser/sync/engine/build_and_process_conflict_sets_command.h"
 #include "chrome/browser/sync/engine/build_commit_command.h"

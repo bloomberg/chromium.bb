@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome_frame/external_tab.h"
+#include "base/location.h"
 #include "base/task.h"
 #include "base/threading/thread.h"
-#include "base/tracked.h"
+#include "chrome_frame/external_tab.h"
 
 // #include "base/synchronization/waitable_event.h"
 

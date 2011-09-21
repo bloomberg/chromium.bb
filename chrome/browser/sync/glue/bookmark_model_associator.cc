@@ -8,9 +8,9 @@
 
 #include "base/command_line.h"
 #include "base/hash_tables.h"
+#include "base/location.h"
 #include "base/message_loop.h"
 #include "base/task.h"
-#include "base/tracked.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/profiles/profile.h"

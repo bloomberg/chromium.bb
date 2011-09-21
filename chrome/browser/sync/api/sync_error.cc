@@ -4,8 +4,8 @@
 
 #include "chrome/browser/sync/api/sync_error.h"
 
+#include "base/location.h"
 #include "base/logging.h"
-#include "base/tracked.h"
 
 SyncError::SyncError() {
   Clear();

@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/location.h"
 #include "base/message_loop_proxy.h"
 #include "remoting/base/constants.h"
 #include "remoting/jingle_glue/host_resolver.h"
