@@ -793,7 +793,6 @@
             '../third_party/skia/src/ports/SkFontHost_FreeType.cpp',
             '../third_party/skia/src/ports/SkFontHost_TryeType_Tables.cpp',
             '../third_party/skia/src/ports/SkFontHost_gamma_none.cpp',
-            '../third_party/skia/src/ports/SkFontHost_gamma_none.cpp',
             '../third_party/skia/src/ports/SkFontHost_tables.cpp',
           ],
         }],
