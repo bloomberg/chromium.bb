@@ -27,6 +27,7 @@
 #import "chrome/browser/ui/panels/panel_titlebar_view_cocoa.h"
 #include "chrome/browser/ui/toolbar/encoding_menu_controller.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_service.h"
 
@@ -412,6 +413,38 @@ static BOOL g_reportAnimationStatus = NO;
   NSView* titlebar = [self titlebarView];
   return NSHeight([titlebar convertRect:[titlebar bounds] toView:nil]);
 }
+
+// TODO(dcheng): These two selectors are almost copy-and-paste from
+// BrowserWindowController. Figure out the appropriate way of code sharing,
+// whether it's refactoring more things into BrowserWindowUtils or making a
+// common base controller for browser windows.
+- (void)windowDidBecomeKey:(NSNotification*)notification {
+  // We need to activate the controls (in the "WebView"). To do this, get the
+  // selected TabContents's RenderWidgetHostViewMac and tell it to activate.
+  if (TabContents* contents =
+          windowShim_->browser()->GetSelectedTabContents()) {
+    if (RenderWidgetHostView* rwhv = contents->GetRenderWidgetHostView())
+      rwhv->SetActive(true);
+  }
+}
+
+- (void)windowDidResignKey:(NSNotification*)notification {
+  // If our app is still active and we're still the key window, ignore this
+  // message, since it just means that a menu extra (on the "system status bar")
+  // was activated; we'll get another |-windowDidResignKey| if we ever really
+  // lose key window status.
+  if ([NSApp isActive] && ([NSApp keyWindow] == [self window]))
+    return;
+
+  // We need to deactivate the controls (in the "WebView"). To do this, get the
+  // selected TabContents's RenderWidgetHostView and tell it to deactivate.
+  if (TabContents* contents =
+          windowShim_->browser()->GetSelectedTabContents()) {
+    if (RenderWidgetHostView* rwhv = contents->GetRenderWidgetHostView())
+      rwhv->SetActive(false);
+  }
+}
+
 // TestingAPI interface implementation
 
 + (void)enableBoundsAnimationNotifications {
