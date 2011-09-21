@@ -42,6 +42,8 @@
 #define MAYBE_TestSettingsPageRTL TestSettingsPageRTL
 #endif
 
+// Disabled, http://crbug.com/97453
+#define MAYBE_TestNewTabPageRTL DISABLED_TestNewTabPageRTL
 
 static const FilePath::CharType* kWebUIBidiCheckerLibraryJS =
     FILE_PATH_LITERAL("third_party/bidichecker/bidichecker_packaged.js");
