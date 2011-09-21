@@ -106,6 +106,11 @@ GLImplementation GetGLImplementation() {
   return g_gl_implementation;
 }
 
+bool HasDesktopGLFeatures() {
+  return kGLImplementationDesktopGL == g_gl_implementation ||
+         kGLImplementationOSMesaGL == g_gl_implementation;
+}
+
 void AddGLNativeLibrary(base::NativeLibrary library) {
   DCHECK(library);
 

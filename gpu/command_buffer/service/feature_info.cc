@@ -232,8 +232,7 @@ void FeatureInfo::AddFeatures(const char* desired_features) {
   }
 
   if (ext.Desire("GL_OES_rgb8_rgba8")) {
-    if (ext.Have("GL_OES_rgb8_rgba8") ||
-        gfx::GetGLImplementation() == gfx::kGLImplementationDesktopGL) {
+    if (ext.Have("GL_OES_rgb8_rgba8") || gfx::HasDesktopGLFeatures()) {
       AddExtensionString("GL_OES_rgb8_rgba8");
       validators_.render_buffer_format.AddValue(GL_RGB8_OES);
       validators_.render_buffer_format.AddValue(GL_RGBA8_OES);
@@ -316,14 +315,13 @@ void FeatureInfo::AddFeatures(const char* desired_features) {
   }
 
   if (ext.HaveAndDesire("GL_OES_depth24") ||
-      (gfx::GetGLImplementation() == gfx::kGLImplementationDesktopGL &&
-       ext.Desire("GL_OES_depth24"))) {
+      (gfx::HasDesktopGLFeatures() && ext.Desire("GL_OES_depth24"))) {
     AddExtensionString("GL_OES_depth24");
     validators_.render_buffer_format.AddValue(GL_DEPTH_COMPONENT24);
   }
 
   if (ext.HaveAndDesire("GL_OES_standard_derivatives") ||
-      (gfx::GetGLImplementation() == gfx::kGLImplementationDesktopGL &&
+      (gfx::HasDesktopGLFeatures() &&
        ext.Desire("GL_OES_standard_derivatives"))) {
     AddExtensionString("GL_OES_standard_derivatives");
     feature_flags_.oes_standard_derivatives = true;
