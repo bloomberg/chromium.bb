@@ -50,8 +50,7 @@ def _CheckNoProductionCodeUsingTestOnlyFunctions(input_api, output_api):
   file_inclusion_pattern = r'.+%s' % source_extensions
   file_exclusion_pattern = (
     r'.+(_test_support|profile_sync_service_harness|'
-    r'_(unit|browser|ui|perf)test)%s' %
-                            source_extensions)
+    r'_(api|browser|perf|unit|ui)?test)%s' % source_extensions)
   path_exclusion_pattern = r'.*[/\\](test|tool(s)?)[/\\].*'
 
   base_function_pattern = r'ForTest(ing)?|for_test(ing)?'
