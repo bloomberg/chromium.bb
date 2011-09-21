@@ -233,6 +233,7 @@ class AddMountFunction
                                                void* context) OVERRIDE;
 
  private:
+#if defined(OS_CHROMEOS)
   struct MountParamaters {
     MountParamaters(const std::string& type,
                     const chromeos::MountPathOptions& options)
@@ -241,6 +242,7 @@ class AddMountFunction
     std::string mount_type;
     chromeos::MountPathOptions mount_options;
   };
+#endif
 
   DECLARE_EXTENSION_FUNCTION_NAME("fileBrowserPrivate.addMount");
 };
@@ -330,7 +332,7 @@ class GetVolumeMetadataFunction
   virtual bool RunImpl() OVERRIDE;
 
  private:
-#ifdef OS_CHROMEOS
+#if defined(OS_CHROMEOS)
   const std::string& DeviceTypeToString(chromeos::DeviceType type);
 #endif
 

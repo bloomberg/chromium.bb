@@ -156,6 +156,28 @@ enum ContextType {
   kMediaContext
 };
 
+typedef std::list<std::pair<FilePath::StringType, int> >
+    ComponentExtensionList;
+
+#if defined(FILE_MANAGER_EXTENSION)
+void AddFileManagerExtension(ComponentExtensionList* component_extensions) {
+#ifndef NDEBUG
+  const CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kFileManagerExtensionPath)) {
+    FilePath filemgr_extension_path =
+        command_line->GetSwitchValuePath(switches::kFileManagerExtensionPath);
+    component_extensions->push_back(std::make_pair(
+        filemgr_extension_path.value(),
+        IDR_FILEMANAGER_MANIFEST));
+    return;
+  }
+#endif  // NDEBUG
+  component_extensions->push_back(std::make_pair(
+      FILE_PATH_LITERAL("file_manager"),
+      IDR_FILEMANAGER_MANIFEST));
+}
+#endif  // defined(FILE_MANAGER_EXTENSION)
+
 // Gets the cache parameters from the command line. |type| is the type of
 // request context that we need, |cache_path| will be set to the user provided
 // path, or will not be touched if there is not an argument. |max_size| will
@@ -610,24 +632,7 @@ void ProfileImpl::RegisterComponentExtensions() {
       IDR_BOOKMARKS_MANIFEST));
 
 #if defined(FILE_MANAGER_EXTENSION)
-  const CommandLine* command_line = CommandLine::ForCurrentProcess();
-#ifndef NDEBUG
-  if (command_line->HasSwitch(switches::kFileManagerExtensionPath)) {
-    FilePath filemgr_extension_path =
-        command_line->GetSwitchValuePath(switches::kFileManagerExtensionPath);
-    component_extensions.push_back(std::make_pair(
-        filemgr_extension_path.value(),
-        IDR_FILEMANAGER_MANIFEST));
-  } else {
-    component_extensions.push_back(std::make_pair(
-        FILE_PATH_LITERAL("file_manager"),
-        IDR_FILEMANAGER_MANIFEST));
-  }
-#else
-  component_extensions.push_back(std::make_pair(
-      FILE_PATH_LITERAL("file_manager"),
-      IDR_FILEMANAGER_MANIFEST));
-#endif
+  AddFileManagerExtension(&component_extensions);
 #endif
 
 #if defined(TOUCH_UI)
@@ -641,6 +646,7 @@ void ProfileImpl::RegisterComponentExtensions() {
         FILE_PATH_LITERAL("/usr/share/chromeos-assets/mobile"),
         IDR_MOBILE_MANIFEST));
 
+    const CommandLine* command_line = CommandLine::ForCurrentProcess();
     if (command_line->HasSwitch(switches::kAuthExtensionPath)) {
       FilePath auth_extension_path =
           command_line->GetSwitchValuePath(switches::kAuthExtensionPath);

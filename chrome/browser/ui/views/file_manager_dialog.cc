@@ -73,6 +73,7 @@ FileManagerDialog* PendingDialog::Find(int32 tab_id) {
 
 // Linking this implementation of SelectFileDialog::Create into the target
 // selects FileManagerDialog as the dialog of choice.
+// TODO(jamescook): Move this into a new file shell_dialogs_chromeos.cc
 // static
 SelectFileDialog* SelectFileDialog::Create(Listener* listener) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -182,19 +183,24 @@ void FileManagerDialog::SelectFileImpl(
     virtual_path = FilePath();
   }
 
-  // Connect our listener to FileDialogFunction's per-tab callbacks.
-  TabContentsWrapper* tab = owner_browser->GetSelectedTabContentsWrapper();
-  int32 tab_id = (tab ? tab->restore_tab_helper()->session_id().id() : 0);
-  PendingDialog::Add(tab_id, this);
-
   GURL file_browser_url = FileManagerUtil::GetFileBrowserUrlWithParams(
       type, title, virtual_path, file_types, file_type_index,
       default_extension);
-  extension_dialog_ = ExtensionDialog::Show(file_browser_url,
+  TabContentsWrapper* tab = owner_browser->GetSelectedTabContentsWrapper();
+  ExtensionDialog* dialog = ExtensionDialog::Show(file_browser_url,
       owner_browser, tab->tab_contents(),
       kFileManagerWidth, kFileManagerHeight,
       this /* ExtensionDialog::Observer */);
+  if (!dialog) {
+    LOG(ERROR) << "Unable to create extension dialog";
+    return;
+  }
 
+  // Connect our listener to FileDialogFunction's per-tab callbacks.
+  int32 tab_id = (tab ? tab->restore_tab_helper()->session_id().id() : 0);
+  PendingDialog::Add(tab_id, this);
+
+  extension_dialog_ = dialog;
   params_ = params;
   tab_id_ = tab_id;
   owner_window_ = owner_window;
