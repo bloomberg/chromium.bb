@@ -144,6 +144,7 @@ legend {
 
 .toggler {
   color: #808080;
+  cursor: pointer;
 }
 
 .collapsed {
