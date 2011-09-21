@@ -11,7 +11,8 @@
 #include "net/base/x509_certificate.h"
 #include "ui/gfx/native_widget_types.h"
 
-// Displays the WebUI certificate viewer dialog for the passed in certificate.
+// Displays the native or WebUI certificate viewer dialog for the given
+// certificate.
 void ShowCertificateViewer(gfx::NativeWindow parent,
                            net::X509Certificate*);
 
@@ -24,6 +25,7 @@ class CertificateViewerDialog : private HtmlDialogUIDelegate {
   // Shows the certificate viewer dialog for the passed in certificate.
   static void ShowDialog(gfx::NativeWindow parent,
                          net::X509Certificate* cert);
+  virtual ~CertificateViewerDialog();
 
  private:
   // Construct a certificate viewer for the passed in certificate. A reference
@@ -64,6 +66,7 @@ class CertificateViewerDialogHandler : public WebUIMessageHandler {
  public:
   CertificateViewerDialogHandler(gfx::NativeWindow parent,
                                  net::X509Certificate* cert);
+  virtual ~CertificateViewerDialogHandler();
 
   // Overridden from WebUIMessageHandler
   virtual void RegisterMessages();
