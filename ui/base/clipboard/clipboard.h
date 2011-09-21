@@ -255,7 +255,7 @@ class UI_EXPORT Clipboard {
 
   // True if we can create a window.
   bool create_window_;
-#elif !defined(OS_MACOSX)
+#elif defined(TOOLKIT_USES_GTK)
   // The public API is via WriteObjects() which dispatches to multiple
   // Write*() calls, but on GTK we must write all the clipboard types
   // in a single GTK call.  To support this we store the current set

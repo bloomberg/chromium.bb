@@ -15,12 +15,12 @@ class SkPaint;
 
 namespace gfx {
 
-class UI_EXPORT PlatformFontGtk : public PlatformFont {
+class UI_EXPORT PlatformFontPango : public PlatformFont {
  public:
-  PlatformFontGtk();
-  explicit PlatformFontGtk(const Font& other);
-  explicit PlatformFontGtk(NativeFont native_font);
-  PlatformFontGtk(const string16& font_name,
+  PlatformFontPango();
+  explicit PlatformFontPango(const Font& other);
+  explicit PlatformFontPango(NativeFont native_font);
+  PlatformFontPango(const string16& font_name,
                   int font_size);
 
   // Converts |gfx_font| to a new pango font. Free the returned font with
@@ -54,11 +54,11 @@ class UI_EXPORT PlatformFontGtk : public PlatformFont {
  private:
   // Create a new instance of this object with the specified properties. Called
   // from DeriveFont.
-  PlatformFontGtk(SkTypeface* typeface,
+  PlatformFontPango(SkTypeface* typeface,
                   const string16& name,
                   int size,
                   int style);
-  virtual ~PlatformFontGtk();
+  virtual ~PlatformFontPango();
 
   // Initialize this object.
   void InitWithNameAndSize(const string16& font_name, int font_size);
@@ -66,7 +66,7 @@ class UI_EXPORT PlatformFontGtk : public PlatformFont {
                                         const string16& name,
                                         int size,
                                         int style);
-  void InitFromPlatformFont(const PlatformFontGtk* other);
+  void InitFromPlatformFont(const PlatformFontPango* other);
 
   // Potentially slow call to get pango metrics (average width, underline info).
   void InitPangoMetrics();

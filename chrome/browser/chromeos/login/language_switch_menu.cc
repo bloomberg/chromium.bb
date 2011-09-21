@@ -21,7 +21,7 @@
 #include "grit/platform_locale_settings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/gfx/platform_font_gtk.h"
+#include "ui/gfx/platform_font_pango.h"
 #include "views/controls/button/menu_button.h"
 #include "views/controls/menu/menu_item_view.h"
 #include "views/controls/menu/menu_runner.h"
@@ -139,7 +139,7 @@ void LanguageSwitchMenu::LoadFontsForCurrentLocale() {
     gtk_rc_parse("/etc/gtk-2.0/gtkrc");
 
   // Switch the font.
-  gfx::PlatformFontGtk::ReloadDefaultFont();
+  gfx::PlatformFontPango::ReloadDefaultFont();
   ResourceBundle::GetSharedInstance().ReloadFonts();
 }
 

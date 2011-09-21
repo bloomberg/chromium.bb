@@ -4,7 +4,7 @@
 
 #include "ui/base/l10n/l10n_util.h"
 
-#if defined(TOOLKIT_USES_GTK)
+#if defined(USE_X11)
 #include <glib/gutils.h>
 #endif
 
@@ -404,7 +404,7 @@ std::string GetApplicationLocale(const std::string& pref_locale) {
   if (!pref_locale.empty())
     candidates.push_back(pref_locale);
 
-#elif defined(OS_POSIX) && defined(TOOLKIT_USES_GTK)
+#elif !defined(OS_MACOSX)
 
   // GLib implements correct environment variable parsing with
   // the precedence order: LANGUAGE, LC_ALL, LC_MESSAGES and LANG.

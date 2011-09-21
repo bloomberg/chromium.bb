@@ -142,7 +142,7 @@ TEST_F(ClipboardTest, TrickyHTMLTest) {
 #endif  // defined(OS_WIN)
 }
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
+#if defined(TOOLKIT_USES_GTK)
 // Regression test for crbug.com/56298 (pasting empty HTML crashes Linux).
 TEST_F(ClipboardTest, EmptyHTMLTest) {
   Clipboard clipboard;

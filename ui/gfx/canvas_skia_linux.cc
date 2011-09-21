@@ -7,18 +7,20 @@
 #include <algorithm>
 
 #include <cairo/cairo.h>
-#include <gtk/gtk.h>
 #include <pango/pango.h>
 #include <pango/pangocairo.h>
 
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "ui/gfx/font.h"
-#include "ui/gfx/gtk_util.h"
 #include "ui/gfx/pango_util.h"
-#include "ui/gfx/platform_font_gtk.h"
+#include "ui/gfx/platform_font_pango.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/skia_util.h"
+
+#if defined(TOOLKIT_USES_GTK)
+#include <gdk/gdk.h>
+#endif
 
 using std::max;
 
@@ -219,8 +221,8 @@ void DrawStringContext::DrawWithHalo(const SkColor& text_color,
 }
 
 void DrawStringContext::DrawUnderline(cairo_t* cr, double extra_edge_width) {
-  gfx::PlatformFontGtk* platform_font =
-      static_cast<gfx::PlatformFontGtk*>(font_.platform_font());
+  gfx::PlatformFontPango* platform_font =
+      static_cast<gfx::PlatformFontPango*>(font_.platform_font());
   const double underline_y =
       static_cast<double>(text_y_) + text_height_ +
       platform_font->underline_position();
@@ -267,8 +269,8 @@ void CanvasSkia::SizeStringInt(const string16& text,
   pango_layout_get_pixel_size(layout, width, height);
 
   if (font.GetStyle() & gfx::Font::UNDERLINED) {
-    gfx::PlatformFontGtk* platform_font =
-        static_cast<gfx::PlatformFontGtk*>(font.platform_font());
+    gfx::PlatformFontPango* platform_font =
+        static_cast<gfx::PlatformFontPango*>(font.platform_font());
     *height += max(platform_font->underline_position() +
                    platform_font->underline_thickness(), 0.0);
   }
@@ -329,6 +331,7 @@ void CanvasSkia::DrawStringInt(const string16& text,
   context.Draw(color);
 }
 
+#if defined(TOOLKIT_USES_GTK)
 void CanvasSkia::DrawGdkPixbuf(GdkPixbuf* pixbuf, int x, int y) {
   if (!pixbuf) {
     NOTREACHED();
@@ -340,6 +343,7 @@ void CanvasSkia::DrawGdkPixbuf(GdkPixbuf* pixbuf, int x, int y) {
   gdk_cairo_set_source_pixbuf(cr, pixbuf, x, y);
   cairo_paint(cr);
 }
+#endif  // defined(TOOLKIT_USES_GTK)
 
 ui::TextureID CanvasSkia::GetTextureID() {
   // TODO(wjmaclean)

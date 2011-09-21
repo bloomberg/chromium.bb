@@ -138,12 +138,9 @@
             'gfx/interpolated_transform_unittest.cc',
           ],
         }],
-        ['toolkit_uses_gtk == 1', {
-          'sources': [
-            'base/dragdrop/gtk_dnd_util_unittest.cc',
-          ],
+        ['use_glib == 1', {
           'dependencies': [
-            '../build/linux/system.gyp:gtk',
+            '../build/linux/system.gyp:pangocairo',
             '../tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
             'base/strings/ui_strings.gyp:ui_unittest_strings',
           ],
@@ -158,6 +155,14 @@
                 'browser/ui/gtk/gtk_expanded_container_unittest.cc',
               ],
             }],
+          ],
+        }],
+        ['toolkit_uses_gtk == 1', {
+          'sources': [
+            'base/dragdrop/gtk_dnd_util_unittest.cc',
+          ],
+          'dependencies': [
+            '../build/linux/system.gyp:gtk',
           ],
         }],
         ['toolkit_views==1', {

@@ -31,7 +31,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas_skia_paint.h"
 #include "ui/gfx/favicon_size.h"
-#include "ui/gfx/platform_font_gtk.h"
+#include "ui/gfx/platform_font_pango.h"
 #include "ui/gfx/skbitmap_operations.h"
 
 #if !GTK_CHECK_VERSION(2, 22, 0)

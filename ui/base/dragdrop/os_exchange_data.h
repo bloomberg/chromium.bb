@@ -13,7 +13,7 @@
 
 #if defined(OS_WIN)
 #include <objidl.h>
-#elif !defined(OS_MACOSX)
+#elif defined(TOOLKIT_USES_GTK)
 #include <gtk/gtk.h>
 #endif
 
@@ -48,8 +48,10 @@ class UI_EXPORT OSExchangeData {
   // nodes are written using a CustomFormat.
 #if defined(OS_WIN)
   typedef CLIPFORMAT CustomFormat;
-#elif !defined(OS_MACOSX)
+#elif defined(TOOLKIT_USES_GTK)
   typedef GdkAtom CustomFormat;
+#else
+  typedef void* CustomFormat;
 #endif
 
   // Enumeration of the known formats.

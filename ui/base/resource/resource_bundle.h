@@ -163,7 +163,7 @@ class UI_EXPORT ResourceBundle {
 
   // Loads and returns a cursor from the app module.
   HCURSOR LoadCursor(int cursor_id);
-#elif defined(USE_X11)
+#elif defined(TOOLKIT_USES_GTK)
   // Gets the GdkPixbuf with the specified resource_id from the main data pak
   // file. Returns a pointer to a shared instance of the GdkPixbuf.  This
   // shared GdkPixbuf is owned by the resource bundle and should not be freed.

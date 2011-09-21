@@ -11,7 +11,7 @@
 #include "skia/ext/platform_canvas.h"
 #include "ui/gfx/canvas.h"
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
+#if defined(TOOLKIT_USES_GTK)
 typedef struct _GdkPixbuf GdkPixbuf;
 #endif
 
@@ -68,7 +68,7 @@ class UI_EXPORT CanvasSkia : public skia::PlatformCanvas, public Canvas {
   // gfx::Canvas::TEXT_ALIGN_RIGHT.
   static int DefaultCanvasTextAlignment();
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
+#if defined(TOOLKIT_USES_GTK)
   // Draw the pixbuf in its natural size at (x, y).
   void DrawGdkPixbuf(GdkPixbuf* pixbuf, int x, int y);
 #endif

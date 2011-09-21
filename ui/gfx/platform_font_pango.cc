@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/gfx/platform_font_gtk.h"
+#include "ui/gfx/platform_font_pango.h"
 
 #include <algorithm>
 #include <fontconfig/fontconfig.h>
@@ -19,7 +19,7 @@
 #include "ui/gfx/font.h"
 #include "ui/gfx/linux_util.h"
 
-#if !defined(USE_WAYLAND)
+#if !defined(USE_WAYLAND) && defined(TOOLKIT_USES_GTK)
 #include <gdk/gdk.h>
 #include <gtk/gtk.h>
 #endif
@@ -114,7 +114,7 @@ string16 FindBestMatchFontFamilyName(const char* family_name) {
 }
 
 std::string GetDefaultFont() {
-#if defined(USE_WAYLAND) || defined(USE_AURA)
+#if defined(USE_WAYLAND) || !defined(TOOLKIT_USES_GTK)
   return "sans 10";
 #else
   GtkSettings* settings = gtk_settings_get_default();
@@ -136,12 +136,12 @@ std::string GetDefaultFont() {
 
 namespace gfx {
 
-Font* PlatformFontGtk::default_font_ = NULL;
+Font* PlatformFontPango::default_font_ = NULL;
 
 ////////////////////////////////////////////////////////////////////////////////
-// PlatformFontGtk, public:
+// PlatformFontPango, public:
 
-PlatformFontGtk::PlatformFontGtk() {
+PlatformFontPango::PlatformFontPango() {
   if (default_font_ == NULL) {
     std::string font_name = GetDefaultFont();
 
@@ -154,15 +154,15 @@ PlatformFontGtk::PlatformFontGtk() {
   }
 
   InitFromPlatformFont(
-      static_cast<PlatformFontGtk*>(default_font_->platform_font()));
+      static_cast<PlatformFontPango*>(default_font_->platform_font()));
 }
 
-PlatformFontGtk::PlatformFontGtk(const Font& other) {
+PlatformFontPango::PlatformFontPango(const Font& other) {
   InitFromPlatformFont(
-      static_cast<PlatformFontGtk*>(other.platform_font()));
+      static_cast<PlatformFontPango*>(other.platform_font()));
 }
 
-PlatformFontGtk::PlatformFontGtk(NativeFont native_font) {
+PlatformFontPango::PlatformFontPango(NativeFont native_font) {
   const char* family_name = pango_font_description_get_family(native_font);
 
   gint size_in_pixels = 0;
@@ -197,41 +197,41 @@ PlatformFontGtk::PlatformFontGtk(NativeFont native_font) {
     style_ = style;
 }
 
-PlatformFontGtk::PlatformFontGtk(const string16& font_name,
-                                 int font_size) {
+PlatformFontPango::PlatformFontPango(const string16& font_name,
+                                     int font_size) {
   InitWithNameAndSize(font_name, font_size);
 }
 
-double PlatformFontGtk::underline_position() const {
-  const_cast<PlatformFontGtk*>(this)->InitPangoMetrics();
+double PlatformFontPango::underline_position() const {
+  const_cast<PlatformFontPango*>(this)->InitPangoMetrics();
   return underline_position_pixels_;
 }
 
-double PlatformFontGtk::underline_thickness() const {
-  const_cast<PlatformFontGtk*>(this)->InitPangoMetrics();
+double PlatformFontPango::underline_thickness() const {
+  const_cast<PlatformFontPango*>(this)->InitPangoMetrics();
   return underline_thickness_pixels_;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// PlatformFontGtk, PlatformFont implementation:
+// PlatformFontPango, PlatformFont implementation:
 
 // static
-void PlatformFontGtk::ReloadDefaultFont() {
+void PlatformFontPango::ReloadDefaultFont() {
   delete default_font_;
   default_font_ = NULL;
 }
 
-Font PlatformFontGtk::DeriveFont(int size_delta, int style) const {
+Font PlatformFontPango::DeriveFont(int size_delta, int style) const {
   // If the delta is negative, if must not push the size below 1
   if (size_delta < 0)
     DCHECK_LT(-size_delta, font_size_pixels_);
 
   if (style == style_) {
     // Fast path, we just use the same typeface at a different size
-    return Font(new PlatformFontGtk(typeface_,
-                                    font_family_,
-                                    font_size_pixels_ + size_delta,
-                                    style_));
+    return Font(new PlatformFontPango(typeface_,
+                                      font_family_,
+                                      font_size_pixels_ + size_delta,
+                                      style_));
   }
 
   // If the style has changed we may need to load a new face
@@ -246,49 +246,49 @@ Font PlatformFontGtk::DeriveFont(int size_delta, int style) const {
       static_cast<SkTypeface::Style>(skstyle));
   SkAutoUnref tf_helper(typeface);
 
-  return Font(new PlatformFontGtk(typeface,
-                                  font_family_,
-                                  font_size_pixels_ + size_delta,
-                                  style));
+  return Font(new PlatformFontPango(typeface,
+                                    font_family_,
+                                    font_size_pixels_ + size_delta,
+                                    style));
 }
 
-int PlatformFontGtk::GetHeight() const {
+int PlatformFontPango::GetHeight() const {
   return height_pixels_;
 }
 
-int PlatformFontGtk::GetBaseline() const {
+int PlatformFontPango::GetBaseline() const {
   return ascent_pixels_;
 }
 
-int PlatformFontGtk::GetAverageCharacterWidth() const {
+int PlatformFontPango::GetAverageCharacterWidth() const {
   return SkScalarRound(average_width_pixels_);
 }
 
-int PlatformFontGtk::GetStringWidth(const string16& text) const {
+int PlatformFontPango::GetStringWidth(const string16& text) const {
   int width = 0, height = 0;
-  CanvasSkia::SizeStringInt(text, Font(const_cast<PlatformFontGtk*>(this)),
+  CanvasSkia::SizeStringInt(text, Font(const_cast<PlatformFontPango*>(this)),
                             &width, &height, gfx::Canvas::NO_ELLIPSIS);
   return width;
 }
 
-int PlatformFontGtk::GetExpectedTextWidth(int length) const {
-  double char_width = const_cast<PlatformFontGtk*>(this)->GetAverageWidth();
+int PlatformFontPango::GetExpectedTextWidth(int length) const {
+  double char_width = const_cast<PlatformFontPango*>(this)->GetAverageWidth();
   return round(static_cast<float>(length) * char_width);
 }
 
-int PlatformFontGtk::GetStyle() const {
+int PlatformFontPango::GetStyle() const {
   return style_;
 }
 
-string16 PlatformFontGtk::GetFontName() const {
+string16 PlatformFontPango::GetFontName() const {
   return font_family_;
 }
 
-int PlatformFontGtk::GetFontSize() const {
+int PlatformFontPango::GetFontSize() const {
   return font_size_pixels_;
 }
 
-NativeFont PlatformFontGtk::GetNativeFont() const {
+NativeFont PlatformFontPango::GetNativeFont() const {
   PangoFontDescription* pfd = pango_font_description_new();
   pango_font_description_set_family(pfd, UTF16ToUTF8(GetFontName()).c_str());
   // Set the absolute size to avoid overflowing UI elements.
@@ -318,19 +318,19 @@ NativeFont PlatformFontGtk::GetNativeFont() const {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// PlatformFontGtk, private:
+// PlatformFontPango, private:
 
-PlatformFontGtk::PlatformFontGtk(SkTypeface* typeface,
-                                 const string16& name,
-                                 int size,
-                                 int style) {
+PlatformFontPango::PlatformFontPango(SkTypeface* typeface,
+                                     const string16& name,
+                                     int size,
+                                     int style) {
   InitWithTypefaceNameSizeAndStyle(typeface, name, size, style);
 }
 
-PlatformFontGtk::~PlatformFontGtk() {}
+PlatformFontPango::~PlatformFontPango() {}
 
-void PlatformFontGtk::InitWithNameAndSize(const string16& font_name,
-                                          int font_size) {
+void PlatformFontPango::InitWithNameAndSize(const string16& font_name,
+                                            int font_size) {
   DCHECK_GT(font_size, 0);
   string16 fallback;
 
@@ -354,7 +354,7 @@ void PlatformFontGtk::InitWithNameAndSize(const string16& font_name,
                                    gfx::Font::NORMAL);
 }
 
-void PlatformFontGtk::InitWithTypefaceNameSizeAndStyle(
+void PlatformFontPango::InitWithTypefaceNameSizeAndStyle(
     SkTypeface* typeface,
     const string16& font_family,
     int font_size,
@@ -379,7 +379,7 @@ void PlatformFontGtk::InitWithTypefaceNameSizeAndStyle(
   height_pixels_ = ascent_pixels_ + SkScalarCeil(metrics.fDescent);
 }
 
-void PlatformFontGtk::InitFromPlatformFont(const PlatformFontGtk* other) {
+void PlatformFontPango::InitFromPlatformFont(const PlatformFontPango* other) {
   typeface_helper_.reset(new SkAutoUnref(other->typeface_));
   typeface_ = other->typeface_;
   typeface_->ref();
@@ -394,7 +394,7 @@ void PlatformFontGtk::InitFromPlatformFont(const PlatformFontGtk* other) {
   underline_thickness_pixels_ = other->underline_thickness_pixels_;
 }
 
-void PlatformFontGtk::PaintSetup(SkPaint* paint) const {
+void PlatformFontPango::PaintSetup(SkPaint* paint) const {
   paint->setAntiAlias(false);
   paint->setSubpixelText(false);
   paint->setTextSize(font_size_pixels_);
@@ -404,7 +404,7 @@ void PlatformFontGtk::PaintSetup(SkPaint* paint) const {
                       -SK_Scalar1/4 : 0);
 }
 
-void PlatformFontGtk::InitPangoMetrics() {
+void PlatformFontPango::InitPangoMetrics() {
   if (!pango_metrics_inited_) {
     pango_metrics_inited_ = true;
     PangoFontDescription* pango_desc = GetNativeFont();
@@ -439,8 +439,8 @@ void PlatformFontGtk::InitPangoMetrics() {
 }
 
 
-double PlatformFontGtk::GetAverageWidth() const {
-  const_cast<PlatformFontGtk*>(this)->InitPangoMetrics();
+double PlatformFontPango::GetAverageWidth() const {
+  const_cast<PlatformFontPango*>(this)->InitPangoMetrics();
   return average_width_pixels_;
 }
 
@@ -449,23 +449,23 @@ double PlatformFontGtk::GetAverageWidth() const {
 
 // static
 PlatformFont* PlatformFont::CreateDefault() {
-  return new PlatformFontGtk;
+  return new PlatformFontPango;
 }
 
 // static
 PlatformFont* PlatformFont::CreateFromFont(const Font& other) {
-  return new PlatformFontGtk(other);
+  return new PlatformFontPango(other);
 }
 
 // static
 PlatformFont* PlatformFont::CreateFromNativeFont(NativeFont native_font) {
-  return new PlatformFontGtk(native_font);
+  return new PlatformFontPango(native_font);
 }
 
 // static
 PlatformFont* PlatformFont::CreateFromNameAndSize(const string16& font_name,
                                                   int font_size) {
-  return new PlatformFontGtk(font_name, font_size);
+  return new PlatformFontPango(font_name, font_size);
 }
 
 }  // namespace gfx

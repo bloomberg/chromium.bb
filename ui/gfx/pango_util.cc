@@ -5,7 +5,6 @@
 #include "ui/gfx/pango_util.h"
 
 #include <cairo/cairo.h>
-#include <gtk/gtk.h>
 #include <pango/pango.h>
 #include <pango/pangocairo.h>
 
@@ -14,7 +13,8 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font.h"
 
-#if !defined(USE_WAYLAND)
+#if !defined(USE_WAYLAND) && defined(TOOLKIT_USES_GTK)
+#include <gtk/gtk.h>
 #include "ui/gfx/gtk_util.h"
 #else
 #include "ui/gfx/linux_util.h"
@@ -43,7 +43,7 @@ cairo_font_options_t* GetCairoFontOptions() {
   gchar* hint_style = NULL;
   gchar* rgba_style = NULL;
 
-#if !defined(USE_WAYLAND) && !defined(USE_AURA)
+#if !defined(USE_WAYLAND) && defined(TOOLKIT_USES_GTK)
   // TODO(xji): still has gtk dependency.
   GtkSettings* gtk_settings = gtk_settings_get_default();
   g_object_get(gtk_settings,

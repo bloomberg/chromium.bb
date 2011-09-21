@@ -4,8 +4,6 @@
 
 #include "ui/base/resource/resource_bundle.h"
 
-#include <gtk/gtk.h>
-
 #include "base/base_paths.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
@@ -21,8 +19,13 @@
 #include "ui/gfx/gtk_util.h"
 #include "ui/gfx/image/image.h"
 
+#if defined(TOOLKIT_USES_GTK)
+#include <gtk/gtk.h>
+#endif
+
 namespace ui {
 
+#if defined(TOOLKIT_USES_GTK)
 namespace {
 
 // Convert the raw image data into a GdkPixbuf.  The GdkPixbuf that is returned
@@ -57,6 +60,7 @@ GdkPixbuf* LoadPixbuf(RefCountedStaticMemory* data, bool rtl_enabled) {
 }
 
 }  // namespace
+#endif  // defined(TOOLKIT_USES_GTK)
 
 // static
 FilePath ResourceBundle::GetResourcesFilePath() {
@@ -72,9 +76,15 @@ FilePath ResourceBundle::GetLargeIconResourcesFilePath() {
 }
 
 gfx::Image& ResourceBundle::GetNativeImageNamed(int resource_id) {
+#if defined(TOOLKIT_USES_GTK)
   return *GetPixbufImpl(resource_id, false);
+#else
+  static gfx::Image image(NULL);
+  return image;
+#endif
 }
 
+#if defined(TOOLKIT_USES_GTK)
 gfx::Image* ResourceBundle::GetPixbufImpl(int resource_id, bool rtl_enabled) {
   // Use the negative |resource_id| for the key for BIDI-aware images.
   int key = rtl_enabled ? -resource_id : resource_id;
@@ -114,5 +124,6 @@ gfx::Image* ResourceBundle::GetPixbufImpl(int resource_id, bool rtl_enabled) {
 GdkPixbuf* ResourceBundle::GetRTLEnabledPixbufNamed(int resource_id) {
   return *GetPixbufImpl(resource_id, true);
 }
+#endif  // defined(TOOLKIT_USES_GTK)
 
 }  // namespace ui
