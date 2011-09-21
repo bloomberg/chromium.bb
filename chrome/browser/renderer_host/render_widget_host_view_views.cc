@@ -985,9 +985,13 @@ void RenderWidgetHostViewViews::GetDefaultScreenInfo(
 void RenderWidgetHostViewViews::GetScreenInfo(WebKit::WebScreenInfo* results) {
 #if !defined(USE_AURA)
   views::Widget* widget = GetWidget() ? GetWidget()->GetTopLevelWidget() : NULL;
-  if (widget)
+  if (widget && widget->GetNativeView())
     content::GetScreenInfoFromNativeWindow(widget->GetNativeView()->window,
                                            results);
+  else
+    RenderWidgetHostView::GetDefaultScreenInfo(results);
+#else
+  RenderWidgetHostView::GetDefaultScreenInfo(results);
 #endif
 }
 

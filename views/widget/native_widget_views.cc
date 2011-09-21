@@ -171,11 +171,13 @@ const Widget* NativeWidgetViews::GetWidget() const {
 }
 
 gfx::NativeView NativeWidgetViews::GetNativeView() const {
-  return GetParentNativeWidget()->GetNativeView();
+  return GetParentNativeWidget() ?
+      GetParentNativeWidget()->GetNativeView() : NULL;
 }
 
 gfx::NativeWindow NativeWidgetViews::GetNativeWindow() const {
-  return GetParentNativeWidget()->GetNativeWindow();
+  return GetParentNativeWidget() ?
+      GetParentNativeWidget()->GetNativeWindow() : NULL;
 }
 
 Widget* NativeWidgetViews::GetTopLevelWidget() {
