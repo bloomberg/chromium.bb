@@ -32,7 +32,7 @@ bool RootWindow::HandleMouseEvent(const MouseEvent& event) {
     mouse_pressed_handler_ = target;
   if (event.type() == ui::ET_MOUSE_RELEASED)
     mouse_pressed_handler_ = NULL;
-  if (target->delegate()) {
+  if (target && target->delegate()) {
     MouseEvent translated_event(event, this, target);
     return target->OnMouseEvent(&translated_event);
   }
