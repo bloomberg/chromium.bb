@@ -10,10 +10,23 @@
 #include "ui/aura_shell/examples/toplevel_window.h"
 #include "ui/gfx/canvas.h"
 #include "views/controls/button/text_button.h"
+#include "views/controls/menu/menu_item_view.h"
+#include "views/controls/menu/menu_runner.h"
 #include "views/widget/widget.h"
+
+using views::MenuItemView;
+using views::MenuRunner;
 
 namespace aura_shell {
 namespace examples {
+
+void InitWindowTypeLauncher() {
+  views::Widget* widget =
+      views::Widget::CreateWindowWithBounds(new WindowTypeLauncher,
+                                            gfx::Rect(120, 150, 400, 300));
+  widget->GetNativeView()->set_name(ASCIIToUTF16("WindowTypeLauncher"));
+  widget->Show();
+}
 
 WindowTypeLauncher::WindowTypeLauncher()
     : ALLOW_THIS_IN_INITIALIZER_LIST(
@@ -22,6 +35,7 @@ WindowTypeLauncher::WindowTypeLauncher()
           new views::NativeTextButton(this, L"Create Pointy Bubble"))) {
   AddChildView(create_button_);
   AddChildView(bubble_button_);
+  set_context_menu_controller(this);
 }
 
 WindowTypeLauncher::~WindowTypeLauncher() {
@@ -48,6 +62,11 @@ gfx::Size WindowTypeLauncher::GetPreferredSize() {
   return gfx::Size(300, 500);
 }
 
+bool WindowTypeLauncher::OnMousePressed(const views::MouseEvent& event) {
+  // Overriden so we get OnMouseReleased and can show the context menu.
+  return true;
+}
+
 views::View* WindowTypeLauncher::GetContentsView() {
   return this;
 }
@@ -68,12 +87,21 @@ void WindowTypeLauncher::ButtonPressed(views::Button* sender,
   }
 }
 
-void InitWindowTypeLauncher() {
-  views::Widget* widget =
-      views::Widget::CreateWindowWithBounds(new WindowTypeLauncher,
-                                            gfx::Rect(120, 150, 400, 300));
-  widget->GetNativeView()->set_name(ASCIIToUTF16("WindowTypeLauncher"));
-  widget->Show();
+void WindowTypeLauncher::ExecuteCommand(int id) {
+  DCHECK_EQ(id, COMMAND_NEW_WINDOW);
+  InitWindowTypeLauncher();
+}
+
+void WindowTypeLauncher::ShowContextMenuForView(views::View* source,
+                                                const gfx::Point& p,
+                                                bool is_mouse_gesture) {
+  MenuItemView* root = new MenuItemView(this);
+  root->AppendMenuItem(COMMAND_NEW_WINDOW, L"New Window", MenuItemView::NORMAL);
+  // MenuRunner takes ownership of root.
+  menu_runner_.reset(new MenuRunner(root));
+  menu_runner_->RunMenuAt(
+      GetWidget(), NULL, gfx::Rect(p, gfx::Size(0, 0)),
+      MenuItemView::TOPLEFT, MenuRunner::HAS_MNEMONICS);
 }
 
 }  // namespace examples
