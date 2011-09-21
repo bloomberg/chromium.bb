@@ -270,7 +270,7 @@ void ActiveDownloadsHandler::HandleCancelDownload(const ListValue* args) {
   DownloadItem* item = GetDownloadById(args);
   if (item) {
     if (item->IsPartialDownload())
-      item->Cancel(true);
+      item->Cancel();
     item->Delete(DownloadItem::DELETE_DUE_TO_USER_DISCARD);
   }
 }

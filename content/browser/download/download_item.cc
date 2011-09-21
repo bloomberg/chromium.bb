@@ -353,24 +353,27 @@ void DownloadItem::Update(int64 bytes_so_far) {
   UpdateObservers();
 }
 
-// Triggered by a user action.
-void DownloadItem::Cancel(bool update_history) {
+void DownloadItem::Cancel() {
   // TODO(rdsmith): Change to DCHECK after http://crbug.com/85408 resolved.
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
   VLOG(20) << __FUNCTION__ << "() download = " << DebugString(true);
-  if (!IsPartialDownload()) {
-    // Small downloads might be complete before this method has
-    // a chance to run.
+
+  // Small downloads might be complete before we have a chance to run.
+  if (!IsInProgress())
     return;
-  }
+
+  TransitionTo(CANCELLED);
 
   download_stats::RecordDownloadCount(download_stats::CANCELLED_COUNT);
 
-  TransitionTo(CANCELLED);
-  StopProgressTimer();
-  if (update_history)
-    download_manager_->DownloadCancelledInternal(this);
+  // History insertion is the point at which we have finalized download
+  // details and persist them if something goes wrong.  Before history
+  // insertion, interrupt or cancel results in download removal.
+  if (db_handle() == DownloadItem::kUninitializedHandle) {
+    download_manager_->RemoveDownload(this);
+    // We are now deleted; no further code should be executed on this
+    // object.
+  }
 }
 
 void DownloadItem::MarkAsComplete() {
@@ -429,10 +432,22 @@ void DownloadItem::Completed() {
 }
 
 void DownloadItem::TransitionTo(DownloadState new_state) {
-  if (state_ == new_state)
+  DownloadState old_state = state_;
+  if (old_state == new_state)
     return;
 
+  // Check for disallowed state transitions.
+  CHECK(!(old_state == IN_PROGRESS && new_state == REMOVING));
+
   state_ = new_state;
+
+  // Do special operations for transitions from an active state.
+  if (old_state == IN_PROGRESS &&
+      (new_state == CANCELLED || new_state == INTERRUPTED)) {
+    download_manager_->DownloadStopped(this);
+    StopProgressTimer();
+  }
+
   UpdateObservers();
 }
 
@@ -454,20 +469,32 @@ void DownloadItem::UpdateTarget() {
     state_info_.target_name = full_path_.BaseName();
 }
 
-void DownloadItem::Interrupted(int64 size, net::Error net_error) {
+void DownloadItem::Interrupt(int64 size, net::Error net_error) {
   // TODO(rdsmith): Change to DCHECK after http://crbug.com/85408 resolved.
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  VLOG(20) << __FUNCTION__ << "() download = " << DebugString(true);
 
+  // Small downloads might be complete before we have a chance to run.
   if (!IsInProgress())
     return;
 
-  last_error_ = net_error;
   UpdateSize(size);
-  StopProgressTimer();
+  last_error_ = net_error;
+
+  TransitionTo(INTERRUPTED);
+
   download_stats::RecordDownloadInterrupted(net_error,
                                             received_bytes_,
                                             total_bytes_);
-  TransitionTo(INTERRUPTED);
+
+  // History insertion is the point at which we have finalized download
+  // details and persist them if something goes wrong.  Before history
+  // insertion, interrupt or cancel results in download removal.
+  if (db_handle() == DownloadItem::kUninitializedHandle) {
+    download_manager_->RemoveDownload(this);
+    // We are now deleted; no further code should be executed on this
+    // object.
+  }
 }
 
 void DownloadItem::Delete(DeleteReason reason) {
@@ -498,11 +525,14 @@ void DownloadItem::Remove() {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   download_manager_->AssertQueueStateConsistent(this);
-  Cancel(true);
+  if (IsInProgress()) {
+    TransitionTo(CANCELLED);
+    download_stats::RecordDownloadCount(download_stats::CANCELLED_COUNT);
+  }
   download_manager_->AssertQueueStateConsistent(this);
+  download_stats::RecordDownloadCount(download_stats::REMOVED_COUNT);
 
-  TransitionTo(REMOVING);
-  download_manager_->RemoveDownload(db_handle_);
+  download_manager_->RemoveDownload(this);
   // We have now been deleted.
 }
 

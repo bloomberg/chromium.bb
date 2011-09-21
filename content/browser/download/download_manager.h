@@ -122,22 +122,24 @@ class CONTENT_EXPORT DownloadManager
   void OnResponseCompleted(int32 download_id, int64 size,
                            const std::string& hash);
 
-  // Offthread target for cancelling a particular download.  Will be a no-op
-  // if the download has already been cancelled.
-  void CancelDownload(int32 download_id);
-
   // Called when there is an error in the download.
   // |download_id| is the ID of the download.
   // |size| is the number of bytes that are currently downloaded.
   // |error| is a download error code.  Indicates what caused the interruption.
   void OnDownloadError(int32 download_id, int64 size, net::Error error);
 
-  // Called from DownloadItem to handle the DownloadManager portion of a
-  // Cancel; should not be called from other locations.
-  void DownloadCancelledInternal(DownloadItem* download);
+  // This routine is called from the DownloadItem when a
+  // request is cancelled or interrupted.  It removes the download
+  // from all internal queues holding in-progress work, and takes care
+  // of the off-thread aspects of the cancel (stopping the request,
+  // cancelling the download on the file thread).
+  void DownloadStopped(DownloadItem* download);
 
-  // Called from a view when a user clicks a UI button or link.
-  void RemoveDownload(int64 download_handle);
+  // Called from DownloadItem when the download is being removed.
+  // Takes care of all history operations, modifying internal queues,
+  // and notifying DownloadManager observers, and actually deletes
+  // the DownloadItem.
+  void RemoveDownload(DownloadItem* download);
 
   // Determine if the download is ready for completion, i.e. has had
   // all data saved, and completed the filename determination and
@@ -264,7 +266,7 @@ class CONTENT_EXPORT DownloadManager
   void SavePageDownloadFinished(DownloadItem* download);
 
   // Get the download item from the active map.  Useful when the item is not
-  // yet in the history map.
+  // yet in the history map.  Returns NULL if no such active download.
   DownloadItem* GetActiveDownloadItem(int id);
 
   DownloadManagerDelegate* delegate() const { return delegate_; }
@@ -273,15 +275,15 @@ class CONTENT_EXPORT DownloadManager
   typedef std::set<DownloadItem*> DownloadSet;
   typedef base::hash_map<int64, DownloadItem*> DownloadMap;
 
+  friend struct BrowserThread::DeleteOnThread<BrowserThread::UI>;
+  friend class DeleteTask<DownloadManager>;
+  friend class base::RefCountedThreadSafe<DownloadManager,
+                                          BrowserThread::DeleteOnUIThread>;
+
   // For testing.
   friend class DownloadManagerTest;
   friend class MockDownloadManager;
   friend class DownloadTest;
-
-  friend class base::RefCountedThreadSafe<DownloadManager,
-                                          BrowserThread::DeleteOnUIThread>;
-  friend struct BrowserThread::DeleteOnThread<BrowserThread::UI>;
-  friend class DeleteTask<DownloadManager>;
 
   void set_delegate(DownloadManagerDelegate* delegate) { delegate_ = delegate; }
 
@@ -305,16 +307,17 @@ class CONTENT_EXPORT DownloadManager
   // Returns NULL if the download is not active.
   DownloadItem* GetActiveDownload(int32 download_id);
 
-  // Removes |download| from the active and in progress maps.
-  // Called when the download is cancelled or has an error.
-  // Does nothing if the download is not in the history DB.
-  void RemoveFromActiveList(DownloadItem* download);
-
   // Updates the delegate about the overall download progress.
   void UpdateDownloadProgress();
 
   // Inform observers that the model has changed.
   void NotifyModelChanged();
+
+  // Return all in progress downloads.  This includes downloads that
+  // have not yet been entered into the history (all other accessors
+  // only return downloads that have been entered into the history).
+  // This is intended to be used for testing only.
+  void GetInProgressDownloads(std::vector<DownloadItem*>* result);
 
   // Debugging routine to confirm relationship between below
   // containers; no-op if NDEBUG.

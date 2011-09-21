@@ -220,8 +220,8 @@ void ChromeDownloadManagerDelegate::UpdatePathForItemInPersistentStore(
 }
 
 void ChromeDownloadManagerDelegate::RemoveItemFromPersistentStore(
-    DownloadItem* item) {
-  download_history_->RemoveEntry(item);
+    int64 db_handle) {
+  download_history_->RemoveEntry(db_handle);
 }
 
 void ChromeDownloadManagerDelegate::RemoveItemsFromPersistentStoreBetween(

@@ -1,9 +1,13 @@
 // Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-// This class simulates a slow download.  This used in a UI test to test the
-// download manager.  Requests to |kUnknownSizeUrl| and |kKnownSizeUrl| start
-// downloads that pause after the first
+// This class simulates a slow download.  This is used in browser tests
+// to test the download manager.  Requests to |kUnknownSizeUrl| and
+// |kKnownSizeUrl| start downloads that pause after the first chunk of
+// data is delivered.  A later request to |kFinishDownloadUrl| will finish
+// these downloads.  A later request to |kErrorFinishDownloadUrl| will
+// cause these downloads to error with |net::ERR_FAILED|.
+// TODO(rdsmith): Update to allow control of returned error.
 
 #ifndef CONTENT_BROWSER_NET_URL_REQUEST_SLOW_DOWNLOAD_JOB_H_
 #define CONTENT_BROWSER_NET_URL_REQUEST_SLOW_DOWNLOAD_JOB_H_
@@ -37,6 +41,7 @@ class URLRequestSlowDownloadJob : public net::URLRequestJob {
   static const char kUnknownSizeUrl[];
   static const char kKnownSizeUrl[];
   static const char kFinishDownloadUrl[];
+  static const char kErrorFinishDownloadUrl[];
 
   // Adds the testing URLs to the net::URLRequestFilter.
   CONTENT_EXPORT static void AddUrlHandler();
@@ -47,17 +52,19 @@ class URLRequestSlowDownloadJob : public net::URLRequestJob {
   void GetResponseInfoConst(net::HttpResponseInfo* info) const;
 
   // Mark all pending requests to be finished.  We keep track of pending
-  // requests in |kPendingRequests|.
-  static void FinishPendingRequests();
-  static std::vector<URLRequestSlowDownloadJob*> kPendingRequests;
+  // requests in |pending_requests_|.
+  static void FinishPendingRequests(bool error);
+  static std::vector<URLRequestSlowDownloadJob*> pending_requests_;
 
   void StartAsync();
 
   void set_should_finish_download() { should_finish_download_ = true; }
+  void set_should_error_download() { should_error_download_ = true; }
 
   int first_download_size_remaining_;
   bool should_finish_download_;
   bool should_send_second_chunk_;
+  bool should_error_download_;
 
   ScopedRunnableMethodFactory<URLRequestSlowDownloadJob> method_factory_;
 };

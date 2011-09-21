@@ -47,8 +47,10 @@ class DownloadHistory {
   void UpdateDownloadPath(DownloadItem* download_item,
                           const FilePath& new_path);
 
-  // Removes |download_item| from the history database.
-  void RemoveEntry(DownloadItem* download_item);
+  // Removes the download identified by |db_handle| from the history database.
+  // |db_handle| is used instead of the DownloadItem pointer to allow
+  // removal after deletion of the download item.
+  void RemoveEntry(int64 db_handle);
 
   // Removes download-related history entries in the given time range.
   void RemoveEntriesBetween(const base::Time remove_begin,

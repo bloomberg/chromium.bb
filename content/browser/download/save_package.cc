@@ -626,7 +626,7 @@ void SavePackage::Stop() {
 
   // Inform the DownloadItem we have canceled whole save page job.
   if (download_) {
-    download_->Cancel(false);
+    download_->Cancel();
     FinalizeDownloadEntry();
   }
 }
