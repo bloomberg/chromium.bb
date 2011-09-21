@@ -11,7 +11,13 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/chrome_switches.h"
 
+// Sometimes times out on Mac OS
+// crbug.com/
+#ifdef OS_MACOSX
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_Processes) {
+#else
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Processes) {
+#endif
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableExperimentalExtensionApis);
 
@@ -47,4 +53,3 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ProcessesVsTaskManager) {
   UnloadExtension(last_loaded_extension_id_);
   EXPECT_EQ(1, model->update_requests_);
 }
-
