@@ -620,7 +620,7 @@ void ExtensionWebRequestEventRouter::OnAuthRequired(
   challenger->SetInteger(keys::kPortKey, auth_info.challenger.port());
   dict->Set(keys::kChallengerKey, challenger);
   dict->SetDouble(keys::kTimeStampKey, time.ToDoubleT() * 1000);
-  if (extra_info_spec & ExtraInfoSpec::REQUEST_HEADERS) {
+  if (extra_info_spec & ExtraInfoSpec::RESPONSE_HEADERS) {
     dict->Set(keys::kResponseHeadersKey,
               GetResponseHeadersList(request->response_headers()));
   }
