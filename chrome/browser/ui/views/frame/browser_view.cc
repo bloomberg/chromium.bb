@@ -1659,7 +1659,8 @@ void BrowserView::SaveWindowPlacement(const gfx::Rect& bounds,
   // If IsFullscreen() is true, we've just changed into fullscreen mode, and
   // we're catching the going-into-fullscreen sizing and positioning calls,
   // which we want to ignore.
-  if (!IsFullscreen() && browser_->ShouldSaveWindowPlacement()) {
+  if (!IsFullscreen() &&
+      (browser_->ShouldSaveWindowPlacement() || browser_->is_app())) {
     WidgetDelegate::SaveWindowPlacement(bounds, show_state);
     browser_->SaveWindowPlacement(bounds, show_state);
   }
@@ -1672,7 +1673,7 @@ bool BrowserView::GetSavedWindowPlacement(
   *show_state = browser_->GetSavedWindowShowState();
 
   if ((browser_->is_type_popup() || browser_->is_type_panel())
-      && !browser_->is_devtools()) {
+      && !browser_->is_devtools() && !browser_->is_app()) {
     // We are a popup window. The value passed in |bounds| represents two
     // pieces of information:
     // - the position of the window, in screen coordinates (outer position).
