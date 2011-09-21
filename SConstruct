@@ -2514,20 +2514,10 @@ def MakeMacEnv():
       PLUGIN_SUFFIX = '.bundle',
   )
 
-  if mac_env.Bit('build_x86_64'):
-    # OS X 10.5 was the first version to support x86-64.  We need to
-    # specify 10.5 rather than 10.4 here otherwise building
-    # get_plugin_dirname.mm gives the warning (converted to an error)
-    # "Mac OS X version 10.5 or later is needed for use of the new objc abi".
-    mac_env.Append(
-        CCFLAGS=['-mmacosx-version-min=10.5'],
-        LINKFLAGS=['-mmacosx-version-min=10.5'],
-        CPPDEFINES=[['MAC_OS_X_VERSION_MIN_REQUIRED', 'MAC_OS_X_VERSION_10_5']])
-  else:
-    mac_env.Append(
-        CCFLAGS=['-mmacosx-version-min=10.4'],
-        LINKFLAGS=['-mmacosx-version-min=10.4'],
-        CPPDEFINES=[['MAC_OS_X_VERSION_MIN_REQUIRED', 'MAC_OS_X_VERSION_10_4']])
+  mac_env.Append(
+      CCFLAGS=['-mmacosx-version-min=10.5'],
+      LINKFLAGS=['-mmacosx-version-min=10.5'],
+      CPPDEFINES=[['MAC_OS_X_VERSION_MIN_REQUIRED', 'MAC_OS_X_VERSION_10_5']])
   subarch_flag = '-m%s' % mac_env['BUILD_SUBARCH']
   mac_env.Append(
       CCFLAGS=[subarch_flag, '-fPIC'],
