@@ -25,6 +25,14 @@ function load() {
   cr.ui.decorate('input[pref][type=url]', options.PrefTextField);
   ProxyOptions.getInstance().initializePage();
 
+  // TODO(ivankr): remove when http://crosbug.com/20660 is resolved.
+  var inputs = document.querySelectorAll('input[pref]');
+  for (var i = 0, el; el = inputs[i]; i++) {
+    el.addEventListener('keyup', function(e) {
+      cr.dispatchSimpleEvent(this, 'change');
+    });
+  }
+
   Preferences.getInstance().initialize();
   chrome.send('coreOptionsInitialize');
 
