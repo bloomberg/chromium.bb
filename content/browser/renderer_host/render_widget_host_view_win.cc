@@ -762,8 +762,7 @@ BackingStore* RenderWidgetHostViewWin::AllocBackingStore(
 
 void RenderWidgetHostViewWin::SetBackground(const SkBitmap& background) {
   RenderWidgetHostView::SetBackground(background);
-  Send(new ViewMsg_SetBackground(render_widget_host_->routing_id(),
-                                 background));
+  render_widget_host_->SetBackground(background);
 }
 
 void RenderWidgetHostViewWin::SetVisuallyDeemphasized(const SkColor* color,
@@ -1630,16 +1629,14 @@ void RenderWidgetHostViewWin::SetAccessibilityFocus(int acc_obj_id) {
   if (!render_widget_host_)
     return;
 
-  render_widget_host_->Send(new ViewMsg_SetAccessibilityFocus(
-      render_widget_host_->routing_id(), acc_obj_id));
+  render_widget_host_->AccessibilitySetFocus(acc_obj_id);
 }
 
 void RenderWidgetHostViewWin::AccessibilityDoDefaultAction(int acc_obj_id) {
   if (!render_widget_host_)
     return;
 
-  render_widget_host_->Send(new ViewMsg_AccessibilityDoDefaultAction(
-      render_widget_host_->routing_id(), acc_obj_id));
+  render_widget_host_->AccessibilityDoDefaultAction(acc_obj_id);
 }
 
 IAccessible* RenderWidgetHostViewWin::GetIAccessible() {

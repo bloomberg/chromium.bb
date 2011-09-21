@@ -8,7 +8,6 @@
 
 #import "chrome/browser/renderer_host/render_widget_host_view_mac.h"
 #include "content/browser/renderer_host/render_widget_host.h"
-#include "content/common/view_messages.h"
 
 namespace {
 // The names of all the objc selectors w/o ':'s added to an object by
@@ -140,7 +139,7 @@ void EditCommandImp(id self, SEL _cmd, id sender) {
 
   // The second parameter is the core command value which isn't used here.
   RenderWidgetHost* rwh = rwhv->GetRenderWidgetHost();
-  rwh->Send(new ViewMsg_ExecuteEditCommand(rwh->routing_id(), command, ""));
+  rwh->ExecuteEditCommand(command, "");
 }
 
 }  // namespace

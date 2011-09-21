@@ -41,7 +41,6 @@ class WebInputEvent;
 class WebMouseEvent;
 struct WebCompositionUnderline;
 struct WebScreenInfo;
-struct WebFindOptions;
 }
 
 class BackingStore;
@@ -51,6 +50,9 @@ class RenderWidgetHostView;
 class TransportDIB;
 class WebCursor;
 struct ViewHostMsg_UpdateRect_Params;
+struct WebPreferences;
+struct EditCommand;
+class GURL;
 
 // This class manages the browser side of a browser<->renderer HWND connection.
 // The HWND lives in the browser process, and windows events are sent over
@@ -375,29 +377,45 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Channel::Listener,
   // perform an action. See OnUserGesture for more details.
   void StartUserGesture();
 
-  // Changes the zoom level for the current main frame.
-  void Zoom(PageZoom::Function zoom_function);
-
-  // Reloads the current focused frame.
-  void ReloadFrame();
-
-  // Finds text on a page.
-  void Find(int request_id, const string16& search_text,
-            const WebKit::WebFindOptions& options);
-
   // Stops loading the page.
   void Stop();
 
-  // Requests the renderer to evaluate an xpath to a frame and insert css
-  // into that frame's document.
-  void InsertCSS(const string16& frame_xpath, const std::string& css);
+  // Set the RenderView background.
+  void SetBackground(const SkBitmap& background);
 
-  // Tells the renderer not to add scrollbars with height and width below a
-  // threshold.
-  void DisableScrollbarsForThreshold(const gfx::Size& size);
+  // Notifies the renderer that the next key event is bound to one or more
+  // pre-defined edit commands
+  void SetEditCommandsForNextKeyEvent(
+      const std::vector<EditCommand>& commands);
 
-  // Instructs the RenderView to send back updates to the preferred size.
-  void EnablePreferredSizeMode(int flags);
+  // Relay a request from assistive technology to perform the default action
+  // on a given node.
+  void AccessibilityDoDefaultAction(int object_id);
+
+  // Relay a request from assistive technology to set focus to a given node.
+  void AccessibilitySetFocus(int object_id);
+
+  // Executes the edit command on the RenderView.
+  void ExecuteEditCommand(const std::string& command,
+                          const std::string& value);
+
+  // Tells the renderer to scroll the currently focused node into rect only if
+  // the currently focused node is a Text node (textfield, text area or content
+  // editable divs).
+  void ScrollFocusedEditableNodeIntoRect(const gfx::Rect& rect);
+
+  // Requests the renderer to select the region between two points.
+  void SelectRange(const gfx::Point& start, const gfx::Point& end);
+
+  // Edit operations.
+  void Undo();
+  void Redo();
+  void Cut();
+  void Copy();
+  void CopyToFindPboard();
+  void Paste();
+  void Delete();
+  void SelectAll();
 
  protected:
   // Internal implementation of the public Forward*Event() methods.

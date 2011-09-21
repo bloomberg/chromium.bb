@@ -31,7 +31,6 @@
 #include "content/common/content_notification_types.h"
 #include "content/common/notification_registrar.h"
 #include "content/common/notification_source.h"
-#include "content/common/view_messages.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "webkit/glue/webpreferences.h"
 
@@ -323,8 +322,7 @@ void CloudPrintFlowHandler::Observe(int type,
       if (rvh && rvh->delegate()) {
         WebPreferences webkit_prefs = rvh->delegate()->GetWebkitPrefs();
         webkit_prefs.allow_scripts_to_close_windows = true;
-        rvh->Send(new ViewMsg_UpdateWebPreferences(
-            rvh->routing_id(), webkit_prefs));
+        rvh->UpdateWebkitPreferences(webkit_prefs);
       } else {
         DCHECK(false);
       }

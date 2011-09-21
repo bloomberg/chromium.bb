@@ -36,7 +36,6 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/native_web_keyboard_event.h"
 #include "content/common/notification_service.h"
-#include "content/common/view_messages.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "grit/theme_resources_standard.h"
@@ -670,8 +669,7 @@ bool FindBarGtk::MaybeForwardKeyEventToRenderer(GdkEventKey* event) {
 
   // Make sure we don't have a text field element interfering with keyboard
   // input. Otherwise Up and Down arrow key strokes get eaten. "Nom Nom Nom".
-  render_view_host->Send(
-      new ViewMsg_ClearFocusedNode(render_view_host->routing_id()));
+  render_view_host->ClearFocusedNode();
 
   NativeWebKeyboardEvent wke(event);
   render_view_host->ForwardKeyboardEvent(wke);

@@ -28,6 +28,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCompositionUnderline.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "webkit/glue/webcursor.h"
+#include "webkit/glue/webpreferences.h"
 #include "webkit/plugins/npapi/webplugin.h"
 
 using base::Time;
@@ -1268,33 +1269,82 @@ void RenderWidgetHost::StartUserGesture() {
   OnUserGesture();
 }
 
-void RenderWidgetHost::Zoom(PageZoom::Function zoom_function) {
-  Send(new ViewMsg_Zoom(routing_id(), zoom_function));
-}
-
-void RenderWidgetHost::ReloadFrame() {
-  Send(new ViewMsg_ReloadFrame(routing_id()));
-}
-
-void RenderWidgetHost::Find(int request_id, const string16& search_text,
-                            const WebKit::WebFindOptions& options) {
-  Send(new ViewMsg_Find(routing_id(), request_id, search_text, options));
-}
-
 void RenderWidgetHost::Stop() {
   Send(new ViewMsg_Stop(routing_id()));
 }
 
-void RenderWidgetHost::InsertCSS(const string16& frame_xpath,
-                                 const std::string& css) {
-  Send(new ViewMsg_CSSInsertRequest(routing_id(), frame_xpath, css));
+void RenderWidgetHost::SetBackground(const SkBitmap& background) {
+  Send(new ViewMsg_SetBackground(routing_id(), background));
 }
 
-void RenderWidgetHost::DisableScrollbarsForThreshold(const gfx::Size& size) {
-  Send(new ViewMsg_DisableScrollbarsForSmallWindows(routing_id(), size));
+void RenderWidgetHost::SetEditCommandsForNextKeyEvent(
+    const std::vector<EditCommand>& commands) {
+  Send(new ViewMsg_SetEditCommandsForNextKeyEvent(routing_id(), commands));
 }
 
-void RenderWidgetHost::EnablePreferredSizeMode(int flags) {
-  Send(new ViewMsg_EnablePreferredSizeChangedMode(routing_id(), flags));
+void RenderWidgetHost::AccessibilityDoDefaultAction(int object_id) {
+  Send(new ViewMsg_AccessibilityDoDefaultAction(routing_id(), object_id));
+}
+
+void RenderWidgetHost::AccessibilitySetFocus(int object_id) {
+  Send(new ViewMsg_SetAccessibilityFocus(routing_id(), object_id));
+}
+
+void RenderWidgetHost::ExecuteEditCommand(const std::string& command,
+                                          const std::string& value) {
+  Send(new ViewMsg_ExecuteEditCommand(routing_id(), command, value));
+}
+
+void RenderWidgetHost::ScrollFocusedEditableNodeIntoRect(
+    const gfx::Rect& rect) {
+  Send(new ViewMsg_ScrollFocusedEditableNodeIntoRect(routing_id(), rect));
+}
+
+void RenderWidgetHost::SelectRange(const gfx::Point& start,
+                                   const gfx::Point& end) {
+  Send(new ViewMsg_SelectRange(routing_id(), start, end));
+}
+
+void RenderWidgetHost::Undo() {
+  Send(new ViewMsg_Undo(routing_id()));
+  UserMetrics::RecordAction(UserMetricsAction("Undo"));
+}
+
+void RenderWidgetHost::Redo() {
+  Send(new ViewMsg_Redo(routing_id()));
+  UserMetrics::RecordAction(UserMetricsAction("Redo"));
+}
+
+void RenderWidgetHost::Cut() {
+  Send(new ViewMsg_Cut(routing_id()));
+  UserMetrics::RecordAction(UserMetricsAction("Cut"));
+}
+
+void RenderWidgetHost::Copy() {
+  Send(new ViewMsg_Copy(routing_id()));
+  UserMetrics::RecordAction(UserMetricsAction("Copy"));
+}
+
+void RenderWidgetHost::CopyToFindPboard() {
+#if defined(OS_MACOSX)
+  // Windows/Linux don't have the concept of a find pasteboard.
+  Send(new ViewMsg_CopyToFindPboard(routing_id()));
+  UserMetrics::RecordAction(UserMetricsAction("CopyToFindPboard"));
+#endif
+}
+
+void RenderWidgetHost::Paste() {
+  Send(new ViewMsg_Paste(routing_id()));
+  UserMetrics::RecordAction(UserMetricsAction("Paste"));
+}
+
+void RenderWidgetHost::Delete() {
+  Send(new ViewMsg_Delete(routing_id()));
+  UserMetrics::RecordAction(UserMetricsAction("DeleteSelection"));
+}
+
+void RenderWidgetHost::SelectAll() {
+  Send(new ViewMsg_SelectAll(routing_id()));
+  UserMetrics::RecordAction(UserMetricsAction("SelectAll"));
 }
 

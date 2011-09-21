@@ -481,49 +481,6 @@ int RenderViewHost::ExecuteJavascriptInWebFrameNotifyResult(
   return next_id++;
 }
 
-void RenderViewHost::Undo() {
-  Send(new ViewMsg_Undo(routing_id()));
-  UserMetrics::RecordAction(UserMetricsAction("Undo"));
-}
-
-void RenderViewHost::Redo() {
-  Send(new ViewMsg_Redo(routing_id()));
-  UserMetrics::RecordAction(UserMetricsAction("Redo"));
-}
-
-void RenderViewHost::Cut() {
-  Send(new ViewMsg_Cut(routing_id()));
-  UserMetrics::RecordAction(UserMetricsAction("Cut"));
-}
-
-void RenderViewHost::Copy() {
-  Send(new ViewMsg_Copy(routing_id()));
-  UserMetrics::RecordAction(UserMetricsAction("Copy"));
-}
-
-void RenderViewHost::CopyToFindPboard() {
-#if defined(OS_MACOSX)
-  // Windows/Linux don't have the concept of a find pasteboard.
-  Send(new ViewMsg_CopyToFindPboard(routing_id()));
-  UserMetrics::RecordAction(UserMetricsAction("CopyToFindPboard"));
-#endif
-}
-
-void RenderViewHost::Paste() {
-  Send(new ViewMsg_Paste(routing_id()));
-  UserMetrics::RecordAction(UserMetricsAction("Paste"));
-}
-
-void RenderViewHost::Delete() {
-  Send(new ViewMsg_Delete(routing_id()));
-  UserMetrics::RecordAction(UserMetricsAction("DeleteSelection"));
-}
-
-void RenderViewHost::SelectAll() {
-  Send(new ViewMsg_SelectAll(routing_id()));
-  UserMetrics::RecordAction(UserMetricsAction("SelectAll"));
-}
-
 void RenderViewHost::JavaScriptDialogClosed(IPC::Message* reply_msg,
                                             bool success,
                                             const string16& user_input) {
@@ -1259,6 +1216,52 @@ void RenderViewHost::FilterURL(ChildProcessSecurityPolicy* policy,
     VLOG(1) << "Blocked URL " << url->spec();
     *url = GURL();
   }
+}
+
+void RenderViewHost::SetAltErrorPageURL(const GURL& url) {
+  Send(new ViewMsg_SetAltErrorPageURL(routing_id(), url));
+}
+
+void RenderViewHost::ExitFullscreen() {
+  Send(new ViewMsg_ExitFullscreen(routing_id()));
+}
+
+void RenderViewHost::UpdateWebkitPreferences(const WebPreferences& prefs) {
+  Send(new ViewMsg_UpdateWebPreferences(routing_id(), prefs));
+}
+
+void RenderViewHost::ClearFocusedNode() {
+  Send(new ViewMsg_ClearFocusedNode(routing_id()));
+}
+
+void RenderViewHost::SetZoomLevel(double level) {
+  Send(new ViewMsg_SetZoomLevel(routing_id(), level));
+}
+
+void RenderViewHost::Zoom(PageZoom::Function zoom_function) {
+  Send(new ViewMsg_Zoom(routing_id(), zoom_function));
+}
+
+void RenderViewHost::ReloadFrame() {
+  Send(new ViewMsg_ReloadFrame(routing_id()));
+}
+
+void RenderViewHost::Find(int request_id, const string16& search_text,
+                          const WebKit::WebFindOptions& options) {
+  Send(new ViewMsg_Find(routing_id(), request_id, search_text, options));
+}
+
+void RenderViewHost::InsertCSS(const string16& frame_xpath,
+                               const std::string& css) {
+  Send(new ViewMsg_CSSInsertRequest(routing_id(), frame_xpath, css));
+}
+
+void RenderViewHost::DisableScrollbarsForThreshold(const gfx::Size& size) {
+  Send(new ViewMsg_DisableScrollbarsForSmallWindows(routing_id(), size));
+}
+
+void RenderViewHost::EnablePreferredSizeMode(int flags) {
+  Send(new ViewMsg_EnablePreferredSizeChangedMode(routing_id(), flags));
 }
 
 void RenderViewHost::OnAccessibilityNotifications(

@@ -55,7 +55,6 @@
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/common/notification_service.h"
-#include "content/common/view_messages.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "grit/platform_locale_settings.h"
@@ -604,8 +603,8 @@ void TabContentsWrapper::Observe(int type,
                  StartsWithASCII(*pref_name_in, "webkit.webprefs.", true)) {
         UpdateWebPreferences();
       } else if (*pref_name_in == prefs::kDefaultZoomLevel) {
-        Send(new ViewMsg_SetZoomLevel(
-            routing_id(), tab_contents()->GetZoomLevel()));
+        tab_contents()->render_view_host()->SetZoomLevel(
+            tab_contents()->GetZoomLevel());
       } else if (*pref_name_in == prefs::kEnableReferrers) {
         UpdateRendererPreferences();
       } else if (*pref_name_in == prefs::kSafeBrowsingEnabled) {
@@ -650,13 +649,13 @@ GURL TabContentsWrapper::GetAlternateErrorPageURL() const {
 }
 
 void TabContentsWrapper::UpdateAlternateErrorPageURL(RenderViewHost* rvh) {
-  rvh->Send(new ViewMsg_SetAltErrorPageURL(
-      rvh->routing_id(), GetAlternateErrorPageURL()));
+  rvh->SetAltErrorPageURL(GetAlternateErrorPageURL());
 }
 
 void TabContentsWrapper::UpdateWebPreferences() {
   RenderViewHostDelegate* rvhd = tab_contents();
-  Send(new ViewMsg_UpdateWebPreferences(routing_id(), rvhd->GetWebkitPrefs()));
+  tab_contents()->render_view_host()->UpdateWebkitPreferences(
+      rvhd->GetWebkitPrefs());
 }
 
 void TabContentsWrapper::UpdateRendererPreferences() {
@@ -685,5 +684,5 @@ void TabContentsWrapper::UpdateSafebrowsingDetectionHost() {
 }
 
 void TabContentsWrapper::ExitFullscreenMode() {
-  Send(new ViewMsg_ExitFullscreen(routing_id()));
+  tab_contents()->render_view_host()->ExitFullscreen();
 }

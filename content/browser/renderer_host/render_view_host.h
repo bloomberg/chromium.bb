@@ -62,6 +62,7 @@ struct WebAccessibility;
 
 namespace WebKit {
 struct WebMediaPlayerAction;
+struct WebFindOptions;
 }  // namespace WebKit
 
 namespace net {
@@ -254,16 +255,6 @@ class CONTENT_EXPORT RenderViewHost : public RenderWidgetHost {
   int ExecuteJavascriptInWebFrameNotifyResult(const string16& frame_xpath,
                                               const string16& jscript);
 
-  // Edit operations.
-  void Undo();
-  void Redo();
-  void Cut();
-  void Copy();
-  void CopyToFindPboard();
-  void Paste();
-  void Delete();
-  void SelectAll();
-
   // Notifies the RenderView that the JavaScript message that was shown was
   // closed by the user.
   void JavaScriptDialogClosed(IPC::Message* reply_msg,
@@ -383,6 +374,42 @@ class CONTENT_EXPORT RenderViewHost : public RenderWidgetHost {
   static void FilterURL(ChildProcessSecurityPolicy* policy,
                         int renderer_id,
                         GURL* url);
+
+  // Sets the alternate error page URL (link doctor) for the renderer process.
+  void SetAltErrorPageURL(const GURL& url);
+
+  // Asks the renderer to exit fullscreen
+  void ExitFullscreen();
+
+  // Passes a list of Webkit preferences to the renderer.
+  void UpdateWebkitPreferences(const WebPreferences& prefs);
+
+  // Tells the renderer to clear the focused node (if any).
+  void ClearFocusedNode();
+
+  // Set the zoom level for the current main frame
+  void SetZoomLevel(double level);
+
+  // Changes the zoom level for the current main frame.
+  void Zoom(PageZoom::Function zoom_function);
+
+  // Reloads the current focused frame.
+  void ReloadFrame();
+
+  // Finds text on a page.
+  void Find(int request_id, const string16& search_text,
+            const WebKit::WebFindOptions& options);
+
+  // Requests the renderer to evaluate an xpath to a frame and insert css
+  // into that frame's document.
+  void InsertCSS(const string16& frame_xpath, const std::string& css);
+
+  // Tells the renderer not to add scrollbars with height and width below a
+  // threshold.
+  void DisableScrollbarsForThreshold(const gfx::Size& size);
+
+  // Instructs the RenderView to send back updates to the preferred size.
+  void EnablePreferredSizeMode(int flags);
 
   // NOTE: Do not add functions that just send an IPC message that are called in
   // one or two places.  Have the caller send the IPC message directly.

@@ -390,8 +390,7 @@ void RenderWidgetHostViewViews::Observe(int type,
     gfx::Rect screen_bounds = GetScreenBounds();
     gfx::Rect intersecting_rect = screen_bounds.Intersect(keyboard_rect);
     gfx::Rect available_rect = screen_bounds.Subtract(intersecting_rect);
-    host_->Send(new ViewMsg_ScrollFocusedEditableNodeIntoRect(
-        host_->routing_id(), available_rect));
+    host_->ScrollFocusedEditableNodeIntoRect(available_rect);
   }
 #endif
 }
@@ -408,7 +407,7 @@ BackingStore* RenderWidgetHostViewViews::AllocBackingStore(
 void RenderWidgetHostViewViews::SetBackground(const SkBitmap& background) {
   RenderWidgetHostView::SetBackground(background);
   if (host_)
-    host_->Send(new ViewMsg_SetBackground(host_->routing_id(), background));
+    host_->SetBackground(background);
 }
 
 void RenderWidgetHostViewViews::SetVisuallyDeemphasized(
@@ -431,7 +430,7 @@ void RenderWidgetHostViewViews::SetScrollOffsetPinning(
 void RenderWidgetHostViewViews::SelectRect(const gfx::Point& start,
                                            const gfx::Point& end) {
   if (host_)
-    host_->Send(new ViewMsg_SelectRange(host_->routing_id(), start, end));
+    host_->SelectRange(start, end);
 }
 
 bool RenderWidgetHostViewViews::IsCommandIdChecked(int command_id) const {
@@ -473,19 +472,19 @@ bool RenderWidgetHostViewViews::GetAcceleratorForCommandId(
 void RenderWidgetHostViewViews::ExecuteCommand(int command_id) {
   switch (command_id) {
     case IDS_APP_CUT:
-      host_->Send(new ViewMsg_Cut(host_->routing_id()));
+      host_->Cut();
       break;
     case IDS_APP_COPY:
-      host_->Send(new ViewMsg_Copy(host_->routing_id()));
+      host_->Copy();
       break;
     case IDS_APP_PASTE:
-      host_->Send(new ViewMsg_Paste(host_->routing_id()));
+      host_->Paste();
       break;
     case IDS_APP_DELETE:
-      host_->Send(new ViewMsg_Delete(host_->routing_id()));
+      host_->Delete();
       break;
     case IDS_APP_SELECT_ALL:
-      host_->Send(new ViewMsg_SelectAll(host_->routing_id()));
+      host_->SelectAll();
       break;
     default:
       NOTREACHED();
