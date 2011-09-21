@@ -39,28 +39,22 @@ class RenderTextLinux : public RenderText {
                                                 BreakType break_type) OVERRIDE;
   virtual SelectionModel LeftEndSelectionModel() OVERRIDE;
   virtual SelectionModel RightEndSelectionModel() OVERRIDE;
-  virtual size_t GetIndexOfPreviousGrapheme(size_t position) OVERRIDE;
+  virtual bool IsCursorablePosition(size_t position) OVERRIDE;
 
  private:
-  enum RelativeLogicalPosition {
-    PREVIOUS,
-    NEXT
-  };
-
-  // Get the logical start index of the next grapheme after |position|.
-  size_t GetIndexOfNextGrapheme(size_t position);
+  virtual size_t IndexOfAdjacentGrapheme(size_t index, bool next) OVERRIDE;
 
   // Returns the run that contains |position|. Return NULL if not found.
   GSList* GetRunContainingPosition(size_t position) const;
 
   // Given |utf8_index_of_current_grapheme|, returns the UTF8 or UTF16 index of
-  // next grapheme in the text if |pos| is NEXT, otherwise, returns the index of
-  // previous grapheme. Returns 0 if there is no previous grapheme, and returns
-  // the |text_| length if there is no next grapheme.
+  // next grapheme in the text if |next| is true, otherwise, returns the index
+  // of previous grapheme. Returns 0 if there is no previous grapheme, and
+  // returns the |text_| length if there is no next grapheme.
   size_t Utf8IndexOfAdjacentGrapheme(size_t utf8_index_of_current_grapheme,
-                                     RelativeLogicalPosition pos) const;
+                                     bool next) const;
   size_t Utf16IndexOfAdjacentGrapheme(size_t utf8_index_of_current_grapheme,
-                                      RelativeLogicalPosition pos) const;
+                                      bool next) const;
 
   // Given a |run|, returns the SelectionModel that contains the logical first
   // or last caret position inside (not at a boundary of) the run.

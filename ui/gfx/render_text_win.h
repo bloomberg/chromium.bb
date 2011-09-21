@@ -72,10 +72,12 @@ class RenderTextWin : public RenderText {
                                                 BreakType break_type) OVERRIDE;
   virtual SelectionModel LeftEndSelectionModel() OVERRIDE;
   virtual SelectionModel RightEndSelectionModel() OVERRIDE;
-  virtual size_t GetIndexOfPreviousGrapheme(size_t position) OVERRIDE;
   virtual std::vector<Rect> GetSubstringBounds(size_t from, size_t to) OVERRIDE;
+  virtual bool IsCursorablePosition(size_t position) OVERRIDE;
 
  private:
+  virtual size_t IndexOfAdjacentGrapheme(size_t index, bool next) OVERRIDE;
+
   void ItemizeLogicalText();
   void LayoutVisualText(HDC hdc);
 
@@ -84,15 +86,11 @@ class RenderTextWin : public RenderText {
   size_t GetRunContainingPosition(size_t position) const;
   size_t GetRunContainingPoint(const Point& point) const;
 
-  // Return an index belonging to the |next| or previous logical grapheme.
-  // The return value is bounded by 0 and the text length, inclusive.
-  size_t IndexOfAdjacentGrapheme(size_t index, bool next) const;
-
   // Given a |run|, returns the SelectionModel that contains the logical first
   // or last caret position inside (not at a boundary of) the run.
   // The returned value represents a cursor/caret position without a selection.
-  SelectionModel FirstSelectionModelInsideRun(internal::TextRun*) const;
-  SelectionModel LastSelectionModelInsideRun(internal::TextRun*) const;
+  SelectionModel FirstSelectionModelInsideRun(internal::TextRun*);
+  SelectionModel LastSelectionModelInsideRun(internal::TextRun*);
 
   // Get the selection model visually left/right of |selection| by one grapheme.
   // The returned value represents a cursor/caret position without a selection.
