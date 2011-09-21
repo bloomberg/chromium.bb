@@ -79,6 +79,8 @@
       # ==================================================
       # crbug.com/83686
       '-autofill.AutofillTest.testFillProfileCrazyCharacters',
+      # crbug.com/97369
+      '-autofill.AutofillTest.testNoDuplicatePhoneNumsInPrefs',
       # Browser crash when clearing browsing history and downloads together.
       # crbug.com/88128
       '-browsing_data.BrowsingDataTest.testClearHistoryAndDownloads',
