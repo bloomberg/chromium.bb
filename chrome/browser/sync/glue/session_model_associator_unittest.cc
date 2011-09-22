@@ -89,7 +89,7 @@ TEST_F(SessionModelAssociatorTest, PopulateSessionWindow) {
   SessionWindow* win = new SessionWindow();
   session->windows.push_back(win);
   SessionModelAssociator::PopulateSessionWindowFromSpecifics(
-      tag, window_s, 0, win, &tracker);
+      tag, window_s, base::Time(), win, &tracker);
   ASSERT_EQ(1U, win->tabs.size());
   ASSERT_EQ(1, win->selected_tab_index);
   ASSERT_EQ(1, win->type);
@@ -118,7 +118,8 @@ TEST_F(SessionModelAssociatorTest, PopulateSessionTab) {
   navigation->set_page_transition(sync_pb::TabNavigation_PageTransition_TYPED);
 
   SessionTab tab;
-  SessionModelAssociator::PopulateSessionTabFromSpecifics(tab_s, 0, &tab);
+  SessionModelAssociator::PopulateSessionTabFromSpecifics(
+      tab_s, base::Time(), &tab);
   ASSERT_EQ(13, tab.tab_visual_index);
   ASSERT_EQ(3, tab.current_navigation_index);
   ASSERT_TRUE(tab.pinned);

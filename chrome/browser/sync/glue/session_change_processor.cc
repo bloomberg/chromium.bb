@@ -244,7 +244,7 @@ void SessionChangeProcessor::ApplyChangesFromSyncModel(
       StartObserving();
       return;
     }
-    const int64 mtime = sync_node.GetModificationTime();
+    const base::Time& mtime = sync_node.GetModificationTime();
     // Model associator handles foreign session update and add the same.
     session_model_associator_->AssociateForeignSpecifics(specifics, mtime);
   }

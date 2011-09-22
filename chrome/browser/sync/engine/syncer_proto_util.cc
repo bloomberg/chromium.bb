@@ -9,7 +9,6 @@
 #include "chrome/browser/sync/engine/net/server_connection_manager.h"
 #include "chrome/browser/sync/engine/syncer.h"
 #include "chrome/browser/sync/engine/syncer_types.h"
-#include "chrome/browser/sync/engine/syncer_util.h"
 #include "chrome/browser/sync/protocol/service_constants.h"
 #include "chrome/browser/sync/protocol/sync.pb.h"
 #include "chrome/browser/sync/protocol/sync_protocol_error.h"
@@ -18,6 +17,7 @@
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/syncable/syncable-inl.h"
 #include "chrome/browser/sync/syncable/syncable.h"
+#include "chrome/browser/sync/util/time.h"
 
 using browser_sync::SyncProtocolErrorType;
 using std::string;
@@ -364,7 +364,7 @@ bool SyncerProtoUtil::Compare(const syncable::Entry& local_entry,
 
   if (local_entry.Get(IS_DEL) && server_entry.deleted())
     return true;
-  if (!ClientAndServerTimeMatch(local_entry.Get(CTIME), server_entry.ctime())) {
+  if (local_entry.Get(CTIME) != ProtoTimeToTime(server_entry.ctime())) {
     LOG(WARNING) << "ctime mismatch";
     return false;
   }
@@ -389,8 +389,7 @@ bool SyncerProtoUtil::Compare(const syncable::Entry& local_entry,
     return false;
   }
   if (!local_entry.Get(IS_DIR) &&
-      !ClientAndServerTimeMatch(local_entry.Get(MTIME),
-                                server_entry.mtime())) {
+      (local_entry.Get(MTIME) != ProtoTimeToTime(server_entry.mtime()))) {
     LOG(WARNING) << "mtime mismatch";
     return false;
   }
@@ -438,18 +437,22 @@ const std::string& SyncerProtoUtil::NameFromCommitEntryResponse(
 
 std::string SyncerProtoUtil::SyncEntityDebugString(
     const sync_pb::SyncEntity& entry) {
+  const std::string& mtime_str =
+      GetTimeDebugString(ProtoTimeToTime(entry.mtime()));
+  const std::string& ctime_str =
+      GetTimeDebugString(ProtoTimeToTime(entry.ctime()));
   return base::StringPrintf(
       "id: %s, parent_id: %s, "
       "version: %"PRId64"d, "
-      "mtime: %" PRId64"d (client: %" PRId64"d), "
-      "ctime: %" PRId64"d (client: %" PRId64"d), "
+      "mtime: %" PRId64"d (%s), "
+      "ctime: %" PRId64"d (%s), "
       "name: %s, sync_timestamp: %" PRId64"d, "
       "%s ",
       entry.id_string().c_str(),
       entry.parent_id_string().c_str(),
       entry.version(),
-      entry.mtime(), ServerTimeToClientTime(entry.mtime()),
-      entry.ctime(), ServerTimeToClientTime(entry.ctime()),
+      entry.mtime(), mtime_str.c_str(),
+      entry.ctime(), ctime_str.c_str(),
       entry.name().c_str(), entry.sync_timestamp(),
       entry.deleted() ? "deleted, ":"");
 }

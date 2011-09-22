@@ -84,6 +84,7 @@ class DirectoryBackingStore {
   FRIEND_TEST_ALL_PREFIXES(DirectoryBackingStoreTest, MigrateVersion73To74);
   FRIEND_TEST_ALL_PREFIXES(DirectoryBackingStoreTest, MigrateVersion74To75);
   FRIEND_TEST_ALL_PREFIXES(DirectoryBackingStoreTest, MigrateVersion75To76);
+  FRIEND_TEST_ALL_PREFIXES(DirectoryBackingStoreTest, MigrateVersion76To77);
   FRIEND_TEST_ALL_PREFIXES(DirectoryBackingStoreTest, ModelTypeIds);
   FRIEND_TEST_ALL_PREFIXES(DirectoryBackingStoreTest, Corruption);
   FRIEND_TEST_ALL_PREFIXES(DirectoryBackingStoreTest, DeleteEntries);
@@ -181,6 +182,7 @@ class DirectoryBackingStore {
   bool MigrateVersion73To74();
   bool MigrateVersion74To75();
   bool MigrateVersion75To76();
+  bool MigrateVersion76To77();
 
   // The handle to our sqlite on-disk store for initialization and loading, and
   // for saving changes periodically via SaveChanges, respectively.

@@ -34,6 +34,7 @@
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/util/dbgq.h"
 #include "chrome/browser/sync/util/immutable.h"
+#include "chrome/browser/sync/util/time.h"
 
 struct PurgeInfo;
 
@@ -59,8 +60,14 @@ class DirectoryBackingStore;
 
 static const int64 kInvalidMetaHandle = 0;
 
-// Update syncable_enum_conversions{.h,.cc,_unittest.cc} if you change
-// any fields in this file.
+// Things you need to update if you change any of the fields below:
+//  - EntryKernel struct in syncable.h (this file)
+//  - syncable_columns.h
+//  - syncable_enum_conversions{.h,.cc,_unittest.cc}
+//  - EntryKernel::EntryKernel(), EntryKernel::ToValue(), operator<<
+//    for Entry in syncable.cc
+//  - BindFields() and UnpackEntry() in directory_backing_store.cc
+//  - TestSimpleFieldsPreservedDuringSaveChanges in syncable_unittest.cc
 
 enum {
   BEGIN_FIELDS = 0,
@@ -81,10 +88,6 @@ enum BaseVersion {
 
 enum Int64Field {
   SERVER_VERSION = BASE_VERSION + 1,
-  MTIME,
-  SERVER_MTIME,
-  CTIME,
-  SERVER_CTIME,
 
   // A numeric position value that indicates the relative ordering of
   // this object among its siblings.
@@ -97,8 +100,21 @@ enum Int64Field {
 };
 
 enum {
-  INT64_FIELDS_COUNT = INT64_FIELDS_END,
-  ID_FIELDS_BEGIN = INT64_FIELDS_END,
+  INT64_FIELDS_COUNT = INT64_FIELDS_END - INT64_FIELDS_BEGIN,
+  TIME_FIELDS_BEGIN = INT64_FIELDS_END,
+};
+
+enum TimeField {
+  MTIME = TIME_FIELDS_BEGIN,
+  SERVER_MTIME,
+  CTIME,
+  SERVER_CTIME,
+  TIME_FIELDS_END,
+};
+
+enum {
+  TIME_FIELDS_COUNT = TIME_FIELDS_END - TIME_FIELDS_BEGIN,
+  ID_FIELDS_BEGIN = TIME_FIELDS_END,
 };
 
 enum IdField {
@@ -237,6 +253,7 @@ struct EntryKernel {
   std::string string_fields[STRING_FIELDS_COUNT];
   sync_pb::EntitySpecifics specifics_fields[PROTO_FIELDS_COUNT];
   int64 int64_fields[INT64_FIELDS_COUNT];
+  base::Time time_fields[TIME_FIELDS_COUNT];
   Id id_fields[ID_FIELDS_COUNT];
   std::bitset<BIT_FIELDS_COUNT> bit_fields;
   std::bitset<BIT_TEMPS_COUNT> bit_temps;
@@ -278,6 +295,13 @@ struct EntryKernel {
   inline void put(Int64Field field, int64 value) {
     int64_fields[field - INT64_FIELDS_BEGIN] = value;
   }
+  inline void put(TimeField field, const base::Time& value) {
+    // Round-trip to proto time format and back so that we have
+    // consistent time resolutions (ms).
+    time_fields[field - TIME_FIELDS_BEGIN] =
+        browser_sync::ProtoTimeToTime(
+            browser_sync::TimeToProtoTime(value));
+  }
   inline void put(IdField field, const Id& value) {
     id_fields[field - ID_FIELDS_BEGIN] = value;
   }
@@ -309,6 +333,9 @@ struct EntryKernel {
   }
   inline int64 ref(Int64Field field) const {
     return int64_fields[field - INT64_FIELDS_BEGIN];
+  }
+  inline const base::Time& ref(TimeField field) const {
+    return time_fields[field - TIME_FIELDS_BEGIN];
   }
   inline const Id& ref(IdField field) const {
     return id_fields[field - ID_FIELDS_BEGIN];
@@ -386,6 +413,10 @@ class Entry {
     return kernel_->ref(field);
   }
   inline int64 Get(Int64Field field) const {
+    DCHECK(kernel_);
+    return kernel_->ref(field);
+  }
+  inline const base::Time& Get(TimeField field) const {
     DCHECK(kernel_);
     return kernel_->ref(field);
   }
@@ -490,6 +521,7 @@ class MutableEntry : public Entry {
   // that putting the value would have caused a duplicate in the index.
   // TODO(chron): Remove some of these unecessary return values.
   bool Put(Int64Field field, const int64& value);
+  bool Put(TimeField field, const base::Time& value);
   bool Put(IdField field, const Id& value);
 
   // Do a simple property-only update if the PARENT_ID field.  Use with caution.
@@ -1213,14 +1245,8 @@ class WriteTransaction : public BaseTransaction {
 
 bool IsLegalNewParent(BaseTransaction* trans, const Id& id, const Id& parentid);
 
-int64 Now();
-
 // This function sets only the flags needed to get this entry to sync.
 void MarkForSyncing(syncable::MutableEntry* e);
-
-// This is not a reset.  It just sets the numeric fields which are not
-// initialized by the constructor to zero.
-void ZeroFields(EntryKernel* entry, int first_field);
 
 }  // namespace syncable
 

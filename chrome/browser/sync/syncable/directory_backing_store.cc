@@ -6,10 +6,6 @@
 
 #include "build/build_config.h"
 
-#if defined(OS_MACOSX)
-#include <CoreFoundation/CoreFoundation.h>
-#endif
-
 #include <limits>
 
 #include "base/file_util.h"
@@ -19,12 +15,14 @@
 #include "base/stl_util.h"
 #include "base/string_number_conversions.h"
 #include "base/stringprintf.h"
+#include "base/time.h"
 #include "chrome/browser/sync/protocol/bookmark_specifics.pb.h"
 #include "chrome/browser/sync/protocol/service_constants.h"
 #include "chrome/browser/sync/protocol/sync.pb.h"
 #include "chrome/browser/sync/syncable/syncable-inl.h"
 #include "chrome/browser/sync/syncable/syncable_columns.h"
 #include "chrome/browser/sync/util/sqlite_utils.h"
+#include "chrome/browser/sync/util/time.h"
 #include "chrome/common/random.h"
 #include "third_party/sqlite/sqlite3.h"
 
@@ -44,7 +42,7 @@ static const string::size_type kUpdateStatementBufferSize = 2048;
 
 // Increment this version whenever updating DB tables.
 extern const int32 kCurrentDBVersion;  // Global visibility for our unittest.
-const int32 kCurrentDBVersion = 76;
+const int32 kCurrentDBVersion = 77;
 
 namespace {
 
@@ -76,6 +74,11 @@ int BindFields(const EntryKernel& entry,
   for (i = BEGIN_FIELDS; i < INT64_FIELDS_END; ++i) {
     statement->bind_int64(index++, entry.ref(static_cast<Int64Field>(i)));
   }
+  for ( ; i < TIME_FIELDS_END; ++i) {
+    statement->bind_int64(index++,
+                          browser_sync::TimeToProtoTime(
+                              entry.ref(static_cast<TimeField>(i))));
+  }
   for ( ; i < ID_FIELDS_END; ++i) {
     statement->bind_string(index++, entry.ref(static_cast<IdField>(i)).s_);
   }
@@ -97,13 +100,17 @@ int BindFields(const EntryKernel& entry,
 int UnpackEntry(sqlite_utils::SQLStatement* statement, EntryKernel** kernel) {
   *kernel = NULL;
   int query_result = statement->step();
-  if (SQLITE_ROW == query_result) {
-    *kernel = new EntryKernel;
-    (*kernel)->clear_dirty(NULL);
-    DCHECK(statement->column_count() == static_cast<int>(FIELD_COUNT));
+  if (query_result == SQLITE_ROW) {
+    *kernel = new EntryKernel();
+    DCHECK_EQ(statement->column_count(), static_cast<int>(FIELD_COUNT));
     int i = 0;
     for (i = BEGIN_FIELDS; i < INT64_FIELDS_END; ++i) {
       (*kernel)->put(static_cast<Int64Field>(i), statement->column_int64(i));
+    }
+    for ( ; i < TIME_FIELDS_END; ++i) {
+      (*kernel)->put(static_cast<TimeField>(i),
+                     browser_sync::ProtoTimeToTime(
+                         statement->column_int64(i)));
     }
     for ( ; i < ID_FIELDS_END; ++i) {
       (*kernel)->mutable_ref(static_cast<IdField>(i)).s_ =
@@ -120,9 +127,8 @@ int UnpackEntry(sqlite_utils::SQLStatement* statement, EntryKernel** kernel) {
       (*kernel)->mutable_ref(static_cast<ProtoField>(i)).ParseFromArray(
           statement->column_blob(i), statement->column_bytes(i));
     }
-    ZeroFields((*kernel), i);
   } else {
-    DCHECK(SQLITE_DONE == query_result);
+    DCHECK_EQ(query_result, SQLITE_DONE);
     (*kernel) = NULL;
   }
   return query_result;
@@ -476,6 +482,13 @@ DirOpenResult DirectoryBackingStore::InitializeTables() {
   if (version_on_disk == 75) {
     if (MigrateVersion75To76())
       version_on_disk = 76;
+  }
+
+  // Version 77 standardized all time fields to ms since the Unix
+  // epoch.
+  if (version_on_disk == 76) {
+    if (MigrateVersion76To77())
+      version_on_disk = 77;
   }
 
   // If one of the migrations requested it, drop columns that aren't current.
@@ -1089,6 +1102,35 @@ bool DirectoryBackingStore::MigrateVersion75To76() {
   return true;
 }
 
+bool DirectoryBackingStore::MigrateVersion76To77() {
+  sqlite_utils::SQLStatement update_timestamps;
+  // This change changes the format of stored timestamps to ms since
+  // the Unix epoch.
+#if defined(OS_WIN)
+// On Windows, we used to store timestamps in FILETIME format (100s of
+// ns since Jan 1, 1601).  Magic numbers taken from
+// http://stackoverflow.com/questions/5398557/java-library-for-dealing-with-win32-filetime
+// .
+#define TO_UNIX_TIME_MS(x) #x " = " #x " / 10000 - 11644473600000"
+#else
+// On other platforms, we used to store timestamps in time_t format (s
+// since the Unix epoch).
+#define TO_UNIX_TIME_MS(x) #x " = " #x " * 1000"
+#endif
+  update_timestamps.prepare(
+      load_dbhandle_,
+      "UPDATE metas SET "
+      TO_UNIX_TIME_MS(mtime) ", "
+      TO_UNIX_TIME_MS(server_mtime) ", "
+      TO_UNIX_TIME_MS(ctime) ", "
+      TO_UNIX_TIME_MS(server_ctime));
+#undef TO_UNIX_TIME_MS
+  if (update_timestamps.step() != SQLITE_DONE)
+    return false;
+  SetVersion(77);
+  return true;
+}
+
 int DirectoryBackingStore::CreateTables() {
   VLOG(1) << "First run, creating tables";
   // Create two little tables share_version and share_info
@@ -1143,7 +1185,7 @@ int DirectoryBackingStore::CreateTables() {
     return result;
   {
     // Insert the entry for the root into the metas table.
-    const int64 now = Now();
+    const int64 now = browser_sync::TimeToProtoTime(base::Time::Now());
     sqlite_utils::SQLStatement statement;
     statement.prepare(load_dbhandle_,
                       "INSERT INTO metas "
