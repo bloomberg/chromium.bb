@@ -794,10 +794,10 @@ void ExtensionUpdater::HandleManifestResults(
 void ExtensionUpdater::ProcessBlacklist(const std::string& data) {
   DCHECK(alive_);
   // Verify sha256 hash value.
-  char sha256_hash_value[crypto::SHA256_LENGTH];
-  crypto::SHA256HashString(data, sha256_hash_value, crypto::SHA256_LENGTH);
+  char sha256_hash_value[crypto::kSHA256Length];
+  crypto::SHA256HashString(data, sha256_hash_value, crypto::kSHA256Length);
   std::string hash_in_hex = base::HexEncode(sha256_hash_value,
-                                            crypto::SHA256_LENGTH);
+                                            crypto::kSHA256Length);
 
   if (current_extension_fetch_.package_hash != hash_in_hex) {
     NOTREACHED() << "Fetched blacklist checksum is not as expected. "

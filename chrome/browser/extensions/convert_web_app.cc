@@ -46,12 +46,11 @@ const char kIconsDirName[] = "icons";
 // auto-updated using ExtensionUpdater. But Chrome does notice updates to the
 // manifest and regenerates these extensions.
 std::string GenerateKey(const GURL& manifest_url) {
-  char raw[crypto::SHA256_LENGTH] = {0};
+  char raw[crypto::kSHA256Length] = {0};
   std::string key;
-  crypto::SHA256HashString(manifest_url.spec().c_str(),
-                           raw,
-                           crypto::SHA256_LENGTH);
-  base::Base64Encode(std::string(raw, crypto::SHA256_LENGTH), &key);
+  crypto::SHA256HashString(manifest_url.spec().c_str(), raw,
+                           crypto::kSHA256Length);
+  base::Base64Encode(std::string(raw, crypto::kSHA256Length), &key);
   return key;
 }
 

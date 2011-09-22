@@ -563,7 +563,7 @@ void ClientSideDetectionService::SetBadSubnets(const ClientSideModel& model,
       DLOG(ERROR) << "Invalid bad subnet size: " << size;
       continue;
     }
-    if (model.bad_subnet(i).prefix().size() != crypto::SHA256_LENGTH) {
+    if (model.bad_subnet(i).prefix().size() != crypto::kSHA256Length) {
       DLOG(ERROR) << "Invalid bad subnet prefix length: "
                   << model.bad_subnet(i).prefix().size();
       continue;

@@ -428,7 +428,7 @@ bool DNSSECChainVerifier::DigestKey(base::StringPiece* out,
                                     uint16 keyid,
                                     uint8 algorithm) {
   std::string temp;
-  uint8 temp2[crypto::SHA256_LENGTH];
+  uint8 temp2[crypto::kSHA256Length];
   const uint8* digest;
   unsigned digest_len;
 

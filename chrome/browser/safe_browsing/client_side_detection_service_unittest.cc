@@ -432,11 +432,11 @@ TEST_F(ClientSideDetectionServiceTest, SetBadSubnets) {
 
   // Bad subnets are skipped.
   ClientSideModel::IPSubnet* subnet = model.add_bad_subnet();
-  subnet->set_prefix(std::string(crypto::SHA256_LENGTH, '.'));
+  subnet->set_prefix(std::string(crypto::kSHA256Length, '.'));
   subnet->set_size(130);  // Invalid size.
 
   subnet = model.add_bad_subnet();
-  subnet->set_prefix(std::string(crypto::SHA256_LENGTH, '.'));
+  subnet->set_prefix(std::string(crypto::kSHA256Length, '.'));
   subnet->set_size(-1);  // Invalid size.
 
   subnet = model.add_bad_subnet();
@@ -447,19 +447,19 @@ TEST_F(ClientSideDetectionServiceTest, SetBadSubnets) {
   EXPECT_EQ(0U, bad_subnets.size());
 
   subnet = model.add_bad_subnet();
-  subnet->set_prefix(std::string(crypto::SHA256_LENGTH, '.'));
+  subnet->set_prefix(std::string(crypto::kSHA256Length, '.'));
   subnet->set_size(64);
 
   subnet = model.add_bad_subnet();
-  subnet->set_prefix(std::string(crypto::SHA256_LENGTH, ','));
+  subnet->set_prefix(std::string(crypto::kSHA256Length, ','));
   subnet->set_size(64);
 
   subnet = model.add_bad_subnet();
-  subnet->set_prefix(std::string(crypto::SHA256_LENGTH, '.'));
+  subnet->set_prefix(std::string(crypto::kSHA256Length, '.'));
   subnet->set_size(128);
 
   subnet = model.add_bad_subnet();
-  subnet->set_prefix(std::string(crypto::SHA256_LENGTH, '.'));
+  subnet->set_prefix(std::string(crypto::kSHA256Length, '.'));
   subnet->set_size(100);
 
   ClientSideDetectionService::SetBadSubnets(model, &bad_subnets);
@@ -467,16 +467,16 @@ TEST_F(ClientSideDetectionServiceTest, SetBadSubnets) {
   ClientSideDetectionService::BadSubnetMap::const_iterator it;
   std::string mask = std::string(8, '\xFF') + std::string(8, '\x00');
   EXPECT_TRUE(bad_subnets.count(mask));
-  EXPECT_TRUE(bad_subnets[mask].count(std::string(crypto::SHA256_LENGTH, '.')));
-  EXPECT_TRUE(bad_subnets[mask].count(std::string(crypto::SHA256_LENGTH, ',')));
+  EXPECT_TRUE(bad_subnets[mask].count(std::string(crypto::kSHA256Length, '.')));
+  EXPECT_TRUE(bad_subnets[mask].count(std::string(crypto::kSHA256Length, ',')));
 
   mask = std::string(16, '\xFF');
   EXPECT_TRUE(bad_subnets.count(mask));
-  EXPECT_TRUE(bad_subnets[mask].count(std::string(crypto::SHA256_LENGTH, '.')));
+  EXPECT_TRUE(bad_subnets[mask].count(std::string(crypto::kSHA256Length, '.')));
 
   mask = std::string(12, '\xFF') + "\xF0" + std::string(3, '\x00');
   EXPECT_TRUE(bad_subnets.count(mask));
-  EXPECT_TRUE(bad_subnets[mask].count(std::string(crypto::SHA256_LENGTH, '.')));
+  EXPECT_TRUE(bad_subnets[mask].count(std::string(crypto::kSHA256Length, '.')));
 }
 
 TEST_F(ClientSideDetectionServiceTest, IsBadIpAddress) {

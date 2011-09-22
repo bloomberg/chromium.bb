@@ -539,12 +539,12 @@ GURL GeneratePhishingReportUrl(const std::string& report_page,
 }
 
 void StringToSBFullHash(const std::string& hash_in, SBFullHash* hash_out) {
-  DCHECK_EQ(static_cast<size_t>(crypto::SHA256_LENGTH), hash_in.size());
-  memcpy(hash_out->full_hash, hash_in.data(), crypto::SHA256_LENGTH);
+  DCHECK_EQ(crypto::kSHA256Length, hash_in.size());
+  memcpy(hash_out->full_hash, hash_in.data(), crypto::kSHA256Length);
 }
 
 std::string SBFullHashToString(const SBFullHash& hash) {
-  DCHECK_EQ(static_cast<size_t>(crypto::SHA256_LENGTH), sizeof(hash.full_hash));
+  DCHECK_EQ(crypto::kSHA256Length, sizeof(hash.full_hash));
   return std::string(hash.full_hash, sizeof(hash.full_hash));
 }
 }  // namespace safe_browsing_util
