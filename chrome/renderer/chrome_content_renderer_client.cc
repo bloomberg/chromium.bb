@@ -391,9 +391,17 @@ WebPlugin* ChromeContentRendererClient::CreatePluginImpl(
         IDS_PLUGIN_NOT_AUTHORIZED, false, true);
   }
 
-  if (info.path.value() == webkit::npapi::kDefaultPluginLibraryName ||
-      plugin_setting == CONTENT_SETTING_ALLOW ||
-      host_setting == CONTENT_SETTING_ALLOW) {
+  // Treat Native Client invocations like Javascript.
+  bool is_nacl_plugin =
+      info.name == ASCIIToUTF16(ChromeContentClient::kNaClPluginName);
+  if (is_nacl_plugin) {
+    plugin_setting =
+        observer->GetContentSetting(CONTENT_SETTINGS_TYPE_JAVASCRIPT);
+  }
+
+  if (plugin_setting == CONTENT_SETTING_ALLOW ||
+      host_setting == CONTENT_SETTING_ALLOW ||
+      info.path.value() == webkit::npapi::kDefaultPluginLibraryName) {
     // Delay loading plugins if prerendering.
     if (prerender::PrerenderHelper::IsPrerendering(render_view)) {
       return CreatePluginPlaceholder(
@@ -401,8 +409,8 @@ WebPlugin* ChromeContentRendererClient::CreatePluginImpl(
           IDS_PLUGIN_LOAD, true, true);
     }
 
-    // Enforce Chrome WebStore restriction on the Native Client plugin.
-    if (info.name == ASCIIToUTF16(ChromeContentClient::kNaClPluginName)) {
+    // Enforce the Chrome WebStore restriction on the Native Client plugin.
+    if (is_nacl_plugin) {
       bool allow_nacl = cmd->HasSwitch(switches::kEnableNaCl);
       if (!allow_nacl) {
         const char* kNaClPluginMimeType = "application/x-nacl";
