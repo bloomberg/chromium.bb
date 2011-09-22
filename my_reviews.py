@@ -16,7 +16,7 @@ import sys
 import rietveld
 
 
-def print_reviews(owner, reviewer, created_after, created_before):
+def print_reviews(owner, reviewer, created_after, created_before, instance_url):
   """Prints issues with the filter.
 
   Set with_messages=True to search() call bellow if you want each message too.
@@ -24,7 +24,6 @@ def print_reviews(owner, reviewer, created_after, created_before):
   You can then use remote.get_issue_properties(issue, True) to get the data per
   issue.
   """
-  instance_url = 'codereview.chromium.org'
   remote = rietveld.Rietveld(instance_url, None, None)
 
   # See def search() in rietveld.py to see all the filters you can use.
@@ -70,6 +69,7 @@ def main():
   parser.add_option('-c', '--created_after')
   parser.add_option('-C', '--created_before')
   parser.add_option('-Q', '--last_quarter', action='store_true')
+  parser.add_option('-i', '--instance_url', default='codereview.chromium.org')
   # Remove description formatting
   parser.format_description = lambda x: parser.description
   options, args = parser.parse_args()
@@ -87,7 +87,8 @@ def main():
         options.created_after, options.created_before)
   print_reviews(
       options.owner, options.reviewer,
-      options.created_after, options.created_before)
+      options.created_after, options.created_before,
+      options.instance_url)
   return 0
 
 
