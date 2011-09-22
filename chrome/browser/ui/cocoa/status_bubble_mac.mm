@@ -377,6 +377,10 @@ void StatusBubbleMac::Create() {
 
   [window_ setAlphaValue:0.0];
 
+  // TODO(dtseng): Ignore until we provide NSAccessibility support.
+  [window_ accessibilitySetOverrideValue:NSAccessibilityUnknownRole
+      forAttribute:NSAccessibilityRoleAttribute];
+
   // Set a delegate for the fade-in and fade-out transitions to be notified
   // when fades are complete.  The ownership model is for window_ to own
   // animation_dictionary, which owns animation, which owns

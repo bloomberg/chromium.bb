@@ -344,6 +344,10 @@ void OmniboxPopupViewMac::CreatePopupIfNeeded() {
 
     [contentView addSubview:matrix];
     [popup_ setContentView:contentView];
+
+    // TODO(dtseng): Ignore until we provide NSAccessibility support.
+    [popup_ accessibilitySetOverrideValue:NSAccessibilityUnknownRole
+        forAttribute:NSAccessibilityRoleAttribute];
   }
 }
 
