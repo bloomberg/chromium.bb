@@ -58,8 +58,12 @@ void ExtensionSettingsUIWrapper::Core::RunWithSettingsOnFileThread(
 }
 
 ExtensionSettingsUIWrapper::Core::~Core() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
-      BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  BrowserThread::DeleteSoon(
-      BrowserThread::FILE, FROM_HERE, extension_settings_);
+  if (BrowserThread::CurrentlyOn(BrowserThread::FILE)) {
+    delete extension_settings_;
+  } else if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+    BrowserThread::DeleteSoon(
+        BrowserThread::FILE, FROM_HERE, extension_settings_);
+  } else {
+    NOTREACHED();
+  }
 }

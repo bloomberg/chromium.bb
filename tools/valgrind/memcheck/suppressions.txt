@@ -4623,16 +4623,6 @@
    fun:avcodec_decode_audio3
 }
 {
-   bug_97511_c
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN26ExtensionSettingsUIWrapper4Core16InitOnFileThreadERK8FilePath
-   fun:_ZN4base8internal8Invoker2ILb0ENS0_15InvokerStorage2IMN26ExtensionSettingsUIWrapper4CoreEFvRK8FilePathEPS4_S5_EES9_E8DoInvokeEPNS0_18InvokerStorageBaseE
-   fun:_ZNK4base8CallbackIFvvEE3RunEv
-   ...
-   fun:_ZN*Extension*Test*
-}
-{
    bug_97511_d
    Memcheck:Leak
    fun:_Znw*

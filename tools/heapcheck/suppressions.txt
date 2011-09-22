@@ -1693,15 +1693,3 @@
    ...
    fun:ExtensionSettingsSyncTest*
 }
-{
-   bug_97511_c
-   Heapcheck:Leak
-   ...
-   fun:ExtensionUpdaterTest*
-}
-{
-   bug_97511_d
-   Heapcheck:Leak
-   ...
-   fun:ExtensionServiceTestSimple*
-}
