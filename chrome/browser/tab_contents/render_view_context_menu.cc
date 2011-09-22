@@ -1665,10 +1665,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       // Deserialize the SSL info.
       NavigationEntry::SSLStatus ssl;
       if (!params_.security_info.empty()) {
-        int cert_id;
-        net::CertStatus cert_status;
-        int security_bits;
-        int connection_status;
+        int cert_id, cert_status, security_bits, connection_status;
         SSLManager::DeserializeSecurityInfo(params_.security_info,
                                             &cert_id,
                                             &cert_status,

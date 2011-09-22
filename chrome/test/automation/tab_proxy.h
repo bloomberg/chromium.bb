@@ -282,7 +282,7 @@ class TabProxy : public AutomationResourceProxy,
 
   // Retrieves the different security states for the current tab.
   bool GetSecurityState(SecurityStyle* security_style,
-                        net::CertStatus* ssl_cert_status,
+                        int* ssl_cert_status,
                         int* insecure_content_status) WARN_UNUSED_RESULT;
 
   // Returns the type of the page currently showing (normal, interstitial,

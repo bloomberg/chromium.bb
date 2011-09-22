@@ -12,7 +12,6 @@
 #include "content/common/navigation_types.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_message_macros.h"
-#include "net/base/cert_status_flags.h"
 #include "net/url_request/url_request_status.h"
 #include "ui/gfx/rect.h"
 #include "webkit/glue/window_open_disposition.h"
@@ -553,15 +552,15 @@ IPC_MESSAGE_ROUTED1(AutomationMsg_DidNavigate,
 // Response:
 //  - bool: whether the operation was successful.
 //  - SecurityStyle: the security style of the tab.
-//  - net::CertStatus: the status of the server's ssl cert (0 means no errors or
-//                     no ssl was used).
+//  - int: the status of the server's ssl cert (0 means no errors or no ssl
+//         was used).
 //  - int: the insecure content state, 0 means no insecure contents.
 
 IPC_SYNC_MESSAGE_CONTROL1_4(AutomationMsg_GetSecurityState,
                             int,
                             bool,
                             SecurityStyle,
-                            net::CertStatus,
+                            int,
                             int)
 
 // This message requests the page type of the page displayed in the specified

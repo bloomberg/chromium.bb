@@ -15,7 +15,6 @@
 #include "content/common/page_type.h"
 #include "content/common/security_style.h"
 #include "googleurl/src/gurl.h"
-#include "net/base/cert_status_flags.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 class SiteInstance;
@@ -76,10 +75,10 @@ class CONTENT_EXPORT NavigationEntry {
       return cert_id_;
     }
 
-    void set_cert_status(net::CertStatus ssl_cert_status) {
+    void set_cert_status(int ssl_cert_status) {
       cert_status_ = ssl_cert_status;
     }
-    net::CertStatus cert_status() const {
+    int cert_status() const {
       return cert_status_;
     }
 
@@ -126,7 +125,7 @@ class CONTENT_EXPORT NavigationEntry {
     // See the accessors above for descriptions.
     SecurityStyle security_style_;
     int cert_id_;
-    net::CertStatus cert_status_;
+    int cert_status_;
     int security_bits_;
     int connection_status_;
     int content_status_;

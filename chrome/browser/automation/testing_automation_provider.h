@@ -19,7 +19,6 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "content/common/notification_registrar.h"
 #include "content/common/page_type.h"
-#include "net/base/cert_status_flags.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 
 class ImporterList;
@@ -197,10 +196,8 @@ class TestingAutomationProvider : public AutomationProvider,
   void WaitForTabToBeRestored(int tab_handle, IPC::Message* reply_message);
 
   // Gets the security state for the tab associated to the specified |handle|.
-  void GetSecurityState(int handle,
-                        bool* success,
-                        SecurityStyle* security_style,
-                        net::CertStatus* ssl_cert_status,
+  void GetSecurityState(int handle, bool* success,
+                        SecurityStyle* security_style, int* ssl_cert_status,
                         int* insecure_content_status);
 
   // Gets the page type for the tab associated to the specified |handle|.

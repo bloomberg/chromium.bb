@@ -11,7 +11,6 @@
 #include "base/basictypes.h"
 #include "content/common/page_transition_types.h"
 #include "googleurl/src/gurl.h"
-#include "net/base/cert_status_flags.h"
 
 // This class captures some of the information associated to the provisional
 // load of a frame.  It is provided as Details with the
@@ -49,7 +48,7 @@ class ProvisionalLoadDetails {
 
   int ssl_cert_id() const { return ssl_cert_id_; }
 
-  net::CertStatus ssl_cert_status() const { return ssl_cert_status_; }
+  int ssl_cert_status() const { return ssl_cert_status_; }
 
   int ssl_security_bits() const { return ssl_security_bits_; }
 
@@ -66,7 +65,7 @@ class ProvisionalLoadDetails {
   bool is_main_frame_;
   bool is_in_page_navigation_;
   int ssl_cert_id_;
-  net::CertStatus ssl_cert_status_;
+  int ssl_cert_status_;
   int ssl_security_bits_;
   int ssl_connection_status_;
   bool is_error_page_;

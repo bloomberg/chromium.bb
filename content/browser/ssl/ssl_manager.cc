@@ -55,12 +55,12 @@ void SSLManager::NotifySSLInternalStateChanged(
 
 // static
 std::string SSLManager::SerializeSecurityInfo(int cert_id,
-                                              net::CertStatus cert_status,
+                                              int cert_status,
                                               int security_bits,
                                               int ssl_connection_status) {
   Pickle pickle;
   pickle.WriteInt(cert_id);
-  pickle.WriteUInt32(cert_status);
+  pickle.WriteInt(cert_status);
   pickle.WriteInt(security_bits);
   pickle.WriteInt(ssl_connection_status);
   return std::string(static_cast<const char*>(pickle.data()), pickle.size());
@@ -69,7 +69,7 @@ std::string SSLManager::SerializeSecurityInfo(int cert_id,
 // static
 bool SSLManager::DeserializeSecurityInfo(const std::string& state,
                                          int* cert_id,
-                                         net::CertStatus* cert_status,
+                                         int* cert_status,
                                          int* security_bits,
                                          int* ssl_connection_status) {
   DCHECK(cert_id && cert_status && security_bits && ssl_connection_status);
@@ -86,7 +86,7 @@ bool SSLManager::DeserializeSecurityInfo(const std::string& state,
   Pickle pickle(state.data(), static_cast<int>(state.size()));
   void * iter = NULL;
   return pickle.ReadInt(&iter, cert_id) &&
-         pickle.ReadUInt32(&iter, cert_status) &&
+         pickle.ReadInt(&iter, cert_status) &&
          pickle.ReadInt(&iter, security_bits) &&
          pickle.ReadInt(&iter, ssl_connection_status);
 }
@@ -124,10 +124,8 @@ void SSLManager::DidCommitProvisionalLoad(
   if (details->is_main_frame) {
     if (entry) {
       // Decode the security details.
-      int ssl_cert_id;
-      net::CertStatus ssl_cert_status;
-      int ssl_security_bits;
-      int ssl_connection_status;
+      int ssl_cert_id, ssl_cert_status, ssl_security_bits,
+          ssl_connection_status;
       DeserializeSecurityInfo(details->serialized_security_info,
                               &ssl_cert_id,
                               &ssl_cert_status,
