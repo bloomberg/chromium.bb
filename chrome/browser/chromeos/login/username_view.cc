@@ -28,50 +28,6 @@ const double kMarginRatio = 1.0 / 3.0;
 // Holds the frame width for the small shaped username view.
 const SkScalar kSmallShapeFrameWidth = SkIntToScalar(1);
 
-// Class that sets up half rounded rectangle (only the bottom corners are
-// rounded) as a clip region of the view.
-// For more info see the file "chrome/browser/chromeos/login/rounded_view.h".
-template<typename C>
-class HalfRoundedView : public RoundedView<C> {
- public:
-  HalfRoundedView(const std::wstring &text, bool use_small_shape)
-      : RoundedView<C>(text, use_small_shape) {
-  }
-
- protected:
-  // Overrides ViewFilter.
-  virtual SkPath GetClipPath() const {
-    if (!C::use_small_shape()) {
-      return RoundedView<C>::GetClipPath();
-    } else {
-      SkPath path;
-      gfx::Rect frame_bounds = this->bounds();
-      frame_bounds.Inset(kSmallShapeFrameWidth, kSmallShapeFrameWidth,
-                   kSmallShapeFrameWidth, kSmallShapeFrameWidth);
-      path.addRect(SkIntToScalar(frame_bounds.x()),
-                   SkIntToScalar(frame_bounds.y()),
-                   SkIntToScalar(frame_bounds.x() + frame_bounds.width()),
-                   SkIntToScalar(frame_bounds.y() + frame_bounds.height()));
-      return path;
-    }
-  }
-
-  virtual void DrawFrame(gfx::Canvas* canvas) {
-    // No frame is needed.
-  }
-
-  virtual SkRect GetViewRect() const {
-    SkRect view_rect;
-    // The rectangle will be intersected with the bounds, so the correct half
-    // of the round rectangle will be obtained.
-    view_rect.iset(this->x(),
-                   this->y() - this->height(),
-                   this->x() + this->width(),
-                   this->y() + this->height());
-    return view_rect;
-  }
-};
-
 }  // namespace
 
 UsernameView::UsernameView(const std::wstring& username, bool use_small_shape)
@@ -96,7 +52,7 @@ void UsernameView::OnPaint(gfx::Canvas* canvas) {
 // static
 UsernameView* UsernameView::CreateShapedUsernameView(
     const std::wstring& username, bool use_small_shape) {
-  return new HalfRoundedView<UsernameView>(username, use_small_shape);
+  return new UsernameView(username, use_small_shape);
 }
 
 gfx::NativeCursor UsernameView::GetCursor(const views::MouseEvent& event) {

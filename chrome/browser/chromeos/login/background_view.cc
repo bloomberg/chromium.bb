@@ -12,7 +12,6 @@
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/oobe_progress_bar.h"
 #include "chrome/browser/chromeos/login/proxy_settings_dialog.h"
@@ -47,6 +46,9 @@ using views::Widget;
 namespace {
 
 const SkColor kVersionColor = 0xff5c739f;
+
+// Tentative background color that matches WebUI login.
+const SkColor kBackgroundColor = 0xfff0f0f0;
 
 // Returns the corresponding step id for step constant.
 int GetStepId(size_t step) {
@@ -94,8 +96,8 @@ BackgroundView::~BackgroundView() {
 }
 
 void BackgroundView::Init(const GURL& background_url) {
-  views::Painter* painter = CreateBackgroundPainter();
-  set_background(views::Background::CreateBackgroundPainter(true, painter));
+  set_background(
+      views::Background::CreateSolidBackground(kBackgroundColor));
   InitStatusArea();
   InitInfoLabels();
   if (!background_url.is_empty()) {

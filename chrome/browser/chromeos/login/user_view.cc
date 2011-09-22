@@ -7,7 +7,6 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/rounded_rect_painter.h"
-#include "chrome/browser/chromeos/login/rounded_view.h"
 #include "chrome/browser/chromeos/view_ids.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources_standard.h"
@@ -30,12 +29,14 @@ namespace {
 // Background color and corner radius of the login status label and
 // signout button.
 const SkColor kSignoutBackgroundColor = 0xFF007700;
-const int kSignoutBackgroundCornerRadius = 4;
 
 // Horiz/Vert insets for Signout view.
 const int kSignoutViewHorizontalInsets = 10;
 const int kSignoutViewVerticalInsets = 5;
 const int kMinControlHeight = 16;
+
+// 1x Border around image pod.
+const SkColor kImageBorderColor = 0xFFCCCCCC;
 
 // Padding between remove button and top right image corner.
 const int kRemoveButtonPadding = 3;
@@ -46,8 +47,7 @@ class SignoutBackgroundPainter : public views::Painter {
   virtual void Paint(int w, int h, gfx::Canvas* canvas) {
     SkRect rect = {0, 0, w, h};
     SkPath path;
-    path.addRoundRect(rect,
-        kSignoutBackgroundCornerRadius, kSignoutBackgroundCornerRadius);
+    path.addRect(rect);
     SkPaint paint;
     paint.setStyle(SkPaint::kFill_Style);
     paint.setFlags(SkPaint::kAntiAlias_Flag);
@@ -258,10 +258,9 @@ UserView::UserView(Delegate* delegate, bool is_login, bool need_background)
   if (!is_login)
     signout_view_ = new SignoutView(this);
 
-  if (need_background)
-    image_view_ = new RoundedView<PodImageView>(delegate);
-  else
-    image_view_ = new PodImageView(delegate);
+  image_view_ = new PodImageView(delegate);
+  image_view_->set_border(
+      views::Border::CreateSolidBorder(1, kImageBorderColor));
 
   Init(need_background);
 }

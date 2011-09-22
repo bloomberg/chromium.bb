@@ -124,13 +124,10 @@ void ScreenLockView::Init() {
                             false,  // is_login
                             true);  // need_background
   main_ = new views::View();
-  // Use rounded rect background.
-  views::Painter* painter =
-      CreateWizardPainter(&BorderDefinition::kUserBorder);
-
   main_->set_background(
-      views::Background::CreateBackgroundPainter(true, painter));
-  main_->set_border(CreateWizardBorder(&BorderDefinition::kUserBorder));
+      views::Background::CreateVerticalGradientBackground(
+          BorderDefinition::kUserBorder.top_color,
+          BorderDefinition::kUserBorder.bottom_color));
 
   // Password field.
   password_field_ = new PasswordField();
