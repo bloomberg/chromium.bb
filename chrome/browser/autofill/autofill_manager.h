@@ -162,10 +162,10 @@ class AutofillManager : public TabContentsObserver,
   // Re-parses |live_form| and adds the result to |form_structures_|.
   // |cached_form| should be a pointer to the existing version of the form, or
   // NULL if no cached version exists.  The updated form is then written into
-  // |updated_form|.
-  void UpdateCachedForm(const webkit_glue::FormData& live_form,
+  // |updated_form|.  Returns false if the cache could not be updated.
+  bool UpdateCachedForm(const webkit_glue::FormData& live_form,
                         const FormStructure* cached_form,
-                        FormStructure** updated_form);
+                        FormStructure** updated_form) WARN_UNUSED_RESULT;
 
   // Returns a list of values from the stored profiles that match |type| and the
   // value of |field| and returns the labels of the matching profiles. |labels|

@@ -818,7 +818,13 @@ bool AutofillManager::FindCachedForm(const FormData& form,
        iter != form_structures_.rend(); ++iter) {
     if (**iter == form) {
       *form_structure = *iter;
-      break;
+
+      // The same form might be cached with multiple field counts: in some
+      // cases, non-autofillable fields are filtered out, whereas in other cases
+      // they are not.  To avoid thrashing the cache, keep scanning until we
+      // find a cached version with the same number of fields, if there is one.
+      if ((*iter)->field_count() == form.fields.size())
+        break;
     }
   }
 
@@ -836,14 +842,14 @@ bool AutofillManager::GetCachedFormAndField(const FormData& form,
   // If we do not have this form in our cache but it is parseable, we'll add it
   // in the call to |UpdateCachedForm()|.
   if (!FindCachedForm(form, form_structure) &&
-      (form_structures_.size() >= kMaxFormCacheSize ||
-       !FormStructure(form).ShouldBeParsed(false))) {
+      !FormStructure(form).ShouldBeParsed(false)) {
     return false;
   }
 
   // Update the cached form to reflect any dynamic changes to the form data, if
   // necessary.
-  UpdateCachedForm(form, *form_structure, form_structure);
+  if (!UpdateCachedForm(form, *form_structure, form_structure))
+    return false;
 
   // No data to return if there are no auto-fillable fields.
   if (!(*form_structure)->autofill_count())
@@ -865,7 +871,7 @@ bool AutofillManager::GetCachedFormAndField(const FormData& form,
   return true;
 }
 
-void AutofillManager::UpdateCachedForm(const FormData& live_form,
+bool AutofillManager::UpdateCachedForm(const FormData& live_form,
                                        const FormStructure* cached_form,
                                        FormStructure** updated_form) {
   bool needs_update =
@@ -876,10 +882,12 @@ void AutofillManager::UpdateCachedForm(const FormData& live_form,
   }
 
   if (!needs_update)
-    return;
+    return true;
+
+  if (form_structures_.size() >= kMaxFormCacheSize)
+    return false;
 
   // Add the new or updated form to our cache.
-  DCHECK(form_structures_.size() < kMaxFormCacheSize);
   form_structures_.push_back(new FormStructure(live_form));
   *updated_form = *form_structures_.rbegin();
   (*updated_form)->DetermineHeuristicTypes();
@@ -910,6 +918,8 @@ void AutofillManager::UpdateCachedForm(const FormData& live_form,
   // Annotate the updated form with its predicted types.
   std::vector<FormStructure*> forms(1, *updated_form);
   SendAutofillTypePredictions(forms);
+
+  return true;
 }
 
 void AutofillManager::GetProfileSuggestions(

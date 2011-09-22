@@ -29,8 +29,9 @@ TEST_F(RenderViewTest, SendForms) {
 
   LoadHTML("<form method=\"POST\">"
            "  <input type=\"text\" id=\"firstname\"/>"
-           "  <input type=\"text\" id=\"middlename\" autoComplete=\"off\"/>"
-           "  <input type=\"hidden\" id=\"lastname\"/>"
+           "  <input type=\"text\" id=\"middlename\"/>"
+           "  <input type=\"text\" id=\"lastname\" autoComplete=\"off\"/>"
+           "  <input type=\"hidden\" id=\"email\"/>"
            "  <select id=\"state\"/>"
            "    <option>?</option>"
            "    <option>California</option>"
@@ -47,7 +48,7 @@ TEST_F(RenderViewTest, SendForms) {
   AutofillHostMsg_FormsSeen::Read(message, &params);
   const std::vector<FormData>& forms = params.a;
   ASSERT_EQ(1UL, forms.size());
-  ASSERT_EQ(3UL, forms[0].fields.size());
+  ASSERT_EQ(4UL, forms[0].fields.size());
 
   FormField expected;
 
@@ -63,11 +64,17 @@ TEST_F(RenderViewTest, SendForms) {
   expected.max_length = WebInputElement::defaultMaxLength();
   EXPECT_FORM_FIELD_EQUALS(expected, forms[0].fields[1]);
 
+  expected.name = ASCIIToUTF16("lastname");
+  expected.value = string16();
+  expected.form_control_type = ASCIIToUTF16("text");
+  expected.max_length = WebInputElement::defaultMaxLength();
+  EXPECT_FORM_FIELD_EQUALS(expected, forms[0].fields[2]);
+
   expected.name = ASCIIToUTF16("state");
   expected.value = ASCIIToUTF16("?");
   expected.form_control_type = ASCIIToUTF16("select-one");
   expected.max_length = 0;
-  EXPECT_FORM_FIELD_EQUALS(expected, forms[0].fields[2]);
+  EXPECT_FORM_FIELD_EQUALS(expected, forms[0].fields[3]);
 
   // Verify that |didAcceptAutofillSuggestion()| sends the expected number of
   // fields.

@@ -781,9 +781,10 @@ bool WebFormElementToFormData(
   return true;
 }
 
-bool FindFormAndFieldForFormControlElement(const WebFormControlElement& element,
-                                           FormData* form,
-                                           webkit_glue::FormField* field) {
+bool FindFormAndFieldForInputElement(const WebInputElement& element,
+                                     FormData* form,
+                                     webkit_glue::FormField* field,
+                                     RequirementsMask requirements) {
   if (!IsAutofillableElement(element))
     return false;
 
@@ -795,7 +796,7 @@ bool FindFormAndFieldForFormControlElement(const WebFormControlElement& element,
       static_cast<ExtractMask>(EXTRACT_VALUE | EXTRACT_OPTIONS);
   return WebFormElementToFormData(form_element,
                                   element,
-                                  REQUIRE_NONE,
+                                  requirements,
                                   extract_mask,
                                   form,
                                   field);

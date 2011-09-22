@@ -85,10 +85,10 @@ bool WebFormElementToFormData(
 // Finds the form that contains |element| and returns it in |form|.  Fills
 // |field| with the |FormField| representation for element.
 // Returns false if the form is not found.
-bool FindFormAndFieldForFormControlElement(
-    const WebKit::WebFormControlElement& element,
-    webkit_glue::FormData* form,
-    webkit_glue::FormField* field);
+bool FindFormAndFieldForInputElement(const WebKit::WebInputElement& element,
+                                     webkit_glue::FormData* form,
+                                     webkit_glue::FormField* field,
+                                     RequirementsMask requirements);
 
 // Fills the form represented by |form|.  |element| is the input element that
 // initiated the auto-fill process.

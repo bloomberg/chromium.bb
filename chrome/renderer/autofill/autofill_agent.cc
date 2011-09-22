@@ -222,7 +222,7 @@ void AutofillAgent::TextFieldDidChangeImpl(const WebInputElement& element) {
 
   webkit_glue::FormData form;
   webkit_glue::FormField field;
-  if (FindFormAndFieldForNode(element, &form, &field)) {
+  if (FindFormAndFieldForInputElement(element, &form, &field, REQUIRE_NONE)) {
     Send(new AutofillHostMsg_TextFieldDidChange(routing_id(), form, field,
                                                 base::TimeTicks::Now()));
   }
@@ -399,7 +399,8 @@ void AutofillAgent::QueryAutofillSuggestions(const WebInputElement& element,
 
   webkit_glue::FormData form;
   webkit_glue::FormField field;
-  if (!FindFormAndFieldForNode(element, &form, &field)) {
+  if (!FindFormAndFieldForInputElement(element, &form, &field,
+                                       REQUIRE_AUTOCOMPLETE)) {
     // If we didn't find the cached form, at least let autocomplete have a shot
     // at providing suggestions.
     WebFormControlElementToFormField(element, EXTRACT_VALUE, &field);
@@ -417,20 +418,15 @@ void AutofillAgent::FillAutofillFormData(const WebNode& node,
 
   webkit_glue::FormData form;
   webkit_glue::FormField field;
-  if (!FindFormAndFieldForNode(node, &form, &field))
+  if (!FindFormAndFieldForInputElement(node.toConst<WebInputElement>(), &form,
+                                       &field, REQUIRE_AUTOCOMPLETE)) {
     return;
+  }
 
   autofill_action_ = action;
   was_query_node_autofilled_ = field.is_autofilled;
   Send(new AutofillHostMsg_FillAutofillFormData(
       routing_id(), autofill_query_id_, form, field, unique_id));
-}
-
-bool AutofillAgent::FindFormAndFieldForNode(const WebNode& node,
-                                            webkit_glue::FormData* form,
-                                            webkit_glue::FormField* field) {
-  const WebInputElement& element = node.toConst<WebInputElement>();
-  return FindFormAndFieldForFormControlElement(element, form, field);
 }
 
 }  // namespace autofill
