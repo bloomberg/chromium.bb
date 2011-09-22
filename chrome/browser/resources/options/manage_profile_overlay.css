@@ -48,7 +48,11 @@
   display: block;
 }
 
-#manage-profile-duplicate-name-error {
+#manage-profile-name:invalid {
+  background-color: pink;
+}
+
+#manage-profile-error-bubble {
   -webkit-transition: max-height 0.2s, padding 0.2s;
   background-color: #eeb939;
   border-radius: 4px;
@@ -62,7 +66,8 @@
   width: 80%;
 }
 
-#manage-profile-duplicate-name-error.hiding {
+#manage-profile-error-bubble[hidden] {
+  display: block !important;
   max-height: 0;
   padding: 0 10px;
 }

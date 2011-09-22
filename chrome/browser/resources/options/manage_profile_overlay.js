@@ -108,34 +108,25 @@ cr.define('options', function() {
     },
 
     /**
-     * Determine whether |name| is valid; i.e. not equal to any other profile
-     * name.
-     * @param {string} name The profile name to validate.
-     * @return true if the name is not equal to any other profile name.
+     * Display the error bubble, with |errorText| in the bubble.
+     * @param {string} errorText The localized string id to display as an error.
      * @private
      */
-    isNameValid_: function(name) {
-      // if the name hasn't changed, assume it is valid.
-      if (name == this.profileInfo_.name)
-        return true;
+    showErrorBubble_: function(errorText) {
+      var nameErrorEl = $('manage-profile-error-bubble');
+      nameErrorEl.hidden = false;
+      nameErrorEl.textContent = localStrings.getString(errorText);
 
-      return this.profileNames_[name] == undefined;
+      $('manage-profile-ok').disabled = true;
     },
 
     /**
-     * Update the UI elements accordingly if the profile name is valid/invalid.
-     * @param {boolean} isValid True if the UI should be updated as if the name
-     *     were valid.
+     * Hide the error bubble.
      * @private
      */
-    setNameIsValid_: function(isValid) {
-      var dupeNameErrorEl = $('manage-profile-duplicate-name-error');
-      if (isValid)
-        dupeNameErrorEl.classList.add('hiding');
-      else
-        dupeNameErrorEl.classList.remove('hiding');
-
-      $('manage-profile-ok').disabled = !isValid;
+    hideErrorBubble_: function() {
+      $('manage-profile-error-bubble').hidden = true;
+      $('manage-profile-ok').disabled = false;
     },
 
     /**
@@ -144,7 +135,19 @@ cr.define('options', function() {
      * @private
      */
     onNameChanged_: function(event) {
-      this.setNameIsValid_(this.isNameValid_(event.target.value));
+      var newName = event.target.value;
+      var oldName = this.profileInfo_.name;
+
+      if (newName == oldName) {
+        this.hideErrorBubble_();
+      } else if (this.profileNames_[newName] != undefined) {
+        this.showErrorBubble_('manageProfilesDuplicateNameError');
+      } else {
+        this.hideErrorBubble_();
+
+        var nameIsValid = $('manage-profile-name').validity.valid;
+        $('manage-profile-ok').disabled = !nameIsValid;
+      }
     },
 
     /**
@@ -167,7 +170,7 @@ cr.define('options', function() {
       ManageProfileOverlay.setProfileInfo(profileInfo);
       $('manage-profile-overlay-manage').hidden = false;
       $('manage-profile-overlay-delete').hidden = true;
-      ManageProfileOverlay.getInstance().setNameIsValid_(true);
+      ManageProfileOverlay.getInstance().hideErrorBubble_();
 
       // Intentionally don't show the URL in the location bar as we don't want
       // people trying to navigate here by hand.
