@@ -644,11 +644,7 @@ void RenderWidget::AnimateIfNeeded() {
         this, &RenderWidget::AnimationCallback), animationInterval);
     animation_task_posted_ = true;
     animation_update_pending_ = false;
-#ifdef WEBWIDGET_HAS_ANIMATE_CHANGES
     webwidget_->animate(0.0);
-#else
-    webwidget_->animate();
-#endif
     return;
   }
   TRACE_EVENT0("renderer", "EarlyOut_AnimatedTooRecently");

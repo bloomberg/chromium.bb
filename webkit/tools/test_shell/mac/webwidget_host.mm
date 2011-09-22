@@ -184,11 +184,7 @@ void WebWidgetHost::Paint() {
       [NSGraphicsContext graphicsContextWithGraphicsPort:bitmap_context
                                                  flipped:YES]];
 
-#ifdef WEBWIDGET_HAS_ANIMATE_CHANGES
   webwidget_->animate(0.0);
-#else
-  webwidget_->animate();
-#endif
 
   // This may result in more invalidation
   webwidget_->layout();

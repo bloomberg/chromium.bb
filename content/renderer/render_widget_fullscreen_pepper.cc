@@ -65,13 +65,8 @@ class PepperWidget : public WebWidget {
   virtual void willEndLiveResize() {
   }
 
-#ifndef WEBWIDGET_HAS_ANIMATE_CHANGES
-  virtual void animate() {
-  }
-#else
   virtual void animate(double frameBeginTime) {
   }
-#endif
 
   virtual void layout() {
   }
