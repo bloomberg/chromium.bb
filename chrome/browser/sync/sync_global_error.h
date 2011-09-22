@@ -45,6 +45,7 @@ class SyncGlobalError : public GlobalError,
   bool HasCustomizedSyncMenuItem();
 
  private:
+  bool has_error_;
   ProfileSyncService* service_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncGlobalError);

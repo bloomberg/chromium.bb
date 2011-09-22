@@ -7,6 +7,8 @@
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_observer.h"
 #include "chrome/browser/sync/sync_ui_util.h"
+#include "chrome/browser/ui/global_error_service.h"
+#include "chrome/browser/ui/global_error_service_factory.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -17,7 +19,8 @@ typedef GoogleServiceAuthError AuthError;
 using namespace sync_ui_util;
 
 SyncGlobalError::SyncGlobalError(ProfileSyncService* service)
-    : service_(service) {
+    : has_error_(false),
+      service_(service) {
   OnStateChanged();
 }
 
@@ -93,7 +96,13 @@ void SyncGlobalError::BubbleViewCancelButtonPressed() {
 }
 
 void SyncGlobalError::OnStateChanged() {
-  // TODO(sail): Update the wrench menu button.
+  bool new_has_error = GetStatusLabelsForSyncGlobalError(
+      service_, NULL, NULL, NULL) == SYNC_ERROR;
+  if (new_has_error != has_error_) {
+    has_error_ = new_has_error;
+    GlobalErrorServiceFactory::GetForProfile(
+        service_->profile())->NotifyErrorsChanged(this);
+  }
 }
 
 bool SyncGlobalError::HasCustomizedSyncMenuItem() {
