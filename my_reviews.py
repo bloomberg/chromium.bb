@@ -6,7 +6,7 @@
 """Get rietveld stats about the review you done, or forgot to do.
 
 Example:
-  - my_reviews.py -o me@chromium.org -Q  for stats for last quarter.
+  - my_reviews.py -r me@chromium.org -Q  for stats for last quarter.
 """
 import datetime
 import optparse
