@@ -26,11 +26,14 @@
 #include "printing/backend/cups_helper.h"
 #include "printing/backend/print_backend_consts.h"
 
-#if defined(OS_MACOSX)
-#if MAC_OS_X_VERSION_MAX_ALLOWED <= MAC_OS_X_VERSION_10_5
+#if (defined(OS_MACOSX) && \
+     MAC_OS_X_VERSION_MAX_ALLOWED <= MAC_OS_X_VERSION_10_5) || \
+    (defined(OS_LINUX) && \
+     CUPS_VERSION_MAJOR == 1 && CUPS_VERSION_MINOR < 4)
 const int CUPS_PRINTER_SCANNER = 0x2000000;  // Scanner-only device
-#endif  // MAC_OS_X_VERSION_MAX_ALLOWED <= MAC_OS_X_VERSION_10_5
-#else
+#endif
+
+#if !defined(OS_MACOSX)
 GCRY_THREAD_OPTION_PTHREAD_IMPL;
 
 namespace {
@@ -80,7 +83,7 @@ static base::LazyInstance<GcryptInitializer> g_gcrypt_initializer(
     base::LINKER_INITIALIZED);
 
 }  // namespace
-#endif  // defined(OS_MACOSX)
+#endif  // !defined(OS_MACOSX)
 
 namespace printing {
 
