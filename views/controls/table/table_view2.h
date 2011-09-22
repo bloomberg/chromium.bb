@@ -10,14 +10,13 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/models/table_model_observer.h"
 #include "ui/gfx/canvas.h"
 #include "views/controls/table/native_table_wrapper.h"
 #include "views/controls/table/table_view.h"
 #include "views/view.h"
-
-class SkBitmap;
 
 namespace ui {
 struct TableColumn;
@@ -198,8 +197,9 @@ class VIEWS_EXPORT TableView2 : public View, public ui::TableModelObserver {
   virtual gfx::NativeView GetTestingHandle();
 
  protected:
-  virtual NativeTableWrapper* CreateWrapper();
-  virtual void ViewHierarchyChanged(bool is_add, View* parent, View* child);
+  virtual void ViewHierarchyChanged(bool is_add,
+                                    View* parent,
+                                    View* child) OVERRIDE;
 
  private:
   friend class ListViewParent;
@@ -213,7 +213,7 @@ class VIEWS_EXPORT TableView2 : public View, public ui::TableModelObserver {
   // cast from GetWindowLongPtr would break the pointer if it is pointing to a
   // subclass (in the OO sense of TableView).
   struct TableViewWrapper {
-    explicit TableViewWrapper(TableView2* view) : table_view(view) { }
+    explicit TableViewWrapper(TableView2* view) : table_view(view) {}
     TableView2* table_view;
   };
 

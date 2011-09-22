@@ -11,8 +11,6 @@
 
 namespace views {
 
-// TableView2 ------------------------------------------------------------------
-
 TableView2::TableView2(ui::TableModel* model,
                        const std::vector<ui::TableColumn>& columns,
                        TableTypes table_type,
@@ -308,7 +306,7 @@ void TableView2::ViewHierarchyChanged(bool is_add, View* parent, View* child) {
   if (is_add && !native_wrapper_ && GetWidget()) {
     // The native wrapper's lifetime will be managed by the view hierarchy after
     // we call AddChildView.
-    native_wrapper_ = CreateWrapper();
+    native_wrapper_ = NativeTableWrapper::CreateNativeWrapper(this);
     AddChildView(native_wrapper_->GetView());
   }
 }
@@ -331,13 +329,6 @@ ui::TableColumn TableView2::GetVisibleColumnAt(int index) {
       all_columns_.find(index);
   DCHECK(iter != all_columns_.end());
   return iter->second;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// NativeTable2, protected:
-
-NativeTableWrapper* TableView2::CreateWrapper() {
-  return NativeTableWrapper::CreateNativeWrapper(this);
 }
 
 }  // namespace views
