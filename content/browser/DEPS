@@ -3,6 +3,7 @@ include_rules = [
 
   # Other libraries.
   "+third_party/iaccessible2",
+  "+third_party/isimpledom",
 
   # DO NOT ADD ANY CHROME INCLUDES HERE!!!
   # See https://sites.google.com/a/chromium.org/dev/developers/content-module

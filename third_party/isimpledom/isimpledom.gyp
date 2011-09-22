@@ -3,41 +3,34 @@
 # found in the LICENSE file.
 
 {
-  'includes': [
-    '../../build/common.gypi',
-  ],
-
-  'target_defaults': {
-    'include_dirs': [
-      '.',
-      '<(INTERMEDIATE_DIR)',
-    ],
-  },
   'targets': [
     {
       'target_name': 'isimpledom',
       'type': 'static_library',
+      'variables': {
+        'midl_out_dir': '<(SHARED_INTERMEDIATE_DIR)/third_party/isimpledom',
+      },
       'sources': [
         'ISimpleDOMDocument.idl',
         'ISimpleDOMNode.idl',
         'ISimpleDOMText.idl',
-        '<(INTERMEDIATE_DIR)/ISimpleDOMDocument.h',
-        '<(INTERMEDIATE_DIR)/ISimpleDOMDocument_i.c',
-        '<(INTERMEDIATE_DIR)/ISimpleDOMNode.h',
-        '<(INTERMEDIATE_DIR)/ISimpleDOMNode_i.c',
-        '<(INTERMEDIATE_DIR)/ISimpleDOMText.h',
-        '<(INTERMEDIATE_DIR)/ISimpleDOMText_i.c',
+        '<(midl_out_dir)/ISimpleDOMDocument.h',
+        '<(midl_out_dir)/ISimpleDOMDocument_i.c',
+        '<(midl_out_dir)/ISimpleDOMNode.h',
+        '<(midl_out_dir)/ISimpleDOMNode_i.c',
+        '<(midl_out_dir)/ISimpleDOMText.h',
+        '<(midl_out_dir)/ISimpleDOMText_i.c',
       ],
       'hard_dependency': 1,
       'direct_dependent_settings': {
         'include_dirs': [
-          # Bit of a hack to work around the built in vstudio rule.
-          '<(INTERMEDIATE_DIR)/../isimpledom',
+          '<(SHARED_INTERMEDIATE_DIR)',
         ],
       },
       'msvs_settings': {
         'VCMIDLTool': {
           'GenerateTypeLibrary': 'false',
+          'OutputDirectory': '<(midl_out_dir)',
         },
       },
     },

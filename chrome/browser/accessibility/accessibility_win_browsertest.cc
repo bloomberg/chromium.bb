@@ -19,7 +19,7 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/content_notification_types.h"
 #include "third_party/iaccessible2/ia2_api_all.h"
-#include "ISimpleDOMNode.h"  // Generated   NOLINT
+#include "third_party/isimpledom/ISimpleDOMNode.h"
 
 using std::auto_ptr;
 using std::vector;

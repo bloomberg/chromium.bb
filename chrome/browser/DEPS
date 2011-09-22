@@ -33,6 +33,7 @@ include_rules = [
   "+third_party/cld",
   "+third_party/expat",
   "+third_party/iaccessible2",
+  "+third_party/isimpledom",
   "+third_party/libevent",  # For the remote V8 debugging server
   "+third_party/libjingle",
   "+third_party/protobuf/src/google/protobuf",
