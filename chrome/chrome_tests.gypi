@@ -1341,7 +1341,6 @@
         'browser/net/url_fixer_upper_unittest.cc',
         'browser/net/url_info_unittest.cc',
         'browser/notifications/desktop_notification_service_unittest.cc',
-        'browser/notifications/notification_exceptions_table_model_unittest.cc',
         'browser/parsers/metadata_parser_filebase_unittest.cc',
         'browser/password_manager/encryptor_password_mac_unittest.cc',
         'browser/password_manager/encryptor_unittest.cc',
