@@ -403,6 +403,7 @@ void DevToolsWindow::AddDevToolsExtensionsToClient() {
     DictionaryValue* extension_info = new DictionaryValue();
     extension_info->Set("startPage",
         new StringValue((*extension)->devtools_url().spec()));
+    extension_info->Set("name", new StringValue((*extension)->name()));
     results.Append(extension_info);
   }
   CallClientFunction(ASCIIToUTF16("WebInspector.addExtensions"), results);
