@@ -110,6 +110,11 @@ NPObjectBase* NPChannelBase::GetNPObjectListenerForRoute(int route_id) {
   return iter->second;
 }
 
+base::WaitableEvent* NPChannelBase::GetModalDialogEvent(
+    gfx::NativeViewId containing_window) {
+  return NULL;
+}
+
 bool NPChannelBase::Init(base::MessageLoopProxy* ipc_message_loop,
                          bool create_pipe_now,
                          base::WaitableEvent* shutdown_event) {

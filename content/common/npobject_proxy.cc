@@ -4,9 +4,9 @@
 
 #include "content/common/npobject_proxy.h"
 
+#include "content/common/np_channel_base.h"
 #include "content/common/npobject_util.h"
 #include "content/common/plugin_messages.h"
-#include "content/plugin/plugin_channel.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebBindings.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/plugins/npapi/plugin_instance.h"
@@ -207,12 +207,9 @@ bool NPObjectProxy::NPInvokePrivate(NPP npp,
   // queue while waiting for a reply.  We need to do this to simulate what
   // happens when everything runs in-process (while calling MessageBox window
   // messages are pumped).
-  if (IsPluginProcess()) {
-    PluginChannel* channel = static_cast<PluginChannel*>(proxy->channel_.get());
-    if (channel) {
-      msg->set_pump_messages_event(
-          channel->GetModalDialogEvent(containing_window));
-    }
+  if (IsPluginProcess() && proxy->channel()) {
+    msg->set_pump_messages_event(
+        proxy->channel()->GetModalDialogEvent(containing_window));
   }
 
   GURL page_url = proxy->page_url_;
@@ -430,12 +427,9 @@ bool NPObjectProxy::NPNConstruct(NPObject *obj,
       proxy->route_id_, args_param, &param_result, &result);
 
   // See comment in NPObjectProxy::NPInvokePrivate.
-  if (IsPluginProcess()) {
-    PluginChannel* channel = static_cast<PluginChannel*>(proxy->channel_.get());
-    if (channel) {
-      msg->set_pump_messages_event(
-          channel->GetModalDialogEvent(proxy->containing_window_));
-    }
+  if (IsPluginProcess() && proxy->channel()) {
+    msg->set_pump_messages_event(
+        proxy->channel()->GetModalDialogEvent(proxy->containing_window_));
   }
 
   GURL page_url = proxy->page_url_;
@@ -483,12 +477,9 @@ bool NPObjectProxy::NPNEvaluate(NPP npp,
                                                        &result);
 
   // See comment in NPObjectProxy::NPInvokePrivate.
-  if (IsPluginProcess()) {
-    PluginChannel* channel = static_cast<PluginChannel*>(proxy->channel_.get());
-    if (channel) {
-      msg->set_pump_messages_event(
-          channel->GetModalDialogEvent(proxy->containing_window_));
-    }
+  if (IsPluginProcess() && proxy->channel()) {
+    msg->set_pump_messages_event(
+        proxy->channel()->GetModalDialogEvent(containing_window));
   }
   scoped_refptr<NPChannelBase> channel(proxy->channel_);
 

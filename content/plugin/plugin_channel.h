@@ -43,7 +43,8 @@ class PluginChannel : public NPChannelBase {
 
   // Returns the event that's set when a call to the renderer causes a modal
   // dialog to come up.
-  base::WaitableEvent* GetModalDialogEvent(gfx::NativeViewId containing_window);
+  virtual base::WaitableEvent* GetModalDialogEvent(
+      gfx::NativeViewId containing_window);
 
   bool in_send() { return in_send_ != 0; }
 

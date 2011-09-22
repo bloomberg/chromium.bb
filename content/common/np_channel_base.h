@@ -100,6 +100,12 @@ class NPChannelBase : public IPC::Channel::Listener,
   // Returns NULL on failure.
   NPObjectBase* GetNPObjectListenerForRoute(int route_id);
 
+  // Returns the event that's set when a call to the renderer causes a modal
+  // dialog to come up. The default implementation returns NULL. Derived
+  // classes should override this method if this functionality is required.
+  virtual base::WaitableEvent* GetModalDialogEvent(
+      gfx::NativeViewId containing_window);
+
  protected:
   typedef NPChannelBase* (*ChannelFactory)();
 
