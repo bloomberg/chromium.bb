@@ -8,10 +8,6 @@
 
 #include "build/build_config.h"
 
-#if defined(OS_LINUX)
-#include <gdk/gdk.h>
-#endif
-
 #include <string>
 
 #include "base/basictypes.h"

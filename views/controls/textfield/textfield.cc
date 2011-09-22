@@ -4,7 +4,7 @@
 
 #include "views/controls/textfield/textfield.h"
 
-#if defined(OS_LINUX)
+#if defined(TOOLKIT_USES_GTK)
 #include <gdk/gdkkeysyms.h>
 #endif
 

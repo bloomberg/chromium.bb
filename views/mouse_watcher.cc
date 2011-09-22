@@ -35,10 +35,10 @@ class MouseWatcher::Observer : public MessageLoopForUI::Observer {
 
   // MessageLoop::Observer implementation:
 #if defined(OS_WIN)
-  void WillProcessMessage(const MSG& msg) {
+  void WillProcessMessage(const MSG& msg) OVERRIDE {
   }
 
-  void DidProcessMessage(const MSG& msg) {
+  void DidProcessMessage(const MSG& msg) OVERRIDE {
     // We spy on three different Windows messages here to see if the mouse has
     // moved out of the bounds of the view. The messages are:
     //
@@ -62,7 +62,7 @@ class MouseWatcher::Observer : public MessageLoopForUI::Observer {
 }
 #elif defined(USE_WAYLAND)
   MessageLoopForUI::Observer::EventStatus WillProcessEvent(
-      ui::WaylandEvent* event) {
+      ui::WaylandEvent* event) OVERRIDE {
     switch (event->type) {
       case ui::WAYLAND_MOTION:
         HandleGlobalMouseMoveEvent(false);
@@ -76,11 +76,11 @@ class MouseWatcher::Observer : public MessageLoopForUI::Observer {
     }
     return EVENT_CONTINUE;
   }
-#else
-  void WillProcessEvent(GdkEvent* event) {
+#elif defined(TOOLKIT_USES_GTK)
+  void WillProcessEvent(GdkEvent* event) OVERRIDE {
   }
 
-  void DidProcessEvent(GdkEvent* event) {
+  void DidProcessEvent(GdkEvent* event) OVERRIDE {
     switch (event->type) {
       case GDK_MOTION_NOTIFY:
         HandleGlobalMouseMoveEvent(false);
@@ -91,6 +91,11 @@ class MouseWatcher::Observer : public MessageLoopForUI::Observer {
       default:
         break;
     }
+  }
+#else
+  EventStatus WillProcessXEvent(XEvent* event) OVERRIDE {
+    // TODO(davemoore) Implement.
+    return EVENT_CONTINUE;
   }
 #endif
 

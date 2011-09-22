@@ -6,7 +6,7 @@
 
 #include "build/build_config.h"
 
-#if defined(OS_LINUX)
+#if defined(TOOLKIT_USES_GTK)
 #include <gdk/gdk.h>
 #endif
 
@@ -18,7 +18,7 @@
 #include "views/controls/link_listener.h"
 #include "views/events/event.h"
 
-#if defined(OS_LINUX)
+#if defined(TOOLKIT_USES_GTK)
 #include "ui/gfx/gtk_util.h"
 #endif
 
@@ -103,11 +103,11 @@ gfx::NativeCursor Link::GetCursor(const MouseEvent& event) {
 #if defined(OS_WIN)
   static HCURSOR g_hand_cursor = LoadCursor(NULL, IDC_HAND);
   return g_hand_cursor;
-#elif defined(USE_AURA)
+#elif defined(TOOLKIT_USES_GTK)
+  return gfx::GetCursor(GDK_HAND2);
+#else
   // TODO(saintlou):
   return NULL;
-#elif defined(OS_LINUX)
-  return gfx::GetCursor(GDK_HAND2);
 #endif
 }
 

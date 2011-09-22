@@ -157,12 +157,12 @@ bool WidgetHasMouseCapture(const Widget* widget) {
 TEST_F(WidgetTest, GetTopLevelWidget_Native) {
   // Create a hierarchy of native widgets.
   Widget* toplevel = CreateTopLevelPlatformWidget();
-#if defined(OS_WIN)
-  gfx::NativeView parent = toplevel->GetNativeView();
-#elif defined(TOOLKIT_USES_GTK)
+#if defined(TOOLKIT_USES_GTK)
   NativeWidgetGtk* native_widget =
       static_cast<NativeWidgetGtk*>(toplevel->native_widget());
   gfx::NativeView parent = native_widget->window_contents();
+#else
+  gfx::NativeView parent = toplevel->GetNativeView();
 #endif
   Widget* child = CreateChildPlatformWidget(parent);
 

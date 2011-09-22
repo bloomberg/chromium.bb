@@ -10,7 +10,7 @@
 #include <windows.h>
 #include <uxtheme.h>
 #include <vsstyle.h>
-#else
+#elif defined(TOOLKIT_USES_GTK)
 #include <gtk/gtk.h>
 #endif
 

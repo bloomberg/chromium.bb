@@ -4,8 +4,11 @@
 
 #include "views/touchui/touch_factory.h"
 
+#if defined(TOOLKIT_USES_GTK)
+// TODO(sad) Remove all TOOLKIT_USES_GTK uses once we move to aura only.
 #include <gtk/gtk.h>
 #include <gdk/gdkx.h>
+#endif
 #include <X11/cursorfont.h>
 #include <X11/extensions/XInput.h>
 #include <X11/extensions/XInput2.h>
@@ -71,6 +74,7 @@ XIValuatorClassInfo* FindTPValuator(Display* display,
   return NULL;
 }
 
+#if defined(TOOLKIT_USES_GTK)
 // Setup XInput2 select for the GtkWidget.
 gboolean GtkWidgetRealizeCallback(GSignalInvocationHint* hint, guint nparams,
                                   const GValue* pvalues, gpointer data) {
@@ -112,6 +116,7 @@ void RemoveGtkWidgetRealizeNotifier() {
   realize_signal_id = 0;
   realize_hook_id = 0;
 }
+#endif
 
 }  // namespace
 
@@ -147,11 +152,12 @@ TouchFactory::TouchFactory()
   SetCursorVisible(false, false);
   UpdateDeviceList(display);
 
+#if defined(TOOLKIT_USES_GTK)
   // TODO(sad): Here, we only setup so that the X windows created by GTK+ are
   // setup for XInput2 events. We need a way to listen for XInput2 events for X
   // windows created by other means (e.g. for context menus).
   SetupGtkWidgetRealizeNotifier(this);
-
+#endif
   // Make sure the list of devices is kept up-to-date by listening for
   // XI_HierarchyChanged event on the root window.
   unsigned char mask[XIMaskLen(XI_LASTEVENT)];
@@ -177,7 +183,9 @@ TouchFactory::~TouchFactory() {
   XFreeCursor(display, invisible_cursor_);
   XFreeCursor(display, arrow_cursor_);
 
+#if defined(TOOLKIT_USES_GTK)
   RemoveGtkWidgetRealizeNotifier();
+#endif
 }
 
 void TouchFactory::UpdateDeviceList(Display* display) {

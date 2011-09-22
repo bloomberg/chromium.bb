@@ -4,7 +4,7 @@
 
 #include "views/controls/single_split_view.h"
 
-#if defined(OS_LINUX)
+#if defined(TOOLKIT_USES_GTK)
 #include <gdk/gdk.h>
 #endif
 
@@ -13,7 +13,7 @@
 #include "ui/gfx/canvas.h"
 #include "views/background.h"
 
-#if defined(OS_LINUX)
+#if defined(TOOLKIT_USES_GTK)
 #include "ui/gfx/gtk_util.h"
 #endif
 
@@ -100,12 +100,12 @@ gfx::NativeCursor SingleSplitView::GetCursor(const MouseEvent& event) {
   static HCURSOR we_resize_cursor = LoadCursor(NULL, IDC_SIZEWE);
   static HCURSOR ns_resize_cursor = LoadCursor(NULL, IDC_SIZENS);
   return is_horizontal_ ? we_resize_cursor : ns_resize_cursor;
-#elif defined(USE_AURA)
-  // TODO(saintlou):
-  return NULL;
-#elif defined(OS_LINUX)
+#elif defined(TOOLKIT_USES_GTK)
   return gfx::GetCursor(is_horizontal_ ? GDK_SB_H_DOUBLE_ARROW :
                                          GDK_SB_V_DOUBLE_ARROW);
+#else
+  // TODO(saintlou):
+  return NULL;
 #endif
 }
 

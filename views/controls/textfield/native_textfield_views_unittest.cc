@@ -715,6 +715,7 @@ TEST_F(NativeTextfieldViewsTest, DragToSelect) {
   EXPECT_EQ(textfield_->text(), textfield_->GetSelectedText());
 }
 
+#if defined(OS_WIN) || defined(TOOLKIT_USES_GTK)
 TEST_F(NativeTextfieldViewsTest, DragAndDrop_AcceptDrop) {
   InitTextfield(Textfield::STYLE_DEFAULT);
   textfield_->SetText(ASCIIToUTF16("hello world"));
@@ -769,6 +770,7 @@ TEST_F(NativeTextfieldViewsTest, DragAndDrop_AcceptDrop) {
 #endif
   EXPECT_FALSE(textfield_view_->CanDrop(bad_data));
 }
+#endif
 
 #if !defined(TOUCH_UI)
 TEST_F(NativeTextfieldViewsTest, DragAndDrop_InitiateDrag) {

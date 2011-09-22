@@ -481,7 +481,7 @@ TEST_F(ViewTest, DISABLED_Painting) {
 
 #if defined(OS_WIN)
 TEST_F(ViewTest, RemoveNotification) {
-#elif defined(TOOLKIT_USES_GTK)
+#else
 // TODO(beng): stopped working with widget hierarchy split,
 //             http://crbug.com/82364
 TEST_F(ViewTest, DISABLED_RemoveNotification) {

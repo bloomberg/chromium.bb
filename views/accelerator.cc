@@ -6,7 +6,7 @@
 
 #if defined(OS_WIN)
 #include <windows.h>
-#elif defined(OS_LINUX)
+#elif defined(TOOLKIT_USES_GTK)
 #include <gdk/gdk.h>
 #endif
 
@@ -83,7 +83,7 @@ string16 Accelerator::GetShortcutText() const {
     else
       key = LOWORD(::MapVirtualKeyW(key_code_, MAPVK_VK_TO_CHAR));
     shortcut += key;
-#elif defined(OS_LINUX)
+#elif defined(TOOLKIT_USES_GTK)
     const gchar* name = NULL;
     switch (key_code_) {
       case ui::VKEY_OEM_2:
