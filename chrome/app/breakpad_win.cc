@@ -119,7 +119,15 @@ bool IsBoringCommandLineSwitch(const std::wstring& flag) {
          StartsWith(flag, L"--plugin-path=", true) ||
 
          // This is too big so we end up truncating it anyway.
-         StartsWith(flag, L"--force-fieldtest=", true);
+         StartsWith(flag, L"--force-fieldtest=", true) ||
+
+         // These surround the flags that were added by about:flags, it lets
+         // you distinguish which flags were added manually via the command
+         // line versus those added through about:flags. For the most part
+         // we don't care how an option was enabled, so we strip these.
+         // (If you need to know can always look at the PEB).
+         flag == L"--flag-switches-begin" ||
+         flag == L"--flag-switches-end";
 }
 
 extern "C" void __declspec(dllexport) __cdecl SetCommandLine(
