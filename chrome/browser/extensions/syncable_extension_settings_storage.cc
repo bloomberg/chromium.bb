@@ -176,15 +176,19 @@ SyncError SyncableExtensionSettingsStorage::OverwriteLocalSettingsWithSync(
   ExtensionSettingSyncDataList changes;
   for (DictionaryValue::key_iterator it = settings.begin_keys();
       it != settings.end_keys(); ++it) {
-    Value* sync_value = NULL;
-    if (new_sync_state->RemoveWithoutPathExpansion(*it, &sync_value)) {
+    Value* orphaned_sync_value = NULL;
+    if (new_sync_state->RemoveWithoutPathExpansion(*it, &orphaned_sync_value)) {
+      scoped_ptr<Value> sync_value(orphaned_sync_value);
       Value* local_value = NULL;
       settings.GetWithoutPathExpansion(*it, &local_value);
-      if (!local_value->Equals(sync_value)) {
+      if (!sync_value->Equals(local_value)) {
         // Sync value is different, update local setting with new value.
         changes.push_back(
             ExtensionSettingSyncData(
-                SyncChange::ACTION_UPDATE, extension_id_, *it, sync_value));
+                SyncChange::ACTION_UPDATE,
+                extension_id_,
+                *it,
+                sync_value.release()));
       }
     } else {
       // Not synced, delete local setting.
@@ -200,8 +204,8 @@ SyncError SyncableExtensionSettingsStorage::OverwriteLocalSettingsWithSync(
   // Add all new settings to local settings.
   while (!new_sync_state->empty()) {
     std::string key = *new_sync_state->begin_keys();
-    Value* value;
-    new_sync_state->RemoveWithoutPathExpansion(key, &value);
+    Value* value = NULL;
+    CHECK(new_sync_state->RemoveWithoutPathExpansion(key, &value));
     changes.push_back(
         ExtensionSettingSyncData(
             SyncChange::ACTION_ADD, extension_id_, key, value));
