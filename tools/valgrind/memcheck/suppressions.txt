@@ -4622,6 +4622,50 @@
    fun:vorbis_decode_frame
    fun:avcodec_decode_audio3
 }
+{
+   bug_97511_a
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN30ExtensionSettingsQuotaUnittestC2Ev
+   fun:_ZN*ExtensionSettingsQuotaUnittest_*
+}
+{
+   bug_97511_b
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN9__gnu_cxx13new_allocatorISt13_Rb_tree_nodeISt4pairIKSsPN4base5ValueEEEE8allocateE*
+   fun:_ZNSt8_Rb_treeISsSt4pairIKSsPN4base5ValueEESt10_Select1stIS5_ESt4lessISsESaIS5_EE11_M_get_nodeEv
+   fun:_ZNSt8_Rb_treeISsSt4pairIKSsPN4base5ValueEESt10_Select1stIS5_ESt4lessISsESaIS5_EE*
+   ...
+   fun:_ZNSt3mapISsPN4base5ValueESt4lessISsESaISt4pairIKSsS2_EEE6insertESt17_Rb_tree_iteratorIS7_ERKS7_
+   fun:_ZNSt3mapISsPN4base5ValueESt4lessISsESaISt4pairIKSsS2_EEEixERS6_
+   fun:_ZN4base15DictionaryValue23SetWithoutPathExpansionERKSsPNS_5ValueE
+   fun:_ZN4base15DictionaryValue15MergeDictionaryEPKS0_
+   fun:_ZN29ExtensionSettingsStorageCache3Set*
+   ...
+   fun:_ZN*ExtensionSettingsQuotaUnittest_*
+}
+{
+   bug_97511_c
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN26ExtensionSettingsUIWrapper4Core16InitOnFileThreadERK8FilePath
+   fun:_ZN4base8internal8Invoker2ILb0ENS0_15InvokerStorage2IMN26ExtensionSettingsUIWrapper4CoreEFvRK8FilePathEPS4_S5_EES9_E8DoInvokeEPNS0_18InvokerStorageBaseE
+   fun:_ZNK4base8CallbackIFvvEE3RunEv
+   ...
+   fun:_ZN*Extension*Test*
+}
+{
+   bug_97511_d
+   Memcheck:Leak
+   fun:_Znw*
+   ...
+   fun:_ZNK4base15DictionaryValue8DeepCopyEv
+   fun:_ZN32SyncableExtensionSettingsStorage30OverwriteLocalSettingsWithSyncERKN4base15DictionaryValueES3_
+   fun:_ZN32SyncableExtensionSettingsStorage12StartSyncingERKN4base15DictionaryValueEP19SyncChangeProcessor
+   fun:_ZN17ExtensionSettings24MergeDataAndStartSyncingEN8syncable9ModelTypeERKSt6vectorI8SyncDataSaIS3_EEP19SyncChangeProcessor
+   fun:_ZN58ExtensionSettingsSyncTest_InSyncDataDoesNotInvokeSync_Test8TestBodyEv
+}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
