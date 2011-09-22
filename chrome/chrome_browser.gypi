@@ -1657,8 +1657,6 @@
         'browser/plugin_data_remover_helper.h',
         'browser/plugin_download_helper.cc',
         'browser/plugin_download_helper.h',
-        'browser/plugin_exceptions_table_model.cc',
-        'browser/plugin_exceptions_table_model.h',
         'browser/plugin_installer_infobar_delegate.cc',
         'browser/plugin_installer_infobar_delegate.h',
         'browser/plugin_observer.cc',

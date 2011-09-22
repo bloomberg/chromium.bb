@@ -140,17 +140,11 @@ void OpenUsingReader(TabContentsWrapper* tab,
                      const WebPluginInfo& reader_plugin,
                      InfoBarDelegate* old_delegate,
                      InfoBarDelegate* new_delegate) {
-  WebPluginInfo plugin = reader_plugin;
-  // Give the plugin a new version so that the renderer doesn't show the blocked
-  // plugin UI if it's vulnerable, since we already went through the
-  // interstitial.
-  plugin.version = ASCIIToUTF16("11.0.0.0");
-
   ChromePluginServiceFilter::GetInstance()->OverridePluginForTab(
       tab->render_view_host()->process()->id(),
       tab->render_view_host()->routing_id(),
       tab->tab_contents()->GetURL(),
-      plugin);
+      ASCIIToUTF16(PluginGroup::kAdobeReaderGroupName));
   tab->render_view_host()->ReloadFrame();
 
   if (new_delegate) {

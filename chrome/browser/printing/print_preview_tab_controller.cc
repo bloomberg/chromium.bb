@@ -28,41 +28,17 @@
 #include "content/common/content_notification_types.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_source.h"
-#include "webkit/plugins/npapi/plugin_group.h"
-#include "webkit/plugins/npapi/plugin_list.h"
 #include "webkit/plugins/webplugininfo.h"
-
-using webkit::npapi::PluginGroup;
-using webkit::npapi::PluginList;
-using webkit::WebPluginInfo;
 
 namespace {
 
 void EnableInternalPDFPluginForTab(TabContentsWrapper* preview_tab) {
   // Always enable the internal PDF plugin for the print preview page.
-  string16 internal_pdf_group_name(
-      ASCIIToUTF16(chrome::ChromeContentClient::kPDFPluginName));
-  PluginGroup* internal_pdf_group = NULL;
-  std::vector<PluginGroup> plugin_groups;
-  PluginList::Singleton()->GetPluginGroups(false, &plugin_groups);
-  for (size_t i = 0; i < plugin_groups.size(); ++i) {
-    if (plugin_groups[i].GetGroupName() == internal_pdf_group_name) {
-      internal_pdf_group = &plugin_groups[i];
-      break;
-    }
-  }
-  if (internal_pdf_group) {
-    const std::vector<WebPluginInfo>& plugins =
-        internal_pdf_group->web_plugin_infos();
-    DCHECK_EQ(plugins.size(), 1U);
-
-    webkit::WebPluginInfo plugin = plugins[0];
-    ChromePluginServiceFilter::GetInstance()->OverridePluginForTab(
+  ChromePluginServiceFilter::GetInstance()->OverridePluginForTab(
         preview_tab->render_view_host()->process()->id(),
         preview_tab->render_view_host()->routing_id(),
         GURL(),
-        plugin);
-  }
+        ASCIIToUTF16(chrome::ChromeContentClient::kPDFPluginName));
 }
 
 void ResetPreviewTabOverrideTitle(TabContentsWrapper* preview_tab) {

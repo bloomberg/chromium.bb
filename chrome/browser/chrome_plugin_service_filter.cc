@@ -5,6 +5,7 @@
 #include "chrome/browser/chrome_plugin_service_filter.h"
 
 #include "base/logging.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/plugin_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -13,7 +14,10 @@
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/resource_context.h"
 #include "content/common/notification_service.h"
+#include "webkit/plugins/npapi/plugin_group.h"
 #include "webkit/plugins/npapi/plugin_list.h"
+
+using webkit::npapi::PluginGroup;
 
 // static
 ChromePluginServiceFilter* ChromePluginServiceFilter::GetInstance() {
@@ -38,12 +42,12 @@ void ChromePluginServiceFilter::OverridePluginForTab(
     int render_process_id,
     int render_view_id,
     const GURL& url,
-    const webkit::WebPluginInfo& plugin) {
+    const string16& plugin_name) {
   OverriddenPlugin overridden_plugin;
   overridden_plugin.render_process_id = render_process_id;
   overridden_plugin.render_view_id = render_view_id;
   overridden_plugin.url = url;
-  overridden_plugin.plugin = plugin;
+  overridden_plugin.plugin_name = plugin_name;
   base::AutoLock auto_lock(lock_);
   overridden_plugins_.push_back(overridden_plugin);
 }
@@ -78,10 +82,15 @@ bool ChromePluginServiceFilter::ShouldUsePlugin(
         overridden_plugins_[i].render_view_id == render_view_id &&
         (overridden_plugins_[i].url == url ||
          overridden_plugins_[i].url.is_empty())) {
-      if (overridden_plugins_[i].plugin.path != plugin->path)
-        return false;
-      *plugin = overridden_plugins_[i].plugin;
-      return true;
+
+      bool use = overridden_plugins_[i].plugin_name == plugin->name;
+      if (use &&
+          plugin->name == ASCIIToUTF16(PluginGroup::kAdobeReaderGroupName)) {
+        // If the caller is forcing the Adobe Reader plugin, then don't show the
+        // blocked plugin UI if it's vulnerable.
+        plugin->version = ASCIIToUTF16("11.0.0.0");
+      }
+      return use;
     }
   }
 
