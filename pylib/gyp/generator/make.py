@@ -2007,7 +2007,8 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
 
       # Bundle postbuilds can depend on the whole bundle, so run them after
       # the bundle is packaged, not already after the bundle binary is done.
-      self.WriteLn('\t@$(call do_postbuilds)')
+      if postbuilds:
+        self.WriteLn('\t@$(call do_postbuilds)')
       postbuilds = []  # Don't write postbuilds for target's output.
 
       # Needed by test/mac/gyptest-rebuild.py.
