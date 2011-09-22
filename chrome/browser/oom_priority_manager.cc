@@ -9,10 +9,12 @@
 
 #include "base/process.h"
 #include "base/process_util.h"
+#include "base/string_number_conversions.h"
 #include "base/string16.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread.h"
 #include "base/timer.h"
+#include "base/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -23,6 +25,7 @@
 #include "content/browser/renderer_host/render_widget_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/zygote_host_linux.h"
+#include "content/common/content_notification_types.h"
 #include "content/common/notification_service.h"
 
 #if !defined(OS_CHROMEOS)
@@ -34,33 +37,38 @@ using base::TimeTicks;
 using base::ProcessHandle;
 using base::ProcessMetrics;
 
+namespace {
+
+// Returns a unique ID for a TabContents.  Do not cast back to a pointer, as
+// the TabContents could be deleted if the user closed the tab.
+int64 IdFromTabContents(TabContents* tab_contents) {
+  return reinterpret_cast<int64>(tab_contents);
+}
+
+}  // namespace
+
 namespace browser {
 
 // The default interval in seconds after which to adjust the oom_score_adj
 // value.
 #define ADJUSTMENT_INTERVAL_SECONDS 10
 
-// The default interval in minutes for considering activation times
-// "equal".
-#define BUCKET_INTERVAL_MINUTES 10
-
 // The default interval in milliseconds to wait before setting the score of
 // currently focused tab.
 #define FOCUSED_TAB_SCORE_ADJUST_INTERVAL_MS 500
 
-OomPriorityManager::RendererStats::RendererStats()
+OomPriorityManager::TabStats::TabStats()
   : is_pinned(false),
     is_selected(false),
-    memory_used(0),
-    renderer_handle(0) {
+    renderer_handle(0),
+    tab_contents_id(0) {
 }
 
-OomPriorityManager::RendererStats::~RendererStats() {
+OomPriorityManager::TabStats::~TabStats() {
 }
 
 OomPriorityManager::OomPriorityManager()
   : focused_tab_pid_(0) {
-  renderer_stats_.reserve(32);  // 99% of users have < 30 tabs open
   registrar_.Add(this,
       content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
       NotificationService::AllSources());
@@ -90,25 +98,48 @@ void OomPriorityManager::Stop() {
 }
 
 std::vector<string16> OomPriorityManager::GetTabTitles() {
-  base::AutoLock renderer_stats_autolock(renderer_stats_lock_);
+  TabStatsList stats = GetTabStatsOnUIThread();
+  base::AutoLock pid_to_oom_score_autolock(pid_to_oom_score_lock_);
   std::vector<string16> titles;
-  titles.reserve(renderer_stats_.size());
-  StatsList::iterator it = renderer_stats_.begin();
-  for ( ; it != renderer_stats_.end(); ++it) {
-    titles.push_back(it->title);
+  titles.reserve(stats.size());
+  TabStatsList::iterator it = stats.begin();
+  for ( ; it != stats.end(); ++it) {
+    string16 str = it->title;
+    str += ASCIIToUTF16(" (");
+    int score = pid_to_oom_score_[it->renderer_handle];
+    str += base::IntToString16(score);
+    str += ASCIIToUTF16(")");
+    titles.push_back(str);
   }
   return titles;
 }
 
+void OomPriorityManager::DiscardTab() {
+  TabStatsList stats = GetTabStatsOnUIThread();
+  if (stats.empty())
+    return;
+  std::sort(stats.begin(), stats.end(), CompareTabStats);
+  TabStatsList::const_reverse_iterator rit = stats.rbegin();
+  int64 least_important_tab_id = rit->tab_contents_id;
+  for (BrowserList::const_iterator browser_iterator = BrowserList::begin();
+       browser_iterator != BrowserList::end(); ++browser_iterator) {
+    Browser* browser = *browser_iterator;
+    TabStripModel* model = browser->tabstrip_model();
+    for (int idx = 0; idx < model->count(); idx++) {
+      TabContents* tab_contents = model->GetTabContentsAt(idx)->tab_contents();
+      int64 tab_contents_id = IdFromTabContents(tab_contents);
+      if (tab_contents_id == least_important_tab_id) {
+        model->CloseTabContentsAt(idx,
+                                  TabStripModel::CLOSE_CREATE_HISTORICAL_TAB);
+      }
+    }
+  }
+}
+
 // Returns true if |first| is considered less desirable to be killed
 // than |second|.
-bool OomPriorityManager::CompareRendererStats(RendererStats first,
-                                                  RendererStats second) {
-  // The size of the slop in comparing activation times.  [This is
-  // allocated here to avoid static initialization at startup time.]
-  static const int64 kTimeBucketInterval =
-      TimeDelta::FromMinutes(BUCKET_INTERVAL_MINUTES).ToInternalValue();
-
+bool OomPriorityManager::CompareTabStats(TabStats first,
+                                         TabStats second) {
   // Being currently selected is most important.
   if (first.is_selected != second.is_selected)
     return first.is_selected == true;
@@ -117,18 +148,12 @@ bool OomPriorityManager::CompareRendererStats(RendererStats first,
   if (first.is_pinned != second.is_pinned)
     return first.is_pinned == true;
 
-  // We want to be a little "fuzzy" when we compare these, because
-  // it's not really possible for the times to be identical, but if
-  // the user selected two tabs at about the same time, we still want
-  // to take the one that uses more memory.
-  if (abs((first.last_selected - second.last_selected).ToInternalValue()) <
-      kTimeBucketInterval)
-    return first.last_selected > second.last_selected;
-
-  return first.memory_used < second.memory_used;
+  // Being more recently selected is more important.
+  return first.last_selected > second.last_selected;
 }
 
-void OomPriorityManager::AdjustFocusedTabScore() {
+void OomPriorityManager::AdjustFocusedTabScoreOnFileThread() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   base::AutoLock pid_to_oom_score_autolock(pid_to_oom_score_lock_);
   ZygoteHost::GetInstance()->AdjustRendererOOMScore(
       focused_tab_pid_, chrome::kLowestRendererOomScore);
@@ -138,11 +163,12 @@ void OomPriorityManager::AdjustFocusedTabScore() {
 void OomPriorityManager::OnFocusTabScoreAdjustmentTimeout() {
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      NewRunnableMethod(this, &OomPriorityManager::AdjustFocusedTabScore));
+      NewRunnableMethod(
+          this, &OomPriorityManager::AdjustFocusedTabScoreOnFileThread));
 }
 
 void OomPriorityManager::Observe(int type, const NotificationSource& source,
-                                    const NotificationDetails& details) {
+                                 const NotificationDetails& details) {
   base::ProcessHandle handle = 0;
   base::AutoLock pid_to_oom_score_autolock(pid_to_oom_score_lock_);
   switch (type) {
@@ -193,71 +219,49 @@ void OomPriorityManager::Observe(int type, const NotificationSource& source,
 // 1) whether or not a tab is pinned
 // 2) last time a tab was selected
 // 3) is the tab currently selected
-//
-// We also need to collect:
-// 4) size in memory of a tab
-// But we do that in DoAdjustOomPriorities on the FILE thread so that
-// we avoid jank, because it accesses /proc.
 void OomPriorityManager::AdjustOomPriorities() {
   if (BrowserList::size() == 0)
     return;
+  TabStatsList stats_list = GetTabStatsOnUIThread();
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
+      NewRunnableMethod(this,
+                        &OomPriorityManager::AdjustOomPrioritiesOnFileThread,
+                        stats_list));
+}
 
-  {
-    base::AutoLock renderer_stats_autolock(renderer_stats_lock_);
-    renderer_stats_.clear();
-    for (BrowserList::const_iterator browser_iterator = BrowserList::begin();
-         browser_iterator != BrowserList::end(); ++browser_iterator) {
-      Browser* browser = *browser_iterator;
-      const TabStripModel* model = browser->tabstrip_model();
-      for (int i = 0; i < model->count(); i++) {
-        TabContents* contents = model->GetTabContentsAt(i)->tab_contents();
-        if (!contents->is_crashed()) {
-          RendererStats stats;
-          stats.last_selected = contents->last_selected_time();
-          stats.renderer_handle = contents->GetRenderProcessHost()->GetHandle();
-          stats.is_pinned = model->IsTabPinned(i);
-          stats.memory_used = 0;  // Calculated in DoAdjustOomPriorities.
-          stats.is_selected = model->IsTabSelected(i);
-          stats.title = contents->GetTitle();
-          renderer_stats_.push_back(stats);
-        }
+OomPriorityManager::TabStatsList OomPriorityManager::GetTabStatsOnUIThread() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  TabStatsList stats_list;
+  stats_list.reserve(32);  // 99% of users have < 30 tabs open
+  for (BrowserList::const_iterator browser_iterator = BrowserList::begin();
+       browser_iterator != BrowserList::end(); ++browser_iterator) {
+    Browser* browser = *browser_iterator;
+    const TabStripModel* model = browser->tabstrip_model();
+    for (int i = 0; i < model->count(); i++) {
+      TabContents* contents = model->GetTabContentsAt(i)->tab_contents();
+      if (!contents->is_crashed()) {
+        TabStats stats;
+        stats.last_selected = contents->last_selected_time();
+        stats.renderer_handle = contents->GetRenderProcessHost()->GetHandle();
+        stats.is_pinned = model->IsTabPinned(i);
+        stats.is_selected = model->IsTabSelected(i);
+        stats.title = contents->GetTitle();
+        stats.tab_contents_id = IdFromTabContents(contents);
+        stats_list.push_back(stats);
       }
     }
   }
-
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      NewRunnableMethod(this, &OomPriorityManager::DoAdjustOomPriorities));
+  // Sort the data we collected so that least desirable to be
+  // killed is first, most desirable is last.
+  std::sort(stats_list.begin(), stats_list.end(), CompareTabStats);
+  return stats_list;
 }
 
-void OomPriorityManager::DoAdjustOomPriorities() {
+void OomPriorityManager::AdjustOomPrioritiesOnFileThread(
+    TabStatsList stats_list) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  base::AutoLock renderer_stats_autolock(renderer_stats_lock_);
   base::AutoLock pid_to_oom_score_autolock(pid_to_oom_score_lock_);
-  for (StatsList::iterator stats_iter = renderer_stats_.begin();
-       stats_iter != renderer_stats_.end(); ++stats_iter) {
-    scoped_ptr<ProcessMetrics> metrics(ProcessMetrics::CreateProcessMetrics(
-        stats_iter->renderer_handle));
-
-    base::WorkingSetKBytes working_set_kbytes;
-    if (metrics->GetWorkingSetKBytes(&working_set_kbytes)) {
-      // We use the proportional set size (PSS) to calculate memory
-      // usage "badness" on Linux.
-      stats_iter->memory_used = working_set_kbytes.shared * 1024;
-    } else {
-      // and if for some reason we can't get PSS, we revert to using
-      // resident set size (RSS).  This will be zero if the process
-      // has already gone away, but we can live with that, since the
-      // process is gone anyhow.
-      stats_iter->memory_used = metrics->GetWorkingSetSize();
-    }
-  }
-
-  // Now we sort the data we collected so that least desirable to be
-  // killed is first, most desirable is last.
-  std::sort(renderer_stats_.begin(),
-            renderer_stats_.end(),
-            OomPriorityManager::CompareRendererStats);
 
   // Now we assign priorities based on the sorted list.  We're
   // assigning priorities in the range of kLowestRendererOomScore to
@@ -277,13 +281,13 @@ void OomPriorityManager::DoAdjustOomPriorities() {
   const int kPriorityRange = chrome::kHighestRendererOomScore -
                              chrome::kLowestRendererOomScore;
   float priority_increment =
-      static_cast<float>(kPriorityRange) / renderer_stats_.size();
+      static_cast<float>(kPriorityRange) / stats_list.size();
   float priority = chrome::kLowestRendererOomScore;
   std::set<base::ProcessHandle> already_seen;
   int score = 0;
   ProcessScoreMap::iterator it;
-  for (StatsList::iterator iterator = renderer_stats_.begin();
-       iterator != renderer_stats_.end(); ++iterator) {
+  for (TabStatsList::iterator iterator = stats_list.begin();
+       iterator != stats_list.end(); ++iterator) {
     if (already_seen.find(iterator->renderer_handle) == already_seen.end()) {
       already_seen.insert(iterator->renderer_handle);
       // If a process has the same score as the newly calculated value,

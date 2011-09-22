@@ -17,6 +17,8 @@
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 
+class TabContents;
+
 namespace browser {
 
 // The OomPriorityManager periodically checks (see
@@ -26,11 +28,8 @@ namespace browser {
 // algorithm embedded here for priority in being killed upon OOM
 // conditions.
 //
-// The algorithm used favors killing tabs that are not pinned, have
-// been idle for longest, and take up the most memory, in that order
-// of priority.  We round the idle times to the nearest few minutes
-// (see BUCKET_INTERVAL_MINUTES in the source) so that we can bucket
-// them, as no two tabs will have exactly the same idle time.
+// The algorithm used favors killing tabs that are not selected, not pinned,
+// and have been idle for longest, in that order of priority.
 class OomPriorityManager : public NotificationObserver {
  public:
   OomPriorityManager();
@@ -43,35 +42,38 @@ class OomPriorityManager : public NotificationObserver {
   // to least interesting (OK to kill).
   std::vector<string16> GetTabTitles();
 
+  // Discards a tab to free the memory occupied by its renderer.
+  // Tab still exists in the tab-strip; clicking on it will reload it.
+  void DiscardTab();
+
  private:
-  struct RendererStats {
-    RendererStats();
-    ~RendererStats();
+  struct TabStats {
+    TabStats();
+    ~TabStats();
     bool is_pinned;
     bool is_selected;
     base::TimeTicks last_selected;
-    size_t memory_used;
     base::ProcessHandle renderer_handle;
     string16 title;
+    int64 tab_contents_id;  // unique ID per TabContents
   };
-  typedef std::vector<RendererStats> StatsList;
-  typedef base::hash_map<base::ProcessHandle, int> ProcessScoreMap;
+  typedef std::vector<TabStats> TabStatsList;
 
-  // Posts DoAdjustOomPriorities task to the file thread.  Called when
-  // the timer fires.
+  TabStatsList GetTabStatsOnUIThread();
+
+  // Called when the timer fires, sets oom_adjust_score for all renderers.
   void AdjustOomPriorities();
+
+  // Called by AdjustOomPriorities.
+  void AdjustOomPrioritiesOnFileThread(TabStatsList stats_list);
 
   // Posts AdjustFocusedTabScore task to the file thread.
   void OnFocusTabScoreAdjustmentTimeout();
 
-  // Called by AdjustOomPriorities.  Runs on the file thread.
-  void DoAdjustOomPriorities();
+  // Sets the score of the focused tab to the least value.
+  void AdjustFocusedTabScoreOnFileThread();
 
-  // Called when a tab comes into focus. Runs on the file thread.
-  // Sets the score of only the currently focused tab to the least value.
-  void AdjustFocusedTabScore();
-
-  static bool CompareRendererStats(RendererStats first, RendererStats second);
+  static bool CompareTabStats(TabStats first, TabStats second);
 
   virtual void Observe(int type,
                        const NotificationSource& source,
@@ -79,14 +81,13 @@ class OomPriorityManager : public NotificationObserver {
 
   base::RepeatingTimer<OomPriorityManager> timer_;
   base::OneShotTimer<OomPriorityManager> focus_tab_score_adjust_timer_;
-  // renderer_stats_ is used on both UI and file threads.
-  base::Lock renderer_stats_lock_;
-  StatsList renderer_stats_;
+  NotificationRegistrar registrar_;
+
   // This lock is for pid_to_oom_score_ and focus_tab_pid_.
   base::Lock pid_to_oom_score_lock_;
   // map maintaining the process - oom_score mapping.
+  typedef base::hash_map<base::ProcessHandle, int> ProcessScoreMap;
   ProcessScoreMap pid_to_oom_score_;
-  NotificationRegistrar registrar_;
   base::ProcessHandle focused_tab_pid_;
 
   DISALLOW_COPY_AND_ASSIGN(OomPriorityManager);

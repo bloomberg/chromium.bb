@@ -676,8 +676,13 @@ std::string AboutCryptohome(const std::string& query) {
   return GetCryptohomeHtmlInfo(refresh);
 }
 
-std::string AboutDiscards() {
+std::string AboutDiscards(const std::string& path) {
   std::string output;
+  const std::string kRunCommand("run");
+  if (path == kRunCommand) {
+    output.append(WrapWithTag("p", "Discarding a tab..."));
+    g_browser_process->oom_priority_manager()->DiscardTab();
+  }
   AppendHeader(&output, 0, "About discards");
   AppendBody(&output);
   output.append("<h3>About discards</h3>");
@@ -698,28 +703,30 @@ std::string AboutDiscards() {
   } else {
     output.append("<p>None found.  Wait 10 seconds, then refresh.</p>");
   }
+  output.append(
+      "<a href='chrome://discards/" + kRunCommand + "'>Discard tab now</a>");
 
   base::SystemMemoryInfoKB meminfo;
   base::GetSystemMemoryInfo(&meminfo);
   output.append("<h3>System memory information in MB</h3>");
   output.append("<table>");
   output.append(AddStringRow(
-    "Total Memory", base::IntToString(meminfo.total / 1024)));
+    "Total", base::IntToString(meminfo.total / 1024)));
   output.append(AddStringRow(
-    "Free Memory", base::IntToString(meminfo.free / 1024)));
+    "Free", base::IntToString(meminfo.free / 1024)));
   output.append(AddStringRow(
-    "Buffered Memory", base::IntToString(meminfo.buffers / 1024)));
+    "Buffered", base::IntToString(meminfo.buffers / 1024)));
   output.append(AddStringRow(
-    "Cached Memory", base::IntToString(meminfo.cached / 1024)));
+    "Cached", base::IntToString(meminfo.cached / 1024)));
   output.append(AddStringRow(
-    "Committed Memory", base::IntToString(
+    "Committed", base::IntToString(
     (meminfo.total - meminfo.free - meminfo.buffers - meminfo.cached) / 1024)));
   output.append(AddStringRow(
-    "Active Anon Memory", base::IntToString(meminfo.active_anon / 1024)));
+    "Active Anon", base::IntToString(meminfo.active_anon / 1024)));
   output.append(AddStringRow(
-    "Inactive Anon Memory", base::IntToString(meminfo.inactive_anon / 1024)));
+    "Inactive Anon", base::IntToString(meminfo.inactive_anon / 1024)));
   output.append(AddStringRow(
-    "Shared Memory", base::IntToString(meminfo.shmem / 1024)));
+    "Shared", base::IntToString(meminfo.shmem / 1024)));
   output.append("</table>");
 
   AppendFooter(&output);
@@ -1406,7 +1413,7 @@ void AboutSource::StartDataRequest(const std::string& path,
   } else if (host == chrome::kChromeUICryptohomeHost) {
     response = AboutCryptohome(path);
   } else if (host == chrome::kChromeUIDiscardsHost) {
-    response = AboutDiscards();
+    response = AboutDiscards(path);
 #endif
   } else if (host == chrome::kChromeUIDNSHost) {
     AboutDnsHandler::Start(this, request_id);
