@@ -9,6 +9,7 @@
 #include <map>
 
 #include "base/message_loop.h"
+#include "ui/base/ui_base_types.h"
 #include "ui/gfx/transform.h"
 #include "views/widget/native_widget_private.h"
 #include "views/widget/widget.h"
@@ -155,7 +156,7 @@ class VIEWS_EXPORT NativeWidgetViews : public internal::NativeWidgetPrivate {
 
   bool active_;
 
-  bool minimized_;
+  ui::WindowShowState window_state_;
 
   // Set when SetAlwaysOnTop is called, or keep_on_top is set during creation.
   bool always_on_top_;

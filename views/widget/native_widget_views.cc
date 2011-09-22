@@ -5,7 +5,6 @@
 #include "views/widget/native_widget_views.h"
 
 #include "ui/gfx/compositor/compositor.h"
-#include "views/desktop/desktop_window_view.h"
 #include "views/view.h"
 #include "views/views_delegate.h"
 #include "views/widget/native_widget_view.h"
@@ -31,7 +30,7 @@ NativeWidgetViews::NativeWidgetViews(internal::NativeWidgetDelegate* delegate)
     : delegate_(delegate),
       view_(NULL),
       active_(false),
-      minimized_(false),
+      window_state_(ui::SHOW_STATE_DEFAULT),
       always_on_top_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(close_widget_factory_(this)),
       ownership_(Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET),
@@ -410,15 +409,28 @@ void NativeWidgetViews::SetAlwaysOnTop(bool on_top) {
 }
 
 void NativeWidgetViews::Maximize() {
-  NOTIMPLEMENTED();
+  if (window_state_ == ui::SHOW_STATE_MAXIMIZED)
+    return;
+
+  if (window_state_ != ui::SHOW_STATE_MINIMIZED) {
+    // Remember bounds and transform to use when unmaximized.
+    restored_bounds_ = view_->bounds();
+    restored_transform_ = view_->GetTransform();
+  }
+
+  window_state_ = ui::SHOW_STATE_MAXIMIZED;
+  gfx::Size size = GetParentNativeWidget()->GetWindowScreenBounds().size();
+  SetBounds(gfx::Rect(gfx::Point(), size));
 }
 
 void NativeWidgetViews::Minimize() {
   gfx::Rect view_bounds = view_->bounds();
   gfx::Rect parent_bounds = view_->parent()->bounds();
 
-  restored_bounds_ = view_bounds;
-  restored_transform_ = view_->GetTransform();
+  if (window_state_ != ui::SHOW_STATE_MAXIMIZED) {
+    restored_bounds_ = view_bounds;
+    restored_transform_ = view_->GetTransform();
+  }
 
   float aspect_ratio = static_cast<float>(view_bounds.width()) /
                        static_cast<float>(view_bounds.height());
@@ -441,20 +453,19 @@ void NativeWidgetViews::Minimize() {
                      (float)target_height / (float)view_bounds.height());
   view_->SetTransform(transform);
 
-  minimized_ = true;
+  window_state_ = ui::SHOW_STATE_MINIMIZED;
 }
 
 bool NativeWidgetViews::IsMaximized() const {
-  // NOTIMPLEMENTED();
-  return false;
+  return window_state_ == ui::SHOW_STATE_MAXIMIZED;
 }
 
 bool NativeWidgetViews::IsMinimized() const {
-  return minimized_;
+  return window_state_ == ui::SHOW_STATE_MINIMIZED;
 }
 
 void NativeWidgetViews::Restore() {
-  minimized_ = false;
+  window_state_ = ui::SHOW_STATE_NORMAL;
   view_->SetBoundsRect(restored_bounds_);
   view_->SetTransform(restored_transform_);
 }
