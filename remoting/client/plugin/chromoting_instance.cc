@@ -156,7 +156,7 @@ bool ChromotingInstance::Init(uint32_t argc,
   return true;
 }
 
-void ChromotingInstance::Connect(const ClientConfig& config, bool use_p2p_api) {
+void ChromotingInstance::Connect(const ClientConfig& config) {
   DCHECK(plugin_message_loop_->BelongsToCurrentThread());
 
   // This can only happen at initialization if the Javascript connect call
@@ -165,42 +165,13 @@ void ChromotingInstance::Connect(const ClientConfig& config, bool use_p2p_api) {
   if (!initial_policy_received_) {
     LOG(INFO) << "Delaying connect until initial policy is read.";
     delayed_connect_.reset(
-        task_factory_.NewRunnableMethod(&ChromotingInstance::Connect,
-                                        config, use_p2p_api));
+        task_factory_.NewRunnableMethod(&ChromotingInstance::Connect, config));
     return;
   }
 
-  webkit::ppapi::PluginInstance* plugin_instance =
-      webkit::ppapi::ResourceTracker::Get()->GetInstance(pp_instance());
-
-  if (use_p2p_api) {
-    host_connection_.reset(new protocol::ConnectionToHost(
-        context_.network_message_loop(), this, NULL, NULL, NULL, NULL,
-        enable_client_nat_traversal_));
-  } else {
-    content::P2PSocketDispatcher* socket_dispatcher =
-        plugin_instance->delegate()->GetP2PSocketDispatcher();
-
-    content::IpcNetworkManager* network_manager = NULL;
-    content::IpcPacketSocketFactory* socket_factory = NULL;
-    HostResolverFactory* host_resolver_factory = NULL;
-    PortAllocatorSessionFactory* session_factory =
-        CreatePepperPortAllocatorSessionFactory(
-            this, plugin_message_loop_, context_.network_message_loop());
-
-    // If we don't have socket dispatcher for IPC (e.g. P2P API is
-    // disabled), then JingleSessionManager will try to use physical sockets.
-    if (socket_dispatcher) {
-      VLOG(1) << "Creating IpcNetworkManager and IpcPacketSocketFactory.";
-      network_manager = new content::IpcNetworkManager(socket_dispatcher);
-      socket_factory = new content::IpcPacketSocketFactory(socket_dispatcher);
-      host_resolver_factory = new IpcHostResolverFactory(socket_dispatcher);
-    }
-
-    host_connection_.reset(new protocol::ConnectionToHost(
-        context_.network_message_loop(), NULL, network_manager, socket_factory,
-        host_resolver_factory, session_factory, enable_client_nat_traversal_));
-  }
+  host_connection_.reset(new protocol::ConnectionToHost(
+      context_.network_message_loop(), this, NULL, NULL, NULL, NULL,
+      enable_client_nat_traversal_));
 
   input_handler_.reset(new PepperInputHandler(&context_,
                                               host_connection_.get(),

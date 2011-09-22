@@ -77,7 +77,7 @@ class ChromotingInstance : public pp::InstancePrivate {
   ChromotingScriptableObject* GetScriptableObject();
 
   // Initiates and cancels connections.
-  void Connect(const ClientConfig& config, bool use_p2p_api);
+  void Connect(const ClientConfig& config);
   void Disconnect();
 
   // Called by ChromotingScriptableObject to provide username and password.

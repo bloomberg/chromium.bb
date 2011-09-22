@@ -54,14 +54,6 @@ remoting.ClientError = {
  */
 remoting.scaleToFit = false;
 
-/**
- * Whether or not the P2P Transport API should be used. This flag is an interim
- * measure to allow testing by early adopters, and will be removed when P2P API
- * is enabled by default. See http://crbug.com/51198 for details.
- * @type {boolean}
- */
-remoting.useP2pApi = false;
-
 // Constants representing keys used for storing persistent application state.
 var KEY_APP_MODE_ = 'remoting-app-mode';
 var KEY_EMAIL_ = 'remoting-email';
@@ -180,8 +172,6 @@ remoting.init = function() {
     document.getElementById('client-footer-text-cros').id =
         'client-footer-text';
   }
-
-  remoting.useP2pApi = !(window.localStorage.getItem(KEY_USE_P2P_API_) == null);
 }
 
 /**
@@ -726,15 +716,6 @@ remoting.promptClose = function() {
 remoting.checkHotkeys = function(event) {
   if (String.fromCharCode(event.which) == 'D') {
     remoting.toggleDebugLog();
-  }
-}
-
-remoting.setUseP2pApi = function(use) {
-  remoting.useP2pApi = use;
-  if (use) {
-    window.localStorage.setItem(KEY_USE_P2P_API_, 'true');
-  } else {
-    window.localStorage.removeItem(KEY_USE_P2P_API_);
   }
 }
 

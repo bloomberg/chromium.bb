@@ -254,13 +254,8 @@ remoting.ClientSession.prototype.connectPluginToWcs_ =
       remoting.debug.log('Receiving Iq: ' + stanza);
       that.plugin.onIq(stanza);
   });
-  if (remoting.useP2pApi) {
-    this.plugin.connect(this.hostJid, this.hostPublicKey, this.clientJid,
-                        this.accessCode, remoting.useP2pApi);
-  } else {
-    that.plugin.connect(this.hostJid, this.hostPublicKey, this.clientJid,
-                        this.accessCode);
-  }
+  that.plugin.connect(this.hostJid, this.hostPublicKey, this.clientJid,
+                      this.accessCode);
 };
 
 /**
