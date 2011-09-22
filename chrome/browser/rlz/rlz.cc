@@ -246,7 +246,7 @@ void _cdecl RLZTracker::PingNow(void* arg) {
 }
 
 void RLZTracker::PingNowImpl() {
-  // Needs to be evaluated. See http://crbug.com/62328.
+  // This is the entry point of a background thread, so I/O is allowed.
   base::ThreadRestrictions::ScopedAllowIO allow_io;
 
   std::wstring lang;
@@ -259,8 +259,15 @@ void RLZTracker::PingNowImpl() {
   GoogleUpdateSettings::GetReferral(&referral);
   if (SendFinancialPing(brand, lang, referral, is_organic(brand))) {
     GoogleUpdateSettings::ClearReferral();
-    base::AutoLock lock(cache_lock_);
-    rlz_cache_.clear();
+
+    {
+      base::AutoLock lock(cache_lock_);
+      rlz_cache_.clear();
+    }
+
+    // Prime the RLZ cache for the access points we are interested in.
+    GetAccessPointRlz(rlz_lib::CHROME_OMNIBOX, NULL);
+    GetAccessPointRlz(rlz_lib::CHROME_HOME_PAGE, NULL);
   }
 }
 
@@ -378,7 +385,7 @@ bool RLZTracker::GetAccessPointRlzImpl(rlz_lib::AccessPoint point,
 }
 
 bool RLZTracker::ScheduleGetAccessPointRlz(rlz_lib::AccessPoint point) {
-  if (BrowserThread::CurrentlyOn(BrowserThread::FILE))
+  if (!BrowserThread::CurrentlyOn(BrowserThread::UI))
     return false;
 
   std::wstring* not_used = NULL;
