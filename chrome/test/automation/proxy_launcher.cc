@@ -218,7 +218,7 @@ bool ProxyLauncher::LaunchAnotherBrowserBlockUntilClosed(
 void ProxyLauncher::QuitBrowser() {
   // If we have already finished waiting for the browser to exit
   // (or it hasn't launched at all), there's nothing to do here.
-  if (process_ == base::kNullProcessHandle)
+  if (process_ == base::kNullProcessHandle || !automation_proxy_.get())
     return;
 
   if (SESSION_ENDING == shutdown_type_) {
@@ -288,7 +288,7 @@ void ProxyLauncher::QuitBrowser() {
 void ProxyLauncher::TerminateBrowser() {
   // If we have already finished waiting for the browser to exit
   // (or it hasn't launched at all), there's nothing to do here.
-  if (process_ == base::kNullProcessHandle)
+  if (process_ == base::kNullProcessHandle || !automation_proxy_.get())
     return;
 
   base::TimeTicks quit_start = base::TimeTicks::Now();

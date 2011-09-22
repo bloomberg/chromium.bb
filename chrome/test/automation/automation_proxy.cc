@@ -33,6 +33,8 @@ using base::TimeTicks;
 
 namespace {
 
+const char kChannelErrorVersionString[] = "***CHANNEL_ERROR***";
+
 // This object allows messages received on the background thread to be
 // properly triaged.
 class AutomationMessageFilter : public IPC::ChannelProxy::MessageFilter {
@@ -41,7 +43,7 @@ class AutomationMessageFilter : public IPC::ChannelProxy::MessageFilter {
 
   // Return true to indicate that the message was handled, or false to let
   // the message be handled in the default way.
-  virtual bool OnMessageReceived(const IPC::Message& message) {
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE {
     bool handled = true;
     IPC_BEGIN_MESSAGE_MAP(AutomationMessageFilter, message)
       IPC_MESSAGE_HANDLER_GENERIC(AutomationMsg_Hello,
@@ -58,14 +60,20 @@ class AutomationMessageFilter : public IPC::ChannelProxy::MessageFilter {
     return handled;
   }
 
-  virtual void OnFilterAdded(IPC::Channel* channel) {
+  virtual void OnFilterAdded(IPC::Channel* channel) OVERRIDE {
     server_->SetChannel(channel);
   }
 
-  virtual void OnFilterRemoved() {
+  virtual void OnFilterRemoved() OVERRIDE {
     server_->ResetChannel();
   }
 
+  virtual void OnChannelError() OVERRIDE {
+    server_->SignalAppLaunch(kChannelErrorVersionString);
+    server_->SignalNewTabUITab(-1);
+  }
+
+ private:
   void NewTabLoaded(int load_time) {
     server_->SignalNewTabUITab(load_time);
   }
@@ -83,8 +91,9 @@ class AutomationMessageFilter : public IPC::ChannelProxy::MessageFilter {
     server_->SignalAppLaunch(server_version);
   }
 
- private:
   AutomationProxy* server_;
+
+  DISALLOW_COPY_AND_ASSIGN(AutomationMessageFilter);
 };
 
 }  // anonymous namespace
@@ -96,7 +105,6 @@ AutomationProxy::AutomationProxy(int action_timeout_ms,
       initial_loads_complete_(true, false),
       new_tab_ui_load_complete_(true, false),
       shutdown_event_(new base::WaitableEvent(true, false)),
-      app_launch_signaled_(0),
       perform_version_check_(false),
       disconnect_on_failure_(disconnect_on_failure),
       action_timeout_(
@@ -170,7 +178,9 @@ void AutomationProxy::InitializeHandleTracker() {
 AutomationLaunchResult AutomationProxy::WaitForAppLaunch() {
   AutomationLaunchResult result = AUTOMATION_SUCCESS;
   if (app_launched_.TimedWait(action_timeout_)) {
-    if (perform_version_check_) {
+    if (server_version_ == kChannelErrorVersionString) {
+      result = AUTOMATION_CHANNEL_ERROR;
+    } else if (perform_version_check_) {
       // Obtain our own version number and compare it to what the automation
       // provider sent.
       chrome::VersionInfo version_info;
@@ -190,16 +200,6 @@ AutomationLaunchResult AutomationProxy::WaitForAppLaunch() {
 }
 
 void AutomationProxy::SignalAppLaunch(const std::string& version_string) {
-  // The synchronization of the reading / writing of server_version_ is a bit
-  // messy but does work as long as SignalAppLaunch is only called once.
-  // Review this if we ever want an AutomationProxy instance to launch
-  // multiple AutomationProviders.
-  app_launch_signaled_++;
-  if (app_launch_signaled_ > 1) {
-    NOTREACHED();
-    LOG(ERROR) << "Multiple AutomationMsg_Hello messages received";
-    return;
-  }
   server_version_ = version_string;
   app_launched_.Signal();
 }

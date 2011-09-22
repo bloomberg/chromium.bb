@@ -71,6 +71,7 @@ enum AutomationLaunchResult {
   AUTOMATION_VERSION_MISMATCH,
   AUTOMATION_CREATE_TAB_FAILED,
   AUTOMATION_SERVER_CRASHED,
+  AUTOMATION_CHANNEL_ERROR,
 };
 
 enum AutomationMsg_NavigationResponseValues {

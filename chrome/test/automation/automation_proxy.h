@@ -290,9 +290,6 @@ class AutomationProxy : public IPC::Channel::Listener,
   // The version of the automation provider we are communicating with.
   std::string server_version_;
 
-  // Used to guard against multiple hello messages being received.
-  int app_launch_signaled_;
-
   // Whether to perform a version check between the automation proxy and
   // the automation provider at connection time. Defaults to false, you can
   // set this to true if building the automation proxy into a module with
