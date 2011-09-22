@@ -567,18 +567,18 @@ void PrintWebViewHelper::OnPrintForPrintPreview(
     return;
   }
 
-  WebFrame* pdf_frame = pdf_element.document().frame();
-  scoped_ptr<PrepareFrameAndViewForPrint> prepare;
-  if (!InitPrintSettingsAndPrepareFrame(pdf_frame, &pdf_element, &prepare)) {
-    LOG(ERROR) << "Failed to initialize print page settings";
-    return;
-  }
-
   if (!UpdatePrintSettings(job_settings, false)) {
     LOG(ERROR) << "UpdatePrintSettings failed";
     DidFinishPrinting(FAIL_PRINT);
     return;
   }
+
+  WebFrame* pdf_frame = pdf_element.document().frame();
+  scoped_ptr<PrepareFrameAndViewForPrint> prepare;
+  prepare.reset(new PrepareFrameAndViewForPrint(print_pages_params_->params,
+                                                pdf_frame, &pdf_element));
+  UpdatePrintableSizeInPrintParameters(pdf_frame, &pdf_element, prepare.get(),
+                                       &print_pages_params_->params);
 
   // Render Pages for printing.
   if (!RenderPagesForPrint(pdf_frame, &pdf_element, prepare.get())) {
@@ -629,17 +629,12 @@ void PrintWebViewHelper::OnPrintPreview(const DictionaryValue& settings) {
   DCHECK(is_preview_);
   print_preview_context_.OnPrintPreview();
 
-  if (!InitPrintSettings(print_preview_context_.frame(),
-                         print_preview_context_.node(),
-                         true)) {
-    Send(new PrintHostMsg_PrintPreviewInvalidPrinterSettings(
-         routing_id(),
-         print_pages_params_->params.document_cookie));
-    return;
-  }
-
   if (!UpdatePrintSettings(settings, true)) {
-    LOG(ERROR) << "UpdatePrintSettings failed";
+    if (print_preview_context_.last_error() != PREVIEW_ERROR_BAD_SETTING) {
+      Send(new PrintHostMsg_PrintPreviewInvalidPrinterSettings(
+          routing_id(), print_pages_params_->params.document_cookie));
+      notify_browser_of_print_failure_ = false;  // Already sent.
+    }
     DidFinishPrinting(FAIL_PREVIEW);
     return;
   }
@@ -804,8 +799,10 @@ void PrintWebViewHelper::Print(WebKit::WebFrame* frame, WebKit::WebNode* node) {
 
   // Initialize print settings.
   scoped_ptr<PrepareFrameAndViewForPrint> prepare;
-  if (!InitPrintSettingsAndPrepareFrame(frame, node, &prepare))
+  if (!InitPrintSettingsAndPrepareFrame(frame, node, &prepare)) {
+    DidFinishPrinting(FAIL_PRINT);
     return;  // Failed to init print page settings.
+  }
 
   int expected_page_count = 0;
   bool use_browser_overlays = true;
@@ -851,7 +848,8 @@ void PrintWebViewHelper::DidFinishPrinting(PrintingResult result) {
   } else if (result == FAIL_PREVIEW) {
     DCHECK(is_preview_);
     store_print_pages_params = false;
-    int cookie = print_pages_params_->params.document_cookie;
+    int cookie = print_pages_params_.get() ?
+                     print_pages_params_->params.document_cookie : 0;
     if (notify_browser_of_print_failure_)
       Send(new PrintHostMsg_PrintPreviewFailed(routing_id(), cookie));
     else
@@ -1054,9 +1052,7 @@ void PrintWebViewHelper::UpdatePrintableSizeInPrintParameters(
   prepare->UpdatePrintParams(*params);
 }
 
-bool PrintWebViewHelper::InitPrintSettings(WebKit::WebFrame* frame,
-                                           WebKit::WebNode* node,
-                                           bool is_preview) {
+bool PrintWebViewHelper::InitPrintSettings(WebKit::WebFrame* frame) {
   DCHECK(frame);
   PrintMsg_PrintPages_Params settings;
 
@@ -1067,12 +1063,10 @@ bool PrintWebViewHelper::InitPrintSettings(WebKit::WebFrame* frame,
   // terminate.
   bool result = true;
   if (PrintMsg_Print_Params_IsEmpty(settings.params)) {
-    if (!is_preview) {
-      render_view()->runModalAlertDialog(
-          frame,
-          l10n_util::GetStringUTF16(
-              IDS_PRINT_PREVIEW_INVALID_PRINTER_SETTINGS));
-    }
+    render_view()->runModalAlertDialog(
+        frame,
+        l10n_util::GetStringUTF16(
+            IDS_PRINT_PREVIEW_INVALID_PRINTER_SETTINGS));
     result = false;
   }
 
@@ -1091,7 +1085,7 @@ bool PrintWebViewHelper::InitPrintSettings(WebKit::WebFrame* frame,
 bool PrintWebViewHelper::InitPrintSettingsAndPrepareFrame(
     WebKit::WebFrame* frame, WebKit::WebNode* node,
     scoped_ptr<PrepareFrameAndViewForPrint>* prepare) {
-  if (!InitPrintSettings(frame, node, false))
+  if (!InitPrintSettings(frame))
     return false;
 
   DCHECK(!prepare->get());
@@ -1106,10 +1100,39 @@ bool PrintWebViewHelper::InitPrintSettingsAndPrepareFrame(
 
 bool PrintWebViewHelper::UpdatePrintSettings(
     const DictionaryValue& job_settings, bool is_preview) {
-  PrintMsg_PrintPages_Params settings;
+  if (job_settings.empty()) {
+    if (is_preview)
+      print_preview_context_.set_error(PREVIEW_ERROR_BAD_SETTING);
+    return false;
+  }
 
+  // Send the cookie so that UpdatePrintSettings can reuse PrinterQuery when
+  // possible.
+  int cookie = print_pages_params_.get() ?
+      print_pages_params_->params.document_cookie : 0;
+  PrintMsg_PrintPages_Params settings;
   Send(new PrintHostMsg_UpdatePrintSettings(routing_id(),
-       print_pages_params_->params.document_cookie, job_settings, &settings));
+      cookie, job_settings, &settings));
+  print_pages_params_.reset(new PrintMsg_PrintPages_Params(settings));
+
+  if (PrintMsg_Print_Params_IsEmpty(settings.params)) {
+    if (is_preview) {
+      print_preview_context_.set_error(PREVIEW_ERROR_INVALID_PRINTER_SETTINGS);
+    } else {
+      WebKit::WebFrame* frame = print_preview_context_.frame();
+      if (!frame) {
+        GetPrintFrame(&frame);
+      }
+      if (frame) {
+        render_view()->runModalAlertDialog(
+            frame,
+            l10n_util::GetStringUTF16(
+                IDS_PRINT_PREVIEW_INVALID_PRINTER_SETTINGS));
+      }
+    }
+    return false;
+  }
+
   if (settings.params.dpi < kMinDpi || !settings.params.document_cookie) {
     print_preview_context_.set_error(PREVIEW_ERROR_UPDATING_PRINT_SETTINGS);
     return false;
@@ -1543,6 +1566,10 @@ PrintWebViewHelper::PrintPreviewContext::metafile() const {
 const PrintMsg_Print_Params&
 PrintWebViewHelper::PrintPreviewContext::print_params() const {
   return *print_params_;
+}
+
+int PrintWebViewHelper::PrintPreviewContext::last_error() const {
+  return error_;
 }
 
 const gfx::Size&

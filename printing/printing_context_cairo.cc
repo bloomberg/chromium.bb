@@ -155,6 +155,11 @@ PrintingContext::Result PrintingContextCairo::UpdatePrinterSettings(
 #else
   DCHECK(!in_print_job_);
 
+  if (!print_dialog_) {
+    print_dialog_ = create_dialog_func_(this);
+    print_dialog_->AddRefToDialog();
+  }
+
   if (!print_dialog_->UpdateSettings(job_settings, ranges))
     return OnError();
 

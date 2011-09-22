@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,7 +23,7 @@ void PrintSettingsInitializerWin::InitPrintSettings(
 
   print_settings->set_printer_name(dev_mode.dmDeviceName);
   print_settings->set_device_name(new_device_name);
-  print_settings->ranges = new_ranges;
+  print_settings->ranges = const_cast<PageRanges&>(new_ranges);
   print_settings->set_landscape(dev_mode.dmOrientation == DMORIENT_LANDSCAPE);
   print_settings->selection_only = print_selection_only;
 

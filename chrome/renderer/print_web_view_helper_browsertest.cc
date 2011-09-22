@@ -489,7 +489,6 @@ TEST_F(PrintWebViewHelperPreviewTest, OnPrintForPrintPreviewFail) {
   DictionaryValue empty_dict;
   PrintWebViewHelper::Get(view_)->OnPrintForPrintPreview(empty_dict);
 
-  VerifyPrintFailed(true);
   VerifyPagesPrinted(false);
 }
 
@@ -530,6 +529,7 @@ TEST_F(PrintWebViewHelperPreviewTest,
   CreatePrintSettingsDictionary(&dict);
   PrintWebViewHelper::Get(view_)->OnPrintForPrintPreview(dict);
 
+  VerifyPrintFailed(true);
   VerifyPagesPrinted(false);
 }
 

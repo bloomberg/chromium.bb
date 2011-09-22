@@ -172,13 +172,13 @@ class PrintWebViewHelper : public RenderViewObserver,
   // Print Settings -----------------------------------------------------------
 
   // Initialize print page settings with default settings.
-  bool InitPrintSettings(WebKit::WebFrame* frame,
-                         WebKit::WebNode* node,
-                         bool is_preview);
+  // Used only for native printing workflow.
+  bool InitPrintSettings(WebKit::WebFrame* frame);
 
   // Initialize print page settings with default settings and prepare the frame
   // for print. A new PrepareFrameAndViewForPrint is created to fulfill the
   // request and is filled into the |prepare| argument.
+  // Used only for native printing workflow.
   bool InitPrintSettingsAndPrepareFrame(
       WebKit::WebFrame* frame,
       WebKit::WebNode* node,
@@ -334,6 +334,7 @@ class PrintWebViewHelper : public RenderViewObserver,
     PREVIEW_ERROR_MAC_DRAFT_METAFILE_INIT_FAILED,
     PREVIEW_ERROR_PAGE_RENDERED_WITHOUT_METAFILE,
     PREVIEW_ERROR_UPDATING_PRINT_SETTINGS,
+    PREVIEW_ERROR_INVALID_PRINTER_SETTINGS,
     PREVIEW_ERROR_LAST_ENUM  // Always last.
   };
 
@@ -390,6 +391,7 @@ class PrintWebViewHelper : public RenderViewObserver,
     printing::PreviewMetafile* metafile() const;
     const PrintMsg_Print_Params& print_params() const;
     const gfx::Size& GetPrintCanvasSize() const;
+    int last_error() const;
 
    private:
     enum State {

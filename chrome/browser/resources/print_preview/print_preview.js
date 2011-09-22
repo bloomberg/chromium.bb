@@ -853,7 +853,7 @@ function printPreviewFailed() {
 
 /**
  * Display an error message when encountered invalid printer settings.
- * Called from PrintPreviewMessageHandler::OnInvalidDefaultPrinter().
+ * Called from PrintPreviewMessageHandler::OnInvalidPrinterSettings().
  */
 function invalidPrinterSettings() {
   displayErrorMessage(localStrings.getString('invalidPrinterSettings'));

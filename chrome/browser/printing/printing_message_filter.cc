@@ -288,22 +288,29 @@ void PrintingMessageFilter::OnUpdatePrintSettings(
     int document_cookie, const DictionaryValue& job_settings,
     IPC::Message* reply_msg) {
   scoped_refptr<printing::PrinterQuery> printer_query;
-  print_job_manager_->PopPrinterQuery(document_cookie, &printer_query);
-  if (printer_query.get()) {
-    CancelableTask* task = NewRunnableMethod(
-        this,
-        &PrintingMessageFilter::OnUpdatePrintSettingsReply,
-        printer_query,
-        reply_msg);
-    printer_query->SetSettings(job_settings, task);
+  if (!print_job_manager_->printing_enabled()) {
+    // Reply with NULL query.
+    OnUpdatePrintSettingsReply(printer_query, reply_msg);
+    return;
   }
+
+  print_job_manager_->PopPrinterQuery(document_cookie, &printer_query);
+  if (!printer_query.get())
+    printer_query = new printing::PrinterQuery;
+  CancelableTask* task = NewRunnableMethod(
+      this,
+      &PrintingMessageFilter::OnUpdatePrintSettingsReply,
+      printer_query,
+      reply_msg);
+  printer_query->SetSettings(job_settings, task);
 }
 
 void PrintingMessageFilter::OnUpdatePrintSettingsReply(
     scoped_refptr<printing::PrinterQuery> printer_query,
     IPC::Message* reply_msg) {
   PrintMsg_PrintPages_Params params;
-  if (printer_query->last_status() != printing::PrintingContext::OK) {
+  if (!printer_query.get() ||
+      printer_query->last_status() != printing::PrintingContext::OK) {
     params.Reset();
   } else {
     RenderParamsFromPrintSettings(printer_query->settings(), &params.params);
@@ -314,10 +321,12 @@ void PrintingMessageFilter::OnUpdatePrintSettingsReply(
   PrintHostMsg_UpdatePrintSettings::WriteReplyParams(reply_msg, params);
   Send(reply_msg);
   // If user hasn't cancelled.
-  if (printer_query->cookie() && printer_query->settings().dpi())
-    print_job_manager_->QueuePrinterQuery(printer_query.get());
-  else
-    printer_query->StopWorker();
+  if (printer_query.get()) {
+    if (printer_query->cookie() && printer_query->settings().dpi())
+      print_job_manager_->QueuePrinterQuery(printer_query.get());
+    else
+      printer_query->StopWorker();
+  }
 }
 
 void PrintingMessageFilter::OnCheckForCancel(const std::string& preview_ui_addr,

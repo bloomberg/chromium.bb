@@ -175,6 +175,9 @@ bool PrintDialogGtk::UpdateSettings(const DictionaryValue& settings,
     return false;
   }
 
+  if (!gtk_settings_)
+    gtk_settings_ = gtk_print_settings_new();
+
   if (!print_to_pdf) {
     scoped_ptr<GtkPrinterList> printer_list(new GtkPrinterList);
     printer_ = printer_list->GetPrinterWithName(device_name.c_str());
@@ -182,7 +185,13 @@ bool PrintDialogGtk::UpdateSettings(const DictionaryValue& settings,
       g_object_ref(printer_);
       gtk_print_settings_set_printer(gtk_settings_,
                                      gtk_printer_get_name(printer_));
+      if (!page_setup_) {
+        page_setup_ = gtk_printer_get_default_page_size(printer_);
+      }
     }
+    if (!page_setup_)
+      page_setup_ = gtk_page_setup_new();
+
     gtk_print_settings_set_n_copies(gtk_settings_, copies);
     gtk_print_settings_set_collate(gtk_settings_, collate);
 
