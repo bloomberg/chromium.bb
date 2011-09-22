@@ -118,7 +118,8 @@ void NativeWidgetViews::InitNativeWidget(const Widget::InitParams& params) {
   if (params.parent_widget) {
     parent_view = params.parent_widget->GetChildViewParent();
   } else if (ViewsDelegate::views_delegate &&
-             ViewsDelegate::views_delegate->GetDefaultParentView()) {
+             ViewsDelegate::views_delegate->GetDefaultParentView() &&
+             !params.child) {
     parent_view = ViewsDelegate::views_delegate->GetDefaultParentView();
   } else if (params.parent) {
     Widget* widget = Widget::GetWidgetForNativeView(params.parent);

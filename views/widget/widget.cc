@@ -73,7 +73,8 @@ class DefaultWidgetDelegate : public WidgetDelegate {
  public:
   DefaultWidgetDelegate(Widget* widget, const Widget::InitParams& params)
       : widget_(widget),
-        can_activate_(params.type != Widget::InitParams::TYPE_POPUP) {
+        can_activate_(!params.child &&
+                      params.type != Widget::InitParams::TYPE_POPUP) {
   }
   virtual ~DefaultWidgetDelegate() {}
 
@@ -398,6 +399,8 @@ const Widget* Widget::GetTopLevelWidget() const {
 
 void Widget::SetContentsView(View* view) {
   root_view_->SetContentsView(view);
+  if (non_client_view_ != view)
+    non_client_view_ = NULL;
 }
 
 View* Widget::GetContentsView() {
@@ -1074,6 +1077,7 @@ internal::RootView* Widget::CreateRootView() {
 }
 
 void Widget::DestroyRootView() {
+  non_client_view_ = NULL;
   root_view_.reset();
   // Input method has to be destroyed before focus manager.
   input_method_.reset();
