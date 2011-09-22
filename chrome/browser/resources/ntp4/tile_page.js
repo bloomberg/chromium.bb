@@ -20,6 +20,19 @@ cr.define('ntp4', function() {
   }
 
   /**
+   * Changes the current dropEffect of a drag. This modifies the native cursor
+   * and serves as an indicator of what we should do at the end of the drag as
+   * well as give indication to the user if a drop would succeed if they let go.
+   * @param {DataTransfer} dataTransfer A dataTransfer object from a drag event.
+   * @param {string} effect A drop effect to change to (i.e. copy, move, none).
+   */
+  function setCurrentDropEffect(dataTransfer, effect) {
+    dataTransfer.dropEffect = effect;
+    if (currentlyDraggingTile)
+      currentlyDraggingTile.lastDropEffect = dataTransfer.dropEffect;
+  }
+
+  /**
    * Creates a new Tile object. Tiles wrap content on a TilePage, providing
    * some styling and drag functionality.
    * @constructor
@@ -161,8 +174,8 @@ cr.define('ntp4', function() {
       } else if (tilePage) {
         // TODO(dbeam): Until we fix dropEffect to the correct behavior it will
         // differ on windows - crbug.com/39399.  That's why we use the custom
-        // tilePage.lastDropEffect_ instead of e.dataTransfer.dropEffect.
-        if (tilePage.selected && tilePage.lastDropEffect_ != 'copy') {
+        // this.lastDropEffect instead of e.dataTransfer.dropEffect.
+        if (tilePage.selected && this.lastDropEffect != 'copy') {
           // The drag clone can still be hidden from the last drag move event.
           this.dragClone.hidden = false;
           // The tile's contents may have moved following the respositioning;
@@ -183,6 +196,7 @@ cr.define('ntp4', function() {
         }
       }
 
+      delete this.lastDropEffect;
       this.landedOnTrash = false;
     },
 
@@ -931,8 +945,6 @@ cr.define('ntp4', function() {
       if (newDragIndex < 0 || newDragIndex >= this.tileElements_.length)
         newDragIndex = this.dragItemIndex_;
       this.updateDropIndicator_(newDragIndex);
-
-      this.lastDropEffect_ = e.dataTransfer.dropEffect;
     },
 
     /**
@@ -1071,6 +1083,7 @@ cr.define('ntp4', function() {
 
   return {
     getCurrentlyDraggingTile: getCurrentlyDraggingTile,
+    setCurrentDropEffect: setCurrentDropEffect,
     TilePage: TilePage,
   };
 });

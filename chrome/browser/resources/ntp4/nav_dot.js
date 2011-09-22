@@ -203,7 +203,7 @@ cr.define('ntp4', function() {
       e.preventDefault();
 
       if (!this.dragWrapper_.isCurrentDragTarget)
-        e.dataTransfer.dropEffect = 'none';
+        ntp4.setCurrentDropEffect(e.dataTransfer, 'none');
       else
         this.page_.setDropEffect(e.dataTransfer);
     },

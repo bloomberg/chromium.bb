@@ -507,9 +507,9 @@ cr.define('ntp4', function() {
     setDropEffect: function(dataTransfer) {
       var tile = ntp4.getCurrentlyDraggingTile();
       if (tile && tile.querySelector('.bookmark'))
-        dataTransfer.dropEffect = 'move';
+        ntp4.setCurrentDropEffect(dataTransfer, 'move');
       else
-        dataTransfer.dropEffect = 'copy';
+        ntp4.setCurrentDropEffect(dataTransfer, 'copy');
     },
 
     /** @inheritDoc */

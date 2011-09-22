@@ -43,8 +43,8 @@ cr.define('ntp4', function() {
     doDragOver: function(e) {
       ntp4.getCurrentlyDraggingTile().dragClone.classList.add(
           'hovering-on-trash');
+      ntp4.setCurrentDropEffect(e.dataTransfer, 'move');
       e.preventDefault();
-      e.dataTransfer.dropEffect = 'move';
     },
 
     /**
