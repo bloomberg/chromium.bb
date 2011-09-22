@@ -135,10 +135,8 @@ void AppendMouseEvent(const WebInputEvent& event,
   result.mouse_position.x = mouse_event.x;
   result.mouse_position.y = mouse_event.y;
   result.mouse_click_count = mouse_event.clickCount;
-
-  // TODO(yzshen): Make the change after WebMouseEvent adds movementX/Y.
-  result.mouse_movement.x = 0; // mouse_event.movementX
-  result.mouse_movement.y = 0; // mouse_event.movementY
+  result.mouse_movement.x = mouse_event.movementX;
+  result.mouse_movement.y = mouse_event.movementY;
   result_events->push_back(result);
 }
 
@@ -229,11 +227,8 @@ WebMouseEvent* BuildMouseEvent(const InputEventData& event) {
   mouse_event->x = event.mouse_position.x;
   mouse_event->y = event.mouse_position.y;
   mouse_event->clickCount = event.mouse_click_count;
-
-  // TODO(yzshen): Uncomment the following lines after WebMouseEvent adds
-  // movementX/Y.
-  // mouse_event->movementX = event.mouse_position.x;
-  // mouse_event->movementY = event.mouse_position.y;
+  mouse_event->movementX = event.mouse_movement.x;
+  mouse_event->movementY = event.mouse_movement.y;
   return mouse_event;
 }
 

@@ -648,6 +648,8 @@ class RenderView : public RenderWidget,
       gfx::Rect* clip);
   virtual gfx::Point GetScrollOffset();
   virtual void DidHandleKeyEvent();
+  virtual bool WillHandleMouseEvent(
+      const WebKit::WebMouseEvent& event) OVERRIDE;
   virtual void DidHandleMouseEvent(const WebKit::WebMouseEvent& event);
   virtual void OnSetFocus(bool enable);
   virtual void OnWasHidden();
@@ -829,8 +831,10 @@ class RenderView : public RenderWidget,
       const std::vector<GURL>& links,
       const std::vector<FilePath>& local_paths,
       const FilePath& local_directory_name);
+  void OnLockMouseACK(bool succeeded);
   void OnMediaPlayerActionAt(const gfx::Point& location,
                              const WebKit::WebMediaPlayerAction& action);
+  void OnMouseLockLost();
   void OnMoveOrResizeStarted();
   void OnNavigate(const ViewMsg_Navigate_Params& params);
   void OnPaste();

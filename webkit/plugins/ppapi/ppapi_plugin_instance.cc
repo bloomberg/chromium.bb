@@ -1584,20 +1584,15 @@ int32_t PluginInstance::LockMouse(PP_Instance instance,
   if (lock_mouse_callback_.func)
     return PP_ERROR_INPROGRESS;
 
-  // TODO(yzshen): Uncomment the following lines after adding implementation in
-  // the delegate.
-  // lock_mouse_callback_ = callback;
+  lock_mouse_callback_ = callback;
   // We will be notified on completion via OnLockMouseACK(), either
   // synchronously or asynchronously.
-  // delegate()->LockMouse(this);
-  // return PP_OK_COMPLETIONPENDING;
-  return PP_ERROR_FAILED;
+  delegate()->LockMouse(this);
+  return PP_OK_COMPLETIONPENDING;
 }
 
 void PluginInstance::UnlockMouse(PP_Instance instance) {
-  // TODO(yzshen): Uncomment the following after adding implementation in the
-  // delegate.
-  // delegate()->UnlockMouse(this);
+  delegate()->UnlockMouse(this);
 }
 
 void PluginInstance::SubscribeToPolicyUpdates(PP_Instance instance) {

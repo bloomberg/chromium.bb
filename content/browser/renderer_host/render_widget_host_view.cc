@@ -4,6 +4,7 @@
 
 #include "content/browser/renderer_host/render_widget_host_view.h"
 
+#include "base/logging.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScreenInfo.h"
 
 #if defined(OS_MACOSX)
@@ -39,7 +40,13 @@ void RenderWidgetHostView::GetDefaultScreenInfo(
 }
 #endif
 
-RenderWidgetHostView::~RenderWidgetHostView() {}
+RenderWidgetHostView::RenderWidgetHostView()
+    : popup_type_(WebKit::WebPopupTypeNone), mouse_locked_(false) {
+}
+
+RenderWidgetHostView::~RenderWidgetHostView() {
+  DCHECK(!mouse_locked_);
+}
 
 void RenderWidgetHostView::SetBackground(const SkBitmap& background) {
   background_ = background;

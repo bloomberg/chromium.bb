@@ -26,6 +26,7 @@
 #include "content/common/notification_registrar.h"
 #include "ui/base/win/ime_input.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/gfx/point.h"
 #include "webkit/glue/webcursor.h"
 
 class BackingStore;
@@ -181,6 +182,8 @@ class RenderWidgetHostViewWin
   virtual void OnAccessibilityNotifications(
       const std::vector<ViewHostMsg_AccessibilityNotification_Params>& params
       ) OVERRIDE;
+  virtual bool LockMouse() OVERRIDE;
+  virtual void UnlockMouse() OVERRIDE;
 
   // Implementation of NotificationObserver:
   virtual void Observe(int type,
@@ -291,6 +294,11 @@ class RenderWidgetHostViewWin
                                const gfx::Rect& pos,
                                DWORD ex_style);
 
+  CPoint GetClientCenter() const;
+  void MoveCursorToCenter() const;
+
+  void HandleLockedMouseEvent(UINT message, WPARAM wparam, LPARAM lparam);
+
   // The associated Model.  While |this| is being Destroyed,
   // |render_widget_host_| is NULL and the Windows message loop is run one last
   // time. Message handlers must check for a NULL |render_widget_host_|.
@@ -385,6 +393,18 @@ class RenderWidgetHostViewWin
 
   // Is the widget fullscreen?
   bool is_fullscreen_;
+
+  // Used to record the last position of the mouse.
+  // While the mouse is locked, they store the last known position just as mouse
+  // lock was entered.
+  // Relative to the upper-left corner of the view.
+  gfx::Point last_mouse_position_;
+  // Relative to the upper-left corner of the screen.
+  gfx::Point last_global_mouse_position_;
+
+  // In the case of the mouse being moved away from the view and then moved
+  // back, we regard the mouse movement as (0, 0).
+  bool ignore_mouse_movement_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewWin);
 };

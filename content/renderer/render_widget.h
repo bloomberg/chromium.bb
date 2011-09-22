@@ -42,6 +42,7 @@ class PlatformCanvas;
 }
 
 namespace WebKit {
+class WebInputEvent;
 class WebMouseEvent;
 class WebWidget;
 struct WebPopupMenuInfo;
@@ -299,6 +300,12 @@ class RenderWidget : public IPC::Channel::Listener,
   // Called by OnHandleInputEvent() to notify subclasses that a key event was
   // just handled.
   virtual void DidHandleKeyEvent() {}
+
+  // Called by OnHandleInputEvent() to notify subclasses that a mouse event is
+  // about to be handled.
+  // Returns true if no further handling is needed. In that case, the event
+  // won't be sent to WebKit or trigger DidHandleMouseEvent().
+  virtual bool WillHandleMouseEvent(const WebKit::WebMouseEvent& event);
 
   // Called by OnHandleInputEvent() to notify subclasses that a mouse event was
   // just handled.

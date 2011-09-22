@@ -1100,6 +1100,15 @@ void RenderWidgetHostViewMac::SetScrollOffsetPinning(
   [cocoa_view_ setPinnedRight:is_pinned_to_right];
 }
 
+bool RenderWidgetHostViewMac::LockMouse() {
+  NOTIMPLEMENTED();
+  return false;
+}
+
+void RenderWidgetHostViewMac::UnlockMouse() {
+  NOTIMPLEMENTED();
+}
+
 void RenderWidgetHostViewMac::ShutdownHost() {
   shutdown_factory_.RevokeAll();
   render_widget_host_->Shutdown();

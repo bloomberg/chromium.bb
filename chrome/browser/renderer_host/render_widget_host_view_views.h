@@ -119,6 +119,8 @@ class RenderWidgetHostViewViews : public RenderWidgetHostView,
   virtual void ShowCompositorHostWindow(bool show) OVERRIDE;
 #endif
   virtual gfx::PluginWindowHandle GetCompositingSurface() OVERRIDE;
+  virtual bool LockMouse() OVERRIDE;
+  virtual void UnlockMouse() OVERRIDE;
 
   // Overridden from views::TouchSelectionClientView.
   virtual void SelectRect(const gfx::Point& start,

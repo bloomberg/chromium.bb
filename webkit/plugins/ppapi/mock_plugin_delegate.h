@@ -118,6 +118,8 @@ class MockPluginDelegate : public PluginDelegate {
   virtual std::string GetFlashCommandLineArgs();
   virtual base::SharedMemory* CreateAnonymousSharedMemory(uint32_t size);
   virtual ::ppapi::Preferences GetPreferences();
+  virtual void LockMouse(PluginInstance* instance);
+  virtual void UnlockMouse(PluginInstance* instance);
 };
 
 }  // namespace ppapi

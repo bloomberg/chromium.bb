@@ -243,7 +243,8 @@ RenderWidgetHostViewWin::RenderWidgetHostViewWin(RenderWidgetHost* widget)
       is_loading_(false),
       overlay_color_(0),
       text_input_type_(ui::TEXT_INPUT_TYPE_NONE),
-      is_fullscreen_(false) {
+      is_fullscreen_(false),
+      ignore_mouse_movement_(true) {
   render_widget_host_->SetView(this);
   registrar_.Add(this,
                  content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
@@ -251,6 +252,7 @@ RenderWidgetHostViewWin::RenderWidgetHostViewWin(RenderWidgetHost* widget)
 }
 
 RenderWidgetHostViewWin::~RenderWidgetHostViewWin() {
+  UnlockMouse();
   ResetTooltip();
 }
 
@@ -1100,12 +1102,14 @@ LRESULT RenderWidgetHostViewWin::OnNotify(int w_param, NMHDR* header) {
         tooltip_hwnd_, TTM_SETMAXTIPWIDTH, 0, kTooltipMaxWidthPixels);
       SetMsgHandled(TRUE);
       break;
-                          }
+    }
     case TTN_POP:
       tooltip_showing_ = false;
       SetMsgHandled(TRUE);
       break;
     case TTN_SHOW:
+      // Tooltip shouldn't be shown when the mouse is locked.
+      DCHECK(!mouse_locked_);
       tooltip_showing_ = true;
       SetMsgHandled(TRUE);
       break;
@@ -1226,6 +1230,15 @@ LRESULT RenderWidgetHostViewWin::OnMouseEvent(UINT message, WPARAM wparam,
                                               LPARAM lparam, BOOL& handled) {
   handled = TRUE;
 
+  if (message == WM_MOUSELEAVE)
+    ignore_mouse_movement_ = true;
+
+  if (mouse_locked_) {
+    HandleLockedMouseEvent(message, wparam, lparam);
+    MoveCursorToCenter();
+    return 0;
+  }
+
   if (::IsWindow(tooltip_hwnd_)) {
     // Forward mouse events through to the tooltip window
     MSG msg;
@@ -1289,10 +1302,12 @@ LRESULT RenderWidgetHostViewWin::OnKeyEvent(UINT message, WPARAM wparam,
   handled = TRUE;
 
   // Force fullscreen windows to close on Escape.
-  if (is_fullscreen_ && (message == WM_KEYDOWN || message == WM_KEYUP) &&
-      wparam == VK_ESCAPE) {
-    SendMessage(WM_CANCELMODE);
-    return 0;
+  if ((message == WM_KEYDOWN || message == WM_KEYUP) && wparam == VK_ESCAPE) {
+    if (mouse_locked_)
+      UnlockMouse();
+    if (is_fullscreen_)
+      SendMessage(WM_CANCELMODE);
+   return 0;
   }
 
   // If we are a pop-up, forward tab related messages to our parent HWND, so
@@ -1475,6 +1490,52 @@ void RenderWidgetHostViewWin::OnAccessibilityNotifications(
             m_hWnd, static_cast<WebAccessibility::State>(0), this));
   }
   browser_accessibility_manager_->OnAccessibilityNotifications(params);
+}
+
+bool RenderWidgetHostViewWin::LockMouse() {
+  if (mouse_locked_)
+    return true;
+
+  mouse_locked_ = true;
+
+  // Hide the tooltip window if it is currently visible. When the mouse is
+  // locked, no mouse message is relayed to the tooltip window, so we don't need
+  // to worry that it will reappear.
+  if (::IsWindow(tooltip_hwnd_) && tooltip_showing_) {
+    ::SendMessage(tooltip_hwnd_, TTM_POP, 0, 0);
+    // Sending a TTM_POP message doesn't seem to actually hide the tooltip
+    // window, although we will receive a TTN_POP notification. As a result,
+    // ShowWindow() is explicitly called to hide the window.
+    ::ShowWindow(tooltip_hwnd_, SW_HIDE);
+  }
+
+  // TODO(yzshen): Show an invisible cursor instead of using
+  // ::ShowCursor(FALSE), so that MoveCursorToCenter() works with Remote
+  // Desktop.
+  ::ShowCursor(FALSE);
+
+  MoveCursorToCenter();
+
+  CRect rect;
+  GetWindowRect(&rect);
+  ::ClipCursor(&rect);
+
+  return true;
+}
+
+void RenderWidgetHostViewWin::UnlockMouse() {
+  if (!mouse_locked_)
+    return;
+
+  mouse_locked_ = false;
+
+  ::ClipCursor(NULL);
+  ::SetCursorPos(last_global_mouse_position_.x(),
+                 last_global_mouse_position_.y());
+  ::ShowCursor(TRUE);
+
+  if (render_widget_host_)
+    render_widget_host_->LostMouseLock();
 }
 
 void RenderWidgetHostViewWin::Observe(int type,
@@ -1795,6 +1856,31 @@ void RenderWidgetHostViewWin::ForwardMouseEventToRenderer(UINT message,
   WebMouseEvent event(
       WebInputEventFactory::mouseEvent(m_hWnd, message, wparam, lparam));
 
+  if (mouse_locked_) {
+    CPoint center = GetClientCenter();
+
+    event.movementX = event.windowX - center.x;
+    event.movementY = event.windowY - center.y;
+    event.x = last_mouse_position_.x();
+    event.y = last_mouse_position_.y();
+    event.windowX = last_mouse_position_.x();
+    event.windowY = last_mouse_position_.y();
+    event.globalX = last_global_mouse_position_.x();
+    event.globalY = last_global_mouse_position_.y();
+  } else {
+    if (ignore_mouse_movement_) {
+      ignore_mouse_movement_ = false;
+      event.movementX = 0;
+      event.movementY = 0;
+    } else {
+      event.movementX = event.globalX - last_global_mouse_position_.x();
+      event.movementY = event.globalY - last_global_mouse_position_.y();
+    }
+
+    last_mouse_position_.SetPoint(event.windowX, event.windowY);
+    last_global_mouse_position_.SetPoint(event.globalX, event.globalY);
+  }
+
   // Send the event to the renderer before changing mouse capture, so that the
   // capturelost event arrives after mouseup.
   render_widget_host_->ForwardMouseEvent(event);
@@ -1843,3 +1929,32 @@ void RenderWidgetHostViewWin::DoPopupOrFullscreenInit(HWND parent_hwnd,
   EnsureTooltip();
   ShowWindow(IsActivatable() ? SW_SHOW : SW_SHOWNA);
 }
+
+CPoint RenderWidgetHostViewWin::GetClientCenter() const {
+  CRect rect;
+  GetClientRect(&rect);
+  return rect.CenterPoint();
+}
+
+void RenderWidgetHostViewWin::MoveCursorToCenter() const {
+  CPoint center = GetClientCenter();
+  ClientToScreen(&center);
+  if (!::SetCursorPos(center.x, center.y))
+    LOG_GETLASTERROR(WARNING) << "Failed to set cursor position.";
+}
+
+void RenderWidgetHostViewWin::HandleLockedMouseEvent(UINT message,
+                                                     WPARAM wparam,
+                                                     LPARAM lparam) {
+  DCHECK(mouse_locked_);
+
+  if (message == WM_MOUSEMOVE) {
+    CPoint center = GetClientCenter();
+    // Ignore WM_MOUSEMOVE messages generated by MoveCursorToCenter().
+    if (LOWORD(lparam) == center.x && HIWORD(lparam) == center.y)
+      return;
+  }
+
+  ForwardMouseEventToRenderer(message, wparam, lparam);
+}
+

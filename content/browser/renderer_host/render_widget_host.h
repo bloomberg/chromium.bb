@@ -196,6 +196,9 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Channel::Listener,
   void Blur();
   virtual void LostCapture();
 
+  // Called to notify the RenderWidget that it has lost the mouse lock.
+  virtual void LostMouseLock();
+
   // Tells us whether the page is rendered directly via the GPU process.
   bool is_accelerated_compositing_active() {
     return is_accelerated_compositing_active_;
@@ -465,6 +468,8 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Channel::Listener,
   virtual void NotifyRendererUnresponsive() {}
   virtual void NotifyRendererResponsive() {}
 
+  bool IsMouseLocked() const;
+
  protected:
   // true if a renderer has once been valid. We use this flag to display a sad
   // tab only when we lose our renderer and not if a paint occurs during
@@ -510,6 +515,9 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Channel::Listener,
   void OnMsgImeCancelComposition();
 
   void OnMsgDidActivateAcceleratedCompositing(bool activated);
+
+  void OnMsgLockMouse();
+  void OnMsgUnlockMouse();
 
 #if defined(OS_POSIX)
   void OnMsgGetScreenInfo(gfx::NativeViewId view,

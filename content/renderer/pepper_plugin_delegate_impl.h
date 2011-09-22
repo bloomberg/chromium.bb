@@ -45,6 +45,7 @@ class PluginModule;
 
 namespace WebKit {
 class WebFileChooserCompletion;
+class WebMouseEvent;
 struct WebFileChooserParams;
 }
 
@@ -167,6 +168,15 @@ class PepperPluginDelegateImpl
 
   // Returns whether or not a Pepper plugin is focused.
   bool IsPluginFocused() const;
+
+  // Notification that the request to lock the mouse has completed.
+  void OnLockMouseACK(bool succeeded);
+  // Notification that the plugin instance has lost the mouse lock.
+  void OnMouseLockLost();
+  // Dispatches mouse events directly to the owner of the mouse lock.
+  // True indicates currently the mouse is locked and the event has been
+  // dispatched to the owner.
+  bool DispatchLockedMouseEvent(const WebKit::WebMouseEvent& event);
 
   // PluginDelegate implementation.
   virtual void PluginFocusChanged(bool focused) OVERRIDE;
@@ -305,6 +315,8 @@ class PepperPluginDelegateImpl
   virtual base::SharedMemory* CreateAnonymousSharedMemory(uint32_t size)
       OVERRIDE;
   virtual ::ppapi::Preferences GetPreferences() OVERRIDE;
+  virtual void LockMouse(webkit::ppapi::PluginInstance* instance) OVERRIDE;
+  virtual void UnlockMouse(webkit::ppapi::PluginInstance* instance) OVERRIDE;
 
   CONTENT_EXPORT int GetRoutingId() const;
 
@@ -316,6 +328,10 @@ class PepperPluginDelegateImpl
   // Asynchronously attempts to create a PPAPI broker for the given plugin.
   scoped_refptr<PpapiBrokerImpl> CreatePpapiBroker(
       webkit::ppapi::PluginModule* plugin_module);
+
+  bool MouseLockedOrPending() const {
+    return mouse_locked_ || pending_lock_request_ || pending_unlock_request_;
+  }
 
   // Pointer to the RenderView that owns us.
   RenderView* render_view_;
@@ -346,6 +362,21 @@ class PepperPluginDelegateImpl
   // Set of instances to receive a notification when the enterprise policy has
   // been updated.
   std::set<webkit::ppapi::PluginInstance*> subscribed_to_policy_updates_;
+
+  // |mouse_lock_owner_| is not owned by this class. We can know about when it
+  // is destroyed via InstanceDeleted().
+  // |mouse_lock_owner_| being non-NULL doesn't indicate that currently the
+  // mouse has been locked. It is possible that a request to lock the mouse has
+  // been sent, but the response hasn't arrived yet.
+  webkit::ppapi::PluginInstance* mouse_lock_owner_;
+  bool mouse_locked_;
+  // If both |pending_lock_request_| and |pending_unlock_request_| are true,
+  // it means a lock request was sent before an unlock request and we haven't
+  // received responses for them.
+  // The logic in LockMouse() makes sure that a lock request won't be sent when
+  // there is a pending unlock request.
+  bool pending_lock_request_;
+  bool pending_unlock_request_;
 
   DISALLOW_COPY_AND_ASSIGN(PepperPluginDelegateImpl);
 };

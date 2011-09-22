@@ -760,6 +760,8 @@ bool RenderView::OnMessageReceived(const IPC::Message& message) {
                         OnSetHistoryLengthAndPrune)
     IPC_MESSAGE_HANDLER(ViewMsg_EnableViewSourceMode, OnEnableViewSourceMode)
     IPC_MESSAGE_HANDLER(IntentsMsg_WebIntentReply, OnWebIntentReply);
+    IPC_MESSAGE_HANDLER(ViewMsg_LockMouse_ACK, OnLockMouseACK)
+    IPC_MESSAGE_HANDLER(ViewMsg_MouseLockLost, OnMouseLockLost)
 
     // Have the super handle all other messages.
     IPC_MESSAGE_UNHANDLED(handled = RenderWidget::OnMessageReceived(message))
@@ -4185,6 +4187,10 @@ void RenderView::DidHandleKeyEvent() {
   edit_commands_.clear();
 }
 
+bool RenderView::WillHandleMouseEvent(const WebKit::WebMouseEvent& event) {
+  return pepper_delegate_.DispatchLockedMouseEvent(event);
+}
+
 void RenderView::DidHandleMouseEvent(const WebKit::WebMouseEvent& event) {
   FOR_EACH_OBSERVER(RenderViewObserver, observers_, DidHandleMouseEvent(event));
 }
@@ -4636,3 +4642,12 @@ void RenderView::OnEnableViewSourceMode() {
     return;
   main_frame->enableViewSourceMode(true);
 }
+
+void RenderView::OnLockMouseACK(bool succeeded) {
+  pepper_delegate_.OnLockMouseACK(succeeded);
+}
+
+void RenderView::OnMouseLockLost() {
+  pepper_delegate_.OnMouseLockLost();
+}
+

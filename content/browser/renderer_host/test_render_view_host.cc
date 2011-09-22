@@ -252,6 +252,13 @@ gfx::PluginWindowHandle TestRenderWidgetHostView::GetCompositingSurface() {
   return gfx::kNullPluginWindow;
 }
 
+bool TestRenderWidgetHostView::LockMouse() {
+  return false;
+}
+
+void TestRenderWidgetHostView::UnlockMouse() {
+}
+
 TestRenderViewHostFactory::TestRenderViewHostFactory(
     RenderProcessHostFactory* rph_factory)
     : render_process_host_factory_(rph_factory) {

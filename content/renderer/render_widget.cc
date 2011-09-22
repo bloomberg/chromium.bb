@@ -446,10 +446,16 @@ void RenderWidget::OnHandleInputEvent(const IPC::Message& message) {
   if (input_event->type == WebInputEvent::RawKeyDown)
     message.ReadBool(&iter, &is_keyboard_shortcut);
 
-  bool processed = false;
+  bool prevent_default = false;
+  if (WebInputEvent::isMouseEventType(input_event->type)) {
+    prevent_default = WillHandleMouseEvent(
+        *(static_cast<const WebMouseEvent*>(input_event)));
+  }
+
+  bool processed = prevent_default;
   if (input_event->type != WebInputEvent::Char || !suppress_next_char_events_) {
     suppress_next_char_events_ = false;
-    if (webwidget_)
+    if (!processed && webwidget_)
       processed = webwidget_->handleInputEvent(*input_event);
   }
 
@@ -482,10 +488,12 @@ void RenderWidget::OnHandleInputEvent(const IPC::Message& message) {
 
   handling_input_event_ = false;
 
-  if (WebInputEvent::isKeyboardEventType(input_event->type))
-    DidHandleKeyEvent();
-  if (WebInputEvent::isMouseEventType(input_event->type))
-    DidHandleMouseEvent(*(static_cast<const WebMouseEvent*>(input_event)));
+  if (!prevent_default) {
+    if (WebInputEvent::isKeyboardEventType(input_event->type))
+      DidHandleKeyEvent();
+    if (WebInputEvent::isMouseEventType(input_event->type))
+      DidHandleMouseEvent(*(static_cast<const WebMouseEvent*>(input_event)));
+  }
 }
 
 void RenderWidget::OnMouseCaptureLost() {
@@ -1392,4 +1400,8 @@ void RenderWidget::CleanupWindowInPluginMoves(gfx::PluginWindowHandle window) {
       break;
     }
   }
+}
+
+bool RenderWidget::WillHandleMouseEvent(const WebKit::WebMouseEvent& event) {
+  return false;
 }

@@ -52,8 +52,10 @@
 #include "ppapi/proxy/host_dispatcher.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/shared_impl/ppapi_preferences.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebCursorInfo.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFileChooserCompletion.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFileChooserParams.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPluginContainer.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScreenInfo.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
@@ -663,10 +665,15 @@ PepperPluginDelegateImpl::PepperPluginDelegateImpl(RenderView* render_view)
       has_saved_context_menu_action_(false),
       saved_context_menu_action_(0),
       id_generator_(0),
-      is_pepper_plugin_focused_(false) {
+      is_pepper_plugin_focused_(false),
+      mouse_lock_owner_(NULL),
+      mouse_locked_(false),
+      pending_lock_request_(false),
+      pending_unlock_request_(false) {
 }
 
 PepperPluginDelegateImpl::~PepperPluginDelegateImpl() {
+  DCHECK(!mouse_lock_owner_);
 }
 
 scoped_refptr<webkit::ppapi::PluginModule>
@@ -851,6 +858,8 @@ void PepperPluginDelegateImpl::PluginCrashed(
     webkit::ppapi::PluginInstance* instance) {
   subscribed_to_policy_updates_.erase(instance);
   render_view_->PluginCrashed(instance->module()->path());
+
+  UnlockMouse(instance);
 }
 
 void PepperPluginDelegateImpl::InstanceCreated(
@@ -865,6 +874,14 @@ void PepperPluginDelegateImpl::InstanceDeleted(
     webkit::ppapi::PluginInstance* instance) {
   active_instances_.erase(instance);
   subscribed_to_policy_updates_.erase(instance);
+
+  if (mouse_lock_owner_ && mouse_lock_owner_ == instance) {
+    // UnlockMouse() will determine whether a ViewHostMsg_UnlockMouse needs to
+    // be sent, and set internal state properly. We only need to forget about
+    // the current |mouse_lock_owner_|.
+    UnlockMouse(mouse_lock_owner_);
+    mouse_lock_owner_ = NULL;
+  }
 }
 
 SkBitmap* PepperPluginDelegateImpl::GetSadPluginBitmap() {
@@ -1027,13 +1044,71 @@ void PepperPluginDelegateImpl::OnAsyncFileOpened(
 
 void PepperPluginDelegateImpl::OnSetFocus(bool has_focus) {
   for (std::set<webkit::ppapi::PluginInstance*>::iterator i =
-         active_instances_.begin();
+           active_instances_.begin();
        i != active_instances_.end(); ++i)
     (*i)->SetContentAreaFocus(has_focus);
 }
 
 bool PepperPluginDelegateImpl::IsPluginFocused() const {
   return is_pepper_plugin_focused_;
+}
+
+void PepperPluginDelegateImpl::OnLockMouseACK(bool succeeded) {
+  DCHECK(!mouse_locked_ && pending_lock_request_);
+
+  mouse_locked_ = succeeded;
+  pending_lock_request_ = false;
+  if (pending_unlock_request_ && !succeeded) {
+    // We have sent an unlock request after the lock request. However, since
+    // the lock request has failed, the unlock request will be ignored by the
+    // browser side and there won't be any response to it.
+    pending_unlock_request_ = false;
+  }
+  // If the PluginInstance has been deleted, |mouse_lock_owner_| can be NULL.
+  if (mouse_lock_owner_) {
+    webkit::ppapi::PluginInstance* last_mouse_lock_owner = mouse_lock_owner_;
+    if (!succeeded) {
+      // Reset |mouse_lock_owner_| to NULL before calling OnLockMouseACK(), so
+      // that if OnLockMouseACK() results in calls to any mouse lock method
+      // (e.g., LockMouse()), the method will see consistent internal state.
+      mouse_lock_owner_ = NULL;
+    }
+
+    last_mouse_lock_owner->OnLockMouseACK(succeeded ? PP_OK : PP_ERROR_FAILED);
+  }
+}
+
+void PepperPluginDelegateImpl::OnMouseLockLost() {
+  DCHECK(mouse_locked_ && !pending_lock_request_);
+
+  mouse_locked_ = false;
+  pending_unlock_request_ = false;
+  // If the PluginInstance has been deleted, |mouse_lock_owner_| can be NULL.
+  if (mouse_lock_owner_) {
+    // Reset |mouse_lock_owner_| to NULL before calling OnMouseLockLost(), so
+    // that if OnMouseLockLost() results in calls to any mouse lock method
+    // (e.g., LockMouse()), the method will see consistent internal state.
+    webkit::ppapi::PluginInstance* last_mouse_lock_owner = mouse_lock_owner_;
+    mouse_lock_owner_ = NULL;
+
+    last_mouse_lock_owner->OnMouseLockLost();
+  }
+}
+
+bool PepperPluginDelegateImpl::DispatchLockedMouseEvent(
+    const WebKit::WebMouseEvent& event) {
+  if (mouse_locked_) {
+    if (mouse_lock_owner_) {
+      // |cursor_info| is ignored since it is hidden when the mouse is locked.
+      WebKit::WebCursorInfo cursor_info;
+      mouse_lock_owner_->HandleInputEvent(event, &cursor_info);
+    }
+
+    // If the mouse is locked, only the current owner of the mouse lock can
+    // process mouse events.
+    return true;
+  }
+  return false;
 }
 
 bool PepperPluginDelegateImpl::OpenFileSystem(
@@ -1488,6 +1563,58 @@ base::SharedMemory* PepperPluginDelegateImpl::CreateAnonymousSharedMemory(
 
 ppapi::Preferences PepperPluginDelegateImpl::GetPreferences() {
   return ppapi::Preferences(render_view_->webkit_preferences());
+}
+
+void PepperPluginDelegateImpl::LockMouse(
+    webkit::ppapi::PluginInstance* instance) {
+  DCHECK(instance);
+  if (!MouseLockedOrPending()) {
+    DCHECK(!mouse_lock_owner_);
+    pending_lock_request_ = true;
+    mouse_lock_owner_ = instance;
+
+    render_view_->Send(
+        new ViewHostMsg_LockMouse(render_view_->routing_id()));
+  } else if (instance != mouse_lock_owner_) {
+    // Another plugin instance is using mouse lock. Fail immediately.
+    instance->OnLockMouseACK(PP_ERROR_FAILED);
+  } else {
+    if (mouse_locked_) {
+      instance->OnLockMouseACK(PP_OK);
+    } else if (pending_lock_request_) {
+      instance->OnLockMouseACK(PP_ERROR_INPROGRESS);
+    } else {
+      // The only case left here is
+      // !mouse_locked_ && !pending_lock_request_ && pending_unlock_request_,
+      // which is not possible.
+      NOTREACHED();
+      instance->OnLockMouseACK(PP_ERROR_FAILED);
+    }
+  }
+}
+
+void PepperPluginDelegateImpl::UnlockMouse(
+    webkit::ppapi::PluginInstance* instance) {
+  DCHECK(instance);
+
+  // If no one is using mouse lock or the user is not |instance|, ignore
+  // the unlock request.
+  if (MouseLockedOrPending() && mouse_lock_owner_ == instance) {
+    if (mouse_locked_ || pending_lock_request_) {
+      DCHECK(!mouse_locked_ || !pending_lock_request_);
+      if (!pending_unlock_request_) {
+        pending_unlock_request_ = true;
+
+        render_view_->Send(
+            new ViewHostMsg_UnlockMouse(render_view_->routing_id()));
+      }
+    } else {
+      // The only case left here is
+      // !mouse_locked_ && !pending_lock_request_ && pending_unlock_request_,
+      // which is not possible.
+      NOTREACHED();
+    }
+  }
 }
 
 int PepperPluginDelegateImpl::GetRoutingId() const {

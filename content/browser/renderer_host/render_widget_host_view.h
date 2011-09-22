@@ -313,6 +313,10 @@ class RenderWidgetHostView {
   virtual void SetScrollOffsetPinning(
       bool is_pinned_to_left, bool is_pinned_to_right) = 0;
 
+  // Return value indicates whether the mouse is locked successfully or not.
+  virtual bool LockMouse() = 0;
+  virtual void UnlockMouse() = 0;
+
   void set_popup_type(WebKit::WebPopupType popup_type) {
     popup_type_ = popup_type;
   }
@@ -334,9 +338,11 @@ class RenderWidgetHostView {
     reserved_rect_ = reserved_rect;
   }
 
+  bool mouse_locked() const { return mouse_locked_; }
+
  protected:
   // Interface class only, do not construct.
-  RenderWidgetHostView() : popup_type_(WebKit::WebPopupTypeNone) {}
+  RenderWidgetHostView();
 
   // Whether this view is a popup and what kind of popup it is (select,
   // autofill...).
@@ -349,6 +355,13 @@ class RenderWidgetHostView {
   // The current reserved area in view coordinates where contents should not be
   // rendered to draw the resize corner, sidebar mini tabs etc.
   gfx::Rect reserved_rect_;
+
+  // While the mouse is locked, the cursor is hidden from the user. Mouse events
+  // are still generated. However, the position they report is the last known
+  // mouse position just as mouse lock was entered; the movement they report
+  // indicates what the change in position of the mouse would be had it not been
+  // locked.
+  bool mouse_locked_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostView);

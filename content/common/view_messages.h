@@ -1335,6 +1335,14 @@ IPC_MESSAGE_ROUTED3(ViewMsg_GetSerializedHtmlDataForCurrentPageWithLocalLinks,
 IPC_MESSAGE_ROUTED1(ViewMsg_UpdateRemoteAccessClientFirewallTraversal,
                     std::string /* traversal_data */)
 
+// Tells the render side that a ViewHostMsg_LockMouse message has been
+// processed. |succeeded| indicates whether the mouse has been successfully
+// locked or not.
+IPC_MESSAGE_ROUTED1(ViewMsg_LockMouse_ACK,
+                    bool /* succeeded */)
+// Tells the render side that the mouse has been unlocked.
+IPC_MESSAGE_ROUTED0(ViewMsg_MouseLockLost)
+
 // These three messages are sent to the parent RenderViewHost to display the
 // page/widget that was created by
 // CreateWindow/CreateWidget/CreateFullscreenWidget. routing_id
@@ -1900,8 +1908,8 @@ IPC_MESSAGE_ROUTED3(ViewHostMsg_UpdateZoomLimits,
 // Asks the browser to create a block of shared memory for the renderer to
 // fill in and pass back to the browser.
 IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_AllocateSharedMemoryBuffer,
-                           uint32 /* buffer size */,
-                           base::SharedMemoryHandle /* browser handle */)
+                            uint32 /* buffer size */,
+                            base::SharedMemoryHandle /* browser handle */)
 
 // Notify the browser that this render process can or can't be suddenly
 // terminated.
@@ -2086,3 +2094,13 @@ IPC_MESSAGE_ROUTED0(ViewHostMsg_RequestRemoteAccessClientFirewallTraversal)
 // Notifies the browser of an event occurring in the media pipeline.
 IPC_MESSAGE_CONTROL1(ViewHostMsg_MediaLogEvent,
                      media::MediaLogEvent /* event */)
+
+// Requests to lock the mouse. Will result in a ViewMsg_LockMouse_ACK message
+// being sent back.
+IPC_MESSAGE_ROUTED0(ViewHostMsg_LockMouse)
+
+// Requests to unlock the mouse. A ViewMsg_MouseLockLost message will be sent
+// whenever the mouse is unlocked (which may or may not be caused by
+// ViewHostMsg_UnlockMouse).
+IPC_MESSAGE_ROUTED0(ViewHostMsg_UnlockMouse)
+

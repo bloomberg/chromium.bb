@@ -279,6 +279,16 @@
           ],
         },
         {
+          'target_name': 'ppapi_example_mouse_lock',
+          'dependencies': [
+            'ppapi_example_skeleton',
+            'ppapi.gyp:ppapi_cpp',
+          ],
+          'sources': [
+            'examples/mouse_lock/mouse_lock.cc',
+          ],
+        },
+        {
           'target_name': 'ppapi_example_file_chooser',
           'dependencies': [
             'ppapi_example_skeleton',

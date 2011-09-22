@@ -313,6 +313,9 @@ class RenderWidgetHostViewMac : public RenderWidgetHostView {
   virtual void SetScrollOffsetPinning(
       bool is_pinned_to_left, bool is_pinned_to_right) OVERRIDE;
 
+  virtual bool LockMouse() OVERRIDE;
+  virtual void UnlockMouse() OVERRIDE;
+
   void KillSelf();
 
   void SetTextInputActive(bool active);

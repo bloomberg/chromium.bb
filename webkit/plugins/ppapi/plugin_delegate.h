@@ -446,6 +446,20 @@ class PluginDelegate {
 
   // Returns the current preferences.
   virtual ::ppapi::Preferences GetPreferences() = 0;
+
+  // Locks the mouse for |instance|. It will call
+  // PluginInstance::OnLockMouseACK() to notify the instance when the operation
+  // is completed. The call to OnLockMouseACK() may be synchronous (i.e., it may
+  // be called when LockMouse() is still on the stack).
+  virtual void LockMouse(PluginInstance* instance) = 0;
+
+  // Unlocks the mouse if |instance| currently owns the mouse lock. Whenever an
+  // plugin instance has lost the mouse lock, it will be notified by
+  // PluginInstance::OnMouseLockLost(). Please note that UnlockMouse() is not
+  // the only cause of losing mouse lock. For example, a user may press the Esc
+  // key to quit the mouse lock mode, which also results in an OnMouseLockLost()
+  // call to the current mouse lock owner.
+  virtual void UnlockMouse(PluginInstance* instance) = 0;
 };
 
 }  // namespace ppapi

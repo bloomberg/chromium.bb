@@ -1183,6 +1183,15 @@ gfx::PluginWindowHandle RenderWidgetHostViewGtk::GetCompositingSurface() {
   return compositing_surface_;
 }
 
+bool RenderWidgetHostViewGtk::LockMouse() {
+  NOTIMPLEMENTED();
+  return false;
+}
+
+void RenderWidgetHostViewGtk::UnlockMouse() {
+  NOTIMPLEMENTED();
+}
+
 void RenderWidgetHostViewGtk::ForwardKeyboardEvent(
     const NativeWebKeyboardEvent& event) {
   if (!host_)

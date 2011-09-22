@@ -106,6 +106,8 @@ class RenderWidgetHostViewGtk : public RenderWidgetHostView,
   virtual void GetScreenInfo(WebKit::WebScreenInfo* results) OVERRIDE;
   virtual gfx::Rect GetRootWindowBounds() OVERRIDE;
   virtual gfx::PluginWindowHandle GetCompositingSurface() OVERRIDE;
+  virtual bool LockMouse() OVERRIDE;
+  virtual void UnlockMouse() OVERRIDE;
 
   // ui::AnimationDelegate implementation.
   virtual void AnimationEnded(const ui::Animation* animation) OVERRIDE;

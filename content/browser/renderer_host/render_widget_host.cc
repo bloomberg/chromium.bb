@@ -199,6 +199,8 @@ bool RenderWidgetHost::OnMessageReceived(const IPC::Message &msg) {
                         OnMsgImeCancelComposition)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidActivateAcceleratedCompositing,
                         OnMsgDidActivateAcceleratedCompositing)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_LockMouse, OnMsgLockMouse)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_UnlockMouse, OnMsgUnlockMouse)
 #if defined(OS_POSIX)
     IPC_MESSAGE_HANDLER(ViewHostMsg_GetScreenInfo, OnMsgGetScreenInfo)
     IPC_MESSAGE_HANDLER(ViewHostMsg_GetWindowRect, OnMsgGetWindowRect)
@@ -381,6 +383,9 @@ void RenderWidgetHost::Focus() {
 }
 
 void RenderWidgetHost::Blur() {
+  if (IsMouseLocked())
+    view_->UnlockMouse();
+
   Send(new ViewMsg_SetFocus(routing_id_, false));
 }
 
@@ -388,7 +393,14 @@ void RenderWidgetHost::LostCapture() {
   Send(new ViewMsg_MouseCaptureLost(routing_id_));
 }
 
+void RenderWidgetHost::LostMouseLock() {
+  Send(new ViewMsg_MouseLockLost(routing_id_));
+}
+
 void RenderWidgetHost::ViewDestroyed() {
+  if (IsMouseLocked())
+    view_->UnlockMouse();
+
   // TODO(evanm): tracking this may no longer be necessary;
   // eliminate this function if so.
   SetView(NULL);
@@ -527,7 +539,16 @@ void RenderWidgetHost::ForwardMouseEvent(const WebMouseEvent& mouse_event) {
   // more WM_MOUSEMOVE events than we wish to send to the renderer.
   if (mouse_event.type == WebInputEvent::MouseMove) {
     if (mouse_move_pending_) {
-      next_mouse_move_.reset(new WebMouseEvent(mouse_event));
+      if (!next_mouse_move_.get()) {
+        next_mouse_move_.reset(new WebMouseEvent(mouse_event));
+      } else {
+        // Accumulate movement deltas.
+        int x = next_mouse_move_->movementX;
+        int y = next_mouse_move_->movementY;
+        *next_mouse_move_ = mouse_event;
+        next_mouse_move_->movementX += x;
+        next_mouse_move_->movementY += y;
+      }
       return;
     }
     mouse_move_pending_ = true;
@@ -778,6 +799,10 @@ void RenderWidgetHost::ImeConfirmComposition() {
 void RenderWidgetHost::ImeCancelComposition() {
   Send(new ViewMsg_ImeSetComposition(routing_id(), string16(),
             std::vector<WebKit::WebCompositionUnderline>(), 0, 0));
+}
+
+bool RenderWidgetHost::IsMouseLocked() const {
+  return view_ ? view_->mouse_locked() : false;
 }
 
 void RenderWidgetHost::Destroy() {
@@ -1123,6 +1148,21 @@ void RenderWidgetHost::OnMsgDidActivateAcceleratedCompositing(bool activated) {
   if (view_)
     view_->AcceleratedCompositingActivated(activated);
 #endif
+}
+
+void RenderWidgetHost::OnMsgLockMouse() {
+  // TODO(yzshen): Only allow to lock the mouse when in fullscreen mode, and
+  // make sure that the mouse is unlocked when leaving fullscreen mode.
+  if (!view_ || !view_->HasFocus() || !view_->LockMouse()) {
+    Send(new ViewMsg_LockMouse_ACK(routing_id_, false));
+  } else {
+    Send(new ViewMsg_LockMouse_ACK(routing_id_, true));
+  }
+}
+
+void RenderWidgetHost::OnMsgUnlockMouse() {
+  if (IsMouseLocked())
+    view_->UnlockMouse();
 }
 
 #if defined(OS_POSIX)

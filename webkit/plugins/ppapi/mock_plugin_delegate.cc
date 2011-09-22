@@ -7,6 +7,7 @@
 #include "base/message_loop_proxy.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/shared_impl/ppapi_preferences.h"
+#include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 
 namespace webkit {
 namespace ppapi {
@@ -282,6 +283,13 @@ base::SharedMemory* MockPluginDelegate::CreateAnonymousSharedMemory(
 
 ::ppapi::Preferences MockPluginDelegate::GetPreferences() {
   return ::ppapi::Preferences();
+}
+
+void MockPluginDelegate::LockMouse(PluginInstance* instance) {
+  instance->OnLockMouseACK(PP_ERROR_FAILED);
+}
+
+void MockPluginDelegate::UnlockMouse(PluginInstance* instance) {
 }
 
 }  // namespace ppapi
