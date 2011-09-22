@@ -398,7 +398,7 @@ HistoryUI::HistoryUI(TabContents* contents) : ChromeWebUI(contents) {
 // static
 const GURL HistoryUI::GetHistoryURLWithSearchText(const string16& text) {
   return GURL(std::string(chrome::kChromeUIHistoryURL) + "#q=" +
-              EscapeQueryParamValue(UTF16ToUTF8(text), true));
+              net::EscapeQueryParamValue(UTF16ToUTF8(text), true));
 }
 
 // static

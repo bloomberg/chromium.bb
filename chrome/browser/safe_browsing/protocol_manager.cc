@@ -797,9 +797,9 @@ GURL SafeBrowsingProtocolManager::SafeBrowsingHitUrl(
   }
   return GURL(base::StringPrintf("%s&evts=%s&evtd=%s&evtr=%s&evhr=%s&evtb=%d",
       url.c_str(), threat_list.c_str(),
-      EscapeQueryParamValue(malicious_url.spec(), true).c_str(),
-      EscapeQueryParamValue(page_url.spec(), true).c_str(),
-      EscapeQueryParamValue(referrer_url.spec(), true).c_str(),
+      net::EscapeQueryParamValue(malicious_url.spec(), true).c_str(),
+      net::EscapeQueryParamValue(page_url.spec(), true).c_str(),
+      net::EscapeQueryParamValue(referrer_url.spec(), true).c_str(),
       is_subresource));
 }
 

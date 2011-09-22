@@ -10,8 +10,8 @@
 
 #include "base/i18n/rtl.h"
 #include "base/lazy_instance.h"
-#include "base/stringprintf.h"
 #include "base/string_number_conversions.h"
+#include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
@@ -497,7 +497,7 @@ void SafeBrowsingBlockingPage::CommandReceived(const std::string& cmd) {
     // We're going to take the user to Google's SafeBrowsing diagnostic page.
     std::string diagnostic =
         base::StringPrintf(kSbDiagnosticUrl,
-                           EscapeQueryParamValue(bad_url_spec, true).c_str());
+            net::EscapeQueryParamValue(bad_url_spec, true).c_str());
     GURL diagnostic_url(diagnostic);
     diagnostic_url = google_util::AppendGoogleLocaleParam(diagnostic_url);
     DCHECK(unsafe_resources_[element_index].threat_type ==

@@ -8,8 +8,8 @@
 #include <set>
 
 #include "base/compiler_specific.h"
-#include "base/logging.h"
 #include "base/file_util.h"
+#include "base/logging.h"
 #include "base/memory/scoped_handle.h"
 #include "base/metrics/histogram.h"
 #include "base/rand_util.h"
@@ -17,12 +17,9 @@
 #include "base/string_number_conversions.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
-#include "base/time.h"
 #include "base/threading/thread.h"
+#include "base/time.h"
 #include "base/version.h"
-#include "crypto/sha2.h"
-#include "content/common/notification_service.h"
-#include "content/common/notification_source.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"
@@ -38,6 +35,9 @@
 #include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/utility_process_host.h"
+#include "content/common/notification_service.h"
+#include "content/common/notification_source.h"
+#include "crypto/sha2.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
@@ -183,7 +183,7 @@ bool ManifestFetchData::AddExtension(std::string id, std::string version,
     // Make sure the update_url_data string is escaped before using it so that
     // there is no chance of overriding the id or v other parameter value
     // we place into the x= value.
-    parts.push_back("ap=" + EscapeQueryParamValue(update_url_data, true));
+    parts.push_back("ap=" + net::EscapeQueryParamValue(update_url_data, true));
   }
 
   // Append rollcall and active ping parameters.
@@ -205,11 +205,11 @@ bool ManifestFetchData::AddExtension(std::string id, std::string version,
     }
 #endif  // SEND_ACTIVE_PINGS
     if (!ping_value.empty())
-      parts.push_back("ping=" + EscapeQueryParamValue(ping_value, true));
+      parts.push_back("ping=" + net::EscapeQueryParamValue(ping_value, true));
   }
 
   std::string extra = full_url_.has_query() ? "&" : "?";
-  extra += "x=" + EscapeQueryParamValue(JoinString(parts, '&'), true);
+  extra += "x=" + net::EscapeQueryParamValue(JoinString(parts, '&'), true);
 
   // Check against our max url size, exempting the first extension added.
   int new_size = full_url_.possibly_invalid_spec().size() + extra.size();

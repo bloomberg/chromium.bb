@@ -451,7 +451,7 @@ GURL GetWebstoreInstallUrl(const std::string& extension_id,
   std::string url_string = extension_urls::GetWebstoreUpdateUrl(true).spec();
 
   GURL url(url_string + "?response=redirect&x=" +
-      EscapeQueryParamValue(JoinString(params, '&'), true));
+      net::EscapeQueryParamValue(JoinString(params, '&'), true));
   DCHECK(url.is_valid());
 
   return url;

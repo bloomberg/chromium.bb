@@ -111,9 +111,9 @@ std::string URLQueryParameters::Encode() {
        ++entry) {
     if (entry != params_.begin())
       result += '&';
-    result += EscapeQueryParamValue(entry->first, true);
+    result += net::EscapeQueryParamValue(entry->first, true);
     result += '=';
-    result += EscapeQueryParamValue(entry->second, true);
+    result += net::EscapeQueryParamValue(entry->second, true);
   }
   return result;
 }

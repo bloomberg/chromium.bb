@@ -155,8 +155,8 @@
 #include "ui/base/animation/animation.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/point.h"
-#include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/web_intent_data.h"
+#include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/window_open_disposition.h"
 
 #if defined(OS_WIN)
@@ -1791,8 +1791,9 @@ void Browser::EmailPageLocation() {
   TabContents* tc = GetSelectedTabContents();
   DCHECK(tc);
 
-  std::string title = EscapeQueryParamValue(UTF16ToUTF8(tc->GetTitle()), false);
-  std::string page_url = EscapeQueryParamValue(tc->GetURL().spec(), false);
+  std::string title = net::EscapeQueryParamValue(
+      UTF16ToUTF8(tc->GetTitle()), false);
+  std::string page_url = net::EscapeQueryParamValue(tc->GetURL().spec(), false);
   std::string mailto = std::string("mailto:?subject=Fwd:%20") +
       title + "&body=%0A%0A" + page_url;
   platform_util::OpenExternal(GURL(mailto));

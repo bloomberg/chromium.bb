@@ -144,12 +144,12 @@ void SpeechRecognitionRequest::Start(const std::string& language,
   }
   if (lang_param.empty())
     lang_param = "en-US";
-  parts.push_back("lang=" + EscapeQueryParamValue(lang_param, true));
+  parts.push_back("lang=" + net::EscapeQueryParamValue(lang_param, true));
 
   if (!grammar.empty())
-    parts.push_back("lm=" + EscapeQueryParamValue(grammar, true));
+    parts.push_back("lm=" + net::EscapeQueryParamValue(grammar, true));
   if (!hardware_info.empty())
-    parts.push_back("xhw=" + EscapeQueryParamValue(hardware_info, true));
+    parts.push_back("xhw=" + net::EscapeQueryParamValue(hardware_info, true));
   parts.push_back("maxresults=" + base::IntToString(kMaxResults));
   parts.push_back(censor_results ? "pfilter=2" : "pfilter=0");
 

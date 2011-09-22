@@ -33,8 +33,8 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_delegate.h"
 #include "content/browser/user_metrics.h"
-#include "content/common/notification_source.h"
 #include "content/common/notification_details.h"
+#include "content/common/notification_source.h"
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -388,7 +388,7 @@ HistoryUI2::HistoryUI2(TabContents* contents) : ChromeWebUI(contents) {
 // static
 const GURL HistoryUI2::GetHistoryURLWithSearchText(const string16& text) {
   return GURL(std::string(chrome::kChromeUIHistory2URL) + "#q=" +
-              EscapeQueryParamValue(UTF16ToUTF8(text), true));
+              net::EscapeQueryParamValue(UTF16ToUTF8(text), true));
 }
 
 // static

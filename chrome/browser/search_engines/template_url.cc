@@ -342,14 +342,14 @@ std::string TemplateURLRef::ReplaceSearchTermsUsingTermsData(
     // Encode the search terms so that we know the encoding.
     const std::vector<std::string>& encodings = host.input_encodings();
     for (size_t i = 0; i < encodings.size(); ++i) {
-      if (EscapeQueryParamValue(terms,
-                                encodings[i].c_str(), true,
-                                &encoded_terms)) {
+      if (net::EscapeQueryParamValue(terms,
+                                     encodings[i].c_str(), true,
+                                     &encoded_terms)) {
         if (!original_query_for_suggestion.empty()) {
-          EscapeQueryParamValue(original_query_for_suggestion,
-                                encodings[i].c_str(),
-                                true,
-                                &encoded_original_query);
+          net::EscapeQueryParamValue(original_query_for_suggestion,
+                                     encodings[i].c_str(),
+                                     true,
+                                     &encoded_original_query);
         }
         input_encoding = encodings[i];
         break;

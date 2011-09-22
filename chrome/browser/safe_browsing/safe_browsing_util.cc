@@ -6,11 +6,11 @@
 
 #include "base/base64.h"
 #include "base/logging.h"
-#include "base/stringprintf.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
+#include "chrome/browser/google/google_util.h"
 #include "crypto/hmac.h"
 #include "crypto/sha2.h"
-#include "chrome/browser/google/google_util.h"
 #include "googleurl/src/gurl.h"
 #include "googleurl/src/url_util.h"
 #include "net/base/escape.h"
@@ -517,9 +517,10 @@ GURL GeneratePhishingReportUrl(const std::string& report_page,
   const char* lang = locale.getLanguage();
   if (!lang)
     lang = "en";  // fallback
-  const std::string continue_esc =
-      EscapeQueryParamValue(base::StringPrintf(kContinueUrlFormat, lang), true);
-  const std::string current_esc = EscapeQueryParamValue(url_to_report, true);
+  const std::string continue_esc = net::EscapeQueryParamValue(
+      base::StringPrintf(kContinueUrlFormat, lang), true);
+  const std::string current_esc = net::EscapeQueryParamValue(url_to_report,
+                                                             true);
 
 #if defined(OS_WIN)
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();

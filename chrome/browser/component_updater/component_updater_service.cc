@@ -37,7 +37,7 @@ bool AddQueryString(std::string id, std::string version,
                     size_t limit, std::string* query) {
   std::string additional =
       base::StringPrintf("id=%s&v=%s&uc", id.c_str(), version.c_str());
-  additional = "x=" + EscapeQueryParamValue(additional, true);
+  additional = "x=" + net::EscapeQueryParamValue(additional, true);
   if ((additional.size() + query->size() + 1) > limit)
     return false;
   query->append(1,  query->empty()? '?' : '&');

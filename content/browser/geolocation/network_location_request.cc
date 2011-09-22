@@ -220,7 +220,7 @@ void AddWifiData(const WifiData& wifi_data,
     ReplaceSubstringsAfterOffset(&ssid, 0, "|", "\\|");
     AddString("ssid:", ssid, &wifi_params);
     params->push_back(
-        "wifi=" + EscapeQueryParamValue(wifi_params, false));
+        "wifi=" + net::EscapeQueryParamValue(wifi_params, false));
   }
 }
 

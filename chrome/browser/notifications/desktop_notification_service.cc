@@ -208,7 +208,7 @@ string16 DesktopNotificationService::CreateDataUrl(
 
   std::string data = ReplaceStringPlaceholders(template_html, subst, NULL);
   return UTF8ToUTF16("data:text/html;charset=utf-8," +
-                      EscapeQueryParamValue(data, false));
+                      net::EscapeQueryParamValue(data, false));
 }
 
 DesktopNotificationService::DesktopNotificationService(Profile* profile,

@@ -42,9 +42,8 @@
 #include "content/common/url_constants.h"
 #include "content/common/view_messages.h"
 #include "content/renderer/content_renderer_client.h"
-#include "content/renderer/devtools_agent.h"
 #include "content/renderer/device_orientation_dispatcher.h"
-#include "content/renderer/mhtml_generator.h"
+#include "content/renderer/devtools_agent.h"
 #include "content/renderer/external_popup_menu.h"
 #include "content/renderer/geolocation_dispatcher.h"
 #include "content/renderer/gpu/webgraphicscontext3d_command_buffer_impl.h"
@@ -54,6 +53,7 @@
 #include "content/renderer/media/audio_renderer_impl.h"
 #include "content/renderer/media/media_stream_impl.h"
 #include "content/renderer/media/render_media_log.h"
+#include "content/renderer/mhtml_generator.h"
 #include "content/renderer/navigation_state.h"
 #include "content/renderer/notification_provider.h"
 #include "content/renderer/p2p/socket_dispatcher.h"
@@ -3185,7 +3185,7 @@ GURL RenderView::GetAlternateErrorPageURL(const GURL& failed_url,
   // Construct the query params to send to link doctor.
   std::string params(alternate_error_page_url_.query());
   params.append("&url=");
-  params.append(EscapeQueryParamValue(spec_to_send, true));
+  params.append(net::EscapeQueryParamValue(spec_to_send, true));
   params.append("&sourceid=chrome");
   params.append("&error=");
   switch (error_type) {
