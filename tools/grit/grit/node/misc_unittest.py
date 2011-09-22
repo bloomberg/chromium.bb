@@ -35,8 +35,8 @@ class GritNodeUnittest(unittest.TestCase):
     src_dir, id_dict = misc._ReadFirstIdsFromFile(
         test_resource_ids,
         {
-          'FOO': 'bar',
-          'SHARED_INTERMEDIATE_DIR': 'out/Release/obj/gen',
+          'FOO': '/bar',
+          'SHARED_INTERMEDIATE_DIR': '/out/Release/obj/gen',
         })
     self.assertEqual({}, id_dict.get('bar/file.grd', None))
     self.assertEqual({},

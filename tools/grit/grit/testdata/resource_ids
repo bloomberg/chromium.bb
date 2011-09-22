@@ -1,5 +1,5 @@
 {
-  "SRCDIR": ".",
+  "SRCDIR": "",
   "test.grd": {
     "messages": [100, 10000],
   },

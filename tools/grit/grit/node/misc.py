@@ -34,11 +34,13 @@ def _ReadFirstIdsFromFile(filename, defines):
   # parameter of the .grd file rather than of the resource_ids file.
   src_root_dir = os.path.abspath(os.path.join(os.path.dirname(filename),
                                               first_ids_dict['SRCDIR']))
+  # Special case for testing.
+  if first_ids_dict['SRCDIR'] == '':
+    src_root_dir = ''
 
   def ReplaceVariable(matchobj):
     for key, value in defines.iteritems():
       if matchobj.group(1) == key:
-        value = os.path.join(src_root_dir, value)
         value = os.path.abspath(value)[len(src_root_dir) + 1:]
         return value
     return ''
