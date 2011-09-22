@@ -25,16 +25,9 @@ namespace pp {
 class Instance;
 }  // namespace pp
 
-namespace talk_base {
-class NetworkManager;
-class PacketSocketFactory;
-}  // namespace talk_base
-
 namespace remoting {
 
 class JingleThread;
-class HostResolverFactory;
-class PortAllocatorSessionFactory;
 class XmppProxy;
 class VideoPacket;
 
@@ -76,16 +69,8 @@ class ConnectionToHost : public SignalStrategy::StatusObserver,
     virtual void OnConnectionFailed(ConnectionToHost* conn) = 0;
   };
 
-  // Takes ownership of |network_manager| and |socket_factory|. Both
-  // |network_manager| and |socket_factory| may be set to NULL.
-  //
-  // TODO(sergeyu): Constructor shouldn't need thread here.
-  ConnectionToHost(base::MessageLoopProxy* network_message_loop,
+  ConnectionToHost(base::MessageLoopProxy* message_loop,
                    pp::Instance* pp_instance,
-                   talk_base::NetworkManager* network_manager,
-                   talk_base::PacketSocketFactory* socket_factory,
-                   HostResolverFactory* host_resolver_factory,
-                   PortAllocatorSessionFactory* session_factory,
                    bool allow_nat_traversal);
   virtual ~ConnectionToHost();
 
@@ -146,10 +131,6 @@ class ConnectionToHost : public SignalStrategy::StatusObserver,
 
   scoped_refptr<base::MessageLoopProxy> message_loop_;
   pp::Instance* pp_instance_;
-  scoped_ptr<talk_base::NetworkManager> network_manager_;
-  scoped_ptr<talk_base::PacketSocketFactory> socket_factory_;
-  scoped_ptr<HostResolverFactory> host_resolver_factory_;
-  scoped_ptr<PortAllocatorSessionFactory> port_allocator_session_factory_;
   bool allow_nat_traversal_;
 
   std::string host_jid_;

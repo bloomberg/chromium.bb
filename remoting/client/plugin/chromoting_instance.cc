@@ -17,11 +17,6 @@
 #include "base/task.h"
 #include "base/threading/thread.h"
 #include "base/values.h"
-// TODO(sergeyu): We should not depend on renderer here. Instead P2P
-// Pepper API should be used. Remove this dependency.
-// crbug.com/74951
-#include "content/renderer/p2p/ipc_network_manager.h"
-#include "content/renderer/p2p/ipc_socket_factory.h"
 #include "media/base/media.h"
 #include "ppapi/c/dev/ppb_query_policy_dev.h"
 #include "ppapi/cpp/completion_callback.h"
@@ -33,7 +28,6 @@
 #include "remoting/base/util.h"
 #include "remoting/client/client_config.h"
 #include "remoting/client/chromoting_client.h"
-#include "remoting/client/ipc_host_resolver.h"
 #include "remoting/client/plugin/chromoting_scriptable_object.h"
 #include "remoting/client/plugin/pepper_input_handler.h"
 #include "remoting/client/plugin/pepper_port_allocator_session.h"
@@ -44,13 +38,6 @@
 #include "remoting/proto/auth.pb.h"
 #include "remoting/protocol/connection_to_host.h"
 #include "remoting/protocol/host_stub.h"
-// TODO(sergeyu): This is a hack: plugin should not depend on webkit
-// glue. It is used here to get P2PPacketDispatcher corresponding to
-// the current RenderView. Use P2P Pepper API for connection and
-// remove these includes.
-// crbug.com/74951
-#include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
-#include "webkit/plugins/ppapi/resource_tracker.h"
 
 namespace remoting {
 
@@ -170,8 +157,7 @@ void ChromotingInstance::Connect(const ClientConfig& config) {
   }
 
   host_connection_.reset(new protocol::ConnectionToHost(
-      context_.network_message_loop(), this, NULL, NULL, NULL, NULL,
-      enable_client_nat_traversal_));
+      context_.network_message_loop(), this, enable_client_nat_traversal_));
 
   input_handler_.reset(new PepperInputHandler(&context_,
                                               host_connection_.get(),

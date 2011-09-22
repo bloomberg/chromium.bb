@@ -544,8 +544,6 @@
         'client/frame_consumer.h',
         'client/input_handler.cc',
         'client/input_handler.h',
-        'client/ipc_host_resolver.cc',
-        'client/ipc_host_resolver.h',
         'client/rectangle_update_decoder.cc',
         'client/rectangle_update_decoder.h',
       ],

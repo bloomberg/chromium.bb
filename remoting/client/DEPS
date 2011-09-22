@@ -6,8 +6,4 @@ include_rules = [
 
   "+remoting/protocol",
   "+remoting/jingle_glue",
-
-  # TODO(sergeyu): Remove this dependency: crbug.com/74951 .
-  "+webkit/plugins/ppapi",
-  "+content/renderer/p2p",
 ]

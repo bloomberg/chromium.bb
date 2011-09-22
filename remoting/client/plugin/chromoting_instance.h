@@ -64,10 +64,10 @@ class ChromotingInstance : public pp::InstancePrivate {
   virtual ~ChromotingInstance();
 
   // pp::Instance interface.
-  virtual void DidChangeView(const pp::Rect& position, const pp::Rect& clip)
-      OVERRIDE;
-  virtual bool Init(uint32_t argc, const char* argn[], const char* argv[])
-      OVERRIDE;
+  virtual void DidChangeView(const pp::Rect& position,
+                             const pp::Rect& clip) OVERRIDE;
+  virtual bool Init(uint32_t argc, const char* argn[],
+                    const char* argv[]) OVERRIDE;
   virtual bool HandleInputEvent(const pp::InputEvent& event) OVERRIDE;
 
   // pp::InstancePrivate interface.
