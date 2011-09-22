@@ -87,10 +87,6 @@
       '-browsing_data.BrowsingDataTest.testClearingAccuracy',
       # Turkish I problem. crbug.com/60638
       '-find_in_page.FindMatchTests.testLocalizationAndCaseOrder',
-      # crbug.com/87959
-      '-instant.InstantTest.testInstantLoadsFor100CharsLongQuery',
-      # crbug.com/83459
-      '-instant.InstantTest.testPreFetchInstantURLSetsNoCookies',
       '-omnibox.OmniboxTest.testHistoryResult',  # crbug.com/71715
       # crbug.com/91033
       '-omnibox.OmniboxTest.testOmniboxSearchHistory',
@@ -488,9 +484,6 @@
       # ==================================================
       # Disabled tests that need to be investigated/fixed.
       # ==================================================
-      # crbug.com/83459
-      '-instant.InstantTest.testPreFetchInstantURLSetsNoCookies',
-
       # crbug.com/95035
       '-enterprise.EnterpriseTestReverse.testEnable3DAPI',
     ],
