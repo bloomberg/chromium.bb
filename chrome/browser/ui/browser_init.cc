@@ -78,7 +78,6 @@
 #include "net/base/net_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "webkit/glue/webkit_glue.h"
 
 #if defined(OS_MACOSX)
 #include "base/mac/mac_util.h"
@@ -688,11 +687,6 @@ bool BrowserInit::LaunchWithProfile::Launch(
     } else {
       DLOG(WARNING) << "Invalid http debugger port number " << port;
     }
-  }
-
-  if (command_line_.HasSwitch(switches::kUserAgent)) {
-    webkit_glue::SetUserAgent(command_line_.GetSwitchValueASCII(
-        switches::kUserAgent));
   }
 
   // Open the required browser windows and tabs. First, see if

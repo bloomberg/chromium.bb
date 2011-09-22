@@ -21,7 +21,7 @@ class TestContentClient : public content::ContentClient {
       std::vector<PepperPluginInfo>* plugins) OVERRIDE;
   virtual bool CanSendWhileSwappedOut(const IPC::Message* msg) OVERRIDE;
   virtual bool CanHandleWhileSwappedOut(const IPC::Message& msg) OVERRIDE;
-  virtual std::string GetUserAgent(bool mimic_windows) const OVERRIDE;
+  virtual std::string GetUserAgent(bool* overriding) const OVERRIDE;
   virtual string16 GetLocalizedString(int message_id) const OVERRIDE;
   virtual base::StringPiece GetDataResource(int resource_id) const OVERRIDE;
 #if defined(OS_WIN)

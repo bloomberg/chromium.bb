@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,10 +21,9 @@ std::string GetWebKitVersion();
 int GetWebKitMajorVersion();
 int GetWebKitMinorVersion();
 
-// Helper function to generate the user agent.
-// - If mimic_windows is true, produce a fake Windows Chrome string..
-std::string BuildUserAgentHelper(bool mimic_windows,
-                                 const std::string& product);
+// Helper function to generate a full user agent string from a short
+// product name.
+std::string BuildUserAgentFromProduct(const std::string& product);
 }  // namespace webkit_glue
 
 #endif  // WEBKIT_GLUE_USER_AGENT_H_

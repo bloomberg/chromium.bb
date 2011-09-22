@@ -31,8 +31,9 @@ bool TestContentClient::CanHandleWhileSwappedOut(const IPC::Message& msg) {
   return true;
 }
 
-std::string TestContentClient::GetUserAgent(bool mimic_windows) const {
-  return std::string();
+std::string TestContentClient::GetUserAgent(bool* overriding) const {
+  *overriding = false;
+  return std::string("TestContentClient");
 }
 
 string16 TestContentClient::GetLocalizedString(int message_id) const {

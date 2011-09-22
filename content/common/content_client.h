@@ -76,10 +76,10 @@ class CONTENT_EXPORT ContentClient {
   // behalf of a swapped out renderer.
   virtual bool CanHandleWhileSwappedOut(const IPC::Message& msg) = 0;
 
-  // Returns the user agent. If mimic_windows is true then the embedder can
-  // return a fake Windows user agent. This is a workaround for broken
-  // websites.
-  virtual std::string GetUserAgent(bool mimic_windows) const = 0;
+  // Returns the user agent and a flag indicating whether the returned
+  // string should always be used (if false, callers may override the
+  // value as needed to work around various user agent sniffing bugs).
+  virtual std::string GetUserAgent(bool *overriding) const = 0;
 
   // Returns a string resource given its id.
   virtual string16 GetLocalizedString(int message_id) const = 0;
