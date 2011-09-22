@@ -19,34 +19,45 @@ class ExtensionUninstallDialog : public ImageLoadingTracker::Observer {
   class Delegate {
    public:
     // We call this method to signal that the uninstallation should continue.
-    virtual void ExtensionDialogAccepted() = 0;
+    virtual void ExtensionUninstallAccepted() = 0;
 
     // We call this method to signal that the uninstallation should stop.
-    virtual void ExtensionDialogCanceled() = 0;
+    virtual void ExtensionUninstallCanceled() = 0;
 
    protected:
     virtual ~Delegate() {}
   };
 
-  explicit ExtensionUninstallDialog(Profile* profile);
+  // Creates a platform specific implementation of ExtensionUninstallDialog.
+  static ExtensionUninstallDialog* Create(
+      Profile* profile, Delegate* delegate);
+
   virtual ~ExtensionUninstallDialog();
 
-  // This is called by the extensions management page to verify whether the
-  // uninstallation should proceed.
+  // This is called to verify whether the uninstallation should proceed.
   // Starts the process of showing a confirmation UI, which is split into two.
   // 1) Set off a 'load icon' task.
   // 2) Handle the load icon response and show the UI (OnImageLoaded).
-  void ConfirmUninstall(Delegate* delegate, const Extension* extension);
+  void ConfirmUninstall(const Extension* extension);
+
+ protected:
+  // Constructor used by the derived classes.
+  explicit ExtensionUninstallDialog(Profile* profile, Delegate* delegate);
+
+  Profile* profile_;
+
+  // The delegate we will call Accepted/Canceled on after confirmation dialog.
+  Delegate* delegate_;
+
+  // The extension we are showing the dialog for.
+  const Extension* extension_;
+
+  // The extensions icon.
+  SkBitmap icon_;
 
  private:
-  // Creates an appropriate ExtensionUninstallDialog for the platform.
-  static void Show(Profile* profile,
-                   Delegate* delegate,
-                   const Extension* extension,
-                   SkBitmap* icon);
-
-  // Sets the icon that will be used in any UI. If |icon| is NULL, or contains
-  // an empty bitmap, then a default icon will be used instead.
+  // Sets the icon that will be used in the dialog. If |icon| is NULL, or
+  // contains an empty bitmap, then we use a default icon instead.
   void SetIcon(SkBitmap* icon);
 
   // ImageLoadingTracker::Observer:
@@ -54,21 +65,15 @@ class ExtensionUninstallDialog : public ImageLoadingTracker::Observer {
                              const ExtensionResource& resource,
                              int index) OVERRIDE;
 
-  Profile* profile_;
+  // Displays the prompt. This should only be called after loading the icon.
+  // The implementations of this method are platform-specific.
+  virtual void Show() = 0;
+
   MessageLoop* ui_loop_;
 
-  // The delegate we will call Accepted/Canceled on after confirmation UI.
-  Delegate* delegate_;
-
-  // The extension we are showing the UI for.
-  const Extension* extension_;
-
   // Keeps track of extension images being loaded on the File thread for the
-  // purpose of showing the install UI.
+  // purpose of showing the dialog.
   ImageLoadingTracker tracker_;
-
-  // The extensions icon.
-  SkBitmap icon_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionUninstallDialog);
 };

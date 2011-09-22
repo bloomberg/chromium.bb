@@ -28,8 +28,8 @@ class PanelSettingsMenuModel : public ui::SimpleMenuModel,
   virtual void ExecuteCommand(int command_id) OVERRIDE;
 
   // ExtensionUninstallDialog::Delegate:
-  virtual void ExtensionDialogAccepted() OVERRIDE;
-  virtual void ExtensionDialogCanceled() OVERRIDE;
+  virtual void ExtensionUninstallAccepted() OVERRIDE;
+  virtual void ExtensionUninstallCanceled() OVERRIDE;
 
  private:
   friend class PanelBrowserTest;

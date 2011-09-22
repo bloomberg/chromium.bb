@@ -52,8 +52,8 @@ class ExtensionContextMenuModel
   virtual void ExecuteCommand(int command_id);
 
   // ExtensionUninstallDialog::Delegate:
-  virtual void ExtensionDialogAccepted();
-  virtual void ExtensionDialogCanceled();
+  virtual void ExtensionUninstallAccepted();
+  virtual void ExtensionUninstallCanceled();
 
  private:
   void InitCommonCommands();

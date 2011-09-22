@@ -74,8 +74,8 @@ class ExtensionsDOMHandler : public WebUIMessageHandler,
   virtual void OnPackFailure(const std::string& error) OVERRIDE;
 
   // ExtensionUninstallDialog::Delegate:
-  virtual void ExtensionDialogAccepted() OVERRIDE;
-  virtual void ExtensionDialogCanceled() OVERRIDE;
+  virtual void ExtensionUninstallAccepted() OVERRIDE;
+  virtual void ExtensionUninstallCanceled() OVERRIDE;
 
  private:
   // Callback for "requestExtensionsData" message.

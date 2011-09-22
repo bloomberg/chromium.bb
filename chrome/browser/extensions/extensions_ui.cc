@@ -282,7 +282,7 @@ void ExtensionsDOMHandler::RegisterForNotifications() {
 ExtensionUninstallDialog* ExtensionsDOMHandler::GetExtensionUninstallDialog() {
   if (!extension_uninstall_dialog_.get()) {
     extension_uninstall_dialog_.reset(
-        new ExtensionUninstallDialog(Profile::FromWebUI(web_ui_)));
+        ExtensionUninstallDialog::Create(Profile::FromWebUI(web_ui_), this));
   }
   return extension_uninstall_dialog_.get();
 }
@@ -413,10 +413,10 @@ void ExtensionsDOMHandler::HandleUninstallMessage(const ListValue* args) {
 
   extension_id_prompting_ = extension_id;
 
-  GetExtensionUninstallDialog()->ConfirmUninstall(this, extension);
+  GetExtensionUninstallDialog()->ConfirmUninstall(extension);
 }
 
-void ExtensionsDOMHandler::ExtensionDialogAccepted() {
+void ExtensionsDOMHandler::ExtensionUninstallAccepted() {
   DCHECK(!extension_id_prompting_.empty());
 
   bool was_terminated = false;
@@ -443,7 +443,7 @@ void ExtensionsDOMHandler::ExtensionDialogAccepted() {
     HandleRequestExtensionsData(NULL);
 }
 
-void ExtensionsDOMHandler::ExtensionDialogCanceled() {
+void ExtensionsDOMHandler::ExtensionUninstallCanceled() {
   extension_id_prompting_ = "";
 }
 

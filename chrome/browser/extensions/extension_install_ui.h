@@ -24,7 +24,7 @@ class Profile;
 class InfoBarDelegate;
 class TabContents;
 
-// Displays all the UI around extension installation and uninstallation.
+// Displays all the UI around extension installation.
 class ExtensionInstallUI : public ImageLoadingTracker::Observer {
  public:
   enum PromptType {

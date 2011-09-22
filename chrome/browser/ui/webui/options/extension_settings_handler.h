@@ -145,8 +145,8 @@ class ExtensionSettingsHandler : public OptionsPageUIHandler,
 
   // ExtensionUninstallDialog::Delegate implementation, used for receiving
   // notification about uninstall confirmation dialog selections.
-  virtual void ExtensionDialogAccepted() OVERRIDE;
-  virtual void ExtensionDialogCanceled() OVERRIDE;
+  virtual void ExtensionUninstallAccepted() OVERRIDE;
+  virtual void ExtensionUninstallCanceled() OVERRIDE;
 
  private:
   // Helper that lists the current active html pages for an extension.

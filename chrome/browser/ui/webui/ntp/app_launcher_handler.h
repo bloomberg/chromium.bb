@@ -141,8 +141,8 @@ class AppLauncherHandler : public WebUIMessageHandler,
   void PromptToEnableApp(const std::string& extension_id);
 
   // ExtensionUninstallDialog::Delegate:
-  virtual void ExtensionDialogAccepted() OVERRIDE;
-  virtual void ExtensionDialogCanceled() OVERRIDE;
+  virtual void ExtensionUninstallAccepted() OVERRIDE;
+  virtual void ExtensionUninstallCanceled() OVERRIDE;
 
   // ExtensionInstallUI::Delegate:
   virtual void InstallUIProceed() OVERRIDE;

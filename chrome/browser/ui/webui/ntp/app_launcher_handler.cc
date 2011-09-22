@@ -642,9 +642,9 @@ void AppLauncherHandler::HandleUninstallApp(const ListValue* args) {
     scoped_ptr<AutoReset<bool> > auto_reset;
     if (NewTabUI::NTP4Enabled())
       auto_reset.reset(new AutoReset<bool>(&ignore_changes_, true));
-    ExtensionDialogAccepted();
+    ExtensionUninstallAccepted();
   } else {
-    GetExtensionUninstallDialog()->ConfirmUninstall(this, extension);
+    GetExtensionUninstallDialog()->ConfirmUninstall(extension);
   }
 }
 
@@ -913,7 +913,7 @@ void AppLauncherHandler::PromptToEnableApp(const std::string& extension_id) {
   GetExtensionInstallUI()->ConfirmReEnable(this, extension);
 }
 
-void AppLauncherHandler::ExtensionDialogAccepted() {
+void AppLauncherHandler::ExtensionUninstallAccepted() {
   // Do the uninstall work here.
   DCHECK(!extension_id_prompting_.empty());
 
@@ -930,7 +930,7 @@ void AppLauncherHandler::ExtensionDialogAccepted() {
   extension_id_prompting_ = "";
 }
 
-void AppLauncherHandler::ExtensionDialogCanceled() {
+void AppLauncherHandler::ExtensionUninstallCanceled() {
   extension_id_prompting_ = "";
 }
 
@@ -958,7 +958,7 @@ void AppLauncherHandler::InstallUIProceed() {
 }
 
 void AppLauncherHandler::InstallUIAbort(bool user_initiated) {
-  // We record the histograms here because ExtensionDialogCanceled is also
+  // We record the histograms here because ExtensionUninstallCanceled is also
   // called when the extension uninstall dialog is canceled.
   const Extension* extension =
       extension_service_->GetExtensionById(extension_id_prompting_, true);
@@ -968,13 +968,13 @@ void AppLauncherHandler::InstallUIAbort(bool user_initiated) {
   ExtensionService::RecordPermissionMessagesHistogram(
       extension, histogram_name.c_str());
 
-  ExtensionDialogCanceled();
+  ExtensionUninstallCanceled();
 }
 
 ExtensionUninstallDialog* AppLauncherHandler::GetExtensionUninstallDialog() {
   if (!extension_uninstall_dialog_.get()) {
     extension_uninstall_dialog_.reset(
-        new ExtensionUninstallDialog(Profile::FromWebUI(web_ui_)));
+        ExtensionUninstallDialog::Create(Profile::FromWebUI(web_ui_), this));
   }
   return extension_uninstall_dialog_.get();
 }

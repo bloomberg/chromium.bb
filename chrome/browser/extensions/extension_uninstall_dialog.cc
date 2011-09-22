@@ -17,21 +17,19 @@
 // Size of extension icon in top left of dialog.
 static const int kIconSize = 69;
 
-ExtensionUninstallDialog::ExtensionUninstallDialog(Profile* profile)
+ExtensionUninstallDialog::ExtensionUninstallDialog(
+    Profile* profile,
+    ExtensionUninstallDialog::Delegate* delegate)
     : profile_(profile),
-      ui_loop_(MessageLoop::current()),
-      delegate_(NULL),
+      delegate_(delegate),
       extension_(NULL),
-      ALLOW_THIS_IN_INITIALIZER_LIST(tracker_(this)) {
-}
+      ui_loop_(MessageLoop::current()),
+      ALLOW_THIS_IN_INITIALIZER_LIST(tracker_(this)) {}
 
-ExtensionUninstallDialog::~ExtensionUninstallDialog() {
-}
+ExtensionUninstallDialog::~ExtensionUninstallDialog() {}
 
-void ExtensionUninstallDialog::ConfirmUninstall(Delegate* delegate,
-                                                const Extension* extension) {
+void ExtensionUninstallDialog::ConfirmUninstall(const Extension* extension) {
   DCHECK(ui_loop_ == MessageLoop::current());
-  delegate_ = delegate;
   extension_ = extension;
 
   ExtensionResource image =
@@ -64,5 +62,5 @@ void ExtensionUninstallDialog::OnImageLoaded(SkBitmap* image,
                                              int index) {
   SetIcon(image);
 
-  Show(profile_, delegate_, extension_, &icon_);
+  Show();
 }

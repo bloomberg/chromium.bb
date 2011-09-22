@@ -91,9 +91,9 @@ void PanelSettingsMenuModel::ExecuteCommand(int command_id) {
     case COMMAND_UNINSTALL:
       // TODO(jianli): Need to handle the case that the extension API requests
       // the panel to be closed when the uninstall dialog is still showing.
-      extension_uninstall_dialog_.reset(new ExtensionUninstallDialog(
-          browser->GetProfile()));
-      extension_uninstall_dialog_->ConfirmUninstall(this, extension);
+      extension_uninstall_dialog_.reset(
+          ExtensionUninstallDialog::Create(browser->GetProfile(), this));
+      extension_uninstall_dialog_->ConfirmUninstall(extension);
       break;
     case COMMAND_MANAGE:
       browser->ShowOptionsTab(chrome::kExtensionsSubPage);
@@ -104,7 +104,7 @@ void PanelSettingsMenuModel::ExecuteCommand(int command_id) {
   }
 }
 
-void PanelSettingsMenuModel::ExtensionDialogAccepted() {
+void PanelSettingsMenuModel::ExtensionUninstallAccepted() {
   const Extension* extension = panel_->GetExtension();
   DCHECK(extension);
 
@@ -112,5 +112,5 @@ void PanelSettingsMenuModel::ExtensionDialogAccepted() {
       UninstallExtension(extension->id(), false, NULL);
 }
 
-void PanelSettingsMenuModel::ExtensionDialogCanceled() {
+void PanelSettingsMenuModel::ExtensionUninstallCanceled() {
 }

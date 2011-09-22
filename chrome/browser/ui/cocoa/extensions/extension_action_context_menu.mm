@@ -40,18 +40,19 @@ class AsyncUninstaller : public ExtensionUninstallDialog::Delegate {
   AsyncUninstaller(const Extension* extension, Profile* profile)
       : extension_(extension),
         profile_(profile) {
-    extension_uninstall_dialog_.reset(new ExtensionUninstallDialog(profile));
-    extension_uninstall_dialog_->ConfirmUninstall(this, extension_);
+    extension_uninstall_dialog_.reset(
+        ExtensionUninstallDialog::Create(profile, this));
+    extension_uninstall_dialog_->ConfirmUninstall(extension_);
   }
 
   ~AsyncUninstaller() {}
 
   // ExtensionUninstallDialog::Delegate:
-  virtual void ExtensionDialogAccepted() {
+  virtual void ExtensionUninstallAccepted() {
     profile_->GetExtensionService()->
         UninstallExtension(extension_->id(), false, NULL);
   }
-  virtual void ExtensionDialogCanceled() {}
+  virtual void ExtensionUninstallCanceled() {}
 
  private:
   // The extension that we're loading the icon for. Weak.

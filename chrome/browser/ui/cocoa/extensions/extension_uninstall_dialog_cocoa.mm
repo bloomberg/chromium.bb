@@ -17,12 +17,28 @@
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/resource/resource_bundle.h"
 
-// static
-void ExtensionUninstallDialog::Show(
-    Profile* profile,
-    ExtensionUninstallDialog::Delegate* delegate,
-    const Extension* extension,
-    SkBitmap* icon) {
+namespace {
+
+// The Cocoa implementation of ExtensionUninstallDialog. This has a less
+// complex life cycle than the Views and GTK implementations because the
+// dialog blocks the page from navigating away and destroying the dialog,
+// so there's no way for the dialog to outlive its delegate.
+class ExtensionUninstallDialogCocoa : public ExtensionUninstallDialog {
+ public:
+  ExtensionUninstallDialogCocoa(Profile* profile, Delegate* delegate);
+  virtual ~ExtensionUninstallDialogCocoa() OVERRIDE;
+
+ private:
+  virtual void Show() OVERRIDE;
+};
+
+ExtensionUninstallDialogCocoa::ExtensionUninstallDialogCocoa(
+    Profile* profile, ExtensionUninstallDialog::Delegate* delegate)
+    : ExtensionUninstallDialog(profile, delegate) {}
+
+ExtensionUninstallDialogCocoa::~ExtensionUninstallDialogCocoa() {}
+
+void ExtensionUninstallDialogCocoa::Show() {
   NSAlert* alert = [[[NSAlert alloc] init] autorelease];
 
   NSButton* continueButton = [alert addButtonWithTitle:l10n_util::GetNSString(
@@ -37,12 +53,20 @@ void ExtensionUninstallDialog::Show(
 
   [alert setMessageText:l10n_util::GetNSStringF(
        IDS_EXTENSION_UNINSTALL_PROMPT_HEADING,
-       UTF8ToUTF16(extension->name()))];
+       UTF8ToUTF16(extension_->name()))];
   [alert setAlertStyle:NSWarningAlertStyle];
-  [alert setIcon:gfx::SkBitmapToNSImage(*icon)];
+  [alert setIcon:gfx::SkBitmapToNSImage(icon_)];
 
   if ([alert runModal] == NSAlertFirstButtonReturn)
-    delegate->ExtensionDialogAccepted();
+    delegate_->ExtensionUninstallAccepted();
   else
-    delegate->ExtensionDialogCanceled();
+    delegate_->ExtensionUninstallCanceled();
+}
+
+}  // namespace
+
+// static
+ExtensionUninstallDialog* ExtensionUninstallDialog::Create(
+    Profile* profile, Delegate* delegate) {
+  return new ExtensionUninstallDialogCocoa(profile, delegate);
 }

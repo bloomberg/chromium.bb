@@ -87,11 +87,10 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
   // For Dialog boxes, this is called when the user presses the "OK" button,
   // or the Enter key.  Can also be called on Esc key or close button
   // presses if there is no "Cancel" button.  This function should return
-  // true if the window can be closed after the window can be closed after
-  // it returns, or false if it must remain open.  If |window_closing| is
-  // true, it means that this handler is being called because the window is
-  // being closed (e.g.  by Window::Close) and there is no Cancel handler,
-  // so Accept is being called instead.
+  // true if the window can be closed after it returns, or false if it must
+  // remain open.  If |window_closing| is true, it means that this handler is
+  // being called because the window is being closed (e.g.  by Window::Close)
+  // and there is no Cancel handler, so Accept is being called instead.
   virtual bool Accept(bool window_closing);
   virtual bool Accept();
 

@@ -131,8 +131,9 @@ void ExtensionContextMenuModel::ExecuteCommand(int command_id) {
     }
     case UNINSTALL: {
       AddRef();  // Balanced in Accepted() and Canceled()
-      extension_uninstall_dialog_.reset(new ExtensionUninstallDialog(profile_));
-      extension_uninstall_dialog_->ConfirmUninstall(this, extension);
+      extension_uninstall_dialog_.reset(
+          ExtensionUninstallDialog::Create(profile_, this));
+      extension_uninstall_dialog_->ConfirmUninstall(extension);
       break;
     }
     case MANAGE: {
@@ -149,7 +150,7 @@ void ExtensionContextMenuModel::ExecuteCommand(int command_id) {
   }
 }
 
-void ExtensionContextMenuModel::ExtensionDialogAccepted() {
+void ExtensionContextMenuModel::ExtensionUninstallAccepted() {
   if (GetExtension())
     profile_->GetExtensionService()->UninstallExtension(extension_id_, false,
                                                         NULL);
@@ -157,7 +158,7 @@ void ExtensionContextMenuModel::ExtensionDialogAccepted() {
   Release();
 }
 
-void ExtensionContextMenuModel::ExtensionDialogCanceled() {
+void ExtensionContextMenuModel::ExtensionUninstallCanceled() {
   Release();
 }
 
