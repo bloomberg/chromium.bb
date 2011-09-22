@@ -9,6 +9,7 @@
 #include <Vssym32.h>
 
 #include "base/logging.h"
+#include "base/win/scoped_gdi_object.h"
 #include "base/win/win_util.h"
 #include "ui/base/l10n/l10n_util_win.h"
 #include "ui/gfx/native_theme_win.h"
@@ -29,10 +30,11 @@ MenuConfig* MenuConfig::Create() {
   NONCLIENTMETRICS metrics;
   base::win::GetNonClientMetrics(&metrics);
   l10n_util::AdjustUIFont(&(metrics.lfMenuFont));
-  HFONT font = CreateFontIndirect(&metrics.lfMenuFont);
-  DLOG_ASSERT(font);
-  config->font = gfx::Font(font);
-
+  {
+    base::win::ScopedHFONT font(CreateFontIndirect(&metrics.lfMenuFont));
+    DLOG_ASSERT(font.Get());
+    config->font = gfx::Font(font);
+  }
   NativeTheme::ExtraParams extra;
   extra.menu_check.is_radio = false;
   extra.menu_check.is_selected = false;
