@@ -37,14 +37,12 @@ WHITELISTED_LICENSES = [
     'BSD (2 clause) MIT/X11 (BSD like)',
     'BSD (3 clause)',
     'BSD (3 clause) ISC',
-    'BSD (3 clause) LGPL (v2.1 or later) (with incorrect FSF address)',
+    'BSD (3 clause) LGPL (v2.1 or later)',
     'BSD (3 clause) MIT/X11 (BSD like)',
     'BSD (4 clause)',
     'BSD-like',
 
     # TODO(phajdan.jr): Make licensecheck not print BSD-like twice.
-    'BSD-like BSD (2 clause)',
-    'BSD-like BSD (3 clause)',
     'BSD-like MIT/X11 (BSD like)',
 
     'BSL (v1.0)',
@@ -54,7 +52,6 @@ WHITELISTED_LICENSES = [
     'LGPL',
     'LGPL (v2)',
     'LGPL (v2 or later)',
-    'LGPL (v2 or later) (with incorrect FSF address)',
     'LGPL (v2.1)',
     'LGPL (v3 or later)',
 
@@ -62,8 +59,7 @@ WHITELISTED_LICENSES = [
     'LGPL (v2,1 or later)',
 
     'LGPL (v2.1 or later)',
-    'LGPL (v2.1 or later) (with incorrect FSF address)',
-    'MPL (v1.0) LGPL (v2 or later) (with incorrect FSF address)',
+    'MPL (v1.0) LGPL (v2 or later)',
     'MPL (v1.1)',
     'MPL (v1.1) BSD-like',
     'MPL (v1.1) BSD-like GPL (unversioned/unknown version)',
@@ -129,11 +125,10 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
         'UNKNOWN',
     ],
     'native_client/toolchain': [
-        'BSD GPL (v2 or later) (with incorrect FSF address)',
+        'BSD GPL (v2 or later)',
         'BSD (2 clause) GPL (v2 or later)',
         'BSL (v1.0) GPL',
         'GPL',
-        'GPL (with incorrect FSF address)',
         'GPL (unversioned/unknown version)',
         'GPL (v2)',
 
@@ -141,7 +136,6 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
         'GPL (v2,)',
 
         'GPL (v2 or later)',
-        'GPL (v2 or later) (with incorrect FSF address)',
 
         # TODO(phajdan.jr): Make licensecheck not print the comma after 3.1.
         'GPL (v3.1,)',
@@ -153,7 +147,7 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
         'UNKNOWN',
     ],
     'net/tools/spdyshark': [
-        'GPL (v2 or later) (with incorrect FSF address)',
+        'GPL (v2 or later)',
         'UNKNOWN',
     ],
     'ppapi/c/documentation/check.sh': [
@@ -181,8 +175,8 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
         'GPL',
     ],
     'third_party/WebKit/Source/JavaScriptCore/tests/mozilla': [
+        'GPL',
         'GPL (unversioned/unknown version)',
-        'GPL (with incorrect FSF address)',
     ],
     'third_party/active_doc': [
         'UNKNOWN',
@@ -256,7 +250,7 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
         'UNKNOWN',
     ],
     'third_party/lcov/contrib/galaxy/genflat.pl': [
-        'GPL (v2 or later) (with incorrect FSF address)',
+        'GPL (v2 or later)',
     ],
     'third_party/leveldatabase/src/util/posix_logger.h': [
         'UNKNOWN',
@@ -284,7 +278,6 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
     ],
     'third_party/libvpx/source/libvpx/examples/includes': [
         'GPL (v2 or later)',
-        'GPL (v2 or later) (with incorrect FSF address)',
     ],
     'third_party/libwebp': [
         'UNKNOWN',

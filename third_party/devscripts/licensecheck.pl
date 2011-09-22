@@ -277,10 +277,6 @@ while (@files) {
     while (<F>) {
         last if ($. > $opt_lines);
         $content .= $_;
-	$copyright_match = parse_copyright($_);
-	if ($copyright_match) {
-	    $copyrights{lc("$copyright_match")} = "$copyright_match";
-	}
     }
     close(F);
 
@@ -298,7 +294,6 @@ while (@files) {
 
     $license = parselicense($content);
     print "$file: ";
-    print "*No copyright* " unless $copyright;
     print $license . "\n";
     print "  [Copyright: " . $copyright . "]\n"
       if $copyright and $opt_copyright;
@@ -398,10 +393,6 @@ sub parselicense($) {
 	$gplver = " (v$1 or later)";
     }
 
-    if ($licensetext =~ /(?:675 Mass Ave|59 Temple Place|51 Franklin Steet|02139|02111-1307)/i) {
-	$extrainfo = " (with incorrect FSF address)$extrainfo";
-    }
-
     if ($licensetext =~ /permission (?:is (also granted|given))? to link (the code of )?this program with (any edition of )?(Qt|the Qt library)/i) {
 	$extrainfo = " (with Qt exception)$extrainfo"
     }
@@ -414,20 +405,12 @@ sub parselicense($) {
 	$license = "LGPL$gplver$extrainfo $license";
     }
 
-    if ($licensetext =~ /is free software.? you can redistribute it and\/or modify it under the terms of the (GNU Affero General Public License|AGPL)/i) {
-	$license = "AGPL$gplver$extrainfo $license";
-    }
-
     if ($licensetext =~ /is free software.? you (can|may) redistribute it and\/or modify it under the terms of (?:version [^ ]+ (?:\(?only\)? )?of )?the GNU General Public License/i) {
 	$license = "GPL$gplver$extrainfo $license";
-    }
-
-    if ($licensetext =~ /is distributed under the terms of the GNU General Public License,/
+    } elsif ($licensetext =~ /is distributed under the terms of the GNU General Public License,/
 	and length $gplver) {
 	$license = "GPL$gplver$extrainfo $license";
-    }
-
-    if ($licensetext =~ /is distributed.*terms.*GPL/) {
+    } elsif ($licensetext =~ /is distributed.*terms.*GPL/) {
 	$license = "GPL (unversioned/unknown version) $license";
     }
 
@@ -448,20 +431,18 @@ sub parselicense($) {
     }
 
     if ($licensetext =~ /THIS SOFTWARE IS PROVIDED .*AS IS AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY/) {
-	if ($licensetext =~ /All advertising materials mentioning features or use of this software must display the following acknowledge?ment.*This product includes software developed by/i) {
+	if ($licensetext =~ /All advertising materials mentioning features or use of this software must display the following/) {
 	    $license = "BSD (4 clause) $license";
-	} elsif ($licensetext =~ /(The name of .*? may not|Neither the names? of .*? nor the names of (its|their) contributors may) be used to endorse or promote products derived from this software/i) {
+	} elsif ($licensetext =~ /be used to endorse or promote products derived from this software/) {
 	    $license = "BSD (3 clause) $license";
-	} elsif ($licensetext =~ /Redistributions of source code must retain the above copyright notice/i) {
+	} elsif ($licensetext =~ /Redistributions of source code must retain the above copyright notice/) {
 	    $license = "BSD (2 clause) $license";
 	} else {
 	    $license = "BSD $license";
 	}
-    }
-
-    if ($licensetext =~ /Use of this source code is governed by a BSD-style license/) {
+    } elsif ($licensetext =~ /Use of this source code is governed by a BSD-style license/) {
         $license = "BSD-like $license";
-    } elsif ($licensetext =~ /BSD terms apply.*see.*COPYING.*for details/) {
+    } elsif ($licensetext =~ /BSD terms apply/) {
         $license = "BSD-like $license";
     }
 
@@ -501,7 +482,7 @@ sub parselicense($) {
 	$license = "SGI Free Software License B $license";
     }
 
-    if ($licensetext =~ /is.*in the public domain|disclaims copyright/i) {
+    if ($licensetext =~ /in the public domain/i) {
 	$license = "Public domain";
     }
 
@@ -527,18 +508,6 @@ sub parselicense($) {
 	$license = "zlib/libpng $license";
     } elsif ($licensetext =~ /This code is released under the libpng license/) {
         $license = "libpng $license";
-    }
-
-    if ($licensetext =~ /Do What The Fuck You Want To Public License, Version ([^, ]+)/i) {
-        $license = "WTFPL (v$1)";
-    }
-
-    if ($licensetext =~ /Do what The Fuck You Want To Public License/i) {
-        $license = "WTFPL";
-    }
-
-    if ($licensetext =~ /(License WTFPL|Under (the|a) WTFPL)/i) {
-        $license = "WTFPL";
     }
 
     $license = "UNKNOWN" if (!length($license));
