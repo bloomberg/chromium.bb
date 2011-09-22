@@ -101,15 +101,24 @@ InputMethodDescriptor::InputMethodDescriptor() {
 InputMethodDescriptor::~InputMethodDescriptor() {
 }
 
+InputMethodDescriptor::InputMethodDescriptor(
+    const std::string& in_id,
+    const std::string& in_keyboard_layout,
+    const std::string& in_virtual_keyboard_layouts,
+    const std::string& in_language_code)
+    : id_(in_id),
+      keyboard_layout_(in_keyboard_layout),
+      language_code_(in_language_code) {
+  DCHECK(keyboard_layout_.find(",") == std::string::npos);
+  base::SplitString(
+      in_virtual_keyboard_layouts, ',', &virtual_keyboard_layouts_);
+}
+
 // static
 InputMethodDescriptor
 InputMethodDescriptor::GetFallbackInputMethodDescriptor() {
-  InputMethodDescriptor desc;
-  desc.id_ = "xkb:us::eng";
-  desc.keyboard_layout_ = kFallbackLayout;
-  desc.virtual_keyboard_layouts_.push_back(kFallbackLayout);
-  desc.language_code_ = "eng";
-  return desc;
+  return InputMethodDescriptor(
+      "xkb:us::eng", kFallbackLayout, kFallbackLayout, "eng");
 }
 
 std::string InputMethodDescriptor::ToString() const {

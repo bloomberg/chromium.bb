@@ -50,6 +50,12 @@ class InputMethodDescriptor {
   static InputMethodDescriptor GetFallbackInputMethodDescriptor();
 
  private:
+  // For GetFallbackInputMethodDescriptor(). Use the public constructor instead.
+  InputMethodDescriptor(const std::string& in_id,
+                        const std::string& in_keyboard_layout,
+                        const std::string& in_virtual_keyboard_layouts,
+                        const std::string& in_language_code);
+
   // An ID that identifies an input method engine (e.g., "t:latn-post",
   // "pinyin", "hangul").
   std::string id_;
