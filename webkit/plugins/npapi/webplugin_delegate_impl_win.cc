@@ -106,7 +106,9 @@ bool GetSavedKeyState(WPARAM vkey) {
 
 void SetSavedKeyState(WPARAM vkey) {
   CHECK_LT(vkey, kBitsPerType * sizeof(g_saved_key_state));
-  g_saved_key_state[vkey / kBitsPerType] |= 1 << (vkey % kBitsPerType);
+  // Cache the key state only for keys blocked by UIPI.
+  if (g_iat_orig_get_key_state(vkey) == 0)
+    g_saved_key_state[vkey / kBitsPerType] |= 1 << (vkey % kBitsPerType);
 }
 
 void UnsetSavedKeyState(WPARAM vkey) {
