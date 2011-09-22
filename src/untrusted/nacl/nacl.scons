@@ -25,6 +25,7 @@ sources_for_standard_interfaces = [
     'gettimeofday.c',
     'lock.c',
     'lseek.c',
+    'malloc.c',
     'mmap.c',
     'munmap.c',
     'nanosleep.c',
