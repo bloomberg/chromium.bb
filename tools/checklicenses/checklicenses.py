@@ -18,6 +18,9 @@ def PrintUsage():
            to the script file. This will be correct given the normal location
            of the script in "<root>/tools/checklicenses".
 
+  --ignore-suppressions  Ignores path-specific license whitelist. Useful when
+                         trying to remove a suppression/whitelist entry.
+
   tocheck  Specifies the directory, relative to root, to check. This defaults
            to "." so it checks everything.
 
@@ -494,14 +497,15 @@ def main(options, args):
     if license in WHITELISTED_LICENSES:
       continue
 
-    found_path_specific = False
-    for prefix in PATH_SPECIFIC_WHITELISTED_LICENSES:
-      if (filename.startswith(prefix) and
-          license in PATH_SPECIFIC_WHITELISTED_LICENSES[prefix]):
+    if not options.ignore_suppressions:
+      found_path_specific = False
+      for prefix in PATH_SPECIFIC_WHITELISTED_LICENSES:
+        if (filename.startswith(prefix) and
+            license in PATH_SPECIFIC_WHITELISTED_LICENSES[prefix]):
           found_path_specific = True
           break
-    if found_path_specific:
-      continue
+      if found_path_specific:
+        continue
 
     print "'%s' has non-whitelisted license '%s'" % (filename, license)
     success = False
@@ -532,5 +536,9 @@ if '__main__' == __name__:
                            'will normally be the repository root.')
   option_parser.add_option('-v', '--verbose', action='store_true',
                            default=False, help='Print debug logging')
+  option_parser.add_option('--ignore-suppressions',
+                           action='store_true',
+                           default=False,
+                           help='Ignore path-specific license whitelist.')
   options, args = option_parser.parse_args()
   main(options, args)
