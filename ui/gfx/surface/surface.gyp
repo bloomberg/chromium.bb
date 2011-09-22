@@ -9,7 +9,7 @@
 
   'target_defaults': {
     'conditions': [
-      ['toolkit_uses_gtk == 1 or use_wayland == 1', {
+      ['use_x11 == 1', {
         'include_dirs': [
           '<(DEPTH)/third_party/angle/include',
         ],
