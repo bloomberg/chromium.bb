@@ -47,6 +47,18 @@ var REPEAT_DELAY_MSEC = 500;
 var REPEAT_INTERVAL_MSEC = 50;
 
 /**
+ * The keyboard layout name currently in use.
+ * @type {string}
+ */
+var currentKeyboardLayout = 'us';
+
+/**
+ * The popup keyboard layout name currently in use.
+ * @type {string}
+ */
+var currentPopupName = '';
+
+/**
  * A structure to track the currently repeating key on the keyboard.
  */
 var repeatKey = {
@@ -79,6 +91,31 @@ var repeatKey = {
       this.key = undefined;
     }
 };
+
+/**
+ * An array to track the currently touched keys on the popup keyboard.
+ */
+var touchedKeys = [];
+
+/**
+ * Set the keyboard mode.
+ * @param {string} mode The new mode.
+ * @return {void}
+ */
+function setMode(mode) {
+  var rows = KEYBOARDS[currentKeyboardLayout]['rows'];
+  for (var i = 0; i < rows.length; ++i) {
+    rows[i].showMode(mode);
+  }
+
+  if (!currentPopupName) {
+    return;
+  }
+  var popupRows = KEYBOARDS[currentPopupName]['rows'];
+  for (var i = 0; i < popupRows.length; ++i) {
+    popupRows[i].showMode(mode);
+  }
+}
 
 /**
  * Transition the mode according to the given transition.
@@ -216,8 +253,13 @@ function setupKeyEventHandlers(key, element, handlers) {
     }
 
     if (keyLongHandler) {
+      // Copy the currentTarget of event, which is neccessary in
+      // showPopupKeyboard, because |evt| can be modified before
+      // |keyLongHandler| is called.
+      var evtCopy = {};
+      evtCopy.currentTarget = evt.currentTarget;
       key.longPressTimer = setTimeout(function() {
-          keyLongHandler(evt),
+          keyLongHandler(evtCopy),
           clearTimeout(key.longPressTimer);
           delete key.longPressTimer;
           key.pressed = false;
@@ -256,6 +298,20 @@ function setupKeyEventHandlers(key, element, handlers) {
   };
 
   var outHandler = function(evt) {
+    // Key element contains a div that holds text like this.
+    //
+    // <div class="key r1">
+    //   <div class="text-key">a</div>
+    // </div>
+    //
+    // We are interested in mouseout event sent when mouse cursor moves out of
+    // the external div, but mouseout event is sent when mouse cursor moves out
+    // of the internal div or moves into the internal div, too.
+    // Filter out the last two cases here.
+    if (evt.target != evt.currentTarget ||
+        evt.toElement.parentNode == evt.fromElement) {
+      return;
+    }
     // Reset key press state if the point goes out of the element.
     key.pressed = false;
     // Reset long-press timer.
@@ -289,23 +345,144 @@ function sendKeyFunction(key) {
 }
 
 /**
+ * Dispatch custom events to the elements at the touch points.
+ * touchmove_popup events are dispatched responding to a touchmove and
+ * touchend_popup events responding to a touchend event respectively.
+ * @param {UIEvent} evt The touch event that contains touch points information.
+ * @return {void}
+ */
+function dispatchCustomPopupEvents(evt) {
+  var type = null;
+  var touches = null;
+  if (evt.type == 'touchmove') {
+    type = 'touchmove_popup';
+    touches = evt.touches;
+  } else if (evt.type == 'touchend') {
+    type = 'touchend_popup';
+    touches = evt.changedTouches;
+  } else {
+    return;
+  }
+
+  for (var i = 0; i < touches.length; ++i) {
+    var dispatchedEvent = document.createEvent('Event');
+    dispatchedEvent.initEvent(type, true, false);
+    var touch = touches[i];
+    var key = document.elementFromPoint(touch.screenX, touch.screenY);
+    if (key) {
+      key.dispatchEvent(dispatchedEvent);
+    }
+  }
+}
+
+/**
+ * Handle a touch move event on the key to make changes to the popup keyboard.
+ * @param {UIEvent} evt The UI event which triggered the touch move.
+ * @return {void}
+*/
+function trackTouchMoveForPopup(evt) {
+  var previous = touchedKeys;
+  touchedKeys = [];
+  dispatchCustomPopupEvents(evt);
+  for (var i = 0; i < previous.length; ++i) {
+    if (touchedKeys.indexOf(previous[i]) == -1) {
+      previous[i].classList.remove('highlighted');
+    }
+  }
+  for (var i = 0; i < touchedKeys.length; ++i) {
+    touchedKeys[i].classList.add('highlighted');
+  }
+}
+
+/**
+ * Handle a touch end event on the key to make changes to the popup keyboard.
+ * @param {UIEvent} evt The UI event which triggered the touch end.
+ * @return {void}
+*/
+function trackTouchEndForPopup(evt) {
+  for (var i = 0; i < touchedKeys.length; ++i) {
+    touchedKeys[i].classList.remove('highlighted');
+  }
+  dispatchCustomPopupEvents(evt);
+  hidePopupKeyboard();
+
+  touchedKeys = [];
+  evt.target.removeEventListener('touchmove', trackTouchMoveForPopup);
+  evt.target.removeEventListener('touchend', trackTouchEndForPopup);
+}
+
+/**
  * Show the popup keyboard.
  * @param {string} name The name of the popup keyboard.
+ * @param {UIEvent} evt The UI event which triggered the touch start.
+ * @return {void}
  */
-function showPopupKeyboard(name) {
-  // TODO(mazda): Implement this function.
-  console.warn('Popup keyboard is not implemented yet.');
+function showPopupKeyboard(name, evt) {
+  var popupDiv = document.getElementById('popup');
+  if (popupDiv.style.visibility == 'visible') {
+    return;
+  }
+
+  // Iitialize the rows of the popup keyboard
+  initRows(name, popupDiv, true);
+  currentPopupName = name;
+
+  // Set the mode of the popup keyboard
+  var popupRows = KEYBOARDS[name]['rows'];
+  for (var i = 0; i < popupRows.length; ++i) {
+    popupRows[i].showMode(currentMode);
+  }
+
+  // Calculate the size of popup keyboard based on the size of the key.
+  var keyElement = evt.currentTarget;
+  var keyboard = KEYBOARDS[name];
+  var rows = keyboard['definition'];
+  var height = keyElement.offsetHeight * rows.length;
+  var aspect = keyboard['aspect'];
+  var width = aspect * height;
+  popupDiv.style.width = width + 'px';
+  popupDiv.style.height = height + 'px';
+
+  // Place the popup keyboard above the key
+  var rect = keyElement.getBoundingClientRect();
+  var left = (rect.left + rect.right) / 2 - width / 2;
+  left = Math.min(Math.max(left, 0), window.innerWidth - width);
+  var top = rect.top - height;
+  top = Math.min(Math.max(top, 0), window.innerHeight - height);
+  popupDiv.style.left = left + 'px';
+  popupDiv.style.top = top + 'px';
+  popupDiv.style.visibility = 'visible';
+
+  keyElement.addEventListener('touchmove', trackTouchMoveForPopup);
+  keyElement.addEventListener('touchend', trackTouchEndForPopup);
 }
 
 /**
  * Create closure for the showPopupKeyboard function.
  * @param {string} name The name paramater to showPopupKeyboard.
- * @return {function()} A function which calls showPopupKeyboard(name).
+ * @return {function()} A function which calls showPopupKeyboard(name, evt).
  */
 function showPopupKeyboardFunction(name) {
-  return function () {
-    showPopupKeyboard(name);
+  return function (evt) {
+    showPopupKeyboard(name, evt);
   };
+}
+
+/**
+ * Hide the popup keyboard.
+ * @return {void}
+ */
+function hidePopupKeyboard() {
+  // Clean up the popup keyboard
+  var popupDiv = document.getElementById('popup');
+  popupDiv.style.visibility = 'hidden';
+  while (popupDiv.firstChild) {
+    popupDiv.removeChild(popupDiv.firstChild);
+  }
+  if (currentPopupName in KEYBOARDS) {
+    delete KEYBOARDS[currentPopupName].rows;
+  }
+  currentPopupName = '';
 }
 
 /**
@@ -321,10 +498,30 @@ function Character(display, id) {
 
 /**
  * Convenience function to make the keyboard data more readable.
- * @param {string} display Both the display and id for the created Character.
+ * @param {string} display The display for the created Character.
+ * @param {string} opt_id The id for the created Character.
+ * @return {Character} A character that contains display and opt_id. If
+ *     opt_id is omitted, display is used as the id.
  */
-function C(display) {
-  return new Character(display, display);
+function C(display, opt_id) {
+  var id = opt_id || display;
+  return new Character(display, id);
+}
+
+/**
+ * Convenience function to make the keyboard data more readable.
+ * @param {string} display The display for the created Character.
+ * @param {string} opt_id The id for the created Character.
+ * @param {string} opt_popupName The popup keyboard name for this character.
+ * @return {Object} An object that contains a Character and the popup keyboard
+ *     name.
+ */
+function CP(display, opt_id, opt_popupName) {
+  var result = { character: C(display, opt_id) };
+  if (opt_popupName) {
+    result['popupName'] = opt_popupName;
+  }
+  return result;
 }
 
 /**
@@ -396,10 +593,10 @@ BaseKey.prototype = {
 
 /**
  * A simple key which displays Characters.
- * @param {Character} key The Character for KEY_MODE.
- * @param {Character} shift The Character for SHIFT_MODE.
- * @param {Character} num The Character for NUMBER_MODE.
- * @param {Character} symbol The Character for SYMBOL_MODE.
+ * @param {Object} key The Character and the popup name for KEY_MODE.
+ * @param {Object} shift The Character and the popup name for SHIFT_MODE.
+ * @param {Object} num The Character and the popup name for NUMBER_MODE.
+ * @param {Object} symbol The Character and the popup name for SYMBOL_MODE.
  * @constructor
  * @extends {BaseKey}
  */
@@ -408,10 +605,16 @@ function Key(key, shift, num, symbol) {
   this.cellType_ = '';
 
   this.modes_ = {};
-  this.modes_[KEY_MODE] = key;
-  this.modes_[SHIFT_MODE] = shift;
-  this.modes_[NUMBER_MODE] = num;
-  this.modes_[SYMBOL_MODE] = symbol;
+  this.modes_[KEY_MODE] = key ? key.character : null;
+  this.modes_[SHIFT_MODE] = shift ? shift.character : null;
+  this.modes_[NUMBER_MODE] = num ? num.character : null;
+  this.modes_[SYMBOL_MODE] = symbol ? symbol.character : null;
+
+  this.popupNames_ = {};
+  this.popupNames_[KEY_MODE] = key ? key.popupName : null;
+  this.popupNames_[SHIFT_MODE] = shift ? shift.popupName : null;
+  this.popupNames_[NUMBER_MODE] = num ? num.popupName : null;
+  this.popupNames_[SYMBOL_MODE] = symbol ? symbol.popupName : null;
 }
 
 Key.prototype = {
@@ -424,16 +627,68 @@ Key.prototype = {
     }
 
     this.modeElements_[mode] = document.createElement('div');
-    this.modeElements_[mode].className = 'key';
-    addContent(this.modeElements_[mode], this.modes_[mode].display);
+    var element = this.modeElements_[mode];
+    element.className = 'key';
 
-    // TODO(mazda): Set the long-press handler only if the key has characters
-    // to show on the popup keyboard.
-    setupKeyEventHandlers(this, this.modeElements_[mode],
+    addContent(element, this.modes_[mode].display);
+
+    var longHandler = this.popupNames_[mode] ?
+        showPopupKeyboardFunction(this.popupNames_[mode]) : null;
+    setupKeyEventHandlers(this, element,
         { 'up': sendKeyFunction(this.modes_[mode].keyIdentifier),
-          'long': showPopupKeyboardFunction('') });
+          'long': longHandler });
+    return element;
+  }
+};
 
-    return this.modeElements_[mode];
+/**
+ * A simple key which displays Characters on the popup keyboard.
+ * @param {Character} key The Character for KEY_MODE.
+ * @param {Character} shift The Character for SHIFT_MODE.
+ * @param {Character} num The Character for NUMBER_MODE.
+ * @param {Character} symbol The Character for SYMBOL_MODE.
+ * @constructor
+ * @extends {BaseKey}
+ */
+function PopupKey(key, shift, num, symbol) {
+  this.modeElements_ = {};
+  this.cellType_ = '';
+
+  this.modes_ = {};
+  this.modes_[KEY_MODE] = key;
+  this.modes_[SHIFT_MODE] = shift;
+  this.modes_[NUMBER_MODE] = num;
+  this.modes_[SYMBOL_MODE] = symbol;
+}
+
+PopupKey.prototype = {
+  __proto__: BaseKey.prototype,
+
+  /** @inheritDoc */
+  makeDOM: function(mode) {
+    if (!this.modes_[mode]) {
+      return null;
+    }
+
+    this.modeElements_[mode] = document.createElement('div');
+    var element = this.modeElements_[mode];
+    element.className = 'key popupkey';
+
+    addContent(element, this.modes_[mode].display);
+
+    var upHandler = sendKeyFunction(this.modes_[mode].keyIdentifier);
+    element.addEventListener('touchmove_popup', function(evt) {
+        touchedKeys.push(element);
+      });
+    element.addEventListener('touchend_popup', upHandler);
+    element.addEventListener('mouseup', upHandler);
+    element.addEventListener('mouseover', function(evt) {
+        element.classList.add('highlighted');
+      });
+    element.addEventListener('mouseout', function(evt) {
+        element.classList.remove('highlighted');
+      });
+    return element;
   }
 };
 
@@ -705,4 +960,12 @@ Row.prototype = {
     }
     this.modeElements_[mode].style.display = '-webkit-box';
   },
+
+  /**
+   * Returns the size of keys this row contains.
+   * @return {number} The size of keys.
+   */
+  get length() {
+    return this.keys_.length;
+  }
 };

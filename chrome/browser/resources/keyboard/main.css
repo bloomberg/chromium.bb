@@ -70,6 +70,15 @@ div.row > div {
   text-align: left;
 }
 
+.popup {
+  background: rgba(50, 50, 50, 0.95);
+  border: 1px solid rgba(50, 50, 50, 0.8);
+  padding-right: 5px;
+  position: absolute;
+  -webkit-border-radius: 4px;
+  -webkit-box-shadow: 5px 5px 3px rgba(50, 50, 50, 0.3);
+}
+
 .button {
   background: -webkit-linear-gradient(#5a616f, #505662);
 }
@@ -104,6 +113,18 @@ div.row > div {
   position: absolute;
   right: 0;
   top: 0;
+}
+
+.key.popupkey {
+  background: rgba(0, 0, 0, 0);
+  border: 1px solid rgba(0, 0, 0, 0);
+  box-shadow: 0px 0px 0px #fff;
+  color: #fff;
+}
+
+.key.popupkey.highlighted {
+  background: rgba(20, 20, 200, 0.2);
+  color: #fff;
 }
 
 .key:active {

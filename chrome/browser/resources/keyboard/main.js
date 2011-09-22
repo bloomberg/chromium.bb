@@ -7,12 +7,6 @@
  */
 
 /**
- * The keyboard layout name currently in use.
- * @type {string}
- */
-var currentKeyboardLayout = 'us';
-
-/**
  * The ratio of the row height to the font size.
  * @type {number}
  */
@@ -48,25 +42,15 @@ function getKeyboardHeight() {
 }
 
 /**
- * Set the keyboard mode.
- * @param {string} mode The new mode.
- * @return {void}
- */
-function setMode(mode) {
-  var rows = KEYBOARDS[currentKeyboardLayout]['rows'];
-  for (var i = 0; i < rows.length; ++i) {
-    rows[i].showMode(mode);
-  }
-}
-
-/**
  * Create a DOM of the keyboard rows for the given keyboard layout.
  * Do nothing if the DOM is already created.
  * @param {string} layout The keyboard layout for which rows are created.
- * @param {Element} The DOM Element to which rows are appended.
+ * @param {Element} element The DOM Element to which rows are appended.
+ * @param {boolean} autoPadding True if padding needs to be added to both side
+ *     of the rows that have less keys.
  * @return {void}
  */
-function initRows(layout, element) {
+function initRows(layout, element, autoPadding) {
   var keyboard = KEYBOARDS[layout];
   if ('rows' in keyboard) {
     return;
@@ -78,11 +62,24 @@ function initRows(layout, element) {
   }
   keyboard['rows'] = rows;
 
+  var maxRowLength = -1;
+  for (var i = 0; i < rows.length; ++i) {
+    if (rows[i].length > maxRowLength) {
+      maxRowLength = rows[i].length;
+    }
+  }
+
   // A div element which holds rows for the layout.
   var rowsDiv = document.createElement('div');
   rowsDiv.className = 'rows';
   for (var i = 0; i < rows.length; ++i) {
-    rowsDiv.appendChild(rows[i].makeDOM());
+    var rowDiv = rows[i].makeDOM();
+    if (autoPadding && rows[i].length < maxRowLength) {
+      var padding = 50 * (maxRowLength - rows[i].length) / maxRowLength;
+      rowDiv.style.paddingLeft = padding + '%';
+      rowDiv.style.paddingRight = padding + '%';
+    }
+    rowsDiv.appendChild(rowDiv);
     rows[i].showMode(currentMode);
   }
   keyboard['rowsDiv'] = rowsDiv;
@@ -134,6 +131,22 @@ function initKeyboard(layout, element) {
 }
 
 /**
+ * Create a DOM of the popup keyboard.
+ * @param {Element} The DOM Element to which the popup keyboard is appended.
+ * @return {void}
+ */
+function initPopupKeyboard(element) {
+  var popupDiv = document.createElement('div');
+  popupDiv.id = 'popup';
+  popupDiv.className = 'keyboard popup';
+  popupDiv.style.visibility = 'hidden';
+  element.appendChild(popupDiv);
+  element.addEventListener('mouseup', function(evt) {
+      hidePopupKeyboard(evt);
+    });
+}
+
+/**
  * Resize the keyboard according to the new window size.
  * @return {void}
  */
@@ -171,6 +184,7 @@ window.onload = function() {
 
   initIme(mainDiv);
   initKeyboard(currentKeyboardLayout, mainDiv);
+  initPopupKeyboard(body);
 
   window.onhashchange();
 
