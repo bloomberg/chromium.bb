@@ -19,8 +19,8 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome_frame/test/win_event_receiver.h"
 #include "chrome_frame/utils.h"
-#include "ia2_api_all.h"  // Generated NOLINT
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/iaccessible2/ia2_api_all.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
 

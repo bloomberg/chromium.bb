@@ -1,6 +1,9 @@
 include_rules = [
   "+content/gpu",  # For gpu_info_collector.h and in-process GPU
 
+  # Other libraries.
+  "+third_party/iaccessible2",
+
   # DO NOT ADD ANY CHROME INCLUDES HERE!!!
   # See https://sites.google.com/a/chromium.org/dev/developers/content-module
   # for more information.

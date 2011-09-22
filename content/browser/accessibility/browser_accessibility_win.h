@@ -13,10 +13,10 @@
 #include <vector>
 
 #include "content/browser/accessibility/browser_accessibility.h"
-#include "ia2_api_all.h"  // Generated
-#include "ISimpleDOMDocument.h"  // Generated
-#include "ISimpleDOMNode.h"  // Generated
-#include "ISimpleDOMText.h"  // Generated
+#include "ISimpleDOMDocument.h"  // Generated NOLINT
+#include "ISimpleDOMNode.h"  // Generated NOLINT
+#include "ISimpleDOMText.h"  // Generated NOLINT
+#include "third_party/iaccessible2/ia2_api_all.h"
 #include "webkit/glue/webaccessibility.h"
 
 class BrowserAccessibilityManagerWin;

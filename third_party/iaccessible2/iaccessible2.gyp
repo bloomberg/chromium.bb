@@ -3,15 +3,8 @@
 # found in the LICENSE file.
 
 {
-  'includes': [
-    '../../build/common.gypi',
-  ],
-
-  'target_defaults': {
-    'include_dirs': [
-      '.',
-      '<(INTERMEDIATE_DIR)',
-    ],
+  'variables': {
+    'midl_out_dir': '<(SHARED_INTERMEDIATE_DIR)/third_party/iaccessible2',
   },
   'targets': [
     {
@@ -19,14 +12,18 @@
       'type': 'static_library',
       'sources': [
         'ia2_api_all.idl',
-        '<(INTERMEDIATE_DIR)/ia2_api_all.h',
-        '<(INTERMEDIATE_DIR)/ia2_api_all_i.c',
+        '<(midl_out_dir)/ia2_api_all.h',
+        '<(midl_out_dir)/ia2_api_all_i.c',
       ],
       'hard_dependency': 1,
+      'msvs_settings': {
+        'VCMIDLTool': {
+          'OutputDirectory': '<(midl_out_dir)',
+         },
+      },
       'direct_dependent_settings': {
         'include_dirs': [
-          # Bit of a hack to work around the built in vstudio rule.
-          '<(INTERMEDIATE_DIR)/../iaccessible2',
+          '<(SHARED_INTERMEDIATE_DIR)',
         ],
       },
     },
@@ -37,8 +34,8 @@
       'dependencies': [ 'iaccessible2' ],
       'sources': [
         'IAccessible2Proxy.def',
-        '<(INTERMEDIATE_DIR)/../iaccessible2/dlldata.c',
-        '<(INTERMEDIATE_DIR)/../iaccessible2/ia2_api_all_p.c',
+        '<(midl_out_dir)/dlldata.c',
+        '<(midl_out_dir)/ia2_api_all_p.c',
       ],
       'link_settings': {
         'libraries': [
