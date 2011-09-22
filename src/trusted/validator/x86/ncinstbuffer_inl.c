@@ -18,6 +18,8 @@
  *   NCInstBytesRead
  *   NCInstBytesReadBytes
  *   NCInstBytesReset
+ *   NCInstBytesInit
+ *   NCInstBytesByte
  *
  * See ncinstbuffer.h for comments on how to use the corresponding inline
  * functions.
@@ -50,6 +52,13 @@
  * TODO(karl) Fix the parser/printer so that NCBUF_CLEAR_CACHE can be set to 0.
  */
 #define NCBUF_CLEAR_CACHE 1
+
+/* Defines the number of bytes in the buffer. */
+#if NCBUF_CLEAR_CACHE
+#define NCBUF_BYTES_LENGTH(bytes) MAX_INST_LENGTH
+#else
+#define NCBUF_BYTES_LENGTH(bytes) (bytes)->length
+#endif
 
 /* The constant to return if memory overflow occurs. */
 # define NC_MEMORY_OVERFLOW 0
@@ -166,6 +175,35 @@ static INLINE void NCInstBytesResetInline(NCInstBytes* buffer) {
 #endif
   NCRemainingMemoryResetInline(buffer->memory);
   buffer->length = 0;
+}
+
+/* Initializes the instruction buffer as the empty buffer, and
+ * advances the memory segment so that one is beginning the
+ * parsing of the current instruction at the current position
+ * in the memory segment.
+ * Note: Assumes that NCInstBytesInitMemory has already been called to associate
+ * memory.
+ */
+static INLINE void NCInstBytesInitInline(NCInstBytes* buffer) {
+#if NCBUF_CLEAR_CACHE
+  int i;
+  for (i = 0; i < MAX_INST_LENGTH; ++i) {
+    buffer->byte[i] = 0;
+  }
+#endif
+  NCRemainingMemoryAdvanceInline(buffer->memory);
+  buffer->length = 0;
+}
+
+/* Returns the indexed byte pointed to by the instruction buffer pointer. */
+static INLINE uint8_t NCInstBytesByteInline(const NCInstBytesPtr* ptr, int n) {
+  int index = ptr->pos + n;
+  if (index < NCBUF_BYTES_LENGTH(ptr->bytes)) {
+    return ptr->bytes->byte[index];
+  } else {
+    ptr->bytes->memory->error_fn(NCInstBufferOverflow, ptr->bytes->memory);
+    return 0;
+  }
 }
 
 #endif  /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCINSTBUFFER_INL_C__ */

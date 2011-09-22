@@ -24,6 +24,9 @@
 #include "native_client/src/trusted/validator/x86/ncval_seg_sfi/ncdecode.h"
 #include "native_client/src/trusted/validator/x86/ncval_seg_sfi/ncvalidate_internaltypes.h"
 
+#include "native_client/src/trusted/validator/x86/ncinstbuffer_inl.c"
+#include "native_client/src/trusted/validator/x86/x86_insts_inl.c"
+
 #if NACL_TARGET_SUBARCH == 64
 #include "native_client/src/trusted/validator/x86/ncval_seg_sfi/gen/ncbadprefixmask_64.h"
 #else
@@ -383,8 +386,8 @@ Bool NCAddressInMemoryRange(const NaClPcAddress address,
   return vstate->iadrbase <= address && address < vstate->iadrlimit;
 }
 
-static void RememberIP(const NaClPcAddress ip,
-                       struct NCValidatorState *vstate) {
+static INLINE void RememberIP(const NaClPcAddress ip,
+                              struct NCValidatorState *vstate) {
   const NaClMemorySize ioffset =  ip - vstate->iadrbase;
   if (!NCAddressInMemoryRange(ip, vstate)) {
     ValidatePrintError(ip, "JUMP TARGET out of range in RememberIP", vstate);
@@ -477,9 +480,9 @@ void NCValidateFreeState(struct NCValidatorState **vstate) {
 /* It returns 0 if the current instruction is implemented, and 1 if not.  */
 static int ValidateSFenceClFlush(const NCDecoderInst *dinst) {
   NCValidatorState* vstate = NCVALIDATOR_STATE_DOWNCAST(dinst->dstate);
-  uint8_t mrm = NCInstBytesByte(&dinst->inst_bytes, 2);
+  uint8_t mrm = NCInstBytesByteInline(&dinst->inst_bytes, 2);
 
-  if (modrm_mod(mrm) == 3) {
+  if (modrm_modInline(mrm) == 3) {
     /* this is an sfence */
     if (vstate->cpufeatures.f_FXSR) return 0;
     return 1;
@@ -501,8 +504,8 @@ static void ValidateCallAlignment(const NCDecoderInst *dinst) {
 }
 
 static void ValidateJmp8(const NCDecoderInst *dinst) {
-  int8_t offset = NCInstBytesByte(&dinst->inst_bytes,
-                                  dinst->inst.prefixbytes+1);
+  int8_t offset = NCInstBytesByteInline(&dinst->inst_bytes,
+                                        dinst->inst.prefixbytes+1);
   struct NCValidatorState* vstate = NCVALIDATOR_STATE_DOWNCAST(dinst->dstate);
   NaClPcAddress target =
       dinst->vpc + dinst->inst.bytes.length + offset;
@@ -518,7 +521,7 @@ static void ValidateJmpz(const NCDecoderInst *dinst) {
   NCValidatorState* vstate = NCVALIDATOR_STATE_DOWNCAST(dinst->dstate);
   NCInstBytesPtrInitInc(&opcode, &dinst->inst_bytes,
                         dinst->inst.prefixbytes);
-  opcode0 = NCInstBytesByte(&opcode, 0);
+  opcode0 = NCInstBytesByteInline(&opcode, 0);
   NCStatsCheckTarget(vstate);
   if (opcode0 == 0x0f) {
     /* Multbyte opcode. Intruction is of form:
@@ -570,10 +573,11 @@ static void ValidateIndirect5(const NCDecoderInst *dinst) {
   NCInstBytesPtrInitInc(&jmpopcode, &dinst->inst_bytes, 0);
   /* note: no prefixbytes allowed */
   NCInstBytesPtrInitInc(&andopcode, &andinst->inst_bytes, 0);
-  mrm = NCInstBytesByte(&jmpopcode, 1);
-  targetreg = modrm_rm(mrm);  /* Note that the modrm_rm field holds the   */
-                              /* target addr the modrm_reg is the opcode. */
-
+  mrm = NCInstBytesByteInline(&jmpopcode, 1);
+  /* Note that the modrm_rm field holds the
+   * target addr the modrm_reg is the opcode.
+   */
+  targetreg = modrm_rmInline(mrm);
   NCStatsCheckTarget(vstate);
   NCStatsTargetIndirect(vstate);
   do {
@@ -582,23 +586,23 @@ static void ValidateIndirect5(const NCDecoderInst *dinst) {
     if (dinst->inst.prefixbytes != 0) break;
     /* Check all the opcodes. */
     /* In GROUP5, 2 => call, 4 => jmp */
-    if (NCInstBytesByte(&jmpopcode, 0) != 0xff) break;
-    if ((modrm_reg(mrm) != 2) && (modrm_reg(mrm) != 4)) break;
+    if (NCInstBytesByteInline(&jmpopcode, 0) != 0xff) break;
+    if ((modrm_regInline(mrm) != 2) && (modrm_regInline(mrm) != 4)) break;
     /* Issue 32: disallow unsafe call/jump indirection */
     /* example:    ff 12     call (*edx)               */
     /* Reported by defend.the.world on 11 Dec 2008     */
-    if (modrm_mod(mrm) != 3) break;
+    if (modrm_modInline(mrm) != 3) break;
     if (targetreg == kReg_ESP) break;
-    if (NCInstBytesByte(&andopcode, 0) != 0x83) break;
+    if (NCInstBytesByteInline(&andopcode, 0) != 0x83) break;
     /* check modrm bytes of or and and instructions */
-    if (NCInstBytesByte(&andopcode, 1) != (0xe0 | targetreg)) break;
+    if (NCInstBytesByteInline(&andopcode, 1) != (0xe0 | targetreg)) break;
     /* check mask */
-    if (NCInstBytesByte(&andopcode, 2) !=
+    if (NCInstBytesByteInline(&andopcode, 2) !=
         (0x0ff & ~vstate->alignmask)) break;
     /* All checks look good. Make the sequence 'atomic.' */
     ForgetIP(dinst->vpc, vstate);
     /* as a courtesy, check call alignment correctness */
-    if (modrm_reg(mrm) == 2) ValidateCallAlignment(dinst);
+    if (modrm_regInline(mrm) == 2) ValidateCallAlignment(dinst);
     return;
   } while (0);
   NCBadInstructionError(dinst, "Unsafe indirect jump");
@@ -695,7 +699,8 @@ static Bool ValidateInst(const NCDecoderInst *dinst) {
  /*  dprint(("ValidateInst(%x, %x) at %x\n",
       (uint32_t)dinst, (uint32_t)vstate, dinst->vpc)); */
 
-  OpcodeHisto(NCInstBytesByte(&dinst->inst_bytes, dinst->inst.prefixbytes),
+  OpcodeHisto(NCInstBytesByteInline(&dinst->inst_bytes,
+                                    dinst->inst.prefixbytes),
               vstate);
   RememberIP(dinst->vpc, vstate);
 
@@ -740,7 +745,8 @@ static Bool ValidateInst(const NCDecoderInst *dinst) {
        * This stops us from accepting f00f on multiple bytes.
        * http://en.wikipedia.org/wiki/Pentium_F00F_bug
        */
-      if (modrm_mod(dinst->inst.mrm) == kModRmModFieldDefinesRegisterRef) {
+      if (modrm_modInline(dinst->inst.mrm)
+          == kModRmModFieldDefinesRegisterRef) {
         NCBadInstructionError(dinst, "Illegal instruction");
         NCStatsIllegalInst(vstate);
       }

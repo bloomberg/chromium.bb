@@ -47,6 +47,9 @@
 
 #include "native_client/src/shared/utils/debugging.h"
 
+#include "native_client/src/trusted/validator/x86/ncinstbuffer_inl.c"
+#include "native_client/src/trusted/validator/x86/x86_insts_inl.c"
+
 /* Generates a print name for the given NCDecodeImmediateType. */
 static const char* NCDecodeImmediateTypeName(NCDecodeImmediateType type) {
   DEBUG_OR_ERASE(
@@ -151,8 +154,8 @@ static void NCRemainingMemoryInternalError(NCRemainingMemoryError error,
   }
 }
 
-void InitDecoder(struct NCDecoderInst* dinst) {
-  NCInstBytesInit(&dinst->inst.bytes);
+static INLINE void InitDecoder(struct NCDecoderInst* dinst) {
+  NCInstBytesInitInline(&dinst->inst.bytes);
   dinst->inst.prefixbytes = 0;
   dinst->inst.prefixmask = 0;
   dinst->inst.opcode_prefixmask = 0;
@@ -179,7 +182,7 @@ static int ExtractOperandSize(NCDecoderInst* dinst) {
 }
 
 /* at most four prefix bytes are allowed */
-void ConsumePrefixBytes(struct NCDecoderInst* dinst) {
+static void ConsumePrefixBytes(struct NCDecoderInst* dinst) {
   uint8_t nb;
   int ii;
   uint32_t prefix_form;
@@ -192,7 +195,7 @@ void ConsumePrefixBytes(struct NCDecoderInst* dinst) {
     dinst->inst.prefixmask |= prefix_form;
     dinst->inst.prefixmask |= kPrefixTable[nb];
     dinst->inst.prefixbytes += 1;
-    NCInstBytesRead(&dinst->inst.bytes);
+    NCInstBytesReadInline(&dinst->inst.bytes);
     DEBUG( printf("  prefix mask: %08x\n", dinst->inst.prefixmask) );
     if (NACL_TARGET_SUBARCH == 64 && prefix_form == kPrefixREX) {
       dinst->inst.rexprefix = nb;
@@ -227,7 +230,8 @@ static const struct OpInfo* GetExtendedOpInfo(NCDecoderInst* dinst,
 
 static void GetX87OpInfo(NCDecoderInst* dinst) {
   /* WAIT is an x87 instruction but not in the coproc opcode space. */
-  uint8_t op1 = NCInstBytesByte(&dinst->inst_bytes, dinst->inst.prefixbytes);
+  uint8_t op1 = NCInstBytesByteInline(&dinst->inst_bytes,
+                                      dinst->inst.prefixbytes);
   if (op1 < kFirstX87Opcode || op1 > kLastX87Opcode) {
     if (op1 != kWAITOp) ErrorInternal(dinst);
     return;
@@ -237,19 +241,19 @@ static void GetX87OpInfo(NCDecoderInst* dinst) {
          PrintOpInfo(dinst->opinfo) );
 }
 
-void ConsumeOpcodeBytes(NCDecoderInst* dinst) {
-  uint8_t opcode = NCInstBytesRead(&dinst->inst.bytes);
+static void ConsumeOpcodeBytes(NCDecoderInst* dinst) {
+  uint8_t opcode = NCInstBytesReadInline(&dinst->inst.bytes);
   dinst->opinfo = &kDecode1ByteOp[opcode];
   DEBUG( printf("NACLi_1BYTE: opcode = %02x, ", opcode);
          PrintOpInfo(dinst->opinfo) );
   if (opcode == kTwoByteOpcodeByte1) {
-    uint8_t opcode2 = NCInstBytesRead(&dinst->inst.bytes);
+    uint8_t opcode2 = NCInstBytesReadInline(&dinst->inst.bytes);
     dinst->opinfo = GetExtendedOpInfo(dinst, opcode2);
     DEBUG( printf("NACLi_2BYTE: opcode2 = %02x, ", opcode2);
            PrintOpInfo(dinst->opinfo) );
     dinst->inst.num_opbytes = 2;
     if (dinst->opinfo->insttype == NACLi_3BYTE) {
-      uint8_t opcode3 = NCInstBytesRead(&dinst->inst.bytes);
+      uint8_t opcode3 = NCInstBytesReadInline(&dinst->inst.bytes);
       uint32_t pm;
       pm = dinst->inst.opcode_prefixmask;
       dinst->inst.num_opbytes = 3;
@@ -293,9 +297,9 @@ void ConsumeOpcodeBytes(NCDecoderInst* dinst) {
   dinst->inst.immtype = dinst->opinfo->immtype;
 }
 
-void ConsumeModRM(NCDecoderInst* dinst) {
+static void ConsumeModRM(NCDecoderInst* dinst) {
   if (dinst->opinfo->hasmrmbyte != 0) {
-    const uint8_t mrm = NCInstBytesRead(&dinst->inst.bytes);
+    const uint8_t mrm = NCInstBytesReadInline(&dinst->inst.bytes);
     DEBUG( printf("Mod/RM byte: %02x\n", mrm) );
     dinst->inst.mrm = mrm;
     if (dinst->opinfo->insttype == NACLi_X87) {
@@ -303,16 +307,17 @@ void ConsumeModRM(NCDecoderInst* dinst) {
     }
     if (dinst->opinfo->opinmrm) {
       const struct OpInfo* mopinfo =
-        &kDecodeModRMOp[dinst->opinfo->opinmrm][modrm_opcode(mrm)];
+        &kDecodeModRMOp[dinst->opinfo->opinmrm][modrm_opcodeInline(mrm)];
       dinst->opinfo = mopinfo;
-      DEBUG( printf("NACLi_opinmrm: modrm.opcode = %x, ", modrm_opcode(mrm));
+      DEBUG( printf("NACLi_opinmrm: modrm.opcode = %x, ",
+                    modrm_opcodeInline(mrm));
              PrintOpInfo(dinst->opinfo) );
       if (dinst->inst.immtype == IMM_UNKNOWN) {
         assert(0);
         dinst->inst.immtype = mopinfo->immtype;
       }
       /* handle weird case for 0xff TEST Ib/Iv */
-      if (modrm_opcode(mrm) == 0) {
+      if (modrm_opcodeInline(mrm) == 0) {
         if (dinst->inst.immtype == IMM_GROUP3_F6) {
           dinst->inst.immtype = IMM_FIXED1;
         }
@@ -324,10 +329,13 @@ void ConsumeModRM(NCDecoderInst* dinst) {
                     NCDecodeImmediateTypeName(dinst->inst.immtype)) );
     }
     if (dinst->inst.prefixmask & kPrefixADDR16) {
-      switch (modrm_mod(mrm)) {
+      switch (modrm_modInline(mrm)) {
         case 0:
-          if (modrm_rm(mrm) == 0x06) dinst->inst.dispbytes = 2;  /* disp16 */
-          else dinst->inst.dispbytes = 0;
+          if (modrm_rmInline(mrm) == 0x06) {
+            dinst->inst.dispbytes = 2;        /* disp16 */
+          } else {
+            dinst->inst.dispbytes = 0;
+          }
           break;
         case 1:
           dinst->inst.dispbytes = 1;           /* disp8 */
@@ -343,10 +351,13 @@ void ConsumeModRM(NCDecoderInst* dinst) {
       }
       dinst->inst.hassibbyte = 0;
     } else {
-      switch (modrm_mod(mrm)) {
+      switch (modrm_modInline(mrm)) {
         case 0:
-          if (modrm_rm(mrm) == 0x05) dinst->inst.dispbytes = 4;  /* disp32 */
-          else dinst->inst.dispbytes = 0;
+          if (modrm_rmInline(mrm) == 0x05) {
+            dinst->inst.dispbytes = 4;         /* disp32 */
+          } else {
+            dinst->inst.dispbytes = 0;
+          }
           break;
         case 1:
           dinst->inst.dispbytes = 1;           /* disp8 */
@@ -360,19 +371,19 @@ void ConsumeModRM(NCDecoderInst* dinst) {
         default:
           ErrorInternal(dinst);
       }
-      dinst->inst.hassibbyte = ((modrm_rm(mrm) == 0x04) &&
-                                 (modrm_mod(mrm) != 3));
+      dinst->inst.hassibbyte = ((modrm_rmInline(mrm) == 0x04) &&
+                                 (modrm_modInline(mrm) != 3));
     }
   }
   DEBUG( printf("  dispbytes = %d, hasibbyte = %d\n",
                 dinst->inst.dispbytes, dinst->inst.hassibbyte) );
 }
 
-void ConsumeSIB(NCDecoderInst* dinst) {
+static INLINE void ConsumeSIB(NCDecoderInst* dinst) {
   if (dinst->inst.hassibbyte != 0) {
-    const uint8_t sib = NCInstBytesRead(&dinst->inst.bytes);
+    const uint8_t sib = NCInstBytesReadInline(&dinst->inst.bytes);
     if (sib_base(sib) == 0x05) {
-      switch (modrm_mod(dinst->inst.mrm)) {
+      switch (modrm_modInline(dinst->inst.mrm)) {
       case 0: dinst->inst.dispbytes = 4; break;
       case 1: dinst->inst.dispbytes = 1; break;
       case 2: dinst->inst.dispbytes = 4; break;
@@ -386,7 +397,7 @@ void ConsumeSIB(NCDecoderInst* dinst) {
   }
 }
 
-void ConsumeID(NCDecoderInst* dinst) {
+static INLINE void ConsumeID(NCDecoderInst* dinst) {
   if (dinst->inst.immtype == IMM_UNKNOWN) {
     ErrorInternal(dinst);
   }
@@ -400,25 +411,26 @@ void ConsumeID(NCDecoderInst* dinst) {
   } else {
     dinst->inst.immbytes = kImmTypeToSize[dinst->inst.immtype];
   }
-  NCInstBytesReadBytes((ssize_t) dinst->inst.immbytes,
-                       &dinst->inst.bytes);
-  NCInstBytesReadBytes((ssize_t) dinst->inst.dispbytes,
-                       &dinst->inst.bytes);
+  NCInstBytesReadBytesInline((ssize_t) dinst->inst.immbytes,
+                             &dinst->inst.bytes);
+  NCInstBytesReadBytesInline((ssize_t) dinst->inst.dispbytes,
+                             &dinst->inst.bytes);
   DEBUG(printf("ID: %d disp bytes, %d imm bytes\n",
                dinst->inst.dispbytes, dinst->inst.immbytes));
 }
 
 /* Actually this routine is special for 3DNow instructions */
-void MaybeGet3ByteOpInfo(NCDecoderInst* dinst) {
+static INLINE void MaybeGet3ByteOpInfo(NCDecoderInst* dinst) {
   if (dinst->opinfo->insttype == NACLi_3DNOW) {
-    uint8_t opbyte1 = NCInstBytesByte(&dinst->inst_bytes,
+    uint8_t opbyte1 = NCInstBytesByteInline(&dinst->inst_bytes,
                                       dinst->inst.prefixbytes);
-    uint8_t opbyte2 = NCInstBytesByte(&dinst->inst_bytes,
+    uint8_t opbyte2 = NCInstBytesByteInline(&dinst->inst_bytes,
                                       dinst->inst.prefixbytes + 1);
     if (opbyte1 == kTwoByteOpcodeByte1 &&
         opbyte2 == k3DNowOpcodeByte2) {
       uint8_t immbyte =
-          NCInstBytesByte(&dinst->inst_bytes, dinst->inst.bytes.length - 1);
+          NCInstBytesByteInline(&dinst->inst_bytes,
+                                dinst->inst.bytes.length - 1);
       dinst->opinfo = &kDecode0F0FOp[immbyte];
       DEBUG( printf(
                  "NACLi_3DNOW: byte1 = %02x, byte2 = %02x, immbyte = %02x,\n  ",
@@ -519,8 +531,8 @@ static uint8_t GetInstByte(NCDecoderInst* dinst, ssize_t i) {
   if (i < dinst->inst.bytes.length) {
     return dinst->inst.bytes.byte[i];
   } else {
-    return NCRemainingMemoryLookahead(&dinst->dstate->memory,
-                                      i - dinst->inst.bytes.length);
+    return NCRemainingMemoryLookaheadInline(&dinst->dstate->memory,
+                                            i - dinst->inst.bytes.length);
   }
 }
 
@@ -553,9 +565,9 @@ static void ConsumePredefinedNop(NCDecoderInst* dinst) {
     DEBUG(printf("NOP match failed!\n"));
   } else {
     DEBUG(printf("NOP match succeeds! Using last matched rule.\n"));
-    NCRemainingMemoryReset(&dinst->dstate->memory);
+    NCRemainingMemoryResetInline(&dinst->dstate->memory);
     InitDecoder(dinst);
-    NCInstBytesReadBytes(matching_length, &dinst->inst.bytes);
+    NCInstBytesReadBytesInline(matching_length, &dinst->inst.bytes);
     dinst->opinfo = matching_opinfo;
   }
 }

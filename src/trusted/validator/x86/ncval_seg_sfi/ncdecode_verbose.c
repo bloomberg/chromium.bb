@@ -19,6 +19,8 @@
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/validator/x86/ncval_seg_sfi/ncdecode.h"
 
+#include "native_client/src/trusted/validator/x86/x86_insts_inl.c"
+
 #if NACL_TARGET_SUBARCH == 64
 #include "native_client/src/trusted/validator/x86/ncval_seg_sfi/gen/ncdisasmtab_64.h"
 #else
@@ -83,7 +85,7 @@ static INLINE uint32_t state_modrm_reg(const NCDecoderInst* dinst) {
    * which requires the W bit to be set (r/m32 entries do not use REX.w,
    * and a different set of registers).
    */
-  uint32_t index = modrm_reg(dinst->inst.mrm);
+  uint32_t index = modrm_regInline(dinst->inst.mrm);
 #if NACL_TARGET_SUBARCH == 64
   if (GetRexPrefixW(dinst) && GetRexPrefixR(dinst)) {
     index += 8;
@@ -349,35 +351,35 @@ static void RegMemPrint(const NCDecoderInst *dinst,
              "reg mem print: sib_offset = %d, "
              "disp_offset = %d, mrm.mod = %02x\n",
              NCSibOffset(dinst), (int) NCDispOffset(dinst),
-             modrm_mod(dinst->inst.mrm)) );
-  switch (modrm_mod(dinst->inst.mrm)) {
+             modrm_modInline(dinst->inst.mrm)) );
+  switch (modrm_modInline(dinst->inst.mrm)) {
     case 0:
      SegPrefixPrint(dinst, fp);
-      if (4 == modrm_rm(dinst->inst.mrm)) {
+      if (4 == modrm_rmInline(dinst->inst.mrm)) {
         SibPrint(dinst, fp);
-      } else if (5 == modrm_rm(dinst->inst.mrm)) {
+      } else if (5 == modrm_rmInline(dinst->inst.mrm)) {
         gprintf(fp, "[0x%x]", DwordImmedAtOffset(dinst, NCDispOffset(dinst)));
       } else {
-        gprintf(fp, "[%s]", gp_regs[modrm_rm(dinst->inst.mrm)]);
+        gprintf(fp, "[%s]", gp_regs[modrm_rmInline(dinst->inst.mrm)]);
       }
       break;
     case 1: {
         SegPrefixPrint(dinst, fp);
         gprintf(fp, "0x%x", ByteImmedAtOffset(dinst, NCDispOffset(dinst)));
-        if (4 == modrm_rm(dinst->inst.mrm)) {
+        if (4 == modrm_rmInline(dinst->inst.mrm)) {
           SibPrint(dinst, fp);
         } else {
-          gprintf(fp, "[%s]", gp_regs[modrm_rm(dinst->inst.mrm)]);
+          gprintf(fp, "[%s]", gp_regs[modrm_rmInline(dinst->inst.mrm)]);
         }
       }
       break;
     case 2: {
         SegPrefixPrint(dinst, fp);
         gprintf(fp, "0x%x", DwordImmedAtOffset(dinst, NCDispOffset(dinst)));
-        if (4 == modrm_rm(dinst->inst.mrm)) {
+        if (4 == modrm_rmInline(dinst->inst.mrm)) {
           SibPrint(dinst, fp);
         } else {
-          gprintf(fp, "[%s]", gp_regs[modrm_rm(dinst->inst.mrm)]);
+          gprintf(fp, "[%s]", gp_regs[modrm_rmInline(dinst->inst.mrm)]);
         }
       }
       break;
@@ -385,7 +387,7 @@ static void RegMemPrint(const NCDecoderInst *dinst,
       if (is_gp_regs) {
         gprintf(fp, "%s", reg_names[state_modrm_reg(dinst)]);
       } else {
-        gprintf(fp, "%s", reg_names[modrm_rm(dinst->inst.mrm)]);
+        gprintf(fp, "%s", reg_names[modrm_rmInline(dinst->inst.mrm)]);
       }
       break;
   }
@@ -479,7 +481,7 @@ static void InstFormat(const char* format,
     if ('$' == token[0]) {
       NaClMRMGroups group = ParseGroupName(token+1);
       if (NOGROUP != group) {
-        int mrm = modrm_reg(dinst->inst.mrm);
+        int mrm = modrm_regInline(dinst->inst.mrm);
         const char* opname = kDisasmModRMOp[group][mrm];
         DEBUG( printf("case: group %d, opname = %s\n", group, opname) );
         gprintf(fp, "%s", opname);
@@ -491,10 +493,10 @@ static void InstFormat(const char* format,
             gprintf(fp, "$A");
             break;
           case 'C':
-            gprintf(fp, "%%cr%d", modrm_reg(dinst->inst.mrm));
+            gprintf(fp, "%%cr%d", modrm_regInline(dinst->inst.mrm));
             break;
           case 'D':
-            gprintf(fp, "%%dr%d", modrm_reg(dinst->inst.mrm));
+            gprintf(fp, "%%dr%d", modrm_regInline(dinst->inst.mrm));
             break;
           case 'E':
           case 'M': /* mod should never be 3 for 'M' */
@@ -505,7 +507,7 @@ static void InstFormat(const char* format,
             gprintf(fp, "eflags");
             break;
           case 'G':
-            gprintf(fp, "%s", gp_regs[modrm_reg(dinst->inst.mrm)]);
+            gprintf(fp, "%s", gp_regs[modrm_regInline(dinst->inst.mrm)]);
             break;
           case 'I':
             gprintf(fp, "0x%"NACL_PRIx64, NCValueImmediate(dinst));
@@ -526,25 +528,25 @@ static void InstFormat(const char* format,
             break;
           case 'P':
             if ('R' == token[2]) {
-              gprintf(fp, "%%mm%d", modrm_rm(dinst->inst.mrm));
+              gprintf(fp, "%%mm%d", modrm_rmInline(dinst->inst.mrm));
             } else {
-              gprintf(fp, "%%mm%d", modrm_reg(dinst->inst.mrm));
+              gprintf(fp, "%%mm%d", modrm_regInline(dinst->inst.mrm));
             }
             break;
           case 'Q':
             RegMemPrint(dinst, mmx_regs, 0, fp);
             break;
           case 'R':
-            gprintf(fp, "%s", gp_regs[modrm_rm(dinst->inst.mrm)]);
+            gprintf(fp, "%s", gp_regs[modrm_rmInline(dinst->inst.mrm)]);
             break;
           case 'S':
-            gprintf(fp, "%s", seg_regs[modrm_reg(dinst->inst.mrm)]);
+            gprintf(fp, "%s", seg_regs[modrm_regInline(dinst->inst.mrm)]);
             break;
           case 'V':
             if ('R' == token[2]) {
-              gprintf(fp, "%%xmm%d", modrm_rm(dinst->inst.mrm));
+              gprintf(fp, "%%xmm%d", modrm_rmInline(dinst->inst.mrm));
             } else {
-              gprintf(fp, "%%xmm%d", modrm_reg(dinst->inst.mrm));
+              gprintf(fp, "%%xmm%d", modrm_regInline(dinst->inst.mrm));
             }
             break;
           case 'W':

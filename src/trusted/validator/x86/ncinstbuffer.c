@@ -77,14 +77,7 @@ void NCInstBytesReset(NCInstBytes* buffer) {
 }
 
 void NCInstBytesInit(NCInstBytes* buffer) {
-#if NCBUF_CLEAR_CACHE
-  int i;
-  for (i = 0; i < MAX_INST_LENGTH; ++i) {
-    buffer->byte[i] = 0;
-  }
-#endif
-  NCRemainingMemoryAdvance(buffer->memory);
-  buffer->length = 0;
+  NCInstBytesInitInline(buffer);
 }
 
 uint8_t NCInstBytesPeek(NCInstBytes* bytes, ssize_t n) {
@@ -104,15 +97,15 @@ void NCInstBytesReadBytes(ssize_t n, NCInstBytes* bytes) {
 }
 
 #if NCBUF_CLEAR_CACHE
-#define BYTES_LENGTH(bytes) MAX_INST_LENGTH
+#define NCBUF_BYTES_LENGTH(bytes) MAX_INST_LENGTH
 #else
-#define BYTES_LENGTH(bytes) (bytes)->length
+#define NCBUF_BYTES_LENGTH(bytes) (bytes)->length
 #endif
 
-static void NCInstBytesPtrInitPos(NCInstBytesPtr* ptr, const NCInstBytes* bytes,
-                        int pos) {
+static INLINE void NCInstBytesPtrInitPos(
+    NCInstBytesPtr* ptr, const NCInstBytes* bytes, int pos) {
   ptr->bytes = bytes;
-  if (pos <= BYTES_LENGTH(bytes)) {
+  if (pos <= NCBUF_BYTES_LENGTH(bytes)) {
     ptr->pos = (uint8_t) pos;
   } else {
     bytes->memory->error_fn(NCInstBufferOverflow, bytes->memory);
@@ -134,25 +127,19 @@ uint8_t NCInstBytesPos(const NCInstBytesPtr* ptr) {
 }
 
 uint8_t NCInstBytesByte(const NCInstBytesPtr* ptr, int n) {
-  int index = ptr->pos + n;
-  if (index < BYTES_LENGTH(ptr->bytes)) {
-    return ptr->bytes->byte[index];
-  } else {
-    ptr->bytes->memory->error_fn(NCInstBufferOverflow, ptr->bytes->memory);
-    return 0;
-  }
+  return NCInstBytesByteInline(ptr, n);
 }
 
 int32_t NCInstBytesInt32(const NCInstBytesPtr* ptr) {
-  return (NCInstBytesByte(ptr, 0) +
-          (NCInstBytesByte(ptr, 1) << 8) +
-          (NCInstBytesByte(ptr, 2) << 16) +
-          (NCInstBytesByte(ptr, 3) << 24));
+  return (NCInstBytesByteInline(ptr, 0) +
+          (NCInstBytesByteInline(ptr, 1) << 8) +
+          (NCInstBytesByteInline(ptr, 2) << 16) +
+          (NCInstBytesByteInline(ptr, 3) << 24));
 }
 
 void NCInstBytesAdvance(NCInstBytesPtr* ptr, int n) {
   int index = ptr->pos + n;
-  if (index < BYTES_LENGTH(ptr->bytes)) {
+  if (index < NCBUF_BYTES_LENGTH(ptr->bytes)) {
     ptr->pos = index;
   } else {
     ptr->bytes->memory->error_fn(NCInstBufferOverflow, ptr->bytes->memory);
