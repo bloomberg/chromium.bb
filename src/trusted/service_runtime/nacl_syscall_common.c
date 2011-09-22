@@ -2765,7 +2765,7 @@ int32_t NaClCommonSysTest_InfoLeak(struct NaClAppThread *natp) {
 # endif
 
   for (i = 0; i < 8; ++i)
-    memcpy(&u.fxsave.st_space[i], tenbytes, sizeof(u.fxsave.st_space[i]));
+    memcpy(&u.fxsave.st_space[i], tenbytes, sizeof(tenbytes));
 
   memcpy(u.fxsave.xmm_space, manybytes, sizeof(u.fxsave.xmm_space));
 
