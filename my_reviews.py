@@ -62,31 +62,50 @@ def get_previous_quarter(today):
   that is requested.
   """
   year = today.year
-  month = today.month - (today.month % 3)
-  if not month:
-    month = 12
+  month = today.month - (today.month % 3) + 1
+  if month <= 0:
+    month += 12
     year -= 1
-  previous_month = month - 2
+  if month > 12:
+    month -= 12
+    year += 1
+  previous_month = month - 3
+  previous_year = year
+  if previous_month <= 0:
+    previous_month += 12
+    previous_year -= 1
   return (
-      '%d-%02d-01' % (year, previous_month),
+      '%d-%02d-01' % (previous_year, previous_month),
       '%d-%02d-01' % (year, month))
 
 
 def main():
   # Silence upload.py.
   rietveld.upload.verbosity = 0
+  today = datetime.date.today()
+  created_after, created_before = get_previous_quarter(today)
   parser = optparse.OptionParser(description=sys.modules[__name__].__doc__)
   parser.add_option(
       '--count', action='store_true',
       help='Just count instead of printing individual issues')
-  parser.add_option('-o', '--owner')
-  parser.add_option('-r', '--reviewer')
-  parser.add_option('-c', '--created_after')
-  parser.add_option('-C', '--created_before')
+  parser.add_option(
+      '-o', '--owner', metavar='<email>', help='Filter on issue owner')
+  parser.add_option(
+      '-r', '--reviewer', metavar='<email>', help='Filter on issue reviewer')
+  parser.add_option(
+      '-c', '--created_after', metavar='<date>',
+      help='Filter issues created after the date')
+  parser.add_option(
+      '-C', '--created_before', metavar='<date>',
+      help='Filter issues create before the date')
   parser.add_option(
       '-Q', '--last_quarter', action='store_true',
-      help='Use last quarter\'s dates as filter')
-  parser.add_option('-i', '--instance_url', default='codereview.chromium.org')
+      help='Use last quarter\'s dates, e.g. %s to %s' % (
+        created_after, created_before))
+  parser.add_option(
+      '-i', '--instance_url', metavar='<host>',
+      default='http://codereview.chromium.org',
+      help='Host to use, default is %default')
   # Remove description formatting
   parser.format_description = lambda x: parser.description
   options, args = parser.parse_args()
@@ -98,8 +117,8 @@ def main():
       parser.error('Please specify at least -o or -r')
     print >> sys.stderr, 'Defaulting to owner=%s' % options.owner
   if options.last_quarter:
-    today = datetime.date.today()
-    options.created_after, options.created_before = get_previous_quarter(today)
+    options.created_after = created_after
+    options.created_before = created_before
     print >> sys.stderr, 'Using range %s to %s' % (
         options.created_after, options.created_before)
   if options.count:
