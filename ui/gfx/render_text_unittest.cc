@@ -487,4 +487,169 @@ TEST_F(RenderTextTest, MoveCursorLeftRightWithSelection) {
   EXPECT_EQ(4U, render_text->GetCursorPosition());
 }
 
+// TODO(xji): Make these work on Windows.
+#if defined(OS_LINUX)
+void MoveLeftRightByWordVerifier(RenderText* render_text,
+                                 const wchar_t* str) {
+  render_text->SetText(WideToUTF16(str));
+
+  // Test moving by word from left ro right.
+  render_text->MoveCursorLeft(LINE_BREAK, false);
+  bool first_word = true;
+  while (true) {
+    // First, test moving by word from a word break position, such as from
+    // "|abc def" to "abc| def".
+    SelectionModel start = render_text->selection_model();
+    render_text->MoveCursorRight(WORD_BREAK, false);
+    SelectionModel end = render_text->selection_model();
+    if (end.Equals(start))  // reach the end.
+      break;
+
+    // For testing simplicity, each word is a 3-character word.
+    int num_of_character_moves = first_word ? 3 : 4;
+    first_word = false;
+    render_text->MoveCursorTo(start);
+    for (int j = 0; j < num_of_character_moves; ++j)
+      render_text->MoveCursorRight(CHARACTER_BREAK, false);
+    EXPECT_TRUE(render_text->selection_model().Equals(end));
+
+    // Then, test moving by word from positions inside the word, such as from
+    // "a|bc def" to "abc| def", and from "ab|c def" to "abc| def".
+    for (int j = 1; j < num_of_character_moves; ++j) {
+      render_text->MoveCursorTo(start);
+      for (int k = 0; k < j; ++k)
+        render_text->MoveCursorRight(CHARACTER_BREAK, false);
+      render_text->MoveCursorRight(WORD_BREAK, false);
+      EXPECT_TRUE(render_text->selection_model().Equals(end));
+    }
+  }
+
+  // Test moving by word from right to left.
+  render_text->MoveCursorRight(LINE_BREAK, false);
+  first_word = true;
+  while (true) {
+    SelectionModel start = render_text->selection_model();
+    render_text->MoveCursorLeft(WORD_BREAK, false);
+    SelectionModel end = render_text->selection_model();
+    if (end.Equals(start))  // reach the end.
+      break;
+
+    int num_of_character_moves = first_word ? 3 : 4;
+    first_word = false;
+    render_text->MoveCursorTo(start);
+    for (int j = 0; j < num_of_character_moves; ++j)
+      render_text->MoveCursorLeft(CHARACTER_BREAK, false);
+    EXPECT_TRUE(render_text->selection_model().Equals(end));
+
+    for (int j = 1; j < num_of_character_moves; ++j) {
+      render_text->MoveCursorTo(start);
+      for (int k = 0; k < j; ++k)
+        render_text->MoveCursorLeft(CHARACTER_BREAK, false);
+      render_text->MoveCursorLeft(WORD_BREAK, false);
+      EXPECT_TRUE(render_text->selection_model().Equals(end));
+    }
+  }
+}
+
+TEST_F(RenderTextTest, MoveLeftRightByWordInBidiText) {
+  scoped_ptr<RenderText> render_text(RenderText::CreateRenderText());
+
+  // For testing simplicity, each word is a 3-character word.
+  std::vector<const wchar_t*> test;
+  test.push_back(L"abc");
+  test.push_back(L"abc def");
+  test.push_back(L"\x05E1\x05E2\x05E3");
+  test.push_back(L"\x05E1\x05E2\x05E3 \x05E4\x05E5\x05E6");
+  test.push_back(L"abc \x05E1\x05E2\x05E3");
+  test.push_back(L"abc def \x05E1\x05E2\x05E3 \x05E4\x05E5\x05E6");
+  test.push_back(L"abc def hij \x05E1\x05E2\x05E3 \x05E4\x05E5\x05E6"
+                 L" \x05E7\x05E8\x05E9");
+
+  test.push_back(L"abc \x05E1\x05E2\x05E3 hij");
+  test.push_back(L"abc def \x05E1\x05E2\x05E3 \x05E4\x05E5\x05E6 hij opq");
+  test.push_back(L"abc def hij \x05E1\x05E2\x05E3 \x05E4\x05E5\x05E6"
+                 L" \x05E7\x05E8\x05E9"L" opq rst uvw");
+
+  test.push_back(L"\x05E1\x05E2\x05E3 abc");
+  test.push_back(L"\x05E1\x05E2\x05E3 \x05E4\x05E5\x05E6 abc def");
+  test.push_back(L"\x05E1\x05E2\x05E3 \x05E4\x05E5\x05E6 \x05E7\x05E8\x05E9"
+                 L" abc def hij");
+
+  test.push_back(L"\x05D1\x05D2\x05D3 abc \x05E1\x05E2\x05E3");
+  test.push_back(L"\x05D1\x05D2\x05D3 \x05D4\x05D5\x05D6 abc def"
+                 L" \x05E1\x05E2\x05E3 \x05E4\x05E5\x05E6");
+  test.push_back(L"\x05D1\x05D2\x05D3 \x05D4\x05D5\x05D6 \x05D7\x05D8\x05D9"
+                 L" abc def hij \x05E1\x05E2\x05E3 \x05E4\x05E5\x05E6"
+                 L" \x05E7\x05E8\x05E9");
+
+  for (size_t i = 0; i < test.size(); ++i)
+    MoveLeftRightByWordVerifier(render_text.get(), test[i]);
+}
+
+TEST_F(RenderTextTest, MoveLeftRightByWordInBidiText_TestEndOfText) {
+  scoped_ptr<RenderText> render_text(RenderText::CreateRenderText());
+
+  render_text->SetText(WideToUTF16(L"ab\x05E1"));
+  // Moving the cursor by word from "abC|" to the left should return "|abC".
+  // But since end of text is always treated as a word break, it returns
+  // position "ab|C".
+  // TODO(xji): Need to make it work as expected.
+  render_text->MoveCursorRight(LINE_BREAK, false);
+  render_text->MoveCursorLeft(WORD_BREAK, false);
+  // EXPECT_TRUE(render_text->selection_model().Equals(SelectionModel(0)));
+
+  // Moving the cursor by word from "|abC" to the right returns "abC|".
+  render_text->MoveCursorLeft(LINE_BREAK, false);
+  render_text->MoveCursorRight(WORD_BREAK, false);
+  EXPECT_TRUE(render_text->selection_model().Equals(
+      SelectionModel(3, 2, SelectionModel::LEADING)));
+
+  render_text->SetText(WideToUTF16(L"\x05E1\x05E2"L"a"));
+  // For logical text "BCa", moving the cursor by word from "aCB|" to the left
+  // returns "|aCB".
+  render_text->MoveCursorRight(LINE_BREAK, false);
+  render_text->MoveCursorLeft(WORD_BREAK, false);
+  EXPECT_TRUE(render_text->selection_model().Equals(
+      SelectionModel(3, 2, SelectionModel::LEADING)));
+
+  // Moving the cursor by word from "|aCB" to the right should return "aCB|".
+  // But since end of text is always treated as a word break, it returns
+  // position "a|CB".
+  // TODO(xji): Need to make it work as expected.
+  render_text->MoveCursorLeft(LINE_BREAK, false);
+  render_text->MoveCursorRight(WORD_BREAK, false);
+  // EXPECT_TRUE(render_text->selection_model().Equals(SelectionModel(0)));
+}
+
+TEST_F(RenderTextTest, MoveLeftRightByWordInTextWithMultiSpaces) {
+  scoped_ptr<RenderText> render_text(RenderText::CreateRenderText());
+  render_text->SetText(WideToUTF16(L"abc     def"));
+  render_text->MoveCursorTo(SelectionModel(5));
+  render_text->MoveCursorRight(WORD_BREAK, false);
+  EXPECT_EQ(11U, render_text->GetCursorPosition());
+
+  render_text->MoveCursorTo(SelectionModel(5));
+  render_text->MoveCursorLeft(WORD_BREAK, false);
+  EXPECT_EQ(0U, render_text->GetCursorPosition());
+}
+
+TEST_F(RenderTextTest, MoveLeftRightByWordInChineseText) {
+  scoped_ptr<RenderText> render_text(RenderText::CreateRenderText());
+  render_text->SetText(WideToUTF16(L"\x6211\x4EEC\x53BB\x516C\x56ED\x73A9"));
+  render_text->MoveCursorLeft(LINE_BREAK, false);
+  EXPECT_EQ(0U, render_text->GetCursorPosition());
+  render_text->MoveCursorRight(WORD_BREAK, false);
+  EXPECT_EQ(2U, render_text->GetCursorPosition());
+  render_text->MoveCursorRight(WORD_BREAK, false);
+  EXPECT_EQ(3U, render_text->GetCursorPosition());
+  render_text->MoveCursorRight(WORD_BREAK, false);
+  EXPECT_EQ(5U, render_text->GetCursorPosition());
+  render_text->MoveCursorRight(WORD_BREAK, false);
+  EXPECT_EQ(6U, render_text->GetCursorPosition());
+  render_text->MoveCursorRight(WORD_BREAK, false);
+  EXPECT_EQ(6U, render_text->GetCursorPosition());
+}
+
+#endif
+
 }  // namespace gfx

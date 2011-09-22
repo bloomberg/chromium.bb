@@ -68,6 +68,11 @@ class RenderTextLinux : public RenderText {
   SelectionModel LeftSelectionModel(const SelectionModel& current);
   SelectionModel RightSelectionModel(const SelectionModel& current);
 
+  // Get the selection model visually left or right of |current| by one word.
+  // The returned value represents a cursor/caret position without a selection.
+  SelectionModel LeftSelectionModelByWord(const SelectionModel& current);
+  SelectionModel RightSelectionModelByWord(const SelectionModel& current);
+
   // If |layout_| is NULL, create and setup |layout_|, retain and ref
   // |current_line_|. Return |layout_|.
   PangoLayout* EnsureLayout();

@@ -8,6 +8,7 @@
 
 #include <algorithm>
 
+#include "base/i18n/break_iterator.h"
 #include "base/logging.h"
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/pango_util.h"
@@ -190,8 +191,8 @@ SelectionModel RenderTextLinux::GetLeftSelectionModel(
     return LeftEndSelectionModel();
   if (break_type == CHARACTER_BREAK)
     return LeftSelectionModel(current);
-  // TODO(xji): not implemented yet.
-  return RenderText::GetLeftSelectionModel(current, break_type);
+  DCHECK(break_type == WORD_BREAK);
+  return LeftSelectionModelByWord(current);
 }
 
 SelectionModel RenderTextLinux::GetRightSelectionModel(
@@ -203,8 +204,8 @@ SelectionModel RenderTextLinux::GetRightSelectionModel(
     return RightEndSelectionModel();
   if (break_type == CHARACTER_BREAK)
     return RightSelectionModel(current);
-  // TODO(xji): not implemented yet.
-  return RenderText::GetRightSelectionModel(current, break_type);
+  DCHECK(break_type == WORD_BREAK);
+  return RightSelectionModelByWord(current);
 }
 
 SelectionModel RenderTextLinux::LeftEndSelectionModel() {
@@ -436,6 +437,64 @@ SelectionModel RenderTextLinux::RightSelectionModel(
                                       FirstSelectionModelInsideRun(item);
 }
 
+SelectionModel RenderTextLinux::LeftSelectionModelByWord(
+    const SelectionModel& selection) {
+  base::i18n::BreakIterator iter(text(), base::i18n::BreakIterator::BREAK_WORD);
+  bool success = iter.Init();
+  DCHECK(success);
+  if (!success)
+    return selection;
+
+  SelectionModel left_end = LeftEndSelectionModel();
+  SelectionModel left(selection);
+  while (!left.Equals(left_end)) {
+    left = LeftSelectionModel(left);
+    size_t caret = left.caret_pos();
+    GSList* run = GetRunContainingPosition(caret);
+    DCHECK(run);
+    PangoItem* item = reinterpret_cast<PangoLayoutRun*>(run->data)->item;
+    size_t cursor = left.selection_end();
+    if (item->analysis.level % 2 == 0) {  // LTR run.
+      if (iter.IsStartOfWord(cursor))
+        return left;
+    } else {  // RTL run.
+      if (iter.IsEndOfWord(cursor))
+        return left;
+    }
+  }
+
+  return left_end;
+}
+
+SelectionModel RenderTextLinux::RightSelectionModelByWord(
+    const SelectionModel& selection) {
+  base::i18n::BreakIterator iter(text(), base::i18n::BreakIterator::BREAK_WORD);
+  bool success = iter.Init();
+  DCHECK(success);
+  if (!success)
+    return selection;
+
+  SelectionModel right_end = RightEndSelectionModel();
+  SelectionModel right(selection);
+  while (!right.Equals(right_end)) {
+    right = RightSelectionModel(right);
+    size_t caret = right.caret_pos();
+    GSList* run = GetRunContainingPosition(caret);
+    DCHECK(run);
+    PangoItem* item = reinterpret_cast<PangoLayoutRun*>(run->data)->item;
+    size_t cursor = right.selection_end();
+    if (item->analysis.level % 2 == 0) {  // LTR run.
+      if (iter.IsEndOfWord(cursor))
+        return right;
+    } else {  // RTL run.
+      if (iter.IsStartOfWord(cursor))
+        return right;
+    }
+  }
+
+  return right_end;
+}
+
 PangoLayout* RenderTextLinux::EnsureLayout() {
   if (layout_ == NULL) {
     CanvasSkia canvas(display_rect().width(), display_rect().height(), false);
@@ -494,6 +553,15 @@ void RenderTextLinux::ResetLayout() {
 void RenderTextLinux::SetupPangoAttributes(PangoLayout* layout) {
   PangoAttrList* attrs = pango_attr_list_new();
   // Set selection background color.
+  // TODO(xji): There's a bug in pango that it can't use two colors in one
+  // glyph. Please refer to https://bugzilla.gnome.org/show_bug.cgi?id=648157
+  // for detail. So for example, if a font has "ffi" ligature, but you select
+  // half of that glyph, you either get the entire "ffi" ligature
+  // selection-colored, or none of it.
+  // We could use clipping to render selection.
+  // Use pango_glyph_item_get_logical_widths to find the exact boundaries of
+  // selection, then cairo_clip that, paint background, set color to white and
+  // redraw the layout.
   SkColor selection_color =
       focused() ? kFocusedSelectionColor : kUnfocusedSelectionColor;
   size_t start = std::min(MinOfSelection(), text().length());
@@ -510,6 +578,8 @@ void RenderTextLinux::SetupPangoAttributes(PangoLayout* layout) {
   StyleRanges ranges_of_style(style_ranges());
   ApplyCompositionAndSelectionStyles(&ranges_of_style);
 
+  PlatformFont* default_platform_font = default_style().font.platform_font();
+
   for (StyleRanges::const_iterator i = ranges_of_style.begin();
        i < ranges_of_style.end(); ++i) {
     start = std::min(i->range.start(), text().length());
@@ -517,12 +587,19 @@ void RenderTextLinux::SetupPangoAttributes(PangoLayout* layout) {
     if (start >= end)
       continue;
 
-    const Font& font = !i->underline ? i->font :
-        i->font.DeriveFont(0, i->font.GetStyle() | Font::UNDERLINED);
-    PangoFontDescription* desc = font.GetNativeFont();
-    pango_attr = pango_attr_font_desc_new(desc);
-    AppendPangoAttribute(start, end, pango_attr, attrs);
-    pango_font_description_free(desc);
+    const Font& font = i->font;
+    // In Pango, different fonts means different runs, and it breaks Arabic
+    // shaping acorss run boundaries. So, set font only when it is different
+    // from the default faont.
+    // TODO(xji): we'll eventually need to split up StyleRange into components
+    // (ColorRange, FontRange, etc.) so that we can combine adjacent ranges
+    // with the same Fonts (to avoid unnecessarily splitting up runs)
+    if (font.platform_font() != default_platform_font) {
+      PangoFontDescription* desc = font.GetNativeFont();
+      pango_attr = pango_attr_font_desc_new(desc);
+      AppendPangoAttribute(start, end, pango_attr, attrs);
+      pango_font_description_free(desc);
+    }
 
     SkColor foreground = i->foreground;
     pango_attr = pango_attr_foreground_new(
@@ -530,6 +607,11 @@ void RenderTextLinux::SetupPangoAttributes(PangoLayout* layout) {
         ConvertColorFrom8BitTo16Bit(SkColorGetG(foreground)),
         ConvertColorFrom8BitTo16Bit(SkColorGetB(foreground)));
     AppendPangoAttribute(start, end, pango_attr, attrs);
+
+    if (i->underline) {
+      pango_attr = pango_attr_underline_new(PANGO_UNDERLINE_SINGLE);
+      AppendPangoAttribute(start, end, pango_attr, attrs);
+    }
 
     if (i->strike) {
       pango_attr = pango_attr_strikethrough_new(true);
@@ -550,6 +632,7 @@ void RenderTextLinux::AppendPangoAttribute(size_t start,
   pango_attr_list_insert(attrs, pango_attr);
 }
 
+// TODO(xji): Keep a vector of runs to avoid using a singly-linked list.
 PangoLayoutRun* RenderTextLinux::GetPreviousRun(PangoLayoutRun* run) const {
   GSList* current = current_line_->runs;
   GSList* prev = NULL;
