@@ -384,10 +384,19 @@ cr.define('ntp4', function() {
       if (this.currentlyInFolder_(bookmark.parentId)) {
         // Hide the import promo if it exists.
         this.hideImportPromo_();
-        // If source of the add came from this page, show an animated insertion,
-        // otherwise just quietly do it.
-        this.addTileAt(new Bookmark(bookmark), bookmark.index, fromCurrentPage);
-        this.repositionTiles_();
+        // Only add the item if it should be visible.
+        if (bookmark.index < MAX_BOOKMARK_TILES) {
+          // If source of the add came from this page, show an animated
+          // insertion, otherwise just quietly do it.
+          this.addTileAt(new Bookmark(bookmark), bookmark.index,
+                         fromCurrentPage);
+          // Delete extra tiles if they exist.
+          while (this.tiles.length > MAX_BOOKMARK_TILES) {
+            var tile = this.tiles[this.tiles.length - 1];
+            this.removeTile(tile, false);
+          }
+          this.repositionTiles_();
+        }
       }
     },
 
