@@ -33,6 +33,7 @@ static const char kKeyId[] = "id";
 static const char kSubNodesId[] = "subnodes";
 static const char kNameId[] = "name";
 static const char kReadOnlyId[] = "readonly";
+static const char kUntrustedId[] = "untrusted";
 static const char kIconId[] = "icon";
 static const char kSecurityDeviceId[] = "device";
 static const char kErrorId[] = "error";
@@ -346,6 +347,10 @@ void CertificateManagerHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_CERT_MANAGER_EDIT_CA_TRUST_OBJSIGN_LABEL));
   localized_strings->SetString("certificateImportErrorFormat",
       l10n_util::GetStringUTF16(IDS_CERT_MANAGER_IMPORT_ERROR_FORMAT));
+
+  // Badges next to certificates
+  localized_strings->SetString("badgeCertUntrusted",
+      l10n_util::GetStringUTF16(IDS_CERT_MANAGER_UNTRUSTED));
 
 #if defined(OS_CHROMEOS)
   localized_strings->SetString("importAndBindCertificate",
@@ -930,6 +935,9 @@ void CertificateManagerHandler::PopulateTree(const std::string& tab_name,
         cert_dict->SetBoolean(
             kReadOnlyId,
             certificate_manager_model_->cert_db().IsReadOnly(cert));
+        cert_dict->SetBoolean(
+            kUntrustedId,
+            certificate_manager_model_->cert_db().IsUntrusted(cert));
         // TODO(mattm): Other columns.
         cert_dict->SetString(kIconId, "none");
         subnodes->Append(cert_dict);

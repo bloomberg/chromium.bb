@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,6 +22,14 @@ cr.define('options', function() {
 
     if (data.icon) {
       treeItem.icon = data.icon;
+    }
+
+    if (data.untrusted) {
+      var badge = document.createElement('span');
+      badge.setAttribute('class', 'certUntrusted');
+      badge.textContent = localStrings.getString("badgeCertUntrusted");
+      treeItem.labelElement.insertBefore(
+          badge, treeItem.labelElement.firstChild);
     }
 
     return treeItem;

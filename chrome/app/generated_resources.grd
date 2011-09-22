@@ -3353,6 +3353,9 @@ are declared in build/common.gypi.
       <message name="IDS_CERT_MANAGER_WRITE_ERROR_FORMAT" desc="The text in the error dialog for PKCS #12 file write errors.">
         There was an error while trying to write the file: <ph name="ERROR_TEXT">$1<ex>Permission denied.</ex></ph>.
       </message>
+      <message name="IDS_CERT_MANAGER_UNTRUSTED" desc="This text is displayed next to untrusted certificates in a red box. Untrusted certificates are sometimes added in order to explicitly distrust them. Thus, they will be listed but it's important that the user note that they serve a different purpose from the rest.">
+        Untrusted
+      </message>
       <message name="IDS_CERT_MANAGER_PKCS12_IMPORT_ERROR_TITLE" desc="The title in the error dialog for PKCS #12 file import errors.">
         PKCS #12 Import Error
       </message>
