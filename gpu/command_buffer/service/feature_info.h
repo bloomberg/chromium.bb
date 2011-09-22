@@ -41,7 +41,7 @@ class FeatureInfo {
   // If allowed features = NULL or "*", all features are allowed. Otherwise
   // only features that match the strings in allowed_features are allowed.
   bool Initialize(const char* allowed_features);
-  bool Initialize(const DisallowedExtensions& disallowed_extensions,
+  bool Initialize(const DisallowedFeatures& disallowed_features,
                   const char* allowed_features);
 
   // Turns on certain features if they can be turned on. NULL turns on
@@ -65,7 +65,7 @@ class FeatureInfo {
 
   Validators validators_;
 
-  DisallowedExtensions disallowed_extensions_;
+  DisallowedFeatures disallowed_features_;
 
   // The extensions string returned by glGetString(GL_EXTENSIONS);
   std::string extensions_;

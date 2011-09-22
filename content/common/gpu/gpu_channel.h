@@ -177,7 +177,7 @@ class GpuChannel : public IPC::Channel::Listener,
   TransportTextureMap transport_textures_;
 
   bool log_messages_;  // True if we should log sent and received messages.
-  gpu::gles2::DisallowedExtensions disallowed_extensions_;
+  gpu::gles2::DisallowedFeatures disallowed_features_;
   GpuWatchdog* watchdog_;
   bool software_;
 

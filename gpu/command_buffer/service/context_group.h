@@ -28,7 +28,7 @@ class RenderbufferManager;
 class ProgramManager;
 class ShaderManager;
 class TextureManager;
-struct DisallowedExtensions;
+struct DisallowedFeatures;
 
 // A Context Group helps manage multiple GLES2Decoders that share
 // resources.
@@ -40,7 +40,7 @@ class ContextGroup : public base::RefCounted<ContextGroup> {
   ~ContextGroup();
 
   // This should only be called by GLES2Decoder.
-  bool Initialize(const DisallowedExtensions& disallowed_extensions,
+  bool Initialize(const DisallowedFeatures& disallowed_features,
                   const char* allowed_features);
 
   // Sets the ContextGroup has having a lost context.

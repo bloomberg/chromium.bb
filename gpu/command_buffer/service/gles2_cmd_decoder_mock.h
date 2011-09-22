@@ -33,7 +33,7 @@ class MockGLES2Decoder : public GLES2Decoder {
                bool(const scoped_refptr<gfx::GLSurface>& surface,
                     const scoped_refptr<gfx::GLContext>& context,
                     const gfx::Size& size,
-                    const DisallowedExtensions& disallowed_extensions,
+                    const DisallowedFeatures& disallowed_features,
                     const char* allowed_extensions,
                     const std::vector<int32>& attribs));
   MOCK_METHOD0(Destroy, void());

@@ -41,9 +41,9 @@ GpuChannel::GpuChannel(GpuChannelManager* gpu_channel_manager,
   DCHECK(renderer_id);
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
   log_messages_ = command_line->HasSwitch(switches::kLogPluginMessages);
-  disallowed_extensions_.multisampling =
+  disallowed_features_.multisampling =
       command_line->HasSwitch(switches::kDisableGLMultisampling);
-  disallowed_extensions_.driver_bug_workarounds =
+  disallowed_features_.driver_bug_workarounds =
       command_line->HasSwitch(switches::kDisableGpuDriverBugWorkarounds);
 }
 
@@ -191,7 +191,7 @@ void GpuChannel::CreateViewCommandBuffer(
       share_group,
       window,
       gfx::Size(),
-      disallowed_extensions_,
+      disallowed_features_,
       init_params.allowed_extensions,
       init_params.attribs,
       *route_id,
@@ -312,7 +312,7 @@ void GpuChannel::OnCreateOffscreenCommandBuffer(
       share_group,
       gfx::kNullPluginWindow,
       size,
-      disallowed_extensions_,
+      disallowed_features_,
       init_params.allowed_extensions,
       init_params.attribs,
       route_id,

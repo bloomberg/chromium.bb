@@ -43,7 +43,7 @@ class GpuCommandBufferStub
       GpuCommandBufferStub* share_group,
       gfx::PluginWindowHandle handle,
       const gfx::Size& size,
-      const gpu::gles2::DisallowedExtensions& disallowed_extensions,
+      const gpu::gles2::DisallowedFeatures& disallowed_features,
       const std::string& allowed_extensions,
       const std::vector<int32>& attribs,
       int32 route_id,
@@ -155,7 +155,7 @@ class GpuCommandBufferStub
 
   gfx::PluginWindowHandle handle_;
   gfx::Size initial_size_;
-  gpu::gles2::DisallowedExtensions disallowed_extensions_;
+  gpu::gles2::DisallowedFeatures disallowed_features_;
   std::string allowed_extensions_;
   std::vector<int32> requested_attribs_;
   int32 route_id_;

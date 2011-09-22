@@ -45,13 +45,13 @@ static void GetIntegerv(GLenum pname, uint32* var) {
   *var = value;
 }
 
-bool ContextGroup::Initialize(const DisallowedExtensions& disallowed_extensions,
+bool ContextGroup::Initialize(const DisallowedFeatures& disallowed_features,
                               const char* allowed_features) {
   if (initialized_) {
     return true;
   }
 
-  if (!feature_info_.Initialize(disallowed_extensions, allowed_features)) {
+  if (!feature_info_.Initialize(disallowed_features, allowed_features)) {
     LOG(ERROR) << "ContextGroup::Initialize failed because FeatureInfo "
                << "initialization failed.";
     return false;

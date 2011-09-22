@@ -10,7 +10,7 @@
 namespace gpu {
 namespace gles2 {
 
-struct DisallowedExtensions;
+struct DisallowedFeatures;
 
 class TestHelper {
  public:
@@ -38,7 +38,7 @@ class TestHelper {
 
   static void SetupContextGroupInitExpectations(
       ::gfx::MockGLInterface* gl,
-      const DisallowedExtensions& disallowed_extensions,
+      const DisallowedFeatures& disallowed_features,
       const char* extensions);
   static void SetupFeatureInfoInitExpectations(
       ::gfx::MockGLInterface* gl, const char* extensions);

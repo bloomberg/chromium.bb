@@ -81,7 +81,7 @@ bool Window::CreateRenderContext(gfx::PluginWindowHandle hwnd) {
   if (!decoder_->Initialize(surface_.get(),
                             context_.get(),
                             gfx::Size(),
-                            gpu::gles2::DisallowedExtensions(),
+                            gpu::gles2::DisallowedFeatures(),
                             NULL,
                             attribs)) {
     return false;

@@ -125,7 +125,7 @@ EGLSurface Display::CreateWindowSurface(EGLConfig config,
   if (!decoder_->Initialize(gl_surface_.get(),
                             gl_context_.get(),
                             gfx::Size(),
-                            gpu::gles2::DisallowedExtensions(),
+                            gpu::gles2::DisallowedFeatures(),
                             NULL,
                             attribs)) {
     return EGL_NO_SURFACE;

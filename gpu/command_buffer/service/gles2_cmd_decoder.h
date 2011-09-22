@@ -29,8 +29,8 @@ namespace gles2 {
 class ContextGroup;
 class GLES2Util;
 
-struct DisallowedExtensions {
-  DisallowedExtensions()
+struct DisallowedFeatures {
+  DisallowedFeatures()
       : multisampling(false),
         driver_bug_workarounds(false) {
   }
@@ -73,7 +73,7 @@ class GLES2Decoder : public CommonDecoder {
   virtual bool Initialize(const scoped_refptr<gfx::GLSurface>& surface,
                           const scoped_refptr<gfx::GLContext>& context,
                           const gfx::Size& size,
-                          const DisallowedExtensions& disallowed_extensions,
+                          const DisallowedFeatures& disallowed_features,
                           const char* allowed_extensions,
                           const std::vector<int32>& attribs) = 0;
 

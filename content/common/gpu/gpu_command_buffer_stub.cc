@@ -26,7 +26,7 @@ GpuCommandBufferStub::GpuCommandBufferStub(
     GpuCommandBufferStub* share_group,
     gfx::PluginWindowHandle handle,
     const gfx::Size& size,
-    const gpu::gles2::DisallowedExtensions& disallowed_extensions,
+    const gpu::gles2::DisallowedFeatures& disallowed_features,
     const std::string& allowed_extensions,
     const std::vector<int32>& attribs,
     int32 route_id,
@@ -37,7 +37,7 @@ GpuCommandBufferStub::GpuCommandBufferStub(
     : channel_(channel),
       handle_(handle),
       initial_size_(size),
-      disallowed_extensions_(disallowed_extensions),
+      disallowed_features_(disallowed_features),
       allowed_extensions_(allowed_extensions),
       requested_attribs_(attribs),
       route_id_(route_id),
@@ -258,7 +258,7 @@ void GpuCommandBufferStub::OnInitialize(
   if (!decoder_->Initialize(surface_.get(),
                             context_.get(),
                             initial_size_,
-                            disallowed_extensions_,
+                            disallowed_features_,
                             allowed_extensions_.c_str(),
                             requested_attribs_)) {
     LOG(ERROR) << "Failed to initialize decoder.";

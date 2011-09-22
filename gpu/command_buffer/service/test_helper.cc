@@ -123,7 +123,7 @@ void TestHelper::SetupTextureManagerInitExpectations(
 
 void TestHelper::SetupContextGroupInitExpectations(
       ::gfx::MockGLInterface* gl,
-      const DisallowedExtensions& disallowed_extensions,
+      const DisallowedFeatures& disallowed_features,
       const char* extensions) {
   InSequence sequence;
 

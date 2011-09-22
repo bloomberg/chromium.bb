@@ -478,7 +478,7 @@ bool GLInProcessContext::Initialize(bool onscreen,
   if (!decoder_->Initialize(surface_.get(),
                             context_.get(),
                             size,
-                            ::gpu::gles2::DisallowedExtensions(),
+                            ::gpu::gles2::DisallowedFeatures(),
                             allowed_extensions,
                             attribs)) {
     LOG(ERROR) << "Could not initialize decoder.";

@@ -461,7 +461,7 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   virtual bool Initialize(const scoped_refptr<gfx::GLSurface>& surface,
                           const scoped_refptr<gfx::GLContext>& context,
                           const gfx::Size& size,
-                          const DisallowedExtensions& disallowed_extensions,
+                          const DisallowedFeatures& disallowed_features,
                           const char* allowed_extensions,
                           const std::vector<int32>& attribs);
   virtual void Destroy();
@@ -1306,7 +1306,7 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   scoped_ptr<ShaderTranslator> vertex_translator_;
   scoped_ptr<ShaderTranslator> fragment_translator_;
 
-  DisallowedExtensions disallowed_extensions_;
+  DisallowedFeatures disallowed_features_;
 
   // Cached from ContextGroup
   const Validators* validators_;
@@ -1716,7 +1716,7 @@ bool GLES2DecoderImpl::Initialize(
     const scoped_refptr<gfx::GLSurface>& surface,
     const scoped_refptr<gfx::GLContext>& context,
     const gfx::Size& size,
-    const DisallowedExtensions& disallowed_extensions,
+    const DisallowedFeatures& disallowed_features,
     const char* allowed_extensions,
     const std::vector<int32>& attribs) {
   DCHECK(context);
@@ -1739,7 +1739,7 @@ bool GLES2DecoderImpl::Initialize(
     return false;
   }
 
-  if (!group_->Initialize(disallowed_extensions, allowed_extensions)) {
+  if (!group_->Initialize(disallowed_features, allowed_extensions)) {
     LOG(ERROR) << "GpuScheduler::InitializeCommon failed because group "
                << "failed to initialize.";
     Destroy();
@@ -1747,7 +1747,7 @@ bool GLES2DecoderImpl::Initialize(
   }
 
   CHECK_GL_ERROR();
-  disallowed_extensions_ = disallowed_extensions;
+  disallowed_features_ = disallowed_features;
 
   vertex_attrib_manager_.Initialize(group_->max_vertex_attribs());
 
@@ -1938,7 +1938,7 @@ bool GLES2DecoderImpl::Initialize(
 
   has_arb_robustness_ = context->HasExtension("GL_ARB_robustness");
 
-  if (!disallowed_extensions_.driver_bug_workarounds) {
+  if (!disallowed_features_.driver_bug_workarounds) {
 #if defined(OS_MACOSX)
     const char* vendor_str = reinterpret_cast<const char*>(
         glGetString(GL_VENDOR));
@@ -6726,7 +6726,7 @@ error::Error GLES2DecoderImpl::HandleGetRequestableExtensionsCHROMIUM(
     const gles2::GetRequestableExtensionsCHROMIUM& c) {
   Bucket* bucket = CreateBucket(c.bucket_id);
   scoped_ptr<FeatureInfo> info(new FeatureInfo());
-  info->Initialize(disallowed_extensions_, NULL);
+  info->Initialize(disallowed_features_, NULL);
   bucket->SetFromString(info->extensions().c_str());
   return error::kNoError;
 }
