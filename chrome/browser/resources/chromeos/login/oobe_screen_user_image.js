@@ -121,6 +121,10 @@ cr.define('oobe', function() {
     onBeforeShow: function(data) {
       Oobe.getInstance().headerHidden = true;
       $('user-image-grid').updateAndFocus();
+
+      // Announce the name of the screen, if accessibility is on.
+      $('user-image-aria-label').setAttribute(
+          'aria-label', localStrings.getString('userImageScreenTitle'));
     },
   };
 
