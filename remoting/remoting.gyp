@@ -321,7 +321,7 @@
           ],
           'action': [
             'python', 'webapp/build-webapp.py',
-            '<(linux_strip_binary)',
+            '<(buildtype)',
             '<(host_plugin_mime_type)',
             '<(_output_dir)',
             '<(_zip_path)',

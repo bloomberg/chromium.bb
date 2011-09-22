@@ -47,12 +47,12 @@ def createZip(zip_path, directory):
   zip.close()
 
 
-def buildWebApp(linux_strip, mimetype, destination, zip_path, plugin, files,
+def buildWebApp(buildtype, mimetype, destination, zip_path, plugin, files,
                 locales):
   """Does the main work of building the webapp directory and zipfile.
 
   Args:
-    linux_strip: should we strip the build on Linux (0 or !0).
+    buildtype: the type of build ("Official" or "Dev")
     mimetype: A string with mimetype of plugin.
     destination: A string with path to directory where the webapp will be
                  written.
@@ -152,7 +152,7 @@ def buildWebApp(linux_strip, mimetype, destination, zip_path, plugin, files,
     shutil.copy2(plugin, newPluginPath)
 
   # Strip the linux build.
-  if ((platform.system() == 'Linux') and (linux_strip != '0')):
+  if ((platform.system() == 'Linux') and (buildtype == 'Official')):
     subprocess.call(["strip", newPluginPath])
 
   # Add unique build numbers to manifest version.
@@ -181,7 +181,7 @@ def buildWebApp(linux_strip, mimetype, destination, zip_path, plugin, files,
 def main():
   if len(sys.argv) < 6:
     print ('Usage: build-webapp.py '
-           '<linux-strip> <mime-type> <dst> <zip-path> <plugin> '
+           '<build-type> <mime-type> <dst> <zip-path> <plugin> '
            '<other files...> --locales <locales...>')
     sys.exit(1)
 
