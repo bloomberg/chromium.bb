@@ -247,6 +247,8 @@ abs_obj := $(abspath $(obj))
 # generated dependency rule Makefiles in one pass.
 all_deps :=
 
+%(make_global_settings)s
+
 # C++ apps need to be linked with g++.
 #
 # Note: flock is used to seralize linking. Linking is a memory-intensive
@@ -258,9 +260,6 @@ all_deps :=
 # This will allow make to invoke N linker processes as specified in -jN.
 LINK ?= %(flock)s $(builddir)/linker.lock $(CXX)
 
-%(make_global_settings)s
-
-LINK ?= $(FLOCK) $(CXX)
 CC.target ?= $(CC)
 CFLAGS.target ?= $(CFLAGS)
 CXX.target ?= $(CXX)
