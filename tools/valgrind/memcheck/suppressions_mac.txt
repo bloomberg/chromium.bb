@@ -1789,7 +1789,7 @@
    bug_96300
    Memcheck:Leak
    fun:malloc
-   fun:SecAsn1CoderCreate
+   ...
    fun:_ZN12OCSPResponseC2ERK9cssm_datad
    fun:tpVerifyCertGroupWithOCSP
    fun:_ZN14AppleTPSession15CertGroupVerifyEllRK14cssm_certgroupPK22cssm_tp_verify_contextP29cssm_tp_verify_context_result
