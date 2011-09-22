@@ -394,7 +394,7 @@ const DataResource kDataResources[] = {
     IDR_MEDIAPLAYER_VOLUME_SLIDER_THUMB_HOVER },
   { "mediaplayerVolumeSliderThumbDown",
     IDR_MEDIAPLAYER_VOLUME_SLIDER_THUMB_DOWN },
-#if defined(OS_MACOSX) || defined(TOUCH_UI)
+#if defined(OS_MACOSX)
   { "overhangPattern", IDR_OVERHANG_PATTERN },
 #endif
   { "panIcon", IDR_PAN_SCROLL_ICON },
