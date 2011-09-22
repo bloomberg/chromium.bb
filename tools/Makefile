@@ -872,15 +872,15 @@ buildbot-mark-version: | \
 	+++ SRC/binutils/bfd/version.h\n\
 	@@ -3 +3 @@\n\
 	-#define BFD_VERSION_STRING  @bfd_version_package@ @bfd_version_string@\n\
-	+#define BFD_VERSION_STRING  @bfd_version_package@ @bfd_version_string@ \" `LC_ALL=C svn info | grep 'Last Changed Date' | sed -e s'+Last Changed Date: \(....\)-\(..\)-\(..\).*+\1-\2-\3+'` (Native Client r`LC_ALL=C svnversion`, Git Commit `cd SRC/binutils ; LC_ALL=C git rev-parse HEAD`)\"\n" |\
+	+#define BFD_VERSION_STRING  @bfd_version_package@ @bfd_version_string@ \" `LC_ALL=C svn info | grep 'Last Changed Date' | sed -e s'+Last Changed Date: \(....\)-\(..\)-\(..\).*+\1\2\3+'` (Native Client r`LC_ALL=C svnversion`, Git Commit `cd SRC/binutils ; LC_ALL=C git rev-parse HEAD`)\"\n" |\
 	patch -p0
-	LC_ALL=C svn info | grep 'Last Changed Date' | sed -e s'+Last Changed Date: \(....\)-\(..\)-\(..\).*+\1-\2-\3+' > SRC/gcc/gcc/DATESTAMP
+	LC_ALL=C svn info | grep 'Last Changed Date' | sed -e s'+Last Changed Date: \(....\)-\(..\)-\(..\).*+\1\2\3+' > SRC/gcc/gcc/DATESTAMP
 	echo "Native Client r`LC_ALL=C svnversion`, Git Commit `cd SRC/gcc ; LC_ALL=C git rev-parse HEAD`" > SRC/gcc/gcc/DEV-PHASE
 	printf -- "--- SRC/gdb/gdb/version.in\n\
 	+++ SRC/gdb/gdb/version.in\n\
 	@@ -1 +1 @@\n\
 	-`cat SRC/gdb/gdb/version.in`\n\
-	+`cat SRC/gdb/gdb/version.in` `LC_ALL=C svn info | grep 'Last Changed Date' | sed -e s'+Last Changed Date: \(....\)-\(..\)-\(..\).*+\1-\2-\3+'` (Native Client r`LC_ALL=C svnversion`, Git Commit `cd SRC/gdb ; LC_ALL=C git rev-parse HEAD`)\n" |\
+	+`cat SRC/gdb/gdb/version.in` `LC_ALL=C svn info | grep 'Last Changed Date' | sed -e s'+Last Changed Date: \(....\)-\(..\)-\(..\).*+\1\2\3+'` (Native Client r`LC_ALL=C svnversion`, Git Commit `cd SRC/gdb ; LC_ALL=C git rev-parse HEAD`)\n" |\
 	patch -p0
 
 ##################################################################
