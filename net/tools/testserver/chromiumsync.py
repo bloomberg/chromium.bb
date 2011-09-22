@@ -108,6 +108,10 @@ class TransientError(Error):
   """The client would be sent a transient error."""
 
 
+class SyncInducedError(Error):
+  """The client would be sent an error."""
+
+
 def GetEntryType(entry):
   """Extract the sync type from a SyncEntry.
 
@@ -420,6 +424,8 @@ class SyncDataModel(object):
     self.ResetStoreBirthday()
 
     self.migration_history = MigrationHistory()
+
+    self.induced_error = sync_pb2.ClientToServerResponse.Error()
 
   def _SaveEntry(self, entry):
     """Insert or update an entry in the change log, and give it a new version.
@@ -886,6 +892,12 @@ class SyncDataModel(object):
         True)
     self._SaveEntry(nigori_new)
 
+  def SetInducedError(self, error):
+    self.induced_error = error
+
+  def GetInducedError(self):
+    return self.induced_error
+
 
 class TestServer(object):
   """An object to handle requests for one (and only one) Chrome Sync account.
@@ -928,6 +940,12 @@ class TestServer(object):
     if self.transient_error:
       raise TransientError
 
+  def CheckSendError(self):
+     """Raises SyncInducedError if needed."""
+     if (self.account.induced_error.error_type !=
+         sync_pb2.ClientToServerResponse.UNKNOWN):
+       raise SyncInducedError
+
   def HandleMigrate(self, path):
     query = urlparse.urlparse(path)[4]
     code = 200
@@ -948,6 +966,39 @@ class TestServer(object):
     finally:
       self.account_lock.release()
     return (code, '<html><title>Migration: %d</title><H1>%d %s</H1></html>' %
+                (code, code, response))
+
+  def HandleSetInducedError(self, path):
+     query = urlparse.urlparse(path)[4]
+     self.account_lock.acquire()
+     code = 200;
+     response = 'Success'
+     error = sync_pb2.ClientToServerResponse.Error()
+     try:
+       error_type = urlparse.parse_qs(query)['error']
+       action = urlparse.parse_qs(query)['action']
+       error.error_type = int(error_type[0])
+       error.action = int(action[0])
+       try:
+         error.url = (urlparse.parse_qs(query)['url'])[0]
+       except KeyError:
+         error.url = ''
+       try:
+         error.error_description =(
+         (urlparse.parse_qs(query)['error_description'])[0])
+       except KeyError:
+         error.error_description = ''
+       self.account.SetInducedError(error)
+       response = ('Error = %d, action = %d, url = %s, description = %s' %
+                   (error.error_type, error.action,
+                    error.url,
+                    error.error_description))
+     except error:
+       response = 'Could not parse url'
+       code = 400
+     finally:
+       self.account_lock.release()
+     return (code, '<html><title>SetError: %d</title><H1>%d %s</H1></html>' %
                 (code, code, response))
 
   def HandleCreateBirthdayError(self):
@@ -998,6 +1049,7 @@ class TestServer(object):
       self.CheckStoreBirthday(request)
       response.store_birthday = self.account.store_birthday
       self.CheckTransientError();
+      self.CheckSendError();
 
       print_context('->')
 
@@ -1036,10 +1088,21 @@ class TestServer(object):
       response.error_code = sync_pb2.ClientToServerResponse.NOT_MY_BIRTHDAY
       return (200, response.SerializeToString())
     except TransientError, error:
+      ### This is deprecated now. Would be removed once test cases are removed.
       print_context('<-')
       print 'TRANSIENT_ERROR'
       response.store_birthday = self.account.store_birthday
       response.error_code = sync_pb2.ClientToServerResponse.TRANSIENT_ERROR
+      return (200, response.SerializeToString())
+    except SyncInducedError, error:
+      print_context('<-')
+      print 'INDUCED_ERROR'
+      response.store_birthday = self.account.store_birthday
+      error = self.account.GetInducedError()
+      response.error.error_type = error.error_type
+      response.error.url = error.url
+      response.error.error_description = error.error_description
+      response.error.action = error.action
       return (200, response.SerializeToString())
     finally:
       self.account_lock.release()
