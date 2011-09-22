@@ -11,6 +11,7 @@
 #include "base/file_path.h"
 #include "base/memory/linked_ptr.h"
 #include "base/synchronization/lock.h"
+#include "content/common/content_export.h"
 #include "net/base/file_stream.h"
 
 namespace net {
@@ -33,7 +34,7 @@ struct DownloadBuffer {
 };
 
 // Holds the information about how to save a download file.
-struct DownloadSaveInfo {
+struct CONTENT_EXPORT DownloadSaveInfo {
   DownloadSaveInfo();
   DownloadSaveInfo(const DownloadSaveInfo& info);
   ~DownloadSaveInfo();
