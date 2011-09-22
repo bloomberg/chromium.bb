@@ -852,6 +852,11 @@ LocationBar* BrowserView::GetLocationBar() const {
 }
 
 void BrowserView::SetFocusToLocationBar(bool select_all) {
+  // Only change focus if this is the active window otherwise we'll end
+  // accidentally deactivating another window.
+  if (!IsActive())
+    return;
+
   if (UseCompactNavigationBar()) {
     // If focus ever goes to the location bar, we should make sure it is shown
     // in compact mode. This includes all accelerators that move focus there.
