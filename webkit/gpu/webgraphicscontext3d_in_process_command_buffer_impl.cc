@@ -837,7 +837,7 @@ bool WebGraphicsContext3DInProcessCommandBufferImpl::readBackFramebuffer(
 
 void WebGraphicsContext3DInProcessCommandBufferImpl::synthesizeGLError(
     WGC3Denum error) {
-  if (find(synthetic_errors_.begin(), synthetic_errors_.end(), error) ==
+  if (std::find(synthetic_errors_.begin(), synthetic_errors_.end(), error) ==
       synthetic_errors_.end()) {
     synthetic_errors_.push_back(error);
   }
