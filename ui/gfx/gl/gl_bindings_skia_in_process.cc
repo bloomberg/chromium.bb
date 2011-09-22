@@ -35,8 +35,13 @@ GLvoid StubGLBindBuffer(GLenum target, GLuint buffer) {
   glBindBuffer(target, buffer);
 }
 
-GLvoid StubBindFragDataLocationIndexedARB(GLuint program, GLuint colorNumber,
-                                          GLuint index, const GLchar * name) {
+GLvoid StubGLBindFragDataLocation(GLuint program, GLuint colorNumber,
+                                  const GLchar * name) {
+  glBindFragDataLocation(program, colorNumber, name);
+}
+
+GLvoid StubGLBindFragDataLocationIndexedARB(GLuint program, GLuint colorNumber,
+                                            GLuint index, const GLchar * name) {
   glBindFragDataLocationIndexedARB(program, colorNumber, index, name);
 }
 
@@ -499,6 +504,7 @@ GrGLInterface* CreateInProcessSkiaGLBinding() {
   interface->fAttachShader = StubGLAttachShader;
   interface->fBindAttribLocation = StubGLBindAttribLocation;
   interface->fBindBuffer = StubGLBindBuffer;
+  interface->fBindFragDataLocation = StubGLBindFragDataLocation;
   interface->fBindTexture = StubGLBindTexture;
   interface->fBlendColor = StubGLBlendColor;
   interface->fBlendFunc = StubGLBlendFunc;
@@ -597,7 +603,7 @@ GrGLInterface* CreateInProcessSkiaGLBinding() {
   interface->fMapBuffer = StubGLMapBuffer;
   interface->fUnmapBuffer = StubGLUnmapBuffer;
   interface->fBindFragDataLocationIndexed =
-    StubBindFragDataLocationIndexedARB;
+    StubGLBindFragDataLocationIndexedARB;
   return interface;
 }
 

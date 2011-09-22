@@ -39,6 +39,10 @@ class GL_EXPORT GLInterface {
                                               GLuint index,
                                               const char* name) = 0;
 
+  virtual void BindFragDataLocation(GLuint program,
+                                    GLuint colorNumber,
+                                    const char* name) = 0;
+
   virtual void BindFramebufferEXT(GLenum target, GLuint framebuffer) = 0;
 
   virtual void BindRenderbufferEXT(GLenum target, GLuint renderbuffer) = 0;

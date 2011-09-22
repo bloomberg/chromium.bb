@@ -16,6 +16,8 @@ GL_FUNCTIONS = [
 ['void', ['glBindAttribLocation'],
     'GLuint program, GLuint index, const char* name'],
 ['void', ['glBindBuffer'], 'GLenum target, GLuint buffer'],
+['void', ['glBindFragDataLocation'],
+    'GLuint program, GLuint colorNumber, const char* name'],
 ['void', ['glBindFragDataLocationIndexedARB'],
     'GLuint program, GLuint colorNumber, GLuint index, const char* name'],
 ['void', ['glBindFramebufferEXT', 'glBindFramebuffer'],
