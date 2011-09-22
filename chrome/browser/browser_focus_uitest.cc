@@ -192,13 +192,7 @@ class TestInterstitialPage : public InterstitialPage {
   std::string html_contents_;
 };
 
-#if defined(OS_CHROMEOS)
-#define MAYBE_ClickingMovesFocus  DISABLED_ClickingMovesFocus
-#else
-#define MAYBE_ClickingMovesFocus  ClickingMovesFocus
-#endif
-
-IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_ClickingMovesFocus) {
+IN_PROC_BROWSER_TEST_F(BrowserFocusTest, ClickingMovesFocus) {
   ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
 #if defined(OS_POSIX)
   // It seems we have to wait a little bit for the widgets to spin up before
