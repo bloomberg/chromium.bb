@@ -781,9 +781,25 @@ class SVNWrapper(SCMWrapper):
 
     # Look for locked directories.
     dir_info = scm.SVN.CaptureStatus(os.path.join(self.checkout_path, '.'))
-    for d in dir_info:
-      if d[0][2] == 'L':
-        self._Run(['cleanup', d[1]], options)
+    if any(d[0][2] == 'L' for d in dir_info):
+      try:
+        self._Run(['cleanup', self.checkout_path], options)
+      except subprocess2.CalledProcessError, e:
+        # Get the status again, svn cleanup may have cleaned up at least
+        # something.
+        dir_info = scm.SVN.CaptureStatus(os.path.join(self.checkout_path, '.'))
+
+        # Try to fix the failures by removing troublesome files.
+        for d in dir_info:
+          if d[0][2] == 'L':
+            if d[0][0] == '!' and options.force:
+              print 'Removing troublesome path %s' % d[1]
+              gclient_utils.rmtree(d[1])
+            else:
+              print 'Not removing troublesome path %s automatically.' % d[1]
+              if d[0][0] == '!':
+                print 'You can pass --force to enable automatic removal.'
+              raise e
 
     # Retrieve the current HEAD version because svn is slow at null updates.
     if options.manually_grab_svn_rev and not revision:
