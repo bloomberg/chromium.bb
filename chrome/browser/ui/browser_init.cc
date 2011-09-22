@@ -98,7 +98,6 @@
 #include "chrome/browser/chromeos/gview_request_interceptor.h"
 #include "chrome/browser/chromeos/low_battery_observer.h"
 #include "chrome/browser/chromeos/network_message_observer.h"
-#include "chrome/browser/chromeos/network_state_notifier.h"
 #include "chrome/browser/chromeos/sms_observer.h"
 #include "chrome/browser/chromeos/update_observer.h"
 #include "chrome/browser/chromeos/wm_message_listener.h"
@@ -549,16 +548,6 @@ bool BrowserInit::LaunchBrowser(const CommandLine& command_line,
                                 int* return_code) {
   in_startup = process_startup;
   DCHECK(profile);
-#if defined(OS_CHROMEOS)
-  if (process_startup) {
-    // NetworkStateNotifier has to be initialized before Launching browser
-    // because the page load can happen in parallel to this UI thread
-    // and IO thread may access the NetworkStateNotifier.
-    chromeos::CrosLibrary::Get()->GetNetworkLibrary()
-        ->AddNetworkManagerObserver(
-            chromeos::NetworkStateNotifier::GetInstance());
-  }
-#endif
 
   // Continue with the incognito profile from here on if Incognito mode
   // is forced.

@@ -10,7 +10,6 @@
 #include "base/memory/singleton.h"
 #include "base/metrics/histogram.h"
 #include "base/string_util.h"
-#include "chrome/browser/chromeos/network_state_notifier.h"
 #include "chrome/browser/chromeos/offline/offline_load_page.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/common/url_constants.h"
@@ -19,6 +18,7 @@
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
 #include "net/base/net_errors.h"
+#include "net/base/network_change_notifier.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 
@@ -172,7 +172,7 @@ bool OfflineResourceHandler::ShouldShowOfflinePage(const GURL& url) const {
   // Only check main frame. If the network is disconnected while
   // loading other resources, we'll simply show broken link/images.
   return IsRemote(url) &&
-      !chromeos::NetworkStateNotifier::is_connected() &&
+      net::NetworkChangeNotifier::IsOffline() &&
       ResourceDispatcherHost::InfoForRequest(request_)->resource_type()
         == ResourceType::MAIN_FRAME;
 }

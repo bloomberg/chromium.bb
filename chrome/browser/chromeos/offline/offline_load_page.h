@@ -9,8 +9,8 @@
 #include <string>
 
 #include "base/task.h"
-#include "chrome/browser/chromeos/network_state_notifier.h"
 #include "chrome/browser/tab_contents/chrome_interstitial_page.h"
+#include "net/base/network_change_notifier.h"
 
 class Extension;
 class TabContents;
@@ -25,7 +25,8 @@ namespace chromeos {
 // when no network is available and hides when some network (either
 // one of wifi, 3g or ethernet) becomes available.
 // It deletes itself when the interstitial page is closed.
-class OfflineLoadPage : public ChromeInterstitialPage {
+class OfflineLoadPage : public ChromeInterstitialPage,
+                        public net::NetworkChangeNotifier::OnlineStateObserver {
  public:
   // A delegate class that is called when the interstitinal page
   // is closed.
@@ -63,10 +64,8 @@ class OfflineLoadPage : public ChromeInterstitialPage {
   virtual void Proceed();
   virtual void DontProceed();
 
-  // Overrides ChromeInterstitialPage's Observe.
-  virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+  // net::NetworkChangeNotifier::OnlineStateObserver overrides.
+  virtual void OnOnlineStateChanged(bool online) OVERRIDE;
 
   // Retrieves template strings of the offline page for app and
   // normal site.

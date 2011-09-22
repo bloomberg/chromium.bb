@@ -50,7 +50,7 @@ namespace chromeos {
 void OfflineLoadPage::Show(int process_host_id, int render_view_id,
                            const GURL& url, Delegate* delegate) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (NetworkStateNotifier::is_connected()) {
+  if (!net::NetworkChangeNotifier::IsOffline()) {
     // Check again in UI thread and proceed if it's connected.
     delegate->OnBlockingPageComplete(true);
   } else {
@@ -72,18 +72,16 @@ OfflineLoadPage::OfflineLoadPage(TabContents* tab_contents,
       proceeded_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
       in_test_(false) {
-  registrar_.Add(this, chrome::NOTIFICATION_NETWORK_STATE_CHANGED,
-                 NotificationService::AllSources());
+  net::NetworkChangeNotifier::AddOnlineStateObserver(this);
 }
 
-OfflineLoadPage::~OfflineLoadPage() {}
+OfflineLoadPage::~OfflineLoadPage() {
+  net::NetworkChangeNotifier::RemoveOnlineStateObserver(this);
+}
 
 std::string OfflineLoadPage::GetHTMLContents() {
   DictionaryValue strings;
-  int64 time_to_wait = std::max(
-      static_cast<int64>(0),
-      kMaxBlankPeriod -
-      NetworkStateNotifier::GetOfflineDuration().InMilliseconds());
+  int64 time_to_wait = 0;  // kMaxBlankPeriod
   // Set the timeout to show the page.
   strings.SetInteger("time_to_wait", static_cast<int>(time_to_wait));
   // Button labels
@@ -199,22 +197,13 @@ void OfflineLoadPage::DontProceed() {
   InterstitialPage::DontProceed();
 }
 
-void OfflineLoadPage::Observe(int type,
-                              const NotificationSource& source,
-                              const NotificationDetails& details) {
-  if (type == chrome::NOTIFICATION_NETWORK_STATE_CHANGED) {
-    chromeos::NetworkStateDetails* state_details =
-        Details<chromeos::NetworkStateDetails>(details).ptr();
-    DVLOG(1) << "NetworkStateChanaged notification received: state="
-             << state_details->state();
-    if (state_details->state() ==
-        chromeos::NetworkStateDetails::CONNECTED) {
-      registrar_.Remove(this, chrome::NOTIFICATION_NETWORK_STATE_CHANGED,
-                        NotificationService::AllSources());
-      Proceed();
-    }
-  } else {
-    ChromeInterstitialPage::Observe(type, source, details);
+void OfflineLoadPage::OnOnlineStateChanged(bool online) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DVLOG(1) << "OnlineStateObserver notification received: state="
+           << (online ? "online" : "offline");
+  if (online) {
+    net::NetworkChangeNotifier::RemoveOnlineStateObserver(this);
+    Proceed();
   }
 }
 

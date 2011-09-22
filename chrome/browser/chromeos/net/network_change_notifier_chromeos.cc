@@ -12,9 +12,11 @@ namespace {
 
 // Delay for online change notification reporting.
 const int kOnlineNotificationDelayMS = 500;
+const int kInitialNotificationCheckDelayMS = 1000;
 
 bool IsOnline(chromeos::ConnectionState state) {
-  return state == chromeos::STATE_ONLINE;
+  return state == chromeos::STATE_ONLINE ||
+         state == chromeos::STATE_PORTAL;
 }
 
 }
@@ -69,11 +71,12 @@ NetworkChangeNotifierChromeos::NetworkChangeNotifierChromeos()
       chromeos::CrosLibrary::Get()->GetPowerLibrary();
   power->AddObserver(this);
 
+  UpdateNetworkState(net);
   BrowserThread::PostDelayedTask(
          BrowserThread::UI, FROM_HERE,
          NewRunnableFunction(
              &NetworkChangeNotifierChromeos::UpdateInitialState, this),
-         kOnlineNotificationDelayMS);
+         kInitialNotificationCheckDelayMS);
 }
 
 NetworkChangeNotifierChromeos::~NetworkChangeNotifierChromeos() {

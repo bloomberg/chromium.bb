@@ -676,8 +676,6 @@
         'browser/chromeos/network_login_observer.h',
         'browser/chromeos/network_message_observer.cc',
         'browser/chromeos/network_message_observer.h',
-        'browser/chromeos/network_state_notifier.cc',
-        'browser/chromeos/network_state_notifier.h',
         'browser/chromeos/notifications/balloon_collection_impl.cc',
         'browser/chromeos/notifications/balloon_collection_impl.h',
         'browser/chromeos/notifications/balloon_view.cc',

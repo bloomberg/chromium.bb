@@ -2231,7 +2231,6 @@
         'browser/chromeos/login/wizard_in_process_browser_test.cc',
         'browser/chromeos/login/wizard_in_process_browser_test.h',
         'browser/chromeos/media/media_player_browsertest.cc',
-        'browser/chromeos/network_state_notifier_browsertest.cc',
         'browser/chromeos/notifications/notification_browsertest.cc',
         'browser/chromeos/panels/panel_browsertest.cc',
         'browser/chromeos/status/accessibility_menu_button_browsertest.cc',

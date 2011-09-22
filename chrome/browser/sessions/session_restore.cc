@@ -34,10 +34,10 @@
 #include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/common/notification_registrar.h"
 #include "content/common/notification_service.h"
+#include "net/base/network_change_notifier.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/boot_times_loader.h"
-#include "chrome/browser/chromeos/network_state_notifier.h"
 #endif
 
 // Are we in the process of restoring?
@@ -58,10 +58,11 @@ static const int kInitialDelayTimerMS = 100;
 //
 // This is not part of SessionRestoreImpl so that synchronous destruction
 // of SessionRestoreImpl doesn't have timing problems.
-class TabLoader : public NotificationObserver {
+class TabLoader : public NotificationObserver,
+                  public net::NetworkChangeNotifier::OnlineStateObserver {
  public:
   explicit TabLoader(base::TimeTicks restore_started);
-  ~TabLoader();
+  virtual ~TabLoader();
 
   // Schedules a tab for loading.
   void ScheduleLoad(NavigationController* controller);
@@ -88,7 +89,10 @@ class TabLoader : public NotificationObserver {
   // tab.
   virtual void Observe(int type,
                        const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const NotificationDetails& details) OVERRIDE;
+
+  // net::NetworkChangeNotifier::OnlineStateObserver overrides.
+  virtual void OnOnlineStateChanged(bool online) OVERRIDE;
 
   // Removes the listeners from the specified tab and removes the tab from
   // the set of tabs to load and list of tabs we're waiting to get a load
@@ -156,6 +160,7 @@ TabLoader::TabLoader(base::TimeTicks restore_started)
 TabLoader::~TabLoader() {
   DCHECK((got_first_paint_ || render_widget_hosts_to_paint_.empty()) &&
           tabs_loading_.empty() && tabs_to_load_.empty());
+  net::NetworkChangeNotifier::RemoveOnlineStateObserver(this);
 }
 
 void TabLoader::ScheduleLoad(NavigationController* controller) {
@@ -181,13 +186,11 @@ void TabLoader::StartLoading() {
   registrar_.Add(this, content::NOTIFICATION_RENDER_WIDGET_HOST_DID_PAINT,
                  NotificationService::AllSources());
 #if defined(OS_CHROMEOS)
-  if (chromeos::NetworkStateNotifier::is_connected()) {
+  if (!net::NetworkChangeNotifier::IsOffline()) {
     loading_ = true;
     LoadNextTab();
   } else {
-    // Start listening to network state notification now.
-    registrar_.Add(this, chrome::NOTIFICATION_NETWORK_STATE_CHANGED,
-                   NotificationService::AllSources());
+    net::NetworkChangeNotifier::AddOnlineStateObserver(this);
   }
 #else
   loading_ = true;
@@ -232,31 +235,6 @@ void TabLoader::Observe(int type,
                         const NotificationSource& source,
                         const NotificationDetails& details) {
   switch (type) {
-#if defined(OS_CHROMEOS)
-    case chrome::NOTIFICATION_NETWORK_STATE_CHANGED: {
-      chromeos::NetworkStateDetails* state_details =
-          Details<chromeos::NetworkStateDetails>(details).ptr();
-      switch (state_details->state()) {
-        case chromeos::NetworkStateDetails::CONNECTED:
-          if (!loading_) {
-            loading_ = true;
-            LoadNextTab();
-          }
-          // Start loading
-          break;
-        case chromeos::NetworkStateDetails::CONNECTING:
-        case chromeos::NetworkStateDetails::DISCONNECTED:
-          // Disconnected while loading. Set loading_ false so
-          // that it stops trying to load next tab.
-          loading_ = false;
-          break;
-        default:
-          NOTREACHED() << "Unknown nework state notification:"
-                       << state_details->state();
-      }
-      break;
-    }
-#endif
     case content::NOTIFICATION_LOAD_START: {
       // Add this render_widget_host to the set of those we're waiting for
       // paints on. We want to only record stats for paints that occur after
@@ -330,6 +308,17 @@ void TabLoader::Observe(int type,
   if ((got_first_paint_ || render_widget_hosts_to_paint_.empty()) &&
       tabs_loading_.empty() && tabs_to_load_.empty())
     delete this;
+}
+
+void TabLoader::OnOnlineStateChanged(bool online) {
+  if (online) {
+    if (!loading_) {
+      loading_ = true;
+      LoadNextTab();
+    }
+  } else {
+    loading_ = false;
+  }
 }
 
 void TabLoader::RemoveTab(NavigationController* tab) {

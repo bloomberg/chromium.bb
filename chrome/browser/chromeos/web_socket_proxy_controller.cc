@@ -26,6 +26,7 @@
 #include "content/common/notification_service.h"
 #include "content/common/url_constants.h"
 #include "googleurl/src/gurl.h"
+#include "net/base/network_change_notifier.h"
 
 namespace {
 
@@ -102,20 +103,22 @@ class ProxyTask : public Task {
   virtual void Run() OVERRIDE;
 };
 
-class ProxyLifetime : public NotificationObserver {
+class ProxyLifetime : public net::NetworkChangeNotifier::OnlineStateObserver {
  public:
   ProxyLifetime() : delay_ms_(1000), shutdown_requested_(false) {
     BrowserThread::PostTask(
         BrowserThread::WEB_SOCKET_PROXY, FROM_HERE, new ProxyTask());
-    registrar_.Add(this, chrome::NOTIFICATION_NETWORK_STATE_CHANGED,
-                   NotificationService::AllSources());
+    net::NetworkChangeNotifier::AddOnlineStateObserver(this);
+  }
+
+  virtual ~ProxyLifetime() {
+    net::NetworkChangeNotifier::RemoveOnlineStateObserver(this);
   }
 
  private:
-  virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) {
-    DCHECK_EQ(type, chrome::NOTIFICATION_NETWORK_STATE_CHANGED);
+  // net::NetworkChangeNotifier::OnlineStateObserver overrides.
+  virtual void OnOnlineStateChanged(bool online) OVERRIDE {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     DCHECK(chromeos::WebSocketProxyController::IsInitiated());
     base::AutoLock alk(lock_);
     if (server_)

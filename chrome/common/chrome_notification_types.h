@@ -776,12 +776,6 @@ enum NotificationType {
   // object.
   NOTIFICATION_SCREEN_LOCK_STATE_CHANGED,
 
-  // Sent when the network state has changed on UI thread.
-  // The source is AllSources and the details is NetworkStateDetails defined
-  // in chrome/browser/chromeos/network_state_notifier.h.
-  // TODO(oshima): Port this to all platforms.
-  NOTIFICATION_NETWORK_STATE_CHANGED,
-
   // Sent when an attempt to acquire the public key of the owner of a chromium
   // os device has succeeded.
   NOTIFICATION_OWNER_KEY_FETCH_ATTEMPT_SUCCEEDED,

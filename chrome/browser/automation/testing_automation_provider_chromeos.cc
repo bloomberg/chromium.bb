@@ -25,7 +25,6 @@
 #include "chrome/browser/chromeos/login/screen_locker.h"
 #include "chrome/browser/chromeos/login/webui_login_display.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
-#include "chrome/browser/chromeos/network_state_notifier.h"
 #include "chrome/browser/chromeos/options/take_photo_dialog.h"
 #include "chrome/browser/chromeos/proxy_cros_settings_provider.h"
 #include "chrome/browser/chromeos/system/timezone_settings.h"
@@ -39,6 +38,7 @@
 #include "chrome/browser/ui/views/window.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "net/base/network_change_notifier.h"
 #include "policy/policy_constants.h"
 #include "views/widget/widget.h"
 
@@ -375,9 +375,8 @@ void TestingAutomationProvider::GetNetworkInfo(DictionaryValue* args,
   scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
   NetworkLibrary* network_library = CrosLibrary::Get()->GetNetworkLibrary();
 
-  chromeos::NetworkStateNotifier* notifier =
-      chromeos::NetworkStateNotifier::GetInstance();
-  return_value->SetBoolean("offline_mode", !notifier->is_connected());
+  return_value->SetBoolean("offline_mode",
+                           net::NetworkChangeNotifier::IsOffline());
 
   // IP address.
   return_value->SetString("ip_address", network_library->IPAddress());
