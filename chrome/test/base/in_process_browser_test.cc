@@ -246,8 +246,6 @@ Browser* InProcessBrowserTest::CreateBrowserForPopup(Profile* profile) {
 }
 
 void InProcessBrowserTest::AddBlankTabAndShow(Browser* browser) {
-  browser->window()->Show();
-
   ui_test_utils::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP,
       NotificationService::AllSources());
@@ -255,7 +253,7 @@ void InProcessBrowserTest::AddBlankTabAndShow(Browser* browser) {
       GURL(chrome::kAboutBlankURL), PageTransition::START_PAGE);
   observer.Wait();
 
-  browser->window()->Activate();
+  browser->window()->Show();
 }
 
 #if defined(OS_POSIX)
