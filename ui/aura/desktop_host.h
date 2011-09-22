@@ -7,6 +7,7 @@
 #pragma once
 
 #include "base/message_loop.h"
+#include "ui/aura/cursor.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace gfx {
@@ -40,6 +41,9 @@ class DesktopHost : public MessageLoop::Dispatcher {
   // Gets/Sets the size of the DesktopHost.
   virtual gfx::Size GetSize() = 0;
   virtual void SetSize(const gfx::Size& size) = 0;
+
+  // Sets the currently displayed cursor.
+  virtual void SetCursor(CursorType cursor_type) = 0;
 };
 
 }  // namespace aura

@@ -57,6 +57,10 @@ void Desktop::SetSize(const gfx::Size& size) {
   host_->SetSize(size);
 }
 
+void Desktop::SetCursor(CursorType cursor_type) {
+  host_->SetCursor(cursor_type);
+}
+
 void Desktop::Run() {
   Show();
   MessageLoopForUI::current()->Run(host_.get());

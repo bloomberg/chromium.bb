@@ -4,6 +4,8 @@
 
 #include "ui/aura/toplevel_window_event_filter.h"
 
+#include "ui/aura/cursor.h"
+#include "ui/aura/desktop.h"
 #include "ui/aura/event.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
@@ -25,9 +27,12 @@ ToplevelWindowEventFilter::~ToplevelWindowEventFilter() {
 bool ToplevelWindowEventFilter::OnMouseEvent(Window* target,
                                              MouseEvent* event) {
   switch (event->type()) {
-    case ui::ET_MOUSE_PRESSED:
+    case ui::ET_MOUSE_MOVED:
       window_component_ =
           target->delegate()->GetNonClientComponent(event->location());
+      UpdateCursorForWindowComponent();
+      break;
+    case ui::ET_MOUSE_PRESSED:
       MoveWindowToFront(target);
       mouse_down_offset_ = event->location();
       window_location_ = target->bounds().origin();
@@ -61,6 +66,21 @@ void ToplevelWindowEventFilter::MoveWindowToFront(Window* target) {
       break;
     parent = parent->parent();
     child = child->parent();
+  }
+}
+
+void ToplevelWindowEventFilter::UpdateCursorForWindowComponent() {
+  switch (window_component_) {
+    case HTLEFT:
+    case HTRIGHT:
+      Desktop::GetInstance()->SetCursor(CURSOR_SIZE_HORIZONTAL);
+      break;
+    case HTBOTTOM:
+      Desktop::GetInstance()->SetCursor(CURSOR_SIZE_VERTICAL);
+      break;
+    default:
+      Desktop::GetInstance()->SetCursor(CURSOR_POINTER);
+      break;
   }
 }
 

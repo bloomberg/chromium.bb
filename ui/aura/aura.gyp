@@ -23,6 +23,7 @@
         'AURA_IMPLEMENTATION',
       ],
       'sources': [
+        'cursor.h',
         'desktop_host.h',
         'desktop_host_linux.cc',
         'desktop_host_win.cc',

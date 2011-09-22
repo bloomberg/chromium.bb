@@ -42,6 +42,8 @@
         'shell_factory.h',
         'status_area_view.cc',
         'status_area_view.h',
+        'toplevel_frame_view.cc',
+        'toplevel_frame_view.h',
       ],
     },
     {

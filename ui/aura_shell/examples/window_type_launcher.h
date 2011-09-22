@@ -42,7 +42,9 @@ class WindowTypeLauncher : public views::WidgetDelegateView,
 
   // Overridden from views::WidgetDelegate:
   virtual views::View* GetContentsView() OVERRIDE;
+  virtual bool CanResize() const OVERRIDE;
   virtual std::wstring GetWindowTitle() const OVERRIDE;
+  virtual views::NonClientFrameView* CreateNonClientFrameView() OVERRIDE;
 
   // Overridden from views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender,

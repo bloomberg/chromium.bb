@@ -8,6 +8,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura_shell/examples/example_factory.h"
 #include "ui/aura_shell/examples/toplevel_window.h"
+#include "ui/aura_shell/toplevel_frame_view.h"
 #include "ui/gfx/canvas.h"
 #include "views/controls/button/text_button.h"
 #include "views/controls/menu/menu_item_view.h"
@@ -71,8 +72,16 @@ views::View* WindowTypeLauncher::GetContentsView() {
   return this;
 }
 
+bool WindowTypeLauncher::CanResize() const {
+  return true;
+}
+
 std::wstring WindowTypeLauncher::GetWindowTitle() const {
   return L"Examples: Window Builder";
+}
+
+views::NonClientFrameView* WindowTypeLauncher::CreateNonClientFrameView() {
+  return new aura_shell::internal::ToplevelFrameView;
 }
 
 void WindowTypeLauncher::ButtonPressed(views::Button* sender,

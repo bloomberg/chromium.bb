@@ -28,6 +28,8 @@ class ToplevelWindowEventFilter : public EventFilter {
   // respective z-orders.
   void MoveWindowToFront(Window* target);
 
+  void UpdateCursorForWindowComponent();
+
   gfx::Point mouse_down_offset_;
   gfx::Point window_location_;
   int window_component_;

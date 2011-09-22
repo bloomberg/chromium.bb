@@ -9,8 +9,9 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/task.h"
-#include "ui/aura/root_window.h"
 #include "ui/aura/aura_export.h"
+#include "ui/aura/cursor.h"
+#include "ui/aura/root_window.h"
 #include "ui/gfx/compositor/compositor.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -37,6 +38,9 @@ class AURA_EXPORT Desktop : public ui::CompositorDelegate {
 
   // Sets the size of the desktop.
   void SetSize(const gfx::Size& size);
+
+  // Shows the specified cursor.
+  void SetCursor(CursorType cursor_type);
 
   // Shows the desktop host and runs an event loop for it.
   void Run();

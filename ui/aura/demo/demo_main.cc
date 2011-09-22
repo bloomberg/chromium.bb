@@ -37,19 +37,16 @@ class DemoWindowDelegate : public aura::WindowDelegate {
   virtual bool OnKeyEvent(aura::KeyEvent* event) OVERRIDE {
     return false;
   }
-
   virtual int GetNonClientComponent(const gfx::Point& point) const OVERRIDE {
     return HTCAPTION;
   }
-
   virtual bool OnMouseEvent(aura::MouseEvent* event) OVERRIDE {
     return true;
   }
-
+  virtual void OnCaptureLost() OVERRIDE {}
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
     canvas->AsCanvasSkia()->drawColor(color_, SkXfermode::kSrc_Mode);
   }
-
   virtual void OnWindowDestroying() OVERRIDE {}
   virtual void OnWindowDestroyed() OVERRIDE {}
 
