@@ -117,6 +117,10 @@ cr.define('login', function() {
       $('createAccount').hidden = !data.createAccount;
       $('guestSignin').hidden = !data.guestSignin;
 
+      // Announce the name of the screen, if accessibility is on.
+      $('gaia-signin-aria-label').setAttribute(
+          'aria-label', localStrings.getString('signinScreenTitle'));
+
       this.loading = true;
     },
 
