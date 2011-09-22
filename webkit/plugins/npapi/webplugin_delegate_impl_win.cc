@@ -1359,6 +1359,7 @@ bool WebPluginDelegateImpl::PlatformHandleInputEvent(
   ret = true;
 
   if (np_event.event == WM_MOUSEMOVE) {
+    current_windowless_cursor_.InitFromExternalCursor(GetCursor());
     // Snag a reference to the current cursor ASAP in case the plugin modified
     // it. There is a nasty race condition here with the multiprocess browser
     // as someone might be setting the cursor in the main process as well.
@@ -1460,19 +1461,7 @@ HCURSOR WINAPI WebPluginDelegateImpl::SetCursorPatch(HCURSOR cursor) {
     }
     return current_cursor;
   }
-
-  if (!g_current_plugin_instance->IsWindowless()) {
-    return ::SetCursor(cursor);
-  }
-
-  // It is ok to pass NULL here to GetCursor as we are not looking for cursor
-  // types defined by Webkit.
-  HCURSOR previous_cursor =
-      g_current_plugin_instance->current_windowless_cursor_.GetCursor(NULL);
-
-  g_current_plugin_instance->current_windowless_cursor_.InitFromExternalCursor(
-      cursor);
-  return previous_cursor;
+  return ::SetCursor(cursor);
 }
 
 LONG WINAPI WebPluginDelegateImpl::RegEnumKeyExWPatch(
