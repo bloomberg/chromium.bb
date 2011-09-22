@@ -207,7 +207,8 @@ const char WebUIBrowserTest::kDummyURL[] = "chrome://DummyURL";
 
 WebUIBrowserTest::WebUIBrowserTest()
     : test_handler_(new WebUITestHandler()),
-      libraries_preloaded_(false) {}
+      libraries_preloaded_(false),
+      override_selected_web_ui_(NULL) {}
 
 namespace {
 
@@ -252,6 +253,10 @@ void WebUIBrowserTest::SetUpInProcessBrowserTestFixture() {
 void WebUIBrowserTest::TearDownInProcessBrowserTestFixture() {
   InProcessBrowserTest::TearDownInProcessBrowserTestFixture();
   TestChromeWebUIFactory::RemoveFactoryOverride(GURL(kDummyURL).host());
+}
+
+void WebUIBrowserTest::SetWebUIInstance(WebUI* web_ui) {
+  override_selected_web_ui_ = web_ui;
 }
 
 WebUIMessageHandler* WebUIBrowserTest::GetMockMessageHandler() {
@@ -363,7 +368,8 @@ bool WebUIBrowserTest::RunJavascriptUsingHandler(
 }
 
 void WebUIBrowserTest::SetupHandlers() {
-  WebUI* web_ui_instance =
+  WebUI* web_ui_instance = override_selected_web_ui_ ?
+      override_selected_web_ui_ :
       browser()->GetSelectedTabContents()->web_ui();
   ASSERT_TRUE(web_ui_instance != NULL);
   web_ui_instance->set_register_callback_overwrites(true);

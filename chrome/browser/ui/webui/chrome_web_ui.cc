@@ -13,6 +13,13 @@
 #include "views/widget/widget.h"
 #endif
 
+namespace {
+
+// If true, overrides IsMoreWebUI flag.
+bool override_more_webui_ = false;
+
+}  // namespace
+
 ChromeWebUI::ChromeWebUI(TabContents* contents)
     : WebUI(contents),
       force_bookmark_bar_visible_(false) {
@@ -28,9 +35,13 @@ Profile* ChromeWebUI::GetProfile() const {
 // static
 bool ChromeWebUI::IsMoreWebUI() {
   bool more_webui = CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kUseMoreWebUI);
+      switches::kUseMoreWebUI) || override_more_webui_;
 #if defined(TOOLKIT_VIEWS)
   more_webui |= views::Widget::IsPureViews();
 #endif
   return more_webui;
+}
+
+void ChromeWebUI::OverrideMoreWebUI(bool use_more_webui) {
+  override_more_webui_ = use_more_webui;
 }

@@ -743,6 +743,7 @@ var testing = {};
    *     necessarily successful results) of this test.
    * @see errors
    * @see runTestFunction
+   * TODO(scr): Fix TEST_F to call testDone when assertions fail in async mode.
    */
   function runTest(isAsync, testFunction, testArguments) {
     // Avoid eval() if at all possible, since it will not work on pages

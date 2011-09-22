@@ -28,6 +28,10 @@ class ChromeWebUI : public WebUI {
   // available WebUI implementations of native dialogs.
   static bool IsMoreWebUI();
 
+  // Override the argument setting for more WebUI. If true this enables more
+  // WebUI.
+  static void OverrideMoreWebUI(bool use_more_webui);
+
  protected:
   void set_force_bookmark_bar_visible(bool value) {
     force_bookmark_bar_visible_ = value;

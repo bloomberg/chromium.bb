@@ -76,7 +76,7 @@ class WebUIBrowserTest
                          const ConstValueVector& test_arguments);
 
   // Runs a test that may include calls to functions in test_api.js, and waits
-  // for call to asyncTestDone().  Takes ownership of Value arguments.
+  // for call to testDone().  Takes ownership of Value arguments.
   bool RunJavascriptAsyncTest(const std::string& test_name);
   bool RunJavascriptAsyncTest(const std::string& test_name,
                               base::Value* arg);
@@ -124,6 +124,9 @@ class WebUIBrowserTest
 
   // Tear down override for |kDummyURL|.
   virtual void TearDownInProcessBrowserTestFixture() OVERRIDE;
+
+  // Set a WebUI instance to run tests on.
+  void SetWebUIInstance(WebUI* web_ui);
 
   // Returns a mock WebUI object under test (if any).
   virtual WebUIMessageHandler* GetMockMessageHandler();
@@ -178,6 +181,10 @@ class WebUIBrowserTest
   // PreloadJavascriptLibraries().
   std::string preload_test_fixture_;
   std::string preload_test_name_;
+
+  // When this is non-NULL, this is The WebUI instance used for testing.
+  // Otherwise the selected tab's web_ui is used.
+  WebUI* override_selected_web_ui_;
 };
 
 #endif  // CHROME_BROWSER_UI_WEBUI_WEB_UI_BROWSERTEST_H_
