@@ -271,14 +271,21 @@ void RenderWidgetHostViewViews::ImeUpdateTextInputState(
   // as true. We need to support "can_compose_inline=false" for PPAPI plugins
   // that may want to avoid drawing composition-text by themselves and pass
   // the responsibility to the browser.
-  DCHECK(GetInputMethod());
+
+  // This is async message and by the time the ipc arrived,
+  // RWHVV may be detached from Top level widget, in which case
+  // GetInputMethod may return NULL;
+  views::InputMethod* input_method = GetInputMethod();
+
   if (text_input_type_ != type) {
     text_input_type_ = type;
-    GetInputMethod()->OnTextInputTypeChanged(this);
+    if (input_method)
+      input_method->OnTextInputTypeChanged(this);
   }
   if (caret_bounds_ != caret_rect) {
     caret_bounds_ = caret_rect;
-    GetInputMethod()->OnCaretBoundsChanged(this);
+    if (input_method)
+      input_method->OnCaretBoundsChanged(this);
   }
 }
 

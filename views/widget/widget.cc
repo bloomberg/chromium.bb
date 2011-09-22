@@ -622,7 +622,12 @@ InputMethod* Widget::GetInputMethod() {
     return input_method_.get();
   } else {
     Widget* toplevel = GetTopLevelWidget();
-    return toplevel ? toplevel->GetInputMethod() : NULL;
+    // If GetTopLevelWidget() returns itself which is not toplevel,
+    // the widget is detached from toplevel widget.
+    // TODO(oshima): Fix GetTopLevelWidget() to return NULL
+    // if there is no toplevel. We probably need to add GetTopMostWidget()
+    // to replace some use cases.
+    return (toplevel && toplevel != this) ? toplevel->GetInputMethod() : NULL;
   }
 }
 
