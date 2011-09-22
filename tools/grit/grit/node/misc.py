@@ -1,5 +1,5 @@
 #!/usr/bin/python2.4
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -20,15 +20,25 @@ from grit import util
 import grit.format.rc_header
 
 
-def _ReadFirstIdsFromFile(filename, defines, src_root_dir):
+def _ReadFirstIdsFromFile(filename, defines):
   '''Read the starting resource id values from |filename|.  We also
   expand variables of the form <(FOO) based on defines passed in on
-  the command line.'''
+  the command line.
+
+  Returns a tuple, the absolute path of SRCDIR followed by the
+  first_ids dictionary.
+  '''
   first_ids_dict = eval(open(filename).read())
+
+  # TODO(joi@chromium.org): It might make sense to make this a
+  # parameter of the .grd file rather than of the resource_ids file.
+  src_root_dir = os.path.abspath(os.path.join(os.path.dirname(filename),
+                                              first_ids_dict['SRCDIR']))
 
   def ReplaceVariable(matchobj):
     for key, value in defines.iteritems():
       if matchobj.group(1) == key:
+        value = os.path.join(src_root_dir, value)
         value = os.path.abspath(value)[len(src_root_dir) + 1:]
         return value
     return ''
@@ -45,7 +55,7 @@ def _ReadFirstIdsFromFile(filename, defines, src_root_dir):
     first_ids_dict[new_grd_filename] = first_ids_dict[grd_filename]
     del(first_ids_dict[grd_filename])
 
-  return first_ids_dict
+  return (src_root_dir, first_ids_dict)
 
 
 class IfNode(base.Node):
@@ -303,27 +313,34 @@ class GritNode(base.Node):
     if type(filename_or_stream) not in (str, unicode):
       return
 
-    # By default, we use the the file resources_ids next to grit.py
-    # to determine what ids to assign to resources.
-    grit_root_dir = os.path.abspath(os.path.join(os.path.dirname(
-        os.path.abspath(__file__)), '..', '..'))
+    # TODO(joi@chromium.org): Get rid of this hack by making it
+    # possible to specify the resource_ids file to use as an attribute
+    # of the <grit> node in the .grd file, and doing so in all Chrome
+    # .grd files.
+    #
+    # For now, by default, we use the the file
+    # ../gritsettings/resource_ids relative to grit.py.
     if not first_id_filename:
-      first_id_filename = os.path.join(grit_root_dir, 'resource_ids')
+      first_id_filename = os.path.join(
+          os.path.dirname(__file__),
+          '..', '..', '..',
+          'gritsettings', 'resource_ids')
 
     first_ids = None
     from grit.node import empty
     for node in self.inorder():
       if isinstance(node, empty.GroupingNode):
-        # The checkout base directory is 2 directories up from grit.py.
-        src_root_dir = os.path.dirname(os.path.dirname(grit_root_dir))
-
+        if not first_ids:
+          src_root_dir, first_ids = _ReadFirstIdsFromFile(first_id_filename,
+                                                          defines)
         filename = os.path.abspath(filename_or_stream)[
             len(src_root_dir) + 1:]
         filename = filename.replace('\\', '/')
-        if not first_ids:
-          first_ids = _ReadFirstIdsFromFile(first_id_filename, defines,
-                                            src_root_dir)
 
+        # TODO(joi@chromium.org): Generalize this; users other than
+        # Chrome might want to use the first_id attribute; could check
+        # for first_ids == None to indicate not loaded, first_ids ==
+        # {} to indicate tried to load but found no resource_ids file.
         if node.attrs['first_id'] != '':
           raise Exception("Don't set the first_id attribute, update "
               "%s instead." % first_id_filename)

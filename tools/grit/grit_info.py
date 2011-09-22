@@ -11,6 +11,7 @@ import os
 import posixpath
 import types
 import sys
+
 from grit import grd_reader
 from grit import util
 
@@ -93,7 +94,7 @@ def relpath(path, start=os.path.curdir):
 
     rel_list = [os.path.pardir] * (len(start_list)-i) + path_list[i:]
     if not rel_list:
-        return curdir
+        return os.path.curdir
     return os.path.join(*rel_list)
 ##############################################################################
 
@@ -139,8 +140,16 @@ def GritSourceFiles():
   grit_root_dir = relpath(os.path.dirname(__file__), os.getcwd())
   for root, dirs, filenames in os.walk(grit_root_dir):
     grit_src = [os.path.join(root, f) for f in filenames
-                if f.endswith('.py') or f == 'resource_ids']
+                if f.endswith('.py')]
     files.extend(grit_src)
+  # TODO(joi@chromium.org): Once we switch to specifying the
+  # resource_ids file via a .grd attribute, it should be considered an
+  # input of grit and this bit should no longer be necessary.
+  default_resource_ids = relpath(
+      os.path.join(grit_root_dir, '..', 'gritsettings', 'resource_ids'),
+      os.getcwd())
+  if os.path.exists(default_resource_ids):
+    files.append(default_resource_ids)
   return files
 
 
