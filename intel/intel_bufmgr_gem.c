@@ -2113,7 +2113,7 @@ drm_intel_bufmgr_gem_init(int fd, int batch_size)
 	drm_intel_bufmgr_gem *bufmgr_gem;
 	struct drm_i915_gem_get_aperture aperture;
 	drm_i915_getparam_t gp;
-	int ret;
+	int ret, tmp;
 	int exec2 = 0;
 
 	bufmgr_gem = calloc(1, sizeof(*bufmgr_gem));
@@ -2159,6 +2159,8 @@ drm_intel_bufmgr_gem_init(int fd, int batch_size)
 		bufmgr_gem->gen = 4;
 	else
 		bufmgr_gem->gen = 6;
+
+	gp.value = &tmp;
 
 	gp.param = I915_PARAM_HAS_EXECBUF2;
 	ret = drmIoctl(bufmgr_gem->fd, DRM_IOCTL_I915_GETPARAM, &gp);
