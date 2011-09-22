@@ -69,7 +69,7 @@ def _ExtractProjectFromEntry(entry):
   """From a deps entry extract the Gerrit project name.
 
   Arguments:
-    entry: The deps entry in the format ${url_prefix}/${project_name}@${hash}
+    entry: The deps entry in the format ${url_prefix}/${project_name}@${hash}.
   """
   # We only support Gerrit urls, where the path is the project name.
   repo_url = entry.partition('@')[0]
@@ -117,14 +117,17 @@ def _ResetGitCheckout(chromium_root, deps):
          entry in the '.DEPS.git' file.
   """
   for rel_path, project_hash in deps.iteritems():
-    print 'resetting project %s' % rel_path
     repo_url, _, commit_hash = project_hash.partition('@')
     abs_path = os.path.join(chromium_root, rel_path)
     if not os.path.isdir(abs_path):
       cros_lib.Die('Cannot find project %s. Expecting project to be '
                    'checked out to %s.\n' % (repo_url, abs_path))
-    if commit_hash:
+
+    if commit_hash != cros_lib.GetGitRepoRevision(abs_path):
+      print 'pinning project %s' % rel_path
       _ResetProject(abs_path, commit_hash)
+    else:
+      cros_lib.Debug('skipping project %s' % rel_path)
 
 
 def _RunHooks(chromium_root, hooks):
@@ -155,7 +158,7 @@ def _GetParsedDeps(deps_file):
   """Returns the full parsed DEPS file dictionary, and merged deps.
 
   Arguments:
-    deps_file: Path to the .DEPS.git file
+    deps_file: Path to the .DEPS.git file.
 
   Returns:
     An (x,y) tuple.  x is a dictionary containing the contents of the DEPS file,
@@ -177,7 +180,7 @@ def main(argv=None):
   usage = 'usage: %prog [-d <DEPS.git file>] [command]'
   parser = optparse.OptionParser(usage=usage)
 
-  # TODO(rcui): have -d accept a URL
+  # TODO(rcui): have -d accept a URL.
   parser.add_option('-d', '--deps', default=None,
                     help=('DEPS file to use. Defaults to '
                          '<chrome_src_root>/.DEPS.git'))
@@ -185,14 +188,22 @@ def main(argv=None):
                     default=True, help='Allow chrome-internal URLs')
   parser.add_option('--runhooks', action='store_true', dest='runhooks',
                     default=False, help="Run hooks as well.")
+  parser.add_option('-v', '--verbose', default=False, action='store_true',
+                    help='Run with debug output.')
   (options, inputs) = parser.parse_args(argv)
+
+  # Set cros_build_lib debug level to hide RunCommand spew.
+  if options.verbose:
+    cros_lib.DebugLevel.SetDebugLevel(cros_lib.DebugLevel.DEBUG)
+  else:
+    cros_lib.DebugLevel.SetDebugLevel(cros_lib.DebugLevel.WARNING)
 
   repo_root = cros_lib.FindRepoCheckoutRoot()
   chromium_src_root = os.path.join(repo_root, _CHROMIUM_SRC_ROOT)
   if not os.path.isdir(chromium_src_root):
     cros_lib.Die('chromium src/ dir not found')
 
-  # Add DEPS files to parse
+  # Add DEPS files to parse.
   deps_files_to_parse = []
   if options.deps:
     deps_files_to_parse.append(options.deps)
@@ -205,18 +216,18 @@ def main(argv=None):
 
   deps_files_to_parse.append(os.path.join(repo_root, _CHROMIUM_CROS_DEPS))
 
-  # Prepare source tree for resetting
+  # Prepare source tree for resetting.
   chromium_root = os.path.join(repo_root, _CHROMIUM_ROOT)
   _CreateCrosSymlink(repo_root)
 
-  # Parse DEPS files and store hooks
+  # Parse DEPS files and store hooks.
   hook_dicts = []
   for deps_file in deps_files_to_parse:
     deps, merged_deps = _GetParsedDeps(deps_file)
     _ResetGitCheckout(chromium_root, merged_deps)
     hook_dicts.append(deps.get('hooks', {}))
 
-  # Run hooks after checkout has been reset properly
+  # Run hooks after checkout has been reset properly.
   if options.runhooks:
     for hooks in hook_dicts:
       _RunHooks(chromium_root, hooks)
