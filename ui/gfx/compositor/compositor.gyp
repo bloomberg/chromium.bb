@@ -97,6 +97,7 @@
         'layer_unittest.cc',
         'run_all_unittests.cc',
         'test_compositor_host.h',
+        'test_compositor_host_linux.cc',
         'test_compositor_host_win.cc',
         'test_suite.cc',
         'test_suite.h',

@@ -34,7 +34,7 @@ class TestLayerDelegate : public LayerDelegate {
     canvas->FillRectInt(colors_.at(color_index_), 0, 0,
                         contents.width(),
                         contents.height());
-    color_index_ = ++color_index_ % colors_.size();
+    color_index_ = (color_index_ + 1) % static_cast<int>(colors_.size());
   }
 
  private:
