@@ -4623,29 +4623,6 @@
    fun:avcodec_decode_audio3
 }
 {
-   bug_97511_a
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN30ExtensionSettingsQuotaUnittestC2Ev
-   fun:_ZN*ExtensionSettingsQuotaUnittest_*
-}
-{
-   bug_97511_b
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN9__gnu_cxx13new_allocatorISt13_Rb_tree_nodeISt4pairIKSsPN4base5ValueEEEE8allocateE*
-   fun:_ZNSt8_Rb_treeISsSt4pairIKSsPN4base5ValueEESt10_Select1stIS5_ESt4lessISsESaIS5_EE11_M_get_nodeEv
-   fun:_ZNSt8_Rb_treeISsSt4pairIKSsPN4base5ValueEESt10_Select1stIS5_ESt4lessISsESaIS5_EE*
-   ...
-   fun:_ZNSt3mapISsPN4base5ValueESt4lessISsESaISt4pairIKSsS2_EEE6insertESt17_Rb_tree_iteratorIS7_ERKS7_
-   fun:_ZNSt3mapISsPN4base5ValueESt4lessISsESaISt4pairIKSsS2_EEEixERS6_
-   fun:_ZN4base15DictionaryValue23SetWithoutPathExpansionERKSsPNS_5ValueE
-   fun:_ZN4base15DictionaryValue15MergeDictionaryEPKS0_
-   fun:_ZN29ExtensionSettingsStorageCache3Set*
-   ...
-   fun:_ZN*ExtensionSettingsQuotaUnittest_*
-}
-{
    bug_97511_c
    Memcheck:Leak
    fun:_Znw*

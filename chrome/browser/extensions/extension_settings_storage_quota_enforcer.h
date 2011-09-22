@@ -40,7 +40,7 @@ class ExtensionSettingsStorageQuotaEnforcer : public ExtensionSettingsStorage {
   size_t const max_keys_;
 
   // The delegate storage area.
-  ExtensionSettingsStorage* const delegate_;
+  scoped_ptr<ExtensionSettingsStorage> const delegate_;
 
   // Total size of the settings currently being used.  Includes both settings
   // keys and their JSON-encoded values.

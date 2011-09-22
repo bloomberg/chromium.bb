@@ -1688,12 +1688,6 @@
    fun:void DispatchToMethod
 }
 {
-   bug_97511_a
-   Heapcheck:Leak
-   ...
-   fun:ExtensionSettingsQuotaUnittest*
-}
-{
    bug_97511_b
    Heapcheck:Leak
    ...
