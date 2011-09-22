@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,7 +8,7 @@ SSLRequestInfo::SSLRequestInfo(const GURL& url,
                                ResourceType::Type resource_type,
                                int child_id,
                                int ssl_cert_id,
-                               int ssl_cert_status)
+                               net::CertStatus ssl_cert_status)
     : url_(url),
       resource_type_(resource_type),
       child_id_(child_id),

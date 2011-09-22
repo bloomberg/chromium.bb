@@ -571,7 +571,7 @@ bool TabProxy::WaitForTabToBeRestored(uint32 timeout_ms) {
 }
 
 bool TabProxy::GetSecurityState(SecurityStyle* security_style,
-                                int* ssl_cert_status,
+                                net::CertStatus* ssl_cert_status,
                                 int* insecure_content_status) {
   DCHECK(security_style && ssl_cert_status && insecure_content_status);
 

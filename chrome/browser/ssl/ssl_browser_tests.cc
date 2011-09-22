@@ -66,7 +66,7 @@ class SSLUITest : public InProcessBrowserTest {
   }
 
   void CheckAuthenticationBrokenState(TabContents* tab,
-                                      int error,
+                                      net::CertStatus error,
                                       bool ran_insecure_content,
                                       bool interstitial) {
     NavigationEntry* entry = tab->controller().GetActiveEntry();

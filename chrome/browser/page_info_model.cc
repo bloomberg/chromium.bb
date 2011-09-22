@@ -68,7 +68,7 @@ PageInfoModel::PageInfoModel(Profile* profile,
       CertStore::GetInstance()->RetrieveCert(ssl.cert_id(), &cert) &&
       !net::IsCertStatusError(status_with_warnings_removed)) {
     // No error found so far, check cert_status warnings.
-    int cert_status = ssl.cert_status();
+    net::CertStatus cert_status = ssl.cert_status();
     if (cert_status & cert_warnings) {
       string16 issuer_name(UTF8ToUTF16(cert->issuer().GetDisplayName()));
       if (issuer_name.empty()) {
@@ -89,7 +89,7 @@ PageInfoModel::PageInfoModel(Profile* profile,
         NOTREACHED() << "Need to specify string for this warning";
       }
       icon_id = ICON_STATE_WARNING_MINOR;
-    } else if ((ssl.cert_status() & net::CERT_STATUS_IS_EV) != 0) {
+    } else if (ssl.cert_status() & net::CERT_STATUS_IS_EV) {
       // EV HTTPS page.
       DCHECK(!cert->subject().organization_names.empty());
       headline =
@@ -119,7 +119,7 @@ PageInfoModel::PageInfoModel(Profile* profile,
           UTF8ToUTF16(cert->subject().organization_names[0]),
           locality,
           UTF8ToUTF16(cert->issuer().GetDisplayName())));
-    } else if ((ssl.cert_status() & net::CERT_STATUS_IS_DNSSEC) != 0) {
+    } else if (ssl.cert_status() & net::CERT_STATUS_IS_DNSSEC) {
       // DNSSEC authenticated page.
       if (empty_subject_name)
         headline.clear();  // Don't display any title.

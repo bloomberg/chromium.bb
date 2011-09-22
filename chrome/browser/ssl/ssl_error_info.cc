@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -231,10 +231,10 @@ SSLErrorInfo::ErrorType SSLErrorInfo::NetErrorToErrorType(int net_error) {
 
 // static
 int SSLErrorInfo::GetErrorsForCertStatus(int cert_id,
-                                         int cert_status,
+                                         net::CertStatus cert_status,
                                          const GURL& url,
                                          std::vector<SSLErrorInfo>* errors) {
-  const int kErrorFlags[] = {
+  const net::CertStatus kErrorFlags[] = {
     net::CERT_STATUS_COMMON_NAME_INVALID,
     net::CERT_STATUS_DATE_INVALID,
     net::CERT_STATUS_AUTHORITY_INVALID,
