@@ -344,11 +344,11 @@ class RenderView : public RenderWidget,
   // |actual_mime_type| is the actual mime type supported by the
   // plugin found that match the URL given (one for each item in
   // |info|).
-  CONTENT_EXPORT bool GetPluginInfo(const GURL& url,
-                                    const GURL& page_url,
-                                    const std::string& mime_type,
-                                    webkit::WebPluginInfo* plugin_info,
-                                    std::string* actual_mime_type);
+  bool GetPluginInfo(const GURL& url,
+                     const GURL& page_url,
+                     const std::string& mime_type,
+                     webkit::WebPluginInfo* plugin_info,
+                     std::string* actual_mime_type);
 
   // Asks the host to create a block of shared memory for the renderer.
   // The shared memory handle allocated by the host is returned back.

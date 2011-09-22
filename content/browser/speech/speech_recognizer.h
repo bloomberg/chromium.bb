@@ -21,7 +21,7 @@ namespace speech_input {
 
 // Records audio, sends recorded audio to server and translates server response
 // to recognition result.
-class CONTENT_EXPORT SpeechRecognizer
+class SpeechRecognizer
     : public base::RefCountedThreadSafe<SpeechRecognizer>,
       public media::AudioInputController::EventHandler,
       public SpeechRecognitionRequestDelegate {
@@ -35,7 +35,7 @@ class CONTENT_EXPORT SpeechRecognizer
   };
 
   // Implemented by the caller to receive recognition events.
-  class CONTENT_EXPORT Delegate {
+  class Delegate {
    public:
     virtual void SetRecognitionResult(
         int caller_id,
@@ -79,27 +79,27 @@ class CONTENT_EXPORT SpeechRecognizer
     virtual ~Delegate() {}
   };
 
-  SpeechRecognizer(Delegate* delegate,
-                   int caller_id,
-                   const std::string& language,
-                   const std::string& grammar,
-                   bool censor_results,
-                   const std::string& hardware_info,
-                   const std::string& origin_url);
+  CONTENT_EXPORT SpeechRecognizer(Delegate* delegate,
+                                  int caller_id,
+                                  const std::string& language,
+                                  const std::string& grammar,
+                                  bool censor_results,
+                                  const std::string& hardware_info,
+                                  const std::string& origin_url);
   virtual ~SpeechRecognizer();
 
   // Starts audio recording and does recognition after recording ends. The same
   // SpeechRecognizer instance can be used multiple times for speech recognition
   // though each recognition request can be made only after the previous one
   // completes (i.e. after receiving Delegate::DidCompleteRecognition).
-  bool StartRecording();
+  CONTENT_EXPORT bool StartRecording();
 
   // Stops recording audio and starts recognition.
-  void StopRecording();
+  CONTENT_EXPORT void StopRecording();
 
   // Stops recording audio and cancels recognition. Any audio recorded so far
   // gets discarded.
-  void CancelRecognition();
+  CONTENT_EXPORT void CancelRecognition();
 
   // AudioInputController::EventHandler methods.
   virtual void OnCreated(media::AudioInputController* controller) { }
