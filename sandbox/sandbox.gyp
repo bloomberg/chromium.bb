@@ -136,7 +136,7 @@
       'targets': [
         {
           'target_name': 'sandbox',
-          'type': 'settings',
+          'type': 'none',
           'conditions': [
             # Only compile in the seccomp code for the flag combination
             # where we support it.

@@ -49,7 +49,7 @@
       'targets': [
         {
           'target_name': 'bzip2',
-          'type': 'settings',
+          'type': 'none',
 
           'direct_dependent_settings': {
             'defines': [
