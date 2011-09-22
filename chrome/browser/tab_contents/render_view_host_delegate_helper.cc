@@ -491,6 +491,8 @@ WebPreferences RenderViewHostDelegateHelper::GetWebkitPrefs(
       web_prefs.accelerated_compositing_enabled = false;
     if (blacklist_flags & GpuFeatureFlags::kGpuFeatureWebgl)
       web_prefs.experimental_webgl_enabled = false;
+    if (blacklist_flags & GpuFeatureFlags::kGpuFeatureAccelerated2dCanvas)
+      web_prefs.accelerated_2d_canvas_enabled = false;
     if (blacklist_flags & GpuFeatureFlags::kGpuFeatureMultisampling)
       web_prefs.gl_multisampling_enabled = false;
   }
