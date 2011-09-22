@@ -45,6 +45,16 @@ def print_reviews(owner, reviewer, created_after, created_before, instance_url):
     print '%d: %s %s' % (issue['issue'], timestamp, ', '.join(reviewers))
 
 
+def print_count(owner, reviewer, created_after, created_before, instance_url):
+  remote = rietveld.Rietveld(instance_url, None, None)
+  print len(list(remote.search(
+      owner=owner,
+      reviewer=reviewer,
+      created_after=created_after,
+      created_before=created_before,
+      keys_only=False)))
+
+
 def get_previous_quarter(today):
   """There are four quarters, 01-03, 04-06, 07-09, 10-12.
 
@@ -63,12 +73,19 @@ def get_previous_quarter(today):
 
 
 def main():
+  # Silence upload.py.
+  rietveld.upload.verbosity = 0
   parser = optparse.OptionParser(description=sys.modules[__name__].__doc__)
+  parser.add_option(
+      '--count', action='store_true',
+      help='Just count instead of printing individual issues')
   parser.add_option('-o', '--owner')
   parser.add_option('-r', '--reviewer')
   parser.add_option('-c', '--created_after')
   parser.add_option('-C', '--created_before')
-  parser.add_option('-Q', '--last_quarter', action='store_true')
+  parser.add_option(
+      '-Q', '--last_quarter', action='store_true',
+      help='Use last quarter\'s dates as filter')
   parser.add_option('-i', '--instance_url', default='codereview.chromium.org')
   # Remove description formatting
   parser.format_description = lambda x: parser.description
@@ -79,16 +96,22 @@ def main():
     options.owner = os.environ['EMAIL_ADDRESS']
     if '@' not in options.owner:
       parser.error('Please specify at least -o or -r')
-    print 'Defaulting to owner=%s' % options.owner
+    print >> sys.stderr, 'Defaulting to owner=%s' % options.owner
   if options.last_quarter:
     today = datetime.date.today()
     options.created_after, options.created_before = get_previous_quarter(today)
-    print 'Using range %s to %s' % (
+    print >> sys.stderr, 'Using range %s to %s' % (
         options.created_after, options.created_before)
-  print_reviews(
-      options.owner, options.reviewer,
-      options.created_after, options.created_before,
-      options.instance_url)
+  if options.count:
+    print_count(
+        options.owner, options.reviewer,
+        options.created_after, options.created_before,
+        options.instance_url)
+  else:
+    print_reviews(
+        options.owner, options.reviewer,
+        options.created_after, options.created_before,
+        options.instance_url)
   return 0
 
 
