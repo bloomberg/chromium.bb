@@ -894,18 +894,38 @@ UpdateTabFunction::UpdateTabFunction() {
 }
 
 bool UpdateTabFunction::RunImpl() {
-  int tab_id;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &tab_id));
   DictionaryValue* update_props;
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(1, &update_props));
 
-  TabStripModel* tab_strip = NULL;
-  TabContentsWrapper* contents = NULL;
-  int tab_index = -1;
-  if (!GetTabById(tab_id, profile(), include_incognito(),
-                  NULL, &tab_strip, &contents, &tab_index, &error_))
-    return false;
+  Value* tab_value = NULL;
+  if (HasOptionalArgument(0)) {
+    EXTENSION_FUNCTION_VALIDATE(args_->Get(0, &tab_value));
+  }
 
+  int tab_id = -1;
+  TabContentsWrapper* contents = NULL;
+  if (tab_value == NULL || tab_value->IsType(Value::TYPE_NULL)) {
+    Browser* browser = GetCurrentBrowser();
+    if (!browser) {
+      error_ = keys::kNoCurrentWindowError;
+      return false;
+    }
+    contents = browser->tabstrip_model()->GetActiveTabContents();
+    if (!contents) {
+      error_ = keys::kNoSelectedTabError;
+      return false;
+    }
+    tab_id = ExtensionTabUtil::GetTabId(contents->tab_contents());
+  } else {
+    EXTENSION_FUNCTION_VALIDATE(tab_value->GetAsInteger(&tab_id));
+  }
+
+  int tab_index = -1;
+  TabStripModel* tab_strip = NULL;
+  if (!GetTabById(tab_id, profile(), include_incognito(),
+                  NULL, &tab_strip, &contents, &tab_index, &error_)) {
+    return false;
+  }
   NavigationController& controller = contents->controller();
 
   // TODO(rafaelw): handle setting remaining tab properties:

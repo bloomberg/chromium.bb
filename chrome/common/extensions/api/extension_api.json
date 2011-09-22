@@ -1534,7 +1534,13 @@
         "type": "function",
         "description": "Modifies the properties of a tab. Properties that are not specified in <var>updateProperties</var> are not modified. Note: This function can be used without requesting the 'tabs' permission in the manifest.",
         "parameters": [
-          {"type": "integer", "name": "tabId", "minimum": 0},
+          {
+            "type": "integer",
+            "name": "tabId",
+            "minimum": 0,
+            "optional": true,
+            "description": "Defaults to the selected tab of the <a href='windows.html#current-window'>current window</a>."
+          },
           {
             "type": "object",
             "name": "updateProperties",
