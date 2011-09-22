@@ -1,5 +1,18 @@
 --- licensecheck.pl.orig	2011-09-22 10:51:25.934402455 -0700
 +++ licensecheck.pl	2011-09-22 10:45:54.585545044 -0700
+@@ -241,6 +241,12 @@ my @files = ();
+ my @find_args = ();
+ my $files_count = @ARGV;
+ 
++push @find_args, qw(-not ( -path */LayoutTests/* -prune ) );
++push @find_args, qw(-not ( -path */out/Debug/* -prune ) );
++push @find_args, qw(-not ( -path */out/Release/* -prune ) );
++push @find_args, qw(-not ( -path *.git* -prune ) );
++push @find_args, qw(-not ( -path *.svn* -prune ) );
++
+ push @find_args, qw(-maxdepth 1) unless $opt_recursive;
+ push @find_args, qw(-follow -type f -print);
+ 
 @@ -277,10 +277,6 @@
      while (<F>) {
          last if ($. > $opt_lines);

@@ -241,6 +241,12 @@ my @files = ();
 my @find_args = ();
 my $files_count = @ARGV;
 
+push @find_args, qw(-not ( -path */LayoutTests/* -prune ) );
+push @find_args, qw(-not ( -path */out/Debug/* -prune ) );
+push @find_args, qw(-not ( -path */out/Release/* -prune ) );
+push @find_args, qw(-not ( -path *.git* -prune ) );
+push @find_args, qw(-not ( -path *.svn* -prune ) );
+
 push @find_args, qw(-maxdepth 1) unless $opt_recursive;
 push @find_args, qw(-follow -type f -print);
 
