@@ -209,8 +209,6 @@ TEST_F(VideoCaptureManagerTest, OpenTwo) {
       listener_->devices_.begin();
 
   int video_session_id_first = vcm_->Open(*it);
-
-  // This should trigger an error callback with error code 'kDeviceAlreadyInUse'
   ++it;
   int video_session_id_second = vcm_->Open(*it);
 
@@ -273,6 +271,35 @@ TEST_F(VideoCaptureManagerTest, StartUsingId) {
   // Wait to check callbacks before removing the listener
   SyncWithVideoCaptureManagerThread();
   vcm_->Unregister();
+}
+
+// TODO(mflodman) Remove test case below when shut-down bug is resolved, this is
+// only to verify this temporary solution is ok in regards to the
+// VideoCaptureManager.
+// Open the devices and delete manager.
+TEST_F(VideoCaptureManagerTest, DeleteManager) {
+  InSequence s;
+  EXPECT_CALL(*listener_, DevicesEnumerated(_))
+    .Times(1);
+  EXPECT_CALL(*listener_, Opened(media_stream::kVideoCapture, _))
+    .Times(2);
+
+  vcm_->EnumerateDevices();
+
+  // Wait to get device callback...
+  SyncWithVideoCaptureManagerThread();
+
+  media_stream::StreamDeviceInfoArray::iterator it =
+      listener_->devices_.begin();
+  vcm_->Open(*it);
+  ++it;
+  vcm_->Open(*it);
+
+  // Wait to check callbacks before removing the listener
+  SyncWithVideoCaptureManagerThread();
+
+  // Delete the manager.
+  vcm_.reset();
 }
 
 }  // namespace

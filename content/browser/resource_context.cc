@@ -20,7 +20,8 @@ ResourceContext::ResourceContext()
       blob_storage_context_(NULL),
       quota_manager_(NULL),
       host_zoom_map_(NULL),
-      media_observer_(NULL) {
+      media_observer_(NULL),
+      media_stream_manager_(NULL) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
@@ -162,6 +163,19 @@ void ResourceContext::set_next_download_id_thunk(
     const DownloadManager::GetNextIdThunkType& thunk) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   next_download_id_thunk_ = thunk;
+}
+
+media_stream::MediaStreamManager*
+ResourceContext::media_stream_manager() const {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  EnsureInitialized();
+  return media_stream_manager_;
+}
+
+void ResourceContext::set_media_stream_manager(
+    media_stream::MediaStreamManager* media_stream_manager) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  media_stream_manager_ = media_stream_manager;
 }
 
 const base::Callback<prerender::PrerenderManager*(void)>&

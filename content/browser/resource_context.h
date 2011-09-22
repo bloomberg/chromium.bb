@@ -21,6 +21,9 @@ class MediaObserver;
 namespace fileapi {
 class FileSystemContext;
 }  // namespace fileapi
+namespace media_stream {
+class MediaStreamManager;
+}  // namespace media_stream
 namespace net {
 class HostResolver;
 class URLRequestContext;
@@ -82,6 +85,10 @@ class CONTENT_EXPORT ResourceContext {
   void set_next_download_id_thunk(
       const DownloadManager::GetNextIdThunkType& thunk);
 
+  media_stream::MediaStreamManager* media_stream_manager() const;
+  void set_media_stream_manager(
+      media_stream::MediaStreamManager* media_stream_manager);
+
   // =======================================================================
   // TODO(willchan): These don't belong in content/. Remove them eventually.
 
@@ -108,6 +115,7 @@ class CONTENT_EXPORT ResourceContext {
   HostZoomMap* host_zoom_map_;
   MediaObserver* media_observer_;
   DownloadManager::GetNextIdThunkType next_download_id_thunk_;
+  media_stream::MediaStreamManager* media_stream_manager_;
 
   // Externally-defined data accessible by key.
   typedef std::map<const void*, void*> UserDataMap;

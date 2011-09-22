@@ -25,8 +25,18 @@ VideoCaptureManager::VideoCaptureManager()
 }
 
 VideoCaptureManager::~VideoCaptureManager() {
-  DCHECK(devices_.empty());
   vc_device_thread_.Stop();
+  // TODO(mflodman) Remove this temporary solution when shut-down issue is
+  // resolved, i.e. all code below this comment.
+  // Temporary solution: close all open devices and delete them, after the
+  // thread is stopped.
+  DLOG_IF(ERROR, !devices_.empty()) << "VideoCaptureManager: Open devices!";
+  for (VideoCaptureDevices::iterator it = devices_.begin();
+       it != devices_.end();
+       ++it) {
+    it->second->DeAllocate();
+    delete it->second;
+  }
 }
 
 void VideoCaptureManager::Register(MediaStreamProviderListener* listener) {

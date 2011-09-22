@@ -14,6 +14,10 @@
 #include "content/browser/renderer_host/media/media_stream_requester.h"
 #include "content/common/media/media_stream_options.h"
 
+namespace content {
+class ResourceContext;
+}  // namespace content
+
 namespace media_stream {
 
 // MediaStreamDispatcherHost is a delegate for Media Stream API messages used by
@@ -23,7 +27,8 @@ class MediaStreamDispatcherHost
     : public BrowserMessageFilter,
       public MediaStreamRequester {
  public:
-  explicit MediaStreamDispatcherHost(int render_process_id);
+  MediaStreamDispatcherHost(const content::ResourceContext* resource_context,
+                            int render_process_id);
   virtual ~MediaStreamDispatcherHost();
 
   // MediaStreamRequester implementation.
@@ -54,7 +59,9 @@ class MediaStreamDispatcherHost
   // creating one if needed.
   MediaStreamManager* manager();
 
+  const content::ResourceContext* resource_context_;
   int render_process_id_;
+
   struct StreamRequest {
     StreamRequest() {}
     StreamRequest(int render_view_id, int page_request_id)
