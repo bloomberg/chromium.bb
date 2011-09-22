@@ -20,6 +20,7 @@
 #import "chrome/browser/ui/cocoa/find_bar/find_bar_bridge.h"
 #import "chrome/browser/ui/cocoa/find_bar/find_bar_cocoa_controller.h"
 #import "chrome/browser/ui/cocoa/menu_controller.h"
+#import "chrome/browser/ui/cocoa/tab_contents/favicon_util.h"
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_browser_window_cocoa.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
@@ -179,6 +180,12 @@ static BOOL g_reportAnimationStatus = NO;
                                      withNewTitle:newTitle
                                         forWindow:[self window]]);
   [titlebar_view_ setTitle:newTitle];
+
+  NSImage* newIcon = mac::FaviconForTabContents(
+      windowShim_->browser()->GetSelectedTabContentsWrapper());
+  [titlebar_view_ setIcon:newIcon];
+
+  [titlebar_view_ updateIconAndTitleLayout];
 }
 
 - (void)addFindBar:(FindBarCocoaController*)findBarCocoaController {

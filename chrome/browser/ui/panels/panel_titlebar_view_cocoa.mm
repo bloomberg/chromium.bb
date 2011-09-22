@@ -21,7 +21,8 @@
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 
 const int kRoundedCornerSize = 3;
-const int kCloseButtonLeftPadding = 8;
+const int kButtonPadding = 8;
+const int kIconAndTextPadding = 5;
 
 // Used to implement TestingAPI
 static NSEvent* MakeMouseEvent(NSEventType type,
@@ -184,6 +185,7 @@ static NSEvent* MakeMouseEvent(NSEventType type,
 
   // Update layout of controls in the titlebar.
   [self updateCloseButtonLayout];
+  [self updateIconAndTitleLayout];
 
   // Set autoresizing behavior: glued to edges on left, top and right.
   [self setAutoresizingMask:(NSViewMinYMargin | NSViewWidthSizable)];
@@ -211,16 +213,16 @@ static NSEvent* MakeMouseEvent(NSEventType type,
   [title_ setStringValue:newTitle];
 }
 
+- (void)setIcon:(NSImage*)newIcon {
+  [icon_ setImage:newIcon];
+}
+
 - (void)updateCloseButtonLayout {
-  NSRect buttonBounds = [closeButton_ bounds];
+  NSRect buttonFrame = [closeButton_ frame];
   NSRect bounds = [self bounds];
 
-  int x = kCloseButtonLeftPadding;
-  int y = (NSHeight(bounds) - NSHeight(buttonBounds)) / 2;
-  NSRect buttonFrame = NSMakeRect(x,
-                                  y,
-                                  NSWidth(buttonBounds),
-                                  NSHeight(buttonBounds));
+  buttonFrame.origin.x = kButtonPadding;
+  buttonFrame.origin.y = (NSHeight(bounds) - NSHeight(buttonFrame)) / 2;
   [closeButton_ setFrame:buttonFrame];
 
   DCHECK(!closeButtonTrackingArea_.get());
@@ -233,6 +235,34 @@ static NSEvent* MakeMouseEvent(NSEventType type,
   NSWindow* panelWindow = [self window];
   [closeButtonTrackingArea_.get() clearOwnerWhenWindowWillClose:panelWindow];
   [self addTrackingArea:closeButtonTrackingArea_.get()];
+}
+
+- (void)updateIconAndTitleLayout {
+  NSRect closeButtonFrame = [closeButton_ frame];
+  NSRect iconFrame = [icon_ frame];
+  [title_ sizeToFit];
+  NSRect titleFrame = [title_ frame];
+  NSRect settingsButtonFrame = [settingsButton_ frame];
+  NSRect bounds = [self bounds];
+
+  // Place the icon and title at the center of the titlebar.
+  int iconWidthWithPadding = NSWidth(iconFrame) + kIconAndTextPadding;
+  int titleWidth = NSWidth(titleFrame);
+  int availableWidth = NSWidth(bounds) - kButtonPadding * 4 -
+      NSWidth(closeButtonFrame) - NSWidth(settingsButtonFrame);
+  if (iconWidthWithPadding + titleWidth > availableWidth)
+    titleWidth = availableWidth - iconWidthWithPadding;
+  int startX = kButtonPadding * 2 + NSWidth(closeButtonFrame) +
+      (availableWidth - iconWidthWithPadding - titleWidth) / 2;
+
+  iconFrame.origin.x = startX;
+  iconFrame.origin.y = (NSHeight(bounds) - NSHeight(iconFrame)) / 2;
+  [icon_ setFrame:iconFrame];
+
+  titleFrame.origin.x = startX + iconWidthWithPadding;
+  titleFrame.origin.y = (NSHeight(bounds) - NSHeight(titleFrame)) / 2;
+  titleFrame.size.width = titleWidth;
+  [title_ setFrame:titleFrame];
 }
 
 // PanelManager controls size/position of the window.
