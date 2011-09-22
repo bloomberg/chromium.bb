@@ -173,8 +173,11 @@ class FormStructure {
   // Classifies each field in |fields_| into a logical section.
   // Sections are identified by the heuristic that a logical section should not
   // include multiple fields of the same autofill type (with some exceptions, as
-  // described in the implementation).
-  void IdentifySections();
+  // described in the implementation).  Sections are furthermore distinguished
+  // as either credit card or non-credit card sections.
+  // If |has_author_specified_sections| is true, only the second pass --
+  // distinguishing credit card sections from non-credit card ones -- is made.
+  void IdentifySections(bool has_author_specified_sections);
 
   // The name of the form.
   string16 form_name_;

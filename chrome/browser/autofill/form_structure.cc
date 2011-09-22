@@ -279,9 +279,9 @@ void FormStructure::DetermineHeuristicTypes() {
   // First, try to detect field types based on the fields' |autocompletetype|
   // attributes.  If there is at least one form field with this attribute, don't
   // try to apply other heuristics to match fields in this form.
-  bool found_sections;
+  bool has_author_specified_sections;
   ParseAutocompletetypeAttributes(&has_author_specified_types_,
-                                  &found_sections);
+                                  &has_author_specified_sections);
 
   if (!has_author_specified_types_) {
     FieldTypeMap field_type_map;
@@ -295,21 +295,7 @@ void FormStructure::DetermineHeuristicTypes() {
   }
 
   UpdateAutofillCount();
-
-  if (!found_sections)
-    IdentifySections();
-
-  // Ensure that credit card and address fields are in separate sections.
-  // This simplifies the section-aware logic in autofill_manager.cc.
-  for (std::vector<AutofillField*>::iterator field = fields_->begin();
-       field != fields_->end(); ++field) {
-    AutofillType::FieldTypeGroup field_type_group =
-        AutofillType((*field)->type()).group();
-    if (field_type_group == AutofillType::CREDIT_CARD)
-      (*field)->set_section((*field)->section() + ASCIIToUTF16("-cc"));
-    else
-      (*field)->set_section((*field)->section() + ASCIIToUTF16("-default"));
-  }
+  IdentifySections(has_author_specified_sections);
 }
 
 bool FormStructure::EncodeUploadRequest(
@@ -464,6 +450,7 @@ void FormStructure::ParseQueryResponse(const std::string& response_xml,
     }
 
     form->UpdateAutofillCount();
+    form->IdentifySections(false);
   }
 
   AutofillMetrics::ServerQueryMetric metric;
@@ -923,50 +910,65 @@ void FormStructure::ParseAutocompletetypeAttributes(bool* found_attribute,
   }
 }
 
-void FormStructure::IdentifySections() {
+void FormStructure::IdentifySections(bool has_author_specified_sections) {
   if (fields_.empty())
     return;
 
-  // Name sections after the first field in the section.
-  string16 current_section = fields_->front()->unique_name();
+  if (!has_author_specified_sections) {
+    // Name sections after the first field in the section.
+    string16 current_section = fields_->front()->unique_name();
 
-  // Keep track of the types we've seen in this section.
-  std::set<AutofillFieldType> seen_types;
-  AutofillFieldType previous_type = UNKNOWN_TYPE;
+    // Keep track of the types we've seen in this section.
+    std::set<AutofillFieldType> seen_types;
+    AutofillFieldType previous_type = UNKNOWN_TYPE;
 
+    for (std::vector<AutofillField*>::iterator field = fields_->begin();
+         field != fields_->end(); ++field) {
+      const AutofillFieldType current_type =
+          AutofillType::GetEquivalentFieldType((*field)->type());
+
+      bool already_saw_current_type = seen_types.count(current_type) > 0;
+
+      // Forms often ask for multiple phone numbers -- e.g. both a daytime and
+      // evening phone number.  Our phone number detection is also generally a
+      // little off.  Hence, ignore this field type as a signal here.
+      if (AutofillType(current_type).group() == AutofillType::PHONE_HOME)
+        already_saw_current_type = false;
+
+      // Some forms have adjacent fields of the same type.  Two common examples:
+      //  * Forms with two email fields, where the second is meant to "confirm"
+      //    the first.
+      //  * Forms with a <select> menu for states in some countries, and a
+      //    freeform <input> field for states in other countries.  (Usually,
+      //    only one of these two will be visible for any given choice of
+      //    country.)
+      // Generally, adjacent fields of the same type belong in the same logical
+      // section.
+      if (current_type == previous_type)
+        already_saw_current_type = false;
+
+      previous_type = current_type;
+
+      if (current_type != UNKNOWN_TYPE && already_saw_current_type) {
+        // We reached the end of a section, so start a new section.
+        seen_types.clear();
+        current_section = (*field)->unique_name();
+      }
+
+      seen_types.insert(current_type);
+      (*field)->set_section(current_section);
+    }
+  }
+
+  // Ensure that credit card and address fields are in separate sections.
+  // This simplifies the section-aware logic in autofill_manager.cc.
   for (std::vector<AutofillField*>::iterator field = fields_->begin();
        field != fields_->end(); ++field) {
-    const AutofillFieldType current_type =
-        AutofillType::GetEquivalentFieldType((*field)->type());
-
-    bool already_saw_current_type = seen_types.count(current_type) > 0;
-
-    // Forms often ask for multiple phone numbers -- e.g. both a daytime and
-    // evening phone number.  Our phone number detection is also generally a
-    // little off.  Hence, ignore this field type as a signal here.
-    if (AutofillType(current_type).group() == AutofillType::PHONE_HOME)
-      already_saw_current_type = false;
-
-    // Some forms have adjacent fields of the same type.  Two common examples:
-    //  * Forms with two email fields, where the second is meant to "confirm"
-    //    the first.
-    //  * Forms with a <select> menu for states in some countries, and a
-    //    freeform <input> field for states in other countries.  (Usually, only
-    //    one of these two will be visible for any given choice of country.)
-    // Generally, adjacent fields of the same type belong in the same logical
-    // section.
-    if (current_type == previous_type)
-      already_saw_current_type = false;
-
-    previous_type = current_type;
-
-    if (current_type != UNKNOWN_TYPE && already_saw_current_type) {
-      // We reached the end of a section, so start a new section.
-      seen_types.clear();
-      current_section = (*field)->unique_name();
-    }
-
-    seen_types.insert(current_type);
-    (*field)->set_section(current_section);
+    AutofillType::FieldTypeGroup field_type_group =
+        AutofillType((*field)->type()).group();
+    if (field_type_group == AutofillType::CREDIT_CARD)
+      (*field)->set_section((*field)->section() + ASCIIToUTF16("-cc"));
+    else
+      (*field)->set_section((*field)->section() + ASCIIToUTF16("-default"));
   }
 }
