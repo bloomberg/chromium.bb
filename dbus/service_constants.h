@@ -144,6 +144,7 @@ const char kRequestShutdownMethod[] = "RequestShutdown";
 const char kRequestUnlockScreenMethod[] = "RequestUnlockScreen";
 const char kScreenIsLockedMethod[] = "ScreenIsLocked";
 const char kScreenIsUnlockedMethod[] = "ScreenIsUnlocked";
+const char kGetAllPropertiesMethod[] = "GetAllProperties";
 const char kCleanShutdown[] = "CleanShutdown";
 const char kRegisterSuspendDelay[] = "RegisterSuspendDelay";
 const char kUnregisterSuspendDelay[] = "UnregisterSuspendDelay";
