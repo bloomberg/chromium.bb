@@ -76,29 +76,29 @@ def get_previous_quarter(today):
   If today is in the last month of a quarter, assume it's the current quarter
   that is requested.
   """
-  year = today.year
-  month = today.month - (today.month % 3) + 1
-  if month <= 0:
-    month += 12
-    year -= 1
-  if month > 12:
-    month -= 12
-    year += 1
-  previous_month = month - 3
-  previous_year = year
-  if previous_month <= 0:
-    previous_month += 12
-    previous_year -= 1
-  return (
-      '%d-%02d-01' % (previous_year, previous_month),
-      '%d-%02d-01' % (year, month))
+  end_year = today.year
+  end_month = today.month - (today.month % 3) + 1
+  if end_month <= 0:
+    end_year -= 1
+    end_month += 12
+  if end_month > 12:
+    end_year += 1
+    end_month -= 12
+  end = '%d-%02d-01' % (end_year, end_month)
+  begin_year = end_year
+  begin_month = end_month - 3
+  if begin_month <= 0:
+    begin_year -= 1
+    begin_month += 12
+  begin = '%d-%02d-01' % (begin_year, begin_month)
+  return begin, end
 
 
 def main():
   # Silence upload.py.
   rietveld.upload.verbosity = 0
   today = datetime.date.today()
-  created_after, created_before = get_previous_quarter(today)
+  begin, end = get_previous_quarter(today)
   parser = optparse.OptionParser(description=sys.modules[__name__].__doc__)
   parser.add_option(
       '--count', action='store_true',
@@ -108,15 +108,15 @@ def main():
       default=os.environ.get('EMAIL_ADDRESS'),
       help='Filter on issue reviewer, default=%default')
   parser.add_option(
-      '-c', '--created_after', metavar='<date>',
+      '-b', '--begin', metavar='<date>',
       help='Filter issues created after the date')
   parser.add_option(
-      '-C', '--created_before', metavar='<date>',
-      help='Filter issues create before the date')
+      '-e', '--end', metavar='<date>',
+      help='Filter issues created before the date')
   parser.add_option(
       '-Q', '--last_quarter', action='store_true',
       help='Use last quarter\'s dates, e.g. %s to %s' % (
-        created_after, created_before))
+        begin, end))
   parser.add_option(
       '-i', '--instance_url', metavar='<host>',
       default='http://codereview.chromium.org',
@@ -126,24 +126,25 @@ def main():
   options, args = parser.parse_args()
   if args:
     parser.error('Args unsupported')
-
+  if not options.reviewer:
+    parser.error('$EMAIL_ADDRESS is not set, please use -r')
   print >> sys.stderr, 'Searching for reviews by %s' % options.reviewer
   if options.last_quarter:
-    options.created_after = created_after
-    options.created_before = created_before
+    options.begin = begin
+    options.end = end
     print >> sys.stderr, 'Using range %s to %s' % (
-        options.created_after, options.created_before)
+        options.begin, options.end)
   if options.count:
     print_count(
         options.reviewer,
-        options.created_after,
-        options.created_before,
+        options.begin,
+        options.end,
         options.instance_url)
   else:
     print_reviews(
         options.reviewer,
-        options.created_after,
-        options.created_before,
+        options.begin,
+        options.end,
         options.instance_url)
   return 0
 
