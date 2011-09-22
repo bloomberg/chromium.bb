@@ -24,6 +24,7 @@ cr.define('cr.ui', function() {
       this.selectedItem = null;
       // First item which could be selected.
       this.firstItem = null;
+      this.setAttribute('role', 'menu');
       // Whether scroll has just happened.
       this.scrollJustHappened = false;
     },
@@ -57,6 +58,10 @@ cr.define('cr.ui', function() {
         this.selectedItem.classList.remove('hover');
       selectedItem.classList.add('hover');
       this.selectedItem = selectedItem;
+      if (!this.hidden) {
+        this.previousSibling.setAttribute(
+            'aria-activedescendant', selectedItem.id);
+      }
       var action = this.scrollAction(selectedItem);
       if (action != 0) {
         selectedItem.scrollIntoView(action < 0);
@@ -80,11 +85,15 @@ cr.define('cr.ui', function() {
     /** @inheritDoc */
     decorate: function() {
       this.appendChild(this.createOverlay_());
-      this.appendChild(this.createTitle_());
+      this.appendChild(this.title_ = this.createTitle_());
       this.appendChild(new DropDownContainer());
 
       this.isShown = false;
       this.addEventListener('keydown', this.keyDownHandler_);
+
+      this.title_.id = this.id + '-dropdown';
+      this.title_.setAttribute('role', 'button');
+      this.title_.setAttribute('aria-haspopup', 'true');
     },
 
     /**
@@ -102,8 +111,13 @@ cr.define('cr.ui', function() {
     set isShown(show) {
       this.firstElementChild.hidden = !show;
       this.container.hidden = !show;
-      if (show)
+      if (show) {
         this.container.selectItem(this.container.firstItem, false);
+        this.title_.setAttribute('aria-pressed', 'true');
+      } else {
+        this.title_.setAttribute('aria-pressed', 'false');
+        this.title_.removeAttribute('aria-activedescendant');
+      }
     },
 
     /**
@@ -177,6 +191,7 @@ cr.define('cr.ui', function() {
         if ('bold' in item && item.bold)
           span.classList.add('bold');
         var image = this.ownerDocument.createElement('img');
+        image.alt = '';
         if (item.icon)
           image.src = item.icon;
       }
@@ -192,6 +207,10 @@ cr.define('cr.ui', function() {
 
       if (item.id > 0) {
         var wrapperDiv = this.ownerDocument.createElement('div');
+        wrapperDiv.setAttribute('role', 'menuitem');
+        wrapperDiv.id = this.id + item.id;
+        if (!enabled)
+          wrapperDiv.setAttribute('aria-disabled', 'true');
         wrapperDiv.classList.add('dropdown-item-container');
         var imageDiv = this.ownerDocument.createElement('div');
         imageDiv.classList.add('dropdown-image');
@@ -240,6 +259,7 @@ cr.define('cr.ui', function() {
      */
     createTitle_: function() {
       var image = this.ownerDocument.createElement('img');
+      image.alt = '';
       var text = this.ownerDocument.createElement('div');
 
       var el = this.ownerDocument.createElement('div');
@@ -266,8 +286,9 @@ cr.define('cr.ui', function() {
       });
 
       el.addEventListener('keydown', function f(e) {
-        if (this.inFocus && !this.controller.isShown && e.keyCode == 13) {
-          // Enter has been pressed.
+        if (this.inFocus && !this.controller.isShown &&
+            (e.keyCode == 13 || e.keyCode == 32)) {
+          // Enter or space has been pressed.
           this.opening = true;
           this.controller.isShown = true;
         }
