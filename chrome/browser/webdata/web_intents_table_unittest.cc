@@ -8,12 +8,12 @@
 #include "base/scoped_temp_dir.h"
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/intents/web_intent_service_data.h"
 #include "chrome/browser/webdata/web_database.h"
 #include "chrome/browser/webdata/web_intents_table.h"
 #include "chrome/common/chrome_paths.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "webkit/glue/web_intent_service_data.h"
 
 namespace {
 

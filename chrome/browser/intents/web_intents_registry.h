@@ -8,9 +8,9 @@
 
 #include "base/hash_tables.h"
 #include "base/memory/ref_counted.h"
-#include "chrome/browser/intents/web_intent_service_data.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/browser/webdata/web_data_service.h"
+#include "webkit/glue/web_intent_service_data.h"
 
 // Handles storing and retrieving of web intents in the web database.
 // The registry provides filtering logic to retrieve specific types of intents.

@@ -1420,8 +1420,6 @@
         'browser/intents/web_intents_registry.h',
         'browser/intents/web_intents_registry_factory.cc',
         'browser/intents/web_intents_registry_factory.h',
-        'browser/intents/web_intent_service_data.cc',
-        'browser/intents/web_intent_service_data.h',
         'browser/internal_auth.cc',
         'browser/internal_auth.h',
         'browser/intranet_redirect_detector.cc',

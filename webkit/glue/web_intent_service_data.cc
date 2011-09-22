@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/utf_string_conversions.h"
-#include "chrome/browser/intents/web_intent_service_data.h"
 #include <ostream>
+
+#include "base/utf_string_conversions.h"
+#include "webkit/glue/web_intent_service_data.h"
 
 WebIntentServiceData::WebIntentServiceData()
     : disposition(WebIntentServiceData::DISPOSITION_WINDOW) {

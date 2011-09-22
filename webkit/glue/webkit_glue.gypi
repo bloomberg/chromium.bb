@@ -397,6 +397,8 @@
         'webdropdata.h',
         'webfileutilities_impl.cc',
         'webfileutilities_impl.h',
+        'web_intent_service_data.cc',
+        'web_intent_service_data.h',
         'webkit_constants.h',
         'webkit_glue.cc',
         'webkit_glue.h',

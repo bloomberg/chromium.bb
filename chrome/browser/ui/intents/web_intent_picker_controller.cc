@@ -7,7 +7,6 @@
 #include <vector>
 
 #include "chrome/browser/favicon/favicon_service.h"
-#include "chrome/browser/intents/web_intent_service_data.h"
 #include "chrome/browser/intents/web_intents_registry.h"
 #include "chrome/browser/intents/web_intents_registry_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -18,6 +17,7 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_source.h"
 #include "ui/gfx/codec/png_codec.h"
+#include "webkit/glue/web_intent_service_data.h"
 
 namespace {
 

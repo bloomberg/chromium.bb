@@ -10,7 +10,6 @@
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/favicon/favicon_service.h"
-#include "chrome/browser/intents/web_intent_service_data.h"
 #include "chrome/browser/intents/web_intents_registry.h"
 #include "chrome/browser/intents/web_intents_registry_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -26,6 +25,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/native_widget_types.h"
+#include "webkit/glue/web_intent_service_data.h"
 
 using testing::_;
 using testing::AtMost;
