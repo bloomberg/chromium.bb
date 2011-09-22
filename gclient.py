@@ -163,9 +163,9 @@ class Dependency(GClientKeywords, gclient_utils.WorkItem):
     # 'managed' via the --unmanaged command-line flag or a .gclient config,
     # where 'should_process' is dynamically set by gclient if it goes over its
     # recursion limit and controls gclient's behavior so it does not misbehave.
-    self.managed = managed
-    self.custom_vars = custom_vars or {}
-    self.custom_deps = custom_deps or {}
+    self._managed = managed
+    self._custom_vars = custom_vars or {}
+    self._custom_deps = custom_deps or {}
     self.deps_hooks = []
 
     # Calculates properties:
@@ -226,10 +226,11 @@ class Dependency(GClientKeywords, gclient_utils.WorkItem):
     # they already have their parent as a requirement.
     root_deps = self.root.dependencies
     if self.parent in root_deps:
-      for i in range(0, root_deps.index(self.parent)):
-        value = root_deps[i]
-        if value.name:
-          self._requirements.add(value.name)
+      for i in root_deps:
+        if i is self.parent:
+          break
+        if i.name:
+          self._requirements.add(i.name)
 
     if isinstance(self.url, self.FromImpl):
       self._requirements.add(self.url.module_name)
@@ -357,9 +358,10 @@ class Dependency(GClientKeywords, gclient_utils.WorkItem):
     # load os specific dependencies if defined.  these dependencies may
     # override or extend the values defined by the 'deps' member.
     if 'deps_os' in local_scope:
-      for deps_os_key in self.root.enforced_os:
+      enforced_os = self.root.enforced_os
+      for deps_os_key in enforced_os:
         os_deps = local_scope['deps_os'].get(deps_os_key, {})
-        if len(self.root.enforced_os) > 1:
+        if len(enforced_os) > 1:
           # Ignore any conflict when including deps for more than one
           # platform, so we collect the broadest set of dependencies
           # available. We may end up with the wrong revision of something for
@@ -566,10 +568,11 @@ class Dependency(GClientKeywords, gclient_utils.WorkItem):
   def subtree(self, include_all):
     """Breadth first"""
     result = []
-    for d in self.dependencies:
+    dependencies = self.dependencies
+    for d in dependencies:
       if d.should_process or include_all:
         result.append(d)
-    for d in self.dependencies:
+    for d in dependencies:
       result.extend(d.subtree(include_all))
     return result
 
@@ -582,15 +585,24 @@ class Dependency(GClientKeywords, gclient_utils.WorkItem):
 
   @property
   def recursion_limit(self):
-    """Returns > 0 if this dependency is not too recursed to be processed."""
+    """Returns > 0 if this dependency is not too recursed to be processed.
+
+    Immutable so no need to lock."""
     return max(self.parent.recursion_limit - 1, 0)
 
   @property
   def deps_file(self):
+    """Immutable so no need to lock."""
     return self._deps_file
 
   @property
+  def managed(self):
+    """Immutable so no need to lock."""
+    return self._managed
+
+  @property
   def safesync_url(self):
+    """Immutable so no need to lock."""
     return self._safesync_url
 
   @property
@@ -600,9 +612,21 @@ class Dependency(GClientKeywords, gclient_utils.WorkItem):
 
   @property
   def parent(self):
+    """Immutable so no need to lock."""
     return self._parent
 
   @property
+  def custom_vars(self):
+    """Immutable so no need to lock."""
+    return self._custom_vars.copy()
+
+  @property
+  def custom_deps(self):
+    """Immutable so no need to lock."""
+    return self._custom_deps.copy()
+
+  @property
+  @gclient_utils.lockedmethod
   def file_list(self):
     result = self._file_list[:]
     for d in self.dependencies:
@@ -712,7 +736,7 @@ solutions = [
     self.config_content = None
 
   def SetConfig(self, content):
-    assert self.dependencies == []
+    assert not self.dependencies
     config_dict = {}
     self.config_content = content
     try:
