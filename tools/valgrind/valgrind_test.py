@@ -967,6 +967,59 @@ class RaceVerifier(object):
   def Run(self, args, module):
    return self.Main(args, False)
 
+class EmbeddedTool(BaseTool):
+  """Abstract class for tools embedded directly into the test binary."""
+  def __init__(self):
+    super(EmbeddedTool, self).__init__()
+    self._env = {}
+
+  def ToolCommand(self):
+    """Basically just the args of the script."""
+    return self._args
+
+  def NeedsPipes(self):
+    """True iff the tool needs to chain several subprocesses."""
+    raise NotImplementedError, "This method should be implemented " \
+                               "in the tool-specific subclass"
+
+  def Execute(self):
+    """Executes the app to be tested."""
+    for var in self._env:
+      self.PutEnvAndLog(var, self._env[var])
+    proc = self.ToolCommand()
+    logging.info('starting execution...')
+    if self.NeedsPipes():
+      return common.RunSubprocessChain(proc, self._timeout)
+    else:
+      return common.RunSubprocess(proc, self._timeout)
+
+  def PutEnvAndLog(self, env_name, env_value):
+    """Sets the env var |env_name| to |env_value| and writes to logging.info.
+    """
+    os.putenv(env_name, env_value)
+    logging.info('export %s=%s', env_name, env_value)
+
+
+class Asan(EmbeddedTool):
+  def __init__(self):
+    super(Asan, self).__init__()
+    self._timeout = 1200
+
+  def ToolName(self):
+    return "asan"
+
+  def NeedsPipes(self):
+    return True
+
+  def ToolCommand(self):
+    procs = [self._args]
+    procs.append([os.path.join(self._source_dir, "third_party", "asan",
+                              "scripts", "asan_symbolize.py")])
+    procs.append(["c++filt"])
+    return procs
+
+  def Analyze(sels, unused_check_sanity):
+    return 0
 
 class ToolFactory:
   def Create(self, tool_name):
@@ -986,6 +1039,8 @@ class ToolFactory:
       return DrMemory(True)
     if tool_name == "tsan_rv":
       return RaceVerifier()
+    if tool_name == "asan":
+      return Asan()
     try:
       platform_name = common.PlatformNames()[0]
     except common.NotImplementedError:
