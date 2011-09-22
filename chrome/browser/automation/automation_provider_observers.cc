@@ -46,6 +46,7 @@
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/sessions/restore_tab_helper.h"
+#include "chrome/browser/sessions/session_utils.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
@@ -2083,8 +2084,10 @@ NTPInfoObserver::NTPInfoObserver(
   ntp_info_->Set("apps", apps_list);
 
   // Get the info that would be displayed in the recently closed section.
+  TabRestoreService::Entries entries;
+  SessionUtils::FilteredEntries(service->entries(), &entries);
   ListValue* recently_closed_list = new ListValue;
-  RecentlyClosedTabsHandler::AddRecentlyClosedEntries(service->entries(),
+  RecentlyClosedTabsHandler::AddRecentlyClosedEntries(entries,
                                                       recently_closed_list);
   ntp_info_->Set("recently_closed", recently_closed_list);
 

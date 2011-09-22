@@ -6,6 +6,7 @@
 
 #include "base/metrics/histogram.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sessions/session_utils.h"
 #include "chrome/browser/sessions/tab_restore_service_delegate.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
@@ -13,24 +14,6 @@
 #include "content/browser/tab_contents/tab_contents.h"
 
 namespace {
-
-bool IsTabUnique(const DictionaryValue* tab,
-                 std::set<std::string>* unique_items) {
-  DCHECK(unique_items);
-  std::string title;
-  std::string url;
-  if (tab->GetString("title", &title) &&
-      tab->GetString("url", &url)) {
-    // TODO(viettrungluu): this isn't obviously reliable, since different
-    // combinations of titles/urls may conceivably yield the same string.
-    std::string unique_key = title + url;
-    if (unique_items->find(unique_key) != unique_items->end())
-      return false;
-    else
-      unique_items->insert(unique_key);
-  }
-  return true;
-}
 
 bool TabToValue(const TabRestoreService::Tab& tab,
                 DictionaryValue* dictionary) {
@@ -94,7 +77,8 @@ void RecentlyClosedTabsHandler::HandleReopenTab(const ListValue* args) {
   if (!ExtractIntegerValue(args, &session_to_restore))
     return;
 
-  const TabRestoreService::Entries& entries = tab_restore_service_->entries();
+  TabRestoreService::Entries entries;
+  SessionUtils::FilteredEntries(tab_restore_service_->entries(), &entries);
   int index = 0;
   for (TabRestoreService::Entries::const_iterator iter = entries.begin();
        iter != entries.end(); ++iter, ++index) {
@@ -133,7 +117,10 @@ void RecentlyClosedTabsHandler::HandleGetRecentlyClosedTabs(
 void RecentlyClosedTabsHandler::TabRestoreServiceChanged(
     TabRestoreService* service) {
   ListValue list_value;
-  AddRecentlyClosedEntries(service->entries(), &list_value);
+  TabRestoreService::Entries entries;
+  SessionUtils::FilteredEntries(service->entries(), &entries);
+
+  AddRecentlyClosedEntries(entries, &list_value);
 
   web_ui_->CallJavascriptFunction("recentlyClosedTabs", list_value);
 }
@@ -148,7 +135,6 @@ void RecentlyClosedTabsHandler::AddRecentlyClosedEntries(
     const TabRestoreService::Entries& entries, ListValue* entry_list_value) {
   const int max_count = 10;
   int added_count = 0;
-  std::set<std::string> unique_items;
   // We filter the list of recently closed to only show 'interesting' entries,
   // where an interesting entry is either a closed window or a closed tab
   // whose selected navigation is not the new tab ui.
@@ -159,8 +145,7 @@ void RecentlyClosedTabsHandler::AddRecentlyClosedEntries(
     if ((entry->type == TabRestoreService::TAB &&
          TabToValue(
              *static_cast<TabRestoreService::Tab*>(entry),
-             entry_dict.get()) &&
-         IsTabUnique(entry_dict.get(), &unique_items)) ||
+             entry_dict.get())) ||
         (entry->type == TabRestoreService::WINDOW &&
          WindowToValue(
              *static_cast<TabRestoreService::Window*>(entry),
