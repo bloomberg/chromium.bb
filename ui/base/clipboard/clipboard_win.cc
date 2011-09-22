@@ -134,6 +134,27 @@ HGLOBAL CreateGlobalData(const std::basic_string<charT>& str) {
   return data;
 };
 
+bool BitmapHasInvalidPremultipliedColors(const SkBitmap& bitmap) {
+  for (int x = 0; x < bitmap.width(); ++x) {
+    for (int y = 0; y < bitmap.height(); ++y) {
+      uint32_t pixel = *bitmap.getAddr32(x, y);
+      if (SkColorGetR(pixel) > SkColorGetA(pixel) ||
+          SkColorGetG(pixel) > SkColorGetA(pixel) ||
+          SkColorGetB(pixel) > SkColorGetA(pixel))
+        return true;
+    }
+  }
+  return false;
+}
+
+void MakeBitmapOpaque(const SkBitmap& bitmap) {
+  for (int x = 0; x < bitmap.width(); ++x) {
+    for (int y = 0; y < bitmap.height(); ++y) {
+      *bitmap.getAddr32(x, y) = SkColorSetA(*bitmap.getAddr32(x, y), 0xFF);
+    }
+  }
+}
+
 }  // namespace
 
 Clipboard::Clipboard() : create_window_(false) {
@@ -476,18 +497,24 @@ SkBitmap Clipboard::ReadImage(Buffer buffer) const {
                         bitmap->bmiHeader.biHeight, bitmap_bits, bitmap,
                         DIB_RGB_COLORS);
   }
-  // SetDIBitsToDevice doesn't properly set alpha values for bitmaps with
-  // depth < 32bpp so manually fix it up.
-  if (bitmap->bmiHeader.biBitCount < 32) {
-    const SkBitmap& device_bitmap = canvas.getDevice()->accessBitmap(true);
+  // Windows doesn't really handle alpha channels well in many situations. When
+  // the source image is < 32 bpp, we force the bitmap to be opaque. When the
+  // source image is 32 bpp, the alpha channel might still contain garbage data.
+  // Since Windows uses premultiplied alpha, we scan for instances where
+  // (R, G, B) > A. If there are any invalid premultiplied colors in the image,
+  // we assume the alpha channel contains garbage and force the bitmap to be
+  // opaque as well. Note that this  heuristic will fail on a transparent bitmap
+  // containing only black pixels...
+  const SkBitmap& device_bitmap = canvas.getDevice()->accessBitmap(true);
+  {
     SkAutoLockPixels lock(device_bitmap);
-    for (int x = 0; x < device_bitmap.width(); ++x) {
-      for (int y = 0; y < device_bitmap.height(); ++y) {
-        *device_bitmap.getAddr32(x, y) =
-            SkColorSetA(*device_bitmap.getAddr32(x, y), 0xFF);
-      }
+    bool has_invalid_alpha_channel = bitmap->bmiHeader.biBitCount < 32 ||
+        BitmapHasInvalidPremultipliedColors(device_bitmap);
+    if (has_invalid_alpha_channel) {
+      MakeBitmapOpaque(device_bitmap);
     }
   }
+
   return canvas.ExtractBitmap();
 }
 
