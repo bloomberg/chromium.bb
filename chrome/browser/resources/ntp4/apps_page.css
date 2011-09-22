@@ -59,6 +59,12 @@
   -webkit-box-pack: center;
 }
 
+.app-icon-div .app-img-container {
+  bottom: 10px;
+  left: 10px;
+  position: absolute;
+}
+
 .app-icon-div .color-stripe {
   border-bottom-left-radius: 5px 5px;
   border-bottom-right-radius: 5px 5px;

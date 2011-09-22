@@ -162,8 +162,7 @@ cr.define('ntp4', function() {
   function App(appData) {
     var el = cr.doc.createElement('div');
     el.__proto__ = App.prototype;
-    el.appData = appData;
-    el.initialize();
+    el.initialize(appData);
 
     return el;
   }
@@ -171,55 +170,44 @@ cr.define('ntp4', function() {
   App.prototype = {
     __proto__: HTMLDivElement.prototype,
 
-    initialize: function() {
+    /**
+     * Initialize the app object.
+     * @param {Object} appData The data object that describes the app.
+     */
+    initialize: function(appData) {
+      this.appData = appData;
       assert(this.appData_.id, 'Got an app without an ID');
       this.id = this.appData_.id;
 
       this.className = 'app';
 
-      var appContents = this.ownerDocument.createElement('div');
-      appContents.className = 'app-contents';
-
-      var appImgContainer = this.ownerDocument.createElement('div');
-      appImgContainer.className = 'app-img-container';
-      this.appImgContainer_ = appImgContainer;
-
       if (!this.appData_.icon_big_exists && this.appData_.icon_small_exists)
         this.useSmallIcon_ = true;
 
-      var appImg = this.ownerDocument.createElement('img');
-      appImg.classList.add('invisible');
-      this.appImg_ = appImg;
+      this.appContents_ = this.useSmallIcon_ ?
+          $('app-small-icon-template').cloneNode(true) :
+          $('app-large-icon-template').cloneNode(true);
+      this.appContents_.id = '';
+      this.appContents_.hidden = false;
+      this.appendChild(this.appContents_);
+
+      this.appImgContainer_ = this.querySelector('.app-img-container');
+      this.appImg_ = this.appImgContainer_.querySelector('img');
       this.setIcon();
-      appImgContainer.appendChild(appImg);
 
       if (this.useSmallIcon_) {
-        var imgDiv = this.ownerDocument.createElement('div');
-        imgDiv.className = 'app-icon-div';
-        imgDiv.appendChild(appImgContainer);
-        this.addLaunchClickTarget_(imgDiv);
-        imgDiv.title = this.appData_.name;
-        this.imgDiv_ = imgDiv;
-        appContents.appendChild(imgDiv);
-        this.appImgContainer_.style.position = 'absolute';
-        this.appImgContainer_.style.bottom = '10px';
-        this.appImgContainer_.style.left = '10px';
-        var stripeDiv = this.ownerDocument.createElement('div');
-        stripeDiv.className = 'color-stripe';
-        imgDiv.appendChild(stripeDiv);
-
+        this.imgDiv_ = this.querySelector('.app-icon-div');
+        this.addLaunchClickTarget_(this.imgDiv_);
+        this.imgDiv_.title = this.appData_.name;
         chrome.send('getAppIconDominantColor', [this.id]);
       } else {
-        this.addLaunchClickTarget_(appImgContainer);
-        appImgContainer.title = this.appData_.name;
-        appContents.appendChild(appImgContainer);
+        this.addLaunchClickTarget_(this.appImgContainer_);
+        this.appImgContainer_.title = this.appData_.name;
       }
 
-      var appSpan = this.ownerDocument.createElement('span');
+      var appSpan = this.appContents_.querySelector('.title');
       appSpan.textContent = appSpan.title = this.appData_.name;
       this.addLaunchClickTarget_(appSpan);
-      appContents.appendChild(appSpan);
-      this.appendChild(appContents);
 
       var notification = this.appData_.notification;
       var hasNotification = typeof notification != 'undefined' &&
@@ -228,18 +216,17 @@ cr.define('ntp4', function() {
       if (hasNotification)
         this.setupNotification_(notification);
 
-      this.appContents_ = appContents;
-
       this.addEventListener('keydown', cr.ui.contextMenuHandler);
       this.addEventListener('keyup', cr.ui.contextMenuHandler);
 
       // This hack is here so that appContents.contextMenu will be the same as
       // this.contextMenu.
       var self = this;
-      appContents.__defineGetter__('contextMenu', function() {
+      this.appContents_.__defineGetter__('contextMenu', function() {
         return self.contextMenu;
       });
-      appContents.addEventListener('contextmenu', cr.ui.contextMenuHandler);
+      this.appContents_.addEventListener('contextmenu',
+                                         cr.ui.contextMenuHandler);
 
       this.isStore_ = this.appData_.is_webstore;
       if (this.isStore_)
