@@ -7,7 +7,9 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/logging.h"
+#include "base/metrics/histogram.h"
 #include "base/path_service.h"
+#include "chrome/common/chrome_paths.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/json_value_serializer.h"
 
@@ -34,8 +36,10 @@ DictionaryValue* ExtractPrefs(const FilePath& path,
 
 }  // namespace
 
-ExternalPrefExtensionLoader::ExternalPrefExtensionLoader(int base_path_key)
-    : base_path_key_(base_path_key) {
+ExternalPrefExtensionLoader::ExternalPrefExtensionLoader(int base_path_key,
+                                                         Options options)
+    : base_path_key_(base_path_key),
+      options_(options){
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
@@ -55,32 +59,72 @@ void ExternalPrefExtensionLoader::StartLoading() {
           &ExternalPrefExtensionLoader::LoadOnFileThread));
 }
 
-void ExternalPrefExtensionLoader::LoadOnFileThread() {
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-
+DictionaryValue* ExternalPrefExtensionLoader::ReadJsonPrefsFile() {
   // TODO(skerner): Some values of base_path_key_ will cause
   // PathService::Get() to return false, because the path does
   // not exist.  Find and fix the build/install scripts so that
   // this can become a CHECK().  Known examples include chrome
   // OS developer builds and linux install packages.
   // Tracked as crbug.com/70402 .
-
-  scoped_ptr<DictionaryValue> prefs;
-  if (PathService::Get(base_path_key_, &base_path_)) {
-    FilePath json_file;
-    json_file =
-        base_path_.Append(FILE_PATH_LITERAL("external_extensions.json"));
-
-    if (file_util::PathExists(json_file)) {
-      JSONFileValueSerializer serializer(json_file);
-      prefs.reset(ExtractPrefs(json_file, &serializer));
-    }
+  if (!PathService::Get(base_path_key_, &base_path_)) {
+    return NULL;
   }
 
-  if (!prefs.get())
-    prefs.reset(new DictionaryValue());
+  FilePath json_file = base_path_.Append(
+      FILE_PATH_LITERAL("external_extensions.json"));
 
-  prefs_.reset(prefs.release());
+  if (!file_util::PathExists(json_file)) {
+    // This is not an error.  The file does not exist by default.
+    return NULL;
+  }
+
+  if (IsOptionSet(ENSURE_PATH_CONTROLLED_BY_ADMIN)) {
+#if defined(OS_MACOSX)
+    if (!file_util::VerifyPathControlledByAdmin(json_file)) {
+      LOG(ERROR) << "Can not read external extensions source.  The file "
+                 << json_file.value() << " and every directory in its path, "
+                 << "must be owned by root, have group \"admin\", and not be "
+                 << "writable by all users. These restrictions prevent "
+                 << "unprivleged users from making chrome install extensions "
+                 << "on other users' accounts.";
+      return NULL;
+    }
+#else
+    // The only platform that uses this check is Mac OS.  If you add one,
+    // you need to implement file_util::VerifyPathControlledByAdmin() for
+    // that platform.
+    NOTREACHED();
+#endif  // defined(OS_MACOSX)
+  }
+
+  JSONFileValueSerializer serializer(json_file);
+  return ExtractPrefs(json_file, &serializer);
+}
+
+void ExternalPrefExtensionLoader::LoadOnFileThread() {
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+
+  prefs_.reset(ReadJsonPrefsFile());
+  if (!prefs_.get())
+    prefs_.reset(new DictionaryValue());
+
+  // We want to deprecate the external extensions file inside the app
+  // bundle on mac os.  Use a histogram to see how many extensions
+  // are installed using the deprecated path, and how many are installed
+  // from the supported path.  We can use this data to measure the
+  // effectiveness of asking developers to use the new path, or any
+  // automatic migration methods we implement.
+#if defined(OS_MACOSX)
+  // The deprecated path only exists on mac for now.
+  if (base_path_key_ == chrome::DIR_DEPRICATED_EXTERNAL_EXTENSIONS) {
+    UMA_HISTOGRAM_COUNTS_100("Extensions.DepricatedExternalJsonCount",
+                             prefs_->size());
+  }
+#endif  // defined(OS_MACOSX)
+  if (base_path_key_ == chrome::DIR_EXTERNAL_EXTENSIONS) {
+    UMA_HISTOGRAM_COUNTS_100("Extensions.ExternalJsonCount",
+                             prefs_->size());
+  }
 
   // If we have any records to process, then we must have
   // read the .json file.  If we read the .json file, then

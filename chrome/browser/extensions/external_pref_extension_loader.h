@@ -20,24 +20,38 @@
 // thread and they are expecting public method calls from the UI thread.
 class ExternalPrefExtensionLoader : public ExternalExtensionLoader {
  public:
+  enum Options {
+    NONE = 0,
+
+    // Ensure that only root can force an external install by checking
+    // that all components of the path to external extensions files are
+    // owned by root and not writable by any non-root user.
+    ENSURE_PATH_CONTROLLED_BY_ADMIN = 1 << 0
+  };
+
   // |base_path_key| is the directory containing the external_extensions.json
   // file.  Relative file paths to extension files are resolved relative
   // to this path.
-  explicit ExternalPrefExtensionLoader(int base_path_key);
+  explicit ExternalPrefExtensionLoader(int base_path_key, Options options);
 
   virtual const FilePath GetBaseCrxFilePath() OVERRIDE;
 
  protected:
   virtual void StartLoading() OVERRIDE;
+  bool IsOptionSet(Options option) {
+    return (options_ & option) != 0;
+  }
 
  private:
   friend class base::RefCountedThreadSafe<ExternalExtensionLoader>;
 
   virtual ~ExternalPrefExtensionLoader() {}
 
+  DictionaryValue* ReadJsonPrefsFile();
   void LoadOnFileThread();
 
   int base_path_key_;
+  Options options_;
   FilePath base_path_;
 
   DISALLOW_COPY_AND_ASSIGN(ExternalPrefExtensionLoader);

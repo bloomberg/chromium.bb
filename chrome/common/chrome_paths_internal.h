@@ -76,6 +76,9 @@ FilePath GetFrameworkBundlePath();
 // Get the local library directory.
 bool GetLocalLibraryDirectory(FilePath* result);
 
+// Get the global Application Support directory (under /Library/).
+bool GetGlobalApplicationSupportDirectory(FilePath* result);
+
 // Returns the NSBundle for the outer browser application, even when running
 // inside the helper. In unbundled applications, such as tests, returns nil.
 NSBundle* OuterAppBundle();

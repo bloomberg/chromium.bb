@@ -105,6 +105,10 @@ bool GetUserDocumentsDirectory(FilePath* result) {
   return base::mac::GetUserDirectory(NSDocumentDirectory, result);
 }
 
+bool GetGlobalApplicationSupportDirectory(FilePath* result) {
+  return base::mac::GetLocalDirectory(NSApplicationSupportDirectory, result);
+}
+
 void GetUserCacheDirectory(const FilePath& profile_dir, FilePath* result) {
   // If the profile directory is under ~/Library/Application Support,
   // use a suitable cache directory under ~/Library/Caches.  For
