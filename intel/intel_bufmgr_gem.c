@@ -275,7 +275,8 @@ drm_intel_gem_bo_tile_pitch(drm_intel_bufmgr_gem *bufmgr_gem,
 	if (*tiling_mode == I915_TILING_NONE)
 		return ALIGN(pitch, 64);
 
-	if (*tiling_mode == I915_TILING_X)
+	if (*tiling_mode == I915_TILING_X
+			|| (IS_915(bufmgr_gem) && *tiling_mode == I915_TILING_Y))
 		tile_width = 512;
 	else
 		tile_width = 128;
@@ -764,7 +765,8 @@ drm_intel_gem_bo_alloc_tiled(drm_intel_bufmgr *bufmgr, const char *name,
 
 		if (IS_GEN2(bufmgr_gem) && tiling != I915_TILING_NONE)
 			height_alignment = 16;
-		else if (tiling == I915_TILING_X)
+		else if (tiling == I915_TILING_X
+			|| (IS_915(bufmgr_gem) && tiling == I915_TILING_Y))
 			height_alignment = 8;
 		else if (tiling == I915_TILING_Y)
 			height_alignment = 32;
