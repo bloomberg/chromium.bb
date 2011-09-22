@@ -1166,7 +1166,8 @@ void NativeWidgetGtk::Show() {
     gtk_widget_show(widget_);
     if (widget_->window)
       gdk_window_raise(widget_->window);
-    delegate_->OnNativeWidgetVisibilityChanged(true);
+    // See Hide() for the reason why we're not calling
+    // OnNativeWidgetVisibilityChange.
   }
 }
 
@@ -1175,7 +1176,15 @@ void NativeWidgetGtk::Hide() {
     gtk_widget_hide(widget_);
     if (widget_->window)
       gdk_window_lower(widget_->window);
-    delegate_->OnNativeWidgetVisibilityChanged(false);
+    // We're not calling OnNativeWidgetVisibilityChanged because it
+    // breaks the ability to refocus to FindBar. NativeControlGtk
+    // detaches the underlying gtk widget for optimization purpose
+    // when it becomes invisible, which in turn breaks SetNativeFocus
+    // because there is no gtk attached to NativeControlGtk. I'm not
+    // fixing that part because
+    // a) This is views/gtk only issue, which will be gone soon.
+    // b) Alternative fix, which we can modify animator to show it
+    // immediately, won't be necessary for non gtk implementation.
   }
 }
 

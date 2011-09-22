@@ -782,6 +782,13 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, AcceleratorRestoring) {
   // The accelerator for Escape should be back to what it was before.
   EXPECT_EQ(old_target,
             focus_manager->GetCurrentTargetForAccelerator(escape));
+
+  // Show find bar again with animation on, and the target should be
+  // on find bar.
+  DropdownBarHost::disable_animations_during_testing_ = false;
+  browser()->ShowFindBar();
+  EXPECT_EQ(new_target,
+            focus_manager->GetCurrentTargetForAccelerator(escape));
 }
 #endif  // TOOLKIT_VIEWS
 
