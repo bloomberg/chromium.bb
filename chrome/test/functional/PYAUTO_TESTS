@@ -111,8 +111,6 @@
       '-cookies.CookiesTest.testAllowCookiesForASessionUsingExceptions',
       '-cookies.CookiesTest.testAllowCookiesUsingExceptions',
       '-cookies.CookiesTest.testBlockCookiesUsingExceptions',
-      # crbug.com/91030
-      '-omnibox.OmniboxTest.testContentHistory',
       # crbug.com/86524
       '-plugins.PluginsTest.testAllowPluginException',
       # crbug.com/87811
