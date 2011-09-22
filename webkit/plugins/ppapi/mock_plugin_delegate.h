@@ -112,7 +112,6 @@ class MockPluginDelegate : public PluginDelegate {
   virtual void DidStopLoading();
   virtual void SetContentRestriction(int restrictions);
   virtual void SaveURLAs(const GURL& url);
-  virtual content::P2PSocketDispatcher* GetP2PSocketDispatcher();
   virtual webkit_glue::P2PTransport* CreateP2PTransport();
   virtual double GetLocalTimeZoneOffset(base::Time t);
   virtual std::string GetFlashCommandLineArgs();

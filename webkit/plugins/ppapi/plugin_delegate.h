@@ -424,13 +424,6 @@ class PluginDelegate {
   // Tells the browser to bring up SaveAs dialog to save specified URL.
   virtual void SaveURLAs(const GURL& url) = 0;
 
-  // Socket dispatcher for P2P connections. Returns to NULL if P2P API
-  // is disabled.
-  //
-  // TODO(sergeyu): Stop using GetP2PSocketDispatcher() in remoting
-  // client and remove it from here.
-  virtual content::P2PSocketDispatcher* GetP2PSocketDispatcher() = 0;
-
   // Creates P2PTransport object.
   virtual webkit_glue::P2PTransport* CreateP2PTransport() = 0;
 

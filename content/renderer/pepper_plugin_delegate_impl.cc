@@ -1519,11 +1519,6 @@ void PepperPluginDelegateImpl::SaveURLAs(const GURL& url) {
       render_view_->routing_id(), url));
 }
 
-content::P2PSocketDispatcher*
-PepperPluginDelegateImpl::GetP2PSocketDispatcher() {
-  return render_view_->p2p_socket_dispatcher();
-}
-
 webkit_glue::P2PTransport* PepperPluginDelegateImpl::CreateP2PTransport() {
 #if defined(ENABLE_P2P_APIS)
   return new content::P2PTransportImpl(render_view_->p2p_socket_dispatcher());

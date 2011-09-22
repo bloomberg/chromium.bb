@@ -260,10 +260,6 @@ void MockPluginDelegate::SetContentRestriction(int restrictions) {
 void MockPluginDelegate::SaveURLAs(const GURL& url) {
 }
 
-content::P2PSocketDispatcher* MockPluginDelegate::GetP2PSocketDispatcher() {
-  return NULL;
-}
-
 webkit_glue::P2PTransport* MockPluginDelegate::CreateP2PTransport() {
   return NULL;
 }
