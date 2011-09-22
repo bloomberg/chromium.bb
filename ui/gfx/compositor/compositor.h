@@ -72,6 +72,9 @@ class COMPOSITOR_EXPORT CompositorDelegate {
  public:
   // Requests the owner to schedule a paint.
   virtual void ScheduleCompositorPaint() = 0;
+
+ protected:
+  virtual ~CompositorDelegate() {}
 };
 
 // Compositor object to take care of GPU painting.
