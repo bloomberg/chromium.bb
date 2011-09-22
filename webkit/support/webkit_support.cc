@@ -264,7 +264,6 @@ static void SetUpTestEnvironmentImpl(bool unit_test_mode) {
     // because on Linux, we need base::AtExitManager.
     icu_util::Initialize();
   }
-  webkit_glue::SetUserAgent("DumpRenderTree", false);
 }
 
 void SetUpTestEnvironment() {

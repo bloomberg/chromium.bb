@@ -48,6 +48,11 @@ bool IsProtocolSupportedForMedia(const GURL& url) {
   return false;
 }
 
+std::string BuildUserAgent(bool mimic_windows) {
+  return webkit_glue::BuildUserAgentHelper(mimic_windows,
+                                           "DumpRenderTree/0.0.0.0");
+}
+
 bool GetPluginFinderURL(std::string* plugin_finder_url) {
   return false;
 }

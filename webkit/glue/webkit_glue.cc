@@ -343,11 +343,13 @@ class UserAgentState {
   UserAgentState();
   ~UserAgentState();
 
-  void Set(const std::string& user_agent, bool overriding);
+  void Set(const std::string& user_agent);
   const std::string& Get(const GURL& url) const;
 
  private:
   mutable std::string user_agent_;
+  // The UA string when we're pretending to be Windows Chrome.
+  mutable std::string mimic_windows_user_agent_;
   // The UA string when we're pretending to be Mac Safari.
   mutable std::string mimic_mac_safari_user_agent_;
 
@@ -367,18 +369,11 @@ UserAgentState::UserAgentState()
 UserAgentState::~UserAgentState() {
 }
 
-void UserAgentState::Set(const std::string& user_agent, bool overriding) {
+void UserAgentState::Set(const std::string& user_agent) {
   base::AutoLock auto_lock(lock_);
-  if (user_agent == user_agent_) {
-    // We allow the user agent to be set multiple times as long as it
-    // is set to the same value, in order to simplify unit testing
-    // given g_user_agent is a global.
-    return;
-  }
-  DCHECK(!user_agent.empty());
   DCHECK(!user_agent_requested_) << "Setting the user agent after someone has "
       "already requested it can result in unexpected behavior.";
-  user_agent_is_overridden_ = overriding;
+  user_agent_is_overridden_ = true;
   user_agent_ = user_agent;
 }
 
@@ -386,10 +381,21 @@ const std::string& UserAgentState::Get(const GURL& url) const {
   base::AutoLock auto_lock(lock_);
   user_agent_requested_ = true;
 
-  DCHECK(!user_agent_.empty());
+  if (user_agent_.empty())
+    user_agent_ = BuildUserAgent(false);
 
   // Workarounds for sites that use misguided UA sniffing.
   if (!user_agent_is_overridden_) {
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
+    if (MatchPattern(url.host(), "*.mail.yahoo.com")) {
+      // mail.yahoo.com is ok with Windows Chrome but not Linux Chrome.
+      // http://bugs.chromium.org/11136
+      // TODO(evanm): remove this if Yahoo fixes their sniffing.
+      if (mimic_windows_user_agent_.empty())
+        mimic_windows_user_agent_ = BuildUserAgent(true);
+      return mimic_windows_user_agent_;
+    }
+#endif
 #if defined(OS_MACOSX)
     if (url.host() == "www.microsoft.com" &&
         StartsWithASCII(url.path(), "/getsilverlight", false)) {
@@ -399,7 +405,7 @@ const std::string& UserAgentState::Get(const GURL& url) const {
       // Should be removed if the sniffing is removed: http://crbug.com/88211
       if (mimic_mac_safari_user_agent_.empty()) {
         mimic_mac_safari_user_agent_ =
-            BuildUserAgentFromProduct("Version/5.0.4 Safari/533.20.27");
+            BuildUserAgentHelper(false, "Version/5.0.4 Safari/533.20.27");
       }
       return mimic_mac_safari_user_agent_;
     }
@@ -413,8 +419,8 @@ base::LazyInstance<UserAgentState> g_user_agent(base::LINKER_INITIALIZED);
 
 }  // namespace
 
-void SetUserAgent(const std::string& user_agent, bool overriding) {
-  g_user_agent.Get().Set(user_agent, overriding);
+void SetUserAgent(const std::string& new_user_agent) {
+  g_user_agent.Get().Set(new_user_agent);
 }
 
 const std::string& GetUserAgent(const GURL& url) {

@@ -20,12 +20,11 @@
 #include "net/base/net_util.h"
 
 #include "chrome/browser/automation/url_request_automation_job.h"
-#include "chrome/common/chrome_version_info.h"
 #include "chrome_frame/chrome_frame_automation.h"
 #include "chrome_frame/chrome_frame_delegate.h"
 #include "chrome_frame/html_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/glue/user_agent.h"
+#include "webkit/glue/webkit_glue.h"
 
 const char kChromeFrameUserAgent[] = "chromeframe";
 
@@ -404,15 +403,11 @@ TEST_F(HtmlUtilUnittest, GetDefaultUserAgentHeaderWithCFTag) {
 }
 
 TEST_F(HtmlUtilUnittest, GetChromeUserAgent) {
-  // This code is duplicated from chrome_content_client.cc to avoid
-  // introducing a link-time dependency on chrome_common.
-  chrome::VersionInfo version_info;
-  std::string product("Chrome/");
-  product += version_info.is_valid() ? version_info.Version() : "0.0.0.0";
-  std::string chrome_ua(webkit_glue::BuildUserAgentFromProduct(product));
-
+  std::string chrome_ua;
+  chrome_ua = webkit_glue::BuildUserAgent(false);
+  EXPECT_FALSE(chrome_ua.empty());
   const char* ua = http_utils::GetChromeUserAgent();
-  EXPECT_EQ(ua, chrome_ua);
+  EXPECT_EQ(0, chrome_ua.compare(ua));
 }
 
 TEST_F(HtmlUtilUnittest, GetDefaultUserAgent) {

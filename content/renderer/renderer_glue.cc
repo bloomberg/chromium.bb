@@ -247,4 +247,8 @@ base::StringPiece GetDataResource(int resource_id) {
   return content::GetContentClient()->GetDataResource(resource_id);
 }
 
+std::string BuildUserAgent(bool mimic_windows) {
+  return content::GetContentClient()->GetUserAgent(mimic_windows);
+}
+
 }  // namespace webkit_glue

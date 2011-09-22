@@ -30,9 +30,8 @@ bool ShellContentClient::CanHandleWhileSwappedOut(const IPC::Message& msg) {
   return false;
 }
 
-std::string ShellContentClient::GetUserAgent(bool* overriding) const {
-  *overriding = false;
-  return std::string("Chrome/15.16.17.18");
+std::string ShellContentClient::GetUserAgent(bool mimic_windows) const {
+  return webkit_glue::BuildUserAgentHelper(mimic_windows, "Chrome/15.16.17.18");
 }
 
 string16 ShellContentClient::GetLocalizedString(int message_id) const {
