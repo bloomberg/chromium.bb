@@ -4,6 +4,7 @@
 
 #include "content/renderer/media/video_capture_module_impl.h"
 
+#include "base/atomicops.h"
 #include "content/renderer/media/video_capture_impl_manager.h"
 
 VideoCaptureModuleImpl::VideoCaptureModuleImpl(
@@ -20,7 +21,8 @@ VideoCaptureModuleImpl::VideoCaptureModuleImpl(
       frame_rate_(-1),
       video_type_(webrtc::kVideoI420),
       capture_engine_(NULL),
-      pending_start_(false) {
+      pending_start_(false),
+      ref_count_(0) {
   DCHECK(vc_manager_);
   Init();
 }
@@ -34,6 +36,21 @@ void VideoCaptureModuleImpl::Init() {
   thread_.Start();
   message_loop_proxy_ = thread_.message_loop_proxy();
   capture_engine_ = vc_manager_->AddDevice(session_id_, this);
+}
+
+int32_t VideoCaptureModuleImpl::AddRef() {
+  VLOG(1) << "VideoCaptureModuleImpl::AddRef()";
+  return base::subtle::Barrier_AtomicIncrement(&ref_count_, 1);
+}
+
+int32_t VideoCaptureModuleImpl::Release() {
+  VLOG(1) << "VideoCaptureModuleImpl::Release()";
+  int ret = base::subtle::Barrier_AtomicIncrement(&ref_count_, -1);
+  if (ret == 0) {
+    VLOG(1) << "Reference count is zero, hence this object is now deleted.";
+    delete this;
+  }
+  return ret;
 }
 
 WebRtc_Word32 VideoCaptureModuleImpl::StartCapture(
