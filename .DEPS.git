@@ -142,7 +142,7 @@ deps_os = {
         'src/chrome_frame/tools/test/reference_build/chrome_win':
             Var('git_url') + '/chromium/reference_builds/chrome_win.git@b9f52667918a74977cb85eefd4e967150f852fbc',
         'src/rlz':
-            Var('git_url') + '/external/rlz.git@a2459c4005bb0af52d59a0c81fdd1a853ed91f75',
+            Var('git_url') + '/external/rlz.git@b45f360498e3816692b0ed8355b9536b08b8cf36',
         'src/third_party/cygwin':
             Var('git_url') + '/chromium/deps/cygwin.git@06a117a90c15174436bfa20ceebbfdf43b7eb820',
         'src/third_party/ffmpeg/binaries/chromium/win/ia32':
