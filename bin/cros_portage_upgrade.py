@@ -5,6 +5,7 @@
 
 """Perform various tasks related to updating Portage packages."""
 
+import filecmp
 import logging
 import optparse
 import os
@@ -85,6 +86,7 @@ class Upgrader(object):
                '_cros_overlay', # Path to chromiumos-overlay repo
                '_csv_file',     # File path for writing csv output
                '_deps_graph',   # Dependency graph from portage
+               '_eclass_regexp',# Regexp to find needed eclass in equery output
                '_emptydir',     # Path to temporary empty directory
                '_equery_regexp',# Regexp mask bits from 'equery list' output
                '_master_archs', # Set. Archs of tables merged into master_table
@@ -133,6 +135,8 @@ class Upgrader(object):
 
     # Pre-compiled regexps for speed.
     self._equery_regexp = re.compile(r'^\[...\]\s*\[(.)(.)\]\s+\S+$')
+    self._eclass_regexp = re.compile(r'(\S+\.eclass) could not be '
+                                     'found by inherit')
 
   def _GetPkgKeywordsFile(self):
     """Return the path to the package.keywords file in chromiumos-overlay."""
@@ -442,8 +446,8 @@ class Upgrader(object):
       if match:
         return ('M' != match.group(1), '~' != match.group(2))
 
-    raise RuntimeError("Unable to determine whether %s is stable from equery "
-                       "output:\n%s" % (cpv, output))
+    raise RuntimeError("Unable to determine whether %s is stable from equery:\n"
+                       " %s\noutput:\n %s" % (cpv, ' '.join(cmd), output))
 
   def _VerifyEbuildOverlay(self, cpv, overlay, stable_only):
     """Raises exception if ebuild for |cpv| is not from |overlay|.
@@ -470,6 +474,31 @@ class Upgrader(object):
       raise RuntimeError('Somehow ebuild for %s is not coming from %s:\n %s\n'
                          'Please show this error to the build team.' %
                          (cpv, overlay, ebuild_path))
+
+  def _IdentifyNeededEclass(self, cpv):
+    """Return eclass that must be upgraded for this |cpv|."""
+    # Use the output of 'equery which'.  If a needed eclass cannot be found,
+    # then the output will have lines like:
+    # * ERROR: app-admin/eselect-1.2.15 failed (depend phase):
+    # *   bash-completion-r1.eclass could not be found by inherit()
+    envvars = self._GenPortageEnvvars(self._curr_arch, unstable_ok=True)
+
+    equery = self._GetBoardCmd(self.EQUERY_CMD)
+    cmd = [equery, 'which', cpv]
+    result = cros_lib.RunCommand(cmd, exit_code=True, error_ok=True,
+                                 extra_env=envvars, print_cmd=False,
+                                 redirect_stdout=True,
+                                 combine_stdout_stderr=True,
+                                 )
+
+    if result.returncode != 0:
+      output = result.output.strip()
+      for line in output.split('\n'):
+        match = self._eclass_regexp.search(line)
+        if match:
+          return match.group(1)
+
+    return None
 
   def _GiveMaskedError(self, upgraded_cpv, emerge_output):
     """Raise RuntimeError saying that |upgraded_cpv| is masked off.
@@ -520,9 +549,6 @@ class Upgrader(object):
 
   def _PkgUpgradeStaged(self, upstream_cpv):
     """Return True if package upgrade is already staged."""
-    if not upstream_cpv:
-      return False
-
     (cat, pkgname, version, rev) = portage.versions.catpkgsplit(upstream_cpv)
     ebuild = upstream_cpv.replace(cat + '/', '') + '.ebuild'
     ebuild_relative_path = os.path.join(cat, pkgname, ebuild)
@@ -535,7 +561,9 @@ class Upgrader(object):
 
   def _AnyChangesStaged(self):
     """Return True if any local changes are staged in stable repo."""
-    return bool(len(self._stable_repo_status))
+    # Don't count files with '??' status - they aren't staged.
+    files = [f for (f, s) in self._stable_repo_status.items() if s != '??']
+    return bool(len(files))
 
   def _StashChanges(self):
     """Run 'git stash save' on stable repo."""
@@ -566,8 +594,7 @@ class Upgrader(object):
     Returns:
       The upstream_cpv if the package was upgraded, None otherwise.
     """
-    if not upstream_cpv:
-      return None
+    oper.Info('Copying %s from upstream.' % upstream_cpv)
 
     (cat, pkgname, version, rev) = portage.versions.catpkgsplit(upstream_cpv)
     ebuild = upstream_cpv.replace(cat + '/', '') + '.ebuild'
@@ -602,7 +629,35 @@ class Upgrader(object):
             shutil.copy2(src, dst)
     self._RunGit(self._stable_repo, 'add ' + catpkgsubdir)
 
+    # Now copy any eclasses that this package requires.
+    eclass = self._IdentifyNeededEclass(upstream_cpv)
+    while eclass and self._CopyUpstreamEclass(eclass):
+      eclass = self._IdentifyNeededEclass(upstream_cpv)
+
     return upstream_cpv
+
+  def _CopyUpstreamEclass(self, eclass):
+    """Upgrades eclass in |eclass| to upstream copy.
+
+    Does not do the copy if the eclass already exists locally and
+    is identical to the upstream version.
+
+    Returns True if the copy was done."""
+    eclass_subpath = os.path.join('eclass', eclass)
+    upstream_path = os.path.join(self._upstream_repo, eclass_subpath)
+    local_path = os.path.join(self._stable_repo, eclass_subpath)
+
+    if os.path.exists(upstream_path):
+      if os.path.exists(local_path) and filecmp.cmp(upstream_path, local_path):
+        return False
+      else:
+        oper.Info('Copying %s from upstream.' % eclass)
+        shutil.copy2(upstream_path, local_path)
+        self._RunGit(self._stable_repo, 'add %s' % eclass_subpath)
+        return True
+
+    raise RuntimeError("Cannot find upstream '%s'.  Looked at '%s'" %
+                       (eclass, upstream_path))
 
   def _GetPackageUpgradeState(self, info):
     """Return state value for package in |info|."""
@@ -771,7 +826,6 @@ class Upgrader(object):
                     info['upstream_cpv'])
           info['upgraded_cpv'] = info['upstream_cpv']
         elif info['cpv_cmp_upstream'] > 0:
-          oper.Info('Copying %s from upstream.' % info['upstream_cpv'])
           info['upgraded_cpv'] = self._CopyUpstreamPackage(info['upstream_cpv'])
 
     return bool(info['upgraded_cpv'])
