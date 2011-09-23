@@ -13,6 +13,7 @@
 #include "chrome/test/base/test_url_request_context_getter.h"
 #include "content/browser/browser_thread.h"
 #include "jingle/notifier/base/fake_base_task.h"
+#include "net/url_request/url_request_context.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -43,11 +44,20 @@ class NonBlockingInvalidationNotifierTest : public testing::Test {
   }
 
   virtual void TearDown() {
+    scoped_refptr<net::URLRequestContextGetter> request_context_getter =
+        request_context_getter_;
     invalidation_notifier_->RemoveObserver(&mock_observer_);
     invalidation_notifier_.reset();
     request_context_getter_ = NULL;
     io_thread_.Stop();
     ui_loop_.RunAllPending();
+    // Extra checks to catch the leak described in
+    // http://crbug.com/96904.
+    EXPECT_TRUE(request_context_getter->HasOneRef());
+    // |request_context_getter| should be the only thing that has a
+    // ref to the request context (note that GetURLRequestContext()
+    // returns a raw pointer).
+    EXPECT_TRUE(request_context_getter->GetURLRequestContext()->HasOneRef());
   }
 
   MessageLoop ui_loop_;
