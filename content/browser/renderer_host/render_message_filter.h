@@ -156,8 +156,9 @@ class RenderMessageFilter : public BrowserMessageFilter {
   void OnReleaseCachedFonts();
 #endif
 
-  void OnGetPlugins(bool refresh,
-                    std::vector<webkit::WebPluginInfo>* plugins);
+  void OnGetPlugins(bool refresh, IPC::Message* reply_msg);
+  void GetPluginsCallback(IPC::Message* reply_msg,
+                          const std::vector<webkit::WebPluginInfo>& plugins);
   void OnGetPluginInfo(int routing_id,
                        const GURL& url,
                        const GURL& policy_url,

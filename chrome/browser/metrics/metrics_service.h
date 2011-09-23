@@ -38,6 +38,7 @@ class TemplateURLService;
 namespace base {
 class DictionaryValue;
 class ListValue;
+class MessageLoopProxy;
 }
 
 namespace prerender {
@@ -165,12 +166,17 @@ class MetricsService : public NotificationObserver,
     NEED_TO_SHUTDOWN = ~CLEANLY_SHUTDOWN
   };
 
-  class InitTask;
-  class InitTaskComplete;
+  // First part of the init task. Called on the FILE thread to load hardware
+  // class information.
+  void InitTaskGetHardwareClass(base::MessageLoopProxy* target_loop);
 
-  // Callback to let us know that the init task is done.
-  void OnInitTaskComplete(
-      const std::string& hardware_class,
+  // Callback from InitTaskGetHardwareClass() that continues the init task by
+  // loading plugin information.
+  void OnInitTaskGotHardwareClass(const std::string& hardware_class);
+
+  // Callback from PluginService::GetPlugins() that moves the state to
+  // INIT_TASK_DONE.
+  void OnInitTaskGotPluginInfo(
       const std::vector<webkit::WebPluginInfo>& plugins);
 
   // When we start a new version of Chromium (different from our last run), we

@@ -10,9 +10,7 @@
 
 namespace webkit {
 namespace npapi {
-
-class PluginList;
-
+class PluginGroup;
 }
 }
 
@@ -47,10 +45,11 @@ class GetResourceIdentifiersFunction : public AsyncExtensionFunction {
   FRIEND_TEST_ALL_PREFIXES(ExtensionApiTest,
                            ContentSettingsGetResourceIdentifiers);
 
-  void GetPluginsOnFileThread();
+  void OnGotPluginGroups(const std::vector<webkit::npapi::PluginGroup>& groups);
 
   // Used to override the global plugin list in tests.
-  static void SetPluginListForTesting(webkit::npapi::PluginList* plugin_list);
+  static void SetPluginGroupsForTesting(
+      const std::vector<webkit::npapi::PluginGroup>* plugin_groups);
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_CONTENT_SETTINGS_API_H__

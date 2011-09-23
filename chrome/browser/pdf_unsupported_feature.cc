@@ -4,6 +4,7 @@
 
 #include "chrome/browser/pdf_unsupported_feature.h"
 
+#include "base/bind.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "base/version.h"
@@ -14,6 +15,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/chrome_interstitial_page.h"
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
+#include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/jstemplate_builder.h"
@@ -30,11 +32,8 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
 #include "webkit/plugins/npapi/plugin_group.h"
-#include "webkit/plugins/npapi/plugin_list.h"
-#include "webkit/plugins/webplugininfo.h"
 
 using webkit::npapi::PluginGroup;
-using webkit::npapi::PluginList;
 using webkit::WebPluginInfo;
 
 namespace {
@@ -236,7 +235,7 @@ class PDFUnsupportedFeatureInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
   // |reader_group| is NULL if Adobe Reader isn't installed.
   PDFUnsupportedFeatureInfoBarDelegate(TabContentsWrapper* tab_contents,
-                                       PluginGroup* reader_group);
+                                       const PluginGroup* reader_group);
   virtual ~PDFUnsupportedFeatureInfoBarDelegate();
 
   // ConfirmInfoBarDelegate
@@ -262,7 +261,7 @@ class PDFUnsupportedFeatureInfoBarDelegate : public ConfirmInfoBarDelegate {
 
 PDFUnsupportedFeatureInfoBarDelegate::PDFUnsupportedFeatureInfoBarDelegate(
     TabContentsWrapper* tab_contents,
-    PluginGroup* reader_group)
+    const PluginGroup* reader_group)
     : ConfirmInfoBarDelegate(tab_contents->tab_contents()),
       tab_contents_(tab_contents),
       reader_installed_(!!reader_group),
@@ -362,14 +361,19 @@ void PDFUnsupportedFeatureInfoBarDelegate::OnNo() {
       UserMetricsAction("PDF_InstallReaderInfoBarCancel"));
 }
 
-}  // namespace
+void GotPluginGroupsCallback(int process_id,
+                             int routing_id,
+                             const std::vector<PluginGroup>& groups) {
+  TabContents* tab_contents =
+      tab_util::GetTabContentsByID(process_id, routing_id);
+  if (!tab_contents)
+    return;
 
-void PDFHasUnsupportedFeature(TabContentsWrapper* tab) {
-#if !defined(OS_WIN)
-  // Only works for Windows for now.  For Mac, we'll have to launch the file
-  // externally since Adobe Reader doesn't work inside Chrome.
-  return;
-#endif
+  TabContentsWrapper* tab =
+      TabContentsWrapper::GetCurrentWrapperForContents(tab_contents);
+  if (!tab)
+    return;
+
   string16 reader_group_name(ASCIIToUTF16(PluginGroup::kAdobeReaderGroupName));
 
   // If the Reader plugin is disabled by policy, don't prompt them.
@@ -379,16 +383,29 @@ void PDFHasUnsupportedFeature(TabContentsWrapper* tab) {
     return;
   }
 
-  PluginGroup* reader_group = NULL;
-  std::vector<PluginGroup> plugin_groups;
-  PluginList::Singleton()->GetPluginGroups(false, &plugin_groups);
-  for (size_t i = 0; i < plugin_groups.size(); ++i) {
-    if (plugin_groups[i].GetGroupName() == reader_group_name) {
-      reader_group = &plugin_groups[i];
+  const PluginGroup* reader_group = NULL;
+  for (size_t i = 0; i < groups.size(); ++i) {
+    if (groups[i].GetGroupName() == reader_group_name) {
+      reader_group = &groups[i];
       break;
     }
   }
 
   tab->infobar_tab_helper()->AddInfoBar(
       new PDFUnsupportedFeatureInfoBarDelegate(tab, reader_group));
+}
+
+}  // namespace
+
+void PDFHasUnsupportedFeature(TabContentsWrapper* tab) {
+#if !defined(OS_WIN)
+  // Only works for Windows for now.  For Mac, we'll have to launch the file
+  // externally since Adobe Reader doesn't work inside Chrome.
+  return;
+#endif
+
+  PluginService::GetInstance()->GetPluginGroups(
+      base::Bind(&GotPluginGroupsCallback,
+          tab->render_view_host()->process()->id(),
+          tab->render_view_host()->routing_id()));
 }

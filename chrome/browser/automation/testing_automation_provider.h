@@ -29,6 +29,10 @@ namespace base {
 class DictionaryValue;
 }
 
+namespace webkit {
+struct WebPluginInfo;
+}
+
 // This is an automation provider containing testing calls.
 class TestingAutomationProvider : public AutomationProvider,
                                   public BrowserList::Observer,
@@ -499,6 +503,10 @@ class TestingAutomationProvider : public AutomationProvider,
   void GetPluginsInfo(Browser* browser,
                       base::DictionaryValue* args,
                       IPC::Message* reply_message);
+  void GetPluginsInfoCallback(Browser* browser,
+      base::DictionaryValue* args,
+      IPC::Message* reply_message,
+      const std::vector<webkit::WebPluginInfo>& plugins);
 
   // Enable a plugin.
   // Uses the JSON interface for input/output.

@@ -17,6 +17,10 @@ namespace net {
 class URLRequest;
 }  // namespace net
 
+namespace webkit {
+struct WebPluginInfo;
+}
+
 // Used to buffer a request until enough data has been received.
 class BufferedResourceHandler : public ResourceHandler {
  public:
@@ -69,11 +73,8 @@ class BufferedResourceHandler : public ResourceHandler {
   // A reference to |handler| is acquired.
   void UseAlternateResourceHandler(int request_id, ResourceHandler* handler);
 
-  // Called on the file thread to load the list of plugins.
-  void LoadPlugins();
-
   // Called on the IO thread once the list of plugins has been loaded.
-  void OnPluginsLoaded();
+  void OnPluginsLoaded(const std::vector<webkit::WebPluginInfo>& plugins);
 
   scoped_refptr<ResourceHandler> real_handler_;
   scoped_refptr<ResourceResponse> response_;

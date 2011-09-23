@@ -36,7 +36,9 @@ extern FilePath::CharType kDefaultPluginLibraryName[];
 class PluginInstance;
 
 // This struct holds entry points into a plugin.  The entry points are
-// slightly different between Win/Mac and Unixes.
+// slightly different between Win/Mac and Unixes.  Note that the interface for
+// querying plugins is synchronous and it is preferable to use a higher-level
+// asynchronous information to query information.
 struct PluginEntryPoints {
 #if !defined(OS_POSIX) || defined(OS_MACOSX)
   NP_GetEntryPointsFunc np_getentrypoints;
@@ -118,7 +120,7 @@ class PluginList {
       const string16& mime_type_descriptions,
       std::vector<webkit::WebPluginMimeType>* parsed_mime_types);
 
-  // Get all the plugins.
+  // Get all the plugins synchronously.
   void GetPlugins(std::vector<webkit::WebPluginInfo>* plugins);
 
   // Returns a list in |info| containing plugins that are found for
@@ -146,7 +148,9 @@ class PluginList {
   bool GetPluginInfoByPath(const FilePath& plugin_path,
                            webkit::WebPluginInfo* info);
 
-  // Populates the given vector with all available plugin groups.
+  // Populates the given vector with all available plugin groups. If
+  // |load_if_necessary| is true, this will potentially load the plugin list
+  // synchronously.
   void GetPluginGroups(bool load_if_necessary,
                        std::vector<PluginGroup>* plugin_groups);
 

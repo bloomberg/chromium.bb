@@ -21,6 +21,7 @@
 #include "content/browser/download/download_types.h"
 #include "content/browser/plugin_process_host.h"
 #include "content/browser/plugin_service.h"
+#include "content/browser/plugin_service_filter.h"
 #include "content/browser/ppapi_plugin_process_host.h"
 #include "content/browser/ppapi_broker_process_host.h"
 #include "content/browser/renderer_host/browser_render_process_host.h"
@@ -51,7 +52,6 @@
 #include "webkit/glue/webcookie.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/plugins/npapi/plugin_group.h"
-#include "webkit/plugins/npapi/plugin_list.h"
 #include "webkit/plugins/npapi/webplugin.h"
 #include "webkit/plugins/webplugininfo.h"
 
@@ -295,8 +295,6 @@ void RenderMessageFilter::OnChannelError() {
 void RenderMessageFilter::OverrideThreadForMessage(const IPC::Message& message,
                                                    BrowserThread::ID* thread) {
   switch (message.type()) {
-    // Can't load plugins on IO thread.
-    case ViewHostMsg_GetPlugins::ID:
     // The PluginService::GetPluginInfo may need to load the plugins.  Don't do
     // it on the IO thread.
     case ViewHostMsg_GetPluginInfo::ID:
@@ -338,7 +336,7 @@ bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message,
 #if defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER(ViewHostMsg_LoadFont, OnLoadFont)
 #endif
-    IPC_MESSAGE_HANDLER(ViewHostMsg_GetPlugins, OnGetPlugins)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_GetPlugins, OnGetPlugins)
     IPC_MESSAGE_HANDLER(ViewHostMsg_GetPluginInfo, OnGetPluginInfo)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DownloadUrl, OnDownloadUrl)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_OpenChannelToPlugin,
@@ -513,7 +511,7 @@ void RenderMessageFilter::OnReleaseCachedFonts() {
 
 void RenderMessageFilter::OnGetPlugins(
     bool refresh,
-    std::vector<webkit::WebPluginInfo>* plugins) {
+    IPC::Message* reply_msg) {
   // Don't refresh if the specified threshold has not been passed.  Note that
   // this check is performed before off-loading to the file thread.  The reason
   // we do this is that some pages tend to request that the list of plugins be
@@ -526,13 +524,39 @@ void RenderMessageFilter::OnGetPlugins(
     const base::TimeTicks now = base::TimeTicks::Now();
     if (now - last_plugin_refresh_time_ >= threshold) {
       // Only refresh if the threshold hasn't been exceeded yet.
-      webkit::npapi::PluginList::Singleton()->RefreshPlugins();
+      PluginService::GetInstance()->RefreshPluginList();
       last_plugin_refresh_time_ = now;
     }
   }
 
-  PluginService::GetInstance()->GetPlugins(resource_context_,
-                                           plugins);
+  PluginService::GetInstance()->GetPlugins(
+      base::Bind(&RenderMessageFilter::GetPluginsCallback, this, reply_msg));
+}
+
+void RenderMessageFilter::GetPluginsCallback(
+    IPC::Message* reply_msg,
+    const std::vector<webkit::WebPluginInfo>& all_plugins) {
+  // Filter the plugin list.
+  content::PluginServiceFilter* filter = PluginService::GetInstance()->filter();
+  std::vector<webkit::WebPluginInfo> plugins;
+
+  int child_process_id = -1;
+  int routing_id = MSG_ROUTING_NONE;
+  for (size_t i = 0; i < all_plugins.size(); ++i) {
+    // Copy because the filter can mutate.
+    webkit::WebPluginInfo plugin(all_plugins[i]);
+    if (!filter || filter->ShouldUsePlugin(child_process_id,
+                                           routing_id,
+                                           &resource_context_,
+                                           GURL(),
+                                           GURL(),
+                                           &plugin)) {
+      plugins.push_back(plugin);
+    }
+  }
+
+  ViewHostMsg_GetPlugins::WriteReplyParams(reply_msg, plugins);
+  Send(reply_msg);
 }
 
 void RenderMessageFilter::OnGetPluginInfo(

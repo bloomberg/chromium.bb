@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/string_util.h"
@@ -24,7 +25,7 @@
 #include "net/base/mime_util.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
-#include "webkit/plugins/npapi/plugin_list.h"
+#include "webkit/plugins/webplugininfo.h"
 
 namespace {
 
@@ -346,10 +347,9 @@ bool BufferedResourceHandler::ShouldWaitForPlugins() {
       ResourceDispatcherHost::InfoForRequest(request_);
   host_->PauseRequest(info->child_id(), info->request_id(), true);
 
-  // Schedule plugin loading on the file thread.
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      NewRunnableMethod(this, &BufferedResourceHandler::LoadPlugins));
+  // Get the plugins asynchronously.
+  PluginService::GetInstance()->GetPlugins(
+      base::Bind(&BufferedResourceHandler::OnPluginsLoaded, this));
   return true;
 }
 
@@ -455,16 +455,8 @@ void BufferedResourceHandler::UseAlternateResourceHandler(
   real_handler_ = handler;
 }
 
-void BufferedResourceHandler::LoadPlugins() {
-  std::vector<webkit::WebPluginInfo> plugins;
-  webkit::npapi::PluginList::Singleton()->GetPlugins(&plugins);
-
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      NewRunnableMethod(this, &BufferedResourceHandler::OnPluginsLoaded));
-}
-
-void BufferedResourceHandler::OnPluginsLoaded() {
+void BufferedResourceHandler::OnPluginsLoaded(
+    const std::vector<webkit::WebPluginInfo>& plugins) {
   wait_for_plugins_ = false;
   if (!request_)
     return;

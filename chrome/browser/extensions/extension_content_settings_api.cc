@@ -19,8 +19,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_error_utils.h"
+#include "content/browser/plugin_service.h"
 #include "webkit/plugins/npapi/plugin_group.h"
-#include "webkit/plugins/npapi/plugin_list.h"
 
 namespace helpers = extension_content_settings_helpers;
 namespace keys = extension_content_settings_api_constants;
@@ -29,7 +29,7 @@ namespace pref_keys = extension_preference_api_constants;
 
 namespace {
 
-webkit::npapi::PluginList* g_plugin_list = NULL;
+const std::vector<webkit::npapi::PluginGroup>* g_testing_plugin_groups_;
 
 }  // namespace
 
@@ -265,10 +265,12 @@ bool GetResourceIdentifiersFunction::RunImpl() {
   if (content_type == CONTENT_SETTINGS_TYPE_PLUGINS &&
       CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableResourceContentSettings)) {
-    BrowserThread::PostTask(
-        BrowserThread::FILE, FROM_HERE,
-        base::Bind(&GetResourceIdentifiersFunction::GetPluginsOnFileThread,
-                   this));
+    if (g_testing_plugin_groups_) {
+      OnGotPluginGroups(*g_testing_plugin_groups_);
+    } else {
+      PluginService::GetInstance()->GetPluginGroups(
+          base::Bind(&GetResourceIdentifiersFunction::OnGotPluginGroups, this));
+    }
   } else {
     SendResponse(true);
   }
@@ -276,18 +278,11 @@ bool GetResourceIdentifiersFunction::RunImpl() {
   return true;
 }
 
-void GetResourceIdentifiersFunction::GetPluginsOnFileThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  webkit::npapi::PluginList* plugin_list = g_plugin_list;
-  if (!plugin_list) {
-    plugin_list = webkit::npapi::PluginList::Singleton();
-  }
-
-  std::vector<webkit::npapi::PluginGroup> groups;
-  plugin_list->GetPluginGroups(true, &groups);
-
+void GetResourceIdentifiersFunction::OnGotPluginGroups(
+    const std::vector<webkit::npapi::PluginGroup>& groups) {
   ListValue* list = new ListValue();
-  for (std::vector<webkit::npapi::PluginGroup>::iterator it = groups.begin();
+  for (std::vector<webkit::npapi::PluginGroup>::const_iterator it =
+          groups.begin();
        it != groups.end(); ++it) {
     DictionaryValue* dict = new DictionaryValue();
     dict->SetString(keys::kIdKey, it->identifier());
@@ -301,7 +296,7 @@ void GetResourceIdentifiersFunction::GetPluginsOnFileThread() {
 }
 
 // static
-void GetResourceIdentifiersFunction::SetPluginListForTesting(
-    webkit::npapi::PluginList* plugin_list) {
-  g_plugin_list = plugin_list;
+void GetResourceIdentifiersFunction::SetPluginGroupsForTesting(
+    const std::vector<webkit::npapi::PluginGroup>* plugin_groups) {
+  g_testing_plugin_groups_ = plugin_groups;
 }

@@ -4,9 +4,12 @@
 
 #include "content/browser/plugin_service.h"
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/file_path.h"
+#include "base/message_loop.h"
+#include "base/message_loop_proxy.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
 #include "base/synchronization/waitable_event.h"
@@ -27,6 +30,7 @@
 #include "content/common/plugin_messages.h"
 #include "content/common/view_messages.h"
 #include "webkit/plugins/npapi/plugin_constants_win.h"
+#include "webkit/plugins/npapi/plugin_group.h"
 #include "webkit/plugins/npapi/plugin_list.h"
 #include "webkit/plugins/webplugininfo.h"
 
@@ -35,6 +39,28 @@ using ::base::files::FilePathWatcher;
 #endif
 
 using content::PluginServiceFilter;
+
+namespace {
+
+// Helper function that merely runs the callback with the result. Called on the
+// thread on which the original GetPlugins() call was made.
+static void RunGetPluginsCallback(
+    const PluginService::GetPluginsCallback& callback,
+    const std::vector<webkit::WebPluginInfo>& result) {
+  callback.Run(result);
+}
+
+// A callback for GetPlugins() that then gets the freshly loaded plugin groups
+// and runs the callback for GetPluginGroups().
+static void GetPluginsForGroupsCallback(
+    const PluginService::GetPluginGroupsCallback& callback,
+    const std::vector<webkit::WebPluginInfo>& plugins) {
+  std::vector<webkit::npapi::PluginGroup> groups;
+  webkit::npapi::PluginList::Singleton()->GetPluginGroups(false, &groups);
+  callback.Run(groups);
+}
+
+}  // namespace
 
 #if defined(OS_MACOSX)
 static void NotifyPluginsOfActivation() {
@@ -417,29 +443,31 @@ bool PluginService::GetPluginInfo(int render_process_id,
   return false;
 }
 
-void PluginService::GetPlugins(
-    const content::ResourceContext& context,
-    std::vector<webkit::WebPluginInfo>* plugins) {
-  // GetPlugins may need to load the plugins, so we need to be
-  // on the FILE thread.
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  webkit::npapi::PluginList* plugin_list =
-      webkit::npapi::PluginList::Singleton();
-  std::vector<webkit::WebPluginInfo> all_plugins;
-  plugin_list->GetPlugins(&all_plugins);
+void PluginService::RefreshPluginList() {
+  webkit::npapi::PluginList::Singleton()->RefreshPlugins();
+}
 
-  int child_process_id = -1;
-  int routing_id = MSG_ROUTING_NONE;
-  for (size_t i = 0; i < all_plugins.size(); ++i) {
-    if (!filter_ || filter_->ShouldUsePlugin(child_process_id,
-                                             routing_id,
-                                             &context,
-                                             GURL(),
-                                             GURL(),
-                                             &all_plugins[i])) {
-      plugins->push_back(all_plugins[i]);
-    }
-  }
+void PluginService::GetPlugins(const GetPluginsCallback& callback) {
+  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
+      base::Bind(&PluginService::GetPluginsInternal, base::Unretained(this),
+          MessageLoop::current()->message_loop_proxy(),
+          callback));
+}
+
+void PluginService::GetPluginGroups(const GetPluginGroupsCallback& callback) {
+  GetPlugins(base::Bind(&GetPluginsForGroupsCallback, callback));
+}
+
+void PluginService::GetPluginsInternal(
+     base::MessageLoopProxy* target_loop,
+     const PluginService::GetPluginsCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+
+  std::vector<webkit::WebPluginInfo> plugins;
+  webkit::npapi::PluginList::Singleton()->GetPlugins(&plugins);
+
+  target_loop->PostTask(FROM_HERE,
+      base::Bind(&RunGetPluginsCallback, callback, plugins));
 }
 
 void PluginService::OnWaitableEventSignaled(

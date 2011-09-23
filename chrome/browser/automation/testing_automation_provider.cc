@@ -103,6 +103,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
+#include "content/browser/plugin_service.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/interstitial_page.h"
@@ -115,7 +116,7 @@
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/message_box_flags.h"
 #include "webkit/glue/webdropdata.h"
-#include "webkit/plugins/npapi/plugin_list.h"
+#include "webkit/plugins/webplugininfo.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/ui/webui/active_downloads_ui.h"
@@ -3495,15 +3496,16 @@ void TestingAutomationProvider::GetPluginsInfo(
     Browser* browser,
     DictionaryValue* args,
     IPC::Message* reply_message) {
-  if (!BrowserThread::CurrentlyOn(BrowserThread::FILE)) {
-    BrowserThread::PostTask(
-        BrowserThread::FILE, FROM_HERE,
-        base::Bind(&TestingAutomationProvider::GetPluginsInfo,
-                   this, browser, args, reply_message));
-    return;
-  }
-  std::vector<webkit::WebPluginInfo> plugins;
-  webkit::npapi::PluginList::Singleton()->GetPlugins(&plugins);
+  PluginService::GetInstance()->GetPlugins(
+      base::Bind(&TestingAutomationProvider::GetPluginsInfoCallback,
+          this, browser, args, reply_message));
+}
+
+void TestingAutomationProvider::GetPluginsInfoCallback(
+    Browser* browser,
+    DictionaryValue* args,
+    IPC::Message* reply_message,
+    const std::vector<webkit::WebPluginInfo>& plugins) {
   PluginPrefs* plugin_prefs = PluginPrefs::GetForProfile(browser->profile());
   ListValue* items = new ListValue;
   for (std::vector<webkit::WebPluginInfo>::const_iterator it =

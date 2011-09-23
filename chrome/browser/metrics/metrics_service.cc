@@ -187,6 +187,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "content/browser/load_notification_details.h"
+#include "content/browser/plugin_service.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/common/child_process_info.h"
 #include "content/common/notification_service.h"
@@ -319,44 +320,6 @@ class MetricsMemoryDetails : public MemoryDetails {
 
   Task* completion_;
   DISALLOW_COPY_AND_ASSIGN(MetricsMemoryDetails);
-};
-
-class MetricsService::InitTaskComplete : public Task {
- public:
-  explicit InitTaskComplete(
-      const std::string& hardware_class,
-      const std::vector<webkit::WebPluginInfo>& plugins)
-      : hardware_class_(hardware_class), plugins_(plugins) {}
-
-  virtual void Run() {
-    g_browser_process->metrics_service()->OnInitTaskComplete(
-        hardware_class_, plugins_);
-  }
-
- private:
-  std::string hardware_class_;
-  std::vector<webkit::WebPluginInfo> plugins_;
-};
-
-class MetricsService::InitTask : public Task {
- public:
-  explicit InitTask(MessageLoop* callback_loop)
-      : callback_loop_(callback_loop) {}
-
-  virtual void Run() {
-    std::vector<webkit::WebPluginInfo> plugins;
-    webkit::npapi::PluginList::Singleton()->GetPlugins(&plugins);
-    std::string hardware_class;  // Empty string by default.
-#if defined(OS_CHROMEOS)
-    chromeos::system::StatisticsProvider::GetInstance()->GetMachineStatistic(
-        "hardware_class", &hardware_class);
-#endif  // OS_CHROMEOS
-    callback_loop_->PostTask(FROM_HERE, new InitTaskComplete(
-        hardware_class, plugins));
-  }
-
- private:
-  MessageLoop* callback_loop_;
 };
 
 // static
@@ -796,12 +759,38 @@ void MetricsService::InitializeMetricsState() {
   ScheduleNextStateSave();
 }
 
-void MetricsService::OnInitTaskComplete(
-    const std::string& hardware_class,
-    const std::vector<webkit::WebPluginInfo>& plugins) {
+void MetricsService::InitTaskGetHardwareClass(
+    base::MessageLoopProxy* target_loop) {
+  DCHECK(state_ == INIT_TASK_SCHEDULED);
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+
+  std::string hardware_class;
+#if defined(OS_CHROMEOS)
+  chromeos::system::StatisticsProvider::GetInstance()->GetMachineStatistic(
+      "hardware_class", &hardware_class);
+#endif  // OS_CHROMEOS
+
+  target_loop->PostTask(FROM_HERE,
+      base::Bind(&MetricsService::OnInitTaskGotHardwareClass,
+          base::Unretained(this), hardware_class));
+}
+
+void MetricsService::OnInitTaskGotHardwareClass(
+    const std::string& hardware_class) {
   DCHECK(state_ == INIT_TASK_SCHEDULED);
   hardware_class_ = hardware_class;
+
+  // Start the next part of the init task: loading plugin information.
+  PluginService::GetInstance()->GetPlugins(
+      base::Bind(&MetricsService::OnInitTaskGotPluginInfo,
+          base::Unretained(this)));
+}
+
+void MetricsService::OnInitTaskGotPluginInfo(
+    const std::vector<webkit::WebPluginInfo>& plugins) {
+  DCHECK(state_ == INIT_TASK_SCHEDULED);
   plugins_ = plugins;
+
   io_thread_ = g_browser_process->io_thread();
   if (state_ == INIT_TASK_SCHEDULED)
     state_ = INIT_TASK_DONE;
@@ -853,8 +842,10 @@ void MetricsService::StartRecording() {
     // initialization steps (such as plugin list generation) necessary
     // for sending the initial log.  This avoids blocking the main UI
     // thread.
-    g_browser_process->file_thread()->message_loop()->PostDelayedTask(FROM_HERE,
-        new InitTask(MessageLoop::current()),
+    BrowserThread::PostDelayedTask(BrowserThread::FILE, FROM_HERE,
+        base::Bind(&MetricsService::InitTaskGetHardwareClass,
+            base::Unretained(this),
+            MessageLoop::current()->message_loop_proxy()),
         kInitializationDelaySeconds * 1000);
   }
 }

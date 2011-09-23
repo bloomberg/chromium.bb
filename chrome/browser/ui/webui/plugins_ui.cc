@@ -8,7 +8,9 @@
 #include <string>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/memory/singleton.h"
+#include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/utf_string_conversions.h"
@@ -27,6 +29,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/browser_thread.h"
+#include "content/browser/plugin_service.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_service.h"
 #include "grit/browser_resources.h"
@@ -34,7 +37,7 @@
 #include "grit/theme_resources.h"
 #include "grit/theme_resources_standard.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "webkit/plugins/npapi/plugin_list.h"
+#include "webkit/plugins/npapi/plugin_group.h"
 
 using webkit::npapi::PluginGroup;
 using webkit::WebPluginInfo;
@@ -119,23 +122,15 @@ class PluginsDOMHandler : public WebUIMessageHandler,
                        const NotificationDetails& details) OVERRIDE;
 
  private:
-  // Loads the plugins on the FILE thread.
-  static void LoadPluginsOnFileThread(
-      std::vector<PluginGroup>* groups, Task* task);
-
-  // Used in conjunction with ListWrapper to avoid any memory leaks.
-  static void EnsurePluginGroupsDeleted(
-      std::vector<PluginGroup>* groups);
-
   // Call this to start getting the plugins on the UI thread.
   void LoadPlugins();
 
   // Called on the UI thread when the plugin information is ready.
-  void PluginsLoaded(const std::vector<PluginGroup>* groups);
+  void PluginsLoaded(const std::vector<PluginGroup>& groups);
 
   NotificationRegistrar registrar_;
 
-  ScopedRunnableMethodFactory<PluginsDOMHandler> get_plugins_factory_;
+  base::WeakPtrFactory<PluginsDOMHandler> weak_ptr_factory_;
 
   // This pref guards the value whether about:plugins is in the details mode or
   // not.
@@ -145,7 +140,7 @@ class PluginsDOMHandler : public WebUIMessageHandler,
 };
 
 PluginsDOMHandler::PluginsDOMHandler()
-    : ALLOW_THIS_IN_INITIALIZER_LIST(get_plugins_factory_(this)) {
+    : ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
   registrar_.Add(this,
                  chrome::NOTIFICATION_PLUGIN_ENABLE_STATUS_CHANGED,
                  NotificationService::AllSources());
@@ -235,40 +230,16 @@ void PluginsDOMHandler::Observe(int type,
   LoadPlugins();
 }
 
-void PluginsDOMHandler::LoadPluginsOnFileThread(
-    std::vector<PluginGroup>* groups,
-    Task* task) {
-  webkit::npapi::PluginList::Singleton()->GetPluginGroups(true, groups);
-
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, task);
-  BrowserThread::PostTask(
-      BrowserThread::UI,
-      FROM_HERE,
-      NewRunnableFunction(&PluginsDOMHandler::EnsurePluginGroupsDeleted,
-                          groups));
-}
-
-void PluginsDOMHandler::EnsurePluginGroupsDeleted(
-    std::vector<PluginGroup>* groups) {
-  delete groups;
-}
-
 void PluginsDOMHandler::LoadPlugins() {
-  if (!get_plugins_factory_.empty())
+  if (weak_ptr_factory_.HasWeakPtrs())
     return;
 
-  std::vector<PluginGroup>* groups = new std::vector<PluginGroup>;
-  Task* task = get_plugins_factory_.NewRunnableMethod(
-          &PluginsDOMHandler::PluginsLoaded, groups);
-
-  BrowserThread::PostTask(
-      BrowserThread::FILE,
-      FROM_HERE,
-      NewRunnableFunction(
-          &PluginsDOMHandler::LoadPluginsOnFileThread, groups, task));
+  PluginService::GetInstance()->GetPluginGroups(
+      base::Bind(&PluginsDOMHandler::PluginsLoaded,
+          weak_ptr_factory_.GetWeakPtr()));
 }
 
-void PluginsDOMHandler::PluginsLoaded(const std::vector<PluginGroup>* groups) {
+void PluginsDOMHandler::PluginsLoaded(const std::vector<PluginGroup>& groups) {
   PluginPrefs* plugin_prefs =
       PluginPrefs::GetForProfile(Profile::FromWebUI(web_ui_));
 
@@ -277,9 +248,9 @@ void PluginsDOMHandler::PluginsLoaded(const std::vector<PluginGroup>* groups) {
 
   // Construct DictionaryValues to return to the UI
   ListValue* plugin_groups_data = new ListValue();
-  for (size_t i = 0; i < groups->size(); ++i) {
+  for (size_t i = 0; i < groups.size(); ++i) {
     ListValue* plugin_files = new ListValue();
-    const PluginGroup& group = (*groups)[i];
+    const PluginGroup& group = groups[i];
     string16 group_name = group.GetGroupName();
     bool group_enabled = false;
     const WebPluginInfo* active_plugin = NULL;

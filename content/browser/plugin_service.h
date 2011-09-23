@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/singleton.h"
 #include "base/synchronization/waitable_event_watcher.h"
@@ -25,7 +26,6 @@
 #include "content/common/notification_registrar.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_channel_handle.h"
-#include "webkit/plugins/webplugininfo.h"
 
 #if defined(OS_WIN)
 #include "base/memory/scoped_ptr.h"
@@ -39,13 +39,26 @@
 struct PepperPluginInfo;
 class PluginDirWatcherDelegate;
 
+namespace base {
+class MessageLoopProxy;
+}
+
 namespace content {
 class ResourceContext;
 class PluginServiceFilter;
 }
 
+namespace webkit {
+namespace npapi {
+class PluginGroup;
+class PluginList;
+}
+}
+
 // This must be created on the main thread but it's only called on the IO/file
-// thread.
+// thread. This is an asynchronous wrapper around the PluginList interface for
+// querying plugin information. This must be used instead of that to avoid
+// doing expensive disk operations on the IO/UI threads.
 class CONTENT_EXPORT PluginService
     : public base::WaitableEventWatcher::Delegate,
       public NotificationObserver {
@@ -56,6 +69,11 @@ class CONTENT_EXPORT PluginService
     GURL url;  // If empty, the override applies to all urls in render_view.
     webkit::WebPluginInfo plugin;
   };
+
+  typedef base::Callback<void(const std::vector<webkit::WebPluginInfo>&)>
+      GetPluginsCallback;
+  typedef base::Callback<void(const std::vector<webkit::npapi::PluginGroup>&)>
+      GetPluginGroupsCallback;
 
   // Returns the PluginService singleton.
   static PluginService* GetInstance();
@@ -115,10 +133,17 @@ class CONTENT_EXPORT PluginService
                      webkit::WebPluginInfo* info,
                      std::string* actual_mime_type);
 
-  // Returns a list of all plug-ins available to the resource context. Must be
-  // called on the FILE thread.
-  void GetPlugins(const content::ResourceContext& context,
-                  std::vector<webkit::WebPluginInfo>* plugins);
+  // Marks the plugin list as dirty and will cause the plugins to be reloaded
+  // on the next access through GetPlugins() or GetPluginGroups().
+  void RefreshPluginList();
+
+  // Asynchronously loads plugins if necessary and then calls back to the
+  // provided function on the calling MessageLoop on completion.
+  void GetPlugins(const GetPluginsCallback& callback);
+
+  // Asynchronously loads the list of plugin groups if necessary and then calls
+  // back to the provided function on the calling MessageLoop on completion.
+  void GetPluginGroups(const GetPluginGroupsCallback& callback);
 
   // Tells all the renderer processes to throw away their cache of the plugin
   // list, and optionally also reload all the pages with plugins.
@@ -128,6 +153,7 @@ class CONTENT_EXPORT PluginService
   void set_filter(content::PluginServiceFilter* filter) {
     filter_ = filter;
   }
+  content::PluginServiceFilter* filter() { return filter_; }
 
  private:
   friend struct DefaultSingletonTraits<PluginService>;
@@ -147,6 +173,10 @@ class CONTENT_EXPORT PluginService
   void RegisterPepperPlugins();
 
   PepperPluginInfo* GetRegisteredPpapiPluginInfo(const FilePath& plugin_path);
+
+  // Function that is run on the FILE thread to load the plugins synchronously.
+  void GetPluginsInternal(base::MessageLoopProxy* target_loop,
+                          const GetPluginsCallback& callback);
 
   // Helper so we can do the plugin lookup on the FILE thread.
   void GetAllowedPluginForOpenChannelToPlugin(

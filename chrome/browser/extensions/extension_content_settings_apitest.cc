@@ -117,10 +117,14 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest,
                             FilePath(kBarPath),
                             ASCIIToUTF16("2.3.4"),
                             ASCIIToUTF16("bar")));
-  GetResourceIdentifiersFunction::SetPluginListForTesting(&plugin_list);
+
+  std::vector<webkit::npapi::PluginGroup> groups;
+  plugin_list.GetPluginGroups(true, &groups);
+
+  GetResourceIdentifiersFunction::SetPluginGroupsForTesting(&groups);
 
   EXPECT_TRUE(RunExtensionTest("content_settings/getresourceidentifiers"))
       << message_;
 
-  GetResourceIdentifiersFunction::SetPluginListForTesting(NULL);
+  GetResourceIdentifiersFunction::SetPluginGroupsForTesting(NULL);
 }
