@@ -28,7 +28,7 @@ CURRENT_RESULT_FILE_FOR_DEBUG = os.path.join(DEFAULT_RESULT_DIR,
 PREV_TIME_FOR_DEBUG = '2011-09-11-18'
 
 
-def parse_option():
+def ParseOption():
   """Parse command-line options using OptionParser.
 
   Returns:
@@ -38,27 +38,27 @@ def parse_option():
 
   option_parser.add_option('-r', '--receiver-email-address',
                            dest='receiver_email_address',
-                           help=('receiver\'s email adddress (defaults to '
-                                 '%default'),
-                           default='imasaki@chromium.org')
+                           help=('receiver\'s email address. '
+                                 'Result email is not sent if this is not '
+                                 'specified.'))
   option_parser.add_option('-g', '--debug-mode', dest='debug',
                            help=('Debug mode is used when you want to debug '
                                  'the analyzer by using local file rather '
                                  'than getting data from SVN. This shortens '
-                                 'the debugging time (off by default)'),
+                                 'the debugging time (off by default).'),
                            action='store_true', default=False)
   option_parser.add_option('-t', '--trend-graph-location',
                            dest='trend_graph_location',
                            help=('Location of the bug trend file; '
                                  'file is expected to be in Google '
                                  'Visualization API trend-line format '
-                                 '(defaults to %default)'),
+                                 '(defaults to %default).'),
                            default=DEFAULT_GRAPH_FILE)
   option_parser.add_option('-a', '--bug-anno-file-location',
                            dest='bug_annotation_file_location',
                            help=('Location of the bug annotation file; '
                                  'file is expected to be in CSV format '
-                                 '(default to %default)'),
+                                 '(default to %default).'),
                            default=DEFAULT_ANNO_FILE)
   option_parser.add_option('-n', '--test-group-file-location',
                            dest='test_group_file_location',
@@ -77,14 +77,14 @@ def parse_option():
   option_parser.add_option('-d', '--result-directory-location',
                            dest='result_directory_location',
                            help=('Name of result directory location '
-                                 '(default to %default)'),
+                                 '(default to %default).'),
                            default=DEFAULT_RESULT_DIR)
   option_parser.add_option('-b', '--email-appended-text-file-location',
                            dest='email_appended_text_file_location',
                            help=('File location of the email appended text. '
                                  'The text is appended in the status email. '
                                  '(default to %default and no text is '
-                                 'appended in that case.)'),
+                                 'appended in that case).'),
                            default=None)
   option_parser.add_option('-c', '--email-only-change-mode',
                            dest='email_only_change_mode',
@@ -93,24 +93,45 @@ def parse_option():
                                  'analyzer result compared to the previous '
                                  'result (off by default)'),
                            action='store_true', default=False)
+  option_parser.add_option('-q', '--dashboard-file-location',
+                           dest='dashboard_file_location',
+                           help=('Location of dashboard file. The results are '
+                                 'not reported to the dashboard if this '
+                                 'option is not specified.'))
   return option_parser.parse_args()[0]
 
 
-def main():
-  """A main function for the analyzer."""
-  options = parse_option()
-  start_time = datetime.now()
-  # Do the main analysis.
-  if not options.debug:
-    if not options.test_group_file_location and not options.test_group_name:
+def GetCurrentAndPreviousResults(debug, test_group_file_location,
+                                 test_group_name, result_directory_location):
+  """Get current and the latest previous analyzer results.
+
+  In debug mode, they are read from predefined files. In non-debug mode,
+  current analyzer results are dynamically obtained from Webkit SVN and
+  the latest previous result is read from the corresponding file.
+
+  Args:
+    debug: please refer to |options|.
+    test_group_file_location: please refer to |options|.
+    test_group_name: please refer to |options|.
+    result_directory_location: please refer to |options|.
+
+  Returns:
+    a tuple of the following:
+       prev_time: the previous time string that is compared against.
+       prev_analyzer_result_map: previous analyzer result map. Please refer to
+          layouttest_analyzer_helpers.AnalyzerResultMap.
+       analyzer_result_map: current analyzer result map. Please refer to
+          layouttest_analyzer_helpers.AnalyzerResultMap.
+  """
+  if not debug:
+    if not test_group_file_location and not test_group_name:
       print ('Either --test-group-name or --test_group_file_location must be '
              'specified. Exiting this program.')
       sys.exit()
     filter_names = []
-    if options.test_group_file_location and (
-        os.path.exists(options.test_group_file_location)):
+    if test_group_file_location and os.path.exists(test_group_file_location):
       filter_names = LayoutTests.GetLayoutTestNamesFromCSV(
-          options.test_group_file_location)
+          test_group_file_location)
       parent_location_list = LayoutTests.GetParentDirectoryList(filter_names)
       recursion = False
     else:
@@ -120,7 +141,7 @@ def main():
       #   http://svn.webkit.org/repository/webkit/trunk/LayoutTests/media
       # Filtering is not set so all HTML files are considered as valid tests.
       # Also, we look for the tests recursively.
-      if not os.path.exists(options.test_group_file_location):
+      if not os.path.exists(test_group_file_location):
         print ('Warning: CSV file (%s) does not exist. So it is ignored and '
                '%s is used for obtaining test names') % (
                    options.test_group_file_location, options.test_group_name)
@@ -135,9 +156,13 @@ def main():
                               filter_names=filter_names)
     analyzer_result_map = layouttest_analyzer_helpers.AnalyzerResultMap(
         layouttests.JoinWithTestExpectation(TestExpectations()))
-    (prev_time, prev_analyzer_result_map) = (
-        layouttest_analyzer_helpers.FindLatestResult(
-            options.result_directory_location))
+    result = layouttest_analyzer_helpers.FindLatestResult(
+                 result_directory_location)
+    if result:
+      (prev_time, prev_analyzer_result_map) = result
+    else:
+      prev_time = None
+      prev_analyzer_result_map = None
   else:
     analyzer_result_map = layouttest_analyzer_helpers.AnalyzerResultMap.Load(
         CURRENT_RESULT_FILE_FOR_DEBUG)
@@ -145,12 +170,25 @@ def main():
     prev_analyzer_result_map = (
         layouttest_analyzer_helpers.AnalyzerResultMap.Load(
             os.path.join(DEFAULT_RESULT_DIR, prev_time)))
+  return (prev_time, prev_analyzer_result_map, analyzer_result_map)
 
-  # Read bug annotations and generate an annotation map used for the status
-  # email.
+
+def ReadEmailInformation(bug_annotation_file_location,
+                         email_appended_text_file_location):
+  """Read bug annotations and generate an annotation map used for email.
+
+  Args:
+    bug_annotation_file_location: please refer to |options|.
+    email_appended_text_file_location: please refer to |options|.
+
+  Returns:
+    a tuple of the following:
+      anno_map: a dictionary that maps bug names to their annotations.
+      appended_text_to_email: the text string to append to the status email.
+  """
   anno_map = {}
   try:
-    file_object = open(options.bug_annotation_file_location)
+    file_object = open(bug_annotation_file_location)
   except IOError:
     print 'cannot open annotation file %s. Skipping.' % (
         options.bug_annotation_file_location)
@@ -161,92 +199,211 @@ def main():
     file_object.close()
 
   appended_text_to_email = ''
-  if options.email_appended_text_file_location:
+  if email_appended_text_file_location:
     try:
-      file_object = open(options.email_appended_text_file_location)
+      file_object = open(email_appended_text_file_location)
     except IOError:
       print 'cannot open email appended text file %s. Skipping.' % (
-          options.email_appended_text_file_location)
+          email_appended_text_file_location)
     else:
       appended_text_to_email = ''.join(file_object.readlines())
       file_object.close()
+  return (anno_map, appended_text_to_email)
 
-  diff_map = analyzer_result_map.CompareToOtherResultMap(
-      prev_analyzer_result_map)
-  result_change = (any(diff_map['whole']) or any(diff_map['skip']) or
-                      any(diff_map['nonskip']))
-  # Email only when |email_only_change_mode| is False or there
-  # is a change in the result compared to the last result.
-  simple_rev_str = ''
-  if not options.email_only_change_mode or result_change:
-    prev_time_in_float = datetime.strptime(prev_time, '%Y-%m-%d-%H')
-    prev_time_in_float = time.mktime(prev_time_in_float.timetuple())
-    if options.debug:
-      cur_time_in_float = datetime.strptime(CUR_TIME_FOR_DEBUG, '%Y-%m-%d-%H')
-      cur_time_in_float = time.mktime(cur_time_in_float.timetuple())
+
+def SendEmail(prev_time, prev_analyzer_result_map, analyzer_result_map,
+              anno_map, appended_text_to_email, email_only_change_mode, debug,
+              receiver_email_address, test_group_name):
+  """Send result status email.
+
+  Args:
+    prev_time: the previous time string that is compared against.
+    prev_analyzer_result_map: previous analyzer result map. Please refer to
+        layouttest_analyzer_helpers.AnalyzerResultMap.
+    analyzer_result_map: current analyzer result map. Please refer to
+        layouttest_analyzer_helpers.AnalyzerResultMap.
+    anno_map: a dictionary that maps bug names to their annotations.
+    appended_text_to_email: the text string to append to the status email.
+    email_only_change_mode: please refer to |options|.
+    debug: please refer to |options|.
+    receiver_email_address: please refer to |options|.
+    test_group_name: please refer to |options|.
+
+  Returns:
+    a tuple of the following:
+        result_change: a boolean indicating whether there is a change in the
+            result compared with the latest past result.
+        diff_map: please refer to
+            layouttest_analyzer_helpers.SendStatusEmail().
+        simple_rev_str: a simple version of revision string that is sent in
+            the email.
+  """
+  if prev_analyzer_result_map:
+    diff_map = analyzer_result_map.CompareToOtherResultMap(
+        prev_analyzer_result_map)
+    result_change = (any(diff_map['whole']) or any(diff_map['skip']) or
+                        any(diff_map['nonskip']))
+    # Email only when |email_only_change_mode| is False or there
+    # is a change in the result compared to the last result.
+    simple_rev_str = ''
+    if not email_only_change_mode or result_change:
+      prev_time_in_float = datetime.strptime(prev_time, '%Y-%m-%d-%H')
+      prev_time_in_float = time.mktime(prev_time_in_float.timetuple())
+      if debug:
+        cur_time_in_float = datetime.strptime(CUR_TIME_FOR_DEBUG,
+                                              '%Y-%m-%d-%H')
+        cur_time_in_float = time.mktime(cur_time_in_float.timetuple())
+      else:
+        cur_time_in_float = time.time()
+      (rev_str, simple_rev_str) = (
+          layouttest_analyzer_helpers.GetRevisionString(prev_time_in_float,
+                                                        cur_time_in_float,
+                                                        diff_map))
+      if receiver_email_address:
+        layouttest_analyzer_helpers.SendStatusEmail(
+            prev_time, analyzer_result_map, diff_map, anno_map,
+            receiver_email_address, test_group_name,
+            appended_text_to_email, rev_str)
+    if simple_rev_str:
+      simple_rev_str = '\'' + simple_rev_str + '\''
     else:
-      cur_time_in_float = time.time()
-    (rev_str, simple_rev_str) = (
-        layouttest_analyzer_helpers.GetRevisionString(prev_time_in_float,
-                                                      cur_time_in_float,
-                                                      diff_map))
-    layouttest_analyzer_helpers.SendStatusEmail(
-        prev_time, analyzer_result_map, diff_map, anno_map,
-        options.receiver_email_address, options.test_group_name,
-        appended_text_to_email, rev_str)
-  if simple_rev_str:
-    simple_rev_str = '\'' + simple_rev_str + '\''
+      simple_rev_str = 'undefined'  # GViz uses undefined for NONE.
   else:
-    simple_rev_str = 'undefined'  # GViz uses undefined for NONE.
-  if not options.debug:
-    # Save the current result.
+    # Initial result should be written to tread-graph if there are no previous
+    # results.
+    result_change = True
+    diff_map = None
+    simple_rev_str = 'undefined'
+  return (result_change, diff_map, simple_rev_str)
+
+
+def UpdateTrendGraph(start_time, analyzer_result_map, diff_map, simple_rev_str,
+                     trend_graph_location):
+  """Update trend graph in GViz.
+
+  Annotate the graph with revision information.
+
+  Args:
+    start_time: the script starting time as a float value.
+    analyzer_result_map: current analyzer result map. Please refer to
+        layouttest_analyzer_helpers.AnalyzerResultMap.
+    diff_map: a map that has 'whole', 'skip' and 'nonskip' as keys.
+        Please refer to |diff_map| in
+        |layouttest_analyzer_helpers.SendStatusEmail()|.
+    simple_rev_str: a simple version of revision string that is sent in
+        the email.
+    trend_graph_location: the location of the trend graph that needs to be
+        updated.
+
+  Returns:
+     a dictionary that maps result data category ('whole', 'skip', 'nonskip',
+         'passingrate') to information tuple (the number of the tests,
+         annotation, simple_rev_string) of the given result
+         data category. These tuples are used for trend graph update.
+  """
+  # Trend graph update (if specified in the command-line argument) when
+  # there is change from the last result.
+  # Currently, there are two graphs (graph1 is for 'whole', 'skip',
+  # 'nonskip' and the graph2 is for 'passingrate'). Please refer to
+  # graph/graph.html.
+  # Sample JS annotation for graph1:
+  #   [new Date(2011,8,12,10,41,32),224,undefined,'',52,undefined,
+  #    undefined, 12, 'test1,','<a href="http://t</a>,',],
+  # This example lists 'whole' triple and 'skip' triple and
+  # 'nonskip' triple. Each triple is (the number of tests that belong to
+  # the test group, linked text, a link). The following code generates this
+  # automatically based on rev_string etc.
+  trend_graph = TrendGraph(trend_graph_location)
+  datetime_string = start_time.strftime('%Y,%m,%d,%H,%M,%S')
+  data_map = {}
+  passingrate_anno = ''
+  for test_group in ['whole', 'skip', 'nonskip']:
+    anno = 'undefined'
+    tests = analyzer_result_map.result_map[test_group].keys()
+    test_str = ''
+    links = ''
+    if diff_map and diff_map[test_group]:
+      for i in [0, 1]:
+        for (name, _) in diff_map[test_group][i]:
+          test_str += name + ','
+          # This is link to test HTML in WebKit SVN.
+          links += ('<a href="http://trac.webkit.org/browser/trunk/'
+                    'LayoutTests/%s">%s</a>,') % (name, name)
+      if test_str:
+        anno = '\'' + test_str + '\''
+        # The annotation of passing rate is a union of all annotations.
+        passingrate_anno += anno
+    if links:
+      links = '\'' + links + '\''
+    else:
+      links = 'undefined'
+    if test_group is 'whole':
+      data_map[test_group] = (str(len(tests)), anno, links)
+    else:
+      data_map[test_group] = (str(len(tests)), anno, simple_rev_str)
+  if not passingrate_anno:
+    passingrate_anno = 'undefined'
+  data_map['passingrate'] = (
+      str(analyzer_result_map.GetPassingRate()), passingrate_anno,
+      simple_rev_str)
+  trend_graph.Update(datetime_string, data_map)
+  return data_map
+
+
+def UpdateDashboard(dashboard_file_location, test_group_name, data_map):
+  """Update dashboard HTML file.
+
+  Args:
+    dashboard_file_location: the file location for the dashboard file.
+    test_group_name: please refer to |options|.
+    data_map: a dictionary that maps result data category
+        ('whole', 'skip', 'nonskip', 'passingrate') to information tuple (the
+        number of the tests, annotation, simple_rev_string) of the given result
+        data category.
+  """
+  new_str = ('<td><a href="%s">%s</a><td>%s</td><td>%s</td><td>%s</td>'
+             '<td>%s%%</td><tr>\n') % (
+                 # Dashboard file and graph must be in the same directory
+                 # to make the following link work.
+                 test_group_name.replace('/', '_') + '.html',
+                 test_group_name, data_map['whole'][0],
+                 data_map['skip'][0], data_map['nonskip'][0],
+                 data_map['passingrate'][0])
+  layouttest_analyzer_helpers.ReplaceLineInFile(
+      dashboard_file_location, test_group_name, new_str)
+
+
+def main():
+  """A main function for the analyzer."""
+  options = ParseOption()
+  start_time = datetime.now()
+
+  (prev_time, prev_analyzer_result_map, analyzer_result_map) = (
+      GetCurrentAndPreviousResults(options.debug,
+                                   options.test_group_file_location,
+                                   options.test_group_name,
+                                   options.result_directory_location))
+  (anno_map, appended_text_to_email) = ReadEmailInformation(
+      options.bug_annotation_file_location,
+      options.email_appended_text_file_location)
+  (result_change, diff_map, simple_rev_str) = (
+      SendEmail(prev_time, prev_analyzer_result_map, analyzer_result_map,
+                anno_map, appended_text_to_email,
+                options.email_only_change_mode, options.debug,
+                options.receiver_email_address, options.test_group_name))
+  if not options.debug and (result_change or not prev_analyzer_result_map):
+    # Save the current result when result is changed or the script is
+    # executed for the first time.
     date = start_time.strftime('%Y-%m-%d-%H')
     file_path = os.path.join(options.result_directory_location, date)
     analyzer_result_map.Save(file_path)
-
-  if result_change:
-    # Trend graph update (if specified in the command-line argument) when
-    # there is change from the last result.
-    # Currently, there are two graphs (graph1 is for 'whole', 'skip',
-    # 'nonskip' and the graph2 is for 'passingrate'). Please refer to
-    # graph/graph.html.
-    # Sample JS annotation for graph1:
-    #   [new Date(2011,8,12,10,41,32),224,undefined,'',52,undefined,undefined,
-    #   12, 'test1,','<a href="http://t</a>,',],
-    # This example lists 'whole' triple and 'skip' triple and
-    # 'nonskip' triple. Each triple is (the number of tests that belong to
-    # the test group, linked text, a link). The following code generates this
-    # automatically based on rev_string etc.
-    trend_graph = TrendGraph(options.trend_graph_location)
-    datetime_string = start_time.strftime('%Y,%m,%d,%H,%M,%S')
-    data_map = {}
-    passingrate_anno = ''
-    for test_group in ['whole', 'skip', 'nonskip']:
-      anno = 'undefined'
-      tests = analyzer_result_map.result_map[test_group].keys()
-      if diff_map[test_group]:
-        test_str = ''
-        links = ''
-        for i in [0, 1]:
-          for (name, _) in diff_map[test_group][i]:
-            test_str += name + ','
-            # This is link to test HTML in WebKit SVN.
-            links += ('<a href="http://trac.webkit.org/browser/trunk/'
-                      'LayoutTests/%s">%s</a>,') % (name, name)
-        if test_str:
-          anno = '\'' + test_str + '\''
-          # The annotation of passing rate is a union of all annotations.
-          passingrate_anno += anno
-        if test_group is 'whole':
-          data_map[test_group] = (str(len(tests)), anno, '\'' + links + '\'')
-        else:
-          data_map[test_group] = (str(len(tests)), anno, simple_rev_str)
-    if not passingrate_anno:
-      passingrate_anno = 'undefined'
-    data_map['passingrate'] = (
-        str(analyzer_result_map.GetPassingRate()), passingrate_anno,
-        simple_rev_str)
-    trend_graph.Update(datetime_string, data_map)
+  if result_change or not prev_analyzer_result_map:
+    data_map = UpdateTrendGraph(start_time, analyzer_result_map, diff_map,
+                                simple_rev_str, options.trend_graph_location)
+    # Report the result to dashboard.
+    if options.dashboard_file_location:
+      UpdateDashboard(options.dashboard_file_location, options.test_group_name,
+                      data_map)
 
 
 if '__main__' == __name__:

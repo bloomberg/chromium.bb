@@ -5,10 +5,10 @@
 
 """A module for manipulating trend graph with analyzer result history."""
 
-import fileinput
 import os
 import sys
 
+import layouttest_analyzer_helpers
 
 DEFAULT_TREND_GRAPH_PATH = os.path.join('graph', 'graph.html')
 
@@ -61,7 +61,9 @@ class TrendGraph(object):
                                                               joined_str)
     new_line_for_numbers += '         %s\n' % (
         LINE_INSERT_POINT_FOR_NUMBERS)
-    self._ReplaceLine(LINE_INSERT_POINT_FOR_NUMBERS, new_line_for_numbers)
+    layouttest_analyzer_helpers.ReplaceLineInFile(
+        self._location, LINE_INSERT_POINT_FOR_NUMBERS,
+        new_line_for_numbers)
 
     joined_str = '%s,%s,%s' % (
         data_map['passingrate'][0], data_map['nonskip'][1],
@@ -70,17 +72,6 @@ class TrendGraph(object):
         datetime_string, joined_str)
     new_line_for_passingrate += '         %s\n' % (
         LINE_INSERT_POINT_FOR_PASSING_RATE)
-    self._ReplaceLine(LINE_INSERT_POINT_FOR_PASSING_RATE,
-                      new_line_for_passingrate)
-
-  def _ReplaceLine(self, search_exp, replace_line):
-    """Replace line which has |search_exp| with |replace_line|.
-
-    Args:
-        search_exp: search expression to find a line to be replaced.
-        replace_line: the new line.
-    """
-    for line in fileinput.input(self._location, inplace=1):
-      if search_exp in line:
-        line = replace_line
-      sys.stdout.write(line)
+    layouttest_analyzer_helpers.ReplaceLineInFile(
+        self._location, LINE_INSERT_POINT_FOR_PASSING_RATE,
+        new_line_for_passingrate)

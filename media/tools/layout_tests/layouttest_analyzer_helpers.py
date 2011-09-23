@@ -8,10 +8,12 @@
 from datetime import datetime
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+import fileinput
 import os
 import pickle
 import smtplib
 import socket
+import sys
 import time
 import urllib
 
@@ -414,6 +416,20 @@ def FindLatestTime(time_list):
     return None
 
 
+def ReplaceLineInFile(file_path, search_exp, replace_line):
+  """Replace line which has |search_exp| with |replace_line| within a file.
+
+  Args:
+      file_path: the file that is being replaced.
+      search_exp: search expression to find a line to be replaced.
+      replace_line: the new line.
+  """
+  for line in fileinput.input(file_path, inplace=1):
+    if search_exp in line:
+      line = replace_line
+    sys.stdout.write(line)
+
+
 def FindLatestResult(result_dir):
   """Find the latest result in |result_dir| and read and return them.
 
@@ -424,10 +440,14 @@ def FindLatestResult(result_dir):
     result_dir: the result directory.
 
   Returns:
-    a tuple of filename (latest_time) of the and the latest analyzer result.
+    A tuple of filename (latest_time) and the latest analyzer result.
+        Returns None if there is no file or no file that matches the file
+        patterns used ('%Y-%m-%d-%H').
   """
   dir_list = os.listdir(result_dir)
   file_name = FindLatestTime(dir_list)
+  if not file_name:
+    return None
   file_path = os.path.join(result_dir, file_name)
   return (file_name, AnalyzerResultMap.Load(file_path))
 

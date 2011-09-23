@@ -160,6 +160,26 @@ class TestLayoutTestAnalyzerHelpers(unittest.TestCase):
     self.RunTestGetRevisionString('2011-09-01-00', '2011-09-02-00', '', '',
                                   'foo1.html')
 
+  def testReplaceLineInFile(self):
+    file_path = os.path.join('test_data', 'inplace.txt')
+    f = open(file_path, 'w')
+    f.write('Hello')
+    f.close()
+    layouttest_analyzer_helpers.ReplaceLineInFile(
+        file_path, 'Hello', 'Goodbye')
+    f = open(file_path, 'r')
+    self.assertEquals(f.readline(), 'Goodbye')
+    f.close()
+    layouttest_analyzer_helpers.ReplaceLineInFile(
+        file_path, 'Bye', 'Hello')
+    f = open(file_path, 'r')
+    self.assertEquals(f.readline(), 'Goodbye')
+    f.close()
+
+  def testFindLatestResultWithNoData(self):
+    self.assertFalse(
+        layouttest_analyzer_helpers.FindLatestResult('test_data'))
+
 
 if __name__ == '__main__':
   unittest.main()
