@@ -1099,13 +1099,10 @@ void ResourceDispatcherHost::CancelRequestsForContext(
   for (BlockedRequestMap::iterator i = blocked_requests_map_.begin();
        i != blocked_requests_map_.end();) {
     BlockedRequestsList* requests = i->second;
-    // TODO(willchan): Investigate why this condition is possible. It shouldn't
-    // be possible, since when blocked requests get canceled, we should delete
-    // the list when empty. Or are we creating BlockedRequestsLists but never
-    // adding requests to them?
     if (requests->empty()) {
-      blocked_requests_map_.erase(i++);
-      delete requests;
+      // This can happen if BlockRequestsForRoute() has been called for a route,
+      // but we haven't blocked any matching requests yet.
+      ++i;
       continue;
     }
     ResourceDispatcherHostRequestInfo* info =
