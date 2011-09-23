@@ -23,9 +23,9 @@ using objdump, we can disassemble those functions and dump all symbols that
 they reference.
 """
 
+import optparse
 import re
 import subprocess
-import sys
 
 # A map of symbol => informative text about it.
 NOTES = {
@@ -73,6 +73,10 @@ def ExtractSymbolReferences(binary, start, end):
 
   refs = set()
   for line in objdump.stdout:
+    if '__static_initialization_and_destruction' in line:
+      raise RuntimeError, ('code mentions '
+                           '__static_initialization_and_destruction; '
+                           'did you accidentally run this on a Debug binary?')
     match = disassembly_re.search(line)
     if match:
       (ref,) = match.groups()
@@ -84,16 +88,17 @@ def ExtractSymbolReferences(binary, start, end):
         continue
       refs.add(ref)
       continue
-    if '__static_initialization_and_destruction' in line:
-      raise RuntimeError, ('code mentions '
-                           '__static_initialization_and_destruction; '
-                           'did you accidentally use a Debug binary?')
 
   for ref in sorted(refs):
     yield ref
 
 
-(binary,) = sys.argv[1:]
+parser = optparse.OptionParser(usage='%prog filename')
+opts, args = parser.parse_args()
+if len(args) != 1:
+  parser.error('missing filename argument')
+binary = args[0]
+
 demangler = Demangler()
 for addr, size, filename in ParseNm(binary):
   if size == 2:
@@ -102,7 +107,7 @@ for addr, size, filename in ParseNm(binary):
     # Two bytes is too small to do anything, so just ignore it.
     continue
 
-  print '%s (0x%x 0x%x)' % (filename, addr, addr+size)
+  print '%s (initializer offset 0x%x size 0x%x)' % (filename, addr, size)
   for ref in ExtractSymbolReferences(binary, addr, addr+size):
     ref = demangler.Demangle(ref)
     if ref in NOTES:
