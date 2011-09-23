@@ -1,28 +1,15 @@
 {
    newlib_free4
    Memcheck:Addr4
-   ...
-   fun:_free_r
-}
-
-{
-   newlib_free1
-   Memcheck:Addr1
-   fun:_free_r
+   fun:free
+   fun:free
 }
 
 {
    newlib_malloc4
    Memcheck:Addr4
-   ...
-   fun:_malloc_r
-}
-
-{
-   newlib_malloc1
-   Memcheck:Addr1
-   ...
-   fun:_malloc_r
+   fun:malloc
+   fun:malloc
 }
 
 {
