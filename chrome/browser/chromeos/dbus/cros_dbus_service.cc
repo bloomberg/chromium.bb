@@ -67,4 +67,7 @@ bool CrosDBusService::OnOriginThread() {
   return base::PlatformThread::CurrentId() == origin_thread_id_;
 }
 
+CrosDBusService::ServiceProviderInterface::~ServiceProviderInterface() {
+}
+
 }  // namespace chromeos

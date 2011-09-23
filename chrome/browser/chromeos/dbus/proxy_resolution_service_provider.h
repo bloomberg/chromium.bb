@@ -121,8 +121,6 @@ class ProxyResolutionServiceProvider
 class ProxyResolverInterface
     : public base::RefCountedThreadSafe<ProxyResolverInterface> {
  public:
-  virtual ~ProxyResolverInterface();
-
   // Resolves the proxy for the given URL. Returns the result as a
   // signal sent to |signal_interface| and
   // |signal_name|. |exported_object| will be used to send the
@@ -136,6 +134,10 @@ class ProxyResolverInterface
       const std::string& signal_interface,
       const std::string& signal_name,
       scoped_refptr<dbus::ExportedObject> exported_object) = 0;
+
+ protected:
+  // This is protected, so we can define sub classes.
+  virtual ~ProxyResolverInterface();
 
  private:
   friend class base::RefCountedThreadSafe<ProxyResolverInterface>;
