@@ -42,6 +42,13 @@ namespace safe_browsing {
 PrefixSet::PrefixSet(const std::vector<SBPrefix>& sorted_prefixes)
     : checksum_(0) {
   if (sorted_prefixes.size()) {
+    // Estimate the resulting vector sizes.  There will be strictly
+    // more than |min_runs| entries in |index_|, but there generally
+    // aren't many forced breaks.
+    const size_t min_runs = sorted_prefixes.size() / kMaxRun;
+    index_.reserve(min_runs);
+    deltas_.reserve(sorted_prefixes.size() - min_runs);
+
     // Lead with the first prefix.
     SBPrefix prev_prefix = sorted_prefixes[0];
     size_t run_length = 0;
@@ -141,6 +148,8 @@ bool PrefixSet::Exists(SBPrefix prefix) const {
 }
 
 void PrefixSet::GetPrefixes(std::vector<SBPrefix>* prefixes) const {
+  prefixes->reserve(index_.size() + deltas_.size());
+
   for (size_t ii = 0; ii < index_.size(); ++ii) {
     // The deltas for this |index_| entry run to the next index entry,
     // or the end of the deltas.

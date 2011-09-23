@@ -269,6 +269,7 @@ safe_browsing::PrefixSet* PrefixSetFromAddPrefixes(
   // |prefixes|.  For now, |prefixes| is useful while debugging
   // things.
   std::vector<SBPrefix> prefixes;
+  prefixes.reserve(add_prefixes.size());
   for (size_t i = 0; i < add_prefixes.size(); ++i) {
     prefixes.push_back(add_prefixes[i].prefix);
   }
@@ -1406,6 +1407,7 @@ void SafeBrowsingDatabaseNew::LoadWhitelist(
   }
 
   std::vector<SBFullHash> new_whitelist;
+  new_whitelist.reserve(full_hashes.size());
   for (std::vector<SBAddFullHash>::const_iterator it = full_hashes.begin();
        it != full_hashes.end(); ++it) {
     new_whitelist.push_back(it->full_hash);
