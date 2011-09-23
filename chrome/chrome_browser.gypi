@@ -3054,6 +3054,7 @@
         'browser/ui/panels/panel_mouse_watcher.h',
         'browser/ui/panels/panel_mouse_watcher_timer.cc',
         'browser/ui/panels/panel_mouse_watcher_win.cc',
+        'browser/ui/panels/panel_mouse_watcher_win.h',
         'browser/ui/panels/panel_settings_menu_model.cc',
         'browser/ui/panels/panel_settings_menu_model.h',
         'browser/ui/panels/panel_titlebar_view_cocoa.h',
@@ -4745,6 +4746,7 @@
                 ['exclude', '^browser/ui/gtk/omnibox/omnibox_popup_view_gtk.h'],
                 ['exclude', '^browser/ui/panels/panel_browser_window_gtk.cc'],
                 ['exclude', '^browser/ui/panels/panel_browser_window_gtk.h'],
+                ['exclude', '^browser/ui/panels/panel_mouse_watcher_timer.cc'],
               ],
             }],
             # Exclude these toolkit_views specific files again.

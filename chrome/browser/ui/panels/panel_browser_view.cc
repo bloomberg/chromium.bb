@@ -8,7 +8,7 @@
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_browser_frame_view.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
-#include "chrome/browser/ui/panels/panel_mouse_watcher.h"
+#include "chrome/browser/ui/panels/panel_mouse_watcher_win.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "grit/chromium_strings.h"
 #include "ui/base/animation/slide_animation.h"
@@ -51,8 +51,6 @@ PanelBrowserView::PanelBrowserView(Browser* browser, Panel* panel,
 }
 
 PanelBrowserView::~PanelBrowserView() {
-  if (PanelMouseWatcher::GetInstance()->IsSubscribed(this))
-    PanelMouseWatcher::GetInstance()->RemoveSubscriber(this);
 }
 
 void PanelBrowserView::Init() {
@@ -72,6 +70,12 @@ void PanelBrowserView::Close() {
     bounds_animator_.reset();
 
   ::BrowserView::Close();
+
+  // Stop the global mouse watcher only if we do not have any panels up.
+#if defined(OS_WIN)
+  if (panel_->manager()->num_panels() == 1)
+    StopMouseWatcher();
+#endif
 }
 
 bool PanelBrowserView::CanResize() const {
@@ -211,7 +215,6 @@ void PanelBrowserView::OnPanelExpansionStateChanged(
   int height;
   switch (expansion_state) {
     case Panel::EXPANDED:
-      PanelMouseWatcher::GetInstance()->RemoveSubscriber(this);
       height = restored_height_;
       break;
     case Panel::TITLE_ONLY:
@@ -219,7 +222,12 @@ void PanelBrowserView::OnPanelExpansionStateChanged(
       break;
     case Panel::MINIMIZED:
       height = PanelManager::minimized_panel_height();
-      PanelMouseWatcher::GetInstance()->AddSubscriber(this);
+
+      // Start the mouse watcher so that we can bring up the minimized panels.
+      // TODO(jianli): Need to support mouse watching in ChromeOS.
+#if defined(OS_WIN)
+      EnsureMouseWatcherStarted();
+#endif
       break;
     default:
       NOTREACHED();
@@ -472,7 +480,7 @@ NativePanelTesting* NativePanelTesting::Create(NativePanel* native_panel) {
 
 // static
 PanelMouseWatcher* NativePanelTesting::GetPanelMouseWatcherInstance() {
-  return PanelMouseWatcher::GetInstance();
+  return NULL;
 }
 
 NativePanelTestingWin::NativePanelTestingWin(
@@ -508,10 +516,10 @@ void NativePanelTestingWin::FinishDragTitlebar() {
 
 void NativePanelTestingWin::SetMousePositionForMinimizeRestore(
     const gfx::Point& hover_point) {
-  PanelMouseWatcher::GetInstance()->HandleMouseMovement(hover_point);
-  MessageLoopForUI::current()->RunAllPending();
+  NOTIMPLEMENTED();
 }
 
 int NativePanelTestingWin::TitleOnlyHeight() const {
-  return panel_browser_view_->GetFrameView()->NonClientTopBorderHeight();
+  NOTIMPLEMENTED();
+  return -1;
 }

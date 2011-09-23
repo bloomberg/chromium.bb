@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/ui/panels/panel_mouse_watcher_win.h"
+
 #include <windows.h>
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
-#include "chrome/browser/ui/panels/panel_mouse_watcher.h"
 
 namespace {
 
@@ -24,53 +25,34 @@ HMODULE GetCurrentModuleHandle() {
   return ::GetModuleHandleFromAddress(GetCurrentModuleHandle);
 }
 
-}  // namespace
-
-class PanelMouseWatcherWin : public PanelMouseWatcher {
+class PanelMouseWatcherWin {
  public:
   PanelMouseWatcherWin();
-  virtual ~PanelMouseWatcherWin();
-
-  virtual void Start() OVERRIDE;
-  virtual void Stop() OVERRIDE;
+  ~PanelMouseWatcherWin();
 
  private:
   static LRESULT CALLBACK MouseHookProc(int code, WPARAM wparam, LPARAM lparam);
 
+  void OnMouseAction(int mouse_x, int mouse_y);
+
   HHOOK mouse_hook_;
+  bool bring_up_titlebars_;
 
   DISALLOW_COPY_AND_ASSIGN(PanelMouseWatcherWin);
 };
 
 scoped_ptr<PanelMouseWatcherWin> mouse_watcher;
 
-// static
-PanelMouseWatcher* PanelMouseWatcher::GetInstance() {
-  if (!mouse_watcher.get())
-    mouse_watcher.reset(new PanelMouseWatcherWin());
-
-  return mouse_watcher.get();
-}
-
 PanelMouseWatcherWin::PanelMouseWatcherWin()
-    : mouse_hook_(NULL) {
-}
-
-PanelMouseWatcherWin::~PanelMouseWatcherWin() {
-  DCHECK(!mouse_hook_);
-}
-
-void PanelMouseWatcherWin::Start() {
-  DCHECK(!mouse_hook_);
+    : mouse_hook_(NULL),
+      bring_up_titlebars_(false) {
   mouse_hook_ = ::SetWindowsHookEx(
       WH_MOUSE_LL, MouseHookProc, GetCurrentModuleHandle(), 0);
   DCHECK(mouse_hook_);
 }
 
-void PanelMouseWatcherWin::Stop() {
-  DCHECK(mouse_hook_);
+PanelMouseWatcherWin::~PanelMouseWatcherWin() {
   ::UnhookWindowsHookEx(mouse_hook_);
-  mouse_hook_ = NULL;
 }
 
 LRESULT CALLBACK PanelMouseWatcherWin::MouseHookProc(int code,
@@ -78,10 +60,35 @@ LRESULT CALLBACK PanelMouseWatcherWin::MouseHookProc(int code,
                                                      LPARAM lparam) {
   if (code == HC_ACTION) {
     MOUSEHOOKSTRUCT* hook_struct = reinterpret_cast<MOUSEHOOKSTRUCT*>(lparam);
-    if (hook_struct) {
-      mouse_watcher->HandleMouseMovement(
-          gfx::Point(hook_struct->pt.x, hook_struct->pt.y));
-    }
+    if (hook_struct)
+      mouse_watcher->OnMouseAction(hook_struct->pt.x, hook_struct->pt.y);
   }
   return ::CallNextHookEx(NULL, code, wparam, lparam);
+}
+
+void PanelMouseWatcherWin::OnMouseAction(int mouse_x, int mouse_y) {
+  PanelManager* panel_manager = PanelManager::GetInstance();
+
+  bool bring_up_titlebars = panel_manager->ShouldBringUpTitlebars(
+      mouse_x, mouse_y);
+  if (bring_up_titlebars == bring_up_titlebars_)
+    return;
+  bring_up_titlebars_ = bring_up_titlebars;
+
+  panel_manager->BringUpOrDownTitlebars(bring_up_titlebars);
+}
+
+}  // namespace
+
+void EnsureMouseWatcherStarted() {
+  if (!mouse_watcher.get())
+    mouse_watcher.reset(new PanelMouseWatcherWin());
+}
+
+void StopMouseWatcher() {
+  mouse_watcher.reset(NULL);
+}
+
+bool IsMouseWatcherStarted() {
+  return mouse_watcher.get() != NULL;
 }

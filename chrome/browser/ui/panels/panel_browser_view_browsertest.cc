@@ -12,7 +12,7 @@
 #include "chrome/browser/ui/panels/panel_browser_frame_view.h"
 #include "chrome/browser/ui/panels/panel_browser_view.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
-#include "chrome/browser/ui/panels/panel_mouse_watcher.h"
+#include "chrome/browser/ui/panels/panel_mouse_watcher_win.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
@@ -126,7 +126,7 @@ class PanelBrowserViewTest : public BasePanelBrowserTest {
     EXPECT_LT(panel1->GetBounds().height(), titlebar_height);
     EXPECT_GT(panel1->GetBounds().height(), 0);
     EXPECT_EQ(expected_bottom_on_minimized, panel1->GetBounds().bottom());
-    EXPECT_TRUE(PanelMouseWatcher::GetInstance()->IsSubscribed(browser_view1));
+    EXPECT_TRUE(IsMouseWatcherStarted());
     WaitTillBoundsAnimationFinished(browser_view1);
     EXPECT_FALSE(panel1->IsActive());
 
@@ -209,8 +209,11 @@ class PanelBrowserViewTest : public BasePanelBrowserTest {
     browser_view1->OnTitlebarMouseReleased();
 
     panel1->Close();
+    EXPECT_TRUE(IsMouseWatcherStarted());
     panel2->Close();
+    EXPECT_TRUE(IsMouseWatcherStarted());
     panel3->Close();
+    EXPECT_FALSE(IsMouseWatcherStarted());
   }
 
   void TestDrawAttention() {

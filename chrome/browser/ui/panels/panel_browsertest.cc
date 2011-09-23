@@ -824,7 +824,13 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, AutoResize) {
   panel->Close();
 }
 
-IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MinimizeRestore) {
+#if defined(TOOLKIT_GTK) || defined(OS_MACOSX)
+#define MAYBE_MinimizeRestore MinimizeRestore
+#else
+#define MAYBE_MinimizeRestore DISABLED_MinimizeRestore
+#endif
+
+IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MAYBE_MinimizeRestore) {
   // Disable mouse watcher.  We'll simulate mouse movements for test.
   NativePanelTesting::GetPanelMouseWatcherInstance()->EnableTestingMode();
 
