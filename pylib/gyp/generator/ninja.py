@@ -470,7 +470,7 @@ class NinjaWriter:
     command_map = {
       'executable':      'link',
       'static_library':  'alink',
-      'loadable_module': 'solink',
+      'loadable_module': 'solink_module',
       'shared_library':  'solink',
       'none':            'stamp',
     }
@@ -485,7 +485,7 @@ class NinjaWriter:
                                                     spec.get('libraries', []))))
 
     extra_bindings = []
-    if command == 'solink':
+    if command in ('solink', 'solink_module'):
       extra_bindings.append(('soname', os.path.split(output)[1]))
 
     self.ninja.build(output, command, final_deps,
@@ -657,6 +657,11 @@ def GenerateOutput(target_list, target_dicts, data, params):
     description='SOLINK $out',
     command=('$ld -shared $ldflags -o $out -Wl,-soname=$soname '
              '-Wl,--whole-archive $in -Wl,--no-whole-archive $libs'))
+  master_ninja.rule(
+    'solink_module',
+    description='SOLINK(module) $out',
+    command=('$ld -shared $ldflags -o $out -Wl,-soname=$soname '
+             '-Wl,--start-group $in -Wl,--end-group $libs'))
   master_ninja.rule(
     'link',
     description='LINK $out',
