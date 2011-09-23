@@ -6587,13 +6587,17 @@ Keep your key file in a safe place. You will need it to create new versions of y
           &gt;
           <ph name="INTERNET_TITLE">&lt;span jscontent="internetTitle"&gt;&lt;/span&gt;<ex>Internet</ex></ph>
           &gt;
-          <ph name="OPTIONS_BUTTON">&lt;span jscontent="optionsButton"&gt;&lt;/span&gt;<ex>Options...</ex></ph>
-          of connected network &gt;
-          <ph name="NETWORK_TAB">&lt;span jscontent="networkTab"&gt;&lt;/span&gt;<ex>Network</ex></ph>
-          tab &gt;
-          <ph name="PROXY_BUTTON">&lt;span jscontent="proxyButton"&gt;&lt;/span&gt;<ex>Change proxy settings...</ex></ph>
+          &quot;<ph name="OPTIONS_BUTTON">&lt;span jscontent="optionsButton"&gt;&lt;/span&gt;<ex>Options...</ex></ph>&quot;
           <ph name="END_BOLD">&lt;/strong&gt;</ph>
-          and make sure your configuration is set to &quot;Direct&quot;.
+          (for the current Network). If the
+          <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>
+          &quot;<ph name="PROXY_BUTTON">&lt;span jscontent="proxyButton"&gt;&lt;/span&gt;<ex>Change proxy settings...</ex></ph>&quot;
+          <ph name="END_BOLD">&lt;/strong&gt;</ph>button (in the
+          <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>
+          <ph name="NETWORK_TAB">&lt;span jscontent="networkTab"&gt;&lt;/span&gt;<ex>Network</ex></ph>
+          <ph name="END_BOLD">&lt;/strong&gt;</ph>
+          tab) is present, click on that and make sure your configuration
+          is set to &quot;Direct&quot;.
         </message>
       </if>
       <if expr="not pp_ifdef('chromeos') and is_posix and not is_macosx">
