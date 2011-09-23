@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -95,9 +95,9 @@ void ScrollView::Init(ScrollBar* horizontal_scrollbar,
   // Don't add the scrollbars as children until we discover we need them
   // (ShowOrHideScrollBar).
   horiz_sb_->SetVisible(false);
-  horiz_sb_->SetController(this);
+  horiz_sb_->set_controller(this);
   vert_sb_->SetVisible(false);
-  vert_sb_->SetController(this);
+  vert_sb_->set_controller(this);
   if (resize_corner_)
     resize_corner_->SetVisible(false);
 }

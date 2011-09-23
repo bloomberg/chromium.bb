@@ -6,8 +6,10 @@
 #define VIEWS_CONTROLS_SCROLLBAR_SCROLLBAR_H_
 #pragma once
 
-#include "views/events/event.h"
+#include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "views/view.h"
+#include "views/views_export.h"
 
 namespace views {
 
@@ -62,18 +64,19 @@ class VIEWS_EXPORT ScrollBar : public View {
   // Overridden from View:
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
 
-  // Return whether this scrollbar is horizontal
+  // Returns whether this scrollbar is horizontal.
   bool IsHorizontal() const;
 
-  // Set / Get the controller
-  void SetController(ScrollBarController* controller);
-  ScrollBarController* GetController() const;
+  void set_controller(ScrollBarController* controller) {
+     controller_ = controller;
+  }
+  ScrollBarController* controller() const { return controller_; }
 
   // Update the scrollbar appearance given a viewport size, content size and
   // current position
   virtual void Update(int viewport_size, int content_size, int current_pos);
 
-  // Return the max and min positions
+  // Returns the max and min positions.
   int GetMaxPosition() const;
   int GetMinPosition() const;
 
@@ -94,14 +97,13 @@ class VIEWS_EXPORT ScrollBar : public View {
  private:
   const bool is_horiz_;
 
-  // Current controller
   ScrollBarController* controller_;
 
-  // properties
   int max_pos_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScrollBar);
 };
 
 }  // namespace views
 
 #endif  // VIEWS_CONTROLS_SCROLLBAR_SCROLLBAR_H_
-

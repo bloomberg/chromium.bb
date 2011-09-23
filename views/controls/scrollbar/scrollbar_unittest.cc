@@ -62,7 +62,7 @@ class NativeScrollBarTest : public ViewsTestBase {
     ASSERT_FALSE(scrollbar_);
     native_scrollbar_ = new NativeScrollBar(true);
     native_scrollbar_->SetBounds(0, 0, 100, 100);
-    native_scrollbar_->SetController(controller_.get());
+    native_scrollbar_->set_controller(controller_.get());
 
     widget_ = new Widget;
     Widget::InitParams params(Widget::InitParams::TYPE_POPUP);

@@ -246,7 +246,7 @@ NativeScrollBarViews::NativeScrollBarViews(NativeScrollBar* scroll_bar)
     : BaseScrollBar(scroll_bar->IsHorizontal(),
                     new ScrollBarThumb(this)),
       native_scroll_bar_(scroll_bar) {
-  SetController(native_scroll_bar_->GetController());
+  set_controller(native_scroll_bar_->controller());
 
   if (native_scroll_bar_->IsHorizontal()) {
     prev_button_ = new ScrollBarButton(this, ScrollBarButton::LEFT);
@@ -325,14 +325,13 @@ int NativeScrollBarViews::GetLayoutSize() const {
 }
 
 void NativeScrollBarViews::ScrollToPosition(int position) {
-  GetController()->ScrollToPosition(native_scroll_bar_, position);
+  controller()->ScrollToPosition(native_scroll_bar_, position);
 }
 
-int NativeScrollBarViews::GetScrollIncrement(bool is_page,
-                                             bool is_positive) {
-  return GetController()->GetScrollIncrement(native_scroll_bar_,
-                                             is_page,
-                                             is_positive);
+int NativeScrollBarViews::GetScrollIncrement(bool is_page, bool is_positive) {
+  return controller()->GetScrollIncrement(native_scroll_bar_,
+                                          is_page,
+                                          is_positive);
 }
 
 //////////////////////////////////////////////////////////////////////////////

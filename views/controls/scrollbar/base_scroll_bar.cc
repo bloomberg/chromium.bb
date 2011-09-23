@@ -338,11 +338,11 @@ CustomButton::ButtonState BaseScrollBar::GetThumbTrackState() const {
 }
 
 void BaseScrollBar::ScrollToPosition(int position) {
-  GetController()->ScrollToPosition(this, position);
+  controller()->ScrollToPosition(this, position);
 }
 
 int BaseScrollBar::GetScrollIncrement(bool is_page, bool is_positive) {
-  return GetController()->GetScrollIncrement(this, is_page, is_positive);
+  return controller()->GetScrollIncrement(this, is_page, is_positive);
 }
 
 

@@ -138,7 +138,7 @@ void NativeScrollBarGtk::Update(int viewport_size,
   if (current_pos > content_size)
     current_pos = content_size;
 
-  ScrollBarController* controller = native_scroll_bar_->GetController();
+  ScrollBarController* controller = native_scroll_bar_->controller();
   int step = controller->GetScrollIncrement(native_scroll_bar_,
                                             false /* step */,
                                             true /* positive */);
@@ -157,7 +157,7 @@ void NativeScrollBarGtk::Update(int viewport_size,
 // NativeScrollBarGtk, private:
 
 void NativeScrollBarGtk::ValueChanged() {
-  ScrollBarController* controller = native_scroll_bar_->GetController();
+  ScrollBarController* controller = native_scroll_bar_->controller();
   controller->ScrollToPosition(native_scroll_bar_, GetPosition());
 }
 
@@ -172,12 +172,12 @@ void NativeScrollBarGtk::MoveBy(int o) {
 }
 
 void NativeScrollBarGtk::MovePage(bool positive) {
-  ScrollBarController* controller = native_scroll_bar_->GetController();
+  ScrollBarController* controller = native_scroll_bar_->controller();
   MoveBy(controller->GetScrollIncrement(native_scroll_bar_, true, positive));
 }
 
 void NativeScrollBarGtk::MoveStep(bool positive) {
-  ScrollBarController* controller = native_scroll_bar_->GetController();
+  ScrollBarController* controller = native_scroll_bar_->controller();
   MoveBy(controller->GetScrollIncrement(native_scroll_bar_, false, positive));
 }
 

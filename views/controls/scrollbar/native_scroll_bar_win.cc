@@ -64,8 +64,7 @@ class ScrollBarContainer : public ui::WindowImpl {
     else if (pos > parent_->GetMaxPosition())
       pos = parent_->GetMaxPosition();
 
-    ScrollBarController* sbc = parent_->GetController();
-    sbc->ScrollToPosition(parent_, pos);
+    parent_->controller()->ScrollToPosition(parent_, pos);
 
     si.nPos = pos;
     si.fMask = SIF_POS;
@@ -124,7 +123,7 @@ class ScrollBarContainer : public ui::WindowImpl {
     GetScrollInfo(scrollbar_, SB_CTL, &si);
     pos = si.nPos;
 
-    ScrollBarController* sbc = parent_->GetController();
+    ScrollBarController* sbc = parent_->controller();
 
     switch (code) {
       case SB_BOTTOM:  // case SB_RIGHT:
