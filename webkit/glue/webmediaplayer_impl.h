@@ -50,6 +50,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
 #include "media/base/filters.h"
 #include "media/base/message_loop_factory.h"
@@ -77,7 +78,8 @@ class WebVideoRenderer;
 
 class WebMediaPlayerImpl
     : public WebKit::WebMediaPlayer,
-      public MessageLoop::DestructionObserver {
+      public MessageLoop::DestructionObserver,
+      public base::SupportsWeakPtr<WebMediaPlayerImpl> {
  public:
   // Construct a WebMediaPlayerImpl with reference to the client, and media
   // filter collection. By providing the filter collection the implementor can
@@ -196,32 +198,6 @@ class WebMediaPlayerImpl
   void OnDemuxerOpened();
 
  private:
-  // Class used to avoid race condition:
-  // * We added task UsesExtraMemoryTask to tell the V8 we are using extra
-  //   memory.
-  // * Meanwhile, WebMediaPlayerImpl is being deleted. We want to let V8 know
-  //   we are not using that extra memory anymore -- but we cannot be sure
-  //   UsesExtraMemoryTask was yet completed. We cannot add task doing that to
-  //   the message loop either, because we will break shutodown of some tests
-  //   that wait till queue is empty and don't expect destructor to add new
-  //   tasks.
-  // We also don't want to delay destruction of WebMediaPlayerImpl till
-  // UsesExtraMemoryTask finishes, as object is big and uses lot of resources.
-  //
-  // Solution is to use small ref counted object that usually has 2 references
-  // to it -- one from WebMediaPlayerImpl, and one from message loop. Destructor
-  // and UsesExtraMemoryTask can communicate through it.
-  class DestructorOrTaskHadRun:
-      public base::RefCounted<DestructorOrTaskHadRun> {
-   public:
-    DestructorOrTaskHadRun() : value_(false) { }
-    bool value() const { return value_; }
-    void set_value(bool value) { value_ = value; }
-
-   private:
-    bool value_;
-  };
-
   // Helpers that set the network/ready state and notifies the client if
   // they've changed.
   void SetNetworkState(WebKit::WebMediaPlayer::NetworkState state);
@@ -234,8 +210,7 @@ class WebMediaPlayerImpl
   WebKit::WebMediaPlayerClient* GetClient();
 
   // Lets V8 know that player uses extra resources not managed by V8.
-  static void UsesExtraMemoryTask(
-      scoped_refptr<DestructorOrTaskHadRun> destructor_or_task_had_run);
+  void IncrementExternallyAllocatedMemory();
 
   // TODO(hclam): get rid of these members and read from the pipeline directly.
   WebKit::WebMediaPlayer::NetworkState network_state_;
@@ -290,7 +265,7 @@ class WebMediaPlayerImpl
 
   scoped_refptr<media::MediaLog> media_log_;
 
-  scoped_refptr<DestructorOrTaskHadRun> destructor_or_task_had_run_;
+  bool incremented_externally_allocated_memory_;
 
   DISALLOW_COPY_AND_ASSIGN(WebMediaPlayerImpl);
 };

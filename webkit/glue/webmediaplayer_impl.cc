@@ -115,7 +115,8 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       client_(client),
       proxy_(NULL),
       media_stream_client_(media_stream_client),
-      media_log_(media_log) {
+      media_log_(media_log),
+      incremented_externally_allocated_memory_(false) {
   // Saves the current message loop.
   DCHECK(!main_loop_);
   main_loop_ = MessageLoop::current();
@@ -127,6 +128,7 @@ bool WebMediaPlayerImpl::Initialize(
     WebKit::WebFrame* frame,
     bool use_simple_data_source,
     scoped_refptr<WebVideoRenderer> web_video_renderer) {
+  DCHECK_EQ(main_loop_, MessageLoop::current());
   MessageLoop* pipeline_message_loop =
       message_loop_factory_->GetMessageLoop("PipelineThread");
   if (!pipeline_message_loop) {
@@ -139,12 +141,11 @@ bool WebMediaPlayerImpl::Initialize(
   // Also, delaying GC until after player starts gets rid of starting lag --
   // collection happens in parallel with playing.
   // TODO(enal): remove when we get rid of per-audio-stream thread.
-  if (destructor_or_task_had_run_.get() == NULL) {
-    destructor_or_task_had_run_ = new DestructorOrTaskHadRun();
-    main_loop_->PostTask(
+  if (!incremented_externally_allocated_memory_) {
+    MessageLoop::current()->PostTask(
         FROM_HERE,
-        NewRunnableFunction(WebMediaPlayerImpl::UsesExtraMemoryTask,
-                            destructor_or_task_had_run_));
+        base::Bind(&WebMediaPlayerImpl::IncrementExternallyAllocatedMemory,
+                   AsWeakPtr()));
   }
 
   pipeline_ = new media::PipelineImpl(pipeline_message_loop, media_log_);
@@ -222,6 +223,7 @@ bool WebMediaPlayerImpl::Initialize(
 }
 
 WebMediaPlayerImpl::~WebMediaPlayerImpl() {
+  DCHECK_EQ(main_loop_, MessageLoop::current());
   Destroy();
   media_log_->AddEvent(
       media_log_->CreateEvent(media::MediaLogEvent::WEBMEDIAPLAYER_DESTROYED));
@@ -234,7 +236,7 @@ WebMediaPlayerImpl::~WebMediaPlayerImpl() {
 }
 
 void WebMediaPlayerImpl::load(const WebKit::WebURL& url) {
-  DCHECK(MessageLoop::current() == main_loop_);
+  DCHECK_EQ(main_loop_, MessageLoop::current());
   DCHECK(proxy_);
 
   if (media_stream_client_) {
@@ -274,11 +276,11 @@ void WebMediaPlayerImpl::load(const WebKit::WebURL& url) {
 }
 
 void WebMediaPlayerImpl::cancelLoad() {
-  DCHECK(MessageLoop::current() == main_loop_);
+  DCHECK_EQ(main_loop_, MessageLoop::current());
 }
 
 void WebMediaPlayerImpl::play() {
-  DCHECK(MessageLoop::current() == main_loop_);
+  DCHECK_EQ(main_loop_, MessageLoop::current());
 
   paused_ = false;
   pipeline_->SetPlaybackRate(playback_rate_);
@@ -287,7 +289,7 @@ void WebMediaPlayerImpl::play() {
 }
 
 void WebMediaPlayerImpl::pause() {
-  DCHECK(MessageLoop::current() == main_loop_);
+  DCHECK_EQ(main_loop_, MessageLoop::current());
 
   paused_ = true;
   pipeline_->SetPlaybackRate(0.0f);
@@ -297,17 +299,17 @@ void WebMediaPlayerImpl::pause() {
 }
 
 bool WebMediaPlayerImpl::supportsFullscreen() const {
-  DCHECK(MessageLoop::current() == main_loop_);
+  DCHECK_EQ(main_loop_, MessageLoop::current());
   return true;
 }
 
 bool WebMediaPlayerImpl::supportsSave() const {
-  DCHECK(MessageLoop::current() == main_loop_);
+  DCHECK_EQ(main_loop_, MessageLoop::current());
   return true;
 }
 
 void WebMediaPlayerImpl::seek(float seconds) {
-  DCHECK(MessageLoop::current() == main_loop_);
+  DCHECK_EQ(main_loop_, MessageLoop::current());
 
   // WebKit fires a seek(0) at the very start, however pipeline already does a
   // seek(0) internally.  Avoid doing seek(0) the second time because this will
@@ -348,14 +350,14 @@ void WebMediaPlayerImpl::seek(float seconds) {
 }
 
 void WebMediaPlayerImpl::setEndTime(float seconds) {
-  DCHECK(MessageLoop::current() == main_loop_);
+  DCHECK_EQ(main_loop_, MessageLoop::current());
 
   // TODO(hclam): add method call when it has been implemented.
   return;
 }
 
 void WebMediaPlayerImpl::setRate(float rate) {
-  DCHECK(MessageLoop::current() == main_loop_);
+  DCHECK_EQ(main_loop_, MessageLoop::current());
 
   // TODO(kylep): Remove when support for negatives is added. Also, modify the
   // following checks so rewind uses reasonable values also.
@@ -377,13 +379,13 @@ void WebMediaPlayerImpl::setRate(float rate) {
 }
 
 void WebMediaPlayerImpl::setVolume(float volume) {
-  DCHECK(MessageLoop::current() == main_loop_);
+  DCHECK_EQ(main_loop_, MessageLoop::current());
 
   pipeline_->SetVolume(volume);
 }
 
 void WebMediaPlayerImpl::setVisible(bool visible) {
-  DCHECK(MessageLoop::current() == main_loop_);
+  DCHECK_EQ(main_loop_, MessageLoop::current());
 
   // TODO(hclam): add appropriate method call when pipeline has it implemented.
   return;
@@ -398,31 +400,31 @@ COMPILE_ASSERT_MATCHING_ENUM(MetaData, METADATA);
 COMPILE_ASSERT_MATCHING_ENUM(Auto, AUTO);
 
 void WebMediaPlayerImpl::setPreload(WebKit::WebMediaPlayer::Preload preload) {
-  DCHECK(MessageLoop::current() == main_loop_);
+  DCHECK_EQ(main_loop_, MessageLoop::current());
 
   pipeline_->SetPreload(static_cast<media::Preload>(preload));
 }
 
 bool WebMediaPlayerImpl::totalBytesKnown() {
-  DCHECK(MessageLoop::current() == main_loop_);
+  DCHECK_EQ(main_loop_, MessageLoop::current());
 
   return pipeline_->GetTotalBytes() != 0;
 }
 
 bool WebMediaPlayerImpl::hasVideo() const {
-  DCHECK(MessageLoop::current() == main_loop_);
+  DCHECK_EQ(main_loop_, MessageLoop::current());
 
   return pipeline_->HasVideo();
 }
 
 bool WebMediaPlayerImpl::hasAudio() const {
-  DCHECK(MessageLoop::current() == main_loop_);
+  DCHECK_EQ(main_loop_, MessageLoop::current());
 
   return pipeline_->HasAudio();
 }
 
 WebKit::WebSize WebMediaPlayerImpl::naturalSize() const {
-  DCHECK(MessageLoop::current() == main_loop_);
+  DCHECK_EQ(main_loop_, MessageLoop::current());
 
   gfx::Size size;
   pipeline_->GetNaturalVideoSize(&size);
@@ -430,13 +432,13 @@ WebKit::WebSize WebMediaPlayerImpl::naturalSize() const {
 }
 
 bool WebMediaPlayerImpl::paused() const {
-  DCHECK(MessageLoop::current() == main_loop_);
+  DCHECK_EQ(main_loop_, MessageLoop::current());
 
   return pipeline_->GetPlaybackRate() == 0.0f;
 }
 
 bool WebMediaPlayerImpl::seeking() const {
-  DCHECK(MessageLoop::current() == main_loop_);
+  DCHECK_EQ(main_loop_, MessageLoop::current());
 
   if (ready_state_ == WebKit::WebMediaPlayer::HaveNothing)
     return false;
@@ -445,7 +447,7 @@ bool WebMediaPlayerImpl::seeking() const {
 }
 
 float WebMediaPlayerImpl::duration() const {
-  DCHECK(MessageLoop::current() == main_loop_);
+  DCHECK_EQ(main_loop_, MessageLoop::current());
 
   base::TimeDelta duration = pipeline_->GetMediaDuration();
   if (duration.InMicroseconds() == media::Limits::kMaxTimeInMicroseconds)
@@ -454,7 +456,7 @@ float WebMediaPlayerImpl::duration() const {
 }
 
 float WebMediaPlayerImpl::currentTime() const {
-  DCHECK(MessageLoop::current() == main_loop_);
+  DCHECK_EQ(main_loop_, MessageLoop::current());
   if (paused_) {
     return static_cast<float>(paused_time_.InSecondsF());
   }
@@ -462,7 +464,7 @@ float WebMediaPlayerImpl::currentTime() const {
 }
 
 int WebMediaPlayerImpl::dataRate() const {
-  DCHECK(MessageLoop::current() == main_loop_);
+  DCHECK_EQ(main_loop_, MessageLoop::current());
 
   // TODO(hclam): Add this method call if pipeline has it in the interface.
   return 0;
@@ -477,7 +479,7 @@ WebKit::WebMediaPlayer::ReadyState WebMediaPlayerImpl::readyState() const {
 }
 
 const WebKit::WebTimeRanges& WebMediaPlayerImpl::buffered() {
-  DCHECK(MessageLoop::current() == main_loop_);
+  DCHECK_EQ(main_loop_, MessageLoop::current());
 
   // Update buffered_ with the most recent buffered time.
   if (buffered_.size() > 0) {
@@ -491,7 +493,7 @@ const WebKit::WebTimeRanges& WebMediaPlayerImpl::buffered() {
 }
 
 float WebMediaPlayerImpl::maxTimeSeekable() const {
-  DCHECK(MessageLoop::current() == main_loop_);
+  DCHECK_EQ(main_loop_, MessageLoop::current());
 
   // If we are performing streaming, we report that we cannot seek at all.
   // We are using this flag to indicate if the data source supports seeking
@@ -503,19 +505,19 @@ float WebMediaPlayerImpl::maxTimeSeekable() const {
 }
 
 unsigned long long WebMediaPlayerImpl::bytesLoaded() const {
-  DCHECK(MessageLoop::current() == main_loop_);
+  DCHECK_EQ(main_loop_, MessageLoop::current());
 
   return pipeline_->GetBufferedBytes();
 }
 
 unsigned long long WebMediaPlayerImpl::totalBytes() const {
-  DCHECK(MessageLoop::current() == main_loop_);
+  DCHECK_EQ(main_loop_, MessageLoop::current());
 
   return pipeline_->GetTotalBytes();
 }
 
 void WebMediaPlayerImpl::setSize(const WebSize& size) {
-  DCHECK(MessageLoop::current() == main_loop_);
+  DCHECK_EQ(main_loop_, MessageLoop::current());
   DCHECK(proxy_);
 
   proxy_->SetSize(gfx::Rect(0, 0, size.width, size.height));
@@ -523,7 +525,7 @@ void WebMediaPlayerImpl::setSize(const WebSize& size) {
 
 void WebMediaPlayerImpl::paint(WebCanvas* canvas,
                                const WebRect& rect) {
-  DCHECK(MessageLoop::current() == main_loop_);
+  DCHECK_EQ(main_loop_, MessageLoop::current());
   DCHECK(proxy_);
 
 #if WEBKIT_USING_SKIA
@@ -591,7 +593,7 @@ bool WebMediaPlayerImpl::hasSingleSecurityOrigin() const {
 
 WebKit::WebMediaPlayer::MovieLoadType
     WebMediaPlayerImpl::movieLoadType() const {
-  DCHECK(MessageLoop::current() == main_loop_);
+  DCHECK_EQ(main_loop_, MessageLoop::current());
 
   // TODO(hclam): If the pipeline is performing streaming, we say that this is
   // a live stream. But instead it should be a StoredStream if we have proper
@@ -606,28 +608,28 @@ float WebMediaPlayerImpl::mediaTimeForTimeValue(float timeValue) const {
 }
 
 unsigned WebMediaPlayerImpl::decodedFrameCount() const {
-  DCHECK(MessageLoop::current() == main_loop_);
+  DCHECK_EQ(main_loop_, MessageLoop::current());
 
   media::PipelineStatistics stats = pipeline_->GetStatistics();
   return stats.video_frames_decoded;
 }
 
 unsigned WebMediaPlayerImpl::droppedFrameCount() const {
-  DCHECK(MessageLoop::current() == main_loop_);
+  DCHECK_EQ(main_loop_, MessageLoop::current());
 
   media::PipelineStatistics stats = pipeline_->GetStatistics();
   return stats.video_frames_dropped;
 }
 
 unsigned WebMediaPlayerImpl::audioDecodedByteCount() const {
-  DCHECK(MessageLoop::current() == main_loop_);
+  DCHECK_EQ(main_loop_, MessageLoop::current());
 
   media::PipelineStatistics stats = pipeline_->GetStatistics();
   return stats.audio_bytes_decoded;
 }
 
 unsigned WebMediaPlayerImpl::videoDecodedByteCount() const {
-  DCHECK(MessageLoop::current() == main_loop_);
+  DCHECK_EQ(main_loop_, MessageLoop::current());
 
   media::PipelineStatistics stats = pipeline_->GetStatistics();
   return stats.video_bytes_decoded;
@@ -656,13 +658,13 @@ void WebMediaPlayerImpl::putCurrentFrame(
 /*
 bool WebMediaPlayerImpl::sourceAppend(const unsigned char* data,
                                       unsigned length) {
-  DCHECK(MessageLoop::current() == main_loop_);
+  DCHECK_EQ(main_loop_, MessageLoop::current());
   return proxy_->DemuxerAppend(data, length);
 }
 
 void WebMediaPlayerImpl::sourceEndOfStream(
     WebKit::WebMediaPlayer::EndOfStreamStatus status) {
-  DCHECK(MessageLoop::current() == main_loop_);
+  DCHECK_EQ(main_loop_, MessageLoop::current());
   media::PipelineStatus pipeline_status = media::PIPELINE_OK;
 
   switch(status) {
@@ -688,12 +690,12 @@ void WebMediaPlayerImpl::WillDestroyCurrentMessageLoop() {
 }
 
 void WebMediaPlayerImpl::Repaint() {
-  DCHECK(MessageLoop::current() == main_loop_);
+  DCHECK_EQ(main_loop_, MessageLoop::current());
   GetClient()->repaint();
 }
 
 void WebMediaPlayerImpl::OnPipelineInitialize(PipelineStatus status) {
-  DCHECK(MessageLoop::current() == main_loop_);
+  DCHECK_EQ(main_loop_, MessageLoop::current());
   if (status == media::PIPELINE_OK) {
     // Only keep one time range starting from 0.
     WebKit::WebTimeRanges new_buffered(static_cast<size_t>(1));
@@ -725,7 +727,7 @@ void WebMediaPlayerImpl::OnPipelineInitialize(PipelineStatus status) {
 }
 
 void WebMediaPlayerImpl::OnPipelineSeek(PipelineStatus status) {
-  DCHECK(MessageLoop::current() == main_loop_);
+  DCHECK_EQ(main_loop_, MessageLoop::current());
   seeking_ = false;
   if (pending_seek_) {
     pending_seek_ = false;
@@ -745,14 +747,14 @@ void WebMediaPlayerImpl::OnPipelineSeek(PipelineStatus status) {
 }
 
 void WebMediaPlayerImpl::OnPipelineEnded(PipelineStatus status) {
-  DCHECK(MessageLoop::current() == main_loop_);
+  DCHECK_EQ(main_loop_, MessageLoop::current());
   if (status == media::PIPELINE_OK) {
     GetClient()->timeChanged();
   }
 }
 
 void WebMediaPlayerImpl::OnPipelineError(PipelineStatus error) {
-  DCHECK(MessageLoop::current() == main_loop_);
+  DCHECK_EQ(main_loop_, MessageLoop::current());
   switch (error) {
     case media::PIPELINE_OK:
       LOG(DFATAL) << "PIPELINE_OK isn't an error!";
@@ -793,7 +795,7 @@ void WebMediaPlayerImpl::OnPipelineError(PipelineStatus error) {
 }
 
 void WebMediaPlayerImpl::OnNetworkEvent(PipelineStatus status) {
-  DCHECK(MessageLoop::current() == main_loop_);
+  DCHECK_EQ(main_loop_, MessageLoop::current());
   if (status == media::PIPELINE_OK) {
     if (pipeline_->IsNetworkActive())
       SetNetworkState(WebKit::WebMediaPlayer::Loading);
@@ -803,7 +805,7 @@ void WebMediaPlayerImpl::OnNetworkEvent(PipelineStatus status) {
 }
 
 void WebMediaPlayerImpl::OnDemuxerOpened() {
-  DCHECK(MessageLoop::current() == main_loop_);
+  DCHECK_EQ(main_loop_, MessageLoop::current());
 
   // TODO(acolwell): Uncomment once WebKit changes are checked in.
   // https://bugs.webkit.org/show_bug.cgi?id=64731
@@ -812,7 +814,7 @@ void WebMediaPlayerImpl::OnDemuxerOpened() {
 
 void WebMediaPlayerImpl::SetNetworkState(
     WebKit::WebMediaPlayer::NetworkState state) {
-  DCHECK(MessageLoop::current() == main_loop_);
+  DCHECK_EQ(main_loop_, MessageLoop::current());
   // Always notify to ensure client has the latest value.
   network_state_ = state;
   GetClient()->networkStateChanged();
@@ -820,14 +822,14 @@ void WebMediaPlayerImpl::SetNetworkState(
 
 void WebMediaPlayerImpl::SetReadyState(
     WebKit::WebMediaPlayer::ReadyState state) {
-  DCHECK(MessageLoop::current() == main_loop_);
+  DCHECK_EQ(main_loop_, MessageLoop::current());
   // Always notify to ensure client has the latest value.
   ready_state_ = state;
   GetClient()->readyStateChanged();
 }
 
 void WebMediaPlayerImpl::Destroy() {
-  DCHECK(MessageLoop::current() == main_loop_);
+  DCHECK_EQ(main_loop_, MessageLoop::current());
 
   // Tell the data source to abort any pending reads so that the pipeline is
   // not blocked when issuing stop commands to the other filters.
@@ -844,13 +846,10 @@ void WebMediaPlayerImpl::Destroy() {
     note.Wait();
 
     // Let V8 know we are not using extra resources anymore.
-    if (destructor_or_task_had_run_.get() != NULL) {
-      if (destructor_or_task_had_run_->value())
-        v8::V8::AdjustAmountOfExternalAllocatedMemory(-kPlayerExtraMemory);
-      else
-        destructor_or_task_had_run_->set_value(true);
+    if (incremented_externally_allocated_memory_) {
+      v8::V8::AdjustAmountOfExternalAllocatedMemory(-kPlayerExtraMemory);
+      incremented_externally_allocated_memory_ = false;
     }
-    destructor_or_task_had_run_ = NULL;
   }
 
   message_loop_factory_.reset();
@@ -864,17 +863,15 @@ void WebMediaPlayerImpl::Destroy() {
 }
 
 WebKit::WebMediaPlayerClient* WebMediaPlayerImpl::GetClient() {
-  DCHECK(MessageLoop::current() == main_loop_);
+  DCHECK_EQ(main_loop_, MessageLoop::current());
   DCHECK(client_);
   return client_;
 }
 
-void WebMediaPlayerImpl::UsesExtraMemoryTask(
-    scoped_refptr<DestructorOrTaskHadRun> destructor_or_task_had_run) {
-  if (!destructor_or_task_had_run->value()) {
-    v8::V8::AdjustAmountOfExternalAllocatedMemory(kPlayerExtraMemory);
-    destructor_or_task_had_run->set_value(true);
-  }
+void WebMediaPlayerImpl::IncrementExternallyAllocatedMemory() {
+  DCHECK_EQ(main_loop_, MessageLoop::current());
+  incremented_externally_allocated_memory_ = true;
+  v8::V8::AdjustAmountOfExternalAllocatedMemory(kPlayerExtraMemory);
 }
 
 }  // namespace webkit_glue
