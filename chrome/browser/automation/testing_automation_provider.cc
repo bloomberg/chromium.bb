@@ -2256,6 +2256,8 @@ void TestingAutomationProvider::SendJSONRequest(int handle,
       &TestingAutomationProvider::CreateNewAutomationProvider;
   handler_map["GetBrowserInfo"] =
       &TestingAutomationProvider::GetBrowserInfo;
+  handler_map["GetProcessInfo"] =
+      &TestingAutomationProvider::GetProcessInfo;
 #if defined(OS_CHROMEOS)
   handler_map["GetLoginInfo"] = &TestingAutomationProvider::GetLoginInfo;
   handler_map["ShowCreateAccountUI"] =
@@ -2872,6 +2874,17 @@ void TestingAutomationProvider::GetBrowserInfo(
   }
   return_value->Set("extension_views", extension_views);
   AutomationJSONReply(this, reply_message).SendSuccess(return_value.get());
+}
+
+// Sample json input: { "command": "GetProcessInfo" }
+// Refer to GetProcessInfo() in chrome/test/pyautolib/pyauto.py for
+// sample json output.
+void TestingAutomationProvider::GetProcessInfo(
+    DictionaryValue* args,
+    IPC::Message* reply_message) {
+  scoped_refptr<ProcessInfoObserver>
+      proc_observer(new ProcessInfoObserver(this, reply_message));
+  proc_observer->StartFetch();
 }
 
 // Sample json input: { "command": "GetNavigationInfo" }

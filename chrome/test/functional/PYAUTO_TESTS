@@ -184,13 +184,6 @@
       '-passwords.PasswordTest.testClearFetchedCredForNewUserName',
       # Crashes browser. crbug.com/89000
       '-prefs.PrefsTest.testGeolocationPref',
-      # crbug.com/93822
-      '-process_count.ProcessCountTest.testProcessCountAppendSingleTab',
-      '-process_count.ProcessCountTest.testProcessCountCombination',
-      '-process_count.ProcessCountTest.testProcessCountExtensionProcess',
-      '-process_count.ProcessCountTest.testProcessCountFlashProcess',
-      '-process_count.ProcessCountTest.testProcessCountFreshProfile',
-      '-process_count.ProcessCountTest.testProcessCountNewWindow',
       #	crbug.com/95621
       '-youtube.YoutubeTest.testPlayerStatus',
     ],
@@ -230,8 +223,6 @@
       '-passwords',
       # crbug.com/97140
       '-plugins.PluginsTest.testDisableEnableAllPlugins',
-      # crbug.com/95142
-      '-process_count.ProcessCountTest.testProcessCountExtensionProcess',
       # WebDriver requires python 2.6, which mac pyauto does not use yet.
       # crbug.com/49379
       '-pyauto_webdriver',

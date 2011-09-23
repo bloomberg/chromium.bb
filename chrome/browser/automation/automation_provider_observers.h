@@ -37,6 +37,7 @@
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/importer/importer_data_types.h"
 #include "chrome/browser/importer/importer_progress_observer.h"
+#include "chrome/browser/memory_details.h"
 #include "chrome/browser/password_manager/password_store_change.h"
 #include "chrome/browser/password_manager/password_store_consumer.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
@@ -1705,6 +1706,23 @@ class DragTargetDropAckNotificationObserver : public NotificationObserver {
   scoped_ptr<IPC::Message> reply_message_;
 
   DISALLOW_COPY_AND_ASSIGN(DragTargetDropAckNotificationObserver);
+};
+
+// Allows the automation provider to wait for process memory details to be
+// available before sending this information to the client.
+class ProcessInfoObserver : public MemoryDetails {
+ public:
+  ProcessInfoObserver(AutomationProvider* automation,
+                      IPC::Message* reply_message);
+
+  virtual void OnDetailsAvailable() OVERRIDE;
+
+ private:
+  ~ProcessInfoObserver() {}
+  base::WeakPtr<AutomationProvider> automation_;
+  scoped_ptr<IPC::Message> reply_message_;
+
+  DISALLOW_COPY_AND_ASSIGN(ProcessInfoObserver);
 };
 
 #endif  // CHROME_BROWSER_AUTOMATION_AUTOMATION_PROVIDER_OBSERVERS_H_

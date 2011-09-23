@@ -389,6 +389,10 @@ class TestingAutomationProvider : public AutomationProvider,
   void GetBrowserInfo(base::DictionaryValue* args,
                       IPC::Message* reply_message);
 
+  // Get info about browser-related processes that currently exist.
+  void GetProcessInfo(base::DictionaryValue* args,
+                      IPC::Message* reply_message);
+
   // Get info about the state of navigation in a given tab.
   // This includes ssl info.
   // Uses the JSON interface for input/output.

@@ -33,6 +33,7 @@ import logging
 import optparse
 import os
 import pickle
+import pprint
 import shutil
 import signal
 import socket
@@ -134,6 +135,10 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     pyautolib.PyUITestBase.__init__(self, clear_profile, homepage)
     self.Initialize(pyautolib.FilePath(self.BrowserPath()))
     unittest.TestCase.__init__(self, methodName)
+
+    # Give all pyauto tests easy access to pprint.PrettyPrinter functions.
+    self.pprint = pprint.pprint
+    self.pformat = pprint.pformat
 
     # Set up remote proxies, if they were requested.
     self.remotes = []
@@ -1378,6 +1383,65 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     """
     cmd_dict = {  # Prepare command for the json interface
       'command': 'GetBrowserInfo',
+    }
+    return self._GetResultFromJSONRequest(cmd_dict, windex=-1)
+
+  def GetProcessInfo(self):
+    """Returns information about browser-related processes that currently exist.
+
+    This will also return information about other currently-running browsers
+    besides just Chrome.
+
+    Returns:
+      A dictionary containing browser-related process information as identified
+      by class MemoryDetails in src/chrome/browser/memory_details.h.  The
+      dictionary contains a single key 'browsers', mapped to a list of
+      dictionaries containing information about each browser process name.
+      Each of those dictionaries contains a key 'processes', mapped to a list
+      of dictionaries containing the specific information for each process
+      with the given process name.
+
+      The memory values given in |committed_mem| and |working_set_mem| are in
+      KBytes.
+
+      Sample:
+      { 'browsers': [ { 'name': 'Chromium',
+                        'process_name': 'chrome',
+                        'processes': [ { 'child_process_type': 'Browser',
+                                         'committed_mem': { 'image': 0,
+                                                            'mapped': 0,
+                                                            'priv': 0},
+                                         'is_diagnostics': False,
+                                         'num_processes': 1,
+                                         'pid': 7770,
+                                         'product_name': '',
+                                         'renderer_type': 'Unknown',
+                                         'titles': [],
+                                         'version': '',
+                                         'working_set_mem': { 'priv': 43672,
+                                                              'shareable': 0,
+                                                              'shared': 59251}},
+                                       { 'child_process_type': 'Tab',
+                                         'committed_mem': { 'image': 0,
+                                                            'mapped': 0,
+                                                            'priv': 0},
+                                         'is_diagnostics': False,
+                                         'num_processes': 1,
+                                         'pid': 7791,
+                                         'product_name': '',
+                                         'renderer_type': 'Tab',
+                                         'titles': ['about:blank'],
+                                         'version': '',
+                                         'working_set_mem': { 'priv': 16768,
+                                                              'shareable': 0,
+                                                              'shared': 26256}},
+                                       ...<more processes>...]}]}
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    cmd_dict = {  # Prepare command for the json interface.
+      'command': 'GetProcessInfo',
     }
     return self._GetResultFromJSONRequest(cmd_dict, windex=-1)
 
