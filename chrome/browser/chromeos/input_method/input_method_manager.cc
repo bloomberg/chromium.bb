@@ -1260,7 +1260,7 @@ class InputMethodManagerImpl : public HotkeyManager::Observer,
   // resend if the ime restarts and loses its state.
   InputMethodConfigRequests current_config_values_;
 
-  // This is used to register this object to APP_EXITING notification.
+  // This is used to register this object to APP_TERMINATING notification.
   NotificationRegistrar notification_registrar_;
 
   // True if we should launch the input method daemon.
