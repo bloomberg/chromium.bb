@@ -55,7 +55,7 @@ PluginDispatcher* CheckExceptionAndGetDispatcher(const PP_Var& object,
   return NULL;
 }
 
-// PPP_Var_Deprecated plugin ---------------------------------------------------
+// PPB_Var_Deprecated plugin ---------------------------------------------------
 
 void AddRefVar(PP_Var var) {
   PluginResourceTracker::GetInstance()->var_tracker().AddRefVar(var);

@@ -4,11 +4,11 @@
 
 #include "base/synchronization/waitable_event.h"
 #include "ipc/ipc_message_utils.h"
-#include "ppapi/c/dev/ppb_fullscreen_dev.h"
 #include "ppapi/c/pp_var.h"
 #include "ppapi/c/ppb_core.h"
 #include "ppapi/c/ppb_url_loader.h"
 #include "ppapi/c/ppp_instance.h"
+#include "ppapi/c/private/ppb_flash_fullscreen.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/ppapi_proxy_test.h"
 
@@ -68,12 +68,6 @@ PP_Bool HandleDocumentLoad(PP_Instance instance, PP_Resource url_loader) {
   return PP_FALSE;
 }
 
-PP_Var var_to_return;
-PP_Var GetInstanceObject(PP_Instance instance) {
-  received_instance = instance;
-  return var_to_return;
-}
-
 // Clear all the 'received' values for our mock.  Call this before you expect
 // one of the functions to be invoked.  TODO(dmichael): It would be better to
 // have a flag also for each function, so we know the right one got called.
@@ -95,12 +89,12 @@ PPP_Instance_1_0 ppp_instance_1_0 = {
   &HandleDocumentLoad
 };
 
-// PPP_Instance_Proxy::DidChangeView relies on PPB_FullscreenDev being
+// PPP_Instance_Proxy::DidChangeView relies on PPB_Fullscreen being
 // available with a valid implementation of IsFullScreen, so we mock it.
 PP_Bool IsFullscreen(PP_Instance instance) {
   return PP_FALSE;
 }
-PPB_Fullscreen_Dev ppb_fullscreen_dev = { &IsFullscreen };
+PPB_FlashFullscreen ppb_flash_fullscreen = { &IsFullscreen };
 
 }  // namespace
 
@@ -113,8 +107,8 @@ class PPP_Instance_ProxyTest : public TwoWayTest {
 
 TEST_F(PPP_Instance_ProxyTest, PPPInstance1_0) {
   plugin().RegisterTestInterface(PPP_INSTANCE_INTERFACE_1_0, &ppp_instance_1_0);
-  host().RegisterTestInterface(PPB_FULLSCREEN_DEV_INTERFACE,
-                               &ppb_fullscreen_dev);
+  host().RegisterTestInterface(PPB_FLASHFULLSCREEN_INTERFACE,
+                               &ppb_flash_fullscreen);
 
   // Grab the host-side proxy for the 1.0 interface.
   const PPP_Instance_1_0* ppp_instance = static_cast<const PPP_Instance_1_0*>(
