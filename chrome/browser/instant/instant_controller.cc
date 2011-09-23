@@ -156,11 +156,8 @@ void InstantController::Disable(Profile* profile) {
                                 delta.InMinutes(), 1, 60 * 24 * 10, 50);
   }
 
-  if (InstantFieldTrial::IsExperimentGroup(profile)) {
-    UMA_HISTOGRAM_COUNTS(
-        "Instant.FieldTrialOptOut." + InstantFieldTrial::GetGroupName(profile),
-        1);
-  }
+  UMA_HISTOGRAM_COUNTS(
+      "Instant.OptOut" + InstantFieldTrial::GetGroupName(profile), 1);
 
   service->SetBoolean(prefs::kInstantEnabledOnce, true);
   service->SetBoolean(prefs::kInstantEnabled, false);

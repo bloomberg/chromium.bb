@@ -864,9 +864,8 @@ void AutocompleteController::Start(
   if (matches_requested == AutocompleteInput::ALL_MATCHES &&
       (text.length() < 6)) {
     base::TimeTicks end_time = base::TimeTicks::Now();
-    std::string name = "Omnibox.QueryTime." +
-                       InstantFieldTrial::GetGroupName(profile_) + "." +
-                       base::IntToString(text.length());
+    std::string name = "Omnibox.QueryTime." + base::IntToString(text.length())
+                       + InstantFieldTrial::GetGroupName(profile_);
     base::Histogram* counter = base::Histogram::FactoryGet(
         name, 1, 1000, 50, base::Histogram::kUmaTargetedHistogramFlag);
     counter->Add(static_cast<int>((end_time - start_time).InMilliseconds()));

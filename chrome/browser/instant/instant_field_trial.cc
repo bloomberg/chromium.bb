@@ -74,14 +74,14 @@ bool InstantFieldTrial::IsExperimentGroup(Profile* profile) {
 // static
 std::string InstantFieldTrial::GetGroupName(Profile* profile) {
   switch (GetGroup(profile)) {
-    case INACTIVE:    return "InstantInactive";
-    case CONTROL1:    return "InstantControl1";
-    case CONTROL2:    return "InstantControl2";
-    case EXPERIMENT1: return "InstantExperiment1";
-    case EXPERIMENT2: return "InstantExperiment2";
+    case INACTIVE:    return std::string();
+    case CONTROL1:    return "_InstantControl1";
+    case CONTROL2:    return "_InstantControl2";
+    case EXPERIMENT1: return "_InstantExperiment1";
+    case EXPERIMENT2: return "_InstantExperiment2";
   }
   NOTREACHED();
-  return "InstantUnknown";
+  return std::string();
 }
 
 // static
