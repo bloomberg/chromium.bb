@@ -51,8 +51,10 @@ VS_OUT VS(VS_IN vIn) {
   return vOut;
 }
 
+float alpha = 1.0f;
+
 float4 PS(VS_OUT pIn) : SV_Target {
-  return textureMap.Sample(Sampler, float2(pIn.texC));
+  return textureMap.Sample(Sampler, float2(pIn.texC)) * alpha;
 }
 
 technique10 ViewTech {

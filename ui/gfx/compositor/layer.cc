@@ -20,6 +20,7 @@ Layer::Layer(Compositor* compositor)
       visible_(true),
       fills_bounds_opaquely_(false),
       layer_updated_externally_(false),
+      opacity_(1.0f),
       delegate_(NULL) {
 }
 
@@ -31,6 +32,7 @@ Layer::Layer(Compositor* compositor, TextureParam texture_param)
       visible_(true),
       fills_bounds_opaquely_(false),
       layer_updated_externally_(false),
+      opacity_(1.0f),
       delegate_(NULL) {
 }
 
@@ -130,7 +132,8 @@ void Layer::SchedulePaint(const gfx::Rect& invalid_rect) {
 }
 
 void Layer::Draw() {
-  if (!texture_.get())
+  const float combined_opacity = GetCombinedOpacity();
+  if (!texture_.get() || combined_opacity == 0.0f)
     return;
 
   UpdateLayerCanvas();
@@ -143,10 +146,16 @@ void Layer::Draw() {
         static_cast<float>(layer->bounds_.y()));
   }
 
-  // Only blend for transparent child layers.
-  // The root layer will clobber the cleared bg.
-  texture_draw_params.blend = parent_ != NULL && !fills_bounds_opaquely_;
+  // Only blend for transparent child layers (and when we're forcing
+  // transparency). The root layer will clobber the cleared bg.
+  const bool is_root = parent_ == NULL;
+  const bool forcing_transparency = combined_opacity < 1.0f;
+  const bool is_opaque = fills_bounds_opaquely_ || !has_valid_alpha_channel();
+  texture_draw_params.blend = !is_root && (forcing_transparency || !is_opaque);
+
   texture_draw_params.compositor_size = compositor_->size();
+  texture_draw_params.opacity = combined_opacity;
+  texture_draw_params.has_valid_alpha_channel = has_valid_alpha_channel();
 
   hole_rect_ = hole_rect_.Intersect(
       gfx::Rect(0, 0, bounds_.width(), bounds_.height()));
@@ -189,6 +198,38 @@ void Layer::DrawTree() {
     children_.at(i)->DrawTree();
 }
 
+void Layer::SetOpacity(float alpha) {
+  bool was_opaque = GetCombinedOpacity() == 1.0f;
+  opacity_ = alpha;
+  bool is_opaque = GetCombinedOpacity() == 1.0f;
+
+  // If our opacity has changed we need to recompute our hole, our parent's hole
+  // and the holes of all our descendants.
+  if (was_opaque != is_opaque) {
+    if (parent_)
+      parent_->RecomputeHole();
+    std::queue<Layer*> to_process;
+    to_process.push(this);
+    while (!to_process.empty()) {
+      Layer* current = to_process.front();
+      to_process.pop();
+      current->RecomputeHole();
+      for (size_t i = 0; i < current->children_.size(); ++i)
+        to_process.push(current->children_.at(i));
+    }
+  }
+}
+
+float Layer::GetCombinedOpacity() const {
+  float opacity = opacity_;
+  Layer* current = this->parent_;
+  while (current) {
+    opacity *= current->opacity_;
+    current = current->parent_;
+  }
+  return opacity;
+}
+
 void Layer::DrawRegion(const ui::TextureDrawParams& params,
                        const gfx::Rect& region_to_draw) {
   if (!region_to_draw.IsEmpty())
@@ -216,6 +257,7 @@ void Layer::UpdateLayerCanvas() {
 void Layer::RecomputeHole() {
   for (size_t i = 0; i < children_.size(); ++i) {
     if (children_[i]->fills_bounds_opaquely() &&
+        children_[i]->GetCombinedOpacity() == 1.0f &&
         !children_[i]->transform().HasChange()) {
       hole_rect_ = children_[i]->bounds();
       return;

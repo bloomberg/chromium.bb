@@ -22,6 +22,7 @@
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/base/animation/slide_animation.h"
 #include "ui/base/ime/text_input_type.h"
+#include "ui/gfx/compositor/layer.h"
 #include "ui/gfx/interpolated_transform.h"
 #include "ui/gfx/screen.h"
 #include "views/ime/text_input_type_tracker.h"
@@ -261,8 +262,10 @@ bool KeyboardWidget::OnKeyEvent(const views::KeyEvent& event) {
 }
 
 void KeyboardWidget::AnimationProgressed(const ui::Animation* animation) {
-  GetRootView()->SetTransform(
-      transform_->Interpolate(animation_->GetCurrentValue()));
+  float t = static_cast<float>(animation_->GetCurrentValue());
+  if (GetRootView()->layer())
+    GetRootView()->layer()->SetOpacity(t * t);
+  GetRootView()->SetTransform(transform_->Interpolate(t));
 }
 
 void KeyboardWidget::AnimationEnded(const ui::Animation* animation) {

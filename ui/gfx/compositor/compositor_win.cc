@@ -249,6 +249,9 @@ void ViewTexture::Draw(const ui::TextureDrawParams& params,
       effect_->GetVariableByName("textureMap")->AsShaderResource()->
       SetResource(shader_view_.get()));
 
+  RETURN_IF_FAILED(effect_->GetVariableByName("alpha")->AsScalar()->SetFloat(
+                   params.opacity));
+
   ID3D10EffectTechnique* technique = effect_->GetTechniqueByName("ViewTech");
   DCHECK(technique);
   D3D10_TECHNIQUE_DESC tech_desc;

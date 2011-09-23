@@ -42,6 +42,9 @@ class ui::TextureProgramGL {
   // Location of texture co-ordinate attribute in vertex shader.
   GLuint a_tex_loc() const { return a_tex_loc_; }
 
+  // Location of the alpha multiplier uniform in the vertex shader.
+  GLuint u_alpha_loc() const { return u_alpha_loc_; }
+
   // Location of transformation matrix uniform in vertex shader.
   GLuint u_mat_loc() const { return u_mat_loc_; }
 
@@ -62,6 +65,7 @@ class ui::TextureProgramGL {
 
   GLuint a_pos_loc_;
   GLuint a_tex_loc_;
+  GLuint u_alpha_loc_;
   GLuint u_tex_loc_;
   GLuint u_mat_loc_;
 };
@@ -113,11 +117,16 @@ bool TextureProgramNoSwizzleGL::Initialize() {
       "#ifdef GL_ES\n"
       "precision mediump float;\n"
       "#endif\n"
+      "uniform float u_alpha;"
       "uniform sampler2D u_tex;"
       "varying vec2 v_texCoord;"
       "void main()"
       "{"
       "  gl_FragColor = texture2D(u_tex, v_texCoord);"
+      "  if (u_alpha > 0.0)"
+      "    gl_FragColor.a = u_alpha;"
+      "  else"
+      "    gl_FragColor.a = gl_FragColor.a * -u_alpha;"
       "}";
 
   frag_shader_ = CompileShader(GL_FRAGMENT_SHADER, frag_shader_source);
@@ -132,11 +141,16 @@ bool TextureProgramSwizzleGL::Initialize() {
       "#ifdef GL_ES\n"
       "precision mediump float;\n"
       "#endif\n"
+      "uniform float u_alpha;"
       "uniform sampler2D u_tex;"
       "varying vec2 v_texCoord;"
       "void main()"
       "{"
       "  gl_FragColor = texture2D(u_tex, v_texCoord).zyxw;"
+      "  if (u_alpha > 0.0)"
+      "    gl_FragColor.a = u_alpha;"
+      "  else"
+      "    gl_FragColor.a = gl_FragColor.a * -u_alpha;"
       "}";
 
   frag_shader_ = CompileShader(GL_FRAGMENT_SHADER, frag_shader_source);
@@ -154,6 +168,7 @@ TextureProgramGL::TextureProgramGL()
     : program_(0),
       a_pos_loc_(0),
       a_tex_loc_(0),
+      u_alpha_loc_(0),
       u_tex_loc_(0),
       u_mat_loc_(0) {
 }
@@ -185,6 +200,7 @@ bool TextureProgramGL::InitializeCommon() {
   // Store locations of program inputs.
   a_pos_loc_ = glGetAttribLocation(program_, "a_position");
   a_tex_loc_ = glGetAttribLocation(program_, "a_texCoord");
+  u_alpha_loc_ = glGetUniformLocation(program_, "u_alpha");
   u_tex_loc_ = glGetUniformLocation(program_, "u_tex");
   u_mat_loc_ = glGetUniformLocation(program_, "u_matViewProjection");
 
@@ -437,6 +453,13 @@ void TextureGL::DrawInternal(const ui::TextureProgramGL& program,
   glEnableVertexAttribArray(program.a_tex_loc());
 
   glUniformMatrix4fv(program.u_mat_loc(), 1, GL_FALSE, m);
+
+  // negative means multiply, positive means clobber.
+  float alpha = params.has_valid_alpha_channel
+      ? -params.opacity
+      :  params.opacity;
+
+  glUniform1fv(program.u_alpha_loc(), 1, &alpha);
 
   glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 }

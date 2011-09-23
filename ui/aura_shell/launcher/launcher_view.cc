@@ -9,6 +9,7 @@
 #include "ui/aura_shell/aura_shell_export.h"
 #include "ui/aura_shell/launcher/launcher_button.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/compositor/layer.h"
 #include "views/widget/widget.h"
 
 namespace aura_shell {
@@ -43,6 +44,7 @@ AURA_SHELL_EXPORT views::Widget* CreateLauncher() {
   LauncherView* launcher_view = new LauncherView;
   params2.delegate = launcher_view;
   launcher_widget->Init(params2);
+  launcher_widget->GetNativeWindow()->layer()->SetOpacity(0.2f);
   launcher_widget->SetContentsView(launcher_view);
   launcher_widget->Show();
   launcher_widget->GetNativeView()->set_name(ASCIIToUTF16("LauncherView"));

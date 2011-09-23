@@ -25,7 +25,11 @@ class CompositorObserver;
 class Layer;
 
 struct TextureDrawParams {
-  TextureDrawParams() : transform(), blend(false), compositor_size() {}
+  TextureDrawParams()
+      : blend(false),
+        has_valid_alpha_channel(false),
+        opacity(1.0f) {
+  }
 
   // The transform to be applied to the texture.
   ui::Transform transform;
@@ -33,6 +37,13 @@ struct TextureDrawParams {
   // If this is true, then the texture is blended with the pixels behind it.
   // Otherwise, the drawn pixels clobber the old pixels.
   bool blend;
+
+  // If this is false, the alpha values for this texture should not be trusted.
+  bool has_valid_alpha_channel;
+
+  // This multiplier is applied to all pixels before blending. The intent is to
+  // allow alpha to be animated (for effects such as cross fades).
+  float opacity;
 
   // The size of the surface that the texture is drawn to.
   gfx::Size compositor_size;

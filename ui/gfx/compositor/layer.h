@@ -132,7 +132,16 @@ class COMPOSITOR_EXPORT Layer {
   // (e.g. the GPU process on TOUCH_UI).
   bool layer_updated_externally() const { return layer_updated_externally_; }
 
+  float opacity() const { return opacity_; }
+  void SetOpacity(float alpha);
+
  private:
+  // TODO(vollick): Eventually, if a non-leaf node has an opacity of less than
+  // 1.0, we'll render to a separate texture, and then apply the alpha.
+  // Currently, we multiply our opacity by all our ancestor's opacities and
+  // use the combined result, but this is only temporary.
+  float GetCombinedOpacity() const;
+
   // calls Texture::Draw only if the region to be drawn is non empty
   void DrawRegion(const ui::TextureDrawParams& params,
                   const gfx::Rect& region_to_draw);
@@ -156,6 +165,11 @@ class COMPOSITOR_EXPORT Layer {
   bool GetTransformRelativeTo(const Layer* ancestor,
                               Transform* transform) const;
 
+  // The only externally updated layers are ones that get their pixels from
+  // WebKit and WebKit does not produce valid alpha values. All other layers
+  // should have valid alpha.
+  bool has_valid_alpha_channel() const { return !layer_updated_externally_; }
+
   Compositor* compositor_;
 
   scoped_refptr<ui::Texture> texture_;
@@ -178,6 +192,8 @@ class COMPOSITOR_EXPORT Layer {
 
   // If true the layer is always up to date.
   bool layer_updated_externally_;
+
+  float opacity_;
 
   LayerDelegate* delegate_;
 
