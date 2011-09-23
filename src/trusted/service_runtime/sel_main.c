@@ -491,6 +491,9 @@ int main(int  argc,
 
   /*
    * Ensure the platform qualification checks pass.
+   *
+   * NACL_DANGEROUS_SKIP_QUALIFICATION_TEST is used by tsan / memcheck
+   * (see src/third_party/valgrind/).
    */
   if (!skip_qualification &&
       getenv("NACL_DANGEROUS_SKIP_QUALIFICATION_TEST") != NULL) {
