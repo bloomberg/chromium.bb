@@ -2576,18 +2576,20 @@ def GenerateOutput(target_list, target_dicts, data, params):
     srcdir = gyp.common.RelativePath(srcdir, options.generator_output)
     srcdir_prefix = '$(srcdir)/'
 
+  flock_command= 'flock'
   header_params = {
       'builddir': builddir_name,
       'default_configuration': default_configuration,
-      'flock': 'flock',
+      'flock': flock_command,
       'flock_index': 1,
       'link_commands': LINK_COMMANDS_LINUX,
       'mac_commands': '',
       'srcdir': srcdir,
     }
   if flavor == 'mac':
+    flock_command = './gyp-mac-tool flock'
     header_params.update({
-        'flock': './gyp-mac-tool flock',
+        'flock': flock_command,
         'flock_index': 2,
         'link_commands': LINK_COMMANDS_MAC,
         'mac_commands': SHARED_HEADER_MAC_COMMANDS,
@@ -2605,7 +2607,7 @@ def GenerateOutput(target_list, target_dicts, data, params):
     if value[0] != '$':
       value = '$(abspath %s)' % value
     if key == 'LINK':
-      make_global_settings += '%s ?= $(FLOCK) %s\n' % (key, value)
+      make_global_settings += '%s ?= %s %s\n' % (flock_command, key, value)
     elif key in ['CC', 'CXX']:
       make_global_settings += (
           'ifneq (,$(filter $(origin %s), undefined default))\n' % key)
