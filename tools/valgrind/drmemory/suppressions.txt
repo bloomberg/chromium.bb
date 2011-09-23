@@ -522,6 +522,16 @@ POSSIBLE LEAK
 <ntdll.dll+0x64fde>
 <ntdll.dll+0x447f3>
 
+# http://crbug.com/96433
+UNADDRESSABLE ACCESS
+ntdll.dll!*
+ntdll.dll!*
+ntdll.dll!*
+KERNELBASE.dll!LocalReAlloc
+CRYPT32.dll!*
+...
+CRYPT32.dll!CertControlStore
+
 ############################
 # TODO(timurrrr): investigate these
 UNINITIALIZED READ
