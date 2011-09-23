@@ -172,4 +172,25 @@
    fun:scoped_ptr::reset
    fun:media::FFmpegVideoDecodeEngineTest::~FFmpegVideoDecodeEngineTest
 }
-
+{
+   bug_97822
+   ThreadSanitizer:Race
+   ...
+   fun:media::FFmpegVideoDecodeEngine::DecodeFrame
+   fun:media::FFmpegVideoDecodeEngine::ConsumeVideoSample
+   fun:media::DemuxCompleteActionP2::gmock_Impl::gmock_PerformImpl
+   fun:testing::internal::ActionHelper::Perform
+   fun:testing::Action::Perform
+   fun:testing::internal::ActionResultHolder::PerformAction
+   fun:testing::internal::FunctionMockerBase::UntypedPerformAction
+   fun:testing::internal::UntypedFunctionMockerBase::UntypedInvokeWith
+   fun:testing::internal::FunctionMockerBase::InvokeWith
+   fun:testing::internal::FunctionMocker::Invoke
+   fun:media::FFmpegVideoDecodeEngineTest::ProduceVideoSample
+   fun:media::FFmpegVideoDecodeEngineTest::ProduceVideoSample
+   fun:media::FFmpegVideoDecodeEngine::ReadInput
+   fun:media::FFmpegVideoDecodeEngine::ProduceVideoFrame
+   fun:media::FFmpegVideoDecodeEngineTest::CallProduceVideoFrame
+   fun:media::FFmpegVideoDecodeEngineTest::DecodeIFrameThenTestFile
+   fun:media::FFmpegVideoDecodeEngineTest_DecodeFrame_SmallerWidth_Test::TestBody
+}
