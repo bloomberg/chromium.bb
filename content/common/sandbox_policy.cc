@@ -220,7 +220,7 @@ void AddPluginDllEvictionPolicy(sandbox::TargetPolicy* policy) {
 // Returns the object path prepended with the current logon session.
 string16 PrependWindowsSessionPath(const char16* object) {
   // Cache this because it can't change after process creation.
-  uintptr_t s_session_id = 0;
+  static uintptr_t s_session_id = 0;
   if (s_session_id == 0) {
     HANDLE token;
     DWORD session_id_length;
@@ -230,7 +230,8 @@ string16 PrependWindowsSessionPath(const char16* object) {
     CHECK(::GetTokenInformation(token, TokenSessionId, &session_id,
         sizeof(session_id), &session_id_length));
     CloseHandle(token);
-    s_session_id = session_id;
+    if (session_id)
+      s_session_id = session_id;
   }
 
   return base::StringPrintf(L"\\Sessions\\%d%ls", s_session_id, object);
