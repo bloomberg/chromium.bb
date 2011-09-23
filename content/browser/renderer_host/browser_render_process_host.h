@@ -96,7 +96,7 @@ class BrowserRenderProcessHost : public RenderProcessHost,
   void SuddenTerminationChanged(bool enabled);
   void OnUserMetricsRecordAction(const std::string& action);
   void OnRevealFolderInOS(const FilePath& path);
-  void OnSavedPageAsMHTML(int job_id, int64 mhtml_file_size);
+  void OnSavedPageAsMHTML(int job_id, bool success);
 
   // Generates a command line to be used to spawn a renderer and appends the
   // results to |*command_line|.

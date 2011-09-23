@@ -33,18 +33,18 @@ void MHTMLGenerator::OnSavePageAsMHTML(
   base::PlatformFile file =
       IPC::PlatformFileForTransitToPlatformFile(file_for_transit);
   file_ = file;
-  int64 size = GenerateMHTML();
-  NotifyBrowser(job_id, size);
+  bool success = GenerateMHTML();
+  NotifyBrowser(job_id, success);
 }
 
-void MHTMLGenerator::NotifyBrowser(int job_id, int64 data_size) {
-  render_view()->Send(new ViewHostMsg_SavedPageAsMHTML(job_id, data_size));
+void MHTMLGenerator::NotifyBrowser(int job_id, bool success) {
+  render_view()->Send(new ViewHostMsg_SavedPageAsMHTML(job_id, success));
   file_ = base::kInvalidPlatformFileValue;
 }
 
 // TODO(jcivelli): write the chunks in deferred tasks to give a chance to the
 //                 message loop to process other events.
-int64 MHTMLGenerator::GenerateMHTML() {
+bool MHTMLGenerator::GenerateMHTML() {
   WebKit::WebCString mhtml =
       WebKit::WebPageSerializer::serializeToMHTML(render_view()->webview());
   const size_t chunk_size = 1024;
@@ -57,8 +57,8 @@ int64 MHTMLGenerator::GenerateMHTML() {
                                                 data + total_bytes_written,
                                                 copy_size);
     if (bytes_written == -1)
-      return -1;
+      return false;
     total_bytes_written += bytes_written;
   }
-  return total_bytes_written;
+  return true;
 }

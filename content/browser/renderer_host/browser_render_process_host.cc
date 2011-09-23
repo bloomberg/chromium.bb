@@ -995,7 +995,7 @@ void BrowserRenderProcessHost::OnRevealFolderInOS(const FilePath& path) {
     content::GetContentClient()->browser()->OpenItem(path);
 }
 
-void BrowserRenderProcessHost::OnSavedPageAsMHTML(int job_id, int64 data_size) {
+void BrowserRenderProcessHost::OnSavedPageAsMHTML(int job_id, bool success) {
   content::GetContentClient()->browser()->GetMHTMLGenerationManager()->
-      MHTMLGenerated(job_id, data_size);
+      MHTMLGenerated(job_id, success);
 }

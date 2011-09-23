@@ -39,7 +39,6 @@
 #include "chrome/browser/extensions/extension_processes_api.h"
 #include "chrome/browser/extensions/extension_proxy_api.h"
 #include "chrome/browser/extensions/extension_rlz_module.h"
-#include "chrome/browser/extensions/extension_save_page_api.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_settings_api.h"
 #include "chrome/browser/extensions/extension_sidebar_api.h"
@@ -449,9 +448,6 @@ void FactoryRegistry::ResetFunctions() {
   RegisterFunction<DownloadsAcceptDangerFunction>();
   RegisterFunction<DownloadsShowFunction>();
   RegisterFunction<DownloadsDragFunction>();
-
-  // SavePage
-  RegisterFunction<SavePageAsMHTMLFunction>();
 }
 
 void FactoryRegistry::GetAllNames(std::vector<std::string>* names) {

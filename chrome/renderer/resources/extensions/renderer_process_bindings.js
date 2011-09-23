@@ -324,7 +324,6 @@ var chrome = chrome || {};
       "experimental.processes",
       "experimental.privacy",
       "experimental.rlz",
-      "experimental.savePage",
       "experimental.sidebar",
       "experimental.webNavigation",
       "experimental.webRequest",

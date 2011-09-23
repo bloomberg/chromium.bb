@@ -21,9 +21,8 @@ class MHTMLGenerator : public RenderViewObserver {
   void OnSavePageAsMHTML(int job_id,
                          IPC::PlatformFileForTransit file_for_transit);
 
-  void NotifyBrowser(int job_id, int64 data_size);
-  // Returns the size of the generated MHTML, -1 if it failed.
-  int64 GenerateMHTML();
+  void NotifyBrowser(int job_id, bool success);
+  bool GenerateMHTML();
 
   base::PlatformFile file_;
 

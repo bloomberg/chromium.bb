@@ -55,9 +55,9 @@ IN_PROC_BROWSER_TEST_F(MHTMLGenerationTest, GenerateMHTML) {
 
   MHTMLGenerationManager::NotificationDetails details;
   ASSERT_TRUE(signal.GetDetailsFor(source.map_key(), &details));
-  ASSERT_GT(details.file_size, 0);
+  ASSERT_TRUE(details.success);
 
-  // Make sure the actual generated file has some contents.
+  // Make sure the generated file has some contents.
   int64 file_size;
   ASSERT_TRUE(file_util::GetFileSize(path, &file_size));
   EXPECT_GT(file_size, 100);

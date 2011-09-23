@@ -1923,7 +1923,7 @@ IPC_MESSAGE_CONTROL1(ViewHostMsg_UserMetricsRecordAction,
 // Notifies the browser that the page was or was not saved as MHTML.
 IPC_MESSAGE_CONTROL2(ViewHostMsg_SavedPageAsMHTML,
                      int /* job_id */,
-                     int64 /* size of the MHTML file, -1 if error */)
+                     bool /* success */)
 
 IPC_MESSAGE_ROUTED3(ViewHostMsg_SendCurrentPageAllSavableResourceLinks,
                     std::vector<GURL> /* all savable resource links */,

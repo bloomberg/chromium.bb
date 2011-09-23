@@ -8494,36 +8494,5 @@
         ]
       }
     ]
-  },
-  {
-    "namespace": "experimental.savePage",
-    "functions": [
-      {
-        "name": "saveAsMHTML",
-        "type": "function",
-        "description": "Saves the content of the tab with given id to MHTML.",
-        "parameters": [
-          {
-            "name": "tabId",
-            "type": "integer",
-            "minimum": 0,
-            "description": "The id of the tab to save."
-          },
-          {
-            "name": "callback",
-            "type": "function",
-            "description": "Called when the MHTML has been generated.",
-            "parameters": [
-	      {
-                "name": "mhtmlData",
-                "type": "blob",
-                "optional": "true",
-                "description": "The MHTML data as a Blob."
-              }
-	    ]
-          }
-        ]
-      }
-    ]
   }
 ]
