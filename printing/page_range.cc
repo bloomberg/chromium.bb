@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,13 +20,6 @@ std::vector<int> PageRange::GetPages(const PageRanges& ranges) {
     }
   }
   return std::vector<int>(pages.begin(), pages.end());
-}
-
-/* static */
-int PageRange::GetTotalPages(const PageRanges& ranges) {
-  // Since ranges can overlap we need to merge them before counting
-  std::vector<int> pages = PageRange::GetPages(ranges);
-  return pages.size();
 }
 
 }  // namespace printing
