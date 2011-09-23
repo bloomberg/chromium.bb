@@ -59,15 +59,18 @@ class CONTENT_EXPORT GpuBlacklist {
                                            Version* os_version,
                                            const GPUInfo& gpu_info);
 
-  // Collects the entries that set the "feature" flag from the last
+  // Collects the active entries that set the "feature" flag from the last
   // DetermineGpuFeatureFlags() call.  This tells which entries are responsible
   // for raising a certain flag, i.e, for blacklisting a certain feature.
   // Examples of "feature":
   //   kGpuFeatureAll - any of the supported features;
   //   kGpuFeatureWebgl - a single feature;
   //   kGpuFeatureWebgl | kGpuFeatureAcceleratedCompositing - two features.
+  // If disabled set to true, return entries that are disabled; otherwise,
+  // return enabled entries.
   void GetGpuFeatureFlagEntries(GpuFeatureFlags::GpuFeatureType feature,
-                                std::vector<uint32>& entry_ids) const;
+                                std::vector<uint32>& entry_ids,
+                                bool disabled) const;
 
   // Returns status information on the blacklist. This is two parted:
   // {
@@ -238,6 +241,9 @@ class CONTENT_EXPORT GpuBlacklist {
     // Returns the entry's unique id.  0 is reserved.
     uint32 id() const;
 
+    // Returns whether the entry is disabled.
+    bool disabled() const;
+
     // Returns the description of the entry
     const std::string& description() const { return description_; }
 
@@ -264,6 +270,8 @@ class CONTENT_EXPORT GpuBlacklist {
     ~GpuBlacklistEntry() { }
 
     bool SetId(uint32 id);
+
+    void SetDisabled(bool disabled);
 
     bool SetOsInfo(const std::string& os,
                    const std::string& version_op,
@@ -299,6 +307,7 @@ class CONTENT_EXPORT GpuBlacklist {
     void AddBrowserChannel(BrowserChannel channel);
 
     uint32 id_;
+    bool disabled_;
     std::string description_;
     std::vector<int> cr_bugs_;
     std::vector<int> webkit_bugs_;

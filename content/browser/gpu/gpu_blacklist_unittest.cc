@@ -144,12 +144,13 @@ TEST_F(GpuBlacklistTest, DetailedEntryAndInvalidJson) {
       flags.flags(),
       static_cast<uint32>(GpuFeatureFlags::kGpuFeatureAcceleratedCompositing));
   std::vector<uint32> entries;
+  bool disabled = false;
   blacklist.GetGpuFeatureFlagEntries(
-      GpuFeatureFlags::kGpuFeatureAcceleratedCompositing, entries);
+      GpuFeatureFlags::kGpuFeatureAcceleratedCompositing, entries, disabled);
   EXPECT_EQ(entries.size(), 1u);
   EXPECT_EQ(entries[0], 5u);
   blacklist.GetGpuFeatureFlagEntries(
-      GpuFeatureFlags::kGpuFeatureAll, entries);
+      GpuFeatureFlags::kGpuFeatureAll, entries, disabled);
   EXPECT_EQ(entries.size(), 1u);
   EXPECT_EQ(entries[0], 5u);
   EXPECT_EQ(blacklist.max_entry_id(), 5u);
@@ -723,5 +724,39 @@ TEST_F(GpuBlacklistTest, GlRenderer) {
       GpuBlacklist::kOsWin, os_version.get(), gpu_info());
   EXPECT_EQ(flags.flags(),
             static_cast<uint32>(GpuFeatureFlags::kGpuFeatureWebgl));
+}
+
+TEST_F(GpuBlacklistTest, DisabledEntry) {
+  const std::string disabled_json =
+      "{\n"
+      "  \"name\": \"gpu blacklist\",\n"
+      "  \"version\": \"0.1\",\n"
+      "  \"entries\": [\n"
+      "    {\n"
+      "      \"id\": 1,\n"
+      "      \"disabled\": true,\n"
+      "      \"blacklist\": [\n"
+      "        \"webgl\"\n"
+      "      ]\n"
+      "    }\n"
+      "  ]\n"
+      "}";
+  scoped_ptr<Version> os_version(Version::GetVersionFromString("10.6.4"));
+
+  GpuBlacklist blacklist("1.0 unknown");
+  EXPECT_TRUE(
+      blacklist.LoadGpuBlacklist(disabled_json, GpuBlacklist::kAllOs));
+  GpuFeatureFlags flags = blacklist.DetermineGpuFeatureFlags(
+      GpuBlacklist::kOsWin, os_version.get(), gpu_info());
+  EXPECT_EQ(flags.flags(), 0u);
+  std::vector<uint32> flag_entries;
+  bool disabled = false;
+  blacklist.GetGpuFeatureFlagEntries(
+      GpuFeatureFlags::kGpuFeatureAll, flag_entries, disabled);
+  EXPECT_EQ(flag_entries.size(), 0u);
+  disabled = true;
+  blacklist.GetGpuFeatureFlagEntries(
+      GpuFeatureFlags::kGpuFeatureAll, flag_entries, disabled);
+  EXPECT_EQ(flag_entries.size(), 1u);
 }
 

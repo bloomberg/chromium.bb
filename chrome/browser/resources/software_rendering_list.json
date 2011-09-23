@@ -40,6 +40,8 @@
 // 16. "browser_channels" is a list of browser channel strings, valid values
 //     include "stable", "beta", "dev", and "canary". If the browser_channels
 //     list is not present, the entry matches all channels.
+// 17. "disabled" is a boolean. If it is present, the entry will be skipped.
+//     This can not be used in exceptions.
 //
 // VERSION includes "op" "number", and "number2".  "op" can be any of the
 // following values: "=", "<", "<=", ">", ">=", "any", "between".  "number2" is

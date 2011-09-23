@@ -223,6 +223,12 @@ GpuBlacklist::GpuBlacklistEntry::GetGpuBlacklistEntryFromValue(
       return NULL;
     }
     dictionary_entry_count++;
+
+    bool disabled;
+    if (value->GetBoolean("disabled", &disabled)) {
+      entry->SetDisabled(disabled);
+      dictionary_entry_count++;
+    }
   }
 
   std::string description;
@@ -456,6 +462,7 @@ GpuBlacklist::GpuBlacklistEntry::GetGpuBlacklistEntryFromValue(
 
 GpuBlacklist::GpuBlacklistEntry::GpuBlacklistEntry()
     : id_(0),
+      disabled_(false),
       vendor_id_(0),
       contains_unknown_fields_(false),
       contains_unknown_features_(false) {
@@ -467,6 +474,10 @@ bool GpuBlacklist::GpuBlacklistEntry::SetId(uint32 id) {
     return true;
   }
   return false;
+}
+
+void GpuBlacklist::GpuBlacklistEntry::SetDisabled(bool disabled) {
+  disabled_ = disabled;
 }
 
 bool GpuBlacklist::GpuBlacklistEntry::SetOsInfo(
@@ -644,6 +655,10 @@ uint32 GpuBlacklist::GpuBlacklistEntry::id() const {
   return id_;
 }
 
+bool GpuBlacklist::GpuBlacklistEntry::disabled() const {
+  return disabled_;
+}
+
 GpuFeatureFlags GpuBlacklist::GpuBlacklistEntry::GetGpuFeatureFlags() const {
   return *feature_flags_;
 }
@@ -752,7 +767,8 @@ GpuFeatureFlags GpuBlacklist::DetermineGpuFeatureFlags(
 
   for (size_t i = 0; i < blacklist_.size(); ++i) {
     if (blacklist_[i]->Contains(os, *os_version, browser_channel_, gpu_info)) {
-      flags.Combine(blacklist_[i]->GetGpuFeatureFlags());
+      if (!blacklist_[i]->disabled())
+        flags.Combine(blacklist_[i]->GetGpuFeatureFlags());
       active_entries_.push_back(blacklist_[i]);
     }
   }
@@ -761,10 +777,12 @@ GpuFeatureFlags GpuBlacklist::DetermineGpuFeatureFlags(
 
 void GpuBlacklist::GetGpuFeatureFlagEntries(
     GpuFeatureFlags::GpuFeatureType feature,
-    std::vector<uint32>& entry_ids) const {
+    std::vector<uint32>& entry_ids,
+    bool disabled) const {
   entry_ids.clear();
   for (size_t i = 0; i < active_entries_.size(); ++i) {
-    if ((feature & active_entries_[i]->GetGpuFeatureFlags().flags()) != 0)
+    if (((feature & active_entries_[i]->GetGpuFeatureFlags().flags()) != 0) &&
+        disabled == active_entries_[i]->disabled())
       entry_ids.push_back(active_entries_[i]->id());
   }
 }

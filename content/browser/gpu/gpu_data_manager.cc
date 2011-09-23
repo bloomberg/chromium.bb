@@ -408,18 +408,30 @@ void GpuDataManager::UpdateGpuFeatureFlags() {
 
   uint32 flags = gpu_feature_flags_.flags();
   uint32 max_entry_id = gpu_blacklist->max_entry_id();
+  bool disabled = false;
   if (flags == 0) {
     UMA_HISTOGRAM_ENUMERATION("GPU.BlacklistTestResultsPerEntry",
         0, max_entry_id + 1);
   } else {
     std::vector<uint32> flag_entries;
     gpu_blacklist->GetGpuFeatureFlagEntries(
-        GpuFeatureFlags::kGpuFeatureAll, flag_entries);
+        GpuFeatureFlags::kGpuFeatureAll, flag_entries, disabled);
     DCHECK_GT(flag_entries.size(), 0u);
     for (size_t i = 0; i < flag_entries.size(); ++i) {
       UMA_HISTOGRAM_ENUMERATION("GPU.BlacklistTestResultsPerEntry",
           flag_entries[i], max_entry_id + 1);
     }
+  }
+
+  // This counts how many users are affected by a disabled entry - this allows
+  // us to understand the impact of an entry before enable it.
+  std::vector<uint32> flag_disabled_entries;
+  disabled = true;
+  gpu_blacklist->GetGpuFeatureFlagEntries(
+      GpuFeatureFlags::kGpuFeatureAll, flag_disabled_entries, disabled);
+  for (size_t i = 0; i < flag_disabled_entries.size(); ++i) {
+    UMA_HISTOGRAM_ENUMERATION("GPU.BlacklistTestResultsPerDisabledEntry",
+        flag_disabled_entries[i], max_entry_id + 1);
   }
 
   const GpuFeatureFlags::GpuFeatureType kGpuFeatures[] = {
