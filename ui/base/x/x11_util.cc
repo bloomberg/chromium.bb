@@ -8,10 +8,6 @@
 
 #include "ui/base/x/x11_util.h"
 
-#include <gdk/gdk.h>
-#include <gdk/gdkx.h>
-#include <gtk/gtk.h>
-
 #include <sys/ipc.h>
 #include <sys/shm.h>
 
@@ -27,6 +23,18 @@
 #include "ui/base/x/x11_util_internal.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
+
+#if defined(TOOLKIT_USES_GTK)
+#include <gdk/gdk.h>
+#include <gdk/gdkx.h>
+#include <gtk/gtk.h>
+#else
+// TODO(sad): Use the new way of handling X errors when
+// http://codereview.chromium.org/7889040/ lands.
+#define gdk_error_trap_push()
+#define gdk_error_trap_pop() false
+#define gdk_flush()
+#endif
 
 namespace ui {
 
@@ -68,13 +76,20 @@ int DefaultX11IOErrorHandler(Display* d) {
   _exit(1);
 }
 
+Atom GetAtom(const char* name) {
+#if defined(TOOLKIT_USES_GTK)
+  return gdk_x11_get_xatom_by_name_for_display(
+      gdk_display_get_default(), name);
+#else
+  return XInternAtom(GetXDisplay(), name, false);
+#endif
+}
+
 // Note: The caller should free the resulting value data.
 bool GetProperty(XID window, const std::string& property_name, long max_length,
                  Atom* type, int* format, unsigned long* num_items,
                  unsigned char** property) {
-  Atom property_atom = gdk_x11_get_xatom_by_name_for_display(
-      gdk_display_get_default(), property_name.c_str());
-
+  Atom property_atom = GetAtom(property_name.c_str());
   unsigned long remaining_bytes = 0;
   return XGetWindowProperty(GetXDisplay(),
                             window,
@@ -93,7 +108,7 @@ bool GetProperty(XID window, const std::string& property_name, long max_length,
 }  // namespace
 
 bool XDisplayExists() {
-  return (gdk_display_get_default() != NULL);
+  return (GetXDisplay() != NULL);
 }
 
 Display* GetXDisplay() {
@@ -166,13 +181,14 @@ int GetDefaultScreen(Display* display) {
 }
 
 XID GetX11RootWindow() {
-  return GDK_WINDOW_XID(gdk_get_default_root_window());
+  return DefaultRootWindow(GetXDisplay());
 }
 
 bool GetCurrentDesktop(int* desktop) {
   return GetIntProperty(GetX11RootWindow(), "_NET_CURRENT_DESKTOP", desktop);
 }
 
+#if defined(TOOLKIT_USES_GTK)
 XID GetX11WindowFromGtkWidget(GtkWidget* widget) {
   return GDK_WINDOW_XID(widget->window);
 }
@@ -197,6 +213,7 @@ GtkWindow* GetGtkWindowFromX11Window(XID xid) {
 void* GetVisualFromGtkWidget(GtkWidget* widget) {
   return GDK_VISUAL_XVISUAL(gtk_widget_get_visual(widget));
 }
+#endif  // defined(TOOLKIT_USES_GTK)
 
 int BitsPerPixelForPixmapDepth(Display* dpy, int depth) {
   int count;
@@ -667,8 +684,7 @@ bool ChangeWindowDesktop(XID window, XID destination) {
   XEvent event;
   event.xclient.type = ClientMessage;
   event.xclient.window = window;
-  event.xclient.message_type = gdk_x11_get_xatom_by_name_for_display(
-      gdk_display_get_default(), "_NET_WM_DESKTOP");
+  event.xclient.message_type = GetAtom("_NET_WM_DESKTOP");
   event.xclient.format = 32;
   event.xclient.data.l[0] = desktop;
   event.xclient.data.l[1] = 1;  // source indication
@@ -684,8 +700,7 @@ void SetDefaultX11ErrorHandlers() {
 
 bool IsX11WindowFullScreen(XID window) {
   // First check if _NET_WM_STATE property contains _NET_WM_STATE_FULLSCREEN.
-  static Atom atom = gdk_x11_get_xatom_by_name_for_display(
-      gdk_display_get_default(), "_NET_WM_STATE_FULLSCREEN");
+  static Atom atom = GetAtom("_NET_WM_STATE_FULLSCREEN");
 
   std::vector<Atom> atom_properties;
   if (GetAtomArrayProperty(window,
@@ -695,6 +710,7 @@ bool IsX11WindowFullScreen(XID window) {
           != atom_properties.end())
     return true;
 
+#if defined(TOOLKIT_USES_GTK)
   // As the last resort, check if the window size is as large as the main
   // screen.
   GdkRectangle monitor_rect;
@@ -708,6 +724,10 @@ bool IsX11WindowFullScreen(XID window) {
          monitor_rect.y == window_rect.y() &&
          monitor_rect.width == window_rect.width() &&
          monitor_rect.height == window_rect.height();
+#else
+  NOTIMPLEMENTED();
+  return false;
+#endif
 }
 
 // ----------------------------------------------------------------------------
