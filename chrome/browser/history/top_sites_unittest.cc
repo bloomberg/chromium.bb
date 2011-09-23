@@ -21,9 +21,11 @@
 #include "chrome/browser/history/top_sites_database.h"
 #include "chrome/browser/ui/webui/ntp/most_visited_handler.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chrome/test/base/ui_test_utils.h"
 #include "chrome/tools/profiles/thumbnail-inl.h"
 #include "content/browser/browser_thread.h"
 #include "googleurl/src/gurl.h"
@@ -374,7 +376,6 @@ class TopSitesMigrationTest : public TopSitesTest {
   }
 
  private:
-
   DISALLOW_COPY_AND_ASSIGN(TopSitesMigrationTest);
 };
 
@@ -1334,6 +1335,56 @@ TEST_F(TopSitesTest, CreateTopSitesThenHistory) {
   profile()->CreateHistoryService(false, false);
   profile()->BlockUntilTopSitesLoaded();
   EXPECT_TRUE(IsTopSitesLoaded());
+}
+
+class TopSitesUnloadTest : public TopSitesTest {
+ public:
+  TopSitesUnloadTest() {}
+
+  virtual bool CreateHistoryAndTopSites() OVERRIDE {
+    return false;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TopSitesUnloadTest);
+};
+
+// Makes sure if history is unloaded after topsites is loaded we don't hit any
+// assertions.
+TEST_F(TopSitesUnloadTest, UnloadHistoryTest) {
+  profile()->CreateHistoryService(false, false);
+  profile()->CreateTopSites();
+  profile()->BlockUntilTopSitesLoaded();
+  profile()->GetHistoryService(Profile::EXPLICIT_ACCESS)->UnloadBackend();
+  profile()->BlockUntilHistoryProcessesPendingRequests();
+}
+
+// Makes sure if history (with migration code) is unloaded after topsites is
+// loaded we don't hit any assertions.
+TEST_F(TopSitesUnloadTest, UnloadWithMigration) {
+  // Set up history and thumbnails as they would be before migration.
+  FilePath data_path;
+  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &data_path));
+  data_path = data_path.AppendASCII("top_sites");
+  ASSERT_NO_FATAL_FAILURE(ExecuteSQLScript(
+      data_path.AppendASCII("history.19.sql"),
+      profile()->GetPath().Append(chrome::kHistoryFilename)));
+  ASSERT_NO_FATAL_FAILURE(ExecuteSQLScript(
+      data_path.AppendASCII("thumbnails.3.sql"),
+      profile()->GetPath().Append(chrome::kThumbnailsFilename)));
+
+  // Create history and block until its loaded.
+  profile()->CreateHistoryService(false, false);
+  profile()->BlockUntilHistoryProcessesPendingRequests();
+
+  // Create top sites and unload history.
+  ui_test_utils::WindowedNotificationObserver observer(
+      chrome::NOTIFICATION_TOP_SITES_LOADED,
+      Source<Profile>(profile()));
+  profile()->CreateTopSites();
+  profile()->GetHistoryService(Profile::EXPLICIT_ACCESS)->UnloadBackend();
+  profile()->BlockUntilHistoryProcessesPendingRequests();
+  observer.Wait();
 }
 
 }  // namespace history

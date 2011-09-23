@@ -286,7 +286,11 @@ static int IndexOf(const MostVisitedURLList& urls, const GURL& url) {
 
 void TopSites::MigrateFromHistory() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK_EQ(history_state_, HISTORY_LOADING);
+
+  if (history_state_ != HISTORY_LOADING) {
+    // This can happen if history was unloaded then loaded again.
+    return;
+  }
 
   history_state_ = HISTORY_MIGRATING;
   profile_->GetHistoryService(Profile::EXPLICIT_ACCESS)->ScheduleDBTask(
@@ -330,7 +334,6 @@ void TopSites::FinishHistoryMigration(const ThumbnailMigration& data) {
 
 void TopSites::HistoryLoaded() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK_NE(history_state_, HISTORY_LOADED);
 
   if (history_state_ != HISTORY_MIGRATING) {
     // No migration from history is needed.
@@ -343,6 +346,7 @@ void TopSites::HistoryLoaded() {
       MoveStateToLoaded();
     }
   }
+  // else case can happen if history is unloaded, then loaded again.
 }
 
 void TopSites::SyncWithHistory() {

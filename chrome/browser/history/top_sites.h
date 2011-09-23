@@ -184,7 +184,9 @@ class TopSites
   typedef std::pair<GURL, Images> TempImage;
   typedef std::list<TempImage> TempImages;
 
-  // Enumeration of the possible states history can be in.
+  // Enumeration of the possible states history can be in. These values do not
+  // necessarily reflect the loaded state of history. In particular if the
+  // history backend is unloaded |history_state_| may be HISTORY_LOADED.
   enum HistoryLoadState {
     // We're waiting for history to finish loading.
     HISTORY_LOADING,
