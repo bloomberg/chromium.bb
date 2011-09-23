@@ -21,6 +21,8 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/dom_operation_notification_details.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/search_engines/template_url_service.h"
+#include "chrome/browser/search_engines/template_url_service_test_util.h"
 #include "chrome/browser/tab_contents/thumbnail_generator.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -544,6 +546,14 @@ void WaitForBookmarkModelToLoad(BookmarkModel* model) {
   RunMessageLoop();
   model->RemoveObserver(&observer);
   ASSERT_TRUE(model->IsLoaded());
+}
+
+void WaitForTemplateURLServiceToLoad(TemplateURLService* service) {
+  if (service->loaded())
+    return;
+  service->Load();
+  TemplateURLServiceTestUtil::BlockTillServiceProcessesRequests();
+  ASSERT_TRUE(service->loaded());
 }
 
 void WaitForHistoryToLoad(Browser* browser) {

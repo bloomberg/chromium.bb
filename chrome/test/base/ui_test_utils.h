@@ -45,6 +45,7 @@ class ScopedTempDir;
 class SkBitmap;
 class TabContents;
 class TabContentsWrapper;
+class TemplateURLService;
 
 namespace browser {
 struct NavigateParams;
@@ -233,6 +234,9 @@ void RegisterAndWait(NotificationObserver* observer,
 
 // Blocks until |model| finishes loading.
 void WaitForBookmarkModelToLoad(BookmarkModel* model);
+
+// Blocks until |service| finishes loading.
+void WaitForTemplateURLServiceToLoad(TemplateURLService* service);
 
 // Blocks until the |browser|'s history finishes loading.
 void WaitForHistoryToLoad(Browser* browser);

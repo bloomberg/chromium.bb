@@ -21,6 +21,8 @@
 #include "chrome/browser/password_manager/encryptor.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/search_engines/template_url_service.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/sync/notifier/p2p_notifier.h"
 #include "chrome/browser/sync/profile_sync_service_harness.h"
 #include "chrome/browser/sync/protocol/sync.pb.h"
@@ -221,6 +223,10 @@ void SyncTest::AddOptionalTypesToCommandLine(CommandLine* cl) {
   // TODO(sync): Remove this once sessions sync is enabled by default.
   if (!cl->HasSwitch(switches::kEnableSyncTabs))
     cl->AppendSwitch(switches::kEnableSyncTabs);
+
+  // TODO(stevet): Remove this once search engines sync is enabled by default.
+  if (!cl->HasSwitch(switches::kEnableSyncSearchEngines))
+    cl->AppendSwitch(switches::kEnableSyncSearchEngines);
 }
 
 // static
@@ -295,11 +301,16 @@ bool SyncTest::SetupClients() {
 
     ui_test_utils::WaitForBookmarkModelToLoad(
         GetProfile(i)->GetBookmarkModel());
+
+    ui_test_utils::WaitForTemplateURLServiceToLoad(
+        TemplateURLServiceFactory::GetForProfile(GetProfile(i)));
   }
 
   // Create the verifier profile.
   verifier_ = MakeProfile(FILE_PATH_LITERAL("Verifier"));
   ui_test_utils::WaitForBookmarkModelToLoad(verifier()->GetBookmarkModel());
+  ui_test_utils::WaitForTemplateURLServiceToLoad(
+      TemplateURLServiceFactory::GetForProfile(verifier()));
   return (verifier_ != NULL);
 }
 
