@@ -22,12 +22,18 @@
   "Return chromium's src/ directory, or nil on failure."
   (locate-dominating-file buffer-file-truename cr-flymake-ninja-build-file))
 
+(defun cr-flymake-string-prefix-p (prefix str)
+  "Return non-nil if PREFIX is a prefix of STR (23.2 has string-prefix-p but
+  that's case insensitive and also 23.1 doesn't have it)."
+  (string= prefix (substring str 0 (length prefix))))
+
 (defun cr-flymake-current-file-name ()
   "Return the relative path from chromium's src/ directory to the
   file backing the current buffer or nil if it doesn't look like
   we're under chromium/src/."
   (when (and (cr-flymake-chromium-src)
-             (string-prefix-p (cr-flymake-chromium-src) buffer-file-truename))
+             (cr-flymake-string-prefix-p
+              (cr-flymake-chromium-src) buffer-file-truename))
     (substring buffer-file-truename (length (cr-flymake-chromium-src)))))
 
 (defun cr-flymake-from-build-to-src-root ()
@@ -36,7 +42,8 @@
    "[^/]+" ".."
    (substring
     (file-name-directory
-     (file-truename (or (and (string-prefix-p "/" cr-flymake-ninja-build-file)
+     (file-truename (or (and (cr-flymake-string-prefix-p
+                              "/" cr-flymake-ninja-build-file)
                              cr-flymake-ninja-build-file)
                         (concat (cr-flymake-chromium-src)
                                 cr-flymake-ninja-build-file))))
@@ -44,9 +51,7 @@
 
 (defun cr-flymake-getfname (file-name-from-error-message)
   "Strip cruft from the passed-in filename to help flymake find the real file."
-  (concat (cr-flymake-chromium-src)
-          (substring file-name-from-error-message
-                     (length (cr-flymake-from-build-to-src-root)))))
+  (file-name-nondirectory file-name-from-error-message))
 
 (defun cr-flymake-ninja-command-line ()
   "Return the command-line for running ninja, as a list of strings, or nil if
@@ -78,7 +83,7 @@
            (line-err-info-list
             (nth 0 (flymake-find-err-info flymake-err-info line-no)))
            (menu-data (flymake-make-err-menu-data line-no line-err-info-list)))
-      (prin1 (caaadr menu-data) t))))
+      (prin1 (car (car (car (cdr menu-data)))) t))))
 
 (defun cr-flymake-find-file ()
   "Enable flymake, but only if it makes sense, and immediately
@@ -90,9 +95,9 @@
     ;; against, can't use cr-flymake-chromium-src here.  Instead we add a
     ;; generic regexp, but only to a buffer-local version of the variable.
     (set (make-local-variable 'flymake-allowed-file-name-masks)
-         (list (list (concat "\\." (make-regexp '("c" "cc" "cpp")) "$")
+         (list (list "\\.c\\(\\|c\\|pp\\)"
                      'cr-flymake-ninja-command-line
-                     nil
+                     'ignore
                      'cr-flymake-getfname)))
     (flymake-find-file-hook)
     (if flymake-mode
@@ -102,7 +107,8 @@
 (add-hook 'find-file-hook 'cr-flymake-find-file 'append)
 (add-hook 'after-save-hook 'cr-flymake-kick-off-check-after-save)
 
-;; Show flymake infrastructure ERRORs in hopes of fixing them.
+;; Show flymake infrastructure ERRORs in hopes of fixing them.  Set to 3 for
+;; DEBUG-level output from flymake.el.
 (setq flymake-log-level 0)
 
 (provide 'flymake-chromium)
