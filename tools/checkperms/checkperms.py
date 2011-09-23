@@ -1,5 +1,5 @@
-#!/usr/bin/python
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+#!/usr/bin/env python
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -66,6 +66,11 @@ WHITELIST_FILES = [
     '/third_party/lcov/bin/genpng',
     '/third_party/lcov/bin/lcov',
     '/third_party/lcov/bin/mcov',
+    '/third_party/lcov-1.9/bin/gendesc',
+    '/third_party/lcov-1.9/bin/genhtml',
+    '/third_party/lcov-1.9/bin/geninfo',
+    '/third_party/lcov-1.9/bin/genpng',
+    '/third_party/lcov-1.9/bin/lcov',
     '/third_party/libxml/linux/xml2-config',
     '/third_party/lzma_sdk/executable/7za.exe',
     '/third_party/swig/linux/swig',
