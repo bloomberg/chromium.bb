@@ -7,13 +7,15 @@
 #include "chrome/browser/ui/webui/chrome_web_ui.h"
 
 BookmarkEditor::EditDetails::EditDetails(Type node_type)
-    : type(node_type) {
+    : type(node_type), existing_node(NULL), parent_node(NULL) {
 }
 
 BookmarkEditor::EditDetails BookmarkEditor::EditDetails::EditNode(
     const BookmarkNode* node) {
   EditDetails details(EXISTING_NODE);
   details.existing_node = node;
+  if (node)
+    details.parent_node = node->parent();
   return details;
 }
 
