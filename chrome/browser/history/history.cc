@@ -714,6 +714,8 @@ void HistoryService::SetInMemoryBackend(int backend_id,
     history::InMemoryHistoryBackend* mem_backend) {
   if (!history_backend_ || current_backend_id_ != backend_id) {
     VLOG(1) << "Message from obsolete backend";
+    // Cleaning up the memory backend.
+    delete mem_backend;
     return;
   }
   DCHECK(!in_memory_backend_.get()) << "Setting mem DB twice";
