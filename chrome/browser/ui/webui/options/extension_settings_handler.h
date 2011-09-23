@@ -54,6 +54,8 @@ class ExtensionSettingsHandler : public OptionsPageUIHandler,
   ExtensionSettingsHandler();
   virtual ~ExtensionSettingsHandler();
 
+  static void RegisterUserPrefs(PrefService* prefs);
+
   // Extension Detail JSON Struct for page. (static for ease of testing).
   // Note: service can be NULL in unit tests.
   static base::DictionaryValue* CreateExtensionDetailValue(

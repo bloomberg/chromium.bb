@@ -222,9 +222,6 @@ are declared in build/common.gypi.
       <message name="IDS_DOWNLOAD_TITLE" desc="Title for the downloads tab.">
         Downloads
       </message>
-      <message name="IDS_EXTENSIONS_TITLE" desc="Title for the extensions tab.">
-        Extensions
-      </message>
       <message name="IDS_DEFAULT_TAB_TITLE" desc="The default title in a tab.">
         Untitled
       </message>
@@ -3929,15 +3926,9 @@ are declared in build/common.gypi.
         Page Action
       </message>
 
-      <!-- chrome://extensions page -->
+      <!-- chrome://settings/extensions page -->
       <message name="IDS_EXTENSIONS_DEVELOPER_MODE_LINK" desc="Text of the link for developer mode.">
         Developer mode
-      </message>
-      <message name="IDS_EXTENSIONS_DEVELOPER_MODE_PREFIX" desc="Text of the prefix for the developer mode buttons.">
-        Developer mode:
-      </message>
-      <message name="IDS_EXTENSIONS_INSPECT_POPUPS_INSTRUCTIONS" desc="Text that appears under 'Inspect Active Views' with instructions on how to inspect a page or browser action.">
-        To inspect a popup, right-click the page or browser action's icon and choose Inspect popup.
       </message>
       <message name="IDS_EXTENSIONS_LOAD_UNPACKED_BUTTON" desc="Text of the 'Load Extension' button.">
         Load unpacked extension...
@@ -3957,9 +3948,6 @@ are declared in build/common.gypi.
       <message name="IDS_EXTENSIONS_CRASHED_EXTENSION" desc="Text that signifies that the extension process was terminated, usually because it has crashed.">
         (Crashed)
       </message>
-      <message name="IDS_EXTENSIONS_DISABLED_EXTENSION" desc="Text that signifies that the extension is currently disabled.">
-        (Disabled)
-      </message>
       <message name="IDS_EXTENSIONS_IN_DEVELOPMENT" desc="Text that signifies that the extension is currently in development.">
         (Unpacked)
       </message>
@@ -3971,9 +3959,6 @@ are declared in build/common.gypi.
       </message>
       <message name="IDS_EXTENSIONS_PATH" desc="The label in front of the extension load path.">
         Loaded from:
-      </message>
-      <message name="IDS_EXTENSIONS_VERSION" desc="The version label text in front of the version number.">
-        Version:
       </message>
       <message name="IDS_EXTENSIONS_INSPECT_VIEWS" desc="The text for the label in front of the links to inspect active views.">
         Inspect active views:

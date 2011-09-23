@@ -54,8 +54,6 @@
       <if expr="not is_macosx">
         <include name="IDR_EXTENSIONS_INFOBAR_CSS" file="resources\extensions_infobar.css" flattenhtml="true" type="BINDATA" />
       </if>
-      <include name="IDR_EXTENSIONS_UI_HTML" file="resources\extensions_ui.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
-      <include name="IDR_EXTENSIONS_UI_JS" file="resources\extensions_ui.js" type="BINDATA" />
       <include name="IDR_FLAGS_HTML" file="resources\flags.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_FLAGS_HTML_WARNING" file="resources\flags_warning.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_FLAGS_JS" file="resources\flags.js" type="BINDATA" />

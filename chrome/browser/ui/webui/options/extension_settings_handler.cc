@@ -83,6 +83,13 @@ ExtensionSettingsHandler::~ExtensionSettingsHandler() {
   registrar_.RemoveAll();
 }
 
+// static
+void ExtensionSettingsHandler::RegisterUserPrefs(PrefService* prefs) {
+  prefs->RegisterBooleanPref(prefs::kExtensionsUIDeveloperMode,
+                             false,
+                             PrefService::SYNCABLE_PREF);
+}
+
 void ExtensionSettingsHandler::RegisterMessages() {
   web_ui_->RegisterMessageCallback("extensionSettingsRequestExtensionsData",
       NewCallback(this,
@@ -503,6 +510,8 @@ void ExtensionSettingsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_PATH));
   localized_strings->SetString("extensionSettingsInspectViews",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_INSPECT_VIEWS));
+  localized_strings->SetString("viewIncognito",
+      l10n_util::GetStringUTF16(IDS_EXTENSIONS_VIEW_INCOGNITO));
   localized_strings->SetString("extensionSettingsEnable",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_ENABLE));
   localized_strings->SetString("extensionSettingsEnabled",
@@ -617,13 +626,14 @@ DictionaryValue* ExtensionSettingsHandler::CreateExtensionDetailValue(
   extension_data->SetString("id", extension->id());
   extension_data->SetString("name", extension->name());
   extension_data->SetString("description", extension->description());
-  extension_data->SetString("path", extension->path().value());
+  if (extension->location() == Extension::LOAD)
+    extension_data->SetString("path", extension->path().value());
   extension_data->SetString("version", extension->version()->GetString());
   extension_data->SetString("icon", icon.spec());
   extension_data->SetBoolean("isUnpacked",
-      extension->location() == Extension::LOAD);
+                             extension->location() == Extension::LOAD);
   extension_data->SetBoolean("mayDisable",
-      Extension::UserMayDisable(extension->location()));
+                             Extension::UserMayDisable(extension->location()));
   extension_data->SetBoolean("enabled", enabled);
   extension_data->SetBoolean("terminated", terminated);
   extension_data->SetBoolean("enabledIncognito",

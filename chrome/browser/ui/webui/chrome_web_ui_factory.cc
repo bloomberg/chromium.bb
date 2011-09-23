@@ -8,7 +8,6 @@
 #include "chrome/browser/about_flags.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_web_ui.h"
-#include "chrome/browser/extensions/extensions_ui.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -168,8 +167,6 @@ static WebUIFactoryFunction GetWebUIFactoryFunction(Profile* profile,
     return &NewWebUI<TaskManagerUI>;
   if (url.host() == chrome::kChromeUITextfieldsHost)
     return &NewWebUI<TextfieldsUI>;
-  if (url.host() == chrome::kChromeUIExtensionsHost)
-    return &NewWebUI<ExtensionsUI>;
   if (url.host() == chrome::kChromeUIHistoryHost)
     return &NewWebUI<HistoryUI>;
   if (url.host() == chrome::kChromeUIHistory2Host)
@@ -370,9 +367,6 @@ RefCountedMemory* ChromeWebUIFactory::GetFaviconResourceBytes(
 
   if (page_url.host() == chrome::kChromeUIDownloadsHost)
     return DownloadsUI::GetFaviconResourceBytes();
-
-  if (page_url.host() == chrome::kChromeUIExtensionsHost)
-    return ExtensionsUI::GetFaviconResourceBytes();
 
   if (page_url.host() == chrome::kChromeUIHistoryHost)
     return HistoryUI::GetFaviconResourceBytes();

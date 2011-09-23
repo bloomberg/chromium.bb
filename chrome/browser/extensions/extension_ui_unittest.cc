@@ -4,7 +4,7 @@
 
 #include "base/path_service.h"
 #include "base/string_util.h"
-#include "chrome/browser/extensions/extensions_ui.h"
+#include "chrome/browser/ui/webui/options/extension_settings_handler.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/common/json_value_serializer.h"
@@ -39,7 +39,7 @@ namespace {
     EXPECT_TRUE(extension.get());
     EXPECT_EQ("", error);
 
-    return ExtensionsDOMHandler::CreateExtensionDetailValue(
+    return ExtensionSettingsHandler::CreateExtensionDetailValue(
         NULL, extension.get(), pages, true, false);
   }
 

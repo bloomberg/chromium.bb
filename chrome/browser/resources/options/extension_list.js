@@ -388,6 +388,15 @@ cr.define('options', function() {
             link.href = '#';
             link.addEventListener('click', this.sendInspectMessage_.bind(this));
             content.appendChild(link);
+
+            if (extension.views[i].incognito) {
+              var incognito = this.ownerDocument.createElement('span');
+              incognito.classList.add('extension-links-view');
+              incognito.textContent =
+                  localStrings.getString('viewIncognito');
+              content.appendChild(incognito);
+            }
+
             td.appendChild(content);
             tr.appendChild(td);
 

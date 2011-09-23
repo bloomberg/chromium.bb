@@ -18,7 +18,6 @@
 #include "chrome/browser/extensions/apps_promo.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_web_ui.h"
-#include "chrome/browser/extensions/extensions_ui.h"
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
 #include "chrome/browser/geolocation/geolocation_prefs.h"
 #include "chrome/browser/google/google_url_tracker.h"
@@ -57,6 +56,7 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/webui/flags_ui.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
+#include "chrome/browser/ui/webui/options/extension_settings_handler.h"
 #include "chrome/browser/ui/webui/plugins_ui.h"
 #include "chrome/browser/upgrade_detector.h"
 #include "chrome/browser/web_resource/promo_resource_service.h"
@@ -152,7 +152,7 @@ void RegisterUserPrefs(PrefService* user_prefs) {
   TabContentsWrapper::RegisterUserPrefs(user_prefs);
   TemplateURLPrepopulateData::RegisterUserPrefs(user_prefs);
   ExtensionWebUI::RegisterUserPrefs(user_prefs);
-  ExtensionsUI::RegisterUserPrefs(user_prefs);
+  ExtensionSettingsHandler::RegisterUserPrefs(user_prefs);
   IncognitoModePrefs::RegisterUserPrefs(user_prefs);
   NewTabUI::RegisterUserPrefs(user_prefs);
   PluginPrefs::RegisterPrefs(user_prefs);

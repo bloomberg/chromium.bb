@@ -1145,8 +1145,6 @@
         'browser/extensions/extensions_quota_service.h',
         'browser/extensions/extensions_startup.cc',
         'browser/extensions/extensions_startup.h',
-        'browser/extensions/extensions_ui.cc',
-        'browser/extensions/extensions_ui.h',
         'browser/extensions/external_extension_loader.cc',
         'browser/extensions/external_extension_loader.h',
         'browser/extensions/external_extension_provider_impl.cc',
