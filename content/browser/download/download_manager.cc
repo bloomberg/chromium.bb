@@ -437,8 +437,12 @@ void DownloadManager::AssertQueueStateConsistent(DownloadItem* download) {
 
   int64 state = download->state();
   base::debug::Alias(&state);
-  if (ContainsKey(active_downloads_, download->id()))
-    CHECK_EQ(DownloadItem::IN_PROGRESS, download->state());
+  if (ContainsKey(active_downloads_, download->id())) {
+    if (download->db_handle() != DownloadItem::kUninitializedHandle)
+      CHECK_EQ(DownloadItem::IN_PROGRESS, download->state());
+    if (DownloadItem::IN_PROGRESS != download->state())
+      CHECK_EQ(DownloadItem::kUninitializedHandle, download->db_handle());
+  }
   if (DownloadItem::IN_PROGRESS == download->state())
     CHECK(ContainsKey(active_downloads_, download->id()));
 }
