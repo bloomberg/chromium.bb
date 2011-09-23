@@ -11,16 +11,14 @@
 #include "base/string_util.h"
 #include "base/task.h"
 #include "remoting/base/constants.h"
-#include "remoting/jingle_glue/host_resolver.h"
-#include "remoting/jingle_glue/http_port_allocator.h"
 #include "remoting/jingle_glue/jingle_info_request.h"
 #include "remoting/jingle_glue/jingle_signaling_connector.h"
 #include "remoting/jingle_glue/signal_strategy.h"
 #include "third_party/libjingle/source/talk/base/basicpacketsocketfactory.h"
+#include "third_party/libjingle/source/talk/p2p/base/constants.h"
 #include "third_party/libjingle/source/talk/p2p/base/sessionmanager.h"
 #include "third_party/libjingle/source/talk/p2p/base/transport.h"
-#include "third_party/libjingle/source/talk/p2p/base/constants.h"
-#include "third_party/libjingle/source/talk/p2p/base/transport.h"
+#include "third_party/libjingle/source/talk/p2p/client/httpportallocator.h"
 #include "third_party/libjingle/source/talk/xmllite/xmlelement.h"
 
 using buzz::XmlElement;
@@ -28,35 +26,9 @@ using buzz::XmlElement;
 namespace remoting {
 namespace protocol {
 
-// static
-JingleSessionManager* JingleSessionManager::CreateNotSandboxed(
-    base::MessageLoopProxy* message_loop) {
-  return new JingleSessionManager(message_loop, NULL, NULL, NULL, NULL);
-}
-
-// static
-JingleSessionManager* JingleSessionManager::CreateSandboxed(
-    base::MessageLoopProxy* message_loop,
-    talk_base::NetworkManager* network_manager,
-    talk_base::PacketSocketFactory* socket_factory,
-    HostResolverFactory* host_resolver_factory,
-    PortAllocatorSessionFactory* port_allocator_session_factory) {
-  return new JingleSessionManager(message_loop, network_manager, socket_factory,
-                                  host_resolver_factory,
-                                  port_allocator_session_factory);
-}
-
 JingleSessionManager::JingleSessionManager(
-    base::MessageLoopProxy* message_loop,
-    talk_base::NetworkManager* network_manager,
-    talk_base::PacketSocketFactory* socket_factory,
-    HostResolverFactory* host_resolver_factory,
-    PortAllocatorSessionFactory* port_allocator_session_factory)
+    base::MessageLoopProxy* message_loop)
     : message_loop_(message_loop),
-      network_manager_(network_manager),
-      socket_factory_(socket_factory),
-      host_resolver_factory_(host_resolver_factory),
-      port_allocator_session_factory_(port_allocator_session_factory),
       signal_strategy_(NULL),
       allow_nat_traversal_(false),
       allow_local_ips_(false),
@@ -106,9 +78,8 @@ void JingleSessionManager::Init(
   int port_allocator_flags = cricket::PORTALLOCATOR_DISABLE_TCP;
 
   if (allow_nat_traversal) {
-    http_port_allocator_ = new remoting::HttpPortAllocator(
-        network_manager_.get(), socket_factory_.get(),
-        port_allocator_session_factory_.get(), "transp2");
+    http_port_allocator_ = new cricket::HttpPortAllocator(
+        network_manager_.get(), socket_factory_.get(), "transp2");
     port_allocator_.reset(http_port_allocator_);
   } else {
     port_allocator_flags |= cricket::PORTALLOCATOR_DISABLE_STUN |
@@ -130,8 +101,7 @@ void JingleSessionManager::Init(
   // If NAT traversal is enabled then we need to request STUN/Relay info.
   if (allow_nat_traversal) {
     jingle_info_request_.reset(
-        new JingleInfoRequest(signal_strategy_->CreateIqRequest(),
-                              host_resolver_factory_.get()));
+        new JingleInfoRequest(signal_strategy_->CreateIqRequest()));
     jingle_info_request_->Send(base::Bind(
         &JingleSessionManager::OnJingleInfo, base::Unretained(this)));
   } else {

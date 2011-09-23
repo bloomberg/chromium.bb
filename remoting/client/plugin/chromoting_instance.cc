@@ -30,7 +30,6 @@
 #include "remoting/client/chromoting_client.h"
 #include "remoting/client/plugin/chromoting_scriptable_object.h"
 #include "remoting/client/plugin/pepper_input_handler.h"
-#include "remoting/client/plugin/pepper_port_allocator_session.h"
 #include "remoting/client/plugin/pepper_view.h"
 #include "remoting/client/plugin/pepper_view_proxy.h"
 #include "remoting/client/plugin/pepper_xmpp_proxy.h"

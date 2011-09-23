@@ -198,8 +198,7 @@ void ChromotingHost::OnStateChange(
 
     // Create and start session manager.
     protocol::JingleSessionManager* server =
-        protocol::JingleSessionManager::CreateNotSandboxed(
-            context_->network_message_loop());
+        new protocol::JingleSessionManager(context_->network_message_loop());
     // TODO(ajwong): Make this a command switch when we're more stable.
     server->set_allow_local_ips(true);
 

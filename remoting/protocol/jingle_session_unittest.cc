@@ -177,7 +177,7 @@ class JingleSessionTest : public testing::Test {
 
     EXPECT_CALL(host_server_listener_, OnSessionManagerInitialized())
         .Times(1);
-    host_server_.reset(JingleSessionManager::CreateNotSandboxed(
+    host_server_.reset(new JingleSessionManager(
         base::MessageLoopProxy::current()));
     host_server_->set_allow_local_ips(true);
     host_server_->Init(
@@ -186,7 +186,7 @@ class JingleSessionTest : public testing::Test {
 
     EXPECT_CALL(client_server_listener_, OnSessionManagerInitialized())
         .Times(1);
-    client_server_.reset(JingleSessionManager::CreateNotSandboxed(
+    client_server_.reset(new JingleSessionManager(
         base::MessageLoopProxy::current()));
     client_server_->set_allow_local_ips(true);
     client_server_->Init(

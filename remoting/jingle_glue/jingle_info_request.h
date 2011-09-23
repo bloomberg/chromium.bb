@@ -27,8 +27,6 @@ class SocketAddress;
 namespace remoting {
 
 class IqRequest;
-class HostResolver;
-class HostResolverFactory;
 
 // JingleInfoRequest handles requesting STUN/Relay infromation from
 // the Google Talk network. The query is made when Send() is
@@ -49,8 +47,7 @@ class JingleInfoRequest : public sigslot::has_slots<> {
       const std::string&, const std::vector<std::string>&,
       const std::vector<talk_base::SocketAddress>&)> OnJingleInfoCallback;
 
-  explicit JingleInfoRequest(IqRequest* request,
-                             HostResolverFactory* host_resolver_factory);
+  explicit JingleInfoRequest(IqRequest* request);
   virtual ~JingleInfoRequest();
 
   void Send(const OnJingleInfoCallback& callback);
@@ -59,18 +56,9 @@ class JingleInfoRequest : public sigslot::has_slots<> {
   struct PendingDnsRequest;
 
   void OnResponse(const buzz::XmlElement* stanza);
-  void OnStunAddressResponse(HostResolver* resolver,
-                             const talk_base::SocketAddress& address);
 
-  HostResolverFactory* host_resolver_factory_;
   scoped_ptr<IqRequest> request_;
   OnJingleInfoCallback on_jingle_info_cb_;
-
-  std::vector<std::string> relay_hosts_;
-  std::vector<talk_base::SocketAddress> stun_hosts_;
-  std::string relay_token_;
-
-  std::set<HostResolver*> stun_dns_requests_;
 
   DISALLOW_COPY_AND_ASSIGN(JingleInfoRequest);
 };

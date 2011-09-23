@@ -9,8 +9,6 @@
 #include "base/location.h"
 #include "base/message_loop_proxy.h"
 #include "remoting/base/constants.h"
-#include "remoting/jingle_glue/host_resolver.h"
-#include "remoting/jingle_glue/http_port_allocator.h"
 #include "remoting/jingle_glue/javascript_signal_strategy.h"
 #include "remoting/jingle_glue/xmpp_signal_strategy.h"
 #include "remoting/protocol/auth_token_utils.h"
