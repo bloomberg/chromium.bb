@@ -106,6 +106,7 @@ merge-all() {
 
   assert-clean
 
+  echo "@@@BUILD_STEP Merge@@@"
   generate-pre-diff
 
   commit-vendor
@@ -138,6 +139,7 @@ assert-clean() {
 
 #@ clean                 - Clean/revert mercurial repositories
 clean() {
+  echo "@@@BUILD_STEP Clean hg/upstream@@@"
   StepBanner "CLEAN - Cleaning repositories"
   clean-upstream
 }

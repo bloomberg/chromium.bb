@@ -241,6 +241,13 @@ BOT_ASSIGNMENT = {
     # PNaCl LLVM Merging bots
     'llvm':
         'bash buildbot/buildbot_pnacl_merge.sh merge-bot',
+    'llvm-scons':
+        'bash buildbot/buildbot_pnacl_merge.sh scons-bot',
+    'llvm-spec2k-x86':
+        'bash buildbot/buildbot_pnacl_merge.sh spec2k-x86-bot',
+    'llvm-spec2k-arm':
+        'bash buildbot/buildbot_pnacl_merge.sh spec2k-arm-bot',
+
 }
 
 
