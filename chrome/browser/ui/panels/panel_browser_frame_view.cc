@@ -176,7 +176,7 @@ void PanelBrowserFrameView::MouseWatcher::DidProcessMessage(const MSG& msg) {
       break;
   }
 }
-#else
+#elif defined(TOOLKIT_USES_GTK)
 void PanelBrowserFrameView::MouseWatcher::DidProcessEvent(GdkEvent* event) {
   switch (event->type) {
     case GDK_MOTION_NOTIFY:

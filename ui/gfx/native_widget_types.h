@@ -37,6 +37,7 @@
 // 'views'.
 
 #if defined(USE_AURA)
+class SkRegion;
 namespace aura {
 class Window;
 }
@@ -144,7 +145,7 @@ typedef void* NativeEditView;
 typedef cairo_t* NativeDrawingContext;
 typedef void* NativeCursor;
 typedef void* NativeMenu;
-typedef void* NativeRegion;
+typedef SkRegion* NativeRegion;
 typedef void* NativeViewAccessible;
 #elif defined(OS_ANDROID)
 typedef void* NativeFont;
