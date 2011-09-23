@@ -24,6 +24,116 @@
 // each user gesture. This variable should only be accessed from the UI thread.
 static bool g_accept_requests = true;
 
+namespace {
+
+// Functions enabling unit testing. Using a NULL delegate will use the default
+// behavior; if a delegate is provided it will be used instead.
+ShellIntegration::DefaultProtocolClientWorker* CreateShellWorker(
+    ShellIntegration::DefaultWebClientObserver* observer,
+    const std::string& protocol,
+    ExternalProtocolHandler::Delegate* delegate) {
+  if (!delegate)
+    return new ShellIntegration::DefaultProtocolClientWorker(observer,
+                                                             protocol);
+
+  return delegate->CreateShellWorker(observer, protocol);
+}
+
+ExternalProtocolHandler::BlockState GetBlockStateWithDelegate(
+    const std::string& scheme,
+    ExternalProtocolHandler::Delegate* delegate) {
+  if (!delegate)
+    return ExternalProtocolHandler::GetBlockState(scheme);
+
+  return delegate->GetBlockState(scheme);
+}
+
+void RunExternalProtocolDialogWithDelegate(
+    const GURL& url,
+    int render_process_host_id,
+    int routing_id,
+    ExternalProtocolHandler::Delegate* delegate) {
+  if (!delegate) {
+    ExternalProtocolHandler::RunExternalProtocolDialog(url,
+                                                       render_process_host_id,
+                                                       routing_id);
+  } else {
+    delegate->RunExternalProtocolDialog(url, render_process_host_id,
+                                        routing_id);
+  }
+}
+
+void LaunchUrlWithoutSecurityCheckWithDelegate(
+    const GURL& url,
+    ExternalProtocolHandler::Delegate* delegate) {
+  if (!delegate)
+    ExternalProtocolHandler::LaunchUrlWithoutSecurityCheck(url);
+  else
+    delegate->LaunchUrlWithoutSecurityCheck(url);
+}
+
+// When we are about to launch a URL with the default OS level application,
+// we check if that external application will be us. If it is we just ignore
+// the request.
+class ExternalDefaultProtocolObserver
+    : public ShellIntegration::DefaultWebClientObserver {
+ public:
+  ExternalDefaultProtocolObserver(const GURL& escaped_url,
+                                  int render_process_host_id,
+                                  int tab_contents_id,
+                                  bool prompt_user,
+                                  ExternalProtocolHandler::Delegate* delegate)
+      : delegate_(delegate),
+        escaped_url_(escaped_url),
+        render_process_host_id_(render_process_host_id),
+        tab_contents_id_(tab_contents_id),
+        prompt_user_(prompt_user) {}
+
+  virtual void SetDefaultWebClientUIState(
+      ShellIntegration::DefaultWebClientUIState state) OVERRIDE {
+    DCHECK_EQ(MessageLoop::TYPE_UI, MessageLoop::current()->type());
+
+    // If we are still working out if we're the default, or we've found
+    // out we definately are the default, we end here.
+    if (state == ShellIntegration::STATE_PROCESSING) {
+      return;
+    }
+
+    if (delegate_)
+      delegate_->FinishedProcessingCheck();
+
+    if (state == ShellIntegration::STATE_IS_DEFAULT) {
+      if (delegate_)
+        delegate_->BlockRequest();
+      return;
+    }
+
+    // If we get here, either we are not the default or we cannot work out
+    // what the default is, so we proceed.
+    if (prompt_user_) {
+      // Ask the user if they want to allow the protocol. This will call
+      // LaunchUrlWithoutSecurityCheck if the user decides to accept the
+      // protocol.
+      RunExternalProtocolDialogWithDelegate(escaped_url_,
+          render_process_host_id_, tab_contents_id_, delegate_);
+      return;
+    }
+
+    LaunchUrlWithoutSecurityCheckWithDelegate(escaped_url_, delegate_);
+  }
+
+  virtual bool IsOwnedByWorker() OVERRIDE { return true; }
+
+ private:
+  ExternalProtocolHandler::Delegate* delegate_;
+  GURL escaped_url_;
+  int render_process_host_id_;
+  int tab_contents_id_;
+  bool prompt_user_;
+};
+
+} // namespace
+
 // static
 void ExternalProtocolHandler::PrepopulateDictionary(DictionaryValue* win_pref) {
   static bool is_warm = false;
@@ -126,31 +236,42 @@ void ExternalProtocolHandler::SetBlockState(const std::string& scheme,
 }
 
 // static
-void ExternalProtocolHandler::LaunchUrl(const GURL& url,
-                                        int render_process_host_id,
-                                        int tab_contents_id) {
+void ExternalProtocolHandler::LaunchUrlWithDelegate(const GURL& url,
+                                                    int render_process_host_id,
+                                                    int tab_contents_id,
+                                                    Delegate* delegate) {
   DCHECK_EQ(MessageLoop::TYPE_UI, MessageLoop::current()->type());
 
   // Escape the input scheme to be sure that the command does not
   // have parameters unexpected by the external program.
   std::string escaped_url_string = EscapeExternalHandlerValue(url.spec());
   GURL escaped_url(escaped_url_string);
-  BlockState block_state = GetBlockState(escaped_url.scheme());
-  if (block_state == BLOCK)
-    return;
-
-  g_accept_requests = false;
-
-  if (block_state == UNKNOWN) {
-    // Ask the user if they want to allow the protocol. This will call
-    // LaunchUrlWithoutSecurityCheck if the user decides to accept the protocol.
-    RunExternalProtocolDialog(escaped_url,
-                              render_process_host_id,
-                              tab_contents_id);
+  BlockState block_state = GetBlockStateWithDelegate(escaped_url.scheme(),
+                                                     delegate);
+  if (block_state == BLOCK) {
+    if (delegate)
+      delegate->BlockRequest();
     return;
   }
 
-  LaunchUrlWithoutSecurityCheck(escaped_url);
+  g_accept_requests = false;
+
+  // The worker creates tasks with references to itself and puts them into
+  // message loops. When no tasks are left it will delete the observer and
+  // eventually be deleted itself.
+  ShellIntegration::DefaultWebClientObserver* observer =
+      new ExternalDefaultProtocolObserver(url,
+                                          render_process_host_id,
+                                          tab_contents_id,
+                                          block_state == UNKNOWN,
+                                          delegate);
+  scoped_refptr<ShellIntegration::DefaultProtocolClientWorker> worker =
+      CreateShellWorker(observer, escaped_url.scheme(), delegate);
+
+  // Start the check process running. This will send tasks to the FILE thread
+  // and when the answer is known will send the result back to the observer on
+  // the UI thread.
+  worker->StartCheckIsDefault();
 }
 
 // static

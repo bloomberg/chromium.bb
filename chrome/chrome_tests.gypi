@@ -1269,6 +1269,7 @@
         'browser/extensions/sandboxed_extension_unpacker_unittest.cc',
         'browser/extensions/user_script_listener_unittest.cc',
         'browser/extensions/user_script_master_unittest.cc',
+        'browser/external_protocol/external_protocol_handler_unittest.cc',
         'browser/favicon/favicon_handler_unittest.cc',
         'browser/first_run/first_run_unittest.cc',
         'browser/geolocation/chrome_geolocation_permission_context_unittest.cc',

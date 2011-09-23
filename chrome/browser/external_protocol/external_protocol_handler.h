@@ -8,6 +8,8 @@
 
 #include <string>
 
+#include "chrome/browser/shell_integration.h"
+
 class GURL;
 class PrefService;
 
@@ -21,6 +23,22 @@ class ExternalProtocolHandler {
     DONT_BLOCK,
     BLOCK,
     UNKNOWN,
+  };
+
+  // Delegate to allow unit testing to provide different behavior.
+  class Delegate {
+   public:
+    virtual ShellIntegration::DefaultProtocolClientWorker* CreateShellWorker(
+        ShellIntegration::DefaultWebClientObserver* observer,
+        const std::string& protocol) = 0;
+    virtual BlockState GetBlockState(const std::string& scheme) = 0;
+    virtual void BlockRequest() = 0;
+    virtual void RunExternalProtocolDialog(const GURL& url,
+                                           int render_process_host_id,
+                                           int routing_id) = 0;
+    virtual void LaunchUrlWithoutSecurityCheck(const GURL& url) = 0;
+    virtual void FinishedProcessingCheck() = 0;
+    virtual ~Delegate() {}
   };
 
   // Returns whether we should block a given scheme.
@@ -37,7 +55,14 @@ class ExternalProtocolHandler {
   // application is launched.
   // Must run on the UI thread.
   static void LaunchUrl(const GURL& url, int render_process_host_id,
-                        int tab_contents_id);
+                        int tab_contents_id) {
+      LaunchUrlWithDelegate(url, render_process_host_id, tab_contents_id, NULL);
+  }
+
+  // Version of LaunchUrl allowing use of a delegate to facilitate unit
+  // testing.
+  static void LaunchUrlWithDelegate(const GURL& url, int render_process_host_id,
+                                    int tab_contents_id, Delegate* delegate);
 
   // Creates and runs a External Protocol dialog box.
   // |url| - The url of the request.
