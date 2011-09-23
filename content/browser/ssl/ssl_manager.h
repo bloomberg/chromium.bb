@@ -15,6 +15,7 @@
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 #include "googleurl/src/gurl.h"
+#include "net/base/cert_status_flags.h"
 #include "net/base/net_errors.h"
 
 class LoadFromMemoryCacheDetails;
@@ -57,14 +58,15 @@ class SSLManager : public NotificationObserver {
 
   // Convenience methods for serializing/deserializing the security info.
   static std::string SerializeSecurityInfo(int cert_id,
-                                           int cert_status,
+                                           net::CertStatus cert_status,
                                            int security_bits,
                                            int connection_status);
-  CONTENT_EXPORT static bool DeserializeSecurityInfo(const std::string& state,
-                                                     int* cert_id,
-                                                     int* cert_status,
-                                                     int* security_bits,
-                                                     int* connection_status);
+  CONTENT_EXPORT static bool DeserializeSecurityInfo(
+      const std::string& state,
+      int* cert_id,
+      net::CertStatus* cert_status,
+      int* security_bits,
+      int* connection_status);
 
   // Construct an SSLManager for the specified tab.
   // If |delegate| is NULL, SSLPolicy::GetDefaultPolicy() is used.

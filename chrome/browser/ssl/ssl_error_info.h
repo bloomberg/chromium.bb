@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/string16.h"
+#include "net/base/cert_status_flags.h"
 #include "net/base/x509_certificate.h"
 
 class GURL;
@@ -46,9 +47,10 @@ class SSLErrorInfo {
   // Populates the specified |errors| vector with the errors contained in
   // |cert_status|.  Returns the number of errors found.
   // Callers only interested in the error count can pass NULL for |errors|.
-  static int GetErrorsForCertStatus(int cert_status,
-                                    int cert_id,
-                                    const GURL& request_url,
+  // TODO(wtc): Document |cert_id| and |url| arguments.
+  static int GetErrorsForCertStatus(int cert_id,
+                                    net::CertStatus cert_status,
+                                    const GURL& url,
                                     std::vector<SSLErrorInfo>* errors);
 
   // A title describing the error, usually to be used with the details below.

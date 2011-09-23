@@ -8,7 +8,7 @@ LoadFromMemoryCacheDetails::LoadFromMemoryCacheDetails(
     const GURL& url,
     int pid,
     int cert_id,
-    int cert_status)
+    net::CertStatus cert_status)
     : url_(url),
       pid_(pid),
       cert_id_(cert_id),

@@ -542,7 +542,7 @@ TEST_F(CertDatabaseNSSTest, ImportServerCert) {
   CertVerifyResult verify_result;
   int error = goog_cert->Verify("www.google.com", flags, &verify_result);
   EXPECT_EQ(OK, error);
-  EXPECT_EQ(0, verify_result.cert_status);
+  EXPECT_EQ(0U, verify_result.cert_status);
 }
 
 TEST_F(CertDatabaseNSSTest, ImportServerCert_SelfSigned) {
@@ -578,7 +578,7 @@ TEST_F(CertDatabaseNSSTest, ImportServerCert_SelfSigned) {
   verify_result.Reset();
   error = puny_cert->Verify("xn--wgv71a119e.com", flags, &verify_result);
   EXPECT_EQ(OK, error);
-  EXPECT_EQ(0, verify_result.cert_status);
+  EXPECT_EQ(0U, verify_result.cert_status);
 }
 
 }  // namespace net

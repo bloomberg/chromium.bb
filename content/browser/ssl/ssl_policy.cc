@@ -131,7 +131,8 @@ void SSLPolicy::UpdateEntry(NavigationEntry* entry, TabContents* tab_contents) {
 
   // If CERT_STATUS_UNABLE_TO_CHECK_REVOCATION is the only certificate error,
   // don't lower the security style to SECURITY_STYLE_AUTHENTICATION_BROKEN.
-  int cert_errors = entry->ssl().cert_status() & net::CERT_STATUS_ALL_ERRORS;
+  net::CertStatus cert_errors =
+      entry->ssl().cert_status() & net::CERT_STATUS_ALL_ERRORS;
   if (cert_errors) {
     if (cert_errors != net::CERT_STATUS_UNABLE_TO_CHECK_REVOCATION)
       entry->ssl().set_security_style(SECURITY_STYLE_AUTHENTICATION_BROKEN);

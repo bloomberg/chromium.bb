@@ -10,6 +10,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "googleurl/src/gurl.h"
+#include "net/base/cert_status_flags.h"
 #include "webkit/glue/resource_type.h"
 
 // SSLRequestInfo wraps up the information SSLPolicy needs about a request in
@@ -21,13 +22,13 @@ class SSLRequestInfo : public base::RefCounted<SSLRequestInfo> {
                  ResourceType::Type resource_type,
                  int child_id,
                  int ssl_cert_id,
-                 int ssl_cert_status);
+                 net::CertStatus ssl_cert_status);
 
   const GURL& url() const { return url_; }
   ResourceType::Type resource_type() const { return resource_type_; }
   int child_id() const { return child_id_; }
   int ssl_cert_id() const { return ssl_cert_id_; }
-  int ssl_cert_status() const { return ssl_cert_status_; }
+  net::CertStatus ssl_cert_status() const { return ssl_cert_status_; }
 
  private:
   friend class base::RefCounted<SSLRequestInfo>;
@@ -38,7 +39,7 @@ class SSLRequestInfo : public base::RefCounted<SSLRequestInfo> {
   ResourceType::Type resource_type_;
   int child_id_;
   int ssl_cert_id_;
-  int ssl_cert_status_;
+  net::CertStatus ssl_cert_status_;
 
   DISALLOW_COPY_AND_ASSIGN(SSLRequestInfo);
 };

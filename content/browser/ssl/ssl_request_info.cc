@@ -8,7 +8,7 @@ SSLRequestInfo::SSLRequestInfo(const GURL& url,
                                ResourceType::Type resource_type,
                                int child_id,
                                int ssl_cert_id,
-                               int ssl_cert_status)
+                               net::CertStatus ssl_cert_status)
     : url_(url),
       resource_type_(resource_type),
       child_id_(child_id),

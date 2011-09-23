@@ -1480,11 +1480,12 @@ void TestingAutomationProvider::WaitForTabToBeRestored(
   }
 }
 
-void TestingAutomationProvider::GetSecurityState(int handle,
-                                                 bool* success,
-                                                 SecurityStyle* security_style,
-                                                 int* ssl_cert_status,
-                                                 int* insecure_content_status) {
+void TestingAutomationProvider::GetSecurityState(
+    int handle,
+    bool* success,
+    SecurityStyle* security_style,
+    net::CertStatus* ssl_cert_status,
+    int* insecure_content_status) {
   if (tab_tracker_->ContainsHandle(handle)) {
     NavigationController* tab = tab_tracker_->GetResource(handle);
     NavigationEntry* entry = tab->GetActiveEntry();
