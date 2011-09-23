@@ -127,6 +127,7 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
     'native_client/toolchain': [
         'BSD GPL (v2 or later)',
         'BSD (2 clause) GPL (v2 or later)',
+        'BSD (3 clause) GPL (v2 or later)',
         'BSL (v1.0) GPL',
         'GPL',
         'GPL (unversioned/unknown version)',

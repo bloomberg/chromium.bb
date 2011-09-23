@@ -7,7 +7,7 @@ vars = {
   "webkit_revision": "95802",
   "chromium_git": "http://git.chromium.org/git",
   "swig_revision": "69281",
-  "nacl_revision": "6743",
+  "nacl_revision": "6760",
   # After changing nacl_revision, run 'glient sync' and check native_client/DEPS
   # to update other nacl_*_revision's.
   # TODO(brettw) We should use the "From" syntax to avoid hardcoding the
@@ -18,12 +18,12 @@ vars = {
   # After changing nacl_toolchain_revision, run 'gclient runhooks' to get the
   # new values.
   "nacl_toolchain_mac_x86_newlib_hash":
-      "1b0855435c03c435a011c6105a509624b2a4edaa",
+      "280ecee659ff804d5eeca8964c31545b0d68d9c8",
   "nacl_toolchain_win_x86_newlib_hash":
-      "5038a47b5a9a49acdc36cbe311aec7bce575c164",
+      "7730f4515c745c0c012df4a1080be9a46ffcda47",
   "nacl_toolchain_linux_x86_newlib_hash":
-      "01e245dc6dca16bea5cf840dbc77e3aa138f234f",
-  "nacl_toolchain_revision": "6494",
+      "596aa5b812ec4b24160ed7ce55b3fd141f929fbf",
+  "nacl_toolchain_revision": "6757",
 
   "libjingle_revision": "85",
   "libvpx_revision": "97420",
