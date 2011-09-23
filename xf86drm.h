@@ -39,6 +39,10 @@
 #include <stdint.h>
 #include <drm.h>
 
+#if defined(__cplusplus) || defined(c_plusplus)
+extern "C" {
+#endif
+
 #ifndef DRM_MAX_MINOR
 #define DRM_MAX_MINOR   16
 #endif
@@ -722,5 +726,9 @@ typedef struct _drmEventContext {
 extern int drmHandleEvent(int fd, drmEventContextPtr evctx);
 
 extern char *drmGetDeviceNameFromFd(int fd);
+
+#if defined(__cplusplus) || defined(c_plusplus)
+}
+#endif
 
 #endif
