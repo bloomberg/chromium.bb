@@ -265,23 +265,20 @@ std::string ChromeContentRendererClient::GetDefaultEncoding() {
   return l10n_util::GetStringUTF8(IDS_DEFAULT_ENCODING);
 }
 
-WebPlugin* ChromeContentRendererClient::CreatePlugin(
+bool ChromeContentRendererClient::OverrideCreatePlugin(
       RenderView* render_view,
       WebFrame* frame,
-      const WebPluginParams& original_params) {
+      const WebPluginParams& params,
+      WebKit::WebPlugin** plugin) {
   bool is_default_plugin;
-  WebPlugin* plugin = CreatePluginImpl(render_view,
-                                       frame,
-                                       original_params,
-                                       &is_default_plugin);
-  if (!plugin || is_default_plugin)
+  *plugin = CreatePlugin(render_view, frame, params, &is_default_plugin);
+  if (!*plugin || is_default_plugin)
     MissingPluginReporter::GetInstance()->ReportPluginMissing(
-        original_params.mimeType.utf8(),
-        original_params.url);
-  return plugin;
+        params.mimeType.utf8(), params.url);
+  return true;
 }
 
-WebPlugin* ChromeContentRendererClient::CreatePluginImpl(
+WebPlugin* ChromeContentRendererClient::CreatePlugin(
       RenderView* render_view,
       WebFrame* frame,
       const WebPluginParams& original_params,

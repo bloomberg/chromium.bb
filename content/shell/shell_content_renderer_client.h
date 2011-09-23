@@ -19,10 +19,11 @@ class ShellContentRendererClient : public ContentRendererClient {
   virtual void SetNumberOfViews(int number_of_views) OVERRIDE;
   virtual SkBitmap* GetSadPluginBitmap() OVERRIDE;
   virtual std::string GetDefaultEncoding() OVERRIDE;
-  virtual WebKit::WebPlugin* CreatePlugin(
+  virtual bool OverrideCreatePlugin(
       RenderView* render_view,
       WebKit::WebFrame* frame,
-      const WebKit::WebPluginParams& params) OVERRIDE;
+      const WebKit::WebPluginParams& params,
+      WebKit::WebPlugin** plugin) OVERRIDE;
   virtual void ShowErrorPage(RenderView* render_view,
                              WebKit::WebFrame* frame,
                              int http_status_code) OVERRIDE;

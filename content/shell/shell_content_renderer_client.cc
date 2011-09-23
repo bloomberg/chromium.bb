@@ -4,7 +4,6 @@
 
 #include "content/shell/shell_content_renderer_client.h"
 
-#include "content/renderer/render_view.h"
 #include "v8/include/v8.h"
 
 namespace content {
@@ -29,11 +28,12 @@ std::string ShellContentRendererClient::GetDefaultEncoding() {
   return std::string();
 }
 
-WebKit::WebPlugin* ShellContentRendererClient::CreatePlugin(
+bool ShellContentRendererClient::OverrideCreatePlugin(
     RenderView* render_view,
     WebKit::WebFrame* frame,
-    const WebKit::WebPluginParams& params) {
-  return render_view->CreatePluginNoCheck(frame, params);
+    const WebKit::WebPluginParams& params,
+    WebKit::WebPlugin** plugin) {
+  return false;
 }
 
 void ShellContentRendererClient::ShowErrorPage(RenderView* render_view,

@@ -53,12 +53,14 @@ class ContentRendererClient {
   // Returns the default text encoding.
   virtual std::string GetDefaultEncoding() = 0;
 
-  // Create a plugin in the given frame.  Can return NULL, in which case
-  // RenderView will create a plugin itself.
-  virtual WebKit::WebPlugin* CreatePlugin(
+  // Allows the embedder to override creating a plugin. If it returns true, then
+  // |plugin| will contain the created plugin, although it could be NULL. If it
+  // returns false, the content layer will create the plugin.
+  virtual bool OverrideCreatePlugin(
       RenderView* render_view,
       WebKit::WebFrame* frame,
-      const WebKit::WebPluginParams& params) = 0;
+      const WebKit::WebPluginParams& params,
+      WebKit::WebPlugin** plugin) = 0;
 
   // Give the embedder the ability to set an error page.
   virtual void ShowErrorPage(RenderView* render_view,

@@ -29,11 +29,12 @@ std::string MockContentRendererClient::GetDefaultEncoding() {
   return std::string();
 }
 
-WebKit::WebPlugin* MockContentRendererClient::CreatePlugin(
+bool MockContentRendererClient::OverrideCreatePlugin(
     RenderView* render_view,
     WebKit::WebFrame* frame,
-    const WebKit::WebPluginParams& params) {
-  return NULL;
+    const WebKit::WebPluginParams& params,
+    WebKit::WebPlugin** plugin) {
+  return false;
 }
 
 void MockContentRendererClient::ShowErrorPage(RenderView* render_view,

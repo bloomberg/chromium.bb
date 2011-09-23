@@ -1969,8 +1969,13 @@ void RenderView::runModal() {
 
 WebPlugin* RenderView::createPlugin(WebFrame* frame,
                                     const WebPluginParams& params) {
-  return content::GetContentClient()->renderer()->CreatePlugin(
-      this, frame, params);
+  WebPlugin* plugin = NULL;
+  if (content::GetContentClient()->renderer()->OverrideCreatePlugin(
+          this, frame, params, &plugin)) {
+    return plugin;
+  }
+
+  return CreatePluginNoCheck(frame, params);
 }
 
 WebWorker* RenderView::createWorker(WebFrame* frame, WebWorkerClient* client) {
