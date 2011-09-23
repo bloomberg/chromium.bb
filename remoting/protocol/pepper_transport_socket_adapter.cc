@@ -61,7 +61,8 @@ PepperTransportSocketAdapter::~PepperTransportSocketAdapter() {
 void PepperTransportSocketAdapter::AddRemoteCandidate(
     const std::string& candidate) {
   DCHECK(CalledOnValidThread());
-  transport_->ReceiveRemoteAddress(candidate);
+  if (transport_.get())
+    transport_->ReceiveRemoteAddress(candidate);
 }
 
 int PepperTransportSocketAdapter::Read(net::IOBuffer* buf, int buf_len,
@@ -69,6 +70,9 @@ int PepperTransportSocketAdapter::Read(net::IOBuffer* buf, int buf_len,
   DCHECK(CalledOnValidThread());
   DCHECK(!read_callback_);
   DCHECK(!read_buffer_);
+
+  if (!transport_.get())
+    return net::ERR_SOCKET_NOT_CONNECTED;
 
   int result = PPErrorToNetError(transport_->Recv(
       buf->data(), buf_len,
@@ -88,6 +92,9 @@ int PepperTransportSocketAdapter::Write(net::IOBuffer* buf, int buf_len,
   DCHECK(CalledOnValidThread());
   DCHECK(!write_callback_);
   DCHECK(!write_buffer_);
+
+  if (!transport_.get())
+    return net::ERR_SOCKET_NOT_CONNECTED;
 
   int result = PPErrorToNetError(transport_->Send(
       buf->data(), buf_len,
@@ -117,6 +124,11 @@ bool PepperTransportSocketAdapter::SetSendBufferSize(int32 size) {
 }
 
 int PepperTransportSocketAdapter::Connect(net::CompletionCallback* callback) {
+  DCHECK(CalledOnValidThread());
+
+  if (!transport_.get())
+    return net::ERR_UNEXPECTED;
+
   connect_callback_ = callback;
 
   // This will return false when GetNextAddress() returns an
@@ -135,20 +147,25 @@ int PepperTransportSocketAdapter::Connect(net::CompletionCallback* callback) {
 }
 
 void PepperTransportSocketAdapter::Disconnect() {
-  NOTIMPLEMENTED();
+  DCHECK(CalledOnValidThread());
+  transport_.reset();
 }
 
 bool PepperTransportSocketAdapter::IsConnected() const {
+  DCHECK(CalledOnValidThread());
   return connected_;
 }
 
 bool PepperTransportSocketAdapter::IsConnectedAndIdle() const {
+  DCHECK(CalledOnValidThread());
   NOTIMPLEMENTED();
   return false;
 }
 
 int PepperTransportSocketAdapter::GetPeerAddress(
     net::AddressList* address) const {
+  DCHECK(CalledOnValidThread());
+
   // We don't have a meaningful peer address, but we can't return an
   // error, so we return a INADDR_ANY instead.
   net::IPAddressNumber ip_address(4);
@@ -158,38 +175,46 @@ int PepperTransportSocketAdapter::GetPeerAddress(
 
 int PepperTransportSocketAdapter::GetLocalAddress(
     net::IPEndPoint* address) const {
+  DCHECK(CalledOnValidThread());
   NOTIMPLEMENTED();
   return net::ERR_FAILED;
 }
 
 const net::BoundNetLog& PepperTransportSocketAdapter::NetLog() const {
+  DCHECK(CalledOnValidThread());
   return net_log_;
 }
 
 void PepperTransportSocketAdapter::SetSubresourceSpeculation() {
+  DCHECK(CalledOnValidThread());
   NOTIMPLEMENTED();
 }
 
 void PepperTransportSocketAdapter::SetOmniboxSpeculation() {
+  DCHECK(CalledOnValidThread());
   NOTIMPLEMENTED();
 }
 
 bool PepperTransportSocketAdapter::WasEverUsed() const {
+  DCHECK(CalledOnValidThread());
   NOTIMPLEMENTED();
   return true;
 }
 
 bool PepperTransportSocketAdapter::UsingTCPFastOpen() const {
+  DCHECK(CalledOnValidThread());
   NOTIMPLEMENTED();
   return true;
 }
 
 int64 PepperTransportSocketAdapter::NumBytesRead() const {
+  DCHECK(CalledOnValidThread());
   NOTIMPLEMENTED();
   return 0;
 }
 
 base::TimeDelta PepperTransportSocketAdapter::GetConnectTimeMicros() const {
+  DCHECK(CalledOnValidThread());
   NOTIMPLEMENTED();
   return base::TimeDelta();
 }
@@ -198,6 +223,7 @@ base::TimeDelta PepperTransportSocketAdapter::GetConnectTimeMicros() const {
 int PepperTransportSocketAdapter::ProcessCandidates() {
   DCHECK(CalledOnValidThread());
   DCHECK(!get_address_pending_);
+  DCHECK(transport_.get());
 
   while (true) {
     pp::Var address;
@@ -227,6 +253,7 @@ void PepperTransportSocketAdapter::OnNextAddress(int32_t result) {
 }
 
 void PepperTransportSocketAdapter::OnConnect(int result) {
+  DCHECK(CalledOnValidThread());
   DCHECK(connect_callback_);
 
   if (result == PP_OK)
