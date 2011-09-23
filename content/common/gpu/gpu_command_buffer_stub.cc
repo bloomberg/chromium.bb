@@ -566,7 +566,7 @@ void GpuCommandBufferStub::OnResize(gfx::Size size) {
   // asynchronously.
   uint64 new_backing_store = accelerated_surface_->SetSurfaceSize(size);
   if (new_backing_store) {
-    GpuHostMsg_AcceleratedSurfaceSetIOSurface_Params params;
+    GpuHostMsg_AcceleratedSurfaceNew_Params params;
     params.renderer_id = renderer_id_;
     params.render_view_id = render_view_id_;
     params.window = handle_;
@@ -574,7 +574,7 @@ void GpuCommandBufferStub::OnResize(gfx::Size size) {
     params.height = size.height();
     params.identifier = new_backing_store;
     gpu_channel_manager->Send(
-        new GpuHostMsg_AcceleratedSurfaceSetIOSurface(params));
+        new GpuHostMsg_AcceleratedSurfaceNew(params));
   } else {
     // TODO(kbr): figure out what to do here. It wouldn't be difficult
     // to support the compositor on 10.5, but the performance would be

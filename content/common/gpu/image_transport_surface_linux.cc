@@ -20,11 +20,13 @@
 #include "gpu/command_buffer/service/gpu_scheduler.h"
 #include "third_party/angle/include/EGL/egl.h"
 #include "third_party/angle/include/EGL/eglext.h"
+#include "third_party/mesa/MesaLib/include/GL/osmesa.h"
 #include "ui/gfx/gl/gl_context.h"
 #include "ui/gfx/gl/gl_bindings.h"
 #include "ui/gfx/gl/gl_implementation.h"
 #include "ui/gfx/gl/gl_surface_egl.h"
 #include "ui/gfx/gl/gl_surface_glx.h"
+#include "ui/gfx/gl/gl_surface_osmesa.h"
 #include "ui/gfx/surface/accelerated_surface_linux.h"
 
 namespace {
@@ -50,7 +52,8 @@ class EGLImageTransportSurface : public ImageTransportSurface,
 
  protected:
   // ImageTransportSurface implementation
-  virtual void OnSetSurfaceACK(uint64 surface_id) OVERRIDE;
+  virtual void OnNewSurfaceACK(
+      uint64 surface_id, TransportDIB::Handle surface_handle) OVERRIDE;
   virtual void OnBuffersSwappedACK() OVERRIDE;
   virtual void OnResize(gfx::Size size) OVERRIDE;
 
@@ -68,8 +71,8 @@ class EGLImageTransportSurface : public ImageTransportSurface,
   DISALLOW_COPY_AND_ASSIGN(EGLImageTransportSurface);
 };
 
-// We are backed by an Pbuffer offscreen surface for the purposes of creating a
-// context, but use FBOs to render to X Pixmap backed EGLImages.
+// We render to an off-screen (but mapped) window that the browser process will
+// read from via XComposite
 class GLXImageTransportSurface : public ImageTransportSurface,
                                  public gfx::NativeViewGLSurfaceGLX {
  public:
@@ -87,9 +90,10 @@ class GLXImageTransportSurface : public ImageTransportSurface,
 
  protected:
   // ImageTransportSurface implementation:
-  void OnSetSurfaceACK(uint64 surface_id) OVERRIDE;
-  void OnBuffersSwappedACK() OVERRIDE;
-  void OnResize(gfx::Size size) OVERRIDE;
+  virtual void OnNewSurfaceACK(
+      uint64 surface_id, TransportDIB::Handle surface_handle) OVERRIDE;
+  virtual void OnBuffersSwappedACK() OVERRIDE;
+  virtual void OnResize(gfx::Size size) OVERRIDE;
 
  private:
   virtual ~GLXImageTransportSurface();
@@ -109,6 +113,47 @@ class GLXImageTransportSurface : public ImageTransportSurface,
   scoped_ptr<ImageTransportHelper> helper_;
 
   DISALLOW_COPY_AND_ASSIGN(GLXImageTransportSurface);
+};
+
+// We render to a hunk of shared memory that we get from the browser.
+// Swapping buffers simply means telling the browser to read the contents
+// of the memory.
+class OSMesaImageTransportSurface : public ImageTransportSurface,
+                                    public gfx::GLSurfaceOSMesa {
+ public:
+  OSMesaImageTransportSurface(GpuChannelManager* manager,
+                              int32 render_view_id,
+                              int32 renderer_id,
+                              int32 command_buffer_id);
+
+  // gfx::GLSurface implementation:
+  virtual bool Initialize() OVERRIDE;
+  virtual void Destroy() OVERRIDE;
+  virtual bool IsOffscreen() OVERRIDE;
+  virtual bool SwapBuffers() OVERRIDE;
+  virtual gfx::Size GetSize() OVERRIDE;
+  virtual void* GetHandle() OVERRIDE;
+
+ protected:
+  // ImageTransportSurface implementation:
+  virtual void OnNewSurfaceACK(
+      uint64 surface_id, TransportDIB::Handle surface_handle) OVERRIDE;
+  virtual void OnBuffersSwappedACK() OVERRIDE;
+  virtual void OnResize(gfx::Size size) OVERRIDE;
+
+ private:
+  virtual ~OSMesaImageTransportSurface();
+
+  // Tell the browser to release the surface.
+  void ReleaseSurface();
+
+  scoped_ptr<TransportDIB> shared_mem_;
+  uint32 shared_id_;
+  gfx::Size size_;
+
+  scoped_ptr<ImageTransportHelper> helper_;
+
+  DISALLOW_COPY_AND_ASSIGN(OSMesaImageTransportSurface);
 };
 
 EGLImageTransportSurface::EGLImageTransportSurface(
@@ -145,6 +190,8 @@ void EGLImageTransportSurface::Destroy() {
   PbufferGLSurfaceEGL::Destroy();
 }
 
+// Make sure that buffer swaps occur for the surface, so we can send the data
+// to the actual onscreen surface in the browser
 bool EGLImageTransportSurface::IsOffscreen() {
   return false;
 }
@@ -189,11 +236,11 @@ void EGLImageTransportSurface::OnResize(gfx::Size size) {
                             0);
   glFlush();
 
-  GpuHostMsg_AcceleratedSurfaceSetIOSurface_Params params;
+  GpuHostMsg_AcceleratedSurfaceNew_Params params;
   params.width = size.width();
   params.height = size.height();
   params.identifier = back_surface_->pixmap();
-  helper_->SendAcceleratedSurfaceSetIOSurface(params);
+  helper_->SendAcceleratedSurfaceNew(params);
 
   helper_->SetScheduled(false);
 }
@@ -225,8 +272,8 @@ gfx::Size EGLImageTransportSurface::GetSize() {
   return back_surface_->size();
 }
 
-void EGLImageTransportSurface::OnSetSurfaceACK(
-    uint64 surface_id) {
+void EGLImageTransportSurface::OnNewSurfaceACK(
+    uint64 surface_id, TransportDIB::Handle /*surface_handle*/) {
   DCHECK_EQ(back_surface_->pixmap(), surface_id);
   helper_->SetScheduled(true);
 }
@@ -331,11 +378,11 @@ void GLXImageTransportSurface::OnResize(gfx::Size size) {
   XResizeWindow(dpy, window_, size_.width(), size_.height());
   XFlush(dpy);
 
-  GpuHostMsg_AcceleratedSurfaceSetIOSurface_Params params;
+  GpuHostMsg_AcceleratedSurfaceNew_Params params;
   params.width = size_.width();
   params.height = size_.height();
   params.identifier = window_;
-  helper_->SendAcceleratedSurfaceSetIOSurface(params);
+  helper_->SendAcceleratedSurfaceNew(params);
 
   helper_->SetScheduled(false);
 }
@@ -363,8 +410,8 @@ void GLXImageTransportSurface::OnMakeCurrent(gfx::GLContext* context) {
   }
 }
 
-void GLXImageTransportSurface::OnSetSurfaceACK(
-    uint64 surface_id) {
+void GLXImageTransportSurface::OnNewSurfaceACK(
+    uint64 surface_id, TransportDIB::Handle /*surface_handle*/) {
   DCHECK(!bound_);
   bound_ = true;
   helper_->SetScheduled(true);
@@ -372,6 +419,117 @@ void GLXImageTransportSurface::OnSetSurfaceACK(
 
 void GLXImageTransportSurface::OnBuffersSwappedACK() {
   helper_->SetScheduled(true);
+}
+
+OSMesaImageTransportSurface::OSMesaImageTransportSurface(
+    GpuChannelManager* manager,
+    int32 render_view_id,
+    int32 renderer_id,
+    int32 command_buffer_id)
+  : gfx::GLSurfaceOSMesa(OSMESA_RGBA, gfx::Size(1, 1)),
+    size_(gfx::Size(1, 1)) {
+  helper_.reset(new ImageTransportHelper(this,
+                                         manager,
+                                         render_view_id,
+                                         renderer_id,
+                                         command_buffer_id));
+}
+
+OSMesaImageTransportSurface::~OSMesaImageTransportSurface() {
+  Destroy();
+}
+
+bool OSMesaImageTransportSurface::Initialize() {
+  if (!helper_->Initialize())
+    return false;
+  return gfx::GLSurfaceOSMesa::Initialize();
+}
+
+void OSMesaImageTransportSurface::Destroy() {
+  if (shared_mem_.get())
+    ReleaseSurface();
+
+  helper_->Destroy();
+  gfx::GLSurfaceOSMesa::Destroy();
+}
+
+// Make sure that buffer swaps occur for the surface, so we can send the data
+// to the actual onscreen surface in the browser
+bool OSMesaImageTransportSurface::IsOffscreen() {
+  return false;
+}
+
+void OSMesaImageTransportSurface::ReleaseSurface() {
+  GpuHostMsg_AcceleratedSurfaceRelease_Params params;
+  params.identifier = shared_id_;
+  helper_->SendAcceleratedSurfaceRelease(params);
+
+  shared_mem_.reset();
+  shared_id_ = 0;
+}
+
+void OSMesaImageTransportSurface::OnResize(gfx::Size size) {
+  if (shared_mem_.get())
+    ReleaseSurface();
+
+  // Now that the shared memory buffer is gone, we need to change OSMesa to
+  // point at something valid, so we'll let it point to the buffer in the super
+  // class.  This would be really bad since that buffer has a different size,
+  // but we don't allow any drawing to take place until we reset the surface
+  // back to a new buffer of shared memory.
+  helper_->MakeCurrent();
+
+  size_ = size;
+
+  GpuHostMsg_AcceleratedSurfaceNew_Params params;
+  params.width = size_.width();
+  params.height = size_.height();
+  params.identifier = 0; // id comes from the browser with the shared mem
+  helper_->SendAcceleratedSurfaceNew(params);
+
+  helper_->SetScheduled(false);
+}
+
+void OSMesaImageTransportSurface::OnNewSurfaceACK(
+    uint64 surface_id, TransportDIB::Handle surface_handle) {
+  shared_id_ = surface_id;
+  shared_mem_.reset(TransportDIB::Map(surface_handle));
+  DCHECK_NE(shared_mem_.get(), static_cast<void*>(NULL));
+
+  // When we get the shared memory buffer back we can use that for OSMesa to
+  // write in, so we give it to OSMesa.
+  helper_->MakeCurrent();
+
+  helper_->SetScheduled(true);
+}
+
+bool OSMesaImageTransportSurface::SwapBuffers() {
+  DCHECK_NE(shared_mem_.get(), static_cast<void*>(NULL));
+
+  // Copy the OSMesa buffer to the shared memory
+  memcpy(shared_mem_->memory(), GetHandle(), size_.GetArea() * 4);
+
+  GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params params;
+  params.surface_id = shared_id_;
+  helper_->SendAcceleratedSurfaceBuffersSwapped(params);
+
+  helper_->SetScheduled(false);
+  return true;
+}
+
+void OSMesaImageTransportSurface::OnBuffersSwappedACK() {
+  helper_->SetScheduled(true);
+}
+
+gfx::Size OSMesaImageTransportSurface::GetSize() {
+  return size_;
+}
+
+void* OSMesaImageTransportSurface::GetHandle() {
+  if (shared_mem_.get())
+    return shared_mem_->memory();
+  else
+    return GLSurfaceOSMesa::GetHandle();
 }
 
 }  // namespace
@@ -395,6 +553,12 @@ scoped_refptr<gfx::GLSurface> ImageTransportSurface::CreateSurface(
                                              render_view_id,
                                              renderer_id,
                                              command_buffer_id);
+      break;
+    case gfx::kGLImplementationOSMesaGL:
+      surface = new OSMesaImageTransportSurface(manager,
+                                                render_view_id,
+                                                renderer_id,
+                                                command_buffer_id);
       break;
     default:
       NOTREACHED();
@@ -441,8 +605,8 @@ void ImageTransportHelper::Destroy() {
 bool ImageTransportHelper::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ImageTransportHelper, message)
-    IPC_MESSAGE_HANDLER(AcceleratedSurfaceMsg_SetSurfaceACK,
-                        OnSetSurfaceACK)
+    IPC_MESSAGE_HANDLER(AcceleratedSurfaceMsg_NewACK,
+                        OnNewSurfaceACK)
     IPC_MESSAGE_HANDLER(AcceleratedSurfaceMsg_BuffersSwappedACK,
                         OnBuffersSwappedACK)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -458,12 +622,12 @@ void ImageTransportHelper::SendAcceleratedSurfaceRelease(
   manager_->Send(new GpuHostMsg_AcceleratedSurfaceRelease(params));
 }
 
-void ImageTransportHelper::SendAcceleratedSurfaceSetIOSurface(
-    GpuHostMsg_AcceleratedSurfaceSetIOSurface_Params params) {
+void ImageTransportHelper::SendAcceleratedSurfaceNew(
+    GpuHostMsg_AcceleratedSurfaceNew_Params params) {
   params.renderer_id = renderer_id_;
   params.render_view_id = render_view_id_;
   params.route_id = route_id_;
-  manager_->Send(new GpuHostMsg_AcceleratedSurfaceSetIOSurface(params));
+  manager_->Send(new GpuHostMsg_AcceleratedSurfaceNew(params));
 }
 
 void ImageTransportHelper::SendAcceleratedSurfaceBuffersSwapped(
@@ -482,8 +646,9 @@ void ImageTransportHelper::SetScheduled(bool is_scheduled) {
   scheduler->SetScheduled(is_scheduled);
 }
 
-void ImageTransportHelper::OnSetSurfaceACK(uint64 surface_id) {
-  surface_->OnSetSurfaceACK(surface_id);
+void ImageTransportHelper::OnNewSurfaceACK(
+    uint64 surface_id, TransportDIB::Handle surface_handle) {
+  surface_->OnNewSurfaceACK(surface_id, surface_handle);
 }
 
 void ImageTransportHelper::OnBuffersSwappedACK() {
@@ -492,6 +657,13 @@ void ImageTransportHelper::OnBuffersSwappedACK() {
 
 void ImageTransportHelper::Resize(gfx::Size size) {
   surface_->OnResize(size);
+}
+
+bool ImageTransportHelper::MakeCurrent() {
+  gpu::gles2::GLES2Decoder* decoder = Decoder();
+  if (!decoder)
+    return false;
+  return decoder->MakeCurrent();
 }
 
 gpu::GpuScheduler* ImageTransportHelper::Scheduler() {

@@ -7,4 +7,5 @@ include_rules = [
   "+skia",
   "+third_party/angle/include",
   "+third_party/openmax",
+  "+third_party/mesa",
 ]

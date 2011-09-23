@@ -22,14 +22,16 @@ namespace {
 class AcceleratedSurfaceContainerTouchEGL
     : public AcceleratedSurfaceContainerTouch {
  public:
-  AcceleratedSurfaceContainerTouchEGL(const gfx::Size& size,
-                                      uint64 surface_handle);
+  explicit AcceleratedSurfaceContainerTouchEGL(const gfx::Size& size);
+
+  virtual bool Initialize(uint64* surface_id) OVERRIDE;
+
   // TextureGL implementation
   virtual void Draw(const ui::TextureDrawParams& params,
                     const gfx::Rect& clip_bounds_in_texture) OVERRIDE;
 
  private:
-  ~AcceleratedSurfaceContainerTouchEGL();
+  virtual ~AcceleratedSurfaceContainerTouchEGL();
 
   void* image_;
 
@@ -39,19 +41,46 @@ class AcceleratedSurfaceContainerTouchEGL
 class AcceleratedSurfaceContainerTouchGLX
     : public AcceleratedSurfaceContainerTouch {
  public:
-  AcceleratedSurfaceContainerTouchGLX(const gfx::Size& size,
-                                      uint64 surface_handle);
+  explicit AcceleratedSurfaceContainerTouchGLX(const gfx::Size& size);
+
+  virtual bool Initialize(uint64* surface_id) OVERRIDE;
+
   // TextureGL implementation
   virtual void Draw(const ui::TextureDrawParams& params,
                     const gfx::Rect& clip_bounds_in_texture) OVERRIDE;
 
  private:
-  ~AcceleratedSurfaceContainerTouchGLX();
+  virtual ~AcceleratedSurfaceContainerTouchGLX();
 
   XID pixmap_;
   XID glx_pixmap_;
 
   DISALLOW_COPY_AND_ASSIGN(AcceleratedSurfaceContainerTouchGLX);
+};
+
+class AcceleratedSurfaceContainerTouchOSMesa
+    : public AcceleratedSurfaceContainerTouch {
+ public:
+  explicit AcceleratedSurfaceContainerTouchOSMesa(const gfx::Size& size);
+
+  virtual bool Initialize(uint64* surface_id) OVERRIDE;
+
+  // TextureGL implementation
+  virtual void Draw(const ui::TextureDrawParams& params,
+                    const gfx::Rect& clip_bounds_in_texture) OVERRIDE;
+
+  // Some implementations of this class use shared memory, this gives the handle
+  // to the shared buffer, which is part of the surface container.
+  // When shared memory is not used, this will return
+  // TransportDIB::DefaultHandleValue().
+  virtual TransportDIB::Handle Handle() const OVERRIDE;
+
+ private:
+  virtual ~AcceleratedSurfaceContainerTouchOSMesa();
+
+  scoped_ptr<TransportDIB> shared_mem_;
+
+  DISALLOW_COPY_AND_ASSIGN(AcceleratedSurfaceContainerTouchOSMesa);
 };
 
 class ScopedPtrXFree {
@@ -62,17 +91,19 @@ class ScopedPtrXFree {
 };
 
 AcceleratedSurfaceContainerTouchEGL::AcceleratedSurfaceContainerTouchEGL(
-    const gfx::Size& size,
-    uint64 surface_handle)
+    const gfx::Size& size)
     : AcceleratedSurfaceContainerTouch(size),
       image_(NULL) {
+}
+
+bool AcceleratedSurfaceContainerTouchEGL::Initialize(uint64* surface_id) {
   ui::SharedResources* instance = ui::SharedResources::GetInstance();
   DCHECK(instance);
   instance->MakeSharedContextCurrent();
 
   image_ = eglCreateImageKHR(
       gfx::GLSurfaceEGL::GetHardwareDisplay(), EGL_NO_CONTEXT,
-      EGL_NATIVE_PIXMAP_KHR, reinterpret_cast<void*>(surface_handle), NULL);
+      EGL_NATIVE_PIXMAP_KHR, reinterpret_cast<void*>(*surface_id), NULL);
 
   glGenTextures(1, &texture_id_);
   glBindTexture(GL_TEXTURE_2D, texture_id_);
@@ -82,6 +113,8 @@ AcceleratedSurfaceContainerTouchEGL::AcceleratedSurfaceContainerTouchEGL(
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
   glEGLImageTargetTexture2DOES(GL_TEXTURE_2D, image_);
   glFlush();
+
+  return true;
 }
 
 AcceleratedSurfaceContainerTouchEGL::~AcceleratedSurfaceContainerTouchEGL() {
@@ -115,16 +148,21 @@ void AcceleratedSurfaceContainerTouchEGL::Draw(
 }
 
 AcceleratedSurfaceContainerTouchGLX::AcceleratedSurfaceContainerTouchGLX(
-    const gfx::Size& size,
-    uint64 surface_handle)
+    const gfx::Size& size)
     : AcceleratedSurfaceContainerTouch(size),
       pixmap_(0),
       glx_pixmap_(0) {
+}
+
+bool AcceleratedSurfaceContainerTouchGLX::Initialize(uint64* surface_id) {
   ui::SharedResources* instance = ui::SharedResources::GetInstance();
   DCHECK(instance);
   instance->MakeSharedContextCurrent();
 
   // Create pixmap from window.
+  // We receive a window here rather than a pixmap directly because drivers
+  // require (or required) that the pixmap used to create the GL texture be
+  // created in the same process as the texture.
   Display* dpy = gfx::GLSurfaceGLX::GetDisplay();
   int event_base, error_base;
   if (XCompositeQueryExtension(dpy, &event_base, &error_base)) {
@@ -132,10 +170,10 @@ AcceleratedSurfaceContainerTouchGLX::AcceleratedSurfaceContainerTouchGLX(
     XCompositeQueryVersion(dpy, &major, &minor);
     if (major == 0 && minor < 2) {
       LOG(ERROR) << "Pixmap from window not supported.";
-      return;
+      return false;
     }
   }
-  pixmap_ = XCompositeNameWindowPixmap(dpy, surface_handle);
+  pixmap_ = XCompositeNameWindowPixmap(dpy, *surface_id);
 
   // Wrap the pixmap in a GLXPixmap
   int screen = DefaultScreen(dpy);
@@ -182,7 +220,7 @@ AcceleratedSurfaceContainerTouchGLX::AcceleratedSurfaceContainerTouchGLX(
     LOG(ERROR)
       << "Could not find configuration suitable for binding a pixmap "
       << "as a texture.";
-    return;
+    return false;
   }
 
   const int pixmapAttribs[] = {
@@ -201,6 +239,8 @@ AcceleratedSurfaceContainerTouchGLX::AcceleratedSurfaceContainerTouchGLX(
   glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+  return true;
 }
 
 AcceleratedSurfaceContainerTouchGLX::~AcceleratedSurfaceContainerTouchGLX() {
@@ -231,24 +271,92 @@ void AcceleratedSurfaceContainerTouchGLX::Draw(
   glXReleaseTexImageEXT(dpy, glx_pixmap_, GLX_FRONT_LEFT_EXT);
 }
 
+AcceleratedSurfaceContainerTouchOSMesa::AcceleratedSurfaceContainerTouchOSMesa(
+    const gfx::Size& size)
+      : AcceleratedSurfaceContainerTouch(size) {
+}
+
+bool AcceleratedSurfaceContainerTouchOSMesa::Initialize(uint64* surface_id) {
+  static uint32 next_id = 1;
+
+  ui::SharedResources* instance = ui::SharedResources::GetInstance();
+  DCHECK(instance);
+  instance->MakeSharedContextCurrent();
+
+  // We expect to make the id here, so don't want the other end giving us one
+  DCHECK_EQ(*surface_id, static_cast<uint64>(0));
+
+  // It's possible that this ID gneration could clash with IDs from other
+  // AcceleratedSurfaceContainerTouch* objects, however we should never have
+  // ids active from more than one type at the same time, so we have free
+  // reign of the id namespace.
+  *surface_id = next_id++;
+
+  shared_mem_.reset(
+      TransportDIB::Create(size_.GetArea() * 4,  // GL_RGBA=4 B/px
+                           *surface_id));
+  // Create texture.
+  glGenTextures(1, &texture_id_);
+  glBindTexture(GL_TEXTURE_2D, texture_id_);
+  glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+  // we generate the ID to be used here.
+  return true;
+}
+
+void AcceleratedSurfaceContainerTouchOSMesa::Draw(
+    const ui::TextureDrawParams& params,
+    const gfx::Rect& clip_bounds_in_texture) {
+  ui::SharedResources* instance = ui::SharedResources::GetInstance();
+  DCHECK(instance);
+
+  if (shared_mem_.get()) {
+    glBindTexture(GL_TEXTURE_2D, texture_id_);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,
+                 size_.width(), size_.height(), 0,
+                 GL_RGBA, GL_UNSIGNED_BYTE, shared_mem_->memory());
+
+    DrawInternal(*instance->program_no_swizzle(),
+                 params,
+                 clip_bounds_in_texture);
+  }
+}
+
+TransportDIB::Handle AcceleratedSurfaceContainerTouchOSMesa::Handle() const {
+  if (shared_mem_.get())
+    return shared_mem_->handle();
+  else
+    return TransportDIB::DefaultHandleValue();
+}
+
+AcceleratedSurfaceContainerTouchOSMesa::
+    ~AcceleratedSurfaceContainerTouchOSMesa() {
+}
+
 }  // namespace
 
 AcceleratedSurfaceContainerTouch::AcceleratedSurfaceContainerTouch(
     const gfx::Size& size) : TextureGL(size) {
 }
 
+TransportDIB::Handle AcceleratedSurfaceContainerTouch::Handle() const {
+  return TransportDIB::DefaultHandleValue();
+}
+
 // static
 AcceleratedSurfaceContainerTouch*
 AcceleratedSurfaceContainerTouch::CreateAcceleratedSurfaceContainer(
-    const gfx::Size& size,
-    uint64 surface_handle) {
+    const gfx::Size& size) {
   switch (gfx::GetGLImplementation()) {
     case gfx::kGLImplementationDesktopGL:
-      return new AcceleratedSurfaceContainerTouchGLX(size,
-                                                     surface_handle);
+      return new AcceleratedSurfaceContainerTouchGLX(size);
     case gfx::kGLImplementationEGLGLES2:
-      return new AcceleratedSurfaceContainerTouchEGL(size,
-                                                     surface_handle);
+      return new AcceleratedSurfaceContainerTouchEGL(size);
+    case gfx::kGLImplementationOSMesaGL:
+      return new AcceleratedSurfaceContainerTouchOSMesa(size);
     default:
       NOTREACHED();
       return NULL;

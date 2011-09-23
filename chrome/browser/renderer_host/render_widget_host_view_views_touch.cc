@@ -197,12 +197,21 @@ gfx::PluginWindowHandle RenderWidgetHostViewViews::GetCompositingSurface() {
   return 1;
 }
 
-void RenderWidgetHostViewViews::AcceleratedSurfaceSetIOSurface(
-    int32 width, int32 height, uint64 surface_id) {
-  accelerated_surface_containers_[surface_id] =
-    AcceleratedSurfaceContainerTouch::CreateAcceleratedSurfaceContainer(
-        gfx::Size(width, height),
-        surface_id);
+void RenderWidgetHostViewViews::AcceleratedSurfaceNew(
+    int32 width,
+    int32 height,
+    uint64* surface_id,
+    TransportDIB::Handle* surface_handle) {
+  scoped_ptr<AcceleratedSurfaceContainerTouch> surface(
+      AcceleratedSurfaceContainerTouch::CreateAcceleratedSurfaceContainer(
+          gfx::Size(width, height)));
+  if (!surface->Initialize(surface_id)) {
+    LOG(ERROR) << "Failed to create AcceleratedSurfaceContainer";
+    return;
+  }
+  *surface_handle = surface->Handle();
+
+  accelerated_surface_containers_[*surface_id] = surface.release();
 }
 
 void RenderWidgetHostViewViews::AcceleratedSurfaceRelease(uint64 surface_id) {

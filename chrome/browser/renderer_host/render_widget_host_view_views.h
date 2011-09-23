@@ -181,8 +181,11 @@ class RenderWidgetHostViewViews : public RenderWidgetHostView,
   virtual views::View* GetOwnerViewOfTextInputClient() OVERRIDE;
 
 #if defined(TOUCH_UI)
-  virtual void AcceleratedSurfaceSetIOSurface(
-      int32 width, int32 height, uint64 surface_id) OVERRIDE;
+  virtual void AcceleratedSurfaceNew(
+      int32 width,
+      int32 height,
+      uint64* surface_id,
+      TransportDIB::Handle* surface_handle) OVERRIDE;
   virtual void AcceleratedSurfaceBuffersSwapped(
       uint64 surface_id,
       int32 route_id,

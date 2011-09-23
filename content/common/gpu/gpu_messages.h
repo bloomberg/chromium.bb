@@ -31,7 +31,7 @@ IPC_STRUCT_BEGIN(GPUCreateCommandBufferConfig)
 IPC_STRUCT_END()
 
 #if defined(OS_MACOSX)
-IPC_STRUCT_BEGIN(GpuHostMsg_AcceleratedSurfaceSetIOSurface_Params)
+IPC_STRUCT_BEGIN(GpuHostMsg_AcceleratedSurfaceNew_Params)
   IPC_STRUCT_MEMBER(int32, renderer_id)
   IPC_STRUCT_MEMBER(int32, render_view_id)
   IPC_STRUCT_MEMBER(gfx::PluginWindowHandle, window)
@@ -51,7 +51,7 @@ IPC_STRUCT_END()
 #endif
 
 #if defined(TOUCH_UI)
-IPC_STRUCT_BEGIN(GpuHostMsg_AcceleratedSurfaceSetIOSurface_Params)
+IPC_STRUCT_BEGIN(GpuHostMsg_AcceleratedSurfaceNew_Params)
   IPC_STRUCT_MEMBER(int32, renderer_id)
   IPC_STRUCT_MEMBER(int32, render_view_id)
   IPC_STRUCT_MEMBER(int32, width)
@@ -158,8 +158,9 @@ IPC_MESSAGE_CONTROL2(GpuMsg_ResizeViewACK,
 
 #if defined(TOUCH_UI)
 // Tells the GPU process that it's safe to start rendering to the surface.
-IPC_MESSAGE_ROUTED1(AcceleratedSurfaceMsg_SetSurfaceACK,
-                    uint64 /* surface_id */)
+IPC_MESSAGE_ROUTED2(AcceleratedSurfaceMsg_NewACK,
+                    uint64 /* surface_id */,
+                    TransportDIB::Handle /* shared memory buffer */)
 
 // Tells the GPU process that the browser process handled the swap
 // buffers request with the given number.
@@ -250,12 +251,12 @@ IPC_MESSAGE_CONTROL4(GpuHostMsg_ResizeView,
 #endif
 
 #if defined(OS_MACOSX) || defined(TOUCH_UI)
-// This message is sent from the GPU process to the browser to indicate that a
-// new backing store was allocated. The renderer ID and render view ID are
-// needed in order to uniquely identify the RenderWidgetHostView on the
-// browser side.
-IPC_MESSAGE_CONTROL1(GpuHostMsg_AcceleratedSurfaceSetIOSurface,
-                     GpuHostMsg_AcceleratedSurfaceSetIOSurface_Params)
+// This message is sent from the GPU process to the browser to notify about a
+// new or resized surface in the GPU.  The browser allocates any resources
+// needed for it on its end and replies with an ACK containing any shared
+// resources/identifiers to be used in the GPU.
+IPC_MESSAGE_CONTROL1(GpuHostMsg_AcceleratedSurfaceNew,
+                     GpuHostMsg_AcceleratedSurfaceNew_Params)
 
 // This message notifies the browser process that the renderer
 // swapped the buffers associated with the given "window", which

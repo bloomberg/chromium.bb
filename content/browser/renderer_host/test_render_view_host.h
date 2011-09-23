@@ -138,8 +138,9 @@ class TestRenderWidgetHostView : public RenderWidgetHostView {
       bool is_pinned_to_left, bool is_pinned_to_right) { }
 
 #if defined(TOUCH_UI)
-  virtual void AcceleratedSurfaceSetIOSurface(
-      int32 width, int32 height, uint64 surface_id) { }
+  virtual void AcceleratedSurfaceNew(
+      int32 width, int32 height, uint64* surface_id,
+      TransportDIB::Handle* surface_handle) { }
   virtual void AcceleratedSurfaceBuffersSwapped(
       uint64 surface_id,
       int32 route_id,

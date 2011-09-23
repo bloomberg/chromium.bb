@@ -12,12 +12,13 @@
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_message.h"
 #include "ui/gfx/size.h"
+#include "ui/gfx/surface/transport_dib.h"
 
 class GpuChannelManager;
 
-struct GpuHostMsg_AcceleratedSurfaceRelease_Params;
-struct GpuHostMsg_AcceleratedSurfaceSetIOSurface_Params;
+struct GpuHostMsg_AcceleratedSurfaceNew_Params;
 struct GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params;
+struct GpuHostMsg_AcceleratedSurfaceRelease_Params;
 
 namespace gfx {
 class GLSurface;
@@ -33,7 +34,8 @@ class GLES2Decoder;
 
 class ImageTransportSurface {
  public:
-  virtual void OnSetSurfaceACK(uint64 surface_id) = 0;
+  virtual void OnNewSurfaceACK(
+      uint64 surface_id, TransportDIB::Handle surface_handle) = 0;
   virtual void OnBuffersSwappedACK() = 0;
   virtual void OnResize(gfx::Size size) = 0;
 
@@ -63,22 +65,25 @@ class ImageTransportHelper : public IPC::Channel::Listener {
 
   // Helper send functions. Caller fills in the surface specific params
   // like size and surface id. The helper fills in the rest.
-  void SendAcceleratedSurfaceRelease(
-      GpuHostMsg_AcceleratedSurfaceRelease_Params params);
-  void SendAcceleratedSurfaceSetIOSurface(
-      GpuHostMsg_AcceleratedSurfaceSetIOSurface_Params params);
+  void SendAcceleratedSurfaceNew(
+      GpuHostMsg_AcceleratedSurfaceNew_Params params);
   void SendAcceleratedSurfaceBuffersSwapped(
       GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params params);
+  void SendAcceleratedSurfaceRelease(
+      GpuHostMsg_AcceleratedSurfaceRelease_Params params);
 
   // Whether or not we should execute more commands.
   void SetScheduled(bool is_scheduled);
+
+  // Make the surface's context current
+  bool MakeCurrent();
 
  private:
   gpu::GpuScheduler* Scheduler();
   gpu::gles2::GLES2Decoder* Decoder();
 
   // IPC::Message handlers.
-  void OnSetSurfaceACK(uint64 surface_id);
+  void OnNewSurfaceACK(uint64 surface_id, TransportDIB::Handle surface_handle);
   void OnBuffersSwappedACK();
 
   // Backbuffer resize callback.

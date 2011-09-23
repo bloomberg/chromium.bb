@@ -159,14 +159,20 @@ bool GpuProcessHostUIShim::OnControlMessageReceived(
     IPC_MESSAGE_HANDLER(GpuHostMsg_ResizeView, OnResizeView)
 #endif
 
+#if defined(OS_MACOSX)
+    IPC_MESSAGE_HANDLER(GpuHostMsg_AcceleratedSurfaceNew,
+                        OnAcceleratedSurfaceNew)
+#endif
+
 #if defined(OS_MACOSX) || defined(TOUCH_UI)
-    IPC_MESSAGE_HANDLER(GpuHostMsg_AcceleratedSurfaceSetIOSurface,
-                        OnAcceleratedSurfaceSetIOSurface)
     IPC_MESSAGE_HANDLER(GpuHostMsg_AcceleratedSurfaceBuffersSwapped,
                         OnAcceleratedSurfaceBuffersSwapped)
 #endif
 
 #if defined(TOUCH_UI)
+    IPC_MESSAGE_HANDLER(GpuHostMsg_AcceleratedSurfaceNew,
+                        OnAcceleratedSurfaceNew)
+
     IPC_MESSAGE_HANDLER(GpuHostMsg_AcceleratedSurfaceRelease,
                         OnAcceleratedSurfaceRelease)
 #endif
@@ -234,8 +240,8 @@ void GpuProcessHostUIShim::OnResizeView(int32 renderer_id,
 
 #if defined(OS_MACOSX) || defined(TOUCH_UI)
 
-void GpuProcessHostUIShim::OnAcceleratedSurfaceSetIOSurface(
-    const GpuHostMsg_AcceleratedSurfaceSetIOSurface_Params& params) {
+void GpuProcessHostUIShim::OnAcceleratedSurfaceNew(
+    const GpuHostMsg_AcceleratedSurfaceNew_Params& params) {
   RenderViewHost* host = RenderViewHost::FromID(params.renderer_id,
                                                 params.render_view_id);
   if (!host)
@@ -249,10 +255,14 @@ void GpuProcessHostUIShim::OnAcceleratedSurfaceSetIOSurface(
                                        params.height,
                                        params.identifier);
 #elif defined(TOUCH_UI)
-  view->AcceleratedSurfaceSetIOSurface(
-      params.width, params.height, params.identifier);
-  Send(new AcceleratedSurfaceMsg_SetSurfaceACK(
-      params.route_id, params.identifier));
+  uint64 surface_id = params.identifier;
+  TransportDIB::Handle surface_handle;
+
+  view->AcceleratedSurfaceNew(
+      params.width, params.height, &surface_id, &surface_handle);
+
+  Send(new AcceleratedSurfaceMsg_NewACK(
+      params.route_id, surface_id, surface_handle));
 #endif
 }
 

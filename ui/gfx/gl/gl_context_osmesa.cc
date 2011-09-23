@@ -29,6 +29,7 @@ bool GLContextOSMesa::Initialize(GLSurface* compatible_surface) {
 
   GLuint format =
       static_cast<GLSurfaceOSMesa*>(compatible_surface)->GetFormat();
+  DCHECK_NE(format, (unsigned)0);
   context_ = OSMesaCreateContextExt(format,
                                     0,  // depth bits
                                     0,  // stencil bits
@@ -54,7 +55,7 @@ bool GLContextOSMesa::MakeCurrent(GLSurface* surface) {
 
   gfx::Size size = surface->GetSize();
 
-  if (!OSMesaMakeCurrent(static_cast<OSMesaContext>(context_),
+  if (!OSMesaMakeCurrent(context_,
                          surface->GetHandle(),
                          GL_UNSIGNED_BYTE,
                          size.width(),

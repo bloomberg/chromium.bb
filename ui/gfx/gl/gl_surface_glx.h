@@ -64,7 +64,7 @@ class GL_EXPORT NativeViewGLSurfaceGLX : public GLSurfaceGLX {
 };
 
 // A surface used to render to an offscreen pbuffer.
-class PbufferGLSurfaceGLX : public GLSurfaceGLX {
+class GL_EXPORT PbufferGLSurfaceGLX : public GLSurfaceGLX {
  public:
   explicit PbufferGLSurfaceGLX(const gfx::Size& size);
   virtual ~PbufferGLSurfaceGLX();

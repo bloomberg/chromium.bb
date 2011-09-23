@@ -26,9 +26,9 @@ class Size;
 }
 
 struct GPUCreateCommandBufferConfig;
-struct GpuHostMsg_AcceleratedSurfaceRelease_Params;
-struct GpuHostMsg_AcceleratedSurfaceSetIOSurface_Params;
+struct GpuHostMsg_AcceleratedSurfaceNew_Params;
 struct GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params;
+struct GpuHostMsg_AcceleratedSurfaceRelease_Params;
 
 namespace IPC {
 struct ChannelHandle;
@@ -105,8 +105,8 @@ class GpuProcessHostUIShim
 #endif
 
 #if defined(OS_MACOSX) || defined(TOUCH_UI)
-  void OnAcceleratedSurfaceSetIOSurface(
-      const GpuHostMsg_AcceleratedSurfaceSetIOSurface_Params& params);
+  void OnAcceleratedSurfaceNew(
+      const GpuHostMsg_AcceleratedSurfaceNew_Params& params);
   void OnAcceleratedSurfaceBuffersSwapped(
       const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params);
 #endif
