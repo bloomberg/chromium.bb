@@ -2931,6 +2931,7 @@
         'browser/sync/internal_api/syncapi_unittest.cc',
         'browser/sync/js/js_arg_list_unittest.cc',
         'browser/sync/js/js_event_details_unittest.cc',
+        'browser/sync/js/js_mutation_event_observer_unittest.cc',
         'browser/sync/js/js_sync_manager_observer_unittest.cc',
         'browser/sync/notifier/cache_invalidation_packet_handler_unittest.cc',
         'browser/sync/notifier/chrome_invalidation_client_unittest.cc',

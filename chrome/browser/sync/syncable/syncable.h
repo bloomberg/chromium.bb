@@ -627,7 +627,8 @@ struct WriteTransactionInfo {
   base::DictionaryValue* ToValue(size_t max_mutations_size) const;
 
   int64 id;
-  // TODO(akalin): Use Location when it becomes assignable.
+  // If tracked_objects::Location becomes assignable, we can use that
+  // instead.
   std::string location_string;
   WriterTag writer;
   ImmutableEntryKernelMutationMap mutations;

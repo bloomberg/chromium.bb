@@ -34,9 +34,9 @@
 #include "chrome/browser/sync/js/js_backend.h"
 #include "chrome/browser/sync/js/js_event_details.h"
 #include "chrome/browser/sync/js/js_event_handler.h"
+#include "chrome/browser/sync/js/js_mutation_event_observer.h"
 #include "chrome/browser/sync/js/js_reply_handler.h"
 #include "chrome/browser/sync/js/js_sync_manager_observer.h"
-#include "chrome/browser/sync/js/js_transaction_observer.h"
 #include "chrome/browser/sync/notifier/sync_notifier.h"
 #include "chrome/browser/sync/notifier/sync_notifier_observer.h"
 #include "chrome/browser/sync/protocol/proto_value_conversions.h"
@@ -61,8 +61,8 @@ using browser_sync::JsEventDetails;
 using browser_sync::JsEventHandler;
 using browser_sync::JsEventHandler;
 using browser_sync::JsReplyHandler;
+using browser_sync::JsMutationEventObserver;
 using browser_sync::JsSyncManagerObserver;
-using browser_sync::JsTransactionObserver;
 using browser_sync::ModelSafeWorkerRegistrar;
 using browser_sync::kNigoriTag;
 using browser_sync::KeyParams;
@@ -549,7 +549,7 @@ class SyncManager::SyncInternal
   JsMessageHandlerMap js_message_handlers_;
   WeakHandle<JsEventHandler> js_event_handler_;
   JsSyncManagerObserver js_sync_manager_observer_;
-  JsTransactionObserver js_transaction_observer_;
+  JsMutationEventObserver js_mutation_event_observer_;
 };
 const int SyncManager::SyncInternal::kDefaultNudgeDelayMilliseconds = 200;
 const int SyncManager::SyncInternal::kPreferencesNudgeDelayMilliseconds = 2000;
@@ -756,7 +756,6 @@ bool SyncManager::SyncInternal::Init(
 
   sync_notifier_.reset(sync_notifier);
 
-  AddChangeObserver(&js_sync_manager_observer_);
   AddObserver(&js_sync_manager_observer_);
   SetJsEventHandler(event_handler);
 
@@ -897,7 +896,8 @@ bool SyncManager::SyncInternal::OpenDirectory() {
   }
 
   connection_manager()->set_client_id(lookup->cache_guid());
-  lookup->AddTransactionObserver(&js_transaction_observer_);
+  lookup->AddTransactionObserver(&js_mutation_event_observer_);
+  AddChangeObserver(&js_mutation_event_observer_);
   return true;
 }
 
@@ -1262,7 +1262,6 @@ void SyncManager::SyncInternal::Shutdown() {
   scheduler_.reset();
 
   SetJsEventHandler(WeakHandle<JsEventHandler>());
-  RemoveChangeObserver(&js_sync_manager_observer_);
   RemoveObserver(&js_sync_manager_observer_);
 
   if (sync_notifier_.get()) {
@@ -1281,7 +1280,8 @@ void SyncManager::SyncInternal::Shutdown() {
   if (dir_manager()) {
     syncable::ScopedDirLookup lookup(dir_manager(), username_for_share());
     if (lookup.good()) {
-      lookup->RemoveTransactionObserver(&js_transaction_observer_);
+      lookup->RemoveTransactionObserver(&js_mutation_event_observer_);
+      RemoveChangeObserver(&js_mutation_event_observer_);
     } else {
       NOTREACHED();
     }
@@ -1680,7 +1680,7 @@ void SyncManager::SyncInternal::SetJsEventHandler(
     const WeakHandle<JsEventHandler>& event_handler) {
   js_event_handler_ = event_handler;
   js_sync_manager_observer_.SetJsEventHandler(js_event_handler_);
-  js_transaction_observer_.SetJsEventHandler(js_event_handler_);
+  js_mutation_event_observer_.SetJsEventHandler(js_event_handler_);
 }
 
 void SyncManager::SyncInternal::ProcessJsMessage(
