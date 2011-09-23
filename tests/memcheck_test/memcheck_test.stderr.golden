@@ -2,21 +2,21 @@ Invalid read of size 4
  at oob_read_test
  by main
  Address is 0 bytes after a block of size 40 alloc'd
- at _malloc_r
+ at malloc
  by oob_read_test
  by main
 Invalid read of size 4
  at oob_read_test
  by main
  Address is 4 bytes before a block of size 40 alloc'd
- at _malloc_r
+ at malloc
  by oob_read_test
  by main
 Invalid write of size 4
  at oob_write_test
  by main
  Address is 0 bytes after a block of size 40 alloc'd
- at _malloc_r
+ at malloc
  by oob_write_test
  by main
  Conditional jump or move depends on uninitialised value(s)
@@ -29,14 +29,14 @@ Invalid read of size 4
  at use_after_free_test
  by main
  Address is 20 bytes inside a block of size 40 free'd
- at _free_r
+ at free
  by use_after_free_test
  by main
 Invalid write of size 4
  at use_after_free_with_reuse_test
  by main
  Address is 24 bytes inside a block of size 40 free'd
- at _free_r
+ at free
  by use_after_free_with_reuse_test
  by main
 VG_USERREQ__CLIENT_CALL1: func=0x0
