@@ -62,9 +62,9 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/user_metrics.h"
 #include "content/common/content_restriction.h"
-#include "content/common/view_messages.h"
 #include "grit/generated_resources.h"
 #include "net/base/escape.h"
+#include "net/base/net_util.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebContextMenuData.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebMediaPlayerAction.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -1427,8 +1427,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
   if (id >= IDC_CONTENT_CONTEXT_CUSTOM_FIRST &&
       id <= IDC_CONTENT_CONTEXT_CUSTOM_LAST) {
     unsigned action = id - IDC_CONTENT_CONTEXT_CUSTOM_FIRST;
-    rvh->Send(new ViewMsg_CustomContextMenuAction(
-        rvh->routing_id(), params_.custom_context, action));
+    rvh->ExecuteCustomContextMenuCommand(action, params_.custom_context);
     return;
   }
 
@@ -1873,8 +1872,7 @@ void RenderViewContextMenu::MenuClosed(ui::SimpleMenuModel* source) {
     view->ShowingContextMenu(false);
   RenderViewHost* rvh = source_tab_contents_->render_view_host();
   if (rvh) {
-    rvh->Send(new ViewMsg_ContextMenuClosed(
-        rvh->routing_id(), params_.custom_context));
+    rvh->NotifyContextMenuClosed(params_.custom_context);
   }
 }
 
@@ -1923,8 +1921,7 @@ void RenderViewContextMenu::OpenURL(
 }
 
 void RenderViewContextMenu::CopyImageAt(int x, int y) {
-  RenderViewHost* rvh = source_tab_contents_->render_view_host();
-  rvh->Send(new ViewMsg_CopyImageAt(rvh->routing_id(), x, y));
+  source_tab_contents_->render_view_host()->CopyImageAt(x, y);
 }
 
 void RenderViewContextMenu::Inspect(int x, int y) {
@@ -1943,7 +1940,6 @@ void RenderViewContextMenu::WriteURLToClipboard(const GURL& url) {
 void RenderViewContextMenu::MediaPlayerActionAt(
     const gfx::Point& location,
     const WebMediaPlayerAction& action) {
-  RenderViewHost* rvh = source_tab_contents_->render_view_host();
-  rvh->Send(new ViewMsg_MediaPlayerActionAt(
-      rvh->routing_id(), location, action));
+  source_tab_contents_->render_view_host()->
+      ExecuteMediaPlayerActionAtLocation(location, action);
 }

@@ -83,7 +83,6 @@
 #include "content/browser/user_metrics.h"
 #include "content/common/content_switches.h"
 #include "content/common/notification_service.h"
-#include "content/common/view_messages.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -1730,8 +1729,7 @@ void BrowserView::OnWindowBeginUserBoundsChange() {
   TabContents* tab_contents = GetSelectedTabContents();
   if (!tab_contents)
     return;
-  RenderViewHost* rvh = tab_contents->render_view_host();
-  rvh->Send(new ViewMsg_MoveOrResizeStarted(rvh->routing_id()));
+  tab_contents->render_view_host()->NotifyMoveOrResizeStarted();
 }
 
 void BrowserView::OnWidgetMove() {

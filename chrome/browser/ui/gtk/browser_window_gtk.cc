@@ -84,7 +84,6 @@
 #include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/common/native_web_keyboard_event.h"
 #include "content/common/notification_service.h"
-#include "content/common/view_messages.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -1395,8 +1394,7 @@ gboolean BrowserWindowGtk::OnConfigure(GtkWidget* widget,
 
   TabContentsWrapper* tab = GetDisplayedTab();
   if (tab) {
-    RenderViewHost* rvh = tab->tab_contents()->render_view_host();
-    rvh->Send(new ViewMsg_MoveOrResizeStarted(rvh->routing_id()));
+    tab->tab_contents()->render_view_host()->NotifyMoveOrResizeStarted();
   }
 
   if (bounds_.size() != bounds.size())

@@ -1264,6 +1264,37 @@ void RenderViewHost::EnablePreferredSizeMode(int flags) {
   Send(new ViewMsg_EnablePreferredSizeChangedMode(routing_id(), flags));
 }
 
+void RenderViewHost::ExecuteCustomContextMenuCommand(
+    int action, const webkit_glue::CustomContextMenuContext& context) {
+  Send(new ViewMsg_CustomContextMenuAction(routing_id(), context, action));
+}
+
+void RenderViewHost::NotifyContextMenuClosed(
+    const webkit_glue::CustomContextMenuContext& context) {
+  Send(new ViewMsg_ContextMenuClosed(routing_id(), context));
+}
+
+void RenderViewHost::CopyImageAt(int x, int y) {
+  Send(new ViewMsg_CopyImageAt(routing_id(), x, y));
+}
+
+void RenderViewHost::ExecuteMediaPlayerActionAtLocation(
+  const gfx::Point& location, const WebKit::WebMediaPlayerAction& action) {
+  Send(new ViewMsg_MediaPlayerActionAt(routing_id(), location, action));
+}
+
+void RenderViewHost::DisassociateFromPopupCount() {
+  Send(new ViewMsg_DisassociateFromPopupCount(routing_id()));
+}
+
+void RenderViewHost::NotifyMoveOrResizeStarted() {
+  Send(new ViewMsg_MoveOrResizeStarted(routing_id()));
+}
+
+void RenderViewHost::StopFinding(const ViewMsg_StopFinding_Params& params) {
+  Send(new ViewMsg_StopFinding(routing_id(), params));
+}
+
 void RenderViewHost::OnAccessibilityNotifications(
     const std::vector<ViewHostMsg_AccessibilityNotification_Params>& params) {
   if (view() && !is_swapped_out_)

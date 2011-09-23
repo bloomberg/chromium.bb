@@ -18,6 +18,7 @@
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
 #include "base/string_number_conversions.h"
+#include "base/stringprintf.h"
 #include "base/string_util.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
@@ -143,7 +144,6 @@
 #include "content/common/notification_service.h"
 #include "content/common/page_transition_types.h"
 #include "content/common/page_zoom.h"
-#include "content/common/view_messages.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -3389,8 +3389,7 @@ void Browser::AddNewContents(TabContents* source,
       return;
     }
 
-    RenderViewHost* view = new_contents->render_view_host();
-    view->Send(new ViewMsg_DisassociateFromPopupCount(view->routing_id()));
+    new_contents->render_view_host()->DisassociateFromPopupCount();
   }
 
   browser::NavigateParams params(this, new_wrapper);

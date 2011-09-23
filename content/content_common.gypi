@@ -248,6 +248,7 @@
     'common/url_constants.h',
     'common/utility_messages.h',
     'common/view_messages.h',
+    'common/view_message_enums.h',
     'common/view_types.cc',
     'common/view_types.h',
     'common/web_database_observer_impl.cc',
