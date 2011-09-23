@@ -28,8 +28,9 @@ namespace {
 // Delay on first fetch so we don't interfere with startup.
 static const int kStartResourceFetchDelay = 5000;
 
-// Delay between calls to update the cache (48 hours).
+// Delay between calls to update the cache (48 hours), and 3 min in debug mode.
 static const int kCacheUpdateDelay = 48 * 60 * 60 * 1000;
+static const int kDebugCacheUpdateDelay = 3 * 60 * 1000;
 
 // Users are randomly assigned to one of kNTPPromoGroupSize buckets, in order
 // to be able to roll out promos slowly, or display different promos to
@@ -78,6 +79,11 @@ const char* GetPromoResourceURL() {
   return promo_server_url.empty() ?
       PromoResourceService::kDefaultPromoResourceServer :
       promo_server_url.c_str();
+}
+
+int GetCacheUpdateDelay() {
+  return CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kPromoServerURL) ? kDebugCacheUpdateDelay : kCacheUpdateDelay;
 }
 
 }  // namespace
@@ -155,7 +161,7 @@ PromoResourceService::PromoResourceService(Profile* profile)
                          chrome::NOTIFICATION_PROMO_RESOURCE_STATE_CHANGED,
                          prefs::kNTPPromoResourceCacheUpdate,
                          kStartResourceFetchDelay,
-                         kCacheUpdateDelay),
+                         GetCacheUpdateDelay()),
                          profile_(profile),
                          channel_(chrome::VersionInfo::CHANNEL_UNKNOWN) {
   Init();
