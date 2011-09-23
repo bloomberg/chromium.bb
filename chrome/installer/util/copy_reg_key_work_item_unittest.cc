@@ -42,7 +42,8 @@ TEST_F(CopyRegKeyWorkItemTest, TestNoKey) {
     const std::wstring& key_path = key_paths[i];
     scoped_ptr<CopyRegKeyWorkItem> item(
         WorkItem::CreateCopyRegKeyWorkItem(test_data_.root_key(), key_path,
-                                           destination_path_));
+                                           destination_path_,
+                                           WorkItem::ALWAYS));
     EXPECT_TRUE(item->Do());
     EXPECT_NE(ERROR_SUCCESS,
               key.Open(test_data_.root_key(), destination_path_.c_str(),
@@ -61,7 +62,8 @@ TEST_F(CopyRegKeyWorkItemTest, TestEmptyKey) {
   scoped_ptr<CopyRegKeyWorkItem> item(
       WorkItem::CreateCopyRegKeyWorkItem(test_data_.root_key(),
                                          test_data_.empty_key_path(),
-                                         destination_path_));
+                                         destination_path_,
+                                         WorkItem::ALWAYS));
   EXPECT_TRUE(item->Do());
   RegistryTestData::ExpectEmptyKey(test_data_.root_key(),
                                    destination_path_.c_str());
@@ -79,7 +81,8 @@ TEST_F(CopyRegKeyWorkItemTest, TestNonEmptyKey) {
   scoped_ptr<CopyRegKeyWorkItem> item(
       WorkItem::CreateCopyRegKeyWorkItem(test_data_.root_key(),
                                          test_data_.non_empty_key_path(),
-                                         destination_path_));
+                                         destination_path_,
+                                         WorkItem::ALWAYS));
   EXPECT_TRUE(item->Do());
   test_data_.ExpectMatchesNonEmptyKey(test_data_.root_key(),
                                       destination_path_.c_str());
@@ -88,6 +91,40 @@ TEST_F(CopyRegKeyWorkItemTest, TestNonEmptyKey) {
   EXPECT_NE(ERROR_SUCCESS,
             key.Open(test_data_.root_key(), destination_path_.c_str(),
                      KEY_READ));
+}
+
+// Test that existing data isn't overwritten.
+TEST_F(CopyRegKeyWorkItemTest, TestNoOverwrite) {
+  RegKey key;
+  // First copy the data into the dest.
+  EXPECT_EQ(ERROR_SUCCESS,
+            key.Create(test_data_.root_key(), destination_path_.c_str(),
+                       KEY_WRITE));
+  EXPECT_EQ(ERROR_SUCCESS,
+            SHCopyKey(test_data_.root_key(),
+                      test_data_.non_empty_key_path().c_str(), key.Handle(),
+                      0));
+  key.Close();
+
+  // Now copy the empty key into the dest, which should do nothing.
+  scoped_ptr<CopyRegKeyWorkItem> item(
+      WorkItem::CreateCopyRegKeyWorkItem(test_data_.root_key(),
+                                         test_data_.empty_key_path(),
+                                         destination_path_,
+                                         WorkItem::IF_NOT_PRESENT));
+  EXPECT_TRUE(item->Do());
+
+  // Make sure it's all there.
+  test_data_.ExpectMatchesNonEmptyKey(test_data_.root_key(),
+                                      destination_path_.c_str());
+
+  // Rollback should do nothing.
+  item->Rollback();
+  item.reset();
+
+  // Make sure it's still all there.
+  test_data_.ExpectMatchesNonEmptyKey(test_data_.root_key(),
+                                      destination_path_.c_str());
 }
 
 // Test that copying an empty key over a key with data succeeds, and that
@@ -108,7 +145,8 @@ TEST_F(CopyRegKeyWorkItemTest, TestOverwriteAndRestore) {
   scoped_ptr<CopyRegKeyWorkItem> item(
       WorkItem::CreateCopyRegKeyWorkItem(test_data_.root_key(),
                                          test_data_.empty_key_path(),
-                                         destination_path_));
+                                         destination_path_,
+                                         WorkItem::ALWAYS));
   EXPECT_TRUE(item->Do());
 
   // Make sure the dest is now empty.
@@ -131,7 +169,8 @@ TEST_F(CopyRegKeyWorkItemTest, TestIgnoreFailRollback) {
   scoped_ptr<CopyRegKeyWorkItem> item(
       WorkItem::CreateCopyRegKeyWorkItem(test_data_.root_key(),
                                          test_data_.empty_key_path(),
-                                         test_data_.non_empty_key_path()));
+                                         test_data_.non_empty_key_path(),
+                                         WorkItem::ALWAYS));
   item->set_ignore_failure(true);
   EXPECT_TRUE(item->Do());
   item->Rollback();

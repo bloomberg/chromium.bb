@@ -26,9 +26,10 @@ WorkItem::~WorkItem() {
 CopyRegKeyWorkItem* WorkItem::CreateCopyRegKeyWorkItem(
     HKEY predefined_root,
     const std::wstring& source_key_path,
-    const std::wstring& dest_key_path) {
+    const std::wstring& dest_key_path,
+    CopyOverWriteOption overwrite_option) {
   return new CopyRegKeyWorkItem(predefined_root, source_key_path,
-                                dest_key_path);
+                                dest_key_path, overwrite_option);
 }
 
 CopyTreeWorkItem* WorkItem::CreateCopyTreeWorkItem(

@@ -40,7 +40,8 @@ class WorkItemList : public WorkItem {
   // Add a CopyRegKeyWorkItem that recursively copies a given registry key.
   virtual WorkItem* AddCopyRegKeyWorkItem(HKEY predefined_root,
                                           const std::wstring& source_key_path,
-                                          const std::wstring& dest_key_path);
+                                          const std::wstring& dest_key_path,
+                                          CopyOverWriteOption overwrite_option);
 
   // Add a CopyTreeWorkItem to the list of work items.
   // See the NOTE in the documentation for the CopyTreeWorkItem class for

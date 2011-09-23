@@ -8,6 +8,7 @@
 #include "chrome_tab.h"  // NOLINT
 
 #include <atlsecurity.h>
+#include <objbase.h>
 
 #include "base/at_exit.h"
 #include "base/command_line.h"
@@ -171,6 +172,13 @@ class ChromeTabModule : public CAtlDllModuleT<ChromeTabModule> {
         hr = registrar->AddReplacement(L"HIVE", L"HKCU");
       }
       DCHECK(SUCCEEDED(hr));
+    }
+
+    if (SUCCEEDED(hr)) {
+      // Add the Chrome Frame CLSID.
+      wchar_t cf_clsid[64];
+      StringFromGUID2(CLSID_ChromeFrame, &cf_clsid[0], arraysize(cf_clsid));
+      hr = registrar->AddReplacement(L"CHROME_FRAME_CLSID", &cf_clsid[0]);
     }
 
     return hr;
@@ -599,13 +607,10 @@ HRESULT RegisterActiveX(bool reg, bool is_system) {
 
 HRESULT RegisterElevationPolicy(bool reg, bool is_system) {
   HRESULT hr = S_OK;
-  if (reg && base::win::GetVersion() >= base::win::VERSION_VISTA) {
+  if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
     // Register the elevation policy. This must succeed for Chrome Frame to
     // be able launch Chrome when running in low-integrity IE.
-    // Note that this is not done on unregistration, the installer will
-    // explicitly remove the policy on uninstall.
-    hr = _AtlModule.UpdateRegistryFromResourceS(IDR_CHROMEFRAME_ELEVATION,
-                                                reg);
+    hr = _AtlModule.UpdateRegistryFromResourceS(IDR_CHROMEFRAME_ELEVATION, reg);
     if (SUCCEEDED(hr)) {
       hr = RefreshElevationPolicy();
     }

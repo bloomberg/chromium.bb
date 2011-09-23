@@ -606,6 +606,11 @@ bool AppendPostInstallTasks(const InstallerState& installer_state,
       // update upgrade_utils::SwapNewChromeExeIfPresent.
     }
 
+    if (installer_state.FindProduct(BrowserDistribution::CHROME_FRAME)) {
+      AddCopyIELowRightsPolicyWorkItems(installer_state,
+                                        in_use_update_work_items.get());
+    }
+
     post_install_task_list->AddWorkItem(in_use_update_work_items.release());
   }
 
@@ -624,6 +629,11 @@ bool AppendPostInstallTasks(const InstallerState& installer_state,
                                             google_update::kRegOldVersionField);
       regular_update_work_items->AddDeleteRegValueWorkItem(root, version_key,
                                             google_update::kRegRenameCmdField);
+    }
+
+    if (installer_state.FindProduct(BrowserDistribution::CHROME_FRAME)) {
+      AddDeleteOldIELowRightsPolicyWorkItems(installer_state,
+                                             regular_update_work_items.get());
     }
 
     post_install_task_list->AddWorkItem(regular_update_work_items.release());
@@ -969,63 +979,71 @@ void AddChromeFrameWorkItems(const InstallationState& original_state,
   }
 }
 
-void AddElevationPolicyWorkItems(const InstallationState& original_state,
-                                 const InstallerState& installer_state,
-                                 const Version& new_version,
-                                 WorkItemList* install_list) {
-  if (!installer_state.is_multi_install()) {
-    VLOG(1) << "Not adding elevation policy for single installs";
-    return;
+namespace {
+
+enum ElevationPolicyId {
+  CURRENT_ELEVATION_POLICY,
+  OLD_ELEVATION_POLICY,
+};
+
+// Although the UUID of the ChromeFrame class is used for the "current" value,
+// this is done only as a convenience; there is no need for the GUID of the Low
+// Rights policies to match the ChromeFrame class's GUID.  Hence, it is safe to
+// use this completely unrelated GUID for the "old" policies.
+const wchar_t kIELowRightsPolicyOldGuid[] =
+    L"{6C288DD7-76FB-4721-B628-56FAC252E199}";
+
+const wchar_t kElevationPolicyKeyPath[] =
+    L"SOFTWARE\\Microsoft\\Internet Explorer\\Low Rights\\ElevationPolicy\\";
+
+void GetIELowRightsElevationPolicyKeyPath(ElevationPolicyId policy,
+                                          std::wstring* key_path) {
+  DCHECK(policy == CURRENT_ELEVATION_POLICY || policy == OLD_ELEVATION_POLICY);
+
+  key_path->assign(kElevationPolicyKeyPath,
+                   arraysize(kElevationPolicyKeyPath) - 1);
+  if (policy == CURRENT_ELEVATION_POLICY) {
+    wchar_t cf_clsid[64];
+    int len = StringFromGUID2(__uuidof(ChromeFrame), &cf_clsid[0],
+                              arraysize(cf_clsid));
+    key_path->append(&cf_clsid[0], len - 1);
   } else {
-    const ProductState* cf_state =
-        original_state.GetProductState(installer_state.system_install(),
-                                       BrowserDistribution::CHROME_FRAME);
-    if (cf_state && !cf_state->is_multi_install()) {
-      LOG(WARNING) << "Not adding elevation policy since a single install "
-                      "of CF exists";
-      return;
-    }
+    key_path->append(kIELowRightsPolicyOldGuid,
+                     arraysize(kIELowRightsPolicyOldGuid)- 1);
   }
+}
 
-  FilePath binary_dir(
-      GetChromeInstallPath(installer_state.system_install(),
-          BrowserDistribution::GetSpecificDistribution(
-              BrowserDistribution::CHROME_BINARIES)));
+}  // namespace
 
-  struct {
-    const wchar_t* sub_key;
-    const wchar_t* executable;
-    const FilePath exe_dir;
-  } low_rights_entries[] = {
-    { L"ElevationPolicy\\", kChromeLauncherExe,
-      binary_dir.Append(ASCIIToWide(new_version.GetString())) },
-    { L"DragDrop\\", chrome::kBrowserProcessExecutableName, binary_dir },
-  };
+void AddDeleteOldIELowRightsPolicyWorkItems(
+    const InstallerState& installer_state,
+    WorkItemList* install_list) {
+  DCHECK(install_list);
 
-  bool uninstall = (installer_state.operation() == InstallerState::UNINSTALL);
-  HKEY root = installer_state.root_key();
-  const wchar_t kLowRightsKeyPath[] =
-      L"SOFTWARE\\Microsoft\\Internet Explorer\\Low Rights\\";
-  std::wstring key_path(kLowRightsKeyPath);
+  std::wstring key_path;
+  GetIELowRightsElevationPolicyKeyPath(OLD_ELEVATION_POLICY, &key_path);
+  install_list->AddDeleteRegKeyWorkItem(installer_state.root_key(), key_path);
+}
 
-  wchar_t cf_classid[64] = {0};
-  StringFromGUID2(__uuidof(ChromeFrame), cf_classid, arraysize(cf_classid));
+// Adds work items to copy the chrome_launcher IE low rights elevation policy
+// from the primary policy GUID to the "old" policy GUID.  Take care not to
+// perform the copy if there is already an old policy present, as the ones under
+// the main kElevationPolicyGuid would then correspond to an intermediate
+// version (current_version < pv < new_version).
+void AddCopyIELowRightsPolicyWorkItems(const InstallerState& installer_state,
+                                       WorkItemList* install_list) {
+  DCHECK(install_list);
 
-  for (size_t i = 0; i < arraysize(low_rights_entries); ++i) {
-    key_path.append(low_rights_entries[i].sub_key).append(cf_classid);
-    if (uninstall) {
-      install_list->AddDeleteRegKeyWorkItem(root, key_path);
-    } else {
-      install_list->AddCreateRegKeyWorkItem(root, key_path);
-      install_list->AddSetRegValueWorkItem(root, key_path, L"Policy",
-          static_cast<DWORD>(3), true);
-      install_list->AddSetRegValueWorkItem(root, key_path, L"AppName",
-          low_rights_entries[i].executable, true);
-      install_list->AddSetRegValueWorkItem(root, key_path, L"AppPath",
-          low_rights_entries[i].exe_dir.value(), true);
-    }
-    key_path.resize(arraysize(kLowRightsKeyPath) - 1);
-  }
+  std::wstring current_key_path;
+  std::wstring old_key_path;
+
+  GetIELowRightsElevationPolicyKeyPath(CURRENT_ELEVATION_POLICY,
+                                       &current_key_path);
+  GetIELowRightsElevationPolicyKeyPath(OLD_ELEVATION_POLICY, &old_key_path);
+  // Do not clobber existing old policies.
+  install_list->AddCopyRegKeyWorkItem(installer_state.root_key(),
+                                      current_key_path, old_key_path,
+                                      WorkItem::IF_NOT_PRESENT);
 }
 
 void AppendUninstallCommandLineFlags(const InstallerState& installer_state,

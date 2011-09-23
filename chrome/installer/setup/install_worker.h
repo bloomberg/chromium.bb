@@ -139,11 +139,15 @@ void AddVersionKeyWorkItems(HKEY root,
                             const Version& new_version,
                             WorkItemList* list);
 
-// [Un]Registers Chrome and ChromeLauncher in IE's low rights elevation policy.
-void AddElevationPolicyWorkItems(const InstallationState& original_state,
-                                 const InstallerState& installer_state,
-                                 const Version& new_version,
-                                 WorkItemList* install_list);
+// Unregisters the "opv" version of ChromeLauncher from IE's low rights
+// elevation policy.
+void AddDeleteOldIELowRightsPolicyWorkItems(
+    const InstallerState& installer_state,
+    WorkItemList* install_list);
+
+// Adds work items to copy IE low rights policies for an in-use update.
+void AddCopyIELowRightsPolicyWorkItems(const InstallerState& installer_state,
+                                       WorkItemList* install_list);
 
 // Utility method currently shared between install.cc and install_worker.cc
 void AppendUninstallCommandLineFlags(const InstallerState& installer_state,

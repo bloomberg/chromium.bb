@@ -16,20 +16,32 @@ CopyRegKeyWorkItem::~CopyRegKeyWorkItem() {
 
 CopyRegKeyWorkItem::CopyRegKeyWorkItem(HKEY predefined_root,
                                        const std::wstring& source_key_path,
-                                       const std::wstring& dest_key_path)
+                                       const std::wstring& dest_key_path,
+                                       CopyOverWriteOption overwrite_option)
     : predefined_root_(predefined_root),
       source_key_path_(source_key_path),
-      dest_key_path_(dest_key_path) {
+      dest_key_path_(dest_key_path),
+      overwrite_option_(overwrite_option),
+      cleared_destination_(false) {
   DCHECK(predefined_root);
   // It's a safe bet that we don't want to copy or overwrite one of the root
   // trees.
   DCHECK(!source_key_path.empty());
   DCHECK(!dest_key_path.empty());
+  DCHECK(overwrite_option == ALWAYS || overwrite_option == IF_NOT_PRESENT);
 }
 
 bool CopyRegKeyWorkItem::Do() {
   if (source_key_path_.empty() || dest_key_path_.empty())
     return false;
+
+  // Leave immediately if we're not supposed to overwrite an existing key and
+  // one is there.
+  if (overwrite_option_ == IF_NOT_PRESENT &&
+      RegKey(predefined_root_, dest_key_path_.c_str(),
+             KEY_QUERY_VALUE).Valid()) {
+    return true;
+  }
 
   RegistryKeyBackup backup;
   RegKey dest_key;
@@ -48,6 +60,7 @@ bool CopyRegKeyWorkItem::Do() {
     LOG(ERROR) << "Failed to delete key at " << dest_key_path_ << ", result: "
                << result;
   } else {
+    cleared_destination_ = true;
     // We've just modified the registry, so remember any backup we may have
     // made so that Rollback can take us back where we started.
     backup_.swap(backup);
@@ -85,16 +98,18 @@ void CopyRegKeyWorkItem::Rollback() {
   if (ignore_failure_)
     return;
 
-  // Delete anything in the key before restoring the backup in case someone else
-  // put new data in the key after Do().
-  LONG result = SHDeleteKey(predefined_root_, dest_key_path_.c_str());
-  if (result != ERROR_SUCCESS && result != ERROR_FILE_NOT_FOUND) {
-    LOG(ERROR) << "Failed to delete key at " << dest_key_path_
-               << " in rollback, result: " << result;
-  }
+  if (cleared_destination_) {
+    // Delete anything in the key before restoring the backup in case new data
+    // was written after Do().
+    LONG result = SHDeleteKey(predefined_root_, dest_key_path_.c_str());
+    if (result != ERROR_SUCCESS && result != ERROR_FILE_NOT_FOUND) {
+      LOG(ERROR) << "Failed to delete key at " << dest_key_path_
+                 << " in rollback, result: " << result;
+    }
 
-  // Restore the old contents.  The restoration takes on its default security
-  // attributes; any custom attributes are lost.
-  if (!backup_.WriteTo(predefined_root_, dest_key_path_.c_str()))
-    LOG(ERROR) << "Failed to restore key in rollback.";
+    // Restore the old contents.  The restoration takes on its default security
+    // attributes; any custom attributes are lost.
+    if (!backup_.WriteTo(predefined_root_, dest_key_path_.c_str()))
+      LOG(ERROR) << "Failed to restore key in rollback.";
+  }
 }

@@ -63,7 +63,8 @@ class WorkItem {
   static CopyRegKeyWorkItem* CreateCopyRegKeyWorkItem(
       HKEY predefined_root,
       const std::wstring& source_key_path,
-      const std::wstring& dest_key_path);
+      const std::wstring& dest_key_path,
+      CopyOverWriteOption overwrite_option);
 
   // Create a CopyTreeWorkItem that recursively copies a file system hierarchy
   // from source path to destination path.

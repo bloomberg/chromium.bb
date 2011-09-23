@@ -2,14 +2,14 @@
   NoRemove Software {
     NoRemove Classes {
       ChromeTab.ChromeFrame.1 = s 'Chrome Frame' {
-        CLSID = s '{E0A900DF-9611-4446-86BD-4B1D47E7DB2A}'
+        CLSID = s '%CHROME_FRAME_CLSID%'
       }
       ChromeTab.ChromeFrame = s 'Chrome Frame' {
-        CLSID = s '{E0A900DF-9611-4446-86BD-4B1D47E7DB2A}'
+        CLSID = s '%CHROME_FRAME_CLSID%'
         CurVer = s 'ChromeTab.ChromeFrame.1'
       }
       NoRemove CLSID {
-        ForceRemove {E0A900DF-9611-4446-86BD-4B1D47E7DB2A} = s 'Chrome Frame' {
+        ForceRemove %CHROME_FRAME_CLSID% = s 'Chrome Frame' {
           ProgID = s 'ChromeTab.ChromeFrame.1'
           VersionIndependentProgID = s 'ChromeTab.ChromeFrame'
           ForceRemove 'Programmable'
@@ -35,11 +35,11 @@
         NoRemove CurrentVersion {
           NoRemove Ext {
             NoRemove PreApproved {
-              ForceRemove '{E0A900DF-9611-4446-86BD-4B1D47E7DB2A}' = s '' {
+              ForceRemove '%CHROME_FRAME_CLSID%' = s '' {
               }
             }
             NoRemove Stats {
-              ForceRemove {E0A900DF-9611-4446-86BD-4B1D47E7DB2A} {
+              ForceRemove %CHROME_FRAME_CLSID% {
                 ForceRemove 'iexplore' {
                   val Type = d '1'
                   val Flags = d '4'

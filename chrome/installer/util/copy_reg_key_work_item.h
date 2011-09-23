@@ -28,9 +28,11 @@ class CopyRegKeyWorkItem : public WorkItem {
   friend class WorkItem;
 
   // Neither |source_key_path| nor |dest_key_path| may be empty.
+  // Only ALWAYS and IF_NOT_PRESENT are supported for |overwrite_option|.
   CopyRegKeyWorkItem(HKEY predefined_key,
                      const std::wstring& source_key_path,
-                     const std::wstring& dest_key_path);
+                     const std::wstring& dest_key_path,
+                     CopyOverWriteOption overwrite_option);
 
   // Root key in which we operate. The root key must be one of the predefined
   // keys on Windows.
@@ -42,8 +44,13 @@ class CopyRegKeyWorkItem : public WorkItem {
   // Path of the destination key.
   std::wstring dest_key_path_;
 
+  CopyOverWriteOption overwrite_option_;
+
   // Backup of the destination key.
   RegistryKeyBackup backup_;
+
+  // Set to true after the destination is cleared for the copy.
+  bool cleared_destination_;
 
   DISALLOW_COPY_AND_ASSIGN(CopyRegKeyWorkItem);
 };

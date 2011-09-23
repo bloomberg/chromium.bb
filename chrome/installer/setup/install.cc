@@ -277,9 +277,6 @@ installer::InstallStatus InstallNewVersion(
                       current_version,
                       install_list.get());
 
-  AddElevationPolicyWorkItems(original_state, installer_state, new_version,
-                              install_list.get());
-
   FilePath new_chrome_exe(
       installer_state.target_path().Append(installer::kChromeNewExe));
 

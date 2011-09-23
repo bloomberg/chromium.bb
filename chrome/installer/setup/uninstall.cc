@@ -119,6 +119,14 @@ void ProcessQuickEnableWorkItems(
     LOG(ERROR) << "Failed to update quick-enable-cf command.";
 }
 
+void ProcessIELowRightsPolicyWorkItems(
+    const installer::InstallerState& installer_state) {
+  scoped_ptr<WorkItemList> work_items(WorkItem::CreateNoRollbackWorkItemList());
+  AddDeleteOldIELowRightsPolicyWorkItems(installer_state, work_items.get());
+  work_items->Do();
+  installer::RefreshElevationPolicy();
+}
+
 void ClearRlzProductState() {
   const rlz_lib::AccessPoint points[] = {rlz_lib::CHROME_OMNIBOX,
                                          rlz_lib::CHROME_HOME_PAGE,
@@ -790,6 +798,9 @@ InstallStatus UninstallProduct(const InstallationState& original_state,
                                  unreg_work_item_list.get());
       unreg_work_item_list->Do();
     }
+
+    if (!is_chrome)
+      ProcessIELowRightsPolicyWorkItems(installer_state);
   }
 
   // Close any Chrome Frame helper processes that may be running.
@@ -825,14 +836,6 @@ InstallStatus UninstallProduct(const InstallationState& original_state,
     LOG(INFO) << (can_delete_files ? "Shared binaries will be deleted." :
                                      "Shared binaries still in use.");
     if (can_delete_files) {
-      // Remove the elevation policy when the last product is uninstalled.
-      scoped_ptr<WorkItemList> work_items(
-          WorkItem::CreateNoRollbackWorkItemList());
-      AddElevationPolicyWorkItems(original_state, installer_state,
-          product_state->version(), work_items.get());
-      work_items->Do();
-      RefreshElevationPolicy();
-
       BrowserDistribution* multi_dist =
           installer_state.multi_package_binaries_distribution();
       InstallUtil::DeleteRegistryKey(reg_root, multi_dist->GetVersionKey());

@@ -76,9 +76,10 @@ void WorkItemList::AddWorkItem(WorkItem* work_item) {
 WorkItem* WorkItemList::AddCopyRegKeyWorkItem(
     HKEY predefined_root,
     const std::wstring& source_key_path,
-    const std::wstring& dest_key_path) {
+    const std::wstring& dest_key_path,
+    CopyOverWriteOption overwrite_option) {
   WorkItem* item = WorkItem::CreateCopyRegKeyWorkItem(
-      predefined_root, source_key_path, dest_key_path);
+      predefined_root, source_key_path, dest_key_path, overwrite_option);
   AddWorkItem(item);
   return item;
 }

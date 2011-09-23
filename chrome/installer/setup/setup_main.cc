@@ -30,6 +30,7 @@
 #include "chrome/installer/setup/chrome_frame_quick_enable.h"
 #include "chrome/installer/setup/chrome_frame_ready_mode.h"
 #include "chrome/installer/setup/install.h"
+#include "chrome/installer/setup/install_worker.h"
 #include "chrome/installer/setup/setup_constants.h"
 #include "chrome/installer/setup/setup_util.h"
 #include "chrome/installer/setup/uninstall.h"
@@ -169,6 +170,8 @@ void AddExistingMultiInstalls(const InstallationState& original_state,
 // for Chrome so there should be a file called new_chrome.exe on the file
 // system and a key called 'opv' in the registry. This function will move
 // new_chrome.exe to chrome.exe and delete 'opv' key in one atomic operation.
+// This function also deletes elevation policies associated with the old version
+// if they exist.
 installer::InstallStatus RenameChromeExecutables(
     const InstallationState& original_state,
     InstallerState* installer_state) {
@@ -202,6 +205,12 @@ installer::InstallStatus RenameChromeExecutables(
                                     temp_path.path().value(),
                                     WorkItem::ALWAYS_MOVE);
   install_list->AddDeleteTreeWorkItem(chrome_new_exe, temp_path.path());
+  // Delete an elevation policy associated with the old version, should one
+  // exist.
+  if (installer_state->FindProduct(BrowserDistribution::CHROME_FRAME)) {
+    installer::AddDeleteOldIELowRightsPolicyWorkItems(*installer_state,
+                                                      install_list.get());
+  }
   // old_chrome.exe is still in use in most cases, so ignore failures here.
   install_list->AddDeleteTreeWorkItem(chrome_old_exe, temp_path.path())
       ->set_ignore_failure(true);
@@ -590,11 +599,6 @@ installer::InstallStatus InstallProductsHelper(
       installer_state.WriteInstallerResult(install_status,
           IDS_INSTALL_INVALID_ARCHIVE_BASE, NULL);
     } else {
-      // TODO(tommi): Move towards having only a single version that is common
-      // to all products.  Only the package should have a version since it
-      // represents all the binaries.  When a single product is upgraded, all
-      // currently installed product for the shared binary installation, should
-      // (or rather must) be upgraded.
       VLOG(1) << "version to install: " << installer_version->GetString();
       bool proceed_with_installation = true;
       uint32 higher_products = 0;
@@ -806,24 +810,52 @@ installer::InstallStatus UninstallProduct(
     const InstallationState& original_state,
     const InstallerState& installer_state,
     const CommandLine& cmd_line,
+    bool remove_all,
+    bool force_uninstall,
     const Product& product) {
-  bool force = cmd_line.HasSwitch(installer::switches::kForceUninstall);
   const ProductState* product_state =
       original_state.GetProductState(installer_state.system_install(),
                                      product.distribution()->GetType());
   if (product_state != NULL) {
     VLOG(1) << "version on the system: "
             << product_state->version().GetString();
-  } else if (!force) {
-    LOG(ERROR) << "No Chrome installation found for uninstall.";
+  } else if (!force_uninstall) {
+    LOG(ERROR) << product.distribution()->GetAppShortCutName()
+               << " not found for uninstall.";
     return installer::CHROME_NOT_INSTALLED;
   }
 
-  bool remove_all = !cmd_line.HasSwitch(
+  return installer::UninstallProduct(original_state, installer_state,
+      cmd_line.GetProgram(), product, remove_all, force_uninstall, cmd_line);
+}
+
+installer::InstallStatus UninstallProducts(
+    const InstallationState& original_state,
+    const InstallerState& installer_state,
+    const CommandLine& cmd_line) {
+  const Products& products = installer_state.products();
+  // InstallerState::Initialize always puts Chrome first, and we rely on that
+  // here for this reason: if Chrome is in-use, the user will be prompted to
+  // confirm uninstallation.  Upon cancel, we should not continue with the
+  // other products.
+  DCHECK(products.size() < 2 || products[0]->is_chrome());
+  installer::InstallStatus install_status = installer::UNINSTALL_SUCCESSFUL;
+  installer::InstallStatus prod_status = installer::UNKNOWN_STATUS;
+  const bool force = cmd_line.HasSwitch(installer::switches::kForceUninstall);
+  const bool remove_all = !cmd_line.HasSwitch(
       installer::switches::kDoNotRemoveSharedItems);
 
-  return installer::UninstallProduct(original_state, installer_state,
-      cmd_line.GetProgram(), product, remove_all, force, cmd_line);
+  for (size_t i = 0;
+       install_status != installer::UNINSTALL_CANCELLED &&
+           i < products.size();
+       ++i) {
+    prod_status = UninstallProduct(original_state, installer_state,
+        cmd_line, remove_all, force, *products[i]);
+    if (prod_status != installer::UNINSTALL_SUCCESSFUL)
+      install_status = prod_status;
+  }
+
+  return install_status;
 }
 
 installer::InstallStatus ShowEULADialog(const std::wstring& inner_frame) {
@@ -1260,23 +1292,8 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE prev_instance,
   installer::InstallStatus install_status = installer::UNKNOWN_STATUS;
   // If --uninstall option is given, uninstall the identified product(s)
   if (is_uninstall) {
-    const Products& products = installer_state.products();
-    // InstallerState::Initialize always puts Chrome first, and we rely on that
-    // here for this reason: if Chrome is in-use, the user will be prompted to
-    // confirm uninstallation.  Upon cancel, we should not continue with the
-    // other products.
-    DCHECK(products.size() < 2 || products[0]->is_chrome());
-    install_status = installer::UNINSTALL_SUCCESSFUL;  // I'm an optimist.
-    installer::InstallStatus prod_status = installer::UNKNOWN_STATUS;
-    for (size_t i = 0;
-         install_status != installer::UNINSTALL_CANCELLED &&
-             i < products.size();
-         ++i) {
-      prod_status = UninstallProduct(original_state, installer_state,
-          cmd_line, *products[i]);
-      if (prod_status != installer::UNINSTALL_SUCCESSFUL)
-        install_status = prod_status;
-    }
+    install_status = UninstallProducts(original_state, installer_state,
+                                       cmd_line);
   } else {
     // If --uninstall option is not specified, we assume it is install case.
     install_status = InstallProducts(original_state, cmd_line, prefs,
