@@ -186,7 +186,7 @@ KeyboardWidget::KeyboardWidget()
                  chrome::NOTIFICATION_SET_KEYBOARD_HEIGHT_INVOKED,
                  NotificationService::AllSources());
   registrar_.Add(this,
-                 content::NOTIFICATION_APP_EXITING,
+                 content::NOTIFICATION_APP_TERMINATING,
                  NotificationService::AllSources());
 
 #if defined(OS_CHROMEOS)
@@ -407,7 +407,7 @@ void KeyboardWidget::Observe(int type,
       break;
     }
 
-    case content::NOTIFICATION_APP_EXITING: {
+    case content::NOTIFICATION_APP_TERMINATING: {
       CloseNow();
       break;
     }
