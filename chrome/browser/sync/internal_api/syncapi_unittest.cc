@@ -564,6 +564,17 @@ TEST_F(SyncApiTest, BaseNodeGetDetailsAsValue) {
   }
 }
 
+TEST_F(SyncApiTest, EmptyTags) {
+  WriteTransaction trans(FROM_HERE, test_user_share_.user_share());
+  ReadNode root_node(&trans);
+  root_node.InitByRootLookup();
+  WriteNode node(&trans);
+  std::string empty_tag;
+  EXPECT_FALSE(node.InitUniqueByCreation(
+      syncable::TYPED_URLS, root_node, empty_tag));
+  EXPECT_FALSE(node.InitByTagLookup(empty_tag));
+}
+
 namespace {
 
 class TestHttpPostProviderInterface : public HttpPostProviderInterface {

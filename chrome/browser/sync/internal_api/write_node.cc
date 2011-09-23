@@ -394,6 +394,10 @@ bool WriteNode::InitUniqueByCreation(syncable::ModelType model_type,
                                      const BaseNode& parent,
                                      const std::string& tag) {
   DCHECK(!entry_) << "Init called twice";
+  if (tag.empty()) {
+    LOG(WARNING) << "InitUniqueByCreation failed due to empty tag.";
+    return false;
+  }
 
   const std::string hash = GenerateSyncableHash(model_type, tag);
 
