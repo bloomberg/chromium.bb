@@ -1384,6 +1384,15 @@ void TestingAutomationProvider::GetDownloadDirectory(
   }
 }
 
+// Sample json input: { "command": OpenNewBrowserWindowWithNewProfile" }
+// Sample output: {}
+void TestingAutomationProvider::OpenNewBrowserWindowWithNewProfile(
+    base::DictionaryValue* args, IPC::Message* reply_message) {
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  new BrowserOpenedWithNewProfileNotificationObserver(this, reply_message);
+  profile_manager->CreateMultiProfileAsync();
+}
+
 void TestingAutomationProvider::OpenNewBrowserWindowOfType(
     int type, bool show, IPC::Message* reply_message) {
   new BrowserOpenedNotificationObserver(this, reply_message);
@@ -2258,6 +2267,8 @@ void TestingAutomationProvider::SendJSONRequest(int handle,
       &TestingAutomationProvider::CreateNewAutomationProvider;
   handler_map["GetBrowserInfo"] =
       &TestingAutomationProvider::GetBrowserInfo;
+  handler_map["OpenNewBrowserWindowWithNewProfile"] =
+      &TestingAutomationProvider::OpenNewBrowserWindowWithNewProfile;
   handler_map["GetProcessInfo"] =
       &TestingAutomationProvider::GetProcessInfo;
 #if defined(OS_CHROMEOS)
@@ -2764,6 +2775,8 @@ void TestingAutomationProvider::GetBrowserInfo(
     browser_item->SetInteger("selected_tab", browser->active_index());
     browser_item->SetBoolean("incognito",
                              browser->profile()->IsOffTheRecord());
+    browser_item->SetString("profile_path",
+        browser->profile()->GetPath().BaseName().MaybeAsASCII());
     std::string type;
     switch (browser->type()) {
       case Browser::TYPE_TABBED:
@@ -2952,7 +2965,8 @@ void TestingAutomationProvider::GetHistoryInfo(Browser* browser,
   args->GetString("search_text", &search_text);
 
   // Fetch history.
-  HistoryService* hs = profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
+  HistoryService* hs = browser->profile()->GetHistoryService(
+      Profile::EXPLICIT_ACCESS);
   history::QueryOptions options;
   // The observer owns itself.  It deletes itself after it fetches history.
   AutomationProviderHistoryObserver* history_observer =
@@ -2996,7 +3010,8 @@ void TestingAutomationProvider::AddHistoryItem(Browser* browser,
 
   // Ideas for "dummy" values (e.g. id_scope) came from
   // chrome/browser/autocomplete/history_contents_provider_unittest.cc
-  HistoryService* hs = profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
+  HistoryService* hs = browser->profile()->GetHistoryService(
+      Profile::EXPLICIT_ACCESS);
   const void* id_scope = reinterpret_cast<void*>(1);
   hs->AddPage(gurl, time,
               id_scope,
@@ -3155,7 +3170,7 @@ void TestingAutomationProvider::LoadSearchEngineInfo(
     DictionaryValue* args,
     IPC::Message* reply_message) {
   TemplateURLService* url_model =
-      TemplateURLServiceFactory::GetForProfile(profile_);
+      TemplateURLServiceFactory::GetForProfile(browser->profile());
   if (url_model->loaded()) {
     AutomationJSONReply(this, reply_message).SendSuccess(NULL);
     return;
@@ -3172,7 +3187,7 @@ void TestingAutomationProvider::GetSearchEngineInfo(
     DictionaryValue* args,
     IPC::Message* reply_message) {
   TemplateURLService* url_model =
-      TemplateURLServiceFactory::GetForProfile(profile_);
+      TemplateURLServiceFactory::GetForProfile(browser->profile());
   scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
   ListValue* search_engines = new ListValue;
   std::vector<const TemplateURL*> template_urls = url_model->GetTemplateURLs();
@@ -3205,7 +3220,7 @@ void TestingAutomationProvider::AddOrEditSearchEngine(
     DictionaryValue* args,
     IPC::Message* reply_message) {
   TemplateURLService* url_model =
-      TemplateURLServiceFactory::GetForProfile(profile_);
+      TemplateURLServiceFactory::GetForProfile(browser->profile());
   const TemplateURL* template_url;
   string16 new_title;
   string16 new_keyword;
@@ -3221,7 +3236,7 @@ void TestingAutomationProvider::AddOrEditSearchEngine(
   std::string new_ref_url = TemplateURLRef::DisplayURLToURLRef(
       UTF8ToUTF16(new_url));
   scoped_ptr<KeywordEditorController> controller(
-      new KeywordEditorController(profile_));
+      new KeywordEditorController(browser->profile()));
   if (args->GetString("keyword", &keyword)) {
     template_url = url_model->GetTemplateURLForKeyword(UTF8ToUTF16(keyword));
     if (template_url == NULL) {
@@ -3247,7 +3262,7 @@ void TestingAutomationProvider::PerformActionOnSearchEngine(
     DictionaryValue* args,
     IPC::Message* reply_message) {
   TemplateURLService* url_model =
-      TemplateURLServiceFactory::GetForProfile(profile_);
+      TemplateURLServiceFactory::GetForProfile(browser->profile());
   std::string keyword;
   std::string action;
   if (!args->GetString("keyword", &keyword) ||
@@ -3324,7 +3339,8 @@ void TestingAutomationProvider::SetLocalStatePrefs(Browser* browser,
 void TestingAutomationProvider::GetPrefsInfo(Browser* browser,
                                              DictionaryValue* args,
                                              IPC::Message* reply_message) {
-  DictionaryValue* items = profile_->GetPrefs()->GetPreferenceValues();
+  DictionaryValue* items = browser->profile()->GetPrefs()->
+      GetPreferenceValues();
 
   scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
   return_value->Set("prefs", items);  // return_value owns items.
@@ -3339,7 +3355,7 @@ void TestingAutomationProvider::SetPrefs(Browser* browser,
   Value* val;
   AutomationJSONReply reply(this, reply_message);
   if (args->GetString("path", &path) && args->Get("value", &val)) {
-    PrefService* pref_service = profile_->GetPrefs();
+    PrefService* pref_service = browser->profile()->GetPrefs();
     const PrefService::Preference* pref =
         pref_service->FindPreference(path.c_str());
     if (!pref) {  // Not a registered pref.

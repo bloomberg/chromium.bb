@@ -1349,6 +1349,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
         u'windows': [ { u'index': 0,
                         u'height': 1134,
                         u'incognito': False,
+                        u'profile_path': u'Default',
                         u'fullscreen': False,
                         u'selected_tab': 0,
                         u'tabs': [ {
@@ -3153,6 +3154,18 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
         'channel_id': channel_id
     }
     self._GetResultFromJSONRequest(cmd_dict)
+
+  def OpenNewBrowserWindowWithNewProfile(self):
+    """Creates a new multi-profiles user, and then opens and shows a new
+    tabbed browser window with the new profile.
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    cmd_dict = {  # Prepare command for the json interface
+      'command': 'OpenNewBrowserWindowWithNewProfile'
+    }
+    return self._GetResultFromJSONRequest(cmd_dict, windex=-1)
 
   ## ChromeOS section
 

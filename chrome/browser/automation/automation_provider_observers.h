@@ -1725,4 +1725,32 @@ class ProcessInfoObserver : public MemoryDetails {
   DISALLOW_COPY_AND_ASSIGN(ProcessInfoObserver);
 };
 
+// Manages the process of creating a new Profile and opening a new browser with
+// that profile. This observer should be created, and then a new Profile
+// should be created through the ProfileManager using
+// profile_manager->CreateMultiProfileAsync(). The Observer watches for profile
+// creation, upon which it creates a new browser window; after observing
+// window creation, it creates a new tab and then finally observes it finish
+// loading.
+class BrowserOpenedWithNewProfileNotificationObserver
+    : public NotificationObserver {
+ public:
+  BrowserOpenedWithNewProfileNotificationObserver(
+      AutomationProvider* automation,
+      IPC::Message* reply_message);
+  virtual ~BrowserOpenedWithNewProfileNotificationObserver();
+
+  virtual void Observe(int type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
+
+ private:
+  NotificationRegistrar registrar_;
+  base::WeakPtr<AutomationProvider> automation_;
+  scoped_ptr<IPC::Message> reply_message_;
+  int new_window_id_;
+
+  DISALLOW_COPY_AND_ASSIGN(BrowserOpenedWithNewProfileNotificationObserver);
+};
+
 #endif  // CHROME_BROWSER_AUTOMATION_AUTOMATION_PROVIDER_OBSERVERS_H_

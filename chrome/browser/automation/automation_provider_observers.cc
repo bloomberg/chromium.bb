@@ -56,6 +56,7 @@
 #include "chrome/browser/translate/translate_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/find_bar/find_notification_details.h"
 #include "chrome/browser/ui/login/login_prompt.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
@@ -2831,3 +2832,65 @@ void ProcessInfoObserver::OnDetailsAvailable() {
         .SendSuccess(return_value.get());
   }
 }
+
+BrowserOpenedWithNewProfileNotificationObserver::
+    BrowserOpenedWithNewProfileNotificationObserver(
+        AutomationProvider* automation,
+        IPC::Message* reply_message)
+        : automation_(automation->AsWeakPtr()),
+          reply_message_(reply_message),
+          new_window_id_(extension_misc::kUnknownWindowId) {
+  registrar_.Add(this, chrome::NOTIFICATION_PROFILE_CREATED,
+                 NotificationService::AllBrowserContextsAndSources());
+  registrar_.Add(this, chrome::NOTIFICATION_BROWSER_OPENED,
+                 NotificationService::AllBrowserContextsAndSources());
+  registrar_.Add(this, content::NOTIFICATION_LOAD_STOP,
+                 NotificationService::AllBrowserContextsAndSources());
+}
+
+BrowserOpenedWithNewProfileNotificationObserver::
+    ~BrowserOpenedWithNewProfileNotificationObserver() {
+}
+
+void BrowserOpenedWithNewProfileNotificationObserver::Observe(
+    int type,
+    const NotificationSource& source,
+    const NotificationDetails& details) {
+  if (!automation_) {
+    delete this;
+    return;
+  }
+
+  if (type == chrome::NOTIFICATION_PROFILE_CREATED) {
+    // As part of multi-profile creation, a new browser window will
+    // automatically be opened.
+    Profile* profile = Source<Profile>(source).ptr();
+    if (!profile) {
+      AutomationJSONReply(automation_,
+          reply_message_.release()).SendError("Profile could not be created.");
+      return;
+    }
+  } else if (type == chrome::NOTIFICATION_BROWSER_OPENED) {
+    // Store the new browser ID and continue waiting for a new tab within it
+    // to stop loading.
+    new_window_id_ = ExtensionTabUtil::GetWindowId(
+        Source<Browser>(source).ptr());
+  } else if (type == content::NOTIFICATION_LOAD_STOP) {
+    // Only send the result if the loaded tab is in the new window.
+    NavigationController* controller =
+        Source<NavigationController>(source).ptr();
+    TabContentsWrapper* tab = TabContentsWrapper::GetCurrentWrapperForContents(
+        controller->tab_contents());
+    int window_id = tab ? tab->restore_tab_helper()->window_id().id() : -1;
+    if (window_id == new_window_id_) {
+      if (automation_) {
+        AutomationJSONReply(automation_, reply_message_.release())
+            .SendSuccess(NULL);
+      }
+      delete this;
+    }
+  } else {
+    NOTREACHED();
+  }
+}
+

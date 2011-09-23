@@ -147,6 +147,14 @@ class NTPTest(pyauto.PyUITest):
     self.NavigateToURL(self.PAGES[0]['url'], 1, 0)
     self.assertFalse(self.GetNTPThumbnails())
 
+  def testDifferentProfileNotAppearInMostVisited(self):
+    """Tests that visiting a page in one profile does not cause it to appear in
+    the Most Visited section of another."""
+    self.RemoveNTPDefaultThumbnails()
+    self.OpenNewBrowserWindowWithNewProfile()
+    self.NavigateToURL(self.PAGES[0]['url'], 1, 0)
+    self.assertFalse(self.GetNTPThumbnails())
+
   def testRestoreOncePinnedThumbnail(self):
     """Tests that after restoring a once pinned thumbnail, the thumbnail is
     not pinned"""

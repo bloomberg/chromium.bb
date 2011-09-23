@@ -390,6 +390,12 @@ class TestingAutomationProvider : public AutomationProvider,
                               base::DictionaryValue* args,
                               IPC::Message* reply_message);
 
+  // Create a new profile and open a new browser window with this profile. Uses
+  // the JSON interface for input/output.
+  void OpenNewBrowserWindowWithNewProfile(
+      base::DictionaryValue* args,
+      IPC::Message* reply_message);
+
   // Get info about the chromium/chrome in use.
   // This includes things like version, executable name, executable path.
   // Uses the JSON interface for input/output.
