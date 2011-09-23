@@ -71,4 +71,3 @@ TestCompositorHost* TestCompositorHost::Create(const gfx::Rect& bounds) {
 }
 
 }  // namespace ui
-
