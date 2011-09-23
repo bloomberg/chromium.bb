@@ -13629,6 +13629,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
     <message name="IDS_CHOOSE_INTENT_HANDLER_MESSAGE" desc="Text to display when user is choosing a intent handler to respond to a web intent.">
       Complete action using:
     </message>
+    <message name="IDS_FIND_MORE_INTENT_HANDLER_MESSAGE" desc="Text to show to inform the user that more intent services can be found in the web store.">
+      Find more services by visiting the Chrome Web Store.
+    </message>
+    <message name="IDS_FIND_MORE_INTENT_HANDLER_TOOLTIP" desc="Tooltip text for the web store plus button on the intent picker dialog.">
+      Find services in the Chrome Web Store
+    </message>
 
     <!-- PDF with unsupported feature Info Bar -->
     <message name="IDS_PDF_INFOBAR_QUESTION_READER_INSTALLED" desc="Question asked on the info bar when a user views a PDF with an unsupported feature and they have Adobe Reader installed.">

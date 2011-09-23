@@ -53,6 +53,9 @@ class WebIntentPickerGtk : public WebIntentPicker,
   // non-NULL.
   void InitContents();
 
+  // Get the button widget at |index|.
+  GtkWidget* GetServiceButton(size_t index);
+
   // A weak pointer to the tab contents on which to display the picker UI.
   TabContentsWrapper* wrapper_;
 

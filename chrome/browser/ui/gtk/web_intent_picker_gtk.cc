@@ -19,6 +19,8 @@
 #include "content/common/content_notification_types.h"
 #include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
+#include "grit/theme_resources.h"
+#include "grit/theme_resources_standard.h"
 #include "grit/ui_resources.h"
 #include "ui/base/gtk/gtk_hig_constants.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -28,8 +30,34 @@
 
 namespace {
 
+// The width in pixels of the area between the icon on the left and the close
+// button on the right.
+const int kMainContentWidth = 300;
+
+// The length in pixels of the label at the bottom of the picker. Text longer
+// than this width will wrap.
+const int kWebStoreLabelLength = 300;
+
+// The pixel size of the label at the bottom of the picker.
+const int kWebStoreLabelPixelSize = 11;
+
+// How much to scale the the buttons up from their favicon size.
+const int kServiceButtonScale = 3;
+
 GtkThemeService *GetThemeService(TabContentsWrapper* wrapper) {
   return GtkThemeService::GetFrom(wrapper->profile());
+}
+
+// Set the image of |button| to |pixbuf|, and scale the button up by
+// |kServiceButtonScale|.
+void SetServiceButtonImage(GtkWidget* button, GdkPixbuf* pixbuf) {
+  int width = gdk_pixbuf_get_width(pixbuf);
+  int height = gdk_pixbuf_get_height(pixbuf);
+  gtk_button_set_image(GTK_BUTTON(button),
+                       gtk_image_new_from_pixbuf(pixbuf));
+  gtk_widget_set_size_request(button,
+                              width * kServiceButtonScale,
+                              height * kServiceButtonScale);
 }
 
 } // namespace
@@ -86,6 +114,17 @@ void WebIntentPickerGtk::SetServiceURLs(const std::vector<GURL>& urls) {
                      this);
   }
 
+  // Add the '+' button, to use the Chrome Web Store.
+  GtkWidget* plus_button = gtk_button_new();
+  gtk_widget_set_tooltip_text(
+      plus_button,
+      l10n_util::GetStringUTF8(IDS_FIND_MORE_INTENT_HANDLER_TOOLTIP).c_str());
+  gtk_box_pack_start(GTK_BOX(button_hbox_), plus_button, FALSE, FALSE, 0);
+
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  GdkPixbuf* icon_pixbuf = rb.GetNativeImageNamed(IDR_SIDETABS_NEW_TAB);
+  SetServiceButtonImage(plus_button, icon_pixbuf);
+
   gtk_widget_show_all(button_hbox_);
 }
 
@@ -93,23 +132,19 @@ void WebIntentPickerGtk::SetServiceIcon(size_t index, const SkBitmap& icon) {
   if (icon.empty())
     return;
 
-  GList* button_list = gtk_container_get_children(GTK_CONTAINER(button_hbox_));
-  GtkButton* button = GTK_BUTTON(g_list_nth_data(button_list, index));
-  DCHECK(button != NULL) << "Invalid index.";
+  GtkWidget* button = GetServiceButton(index);
 
   GdkPixbuf* icon_pixbuf = gfx::GdkPixbufFromSkBitmap(&icon);
-  gtk_button_set_image(button, gtk_image_new_from_pixbuf(icon_pixbuf));
+  SetServiceButtonImage(button, icon_pixbuf);
   g_object_unref(icon_pixbuf);
 }
 
 void WebIntentPickerGtk::SetDefaultServiceIcon(size_t index) {
-  GList* button_list = gtk_container_get_children(GTK_CONTAINER(button_hbox_));
-  GtkButton* button = GTK_BUTTON(g_list_nth_data(button_list, index));
-  DCHECK(button != NULL) << "Invalid index.";
+  GtkWidget* button = GetServiceButton(index);
 
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   GdkPixbuf* icon_pixbuf = rb.GetNativeImageNamed(IDR_DEFAULT_FAVICON);
-  gtk_button_set_image(button, gtk_image_new_from_pixbuf(icon_pixbuf));
+  SetServiceButtonImage(button, icon_pixbuf);
 }
 
 void WebIntentPickerGtk::Close() {
@@ -135,11 +170,40 @@ void WebIntentPickerGtk::OnServiceButtonClick(GtkWidget* button) {
 }
 
 void WebIntentPickerGtk::InitContents() {
-  contents_ = gtk_vbox_new(FALSE, ui::kContentAreaBorder);
-  GtkWidget* hbox = gtk_hbox_new(FALSE, 0);
-  GtkWidget* label = gtk_label_new(
-      l10n_util::GetStringUTF8(IDS_CHOOSE_INTENT_HANDLER_MESSAGE).c_str());
-  gtk_box_pack_start(GTK_BOX(hbox), label, TRUE, TRUE, 0);
+  GtkThemeService* theme_service = GetThemeService(wrapper_);
+
+  contents_ = gtk_hbox_new(FALSE, ui::kContentAreaSpacing);
+  gtk_container_set_border_width(GTK_CONTAINER(contents_),
+                                 ui::kContentAreaBorder);
+
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  GdkPixbuf* image_pixbuf = rb.GetNativeImageNamed(IDR_PAGEINFO_INFO);
+  GtkWidget* image = gtk_image_new_from_pixbuf(image_pixbuf);
+  gtk_box_pack_start(GTK_BOX(contents_), image, FALSE, FALSE, 0);
+  gtk_misc_set_alignment(GTK_MISC(image), 0, 0);
+
+  GtkWidget* vbox = gtk_vbox_new(FALSE, ui::kContentAreaSpacing);
+
+  GtkWidget* label = theme_service->BuildLabel(
+      l10n_util::GetStringUTF8(IDS_CHOOSE_INTENT_HANDLER_MESSAGE).c_str(),
+      ui::kGdkBlack);
+  gtk_box_pack_start(GTK_BOX(vbox), label, TRUE, TRUE, 0);
+  gtk_misc_set_alignment(GTK_MISC(label), 0, 0);
+
+  gtk_widget_set_size_request(vbox, kMainContentWidth, -1);
+
+  button_hbox_ = gtk_hbox_new(FALSE, ui::kControlSpacing);
+  gtk_box_pack_start(GTK_BOX(vbox), button_hbox_, TRUE, TRUE, 0);
+
+  GtkWidget* cws_label = theme_service->BuildLabel(
+      l10n_util::GetStringUTF8(IDS_FIND_MORE_INTENT_HANDLER_MESSAGE).c_str(),
+      ui::kGdkBlack);
+  gtk_box_pack_start(GTK_BOX(vbox), cws_label, TRUE, TRUE, 0);
+  gtk_misc_set_alignment(GTK_MISC(cws_label), 0, 0);
+  gtk_util::SetLabelWidth(cws_label, kWebStoreLabelLength);
+  gtk_util::ForceFontSizePixels(cws_label, kWebStoreLabelPixelSize);
+
+  gtk_box_pack_start(GTK_BOX(contents_), vbox, TRUE, TRUE, 0);
 
   close_button_.reset(
       CustomDrawButton::CloseButton(GetThemeService(wrapper_)));
@@ -148,10 +212,17 @@ void WebIntentPickerGtk::InitContents() {
                    G_CALLBACK(OnCloseButtonClickThunk),
                    this);
   gtk_widget_set_can_focus(close_button_->widget(), FALSE);
-  gtk_box_pack_end(GTK_BOX(hbox), close_button_->widget(), FALSE, FALSE, 0);
 
-  gtk_box_pack_start(GTK_BOX(contents_), hbox, FALSE, FALSE, 0);
+  GtkWidget* close_vbox = gtk_vbox_new(FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(close_vbox), close_button_->widget(), FALSE, FALSE,
+                     0);
+  gtk_box_pack_end(GTK_BOX(contents_), close_vbox, FALSE, FALSE, 0);
+}
 
-  button_hbox_ = gtk_hbox_new(FALSE, ui::kContentAreaBorder);
-  gtk_box_pack_start(GTK_BOX(contents_), button_hbox_, TRUE, TRUE, 0);
+GtkWidget* WebIntentPickerGtk::GetServiceButton(size_t index) {
+  GList* button_list = gtk_container_get_children(GTK_CONTAINER(button_hbox_));
+  GtkWidget* button = GTK_WIDGET(g_list_nth_data(button_list, index));
+  DCHECK(button != NULL);
+
+  return button;
 }
