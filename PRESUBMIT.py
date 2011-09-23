@@ -115,7 +115,8 @@ def _CheckNoNewWStrings(input_api, output_api):
   errors = []
   for f in input_api.AffectedFiles():
     for line_num, line in f.ChangedContents():
-      if not f.LocalPath().endswith(('.cc', '.h')):
+      if (not f.LocalPath().endswith(('.cc', '.h')) or
+          f.LocalPath().endswith('test.cc')):
         continue
 
       if 'wstring' in line:
