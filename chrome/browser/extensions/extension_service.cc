@@ -704,7 +704,6 @@ void ExtensionService::InitEventRouters() {
   downloads_event_router_.reset(new ExtensionDownloadsEventRouter(profile_));
   history_event_router_.reset(new ExtensionHistoryEventRouter());
   history_event_router_->ObserveProfile(profile_);
-  ExtensionAccessibilityEventRouter::GetInstance()->ObserveProfile(profile_);
   browser_event_router_.reset(new ExtensionBrowserEventRouter(profile_));
   browser_event_router_->Init();
   preference_event_router_.reset(new ExtensionPreferenceEventRouter(profile_));

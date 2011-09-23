@@ -41,42 +41,36 @@ ExtensionAccessibilityEventRouter*
 }
 
 ExtensionAccessibilityEventRouter::ExtensionAccessibilityEventRouter()
-    : enabled_(false) {}
+    : enabled_(false) {
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_ACCESSIBILITY_WINDOW_OPENED,
+                 NotificationService::AllSources());
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_ACCESSIBILITY_WINDOW_CLOSED,
+                 NotificationService::AllSources());
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_ACCESSIBILITY_CONTROL_FOCUSED,
+                 NotificationService::AllSources());
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_ACCESSIBILITY_CONTROL_ACTION,
+                 NotificationService::AllSources());
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_ACCESSIBILITY_TEXT_CHANGED,
+                 NotificationService::AllSources());
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_ACCESSIBILITY_MENU_OPENED,
+                 NotificationService::AllSources());
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_ACCESSIBILITY_MENU_CLOSED,
+                 NotificationService::AllSources());
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_ACCESSIBILITY_VOLUME_CHANGED,
+                 NotificationService::AllSources());
+}
 
 ExtensionAccessibilityEventRouter::~ExtensionAccessibilityEventRouter() {
   STLDeleteElements(&on_enabled_listeners_);
   STLDeleteElements(&on_disabled_listeners_);
-}
-
-void ExtensionAccessibilityEventRouter::ObserveProfile(Profile* profile) {
-  last_focused_control_dict_.Clear();
-
-  if (registrar_.IsEmpty()) {
-    registrar_.Add(this,
-                   chrome::NOTIFICATION_ACCESSIBILITY_WINDOW_OPENED,
-                   NotificationService::AllSources());
-    registrar_.Add(this,
-                   chrome::NOTIFICATION_ACCESSIBILITY_WINDOW_CLOSED,
-                   NotificationService::AllSources());
-    registrar_.Add(this,
-                   chrome::NOTIFICATION_ACCESSIBILITY_CONTROL_FOCUSED,
-                   NotificationService::AllSources());
-    registrar_.Add(this,
-                   chrome::NOTIFICATION_ACCESSIBILITY_CONTROL_ACTION,
-                   NotificationService::AllSources());
-    registrar_.Add(this,
-                   chrome::NOTIFICATION_ACCESSIBILITY_TEXT_CHANGED,
-                   NotificationService::AllSources());
-    registrar_.Add(this,
-                   chrome::NOTIFICATION_ACCESSIBILITY_MENU_OPENED,
-                   NotificationService::AllSources());
-    registrar_.Add(this,
-                   chrome::NOTIFICATION_ACCESSIBILITY_MENU_CLOSED,
-                   NotificationService::AllSources());
-    registrar_.Add(this,
-                   chrome::NOTIFICATION_ACCESSIBILITY_VOLUME_CHANGED,
-                   NotificationService::AllSources());
-  }
 }
 
 void ExtensionAccessibilityEventRouter::Observe(

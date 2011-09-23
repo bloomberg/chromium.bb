@@ -25,9 +25,6 @@ class ExtensionAccessibilityEventRouter : public NotificationObserver {
   // Single instance of the event router.
   static ExtensionAccessibilityEventRouter* GetInstance();
 
-  // Safe to call multiple times.
-  void ObserveProfile(Profile* profile);
-
   // Get the dict representing the last control that received an
   // OnControlFocus event.
   DictionaryValue* last_focused_control_dict() {
