@@ -20,6 +20,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/user_metrics.h"
+#include "content/common/content_switches.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/gl/gl_switches.h"
@@ -166,6 +167,13 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_DISABLE_GPU_VSYNC_DESCRIPTION,
     kOsAll,
     SINGLE_VALUE_TYPE(switches::kDisableGpuVsync)
+  },
+  {
+    "disable-webgl",
+    IDS_FLAGS_DISABLE_WEBGL_NAME,
+    IDS_FLAGS_DISABLE_WEBGL_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kDisableExperimentalWebGL)
   },
   // Exposed on all platforms until there is a workaround for easy access to
   // the native print dialog for users that need it. Once that's done, revert
