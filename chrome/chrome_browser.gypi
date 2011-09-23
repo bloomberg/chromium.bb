@@ -233,7 +233,8 @@
         'browser/automation/ui_controls.h',
         'browser/automation/ui_controls_internal.cc',
         'browser/automation/ui_controls_internal.h',
-        'browser/automation/ui_controls_linux.cc',
+        'browser/automation/ui_controls_aura.cc',
+        'browser/automation/ui_controls_gtk.cc',
         'browser/automation/ui_controls_mac.mm',
         'browser/automation/ui_controls_win.cc',
         'browser/automation/url_request_automation_job.cc',
@@ -247,7 +248,8 @@
         'browser/background/background_mode_manager.cc',
         'browser/background/background_mode_manager.h',
         'browser/background/background_mode_manager_chromeos.cc',
-        'browser/background/background_mode_manager_linux.cc',
+        'browser/background/background_mode_manager_aura.cc',
+        'browser/background/background_mode_manager_gtk.cc',
         'browser/background/background_mode_manager_mac.mm',
         'browser/background/background_mode_manager_win.cc',
         'browser/bookmarks/base_bookmark_model_observer.cc',
@@ -1220,7 +1222,8 @@
         'browser/first_run/upgrade_util_win.cc',
         'browser/first_run/upgrade_util_win.h',
         'browser/fullscreen.h',
-        'browser/fullscreen_linux.cc',
+        'browser/fullscreen_aura.cc',
+        'browser/fullscreen_gtk.cc',
         'browser/fullscreen_mac.mm',
         'browser/fullscreen_win.cc',
         'browser/geolocation/chrome_access_token_store.cc',
@@ -1461,8 +1464,9 @@
         'browser/memory_details_win.cc',
         'browser/memory_purger.cc',
         'browser/memory_purger.h',
+        'browser/metrics/display_utils_aura.cc',
+        'browser/metrics/display_utils_gtk.cc',
         'browser/metrics/display_utils_mac.cc',
-        'browser/metrics/display_utils_posix.cc',
         'browser/metrics/display_utils_win.cc',
         'browser/metrics/field_trial_synchronizer.cc',
         'browser/metrics/field_trial_synchronizer.h',
@@ -3942,7 +3946,7 @@
             'browser/chromeos/input_method/input_method.gyp:mozc_commands_proto',
           ],
           'sources!': [
-            'browser/background_mode_manager_linux.cc',
+            'browser/background/background_mode_manager_gtk.cc',
             'browser/first_run/upgrade_util.cc',
             'browser/first_run/upgrade_util.h',
             'browser/first_run/upgrade_util_linux.cc',
@@ -4779,9 +4783,9 @@
                 ['exclude', '^browser/ui/views/select_file_dialog.cc'],
               ],
             }],
-            # Exclude extension_input_ui_api again
+            # Exclude extension_input_ui_api that depends on chromeos again
             # (Required because of the '^browser/extensions/' include above)
-            ['toolkit_uses_gtk == 1 and ( touchui == 0 or chromeos == 0 )', {
+            ['chromeos == 0', {
               'sources/': [
                 ['exclude', '^browser/extensions/extension_input_ui_api.cc'],
                 ['exclude', '^browser/extensions/extension_input_ui_api.h'],

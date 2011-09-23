@@ -930,11 +930,12 @@ void RenderWidgetHostViewViews::UpdateCursor(const WebCursor& cursor) {
   // Optimize the common case, where the cursor hasn't changed.
   // However, we can switch between different pixmaps, so only on the
   // non-pixmap branch.
+#if defined(TOOLKIT_USES_GTK)
   if (current_cursor_.GetCursorType() != GDK_CURSOR_IS_PIXMAP &&
       current_cursor_.GetCursorType() == cursor.GetCursorType()) {
     return;
   }
-
+#endif
   current_cursor_ = cursor;
   ShowCurrentCursor();
 }
@@ -950,10 +951,8 @@ void RenderWidgetHostViewViews::ShowCurrentCursor() {
   native_cursor_ = current_cursor_.GetNativeCursor();
 }
 
+#if defined(TOOLKIT_USES_GTK)
 bool RenderWidgetHostViewViews::IsReadyToPaint() {
-#if defined(USE_AURA)
-  return false;
-#else
   views::Widget* top = NULL;
 
   // TODO(oshima): move this functionality to Widget.
@@ -968,8 +967,8 @@ bool RenderWidgetHostViewViews::IsReadyToPaint() {
   return top ?
       !!(static_cast<const views::NativeWidgetGtk*>(top->native_widget())->
          window_contents()->window) : false;
-#endif
 }
+#endif
 
 #endif  // !OS_WIN
 
