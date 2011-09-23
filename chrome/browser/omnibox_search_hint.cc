@@ -37,7 +37,7 @@
 #include "ui/base/resource/resource_bundle.h"
 
 // The URLs of search engines for which we want to trigger the infobar.
-const char* kSearchEngineURLs[] = {
+const char* const kSearchEngineURLs[] = {
     "http://www.google.com/",
     "http://www.yahoo.com/",
     "http://www.bing.com/",
@@ -154,10 +154,8 @@ OmniboxSearchHint::OmniboxSearchHint(TabContentsWrapper* tab) : tab_(tab) {
                               content::NOTIFICATION_NAV_ENTRY_COMMITTED,
                               Source<NavigationController>(controller));
   // Fill the search_engine_urls_ map, used for faster look-up (overkill?).
-  for (size_t i = 0;
-       i < sizeof(kSearchEngineURLs) / sizeof(kSearchEngineURLs[0]); ++i) {
+  for (size_t i = 0; i < arraysize(kSearchEngineURLs); ++i)
     search_engine_urls_[kSearchEngineURLs[i]] = 1;
-  }
 
   // Listen for omnibox to figure-out when the user searches from the omnibox.
   notification_registrar_.Add(this,
