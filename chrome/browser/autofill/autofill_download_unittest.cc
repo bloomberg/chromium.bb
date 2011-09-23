@@ -37,6 +37,19 @@ class MockAutofillMetrics : public AutofillMetrics {
   DISALLOW_COPY_AND_ASSIGN(MockAutofillMetrics);
 };
 
+// Call |fetcher->OnURLFetchComplete()| as the URLFetcher would when
+// a response is received.  Params allow caller to set fake status.
+void FakeOnURLFetchComplete(TestURLFetcher* fetcher,
+                            int response_code,
+                            const std::string& response_body) {
+  fetcher->set_url(GURL());
+  fetcher->set_status(net::URLRequestStatus());
+  fetcher->set_response_code(response_code);
+  fetcher->SetResponseString(response_body);
+
+  fetcher->delegate()->OnURLFetchComplete(fetcher);
+}
+
 }  // namespace
 
 // This tests AutofillDownloadManager. AutofillDownloadTest implements
@@ -254,26 +267,19 @@ TEST_F(AutofillDownloadTest, QueryAndUploadTest) {
   // Return them out of sequence.
   TestURLFetcher* fetcher = factory.GetFetcherByID(1);
   ASSERT_TRUE(fetcher);
-  fetcher->delegate()->OnURLFetchComplete(fetcher, GURL(),
-                                          net::URLRequestStatus(),
-                                          200, net::ResponseCookies(),
-                                          std::string(responses[1]));
+  FakeOnURLFetchComplete(fetcher, 200, std::string(responses[1]));
+
   // After that upload rates would be adjusted to 0.5/0.3
   EXPECT_DOUBLE_EQ(0.5, download_manager.GetPositiveUploadRate());
   EXPECT_DOUBLE_EQ(0.3, download_manager.GetNegativeUploadRate());
 
   fetcher = factory.GetFetcherByID(2);
   ASSERT_TRUE(fetcher);
-  fetcher->delegate()->OnURLFetchComplete(fetcher, GURL(),
-                                          net::URLRequestStatus(),
-                                          404, net::ResponseCookies(),
-                                          std::string(responses[2]));
+  FakeOnURLFetchComplete(fetcher, 404, std::string(responses[2]));
+
   fetcher = factory.GetFetcherByID(0);
   ASSERT_TRUE(fetcher);
-  fetcher->delegate()->OnURLFetchComplete(fetcher, GURL(),
-                                          net::URLRequestStatus(),
-                                          200, net::ResponseCookies(),
-                                          std::string(responses[0]));
+  FakeOnURLFetchComplete(fetcher, 200, std::string(responses[0]));
   EXPECT_EQ(static_cast<size_t>(3), responses_.size());
 
   EXPECT_EQ(AutofillDownloadTest::UPLOAD_SUCCESSFULL,
@@ -328,10 +334,8 @@ TEST_F(AutofillDownloadTest, QueryAndUploadTest) {
   ASSERT_TRUE(fetcher);
   fetcher->set_backoff_delay(
       base::TimeDelta::FromMilliseconds(TestTimeouts::action_max_timeout_ms()));
-  fetcher->delegate()->OnURLFetchComplete(fetcher, GURL(),
-                                          net::URLRequestStatus(),
-                                          500, net::ResponseCookies(),
-                                          std::string(responses[0]));
+  FakeOnURLFetchComplete(fetcher, 500, std::string(responses[0]));
+
   EXPECT_EQ(AutofillDownloadTest::REQUEST_QUERY_FAILED,
             responses_.front().type_of_response);
   EXPECT_EQ(500, responses_.front().error);
@@ -356,10 +360,7 @@ TEST_F(AutofillDownloadTest, QueryAndUploadTest) {
   ASSERT_TRUE(fetcher);
   fetcher->set_backoff_delay(
       base::TimeDelta::FromMilliseconds(TestTimeouts::action_max_timeout_ms()));
-  fetcher->delegate()->OnURLFetchComplete(fetcher, GURL(),
-                                          net::URLRequestStatus(),
-                                          503, net::ResponseCookies(),
-                                          std::string(responses[2]));
+  FakeOnURLFetchComplete(fetcher, 503, std::string(responses[2]));
   EXPECT_EQ(AutofillDownloadTest::REQUEST_UPLOAD_FAILED,
             responses_.front().type_of_response);
   EXPECT_EQ(503, responses_.front().error);
@@ -452,10 +453,7 @@ TEST_F(AutofillDownloadTest, CacheQueryTest) {
 
   TestURLFetcher* fetcher = factory.GetFetcherByID(0);
   ASSERT_TRUE(fetcher);
-  fetcher->delegate()->OnURLFetchComplete(fetcher, GURL(),
-                                          net::URLRequestStatus(),
-                                          200, net::ResponseCookies(),
-                                          std::string(responses[0]));
+  FakeOnURLFetchComplete(fetcher, 200, std::string(responses[0]));
   ASSERT_EQ(static_cast<size_t>(1), responses_.size());
   EXPECT_EQ(responses[0], responses_.front().response);
 
@@ -481,10 +479,7 @@ TEST_F(AutofillDownloadTest, CacheQueryTest) {
 
   fetcher = factory.GetFetcherByID(1);
   ASSERT_TRUE(fetcher);
-  fetcher->delegate()->OnURLFetchComplete(fetcher, GURL(),
-                                          net::URLRequestStatus(),
-                                          200, net::ResponseCookies(),
-                                          std::string(responses[1]));
+  FakeOnURLFetchComplete(fetcher, 200, std::string(responses[1]));
   ASSERT_EQ(static_cast<size_t>(1), responses_.size());
   EXPECT_EQ(responses[1], responses_.front().response);
 
@@ -498,10 +493,7 @@ TEST_F(AutofillDownloadTest, CacheQueryTest) {
 
   fetcher = factory.GetFetcherByID(2);
   ASSERT_TRUE(fetcher);
-  fetcher->delegate()->OnURLFetchComplete(fetcher, GURL(),
-                                          net::URLRequestStatus(),
-                                          200, net::ResponseCookies(),
-                                          std::string(responses[2]));
+  FakeOnURLFetchComplete(fetcher, 200, std::string(responses[2]));
   ASSERT_EQ(static_cast<size_t>(1), responses_.size());
   EXPECT_EQ(responses[2], responses_.front().response);
 
@@ -534,10 +526,7 @@ TEST_F(AutofillDownloadTest, CacheQueryTest) {
 
   fetcher = factory.GetFetcherByID(3);
   ASSERT_TRUE(fetcher);
-  fetcher->delegate()->OnURLFetchComplete(fetcher, GURL(),
-                                          net::URLRequestStatus(),
-                                          200, net::ResponseCookies(),
-                                          std::string(responses[0]));
+  FakeOnURLFetchComplete(fetcher, 200, std::string(responses[0]));
   ASSERT_EQ(static_cast<size_t>(1), responses_.size());
   EXPECT_EQ(responses[0], responses_.front().response);
 }

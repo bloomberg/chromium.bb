@@ -103,6 +103,7 @@ class TestURLFetcher : public URLFetcher {
   void SetResponseFilePath(const FilePath& path);
 
   // Override response access functions to return fake data.
+  virtual const std::string& GetResponseStringRef() const OVERRIDE;
   virtual bool GetResponseAsString(std::string* out_response_string) const
       OVERRIDE;
   virtual bool GetResponseAsFilePath(bool take_ownership,

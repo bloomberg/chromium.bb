@@ -126,12 +126,7 @@ class AutofillDownloadManager : public URLFetcher::Delegate {
       const std::vector<std::string>& forms_in_query) const;
 
   // URLFetcher::Delegate implementation:
-  virtual void OnURLFetchComplete(const URLFetcher* source,
-                                  const GURL& url,
-                                  const net::URLRequestStatus& status,
-                                  int response_code,
-                                  const net::ResponseCookies& cookies,
-                                  const std::string& data);
+  virtual void OnURLFetchComplete(const URLFetcher* source) OVERRIDE;
 
   // Probability of the form upload. Between 0 (no upload) and 1 (upload all).
   // GetPositiveUploadRate() is for matched forms,

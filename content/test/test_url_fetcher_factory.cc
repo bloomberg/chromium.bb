@@ -58,6 +58,10 @@ void TestURLFetcher::SetResponseFilePath(const FilePath& path) {
   fake_response_file_path_ = path;
 }
 
+const std::string& TestURLFetcher::GetResponseStringRef() const {
+  return fake_response_string_;
+}
+
 bool TestURLFetcher::GetResponseAsString(
     std::string* out_response_string) const {
   if (GetResponseDestinationForTesting() != STRING)

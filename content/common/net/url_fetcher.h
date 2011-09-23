@@ -250,6 +250,10 @@ class CONTENT_EXPORT URLFetcher {
   // set to store the response as a string.
   virtual bool GetResponseAsString(std::string* out_response_string) const;
 
+  // Return a const reference to the string data fetched.  Response type
+  // must be STRING, or this will CHECK.
+  virtual const std::string& GetResponseStringRef() const;
+
   // Get the path to the file containing the response body. Returns false
   // if the response body was not saved to a file. If take_ownership is
   // true, caller takes responsibility for the temp file, and it will not
@@ -278,12 +282,6 @@ class CONTENT_EXPORT URLFetcher {
 
   // Used by tests.
   const std::string& upload_data() const;
-
-  // Return a reference to the string data fetched.  Response type must
-  // be STRING, or this will CHECK.  This method exists to support the
-  // old signiture to OnURLFetchComplete(), and will be removed as part
-  // of crbug.com/83592 .
-  virtual const std::string& GetResponseStringRef() const;
 
   virtual void SetResponseDestinationForTesting(ResponseDestinationType);
   virtual ResponseDestinationType GetResponseDestinationForTesting() const;
