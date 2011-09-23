@@ -1544,9 +1544,10 @@
 {
    bug_96363a
    Heapcheck:Leak
-   fun:MakeAutofillProfileSyncComponentsActionP4::gmock_Impl::gmock_PerformImpl
+   ...
+   fun:MakeAutofillProfileSyncComponentsActionP3::gmock_Impl::gmock_PerformImpl
    fun:testing::internal::ActionHelper::Perform
-   fun:MakeAutofillProfileSyncComponentsActionP4::gmock_Impl::Perform
+   fun:MakeAutofillProfileSyncComponentsActionP3::gmock_Impl::Perform
    fun:testing::Action::Perform
    fun:testing::internal::ActionResultHolder::PerformAction
    fun:testing::internal::FunctionMockerBase::UntypedPerformAction
