@@ -184,7 +184,8 @@ DownloadItem::DownloadItem(DownloadManager* download_manager,
       is_temporary_(!info.save_info.file_path.empty()),
       all_data_saved_(false),
       opened_(false),
-      open_enabled_(true) {
+      open_enabled_(true),
+      delegate_delayed_complete_(false) {
   Init(true /* actively downloading */);
 }
 
@@ -215,7 +216,8 @@ DownloadItem::DownloadItem(DownloadManager* download_manager,
       is_temporary_(false),
       all_data_saved_(false),
       opened_(false),
-      open_enabled_(true) {
+      open_enabled_(true),
+      delegate_delayed_complete_(false) {
   Init(true /* actively downloading */);
 }
 

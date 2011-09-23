@@ -201,8 +201,6 @@
       '-crash_reporter.CrashReporterTest.testRendererCrash',  # crbug.com/69464
       # crbug.com/75724
       '-downloads.DownloadsTest.testDeclineDangerousDownload',
-      # crbug.com/94468
-      '-downloads.DownloadsTest.testDownloadPercentage',
       # crbug.com/75724
       '-downloads.DownloadsTest.testSaveDangerousFile',
       '-instant.InstantTest.testInstantNavigation',  # crbug.com/69090
