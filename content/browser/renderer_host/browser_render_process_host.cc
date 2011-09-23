@@ -846,10 +846,10 @@ void BrowserRenderProcessHost::OnChannelError() {
 void BrowserRenderProcessHost::OnWaitableEventSignaled(
     base::WaitableEvent* waitable_event) {
 #if defined (OS_WIN)
-  DCHECK(child_process_launcher_.get());
   int exit_code = 0;
   base::TerminationStatus status =
-      child_process_launcher_->GetChildTerminationStatus(&exit_code);
+      base::GetTerminationStatus(waitable_event->Release(), &exit_code);
+  delete waitable_event;
   ProcessDied(status, exit_code, true);
 #endif
 }
