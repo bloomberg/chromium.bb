@@ -1030,6 +1030,9 @@ bool ProfileSyncServiceHarness::EnableEncryptionForType(
 
 bool ProfileSyncServiceHarness::WaitForTypeEncryption(
     syncable::ModelType type) {
+  // The correctness of this if condition depends on the ordering of its
+  // sub-expressions.  See crbug.com/95619.
+  // TODO(rlarocque): Figure out a less brittle way of detecting this.
   if (IsTypeEncrypted(type) &&
       IsSynced() &&
       GetLastSessionSnapshot()->num_conflicting_updates == 0) {
