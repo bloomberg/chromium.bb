@@ -16,7 +16,13 @@ class Point;
 namespace views {
 
 class Menu2;
-class MenuListener;
+
+// An interface for clients that want a notification when a menu is opened.
+class MenuListener {
+ public:
+  // This will be called after the menu has actually opened.
+  virtual void OnMenuOpened() = 0;
+};
 
 // An interface that wraps an object that implements a menu.
 class VIEWS_EXPORT MenuWrapper {

@@ -20,6 +20,7 @@
 #include "ui/base/models/accelerator.h"
 #include "views/controls/button/menu_button.h"
 #include "views/controls/menu/menu.h"
+#include "views/controls/menu/menu_wrapper.h"
 #include "views/controls/menu/view_menu_delegate.h"
 #include "views/view.h"
 
@@ -27,10 +28,6 @@ class BrowserActionsContainer;
 class Browser;
 class Profile;
 class WrenchMenu;
-
-namespace views {
-class MenuListener;
-}
 
 // The Browser Window's toolbar.
 class ToolbarView : public AccessiblePaneView,

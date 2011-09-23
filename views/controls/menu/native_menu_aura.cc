@@ -6,7 +6,6 @@
 
 #include "base/logging.h"
 #include "views/controls/menu/menu_2.h"
-#include "views/controls/menu/menu_listener.h"
 #include "views/controls/menu/menu_wrapper.h"
 
 namespace views {

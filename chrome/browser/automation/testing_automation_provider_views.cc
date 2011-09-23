@@ -4,7 +4,6 @@
 
 #include "chrome/browser/automation/testing_automation_provider.h"
 
-#include "base/compiler_specific.h"
 #include "chrome/browser/automation/automation_browser_tracker.h"
 #include "chrome/browser/automation/automation_window_tracker.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -12,7 +11,7 @@
 #include "chrome/browser/ui/views/toolbar_view.h"
 #include "chrome/common/automation_messages.h"
 #include "ui/gfx/point.h"
-#include "views/controls/menu/menu_listener.h"
+#include "views/controls/menu/menu_wrapper.h"
 #include "views/view.h"
 #include "views/widget/widget.h"
 
@@ -89,8 +88,8 @@ class TestingAutomationProvider::PopupMenuWaiter : public views::MenuListener {
 
   virtual ~PopupMenuWaiter() {}
 
-  // Overridden from views::MenuListener:
-  virtual void OnMenuOpened() OVERRIDE {
+  // Implementation of views::MenuListener
+  virtual void OnMenuOpened() {
     toolbar_view_->RemoveMenuListener(this);
     automation_->popup_menu_opened_ = true;
     automation_->popup_menu_waiter_ = NULL;

@@ -6,10 +6,8 @@
 #define VIEWS_CONTROLS_MENU_NATIVE_MENU_LINUX_H_
 #pragma once
 
-#include "base/basictypes.h"
-#include "base/compiler_specific.h"
-#include "base/memory/scoped_ptr.h"
 #include "views/controls/menu/menu_delegate.h"
+#include "views/controls/menu/menu_item_view.h"
 #include "views/controls/menu/menu_wrapper.h"
 
 namespace ui {
@@ -18,7 +16,6 @@ class MenuModel;
 
 namespace views {
 
-class MenuItemView;
 class MenuRunner;
 
 // A non-GTK implementation of MenuWrapper, used currently for touchui.
@@ -29,21 +26,21 @@ class NativeMenuLinux : public MenuWrapper,
   virtual ~NativeMenuLinux();
 
   // Overridden from MenuWrapper:
-  virtual void RunMenuAt(const gfx::Point& point, int alignment) OVERRIDE;
-  virtual void CancelMenu() OVERRIDE;
-  virtual void Rebuild() OVERRIDE;
-  virtual void UpdateStates() OVERRIDE;
-  virtual gfx::NativeMenu GetNativeMenu() const OVERRIDE;
-  virtual MenuAction GetMenuAction() const OVERRIDE;
-  virtual void AddMenuListener(MenuListener* listener) OVERRIDE;
-  virtual void RemoveMenuListener(MenuListener* listener) OVERRIDE;
-  virtual void SetMinimumWidth(int width) OVERRIDE;
+  virtual void RunMenuAt(const gfx::Point& point, int alignment);
+  virtual void CancelMenu();
+  virtual void Rebuild();
+  virtual void UpdateStates();
+  virtual gfx::NativeMenu GetNativeMenu() const;
+  virtual MenuAction GetMenuAction() const;
+  virtual void AddMenuListener(MenuListener* listener);
+  virtual void RemoveMenuListener(MenuListener* listener);
+  virtual void SetMinimumWidth(int width);
 
   // Overridden from MenuDelegate:
-  virtual bool IsItemChecked(int id) const OVERRIDE;
-  virtual bool IsCommandEnabled(int id) const OVERRIDE;
-  virtual void ExecuteCommand(int id) OVERRIDE;
-  virtual bool GetAccelerator(int id, views::Accelerator* accelerator) OVERRIDE;
+  virtual bool IsItemChecked(int id) const;
+  virtual bool IsCommandEnabled(int id) const;
+  virtual void ExecuteCommand(int id);
+  virtual bool GetAccelerator(int id, views::Accelerator* accelerator);
 
  private:
   void AddMenuItemsFromModel(MenuItemView* parent, ui::MenuModel* model);

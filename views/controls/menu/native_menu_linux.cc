@@ -9,8 +9,6 @@
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/skia_util.h"
 #include "views/controls/menu/menu_2.h"
-#include "views/controls/menu/menu_item_view.h"
-#include "views/controls/menu/menu_listener.h"
 #include "views/controls/menu/menu_runner.h"
 #include "views/controls/menu/submenu_view.h"
 
