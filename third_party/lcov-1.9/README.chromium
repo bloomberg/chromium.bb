@@ -1,0 +1,14 @@
+Name: LCOV - the LTP GCOV extension
+Short Name: lcov
+URL: http://ltp.sourceforge.net/coverage/lcov.php
+Version: 1.9
+License: GPLv2 or later
+License File: COPYING
+Security Critical: no
+Local Modifications: None
+Description:
+This directory contains a stock lcov-1.9. The existing lcov is v1.6 and need
+to stay here to prevent breakages of existing coverage schemes.
+
+N.B.: This code will not be shipped with Chrome.
+      It is only part of the build/test infrastructure.
