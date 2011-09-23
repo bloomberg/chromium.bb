@@ -15,7 +15,6 @@
 #include "chrome/renderer/safe_browsing/features.h"
 #include "content/renderer/render_view.h"
 #include "net/base/registry_controlled_domain.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebElement.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNodeCollection.h"
@@ -127,6 +126,11 @@ void PhishingDOMFeatureExtractor::ExtractFeatures(
   done_callback_.reset(done_callback);
 
   page_feature_state_.reset(new PageFeatureState(clock_->Now()));
+  WebKit::WebView* web_view = render_view_->webview();
+  if (web_view && web_view->mainFrame()) {
+    cur_document_ = web_view->mainFrame()->document();
+  }
+
   MessageLoop::current()->PostTask(
       FROM_HERE,
       method_factory_.NewRunnableMethod(
@@ -144,18 +148,15 @@ void PhishingDOMFeatureExtractor::ExtractFeaturesWithTimeout() {
   ++page_feature_state_->num_iterations;
   base::TimeTicks current_chunk_start_time = clock_->Now();
 
-  if (!cur_frame_) {
-    WebKit::WebView* web_view = render_view_->webview();
-    if (!web_view) {
-      RunCallback(false);  // The WebView is going away.
-      return;
-    }
-    cur_frame_ = web_view->mainFrame();
+  if (cur_document_.isNull()) {
+    // This will only happen if we weren't able to get the document for the
+    // main frame.  We'll treat this as an extraction failure.
+    RunCallback(false);
+    return;
   }
 
   int num_elements = 0;
-  for (; cur_frame_;
-       cur_frame_ = cur_frame_->traverseNext(false /* don't wrap around */)) {
+  for (; !cur_document_.isNull(); cur_document_ = GetNextDocument()) {
     WebKit::WebNode cur_node;
     if (cur_frame_data_.get()) {
       // We're resuming traversal of a frame, so just advance to the next node.
@@ -351,8 +352,9 @@ void PhishingDOMFeatureExtractor::HandleScript(
 void PhishingDOMFeatureExtractor::CheckNoPendingExtraction() {
   DCHECK(!done_callback_.get());
   DCHECK(!cur_frame_data_.get());
-  DCHECK(!cur_frame_);
-  if (done_callback_.get() || cur_frame_data_.get() || cur_frame_) {
+  DCHECK(cur_document_.isNull());
+  if (done_callback_.get() || cur_frame_data_.get() ||
+      !cur_document_.isNull()) {
     LOG(ERROR) << "Extraction in progress, missing call to "
                << "CancelPendingExtraction";
   }
@@ -376,23 +378,37 @@ void PhishingDOMFeatureExtractor::Clear() {
   features_ = NULL;
   done_callback_.reset(NULL);
   cur_frame_data_.reset(NULL);
-  cur_frame_ = NULL;
+  cur_document_.reset();
 }
 
 bool PhishingDOMFeatureExtractor::ResetFrameData() {
-  DCHECK(cur_frame_);
+  DCHECK(!cur_document_.isNull());
   DCHECK(!cur_frame_data_.get());
 
-  WebKit::WebDocument doc = cur_frame_->document();
-  if (doc.isNull()) {
-    return false;
-  }
   cur_frame_data_.reset(new FrameData());
-  cur_frame_data_->elements = doc.all();
+  cur_frame_data_->elements = cur_document_.all();
   cur_frame_data_->domain =
       net::RegistryControlledDomainService::GetDomainAndRegistry(
-          cur_frame_->document().url());
+          cur_document_.url());
   return true;
+}
+
+WebKit::WebDocument PhishingDOMFeatureExtractor::GetNextDocument() {
+  DCHECK(!cur_document_.isNull());
+  WebKit::WebFrame* frame = cur_document_.frame();
+  // Advance to the next frame that contains a document, with no wrapping.
+  if (frame) {
+    while ((frame = frame->traverseNext(false))) {
+      if (!frame->document().isNull()) {
+        return frame->document();
+      }
+    }
+  } else {
+    // Keep track of how often frame traversal got "stuck" due to the
+    // current subdocument getting removed from the frame tree.
+    UMA_HISTOGRAM_COUNTS("SBClientPhishing.DOMFeatureFrameRemoved", 1);
+  }
+  return WebKit::WebDocument();
 }
 
 bool PhishingDOMFeatureExtractor::IsExternalDomain(const GURL& url,

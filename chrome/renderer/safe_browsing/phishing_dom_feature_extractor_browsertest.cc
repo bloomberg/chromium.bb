@@ -9,21 +9,45 @@
 
 #include "chrome/renderer/safe_browsing/phishing_dom_feature_extractor.h"
 
+#include "base/bind.h"
 #include "base/callback.h"
+#include "base/compiler_specific.h"
+#include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
 #include "base/time.h"
 #include "chrome/renderer/safe_browsing/features.h"
 #include "chrome/renderer/safe_browsing/mock_feature_extractor_clock.h"
 #include "chrome/renderer/safe_browsing/render_view_fake_resources_test.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebScriptSource.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
 
 using ::testing::ContainerEq;
+using ::testing::DoAll;
+using ::testing::Invoke;
 using ::testing::Return;
 
 namespace safe_browsing {
 
 class PhishingDOMFeatureExtractorTest : public RenderViewFakeResourcesTest {
+ public:
+  // Helper for the SubframeRemoval test that posts a message to remove
+  // the iframe "frame1" from the document.
+  void ScheduleRemoveIframe() {
+    message_loop_.PostTask(
+        FROM_HERE,
+        base::Bind(&PhishingDOMFeatureExtractorTest::RemoveIframe,
+                   weak_factory_.GetWeakPtr()));
+  }
+
  protected:
+  PhishingDOMFeatureExtractorTest()
+      : RenderViewFakeResourcesTest(),
+        ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {}
+
+  virtual ~PhishingDOMFeatureExtractorTest() {}
+
   virtual void SetUp() {
     // Set up WebKit and the RenderView.
     RenderViewFakeResourcesTest::SetUp();
@@ -51,9 +75,19 @@ class PhishingDOMFeatureExtractorTest : public RenderViewFakeResourcesTest {
     message_loop_.Quit();
   }
 
+  // Does the actual work of removing the iframe "frame1" from the document.
+  void RemoveIframe() {
+    WebKit::WebFrame* main_frame = GetMainFrame();
+    ASSERT_TRUE(main_frame);
+    main_frame->executeScript(
+        WebKit::WebString(
+            "document.body.removeChild(document.getElementById('frame1'));"));
+  }
+
   MockFeatureExtractorClock clock_;
   scoped_ptr<PhishingDOMFeatureExtractor> extractor_;
   bool success_;  // holds the success value from ExtractFeatures
+  base::WeakPtrFactory<PhishingDOMFeatureExtractorTest> weak_factory_;
 };
 
 TEST_F(PhishingDOMFeatureExtractorTest, FormFeatures) {
@@ -320,6 +354,48 @@ TEST_F(PhishingDOMFeatureExtractorTest, Continuation) {
 
   features.Clear();
   EXPECT_FALSE(ExtractFeatures(&features));
+}
+
+TEST_F(PhishingDOMFeatureExtractorTest, SubframeRemoval) {
+  // In this test, we'll advance the feature extractor so that it is positioned
+  // inside an iframe, and have it pause due to exceeding the chunk time limit.
+  // Then, prior to continuation, the iframe is removed from the document.
+  // As currently implemented, this should finish extraction from the removed
+  // iframe document.
+  responses_["http://host.com/"] =
+      "<html><head></head><body>"
+      "<iframe src=\"frame.html\" id=\"frame1\"></iframe>"
+      "<form></form></body></html>";
+  responses_["http://host.com/frame.html"] =
+      "<html><body><p><p><p><input type=password></body></html>";
+
+  base::TimeTicks now = base::TimeTicks::Now();
+  EXPECT_CALL(clock_, Now())
+      // Time check at the start of extraction.
+      .WillOnce(Return(now))
+      // Time check at the start of the first chunk of work.
+      .WillOnce(Return(now))
+      // Time check after the first 10 elements.  Enough time has passed
+      // to stop extraction.  Schedule the iframe removal to happen as soon as
+      // the feature extractor returns control to the message loop.
+      .WillOnce(DoAll(
+          Invoke(this, &PhishingDOMFeatureExtractorTest::ScheduleRemoveIframe),
+          Return(now + base::TimeDelta::FromMilliseconds(21))))
+      // Time check at the start of the second chunk of work.
+      .WillOnce(Return(now + base::TimeDelta::FromMilliseconds(25)))
+      // Time check after resuming iteration for the second chunk.
+      .WillOnce(Return(now + base::TimeDelta::FromMilliseconds(27)))
+      // A final time check for the histograms.
+      .WillOnce(Return(now + base::TimeDelta::FromMilliseconds(33)));
+
+  FeatureMap expected_features;
+  expected_features.AddBooleanFeature(features::kPageHasForms);
+  expected_features.AddBooleanFeature(features::kPageHasPswdInputs);
+
+  FeatureMap features;
+  LoadURL("http://host.com/");
+  ASSERT_TRUE(ExtractFeatures(&features));
+  EXPECT_THAT(features.features(), ContainerEq(expected_features.features()));
 }
 
 }  // namespace safe_browsing

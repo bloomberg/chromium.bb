@@ -16,13 +16,13 @@
 #include "base/callback_old.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/task.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 
 class GURL;
 class RenderView;
 
 namespace WebKit {
 class WebElement;
-class WebFrame;
 }
 
 namespace safe_browsing {
@@ -102,9 +102,13 @@ class PhishingDOMFeatureExtractor {
   // Clears all internal feature extraction state.
   void Clear();
 
-  // Called after advancing |cur_frame_| to update the state in
+  // Called after advancing |cur_document_| to update the state in
   // |cur_frame_data_|.  Returns true if the state was updated successfully.
   bool ResetFrameData();
+
+  // Returns the next document in frame-traversal order from cur_document_.
+  // If there are no more documents, returns a null WebDocument.
+  WebKit::WebDocument GetNextDocument();
 
   // Given a URL, checks whether the domain is different from the domain of
   // the current frame's URL.  If so, stores the domain in |domain| and returns
@@ -126,10 +130,11 @@ class PhishingDOMFeatureExtractor {
   FeatureMap* features_;  // The caller keeps ownership of this.
   scoped_ptr<DoneCallback> done_callback_;
 
-  // Non-owned pointer to the current frame that we are processing.
-  WebKit::WebFrame* cur_frame_;
+  // The current (sub-)document that we are processing.  May be a null document
+  // (isNull()) if we are not currently extracting features.
+  WebKit::WebDocument cur_document_;
 
-  // Stores extra state for |cur_frame_| that will be persisted until we
+  // Stores extra state for |cur_document_| that will be persisted until we
   // advance to the next frame.
   scoped_ptr<FrameData> cur_frame_data_;
 
