@@ -19,6 +19,8 @@
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autofill/autofill_common_test.h"
+#include "chrome/browser/autofill/personal_data_manager.h"
+#include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/sync/abstract_profile_sync_service_test.h"
 #include "chrome/browser/sync/engine/model_changing_syncer_command.h"
 #include "chrome/browser/sync/glue/autofill_change_processor.h"
@@ -164,24 +166,25 @@ class WebDataServiceFake : public WebDataService {
   WebDatabase* web_database_;
 };
 
-ACTION_P4(MakeAutofillSyncComponents, service, wd, pdm, dtc) {
+ACTION_P3(MakeAutofillSyncComponents, service, wd, dtc) {
   EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::DB));
   if (!BrowserThread::CurrentlyOn(BrowserThread::DB))
     return ProfileSyncFactory::SyncComponents(NULL, NULL);
   AutofillModelAssociator* model_associator =
-      new AutofillModelAssociator(service, wd, pdm);
+      new AutofillModelAssociator(service, wd, service->profile());
   AutofillChangeProcessor* change_processor =
-      new AutofillChangeProcessor(model_associator, wd, pdm, dtc);
+      new AutofillChangeProcessor(model_associator, wd,
+                                  service->profile(), dtc);
   return ProfileSyncFactory::SyncComponents(model_associator,
                                             change_processor);
 }
 
-ACTION_P4(MakeAutofillProfileSyncComponents, service, wd, pdm, dtc) {
+ACTION_P3(MakeAutofillProfileSyncComponents, service, wd, dtc) {
   EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::DB));
   if (!BrowserThread::CurrentlyOn(BrowserThread::DB))
     return ProfileSyncFactory::SyncComponents(NULL, NULL);
   AutofillProfileSyncableService* sync_service =
-      new AutofillProfileSyncableService(wd, pdm, service->profile());
+      new AutofillProfileSyncableService(wd, service->profile());
   sync_api::UserShare* user_share = service->GetUserShare();
   GenericChangeProcessor* change_processor =
       new GenericChangeProcessor(sync_service, dtc, user_share);
@@ -202,7 +205,6 @@ class AbstractAutofillFactory {
   virtual void SetExpectation(ProfileSyncFactoryMock* factory,
       ProfileSyncService* service,
       WebDatabase* wd,
-      PersonalDataManager* pdm,
       DataTypeController* dtc) = 0;
   virtual ~AbstractAutofillFactory() {}
 };
@@ -220,10 +222,9 @@ class AutofillEntryFactory : public AbstractAutofillFactory {
   void SetExpectation(ProfileSyncFactoryMock* factory,
       ProfileSyncService* service,
       WebDatabase* wd,
-      PersonalDataManager* pdm,
       DataTypeController* dtc) {
-    EXPECT_CALL(*factory, CreateAutofillSyncComponents(_,_,_,_)).
-        WillOnce(MakeAutofillSyncComponents(service, wd, pdm, dtc));
+    EXPECT_CALL(*factory, CreateAutofillSyncComponents(_,_,_)).
+        WillOnce(MakeAutofillSyncComponents(service, wd, dtc));
   }
 };
 
@@ -240,15 +241,18 @@ class AutofillProfileFactory : public AbstractAutofillFactory {
   void SetExpectation(ProfileSyncFactoryMock* factory,
       ProfileSyncService* service,
       WebDatabase* wd,
-      PersonalDataManager* pdm,
       DataTypeController* dtc) {
-    EXPECT_CALL(*factory, CreateAutofillProfileSyncComponents(_,_,_,_)).
-        WillOnce(MakeAutofillProfileSyncComponents(service, wd, pdm, dtc));
+    EXPECT_CALL(*factory, CreateAutofillProfileSyncComponents(_,_,_)).
+        WillOnce(MakeAutofillProfileSyncComponents(service, wd, dtc));
   }
 };
 
 class PersonalDataManagerMock: public PersonalDataManager {
  public:
+  static ProfileKeyedService* Build(Profile* profile) {
+    return new PersonalDataManagerMock;
+  }
+
   MOCK_CONST_METHOD0(IsDataLoaded, bool());
   MOCK_METHOD0(LoadProfiles, void());
   MOCK_METHOD0(LoadCreditCards, void());
@@ -273,14 +277,23 @@ class ProfileSyncServiceAutofillTest : public AbstractProfileSyncServiceTest {
       return NULL;
     }
   }
+
   virtual void SetUp() {
     AbstractProfileSyncServiceTest::SetUp();
     profile_.CreateRequestContext();
     web_database_.reset(new WebDatabaseFake(&autofill_table_));
     web_data_service_ = new WebDataServiceFake(web_database_.get());
-    personal_data_manager_ = new PersonalDataManagerMock();
+    personal_data_manager_ = static_cast<PersonalDataManagerMock*>(
+        PersonalDataManagerFactory::GetInstance()->SetTestingFactoryAndUse(
+            &profile_, PersonalDataManagerMock::Build));
     EXPECT_CALL(*personal_data_manager_, LoadProfiles()).Times(1);
     EXPECT_CALL(*personal_data_manager_, LoadCreditCards()).Times(1);
+    EXPECT_CALL(profile_, GetWebDataService(_)).
+        // TokenService::Initialize
+        // AutofillDataTypeController::StartModels()
+        // In some tests:
+        // AutofillProfileSyncableService::AutofillProfileSyncableService()
+        WillRepeatedly(Return(web_data_service_.get()));
     personal_data_manager_->Init(&profile_);
 
     notification_service_ = new ThreadNotificationService(&db_thread_);
@@ -313,21 +326,10 @@ class ProfileSyncServiceAutofillTest : public AbstractProfileSyncServiceTest {
     factory->SetExpectation(&factory_,
                             service_.get(),
                             web_database_.get(),
-                            personal_data_manager_.get(),
                             data_type_controller);
 
     EXPECT_CALL(factory_, CreateDataTypeManager(_, _)).
         WillOnce(ReturnNewDataTypeManager());
-
-    EXPECT_CALL(profile_, GetWebDataService(_)).
-        // TokenService::Initialize
-        // AutofillDataTypeController::StartModels()
-        // In some tests:
-        // AutofillProfileSyncableService::AutofillProfileSyncableService()
-        WillRepeatedly(Return(web_data_service_.get()));
-
-    EXPECT_CALL(profile_, GetPersonalDataManager()).
-        WillRepeatedly(Return(personal_data_manager_.get()));
 
     EXPECT_CALL(*personal_data_manager_, IsDataLoaded()).
         WillRepeatedly(Return(true));
@@ -475,7 +477,7 @@ class ProfileSyncServiceAutofillTest : public AbstractProfileSyncServiceTest {
   AutofillTableMock autofill_table_;
   scoped_ptr<WebDatabaseFake> web_database_;
   scoped_refptr<WebDataService> web_data_service_;
-  scoped_refptr<PersonalDataManagerMock> personal_data_manager_;
+  PersonalDataManagerMock* personal_data_manager_;
 };
 
 template <class T>

@@ -12,15 +12,14 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
-#include "chrome/browser/autofill/personal_data_manager.h"
 #include "chrome/browser/sync/glue/model_associator.h"
 #include "chrome/browser/sync/protocol/autofill_specifics.pb.h"
 #include "chrome/browser/webdata/autofill_entry.h"
 
 class AutofillProfile;
 
+class Profile;
 class ProfileSyncService;
 class WebDatabase;
 
@@ -48,7 +47,7 @@ class AutofillModelAssociator
   static syncable::ModelType model_type() { return syncable::AUTOFILL; }
   AutofillModelAssociator(ProfileSyncService* sync_service,
                           WebDatabase* web_database,
-                          PersonalDataManager* data_manager);
+                          Profile* profile);
   virtual ~AutofillModelAssociator();
 
   // PerDataTypeAssociatorInterface implementation.
@@ -168,7 +167,7 @@ class AutofillModelAssociator
 
   ProfileSyncService* sync_service_;
   WebDatabase* web_database_;
-  PersonalDataManager* personal_data_;
+  Profile* profile_;
   int64 autofill_node_id_;
 
   AutofillToSyncIdMap id_map_;

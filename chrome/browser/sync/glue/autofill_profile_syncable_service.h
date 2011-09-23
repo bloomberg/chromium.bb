@@ -6,15 +6,13 @@
 #pragma once
 
 #include <map>
-#include <set>
 #include <string>
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_vector.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/non_thread_safe.h"
-#include "chrome/browser/autofill/personal_data_manager.h"
 #include "chrome/browser/sync/api/sync_change.h"
 #include "chrome/browser/sync/api/sync_data.h"
 #include "chrome/browser/sync/api/sync_error.h"
@@ -47,9 +45,7 @@ class AutofillProfileSyncableService
       public NotificationObserver,
       public base::NonThreadSafe {
  public:
-  AutofillProfileSyncableService(WebDatabase* web_database,
-                                 PersonalDataManager* data_manager,
-                                 Profile* profile);
+  AutofillProfileSyncableService(WebDatabase* web_database, Profile* profile);
   virtual ~AutofillProfileSyncableService();
 
   static syncable::ModelType model_type() { return syncable::AUTOFILL_PROFILE; }
@@ -137,7 +133,7 @@ class AutofillProfileSyncableService
   }
 
   WebDatabase* web_database_;
-  PersonalDataManager* personal_data_;
+  Profile* profile_;
   NotificationRegistrar notification_registrar_;
 
   // Cached Autofill profiles. *Warning* deleted profiles are still in the
@@ -163,4 +159,3 @@ struct AutofillProfileSyncableService::DataBundle {
 }  // namespace browser_sync
 
 #endif  // CHROME_BROWSER_SYNC_GLUE_AUTOFILL_PROFILE_SYNCABLE_SERVICE_H_
-

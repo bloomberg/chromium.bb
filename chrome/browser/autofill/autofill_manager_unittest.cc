@@ -4,7 +4,6 @@
 
 #include <vector>
 
-#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/string16.h"
@@ -19,6 +18,7 @@
 #include "chrome/browser/autofill/autofill_profile.h"
 #include "chrome/browser/autofill/credit_card.h"
 #include "chrome/browser/autofill/personal_data_manager.h"
+#include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -58,6 +58,11 @@ class TestPersonalDataManager : public PersonalDataManager {
   TestPersonalDataManager() {
     CreateTestAutofillProfiles(&web_profiles_);
     CreateTestCreditCards(&credit_cards_);
+  }
+
+  // Factory method for keyed service.  PersonalDataManager is NULL for testing.
+  static ProfileKeyedService* Build(Profile* profile) {
+    return NULL;
   }
 
   MOCK_METHOD1(SaveImportedProfile, void(const AutofillProfile&));
@@ -399,10 +404,10 @@ void ExpectFilledCreditCardYearMonthWithYearMonth(int page_id,
 class TestAutofillManager : public AutofillManager {
  public:
   TestAutofillManager(TabContentsWrapper* tab_contents,
-                      TestPersonalDataManager* personal_manager)
-      : AutofillManager(tab_contents, personal_manager),
+                      TestPersonalDataManager* personal_data)
+      : AutofillManager(tab_contents, personal_data),
+        personal_data_(personal_data),
         autofill_enabled_(true) {
-    test_personal_data_ = personal_manager;
   }
 
   virtual bool IsAutofillEnabled() const OVERRIDE { return autofill_enabled_; }
@@ -420,15 +425,15 @@ class TestAutofillManager : public AutofillManager {
   }
 
   AutofillProfile* GetProfileWithGUID(const char* guid) {
-    return test_personal_data_->GetProfileWithGUID(guid);
+    return personal_data_->GetProfileWithGUID(guid);
   }
 
   void AddProfile(AutofillProfile* profile) {
-    test_personal_data_->AddProfile(profile);
+    personal_data_->AddProfile(profile);
   }
 
   void AddCreditCard(CreditCard* credit_card) {
-    test_personal_data_->AddCreditCard(credit_card);
+    personal_data_->AddCreditCard(credit_card);
   }
 
   int GetPackedCreditCardID(int credit_card_id) {
@@ -458,7 +463,8 @@ class TestAutofillManager : public AutofillManager {
   }
 
  private:
-  TestPersonalDataManager* test_personal_data_;
+  // Weak reference.
+  TestPersonalDataManager* personal_data_;
   bool autofill_enabled_;
   std::string submitted_form_signature_;
 
@@ -479,14 +485,17 @@ class AutofillManagerTest : public TabContentsWrapperTestHarness {
     // Order of destruction is important as AutofillManager relies on
     // PersonalDataManager to be around when it gets destroyed.
     autofill_manager_.reset(NULL);
-    test_personal_data_ = NULL;
   }
 
   virtual void SetUp() {
+    Profile* profile = new TestingProfile();
+    browser_context_.reset(profile);
+    PersonalDataManagerFactory::GetInstance()->SetTestingFactory(
+        profile, TestPersonalDataManager::Build);
+
     TabContentsWrapperTestHarness::SetUp();
-    test_personal_data_ = new TestPersonalDataManager();
     autofill_manager_.reset(new TestAutofillManager(contents_wrapper(),
-                                                    test_personal_data_.get()));
+                                                    &personal_data_));
   }
 
   void GetAutofillSuggestions(int query_id,
@@ -570,7 +579,7 @@ class AutofillManagerTest : public TabContentsWrapperTestHarness {
   BrowserThread browser_thread_;
 
   scoped_ptr<TestAutofillManager> autofill_manager_;
-  scoped_refptr<TestPersonalDataManager> test_personal_data_;
+  TestPersonalDataManager personal_data_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AutofillManagerTest);
@@ -831,7 +840,7 @@ TEST_F(AutofillManagerTest, GetProfileSuggestionsMethodGet) {
                     expected_labels2, expected_icons2, expected_unique_ids2);
 
   // Now clear the test profiles and try again -- we shouldn't return a warning.
-  test_personal_data_->ClearAutofillProfiles();
+  personal_data_.ClearAutofillProfiles();
   GetAutofillSuggestions(form, field);
   EXPECT_FALSE(GetAutofillSuggestionsMessage(NULL, NULL, NULL, NULL, NULL));
 }
@@ -1018,7 +1027,7 @@ TEST_F(AutofillManagerTest, GetCreditCardSuggestionsNonHTTPS) {
                     expected_labels2, expected_icons2, expected_unique_ids2);
 
   // Clear the test credit cards and try again -- we shouldn't return a warning.
-  test_personal_data_->ClearCreditCards();
+  personal_data_.ClearCreditCards();
   GetAutofillSuggestions(form, field);
   EXPECT_FALSE(GetAutofillSuggestionsMessage(NULL, NULL, NULL, NULL, NULL));
 }
@@ -1219,7 +1228,7 @@ TEST_F(AutofillManagerTest, GetAddressAndCreditCardSuggestionsNonHttps) {
                     expected_labels2, expected_icons2, expected_unique_ids2);
 
   // Clear the test credit cards and try again -- we shouldn't return a warning.
-  test_personal_data_->ClearCreditCards();
+  personal_data_.ClearCreditCards();
   GetAutofillSuggestions(form, field);
   EXPECT_FALSE(GetAutofillSuggestionsMessage(NULL, NULL, NULL, NULL, NULL));
 }
@@ -1414,7 +1423,7 @@ TEST_F(AutofillManagerTest, GetFieldSuggestionsForMultiValuedProfileUnfilled) {
   multi_values[0] = ASCIIToUTF16("Elvis Presley");
   multi_values[1] = ASCIIToUTF16("Elena Love");
   profile->SetMultiInfo(NAME_FULL, multi_values);
-  test_personal_data_->ClearAutofillProfiles();
+  personal_data_.ClearAutofillProfiles();
   autofill_manager_->AddProfile(profile);
 
   {
@@ -1630,7 +1639,7 @@ TEST_F(AutofillManagerTest, FillCreditCardForm) {
 TEST_F(AutofillManagerTest, FillCreditCardFormNoYearNoMonth) {
   // Same as the SetUp(), but generate 4 credit cards with year month
   // combination.
-  test_personal_data_->CreateTestCreditCardsYearAndMonth("", "");
+  personal_data_.CreateTestCreditCardsYearAndMonth("", "");
   // Set up our form data.
   FormData form;
   CreateTestCreditCardFormData(&form, true, true);
@@ -1656,7 +1665,7 @@ TEST_F(AutofillManagerTest, FillCreditCardFormNoYearNoMonth) {
 TEST_F(AutofillManagerTest, FillCreditCardFormNoYearMonth) {
   // Same as the SetUp(), but generate 4 credit cards with year month
   // combination.
-  test_personal_data_->CreateTestCreditCardsYearAndMonth("", "04");
+  personal_data_.CreateTestCreditCardsYearAndMonth("", "04");
   // Set up our form data.
   FormData form;
   CreateTestCreditCardFormData(&form, true, true);
@@ -1681,7 +1690,7 @@ TEST_F(AutofillManagerTest, FillCreditCardFormNoYearMonth) {
 TEST_F(AutofillManagerTest, FillCreditCardFormYearNoMonth) {
   // Same as the SetUp(), but generate 4 credit cards with year month
   // combination.
-  test_personal_data_->CreateTestCreditCardsYearAndMonth("2012", "");
+  personal_data_.CreateTestCreditCardsYearAndMonth("2012", "");
   // Set up our form data.
   FormData form;
   CreateTestCreditCardFormData(&form, true, true);
@@ -1706,8 +1715,8 @@ TEST_F(AutofillManagerTest, FillCreditCardFormYearNoMonth) {
 TEST_F(AutofillManagerTest, FillCreditCardFormYearMonth) {
   // Same as the SetUp(), but generate 4 credit cards with year month
   // combination.
-  test_personal_data_->ClearCreditCards();
-  test_personal_data_->CreateTestCreditCardsYearAndMonth("2012", "04");
+  personal_data_.ClearCreditCards();
+  personal_data_.CreateTestCreditCardsYearAndMonth("2012", "04");
   // Set up our form data.
   FormData form;
   CreateTestCreditCardFormData(&form, true, true);
@@ -2300,7 +2309,7 @@ TEST_F(AutofillManagerTest, FormSubmitted) {
 
   // Simulate form submission. We should call into the PDM to try to save the
   // filled data.
-  EXPECT_CALL(*test_personal_data_, SaveImportedProfile(::testing::_)).Times(1);
+  EXPECT_CALL(personal_data_, SaveImportedProfile(::testing::_)).Times(1);
   FormSubmitted(results);
 }
 
@@ -2338,7 +2347,7 @@ TEST_F(AutofillManagerTest, FormSubmittedServerTypes) {
 
   // Simulate form submission. We should call into the PDM to try to save the
   // filled data.
-  EXPECT_CALL(*test_personal_data_, SaveImportedProfile(::testing::_)).Times(1);
+  EXPECT_CALL(personal_data_, SaveImportedProfile(::testing::_)).Times(1);
   FormSubmitted(results);
 }
 
@@ -2396,7 +2405,7 @@ TEST_F(AutofillManagerTest, FormSubmittedWithDefaultValues) {
 
   // Simulate form submission.  We should call into the PDM to try to save the
   // filled data.
-  EXPECT_CALL(*test_personal_data_, SaveImportedProfile(::testing::_)).Times(1);
+  EXPECT_CALL(personal_data_, SaveImportedProfile(::testing::_)).Times(1);
   FormSubmitted(results);
 
   // Set the address field's value back to the default value.
@@ -2404,7 +2413,7 @@ TEST_F(AutofillManagerTest, FormSubmittedWithDefaultValues) {
 
   // Simulate form submission.  We should not call into the PDM to try to save
   // the filled data, since the filled form is effectively missing an address.
-  EXPECT_CALL(*test_personal_data_, SaveImportedProfile(::testing::_)).Times(0);
+  EXPECT_CALL(personal_data_, SaveImportedProfile(::testing::_)).Times(0);
   FormSubmitted(results);
 }
 
@@ -2727,7 +2736,7 @@ TEST_F(AutofillManagerTest, DeterminePossibleFieldTypesForUpload) {
 }
 
 TEST_F(AutofillManagerTest, DeterminePossibleFieldTypesForUploadStressTest) {
-  test_personal_data_->ClearAutofillProfiles();
+  personal_data_.ClearAutofillProfiles();
   const int kNumProfiles = 5;
   for (int i = 0; i < kNumProfiles; ++i) {
     AutofillProfile* profile = new AutofillProfile;
@@ -2744,7 +2753,7 @@ TEST_F(AutofillManagerTest, DeterminePossibleFieldTypesForUploadStressTest) {
                                   StringPrintf("650234%04d", i).c_str());
     profile->set_guid(
         StringPrintf("00000000-0000-0000-0001-00000000%04d", i).c_str());
-    test_personal_data_->AddProfile(profile);
+    personal_data_.AddProfile(profile);
   }
   FormData form;
   CreateTestAddressFormData(&form);

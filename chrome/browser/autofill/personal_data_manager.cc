@@ -23,8 +23,10 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/webdata/web_data_service.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/browser_thread.h"
+#include "content/common/notification_source.h"
 
 namespace {
 
@@ -196,6 +198,24 @@ void PersonalDataManager::OnStateChanged() {
     web_data_service->EmptyMigrationTrash(true);
     sync_service->RemoveObserver(this);
   }
+}
+
+void PersonalDataManager::Shutdown() {
+  CancelPendingQuery(&pending_profiles_query_);
+  CancelPendingQuery(&pending_creditcards_query_);
+  notification_registrar_.RemoveAll();
+}
+
+void PersonalDataManager::Observe(int type,
+                                  const NotificationSource& source,
+                                  const NotificationDetails& details) {
+  DCHECK_EQ(type, chrome::NOTIFICATION_AUTOFILL_MULTIPLE_CHANGED);
+  WebDataService* web_data_service = Source<WebDataService>(source).ptr();
+
+  DCHECK(web_data_service &&
+         web_data_service ==
+             profile_->GetWebDataService(Profile::EXPLICIT_ACCESS));
+  Refresh();
 }
 
 bool PersonalDataManager::ImportFormData(
@@ -531,8 +551,18 @@ void PersonalDataManager::Init(Profile* profile) {
   profile_ = profile;
   metric_logger_->LogIsAutofillEnabledAtStartup(IsAutofillEnabled());
 
+  // WebDataService may not be available in tests.
+  WebDataService* web_data_service =
+    profile_->GetWebDataService(Profile::EXPLICIT_ACCESS);
+  if (!web_data_service)
+    return;
+
   LoadProfiles();
   LoadCreditCards();
+
+  notification_registrar_.Add(this,
+                              chrome::NOTIFICATION_AUTOFILL_MULTIPLE_CHANGED,
+                              Source<WebDataService>(web_data_service));
 }
 
 bool PersonalDataManager::IsAutofillEnabled() const {

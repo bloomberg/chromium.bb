@@ -76,7 +76,6 @@ class ProfileImpl : public Profile,
   virtual PrefService* GetOffTheRecordPrefs();
   virtual TemplateURLFetcher* GetTemplateURLFetcher();
   virtual DownloadManager* GetDownloadManager();
-  virtual PersonalDataManager* GetPersonalDataManager();
   virtual fileapi::FileSystemContext* GetFileSystemContext();
   virtual quota::QuotaManager* GetQuotaManager();
   virtual bool HasCreatedDownloadManager() const;
@@ -236,7 +235,6 @@ class ProfileImpl : public Profile,
   scoped_refptr<WebDataService> web_data_service_;
   scoped_refptr<PasswordStore> password_store_;
   scoped_refptr<WebKitContext> webkit_context_;
-  scoped_refptr<PersonalDataManager> personal_data_manager_;
   scoped_refptr<fileapi::FileSystemContext> file_system_context_;
   scoped_refptr<quota::QuotaManager> quota_manager_;
   bool history_service_created_;

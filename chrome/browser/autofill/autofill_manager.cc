@@ -26,6 +26,7 @@
 #include "chrome/browser/autofill/credit_card.h"
 #include "chrome/browser/autofill/form_structure.h"
 #include "chrome/browser/autofill/personal_data_manager.h"
+#include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/autofill/phone_number.h"
 #include "chrome/browser/autofill/phone_number_i18n.h"
 #include "chrome/browser/autofill/select_control_handler.h"
@@ -217,8 +218,8 @@ AutofillManager::AutofillManager(TabContentsWrapper* tab_contents)
   DCHECK(tab_contents);
 
   // |personal_data_| is NULL when using TestTabContents.
-  personal_data_ =
-      tab_contents->profile()->GetOriginalProfile()->GetPersonalDataManager();
+  personal_data_ = PersonalDataManagerFactory::GetForProfile(
+      tab_contents->profile()->GetOriginalProfile());
   download_manager_.SetObserver(this);
 }
 

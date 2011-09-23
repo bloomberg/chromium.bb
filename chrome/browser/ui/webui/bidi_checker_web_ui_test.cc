@@ -12,6 +12,7 @@
 #include "chrome/browser/autofill/autofill_common_test.h"
 #include "chrome/browser/autofill/autofill_profile.h"
 #include "chrome/browser/autofill/personal_data_manager.h"
+#include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -224,7 +225,7 @@ IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTest,
       "0000");
 
   PersonalDataManager* personal_data_manager =
-    browser()->profile()->GetPersonalDataManager();
+    PersonalDataManagerFactory::GetForProfile(browser()->profile());
   ASSERT_TRUE(personal_data_manager);
 
   personal_data_manager->AddProfile(profile);
@@ -255,7 +256,7 @@ IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestFakeBidi,
                                 "5125551234");
 
   PersonalDataManager* personal_data_manager =
-      browser()->profile()->GetPersonalDataManager();
+      PersonalDataManagerFactory::GetForProfile(browser()->profile());
   ASSERT_TRUE(personal_data_manager);
 
   personal_data_manager->AddProfile(profile);

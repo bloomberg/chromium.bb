@@ -128,7 +128,7 @@ class AutofillMergeTest : public testing::Test,
   // sequentially, and fills |merged_profiles| with the serialized result.
   void MergeProfiles(const std::string& profiles, std::string* merged_profiles);
 
-  scoped_refptr<PersonalDataManagerMock> personal_data_;
+  scoped_ptr<PersonalDataManagerMock> personal_data_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AutofillMergeTest);
@@ -143,7 +143,7 @@ AutofillMergeTest::~AutofillMergeTest() {
 void AutofillMergeTest::SetUp() {
   autofill_test::DisableSystemServices(NULL);
 
-  personal_data_ = new PersonalDataManagerMock();
+  personal_data_.reset(new PersonalDataManagerMock);
 }
 
 void AutofillMergeTest::GenerateResults(const std::string& input,

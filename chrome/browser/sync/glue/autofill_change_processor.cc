@@ -13,7 +13,6 @@
 #include "chrome/browser/autofill/personal_data_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/glue/autofill_model_associator.h"
-#include "chrome/browser/sync/glue/do_optimistic_refresh_task.h"
 #include "chrome/browser/sync/internal_api/change_record.h"
 #include "chrome/browser/sync/internal_api/read_node.h"
 #include "chrome/browser/sync/internal_api/write_node.h"
@@ -43,17 +42,17 @@ struct AutofillChangeProcessor::AutofillChangeRecord {
 AutofillChangeProcessor::AutofillChangeProcessor(
     AutofillModelAssociator* model_associator,
     WebDatabase* web_database,
-    PersonalDataManager* personal_data,
+    Profile* profile,
     UnrecoverableErrorHandler* error_handler)
     : ChangeProcessor(error_handler),
       model_associator_(model_associator),
       web_database_(web_database),
-      personal_data_(personal_data),
+      profile_(profile),
       observing_(false) {
   DCHECK(model_associator);
   DCHECK(web_database);
+  DCHECK(profile);
   DCHECK(error_handler);
-  DCHECK(personal_data);
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
   StartObserving();
 }
@@ -86,12 +85,6 @@ void AutofillChangeProcessor::Observe(int type,
 
   AutofillChangeList* changes = Details<AutofillChangeList>(details).ptr();
   ObserveAutofillEntriesChanged(changes, &trans, autofill_root);
-}
-
-void AutofillChangeProcessor::PostOptimisticRefreshTask() {
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-      new DoOptimisticRefreshForAutofill(
-           personal_data_));
 }
 
 void AutofillChangeProcessor::ObserveAutofillEntriesChanged(
@@ -302,7 +295,7 @@ void AutofillChangeProcessor::CommitChangesFromSyncModel() {
     return;
   }
 
-  PostOptimisticRefreshTask();
+  WebDataService::NotifyOfMultipleAutofillChanges(profile_);
 
   StartObserving();
 }

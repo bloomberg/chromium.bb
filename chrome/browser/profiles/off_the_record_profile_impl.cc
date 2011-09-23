@@ -338,10 +338,6 @@ bool OffTheRecordProfileImpl::HasCreatedDownloadManager() const {
   return download_manager_.get() != NULL;
 }
 
-PersonalDataManager* OffTheRecordProfileImpl::GetPersonalDataManager() {
-  return NULL;
-}
-
 fileapi::FileSystemContext* OffTheRecordProfileImpl::GetFileSystemContext() {
   CreateQuotaManagerAndClients();
   return file_system_context_.get();
@@ -668,10 +664,6 @@ class GuestSessionProfile : public OffTheRecordProfileImpl {
  public:
   explicit GuestSessionProfile(Profile* real_profile)
       : OffTheRecordProfileImpl(real_profile) {
-  }
-
-  virtual PersonalDataManager* GetPersonalDataManager() {
-    return GetOriginalProfile()->GetPersonalDataManager();
   }
 
   virtual void InitChromeOSPreferences() {

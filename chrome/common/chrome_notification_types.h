@@ -573,6 +573,10 @@ enum NotificationType {
   // WebDatabase.  The detail is an AutofillCreditCardChange.
   NOTIFICATION_AUTOFILL_CREDIT_CARD_CHANGED,
 
+  // Sent when multiple Autofill entries have been modified by Sync.
+  // The source is the WebDataService in use by Sync.  No details are specified.
+  NOTIFICATION_AUTOFILL_MULTIPLE_CHANGED,
+
   // This notification is sent whenever the web database service has finished
   // loading the web database.  No details are expected.
   NOTIFICATION_WEB_DATABASE_LOADED,

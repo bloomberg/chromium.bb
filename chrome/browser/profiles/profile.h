@@ -75,7 +75,6 @@ class HistoryService;
 class HostContentSettingsMap;
 class NavigationController;
 class PasswordStore;
-class PersonalDataManager;
 class PrefProxyConfigTracker;
 class PrefService;
 class ProfileSyncFactory;
@@ -345,9 +344,6 @@ class Profile : public content::BrowserContext {
   // Returns the TemplateURLFetcher for this profile. This is owned by the
   // profile.
   virtual TemplateURLFetcher* GetTemplateURLFetcher() = 0;
-
-  // Returns the PersonalDataManager associated with this profile.
-  virtual PersonalDataManager* GetPersonalDataManager() = 0;
 
   // Returns the request context used for extension-related requests.  This
   // is only used for a separate cookie store currently.

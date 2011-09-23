@@ -532,10 +532,6 @@ DownloadManager* TestingProfile::GetDownloadManager() {
   return NULL;
 }
 
-PersonalDataManager* TestingProfile::GetPersonalDataManager() {
-  return NULL;
-}
-
 fileapi::FileSystemContext* TestingProfile::GetFileSystemContext() {
   if (!file_system_context_) {
     file_system_context_ = new fileapi::FileSystemContext(

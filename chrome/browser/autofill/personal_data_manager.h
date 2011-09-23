@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/observer_list.h"
@@ -18,8 +17,11 @@
 #include "chrome/browser/autofill/autofill_profile.h"
 #include "chrome/browser/autofill/credit_card.h"
 #include "chrome/browser/autofill/field_types.h"
+#include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/browser/sync/profile_sync_service_observer.h"
 #include "chrome/browser/webdata/web_data_service.h"
+#include "content/common/notification_observer.h"
+#include "content/common/notification_registrar.h"
 
 class AutofillManager;
 class AutofillMetrics;
@@ -37,11 +39,13 @@ void SetProfiles(int, std::vector<AutofillProfile>*);
 class PersonalDataManager
     : public WebDataServiceConsumer,
       public ProfileSyncServiceObserver,
-      public base::RefCountedThreadSafe<PersonalDataManager> {
+      public ProfileKeyedService,
+      public NotificationObserver {
  public:
-  // WebDataServiceConsumer implementation:
-  virtual void OnWebDataServiceRequestDone(WebDataService::Handle h,
-                                           const WDTypedResult* result);
+  // WebDataServiceConsumer:
+  virtual void OnWebDataServiceRequestDone(
+      WebDataService::Handle h,
+      const WDTypedResult* result) OVERRIDE;
 
   // Sets the listener to be notified of PersonalDataManager events.
   virtual void SetObserver(PersonalDataManagerObserver* observer);
@@ -50,7 +54,19 @@ class PersonalDataManager
   virtual void RemoveObserver(PersonalDataManagerObserver* observer);
 
   // ProfileSyncServiceObserver:
-  virtual void OnStateChanged();
+  virtual void OnStateChanged() OVERRIDE;
+
+  // ProfileKeyedService:
+  // Cancels any pending requests to WebDataService and stops listening for Sync
+  // notifications.
+  virtual void Shutdown() OVERRIDE;
+
+  // NotificationObserver:
+  // Observes "batch" changes made by Sync and refreshes data from the
+  // WebDataService in response.
+  virtual void Observe(int type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details) OVERRIDE;
 
   // Scans the given |form| for importable Autofill data. If the form includes
   // sufficient address data, it is immediately imported. If the form includes
@@ -116,9 +132,6 @@ class PersonalDataManager
   // Also see SetProfile for more details.
   virtual void Refresh();
 
-  // Kicks off asynchronous loading of profiles and credit cards.
-  void Init(Profile* profile);
-
   // Checks suitability of |profile| for adding to the user's set of profiles.
   static bool IsValidLearnableProfile(const AutofillProfile& profile);
 
@@ -131,12 +144,13 @@ class PersonalDataManager
       std::vector<AutofillProfile>* merged_profiles);
 
  protected:
-  // Make sure that only Profile and certain tests can create an instance of
+  // Only PersonalDataManagerFactory and certain tests can create instances of
   // PersonalDataManager.
-  friend class base::RefCountedThreadSafe<PersonalDataManager>;
-  friend class AutofillMergeTest;
+  FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, FirstMiddleLast);
+  FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, AutofillIsEnabledAtStartup);
+  friend class PersonalDataManagerFactory;
   friend class PersonalDataManagerTest;
-  friend class ProfileImpl;
+  friend class scoped_ptr<PersonalDataManager>;
   friend class ProfileSyncServiceAutofillTest;
   friend class TestingAutomationProvider;
   friend void autofill_helper::SetProfiles(int, std::vector<AutofillProfile>*);
@@ -230,11 +244,17 @@ class PersonalDataManager
   ObserverList<PersonalDataManagerObserver> observers_;
 
  private:
+  // Kicks off asynchronous loading of profiles and credit cards.
+  void Init(Profile* profile);
+
   // For logging UMA metrics. Overridden by metrics tests.
   scoped_ptr<const AutofillMetrics> metric_logger_;
 
   // Whether we have already logged the number of profiles this session.
   mutable bool has_logged_profile_count_;
+
+  // Manages registration lifetime for NotificationObserver implementation.
+  NotificationRegistrar notification_registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(PersonalDataManager);
 };

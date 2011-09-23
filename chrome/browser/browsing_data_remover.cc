@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/platform_file.h"
 #include "chrome/browser/autofill/personal_data_manager.h"
+#include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_special_storage_policy.h"
@@ -262,7 +263,8 @@ void BrowsingDataRemover::Remove(int remove_mask) {
           delete_end_);
       web_data_service->RemoveAutofillProfilesAndCreditCardsModifiedBetween(
           delete_begin_, delete_end_);
-      PersonalDataManager* data_manager = profile_->GetPersonalDataManager();
+      PersonalDataManager* data_manager =
+          PersonalDataManagerFactory::GetForProfile(profile_);
       if (data_manager) {
         data_manager->Refresh();
       }

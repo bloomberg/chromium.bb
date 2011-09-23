@@ -29,6 +29,7 @@
 #include "chrome/browser/autofill/autofill_manager.h"
 #include "chrome/browser/autofill/credit_card.h"
 #include "chrome/browser/autofill/personal_data_manager.h"
+#include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/automation/automation_browser_tracker.h"
 #include "chrome/browser/automation/automation_provider_json.h"
 #include "chrome/browser/automation/automation_provider_list.h"
@@ -4430,8 +4431,8 @@ void TestingAutomationProvider::GetAutofillProfile(
   TabContentsWrapper* tab_contents =
       browser->GetTabContentsWrapperAt(tab_index);
   if (tab_contents) {
-    PersonalDataManager* pdm = tab_contents->profile()->GetOriginalProfile()
-        ->GetPersonalDataManager();
+    PersonalDataManager* pdm = PersonalDataManagerFactory::GetForProfile(
+        tab_contents->profile()->GetOriginalProfile());
     if (pdm) {
       std::vector<AutofillProfile*> autofill_profiles = pdm->profiles();
       std::vector<CreditCard*> credit_cards = pdm->credit_cards();
@@ -4498,7 +4499,7 @@ void TestingAutomationProvider::FillAutofillProfile(
 
   if (tab_contents) {
     PersonalDataManager* pdm =
-        tab_contents->profile()->GetPersonalDataManager();
+        PersonalDataManagerFactory::GetForProfile(tab_contents->profile());
     if (pdm) {
       if (profiles || cards) {
         // This observer will delete itself.
@@ -4558,8 +4559,8 @@ void TestingAutomationProvider::SubmitAutofillForm(
     return;
   }
 
-  PersonalDataManager* pdm = tab_contents->profile()->GetOriginalProfile()
-      ->GetPersonalDataManager();
+  PersonalDataManager* pdm = PersonalDataManagerFactory::GetForProfile(
+      tab_contents->profile()->GetOriginalProfile());
   if (!pdm) {
     AutomationJSONReply(this, reply_message)
         .SendError("No PersonalDataManager.");

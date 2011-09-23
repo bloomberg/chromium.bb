@@ -7,13 +7,16 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/autofill/autofill_profile.h"
+#include "chrome/browser/autofill/form_group.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/api/sync_error.h"
-#include "chrome/browser/sync/glue/do_optimistic_refresh_task.h"
 #include "chrome/browser/webdata/autofill_table.h"
 #include "chrome/browser/webdata/web_database.h"
+#include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/guid.h"
+#include "content/browser/browser_thread.h"
 #include "content/common/notification_service.h"
 
 namespace {
@@ -37,19 +40,17 @@ const char kAutofillProfileTag[] = "google_chrome_autofill_profiles";
 
 AutofillProfileSyncableService::AutofillProfileSyncableService(
     WebDatabase* web_database,
-    PersonalDataManager* personal_data,
     Profile* profile)
     : web_database_(web_database),
-      personal_data_(personal_data),
+      profile_(profile),
       sync_processor_(NULL) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
   DCHECK(web_database_);
-  DCHECK(personal_data_);
   DCHECK(profile);
   notification_registrar_.Add(this,
       chrome::NOTIFICATION_AUTOFILL_PROFILE_CHANGED,
       Source<WebDataService>(
-          profile->GetWebDataService(Profile::EXPLICIT_ACCESS)));
+          profile_->GetWebDataService(Profile::EXPLICIT_ACCESS)));
 }
 
 AutofillProfileSyncableService::~AutofillProfileSyncableService() {
@@ -58,7 +59,7 @@ AutofillProfileSyncableService::~AutofillProfileSyncableService() {
 
 AutofillProfileSyncableService::AutofillProfileSyncableService()
     : web_database_(NULL),
-      personal_data_(NULL),
+      profile_(NULL),
       sync_processor_(NULL) {
 }
 
@@ -119,8 +120,7 @@ SyncError AutofillProfileSyncableService::MergeDataAndStartSyncing(
 
   SyncError error = sync_processor_->ProcessSyncChanges(FROM_HERE, new_changes);
 
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-      new DoOptimisticRefreshForAutofill(personal_data_));
+  WebDataService::NotifyOfMultipleAutofillChanges(profile_);
 
   return error;
 }
@@ -188,8 +188,8 @@ SyncError AutofillProfileSyncableService::ProcessSyncChanges(
   if (!SaveChangesToWebData(bundle))
     return SyncError(FROM_HERE, "Failed to update webdata.", model_type());
 
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-      new DoOptimisticRefreshForAutofill(personal_data_));
+  WebDataService::NotifyOfMultipleAutofillChanges(profile_);
+
   return SyncError();
 }
 

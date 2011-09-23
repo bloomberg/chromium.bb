@@ -28,7 +28,6 @@ void AutofillProfileDataTypeController::CreateSyncComponents() {
           CreateAutofillProfileSyncComponents(
           profile_sync_service(),
           web_data_service()->GetDatabase(),
-          personal_data(),
           this);
   set_model_associator(sync_components.model_associator);
   set_change_processor(sync_components.change_processor);
@@ -55,4 +54,3 @@ void AutofillProfileDataTypeController::RecordStartFailure(StartResult result) {
 }
 
 }  // namepsace browser_sync
-

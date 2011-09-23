@@ -187,7 +187,6 @@ class TestingProfile : public Profile {
   virtual history::TopSites* GetTopSites();
   virtual history::TopSites* GetTopSitesWithoutCreating();
   virtual DownloadManager* GetDownloadManager();
-  virtual PersonalDataManager* GetPersonalDataManager();
   virtual fileapi::FileSystemContext* GetFileSystemContext();
   virtual void SetQuotaManager(quota::QuotaManager* manager);
   virtual quota::QuotaManager* GetQuotaManager();

@@ -4,11 +4,13 @@
 
 #include "base/location.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/autofill/autofill_profile.h"
 #include "chrome/browser/sync/glue/autofill_profile_syncable_service.h"
 #include "chrome/browser/sync/internal_api/read_node_mock.h"
 #include "chrome/browser/sync/internal_api/syncapi_mock.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 #include "chrome/browser/sync/syncable/syncable_mock.h"
+#include "content/browser/browser_thread.h"
 #include "chrome/browser/webdata/autofill_change.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"

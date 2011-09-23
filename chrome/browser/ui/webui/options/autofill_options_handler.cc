@@ -15,6 +15,7 @@
 #include "chrome/browser/autofill/autofill_profile.h"
 #include "chrome/browser/autofill/credit_card.h"
 #include "chrome/browser/autofill/personal_data_manager.h"
+#include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/autofill/phone_number_i18n.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/web_ui_util.h"
@@ -225,7 +226,8 @@ void AutofillOptionsHandler::GetLocalizedValues(
 }
 
 void AutofillOptionsHandler::Initialize() {
-  personal_data_ = Profile::FromWebUI(web_ui_)->GetPersonalDataManager();
+  personal_data_ = PersonalDataManagerFactory::GetForProfile(
+      Profile::FromWebUI(web_ui_));
   personal_data_->SetObserver(this);
 
   LoadAutofillData();

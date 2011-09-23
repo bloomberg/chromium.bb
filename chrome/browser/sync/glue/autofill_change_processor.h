@@ -9,9 +9,6 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
-#include "chrome/browser/autofill/autofill_profile.h"
-#include "chrome/browser/autofill/credit_card.h"
-#include "chrome/browser/autofill/personal_data_manager.h"
 #include "chrome/browser/sync/glue/change_processor.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
 #include "chrome/browser/sync/protocol/autofill_specifics.pb.h"
@@ -19,10 +16,8 @@
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 
-class AutofillCreditCardChange;
 class AutofillEntry;
 class AutofillProfileChange;
-class PersonalDataManager;
 class WebDatabase;
 
 namespace sync_api {
@@ -44,7 +39,7 @@ class AutofillChangeProcessor : public ChangeProcessor,
  public:
   AutofillChangeProcessor(AutofillModelAssociator* model_associator,
                           WebDatabase* web_database,
-                          PersonalDataManager* personal_data,
+                          Profile* profile,
                           UnrecoverableErrorHandler* error_handler);
   virtual ~AutofillChangeProcessor();
 
@@ -108,10 +103,6 @@ class AutofillChangeProcessor : public ChangeProcessor,
   void ApplySyncAutofillProfileDelete(
       int64 sync_id);
 
-  // Helper to post a task to the UI loop to inform the PersonalDataManager
-  // it needs to refresh itself.
-  void PostOptimisticRefreshTask();
-
   // Called to see if we need to upgrade to the new autofill2 profile.
   bool HasNotMigratedYet(const sync_api::BaseTransaction* trans);
 
@@ -123,9 +114,9 @@ class AutofillChangeProcessor : public ChangeProcessor,
   // holding a reference.
   WebDatabase* web_database_;
 
-  // We periodically tell the PersonalDataManager to refresh as we make
-  // changes to the autofill data in the WebDatabase.
-  PersonalDataManager* personal_data_;
+  // The profile we are syncing for.  This is used to notify listeners of
+  // the changes made.
+  Profile* profile_;
 
   NotificationRegistrar notification_registrar_;
 

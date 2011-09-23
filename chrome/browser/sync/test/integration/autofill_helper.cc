@@ -8,6 +8,7 @@
 #include "chrome/browser/autofill/autofill_profile.h"
 #include "chrome/browser/autofill/autofill_type.h"
 #include "chrome/browser/autofill/personal_data_manager.h"
+#include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/autofill/personal_data_manager_observer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service.h"
@@ -127,7 +128,7 @@ WebDataService* GetWebDataService(int index) {
 }
 
 PersonalDataManager* GetPersonalDataManager(int index) {
-  return test()->GetProfile(index)->GetPersonalDataManager();
+  return PersonalDataManagerFactory::GetForProfile(test()->GetProfile(index));
 }
 
 void AddKeys(int profile, const std::set<AutofillKey>& keys) {
@@ -215,9 +216,9 @@ void RemoveProfile(int profile, const std::string& guid) {
 }
 
 void UpdateProfile(int profile,
-                                   const std::string& guid,
-                                   const AutofillType& type,
-                                   const string16& value) {
+                   const std::string& guid,
+                   const AutofillType& type,
+                   const string16& value) {
   const std::vector<AutofillProfile*>& all_profiles = GetAllProfiles(profile);
   std::vector<AutofillProfile> profiles;
   for (size_t i = 0; i < all_profiles.size(); ++i) {

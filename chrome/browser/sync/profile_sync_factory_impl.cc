@@ -203,17 +203,16 @@ ProfileSyncFactory::SyncComponents
 ProfileSyncFactoryImpl::CreateAutofillSyncComponents(
     ProfileSyncService* profile_sync_service,
     WebDatabase* web_database,
-    PersonalDataManager* personal_data,
     browser_sync::UnrecoverableErrorHandler* error_handler) {
 
   AutofillModelAssociator* model_associator =
       new AutofillModelAssociator(profile_sync_service,
                                   web_database,
-                                  personal_data);
+                                  profile_sync_service->profile());
   AutofillChangeProcessor* change_processor =
       new AutofillChangeProcessor(model_associator,
                                   web_database,
-                                  personal_data,
+                                  profile_sync_service->profile(),
                                   error_handler);
   return SyncComponents(model_associator, change_processor);
 }
@@ -222,10 +221,9 @@ ProfileSyncFactory::SyncComponents
 ProfileSyncFactoryImpl::CreateAutofillProfileSyncComponents(
     ProfileSyncService* profile_sync_service,
     WebDatabase* web_database,
-    PersonalDataManager* personal_data,
     browser_sync::UnrecoverableErrorHandler* error_handler) {
   AutofillProfileSyncableService* sync_service =
-      new AutofillProfileSyncableService(web_database, personal_data,
+      new AutofillProfileSyncableService(web_database,
                                          profile_sync_service->profile());
   sync_api::UserShare* user_share = profile_sync_service->GetUserShare();
   GenericChangeProcessor* change_processor =

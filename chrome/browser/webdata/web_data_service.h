@@ -25,6 +25,7 @@ class GURL;
 struct IE7PasswordInfo;
 #endif
 class MessageLoop;
+class Profile;
 class SkBitmap;
 class Task;
 class TemplateURL;
@@ -271,6 +272,13 @@ class WebDataService
   };
 
   WebDataService();
+
+  // Notifies listeners on the UI thread that multiple changes have been made to
+  // to Autofill records of the database.
+  // NOTE: This method is intended to be called from the DB thread.  It
+  // it asynchronously notifies listeners on the UI thread.
+  // |profile| may be NULL for testing purposes.
+  static void NotifyOfMultipleAutofillChanges(Profile* profile);
 
   // Initializes the web data service. Returns false on failure
   // Takes the path of the profile directory as its argument.

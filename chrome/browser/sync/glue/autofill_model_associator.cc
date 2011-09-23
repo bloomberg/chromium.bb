@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/location.h"
+#include "base/memory/scoped_vector.h"
 #include "base/string_number_conversions.h"
 #include "base/task.h"
 #include "base/time.h"
@@ -16,7 +17,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/api/sync_error.h"
 #include "chrome/browser/sync/glue/autofill_change_processor.h"
-#include "chrome/browser/sync/glue/do_optimistic_refresh_task.h"
 #include "chrome/browser/sync/internal_api/read_node.h"
 #include "chrome/browser/sync/internal_api/read_transaction.h"
 #include "chrome/browser/sync/internal_api/write_node.h"
@@ -48,16 +48,16 @@ struct AutofillModelAssociator::DataBundle {
 AutofillModelAssociator::AutofillModelAssociator(
     ProfileSyncService* sync_service,
     WebDatabase* web_database,
-    PersonalDataManager* personal_data)
+    Profile* profile)
     : sync_service_(sync_service),
       web_database_(web_database),
-      personal_data_(personal_data),
+      profile_(profile),
       autofill_node_id_(sync_api::kInvalidId),
       abort_association_pending_(false) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
   DCHECK(sync_service_);
   DCHECK(web_database_);
-  DCHECK(personal_data_);
+  DCHECK(profile_);
 }
 
 AutofillModelAssociator::~AutofillModelAssociator() {
@@ -198,8 +198,8 @@ bool AutofillModelAssociator::AssociateModels(SyncError* error) {
     return false;
   }
 
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-      new DoOptimisticRefreshForAutofill(personal_data_));
+  WebDataService::NotifyOfMultipleAutofillChanges(profile_);
+
   return true;
 }
 

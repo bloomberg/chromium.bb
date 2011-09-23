@@ -10,6 +10,7 @@
 #include "base/threading/thread.h"
 #include "chrome/browser/autofill/autofill_profile.h"
 #include "chrome/browser/autofill/credit_card.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/ui/profile_error_dialog.h"
 #include "chrome/browser/webdata/autofill_change.h"
@@ -42,6 +43,36 @@ using base::Time;
 using webkit_glue::FormField;
 using webkit_glue::PasswordForm;
 
+namespace {
+// A task used by WebDataService (for Sync mainly) to inform the
+// PersonalDataManager living on the UI thread that it needs to refresh.
+class NotifyOfMultipleAutofillChangesTask : public Task {
+ public:
+  explicit NotifyOfMultipleAutofillChangesTask(
+      WebDataService* web_data_service);
+  virtual ~NotifyOfMultipleAutofillChangesTask();
+  virtual void Run();
+ private:
+  WebDataService* web_data_service_;
+};
+
+NotifyOfMultipleAutofillChangesTask::NotifyOfMultipleAutofillChangesTask(
+    WebDataService* web_data_service) : web_data_service_(web_data_service) {
+}
+
+NotifyOfMultipleAutofillChangesTask::~NotifyOfMultipleAutofillChangesTask() {}
+
+void NotifyOfMultipleAutofillChangesTask::Run() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  NotificationService::current()->Notify(
+      chrome::NOTIFICATION_AUTOFILL_MULTIPLE_CHANGED,
+      Source<WebDataService>(web_data_service_),
+      NotificationService::NoDetails());
+}
+
+}  // namespace
+
 WDAppImagesResult::WDAppImagesResult() : has_all_images(false) {}
 
 WDAppImagesResult::~WDAppImagesResult() {}
@@ -60,6 +91,22 @@ WebDataService::WebDataService()
     should_commit_(false),
     next_request_handle_(1),
     main_loop_(MessageLoop::current()) {
+}
+
+// static
+void WebDataService::NotifyOfMultipleAutofillChanges(Profile* profile) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
+
+  if (!profile)
+    return;
+
+  WebDataService* web_data_service =
+    profile->GetWebDataService(Profile::EXPLICIT_ACCESS);
+  if (!web_data_service)
+    return;
+
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+      new NotifyOfMultipleAutofillChangesTask(web_data_service));
 }
 
 bool WebDataService::Init(const FilePath& profile_path) {

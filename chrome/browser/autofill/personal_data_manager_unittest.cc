@@ -5,7 +5,6 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
@@ -61,9 +60,9 @@ class PersonalDataManagerTest : public testing::Test {
   }
 
   virtual void TearDown() {
-    personal_data_ = NULL;
-    if (profile_.get())
-      profile_.reset(NULL);
+    // Destruction order is imposed explicitly here.
+    personal_data_.reset(NULL);
+    profile_.reset(NULL);
 
     db_thread_.Stop();
     MessageLoop::current()->PostTask(FROM_HERE, new MessageLoop::QuitTask);
@@ -71,7 +70,7 @@ class PersonalDataManagerTest : public testing::Test {
   }
 
   void ResetPersonalDataManager() {
-    personal_data_ = new PersonalDataManager();
+    personal_data_.reset(new PersonalDataManager);
     personal_data_->Init(profile_.get());
     personal_data_->SetObserver(&personal_data_observer_);
 
@@ -85,7 +84,7 @@ class PersonalDataManagerTest : public testing::Test {
   BrowserThread ui_thread_;
   BrowserThread db_thread_;
   scoped_ptr<TestingProfile> profile_;
-  scoped_refptr<PersonalDataManager> personal_data_;
+  scoped_ptr<PersonalDataManager> personal_data_;
   NotificationRegistrar registrar_;
   NotificationObserverMock observer_;
   PersonalDataLoadedObserverMock personal_data_observer_;
