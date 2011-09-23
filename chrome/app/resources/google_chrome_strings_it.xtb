@@ -31,6 +31,7 @@
 <translation id="8227755444512189073">Google Chrome deve avviare un'applicazione esterna per gestire i link <ph name="SCHEME"/>. Il link richiesto è <ph name="PROTOLINK"/>.</translation>
 <translation id="8290100596633877290">Spiacenti, si è verificato un arresto anomalo di Google Chrome. Riavviarlo ora?</translation>
 <translation id="1281036569101707544"><ph name="TERMS_OF_SERVICE_LINK"/> Google Chrome</translation>
+<translation id="3487814320513494737">La pagina Nuova scheda di Google Chrome è stata rinnovata. Spostati tra le sezioni facendo clic su queste etichette. Google Chrome memorizza la tua preferenza per le volte successive.</translation>
 <translation id="1697213158865901863">Google Chrome Frame</translation>
 <translation id="2653935705142821164">Programma di rendering di Chrome</translation>
 <translation id="8446794773162156990">Google Chrome funziona in modo anomalo</translation>
@@ -39,7 +40,7 @@
 <translation id="3089968997497233615">È disponibile una nuova versione più sicura di Google Chrome.</translation>
 <translation id="5037239767309817516">Chiudi tutte le finestre di Google Chrome e riavvialo per rendere effettiva la modifica.</translation>
 <translation id="7451721381978275812">Argomenti non validi. Google Chrome Frame non è installabile in modalità Pronto senza installare anche Google Chrome.</translation>
-<translation id="5809236835374558741">In questo computer è già installata una versione più recente di Google Chrome Frame. Se il software non funziona, disinstalla Google Chrome Frame e scaricalo nuovamente.</translation>
+<translation id="4585888816441913908">Su questo computer è già installata una versione più recente di Google Chrome e Google Chrome Frame. Se il software non funziona, disinstalla Google Chrome e Google Chrome Frame e riprova.</translation>
 <translation id="6368958679917195344">Chrome OS è reso possibile da <ph name="BEGIN_LINK_CROS_OSS"/>software open source<ph name="END_LINK_CROS_OSS"/> aggiuntivi.</translation>
 <translation id="4357846314885556934">Google Chrome funziona in modo anomalo</translation>
 <translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
@@ -64,7 +65,6 @@
 <translation id="3847841918622877581">Google Chrome potrebbe utilizzare servizi web per migliorare la navigazione.</translation>
 <translation id="7436949144778751379">Google Chrome richiede Windows XP o versione successiva. Alcune funzioni potrebbero non essere disponibili.</translation>
 <translation id="7100330187273168372">Chrome non è in grado di leggere e scrivere nella directory dei dati:\n\n<ph name="USER_DATA_DIRECTORY"/></translation>
-<translation id="5167270755190684957">Galleria di temi di Google Chrome</translation>
 <translation id="7938170099933661772">Google Chrome non può visualizzare l'anteprima di stampa quando il visualizzatore PDF incorporato è disattivato. Per visualizzare l'anteprima, visita il sito <ph name="BEGIN_LINK"/>$1<ph name="END_LINK"/>, attiva il visualizzatore PDF di Google Chrome e riprova.</translation>
 <translation id="6757767188268205357">Non mi interessa</translation>
 <translation id="2290095356545025170">Sei sicuro di voler disinstallare Google Chrome?</translation>
@@ -74,14 +74,16 @@
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">Google Chrome ti permette di scegliere un numero di telefono sul Web e di chiamarlo con Skype.</translation>
 <translation id="3612333635265770873">Un modulo con lo stesso nome risulta in conflitto con Google Chrome.</translation>
+<translation id="2679385451463308372">Stampa utilizzando la finestra di dialogo di sistema…</translation>
 <translation id="5947389362804196214">Non è possibile leggere le tue preferenze.\n\nAlcune funzioni potrebbero non essere disponibili e le modifiche alle preferenze non verranno salvate.</translation>
 <translation id="6650142020817594541">Questo sito consiglia Google Chrome Frame (già installato).</translation>
 <translation id="4127951844153999091">In questo caso l'indirizzo indicato nel certificato non corrisponde all'indirizzo del sito web al quale il tuo browser ha tentato di accedere. Questa mancata corrispondenza può essere dovuta al tentativo da parte di un hacker di presentare un certificato relativo a un altro sito web. È anche possibile che il server sia impostato in modo da restituire lo stesso certificato per più siti web, incluso quello che stai cercando di visitare, malgrado tale certificato non sia valido per tutti i siti. Siamo in grado di garantire che stai comunicando con &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, ma non è possibile verificare che questo sito corrisponda a &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;. Se decidi di procedere, Google Chrome non verificherà eventuali altre mancate corrispondenze. In generale, tuttavia, ti consigliamo di non procedere oltre questo punto.</translation>
 <translation id="2712549016134575851">È stato rilevato un conflitto con un'altra applicazione installata.</translation>
+<translation id="5577648424992741236">Su questo computer è già installata una versione più recente di Google Chrome Frame. Se il software non funziona, disinstalla Google Chrome Frame e riprova.</translation>
 <translation id="7018032895891496381">Google Chrome utilizza il tuo motore di ricerca predefinito, correntemente impostato su <ph name="PAGE_TITLE"/>. Mantenere il motore di ricerca predefinito?</translation>
 <translation id="7161904924553537242">Benvenuto in Google Chrome</translation>
-<translation id="5211087808649701653">Avvia finestra di dialogo di stampa nativa</translation>
 <translation id="8669527147644353129">Supporto Google Chrome</translation>
+<translation id="1399397803214730675">Su questo computer è già installata una versione più recente di Google Chrome. Se il software non funziona, disinstalla Google Chrome e riprova.</translation>
 <translation id="3444832043240812445">Questa pagina mostra solo informazioni sugli arresti anomali recenti se <ph name="BEGIN_LINK"/>attivi la segnalazione degli arresti anomali<ph name="END_LINK"/>.</translation>
 <translation id="8614913330719544658">Google Chrome non risponde. Riavviarlo ora?</translation>
 <translation id="2681064822612051220">Nel sistema è stata rilevata un'installazione di Google Chrome in conflitto. Disinstallala e riprova.</translation>
@@ -99,7 +101,6 @@
 <translation id="2769762047821873045">Google Chrome non è il tuo browser predefinito.</translation>
 <translation id="7825851276765848807">Installazione non riuscita a causa di un errore non specificato. Scarica nuovamente Google Chrome.</translation>
 <translation id="3335672657969596251"><ph name="OS_NAME"/> non è supportato da Google Chrome.</translation>
-<translation id="3636771339108070045">In questo computer è già installata una versione più recente di Google Chrome. Se il software non funziona, disinstalla Google Chrome e scaricalo nuovamente.</translation>
 <translation id="5334545119300433702">Questo modulo è in conflitto con Google Chrome.</translation>
 <translation id="3360895254066713204">Supporto Chrome</translation>
 <translation id="1001534784610492198">Il file del programma di installazione è danneggiato oppure non è valido. Scarica nuovamente Google Chrome.</translation>

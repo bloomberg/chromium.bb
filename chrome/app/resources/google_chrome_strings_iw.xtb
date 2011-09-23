@@ -31,6 +31,7 @@
 <translation id="8227755444512189073">Google Chrome חייב לבצע יישום חיצוני על מנת לנהל <ph name="SCHEME"/> קישורים הקישור המבוקש הוא <ph name="PROTOLINK"/>.</translation>
 <translation id="8290100596633877290">וואו! Google Chrome קרס. להפעיל מחדש עכשיו?</translation>
 <translation id="1281036569101707544">Google Chrome <ph name="TERMS_OF_SERVICE_LINK"/></translation>
+<translation id="3487814320513494737">הדף 'כרטיסייה חדשה' של Chrome עוצב מחדש. עבור בין קטעים על ידי לחיצה על תוויות. Chrome יזכור את ההעדפה שלך בשביל הפעם הבאה.</translation>
 <translation id="1697213158865901863">Google Chrome Frame</translation>
 <translation id="2653935705142821164">Chrome Renderer</translation>
 <translation id="8446794773162156990">Google Chrome לא מתנהג יפה</translation>
@@ -39,7 +40,7 @@
 <translation id="3089968997497233615">גרסה חדשה ובטוחה יותר של Google Chrome זמינה כעת</translation>
 <translation id="5037239767309817516">כדי ששינוי זה ייכנס לתוקף, סגור את כל החלונות של Google Chrome והפעל אותו מחדש.</translation>
 <translation id="7451721381978275812">ארגומנטים לא חוקיים. לא ניתן להתקין את Google Chrome Frame במצב מוכן ללא התקנת Google Chrome.</translation>
-<translation id="5809236835374558741">במחשב זה קיימת כבר גירסה מתקדמת יותר של Google Chrome Frame. אם התוכנה אינה פועלת, הסר את Google Chrome Frame והורד אותו שוב.</translation>
+<translation id="4585888816441913908">במחשב זה קיימת כבר גרסה עדכנית יותר של Google Chrome ו-Google Chrome Frame. אם התוכנה אינה פועלת, הסר את ההתקנה של Google Chrome ו-Google Chrome Frame ונסה שוב.</translation>
 <translation id="6368958679917195344">השימוש במערכת ההפעלה של Chrome מתאפשר באמצעות <ph name="BEGIN_LINK_CROS_OSS"/>תוכנת קוד פתוח<ph name="END_LINK_CROS_OSS"/> נוספת.</translation>
 <translation id="4357846314885556934">Google Chrome לא מתנהג כיאות</translation>
 <translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
@@ -64,7 +65,6 @@
 <translation id="3847841918622877581">Google Chrome עשוי להשתמש בשירותי אינטרנט כדי לשפר את חווית הגלישה שלך.</translation>
 <translation id="7436949144778751379">Google Chrome דורש Windows XP ואילך. ייתכן שחלק מהתכונות לא יפעלו.</translation>
 <translation id="7100330187273168372">Google Chrome אינו יכול לקרוא ולכתוב אל ספריית המידע שלו:\n\n<ph name="USER_DATA_DIRECTORY"/></translation>
-<translation id="5167270755190684957">גלריית העיצובים של Google Chrome</translation>
 <translation id="7938170099933661772">לא ניתן להציג את התצוגה המקדימה של ההדפסה ב-Google Chrome כאשר מציג ה-PDF המובנה מושבת. כדי לראות את התצוגה המקדימה, בקר בכתובת <ph name="BEGIN_LINK"/>chrome://plugins<ph name="END_LINK"/>, הפוך את &quot;מציג ה-PDF של Chrome&quot; לפעיל ונסה שוב.</translation>
 <translation id="6757767188268205357">אל תנדנד לי</translation>
 <translation id="2290095356545025170">האם אתה בטוח שאתה רוצה להסיר את Google Chrome?</translation>
@@ -74,14 +74,16 @@
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">Google Chrome מאפשר לך ללחוץ על מספר טלפון באינטרנט ולהתקשר אליו באמצעות Skype!</translation>
 <translation id="3612333635265770873">מודול בעל אותו שם מתנגש עם Google Chrome.</translation>
+<translation id="2679385451463308372">הדפס באמצעות תיבת דו-שיח של המערכת...</translation>
 <translation id="5947389362804196214">לא היתה אפשרות לקרוא את ההעדפות שלך.\n\nייתכן שחלק מהתכונות לא יהיו זמינות ושינויים בהעדפות לא יישמרו.</translation>
 <translation id="6650142020817594541">אתר זה ממליץ על Google Chrome Frame (כבר מותקן).</translation>
 <translation id="4127951844153999091">במקרה כזה, הכתובת שמופיעה באישור אינה תואמת לכתובת של האתר שאליו הדפדפן שלך ניסה להגיע. סיבה אפשרית לכך היא שהתכתובות שלך נלכדות על ידי גורם פוגע שמציג אישור עבור אתר שונה, ובעקבות זאת נוצרה אי ההתאמה. סיבה אפשרית נוספת היא שהשרת מוגדר להצגת אותו אישור עבור אתרים מרובים, לרבות האתר שבו אתה מנסה לבקר, גם אם האישור אינו תקף לכל אותם אתרים. Google Chrome יכול לקבוע בוודאות שהגעת ל&lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, אך אינו יכול לאמת כי הוא זהה ל-&lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, שאליו ניסית להגיע. אם תמשיך, Chrome לא יחפש אי התאמות שמיות נוספות. ככלל, מומלץ לא להמשיך מעבר לנקודה זו.</translation>
 <translation id="2712549016134575851">אותרה התנגשות עם יישום מותקן אחר.</translation>
+<translation id="5577648424992741236">במחשב זה מותקנת כבר גירסה מתקדמת יותר של Google Chrome Frame. אם התוכנה אינה פועלת, הסר את ההתקנה של Google Chrome Frame ונסה שוב.</translation>
 <translation id="7018032895891496381">Google Chrome משתמש במנוע חיפוש המוגדר כברירת מחדל, שמוגדר כרגע ל-<ph name="PAGE_TITLE"/>. האם ברצונך לשמור על מנוע החיפוש המוגדר כברירת מחדל?</translation>
 <translation id="7161904924553537242">ברוך הבא ל-Google Chrome</translation>
-<translation id="5211087808649701653">פתח תיבת דו-שיח להדפסה מקורית</translation>
 <translation id="8669527147644353129">Google Chrome Helper</translation>
+<translation id="1399397803214730675">במחשב זה מותקנת כבר גירסה עדכנית יותר של Google Chrome. אם התוכנה אינה פועלת, הסר את ההתקנה של Google Chrome ונסה שוב.</translation>
 <translation id="3444832043240812445">דף זה מציג מידע על הקריסות האחרונות בלבד אם <ph name="BEGIN_LINK"/>תפעיל את אפשרות הדיווח על קריסות<ph name="END_LINK"/>.</translation>
 <translation id="8614913330719544658">Google Chrome אינו מגיב. להפעיל מחדש עכשיו?</translation>
 <translation id="2681064822612051220">נמצאה במערכת התקנה מתנגשת אחרת של Google Chrome. הסר את ההתקנה ונסה שוב.</translation>
@@ -99,7 +101,6 @@
 <translation id="2769762047821873045">Google Chrome‏ אינו דפדפן ברירת המחדל שלך.</translation>
 <translation id="7825851276765848807">ההתקנה נכשלה בשל שגיאה לא מזוהה. הורד שוב את Google Chrome.</translation>
 <translation id="3335672657969596251">Google Chrome אינו תומך ב <ph name="OS_NAME"/></translation>
-<translation id="3636771339108070045">במחשב זה קיימת כבר גרסה מתקדמת יותר של Google Chrome. אם התוכנה אינה פועלת, הסר את הדפדפן Google Chrome והורד אותו שוב.</translation>
 <translation id="5334545119300433702">מודול זה מתנגש עם Google Chrome.</translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
 <translation id="1001534784610492198">הארכיון של המתקין פגום או שאינו חוקי. הורד שוב את Google Chrome.</translation>

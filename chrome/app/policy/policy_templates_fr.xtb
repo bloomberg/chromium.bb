@@ -20,10 +20,12 @@
           Par défaut, toutes les extensions figurent sur la liste blanche. Toutefois, si toutes les extensions ont été mises sur la liste noire par la stratégie, seules les extensions expressément indiquées dans la liste blanche pourront être utilisées.</translation>
 <translation id="3185009703220253572">depuis la version <ph name="SINCE_VERSION"/></translation>
 <translation id="5469825884154817306">Bloquer les images sur ces sites</translation>
+<translation id="7812822355979915508">Indique si l'utilisateur peut ouvrir des pages en mode navigation privé dans <ph name="PRODUCT_NAME"/>. Si cette règle est activée, les pages peuvent être ouvertes à l'aide de ce mode. Dans le cas contraire, cela n'est pas possible. Si la règle est configurée sur &quot;Forcé&quot;, les pages peuvent être ouvertes UNIQUEMENT en mode navigation privée.</translation>
 <translation id="2908277604670530363">Nombre maximal de connexions simultanées au serveur proxy</translation>
 <translation id="3512877396423730277">Contrôle si le sous-contenu tiers d'une page est autorisé à ouvrir un pop-up d'authentification HTTP de base (Basic Auth). Cette option est habituellement désactivée dans le cadre de la protection contre le phishing.</translation>
 <translation id="1438955478865681012">Configure les règles relatives aux extensions. L'utilisateur n'est pas autorisé à installer les extensions inscrites sur la liste noires, sauf si elles figurent sur la liste blanche. Vous pouvez également forcer <ph name="PRODUCT_NAME"/> à installer des extensions. Pour ce faire, dressez la liste de ces extensions dans <ph name="EXTENSIONINSTALLFORCELIST_POLICY_NAME"/>. La liste noire est prioritaire sur la liste des extensions dont l'installation est forcée.</translation>
 <translation id="4070280487546651935">Définit le mot clé correspondant au raccourci utilisé dans le champ polyvalent pour déclencher la recherche pour ce moteur de recherche. Facultatif.</translation>
+<translation id="7271085005502526897">Importer la page d'accueil du navigateur par défaut à la première exécution</translation>
 <translation id="6036523166753287175">Activer la traversée de pare-feu depuis l'hôte d'accès à distance</translation>
 <translation id="1096105751829466145">Moteur de recherche par défaut</translation>
 <translation id="7567380065339179813">Autoriser les plug-ins sur ces sites</translation>
@@ -64,11 +66,15 @@
 <translation id="8828766846428537606">Configure la page d'accueil par défaut de <ph name="PRODUCT_NAME"/> et empêche les utilisateurs de modifier cette dernière.
 
       Les paramètres de page d'accueil de l'utilisateur ne sont complètement verrouillés que si vous définissez la page &quot;Nouvel onglet&quot; ou une URL spécifique comme page d'accueil. Si vous ne précisez pas l'URL de la page d'accueil, l'utilisateur est toujours en mesure de définir la page d'accueil sur la page &quot;Nouvel onglet&quot; au moyen de la valeur &quot;chrome://newtab&quot;.</translation>
+<translation id="2231817271680715693">Importer l'historique de navigation du navigateur par défaut à la première exécution</translation>
 <translation id="1353966721814789986">Pages de démarrage</translation>
+<translation id="1969043432858293299">Si cette règle est activée, l'historique de navigation est obligatoirement importé à partir du navigateur par défaut actuel. Dans le cas contraire, aucun historique de navigation n'est importé. Si cette règle n'est pas configurée, le comportement par défaut est utilisé. Lorsqu'elle est activée, elle affecte également la boîte de dialogue d'importation.</translation>
 <translation id="5564962323737505851">Configure le gestionnaire de mots de passe. Si le gestionnaire de mots de passe est activé, vous pouvez activer ou désactiver la stratégie permettant à l'utilisateur d'afficher en texte clair les mots de passe enregistrés.</translation>
 <translation id="4668325077104657568">Paramètres d'images par défaut</translation>
+<translation id="7161193985878519056">Mode navigation privée désactivé</translation>
 <translation id="6368403635025849609">Autoriser JavaScript sur ces sites</translation>
 <translation id="6074963268421707432">Interdire à tous les sites d'afficher des notifications sur le Bureau</translation>
+<translation id="8104962233214241919">Sélectionner automatiquement des certificats client pour ces sites</translation>
 <translation id="3758249152301468420">Désactiver les outils de développement</translation>
 <translation id="8665076741187546529">Configurer la liste des extensions dont l'installation est forcée</translation>
 <translation id="6242542007132978836">Vous permet d'indiquer si des sites Web sont autorisés à exécuter automatiquement des plug-ins. L'exécution automatique des plug-ins peut être soit autorisée pour tous les sites Web, soit refusée pour tous les sites Web.</translation>
@@ -110,12 +116,8 @@
 <translation id="2711603272213076156">Autoriser l'appel des boîtes de dialogue de sélection de fichiers.</translation>
 <translation id="1426410128494586442">Oui</translation>
 <translation id="3381968327636295719">Utiliser le navigateur hôte par défaut</translation>
+<translation id="6520802717075138474">Importer les moteurs de recherche du navigateur par défaut à la première exécution</translation>
 <translation id="6368011194414932347">Configurer l'URL de la page d'accueil</translation>
-<translation id="1966609843734913335">Active le mode navigation privée dans <ph name="PRODUCT_NAME"/>.
-
-      Si ce paramètre est activé ou n'est pas configuré, les utilisateurs peuvent ouvrir des pages Web en mode navigation privée.
-
-      Si ce paramètre est désactivé, les utilisateurs ne peuvent pas ouvrir les pages Web en mode navigation privée.</translation>
 <translation id="3423023819976532001">Active l'enregistrement des mots de passe et l'utilisation des mots de passe enregistrés dans <ph name="PRODUCT_NAME"/>.
 
           Si vous activez ce paramètre, les utilisateurs peuvent faire en sorte que <ph name="PRODUCT_NAME"/> mémorise les mots de passe et renseigne automatiquement ces derniers lorsque les utilisateurs se reconnectent à un site particulier.
@@ -134,6 +136,7 @@
 <translation id="5059221739913673172">Configure le répertoire qui sera utilisé par <ph name="PRODUCT_NAME"/> pour stocker les données utilisateur.
 
       Si vous définissez cette stratégie, <ph name="PRODUCT_NAME"/> utilisera le répertoire fourni, que l'utilisateur ait ou non spécifié l'indicateur &quot;--user-data-dir&quot;.</translation>
+<translation id="6378014222084506939">Disponibilité du mode navigation privée</translation>
 <translation id="3528000905991875314">Activer les pages d'erreur alternatives</translation>
 <translation id="4084327080063933392">Indique le nom du moteur de recherche par défaut. Si vous ne définissez pas cette stratégie, le nom d'hôte indiqué par l'URL de recherche est utilisé.</translation>
 <translation id="6114416803310251055">obsolète</translation>
@@ -155,6 +158,7 @@
           Si vous activez ce paramètre, <ph name="PRODUCT_NAME"/> ignore toutes les options de proxy spécifiées sur la ligne de commande.</translation>
 <translation id="6899705656741990703">Détecter automatiquement les paramètres de proxy</translation>
 <translation id="4101772068965291327">Ouvrir la page d'accueil</translation>
+<translation id="6932480224480511443">Si cette règle est activée, les favoris sont obligatoirement importés à partir du navigateur par défaut actuel. Dans le cas contraire, aucun favori n'est importé. Si elle n'est pas configurée, le comportement par défaut est utilisé. Lorsqu'elle est activée, cette règle affecte également la boîte de dialogue d'importation.</translation>
 <translation id="8992176907758534924">Interdire à tous les sites d'afficher des images</translation>
 <translation id="8704831857353097849">Liste des plug-ins désactivés</translation>
 <translation id="467449052039111439">Ouvrir une liste d'URL</translation>
@@ -189,10 +193,11 @@
       Si vous activez ce paramètre, <ph name="PRODUCT_NAME"/> utilise les paramètres régionaux spécifiés. Si les paramètres régionaux configurés ne sont pas compatibles, le navigateur applique le paramétrage &quot;en-US&quot;.
 
       Si ce paramètre est désactivé ou s'il n'est pas configuré, <ph name="PRODUCT_NAME"/> utilise les paramètres régionaux favoris de l'utilisateur (s'ils ont été configurés), les paramètres régionaux du système ou les paramètres régionaux de remplacement (&quot;en-US&quot;).</translation>
+<translation id="3964909636571393861">Permet d'accéder à une liste d'URL.</translation>
 <translation id="6022948604095165524">Action au démarrage</translation>
 <translation id="3704185423155638353">Vous permet de définir une liste de formats d'URL indiquant les sites non autorisés à exécuter JavaScript.</translation>
 <translation id="7628741187268592472">Indique la bibliothèque GSSAPI à utiliser pour l'authentification HTTP. Vous pouvez indiquer uniquement le nom de la bibliothèque ou son chemin d'accès complet. Si vous ne fournissez aucun paramètre, <ph name="PRODUCT_NAME"/> utilise un nom de bibliothèque par défaut.</translation>
-<translation id="2435100545355792516">Forcer l'activation du mode navigation privée</translation>
+<translation id="1247111313041645019">Si cette règle est activée, les mots de passe enregistrés sont obligatoirement importés à partir du navigateur par défaut précédent. Dans le cas contraire, les mots de passe enregistrés ne sont pas importés. Si cette règle n'est pas configurée, le comportement par défaut est utilisé. Lorsqu'elle est activée, elle affecte également la boîte de dialogue d'importation.</translation>
 <translation id="605147781209875705">Cette stratégie n'est plus autorisée et doit être remplacée par ProxyMode.
 
           Vous permet d'indiquer le serveur proxy utilisé par <ph name="PRODUCT_NAME"/> et d'empêcher les utilisateurs de modifier les paramètres de proxy.
@@ -223,6 +228,7 @@
 <translation id="5770738360657678870">Version en développement (peut être instable)</translation>
 <translation id="2959898425599642200">Règles de contournement de proxy</translation>
 <translation id="7337941689192402544">Définir le répertoire de données utilisateur pour <ph name="PRODUCT_NAME"/></translation>
+<translation id="896575211736907134">Mode navigation privée forcé</translation>
 <translation id="5326137997741385453">Configure le répertoire qui sera utilisé par <ph name="PRODUCT_NAME"/> pour stocker les fichiers mis en cache sur le disque. Si vous l'appliquez, <ph name="PRODUCT_NAME"/> utilisera le répertoire fourni, que l'utilisateur ait spécifié ou non l'indicateur &quot;--disk-cache-dir&quot;.</translation>
 <translation id="4752274243117690301">Si vous définissez ce paramètre sur &quot;True&quot;, la recherche automatique et l'installation des plug-ins manquants seront désactivés dans <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="3292147213643666827">      Permet à <ph name="PRODUCT_NAME"/> de jouer le rôle de proxy entre <ph name="CLOUD_PRINT_NAME"/> et les anciennes imprimantes connectées à la machine.
@@ -234,6 +240,7 @@
 
       Quel que soit le réglage, les utilisateurs ne peuvent pas modifier ni remplacer ce paramétrage dans <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="6641981670621198190">Désactiver la prise en charge des API 3D graphics</translation>
+<translation id="6375011473383446094">Vous permet de spécifier une liste de formats d'URL indiquant les sites pour lesquels <ph name="PRODUCT_NAME"/> devrait sélectionner automatiquement un certificat client, lorsque le site nécessite un certificat.</translation>
 <translation id="2741921267428646309">Cette page répertorie les stratégies respectées par <ph name="PRODUCT_NAME"/>.
 
       Vous n'avez pas besoin de modifier ces paramètres manuellement. Vous pouvez télécharger des modèles de stratégie faciles à utiliser à partir de <ph name="POLICY_TEMPLATE_DOWNLOAD_URL"/>.
@@ -289,6 +296,7 @@
 <translation id="2312134445771258233">Vous permet de configurer les pages chargées au démarrage.
 
       Le contenu de la liste &quot;URL à ouvrir au démarrage&quot; est ignoré, sauf si vous sélectionnez &quot;Ouvrir les pages suivantes&quot; dans &quot;Action au démarrage&quot;.</translation>
+<translation id="8344454543174932833">Importer les favoris du navigateur par défaut à la première exécution</translation>
 <translation id="7931766636395791713">Permet de définir une liste de formats d'URL indiquant les sites autorisés à exécuter JavaScript.</translation>
 <translation id="1019101089073227242">Définir le répertoire de données utilisateur</translation>
 <translation id="2030905906517501646">Mot clé du moteur de recherche par défaut</translation>
@@ -332,6 +340,7 @@
 <translation id="681446116407619279">Modèles d'authentification compatibles</translation>
 <translation id="4027608872760987929">Activer le moteur de recherche par défaut</translation>
 <translation id="2223598546285729819">Paramètre de notification par défaut</translation>
+<translation id="2417932194355389637">Si cette règle est activée, les moteurs de recherche sont obligatoirement importés à partir du navigateur par défaut actuel. Dans le cas contraire, le moteur de recherche par défaut n'est pas importé. Lorsqu'elle n'est pas configurée, le comportement par défaut est utilisé. Si elle est activée, cette règle affecte également la boîte de dialogue d'importation.</translation>
 <translation id="3793095274466276777">Configure les vérifications du navigateur par défaut dans <ph name="PRODUCT_NAME"/> et empêche les utilisateurs de les modifier.
 
       Si vous activez ce paramètre, <ph name="PRODUCT_NAME"/> vérifiera toujours au démarrage s'il s'agit du navigateur par défaut et s'enregistrera automatiquement si possible.
@@ -340,9 +349,11 @@
 
       Si ce paramètre n'est pas défini, <ph name="PRODUCT_NAME"/> autorisera l'utilisateur à déterminer s'il s'agit du navigateur par défaut et si des notifications aux utilisateurs doivent être affichées dans le cas contraire.</translation>
 <translation id="1530812829012954197">Toujours rendre les formats d'URL suivants dans le navigateur hôte</translation>
+<translation id="913195841488580904">Bloquer l'accès à une liste d'URL</translation>
 <translation id="6190022522129724693">Paramètre de fenêtres pop-up par défaut</translation>
 <translation id="847472800012384958">Interdire à tous les sites d'afficher des fenêtres pop-up</translation>
 <translation id="4733471537137819387">Stratégies liées à l'authentification HTTP intégrée</translation>
+<translation id="5428100326165690555">Cette règle est obsolète. Veuillez lui préférer la règle IncognitoModeAvailability (Disponibilité du mode navigation privée), qui active le mode navigation privée dans <ph name="PRODUCT_NAME"/>. Lorsque ce paramètre est activé ou non configuré, les utilisateurs peuvent ouvrir des pages Web en mode navigation privée. Dans le cas contraire, cela n'est pas possible.</translation>
 <translation id="4608714268466689965">Vous permet de définir si des sites Web sont autorisés à afficher des notifications sur le bureau. L'affichage des notifications sur le bureau peut être autorisé par défaut, refusé par défaut, ou la question peut être posée à l'utilisateur chaque fois qu'un site Web veut afficher des notifications sur le bureau.</translation>
 <translation id="8951350807133946005">Définir le répertoire du cache disque</translation>
 <translation id="3866571346358522601">Indique en millisecondes l'intervalle de temps entre chaque demande d'informations sur les règles relatives aux utilisateurs auprès du service de gestion d'appareils. Si cette règle est définie, la valeur par défaut de trois heures est remplacée. Les valeurs admises pour cette règle sont comprises entre 1 800 000 (30 minutes) et 86 400 000 (un jour). Les valeurs situées en dehors de cette plage sont remplacées par la valeur limite la plus proche.</translation>
@@ -351,6 +362,7 @@
           Si vous activez ce paramètre, la consultation CNAME n'est pas effectuée et le nom du serveur est utilisé tel qu'il a été saisi.
 
           Si vous désactivez ce paramètre, le nom canonique du serveur est déterminé via une consultation CNAME.</translation>
+<translation id="7117773566421450481">Bloque l'accès aux URL répertoriées. Cette règle empêche l'utilisateur de charger des pages Web à partir d'URL figurant sur la liste noire. Une URL se présente sous le format &quot;modèle://hôte:port/chemin&quot;. Le modèle facultatif peut être http, https ou ftp. Seul ce modèle sera bloqué. Si aucun n'est spécifié, tous les modèles sont bloqués. L'hôte peut être un hôte ou une adresse IP. Les sous-domaines d'un nom d'hôte seront également bloqués. Afin d'éviter le blocage des sous-domaines, ajoutez un point (.) avant le nom d'hôte. Le nom d'hôte spécial &quot;*&quot; bloque tous les domaines. Le port facultatif est un numéro de port valide de 1 à 65 535. Si aucun n'est spécifié, tous les ports sont bloqués. Si le chemin facultatif est spécifié, seuls les chemins contenant ce préfixe seront bloqués. Vous pouvez définir des exceptions dans la règle des URL sur liste blanche. Ces règles étant limitées à 100 entrées, les entrées suivantes seront ignorées.</translation>
 <translation id="166427968280387991">Serveur proxy</translation>
 <translation id="2805707493867224476">Autoriser tous les sites à afficher des fenêtres pop-up</translation>
 <translation id="1727394138581151779">Bloquer tous les plug-ins</translation>
@@ -369,6 +381,7 @@
 <translation id="6524941558928880715">Rouvrir les dernières URL ouvertes</translation>
 <translation id="3167247709504138314">Définit l'URL du moteur de recherche utilisé pour fournir des suggestions de recherche. Cette URL doit contenir la chaîne &quot;<ph name="SEARCH_TERM_MARKER"/>&quot;, qui sera remplacée lors de la requête par le texte déjà saisi par l'utilisateur. Facultatif.</translation>
 <translation id="602728333950205286">URL de recherche instantanée du moteur de recherche par défaut</translation>
+<translation id="3087595738450590532">Si cette règle est activée, la page d'accueil est obligatoirement importée à partir du navigateur par défaut actuel. Dans le cas contraire, la page d'accueil n'est pas importée. Lorsque cette règle n'est pas configurée, le comportement par défaut est utilisé.</translation>
 <translation id="1675002386741412210">Compatible avec :</translation>
 <translation id="5417368737700340683">Active la fonction de recherche instantanée dans <ph name="PRODUCT_NAME"/> et empêche les utilisateurs de modifier ce paramétrage.
 
@@ -394,7 +407,9 @@
 <translation id="8544375438507658205">Moteur de rendu HTML par défaut pour <ph name="PRODUCT_FRAME_NAME"/></translation>
 <translation id="7424751532654212117">Liste des exceptions à la liste des plug-ins désactivés</translation>
 <translation id="6233173491898450179">Définir le répertoire de téléchargement</translation>
+<translation id="2158989228646115511">Lorsque cette règle est définie sur &quot;True&quot; (&quot;Vrai&quot;), les promotions pour les applications du Chrome Web Store ne s'affichent pas sur la page &quot;Nouvel onglet&quot;.</translation>
 <translation id="2299220924812062390">Indiquer une liste de plug-ins activés</translation>
+<translation id="924557436754151212">Importer les mots de passe enregistrés du navigateur par défaut à la première exécution</translation>
 <translation id="8754704265300028644">Désactive l'enregistrement de l'historique du navigateur dans <ph name="PRODUCT_NAME"/> et empêche les utilisateurs de modifier ce paramétrage.
 
       Si ce paramètre est activé, l'historique du navigateur n'est pas enregistré.
@@ -420,9 +435,9 @@
 <translation id="868187325500643455">Autoriser tous les sites à exécuter automatiquement les plug-ins</translation>
 <translation id="5226033722357981948">Indiquer si l'outil de recherche de plug-ins doit être désactivé</translation>
 <translation id="9068358498333390522">Vous permet d'indiquer si les sites Web sont autorisés à afficher des fenêtres pop-up. L'affichage des fenêtres pop-up peut être autorisé pour tous les sites Web ou refusé pour tous les sites Web.</translation>
+<translation id="3612784419634427880">Mode navigation privée disponible</translation>
 <translation id="7194407337890404814">Nom du moteur de recherche par défaut</translation>
 <translation id="1843117931376765605">Fréquence d'actualisation des règles relatives aux utilisateurs</translation>
-<translation id="1630808801738981930">Force l'activation du mode navigation privée pour chaque session dans <ph name="PRODUCT_NAME"/>. Si ce paramètre est activé, les utilisateurs ne peuvent ouvrir des pages qu'en mode navigation privée. Si ce paramètre est désactivé ou n'est pas configuré, les utilisateurs peuvent également utiliser le navigateur en mode normal.</translation>
 <translation id="5535973522252703021">Liste blanche des serveurs de délégation Kerberos</translation>
 <translation id="4554678280250165996">Répertorie les systèmes d'authentification HTTP compatibles avec <ph name="PRODUCT_NAME"/>.
 
@@ -454,6 +469,7 @@
 <translation id="7848840259379156480">Permet de configurer le moteur de rendu HTML par défaut lorsque <ph name="PRODUCT_FRAME_NAME"/> est installé.
       Le paramétrage par défaut de cette stratégie autorise le navigateur hôte à effectuer le rendu. Toutefois, vous pouvez
       remplacer ce paramétrage pour que <ph name="PRODUCT_FRAME_NAME"/> assure le rendu des pages HTML pages par défaut.</translation>
+<translation id="4121350739760194865">Empêcher les promotions pour les applications de s'afficher sur la page &quot;Nouvel onglet&quot;</translation>
 <translation id="4486602758942612946">Personnalise la liste des formats d'URL qui doivent être systématiquement rendus par le navigateur hôte.
           Pour consulter des exemples de formats, accédez à : http://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="2257451316169619209">Indique en millisecondes l'intervalle de temps entre chaque demande d'informations sur les règles relatives aux appareils auprès du service de gestion d'appareils. Si cette règle est définie, la valeur par défaut de trois heures est remplacée. Les valeurs admises pour cette règle sont comprises entre 1 800 000 (30 minutes) et 86 400 000 (un jour). Les valeurs situées en dehors de cette plage sont remplacées par la valeur limite la plus proche.</translation>
@@ -508,6 +524,7 @@
 
       Si vous activez ce paramètre ou ne configurez pas de valeur, la fonction de saisie automatique peut être contrôlée pour les utilisateurs. Ils peuvent ainsi configurer des profils de saisie automatique et activer ou désactiver à leur guise la fonction de saisie automatique.</translation>
 <translation id="6938581770853731947">Configure le type de la page d'accueil par défaut dans <ph name="PRODUCT_NAME"/> et empêche les utilisateurs de modifier les préférences de page d'accueil. Vous pouvez définir la page d'accueil sur une URL spécifique que vous indiquez ou sur la page &quot;Nouvel onglet&quot;. Si vous activez ce paramètre, la page &quot;Nouvel onglet&quot; est systématiquement utilisée en tant que page d'accueil et l'adresse URL de la page d'accueil est ignorée. Si vous désactivez ce paramètre, la page d'accueil de l'utilisateur ne correspondra jamais à la page &quot;Nouvel onglet&quot;, sauf si l'URL de la page d'accueil est définie en tant que &quot;chrome://newtab&quot;. Dans les deux cas, les utilisateurs ne peuvent pas modifier leur type de page d'accueil dans <ph name="PRODUCT_NAME"/>.</translation>
+<translation id="2844287278346661435">Permet d'accéder aux URL répertoriées comme des exceptions à la liste noire des URL. Voir la description de la règle de la liste noire des URL pour le format des entrées de cette liste. Cette règle peut être utilisée pour ouvrir des exceptions aux listes noires restrictives. Par exemple, &quot;*&quot; peut figurer sur la liste noire pour bloquer toutes les demandes. Cette règle peut être utilisée pour permettre l'accès à une liste limitée d'URL. Elle peut être utilisée pour ouvrir des exceptions à certains modèles, sous-domaines d'autres domaines, ports ou chemins spécifiques. Le filtre le plus spécifique permettra de déterminer si une URL est bloquée ou non. La liste blanche est prioritaire sur la liste noire. Cette règle étant limitée à 100 entrées, les entrées suivantes seront ignorées.</translation>
 <translation id="5645779841392247734">Autoriser les cookies sur ces sites</translation>
 <translation id="3906388518501362918">Active JavaScript dans <ph name="PRODUCT_NAME"/> et empêche les utilisateurs de modifier ce paramètre.
 

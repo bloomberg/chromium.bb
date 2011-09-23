@@ -31,6 +31,7 @@
 <translation id="8227755444512189073">Google Chrome ને <ph name="SCHEME"/> લિંક્સ હેન્ડલ કરવા માટે એક બાહ્ય એપ્લિકેશન શરૂ કરવાની જરૂર છે. જોઈતી લિંક છે, <ph name="PROTOLINK"/>.</translation>
 <translation id="8290100596633877290">ઓહ! Google Chrome ક્રેશ થઈ ગયું. હમણાં ફરીથી લોંચ કરીએ?</translation>
 <translation id="1281036569101707544">Google Chrome <ph name="TERMS_OF_SERVICE_LINK"/></translation>
+<translation id="3487814320513494737">Chrome ના નવા ટૅબ પૃષ્ઠો રીમૉડેલ કરવામાં આવ્યા છે. આ લેબલ્સને ક્લિક કરીને વિભાગો વચ્ચે સ્વિચ કરો. Chrome આગલી વખત માટે તમારી પસંદગીને યાદ રાખશે.</translation>
 <translation id="1697213158865901863">Google Chrome Frame</translation>
 <translation id="2653935705142821164">Chrome Renderer</translation>
 <translation id="8446794773162156990">Google Chrome બરાબર વર્તતું નથી</translation>
@@ -39,7 +40,7 @@
 <translation id="3089968997497233615">Google Chrome નું નવું, સલામત સંસ્કરણ ઉપલબ્ધ છે.</translation>
 <translation id="5037239767309817516">આ ફેરફારને પ્રભાવમાં લાવવા માટે કૃપા કરીને બધી Google Chrome વિંડોને બંધ કરો અને તેને ફરીથી લોંચ કરો.</translation>
 <translation id="7451721381978275812">અમાન્ય દલીલો. Google Chrome ફ્રેમ રેડી મોડમાં Google Chrome ને ઇન્સ્ટોલ કર્યા વગર ઇન્સ્ટોલ થઈ શકતું નથી.</translation>
-<translation id="5809236835374558741">આ કમ્પ્યુટર પર પહેલેથી જ Google Chrome ફ્રેમ નું વધુ તાજેતરનું સંસ્કરણ છે. જો સૉફ્ટવેર કામ ન કરતું હોય, તો કૃપા કરીને Google Chrome ફ્રેમ ને અનઇન્સ્ટોલ કરો અને તેને ફરીથી ડાઉનલોડ કરો.</translation>
+<translation id="4585888816441913908">આ કમ્પ્યુટર પર પહેલેથી જ Google Chrome અને Google Chrome ફ્રેમ નું વધુ તાજેતરનું સંસ્કરણ છે. જો સૉફ્ટવેર કામ ન કરતું હોય, તો કૃપા કરીને Google Chrome અને Google Chrome ફ્રેમ બંનેને અનઇન્સ્ટોલ કરો અને ફરીથી પ્રયાસ કરો.</translation>
 <translation id="6368958679917195344">Chrome OS એ વધારાના <ph name="BEGIN_LINK_CROS_OSS"/>ખુલ્લા સ્ત્રોત સૉફ્ટવેર<ph name="END_LINK_CROS_OSS"/> દ્વારા શક્ય બને છે.</translation>
 <translation id="4357846314885556934">Google Chrome બરાબર વર્તતું નથી</translation>
 <translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
@@ -64,7 +65,6 @@
 <translation id="3847841918622877581">Google Chrome તમારા બ્રાઉઝિંગ અનુભવને સુધારવા માટે વેબ સેવાઓનો ઉપયોગ કરી શકે છે.</translation>
 <translation id="7436949144778751379">Google Chrome ને Windows XP અથવા તે પછીનાની આવશ્યકતા છે. કેટલીક સુવિધાઓ કામ કરશે નહીં.</translation>
 <translation id="7100330187273168372">Google Chrome તેની ડેટા ડાયરેક્ટરીને વાંચી અને લખી શકતું નથી:\n\n<ph name="USER_DATA_DIRECTORY"/></translation>
-<translation id="5167270755190684957">Google Chrome થીમ્સ ગેલેરી</translation>
 <translation id="7938170099933661772">બિલ્ટ-ઇન PDF વ્યુઅર અક્ષમ હોય ત્યારે Google Chrome છાપવાનું પૂર્વાવલોકન બતાવી શકતું નથી. પૂર્વાવલોકન જોવા માટે, કૃપા કરીને <ph name="BEGIN_LINK"/>$1<ph name="END_LINK"/> ની મુલાકાત લો, અને &quot;Chrome PDF Viewer&quot;ને સક્ષમ કરો, તથા ફરીથી પ્રયાસ કરો.</translation>
 <translation id="6757767188268205357">મને બગ રીતે કરશો નહીં</translation>
 <translation id="2290095356545025170">શું તમને ખાતરી છે કે તમારે Google Chromeને અનઇન્સ્ટોલ કરવું છે?</translation>
@@ -74,14 +74,16 @@
 <translation id="4990567037958725628">Google Chrome કૅનેરી</translation>
 <translation id="4561051373932531560">Google Chrome થી તમે વેબ પર એક ફોન નંબર પર ક્લિક કરી શકો છો અને તેને Skype થી કૉલ કરી શકો છો!</translation>
 <translation id="3612333635265770873">આ જ નામનું એક મોડ્યુલ Google Chrome સાથે વિરોધાભાસમાં જાણમાં આવ્યું છે.</translation>
+<translation id="2679385451463308372">સિસ્ટમ સંવાદનો ઉપયોગ કરીને છાપો... </translation>
 <translation id="5947389362804196214">તમારી પસંદગીઓ વાંચી શકાતી નથી.\n\nકેટલીક સુવિધાઓ અનુપલબ્ધ ક છે અને પસંદગીઓના ફેરફારો સાચવી શકાશે નહીં.</translation>
 <translation id="6650142020817594541">આ સાઇટ Google Chrome ફ્રેમ (પહેલાથી જ ઇન્સ્ટોલ કરેલું છે)ની ભલામણ કરે છે .</translation>
 <translation id="4127951844153999091">આ કિસ્સામાં, પ્રમાણપત્રમાં સૂચિબદ્ધ સરનામું, તમારા બ્રાઉઝરે જ્યાં જવાનો પ્રયાસ કર્યો તે વેબસાઇટનાં સરનામા સાથે મેળ ખાતું નથી. આ માટેનું એક સંભવ કારણ છે કે તમારી વાતચીતોમાં કોઈ હમલાવર દ્વારા દખલગિરી કરવામાં આવી રહી છે જે કોઈ વિભિન્ન વેબસાઇટ માટે પ્રમાણપત્ર પ્રસ્તુત કરી રહ્યો છે, જે મિસમેચનું કારણ બની રહ્યું હશે. બીજુ એક સંભવ કારણ છે કે આ સર્વર તે રીતે સેટ કરેલું છે કે તમે મુલાકાત લેવાનો પ્રયાસ કરી રહ્યા છો તે સહિત અનેક વેબસાઇટ્સ માટે તે જ પ્રમાણપત્ર બતાવે, પછી ભલે તે પ્રમાણપત્ર બધી વેબસાઇટ્સ માટે માન્ય ન હોય. Google Chrome નિશ્ચિતપણે કહી શકે છે કે તમે &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; પર પહોંચી ગયા છો, પરંતુ તે ચકાસણી કરી શકતું નથી કે આ તે જ &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; સાઇટ છે જેના પર તમે જવા માંગતા હતા. જો તમે આગળ વધશો, તો Chrome આગળના નામના મિસમેચેસને તપાસશે નહીં. સામાન્ય રીતે, આ બિંદુથી આગળ ન વધવું જ શ્રેષ્ઠ છે.</translation>
 <translation id="2712549016134575851">બીજી ઇન્સ્ટોલ કરેલી એપ્લિકેશન સાથે વિરોધાભાસ દેખાયો છે.</translation>
+<translation id="5577648424992741236">આ કમ્પ્યુટર પર પહેલેથી જ Google Chrome ફ્રેમ નું વધુ તાજેતરનું સંસ્કરણ છે. જો સૉફ્ટવેર કામ ન કરતું હોય, તો કૃપા કરીને Google Chrome ફ્રેમ ને અનઇન્સ્ટોલ કરો અને ફરીથી પ્રયાસ કરો.</translation>
 <translation id="7018032895891496381">Google  Chrome તમારા ડિફોલ્ટ  શોધ  એંજિનનો ઉપયોગ કરે છે, જે હાલમાં <ph name="PAGE_TITLE"/> પર સેટ છે. શું તમે તમારા ડિફોલ્ટ  શોધ  એંજિનને રાખવા માંગો છો?</translation>
 <translation id="7161904924553537242">Google Chrome માં સ્વાગત છે</translation>
-<translation id="5211087808649701653">નેટિવ પ્રિંટ સંવાદ લોંચ કરો</translation>
 <translation id="8669527147644353129">Google Chrome સહાયક</translation>
+<translation id="1399397803214730675">આ કમ્પ્યુટર પર પહેલેથી જ Google Chrome નું વધુ તાજેતરનું સંસ્કરણ છે. જો સૉફ્ટવેર કામ ન કરતું હોય, તો કૃપા કરીને Google Chrome ને અનઇન્સ્ટોલ કરો અને ફરી પ્રયાસ કરો.</translation>
 <translation id="3444832043240812445">આ પૃષ્ઠ તો જ તમારા હાલનાં ક્રેશેસ પર માહિતી બતાવે છે જો તમે <ph name="BEGIN_LINK"/>ક્રેશ રિપોર્ટિંગ સક્ષમ કરો છો<ph name="END_LINK"/>.</translation>
 <translation id="8614913330719544658">Google Chrome પ્રતિસાદ આપતું નથી. હવે ફરીથી લોંચ કરીએ?</translation>
 <translation id="2681064822612051220">સિસ્ટમ પર Google Chrome નું એક વિરોધાભાસી ઇન્સ્ટોલેશન મળ્યું. કૃપા કરીને તેને અનઇન્સ્ટોલ કરો અને ફરીથી પ્રયાસ કરો.</translation>
@@ -99,7 +101,6 @@
 <translation id="2769762047821873045">Google Chrome તમારુ ડિફોલ્ટ બ્રાઉઝર નથીં.</translation>
 <translation id="7825851276765848807">અનુલ્લેખિત ભૂલને કારણે ઇન્સ્ટોલેશન નિષ્ફળ રહ્યું. કૃપા કરીને Google Chrome ફરીથી ડાઉનલોડ કરો.</translation>
 <translation id="3335672657969596251">Google Chrome <ph name="OS_NAME"/> ને સપોર્ટ કરતું નથી.</translation>
-<translation id="3636771339108070045">આ કમ્પ્યુટર પર પહેલેથી જ Google Chrome નું સૌથી તાજેતરનું વર્ઝન છે. જો સૉફ્ટવેર કામ નથી કરતું, તો કૃપા કરીને Google Chrome ને અનઇન્સ્ટોલ કરો અને તેને ફરીથી ડાઉનલોડ કરો.</translation>
 <translation id="5334545119300433702">આ મોડ્યુલ Google Chrome સાથે વિરોધાભાસ માટે જાણીતું છે.</translation>
 <translation id="3360895254066713204">Chrome સહાયક</translation>
 <translation id="1001534784610492198">ઇન્સ્ટોલ આર્કાઇવ દૂષિત છે અથવા અમાન્ય છે. કૃપા કરીને Google Chrome ફરીથી ડાઉનલોડ કરો.</translation>

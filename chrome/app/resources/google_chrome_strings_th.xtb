@@ -31,6 +31,7 @@
 <translation id="8227755444512189073">Google Chrome จำเป็นต้องเรียกแอปพลิเคชันภายนอกเพื่อเปิดลิงก์ <ph name="SCHEME"/> ลิงก์ที่ขอคือ <ph name="PROTOLINK"/></translation>
 <translation id="8290100596633877290">อ๊ะ! Google Chrome ขัดข้อง เปิดใหม่ตอนนี้หรือไม่</translation>
 <translation id="1281036569101707544"><ph name="TERMS_OF_SERVICE_LINK"/> ของ Google Chrome</translation>
+<translation id="3487814320513494737">หน้าแท็บใหม่ของ Chrome ได้รับการออกแบบใหม่แล้ว การเปลี่ยนสลับระหว่างส่วนต่างๆ ทำได้โดยคลิกที่ป้ายกำกับเหล่านี้ Chrome จะจำค่ากำหนดของคุณสำหรับครั้งต่อไป</translation>
 <translation id="1697213158865901863">Google Chrome Frame</translation>
 <translation id="2653935705142821164">โปรแกรมแสดงภาพของ Chrome</translation>
 <translation id="8446794773162156990">Google Chrome กำลังทำงานผิดปกติ</translation>
@@ -39,7 +40,7 @@
 <translation id="3089968997497233615">Google Chrome มีรุ่นใหม่ที่ปลอดภัยกว่าให้ใช้งานแล้ว</translation>
 <translation id="5037239767309817516">โปรดปิดหน้าต่าง Google Chrome ทั้งหมด แล้วเปิดใหม่อีกครั้งเพื่อให้การเปลี่ยนแปลงนี้มีผล</translation>
 <translation id="7451721381978275812">ข้อโต้แย้งไม่ถูกต้อง คุณไม่สามารถติดตั้ง Google Chrome Frame ในโหมดพร้อมใช้งานโดยไม่ติดตั้ง Google Chrome ได้</translation>
-<translation id="5809236835374558741">คอมพิวเตอร์เครื่องนี้มี Google Chrome Frame รุ่นล่าสุดอยู่แล้ว หากซอฟต์แวร์ไม่ทำงาน โปรดถอนการติดตั้ง Google Chrome Frame และดาวน์โหลดอีกครั้ง</translation>
+<translation id="4585888816441913908">คอมพิวเตอร์เครื่องนี้มี Google Chrome และ Google Chrome Frame รุ่นใหม่กว่าแล้ว หากซอฟต์แวร์ไม่ทำงาน โปรดถอนการติดตั้งทั้ง Google Chrome และ Google Chrome Frame แล้วลองใหม่อีกครั้ง</translation>
 <translation id="6368958679917195344">Chrome OS เกิดขึ้นได้ด้วยการสนับสนุนจาก<ph name="BEGIN_LINK_CROS_OSS"/>ซอฟต์แวร์โอเพนซอร์ส<ph name="END_LINK_CROS_OSS"/>เพิ่มเติม</translation>
 <translation id="4357846314885556934">Google Chrome กำลังทำงานผิดปกติ</translation>
 <translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
@@ -64,7 +65,6 @@
 <translation id="3847841918622877581">Google Chrome อาจใช้บริการเว็บเพื่อปรับปรุงการเรียกดูของคุณ</translation>
 <translation id="7436949144778751379">Google Chrome ต้องใช้ Windows XP หรือรุ่นใหม่กว่า คุณลักษณะบางอย่างอาจไม่ทำงาน</translation>
 <translation id="7100330187273168372">Google Chrome ไม่สามารถอ่านและเขียนข้อมูลในไดเรกทอรีข้อมูล:\n\n<ph name="USER_DATA_DIRECTORY"/></translation>
-<translation id="5167270755190684957">แกลเลอรีธีมของ Google Chrome</translation>
 <translation id="7938170099933661772">Google Chrome ไม่สามารถแสดงหน้าตัวอย่างก่อนพิมพ์เมื่อปิดใช้งานโปรแกรมอ่าน PDF ภายใน หากคุณต้องการดูหน้าตัวอย่าง โปรดไปที่ <ph name="BEGIN_LINK"/>$1<ph name="END_LINK"/> เปิดใช้งาน &quot;โปรแกรมอ่าน PDF ของ Chrome&quot; และลองอีกครั้ง</translation>
 <translation id="6757767188268205357">อย่ากวนใจฉัน</translation>
 <translation id="2290095356545025170">คุณแน่ใจหรือไม่ว่าต้องการยกเลิกการติดตั้ง Google Chrome</translation>
@@ -74,14 +74,16 @@
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">Google Chrome ทำให้คุณสามารถคลิกที่หมายเลขโทรศัพท์บนเว็บแล้วโทรหาด้วย Skype!</translation>
 <translation id="3612333635265770873">เป็นที่ทราบกันว่าโมดูลที่มีชื่อเดียวกันจะมีความขัดแย้งกับ Google Chrome</translation>
+<translation id="2679385451463308372">พิมพ์โดยใช้หน้าต่างระบบ…</translation>
 <translation id="5947389362804196214">ค่ากำหนดของคุณไม่สามารถอ่านได้\n\nคุณลักษณะบางอย่างอาจใช้ไม่ได้และการเปลี่ยนแปลงค่ากำหนดจะไม่ได้รับการบันทึก</translation>
 <translation id="6650142020817594541">ไซต์นี้แนะนำให้ใช้งาน Google Chrome Frame (ติดตั้งไว้แล้ว)</translation>
 <translation id="4127951844153999091">ในกรณีนี้ รายการที่อยู่ในใบรับรองไม่ตรงกับที่อยู่ของเว็บไซต์ที่เบราว์เซอร์ของคุณพยายามเข้าไป เหตุผลที่เป็นไปได้ประการหนึ่งคือ ผู้โจมตีที่แสดงแสดงใบรับรองของเว็บไซต์อื่นขัดขวางการสื่อสารของคุณ ซึ่งทำให้เกิดความไม่ตรงกันของใบรับรอง อีกเหตุผลหนึ่งที่เป็นไปได้คือ เซิร์ฟเวอร์ถูกตั้งค่าให้หลายเว็บไซต์ส่งคืนใบรับรองเดียวกัน ซึ่งรวมไปถึงเว็บไซต์ที่คุณพยายามจะเข้าชมด้วย ถึงแม้ว่าใบรับรองนั้นจะไม่ถูกต้องสำหรับเว็บไซต์ทั้งหมดก็ตาม Google Chrome สามารถยืนยันได้ว่าคุณกำลังติดต่อกับ &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; แต่ไม่สามารถตรวจสอบได้ว่าเว็บไซต์นั้นเป็นเว็บไซต์เดียวกันกับ &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; ที่คุณต้องการติดต่อจริงหรือไม่ หากคุณดำเนินการต่อ Chrome จะไม่ตรวจสอบชื่อที่ไม่ตรงกันอีกต่อไป โดยทั่วไป คุณไม่ควรดำเนินการผ่านจุดนี้ไป</translation>
 <translation id="2712549016134575851">ตรวจพบข้อขัดแย้งกับแอปพลิเคชันอื่นที่ได้ติดตั้งไว้</translation>
+<translation id="5577648424992741236">คอมพิวเตอร์เครื่องนี้มี Google Chrome Frame รุ่นใหม่กว่าแล้ว หากซอฟต์แวร์ไม่ทำงาน โปรดถอนการติดตั้ง Google Chrome Frame แล้วลองใหม่อีกครั้ง</translation>
 <translation id="7018032895891496381">Google Chrome ใช้เครื่องมือค้นหาเริ่มต้นของคุณซึ่งปัจจุบันถูกตั้งให้เป็น <ph name="PAGE_TITLE"/> คุณต้องการเก็บเครื่องมือค้นหาเริ่มต้นไว้ตามเดิมหรือไม่</translation>
 <translation id="7161904924553537242">ยินดีต้อนรับสู่ Google Chrome</translation>
-<translation id="5211087808649701653">เปิดช่องโต้ตอบการพิมพ์ดั้งเดิม</translation>
 <translation id="8669527147644353129">ตัวช่วยเหลือของ Google Chrome</translation>
+<translation id="1399397803214730675">คอมพิวเตอร์เครื่องนี้มี Google Chrome รุ่นใหม่กว่าแล้ว หากซอฟต์แวร์ไม่ทำงาน โปรดถอนการติดตั้ง Google Chrome แล้วลองใหม่อีกครั้ง</translation>
 <translation id="3444832043240812445">หน้าเว็บนี้จะแสดงเฉพาะข้อมูลเกี่ยวกับข้อขัดข้องที่เกิดขึ้นเมื่อเร็วๆ นี้ของคุณเท่านั้น หากคุณ<ph name="BEGIN_LINK"/>เปิดใช้งานการรายงานข้อขัดข้อง<ph name="END_LINK"/></translation>
 <translation id="8614913330719544658">Google Chrome ไม่ตอบสนอง เปิดใช้งานใหม่ตอนนี้หรือไม่</translation>
 <translation id="2681064822612051220">พบข้อขัดแย้งในการติดตั้ง Google Chrome บนระบบ โปรดถอนการติดตั้งและลองอีกครั้ง</translation>
@@ -99,7 +101,6 @@
 <translation id="2769762047821873045">Google Chrome ไม่ใช่เบราว์เซอร์เริ่มต้นโดยอัตโนมัติของคุณ</translation>
 <translation id="7825851276765848807">การติดตั้งล้มเหลวเนื่องจากเกิดข้อผิดพลาดที่ไม่ระบุ โปรดดาวน์โหลด Google Chrome อีกครั้ง</translation>
 <translation id="3335672657969596251">Google Chrome ไม่สนับสนุน <ph name="OS_NAME"/></translation>
-<translation id="3636771339108070045">คอมพิวเตอร์เครื่องนี้มี Google Chrome รุ่นล่าสุดอยู่แล้ว หากซอฟต์แวร์ไม่ทำงาน โปรดถอนการติดตั้ง Google Chrome และดาวน์โหลดอีกครั้ง</translation>
 <translation id="5334545119300433702">เป็นที่ทราบว่าโมดูลนี้ขัดแย้งกับ Google Chrome</translation>
 <translation id="3360895254066713204">ตัวช่วยเหลือของ Chrome</translation>
 <translation id="1001534784610492198">การเก็บข้อมูลของโปรแกรมติดตั้งเสียหายหรือไม่ถูกต้อง โปรดดาวน์โหลด Google Chrome อีกครั้ง</translation>

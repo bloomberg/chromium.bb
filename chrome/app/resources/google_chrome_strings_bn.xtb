@@ -31,6 +31,7 @@
 <translation id="8227755444512189073"><ph name="SCHEME"/> লিঙ্কগুলি নিয়ন্ত্রণ করার জন্য Google Chrome-এর একটি বহিরাগত অ্যাপ্লিকেশন প্রবর্তন করা দরকার৷ অনুরোধ করা লিঙ্কটি হল <ph name="PROTOLINK"/>৷</translation>
 <translation id="8290100596633877290">হোয়া! Google Chrome ক্র্যাশ হয়েছে৷ এখনই পুনঃলঞ্চ করবেন?</translation>
 <translation id="1281036569101707544">Google Chrome <ph name="TERMS_OF_SERVICE_LINK"/></translation>
+<translation id="3487814320513494737">Chrome এর নতুন ট্যাব পৃষ্ঠাটির পুনরায় মডেল করা হয়েছে৷ এই লেবেলগুলির মধ্যে ক্লিক করে বিভাগগুলির মধ্যে স্যুইচ করুন৷ Chrome পরের বারের জন্য আপনার পছন্দটি মনে রাখবে৷</translation>
 <translation id="1697213158865901863">Google Chrome ফ্রেম</translation>
 <translation id="2653935705142821164">Chrome Renderer</translation>
 <translation id="8446794773162156990">Google Chrome ভুল আচরণ করছে</translation>
@@ -39,7 +40,7 @@
 <translation id="3089968997497233615">Google Chrome-এর একটি নতুন, তুলনামূলক নিরাপদ সংস্করণ উপলব্ধ৷</translation>
 <translation id="5037239767309817516">দয়া করে সব Google Chrome উইন্ডো বন্ধ করুন এবং এই পরিবর্তনকে প্রভাবশালী করতে এটিকে পুনঃলঞ্চ  করুন৷ </translation>
 <translation id="7451721381978275812">অকার্যকর আর্গুমেন্ট৷ Google Chrome ইনস্টল না করে Google Chrome Frame প্রস্তুত মোডে ইনস্টল করতে পারা যায়না৷</translation>
-<translation id="5809236835374558741">এই কম্পিউটারটিতে ইতিমধ্যে Google Chrome Frame-এর অতি সাম্প্রতিক সংস্করণ রয়েছে৷ যদি সফ্টওয়্যারটি কাজ না করে তবে দয়া করে Google Chrome Frame আনইনস্টল করুন এবং এটি আবার ডাউনলোড করুন৷</translation>
+<translation id="4585888816441913908">এই কম্পিউটারটিতে ইতিমধ্যে Google Chrome এবং Google Chrome ফ্রেমের অতি সাম্প্রতিক সংস্করণ রয়েছে৷ যদি সফ্টওয়্যার কাজ না করে তবে দয়া করে Google Chrome এবং Google Chrome ফ্রেম দু'টিই আনইনস্টল করে আবার চেষ্টা করুন৷</translation>
 <translation id="6368958679917195344">Chrome OS সম্ভবত অতিরিক্ত <ph name="BEGIN_LINK_CROS_OSS"/>মুক্ত উত্স সফ্টওয়্যার<ph name="END_LINK_CROS_OSS"/> দিয়ে তৈরি৷</translation>
 <translation id="4357846314885556934">Google Chrome ভুল আচরণ করছে</translation>
 <translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
@@ -64,7 +65,6 @@
 <translation id="3847841918622877581">আপনার ব্রাউজিং অভিজ্ঞতার উন্নতি ঘটাতে Google Chrome ওয়েব পরিষেবা ব্যবহার করতে পারে৷</translation>
 <translation id="7436949144778751379">Google Chrome-এর Windows XP বা পরবর্তী প্রয়োজন৷ কিছু বৈশিষ্ট্য নাও কাজ করতে পারে৷</translation>
 <translation id="7100330187273168372">Google Chrome, তার ডেটা ডিরেক্টরিতে পড়তে বা লিখতে পারে না:\n\n<ph name="USER_DATA_DIRECTORY"/></translation>
-<translation id="5167270755190684957">Google Chrome থিমগুলির গ্যালারী</translation>
 <translation id="7938170099933661772">বিল্ট-ইন PDF ভিউয়ারটি অক্ষম থাকলে Google Chrome মুদ্রণ পূর্বরূপ প্রদর্শন করতে পারবে না৷ পূর্বরূপটি দেখতে, দয়া করে <ph name="BEGIN_LINK"/>$1<ph name="END_LINK"/> পরিদর্শন করুন, &quot;Chrome PDF ভিউয়ার&quot; সক্ষম করুন এবং আবার চেষ্টা করুন৷</translation>
 <translation id="6757767188268205357">আমাকে বাগ করবেন না</translation>
 <translation id="2290095356545025170">আপনি কি Google Chrome আনইনস্টল করার ব্যাপারে নিষ্চিত ?</translation>
@@ -74,14 +74,16 @@
 <translation id="4990567037958725628">Google Chrome  ক্যানারি</translation>
 <translation id="4561051373932531560">Google Chrome আপনাকে ওয়েবে কোনো ফোন নম্বরে ক্লিক করতে এবং Skype-এর মাধ্যমে সেটিতে কল করতে দেয়!</translation>
 <translation id="3612333635265770873">একই নামের একটি মডিউল Google Chrome-এর সাথে বিবাদ করছে বলে জানা গেছে৷</translation>
+<translation id="2679385451463308372">সিস্টেম কথোপকথন ব্যবহার করে মুদ্রণ করুন...</translation>
 <translation id="5947389362804196214">আপনার অভিরুচিসমূহ পড়া যাবে না৷\n\nকিছু বৈশিষ্ট্য অনুপলব্ধ থাকতে পারে ও অভিরুচিসমূহতে করা পরিবর্তন সংরক্ষিত হবে না৷</translation>
 <translation id="6650142020817594541">এই সাইটটি Google Chrome Frame(ইতিমধ্যে ইনস্টল আছে)-এর পরামর্শ দেয়৷</translation>
 <translation id="4127951844153999091">এই ক্ষেত্রে শংসাপত্রে তালিকাবব্ধ ঠিকানা, আপনার ব্রাউজার যে ওয়েবসাইটে যাওয়ার চেষ্টা করছে তার ঠিকানার সাথে মেলে না৷ এর একটি সম্ভাব্য কারণ হতে পারে আপনার যোগাযোগ একটি আক্রমণকারী, যে একটি অন্য ওয়েবসাইটের শংসাপত্র উপস্থিত করছে তার দ্বারা ব্যহত হচ্ছে, যা কোনো অমিলের কারণ হবে৷ অন্য সম্ভাব্য কারণ হতে পারে সার্ভারটি একাধিক ওয়েবসাইটের জন্য একই শংসাপত্র ফেরত পাঠানোতে সেট আছে, যার মধ্যে আপনি যেটি পরিদর্শন করতে চাইছেন সেই সাইটিও আছে, যদিও শংসাপত্রটি এই সকল ওয়েবসাইটের জন্য কার্যকর নয়৷ Google Chrome নিশ্চিতভাবে বলতে পারে আপনি &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;-এ পৌঁছেছেন, কিন্তু এটি যাচাই করতে পারে না যে সেটি &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;-এর মত একই, যাতে আপনি পৌঁছাতে চান৷ আপনি যদি এগিয়ে যান তাহলে, Chrome আর কোনও নামের অমিল চেক করবে না৷ সধারণভাব, এর বেশি না এগোনোই ভালো৷</translation>
 <translation id="2712549016134575851">অন্য একটি ইনস্টল থাকা প্রয়োগের সাথে বিরোধ সনাক্ত করা হয়েছে৷</translation>
+<translation id="5577648424992741236">এই কম্পিউটারটিতে ইতিমধ্যে Google Chrome Frame-এর অতি সাম্প্রতিক সংস্করণ রয়েছে৷ যদি সফ্টওয়্যারটি কাজ না করে তবে দয়া করে Google Chrome Frame আনইনস্টল করুন এবং আবার চেষ্টা করুন৷</translation>
 <translation id="7018032895891496381">Google Chrome আপনার ডিফল্ট সার্চ ইঞ্জিন ব্যবহার করে, যা বর্তমানে <ph name="PAGE_TITLE"/>-এ সেট আছে৷ আপনি কি নিজের ডিফল্ট সার্চ ইঞ্জিন রাখতে চান?</translation>
 <translation id="7161904924553537242">Google Chrome-এ আপনাকে স্বাগতম</translation>
-<translation id="5211087808649701653">নেটিভ মুদ্রণ কথোপকথন প্রবর্তন করুন</translation>
 <translation id="8669527147644353129">Google Chrome সহায়তাকারী</translation>
+<translation id="1399397803214730675">এই কম্পিউটারটিতে ইতিমধ্যে Google Chrome -এর অতি সাম্প্রতিক সংস্করণ রয়েছে৷ যদি সফ্টওয়্যারটি কাজ না করে তবে দয়া করে Google Chrome আনইনস্টল করুন এবং এটি আবার ডাউনলোড করুন৷</translation>
 <translation id="3444832043240812445">যদি আপনি <ph name="BEGIN_LINK"/>ক্র্যাশ প্রতিবেদন সক্ষম করেন<ph name="END_LINK"/> তাহলে এই পৃষ্ঠাটি কেবল আপনার সাম্প্রতিক ক্র্যাশগুলির তথ্য দেখায়৷</translation>
 <translation id="8614913330719544658">Google Chrome প্রতিক্রিয়া করছে না৷ এখনই পুনঃলঞ্চ করবেন?</translation>
 <translation id="2681064822612051220">সিস্টেমে Google Chrome-এর একটি বিবাদমূলক ইনস্টলেশন খুঁজে পাওয়া গেছে৷ দয়া করে এটি আনইনস্টল করুন এবং পুনরায় চেষ্টা করুন৷</translation>
@@ -99,7 +101,6 @@
 <translation id="2769762047821873045">Google Chrome আপনার ডিফল্ট ব্রাউসার নয় ৷</translation>
 <translation id="7825851276765848807">অনির্দিষ্ট ত্রুটির জন্য ইনস্টলেশন ব্যর্থ হয়েছে৷ দয়া করে পুনরায় Google Chrome ডাউনলোড করুন৷</translation>
 <translation id="3335672657969596251">Google Chrome, <ph name="OS_NAME"/> সমর্থন করে না৷</translation>
-<translation id="3636771339108070045">এই কম্পিউটারটিতে ইতিমধ্যে Google Chrome-এর আরও সাম্প্রতিক সংস্করণ রয়েছে৷ সফ্টওয়্যারটি যদি কাজ না করে তবে দয়া করে Google Chrome আনইনস্টল করুন এবং এটি পুনরায় ডাউনলোড করুন৷</translation>
 <translation id="5334545119300433702">এই মডিউলটি Google Chrome-এর সাথে বিবাদের জন্য পরিচিত৷</translation>
 <translation id="3360895254066713204">Chrome সহায়তাকারী</translation>
 <translation id="1001534784610492198">ইনস্টলার সংরক্ষণাগারটি দূষিত বা অকার্যকর৷ দয়া করে পুনরায় Google Chrome ডাউনলোড করুন৷</translation>

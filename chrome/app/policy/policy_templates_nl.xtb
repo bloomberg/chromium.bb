@@ -20,10 +20,18 @@
           Standaard staan alle extensies op de witte lijst, maar als alle extensies door een beleidsmaatregel op de zwarte lijst zijn geplaatst, kan de witte lijst worden gebruikt om dat beleid voor specifieke extensies op te heffen.</translation>
 <translation id="3185009703220253572">sinds versie <ph name="SINCE_VERSION"/></translation>
 <translation id="5469825884154817306">Afbeeldingen blokkeren op deze sites</translation>
+<translation id="7812822355979915508">Geeft aan of de gebruiker pagina's in de incognitomodus mag openen in <ph name="PRODUCT_NAME"/>.
+
+      Als 'Ingeschakeld' is geselecteerd, mogen pagina's worden geopend in de incognitomodus.
+
+      Als 'Uitgeschakeld' is geselecteerd, mogen pagina's niet worden geopend in de incognitomodus.
+
+      Als 'Afgedwongen' is geselecteerd, mogen pagina's ALLEEN worden geopend in de incognitomodus.</translation>
 <translation id="2908277604670530363">Maximaal aantal gelijktijdige verbindingen met de proxyserver</translation>
 <translation id="3512877396423730277">Bepaalt of subinhoud van derden op een pagina een dialoogvenster voor algemene HTTP-authenticatie als pop-up mag weergeven. Deze optie is meestal uitgeschakeld als beveiliging tegen phishing.</translation>
 <translation id="1438955478865681012">Hiermee wordt extensiegerelateerd beleid geconfigureerd. De gebruiker mag geen extensies installeren die op de zwarte lijst staan, tenzij ze ook op de witte lijst staan. U kunt ook instellen dat <ph name="PRODUCT_NAME"/> extensies automatisch installeert, door deze te specificeren in <ph name="EXTENSIONINSTALLFORCELIST_POLICY_NAME"/>. Voor de lijst met automatisch geïnstalleerde extensies heeft de zwarte lijst voorrang op de witte lijst.</translation>
 <translation id="4070280487546651935">Hiermee wordt het zoekwoord gespecificeerd dat in de omnibox wordt gebruikt om de zoekfunctie voor deze provider te activeren. Deze instelling is optioneel.</translation>
+<translation id="7271085005502526897">Startpagina importeren uit standaardbrowser bij eerste uitvoering</translation>
 <translation id="6036523166753287175">Firewallpassage vanaf host voor externe toegang inschakelen</translation>
 <translation id="1096105751829466145">Standaardzoekprovider</translation>
 <translation id="7567380065339179813">Plug-ins toestaan op deze sites</translation>
@@ -68,11 +76,15 @@
 <translation id="8828766846428537606">Hiermee wordt de standaard startpagina in <ph name="PRODUCT_NAME"/> geconfigureerd en wordt voorkomen dat gebruikers deze instelling kunnen wijzigen.
 
       De instellingen voor de startpagina worden alleen volledig voor de gebruiker vergrendeld als u de pagina 'Nieuw tabblad' als de startpagina selecteert of als u zelf een URL voor de startpagina specificeert. Als u geen URL voor de startpagina opgeeft, kan de gebruiker nog steeds de pagina 'Nieuw tabblad' als startpagina instellen door 'chrome://newtab' op te geven.</translation>
+<translation id="2231817271680715693">Browsergeschiedenis importeren uit standaardbrowser bij eerste uitvoering</translation>
 <translation id="1353966721814789986">Startpagina's</translation>
+<translation id="1969043432858293299">Indien ingeschakeld, wordt met dit beleid afgedwongen dat de browsergeschiedenis wordt geïmporteerd uit de huidige standaardbrowser. Als het beleid is uitgeschakeld, wordt er geen browsergeschiedenis geïmporteerd. Het standaardgedrag wordt gebruikt als het beleid niet is geconfigureerd. Als het beleid is ingeschakeld, is dit ook van invloed op het dialoogvenster voor importeren.</translation>
 <translation id="5564962323737505851">Hiermee wordt Wachtwoordbeheer geconfigureerd. Als Wachtwoordbeheer is ingeschakeld, kunt u specificeren of de gebruiker opgeslagen wachtwoorden als leesbare tekst mag weergeven.</translation>
 <translation id="4668325077104657568">Standaardinstelling voor afbeeldingen</translation>
+<translation id="7161193985878519056">Incognitomodus uitgeschakeld.</translation>
 <translation id="6368403635025849609">JavaScript toestaan op deze sites</translation>
 <translation id="6074963268421707432">Niet toestaan dat sites bureaubladmeldingen weergeven</translation>
+<translation id="8104962233214241919">Clientcertificaten automatisch selecteren voor deze sites</translation>
 <translation id="3758249152301468420">Hulpprogramma's voor ontwikkelaars uitschakelen</translation>
 <translation id="8665076741187546529">De lijst met automatisch geïnstalleerde extensies configureren</translation>
 <translation id="6242542007132978836">Hiermee kunt u instellen of websites automatisch plug-ins mogen uitvoeren. Automatisch uitgevoerde plug-ins kunnen voor alle websites worden toegestaan of voor alle websites worden geweigerd.</translation>
@@ -114,12 +126,8 @@
 <translation id="2711603272213076156">Activering van dialoogvensters voor het selecteren van bestanden toestaan.</translation>
 <translation id="1426410128494586442">Ja</translation>
 <translation id="3381968327636295719"> gebruiken</translation>
+<translation id="6520802717075138474">Zoekmachines importeren uit standaardbrowser bij eerste uitvoering</translation>
 <translation id="6368011194414932347">De startpagina-URL configureren</translation>
-<translation id="1966609843734913335">Hiermee wordt de incognitomodus in <ph name="PRODUCT_NAME"/> ingeschakeld.
-
-      Als deze instelling is ingeschakeld of niet is geconfigureerd, kunnen gebruikers webpagina's in de incognitomodus openen.
-
-      Als deze instelling is uitgeschakeld, kunnen gebruikers geen webpagina's in de incognitomodus openen.</translation>
 <translation id="3423023819976532001">Hiermee wordt het opslaan van wachtwoorden en het gebruiken van opgeslagen wachtwoorden in <ph name="PRODUCT_NAME"/> ingeschakeld.
 
           Als u deze instelling inschakelt, kunnen gebruikers <ph name="PRODUCT_NAME"/> wachtwoorden laten onthouden en deze automatisch laten invullen wanneer ze zich later opnieuw bij een site aanmelden.
@@ -138,6 +146,7 @@
 <translation id="5059221739913673172">Hiermee wordt de directory geconfigureerd die <ph name="PRODUCT_NAME"/> gebruikt voor het opslaan van gebruikersgegevens.
 
       Als u dit beleid instelt, gebruikt <ph name="PRODUCT_NAME"/> deze directory, ongeacht of de gebruiker de optie voor '--user-data-dir' heeft ingesteld.</translation>
+<translation id="6378014222084506939">Beschikbaarheid van incognitomodus.</translation>
 <translation id="3528000905991875314">Alternatieve foutpagina's inschakelen</translation>
 <translation id="4084327080063933392">Hiermee wordt de naam van de standaardzoekprovider gespecificeerd. Als de naam niet wordt opgegeven, wordt de hostnaam gebruikt die door de zoek-URL wordt gespecificeerd.</translation>
 <translation id="6114416803310251055">verouderd</translation>
@@ -160,6 +169,7 @@
          Als u deze instelling inschakelt, negeert <ph name="PRODUCT_NAME"/> alle aan proxy's gerelateerde opties die via de opdrachtregel worden opgegeven.</translation>
 <translation id="6899705656741990703">Proxyinstellingen automatisch detecteren</translation>
 <translation id="4101772068965291327">Startpagina openen</translation>
+<translation id="6932480224480511443">Indien ingeschakeld, wordt met dit beleid afgedwongen dat bladwijzers worden geïmporteerd uit de huidige standaardbrowser. Als het beleid is uitgeschakeld, worden er geen bladwijzers geïmporteerd. Het standaardgedrag wordt gebruikt als het beleid niet is geconfigureerd. Als het beleid is ingeschakeld, is dit ook van invloed op het dialoogvenster voor importeren.</translation>
 <translation id="8992176907758534924">Niet toestaan dat sites afbeeldingen weergeven</translation>
 <translation id="8704831857353097849">Lijst met uitgeschakelde plug-ins</translation>
 <translation id="467449052039111439">Een lijst met URL's openen</translation>
@@ -194,10 +204,11 @@
       Als u deze instelling inschakelt, gebruikt <ph name="PRODUCT_NAME"/> de gespecificeerde landinstelling. Als de geconfigureerde landinstelling niet wordt ondersteund, wordt 'en-US' gebruikt.
 
       Als deze instelling is uitgeschakeld of niet is geconfigureerd, gebruikt <ph name="PRODUCT_NAME"/> de door de gebruiker gespecificeerde landinstelling (indien geconfigureerd), de landinstelling voor het systeem of 'en_US'.</translation>
+<translation id="3964909636571393861">Toegang verlenen aan een lijst met URL's</translation>
 <translation id="6022948604095165524">Actie bij starten</translation>
 <translation id="3704185423155638353">Hiermee kunt u een lijst met URL-patronen opgeven waarmee sites worden gespecificeerd waarop JavaScript niet mag worden uitgevoerd.</translation>
 <translation id="7628741187268592472">Hiermee wordt gespecificeerd welke GSSAPI-bibliotheek moet worden gebruikt voor HTTP-authenticatie. U kunt een bibliotheeknaam instellen of een volledig pad. Als er geen instelling wordt opgegeven, gebruikt <ph name="PRODUCT_NAME"/> een standaard bibliotheeknaam.</translation>
-<translation id="2435100545355792516">Incognitomodus forceren</translation>
+<translation id="1247111313041645019">Indien ingeschakeld, wordt met dit beleid afgedwongen dat de opgeslagen wachtwoorden worden geïmporteerd uit de vorige standaardbrowser. Als het beleid is uitgeschakeld, worden de opgeslagen wachtwoorden niet geïmporteerd. Het standaardgedrag wordt gebruikt als het beleid niet is geconfigureerd. Als het beleid is ingeschakeld, is dit ook van invloed op het dialoogvenster voor importeren.</translation>
 <translation id="605147781209875705">Dit beleid is verouderd. Gebruik in plaats daarvan ProxyMode.
 
           Hiermee kunt u de proxyserver specificeren die wordt gebruikt door <ph name="PRODUCT_NAME"/> en voorkomt u dat gebruikers de proxyinstellingen kunnen aanpassen.
@@ -228,6 +239,7 @@
 <translation id="5770738360657678870">Ontwikkelaarskanaal (mogelijk instabiel)</translation>
 <translation id="2959898425599642200">Regels voor proxyomzeiling</translation>
 <translation id="7337941689192402544">Directory voor gebruikersgegevens voor <ph name="PRODUCT_NAME"/> instellen</translation>
+<translation id="896575211736907134">Incognitomodus afgedwongen.</translation>
 <translation id="5326137997741385453">Hiermee wordt de directory geconfigureerd die <ph name="PRODUCT_NAME"/> gebruikt om gecachte bestanden op schijf op te slaan. Als u dit beleid instelt, gebruikt <ph name="PRODUCT_NAME"/> de opgegeven directory, ongeacht of de gebruiker de optie '--disk-cache-dir' heeft ingesteld.</translation>
 <translation id="4752274243117690301">Als u deze instelling instelt op 'True', worden het automatisch zoeken naar en installeren van ontbrekende plug-ins uitgeschakeld in <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="3292147213643666827">      Met deze instelling kan <ph name="PRODUCT_NAME"/> als proxy worden ingesteld tussen <ph name="CLOUD_PRINT_NAME"/> en printers die zijn aangesloten op het apparaat.
@@ -239,6 +251,7 @@
 
       Als u deze instelling in- of uitschakelt, kunnen gebruikers de instelling niet aanpassen of negeren in <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="6641981670621198190">Ondersteuning voor API's voor 3D-beelden uitschakelen</translation>
+<translation id="6375011473383446094">Hiermee kunt u een lijst met URL-patronen opgeven waarvoor <ph name="PRODUCT_NAME"/> automatisch een clientcertificaat moet selecteren als de site vraagt om een certificaat.</translation>
 <translation id="2741921267428646309">Dit is de lijst met beleidsregels die in <ph name="PRODUCT_NAME"/> worden gevolgd.
 
       U hoeft deze instellingen niet handmatig te wijzigen. U kunt gebruiksvriendelijke sjablonen downloaden op
@@ -308,6 +321,7 @@
 <translation id="2312134445771258233">Hiermee kunt u de pagina's configureren die bij het starten worden geladen.
 
       De inhoud van de lijst 'URL's die worden geopend bij starten' wordt genegeerd, tenzij u 'Een lijst met URL's openen' selecteert bij 'Actie bij starten'.</translation>
+<translation id="8344454543174932833">Bladwijzers importeren uit standaardbrowser bij eerste uitvoering</translation>
 <translation id="7931766636395791713">Hiermee kunt u een lijst met URL-patronen opgeven waarmee sites worden gespecificeerd waarop JavaScript mag worden uitgevoerd.</translation>
 <translation id="1019101089073227242">Gegevensdirectory voor gebruiker instellen</translation>
 <translation id="2030905906517501646">Zoekwoord voor standaardzoekprovider</translation>
@@ -357,6 +371,7 @@
 <translation id="681446116407619279">Ondersteunde authenticatieschema's</translation>
 <translation id="4027608872760987929">De standaardzoekprovider inschakelen</translation>
 <translation id="2223598546285729819">Standaardinstelling voor meldingen</translation>
+<translation id="2417932194355389637">Indien ingeschakeld, wordt met dit beleid afgedwongen dat zoekmachines worden geïmporteerd uit de huidige standaardbrowser. Als het beleid is uitgeschakeld, worden de standaardzoekmachines niet geïmporteerd. Het standaardgedrag wordt gebruikt als het beleid niet is geconfigureerd. Als het beleid is ingeschakeld, is dit ook van invloed op het dialoogvenster voor importeren.</translation>
 <translation id="3793095274466276777">Hiermee worden de controles van standaardbrowser in <ph name="PRODUCT_NAME"/> geconfigureerd en wordt voorkomen dat gebruikers deze instelling kunnen wijzigen.
 
       Als u deze instelling inschakelt, controleert <ph name="PRODUCT_NAME"/> bij het starten altijd of dit programma de standaardbrowser is en registreert zichzelf indien mogelijk automatisch.
@@ -365,9 +380,16 @@
 
       Als deze instelling niet is ingeschakeld, kan de gebruiker in <ph name="PRODUCT_NAME"/> bepalen of dit programma de standaardbrowser is, en of er een melding aan de gebruiker moet worden weergegeven wanneer dit niet het geval is.</translation>
 <translation id="1530812829012954197">De volgende URL-patronen altijd verwerken in de hostbrowser</translation>
+<translation id="913195841488580904">Toegang blokkeren voor een lijst met URL's</translation>
 <translation id="6190022522129724693">Standaardinstelling voor pop-ups</translation>
 <translation id="847472800012384958">Niet toestaan dat sites pop-ups weergeven</translation>
 <translation id="4733471537137819387">Beleid met betrekking tot geïntegreerde HTTP-authenticatie.</translation>
+<translation id="5428100326165690555">Dit beleid is verouderd. Gebruik in plaats daarvan IncognitoModeAvailability.
+      Hiermee wordt de incognitomodus ingeschakeld in <ph name="PRODUCT_NAME"/>.
+
+      Als deze instelling ingeschakeld of niet geconfigureerd is, kunnen gebruikers webpagina's openen in de incognitomodus.
+
+      Als deze instelling is uitgeschakeld, kunnen gebruikers webpagina's niet openen in de incognitomodus.</translation>
 <translation id="4608714268466689965">Hiermee kunt u instellen of websites bureaubladmeldingen mogen weergeven. Het weergeven van bureaubladmeldingen kan standaard worden toegestaan of geweigerd, of de gebruiker kan een melding te zien krijgen wanneer een website bureaubladmeldingen wil weergeven.</translation>
 <translation id="8951350807133946005">Directory voor schijfcache instellen</translation>
 <translation id="3866571346358522601">Hiermee wordt de periode in milliseconden gespecificeerd waarna de apparaatbeheerservice wordt gevraagd om gebruikersbeleidsinformatie. Als u dit beleid instelt, wordt de standaardwaarde van 3 uur genegeerd. Geldige waarden voor dit beleid liggen tussen 1800000 (30 minuten) en 86400000 (1 dag). Alle waarden die niet binnen dit bereik vallen, worden afgerond tot de betreffende minimum of maximum grens.</translation>
@@ -376,6 +398,17 @@
           Als u deze instelling inschakelt, wordt de CNAME-lookup overgeschakeld en wordt de servernaam gebruikt zoals deze is opgegeven.
 
           Als u deze instelling uitschakelt, wordt de canonieke naam van de server bepaald aan de hand van de CNAME-lookup.</translation>
+<translation id="7117773566421450481">Blokkeert de toegang tot de vermelde URL's.
+
+      Met dit beleid wordt voorkomen dat de gebruiker webpagina's laadt van URL's die op de zwarte lijst staan.
+
+      Een URL heeft de notatie 'scheme://host:port/path'.
+      Het optionele schema kan http, https of ftp zijn. Alleen dit schema wordt geblokkeerd. Als er geen schema is opgegeven, worden alle schema's geblokkeerd.
+      De host kan een hostnaam of een IP-adres zijn. Subdomeinen van een hostnaam worden ook geblokkeerd. Om te voorkomen dat subdomeinen worden geblokkeerd, voegt u een '.' toe vóór de hostnaam. De speciale hostnaam '*' blokkeert alle domeinen.
+      De optionele poort is een geldig poortnummer tussen 1 en 65535. Als er geen poortnummer is opgegeven, worden alle poorten geblokkeerd.
+      Als het optionele pad is opgegeven, worden alleen paden met dat voorvoegsel geblokkeerd.
+
+      Uitzonderingen kunnen worden gedefinieerd in het beleid voor de witte lijst voor URL's. Dit beleid is beperkt tot 100 items; daaropvolgende items worden genegeerd.</translation>
 <translation id="166427968280387991">Proxyserver</translation>
 <translation id="2805707493867224476">Alle sites toestaan pop-ups weer te geven</translation>
 <translation id="1727394138581151779">Alle plug-ins blokkeren</translation>
@@ -394,6 +427,7 @@
 <translation id="6524941558928880715">De URL's opnieuw openen die het laatst waren geopend</translation>
 <translation id="3167247709504138314">Hiermee wordt de URL gespecificeerd voor de zoekmachine die wordt gebruikt om zoeksuggesties te leveren. De URL moet de tekenreeks '<ph name="SEARCH_TERM_MARKER"/>' bevatten, die op het moment van de zoekopdracht wordt vervangen door de tekst die de gebruiker tot op dat moment heeft getypt. Deze instelling is optioneel.</translation>
 <translation id="602728333950205286">Instant-URL voor standaardzoekprovider</translation>
+<translation id="3087595738450590532">Indien ingeschakeld, wordt met dit beleid afgedwongen dat de startpagina wordt geïmporteerd uit de huidige standaardbrowser. Als het beleid is uitgeschakeld, wordt de startpagina niet geïmporteerd. Het standaardgedrag wordt gebruikt als het beleid niet is geconfigureerd.</translation>
 <translation id="1675002386741412210">Ondersteund op:</translation>
 <translation id="5417368737700340683">Hiermee wordt de functie Instant van <ph name="PRODUCT_NAME"/> ingeschakeld en wordt voorkomen dat gebruikers deze instelling kunnen wijzigen.
 
@@ -419,7 +453,9 @@
 <translation id="8544375438507658205">Standaard HTML-renderer voor <ph name="PRODUCT_FRAME_NAME"/></translation>
 <translation id="7424751532654212117">Lijst van uitzonderingen op de lijst met uitgeschakelde plug-ins</translation>
 <translation id="6233173491898450179">Downloaddirectory instellen</translation>
+<translation id="2158989228646115511">Indien ingesteld op 'Waar', worden promoties voor Chrome Web Store-apps niet weergegeven op de pagina 'Nieuw tabblad'.</translation>
 <translation id="2299220924812062390">Een lijst met ingeschakelde plug-ins specificeren</translation>
+<translation id="924557436754151212">Opgeslagen wachtwoorden importeren uit standaardbrowser bij eerste uitvoering</translation>
 <translation id="8754704265300028644">Hiermee wordt het opslaan van de browsegeschiedenis in <ph name="PRODUCT_NAME"/> uitgeschakeld en wordt voorkomen dat gebruikers deze instelling kunnen wijzigen.
 
       Als deze instelling is ingeschakeld, wordt de browsegeschiedenis niet opgeslagen.
@@ -445,13 +481,9 @@
 <translation id="868187325500643455">Alle sites toestaan automatisch plug-ins uit te voeren</translation>
 <translation id="5226033722357981948">Aangeven of de plug-inzoeker moet worden uitgeschakeld</translation>
 <translation id="9068358498333390522">Hiermee kunt u instellen of websites pop-ups mogen weergeven. Het weergeven van pop-ups kan worden toegestaan voor alle websites of worden geweigerd voor alle websites.</translation>
+<translation id="3612784419634427880">Incognitomodus beschikbaar.</translation>
 <translation id="7194407337890404814">Naam van standaardzoekprovider</translation>
 <translation id="1843117931376765605">Vernieuwingsfrequentie voor gebruikersbeleid</translation>
-<translation id="1630808801738981930">Forceert de incognitomodus voor elke sessie in <ph name="PRODUCT_NAME"/>.
-
-      Als deze instelling is ingeschakeld, kunnen gebruikers pagina's alleen openen in de incognitomodus.
-
-      Als deze instelling is uitgeschakeld of niet is geconfigureerd, kunnen gebruikers de browser ook in de normale modus gebruiken.</translation>
 <translation id="5535973522252703021">Witte lijst voor Kerberos-delegatieserver</translation>
 <translation id="4554678280250165996">Hiermee wordt gespecificeerd welke HTTP-authenticatieschema's worden ondersteund door <ph name="PRODUCT_NAME"/>.
 
@@ -488,6 +520,7 @@
 <translation id="7848840259379156480">Hiermee kunt u de standaard HTML-renderer configureren wanneer <ph name="PRODUCT_FRAME_NAME"/> is geïnstalleerd.
           De standaardinstelling is om de hostbrowser de rendering te laten regelen, maar
           u kunt dit aanpassen en <ph name="PRODUCT_FRAME_NAME"/> HTML-pagina's standaard laten renderen.</translation>
+<translation id="4121350739760194865">Voorkomen dat app-promoties worden weergegeven op de pagina 'Nieuw tabblad'</translation>
 <translation id="4486602758942612946">Hiermee kunt u de lijst aanpassen van URL-patronen die altijd moeten worden verwerkt door de hostbrowser.
           Ga voor voorbeeldpatronen naar http://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="2257451316169619209">Hiermee wordt de periode in milliseconden gespecificeerd waarna de apparaatbeheerservice wordt gevraagd om apparaatbeleidsinformatie. Als u dit beleid instelt, wordt de standaardwaarde van 3 uur genegeerd. Geldige waarden voor dit beleid liggen tussen 1800000 (30 minuten) en 86400000 (1 dag). Alle waarden die niet binnen dit bereik vallen, worden afgerond tot de betreffende minimum of maximum grens.</translation>
@@ -550,6 +583,15 @@
           Als u deze instelling uitschakelt, wordt de pagina 'Nieuw tabblad' nooit weergegeven als de startpagina, tenzij de URL is ingesteld op 'chrome://newtab'.
 
           Als u deze instelling in- of uitschakelt, kunnen gebruikers het type startpagina niet aanpassen in <ph name="PRODUCT_NAME"/>.</translation>
+<translation id="2844287278346661435">Verleent toegang tot de vermelde URL's, als uitzondering op de zwarte lijst voor URL's.
+
+      Bekijk de beschrijving van het beleid voor de zwarte lijst voor URL's voor de notatie van items in deze lijst.
+
+      Dit beleid kan worden gebruikt om uitzonderingen op te geven voor beperkende zwarte lijsten. '*' kan bijvoorbeeld op de zwarte lijst worden gezet om alle verzoeken te blokkeren en dit beleid kan worden gebruikt om toegang tot een beperkte lijst met URL's te verlenen. Het kan worden gebruikt om uitzonderingen op te geven voor bepaalde schema's, subdomeinen van andere domeinen, poorten of specifieke paden.
+
+      Het meest specifieke filter bepaalt of een URL wordt geblokkeerd of toegestaan. De witte lijst krijgt voorrang op de zwarte lijst.
+
+      Dit beleid is beperkt tot 100 items; daaropvolgende items worden genegeerd.</translation>
 <translation id="5645779841392247734">Cookies toestaan op deze sites</translation>
 <translation id="3906388518501362918">Hiermee wordt JavaScript in <ph name="PRODUCT_NAME"/> ingeschakeld en wordt voorkomen dat gebruikers deze instelling kunnen wijzigen.
 

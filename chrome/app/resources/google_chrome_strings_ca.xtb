@@ -31,6 +31,7 @@
 <translation id="8227755444512189073">Google Chrome ha d'iniciar una aplicació externa per gestionar els enllaços <ph name="SCHEME"/>. L'enllaç sol·licitat és <ph name="PROTOLINK"/>.</translation>
 <translation id="8290100596633877290">Google Chrome s'ha bloquejat. Voleu tornar-lo a iniciar?</translation>
 <translation id="1281036569101707544"><ph name="TERMS_OF_SERVICE_LINK"/> de Google Chrome</translation>
+<translation id="3487814320513494737">S'ha remodelat la pàgina de pestanya nova de Chrome. Podeu canviar entre les seccions si feu clic en aquestes etiquetes. Chrome recordarà la vostra preferència per a la propera vegada.</translation>
 <translation id="1697213158865901863">Google Chrome Frame</translation>
 <translation id="2653935705142821164">Renderitzador de Chrome</translation>
 <translation id="8446794773162156990">Google Chrome té un comportament estrany.</translation>
@@ -39,7 +40,7 @@
 <translation id="3089968997497233615">Hi ha disponible una nova versió més segura de Google Chrome.</translation>
 <translation id="5037239767309817516">Tanqueu totes les finestres de Google Chrome i torneu a iniciar el programa perquè aquest canvi tingui efecte.</translation>
 <translation id="7451721381978275812">Arguments no vàlids. Google Chrome Frame no es pot instal·lar en mode preparat sense instal·lar també Google Chrome.</translation>
-<translation id="5809236835374558741">Aquest equip ja disposa d'una versió més recent de Google Chrome Frame. Si el programari no funciona, desinstal·leu Google Chrome Frame i torneu-lo a baixar.</translation>
+<translation id="4585888816441913908">Aquest equip ja té una versió més recent de Google Chrome i de Google Chrome Frame. Si el programari no funciona, desinstal·leu Google Chrome i Google Chrome Frame i torneu-ho a provar.</translation>
 <translation id="6368958679917195344">Chrome OS és possible gràcies a <ph name="BEGIN_LINK_CROS_OSS"/>programari addicional de codi obert<ph name="END_LINK_CROS_OSS"/>.</translation>
 <translation id="4357846314885556934">Google Chrome té un comportament estrany</translation>
 <translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
@@ -64,7 +65,6 @@
 <translation id="3847841918622877581">Google Chrome pot utilitzar serveis web per millorar la vostra experiència de navegació.</translation>
 <translation id="7436949144778751379">Google Chrome necessita Windows XP o una versió posterior. És possible que algunes funcions no estiguin disponibles.</translation>
 <translation id="7100330187273168372">Google Chrome no pot llegir ni escriure al seu directori de dades:\n\n<ph name="USER_DATA_DIRECTORY"/></translation>
-<translation id="5167270755190684957">Galeria de temes de Google Chrome</translation>
 <translation id="7938170099933661772">Google Chrome no pot mostrar la visualització prèvia de la impressió si el lector de PDF integrat està desactivat. Per veure-la, visiteu <ph name="BEGIN_LINK"/>$1<ph name="END_LINK"/>, activeu el lector de PDF de Chrome i torneu-ho a provar.</translation>
 <translation id="6757767188268205357">No em molestis</translation>
 <translation id="2290095356545025170">Esteu segur que voleu desinstal·lar Google Chrome?</translation>
@@ -74,14 +74,16 @@
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">Google Chrome us permet fer clic en un número de telèfon al web i trucar-hi amb Skype!</translation>
 <translation id="3612333635265770873">Se sap que un mòdul amb el mateix nom entra en conflicte amb Google Chrome.</translation>
+<translation id="2679385451463308372">Imprimeix amb el diàleg del sistema…</translation>
 <translation id="5947389362804196214">No es poden llegir les vostres preferències.\n\nÉs possible que algunes funcions no estiguin disponibles, i els canvis a les preferències no es desaran.</translation>
 <translation id="6650142020817594541">Aquest lloc recomana Google Chrome Frame (ja instal·lat).</translation>
 <translation id="4127951844153999091">En aquest cas, l'adreça que s'indica al certificat no coincideix amb l'adreça del lloc web al qual heu intentat accedir el navegador. Un possible motiu és que les vostres comunicacions les està interceptant un atacant que presenta un certificat per a un lloc web diferent, cosa que podria provocar un error de concordança. Un altre motiu possible és que el servidor estigui configurat per tornar el mateix certificat per a diversos llocs web, inclòs aquest que intenteu visitar, encara que el certificat no sigui vàlid per a tots aquests llocs web. Google Chrome pot garantir que heu accedit a &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, però no pot verificar que sigui el mateix lloc que &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; , que volíeu visitar. Si continueu, Chrome no comprovarà cap altre error de nom. En general, és millor no continuar més enllà d'aquest punt.</translation>
 <translation id="2712549016134575851">S'ha detectat un conflicte amb una altra aplicació instal·lada.</translation>
+<translation id="5577648424992741236">Aquest equip ja disposa d'una versió més recent de Google Chrome Frame. Si el programari no funciona, desinstal·leu Google Chrome Frame i torneu-ho a provar.</translation>
 <translation id="7018032895891496381">Google Chrome utilitza el vostre motor de cerca predeterminat, que actualment és <ph name="PAGE_TITLE"/>. Voleu mantenir el motor de cerca predeterminat?</translation>
 <translation id="7161904924553537242">Us donem la benvinguda a Google Chrome.</translation>
-<translation id="5211087808649701653">Inicia el diàleg d'impressió natiu</translation>
 <translation id="8669527147644353129">Aplicació auxiliar de Google Chrome</translation>
+<translation id="1399397803214730675">Aquest equip ja disposa d'una versió més recent de Google Chrome. Si el programari no funciona, desinstal·leu Google Chrome i torneu-ho a provar.</translation>
 <translation id="3444832043240812445">Aquesta pàgina només mostrarà informació sobre els bloqueigs recents si <ph name="BEGIN_LINK"/>activeu la creació d'informes de bloqueig<ph name="END_LINK"/>.</translation>
 <translation id="8614913330719544658">Google Chrome no respon. Voleu tornar-lo a iniciar ara?</translation>
 <translation id="2681064822612051220">S'ha trobat una instal·lació conflictiva de Google Chrome al sistema. Desinstal·leu l'aplicació i torneu-ho a provar.</translation>
@@ -99,7 +101,6 @@
 <translation id="2769762047821873045">Google Chrome no és el navegador predeterminat.</translation>
 <translation id="7825851276765848807">La instal·lació ha fallat a causa d'un error no especificat. Torneu a baixar Google Chrome.</translation>
 <translation id="3335672657969596251">Google Chrome no és compatible amb <ph name="OS_NAME"/>.</translation>
-<translation id="3636771339108070045">Aquest equip ja disposa d'una versió més recent de Google Chrome. Si el programari no funciona, desinstal·la Google Chrome i baixa'l de nou.</translation>
 <translation id="5334545119300433702">Se sap que aquest mòdul entra en conflicte amb Google Chrome.</translation>
 <translation id="3360895254066713204">Aplicació auxiliar de Chrome</translation>
 <translation id="1001534784610492198">El fitxer d'instal·lació està malmès o no és vàlid. Torna a baixar Google Chrome.</translation>

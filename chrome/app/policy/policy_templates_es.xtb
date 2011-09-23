@@ -20,10 +20,18 @@
           De forma predeterminada, se admiten todas las extensiones, pero si se ha establecido una política que indique que todas las extensiones se deben incluir en la lista negra, se puede utilizar una lista de admisión para anularla.</translation>
 <translation id="3185009703220253572">desde la versión <ph name="SINCE_VERSION"/></translation>
 <translation id="5469825884154817306">Bloquear imágenes de estos sitios</translation>
+<translation id="7812822355979915508">Especifica si el usuario puede abrir páginas en modo de incógnito en <ph name="PRODUCT_NAME"/>.
+
+      Si esta política está habilitada, las páginas se pueden abrir en modo de incógnito.
+
+      Si no está habilitada, las páginas no se pueden abrir en modo de incógnito.
+
+      Si está forzada, las páginas SOLO se pueden abrir en modo de incógnito.</translation>
 <translation id="2908277604670530363">Número máximo de conexiones simultáneas con el servidor proxy</translation>
 <translation id="3512877396423730277">Controla si se permite que el contenido secundario de terceros de una página muestre un cuadro de diálogo emergente de autenticación básica de HTTP. Esta opción suele estar inhabilitada para protegerse de los ataques de phishing.</translation>
 <translation id="1438955478865681012">Configura las políticas relacionadas con las extensiones. Los usuarios solo pueden instalar extensiones de la lista negra si estas se han incluido en la lista de admisión. Se puede forzar la instalación automática de extensiones en <ph name="PRODUCT_NAME"/> si se especifican en <ph name="EXTENSIONINSTALLFORCELIST_POLICY_NAME"/>. La lista negra tiene preferencia sobre la lista de extensiones de instalación forzada.</translation>
 <translation id="4070280487546651935">Especifica la palabra clave, que se utiliza como acceso directo en el omnibox para generar resultados de búsqueda de este proveedor. Esta política es opcional.</translation>
+<translation id="7271085005502526897">Importar la página de inicio desde el navegador predeterminado en la primera ejecución</translation>
 <translation id="6036523166753287175">Habilita que se pueda pasar a través de un cortafuegos desde un host de acceso remoto.</translation>
 <translation id="1096105751829466145">Proveedor de búsquedas predeterminadas</translation>
 <translation id="7567380065339179813">Permitir complementos en estos sitios</translation>
@@ -68,11 +76,15 @@
 <translation id="8828766846428537606">Permite configurar la página principal predeterminada en <ph name="PRODUCT_NAME"/> e impide que los usuarios la cambien.
 
       Para bloquear completamente la configuración de la página principal de los usuarios, es necesario establecerla como página Nueva pestaña o definirla como URL y establecerla como URL de página principal. Si no especificas la URL de página principal, los usuarios podrán establecer la página Nueva pestaña como página principal especificando &quot;chrome://newtab&quot;.</translation>
+<translation id="2231817271680715693">Importar el historial de navegación desde el navegador predeterminado en la primera ejecución</translation>
 <translation id="1353966721814789986">Páginas de inicio</translation>
+<translation id="1969043432858293299">Esta política fuerza la importación del historial de navegación desde el navegador predeterminado actual si está habilitada. Si no está habilitada, no se importa el historial de navegación. Si no está configurada, se utiliza el comportamiento predeterminado. Si esta política está habilitada, solo afecta al cuadro de diálogo de importación.</translation>
 <translation id="5564962323737505851">Permite configurar el Administrador de contraseñas. Si el Administrador de contraseñas está habilitado, tienes la posibilidad de habilitar o inhabilitar la opción de visualización de contraseñas almacenadas de los usuarios sin cifrar.</translation>
 <translation id="4668325077104657568">Configuración de imágenes predeterminada</translation>
+<translation id="7161193985878519056">Modo de incógnito inhabilitado</translation>
 <translation id="6368403635025849609">Permitir JavaScript en estos sitios</translation>
 <translation id="6074963268421707432">No permitir que ningún sitio muestre notificaciones de escritorio</translation>
+<translation id="8104962233214241919">Seleccionar automáticamente certificados de cliente de estos sitios</translation>
 <translation id="3758249152301468420">Inhabilitar las Herramientas para desarrolladores</translation>
 <translation id="8665076741187546529">Configurar lista de extensiones de instalación forzada</translation>
 <translation id="6242542007132978836">Permite establecer si los sitios web pueden ejecutar o no complementos automáticamente. La ejecución automática de complementos se permite o se deniega a todos los sitios web.</translation>
@@ -116,12 +128,8 @@
 <translation id="2711603272213076156">Permitir solicitud de cuadros de diálogo de selección de archivos</translation>
 <translation id="1426410128494586442">Sí</translation>
 <translation id="3381968327636295719">Utilizar el navegador del host de forma predeterminada</translation>
+<translation id="6520802717075138474">Importa los motores de búsqueda desde el navegador predeterminado en la primera ejecución.</translation>
 <translation id="6368011194414932347">Configurar la URL de la página de inicio</translation>
-<translation id="1966609843734913335">Permite habilitar el modo de incógnito en <ph name="PRODUCT_NAME"/>.
-
-      Si esta opción se habilita o no se configura, los usuarios podrán abrir páginas web en el modo de incógnito.
-
-      Si se inhabilita, los usuarios no podrán abrir páginas web en el modo de incógnito.</translation>
 <translation id="3423023819976532001">Permite habilitar el almacenamiento de contraseñas y el uso de contraseñas guardadas en <ph name="PRODUCT_NAME"/>.
 
           Si habilitas esta opción, <ph name="PRODUCT_NAME"/> memorizará las contraseñas de los usuarios, que aparecerán automáticamente la próxima vez que accedan a un sitio.
@@ -140,6 +148,7 @@
 <translation id="5059221739913673172">Permite configurar el directorio que se utilizará para almacenar los datos de los usuarios en <ph name="PRODUCT_NAME"/>.
 
       Si estableces esta política, <ph name="PRODUCT_NAME"/> utilizará el directorio proporcionado, tanto si el usuario ha especificado una instrucción &quot;--user-data-dir&quot; como si no.</translation>
+<translation id="6378014222084506939">Disponibilidad del modo de incógnito</translation>
 <translation id="3528000905991875314">Habilitar páginas de error alternativas</translation>
 <translation id="4084327080063933392">Permite especificar el nombre del proveedor de búsquedas predeterminadas. Si se deja en blanco, se utilizará el nombre del host especificado por la URL de búsqueda.</translation>
 <translation id="6114416803310251055">obsoleto</translation>
@@ -162,6 +171,7 @@
           Si habilitas esta opción, <ph name="PRODUCT_NAME"/> ignorará todas las opciones relacionadas con el proxy especificadas en la línea de comandos.</translation>
 <translation id="6899705656741990703">Detección automática de la configuración del proxy</translation>
 <translation id="4101772068965291327">Abrir página de inicio</translation>
+<translation id="6932480224480511443">Esta política fuerza la importación de los marcadores desde el navegador predeterminado actual si está habilitada. Si no está habilitada, no se importan los marcadores. Si no está configurada, se utiliza el comportamiento predeterminado. Si esta política está habilitada, también afecta al cuadro de diálogo de importación.</translation>
 <translation id="8992176907758534924">No permitir que todos los sitios muestren imágenes</translation>
 <translation id="8704831857353097849">Lista de complementos inhabilitados</translation>
 <translation id="467449052039111439">Abrir una lista de URL</translation>
@@ -196,10 +206,11 @@
       Si habilitas esta opción, <ph name="PRODUCT_NAME"/> utilizará la configuración regional especificada. Si no se admite la configuración regional especificada, se utilizará &quot;en-US&quot;.
 
       Si esta opción se inhabilita o no se configura, <ph name="PRODUCT_NAME"/> utilizará la configuración regional preferida especificada por el usuario (si hay alguna), la configuración regional del sistema o la configuración regional alternativa &quot;en-US&quot;.</translation>
+<translation id="3964909636571393861">Permite acceder a una lista de URL.</translation>
 <translation id="6022948604095165524">Acción al iniciar</translation>
 <translation id="3704185423155638353">Permite configurar una lista de patrones de URL para especificar los sitios que no pueden ejecutar JavaScript.</translation>
 <translation id="7628741187268592472">Permite especificar la biblioteca GSSAPI que se debe utilizar para la autenticación HTTP. Puedes definir simplemente el nombre de una biblioteca o una ruta completa. Si no se proporciona ningún parámetro, <ph name="PRODUCT_NAME"/> volverá a utilizar un nombre de biblioteca predeterminado.</translation>
-<translation id="2435100545355792516">Forzar modo de incógnito</translation>
+<translation id="1247111313041645019">Esta política fuerza la importación de las contraseñas guardadas desde el navegador anterior predeterminado si está habilitada. Si no está habilitada, no se importan las contraseñas guardadas. Si no está configurada, se utiliza el comportamiento predeterminado. Si esta política está habilitada, también afecta al cuadro de diálogo de importación.</translation>
 <translation id="605147781209875705">Esta política está obsoleta, te recomendamos que utilices ProxyMode en su lugar.
 
           Permite especificar el servidor proxy que utiliza <ph name="PRODUCT_NAME"/> e impide que los usuarios modifiquen la configuración del proxy.
@@ -230,6 +241,7 @@
 <translation id="5770738360657678870">Canal de desarrolladores (puede ser inestable)</translation>
 <translation id="2959898425599642200">Reglas de omisión de proxy</translation>
 <translation id="7337941689192402544">Configurar directorio de datos de usuario de <ph name="PRODUCT_NAME"/></translation>
+<translation id="896575211736907134">Modo de incógnito forzado</translation>
 <translation id="5326137997741385453">Configura el directorio que <ph name="PRODUCT_NAME"/> utilizará para guardar archivos almacenados en caché en el disco.
 
       Si se establece esta política, <ph name="PRODUCT_NAME"/> utilizará el directorio proporcionado aunque el usuario no haya especificado la instrucción &quot;--disk-cache-dir&quot;.</translation>
@@ -243,6 +255,7 @@
 
       Tanto si habilitas esta opción como si la inhabilitas, los usuarios no podrán modificarla ni anularla en <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="6641981670621198190">Inhabilitar compatibilidad con API de gráficos 3D</translation>
+<translation id="6375011473383446094">Te permite especificar una lista de patrones de URL que especifica sitios para los que <ph name="PRODUCT_NAME"/> debe seleccionar automáticamente un certificado de cliente si el sitio solicita un certificado.</translation>
 <translation id="2741921267428646309">Esta es la lista de políticas que debe cumplir <ph name="PRODUCT_NAME"/>.
 
       No es necesario que modifiques esta configuración manualmente. Puedes descargar unas plantillas de fácil uso a través de la página <ph name="POLICY_TEMPLATE_DOWNLOAD_URL"/>.
@@ -311,6 +324,7 @@
 <translation id="2312134445771258233">Permite configurar las páginas que se cargan al iniciar el navegador.
 
       Se ignorará el contenido de la lista &quot;URL que se deben abrir al inicio&quot; a menos que se seleccione la opción &quot;Abrir una lista de URL&quot; en la política &quot;Acción al iniciar&quot;.</translation>
+<translation id="8344454543174932833">Importa los marcadores desde el navegador predeterminado en la primera ejecución.</translation>
 <translation id="7931766636395791713">Permite establecer una lista de patrones de URL para especificar los sitios que pueden ejecutar JavaScript.</translation>
 <translation id="1019101089073227242">Establecer directorio de datos de usuarios</translation>
 <translation id="2030905906517501646">Palabra clave de proveedor de búsquedas predeterminadas</translation>
@@ -354,6 +368,7 @@
 <translation id="681446116407619279">Esquemas de autenticación admitidos</translation>
 <translation id="4027608872760987929">Habilitar proveedor de búsquedas predeterminadas</translation>
 <translation id="2223598546285729819">Configuración de notificación predeterminada</translation>
+<translation id="2417932194355389637">Esta política fuerza la importación de los motores de búsqueda desde el navegador predeterminado actual si está habilitada. Si no está habilitada, no se importa el motor de búsqueda predeterminado. Si no está configurada, se utiliza el comportamiento predeterminado. Si esta política está habilitada, también afecta al cuadro de diálogo de importación.</translation>
 <translation id="3793095274466276777">Permite configurar la comprobación del navegador predeterminado en <ph name="PRODUCT_NAME"/> e impide que los usuarios modifiquen esta configuración.
 
       Si habilitas esta opción, siempre se comprobará si <ph name="PRODUCT_NAME"/> es el navegador predeterminado al iniciarlo y se realizará un registro del propio navegador, si es posible.
@@ -362,9 +377,16 @@
 
       Si no se configura esta opción, los usuarios de <ph name="PRODUCT_NAME"/> podrán decidir si quieren que este sea el navegador predeterminado y si deben aparecer notificaciones cuando no lo sea.</translation>
 <translation id="1530812829012954197">Mostrar siempre los patrones de URL que se indican a continuación en el navegador del host</translation>
+<translation id="913195841488580904">Bloquear el acceso a una lista de URL</translation>
 <translation id="6190022522129724693">Configuración de pop-ups predeterminada</translation>
 <translation id="847472800012384958">No permitir que ningún sitio muestre pop-ups</translation>
 <translation id="4733471537137819387">Políticas relacionadas con la autenticación HTTP integrada</translation>
+<translation id="5428100326165690555">Esta política está obsoleta. Debes utilizar IncognitoModeAvailability en su lugar.
+      Habilita el modo de incógnito en <ph name="PRODUCT_NAME"/>.
+
+      Si esta opción está habilitada o no configurada, los usuarios pueden abrir páginas web en modo de incógnito.
+
+      Si esta opción no está habilitada, los usuarios no pueden abrir páginas web en modo de incógnito.</translation>
 <translation id="4608714268466689965">Permite establecer si los sitios web pueden mostrar notificaciones de escritorio. Las notificaciones de escritorio se pueden permitir o denegar de forma predeterminada o se puede establecer que los sitios web pidan permiso al usuario cada vez que quieran mostrar notificaciones de escritorio.</translation>
 <translation id="8951350807133946005">Establecer directorio de caché de disco</translation>
 <translation id="3866571346358522601">Permite especificar el período en milisegundos en el que se solicita información sobre políticas de usuarios al servicio de administración de dispositivos. Al establecer esta política, se anula el valor predeterminado de tres horas. Los valores válidos están comprendidos entre 1800000 (30 minutos) y 86400000 (un día). Si el valor no está incluido en este intervalo, se redondeará al límite correspondiente.</translation>
@@ -373,6 +395,17 @@
           Si habilitas esta opción, se omitirá la consulta de nombre canónico y se utilizará el nombre del servidor tal como se haya introducido.
 
           Si inhabilitas esta opción, se realizará una consulta de nombre canónico para determinar el nombre canónico del servidor.</translation>
+<translation id="7117773566421450481">Bloquea el acceso a la lista de URL.
+
+      Esta política evita que el usuario cargue páginas web de las URL incluidas en una lista negra.
+
+      Una URL tiene el formato &quot;esquema://host:puerto/ruta&quot;.
+      El esquema opcional puede ser &quot;http&quot;, &quot;https&quot; o &quot;ftp&quot;. Solo se bloqueará ese esquema. Si no se especifica ninguno, se bloquearán todos los esquemas.
+      El host puede ser un nombre de host o una dirección IP. También se bloquearán los subdominios de un nombre de host. Para evitar que se bloqueen subdominios, debes incluir un símbolo &quot;.&quot; delante del nombre de host. El símbolo &quot;*&quot; del nombre de host especial bloqueará todos los dominios.
+      El puerto opcional es un número de puerto válido comprendido entre 1 y 65535. Si no se especifica ninguno, se bloquearán todos los puertos.
+      Si se especifica la ruta opcional, solo se bloquearán las rutas con ese prefijo.
+
+      Las excepciones se pueden definir en la política de listas blancas de URL. Estas políticas se limitan a 100 entradas, y se ignorarán las entradas que superen este número.</translation>
 <translation id="166427968280387991">Servidor proxy</translation>
 <translation id="2805707493867224476">Permitir que todos los sitios muestren pop-ups</translation>
 <translation id="1727394138581151779">Bloquear todos los complementos</translation>
@@ -391,6 +424,7 @@
 <translation id="6524941558928880715">Volver a abrir las pestañas que se abrieron la última vez</translation>
 <translation id="3167247709504138314">Permite especificar la URL del motor de búsqueda que se utiliza para obtener sugerencias de búsqueda. La URL debe contener la cadena &quot;<ph name="SEARCH_TERM_MARKER"/>&quot;, que se sustituirá por el texto que el usuario haya introducido al realizar la consulta. Esta política es opcional.</translation>
 <translation id="602728333950205286">URL de función Instant del proveedor de búsquedas predeterminadas</translation>
+<translation id="3087595738450590532">Esta política fuerza la importación de la página de inicio desde el navegador predeterminado actual si está habilitada. Si no está habilitada, no se importa la página de inicio. Si no está configurada, se utiliza el comportamiento predeterminado.</translation>
 <translation id="1675002386741412210">Compatible con:</translation>
 <translation id="5417368737700340683">Permite habilitar la función Instant de <ph name="PRODUCT_NAME"/> e impide que los usuarios modifiquen esta configuración.
 
@@ -416,7 +450,9 @@
 <translation id="8544375438507658205">Procesador de HTML predeterminado de <ph name="PRODUCT_FRAME_NAME"/></translation>
 <translation id="7424751532654212117">Lista de excepciones de la lista de complementos inhabilitados</translation>
 <translation id="6233173491898450179">Establecer directorio de descargas</translation>
+<translation id="2158989228646115511">Si se establece en &quot;true&quot;, las promociones de aplicaciones de Chrome Web Store no aparecerán en la página Nueva pestaña.</translation>
 <translation id="2299220924812062390">Especificar una lista de complementos habilitados</translation>
+<translation id="924557436754151212">Importar las contraseñas guardadas desde el navegador predeterminado en la primera ejecución</translation>
 <translation id="8754704265300028644">Permite inhabilitar el almacenamiento del historial de navegación de <ph name="PRODUCT_NAME"/> e impide que los usuarios modifiquen esta configuración.
 
       Si se habilita esta opción, no se almacenará el historial de navegación.
@@ -442,9 +478,9 @@
 <translation id="868187325500643455">Permitir que todos los sitios ejecuten complementos automáticamentej</translation>
 <translation id="5226033722357981948">Especificar si se debe inhabilitar el buscador de complementos</translation>
 <translation id="9068358498333390522">Permite establecer si los sitios web pueden mostrar o no pop-ups. La ejecución de pop-ups se permite o se deniega a todos los sitios web.</translation>
+<translation id="3612784419634427880">Modo de incógnito disponible</translation>
 <translation id="7194407337890404814">Nombre del proveedor de búsquedas predeterminadas</translation>
 <translation id="1843117931376765605">Frecuencia con la que se actualiza la política de usuario</translation>
-<translation id="1630808801738981930">Fuerza que cada sesión tenga lugar en modo de incógnito en <ph name="PRODUCT_NAME"/>. Si esta opción está habilitada, los usuarios solo podrán abrir páginas en modo de incógnito. Si está inhabilitada o no se ha configurado, los usuarios también pueden utilizar el navegador en modo normal.</translation>
 <translation id="5535973522252703021">Lista de admisión de servidores de delegación Kerberos</translation>
 <translation id="4554678280250165996">Permite especificar los esquemas de autenticación HTTP admitidos por <ph name="PRODUCT_NAME"/>.
 
@@ -477,6 +513,7 @@
 <translation id="7848840259379156480">Permite configurar el procesador de HTML predeterminado si se ha instalado <ph name="PRODUCT_FRAME_NAME"/>.
       De forma predeterminada, se permite que el navegador del host muestre las páginas HTML,
       pero puedes anular esta opción para que <ph name="PRODUCT_FRAME_NAME"/> muestre las páginas HTML de forma predeterminada.</translation>
+<translation id="4121350739760194865">Evitar que las promociones de aplicaciones aparezcan en la página Nueva pestaña</translation>
 <translation id="4486602758942612946">Permite personalizar la lista de patrones de URL que siempre debe mostrar el navegador del host.
           Puedes consultar ejemplos de patrones en la página http://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="2257451316169619209">Permite especificar el período en milisegundos en el que se solicita información sobre políticas de dispositivos al servicio de administración de dispositivos. Al establecer esta política, se anula el valor predeterminado de tres horas. Los valores válidos están comprendidos entre 1800000 (30 minutos) y 86400000 (un día). Si el valor no está incluido en este intervalo, se redondeará al límite correspondiente.</translation>
@@ -539,6 +576,15 @@
           Si inhabilitas esta opción, la página Nueva pestaña nunca será la página de inicio del usuario, a menos que se utilice &quot;chrome://newtab&quot; como URL.
 
           En cualquier caso, los usuarios no podrán modificar el tipo de página de inicio en <ph name="PRODUCT_NAME"/>.</translation>
+<translation id="2844287278346661435">Permite acceder a las URL especificadas en  la lista como excepciones de la lista negra de URL.
+
+      Consulta la descripción de la política de listas negras de URL para comprobar el formato de las entradas de esta lista.
+
+      Esta política se puede utilizar para abrir excepciones de listas negras restrictivas. Por ejemplo, el símbolo &quot;*&quot; se puede incluir en una lista negra para bloquear todas las solicitudes, y esta política se puede utilizar para poder acceder a una lista limitada de URL. También se puede utilizar para abrir excepciones de determinados esquemas, subdominios de otros dominios, puertos o rutas específicas.
+
+      El filtro más específico determinará si una URL está bloqueada o autorizada. La lista blanca prevalece sobre la lista negra.
+
+      Esta política se limita a 100 entradas, y se ignorarán las entradas que superen este número.</translation>
 <translation id="5645779841392247734">Permitir cookies en estos sitios</translation>
 <translation id="3906388518501362918">Permite habilitar JavaScript en <ph name="PRODUCT_NAME"/> e impide que los usuarios modifiquen esta configuración.
 

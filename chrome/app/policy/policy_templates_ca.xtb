@@ -14,10 +14,18 @@
 <translation id="5183383917553127163">Us permet especificar les extensions que no estan subjectes a la llista negra. Un valor de * a la llista negra significa que s'hi inclouen totes les extensions i que els usuaris només podran instal·lar les que apareixen a la llista blanca. De manera predeterminada, totes les aplicacions apareixen a la llista blanca, però si una política provoca que totes es moguin a la llista negra, pot fer-se servir la llista blanca per substituir aquesta política.</translation>
 <translation id="3185009703220253572">des de la versió <ph name="SINCE_VERSION"/></translation>
 <translation id="5469825884154817306">Bloqueja les imatges en aquests llocs</translation>
+<translation id="7812822355979915508">Especifica si l'usuari pot obrir pàgines en mode d'incògnit a <ph name="PRODUCT_NAME"/>.
+
+      Si s'ha seleccionat &quot;Activat&quot;, les pàgines es poden obrir en mode d'incògnit.
+
+      Si s'ha seleccionat &quot;Desactivat&quot;, les pàgines no es poden obrir en mode d'incògnit.
+
+      Si s'ha seleccionat &quot;Forçat&quot;, les pàgines NOMÉS es poden obrir en mode d'incògnit.</translation>
 <translation id="2908277604670530363">Nombre màxim de connexions paral·leles al servidor intermediari</translation>
 <translation id="3512877396423730277">Controla si el contingut secundari de tercers d'una pàgina pot obrir un quadre de diàleg emergent d'autenticació bàsica d'HTTP. Normalment, aquesta opció està desactivada com a defensa contra la pesca.</translation>
 <translation id="1438955478865681012">Configura les polítiques relacionades amb les extensions. L'usuari no pot instal·lar les extensions que s'enumeren a la llista negra tret que també apareguin a la llista blanca. També podeu forçar <ph name="PRODUCT_NAME"/> perquè instal·li automàticament extensions si les especifiqueu a <ph name="EXTENSIONINSTALLFORCELIST_POLICY_NAME"/>. La llista negra té prioritat davant la llista d'extensions forçades.</translation>
 <translation id="4070280487546651935">Especifica la paraula clau, que és la drecera que es fa servir a la barra d'adreces per activar la cerca per a aquest proveïdor. És opcional.</translation>
+<translation id="7271085005502526897">Importació de la pàgina d'inici des del navegador predeterminat en la primera execució</translation>
 <translation id="6036523166753287175">Activa que es pugui travessar el tallafoc des d'un amfitrió d'accés remot</translation>
 <translation id="1096105751829466145">Proveïdor de cerca predeterminat</translation>
 <translation id="7567380065339179813">Permet els connectors en aquests llocs</translation>
@@ -34,11 +42,15 @@
 <translation id="5912364507361265851">Permet que els usuaris mostrin les contrasenyes al Gestor de contrasenyes</translation>
 <translation id="6999540307315670568">Activa la barra d'adreces d'interès a la pàgina de pestanya nova de <ph name="PRODUCT_NAME"/>. Si activeu aquest paràmetre, <ph name="PRODUCT_NAME"/> mostrarà una barra d'adreces d'interès a la pàgina de pestanya nova. Si el desactiveu, els usuaris no veuran la barra d'adreces d'interès. Tant si activeu com si desactiveu aquest paràmetre, els usuaris no podran modificar-lo ni substituir-lo a <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="8828766846428537606">Configura la pàgina d'inici predeterminada a <ph name="PRODUCT_NAME"/> i evita que els usuaris la canviïn. La configuració de la pàgina d'inici dels usuaris només es bloqueja completament si seleccioneu que sigui la pàgina de pestanya nova o si l'establiu perquè sigui un URL que trieu. Si no especifiqueu l'URL de la pàgina d'inici, l'usuari podrà establir la pàgina de pestanya nova com a pàgina d'inici si especifica &quot;chrome://newtab&quot;.</translation>
+<translation id="2231817271680715693">Importació de l'historial de navegació des del navegador predeterminat en la primera execució</translation>
 <translation id="1353966721814789986">Pàgines d'inici</translation>
+<translation id="1969043432858293299">Aquesta política fa que l'historial de navegació s'importi des del navegador predeterminat actual si està activada. Si està desactivada, no s'importa cap historial de navegació. Si no està configurada, es fa servir el comportament predeterminat. Si està activada, aquesta política també afecta el diàleg d'importació.</translation>
 <translation id="5564962323737505851">Configura el gestor de contrasenyes. Si el gestor de contrasenyes està activat, podeu activar o desactivar la possibilitat que l'usuari mostri les contrasenyes emmagatzemades com a text no xifrat.</translation>
 <translation id="4668325077104657568">Configuració predeterminada de les imatges</translation>
+<translation id="7161193985878519056">Mode d'incògnit desactivat.</translation>
 <translation id="6368403635025849609">Permet JavaScript en aquests llocs</translation>
 <translation id="6074963268421707432">No permetis que cap lloc mostri notificacions d'escriptori</translation>
+<translation id="8104962233214241919">Selecciona automàticament certificats de client per a aquest llocs</translation>
 <translation id="3758249152301468420">Desactiva les eines per a desenvolupadors</translation>
 <translation id="8665076741187546529">Configura la llista d'extensions instal·lades per la força</translation>
 <translation id="6242542007132978836">Us permet establir si els llocs web poden executar connectors automàticament o no. L'execució automàtica de connectors pot permetre's a tots els llocs web o denegar-se a tots els llocs web.</translation>
@@ -64,12 +76,13 @@
 <translation id="2711603272213076156">Permet la invocació de diàlegs de selecció de fitxers.</translation>
 <translation id="1426410128494586442">Sí</translation>
 <translation id="3381968327636295719">Fes servir el navegador amfitrió de manera predeterminada</translation>
+<translation id="6520802717075138474">Importació dels motors de cerca des del navegador predeterminat en la primera execució</translation>
 <translation id="6368011194414932347">Configura l'URL de la pàgina d'inici</translation>
-<translation id="1966609843734913335">Activa el mode d'incògnit a <ph name="PRODUCT_NAME"/>. Si aquesta configuració està activada o bé si no està configurada, els usuaris poden obrir pàgines web en mode d'incògnit. Si està desactivada, els usuaris no poden obrir pàgines web en mode d'incògnit.</translation>
 <translation id="3423023819976532001">Permet desar les contrasenyes i fer servir les contrasenyes desades a <ph name="PRODUCT_NAME"/>. Si activeu aquest paràmetre, els usuaris poden fer que <ph name="PRODUCT_NAME"/> memoritzi contrasenyes i que les proporcioni automàticament la propera vegada que iniciïn la sessió en un servei. Si el desactiveu, els usuaris no podran desar les contrasenyes ni fer servir les que ja hagin desat. Tant si activeu com si desactiveu aquest paràmetre, els usuaris no podran modificar-lo ni substituir-lo a <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="2877225735001246144">Desactiva la cerca de CNAME en negociar l'autenticació de Kerberos</translation>
 <translation id="6200084307932433394">Activa el servei integrat de Google Traductor a <ph name="PRODUCT_NAME"/>. Si activeu aquest paràmetre, <ph name="PRODUCT_NAME"/> mostrarà una barra d'eines integrada que oferirà a l'usuari la traducció de les pàgines, si s'escau. Si el desactiveu, els usuaris no veuran la barra de traducció. Tant si activeu com si desactiveu aquest paràmetre, els usuaris no podran modificar-lo ni substituir-lo a <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="5059221739913673172">Configura el directori que <ph name="PRODUCT_NAME"/> farà servir per emmagatzemar les dades de l'usuari. Si establiu aquesta política, <ph name="PRODUCT_NAME"/> utilitzarà el directori que hàgiu proporcionat, tant si l'usuari ha especificat la marca &quot;--user-data-dir&quot; com si no.</translation>
+<translation id="6378014222084506939">Disponibilitat del mode d'incògnit.</translation>
 <translation id="3528000905991875314">Activa les pàgines d'error alternatives</translation>
 <translation id="4084327080063933392">Especifica el nom del proveïdor de cerca predeterminat. Si ho deixeu en blanc, es farà servir el nom de l'amfitrió que especifiqui l'URL de cerca.</translation>
 <translation id="6114416803310251055">obsolet</translation>
@@ -79,6 +92,7 @@
 <translation id="6417878201680958437">Us permet especificar el servidor intermediari que <ph name="PRODUCT_NAME"/> fa servir i evita que els usuaris en modifiquin la configuració. Si establiu que mai no s'utilitzi un servidor intermediari i que es connecti sempre directament, s'ignoren totes les altres opcions. Si establiu que es faci servir la configuració de servidor intermediari o que es detecti el servidor intermediari automàticament, també. Si seleccioneu el mode de servidor intermediari fix, podeu especificar més opcions a &quot;Adreça o URL del servidor intermediari&quot; i a &quot;Regles d'evitació de servidors intermediaris separada per comes&quot;. Si voleu fer servir un script de servidor intermediari .pac, heu d'especificar l'URL a l'script a &quot;URL a un fitxer .pac de servidor intermediari&quot;. Si voleu consultar-ne exemples detallats, visiteu: <ph name="PROXY_HELP_URL"/>. Si activeu aquesta configuració, <ph name="PRODUCT_NAME"/> ignora totes les opcions relacionades amb els servidors intermediaris que hi hagi a la línia d'ordres.</translation>
 <translation id="6899705656741990703">Configuració de la detecció automàtica de servidors intermediaris</translation>
 <translation id="4101772068965291327">Obre la pàgina d'inici</translation>
+<translation id="6932480224480511443">Aquesta política fa que les adreces d'interès s'importin des del navegador predeterminat actual si està activada. Si està desactivada, no s'importa cap adreça d'interès. Si no està configurada, es fa servir el comportament predeterminat. Si està activada, aquesta política també afecta el diàleg d'importació.</translation>
 <translation id="8992176907758534924">No permetis que cap lloc mostri imatges</translation>
 <translation id="8704831857353097849">Llista de connectors desactivats</translation>
 <translation id="467449052039111439">Obre una llista d'URL</translation>
@@ -95,10 +109,11 @@
 <translation id="9035964157729712237">ID de les extensions que s'han d'excloure de la llista negra</translation>
 <translation id="3523486089716697173">Us permet establir una llista dels patrons d'URL que especifiquin els llocs que no puguin mostrar imatges.</translation>
 <translation id="751265277672445578">Defineix la configuració regional de les aplicacions a <ph name="PRODUCT_NAME"/> i impedeix que els usuaris la modifiquin. Si activeu aquest paràmetre, <ph name="PRODUCT_NAME"/> fa servir la configuració regional especificada. Si aquesta configuració no és compatible, es fa servir &quot;en-US&quot; en lloc seu. Si aquest paràmetre està desactivat o bé si no està configurat, <ph name="PRODUCT_NAME"/> fa servir la configuració regional preferida que hagi especificat l'usuari (cas que n'hagi configurat cap), la configuració regional del sistema o bé la configuració regional alternativa &quot;en-US&quot;.</translation>
+<translation id="3964909636571393861">Permet l'accés a una llista d'URL</translation>
 <translation id="6022948604095165524">Acció en iniciar</translation>
 <translation id="3704185423155638353">Us permet configurar una llista de patrons d'URL que especifica els llocs que no poden executar JavaScript.</translation>
 <translation id="7628741187268592472">Especifica la biblioteca GSSAPI que s'ha de fer servir per a l'autenticació HTTP. Podeu establir només el nom d'una biblioteca o un camí sencer. Si no s'ha proporcionat cap configuració, <ph name="PRODUCT_NAME"/> utilitzarà un nom de biblioteca predeterminat.</translation>
-<translation id="2435100545355792516">Força el mode d'incògnit</translation>
+<translation id="1247111313041645019">Aquesta política fa que les contrasenyes que s'han desat s'importin des del navegador predeterminat actual si està activada. Si està desactivada, no s'importa cap contrasenya desada. Si no està configurada, es fa servir el comportament predeterminat. Si està activada, aquesta política també afecta el diàleg d'importació.</translation>
 <translation id="605147781209875705">Aquesta política està obsoleta; feu servir ProxyMode en lloc seu. Us permet especificar el servidor intermediari que <ph name="PRODUCT_NAME"/> utilitza i evita que els usuaris en modifiquin la configuració. Si trieu que mai no es faci servir un connector intermediari i voleu connectar-vos directament, s'ignoren totes les altres opcions. Si trieu fer servir la configuració del servidor intermediari o bé detectar el servidor intermediari automàticament, s'ignoren totes les altres opcions. Si trieu configurar manualment el servidor intermediari, podeu especificar més opcions a &quot;Adreça o URL del servidor intermediari&quot;, a &quot;URL del fitxer .pac d'un servidor intermediari&quot; i a &quot;Regles d'evitació de servidors intermediaris separada per comes&quot;. Si voleu consultar-ne exemples detallats, visiteu: <ph name="PROXY_HELP_URL"/>. Si activeu aquest paràmetre, <ph name="PRODUCT_NAME"/> ignora totes les opcions relacionades amb els servidors intermediaris que hi hagi a la línia d'ordres.</translation>
 <translation id="6516561898504323308">Bloqueja les galetes de tercers. Si activeu aquest paràmetre, s'evitarà que els elements de les pàgines web estableixin les galetes que no pertanyen al domini que hi ha a la barra d'adreces del navegador. Si el desactiveu, els elements de les pàgines web podran establir galetes de fora dels dominis que hi ha a la barra d'adreces del navegador i s'evitarà que els usuaris el modifiquin.</translation>
 <translation id="3864818549971490907">Configuració de connectors predeterminada</translation>
@@ -107,11 +122,13 @@
 <translation id="5770738360657678870">Canal per a desenvolupadors (pot ser inestable)</translation>
 <translation id="2959898425599642200">Regles d'evitació de servidors intermediaris</translation>
 <translation id="7337941689192402544">Defineix el directori de dades de l'usuari de <ph name="PRODUCT_NAME"/></translation>
+<translation id="896575211736907134">S'ha forçat el mode d'incògnit.</translation>
 <translation id="5326137997741385453">Configura el directori del disc que <ph name="PRODUCT_NAME"/> utilitzarà per emmagatzemar els fitxers emmagatzemats a la memòria cau. Si definiu aquesta política, <ph name="PRODUCT_NAME"/> farà servir el directori proporcionat independentment de si l'usuari ha especificat la marca &quot;--disk-cache-dir&quot; o no.</translation>
 <translation id="4752274243117690301">Si heu establert aquest paràmetre com a Cert, la cerca automàtica i la instal·lació dels connectors que faltin es desactivaran a <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="3292147213643666827">      Activa <ph name="PRODUCT_NAME"/> perquè actuï com a servidor intermediari entre <ph name="CLOUD_PRINT_NAME"/> i les impressores heretades connectades a l'equip. Si aquest paràmetre està activat o si no està configurat, els usuaris podran activar el servidor intermediari d'impressió si s'autentiquen amb el seu compte de Google. Si el paràmetre està desactivat, els usuaris no podran activar el servidor intermediari i l'equip no podrà compartir les seves impressores amb <ph name="CLOUD_PRINT_NAME"/>.</translation>
 <translation id="617204585863800180">Activa la predicció de xarxa a <ph name="PRODUCT_NAME"/> i evita que els usuaris en modifiquin la configuració. Tant si activeu com si desactiveu aquest paràmetre, els usuaris no podran modificar-lo ni substituir-lo a <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="6641981670621198190">Desactiva la compatibilitat amb API de gràfics en 3D</translation>
+<translation id="6375011473383446094">Us permet especificar una llista de patrons d'URL que especifiquen llocs per als quals <ph name="PRODUCT_NAME"/> hauria de seleccionar automàticament un certificat de client si el lloc sol·licita un certificat.</translation>
 <translation id="2741921267428646309">Aquesta és la llista de polítiques que <ph name="PRODUCT_NAME"/> respecta. No cal que en canvieu la configuració a mà. Podeu baixar plantilles fàcils de fer servir a <ph name="POLICY_TEMPLATE_DOWNLOAD_URL"/>. La llista de polítiques compatibles és la mateixa per a Chromium i per a Google Chrome, però la ubicació del seu registre de Windows és diferent. Comença amb <ph name="CHROMIUM_KEY"/> per a les polítiques de Chromium i amb <ph name="GOOGLE_CHROME_KEY"/> per a les polítiques de Google Chrome.</translation>
 <translation id="7003746348783715221">Preferències de <ph name="PRODUCT_NAME"/></translation>
 <translation id="4723829699367336876">Activa que es pugui travessar el tallafoc des d'un client d'accés remot</translation>
@@ -146,6 +163,7 @@
 <translation id="8665913667133665583">Especifica els servidors que han d'aparèixer a la llista blanca per a l'autenticació integrada. Aquest tipus d'autenticació només s'activa quan <ph name="PRODUCT_NAME"/> rep un desafiament d'autenticació d'un servidor intermediari o d'un servidor que estigui en aquesta llista permesa. Separeu els diferents noms de servidors amb comes. Es permeten els comodins (*).</translation>
 <translation id="538108065117008131">Permet que <ph name="PRODUCT_FRAME_NAME"/> gestioni els tipus de contingut següents.</translation>
 <translation id="2312134445771258233">Us permet configurar les pàgines que es carreguen en iniciar. El contingut de la llista &quot;URL que s'han d'obrir en iniciar&quot; s'ignora tret que seleccioneu &quot;Obre una llista d'URL&quot; a &quot;Acció a l'inici&quot;.</translation>
+<translation id="8344454543174932833">Importació de les adreces d'interès des del navegador predeterminat en la primera execució</translation>
 <translation id="7931766636395791713">Us permet configurar una llista de patrons que especifiquin els llocs als quals es permet executar JavaScript.</translation>
 <translation id="1019101089073227242">Estableix el directori de dades de l'usuari</translation>
 <translation id="2030905906517501646">Paraula clau del proveïdor de cerca predeterminat</translation>
@@ -174,15 +192,34 @@
 <translation id="681446116407619279">Esquemes d'autenticació compatibles</translation>
 <translation id="4027608872760987929">Activa el proveïdor de cerca predeterminat</translation>
 <translation id="2223598546285729819">Configuració de notificacions predeterminada</translation>
+<translation id="2417932194355389637">Aquesta política fa que els motors de cerca s'importin des del navegador predeterminat actual si està activada. Si està desactivada, no s'importa cap motor de cerca predeterminada. Si no està configurada, es fa servir el comportament predeterminat. Si està activada, aquesta política també afecta el diàleg d'importació.</translation>
 <translation id="3793095274466276777">Configura les comprovacions del navegador predeterminat a <ph name="PRODUCT_NAME"/> i evita que els usuaris les modifiquin. Si activeu aquest paràmetre, <ph name="PRODUCT_NAME"/> comprovarà sempre en iniciar-se que sigui el navegador predeterminat i es registrarà automàticament si és possible. Si el desactiveu, <ph name="PRODUCT_NAME"/> no comprovarà que sigui el navegador predeterminat i es desactivaran els controls de l'usuari per configurar aquesta opció. Si no definiu aquest paràmetre, <ph name="PRODUCT_NAME"/> permetrà que l'usuari decideixi si és el navegador predeterminat i si s'han de mostrar les notificacions de l'usuari quan no ho sigui.</translation>
 <translation id="1530812829012954197">Renderitza sempre els patrons d'URL següents al navegador de l'amfitrió</translation>
+<translation id="913195841488580904">Bloqueja l'accés a una llista d'URL</translation>
 <translation id="6190022522129724693">Configuració predeterminada de les finestres emergents</translation>
 <translation id="847472800012384958">No permetis que cap lloc mostri elements emergents</translation>
 <translation id="4733471537137819387">Les polítiques relacionades amb l'autenticació HTTP integrada.</translation>
+<translation id="5428100326165690555">Aquesta política està obsoleta. Feu servir IncognitoModeAvailability.
+      Activa el mode d'incògnit a <ph name="PRODUCT_NAME"/>.
+
+      Si aquesta configuració està activada o no està configurada, els usuaris poden obrir pàgines web en mode d'incògnit.
+
+      Si aquesta opció està desactivada, els usuaris no poden obrir pàgines web en mode d'incògnit.</translation>
 <translation id="4608714268466689965">Us permet definir si els llocs web poden mostrar notificacions a l'escriptori o no. Es pot permetre per defecte que es mostrin notificacions d'escriptori; també pot denegar-se per defecte o establir que se sol·liciti a l'usuari cada vegada que un lloc web vulgui mostrar notificacions d'escriptori.</translation>
 <translation id="8951350807133946005">Defineix el directori de la memòria cau del disc</translation>
 <translation id="3866571346358522601">Especifica el període en mil·lisegons durant el qual se sol·licita al servei de gestió de dispositius informació sobre les polítiques d'usuari. Si configureu aquesta política, se substituirà el valor predeterminat de 3 hores. Els valors vàlids per a aquesta política van des de 1800000 (30 minuts) fins a 86400000 (un dia). Els valors que estiguin fora d'aquest àmbit temporal es modificaran fins a encabir-los al límit respectiu.</translation>
 <translation id="1334051495529796396">Especifica si l'SPN de Kerberos que s'ha generat està basat en el nom de DNS canònic o en el nom original que s'ha introduït. Si activeu aquest paràmetre, la cerca de CNAME s'ometrà i s'utilitzarà el nom del servidor que s'introdueixi. Si el desactiveu, el nom canònic del servidor es determinarà mitjançant la cerca de CNAME.</translation>
+<translation id="7117773566421450481">Bloqueja l'accés als URL de la llista.
+
+      Aquesta política impedeix que l'usuari carregui pàgines web d'URL en llistes negres.
+
+      Un URL té el format &quot;esquema://amfitrió:port/camí&quot;.
+      L'esquema opcional pot ser http, https o ftp. Només es bloquejarà aquest esquema; si no se n'especifica cap, es bloquejaran tots els esquemes.
+      L'amfitrió pot ser un nom d'amfitrió o una adreça IP. Els subdominis d'un nom d'amfitrió també es bloquejaran. Per evitar bloquejar subdominis, incloeu un &quot;.&quot; abans del nom d'amfitrió. El nom d'amfitrió especial &quot;*&quot; bloquejarà tots els dominis.
+      El port opcional és un número de port vàlid d'1 a 65535. Si no se n'especifica cap, es bloquejaran tots els ports.
+      Si s'especifica el camí opcional, només es bloquejaran camins amb aquest prefix.
+
+      Les excepcions es poden definir a la política de llista blanca d'URL. Aquestes polítiques es limiten a 100 entrades; les entrades posteriors s'ignoraran.</translation>
 <translation id="166427968280387991">Servidor intermediari</translation>
 <translation id="2805707493867224476">Permet que tots els llocs mostrin finestres emergents</translation>
 <translation id="1727394138581151779">Bloqueja tots els connectors</translation>
@@ -197,6 +234,7 @@
 <translation id="6524941558928880715">Torna a obrir els URL que hi havia oberts la darrera vegada</translation>
 <translation id="3167247709504138314">Especifica l'URL del motor de cerca que s'ha de fer servir per proporcionar suggeriments de cerca. L'URL ha de contenir la cadena &quot;<ph name="SEARCH_TERM_MARKER"/>&quot;, que se substituirà en el moment de la consulta pel text que l'usuari hagi introduït fins llavors. És opcional.</translation>
 <translation id="602728333950205286">URL instantani del proveïdor de cerca predeterminat</translation>
+<translation id="3087595738450590532">Aquesta política fa que la pàgina d'inici s'importi des del navegador predeterminat actual si està activada. Si està desactivada, no s'importa la pàgina d'inici. Si no està configurada, es fa servir el comportament predeterminat.</translation>
 <translation id="1675002386741412210">Compatible amb:</translation>
 <translation id="5417368737700340683">Activa la funció Instant de <ph name="PRODUCT_NAME"/> i evita que els usuaris en modifiquin la configuració. Si activeu aquest paràmetre, <ph name="PRODUCT_NAME"/> instant s'activa. Si el desactiveu, <ph name="PRODUCT_NAME"/> Instant es desactiva. Tant si activeu com si desactiveu aquest paràmetre, els usuaris no podran modificar-lo ni substituir-lo.</translation>
 <translation id="3264793472749429012">Codificacions del proveïdor de cerca predeterminat</translation>
@@ -208,7 +246,9 @@
 <translation id="8544375438507658205">Renderitzador HTML predeterminat per a <ph name="PRODUCT_FRAME_NAME"/></translation>
 <translation id="7424751532654212117">Llista d'excepcions de la llista de connectors desactivats</translation>
 <translation id="6233173491898450179">Estableix el directori de baixada</translation>
+<translation id="2158989228646115511">Quan es defineix com a Activat, les promocions per a les aplicacions de Chrome Web Store no apareixeran a la pestanya nova.</translation>
 <translation id="2299220924812062390">Especifica una llista de connectors activats</translation>
+<translation id="924557436754151212">Importació de les contrasenyes desades des del navegador predeterminat en la primera execució</translation>
 <translation id="8754704265300028644">Desactiva l'emmagatzematge de l'historial del navegador a <ph name="PRODUCT_NAME"/> i evita que els usuaris en canviïn la configuració. Si aquest paràmetre està activat, l'historial de navegació no es desa. Si està desactivat o bé si no està configurat, l'historial de navegació es desa.</translation>
 <translation id="1897365952389968758">Permet que tots els llocs executin JavaScript</translation>
 <translation id="6931242315485576290">Desactiva la sincronització de dades amb Google</translation>
@@ -224,13 +264,9 @@
 <translation id="868187325500643455">Permet que tots els llocs executin connectors automàticament</translation>
 <translation id="5226033722357981948">Indica si s'ha de desactivar el cercador de connectors</translation>
 <translation id="9068358498333390522">Us permet establir si els llocs web poden mostrar finestres emergents o no. Podeu permetre les finestres emergents per a tots els llocs web o bé denegar-les per a tots els llocs web.</translation>
+<translation id="3612784419634427880">Mode d'incògnit disponible.</translation>
 <translation id="7194407337890404814">Nom del proveïdor de cerca predeterminat</translation>
 <translation id="1843117931376765605">Freqüència d'actualització de la política d'usuari</translation>
-<translation id="1630808801738981930">Força totes les sessions en mode d'incògnit a <ph name="PRODUCT_NAME"/>.
-
-      Si aquesta opció de configuració està activada, els usuaris només poden obrir pàgines en mode d'incògnit.
-
-      Si aquesta opció de configuració està desactivada o no està configurada, els usuaris també poden utilitzar el navegador en mode normal.</translation>
 <translation id="5535973522252703021">Llista blanca del servidor de delegacions Kerberos</translation>
 <translation id="4554678280250165996">Especifica els esquemes d'autenticació HTTP que són compatibles amb <ph name="PRODUCT_NAME"/>. Els valors possibles són &quot;basic&quot;, &quot;digest&quot;, &quot;ntlm&quot; i &quot;negotiate&quot;. Separeu els valors múltiples amb comes.</translation>
 <translation id="5034323863800401760">Desactiva les Eines per a desenvolupadors i la consola JavaScript. Si activeu aquest paràmetre, no es pot accedir a les Eines per a desenvolupadors ni es poden inspeccionar els elements dels llocs web. Es desactivaran totes les dreceres del teclat i les entrades dels menús o dels menús contextuals que obrin les Eines per a desenvolupadors o la Consola JavaScript.</translation>
@@ -251,6 +287,7 @@
 <translation id="5511702823008968136">Activa la barra d'adreces d'interès</translation>
 <translation id="3653673712530669976">Us permet configurar el renderitzador HTML predeterminat quan <ph name="PRODUCT_FRAME_NAME"/> estigui instal·lat. De manera predeterminada, la configuració permet que el navegador amfitrió dugui a terme la renderització, però podeu substituir aquesta configuració de manera opcional i fer que <ph name="PRODUCT_FRAME_NAME"/> renderitzi les pàgines HTML de manera predeterminada.</translation>
 <translation id="7848840259379156480">Us permet configurar el renderitzador HTML predeterminat quan <ph name="PRODUCT_FRAME_NAME"/> estigui instal·lat. De manera predeterminada, la configuració permet que el navegador amfitrió dugui a terme la renderització, però podeu substituir aquesta configuració de manera opcional i fer que <ph name="PRODUCT_FRAME_NAME"/> renderitzi les pàgines HTML de manera predeterminada.</translation>
+<translation id="4121350739760194865">Impedeix que les promocions d'aplicacions apareguin a la pestanya nova</translation>
 <translation id="4486602758942612946">Personalitzeu la llista de patrons URL que ha de renderitzar sempre el navegador amfitrió. Si voleu veure patrons d'exemple, consulteu http://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="2257451316169619209">Especifica el període en mil·lisegons durant el qual se sol·licita al servei de gestió de dispositius d'informació sobre les polítiques de dispositiu. Si configureu aquesta política, se substituirà el valor predeterminat de 3 hores. Els valors vàlids per a aquesta política van des de 1800000 (30 minuts) fins a 86400000 (un dia). Els valors que estiguin fora d'aquest àmbit temporal es modificaran fins a encabir-los al límit respectiu.</translation>
 <translation id="1734716591049455502">Configura les opcions d'accés remot</translation>
@@ -274,6 +311,15 @@
 <translation id="5946082169633555022">Canal beta</translation>
 <translation id="817926804885880359">Activa la funció d'emplenament automàtic de <ph name="PRODUCT_NAME"/> i permet que els usuaris emplenin formularis automàticament mitjançant informació emmagatzemada anteriorment, com ara l'adreça o la informació de la targeta de crèdit. Si desactiveu aquest paràmetre, els usuaris no podran accedir a l'emplenament automàtic. Tant si l'activeu com si no hi configureu cap valor, l'usuari podrà controlar l'emplenament automàtic. D'aquesta manera, podrà configurar perfils d'emplenament automàtic i activar o desactivar l'emplenament automàtic segons li convingui.</translation>
 <translation id="6938581770853731947">Configura el tipus de la pàgina d'inici predeterminada a <ph name="PRODUCT_NAME"/> i impedeix que els usuaris modifiquin les preferències de la pàgina d'inici. La pàgina d'inici pot ser tant un URL que especifiqueu com la pàgina de pestanya nova. Si activeu aquest paràmetre, s'utilitzarà sempre la pàgina de pestanya nova com a pàgina d'inici i s'ignorarà la ubicació de l'URL de la pàgina d'inici. Si el desactiveu, la pàgina d'inici de l'usuari mai no serà la pàgina de pestanya nova, tret que s'estableixi l'URL com a &quot;chrome://newtab&quot;. Tant si activeu com si desactiveu aquest paràmetre, els usuaris no podran canviar el tipus de pàgina d'inici a <ph name="PRODUCT_NAME"/>.</translation>
+<translation id="2844287278346661435">Permet l'accés als URL de la llista com a excepcions a la llista negra d'URL.
+
+      Consulteu la descripció de la política de la llista negra d'URL per obtenir informació sobre el format de les entrades d'aquesta llista.
+
+      Aquesta política es pot utilitzar per obrir excepcions a llistes negres restrictives. Per exemple, &quot;*&quot; es pot incloure a la llista negra perquè bloquegi totes les sol·licituds, i aquesta política es pot utilitzar per permetre l'accés a una llista limitada d'URL. Es pot utilitzar per obrir excepcions a determinats esquemes, subdominis d'altres dominis, ports o camins específics.
+
+      El filtre més específic determinarà si un URL s'ha bloquejat o s'ha permès. La llista blanca té preferència sobre la llista negra.
+
+      Aquesta política està limitada a 100 entrades; les entrades posteriors s'ignoraran.</translation>
 <translation id="5645779841392247734">Permet les galetes en aquests llocs</translation>
 <translation id="3906388518501362918">Activa JavaScript a <ph name="PRODUCT_NAME"/> i evita que els usuaris en modifiquin la configuració. Si aquest paràmetre està activat o si no està configurat, les pàgines web podran fer servir JavaScript. Si està desactivat, no podran fer-lo servir.</translation>
 <translation id="4821854788360803313">Especifica una llista de connectors desactivats a <ph name="PRODUCT_NAME"/> i evita que els usuaris en modifiquin la configuració. Els caràcters comodí &quot;*&quot; i &quot;?&quot; poden utilitzar-se per fer coincidir seqüències de caràcters arbitraris. &quot;*&quot; coincideix amb un nombre arbitrari de caràcters i &quot;?&quot; especifica un únic caràcter opcional, és a dir, coincideix amb un caràcter o amb cap. El caràcter d'escapament és &quot;\&quot;, de manera que si voleu coincidir amb els caràcters &quot;*&quot;, &quot;?&quot; o &quot;\&quot; reals, podeu posar-hi el caràcter &quot;\&quot; al davant. Si activeu aquest paràmetre, la llista de connectors que s'especifica no es fa servir mai a <ph name="PRODUCT_NAME"/>. Els connectors es marquen com a desactivats a &quot;about:plugins&quot; i els usuaris no poden activar-los. Tingueu en compte que DisabledPlugins i DisabledPluginsExceptions poden substituir aquesta política.</translation>

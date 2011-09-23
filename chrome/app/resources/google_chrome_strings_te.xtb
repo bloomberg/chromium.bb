@@ -31,6 +31,7 @@
 <translation id="8227755444512189073"><ph name="SCHEME"/> లింకులను నిర్వహించడానికి Google Chrome ఒక బాహ్య అప్లికేషన్‌ను ప్రారంభించాల్సి ఉంది. అభ్యర్థించిన లింక్ <ph name="PROTOLINK"/>.</translation>
 <translation id="8290100596633877290">ఆపండి! Google Chrome క్రాష్ అయ్యింది. ఇప్పుడు మళ్ళీ ప్రారంభించాల?</translation>
 <translation id="1281036569101707544">Google Chrome <ph name="TERMS_OF_SERVICE_LINK"/>.</translation>
+<translation id="3487814320513494737">Chrome యొక్క క్రొత్త ట్యాబ్ పేజీ మార్చబడింది. ఈ లేబుల్‌లు క్లిక్ చేయడం ద్వారా విభాగాల మధ్య మారవచ్చు. తదుపరి సమయానికి మీ ప్రాధాన్యతను Chrome గుర్తుంచుకుంటుంది.</translation>
 <translation id="1697213158865901863">Google Chrome Frame</translation>
 <translation id="2653935705142821164">Chrome Renderer</translation>
 <translation id="8446794773162156990">Google Chrome తప్పుగా ప్రవర్తిస్తోంది</translation>
@@ -39,7 +40,7 @@
 <translation id="3089968997497233615">Google Chrome యొక్క క్రొత్త సురక్షితమైన సంస్కరణ అందుబాటులో ఉంది.</translation>
 <translation id="5037239767309817516">దయచేసి ఈ మార్పు అమలులోకి రావడానికి అన్ని Google Chrome విండోలను మూసివేయండి మరియు దీన్ని మళ్ళీ ప్రారంభించండి.</translation>
 <translation id="7451721381978275812">చెల్లని కారకాలు. Google Chromeని కూడా వ్యవస్థాపించకుండా Google Chrome Frame సిద్ధమైన మోడ్‌లో వ్యవస్థాపించబడదు.</translation>
-<translation id="5809236835374558741">ఈ కంప్యూటర్ ఇప్పటికే Google Chrome Frame యొక్క తాజా వెర్షన్‌‌ని కలిగి ఉంది. సాఫ్ట్‌వేర్ పని చెయ్యకపోతే, దయచేసి Google Chrome Frameని అన్‌ఇన్‌స్టాల్ చేసి, దీన్ని మళ్ళీ డౌన్‌లోడ్ చెయ్యండి.</translation>
+<translation id="4585888816441913908">ఈ కంప్యూటర్ ఇప్పటికే Google Chrome మరియు Google Chrome Frame యొక్క తాజా సంస్కరణను కలిగి ఉంది. సాఫ్ట్‌వేర్ పని చెయ్యకపోతే, దయచేసి Google Chrome, Google Chrome Frame రెండింటినీ అన్‌ఇన్‌స్టాల్ చేసి, మళ్ళీ ప్రయత్నించండి.</translation>
 <translation id="6368958679917195344">అదనపు <ph name="BEGIN_LINK_CROS_OSS"/>ఓపన్ సోర్స్ సాఫ్ట్‌వేర్‌<ph name="END_LINK_CROS_OSS"/> ద్వారా  Chrome OS సాధ్యం అవుతుంది.</translation>
 <translation id="4357846314885556934">Google Chrome తప్పుగా ప్రవర్తిస్తోంది</translation>
 <translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
@@ -64,7 +65,6 @@
 <translation id="3847841918622877581">Google Chrome మీ బ్రౌజింగ్ అనుభవాన్ని మెరుగుపరచడానికి వెబ్ సేవలను ఉపయోగించవచ్చు.</translation>
 <translation id="7436949144778751379">Google Chromeకు Windows XP లేదా క్రొత్తది అవసరం. కొన్ని లక్షణాలు పని చేయకపోవచ్చు.</translation>
 <translation id="7100330187273168372">Google Chrome దాని డేటా డైరెక్టరీలో రాయలేదు మరియు చదవలేదు:\n\n<ph name="USER_DATA_DIRECTORY"/></translation>
-<translation id="5167270755190684957">Google Chrome థీమ్ల గ్యాలరీ</translation>
 <translation id="7938170099933661772">అంతర్నిర్మాణ PDF వ్యూయర్ నిలిపివేసినపుడు Google Chrome ముద్రణ పరిదృశ్యాన్ని చూపించదు. పరిదృశ్యాన్ని చూడటానికి, దయచేసి <ph name="BEGIN_LINK"/>$1<ph name="END_LINK"/>ను సందర్శించండి మరియు &quot;Chrome PDF Viewer&quot; ని ప్రారంభించి మరల ప్రయత్నించండి.</translation>
 <translation id="6757767188268205357">నన్ను విసిగించకు</translation>
 <translation id="2290095356545025170">మీరు Google Chrome ని ఖచ్చితంగా అన్ ఇన్స్టాల్ చెయ్యాలని అనుకుంటున్నారా?</translation>
@@ -74,14 +74,16 @@
 <translation id="4990567037958725628">Google Chrome కేనరీ</translation>
 <translation id="4561051373932531560">Google Chrome వెబ్‌లో మిమ్మళ్ని ఫోన్ నంబర్ క్లిక్ చెయ్యనిస్తుంది మరియు Skypeతో కాల్ చేస్తుంది!</translation>
 <translation id="3612333635265770873">Google Chromeతో వైరుధ్యం అయ్యే అదే పేరుతో మాడ్యూల్ ఉంది.</translation>
+<translation id="2679385451463308372">సిస్టమ్ డైలాగ్ ఉపయోగించి ముద్రించు...</translation>
 <translation id="5947389362804196214">మీ ప్రాధాన్యతలను చదవలేము.\n\nకొన్ని లక్షణాలు అందుబాటులో లేకపోవచ్చు మరియు ప్రాధాన్యతలకు మార్పులు సేవ్ చేయబడవు.</translation>
 <translation id="6650142020817594541">ఈ సైట్ Google Chrome Frame (ఇప్పటికే వ్యవస్థాపించబడిన)ని సిఫార్సు చేస్తుంది.</translation>
 <translation id="4127951844153999091">ఈ సందర్భంలో, మీ బ్రౌజర్ ప్రయత్నిస్తున్న వెబ్‌‌సైట్ చిరునామా సర్టిఫికెట్‌లోని చిరునామాతో సరిపోలలేదు. దీనికి ఒక కారణం వేరొక వెబ్‌సైట్ కోసం ఒక సర్టిఫికెట్‌ను అందిస్తున్న ఒక అటాకర్‌చే మీ కమ్యూనికేషన్లకు అంతరాయం కలిగిస్తూ సరిపోలలేకపోవచ్చు. దీనికి మరొక కారణం మొత్తం వెబ్‌సైట్‌లకు ఆ సర్టిఫికెట్ చెల్లనిది అయినప్పటికీ, మీరు సందర్శించడానికి ప్రయత్నిస్తున్న ఒక వెబ్‌సైట్ సహా బహుళ వెబ్‌సైట్‌లకు ఒకే సర్టిఫికెట్‌ను తిరిగి అందించేలా సర్వర్ సెట్ చెయ్యబడింది. మీరు &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;కు చేరుకున్నారని Google Chrome ఖచ్చితంగా చెప్పగలదు, కానీ మీరు చేరుకోవాలనుకున్న సైట్ అయిన &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; సైట్‌కే చేరుకున్నారని ధ్రువీకరించలేదు. మీరు కొనసాగినట్లయితే, తరువాత జరగబోయే ఏ పేరు సరిపోలికలను Chrome తనిఖీ చెయ్యదు. సాధారణంగా, ఈ అంశాన్ని దాటవేసి ముందుకు సాగకపోవడమే మంచిది.</translation>
 <translation id="2712549016134575851">ఇన్‌స్టాల్ చెయ్యబడిన మరొక అప్లికేషన్‌తో విరోధం కనుగొనబడింది.</translation>
+<translation id="5577648424992741236">ఈ కంప్యూటర్ ఇప్పటికే Google Chrome Frame యొక్క తాజా సంస్కరణను కలిగి ఉంది. సాఫ్ట్‌వేర్ పని చెయ్యకపోతే, దయచేసి Google Chrome Frameని అన్‌ఇన్‌స్టాల్ చేసి, మళ్ళీ ప్రయత్నించండి.</translation>
 <translation id="7018032895891496381">Google Chrome ప్రస్తుతం <ph name="PAGE_TITLE"/>కు సెట్ చేసిన, మీ డిఫాల్ట్ శోధన ఇంజిన్‌ను ఉపయోగిస్తుంది. మీరు మీ డిఫాల్ట్ శోధన ఇంజిన్‌ను ఉంచాలనుకుంటున్నారా?</translation>
 <translation id="7161904924553537242">Google Chromeకు స్వాగతం</translation>
-<translation id="5211087808649701653">స్థానిక ముద్రణ డైలాగ్‌ను ఆవిష్కరించు</translation>
 <translation id="8669527147644353129">Google Chrome సహాయకారుడు</translation>
+<translation id="1399397803214730675">ఈ కంప్యూటర్‌లో ఇప్పటికే Google Chrome యొక్క తాజా సంస్కరణ ఉంది. సాఫ్ట్‌వేర్ పని చెయ్యకపోతే, దయచేసి Google Chromeను అన్‌ఇన్‌స్టాల్ చేసి, మళ్ళీ ప్రయత్నించండి.</translation>
 <translation id="3444832043240812445">మీరు <ph name="BEGIN_LINK"/>క్రాష్‌ నివేదికను ప్రారంభించినపుడు<ph name="END_LINK"/> ఈ పేజీ మీ ఇటీవలి క్రాష్‌ల సమాచారాన్ని మాత్రమే చూపిస్తుంది.</translation>
 <translation id="8614913330719544658">Google Chrome స్పందించడం లేదు. ఇప్పుడే పునఃప్రారంభించాలా?</translation>
 <translation id="2681064822612051220">సిస్టమ్‌లో Google Chrome యొక్క సంఘర్షించే వ్యవస్థాపన కనుగొనబడింది. దయచేసి దీన్ని అన్‌ఇన్‌స్టాల్ చేసి, మళ్ళీ ప్రయత్నించండి.</translation>
@@ -99,7 +101,6 @@
 <translation id="2769762047821873045">Google Chrome మీ డిఫాల్ట్ బ్రౌజర్ కాదు.</translation>
 <translation id="7825851276765848807">పేర్కొనలేని లోపం కారణంగా వ్యవస్థాపన విఫలమైంది. దయచేసి Google Chromeని మళ్ళీ డౌన్‌లోడ్ చెయ్యండి.</translation>
 <translation id="3335672657969596251">Google Chrome <ph name="OS_NAME"/>కు మద్దతు ఇవ్వదు.</translation>
-<translation id="3636771339108070045">ఈ కంప్యూటర్లో ఇప్పటికే Google Chrome యొక్క తాజా వెర్షన్‌ ఉంది. సాఫ్ట్‌వేర్ పని చెయ్యకపోతే, దయచేసి Google Chromeను అన్‌ఇన్‌స్టాల్ చేసి, దాన్ని మళ్ళీ డౌన్‌లోడ్ చెయ్యండి.</translation>
 <translation id="5334545119300433702">ఈ మాడ్యూల్ Google Chromeతో వైరుధ్యంగా ఉంటుంది.</translation>
 <translation id="3360895254066713204">Chrome సహాయకారుడు</translation>
 <translation id="1001534784610492198">ఇన్‌స్టాలర్ ఆర్కైవ్ పాడైంది లేదా చెల్లదు. దయచేసి Google Chromeను మళ్ళీ డౌన్‌లోడ్ చెయ్యండి.</translation>

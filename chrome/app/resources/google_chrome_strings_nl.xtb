@@ -31,6 +31,7 @@
 <translation id="8227755444512189073"><ph name="SCHEME"/> De opgevraagde link is <ph name="PROTOLINK"/>.</translation>
 <translation id="8290100596633877290">Oeps! Google Chrome is vastgelopen. Nu opnieuw starten?</translation>
 <translation id="1281036569101707544"><ph name="TERMS_OF_SERVICE_LINK"/> van Google Chrome</translation>
+<translation id="3487814320513494737">De pagina 'Nieuw tabblad' van Chrome heeft een nieuw ontwerp. Schakel tussen secties door op deze labels te klikken. Chrome onthoudt uw voorkeur voor de volgende keer.</translation>
 <translation id="1697213158865901863">Google Chrome Frame</translation>
 <translation id="2653935705142821164">Chrome Renderer</translation>
 <translation id="8446794773162156990">Google Chrome doet moeilijk</translation>
@@ -39,7 +40,7 @@
 <translation id="3089968997497233615">Er is een nieuwere, veiligere versie van Google Chrome beschikbaar.</translation>
 <translation id="5037239767309817516">Sluit alle Google Chrome-vensters en start Google Chrome opnieuw om deze wijziging door te voeren.</translation>
 <translation id="7451721381978275812">Ongeldige argumenten. Google Chrome Frame kan niet in de ready-modus worden geïnstalleerd zonder dat Google Chrome wordt geïnstalleerd.</translation>
-<translation id="5809236835374558741">Er staat al een nieuwere versie van Google Chrome Frame op deze computer. Als de software niet werkt, verwijdert u Google Chrome Frame en downloadt u het programma opnieuw.</translation>
+<translation id="4585888816441913908">Deze computer beschikt al over een nieuwere versie van Google Chrome en Google Chrome Frame. Als de software niet werkt, verwijdert u Google Chrome en Google Chrome Frame en probeert u het opnieuw.</translation>
 <translation id="6368958679917195344">Chrome OS wordt mogelijk gemaakt door aanvullende <ph name="BEGIN_LINK_CROS_OSS"/>open source-software<ph name="END_LINK_CROS_OSS"/>.</translation>
 <translation id="4357846314885556934">Google Chrome doet moeilijk</translation>
 <translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
@@ -64,7 +65,6 @@
 <translation id="3847841918622877581">Google Chrome kan webservices gebruiken om uw internetervaring te verbeteren.</translation>
 <translation id="7436949144778751379">Voor Google Chrome is Windows XP of hoger vereist. Het is mogelijk dat sommige functies niet werken.</translation>
 <translation id="7100330187273168372">Google Chrome kan deze datadirectory niet lezen of beschrijven:\n\n<ph name="USER_DATA_DIRECTORY"/></translation>
-<translation id="5167270755190684957">Galerij met thema's voor Google Chrome</translation>
 <translation id="7938170099933661772">Google Chrome kan geen afdrukvoorbeeld weergeven wanneer de ingebouwde pdf-viewer is uitgeschakeld. Als u een afdrukvoorbeeld wilt bekijken, gaat u naar  <ph name="BEGIN_LINK"/>$1<ph name="END_LINK"/>, schakelt u 'Chrome PDF Viewer' in en probeert u het opnieuw.</translation>
 <translation id="6757767188268205357">Vraag me niet meer</translation>
 <translation id="2290095356545025170">Weet u zeker dat u Google Chrome wilt verwijderen?</translation>
@@ -74,14 +74,16 @@
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">Met Google Chrome kunt u klikken op een telefoonnummer op internet om dit via Skype te bellen!</translation>
 <translation id="3612333635265770873">Van een module met dezelfde naam is bekend dat deze conflicteert met Google Chrome.</translation>
+<translation id="2679385451463308372">Afdrukken via het dialoogvenster van het systeem…</translation>
 <translation id="5947389362804196214">Uw voorkeuren kunnen niet worden gelezen.\n\nSommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren worden niet opgeslagen.</translation>
 <translation id="6650142020817594541">Deze site raadt Google Chrome Frame aan (al geïnstalleerd).</translation>
 <translation id="4127951844153999091">In dit geval komt het adres in het certificaat niet overeen met het adres van de website dat uw browser probeerde te bezoeken. Dit kan komen omdat uw communicatie wordt onderschept door een hacker die een certificaat voor een andere website retourneert, waardoor de adressen niet overeenkomen. Een andere mogelijkheid is dat de server is ingesteld op het retourneren van hetzelfde certificaat voor meerdere websites, inclusief de site die u probeert te bezoeken, hoewel dat certificaat niet geldig is voor al deze websites. Google Chrome kan garanderen dat u &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; heeft bereikt, maar kan niet verifiëren of dat dezelfde site is als &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, die u wilde bezoeken. Als u doorgaat, controleert Chrome niet verder op verschillen tussen namen. Over het algemeen is het beter hier niet verder te gaan.</translation>
 <translation id="2712549016134575851"/>
+<translation id="5577648424992741236">Deze computer beschikt al over een nieuwere versie van Google Chrome Frame. Als de software niet werkt, verwijdert u Google Chrome Frame en probeert u het opnieuw.</translation>
 <translation id="7018032895891496381">Google Chrome gebruikt uw standaardzoekmachine. Deze is momenteel ingesteld op <ph name="PAGE_TITLE"/>. Wilt u uw standaardzoekmachine behouden?</translation>
 <translation id="7161904924553537242">Welkom bij Google Chrome</translation>
-<translation id="5211087808649701653">Systeemeigen afdrukdialoogvenster openen</translation>
 <translation id="8669527147644353129">Google Chrome Helper</translation>
+<translation id="1399397803214730675">Deze computer beschikt al over een nieuwere versie van Google Chrome. Als de software niet werkt, verwijdert u Google Chrome en probeert u het opnieuw.</translation>
 <translation id="3444832043240812445">Deze pagina bevat alleen informatie over recente crashes als u <ph name="BEGIN_LINK"/>crashrapportage inschakelt<ph name="END_LINK"/>.</translation>
 <translation id="8614913330719544658">Google Chrome reageert niet meer. Nu opnieuw starten?</translation>
 <translation id="2681064822612051220">Er is een conflicterende installatie van Google Chrome op het systeem gevonden. Verwijder deze en probeer het opnieuw.</translation>
@@ -99,7 +101,6 @@
 <translation id="2769762047821873045">Google Chrome is niet uw standaardbrowser.</translation>
 <translation id="7825851276765848807">De installatie is mislukt vanwege een onbekende fout. Download Google Chrome opnieuw.</translation>
 <translation id="3335672657969596251">Google Chrome ondersteunt <ph name="OS_NAME"/> niet.</translation>
-<translation id="3636771339108070045">Er staat al een nieuwere versie van Google Chrome op deze computer. Als de software niet werkt, verwijdert u Google Chrome en downloadt u het programma opnieuw.</translation>
 <translation id="5334545119300433702">Van deze module is bekend dat deze conflicteert met Google Chrome.</translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
 <translation id="1001534784610492198">Het archief van het installatieprogramma is beschadigd of ongeldig. Download Google Chrome opnieuw.</translation>

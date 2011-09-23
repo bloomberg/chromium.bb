@@ -31,6 +31,7 @@
 <translation id="8227755444512189073">Google Chrome 需要啟動外部應用程式以處理 <ph name="SCHEME"/> 連結。所要求的連結為 <ph name="PROTOLINK"/>。 </translation>
 <translation id="8290100596633877290">真糟糕！Google Chrome 當掉了，要立即重新啟動嗎？</translation>
 <translation id="1281036569101707544">Google Chrome <ph name="TERMS_OF_SERVICE_LINK"/></translation>
+<translation id="3487814320513494737">Chrome 的「新分頁」現已重新設計，按一下這些標籤即可切換不同部分。Chrome 會記住您的偏好設定，以便在您下次使用時直接顯示偏好的內容。</translation>
 <translation id="1697213158865901863">Google Chrome 內嵌框架</translation>
 <translation id="2653935705142821164">Chrome 成像器</translation>
 <translation id="8446794773162156990">Google Chrome 反應異常</translation>
@@ -39,7 +40,7 @@
 <translation id="3089968997497233615">Google Chrome 推出全新版本，安全性更勝以往。</translation>
 <translation id="5037239767309817516">為了讓這項變更生效，請關閉所有 Google Chrome 視窗，並重新啟動瀏覽器。</translation>
 <translation id="7451721381978275812">無效的引數。您必須安裝 Google Chrome，才能在就緒模式中安裝「Google Chrome 內嵌框架」。</translation>
-<translation id="5809236835374558741">這台電腦已安裝較新的「Google Chrome 內嵌框架」版本，如果該軟體無法順利運作，請解除安裝「Google Chrome 內嵌框架」，然後重新下載。</translation>
+<translation id="4585888816441913908">這台電腦已安裝較新的 Google Chrome 和「Google Chrome 內嵌框架」版本，如果軟體無法順利運作，請解除安裝 Google Chrome 和「Google Chrome 內嵌框架」，然後再試一次。</translation>
 <translation id="6368958679917195344">「Chrome 作業系統」藉助了其他<ph name="BEGIN_LINK_CROS_OSS"/>開放原始碼軟體<ph name="END_LINK_CROS_OSS"/>的相關技術才得以問世。</translation>
 <translation id="4357846314885556934">Google Chrome 反應異常</translation>
 <translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
@@ -64,7 +65,6 @@
 <translation id="3847841918622877581">Google Chrome 會使用網路服務來改善瀏覽品質。</translation>
 <translation id="7436949144778751379">Google Chrome 需要 Windows XP 或更新版本的作業系統。某些功能可能無法執行。</translation>
 <translation id="7100330187273168372">Google Chrome 無法讀取或寫入資料目錄:\n\n<ph name="USER_DATA_DIRECTORY"/></translation>
-<translation id="5167270755190684957">Google Chrome 主題庫</translation>
 <translation id="7938170099933661772">Google Chrome 內建的 PDF 檢視器停用時，便無法顯示列印預覽畫面。如要檢視預覽畫面，請造訪 <ph name="BEGIN_LINK"/>$<ph name="END_LINK"/>，從中啟用「Chrome PDF 檢視器」，然後再試一次。</translation>
 <translation id="6757767188268205357">不要再問我</translation>
 <translation id="2290095356545025170">您是否確定要解除安裝 Google Chrome？</translation>
@@ -74,14 +74,16 @@
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">Google Chrome 可讓您按一下網頁上的電話號碼，隨即透過 Skype 撥打電話！</translation>
 <translation id="3612333635265770873">依據名稱判斷，這個模組可能會與 Google Chrome 衝突。</translation>
+<translation id="2679385451463308372">使用系統對話方塊列印...</translation>
 <translation id="5947389362804196214">系統無法讀取您的偏好設定。\n\n部分功能可能無法使用，且系統也不會儲存任何偏好設定的變更。</translation>
 <translation id="6650142020817594541">建議您使用「Google Chrome 內嵌框架」(已安裝) 瀏覽這個網站。</translation>
 <translation id="4127951844153999091">在這個情況下，憑證所列的網址與瀏覽器嘗試前往的網址不符。憑證不符的其中一個可能原因是，攻擊者欄截了您的通訊，並且出示另一個網站的憑證。另一個可能的原因是，伺服器已設定為不同的網站傳回相同的憑證 (其中包括您嘗試造訪的網站)，即便該憑證並不適用於某些網站。Google Chrome 可以確定您已經到達 &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;，但是無法驗證這與您嘗試前往的 &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; 是同一個網站。如果您繼續，Chrome 將不再檢查任何名稱不符的情況。一般而言，建議您就此停住。</translation>
 <translation id="2712549016134575851">偵測到與其他已安裝的應用程式互相衝突。</translation>
+<translation id="5577648424992741236">這台電腦已安裝較新的「Google Chrome 內嵌框架」版本，如果軟體無法順利運作，請解除安裝「Google Chrome 內嵌框架」，然後再試一次。</translation>
 <translation id="7018032895891496381">Google Chrome 使用您目前預設的搜尋引擎 <ph name="PAGE_TITLE"/>，要保留目前預設的搜尋引擎嗎？</translation>
 <translation id="7161904924553537242">歡迎使用 Google Chrome</translation>
-<translation id="5211087808649701653">啟動本機列印對話方塊</translation>
 <translation id="8669527147644353129">Google Chrome 小幫手</translation>
+<translation id="1399397803214730675">這台電腦已安裝較新的 Google Chrome 版本，如果軟體無法順利運作，請解除安裝 Google Chrome，然後再試一次。</translation>
 <translation id="3444832043240812445">如果您<ph name="BEGIN_LINK"/>啟用當機報告功能<ph name="END_LINK"/>，這個頁面僅會顯示最近的當機資訊。</translation>
 <translation id="8614913330719544658">Google Chrome 沒有回應，要立即重新啟動嗎？</translation>
 <translation id="2681064822612051220">系統在安裝 Google Chrome 時發生衝突問題，請先解除安裝，然後再試一次。</translation>
@@ -99,7 +101,6 @@
 <translation id="2769762047821873045">Google Chrome 並非您的預設瀏覽器。</translation>
 <translation id="7825851276765848807">不明錯誤導致安裝失敗，請再次下載 Google Chrome。</translation>
 <translation id="3335672657969596251">Google Chrome 不支援 <ph name="OS_NAME"/>。</translation>
-<translation id="3636771339108070045">此電腦已有更新的 Google Chrome 版本可供使用，如果軟體無法順利運作，請移除 Google Chrome，然後重新下載一次。</translation>
 <translation id="5334545119300433702">已知這個模組與 Google Chrome 衝突。</translation>
 <translation id="3360895254066713204">Chrome 小幫手</translation>
 <translation id="1001534784610492198">安裝程式封存檔案已經損壞或無效，請再次下載 Google Chrome。</translation>

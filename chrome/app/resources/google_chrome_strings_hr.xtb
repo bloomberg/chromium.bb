@@ -31,6 +31,7 @@
 <translation id="8227755444512189073">Google Chrome treba pokrenuti vanjsku aplikaciju da bi mogao koristiti veze <ph name="SCHEME"/>. Zatražena je veza <ph name="PROTOLINK"/>.</translation>
 <translation id="8290100596633877290">Opa! Google Chrome je pao. Ponovo pokrenuti sada?</translation>
 <translation id="1281036569101707544">Google Chrome <ph name="TERMS_OF_SERVICE_LINK"/></translation>
+<translation id="3487814320513494737">Stranica Nova kartica u pregledniku Chrome preoblikovana je. Između odjeljaka prebacujete se klikom na ove oznake. Chrome će zapamtiti vaše postavke za sljedeći put.</translation>
 <translation id="1697213158865901863">Google Chrome Frame</translation>
 <translation id="2653935705142821164">Chrome Renderer</translation>
 <translation id="8446794773162156990">Google Chrome se čudno ponaša.</translation>
@@ -39,7 +40,7 @@
 <translation id="3089968997497233615">Dostupna je nova, sigurnija verzija preglednika Google Chrome.</translation>
 <translation id="5037239767309817516">Zatvorite sve prozore preglednika Google Chrome i ponovo ga pokrenite kako bi ova promjena stupila na snagu.</translation>
 <translation id="7451721381978275812">Nevažeći argumenti. Google Chrome Frame ne može se instalirati u načinu spremno, a da se ne instalira i Google Chrome.</translation>
-<translation id="5809236835374558741">Ovo računalo već ima noviju verziju programa Google Chrome Frame. Ako softver ne radi, deinstalirajte Google Chrome Frame i ponovno ga preuzmite.</translation>
+<translation id="4585888816441913908">Na ovom računalu već postoji novija verzija programa Google Chrome i Google Chrome Frame. Ako softveri ne rade, deinstalirajte Google Chrome i Google Chrome Frame pa pokušajte ponovo.</translation>
 <translation id="6368958679917195344">OS Chrome omogućen je dodatnim <ph name="BEGIN_LINK_CROS_OSS"/>softverom otvorenog koda<ph name="END_LINK_CROS_OSS"/>.</translation>
 <translation id="4357846314885556934">Google Chrome se čudno ponaša</translation>
 <translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
@@ -64,7 +65,6 @@
 <translation id="3847841918622877581">Google Chrome može upotrebljavati web-usluge za poboljšanje vašeg doživljaja pregledavanja.</translation>
 <translation id="7436949144778751379">Google Chrome zahtijeva Windows XP ili noviji. Neke značajke možda neće raditi.</translation>
 <translation id="7100330187273168372">Google Chrome ne može čitati iz svojeg podatkovnog direktorija niti u njega pisati:\n\n<ph name="USER_DATA_DIRECTORY"/></translation>
-<translation id="5167270755190684957">Galerija tema za Google Chrome</translation>
 <translation id="7938170099933661772">Google Chrome ne može prikazati pregled ispisa ako je onemogućen ugrađeni PDF pregledač. Za prikaz pregleda posjetite <ph name="BEGIN_LINK"/>$1<ph name="END_LINK"/>, omogućite &quot;Chrome PDF pregledač&quot; i pokušajte ponovo.</translation>
 <translation id="6757767188268205357">Ne ometaj me</translation>
 <translation id="2290095356545025170">Jeste li sigurni da želite deinstalirati Google Chrome?</translation>
@@ -74,14 +74,16 @@
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">Google Chrome omogućuje da kliknete telefonski broj na webu i nazovete ga koristeći se Skypeom!</translation>
 <translation id="3612333635265770873">Modul s tim nazivom već je bio u konfliktu s preglednikom Google Chrome.</translation>
+<translation id="2679385451463308372">Ispiši upotrebom dijaloga sustava...</translation>
 <translation id="5947389362804196214">Vaše postavke nije moguće čitati.\n\nNeke su značajke možda nedostupne i promjene postavki neće biti spremljene.</translation>
 <translation id="6650142020817594541">Ova web-lokacija preporučuje Google Chrome Frame (već instaliran).</translation>
 <translation id="4127951844153999091">U tom slučaju adresa navedena u potvrdi ne odgovara adresi web lokacije na koju je pokušao otići Vaš preglednik. Jedan od mogućih razloga je taj da Vaše komunikacije presreće napadač koji prikazuje potvrdu za drugu web lokaciju, zbog čega dolazi do nepodudaranja. Drugi je mogući razlog taj što je poslužitelj postavljen tako da vraća istu potvrdu za više web lokacija, uključujući i za onu koju pokušavate posjetiti, iako ta potvrda nije valjana za sve te web lokacije. Google Chrome može sa sigurnošću reći da ste pristupili domeni &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, ali ne može provjeriti da je ta web lokacija ista kao &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; kojoj ste htjeli pristupiti. Ako nastavite, Chrome neće provjeravati dodatna nepodudaranja naziva. Općenito govoreći, najbolje je da ne nastavite.</translation>
 <translation id="2712549016134575851">Otkriven je sukob s drugom instaliranom aplikacijom.</translation>
+<translation id="5577648424992741236">Na ovom računalu već postoji novija verzija programa Google Chrome Frame. Ako softver ne radi, deinstalirajte Google Chrome Frame i pokušajte ponovo.</translation>
 <translation id="7018032895891496381">Google Chrome koristi vašu zadanu tražilicu koja je trenutno postavljena na <ph name="PAGE_TITLE"/>. Želite li zadržati zadanu tražilicu?</translation>
 <translation id="7161904924553537242">Dobro došli u Google Chrome</translation>
-<translation id="5211087808649701653">Pokretanje dijaloškog okvira za izvorni ispis</translation>
 <translation id="8669527147644353129">Google Chrome Helper</translation>
+<translation id="1399397803214730675">Na ovom računalu već postoji novija verzija programa Google Chrome. Ako softver ne radi, deinstalirajte Google Chrome i pokušajte ponovo.</translation>
 <translation id="3444832043240812445">Ova stranica prikazuje samo informacije o vašim nedavnim padovima ako <ph name="BEGIN_LINK"/>omogućite izvješćivanja o padu<ph name="END_LINK"/>.</translation>
 <translation id="8614913330719544658">Google Chrome ne reagira. Ponovo pokrenuti sada?</translation>
 <translation id="2681064822612051220">Na sustavu je pronađena konfliktna instalacija aplikacije Google Chrome. Deinstalirajte je i pokušajte ponovo.</translation>
@@ -99,7 +101,6 @@
 <translation id="2769762047821873045">Google Chrome nije vaš zadani preglednik.</translation>
 <translation id="7825851276765848807">Instalacija nije uspjela zbog neodređene pogreške. Ponovo preuzmite Google Chrome.</translation>
 <translation id="3335672657969596251">Google Chrome ne podržava sustav <ph name="OS_NAME"/>.</translation>
-<translation id="3636771339108070045">Ovo računalo već ima noviju verziju programa Google Chrome. Ako softver ne radi, deinstalirajte Google Chrome i ponovno ga preuzmite.</translation>
 <translation id="5334545119300433702">Za taj se modul već zna da je u konfliktu s programom Google Chrome.</translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
 <translation id="1001534784610492198">Arhiva programa za instalaciju je oštećena ili nevažeća. Ponovno preuzmite program Google Chrome.</translation>

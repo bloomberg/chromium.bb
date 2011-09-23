@@ -31,6 +31,7 @@
 <translation id="8227755444512189073">Браузеру Google Chrome требуется запустить внешнее приложение для обработки ссылок <ph name="SCHEME"/>. Запрошенная ссылка: <ph name="PROTOLINK"/>.</translation>
 <translation id="8290100596633877290">Произошел сбой Google Chrome. Перезапустить?</translation>
 <translation id="1281036569101707544"><ph name="TERMS_OF_SERVICE_LINK"/> для Google Chrome</translation>
+<translation id="3487814320513494737">Страница быстрого доступа в Chrome изменена. Чтобы переключиться на нужный раздел, нажмите на соответствующий ярлык. Ваш выбор будет сохранен.</translation>
 <translation id="1697213158865901863">Google Chrome Frame</translation>
 <translation id="2653935705142821164">Chrome Renderer</translation>
 <translation id="8446794773162156990">Неполадки в работе Google Chrome</translation>
@@ -39,7 +40,7 @@
 <translation id="3089968997497233615">Доступна новая, более безопасная версия Google Chrome.</translation>
 <translation id="5037239767309817516">Чтобы изменения вступили в силу, закройте все окна Google Chrome и перезапустите браузер.</translation>
 <translation id="7451721381978275812">Недопустимые аргументы. Чтобы установить в режиме готовности Google Chrome Frame, необходимо также установить Google Chrome.</translation>
-<translation id="5809236835374558741">На этом компьютере уже установлена самая последняя версия Google Chrome Frame. Если Google Chrome Frame не работает, удалите эту программу и загрузите ее снова.</translation>
+<translation id="4585888816441913908">На компьютере уже установлены последние версии Google Chrome и Google Chrome Frame. Если они не работают, удалите их и установите снова.</translation>
 <translation id="6368958679917195344">Своим появлением Chrome OS обязана дополнительному <ph name="BEGIN_LINK_CROS_OSS"/>программному обеспечению с открытым исходным кодом<ph name="END_LINK_CROS_OSS"/>.</translation>
 <translation id="4357846314885556934">Неполадки в работе Google Chrome</translation>
 <translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
@@ -64,7 +65,6 @@
 <translation id="3847841918622877581">Браузер Google Chrome может использовать различные веб-службы, которые делают работу в Интернете более удобной и приятной.</translation>
 <translation id="7436949144778751379">Для работы Google Chrome необходима ОС Windows XP и выше. Некоторые функции могут не работать.</translation>
 <translation id="7100330187273168372">Google Chrome не может выполнить чтение и запись в каталог данных: \n\n<ph name="USER_DATA_DIRECTORY"/></translation>
-<translation id="5167270755190684957">Галерея тем Google Chrome</translation>
 <translation id="7938170099933661772">В Google Chrome невозможен предварительный просмотр печати, если не активировано встроенное средство просмотра PDF. Подключить его можно на странице <ph name="BEGIN_LINK"/>$1<ph name="END_LINK"/>.</translation>
 <translation id="6757767188268205357">Больше не спрашивать</translation>
 <translation id="2290095356545025170">Вы действительно хотите удалить Google Chrome?</translation>
@@ -74,14 +74,16 @@
 <translation id="4990567037958725628">Google Chrome – Канарейка</translation>
 <translation id="4561051373932531560">В Google Chrome вы можете нажать на любой номер телефона и позвонить на него через Skype!</translation>
 <translation id="3612333635265770873">Известно, что модуль с таким названием конфликтует с Google Chrome.</translation>
+<translation id="2679385451463308372">Показывать системное диалоговое окно при печати...</translation>
 <translation id="5947389362804196214">Настройки не прочитаны.\n\nНекоторые функции могут быть недоступны, а изменения настроек не будут сохранены.</translation>
 <translation id="6650142020817594541">Для просмотра этого сайта рекомендуется использовать Google Chrome Frame (уже установлено).</translation>
 <translation id="4127951844153999091">В этом случае указанный в сертификате адрес не соответствует тому веб-сайту, который вы попытались открыть. Одной из возможных причин является перехват данных злоумышленником, который предоставляет сертификат другого веб-сайта, что и приводит к несоответствию. Другая возможная причина состоит в том, что на сервере заданы настройки предоставлять один сертификат для нескольких веб-сайтов, включая и сайт, которые вы пытаетесь открыть, даже если этот сертификат недействителен для всех этих сайтов. Google Chrome может с уверенностью утверждать, что вы перешли на сайт &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, но не может удостовериться, что это именно тот сайт, который вы хотели посетить - &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;. В случае продолжения браузер Chrome не будет проверять имена на несоответствие. Как правило, лучше не продолжать просмотр.</translation>
 <translation id="2712549016134575851">Обнаружен конфликт с другим установленным приложением.</translation>
+<translation id="5577648424992741236">На компьютере уже установлена последняя версия Google Chrome Frame. Если она не работает, удалите ее и установите снова.</translation>
 <translation id="7018032895891496381">Google Chrome использует вашу поисковую систему по умолчанию, сейчас это <ph name="PAGE_TITLE"/>. Продолжить использование этой системы?</translation>
 <translation id="7161904924553537242">Добро пожаловать в Google Chrome</translation>
-<translation id="5211087808649701653">Открыть диалоговое окно оригинальной печати</translation>
 <translation id="8669527147644353129">Google Chrome Helper</translation>
+<translation id="1399397803214730675">На компьютере уже установлена последняя версия браузера Google Chrome. Если он не работает, удалите его и установите снова.</translation>
 <translation id="3444832043240812445">Информация о недавних сбоях отображается на этой странице только при <ph name="BEGIN_LINK"/>включенной функции отчетов о сбоях<ph name="END_LINK"/>.</translation>
 <translation id="8614913330719544658">Google Chrome не отвечает. Перезапустить сейчас?</translation>
 <translation id="2681064822612051220">В системе установлена конфликтующая версия Google Chrome. Удалите ее и повторите попытку.</translation>
@@ -99,7 +101,6 @@
 <translation id="2769762047821873045">Google Chrome не является браузером по умолчанию.</translation>
 <translation id="7825851276765848807">Не удалось выполнить установку из-за неизвестной ошибки. Загрузите Google Chrome еще раз.</translation>
 <translation id="3335672657969596251">Google Chrome не поддерживает <ph name="OS_NAME"/>.</translation>
-<translation id="3636771339108070045">На этом компьютере уже установлена самая поздняя версия браузера Google Chrome. Если программа не работает, удалите браузер Google Chrome и загрузите его снова.</translation>
 <translation id="5334545119300433702">Этот модуль конфликтует с Google Chrome.</translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
 <translation id="1001534784610492198">Архив программы установки поврежден или имеет неправильный формат. Загрузите Google Chrome снова.</translation>

@@ -31,6 +31,7 @@
 <translation id="8227755444512189073">Google Chrome 浏览器必须启动外部应用程序才能处理 <ph name="SCHEME"/> 链接。请求的链接是 <ph name="PROTOLINK"/>。</translation>
 <translation id="8290100596633877290">哎呀！Google Chrome 浏览器崩溃了。是否立即重新启动？</translation>
 <translation id="1281036569101707544">Google Chrome 浏览器<ph name="TERMS_OF_SERVICE_LINK"/></translation>
+<translation id="3487814320513494737">Chrome 浏览器的新标签页已经过重新设计。点击这些标签可在各部分之间进行切换。Chrome 浏览器会记住您的偏好设置，并在下次打开时应用。</translation>
 <translation id="1697213158865901863">Google Chrome 浏览器内嵌框架</translation>
 <translation id="2653935705142821164">Chrome 浏览器呈现器</translation>
 <translation id="8446794773162156990">Google Chrome 浏览器功能失常</translation>
@@ -39,7 +40,7 @@
 <translation id="3089968997497233615">Google Chrome 浏览器现已推出更安全的新版本。</translation>
 <translation id="5037239767309817516">请关闭所有 Google Chrome 浏览器窗口，然后重新启动，以使此更改生效。</translation>
 <translation id="7451721381978275812">参数无效。在准备模式下，“Google Chrome 浏览器内嵌框架”必须与“Google Chrome 浏览器”同时安装。</translation>
-<translation id="5809236835374558741">该计算机已经有了更高版本的 Google Chrome 浏览器内嵌框架。如果该软件无法正常运行，请卸载 Google Chrome 浏览器内嵌框架并重新下载。</translation>
+<translation id="4585888816441913908">该计算机已安装了更高版本的 Google Chrome 浏览器和 Google Chrome 浏览器内嵌框架。如果该软件无法正常运行，请卸载 Google Chrome 浏览器和 Google Chrome 浏览器内嵌框架，然后重试。</translation>
 <translation id="6368958679917195344">“Chrome 操作系统”是借助其他<ph name="BEGIN_LINK_CROS_OSS"/>开放源代码软件<ph name="END_LINK_CROS_OSS"/>实现的。</translation>
 <translation id="4357846314885556934">Google Chrome 浏览器功能失常</translation>
 <translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
@@ -64,7 +65,6 @@
 <translation id="3847841918622877581">Google Chrome 浏览器可能会使用网络服务改善您的浏览体验。</translation>
 <translation id="7436949144778751379">您需要在 Windows XP 或更高版本的操作系统中运行 Google Chrome 浏览器，否则可能无法正常使用某些功能。</translation>
 <translation id="7100330187273168372">Google Chrome 浏览器无法对其数据目录进行读写操作：\n\n<ph name="USER_DATA_DIRECTORY"/></translation>
-<translation id="5167270755190684957">Google Chrome 浏览器主题库</translation>
 <translation id="7938170099933661772">“Google Chrome 浏览器”无法在内置 PDF 查看器已停用的情况下显示打印预览。要查看打印预览，请访问 <ph name="BEGIN_LINK"/>$1<ph name="END_LINK"/>，启用“Chrome PDF 查看器”，然后重试。</translation>
 <translation id="6757767188268205357">谢绝打扰</translation>
 <translation id="2290095356545025170">确定要卸载 Google Chrome 浏览器吗？</translation>
@@ -74,14 +74,16 @@
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">您可以在 Google Chrome 浏览器中点击网上的电话号码，然后通过 Skype 拨打！</translation>
 <translation id="3612333635265770873">已发现一个同名的模块与 Google Chrome 浏览器存在冲突。</translation>
+<translation id="2679385451463308372">使用系统对话框进行打印...</translation>
 <translation id="5947389362804196214">系统无法读取您的偏好设置。\n\n某些功能可能无法使用，并且对偏好设置进行的更改不会保存。</translation>
 <translation id="6650142020817594541">此网站建议使用“Google Chrome 浏览器内嵌框架”（已安装）。</translation>
 <translation id="4127951844153999091">在这种情况下，列在证书中的地址与浏览器尝试显示的网站的地址不相符。引发这种情况的一个可能原因是，您的通信内容正被攻击者拦截，攻击者出示的是其他网站的证书，这就会引发网站地址不符的情况。另一可能引发这种情况的原因是，服务器已设置为对多个网站（包括您试图访问的网站）返回同一证书，即使此证书并不是对所有这些网站都有效。Google Chrome 浏览器确定访问的是 &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;，但无法证实该网站就是所要访问的网站 &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;。如果继续操作，则 Chrome 浏览器不会检查是否还有名称不相符的情况。一般而言，最好不要继续操作。</translation>
 <translation id="2712549016134575851">检测到与另一个已安装的应用程序存在冲突。</translation>
+<translation id="5577648424992741236">该计算机已安装了更高版本的 Google Chrome 浏览器内嵌框架。如果该软件无法正常运行，请卸载 Google Chrome 浏览器内嵌框架，然后重试。</translation>
 <translation id="7018032895891496381">Google Chrome 浏览器会使用您的默认搜索引擎（目前设置为<ph name="PAGE_TITLE"/>）。您想要保留自己的默认搜索引擎吗？</translation>
 <translation id="7161904924553537242">欢迎使用 Google Chrome 浏览器</translation>
-<translation id="5211087808649701653">启动本地打印对话框</translation>
 <translation id="8669527147644353129">Google Chrome 浏览器帮助程序</translation>
+<translation id="1399397803214730675">该计算机已安装了更高版本的 Google Chrome 浏览器。如果该软件无法正常运行，请卸载 Google Chrome 浏览器，然后重试。</translation>
 <translation id="3444832043240812445">如果<ph name="BEGIN_LINK"/>启用崩溃报告<ph name="END_LINK"/>，则该网页将只显示您最近的崩溃信息。</translation>
 <translation id="8614913330719544658">Google Chrome 浏览器未响应。是否立即重新启动？</translation>
 <translation id="2681064822612051220">在系统中安装“Google Chrome 浏览器”时发现已存在其他版本，请先卸载然后重试。</translation>
@@ -99,7 +101,6 @@
 <translation id="2769762047821873045">Google Chrome 浏览器不是您的默认浏览器。</translation>
 <translation id="7825851276765848807">由于未指定的错误导致安装失败。请重新下载 Google Chrome 浏览器。</translation>
 <translation id="3335672657969596251">Google Chrome 浏览器不支持 <ph name="OS_NAME"/>。</translation>
-<translation id="3636771339108070045">该计算机已经安装了更高版本的 Google Chrome 浏览器。如果该软件无法正常运行，请卸载 Google Chrome 浏览器并重新下载。</translation>
 <translation id="5334545119300433702">已知此模块与 Google Chrome 浏览器存在冲突。</translation>
 <translation id="3360895254066713204">Chrome 浏览器帮助应用程序</translation>
 <translation id="1001534784610492198">安装程序存档文件损坏或无效。请重新下载 Google Chrome 浏览器。</translation>

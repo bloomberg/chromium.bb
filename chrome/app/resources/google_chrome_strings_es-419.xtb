@@ -31,6 +31,7 @@
 <translation id="8227755444512189073">Google Chrome debe iniciar una aplicación externa para administrar <ph name="SCHEME"/> enlaces. El enlace solicitado es <ph name="PROTOLINK"/>.</translation>
 <translation id="8290100596633877290">¡Vaya! Se ha producido un bloqueo en Google Chrome. ¿Quieres reiniciar el navegador ahora?</translation>
 <translation id="1281036569101707544">Google Chrome <ph name="TERMS_OF_SERVICE_LINK"/></translation>
+<translation id="3487814320513494737">Se ha cambiado el diseño de la página Nueva pestaña de Chrome. Alterna entre las secciones al hacer clic en estas etiquetas. Chrome recordará tu selección la próxima vez.</translation>
 <translation id="1697213158865901863">Google Chrome Frame</translation>
 <translation id="2653935705142821164">Procesador de Chrome</translation>
 <translation id="8446794773162156990">Google Chrome presenta un comportamiento incorrecto</translation>
@@ -39,7 +40,7 @@
 <translation id="3089968997497233615">Hay disponible una versión de Google Chrome más nueva y más segura.</translation>
 <translation id="5037239767309817516">Cierra todas las ventanas de Google Chrome y reinicia el navegador para que se aplique el cambio.</translation>
 <translation id="7451721381978275812">Argumentos no válidos. Google Chrome Frame no se puede instalar en modo Listo si no se instala Google Chrome.</translation>
-<translation id="5809236835374558741">Este equipo ya cuenta con una versión más reciente de Google Chrome Frame. Si el software no funciona, desinstala Google Chrome Frame y descárgalo nuevamente.</translation>
+<translation id="4585888816441913908">Este equipo ya tiene una versión más reciente de Google Chrome y Google Chrome Frame. Si el software no funciona, desinstala Google Chrome y Google Chrome Frame, y vuelve a intentarlo.</translation>
 <translation id="6368958679917195344">Chrome OS es posible gracias al <ph name="BEGIN_LINK_CROS_OSS"/>software de código abierto<ph name="END_LINK_CROS_OSS"/> adicional.</translation>
 <translation id="4357846314885556934">Google Chrome se está comportando erróneamente</translation>
 <translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
@@ -64,7 +65,6 @@
 <translation id="3847841918622877581">Google Chrome puede utilizar servicios web con el objetivo de mejorar la navegación.</translation>
 <translation id="7436949144778751379">Google Chrome requiere Windows XP o versiones posteriores. Es posible que no funcionen algunas características.</translation>
 <translation id="7100330187273168372">Google Chrome no puede leer y escribir a su directorio de datos:\n\n<ph name="USER_DATA_DIRECTORY"/></translation>
-<translation id="5167270755190684957">Galería de temas de Google Chrome</translation>
 <translation id="7938170099933661772">Google Chrome no puede mostrar la vista previa de impresión si el visor de PDF integrado no está habilitado. Para poder ver la vista previa, accede a <ph name="BEGIN_LINK"/>$1<ph name="END_LINK"/>, habilita la opción del visor de PDF de Chrome y vuelve a intentarlo.</translation>
 <translation id="6757767188268205357">No preguntar de nuevo</translation>
 <translation id="2290095356545025170">¿Estás seguro de que deseas desinstalar Google Chrome?</translation>
@@ -74,14 +74,16 @@
 <translation id="4990567037958725628">Google Chrome Canario</translation>
 <translation id="4561051373932531560">Google Chrome te permite hacer clic en un número de teléfono en la web y ¡llamarlo por Skype!</translation>
 <translation id="3612333635265770873">Un módulo con el mismo nombre ha interferido con Google Chrome.</translation>
+<translation id="2679385451463308372">Imprimir utilizando el diálogo del sistema…</translation>
 <translation id="5947389362804196214">No se pueden leer tus preferencias.\n\nEs posible que algunas funciones no estén disponibles y no se guardarán los cambios realizados a las preferencias.</translation>
 <translation id="6650142020817594541">Este sitio recomienda Google Chrome Frame (ya instalado).</translation>
 <translation id="4127951844153999091">En este caso, la dirección que figura en este certificado no coincide con la del sitio web a la que el navegador intentó ir. Es posible que esto ocurra debido a que un usuario malintencionado que presenta un certificado para otro sitio web está interceptando sus comunicaciones. Esto puede ser la causa de esa diferencia. O bien puede ocurrir que el servidor esté configurado para devolver el mismo certificado a varios sitios web, incluido el que está intentando visitar, aunque el certificado no sea válido para todos esos sitios web. Google Chrome puede asegurar que se conectó con &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, pero no puede comprobar que es el mismo sitio que &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; al que intentó conectarse. Si continúa, Chrome no comprobará si hay otros nombres que no coinciden. Generalmente, no recomendamos continuar.</translation>
 <translation id="2712549016134575851">Se detectó un conflicto con otra aplicación instalada.</translation>
+<translation id="5577648424992741236">Este equipo ya tiene una versión más reciente de Google Chrome Frame. Si el software no funciona, desinstala Google Chrome Frame y vuelve a intentarlo.</translation>
 <translation id="7018032895891496381">Google Chrome utiliza tu motor de búsqueda predeterminado que está actualmente establecido como <ph name="PAGE_TITLE"/>. ¿Deseas mantener tu motor de búsqueda predeterminado?</translation>
 <translation id="7161904924553537242">Bienvenido a Google Chrome</translation>
-<translation id="5211087808649701653">Lanzar cuadro de diálogo de impresión nativo</translation>
 <translation id="8669527147644353129">Ayuda de Google Chrome</translation>
+<translation id="1399397803214730675">Este equipo ya cuenta con una versión más reciente de Google Chrome. Si el software no funciona, desinstala Google Chrome y descárgalo nuevamente.</translation>
 <translation id="3444832043240812445">Esta página sólo muestra información sobre fallas recientes si se <ph name="BEGIN_LINK"/>activan los informes sobre fallas<ph name="END_LINK"/>.</translation>
 <translation id="8614913330719544658">Google Chrome no responde. ¿Quieres reiniciarlo ahora?</translation>
 <translation id="2681064822612051220">Se encontró una instalación conflictiva de Google Chrome en el sistema. Desinstálala e intenta nuevamente.</translation>
@@ -99,7 +101,6 @@
 <translation id="2769762047821873045">Google Chrome no es tu navegador predeterminado.</translation>
 <translation id="7825851276765848807">La instalación falló debido a un error no especificado. Descarga Google Chrome otra vez.</translation>
 <translation id="3335672657969596251">Google Chrome no es compatible con <ph name="OS_NAME"/>.</translation>
-<translation id="3636771339108070045">Este equipo ya cuenta con una versión más reciente de Google Chrome. Si el software no funciona, desinstale Google Chrome y descárguelo nuevamente.</translation>
 <translation id="5334545119300433702">Se sabe que este módulo es conflictivo con Google Chrome.</translation>
 <translation id="3360895254066713204">Ayuda de Chrome</translation>
 <translation id="1001534784610492198">El instalador está dañado o no es válido. Descargue Google Chrome nuevamente.</translation>

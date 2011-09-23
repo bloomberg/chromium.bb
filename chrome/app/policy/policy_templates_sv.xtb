@@ -18,10 +18,18 @@
           Som standard är alla tillägg vitlistade, men om alla tillägg har svartlistats av en policy kan vitlistan användas för att åsidosätta den policyn.</translation>
 <translation id="3185009703220253572">sedan version <ph name="SINCE_VERSION"/></translation>
 <translation id="5469825884154817306">Blockera bilder på dessa webbplatser</translation>
+<translation id="7812822355979915508">Anger om användaren kan öppna sidor i inkognitoläge i <ph name="PRODUCT_NAME"/>.
+
+      Om du väljer Aktiverat kan du öppna sidor i inkognitoläge.
+
+      Om du väljer Inaktiverat kan du inte öppna sidor i inkognitoläge.
+
+      Om du väljer Tvingat kan du endast öppna sidor i inkognitoläge.</translation>
 <translation id="2908277604670530363">Högsta antalet samtidiga anslutningar till proxyservern</translation>
 <translation id="3512877396423730277">Kontrollerar om delinnehåll från tredje part på en sida får öppna en HTTP Basic Auth-dialogruta. Normalt är detta inaktiverat som ett skydd mot lösenordsfiske.</translation>
 <translation id="1438955478865681012">Konfigurerar tilläggsrelaterade policyer. Användaren får inte installera svartlistade tillägg om de inte tas med i vitlistan. Du kan också tvinga <ph name="PRODUCT_NAME"/> att installera tillägg automatiskt genom att ange dem i <ph name="EXTENSIONINSTALLFORCELIST_POLICY_NAME"/>. Svartlistan åsidosätter listan med påtvingade tillägg.</translation>
 <translation id="4070280487546651935">Anger det sökord som används som genväg för att aktivera leverantörens sökning i adressfältet. Valfritt.</translation>
+<translation id="7271085005502526897">Importera startsida från standardwebbläsaren första gången den körs</translation>
 <translation id="6036523166753287175">Aktivera brandväggspassage från fjärråtkomstsvärd</translation>
 <translation id="1096105751829466145">Standardsökleverantör</translation>
 <translation id="7567380065339179813">Tillåt plugin-program på dessa webbplatser</translation>
@@ -62,11 +70,15 @@
 <translation id="8828766846428537606">Konfigurerar standardstartsidan i <ph name="PRODUCT_NAME"/> och förhindrar att användarna ändrar den.
 
       Användarnas inställningar för startsidan blir bara helt låsta om du väljer att startsidan ska vara sidan Ny flik eller att den ska vara en webbadress som du anger. Om du inte anger en webbadress för startsidan kan användaren fortfarande ställa in startsidan på sidan Ny flik genom att ange &quot;chrome://newtab&quot;.</translation>
+<translation id="2231817271680715693">Importera webbhistorik från standardwebbläsaren första gången den körs</translation>
 <translation id="1353966721814789986">Startsidor</translation>
+<translation id="1969043432858293299">Om den här policyn är aktiverad importeras webbhistoriken från den aktuella standardwebbläsaren. När den är inaktiverad visas ingen webbhistorik. Om den inte är konfigurerad används standardfunktionen. Om policyn är aktiverad påverkar den även dialogrutan för import.</translation>
 <translation id="5564962323737505851">Konfigurerar lösenordshanteraren. Om lösenordshanteraren är aktiverad kan du välja att aktivera eller inaktivera huruvida användare får visa sparade lösenord med vanlig text.</translation>
 <translation id="4668325077104657568">Standardinställning för bilder</translation>
+<translation id="7161193985878519056">Inkognitoläget är inaktiverat.</translation>
 <translation id="6368403635025849609">Tillåt JavaScript på dessa webbplatser</translation>
 <translation id="6074963268421707432">Tillåt inte att någon webbplats visar aviseringar på skrivbordet</translation>
+<translation id="8104962233214241919">Välj klientcertifikat automatiskt för dessa webbplatser</translation>
 <translation id="3758249152301468420">Inaktivera utvecklarverktygen</translation>
 <translation id="8665076741187546529">Konfigurera listan med tillägg som måste installeras</translation>
 <translation id="6242542007132978836">Innebär att du kan ange om webbplatser får köra plugin-program automatiskt. Att köra plugin-program automatiskt kan vara tillåtet för alla webbplatser eller inte tillåtet för någon webbplats.</translation>
@@ -110,12 +122,8 @@
 <translation id="2711603272213076156">Tillåt anrop till dialogrutor för filval.</translation>
 <translation id="1426410128494586442">Ja</translation>
 <translation id="3381968327636295719">Använd värdwebbläsaren som standard</translation>
+<translation id="6520802717075138474">Importera sökmotorer från standardwebbläsaren första gången den körs</translation>
 <translation id="6368011194414932347">Konfigurera webbadress för startsida</translation>
-<translation id="1966609843734913335">Aktiverar inkognitoläge i <ph name="PRODUCT_NAME"/>.
-
-      Om den här inställningen är aktiverad eller inte konfigurerad kan användarna öppna webbsidor i inkognitoläge.
-
-      Om den här inställningen är inaktiverad kan användarna inte öppna webbsidor i inkognitoläge.</translation>
 <translation id="3423023819976532001">Gör det möjligt att spara lösenord och att använda sparade lösenord i <ph name="PRODUCT_NAME"/>.
 
           Om du aktiverar den här inställningen kan användarna låta <ph name="PRODUCT_NAME"/> spara lösenord och ange dem automatiskt nästa gång du loggar in på en webbplats.
@@ -134,6 +142,7 @@
 <translation id="5059221739913673172">Konfigurerar vilken katalog som <ph name="PRODUCT_NAME"/> ska spara användardata i.
 
       Om du använder den här policyn använder <ph name="PRODUCT_NAME"/> den angivna katalogen oavsett om användaren har angett flaggan &quot;--user-data-dir&quot; eller inte.</translation>
+<translation id="6378014222084506939">Tillgänglighet för inkognitoläge.</translation>
 <translation id="3528000905991875314">Aktivera alternativa felsidor</translation>
 <translation id="4084327080063933392">Anger namnet på standardsökleverantören. Om värdet inte anges används det värdnamn som anges av sökadressen.</translation>
 <translation id="6114416803310251055">föråldrad</translation>
@@ -156,6 +165,7 @@
           Om du aktiverar den här inställningen ignorerar <ph name="PRODUCT_NAME"/> alla proxyrelaterade alternativ som anges från kommandoraden.</translation>
 <translation id="6899705656741990703">Identifiera proxyinställningar automatiskt</translation>
 <translation id="4101772068965291327">Öppna startsidan</translation>
+<translation id="6932480224480511443">Om den här policyn är aktiverad importeras bokmärken från den aktuella standardwebbläsaren. När den är inaktiverad importeras inga bokmärken. Om den inte är konfigurerad används standardfunktionen. Om policyn är aktiverad påverkar den även dialogrutan för import.</translation>
 <translation id="8992176907758534924">Tillåt inte att bilder visas på någon webbplats</translation>
 <translation id="8704831857353097849">Lista med inaktiverade plugin-program</translation>
 <translation id="467449052039111439">Öppna följande sidor</translation>
@@ -190,10 +200,11 @@
       Om du aktiverar den här inställningen används den angivna språkversionen av <ph name="PRODUCT_NAME"/>. Om den språkversion som anges inte stöds används &quot;en-US&quot; istället.
 
       Om inställningen inaktiveras eller inte är konfigurerad använder <ph name="PRODUCT_NAME"/> antingen den språkversion som användaren anger (om den är konfigurerad), samma språk som datorn eller standardversionen &quot;en-US&quot;.</translation>
+<translation id="3964909636571393861">Ger åtkomst till en lista med webbadresser</translation>
 <translation id="6022948604095165524">Åtgärd vid start</translation>
 <translation id="3704185423155638353">Innebär att du kan ange en lista med webbadressmönster som anger webbadresser som inte får köra JavaScript.</translation>
 <translation id="7628741187268592472">Anger vilket GSSAPI-bibliotek som ska användas för HTTP-autentisering. Du kan ange bara ett biblioteksnamn eller en fullständig sökväg. Om du inte anger något använder <ph name="PRODUCT_NAME"/> ett standardbiblioteksnamn.</translation>
-<translation id="2435100545355792516">Tvinga fram inkognitoläge</translation>
+<translation id="1247111313041645019">Om den här policyn är aktiverad importeras sparade lösenord från den tidigare standardwebbläsaren. När den är inaktiverad importeras inga sparade lösenord. Om den inte är konfigurerad används standardfunktionen. Om policyn är aktiverad påverkar den även dialogrutan för import.</translation>
 <translation id="605147781209875705">Den här policyn gäller inte längre. Använd ProxyMode istället.
 
           Den innebär att du kan ange vilken proxyserver som ska användas av <ph name="PRODUCT_NAME"/> och förhindrar att användarna ändrar proxyinställningarna.
@@ -224,6 +235,7 @@
 <translation id="5770738360657678870">Kanal för utvecklare (kan vara instabil)</translation>
 <translation id="2959898425599642200">Regler för proxybypass</translation>
 <translation id="7337941689192402544">Ställ in användardatakatalog för <ph name="PRODUCT_NAME"/></translation>
+<translation id="896575211736907134">Tvingat inkognitoläge.</translation>
 <translation id="5326137997741385453">Katalogen som <ph name="PRODUCT_NAME"/> ska använda för att spara cachelagrade filer på disken konfigureras.
 
       Om du anger den här policyn använder <ph name="PRODUCT_NAME"/> den angivna katalogen oavsett om användaren har angett flaggan &quot;--disk-cache-dir&quot; eller inte.</translation>
@@ -237,6 +249,7 @@
 
       Om du aktiverar eller inaktiverar den här inställningen kan användarna inte ändra eller åsidosätta den i <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="6641981670621198190">Inaktivera stöd för programmeringsgränssnitt för 3D-grafik</translation>
+<translation id="6375011473383446094">Innebär att du kan ange en lista med webbadressmönster som visar webbplatser som <ph name="PRODUCT_NAME"/> automatiskt väljer klientcertifikat för, om webbplatsen kräver ett certifikat.</translation>
 <translation id="2741921267428646309">Det här är listan med policyer som följs av <ph name="PRODUCT_NAME"/>.
 
       Du behöver inte ändra dem för hand. Du kan hämta lättanvända mallar från
@@ -297,6 +310,7 @@
 <translation id="2312134445771258233">Innebär att du kan konfigurera sidorna som läses in vid start.
 
       Innehållet på listan &quot;Webbadresser att öppna vid start&quot; ignoreras om du inte väljer &quot;Öppna följande sidor&quot; i &quot;Vid start&quot;.</translation>
+<translation id="8344454543174932833">Importera bokmärken från standardwebbläsaren första gången den körs</translation>
 <translation id="7931766636395791713">Innebär att du kan ange en lista med webbadressmönster som anger webbadresser som får köra JavaScript.</translation>
 <translation id="1019101089073227242">Ange katalog för användardata</translation>
 <translation id="2030905906517501646">Sökord för standardsökleverantör</translation>
@@ -346,6 +360,7 @@
 <translation id="681446116407619279">Autentiseringsscheman som stöds</translation>
 <translation id="4027608872760987929">Aktivera standardsökleverantör</translation>
 <translation id="2223598546285729819">Standardinställning för avisering</translation>
+<translation id="2417932194355389637">Om den här policyn är aktiverad importeras sökmotorer från den aktuella standardwebbläsaren. När den är inaktiverad importeras inte standardsökmotorn. Om den inte är konfigurerad används standardfunktionen. Om policyn är aktiverad påverkar den även dialogrutan för import.</translation>
 <translation id="3793095274466276777">Konfigurerar standardwebbläsarkontrollerna i <ph name="PRODUCT_NAME"/> och förhindrar att användarna ändrar dem.
 
       Om du aktiverar den här inställningen kontrollerar <ph name="PRODUCT_NAME"/> alltid om den är standardwebbläsare vid start och registrerar sig om det går.
@@ -354,9 +369,16 @@
 
       Om inställningen inte anges kan användaren avgöra om <ph name="PRODUCT_NAME"/> ska vara standardwebbläsare och om ett meddelande ska visas för användaren när den inte är det.</translation>
 <translation id="1530812829012954197">Rendera alltid följande webbadressmönster i värdwebbläsaren</translation>
+<translation id="913195841488580904">Blockera åtkomst till en lista med webbadresser</translation>
 <translation id="6190022522129724693">Standardinställning för popup-fönster</translation>
 <translation id="847472800012384958">Tillåt inte att popup-fönster visas på någon webbplats</translation>
 <translation id="4733471537137819387">Policyer som gäller integrerad HTTP-autentisering</translation>
+<translation id="5428100326165690555">Policyn har utgått. Använd IncognitoModeAvailability istället.
+      Aktiverar inkognitoläget i <ph name="PRODUCT_NAME"/>.
+
+      Om inställningen är aktiverad eller inte konfigurerad kan användare öppna webbsidor i inkognitoläge.
+
+      Om inställningen är inaktiverad kan användare inte öppna webbsidor i inkognitoläge.</translation>
 <translation id="4608714268466689965">Innebär att du kan ange om webbplatser får visa aviseringar på skrivbordet. Att visa aviseringar på skrivbordet kan tillåtas som standard eller nekas som standard, eller så kan användaren tillfrågas varje gång en webbplats försöker visa aviseringar på skrivbordet.</translation>
 <translation id="8951350807133946005">Ange katalog för diskcache</translation>
 <translation id="3866571346358522601">Anger en tid i millisekunder för hur ofta enhetshanteringstjänsten avfrågas för policyinformation. Om du anger den här policyn åsidosätts standardvärdet i tre timmar. Giltiga värden är från 30 minuter till en dag. Värden utanför intervallet ändras till närmaste gräns.</translation>
@@ -365,6 +387,17 @@
           Om du aktiverar den här inställningen hoppas CNAME-sökningen över och servernamnet används så som det angavs.
 
           Om du inaktiverar inställningen avgörs serverns kanoniska namn genom en CNAME-sökning.</translation>
+<translation id="7117773566421450481">Blockerar åtkomst till de angivna webbadresserna.
+
+      Policyn förhindrar att användaren läser in webbsidor från svartlistade webbadresser.
+
+      En webbadress har formatet scheme://host:port/path.
+      Det valfria schemat kan vara http, https eller ftp. Endast det här schemat kommer att blockeras. Om inget anges blockeras alla scheman.
+      Värden kan vara ett värdnamn eller en IP-adress. Underdomänerna till ett värdnamn blockeras också. Om du vill förhindra att underdomäner blockeras lägger du till en punkt (.) före värdnamnet. Det särskilda värdnamnet (*) blockerar alla domäner.
+      Den valfria porten är ett giltigt portnummer från 1 till 65535. Om inget anges blockeras alla portar.
+      Om den valfria sökvägen är angiven kommer endast sökvägar med det prefixet att blockeras.
+
+      Undantag kan anges i policyn för listan över godkända webbadresser. Dessa policyer är begränsade till 100 poster. Efterföljande poster kommer att ignoreras.</translation>
 <translation id="166427968280387991">Proxyserver</translation>
 <translation id="2805707493867224476">Tillåt alla webbplatser att visa popup-fönster</translation>
 <translation id="1727394138581151779">Blockera alla plugin-program</translation>
@@ -383,6 +416,7 @@
 <translation id="6524941558928880715">Öppna de senast öppnade sidorna igen</translation>
 <translation id="3167247709504138314">Anger webbadressen till sökmotorn som används för att ge sökförslag. Webbadressen ska innehålla strängen <ph name="SEARCH_TERM_MARKER"/>, som ersätts av texten användaren har skrivit hittills när frågan skickas. Valfritt.</translation>
 <translation id="602728333950205286">Dynamisk webbadress för standardsökleverantör</translation>
+<translation id="3087595738450590532">Om den här policyn är aktiverad importeras startsidan från den aktuella standardwebbläsaren. När den är inaktiverad importeras inte startsidan. Om den inte är konfigurerad används standardfunktionen.</translation>
 <translation id="1675002386741412210">Stöds av:</translation>
 <translation id="5417368737700340683">Aktiverar funktionen Instant i <ph name="PRODUCT_NAME"/> och förhindrar  att användarna ändrar inställningen.
 
@@ -408,7 +442,9 @@
 <translation id="8544375438507658205">HTML-standardrenderare för <ph name="PRODUCT_FRAME_NAME"/></translation>
 <translation id="7424751532654212117">Lista med undantag till listan med inaktiverade plugin-program</translation>
 <translation id="6233173491898450179">Ange hämtningskatalog</translation>
+<translation id="2158989228646115511">När du har valt inställningen Sant kommer kampanjer för appar i Chrome Web Store inte att visas på den nya fliksidan.</translation>
 <translation id="2299220924812062390">Ange en lista med aktiverade plugin-program</translation>
+<translation id="924557436754151212">Importera sparade lösenord från standardwebbläsaren första gången den körs</translation>
 <translation id="8754704265300028644">Inaktiverar sparande av webbhistorik i <ph name="PRODUCT_NAME"/> och förhindrar att användarna ändrar inställningen.
 
       Om du aktiverar den här inställningen sparas inte webbhistorik.
@@ -434,13 +470,9 @@
 <translation id="868187325500643455">Tillåt alla webbplatser att köra pluginprogram automatiskt</translation>
 <translation id="5226033722357981948">Ange om plugin-sökaren ska inaktiveras</translation>
 <translation id="9068358498333390522">Innebär att du kan ange om webbplatser får visa popup-fönster. Popup-fönster kan antingen vara tillåtna för alla webbplatser eller inte tillåtna för alla webbplatser.</translation>
+<translation id="3612784419634427880">Inkognitoläget är tillgängligt.</translation>
 <translation id="7194407337890404814">Standardsökleverantörens namn</translation>
 <translation id="1843117931376765605">Uppdateringsfrekvens för användarpolicy</translation>
-<translation id="1630808801738981930">Tvinga in varje session i inkognitoläge i <ph name="PRODUCT_NAME"/>.
-
-      Om inställningen är aktiverad kan användare endast öppna sidor i inkognitoläge.
-
-      Om inställningen är inaktiverad eller inte konfigurerad kan användare även använda webbläsaren i normalläge.</translation>
 <translation id="5535973522252703021">Vitlista  för Kerberos-delegeringsserver</translation>
 <translation id="4554678280250165996">Anger vilka HTTP-autentiseringsscheman som stöds av <ph name="PRODUCT_NAME"/>.
 
@@ -473,6 +505,7 @@
 <translation id="7848840259379156480">Innebär att du kan konfigurera standardrenderare för HTML när <ph name="PRODUCT_FRAME_NAME"/> är installerat.
       Standardinställningen är att låta värdwebbläsaren utföra renderingen, men du
       kan välja att åsidosätta detta och låta <ph name="PRODUCT_FRAME_NAME"/> rendera HTML-sidor som standard.</translation>
+<translation id="4121350739760194865">Förhindra att appkampanjer visas på den nya fliksidan</translation>
 <translation id="4486602758942612946">Anpassa listan med webbadressmönster som alltid ska renderas av värdwebbläsaren.
           Exempel på mönster finns på http://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="2257451316169619209">Anger en tid i millisekunder för hur ofta enhetshanteringstjänsten avfrågas för policyinformation. Om du anger den här policyn åsidosätts standardvärdet tre timmar. Giltiga värden är från 30 minuter till en dag. Värden utanför intervallet ändras till närmaste gräns.</translation>
@@ -527,6 +560,15 @@
 
       Om du aktiverar inställningen eller inte konfigurerar något värde förblir Autofyll under användarnas kontroll. Det innebär att de kan konfigurera profiler för Autofyll och aktivera och inaktivera Autofyll som de vill.</translation>
 <translation id="6938581770853731947">Konfigurerar standardstartsidans typ i <ph name="PRODUCT_NAME"/> och förhindrar att användarna ändrar inställningarna för startsidan. Startsidan kan vara en webbadress du anger eller sidan Ny flik. Om du aktiverar inställningen används alltid sidan Ny flik som startsida och startsidans webbadress ignoreras. Om du inaktiverar inställningen blir användarens startsida aldrig sidan Ny flik om inte dess webbadress ställs in på &quot;chrome://newtab&quot;. Om du aktiverar eller inaktiverar inställningen kan användarna inte ändra startsidans typ i <ph name="PRODUCT_NAME"/>.</translation>
+<translation id="2844287278346661435">Ger åtkomst till angivna webbadresser, som undantag till svartlistade webbadresser.
+
+      Läs beskrivningen av policyn för svartlistade webbadresser för formatet för poster i listan.
+
+      Policyn kan användas för att öppna undantag för restriktiva svartlistor. Exempelvis kan * vara svartlistat för att blockera alla förfrågningar och policyn kan användas för att tillåta åtkomst till en begränsad lista med webbadresser. Den kan användas för att öppna undantag för vissa scheman, underdomäner till andra domäner, portar eller särskilda sökvägar.
+
+      Det mest specifika filtret avgör om en webbadress blockeras eller tillåts. Listan över godkända webbplatser har företräde.
+
+      Policyn är begränsad till 100 poster. Efterföljande poster kommer att ignoreras.</translation>
 <translation id="5645779841392247734">Tillåt cookies på dessa webbplatser</translation>
 <translation id="3906388518501362918">Aktiverar JavaScript i <ph name="PRODUCT_NAME"/> och förhindrar att användarna ändrar inställningen.
 

@@ -31,6 +31,7 @@
 <translation id="8227755444512189073">Google Chrome necesită lansarea unei aplicații externe pentru a gestiona link-uri <ph name="SCHEME"/>. Link-ul solicitat este <ph name="PROTOLINK"/>.</translation>
 <translation id="8290100596633877290">Hopa! Google Chrome s-a închis cu eroare. Reporniţi acum?</translation>
 <translation id="1281036569101707544"><ph name="TERMS_OF_SERVICE_LINK"/> Google Chrome</translation>
+<translation id="3487814320513494737">Pagina Filă nouă din Chrome a fost remodelată. Comutaţi între secţiuni făcând clic pe aceste etichete. Chrome va reţine preferinţa dvs. pentru data viitoare.</translation>
 <translation id="1697213158865901863">Google Chrome Frame</translation>
 <translation id="2653935705142821164">Chrome Renderer</translation>
 <translation id="8446794773162156990">Google Chrome nu funcționează corect</translation>
@@ -39,7 +40,7 @@
 <translation id="3089968997497233615">Google Chrome este disponibil într-o versiune nouă şi mai sigură.</translation>
 <translation id="5037239767309817516">Pentru ca această modificare să aibă efect, închideţi toate ferestrele Google Chrome şi reporniţi-l.</translation>
 <translation id="7451721381978275812">Argumentele nu sunt valide. Google Chrome Frame nu poate fi instalat în modul Pregătit fără a instala şi Google Chrome.</translation>
-<translation id="5809236835374558741">Acest computer are deja o versiune Google Chrome Frame mai recentă. Dacă programul nu funcţionează, vă rugăm să dezinstalaţi Google Chrome Frame şi să-l descărcaţi din nou.</translation>
+<translation id="4585888816441913908">Acest computer are deja o versiune mai recentă de Google Chrome şi Google Chrome Frame. Dacă software-ul nu funcţionează, dezinstalaţi atât Google Chrome, cât şi Google Chrome Frame şi încercaţi din nou.</translation>
 <translation id="6368958679917195344"><ph name="BEGIN_LINK_CROS_OSS"/>Software-ul open source<ph name="END_LINK_CROS_OSS"/> suplimentar a contribuit la Sistemul de operare Chrome.</translation>
 <translation id="4357846314885556934">Google Chrome nu funcționează corect</translation>
 <translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
@@ -64,7 +65,6 @@
 <translation id="3847841918622877581">Google Chrome poate utiliza servicii web pentru îmbunătăţirea experienţei de navigare.</translation>
 <translation id="7436949144778751379">Google Chrome necesită Windows XP sau o versiune ulterioară. Este posibil ca unele funcții să nu fie disponibile.</translation>
 <translation id="7100330187273168372">Google Chrome nu poate citi sau scrie în directorul propriu de date:\n\n<ph name="USER_DATA_DIRECTORY"/></translation>
-<translation id="5167270755190684957">Galeria de teme Google Chrome</translation>
 <translation id="7938170099933661772">Google Chrome nu poate afişa previzualizarea înainte de printare când vizualizatorul PDF încorporat este dezactivat. Pentru a vedea previzualizarea, accesaţi <ph name="BEGIN_LINK"/>$1<ph name="END_LINK"/>, activaţi opţiunea „Vizualizator PDF Chrome” şi încercaţi din nou.</translation>
 <translation id="6757767188268205357">Doresc să nu mai fiu deranjat</translation>
 <translation id="2290095356545025170">Sunteți sigur că doriți să dezinstalați Google Chrome?</translation>
@@ -74,14 +74,16 @@
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">Google Chrome vă permite să faceţi clic pe un număr de telefon de pe web pentru a-l apela cu Skype!</translation>
 <translation id="3612333635265770873">Un modul cu acelaşi nume este cunoscut ca având conflicte cu Google Chrome.</translation>
+<translation id="2679385451463308372">Printaţi utilizând caseta de dialog a sistemului...</translation>
 <translation id="5947389362804196214">Preferințele dvs. nu pot fi citite.\n\nEste posibil ca unele funcții să nu fie disponibile, iar modificările aduse preferințelor nu vor fi salvate.</translation>
 <translation id="6650142020817594541">Acest site recomandă Google Chrome Frame (deja instalat).</translation>
 <translation id="4127951844153999091">În acest caz, adresa afișată în certificat nu se potrivește cu adresa site-ului la care a încercat să ajungă browser-ul dvs. Un motiv posibil pentru aceasta este interceptarea comunicațiilor dvs. de către un atacator, care prezintă un certificat pentru un alt site Web, ceea ce ar provoca o nepotrivire. Un alt motiv posibil este că serverul este setat să returneze același certificat pentru mai multe site-uri Web, inclusiv cel pe care încercați să-l accesați, chiar dacă acel certificat nu este valabil pentru toate acele site-uri. Google Chrome poate confirma că ați accesat &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, dar nu poate verifica dacă este același site ca și &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; pe care ați intenționat să-l accesați. Dacă mergeți mai departe, Chrome nu va mai verifica nicio altă nepotrivire de nume. În general, cel mai bine este să nu mergeți mai departe.</translation>
 <translation id="2712549016134575851">S-a detectat un conflict cu o altă aplicație instalată.</translation>
+<translation id="5577648424992741236">Acest computer are deja o versiune mai recentă de Google Chrome Frame. Dacă software-ul nu funcţionează, dezinstalaţi Google Chrome Frame şi încercaţi din nou.</translation>
 <translation id="7018032895891496381">Google Chrome utilizează motorul de căutare prestabilit, setat în prezent la <ph name="PAGE_TITLE"/>. Doriți să păstrați motorul de căutare prestabilit?</translation>
 <translation id="7161904924553537242">Bun venit la Google Chrome</translation>
-<translation id="5211087808649701653">Lansaţi dialogul de printare nativă</translation>
 <translation id="8669527147644353129">Google Chrome Helper</translation>
+<translation id="1399397803214730675">Acest computer are deja o versiune mai recentă de Google Chrome. Dacă software-ul nu funcționează, dezinstalați Google Chrome și încercaţi din nou.</translation>
 <translation id="3444832043240812445">Această pagină afişează informaţii cu privire la recentele opriri cu eroare numai dacă <ph name="BEGIN_LINK"/>activaţi raportarea opririlor cu eroare<ph name="END_LINK"/>.</translation>
 <translation id="8614913330719544658">Google Chrome nu mai răspunde. Îl reporniţi acum?</translation>
 <translation id="2681064822612051220">A fost găsită o instalare conflictuală a Google Chrome în sistem. Dezinstalaţi-o şi încercaţi din nou.</translation>
@@ -99,7 +101,6 @@
 <translation id="2769762047821873045">Google Chrome nu este browserul dvs. prestabilit.</translation>
 <translation id="7825851276765848807">Instalarea nu a reușit din cauza unei erori neprecizate. Descărcați Google Chrome din nou.</translation>
 <translation id="3335672657969596251">Google Chrome nu acceptă <ph name="OS_NAME"/>.</translation>
-<translation id="3636771339108070045">Acest computer are deja o versiune mai recentă de Google Chrome. Dacă programul nu funcționează, vă rugăm să dezinstalați Google Chrome și să-l descărcați din nou.</translation>
 <translation id="5334545119300433702">Acest modul este cunoscut că intră în conflict cu Google Chrome.</translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
 <translation id="1001534784610492198">Arhiva programului de instalare este deteriorată sau nevalidă. Descărcați din nou Google Chrome.</translation>

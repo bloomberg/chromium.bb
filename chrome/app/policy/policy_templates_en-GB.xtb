@@ -18,10 +18,18 @@
           By default, all extensions are whitelisted, but if all extensions have been blacklisted by policy, the whitelist can be used to override that policy.</translation>
 <translation id="3185009703220253572">since version <ph name="SINCE_VERSION"/></translation>
 <translation id="5469825884154817306">Block images on these sites</translation>
+<translation id="7812822355979915508">Specifies whether the user may open pages in Incognito mode in <ph name="PRODUCT_NAME"/>.
+
+      If 'Enabled' is selected, pages may be opened in Incognito mode.
+
+      If 'Disabled' is selected, pages may not be opened in Incognito mode.
+
+      If 'Forced' is selected, pages may be opened ONLY in Incognito mode.</translation>
 <translation id="2908277604670530363">Maximum number of concurrent connections to the proxy server</translation>
 <translation id="3512877396423730277">Controls whether third-party sub-content on a page is allowed to pop up an HTTP Basic Auth dialogue box. Typically, this is disabled as a phishing defence.</translation>
 <translation id="1438955478865681012">Configures extension-related policies. The user is not allowed to install blacklisted extensions unless they are whitelisted. You can also force <ph name="PRODUCT_NAME"/> to automatically install extensions by specifying them in <ph name="EXTENSIONINSTALLFORCELIST_POLICY_NAME"/>. The blacklist takes precedence over the list of forced extensions.</translation>
 <translation id="4070280487546651935">Specifies the keyword, which is the shortcut used in the omnibox to trigger the search for this provider. Optional.</translation>
+<translation id="7271085005502526897">Import of homepage from default browser on first run</translation>
 <translation id="6036523166753287175">Enable firewall traversal from remote access host</translation>
 <translation id="1096105751829466145">Default search provider</translation>
 <translation id="7567380065339179813">Allow plug-ins on these sites</translation>
@@ -62,11 +70,15 @@
 <translation id="8828766846428537606">Configure the default home page in <ph name="PRODUCT_NAME"/> and prevent users from changing it.
 
       The user's home page settings are only completely locked down, if you either select the home page to be the new tab page, or set it to be a URL and specify a home page URL. If you don't specify the home page URL, then the user is still able to set the home page to the new tab page by specifying 'chrome://newtab'.</translation>
+<translation id="2231817271680715693">Import browsing history from default browser on first run</translation>
 <translation id="1353966721814789986">Startup pages:</translation>
+<translation id="1969043432858293299">This policy forces the browsing history to be imported from the current default browser, if enabled. If disabled, no browsing history is imported. If it is not configured, the default behaviour is used. If enabled, this policy also affects the import dialogue.</translation>
 <translation id="5564962323737505851">Configures the password manager. If the password manager is enabled, then you can choose to enable or disable whether the user may show stored passwords in clear text.</translation>
 <translation id="4668325077104657568">Default images setting</translation>
+<translation id="7161193985878519056">Incognito mode disabled.</translation>
 <translation id="6368403635025849609">Allow JavaScript on these sites</translation>
 <translation id="6074963268421707432">Do not allow any site to show desktop notifications</translation>
+<translation id="8104962233214241919">Automatically select client certificates for these sites</translation>
 <translation id="3758249152301468420">Disable Developer Tools</translation>
 <translation id="8665076741187546529">Configure the list of force-installed extensions</translation>
 <translation id="6242542007132978836">Allows you to set whether websites are allowed to automatically run plug-ins. Automatically running plug-ins can be either allowed for all websites or denied for all websites.</translation>
@@ -108,12 +120,8 @@
 <translation id="2711603272213076156">.</translation>
 <translation id="1426410128494586442">Yes</translation>
 <translation id="3381968327636295719">Use the host browser by default</translation>
+<translation id="6520802717075138474">Import search engines from default browser on first run</translation>
 <translation id="6368011194414932347">Configure the home page URL</translation>
-<translation id="1966609843734913335">Enables Incognito mode in <ph name="PRODUCT_NAME"/>.
-
-      If this setting is enabled or not configured, users can open web pages in incognito mode.
-
-      If this setting is disabled, users cannot open web pages in incognito mode.</translation>
 <translation id="3423023819976532001">Enables saving passwords and using saved passwords in <ph name="PRODUCT_NAME"/>.
 
           If you enable this setting, users can have <ph name="PRODUCT_NAME"/> memorise passwords and provide them automatically the next time they log in to a site.
@@ -132,6 +140,7 @@
 <translation id="5059221739913673172">Configures the directory that <ph name="PRODUCT_NAME"/> will use for storing user data.
 
       If you set this policy, <ph name="PRODUCT_NAME"/> will use the provided directory regardless of whether the user has specified the '--user-data-dir' flag or not.</translation>
+<translation id="6378014222084506939">Incognito mode availability.</translation>
 <translation id="3528000905991875314">Enable alternate error pages</translation>
 <translation id="4084327080063933392">Specifies the name of the default search provider. If left empty, the host name specified by the search URL will be used.</translation>
 <translation id="6114416803310251055">deprecated</translation>
@@ -146,6 +155,7 @@
           If you enable this setting, <ph name="PRODUCT_NAME"/> ignores all proxy-related options specified from the command line.</translation>
 <translation id="6899705656741990703">Auto detect proxy settings</translation>
 <translation id="4101772068965291327">Open home page</translation>
+<translation id="6932480224480511443">This policy forces bookmarks to be imported from the current default browser, if enabled. If disabled, no bookmarks are imported. If it is not configured, the default behaviour is used. If enabled, this policy also affects the import dialogue.</translation>
 <translation id="8992176907758534924">Do not allow any site to show images</translation>
 <translation id="8704831857353097849">List of disabled plug-ins</translation>
 <translation id="467449052039111439">Open a list of URLs</translation>
@@ -180,10 +190,11 @@
       If you enable this setting, <ph name="PRODUCT_NAME"/> uses the specified locale. If the configured locale is not supported, 'en-US' is used instead.
 
       If this setting is disabled or not configured, <ph name="PRODUCT_NAME"/> uses either the user-specified preferred locale (if configured), the system locale or the fallback locale 'en-US'.</translation>
+<translation id="3964909636571393861">Allows access to a list of URLs</translation>
 <translation id="6022948604095165524">Action on startup</translation>
 <translation id="3704185423155638353">Allows you to set a list of url patterns that specify sites which are not allowed to run JavaScript.</translation>
 <translation id="7628741187268592472">Specifies which GSSAPI library to be used for HTTP Authentication. You can set either just a library name, or a full path. If no setting is provided, <ph name="PRODUCT_NAME"/> will fall back to using a default library name.</translation>
-<translation id="2435100545355792516">Force Incognito mode</translation>
+<translation id="1247111313041645019">This policy forces the saved passwords to be imported from the previous default browser, if enabled. If disabled, the saved passwords are not imported. If it is not configured, the default behaviour is used. If enabled, this policy also affects the import dialogue.</translation>
 <translation id="605147781209875705"> instead.
 
           Allows you to specify the proxy server used by <ph name="PRODUCT_NAME"/> file' and 'Comma-separated list of proxy bypass rules'.
@@ -208,6 +219,7 @@
 <translation id="5770738360657678870">Dev channel (may be unstable)</translation>
 <translation id="2959898425599642200">Proxy bypass rules</translation>
 <translation id="7337941689192402544">Set <ph name="PRODUCT_NAME"/> user data directory</translation>
+<translation id="896575211736907134">Incognito mode forced.</translation>
 <translation id="5326137997741385453">Configures the directory that <ph name="PRODUCT_NAME"/> will use for storing cached files on the disk. If you set this policy, <ph name="PRODUCT_NAME"/> will use the directory provided, regardless of whether the user has specified the '--disk-cache-dir' flag or not.</translation>
 <translation id="4752274243117690301"> will be disabled in <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="3292147213643666827">      Enables <ph name="PRODUCT_NAME"/> to act as a proxy between <ph name="CLOUD_PRINT_NAME"/> and legacy printers connected to the machine.
@@ -219,6 +231,7 @@
 
       If you enable or disable this setting, users cannot change or override this setting in <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="6641981670621198190">Disable support for 3D graphics APIs</translation>
+<translation id="6375011473383446094">Allows you to specify a list of URL patterns that specify sites for which <ph name="PRODUCT_NAME"/> should automatically select a client certificate, if the site requests a certificate.</translation>
 <translation id="2741921267428646309">This is the list of policies that <ph name="PRODUCT_NAME"/> respects.
 
       You don't need to change these settings by hand!  You can download easy-to-use templates from
@@ -284,6 +297,7 @@
 <translation id="2312134445771258233">Allows you to configure the pages that are loaded on startup.
 
       The contents of the list 'URLs to open at startup' are ignored unless you select 'Open a list of URLs' in 'Action on startup'.</translation>
+<translation id="8344454543174932833">Import bookmarks from default browser on first run</translation>
 <translation id="7931766636395791713">Allows you to set a list of url patterns that specify sites which are allowed to run JavaScript.</translation>
 <translation id="1019101089073227242">Set user data directory</translation>
 <translation id="2030905906517501646">Default search provider keyword</translation>
@@ -327,6 +341,7 @@
 <translation id="681446116407619279">Supported authentication schemes</translation>
 <translation id="4027608872760987929">Enable the default search provider</translation>
 <translation id="2223598546285729819">Default notification settings</translation>
+<translation id="2417932194355389637">This policy forces search engines to be imported from the current default browser, if enabled. If disabled, the default search engine is not imported. If it is not configured, the default behaviour is used. If enabled, this policy also affects the import dialogue.</translation>
 <translation id="3793095274466276777">Configures the default browser checks in <ph name="PRODUCT_NAME"/> and prevents users from changing them.
 
       If you enable this setting, <ph name="PRODUCT_NAME"/> will always check, on startup, whether it is the default browser and automatically register itself if possible.
@@ -335,9 +350,11 @@
 
       If this setting is not set, <ph name="PRODUCT_NAME"/> will allow the user to control whether it is the default browser and whether user notifications should be shown when it isn't.</translation>
 <translation id="1530812829012954197">Always render the following URL patterns in the host browser</translation>
+<translation id="913195841488580904">Block access to a list of URLs</translation>
 <translation id="6190022522129724693"> setting</translation>
 <translation id="847472800012384958">Do not allow any site to show pop-ups</translation>
 <translation id="4733471537137819387">Policies related to integrated HTTP authentication.</translation>
+<translation id="5428100326165690555">This policy is deprecated. Please, use IncognitoModeAvailability instead. Enables Incognito mode in <ph name="PRODUCT_NAME"/>. If this setting is enabled or not configured, users can open web pages in Incognito mode. If this setting is disabled, users cannot open web pages in Incognito mode.</translation>
 <translation id="4608714268466689965">Allows you to set whether websites are allowed to display desktop notifications. Displaying desktop notifications can be allowed by default, denied by default or the user can be asked every time a website wants to show desktop notifications.</translation>
 <translation id="8951350807133946005">Set disk cache directory</translation>
 <translation id="3866571346358522601">Specifies the period in milliseconds at which the device management service is queried for policy information. Setting this policy overrides the default value of 3 hours. Valid values for this policy range between 1800000 (30 minutes) and 86400000 (1 day). Any values not in this range will be clamped to the respective boundary.</translation>
@@ -346,6 +363,7 @@
           If you enable this setting, CNAME lookup will be skipped and the server name will be used as entered.
 
           If you disable this setting, the canonical name of the server will be determined via CNAME lookup.</translation>
+<translation id="7117773566421450481">Blocks access to the URLs listed. This policy prevents the user from loading web pages from blacklisted URLs. A URL has the format 'scheme://host:port/path'. The optional scheme can be http, https or ftp. Only this scheme will be blocked; if none is specified, all schemes are blocked. The host can be a hostname or an IP address. Sub-domains of a hostname will also be blocked. To prevent blocking of sub-domains, include a '.' before the hostname. The special hostname '*' will block all domains. The optional port is a valid port number from 1 to 65535. If none is specified, all ports are blocked. If the optional path is specified, only paths with that prefix will be blocked. Exceptions can be defined in the URL whitelist policy. These policies are limited to 100 entries; subsequent entries will be ignored.</translation>
 <translation id="166427968280387991">Proxy server</translation>
 <translation id="2805707493867224476">Allow all sites to show pop-ups</translation>
 <translation id="1727394138581151779">Block all plug-ins</translation>
@@ -360,6 +378,7 @@
 <translation id="6524941558928880715">Reopen the pages that were opened last</translation>
 <translation id="3167247709504138314">Specifies the URL of the search engine used to provide search suggestions. The URL should contain the string '<ph name="SEARCH_TERM_MARKER"/>', which will be replaced at query time by the text the user has entered so far. Optional.</translation>
 <translation id="602728333950205286">Default search provider instant URL</translation>
+<translation id="3087595738450590532">This policy forces the homepage to be imported from the current default browser, if enabled. If disabled, the homepage is not imported. If it is not configured, the default behaviour is used.</translation>
 <translation id="1675002386741412210">Supported on:</translation>
 <translation id="5417368737700340683">Enables <ph name="PRODUCT_NAME"/>'s Instant feature and prevents users from changing this setting.
 
@@ -385,7 +404,9 @@
 <translation id="8544375438507658205">Default HTML renderer for <ph name="PRODUCT_FRAME_NAME"/></translation>
 <translation id="7424751532654212117">List of exceptions to the list of disabled plugins</translation>
 <translation id="6233173491898450179">Set download directory</translation>
+<translation id="2158989228646115511">When set to True, promotions for Chrome Web Store apps will not appear on the new tab page.</translation>
 <translation id="2299220924812062390">Specify a list of enabled plug-ins</translation>
+<translation id="924557436754151212">Import saved passwords from default browser on first run</translation>
 <translation id="8754704265300028644">Disables saving browser history in <ph name="PRODUCT_NAME"/> and prevents users from changing this setting.
 
       If this setting is enabled, browsing history is not saved.
@@ -411,9 +432,9 @@
 <translation id="868187325500643455">Allow all sites to automatically run plug-ins</translation>
 <translation id="5226033722357981948"> finder should be disabled</translation>
 <translation id="9068358498333390522"> can be either allowed for all websites or denied for all websites.</translation>
+<translation id="3612784419634427880">Incognito mode available.</translation>
 <translation id="7194407337890404814">Default search provider name</translation>
 <translation id="1843117931376765605">Refresh rate for user policy</translation>
-<translation id="1630808801738981930">Forces every session into Incognito mode in <ph name="PRODUCT_NAME"/>. If this setting is enabled, users can open pages only in Incognito mode. If this setting is disabled or not configured, users can use the browser in normal mode as well.</translation>
 <translation id="5535973522252703021">Kerberos delegation server whitelist</translation>
 <translation id="4554678280250165996">Specifies which HTTP Authentication schemes are supported by <ph name="PRODUCT_NAME"/>.
 
@@ -448,6 +469,7 @@
 <translation id="7848840259379156480">Allows you to configure the default HTML renderer when <ph name="PRODUCT_FRAME_NAME"/> is installed.
       The default setting is to allow the host browser do the rendering, but you
       can optionally override this and have <ph name="PRODUCT_FRAME_NAME"/> render HTML pages by default.</translation>
+<translation id="4121350739760194865">Prevent app promotions from appearing on the new tab page</translation>
 <translation id="4486602758942612946">Customise the list of URL patterns that should always be rendered by the host browser.
           For example patterns see http://www.chromium.org/developers/how-tos/chrome-frame-getting-started</translation>
 <translation id="2257451316169619209">Specifies the period in milliseconds at which the device management service is queried for policy information. Setting this policy overrides the default value of 3 hours. Valid values for this policy range between 1800000 (30 minutes) and 86400000 (1 day). Any values not in this range will be clamped to the respective boundary.</translation>
@@ -496,6 +518,7 @@
 
       If you enable this setting or do not configure a value, AutoFill will remain under the control of the user. This will allow the user to configure AutoFill profiles and to switch AutoFill on or off at the user's own discretion.</translation>
 <translation id="6938581770853731947">Configures the type of the default homepage in <ph name="PRODUCT_NAME"/> and prevents users from changing homepage preferences. The homepage can either be set to a URL that you specify or set to the New Tab Page. If you enable this setting, the New Tab Page will always be used as the homepage and the homepage URL location will be ignored. If you disable this setting, the user's homepage will never be the New Tab Page, unless its URL is set to 'chrome://newtab'. If you enable or disable this setting, users cannot change their homepage type in <ph name="PRODUCT_NAME"/>.</translation>
+<translation id="2844287278346661435">Allows access to the URLs listed, as exceptions to the URL blacklist. See the description of the URL blacklist policy for the format of entries of this list. This policy can be used to open exceptions to restrictive blacklists. For example, '*' can be blacklisted to block all requests and this policy can be used to allow access to a limited list of URLs. It can be used to open exceptions to certain schemes, sub-domains of other domains, ports or specific paths. The most specific filter will determine if a URL is blocked or allowed. The whitelist takes precedence over the blacklist. This policy is limited to 100 entries; subsequent entries will be ignored.</translation>
 <translation id="5645779841392247734">Allow cookies on these sites</translation>
 <translation id="3906388518501362918">Enables JavaScript in <ph name="PRODUCT_NAME"/> and prevents users from changing this setting.
 

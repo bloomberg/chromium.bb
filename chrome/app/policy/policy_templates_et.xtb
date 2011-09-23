@@ -14,10 +14,12 @@
 <translation id="5183383917553127163">Võimaldab määrata, millised laiendused ei kuulu musta nimekirja. Musta nimekirja väärtus * tähendab, et kõik laiendused on mustas nimekirjas ja kasutajad saavad installida vaid lubatud nimekirjas olevaid laiendusi. Vaikimisi on kõik laiendused lubatud nimekirjas, kuid kui kõik laiendused on reegliga musta nimekirja kantud, saab lubatud nimekirjaga seda reeglit alistada.</translation>
 <translation id="3185009703220253572">alates versioonist <ph name="SINCE_VERSION"/></translation>
 <translation id="5469825884154817306">Blokeeri kujutised nendel saitidel</translation>
+<translation id="7812822355979915508">Määrab, kas kasutaja võib avada lehti brauseri <ph name="PRODUCT_NAME"/> inkognito režiimis. Kui on tehtud valik „Lubatud”, siis saab lehti avada inkognito režiimis. Kui on tehtud valik „Keelatud”, ei saa lehti inkognito režiimis avada. Kui on tehtud valik „Sunnitud”, siis saab lehti avada AINULT inkognito režiimis.</translation>
 <translation id="2908277604670530363">Puhverserveri samaaegsete ühenduste maksimaalne arv</translation>
 <translation id="3512877396423730277">Juhib, kas lehel olev kolmanda osapoole alasisu võib HTTP Basic Authi dialoogikastis hüpikuna esineda. Tavaliselt on see andmepüügikaitseks keelatud.</translation>
 <translation id="1438955478865681012">Seadistab laiendustega seotud reeglid. Kasutajatel ei ole lubatud mustas nimekirjas olevaid laiendusi installida, kui need ei ole kantud lubatud nimekirja. Võite sundida rakendust <ph name="PRODUCT_NAME"/> automaatselt laiendusi installima, määrates need reeglis <ph name="EXTENSIONINSTALLFORCELIST_POLICY_NAME"/>. Must nimekiri on sunnitud laienduste loendi suhtes ülimuslik.</translation>
 <translation id="4070280487546651935">Määrab märksõna, mida kasutatakse omnikastikeses otseteena teenusepakkuja otsingu käivitamiseks. Funktsioon on valikuline.</translation>
+<translation id="7271085005502526897">Kodulehe importimine vaikebrauseri esimesel käitamisel</translation>
 <translation id="6036523166753287175">Luba tulemüüri läbimine kaugjuurdepääsu hostist</translation>
 <translation id="1096105751829466145">Vaikeotsingupakkuja</translation>
 <translation id="7567380065339179813">Luba pistikprogrammid nendel saitidel</translation>
@@ -34,11 +36,15 @@
 <translation id="5912364507361265851">Luba kasutajatel paroolihalduris paroolide näitamine</translation>
 <translation id="6999540307315670568">Lubab rakenduse <ph name="PRODUCT_NAME"/> uuel vahelehel järjehoidjariba. Kui lubate seade, näitab <ph name="PRODUCT_NAME"/> uuel vahelehel järjehoidjariba. Kui keelate seade, ei näe kasutajad järjehoidjariba ühelgi juhul. Kui lubate või keelate seade, ei saa kasutajad seda rakenduses <ph name="PRODUCT_NAME"/> muuta ega alistada.</translation>
 <translation id="8828766846428537606">Seadistage rakenduse <ph name="PRODUCT_NAME"/> vaikeavaleht ja takistage kasutajaid seda muutmast. Kasutaja avalehe seaded on täielikult lukustatud vaid juhul, kui valite avaleheks uue vahelehe või seate selle URL-iks ja määrate avalehel URL-i. Kui te ei määra avalehe URL-i, saab kasutaja määrata avaleheks uue vahelehe käsuga chrome://newtab.</translation>
+<translation id="2231817271680715693">Sirvimisajaloo importimine vaikebrauserist esimesel käitamisel</translation>
 <translation id="1353966721814789986">Käivitamisel avatavad lehed</translation>
+<translation id="1969043432858293299">See reegel sunnib lubamisel importima sirvimisajaloo praegusest vaikebrauserist. Keelamisel sirvimisajalugu ei impordita. Kui reegel pole seadistatud, kasutatakse vaikekäitumist. Lubamisel mõjutab see reegel ka impordidialoogi.</translation>
 <translation id="5564962323737505851">Seadistab paroolihalduri. Kui paroolihaldur on lubatud, siis võite kasutajatel lubada või keelata talletatud paroolide näitamise tavatekstina.</translation>
 <translation id="4668325077104657568">Kujutiste vaikeseaded</translation>
+<translation id="7161193985878519056">Inkognito režiim on keelatud.</translation>
 <translation id="6368403635025849609">Luba JavaScript nendel saitidel</translation>
 <translation id="6074963268421707432">Keela kõigil saitidel töölauateatiste näitamine</translation>
+<translation id="8104962233214241919">Valige automaatselt kliendi sertifikaadid nendele saitidele</translation>
 <translation id="3758249152301468420">Keela arendaja tööriistad</translation>
 <translation id="8665076741187546529">Sunnitult installitud laienduste loendi seadistamine</translation>
 <translation id="6242542007132978836">Võimaldab määrata, kas veebisaitidel on lubatud automaatselt pistikprogramme käitada. Pistikprogrammide automaatne käitamine on võimalik lubada või keelata kõikidel veebisaitidel.</translation>
@@ -64,12 +70,13 @@
 <translation id="2711603272213076156">Luba valida failiavamisdialooge.</translation>
 <translation id="1426410128494586442">Jah</translation>
 <translation id="3381968327636295719">Kasuta vaikimisi hostbrauserit</translation>
+<translation id="6520802717075138474">Impordi otsingumootorid vaikebrauserist esimesel käitamisel</translation>
 <translation id="6368011194414932347">Avalehe URL-i seadistamine</translation>
-<translation id="1966609843734913335">Lubab inkognitorežiim rakenduses <ph name="PRODUCT_NAME"/>. Kui seade on lubatud või seadistamata, saavad kasutajad avada veebilehti inkognitorežiimis. Kui seade on keelatud, ei saa kasutajad veebilehti inkognitorežiimis avada.</translation>
 <translation id="3423023819976532001">Võimaldab salvestada paroole ja kasutada salvestatud paroole rakenduses <ph name="PRODUCT_NAME"/>. Kui lubate seade, saavad kasutajad lasta rakendusel <ph name="PRODUCT_NAME"/> parooli meelde jätta ja järgmine kord saidile sisse logides automaatselt sisestada. Kui keelate seade, ei saa kasutajad paroole salvestada ega juba salvestatud paroole kasutada. Seade lubamisel või keelamisel ei saa kasutajad seda rakenduses <ph name="PRODUCT_NAME"/> muuta ega alistada.</translation>
 <translation id="2877225735001246144">Keela CNAME-i otsing Kerberose autentimise läbirääkimisel</translation>
 <translation id="6200084307932433394">Lubab integreeritud Google'i tõlke rakenduses <ph name="PRODUCT_NAME"/>. Kui lubate seade, ilmub rakenduses <ph name="PRODUCT_NAME"/> integreeritud tööriistariba, millega kasutajad saavad võimalusel lehe tõlkida. Seade keelamisel ei näe kasutajad tõlkeriba. Seade lubamisel või keelamisel ei saa kasutajad seadet rakenduses <ph name="PRODUCT_NAME"/> muuta ega alistada.</translation>
 <translation id="5059221739913673172">Seadistab kataloogi, kus <ph name="PRODUCT_NAME"/> kasutajate andmeid talletab. Kui rakendate reeglit, kasutab <ph name="PRODUCT_NAME"/> sisestatud kataloogi sõltumata sellest, kas kasutaja on määranud lipu „--user-data-dir”.</translation>
+<translation id="6378014222084506939">Inkognito režiimi kättesaadavus.</translation>
 <translation id="3528000905991875314">Luba alternatiivsed vealehed</translation>
 <translation id="4084327080063933392">Määrab vaikeotsingupakkuja nime. Kui see jäetakse tühjaks, kasutatakse otsingu URL-iga määratud hostinime.</translation>
 <translation id="6114416803310251055">iganenud</translation>
@@ -79,6 +86,7 @@
 <translation id="6417878201680958437">Võimaldab määrata puhverserveri, mida <ph name="PRODUCT_NAME"/> kasutab, ja takistab kasutajaid puhverserveri seadeid muutmast. Kui keelate puhverserveri ja valite otseühenduse, eiratakse kõiki teisi valikuid. Kui otsustate kasutada süsteemi puhverserveri seadeid või valite puhverserveri automaatse tuvastamise, eiratakse kõiki teisi valikuid. Kui valite serveri fikseeritud puhverrežiimi, võite täpsemad valikud seada jaotistes „Puhverserveri aadress või URL„ ja „Puhverserveri möödumisreeglite komaeraldusega loend”. Kui otsustate kasutada puhverserveri pac-skripti, tuleb teil jaotises „Puhverserver pac-faili URL” määrata skripti URL. Üksikasjalikke näiteid vaadake aadressilt <ph name="PROXY_HELP_URL"/>. Selle seade lubamisel eirab <ph name="PRODUCT_NAME"/> kõiki käsureal määratud puhverserveriga seotud valikuid.</translation>
 <translation id="6899705656741990703">Tuvasta puhverserveri seaded automaatselt</translation>
 <translation id="4101772068965291327">Ava avaleht</translation>
+<translation id="6932480224480511443">See reegel sunnib lubamisel importima järjehoidjaid praegusest vaikebrauserist. Keelamisel järjehoidjaid ei impordita. Kui see pole seadistatud, kasutatakse vaikekäitumist. Lubamisel mõjutab see reegel ka impordidialoogi.</translation>
 <translation id="8992176907758534924">Keela kõigil saitidel kujutiste näitamine</translation>
 <translation id="8704831857353097849">Keelatud pistikprogrammide loend</translation>
 <translation id="467449052039111439">Ava URL-ide loend</translation>
@@ -95,10 +103,11 @@
 <translation id="9035964157729712237">Mustast nimekirjast välistatud laienduste ID-d</translation>
 <translation id="3523486089716697173">Võimaldab luua URL-i mustrite loendi, mis määrab saidid, millel ei ole lubatud kujutisi kuvada.</translation>
 <translation id="751265277672445578">Seadistab rakenduse lokaadi rakenduses <ph name="PRODUCT_NAME"/> ja takistab kasutajaid lokaati muutmast. Kui lubate seade, kasutab <ph name="PRODUCT_NAME"/> määratud lokaati. Kui seadistatud lokaati ei toetata, kasutatakse selle asemel lokaati „en-US”. Kui seade on keelatud või seadistamata, kasutab <ph name="PRODUCT_NAME"/> kasutaja määratud eelislokaati (kui on seadistatud), süsteemi lokaati või varulokaati „en-US”.</translation>
+<translation id="3964909636571393861">Võimaldab juurdepääsu URL-ide loendile</translation>
 <translation id="6022948604095165524">Toiming käivitamisel</translation>
 <translation id="3704185423155638353">Võimaldab luua URL-i mustrite loendi, mis määrab saidid, millel ei ole lubatud käitada JavaScripti.</translation>
 <translation id="7628741187268592472">Määrab HTTP autentimisel kasutatava GSSAPI-teegi. Võite määrata ainult teegi nime või täieliku tee. Kui seadet ei sisestada, kasutab <ph name="PRODUCT_NAME"/> vaiketeeki.</translation>
-<translation id="2435100545355792516">Inkognito režiimi jõustamine</translation>
+<translation id="1247111313041645019">See reegel sunnib lubamisel importima salvestatud paroolid eelmisest vaikebrauserist. Keelamisel salvestatud paroole ei impordita. Kui see pole seadistatud, kasutatakse vaikekäitumist. Lubamisel mõjutab see reegel ka impordidialoogi.</translation>
 <translation id="605147781209875705">Reegel on iganenud, kasutage selle asemel ProxyMode'i. See võimaldab määrata rakenduse <ph name="PRODUCT_NAME"/> puhverserveri ja takistab kasutajaid puhverserveri seadeid muutmast. Kui otsustate puhverserverit mitte kasutada ja luua alati ühendus otse, siis eiratakse kõiki muid valikuid. Kui otsustate kasutada süsteemi puhverserveri seadeid või tuvastada puhverserveri automaatselt, eiratakse kõiki muid valikuid. Kui otsustate määrata puhverserveri seaded käsitsi, saate täpsemad valikud määrata jaotistes „Puhverserveri aadress või URL”, „Puhverserveri pac-faili URL” ja „Puhverserveri möödumisreeglite komaeraldusega loend”. Üksikasjalikke näiteid vaadake aadressilt <ph name="PROXY_HELP_URL"/>. Seade lubamisel eirab <ph name="PRODUCT_NAME"/> kõiki käsureal määratud puhverserveri valikuid.</translation>
 <translation id="6516561898504323308">Blokeerib kolmanda osapoole küpsiseid. Kui lubate seade, ei saa seada küpsiseid, mis pärinevad mujalt kui brauseri aadressiribal olevalt domeenilt. Kui keelate seade, saavad küpsiseid seada ka veebilehe elemendid, mis pärinevad mujalt kui brauseri aadressiribal olevalt domeenilt, ja kasutajad ei saa seadet muuta.</translation>
 <translation id="3864818549971490907">Pistikprogrammide vaikeseade</translation>
@@ -107,11 +116,13 @@
 <translation id="5770738360657678870">Arendaja kanal (võib olla ebastabiilne)</translation>
 <translation id="2959898425599642200">Puhverserveri möödumisreeglid</translation>
 <translation id="7337941689192402544">Seadista toote <ph name="PRODUCT_NAME"/> kasutaja andmete kataloog</translation>
+<translation id="896575211736907134">Inkognito režiim on sunnitud.</translation>
 <translation id="5326137997741385453">Seadistab kataloogi, mida <ph name="PRODUCT_NAME"/> kasutab kettal olevate puhverdatud failide talletamiseks. Selle reegli seadmisel kasutab <ph name="PRODUCT_NAME"/> antud kataloogi olenemata sellest, kas kasutaja on määranud lipu „- disk-cache-dir” või mitte.</translation>
 <translation id="4752274243117690301">Kui valite seade väärtuseks Tõene, keelatakse rakenduses <ph name="PRODUCT_NAME"/> puuduvate pistikprogrammide automaatne otsing ja installimine.</translation>
 <translation id="3292147213643666827">      Võimaldab rakendusel <ph name="PRODUCT_NAME"/> toimida puhverserverina teenuse <ph name="CLOUD_PRINT_NAME"/> ja seadmega ühendatud pärandprinterite vahel. Kui seade on lubatud või seadistamata, saavad kasutajad Google'i kontoga autentides lubada pilvprintimise puhverserveri. Kui seade on keelatud, ei saa kasutajad puhverserverit lubada ja seadmel ei ole lubatud printereid teenusega <ph name="CLOUD_PRINT_NAME"/> jagada.</translation>
 <translation id="617204585863800180">Lubab võrgu prognoosi rakenduses <ph name="PRODUCT_NAME"/> ja takistab kasutajaid seadet muutmast. Kui lubate või keelate seade, ei saa kasutajad seda rakenduses <ph name="PRODUCT_NAME"/> muuta ega alistada.</translation>
 <translation id="6641981670621198190">Keela 3D-graafika API-liideste tugi</translation>
+<translation id="6375011473383446094">Võimaldab määrata URL-mustrite loendi, mis täpsustab saidid, millele <ph name="PRODUCT_NAME"/> peaks automaatselt valima kliendi sertifikaadid, kui sait seda taotleb.</translation>
 <translation id="2741921267428646309">See on reeglite loend, mida <ph name="PRODUCT_NAME"/> järgib. Te ei pea neid seadeid käsitsi muutma. Võite aadressilt <ph name="POLICY_TEMPLATE_DOWNLOAD_URL"/> alla laadida hõlpsasti kasutatavad mallid. Toetatud reeglite loend on Chromiumi ja Google Chrome'i puhul sama, kuid nende asukohad Windowsi registris on erinevad. Chromiumi reeglite alguses on <ph name="CHROMIUM_KEY"/>, Google Chrome'i reeglitel <ph name="GOOGLE_CHROME_KEY"/>.</translation>
 <translation id="7003746348783715221">Rakenduse <ph name="PRODUCT_NAME"/> eelistused</translation>
 <translation id="4723829699367336876">Luba tulemüüri läbimine kaugjuurdepääsu kliendist</translation>
@@ -146,6 +157,7 @@
 <translation id="8665913667133665583">Määrab, millised serverid tuleks integreeritud autentimiseks lubatud nimekirja kanda. Integreeritud autentimine lubatakse vaid juhul, kui <ph name="PRODUCT_NAME"/> saab autentimistaotluse puhverserverist või selles lubatud nimekirjas olevast serverist. Eraldage serverite nimed komadega. Metamärgid (*) on lubatud.</translation>
 <translation id="538108065117008131">Teenusel <ph name="PRODUCT_FRAME_NAME"/> järgmist tüüpi sisu käsitsemise lubamine.</translation>
 <translation id="2312134445771258233">Võimaldab seadistada käivitamisel avatavad lehed. Loendi „Käivitamisel avatavad URL-id” sisu eiratakse, kui te ei vali jaotises „Toiming käivitamisel” käsku „Ava URL-ide loend”.</translation>
+<translation id="8344454543174932833">Impordi järjehoidjad vaikebrauserist esmakordsel käitamisel</translation>
 <translation id="7931766636395791713">Võimaldab luua URL-i mustrite loendi, mis määrab saidid, millel on lubatud JavaScripti käitada.</translation>
 <translation id="1019101089073227242">Kasutaja andmete kataloogi määramine</translation>
 <translation id="2030905906517501646">Vaikeotsingupakkuja märksõna</translation>
@@ -168,15 +180,19 @@
 <translation id="681446116407619279">Toetatud autentimisskeemid</translation>
 <translation id="4027608872760987929">Luba vaikeotsingupakkuja</translation>
 <translation id="2223598546285729819">Teatiste vaikeseade</translation>
+<translation id="2417932194355389637">See reegel sunnib lubamisel importima otsingumootorid praegusest vaikebrauserist. Keelamisel vaikeotsingumootorit ei impordita. Kui see pole seadistatud, kasutatakse vaikekäitumist. Lubamisel mõjutab see reegel ka impordidialoogi.</translation>
 <translation id="3793095274466276777">Seadistab vaikebrauseri kontrolli rakenduses <ph name="PRODUCT_NAME"/> ja takistab kasutajaid neid muutmast. Kui lubate seade, kontrollib <ph name="PRODUCT_NAME"/> käivitamisel alati, kas ta on vaikebrauser, ja võimalusel registreerib end ise. Kui keelate seade, ei kontrolli <ph name="PRODUCT_NAME"/> kunagi, kas ta on vaikebrauser, ja kasutajal keelatakse valiku seadmine. Kui te ei määra seadet, võimaldab <ph name="PRODUCT_NAME"/> kasutajal valida, kas see on vaikebrauser ja kas vastasel korral näidatakse kasutajale teatist.</translation>
 <translation id="1530812829012954197">Renderda hostbrauseris alati järgmiste URL-ide mustrid</translation>
+<translation id="913195841488580904">URL-ide loendile juurdepääsu blokeerimine</translation>
 <translation id="6190022522129724693">Hüpikakende vaikeseade</translation>
 <translation id="847472800012384958">Keela kõikidel saitidel hüpikakende näitamine</translation>
 <translation id="4733471537137819387">Integreeritud HTTP autentimisega seotud reeglid</translation>
+<translation id="5428100326165690555">See reegel on iganenud. Kasutage selle asemel IncognitoModeAvailabilityt. Lubab inkognito režiimi brauseris <ph name="PRODUCT_NAME"/>. Kui seade on lubatud või seadistamata, saavad kasutajad avada veebilehti inkognito režiimis. Kui seade on välja lülitatud, ei saa kasutajad avada veebilehti inkognito režiimis.</translation>
 <translation id="4608714268466689965">Võimaldab määrata, kas veebisaitidel on lubatud kuvada töölauateatisi. Töölauateatiste kuvamine võib olla vaikimisi lubatud või keelatud või küsitakse kasutaja käest luba iga kord, kui veebisait soovib töölauateatisi näidata.</translation>
 <translation id="8951350807133946005">Vahemälu kataloogi seadmine</translation>
 <translation id="3866571346358522601">Määrab aja millisekundites, mille möödudes esitatakse seadmehaldusteenusele päring kasutajareeglite teabe kohta. Selle reegli seadmine alistab vaikeväärtuse 3 tundi. Reegli sobivad väärtused on vahemikus 1 800 000 (30 minutit) kuni 86 400 000 (üks ööpäev). Vahemikust väljaspool olevad väärtused viiakse sobivatesse piiridesse.</translation>
 <translation id="1334051495529796396">Määrab, kas loodud Kerberose SPN põhineb kanoonilisel DNS-nimel või algsel sisestatud nimel. Kui lubate seade, jäetakse CNAME-i otsimine vahele ja kasutatakse serveri nime sisestatud kuju. Seade keelamisel määratakse serveri kanooniline nimi CNAME-i otsingu kaudu.</translation>
+<translation id="7117773566421450481">Blokeerib juurdepääsu loendis olevatele URL-idele. See reegel takistab kasutajal laadida veebilehti mustas nimekirjas olevatelt URL-idelt. URL esitatakse kujul „scheme://host:port/path”. Valikuline skeem võib olla http, https või ftp. Blokeeritud on ainult see skeem ja kui ühtegi pole määratud, siis on blokeeritud kõik skeemid. Hostiks saab olla hosti nimi või IP-aadress. Hosti nime alamdomeenid blokeeritakse samuti. Alamdomeenide blokeerimise vältimiseks kaasake hosti nime ette „.”. Eriline hosti nimi „*” blokeerib kõik domeenid. Valikuline port on kehtiv port numbriga 1–65535. Kui ühtegi pole määratud, siis blokeeritakse kõik pordid. Kui valikuline tee on määratud, blokeeritakse ainult selle eesliitega teed. Erandeid saab määrata lubatud URL-ide loendi reegliga. Nende reeglite piiranguks on 100 sisestust ja järgnevaid sisestusi ignoreeritakse.</translation>
 <translation id="166427968280387991">Puhverserver</translation>
 <translation id="2805707493867224476">Luba kõigil saitidel hüpikakende näitamine</translation>
 <translation id="1727394138581151779">Blokeeri kõik pistikprogrammid</translation>
@@ -191,6 +207,7 @@
 <translation id="6524941558928880715">Ava viimati avatud URL-d uuesti</translation>
 <translation id="3167247709504138314">Määrab otsingu soovituste esitamiseks kasutatava otsingumootori URL-i. URL peab sisaldama stringi <ph name="SEARCH_TERM_MARKER"/>, mis asendatakse päringu saatmisel kasutaja sisestatud tekstiga. See on valikuline.</translation>
 <translation id="602728333950205286">Vaikeotsingupakkuja Instant-URL</translation>
+<translation id="3087595738450590532">See reegel sunnib lubamisel importima kodulehe praegusest vaikebrauserist. Keelamisel kodulehte ei impordita. Kui see pole seadistatud, kasutatakse vaikekäitumist.</translation>
 <translation id="1675002386741412210">Toetatud:</translation>
 <translation id="5417368737700340683">Lubab rakenduses <ph name="PRODUCT_NAME"/> funktsiooni Instant ja takistab kasutajaid seadet muutmast. Kui lubate seade, lubatakse rakenduses <ph name="PRODUCT_NAME"/> funktsioon Instant. Kui keelate seade, keelatakse rakenduse <ph name="PRODUCT_NAME"/> funktsioon Instant. Seade lubamisel või keelamisel ei saa kasutajad seadet muuta ega alistada.</translation>
 <translation id="3264793472749429012">Vaikeotsingupakkuja kodeeringud</translation>
@@ -202,7 +219,9 @@
 <translation id="8544375438507658205">Rakenduse <ph name="PRODUCT_FRAME_NAME"/> HTML-i vaikerenderdaja</translation>
 <translation id="7424751532654212117">Keelatud pistikprogrammide loendi erandite loend</translation>
 <translation id="6233173491898450179">Määra allalaadimiskataloog</translation>
+<translation id="2158989228646115511">Kui olekuks on seatud Tõsi (True), ei ilmu Chrome'i veebipoe rakenduste reklaamid uuele vahelehele.</translation>
 <translation id="2299220924812062390">Lubatud pistikprogrammide loendi määramine</translation>
+<translation id="924557436754151212">Impordi salvestatud paroolid vaikebrauserist esimesel käitamisel</translation>
 <translation id="8754704265300028644">Keelab brauseri ajaloo salvestamise rakenduses <ph name="PRODUCT_NAME"/> ja takistab kasutajaid seadet muutmast. Kui seade on lubatud, siis sirvimisajalugu ei salvestata. Kui seade on keelatud või seadistamata, siis salvestatakse sirvimisajalugu.</translation>
 <translation id="1897365952389968758">Luba kõikidel saitidel JavaScripti käitamine</translation>
 <translation id="6931242315485576290">Keela andmete sünkroonimine Google'iga</translation>
@@ -218,9 +237,9 @@
 <translation id="868187325500643455">Kõikidel saitidel pistikprogrammide automaatselt käitamise lubamine</translation>
 <translation id="5226033722357981948">Määramine, kas pistikprogrammide leidja tuleks keelata</translation>
 <translation id="9068358498333390522">Võimaldab määrata, kas veebisaitidel on lubatud näidata hüpikaknaid. Hüpikakende näitamine võib olla lubatud või keelatud kõikidel saitidel.</translation>
+<translation id="3612784419634427880">Saadaval on inkognito režiim.</translation>
 <translation id="7194407337890404814">Vaikeotsingupakkuja nimi</translation>
 <translation id="1843117931376765605">Kasutajareegli värskendussagedus</translation>
-<translation id="1630808801738981930">Sunnib rakenduse <ph name="PRODUCT_NAME"/> iga seansi inkognito režiimile. Kui seade on lubatud, saavad kasutajad avada lehti ainult inkognito režiimis. Kui seade on keelatud või konfigureerimata, saavad kasutajad sirvida ka tavarežiimis.</translation>
 <translation id="5535973522252703021">Kerberose volitusserveri lubatud nimekiri</translation>
 <translation id="4554678280250165996">Määrab, milliseid HTTP autentimisskeeme <ph name="PRODUCT_NAME"/> toetab. Võimalikud väärtused on „basic”, „digest”, „NTLM” ja „negotiate”. Eraldage väärtused komadega.</translation>
 <translation id="5034323863800401760">Keelab arendaja tööriistad ja JavaScripti konsooli. Kui lubate seade, ei pääse kasutajad arendaja tööriistade juurde ja veebisaidi elemente ei saa enam uurida. Kõik arendaja tööriistade või JavaScripti konsooli avamiseks kasutatavad klaviatuuri otseteed ja menüü- või kontekstimenüükirjed keelatakse.</translation>
@@ -241,6 +260,7 @@
 <translation id="5511702823008968136">Luba järjehoidjariba</translation>
 <translation id="3653673712530669976">Võimaldab seadistada HTML-i vaikerenderdusmootori, kui <ph name="PRODUCT_FRAME_NAME"/> on installitud. Vaikeseadena lubatakse hostbrauseril renderdada, kuid võite selle soovi korral alistada ja lasta rakendusel <ph name="PRODUCT_FRAME_NAME"/> HTML-lehti vaikimisi renderdada.</translation>
 <translation id="7848840259379156480">Võimaldab seadistada HTML-i vaikerenderdusmootori, kui <ph name="PRODUCT_FRAME_NAME"/> on installitud. Vaikeseadena on hostbrauseril lubatud renderdada, kuid võite selle soovi korral alistada ja lasta rakendusel <ph name="PRODUCT_FRAME_NAME"/> HTML-lehti vaikimisi renderdada.</translation>
+<translation id="4121350739760194865">Rakenduste reklaamide ilmumise takistamine uuel vahelehel</translation>
 <translation id="4486602758942612946">Kohandage URL-i mustrite loendit, mida tuleb alati renderdada hostbrauseris. Näidismustreid vaadake aadressilt http://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="2257451316169619209">Määrab aja millisekundites, mille möödudes esitatakse seadmehaldusteenusele päring seadme reeglite teabe kohta. Selle reegli seadmine alistab vaikeväärtuse 3 tundi. Reegliga sobivad väärtused on vahemikus 1 800 000 (30 minutit) kuni 86 400 000 (üks ööpäev). Vahemikust väljaspool olevad väärtused viiakse sobivatesse piiridesse.</translation>
 <translation id="1734716591049455502">Kaugjuurdepääsu valikute seadistamine</translation>
@@ -264,6 +284,7 @@
 <translation id="5946082169633555022">Beetakanal</translation>
 <translation id="817926804885880359">Lubab rakenduse <ph name="PRODUCT_NAME"/> automaatse täitmise funktsiooni ja võimaldab kasutajatel automaatselt täita veebivorme varem talletatud teabega, näiteks aadressi või krediitkaardiandmetega. Kui keelate seade, ei saa kasutajad automaatset täitmist kasutada. Kui lubate seade või jätate väärtuse seadistamata, saavad kasutajad automaatset täitmist juhtida. See võimaldab neil seadistada automaatse täitmise profiile ja lülitada soovi korral automaatset täitmist sisse ja välja.</translation>
 <translation id="6938581770853731947">Seadistab avalehe vaiketüübi tootes <ph name="PRODUCT_NAME"/> ja takistab kasutajatel avalehe eelistuste muutmist. Avaleheks võib seada määratud URL-i või uue vahelehe. Kui lubate selle seade, kasutatakse avalehena alati uut vahelehte ja avalehe URL-i eiratakse. Kui keelate selle seade, ei kasutata avalehena kunagi uut vahelehte, kui avalehe URL-iks ei ole märgitud „chrome://newtab”. Seade lubamisel või keelamisel ei saa kasutajad tootes <ph name="PRODUCT_NAME"/> avalehe tüüpi muuta.</translation>
+<translation id="2844287278346661435">Võimaldab juurdepääsu loendis olevatele URL-idele ja erandina URL-ide mustale nimekirjale. Loendi sisestuste vormingut vaadake URL-ide musta nimekirja reegli kirjeldusest. Seda reeglit saab kasutada erandite avamiseks keelavates mustades nimekirjades. Näiteks saab „*” kanda musta nimekirja, et see blokeeriks kõik päringud, ja reeglit saab kasutada juurdepääsu võimaldamiseks URL-ide piiratud loendile. Seda saab kasutada erandite avamiseks kindlatele skeemidele, teiste domeenide alamdomeenidele, portidele või konkreetsetele teedele. Kõige täpsem filter määrab, kas URL on blokeeritud või lubatud. Lubatud URL-ide loend on musta nimekirja suhtes ülimuslik. Selle reegli piiranguks on 100 sisestust, millele järgnevaid sisestusi ignoreeritakse.</translation>
 <translation id="5645779841392247734">Luba küpsised nendel saitidel</translation>
 <translation id="3906388518501362918">Lubab JavaScripti rakenduses <ph name="PRODUCT_NAME"/> ja takistab kasutajaid seadet muutmast. Kui seade on lubatud või seadistamata, saavad veebilehed JavaScripti kasutada. Kui seade on keelatud, ei saa veebilehed JavaScripti kasutada.</translation>
 <translation id="4821854788360803313">Määrab rakenduses <ph name="PRODUCT_NAME"/> keelatud pistikprogrammide loendi ja takistab kasutajaid seadet muutmast. Juhuslike tähemärkide jada vastendamiseks võib kasutada metamärke * ja ?. Märk * vastab mis tahes tähemärkide arvule, ? tähistab valikulist üksikut tähemärki, mis võib, aga ei pruugi esineda. Paomärk on \, mistõttu võite tähemärkide *, ? või \ vastendamiseks lisada nende ette märgi \. Kui lubate seade, ei kasutata pistikprogrammide loendit rakenduses <ph name="PRODUCT_NAME"/> kunagi. Pistikprogrammid märgitakse aknas „about:plugins” keelatuks ja kasutajad ei saa neid lubada. Pange tähele, et seda reeglit saab alistada reegliga EnabledPlugins ja reegliga DisabledPluginsExceptions.</translation>

@@ -14,10 +14,18 @@
 <translation id="5183383917553127163">차단목록에 적용되지 않는 확장 프로그램을 지정할 수 있습니다. 차단목록 값 *은 모든 확장 프로그램이 차단되며 사용자가 허용목록에 나열된 확장 프로그램만 설치할 수 있음을 의미합니다. 기본적으로 모든 확장 프로그램은 허용목록에 포함되지만, 모든 확장 프로그램이 정책에 의해 차단목록에 포함된 경우 허용목록을 사용하여 해당 정책을 무시할 수 있습니다.</translation>
 <translation id="3185009703220253572">버전 <ph name="SINCE_VERSION"/> 이상</translation>
 <translation id="5469825884154817306">이 사이트의 이미지 차단</translation>
+<translation id="7812822355979915508">사용자가 <ph name="PRODUCT_NAME"/>에서 시크릿 모드로 페이지를 열 수 있는지 여부를 지정합니다.
+
+      '사용'을 선택하면 시크릿 모드로 페이지를 열 수 있습니다.
+
+      '사용중지'를 선택하면 시크릿 모드로 페이지를 열 수 없습니다.
+
+      '강제'를 선택하면 시크릿 모드로만 페이지를 열 수 있습니다.</translation>
 <translation id="2908277604670530363">프록시 서버에 대한 최대 동시 연결 수</translation>
 <translation id="3512877396423730277">페이지의 제3자 하위 콘텐츠가 HTTP 기본 인증 대화 상자를 팝업할 수 있는지 여부를 제어합니다. 일반적으로 이 설정은 피싱 차단을 위해 사용 중지되어 있습니다.</translation>
 <translation id="1438955478865681012">확장 프로그램 관련 정책을 설정합니다. 사용자는 차단목록의 확장 프로그램이 허용목록에 포함되지 않는 한 해당 프로그램을 설치할 수 없습니다. 또한 <ph name="EXTENSIONINSTALLFORCELIST_POLICY_NAME"/>에 확장 프로그램을 지정하여 <ph name="PRODUCT_NAME"/>이(가) 강제로 자동 설치하도록 할 수 있습니다. 차단목록은 강제 확장 프로그램 목록보다 우선합니다.</translation>
 <translation id="4070280487546651935">해당 검색 공급자로 검색할 때 검색주소창에서 사용되는 단축키인 키워드를 지정합니다. 선택 사항입니다.</translation>
+<translation id="7271085005502526897">처음 실행 시 기본 브라우저에서 홈페이지 가져오기</translation>
 <translation id="6036523166753287175">원격 액세스 호스트의 방화벽 통과 허용</translation>
 <translation id="1096105751829466145">기본 검색 공급자</translation>
 <translation id="7567380065339179813">이 사이트에서 플러그인 허용</translation>
@@ -34,11 +42,15 @@
 <translation id="5912364507361265851">사용자가 비밀번호 관리자에 암호를 표시할 수 있도록 허용</translation>
 <translation id="6999540307315670568"><ph name="PRODUCT_NAME"/>의 새 탭 페이지에서 북마크바를 사용하도록 설정합니다. 이 설정을 사용하면 <ph name="PRODUCT_NAME"/>은(는) '새 탭' 페이지에 북마크바를 표시합니다. 이 설정을 사용 중지하면 북마크바가 표시되지 않습니다. 이 설정을 사용하거나 사용 중지하면 사용자가 <ph name="PRODUCT_NAME"/>에서 이 설정을 변경하거나 무시할 수 없습니다.</translation>
 <translation id="8828766846428537606"><ph name="PRODUCT_NAME"/>PRODUCT_NAME의 기본 홈페이지를 설정하고 사용자가 변경하지 못하게 합니다. 사용자의 홈페이지 설정은 홈페이지를 새 탭 페이지로 지정하거나 URL로 설정하여 홈페이지 URL을 지정하는 경우에만 완전히 잠깁니다. 홈페이지 URL을 지정하지 않아도 사용자는 계속 'chrome://newtab'을 지정하여 홈페이지를 새 탭 페이지로 설정할 수 있습니다.</translation>
+<translation id="2231817271680715693">처음 실행 시 기본 브라우저에서 인터넷 사용기록 가져오기</translation>
 <translation id="1353966721814789986">시작 페이지</translation>
+<translation id="1969043432858293299">이 정책을 사용하도록 설정하면 현재 기본 브라우저에서 인터넷 사용기록을 강제로 가져옵니다. 사용하지 않는 경우 인터넷 사용기록을 가져오지 않습니다. 설정하지 않으면 기본 동작이 사용됩니다. 또한 사용하는 경우 이 정책은 가져오기 대화상자에 영향을 미칩니다.</translation>
 <translation id="5564962323737505851">비밀번호 관리자를 설정합니다. 비밀번호 관리자를 사용하면 사용자가 저장된 비밀번호를 일반 텍스트로 볼 수 있는지를 선택할 수 있습니다.</translation>
 <translation id="4668325077104657568">기본 이미지 설정</translation>
+<translation id="7161193985878519056">시크릿 모드가 사용중지되었습니다.</translation>
 <translation id="6368403635025849609">이 사이트에서 자바스크립트 허용</translation>
 <translation id="6074963268421707432">모든 사이트에서 데스크톱 알림 표시 허용 안함</translation>
+<translation id="8104962233214241919">이 사이트에 대해 클라이언트 인증서를 자동으로 선택합니다.</translation>
 <translation id="3758249152301468420">개발자 도구 사용 중지</translation>
 <translation id="8665076741187546529">강제로 설치된 확장 프로그램 목록 구성</translation>
 <translation id="6242542007132978836">웹사이트가 자동으로 플러그인을 실행하도록 설정할 수 있습니다. 자동 실행 플러그인은 모든 웹사이트에 대해 허용 또는 거부할 수 있습니다.</translation>
@@ -64,12 +76,13 @@
 <translation id="2711603272213076156">파일 선택 대화 상자의 호출 허용</translation>
 <translation id="1426410128494586442">예</translation>
 <translation id="3381968327636295719">호스트 브라우저를 기본으로 사용</translation>
+<translation id="6520802717075138474">처음 실행 시 기본 브라우저에서 검색엔진 가져오기</translation>
 <translation id="6368011194414932347">홈페이지 URL 설정</translation>
-<translation id="1966609843734913335"><ph name="PRODUCT_NAME"/>에서 시크릿 모드를 사용합니다. 이 설정을 사용하거나 설정하지 않으면 사용자는 웹페이지를 시크릿 모드로 열 수 있습니다. 이 설정을 사용 중지하면 사용자는 웹페이지를 시크릿 모드로 열 수 없습니다.</translation>
 <translation id="3423023819976532001"><ph name="PRODUCT_NAME"/>에서 비밀번호 저장 및 저장된 비밀번호를 사용합니다. 이 설정을 사용하면 <ph name="PRODUCT_NAME"/>에 비밀번호를 저장하여 이후 사이트에 로그인할 때 자동으로 비밀번호를 제공하도록 할 수 있습니다. 이 설정을 사용 중지하면 사용자는 비밀번호를 저장하거나 이미 저장된 비밀번호를 사용할 수 없습니다. 이 설정을 사용하거나 사용 중지하면 사용자가 <ph name="PRODUCT_NAME"/>에서 이 설정을 변경하거나 무시할 수 없습니다.</translation>
 <translation id="2877225735001246144">Kerberos 인증을 협상할 때 CNAME 조회 사용 중지</translation>
 <translation id="6200084307932433394"><ph name="PRODUCT_NAME"/>에서 통합 Google 번역 서비스를 사용합니다. 이 설정을 사용하면 필요한 경우 <ph name="PRODUCT_NAME"/>이(가) 사용자에게 페이지 번역을 제공하는 통합 툴바를 표시합니다. 이 설정을 사용 중지하면 사용자에게 통합 툴바가 표시되지 않습니다. 이 설정을 사용하거나 사용 중지하면 사용자가 <ph name="PRODUCT_NAME"/>에서 이 설정을 변경하거나 무시할 수 없습니다.</translation>
 <translation id="5059221739913673172"><ph name="PRODUCT_NAME"/>이(가) 사용자 데이터를 저장할 디렉토리를 설정합니다. 이 정책을 설정하면 <ph name="PRODUCT_NAME"/>은(는) 사용자가 '--user-data-dir' 플래그를 지정했는지 여부와 상관없이 제공된 디렉토리를 사용합니다.</translation>
+<translation id="6378014222084506939">시크릿 모드 사용 가능 여부</translation>
 <translation id="3528000905991875314">대체 오류 페이지 사용</translation>
 <translation id="4084327080063933392">기본 검색 공급자의 이름을 지정합니다. 비워 둘 경우 검색 URL에서 지정한 호스트 이름이 사용됩니다.</translation>
 <translation id="6114416803310251055">사용중단됨</translation>
@@ -79,6 +92,7 @@
 <translation id="6417878201680958437"><ph name="PRODUCT_NAME"/>이(가) 사용하는 프록시 서버를 지정하도록 허용하며 사용자가 프록시 설정을 변경하지 못하게 합니다. 프록시 서버를 사용하지 않고 항상 직접 연결하도록 선택하면 다른 옵션은 모두 무시됩니다. 시스템 프록시 설정을 사용하거나 프록시 서버를 자동 감지하도록 선택하면 다른 옵션은 모두 무시됩니다. 고정 서버 프록시 모드를 선택하면 '프록시 서버의 주소 또는 URL'과 '쉼표로 구분된 프록시 우회 규칙 목록'에서 추가 옵션을 지정할 수 있습니다. Pac 프록시 스크립트를 사용하도록 선택하면 URL을 'proxy .pac 파일에 대한 URL'의 스크립트로 지정해야 합니다. 자세한 내용은 <ph name="PROXY_HELP_URL"/>을(를) 참조하세요. 이 설정을 사용하면 <ph name="PRODUCT_NAME"/>은(는) 명령줄에서 지정된 모든 프록시 관련 옵션을 무시합니다.</translation>
 <translation id="6899705656741990703">프록시 설정 자동 감지</translation>
 <translation id="4101772068965291327">홈페이지 열기</translation>
+<translation id="6932480224480511443">이 정책을 사용하도록 설정하면 현재 기본 브라우저에서 강제로 북마크를 가져옵니다. 사용하지 않는 경우 북마크를 가져오지 않습니다. 설정하지 않으면 기본 동작이 사용됩니다. 또한 사용하는 경우 이 정책은 가져오기 대화상자에 영향을 미칩니다.</translation>
 <translation id="8992176907758534924">모든 사이트에서 이미지 표시 허용 안함</translation>
 <translation id="8704831857353097849">사용할 수 없는 플러그인 목록</translation>
 <translation id="467449052039111439">URL 목록 열기</translation>
@@ -95,10 +109,11 @@
 <translation id="9035964157729712237">차단목록에서 제외할 확장 프로그램 ID</translation>
 <translation id="3523486089716697173">이미지 표시가 허용되지 않는 사이트를 지정하는 URL 패턴 목록을 설정할 수 있습니다.</translation>
 <translation id="751265277672445578"><ph name="PRODUCT_NAME"/>에서 애플리케이션 언어를 설정하고 사용자가 언어를 변경할 수 없게 합니다. 이 설정을 사용하면 <ph name="PRODUCT_NAME"/>이(가) 지정된 언어를 사용합니다. 설정한 언어가 지원되지 않으면 'en-US'가 대신 사용됩니다. 이 설정을 사용 중지하거나 설정하지 않으면 <ph name="PRODUCT_NAME"/>은(는) 사용자가 지정한 기본 언어(설정한 경우)나 시스템 언어 또는 대체 언어인 'en-US'를 사용합니다.</translation>
+<translation id="3964909636571393861">URL 목록에 대한 액세스 허용</translation>
 <translation id="6022948604095165524">시작 시 동작</translation>
 <translation id="3704185423155638353">자바스크립트 실행이 허용되지 않는 사이트를 지정하는 URL 패턴 목록을 설정할 수 있습니다.</translation>
 <translation id="7628741187268592472">HTTP 인증에 사용할 GSSAPI 라이브러리를 지정합니다. 라이브러리 이름 또는 전체 경로를 설정할 수 있습니다. 설정값이 없으면 <ph name="PRODUCT_NAME"/>이(가) 기본 라이브러리 이름을 사용합니다.</translation>
-<translation id="2435100545355792516">시크릿 모드 강제 사용</translation>
+<translation id="1247111313041645019">이 정책을 사용하도록 설정하면 이전 기본 브라우저에서 저장된 비밀번호를 강제로 가져옵니다. 사용하지 않는 경우 저장된 비밀번호를 가져오지 않습니다. 설정하지 않으면 기본 동작이 사용됩니다. 또한 사용하는 경우 이 정책은 가져오기 대화상자에 영향을 미칩니다.</translation>
 <translation id="605147781209875705">이 정책은 사용 중단되었으며 대신 프록시 모드를 사용합니다. <ph name="PRODUCT_NAME"/>이(가) 사용하는 프록시 서버를 지정할 수 있으며 사용자가 프록시 설정을 변경하지 못하게 합니다. 프록시 서버를 사용하지 않고 항상 직접 연결하도록 선택하면 다른 옵션은 모두 무시됩니다. 시스템 프록시 설정을 사용하거나 프록시 서버를 자동 감지하도록 선택하면 다른 옵션은 모두 무시됩니다. 수동 프록시 설정을 선택하면 '프록시 서버의 주소 또는 URL', 'proxy .pac 파일에 대한 URL' 및 '쉼표로 구분된 프록시 우회 규칙 목록'에서 추가 옵션을 지정할 수 있습니다. 자세한 내용은 <ph name="PROXY_HELP_URL"/>을 참조하세요. 이 설정을 사용하면 <ph name="PRODUCT_NAME"/>은(는) 명령줄에서 지정된 모든 프록시 관련 옵션을 무시합니다.</translation>
 <translation id="6516561898504323308">제 3자 쿠키를 차단합니다. 이 설정을 사용하면 브라우저의 주소 표시줄에 있는 도메인이 출처가 아닌 웹페이지 요소의 쿠키 설정을 금지합니다. 이 설정을 사용하지 않으면 브라우저의 주소 표시줄에 있는 도메인이 출처가 아닌 웹페이지 요소의 쿠키 설정을 허용하며 사용자가 이 설정을 변경하지 못하게 됩니다.</translation>
 <translation id="3864818549971490907">기본 플러그인 설정</translation>
@@ -107,11 +122,13 @@
 <translation id="5770738360657678870">개발자 채널(불안정할 수 있음)</translation>
 <translation id="2959898425599642200">프록시 우회 규칙</translation>
 <translation id="7337941689192402544"><ph name="PRODUCT_NAME"/> 사용자 데이터 디렉토리 설정</translation>
+<translation id="896575211736907134">시크릿 모드를 강제로 사용합니다.</translation>
 <translation id="5326137997741385453"><ph name="PRODUCT_NAME"/>이(가) 디스크에 캐시된 파일을 저장하기 위해 사용할 디렉토리를 구성합니다. 이 정책을 설정하면 <ph name="PRODUCT_NAME"/>은(는) 사용자가 '--disk-cache-dir' 플래그를 지정했는지 여부와 관계없이 제공된 디렉토리를 사용합니다.</translation>
 <translation id="4752274243117690301">이 설정을 True로 설정하는 경우 누락된 플러그인의 자동 검색 및 설치는 <ph name="PRODUCT_NAME"/>에서 사용할 수 없습니다.</translation>
 <translation id="3292147213643666827"><ph name="CLOUD_PRINT_NAME"/>와(과) 컴퓨터에 연결된 기존 프린터 사이의 프록시로 작동하도록 <ph name="PRODUCT_NAME"/>을(를) 설정합니다. 이 설정을 사용하거나 설정하지 않으면 사용자는 Google 계정에서 인증한 클라우드 프린트 프록시를 사용할 수 있습니다. 이 설정을 사용 중지하면 사용자는 프록시를 사용할 수 없으며 컴퓨터는 <ph name="CLOUD_PRINT_NAME"/>와(과)의 프린트 공유를 허용하지 않습니다.</translation>
 <translation id="617204585863800180"><ph name="PRODUCT_NAME"/>에서 네트워크 예측을 사용하며 사용자가 이 설정을 변경할 수 없습니다. 이 설정을 사용하거나 사용 중지하면 사용자가 <ph name="PRODUCT_NAME"/>에서 이 설정을 변경하거나 무시할 수 없습니다.</translation>
 <translation id="6641981670621198190">3D 그래픽 API 지원 사용 중지</translation>
+<translation id="6375011473383446094">사이트에서 인증서를 요청하는 경우 <ph name="PRODUCT_NAME"/>에서 자동으로 클라이언트 인증서를 선택해야 하는 사이트를 지정하는 URL 패턴 목록을 지정하도록 합니다.</translation>
 <translation id="2741921267428646309"><ph name="PRODUCT_NAME"/>PRODUCT_NAME이(가) 준수하는 정책 목록입니다. 이 설정들은 직접 변경할 필요가 없습니다. 손쉽게 사용할 수 있는 템플릿을 POLICY_TEMPLATE_DOWNLOAD_URL에서 다운로드하시면 편리합니다. Chromium 및 Chrome에 대한 지원 정책 목록은 동일하지만 Windows 레지스트리 위치는 다릅니다. Chromium 정책의 경우 (으)로, Chrome 정책의 경우 (으)로 시작합니다.<ph name="POLICY_TEMPLATE_DOWNLOAD_URL"/><ph name="CHROMIUM_KEY"/><ph name="GOOGLE_CHROME_KEY"/></translation>
 <translation id="7003746348783715221"><ph name="PRODUCT_NAME"/> 환경설정</translation>
 <translation id="4723829699367336876">원격 액세스 클라이언트의 방화벽 통과 허용</translation>
@@ -146,6 +163,7 @@
 <translation id="8665913667133665583">통합 인증을 위해 허용목록에 포함되어야 하는 서버를 지정합니다. 통합 인증은 <ph name="PRODUCT_NAME"/>이(가) 이 허용 목록에 있는 서버 또는 프록시에서 인증 요청을 받은 경우에만 사용하도록 설정됩니다. 여러 서버 이름은 쉼표로 구분됩니다. 와일드카드(*)를 사용할 수 있습니다.</translation>
 <translation id="538108065117008131"><ph name="PRODUCT_FRAME_NAME"/>이(가) 다음 콘텐츠 유형을 다루도록 허용</translation>
 <translation id="2312134445771258233">시작 시 로드되는 페이지를 설정할 수 있습니다. '시작 시 동작'에서 'URL 목록 열기'를 선택하지 않으면 '시작 시 열리는 URL' 목록의 콘텐츠는 무시됩니다.</translation>
+<translation id="8344454543174932833">처음 실행 시 기본 브라우저에서 북마크 가져오기</translation>
 <translation id="7931766636395791713">자바스크립트 실행이 허용되는 사이트를 지정하는 URL 패턴 목록을 설정할 수 있습니다.</translation>
 <translation id="1019101089073227242">사용자 데이터 디렉토리 설정</translation>
 <translation id="2030905906517501646">기본 검색 공급자 키워드</translation>
@@ -168,15 +186,34 @@
 <translation id="681446116407619279">지원되는 인증 스키마</translation>
 <translation id="4027608872760987929">기본 검색 공급자 사용</translation>
 <translation id="2223598546285729819">기본 알림 설정</translation>
+<translation id="2417932194355389637">이 정책을 사용하도록 설정하면 현재 기본 브라우저에서 검색엔진을 강제로 가져옵니다. 사용하지 않는 경우 기본 검색엔진을 가져오지 않습니다. 설정하지 않으면 기본 동작이 사용됩니다. 또한 사용하는 경우 이 정책은 가져오기 대화상자에 영향을 미칩니다.</translation>
 <translation id="3793095274466276777"><ph name="PRODUCT_NAME"/>에서 기본 브라우저 확인을 설정하고 사용자가 변경하지 못하게 합니다. 이 설정을 사용하면 <ph name="PRODUCT_NAME"/>은(는) 시작 시 사용하는 브라우저가 기본 브라우저인지 확인하고 가능한 경우 해당 브라우저를 기본 브라우저로 자동 등록합니다. 이 설정을 사용 중지하면 <ph name="PRODUCT_NAME"/>은(는) 기본 브라우저 여부를 확인하지 않고 사용자가 이 옵션을 설정하지 못하도록 합니다. 이 설정을 지정하지 않으면 <ph name="PRODUCT_NAME"/>은(는) 사용자가 기본 브라우저 여부를 확인하고 기본 브라우저가 아닐 때 사용자 알림 표시를 할지를 선택할 수 있도록 허용합니다.</translation>
 <translation id="1530812829012954197">호스트 브라우저에서 다음 URL 패턴을 항상 렌더링</translation>
+<translation id="913195841488580904">URL 목록에 대한 액세스 차단</translation>
 <translation id="6190022522129724693">기본 팝업 설정</translation>
 <translation id="847472800012384958">모든 사이트에서 팝업 표시 허용 안함</translation>
 <translation id="4733471537137819387">통합 HTTP 인증과 관련된 정책입니다.</translation>
+<translation id="5428100326165690555">이 정책은 사용되지 않습니다. 대신 IncognitoModeAvailability를 사용하세요.
+      <ph name="PRODUCT_NAME"/>에서 시크릿 모드를 사용하도록 설정합니다.
+
+      이 설정을 사용하거나 설정하지 않으면 사용자가 시크릿 모드로 웹페이지를 열 수 있습니다.
+
+      이 설정을 사용하지 않는 경우 시크릿 모드로 웹페이지를 열 수 없습니다.</translation>
 <translation id="4608714268466689965">웹사이트에서 데스크톱 알림을 표시하도록 허용할지 여부를 설정할 수 있습니다. 데스크톱 알림 표시는 기본적으로 허용하거나 기본적으로 거부하거나 또는 웹사이트가 데스크톱 알림을 표시할 때마다 사용자에게 알리도록 할 수 있습니다.</translation>
 <translation id="8951350807133946005">디스크 캐시 디렉토리 설정</translation>
 <translation id="3866571346358522601">사용자 정책 정보에 대해 기기 관리 서비스를 검색하는 시간(밀리초)을 지정합니다. 이 정책을 설정하면 기본값인 3시간이 무시됩니다. 이 정책에 대한 유효한 값은 30분(1800000밀리초)에서 1일(86400000) 사이이며, 이 범위에 포함되지 않는 모든 값은 각 경계값으로 고정됩니다.</translation>
 <translation id="1334051495529796396">생성되는 Kerberos SPN이 표준 DNS 이름을 기반으로 할지 또는 원래 입력된 이름을 기반으로 할 지를 지정합니다. 이 설정을 사용하면 CNAME 조회를 건너뛰고 입력된 서버 이름을 사용합니다. 이 설정을 사용 중지하면 CNAME 조회를 통해 서버의 표준 이름을 확인합니다.</translation>
+<translation id="7117773566421450481">목록에 있는 URL에 대한 액세스를 차단합니다.
+
+      이 정책은 사용자가 차단된 URL의 웹페이지를 로드하지 못하게 합니다.
+
+      URL의 형식은 '스킴://호스트:포트/경로'입니다.
+      선택 스킴은 http, https 또는 ftp일 수 있습니다. 이 스킴만 차단됩니다. 아무 것도 지정하지 않으면 모든 스킴이 차단됩니다.
+      호스트는 호스트 이름 또는 IP 주소일 수 있습니다. 호스트 이름의 하위 도메인도 차단됩니다. 하위 도메인이 차단되지 않도록 하려면 호스트 이름 앞에 '.' 을 포함하세요. 특수 호스트 이름('*')은 전체 도메인을 차단합니다.
+      선택 포트는 1에서 65535까지 유효한 포트 번호입니다. 아무 것도 지정하지 않으면 전체 포트가 차단됩니다.
+      선택 경로를 지정하는 경우 해당 프리픽스가 있는 경로만 차단됩니다.
+
+      URL 허용 목록 정책에 예외를 정의할 수 있습니다. 이러한 정책의 항목 수는 100개로 제한되며 이후 항목은 무시됩니다.</translation>
 <translation id="166427968280387991">프록시 서버</translation>
 <translation id="2805707493867224476">모든 사이트에서 팝업 표시 허용</translation>
 <translation id="1727394138581151779">모든 플러그인 차단</translation>
@@ -191,6 +228,7 @@
 <translation id="6524941558928880715">가장 최근에 열어본 URL 다시 열기</translation>
 <translation id="3167247709504138314">추천 검색어를 제공할 때 사용하는 검색 엔진의 URL을 지정합니다. URL은 <ph name="SEARCH_TERM_MARKER"/> 문자열을 포함해야 하며 검색 시 사용자가 입력한 텍스트로 대체됩니다. 선택 사항입니다.</translation>
 <translation id="602728333950205286">기본 검색 공급자 순간 검색 URL</translation>
+<translation id="3087595738450590532">이 정책을 사용하도록 설정하면 현재 기본 브라우저에서 홈페이지를 강제로 가져옵니다. 사용하지 않는 경우 홈페이지를 가져오지 않습니다. 설정하지 않으면 기본 동작이 사용됩니다.</translation>
 <translation id="1675002386741412210">지원:</translation>
 <translation id="5417368737700340683"><ph name="PRODUCT_NAME"/>의 순간 검색 기능을 사용하고 사용자가 이 설정을 변경하지 못하게 합니다. 이 설정을 사용하면 <ph name="PRODUCT_NAME"/> 순간 검색을 사용할 수 있습니다. 이 설정을 사용 중지하면 <ph name="PRODUCT_NAME"/> 순간 검색은 사용 중지됩니다. 이 설정을 사용하거나 사용 중지하면 사용자가 이 설정을 변경하거나 무시할 수 없습니다.</translation>
 <translation id="3264793472749429012">기본 검색 공급자 인코딩</translation>
@@ -202,7 +240,9 @@
 <translation id="8544375438507658205"><ph name="PRODUCT_FRAME_NAME"/>의 기본 HTML 렌더러</translation>
 <translation id="7424751532654212117">사용 중지된 플러그인 목록에 대한 예외 목록</translation>
 <translation id="6233173491898450179">다운로드 디렉토리 설정</translation>
+<translation id="2158989228646115511">True로 설정하면 Chrome 웹 스토어의 앱 프로모션이 새 탭 페이지에 표시되지 않습니다.</translation>
 <translation id="2299220924812062390">사용 설정한 플러그인 목록 지정</translation>
+<translation id="924557436754151212">처음 실행 시 기본 브라우저에서 저장된 비밀번호 가져오기</translation>
 <translation id="8754704265300028644"><ph name="PRODUCT_NAME"/>에서 브라우저 기록 저장을 사용 중지하고 사용자가 이 설정을 변경하지 못하게 합니다. 이 설정을 사용하면 브라우저 기록이 저장되지 않습니다. 이 설정을 사용 중지하거나 설정하지 않으면 브라우저 기록이 저장됩니다.</translation>
 <translation id="1897365952389968758">모든 사이트에서 자바스크립트 실행 허용</translation>
 <translation id="6931242315485576290">Google과 데이터 동기화 사용 중지</translation>
@@ -218,9 +258,9 @@
 <translation id="868187325500643455">모든 사이트에서 플러그인 자동 실행 허용</translation>
 <translation id="5226033722357981948">플러그인 Finder를 사용 중지해야 하는지 여부 지정</translation>
 <translation id="9068358498333390522">웹사이트에서 팝업 표시를 허용할지 여부를 설정할 수 있습니다. 모든 웹사이트에 대해 팝업 표시를 허용 또는 거부할 수 있습니다.</translation>
+<translation id="3612784419634427880">시크릿 모드 사용 가능</translation>
 <translation id="7194407337890404814">기본 검색 공급자 이름</translation>
 <translation id="1843117931376765605">사용자 정책에 대한 새로고침 빈도</translation>
-<translation id="1630808801738981930"><ph name="PRODUCT_NAME"/>에서 모든 세션에서 강제로 시크릿 모드를 사용합니다. 해당 설정을 사용하는 경우 시크릿 모드에서만 페이지를 열 수 있습니다. 해당 설정을 사용하지 않거나 설정하지 않은 경우 일반 모드에서도 브라우저를 사용할 수 있습니다.</translation>
 <translation id="5535973522252703021">Kerberos 위임 서버 허용목록</translation>
 <translation id="4554678280250165996"><ph name="PRODUCT_NAME"/>에서 지원하는 HTTP 인증 스키마를 지정합니다. 사용 가능한 값은 'basic', 'digest', 'ntlm' 및 'negotiate'입니다. 여러 값은 쉼표로 구분합니다.</translation>
 <translation id="5034323863800401760">개발자 도구 및 자바스크립트 콘솔을 사용 중지합니다. 이 설정을 사용하면 개발자 도구에 액세스할 수 없으며 웹사이트 요소를 검사할 수 없습니다. 개발자 도구나 자바스크립트 콘솔을 여는 모든 단축키와 메뉴 항목, 컨텍스트 메뉴 항목의 사용이 중지됩니다.</translation>
@@ -241,6 +281,7 @@
 <translation id="5511702823008968136">북마크바 사용</translation>
 <translation id="3653673712530669976"><ph name="PRODUCT_FRAME_NAME"/>이(가) 설치될 때 기본 HTML 렌더러를 설정할 수 있습니다. 기본 설정은 호스트 브라우저가 렌더링을 수행하도록 허용하지만 원하는 경우 기본 설정을 무시하고 <ph name="PRODUCT_FRAME_NAME"/>이(가) HTML 페이지를 기본적으로 렌더링하도록 할 수 있습니다.</translation>
 <translation id="7848840259379156480"><ph name="PRODUCT_FRAME_NAME"/>이(가) 설치될 때 기본 HTML 렌더러를 설정할 수 있습니다. 기본 설정은 호스트 브라우저가 렌더링을 수행하도록 허용하지만 원하는 경우 기본 설정을 무시하고 <ph name="PRODUCT_FRAME_NAME"/>이(가) HTML 페이지를 기본적으로 렌더링하도록 할 수 있습니다.</translation>
+<translation id="4121350739760194865">앱 프로모션이 새 탭 페이지에 표시되지 않도록 합니다.</translation>
 <translation id="4486602758942612946">항상 호스트 브라우저에서 렌더링되어야 하는 URL 패턴 목록을 맞춤설정합니다. 자세한 패턴 예는 http://www.chromium.org/developers/how-tos/chrome-frame-getting-started를 참조하세요.</translation>
 <translation id="2257451316169619209">기기 정책 정보에 대해 기기 관리 서비스를 검색하는 시간(밀리초)을 지정합니다. 이 정책을 설정하면 기본값인 3시간이 무시됩니다. 이 정책에 대한 유효한 값은 30분(1800000밀리초)에서 1일(86400000) 사이이며, 이 범위에 포함되지 않는 모든 값은 각 경계값으로 고정됩니다.</translation>
 <translation id="1734716591049455502">원격 액세스 옵션 설정</translation>
@@ -264,6 +305,15 @@
 <translation id="5946082169633555022">베타 채널</translation>
 <translation id="817926804885880359"><ph name="PRODUCT_NAME"/>의 자동완성 기능을 사용하며 사용자가 주소나 신용카드 정보와 같이 이전에 저장한 정보를 사용하여 웹 양식을 자동으로 완성할 수 있습니다. 이 설정을 사용 중지하면 사용자가 자동완성을 사용할 수 없습니다. 이 설정을 사용하거나 값을 설정하지 않으면 자동완성을 사용자가 제어할 수 있게 됩니다. 사용자가 자동완성 프로필을 설정하고 원하는 대로 자동완성을 설정하거나 해제할 수 있습니다.</translation>
 <translation id="6938581770853731947"><ph name="PRODUCT_NAME"/>PRODUCT_NAME에서 기본 홈페이지 유형을 설정하여 사용자가 홈페이지 환경설정을 변경할 수 없게 합니다. 홈페이지는 여기에서 지정하는 URL로 설정하거나 새 탭 페이지로 설정할 수 있습니다. 이 설정을 사용하면 새 탭 페이지가 항상 홈페이지로 사용되며 홈페이지 URL 위치는 무시됩니다. 이 설정을 사용 중지하면 사용자 홈페이지 URL을 'chrome://newtab'으로 설정하지 않는 한 사용자 홈페이지는 새 탭 페이지가 될 수 없습니다. 이 설정을 사용하거나 사용 중지하면 사용자가 PRODUCT_NAME에서 홈페이지 유형을 변경할 수 없습니다 <ph name="PRODUCT_NAME"/>.</translation>
+<translation id="2844287278346661435">목록에 있는 URL을 URL 차단 목록에 대한 예외로 취급해 액세스를 허용합니다.
+
+      이 목록의 형식에 대해서는 URL 차단 목록 정책의 설명을 확인하세요.
+
+      이 정책은 제한적인 차단 목록에 대한 예외 목록을 여는 데 사용될 수 있습니다. 예를 들어 '*'를 차단 목록에 등록하여 모든 요청을 차단할 수 있으며, 제한된 URL 목록에 대한 액세스를 허용하는 데 사용될 수 있습니다. 또한 특정 스킴, 다른 도메인의 하위 도메인, 포트 또는 특정 경로에 대한 예외 목록을 여는 데 사용될 수 있습니다.
+
+      가장 구체적인 필터가 URL 차단 또는 허용 여부를 결정합니다. 허용 목록은 차단 목록보다 우선합니다.
+
+      이 정책의 항목 수는 100개로 제한되며 이후 항목은 무시됩니다.</translation>
 <translation id="5645779841392247734">이 사이트에서 쿠키 허용</translation>
 <translation id="3906388518501362918"><ph name="PRODUCT_NAME"/>에서 자바스크립트를 사용하고 사용자가 이 설정을 변경하지 못하게 합니다. 이 설정을 사용하거나 설정하지 않으면 웹페이지는 자바스크립트를 사용할 수 있습니다. 이 설정을 사용 중지하면 웹페이지는 자바스크립트를 사용할 수 없습니다.</translation>
 <translation id="4821854788360803313"><ph name="PRODUCT_NAME"/>에서 사용 중지되는 플러그인 목록을 지정하며 사용자가 이 설정을 변경하지 못하게 합니다. 와일드카드 문자 '*'와 '?'는 임의의 문자 시퀀스를 비교하는 데 사용됩니다. '*'는 임의 개수의 문자를 비교하며 '?'는 선택적 단일 문자를 지정합니다. 즉, 0이나 하나의 문자를 비교합니다. 실제 '*', '?', 또는'\'를 비교하는 이스케이프 문자는 '\'이며 앞에 '\'를 넣을 수 있습니다. 이 설정을 사용하면 지정된 플러그인 목록이 <ph name="PRODUCT_NAME"/>에서 사용되지 않습니다. 플러그인은 'about:plugins'에서 사용 중지로 표시되며 사용자가 이를 사용하도록 설정할 수 없습니다. 이 정책은 EnabledPlugins 및 DisabledPluginsExceptions을 무시합니다.</translation>

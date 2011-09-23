@@ -31,6 +31,7 @@
 <translation id="8227755444512189073">Google Chrome käynnistää ulkopuolisen ohjelman käsitelläkseen <ph name="SCHEME"/> linkkiä. Pyydetty linkki on <ph name="PROTOLINK"/>.</translation>
 <translation id="8290100596633877290">Hups! Google Chrome kaatui. Käynnistetäänkö uudelleen?</translation>
 <translation id="1281036569101707544">Google Chrome <ph name="TERMS_OF_SERVICE_LINK"/></translation>
+<translation id="3487814320513494737">Chromen uusi välilehti -sivua on uudistettu. Vaihtele kohtien välillä napsauttamalla tunnisteita. Chrome muistaa asetuksesi seuraavalla kerralla.</translation>
 <translation id="1697213158865901863">Google Chrome -kehys</translation>
 <translation id="2653935705142821164">Chrome Renderer</translation>
 <translation id="8446794773162156990">Google Chrome käyttäytyy huonosti</translation>
@@ -39,7 +40,7 @@
 <translation id="3089968997497233615">Google Chromesta on saatavillaa uusi, turvallisempi versio.</translation>
 <translation id="5037239767309817516">Sulje kaikki Chrome-ikkunat ja käynnistä selain uudelleen, jotta muutos tulee voimaan.</translation>
 <translation id="7451721381978275812">Virheelliset argumentit. Google Chrome -kehystä ei voi asentaa ilman Google Chromen asennusta.</translation>
-<translation id="5809236835374558741">Tietokoneessa on jo uudempi Google Chrome -kehyksen versio. Jos ohjelma ei toimi, poista Google Chrome -kehyksen asennus ja lataa se uudelleen.</translation>
+<translation id="4585888816441913908">Tässä tietokoneessa on jo Google Chromen uudempi versio ja Google Chrome -kehys. Jos sovellus ei toimi, poista sekä Google Chrome että Google Chrome -kehys ja yritä uudelleen.</translation>
 <translation id="6368958679917195344">Chrome-käyttöjärjestelmää tukee toinen <ph name="BEGIN_LINK_CROS_OSS"/>avoimen lähdekoodin ohjelmisto<ph name="END_LINK_CROS_OSS"/>.</translation>
 <translation id="4357846314885556934">Google Chrome ei toimi</translation>
 <translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
@@ -64,7 +65,6 @@
 <translation id="3847841918622877581">Google Chrome voi käyttää verkkopalveluita parantaakseen selauskokemusta.</translation>
 <translation id="7436949144778751379">Google Chrome vaatii Windows XP:n tai uudemman version. Jotkin ominaisuudet eivät välttämättä toimi.</translation>
 <translation id="7100330187273168372">Google Chrome ei voi lukea datahakemistoa :\n\n<ph name="USER_DATA_DIRECTORY"/>, eikä kirjoittaa siihen</translation>
-<translation id="5167270755190684957">Google Chromen teemagalleria</translation>
 <translation id="7938170099933661772">Google Chrome ei voi näyttää tulostuksen esikatselua PDF-dokumenttien katseluohjelman ollessa pois käytöstä. Jos haluat nähdä esikatselun, käy osoitteessa <ph name="BEGIN_LINK"/>$1<ph name="END_LINK"/>, ota PDF-dokumenttien katselu käyttöön ja yritä uudelleen.</translation>
 <translation id="6757767188268205357">Älä häiritse</translation>
 <translation id="2290095356545025170">Haluatko varmasti poistaa Google Chromen?</translation>
@@ -74,14 +74,16 @@
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">Google Chromen avulla voit napsauttaa puhelinnumeroa verkossa ja soittaa siihen Skypellä!</translation>
 <translation id="3612333635265770873">Samanniminen moduuli on aiheuttanut aiemmin ristiriitoja Google Chromen kanssa.</translation>
+<translation id="2679385451463308372">Tulosta järjestelmän ikkunan kautta...</translation>
 <translation id="5947389362804196214">Asetuksiasi ei voi lukea.\n\nKaikkia toimintoja ei voi välttämättä käyttää eikä asetuksiin tehtäviä muutoksia tallenneta.</translation>
 <translation id="6650142020817594541">Tämä sivusto suosittelee käyttämään Google Chrome -kehystä (jo asennettu).</translation>
 <translation id="4127951844153999091">Tällöin varmenteessa mainittu osoite ei vastaa sen sivuston osoitetta, johon selaimesi yritti siirtyä. Yksi mahdollinen syy on, että hyökkääjä on siepannut yhteytesi ja esittää eri sivuston varmenteen. Toinen syy voi olla se, että palvelin on määritetty palauttamaan sama varmenne useille sivustoille, myös sille, johon yrität päästä, vaikka varmenne ei kelpaa kaikissa kyseessä olevissa sivustoissa. <ph name="DOMAIN2"/><ph name="DOMAIN"/> Jos jatkat, Chrome ei tarkista enää muita vastaamattomia nimiä. Yleensä on parempi olla jatkamatta tästä eteenpäin.</translation>
 <translation id="2712549016134575851">Ristiriita toisen asennetun sovelluksen kanssa havaittu.</translation>
+<translation id="5577648424992741236">Tietokoneessa on jo Google Chrome -kehyksen uudempi versio. Jos sovellus ei toimi, poista Google Chrome -kehys ja yritä uudelleen.</translation>
 <translation id="7018032895891496381">Google Chrome käyttää oletushakukonettasi, joka on tällä hetkellä <ph name="PAGE_TITLE"/>. Haluatko säilyttää oletushakukoneen samana?</translation>
 <translation id="7161904924553537242">Tervetuloa Google Chromeen</translation>
-<translation id="5211087808649701653">Avaa oma tulostusikkuna</translation>
 <translation id="8669527147644353129">Google Chrome Helper</translation>
+<translation id="1399397803214730675">Tietokoneessa on jo Google Chromen uudempi versio. Jos sovellus ei toimi, poista Google Chrome ja yritä uudelleen.</translation>
 <translation id="3444832043240812445">Tällä sivulla näkyy tietoja viimeaikaisista kaatumisista vain, jos <ph name="BEGIN_LINK"/>otat kaatumisraportit käyttöön<ph name="END_LINK"/>.</translation>
 <translation id="8614913330719544658">Google Chrome ei vastaa. Käynnistetäänkö uudelleen?</translation>
 <translation id="2681064822612051220">Järjestelmästä löytyi ristiriidan aiheuttava toinen Google Chromen asennus. Poista tuote ja yritä uudelleen.</translation>
@@ -99,7 +101,6 @@
 <translation id="2769762047821873045">Google Chrome ei ole oletusselain.</translation>
 <translation id="7825851276765848807">Asennus epäonnistui tuntemattoman virheen vuoksi. Lataa Google Chrome uudelleen.</translation>
 <translation id="3335672657969596251">Google Chrome ei tue <ph name="OS_NAME"/>-käyttöjärjestelmää</translation>
-<translation id="3636771339108070045">Tietokoneessa on jo uudempi Google Chromen versio. Jos ohjelma ei toimi, poista Google Chromen asennus ja lataa se uudelleen.</translation>
 <translation id="5334545119300433702">Tämän moduulin tiedetään aiheuttavan ristiriitoja Google Chromen kanssa.</translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
 <translation id="1001534784610492198">Asennusohjelman arkistotiedosto on vioittunut tai se ei kelpaa. Lataa Google Chrome uudelleen.</translation>

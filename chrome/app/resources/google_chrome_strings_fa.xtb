@@ -31,6 +31,7 @@
 <translation id="8227755444512189073">برای کار با پیوندهای <ph name="SCHEME"/>، Google Chrome باید برنامه کاربردی خارجی را راه اندازی کند. پیوند <ph name="PROTOLINK"/> مورد نیاز است.</translation>
 <translation id="8290100596633877290">اوه! Google Chrome با اشکال مواجه شده است. دوباره راه اندازی شود؟</translation>
 <translation id="1281036569101707544"><ph name="TERMS_OF_SERVICE_LINK"/> Google Chrome</translation>
+<translation id="3487814320513494737">مدل صفحه برگه جدید Chrome تغییر کرده است. با کلیک روی این برچسب‌ها، بین بخش‌های مختلف جابجا شوید. Chrome تنظیمات برگزیده شما را برای فرصت بعدی به خاطر می‌سپارد.</translation>
 <translation id="1697213158865901863">Google Chrome Frame</translation>
 <translation id="2653935705142821164">تولید کننده تصویر Chrome</translation>
 <translation id="8446794773162156990">Google Chrome درست عمل نمی کند</translation>
@@ -39,7 +40,7 @@
 <translation id="3089968997497233615">نسخه جدید و امن تری از Google Chrome موجود است.</translation>
 <translation id="5037239767309817516">لطفاً همه پنجره های Google Chrome را ببندید و برای اعمال این تغییر، دوباره آن را راه اندازی کنید.</translation>
 <translation id="7451721381978275812">آرگومان های نامعتبر. Google Chrome Frame در حالت آماده بدون نصب Google Chrome امکان پذیر نیست.</translation>
-<translation id="5809236835374558741">این رایانه در حال حاضر دارای نسخه جدیدتری از Google Chrome Frame است. اگر نرم افزار کار نمی کند، لطفاً Google Chrome Frame را حذف نصب کنید و دوباره آن را دانلود کنید.</translation>
+<translation id="4585888816441913908">این رایانه از قبل یک نسخه جدیدتر از Google Chrome و Google Chrome Frame دارد. اگر نرم‌افزار کار نمی‌کند، Google Chrome و Google Chrome Frame را حذف نصب کرده و دوباره امتحان کنید.</translation>
 <translation id="6368958679917195344">Chrome OS با یک <ph name="BEGIN_LINK_CROS_OSS"/>نرم افزار منبع آزاد<ph name="END_LINK_CROS_OSS"/> دیگر امکان پذیر است.</translation>
 <translation id="4357846314885556934">Google Chrome درست عمل نمی کند</translation>
 <translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
@@ -64,7 +65,6 @@
 <translation id="3847841918622877581">Google Chrome ممکن است از سرویس های وب برای بهبود تجربه مرور استفاده کند.</translation>
 <translation id="7436949144778751379">Google Chrome به Windows XP یا نسخه بالاتر آن نیاز دارد. برخی از ویژگیها ممکن است کار نکند.</translation>
 <translation id="7100330187273168372">Google Chrome نمی تواند دایرکتوری داده های خود را بخواند یا در آن بنویسد:\n\n<ph name="USER_DATA_DIRECTORY"/></translation>
-<translation id="5167270755190684957">گالری طرح های زمینه Google Chrome</translation>
 <translation id="7938170099933661772">در صورتی که نمایشگر PDF داخلی غیر فعال شده باشد، Google Chrome نمی تواند پیش نمایش چاپ را نشان دهد. به منظور مشاهده پیش نمایش، لطفاً به <ph name="BEGIN_LINK"/>$1<ph name="END_LINK"/> مراجعه کنید و &quot;نمایشگر Chrome PDF&quot; را فعال کرده و دوباره امتحان کنید.</translation>
 <translation id="6757767188268205357">مرا اذیت نکن</translation>
 <translation id="2290095356545025170">آیا می خواهید Google Chrome را غیر فعال کنید؟</translation>
@@ -74,14 +74,16 @@
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">Google Chrome به شما اجازه می دهد بر روی شماره تلفن روی وب کلیک کرده و از طریق Skype تماس بگیرید!</translation>
 <translation id="3612333635265770873">یک مدول با همین نام با Google Chrome تداخل دارد.</translation>
+<translation id="2679385451463308372">چاپ با استفاده از کادر گفتگوی سیستم...</translation>
 <translation id="5947389362804196214">موارد برگزیده شما را نمی توان خواند.\n\nبعضی ویژگیها ممکن است در دسترس نباشند و تغییرات موارد برگزیده ذخیره نخواهد شد.</translation>
 <translation id="6650142020817594541">این سایت Google Chrome Frame را توصیه می کند (در حال حاضر نصب است).</translation>
 <translation id="4127951844153999091">در این مورد، آدرس لیست شده در گواهی با آدرس وب سایتی که مرورگر شما سعی در باز کردن آن را داشت یکی نیست. یک دلیل آن ممکن است این باشد که مهاجمی از ارتباطات شما جلوگیری می کند، این مهاجم یک گواهی را برای وب سایت دیگری ارائه می دهد و این باعث عدم تطابق می شود. دلیل ممکن دیگر این است که سرور طوری تنظیم شده است که یک گواهی را برای چند وب سایت برمی گرداند از جمله همین وب سایتی که می خواهید بازدید کنید، اما آن گواهی برای همه آن وب سایتها معتبر نیست. Google Chrome اطمینان دارد که به &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; دسترسی داشته اید، اما نمی تواند تأیید کند که این همان سایت &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; است که شما سعی در برقراری ارتباط با آن را داشتید. اگر ادامه دهید، Chrome دیگر عدم تطابق نام ها را بررسی نمی کند. بطور کلی، بهتر است بدون در نظر گرفتن این نکته ادامه ندهید.</translation>
 <translation id="2712549016134575851">تداخلی با یک برنامه کاربردی نصب شده دیگر شناسایی شد.</translation>
+<translation id="5577648424992741236">این رایانه در حال حاضر دارای نسخه جدیدتری از Google Chrome Frame است. اگر نرم‌افزار کار نمی‌کند، لطفاً Google Chrome Frame را حذف نصب کنید و دوباره امتحان کنید.</translation>
 <translation id="7018032895891496381">Google Chrome از موتور جستجوی پیش فرض شما استفاده می کند، که اکنون روی <ph name="PAGE_TITLE"/> تنظیم شده است. آیا می خواهید موتور جستجوی پیش فرض خود را حفظ کنید؟</translation>
 <translation id="7161904924553537242">به Google Chrome خوش آمدید</translation>
-<translation id="5211087808649701653">راه‌اندازی گفتگوی چاپ بومی</translation>
 <translation id="8669527147644353129">راهنمای Google Chrome</translation>
+<translation id="1399397803214730675">این رایانه از قبل دارای نسخه جدیدتر Google Chrome است. اگر نرم‌افزار کار نمی‌کند، لطفاً Google Chrome را حذف نصب کرده و دوباره امتحان کنید.</translation>
 <translation id="3444832043240812445">در صورتی که <ph name="BEGIN_LINK"/>ارسال گزارش خرابی را فعال کنید<ph name="END_LINK"/>، این صفحه فقط اطلاعاتی را در مورد مشکلات اخیر شما نشان می دهد.</translation>
 <translation id="8614913330719544658">Google Chrome پاسخ نمی دهد. مجدداً راه اندازی شود؟</translation>
 <translation id="2681064822612051220">یک مورد نصب مغایر با Google Chrome در سیستم یافت شد. لطفاً آنرا حذف نصب کنید و دوباره امتحان کنید.</translation>
@@ -99,7 +101,6 @@
 <translation id="2769762047821873045">Google Chrome مرورگر پیش فرض شما نیست.</translation>
 <translation id="7825851276765848807">بدلیل خطای نامشخص، نصب ناموفق بود. لطفاً دوباره Google Chrome را دانلود کنید.</translation>
 <translation id="3335672657969596251">Google Chrome از <ph name="OS_NAME"/> پشتیبانی نمی کند.</translation>
-<translation id="3636771339108070045">این رایانه دارای نسخه جدیدتر Google Chrome است. اگر نرم افزار کار نمی کند، لطفاً Google Chrome را غیر فعال کنید و دوباره آن را دانلود کنید.</translation>
 <translation id="5334545119300433702">این مدول با Google Chrome تداخل دارد.</translation>
 <translation id="3360895254066713204">راهنمای Chrome</translation>
 <translation id="1001534784610492198">آرشیو نصب کننده خراب یا نامعتبر است. لطفا دوباره Google Chrome را دانلود کنید.</translation>

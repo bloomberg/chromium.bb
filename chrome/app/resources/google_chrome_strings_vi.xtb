@@ -31,6 +31,7 @@
 <translation id="8227755444512189073">Google Chrome cần khởi chạy ứng dụng ngoài để xử lý các liên kết <ph name="SCHEME"/>. Liên kết được yêu cầu là <ph name="PROTOLINK"/>.</translation>
 <translation id="8290100596633877290">Rất tiếc! Google Chrome đã xảy ra lỗi. Khởi chạy lại ngay bây giờ?</translation>
 <translation id="1281036569101707544"><ph name="TERMS_OF_SERVICE_LINK"/> của Google Chrome</translation>
+<translation id="3487814320513494737">Trang tab mới của Chrome đã được lập mô hình lại. Chuyển đổi giữa các phần bằng cách nhấp vào các nhãn này. Chrome sẽ ghi nhớ tùy chọn của bạn cho lần tiếp theo.</translation>
 <translation id="1697213158865901863">Google Chrome Frame</translation>
 <translation id="2653935705142821164">Trình kết xuất của Chrome</translation>
 <translation id="8446794773162156990">Google Chrome hoạt động không đúng</translation>
@@ -39,7 +40,7 @@
 <translation id="3089968997497233615">Đã có phiên bản Google Chrome mới và an toàn hơn.</translation>
 <translation id="5037239767309817516">Hãy đóng tất cả các cửa sổ Google Chrome và khởi chạy lại Google Chrome để thay đổi này có hiệu lực.</translation>
 <translation id="7451721381978275812">Đối số không hợp lệ. Không thể cài đặt Google Chrome Frame ở chế độ sẵn sàng nếu như không đồng thời cài Google Chrome.</translation>
-<translation id="5809236835374558741">Máy tính này đã cài đặt phiên bản Google Chrome Frame mới hơn. Nếu phần mềm không hoạt động, vui lòng gỡ cài đặt Google Chrome Frame và tải xuống lại phần mềm.</translation>
+<translation id="4585888816441913908">Máy tính này đã có phiên bản mới hơn của Google Chrome và Google Chrome Frame. Nếu phần mềm này không hoạt động, vui lòng gỡ cài đặt cả Google Chrome và Google Chrome Frame rồi thử lại.</translation>
 <translation id="6368958679917195344">Chrome OS trở nên khả thi là nhờ <ph name="BEGIN_LINK_CROS_OSS"/>phần mềm nguồn mở<ph name="END_LINK_CROS_OSS"/> bổ sung.</translation>
 <translation id="4357846314885556934">Google Chrome Hoạt động không đúng</translation>
 <translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
@@ -64,7 +65,6 @@
 <translation id="3847841918622877581">Google Chrome có thể sử dụng dịch vụ web để cải thiện trải nghiệm duyệt web của bạn.</translation>
 <translation id="7436949144778751379">Google Chrome yêu cầu Windows XP hoặc phiên bản mới hơn. Một số tính năng không thể hoạt động.</translation>
 <translation id="7100330187273168372">Google Chrome không thể đọc và ghi lên thư mục dữ liệu:\n\n<ph name="USER_DATA_DIRECTORY"/></translation>
-<translation id="5167270755190684957">Thư viện Chủ đề của Google Chrome</translation>
 <translation id="7938170099933661772">Google Chrome không thể hiển thị xem trước bản in khi trình xem PDF được tích hợp sẵn bị tắt. Để xem bản xem trước, vui lòng truy cập <ph name="BEGIN_LINK"/>$1<ph name="END_LINK"/>, bật &quot;Trình xem PDF trên Chrome&quot; và thử lại.</translation>
 <translation id="6757767188268205357">Đừng hỏi lại</translation>
 <translation id="2290095356545025170">Bạn có chắc chắn muốn gỡ cài đặt Google Chrome không?</translation>
@@ -74,14 +74,16 @@
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">Google Chrome cho phép bạn nhấp vào số điện thoại trên web và gọi tới số đó bằng Skype!</translation>
 <translation id="3612333635265770873">Một mô-đun có cùng tên đã được xác định là xung đột với Google Chrome.</translation>
+<translation id="2679385451463308372">In bằng hộp thoại hệ thống...</translation>
 <translation id="5947389362804196214">Không thể đọc tùy chọn của bạn.\n\nMột số tính năng có thể không khả dụng và thay đổi cho tùy chọn của bạn sẽ không được lưu.</translation>
 <translation id="6650142020817594541">Trang web này khuyến nghị Google Chrome Frame (đã được cài đặt).</translation>
 <translation id="4127951844153999091">Trong trường hợp này, địa chỉ được liệt kê trong chứng chỉ không phù hợp với địa chỉ của trang web mà trình duyệt của bạn cố truy cập. Một nguyên nhân có thể xảy ra là giao tiếp của bạn đang bị kẻ tấn công, người đang xuất trình chứng chỉ cho trang web khác, chặn lại và gây ra lỗi không khớp. Một nguyên nhân khác có thể là do máy chủ được thiết lập để trả về cùng một chứng chỉ cho nhiều trang web, kể cả trang web mà bạn cố truy cập, mặc dù chứng chỉ đó không có giá trị cho tất cả trang web đó. Google Chrome có thể chắc chắn rằng bạn đã truy cập &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, nhưng không thể xác minh đó là trang web tương tự như &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; mà bạn dự định truy cập. Nếu bạn tiếp tục, Chrome sẽ không kiểm tra thêm bất kỳ sự không phù hợp về tên nào nữa. Nói chung, bạn không nên tiếp tục truy cập trang web.</translation>
 <translation id="2712549016134575851">Đã phát hiện thấy xung đột với một ứng dụng đã cài đặt khác.</translation>
+<translation id="5577648424992741236">Máy tính này đã có phiên bản Google Chrome Frame mới hơn. Nếu phần mềm hiện không hoạt động, vui lòng gỡ cài đặt Google Chrome Frame và thử lại.</translation>
 <translation id="7018032895891496381">Google Chrome sử dụng công cụ tìm kiếm mặc định của bạn, hiện đang được đặt là <ph name="PAGE_TITLE"/>. Bạn có muốn giữ công cụ tìm kiếm mặc định của mình không?</translation>
 <translation id="7161904924553537242">Chào mừng bạn đến với Google Chrome</translation>
-<translation id="5211087808649701653">Khởi chạy hộp thoại in gốc</translation>
 <translation id="8669527147644353129">Trình trợ giúp của Google Chrome</translation>
+<translation id="1399397803214730675">Máy tính này đã có phiên bản Google Chrome mới hơn. Nếu phần mềm hiện không hoạt động, vui lòng gỡ cài đặt Google Chrome và thử lại.</translation>
 <translation id="3444832043240812445">Trang này chỉ hiển thị thông tin về các sự cố gần đây của bạn nếu bạn <ph name="BEGIN_LINK"/>bật báo cáo sự cố<ph name="END_LINK"/>.</translation>
 <translation id="8614913330719544658">Google Chrome không hồi đáp. Khởi chạy lại ngay bây giờ?</translation>
 <translation id="2681064822612051220">Đã phát hiện cài đặt Google Chrome xung đột trên hệ thống. Vui lòng gỡ cài đặt và thử lại.</translation>
@@ -99,7 +101,6 @@
 <translation id="2769762047821873045">Google Chrome không phải là trình duyệt mặc định của bạn.</translation>
 <translation id="7825851276765848807">Không thể cài đặt do lỗi không xác định. Hãy tải xuống lại Google Chrome.</translation>
 <translation id="3335672657969596251">Google Chrome không hỗ trợ <ph name="OS_NAME"/>.</translation>
-<translation id="3636771339108070045">Máy tính này đã cài phiên bản Google Chrome mới hơn. Nếu phần mềm không hoạt động, vui lòng gỡ cài đặt Google Chrome và tải xuống lại phần mềm.</translation>
 <translation id="5334545119300433702">Mô-đun này được xác định là xung đột với Google Chrome.</translation>
 <translation id="3360895254066713204">Trình trợ giúp của Chrome</translation>
 <translation id="1001534784610492198">Lưu trữ trình cài đặt bị lỗi hoặc không hợp lệ. Vui lòng tải xuống lại Google Chrome.</translation>

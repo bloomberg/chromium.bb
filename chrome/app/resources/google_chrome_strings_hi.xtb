@@ -31,6 +31,7 @@
 <translation id="8227755444512189073"><ph name="SCHEME"/> लिंक प्रबंधित करने के लिए Google Chrome को एक बाहरी ऐप्लिकेशन लॉन्च करने की आवश्यकता होती है. अनुरोध की गई लिंक <ph name="PROTOLINK"/> है</translation>
 <translation id="8290100596633877290">रुकिए! Google Chrome क्रैश हो गया है. अभी पुन: लॉन्च करें?</translation>
 <translation id="1281036569101707544">Google Chrome <ph name="TERMS_OF_SERVICE_LINK"/></translation>
+<translation id="3487814320513494737">Chrome का नया टैब पृष्ठ पुन: बनाया जा चुका है. इन लेबल पर क्लिक करके अनुभागों के बीच स्विच करें. Chrome आपकी प्राथमिकता अगली बार के लिए याद रखेगा.</translation>
 <translation id="1697213158865901863">Google Chrome Frame</translation>
 <translation id="2653935705142821164">Chrome रेंडरर</translation>
 <translation id="8446794773162156990">Google Chrome अनुचित व्यवहार कर रहा है</translation>
@@ -39,7 +40,7 @@
 <translation id="3089968997497233615">Google Chrome का एक नया, सुरक्षित संस्‍करण उपलब्‍ध है.</translation>
 <translation id="5037239767309817516">यह परिवर्तन लागू करने के लिए कृपया सभी Google Chrome विंडो बंद करें और इसे पुन: लॉन्‍च करें.</translation>
 <translation id="7451721381978275812">अमान्य तर्क. Google Chrome इंस्टॉल किए बिना Google Chrome Frame को तैयार मोड में इंस्टॉल नहीं किया जा सकता है.</translation>
-<translation id="5809236835374558741">इस कंप्यूटर में Google Chrome Frame का नवीनतम संस्करण पहले से मौजूद है. यदि सॉफ़्टवेयर काम नहीं कर रहा है, तो कृपया Google Chrome Frame को विस्थापित करें और इसे पुनः डाउनलोड करें.</translation>
+<translation id="4585888816441913908">इस कंप्‍यूटर में पहले से ही Google Chrome और Google Chrome Frame का कोई अधिक नवीन संस्‍करण है. यदि सॉफ़्टवेयर कार्य नहीं कर रहा है, तो कृपया Google Chrome और Google Chrome Frame दोनों को अनइंस्‍टॉल करें और पुन: प्रयास करें.</translation>
 <translation id="6368958679917195344">Chrome OS को अतिरिक्त <ph name="BEGIN_LINK_CROS_OSS"/>ओपन सोर्स सॉफ़्टवेयर<ph name="END_LINK_CROS_OSS"/> द्वारा संभव बनाया गया है.</translation>
 <translation id="4357846314885556934">Google Chrome अनुचित व्यवहार कर रहा है</translation>
 <translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
@@ -64,7 +65,6 @@
 <translation id="3847841918622877581">Google Chrome आपके ब्राउज़िंग अनुभव को बेहतर बनाने के लिए वेब सेवाओं का उपयोग कर सकता है.</translation>
 <translation id="7436949144778751379">Google Chrome को Windows XP या इसके बाद के संस्करण की आवश्यकता होती है. हो सकता है कि कुछ सुविधाएं कार्य न करें.</translation>
 <translation id="7100330187273168372">Google Chrome अपनी डेटा निर्देशिका को पढ़ और उस पर लिख नहीं सकता :\n\n<ph name="USER_DATA_DIRECTORY"/></translation>
-<translation id="5167270755190684957">Google Chrome थीम गैलरी</translation>
 <translation id="7938170099933661772">अंतर्निहित PDF व्यूअर अक्षम होने पर Google Chrome प्रिंट पूर्वावलोकन नहीं दिखा सकता. पूर्वावलोकन देखने के लिए, कृपया <ph name="BEGIN_LINK"/>$1<ph name="END_LINK"/> पर जाएं, &quot;Chrome PDF व्यूअर&quot; सक्षम करें, और पुन: प्रयास करें.</translation>
 <translation id="6757767188268205357">मुझे बग न करें</translation>
 <translation id="2290095356545025170">क्या आप वाकई Google Chrome को विस्थापित करना चाहते हैं?</translation>
@@ -74,14 +74,16 @@
 <translation id="4990567037958725628">Google Chrome कैनरी</translation>
 <translation id="4561051373932531560">Google Chrome आपको वेब पर फ़ोन नंबर क्लिक करने और उसे Skype से कॉल करने की सुविधा देता है!</translation>
 <translation id="3612333635265770873">इसी नाम के एक मॉड्यूल को Google Chrome का विरोध करने के लिए जाना जाता है.</translation>
+<translation id="2679385451463308372">सिस्‍टम डायलॉग का उपयोग करके प्रिंट करें…</translation>
 <translation id="5947389362804196214">आपकी प्राथमिकताएं पढ़ी नहीं जा सकती हैं.\n\nकुछ विशेषताएं अनुपलब्ध हो सकती हैं और प्राथमिकताओं में किए गए परिवर्तन सहेजे नहीं जाएंगे.</translation>
 <translation id="6650142020817594541">यह साइट Google Chrome Frame (पहले से इंस्टॉल किया गया) की अनुशंसा करती है.</translation>
 <translation id="4127951844153999091">इस स्थिति में, प्रमाणपत्र में सूचीबद्ध पता उस वेबसाइट के पते से मेल नहीं खाता जिसपर आपके ब्राउज़र ने जाने का प्रयास किया था. इसका एक संभावित कारण यह है कि आपके संचार किसी अन्य वेबसाइट पर प्रमाणपत्र प्रस्तुत करने वाले किसी आक्रमणकारी द्वारा काटे जा रहे हैं, जिसके कारण मेल खाने में गलती होगी. एक अन्य संभावित कारण यह है कि सर्वर को, आपके द्वारा देखने हेतु प्रयास की जा रही वेबसाइट सहित, एकाधिक वेबसाइटों के लिए समान प्रमाणपत्र लौटाने के लिए सेट किया गया है, चाहे वह प्रमाणपत्र उन सभी वेबसाइटों के लिए मान्य है या नहीं. Google Chrome निश्चित रूप से यह कह सकता है कि आप &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; पर पहुंच गए हैं, लेकिन यह सत्यापित नहीं कर सकता कि वह &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; के समान ही एक साइट है जिस पर आप पहुंचना चाहते थे. यदि आप आगे बढ़ते हैं, तो Chrome नाम के किसी अन्य बेमेल हेतु जांच नहीं करेगा. सामान्यत:, बेहतर है कि इस स्थान से आगे न जाया जाए.</translation>
 <translation id="2712549016134575851">किसी अन्य स्थापित ऐप्लिकेशन के साथ विरोधाभास पाया गया है.</translation>
+<translation id="5577648424992741236">इस कंप्यूटर में Google Chrome Frame का अधिक नवीन संस्करण पहले से मौजूद है. यदि सॉफ़्टवेयर काम नहीं कर रहा है, तो कृपया Google Chrome Frame को अनइंस्टॉल करें और पुनः प्रयास करें.</translation>
 <translation id="7018032895891496381">Google Chrome आपके डिफ़ॉल्ट खोज इंजन का उपयोग करता है, जो वर्तमान में <ph name="PAGE_TITLE"/> पर सेट है. क्या आप अपना डिफ़ॉल्ट खोज इंजन रखना चाहते हैं?</translation>
 <translation id="7161904924553537242">Google Chrome में आपका स्वागत है</translation>
-<translation id="5211087808649701653">स्थानीय प्रिंट डायलॉग लॉन्‍च करें</translation>
 <translation id="8669527147644353129">Google Chrome सहायक</translation>
+<translation id="1399397803214730675">इस कंप्यूटर में Google Chrome का अधिक नवीन संस्करण पहले से मौजूद है. यदि सॉफ्टवेयर काम नहीं कर रहा है, तो कृपया Google Chrome अनइंस्‍टॉल करें और पुनः प्रयास करें.</translation>
 <translation id="3444832043240812445">यदि आप <ph name="BEGIN_LINK"/>क्रैश रिपोर्टिंग सक्षम<ph name="END_LINK"/> करते हैं तो यह पृष्‍ठ केवल आपके हाल ही के क्रैश की जानकारी प्रदर्शित करेगा.</translation>
 <translation id="8614913330719544658">Google Chrome निष्‍क्रिय है. अभी पुन: लॉन्च करें?</translation>
 <translation id="2681064822612051220">Google Chrome का एक विरोधपूर्ण इंस्टॉलेशन सिस्टम पर मिला. कृपया इसे अनइंस्टॉल करें और पुनः प्रयास करें.</translation>
@@ -99,7 +101,6 @@
 <translation id="2769762047821873045">Google Chrome आपका डिफ़ॉल्ट ब्राउज़र नहीं है.</translation>
 <translation id="7825851276765848807">अनिर्दिष्ट त्रुटि के कारण डाउनलोड विफल हुआ. कृपया Google Chrome पुन: डाउनलोड करें.</translation>
 <translation id="3335672657969596251">Google Chrome में <ph name="OS_NAME"/> समर्थित नहीं है.</translation>
-<translation id="3636771339108070045">इस कंप्यूटर में Google Chrome का सबसे नवीनतम संस्करण पहले से मौजूद है. यदि सॉफ्टवेयर काम नहीं कर रहा है, तो कृपया Google Chrome को विस्थापित करें और इसे पुनः डाउनलोड करें.</translation>
 <translation id="5334545119300433702">यह मॉड्यूल Google Chrome से विरोध के लिए जाना जाता है.</translation>
 <translation id="3360895254066713204">Chrome सहायक</translation>
 <translation id="1001534784610492198">इंस्टॉलर संग्रह अनुपयोगी या अमान्य है. कृपया Google Chrome पुनः डाउनलोड करें.</translation>

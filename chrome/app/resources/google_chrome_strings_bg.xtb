@@ -31,6 +31,7 @@
 <translation id="8227755444512189073">Google Chrome трябва да стартира външно приложение, за да обработва връзки от тип <ph name="SCHEME"/>. Поисканата връзка е <ph name="PROTOLINK"/>.</translation>
 <translation id="8290100596633877290">Опа! Google Chrome претърпя срив. Да се стартира ли отново сега?</translation>
 <translation id="1281036569101707544"><ph name="TERMS_OF_SERVICE_LINK"/> на Google Chrome</translation>
+<translation id="3487814320513494737">Новият раздел в Chrome бе реорганизиран. Превключвайте между секциите с кликване върху тези етикети. Chrome ще запомни предпочитанието ви за следващия път.</translation>
 <translation id="1697213158865901863">Google Chrome Frame</translation>
 <translation id="2653935705142821164">Chrome Renderer</translation>
 <translation id="8446794773162156990">Google Chrome не работи нормално</translation>
@@ -39,7 +40,7 @@
 <translation id="3089968997497233615">Налице е нова, по-сигурна версия на Google Chrome.</translation>
 <translation id="5037239767309817516">Моля, затворете всички прозорци на Google Chrome и го стартирайте отново, за да влезе в сила промяната.</translation>
 <translation id="7451721381978275812">Невалидни аргументи. Google Chrome Frame не може да се инсталира в режим на готовност, без да се инсталира и Google Chrome.</translation>
-<translation id="5809236835374558741">На този компютър вече има по-нова версия на Google Chrome Frame. Ако софтуерът не работи, моля, деинсталирайте Google Chrome Frame и го изтеглете отново.</translation>
+<translation id="4585888816441913908">На този компютър вече има по-нова версия на Google Chrome и Google Chrome Frame. Ако софтуерът не работи, моля, деинсталирайте и двете и опитайте отново.</translation>
 <translation id="6368958679917195344">Chrome OS е възможна благодарение на допълнителен <ph name="BEGIN_LINK_CROS_OSS"/>софтуер с отворен код<ph name="END_LINK_CROS_OSS"/>.</translation>
 <translation id="4357846314885556934">Google Chrome не работи нормално</translation>
 <translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
@@ -65,7 +66,6 @@
 <translation id="3847841918622877581">Google Chrome може да използва уеб услуги, за да подобри сърфирането ви.</translation>
 <translation id="7436949144778751379">Google Chrome изисква Windows XP или по-нова версия. Някои функции може да не работят.</translation>
 <translation id="7100330187273168372">Google Chrome не може да чете и записва в директорията си с данни:\n\n<ph name="USER_DATA_DIRECTORY"/></translation>
-<translation id="5167270755190684957">Галерия с теми за Google Chrome</translation>
 <translation id="7938170099933661772">Google Chrome не може да покаже визуализацията за печат, когато вграденият визуализатор на PDF е деактивиран. За да я видите, моля, посетете <ph name="BEGIN_LINK"/>$1<ph name="END_LINK"/>, активирайте „Визуализатор на PDF в Chrome“ и опитайте отново.</translation>
 <translation id="6757767188268205357">Не ме занимавайте</translation>
 <translation id="2290095356545025170">Наистина ли искате да деинсталирате Google Chrome?</translation>
@@ -75,14 +75,16 @@
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">Google Chrome ви позволява да кликнете върху телефонен номер в мрежата и да се обадите до него със Skype!</translation>
 <translation id="3612333635265770873">Известно е, че модул със същото име влиза в конфликт с Google Chrome.</translation>
+<translation id="2679385451463308372">Отпечатване чрез системния диалогов прозорец...</translation>
 <translation id="5947389362804196214">Предпочитанията ви не могат да бъдат прочетени.\n\nВъзможно е да няма достъп до някои функции и промените в предпочитанията няма да бъдат запазени.</translation>
 <translation id="6650142020817594541">Този сайт препоръчва Google Chrome Frame (вече е инсталиран).</translation>
 <translation id="4127951844153999091">В този случай посоченият в сертификата адрес не съответства на адреса на уебсайта, който браузърът ви се е опитал да отвори. Една от възможните причини за това е комуникацията ви да се прихваща от хакер, който представя сертификат за различен уебсайт, поради което има несъответствие между тях. Друга възможна причина е сървърът да е настроен да връща един и същи сертификат за голям брой уебсайтове, включително и за този, който се опитвате да отворите, въпреки че този сертификат може да не е валиден за всички от тях. Google Chrome гарантира със сигурност, че сте се свързали с &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, но не може да провери дали това е същият сайт като &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, с който искахте да се свържете. Ако продължите, Google Chrome няма повече да проверява за несъответствие между имената. По принцип е най-добре да не продължавате по-нататък.</translation>
 <translation id="2712549016134575851">Установен е конфликт с друго инсталирано приложение.</translation>
+<translation id="5577648424992741236">На този компютър вече има по-нова версия на Google Chrome Frame. Ако софтуерът не работи, моля, деинсталирайте Google Chrome Frame и опитайте отново.</translation>
 <translation id="7018032895891496381">Google Chrome използва търсещата ви машина по подразбиране, която понастоящем е <ph name="PAGE_TITLE"/>. Искате ли да я запазите?</translation>
 <translation id="7161904924553537242">Добре дошли в Google Chrome</translation>
-<translation id="5211087808649701653">Стартиране на стандартния диалогов прозорец за отпечатване</translation>
 <translation id="8669527147644353129">Google Chrome Helper</translation>
+<translation id="1399397803214730675">На този компютър вече има по-нова версия на Google Chrome. Ако софтуерът не работи, моля, деинсталирайте Google Chrome и опитайте отново.</translation>
 <translation id="3444832043240812445">В тази страница се показва информация за скорошните сривове само ако сте <ph name="BEGIN_LINK"/>активирали изпращането на сигнали за сривове<ph name="END_LINK"/>.</translation>
 <translation id="8614913330719544658">Google Chrome блокира. Да се стартира ли отново сега?</translation>
 <translation id="2681064822612051220">В системата бе намерена несъвместима инсталация на Google Chrome. Моля, деинсталирайте я и опитайте отново.</translation>
@@ -101,7 +103,6 @@
 <translation id="2769762047821873045">Google Chrome не е браузърът ви по подразбиране.</translation>
 <translation id="7825851276765848807">Инсталацията не бе успешна поради неизвестна грешка. Моля, изтеглете отново Google Chrome.</translation>
 <translation id="3335672657969596251">Google Chrome не поддържа <ph name="OS_NAME"/>.</translation>
-<translation id="3636771339108070045">На този компютър вече има по-нова версия на Google Chrome. Ако софтуерът не работи, моля, деинсталирайте Google Chrome и го изтеглете отново.</translation>
 <translation id="5334545119300433702">За този модул е известно, че влиза в конфликт с Google Chrome.</translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
 <translation id="1001534784610492198">Архивът на инсталационната програма е повреден или невалиден. Моля, изтеглете Google Chrome отново.</translation>
