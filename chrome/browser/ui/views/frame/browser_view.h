@@ -734,6 +734,10 @@ class BrowserView : public BrowserBubbleHost,
   // Used to measure the loading spinner animation rate.
   base::TimeTicks last_animation_time_;
 
+  // If this flag is set then SetFocusToLocationBar() will set focus to the
+  // location bar even if the browser window is not active.
+  bool force_location_bar_focus_;
+
   DISALLOW_COPY_AND_ASSIGN(BrowserView);
 };
 

@@ -333,11 +333,12 @@ BrowserView::BrowserView(Browser* browser)
       contents_(NULL),
       contents_split_(NULL),
       initialized_(false),
-      ignore_layout_(true)
+      ignore_layout_(true),
 #if defined(OS_WIN) && !defined(USE_AURA)
-      , hung_window_detector_(&hung_plugin_action_),
-      ticker_(0)
+      hung_window_detector_(&hung_plugin_action_),
+      ticker_(0),
 #endif
+      force_location_bar_focus_(false)
                  {
   browser_->tabstrip_model()->AddObserver(this);
 
@@ -631,6 +632,12 @@ void BrowserView::Show() {
     return;
   }
 
+  // Showing the window doesn't make the browser window active right away.
+  // This can cause SetFocusToLocationBar() to skip setting focus to the
+  // location bar. To avoid this we explicilty let SetFocusToLocationBar()
+  // know that it's ok to steal focus.
+  force_location_bar_focus_ = true;
+
   // Setting the focus doesn't work when the window is invisible, so any focus
   // initialization that happened before this will be lost.
   //
@@ -644,6 +651,8 @@ void BrowserView::Show() {
   RestoreFocus();
 
   frame_->Show();
+
+  force_location_bar_focus_ = false;
 
   browser()->OnWindowDidShow();
 }
@@ -851,6 +860,14 @@ LocationBar* BrowserView::GetLocationBar() const {
 }
 
 void BrowserView::SetFocusToLocationBar(bool select_all) {
+#if defined(OS_WIN)
+  // On Windows changing focus to the location bar causes the browser window
+  // to become active. This can steal focus if the user has another window
+  // open already.
+  if (!force_location_bar_focus_ && !IsActive())
+    return;
+#endif
+
   if (UseCompactNavigationBar()) {
     // If focus ever goes to the location bar, we should make sure it is shown
     // in compact mode. This includes all accelerators that move focus there.
