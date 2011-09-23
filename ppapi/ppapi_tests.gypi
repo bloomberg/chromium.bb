@@ -375,6 +375,21 @@
             'examples/gles2/testdata.h',
           ],
         },
+        {
+          'target_name': 'ppapi_example_vc',
+          'dependencies': [
+            'ppapi_example_skeleton',
+            'ppapi.gyp:ppapi_cpp',
+            'ppapi.gyp:ppapi_gles2',
+            'ppapi.gyp:ppapi_egl',
+          ],
+          'include_dirs': [
+            'lib/gl/include',
+          ],
+          'sources': [
+            'examples/video_capture/video_capture.cc',
+          ],
+        },
       ],
     }]
   ]
