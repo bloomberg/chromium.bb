@@ -275,7 +275,6 @@ gfx::Rect ToplevelFrameView::GetWindowBoundsForClientBounds(
 }
 
 int ToplevelFrameView::NonClientHitTest(const gfx::Point& point) {
-  int old_hittest_code = current_hittest_code_;
   current_hittest_code_ = NonClientHitTestImpl(point);
   return current_hittest_code_;
 }

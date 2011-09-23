@@ -22,7 +22,7 @@ int main(int argc, char** argv) {
   icu_util::Initialize();
   ResourceBundle::InitSharedInstance("en-US");
 
-#if defined(USE_X11)
+#if defined(TOOLKIT_USES_GTK)
   base::MessagePumpX::DisableGtkMessagePump();
 #endif
 

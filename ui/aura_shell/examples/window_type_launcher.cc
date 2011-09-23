@@ -108,9 +108,10 @@ void WindowTypeLauncher::ShowContextMenuForView(views::View* source,
   root->AppendMenuItem(COMMAND_NEW_WINDOW, L"New Window", MenuItemView::NORMAL);
   // MenuRunner takes ownership of root.
   menu_runner_.reset(new MenuRunner(root));
-  menu_runner_->RunMenuAt(
-      GetWidget(), NULL, gfx::Rect(p, gfx::Size(0, 0)),
-      MenuItemView::TOPLEFT, MenuRunner::HAS_MNEMONICS);
+  if (menu_runner_->RunMenuAt(GetWidget(), NULL, gfx::Rect(p, gfx::Size(0, 0)),
+        MenuItemView::TOPLEFT,
+        MenuRunner::HAS_MNEMONICS) == MenuRunner::MENU_DELETED)
+    return;
 }
 
 }  // namespace examples
