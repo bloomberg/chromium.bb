@@ -176,7 +176,7 @@ class TestPrerenderContents : public PrerenderContents {
     PrerenderContents::DidStopLoading();
     ++number_of_loads_;
     if (ShouldRenderPrerenderedPageCorrectly(expected_final_status_) &&
-        number_of_loads_ >= expected_number_of_loads_) {
+        number_of_loads_ == expected_number_of_loads_) {
       MessageLoopForUI::current()->Quit();
     }
   }
@@ -890,9 +890,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderClientRedirectToHttps) {
 
 // Checks that client-issued redirects within an iframe in a prerendered
 // page will not count as an "alias" for the prerendered page.
-// Test flaky due to http://crbug.com/88973.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
-                       FLAKY_PrerenderClientRedirectInIframe) {
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderClientRedirectInIframe) {
   std::string redirect_path = CreateClientRedirect(
       "/files/prerender/prerender_embedded_content.html");
   std::vector<net::TestServer::StringPair> replacement_text;
@@ -903,7 +901,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
       "files/prerender/prerender_with_iframe.html",
       replacement_text,
       &replacement_path));
-  PrerenderTestURL(replacement_path, FINAL_STATUS_USED, 1);
+  PrerenderTestURL(replacement_path, FINAL_STATUS_USED, 2);
   EXPECT_FALSE(UrlIsInPrerenderManager(
       "files/prerender/prerender_embedded_content.html"));
   NavigateToDestURL();
@@ -927,7 +925,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
       "files/prerender/prerender_with_iframe.html",
       replacement_text,
       &replacement_path));
-  PrerenderTestURL(replacement_path, FINAL_STATUS_USED, 1);
+  PrerenderTestURL(replacement_path, FINAL_STATUS_USED, 2);
   EXPECT_FALSE(UrlIsInPrerenderManager(https_url));
   NavigateToDestURL();
 }
