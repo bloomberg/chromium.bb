@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
-# This script is wrapper for Chromium that adds some support for how GYP
-# is invoked by Chromium beyond what can be done it the gclient hooks.
+# This script is wrapper for NaCl that adds some support for how GYP
+# is invoked by NaCl beyond what can be done it the gclient hooks.
 
 import glob
 import os
@@ -23,13 +23,11 @@ if __name__ == '__main__':
   # If we didn't get a file, check an env var, and then fall back to
   # assuming 'src/build/all.gyp'
   if len(args) == 0:
-    args += shlex.split(os.environ.get('CHROMIUM_GYP_FILE',
-                                       'src/build/all.gyp'))
+    args += shlex.split(os.environ.get('NACL_GYP_FILE',
+                                       'native_client/build/all.gyp'))
 
-  # Optionally add supplemental .gypi files if present.
-  supplements = glob.glob('src/*/supplement.gypi')
-  for supplement in supplements:
-    args += ['-I', supplement]
+  # Add in configs.gypi
+  args += ['-I', 'native_client/build/configs.gypi']
 
   # Pick depth explicitly.
   args += ['--depth', '.']

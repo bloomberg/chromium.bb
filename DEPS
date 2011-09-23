@@ -127,7 +127,6 @@ hooks = [
   },
   {
     "pattern": ".",
-    "action": ["python", "native_client/build/gyp_nacl",
-               "native_client/build/all.gyp"],
+    "action": ["python", "native_client/build/gyp_nacl"],
   },
 ]
