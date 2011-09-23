@@ -31,7 +31,6 @@
 //       __COUNTER__, in which case we can get rid of the __LINE__.
 
 
-
 #define IPC_MESSAGE_START AutomationMsgStart
 
 // This message is fired when the AutomationProvider is up and running
