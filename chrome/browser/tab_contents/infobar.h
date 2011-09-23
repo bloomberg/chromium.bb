@@ -100,6 +100,7 @@ class InfoBar : public ui::AnimationDelegate {
   // processing of the given calls.
   virtual void PlatformSpecificShow(bool animate) {}
   virtual void PlatformSpecificHide(bool animate) {}
+  virtual void PlatformSpecificOnCloseSoon() {}
   virtual void PlatformSpecificOnHeightsRecalculated() {}
 
  private:

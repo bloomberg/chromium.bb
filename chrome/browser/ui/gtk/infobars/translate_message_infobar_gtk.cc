@@ -8,6 +8,7 @@
 #include "chrome/browser/translate/translate_infobar_delegate.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "ui/base/gtk/gtk_hig_constants.h"
+#include "ui/base/gtk/gtk_signal_registrar.h"
 
 TranslateMessageInfoBar::TranslateMessageInfoBar(
     TabContentsWrapper* owner,
@@ -30,7 +31,8 @@ void TranslateMessageInfoBar::Init() {
   if (!button_text.empty()) {
     GtkWidget* button =
         gtk_button_new_with_label(UTF16ToUTF8(button_text).c_str());
-    g_signal_connect(button, "clicked",G_CALLBACK(&OnButtonPressedThunk), this);
+    Signals()->Connect(button, "clicked",G_CALLBACK(&OnButtonPressedThunk),
+                       this);
     gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, FALSE, 0);
   }
 }

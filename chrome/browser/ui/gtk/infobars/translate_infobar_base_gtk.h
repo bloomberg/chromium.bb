@@ -9,8 +9,6 @@
 #include "chrome/browser/ui/gtk/infobars/infobar_gtk.h"
 #include "ui/base/animation/animation_delegate.h"
 
-class MenuGtk;
-class OptionsMenuModel;
 class TranslateInfoBarDelegate;
 
 // This class contains some of the base functionality that translate infobars
@@ -59,10 +57,6 @@ class TranslateInfoBarBase : public InfoBarGtk {
   // Builds a button with an arrow in it to emulate the menu-button style from
   // the windows version.
   static GtkWidget* BuildOptionsMenuButton();
-
-  // The menu displayed when the Options button is pressed.
-  scoped_ptr<OptionsMenuModel> options_menu_model_;
-  scoped_ptr<MenuGtk> options_menu_menu_;
 
   CHROMEGTK_CALLBACK_0(TranslateInfoBarBase, void, OnOptionsClicked);
 

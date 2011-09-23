@@ -94,6 +94,7 @@ void InfoBar::SetArrowTargetHeight(int height) {
 
 void InfoBar::CloseSoon() {
   owner_ = NULL;
+  PlatformSpecificOnCloseSoon();
   MaybeDelete();
 }
 

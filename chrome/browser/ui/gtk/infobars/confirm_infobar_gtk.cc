@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/gtk/gtk_chrome_link_button.h"
 #include "chrome/browser/ui/gtk/gtk_chrome_shrinkable_hbox.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
+#include "ui/base/gtk/gtk_signal_registrar.h"
 
 // ConfirmInfoBarDelegate ------------------------------------------------------
 
@@ -41,9 +42,9 @@ ConfirmInfoBarGtk::ConfirmInfoBarGtk(TabContentsWrapper* owner,
   gtk_util::ForceFontSizePixels(label, 13.4);
   gtk_misc_set_alignment(GTK_MISC(label), 0, 0.5);
   gtk_util::CenterWidgetInHBox(confirm_hbox_, label, true, 0);
-  g_signal_connect(label, "map",
-                   G_CALLBACK(gtk_util::InitLabelSizeRequestAndEllipsizeMode),
-                   NULL);
+  Signals()->Connect(label, "map",
+                     G_CALLBACK(gtk_util::InitLabelSizeRequestAndEllipsizeMode),
+                     NULL);
 
   std::string link_text = UTF16ToUTF8(delegate->GetLinkText());
   if (link_text.empty())
@@ -51,7 +52,7 @@ ConfirmInfoBarGtk::ConfirmInfoBarGtk(TabContentsWrapper* owner,
 
   GtkWidget* link = CreateLinkButton(link_text);
   gtk_misc_set_alignment(GTK_MISC(GTK_CHROME_LINK_BUTTON(link)->label), 0, 0.5);
-  g_signal_connect(link, "clicked", G_CALLBACK(OnLinkClickedThunk), this);
+  Signals()->Connect(link, "clicked", G_CALLBACK(OnLinkClickedThunk), this);
   gtk_util::SetButtonTriggersNavigation(link);
   // Until we switch to vector graphics, force the font size.
   // 13.4px == 10pt @ 96dpi

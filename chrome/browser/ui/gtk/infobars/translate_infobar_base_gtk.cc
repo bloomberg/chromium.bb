@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/gtk/menu_gtk.h"
 #include "grit/generated_resources.h"
 #include "ui/base/animation/slide_animation.h"
+#include "ui/base/gtk/gtk_signal_registrar.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/canvas.h"
 
@@ -63,8 +64,8 @@ void TranslateInfoBarBase::Init() {
   // The options button sits outside the translate_box so that it can be end
   // packed in hbox_.
   GtkWidget* options_menu_button = BuildOptionsMenuButton();
-  g_signal_connect(options_menu_button, "clicked",
-                   G_CALLBACK(&OnOptionsClickedThunk), this);
+  Signals()->Connect(options_menu_button, "clicked",
+                     G_CALLBACK(&OnOptionsClickedThunk), this);
   gtk_widget_show_all(options_menu_button);
   gtk_util::CenterWidgetInHBox(hbox_, options_menu_button, true, 0);
 }
@@ -209,11 +210,7 @@ GtkWidget* TranslateInfoBarBase::BuildOptionsMenuButton() {
 }
 
 void TranslateInfoBarBase::OnOptionsClicked(GtkWidget* sender) {
-  if (!options_menu_model_.get()) {
-    options_menu_model_.reset(new OptionsMenuModel(GetDelegate()));
-    options_menu_menu_.reset(new MenuGtk(NULL, options_menu_model_.get()));
-  }
-  options_menu_menu_->PopupForWidget(sender, 1, gtk_get_current_event_time());
+  ShowMenuWithModel(sender, NULL, new OptionsMenuModel(GetDelegate()));
 }
 
 // TranslateInfoBarDelegate specific method:

@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "grit/generated_resources.h"
 #include "ui/base/gtk/gtk_hig_constants.h"
+#include "ui/base/gtk/gtk_signal_registrar.h"
 #include "ui/base/l10n/l10n_util.h"
 
 BeforeTranslateInfoBar::BeforeTranslateInfoBar(
@@ -36,8 +37,8 @@ void BeforeTranslateInfoBar::Init() {
   GtkWidget* combobox =
       CreateLanguageCombobox(GetDelegate()->original_language_index(),
                              GetDelegate()->target_language_index());
-  g_signal_connect(combobox, "changed",
-                   G_CALLBACK(&OnLanguageModifiedThunk), this);
+  Signals()->Connect(combobox, "changed",
+                     G_CALLBACK(&OnLanguageModifiedThunk), this);
   gtk_box_pack_start(GTK_BOX(hbox), combobox, FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(hbox),
                      CreateLabel(UTF16ToUTF8(text.substr(offset))),
@@ -45,12 +46,14 @@ void BeforeTranslateInfoBar::Init() {
 
   GtkWidget* button = gtk_button_new_with_label(
       l10n_util::GetStringUTF8(IDS_TRANSLATE_INFOBAR_ACCEPT).c_str());
-  g_signal_connect(button, "clicked",G_CALLBACK(&OnAcceptPressedThunk), this);
+  Signals()->Connect(button, "clicked",
+                     G_CALLBACK(&OnAcceptPressedThunk), this);
   gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, FALSE, 0);
 
   button = gtk_button_new_with_label(
       l10n_util::GetStringUTF8(IDS_TRANSLATE_INFOBAR_DENY).c_str());
-  g_signal_connect(button, "clicked",G_CALLBACK(&OnDenyPressedThunk), this);
+  Signals()->Connect(button, "clicked",
+                     G_CALLBACK(&OnDenyPressedThunk), this);
   gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, FALSE, 0);
 
   TranslateInfoBarDelegate* delegate = GetDelegate();
@@ -60,8 +63,8 @@ void BeforeTranslateInfoBar::Init() {
                                   delegate->GetLanguageDisplayableNameAt(
                                       delegate->original_language_index()));
     button = gtk_button_new_with_label(label.c_str());
-    g_signal_connect(button, "clicked",
-                     G_CALLBACK(&OnNeverTranslatePressedThunk), this);
+    Signals()->Connect(button, "clicked",
+                       G_CALLBACK(&OnNeverTranslatePressedThunk), this);
     gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, FALSE, 0);
   }
 
@@ -71,8 +74,8 @@ void BeforeTranslateInfoBar::Init() {
                                   delegate->GetLanguageDisplayableNameAt(
                                       delegate->original_language_index()));
     button = gtk_button_new_with_label(label.c_str());
-    g_signal_connect(button, "clicked",
-                     G_CALLBACK(&OnAlwaysTranslatePressedThunk), this);
+    Signals()->Connect(button, "clicked",
+                       G_CALLBACK(&OnAlwaysTranslatePressedThunk), this);
     gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, FALSE, 0);
   }
 }
