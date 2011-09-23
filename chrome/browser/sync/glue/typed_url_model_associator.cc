@@ -144,6 +144,14 @@ bool TypedUrlModelAssociator::AssociateModels(SyncError* error) {
          ix != typed_urls.end(); ++ix) {
       std::string tag = ix->url().spec();
 
+      // Should never see an empty tag.
+      if (tag.empty()) {
+        error->Reset(FROM_HERE,
+                     "Encountered history entry with an empty url.",
+                     model_type());
+        return false;
+      }
+
       history::VisitVector& visits = visit_vectors[ix->id()];
 
       sync_api::ReadNode node(&trans);
@@ -211,7 +219,7 @@ bool TypedUrlModelAssociator::AssociateModels(SyncError* error) {
         if (!node.InitUniqueByCreation(syncable::TYPED_URLS,
                                        typed_url_root, tag)) {
           error->Reset(FROM_HERE,
-                       "Failed to create typed_url sync node.",
+                       "Failed to create typed_url sync node: " + tag,
                        model_type());
           return false;
         }
