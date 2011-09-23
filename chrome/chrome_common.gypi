@@ -255,7 +255,12 @@
             'common/native_web_keyboard_event_views.cc',
             'common/native_web_keyboard_event_views.h',
           ],
-        }],        
+        }],  
+        ['use_aura==1', {
+          'dependencies!': [
+           'default_plugin/default_plugin.gyp:default_plugin',
+          ],
+        }],
         ['os_posix == 1 and OS != "mac"', {
           'include_dirs': [
             '<(SHARED_INTERMEDIATE_DIR)',
