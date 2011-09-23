@@ -1687,3 +1687,11 @@
    fun:sync_notifier::NonBlockingInvalidationNotifier::Core::UpdateCredentials
    fun:void DispatchToMethod
 }
+{
+   bug_97814
+   Heapcheck:Leak
+   fun:base::Value::CreateIntegerValue
+   fun:base::FundamentalValue::DeepCopy
+   fun:ExtensionContentSettingsStore::GetEffectiveContentSetting
+   fun:ExtensionContentSettingsStoreTest_*
+}

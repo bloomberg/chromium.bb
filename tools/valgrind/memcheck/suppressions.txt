@@ -4622,6 +4622,15 @@
    fun:vorbis_decode_frame
    fun:avcodec_decode_audio3
 }
+{
+   bug_97814
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN4base5Value18CreateIntegerValueEi
+   fun:_ZNK4base16FundamentalValue8DeepCopyEv
+   fun:_ZNK29ExtensionContentSettingsStore26GetEffectiveContentSettingERK4GURLS2_19ContentSettingsTypeRKSsb
+   fun:_ZN57ExtensionContentSettingsStoreTest_RegisterUnregister_Test8TestBodyEv
+}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
