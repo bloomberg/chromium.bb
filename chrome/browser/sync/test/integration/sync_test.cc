@@ -23,6 +23,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sync/notifier/p2p_notifier.h"
 #include "chrome/browser/sync/profile_sync_service_harness.h"
+#include "chrome/browser/sync/protocol/sync.pb.h"
 #include "chrome/browser/sync/test/integration/sync_datatype_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -608,6 +609,77 @@ void SyncTest::TriggerTransientError() {
   ui_test_utils::NavigateToURL(browser(), sync_server_.GetURL(path));
   ASSERT_EQ("Transient error",
             UTF16ToASCII(browser()->GetSelectedTabContents()->GetTitle()));
+}
+
+namespace {
+
+sync_pb::ClientToServerResponse::ErrorType
+    GetClientToServerResponseErrorType(
+        browser_sync::SyncProtocolErrorType error) {
+  switch (error) {
+    case browser_sync::SYNC_SUCCESS:
+      return sync_pb::ClientToServerResponse::SUCCESS;
+    case browser_sync::NOT_MY_BIRTHDAY:
+      return sync_pb::ClientToServerResponse::NOT_MY_BIRTHDAY;
+    case browser_sync::THROTTLED:
+      return sync_pb::ClientToServerResponse::THROTTLED;
+    case browser_sync::CLEAR_PENDING:
+      return sync_pb::ClientToServerResponse::CLEAR_PENDING;
+    case browser_sync::TRANSIENT_ERROR:
+      return sync_pb::ClientToServerResponse::TRANSIENT_ERROR;
+    case browser_sync::MIGRATION_DONE:
+      return sync_pb::ClientToServerResponse::MIGRATION_DONE;
+    case browser_sync::UNKNOWN_ERROR:
+      return sync_pb::ClientToServerResponse::UNKNOWN;
+    default:
+      NOTREACHED();
+      return sync_pb::ClientToServerResponse::UNKNOWN;
+  }
+}
+
+sync_pb::ClientToServerResponse::Error::Action
+    GetClientToServerResponseAction(
+        const browser_sync::ClientAction& action) {
+  switch (action) {
+    case browser_sync::UPGRADE_CLIENT:
+      return sync_pb::ClientToServerResponse::Error::UPGRADE_CLIENT;
+    case browser_sync::CLEAR_USER_DATA_AND_RESYNC:
+      return sync_pb::ClientToServerResponse::Error::CLEAR_USER_DATA_AND_RESYNC;
+    case browser_sync::ENABLE_SYNC_ON_ACCOUNT:
+      return sync_pb::ClientToServerResponse::Error::ENABLE_SYNC_ON_ACCOUNT;
+    case browser_sync::STOP_AND_RESTART_SYNC:
+      return sync_pb::ClientToServerResponse::Error::STOP_AND_RESTART_SYNC;
+    case browser_sync::DISABLE_SYNC_ON_CLIENT:
+      return sync_pb::ClientToServerResponse::Error::DISABLE_SYNC_ON_CLIENT;
+    case browser_sync::UNKNOWN_ACTION:
+      return sync_pb::ClientToServerResponse::Error::UNKNOWN_ACTION;
+    default:
+      NOTREACHED();
+      return sync_pb::ClientToServerResponse::Error::UNKNOWN_ACTION;
+  }
+}
+
+}  // namespace
+
+void SyncTest::TriggerSyncError(const browser_sync::SyncProtocolError& error) {
+  ASSERT_TRUE(ServerSupportsErrorTriggering());
+  std::string path = "chromiumsync/error";
+  int error_type =
+      static_cast<int>(GetClientToServerResponseErrorType(
+          error.error_type));
+  int action = static_cast<int>(GetClientToServerResponseAction(
+      error.action));
+
+  path.append(base::StringPrintf("?error=%d", error_type));
+  path.append(base::StringPrintf("&action=%d", action));
+
+  path += "&error_description=" + error.error_description;
+  path += "&url=" + error.url;
+
+  ui_test_utils::NavigateToURL(browser(), sync_server_.GetURL(path));
+  std::string output = UTF16ToASCII(
+      browser()->GetSelectedTabContents()->GetTitle());
+  ASSERT_TRUE(output.find("SetError: 200") != string16::npos);
 }
 
 void SyncTest::TriggerSetSyncTabs() {

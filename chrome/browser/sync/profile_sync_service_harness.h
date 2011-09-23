@@ -80,12 +80,16 @@ class ProfileSyncServiceHarness
   // since the previous one.  Returns true if a sync cycle has completed.
   bool AwaitSyncCycleCompletion(const std::string& reason);
 
-  // Blocks the caller until the sync has been disabled for this client. Returns
+  // Blocks the caller until sync has been disabled for this client. Returns
   // true if sync is disabled.
   bool AwaitSyncDisabled(const std::string& reason);
 
   // Blocks the caller until exponential backoff has been verified to happen.
   bool AwaitExponentialBackoffVerification();
+
+  // Blocks the caller until the syncer receives an actionable error.
+  // Returns true if the sync client received an actionable error.
+  bool AwaitActionableError();
 
   // Blocks until the given set of data types are migrated.
   bool AwaitMigration(const syncable::ModelTypeSet& expected_migrated_types);
@@ -125,10 +129,10 @@ class ProfileSyncServiceHarness
   // calling SetPassphrase has been accepted.
   bool AwaitPassphraseAccepted();
 
-  // Returns the ProfileSyncService member of the the sync client.
+  // Returns the ProfileSyncService member of the sync client.
   ProfileSyncService* service() { return service_; }
 
-  // Returns the status of the ProfileSyncService member of the the sync client.
+  // Returns the status of the ProfileSyncService member of the sync client.
   ProfileSyncService::Status GetStatus();
 
   // See ProfileSyncService::ShouldPushChanges().
@@ -207,7 +211,7 @@ class ProfileSyncServiceHarness
     // full sync cycle is not expected to occur.
     WAITING_FOR_SYNC_CONFIGURATION,
 
-    // The sync client is waiting for the sync to be disabled for this client.
+    // The sync client is waiting for sync to be disabled for this client.
     WAITING_FOR_SYNC_DISABLED,
 
     // The sync client is in the exponential backoff mode. Verify that
@@ -219,6 +223,9 @@ class ProfileSyncServiceHarness
 
     // The sync client is waiting for migration to finish.
     WAITING_FOR_MIGRATION_TO_FINISH,
+
+    // The sync client is waiting for an actionable error from the server.
+    WAITING_FOR_ACTIONABLE_ERROR,
 
     // The client verification is complete. We don't care about the state of
     // the syncer any more.

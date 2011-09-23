@@ -16,6 +16,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/process_util.h"
+#include "chrome/browser/sync/protocol/sync_protocol_error.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "net/base/mock_host_resolver.h"
 #include "net/test/test_server.h"
@@ -172,6 +173,9 @@ class SyncTest : public InProcessBrowserTest {
   // Triggers a transient error on the server. Note the server will stay in
   // this state until shut down.
   void TriggerTransientError();
+
+  // Triggers a sync error on the server.
+  void TriggerSyncError(const browser_sync::SyncProtocolError& error);
 
   // Triggers setting the sync_tabs field of the nigori node.
   void TriggerSetSyncTabs();

@@ -363,13 +363,16 @@ bool ProfileSyncServiceHarness::RunStateChangeMachine() {
           GetLastSessionSnapshot();
       CHECK(snap);
       retry_verifier_.VerifyRetryInterval(*snap);
-      if (retry_verifier_.done())
+      if (retry_verifier_.done()) {
+        // Retry verifier is done verifying exponential backoff.
         SignalStateCompleteWithNextState(WAITING_FOR_NOTHING);
+      }
       break;
     }
     case WAITING_FOR_MIGRATION_TO_START: {
       VLOG(1) << GetClientInfoString("WAITING_FOR_MIGRATION_TO_START");
       if (HasPendingBackendMigration()) {
+        // There are pending migrations. Wait for them.
         SignalStateCompleteWithNextState(WAITING_FOR_MIGRATION_TO_FINISH);
       }
       break;
@@ -377,6 +380,17 @@ bool ProfileSyncServiceHarness::RunStateChangeMachine() {
     case WAITING_FOR_MIGRATION_TO_FINISH: {
       VLOG(1) << GetClientInfoString("WAITING_FOR_MIGRATION_TO_FINISH");
       if (!HasPendingBackendMigration()) {
+        // Done migrating.
+        SignalStateCompleteWithNextState(WAITING_FOR_NOTHING);
+      }
+      break;
+    }
+    case WAITING_FOR_ACTIONABLE_ERROR: {
+      VLOG(1) << GetClientInfoString("WAITING_FOR_ACTIONABLE_ERROR");
+      ProfileSyncService::Status status = GetStatus();
+      if (status.sync_protocol_error.action != browser_sync::UNKNOWN_ACTION &&
+          service_->unrecoverable_error_detected() == true) {
+        // An actionable error has been detected.
         SignalStateCompleteWithNextState(WAITING_FOR_NOTHING);
       }
       break;
@@ -580,6 +594,17 @@ bool ProfileSyncServiceHarness::AwaitExponentialBackoffVerification() {
   AwaitStatusChangeWithTimeout(kExponentialBackoffVerificationTimeoutMs,
       "Verify Exponential backoff");
   return (retry_verifier_.Succeeded());
+}
+
+bool ProfileSyncServiceHarness::AwaitActionableError() {
+  ProfileSyncService::Status status = GetStatus();
+  CHECK(status.sync_protocol_error.action == browser_sync::UNKNOWN_ACTION);
+  wait_state_ = WAITING_FOR_ACTIONABLE_ERROR;
+  AwaitStatusChangeWithTimeout(kLiveSyncOperationTimeoutMs,
+      "Waiting for actionable error");
+  status = GetStatus();
+  return (status.sync_protocol_error.action != browser_sync::UNKNOWN_ACTION &&
+          service_->unrecoverable_error_detected());
 }
 
 bool ProfileSyncServiceHarness::AwaitMigration(
