@@ -294,7 +294,6 @@ size_t VG_NACL_LIBC_FUNC(realloc)(size_t origPtr, size_t size) {
   }
   size_t newPtr = (size_t)malloc(size);
   if (!newPtr) {
-    free((void*)origPtr);
     return 0;
   }
 
