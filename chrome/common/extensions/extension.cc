@@ -44,6 +44,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "webkit/glue/image_decoder.h"
+#include "webkit/glue/web_intent_service_data.h"
 
 namespace keys = extension_manifest_keys;
 namespace values = extension_manifest_values;
@@ -1162,6 +1163,74 @@ bool Extension::LoadAppIsolation(const DictionaryValue* manifest,
   return true;
 }
 
+bool Extension::LoadWebIntents(const base::DictionaryValue& manifest,
+                               std::string* error) {
+  DCHECK(error);
+
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableWebIntents))
+    return true;
+
+  if (!manifest.HasKey(keys::kIntents))
+    return true;
+
+  DictionaryValue* all_intents = NULL;
+  if (!manifest.GetDictionary(keys::kIntents, &all_intents)) {
+    *error = errors::kInvalidIntents;
+    return false;
+  }
+
+  std::string value;
+  for (DictionaryValue::key_iterator iter(all_intents->begin_keys());
+       iter != all_intents->end_keys(); ++iter) {
+    WebIntentServiceData intent;
+
+    DictionaryValue* one_intent = NULL;
+    if (!all_intents->GetDictionaryWithoutPathExpansion(*iter, &one_intent)) {
+      *error = errors::kInvalidIntent;
+      return false;
+    }
+    intent.action = UTF8ToUTF16(*iter);
+
+    // TODO(groby): Support an array of types.
+    if (one_intent->HasKey(keys::kIntentType) &&
+        !one_intent->GetString(keys::kIntentType, &intent.type)) {
+      *error = errors::kInvalidIntentType;
+      return false;
+    }
+
+    if (one_intent->HasKey(keys::kIntentPath)) {
+      if (!one_intent->GetString(keys::kIntentPath, &value)) {
+        *error = errors::kInvalidIntentPath;
+        return false;
+      }
+      intent.service_url = GetResourceURL(value);
+    }
+
+    if (one_intent->HasKey(keys::kIntentTitle) &&
+        !one_intent->GetString(keys::kIntentTitle, &intent.title)) {
+      *error = errors::kInvalidIntentTitle;
+      return false;
+    }
+
+    if (one_intent->HasKey(keys::kIntentDisposition)) {
+      if (!one_intent->GetString(keys::kIntentDisposition, &value) ||
+          (value != values::kIntentDispositionWindow &&
+           value != values::kIntentDispositionInline)) {
+        *error = errors::kInvalidIntentDisposition;
+        return false;
+      }
+      if (value == values::kIntentDispositionInline)
+        intent.disposition = WebIntentServiceData::DISPOSITION_INLINE;
+      else
+        intent.disposition = WebIntentServiceData::DISPOSITION_WINDOW;
+    }
+
+    intents_.push_back(intent);
+  }
+  return true;
+}
+
+
 bool Extension::EnsureNotHybridApp(const DictionaryValue* manifest,
                                    std::string* error) {
   if (web_extent().is_empty())
@@ -2271,6 +2340,10 @@ bool Extension::InitFromValue(const DictionaryValue& source, int flags,
       }
     }
   }
+
+  // Initialize web intents (optional).
+  if (!LoadWebIntents(source, error))
+    return false;
 
   // Initialize incognito behavior. Apps default to split mode, extensions
   // default to spanning.

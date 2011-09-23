@@ -109,9 +109,10 @@ TEST_F(ExtensionIconManagerTest, LoadRemoveLoad) {
       static_cast<DictionaryValue*>(serializer.Deserialize(NULL, NULL)));
   ASSERT_TRUE(manifest.get() != NULL);
 
+  std::string error;
   scoped_refptr<Extension> extension(Extension::Create(
       manifest_path.DirName(), Extension::INVALID, *manifest.get(),
-      Extension::STRICT_ERROR_CHECKS, NULL));
+      Extension::STRICT_ERROR_CHECKS, &error));
   ASSERT_TRUE(extension.get());
   TestIconManager icon_manager(this);
 

@@ -39,6 +39,11 @@ namespace extension_manifest_keys {
   extern const char* kIncognito;
   extern const char* kIncludeGlobs;
   extern const char* kInputComponents;
+  extern const char* kIntents;
+  extern const char* kIntentType;
+  extern const char* kIntentPath;
+  extern const char* kIntentTitle;
+  extern const char* kIntentDisposition;
   extern const char* kIsolation;
   extern const char* kJs;
   extern const char* kKeycode;
@@ -115,6 +120,8 @@ namespace extension_manifest_keys {
 namespace extension_manifest_values {
   extern const char* kIncognitoSplit;
   extern const char* kIncognitoSpanning;
+  extern const char* kIntentDispositionWindow;
+  extern const char* kIntentDispositionInline;
   extern const char* kIsolatedStorage;
   extern const char* kLaunchContainerPanel;
   extern const char* kLaunchContainerTab;
@@ -176,6 +183,12 @@ namespace extension_manifest_errors {
   extern const char* kInvalidInputComponentShortcutKey;
   extern const char* kInvalidInputComponentShortcutKeycode;
   extern const char* kInvalidInputComponentType;
+  extern const char* kInvalidIntent;
+  extern const char* kInvalidIntentDisposition;
+  extern const char* kInvalidIntentPath;
+  extern const char* kInvalidIntents;
+  extern const char* kInvalidIntentType;
+  extern const char* kInvalidIntentTitle;
   extern const char* kInvalidIsolation;
   extern const char* kInvalidIsolationValue;
   extern const char* kInvalidJs;

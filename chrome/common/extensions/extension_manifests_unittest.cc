@@ -747,6 +747,51 @@ TEST_F(ExtensionManifestTest, TtsEngine) {
   EXPECT_EQ(3U, extension->tts_voices()[0].event_types.size());
 }
 
+TEST_F(ExtensionManifestTest, WebIntents) {
+  CommandLine::ForCurrentProcess()->AppendSwitch("--enable-web-intents");
+
+  LoadAndExpectError("intent_invalid_1.json",
+                     extension_manifest_errors::kInvalidIntents);
+  LoadAndExpectError("intent_invalid_2.json",
+                     extension_manifest_errors::kInvalidIntent);
+  LoadAndExpectError("intent_invalid_3.json",
+                     extension_manifest_errors::kInvalidIntentPath);
+  LoadAndExpectError("intent_invalid_4.json",
+                     extension_manifest_errors::kInvalidIntentDisposition);
+  LoadAndExpectError("intent_invalid_5.json",
+                     extension_manifest_errors::kInvalidIntentType);
+  LoadAndExpectError("intent_invalid_6.json",
+                     extension_manifest_errors::kInvalidIntentTitle);
+
+  scoped_refptr<Extension> extension(
+      LoadAndExpectSuccess("intent_valid.json"));
+  ASSERT_TRUE(extension.get() != NULL);
+
+  ASSERT_EQ(1u, extension->intents().size());
+  EXPECT_EQ("image/png", UTF16ToUTF8(extension->intents()[0].type));
+  EXPECT_EQ("http://webintents.org/share",
+            UTF16ToUTF8(extension->intents()[0].action));
+  EXPECT_EQ("chrome-extension", extension->intents()[0].service_url.scheme());
+  EXPECT_EQ("///services/share", extension->intents()[0].service_url.path());
+  EXPECT_EQ("Sample Sharing Intent",
+            UTF16ToUTF8(extension->intents()[0].title));
+  EXPECT_EQ(WebIntentServiceData::DISPOSITION_INLINE,
+            extension->intents()[0].disposition);
+
+  // Verify that optional fields are filled with defaults.
+  extension = LoadAndExpectSuccess("intent_valid_minimal.json");
+  ASSERT_TRUE(extension.get() != NULL);
+
+  ASSERT_EQ(1u, extension->intents().size());
+  EXPECT_EQ("", UTF16ToUTF8(extension->intents()[0].type));
+  EXPECT_EQ("http://webintents.org/share",
+            UTF16ToUTF8(extension->intents()[0].action));
+  EXPECT_TRUE(extension->intents()[0].service_url.is_empty());
+  EXPECT_EQ("", UTF16ToUTF8(extension->intents()[0].title));
+  EXPECT_EQ(WebIntentServiceData::DISPOSITION_WINDOW,
+            extension->intents()[0].disposition);
+}
+
 TEST_F(ExtensionManifestTest, ForbidPortsInPermissions) {
   // Loading as a user would shoud not trigger an error.
   LoadAndExpectSuccess("forbid_ports_in_permissions.json");

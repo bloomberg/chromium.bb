@@ -38,6 +38,11 @@ const char* kId = "id";
 const char* kIncognito = "incognito";
 const char* kIncludeGlobs = "include_globs";
 const char* kInputComponents = "input_components";
+const char* kIntents = "intents";
+const char* kIntentType = "type";
+const char* kIntentPath = "path";
+const char* kIntentTitle = "title";
+const char* kIntentDisposition = "disposition";
 const char* kIsolation = "app.isolation";
 const char* kJs = "js";
 const char* kKeycode = "keyCode";
@@ -113,6 +118,8 @@ const char* kWebURLs = "app.urls";
 namespace extension_manifest_values {
 const char* kIncognitoSplit = "split";
 const char* kIncognitoSpanning = "spanning";
+const char* kIntentDispositionWindow = "window";
+const char* kIntentDispositionInline = "inline";
 const char* kIsolatedStorage = "storage";
 const char* kRunAtDocumentStart = "document_start";
 const char* kRunAtDocumentEnd = "document_end";
@@ -226,6 +233,18 @@ const char* kInvalidInputComponentShortcutKeycode =
     "Invalid value for 'input_conponents[*].shortcutKey.keyCode";
 const char* kInvalidInputComponentType =
     "Invalid value for 'input_conponents[*].type";
+const char* kInvalidIntent =
+    "Invalid value for intents[*]";
+const char* kInvalidIntentDisposition =
+    "Invalid value for intents[*].disposition";
+const char* kInvalidIntentPath =
+  "Invalid value for intents[*].path";
+const char* kInvalidIntents =
+    "Invalid value for intents";
+const char* kInvalidIntentType =
+    "Invalid value for intents[*].type";
+const char* kInvalidIntentTitle =
+    "Invalid value for intents[*].title";
 const char* kInvalidIsolation =
     "Invalid value for 'app.isolation'.";
 const char* kInvalidIsolationValue =

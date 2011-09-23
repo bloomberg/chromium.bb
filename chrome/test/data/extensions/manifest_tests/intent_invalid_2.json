@@ -1,0 +1,7 @@
+{
+  "name": "test",
+  "version": "1",
+  "intents": {
+    "http://webintents.org/" : "shouldBeADict"
+  }
+}
