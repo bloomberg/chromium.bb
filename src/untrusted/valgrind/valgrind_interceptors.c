@@ -254,8 +254,6 @@ INLINE static void handle_free_after() {
   stop_ignore_all_accesses_and_sync();
 }
 
-#ifdef __GLIBC__
-
 static __thread int inside_malloc = 0;
 
 /* malloc() */
@@ -319,64 +317,6 @@ void VG_NACL_LIBC_FUNC(free)(size_t ptr) {
     CALL_FN_v_W(fn, old_ptr);
   handle_free_after();
 }
-
-#else
-
-/* _malloc_r() */
-size_t VG_NACL_LIBC_FUNC(_malloc_r)(size_t reent, size_t size) {
-  OrigFn fn;
-  size_t ptr;
-  VALGRIND_GET_ORIG_FN(fn);
-  size_t allocSize = handle_malloc_before(size);
-  CALL_FN_W_WW(ptr, fn, reent, allocSize);
-  return handle_malloc_after(ptr, size);
-}
-
-/* _calloc_r() */
-size_t VG_NACL_LIBC_FUNC(_calloc_r)(size_t reent, size_t nmemb, size_t size) {
-  size_t totalSize = nmemb * size;
-  void* ptr = _malloc_r((void*)reent, totalSize);
-  if (ptr)
-    memset(ptr, 0, totalSize);
-  return (size_t)ptr;
-}
-
-/* _realloc_r() */
-size_t VG_NACL_LIBC_FUNC(_realloc_r)(void* reent, size_t origPtr, size_t size) {
-  if (!origPtr) {
-    return (size_t)_malloc_r(reent, size);
-  }
-  if (!size) {
-    free((void*)origPtr);
-    return 0;
-  }
-  size_t newPtr = (size_t)_malloc_r(reent, size);
-  if (!newPtr) {
-    free((void*)origPtr);
-    return 0;
-  }
-
-  VALGRIND_MAKE_MEM_DEFINED(VALGRIND_SANDBOX_PTR(origPtr - kRedZoneSize),
-      kRedZoneSize);
-  size_t origSize = ((size_t*)(origPtr - kRedZoneSize))[1];
-  size_t copySize = size < origSize ? size : origSize;
-
-  memcpy((void*)newPtr, (void*)origPtr, copySize);
-  _free_r(reent, (void*)origPtr);
-  return newPtr;
-}
-
-/* _free_r() */
-void VG_NACL_LIBC_FUNC(_free_r)(size_t reent, size_t ptr) {
-  OrigFn fn;
-  VALGRIND_GET_ORIG_FN(fn);
-  size_t old_ptr = handle_free_before(ptr);
-  if (old_ptr)
-    CALL_FN_v_WW(fn, reent, old_ptr);
-  handle_free_after();
-}
-
-#endif
 
 /* Unoptimized string functions. Optimized versions often read several bytes
    beyond the end of the string. This makes Memcheck sad. */
