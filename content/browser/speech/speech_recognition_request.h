@@ -11,6 +11,7 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "content/common/content_export.h"
 #include "content/common/net/url_fetcher.h"
 #include "content/common/speech_input_result.h"
 #include "googleurl/src/gurl.h"
@@ -31,7 +32,7 @@ class SpeechRecognitionRequest : public URLFetcher::Delegate {
   static int url_fetcher_id_for_tests;
 
   // Interface for receiving callbacks from this object.
-  class Delegate {
+  class CONTENT_EXPORT Delegate {
    public:
     virtual void SetRecognitionResult(
         bool error, const SpeechInputResultArray& result) = 0;

@@ -20,7 +20,7 @@ namespace speech_input {
 // handles requests received from various render views and makes sure only one
 // of them can use speech recognition at a time. It also sends recognition
 // results and status events to the render views when required.
-class SpeechInputManager : public SpeechRecognizerDelegate {
+class CONTENT_EXPORT SpeechInputManager : public SpeechRecognizerDelegate {
  public:
   // Implemented by the dispatcher host to relay events to the render views.
   class Delegate {
@@ -35,13 +35,13 @@ class SpeechInputManager : public SpeechRecognizerDelegate {
     virtual ~Delegate() {}
   };
 
-  CONTENT_EXPORT SpeechInputManager();
+  SpeechInputManager();
 
   // Invokes the platform provided microphone settings UI in a non-blocking way,
   // via the BrowserThread::FILE thread.
   static void ShowAudioInputSettings();
 
-  CONTENT_EXPORT virtual ~SpeechInputManager();
+  virtual ~SpeechInputManager();
 
   // Handlers for requests from render views.
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 
 #include "base/basictypes.h"
 #include "content/browser/browser_thread.h"
+#include "content/common/content_export.h"
 
 class NotificationService;
 
@@ -20,7 +21,7 @@ class NotificationService;
 // Applications must initialize the COM library before they can call
 // COM library functions other than CoGetMalloc and memory allocation
 // functions, so this class initializes COM for those users.
-class BrowserProcessSubThread : public BrowserThread {
+class CONTENT_EXPORT BrowserProcessSubThread : public BrowserThread {
  public:
   explicit BrowserProcessSubThread(BrowserThread::ID identifier);
   virtual ~BrowserProcessSubThread();

@@ -184,4 +184,12 @@ void SpeechInputManager::OnFocusChanged(int caller_id) {
   }
 }
 
+SpeechInputManager::SpeechInputRequest::SpeechInputRequest()
+    : delegate(NULL),
+      is_active(false) {
+}
+
+SpeechInputManager::SpeechInputRequest::~SpeechInputRequest() {
+}
+
 }  // namespace speech_input
