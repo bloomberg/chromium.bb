@@ -71,6 +71,8 @@ class SystemKeyEventListener : public WmMessageListener::Observer,
   // CapsLock and Numlock are always ignored.
   void GrabKey(int32 key, uint32 mask);
 
+  void OnBrightnessDown();
+  void OnBrightnessUp();
   void OnVolumeMute();
   void OnVolumeDown();
   void OnVolumeUp();
@@ -83,9 +85,13 @@ class SystemKeyEventListener : public WmMessageListener::Observer,
   // Returns true if the event was processed, false otherwise.
   virtual bool ProcessedXEvent(XEvent* xevent);
 
+  int32 key_brightness_down_;
+  int32 key_brightness_up_;
   int32 key_volume_mute_;
   int32 key_volume_down_;
   int32 key_volume_up_;
+  int32 key_f6_;
+  int32 key_f7_;
   int32 key_f8_;
   int32 key_f9_;
   int32 key_f10_;

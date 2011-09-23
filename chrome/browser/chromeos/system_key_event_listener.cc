@@ -11,6 +11,8 @@
 #include "chrome/browser/accessibility_events.h"
 #include "chrome/browser/chromeos/audio_handler.h"
 #include "chrome/browser/chromeos/brightness_bubble.h"
+#include "chrome/browser/chromeos/cros/brightness_library.h"
+#include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/input_method/hotkey_manager.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/input_method/xkeyboard.h"
@@ -48,21 +50,32 @@ SystemKeyEventListener::SystemKeyEventListener()
       audio_handler_(AudioHandler::GetInstance()) {
   WmMessageListener::GetInstance()->AddObserver(this);
 
+  key_brightness_down_ = XKeysymToKeycode(GDK_DISPLAY(),
+                                          XF86XK_MonBrightnessDown);
+  key_brightness_up_ = XKeysymToKeycode(GDK_DISPLAY(), XF86XK_MonBrightnessUp);
   key_volume_mute_ = XKeysymToKeycode(GDK_DISPLAY(), XF86XK_AudioMute);
   key_volume_down_ = XKeysymToKeycode(GDK_DISPLAY(), XF86XK_AudioLowerVolume);
   key_volume_up_ = XKeysymToKeycode(GDK_DISPLAY(), XF86XK_AudioRaiseVolume);
+  key_f6_ = XKeysymToKeycode(GDK_DISPLAY(), XK_F6);
+  key_f7_ = XKeysymToKeycode(GDK_DISPLAY(), XK_F7);
   key_f8_ = XKeysymToKeycode(GDK_DISPLAY(), XK_F8);
   key_f9_ = XKeysymToKeycode(GDK_DISPLAY(), XK_F9);
   key_f10_ = XKeysymToKeycode(GDK_DISPLAY(), XK_F10);
   key_left_shift_ = XKeysymToKeycode(GDK_DISPLAY(), XK_Shift_L);
   key_right_shift_ = XKeysymToKeycode(GDK_DISPLAY(), XK_Shift_R);
 
+  if (key_brightness_down_)
+    GrabKey(key_brightness_down_, 0);
+  if (key_brightness_up_)
+    GrabKey(key_brightness_up_, 0);
   if (key_volume_mute_)
     GrabKey(key_volume_mute_, 0);
   if (key_volume_down_)
     GrabKey(key_volume_down_, 0);
   if (key_volume_up_)
     GrabKey(key_volume_up_, 0);
+  GrabKey(key_f6_, 0);
+  GrabKey(key_f7_, 0);
   GrabKey(key_f8_, 0);
   GrabKey(key_f9_, 0);
   GrabKey(key_f10_, 0);
@@ -169,6 +182,22 @@ void SystemKeyEventListener::GrabKey(int32 key, uint32 mask) {
            True, GrabModeAsync, GrabModeAsync);
 }
 
+void SystemKeyEventListener::OnBrightnessDown() {
+  if (!chromeos::CrosLibrary::Get()->EnsureLoaded())
+    return;
+  chromeos::BrightnessLibrary* cros =
+      CrosLibrary::Get()->GetBrightnessLibrary();
+  cros->DecreaseScreenBrightness(true);
+}
+
+void SystemKeyEventListener::OnBrightnessUp() {
+  if (!chromeos::CrosLibrary::Get()->EnsureLoaded())
+    return;
+  chromeos::BrightnessLibrary* cros =
+      CrosLibrary::Get()->GetBrightnessLibrary();
+  cros->IncreaseScreenBrightness();
+}
+
 void SystemKeyEventListener::OnVolumeMute() {
   if (!audio_handler_->IsInitialized())
     return;
@@ -263,7 +292,19 @@ bool SystemKeyEventListener::ProcessedXEvent(XEvent* xevent) {
 
       // Only doing non-Alt/Shift/Ctrl modified keys
       if (!(xevent->xkey.state & (Mod1Mask | ShiftMask | ControlMask))) {
-        if (keycode == key_f8_ || keycode == key_volume_mute_) {
+        if (keycode == key_f6_ || keycode == key_brightness_down_) {
+          if (keycode == key_f6_)
+            UserMetrics::RecordAction(
+                UserMetricsAction("Accel_BrightnessDown_F6"));
+          OnBrightnessDown();
+          return true;
+        } else if (keycode == key_f7_ || keycode == key_brightness_up_) {
+          if (keycode == key_f7_)
+            UserMetrics::RecordAction(
+                UserMetricsAction("Accel_BrightnessUp_F7"));
+          OnBrightnessUp();
+          return true;
+        } else if (keycode == key_f8_ || keycode == key_volume_mute_) {
           if (keycode == key_f8_)
             UserMetrics::RecordAction(UserMetricsAction("Accel_VolumeMute_F8"));
           OnVolumeMute();
