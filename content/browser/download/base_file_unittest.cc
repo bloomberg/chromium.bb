@@ -32,6 +32,7 @@ class BaseFileTest : public testing::Test {
   BaseFileTest()
       : expect_file_survives_(false),
         expect_in_progress_(true),
+        expected_error_(false),
         file_thread_(BrowserThread::FILE, &message_loop_) {
   }
 
@@ -43,12 +44,14 @@ class BaseFileTest : public testing::Test {
 
   virtual void TearDown() {
     EXPECT_FALSE(base_file_->in_progress());
-    EXPECT_EQ(static_cast<int64>(expected_data_.size()),
-              base_file_->bytes_so_far());
+    if (!expected_error_) {
+      EXPECT_EQ(static_cast<int64>(expected_data_.size()),
+                base_file_->bytes_so_far());
+    }
 
     FilePath full_path = base_file_->full_path();
 
-    if (!expected_data_.empty()) {
+    if (!expected_data_.empty() && !expected_error_) {
       // Make sure the data has been properly written to disk.
       std::string disk_data;
       EXPECT_TRUE(file_util::ReadFileToString(full_path, &disk_data));
@@ -87,14 +90,18 @@ class BaseFileTest : public testing::Test {
 
   int AppendDataToFile(const std::string& data) {
     EXPECT_EQ(expect_in_progress_, base_file_->in_progress());
+    expected_error_ = mock_file_stream_.get() &&
+                      (mock_file_stream_->forced_error() != net::OK);
     int appended = base_file_->AppendDataToFile(data.data(), data.size());
     if (appended == net::OK)
       EXPECT_TRUE(expect_in_progress_)
           << " appended = " << appended;
     if (base_file_->in_progress()) {
       expected_data_ += data;
-      EXPECT_EQ(static_cast<int64>(expected_data_.size()),
-                base_file_->bytes_so_far());
+      if (!expected_error_) {
+        EXPECT_EQ(static_cast<int64>(expected_data_.size()),
+                  base_file_->bytes_so_far());
+      }
     }
     return appended;
   }
@@ -151,6 +158,7 @@ class BaseFileTest : public testing::Test {
  private:
   // Keep track of what data should be saved to the disk file.
   std::string expected_data_;
+  bool expected_error_;
 
   // Mock file thread to satisfy debug checks in BaseFile.
   MessageLoop message_loop_;

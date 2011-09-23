@@ -619,12 +619,13 @@ TEST_F(DownloadManagerTest, DownloadFileErrorTest) {
   EXPECT_EQ(DownloadItem::INTERRUPTED, download->state());
 
   // Check the download shelf's information.
-  size_t error_size = kTestDataLen * 3;
+  size_t error_size = kTestDataLen * 2;
+  size_t total_size = kTestDataLen * 3;
   ui::DataUnits amount_units = ui::GetByteDisplayUnits(kTestDataLen);
   string16 simple_size =
       ui::FormatBytesWithUnits(error_size, amount_units, false);
   string16 simple_total = base::i18n::GetDisplayStringInLTRDirectionality(
-      ui::FormatBytesWithUnits(error_size, amount_units, true));
+      ui::FormatBytesWithUnits(total_size, amount_units, true));
   EXPECT_EQ(l10n_util::GetStringFUTF16(IDS_DOWNLOAD_STATUS_INTERRUPTED,
                                        simple_size,
                                        simple_total),
