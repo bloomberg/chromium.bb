@@ -61,6 +61,11 @@ class TestCase {
   // that want to handle view changes should override this method.
   virtual void DidChangeView(const pp::Rect& position, const pp::Rect& clip);
 
+  // A function that is invoked whenever HandleInputEvent is called on the
+  // associated TestingInstance. Default implementation returns false. TestCases
+  // that want to handle view changes should override this method.
+  virtual bool HandleInputEvent(const pp::InputEvent& event);
+
  protected:
 #if !(defined __native_client__)
   // Overridden by each test to supply a ScriptableObject corresponding to the

@@ -50,9 +50,15 @@ pp::VarPrivate TestCase::GetTestObject() {
 }
 #endif
 
-void TestCase::HandleMessage(const pp::Var& message_data) {}
+void TestCase::HandleMessage(const pp::Var& message_data) {
+}
 
-void TestCase::DidChangeView(const pp::Rect& position, const pp::Rect& clip) {}
+void TestCase::DidChangeView(const pp::Rect& position, const pp::Rect& clip) {
+}
+
+bool TestCase::HandleInputEvent(const pp::InputEvent& event) {
+  return false;
+}
 
 #if !(defined __native_client__)
 pp::deprecated::ScriptableObject* TestCase::CreateTestObject() {

@@ -94,6 +94,12 @@ void TestingInstance::DidChangeView(const pp::Rect& position,
     current_case_->DidChangeView(position, clip);
 }
 
+bool TestingInstance::HandleInputEvent(const pp::InputEvent& event) {
+  if (current_case_)
+    return current_case_->HandleInputEvent(event);
+  return false;
+}
+
 void TestingInstance::LogTest(const std::string& test_name,
                               const std::string& error_message) {
   // Tell the browser we're still working.

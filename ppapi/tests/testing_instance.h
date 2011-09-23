@@ -49,6 +49,7 @@ pp::InstancePrivate {
   // pp::Instance override.
   virtual bool Init(uint32_t argc, const char* argn[], const char* argv[]);
   virtual void DidChangeView(const pp::Rect& position, const pp::Rect& clip);
+  virtual bool HandleInputEvent(const pp::InputEvent& event);
 
 #if !(defined __native_client__)
   virtual pp::Var GetInstanceObject();
