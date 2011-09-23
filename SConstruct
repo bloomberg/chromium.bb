@@ -1415,13 +1415,15 @@ def PPAPIBrowserTester(env,
     command.extend(['--test_arg', str(key), str(value)])
   if ShouldUseVerboseOptions(extra):
     env.MakeVerboseExtraOptions(target, log_verbosity, extra)
+  # Heuristic for when to capture output...
+  capture_output = (extra.pop('capture_output', False)
+                    or 'process_output' in extra)
   return env.CommandTest(target,
                          command,
                          # Set to 'huge' so that the browser tester's timeout
                          # takes precedence over the default of the test_suite.
                          size='huge',
-                         # Heuristic for when to capture output...
-                         capture_output='process_output' in extra,
+                         capture_output=capture_output,
                          **extra)
 
 pre_base_env.AddMethod(PPAPIBrowserTester)
