@@ -1695,3 +1695,20 @@
    fun:ExtensionContentSettingsStore::GetEffectiveContentSetting
    fun:ExtensionContentSettingsStoreTest_*
 }
+{
+   bug_97865
+   Heapcheck:Leak
+   ...
+   fun:MakeAutofillProfileSyncComponentsActionP3::gmock_Impl::gmock_PerformImpl
+   fun:testing::internal::ActionHelper::Perform
+   fun:MakeAutofillProfileSyncComponentsActionP3::gmock_Impl::Perform
+   fun:testing::Action::Perform
+   fun:testing::internal::ActionResultHolder::PerformAction
+   fun:testing::internal::FunctionMockerBase::UntypedPerformAction
+   fun:testing::internal::UntypedFunctionMockerBase::UntypedInvokeWith
+   fun:testing::internal::FunctionMockerBase::InvokeWith
+   fun:testing::internal::FunctionMocker::Invoke
+   fun:ProfileSyncFactoryMock::CreateAutofillProfileSyncComponents
+   fun:browser_sync::AutofillProfileDataTypeController::CreateSyncComponents
+   fun:browser_sync::NonFrontendDataTypeController::StartAssociation
+}
