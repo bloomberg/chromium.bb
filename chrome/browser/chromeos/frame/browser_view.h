@@ -8,12 +8,13 @@
 
 #include <vector>
 
+#include "base/compiler_specific.h"
 #include "base/message_loop.h"
 #include "chrome/browser/chromeos/status/status_area_host.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "views/context_menu_controller.h"
-#include "views/controls/menu/menu_wrapper.h"
+#include "views/controls/menu/menu_listener.h"
 
 class AccessibleToolbarView;
 class Profile;
