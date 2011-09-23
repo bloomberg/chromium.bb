@@ -198,6 +198,8 @@ BaseFile::BaseFile(const FilePath& full_path,
       detached_(false) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   memset(sha256_hash_, 0, sizeof(sha256_hash_));
+  if (file_stream_.get())
+    file_stream_->EnableErrorStatistics();
 }
 
 BaseFile::~BaseFile() {
@@ -388,6 +390,7 @@ net::Error BaseFile::Open() {
   // Create a new file stream if it is not provided.
   if (!file_stream_.get()) {
     CreateFileStream();
+    file_stream_->EnableErrorStatistics();
     int open_result = file_stream_->Open(
         full_path_,
         base::PLATFORM_FILE_OPEN_ALWAYS | base::PLATFORM_FILE_WRITE);

@@ -25,6 +25,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/worker_pool.h"
 #include "base/synchronization/waitable_event.h"
+#include "net/base/file_stream_metrics.h"
 #include "net/base/net_errors.h"
 
 #if defined(OS_ANDROID)
@@ -47,52 +48,59 @@ COMPILE_ASSERT(FROM_BEGIN   == SEEK_SET &&
 
 namespace {
 
+int RecordAndMapError(int error, FileErrorSource source, bool record_uma) {
+  RecordFileError(error, source, record_uma);
+  return MapSystemError(error);
+}
+
 // ReadFile() is a simple wrapper around read() that handles EINTR signals and
 // calls MapSystemError() to map errno to net error codes.
-int ReadFile(base::PlatformFile file, char* buf, int buf_len) {
+int ReadFile(base::PlatformFile file, char* buf, int buf_len, bool record_uma) {
   base::ThreadRestrictions::AssertIOAllowed();
   // read(..., 0) returns 0 to indicate end-of-file.
 
   // Loop in the case of getting interrupted by a signal.
   ssize_t res = HANDLE_EINTR(read(file, buf, static_cast<size_t>(buf_len)));
   if (res == static_cast<ssize_t>(-1))
-    return MapSystemError(errno);
+    RecordAndMapError(errno, FILE_ERROR_SOURCE_READ, record_uma);
   return static_cast<int>(res);
 }
 
 void ReadFileTask(base::PlatformFile file,
                   char* buf,
                   int buf_len,
+                  bool record_uma,
                   CompletionCallback* callback) {
-  callback->Run(ReadFile(file, buf, buf_len));
+  callback->Run(ReadFile(file, buf, buf_len, record_uma));
 }
 
 // WriteFile() is a simple wrapper around write() that handles EINTR signals and
 // calls MapSystemError() to map errno to net error codes.  It tries to write to
 // completion.
-int WriteFile(base::PlatformFile file, const char* buf, int buf_len) {
+int WriteFile(base::PlatformFile file, const char* buf, int buf_len,
+              bool record_uma) {
   base::ThreadRestrictions::AssertIOAllowed();
   ssize_t res = HANDLE_EINTR(write(file, buf, buf_len));
   if (res == -1)
-    return MapSystemError(errno);
+    RecordAndMapError(errno, FILE_ERROR_SOURCE_WRITE, record_uma);
   return res;
 }
 
 void WriteFileTask(base::PlatformFile file,
                    const char* buf,
-                   int buf_len,
+                   int buf_len, bool record_uma,
                    CompletionCallback* callback) {
-  callback->Run(WriteFile(file, buf, buf_len));
+  callback->Run(WriteFile(file, buf, buf_len, record_uma));
 }
 
 // FlushFile() is a simple wrapper around fsync() that handles EINTR signals and
 // calls MapSystemError() to map errno to net error codes.  It tries to flush to
 // completion.
-int FlushFile(base::PlatformFile file) {
+int FlushFile(base::PlatformFile file, bool record_uma) {
   base::ThreadRestrictions::AssertIOAllowed();
   ssize_t res = HANDLE_EINTR(fsync(file));
   if (res == -1)
-    return MapSystemError(errno);
+    RecordAndMapError(errno, FILE_ERROR_SOURCE_FLUSH, record_uma);
   return res;
 }
 
@@ -144,6 +152,10 @@ class FileStream::AsyncContext {
   // |result| is the result of the Read/Write task.
   void OnBackgroundIOCompleted(int result);
 
+  void EnableErrorStatistics() {
+    record_uma_ = true;
+  }
+
  private:
   // Always called on the IO thread, either directly by a task on the
   // MessageLoop or by ~AsyncContext().
@@ -167,6 +179,7 @@ class FileStream::AsyncContext {
   CancelableCallbackTask* message_loop_task_;
 
   bool is_closing_;
+  bool record_uma_;
 
   DISALLOW_COPY_AND_ASSIGN(AsyncContext);
 };
@@ -178,7 +191,8 @@ FileStream::AsyncContext::AsyncContext()
           this, &AsyncContext::OnBackgroundIOCompleted),
       background_io_completed_(true, false),
       message_loop_task_(NULL),
-      is_closing_(false) {}
+      is_closing_(false),
+      record_uma_(false) {}
 
 FileStream::AsyncContext::~AsyncContext() {
   is_closing_ = true;
@@ -207,6 +221,7 @@ void FileStream::AsyncContext::InitiateAsyncRead(
                              NewRunnableFunction(
                                  &ReadFileTask,
                                  file, buf, buf_len,
+                                 record_uma_,
                                  &background_io_completed_callback_),
                              true /* task_is_slow */);
 }
@@ -221,6 +236,7 @@ void FileStream::AsyncContext::InitiateAsyncWrite(
                              NewRunnableFunction(
                                  &WriteFileTask,
                                  file, buf, buf_len,
+                                 record_uma_,
                                  &background_io_completed_callback_),
                              true /* task_is_slow */);
 }
@@ -261,14 +277,16 @@ void FileStream::AsyncContext::RunAsynchronousCallback() {
 FileStream::FileStream()
     : file_(base::kInvalidPlatformFileValue),
       open_flags_(0),
-      auto_closed_(true) {
+      auto_closed_(true),
+      record_uma_(false) {
   DCHECK(!IsOpen());
 }
 
 FileStream::FileStream(base::PlatformFile file, int flags)
     : file_(file),
       open_flags_(flags),
-      auto_closed_(false) {
+      auto_closed_(false),
+      record_uma_(false) {
   // If the file handle is opened with base::PLATFORM_FILE_ASYNC, we need to
   // make sure we will perform asynchronous File IO to it.
   if (flags & base::PLATFORM_FILE_ASYNC) {
@@ -301,13 +319,11 @@ int FileStream::Open(const FilePath& path, int open_flags) {
 
   open_flags_ = open_flags;
   file_ = base::CreatePlatformFile(path, open_flags_, NULL, NULL);
-  if (file_ == base::kInvalidPlatformFileValue) {
-    return MapSystemError(errno);
-  }
+  if (file_ == base::kInvalidPlatformFileValue)
+    return RecordAndMapError(errno, FILE_ERROR_SOURCE_OPEN, record_uma_);
 
-  if (open_flags_ & base::PLATFORM_FILE_ASYNC) {
+  if (open_flags_ & base::PLATFORM_FILE_ASYNC)
     async_context_.reset(new AsyncContext());
-  }
 
   return OK;
 }
@@ -328,7 +344,7 @@ int64 FileStream::Seek(Whence whence, int64 offset) {
   off_t res = lseek(file_, static_cast<off_t>(offset),
                     static_cast<int>(whence));
   if (res == static_cast<off_t>(-1))
-    return MapSystemError(errno);
+    return RecordAndMapError(errno, FILE_ERROR_SOURCE_SEEK, record_uma_);
 
   return res;
 }
@@ -345,7 +361,7 @@ int64 FileStream::Available() {
 
   struct stat info;
   if (fstat(file_, &info) != 0)
-    return MapSystemError(errno);
+    return RecordAndMapError(errno, FILE_ERROR_SOURCE_GET_SIZE, record_uma_);
 
   int64 size = static_cast<int64>(info.st_size);
   DCHECK_GT(size, cur_pos);
@@ -366,10 +382,12 @@ int FileStream::Read(
     DCHECK(open_flags_ & base::PLATFORM_FILE_ASYNC);
     // If we're in async, make sure we don't have a request in flight.
     DCHECK(!async_context_->callback());
+    if (record_uma_)
+      async_context_->EnableErrorStatistics();
     async_context_->InitiateAsyncRead(file_, buf, buf_len, callback);
     return ERR_IO_PENDING;
   } else {
-    return ReadFile(file_, buf, buf_len);
+    return ReadFile(file_, buf, buf_len, record_uma_);
   }
 }
 
@@ -406,10 +424,12 @@ int FileStream::Write(
     DCHECK(open_flags_ & base::PLATFORM_FILE_ASYNC);
     // If we're in async, make sure we don't have a request in flight.
     DCHECK(!async_context_->callback());
+    if (record_uma_)
+      async_context_->EnableErrorStatistics();
     async_context_->InitiateAsyncWrite(file_, buf, buf_len, callback);
     return ERR_IO_PENDING;
   } else {
-    return WriteFile(file_, buf, buf_len);
+    return WriteFile(file_, buf, buf_len, record_uma_);
   }
 }
 
@@ -429,15 +449,21 @@ int64 FileStream::Truncate(int64 bytes) {
 
   // And truncate the file.
   int result = ftruncate(file_, bytes);
-  return result == 0 ? seek_position :
-                       static_cast<int64>(MapSystemError(errno));
+  if (result == 0)
+    return seek_position;
+
+  return RecordAndMapError(errno, FILE_ERROR_SOURCE_SET_EOF, record_uma_);
 }
 
 int FileStream::Flush() {
   if (!IsOpen())
     return ERR_UNEXPECTED;
 
-  return FlushFile(file_);
+  return FlushFile(file_, record_uma_);
+}
+
+void FileStream::EnableErrorStatistics() {
+  record_uma_ = true;
 }
 
 }  // namespace net
