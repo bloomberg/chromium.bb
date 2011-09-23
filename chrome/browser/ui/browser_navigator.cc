@@ -64,13 +64,16 @@ bool CompareURLsWithReplacements(
 }
 
 // Change some of the navigation parameters based on the particular URL.
-// Currently this applies to chrome://settings and the bookmark manager,
-// which we always want to open in a normal (not incognito) window. Guest
-// session is an exception.
+// Currently this applies to chrome://settings, the bookmark manager,
+// and chrome://extensions, which we always want to open in a normal
+// (not incognito) window. Guest session is an exception.
+// chrome://extensions is on the list because it redirects to
+// chrome://settings.
 void AdjustNavigateParamsForURL(browser::NavigateParams* params) {
   if (!params->target_contents &&
       params->url.scheme() == chrome::kChromeUIScheme &&
       (params->url.host() == chrome::kChromeUISettingsHost ||
+       params->url.host() == chrome::kChromeUIExtensionsHost ||
        params->url.host() == chrome::kChromeUIBookmarksHost)) {
     Profile* profile =
         params->browser ? params->browser->profile() : params->profile;
