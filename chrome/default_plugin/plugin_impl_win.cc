@@ -348,7 +348,7 @@ void PluginInstallerImpl::DownloadPlugin() {
   if (!plugin_download_url_for_display_) {
 #if !defined(USE_AURA)
     ChildThread::current()->Send(new ChromePluginProcessHostMsg_DownloadUrl(
-        plugin_download_url_, hwnd()));
+        plugin_download_url_, hwnd(), renderer_process_id()));
 #endif
   } else {
     default_plugin::g_browser->geturl(instance(),

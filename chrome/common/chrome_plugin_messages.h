@@ -16,7 +16,7 @@
 
 //-----------------------------------------------------------------------------
 // ChromePluginHost messages
-// These are messages sent from the plugin process to the renderer process.
+// These are messages sent from the plugin process to the browser process.
 
 // Used to retrieve the plugin finder URL.
 IPC_SYNC_MESSAGE_CONTROL0_1(ChromePluginProcessHostMsg_GetPluginFinderUrl,
@@ -33,8 +33,9 @@ IPC_MESSAGE_CONTROL4(ChromePluginProcessHostMsg_MissingPluginStatus,
 #if defined(OS_WIN)
 // Used to initiate a download on the plugin installer file from the URL
 // passed in.
-IPC_MESSAGE_CONTROL2(ChromePluginProcessHostMsg_DownloadUrl,
+IPC_MESSAGE_CONTROL3(ChromePluginProcessHostMsg_DownloadUrl,
                      std::string /* URL */,
-                     gfx::NativeWindow /* caller window */)
+                     gfx::NativeWindow /* caller window */,
+                     int /* render_process_id */)
 
 #endif  // OS_WIN

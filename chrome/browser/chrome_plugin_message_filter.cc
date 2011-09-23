@@ -14,6 +14,7 @@
 #include "chrome/common/chrome_plugin_messages.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/plugin_process_host.h"
+#include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -51,19 +52,36 @@ bool ChromePluginMessageFilter::Send(IPC::Message* message) {
 
 #if defined(OS_WIN) && !defined(USE_AURA)
 void ChromePluginMessageFilter::OnDownloadUrl(const std::string& url,
-                                              gfx::NativeWindow caller_window) {
+                                              gfx::NativeWindow caller_window,
+                                              int render_process_id) {
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      NewRunnableFunction(OnDownloadUrlOnUIThread, url, caller_window,
+                          render_process_id));
+}
+
+void ChromePluginMessageFilter::OnDownloadUrlOnUIThread(
+    const std::string& url,
+    gfx::NativeWindow caller_window,
+    int render_process_id) {
+  RenderProcessHost* host = RenderProcessHost::FromID(render_process_id);
+  if (!host) {
+    return;
+  }
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      NewRunnableFunction(OnDownloadUrlOnFileThread, url, caller_window));
+      NewRunnableFunction(OnDownloadUrlOnFileThread, url, caller_window,
+                          host->browser_context()->GetRequestContext()));
 }
 
 void ChromePluginMessageFilter::OnDownloadUrlOnFileThread(
     const std::string& url,
-    gfx::NativeWindow caller_window) {
+    gfx::NativeWindow caller_window,
+    net::URLRequestContextGetter* context) {
   PluginDownloadUrlHelper* download_url_helper =
       new PluginDownloadUrlHelper(url, caller_window, NULL);
   download_url_helper->InitiateDownload(
-      Profile::Deprecated::GetDefaultRequestContext(),
+      context,
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));
 }
 

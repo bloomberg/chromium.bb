@@ -11,6 +11,10 @@
 
 class PluginProcessHost;
 
+namespace net {
+class URLRequestContextGetter;
+};
+
 // This class filters out incoming Chrome-specific IPC messages for the plugin
 // process on the IPC thread.
 class ChromePluginMessageFilter : public IPC::ChannelProxy::MessageFilter,
@@ -29,10 +33,18 @@ class ChromePluginMessageFilter : public IPC::ChannelProxy::MessageFilter,
 
 #if defined(OS_WIN) && !defined(USE_AURA)
   void OnDownloadUrl(const std::string& url,
-                     gfx::NativeWindow caller_window);
+                     gfx::NativeWindow caller_window,
+                     int render_process_id);
   // Helper function to issue the download request on the file thread.
-  static void OnDownloadUrlOnFileThread(const std::string& url,
-                                        gfx::NativeWindow caller_window);
+  static void OnDownloadUrlOnFileThread(
+      const std::string& url,
+      gfx::NativeWindow caller_window,
+      net::URLRequestContextGetter* context);
+  // Helper function to handle the initial portions of the download request
+  // on the UI thread.
+  static void OnDownloadUrlOnUIThread(const std::string& url,
+                                      gfx::NativeWindow caller_window,
+                                      int render_process_id);
 #endif
   void OnGetPluginFinderUrl(std::string* plugin_finder_url);
   void OnMissingPluginStatus(int status,
