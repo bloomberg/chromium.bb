@@ -26,7 +26,9 @@
 
 {
   'variables': {
+    'yasm_flags': [],
     'yasm_path': '<(PRODUCT_DIR)/yasm',
+
     'conditions': [
       # Define yasm_flags that pass into YASM.
       [ 'OS=="linux" and target_arch=="ia32"', {
@@ -57,11 +59,10 @@
       }],
 
       # Define output extension.
-      ['OS=="mac" or OS=="linux"', {
-        'asm_obj_extension': 'o',
-      }],
       ['OS=="win"', {
         'asm_obj_extension': 'obj',
+      }, {
+        'asm_obj_extension': 'o',
       }],
     ],
   },  # variables
