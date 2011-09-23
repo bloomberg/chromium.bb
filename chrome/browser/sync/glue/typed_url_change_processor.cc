@@ -31,10 +31,12 @@ static const int kTypedUrlVisitThrottleThreshold = 10;
 static const int kTypedUrlVisitThrottleMultiple = 10;
 
 TypedUrlChangeProcessor::TypedUrlChangeProcessor(
+    Profile* profile,
     TypedUrlModelAssociator* model_associator,
     history::HistoryBackend* history_backend,
     UnrecoverableErrorHandler* error_handler)
     : ChangeProcessor(error_handler),
+      profile_(profile),
       model_associator_(model_associator),
       history_backend_(history_backend),
       observing_(false),
@@ -332,6 +334,7 @@ void TypedUrlChangeProcessor::CommitChangesFromSyncModel() {
 
 void TypedUrlChangeProcessor::StartImpl(Profile* profile) {
   DCHECK(expected_loop_ == MessageLoop::current());
+  DCHECK_EQ(profile, profile_);
   observing_ = true;
 }
 
@@ -343,26 +346,30 @@ void TypedUrlChangeProcessor::StopImpl() {
 
 void TypedUrlChangeProcessor::StartObserving() {
   DCHECK(expected_loop_ == MessageLoop::current());
-  notification_registrar_.Add(this,
-                              chrome::NOTIFICATION_HISTORY_TYPED_URLS_MODIFIED,
-                              NotificationService::AllSources());
-  notification_registrar_.Add(this, chrome::NOTIFICATION_HISTORY_URLS_DELETED,
-                              NotificationService::AllSources());
-  notification_registrar_.Add(this, chrome::NOTIFICATION_HISTORY_URL_VISITED,
-                              NotificationService::AllSources());
+  DCHECK(profile_);
+  notification_registrar_.Add(
+      this, chrome::NOTIFICATION_HISTORY_TYPED_URLS_MODIFIED,
+      Source<Profile>(profile_));
+  notification_registrar_.Add(
+      this, chrome::NOTIFICATION_HISTORY_URLS_DELETED,
+      Source<Profile>(profile_));
+  notification_registrar_.Add(
+      this, chrome::NOTIFICATION_HISTORY_URL_VISITED,
+      Source<Profile>(profile_));
 }
 
 void TypedUrlChangeProcessor::StopObserving() {
   DCHECK(expected_loop_ == MessageLoop::current());
+  DCHECK(profile_);
   notification_registrar_.Remove(
       this, chrome::NOTIFICATION_HISTORY_TYPED_URLS_MODIFIED,
-      NotificationService::AllSources());
-  notification_registrar_.Remove(this,
-                                 chrome::NOTIFICATION_HISTORY_URLS_DELETED,
-                                 NotificationService::AllSources());
-  notification_registrar_.Remove(this,
-                                 chrome::NOTIFICATION_HISTORY_URL_VISITED,
-                                 NotificationService::AllSources());
+      Source<Profile>(profile_));
+  notification_registrar_.Remove(
+      this, chrome::NOTIFICATION_HISTORY_URLS_DELETED,
+      Source<Profile>(profile_));
+  notification_registrar_.Remove(
+      this, chrome::NOTIFICATION_HISTORY_URL_VISITED,
+      Source<Profile>(profile_));
 }
 
 }  // namespace browser_sync

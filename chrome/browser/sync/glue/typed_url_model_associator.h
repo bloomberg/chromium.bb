@@ -33,7 +33,6 @@ class WriteTransaction;
 
 namespace browser_sync {
 
-class TypedUrlChangeProcessor;
 class UnrecoverableErrorHandler;
 
 extern const char kTypedUrlTag[];

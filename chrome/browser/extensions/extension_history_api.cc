@@ -69,8 +69,8 @@ ExtensionHistoryEventRouter::ExtensionHistoryEventRouter() {}
 ExtensionHistoryEventRouter::~ExtensionHistoryEventRouter() {}
 
 void ExtensionHistoryEventRouter::ObserveProfile(Profile* profile) {
-  NotificationSource source = Source<Profile>(profile);
   CHECK(registrar_.IsEmpty());
+  const Source<Profile> source = Source<Profile>(profile);
   registrar_.Add(this,
                  chrome::NOTIFICATION_HISTORY_URL_VISITED,
                  source);

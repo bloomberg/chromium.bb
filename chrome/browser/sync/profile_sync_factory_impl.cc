@@ -338,7 +338,8 @@ ProfileSyncFactoryImpl::CreateTypedUrlSyncComponents(
       new TypedUrlModelAssociator(profile_sync_service,
                                   history_backend);
   TypedUrlChangeProcessor* change_processor =
-      new TypedUrlChangeProcessor(model_associator,
+      new TypedUrlChangeProcessor(profile_,
+                                  model_associator,
                                   history_backend,
                                   error_handler);
   return SyncComponents(model_associator, change_processor);

@@ -19,6 +19,7 @@
 
 class MessageLoop;
 class NotificationService;
+class Profile;
 
 namespace history {
 class HistoryBackend;
@@ -38,7 +39,8 @@ class UnrecoverableErrorHandler;
 class TypedUrlChangeProcessor : public ChangeProcessor,
                                 public NotificationObserver {
  public:
-  TypedUrlChangeProcessor(TypedUrlModelAssociator* model_associator,
+  TypedUrlChangeProcessor(Profile* profile,
+                          TypedUrlModelAssociator* model_associator,
                           history::HistoryBackend* history_backend,
                           UnrecoverableErrorHandler* error_handler);
   virtual ~TypedUrlChangeProcessor();
@@ -82,6 +84,9 @@ class TypedUrlChangeProcessor : public ChangeProcessor,
   bool CreateOrUpdateSyncNode(history::URLRow typed_url,
                               sync_api::WriteTransaction* transaction);
 
+  // The profile with which we are associated.
+  Profile* profile_;
+
   // The two models should be associated according to this ModelAssociator.
   TypedUrlModelAssociator* model_associator_;
 
@@ -92,7 +97,7 @@ class TypedUrlChangeProcessor : public ChangeProcessor,
 
   NotificationRegistrar notification_registrar_;
 
-  bool observing_;
+  bool observing_;  // True when we should observe notifications.
 
   MessageLoop* expected_loop_;
 

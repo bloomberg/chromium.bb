@@ -69,9 +69,10 @@ static const char* kHistoryThreadName = "Chrome_HistoryThread";
 // Release when the Backend has a reference to us).
 class HistoryService::BackendDelegate : public HistoryBackend::Delegate {
  public:
-  explicit BackendDelegate(HistoryService* history_service)
+  BackendDelegate(HistoryService* history_service, Profile* profile)
       : history_service_(history_service),
-        message_loop_(MessageLoop::current()) {
+        message_loop_(MessageLoop::current()),
+        profile_(profile) {
   }
 
   virtual void NotifyProfileError(int backend_id,
@@ -95,7 +96,7 @@ class HistoryService::BackendDelegate : public HistoryBackend::Delegate {
     if (NotificationService::current()) {
       Details<history::HistoryDetails> det(details);
       NotificationService::current()->Notify(type,
-                                             NotificationService::AllSources(),
+                                             Source<Profile>(profile_),
                                              det);
     }
     // Send the notification to the history service on the main thread.
@@ -116,6 +117,7 @@ class HistoryService::BackendDelegate : public HistoryBackend::Delegate {
  private:
   scoped_refptr<HistoryService> history_service_;
   MessageLoop* message_loop_;
+  Profile* profile_;
 };
 
 // The history thread is intentionally not a BrowserThread because the
@@ -788,7 +790,7 @@ void HistoryService::LoadBackendIfNecessary() {
   scoped_refptr<HistoryBackend> backend(
       new HistoryBackend(history_dir_,
                          current_backend_id_,
-                         new BackendDelegate(this),
+                         new BackendDelegate(this, profile_),
                          bookmark_service_));
   history_backend_.swap(backend);
 

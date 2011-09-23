@@ -113,15 +113,17 @@ HistoryMenuBridge::HistoryMenuBridge(Profile* profile)
 // task cancellation is not done manually here in the dtor.
 HistoryMenuBridge::~HistoryMenuBridge() {
   // Unregister ourselves as observers and notifications.
+  DCHECK(profile_);
   if (history_service_) {
-    const NotificationSource& src = NotificationService::AllSources();
     registrar_.Remove(this, chrome::NOTIFICATION_HISTORY_TYPED_URLS_MODIFIED,
-                      src);
-    registrar_.Remove(this, chrome::NOTIFICATION_HISTORY_URL_VISITED, src);
-    registrar_.Remove(this, chrome::NOTIFICATION_HISTORY_URLS_DELETED, src);
+                      Source<Profile>(profile_));
+    registrar_.Remove(this, chrome::NOTIFICATION_HISTORY_URL_VISITED,
+                      Source<Profile>(profile_));
+    registrar_.Remove(this, chrome::NOTIFICATION_HISTORY_URLS_DELETED,
+                      Source<Profile>(profile_));
   } else {
-    registrar_.Remove(
-        this, chrome::NOTIFICATION_HISTORY_LOADED, Source<Profile>(profile_));
+    registrar_.Remove(this, chrome::NOTIFICATION_HISTORY_LOADED,
+                      Source<Profile>(profile_));
   }
 
   if (tab_restore_service_)
@@ -364,11 +366,12 @@ NSMenuItem* HistoryMenuBridge::AddItemToMenu(HistoryItem* item,
 }
 
 void HistoryMenuBridge::Init() {
-  const NotificationSource& source = NotificationService::AllSources();
   registrar_.Add(this, chrome::NOTIFICATION_HISTORY_TYPED_URLS_MODIFIED,
-                 source);
-  registrar_.Add(this, chrome::NOTIFICATION_HISTORY_URL_VISITED, source);
-  registrar_.Add(this, chrome::NOTIFICATION_HISTORY_URLS_DELETED, source);
+                 Source<Profile>(profile_));
+  registrar_.Add(this, chrome::NOTIFICATION_HISTORY_URL_VISITED,
+                 Source<Profile>(profile_));
+  registrar_.Add(this, chrome::NOTIFICATION_HISTORY_URLS_DELETED,
+                 Source<Profile>(profile_));
 }
 
 void HistoryMenuBridge::CreateMenu() {
