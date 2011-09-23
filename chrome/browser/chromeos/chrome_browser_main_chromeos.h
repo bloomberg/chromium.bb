@@ -22,9 +22,6 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsGtk {
   virtual void PreMainMessageLoopStart() OVERRIDE;
   virtual void PostMainMessageLoopStart() OVERRIDE;
 
- private:
-  scoped_refptr<sensors::SensorsSourceChromeos> sensors_source_;
-
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainPartsChromeos);
 };
 

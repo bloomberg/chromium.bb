@@ -20,6 +20,7 @@ class Bus;
 namespace chromeos {
 
 class CrosDBusService;
+class SensorsSource;
 
 // DBusThreadManager manages the D-Bus thread, the thread dedicated to
 // handling asynchronous D-Bus operations.
@@ -62,6 +63,7 @@ class DBusThreadManager {
   scoped_ptr<base::Thread> dbus_thread_;
   scoped_refptr<dbus::Bus> system_bus_;
   CrosDBusService* cros_dbus_service_;
+  scoped_refptr<SensorsSource> sensors_source_;
 
   DISALLOW_COPY_AND_ASSIGN(DBusThreadManager);
 };

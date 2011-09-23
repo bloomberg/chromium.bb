@@ -4,8 +4,11 @@
 
 #include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
 
+#include "base/command_line.h"
 #include "base/threading/thread.h"
 #include "chrome/browser/chromeos/dbus/cros_dbus_service.h"
+#include "chrome/browser/chromeos/dbus/sensors_source.h"
+#include "chrome/common/chrome_switches.h"
 #include "dbus/bus.h"
 
 namespace chromeos {
@@ -30,6 +33,13 @@ DBusThreadManager::DBusThreadManager() {
   // Create and start the cros D-Bus service.
   cros_dbus_service_ = CrosDBusService::Get(system_bus_.get());
   cros_dbus_service_->Start();
+
+  // Start monitoring sensors if needed.
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  if (command_line.HasSwitch(switches::kEnableSensors)) {
+    sensors_source_ = new SensorsSource;
+    sensors_source_->Init(system_bus_.get());
+  }
 }
 
 DBusThreadManager::~DBusThreadManager() {
