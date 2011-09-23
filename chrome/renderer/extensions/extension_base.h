@@ -43,6 +43,11 @@ class ExtensionBase : public v8::Extension {
   // TODO(jstritar): Used for testing http://crbug.com/91582. Remove when done.
   ExtensionDispatcher* extension_dispatcher() { return extension_dispatcher_; }
 
+  // Returns a hidden variable for use by the bindings in the specified context
+  // that is unreachable by the page for the current context.
+  static v8::Handle<v8::Value> GetChromeHidden(
+      const v8::Handle<v8::Context>& context);
+
  protected:
   template<class T>
   static T* GetFromArguments(const v8::Arguments& args) {
@@ -65,8 +70,7 @@ class ExtensionBase : public v8::Extension {
   bool CheckPermissionForCurrentRenderView(
       const std::string& function_name) const;
 
-  // Returns a hidden variable for use by the bindings that is unreachable
-  // by the page.
+  // Returns the chromeHidden object for the current context.
   static v8::Handle<v8::Value> GetChromeHidden(const v8::Arguments& args);
 
   ExtensionDispatcher* extension_dispatcher_;

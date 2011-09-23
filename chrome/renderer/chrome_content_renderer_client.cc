@@ -33,8 +33,7 @@
 #include "chrome/renderer/chrome_render_process_observer.h"
 #include "chrome/renderer/chrome_render_view_observer.h"
 #include "chrome/renderer/content_settings_observer.h"
-#include "chrome/renderer/extensions/bindings_utils.h"
-#include "chrome/renderer/extensions/event_bindings.h"
+#include "chrome/renderer/extensions/extension_bindings_context.h"
 #include "chrome/renderer/extensions/extension_dispatcher.h"
 #include "chrome/renderer/extensions/extension_helper.h"
 #include "chrome/renderer/extensions/extension_process_bindings.h"
@@ -578,7 +577,7 @@ bool ChromeContentRendererClient::AllowPopup(const GURL& creator) {
   // Extensions and apps always allowed to create unrequested popups. The second
   // check is necessary to include content scripts.
   return extension_dispatcher_->extensions()->GetByURL(creator) ||
-      bindings_utils::GetInfoForCurrentContext();
+      ExtensionBindingsContext::GetCurrent();
 }
 
 bool ChromeContentRendererClient::ShouldFork(WebFrame* frame,
@@ -642,15 +641,19 @@ bool ChromeContentRendererClient::ShouldPumpEventsDuringCookieMessage() {
 
 void ChromeContentRendererClient::DidCreateScriptContext(
     WebFrame* frame, v8::Handle<v8::Context> context, int world_id) {
-  EventBindings::HandleContextCreated(frame,
-                                      context,
-                                      extension_dispatcher_.get(),
-                                      world_id);
+  ExtensionBindingsContext::HandleV8ContextCreated(
+      frame,
+      context,
+      extension_dispatcher_.get(),
+      world_id);
 }
 
 void ChromeContentRendererClient::WillReleaseScriptContext(
     WebFrame* frame, v8::Handle<v8::Context> context, int world_id) {
-  EventBindings::HandleContextDestroyed(frame);
+  ExtensionBindingsContext::HandleV8ContextReleased(
+      frame,
+      context,
+      world_id);
 }
 
 unsigned long long ChromeContentRendererClient::VisitedLinkHash(

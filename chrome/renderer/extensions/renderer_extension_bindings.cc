@@ -12,9 +12,9 @@
 #include "chrome/common/extensions/extension_message_bundle.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/url_constants.h"
-#include "chrome/renderer/extensions/bindings_utils.h"
 #include "chrome/renderer/extensions/event_bindings.h"
 #include "chrome/renderer/extensions/extension_base.h"
+#include "chrome/renderer/extensions/extension_bindings_context.h"
 #include "chrome/renderer/extensions/extension_dispatcher.h"
 #include "content/renderer/render_thread.h"
 #include "content/renderer/render_view.h"
@@ -260,13 +260,10 @@ void RendererExtensionBindings::DeliverMessage(
     RenderView* restrict_to_render_view) {
   v8::HandleScope handle_scope;
 
-  bindings_utils::ContextList contexts = bindings_utils::GetContexts();
-  for (bindings_utils::ContextList::iterator it = contexts.begin();
+  ExtensionBindingsContext::ContextList contexts =
+      ExtensionBindingsContext::GetAll();
+  for (ExtensionBindingsContext::ContextList::iterator it = contexts.begin();
        it != contexts.end(); ++it) {
-
-    v8::Handle<v8::Context> context = (*it)->context;
-    if (context.IsEmpty())
-      continue;
 
     if (restrict_to_render_view &&
         restrict_to_render_view != (*it)->GetRenderView()) {
@@ -276,9 +273,8 @@ void RendererExtensionBindings::DeliverMessage(
     // Check to see whether the context has this port before bothering to create
     // the message.
     v8::Handle<v8::Value> port_id_handle = v8::Integer::New(target_port_id);
-    v8::Handle<v8::Value> has_port =
-        bindings_utils::CallFunctionInContext(
-            context, "Port.hasPort", 1, &port_id_handle);
+    v8::Handle<v8::Value> has_port = (*it)->CallChromeHiddenMethod(
+        "Port.hasPort", 1, &port_id_handle);
     CHECK(!has_port.IsEmpty());
     if (!has_port->BooleanValue())
       continue;
@@ -286,8 +282,8 @@ void RendererExtensionBindings::DeliverMessage(
     std::vector<v8::Handle<v8::Value> > arguments;
     arguments.push_back(v8::String::New(message.c_str(), message.size()));
     arguments.push_back(port_id_handle);
-    bindings_utils::CallFunctionInContext(
-        context, "Port.dispatchOnMessage",
-        arguments.size(), &arguments[0]);
+    (*it)->CallChromeHiddenMethod("Port.dispatchOnMessage",
+                                  arguments.size(),
+                                  &arguments[0]);
   }
 }
