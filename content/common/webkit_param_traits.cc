@@ -302,6 +302,7 @@ bool ParamTraits<NPVariant_Param>::Read(const Message* m,
 }
 
 void ParamTraits<NPVariant_Param>::Log(const param_type& p, std::string* l) {
+  l->append(StringPrintf("NPVariant_Param(%d, ", static_cast<int>(p.type)));
   if (p.type == NPVARIANT_PARAM_BOOL) {
     LogParam(p.bool_value, l);
   } else if (p.type == NPVARIANT_PARAM_INT) {
@@ -313,7 +314,10 @@ void ParamTraits<NPVariant_Param>::Log(const param_type& p, std::string* l) {
   } else if (p.type == NPVARIANT_PARAM_SENDER_OBJECT_ROUTING_ID ||
              p.type == NPVARIANT_PARAM_RECEIVER_OBJECT_ROUTING_ID) {
     LogParam(p.npobject_routing_id, l);
+  } else {
+    l->append("<none>");
   }
+  l->append(")");
 }
 
 void ParamTraits<NPIdentifier_Param>::Write(Message* m, const param_type& p) {
