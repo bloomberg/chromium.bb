@@ -54,7 +54,7 @@ class ReverseInterface : public RefCountBase {
   virtual bool EnumerateManifestKeys(std::set<nacl::string>* keys) = 0;
   virtual bool OpenManifestEntry(nacl::string url_key, int32_t* out_desc) = 0;
   virtual bool CloseManifestEntry(int32_t desc) = 0;
-  virtual void ReportCrash() {}  // = 0;
+  virtual void ReportCrash() = 0;
 
   // covariant impl of Ref()
   ReverseInterface* Ref() {  // down_cast
