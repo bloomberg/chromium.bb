@@ -221,6 +221,49 @@ FilePath GetMediaCachePath(const FilePath& base) {
   return base.Append(chrome::kMediaCacheDirname);
 }
 
+void DoInstallDefaultAppsOnUIThread(const FilePath& profile_path,
+                                    const std::list<FilePath>& crx_path_list) {
+  Profile* profile =
+      g_browser_process->profile_manager()->GetProfileByPath(profile_path);
+  if (profile) {
+    ExtensionService* extension_service = profile->GetExtensionService();
+    for (std::list<FilePath>::const_iterator iter = crx_path_list.begin();
+         iter != crx_path_list.end(); ++iter) {
+      scoped_refptr<CrxInstaller> crx_installer =
+          extension_service->MakeCrxInstaller(NULL);
+      crx_installer->set_allow_silent_install(true);
+      crx_installer->set_delete_source(false);
+      crx_installer->set_install_cause(extension_misc::INSTALL_CAUSE_UPDATE);
+      crx_installer->InstallCrx(*iter);
+    }
+  }
+}
+
+void InstallDefaultApps(const FilePath& profile_path) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+
+  FilePath apps_dir;
+  FilePath file;
+  std::list<FilePath> crx_path_list;
+
+  if (PathService::Get(chrome::DIR_DEFAULT_APPS, &apps_dir)) {
+    file_util::FileEnumerator file_enumerator(apps_dir, false,
+        file_util::FileEnumerator::FILES);
+    while (!(file = file_enumerator.Next()).value().empty()) {
+      if (LowerCaseEqualsASCII(file.Extension(), ".crx"))
+        crx_path_list.push_back(file);
+    }
+  }
+  // No need to post the task if nothing was there to install.
+  if (!crx_path_list.size())
+    return;
+
+  // Finish the install on the UI thread.
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          base::Bind(&DoInstallDefaultAppsOnUIThread,
+                                     profile_path, crx_path_list));
+}
+
 // Simple task to log the size of the current profile.
 class ProfileSizeTask : public Task {
  public:
@@ -548,7 +591,9 @@ void ProfileImpl::InitExtensions(bool extensions_enabled) {
   // ever, not first run per profile.
   if (FirstRun::IsChromeFirstRun() &&
       !LowerCaseEqualsASCII(brand, "ecdb")) {
-    InstallDefaultApps();
+    BrowserThread::PostTask(
+        BrowserThread::FILE, FROM_HERE,
+        base::Bind(&InstallDefaultApps, GetPath()));
   }
 #endif
 
@@ -585,31 +630,6 @@ void ProfileImpl::InitExtensions(bool extensions_enabled) {
     } else {
       extension_service_->InitEventRouters();
     }
-  }
-}
-
-void ProfileImpl::InstallDefaultApps() {
-  FilePath apps_dir;
-  FilePath file;
-  std::list<FilePath> crx_path_list;
-
-  if (PathService::Get(chrome::DIR_DEFAULT_APPS, &apps_dir)) {
-    file_util::FileEnumerator file_enumerator(apps_dir, false,
-        file_util::FileEnumerator::FILES);
-    while (!(file = file_enumerator.Next()).value().empty()) {
-      if (LowerCaseEqualsASCII(file.Extension(), ".crx"))
-        crx_path_list.push_back(file);
-    }
-  }
-
-  for (std::list<FilePath>::iterator iter = crx_path_list.begin();
-       iter != crx_path_list.end(); ++iter) {
-    scoped_refptr<CrxInstaller> crx_installer =
-        extension_service_->MakeCrxInstaller(NULL);
-    crx_installer->set_allow_silent_install(true);
-    crx_installer->set_delete_source(false);
-    crx_installer->set_install_cause(extension_misc::INSTALL_CAUSE_UPDATE);
-    crx_installer->InstallCrx(*iter);
   }
 }
 
