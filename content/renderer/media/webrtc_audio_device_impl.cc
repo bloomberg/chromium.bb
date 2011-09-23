@@ -348,11 +348,11 @@ int32_t WebRtcAudioDeviceImpl::Init() {
   input_channels = 1;
   output_channels = 1;
   // Based on tests using the current ALSA implementation in Chrome, we have
-  // found that the best combination is 10ms on the input side and 30ms on the
+  // found that the best combination is 20ms on the input side and 30ms on the
   // output side.
-  // TODO(henrika): It might be possible to reduce the output buffer size
-  // and reduce the delay even more.
-  input_buffer_size = 480;
+  // TODO(henrika): It might be possible to reduce the input and output buffer
+  // size and reduce the delay even more.
+  input_buffer_size = 2 * 480;
   output_buffer_size = 3 * 480;
 #else
   DLOG(ERROR) << "Unsupported platform";
@@ -572,7 +572,9 @@ int32_t WebRtcAudioDeviceImpl::StartRecording() {
 
   if (session_id_ <= 0) {
     LOG(WARNING) << session_id_ << " is an invalid session id.";
-    return -1;
+    // TODO(xians): enable the return -1 when MediaStreamManager can handle
+    // AudioInputDeviceManager.
+//    return -1;
   }
 
   base::AutoLock auto_lock(lock_);
