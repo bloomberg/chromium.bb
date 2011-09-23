@@ -968,39 +968,38 @@ class RaceVerifier(object):
    return self.Main(args, False)
 
 class EmbeddedTool(BaseTool):
-  """Abstract class for tools embedded directly into the test binary."""
+  """Abstract class for tools embedded directly into the test binary.
+
+  Attributes:
+    _env: dictionary of environment variable names and their values.
+  """
   def __init__(self):
     super(EmbeddedTool, self).__init__()
     self._env = {}
 
   def ToolCommand(self):
-    """Basically just the args of the script."""
+    # In the simplest case just the args of the script.
     return self._args
 
-  def NeedsPipes(self):
-    """True iff the tool needs to chain several subprocesses."""
-    raise NotImplementedError, "This method should be implemented " \
-                               "in the tool-specific subclass"
-
   def Execute(self):
-    """Executes the app to be tested."""
     for var in self._env:
       self.PutEnvAndLog(var, self._env[var])
     proc = self.ToolCommand()
     logging.info('starting execution...')
-    if self.NeedsPipes():
-      return common.RunSubprocessChain(proc, self._timeout)
-    else:
-      return common.RunSubprocess(proc, self._timeout)
+    # TODO(glider): need to support process chaining here.
+    return common.RunSubprocess(proc, self._timeout)
 
   def PutEnvAndLog(self, env_name, env_value):
-    """Sets the env var |env_name| to |env_value| and writes to logging.info.
-    """
     os.putenv(env_name, env_value)
     logging.info('export %s=%s', env_name, env_value)
 
 
 class Asan(EmbeddedTool):
+  """AddressSanitizer, a memory error detector.
+
+  More information at
+  http://dev.chromium.org/developers/testing/addresssanitizer
+  """
   def __init__(self):
     super(Asan, self).__init__()
     self._timeout = 1200
@@ -1008,14 +1007,12 @@ class Asan(EmbeddedTool):
   def ToolName(self):
     return "asan"
 
-  def NeedsPipes(self):
-    return True
-
   def ToolCommand(self):
-    procs = [self._args]
-    procs.append([os.path.join(self._source_dir, "third_party", "asan",
-                              "scripts", "asan_symbolize.py")])
-    procs.append(["c++filt"])
+    # TODO(glider): use pipes instead of the ugly wrapper here once they
+    # are supported.
+    procs = [os.path.join(self._source_dir, "tools", "valgrind",
+                              "asan", "asan_wrapper.sh")]
+    procs.extend(self._args)
     return procs
 
   def Analyze(sels, unused_check_sanity):
