@@ -615,7 +615,11 @@ cr.define('ntp4', function() {
 
     /** @inheritDoc */
     shouldAcceptDrag: function(e) {
-      return ntp4.getCurrentlyDraggingTile() ||
+      var tile = ntp4.getCurrentlyDraggingTile();
+      if (tile.querySelector('.bookmark'))
+        return !!tile.firstChild.data.url;
+
+      return tile ||
           (e.dataTransfer && e.dataTransfer.types.indexOf('url') != -1);
     },
 
@@ -629,7 +633,8 @@ cr.define('ntp4', function() {
               currentlyDraggingTile,
               this.tileElements_[index]);
           this.tileMoved(currentlyDraggingTile);
-        } else if (currentlyDraggingTile.querySelector('.most-visited')) {
+        } else if (currentlyDraggingTile.querySelector(
+                       '.most-visited, .bookmark')) {
           this.generateAppForLink(tileContents.data);
         }
       } else {
