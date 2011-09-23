@@ -2760,6 +2760,8 @@ ProcessInfoObserver::ProcessInfoObserver(
     : automation_(automation->AsWeakPtr()),
       reply_message_(reply_message) {}
 
+ProcessInfoObserver::~ProcessInfoObserver() {}
+
 void ProcessInfoObserver::OnDetailsAvailable() {
   scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
   ListValue* browser_proc_list = new ListValue();

@@ -1718,7 +1718,7 @@ class ProcessInfoObserver : public MemoryDetails {
   virtual void OnDetailsAvailable() OVERRIDE;
 
  private:
-  ~ProcessInfoObserver() {}
+  virtual ~ProcessInfoObserver();
   base::WeakPtr<AutomationProvider> automation_;
   scoped_ptr<IPC::Message> reply_message_;
 
