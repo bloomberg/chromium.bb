@@ -2,10 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#import "chrome/browser/ui/cocoa/tabs/tab_controller.h"
+
+#include <cmath>
+
 #include "base/mac/mac_util.h"
 #import "chrome/browser/themes/theme_service.h"
 #import "chrome/browser/ui/cocoa/menu_controller.h"
-#import "chrome/browser/ui/cocoa/tabs/tab_controller.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_controller_target.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_view.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
@@ -193,7 +196,8 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
                                         : [TabController miniTabWidth];
 
     // Center the icon.
-    appIconFrame.origin.x = (tabWidth - NSWidth(appIconFrame)) / 2.0;
+    appIconFrame.origin.x =
+        std::floor((tabWidth - NSWidth(appIconFrame)) / 2.0);
     [iconView_ setFrame:appIconFrame];
   } else {
     [iconView_ setFrame:originalIconFrame_];
