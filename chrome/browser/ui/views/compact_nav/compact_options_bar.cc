@@ -17,12 +17,15 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "views/controls/button/menu_button.h"
+#include "views/controls/menu/menu_listener.h"
 
 namespace {
+
 const int kPreferredHeight = 25;
 // Pad the left and right ends from other tabstrip region items.
 const int kEndPadding = 3;
-}
+
+}  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
 // CompactOptionsBar public:

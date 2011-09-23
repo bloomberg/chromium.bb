@@ -8,6 +8,8 @@
 
 #include <gtk/gtk.h>
 
+#include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/message_loop.h"
 #include "base/observer_list.h"
 #include "ui/base/gtk/gtk_signal.h"
@@ -37,18 +39,18 @@ class NativeMenuGtk : public MenuWrapper,
   virtual ~NativeMenuGtk();
 
   // Overridden from MenuWrapper:
-  virtual void RunMenuAt(const gfx::Point& point, int alignment);
-  virtual void CancelMenu();
-  virtual void Rebuild();
-  virtual void UpdateStates();
-  virtual gfx::NativeMenu GetNativeMenu() const;
-  virtual MenuAction GetMenuAction() const;
-  virtual void AddMenuListener(MenuListener* listener);
-  virtual void RemoveMenuListener(MenuListener* listener);
-  virtual void SetMinimumWidth(int width);
+  virtual void RunMenuAt(const gfx::Point& point, int alignment) OVERRIDE;
+  virtual void CancelMenu() OVERRIDE;
+  virtual void Rebuild() OVERRIDE;
+  virtual void UpdateStates() OVERRIDE;
+  virtual gfx::NativeMenu GetNativeMenu() const OVERRIDE;
+  virtual MenuAction GetMenuAction() const OVERRIDE;
+  virtual void AddMenuListener(MenuListener* listener) OVERRIDE;
+  virtual void RemoveMenuListener(MenuListener* listener) OVERRIDE;
+  virtual void SetMinimumWidth(int width) OVERRIDE;
 
   // Overriden from MessageLoopForUI::Dispatcher:
-  virtual bool Dispatch(GdkEvent* event);
+  virtual bool Dispatch(GdkEvent* event) OVERRIDE;
 
  private:
   CHROMEGTK_CALLBACK_0(NativeMenuGtk, void, OnMenuHidden);

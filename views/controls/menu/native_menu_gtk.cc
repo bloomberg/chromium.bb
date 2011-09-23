@@ -20,6 +20,7 @@
 #include "ui/gfx/gtk_util.h"
 #include "views/accelerator.h"
 #include "views/controls/menu/menu_2.h"
+#include "views/controls/menu/menu_listener.h"
 #include "views/controls/menu/nested_dispatcher_gtk.h"
 #include "views/views_delegate.h"
 #include "views/widget/native_widget_gtk.h"

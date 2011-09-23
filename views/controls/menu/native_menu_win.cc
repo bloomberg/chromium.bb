@@ -23,6 +23,7 @@
 #include "views/accelerator.h"
 #include "views/controls/menu/menu_2.h"
 #include "views/controls/menu/menu_config.h"
+#include "views/controls/menu/menu_listener.h"
 
 using gfx::NativeTheme;
 

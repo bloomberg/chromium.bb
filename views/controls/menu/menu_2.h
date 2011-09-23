@@ -6,8 +6,9 @@
 #define VIEWS_CONTROLS_MENU_MENU_2_H_
 #pragma once
 
+#include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "ui/base/models/menu_model.h"
+#include "ui/gfx/native_widget_types.h"
 #include "views/controls/menu/menu_wrapper.h"
 #include "views/views_export.h"
 
@@ -15,10 +16,13 @@ namespace gfx {
 class Point;
 }
 
+namespace ui {
+class MenuModel;
+}
+
 namespace views {
 
 class NativeMenuGtk;
-class View;
 
 // A menu. Populated from a model, and relies on a delegate to execute commands.
 //
@@ -27,6 +31,13 @@ class View;
 // ActivatedAt is never invoked.
 class VIEWS_EXPORT Menu2 {
  public:
+  // How the menu is aligned relative to the point it is shown at.
+  // The alignment is reversed by menu if text direction is right to left.
+  enum Alignment {
+    ALIGN_TOPLEFT,
+    ALIGN_TOPRIGHT
+  };
+
   // Creates a new menu populated with the contents of |model|.
   // WARNING: this populates the menu on construction by invoking methods on
   // the model. As such, it is typically not safe to use this as the model
@@ -35,13 +46,6 @@ class VIEWS_EXPORT Menu2 {
   // is likely to have problems.
   explicit Menu2(ui::MenuModel* model);
   virtual ~Menu2();
-
-  // How the menu is aligned relative to the point it is shown at.
-  // The alignment is reversed by menu if text direction is right to left.
-  enum Alignment {
-    ALIGN_TOPLEFT,
-    ALIGN_TOPRIGHT
-  };
 
   // Runs the menu at the specified point. This method blocks until done.
   // RunContextMenuAt is the same, but the alignment is the default for a
