@@ -4,7 +4,18 @@
   found in the LICENSE file.
 -->
 
-<script type="text/javascript" src="nacltest.js"></script>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+  <head>
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="-1" />
+    <script type="text/javascript" src="nacltest.js"></script>
+    <title>Native Client Untrusted Crash Test</title>
+  </head>
+
+  <body>
+    <h1>Native Client Untrusted Crash Test</h1>
 
 <div id="scratch_space"></div>
 
@@ -29,7 +40,15 @@ tester.addAsyncTest('untrusted_crash', function(status) {
 
   div.addEventListener('error', status.wrap(function(event) {
     status.log('Received error: ' + embed.lastError);
-    status.assert(embed.lastError.indexOf('SRPC connection failure') != -1);
+    status.assert(
+      embed.lastError.indexOf('SRPC connection failure') != -1 ||
+      embed.lastError.indexOf('Nexe crashed during startup') != -1);
+    status.pass();
+  }), true);
+
+  div.addEventListener('crash', status.wrap(function(event) {
+    status.log('Received crash: ' + embed.lastError);
+    status.assert(embed.lastError.indexOf('NaCl module crashed') != -1);
     status.pass();
   }), true);
 
