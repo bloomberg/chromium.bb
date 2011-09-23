@@ -121,6 +121,10 @@ cr.define('login', function() {
       $('gaia-signin-aria-label').setAttribute(
           'aria-label', localStrings.getString('signinScreenTitle'));
 
+      // Button header is always visible when sign in is presented.
+      // Header is hidden once GAIA reports on successful sign in.
+      Oobe.getInstance().headerHidden = false;
+
       this.loading = true;
     },
 
