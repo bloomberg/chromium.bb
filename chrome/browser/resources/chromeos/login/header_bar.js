@@ -20,9 +20,10 @@ cr.define('login', function() {
 
     /** @inheritDoc */
     decorate: function() {
-      $('shutdown-button').addEventListener('click', function(e) {
-        chrome.send('shutdownSystem');
-      });
+      $('shutdown-header-bar-item').addEventListener('click',
+          this.handleShutdownClick_);
+      $('shutdown-button').addEventListener('click',
+          this.handleShutdownClick_);
       $('add-user-button').addEventListener('click', function(e) {
         if (window.navigator.onLine) {
           Oobe.showSigninUI();
@@ -36,6 +37,14 @@ cr.define('login', function() {
         $('add-user-button').hidden = false;
         Oobe.showScreen({id: SCREEN_ACCOUNT_PICKER});
       });
+    },
+
+    /**
+     * Shutdown button click handler.
+     * @private
+     */
+    handleShutdownClick_: function(e) {
+      chrome.send('shutdownSystem');
     }
   };
 

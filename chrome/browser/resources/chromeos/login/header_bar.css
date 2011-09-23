@@ -4,7 +4,8 @@
  */
 
 #login-header-bar {
-  padding: 5px 8px;
+  margin: 0;
+  padding: 0;
 }
 
 #login-header-bar button,
@@ -16,10 +17,10 @@
   border: 0;
   color: #666;
   cursor: pointer;
-  height: 24px;
+  height: 34px;
   margin: 0;
   min-width: 0;
-  padding: 0;
+  padding: 5px 0;
   vertical-align: middle;
 }
 
@@ -29,7 +30,14 @@
   background-position: left center;
   background-repeat: no-repeat;
   display: inline-block;
-  height: 24px;
+  height: 34px;
+}
+
+#shutdown-header-bar-item {
+  -webkit-padding-start: 8px;
+  cursor: pointer;
+  display: inline-block;
+  height: 34px;
 }
 
 #login-header-bar #shutdown-button {
