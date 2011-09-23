@@ -12,6 +12,7 @@
 #include "base/values.h"
 #include "chrome/browser/browser_about_handler.h"
 #include "chrome/browser/chromeos/login/enrollment/enterprise_enrollment_screen_actor.h"
+#include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
@@ -62,6 +63,8 @@ class OobeUIHTMLSource : public ChromeURLDataManager::DataSource {
  private:
   virtual ~OobeUIHTMLSource() {}
 
+  std::string GetDataResource(int resource_id) const;
+
   scoped_ptr<DictionaryValue> localized_strings_;
   DISALLOW_COPY_AND_ASSIGN(OobeUIHTMLSource);
 };
@@ -76,26 +79,28 @@ OobeUIHTMLSource::OobeUIHTMLSource(DictionaryValue* localized_strings)
 void OobeUIHTMLSource::StartDataRequest(const std::string& path,
                                         bool is_incognito,
                                         int request_id) {
-  std::string response;
-  if (path.empty()) {
-    static const base::StringPiece html(
-        ResourceBundle::GetSharedInstance().GetRawDataResource(IDR_OOBE_HTML));
-    response = jstemplate_builder::GetI18nTemplateHtml(
-        html, localized_strings_.get());
-  } else if (path == kLoginPath) {
-    static const base::StringPiece html(
-        ResourceBundle::GetSharedInstance().GetRawDataResource(IDR_LOGIN_HTML));
-    response = jstemplate_builder::GetI18nTemplateHtml(
-        html, localized_strings_.get());
-  } else if (path == kEnterpriseEnrollmentGaiaLoginPath) {
-    static const base::StringPiece html(
-        ResourceBundle::GetSharedInstance().GetRawDataResource(
-            IDR_GAIA_LOGIN_HTML));
-    response = jstemplate_builder::GetI18nTemplateHtml(
-        html, localized_strings_.get());
+  if (UserManager::Get()->user_is_logged_in()) {
+    scoped_refptr<RefCountedBytes> empty_bytes(new RefCountedBytes());
+    SendResponse(request_id, empty_bytes);
+    return;
   }
 
+  std::string response;
+  if (path.empty())
+    response = GetDataResource(IDR_OOBE_HTML);
+  else if (path == kLoginPath)
+    response = GetDataResource(IDR_LOGIN_HTML);
+  else if (path == kEnterpriseEnrollmentGaiaLoginPath)
+    response = GetDataResource(IDR_GAIA_LOGIN_HTML);
+
   SendResponse(request_id, base::RefCountedString::TakeString(&response));
+}
+
+std::string OobeUIHTMLSource::GetDataResource(int resource_id) const {
+  const base::StringPiece html(
+      ResourceBundle::GetSharedInstance().GetRawDataResource(resource_id));
+  return jstemplate_builder::GetI18nTemplateHtml(html,
+                                                 localized_strings_.get());
 }
 
 // OobeUI ----------------------------------------------------------------------
