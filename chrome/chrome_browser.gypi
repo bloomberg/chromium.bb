@@ -1067,6 +1067,8 @@
         'browser/extensions/extension_proxy_api_helpers.h',
         'browser/extensions/extension_rlz_module.cc',
         'browser/extensions/extension_rlz_module.h',
+        'browser/extensions/extension_save_page_api.cc',
+        'browser/extensions/extension_save_page_api.h',
         'browser/extensions/extension_setting_sync_data.cc',
         'browser/extensions/extension_setting_sync_data.h',
         'browser/extensions/extension_settings.cc',

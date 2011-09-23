@@ -45,8 +45,8 @@ void MHTMLGenerationManager::GenerateMHTML(TabContents* tab_contents,
                         job_id, file, renderer_process));
 }
 
-void MHTMLGenerationManager::MHTMLGenerated(int job_id, bool success) {
-  JobFinished(job_id, success);
+void MHTMLGenerationManager::MHTMLGenerated(int job_id, int64 mhtml_data_size) {
+  JobFinished(job_id, mhtml_data_size);
 }
 
 void MHTMLGenerationManager::CreateFile(int job_id, const FilePath& file_path,
@@ -74,7 +74,7 @@ void MHTMLGenerationManager::FileCreated(int job_id,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (browser_file == base::kInvalidPlatformFileValue) {
     LOG(ERROR) << "Failed to create file";
-    JobFinished(job_id, false);
+    JobFinished(job_id, -1);
     return;
   }
 
@@ -91,7 +91,7 @@ void MHTMLGenerationManager::FileCreated(int job_id,
   RenderViewHost* rvh = RenderViewHost::FromID(job.process_id, job.routing_id);
   if (!rvh) {
     // The tab went away.
-    JobFinished(job_id, false);
+    JobFinished(job_id, -1);
     return;
   }
 
@@ -99,7 +99,7 @@ void MHTMLGenerationManager::FileCreated(int job_id,
                                         renderer_file));
 }
 
-void MHTMLGenerationManager::JobFinished(int job_id, bool success) {
+void MHTMLGenerationManager::JobFinished(int job_id, int64 file_size) {
   IDToJobMap::iterator iter = id_to_job_.find(job_id);
   if (iter == id_to_job_.end()) {
     NOTREACHED();
@@ -112,7 +112,7 @@ void MHTMLGenerationManager::JobFinished(int job_id, bool success) {
   if (rvh) {
     NotificationDetails details;
     details.file_path = job.file_path;
-    details.success = success;
+    details.file_size = file_size;
 
     NotificationService::current()->Notify(
         content::NOTIFICATION_MHTML_GENERATED,

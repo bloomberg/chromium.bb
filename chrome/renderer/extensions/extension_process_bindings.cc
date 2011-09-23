@@ -14,6 +14,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_action.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -36,6 +37,7 @@
 #include "content/renderer/render_view_visitor.h"
 #include "grit/common_resources.h"
 #include "grit/renderer_resources.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebBlob.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
@@ -183,6 +185,8 @@ class ExtensionImpl : public ExtensionBase {
       return v8::FunctionTemplate::New(GetLocalFileSystem);
     } else if (name->Equals(v8::String::New("DecodeJPEG"))) {
       return v8::FunctionTemplate::New(DecodeJPEG, v8::External::New(this));
+    } else if (name->Equals(v8::String::New("CreateBlob"))) {
+      return v8::FunctionTemplate::New(CreateBlob, v8::External::New(this));
     }
 
     return ExtensionBase::GetNativeFunction(name);
@@ -339,6 +343,17 @@ class ExtensionImpl : public ExtensionBase {
                         v8::Integer::New(pixels[i] & 0xFFFFFF));
     }
     return bitmap_array;
+  }
+
+  // Creates a Blob with the content of the specified file.
+  static v8::Handle<v8::Value> CreateBlob(const v8::Arguments& args) {
+    CHECK(args.Length() == 2);
+    CHECK(args[0]->IsString());
+    CHECK(args[1]->IsInt32());
+    WebKit::WebString path(UTF8ToUTF16(*v8::String::Utf8Value(args[0])));
+    WebKit::WebBlob blob =
+        WebKit::WebBlob::createFromFile(path, args[1]->Int32Value());
+    return blob.toV8Value();
   }
 
   // Creates a new messaging channel to the tab with the given ID.

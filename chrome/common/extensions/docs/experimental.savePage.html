@@ -16,7 +16,7 @@
     <script type="text/javascript" src="js/api_page_generator.js"></script>
     <script type="text/javascript" src="js/bootstrap.js"></script>
     <script type="text/javascript" src="js/sidebar.js"></script>
-  <title>chrome.experimental.* APIs - Google Chrome Extensions - Google Code</title></head>
+  <title>chrome.experimental.savePage - Google Chrome Extensions - Google Code</title></head>
   <body>  <div id="gc-container" class="labs">
       <div id="devModeWarning">
         You are viewing extension docs in chrome via the 'file:' scheme: are you expecting to see local changes when you refresh? You'll need run chrome with --allow-file-access-from-files.
@@ -250,40 +250,24 @@
 
     <div class="g-unit" id="gc-pagecontent">
       <div id="pageTitle">
-        <h1 class="page_title">chrome.experimental.* APIs</h1>
+        <h1 class="page_title">chrome.experimental.savePage</h1>
       </div>
         <!-- TABLE OF CONTENTS -->
         <div id="toc">
           <h2>Contents</h2>
           <ol>
             <li>
-              <a href="#overview">
-List of APIs
-</a>
-              <ol>
-                <li style="display: none; ">
-                  <a>h3Name</a>
-                </li>
-              </ol>
-            </li><li>
-              <a href="#using">How to use experimental APIs</a>
-              <ol>
-                <li style="display: none; ">
-                  <a>h3Name</a>
-                </li>
-              </ol>
-            </li><li>
-              <a href="#other">More APIs</a>
+              <a href="#manifest">Manifest</a>
               <ol>
                 <li style="display: none; ">
                   <a>h3Name</a>
                 </li>
               </ol>
             </li>
-              <li style="display: none; ">
-                <a href="#apiReference">API reference</a>
+              <li>
+                <a href="#apiReference">API reference: chrome.experimental.savePage</a>
                 <ol>
-                  <li>
+                  <li style="display: none; ">
                     <a href="#properties">Properties</a>
                     <ol>
                       <li>
@@ -292,14 +276,14 @@ List of APIs
                     </ol>
                   </li>
                   <li>
-                    <a>Methods</a>
+                    <a href="#global-methods">Methods</a>
                     <ol>
                       <li>
-                        <a href="#method-anchor">methodName</a>
+                        <a href="#method-saveAsMHTML">saveAsMHTML</a>
                       </li>
                     </ol>
                   </li>
-                  <li>
+                  <li style="display: none; ">
                     <a>Events</a>
                     <ol>
                       <li>
@@ -307,7 +291,7 @@ List of APIs
                       </li>
                     </ol>
                   </li>
-                  <li>
+                  <li style="display: none; ">
                     <a href="#types">Types</a>
                     <ol>
                       <li>
@@ -322,157 +306,44 @@ List of APIs
         <!-- /TABLE OF CONTENTS -->
 
         <!-- Standard content lead-in for experimental API pages -->
-        <p id="classSummary" style="display: none; ">
+        <p id="classSummary">
           For information on how to use experimental APIs, see the <a href="experimental.html">chrome.experimental.* APIs</a> page.
         </p>
 
         <!-- STATIC CONTENT PLACEHOLDER -->
-        <div id="static"><div id="pageData-name" class="pageData">chrome.experimental.* APIs</div>
-<div id="pageData-showTOC" class="pageData">true</div>
+        <div id="static"><!-- BEGIN AUTHORED CONTENT -->
+<p>
+The savePage API allows you to save a tab as MHTML.
+</p>
 
 <p>
-Before you start, <strong>choose the right version of this page.</strong>
-You should read either:
+MHTML is a <a href="http://tools.ietf.org/html/rfc2557">standard format</a>
+supported by most browsers. It encapsulates in a single file a page and all
+its resources (CSS files, images..).
 </p>
-
-<ul>
-  <li> <a href="http://code.google.com/chrome/extensions/trunk/experimental.html">Most recent experimental APIs</a>
-  </li><li> <a href="http://code.google.com/chrome/extensions/dev/experimental.html">Dev channel experimental APIs</a></li>
-</ul>
 
 <p>
-For information about browser versions such as
-Canary (bleeding edge) and the Dev channel, see
-<a href="http://www.chromium.org/getting-involved/dev-channel">Chrome Release Channels</a>.
-For details about channel-specific docs,
-see <a href="docs.html#versions">Doc versions</a>.
+Note that for security reasons a MHTML file can only be loaded from the file
+system and that it can only be loaded in the main frame.
 </p>
 
-<h2 id="overview">
-List of APIs
-</h2>
+<h2 id="manifest">Manifest</h2>
 
 <p>
-We'd like your <a href="http://groups.google.com/a/chromium.org/group/chromium-extensions/topics">feedback</a>
-on the following experimental APIs:
-</p>
+The infobars API is currently
+experimental, so you must declare the "experimental"
+permission to use it.
 
-<ul>
-  <li>
-  <a href="experimental.app.html">experimental.app</a></li><li>
-  <a href="experimental.clear.html">experimental.clear</a></li><li>
-  <a href="experimental.contentSettings.html">experimental.contentSettings</a></li><li>
-  <a href="experimental.debugger.html">experimental.debugger</a></li><li>
-  <a href="experimental.devtools.audits.html">experimental.devtools.audits</a></li><li>
-  <a href="experimental.devtools.console.html">experimental.devtools.console</a></li><li>
-  <a href="experimental.devtools.inspectedWindow.html">experimental.devtools.inspectedWindow</a></li><li>
-  <a href="experimental.devtools.network.html">experimental.devtools.network</a></li><li>
-  <a href="experimental.devtools.panels.html">experimental.devtools.panels</a></li><li>
-  <a href="experimental.infobars.html">experimental.infobars</a></li><li>
-  <a href="experimental.permissions.html">experimental.permissions</a></li><li>
-  <a href="experimental.privacy.html">experimental.privacy</a></li><li>
-  <a href="experimental.savePage.html">experimental.savePage</a></li><li>
-  <a href="experimental.settings.html">experimental.settings</a></li><li>
-  <a href="experimental.webNavigation.html">experimental.webNavigation</a></li><li>
-  <a href="experimental.webRequest.html">experimental.webRequest</a></li>
-</ul>
-
-<p>
-Pay special attention to the following APIs,
-which we expect to finalize soon:
-<b>devtools</b>,
-<b>infobars</b>,
-<b>permissions</b>,
-<b>webNavigation</b>.
-For examples of using the experimental APIs, see
-<a href="samples.html#experimental">Samples</a>.
-</p>
-
-<p class="warning">
-<b>Caution:</b>
-Don't depend on these experimental APIs.
-They might disappear,
-and they <em>will</em> change.
-Also, the Chrome Web Store doesn't allow you to
-upload extensions that use experimental APIs.
-</p>
-
-
-<h2 id="using">How to use experimental APIs</h2>
-
-<ol>
-  <li>
-    Make sure you're using either
-    <a href="http://tools.google.com/dlpage/chromesxs">Canary</a>
-    (which you can use at the same time as other Chrome channels) or the
-<a href="http://www.chromium.org/getting-involved/dev-channel">Dev channel</a>.
-    Although the experimental APIs might work in other versions,
-    we need your feedback on the latest incarnation of the APIs,
-    which you can find in Canary and on the Dev channel.
-  </li>
-  <li>
-    Using either the
-    <a href="http://code.google.com/chrome/extensions/trunk/experimental.html">most recent API documentation</a> (if you're using Canary) or the
-    <a href="http://code.google.com/chrome/extensions/dev/experimental.html">API documentation for the Dev channel</a>,
-    write the code for your extension.
-  </li>
-  <li>
-    Specify the "experimental"
-    <a href="manifest.html#permissions">permission</a>
-    in your extension's manifest, like this:
-<pre>"permissions": [
-  <b>"experimental"</b>,
-  ...
-],
-</pre>
-  </li>
-  <li>
-    Enable the experimental API in your browser.
-    You can do this in either of two ways:
-    <ul>
-      <li> Go to <b>chrome://flags</b>,
-        find "Experimental Extension APIs",
-        click its "Enable" link,
-        and restart Chrome.
-        From now on,
-        unless you return to that page and disable experimental APIs,
-        you'll be able to run extensions that use experimental APIs.
-      </li>
-      <li> Specify the <b>--enable-experimental-extension-apis</b> flag
-        each time you launch the browser.
-        On Windows, you can do this by modifying
-        the properties of the shortcut that you use to launch Google Chrome.
-        For example:
-
-<pre><em>path_to_chrome.exe</em> <b>--enable-experimental-extension-apis</b></pre>
-      </li>
-    </ul>
-  </li>
-
-  <li>
-    <a href="http://groups.google.com/a/chromium.org/group/chromium-extensions/topics">Give us feedback!</a>
-    Your comments and suggestions help us
-    improve the APIs and decide
-    which ones should move from experimental to supported.
-  </li>
-</ol>
-
-<h2 id="other">More APIs</h2>
-
-<p>
-For information on the standard APIs that extensions can use, see
-<a href="api_index.html">chrome.* APIs</a> and
-<a href="api_other.html">Other APIs</a>.
-</p>
-</div>
+<!-- END AUTHORED CONTENT -->
+</p></div>
 
         <!-- API PAGE -->
-        <div class="apiPage" style="display: none; ">
+        <div class="apiPage">
         <a name="apiReference"></a>
-        <h2>API reference: chrome.apiname </h2>
+        <h2>API reference: chrome.experimental.savePage</h2>
 
           <!-- PROPERTIES -->
-          <div class="apiGroup">
+          <div class="apiGroup" style="display: none; ">
             <a name="properties"></a>
             <h3 id="properties">Properties</h3>
 
@@ -491,38 +362,170 @@ For information on the standard APIs that extensions can use, see
 
           <!-- METHODS -->
           <div id="methodsTemplate" class="apiGroup">
-            <a></a>
+            <a name="global-methods"></a>
             <h3>Methods</h3>
 
             <!-- iterates over all functions -->
             <div class="apiItem">
-              <a></a> <!-- method-anchor -->
-              <h4>method name</h4>
+              <a name="method-saveAsMHTML"></a> <!-- method-anchor -->
+              <h4>saveAsMHTML</h4>
 
-              <div class="summary"><span>void</span>
+              <div class="summary"><span style="display: none; ">void</span>
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.module.methodName</span>(<span><span>, </span><span></span>
-                      <var><span></span></var></span>)</div>
+                  <span>chrome.experimental.savePage.saveAsMHTML</span>(<span class="null"><span style="display: none; ">, </span><span>integer</span>
+                      <var><span>tabId</span></var></span><span class="null"><span>, </span><span>function</span>
+                      <var><span>callback</span></var></span>)</div>
 
               <div class="description">
-                <p class="todo">Undocumented.</p>
-                <p>
-                  A description from the json schema def of the function goes here.
-                </p>
+                <p class="todo" style="display: none; ">Undocumented.</p>
+                <p>Saves the content of the tab with given id to MHTML.</p>
 
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>
                 <dl>
                   <div>
                     <div>
-                    </div>
+          <dt>
+            <var>tabId</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional" style="display: none; ">optional</span>
+                    <span class="enum" style="display: none; ">enumerated</span>
+                    <span id="typeTemplate">
+                      <span style="display: none; ">
+                        <a> Type</a>
+                      </span>
+                      <span>
+                        <span style="display: none; ">
+                          array of <span><span></span></span>
+                        </span>
+                        <span>integer</span>
+                        <span style="display: none; "></span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
+          <dd class="todo" style="display: none; ">
+            Undocumented.
+          </dd>
+          <dd>The id of the tab to save.</dd>
+          <dd style="display: none; ">
+            This parameter was added in version
+            <b><span></span></b>.
+            You must omit this parameter in earlier versions,
+            and you may omit it in any version.  If you require this
+            parameter, the manifest key
+            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
+            can ensure that your extension won't be run in an earlier browser version.
+          </dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd style="display: none; ">
+            <dl>
+              <div>
+                <div>
+                </div>
+              </div>
+            </dl>
+          </dd>
+
+          <!-- OBJECT METHODS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+          <!-- OBJECT EVENT FIELDS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+          <!-- FUNCTION PARAMETERS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+        </div>
+                  </div><div>
+                    <div>
+          <dt>
+            <var>callback</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional" style="display: none; ">optional</span>
+                    <span class="enum" style="display: none; ">enumerated</span>
+                    <span id="typeTemplate">
+                      <span style="display: none; ">
+                        <a> Type</a>
+                      </span>
+                      <span>
+                        <span style="display: none; ">
+                          array of <span><span></span></span>
+                        </span>
+                        <span>function</span>
+                        <span style="display: none; "></span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
+          <dd class="todo" style="display: none; ">
+            Undocumented.
+          </dd>
+          <dd>Called when the MHTML has been generated.</dd>
+          <dd style="display: none; ">
+            This parameter was added in version
+            <b><span></span></b>.
+            You must omit this parameter in earlier versions,
+            and you may omit it in any version.  If you require this
+            parameter, the manifest key
+            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
+            can ensure that your extension won't be run in an earlier browser version.
+          </dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd style="display: none; ">
+            <dl>
+              <div>
+                <div>
+                </div>
+              </div>
+            </dl>
+          </dd>
+
+          <!-- OBJECT METHODS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+          <!-- OBJECT EVENT FIELDS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+          <!-- FUNCTION PARAMETERS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+        </div>
                   </div>
                 </dl>
 
                 <!-- RETURNS -->
-                <h4>Returns</h4>
+                <h4 style="display: none; ">Returns</h4>
                 <dl>
-                  <div>
+                  <div style="display: none; ">
                     <div>
                     </div>
                   </div>
@@ -536,24 +539,89 @@ For information on the standard APIs that extensions can use, see
                     The callback <em>parameter</em> should specify a function
                     that looks like this:
                   </p>
-                  <p>
+                  <p style="display: none; ">
                     If you specify the <em>callback</em> parameter, it should
                     specify a function that looks like this:
                   </p>
 
                   <!-- Note: intentionally longer 80 columns -->
-                  <pre>function(<span>Type param1, Type param2</span>) <span class="subdued">{...}</span>;</pre>
+                  <pre>function(<span>blob mhtmlData</span>) <span class="subdued">{...}</span>;</pre>
                   <dl>
                     <div>
                       <div>
-                      </div>
+          <dt>
+            <var>mhtmlData</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span class="enum" style="display: none; ">enumerated</span>
+                    <span id="typeTemplate">
+                      <span style="display: none; ">
+                        <a> Type</a>
+                      </span>
+                      <span>
+                        <span style="display: none; ">
+                          array of <span><span></span></span>
+                        </span>
+                        <span>blob</span>
+                        <span style="display: none; "></span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
+          <dd class="todo" style="display: none; ">
+            Undocumented.
+          </dd>
+          <dd>The MHTML data as a Blob.</dd>
+          <dd style="display: none; ">
+            This parameter was added in version
+            <b><span></span></b>.
+            You must omit this parameter in earlier versions,
+            and you may omit it in any version.  If you require this
+            parameter, the manifest key
+            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
+            can ensure that your extension won't be run in an earlier browser version.
+          </dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd style="display: none; ">
+            <dl>
+              <div>
+                <div>
+                </div>
+              </div>
+            </dl>
+          </dd>
+
+          <!-- OBJECT METHODS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+          <!-- OBJECT EVENT FIELDS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+          <!-- FUNCTION PARAMETERS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+        </div>
                     </div>
                   </dl>
                   </div>
                 </div>
 
                 <!-- MIN_VERSION -->
-                <p>
+                <p style="display: none; ">
                   This function was added in version <b><span></span></b>.
                   If you require this function, the manifest key
                   <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
@@ -566,7 +634,7 @@ For information on the standard APIs that extensions can use, see
           </div>  <!-- /apiGroup -->
 
           <!-- EVENTS -->
-          <div id="eventsTemplate" class="apiGroup">
+          <div id="eventsTemplate" class="apiGroup" style="display: none; ">
             <a></a>
             <h3>Events</h3>
             <!-- iterates over all events -->
@@ -622,7 +690,7 @@ For information on the standard APIs that extensions can use, see
           </div> <!-- /apiGroup -->
 
           <!-- TYPES -->
-          <div class="apiGroup">
+          <div class="apiGroup" style="display: none; ">
             <a name="types"></a>
             <h3 id="types">Types</h3>
 
