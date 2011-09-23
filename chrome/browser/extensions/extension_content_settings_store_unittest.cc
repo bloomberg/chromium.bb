@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/extension_content_settings_store.h"
 
+#include "chrome/browser/content_settings/content_settings_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -18,6 +19,12 @@ void CheckRule(const content_settings::ProviderInterface::Rule& rule,
   EXPECT_EQ(primary_pattern.ToString(), rule.primary_pattern.ToString());
   EXPECT_EQ(secondary_pattern.ToString(), rule.secondary_pattern.ToString());
   EXPECT_EQ(setting, rule.content_setting);
+}
+
+ContentSetting ValueToContentSetting(const base::Value* value) {
+  ContentSetting setting = CONTENT_SETTING_DEFAULT;
+  EXPECT_TRUE(content_settings::ParseContentSettingValue(value, &setting));
+  return setting;
 }
 
 // Helper class which returns monotonically-increasing base::Time objects.
@@ -69,24 +76,16 @@ TEST_F(ExtensionContentSettingsStoreTest, RegisterUnregister) {
   GURL url("http://www.youtube.com");
 
   EXPECT_EQ(CONTENT_SETTING_DEFAULT,
-            store()->GetEffectiveContentSetting(
-                     url,
-                     url,
-                     CONTENT_SETTINGS_TYPE_COOKIES,
-                     "",
-                     false));
+            ValueToContentSetting(store()->GetEffectiveContentSetting(
+                url, url, CONTENT_SETTINGS_TYPE_COOKIES, "", false)));
 
   // Register first extension
   std::string ext_id("my_extension");
   RegisterExtension(ext_id);
 
   EXPECT_EQ(CONTENT_SETTING_DEFAULT,
-            store()->GetEffectiveContentSetting(
-                     url,
-                     url,
-                     CONTENT_SETTINGS_TYPE_COOKIES,
-                     "",
-                     false));
+            ValueToContentSetting(store()->GetEffectiveContentSetting(
+                url, url, CONTENT_SETTINGS_TYPE_COOKIES, "", false)));
 
   // Set setting
   ContentSettingsPattern pattern =
@@ -103,12 +102,12 @@ TEST_F(ExtensionContentSettingsStoreTest, RegisterUnregister) {
   Mock::VerifyAndClear(&observer);
 
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
-            store()->GetEffectiveContentSetting(
+            ValueToContentSetting(store()->GetEffectiveContentSetting(
                 url,
                 url,
                 CONTENT_SETTINGS_TYPE_COOKIES,
                 "",
-                false));
+                false)));
 
   // Register second extension.
   std::string ext_id_2("my_second_extension");
@@ -124,23 +123,23 @@ TEST_F(ExtensionContentSettingsStoreTest, RegisterUnregister) {
       kExtensionPrefsScopeRegular);
 
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
-            store()->GetEffectiveContentSetting(
+            ValueToContentSetting(store()->GetEffectiveContentSetting(
                 url,
                 url,
                 CONTENT_SETTINGS_TYPE_COOKIES,
                 "",
-                false));
+                false)));
 
   // Unregister first extension. This shouldn't change the setting.
   EXPECT_CALL(observer, OnContentSettingChanged(ext_id, false));
   store()->UnregisterExtension(ext_id);
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
-            store()->GetEffectiveContentSetting(
+            ValueToContentSetting(store()->GetEffectiveContentSetting(
                 url,
                 url,
                 CONTENT_SETTINGS_TYPE_COOKIES,
                 "",
-                false));
+                false)));
   Mock::VerifyAndClear(&observer);
 
   // Unregister second extension. This should reset the setting to its default
@@ -148,12 +147,12 @@ TEST_F(ExtensionContentSettingsStoreTest, RegisterUnregister) {
   EXPECT_CALL(observer, OnContentSettingChanged(ext_id_2, false));
   store()->UnregisterExtension(ext_id_2);
   EXPECT_EQ(CONTENT_SETTING_DEFAULT,
-            store()->GetEffectiveContentSetting(
+            ValueToContentSetting(store()->GetEffectiveContentSetting(
                 url,
                 url,
                 CONTENT_SETTINGS_TYPE_COOKIES,
                 "",
-                false));
+                false)));
 
   store()->RemoveObserver(&observer);
 }

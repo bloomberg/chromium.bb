@@ -63,6 +63,10 @@ class OriginIdentifierValueMap {
     return entries_.end();
   }
 
+  bool empty() const {
+    return size() == 0u;
+  }
+
   size_t size() const {
     return entries_.size();
   }

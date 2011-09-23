@@ -24,6 +24,10 @@ namespace base {
 class ListValue;
 }
 
+namespace content_settings {
+class OriginIdentifierValueMap;
+}
+
 // This class is the backend for extension-defined content settings. It is used
 // by the content_settings::ExtensionProvider to integrate its settings into the
 // HostContentSettingsMap and by the content settings extension API to provide
@@ -60,7 +64,8 @@ class ExtensionContentSettingsStore
       ContentSetting setting,
       ExtensionPrefsScope scope);
 
-  ContentSetting GetEffectiveContentSetting(
+  // Caller takes ownership of the returned value.
+  base::Value* GetEffectiveContentSetting(
       const GURL& embedded_url,
       const GURL& top_level_url,
       ContentSettingsType type,
@@ -116,46 +121,24 @@ class ExtensionContentSettingsStore
   friend class base::RefCountedThreadSafe<ExtensionContentSettingsStore>;
 
   struct ExtensionEntry;
-  struct ContentSettingSpec {
-    ContentSettingSpec(const ContentSettingsPattern& primary_pattern,
-                       const ContentSettingsPattern& secondary_pattern,
-                       ContentSettingsType type,
-                       const content_settings::ResourceIdentifier& identifier,
-                       ContentSetting setting);
-
-    ContentSettingsPattern primary_pattern;
-    ContentSettingsPattern secondary_pattern;
-    ContentSettingsType content_type;
-    content_settings::ResourceIdentifier resource_identifier;
-    ContentSetting setting;
-  };
 
   typedef std::map<std::string, ExtensionEntry*> ExtensionEntryMap;
 
-  typedef std::list<ContentSettingSpec> ContentSettingSpecList;
-
   virtual ~ExtensionContentSettingsStore();
 
-  ContentSetting GetContentSettingFromSpecList(
-      const GURL& embedded_url,
-      const GURL& top_level_url,
-      ContentSettingsType type,
-      const content_settings::ResourceIdentifier& identifier,
-      const ContentSettingSpecList& setting_spec_list) const;
-
-  ContentSettingSpecList* GetContentSettingSpecList(
+  content_settings::OriginIdentifierValueMap* GetValueMap(
       const std::string& ext_id,
       ExtensionPrefsScope scope);
 
-  const ContentSettingSpecList* GetContentSettingSpecList(
+  const content_settings::OriginIdentifierValueMap* GetValueMap(
       const std::string& ext_id,
       ExtensionPrefsScope scope) const;
 
   // Adds all content setting rules for |type| and |identifier| found in
-  // |setting_spec_list| to |rules|.
+  // |map| to |rules|.
   static void AddRules(ContentSettingsType type,
                        const content_settings::ResourceIdentifier& identifier,
-                       const ContentSettingSpecList* setting_spec_list,
+                       const content_settings::OriginIdentifierValueMap* map,
                        content_settings::ProviderInterface::Rules* rules);
 
   void NotifyOfContentSettingChanged(const std::string& extension_id,

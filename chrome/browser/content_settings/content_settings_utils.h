@@ -6,13 +6,15 @@
 #define CHROME_BROWSER_CONTENT_SETTINGS_CONTENT_SETTINGS_UTILS_H_
 
 #include <string>
-#include <utility>
 
 #include "base/logging.h"
-#include "base/values.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/content_settings_pattern.h"
 #include "chrome/common/content_settings_types.h"
+
+namespace base {
+class Value;
+}
 
 namespace content_settings {
 
@@ -27,7 +29,13 @@ ContentSetting ClickToPlayFixup(ContentSettingsType content_type,
                                 ContentSetting setting);
 
 // Converts |Value| to |ContentSetting|.
-ContentSetting ValueToContentSetting(Value* value);
+ContentSetting ValueToContentSetting(const base::Value* value);
+
+// Converts a |Value| to a |ContentSetting|. Returns true if |value| encodes
+// a valid content setting, false otherwise. Note that |CONTENT_SETTING_DEFAULT|
+// is encoded as a NULL value, so it is not allowed as an integer value.
+bool ParseContentSettingValue(const base::Value* value,
+                              ContentSetting* setting);
 
 PatternPair ParsePatternString(const std::string& pattern_str);
 

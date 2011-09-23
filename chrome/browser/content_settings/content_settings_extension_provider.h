@@ -27,40 +27,39 @@ class ExtensionProvider : public ObservableProvider,
 
   virtual ~ExtensionProvider();
 
-  // Provider Interface implementations.
+  // ProviderInterface methods:
   virtual ContentSetting GetContentSetting(
       const GURL& primary_url,
       const GURL& secondary_url,
       ContentSettingsType content_type,
-      const ResourceIdentifier& resource_identifier) const;
+      const ResourceIdentifier& resource_identifier) const OVERRIDE;
 
-  virtual Value* GetContentSettingValue(
+  virtual base::Value* GetContentSettingValue(
       const GURL& primary_url,
       const GURL& secondary_url,
       ContentSettingsType content_type,
-      const ResourceIdentifier& resource_identifier) const;
+      const ResourceIdentifier& resource_identifier) const OVERRIDE;
 
   virtual void SetContentSetting(
       const ContentSettingsPattern& embedded_url_pattern,
       const ContentSettingsPattern& top_level_url_pattern,
       ContentSettingsType content_type,
       const ResourceIdentifier& resource_identifier,
-      ContentSetting content_setting) {}
+      ContentSetting content_setting) OVERRIDE {}
 
   virtual void GetAllContentSettingsRules(
       ContentSettingsType content_type,
       const ResourceIdentifier& resource_identifier,
-      Rules* content_setting_rules) const;
+      Rules* content_setting_rules) const OVERRIDE;
 
-  virtual void ClearAllContentSettingsRules(ContentSettingsType content_type) {}
+  virtual void ClearAllContentSettingsRules(ContentSettingsType content_type)
+      OVERRIDE {}
 
-  virtual void ResetToDefaults() {}
-
-  virtual void ShutdownOnUIThread();
+  virtual void ShutdownOnUIThread() OVERRIDE;
 
   // ExtensionContentSettingsStore::Observer methods:
   virtual void OnContentSettingChanged(const std::string& extension_id,
-                                       bool incognito);
+                                       bool incognito) OVERRIDE;
 
  private:
   // Specifies whether this provider manages settings for incognito or regular

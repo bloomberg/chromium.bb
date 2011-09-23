@@ -91,12 +91,6 @@ void SetDefaultContentSettings(DictionaryValue* default_settings) {
   }
 }
 
-ContentSetting ValueToContentSetting(Value* value) {
-  int int_value;
-  value->GetAsInteger(&int_value);
-  return IntToContentSetting(int_value);
-}
-
 ContentSettingsType StringToContentSettingsType(
     const std::string& content_type_str) {
   for (size_t type = 0; type < arraysize(kTypeNames); ++type) {
@@ -447,8 +441,7 @@ ContentSetting PrefProvider::GetContentSetting(
                                                  secondary_url,
                                                  content_type,
                                                  resource_identifier));
-  return value.get() ? ValueToContentSetting(value.get())
-                     : CONTENT_SETTING_DEFAULT;
+  return ValueToContentSetting(value.get());
 }
 
 Value* PrefProvider::GetContentSettingValue(
@@ -495,7 +488,7 @@ void PrefProvider::GetAllContentSettingsRules(
     if (entry->content_type == content_type &&
         entry->identifier == resource_identifier) {
       ContentSetting setting = ValueToContentSetting(entry->value.get());
-      DCHECK(setting != CONTENT_SETTING_DEFAULT);
+      DCHECK_NE(CONTENT_SETTING_DEFAULT, setting);
       Rule new_rule(entry->primary_pattern,
                     entry->secondary_pattern,
                     setting);

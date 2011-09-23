@@ -4,6 +4,8 @@
 
 #include "chrome/browser/content_settings/content_settings_extension_provider.h"
 
+#include "base/scoped_ptr.h"
+#include "chrome/browser/content_settings/content_settings_utils.h"
 #include "chrome/browser/extensions/extension_content_settings_store.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -26,9 +28,21 @@ ContentSetting ExtensionProvider::GetContentSetting(
     const GURL& secondary_url,
     ContentSettingsType content_type,
     const ResourceIdentifier& resource_identifier) const {
+  scoped_ptr<base::Value> value(GetContentSettingValue(primary_url,
+                                                       secondary_url,
+                                                       content_type,
+                                                       resource_identifier));
+  return ValueToContentSetting(value.get());
+}
+
+base::Value* ExtensionProvider::GetContentSettingValue(
+    const GURL& primary_url,
+    const GURL& secondary_url,
+    ContentSettingsType content_type,
+    const ResourceIdentifier& resource_identifier) const {
+  DCHECK(extensions_settings_);
   // TODO(markusheintz): Instead of getting the effective setting every time
   // effective patterns could be cached in here.
-  DCHECK(extensions_settings_);
   return extensions_settings_->GetEffectiveContentSetting(
       primary_url,
       secondary_url,
@@ -36,25 +50,6 @@ ContentSetting ExtensionProvider::GetContentSetting(
       resource_identifier,
       incognito_);
 }
-
-Value* ExtensionProvider::GetContentSettingValue(
-    const GURL& primary_url,
-    const GURL& secondary_url,
-    ContentSettingsType content_type,
-    const ResourceIdentifier& resource_identifier) const {
-  // TODO(markusheintz): Change the ExtensionSettingsStore to use the
-  // OriginIdentifierValueMap to allow arbitray |Value|s to be stored instead of
-  // |ContentSetting|s.
-  ContentSetting setting = GetContentSetting(
-      primary_url,
-      secondary_url,
-      content_type,
-      resource_identifier);
-  if (setting == CONTENT_SETTING_DEFAULT)
-    return NULL;
-  return Value::CreateIntegerValue(setting);
-}
-
 
 void ExtensionProvider::GetAllContentSettingsRules(
     ContentSettingsType content_type,

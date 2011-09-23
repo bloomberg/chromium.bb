@@ -9,6 +9,8 @@
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/values.h"
+#include "chrome/browser/content_settings/content_settings_origin_identifier_value_map.h"
+#include "chrome/browser/content_settings/content_settings_utils.h"
 #include "chrome/browser/extensions/extension_content_settings_api_constants.h"
 #include "chrome/browser/extensions/extension_content_settings_helpers.h"
 #include "content/browser/browser_thread.h"
@@ -16,25 +18,9 @@
 namespace helpers = extension_content_settings_helpers;
 namespace keys = extension_content_settings_api_constants;
 
-namespace {
-
-bool ComparePatternPairs(const ContentSettingsPattern& first_primary,
-                         const ContentSettingsPattern& first_secondary,
-                         const ContentSettingsPattern& second_primary,
-                         const ContentSettingsPattern& second_secondary) {
-  ContentSettingsPattern::Relation relation =
-      first_primary.Compare(second_primary);
-  if (relation == ContentSettingsPattern::SUCCESSOR)
-    return true;
-  if (relation == ContentSettingsPattern::PREDECESSOR)
-    return false;
-  return (first_secondary.Compare(second_secondary) ==
-      ContentSettingsPattern::SUCCESSOR);
-}
-
-}  // namespace
-
+using content_settings::OriginIdentifierValueMap;
 using content_settings::ResourceIdentifier;
+using content_settings::ValueToContentSetting;
 
 struct ExtensionContentSettingsStore::ExtensionEntry {
   // Installation time of the extension.
@@ -42,11 +28,11 @@ struct ExtensionContentSettingsStore::ExtensionEntry {
   // Whether extension is enabled in the profile.
   bool enabled;
   // Content settings.
-  ContentSettingSpecList settings;
+  OriginIdentifierValueMap settings;
   // Persistent incognito content settings.
-  ContentSettingSpecList incognito_persistent_settings;
+  OriginIdentifierValueMap incognito_persistent_settings;
   // Session-only incognito content settings.
-  ContentSettingSpecList incognito_session_only_settings;
+  OriginIdentifierValueMap incognito_session_only_settings;
 };
 
 ExtensionContentSettingsStore::ExtensionContentSettingsStore() {
@@ -67,31 +53,12 @@ void ExtensionContentSettingsStore::SetExtensionContentSetting(
     ExtensionPrefsScope scope) {
   {
     base::AutoLock lock(lock_);
-    ContentSettingSpecList* setting_spec_list =
-        GetContentSettingSpecList(ext_id, scope);
-
-    // Find |ContentSettingSpec|.
-    ContentSettingSpecList::iterator setting_spec = setting_spec_list->begin();
-    while (setting_spec != setting_spec_list->end()) {
-      if (setting_spec->primary_pattern == primary_pattern &&
-          setting_spec->secondary_pattern == secondary_pattern &&
-          setting_spec->content_type == type &&
-          setting_spec->resource_identifier == identifier) {
-        break;
-      }
-      ++setting_spec;
-    }
-    if (setting_spec == setting_spec_list->end()) {
-      setting_spec_list->push_back(ContentSettingSpec(primary_pattern,
-                                                      secondary_pattern,
-                                                      type,
-                                                      identifier,
-                                                      setting));
-    } else if (setting != CONTENT_SETTING_DEFAULT) {
-      // Update setting.
-      setting_spec->setting = setting;
+    OriginIdentifierValueMap* map = GetValueMap(ext_id, scope);
+    if (setting == CONTENT_SETTING_DEFAULT) {
+      map->DeleteValue(primary_pattern, secondary_pattern, type, identifier);
     } else {
-      setting_spec_list->erase(setting_spec);
+      map->SetValue(primary_pattern, secondary_pattern, type, identifier,
+                    base::Value::CreateIntegerValue(setting));
     }
   }
 
@@ -160,10 +127,9 @@ void ExtensionContentSettingsStore::SetExtensionState(
     NotifyOfContentSettingChanged(ext_id, true);
 }
 
-ExtensionContentSettingsStore::ContentSettingSpecList*
-    ExtensionContentSettingsStore::GetContentSettingSpecList(
-        const std::string& ext_id,
-        ExtensionPrefsScope scope) {
+OriginIdentifierValueMap* ExtensionContentSettingsStore::GetValueMap(
+    const std::string& ext_id,
+    ExtensionPrefsScope scope) {
   ExtensionEntryMap::const_iterator i = entries_.find(ext_id);
   if (i != entries_.end()) {
     switch (scope) {
@@ -178,10 +144,9 @@ ExtensionContentSettingsStore::ContentSettingSpecList*
   return NULL;
 }
 
-const ExtensionContentSettingsStore::ContentSettingSpecList*
-    ExtensionContentSettingsStore::GetContentSettingSpecList(
-        const std::string& ext_id,
-        ExtensionPrefsScope scope) const {
+const OriginIdentifierValueMap* ExtensionContentSettingsStore::GetValueMap(
+    const std::string& ext_id,
+    ExtensionPrefsScope scope) const {
   ExtensionEntryMap::const_iterator i = entries_.find(ext_id);
   if (i != entries_.end()) {
     switch (scope) {
@@ -196,37 +161,7 @@ const ExtensionContentSettingsStore::ContentSettingSpecList*
   return NULL;
 }
 
-ContentSetting ExtensionContentSettingsStore::GetContentSettingFromSpecList(
-    const GURL& primary_url,
-    const GURL& secondary_url,
-    ContentSettingsType type,
-    const content_settings::ResourceIdentifier& identifier,
-    const ContentSettingSpecList& setting_spec_list) const {
-  ContentSettingSpecList::const_iterator winner_spec = setting_spec_list.end();
-
-  for (ContentSettingSpecList::const_iterator spec = setting_spec_list.begin();
-       spec != setting_spec_list.end(); ++spec) {
-    if (!spec->primary_pattern.Matches(primary_url) ||
-        !spec->secondary_pattern.Matches(secondary_url) ||
-        spec->content_type != type ||
-        spec->resource_identifier != identifier) {
-      continue;
-    }
-
-    if (winner_spec == setting_spec_list.end() ||
-        ComparePatternPairs(winner_spec->primary_pattern,
-                            winner_spec->secondary_pattern,
-                            spec->primary_pattern,
-                            spec->secondary_pattern)) {
-      winner_spec = spec;
-    }
-  }
-
-  return (winner_spec != setting_spec_list.end()) ? winner_spec->setting
-                                                  : CONTENT_SETTING_DEFAULT;
-}
-
-ContentSetting ExtensionContentSettingsStore::GetEffectiveContentSetting(
+base::Value* ExtensionContentSettingsStore::GetEffectiveContentSetting(
     const GURL& embedded_url,
     const GURL& top_level_url,
     ContentSettingsType type,
@@ -235,7 +170,7 @@ ContentSetting ExtensionContentSettingsStore::GetEffectiveContentSetting(
   base::AutoLock lock(lock_);
 
   base::Time winners_install_time;
-  ContentSetting winner_setting = CONTENT_SETTING_DEFAULT;
+  const base::Value* winner_setting = NULL;
 
   ExtensionEntryMap::const_iterator i;
   for (i = entries_.begin(); i != entries_.end(); ++i) {
@@ -247,32 +182,30 @@ ContentSetting ExtensionContentSettingsStore::GetEffectiveContentSetting(
     if (install_time < winners_install_time)
       continue;
 
-    ContentSetting setting = CONTENT_SETTING_DEFAULT;
+    const base::Value* setting = NULL;
     if (incognito) {
       // Try session-only incognito setting first.
-      setting = GetContentSettingFromSpecList(
-          embedded_url, top_level_url, type, identifier,
-          i->second->incognito_session_only_settings);
-      if (setting == CONTENT_SETTING_DEFAULT) {
+      setting = i->second->incognito_session_only_settings.GetValue(
+          embedded_url, top_level_url, type, identifier);
+      if (!setting) {
         // Next, persistent incognito setting.
-        setting = GetContentSettingFromSpecList(
-            embedded_url, top_level_url, type, identifier,
-            i->second->incognito_persistent_settings);
+        setting = i->second->incognito_persistent_settings.GetValue(
+            embedded_url, top_level_url, type, identifier);
       }
     }
-    if (setting == CONTENT_SETTING_DEFAULT) {
+    if (!setting) {
       // Then, non-incognito setting.
-      setting = GetContentSettingFromSpecList(embedded_url, top_level_url, type,
-                                              identifier, i->second->settings);
+      setting = i->second->settings.GetValue(
+          embedded_url, top_level_url, type, identifier);
     }
 
-    if (setting != CONTENT_SETTING_DEFAULT) {
+    if (setting) {
       winners_install_time = install_time;
       winner_setting = setting;
     }
   }
 
-  return winner_setting;
+  return winner_setting ? winner_setting->DeepCopy() : NULL;
 }
 
 void ExtensionContentSettingsStore::ClearContentSettingsForExtension(
@@ -281,10 +214,9 @@ void ExtensionContentSettingsStore::ClearContentSettingsForExtension(
   bool notify = false;
   {
     base::AutoLock lock(lock_);
-    ContentSettingSpecList* setting_spec_list =
-        GetContentSettingSpecList(ext_id, scope);
-    notify = !setting_spec_list->empty();
-    setting_spec_list->clear();
+    OriginIdentifierValueMap* map = GetValueMap(ext_id, scope);
+    notify = !map->empty();
+    map->clear();
   }
   if (notify) {
     NotifyOfContentSettingChanged(ext_id, scope != kExtensionPrefsScopeRegular);
@@ -294,14 +226,16 @@ void ExtensionContentSettingsStore::ClearContentSettingsForExtension(
 // static
 void ExtensionContentSettingsStore::AddRules(
     ContentSettingsType type,
-    const content_settings::ResourceIdentifier& identifier,
-    const ContentSettingSpecList* setting_spec_list,
+    const ResourceIdentifier& identifier,
+    const OriginIdentifierValueMap* map,
     content_settings::ProviderInterface::Rules* rules) {
-  ContentSettingSpecList::const_iterator it;
-  for (it = setting_spec_list->begin(); it != setting_spec_list->end(); ++it) {
-    if (it->content_type == type && it->resource_identifier == identifier) {
+  OriginIdentifierValueMap::EntryList::const_iterator it;
+  for (it = map->begin(); it != map->end(); ++it) {
+    if (it->content_type == type && it->identifier == identifier) {
+      ContentSetting setting = ValueToContentSetting(it->value.get());
+      DCHECK_NE(CONTENT_SETTING_DEFAULT, setting);
       rules->push_back(content_settings::ProviderInterface::Rule(
-          it->primary_pattern, it->secondary_pattern, it->setting));
+          it->primary_pattern, it->secondary_pattern, setting));
     }
   }
 }
@@ -318,37 +252,33 @@ void ExtensionContentSettingsStore::GetContentSettingsForContentType(
       continue;
     if (incognito) {
       AddRules(type, identifier,
-               GetContentSettingSpecList(
-                   ext_it->first,
-                   kExtensionPrefsScopeIncognitoPersistent),
+               GetValueMap(ext_it->first,
+                           kExtensionPrefsScopeIncognitoPersistent),
                rules);
       AddRules(type, identifier,
-               GetContentSettingSpecList(
-                   ext_it->first,
-                   kExtensionPrefsScopeIncognitoSessionOnly),
+               GetValueMap(ext_it->first,
+                           kExtensionPrefsScopeIncognitoSessionOnly),
                 rules);
     } else {
       AddRules(type, identifier,
-               GetContentSettingSpecList(
-                   ext_it->first,
-                   kExtensionPrefsScopeRegular),
+               GetValueMap(ext_it->first,
+                           kExtensionPrefsScopeRegular),
                rules);
     }
   }
 }
 
-ListValue* ExtensionContentSettingsStore::GetSettingsForExtension(
+base::ListValue* ExtensionContentSettingsStore::GetSettingsForExtension(
     const std::string& extension_id,
     ExtensionPrefsScope scope) const {
   base::AutoLock lock(lock_);
-  const ContentSettingSpecList* setting_spec_list =
-      GetContentSettingSpecList(extension_id, scope);
-  if (!setting_spec_list)
+  const OriginIdentifierValueMap* map = GetValueMap(extension_id, scope);
+  if (!map)
     return NULL;
-  ListValue* settings = new ListValue();
-  ContentSettingSpecList::const_iterator it;
-  for (it = setting_spec_list->begin(); it != setting_spec_list->end(); ++it) {
-    DictionaryValue* setting_dict = new DictionaryValue();
+  base::ListValue* settings = new base::ListValue();
+  OriginIdentifierValueMap::EntryList::const_iterator it;
+  for (it = map->begin(); it != map->end(); ++it) {
+    base::DictionaryValue* setting_dict = new base::DictionaryValue();
     setting_dict->SetString(keys::kPrimaryPatternKey,
                             it->primary_pattern.ToString());
     setting_dict->SetString(keys::kSecondaryPatternKey,
@@ -357,9 +287,11 @@ ListValue* ExtensionContentSettingsStore::GetSettingsForExtension(
         keys::kContentSettingsTypeKey,
         helpers::ContentSettingsTypeToString(it->content_type));
     setting_dict->SetString(keys::kResourceIdentifierKey,
-                            it->resource_identifier);
+                            it->identifier);
+    ContentSetting setting = ValueToContentSetting(it->value.get());
+    DCHECK_NE(CONTENT_SETTING_DEFAULT, setting);
     setting_dict->SetString(keys::kContentSettingKey,
-                            helpers::ContentSettingToString(it->setting));
+                            helpers::ContentSettingToString(setting));
     settings->Append(setting_dict);
   }
   return settings;
@@ -367,14 +299,15 @@ ListValue* ExtensionContentSettingsStore::GetSettingsForExtension(
 
 void ExtensionContentSettingsStore::SetExtensionContentSettingsFromList(
     const std::string& extension_id,
-    const ListValue* list,
+    const base::ListValue* list,
     ExtensionPrefsScope scope) {
-  for (ListValue::const_iterator it = list->begin(); it != list->end(); ++it) {
+  for (base::ListValue::const_iterator it = list->begin();
+       it != list->end(); ++it) {
     if ((*it)->GetType() != Value::TYPE_DICTIONARY) {
       NOTREACHED();
       continue;
     }
-    DictionaryValue* dict = static_cast<DictionaryValue*>(*it);
+    base::DictionaryValue* dict = static_cast<base::DictionaryValue*>(*it);
     std::string primary_pattern_str;
     dict->GetString(keys::kPrimaryPatternKey, &primary_pattern_str);
     ContentSettingsPattern primary_pattern =
@@ -421,19 +354,6 @@ void ExtensionContentSettingsStore::AddObserver(Observer* observer) {
 void ExtensionContentSettingsStore::RemoveObserver(Observer* observer) {
   DCHECK(OnCorrectThread());
   observers_.RemoveObserver(observer);
-}
-
-ExtensionContentSettingsStore::ContentSettingSpec::ContentSettingSpec(
-    const ContentSettingsPattern& primary_pattern,
-    const ContentSettingsPattern& secondary_pattern,
-    ContentSettingsType type,
-    const content_settings::ResourceIdentifier& identifier,
-    ContentSetting setting)
-    : primary_pattern(primary_pattern),
-      secondary_pattern(secondary_pattern),
-      content_type(type),
-      resource_identifier(identifier),
-      setting(setting) {
 }
 
 void ExtensionContentSettingsStore::NotifyOfContentSettingChanged(

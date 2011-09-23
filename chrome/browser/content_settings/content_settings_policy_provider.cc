@@ -325,7 +325,7 @@ void PolicyProvider::GetContentSettingsFromPreferences(
     DCHECK(pref);
     DCHECK(pref->IsManaged());
 
-    const ListValue* pattern_str_list = NULL;
+    const base::ListValue* pattern_str_list = NULL;
     if (!pref->GetValue()->GetAsList(&pattern_str_list)) {
       NOTREACHED();
       return;
@@ -354,7 +354,7 @@ void PolicyProvider::GetContentSettingsFromPreferences(
           secondary_pattern,
           content_type,
           ResourceIdentifier(NO_RESOURCE_IDENTIFIER),
-          Value::CreateIntegerValue(
+          base::Value::CreateIntegerValue(
               kPrefsForManagedContentSettingsMap[i].setting));
     }
   }
@@ -373,7 +373,7 @@ void PolicyProvider::GetAutoSelectCertificateSettingsFromPreferences(
   DCHECK(pref);
   DCHECK(pref->IsManaged());
 
-  const ListValue* pattern_filter_str_list = NULL;
+  const base::ListValue* pattern_filter_str_list = NULL;
   if (!pref->GetValue()->GetAsList(&pattern_filter_str_list)) {
     NOTREACHED();
     return;
@@ -399,20 +399,21 @@ void PolicyProvider::GetAutoSelectCertificateSettingsFromPreferences(
     std::string pattern_filter_json;
     pattern_filter_str_list->GetString(j, &pattern_filter_json);
 
-    scoped_ptr<Value> value(base::JSONReader::Read(pattern_filter_json, true));
+    scoped_ptr<base::Value> value(
+        base::JSONReader::Read(pattern_filter_json, true));
     if (!value.get()) {
       VLOG(1) << "Ignoring invalid certificate auto select setting. Reason:"
                  " Invalid JSON format: " << pattern_filter_json;
       continue;
     }
 
-    scoped_ptr<DictionaryValue> pattern_filter_pair(
-        static_cast<DictionaryValue*>(value.release()));
+    scoped_ptr<base::DictionaryValue> pattern_filter_pair(
+        static_cast<base::DictionaryValue*>(value.release()));
     std::string pattern_str;
     bool pattern_read = pattern_filter_pair->GetString("pattern", &pattern_str);
-    Value* cert_filter_ptr = NULL;
+    base::Value* cert_filter_ptr = NULL;
     bool filter_read = pattern_filter_pair->Remove("filter", &cert_filter_ptr);
-    scoped_ptr<Value> cert_filter(cert_filter_ptr);
+    scoped_ptr<base::Value> cert_filter(cert_filter_ptr);
     if (!pattern_read || !filter_read) {
       VLOG(1) << "Ignoring invalid certificate auto select setting. Reason:"
                  " Missing pattern or filter.";
@@ -428,7 +429,7 @@ void PolicyProvider::GetAutoSelectCertificateSettingsFromPreferences(
       continue;
     }
 
-    DCHECK(cert_filter->IsType(Value::TYPE_DICTIONARY));
+    DCHECK(cert_filter->IsType(base::Value::TYPE_DICTIONARY));
     value_map->SetValue(pattern,
                         ContentSettingsPattern::Wildcard(),
                         CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE,
@@ -460,29 +461,29 @@ ContentSetting PolicyProvider::GetContentSetting(
     const GURL& secondary_url,
     ContentSettingsType content_type,
     const ResourceIdentifier& resource_identifier) const {
-  DCHECK_NE(content_type, CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE);
+  DCHECK_NE(CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE, content_type);
   // Resource identifier are not supported by policies as long as the feature is
   // behind a flag. So resource identifiers are simply ignored.
-  scoped_ptr<Value> value(GetContentSettingValue(primary_url,
-                                                 secondary_url,
-                                                 content_type,
-                                                 resource_identifier));
+  base::AutoLock auto_lock(lock_);
   ContentSetting setting =
-      value.get() ? ValueToContentSetting(value.get())
-                  : CONTENT_SETTING_DEFAULT;
+      ValueToContentSetting(value_map_.GetValue(primary_url,
+                                                secondary_url,
+                                                content_type,
+                                                resource_identifier));
   if (setting == CONTENT_SETTING_DEFAULT && default_provider_)
     setting = default_provider_->ProvideDefaultSetting(content_type);
   return setting;
 }
 
-Value* PolicyProvider::GetContentSettingValue(
+base::Value* PolicyProvider::GetContentSettingValue(
     const GURL& primary_url,
     const GURL& secondary_url,
     ContentSettingsType content_type,
     const ResourceIdentifier& resource_identifier) const {
   // Resource identifier are not supported by policies as long as the feature is
   // behind a flag. So resource identifiers are simply ignored.
-  Value* value = value_map_.GetValue(primary_url,
+  base::AutoLock auto_lock(lock_);
+  base::Value* value = value_map_.GetValue(primary_url,
                                      secondary_url,
                                      content_type,
                                      resource_identifier);
@@ -507,7 +508,7 @@ void PolicyProvider::GetAllContentSettingsRules(
     if (entry->content_type == content_type &&
         entry->identifier == resource_identifier) {
       ContentSetting setting = ValueToContentSetting(entry->value.get());
-      DCHECK(setting != CONTENT_SETTING_DEFAULT);
+      DCHECK_NE(CONTENT_SETTING_DEFAULT, setting);
       Rule new_rule(entry->primary_pattern,
                     entry->secondary_pattern,
                     setting);

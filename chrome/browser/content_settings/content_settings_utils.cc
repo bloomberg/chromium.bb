@@ -10,6 +10,7 @@
 
 #include "base/command_line.h"
 #include "base/string_split.h"
+#include "base/values.h"
 #include "chrome/common/chrome_switches.h"
 
 namespace {
@@ -92,10 +93,24 @@ PatternPair ParsePatternString(const std::string& pattern_str) {
   return pattern_pair;
 }
 
-ContentSetting ValueToContentSetting(Value* value) {
-  int int_value;
-  value->GetAsInteger(&int_value);
-  return IntToContentSetting(int_value);
+ContentSetting ValueToContentSetting(const base::Value* value) {
+  ContentSetting setting = CONTENT_SETTING_DEFAULT;
+  bool valid = ParseContentSettingValue(value, &setting);
+  DCHECK(valid);
+  return setting;
+}
+
+bool ParseContentSettingValue(const base::Value* value,
+                              ContentSetting* setting) {
+  if (!value) {
+    *setting = CONTENT_SETTING_DEFAULT;
+    return true;
+  }
+  int int_value = -1;
+  if (!value->GetAsInteger(&int_value))
+    return false;
+  *setting = IntToContentSetting(int_value);
+  return *setting != CONTENT_SETTING_DEFAULT;
 }
 
 }  // namespace content_settings
