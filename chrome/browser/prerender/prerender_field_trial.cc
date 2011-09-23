@@ -55,23 +55,21 @@ void ConfigurePrefetchAndPrerender(const CommandLine& command_line) {
 
   switch (prerender_option) {
     case PRERENDER_OPTION_AUTO: {
-      const base::FieldTrial::Probability kPrefetchDivisor = 1000;
-      const base::FieldTrial::Probability kYesPrefetchProbability = 0;
+      const base::FieldTrial::Probability kPrerenderDivisor = 1000;
       const base::FieldTrial::Probability kPrerenderExp1Probability = 495;
       const base::FieldTrial::Probability kPrerenderControl1Probability = 5;
       const base::FieldTrial::Probability kPrerenderExp2Probability = 495;
       const base::FieldTrial::Probability kPrerenderControl2Probability = 5;
-
+      COMPILE_ASSERT(
+          kPrerenderExp1Probability + kPrerenderControl1Probability +
+          kPrerenderExp2Probability + kPrerenderControl2Probability ==
+          kPrerenderDivisor,
+          PrerenderFieldTrial_numerator_matches_denominator);
       scoped_refptr<base::FieldTrial> trial(
-          new base::FieldTrial("Prefetch", kPrefetchDivisor,
-                               "ContentPrefetchDisabled", 2012, 6, 30));
+          new base::FieldTrial("Prefetch", kPrerenderDivisor,
+                               "ContentPrefetchPrerender1", 2012, 6, 30));
 
-      const int kNoPrefetchGroup = trial->kDefaultGroupNumber;
-      const int kYesPrefetchGroup =
-          trial->AppendGroup("ContentPrefetchEnabled", kYesPrefetchProbability);
-      const int kPrerenderExperiment1Group =
-          trial->AppendGroup("ContentPrefetchPrerender1",
-                             kPrerenderExp1Probability);
+      const int kPrerenderExperiment1Group = trial->kDefaultGroupNumber;
       const int kPrerenderControl1Group =
           trial->AppendGroup("ContentPrefetchPrerenderControl1",
                              kPrerenderControl1Probability);
@@ -82,14 +80,7 @@ void ConfigurePrefetchAndPrerender(const CommandLine& command_line) {
           trial->AppendGroup("ContentPrefetchPrerenderControl2",
                              kPrerenderControl2Probability);
       const int trial_group = trial->group();
-      if (trial_group == kYesPrefetchGroup) {
-        ResourceDispatcherHost::set_is_prefetch_enabled(true);
-        PrerenderManager::SetMode(PrerenderManager::PRERENDER_MODE_DISABLED);
-      } else if (trial_group == kNoPrefetchGroup) {
-        ResourceDispatcherHost::set_is_prefetch_enabled(false);
-        PrerenderManager::SetMode(
-            PrerenderManager::PRERENDER_MODE_DISABLED);
-      } else if (trial_group == kPrerenderExperiment1Group ||
+      if (trial_group == kPrerenderExperiment1Group ||
                  trial_group == kPrerenderExperiment2Group) {
         ResourceDispatcherHost::set_is_prefetch_enabled(false);
         PrerenderManager::SetMode(
