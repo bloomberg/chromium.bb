@@ -1,13 +1,13 @@
-// Copyright 2011 The Chromium Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can
-// be found in the LICENSE file.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #ifndef NATIVE_CLIENT_SRC_SHARED_PPAPI_PROXY_PLUGIN_CORE_H_
 #define NATIVE_CLIENT_SRC_SHARED_PPAPI_PROXY_PLUGIN_CORE_H_
 
 #include "native_client/src/include/nacl_macros.h"
 
-class PPB_Core;
+struct PPB_Core;
 
 namespace ppapi_proxy {
 
