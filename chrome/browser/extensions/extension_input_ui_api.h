@@ -31,7 +31,7 @@ class ExtensionInputUiEventRouter
   friend struct DefaultSingletonTraits<ExtensionInputUiEventRouter>;
 
   ExtensionInputUiEventRouter();
-  ~ExtensionInputUiEventRouter();
+  virtual ~ExtensionInputUiEventRouter();
 
   void Register(Profile* profile, const std::string& extension_id);
   void CandidateClicked(Profile* profile,
