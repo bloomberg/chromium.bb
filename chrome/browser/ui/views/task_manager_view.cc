@@ -94,6 +94,9 @@ string16 TaskManagerTableModel::GetText(int row, int col_id) {
     case IDS_TASK_MANAGER_PAGE_COLUMN:  // Process
       return model_->GetResourceTitle(row);
 
+    case IDS_TASK_MANAGER_PROFILE_NAME_COLUMN:  // Profile Name
+      return model_->GetResourceProfileName(row);
+
     case IDS_TASK_MANAGER_NET_COLUMN:  // Net
       return model_->GetResourceNetworkUsage(row);
 
@@ -383,6 +386,9 @@ void TaskManagerView::Init() {
   columns_.push_back(ui::TableColumn(IDS_TASK_MANAGER_PAGE_COLUMN,
                                      ui::TableColumn::LEFT, -1, 1));
   columns_.back().sortable = true;
+  columns_.push_back(ui::TableColumn(IDS_TASK_MANAGER_PROFILE_NAME_COLUMN,
+                                     ui::TableColumn::LEFT, -1, 0));
+  columns_.back().sortable = true;
   columns_.push_back(ui::TableColumn(IDS_TASK_MANAGER_PHYSICAL_MEM_COLUMN,
                                      ui::TableColumn::RIGHT, -1, 0));
   columns_.back().sortable = true;
@@ -427,6 +433,7 @@ void TaskManagerView::Init() {
       table_model_.get(), columns_, highlight_background_resources_);
 
   // Hide some columns by default
+  tab_table_->SetColumnVisibility(IDS_TASK_MANAGER_PROFILE_NAME_COLUMN, false);
   tab_table_->SetColumnVisibility(IDS_TASK_MANAGER_PROCESS_ID_COLUMN, false);
   tab_table_->SetColumnVisibility(IDS_TASK_MANAGER_SHARED_MEM_COLUMN, false);
   tab_table_->SetColumnVisibility(IDS_TASK_MANAGER_PRIVATE_MEM_COLUMN, false);
