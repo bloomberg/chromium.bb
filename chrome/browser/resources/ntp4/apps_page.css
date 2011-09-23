@@ -13,8 +13,7 @@
 }
 
 .app-contents:active:not(.suppress-active),
-.dragging .app-contents,
-.drag-representation .app-contents {
+.drag-representation:not(.placing) .app-contents {
   -webkit-transform: scale(1.1);
 }
 
