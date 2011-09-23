@@ -452,6 +452,8 @@
     ],
 
     'mac': [
+      # Consistently failing on Mac QA bots only: crbug.com/97810
+      '-process_count',
     ],
 
     'linux': [
