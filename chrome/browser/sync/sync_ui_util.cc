@@ -231,14 +231,12 @@ MessageType GetStatusInfo(ProfileSyncService* service,
               l10n_util::GetStringUTF16(IDS_SYNC_PASSWORD_SYNC_ATTENTION));
         }
         return SYNC_PROMO;
-      } else {
-        // First machine.  Don't show promotion, just show everything
-        // normal.
-        if (status_label)
-          status_label->assign(GetSyncedStateStatusLabel(service));
-        return SYNCED;
       }
     }
+
+    // There is no error. Display "Last synced..." message.
+    if (status_label)
+      status_label->assign(GetSyncedStateStatusLabel(service));
     return SYNCED;
   } else {
     // Either show auth error information with a link to re-login, auth in prog,
