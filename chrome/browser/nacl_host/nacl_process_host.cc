@@ -12,6 +12,7 @@
 
 #include "base/command_line.h"
 #include "base/path_service.h"
+#include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/windows_version.h"
 #include "chrome/common/chrome_paths.h"
@@ -206,6 +207,17 @@ base::TerminationStatus NaClProcessHost::GetChildTerminationStatus(
 }
 
 void NaClProcessHost::OnChildDied() {
+  int exit_code;
+  GetChildTerminationStatus(&exit_code);
+  std::string message =
+    base::StringPrintf("NaCl process exited with status %i (0x%x)",
+                       exit_code, exit_code);
+  if (exit_code == 0) {
+    LOG(INFO) << message;
+  } else {
+    LOG(ERROR) << message;
+  }
+
 #if defined(OS_WIN)
   NaClBrokerService::GetInstance()->OnLoaderDied();
 #endif
