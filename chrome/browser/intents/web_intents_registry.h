@@ -8,6 +8,7 @@
 
 #include "base/hash_tables.h"
 #include "base/memory/ref_counted.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "webkit/glue/web_intent_service_data.h"
@@ -21,6 +22,8 @@ class WebIntentsRegistry
   // Unique identifier for intent queries.
   typedef int QueryID;
 
+  typedef std::vector<WebIntentServiceData> IntentList;
+
   // An interface the WebIntentsRegistry uses to notify its clients when
   // it has finished loading intents data from the web database.
   class Consumer {
@@ -28,14 +31,15 @@ class WebIntentsRegistry
     // Notifies the observer that the intents request has been completed.
     virtual void OnIntentsQueryDone(
         QueryID query_id,
-        const std::vector<WebIntentServiceData>& intents) = 0;
+        const IntentList& intents) = 0;
 
    protected:
     virtual ~Consumer() {}
   };
 
   // Initializes, binds to a valid WebDataService.
-  void Initialize(scoped_refptr<WebDataService> wds);
+  void Initialize(scoped_refptr<WebDataService> wds,
+                  ExtensionServiceInterface* extension_service);
 
   // Registers a web intent provider.
   virtual void RegisterIntentProvider(const WebIntentServiceData& intent);
@@ -79,6 +83,13 @@ class WebIntentsRegistry
 
   // Local reference to Web Data Service.
   scoped_refptr<WebDataService> wds_;
+
+  // Local reference to the ExtensionService.
+  // Shutdown/cleanup is handled by ProfileImpl. We are  guaranteed that any
+  // ProfileKeyedService will be shut down before data on ProfileImpl is
+  // destroyed (i.e. |extension_service_|), so |extension_service_| is valid
+  // for the lifetime of the WebIntentsRegistry object.
+  ExtensionServiceInterface* extension_service_;
 
   DISALLOW_COPY_AND_ASSIGN(WebIntentsRegistry);
 };

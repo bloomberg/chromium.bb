@@ -79,9 +79,7 @@ void WebIntentsSettingsHandler::EnsureWebIntentsModelCreated() {
   if (intents_tree_model_.get()) return;
 
   Profile* profile = Profile::FromWebUI(web_ui_);
-  web_data_service_ = profile->GetWebDataService(Profile::EXPLICIT_ACCESS);
   web_intents_registry_ = WebIntentsRegistryFactory::GetForProfile(profile);
-  web_intents_registry_->Initialize(web_data_service_.get());
   intents_tree_model_.reset(new WebIntentsModel(web_intents_registry_));
   intents_tree_model_->AddWebIntentsTreeObserver(this);
 }

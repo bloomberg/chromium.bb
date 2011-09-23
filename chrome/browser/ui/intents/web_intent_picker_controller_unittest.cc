@@ -131,7 +131,8 @@ class WebIntentPickerControllerTest : public TabContentsWrapperTestHarness {
     favicon_service_ = profile()->GetFaviconService(Profile::EXPLICIT_ACCESS);
     WebIntentsRegistry *registry =
         WebIntentsRegistryFactory::GetForProfile(profile());
-    registry->Initialize(web_data_service_);
+    // TODO(groby): We should not require a call to Initialize() here.
+    registry->Initialize(web_data_service_, NULL);
 
     picker_factory_ = new WebIntentPickerFactoryMock();
     controller_.reset(new TestWebIntentPickerController(contents_wrapper(),

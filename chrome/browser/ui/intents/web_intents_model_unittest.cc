@@ -26,7 +26,7 @@ class WebIntentsModelTest : public testing::Test {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     wds_->Init(temp_dir_.path());
 
-    registry_.Initialize(wds_);
+    registry_.Initialize(wds_, NULL);
   }
 
   virtual void TearDown() {

@@ -11,7 +11,6 @@
 #include "chrome/browser/ui/intents/web_intents_model.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
 
-class WebDataService;
 class WebIntentsRegistry;
 
 // Manage setting up the backing data for the web intents options page.
@@ -63,7 +62,6 @@ class WebIntentsSettingsHandler : public OptionsPageUIHandler,
   // update the WebUI.
   void SendChildren(WebIntentsTreeNode* parent);
 
-  scoped_refptr<WebDataService> web_data_service_;
   WebIntentsRegistry* web_intents_registry_;  // Weak pointer.
 
   // Backing data model for the intents list.

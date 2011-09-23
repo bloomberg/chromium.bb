@@ -17,6 +17,7 @@ WebIntentsRegistryFactory::WebIntentsRegistryFactory()
     : ProfileKeyedServiceFactory(ProfileDependencyManager::GetInstance()) {
   // TODO(erg): For Shutdown() order, we need to:
   //     DependsOn(WebDataServiceFactory::GetInstance());
+  //     DependsOn(ExtensionServiceFactory::GetInstance());
 }
 
 WebIntentsRegistryFactory::~WebIntentsRegistryFactory() {
@@ -30,7 +31,8 @@ WebIntentsRegistryFactory* WebIntentsRegistryFactory::GetInstance() {
 ProfileKeyedService* WebIntentsRegistryFactory::BuildServiceInstanceFor(
     Profile* profile) const {
   WebIntentsRegistry* registry = new WebIntentsRegistry;
-  registry->Initialize(profile->GetWebDataService(Profile::EXPLICIT_ACCESS));
+  registry->Initialize(profile->GetWebDataService(Profile::EXPLICIT_ACCESS),
+                       profile->GetExtensionService());
   return registry;
 }
 

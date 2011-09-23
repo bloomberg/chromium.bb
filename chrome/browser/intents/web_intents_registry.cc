@@ -13,8 +13,12 @@ struct WebIntentsRegistry::IntentsQuery {
   // Underlying data query.
   WebDataService::Handle pending_query_;
 
-  // the consumer for this particular query.
+  // The consumer for this particular query.
   Consumer* consumer_;
+
+  // The particular action to filter for while searching through extensions.
+  // If |action_| is empty, return all extension-provided intents.
+  string16 action_;
 
   // TODO(groby): Additional filter data will go here - filtering is handled
   // per query.
@@ -30,8 +34,11 @@ WebIntentsRegistry::~WebIntentsRegistry() {
   }
 }
 
-void WebIntentsRegistry::Initialize(scoped_refptr<WebDataService> wds) {
+void WebIntentsRegistry::Initialize(
+    scoped_refptr<WebDataService> wds,
+    ExtensionServiceInterface* extension_service) {
   wds_ = wds;
+  extension_service_ = extension_service;
 }
 
 void WebIntentsRegistry::OnWebDataServiceRequestDone(
@@ -48,10 +55,26 @@ void WebIntentsRegistry::OnWebDataServiceRequestDone(
   queries_.erase(it);
 
   // TODO(groby): Filtering goes here.
-  std::vector<WebIntentServiceData> intents = static_cast<
-      const WDResult<std::vector<WebIntentServiceData> >*>(result)->GetValue();
+  IntentList matching_intents = static_cast<
+      const WDResult<IntentList>*>(result)->GetValue();
 
-  query->consumer_->OnIntentsQueryDone(query->query_id_, intents);
+  // Loop over all intents in all extensions, collect ones matching the query.
+  if (extension_service_) {
+    const ExtensionList* extensions = extension_service_->extensions();
+    if (extensions) {
+      for (ExtensionList::const_iterator i(extensions->begin());
+           i != extensions->end(); ++i) {
+        const IntentList& intents((*i)->intents());
+        for (IntentList::const_iterator j(intents.begin());
+             j != intents.end(); ++j) {
+          if (query->action_.empty() || query->action_ == j->action)
+            matching_intents.push_back(*j);
+        }
+      }
+    }
+  }
+
+  query->consumer_->OnIntentsQueryDone(query->query_id_, matching_intents);
   delete query;
 }
 
@@ -64,6 +87,7 @@ WebIntentsRegistry::QueryID WebIntentsRegistry::GetIntentProviders(
   IntentsQuery* query = new IntentsQuery;
   query->query_id_ = next_query_id_++;
   query->consumer_ = consumer;
+  query->action_ = action;
   query->pending_query_ = wds_->GetWebIntents(action, this);
   queries_[query->pending_query_] = query;
 
