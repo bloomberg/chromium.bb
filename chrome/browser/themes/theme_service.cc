@@ -385,23 +385,19 @@ std::string ThemeService::AlignmentToString(int alignment) {
 
 // static
 int ThemeService::StringToAlignment(const std::string& alignment) {
-  std::vector<std::wstring> split;
-  base::SplitStringAlongWhitespace(UTF8ToWide(alignment), &split);
+  std::vector<std::string> split;
+  base::SplitStringAlongWhitespace(alignment, &split);
 
   int alignment_mask = 0;
-  for (std::vector<std::wstring>::iterator alignments(split.begin());
-       alignments != split.end(); ++alignments) {
-    std::string comp = WideToUTF8(*alignments);
-    const char* component = comp.c_str();
-
-    if (base::strcasecmp(component, kAlignmentTop) == 0)
+  for (std::vector<std::string>::iterator component(split.begin());
+       component != split.end(); ++component) {
+    if (LowerCaseEqualsASCII(*component, kAlignmentTop))
       alignment_mask |= ThemeService::ALIGN_TOP;
-    else if (base::strcasecmp(component, kAlignmentBottom) == 0)
+    else if (LowerCaseEqualsASCII(*component, kAlignmentBottom))
       alignment_mask |= ThemeService::ALIGN_BOTTOM;
-
-    if (base::strcasecmp(component, kAlignmentLeft) == 0)
+    else if (LowerCaseEqualsASCII(*component, kAlignmentLeft))
       alignment_mask |= ThemeService::ALIGN_LEFT;
-    else if (base::strcasecmp(component, kAlignmentRight) == 0)
+    else if (LowerCaseEqualsASCII(*component, kAlignmentRight))
       alignment_mask |= ThemeService::ALIGN_RIGHT;
   }
   return alignment_mask;
