@@ -1,0 +1,35 @@
+# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# This is a custom control file for the browser tests used specifically to
+# help debug tests.
+# Arguments added with this control file,
+# (passed through run_remote_tests.sh via the --args '' option)
+# skip_deps      - Specify this argument so autotest does 'NOT' re-copy the
+#                  chrome test dependencies. This can be a several hundred
+#                  megabyte copy operation.
+#
+# gtest_filter=  - Specify this option to run only the tests specified by the
+#                  test filter.
+#
+# gdbserver       - Specify this option to run the tests under gdbserver. The
+#                   gdb server will be run on port 1234.
+
+AUTHOR = "Chrome OS Team"
+NAME = "desktopui_BrowserTest"
+PURPOSE = "Verify basic browsing capability of Chrome."
+CRITERIA = """
+This test will fail if any of the commands chrome executes returns an error.
+"""
+TIME = "LONG"
+TEST_CATEGORY = "Functional"
+TEST_CLASS = "desktopui"
+TEST_TYPE = "client"
+
+DOC = """
+This is a wrapper test for Chrome browser_test.
+"""
+
+job.run_test('desktopui_BrowserTest', arguments=args)
+
