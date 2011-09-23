@@ -216,7 +216,7 @@ fi
 # Current milestones in each repo
 readonly UPSTREAM_REV=${UPSTREAM_REV:-643c7c8da16e}
 
-readonly NEWLIB_REV=57d709868c78
+readonly NEWLIB_REV=c6358617f3fd
 readonly BINUTILS_REV=2f1d9c8ef12d
 readonly COMPILER_RT_REV=1a3a6ffb31ea
 readonly GOOGLE_PERFTOOLS_REV=ad820959663d
@@ -2083,11 +2083,12 @@ llvm-sb-make() {
   fi
 
   local use_tcmalloc=0
-  if ${LIBMODE_NEWLIB} && ! ${SB_JIT}; then
-    # only use tcmalloc with newlib (glibc malloc should be pretty good)
-    # (also, SB_JIT implies building with glibc, but for now it uses nacl-gcc)
-    use_tcmalloc=1
-  fi
+  # TODO(dschuff): Decide whether we should switch back to tcmalloc
+  #if ${LIBMODE_NEWLIB} && ! ${SB_JIT}; then
+  #  # only use tcmalloc with newlib (glibc malloc should be pretty good)
+  #  # (also, SB_JIT implies building with glibc, but for now it uses nacl-gcc)
+  #  use_tcmalloc=1
+  #fi
 
   RunWithLog ${LLVM_SB_LOG_PREFIX}.make \
       env -i PATH="/usr/bin:/bin" \
@@ -2497,9 +2498,10 @@ install-translators() {
     exit -1
   fi
 
-  if ${LIBMODE_NEWLIB}; then
-      google-perftools
-  fi
+  # TODO(dschuff): Decide whether we should switch back to tcmalloc
+  #if ${LIBMODE_NEWLIB}; then
+  #    google-perftools
+  #fi
   local srpc_kind=$1
   check-sb-mode ${srpc_kind}
 
