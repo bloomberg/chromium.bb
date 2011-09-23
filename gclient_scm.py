@@ -779,6 +779,12 @@ class SVNWrapper(SCMWrapper):
           ('Can\'t update/checkout %s if an unversioned directory is present. '
            'Delete the directory and try again.') % self.checkout_path)
 
+    if 'URL' not in from_info:
+      raise gclient_utils.Error(
+          ('gclient is confused. Couldn\'t get the url for %s.\n'
+           'Try using @unmanaged.\n%s') % (
+            self.checkout_path, from_info))
+
     # Look for locked directories.
     dir_info = scm.SVN.CaptureStatus(os.path.join(self.checkout_path, '.'))
     if any(d[0][2] == 'L' for d in dir_info):
