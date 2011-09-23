@@ -133,16 +133,14 @@ void NetworkChangeNotifierChromeos::UpdateNetworkState(
     chromeos::NetworkLibrary* lib) {
   const chromeos::Network* network = lib->active_network();
 
-#if !defined(NDEBUG)
   if (network) {
-    DVLOG(1) << "UpdateNetworkState: type = "
-             << network->type()
-             << ", dev = "
-             << network->device_path()
-             << ", state_ = "
-             << network->state();
+    VLOG(2) << "UpdateNetworkState: type = "
+            << network->type()
+            << ", dev = "
+            << network->device_path()
+            << ", state_ = "
+            << network->state();
   }
-#endif
 
   // Check if active network was added, removed or changed.
   if ((!network && has_active_network_) ||
@@ -175,24 +173,17 @@ void NetworkChangeNotifierChromeos::UpdateNetworkState(
 
 void NetworkChangeNotifierChromeos::UpdateConnectivityState(
       const chromeos::Network* network) {
-  // We only care about if there is an active network right now, not what
-  // happened to the last one that we were listening before.
-//  chromeos::NetworkLibrary* lib =
-//      chromeos::CrosLibrary::Get()->GetNetworkLibrary();
-//  const chromeos::Network* network = lib->active_network();
-
-#if !defined(NDEBUG)
   if (network) {
-    DVLOG(1) << "UpdateConnectivityState: nt = "
-             << network->type()
-             << ", dev = "
-             << network->device_path()
-             << ", ns = "
-             << network->state()
-             << ", cs_ = "
-             << connection_state_;
+    VLOG(2) << "UpdateConnectivityState: nt = "
+            << network->type()
+            << ", dev = "
+            << network->device_path()
+            << ", ns = "
+            << network->state()
+            << ", cs_ = "
+            << connection_state_;
   }
-#endif
+
   // We don't care about all transitions of ConnectionState.  OnlineStateChange
   // notification should trigger if
   //   a) we were online and went offline
@@ -205,29 +196,29 @@ void NetworkChangeNotifierChromeos::UpdateConnectivityState(
   bool was_online = (connection_state_ == chromeos::STATE_ONLINE);
   bool is_portal = (new_connection_state == chromeos::STATE_PORTAL);
   bool was_portal = (connection_state_ == chromeos::STATE_PORTAL);
-  DVLOG(1) << "UpdateConnectivityState: n_cs = "
-           << new_connection_state
-           << ", is_online = "
-           << is_online
-           << ", was_online = "
-           << was_online
-           << ", is_portal = "
-           << is_portal
-           << ", was_portal = "
-           << was_portal;
+  VLOG(2) << "UpdateConnectivityState: n_cs = "
+          << new_connection_state
+          << ", is_online = "
+          << is_online
+          << ", was_online = "
+          << was_online
+          << ", is_portal = "
+          << is_portal
+          << ", was_portal = "
+          << was_portal;
   connection_state_ = new_connection_state;
   if (is_online != was_online || is_portal != was_portal) {
     ReportOnlineStateChange(IsOnline(connection_state_));
   }
-  DVLOG(1) << "UpdateConnectivityState: new_cs = "
-           << new_connection_state
-           << ", end_cs_ = "
-           << connection_state_;
+  VLOG(2) << "UpdateConnectivityState: new_cs = "
+          << new_connection_state
+          << ", end_cs_ = "
+          << connection_state_;
 }
 
 void NetworkChangeNotifierChromeos::ReportOnlineStateChange(bool is_online) {
-    DVLOG(1) << "ReportOnlineStateChange: "
-             << (is_online ? "online" : "offline");
+  VLOG(2) << "ReportOnlineStateChange: "
+          << (is_online ? "online" : "offline");
   if (online_notification_task_) {
     DVLOG(1) << "ReportOnlineStateChange: "
              << "has pending task";
