@@ -745,7 +745,8 @@ void WebPluginImpl::URLRedirectResponse(bool allow, int resource_id) {
           clients_[i].loader->setDefersLoading(false);
         } else {
           clients_[i].loader->cancel();
-          clients_[i].client->DidFail();
+          if (clients_[i].client)
+            clients_[i].client->DidFail();
         }
       }
       break;
