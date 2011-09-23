@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_SYNC_API_SYNC_ERROR_H_
 #pragma once
 
+#include <iosfwd>
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
@@ -53,6 +54,8 @@ class SyncError {
   const std::string& message() const;
   syncable::ModelType type() const;
 
+  std::string ToString() const;
+
  private:
   // Print error information to log.
   void PrintLogError() const;
@@ -75,5 +78,8 @@ class SyncError {
   std::string message_;
   syncable::ModelType type_;
 };
+
+// gmock printer helper.
+void PrintTo(const SyncError& sync_error, std::ostream* os);
 
 #endif  // CHROME_BROWSER_SYNC_API_SYNC_ERROR_H_

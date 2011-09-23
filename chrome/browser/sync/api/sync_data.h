@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_SYNC_API_SYNC_DATA_H_
 #pragma once
 
+#include <iosfwd>
 #include <string>
 #include <vector>
 
@@ -75,6 +76,8 @@ class SyncData {
   // Whether this sync data is for local data or data coming from the syncer.
   bool IsLocal() const;
 
+  std::string ToString() const;
+
   // TODO(zea): Query methods for other sync properties: parent, successor, etc.
 
  private:
@@ -110,5 +113,8 @@ class SyncData {
   // The actual shared sync entity being held.
   ImmutableSyncEntity immutable_entity_;
 };
+
+// gmock printer helper.
+void PrintTo(const SyncData& sync_data, std::ostream* os);
 
 #endif  // CHROME_BROWSER_SYNC_API_SYNC_DATA_H_

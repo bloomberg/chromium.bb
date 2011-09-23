@@ -4,8 +4,11 @@
 
 #include "chrome/browser/sync/api/sync_error.h"
 
+#include <ostream>
+
 #include "base/location.h"
 #include "base/logging.h"
+#include "chrome/browser/sync/syncable/model_type.h"
 
 SyncError::SyncError() {
   Clear();
@@ -83,10 +86,23 @@ syncable::ModelType SyncError::type() const {
   return type_;
 }
 
+std::string SyncError::ToString() const {
+  if (IsSet()) {
+    return "{ location: " + location_->ToString() + ", type: " +
+        syncable::ModelTypeToString(type()) + ", message: " + message() + "}";
+  }
+
+  return "<Unset SyncError>";
+}
+
 void SyncError::PrintLogError() const {
   LAZY_STREAM(logging::LogMessage(location_->file_name(),
                                   location_->line_number(),
                                   logging::LOG_ERROR).stream(),
               LOG_IS_ON(ERROR))
       << syncable::ModelTypeToString(type_) << " Sync Error: " << message_;
+}
+
+void PrintTo(const SyncError& sync_error, std::ostream* os) {
+  *os << sync_error.ToString();
 }

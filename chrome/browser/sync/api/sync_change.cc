@@ -4,6 +4,8 @@
 
 #include "chrome/browser/sync/api/sync_change.h"
 
+#include <ostream>
+
 SyncChange::SyncChange() : change_type_(ACTION_INVALID) {
 }
 
@@ -58,4 +60,13 @@ std::string SyncChange::ChangeTypeToString(SyncChangeType change_type) {
       NOTREACHED();
   }
   return std::string();
+}
+
+std::string SyncChange::ToString() const {
+  return "{ changeType: " + ChangeTypeToString(change_type_) +
+      ", syncData: " + sync_data_.ToString() + "}";
+}
+
+void PrintTo(const SyncChange& sync_change, std::ostream* os) {
+  *os << sync_change.ToString();
 }

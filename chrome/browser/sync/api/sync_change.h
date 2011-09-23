@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_SYNC_API_SYNC_CHANGE_H_
 #pragma once
 
+#include <iosfwd>
 #include <string>
 #include <vector>
 
@@ -48,6 +49,10 @@ class SyncChange {
   // Returns a string representation of |change_type|.
   static std::string ChangeTypeToString(SyncChangeType change_type);
 
+  // Returns a string representation of the entire object. Used for gmock
+  // printing method, PrintTo.
+  std::string ToString() const;
+
  private:
   SyncChangeType change_type_;
 
@@ -55,5 +60,8 @@ class SyncChange {
   // SyncChanges are copied, they copy references to this data.
   SyncData sync_data_;
 };
+
+// gmock printer helper.
+void PrintTo(const SyncChange& sync_change, std::ostream* os);
 
 #endif  // CHROME_BROWSER_SYNC_API_SYNC_CHANGE_H_

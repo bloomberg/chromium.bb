@@ -4,8 +4,16 @@
 
 #include "chrome/browser/sync/api/sync_data.h"
 
+#include <ostream>
+
+#include "base/json/json_writer.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/string_number_conversions.h"
+#include "base/values.h"
 #include "chrome/browser/sync/internal_api/base_node.h"
+#include "chrome/browser/sync/protocol/proto_value_conversions.h"
 #include "chrome/browser/sync/protocol/sync.pb.h"
+#include "chrome/browser/sync/syncable/model_type.h"
 
 void SyncData::ImmutableSyncEntityTraits::InitializeWrapper(
     Wrapper* wrapper) {
@@ -101,4 +109,28 @@ int64 SyncData::GetRemoteId() const {
 
 bool SyncData::IsLocal() const {
   return id_ == sync_api::kInvalidId;
+}
+
+std::string SyncData::ToString() const {
+  if (!IsValid())
+    return "<Invalid SyncData>";
+
+  std::string type = syncable::ModelTypeToString(GetDataType());
+  std::string specifics;
+  scoped_ptr<DictionaryValue> value(
+      browser_sync::EntitySpecificsToValue(GetSpecifics()));
+  base::JSONWriter::Write(value.get(), true, &specifics);
+
+  if (IsLocal()) {
+    return "{ isLocal: true, type: " + type + ", tag: " + GetTag() +
+        ", title: " + GetTitle() + ", specifics: " + specifics + "}";
+  }
+
+  std::string id = base::Int64ToString(GetRemoteId());
+  return "{ isLocal: false, type: " + type + ", specifics: " + specifics +
+      ", id: " + id + "}";
+}
+
+void PrintTo(const SyncData& sync_data, std::ostream* os) {
+  *os << sync_data.ToString();
 }
