@@ -1261,6 +1261,15 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
     self.type = spec['type']
     self.toolset = spec['toolset']
 
+    if self.type == 'settings':
+      # TODO: 'settings' is not actually part of gyp; it was
+      # accidentally introduced somehow into just the Linux build files.
+      # Remove this (or make it an error) once all the users are fixed.
+      print ("WARNING: %s uses invalid type 'settings'.  " % self.target +
+             "Please fix the source gyp file to use type 'none'.")
+      print "See http://code.google.com/p/chromium/issues/detail?id=96629 ."
+      self.type = 'none'
+
     # Bundles are directories with a certain subdirectory structure, instead of
     # just a single file. Bundle rules do not produce a binary but also package
     # resources into that directory.
@@ -1846,9 +1855,6 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
     """
     assert not self.is_mac_bundle
 
-    if self.type == 'settings':
-      return ''  # Doesn't have any output.
-
     path = os.path.join('$(obj).' + self.toolset, self.path)
     if self.type == 'executable' or self._InstallImmediately():
       path = '$(builddir)'
@@ -1918,7 +1924,7 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
                          multiple_output_trick = False)
 
     has_target_postbuilds = False
-    if self.type not in ('settings', 'none'):
+    if self.type != 'none':
       for configname in sorted(configs.keys()):
         config = configs[configname]
         if self.flavor == 'mac':
@@ -2062,9 +2068,6 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
       # Write a stamp line.
       self.WriteDoCmd([self.output_binary], deps, 'touch', part_of_all,
                       postbuilds=postbuilds)
-    elif self.type == 'settings':
-      # Only used for passing flags around.
-      pass
     else:
       print "WARNING: no output for", self.type, target
 
