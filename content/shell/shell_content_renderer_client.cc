@@ -116,4 +116,8 @@ bool ShellContentRendererClient::HandleSetCookieRequest(
   return false;
 }
 
+bool ShellContentRendererClient::IsProtocolSupportedForMedia(const GURL& url) {
+  return false;
+}
+
 }  // namespace content

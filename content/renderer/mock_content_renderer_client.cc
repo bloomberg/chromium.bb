@@ -116,4 +116,9 @@ bool MockContentRendererClient::HandleSetCookieRequest(
     const std::string& value) {
   return false;
 }
+
+bool MockContentRendererClient::IsProtocolSupportedForMedia(const GURL& url) {
+  return false;
+}
+
 }  // namespace content

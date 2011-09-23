@@ -126,6 +126,10 @@ class ContentRendererClient {
                                       const GURL& url,
                                       const GURL& first_party_for_cookies,
                                       const std::string& value) = 0;
+
+  // True if the protocol implemented to serve |url| supports features required
+  // by the media engine.
+  virtual bool IsProtocolSupportedForMedia(const GURL& url) = 0;
 };
 
 }  // namespace content

@@ -23,6 +23,7 @@
 #include "content/common/socket_stream_dispatcher.h"
 #include "content/common/url_constants.h"
 #include "content/common/view_messages.h"
+#include "content/renderer/content_renderer_client.h"
 #include "content/renderer/render_thread.h"
 #include "googleurl/src/url_util.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"
@@ -203,11 +204,11 @@ bool IsProtocolSupportedForMedia(const GURL& url) {
   if (url.SchemeIsFile() || url.SchemeIs(chrome::kHttpScheme) ||
       url.SchemeIs(chrome::kHttpsScheme) ||
       url.SchemeIs(chrome::kDataScheme) ||
-      url.SchemeIs(chrome::kExtensionScheme) ||
       url.SchemeIs(chrome::kFileSystemScheme) ||
       url.SchemeIs(chrome::kBlobScheme))
     return true;
-  return false;
+  return
+      content::GetContentClient()->renderer()->IsProtocolSupportedForMedia(url);
 }
 
 // static factory function
