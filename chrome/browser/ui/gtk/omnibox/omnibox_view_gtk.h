@@ -437,15 +437,15 @@ class OmniboxViewGtk : public OmniboxView,
   gulong mark_set_handler_id_;
   gulong mark_set_handler_id2_;
 
-#if defined(OS_CHROMEOS)
-  // The following variables are used to implement select-all-on-mouse-up, which
-  // is disabled in the standard Linux build due to poor interaction with the
-  // PRIMARY X selection.
-
   // Is the first mouse button currently down?  When selection marks get moved,
   // we use this to determine if the user was highlighting text with the mouse
   // -- if so, we avoid selecting all the text on mouse-up.
   bool button_1_pressed_;
+
+#if defined(OS_CHROMEOS)
+  // The following variables are used to implement select-all-on-mouse-up, which
+  // is disabled in the standard Linux build due to poor interaction with the
+  // PRIMARY X selection.
 
   // Did the user change the selected text in the middle of the current click?
   // If so, we don't select all of the text when the button is released -- we

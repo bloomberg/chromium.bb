@@ -180,8 +180,8 @@ OmniboxViewGtk::OmniboxViewGtk(
       popup_window_mode_(popup_window_mode),
       security_level_(ToolbarModel::NONE),
       mark_set_handler_id_(0),
-#if defined(OS_CHROMEOS)
       button_1_pressed_(false),
+#if defined(OS_CHROMEOS)
       text_selected_during_click_(false),
       text_view_focused_before_button_press_(false),
 #endif
@@ -1250,11 +1250,11 @@ gboolean OmniboxViewGtk::HandleViewButtonPress(GtkWidget* sender,
   DCHECK(text_view_);
 
   if (event->button == 1) {
+    button_1_pressed_ = true;
 #if defined(OS_CHROMEOS)
     // When the first button is pressed, track some stuff that will help us
     // determine whether we should select all of the text when the button is
     // released.
-    button_1_pressed_ = true;
     text_view_focused_before_button_press_ = gtk_widget_has_focus(text_view_);
     text_selected_during_click_ = false;
 #endif
@@ -1276,11 +1276,10 @@ gboolean OmniboxViewGtk::HandleViewButtonRelease(GtkWidget* sender,
   if (event->button != 1)
     return FALSE;
 
-  DCHECK(text_view_);
-
-#if defined(OS_CHROMEOS)
+  bool button_1_was_pressed = button_1_pressed_;
   button_1_pressed_ = false;
-#endif
+
+  DCHECK(text_view_);
 
   // Call the GtkTextView default handler, ignoring the fact that it will
   // likely have told us to stop propagating.  We want to handle selection.
@@ -1303,8 +1302,11 @@ gboolean OmniboxViewGtk::HandleViewButtonRelease(GtkWidget* sender,
   }
 #endif
 
-  // Inform |model_| about possible text selection change.
-  OnAfterPossibleChange();
+  // Inform |model_| about possible text selection change. We may get a button
+  // release with no press (e.g. if the user clicks in the omnibox to dismiss a
+  // bubble).
+  if (button_1_was_pressed)
+    OnAfterPossibleChange();
 
   return TRUE;  // Don't continue, we called the default handler already.
 }
