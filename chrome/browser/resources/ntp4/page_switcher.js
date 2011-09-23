@@ -48,6 +48,7 @@ cr.define('ntp4', function() {
     },
 
     shouldAcceptDrag: function(e) {
+      // We allow all drags to trigger the page switching effect.
       return true;
     },
 
@@ -63,7 +64,8 @@ cr.define('ntp4', function() {
     doDragOver: function(e) {
       e.preventDefault();
       var targetPage = ntp4.getCardSlider().currentCardValue;
-      targetPage.setDropEffect(e.dataTransfer);
+      if (targetPage.shouldAcceptDrag(e))
+        targetPage.setDropEffect(e.dataTransfer);
     },
 
     doDrop: function(e) {
@@ -76,7 +78,7 @@ cr.define('ntp4', function() {
 
       var sourcePage = tile.tilePage;
       var targetPage = ntp4.getCardSlider().currentCardValue;
-      if (targetPage == sourcePage)
+      if (targetPage == sourcePage || !targetPage.shouldAcceptDrag(e))
         return;
 
       targetPage.appendDraggingTile();
