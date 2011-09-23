@@ -9,13 +9,11 @@ namespace printing {
 PrintedPage::PrintedPage(int page_number,
                          Metafile* metafile,
                          const gfx::Size& page_size,
-                         const gfx::Rect& page_content_rect,
-                         bool has_visible_overlays)
+                         const gfx::Rect& page_content_rect)
     : page_number_(page_number),
       metafile_(metafile),
       page_size_(page_size),
-      page_content_rect_(page_content_rect),
-      has_visible_overlays_(has_visible_overlays) {
+      page_content_rect_(page_content_rect) {
 }
 
 PrintedPage::~PrintedPage() {

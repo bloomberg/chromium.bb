@@ -67,16 +67,14 @@ void PrintedDocument::SetPage(int page_number,
                               Metafile* metafile,
                               double shrink,
                               const gfx::Size& paper_size,
-                              const gfx::Rect& page_rect,
-                              bool has_visible_overlays) {
+                              const gfx::Rect& page_rect) {
   // Notice the page_number + 1, the reason is that this is the value that will
   // be shown. Users dislike 0-based counting.
   scoped_refptr<PrintedPage> page(
       new PrintedPage(page_number + 1,
                       metafile,
                       paper_size,
-                      page_rect,
-                      has_visible_overlays));
+                      page_rect));
   {
     base::AutoLock lock(lock_);
     mutable_.pages_[page_number] = page;

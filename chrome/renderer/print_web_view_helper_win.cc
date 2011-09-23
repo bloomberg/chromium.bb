@@ -112,7 +112,6 @@ void PrintWebViewHelper::PrintPageInternal(
   page_params.content_area = gfx::Rect(params.params.margin_left,
       params.params.margin_top, params.params.printable_size.width(),
       params.params.printable_size.height());
-  page_params.has_visible_overlays = frame->isPageBoxVisible(page_number);
 
   if (!CopyMetafileDataToSharedMem(metafile.get(),
                                    &(page_params.metafile_data_handle))) {
@@ -148,7 +147,7 @@ bool PrintWebViewHelper::RenderPreviewPage(int page_number) {
   if (draft_metafile.get()) {
     draft_metafile->FinishDocument();
   } else if (print_preview_context_.IsModifiable() &&
-             print_preview_context_.generate_draft_pages()){
+             print_preview_context_.generate_draft_pages()) {
     DCHECK(!draft_metafile.get());
     draft_metafile.reset(
         print_preview_context_.metafile()->GetMetafileForCurrentPage());

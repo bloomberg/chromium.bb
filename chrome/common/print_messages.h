@@ -230,9 +230,6 @@ IPC_STRUCT_BEGIN(PrintHostMsg_DidPrintPage_Params)
 
   // The printable area the page author specified.
   IPC_STRUCT_MEMBER(gfx::Rect, content_area)
-
-  // True if the page has visible overlays.
-  IPC_STRUCT_MEMBER(bool, has_visible_overlays)
 IPC_STRUCT_END()
 
 // Parameters for the IPC message ViewHostMsg_ScriptedPrint

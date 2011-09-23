@@ -47,8 +47,7 @@ class PRINTING_EXPORT PrintedDocument
   // Sets a page's data. 0-based. Takes metafile ownership.
   // Note: locks for a short amount of time.
   void SetPage(int page_number, Metafile* metafile, double shrink,
-               const gfx::Size& paper_size, const gfx::Rect& page_rect,
-               bool has_visible_overlays);
+               const gfx::Size& paper_size, const gfx::Rect& page_rect);
 
   // Retrieves a page. If the page is not available right now, it
   // requests to have this page be rendered and returns false.
