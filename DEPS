@@ -37,7 +37,7 @@ vars = {
   # tools/clang/scripts/update.sh. The script reads this line here.
   # Do NOT CHANGE this if you don't know what you're doing -- see
   # http://code.google.com/p/chromium/wiki/UpdatingClang
-  "clang_revision": "139990",
+  "clang_revision": "140434",
 }
 
 deps = {
