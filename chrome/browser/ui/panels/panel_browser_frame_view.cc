@@ -164,6 +164,9 @@ bool PanelBrowserFrameView::MouseWatcher::IsCursorInViewBounds() const {
 }
 
 #if defined(OS_WIN)
+void PanelBrowserFrameView::MouseWatcher::WillProcessMessage(const MSG& msg) {
+}
+
 void PanelBrowserFrameView::MouseWatcher::DidProcessMessage(const MSG& msg) {
   switch (msg.message) {
     case WM_MOUSEMOVE:
@@ -177,6 +180,9 @@ void PanelBrowserFrameView::MouseWatcher::DidProcessMessage(const MSG& msg) {
   }
 }
 #elif defined(TOOLKIT_USES_GTK)
+void PanelBrowserFrameView::MouseWatcher::WillProcessEvent(GdkEvent* event) {
+}
+
 void PanelBrowserFrameView::MouseWatcher::DidProcessEvent(GdkEvent* event) {
   switch (event->type) {
     case GDK_MOTION_NOTIFY:
@@ -186,6 +192,13 @@ void PanelBrowserFrameView::MouseWatcher::DidProcessEvent(GdkEvent* event) {
     default:
       break;
   }
+}
+#elif defined(USE_AURA)
+EventStatus PanelBrowserFrameView::MouseWatcher::WillProcessXEvent(
+    XEvent* xevent) {
+  // TODO(saintlou): This is dummy code, but a value must be returned.
+  NOTIMPLEMENTED();
+  return EVENT_CONTINUE;
 }
 #endif
 
