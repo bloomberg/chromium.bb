@@ -6,8 +6,3 @@
 // until the changes can be landed upstream.
 
 // PLEASE DO NOT LEAVE ENTRIES IN THIS FILE FOR MORE THAN 24 HRS.
-
-// TODO(mihaip): remove once we roll past r95843
-BUGWK68705 DEBUG : fast/loader/document-destruction-within-unload.html = PASS CRASH
-BUGWK68705 DEBUG : http/tests/security/contentSecurityPolicy/javascript-url-allowed.html = PASS CRASH
-BUGWK68705 DEBUG : http/tests/security/contentSecurityPolicy/javascript-url-blocked.html = PASS CRASH
