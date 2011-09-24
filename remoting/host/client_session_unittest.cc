@@ -122,7 +122,6 @@ TEST_F(ClientSessionTest, InputStubFilter) {
   EXPECT_CALL(input_stub_, InjectKeyEvent(EqualsKeyEvent(2, true)));
   EXPECT_CALL(input_stub_, InjectKeyEvent(EqualsKeyEvent(2, false)));
   EXPECT_CALL(input_stub_, InjectMouseEvent(EqualsMouseEvent(200, 201)));
-  EXPECT_CALL(*connection_.get(), Disconnect());
 
   // These events should not get through to the input stub,
   // because the client isn't authenticated yet.
@@ -133,7 +132,7 @@ TEST_F(ClientSessionTest, InputStubFilter) {
   client_session_->InjectKeyEvent(key_event2_down);
   client_session_->InjectKeyEvent(key_event2_up);
   client_session_->InjectMouseEvent(mouse_event2);
-  client_session_->Disconnect();
+  client_session_->OnDisconnected();
   // These events should not get through to the input stub,
   // because the client has disconnected.
   client_session_->InjectKeyEvent(key_event3);
@@ -162,7 +161,6 @@ TEST_F(ClientSessionTest, LocalInputTest) {
   EXPECT_CALL(session_event_handler_, LocalLoginSucceeded(_));
   EXPECT_CALL(input_stub_, InjectMouseEvent(EqualsMouseEvent(100, 101)));
   EXPECT_CALL(input_stub_, InjectMouseEvent(EqualsMouseEvent(200, 201)));
-  EXPECT_CALL(*connection_.get(), Disconnect());
 
   client_session_->BeginSessionRequest(&credentials, new DummyTask());
   // This event should get through to the input stub.
@@ -177,7 +175,7 @@ TEST_F(ClientSessionTest, LocalInputTest) {
   client_session_->InjectMouseEvent(mouse_event3);
   // TODO(jamiewalch): Verify that remote inputs are re-enabled eventually
   // (via dependency injection, not sleep!)
-  client_session_->Disconnect();
+  client_session_->OnDisconnected();
 }
 
 TEST_F(ClientSessionTest, UnpressKeys) {
