@@ -1623,55 +1623,6 @@
    fun:browser_sync::NonFrontendDataTypeController::StartAssociation
 }
 {
-   bug_tbd_101732_qsr_1
-   Heapcheck:Leak
-   ...
-   fun:std::string::_Rep::_S_create
-   fun:std::string::_Rep::_M_clone
-   fun:std::string::reserve
-   fun:std::string::append
-   fun:FilePath::Append
-   fun:FilePath::AppendASCII
-   fun:history::HistoryTest::SetUp
-}
-{
-   bug_tbd_101732_qsr_2
-   Heapcheck:Leak
-   ...
-   fun:std::string::_Rep::_S_create
-   fun:std::string::_Rep::_M_clone
-   fun:std::string::reserve
-   fun:std::string::append
-   fun:FilePath::Append
-   fun:FilePath::AppendASCII
-   fun:VisitedLinkTest::SetUp
-}
-{
-   bug_tbd_102077_102081 
-   Heapcheck:Leak
-   ...
-   fun:std::string::_Rep::_S_create
-   fun:std::string::_S_construct
-   fun:std::string::_S_construct_aux
-   fun:std::string::_S_construct
-   fun:std::basic_string::basic_string
-   fun:file_util::CreateTemporaryDirInDirImpl
-   fun:file_util::CreateNewTempDirectory
-   fun:ScopedTempDir::CreateUniqueTempDir
-   fun:TestingProfile::TestingProfile
-}
-{
-   bug_tbd_102077_102081_2
-   Heapcheck:Leak
-   fun:std::string::_Rep::_S_create
-   fun:std::string::copy
-   fun:std::basic_string::basic_string
-   fun:file_util::CreateTemporaryDirInDirImpl
-   fun:file_util::CreateNewTempDirectory
-   fun:ScopedTempDir::CreateUniqueTempDir
-   fun:TestingProfile
-}
-{
    bug_96904
    Heapcheck:Leak
    ...
