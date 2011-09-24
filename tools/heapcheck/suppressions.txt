@@ -993,12 +993,6 @@
    fun:GpuProcessHostUIShim::GetForRenderer
 }
 {
-   bug_75224
-   Heapcheck:Leak
-   fun:*AutofillDownloadTestHelper
-   fun:AutofillDownloadTest_*Test_Test::TestBody
-}
-{
    bug_76354
    Heapcheck:Leak
    fun:*ViewHostMsg_ResolveProxy
