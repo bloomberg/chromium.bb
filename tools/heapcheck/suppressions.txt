@@ -1696,3 +1696,11 @@
    fun:ExtensionContentSettingsStore::GetEffectiveContentSetting
    fun:ExtensionContentSettingsStoreTest_*
 }
+{
+   bug_
+   Heapcheck:Leak
+   ...
+   fun:base::ScopedCallbackFactory::NewCallback
+   fun:fileapi::FileSystemPathManagerTest::GetRootPath
+   fun:fileapi::FileSystemPathManagerTest_*
+}
