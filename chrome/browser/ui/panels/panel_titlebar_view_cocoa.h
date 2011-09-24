@@ -35,7 +35,7 @@ enum PanelDragState {
 @interface PanelTitlebarViewCocoa : NSView {
  @private
   IBOutlet PanelWindowControllerCocoa* controller_;
-  IBOutlet NSImageView* icon_;
+  IBOutlet NSView* icon_;
   IBOutlet NSTextField* title_;
   IBOutlet HoverImageButton* settingsButton_;
   NSButton* closeButton_;  // Created explicitly, not from NIB. Weak, destroyed
@@ -54,7 +54,9 @@ enum PanelDragState {
 - (void)attach;
 
 - (void)setTitle:(NSString*)newTitle;
-- (void)setIcon:(NSImage*)newIcon;
+- (void)setIcon:(NSView*)newIcon;
+
+- (NSView*)icon;
 
   // Should be called when size of the titlebar changes.
 - (void)updateCloseButtonLayout;

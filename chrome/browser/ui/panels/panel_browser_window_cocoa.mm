@@ -187,7 +187,7 @@ void PanelBrowserWindowCocoa::UpdatePanelTitleBar() {
 
 void PanelBrowserWindowCocoa::UpdatePanelLoadingAnimations(
     bool should_animate) {
-  // TODO(jianli): to be implemented.
+  [controller_ updateThrobber:should_animate];
 }
 
 void PanelBrowserWindowCocoa::ShowTaskManagerForPanel() {

@@ -46,6 +46,7 @@ class PanelBrowserWindowCocoa;
                                       // more then just |release| to terminate.
   BOOL animateOnBoundsChange_;
   ScopedCrTrackingArea windowTrackingArea_;
+  BOOL throbberShouldSpin_;
 }
 
 // Load the browser window nib and do any Cocoa-specific initialization.
@@ -69,6 +70,8 @@ class PanelBrowserWindowCocoa;
 - (void)revealAnimatedWithFrame:(const NSRect&)frame;
 
 - (void)updateTitleBar;
+- (void)updateIcon;
+- (void)updateThrobber:(BOOL)shouldSpin;
 
 // Adds the FindBar controller's view to this Panel. Must only be
 // called once per PanelWindowControllerCocoa.

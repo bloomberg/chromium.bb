@@ -21,6 +21,7 @@
 #import "chrome/browser/ui/cocoa/find_bar/find_bar_cocoa_controller.h"
 #import "chrome/browser/ui/cocoa/menu_controller.h"
 #import "chrome/browser/ui/cocoa/tab_contents/favicon_util.h"
+#import "chrome/browser/ui/cocoa/tabs/throbber_view.h"
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_browser_window_cocoa.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
@@ -31,6 +32,10 @@
 #include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_service.h"
+#include "grit/ui_resources.h"
+#include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/image/image.h"
+#include "ui/gfx/mac/nsimage_cache.h"
 
 const int kMinimumWindowSize = 1;
 const double kBoundsChangeAnimationDuration = 0.25;
@@ -112,6 +117,9 @@ static BOOL g_reportAnimationStatus = NO;
 
   [titlebar_view_ attach];
 
+  throbberShouldSpin_ =
+      windowShim_->browser()->GetSelectedTabContents()->IsLoading();
+
   // Set initial size of the window to match the size of the panel to give
   // the renderer the proper size to work with earlier, avoiding a resize
   // after the window is revealed.
@@ -180,12 +188,45 @@ static BOOL g_reportAnimationStatus = NO;
                                      withNewTitle:newTitle
                                         forWindow:[self window]]);
   [titlebar_view_ setTitle:newTitle];
+  [self updateIcon];
+}
 
-  NSImage* newIcon = mac::FaviconForTabContents(
-      windowShim_->browser()->GetSelectedTabContentsWrapper());
-  [titlebar_view_ setIcon:newIcon];
+- (void)updateIcon {
+  NSView* icon = nil;
+  NSRect iconFrame = [[titlebar_view_ icon] frame];
+  if (throbberShouldSpin_) {
+    // If the throbber is spinning now, no need to replace it.
+    if ([[titlebar_view_ icon] isKindOfClass:[ThrobberView class]])
+      return;
 
-  [titlebar_view_ updateIconAndTitleLayout];
+    NSImage* iconImage =
+        ResourceBundle::GetSharedInstance().GetNativeImageNamed(IDR_THROBBER);
+    icon = [ThrobberView filmstripThrobberViewWithFrame:iconFrame
+                                                  image:iconImage];
+  } else {
+    NSImage* iconImage = mac::FaviconForTabContents(
+        windowShim_->browser()->GetSelectedTabContentsWrapper());
+    if (!iconImage)
+      iconImage = gfx::GetCachedImageWithName(@"nav.pdf");
+    NSImageView* iconView =
+        [[[NSImageView alloc] initWithFrame:iconFrame] autorelease];
+    [iconView setImage:iconImage];
+    icon = iconView;
+  }
+
+  [titlebar_view_ setIcon:icon];
+}
+
+- (void)updateThrobber:(BOOL)shouldSpin {
+  if (throbberShouldSpin_ == shouldSpin)
+    return;
+  throbberShouldSpin_ = shouldSpin;
+
+  // If the titlebar view has not been attached, bail out.
+  if (!titlebar_view_)
+    return;
+
+  [self updateIcon];
 }
 
 - (void)addFindBar:(FindBarCocoaController*)findBarCocoaController {

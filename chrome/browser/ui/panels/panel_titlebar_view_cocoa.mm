@@ -211,10 +211,19 @@ static NSEvent* MakeMouseEvent(NSEventType type,
 
 - (void)setTitle:(NSString*)newTitle {
   [title_ setStringValue:newTitle];
+  [self updateIconAndTitleLayout];
 }
 
-- (void)setIcon:(NSImage*)newIcon {
-  [icon_ setImage:newIcon];
+- (void)setIcon:(NSView*)newIcon {
+  [icon_ removeFromSuperview];
+  icon_ = newIcon;
+  if (icon_)
+    [self addSubview:icon_];
+  [self updateIconAndTitleLayout];
+}
+
+- (NSView*)icon {
+  return icon_;
 }
 
 - (void)updateCloseButtonLayout {
