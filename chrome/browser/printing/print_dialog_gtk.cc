@@ -189,8 +189,6 @@ bool PrintDialogGtk::UpdateSettings(const DictionaryValue& settings,
         page_setup_ = gtk_printer_get_default_page_size(printer_);
       }
     }
-    if (!page_setup_)
-      page_setup_ = gtk_page_setup_new();
 
     gtk_print_settings_set_n_copies(gtk_settings_, copies);
     gtk_print_settings_set_collate(gtk_settings_, collate);
@@ -228,6 +226,8 @@ bool PrintDialogGtk::UpdateSettings(const DictionaryValue& settings,
       gtk_print_settings_set(gtk_settings_, kCUPSDuplex, cups_duplex_mode);
     }
   }
+  if (!page_setup_)
+    page_setup_ = gtk_page_setup_new();
 
   gtk_print_settings_set_orientation(
       gtk_settings_,
