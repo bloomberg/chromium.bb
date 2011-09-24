@@ -12,6 +12,7 @@
 #import "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field.h"
 #import "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field_cell.h"
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
+#import "content/browser/find_pasteboard.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
@@ -470,6 +471,25 @@ BOOL ThePasteboardIsTooDamnBig() {
     observer->ClosePopup();
 
   [super mouseDown:theEvent];
+}
+
+- (BOOL)validateMenuItem:(NSMenuItem*)item {
+  if ([item action] == @selector(copyToFindPboard:))
+    return [self selectedRange].length > 0;
+  return [super validateMenuItem:item];
+}
+
+- (void)copyToFindPboard:(id)sender {
+  NSRange selectedRange = [self selectedRange];
+  if (selectedRange.length == 0)
+    return;
+  NSAttributedString* selection =
+      [self attributedSubstringForProposedRange:selectedRange
+                                    actualRange:NULL];
+  if (!selection)
+    return;
+
+  [[FindPasteboard sharedInstance] setFindText:[selection string]];
 }
 
 @end
