@@ -10,7 +10,7 @@
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
 #include <cairo/cairo.h>
 #endif
 
@@ -73,6 +73,8 @@ void BlitContextToContext(NativeDrawingContext dst_context,
   base::mac::ScopedCFTypeRef<CGImageRef> src_sub_image(
       CGImageCreateWithImageInRect(src_image, src_rect.ToCGRect()));
   CGContextDrawImage(dst_context, dst_rect.ToCGRect(), src_sub_image);
+#elif defined(OS_ANDROID)
+  NOTIMPLEMENTED();
 #else  // Linux, BSD, others
   // Only translations in the source context are supported; more complex
   // source context transforms will be ignored.

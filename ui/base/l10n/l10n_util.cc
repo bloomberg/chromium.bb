@@ -331,7 +331,7 @@ bool CheckAndResolveLocale(const std::string& locale,
 // if "foo bar" is RTL. So this function prepends the necessary RLM in such
 // cases.
 void AdjustParagraphDirectionality(string16* paragraph) {
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
   if (base::i18n::IsRTL() &&
       base::i18n::StringContainsStrongRTLChars(*paragraph)) {
     paragraph->insert(0, 1, static_cast<char16>(base::i18n::kRightToLeftMark));
@@ -401,6 +401,12 @@ std::string GetApplicationLocale(const std::string& pref_locale) {
 #elif defined(OS_CHROMEOS)
 
   // On ChromeOS, use the application locale preference.
+  if (!pref_locale.empty())
+    candidates.push_back(pref_locale);
+
+#elif defined(OS_ANDROID)
+
+  // TODO(jcivelli): use the application locale preference for now.
   if (!pref_locale.empty())
     candidates.push_back(pref_locale);
 
