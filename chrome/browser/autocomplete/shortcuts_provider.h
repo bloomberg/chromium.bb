@@ -45,12 +45,13 @@ class ShortcutsProvider
   FRIEND_TEST_ALL_PREFIXES(ShortcutsProviderTest, CalculateScore);
   FRIEND_TEST_ALL_PREFIXES(ShortcutsProviderTest, DeleteMatch);
 
-  // Clamp relevance scores to ensure none of our matches will become the
-  // default. This prevents us from having to worry about inline autocompletion.
-  static const int kMaxScore;
-
   // ShortcutsBackendObserver:
   virtual void OnShortcutsLoaded() OVERRIDE;
+
+  // Clamp relevance scores to ensure none of our matches will become the
+  // default. This prevents us from having to worry about inline autocompletion.
+  // Made a function instead of a constant to avoid static initialization.
+  static int GetMaxScore();
 
   void DeleteMatchesWithURLs(const std::set<GURL>& urls);
   void DeleteShortcutsWithURLs(const std::set<GURL>& urls);

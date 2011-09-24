@@ -51,12 +51,6 @@ class RemoveMatchPredicate {
 
 }  // namespace
 
-// For ease of unit testing, make the clamp value divisible by 4 (since some
-// tests check for half or quarter of the max score).
-// static
-const int ShortcutsProvider::kMaxScore =
-    (AutocompleteResult::kLowestDefaultScore - 1) & ~3;
-
 ShortcutsProvider::ShortcutsProvider(ACProviderListener* listener,
                                      Profile* profile)
     : AutocompleteProvider(listener, profile, "ShortcutsProvider"),
@@ -119,6 +113,13 @@ void ShortcutsProvider::DeleteMatch(const AutocompleteMatch& match) {
 
 void ShortcutsProvider::OnShortcutsLoaded() {
   initialized_ = true;
+}
+
+int ShortcutsProvider::GetMaxScore() {
+  // For ease of unit testing, make the clamp value divisible by 4 (since some
+  // tests check for half or quarter of the max score).
+  const int kMaxScore = (AutocompleteResult::kLowestDefaultScore - 1) & ~3;
+  return kMaxScore;
 }
 
 void ShortcutsProvider::DeleteMatchesWithURLs(const std::set<GURL>& urls) {
@@ -273,7 +274,7 @@ int ShortcutsProvider::CalculateScore(const string16& terms,
   DCHECK_LE(terms.length(), shortcut.text.length());
 
   // The initial score is based on how much of the shortcut the user has typed.
-  double base_score = kMaxScore * static_cast<double>(terms.length()) /
+  double base_score = GetMaxScore() * static_cast<double>(terms.length()) /
       shortcut.text.length();
 
   // Then we decay this by half each week.
@@ -305,3 +306,4 @@ void ShortcutsProvider::set_shortcuts_backend(
   if (shortcuts_backend_->initialized())
     initialized_ = true;
 }
+

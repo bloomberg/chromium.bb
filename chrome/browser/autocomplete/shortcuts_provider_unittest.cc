@@ -529,32 +529,33 @@ TEST_F(ShortcutsProviderTest, CalculateScore) {
 
   // Maximal score.
   shortcut.last_access_time = Time::Now();
+  const int kMaxScore = ShortcutsProvider::GetMaxScore();
   EXPECT_EQ(ShortcutsProvider::CalculateScore(ASCIIToUTF16("test"), shortcut),
-            ShortcutsProvider::kMaxScore);
+            kMaxScore);
 
   // Score decreases as percent of the match is decreased.
   EXPECT_EQ(ShortcutsProvider::CalculateScore(ASCIIToUTF16("tes"), shortcut),
-            (ShortcutsProvider::kMaxScore / 4) * 3);
+            (kMaxScore / 4) * 3);
   EXPECT_EQ(ShortcutsProvider::CalculateScore(ASCIIToUTF16("te"), shortcut),
-            ShortcutsProvider::kMaxScore / 2);
+            kMaxScore / 2);
   EXPECT_EQ(ShortcutsProvider::CalculateScore(ASCIIToUTF16("t"), shortcut),
-            ShortcutsProvider::kMaxScore / 4);
+            kMaxScore / 4);
 
   // Should decay twice in a week.
   shortcut.last_access_time = Time::Now() - TimeDelta::FromDays(7);
   EXPECT_EQ(ShortcutsProvider::CalculateScore(ASCIIToUTF16("test"), shortcut),
-            ShortcutsProvider::kMaxScore / 2);
+            kMaxScore / 2);
 
   // Should decay four times in two weeks.
   shortcut.last_access_time = Time::Now() - TimeDelta::FromDays(14);
   EXPECT_EQ(ShortcutsProvider::CalculateScore(ASCIIToUTF16("test"), shortcut),
-            ShortcutsProvider::kMaxScore / 4);
+            kMaxScore / 4);
 
   // But not if it was activly clicked on. 6 hits slow decaying power twice.
   shortcut.number_of_hits = 6;
   shortcut.last_access_time = Time::Now() - TimeDelta::FromDays(14);
   EXPECT_EQ(ShortcutsProvider::CalculateScore(ASCIIToUTF16("test"), shortcut),
-            ShortcutsProvider::kMaxScore / 2);
+            kMaxScore / 2);
 }
 
 TEST_F(ShortcutsProviderTest, DeleteMatch) {
