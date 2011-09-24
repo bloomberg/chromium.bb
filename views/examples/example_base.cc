@@ -5,35 +5,29 @@
 #include "views/examples/example_base.h"
 
 #include <stdarg.h>
-#include <string>
 
-#include "base/string_util.h"
+#include "base/compiler_specific.h"
 #include "base/stringprintf.h"
-#include "views/controls/button/text_button.h"
 #include "views/examples/examples_main.h"
 
-#if defined(OS_CHROMEOS)
-#include "views/controls/menu/native_menu_gtk.h"
-#endif
-
 namespace {
-
-using views::View;
 
 // Some of GTK based view classes require NativeWidgetGtk in the view
 // parent chain. This class is used to defer the creation of such
 // views until a NativeWidgetGtk is added to the view hierarchy.
-class ContainerView : public View {
+class ContainerView : public views::View {
  public:
   explicit ContainerView(examples::ExampleBase* base)
       : example_view_created_(false),
         example_base_(base) {
   }
 
- protected:
-  // views::View overrides:
-  virtual void ViewHierarchyChanged(bool is_add, View* parent, View* child) {
-    View::ViewHierarchyChanged(is_add, parent, child);
+ private:
+  // Overridden from views::View:
+  virtual void ViewHierarchyChanged(bool is_add,
+                                    views::View* parent,
+                                    views::View* child) OVERRIDE {
+    views::View::ViewHierarchyChanged(is_add, parent, child);
     // We're not using child == this because a Widget may not be
     // availalbe when this is added to the hierarchy.
     if (is_add && GetWidget() && !example_view_created_) {
@@ -42,8 +36,7 @@ class ContainerView : public View {
     }
   }
 
- private:
-  // true if the example view has already been created, or false otherwise.
+  // True if the example view has already been created, or false otherwise.
   bool example_view_created_;
 
   examples::ExampleBase* example_base_;
@@ -59,6 +52,8 @@ ExampleBase::ExampleBase(ExamplesMain* main)
     : main_(main) {
   container_ = new ContainerView(this);
 }
+
+ExampleBase::~ExampleBase() {}
 
 // Prints a message in the status area, at the bottom of the window.
 void ExampleBase::PrintStatus(const char* format, ...) {

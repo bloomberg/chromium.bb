@@ -12,7 +12,7 @@
 
 namespace views {
 class View;
-}  // namespace views
+}
 
 namespace examples {
 
@@ -22,9 +22,7 @@ class ExampleBase {
  public:
   // Returns the view containing this example controls.
   // This view is added as a tab to the example application.
-  views::View* GetExampleView() {
-    return container_;
-  }
+  views::View* GetExampleView() { return container_; }
 
   // Sub-classes should creates and add the views to the given parent.
   virtual void CreateExampleView(views::View* parent) = 0;
@@ -35,7 +33,7 @@ class ExampleBase {
 
  protected:
   explicit ExampleBase(ExamplesMain* main);
-  virtual ~ExampleBase() {}
+  virtual ~ExampleBase();
 
   // Prints a message in the status area, at the bottom of the window.
   void PrintStatus(const char* format, ...);
@@ -58,4 +56,3 @@ class ExampleBase {
 }  // namespace examples
 
 #endif  // VIEWS_EXAMPLES_EXAMPLE_BASE_H_
-
