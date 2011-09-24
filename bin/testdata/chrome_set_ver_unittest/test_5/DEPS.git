@@ -3,11 +3,9 @@
 vars = {
     'git_url':
          'http://git.chromium.org',
-    'nonexistent_rev':
-         '@xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
 }
 
 deps = {
-    'src/repo1':
-        '../repo_mirror' + Var('nonexistent_rev'),
+    'src/breakpad/src':
+        Var('git_url') + '/external/google-breakpad/src.git@70c3f5d304bfde6494c140aecbc329dd566a5a7d',
 }

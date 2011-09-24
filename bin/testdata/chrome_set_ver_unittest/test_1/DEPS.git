@@ -17,9 +17,9 @@ vars = {
 
 deps = {
     'src/repo1':
-        Var('git_url') + '/external/google-breakpad/src.git' + Var('rev1'),
+        '../repo_mirror' + Var('rev1'),
     'src/repo2':
-        Var('git_url') + '/chromium/support.git' + Var('rev2'),
+        '../repo_mirror' + Var('rev2'),
 }
 
 deps_os = {
@@ -31,9 +31,9 @@ deps_os = {
     'unix':
     {
         'src/repo3':
-            Var('git_url') + '/chromium/deps/xz.git' + Var('rev1'),
+            '../repo_mirror' + Var('rev1'),
         'src/repo4':
-            Var('git_url') + '/chromium/deps/xz.git' + Var('rev2'),
+            '../repo_mirror' + Var('rev2'),
     },
     'win':
     {

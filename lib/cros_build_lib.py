@@ -437,6 +437,18 @@ def GetProjectDir(cwd, project):
   return os.path.join(build_root, handler.projects[project]['path'])
 
 
+def IsDirectoryAGitRepoRoot(cwd):
+  """Checks if there's a git repo rooted at a directory."""
+  return os.path.isdir(os.path.join(cwd, '.git'))
+
+
+def IsProjectManagedByRepo(cwd):
+  """Checks if the git repo rooted at a directory is managed by 'repo'"""
+  repo_dir = os.path.realpath(FindRepoDir(cwd))
+  git_object_dir = os.path.realpath(os.path.join(cwd, '.git/objects'))
+  return git_object_dir.startswith(repo_dir)
+
+
 def ReinterpretPathForChroot(path):
   """Returns reinterpreted path from outside the chroot for use inside.
 

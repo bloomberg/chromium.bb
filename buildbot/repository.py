@@ -48,7 +48,7 @@ def CloneGitRepo(working_dir, repo_url):
     repo_dir: location where it should be cloned to
   """
   if not os.path.exists(working_dir): os.makedirs(working_dir)
-  cros_lib.RunCommand(['git', 'clone', repo_url, working_dir])
+  cros_lib.RunCommand(['git', 'clone', repo_url, working_dir], cwd=working_dir)
 
 
 def GetTrybotMarkerPath(buildroot):

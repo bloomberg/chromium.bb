@@ -47,6 +47,7 @@ class DEPSFileTest(mox.MoxTestBase):
     repo_root = cros_lib.FindRepoDir()
     assert(os.path.realpath(os.path.dirname(repo_root)) == self.repo_root)
 
+
   def _VerifyReposAndSymlink(self):
     # Verify symlink was generated
     test_file = 'chromium/src/third_party/cros/HELLO'
@@ -120,6 +121,32 @@ class DEPSFileTest(mox.MoxTestBase):
     self.mox.ReplayAll()
     self.assertRaises(TestEndedException, chrome_set_ver.main,
                       ['-d', os.path.join(self.test_base, 'test_4/DEPS.git')])
+
+  def testProjectInManifestNotWorkingDir(self):
+    """Test erroring out and telling user to repo sync."""
+    self.mox.StubOutWithMock(cros_lib, 'Die')
+    cros_lib.Die(mox.StrContains('not in working tree')).AndRaise(
+        TestEndedException)
+    self.mox.ReplayAll()
+    self.assertRaises(TestEndedException, chrome_set_ver.main,
+                      ['-d', os.path.join(self.test_base, 'test_5/DEPS.git')])
+
+  def testAutoSyncProject(self):
+    """Test pulling down of projects not in manifest."""
+    chrome_set_ver.main(['-d',
+                         os.path.join(self.test_base, 'test_6/DEPS.git')])
+    repo_path = os.path.join(self.repo_root, 'chromium/src/does_not_exist')
+    self.assertTrue(cros_lib.GetGitRepoRevision(repo_path) ==
+                    '8d35063e1836c79c9ef97bf81eb43f450dc111ac')
+
+  def testProjectThatWeManageNowInManifest(self):
+    """Test erroring out and telling user to remove project."""
+    self.mox.StubOutWithMock(cros_lib, 'Die')
+    cros_lib.Die(mox.StrContains('needs to be replaced')).AndRaise(
+        TestEndedException)
+    self.mox.ReplayAll()
+    self.assertRaises(TestEndedException, chrome_set_ver.main,
+                      ['-d', os.path.join(self.test_base, 'test_7/DEPS.git')])
 
   def tearDown(self):
     os.chdir(self.old_dir)
