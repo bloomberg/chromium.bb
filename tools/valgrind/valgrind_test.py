@@ -1003,6 +1003,8 @@ class Asan(EmbeddedTool):
   def __init__(self):
     super(Asan, self).__init__()
     self._timeout = 1200
+    if common.IsMac():
+      self._env["DYLD_NO_PIE"] = "1"
 
   def ToolName(self):
     return "asan"
