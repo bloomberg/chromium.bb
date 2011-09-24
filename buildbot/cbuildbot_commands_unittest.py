@@ -68,7 +68,8 @@ class CBuildBotTest(mox.MoxTestBase):
                             'czf',
                             test_tarball,
                             '--directory=%s' % path_to_results,
-                            '.'])
+                            '.'],
+                           print_cmd=False)
     shutil.rmtree(path_to_results)
     self.mox.ReplayAll()
     commands.ArchiveTestResults(buildroot, test_results_dir)

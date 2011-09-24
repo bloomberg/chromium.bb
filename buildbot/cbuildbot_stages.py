@@ -558,7 +558,7 @@ class VMTestStage(bs.BuilderStage):
                                   os.path.join(test_results_dir,
                                                'chrome_results'))
     except commands.TestException as e:
-      raise bs.NonBacktraceBuildException(str(e))
+      raise bs.NonBacktraceBuildException()  # Suppress redundant output.
     finally:
       test_tarball = None
       if test_results_dir:

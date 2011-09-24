@@ -398,7 +398,8 @@ def ArchiveTestResults(buildroot, test_results_dir):
                             'czf',
                             test_tarball,
                             '--directory=%s' % results_path,
-                            '.'])
+                            '.'],
+                           print_cmd=False)
     shutil.rmtree(results_path)
 
     return test_tarball
