@@ -166,6 +166,10 @@ FirstRunSearchEngineView::~FirstRunSearchEngineView() {
   search_engines_model_->RemoveObserver(this);
 }
 
+std::wstring FirstRunSearchEngineView::GetWindowTitle() const {
+  return UTF16ToWide(l10n_util::GetStringUTF16(IDS_FIRSTRUN_DLG_TITLE));
+}
+
 void FirstRunSearchEngineView::ButtonPressed(views::Button* sender,
                                              const views::Event& event) {
   SearchEngineChoice* choice = static_cast<SearchEngineChoice*>(sender);
@@ -456,8 +460,4 @@ void FirstRunSearchEngineView::Layout() {
 void FirstRunSearchEngineView::GetAccessibleState(
     ui::AccessibleViewState* state) {
   state->role = ui::AccessibilityTypes::ROLE_ALERT;
-}
-
-std::wstring FirstRunSearchEngineView::GetWindowTitle() const {
-  return UTF16ToWide(l10n_util::GetStringUTF16(IDS_FIRSTRUN_DLG_TITLE));
 }

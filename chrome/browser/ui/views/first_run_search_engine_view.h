@@ -14,16 +14,14 @@
 #include "views/view.h"
 #include "views/widget/widget_delegate.h"
 
-namespace views {
-class ButtonListener;
-class ImageView;
-class Label;
-class Separator;
-}
-
 class Profile;
 class TemplateURL;
 class TemplateURLService;
+
+namespace views {
+class ImageView;
+class Label;
+}
 
 // This class holds the logo and TemplateURL for a search engine and serves
 // as its button in the search engine selection view.
@@ -75,10 +73,9 @@ class SearchEngineChoice : public views::NativeTextButton {
 
 // This class displays a large search engine choice dialog view during
 // initial first run import.
-class FirstRunSearchEngineView
-    : public views::ButtonListener,
-      public views::WidgetDelegateView,
-      public TemplateURLServiceObserver {
+class FirstRunSearchEngineView : public views::WidgetDelegateView,
+                                 public views::ButtonListener,
+                                 public TemplateURLServiceObserver {
  public:
   // |profile| allows us to get the set of imported search engines.
   // |randomize| is true if logos are to be displayed in random order.
@@ -86,25 +83,20 @@ class FirstRunSearchEngineView
 
   virtual ~FirstRunSearchEngineView();
 
-  bool IsAlwaysOnTop() const { return true; }
-  bool HasAlwaysOnTopMenu() const { return false; }
+  // Overridden from views::WidgetDelegateView:
+  virtual std::wstring GetWindowTitle() const OVERRIDE;
+  virtual views::View* GetContentsView() OVERRIDE { return this; }
+
+  // Overridden from views::ButtonListener:
+  virtual void ButtonPressed(views::Button* sender,
+                             const views::Event& event) OVERRIDE;
 
   // Overridden from views::View:
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual void Layout() OVERRIDE;
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
 
-  // Overridden from views::WidgetDelegate:
-  virtual std::wstring GetWindowTitle() const OVERRIDE;
-  views::View* GetContentsView() OVERRIDE { return this; }
-  bool CanResize() const OVERRIDE{ return false; }
-  bool CanMaximize() const OVERRIDE { return false; }
-
-  // Overridden from views::ButtonListener:
-  virtual void ButtonPressed(views::Button* sender, const views::Event& event)
-      OVERRIDE;
-
-  // Override from View so we can draw the gray background at dialog top.
+  // Override from views::View so we can draw the gray background at dialog top.
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
 
   // Overridden from TemplateURLServiceObserver. When the search engines have
