@@ -166,9 +166,8 @@ void ShowCertExportDialog(TabContents* tab_contents,
 #endif
 
 // static
-void BookmarkEditor::Show(gfx::NativeWindow parent_hwnd,
+void BookmarkEditor::Show(gfx::NativeWindow parent_window,
                           Profile* profile,
-                          const BookmarkNode* parent,
                           const EditDetails& details,
                           Configuration configuration) {
   // TODO(beng);
@@ -194,4 +193,3 @@ void ShowImportProgressDialog(gfx::NativeWindow parent_window,
 void ExternalProtocolHandler::RunExternalProtocolDialog(
     const GURL& url, int render_process_host_id, int routing_id) {
 }
-
