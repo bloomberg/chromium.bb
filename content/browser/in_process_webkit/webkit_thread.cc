@@ -47,7 +47,7 @@ WebKitThread::InternalWebKitThread::~InternalWebKitThread() {
 void WebKitThread::InternalWebKitThread::Init() {
   DCHECK(!webkit_platform_support_.get());
   webkit_platform_support_.reset(new BrowserWebKitPlatformSupportImpl);
-  WebKit::initialize(webkit_platform_support_.get());
+  WebKit::initializeWithoutV8(webkit_platform_support_.get());
   webkit_glue::EnableWebCoreLogChannels(
       CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kWebCoreLogChannels));
