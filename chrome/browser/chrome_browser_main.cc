@@ -117,7 +117,7 @@
 #include "chrome/app/breakpad_linux.h"
 #endif
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
+#if defined(TOOLKIT_USES_GTK)
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #endif
 

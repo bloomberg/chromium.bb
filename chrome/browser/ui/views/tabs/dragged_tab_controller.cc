@@ -1348,6 +1348,9 @@ gfx::Point DraggedTabController::GetCursorScreenPoint() const {
   gint x, y;
   gdk_display_get_pointer(gdk_display_get_default(), NULL, &x, &y, NULL);
   return gfx::Point(x, y);
+#else
+  NOTIMPLEMENTED();
+  return gfx::Point();
 #endif
 }
 
