@@ -68,42 +68,50 @@ class WindowControlButton : public views::CustomButton {
   DISALLOW_COPY_AND_ASSIGN(WindowControlButton);
 };
 
-class SizingBorder : public views::View,
-                     public ui::AnimationDelegate {
+// Base class for all animatable frame components such as sizing borders and
+// the window's caption. Provides shared animation and event-handling logic.
+class FrameComponent : public views::View,
+                       public ui::AnimationDelegate {
  public:
-  SizingBorder()
-      : ALLOW_THIS_IN_INITIALIZER_LIST(
-            animation_(new ui::SlideAnimation(this))) {
-    animation_->SetSlideDuration(kHoverFadeDurationMs);
-  }
-  virtual ~SizingBorder() {}
-
-  void Configure(const gfx::Rect& hidden_bounds,
-                 const gfx::Rect& visible_bounds) {
-    hidden_bounds_ = hidden_bounds;
-    visible_bounds_ = visible_bounds;
-    SetBoundsRect(hidden_bounds_);
+  virtual ~FrameComponent() {
   }
 
+  // Control animations.
   void Show() {
     animation_->Show();
   }
-
   void Hide() {
     animation_->Hide();
   }
 
+  // Current animation state.
   bool IsShowing() const {
     return animation_->IsShowing();
   }
-
   bool IsHiding() const {
     return animation_->IsClosing();
   }
 
- private:
-  // Overridden from views::View:
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
+  // Returns true if the view ignores events to itself or its children at the
+  // specified point in its parent's coordinates. By default, any events within
+  // the bounds of this view are ignored so that the parent (the NCFV) can
+  // handle them instead. Derived classes can override to disable this for some
+  // of their children.
+  virtual bool IgnoreEventsForPoint(const gfx::Point& point) {
+    gfx::Point translated_point(point);
+    ConvertPointToView(parent(), this, &translated_point);
+    return HitTest(translated_point);
+  }
+
+ protected:
+  FrameComponent()
+      : ALLOW_THIS_IN_INITIALIZER_LIST(
+            animation_(new ui::SlideAnimation(this))) {
+    animation_->SetSlideDuration(kHoverFadeDurationMs);
+  }
+
+  // Most of the frame components are rendered with a transparent bg.
+  void PaintTransparentBackground(gfx::Canvas* canvas) {
     // Fill with current opacity value.
     int opacity = animation_->CurrentValueBetween(kFrameBorderHiddenOpacity,
                                                   kFrameBorderVisibleOpacity);
@@ -115,20 +123,146 @@ class SizingBorder : public views::View,
   }
 
   // Overridden from ui::AnimationDelegate:
-  void AnimationProgressed(const ui::Animation* animation) OVERRIDE {
-    // TODO: update bounds.
-    gfx::Rect current_bounds = animation_->CurrentValueBetween(hidden_bounds_,
-                                                               visible_bounds_);
-    SetBoundsRect(current_bounds);
+  virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE {
     SchedulePaint();
+  }
+
+ private:
+  scoped_ptr<ui::SlideAnimation> animation_;
+
+  DISALLOW_COPY_AND_ASSIGN(FrameComponent);
+};
+
+// A view that renders the title bar of the window, and also hosts the window
+// controls.
+class WindowCaption : public FrameComponent,
+                      public views::ButtonListener {
+ public:
+  WindowCaption() {
+    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    close_button_ =
+        new WindowControlButton(this, SK_ColorRED,
+                                *rb.GetBitmapNamed(IDR_AURA_WINDOW_CLOSE_ICON));
+    zoom_button_ =
+        new WindowControlButton(this, SK_ColorGREEN,
+                                *rb.GetBitmapNamed(IDR_AURA_WINDOW_ZOOM_ICON));
+    AddChildView(close_button_);
+    AddChildView(zoom_button_);
+  }
+  virtual ~WindowCaption() {}
+
+  // Returns the hit-test code for the specified point in parent coordinates.
+  int NonClientHitTest(const gfx::Point& point) {
+    gfx::Point translated_point(point);
+    View::ConvertPointToView(parent(), this, &translated_point);
+    // The window controls come second.
+    if (close_button_->GetMirroredBounds().Contains(translated_point))
+      return HTCLOSE;
+    else if (zoom_button_->GetMirroredBounds().Contains(translated_point))
+      return HTMAXBUTTON;
+    return HTNOWHERE;
+  }
+
+  // Updates the enabled state of the close button.
+  void EnableClose(bool enable) {
+    close_button_->SetEnabled(enable);
+  }
+
+  // Overridden from FrameComponent:
+  virtual bool IgnoreEventsForPoint(const gfx::Point& point) OVERRIDE {
+    gfx::Point translated_point(point);
+    ConvertPointToView(parent(), this, &translated_point);
+    if (PointIsInChildView(close_button_, translated_point))
+      return false;
+    if (PointIsInChildView(zoom_button_, translated_point))
+      return false;
+    return FrameComponent::IgnoreEventsForPoint(point);
+  }
+
+  // Overridden from views::View:
+  virtual gfx::Size GetPreferredSize() OVERRIDE {
+    return gfx::Size(0, close_button_->GetPreferredSize().height());
+  }
+
+ private:
+  // Returns true if the specified |point| in this view's coordinates hit tests
+  // against |child|, a child view of this view.
+  bool PointIsInChildView(views::View* child,
+                          const gfx::Point& point) const {
+    gfx::Point child_point(point);
+    ConvertPointToView(this, child, &child_point);
+    return child->HitTest(child_point);
+  }
+
+  // Overridden from views::View:
+  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
+    PaintTransparentBackground(canvas);
+  }
+  virtual void Layout() OVERRIDE {
+    gfx::Size close_button_ps = close_button_->GetPreferredSize();
+    close_button_->SetBoundsRect(
+        gfx::Rect(width() - close_button_ps.width(),
+                  0, close_button_ps.width(), close_button_ps.height()));
+
+    gfx::Size zoom_button_ps = zoom_button_->GetPreferredSize();
+    zoom_button_->SetBoundsRect(
+        gfx::Rect(close_button_->x() - zoom_button_ps.width(), 0,
+                  zoom_button_ps.width(), zoom_button_ps.height()));
+  }
+
+  // Overridden from views::ButtonListener:
+  virtual void ButtonPressed(views::Button* sender,
+                             const views::Event& event) OVERRIDE {
+    if (sender == close_button_) {
+      GetWidget()->Close();
+    } else if (sender == zoom_button_) {
+      if (GetWidget()->IsMaximized())
+        GetWidget()->Restore();
+      else
+        GetWidget()->Maximize();
+    }
+  }
+
+  views::Button* close_button_;
+  views::Button* zoom_button_;
+
+  DISALLOW_COPY_AND_ASSIGN(WindowCaption);
+};
+
+// A class that renders the sizing border that appears when the user moves
+// their mouse over a sizing edge. This view is not actually responsible for
+// resizing the window, the EventFilter is.
+class SizingBorder : public FrameComponent {
+ public:
+  SizingBorder() {}
+  virtual ~SizingBorder() {}
+
+  void Configure(const gfx::Rect& hidden_bounds,
+                 const gfx::Rect& visible_bounds) {
+    hidden_bounds_ = hidden_bounds;
+    visible_bounds_ = visible_bounds;
+    SetBoundsRect(hidden_bounds_);
+  }
+
+ protected:
+  // Overridden from ui::AnimationDelegate:
+  virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE {
+    gfx::Rect current_bounds = animation->CurrentValueBetween(hidden_bounds_,
+                                                              visible_bounds_);
+    SetBoundsRect(current_bounds);
+    FrameComponent::AnimationProgressed(animation);
+  }
+
+ private:
+  // Overridden from views::View:
+  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
+    PaintTransparentBackground(canvas);
   }
 
   // Each of these represents the hidden/visible states of the sizing border.
   // When the view is shown or hidden it animates between them.
   gfx::Rect hidden_bounds_;
   gfx::Rect visible_bounds_;
-
-  scoped_ptr<ui::SlideAnimation> animation_;
 
   DISALLOW_COPY_AND_ASSIGN(SizingBorder);
 };
@@ -138,19 +272,11 @@ class SizingBorder : public views::View,
 
 ToplevelFrameView::ToplevelFrameView()
     : current_hittest_code_(HTNOWHERE),
+      caption_(new WindowCaption),
       left_edge_(new SizingBorder),
       right_edge_(new SizingBorder),
       bottom_edge_(new SizingBorder) {
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  close_button_ =
-      new WindowControlButton(this, SK_ColorRED,
-                              *rb.GetBitmapNamed(IDR_AURA_WINDOW_CLOSE_ICON));
-  zoom_button_ =
-      new WindowControlButton(this, SK_ColorGREEN,
-                              *rb.GetBitmapNamed(IDR_AURA_WINDOW_ZOOM_ICON));
-  AddChildView(close_button_);
-  AddChildView(zoom_button_);
-
+  AddChildView(caption_);
   AddChildView(left_edge_);
   AddChildView(right_edge_);
   AddChildView(bottom_edge_);
@@ -167,7 +293,7 @@ int ToplevelFrameView::NonClientBorderThickness() const {
 }
 
 int ToplevelFrameView::NonClientTopBorderHeight() const {
-  return close_button_->GetPreferredSize().height();
+  return caption_->GetPreferredSize().height();
 }
 
 int ToplevelFrameView::NonClientHitTestImpl(const gfx::Point& point) {
@@ -180,11 +306,9 @@ int ToplevelFrameView::NonClientHitTestImpl(const gfx::Point& point) {
   if (frame_component != HTNOWHERE)
     return frame_component;
 
-  // The window controls come second.
-  if (close_button_->GetMirroredBounds().Contains(point))
-    return HTCLOSE;
-  else if (zoom_button_->GetMirroredBounds().Contains(point))
-    return HTMAXBUTTON;
+  frame_component = caption_->NonClientHitTest(point);
+  if (frame_component != HTNOWHERE)
+    return frame_component;
 
   // Finally other portions of the frame/sizing border.
   frame_component =
@@ -199,22 +323,17 @@ int ToplevelFrameView::NonClientHitTestImpl(const gfx::Point& point) {
   return frame_component == HTNOWHERE ? HTCAPTION : frame_component;
 }
 
-void ToplevelFrameView::ShowSizingBorder(SizingBorder* sizing_border) {
-  if (sizing_border && !sizing_border->IsShowing())
-    sizing_border->Show();
-  if (left_edge_ != sizing_border && !left_edge_->IsHiding())
+void ToplevelFrameView::ShowFrameComponent(FrameComponent* frame_component) {
+  if (frame_component && !frame_component->IsShowing())
+    frame_component->Show();
+  if (caption_ != frame_component && !caption_->IsHiding())
+    caption_->Hide();
+  if (left_edge_ != frame_component && !left_edge_->IsHiding())
     left_edge_->Hide();
-  if (right_edge_ != sizing_border && !right_edge_->IsHiding())
+  if (right_edge_ != frame_component && !right_edge_->IsHiding())
     right_edge_->Hide();
-  if (bottom_edge_ != sizing_border && !bottom_edge_->IsHiding())
+  if (bottom_edge_ != frame_component && !bottom_edge_->IsHiding())
     bottom_edge_->Hide();
-}
-
-bool ToplevelFrameView::PointIsInChildView(views::View* child,
-                                           const gfx::Point& point) const {
-  gfx::Point child_point(point);
-  ConvertPointToView(this, child, &child_point);
-  return child->HitTest(child_point);
 }
 
 gfx::Rect ToplevelFrameView::GetHiddenBoundsForSizingBorder(
@@ -285,7 +404,7 @@ void ToplevelFrameView::GetWindowMask(const gfx::Size& size,
 }
 
 void ToplevelFrameView::EnableClose(bool enable) {
-  close_button_->SetEnabled(enable);
+  caption_->EnableClose(enable);
 }
 
 void ToplevelFrameView::ResetWindowControls() {
@@ -306,15 +425,9 @@ void ToplevelFrameView::Layout() {
                             NonClientBorderThickness(),
                             NonClientBorderThickness());
 
-  gfx::Size close_button_ps = close_button_->GetPreferredSize();
-  close_button_->SetBoundsRect(
-      gfx::Rect(width() - close_button_ps.width() - NonClientBorderThickness(),
-                0, close_button_ps.width(), close_button_ps.height()));
-
-  gfx::Size zoom_button_ps = zoom_button_->GetPreferredSize();
-  zoom_button_->SetBoundsRect(
-      gfx::Rect(close_button_->x() - zoom_button_ps.width(), 0,
-                zoom_button_ps.width(), zoom_button_ps.height()));
+  caption_->SetBounds(NonClientBorderThickness(), 0,
+                      width() - 2 * NonClientBorderThickness(),
+                      NonClientTopBorderHeight());
 
   left_edge_->Configure(GetHiddenBoundsForSizingBorder(HTLEFT),
                         GetVisibleBoundsForSizingBorder(HTLEFT));
@@ -324,24 +437,19 @@ void ToplevelFrameView::Layout() {
                           GetVisibleBoundsForSizingBorder(HTBOTTOM));
 }
 
-void ToplevelFrameView::OnPaint(gfx::Canvas* canvas) {
-  gfx::Rect caption_rect(NonClientBorderThickness(), 0,
-                         width() - 2 * NonClientBorderThickness(),
-                         NonClientTopBorderHeight());
-  canvas->FillRectInt(kFrameColor, caption_rect.x(), caption_rect.y(),
-                      caption_rect.width(), caption_rect.height());
-}
-
 void ToplevelFrameView::OnMouseMoved(const views::MouseEvent& event) {
   switch (current_hittest_code_) {
     case HTLEFT:
-      ShowSizingBorder(left_edge_);
+      ShowFrameComponent(left_edge_);
       break;
     case HTRIGHT:
-      ShowSizingBorder(right_edge_);
+      ShowFrameComponent(right_edge_);
       break;
     case HTBOTTOM:
-      ShowSizingBorder(bottom_edge_);
+      ShowFrameComponent(bottom_edge_);
+      break;
+    case HTCAPTION:
+      ShowFrameComponent(caption_);
       break;
     default:
       break;
@@ -349,33 +457,18 @@ void ToplevelFrameView::OnMouseMoved(const views::MouseEvent& event) {
 }
 
 void ToplevelFrameView::OnMouseExited(const views::MouseEvent& event) {
-  ShowSizingBorder(NULL);
+  ShowFrameComponent(NULL);
 }
 
 views::View* ToplevelFrameView::GetEventHandlerForPoint(
     const gfx::Point& point) {
-  if (PointIsInChildView(left_edge_, point) ||
-      PointIsInChildView(right_edge_, point) ||
-      PointIsInChildView(bottom_edge_, point)) {
+  if (left_edge_->IgnoreEventsForPoint(point) ||
+      right_edge_->IgnoreEventsForPoint(point) ||
+      bottom_edge_->IgnoreEventsForPoint(point) ||
+      caption_->IgnoreEventsForPoint(point)) {
     return this;
   }
   return View::GetEventHandlerForPoint(point);
-}
-
-
-////////////////////////////////////////////////////////////////////////////////
-// ToplevelFrameView, views::ButtonListener implementation:
-
-void ToplevelFrameView::ButtonPressed(views::Button* sender,
-                                      const views::Event& event) {
-  if (sender == close_button_) {
-    GetWidget()->Close();
-  } else if (sender == zoom_button_) {
-    if (GetWidget()->IsMaximized())
-      GetWidget()->Restore();
-    else
-      GetWidget()->Maximize();
-  }
 }
 
 }  // namespace internal

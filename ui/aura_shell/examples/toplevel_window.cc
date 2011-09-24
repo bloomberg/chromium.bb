@@ -6,22 +6,28 @@
 
 #include "base/utf_string_conversions.h"
 #include "ui/aura/window.h"
+#include "ui/aura_shell/toplevel_frame_view.h"
 #include "ui/gfx/canvas.h"
 #include "views/widget/widget.h"
 
 namespace aura_shell {
 namespace examples {
 
+ToplevelWindow::CreateParams::CreateParams()
+    : can_resize(false),
+      can_maximize(false) {
+}
+
 // static
-void ToplevelWindow::CreateToplevelWindow() {
+void ToplevelWindow::CreateToplevelWindow(const CreateParams& params) {
   views::Widget* widget =
-      views::Widget::CreateWindowWithBounds(new ToplevelWindow,
+      views::Widget::CreateWindowWithBounds(new ToplevelWindow(params),
                                             gfx::Rect(120, 150, 400, 300));
   widget->GetNativeView()->set_name(ASCIIToUTF16("Examples:ToplevelWindow"));
   widget->Show();
 }
 
-ToplevelWindow::ToplevelWindow() {
+ToplevelWindow::ToplevelWindow(const CreateParams& params) : params_(params) {
 }
 
 ToplevelWindow::~ToplevelWindow() {
@@ -37,6 +43,18 @@ std::wstring ToplevelWindow::GetWindowTitle() const {
 
 views::View* ToplevelWindow::GetContentsView() {
   return this;
+}
+
+bool ToplevelWindow::CanResize() const {
+  return params_.can_resize;
+}
+
+bool ToplevelWindow::CanMaximize() const {
+  return params_.can_maximize;
+}
+
+views::NonClientFrameView* ToplevelWindow::CreateNonClientFrameView() {
+  return new aura_shell::internal::ToplevelFrameView;
 }
 
 }  // namespace examples

@@ -7,25 +7,21 @@
 #pragma once
 
 #include "ui/aura_shell/aura_shell_export.h"
-#include "ui/base/animation/animation_delegate.h"
 #include "views/controls/button/button.h"
 #include "views/window/non_client_view.h"
-
-namespace ui {
-class SlideAnimation;
-}
 
 namespace aura_shell {
 namespace internal {
 
+class FrameComponent;
 class SizingBorder;
+class WindowCaption;
 
 // A NonClientFrameView implementation for generic top-level windows in Aura.
 // TODO(beng): Find a way to automatically this for all top-level windows in
 //             Aura. Right now windows have to override CreateNonClientFrameView
 //             on WidgetDelegate to specify this.
-class AURA_SHELL_EXPORT ToplevelFrameView : public views::NonClientFrameView,
-                                            public views::ButtonListener {
+class AURA_SHELL_EXPORT ToplevelFrameView : public views::NonClientFrameView {
  public:
   ToplevelFrameView();
   virtual ~ToplevelFrameView();
@@ -42,7 +38,7 @@ class AURA_SHELL_EXPORT ToplevelFrameView : public views::NonClientFrameView,
 
   // Shows the specified |sizing_border|, hiding all others.
   // If |sizing_border| is NULL, all other sizing borders are hidden.
-  void ShowSizingBorder(SizingBorder* sizing_border);
+  void ShowFrameComponent(FrameComponent* sizing_border);
 
   // Returns true if the specified point (in FrameView coordinates) hit-tests
   // against the specified child.
@@ -66,23 +62,16 @@ class AURA_SHELL_EXPORT ToplevelFrameView : public views::NonClientFrameView,
 
   // Overridden from views::View:
   virtual void Layout() OVERRIDE;
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
   virtual void OnMouseMoved(const views::MouseEvent& event) OVERRIDE;
   virtual void OnMouseExited(const views::MouseEvent& event) OVERRIDE;
   virtual views::View* GetEventHandlerForPoint(
       const gfx::Point& point) OVERRIDE;
 
-  // Overridden from views::ButtonListener:
-  virtual void ButtonPressed(views::Button* sender,
-                             const views::Event& event) OVERRIDE;
-
   gfx::Rect client_view_bounds_;
-
-  views::Button* close_button_;
-  views::Button* zoom_button_;
 
   int current_hittest_code_;
 
+  WindowCaption* caption_;
   SizingBorder* left_edge_;
   SizingBorder* right_edge_;
   SizingBorder* bottom_edge_;

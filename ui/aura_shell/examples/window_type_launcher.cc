@@ -32,9 +32,13 @@ void InitWindowTypeLauncher() {
 WindowTypeLauncher::WindowTypeLauncher()
     : ALLOW_THIS_IN_INITIALIZER_LIST(
           create_button_(new views::NativeTextButton(this, L"Create Window"))),
+      ALLOW_THIS_IN_INITIALIZER_LIST(
+          create_nonresizable_button_(new views::NativeTextButton(
+              this, L"Create Non-Resizable Window"))),
       ALLOW_THIS_IN_INITIALIZER_LIST(bubble_button_(
           new views::NativeTextButton(this, L"Create Pointy Bubble"))) {
   AddChildView(create_button_);
+  AddChildView(create_nonresizable_button_);
   AddChildView(bubble_button_);
   set_context_menu_controller(this);
 }
@@ -57,6 +61,12 @@ void WindowTypeLauncher::Layout() {
   bubble_button_->SetBounds(
       5, create_button_->y() - bubble_button_ps.height() - 5,
       bubble_button_ps.width(), bubble_button_ps.height());
+
+  gfx::Size create_nr_button_ps =
+      create_nonresizable_button_->GetPreferredSize();
+  create_nonresizable_button_->SetBounds(
+      5, bubble_button_->y() - create_nr_button_ps.height() - 5,
+      create_nr_button_ps.width(), create_nr_button_ps.height());
 }
 
 gfx::Size WindowTypeLauncher::GetPreferredSize() {
@@ -87,7 +97,11 @@ views::NonClientFrameView* WindowTypeLauncher::CreateNonClientFrameView() {
 void WindowTypeLauncher::ButtonPressed(views::Button* sender,
                                        const views::Event& event) {
   if (sender == create_button_) {
-    ToplevelWindow::CreateToplevelWindow();
+    ToplevelWindow::CreateParams params;
+    params.can_resize = true;
+    ToplevelWindow::CreateToplevelWindow(params);
+  } else if (sender == create_nonresizable_button_) {
+    ToplevelWindow::CreateToplevelWindow(ToplevelWindow::CreateParams());
   } else if (sender == bubble_button_) {
     gfx::Point origin = bubble_button_->bounds().origin();
     views::View::ConvertPointToWidget(bubble_button_->parent(), &origin);

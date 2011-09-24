@@ -59,6 +59,7 @@ class WindowTypeLauncher : public views::WidgetDelegateView,
                                       bool is_mouse_gesture) OVERRIDE;
 
   views::NativeTextButton* create_button_;
+  views::NativeTextButton* create_nonresizable_button_;
   views::NativeTextButton* bubble_button_;
   scoped_ptr<views::MenuRunner> menu_runner_;
 

@@ -13,10 +13,16 @@ namespace examples {
 
 class ToplevelWindow : public views::WidgetDelegateView {
  public:
-  static void CreateToplevelWindow();
+  struct CreateParams {
+    CreateParams();
+
+    bool can_resize;
+    bool can_maximize;
+  };
+  static void CreateToplevelWindow(const CreateParams& params);
 
  private:
-  ToplevelWindow();
+  explicit ToplevelWindow(const CreateParams& params);
   virtual ~ToplevelWindow();
 
   // Overridden from views::View:
@@ -25,6 +31,11 @@ class ToplevelWindow : public views::WidgetDelegateView {
   // Overridden from views::WidgetDelegate:
   virtual std::wstring GetWindowTitle() const OVERRIDE;
   virtual View* GetContentsView() OVERRIDE;
+  virtual bool CanResize() const OVERRIDE;
+  virtual bool CanMaximize() const OVERRIDE;
+  virtual views::NonClientFrameView* CreateNonClientFrameView() OVERRIDE;
+
+  const CreateParams params_;
 
   DISALLOW_COPY_AND_ASSIGN(ToplevelWindow);
 };
