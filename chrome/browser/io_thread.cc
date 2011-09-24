@@ -345,9 +345,8 @@ IOThread::IOThread(
       net_log_(net_log),
       extension_event_router_forwarder_(extension_event_router_forwarder),
       globals_(NULL),
-      sdch_manager_(new net::SdchManager()),
+      sdch_manager_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
-  sdch_manager_->set_sdch_fetcher(new SdchDictionaryFetcher);
   // We call RegisterPrefs() here (instead of inside browser_prefs.cc) to make
   // sure that everything is initialized in the right order.
   RegisterPrefs(local_state);
@@ -371,9 +370,6 @@ IOThread::IOThread(
 }
 
 IOThread::~IOThread() {
-  delete sdch_manager_;
-  sdch_manager_ = NULL;
-
   if (pref_proxy_config_tracker_)
     pref_proxy_config_tracker_->DetachFromPrefService();
   // We cannot rely on our base class to stop the thread since we want our
@@ -468,9 +464,15 @@ void IOThread::Init() {
 
   globals_->proxy_script_fetcher_context =
       ConstructProxyScriptFetcherContext(globals_, net_log_);
+
+  sdch_manager_ = new net::SdchManager();
+  sdch_manager_->set_sdch_fetcher(new SdchDictionaryFetcher);
 }
 
 void IOThread::CleanUp() {
+  delete sdch_manager_;
+  sdch_manager_ = NULL;
+
   // Step 1: Kill all things that might be holding onto
   // net::URLRequest/net::URLRequestContexts.
 
