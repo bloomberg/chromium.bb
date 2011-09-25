@@ -32,9 +32,6 @@ XIValuatorClassInfo* FindTPValuator(Display* display,
                                     views::TouchFactory::TouchParam tp) {
   // Lookup table for mapping TouchParam to Atom string used in X.
   // A full set of Atom strings can be found at xserver-properties.h.
-  // For Slot ID, See this chromeos revision: http://git.chromium.org/gitweb/?
-  //        p=chromiumos/overlays/chromiumos-overlay.git;
-  //        a=commit;h=9164d0a75e48c4867e4ef4ab51f743ae231c059a
   static struct {
     views::TouchFactory::TouchParam tp;
     const char* atom;
@@ -43,7 +40,12 @@ XIValuatorClassInfo* FindTPValuator(Display* display,
     { views::TouchFactory::TP_TOUCH_MINOR, "Abs MT Touch Minor" },
     { views::TouchFactory::TP_ORIENTATION, "Abs MT Orientation" },
     { views::TouchFactory::TP_PRESSURE,    "Abs MT Pressure" },
+#if !defined(USE_XI2_MT)
+    // For Slot ID, See this chromeos revision: http://git.chromium.org/gitweb/?
+    //        p=chromiumos/overlays/chromiumos-overlay.git;
+    //        a=commit;h=9164d0a75e48c4867e4ef4ab51f743ae231c059a
     { views::TouchFactory::TP_SLOT_ID,     "Abs MT Slot ID" },
+#endif
     { views::TouchFactory::TP_TRACKING_ID, "Abs MT Tracking ID" },
     { views::TouchFactory::TP_LAST_ENTRY, NULL },
   };
@@ -132,8 +134,12 @@ TouchFactory::TouchFactory()
       keep_mouse_cursor_(false),
       cursor_timer_(),
       pointer_device_lookup_(),
+#if defined(USE_XI2_MT)
+      touch_device_list_() {
+#else
       touch_device_list_(),
       slots_used_() {
+#endif
 #if defined(TOUCH_UI)
   if (!base::MessagePumpForUI::HasXInput2())
     return;
@@ -198,6 +204,7 @@ void TouchFactory::UpdateDeviceList(Display* display) {
   int count = 0;
   touch_device_lookup_.reset();
   touch_device_list_.clear();
+#if !defined(USE_XI2_MT)
   XDeviceInfo* devlist = XListInputDevices(display, &count);
   for (int i = 0; i < count; i++) {
     if (devlist[i].type) {
@@ -210,6 +217,7 @@ void TouchFactory::UpdateDeviceList(Display* display) {
   }
   if (devlist)
     XFreeDeviceList(devlist);
+#endif
 
   // Instead of asking X for the list of devices all the time, let's maintain a
   // list of pointer devices we care about.
@@ -227,9 +235,22 @@ void TouchFactory::UpdateDeviceList(Display* display) {
   XIDeviceInfo* devices = XIQueryDevice(display, XIAllDevices, &count);
   for (int i = 0; i < count; i++) {
     XIDeviceInfo* devinfo = devices + i;
-    if (devinfo->use == XIFloatingSlave || devinfo->use == XISlavePointer) {
-      pointer_device_lookup_[devinfo->deviceid] = true;
+#if defined(USE_XI2_MT)
+    for (int k = 0; k < devinfo->num_classes; ++k) {
+      XIAnyClassInfo* xiclassinfo = devinfo->classes[k];
+      if (xiclassinfo->type == XITouchClass) {
+        XITouchClassInfo* tci =
+            reinterpret_cast<XITouchClassInfo *>(xiclassinfo);
+        // Only care direct touch device (such as touch screen) right now
+        if (tci->mode == XIDirectTouch) {
+          touch_device_lookup_[devinfo->deviceid] = true;
+          touch_device_list_.push_back(devinfo->deviceid);
+        }
+      }
     }
+#endif
+    if (devinfo->use == XIFloatingSlave || devinfo->use == XISlavePointer)
+      pointer_device_lookup_[devinfo->deviceid] = true;
   }
   if (devices)
     XIFreeDeviceInfo(devices);
@@ -239,14 +260,21 @@ void TouchFactory::UpdateDeviceList(Display* display) {
 
 bool TouchFactory::ShouldProcessXI2Event(XEvent* xev) {
   DCHECK_EQ(GenericEvent, xev->type);
+  XIEvent* event = static_cast<XIEvent*>(xev->xcookie.data);
+  XIDeviceEvent* xiev = reinterpret_cast<XIDeviceEvent*>(event);
 
-  XGenericEventCookie* cookie = &xev->xcookie;
-  if (cookie->evtype != XI_ButtonPress &&
-      cookie->evtype != XI_ButtonRelease &&
-      cookie->evtype != XI_Motion)
+#if defined(USE_XI2_MT)
+  if (event->evtype == XI_TouchBegin ||
+      event->evtype == XI_TouchUpdate ||
+      event->evtype == XI_TouchEnd) {
+    return touch_device_lookup_[xiev->sourceid];
+  }
+#endif
+  if (event->evtype != XI_ButtonPress &&
+      event->evtype != XI_ButtonRelease &&
+      event->evtype != XI_Motion)
     return true;
 
-  XIDeviceEvent* xiev = static_cast<XIDeviceEvent*>(cookie->data);
   return pointer_device_lookup_[xiev->deviceid];
 }
 
@@ -263,6 +291,11 @@ void TouchFactory::SetupXI2ForXWindow(Window window) {
   unsigned char mask[XIMaskLen(XI_LASTEVENT)];
   memset(mask, 0, sizeof(mask));
 
+#if defined(USE_XI2_MT)
+  XISetMask(mask, XI_TouchBegin);
+  XISetMask(mask, XI_TouchUpdate);
+  XISetMask(mask, XI_TouchEnd);
+#endif
   XISetMask(mask, XI_ButtonPress);
   XISetMask(mask, XI_ButtonRelease);
   XISetMask(mask, XI_Motion);
@@ -294,6 +327,7 @@ bool TouchFactory::IsTouchDevice(unsigned deviceid) const {
       touch_device_lookup_[deviceid] : false;
 }
 
+#if !defined(USE_XI2_MT)
 bool TouchFactory::IsSlotUsed(int slot) const {
   CHECK_LT(slot, kMaxTouchPoints);
   return slots_used_[slot];
@@ -303,6 +337,7 @@ void TouchFactory::SetSlotUsed(int slot, bool used) {
   CHECK_LT(slot, kMaxTouchPoints);
   slots_used_[slot] = used;
 }
+#endif
 
 bool TouchFactory::GrabTouchDevices(Display* display, ::Window window) {
 #if defined(TOUCH_UI)
@@ -315,6 +350,11 @@ bool TouchFactory::GrabTouchDevices(Display* display, ::Window window) {
   bool success = true;
 
   memset(mask, 0, sizeof(mask));
+#if defined(USE_XI2_MT)
+  XISetMask(mask, XI_TouchBegin);
+  XISetMask(mask, XI_TouchUpdate);
+  XISetMask(mask, XI_TouchEnd);
+#endif
   XISetMask(mask, XI_ButtonPress);
   XISetMask(mask, XI_ButtonRelease);
   XISetMask(mask, XI_Motion);
@@ -422,6 +462,14 @@ bool TouchFactory::ExtractTouchParam(const XEvent& xev,
     *value = xiev->valuators.values[v];
     return true;
   }
+
+#if defined(USE_XI2_MT)
+  // With XInput2 MT, Tracking ID is provided in the detail field.
+  if (tp == TP_TRACKING_ID) {
+    *value = xiev->detail;
+    return true;
+  }
+#endif
 
   return false;
 }

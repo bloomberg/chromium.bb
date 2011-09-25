@@ -47,6 +47,26 @@ bool DispatchX2Event(Widget* widget, XEvent* xev) {
       // TODO(sad): We don't capture XInput2 events from keyboard yet.
       break;
     }
+#if defined(USE_XI2_MT)
+    case XI_TouchBegin:
+    case XI_TouchEnd:
+    case XI_TouchUpdate: {
+      Event::FromNativeEvent2 from_native;
+
+      // Hide the cursor when a touch event comes in.
+      TouchFactory::GetInstance()->SetCursorVisible(false, false);
+
+      // If the TouchEvent is processed by |widget|, then return.
+      TouchEvent touch(xev, from_native);
+      if (widget->OnTouchEvent(touch) != ui::TOUCH_STATUS_UNKNOWN)
+        return true;
+
+      // We do not want to generate a mouse event for an unprocessed touch
+      // event here. That is already done by the gesture manager in
+      // RootView::OnTouchEvent.
+      return false;
+    }
+#endif
     case XI_ButtonPress:
     case XI_ButtonRelease:
     case XI_Motion: {
@@ -72,8 +92,8 @@ bool DispatchX2Event(Widget* widget, XEvent* xev) {
             cookie->evtype == XI_ButtonRelease)
           return false;
 
-        // If the TouchEvent is processed by |root|, then return. Otherwise let
-        // it fall through so it can be used as a MouseEvent, if desired.
+        // If the TouchEvent is processed by |widget|, then return. Otherwise
+        // let it fall through so it can be used as a MouseEvent, if desired.
         TouchEvent touch(xev, from_native);
         if (widget->OnTouchEvent(touch) != ui::TOUCH_STATUS_UNKNOWN)
           return true;

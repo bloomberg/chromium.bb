@@ -77,6 +77,19 @@ int GetButtonMaskForX2Event(XIDeviceEvent* xievent) {
 }
 
 ui::EventType GetTouchEventType(XEvent* xev) {
+#if defined(USE_XI2_MT)
+  XIEvent* event = static_cast<XIEvent*>(xev->xcookie.data);
+  switch(event->evtype) {
+    case XI_TouchBegin:
+      return ui::ET_TOUCH_PRESSED;
+    case XI_TouchUpdate:
+      return ui::ET_TOUCH_MOVED;
+    case XI_TouchEnd:
+      return ui::ET_TOUCH_RELEASED;
+  }
+
+  return ui::ET_UNKNOWN;
+#else
   XGenericEventCookie* cookie = &xev->xcookie;
   DCHECK_EQ(cookie->evtype, XI_Motion);
 
@@ -105,14 +118,22 @@ ui::EventType GetTouchEventType(XEvent* xev) {
   }
 
   return ui::ET_TOUCH_MOVED;
+#endif  // defined(USE_XI2_MT)
 }
 
 int GetTouchIDFromXEvent(XEvent* xev) {
-  float slot = 0;
+  float id = 0;
+#if defined(USE_XI2_MT)
+  // TODO(ningxin.hu@gmail.com): Make the id always start from 0 for a new
+  // touch-sequence when TRACKING_ID is used to extract the touch id.
+  TouchFactory::TouchParam tp = TouchFactory::TP_TRACKING_ID;
+#else
+  TouchFactory::TouchParam tp = TouchFactory::TP_SLOT_ID;
+#endif
   if (!TouchFactory::GetInstance()->ExtractTouchParam(
-        *xev, TouchFactory::TP_SLOT_ID, &slot))
-    LOG(ERROR) << "Could not get the slot ID for the event. Using 0.";
-  return slot;
+          *xev, tp, &id))
+    LOG(ERROR) << "Could not get the touch ID for the event. Using 0.";
+  return id;
 }
 
 ui::EventType EventTypeFromNative(NativeEvent2 native_event) {
@@ -403,6 +424,7 @@ TouchEvent::TouchEvent(NativeEvent2 native_event_2,
                                               TouchFactory::TP_ORIENTATION,
                                               0.0)),
       force_(GetTouchForceFromXEvent(native_event_2)) {
+#if !defined(USE_XI2_MT)
   if (type() == ui::ET_TOUCH_PRESSED || type() == ui::ET_TOUCH_RELEASED) {
     TouchFactory* factory = TouchFactory::GetInstance();
     float slot;
@@ -411,6 +433,7 @@ TouchEvent::TouchEvent(NativeEvent2 native_event_2,
       factory->SetSlotUsed(slot, type() == ui::ET_TOUCH_PRESSED);
     }
   }
+#endif
 }
 
 }  // namespace views

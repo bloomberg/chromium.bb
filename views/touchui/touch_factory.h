@@ -42,9 +42,15 @@ class VIEWS_EXPORT TouchFactory {
     // 'Tracking ID' marks the removal of a touch point. During the lifetime of
     // a touchpoint, we use the 'Slot ID' as its identifier. The XI_ButtonPress
     // and XI_ButtonRelease events are ignored.
+#if !defined(USE_XI2_MT)
     TP_SLOT_ID,           // ID of the finger that triggered a touch event
                           // (useful when tracking multiple simultaneous
                           // touches)
+#endif
+    // NOTE for XInput MT: 'Tracking ID' is provided in every touch event to
+    // track individual touch. 'Tracking ID' is an unsigned 32-bit value and
+    // is increased for each new touch. It will wrap back to 0 when reaching
+    // the numerical limit.
     TP_TRACKING_ID,       // ID of the touch point.
 
     TP_LAST_ENTRY
@@ -71,11 +77,13 @@ class VIEWS_EXPORT TouchFactory {
   // Is the device a touch-device?
   bool IsTouchDevice(unsigned int deviceid) const;
 
+#if !defined(USE_XI2_MT)
   // Is the slot ID currently used?
   bool IsSlotUsed(int slot) const;
 
   // Marks a slot as being used/unused.
   void SetSlotUsed(int slot, bool used);
+#endif
 
   // Grabs the touch devices for the specified window on the specified display.
   // Returns if grab was successful for all touch devices.
@@ -182,11 +190,13 @@ class VIEWS_EXPORT TouchFactory {
   int touch_param_min_[kMaxDeviceNum][TP_LAST_ENTRY];
   int touch_param_max_[kMaxDeviceNum][TP_LAST_ENTRY];
 
+#if !defined(USE_XI2_MT)
   // Maximum simultaneous touch points.
   static const int kMaxTouchPoints = 32;
 
   // A lookup table for slots in use for a touch event.
   std::bitset<kMaxTouchPoints> slots_used_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(TouchFactory);
 };

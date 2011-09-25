@@ -75,12 +75,25 @@ void InitializeXInput2(void) {
     return;
   }
 
+#if defined(USE_XI2_MT)
+  // USE_XI2_MT also defines the required XI2 minor minimum version.
+  int major = 2, minor = USE_XI2_MT;
+#else
   int major = 2, minor = 0;
+#endif
   if (XIQueryVersion(display, &major, &minor) == BadRequest) {
     VLOG(1) << "XInput2 not supported in the server.";
     xiopcode = -1;
     return;
   }
+#if defined(USE_XI2_MT)
+  if (major < 2 || (major == 2 && minor < USE_XI2_MT)) {
+    VLOG(1) << "XI version on server is " << major << "." << minor << ". "
+            << "But 2." << USE_XI2_MT << " is required.";
+    xiopcode = -1;
+    return;
+  }
+#endif
 }
 
 }  // namespace
