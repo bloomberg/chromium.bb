@@ -605,17 +605,3 @@
    fun:media::CompositeFilter::CallFilter
    fun:media::CompositeFilter::SerialCallback
 }
-{
-   bug_97836
-   ThreadSanitizer:Race
-   fun:net::SdchManager::Global
-   fun:net::URLRequestHttpJob::NotifyHeadersComplete
-   fun:net::URLRequestHttpJob::SaveNextCookie
-   fun:net::URLRequestHttpJob::SaveCookiesAndNotifyHeadersComplete
-   fun:net::URLRequestHttpJob::OnStartCompleted
-   fun:DispatchToMethod
-   fun:CallbackImpl::RunWithParams
-   fun:CallbackRunner::Run
-   fun:net::HttpNetworkTransaction::DoCallback
-   fun:net::HttpNetworkTransaction::OnIOComplete
-}
