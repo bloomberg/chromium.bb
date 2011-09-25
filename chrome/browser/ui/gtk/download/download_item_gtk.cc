@@ -266,6 +266,10 @@ DownloadItemGtk::DownloadItemGtk(DownloadShelfGtk* parent_shelf,
 }
 
 DownloadItemGtk::~DownloadItemGtk() {
+  // First close the menu and then destroy the GtkWidgets. Bug#97724
+  if (menu_.get())
+    menu_.reset();
+
   icon_consumer_.CancelAllRequests();
   StopDownloadProgress();
   get_download()->RemoveObserver(this);
