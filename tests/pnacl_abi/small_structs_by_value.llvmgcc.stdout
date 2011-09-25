@@ -4,56 +4,35 @@ target triple = "armv7-none-linux-gnueabi"
 %struct.TWO_SHORTS = type { i16, i16 }
 %struct.TWO_INTS = type { i32, i32 }
 
-define void @bar_chars(%struct.TWO_CHARS %z) nounwind {
+define void @bar_chars(%struct.TWO_CHARS* byval %z) nounwind {
 entry:
-  %z_addr = alloca %struct.TWO_CHARS, align 1
-  %memtmp = alloca %struct.TWO_CHARS
-  %"alloca point" = bitcast i32 0 to i32
-  store %struct.TWO_CHARS %z, %struct.TWO_CHARS* %z_addr
-  %0 = load %struct.TWO_CHARS* %z_addr
-  store %struct.TWO_CHARS %0, %struct.TWO_CHARS* %memtmp
-  %1 = load %struct.TWO_CHARS* %memtmp
-  call void @foo_chars(%struct.TWO_CHARS %1) nounwind
+  call void @foo_chars(%struct.TWO_CHARS* byval %z) nounwind
   br label %return
 
 return:                                           ; preds = %entry
   ret void
 }
 
-declare void @foo_chars(%struct.TWO_CHARS)
+declare void @foo_chars(%struct.TWO_CHARS* byval)
 
-define void @bar_shorts(%struct.TWO_SHORTS %z) nounwind {
+define void @bar_shorts(%struct.TWO_SHORTS* byval %z) nounwind {
 entry:
-  %z_addr = alloca %struct.TWO_SHORTS, align 2
-  %memtmp = alloca %struct.TWO_SHORTS
-  %"alloca point" = bitcast i32 0 to i32
-  store %struct.TWO_SHORTS %z, %struct.TWO_SHORTS* %z_addr
-  %0 = load %struct.TWO_SHORTS* %z_addr
-  store %struct.TWO_SHORTS %0, %struct.TWO_SHORTS* %memtmp
-  %1 = load %struct.TWO_SHORTS* %memtmp
-  call void @foo_shorts(%struct.TWO_SHORTS %1) nounwind
+  call void @foo_shorts(%struct.TWO_SHORTS* byval %z) nounwind
   br label %return
 
 return:                                           ; preds = %entry
   ret void
 }
 
-declare void @foo_shorts(%struct.TWO_SHORTS)
+declare void @foo_shorts(%struct.TWO_SHORTS* byval)
 
-define void @bar_ints(%struct.TWO_INTS %z) nounwind {
+define void @bar_ints(%struct.TWO_INTS* byval %z) nounwind {
 entry:
-  %z_addr = alloca %struct.TWO_INTS, align 4
-  %memtmp = alloca %struct.TWO_INTS
-  %"alloca point" = bitcast i32 0 to i32
-  store %struct.TWO_INTS %z, %struct.TWO_INTS* %z_addr
-  %0 = load %struct.TWO_INTS* %z_addr
-  store %struct.TWO_INTS %0, %struct.TWO_INTS* %memtmp
-  %1 = load %struct.TWO_INTS* %memtmp
-  call void @foo_ints(%struct.TWO_INTS %1) nounwind
+  call void @foo_ints(%struct.TWO_INTS* byval %z) nounwind
   br label %return
 
 return:                                           ; preds = %entry
   ret void
 }
 
-declare void @foo_ints(%struct.TWO_INTS)
+declare void @foo_ints(%struct.TWO_INTS* byval)
