@@ -67,12 +67,13 @@ class Stats(object):
     self.multiple_lgtms = 0
     self.drive_by = 0
     self.not_requested = 0
+    self.self_review = 0
 
     self.percent_done = 0.
     self.percent_lgtm = 0.
     self.percent_drive_by = 0.
     self.percent_not_requested = 0.
-    self.days = None
+    self.days = 0
     self.review_per_day = 0.
     self.review_done_per_day = 0.
 
@@ -168,7 +169,11 @@ def print_issue(issue, reviewer, stats):
   """Process an issue and prints stats about it."""
   stats.total += 1
   _process_issue(issue)
-  if any(msg['sender'] == reviewer for msg in issue['messages']):
+  if issue['owner_email'] == reviewer:
+    stats.self_review += 1
+    latency = '<self review>'
+    reviewed = ''
+  elif any(msg['sender'] == reviewer for msg in issue['messages']):
     reviewed = _process_issue_lgtms(issue, reviewer, stats)
     latency = _process_issue_latency(issue, reviewer, stats)
   else:
@@ -215,8 +220,9 @@ def print_reviews(reviewer, created_after, created_before, instance_url):
   stats.finalize(first_day, last_day)
 
   print >> sys.stderr, (
-      '%s reviewed %d issues out of %d (%1.1f%%).' %
-      (reviewer, stats.actually_reviewed, stats.total, stats.percent_done))
+      '%s reviewed %d issues out of %d (%1.1f%%). %d were self-review.' %
+      (reviewer, stats.actually_reviewed, stats.total, stats.percent_done,
+        stats.self_review))
   print >> sys.stderr, (
       '%4.1f review request/day during %3d days   (%4.1f r/d done).' % (
       stats.review_per_day, stats.days, stats.review_done_per_day))
