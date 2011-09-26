@@ -193,7 +193,11 @@ void Panel::SetStarredState(bool is_starred) {
 }
 
 gfx::Rect Panel::GetRestoredBounds() const {
-  return native_panel_->GetPanelBounds();
+  gfx::Rect bounds = native_panel_->GetPanelBounds();
+  int restored_height = native_panel_->GetRestoredHeight();
+  bounds.set_y(bounds.y() + bounds.height() - restored_height);
+  bounds.set_height(restored_height);
+  return bounds;
 }
 
 gfx::Rect Panel::GetBounds() const {

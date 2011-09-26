@@ -79,7 +79,7 @@ void PanelBrowserWindowCocoa::ShowPanel() {
   }
   is_shown_ = true;
 
-  NSRect finalFrame = ConvertCoordinatesToCocoa(GetPanelBounds());
+  NSRect finalFrame = ConvertCoordinatesToCocoa(bounds_);
   [controller_ revealAnimatedWithFrame:finalFrame];
 }
 

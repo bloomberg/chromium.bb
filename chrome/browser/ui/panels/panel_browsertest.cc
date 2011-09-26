@@ -124,7 +124,7 @@ class PanelBrowserTest : public BasePanelBrowserTest {
     std::vector<gfx::Rect> panels_bounds;
     const std::vector<Panel*>& panels = PanelManager::GetInstance()->panels();
     for (size_t i = 0; i < panels.size(); ++i)
-      panels_bounds.push_back(panels[i]->GetRestoredBounds());
+      panels_bounds.push_back(panels[i]->GetBounds());
     return panels_bounds;
   }
 
@@ -135,10 +135,10 @@ class PanelBrowserTest : public BasePanelBrowserTest {
     for (size_t i = 0; i < panels.size(); ++i) {
       DLOG(WARNING) << "#=" << i
                     << ", ptr=" << panels[i]
-                    << ", x=" << panels[i]->GetRestoredBounds().x()
-                    << ", y=" << panels[i]->GetRestoredBounds().y()
-                    << ", width=" << panels[i]->GetRestoredBounds().width()
-                    << ", height" << panels[i]->GetRestoredBounds().height();
+                    << ", x=" << panels[i]->GetBounds().x()
+                    << ", y=" << panels[i]->GetBounds().y()
+                    << ", width=" << panels[i]->GetBounds().width()
+                    << ", height" << panels[i]->GetBounds().height();
     }
   }
 
@@ -154,7 +154,7 @@ class PanelBrowserTest : public BasePanelBrowserTest {
   void CheckPanelBounds(const std::vector<Panel*>& panels,
                         const std::vector<gfx::Rect>& expected_bounds) {
     for (size_t i = 0; i < panels.size(); ++i)
-      EXPECT_EQ(expected_bounds[i], panels[i]->GetRestoredBounds());
+      EXPECT_EQ(expected_bounds[i], panels[i]->GetBounds());
   }
 
   void CheckPanelBoundsWithDeltas(const std::vector<Panel*>& panels,
@@ -163,7 +163,7 @@ class PanelBrowserTest : public BasePanelBrowserTest {
     for (size_t i = 0; i < panels.size(); ++i) {
       gfx::Rect expected_bounds = bounds[i];
       expected_bounds.Offset(expected_delta_x[i], 0);
-      EXPECT_EQ(expected_bounds, panels[i]->GetRestoredBounds());
+      EXPECT_EQ(expected_bounds, panels[i]->GetBounds());
     }
   }
 
@@ -206,7 +206,7 @@ class PanelBrowserTest : public BasePanelBrowserTest {
       // Trigger the mouse-pressed event.
       // All panels should remain in their original positions.
       panel_testing_to_drag->PressLeftMouseButtonTitlebar(
-          panels[drag_index]->GetRestoredBounds().origin());
+          panels[drag_index]->GetBounds().origin());
       CheckPanelBounds(panels, test_begin_bounds);
     }
 
@@ -327,7 +327,7 @@ class PanelBrowserTest : public BasePanelBrowserTest {
     for (size_t index = 0; index < panels.size(); ++index) {
       // Press left mouse button.  Verify nothing changed.
       native_panels_testing[index]->PressLeftMouseButtonTitlebar(
-          panels[index]->GetRestoredBounds().origin());
+          panels[index]->GetBounds().origin());
       CheckPanelBounds(panels, expected_bounds);
       CheckExpansionStates(expected_expansion_states);
 
@@ -366,7 +366,7 @@ class PanelBrowserTest : public BasePanelBrowserTest {
     for (size_t index = 0; index < panels.size(); ++index) {
       // Hover mouse on minimized panel.
       // Verify titlebar is exposed on all panels.
-      gfx::Point hover_point(panels[index]->GetRestoredBounds().origin());
+      gfx::Point hover_point(panels[index]->GetBounds().origin());
       native_panels_testing[index]->SetMousePositionForMinimizeRestore(
           hover_point);
       CheckPanelBounds(panels, titlebar_exposed_bounds);
@@ -374,7 +374,7 @@ class PanelBrowserTest : public BasePanelBrowserTest {
 
       // Hover mouse above the panel. Verify all panels are minimized.
       hover_point.set_y(
-          panels[index]->GetRestoredBounds().y() - kFarEnoughFromHoverArea);
+          panels[index]->GetBounds().y() - kFarEnoughFromHoverArea);
       native_panels_testing[index]->SetMousePositionForMinimizeRestore(
           hover_point);
       CheckPanelBounds(panels, minimized_bounds);
@@ -382,16 +382,16 @@ class PanelBrowserTest : public BasePanelBrowserTest {
 
       // Hover mouse below minimized panel.
       // Verify titlebar is exposed on all panels.
-      hover_point.set_y(panels[index]->GetRestoredBounds().y() +
-                        panels[index]->GetRestoredBounds().height() + 5);
+      hover_point.set_y(panels[index]->GetBounds().y() +
+                        panels[index]->GetBounds().height() + 5);
       native_panels_testing[index]->SetMousePositionForMinimizeRestore(
           hover_point);
       CheckPanelBounds(panels, titlebar_exposed_bounds);
       CheckExpansionStates(titlebar_exposed_states);
 
       // Hover below titlebar exposed panel.  Verify nothing changed.
-      hover_point.set_y(panels[index]->GetRestoredBounds().y() +
-                        panels[index]->GetRestoredBounds().height() + 6);
+      hover_point.set_y(panels[index]->GetBounds().y() +
+                        panels[index]->GetBounds().height() + 6);
       native_panels_testing[index]->SetMousePositionForMinimizeRestore(
           hover_point);
       CheckPanelBounds(panels, titlebar_exposed_bounds);
@@ -399,7 +399,7 @@ class PanelBrowserTest : public BasePanelBrowserTest {
 
       // Hover mouse above panel.  Verify all panels are minimized.
       hover_point.set_y(
-          panels[index]->GetRestoredBounds().y() - kFarEnoughFromHoverArea);
+          panels[index]->GetBounds().y() - kFarEnoughFromHoverArea);
       native_panels_testing[index]->SetMousePositionForMinimizeRestore(
           hover_point);
       CheckPanelBounds(panels, minimized_bounds);
@@ -418,7 +418,7 @@ class PanelBrowserTest : public BasePanelBrowserTest {
       // Click minimized or title bar exposed panel as the case may be.
       // Verify panel is restored to its original size.
       native_panels_testing[index]->PressLeftMouseButtonTitlebar(
-          panels[index]->GetRestoredBounds().origin());
+          panels[index]->GetBounds().origin());
       native_panels_testing[index]->ReleaseMouseButtonTitlebar();
       expected_bounds[index].set_height(
           test_begin_bounds[index].height());
@@ -826,6 +826,54 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, AutoResize) {
   panel->Close();
 }
 #endif
+
+IN_PROC_BROWSER_TEST_F(PanelBrowserTest, RestoredBounds) {
+  // Disable mouse watcher. We don't care about mouse movements in this test.
+  NativePanelTesting::GetPanelMouseWatcherInstance()->EnableTestingMode();
+  Panel* panel = CreatePanel("PanelTest");
+  EXPECT_EQ(Panel::EXPANDED, panel->expansion_state());
+  EXPECT_EQ(panel->GetBounds(), panel->GetRestoredBounds());
+
+  panel->SetExpansionState(Panel::MINIMIZED);
+  EXPECT_EQ(Panel::MINIMIZED, panel->expansion_state());
+  gfx::Rect bounds = panel->GetBounds();
+  gfx::Rect restored = panel->GetRestoredBounds();
+  EXPECT_EQ(bounds.x(), restored.x());
+  EXPECT_GT(bounds.y(), restored.y());
+  EXPECT_EQ(bounds.width(), restored.width());
+  EXPECT_LT(bounds.height(), restored.height());
+
+  panel->SetExpansionState(Panel::EXPANDED);
+  EXPECT_EQ(panel->GetBounds(), panel->GetRestoredBounds());
+
+  panel->SetExpansionState(Panel::TITLE_ONLY);
+  EXPECT_EQ(Panel::TITLE_ONLY, panel->expansion_state());
+  bounds = panel->GetBounds();
+  restored = panel->GetRestoredBounds();
+  EXPECT_EQ(bounds.x(), restored.x());
+  EXPECT_GT(bounds.y(), restored.y());
+  EXPECT_EQ(bounds.width(), restored.width());
+  EXPECT_LT(bounds.height(), restored.height());
+
+  // Verify that changing the panel bounds only affects restored height
+  // when panel is expanded.
+  int restored_height = restored.height();
+  bounds = gfx::Rect(10, 20, 300, 400);
+  panel->SetPanelBounds(bounds);
+  EXPECT_EQ(restored_height, panel->GetRestoredBounds().height());
+
+  panel->SetExpansionState(Panel::MINIMIZED);
+  bounds = gfx::Rect(20, 30, 100, 200);
+  panel->SetPanelBounds(bounds);
+  EXPECT_EQ(restored_height, panel->GetRestoredBounds().height());
+
+  panel->SetExpansionState(Panel::EXPANDED);
+  bounds = gfx::Rect(40, 60, 300, 400);
+  panel->SetPanelBounds(bounds);
+  EXPECT_NE(restored_height, panel->GetRestoredBounds().height());
+
+  panel->Close();
+}
 
 // TODO(jennb): Disabling for Windows due to failure on XP and Vista.
 #if defined(OS_WIN)

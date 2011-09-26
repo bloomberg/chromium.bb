@@ -144,8 +144,11 @@ gfx::Rect PanelBrowserWindowGtk::GetPanelBounds() const {
 }
 
 void PanelBrowserWindowGtk::SetPanelBounds(const gfx::Rect& bounds) {
-  if (bounds != bounds_)
+  if (bounds != bounds_) {
+    if (panel_->expansion_state() == Panel::EXPANDED)
+      restored_height_ = bounds.height();
     SetBoundsImpl(bounds, false);  // Only move if necessary.
+  }
 }
 
 void PanelBrowserWindowGtk::OnPanelExpansionStateChanged(
@@ -387,7 +390,6 @@ gboolean PanelBrowserWindowGtk::OnTitlebarButtonReleaseEvent(
 
   Panel::ExpansionState new_expansion_state;
   if (panel_->expansion_state() == Panel::EXPANDED) {
-    restored_height_ = bounds_.height();
     new_expansion_state = Panel::MINIMIZED;
   } else {
     new_expansion_state = Panel::EXPANDED;

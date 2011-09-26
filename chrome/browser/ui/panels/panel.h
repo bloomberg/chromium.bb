@@ -8,6 +8,7 @@
 
 #include "chrome/browser/ui/browser_window.h"
 
+#include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
@@ -190,6 +191,8 @@ class Panel : public BrowserWindow, public NotificationObserver {
 
  private:
   friend class PanelManager;
+  friend class PanelBrowserTest;
+  FRIEND_TEST_ALL_PREFIXES(PanelBrowserTest, RestoredBounds);
 
   // Panel can only be created using PanelManager::CreatePanel().
   Panel(Browser* browser, const gfx::Rect& bounds);
