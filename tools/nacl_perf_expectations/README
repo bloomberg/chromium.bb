@@ -24,9 +24,13 @@ values (it leaves some padding by guessing the variance).
 Update procedure, from this directory:
 
 (1) update reva to 7000 and revb to 7010.
-(2) ../perf_expectations/make_expectations.py -c ./nacl_perf_expectations.cfg
+
+(2) RUN THIS COMMAND:
+    ../perf_expectations/make_expectations.py -c ./nacl_perf_expectations.cfg
+
     This will poll the bots for samples and update the json file.
     TIP: "cat README", then copy paste the command line!
+
 (3) make a CL to check in the new nacl_perf_expectations.json file.
 
 For more info on the format see:
