@@ -280,6 +280,17 @@ void SpdySM::OnControl(const SpdyControlFrame* frame) {
   }
 }
 
+bool SpdySM::OnControlFrameHeaderData(spdy::SpdyStreamId stream_id,
+                                      const char* header_data,
+                                      size_t len) {
+  DCHECK(false);
+  return false;
+}
+
+void SpdySM::OnDataFrameHeader(const spdy::SpdyDataFrame* frame) {
+  DCHECK(false);
+}
+
 void SpdySM::OnStreamFrameData(SpdyStreamId stream_id,
                                const char* data, size_t len) {
   VLOG(2) << ACCEPTOR_CLIENT_IDENT << "SpdySM: StreamData(" << stream_id
