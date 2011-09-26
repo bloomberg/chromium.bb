@@ -91,6 +91,16 @@ base::MessagePumpDispatcher::DispatchStatus DesktopHostLinux::Dispatch(
       handled = desktop_->OnMouseEvent(mouseev);
       break;
     }
+
+    case ConfigureNotify: {
+      DCHECK_EQ(xdisplay_, xev->xconfigure.display);
+      DCHECK_EQ(xwindow_, xev->xconfigure.window);
+      DCHECK_EQ(xwindow_, xev->xconfigure.event);
+      desktop_->OnHostResized(gfx::Size(xev->xconfigure.width,
+                                        xev->xconfigure.height));
+      handled = true;
+      break;
+    }
   }
   return handled ? EVENT_PROCESSED : EVENT_IGNORED;
 }
@@ -111,6 +121,9 @@ gfx::Size DesktopHostLinux::GetSize() {
 }
 
 void DesktopHostLinux::SetSize(const gfx::Size& size) {
+  if (bounds_.size() == size)
+    return;
+  bounds_.set_size(size);
   XResizeWindow(xdisplay_, xwindow_, size.width(), size.height());
 }
 

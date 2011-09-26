@@ -43,10 +43,6 @@ void Desktop::Init() {
   toplevel_window_container_->SetBounds(gfx::Rect(0, 0, 1280, 1024), 0);
   toplevel_window_container_->SetVisibility(aura::Window::VISIBILITY_SHOWN);
   toplevel_window_container_->SetParent(window_.get());
-#if defined(USE_X11)
-  // TODO(oshima): Implement configure notify and remove this.
-  OnHostResized(host_->GetSize());
-#endif
 }
 
 void Desktop::Show() {
