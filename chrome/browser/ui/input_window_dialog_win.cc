@@ -24,26 +24,23 @@ const int kTextfieldWidth = 200;
 
 }  // namespace
 
-namespace views {
-class Widget;
-}
-
 // The Windows implementation of the cross platform input dialog interface.
 class WinInputWindowDialog : public InputWindowDialog {
  public:
   WinInputWindowDialog(gfx::NativeWindow parent,
-                       const std::wstring& window_title,
-                       const std::wstring& label,
-                       const std::wstring& contents,
+                       const string16& window_title,
+                       const string16& label,
+                       const string16& contents,
                        Delegate* delegate);
   virtual ~WinInputWindowDialog();
 
-  virtual void Show();
-  virtual void Close();
+  // Overridden from InputWindowDialog:
+  virtual void Show() OVERRIDE;
+  virtual void Close() OVERRIDE;
 
-  const std::wstring& window_title() const { return window_title_; }
-  const std::wstring& label() const { return label_; }
-  const std::wstring& contents() const { return contents_; }
+  const string16& window_title() const { return window_title_; }
+  const string16& label() const { return label_; }
+  const string16& contents() const { return contents_; }
 
   InputWindowDialog::Delegate* delegate() { return delegate_.get(); }
 
@@ -52,9 +49,9 @@ class WinInputWindowDialog : public InputWindowDialog {
   views::Widget* window_;
 
   // Strings to feed to the on screen window.
-  std::wstring window_title_;
-  std::wstring label_;
-  std::wstring contents_;
+  string16 window_title_;
+  string16 label_;
+  string16 contents_;
 
   // Our delegate. Consumes the window's output.
   scoped_ptr<InputWindowDialog::Delegate> delegate_;
@@ -65,35 +62,29 @@ class WinInputWindowDialog : public InputWindowDialog {
 class ContentView : public views::DialogDelegateView,
                     public views::TextfieldController {
  public:
-  explicit ContentView(WinInputWindowDialog* delegate)
-      : delegate_(delegate),
-        ALLOW_THIS_IN_INITIALIZER_LIST(focus_grabber_factory_(this)) {
-    DCHECK(delegate_);
-  }
+  explicit ContentView(WinInputWindowDialog* delegate);
 
   // views::DialogDelegateView:
   virtual bool IsDialogButtonEnabled(
-      MessageBoxFlags::DialogButton button) const;
-  virtual bool Accept();
-  virtual bool Cancel();
-  virtual void DeleteDelegate();
-  virtual std::wstring GetWindowTitle() const;
-  virtual bool IsModal() const { return true; }
-  virtual views::View* GetContentsView();
+      MessageBoxFlags::DialogButton button) const OVERRIDE;
+  virtual bool Accept() OVERRIDE;
+  virtual bool Cancel() OVERRIDE;
+  virtual void DeleteDelegate() OVERRIDE;
+  virtual std::wstring GetWindowTitle() const OVERRIDE;
+  virtual bool IsModal() const OVERRIDE;
+  virtual views::View* GetContentsView() OVERRIDE;
 
   // views::TextfieldController:
   virtual void ContentsChanged(views::Textfield* sender,
-                               const std::wstring& new_contents);
+                               const std::wstring& new_contents) OVERRIDE;
   virtual bool HandleKeyEvent(views::Textfield*,
-                              const views::KeyEvent&) {
-    return false;
-  }
+                              const views::KeyEvent&) OVERRIDE;
 
  protected:
   // views::View:
   virtual void ViewHierarchyChanged(bool is_add,
                                     views::View* parent,
-                                    views::View* child);
+                                    views::View* child) OVERRIDE;
 
  private:
   // Set up dialog controls and layout.
@@ -114,6 +105,14 @@ class ContentView : public views::DialogDelegateView,
 
   DISALLOW_COPY_AND_ASSIGN(ContentView);
 };
+
+///////////////////////////////////////////////////////////////////////////////
+// ContentView
+ContentView::ContentView(WinInputWindowDialog* delegate)
+    : delegate_(delegate),
+      ALLOW_THIS_IN_INITIALIZER_LIST(focus_grabber_factory_(this)) {
+    DCHECK(delegate_);
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // ContentView, views::DialogDelegate implementation:
@@ -142,7 +141,11 @@ void ContentView::DeleteDelegate() {
 }
 
 std::wstring ContentView::GetWindowTitle() const {
-  return delegate_->window_title();
+  return UTF16ToWideHack(delegate_->window_title());
+}
+
+bool ContentView::IsModal() const {
+  return true;
 }
 
 views::View* ContentView::GetContentsView() {
@@ -155,6 +158,11 @@ views::View* ContentView::GetContentsView() {
 void ContentView::ContentsChanged(views::Textfield* sender,
                                   const std::wstring& new_contents) {
   GetDialogClientView()->UpdateDialogButtons();
+}
+
+bool ContentView::HandleKeyEvent(views::Textfield*,
+                                 const views::KeyEvent&) {
+  return false;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -172,17 +180,16 @@ void ContentView::ViewHierarchyChanged(bool is_add,
 
 void ContentView::InitControlLayout() {
   text_field_ = new views::Textfield;
-  text_field_->SetText(delegate_->contents());
+  text_field_->SetText(UTF16ToWideHack(delegate_->contents()));
   text_field_->SetController(this);
 
-  using views::ColumnSet;
   using views::GridLayout;
 
   // TODO(sky): Vertical alignment should be baseline.
   GridLayout* layout = GridLayout::CreatePanel(this);
   SetLayoutManager(layout);
 
-  ColumnSet* c1 = layout->AddColumnSet(0);
+  views::ColumnSet* c1 = layout->AddColumnSet(0);
   c1->AddColumn(GridLayout::CENTER, GridLayout::CENTER, 0,
                 GridLayout::USE_PREF, 0, 0);
   c1->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
@@ -190,7 +197,7 @@ void ContentView::InitControlLayout() {
                 GridLayout::USE_PREF, kTextfieldWidth, kTextfieldWidth);
 
   layout->StartRow(0, 0);
-  views::Label* label = new views::Label(delegate_->label());
+  views::Label* label = new views::Label(UTF16ToWideHack(delegate_->label()));
   layout->AddView(label);
   layout->AddView(text_field_);
 
@@ -205,9 +212,9 @@ void ContentView::FocusFirstFocusableControl() {
 }
 
 WinInputWindowDialog::WinInputWindowDialog(gfx::NativeWindow parent,
-                                           const std::wstring& window_title,
-                                           const std::wstring& label,
-                                           const std::wstring& contents,
+                                           const string16& window_title,
+                                           const string16& label,
+                                           const string16& contents,
                                            Delegate* delegate)
     : window_title_(window_title),
       label_(label),
@@ -235,9 +242,6 @@ InputWindowDialog* InputWindowDialog::Create(gfx::NativeWindow parent,
                                              const string16& label,
                                              const string16& contents,
                                              Delegate* delegate) {
-  return new WinInputWindowDialog(parent,
-                                  UTF16ToWide(window_title),
-                                  UTF16ToWide(label),
-                                  UTF16ToWide(contents),
-                                  delegate);
+  return new WinInputWindowDialog(
+      parent, window_title, label, contents, delegate);
 }
