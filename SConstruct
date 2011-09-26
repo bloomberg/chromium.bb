@@ -973,7 +973,7 @@ def DualLibrary(env, lib_name, *args, **kwargs):
   # write conflicting information to the same .gdca/.gdna files.
   if env.Bit('coverage_enabled'): return
   # Build a static library using -fPIC for the .o's.
-  if env.Bit('target_x86_64') and env.Bit('linux'):
+  if env.Bit('linux'):
     env_shared = env.Clone(OBJSUFFIX='.os')
     env_shared.Append(CCFLAGS=['-fPIC'])
     # -fPIE overrides -fPIC, and shared libraries should not be linked
@@ -996,7 +996,7 @@ def DualObject(env, *args, **kwargs):
   # write conflicting information to the same .gdca/.gdna files.
   if env.Bit('coverage_enabled'): return ret
   # Build a static library using -fPIC for the .o's.
-  if env.Bit('target_x86_64') and env.Bit('linux'):
+  if env.Bit('linux'):
     env_shared = env.Clone(OBJSUFFIX='.os')
     env_shared.Append(CCFLAGS=['-fPIC'])
     ret += env_shared.ComponentObject(*args, **kwargs)
@@ -1011,7 +1011,7 @@ def AddDualLibrary(env):
   if env.Bit('coverage_enabled'):
     env['SHARED_LIBS_SPECIAL'] = False
   else:
-    env['SHARED_LIBS_SPECIAL'] = env.Bit('target_x86_64') and env.Bit('linux')
+    env['SHARED_LIBS_SPECIAL'] = env.Bit('linux')
 
 
 # In prebuild mode we ignore the dependencies so that stuff does
