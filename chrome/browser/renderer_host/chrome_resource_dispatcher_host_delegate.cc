@@ -19,7 +19,7 @@
 #include "chrome/browser/renderer_host/chrome_url_request_user_data.h"
 #include "chrome/browser/renderer_host/safe_browsing_resource_handler.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
-#include "chrome/browser/ui/autologin_infobar_delegate.h"
+#include "chrome/browser/ui/auto_login_prompter.h"
 #include "chrome/browser/ui/login/login_prompt.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/user_script.h"
@@ -48,8 +48,8 @@ namespace {
 // instant. This empty ResourceDispatcherHostLoginDelegate implementation does
 // that.
 // TODO: see if we can handle this case more robustly.
-class InstantResourceDispatcherHostLoginDelegate :
-    public ResourceDispatcherHostLoginDelegate {
+class InstantResourceDispatcherHostLoginDelegate
+    : public ResourceDispatcherHostLoginDelegate {
  public:
   InstantResourceDispatcherHostLoginDelegate() {}
 
@@ -329,8 +329,8 @@ void ChromeResourceDispatcherHostDelegate::OnResponseStarted(
   // See if the response contains the X-Auto-Login header.  If so, this was
   // a request for a login page, and the server is allowing the browser to
   // suggest auto-login, if available.
-  AutoLoginInfoBarDelegate::ShowIfAutoLoginRequested(request, info->child_id(),
-                                                     info->route_id());
+  AutoLoginPrompter::ShowInfoBarIfPossible(request, info->child_id(),
+                                           info->route_id());
 }
 
 void ChromeResourceDispatcherHostDelegate::OnRequestRedirected(

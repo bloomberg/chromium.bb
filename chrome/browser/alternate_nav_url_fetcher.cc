@@ -8,6 +8,7 @@
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/intranet_redirect_detector.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/tab_contents/link_infobar_delegate.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "content/browser/tab_contents/navigation_controller.h"
 #include "content/browser/tab_contents/navigation_entry.h"
@@ -19,19 +20,88 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
+// AlternateNavInfoBarDelegate ------------------------------------------------
+
+class AlternateNavInfoBarDelegate : public LinkInfoBarDelegate {
+ public:
+  AlternateNavInfoBarDelegate(TabContents* tab_contents,
+                              const GURL& alternate_nav_url);
+  virtual ~AlternateNavInfoBarDelegate();
+
+ private:
+  // LinkInfoBarDelegate
+  virtual gfx::Image* GetIcon() const OVERRIDE;
+  virtual Type GetInfoBarType() const OVERRIDE;
+  virtual string16 GetMessageTextWithOffset(size_t* link_offset) const OVERRIDE;
+  virtual string16 GetLinkText() const OVERRIDE;
+  virtual bool LinkClicked(WindowOpenDisposition disposition) OVERRIDE;
+
+  TabContents* tab_contents_;
+  GURL alternate_nav_url_;
+
+  DISALLOW_COPY_AND_ASSIGN(AlternateNavInfoBarDelegate);
+};
+
+AlternateNavInfoBarDelegate::AlternateNavInfoBarDelegate(
+    TabContents* tab_contents,
+    const GURL& alternate_nav_url)
+    : LinkInfoBarDelegate(tab_contents),
+      tab_contents_(tab_contents),
+      alternate_nav_url_(alternate_nav_url) {
+}
+
+AlternateNavInfoBarDelegate::~AlternateNavInfoBarDelegate() {
+}
+
+gfx::Image* AlternateNavInfoBarDelegate::GetIcon() const {
+  return &ResourceBundle::GetSharedInstance().GetNativeImageNamed(
+      IDR_INFOBAR_ALT_NAV_URL);
+}
+
+InfoBarDelegate::Type AlternateNavInfoBarDelegate::GetInfoBarType() const {
+  return PAGE_ACTION_TYPE;
+}
+
+string16 AlternateNavInfoBarDelegate::GetMessageTextWithOffset(
+    size_t* link_offset) const {
+  const string16 label = l10n_util::GetStringFUTF16(
+      IDS_ALTERNATE_NAV_URL_VIEW_LABEL, string16(), link_offset);
+  return label;
+}
+
+string16 AlternateNavInfoBarDelegate::GetLinkText() const {
+  return UTF8ToUTF16(alternate_nav_url_.spec());
+}
+
+bool AlternateNavInfoBarDelegate::LinkClicked(
+    WindowOpenDisposition disposition) {
+  tab_contents_->OpenURL(
+      alternate_nav_url_, GURL(), disposition,
+      // Pretend the user typed this URL, so that navigating to
+      // it will be the default action when it's typed again in
+      // the future.
+      PageTransition::TYPED);
+
+  // We should always close, even if the navigation did not occur within this
+  // TabContents.
+  return true;
+}
+
+
+// AlternateNavURLFetcher -----------------------------------------------------
+
 AlternateNavURLFetcher::AlternateNavURLFetcher(
     const GURL& alternate_nav_url)
-    : LinkInfoBarDelegate(NULL),
-      alternate_nav_url_(alternate_nav_url),
+    : alternate_nav_url_(alternate_nav_url),
       controller_(NULL),
       state_(NOT_STARTED),
-      navigated_to_entry_(false),
-      infobar_contents_(NULL) {
+      navigated_to_entry_(false) {
   registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_PENDING,
                  NotificationService::AllSources());
 }
 
-AlternateNavURLFetcher::~AlternateNavURLFetcher() {}
+AlternateNavURLFetcher::~AlternateNavURLFetcher() {
+}
 
 void AlternateNavURLFetcher::Observe(int type,
                                      const NotificationSource& source,
@@ -42,8 +112,7 @@ void AlternateNavURLFetcher::Observe(int type,
       // should delete ourselves as that indicates that the page is being
       // re-loaded so this instance is now stale.
       // http://crbug.com/43378
-      if (!infobar_contents_ &&
-          controller_ == Source<NavigationController>(source).ptr()) {
+      if (controller_ == Source<NavigationController>(source).ptr()) {
         delete this;
       } else if (!controller_) {
         controller_ = Source<NavigationController>(source).ptr();
@@ -73,6 +142,7 @@ void AlternateNavURLFetcher::Observe(int type,
                         Source<NavigationController>(controller_));
       navigated_to_entry_ = true;
       ShowInfobarIfPossible();
+      // WARNING: |this| may be deleted!
       break;
 
     case content::NOTIFICATION_TAB_CLOSED:
@@ -97,39 +167,7 @@ void AlternateNavURLFetcher::OnURLFetchComplete(
   DCHECK_EQ(fetcher_.get(), source);
   SetStatusFromURLFetch(url, status, response_code);
   ShowInfobarIfPossible();
-}
-
-gfx::Image* AlternateNavURLFetcher::GetIcon() const {
-  return &ResourceBundle::GetSharedInstance().GetNativeImageNamed(
-      IDR_INFOBAR_ALT_NAV_URL);
-}
-
-InfoBarDelegate::Type AlternateNavURLFetcher::GetInfoBarType() const {
-  return PAGE_ACTION_TYPE;
-}
-
-string16 AlternateNavURLFetcher::GetMessageTextWithOffset(
-    size_t* link_offset) const {
-  const string16 label = l10n_util::GetStringFUTF16(
-      IDS_ALTERNATE_NAV_URL_VIEW_LABEL, string16(), link_offset);
-  return label;
-}
-
-string16 AlternateNavURLFetcher::GetLinkText() const {
-  return UTF8ToUTF16(alternate_nav_url_.spec());
-}
-
-bool AlternateNavURLFetcher::LinkClicked(WindowOpenDisposition disposition) {
-  infobar_contents_->OpenURL(
-      alternate_nav_url_, GURL(), disposition,
-      // Pretend the user typed this URL, so that navigating to
-      // it will be the default action when it's typed again in
-      // the future.
-      PageTransition::TYPED);
-
-  // We should always close, even if the navigation did not occur within this
-  // TabContents.
-  return true;
+  // WARNING: |this| may be deleted!
 }
 
 void AlternateNavURLFetcher::SetStatusFromURLFetch(
@@ -164,8 +202,9 @@ void AlternateNavURLFetcher::ShowInfobarIfPossible() {
     return;
   }
 
-  infobar_contents_ = controller_->tab_contents();
-  StoreActiveEntryUniqueID(infobar_contents_);
-  TabContentsWrapper::GetCurrentWrapperForContents(infobar_contents_)->
-      infobar_tab_helper()->AddInfoBar(this);
+  TabContents* tab_contents = controller_->tab_contents();
+  TabContentsWrapper::GetCurrentWrapperForContents(tab_contents)->
+      infobar_tab_helper()->AddInfoBar(new AlternateNavInfoBarDelegate(
+          tab_contents, alternate_nav_url_));
+  delete this;
 }
