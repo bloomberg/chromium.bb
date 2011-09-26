@@ -440,7 +440,7 @@ gfx::Image FaviconHandler::ResizeFaviconIfNeeded(const gfx::Image& image) {
   int width = bitmap.width();
   int height = bitmap.height();
   if (width > 0 && height > 0) {
-    calc_favicon_target_size(&width, &height);
+    gfx::CalculateFaviconTargetSize(&width, &height);
     return gfx::Image(new SkBitmap(
                           skia::ImageOperations::Resize(
                               bitmap, skia::ImageOperations::RESIZE_LANCZOS3,

@@ -16,16 +16,18 @@ bool ReencodeFavicon(const unsigned char* src_data,
                      size_t src_len,
                      std::vector<unsigned char>* png_data) {
   // Decode the favicon using WebKit's image decoder.
-  webkit_glue::ImageDecoder decoder(gfx::Size(kFaviconSize, kFaviconSize));
+  webkit_glue::ImageDecoder decoder(
+      gfx::Size(gfx::kFaviconSize, gfx::kFaviconSize));
   SkBitmap decoded = decoder.Decode(src_data, src_len);
   if (decoded.empty())
     return false;  // Unable to decode.
 
-  if (decoded.width() != kFaviconSize || decoded.height() != kFaviconSize) {
+  if (decoded.width() != gfx::kFaviconSize ||
+      decoded.height() != gfx::kFaviconSize) {
     // The bitmap is not the correct size, re-sample.
     int new_width = decoded.width();
     int new_height = decoded.height();
-    calc_favicon_target_size(&new_width, &new_height);
+    gfx::CalculateFaviconTargetSize(&new_width, &new_height);
     decoded = skia::ImageOperations::Resize(
         decoded, skia::ImageOperations::RESIZE_LANCZOS3, new_width, new_height);
   }

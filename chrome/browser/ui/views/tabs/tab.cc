@@ -43,7 +43,7 @@ static const int kCloseButtonVertFuzz = 0;
 static const int kTabIconSize = 32;
 static const int kCloseButtonHorzFuzz = -10;
 #else
-static const int kTabIconSize = kFaviconSize;
+static const int kTabIconSize = gfx::kFaviconSize;
 static const int kCloseButtonHorzFuzz = 5;
 #endif
 
@@ -151,7 +151,7 @@ gfx::Size Tab::GetMinimumUnselectedSize() {
 // static
 gfx::Size Tab::GetMinimumSelectedSize() {
   gfx::Size minimum_size = GetMinimumUnselectedSize();
-  minimum_size.set_width(kLeftPadding + kFaviconSize + kRightPadding);
+  minimum_size.set_width(kLeftPadding + gfx::kFaviconSize + kRightPadding);
   return minimum_size;
 }
 

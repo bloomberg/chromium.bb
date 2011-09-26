@@ -113,8 +113,8 @@ void TabIconView::PaintIcon(gfx::Canvas* canvas,
   float float_src_w = static_cast<float>(src_w);
   float float_src_h = static_cast<float>(src_h);
   float scalable_w, scalable_h;
-  if (src_w <= kFaviconSize && src_h <= kFaviconSize) {
-    scalable_w = scalable_h = kFaviconSize;
+  if (src_w <= gfx::kFaviconSize && src_h <= gfx::kFaviconSize) {
+    scalable_w = scalable_h = gfx::kFaviconSize;
   } else {
     scalable_w = float_src_w;
     scalable_h = float_src_h;
@@ -151,5 +151,5 @@ void TabIconView::OnPaint(gfx::Canvas* canvas) {
 }
 
 gfx::Size TabIconView::GetPreferredSize() {
-  return gfx::Size(kFaviconSize, kFaviconSize);
+  return gfx::Size(gfx::kFaviconSize, gfx::kFaviconSize);
 }

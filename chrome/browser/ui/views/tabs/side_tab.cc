@@ -26,7 +26,7 @@ const SkColor kTextColor = SK_ColorBLACK;
 const int kIconLeftPadding = 5;
 
 // Location the title starts at.
-const int kTitleX = kIconLeftPadding + kFaviconSize + 5;
+const int kTitleX = kIconLeftPadding + gfx::kFaviconSize + 5;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -53,8 +53,9 @@ int SideTab::GetPreferredHeight() {
 
 void SideTab::Layout() {
   if (ShouldShowIcon()) {
-    int icon_y = (height() - kFaviconSize) / 2;
-    icon_bounds_.SetRect(kIconLeftPadding, icon_y, kFaviconSize, kFaviconSize);
+    int icon_y = (height() - gfx::kFaviconSize) / 2;
+    icon_bounds_.SetRect(
+        kIconLeftPadding, icon_y, gfx::kFaviconSize, gfx::kFaviconSize);
   } else {
     icon_bounds_ = gfx::Rect();
   }

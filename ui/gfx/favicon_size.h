@@ -6,29 +6,16 @@
 #define UI_GFX_FAVICON_SIZE_H_
 #pragma once
 
-#include "base/compiler_specific.h"
+namespace gfx {
 
 // Size (along each axis) of the favicon.
-const int kFaviconSize = 16;
+extern const int kFaviconSize;
 
 // If the width or height is bigger than the favicon size, a new width/height
 // is calculated and returned in width/height that maintains the aspect
 // ratio of the supplied values.
-static void calc_favicon_target_size(int* width, int* height) ALLOW_UNUSED;
+void CalculateFaviconTargetSize(int* width, int* height);
 
-// static
-void calc_favicon_target_size(int* width, int* height) {
-  if (*width > kFaviconSize || *height > kFaviconSize) {
-    // Too big, resize it maintaining the aspect ratio.
-    float aspect_ratio = static_cast<float>(*width) /
-                         static_cast<float>(*height);
-    *height = kFaviconSize;
-    *width = static_cast<int>(aspect_ratio * *height);
-    if (*width > kFaviconSize) {
-      *width = kFaviconSize;
-      *height = static_cast<int>(*width / aspect_ratio);
-    }
-  }
-}
+}  // namespace gfx
 
 #endif  // UI_GFX_FAVICON_SIZE_H_

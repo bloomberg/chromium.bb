@@ -105,8 +105,8 @@ void TouchTabStripController::SetTabRendererDataFromModel(
 
   // In the case where we do not have a touch icon we scale up the small
   // favicons (16x16) which originally are coming from NavigationEntry.
-  if (data->favicon.width() == kFaviconSize &&
-      data->favicon.height() == kFaviconSize) {
+  if (data->favicon.width() == gfx::kFaviconSize &&
+      data->favicon.height() == gfx::kFaviconSize) {
     data->favicon = skia::ImageOperations::Resize(data->favicon,
         skia::ImageOperations::RESIZE_BEST, TouchTab::kTouchTargetIconSize,
         TouchTab::kTouchTargetIconSize);

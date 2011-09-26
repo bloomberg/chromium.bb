@@ -222,7 +222,7 @@ class FaviconHandler {
   // Returns the preferred_icon_size according icon_types_, 0 means no
   // preference.
   int preferred_icon_size() {
-    return icon_types_ == history::FAVICON ? kFaviconSize : 0;
+    return icon_types_ == history::FAVICON ? gfx::kFaviconSize : 0;
   }
 
   // Used for history requests.
