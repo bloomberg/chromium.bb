@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/extension_content_settings_store.h"
 
+#include "base/scoped_ptr.h"
 #include "chrome/browser/content_settings/content_settings_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -21,7 +22,9 @@ void CheckRule(const content_settings::ProviderInterface::Rule& rule,
   EXPECT_EQ(setting, rule.content_setting);
 }
 
-ContentSetting ValueToContentSetting(const base::Value* value) {
+// Takes ownership of |value|.
+ContentSetting ValueToContentSetting(base::Value* value) {
+  scoped_ptr<base::Value> owned_value(value);
   ContentSetting setting = CONTENT_SETTING_DEFAULT;
   EXPECT_TRUE(content_settings::ParseContentSettingValue(value, &setting));
   return setting;

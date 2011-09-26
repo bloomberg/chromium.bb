@@ -1634,14 +1634,6 @@
    fun:void DispatchToMethod
 }
 {
-   bug_97814
-   Heapcheck:Leak
-   fun:base::Value::CreateIntegerValue
-   fun:base::FundamentalValue::DeepCopy
-   fun:ExtensionContentSettingsStore::GetEffectiveContentSetting
-   fun:ExtensionContentSettingsStoreTest_*
-}
-{
    bug_
    Heapcheck:Leak
    ...
