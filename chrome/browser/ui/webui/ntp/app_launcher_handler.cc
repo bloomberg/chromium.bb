@@ -15,6 +15,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/extensions/app_notification_manager.h"
 #include "chrome/browser/extensions/apps_promo.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_prefs.h"
@@ -86,11 +87,11 @@ AppLauncherHandler::~AppLauncherHandler() {}
 static DictionaryValue* SerializeNotification(
     const AppNotification& notification) {
   DictionaryValue* dictionary = new DictionaryValue();
-  dictionary->SetString("title", notification.title);
-  dictionary->SetString("body", notification.body);
-  if (!notification.linkUrl.is_empty()) {
-    dictionary->SetString("linkUrl", notification.linkUrl.spec());
-    dictionary->SetString("linkText", notification.linkText);
+  dictionary->SetString("title", notification.title());
+  dictionary->SetString("body", notification.body());
+  if (!notification.link_url().is_empty()) {
+    dictionary->SetString("linkUrl", notification.link_url().spec());
+    dictionary->SetString("linkText", notification.link_text());
   }
   return dictionary;
 }

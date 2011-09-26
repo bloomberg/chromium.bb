@@ -8169,15 +8169,6 @@
                 "type": "string",
                 "optional": true,
                 "description": "If a linkUrl is provided, this is required and will be used as the linkified text. It should be relatively short."
-              },
-              "iconData": {
-                "nodoc": true,
-                "type": "object",
-                "isInstanceOf": "ImageData",
-                "optional": true,
-                "properties": {},
-                "additionalProperties": { "type": "any" },
-                "description": "Pixel data for an image to use as the icon for this notification. Must be an ImageData object (for example, from a canvas element)."
               }
             }
           },
