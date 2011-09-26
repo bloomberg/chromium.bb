@@ -51,6 +51,7 @@
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/color_utils.h"
+#include "ui/gfx/image/image.h"
 #include "ui/gfx/skia_util.h"
 #include "views/bubble/bubble_border.h"
 #include "views/controls/label.h"
@@ -99,11 +100,10 @@ static const int kSelectedKeywordBackgroundImages[] = {
   IDR_LOCATION_BAR_SELECTED_KEYWORD_BACKGROUND_R,
 };
 
-static const int kNormalModeBackgroundImages[] = {
-  IDR_LOCATIONBG_L,
-  IDR_LOCATIONBG_C,
-  IDR_LOCATIONBG_R,
-};
+// Height of the location bar's round corner region.
+static const int kBorderRoundCornerHeight = 6;
+// Width of location bar's round corner region.
+static const int kBorderRoundCornerWidth = 5;
 
 // LocationBarView -----------------------------------------------------------
 
@@ -133,8 +133,15 @@ LocationBarView::LocationBarView(Browser* browser,
   set_id(VIEW_ID_LOCATION_BAR);
   set_focusable(true);
 
-  if (mode_ == NORMAL)
-    painter_.reset(new views::HorizontalPainter(kNormalModeBackgroundImages));
+  if (mode_ == NORMAL) {
+    painter_.reset(
+        views::Painter::CreateImagePainter(
+            *ResourceBundle::GetSharedInstance().GetImageNamed(
+                IDR_LOCATION_BAR_BORDER).ToSkBitmap(),
+            gfx::Insets(kBorderRoundCornerHeight, kBorderRoundCornerWidth,
+                kBorderRoundCornerHeight, kBorderRoundCornerWidth),
+            true));
+  }
 
   edit_bookmarks_enabled_.Init(prefs::kEditBookmarksEnabled,
                                browser_->profile()->GetPrefs(), this);

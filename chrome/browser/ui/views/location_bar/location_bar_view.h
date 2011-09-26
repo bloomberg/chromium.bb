@@ -365,7 +365,7 @@ class LocationBarView : public LocationBar,
   gfx::Font font_;
 
   // An object used to paint the normal-mode background.
-  scoped_ptr<views::HorizontalPainter> painter_;
+  scoped_ptr<views::Painter> painter_;
 
   // An icon to the left of the edit field.
   LocationIconView* location_icon_view_;

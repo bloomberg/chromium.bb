@@ -85,6 +85,7 @@
       <include name="IDR_LOCATIONBG_C" file="omnibox_c.png" type="BINDATA" />
       <include name="IDR_LOCATIONBG_L" file="omnibox_l.png" type="BINDATA" />
       <include name="IDR_LOCATIONBG_R" file="omnibox_r.png" type="BINDATA" />
+      <include name="IDR_LOCATION_BAR_BORDER" file="omnibox_border.png" type="BINDATA" />
       <include name="IDR_LOCATION_BAR_SELECTED_KEYWORD_BACKGROUND_C" file="keyword_search_bubble_c.png" type="BINDATA" />
       <include name="IDR_LOCATION_BAR_SELECTED_KEYWORD_BACKGROUND_L" file="keyword_search_bubble_l.png" type="BINDATA" />
       <include name="IDR_LOCATION_BAR_SELECTED_KEYWORD_BACKGROUND_R" file="keyword_search_bubble_r.png" type="BINDATA" />

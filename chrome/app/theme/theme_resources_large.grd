@@ -79,9 +79,10 @@
       <include name="IDR_INFOBAR_THEME" file="large_infobar_theme.png" type="BINDATA" />
       <include name="IDR_INFOBAR_TRANSLATE" file="large_infobar_translate.png" type="BINDATA" />
       <include name="IDR_KEYWORD_SEARCH_MAGNIFIER" file="large_keyword_search_magnifier.png" type="BINDATA" />
-      <include name="IDR_LOCATIONBG_C" file="large_omnibox_c.png" type="BINDATA" />
-      <include name="IDR_LOCATIONBG_L" file="large_omnibox_l.png" type="BINDATA" />
-      <include name="IDR_LOCATIONBG_R" file="large_omnibox_r.png" type="BINDATA" />
+      <include name="IDR_LOCATIONBG_C" file="omnibox_c.png" type="BINDATA" />
+      <include name="IDR_LOCATIONBG_L" file="omnibox_l.png" type="BINDATA" />
+      <include name="IDR_LOCATIONBG_R" file="omnibox_r.png" type="BINDATA" />
+      <include name="IDR_LOCATION_BAR_BORDER" file="omnibox_border.png" type="BINDATA" />
       <include name="IDR_LOCATION_BAR_SELECTED_KEYWORD_BACKGROUND_C" file="large_keyword_search_bubble_c.png" type="BINDATA" />
       <include name="IDR_LOCATION_BAR_SELECTED_KEYWORD_BACKGROUND_L" file="large_keyword_search_bubble_l.png" type="BINDATA" />
       <include name="IDR_LOCATION_BAR_SELECTED_KEYWORD_BACKGROUND_R" file="large_keyword_search_bubble_r.png" type="BINDATA" />
