@@ -4369,6 +4369,7 @@
             'browser/importer/nss_decryptor_system_nss.h',
             'browser/ui/browser_list_stub.cc',
             'browser/ui/crypto_module_password_dialog_nss.cc',
+            'browser/ui/panels/panel_mouse_watcher_timer.cc',
             'browser/ui/views/keyboard_overlay_delegate.cc',
             'browser/ui/views/keyboard_overlay_dialog_view.cc',
             'browser/ui/views/select_file_dialog.cc',
