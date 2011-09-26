@@ -21,11 +21,12 @@
 #include <map>
 #include <set>
 
-#include "third_party/sfntly/src/sfntly/glyph_table.h"
-#include "third_party/sfntly/src/sfntly/loca_table.h"
-#include "third_party/sfntly/src/sfntly/name_table.h"
+#include "third_party/sfntly/src/sfntly/table/core/name_table.h"
+#include "third_party/sfntly/src/sfntly/table/truetype/glyph_table.h"
+#include "third_party/sfntly/src/sfntly/table/truetype/loca_table.h"
 #include "third_party/sfntly/src/sfntly/tag.h"
 #include "third_party/sfntly/src/sfntly/data/memory_byte_array.h"
+#include "third_party/sfntly/src/sfntly/port/memory_input_stream.h"
 #include "third_party/sfntly/src/sfntly/port/memory_output_stream.h"
 
 namespace sfntly {
@@ -79,14 +80,14 @@ SubsetterImpl::~SubsetterImpl() {
 bool SubsetterImpl::LoadFont(const char* font_name,
                              const unsigned char* original_font,
                              size_t font_size) {
-  ByteArrayPtr raw_font =
-      new MemoryByteArray((byte_t*)original_font, font_size);
+  MemoryInputStream mis;
+  mis.Attach(original_font, font_size);
   if (factory_ == NULL) {
     factory_.Attach(FontFactory::GetInstance());
   }
 
   FontArray font_array;
-  factory_->LoadFonts(raw_font, &font_array);
+  factory_->LoadFonts(&mis, &font_array);
   font_ = FindFont(font_name, font_array);
   if (font_ == NULL) {
     return false;
@@ -221,7 +222,7 @@ bool SubsetterImpl::ResolveCompositeGlyphs(const unsigned int* glyph_ids,
     IntegerSet comp_glyph_id;
     for (IntegerSet::iterator i = glyph_id_remaining.begin(),
                               e = glyph_id_remaining.end(); i != e; ++i) {
-      if (*i < 0 || *i >= loca_table->NumGlyphs()) {
+      if (*i < 0 || *i >= loca_table->num_glyphs()) {
         // Invalid glyph id, ignore.
         continue;
       }
@@ -272,12 +273,10 @@ CALLER_ATTACH Font* SubsetterImpl::Subset(const IntegerSet& glyph_ids) {
   FontBuilderPtr font_builder;
   font_builder.Attach(factory_->NewFontBuilder());
 
-  GlyphTableBuilderPtr glyph_table_builder;
-  glyph_table_builder.Attach(down_cast<GlyphTable::Builder*>(
-      font_builder->NewTableBuilder(Tag::glyf)));
-  LocaTableBuilderPtr loca_table_builder;
-  loca_table_builder.Attach(down_cast<LocaTable::Builder*>(
-      font_builder->NewTableBuilder(Tag::loca)));
+  GlyphTableBuilderPtr glyph_table_builder =
+      down_cast<GlyphTable::Builder*>(font_builder->NewTableBuilder(Tag::glyf));
+  LocaTableBuilderPtr loca_table_builder =
+      down_cast<LocaTable::Builder*>(font_builder->NewTableBuilder(Tag::loca));
   if (glyph_table_builder == NULL || loca_table_builder == NULL) {
     // Out of memory.
     return NULL;
@@ -285,7 +284,7 @@ CALLER_ATTACH Font* SubsetterImpl::Subset(const IntegerSet& glyph_ids) {
 
   // Extract glyphs and setup loca list.
   IntegerList loca_list;
-  loca_list.resize(loca_table->NumGlyphs());
+  loca_list.resize(loca_table->num_glyphs());
   loca_list.push_back(0);
   int32_t last_glyph_id = 0;
   int32_t last_offset = 0;
@@ -302,7 +301,7 @@ CALLER_ATTACH Font* SubsetterImpl::Subset(const IntegerSet& glyph_ids) {
     // Add glyph to new glyf table.
     ReadableFontDataPtr data = glyph->ReadFontData();
     WritableFontDataPtr copy_data;
-    copy_data.Attach(font_builder->GetNewData(data->Length()));
+    copy_data.Attach(WritableFontData::CreateWritableFontData(data->Length()));
     data->CopyTo(copy_data);
     GlyphBuilderPtr glyph_builder;
     glyph_builder.Attach(glyph_table_builder->GlyphBuilder(copy_data));
@@ -316,22 +315,17 @@ CALLER_ATTACH Font* SubsetterImpl::Subset(const IntegerSet& glyph_ids) {
     loca_list[*i + 1] = last_offset;
     last_glyph_id = *i;
   }
-  for (int32_t j = last_glyph_id + 1; j <= loca_table->NumGlyphs(); ++j) {
+  for (int32_t j = last_glyph_id + 1; j <= loca_table->num_glyphs(); ++j) {
     loca_list[j] = last_offset;
   }
   loca_table_builder->SetLocaList(&loca_list);
 
   // Setup remaining builders.
-  for (TableMap::iterator i = font_->Tables()->begin(),
-                          e = font_->Tables()->end(); i != e; ++i) {
+  for (TableMap::const_iterator i = font_->GetTableMap()->begin(),
+                                e = font_->GetTableMap()->end(); i != e; ++i) {
     // We already build the builder for glyph and loca.
     if (i->first != Tag::glyf && i->first != Tag::loca) {
-      // The newTableBuilder() call will alter internal state of font_builder
-      // AND the reference count of returned object.  Therefore we need to
-      // dereference it.
-      TableBuilderPtr dereference;
-      dereference.Attach(
-          font_builder->NewTableBuilder(i->first, i->second->ReadFontData()));
+      font_builder->NewTableBuilder(i->first, i->second->ReadFontData());
     }
   }
 
