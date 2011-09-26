@@ -188,7 +188,7 @@ bool MockContentBrowserClient::CanCreateWindow(
     const GURL& source_url,
     WindowContainerType container_type,
     const content::ResourceContext& context) {
-  return false;
+  return true;
 }
 
 std::string MockContentBrowserClient::GetWorkerProcessTitle(

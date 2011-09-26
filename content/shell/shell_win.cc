@@ -9,11 +9,14 @@
 
 #include "base/message_loop.h"
 #include "base/string_piece.h"
+#include "base/utf_string_conversions.h"
 #include "base/win/resource_util.h"
+#include "content/browser/tab_contents/tab_contents.h"
 #include "content/shell/resource.h"
 #include "googleurl/src/gurl.h"
 #include "grit/webkit_resources.h"
 #include "grit/webkit_chromium_resources.h"
+#include "ipc/ipc_message.h"
 #include "net/base/net_module.h"
 #include "ui/base/win/hwnd_util.h"
 
@@ -56,6 +59,9 @@ base::StringPiece Shell::PlatformResourceProvider(int key) {
   return GetRawDataResource(::GetModuleHandle(NULL), key);
 }
 
+void Shell::PlatformExit() {
+}
+
 void Shell::PlatformCleanUp() {
   // When the window is destroyed, tell the Edit field to forget about us,
   // otherwise we will crash.
@@ -80,6 +86,12 @@ void Shell::PlatformEnableUIControl(UIControl control, bool is_enabled) {
       return;
   }
   EnableWindow(GetDlgItem(main_window_, id), is_enabled);
+}
+
+void Shell::PlatformSetAddressBarURL(const GURL& url) {
+  std::wstring url_string = UTF8ToWide(url.spec());
+  SendMessage(edit_window_, WM_SETTEXT, 0,
+              reinterpret_cast<LPARAM>(url_string.c_str()));
 }
 
 void Shell::PlatformCreateWindow() {
@@ -187,8 +199,16 @@ LRESULT CALLBACK Shell::WndProc(HWND hwnd, UINT message, WPARAM wParam,
     case WM_COMMAND: {
       int id = LOWORD(wParam);
       switch (id) {
-        case IDM_EXIT:
+        case IDM_NEW_WINDOW:
+          CreateNewWindow(
+              shell->tab_contents()->browser_context(),
+              GURL(), NULL, MSG_ROUTING_NONE, NULL);
+          break;
+        case IDM_CLOSE_WINDOW:
           DestroyWindow(hwnd);
+          break;
+        case IDM_EXIT:
+          PlatformExit();
           break;
         case IDC_NAV_BACK:
           shell->GoBackOrForward(-1);
@@ -211,7 +231,7 @@ LRESULT CALLBACK Shell::WndProc(HWND hwnd, UINT message, WPARAM wParam,
     }
     case WM_DESTROY: {
       delete shell;
-      if (!shell_count_)
+      if (windows_.empty())
         MessageLoop::current()->Quit();
       return 0;
     }
@@ -238,7 +258,10 @@ LRESULT CALLBACK Shell::EditWndProc(HWND hwnd, UINT message,
         LRESULT str_len = SendMessage(hwnd, EM_GETLINE, 0, (LPARAM)str);
         if (str_len > 0) {
           str[str_len] = 0;  // EM_GETLINE doesn't NULL terminate.
-          shell->LoadURL(GURL(str));
+          GURL url(str);
+          if (!url.has_scheme())
+            url = GURL(std::wstring(L"http://") + std::wstring(str));
+          shell->LoadURL(url);
         }
 
         return 0;

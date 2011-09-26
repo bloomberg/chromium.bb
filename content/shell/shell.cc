@@ -9,7 +9,6 @@
 #include "base/string_util.h"
 #include "content/browser/tab_contents/navigation_controller.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/shell/shell_browser_context.h"
 #include "ui/gfx/size.h"
 
 #if defined(OS_WIN)
@@ -22,7 +21,7 @@ static const int kTestWindowHeight = 600;
 
 namespace content {
 
-int Shell::shell_count_;
+std::vector<Shell*> Shell::windows_;
 
 Shell::Shell()
     : main_window_(NULL),
@@ -31,15 +30,25 @@ Shell::Shell()
       , default_edit_wnd_proc_(0)
 #endif
   {
-    shell_count_++;
+    windows_.push_back(this);
 }
 
 Shell::~Shell() {
   PlatformCleanUp();
-  --shell_count_;
+
+  for (size_t i = 0; i < windows_.size(); ++i) {
+    if (windows_[i] == this) {
+      windows_.erase(windows_.begin() + i);
+      break;
+    }
+  }
 }
 
-Shell* Shell::CreateNewWindow(ShellBrowserContext* browser_context) {
+Shell* Shell::CreateNewWindow(content::BrowserContext* browser_context,
+                              const GURL& url,
+                              SiteInstance* site_instance,
+                              int routing_id,
+                              TabContents* base_tab_contents) {
   Shell* shell = new Shell();
   shell->PlatformCreateWindow();
 
@@ -47,10 +56,11 @@ Shell* Shell::CreateNewWindow(ShellBrowserContext* browser_context) {
 
   shell->tab_contents_.reset(new TabContents(
       browser_context,
-      NULL,
-      MSG_ROUTING_NONE,
-      NULL,
+      site_instance,
+      routing_id,
+      base_tab_contents,
       NULL));
+  shell->tab_contents_->set_delegate(shell);
 
 #if defined (OS_WIN)
   TabContentsViewWin* view =
@@ -60,7 +70,8 @@ Shell* Shell::CreateNewWindow(ShellBrowserContext* browser_context) {
 
   shell->PlatformResizeSubViews();
 
-  shell->LoadURL(GURL("http://www.google.com"));
+  if (!url.is_empty())
+    shell->LoadURL(url);
   return shell;
 }
 
@@ -90,13 +101,26 @@ void Shell::UpdateNavigationControls() {
 
   PlatformEnableUIControl(BACK_BUTTON, current_index > 0);
   PlatformEnableUIControl(FORWARD_BUTTON, current_index < max_index);
-  PlatformEnableUIControl(STOP_BUTTON, true);//is_loading_);
+  PlatformEnableUIControl(STOP_BUTTON, tab_contents_->IsLoading());
 }
 
 gfx::NativeView Shell::GetContentView() {
   if (!tab_contents_.get())
     return NULL;
   return tab_contents_->GetNativeView();
+}
+
+void Shell::LoadingStateChanged(TabContents* source) {
+  UpdateNavigationControls();
+}
+
+void Shell::DidNavigateMainFramePostCommit(TabContents* tab) {
+  PlatformSetAddressBarURL(tab->GetURL());
+}
+
+void Shell::UpdatePreferredSize(TabContents* source,
+                                const gfx::Size& pref_size) {
+  PlatformSizeTo(pref_size.width(), pref_size.height());
 }
 
 }  // namespace content

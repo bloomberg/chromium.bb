@@ -6,13 +6,16 @@
 
 #include "base/file_path.h"
 #include "content/browser/webui/empty_web_ui_factory.h"
+#include "content/shell/shell.h"
 #include "content/shell/shell_browser_main.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "webkit/glue/webpreferences.h"
 
 #if defined(OS_WIN)
+#include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view_win.h"
+#include "content/common/view_messages.h"
 #endif
 
 namespace content {
@@ -32,7 +35,7 @@ BrowserMainParts* ShellContentBrowserClient::CreateBrowserMainParts(
 TabContentsView* ShellContentBrowserClient::CreateTabContentsView(
     TabContents* tab_contents) {
 #if defined(OS_WIN)
-  return new TabContentsViewWin(tab_contents);
+  return new TabContentsViewWin(tab_contents, this);
 #else
   return NULL;
 #endif
@@ -194,7 +197,7 @@ bool ShellContentBrowserClient::CanCreateWindow(
     const GURL& source_url,
     WindowContainerType container_type,
     const content::ResourceContext& context) {
-  return false;
+  return true;
 }
 
 std::string ShellContentBrowserClient::GetWorkerProcessTitle(
@@ -289,6 +292,21 @@ const wchar_t* ShellContentBrowserClient::GetResourceDllName() {
 crypto::CryptoModuleBlockingPasswordDelegate*
     ShellContentBrowserClient::GetCryptoPasswordDelegate(const GURL& url) {
   return NULL;
+}
+#endif
+
+#if defined(OS_WIN)
+TabContents* ShellContentBrowserClient::CreateNewWindow(
+    TabContentsViewWin* tab_contents_view,
+    int route_id,
+    const ViewHostMsg_CreateWindow_Params& params) {
+  Shell* shell = Shell::CreateNewWindow(
+      tab_contents_view->tab_contents()->browser_context(),
+      GURL(),
+      tab_contents_view->tab_contents()->GetSiteInstance(),
+      route_id,
+      tab_contents_view->tab_contents());
+  return shell->tab_contents();
 }
 #endif
 

@@ -6,16 +6,20 @@
 #define CONTENT_BROWSER_TAB_CONTENTS_TAB_CONTENTS_VIEW_WIN_H_
 #pragma once
 
+#include <map>
+
 #include "content/browser/tab_contents/tab_contents_view.h"
 #include "ui/base/win/window_impl.h"
 
 class RenderWidgetHostViewWin;
+class TabContentsViewWinDelegate;
 
 // An implementation of TabContentsView for Windows.
 class TabContentsViewWin : public TabContentsView,
                            public ui::WindowImpl {
  public:
-  explicit TabContentsViewWin(TabContents* tab_contents);
+  TabContentsViewWin(TabContents* tab_contents,
+                     TabContentsViewWinDelegate* delegate);
   virtual ~TabContentsViewWin();
 
   void SetParent(HWND parent);
@@ -76,6 +80,8 @@ class TabContentsViewWin : public TabContentsView,
   virtual void GotFocus() OVERRIDE;
   virtual void TakeFocus(bool reverse) OVERRIDE;
 
+  TabContents* tab_contents() const { return tab_contents_; }
+
  private:
   LRESULT OnWindowPosChanged(
       UINT message, WPARAM wparam, LPARAM lparam, BOOL& handled);
@@ -86,8 +92,12 @@ class TabContentsViewWin : public TabContentsView,
 
   // The TabContents whose contents we display.
   TabContents* tab_contents_;
+  TabContentsViewWinDelegate* delegate_;
 
   RenderWidgetHostViewWin* view_;
+
+  typedef std::map<int, RenderViewHost*> PendingContents;
+  PendingContents pending_contents_;
 
   DISALLOW_COPY_AND_ASSIGN(TabContentsViewWin);
 };

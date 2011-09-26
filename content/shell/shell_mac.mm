@@ -26,6 +26,9 @@ void Shell::PlatformEnableUIControl(UIControl control, bool is_enabled) {
   NOTIMPLEMENTED();
 }
 
+void Shell::PlatformSetAddressBarURL(const GURL& url) {
+}
+
 void Shell::PlatformCreateWindow() {
   NOTIMPLEMENTED();
 }

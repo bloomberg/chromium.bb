@@ -7,11 +7,15 @@
 
 #pragma once
 
+#include <vector>
+
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "content/browser/tab_contents/tab_contents_delegate.h"
 #include "ui/gfx/native_widget_types.h"
 
 class GURL;
+class SiteInstance;
 class TabContents;
 
 namespace base {
@@ -20,13 +24,13 @@ class StringPiece;
 
 namespace content {
 
-class ShellBrowserContext;
+class BrowserContext;
 
 // This represents one window of the Content Shell, i.e. all the UI including
 // buttons and url bar, as well as the web content area.
-class Shell {
+class Shell : public TabContentsDelegate {
  public:
-  ~Shell();
+  virtual ~Shell();
 
   void LoadURL(const GURL& url);
   void GoBackOrForward(int offset);
@@ -40,7 +44,16 @@ class Shell {
   // This is called indirectly by the modules that need access resources.
   static base::StringPiece PlatformResourceProvider(int key);
 
-  static Shell* CreateNewWindow(ShellBrowserContext* browser_context);
+  static Shell* CreateNewWindow(content::BrowserContext* browser_context,
+                                const GURL& url,
+                                SiteInstance* site_instance,
+                                int routing_id,
+                                TabContents* base_tab_contents);
+
+  // Closes all windows and exits.
+  static void PlatformExit();
+
+  TabContents* tab_contents() const { return tab_contents_.get(); }
 
  private:
   enum UIControl {
@@ -63,8 +76,16 @@ class Shell {
   void PlatformResizeSubViews();
   // Enable/disable a button.
   void PlatformEnableUIControl(UIControl control, bool is_enabled);
+  // Updates the url in the url bar.
+  void PlatformSetAddressBarURL(const GURL& url);
 
   gfx::NativeView GetContentView();
+
+  // TabContentsDelegate
+  virtual void LoadingStateChanged(TabContents* source) OVERRIDE;
+  virtual void DidNavigateMainFramePostCommit(TabContents* tab) OVERRIDE;
+  virtual void UpdatePreferredSize(TabContents* source,
+                                   const gfx::Size& pref_size) OVERRIDE;
 
 #if defined(OS_WIN)
   static ATOM RegisterWindowClass();
@@ -82,7 +103,9 @@ class Shell {
   static HINSTANCE instance_handle_;
 #endif
 
-  static int shell_count_;
+  // A container of all the open windows. We use a vector so we can keep track
+  // of ordering.
+  static std::vector<Shell*> windows_;
 };
 
 }  // namespace content

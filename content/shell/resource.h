@@ -10,6 +10,8 @@
 
 #define IDR_MAINFRAME             128
 #define IDM_EXIT                  105
+#define IDM_CLOSE_WINDOW          106
+#define IDM_NEW_WINDOW            107
 #define IDC_CONTENTSHELL          109
 #define IDC_NAV_BACK              1001
 #define IDC_NAV_FORWARD           1002

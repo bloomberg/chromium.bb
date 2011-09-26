@@ -4,15 +4,19 @@
 
 #include "content/browser/tab_contents/tab_contents_view_win.h"
 
+#include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_widget_host_view_win.h"
 #include "content/browser/tab_contents/constrained_window.h"
 #include "content/browser/tab_contents/interstitial_page.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_delegate.h"
+#include "content/browser/tab_contents/tab_contents_view_win_delegate.h"
 
-TabContentsViewWin::TabContentsViewWin(TabContents* tab_contents)
+TabContentsViewWin::TabContentsViewWin(TabContents* tab_contents,
+                                       TabContentsViewWinDelegate* delegate)
     : parent_(NULL),
       tab_contents_(tab_contents),
+      delegate_(delegate),
       view_(NULL) {
 }
 
@@ -40,6 +44,7 @@ RenderWidgetHostView* TabContentsViewWin::CreateViewForWidget(
   view_ = new RenderWidgetHostViewWin(render_widget_host);
   view_->CreateWnd(GetNativeView());
   view_->ShowWindow(SW_SHOW);
+  view_->SetSize(initial_size_);
   return view_;
 }
 
@@ -152,9 +157,13 @@ void TabContentsViewWin::GetViewBounds(gfx::Rect* out) const {
 void TabContentsViewWin::CreateNewWindow(
     int route_id,
     const ViewHostMsg_CreateWindow_Params& params) {
-  NOTIMPLEMENTED();
-}
+  TabContents* tab = delegate_->CreateNewWindow(this, route_id, params);
 
+  // Copy logic from RenderViewHostDelegateViewHelper.
+  TabContentsView* new_view = tab->view();
+  new_view->CreateViewForWidget(tab->render_view_host());
+  pending_contents_[route_id] = tab->render_view_host();
+}
 
 void TabContentsViewWin::CreateNewWidget(int route_id,
                                          WebKit::WebPopupType popup_type) {
@@ -169,7 +178,16 @@ void TabContentsViewWin::ShowCreatedWindow(int route_id,
                                            WindowOpenDisposition disposition,
                                            const gfx::Rect& initial_pos,
                                            bool user_gesture) {
-  NOTIMPLEMENTED();
+  PendingContents::iterator iter = pending_contents_.find(route_id);
+  if (iter == pending_contents_.end())
+    return;
+
+  RenderViewHost* new_rvh = iter->second;
+  pending_contents_.erase(route_id);
+  if (!new_rvh->process()->HasConnection() ||
+      (new_rvh->delegate()->GetAsTabContents() && !new_rvh->view()))
+    return;
+  new_rvh->Init();
 }
 
 void TabContentsViewWin::ShowCreatedWidget(int route_id,

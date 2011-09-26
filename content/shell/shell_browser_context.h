@@ -7,6 +7,7 @@
 #pragma once
 
 #include "base/compiler_specific.h"
+#include "base/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/browser/browser_context.h"
@@ -53,6 +54,7 @@ class ShellBrowserContext : public BrowserContext {
  private:
   void CreateQuotaManagerAndClients();
 
+  FilePath path_;
   scoped_ptr<ResourceContext> resource_context_;
   scoped_ptr<SSLHostState> ssl_host_state_;
   scoped_ptr<DownloadStatusUpdater> download_status_updater_;

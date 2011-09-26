@@ -80,15 +80,15 @@ class ShellURLRequestContextGetter : public net::URLRequestContextGetter {
 
       dnsrr_resolver_.reset(new net::DnsRRResolver());
 
-      proxy_config_service_.reset(
+      net::ProxyConfigService* proxy_config_service =
           net::ProxyService::CreateSystemProxyConfigService(
               io_loop_,
-              file_loop_));
+              file_loop_);
 
       // TODO(jam): use v8 if possible, look at chrome code.
       proxy_service_.reset(
           net::ProxyService::CreateUsingSystemProxyResolver(
-          proxy_config_service_.get(),
+          proxy_config_service,
           0,
           net_log));
 
@@ -163,7 +163,6 @@ class ShellURLRequestContextGetter : public net::URLRequestContextGetter {
   scoped_ptr<net::CertVerifier> cert_verifier_;
   scoped_ptr<net::OriginBoundCertService> origin_bound_cert_service_;
   scoped_ptr<net::DnsRRResolver> dnsrr_resolver_;
-  scoped_ptr<net::ProxyConfigService> proxy_config_service_;
   scoped_ptr<net::ProxyService> proxy_service_;
   scoped_ptr<net::HttpAuthHandlerFactory> http_auth_handler_factory_;
   scoped_ptr<net::URLSecurityManager> url_security_manager_;
@@ -228,22 +227,27 @@ ShellBrowserContext::ShellBrowserContext(
 }
 
 ShellBrowserContext::~ShellBrowserContext() {
+  if (resource_context_.get()) {
+    BrowserThread::DeleteSoon(
+      BrowserThread::IO, FROM_HERE, resource_context_.release());
+  }
 }
 
 FilePath ShellBrowserContext::GetPath() {
-  FilePath result;
+  if (!path_.empty())
+    return path_;
 
 #if defined(OS_WIN)
-  CHECK(PathService::Get(base::DIR_LOCAL_APP_DATA, &result));
-  result.Append(std::wstring(L"content_shell"));
+  CHECK(PathService::Get(base::DIR_LOCAL_APP_DATA, &path_));
+  path_ = path_.Append(std::wstring(L"content_shell"));
 #else
   NOTIMPLEMENTED();
 #endif
 
-  if (!file_util::PathExists(result))
-    file_util::CreateDirectory(result);
+  if (!file_util::PathExists(path_))
+    file_util::CreateDirectory(path_);
 
-  return result;
+  return path_;
 }
 
 bool ShellBrowserContext::IsOffTheRecord()  {
@@ -359,6 +363,8 @@ fileapi::FileSystemContext* ShellBrowserContext::GetFileSystemContext()  {
 }
 
 void ShellBrowserContext::CreateQuotaManagerAndClients() {
+  if (quota_manager_.get())
+    return;
   quota_manager_ = new quota::QuotaManager(
       IsOffTheRecord(),
       GetPath(),

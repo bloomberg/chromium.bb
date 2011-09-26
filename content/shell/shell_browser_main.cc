@@ -33,6 +33,8 @@ ShellBrowserMainParts::~ShellBrowserMainParts() {
         FROM_HERE,
         NewRunnableFunction(&base::ThreadRestrictions::SetIOAllowed, true));
 
+  browser_context_.reset();
+
   resource_dispatcher_host_->Shutdown();
   io_thread_.reset();
   cache_thread_.reset();
@@ -64,7 +66,11 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
   Shell::PlatformInitialize();
   net::NetModule::SetResourceProvider(Shell::PlatformResourceProvider);
 
-  Shell::CreateNewWindow(browser_context_.get());
+  Shell::CreateNewWindow(browser_context_.get(),
+                         GURL("http://www.google.com"),
+                         NULL,
+                         MSG_ROUTING_NONE,
+                         NULL);
 }
 
 ResourceDispatcherHost* ShellBrowserMainParts::GetResourceDispatcherHost() {
