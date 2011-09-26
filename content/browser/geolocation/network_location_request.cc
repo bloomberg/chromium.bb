@@ -98,19 +98,21 @@ bool NetworkLocationRequest::MakeRequest(const std::string& host_name,
   return true;
 }
 
-void NetworkLocationRequest::OnURLFetchComplete(
-    const URLFetcher* source,
-    const GURL& url,
-    const net::URLRequestStatus& status,
-    int response_code,
-    const net::ResponseCookies& cookies,
-    const std::string& data) {
+void NetworkLocationRequest::OnURLFetchComplete(const URLFetcher* source) {
   DCHECK_EQ(url_fetcher_.get(), source);
+
+  net::URLRequestStatus status = source->status();
+  int response_code = source->response_code();
 
   Geoposition position;
   string16 access_token;
-  GetLocationFromResponse(status.is_success(), response_code, data,
-                          timestamp_, url, &position, &access_token);
+  GetLocationFromResponse(status.is_success(),
+                          response_code,
+                          source->GetResponseStringRef(),
+                          timestamp_,
+                          source->url(),
+                          &position,
+                          &access_token);
   const bool server_error =
       !status.is_success() || (response_code >= 500 && response_code < 600);
   url_fetcher_.reset();

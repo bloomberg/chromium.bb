@@ -65,12 +65,7 @@ class NetworkLocationRequest : private URLFetcher::Delegate {
 
  private:
   // URLFetcher::Delegate
-  virtual void OnURLFetchComplete(const URLFetcher* source,
-                                  const GURL& url,
-                                  const net::URLRequestStatus& status,
-                                  int response_code,
-                                  const net::ResponseCookies& cookies,
-                                  const std::string& data);
+  virtual void OnURLFetchComplete(const URLFetcher* source) OVERRIDE;
 
   scoped_refptr<net::URLRequestContextGetter> url_context_;
   ListenerInterface* listener_;

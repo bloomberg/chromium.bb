@@ -359,14 +359,17 @@ TEST_F(GeolocationNetworkProviderTest, MultipleWifiScansComplete) {
   ASSERT_TRUE(fetcher != NULL);
   EXPECT_EQ(test_server_url_.spec() + kTestJson,
             fetcher->original_url().spec());
+
   // Complete the network request with bad position fix.
   const char* kNoFixNetworkResponse =
       "{"
       "  \"status\": \"ZERO_RESULTS\""
       "}";
-  fetcher->delegate()->OnURLFetchComplete(
-      fetcher, test_server_url_, net::URLRequestStatus(), 200,  // OK
-      net::ResponseCookies(), kNoFixNetworkResponse);
+  fetcher->set_url(test_server_url_);
+  fetcher->set_status(net::URLRequestStatus());
+  fetcher->set_response_code(200);  // OK
+  fetcher->SetResponseString(kNoFixNetworkResponse);
+  fetcher->delegate()->OnURLFetchComplete(fetcher);
 
   Geoposition position;
   provider->GetPosition(&position);
@@ -392,9 +395,11 @@ TEST_F(GeolocationNetworkProviderTest, MultipleWifiScansComplete) {
       "    \"lng\": -0.1"
       "  }"
       "}";
-  fetcher->delegate()->OnURLFetchComplete(
-      fetcher, test_server_url_, net::URLRequestStatus(), 200,  // OK
-      net::ResponseCookies(), kReferenceNetworkResponse);
+  fetcher->set_url(test_server_url_);
+  fetcher->set_status(net::URLRequestStatus());
+  fetcher->set_response_code(200);  // OK
+  fetcher->SetResponseString(kReferenceNetworkResponse);
+  fetcher->delegate()->OnURLFetchComplete(fetcher);
 
   provider->GetPosition(&position);
   EXPECT_EQ(51.0, position.latitude);
@@ -430,11 +435,12 @@ TEST_F(GeolocationNetworkProviderTest, MultipleWifiScansComplete) {
                       kThirdScanAps, 0,
                       REFERENCE_ACCESS_TOKEN);
   // ...reply with a network error.
-  fetcher->delegate()->OnURLFetchComplete(
-      fetcher, test_server_url_,
-      net::URLRequestStatus(net::URLRequestStatus::FAILED, -1),
-      200,  // should be ignored
-      net::ResponseCookies(), "");
+
+  fetcher->set_url(test_server_url_);
+  fetcher->set_status(net::URLRequestStatus(net::URLRequestStatus::FAILED, -1));
+  fetcher->set_response_code(200);  // should be ignored
+  fetcher->SetResponseString("");
+  fetcher->delegate()->OnURLFetchComplete(fetcher);
 
   // Error means we now no longer have a fix.
   provider->GetPosition(&position);
