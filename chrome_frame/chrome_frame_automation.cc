@@ -249,57 +249,60 @@ void AutomationProxyCacheEntry::CreateProxy(ChromeFrameLaunchParams* params,
   proxy->set_perform_version_check(params->version_check());
 
   // Launch browser
-  scoped_ptr<CommandLine> command_line(
-      chrome_launcher::CreateLaunchCommandLine());
-  command_line->AppendSwitchASCII(switches::kAutomationClientChannelID,
-                                  channel_id);
+  std::wstring command_line_string;
+  scoped_ptr<CommandLine> command_line;
+  if (chrome_launcher::CreateLaunchCommandLine(&command_line)) {
+    command_line->AppendSwitchASCII(switches::kAutomationClientChannelID,
+                                    channel_id);
 
-  // Run Chrome in Chrome Frame mode. In practice, this modifies the paths
-  // and registry keys that Chrome looks in via the BrowserDistribution
-  // mechanism.
-  command_line->AppendSwitch(switches::kChromeFrame);
+    // Run Chrome in Chrome Frame mode. In practice, this modifies the paths
+    // and registry keys that Chrome looks in via the BrowserDistribution
+    // mechanism.
+    command_line->AppendSwitch(switches::kChromeFrame);
 
-  // Chrome Frame never wants Chrome to start up with a First Run UI.
-  command_line->AppendSwitch(switches::kNoFirstRun);
+    // Chrome Frame never wants Chrome to start up with a First Run UI.
+    command_line->AppendSwitch(switches::kNoFirstRun);
 
-  command_line->AppendSwitch(switches::kDisablePopupBlocking);
+    command_line->AppendSwitch(switches::kDisablePopupBlocking);
 
-  // Disable the "Whoa! Chrome has crashed." dialog, because that isn't very
-  // useful for Chrome Frame users.
+    // Disable the "Whoa! Chrome has crashed." dialog, because that isn't very
+    // useful for Chrome Frame users.
 #ifndef NDEBUG
-  command_line->AppendSwitch(switches::kNoErrorDialogs);
+    command_line->AppendSwitch(switches::kNoErrorDialogs);
 #endif
 
-  // In headless mode runs like reliability test runs we want full crash dumps
-  // from chrome.
-  if (IsHeadlessMode())
-    command_line->AppendSwitch(switches::kFullMemoryCrashReport);
+    // In headless mode runs like reliability test runs we want full crash dumps
+    // from chrome.
+    if (IsHeadlessMode())
+      command_line->AppendSwitch(switches::kFullMemoryCrashReport);
 
-  // In accessible mode automation tests expect renderer accessibility to be
-  // enabled in chrome.
-  if (IsAccessibleMode())
-    command_line->AppendSwitch(switches::kForceRendererAccessibility);
+    // In accessible mode automation tests expect renderer accessibility to be
+    // enabled in chrome.
+    if (IsAccessibleMode())
+      command_line->AppendSwitch(switches::kForceRendererAccessibility);
 
-  DVLOG(1) << "Profile path: " << params->profile_path().value();
-  command_line->AppendSwitchPath(switches::kUserDataDir,
-                                 params->profile_path());
+    DVLOG(1) << "Profile path: " << params->profile_path().value();
+    command_line->AppendSwitchPath(switches::kUserDataDir,
+                                   params->profile_path());
 
-  // Ensure that Chrome is running the specified version of chrome.dll.
-  command_line->AppendSwitchNative(switches::kChromeVersion,
-                                   GetCurrentModuleVersion());
+    // Ensure that Chrome is running the specified version of chrome.dll.
+    command_line->AppendSwitchNative(switches::kChromeVersion,
+                                     GetCurrentModuleVersion());
 
-  if (!params->language().empty())
-    command_line->AppendSwitchNative(switches::kLang, params->language());
+    if (!params->language().empty())
+      command_line->AppendSwitchNative(switches::kLang, params->language());
 
-  std::wstring command_line_string(command_line->GetCommandLineString());
-  // If there are any extra arguments, append them to the command line.
-  if (!params->extra_arguments().empty()) {
-    command_line_string += L' ' + params->extra_arguments();
+    command_line_string = command_line->GetCommandLineString();
+    // If there are any extra arguments, append them to the command line.
+    if (!params->extra_arguments().empty()) {
+      command_line_string += L' ' + params->extra_arguments();
+    }
   }
 
   automation_server_launch_start_time_ = base::TimeTicks::Now();
 
-  if (!base::LaunchProcess(command_line_string, base::LaunchOptions(), NULL)) {
+  if (command_line_string.empty() ||
+      !base::LaunchProcess(command_line_string, base::LaunchOptions(), NULL)) {
     // We have no code for launch failure.
     launch_result_ = AUTOMATION_LAUNCH_RESULT_INVALID;
   } else {

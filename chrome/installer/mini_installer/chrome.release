@@ -40,8 +40,8 @@ icudt.dll: %(VersionDir)s\
 resources.pak: %(VersionDir)s\
 locales\*.pak: %(VersionDir)s\Locales
 locales\*.dll: %(VersionDir)s\Locales
-servers\*.dll: %(VersionDir)s\
-servers\*.exe: %(VersionDir)s\
+npchrome_frame.dll: %(VersionDir)s\
+chrome_launcher.exe: %(VersionDir)s\
 chrome_frame_helper.exe: %(VersionDir)s\
 chrome_frame_helper.dll: %(VersionDir)s\
 Extensions\*.*: %(VersionDir)s\Extensions\

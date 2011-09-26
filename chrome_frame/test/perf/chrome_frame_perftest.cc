@@ -292,8 +292,7 @@ class ChromeFrameStartupTest : public ChromeFramePerfTestBase {
 
     chrome_dll_ = dir_app_.Append(L"chrome.dll");
     chrome_exe_ = dir_app_.Append(chrome::kBrowserProcessExecutableName);
-    chrome_frame_dll_ = dir_app_.Append(L"servers");
-    chrome_frame_dll_ = chrome_frame_dll_.Append(kChromeFrameDllName);
+    chrome_frame_dll_ = dir_app_.Append(kChromeFrameDllName);
     icu_dll_ = dir_app_.Append(L"icudt.dll");
     avcodec_dll_ = dir_app_.Append(L"avcodec-53.dll");
     avformat_dll_ = dir_app_.Append(L"avformat-53.dll");

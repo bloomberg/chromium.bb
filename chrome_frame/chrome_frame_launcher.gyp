@@ -82,8 +82,6 @@
       ],
       'msvs_settings': {
         'VCLinkerTool': {
-          'OutputFile':
-              '$(OutDir)\\servers\\$(ProjectName).exe',
           # Set /SUBSYSTEM:WINDOWS since this is not a command-line program.
           'SubSystem': '2',
           'AdditionalDependencies': [

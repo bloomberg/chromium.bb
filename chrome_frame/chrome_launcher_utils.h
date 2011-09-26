@@ -9,6 +9,7 @@
 
 class CommandLine;
 class FilePath;
+template <class C> class scoped_ptr;
 
 namespace chrome_launcher {
 
@@ -19,15 +20,19 @@ extern const wchar_t kLauncherExeBaseName[];
 // flags needed before launching.
 //
 // The command-line may use the Chrome executable directly, or use an in-between
-// process if needed for security/elevation purposes.  You must delete the
-// returned command line.
-CommandLine* CreateLaunchCommandLine();
+// process if needed for security/elevation purposes.
+//
+// On success, returns true and populates command_line, which must be non-NULL,
+// with the launch command line.
+bool CreateLaunchCommandLine(scoped_ptr<CommandLine>* command_line);
 
 // Creates a command line suitable for launching the specified command through
 // Google Update.
 //
-// You must delete the returned command line.
-CommandLine* CreateUpdateCommandLine(const std::wstring& update_command);
+// On success, returns true and populates command_line, which must be non-NULL,
+// with the update command line.
+bool CreateUpdateCommandLine(const std::wstring& update_command,
+                             scoped_ptr<CommandLine>* command_line);
 
 // Returns the full path to the Chrome executable.
 FilePath GetChromeExecutablePath();

@@ -275,35 +275,38 @@ std::string GenerateChannelId() {
 std::wstring BuildCmdLine(const std::string& channel_id,
                           const FilePath& profile_path,
                           const std::wstring& extra_args) {
-  scoped_ptr<CommandLine> command_line(
-      chrome_launcher::CreateLaunchCommandLine());
-  command_line->AppendSwitchASCII(switches::kAutomationClientChannelID,
-      channel_id);
-  // Run Chrome in Chrome Frame mode. In practice, this modifies the paths
-  // and registry keys that Chrome looks in via the BrowserDistribution
-  // mechanism.
-  command_line->AppendSwitch(switches::kChromeFrame);
-  // Chrome Frame never wants Chrome to start up with a First Run UI.
-  command_line->AppendSwitch(switches::kNoFirstRun);
-  command_line->AppendSwitch(switches::kDisablePopupBlocking);
+  std::wstring command_line_string;
+  scoped_ptr<CommandLine> command_line;
+  if (chrome_launcher::CreateLaunchCommandLine(&command_line)) {
+    command_line->AppendSwitchASCII(switches::kAutomationClientChannelID,
+        channel_id);
+    // Run Chrome in Chrome Frame mode. In practice, this modifies the paths
+    // and registry keys that Chrome looks in via the BrowserDistribution
+    // mechanism.
+    command_line->AppendSwitch(switches::kChromeFrame);
+    // Chrome Frame never wants Chrome to start up with a First Run UI.
+    command_line->AppendSwitch(switches::kNoFirstRun);
+    command_line->AppendSwitch(switches::kDisablePopupBlocking);
 
-#ifndef NDEBUG
-  // Disable the "Whoa! Chrome has crashed." dialog, because that isn't very
-  // useful for Chrome Frame users.
-  command_line->AppendSwitch(switches::kNoErrorDialogs);
-#endif
+  #ifndef NDEBUG
+    // Disable the "Whoa! Chrome has crashed." dialog, because that isn't very
+    // useful for Chrome Frame users.
+    command_line->AppendSwitch(switches::kNoErrorDialogs);
+  #endif
 
-  // In headless mode runs like reliability test runs we want full crash dumps
-  // from chrome.
-  if (IsHeadlessMode())
-    command_line->AppendSwitch(switches::kFullMemoryCrashReport);
+    // In headless mode runs like reliability test runs we want full crash dumps
+    // from chrome.
+    if (IsHeadlessMode())
+      command_line->AppendSwitch(switches::kFullMemoryCrashReport);
 
-  command_line->AppendSwitchPath(switches::kUserDataDir, profile_path);
+    command_line->AppendSwitchPath(switches::kUserDataDir, profile_path);
 
-  std::wstring command_line_string(command_line->GetCommandLineString());
-  if (!extra_args.empty()) {
-    command_line_string.append(L" ");
-    command_line_string.append(extra_args);
+    command_line_string = command_line->GetCommandLineString();
+    if (!extra_args.empty()) {
+      command_line_string.append(L" ");
+      command_line_string.append(extra_args);
+    }
   }
+
   return command_line_string;
 }

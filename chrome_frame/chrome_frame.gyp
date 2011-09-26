@@ -901,8 +901,6 @@
           },
           'msvs_settings': {
             'VCLinkerTool': {
-              'OutputFile':
-                  '$(OutDir)\\servers\\$(ProjectName).dll',
               'DelayLoadDLLs': [],
               'BaseAddress': '0x33000000',
               # Set /SUBSYSTEM:WINDOWS (for consistency).

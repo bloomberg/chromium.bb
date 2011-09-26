@@ -223,7 +223,6 @@ void ChromeFrameTestWithWebServer::VersionTest(BrowserKind browser,
     const wchar_t* page) {
   FilePath plugin_path;
   PathService::Get(base::DIR_MODULE, &plugin_path);
-  plugin_path = plugin_path.AppendASCII("servers");
   plugin_path = plugin_path.Append(kChromeFrameDllName);
 
   static FileVersionInfo* version_info =

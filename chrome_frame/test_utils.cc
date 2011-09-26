@@ -29,8 +29,7 @@ FilePath GetChromeFrameBuildPath() {
   FilePath build_path;
   PathService::Get(chrome::DIR_APP, &build_path);
 
-  FilePath dll_path = build_path.Append(L"servers").
-                                 Append(kChromeFrameDllName);
+  FilePath dll_path = build_path.Append(kChromeFrameDllName);
 
   if (!file_util::PathExists(dll_path)) {
     // Well, dang.. try looking in the current directory.
@@ -45,7 +44,7 @@ FilePath GetChromeFrameBuildPath() {
   return dll_path;
 }
 
-bool ScopedChromeFrameRegistrar::register_chrome_path_provider_ = false;;
+bool ScopedChromeFrameRegistrar::register_chrome_path_provider_ = false;
 
 // static
 void ScopedChromeFrameRegistrar::RegisterDefaults() {
@@ -53,8 +52,6 @@ void ScopedChromeFrameRegistrar::RegisterDefaults() {
     chrome::RegisterPathProvider();
     register_chrome_path_provider_ = true;
   }
-  FilePath dll_path = GetChromeFrameBuildPath();
-  RegisterAtPath(dll_path.value(), chrome_frame_test::GetTestBedType());
 }
 
 // static
@@ -63,7 +60,8 @@ void ScopedChromeFrameRegistrar::RegisterAtPath(
 
   ASSERT_FALSE(path.empty());
   HMODULE dll_handle = LoadLibrary(path.c_str());
-  ASSERT_TRUE(dll_handle != NULL);
+  ASSERT_TRUE(dll_handle != NULL) << "Failed to load " << path
+                                  << " , gle = " << GetLastError();
 
   typedef HRESULT (STDAPICALLTYPE* DllRegisterServerFn)();
   DllRegisterServerFn register_server = NULL;
@@ -76,9 +74,14 @@ void ScopedChromeFrameRegistrar::RegisterAtPath(
           dll_handle, "DllRegisterServer"));
   }
   ASSERT_TRUE(register_server != NULL);
-  EXPECT_HRESULT_SUCCEEDED((*register_server)());
-
+  HRESULT reg_result = (*register_server)();
   ASSERT_TRUE(FreeLibrary(dll_handle));
+
+  // Assert here after the FreeLibrary since otherwise we hit a
+  // multiple AtExitMananger crash for modules that use base.
+  ASSERT_HRESULT_SUCCEEDED(reg_result) << "Failed to register DLL at "
+                                       << path
+                                       << " , are you running as Admin?";
 }
 
 // static

@@ -8,6 +8,7 @@
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
 #include "base/win/windows_version.h"
@@ -19,30 +20,31 @@ namespace {
 
 const char kUpdateCommandFlag[] = "--update-cmd";
 
-CommandLine* CreateChromeLauncherCommandLine() {
+// Searches for the path to chrome_launcher.exe. Will return false if this
+// executable cannot be found, otherwise the command line will be placed in
+// |command_line|.
+bool CreateChromeLauncherCommandLine(scoped_ptr<CommandLine>* command_line) {
+  DCHECK(command_line);
+  bool success = false;
   // The launcher EXE will be in the same directory as the Chrome Frame DLL,
-  // so create a full path to it based on this assumption.  Since our unit
-  // tests also use this function, and live in the directory above, we test
-  // existence of the file and try the path that includes the /servers/
-  // directory if needed.
+  // so create a full path to it based on this assumption.
   FilePath module_path;
   if (PathService::Get(base::FILE_MODULE, &module_path)) {
     FilePath current_dir = module_path.DirName();
-    FilePath same_dir_path = current_dir.Append(
+    FilePath chrome_launcher = current_dir.Append(
         chrome_launcher::kLauncherExeBaseName);
-    if (file_util::PathExists(same_dir_path)) {
-      return new CommandLine(same_dir_path);
-    } else {
-      FilePath servers_path = current_dir.Append(L"servers").Append(
-          chrome_launcher::kLauncherExeBaseName);
-      DCHECK(file_util::PathExists(servers_path)) <<
-          "What module is this? It's not in 'servers' or main output dir.";
-      return new CommandLine(servers_path);
+    if (file_util::PathExists(chrome_launcher)) {
+      command_line->reset(new CommandLine(chrome_launcher));
+      success = true;
     }
-  } else {
-    NOTREACHED();
-    return NULL;
   }
+
+  if (!success) {
+    NOTREACHED() << "Could not find " << chrome_launcher::kLauncherExeBaseName
+                 << " in output dir.";
+  }
+
+  return success;
 }
 
 }  // namespace
@@ -51,24 +53,30 @@ namespace chrome_launcher {
 
 const wchar_t kLauncherExeBaseName[] = L"chrome_launcher.exe";
 
-CommandLine* CreateUpdateCommandLine(const std::wstring& update_command) {
-  CommandLine* command_line = CreateChromeLauncherCommandLine();
+bool CreateUpdateCommandLine(const std::wstring& update_command,
+                             scoped_ptr<CommandLine>* command_line) {
+  DCHECK(command_line);
+  bool success = false;
 
-  if (command_line) {
-    command_line->AppendArg(kUpdateCommandFlag);
-    command_line->AppendArg(WideToASCII(update_command));
+  if (CreateChromeLauncherCommandLine(command_line)) {
+    (*command_line)->AppendArg(kUpdateCommandFlag);
+    (*command_line)->AppendArg(WideToASCII(update_command));
+    success = true;
   }
 
-  return command_line;
+  return success;
 }
 
-CommandLine* CreateLaunchCommandLine() {
+bool CreateLaunchCommandLine(scoped_ptr<CommandLine>* command_line) {
+  DCHECK(command_line);
+
   // Shortcut for OS versions that don't need the integrity broker.
   if (base::win::GetVersion() < base::win::VERSION_VISTA) {
-    return new CommandLine(GetChromeExecutablePath());
+    command_line->reset(new CommandLine(GetChromeExecutablePath()));
+    return true;
   }
 
-  return CreateChromeLauncherCommandLine();
+  return CreateChromeLauncherCommandLine(command_line);
 }
 
 FilePath GetChromeExecutablePath() {

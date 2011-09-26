@@ -64,7 +64,7 @@ void CFProxy::InitInIoThread(const ProxyParams& params) {
   ipc_sender_ = api_->CreateChannel(channel_id, this);
   std::wstring cmd_line = BuildCmdLine(channel_id, params.profile_path,
                                        params.extra_params);
-  if (api_->LaunchApp(cmd_line)) {
+  if (!cmd_line.empty() && api_->LaunchApp(cmd_line)) {
     CancelableTask* launch_timeout = NewRunnableMethod(this,
         &CFProxy::LaunchTimeOut);
     ipc_thread_.message_loop()->PostDelayedTask(FROM_HERE, launch_timeout,
