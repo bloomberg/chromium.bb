@@ -21,12 +21,12 @@ namespace views {
 class MenuItemView;
 class MenuRunner;
 
-// A non-GTK implementation of MenuWrapper, used currently for touchui.
-class NativeMenuLinux : public MenuWrapper,
+// A views implementation of MenuWrapper, used currently for touchui.
+class NativeMenuViews : public MenuWrapper,
                         public MenuDelegate {
  public:
-  explicit NativeMenuLinux(Menu2* menu);
-  virtual ~NativeMenuLinux();
+  explicit NativeMenuViews(Menu2* menu);
+  virtual ~NativeMenuViews();
 
   // Overridden from MenuWrapper:
   virtual void RunMenuAt(const gfx::Point& point, int alignment) OVERRIDE;
@@ -54,7 +54,7 @@ class NativeMenuLinux : public MenuWrapper,
   MenuItemView* root_;
   scoped_ptr<MenuRunner> menu_runner_;
 
-  DISALLOW_COPY_AND_ASSIGN(NativeMenuLinux);
+  DISALLOW_COPY_AND_ASSIGN(NativeMenuViews);
 };
 
 }  // namespace views
