@@ -1886,8 +1886,12 @@ LRESULT NativeWidgetWin::OnReflectedMessage(UINT msg,
 LRESULT NativeWidgetWin::OnSetCursor(UINT message,
                                      WPARAM w_param,
                                      LPARAM l_param) {
-  // This shouldn't hurt even if we're using the native frame.
-  return DefWindowProcWithRedrawLock(message, w_param, l_param);
+  // Using ScopedRedrawLock here frequently allows content behind this window to
+  // paint in front of this window, causing glaring rendering artifacts.
+  // If omitting ScopedRedrawLock here triggers caption rendering artifacts via
+  // DefWindowProc message handling, we'll need to find a better solution.
+  SetMsgHandled(FALSE);
+  return 0;
 }
 
 void NativeWidgetWin::OnSetFocus(HWND focused_window) {
