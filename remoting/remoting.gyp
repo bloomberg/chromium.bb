@@ -116,8 +116,9 @@
       'webapp/me2mom/wcs.js',
       'webapp/me2mom/wcs_loader.js',
       'webapp/me2mom/xhr.js',
-      'resources/chromoting128.png',
       'resources/chromoting16.png',
+      'resources/chromoting48.png',
+      'resources/chromoting128.png',
     ],
   },
 
@@ -237,6 +238,8 @@
           'mac_bundle_resources': [
             'host/disconnect_window.xib',
             'host/plugin/host_plugin-Info.plist',
+            'resources/chromoting16.png',
+            'resources/chromoting48.png',
             'resources/chromoting128.png',
           ],
           'mac_bundle_resources!': [

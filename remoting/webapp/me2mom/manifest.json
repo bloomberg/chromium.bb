@@ -10,6 +10,7 @@
   },
   "icons": {
     "128": "chromoting128.png",
+    "48": "chromoting48.png"
     "16": "chromoting16.png"
   },
   "content_scripts": [
