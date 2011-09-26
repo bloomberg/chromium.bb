@@ -394,7 +394,8 @@
       '-plugins.PluginsTest.testBlockPluginException',
       '-popups.PopupsTest.testMultiplePopups',
       '-popups.PopupsTest.testPopupBlockedEverySec',
-
+      '-process_count.ProcessCountTest.testProcessCountCombination',
+      '-process_count.ProcessCountTest.testProcessCountFlashProcess',
     ],
 
     'win': [
