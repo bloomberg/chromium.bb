@@ -141,7 +141,7 @@ function FileManager(dialogDom, filesystem, rootEntries) {
   this.summarizeSelection_();
   this.updatePreview_();
 
-  this.dataModel_.sort('cachedMtime_', 'desc');
+  this.dataModel_.sort('name', 'asc');
 
   this.refocus();
 
