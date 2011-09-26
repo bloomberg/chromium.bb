@@ -6,10 +6,9 @@
 #define UI_GFX_POINT_H_
 #pragma once
 
+#include <string>
+
 #include "build/build_config.h"
-
-#include <iosfwd>
-
 #include "ui/base/ui_export.h"
 
 #if defined(OS_WIN)
@@ -91,12 +90,13 @@ class UI_EXPORT Point {
   CGPoint ToCGPoint() const;
 #endif
 
+  // Returns a string representation of point.
+  std::string ToString() const;
+
  private:
   int x_;
   int y_;
 };
-
-UI_EXPORT std::ostream& operator<<(std::ostream& out, const gfx::Point& p);
 
 }  // namespace gfx
 

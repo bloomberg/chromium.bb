@@ -513,8 +513,8 @@ bool WebPluginDelegateImpl::PlatformHandleInputEvent(
     if (content_origin.x() != content_area_origin_.x() ||
         content_origin.y() != content_area_origin_.y()) {
       DLOG(WARNING) << "Stale plugin content area location: "
-                    << content_area_origin_ << " instead of "
-                    << content_origin;
+                    << content_area_origin_.ToString() << " instead of "
+                    << content_origin.ToString();
       SetContentAreaOrigin(content_origin);
     }
 
