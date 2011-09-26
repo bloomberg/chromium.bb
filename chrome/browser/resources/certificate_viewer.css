@@ -11,7 +11,7 @@ body {
   display: inline-block;
   font-weight: bold;
   padding-bottom: 2px;
-  padding-top: 5px;
+  padding-top: 15px;
 }
 
 #tabbox {
@@ -41,7 +41,7 @@ body {
 
 .detail div {
   -webkit-padding-start: 15px;
-  padding: 3px;
+  padding-top: 3px;
 }
 
 .attribute {
@@ -74,22 +74,23 @@ tabpanel {
 }
 
 #hierarchy-section {
-  height: 25%;
+  height: 20%;
   top: 0;
 }
 
 #cert-fields-section {
   height: 50%;
-  top: 25%;
+  top: 20%;
 }
 
 #cert-field-value-section {
   bottom: 0;
-  height: 25%;
+  height: 30%;
 }
 
-/* Scrolling should be enabled on all tree views and value field. */
 .section-contents {
   -webkit-box-flex: 1;
+  border: 1px solid black;
+  /* Scrolling should be enabled on all tree views and value field. */
   overflow: auto;
 }

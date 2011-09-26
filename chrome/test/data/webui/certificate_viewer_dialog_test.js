@@ -80,8 +80,6 @@ TEST_F('CertificateViewerUITestAsync', 'MAYBE_testDetails', function() {
   this.continueTest(WhenTestDone.DEFAULT, function() {
     // There must be at least one certificate in the hierarchy.
     assertLT(0, certHierarchy.childNodes.length);
-    // No certificate fields should be currently loaded.
-    assertEquals(0, certFields.childNodes.length);
 
     // Select the first certificate on the chain and ensure the details show up.
     // Override the receive certificate function to catch when fields are

@@ -79,9 +79,17 @@ cr.define('cert_viewer', function() {
    */
   function createCertificateHierarchy(hierarchy) {
     var treeItem = $('hierarchy');
-    treeItem.add(treeItem.detail.children['root'] =
-        constructTree(hierarchy[0]));
-    revealTree(treeItem);
+    var root = constructTree(hierarchy[0]);
+    treeItem.detail.children['root'] = root;
+    treeItem.add(root);
+
+    // Select the last item in the hierarchy (really we have a list here - each
+    // node has at most one child).  This will reveal the parent nodes and
+    // populate the fields view.
+    var last = root;
+    while (last.detail.children && last.detail.children[0])
+      last = last.detail.children[0];
+    last.selected = true;
   }
 
   /**
@@ -137,6 +145,8 @@ cr.define('cert_viewer', function() {
     treeItem.add(treeItem.detail.children['root'] =
         constructTree(certFields[0]));
     revealTree(treeItem);
+    // Ensure the list is scrolled  to the top by selecting the first item.
+    treeItem.children[0].selected = true;
   }
 
   /**

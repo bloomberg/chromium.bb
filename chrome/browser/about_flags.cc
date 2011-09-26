@@ -414,6 +414,13 @@ const Experiment kExperiments[] = {
     kOsMac | kOsWin | kOsLinux,
     SINGLE_VALUE_TYPE(switches::kEnableAutologin)
   },
+  {
+    "use-more-webui",
+    IDS_FLAGS_USE_MORE_WEBUI_NAME,
+    IDS_FLAGS_USE_MORE_WEBUI_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kUseMoreWebUI)
+  },
 };
 
 const Experiment* experiments = kExperiments;

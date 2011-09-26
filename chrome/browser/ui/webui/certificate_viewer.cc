@@ -21,8 +21,8 @@
 namespace {
 
 // Default width/height of the dialog.
-const int kDefaultWidth = 450;
-const int kDefaultHeight = 450;
+const int kDefaultWidth = 530;
+const int kDefaultHeight = 600;
 
 }  // namespace
 
