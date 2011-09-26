@@ -3,26 +3,25 @@
 # found in the LICENSE file.
 
 {
-      # TODO(dpranke): Fix indentation.
-      'dependencies': [
-        '../base/base.gyp:base',
-      ],
-      'sources': [
-        'utility/content_utility_client.h',
-        'utility/utility_main.cc',
-        'utility/utility_thread.cc',
-        'utility/utility_thread.h',
-      ],
-      'include_dirs': [
-        '..',
-      ],
-      'conditions': [
-        ['OS=="mac"', {
-          'link_settings': {
-            'mac_bundle_resources': [
-              'utility/utility.sb',
-            ],
-          },
-        }],
-      ],
+  'dependencies': [
+    '../base/base.gyp:base',
+  ],
+  'sources': [
+    'utility/content_utility_client.h',
+    'utility/utility_main.cc',
+    'utility/utility_thread.cc',
+    'utility/utility_thread.h',
+  ],
+  'include_dirs': [
+    '..',
+  ],
+  'conditions': [
+    ['OS=="mac"', {
+      'link_settings': {
+        'mac_bundle_resources': [
+          'utility/utility.sb',
+        ],
+      },
+    }],
+  ],
 }
