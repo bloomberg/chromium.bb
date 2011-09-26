@@ -58,6 +58,7 @@ class ResourceCreationImpl : public ::ppapi::FunctionGroupBase,
                                       const PP_Flash_Menu* menu_data) OVERRIDE;
   virtual PP_Resource CreateFlashNetConnector(PP_Instance instance) OVERRIDE;
   virtual PP_Resource CreateFlashTCPSocket(PP_Instance instance) OVERRIDE;
+  virtual PP_Resource CreateFlashUDPSocket(PP_Instance instance) OVERRIDE;
   virtual PP_Resource CreateFontObject(
       PP_Instance instance,
       const PP_FontDescription_Dev* description) OVERRIDE;

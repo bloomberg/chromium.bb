@@ -127,6 +127,8 @@
         'thunk/ppb_flash_net_connector_thunk.cc',
         'thunk/ppb_flash_tcp_socket_api.h',
         'thunk/ppb_flash_tcp_socket_thunk.cc',
+        'thunk/ppb_flash_udp_socket_api.h',
+        'thunk/ppb_flash_udp_socket_thunk.cc',
         'thunk/ppb_font_api.h',
         'thunk/ppb_font_thunk.cc',
         'thunk/ppb_fullscreen_thunk.cc',

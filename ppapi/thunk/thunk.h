@@ -35,6 +35,7 @@ struct PPB_FileIOTrusted;
 struct PPB_Flash_Menu;
 struct PPB_Flash_NetConnector;
 struct PPB_Flash_TCPSocket;
+struct PPB_Flash_UDPSocket;
 struct PPB_Graphics3D;
 struct PPB_Graphics3DTrusted;
 struct PPB_ImageDataTrusted;
@@ -60,6 +61,7 @@ PPAPI_THUNK_EXPORT const PPB_Flash_Menu* GetPPB_Flash_Menu_Thunk();
 PPAPI_THUNK_EXPORT const PPB_Flash_NetConnector*
     GetPPB_Flash_NetConnector_Thunk();
 PPAPI_THUNK_EXPORT const PPB_Flash_TCPSocket* GetPPB_Flash_TCPSocket_Thunk();
+PPAPI_THUNK_EXPORT const PPB_Flash_UDPSocket* GetPPB_Flash_UDPSocket_Thunk();
 PPAPI_THUNK_EXPORT const PPB_Graphics3DTrusted*
     GetPPB_Graphics3DTrusted_Thunk();
 PPAPI_THUNK_EXPORT const PPB_ImageDataTrusted* GetPPB_ImageDataTrusted_Thunk();

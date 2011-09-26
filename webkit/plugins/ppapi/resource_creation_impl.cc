@@ -145,6 +145,12 @@ PP_Resource ResourceCreationImpl::CreateFlashTCPSocket(
   return 0;
 }
 
+PP_Resource ResourceCreationImpl::CreateFlashUDPSocket(
+    PP_Instance instance) {
+  // Creating UDP socket resource at the renderer side is not supported.
+  return 0;
+}
+
 PP_Resource ResourceCreationImpl::CreateFontObject(
     PP_Instance instance,
     const PP_FontDescription_Dev* description) {

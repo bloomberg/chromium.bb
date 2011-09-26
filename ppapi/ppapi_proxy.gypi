@@ -90,6 +90,8 @@
         'proxy/ppb_flash_net_connector_proxy.h',
         'proxy/ppb_flash_tcp_socket_proxy.cc',
         'proxy/ppb_flash_tcp_socket_proxy.h',
+        'proxy/ppb_flash_udp_socket_proxy.cc',
+        'proxy/ppb_flash_udp_socket_proxy.h',
         'proxy/ppb_font_proxy.cc',
         'proxy/ppb_font_proxy.h',
         'proxy/ppb_graphics_2d_proxy.cc',

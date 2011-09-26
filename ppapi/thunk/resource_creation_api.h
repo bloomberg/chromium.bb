@@ -71,6 +71,7 @@ class ResourceCreationAPI {
                                       const PP_Flash_Menu* menu_data) = 0;
   virtual PP_Resource CreateFlashNetConnector(PP_Instance instance) = 0;
   virtual PP_Resource CreateFlashTCPSocket(PP_Instance instace) = 0;
+  virtual PP_Resource CreateFlashUDPSocket(PP_Instance instace) = 0;
   // Note: can't be called CreateFont due to Windows #defines.
   virtual PP_Resource CreateFontObject(
       PP_Instance instance,

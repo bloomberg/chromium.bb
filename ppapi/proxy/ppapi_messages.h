@@ -263,6 +263,23 @@ IPC_MESSAGE_ROUTED4(PpapiMsg_PPBFlashTCPSocket_WriteACK,
                     bool /* succeeded */,
                     int32_t /* bytes_written */)
 
+// PPB_Flash_UDPSocket
+IPC_MESSAGE_ROUTED3(PpapiMsg_PPBFlashUDPSocket_BindACK,
+                    uint32 /* plugin_dispatcher_id */,
+                    uint32 /* socket_id */,
+                    bool /* succeeded */)
+IPC_MESSAGE_ROUTED5(PpapiMsg_PPBFlashUDPSocket_RecvFromACK,
+                    uint32 /* plugin_dispatcher_id */,
+                    uint32 /* socket_id */,
+                    bool /* succeeded */,
+                    std::string /* data */,
+                    PP_Flash_NetAddress /* remote_addr */)
+IPC_MESSAGE_ROUTED4(PpapiMsg_PPBFlashUDPSocket_SendToACK,
+                    uint32 /* plugin_dispatcher_id */,
+                    uint32 /* socket_id */,
+                    bool /* succeeded */,
+                    int32_t /* bytes_written */)
+
 // PPB_Graphics2D.
 IPC_MESSAGE_ROUTED2(PpapiMsg_PPBGraphics2D_FlushACK,
                     ppapi::HostResource /* graphics_2d */,
@@ -727,6 +744,24 @@ IPC_MESSAGE_CONTROL2(PpapiHostMsg_PPBFlashTCPSocket_Write,
                      uint32 /* socket_id */,
                      std::string /* data */)
 IPC_MESSAGE_CONTROL1(PpapiHostMsg_PPBFlashTCPSocket_Disconnect,
+                     uint32 /* socket_id */)
+
+// PPB_Flash_UDPSocket
+IPC_SYNC_MESSAGE_CONTROL2_1(PpapiHostMsg_PPBFlashUDPSocket_Create,
+                            int32 /* routing_id */,
+                            uint32 /* plugin_dispatcher_id */,
+                            uint32 /* socket_id */)
+IPC_MESSAGE_CONTROL2(PpapiHostMsg_PPBFlashUDPSocket_Bind,
+                     uint32 /* socket_id */,
+                     PP_Flash_NetAddress /* net_addr */)
+IPC_MESSAGE_CONTROL2(PpapiHostMsg_PPBFlashUDPSocket_RecvFrom,
+                     uint32 /* socket_id */,
+                     int32_t /* num_bytes */)
+IPC_MESSAGE_CONTROL3(PpapiHostMsg_PPBFlashUDPSocket_SendTo,
+                     uint32 /* socket_id */,
+                     std::string /* data */,
+                     PP_Flash_NetAddress /* net_addr */)
+IPC_MESSAGE_CONTROL1(PpapiHostMsg_PPBFlashUDPSocket_Close,
                      uint32 /* socket_id */)
 
 // PPB_Font.

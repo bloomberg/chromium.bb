@@ -38,6 +38,7 @@
 #include "net/socket/client_socket_handle.h"
 #include "net/socket/ssl_client_socket.h"
 #include "net/socket/tcp_client_socket.h"
+#include "net/udp/udp_server_socket.h"
 #include "net/url_request/url_request_context.h"
 #include "ppapi/c/private/ppb_flash_net_connector.h"
 #include "ppapi/proxy/ppapi_messages.h"
@@ -100,16 +101,28 @@ bool AddressListToNetAddress(const net::AddressList& address_list,
          SockaddrToNetAddress(head->ai_addr, head->ai_addrlen, net_addr);
 }
 
-bool NetAddressToAddressList(const PP_Flash_NetAddress& net_addr,
-                             net::AddressList* address_list) {
-  if (!address_list || !ValidateNetAddress(net_addr))
+bool NetAddressToIPEndPoint(const PP_Flash_NetAddress& net_addr,
+                            net::IPEndPoint* ip_end_point) {
+  if (!ip_end_point || !ValidateNetAddress(net_addr))
     return false;
 
-  net::IPEndPoint ip_end_point;
-  if (!ip_end_point.FromSockAddr(
+  if (!ip_end_point->FromSockAddr(
       reinterpret_cast<const sockaddr*>(net_addr.data), net_addr.size)) {
     return false;
   }
+
+  return true;
+}
+
+bool NetAddressToAddressList(const PP_Flash_NetAddress& net_addr,
+                             net::AddressList* address_list) {
+  if (!address_list)
+    return false;
+
+  net::IPEndPoint ip_end_point;
+  if (!NetAddressToIPEndPoint(net_addr, &ip_end_point))
+    return false;
+
   *address_list = net::AddressList::CreateFromIPAddress(ip_end_point.address(),
                                                         ip_end_point.port());
   return true;
@@ -195,9 +208,62 @@ class PepperMessageFilter::FlashTCPSocket {
   DISALLOW_COPY_AND_ASSIGN(FlashTCPSocket);
 };
 
+// Base class for TCP and UDP socket managers.
+template<class SocketType>
+class PepperMessageFilter::FlashSocketManager {
+ public:
+  explicit FlashSocketManager(PepperMessageFilter* pepper_message_filter);
+
+ protected:
+  // |socket_id| will be set to 0 on failure, non-zero otherwise.
+  bool GenerateSocketID(uint32* socket_id);
+
+  uint32 next_socket_id_;
+  PepperMessageFilter* pepper_message_filter_;
+
+  // SocketMap can hold either FlashTCPSocket or FlashUDPSocket.
+  typedef std::map<uint32, linked_ptr<SocketType> > SocketMap;
+  SocketMap sockets_;
+};
+
+template<class SocketType>
+PepperMessageFilter::FlashSocketManager<SocketType>::FlashSocketManager(
+    PepperMessageFilter* pepper_message_filter)
+    : next_socket_id_(1),
+      pepper_message_filter_(pepper_message_filter) {
+  DCHECK(pepper_message_filter);
+}
+
+template<class SocketType>
+bool PepperMessageFilter::FlashSocketManager<SocketType>::GenerateSocketID(
+    uint32* socket_id) {
+  // Generate a socket ID. For each process which sends us socket requests, IDs
+  // of living sockets must be unique, to each socket type.  TCP and UDP have
+  // unique managers, so the socket ID can be the same in this case.
+  //
+  // However, it is safe to generate IDs based on the internal state of a single
+  // FlashSocketManager object, because for each plugin or renderer process,
+  // there is at most one PepperMessageFilter talking to it
+
+  if (sockets_.size() >= std::numeric_limits<uint32>::max()) {
+    // All valid IDs are being used.
+    *socket_id = 0;
+    return false;
+  }
+  do {
+    // Although it is unlikely, make sure that we won't cause any trouble when
+    // the counter overflows.
+    *socket_id = next_socket_id_++;
+  } while (*socket_id == 0 ||
+           sockets_.find(*socket_id) != sockets_.end());
+
+  return true;
+}
+
 // FlashTCPSocketManager manages the mapping from socket IDs to FlashTCPSocket
 // instances.
-class PepperMessageFilter::FlashTCPSocketManager {
+class PepperMessageFilter::FlashTCPSocketManager
+    : public FlashSocketManager<FlashTCPSocket> {
  public:
   explicit FlashTCPSocketManager(PepperMessageFilter* pepper_message_filter);
 
@@ -228,13 +294,6 @@ class PepperMessageFilter::FlashTCPSocketManager {
   net::CertVerifier* GetCertVerifier();
 
  private:
-  typedef std::map<uint32, linked_ptr<FlashTCPSocket> > SocketMap;
-  SocketMap sockets_;
-
-  uint32 next_socket_id_;
-
-  PepperMessageFilter* pepper_message_filter_;
-
   // The default SSL configuration settings are used, as opposed to Chrome's SSL
   // settings.
   net::SSLConfig ssl_config_;
@@ -498,37 +557,184 @@ bool PepperMessageFilter::FlashTCPSocket::IsConnected() const {
          connection_state_ == SSL_CONNECTED;
 }
 
+class PepperMessageFilter::FlashUDPSocket {
+ public:
+  FlashUDPSocket(PepperMessageFilter* pepper_message_filter,
+                 int32 routing_id,
+                 uint32 plugin_dispatcher_id,
+                 uint32 socket_id);
+  ~FlashUDPSocket();
+
+  void Bind(const PP_Flash_NetAddress& addr);
+  void RecvFrom(int32_t num_bytes);
+  void SendTo(const std::string& data, const PP_Flash_NetAddress& addr);
+
+ private:
+  void SendBindACK(bool result);
+  void SendRecvFromACKError();
+  void SendSendToACKError();
+
+  void OnRecvFromCompleted(int result);
+  void OnSendToCompleted(int result);
+
+  PepperMessageFilter* pepper_message_filter_;
+  int32 routing_id_;
+  uint32 plugin_dispatcher_id_;
+  uint32 socket_id_;
+
+  net::CompletionCallbackImpl<FlashUDPSocket> recvfrom_callback_;
+  net::CompletionCallbackImpl<FlashUDPSocket> sendto_callback_;
+
+  scoped_ptr<net::UDPServerSocket> socket_;
+
+  scoped_refptr<net::IOBuffer> recvfrom_buffer_;
+  scoped_refptr<net::IOBuffer> sendto_buffer_;
+
+  net::IPEndPoint recvfrom_address_;
+
+  DISALLOW_COPY_AND_ASSIGN(FlashUDPSocket);
+};
+
+PepperMessageFilter::FlashUDPSocket::FlashUDPSocket(
+    PepperMessageFilter* pepper_message_filter,
+    int32 routing_id,
+    uint32 plugin_dispatcher_id,
+    uint32 socket_id)
+    : pepper_message_filter_(pepper_message_filter),
+      routing_id_(routing_id),
+      plugin_dispatcher_id_(plugin_dispatcher_id),
+      socket_id_(socket_id),
+      ALLOW_THIS_IN_INITIALIZER_LIST(
+          recvfrom_callback_(this, &FlashUDPSocket::OnRecvFromCompleted)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(
+          sendto_callback_(this, &FlashUDPSocket::OnSendToCompleted)) {
+  DCHECK(pepper_message_filter);
+}
+
+PepperMessageFilter::FlashUDPSocket::~FlashUDPSocket() {
+  // Make sure there are no further callbacks from socket_.
+  if (socket_.get())
+    socket_->Close();
+}
+
+void PepperMessageFilter::FlashUDPSocket::Bind(
+    const PP_Flash_NetAddress& addr) {
+  socket_.reset(new net::UDPServerSocket(NULL, net::NetLog::Source()));
+
+  net::IPEndPoint address;
+  if (!socket_.get() || !NetAddressToIPEndPoint(addr, &address)) {
+    SendBindACK(false);
+    return;
+  }
+
+  int result = socket_->Listen(address);
+
+  SendBindACK(result == net::OK);
+}
+
+void PepperMessageFilter::FlashUDPSocket::RecvFrom(int32_t num_bytes) {
+  if (recvfrom_buffer_.get()) {
+    SendRecvFromACKError();
+    return;
+  }
+
+  recvfrom_buffer_ = new net::IOBuffer(num_bytes);
+  int result = socket_->RecvFrom(recvfrom_buffer_,
+                                 num_bytes,
+                                 &recvfrom_address_,
+                                 &recvfrom_callback_);
+
+  if (result != net::ERR_IO_PENDING)
+    OnRecvFromCompleted(result);
+}
+
+void PepperMessageFilter::FlashUDPSocket::SendTo(
+    const std::string& data,
+    const PP_Flash_NetAddress& addr) {
+  if (sendto_buffer_.get() || data.empty()) {
+    SendSendToACKError();
+    return;
+  }
+
+  net::IPEndPoint address;
+  if (!NetAddressToIPEndPoint(addr, &address)) {
+    SendSendToACKError();
+    return;
+  }
+
+  int data_size = data.size();
+
+  sendto_buffer_ = new net::IOBuffer(data_size);
+  memcpy(sendto_buffer_->data(), data.data(), data_size);
+  int result = socket_->SendTo(sendto_buffer_,
+                               data_size,
+                               address,
+                               &sendto_callback_);
+
+  if (result != net::ERR_IO_PENDING)
+    OnSendToCompleted(result);
+}
+
+void PepperMessageFilter::FlashUDPSocket::SendRecvFromACKError() {
+  PP_Flash_NetAddress addr = kInvalidNetAddress;
+  pepper_message_filter_->Send(
+      new PpapiMsg_PPBFlashUDPSocket_RecvFromACK(
+          routing_id_, plugin_dispatcher_id_, socket_id_, false,
+          std::string(), addr));
+}
+
+void PepperMessageFilter::FlashUDPSocket::SendSendToACKError() {
+  pepper_message_filter_->Send(
+      new PpapiMsg_PPBFlashUDPSocket_SendToACK(
+          routing_id_, plugin_dispatcher_id_, socket_id_, false, 0));
+}
+
+void PepperMessageFilter::FlashUDPSocket::SendBindACK(bool result) {
+  pepper_message_filter_->Send(
+      new PpapiMsg_PPBFlashUDPSocket_BindACK(
+          routing_id_, plugin_dispatcher_id_, socket_id_, result));
+}
+
+void PepperMessageFilter::FlashUDPSocket::OnRecvFromCompleted(int result) {
+  DCHECK(recvfrom_buffer_.get());
+
+  // Convert IPEndPoint we get back from RecvFrom to a PP_Flash_NetAddress,
+  // to send back to Flash.
+  PP_Flash_NetAddress addr = kInvalidNetAddress;
+  if (!IPEndPointToNetAddress(recvfrom_address_, &addr) || result < 0) {
+    SendRecvFromACKError();
+  } else {
+    pepper_message_filter_->Send(
+        new PpapiMsg_PPBFlashUDPSocket_RecvFromACK(
+            routing_id_, plugin_dispatcher_id_, socket_id_, true,
+            std::string(recvfrom_buffer_->data(), result), addr));
+  }
+
+  recvfrom_buffer_ = NULL;
+}
+
+void PepperMessageFilter::FlashUDPSocket::OnSendToCompleted(int result) {
+  DCHECK(sendto_buffer_.get());
+
+  pepper_message_filter_->Send(
+      new PpapiMsg_PPBFlashUDPSocket_SendToACK(
+          routing_id_, plugin_dispatcher_id_, socket_id_, true, result));
+
+  sendto_buffer_ = NULL;
+}
+
 PepperMessageFilter::FlashTCPSocketManager::FlashTCPSocketManager(
     PepperMessageFilter* pepper_message_filter)
-    : next_socket_id_(1),
-      pepper_message_filter_(pepper_message_filter) {
-  DCHECK(pepper_message_filter);
+    : FlashSocketManager<FlashTCPSocket>(pepper_message_filter) {
 }
 
 void PepperMessageFilter::FlashTCPSocketManager::OnMsgCreate(
     int32 routing_id,
     uint32 plugin_dispatcher_id,
     uint32* socket_id) {
-  // Generate a socket ID. For each process which sends us socket requests, IDs
-  // of living sockets must be unique.
-  //
-  // However, it is safe to generate IDs based on the internal state of a single
-  // FlashTCPSocketManager object, because for each plugin or renderer process,
-  // there is at most one PepperMessageFilter (in other words, at most one
-  // FlashTCPSocketManager) talking to it.
-
-  DCHECK(socket_id);
-  if (sockets_.size() >= std::numeric_limits<uint32>::max()) {
-    // All valid IDs are being used.
-    *socket_id = 0;
+  if (!GenerateSocketID(socket_id))
     return;
-  }
-  do {
-    // Although it is unlikely, make sure that we won't cause any trouble when
-    // the counter overflows.
-    *socket_id = next_socket_id_++;
-  } while (*socket_id == 0 ||
-           sockets_.find(*socket_id) != sockets_.end());
+
   sockets_[*socket_id] = linked_ptr<FlashTCPSocket>(
       new FlashTCPSocket(this, routing_id, plugin_dispatcher_id, *socket_id));
 }
@@ -617,12 +823,105 @@ PepperMessageFilter::FlashTCPSocketManager::GetCertVerifier() {
   return cert_verifier_.get();
 }
 
+// FlashUDPSocketManager manages the mapping from socket IDs to FlashUDPSocket
+// instances.
+class PepperMessageFilter::FlashUDPSocketManager
+    : public FlashSocketManager<FlashUDPSocket> {
+ public:
+  explicit FlashUDPSocketManager(PepperMessageFilter* pepper_message_filter);
+
+  void OnMsgCreate(int32 routing_id,
+                   uint32 plugin_dispatcher_id,
+                   uint32* socket_id);
+  void OnMsgBind(uint32 socket_id,
+                 const PP_Flash_NetAddress& addr);
+  void OnMsgRecvFrom(uint32 socket_id,
+                     int32_t num_bytes);
+  void OnMsgSendTo(uint32 socket_id,
+                   const std::string& data,
+                   const PP_Flash_NetAddress& addr);
+  void OnMsgClose(uint32 socket_id);
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(FlashUDPSocketManager);
+};
+
+PepperMessageFilter::FlashUDPSocketManager::FlashUDPSocketManager(
+    PepperMessageFilter* pepper_message_filter)
+    : FlashSocketManager<FlashUDPSocket>(pepper_message_filter) {
+}
+
+void PepperMessageFilter::FlashUDPSocketManager::OnMsgCreate(
+    int32 routing_id,
+    uint32 plugin_dispatcher_id,
+    uint32* socket_id) {
+  if (!GenerateSocketID(socket_id))
+    return;
+
+  sockets_[*socket_id] = linked_ptr<FlashUDPSocket>(
+      new FlashUDPSocket(pepper_message_filter_, routing_id,
+                         plugin_dispatcher_id, *socket_id));
+}
+
+void PepperMessageFilter::FlashUDPSocketManager::OnMsgBind(
+    uint32 socket_id,
+    const PP_Flash_NetAddress& addr) {
+  SocketMap::iterator iter = sockets_.find(socket_id);
+  if (iter == sockets_.end()) {
+    NOTREACHED();
+    return;
+  }
+
+  iter->second->Bind(addr);
+}
+
+void PepperMessageFilter::FlashUDPSocketManager::OnMsgRecvFrom(
+    uint32 socket_id,
+    int32_t num_bytes) {
+  SocketMap::iterator iter = sockets_.find(socket_id);
+  if (iter == sockets_.end()) {
+    NOTREACHED();
+    return;
+  }
+
+  iter->second->RecvFrom(num_bytes);
+}
+
+void PepperMessageFilter::FlashUDPSocketManager::OnMsgSendTo(
+    uint32 socket_id,
+    const std::string& data,
+    const PP_Flash_NetAddress& addr) {
+  SocketMap::iterator iter = sockets_.find(socket_id);
+  if (iter == sockets_.end()) {
+    NOTREACHED();
+    return;
+  }
+
+  iter->second->SendTo(data, addr);
+}
+
+void PepperMessageFilter::FlashUDPSocketManager::OnMsgClose(
+    uint32 socket_id) {
+  SocketMap::iterator iter = sockets_.find(socket_id);
+  if (iter == sockets_.end()) {
+    NOTREACHED();
+    return;
+  }
+
+  // Destroy the FlashUDPSocket instance will cancel any pending completion
+  // callback. From this point on, there won't be any messages associated with
+  // this socket sent to the plugin side.
+  sockets_.erase(iter);
+}
+
 PepperMessageFilter::PepperMessageFilter(
     const content::ResourceContext* resource_context)
     : resource_context_(resource_context),
       host_resolver_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(
-          socket_manager_(new FlashTCPSocketManager(this))) {
+          socket_manager_tcp_(new FlashTCPSocketManager(this))),
+      ALLOW_THIS_IN_INITIALIZER_LIST(
+          socket_manager_udp_(new FlashUDPSocketManager(this))) {
   DCHECK(resource_context_);
 }
 
@@ -630,7 +929,9 @@ PepperMessageFilter::PepperMessageFilter(net::HostResolver* host_resolver)
     : resource_context_(NULL),
       host_resolver_(host_resolver),
       ALLOW_THIS_IN_INITIALIZER_LIST(
-          socket_manager_(new FlashTCPSocketManager(this))) {
+          socket_manager_tcp_(new FlashTCPSocketManager(this))),
+      ALLOW_THIS_IN_INITIALIZER_LIST(
+          socket_manager_udp_(new FlashUDPSocketManager(this))) {
   DCHECK(host_resolver);
 }
 
@@ -650,27 +951,45 @@ bool PepperMessageFilter::OnMessageReceived(const IPC::Message& msg,
                                     OnGetFontFamilies)
     IPC_MESSAGE_FORWARD(
         PpapiHostMsg_PPBFlashTCPSocket_Create,
-        socket_manager_.get(), FlashTCPSocketManager::OnMsgCreate)
+        socket_manager_tcp_.get(), FlashTCPSocketManager::OnMsgCreate)
     IPC_MESSAGE_FORWARD(
         PpapiHostMsg_PPBFlashTCPSocket_Connect,
-        socket_manager_.get(), FlashTCPSocketManager::OnMsgConnect)
+        socket_manager_tcp_.get(), FlashTCPSocketManager::OnMsgConnect)
     IPC_MESSAGE_FORWARD(
         PpapiHostMsg_PPBFlashTCPSocket_ConnectWithNetAddress,
-        socket_manager_.get(),
+        socket_manager_tcp_.get(),
         FlashTCPSocketManager::OnMsgConnectWithNetAddress)
     IPC_MESSAGE_FORWARD(
         PpapiHostMsg_PPBFlashTCPSocket_SSLHandshake,
-        socket_manager_.get(),
+        socket_manager_tcp_.get(),
         FlashTCPSocketManager::OnMsgSSLHandshake)
     IPC_MESSAGE_FORWARD(
         PpapiHostMsg_PPBFlashTCPSocket_Read,
-        socket_manager_.get(), FlashTCPSocketManager::OnMsgRead)
+        socket_manager_tcp_.get(), FlashTCPSocketManager::OnMsgRead)
     IPC_MESSAGE_FORWARD(
         PpapiHostMsg_PPBFlashTCPSocket_Write,
-        socket_manager_.get(), FlashTCPSocketManager::OnMsgWrite)
+        socket_manager_tcp_.get(), FlashTCPSocketManager::OnMsgWrite)
     IPC_MESSAGE_FORWARD(
         PpapiHostMsg_PPBFlashTCPSocket_Disconnect,
-        socket_manager_.get(), FlashTCPSocketManager::OnMsgDisconnect)
+        socket_manager_tcp_.get(), FlashTCPSocketManager::OnMsgDisconnect)
+
+    // UDP
+    IPC_MESSAGE_FORWARD(
+        PpapiHostMsg_PPBFlashUDPSocket_Create,
+        socket_manager_udp_.get(), FlashUDPSocketManager::OnMsgCreate)
+    IPC_MESSAGE_FORWARD(
+        PpapiHostMsg_PPBFlashUDPSocket_Bind,
+        socket_manager_udp_.get(), FlashUDPSocketManager::OnMsgBind)
+    IPC_MESSAGE_FORWARD(
+        PpapiHostMsg_PPBFlashUDPSocket_RecvFrom,
+        socket_manager_udp_.get(), FlashUDPSocketManager::OnMsgRecvFrom)
+    IPC_MESSAGE_FORWARD(
+        PpapiHostMsg_PPBFlashUDPSocket_SendTo,
+        socket_manager_udp_.get(), FlashUDPSocketManager::OnMsgSendTo)
+    IPC_MESSAGE_FORWARD(
+        PpapiHostMsg_PPBFlashUDPSocket_Close,
+        socket_manager_udp_.get(), FlashUDPSocketManager::OnMsgClose)
+
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
   return handled;
