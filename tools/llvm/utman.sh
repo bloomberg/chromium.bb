@@ -214,7 +214,7 @@ else
 fi
 
 # Current milestones in each repo
-readonly UPSTREAM_REV=${UPSTREAM_REV:-4022358cadbd}
+readonly UPSTREAM_REV=${UPSTREAM_REV:-643c7c8da16e}
 
 readonly NEWLIB_REV=c6358617f3fd
 readonly BINUTILS_REV=2f1d9c8ef12d
