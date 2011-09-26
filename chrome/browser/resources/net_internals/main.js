@@ -34,14 +34,6 @@ var g_browser = null;
 var MainView = (function() {
   'use strict';
 
-  // IDs for special HTML elements in index.html
-  var CATEGORY_TAB_HANDLES_ID = 'category-tab-handles';
-  var SPLITTER_BOX_FOR_MAIN_TABS_ID = 'splitter-box-for-main-tabs';
-  var STATUS_VIEW_ID = 'status-view';
-  var STATUS_VIEW_FOR_CAPTURE_ID = 'status-view-for-capture';
-  var STATUS_VIEW_FOR_FILE_ID = 'status-view-for-file';
-  var STATUS_VIEW_DUMP_FILE_NAME_ID = 'status-view-dump-file-name';
-
   // We inherit from ResizableVerticalSplitView.
   var superClass = ResizableVerticalSplitView;
 
@@ -63,9 +55,9 @@ var MainView = (function() {
     // Call superclass's constructor, initializing the view which lets you tab
     // between the different sub-views.
     superClass.call(this,
-                    new DivView(CATEGORY_TAB_HANDLES_ID),
+                    new DivView(MainView.CATEGORY_TAB_HANDLES_ID),
                     tabs,
-                    new DivView(SPLITTER_BOX_FOR_MAIN_TABS_ID));
+                    new DivView(MainView.SPLITTER_BOX_FOR_MAIN_TABS_ID));
 
     // By default the split for the left navbar will be at 50% of the entire
     // width. This is not aesthetically pleasing, so we will shrink it.
@@ -121,7 +113,7 @@ var MainView = (function() {
     // a high level status (i.e. if we are capturing events, or displaying a
     // log file). Below it we will position the main tabs and their content
     // area.
-    var statusView = new DivView(STATUS_VIEW_ID);
+    var statusView = new DivView(MainView.STATUS_VIEW_ID);
     var verticalSplitView = new VerticalSplitView(statusView, this);
     var windowView = new WindowView(verticalSplitView);
 
@@ -136,6 +128,14 @@ var MainView = (function() {
     // Tell the browser that we are ready to start receiving log events.
     g_browser.sendReady();
   }
+
+  // IDs for special HTML elements in index.html
+  MainView.CATEGORY_TAB_HANDLES_ID = 'category-tab-handles';
+  MainView.SPLITTER_BOX_FOR_MAIN_TABS_ID = 'splitter-box-for-main-tabs';
+  MainView.STATUS_VIEW_ID = 'status-view';
+  MainView.STATUS_VIEW_FOR_CAPTURE_ID = 'status-view-for-capture';
+  MainView.STATUS_VIEW_FOR_FILE_ID = 'status-view-for-file';
+  MainView.STATUS_VIEW_DUMP_FILE_NAME_ID = 'status-view-dump-file-name';
 
   cr.addSingletonGetter(MainView);
 
@@ -159,11 +159,11 @@ var MainView = (function() {
      */
     onLoadLogFile: function(fileName) {
        // Swap out the status bar to indicate we have loaded from a file.
-      setNodeDisplay($(STATUS_VIEW_FOR_CAPTURE_ID), false);
-      setNodeDisplay($(STATUS_VIEW_FOR_FILE_ID), true);
+      setNodeDisplay($(MainView.STATUS_VIEW_FOR_CAPTURE_ID), false);
+      setNodeDisplay($(MainView.STATUS_VIEW_FOR_FILE_ID), true);
 
       // Indicate which file is being displayed.
-      $(STATUS_VIEW_DUMP_FILE_NAME_ID).innerText = fileName;
+      $(MainView.STATUS_VIEW_DUMP_FILE_NAME_ID).innerText = fileName;
 
       document.styleSheets[0].insertRule('.hideOnLoadLog { display: none; }');
 

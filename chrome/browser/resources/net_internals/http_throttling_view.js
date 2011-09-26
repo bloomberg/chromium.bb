@@ -8,10 +8,6 @@
 var HttpThrottlingView = (function() {
   'use strict';
 
-  // IDs for special HTML elements in http_throttling_view.html
-  var MAIN_BOX_ID = 'http-throttling-view-tab-content';
-  var ENABLE_CHECKBOX_ID = 'http-throttling-view-enable-checkbox';
-
   // We inherit from DivView.
   var superClass = DivView;
 
@@ -22,9 +18,9 @@ var HttpThrottlingView = (function() {
     assertFirstConstructorCall(HttpThrottlingView);
 
     // Call superclass's constructor.
-    superClass.call(this, MAIN_BOX_ID);
+    superClass.call(this, HttpThrottlingView.MAIN_BOX_ID);
 
-    this.enableCheckbox_ = $(ENABLE_CHECKBOX_ID);
+    this.enableCheckbox_ = $(HttpThrottlingView.ENABLE_CHECKBOX_ID);
     this.enableCheckbox_.onclick = this.onEnableCheckboxClicked_.bind(this);
 
     g_browser.addHttpThrottlingObserver(this);
@@ -32,6 +28,11 @@ var HttpThrottlingView = (function() {
 
   // ID for special HTML element in category_tabs.html
   HttpThrottlingView.TAB_HANDLE_ID = 'tab-handle-http-throttling';
+
+  // IDs for special HTML elements in http_throttling_view.html
+  HttpThrottlingView.MAIN_BOX_ID = 'http-throttling-view-tab-content';
+  HttpThrottlingView.ENABLE_CHECKBOX_ID =
+      'http-throttling-view-enable-checkbox';
 
   cr.addSingletonGetter(HttpThrottlingView);
 

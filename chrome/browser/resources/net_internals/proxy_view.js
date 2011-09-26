@@ -14,15 +14,6 @@
 var ProxyView = (function() {
   'use strict';
 
-  // IDs for special HTML elements in proxy_view.html
-  var MAIN_BOX_ID = 'proxy-view-tab-content';
-  var ORIGINAL_SETTINGS_DIV_ID = 'proxy-view-original-settings';
-  var EFFECTIVE_SETTINGS_DIV_ID = 'proxy-view-effective-settings';
-  var RELOAD_SETTINGS_BUTTON_ID = 'proxy-view-reload-settings';
-  var BAD_PROXIES_TBODY_ID = 'proxy-view-bad-proxies-tbody';
-  var CLEAR_BAD_PROXIES_BUTTON_ID = 'proxy-view-clear-bad-proxies';
-  var PROXY_RESOLVER_LOG_PRE_ID = 'proxy-view-resolver-log';
-
   // We inherit from DivView.
   var superClass = DivView;
 
@@ -33,14 +24,14 @@ var ProxyView = (function() {
     assertFirstConstructorCall(ProxyView);
 
     // Call superclass's constructor.
-    superClass.call(this, MAIN_BOX_ID);
+    superClass.call(this, ProxyView.MAIN_BOX_ID);
 
     this.latestProxySourceId_ = 0;
 
     // Hook up the UI components.
-    $(RELOAD_SETTINGS_BUTTON_ID).onclick =
+    $(ProxyView.RELOAD_SETTINGS_BUTTON_ID).onclick =
         g_browser.sendReloadProxySettings.bind(g_browser);
-    $(CLEAR_BAD_PROXIES_BUTTON_ID).onclick =
+    $(ProxyView.CLEAR_BAD_PROXIES_BUTTON_ID).onclick =
         g_browser.sendClearBadProxies.bind(g_browser);
 
     // Register to receive proxy information as it changes.
@@ -51,6 +42,15 @@ var ProxyView = (function() {
 
   // ID for special HTML element in category_tabs.html
   ProxyView.TAB_HANDLE_ID = 'tab-handle-proxy';
+
+  // IDs for special HTML elements in proxy_view.html
+  ProxyView.MAIN_BOX_ID = 'proxy-view-tab-content';
+  ProxyView.ORIGINAL_SETTINGS_DIV_ID = 'proxy-view-original-settings';
+  ProxyView.EFFECTIVE_SETTINGS_DIV_ID = 'proxy-view-effective-settings';
+  ProxyView.RELOAD_SETTINGS_BUTTON_ID = 'proxy-view-reload-settings';
+  ProxyView.BAD_PROXIES_TBODY_ID = 'proxy-view-bad-proxies-tbody';
+  ProxyView.CLEAR_BAD_PROXIES_BUTTON_ID = 'proxy-view-clear-bad-proxies';
+  ProxyView.PROXY_RESOLVER_LOG_PRE_ID = 'proxy-view-resolver-log';
 
   cr.addSingletonGetter(ProxyView);
 
@@ -87,8 +87,8 @@ var ProxyView = (function() {
     onProxySettingsChanged: function(proxySettings) {
       // Both |original| and |effective| are dictionaries describing the
       // settings.
-      $(ORIGINAL_SETTINGS_DIV_ID).innerHTML = '';
-      $(EFFECTIVE_SETTINGS_DIV_ID).innerHTML = '';
+      $(ProxyView.ORIGINAL_SETTINGS_DIV_ID).innerHTML = '';
+      $(ProxyView.EFFECTIVE_SETTINGS_DIV_ID).innerHTML = '';
 
       if (!proxySettings)
         return false;
@@ -96,13 +96,15 @@ var ProxyView = (function() {
       var original = proxySettings.original;
       var effective = proxySettings.effective;
 
-      $(ORIGINAL_SETTINGS_DIV_ID).innerText = proxySettingsToString(original);
-      $(EFFECTIVE_SETTINGS_DIV_ID).innerText = proxySettingsToString(effective);
+      $(ProxyView.ORIGINAL_SETTINGS_DIV_ID).innerText =
+          proxySettingsToString(original);
+      $(ProxyView.EFFECTIVE_SETTINGS_DIV_ID).innerText =
+          proxySettingsToString(effective);
       return true;
     },
 
     onBadProxiesChanged: function(badProxies) {
-      $(BAD_PROXIES_TBODY_ID).innerHTML = '';
+      $(ProxyView.BAD_PROXIES_TBODY_ID).innerHTML = '';
 
       if (!badProxies)
         return false;
@@ -112,7 +114,7 @@ var ProxyView = (function() {
         var entry = badProxies[i];
         var badUntilDate = timeutil.convertTimeTicksToDate(entry.bad_until);
 
-        var tr = addNode($(BAD_PROXIES_TBODY_ID), 'tr');
+        var tr = addNode($(ProxyView.BAD_PROXIES_TBODY_ID), 'tr');
 
         var nameCell = addNode(tr, 'td');
         var badUntilCell = addNode(tr, 'td');
@@ -139,7 +141,8 @@ var ProxyView = (function() {
 
         this.latestProxySourceId_ = sourceEntry.getSourceId();
 
-        $(PROXY_RESOLVER_LOG_PRE_ID).innerText = sourceEntry.printAsText();
+        $(ProxyView.PROXY_RESOLVER_LOG_PRE_ID).innerText =
+            sourceEntry.printAsText();
       }
     },
 
@@ -150,8 +153,8 @@ var ProxyView = (function() {
       // Prevents display of partial logs.
       ++this.latestProxySourceId_;
 
-      $(PROXY_RESOLVER_LOG_PRE_ID).innerHTML = '';
-      $(PROXY_RESOLVER_LOG_PRE_ID).innerText = 'Deleted.';
+      $(ProxyView.PROXY_RESOLVER_LOG_PRE_ID).innerHTML = '';
+      $(ProxyView.PROXY_RESOLVER_LOG_PRE_ID).innerText = 'Deleted.';
     },
 
     onSourceEntriesDeleted: function(sourceIds) {

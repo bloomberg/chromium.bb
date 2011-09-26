@@ -17,10 +17,6 @@
  */
 netInternalsTest.test('netInternalsPrerenderView',
                       function (url, shouldSucceed, finalStatus) {
-  // IDs for special HTML elements in prerender_view.html
-  var HISTORY_DIV_ID = 'prerender-view-history-div';
-  var ACTIVE_DIV_ID = 'prerender-view-active-div';
-
   // Phases of the test.
   const STATE = {
     // We've switched to the prerender tab, but have yet to receive the
@@ -66,9 +62,9 @@ netInternalsTest.test('netInternalsPrerenderView',
       assertTrue(prerenderInfo.enabled, 'Prerendering not enabled.');
 
       // Check number of rows in both tables.
-      netInternalsTest.checkStyledTableRows(HISTORY_DIV_ID,
+      netInternalsTest.checkStyledTableRows(PrerenderView.HISTORY_DIV_ID,
                                             prerenderInfo.history.length);
-      netInternalsTest.checkStyledTableRows(ACTIVE_DIV_ID,
+      netInternalsTest.checkStyledTableRows(PrerenderView.ACTIVE_DIV_ID,
                                             prerenderInfo.active.length);
 
       if (this.state_ == STATE.START) {

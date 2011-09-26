@@ -8,15 +8,6 @@
 var ExportView = (function() {
   'use strict';
 
-  // IDs for special HTML elements in export_view.html
-  var MAIN_BOX_ID = 'export-view-tab-content';
-  var DOWNLOAD_IFRAME_ID = 'export-view-download-iframe';
-  var SAVE_FILE_BUTTON_ID = 'export-view-save-log-file';
-  var SAVE_STATUS_TEXT_ID = 'export-view-save-status-text';
-  var SECURITY_STRIPPING_CHECKBOX_ID =
-    'export-view-security-stripping-checkbox';
-  var USER_COMMENTS_TEXT_AREA_ID = 'export-view-user-comments';
-
   // We inherit from DivView.
   var superClass = DivView;
 
@@ -27,19 +18,20 @@ var ExportView = (function() {
     assertFirstConstructorCall(ExportView);
 
     // Call superclass's constructor.
-    superClass.call(this, MAIN_BOX_ID);
+    superClass.call(this, ExportView.MAIN_BOX_ID);
 
-    var securityStrippingCheckbox = $(SECURITY_STRIPPING_CHECKBOX_ID);
+    var securityStrippingCheckbox =
+        $(ExportView.SECURITY_STRIPPING_CHECKBOX_ID);
     securityStrippingCheckbox.onclick =
         this.onSetSecurityStripping_.bind(this, securityStrippingCheckbox);
 
-    this.downloadIframe_ = $(DOWNLOAD_IFRAME_ID);
+    this.downloadIframe_ = $(ExportView.DOWNLOAD_IFRAME_ID);
 
-    this.saveFileButton_ = $(SAVE_FILE_BUTTON_ID);
+    this.saveFileButton_ = $(ExportView.SAVE_FILE_BUTTON_ID);
     this.saveFileButton_.onclick = this.onSaveFile_.bind(this);
-    this.saveStatusText_ = $(SAVE_STATUS_TEXT_ID);
+    this.saveStatusText_ = $(ExportView.SAVE_STATUS_TEXT_ID);
 
-    this.userCommentsTextArea_ = $(USER_COMMENTS_TEXT_AREA_ID);
+    this.userCommentsTextArea_ = $(ExportView.USER_COMMENTS_TEXT_AREA_ID);
 
     // Track blob for previous log dump so it can be revoked when a new dump is
     // saved.
@@ -48,6 +40,15 @@ var ExportView = (function() {
 
   // ID for special HTML element in category_tabs.html
   ExportView.TAB_HANDLE_ID = 'tab-handle-export';
+
+  // IDs for special HTML elements in export_view.html
+  ExportView.MAIN_BOX_ID = 'export-view-tab-content';
+  ExportView.DOWNLOAD_IFRAME_ID = 'export-view-download-iframe';
+  ExportView.SAVE_FILE_BUTTON_ID = 'export-view-save-log-file';
+  ExportView.SAVE_STATUS_TEXT_ID = 'export-view-save-status-text';
+  ExportView.SECURITY_STRIPPING_CHECKBOX_ID =
+    'export-view-security-stripping-checkbox';
+  ExportView.USER_COMMENTS_TEXT_AREA_ID = 'export-view-user-comments';
 
   cr.addSingletonGetter(ExportView);
 

@@ -9,19 +9,6 @@
 var SpdyView = (function() {
   'use strict';
 
-  // IDs for special HTML elements in spdy_view.html
-  var MAIN_BOX_ID = 'spdy-view-tab-content';
-  var ENABLED_SPAN_ID = 'spdy-view-enabled-span';
-  var USE_ALTERNATE_PROTOCOL_SPAN_ID = 'spdy-view-alternate-protocol-span';
-  var FORCE_ALWAYS_SPAN_ID = 'spdy-view-force-always-span';
-  var FORCE_OVER_SSL_SPAN_ID = 'spdy-view-force-over-ssl-span';
-  var NEXT_PROTOCOLS_SPAN_ID = 'spdy-view-next-protocols-span';
-  var ALTERNATE_PROTOCOL_MAPPINGS_DIV_ID =
-      'spdy-view-alternate-protocol-mappings-div';
-  var SESSION_NONE_SPAN_ID = 'spdy-view-session-none-span';
-  var SESSION_LINK_SPAN_ID = 'spdy-view-session-link-span';
-  var SESSION_DIV_ID = 'spdy-view-session-div';
-
   // We inherit from DivView.
   var superClass = DivView;
 
@@ -32,27 +19,42 @@ var SpdyView = (function() {
     assertFirstConstructorCall(SpdyView);
 
     // Call superclass's constructor.
-    superClass.call(this, MAIN_BOX_ID);
+    superClass.call(this, SpdyView.MAIN_BOX_ID);
 
     g_browser.addSpdySessionInfoObserver(this);
     g_browser.addSpdyStatusObserver(this);
     g_browser.addSpdyAlternateProtocolMappingsObserver(this);
 
-    this.spdyEnabledSpan_ = $(ENABLED_SPAN_ID);
-    this.spdyUseAlternateProtocolSpan_ = $(USE_ALTERNATE_PROTOCOL_SPAN_ID);
-    this.spdyForceAlwaysSpan_ = $(FORCE_ALWAYS_SPAN_ID);
-    this.spdyForceOverSslSpan_ = $(FORCE_OVER_SSL_SPAN_ID);
-    this.spdyNextProtocolsSpan_ = $(NEXT_PROTOCOLS_SPAN_ID);
+    this.spdyEnabledSpan_ = $(SpdyView.ENABLED_SPAN_ID);
+    this.spdyUseAlternateProtocolSpan_ =
+        $(SpdyView.USE_ALTERNATE_PROTOCOL_SPAN_ID);
+    this.spdyForceAlwaysSpan_ = $(SpdyView.FORCE_ALWAYS_SPAN_ID);
+    this.spdyForceOverSslSpan_ = $(SpdyView.FORCE_OVER_SSL_SPAN_ID);
+    this.spdyNextProtocolsSpan_ = $(SpdyView.NEXT_PROTOCOLS_SPAN_ID);
 
     this.spdyAlternateProtocolMappingsDiv_ =
-        $(ALTERNATE_PROTOCOL_MAPPINGS_DIV_ID);
-    this.spdySessionNoneSpan_ = $(SESSION_NONE_SPAN_ID);
-    this.spdySessionLinkSpan_ = $(SESSION_LINK_SPAN_ID);
-    this.spdySessionDiv_ = $(SESSION_DIV_ID);
+        $(SpdyView.ALTERNATE_PROTOCOL_MAPPINGS_DIV_ID);
+    this.spdySessionNoneSpan_ = $(SpdyView.SESSION_NONE_SPAN_ID);
+    this.spdySessionLinkSpan_ = $(SpdyView.SESSION_LINK_SPAN_ID);
+    this.spdySessionDiv_ = $(SpdyView.SESSION_DIV_ID);
   }
 
   // ID for special HTML element in category_tabs.html
   SpdyView.TAB_HANDLE_ID = 'tab-handle-spdy';
+
+  // IDs for special HTML elements in spdy_view.html
+  SpdyView.MAIN_BOX_ID = 'spdy-view-tab-content';
+  SpdyView.ENABLED_SPAN_ID = 'spdy-view-enabled-span';
+  SpdyView.USE_ALTERNATE_PROTOCOL_SPAN_ID =
+      'spdy-view-alternate-protocol-span';
+  SpdyView.FORCE_ALWAYS_SPAN_ID = 'spdy-view-force-always-span';
+  SpdyView.FORCE_OVER_SSL_SPAN_ID = 'spdy-view-force-over-ssl-span';
+  SpdyView.NEXT_PROTOCOLS_SPAN_ID = 'spdy-view-next-protocols-span';
+  SpdyView.ALTERNATE_PROTOCOL_MAPPINGS_DIV_ID =
+      'spdy-view-alternate-protocol-mappings-div';
+  SpdyView.SESSION_NONE_SPAN_ID = 'spdy-view-session-none-span';
+  SpdyView.SESSION_LINK_SPAN_ID = 'spdy-view-session-link-span';
+  SpdyView.SESSION_DIV_ID = 'spdy-view-session-div';
 
   cr.addSingletonGetter(SpdyView);
 

@@ -26,26 +26,6 @@
 var EventsView = (function() {
   'use strict';
 
-  // IDs for special HTML elements in events_view.html
-  var TBODY_ID = 'events-view-source-list-tbody';
-  var FILTER_INPUT_ID = 'events-view-filter-input';
-  var FILTER_COUNT_ID = 'events-view-filter-count';
-  var DELETE_SELECTED_ID = 'events-view-delete-selected';
-  var DELETE_ALL_ID = 'events-view-delete-all';
-  var SELECT_ALL_ID = 'events-view-select-all';
-  var SORT_BY_ID_ID = 'events-view-sort-by-id';
-  var SORT_BY_SOURCE_TYPE_ID = 'events-view-sort-by-source';
-  var SORT_BY_DESCRIPTION_ID = 'events-view-sort-by-description';
-  var TAB_HANDLES_CONTAINER_ID = 'events-view-details-tab-handles';
-  var LOG_TAB_ID = 'events-view-details-log-tab';
-  var TIMELINE_TAB_ID = 'events-view-details-timeline-tab';
-  var DETAILS_LOG_BOX_ID = 'events-view-details-log-box';
-  var DETAILS_TIMELINE_BOX_ID = 'events-view-details-timeline-box';
-  var TOPBAR_ID = 'events-view-filter-box';
-  var MIDDLE_BOX_ID = 'events-view-source-list';
-  var BOTTOM_BAR_ID = 'events-view-action-box';
-  var SIZER_ID = 'events-view-splitter-box';
-
   // How soon after updating the filter list the counter should be updated.
   var REPAINT_FILTER_COUNTER_TIMEOUT_MS = 0;
 
@@ -62,44 +42,45 @@ var EventsView = (function() {
     superClass.call(this);
 
     // Initialize the sub-views.
-    var leftPane = new TopMidBottomView(new DivView(TOPBAR_ID),
-                                        new DivView(MIDDLE_BOX_ID),
-                                        new DivView(BOTTOM_BAR_ID));
+    var leftPane = new TopMidBottomView(new DivView(EventsView.TOPBAR_ID),
+                                        new DivView(EventsView.MIDDLE_BOX_ID),
+                                        new DivView(EventsView.BOTTOM_BAR_ID));
 
-    this.detailsView_ = new DetailsView(TAB_HANDLES_CONTAINER_ID,
-                                        LOG_TAB_ID,
-                                        TIMELINE_TAB_ID,
-                                        DETAILS_LOG_BOX_ID,
-                                        DETAILS_TIMELINE_BOX_ID);
+    this.detailsView_ = new DetailsView(EventsView.TAB_HANDLES_CONTAINER_ID,
+                                        EventsView.LOG_TAB_ID,
+                                        EventsView.TIMELINE_TAB_ID,
+                                        EventsView.DETAILS_LOG_BOX_ID,
+                                        EventsView.DETAILS_TIMELINE_BOX_ID);
 
     this.splitterView_ = new ResizableVerticalSplitView(
-        leftPane, this.detailsView_, new DivView(SIZER_ID));
+        leftPane, this.detailsView_, new DivView(EventsView.SIZER_ID));
 
     g_browser.sourceTracker.addObserver(this);
 
-    this.tableBody_ = $(TBODY_ID);
+    this.tableBody_ = $(EventsView.TBODY_ID);
 
-    this.filterInput_ = $(FILTER_INPUT_ID);
-    this.filterCount_ = $(FILTER_COUNT_ID);
+    this.filterInput_ = $(EventsView.FILTER_INPUT_ID);
+    this.filterCount_ = $(EventsView.FILTER_COUNT_ID);
 
     this.filterInput_.addEventListener('search',
         this.onFilterTextChanged_.bind(this), true);
 
-    $(DELETE_SELECTED_ID).onclick = this.deleteSelected_.bind(this);
+    $(EventsView.DELETE_SELECTED_ID).onclick = this.deleteSelected_.bind(this);
 
-    $(DELETE_ALL_ID).onclick =
+    $(EventsView.DELETE_ALL_ID).onclick =
         g_browser.sourceTracker.deleteAllSourceEntries.bind(
             g_browser.sourceTracker);
 
-    $(SELECT_ALL_ID).addEventListener('click',
-                                      this.selectAll_.bind(this), true);
+    $(EventsView.SELECT_ALL_ID).addEventListener(
+        'click', this.selectAll_.bind(this), true);
 
-    $(SORT_BY_ID_ID).addEventListener('click', this.sortById_.bind(this), true);
+    $(EventsView.SORT_BY_ID_ID).addEventListener(
+        'click', this.sortById_.bind(this), true);
 
-    $(SORT_BY_SOURCE_TYPE_ID).addEventListener(
+    $(EventsView.SORT_BY_SOURCE_TYPE_ID).addEventListener(
         'click', this.sortBySourceType_.bind(this), true);
 
-    $(SORT_BY_DESCRIPTION_ID).addEventListener(
+    $(EventsView.SORT_BY_DESCRIPTION_ID).addEventListener(
         'click', this.sortByDescription_.bind(this), true);
 
     // Sets sort order and filter.
@@ -110,6 +91,26 @@ var EventsView = (function() {
 
   // ID for special HTML element in category_tabs.html
   EventsView.TAB_HANDLE_ID = 'tab-handle-events';
+
+  // IDs for special HTML elements in events_view.html
+  EventsView.TBODY_ID = 'events-view-source-list-tbody';
+  EventsView.FILTER_INPUT_ID = 'events-view-filter-input';
+  EventsView.FILTER_COUNT_ID = 'events-view-filter-count';
+  EventsView.DELETE_SELECTED_ID = 'events-view-delete-selected';
+  EventsView.DELETE_ALL_ID = 'events-view-delete-all';
+  EventsView.SELECT_ALL_ID = 'events-view-select-all';
+  EventsView.SORT_BY_ID_ID = 'events-view-sort-by-id';
+  EventsView.SORT_BY_SOURCE_TYPE_ID = 'events-view-sort-by-source';
+  EventsView.SORT_BY_DESCRIPTION_ID = 'events-view-sort-by-description';
+  EventsView.TAB_HANDLES_CONTAINER_ID = 'events-view-details-tab-handles';
+  EventsView.LOG_TAB_ID = 'events-view-details-log-tab';
+  EventsView.TIMELINE_TAB_ID = 'events-view-details-timeline-tab';
+  EventsView.DETAILS_LOG_BOX_ID = 'events-view-details-log-box';
+  EventsView.DETAILS_TIMELINE_BOX_ID = 'events-view-details-timeline-box';
+  EventsView.TOPBAR_ID = 'events-view-filter-box';
+  EventsView.MIDDLE_BOX_ID = 'events-view-source-list';
+  EventsView.BOTTOM_BAR_ID = 'events-view-action-box';
+  EventsView.SIZER_ID = 'events-view-splitter-box';
 
   cr.addSingletonGetter(EventsView);
 

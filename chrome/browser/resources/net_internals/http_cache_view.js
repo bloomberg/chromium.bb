@@ -8,10 +8,6 @@
 var HttpCacheView = (function() {
   'use strict';
 
-  // IDs for special HTML elements in http_cache_view.html
-  var MAIN_BOX_ID = 'http-cache-view-tab-content';
-  var STATS_DIV_ID = 'http-cache-view-cache-stats';
-
   // We inherit from DivView.
   var superClass = DivView;
 
@@ -22,9 +18,9 @@ var HttpCacheView = (function() {
     assertFirstConstructorCall(HttpCacheView);
 
     // Call superclass's constructor.
-    superClass.call(this, MAIN_BOX_ID);
+    superClass.call(this, HttpCacheView.MAIN_BOX_ID);
 
-    this.statsDiv_ = $(STATS_DIV_ID);
+    this.statsDiv_ = $(HttpCacheView.STATS_DIV_ID);
 
     // Register to receive http cache info.
     g_browser.addHttpCacheInfoObserver(this);
@@ -32,6 +28,10 @@ var HttpCacheView = (function() {
 
   // ID for special HTML element in category_tabs.html
   HttpCacheView.TAB_HANDLE_ID = 'tab-handle-http-cache';
+
+  // IDs for special HTML elements in http_cache_view.html
+  HttpCacheView.MAIN_BOX_ID = 'http-cache-view-tab-content';
+  HttpCacheView.STATS_DIV_ID = 'http-cache-view-cache-stats';
 
   cr.addSingletonGetter(HttpCacheView);
 

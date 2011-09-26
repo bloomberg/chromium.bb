@@ -13,12 +13,6 @@
 var TestView = (function() {
   'use strict';
 
-  // IDs for special HTML elements in test_view.html
-  var MAIN_BOX_ID = 'test-view-tab-content';
-  var URL_INPUT_ID = 'test-view-url-input';
-  var FORM_ID = 'test-view-connection-tests-form';
-  var SUMMARY_DIV_ID = 'test-view-summary';
-
   // We inherit from DivView.
   var superClass = DivView;
 
@@ -29,12 +23,12 @@ var TestView = (function() {
     assertFirstConstructorCall(TestView);
 
     // Call superclass's constructor.
-    superClass.call(this, MAIN_BOX_ID);
+    superClass.call(this, TestView.MAIN_BOX_ID);
 
-    this.urlInput_ = $(URL_INPUT_ID);
-    this.summaryDiv_ = $(SUMMARY_DIV_ID);
+    this.urlInput_ = $(TestView.URL_INPUT_ID);
+    this.summaryDiv_ = $(TestView.SUMMARY_DIV_ID);
 
-    var form = $(FORM_ID);
+    var form = $(TestView.FORM_ID);
     form.addEventListener('submit', this.onSubmitForm_.bind(this), false);
 
     // Register to test information as it's received.
@@ -43,6 +37,15 @@ var TestView = (function() {
 
   // ID for special HTML element in category_tabs.html
   TestView.TAB_HANDLE_ID = 'tab-handle-tests';
+
+  // IDs for special HTML elements in test_view.html
+  TestView.MAIN_BOX_ID = 'test-view-tab-content';
+  TestView.FORM_ID = 'test-view-connection-tests-form';
+  TestView.URL_INPUT_ID = 'test-view-url-input';
+  TestView.SUMMARY_DIV_ID = 'test-view-summary';
+  // Needed by tests.
+  TestView.SUBMIT_BUTTON_ID = 'test-view-connection-tests-submit';
+
 
   cr.addSingletonGetter(TestView);
 

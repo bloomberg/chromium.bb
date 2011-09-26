@@ -13,12 +13,6 @@
 var ServiceProvidersView = (function() {
   'use strict';
 
-  // IDs for special HTML elements in service_providers_view.html
-  var MAIN_BOX_ID = 'service-providers-view-tab-content';
-  var SERVICE_PROVIDERS_TBODY_ID = 'service-providers-view-tbody';
-  var NAMESPACE_PROVIDERS_TBODY_ID =
-      'service-providers-view-namespace-providers-tbody';
-
   // We inherit from DivView.
   var superClass = DivView;
 
@@ -29,16 +23,25 @@ var ServiceProvidersView = (function() {
     assertFirstConstructorCall(ServiceProvidersView);
 
     // Call superclass's constructor.
-    superClass.call(this, MAIN_BOX_ID);
+    superClass.call(this, ServiceProvidersView.MAIN_BOX_ID);
 
-    this.serviceProvidersTbody_ = $(SERVICE_PROVIDERS_TBODY_ID);
-    this.namespaceProvidersTbody_ = $(NAMESPACE_PROVIDERS_TBODY_ID);
+    this.serviceProvidersTbody_ =
+        $(ServiceProvidersView.SERVICE_PROVIDERS_TBODY_ID);
+    this.namespaceProvidersTbody_ =
+        $(ServiceProvidersView.NAMESPACE_PROVIDERS_TBODY_ID);
 
     g_browser.addServiceProvidersObserver(this);
   }
 
   // ID for special HTML element in category_tabs.html
   ServiceProvidersView.TAB_HANDLE_ID = 'tab-handle-service-providers';
+
+  // IDs for special HTML elements in service_providers_view.html
+  ServiceProvidersView.MAIN_BOX_ID = 'service-providers-view-tab-content';
+  ServiceProvidersView.SERVICE_PROVIDERS_TBODY_ID =
+      'service-providers-view-tbody';
+  ServiceProvidersView.NAMESPACE_PROVIDERS_TBODY_ID =
+      'service-providers-view-namespace-providers-tbody';
 
   cr.addSingletonGetter(ServiceProvidersView);
 

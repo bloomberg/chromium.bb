@@ -12,13 +12,6 @@
 var SocketsView = (function() {
   'use strict';
 
-  // IDs for special HTML elements in sockets_view.html
-  var MAIN_BOX_ID = 'sockets-view-tab-content';
-  var SOCKET_POOL_DIV_ID = 'sockets-view-pool-div';
-  var SOCKET_POOL_GROUPS_DIV_ID = 'sockets-view-pool-groups-div';
-  var CLOSE_IDLE_SOCKETS_BUTTON_ID = 'sockets-view-close-idle-button';
-  var SOCKET_POOL_FLUSH_BUTTON_ID = 'sockets-view-flush-button';
-
   // We inherit from DivView.
   var superClass = DivView;
 
@@ -29,21 +22,28 @@ var SocketsView = (function() {
     assertFirstConstructorCall(SocketsView);
 
     // Call superclass's constructor.
-    superClass.call(this, MAIN_BOX_ID);
+    superClass.call(this, SocketsView.MAIN_BOX_ID);
 
     g_browser.addSocketPoolInfoObserver(this);
-    this.socketPoolDiv_ = $(SOCKET_POOL_DIV_ID);
-    this.socketPoolGroupsDiv_ = $(SOCKET_POOL_GROUPS_DIV_ID);
+    this.socketPoolDiv_ = $(SocketsView.SOCKET_POOL_DIV_ID);
+    this.socketPoolGroupsDiv_ = $(SocketsView.SOCKET_POOL_GROUPS_DIV_ID);
 
-    var closeIdleButton = $(CLOSE_IDLE_SOCKETS_BUTTON_ID);
+    var closeIdleButton = $(SocketsView.CLOSE_IDLE_SOCKETS_BUTTON_ID);
     closeIdleButton.onclick = this.closeIdleSockets.bind(this);
 
-    var flushSocketsButton = $(SOCKET_POOL_FLUSH_BUTTON_ID);
+    var flushSocketsButton = $(SocketsView.SOCKET_POOL_FLUSH_BUTTON_ID);
     flushSocketsButton.onclick = this.flushSocketPools.bind(this);
   }
 
   // ID for special HTML element in category_tabs.html
   SocketsView.TAB_HANDLE_ID = 'tab-handle-sockets';
+
+  // IDs for special HTML elements in sockets_view.html
+  SocketsView.MAIN_BOX_ID = 'sockets-view-tab-content';
+  SocketsView.SOCKET_POOL_DIV_ID = 'sockets-view-pool-div';
+  SocketsView.SOCKET_POOL_GROUPS_DIV_ID = 'sockets-view-pool-groups-div';
+  SocketsView.CLOSE_IDLE_SOCKETS_BUTTON_ID = 'sockets-view-close-idle-button';
+  SocketsView.SOCKET_POOL_FLUSH_BUTTON_ID = 'sockets-view-flush-button';
 
   cr.addSingletonGetter(SocketsView);
 

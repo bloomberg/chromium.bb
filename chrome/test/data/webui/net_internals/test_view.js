@@ -9,11 +9,6 @@
  */
 netInternalsTest.test('netInternalsTestView',
                       function(url, expectedResult, totalIterations) {
-  // IDs for special HTML elements in test_view.html
-  var URL_INPUT_ID = 'test-view-url-input';
-  var SUBMIT_BUTTON_ID = 'test-view-connection-tests-submit';
-  var SUMMARY_DIV_ID = 'test-view-summary';
-
   /**
    * @param {string} url URL to run the test suite on.
    * @param {number} expectedResult Expected result of the first test.
@@ -38,8 +33,8 @@ netInternalsTest.test('netInternalsTestView',
       this.experimentsRun_ = 0;
 
       // Simulate entering the url and submitting the form.
-      $(URL_INPUT_ID).value = this.url_;
-      $(SUBMIT_BUTTON_ID).click();
+      $(TestView.URL_INPUT_ID).value = this.url_;
+      $(TestView.SUBMIT_BUTTON_ID).click();
     },
 
     /**
@@ -122,7 +117,8 @@ netInternalsTest.test('netInternalsTestView',
    * @param {number} expectedRows Expected number of rows in the table.
    */
   function checkTestTableRows(expectedRows) {
-    netInternalsTest.checkStyledTableRows(SUMMARY_DIV_ID, expectedRows);
+    netInternalsTest.checkStyledTableRows(TestView.SUMMARY_DIV_ID,
+                                          expectedRows);
   }
 
   netInternalsTest.switchToView('tests');

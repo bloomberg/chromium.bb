@@ -10,13 +10,6 @@
 var LogsView = (function() {
   'use strict';
 
-  // IDs for special HTML elements in logs_view.html
-  var MAIN_BOX_ID = 'logs-view-tab-content';
-  var TABLE_ID = 'logs-view-log-table';
-  var GLOBAL_SHOW_BUTTON_ID = 'logs-view-global-show-btn';
-  var GLOBAL_HIDE_BUTTON_ID = 'logs-view-global-hide-btn';
-  var REFRESH_LOGS_BUTTON_ID = 'logs-view-refresh-btn';
-
   // Special classes (defined in logs_view.css).
   var LOG_ROW_COLLAPSED_CLASSNAME = 'logs-view-log-row-collapsed';
   var LOG_ROW_EXPANDED_CLASSNAME = 'logs-view-log-row-expanded';
@@ -35,21 +28,28 @@ var LogsView = (function() {
     assertFirstConstructorCall(LogsView);
 
     // Call superclass's constructor.
-    superClass.call(this, MAIN_BOX_ID);
+    superClass.call(this, LogsView.MAIN_BOX_ID);
 
-    var tableDiv = $(TABLE_ID);
+    var tableDiv = $(LogsView.TABLE_ID);
     this.rows = [];
     this.populateTable(tableDiv, LOG_FILTER_LIST);
-    $(GLOBAL_SHOW_BUTTON_ID).addEventListener('click',
+    $(LogsView.GLOBAL_SHOW_BUTTON_ID).addEventListener('click',
         this.onGlobalChangeVisibleClick_.bind(this, true));
-    $(GLOBAL_HIDE_BUTTON_ID).addEventListener('click',
+    $(LogsView.GLOBAL_HIDE_BUTTON_ID).addEventListener('click',
         this.onGlobalChangeVisibleClick_.bind(this, false));
-    $(REFRESH_LOGS_BUTTON_ID).addEventListener('click',
+    $(LogsView.REFRESH_LOGS_BUTTON_ID).addEventListener('click',
         this.onLogsRefresh_.bind(this));
   }
 
   // ID for special HTML element in category_tabs.html
   LogsView.TAB_HANDLE_ID = 'tab-handle-logs';
+
+  // IDs for special HTML elements in logs_view.html
+  LogsView.MAIN_BOX_ID = 'logs-view-tab-content';
+  LogsView.TABLE_ID = 'logs-view-log-table';
+  LogsView.GLOBAL_SHOW_BUTTON_ID = 'logs-view-global-show-btn';
+  LogsView.GLOBAL_HIDE_BUTTON_ID = 'logs-view-global-hide-btn';
+  LogsView.REFRESH_LOGS_BUTTON_ID = 'logs-view-refresh-btn';
 
   cr.addSingletonGetter(LogsView);
 

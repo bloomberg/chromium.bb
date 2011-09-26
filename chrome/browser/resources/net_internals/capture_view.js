@@ -8,15 +8,6 @@
 var CaptureView = (function() {
   'use strict';
 
-  // IDs for special HTML elements in capture_view.html
-  var MAIN_BOX_ID = 'capture-view-tab-content';
-  var BYTE_LOGGING_CHECKBOX_ID = 'capture-view-byte-logging-checkbox';
-  var PASSIVELY_CAPTURED_COUNT_ID = 'capture-view-passively-captured-count';
-  var ACTIVELY_CAPTURED_COUNT_ID = 'capture-view-actively-captured-count';
-  var DELETE_ALL_ID = 'capture-view-delete-all';
-  var TIP_ANCHOR_ID = 'capture-view-tip-anchor';
-  var TIP_DIV_ID = 'capture-view-tip-div';
-
   // We inherit from DivView.
   var superClass = DivView;
 
@@ -27,20 +18,21 @@ var CaptureView = (function() {
     assertFirstConstructorCall(CaptureView);
 
     // Call superclass's constructor.
-    superClass.call(this, MAIN_BOX_ID);
+    superClass.call(this, CaptureView.MAIN_BOX_ID);
 
-    var byteLoggingCheckbox = $(BYTE_LOGGING_CHECKBOX_ID);
+    var byteLoggingCheckbox = $(CaptureView.BYTE_LOGGING_CHECKBOX_ID);
     byteLoggingCheckbox.onclick =
         this.onSetByteLogging_.bind(this, byteLoggingCheckbox);
 
-    this.activelyCapturedCountBox_ = $(ACTIVELY_CAPTURED_COUNT_ID);
-    this.passivelyCapturedCountBox_ = $(PASSIVELY_CAPTURED_COUNT_ID);
-    $(DELETE_ALL_ID).onclick =
+    this.activelyCapturedCountBox_ = $(CaptureView.ACTIVELY_CAPTURED_COUNT_ID);
+    this.passivelyCapturedCountBox_ =
+        $(CaptureView.PASSIVELY_CAPTURED_COUNT_ID);
+    $(CaptureView.DELETE_ALL_ID).onclick =
         g_browser.sourceTracker.deleteAllSourceEntries.bind(
             g_browser.sourceTracker);
 
-    $(TIP_ANCHOR_ID).onclick =
-        this.toggleCommandLineTip_.bind(this, TIP_DIV_ID);
+    $(CaptureView.TIP_ANCHOR_ID).onclick =
+        this.toggleCommandLineTip_.bind(this, CaptureView.TIP_DIV_ID);
 
     this.updateEventCounts_();
 
@@ -49,6 +41,17 @@ var CaptureView = (function() {
 
   // ID for special HTML element in category_tabs.html
   CaptureView.TAB_HANDLE_ID = 'tab-handle-capture';
+
+  // IDs for special HTML elements in capture_view.html
+  CaptureView.MAIN_BOX_ID = 'capture-view-tab-content';
+  CaptureView.BYTE_LOGGING_CHECKBOX_ID = 'capture-view-byte-logging-checkbox';
+  CaptureView.PASSIVELY_CAPTURED_COUNT_ID =
+      'capture-view-passively-captured-count';
+  CaptureView.ACTIVELY_CAPTURED_COUNT_ID =
+      'capture-view-actively-captured-count';
+  CaptureView.DELETE_ALL_ID = 'capture-view-delete-all';
+  CaptureView.TIP_ANCHOR_ID = 'capture-view-tip-anchor';
+  CaptureView.TIP_DIV_ID = 'capture-view-tip-div';
 
   cr.addSingletonGetter(CaptureView);
 
