@@ -56,7 +56,7 @@ bool PrintWebViewHelper::RenderPreviewPage(int page_number) {
 
 bool PrintWebViewHelper::PrintPages(const PrintMsg_PrintPages_Params& params,
                                     WebFrame* frame,
-                                    WebNode* node,
+                                    const WebNode& node,
                                     PrepareFrameAndViewForPrint* prepare) {
   printing::NativeMetafile metafile;
   if (!metafile.Init())
@@ -141,7 +141,7 @@ bool PrintWebViewHelper::PrintPages(const PrintMsg_PrintPages_Params& params,
 
 bool PrintWebViewHelper::RenderPages(const PrintMsg_PrintPages_Params& params,
                                      WebKit::WebFrame* frame,
-                                     WebKit::WebNode* node,
+                                     const WebKit::WebNode& node,
                                      int* page_count,
                                      PrepareFrameAndViewForPrint* prepare,
                                      printing::Metafile* metafile) {

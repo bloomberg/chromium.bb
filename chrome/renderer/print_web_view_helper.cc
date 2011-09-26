@@ -425,8 +425,9 @@ void PrintWebViewHelper::PrintHeaderAndFooter(
 PrepareFrameAndViewForPrint::PrepareFrameAndViewForPrint(
     const PrintMsg_Print_Params& print_params,
     WebFrame* frame,
-    WebNode* node)
+    const WebNode& node)
         : frame_(frame),
+          node_to_print_(node),
           web_view_(frame->view()),
           dpi_(static_cast<int>(print_params.dpi)),
           expected_pages_count_(0),
@@ -438,9 +439,6 @@ PrepareFrameAndViewForPrint::PrepareFrameAndViewForPrint(
   if (WebFrame* web_frame = web_view_->mainFrame())
     prev_scroll_offset_ = web_frame->scrollOffset();
   prev_view_size_ = web_view_->size();
-
-  if (node)
-    node_to_print_ = *node;
 
   StartPrinting(canvas_size);
 }
@@ -521,7 +519,7 @@ void PrintWebViewHelper::PrintPage(WebKit::WebFrame* frame) {
     print_preview_context_.InitWithFrame(frame);
     RequestPrintPreview();
   } else {
-    Print(frame, NULL);
+    Print(frame, WebNode());
   }
 }
 
@@ -576,12 +574,12 @@ void PrintWebViewHelper::OnPrintForPrintPreview(
   WebFrame* pdf_frame = pdf_element.document().frame();
   scoped_ptr<PrepareFrameAndViewForPrint> prepare;
   prepare.reset(new PrepareFrameAndViewForPrint(print_pages_params_->params,
-                                                pdf_frame, &pdf_element));
-  UpdatePrintableSizeInPrintParameters(pdf_frame, &pdf_element, prepare.get(),
+                                                pdf_frame, pdf_element));
+  UpdatePrintableSizeInPrintParameters(pdf_frame, pdf_element, prepare.get(),
                                        &print_pages_params_->params);
 
   // Render Pages for printing.
-  if (!RenderPagesForPrint(pdf_frame, &pdf_element, prepare.get())) {
+  if (!RenderPagesForPrint(pdf_frame, pdf_element, prepare.get())) {
     LOG(ERROR) << "RenderPagesForPrint failed";
     DidFinishPrinting(FAIL_PRINT);
   }
@@ -604,7 +602,7 @@ bool PrintWebViewHelper::GetPrintFrame(WebKit::WebFrame** frame) {
 void PrintWebViewHelper::OnPrintPages() {
   WebFrame* frame;
   if (GetPrintFrame(&frame))
-    Print(frame, NULL);
+    Print(frame, WebNode());
 }
 
 void PrintWebViewHelper::OnPrintForSystemDialog() {
@@ -614,15 +612,7 @@ void PrintWebViewHelper::OnPrintForSystemDialog() {
     return;
   }
 
-  WebNode* node = print_preview_context_.node();
-  if (!node) {
-    Print(frame, NULL);
-  } else {
-    // Make a copy of the node, because |print_preview_context_| will reset its
-    // copy when the print preview tab closes.
-    WebNode duplicate_node(*node);
-    Print(frame, &duplicate_node);
-  }
+  Print(frame, print_preview_context_.node());
 }
 
 void PrintWebViewHelper::OnPrintPreview(const DictionaryValue& settings) {
@@ -779,7 +769,7 @@ void PrintWebViewHelper::OnPrintNodeUnderContextMenu() {
     RequestPrintPreview();
   } else {
     WebNode duplicate_node(context_menu_node);
-    Print(duplicate_node.document().frame(), &duplicate_node);
+    Print(duplicate_node.document().frame(), duplicate_node);
   }
 }
 
@@ -792,7 +782,8 @@ void PrintWebViewHelper::OnInitiatePrintPreview() {
   }
 }
 
-void PrintWebViewHelper::Print(WebKit::WebFrame* frame, WebKit::WebNode* node) {
+void PrintWebViewHelper::Print(WebKit::WebFrame* frame,
+                               const WebKit::WebNode& node) {
   // If still not finished with earlier print request simply ignore.
   if (print_web_view_)
     return;
@@ -901,7 +892,7 @@ bool PrintWebViewHelper::CopyAndPrint(WebKit::WebFrame* web_frame) {
 #if defined(OS_MACOSX) || defined(OS_WIN)
 bool PrintWebViewHelper::PrintPages(const PrintMsg_PrintPages_Params& params,
                                     WebFrame* frame,
-                                    WebNode* node,
+                                    const WebNode& node,
                                     PrepareFrameAndViewForPrint* prepare) {
   PrintMsg_Print_Params print_params = params.params;
   scoped_ptr<PrepareFrameAndViewForPrint> prep_frame_view;
@@ -942,7 +933,7 @@ bool PrintWebViewHelper::PrintPages(const PrintMsg_PrintPages_Params& params,
 void PrintWebViewHelper::didStopLoading() {
   PrintMsg_PrintPages_Params* params = print_pages_params_.get();
   DCHECK(params != NULL);
-  PrintPages(*params, print_web_view_->mainFrame(), NULL, NULL);
+  PrintPages(*params, print_web_view_->mainFrame(), WebNode(), NULL);
 }
 
 // static - Not anonymous so that platform implementations can use it.
@@ -1014,7 +1005,7 @@ void PrintWebViewHelper::GetPageSizeAndMarginsInPoints(
 // static - Not anonymous so that platform implementations can use it.
 void PrintWebViewHelper::UpdatePrintableSizeInPrintParameters(
     WebFrame* frame,
-    WebNode* node,
+    const WebNode& node,
     PrepareFrameAndViewForPrint* prepare,
     PrintMsg_Print_Params* params) {
   PageSizeMargins page_layout_in_points;
@@ -1052,7 +1043,8 @@ void PrintWebViewHelper::UpdatePrintableSizeInPrintParameters(
   prepare->UpdatePrintParams(*params);
 }
 
-bool PrintWebViewHelper::InitPrintSettings(WebKit::WebFrame* frame) {
+bool PrintWebViewHelper::InitPrintSettings(WebKit::WebFrame* frame,
+                                           const WebKit::WebNode& node) {
   DCHECK(frame);
   PrintMsg_PrintPages_Params settings;
 
@@ -1083,9 +1075,9 @@ bool PrintWebViewHelper::InitPrintSettings(WebKit::WebFrame* frame) {
 }
 
 bool PrintWebViewHelper::InitPrintSettingsAndPrepareFrame(
-    WebKit::WebFrame* frame, WebKit::WebNode* node,
+    WebKit::WebFrame* frame, const WebKit::WebNode& node,
     scoped_ptr<PrepareFrameAndViewForPrint>* prepare) {
-  if (!InitPrintSettings(frame))
+  if (!InitPrintSettings(frame, node))
     return false;
 
   DCHECK(!prepare->get());
@@ -1217,7 +1209,7 @@ bool PrintWebViewHelper::GetPrintSettingsFromUser(WebKit::WebFrame* frame,
 
 bool PrintWebViewHelper::RenderPagesForPrint(
     WebKit::WebFrame* frame,
-    WebKit::WebNode* node,
+    const WebKit::WebNode& node,
     PrepareFrameAndViewForPrint* prepare) {
   PrintMsg_PrintPages_Params print_settings = *print_pages_params_;
   if (print_settings.params.selection_only) {
@@ -1387,7 +1379,7 @@ void PrintWebViewHelper::PrintPreviewContext::InitWithNode(
   DCHECK(!web_node.isNull());
   state_ = INITIALIZED;
   frame_ = web_node.document().frame();
-  node_.reset(new WebNode(web_node));
+  node_ = web_node;
 }
 
 void PrintWebViewHelper::PrintPreviewContext::OnPrintPreview() {
@@ -1413,7 +1405,7 @@ bool PrintWebViewHelper::PrintPreviewContext::CreatePreviewDocument(
   // Need to make sure old object gets destroyed first.
   prep_frame_view_.reset(new PrepareFrameAndViewForPrint(*print_params, frame(),
                                                          node()));
-  UpdatePrintableSizeInPrintParameters(frame_, node_.get(),
+  UpdatePrintableSizeInPrintParameters(frame_, node_,
                                        prep_frame_view_.get(), print_params);
 
   total_page_count_ = prep_frame_view_->GetExpectedPageCount();
@@ -1516,7 +1508,7 @@ bool PrintWebViewHelper::PrintPreviewContext::IsModifiable() const {
   // TODO(vandebo) I think this should only return false if the content is a
   // PDF, just because we are printing a particular node does not mean it's
   // a PDF (right?), we should check the mime type of the node.
-  if (node())
+  if (!node().isNull())
     return false;
   std::string mime(frame()->dataSource()->response().mimeType().utf8());
   return mime != "application/pdf";
@@ -1545,8 +1537,8 @@ WebKit::WebFrame* PrintWebViewHelper::PrintPreviewContext::frame() const {
   return frame_;
 }
 
-WebKit::WebNode* PrintWebViewHelper::PrintPreviewContext::node() const {
-  return node_.get();
+const WebKit::WebNode& PrintWebViewHelper::PrintPreviewContext::node() const {
+  return node_;
 }
 
 int PrintWebViewHelper::PrintPreviewContext::total_page_count() const {

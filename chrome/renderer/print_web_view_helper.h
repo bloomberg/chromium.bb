@@ -47,7 +47,7 @@ class PrepareFrameAndViewForPrint {
   // printed.
   PrepareFrameAndViewForPrint(const PrintMsg_Print_Params& print_params,
                               WebKit::WebFrame* frame,
-                              WebKit::WebNode* node);
+                              const WebKit::WebNode& node);
   ~PrepareFrameAndViewForPrint();
 
   void UpdatePrintParams(const PrintMsg_Print_Params& print_params);
@@ -158,7 +158,7 @@ class PrintWebViewHelper : public RenderViewObserver,
 
   // Main printing code -------------------------------------------------------
 
-  void Print(WebKit::WebFrame* frame, WebKit::WebNode* node);
+  void Print(WebKit::WebFrame* frame, const WebKit::WebNode& node);
 
   enum PrintingResult {
     OK,
@@ -173,7 +173,7 @@ class PrintWebViewHelper : public RenderViewObserver,
 
   // Initialize print page settings with default settings.
   // Used only for native printing workflow.
-  bool InitPrintSettings(WebKit::WebFrame* frame);
+  bool InitPrintSettings(WebKit::WebFrame* frame, const WebKit::WebNode& node);
 
   // Initialize print page settings with default settings and prepare the frame
   // for print. A new PrepareFrameAndViewForPrint is created to fulfill the
@@ -181,7 +181,7 @@ class PrintWebViewHelper : public RenderViewObserver,
   // Used only for native printing workflow.
   bool InitPrintSettingsAndPrepareFrame(
       WebKit::WebFrame* frame,
-      WebKit::WebNode* node,
+      const WebKit::WebNode& node,
       scoped_ptr<PrepareFrameAndViewForPrint>* prepare);
 
   // Update the current print settings with new |job_settings|. |job_settings|
@@ -202,7 +202,7 @@ class PrintWebViewHelper : public RenderViewObserver,
   // It will implicitly revert the document to display CSS media type.
   bool PrintPages(const PrintMsg_PrintPages_Params& params,
                   WebKit::WebFrame* frame,
-                  WebKit::WebNode* node,
+                  const WebKit::WebNode& node,
                   PrepareFrameAndViewForPrint* prepare);
 
   // Prints the page listed in |params|.
@@ -218,7 +218,7 @@ class PrintWebViewHelper : public RenderViewObserver,
 #endif
 
   // Render the frame for printing.
-  bool RenderPagesForPrint(WebKit::WebFrame* frame, WebKit::WebNode* node,
+  bool RenderPagesForPrint(WebKit::WebFrame* frame, const WebKit::WebNode& node,
                            PrepareFrameAndViewForPrint* prepare);
 
   // Platform specific helper function for rendering page(s) to |metafile|.
@@ -237,7 +237,7 @@ class PrintWebViewHelper : public RenderViewObserver,
                   WebKit::WebFrame* frame, printing::Metafile* metafile);
 #elif defined(OS_POSIX)
   bool RenderPages(const PrintMsg_PrintPages_Params& params,
-                   WebKit::WebFrame* frame, WebKit::WebNode* node,
+                   WebKit::WebFrame* frame, const WebKit::WebNode& node,
                    int* page_count, PrepareFrameAndViewForPrint* prepare,
                    printing::Metafile* metafile);
 #endif  // defined(OS_WIN)
@@ -257,7 +257,7 @@ class PrintWebViewHelper : public RenderViewObserver,
 
   static void UpdatePrintableSizeInPrintParameters(
       WebKit::WebFrame* frame,
-      WebKit::WebNode* node,
+      const WebKit::WebNode& node,
       PrepareFrameAndViewForPrint* prepare,
       PrintMsg_Print_Params* params);
 
@@ -385,7 +385,7 @@ class PrintWebViewHelper : public RenderViewObserver,
 
     // Getters
     WebKit::WebFrame* frame() const;
-    WebKit::WebNode* node() const;
+    const WebKit::WebNode& node() const;
     int total_page_count() const;
     bool generate_draft_pages();
     printing::PreviewMetafile* metafile() const;
@@ -406,7 +406,7 @@ class PrintWebViewHelper : public RenderViewObserver,
 
     // Specifies what to render for print preview.
     WebKit::WebFrame* frame_;
-    scoped_ptr<WebKit::WebNode> node_;
+    WebKit::WebNode node_;
 
     scoped_ptr<PrepareFrameAndViewForPrint> prep_frame_view_;
     scoped_ptr<printing::PreviewMetafile> metafile_;
