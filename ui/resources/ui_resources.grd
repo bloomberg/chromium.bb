@@ -13,6 +13,7 @@
       <include name="IDR_BROWSER_ACTION_BADGE_CENTER" file="browser_action_badge_center.png" type="BINDATA" />
       <include name="IDR_BROWSER_ACTION_BADGE_LEFT" file="browser_action_badge_left.png" type="BINDATA" />
       <include name="IDR_BROWSER_ACTION_BADGE_RIGHT" file="browser_action_badge_right.png" type="BINDATA" />
+      <include name="IDR_CHECKMARK" file="checkmark.png" type="BINDATA" />
       <if expr="pp_ifdef('toolkit_views')">
         <include name="IDR_CLOSE" file="close.png" type="BINDATA" />
         <include name="IDR_CLOSE_H" file="close_h.png" type="BINDATA" />
@@ -42,7 +43,6 @@
       <include name="IDR_FRAME" file="frame_default.png" type="BINDATA" />
       <include name="IDR_FRAME_APP_PANEL" file="frame_app_panel_default.png" type="BINDATA" />
       <include name="IDR_FRAME_INACTIVE" file="frame_default_inactive.png" type="BINDATA" />
-      <include name="IDR_INPUT_GOOD" file="input_good.png" type="BINDATA" />
       <if expr="pp_ifdef('toolkit_views')">
         <include name="IDR_MAXIMIZE" file="maximize.png" type="BINDATA" />
         <include name="IDR_MAXIMIZE_H" file="maximize_h.png" type="BINDATA" />
@@ -118,7 +118,7 @@
         <include name="IDR_MENU_ARROW" file="menu_arrow.png" type="BINDATA" />
         <include name="IDR_MENU_CHECK" file="menu_check.png" type="BINDATA" />
       </if>
-      
+
       <!-- Images only used by Aura. -->
       <if expr="pp_ifdef('use_aura')">
         <include name="IDR_AURA_LAUNCHER_ICON_CHROME" file="aura/chromium-48.png" type="BINDATA" />
@@ -127,7 +127,7 @@
         <include name="IDR_AURA_WALLPAPER" file="aura/damask.png" type="BINDATA" />
         <include name="IDR_AURA_WINDOW_CLOSE_ICON" file="aura/slab_close.png" type="BINDATA" />
         <include name="IDR_AURA_WINDOW_ZOOM_ICON" file="aura/slab_zoom.png" type="BINDATA" />
-      </if>      
+      </if>
     </includes>
   </release>
 </grit>

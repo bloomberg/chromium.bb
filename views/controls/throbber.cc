@@ -167,7 +167,7 @@ void CheckmarkThrobber::InitClass() {
   static bool initialized = false;
   if (!initialized) {
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    checkmark_ = rb.GetBitmapNamed(IDR_INPUT_GOOD);
+    checkmark_ = rb.GetBitmapNamed(IDR_CHECKMARK);
     initialized = true;
   }
 }
