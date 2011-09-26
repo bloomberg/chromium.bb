@@ -39,6 +39,21 @@ class BrowserThreadModelWorker : public browser_sync::ModelSafeWorker {
   DISALLOW_COPY_AND_ASSIGN(BrowserThreadModelWorker);
 };
 
+// Subclass BrowserThreadModelWorker so that we can distinguish them
+// from stack traces alone.
+
+class DatabaseModelWorker : public BrowserThreadModelWorker {
+ public:
+  DatabaseModelWorker();
+  virtual ~DatabaseModelWorker();
+};
+
+class FileModelWorker : public BrowserThreadModelWorker {
+ public:
+  FileModelWorker();
+  virtual ~FileModelWorker();
+};
+
 }  // namespace browser_sync
 
 #endif  // CHROME_BROWSER_SYNC_GLUE_BROWSER_THREAD_MODEL_WORKER_H_

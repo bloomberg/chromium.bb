@@ -49,4 +49,14 @@ ModelSafeGroup BrowserThreadModelWorker::GetModelSafeGroup() {
   return group_;
 }
 
+DatabaseModelWorker::DatabaseModelWorker()
+    : BrowserThreadModelWorker(BrowserThread::DB, GROUP_DB) {}
+
+DatabaseModelWorker::~DatabaseModelWorker() {}
+
+FileModelWorker::FileModelWorker()
+    : BrowserThreadModelWorker(BrowserThread::FILE, GROUP_FILE) {}
+
+FileModelWorker::~FileModelWorker() {}
+
 }  // namespace browser_sync

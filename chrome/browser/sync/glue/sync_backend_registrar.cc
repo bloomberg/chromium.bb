@@ -60,10 +60,8 @@ SyncBackendRegistrar::SyncBackendRegistrar(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   CHECK(profile_);
   DCHECK(sync_loop_);
-  workers_[GROUP_DB] =
-      new BrowserThreadModelWorker(BrowserThread::DB, GROUP_DB);
-  workers_[GROUP_FILE] =
-      new BrowserThreadModelWorker(BrowserThread::FILE, GROUP_FILE);
+  workers_[GROUP_DB] = new DatabaseModelWorker();
+  workers_[GROUP_FILE] = new FileModelWorker();
   workers_[GROUP_UI] = ui_worker_;
   workers_[GROUP_PASSIVE] = new ModelSafeWorker();
 
