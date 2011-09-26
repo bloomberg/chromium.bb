@@ -1,3 +1,4 @@
+
 // Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
@@ -7,6 +8,7 @@
 
 #include <vector>
 
+#include "base/gtest_prod_util.h"
 #include "base/hash_tables.h"
 #include "base/process.h"
 #include "base/string16.h"
@@ -47,6 +49,8 @@ class OomPriorityManager : public NotificationObserver {
   void DiscardTab();
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(OomPriorityManagerTest, Comparator);
+
   struct TabStats {
     TabStats();
     ~TabStats();

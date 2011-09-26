@@ -1345,6 +1345,7 @@
         'browser/net/url_fixer_upper_unittest.cc',
         'browser/net/url_info_unittest.cc',
         'browser/notifications/desktop_notification_service_unittest.cc',
+        'browser/oom_priority_manager_unittest.cc',
         'browser/parsers/metadata_parser_filebase_unittest.cc',
         'browser/password_manager/encryptor_password_mac_unittest.cc',
         'browser/password_manager/encryptor_unittest.cc',
@@ -1910,10 +1911,11 @@
         }, { # else: chromeos == 0
           'sources/': [
             ['exclude', '^browser/chromeos/'],
+            ['exclude', '^browser/oom_priority_manager_unittest.cc'],
             ['exclude', '^browser/policy/device_policy_cache_unittest.cc'],
             ['exclude', '^browser/policy/enterprise_install_attributes_unittest.cc' ],
-            ['exclude', '^browser/ui/webui/chromeos/login'],
             ['exclude', '^browser/ui/webui/chromeos/imageburner/'],
+            ['exclude', '^browser/ui/webui/chromeos/login'],
             ['exclude', '^browser/ui/webui/options/chromeos/'],
           ],
         }],
