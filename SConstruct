@@ -2603,8 +2603,7 @@ def MakeLinuxEnv():
                       LINKFLAGS=arm_env.get('ARM_LINKFLAGS', ''),
                       )
 
-    linux_env.Append(LIBS=['rt', 'dl', 'pthread', 'crypto'],
-                     CCFLAGS=['-march=armv6'])
+    linux_env.Append(LIBS=['rt', 'dl', 'pthread', 'crypto'])
   else:
     Banner('Strange platform: %s' % BUILD_NAME)
 
