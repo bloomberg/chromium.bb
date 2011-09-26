@@ -262,7 +262,7 @@
           '-Wall', # TODO(bradnelson): why does this disappear?!?
         ],
         'conditions': [
-          ['nacl_standalone==1 and OS=="linux" and target_arch=="x64"', {
+          ['nacl_standalone==1 and OS=="linux"', {
             'cflags': ['-fPIC'],
           }],
           ['nacl_standalone==1 and nacl_strict_warnings==1', {
