@@ -53,7 +53,7 @@ deps = {
     'src/third_party/libjingle/source':
         Var('git_url') + '/external/libjingle.git@61b45e02e09a933fe9d920236baf8aebbe47271b',
     'src/third_party/libjpeg_turbo':
-        Var('git_url') + '/chromium/deps/libjpeg_turbo.git@7101b2d94bfd6768e0942616f2eda2dc718feb9c',
+        Var('git_url') + '/chromium/deps/libjpeg_turbo.git@87e9bdc93a5e68e083499f4ad6a9d56c22afed45',
     'src/third_party/libvpx':
         Var('git_url') + '/chromium/deps/libvpx.git@386dfade66675418b35cefbb184fc587cf14d02c',
     'src/third_party/mozc/session':
