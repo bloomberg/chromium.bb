@@ -26,6 +26,15 @@ class ProcessCountTest(pyauto.PyUITest):
     'chromeos': 'chrome',
   }
 
+  def Debug(self):
+    """Test method for experimentation.
+
+    This method will not run automatically.
+    """
+    while True:
+      raw_input('Hit <enter> to dump process info...')
+      self.pprint(self.GetProcessInfo())
+
   def setUp(self):
     self.proc_count_fresh_profile = 0
     self.chrome_proc_name = ''

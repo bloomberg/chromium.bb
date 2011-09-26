@@ -32,10 +32,7 @@ class HistoryTest(pyauto.PyUITest):
     while True:
       raw_input('Interact with the browser and hit <enter> to dump history.. ')
       print '*' * 20
-      history = self.GetHistoryInfo().History()
-      import pprint
-      pp = pprint.PrettyPrinter(indent=2)
-      pp.pprint(history)
+      self.pprint(self.GetHistoryInfo().History())
 
   def testHistoryPersists(self):
     """Verify that history persists after session restart."""

@@ -22,15 +22,13 @@ class InfobarTest(pyauto.PyUITest):
     To run:
       python chrome/test/functional/infobars.py infobars.InfobarTest.Debug
     """
-    import pprint
-    pp = pprint.PrettyPrinter(indent=2)
     while True:
       raw_input('Hit <enter> to dump info.. ')
       info = self.GetBrowserInfo()
       for window in info['windows']:
         for tab in window['tabs']:
           print 'Window', window['index'], 'tab', tab['index']
-          pp.pprint(tab['infobars'])
+          self.pprint(tab['infobars'])
 
   def setUp(self):
     pyauto.PyUITest.setUp(self)

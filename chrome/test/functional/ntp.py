@@ -53,9 +53,7 @@ class NTPTest(pyauto.PyUITest):
     while True:
       raw_input('Interact with the browser and hit <enter> to dump NTP info...')
       print '*' * 20
-      import pprint
-      pp = pprint.PrettyPrinter(indent=2)
-      pp.pprint(self._GetNTPInfo())
+      self.pprint(self._GetNTPInfo())
 
   def __init__(self, methodName='runTest'):
     super(NTPTest, self).__init__(methodName)

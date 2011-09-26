@@ -23,11 +23,9 @@ class OmniboxTest(pyauto.PyUITest):
 
     This method will not run automatically.
     """
-    import pprint
     import time
-    pp = pprint.PrettyPrinter(indent=2)
     while True:
-      pp.pprint(self.GetOmniboxInfo().omniboxdict)
+      self.pprint(self.GetOmniboxInfo().omniboxdict)
       time.sleep(1)
 
   def testFocusOnStartup(self):

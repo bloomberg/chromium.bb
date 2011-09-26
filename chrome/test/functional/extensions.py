@@ -34,10 +34,7 @@ class ExtensionsTest(pyauto.PyUITest):
     while True:
       raw_input('Interact with the browser and hit <enter> to dump history.. ')
       print '*' * 20
-      extensions = self.GetExtensionsInfo()
-      import pprint
-      pp = pprint.PrettyPrinter(indent=2)
-      pp.pprint(extensions)
+      self.pprint(self.GetExtensionsInfo())
 
   def _GetInstalledExtensionIds(self):
     return [extension['id'] for extension in self.GetExtensionsInfo()]

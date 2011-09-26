@@ -18,11 +18,9 @@ class PopupsTest(pyauto.PyUITest):
 
     This method will not run automatically.
     """
-    import pprint
-    pp = pprint.PrettyPrinter(indent=2)
     while True:
       raw_input('Interact with the browser and hit <enter>')
-      pp.pprint(self.GetBlockedPopupsInfo())
+      self.pprint(self.GetBlockedPopupsInfo())
 
   def testPopupBlockerEnabled(self):
     """Verify popup blocking is enabled."""

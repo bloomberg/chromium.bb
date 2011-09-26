@@ -4,7 +4,6 @@
 # found in the LICENSE file.
 
 import os
-import pprint
 
 import pyauto_functional
 import pyauto
@@ -17,7 +16,6 @@ class ChromeosSecurity(pyauto.PyUITest):
   """
   def setUp(self):
     pyauto.PyUITest.setUp(self)
-    self.pp = pprint.PrettyPrinter(indent=2)
     baseline_file = os.path.abspath(os.path.join(
         pyauto.PyUITest.DataDir(), 'pyauto_private', 'chromeos',
         'security', 'extension_permission_baseline.txt'))
@@ -83,8 +81,8 @@ class ChromeosSecurity(pyauto.PyUITest):
              '\nActual extension info:\n%s' %
              (perm_type, full_expected_info['name'],
               _GetSetDifferenceMessage(expected_set, actual_set),
-              self.pp.pformat(full_expected_info),
-              self.pp.pformat(full_actual_info))))
+              self.pformat(full_expected_info),
+              self.pformat(full_actual_info))))
 
   def _AssertExtensionNamesAreExpected(self, expected_set, actual_set,
                                        ext_type, full_expected_info,
@@ -106,12 +104,12 @@ class ChromeosSecurity(pyauto.PyUITest):
         strings.append('Missing item: "%s"' % missing_item)
         located_ext_info = [info for info in full_expected_info if
                             info['name'] == missing_item][0]
-        strings.append(self.pp.pformat(located_ext_info))
+        strings.append(self.pformat(located_ext_info))
       for extra_item in actual_set.difference(expected_set):
         strings.append('Unexpected (extra) item: "%s"' % extra_item)
         located_ext_info = [info for info in full_actual_info if
                             info['name'] == extra_item][0]
-        strings.append(self.pp.pformat(located_ext_info))
+        strings.append(self.pformat(located_ext_info))
       return '\n'.join(strings)
 
     self.assertEqual(
@@ -140,7 +138,7 @@ class ChromeosSecurity(pyauto.PyUITest):
           located_ext_info,
           msg=('Cannot locate extension info for "%s".\n'
                'Expected extension info:\n%s' %
-               (ext_expected_info['name'], self.pp.pformat(ext_expected_info))))
+               (ext_expected_info['name'], self.pformat(ext_expected_info))))
       ext_actual_info = located_ext_info[0]
       self._AssertPermissionSetIsExpected(
           set(ext_expected_info['effective_host_permissions']),

@@ -20,11 +20,9 @@ class PluginsTest(pyauto.PyUITest):
 
     This method will not run automatically.
     """
-    import pprint
-    pp = pprint.PrettyPrinter(indent=2)
     while True:
       raw_input('Interact with the browser and hit <enter> to list plugins...')
-      pp.pprint(self.GetPluginsInfo().Plugins())
+      self.pprint(self.GetPluginsInfo().Plugins())
 
   def setUp(self):
     pyauto.PyUITest.setUp(self)

@@ -36,11 +36,9 @@ class SearchEnginesTest(pyauto.PyUITest):
 
     This method will not run automatically.
     """
-    import pprint
-    pp = pprint.PrettyPrinter(indent=2)
     while True:
       raw_input('Interact with the browser and hit <enter>')
-      pp.pprint(self.GetSearchEngineInfo())
+      self.pprint(self.GetSearchEngineInfo())
 
   def testDiscoverSearchEngine(self):
     """Test that chrome discovers youtube search engine after searching."""

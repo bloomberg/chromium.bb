@@ -24,11 +24,9 @@ class TranslateTest(pyauto.PyUITest):
 
   def Debug(self):
     """ Test method for experimentation. """
-    import pprint
-    pp = pprint.PrettyPrinter(indent=2)
     while True:
       raw_input('Hit <enter> to dump translate info.. ')
-      pp.pprint(self.GetTranslateInfo())
+      self.pprint(self.GetTranslateInfo())
 
   def _GetDefaultSpanishURL(self):
     return self.GetFileURLForDataPath('translate', self.spanish, 'google.html')

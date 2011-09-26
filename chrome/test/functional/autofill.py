@@ -23,12 +23,9 @@ class AutofillTest(pyauto.PyUITest):
 
     This method will not run automatically.
     """
-    import pprint
-    pp = pprint.PrettyPrinter(indent=2)
     while True:
       raw_input('Hit <enter> to dump info.. ')
-      info = self.GetAutofillProfile()
-      pp.pprint(info)
+      self.pprint(self.GetAutofillProfile())
 
   def testFillProfile(self):
     """Test filling profiles and overwriting with new profiles."""

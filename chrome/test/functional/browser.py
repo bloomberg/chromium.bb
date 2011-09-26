@@ -20,12 +20,9 @@ class BrowserTest(pyauto.PyUITest):
 
     This method will not run automatically.
     """
-    import pprint
-    pp = pprint.PrettyPrinter(indent=2)
     while True:
       raw_input('Hit <enter> to dump info.. ')
-      info = self.GetBrowserInfo()
-      pp.pprint(info)
+      self.pprint(self.GetBrowserInfo())
 
   def setUp(self):
     pyauto.PyUITest.setUp(self)

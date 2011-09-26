@@ -17,12 +17,9 @@ class HTTPSTest(pyauto.PyUITest):
     This method will not run automatically.
     Use: python chrome/test/functional/ssl.py ssl.SSLTest.Debug
     """
-    import pprint
-    pp = pprint.PrettyPrinter(indent=2)
     while True:
       raw_input('Hit <enter> to dump info.. ')
-      info = self.GetNavigationInfo()
-      pp.pprint(info)
+      self.pprint(self.GetNavigationInfo())
 
   def testSSLPageBasic(self):
     """Verify the navigation state in an https page."""

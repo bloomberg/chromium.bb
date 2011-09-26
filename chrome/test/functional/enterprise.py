@@ -29,11 +29,9 @@ class EnterpriseTest(pyauto.PyUITest):
 
     This method will not run automatically.
     """
-    import pprint
-    pp = pprint.PrettyPrinter(indent=2)
     while True:
       raw_input('Interact with the browser and hit <enter> to dump prefs... ')
-      pp.pprint(self.GetPrefsInfo().Prefs())
+      self.pprint(self.GetPrefsInfo().Prefs())
 
   @staticmethod
   def _Cleanup():
@@ -414,11 +412,9 @@ class EnterpriseTestReverse(pyauto.PyUITest):
 
     This method will not run automatically.
     """
-    import pprint
-    pp = pprint.PrettyPrinter(indent=2)
     while True:
       raw_input('Interact with the browser and hit <enter> to dump prefs... ')
-      pp.pprint(self.GetPrefsInfo().Prefs())
+      self.pprint(self.GetPrefsInfo().Prefs())
 
   @staticmethod
   def _Cleanup():

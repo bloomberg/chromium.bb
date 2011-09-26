@@ -19,11 +19,9 @@ class ThemesTest(pyauto.PyUITest):
 
     This method will not run automatically.
     """
-    import pprint
-    pp = pprint.PrettyPrinter(indent=2)
     while True:
       raw_input('Hit <enter> to dump info.. ')
-      pp.pprint(self.GetThemeInfo())
+      self.pprint(self.GetThemeInfo())
 
   def testSetTheme(self):
     """Verify theme install."""

@@ -33,10 +33,8 @@ class NotificationsTest(pyauto.PyUITest):
       raw_input('Interact with the browser and hit <enter> to dump notification'
                 'state...')
       print '*' * 20
-      import pprint
-      pp = pprint.PrettyPrinter(indent=2)
-      pp.pprint(self.GetActiveNotifications())
-      pp.pprint(self._GetDefaultPermissionSetting())
+      self.pprint(self.GetActiveNotifications())
+      self.pprint(self._GetDefaultPermissionSetting())
 
   def _SetDefaultPermissionSetting(self, setting):
     """Sets the default setting for whether sites are allowed to create

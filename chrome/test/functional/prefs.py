@@ -15,6 +15,15 @@ import pyauto
 class PrefsTest(pyauto.PyUITest):
   """TestCase for Preferences."""
 
+  def Debug(self):
+    """Test method for experimentation.
+
+    This method will not run automatically.
+    """
+    while True:
+      raw_input('Interact with the browser and hit <enter> to dump prefs... ')
+      self.pprint(self.GetPrefsInfo().Prefs())
+
   def testSessionRestore(self):
     """Test session restore preference."""
     url1 = 'http://www.google.com/'
@@ -33,17 +42,6 @@ class PrefsTest(pyauto.PyUITest):
     self.assertEqual(url1, self.GetActiveTabURL().spec())
     self.ActivateTab(1)
     self.assertEqual(url2, self.GetActiveTabURL().spec())
-
-  def Debug(self):
-    """Test method for experimentation.
-
-    This method will not run automatically.
-    """
-    import pprint
-    pp = pprint.PrettyPrinter(indent=2)
-    while True:
-      raw_input('Interact with the browser and hit <enter> to dump prefs... ')
-      pp.pprint(self.GetPrefsInfo().Prefs())
 
   def testNavigationStateOnSessionRestore(self):
     """Verify navigation state is preserved on session restore."""

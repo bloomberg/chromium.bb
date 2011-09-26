@@ -5,7 +5,6 @@
 
 import logging
 import os
-import pprint
 import sys
 
 import pyauto_functional  # Must be imported before pyauto
@@ -74,15 +73,15 @@ class PluginsCheck(pyauto.PyUITest):
               self.assertEqual(browser_plugin[key], plugin[key], 'The following'
                   ' plugin attributes do not match the whitelist:'
                   '\n\tplugin:\n%s\n\tlist:\n%s'
-                  % (pprint.pformat(browser_plugin), pprint.pformat(plugin)))
+                  % (self.pformat(browser_plugin), self.pformat(plugin)))
           break;
       self.assertTrue(found_plugin, 'The following plugin in the whitelist '
-          'does not match any on the system:\n%s' % pprint.pformat(plugin))
+          'does not match any on the system:\n%s' % self.pformat(plugin))
     if self.IsChromeOS():
       self.assertEqual(len(plugins_list), len(browser_plugins_list),
           'The number of plugins on the system do not match the number in the '
           'whitelist.\n\tSystem list: %s\n\tWhitelist: %s' %
-          (pprint.pformat(browser_plugins_list), pprint.pformat(plugins_list)))
+          (self.pformat(browser_plugins_list), self.pformat(plugins_list)))
 
 
 if __name__ == '__main__':

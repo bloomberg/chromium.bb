@@ -21,9 +21,7 @@ class PasswordTest(pyauto.PyUITest):
     while True:
       raw_input('Interact with the browser and hit <enter> to dump passwords. ')
       print '*' * 20
-      import pprint
-      pp = pprint.PrettyPrinter(indent=2)
-      pp.pprint(self.GetSavedPasswords())
+      self.pprint(self.GetSavedPasswords())
 
   def setUp(self):
     pyauto.PyUITest.setUp(self)
