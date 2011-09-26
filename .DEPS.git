@@ -101,7 +101,7 @@ deps = {
     'src/tools/gyp':
         Var('git_url') + '/external/gyp.git@68058475eca882224d56ce7d24130cdff5be6501',
     'src/tools/page_cycler/acid3':
-        Var('git_url') + '/chromium/deps/acid3.git@59c6ae4c476750845a529cd407454378ebaaa347',
+        Var('git_url') + '/chromium/deps/acid3.git@633fc66cc99ae5bb92b567c6beafde7a01cfdb49',
     'src/v8':
         Var('git_url') + '/external/v8.git@34e60787ea1e76f3ee49e859f71f036170c21f0e',
 }
