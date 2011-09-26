@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef VIEWS_TOUCHUI_TOUCH_FACTORY_H_
-#define VIEWS_TOUCHUI_TOUCH_FACTORY_H_
+#ifndef UI_BASE_TOUCH_TOUCH_FACTORY_H_
+#define UI_BASE_TOUCH_TOUCH_FACTORY_H_
 #pragma once
 
 #include <bitset>
@@ -11,17 +11,17 @@
 
 #include "base/memory/singleton.h"
 #include "base/timer.h"
-#include "views/views_export.h"
+#include "ui/base/ui_export.h"
 
 typedef unsigned long Cursor;
 typedef unsigned long Window;
 typedef struct _XDisplay Display;
 typedef union _XEvent XEvent;
 
-namespace views {
+namespace ui {
 
 // Functions related to determining touch devices.
-class VIEWS_EXPORT TouchFactory {
+class UI_EXPORT TouchFactory {
  public:
   // Define the touch params following the Multi-touch Protocol.
   enum TouchParam {
@@ -201,6 +201,6 @@ class VIEWS_EXPORT TouchFactory {
   DISALLOW_COPY_AND_ASSIGN(TouchFactory);
 };
 
-}  // namespace views
+}  // namespace ui
 
-#endif  // VIEWS_TOUCHUI_TOUCH_FACTORY_H_
+#endif  // UI_BASE_TOUCH_TOUCH_FACTORY_H_

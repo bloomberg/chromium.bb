@@ -62,8 +62,8 @@ void IBusKeyEventFromViewsKeyEvent(const views::KeyEvent& key,
                                    guint32* ibus_keycode,
                                    guint32* ibus_state) {
 #if defined(TOUCH_UI)
-  if (key.native_event_2()) {
-    XKeyEvent* x_key = reinterpret_cast<XKeyEvent*>(key.native_event_2());
+  if (key.native_event()) {
+    XKeyEvent* x_key = reinterpret_cast<XKeyEvent*>(key.native_event());
     // Yes, ibus uses X11 keysym. We cannot use XLookupKeysym(), which doesn't
     // translate Shift and CapsLock states.
     KeySym keysym = NoSymbol;
@@ -72,8 +72,8 @@ void IBusKeyEventFromViewsKeyEvent(const views::KeyEvent& key,
     *ibus_keycode = x_key->keycode;
   }
 #elif defined(TOOLKIT_USES_GTK)
-  if (key.native_event()) {
-    GdkEventKey* gdk_key = reinterpret_cast<GdkEventKey*>(key.native_event());
+  if (key.gdk_event()) {
+    GdkEventKey* gdk_key = reinterpret_cast<GdkEventKey*>(key.gdk_event());
     *ibus_keyval = gdk_key->keyval;
     *ibus_keycode = gdk_key->hardware_keycode;
   }
@@ -223,8 +223,8 @@ InputMethodIBus::PendingKeyEvent::PendingKeyEvent(InputMethodIBus* input_method,
   DCHECK(input_method_);
 
 #if defined(TOUCH_UI)
-  if (key.native_event_2())
-    x_event_ = *reinterpret_cast<XKeyEvent*>(key.native_event_2());
+  if (key.native_event())
+    x_event_ = *reinterpret_cast<XKeyEvent*>(key.native_event());
   else
     memset(&x_event_, 0, sizeof(x_event_));
 #endif
@@ -241,8 +241,7 @@ void InputMethodIBus::PendingKeyEvent::ProcessPostIME(bool handled) {
 
 #if defined(TOUCH_UI)
   if (x_event_.type == KeyPress || x_event_.type == KeyRelease) {
-    Event::FromNativeEvent2 from_native;
-    KeyEvent key(reinterpret_cast<XEvent*>(&x_event_), from_native);
+    KeyEvent key(reinterpret_cast<XEvent*>(&x_event_));
     input_method_->ProcessKeyEventPostIME(key, ibus_keyval_, handled);
     return;
   }

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "views/touchui/touch_factory.h"
+#include "ui/base/touch/touch_factory.h"
 
 #if defined(TOOLKIT_USES_GTK)
 // TODO(sad) Remove all TOOLKIT_USES_GTK uses once we move to aura only.
@@ -29,25 +29,25 @@ int kCursorIdleSeconds = 5;
 // the X device information through Atom name matching.
 XIValuatorClassInfo* FindTPValuator(Display* display,
                                     XIDeviceInfo* info,
-                                    views::TouchFactory::TouchParam tp) {
+                                    ui::TouchFactory::TouchParam tp) {
   // Lookup table for mapping TouchParam to Atom string used in X.
   // A full set of Atom strings can be found at xserver-properties.h.
   static struct {
-    views::TouchFactory::TouchParam tp;
+    ui::TouchFactory::TouchParam tp;
     const char* atom;
   } kTouchParamAtom[] = {
-    { views::TouchFactory::TP_TOUCH_MAJOR, "Abs MT Touch Major" },
-    { views::TouchFactory::TP_TOUCH_MINOR, "Abs MT Touch Minor" },
-    { views::TouchFactory::TP_ORIENTATION, "Abs MT Orientation" },
-    { views::TouchFactory::TP_PRESSURE,    "Abs MT Pressure" },
+    { ui::TouchFactory::TP_TOUCH_MAJOR, "Abs MT Touch Major" },
+    { ui::TouchFactory::TP_TOUCH_MINOR, "Abs MT Touch Minor" },
+    { ui::TouchFactory::TP_ORIENTATION, "Abs MT Orientation" },
+    { ui::TouchFactory::TP_PRESSURE,    "Abs MT Pressure" },
 #if !defined(USE_XI2_MT)
     // For Slot ID, See this chromeos revision: http://git.chromium.org/gitweb/?
     //        p=chromiumos/overlays/chromiumos-overlay.git;
     //        a=commit;h=9164d0a75e48c4867e4ef4ab51f743ae231c059a
-    { views::TouchFactory::TP_SLOT_ID,     "Abs MT Slot ID" },
+    { ui::TouchFactory::TP_SLOT_ID,     "Abs MT Slot ID" },
 #endif
-    { views::TouchFactory::TP_TRACKING_ID, "Abs MT Tracking ID" },
-    { views::TouchFactory::TP_LAST_ENTRY, NULL },
+    { ui::TouchFactory::TP_TRACKING_ID, "Abs MT Tracking ID" },
+    { ui::TouchFactory::TP_LAST_ENTRY, NULL },
   };
 
   const char* atom_tp = NULL;
@@ -82,7 +82,7 @@ gboolean GtkWidgetRealizeCallback(GSignalInvocationHint* hint, guint nparams,
                                   const GValue* pvalues, gpointer data) {
   GtkWidget* widget = GTK_WIDGET(g_value_get_object(pvalues));
   GdkWindow* window = widget->window;
-  views::TouchFactory* factory = static_cast<views::TouchFactory*>(data);
+  ui::TouchFactory* factory = static_cast<ui::TouchFactory*>(data);
 
   if (GDK_WINDOW_TYPE(window) != GDK_WINDOW_TOPLEVEL &&
       GDK_WINDOW_TYPE(window) != GDK_WINDOW_CHILD &&
@@ -101,7 +101,7 @@ gboolean GtkWidgetRealizeCallback(GSignalInvocationHint* hint, guint nparams,
 guint realize_signal_id = 0;
 guint realize_hook_id = 0;
 
-void SetupGtkWidgetRealizeNotifier(views::TouchFactory* factory) {
+void SetupGtkWidgetRealizeNotifier(ui::TouchFactory* factory) {
   gpointer klass = g_type_class_ref(GTK_TYPE_WIDGET);
 
   g_signal_parse_name("realize", GTK_TYPE_WIDGET,
@@ -122,7 +122,7 @@ void RemoveGtkWidgetRealizeNotifier() {
 
 }  // namespace
 
-namespace views {
+namespace ui {
 
 // static
 TouchFactory* TouchFactory::GetInstance() {
@@ -499,4 +499,4 @@ bool TouchFactory::GetTouchParamRange(unsigned int deviceid,
   return false;
 }
 
-}  // namespace views
+}  // namespace ui

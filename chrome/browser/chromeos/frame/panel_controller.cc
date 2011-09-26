@@ -268,12 +268,12 @@ bool PanelController::TitleMousePressed(const views::MouseEvent& event) {
   dragging_ = false;
 
 #if !defined(TOUCH_UI) && !defined(USE_AURA)
-  const GdkEvent* gdk_event = event.native_event();
+  const GdkEvent* gdk_event = event.gdk_event();
   GdkEventButton last_button_event = gdk_event->button;
   mouse_down_abs_x_ = last_button_event.x_root;
   mouse_down_abs_y_ = last_button_event.y_root;
 #else
-  const XEvent* xev = event.native_event_2();
+  const XEvent* xev = event.native_event();
   gfx::Point abs_location = RootLocationFromXEvent(xev);
   mouse_down_abs_x_ = abs_location.x();
   mouse_down_abs_y_ = abs_location.y();
@@ -332,12 +332,12 @@ bool PanelController::TitleMouseDragged(const views::MouseEvent& event) {
   }
 
 #if !defined(TOUCH_UI)
-  const GdkEvent* gdk_event = event.native_event();
+  const GdkEvent* gdk_event = event.gdk_event();
   GdkEventMotion last_motion_event = gdk_event->motion;
   int x_root = last_motion_event.x_root;
   int y_root = last_motion_event.y_root;
 #else
-  const XEvent* xev = event.native_event_2();
+  const XEvent* xev = event.native_event();
   gfx::Point abs_location = RootLocationFromXEvent(xev);
   int x_root = abs_location.x();
   int y_root = abs_location.y();

@@ -1004,7 +1004,7 @@ void LocationBarView::RefreshPageActionViews() {
 
 #if defined(OS_WIN) && !defined(USE_AURA)
 void LocationBarView::OnMouseEvent(const views::MouseEvent& event, UINT msg) {
-  UINT flags = event.GetWindowsFlags();
+  UINT flags = event.native_event().wParam;
   gfx::Point screen_point(event.location());
   ConvertPointToScreen(this, &screen_point);
   if (views::Widget::IsPureViews())

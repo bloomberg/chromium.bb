@@ -17,36 +17,45 @@ Event::Event(ui::EventType type, int flags)
     : type_(type),
       time_stamp_(base::Time::NowFromSystemTime()),
       flags_(flags) {
-  Init();
+  // Safely initialize the pointer/struct to null/empty.
+  memset(&native_event_, 0, sizeof(native_event_));
+#if defined(TOOLKIT_USES_GTK)
+  gdk_event_ = NULL;
+#endif
 }
 
-Event::Event(NativeEvent native_event, ui::EventType type, int flags)
-    : type_(type),
-      time_stamp_(base::Time::NowFromSystemTime()),
-      flags_(flags) {
-  InitWithNativeEvent(native_event);
-}
-
-Event::Event(NativeEvent2 native_event_2, ui::EventType type, int flags,
-             FromNativeEvent2 from_native)
-    : native_event_2_(native_event_2),
+Event::Event(const NativeEvent& native_event, ui::EventType type, int flags)
+    : native_event_(native_event),
       type_(type),
       time_stamp_(base::Time::NowFromSystemTime()),
       flags_(flags) {
-  InitWithNativeEvent2(native_event_2, from_native);
+#if defined(TOOLKIT_USES_GTK)
+  gdk_event_ = NULL;
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // LocatedEvent, protected:
 
+#if !defined(USE_AURA)
+LocatedEvent::LocatedEvent(const NativeEvent& native_event)
+    : Event(native_event,
+            ui::EventTypeFromNative(native_event),
+            ui::EventFlagsFromNative(native_event)),
+      location_(ui::EventLocationFromNative(native_event)) {
+}
+#endif
+
 // TODO(msw): Kill this legacy constructor when we update uses.
-LocatedEvent::LocatedEvent(ui::EventType type, const gfx::Point& location,
+LocatedEvent::LocatedEvent(ui::EventType type,
+                           const gfx::Point& location,
                            int flags)
     : Event(type, flags),
       location_(location) {
 }
 
-LocatedEvent::LocatedEvent(const LocatedEvent& model, View* source,
+LocatedEvent::LocatedEvent(const LocatedEvent& model,
+                           View* source,
                            View* target)
     : Event(model),
       location_(model.location_) {
@@ -63,7 +72,19 @@ LocatedEvent::LocatedEvent(const LocatedEvent& model, View* root)
 ////////////////////////////////////////////////////////////////////////////////
 // KeyEvent, public:
 
-KeyEvent::KeyEvent(ui::EventType type, ui::KeyboardCode key_code,
+#if !defined(USE_AURA)
+KeyEvent::KeyEvent(const NativeEvent& native_event)
+    : Event(native_event,
+            ui::EventTypeFromNative(native_event),
+            ui::EventFlagsFromNative(native_event)),
+      key_code_(ui::KeyboardCodeFromNative(native_event)),
+      character_(0),
+      unmodified_character_(0) {
+}
+#endif
+
+KeyEvent::KeyEvent(ui::EventType type,
+                   ui::KeyboardCode key_code,
                    int event_flags)
     : Event(type, event_flags),
       key_code_(key_code),
@@ -175,13 +196,16 @@ uint16 KeyEvent::GetCharacterFromKeyCode(ui::KeyboardCode key_code, int flags) {
 ////////////////////////////////////////////////////////////////////////////////
 // MouseEvent, public:
 
+MouseEvent::MouseEvent(const NativeEvent& native_event)
+    : LocatedEvent(native_event) {
+}
+
 MouseEvent::MouseEvent(const MouseEvent& model, View* source, View* target)
     : LocatedEvent(model, source, target) {
 }
 
-MouseEvent::MouseEvent(const TouchEvent& touch,
-                       FromNativeEvent2 from_native)
-    : LocatedEvent(touch.native_event_2(), from_native) {
+MouseEvent::MouseEvent(const TouchEvent& touch)
+    : LocatedEvent(touch.native_event()) {
   // The location of the event is correctly extracted from the native event. But
   // it is necessary to update the event type.
   ui::EventType mtype = ui::ET_UNKNOWN;
@@ -214,6 +238,16 @@ MouseEvent::MouseEvent(const TouchEvent& touch,
     button = ui::EF_MIDDLE_BUTTON_DOWN;
   set_flags(new_flags | button);
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// MouseWheelEvent, public:
+
+#if !defined(USE_AURA)
+MouseWheelEvent::MouseWheelEvent(const ui::NativeEvent& native_event)
+    : MouseEvent(native_event),
+      offset_(ui::GetMouseWheelOffset(native_event)) {
+}
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 // TouchEvent, public:

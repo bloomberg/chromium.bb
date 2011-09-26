@@ -42,8 +42,8 @@
 #include "views/window/hit_test.h"
 
 #if defined(TOUCH_UI)
+#include "ui/base/touch/touch_factory.h"
 #include "views/widget/tooltip_manager_views.h"
-#include "views/touchui/touch_factory.h"
 #else
 #include "views/widget/tooltip_manager_gtk.h"
 #endif
@@ -380,7 +380,7 @@ NativeWidgetGtk::NativeWidgetGtk(internal::NativeWidgetDelegate* delegate)
 #if defined(TOUCH_UI)
   // Make sure the touch factory is initialized so that it can setup XInput2 for
   // the widget.
-  TouchFactory::GetInstance();
+  ui::TouchFactory::GetInstance();
 #endif
   static bool installed_message_loop_observer = false;
   if (!installed_message_loop_observer) {
@@ -926,7 +926,7 @@ void NativeWidgetGtk::SetMouseCapture() {
     ::Window window = GDK_WINDOW_XID(window_contents()->window);
     Display* display = GDK_WINDOW_XDISPLAY(window_contents()->window);
     bool xi2grab =
-        TouchFactory::GetInstance()->GrabTouchDevices(display, window);
+        ui::TouchFactory::GetInstance()->GrabTouchDevices(display, window);
     // xi2grab should always succeed if has_pointer_grab_ succeeded.
     DCHECK(xi2grab);
     has_pointer_grab_ = has_pointer_grab_ && xi2grab;
@@ -946,7 +946,7 @@ void NativeWidgetGtk::ReleaseMouseCapture() {
     has_pointer_grab_ = false;
     gdk_pointer_ungrab(GDK_CURRENT_TIME);
 #if defined(TOUCH_UI)
-    TouchFactory::GetInstance()->UngrabTouchDevices(
+    ui::TouchFactory::GetInstance()->UngrabTouchDevices(
         GDK_WINDOW_XDISPLAY(window_contents()->window));
 #endif
   }
@@ -1310,9 +1310,9 @@ void NativeWidgetGtk::SchedulePaintInRect(const gfx::Rect& rect) {
 
 void NativeWidgetGtk::SetCursor(gfx::NativeCursor cursor) {
 #if defined(TOUCH_UI)
-  if (TouchFactory::GetInstance()->keep_mouse_cursor())
+  if (ui::TouchFactory::GetInstance()->keep_mouse_cursor())
     cursor = gfx::GetCursor(GDK_ARROW);
-  else if (!TouchFactory::GetInstance()->is_cursor_visible())
+  else if (!ui::TouchFactory::GetInstance()->is_cursor_visible())
     cursor = gfx::GetCursor(GDK_BLANK_CURSOR);
 #endif
   // |window_contents_| is placed on top of |widget_|. So the cursor needs to be
@@ -1694,7 +1694,7 @@ gboolean NativeWidgetGtk::OnFocusOut(GtkWidget* widget, GdkEventFocus* event) {
 }
 
 gboolean NativeWidgetGtk::OnEventKey(GtkWidget* widget, GdkEventKey* event) {
-  KeyEvent key(reinterpret_cast<NativeEvent>(event));
+  KeyEvent key(reinterpret_cast<GdkEvent*>(event));
   InputMethod* input_method = GetWidget()->GetInputMethod();
   if (input_method)
     input_method->DispatchKeyEvent(key);
@@ -1751,7 +1751,7 @@ gboolean NativeWidgetGtk::OnGrabBrokeEvent(GtkWidget* widget, GdkEvent* event) {
   ReleaseMouseCapture();
 
 #if defined(HAVE_XINPUT2) && defined(TOUCH_UI)
-  TouchFactory::GetInstance()->UngrabTouchDevices(
+  ui::TouchFactory::GetInstance()->UngrabTouchDevices(
       GDK_WINDOW_XDISPLAY(window_contents()->window));
 #endif
   return false;  // To let other widgets get the event.
@@ -1846,7 +1846,7 @@ void NativeWidgetGtk::DispatchKeyEventPostIME(const KeyEvent& key) {
   // To prevent GtkWindow from handling the key event as a keybinding, we need
   // to bypass GtkWindow's default key event handler and dispatch the event
   // here.
-  GdkEventKey* event = reinterpret_cast<GdkEventKey*>(key.native_event());
+  GdkEventKey* event = reinterpret_cast<GdkEventKey*>(key.gdk_event());
   if (!handled && event && GTK_IS_WINDOW(widget_))
     handled = gtk_window_propagate_key_event(GTK_WINDOW(widget_), event);
 

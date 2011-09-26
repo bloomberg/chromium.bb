@@ -5,7 +5,7 @@
 #ifndef UI_VIEWS_WIDGET_NATIVE_WIDGET_H_
 #define UI_VIEWS_WIDGET_NATIVE_WIDGET_H_
 
-#include "ui/views/native_types.h"
+#include "ui/gfx/native_widget_types.h"
 
 namespace gfx{
 class Path;

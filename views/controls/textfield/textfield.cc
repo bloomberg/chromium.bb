@@ -30,7 +30,6 @@
 // ViewHierarchyChanged is removed.
 #include "views/controls/textfield/native_textfield_views.h"
 #include "views/controls/textfield/native_textfield_win.h"
-#include "views/events/event_utils_win.h"
 #endif
 
 namespace views {
@@ -341,7 +340,8 @@ bool Textfield::SkipDefaultKeyEventProcessing(const KeyEvent& e) {
   // We don't translate accelerators for ALT + NumPad digit on Windows, they are
   // used for entering special characters.  We do translate alt-home.
   if (e.IsAltDown() && (key != ui::VKEY_HOME) &&
-      NativeTextfieldWin::IsNumPadDigit(key, IsExtendedKey(e)))
+      NativeTextfieldWin::IsNumPadDigit(key,
+                                        (e.flags() & ui::EF_EXTENDED) != 0))
     return true;
 #endif
   return false;

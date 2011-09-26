@@ -45,6 +45,7 @@
 #include "ui/base/dragdrop/drop_target.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_win.h"
+#include "ui/base/events.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_win.h"
@@ -53,7 +54,6 @@
 #include "ui/gfx/canvas_skia.h"
 #include "views/controls/textfield/native_textfield_win.h"
 #include "views/drag_utils.h"
-#include "views/events/event_utils_win.h"
 #include "views/widget/widget.h"
 
 #pragma comment(lib, "oleacc.lib")  // Needed for accessibility support.
@@ -994,7 +994,7 @@ bool OmniboxViewWin::SkipDefaultKeyEventProcessing(
   // entering special characters.  We do translate alt-home.
   if (event.IsAltDown() && (key != ui::VKEY_HOME) &&
       views::NativeTextfieldWin::IsNumPadDigit(key,
-                                               views::IsExtendedKey(event)))
+          (event.flags() & ui::EF_EXTENDED) != 0))
     return true;
 
   // Skip accelerators for key combinations omnibox wants to crack. This list

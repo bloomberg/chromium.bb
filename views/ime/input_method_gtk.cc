@@ -127,8 +127,8 @@ void InputMethodGtk::DispatchKeyEvent(const KeyEvent& key) {
   result_text_.clear();
 
   // If it's a fake key event, then we need to synthesize a GdkEventKey.
-  GdkEvent* event = key.native_event() ? key.native_event() :
-                                         SynthesizeGdkEventKey(key);
+  GdkEvent* event = key.gdk_event() ? key.gdk_event() :
+                                      SynthesizeGdkEventKey(key);
   gboolean filtered = gtk_im_context_filter_keypress(
       context_focused_ ? context_ : context_simple_, &event->key);
 
@@ -152,7 +152,7 @@ void InputMethodGtk::DispatchKeyEvent(const KeyEvent& key) {
   }
 
   // Free the synthesized event if there was no underlying native event.
-  if (event != key.native_event())
+  if (event != key.gdk_event())
     gdk_event_free(event);
 }
 

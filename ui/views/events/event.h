@@ -10,7 +10,6 @@
 #include "ui/base/events.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/gfx/point.h"
-#include "ui/views/native_types.h"
 
 class OSExchangeData;
 
@@ -82,7 +81,7 @@ class LocatedEvent : public Event {
 
 class MouseEvent : public LocatedEvent {
  public:
-  explicit MouseEvent(NativeEvent native_event);
+  explicit MouseEvent(const ui::NativeEvent& native_event);
 
   MouseEvent(const MouseEvent& other, View* source, View* target);
 
@@ -115,23 +114,19 @@ class MouseEvent : public LocatedEvent {
 
 class KeyEvent : public Event {
  public:
-  explicit KeyEvent(NativeEvent native_event);
+  explicit KeyEvent(const ui::NativeEvent& native_event);
 
   KeyboardCode key_code() const { return key_code_; }
 
-  int repeat_count() const { return repeat_count_; }
-
  private:
   KeyboardCode key_code_;
-  int repeat_count_;
-  int message_flags_;
 
   DISALLOW_COPY_AND_ASSIGN(KeyEvent);
 };
 
 class MouseWheelEvent : public LocatedEvent {
  public:
-  explicit MouseWheelEvent(NativeEvent native_event);
+  explicit MouseWheelEvent(const ui::NativeEvent& native_event);
 
   int offset() const { return offset_; }
 
@@ -144,7 +139,7 @@ class MouseWheelEvent : public LocatedEvent {
 /*
 class DropTargetEvent : public LocatedEvent {
  public:
-  explicit DropTargetEvent(NativeEvent native_event);
+  explicit DropTargetEvent(const ui::NativeEvent& native_event);
 
   const OSExchangeData& data() const { return data_; }
   int source_operations() const { return source_operations_; }

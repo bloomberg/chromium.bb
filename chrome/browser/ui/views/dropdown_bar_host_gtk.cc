@@ -50,6 +50,6 @@ NativeWebKeyboardEvent DropdownBarHost::GetKeyboardEvent(
 
   return wke;
 #else
-  return NativeWebKeyboardEvent(&key_event.native_event()->key);
+  return NativeWebKeyboardEvent(&key_event.gdk_event()->key);
 #endif
 }

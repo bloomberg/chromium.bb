@@ -34,8 +34,6 @@
         'event.h',
         'event_filter.cc',
         'event_filter.h',
-        'event_win.cc',
-        'event_x.cc',
         'focus_manager.cc',
         'focus_manager.h',
         'hit_test.h',

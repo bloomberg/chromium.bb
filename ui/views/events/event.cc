@@ -50,8 +50,27 @@ LocatedEvent::LocatedEvent(const LocatedEvent& other,
 ////////////////////////////////////////////////////////////////////////////////
 // MouseEvent, public:
 
+MouseEvent::MouseEvent(const ui::NativeEvent& native_event)
+    : LocatedEvent(ui::EventTypeFromNative(native_event),
+                   ui::EventLocationFromNative(native_event),
+                   ui::EventFlagsFromNative(native_event)) {
+}
+
 MouseEvent::MouseEvent(const MouseEvent& other, View* source, View* target)
     : LocatedEvent(other, source, target) {
+}
+
+KeyEvent::KeyEvent(const ui::NativeEvent& native_event)
+    : Event(ui::EventTypeFromNative(native_event),
+            ui::EventFlagsFromNative(native_event)),
+      key_code_(ui::KeyboardCodeFromNative(native_event)) {
+}
+
+MouseWheelEvent::MouseWheelEvent(const ui::NativeEvent& native_event)
+    : LocatedEvent(ui::EventTypeFromNative(native_event),
+                   ui::EventLocationFromNative(native_event),
+                   ui::EventFlagsFromNative(native_event)),
+      offset_(ui::GetMouseWheelOffset(native_event)) {
 }
 
 }  // namespace ui

@@ -13,7 +13,6 @@
         ['include', '_(win)\\.cc$'],
         ['include', '/win/'],
         ['include', '/win_[^/]*\\.cc$'],
-        ['exclude', 'touchui/touch_factory.cc'],
       ]}],
       ['touchui==0', {
         'sources/': [
@@ -260,8 +259,6 @@
         'events/event_gtk.cc',
         'events/event_wayland.cc',
         'events/event_win.cc',
-        'events/event_utils_win.cc',
-        'events/event_utils_win.h',
         'events/event_x.cc',
         'focus/accelerator_handler.h',
         'focus/accelerator_handler_aura.cc',
@@ -332,8 +329,6 @@
         'repeat_controller.h',
         'touchui/gesture_manager.cc',
         'touchui/gesture_manager.h',
-        'touchui/touch_factory.cc',
-        'touchui/touch_factory.h',
         'touchui/touch_selection_controller.cc',
         'touchui/touch_selection_controller.h',
         'touchui/touch_selection_controller_impl.cc',
@@ -426,8 +421,6 @@
             ['exclude', '_(gtk|x)\\.cc$'],
             ['exclude', '/(gtk|x)_[^/]*\\.cc$'],
             ['exclude', 'focus/accelerator_handler_touch.cc'],
-            ['exclude', 'touchui/touch_factory.cc'],
-            ['exclude', 'touchui/touch_factory.h'],
             ['include', 'controls/menu/native_menu_views.cc'],
             ['include', 'controls/menu/native_menu_views.h'],
             ['include', 'drag_utils_gtk.cc'],
@@ -540,6 +533,11 @@
         ['OS=="win"', {
           'include_dirs': [
             '<(DEPTH)/third_party/wtl/include',
+          ],
+        }],
+        ['use_x11==0', {
+          'sources!': [
+            'events/event_x.cc',
           ],
         }],
       ],

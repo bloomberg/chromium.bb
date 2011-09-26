@@ -36,8 +36,7 @@ bool GestureManager::ProcessTouchEventForGesture(const TouchEvent& event,
   // Conver the touch-event into a mouse-event. This mouse-event gets its
   // location information from the native-event, so it needs to convert the
   // coordinate to the target widget.
-  Event::FromNativeEvent2 from_native;
-  MouseEvent mouseev(event, from_native);
+  MouseEvent mouseev(event);
   if (ViewsDelegate::views_delegate->GetDefaultParentView()) {
     // TODO(oshima): We may need to send the event back through
     // window manager to handle mouse capture correctly.

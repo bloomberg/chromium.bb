@@ -13,30 +13,20 @@
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/gfx/point.h"
 
-#if defined(USE_X11)
-typedef union _XEvent XEvent;
-#endif
-
 namespace aura {
-
-#if defined(OS_WIN)
-typedef MSG NativeEvent;
-#elif defined(USE_X11)
-typedef XEvent* NativeEvent;
-#endif
 
 class Window;
 
 class AURA_EXPORT Event {
  public:
-  const NativeEvent& native_event() const { return native_event_; }
+  const ui::NativeEvent& native_event() const { return native_event_; }
   ui::EventType type() const { return type_; }
   const base::Time& time_stamp() const { return time_stamp_; }
   int flags() const { return flags_; }
 
  protected:
   Event(ui::EventType type, int flags);
-  Event(NativeEvent native_event, ui::EventType type, int flags);
+  Event(const ui::NativeEvent& native_event, ui::EventType type, int flags);
   Event(const Event& copy);
   void set_type(ui::EventType type) { type_ = type; }
 
@@ -45,9 +35,9 @@ class AURA_EXPORT Event {
 
   // Safely initializes the native event members of this class.
   void Init();
-  void InitWithNativeEvent(NativeEvent native_event);
+  void InitWithNativeEvent(const ui::NativeEvent& native_event);
 
-  NativeEvent native_event_;
+  ui::NativeEvent native_event_;
   ui::EventType type_;
   base::Time time_stamp_;
   int flags_;
@@ -60,7 +50,7 @@ class AURA_EXPORT LocatedEvent : public Event {
   gfx::Point location() const { return location_; }
 
  protected:
-  explicit LocatedEvent(NativeEvent native_event);
+  explicit LocatedEvent(const ui::NativeEvent& native_event);
 
   // Create a new LocatedEvent which is identical to the provided model.
   // If source / target windows are provided, the model location will be
@@ -78,7 +68,7 @@ class AURA_EXPORT LocatedEvent : public Event {
 
 class AURA_EXPORT MouseEvent : public LocatedEvent {
  public:
-  explicit MouseEvent(NativeEvent native_event);
+  explicit MouseEvent(const ui::NativeEvent& native_event);
 
   // Create a new MouseEvent which is identical to the provided model.
   // If source / target windows are provided, the model location will be
@@ -98,7 +88,7 @@ class AURA_EXPORT MouseEvent : public LocatedEvent {
 
 class AURA_EXPORT KeyEvent : public Event {
  public:
-  explicit KeyEvent(NativeEvent native_event);
+  explicit KeyEvent(const ui::NativeEvent& native_event);
 
   // Used for synthetic events in testing.
   KeyEvent(ui::EventType type,

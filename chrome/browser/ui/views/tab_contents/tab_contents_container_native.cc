@@ -83,7 +83,7 @@ bool TabContentsContainer::OnMousePressed(const views::MouseEvent& event) {
   }
   // It is necessary to look at the native event to determine what special
   // button was pressed.
-  views::NativeEvent2 native_event = event.native_event_2();
+  views::NativeEvent native_event = event.native_event();
   if (!native_event)
     return false;
 

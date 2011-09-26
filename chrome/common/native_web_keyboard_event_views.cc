@@ -49,9 +49,9 @@ NativeWebKeyboardEventViews::NativeWebKeyboardEventViews(
   // |os_event| is a MSG struct, so we can copy it directly.
   os_event = event.native_event();
 #elif defined(TOOLKIT_USES_GTK)
-  if (event.native_event()) {
+  if (event.gdk_event()) {
     os_event =
-        reinterpret_cast<GdkEventKey*>(gdk_event_copy(event.native_event()));
+        reinterpret_cast<GdkEventKey*>(gdk_event_copy(event.gdk_event()));
     nativeKeyCode = os_event->keyval;
   } else {
     os_event = NULL;

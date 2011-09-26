@@ -191,7 +191,7 @@
 #endif
 
 #if defined(TOUCH_UI)
-#include "views/touchui/touch_factory.h"
+#include "ui/base/touch/touch_factory.h"
 #endif
 
 #if defined(USE_AURA)
@@ -1753,7 +1753,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunInternal() {
 #endif
 
 #if defined(TOUCH_UI)
-  views::TouchFactory::GetInstance()->set_keep_mouse_cursor(
+  ui::TouchFactory::GetInstance()->set_keep_mouse_cursor(
       CommandLine::ForCurrentProcess()->HasSwitch(switches::kKeepMouseCursor));
 #endif
 

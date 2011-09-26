@@ -15,7 +15,7 @@ Event::Event(ui::EventType type, int flags)
   Init();
 }
 
-Event::Event(NativeEvent native_event, ui::EventType type, int flags)
+Event::Event(const ui::NativeEvent& native_event, ui::EventType type, int flags)
     : type_(type),
       time_stamp_(base::Time::NowFromSystemTime()),
       flags_(flags) {
@@ -27,6 +27,21 @@ Event::Event(const Event& copy)
       type_(copy.type_),
       time_stamp_(copy.time_stamp_),
       flags_(copy.flags_) {
+}
+
+void Event::Init() {
+  memset(&native_event_, 0, sizeof(native_event_));
+}
+
+void Event::InitWithNativeEvent(const ui::NativeEvent& native_event) {
+  native_event_ = native_event;
+}
+
+LocatedEvent::LocatedEvent(const ui::NativeEvent& native_event)
+    : Event(native_event,
+            ui::EventTypeFromNative(native_event),
+            ui::EventFlagsFromNative(native_event)),
+      location_(ui::EventLocationFromNative(native_event)) {
 }
 
 LocatedEvent::LocatedEvent(const LocatedEvent& model,
@@ -45,6 +60,10 @@ LocatedEvent::LocatedEvent(ui::EventType type,
       location_(location) {
 }
 
+MouseEvent::MouseEvent(const ui::NativeEvent& native_event)
+    : LocatedEvent(native_event) {
+}
+
 MouseEvent::MouseEvent(const MouseEvent& model, Window* source, Window* target)
     : LocatedEvent(model, source, target) {
 }
@@ -61,6 +80,13 @@ MouseEvent::MouseEvent(ui::EventType type,
                        const gfx::Point& location,
                        int flags)
     : LocatedEvent(type, location, flags) {
+}
+
+KeyEvent::KeyEvent(const ui::NativeEvent& native_event)
+    : Event(native_event,
+            ui::EventTypeFromNative(native_event),
+            ui::EventFlagsFromNative(native_event)),
+      key_code_(ui::KeyboardCodeFromNative(native_event)) {
 }
 
 KeyEvent::KeyEvent(ui::EventType type,

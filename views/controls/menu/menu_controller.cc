@@ -1826,7 +1826,7 @@ void MenuController::RepostEvent(SubmenuView* source,
 
     if (event_type) {
       if (in_client_area) {
-        PostMessage(window, event_type, event.GetWindowsFlags(),
+        PostMessage(window, event_type, event.native_event().wParam,
                     MAKELPARAM(window_x, window_y));
       } else {
         PostMessage(window, event_type, nc_hit_result,
