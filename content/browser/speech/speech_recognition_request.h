@@ -63,12 +63,7 @@ class SpeechRecognitionRequest : public URLFetcher::Delegate {
   bool HasPendingRequest() { return url_fetcher_ != NULL; }
 
   // URLFetcher::Delegate methods.
-  virtual void OnURLFetchComplete(const URLFetcher* source,
-                                  const GURL& url,
-                                  const net::URLRequestStatus& status,
-                                  int response_code,
-                                  const net::ResponseCookies& cookies,
-                                  const std::string& data);
+  virtual void OnURLFetchComplete(const URLFetcher* source) OVERRIDE;
 
  private:
   scoped_refptr<net::URLRequestContextGetter> url_context_;

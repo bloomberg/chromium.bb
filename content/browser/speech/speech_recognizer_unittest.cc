@@ -169,11 +169,15 @@ TEST_F(SpeechRecognizerTest, StopWithData) {
   // Issue the network callback to complete the process.
   TestURLFetcher* fetcher = url_fetcher_factory_.GetFetcherByID(0);
   ASSERT_TRUE(fetcher);
+
+  fetcher->set_url(fetcher->original_url());
   net::URLRequestStatus status;
   status.set_status(net::URLRequestStatus::SUCCESS);
-  fetcher->delegate()->OnURLFetchComplete(
-      fetcher, fetcher->original_url(), status, 200, net::ResponseCookies(),
-      "{\"hypotheses\":[{\"utterance\":\"123\"}]}");
+  fetcher->set_status(status);
+  fetcher->set_response_code(200);
+  fetcher->SetResponseString("{\"hypotheses\":[{\"utterance\":\"123\"}]}");
+  fetcher->delegate()->OnURLFetchComplete(fetcher);
+
   EXPECT_TRUE(recognition_complete_);
   EXPECT_TRUE(result_received_);
   EXPECT_EQ(SpeechRecognizer::RECOGNIZER_NO_ERROR, error_);
@@ -219,11 +223,15 @@ TEST_F(SpeechRecognizerTest, ConnectionError) {
   EXPECT_EQ(SpeechRecognizer::RECOGNIZER_NO_ERROR, error_);
 
   // Issue the network callback to complete the process.
+  fetcher->set_url(fetcher->original_url());
   net::URLRequestStatus status;
   status.set_status(net::URLRequestStatus::FAILED);
   status.set_error(net::ERR_CONNECTION_REFUSED);
-  fetcher->delegate()->OnURLFetchComplete(
-      fetcher, fetcher->original_url(), status, 0, net::ResponseCookies(), "");
+  fetcher->set_status(status);
+  fetcher->set_response_code(0);
+  fetcher->SetResponseString("");
+  fetcher->delegate()->OnURLFetchComplete(fetcher);
+
   EXPECT_FALSE(recognition_complete_);
   EXPECT_FALSE(result_received_);
   EXPECT_EQ(SpeechRecognizer::RECOGNIZER_ERROR_NETWORK, error_);
@@ -250,11 +258,14 @@ TEST_F(SpeechRecognizerTest, ServerError) {
   EXPECT_EQ(SpeechRecognizer::RECOGNIZER_NO_ERROR, error_);
 
   // Issue the network callback to complete the process.
+  fetcher->set_url(fetcher->original_url());
   net::URLRequestStatus status;
   status.set_status(net::URLRequestStatus::SUCCESS);
-  fetcher->delegate()->OnURLFetchComplete(fetcher, fetcher->original_url(),
-                                          status, 500, net::ResponseCookies(),
-                                          "Internal Server Error");
+  fetcher->set_status(status);
+  fetcher->set_response_code(500);
+  fetcher->SetResponseString("Internal Server Error");
+  fetcher->delegate()->OnURLFetchComplete(fetcher);
+
   EXPECT_FALSE(recognition_complete_);
   EXPECT_FALSE(result_received_);
   EXPECT_EQ(SpeechRecognizer::RECOGNIZER_ERROR_NETWORK, error_);

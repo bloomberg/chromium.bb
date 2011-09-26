@@ -42,12 +42,16 @@ void SpeechRecognitionRequestTest::CreateAndTestRequest(
   request.UploadAudioChunk(std::string(" "), true);
   TestURLFetcher* fetcher = url_fetcher_factory_.GetFetcherByID(0);
   ASSERT_TRUE(fetcher);
+
+  fetcher->set_url(fetcher->original_url());
   net::URLRequestStatus status;
   status.set_status(success ? net::URLRequestStatus::SUCCESS :
                               net::URLRequestStatus::FAILED);
-  fetcher->delegate()->OnURLFetchComplete(
-      fetcher, fetcher->original_url(), status, success ? 200 : 500,
-      net::ResponseCookies(), http_response);
+  fetcher->set_status(status);
+  fetcher->set_response_code(success ? 200 : 500);
+  fetcher->SetResponseString(http_response);
+
+  fetcher->delegate()->OnURLFetchComplete(fetcher);
   // Parsed response will be available in result_.
 }
 

@@ -179,19 +179,15 @@ void SpeechRecognitionRequest::UploadAudioChunk(const std::string& audio_data,
   url_fetcher_->AppendChunkToUpload(audio_data, is_last_chunk);
 }
 
-void SpeechRecognitionRequest::OnURLFetchComplete(
-    const URLFetcher* source,
-    const GURL& url,
-    const net::URLRequestStatus& status,
-    int response_code,
-    const net::ResponseCookies& cookies,
-    const std::string& data) {
+void SpeechRecognitionRequest::OnURLFetchComplete(const URLFetcher* source) {
   DCHECK_EQ(url_fetcher_.get(), source);
 
-  bool error = !status.is_success() || response_code != 200;
+  bool error =
+      !source->status().is_success() || source->response_code() != 200;
+
   SpeechInputResultArray result;
   if (!error)
-    error = !ParseServerResponse(data, &result);
+    error = !ParseServerResponse(source->GetResponseStringRef(), &result);
   url_fetcher_.reset();
 
   DVLOG(1) << "SpeechRecognitionRequest: Invoking delegate with result.";
