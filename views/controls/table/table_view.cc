@@ -11,6 +11,7 @@
 
 #include "base/i18n/rtl.h"
 #include "base/string_util.h"
+#include "base/win/scoped_gdi_object.h"
 #include "skia/ext/skia_utils_win.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColorFilter.h"
@@ -807,11 +808,12 @@ HWND TableView::CreateNativeControl(HWND parent_container) {
     gfx::CanvasSkia canvas(kImageSize, kImageSize, false);
     // Make the background completely transparent.
     canvas.drawColor(SK_ColorBLACK, SkXfermode::kClear_Mode);
-    HICON empty_icon =
-        IconUtil::CreateHICONFromSkBitmap(canvas.ExtractBitmap());
-    ImageList_AddIcon(image_list, empty_icon);
-    ImageList_AddIcon(image_list, empty_icon);
-    DeleteObject(empty_icon);
+    {
+      base::win::ScopedHICON empty_icon(
+          IconUtil::CreateHICONFromSkBitmap(canvas.ExtractBitmap()));
+      ImageList_AddIcon(image_list, empty_icon);
+      ImageList_AddIcon(image_list, empty_icon);
+    }
     ListView_SetImageList(list_view_, image_list, LVSIL_SMALL);
   }
 
@@ -1082,7 +1084,7 @@ LRESULT TableView::OnNotify(int w_param, LPNMHDR hdr) {
       NMLVGETINFOTIP* info_tip = reinterpret_cast<NMLVGETINFOTIP*>(hdr);
       string16 tooltip =
           model_->GetTooltip(ViewToModel(info_tip->iItem));
-      CHECK(info_tip->cchTextMax >= 2);
+      CHECK_GE(info_tip->cchTextMax, 2);
       if (tooltip.length() >= static_cast<size_t>(info_tip->cchTextMax)) {
         tooltip.erase(info_tip->cchTextMax - 2);  // Ellipsis + '\0'
         const char16 kEllipsis = 0x2026;
@@ -1172,7 +1174,7 @@ LRESULT TableView::OnCustomDraw(NMLVCUSTOMDRAW* draw_info) {
         r |= CDRF_NOTIFYPOSTPAINT;
       return r;
     }
-    case (CDDS_ITEMPREPAINT | CDDS_SUBITEM): {
+    case CDDS_ITEMPREPAINT | CDDS_SUBITEM: {
       // The list-view is painting a subitem. See if the colors should be
       // changed from the default.
       if (custom_colors_enabled_) {

@@ -7,7 +7,10 @@
 #include <commctrl.h>
 #include <windowsx.h>
 
+#include <algorithm>
+
 #include "base/logging.h"
+#include "base/win/scoped_gdi_object.h"
 #include "skia/ext/skia_utils_win.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_win.h"
@@ -325,7 +328,7 @@ bool NativeTableWin::ProcessMessage(UINT message, WPARAM w_param,
         // will disable all of the above behavior.
         NMLVGETINFOTIP* info_tip = reinterpret_cast<NMLVGETINFOTIP*>(hdr);
         string16 tooltip = table_->model()->GetTooltip(info_tip->iItem);
-        CHECK(info_tip->cchTextMax >= 2);
+        CHECK_GE(info_tip->cchTextMax, 2);
         if (tooltip.length() >= static_cast<size_t>(info_tip->cchTextMax)) {
           // Elide the tooltip if necessary.
           tooltip.erase(info_tip->cchTextMax - 2);  // Ellipsis + '\0'
@@ -393,11 +396,12 @@ void NativeTableWin::CreateNativeControl() {
     gfx::CanvasSkia canvas(kImageSize, kImageSize, false);
     // Make the background completely transparent.
     canvas.drawColor(SK_ColorBLACK, SkXfermode::kClear_Mode);
-    HICON empty_icon =
-        IconUtil::CreateHICONFromSkBitmap(canvas.ExtractBitmap());
-    ImageList_AddIcon(image_list, empty_icon);
-    ImageList_AddIcon(image_list, empty_icon);
-    DeleteObject(empty_icon);
+    {
+      base::win::ScopedHICON empty_icon(
+          IconUtil::CreateHICONFromSkBitmap(canvas.ExtractBitmap()));
+      ImageList_AddIcon(image_list, empty_icon);
+      ImageList_AddIcon(image_list, empty_icon);
+    }
     ListView_SetImageList(native_view(), image_list, LVSIL_SMALL);
   }
 
@@ -483,7 +487,7 @@ LRESULT NativeTableWin::OnCustomDraw(NMLVCUSTOMDRAW* draw_info) {
         r |= CDRF_NOTIFYPOSTPAINT;
       return r;
     }
-    case (CDDS_ITEMPREPAINT | CDDS_SUBITEM): {
+    case CDDS_ITEMPREPAINT | CDDS_SUBITEM: {
       // TODO(jcampan): implement custom colors and fonts.
       return CDRF_DODEFAULT;
     }
