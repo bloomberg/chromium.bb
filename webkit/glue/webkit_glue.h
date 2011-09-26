@@ -88,14 +88,14 @@ string16 DumpFrameScrollPosition(WebKit::WebFrame* web_frame, bool recursive);
 string16 DumpHistoryState(const std::string& history_state, int indent,
                           bool is_current);
 
-// Called to override the default user agent with a custom one.  Call this
-// before anyone actually asks for the user agent in order to prevent
-// inconsistent behavior.
-void SetUserAgent(const std::string& new_user_agent);
+// Sets the user agent.  Pass true for overriding if this is a custom
+// user agent instead of the default one (in order to turn off any browser
+// sniffing workarounds). This must be called before GetUserAgent() can
+// be called.
+void SetUserAgent(const std::string& user_agent, bool overriding);
 
-// Returns the user agent to use for the given URL, which is usually the
-// default user agent but may be overriden by a call to SetUserAgent() (which
-// should be done at startup).
+// Returns the user agent to use for the given URL. SetUserAgent() must
+// be called prior to calling this function.
 const std::string& GetUserAgent(const GURL& url);
 
 // Creates serialized state for the specified URL. This is a variant of
@@ -146,10 +146,6 @@ WebKit::WebCanvas* ToWebCanvas(skia::PlatformCanvas*);
 // There can be many such pages (maps of 256 character -> glyph) so this is
 // used to get memory usage statistics.
 int GetGlyphPageCount();
-
-// Construct the User-Agent header, filling in |result|.
-// - If mimic_windows is true, produce a fake Windows Chrome string.
-std::string BuildUserAgent(bool mimic_windows);
 
 //---- END FUNCTIONS IMPLEMENTED BY WEBKIT/GLUE -------------------------------
 

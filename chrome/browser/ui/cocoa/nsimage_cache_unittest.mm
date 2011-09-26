@@ -19,16 +19,6 @@ namespace {
 
 class NSImageCacheTest : public PlatformTest {
  public:
-  NSImageCacheTest() {
-    // Look in the framework bundle for resources.
-    FilePath path;
-    PathService::Get(base::DIR_EXE, &path);
-    path = path.Append(chrome::kFrameworkName);
-    base::mac::SetOverrideAppBundlePath(path);
-  }
-  virtual ~NSImageCacheTest() {
-    base::mac::SetOverrideAppBundle(nil);
-  }
 };
 
 TEST_F(NSImageCacheTest, LookupFound) {

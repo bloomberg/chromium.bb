@@ -113,8 +113,7 @@ int GetWebKitMinorVersion() {
   return WEBKIT_VERSION_MINOR;
 }
 
-std::string BuildUserAgentHelper(bool mimic_windows,
-                                 const std::string& product) {
+std::string BuildUserAgentFromProduct(const std::string& product) {
   const char kUserAgentPlatform[] =
 #if defined(OS_WIN)
       "";
@@ -128,7 +127,6 @@ std::string BuildUserAgentHelper(bool mimic_windows,
 
   std::string user_agent;
 
-  // Replace Safari's Version/X string with the product name/version passed in.
   // This is done to expose our product name in a manner that is maximally
   // compatible with Safari, we hope!!
 
@@ -137,7 +135,7 @@ std::string BuildUserAgentHelper(bool mimic_windows,
       &user_agent,
       "Mozilla/5.0 (%s%s) AppleWebKit/%d.%d"
       " (KHTML, like Gecko) %s Safari/%d.%d",
-      mimic_windows ? "Windows " : kUserAgentPlatform,
+      kUserAgentPlatform,
       webkit_glue::BuildOSCpuInfo().c_str(),
       WEBKIT_VERSION_MAJOR,
       WEBKIT_VERSION_MINOR,

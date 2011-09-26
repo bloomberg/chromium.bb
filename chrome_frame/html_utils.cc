@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -385,7 +385,7 @@ const char* GetChromeUserAgent() {
       product += version_info.is_valid() ? version_info.Version()
                                          : "0.0.0.0";
 
-      ua = webkit_glue::BuildUserAgentHelper(false, product);
+      ua = webkit_glue::BuildUserAgentFromProduct(product);
 
       DCHECK(ua.length() < arraysize(g_chrome_user_agent));
       lstrcpynA(g_chrome_user_agent, ua.c_str(),

@@ -146,6 +146,7 @@ TestShell::TestShell()
     filter->AddHostnameHandler("test-shell-resource", "inspector",
                                &URLRequestTestShellFileJob::InspectorFactory);
     url_util::AddStandardScheme("test-shell-resource");
+    webkit_glue::SetUserAgent("TestShell", false);
 }
 
 TestShell::~TestShell() {
@@ -633,10 +634,6 @@ bool IsProtocolSupportedForMedia(const GURL& url) {
       url.SchemeIs("data"))
     return true;
   return false;
-}
-
-std::string BuildUserAgent(bool mimic_windows) {
-  return webkit_glue::BuildUserAgentHelper(mimic_windows, "Chrome/0.0.0.0");
 }
 
 #if defined(OS_LINUX)
