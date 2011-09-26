@@ -146,7 +146,8 @@ TestShell::TestShell()
     filter->AddHostnameHandler("test-shell-resource", "inspector",
                                &URLRequestTestShellFileJob::InspectorFactory);
     url_util::AddStandardScheme("test-shell-resource");
-    webkit_glue::SetUserAgent("TestShell", false);
+    webkit_glue::SetUserAgent(webkit_glue::BuildUserAgentFromProduct(
+        "TestShell/0.0.0.0"), false);
 }
 
 TestShell::~TestShell() {

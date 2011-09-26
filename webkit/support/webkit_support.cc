@@ -46,6 +46,7 @@
 #include "webkit/appcache/web_application_cache_host_impl.h"
 #include "webkit/glue/media/video_renderer_impl.h"
 #include "webkit/glue/webkit_constants.h"
+#include "webkit/glue/user_agent.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/webkitplatformsupport_impl.h"
 #include "webkit/glue/webmediaplayer_impl.h"
@@ -264,7 +265,8 @@ static void SetUpTestEnvironmentImpl(bool unit_test_mode) {
     // because on Linux, we need base::AtExitManager.
     icu_util::Initialize();
   }
-  webkit_glue::SetUserAgent("DumpRenderTree", false);
+  webkit_glue::SetUserAgent(webkit_glue::BuildUserAgentFromProduct(
+      "DumpRenderTree/0.0.0.0"), false);
 }
 
 void SetUpTestEnvironment() {
