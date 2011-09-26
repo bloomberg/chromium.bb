@@ -327,6 +327,7 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
   scoped_ptr<webkit::npapi::PluginGroup> group(
       webkit::npapi::PluginList::Singleton()->GetPluginGroup(info));
 
+  ContentSettingsType content_type = CONTENT_SETTINGS_TYPE_PLUGINS;
   ContentSetting plugin_setting = CONTENT_SETTING_DEFAULT;
   std::string resource;
   if (cmd->HasSwitch(switches::kEnableResourceContentSettings))
@@ -391,8 +392,9 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
   bool is_nacl_plugin =
       info.name == ASCIIToUTF16(ChromeContentClient::kNaClPluginName);
   if (is_nacl_plugin) {
+    content_type = CONTENT_SETTINGS_TYPE_JAVASCRIPT;
     plugin_setting =
-        observer->GetContentSetting(CONTENT_SETTINGS_TYPE_JAVASCRIPT);
+        observer->GetContentSetting(content_type);
   }
 
   if (plugin_setting == CONTENT_SETTING_ALLOW ||
@@ -471,7 +473,7 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
         frame, params, info.path, actual_mime_type);
   }
 
-  observer->DidBlockContentType(CONTENT_SETTINGS_TYPE_PLUGINS, resource);
+  observer->DidBlockContentType(content_type, resource);
   if (plugin_setting == CONTENT_SETTING_ASK) {
     RenderThread::RecordUserMetrics("Plugin_ClickToPlay");
     return CreatePluginPlaceholder(
