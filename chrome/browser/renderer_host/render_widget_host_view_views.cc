@@ -398,6 +398,13 @@ void RenderWidgetHostViewViews::Observe(int type,
     gfx::Rect screen_bounds = GetScreenBounds();
     gfx::Rect intersecting_rect = screen_bounds.Intersect(keyboard_rect);
     gfx::Rect available_rect = screen_bounds.Subtract(intersecting_rect);
+
+    // Convert available rect to window (RWHVV) coordinates.
+    gfx::Point origin = available_rect.origin();
+    gfx::Rect r = GetWidget()->GetClientAreaScreenBounds();
+    origin.SetPoint(origin.x() - r.x(), origin.y() - r.y());
+    views::View::ConvertPointFromWidget(this, &origin);
+    available_rect.set_origin(origin);
     host_->ScrollFocusedEditableNodeIntoRect(available_rect);
   }
 #endif
