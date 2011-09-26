@@ -29,7 +29,6 @@ const char kXmlNamespace[] = "http://www.w3.org/XML/1998/namespace";
 const char kSessionInitiateAction[] = "session-initiate";
 const char kSessionAcceptAction[] = "session-accept";
 const char kSessionTerminateAction[] = "session-terminate";
-const char kSessionRejectAction[] = "session-return";
 const char kTransportInfoAction[] = "transport-info";
 
 const int kPortMin = 1000;
@@ -142,8 +141,6 @@ bool JingleMessage::ParseXml(const buzz::XmlElement* stanza,
     action = SESSION_ACCEPT;
   } else if (action_str == kSessionTerminateAction) {
     action = SESSION_TERMINATE;
-  } else if (action_str == kSessionRejectAction) {
-    action = SESSION_REJECT;
   } else if (action_str == kTransportInfoAction) {
     action = TRANSPORT_INFO;
   } else {
@@ -157,7 +154,7 @@ bool JingleMessage::ParseXml(const buzz::XmlElement* stanza,
     return false;
   }
 
-  if (action == SESSION_TERMINATE || action == SESSION_REJECT) {
+  if (action == SESSION_TERMINATE) {
     const XmlElement* reason_tag =
         jingle_tag->FirstNamed(QName(kJingleNamespace, "reason"));
     if (reason_tag && reason_tag->FirstElement())
@@ -241,9 +238,6 @@ buzz::XmlElement* JingleMessage::ToXml() {
     case SESSION_TERMINATE:
       action_attr = kSessionTerminateAction;
       break;
-    case SESSION_REJECT:
-      action_attr = kSessionRejectAction;
-      break;
     case TRANSPORT_INFO:
       action_attr = kTransportInfoAction;
       break;
@@ -256,7 +250,7 @@ buzz::XmlElement* JingleMessage::ToXml() {
   if (action == SESSION_INITIATE)
     jingle_tag->AddAttr(QName(kEmptyNamespace, "initiator"), from);
 
-  if (action == SESSION_TERMINATE || action == SESSION_REJECT) {
+  if (action == SESSION_TERMINATE) {
     XmlElement* reason_tag = new XmlElement(QName(kJingleNamespace, "reason"));
     jingle_tag->AddElement(reason_tag);
 

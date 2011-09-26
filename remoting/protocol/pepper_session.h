@@ -107,7 +107,6 @@ class PepperSession : public Session {
 
   // Message handlers for incoming messages.
   void OnAccept(const JingleMessage& message, JingleMessageReply* reply);
-  void OnReject(const JingleMessage& message, JingleMessageReply* reply);
   void OnTerminate(const JingleMessage& message, JingleMessageReply* reply);
   void ProcessTransportInfo(const JingleMessage& message);
 

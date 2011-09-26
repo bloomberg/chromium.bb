@@ -222,10 +222,6 @@ void PepperSession::OnIncomingMessage(const JingleMessage& message,
       ProcessTransportInfo(message);
       break;
 
-    case JingleMessage::SESSION_REJECT:
-      OnReject(message, reply);
-      break;
-
     case JingleMessage::SESSION_TERMINATE:
       OnTerminate(message, reply);
       break;
@@ -267,23 +263,9 @@ void PepperSession::ProcessTransportInfo(const JingleMessage& message) {
   }
 }
 
-void PepperSession::OnReject(const JingleMessage& message,
-                             JingleMessageReply* reply) {
-  if (state_ != CONNECTING) {
-    *reply = JingleMessageReply(JingleMessageReply::UNEXPECTED_REQUEST);
-    return;
-  }
-
-  // TODO(sergeyu): Parse exact rejection reason from reply and pass it
-  // to OnError().
-  OnError(ERROR_SESSION_REJECTED);
-}
-
 void PepperSession::OnTerminate(const JingleMessage& message,
                                 JingleMessageReply* reply) {
   if (state_ == CONNECTING) {
-    // If we are not connected yet, then interpret terminate message
-    // as rejection.
     OnError(ERROR_SESSION_REJECTED);
     return;
   }
