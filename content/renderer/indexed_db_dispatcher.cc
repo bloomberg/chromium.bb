@@ -20,6 +20,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSerializedScriptValue.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
 
+using WebKit::WebDOMStringList;
 using WebKit::WebExceptionCode;
 using WebKit::WebFrame;
 using WebKit::WebIDBCallbacks;
@@ -47,6 +48,8 @@ bool IndexedDBDispatcher::OnMessageReceived(const IPC::Message& msg) {
                         OnSuccessIndexedDBKey)
     IPC_MESSAGE_HANDLER(IndexedDBMsg_CallbacksSuccessIDBTransaction,
                         OnSuccessIDBTransaction)
+    IPC_MESSAGE_HANDLER(IndexedDBMsg_CallbacksSuccessStringList,
+                        OnSuccessStringList)
     IPC_MESSAGE_HANDLER(IndexedDBMsg_CallbacksSuccessSerializedScriptValue,
                         OnSuccessSerializedScriptValue)
     IPC_MESSAGE_HANDLER(IndexedDBMsg_CallbacksError, OnError)
@@ -120,6 +123,26 @@ void IndexedDBDispatcher::RequestIDBFactoryOpen(
   params.origin = origin;
   params.name = name;
   RenderThread::current()->Send(new IndexedDBHostMsg_FactoryOpen(params));
+}
+
+void IndexedDBDispatcher::RequestIDBFactoryGetDatabaseNames(
+    WebIDBCallbacks* callbacks_ptr,
+    const string16& origin,
+    WebFrame* web_frame) {
+  scoped_ptr<WebIDBCallbacks> callbacks(callbacks_ptr);
+
+  if (!web_frame)
+    return; // We must be shutting down.
+  RenderView* render_view = RenderView::FromWebView(web_frame->view());
+  if (!render_view)
+    return; // We must be shutting down.
+
+  IndexedDBHostMsg_FactoryGetDatabaseNames_Params params;
+  params.routing_id = render_view->routing_id();
+  params.response_id = pending_callbacks_.Add(callbacks.release());
+  params.origin = origin;
+  RenderThread::current()->Send(
+      new IndexedDBHostMsg_FactoryGetDatabaseNames(params));
 }
 
 void IndexedDBDispatcher::RequestIDBFactoryDeleteDatabase(
@@ -381,6 +404,17 @@ void IndexedDBDispatcher::OnSuccessIDBTransaction(int32 response_id,
                                                   int32 object_id) {
   WebIDBCallbacks* callbacks = pending_callbacks_.Lookup(response_id);
   callbacks->onSuccess(new RendererWebIDBTransactionImpl(object_id));
+  pending_callbacks_.Remove(response_id);
+}
+
+void IndexedDBDispatcher::OnSuccessStringList(
+    int32 response_id, const std::vector<string16>& value) {
+  WebIDBCallbacks* callbacks = pending_callbacks_.Lookup(response_id);
+  WebDOMStringList string_list;
+  for (std::vector<string16>::const_iterator it = value.begin();
+       it != value.end(); ++it)
+      string_list.append(*it);
+  callbacks->onSuccess(string_list);
   pending_callbacks_.Remove(response_id);
 }
 

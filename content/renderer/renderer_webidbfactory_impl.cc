@@ -22,6 +22,19 @@ RendererWebIDBFactoryImpl::RendererWebIDBFactoryImpl() {
 RendererWebIDBFactoryImpl::~RendererWebIDBFactoryImpl() {
 }
 
+void RendererWebIDBFactoryImpl::getDatabaseNames(
+    WebIDBCallbacks* callbacks,
+    const WebSecurityOrigin& origin,
+    WebFrame* web_frame,
+    const WebString& data_dir_unused,
+    unsigned long long maximum_size_unused,
+    WebKit::WebIDBFactory::BackingStoreType) {
+  IndexedDBDispatcher* dispatcher =
+      RenderThread::current()->indexed_db_dispatcher();
+  dispatcher->RequestIDBFactoryGetDatabaseNames(
+      callbacks, origin.databaseIdentifier(), web_frame);
+}
+
 void RendererWebIDBFactoryImpl::open(
     const WebString& name,
     WebIDBCallbacks* callbacks,

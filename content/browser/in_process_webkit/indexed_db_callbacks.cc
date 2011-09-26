@@ -46,6 +46,18 @@ void IndexedDBCallbacks<WebKit::WebIDBKey>::onSuccess(
           response_id(), IndexedDBKey(value)));
 }
 
+void IndexedDBCallbacks<WebKit::WebDOMStringList>::onSuccess(
+    const WebKit::WebDOMStringList& value) {
+
+  std::vector<string16> list;
+  for (unsigned i = 0; i < value.length(); ++i)
+      list.push_back(value.item(i));
+
+  dispatcher_host()->Send(
+      new IndexedDBMsg_CallbacksSuccessStringList(
+          response_id(), list));
+}
+
 void IndexedDBCallbacks<WebKit::WebSerializedScriptValue>::onSuccess(
     const WebKit::WebSerializedScriptValue& value) {
   dispatcher_host()->Send(

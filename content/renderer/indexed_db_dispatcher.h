@@ -19,6 +19,7 @@ class IndexedDBKey;
 class SerializedScriptValue;
 
 namespace WebKit {
+class WebDOMStringList;
 class WebFrame;
 class WebIDBKeyRange;
 class WebIDBTransaction;
@@ -32,6 +33,11 @@ class IndexedDBDispatcher : public IPC::Channel::Listener {
 
   // IPC::Channel::Listener implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg);
+
+  void RequestIDBFactoryGetDatabaseNames(
+      WebKit::WebIDBCallbacks* callbacks,
+      const string16& origin,
+      WebKit::WebFrame* web_frame);
 
   void RequestIDBFactoryOpen(
       const string16& name,
@@ -151,6 +157,8 @@ class IndexedDBDispatcher : public IPC::Channel::Listener {
   void OnSuccessIndexedDBKey(int32 response_id, const IndexedDBKey& key);
   void OnSuccessIDBTransaction(int32 response_id, int32 object_id);
   void OnSuccessOpenCursor(int32 response_id, int32 object_id);
+  void OnSuccessStringList(int32 response_id,
+                           const std::vector<string16>& value);
   void OnSuccessSerializedScriptValue(int32 response_id,
                                       const SerializedScriptValue& value);
   void OnError(int32 response_id, int code, const string16& message);

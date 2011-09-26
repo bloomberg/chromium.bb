@@ -20,6 +20,16 @@
 
 IPC_ENUM_TRAITS(WebKit::WebIDBObjectStore::PutMode)
 
+// Used to enumerate indexed databases.
+IPC_STRUCT_BEGIN(IndexedDBHostMsg_FactoryGetDatabaseNames_Params)
+  // The routing ID of the view initiating the open.
+  IPC_STRUCT_MEMBER(int32, routing_id)
+  // The response should have this id.
+  IPC_STRUCT_MEMBER(int32, response_id)
+  // The origin doing the initiating.
+  IPC_STRUCT_MEMBER(string16, origin)
+IPC_STRUCT_END()
+
 // Used to open an indexed database.
 IPC_STRUCT_BEGIN(IndexedDBHostMsg_FactoryOpen_Params)
   // The routing ID of the view initiating the open.
@@ -146,6 +156,9 @@ IPC_MESSAGE_CONTROL2(IndexedDBMsg_CallbacksSuccessIDBTransaction,
 IPC_MESSAGE_CONTROL2(IndexedDBMsg_CallbacksSuccessSerializedScriptValue,
                      int32 /* response_id */,
                      SerializedScriptValue /* serialized_script_value */)
+IPC_MESSAGE_CONTROL2(IndexedDBMsg_CallbacksSuccessStringList,
+                     int32 /* response_id */,
+                     std::vector<string16> /* dom_string_list */)
 IPC_MESSAGE_CONTROL3(IndexedDBMsg_CallbacksError,
                      int32 /* response_id */,
                      int /* code */,
@@ -204,6 +217,10 @@ IPC_SYNC_MESSAGE_CONTROL2_1(IndexedDBHostMsg_CursorDelete,
                      int32, /* idb_cursor_id */
                      int32, /* response_id */
                      WebKit::WebExceptionCode /* ec */)
+
+// WebIDBFactory::getDatabaseNames() message.
+IPC_MESSAGE_CONTROL1(IndexedDBHostMsg_FactoryGetDatabaseNames,
+                     IndexedDBHostMsg_FactoryGetDatabaseNames_Params)
 
 // WebIDBFactory::open() message.
 IPC_MESSAGE_CONTROL1(IndexedDBHostMsg_FactoryOpen,

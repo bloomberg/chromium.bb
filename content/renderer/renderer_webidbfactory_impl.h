@@ -24,6 +24,15 @@ class RendererWebIDBFactoryImpl : public WebKit::WebIDBFactory {
   virtual ~RendererWebIDBFactoryImpl();
 
   // See WebIDBFactory.h for documentation on these functions.
+  virtual void getDatabaseNames(
+      WebKit::WebIDBCallbacks* callbacks,
+      const WebKit::WebSecurityOrigin& origin,
+      WebKit::WebFrame* web_frame,
+      const WebKit::WebString& data_dir,
+      // TODO(dgrogan): Remove maximum_size after it's out of the webkit api.
+      unsigned long long maximum_size,
+      WebKit::WebIDBFactory::BackingStoreType);
+
   virtual void open(
       const WebKit::WebString& name,
       WebKit::WebIDBCallbacks* callbacks,

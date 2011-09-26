@@ -111,6 +111,23 @@ class IndexedDBCallbacks<WebKit::WebIDBKey>
   DISALLOW_IMPLICIT_CONSTRUCTORS(IndexedDBCallbacks);
 };
 
+// WebDOMStringList is implemented in WebKit as opposed to being an
+// interface Chromium implements.  Thus we pass a const ___& version and thus
+// we need this specialization.
+template <>
+class IndexedDBCallbacks<WebKit::WebDOMStringList>
+    : public IndexedDBCallbacksBase {
+ public:
+  IndexedDBCallbacks(
+      IndexedDBDispatcherHost* dispatcher_host, int32 response_id)
+      : IndexedDBCallbacksBase(dispatcher_host, response_id) { }
+
+  virtual void onSuccess(const WebKit::WebDOMStringList& value);
+
+ private:
+  DISALLOW_IMPLICIT_CONSTRUCTORS(IndexedDBCallbacks);
+};
+
 // WebSerializedScriptValue is implemented in WebKit as opposed to being an
 // interface Chromium implements.  Thus we pass a const ___& version and thus
 // we need this specialization.

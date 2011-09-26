@@ -16,6 +16,7 @@ class IndexedDBKey;
 class NullableString16;
 class SerializedScriptValue;
 struct IndexedDBHostMsg_DatabaseCreateObjectStore_Params;
+struct IndexedDBHostMsg_FactoryGetDatabaseNames_Params;
 struct IndexedDBHostMsg_FactoryDeleteDatabase_Params;
 struct IndexedDBHostMsg_FactoryOpen_Params;
 struct IndexedDBHostMsg_IndexOpenCursor_Params;
@@ -24,6 +25,7 @@ struct IndexedDBHostMsg_ObjectStoreOpenCursor_Params;
 struct IndexedDBHostMsg_ObjectStorePut_Params;
 
 namespace WebKit {
+class WebDOMStringList;
 class WebIDBCursor;
 class WebIDBDatabase;
 class WebIDBIndex;
@@ -58,12 +60,15 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
   int32 Add(WebKit::WebIDBIndex* idb_index);
   int32 Add(WebKit::WebIDBObjectStore* idb_object_store);
   int32 Add(WebKit::WebIDBTransaction* idb_transaction, const GURL& origin_url);
+  int32 Add(WebKit::WebDOMStringList* domStringList);
 
  private:
   virtual ~IndexedDBDispatcherHost();
 
   // Message processing. Most of the work is delegated to the dispatcher hosts
   // below.
+  void OnIDBFactoryGetDatabaseNames(
+      const IndexedDBHostMsg_FactoryGetDatabaseNames_Params& p);
   void OnIDBFactoryOpen(const IndexedDBHostMsg_FactoryOpen_Params& p);
 
   void OnIDBFactoryDeleteDatabase(
