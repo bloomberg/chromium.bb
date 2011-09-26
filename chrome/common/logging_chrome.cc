@@ -16,10 +16,7 @@
 // IPC_MESSAGE_MACROS_LOG_ENABLED doesn't get undefined.
 #if defined(OS_POSIX) && defined(IPC_MESSAGE_LOG_ENABLED)
 #define IPC_MESSAGE_MACROS_LOG_ENABLED
-#include "chrome/common/render_messages.h"
-#include "content/common/devtools_messages.h"
-#include "content/common/plugin_messages.h"
-#include "content/common/worker_messages.h"
+#include "chrome/common/all_messages.h"
 #endif
 
 #if defined(OS_WIN)
@@ -64,7 +61,7 @@ bool dialogs_are_suppressed_ = false;
 // InitChromeLogging() and the beginning of CleanupChromeLogging().
 bool chrome_logging_initialized_ = false;
 
-// Set if we caled InitChromeLogging() but failed to initialize.
+// Set if we called InitChromeLogging() but failed to initialize.
 bool chrome_logging_failed_ = false;
 
 // This should be true for exactly the period between the end of

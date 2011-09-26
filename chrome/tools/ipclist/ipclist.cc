@@ -8,7 +8,7 @@
 #include <vector>
 
 // Include once to get the type definitions
-#include "chrome/tools/ipclist/all_messages.h"
+#include "chrome/common/all_messages.h"
 
 struct msginfo {
   const char* name;
@@ -28,7 +28,7 @@ struct msginfo {
   { #name, IPC_MESSAGE_ID(), in, out },
 
 static msginfo msgtable[] = {
-#include "chrome/tools/ipclist/all_messages.h"
+#include "chrome/common/all_messages.h"
 };
 #define MSGTABLE_SIZE (sizeof(msgtable)/sizeof(msgtable[0]))
 
@@ -70,7 +70,7 @@ static bool check_msgtable() {
   }
 
   if (!result)
-    std::cout << "Please check chrome/tools/ipclist/all_messages.h.\n";
+    std::cout << "Please check chrome/common/all_messages.h.\n";
 
   return result;
 }
@@ -117,7 +117,8 @@ int main(int argc, char **argv) {
     } else if (std::string("--comma") == *argv) {
       show_comma = true;
     } else if (std::string("--filter") == *argv) {
-      filter = *(++argv); --argc;
+      filter = *(++argv);
+      --argc;
     } else if (std::string("--ids") == *argv) {
       show_ids = true;
     } else if (std::string("--no-check") == *argv) {

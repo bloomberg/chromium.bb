@@ -18,6 +18,11 @@ include_rules = [
   "+third_party/sqlite",
   "+third_party/zlib",
 
+  # This is required by all_messages.h to allow logging of all messages. It
+  # can't be moved to chrome/common/ because it has so many dependencies in
+  # chrome/browser/.
+  "+chrome/browser/importer/profile_import_process_messages.h",
+
   # FIXME - refactor code and remove these dependencies
   "+chrome/installer",
 ]

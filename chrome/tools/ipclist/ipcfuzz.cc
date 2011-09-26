@@ -19,7 +19,7 @@
 #include "base/threading/thread.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/tools/ipclist/all_messages.h"
+#include "chrome/common/all_messages.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_utils.h"
 #include "ipc/ipc_switches.h"
@@ -546,7 +546,7 @@ class PickleCracker : public Pickle {
   };
 
 // Bring them into existence.
-#include "chrome/tools/ipclist/all_messages.h"
+#include "chrome/common/all_messages.h"
 
 // Redefine macros to generate fuzzing funtions
 #include "ipc/ipc_message_null_macros.h"
@@ -631,7 +631,7 @@ class PickleCracker : public Pickle {
 #define IPC_MEMBERS_OUT_4()                NULL, NULL, NULL, NULL
 #define IPC_MEMBERS_OUT_5()                NULL, NULL, NULL, NULL, NULL
 
-#include "chrome/tools/ipclist/all_messages.h"
+#include "chrome/common/all_messages.h"
 
 typedef IPC::Message* (*FuzzFunction)(IPC::Message*, IPC::Fuzzer*);
 typedef base::hash_map<uint32, FuzzFunction> FuzzFunctionMap;
@@ -643,7 +643,7 @@ typedef base::hash_map<uint32, FuzzFunction> FuzzFunctionMap;
   (*map)[static_cast<uint32>(name::ID)] = fuzzer_for_##name;
 
 void PopulateFuzzFunctionMap(FuzzFunctionMap *map) {
-#include "chrome/tools/ipclist/all_messages.h"
+#include "chrome/common/all_messages.h"
 }
 
 class ipcfuzz : public IPC::ChannelProxy::OutgoingMessageFilter {

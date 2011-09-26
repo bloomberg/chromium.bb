@@ -51,6 +51,7 @@
       'sources': [
         'common/about_handler.cc',
         'common/about_handler.h',
+        'common/all_messages.h',
         'common/attrition_experiments.h',
         'common/auto_start_linux.cc',
         'common/auto_start_linux.h',

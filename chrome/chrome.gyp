@@ -904,7 +904,6 @@
          '..',
       ],
       'sources': [
-        'tools/ipclist/all_messages.h',
         'tools/ipclist/ipclist.cc',
       ],
     },
@@ -1309,7 +1308,6 @@
             '../skia/skia.gyp:skia',
           ],
           'sources': [
-            'tools/ipclist/all_messages.h',
             'tools/ipclist/ipcfuzz.cc',
           ],
         },
