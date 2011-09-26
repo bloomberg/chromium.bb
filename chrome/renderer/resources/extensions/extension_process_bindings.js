@@ -22,7 +22,8 @@ var chrome = chrome || {};
   native function SetIconCommon();
   native function GetUniqueSubEventName(eventName);
   native function GetLocalFileSystem(name, path);
-  native function DecodeJPEG(jpeg_image);
+  native function DecodeJPEG(jpegImage);
+  native function CreateBlob(filePath);
 
   var chromeHidden = GetChromeHidden();
 
@@ -739,6 +740,18 @@ var chrome = chrome || {};
         }
       });
     };
+
+    apiFunctions["experimental.savePage.saveAsMHTML"].customCallback =
+      function(name, request, response) {
+        var params = chromeHidden.JSON.parse(response);
+        var path = params.mhtmlFilePath;
+        var size = params.mhtmlFileLength;
+
+        if (request.callback)
+          request.callback(CreateBlob(path, size));
+
+        request.callback = null;
+      };
 
     apiFunctions["fileBrowserPrivate.requestLocalFileSystem"].customCallback =
       function(name, request, response) {

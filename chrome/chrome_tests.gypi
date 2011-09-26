@@ -2326,6 +2326,7 @@
         'browser/extensions/extension_proxy_apitest.cc',
         'browser/extensions/extension_resource_request_policy_apitest.cc',
         'browser/extensions/extension_rlz_apitest.cc',
+        'browser/extensions/extension_save_page_apitest.cc',
         'browser/extensions/extension_settings_apitest.cc',
         'browser/extensions/extension_sidebar_apitest.cc',
         'browser/extensions/extension_startup_browsertest.cc',

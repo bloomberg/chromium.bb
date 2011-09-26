@@ -28,13 +28,15 @@ class CONTENT_EXPORT MHTMLGenerationManager
   // page for |tab_contents|.
   void GenerateMHTML(TabContents* tab_contents, const FilePath& file);
 
-  // Notification from the renderer that the MHTML generation succeeded/failed.
-  void MHTMLGenerated(int job_id, bool success);
+  // Notification from the renderer that the MHTML generation finished.
+  // |mhtml_data_size| contains the size in bytes of the generated MHTML data,
+  // or -1 in case of failure.
+  void MHTMLGenerated(int job_id, int64 mhtml_data_size);
 
   // The details sent along with the MHTML_GENERATED notification.
   struct NotificationDetails {
     FilePath file_path;
-    bool success;
+    int64 file_size;
   };
 
  private:
@@ -71,7 +73,8 @@ class CONTENT_EXPORT MHTMLGenerationManager
 
   // Called on the UI thread when a job has been processed (successfully or
   // not).  Closes the file and removes the job from the job map.
-  void JobFinished(int job_id, bool success);
+  // |mhtml_data_size| is -1 if the MHTML generation failed.
+  void JobFinished(int job_id, int64 mhtml_data_size);
 
   typedef std::map<int, Job> IDToJobMap;
   IDToJobMap id_to_job_;

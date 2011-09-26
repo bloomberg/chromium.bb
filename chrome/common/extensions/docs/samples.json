@@ -72,6 +72,7 @@
     "chrome.experimental.permissions.onRemoved": "experimental.permissions.html#event-onRemoved",
     "chrome.experimental.permissions.remove": "experimental.permissions.html#method-remove",
     "chrome.experimental.permissions.request": "experimental.permissions.html#method-request",
+    "chrome.experimental.savePage.saveAsMHTML": "experimental.savePage.html#method-saveAsMHTML",
     "chrome.experimental.settings.clear": "experimental.settings.html#method-clear",
     "chrome.experimental.settings.get": "experimental.settings.html#method-get",
     "chrome.experimental.settings.remove": "experimental.settings.html#method-remove",
