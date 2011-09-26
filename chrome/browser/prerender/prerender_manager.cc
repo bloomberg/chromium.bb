@@ -158,17 +158,6 @@ struct PrerenderManager::NavigationRecord {
   }
 };
 
-struct PrerenderManager::PendingContentsData {
-  PendingContentsData(const GURL& url,
-                      const GURL& referrer,
-                      Origin origin)
-      : url_(url), referrer_(referrer), origin_(origin) { }
-  ~PendingContentsData() {}
-  GURL url_;
-  GURL referrer_;
-  Origin origin_;
-};
-
 class PrerenderManager::MostVisitedSites : public NotificationObserver {
  public:
   explicit MostVisitedSites(Profile* profile) :
@@ -227,6 +216,18 @@ bool PrerenderManager::IsTopSite(const GURL& url) {
   if (!most_visited_.get())
     most_visited_.reset(new MostVisitedSites(profile_));
   return most_visited_->IsTopSite(url);
+}
+
+bool PrerenderManager::IsPendingEntry(const GURL& url) const {
+  DCHECK(CalledOnValidThread());
+  for (std::list<PrerenderContentsData>::const_iterator it =
+           prerender_list_.begin();
+       it != prerender_list_.end();
+       ++it) {
+    if (it->contents_->IsPendingEntry(url))
+      return true;
+  }
+  return false;
 }
 
 PrerenderManager::PrerenderManager(Profile* profile,
@@ -288,9 +289,11 @@ bool PrerenderManager::AddPrerender(
   histograms_->RecordPrerender(origin, url_arg);
 
   // If the referring page is prerendering, defer the prerender.
-  if (FindPrerenderContentsForChildRouteIdPair(child_route_id_pair) !=
-          prerender_list_.end()) {
-    AddPendingPrerender(origin, child_route_id_pair, url_arg, referrer);
+  std::list<PrerenderContentsData>::iterator source_prerender =
+      FindPrerenderContentsForChildRouteIdPair(child_route_id_pair);
+  if (source_prerender != prerender_list_.end()) {
+    source_prerender->contents_->AddPendingPrerender(
+        origin, url_arg, referrer);
     return true;
   }
 
@@ -369,24 +372,6 @@ bool PrerenderManager::AddPrerender(
   }
   StartSchedulingPeriodicCleanups();
   return true;
-}
-
-void PrerenderManager::AddPendingPrerender(
-    Origin origin,
-    const std::pair<int, int>& child_route_id_pair,
-    const GURL& url,
-    const GURL& referrer) {
-  DCHECK(FindPrerenderContentsForChildRouteIdPair(child_route_id_pair) !=
-             prerender_list_.end());
-  PendingPrerenderList::iterator it =
-      pending_prerender_list_.find(child_route_id_pair);
-  if (it == pending_prerender_list_.end()) {
-    PendingPrerenderList::value_type el = std::make_pair(child_route_id_pair,
-                                            std::vector<PendingContentsData>());
-    it = pending_prerender_list_.insert(el).first;
-  }
-
-  it->second.push_back(PendingContentsData(url, referrer, origin));
 }
 
 std::list<PrerenderManager::PrerenderContentsData>::iterator
@@ -579,20 +564,9 @@ bool PrerenderManager::MaybeUsePrerenderedPage(TabContents* tab_contents,
   DCHECK(prerender_tab_helper != NULL);
   prerender_tab_helper->PrerenderSwappedIn();
 
-  // See if we have any pending prerender requests for this routing id and start
-  // the preload if we do.
-  std::pair<int, int> child_route_pair = std::make_pair(child_id, route_id);
-  PendingPrerenderList::iterator pending_it =
-      pending_prerender_list_.find(child_route_pair);
-  if (pending_it != pending_prerender_list_.end()) {
-    for (std::vector<PendingContentsData>::iterator content_it =
-            pending_it->second.begin();
-         content_it != pending_it->second.end(); ++content_it) {
-      AddPrerender(content_it->origin_, child_route_pair,
-                   content_it->url_, content_it->referrer_);
-    }
-    pending_prerender_list_.erase(pending_it);
-  }
+  // Start pending prerender requests from the PrerenderContents, if there are
+  // any.
+  prerender_contents->StartPendingPrerenders();
 
   if (old_tab_contents->tab_contents()->NeedToFireBeforeUnload()) {
     // Schedule the delete to occur after the tab has run its unload handlers.
@@ -617,7 +591,6 @@ void PrerenderManager::MoveEntryToPendingDelete(PrerenderContents* entry) {
        it != prerender_list_.end();
        ++it) {
     if (it->contents_ == entry) {
-      RemovePendingPrerender(entry);
       prerender_list_.erase(it);
       break;
     }
@@ -730,40 +703,6 @@ PrerenderContents* PrerenderManager::FindEntry(const GURL& url) {
   }
   // Entry not found.
   return NULL;
-}
-
-PrerenderManager::PendingContentsData*
-    PrerenderManager::FindPendingEntry(const GURL& url) {
-  DCHECK(CalledOnValidThread());
-  for (PendingPrerenderList::iterator map_it = pending_prerender_list_.begin();
-       map_it != pending_prerender_list_.end();
-       ++map_it) {
-    for (std::vector<PendingContentsData>::iterator content_it =
-            map_it->second.begin();
-         content_it != map_it->second.end();
-         ++content_it) {
-      if (content_it->url_ == url) {
-        return &(*content_it);
-      }
-    }
-  }
-
-  return NULL;
-}
-
-void PrerenderManager::RemovePendingPrerender(PrerenderContents* entry) {
-  DCHECK(CalledOnValidThread());
-  int child_id;
-  int route_id;
-  bool has_child_id = entry->GetChildId(&child_id);
-  bool has_route_id = has_child_id && entry->GetRouteId(&route_id);
-
-  // If the entry doesn't have a RenderViewHost then it didn't start
-  // prerendering and there shouldn't be any pending preloads to remove.
-  if (has_child_id && has_route_id) {
-    std::pair<int, int> child_route_pair = std::make_pair(child_id, route_id);
-    pending_prerender_list_.erase(child_route_pair);
-  }
 }
 
 bool PrerenderManager::DoesRateLimitAllowPrerender() const {

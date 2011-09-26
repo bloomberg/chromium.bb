@@ -70,6 +70,15 @@ class PrerenderContentsFactoryImpl : public PrerenderContents::Factory {
   }
 };
 
+PrerenderContents::PendingPrerenderData::PendingPrerenderData(
+    Origin origin,
+    const GURL& url,
+    const GURL& referrer)
+    : origin(origin),
+      url(url),
+      referrer(referrer) {
+}
+
 // TabContentsDelegateImpl -----------------------------------------------------
 
 class PrerenderContents::TabContentsDelegateImpl
@@ -133,6 +142,37 @@ class PrerenderContents::TabContentsDelegateImpl
 
   PrerenderContents* prerender_contents_;
 };
+
+void PrerenderContents::AddPendingPrerender(Origin origin,
+                                            const GURL& url,
+                                            const GURL& referrer) {
+  pending_prerender_list_.push_back(
+      PendingPrerenderData(origin, url, referrer));
+}
+
+bool PrerenderContents::IsPendingEntry(const GURL& url) const {
+  for (PendingPrerenderList::const_iterator it =
+           pending_prerender_list_.begin();
+       it != pending_prerender_list_.end();
+       ++it) {
+    if (it->url == url)
+      return true;
+  }
+  return false;
+}
+
+void PrerenderContents::StartPendingPrerenders() {
+  PendingPrerenderList pending_prerender_list;
+  pending_prerender_list.swap(pending_prerender_list_);
+  for (PendingPrerenderList::iterator it = pending_prerender_list.begin();
+       it != pending_prerender_list.end();
+       ++it) {
+    prerender_manager_->AddPrerender(it->origin,
+                                     std::make_pair(child_id_, route_id_),
+                                     it->url,
+                                     it->referrer);
+  }
+}
 
 PrerenderContents::PrerenderContents(PrerenderManager* prerender_manager,
                                      PrerenderTracker* prerender_tracker,

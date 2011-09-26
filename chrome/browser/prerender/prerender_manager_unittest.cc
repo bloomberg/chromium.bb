@@ -127,10 +127,6 @@ class TestPrerenderManager : public PrerenderManager {
                                             GURL());
   }
 
-  bool IsPendingEntry(const GURL& url) {
-    return (PrerenderManager::FindPendingEntry(url) != NULL);
-  }
-
   void set_rate_limit_enabled(bool enabled) {
     mutable_config().rate_limit_enabled = enabled;
   }

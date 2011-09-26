@@ -7,9 +7,7 @@
 #pragma once
 
 #include <list>
-#include <map>
 #include <string>
-#include <vector>
 
 #include "base/hash_tables.h"
 #include "base/memory/scoped_ptr.h"
@@ -210,19 +208,20 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
 
   bool IsTopSite(const GURL& url);
 
+  bool IsPendingEntry(const GURL& url) const;
+
  protected:
   // Test that needs needs access to internal functions.
   FRIEND_TEST_ALL_PREFIXES(PrerenderManagerTest, ExpireTest);
   FRIEND_TEST_ALL_PREFIXES(PrerenderManagerTest, ExtractURLInQueryStringTest);
 
-  struct PendingContentsData;
-
   void SetPrerenderContentsFactory(
       PrerenderContents::Factory* prerender_contents_factory);
 
-  PendingContentsData* FindPendingEntry(const GURL& url);
-
  private:
+  // Needs access to AddPrerender.
+  friend class PrerenderContents;
+
   // Test that needs needs access to internal functions.
   friend class PrerenderBrowserTest;
 
@@ -298,10 +297,6 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   // observed.
   bool WithinWindow() const;
 
-  // Called when removing a preload to ensure we clean up any pending preloads
-  // that might remain in the map.
-  void RemovePendingPrerender(PrerenderContents* entry);
-
   bool DoesRateLimitAllowPrerender() const;
 
   // Deletes old TabContents that have been replaced by prerendered ones.  This
@@ -362,11 +357,6 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   // Set of TabContents which would be displaying a prerendered page
   // (for the control group).
   base::hash_set<TabContents*> would_be_prerendered_tab_contents_set_;
-
-  // Map of child/route id pairs to pending prerender data.
-  typedef std::map<std::pair<int, int>, std::vector<PendingContentsData> >
-      PendingPrerenderList;
-  PendingPrerenderList pending_prerender_list_;
 
   scoped_ptr<PrerenderContents::Factory> prerender_contents_factory_;
 
