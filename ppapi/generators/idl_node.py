@@ -23,7 +23,7 @@ import sys
 from idl_log import ErrOut, InfoOut, WarnOut
 from idl_propertynode import IDLPropertyNode
 from idl_namespace import IDLNamespace
-from idl_version import IDLVersion
+from idl_release import IDLRelease, IDLReleaseMap
 
 
 # IDLAttribute
@@ -46,10 +46,10 @@ class IDLAttribute(object):
 #
 # This class implements the AST tree, providing the associations between
 # parents and children.  It also contains a namepsace and propertynode to
-# allow for look-ups.  IDLNode is derived from IDLVersion, so it is
+# allow for look-ups.  IDLNode is derived from IDLRelease, so it is
 # version aware.
 #
-class IDLNode(IDLVersion):
+class IDLNode(IDLRelease):
 
   # Set of object IDLNode types which have a name and belong in the namespace.
   NamedSet = set(['Enum', 'EnumItem', 'File', 'Function', 'Interface',
@@ -58,7 +58,7 @@ class IDLNode(IDLVersion):
   show_versions = False
   def __init__(self, cls, filename, lineno, pos, children=None):
     # Initialize with no starting or ending Version
-    IDLVersion.__init__(self, None, None)
+    IDLRelease.__init__(self, None, None)
 
     self.cls = cls
     self.lineno = lineno
@@ -91,7 +91,7 @@ class IDLNode(IDLVersion):
   # Return a string representation of this node
   def __str__(self):
     name = self.GetName()
-    ver = IDLVersion.__str__(self)
+    ver = IDLRelease.__str__(self)
     if name is None: name = ''
     if not IDLNode.show_versions: ver = ''
     return '%s(%s%s)' % (self.cls, name, ver)
@@ -117,7 +117,7 @@ class IDLNode(IDLVersion):
 
   def GetNameVersion(self):
     name = self.GetProperty('NAME', default='')
-    ver = IDLVersion.__str__(self)
+    ver = IDLRelease.__str__(self)
     return '%s%s' % (name, ver)
 
   # Dump this object and its children
@@ -204,34 +204,9 @@ class IDLNode(IDLVersion):
       nodes = self.parent.FindVersion(name, vmin, vmax)
     return nodes
 
-  def IsRelease(self, release):
-    label = self.GetLabel()
-    # Assume object is always available if there is no Label
-    if not label:
-      return True
-
-    version = label.GetVersion(release)
-    out =  self.IsVersion(version)
-    return out
-
-  def InReleases(self, releases):
-    for rel in releases:
-      if self.IsRelease(rel): return True
-    return False
-
-  def GetLabel(self):
-    label = self.GetProperty('LABEL')
-    if not label:
-      self.Error('No label availible.')
-      return None
-    return label
-
   def GetType(self, release):
-    label = self.GetLabel()
-    if not label: return None
     if not self.typelist: return None
-    version = label.GetVersion(release)
-    return self.typelist.FindVersion(version)
+    return self.typelist.FindRelease(release)
 
   def GetHash(self, release):
     hashval = self.hashes.get(release, None)
@@ -263,21 +238,23 @@ class IDLNode(IDLVersion):
       self.deps[release] = deps
     return deps
 
-  def GetRelease(self, version):
-    label = self.GetLabel()
-    if not label: return None
-    return label.GetRelease(version)
-
   def GetVersion(self, release):
-    label = self.GetLabel()
-    if not label: return None
-    return label.GetVersion(release)
+    filenode = self.GetProperty('FILE')
+    if not filenode:
+      return None
+    return filenode.release_map.GetVersion(release)
 
   def GetUniqueReleases(self, releases):
-    # Given a list of release, return a subset of releases that change.
+    # Given a list of global release, return a subset of releases
+    # for this object that change.
     last_hash = None
     build_list = []
+    filenode = self.GetProperty('FILE')
+    my_releases = filenode.release_map.GetReleases()
     for rel in releases:
+      if not self.IsRelease(rel): continue
+      # Only check releases used by this source file
+      if rel not in my_releases: continue
       cur_hash = self.GetHash(rel)
       if last_hash != cur_hash:
         build_list.append(rel)
@@ -307,6 +284,7 @@ class IDLFile(IDLNode):
              IDLAttribute('ERRORS', errors)]
     if not children: children = []
     IDLNode.__init__(self, 'File', name, 1, 0, attrs + children)
+    self.release_map = IDLReleaseMap([('M13', 1.0)])
 
 
 #

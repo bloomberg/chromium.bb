@@ -103,6 +103,13 @@ class CGen(object):
       'return': ' %s*',
       'store': '%s'
     },
+    'blob_t': {
+      'in': 'const %s',
+      'inout': '%s',
+      'out': '%s',
+      'return': '%s',
+      'store': '%s'
+    },
     'mem_t': {
       'in': 'const %s',
       'inout': '%s',
@@ -134,6 +141,7 @@ class CGen(object):
   # types before being returned by by the C generator
   #
   RemapName = {
+  'blob_t': 'void**',
   'float_t': 'float',
   'double_t': 'double',
   'handle_t': 'int',
@@ -567,4 +575,3 @@ def Main(args):
 
 if __name__ == '__main__':
   sys.exit(Main(sys.argv[1:]))
-

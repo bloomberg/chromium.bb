@@ -41,11 +41,14 @@ describe {
 
   /** Pointer to memory (void *). */
   mem_t;
-  
+
   /** Pointer to null terminated string (char *). */
   str_t;
 
   /** No return value. */
   void;
+
+  /** Pointer to pointer to memory (void **). */
+  blob_t;
 };
 

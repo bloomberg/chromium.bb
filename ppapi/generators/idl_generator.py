@@ -12,7 +12,7 @@ from idl_option import GetOption, Option, ParseOptions
 GeneratorList = []
 
 Option('release', 'Which release to generate.', default='')
-Option('range', 'Which ranges in the form of MIN,MAX.', default='M13,M14')
+Option('range', 'Which ranges in the form of MIN,MAX.', default='M13,M16')
 
 
 #

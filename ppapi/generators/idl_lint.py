@@ -64,9 +64,6 @@ class IDLLinter(IDLVisitor):
         warnings += 1
 
     if node.IsA('Interface'):
-      if not node.GetLabel():
-        node.Warning('Expecting label.')
-        warnings += 1
       macro = node.GetProperty('macro')
       if macro and not node.GetProperty('wname'):
         node.Warning('Interface name inconsistent: %s' % macro)

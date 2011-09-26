@@ -26,7 +26,7 @@ if __name__ == '__main__':
 
   # If no arguments are provided, assume we are tring to rebuild the
   # C headers with warnings off.
-  if not args: args = ['--wnone', '--cgen', '--range=M13,M14']
+  if not args: args = ['--wnone', '--cgen', '--range=M13,M16']
 
   sys.exit(Main(args))
 

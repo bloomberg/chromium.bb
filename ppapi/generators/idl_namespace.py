@@ -8,131 +8,25 @@
 IDLNamespace for PPAPI
 
 This file defines the behavior of the AST namespace which allows for resolving
-a symbol as one or more AST nodes given a version or range of versions.
+a symbol as one or more AST nodes given a release or range of releases.
 """
 
 import sys
 
 from idl_option import GetOption, Option, ParseOptions
 from idl_log import ErrOut, InfoOut, WarnOut
-from idl_version import IDLVersion
+from idl_release import IDLRelease, IDLReleaseList
 
 Option('label', 'Use the specifed label blocks.', default='Chrome')
-Option('namespace_debug', 'Use the specified version')
-
-
-#
-# IDLVersionList
-#
-# IDLVersionList is a list based container for holding IDLVersion
-# objects in order.  The IDLVersionList can be added to, and searched by
-# range.  Objects are stored in order, and must be added in order.
-#
-class IDLVersionList(object):
-  def __init__(self):
-    self.nodes = []
-
-  def FindVersion(self, version):
-    assert type(version) == float
-
-    for node in self.nodes:
-      if node.IsVersion(version):
-        return node
-    return None
-
-  def FindRange(self, vmin, vmax):
-    assert type(vmin) == float
-    assert type(vmax) == float
-    assert vmin != vmax
-
-    out = []
-    for node in self.nodes:
-      if node.InRange(vmin, vmax):
-        out.append(node)
-    return out
-
-  def AddNode(self, node):
-    if GetOption('version_debug'):
-      InfoOut.Log('\nAdding %s %s' % (node.Location(), node))
-    last = None
-
-    # Check current versions in that namespace
-    for cver in self.nodes:
-      if GetOption('version_debug'): InfoOut.Log('  Checking %s' % cver)
-
-      # We should only be missing a 'version' tag for the first item.
-      if not node.vmin:
-        raise RuntimeError('Missing version')
-        node.Error('Missing version on overload of previous %s.' %
-                   cver.Location())
-        return False
-
-      # If the node has no max, then set it to this one
-      if not cver.vmax:
-        cver.vmax = node.vmin
-        if GetOption('version_debug'): InfoOut.Log('  Update %s' % cver)
-
-      # if the max and min overlap, than's an error
-      if cver.vmax > node.vmin:
-        if node.vmax and cver.vmin >= node.vmax:
-          node.Error('Declarations out of order.')
-        else:
-          node.Error('Overlap in versions.')
-        return False
-      last = cver
-
-    # Otherwise, the previous max and current min should match
-    # unless this is the unlikely case of something being only
-    # temporarily deprecated.
-    if last and last.vmax != node.vmin:
-      node.Warn('Gap in version numbers.')
-
-    # If we made it here, this new node must be the 'newest'
-    # and does not overlap with anything previously added, so
-    # we can add it to the end of the list.
-    if GetOption('version_debug'): InfoOut.Log('Done %s' % node)
-    self.nodes.append(node)
-    return True
-
-#
-# IDLVersionMap
-#
-# A version map, can map from an float interface version, to a global
-# release string.
-#
-class IDLVersionMap(object):
-  def __init__(self):
-    self.version_to_release = {}
-    self.release_to_version = {}
-    self.versions = []
-    self.releases = []
-
-  def AddReleaseVersionMapping(self, release, version):
-    self.version_to_release[version] = release
-    self.release_to_version[release] = version
-    self.versions = sorted(self.version_to_release.keys())
-    self.releases = sorted(self.release_to_version.keys())
-
-  def GetRelease(self, version):
-    # Check for exact match
-    if version in self.versions:
-      return self.version_to_release[version]
-
-  def GetVersion(self, release):
-    if release > self.releases[-1]:
-      release = self.releases[-1]
-    elif release < self.releases[0]:
-      release = self.releases[0]
-    return self.release_to_version[release]
-
+Option('namespace_debug', 'Use the specified release')
 
 
 #
 # IDLNamespace
 #
-# IDLNamespace provides a mapping between a symbol name and an IDLVersionList
-# which contains IDLVersion objects.  It provides an interface for fetching
-# one or more IDLNodes based on a version or range of versions.
+# IDLNamespace provides a mapping between a symbol name and an IDLReleaseList
+# which contains IDLRelease objects.  It provides an interface for fetching
+# one or more IDLNodes based on a release or range of releases.
 #
 class IDLNamespace(object):
   def __init__(self, parent):
@@ -142,27 +36,27 @@ class IDLNamespace(object):
   def Dump(self):
     for name in self.namespace:
       InfoOut.Log('NAME=%s' % name)
-      for cver in self.namespace[name]:
+      for cver in self.namespace[name].nodes:
         InfoOut.Log('  %s' % cver)
       InfoOut.Log('')
 
-  def FindVersion(self, name, version):
+  def FindRelease(self, name, release):
     verlist = self.namespace.get(name, None)
     if verlist == None:
       if self.parent:
-        return self.parent.FindVersion(name, version)
+        return self.parent.FindRelease(name, release)
       else:
         return None
-    return verlist.FindVersion(version)
+    return verlist.FindRelease(release)
 
-  def FindRange(self, name, vmin, vmax):
+  def FindRange(self, name, rmin, rmax):
     verlist = self.namespace.get(name, None)
     if verlist == None:
       if self.parent:
-        return self.parent.FindRange(name, vmin, vmax)
+        return self.parent.FindRange(name, rmin, rmax)
       else:
         return []
-    return verlist.FindRange(vmin, vmax)
+    return verlist.FindRange(rmin, rmax)
 
   def FindList(self, name):
     verlist = self.namespace.get(name, None)
@@ -173,7 +67,7 @@ class IDLNamespace(object):
 
   def AddNode(self, node):
     name = node.GetName()
-    verlist = self.namespace.setdefault(name,IDLVersionList())
+    verlist = self.namespace.setdefault(name,IDLReleaseList())
     if GetOption('namespace_debug'):
         print "Adding to namespace: %s" % node
     return verlist.AddNode(node)
@@ -189,31 +83,31 @@ class IDLNamespace(object):
 #
 # Mocks the IDLNode to support error, warning handling, and string functions.
 #
-class MockNode(IDLVersion):
-  def __init__(self, name, vmin, vmax):
+class MockNode(IDLRelease):
+  def __init__(self, name, rmin, rmax):
     self.name = name
-    self.vmin = vmin
-    self.vmax = vmax
+    self.rmin = rmin
+    self.rmax = rmax
     self.errors = []
     self.warns = []
     self.properties = {
         'NAME': name,
-        'version': vmin,
-        'deprecate' : vmax
+        'release': rmin,
+        'deprecate' : rmax
         }
 
   def __str__(self):
-    return '%s (%s : %s)' % (self.name, self.vmin, self.vmax)
+    return '%s (%s : %s)' % (self.name, self.rmin, self.rmax)
 
   def GetName(self):
     return self.name
 
   def Error(self, msg):
-    if GetOption('version_debug'): print 'Error: %s' % msg
+    if GetOption('release_debug'): print 'Error: %s' % msg
     self.errors.append(msg)
 
   def Warn(self, msg):
-    if GetOption('version_debug'): print 'Warn: %s' % msg
+    if GetOption('release_debug'): print 'Warn: %s' % msg
     self.warns.append(msg)
 
   def GetProperty(self, name):
@@ -225,17 +119,17 @@ errors = 0
 #
 # Dumps all the information relevant  to an add failure.
 def DumpFailure(namespace, node, msg):
-    global errors
-    print '\n******************************'
-    print 'Failure: %s %s' % (node, msg)
-    for warn in node.warns:
-      print '  WARN: %s' % warn
-    for err in node.errors:
-      print '  ERROR: %s' % err
-    print '\n'
-    namespace.Dump()
-    print '******************************\n'
-    errors += 1
+  global errors
+  print '\n******************************'
+  print 'Failure: %s %s' % (node, msg)
+  for warn in node.warns:
+    print '  WARN: %s' % warn
+  for err in node.errors:
+    print '  ERROR: %s' % err
+  print '\n'
+  namespace.Dump()
+  print '******************************\n'
+  errors += 1
 
 # Add expecting no errors or warnings
 def AddOkay(namespace, node):
@@ -258,26 +152,27 @@ def AddError(namespace, node, msg):
     DumpFailure(namespace, node, 'Expected errors')
   if msg not in node.errors:
     DumpFailure(namespace, node, 'Expected error: %s' % msg)
+    print ">>%s<<\n>>%s<<\n" % (node.errors[0], msg)
 
-# Verify that a FindVersion call on the namespace returns the expected node.
-def VerifyFindOne(namespace, name, version, node):
+# Verify that a FindRelease call on the namespace returns the expected node.
+def VerifyFindOne(namespace, name, release, node):
   global errors
-  if (namespace.FindVersion(name, version) != node):
-    print "Failed to find %s as version %f of %s" % (node, version, name)
+  if (namespace.FindRelease(name, release) != node):
+    print "Failed to find %s as release %f of %s" % (node, release, name)
     namespace.Dump()
     print "\n"
     errors += 1
 
 # Verify that a FindRage call on the namespace returns a set of expected nodes.
-def VerifyFindAll(namespace, name, vmin, vmax, nodes):
+def VerifyFindAll(namespace, name, rmin, rmax, nodes):
   global errors
-  out = namespace.FindRange(name, vmin, vmax)
+  out = namespace.FindRange(name, rmin, rmax)
   if (out != nodes):
-    print "Found [%s] instead of[%s] for versions %f to %f of %s" % (
+    print "Found [%s] instead of[%s] for releases %f to %f of %s" % (
         ' '.join([str(x) for x in out]),
         ' '.join([str(x) for x in nodes]),
-        vmin,
-        vmax,
+        rmin,
+        rmax,
         name)
     namespace.Dump()
     print "\n"
@@ -300,8 +195,9 @@ def Main(args):
   AddOkay(namespace, FooXX)
   AddOkay(namespace, Foo1X)
   AddOkay(namespace, Foo3X)
-  # Verify we fail to add a node between undeprecated versions
-  AddError(namespace, Foo2X, 'Overlap in versions.')
+  # Verify we fail to add a node between undeprecated releases
+  AddError(namespace, Foo2X,
+           'Overlap in releases: 3.0 vs 2.0 when adding foo (2.0 : None)')
 
   BarXX = MockNode('bar', None, None)
   Bar12 = MockNode('bar', 1.0, 2.0)
@@ -309,12 +205,12 @@ def Main(args):
   Bar34 = MockNode('bar', 3.0, 4.0)
 
 
-  # Verify we succeed with fully qualified versions
+  # Verify we succeed with fully qualified releases
   namespace = IDLNamespace(namespace)
   AddOkay(namespace, BarXX)
   AddOkay(namespace, Bar12)
   # Verify we warn when detecting a gap
-  AddWarn(namespace, Bar34, 'Gap in version numbers.')
+  AddWarn(namespace, Bar34, 'Gap in release numbers.')
   # Verify we fail when inserting into this gap
   # (NOTE: while this could be legal, it is sloppy so we disallow it)
   AddError(namespace, Bar23, 'Declarations out of order.')
@@ -323,7 +219,7 @@ def Main(args):
   VerifyFindOne(namespace, 'bar', 0.0, BarXX)
   VerifyFindAll(namespace, 'bar', 0.5, 1.5, [BarXX, Bar12])
 
-  # Verify the correct version of the object is found recursively
+  # Verify the correct release of the object is found recursively
   VerifyFindOne(namespace, 'foo', 0.0, FooXX)
   VerifyFindOne(namespace, 'foo', 0.5, FooXX)
   VerifyFindOne(namespace, 'foo', 1.0, Foo1X)
