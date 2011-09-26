@@ -62,6 +62,7 @@ int drm_open_matching(const char *pci_glob, int flags)
 	struct udev_device *device, *parent;
         struct udev_list_entry *entry;
 	const char *pci_id, *path;
+	const char *usub;
 	int fd;
 
 	udev = udev_new();
@@ -78,8 +79,9 @@ int drm_open_matching(const char *pci_glob, int flags)
 		path = udev_list_entry_get_name(entry);
 		device = udev_device_new_from_syspath(udev, path);
 		parent = udev_device_get_parent(device);
+		usub = udev_device_get_subsystem(parent);
 		/* Filter out KMS output devices. */
-		if (strcmp(udev_device_get_subsystem(parent), "pci") != 0)
+		if (!usub || (strcmp(usub, "pci") != 0))
 			continue;
 		pci_id = udev_device_get_property_value(parent, "PCI_ID");
 		if (fnmatch(pci_glob, pci_id, 0) != 0)
