@@ -378,13 +378,13 @@ class Plugin : public pp::InstancePrivate {
   // Callback used when the reverse channel closes.  This is an
   // asynchronous event that might turn into a JavaScript error or
   // crash event -- this is controlled by the two state variables
-  // nacl_ready_state_ and nexe_error_reported_: If an error had
-  // already been reported, no crash event is generated.  If no error
-  // has been reported but nacl_ready_state_ is not DONE, then the
-  // loadend event has not been reported, and we enqueue an error
-  // event followed by loadend.  If nacl_ready_state_ is DONE, then we
-  // are in the post-loadend (we need temporal predicate symbols), and
-  // we enqueue a crash event.
+  // nacl_ready_state_ and nexe_error_reported_: If an error or crash
+  // had already been reported, no additional crash event is
+  // generated.  If no error has been reported but nacl_ready_state_
+  // is not DONE, then the loadend event has not been reported, and we
+  // enqueue an error event followed by loadend.  If nacl_ready_state_
+  // is DONE, then we are in the post-loadend (we need temporal
+  // predicate symbols), and we enqueue a crash event.
   void NexeDidCrash(int32_t pp_error);
 
   // Callback used when a .nexe is translated from bitcode.  If the translation
@@ -464,7 +464,7 @@ class Plugin : public pp::InstancePrivate {
   nacl::string manifest_base_url_;
   nacl::string manifest_url_;
   ReadyState nacl_ready_state_;
-  bool nexe_error_reported_;
+  bool nexe_error_reported_;  // error or crash reported
 
   nacl::DescWrapperFactory* wrapper_factory_;
 

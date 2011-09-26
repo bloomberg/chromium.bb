@@ -1371,7 +1371,7 @@ void Plugin::ReportDeadNexe() {
   if (ppapi_proxy_ != NULL)
     ppapi_proxy_->ReportDeadNexe();
 
-  if (nacl_ready_state() == DONE) {  // After loadEnd.
+  if (nacl_ready_state() == DONE && !nexe_error_reported()) {  // After loadEnd.
     int64_t crash_time = NaClGetTimeOfDayMicroseconds();
     // Crashes will be more likely near startup, so use a medium histogram
     // instead of a large one.
@@ -1387,6 +1387,7 @@ void Plugin::ReportDeadNexe() {
                          LENGTH_IS_NOT_COMPUTABLE,
                          kUnknownBytes,
                          kUnknownBytes);
+    set_nexe_error_reported(true);
     CHECK(ppapi_proxy_ == NULL || !ppapi_proxy_->is_valid());
     ShutdownProxy();
   }
