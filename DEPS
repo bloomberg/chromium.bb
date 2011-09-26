@@ -145,7 +145,7 @@ deps = {
     (Var("googlecode_url") % "ots") + "/trunk@69",
 
   "src/tools/page_cycler/acid3":
-    "/trunk/deps/page_cycler/acid3@19546",
+    "/trunk/deps/page_cycler/acid3@102714",
 
   "src/chrome/test/data/perf/frame_rate/content":
     "/trunk/deps/frame_rate/content@93671",
