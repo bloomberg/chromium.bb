@@ -292,6 +292,9 @@ const char kSpeechInputAboutURL[] =
 const char kLearnMoreRegisterProtocolHandlerURL[] =
     "http://www.google.com/support/chrome/bin/answer.py?answer=1382847";
 
+const char kSyncLearnMoreURL[] =
+    "http://www.google.com/support/chrome/bin/answer.py?answer=165139";
+
 #if defined(OS_CHROMEOS)
 const char kCloudPrintLearnMoreURL[] =
     "https://www.google.com/support/chromeos/bin/topic.py?topic=29023";
