@@ -224,13 +224,3 @@ html[dir='rtl'] #attribution {
 .page-switcher.drag-target {
   background-color: rgba(0, 0, 0, 0.2);
 }
-
-html[dir=ltr] #page-switcher-start,
-html[dir=rtl] #page-switcher-end {
-  border-top-right-radius: 10px;
-}
-
-html[dir=rtl] #page-switcher-start,
-html[dir=ltr] #page-switcher-end {
-  border-top-left-radius: 10px;
-}
