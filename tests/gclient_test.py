@@ -134,7 +134,8 @@ class GclientTest(trial_dir.TestCase):
     # The trick here is to manually process the list to make sure it's out of
     # order.
     for i in obj.dependencies:
-      i.dependencies.sort(key=lambda x: x.name, reverse=reverse)
+      # pylint: disable=W0212
+      i._dependencies.sort(key=lambda x: x.name, reverse=reverse)
     actual = self._get_processed()
     # We don't care of the ordering of these items:
     self.assertEquals(
@@ -209,22 +210,22 @@ class GclientTest(trial_dir.TestCase):
     parser = gclient.Parser()
     options, _ = parser.parse_args([])
     obj = gclient.GClient('foo', options)
-    obj.dependencies.append(
+    obj._dependencies.append(
         gclient.Dependency(obj, 'foo', 'url', None, None, None, None, 'DEPS',
                            True))
-    obj.dependencies.append(
+    obj._dependencies.append(
         gclient.Dependency(obj, 'bar', 'url', None, None, None, None, 'DEPS',
                            True))
-    obj.dependencies[0].dependencies.append(
+    obj.dependencies[0]._dependencies.append(
         gclient.Dependency(
           obj.dependencies[0], 'foo/dir1', 'url', None, None, None, None,
           'DEPS', True))
-    obj.dependencies[0].dependencies.append(
+    obj.dependencies[0]._dependencies.append(
         gclient.Dependency(
           obj.dependencies[0], 'foo/dir2',
           gclient.GClientKeywords.FromImpl('bar'), None, None, None, None,
           'DEPS', True))
-    obj.dependencies[0].dependencies.append(
+    obj.dependencies[0]._dependencies.append(
         gclient.Dependency(
           obj.dependencies[0], 'foo/dir3',
           gclient.GClientKeywords.FileImpl('url'), None, None, None, None,

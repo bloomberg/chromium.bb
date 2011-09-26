@@ -203,9 +203,6 @@ class Dependency(GClientKeywords, gclient_utils.WorkItem, DependencySettings):
 
   def __init__(self, parent, name, url, safesync_url, managed, custom_deps,
                custom_vars, deps_file, should_process):
-    # Warning: this function can be called from any thread. Both
-    # self.dependencies and self.requirements are read and modified from
-    # multiple threads at the same time. Sad.
     GClientKeywords.__init__(self)
     gclient_utils.WorkItem.__init__(self, name)
     DependencySettings.__init__(
@@ -219,7 +216,7 @@ class Dependency(GClientKeywords, gclient_utils.WorkItem, DependencySettings):
 
     # Calculates properties:
     self.parsed_url = None
-    self.dependencies = []
+    self._dependencies = []
     # A cache of the files affected by the current operation, necessary for
     # hooks.
     self._file_list = []
@@ -438,7 +435,7 @@ class Dependency(GClientKeywords, gclient_utils.WorkItem, DependencySettings):
 
     # Convert the deps into real Dependency.
     for name, url in deps.iteritems():
-      if name in [s.name for s in self.dependencies]:
+      if name in [s.name for s in self._dependencies]:
         raise gclient_utils.Error(
             'The same name "%s" appears multiple times in the deps section' %
                 name)
@@ -456,8 +453,10 @@ class Dependency(GClientKeywords, gclient_utils.WorkItem, DependencySettings):
             raise gclient_utils.Error(
                 'Dependency %s specified more than once:\n  %s\nvs\n  %s' %
                 (name, tree[name].hierarchy(), self.hierarchy()))
-      self.dependencies.append(Dependency(self, name, url, None, None, None,
-          None, self.deps_file, should_process))
+      self._dependencies.append(
+          Dependency(
+            self, name, url, None, None, None, None,
+            self.deps_file, should_process))
     logging.debug('Loaded: %s' % str(self))
 
   # Arguments number differs from overridden method
@@ -638,7 +637,10 @@ class Dependency(GClientKeywords, gclient_utils.WorkItem, DependencySettings):
     return max(self.parent.recursion_limit - 1, 0)
 
   @property
-  @gclient_utils.lockedmethod
+  def dependencies(self):
+    return tuple(self._dependencies)
+
+  @property
   def file_list(self):
     result = self._file_list[:]
     for d in self.dependencies:
@@ -761,7 +763,7 @@ solutions = [
         if s['name'] in tree:
           raise gclient_utils.Error(
               'Dependency %s specified more than once in .gclient' % s['name'])
-        self.dependencies.append(Dependency(
+        self._dependencies.append(Dependency(
             self, s['name'], s['url'],
             s.get('safesync_url', None),
             s.get('managed', True),
