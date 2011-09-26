@@ -4,6 +4,8 @@
 
 #include "webkit/plugins/npapi/plugin_list.h"
 
+#include <algorithm>
+
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/sha1.h"
