@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,6 +14,8 @@
 #include "base/string_util.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
+#include "webkit/glue/user_agent.h"
+#include "webkit/glue/webkit_glue.h"
 
 GURL TestShellTest::GetTestURL(const FilePath& test_case_path,
                                const std::string& test_case) {
@@ -24,6 +26,8 @@ void TestShellTest::SetUp() {
   // Make a test shell for use by the test.
   CreateEmptyWindow();
   test_shell_->Show(WebKit::WebNavigationPolicyNewWindow);
+  webkit_glue::SetUserAgent(webkit_glue::BuildUserAgentFromProduct(
+      "TestShell/0.0.0.0"), false);
 
   // Point data_dir_ to the root of the test case dir
   ASSERT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &data_dir_));

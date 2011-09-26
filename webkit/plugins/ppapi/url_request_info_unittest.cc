@@ -8,6 +8,8 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrameClient.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURLRequest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
+#include "webkit/glue/user_agent.h"
+#include "webkit/glue/webkit_glue.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/ppb_url_request_info_impl.h"
 #include "webkit/plugins/ppapi/ppapi_unittest.h"
@@ -58,6 +60,8 @@ class URLRequestInfoTest : public PpapiUnittest {
   }
 
   static void SetUpTestCase() {
+    webkit_glue::SetUserAgent(webkit_glue::BuildUserAgentFromProduct(
+        "TestShell/0.0.0.0"), false);
     web_view_ = WebView::create(NULL);
     web_view_->initializeMainFrame(&web_frame_client_);
     WebURL web_url(GURL(""));
