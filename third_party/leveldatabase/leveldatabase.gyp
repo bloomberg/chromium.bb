@@ -48,6 +48,7 @@
       'direct_dependent_settings': {
         'include_dirs': [
           'src/include/',
+          'src/',
         ],
         'conditions': [
           ['OS == "win"', {
@@ -91,6 +92,8 @@
         'src/db/version_set.h',
         'src/db/write_batch.cc',
         'src/db/write_batch_internal.h',
+        'src/helpers/memenv/memenv.cc',
+        'src/helpers/memenv/memenv.h',
         'src/include/leveldb/cache.h',
         'src/include/leveldb/comparator.h',
         'src/include/leveldb/db.h',
