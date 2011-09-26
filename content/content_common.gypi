@@ -153,7 +153,6 @@
     'common/message_router.h',
     'common/mime_registry_messages.h',
     'common/native_web_keyboard_event.h',
-    'common/native_web_keyboard_event_aura.cc',
     'common/native_web_keyboard_event_gtk.cc',
     'common/native_web_keyboard_event_mac.mm',
     'common/native_web_keyboard_event_win.cc',
