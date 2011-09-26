@@ -136,7 +136,69 @@ class GClientKeywords(object):
       raise gclient_utils.Error("Var is not defined: %s" % var_name)
 
 
-class Dependency(GClientKeywords, gclient_utils.WorkItem):
+class DependencySettings(object):
+  """Immutable configuration settings."""
+  def __init__(
+      self, parent, safesync_url, managed, custom_deps, custom_vars,
+      deps_file, should_process):
+    # These are not mutable:
+    self._parent = parent
+    self._safesync_url = safesync_url
+    self._deps_file = deps_file
+    # 'managed' determines whether or not this dependency is synced/updated by
+    # gclient after gclient checks it out initially.  The difference between
+    # 'managed' and 'should_process' is that the user specifies 'managed' via
+    # the --unmanaged command-line flag or a .gclient config, where
+    # 'should_process' is dynamically set by gclient if it goes over its
+    # recursion limit and controls gclient's behavior so it does not misbehave.
+    self._managed = managed
+    self._should_process = should_process
+
+    # These are only set in .gclient and not in DEPS files.
+    self._custom_vars = custom_vars or {}
+    self._custom_deps = custom_deps or {}
+
+    if '/' in self._deps_file or '\\' in self._deps_file:
+      raise gclient_utils.Error('deps_file name must not be a path, just a '
+                                'filename. %s' % self._deps_file)
+
+  @property
+  def deps_file(self):
+    """Immutable so no need to lock."""
+    return self._deps_file
+
+  @property
+  def managed(self):
+    """Immutable so no need to lock."""
+    return self._managed
+
+  @property
+  def parent(self):
+    """Immutable so no need to lock."""
+    return self._parent
+
+  @property
+  def safesync_url(self):
+    """Immutable so no need to lock."""
+    return self._safesync_url
+
+  @property
+  def should_process(self):
+    """True if this dependency should be processed, i.e. checked out."""
+    return self._should_process
+
+  @property
+  def custom_vars(self):
+    """Immutable so no need to lock."""
+    return self._custom_vars.copy()
+
+  @property
+  def custom_deps(self):
+    """Immutable so no need to lock."""
+    return self._custom_deps.copy()
+
+
+class Dependency(GClientKeywords, gclient_utils.WorkItem, DependencySettings):
   """Object that represents a dependency checkout."""
 
   def __init__(self, parent, name, url, safesync_url, managed, custom_deps,
@@ -146,26 +208,13 @@ class Dependency(GClientKeywords, gclient_utils.WorkItem):
     # multiple threads at the same time. Sad.
     GClientKeywords.__init__(self)
     gclient_utils.WorkItem.__init__(self, name)
-
-    # These are not mutable:
-    self._parent = parent
-    self._safesync_url = safesync_url
-    self._deps_file = deps_file
-    self._should_process = should_process
+    DependencySettings.__init__(
+        self, parent, safesync_url, managed, custom_deps, custom_vars,
+        deps_file, should_process)
 
     # This is in both .gclient and DEPS files:
     self.url = url
 
-    # These are only set in .gclient and not in DEPS files.
-    # 'managed' determines whether or not this dependency is synced/updated by
-    # gclient after gclient checks it out initially.  The difference between
-    # 'managed' and 'should_process' (defined below) is that the user specifies
-    # 'managed' via the --unmanaged command-line flag or a .gclient config,
-    # where 'should_process' is dynamically set by gclient if it goes over its
-    # recursion limit and controls gclient's behavior so it does not misbehave.
-    self._managed = managed
-    self._custom_vars = custom_vars or {}
-    self._custom_deps = custom_deps or {}
     self.deps_hooks = []
 
     # Calculates properties:
@@ -200,9 +249,6 @@ class Dependency(GClientKeywords, gclient_utils.WorkItem):
       raise gclient_utils.Error('dependency url must be either a string, None, '
                                 'File() or From() instead of %s' %
                                 self.url.__class__.__name__)
-    if '/' in self.deps_file or '\\' in self.deps_file:
-      raise gclient_utils.Error('deps_file name must not be a path, just a '
-                                'filename. %s' % self.deps_file)
 
   def _FindDependencies(self):
     """Setup self.requirements and find any other dependency who would have self
@@ -587,43 +633,9 @@ class Dependency(GClientKeywords, gclient_utils.WorkItem):
   def recursion_limit(self):
     """Returns > 0 if this dependency is not too recursed to be processed.
 
-    Immutable so no need to lock."""
+    Immutable so no need to lock.
+    """
     return max(self.parent.recursion_limit - 1, 0)
-
-  @property
-  def deps_file(self):
-    """Immutable so no need to lock."""
-    return self._deps_file
-
-  @property
-  def managed(self):
-    """Immutable so no need to lock."""
-    return self._managed
-
-  @property
-  def safesync_url(self):
-    """Immutable so no need to lock."""
-    return self._safesync_url
-
-  @property
-  def should_process(self):
-    """True if this dependency should be processed, i.e. checked out."""
-    return self._should_process
-
-  @property
-  def parent(self):
-    """Immutable so no need to lock."""
-    return self._parent
-
-  @property
-  def custom_vars(self):
-    """Immutable so no need to lock."""
-    return self._custom_vars.copy()
-
-  @property
-  def custom_deps(self):
-    """Immutable so no need to lock."""
-    return self._custom_deps.copy()
 
   @property
   @gclient_utils.lockedmethod
