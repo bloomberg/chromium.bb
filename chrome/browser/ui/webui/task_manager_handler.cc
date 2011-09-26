@@ -55,6 +55,8 @@ static Value* CreateColumnValue(const TaskManagerModel* tm,
                web_ui_util::GetImageDataUrl(tm->GetResourceIcon(i)));
   if (column_name == "title")
     return Value::CreateStringValue(tm->GetResourceTitle(i));
+  if (column_name == "profileName")
+    return Value::CreateStringValue(tm->GetResourceProfileName(i));
   if (column_name == "networkUsage")
     return Value::CreateStringValue(tm->GetResourceNetworkUsage(i));
   if (column_name == "networkUsageValue")
@@ -169,6 +171,7 @@ static DictionaryValue* CreateTaskGroupValue(const TaskManagerModel* tm,
   // Columns which have some data in each group.
   CreateGroupColumnList(tm, "icon", index, length, val);
   CreateGroupColumnList(tm, "title", index, length, val);
+  CreateGroupColumnList(tm, "profileName", index, length, val);
   CreateGroupColumnList(tm, "networkUsage", index, length, val);
   CreateGroupColumnList(tm, "networkUsageValue", index, length, val);
   CreateGroupColumnList(tm, "fps", index, length, val);

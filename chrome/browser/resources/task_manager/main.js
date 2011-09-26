@@ -13,6 +13,7 @@ cr.addSingletonGetter(TaskManager);
  */
 var DEFAULT_COLUMNS = [
     ['title', 'PAGE_COLUMN', 300, true],
+    ['profileName', 'PROFILE_NAME_COLUMN', 120, false],
     ['physicalMemory', 'PHYSICAL_MEM_COLUMN', 80, true],
     ['sharedMemory', 'SHARED_MEM_COLUMN', 80, false],
     ['privateMemory', 'PRIVATE_MEM_COLUMN', 80, false],
