@@ -6,9 +6,11 @@
 
 #import <Foundation/Foundation.h>
 
+#include "base/command_line.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
+#include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "content/common/gpu/gpu_info.h"
@@ -173,8 +175,36 @@ void SetNumberOfViews(int number_of_views) {
     SetNumberOfViewsImpl(number_of_views, SetCrashKeyValue);
 }
 
-void SetCommandLine(const CommandLine*) {
-  // TODO: http://crbug.com/60991
+void SetCommandLine(const CommandLine* command_line) {
+  DCHECK(SetCrashKeyValue);
+  DCHECK(ClearCrashKey);
+  DCHECK(command_line);
+  if (!command_line || !SetCrashKeyValue || !ClearCrashKey)
+    return;
+
+  // These should match the corresponding strings in breakpad_win.cc.
+  NSString* const kNumSwitchesKey = @"num-switches";
+  NSString* const kSwitchKeyFormat = @"switch-%d";
+
+  // Note the total number of switches, not including the exec path.
+  const CommandLine::StringVector& argv = command_line->argv();
+  SetCrashKeyValue(kNumSwitchesKey,
+                   [NSString stringWithFormat:@"%d", argv.size() - 1]);
+
+  size_t key_i = 0;
+  for (size_t i = 1; i < argv.size() && key_i < kMaxSwitches; ++i) {
+    // TODO(shess): Skip boring switches.
+    NSString* key = [NSString stringWithFormat:kSwitchKeyFormat, key_i];
+    NSString* value = base::SysUTF8ToNSString(argv[i]);
+    SetCrashKeyValue(key, value);
+    key_i++;
+  }
+
+  // Clear out any stale keys.
+  for (; key_i < kMaxSwitches; ++key_i) {
+    NSString* key = [NSString stringWithFormat:kSwitchKeyFormat, key_i];
+    ClearCrashKey(key);
+  }
 }
 
 }  // namespace child_process_logging
