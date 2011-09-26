@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_INTENTS_WEB_INTENT_SERVICE_DATA_H_
-#define CHROME_BROWSER_INTENTS_WEB_INTENT_SERVICE_DATA_H_
+#ifndef WEBKIT_GLUE_WEB_INTENT_SERVICE_DATA_H_
+#define WEBKIT_GLUE_WEB_INTENT_SERVICE_DATA_H_
 #pragma once
 
 #include "base/string16.h"
@@ -11,8 +11,6 @@
 #include <iosfwd>
 
 // Describes the relevant elements of a WebIntent service.
-// TODO(gbillock): if we want to use this in an IPC message, it should
-// go in webkit/glue in web_intent_data.
 struct WebIntentServiceData {
   // An intents disposition determines which context the service is opened in.
   enum Disposition {

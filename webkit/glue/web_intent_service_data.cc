@@ -14,11 +14,11 @@ WebIntentServiceData::WebIntentServiceData()
 WebIntentServiceData::~WebIntentServiceData() {}
 
 bool WebIntentServiceData::operator==(const WebIntentServiceData& other) const {
-  return (service_url == other.service_url &&
-          action == other.action &&
-          type == other.type &&
-          title == other.title &&
-          disposition == other.disposition);
+  return service_url == other.service_url &&
+         action == other.action &&
+         type == other.type &&
+         title == other.title &&
+         disposition == other.disposition;
 }
 
 std::ostream& operator<<(::std::ostream& os,
