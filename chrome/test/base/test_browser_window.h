@@ -66,7 +66,6 @@ class TestBrowserWindow : public BrowserWindow {
   virtual void ShowCreateChromeAppShortcutsDialog(
       Profile* profile,
       const Extension* app) OVERRIDE {}
-  virtual void ToggleUseCompactNavigationBar() OVERRIDE {}
 
   virtual bool IsBookmarkBarVisible() const OVERRIDE;
   virtual bool IsBookmarkBarAnimating() const OVERRIDE;

@@ -112,10 +112,6 @@ void DefaultTabHandler::ToggleUseVerticalTabs() {
   delegate_->AsBrowser()->ToggleUseVerticalTabs();
 }
 
-void DefaultTabHandler::ToggleUseCompactNavigationBar() {
-  delegate_->AsBrowser()->ToggleUseCompactNavigationBar();
-}
-
 bool DefaultTabHandler::CanRestoreTab() {
   return delegate_->AsBrowser()->CanRestoreTab();
 }
@@ -130,10 +126,6 @@ bool DefaultTabHandler::LargeIconsPermitted() const {
 
 bool DefaultTabHandler::UseVerticalTabs() const {
   return delegate_->AsBrowser()->UseVerticalTabs();
-}
-
-bool DefaultTabHandler::UseCompactNavigationBar() const {
-  return delegate_->AsBrowser()->UseCompactNavigationBar();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

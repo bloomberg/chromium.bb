@@ -412,8 +412,7 @@ void OpaqueBrowserFrameView::OnPaint(gfx::Canvas* canvas) {
   else
     PaintRestoredFrameBorder(canvas);
   PaintTitleBar(canvas);
-  if (browser_view_->IsToolbarVisible() ||
-      browser_view_->UseCompactNavigationBar())
+  if (browser_view_->IsToolbarVisible())
     PaintToolbarBackground(canvas);
   if (!frame_->IsMaximized())
     PaintRestoredClientEdge(canvas);
@@ -441,14 +440,6 @@ bool OpaqueBrowserFrameView::HitTest(const gfx::Point& l) const {
   tabstrip_bounds.set_origin(tabstrip_origin);
   if (browser_view_->UseVerticalTabs() ?
       (l.x() > tabstrip_bounds.right()) : (l.y() > tabstrip_bounds.bottom()))
-    return false;
-
-  // Claim it only if we're also not in the compact navigation buttons.
-  if (browser_view_->UseCompactNavigationBar() &&
-      (ConvertedContainsCheck(browser_view_->GetCompactNavigationBarBounds(),
-                              frame_->client_view(), this, l) ||
-       ConvertedContainsCheck(browser_view_->GetCompactOptionsBarBounds(),
-                              frame_->client_view(), this, l)))
     return false;
 
   // We convert from our parent's coordinates since we assume we fill its bounds
@@ -882,8 +873,7 @@ void OpaqueBrowserFrameView::PaintRestoredClientEdge(gfx::Canvas* canvas) {
   gfx::Rect client_area_bounds = CalculateClientAreaBounds(width(), height());
   SkColor toolbar_color = tp->GetColor(ThemeService::COLOR_TOOLBAR);
 
-  if (browser_view_->IsToolbarVisible() ||
-      browser_view_->UseCompactNavigationBar()) {
+  if (browser_view_->IsToolbarVisible()) {
     // The client edge images always start below the toolbar corner images.  The
     // client edge filled rects start there or at the bottom of the toolbar,
     // whichever is shorter.

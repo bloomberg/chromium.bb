@@ -118,12 +118,6 @@ class TabStripModelDelegate {
   // Toggles the use of the vertical tabstrip.
   virtual void ToggleUseVerticalTabs() = 0;
 
-  // Returns true if the compact navigation bar should be used.
-  virtual bool UseCompactNavigationBar() const = 0;
-
-  // Toggles the use of the compact navigation bar.
-  virtual void ToggleUseCompactNavigationBar() = 0;
-
   // Returns true if the tab strip can use large icons.
   virtual bool LargeIconsPermitted() const = 0;
 

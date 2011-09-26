@@ -73,10 +73,7 @@ class ViewIDTest : public InProcessBrowserTest {
           i == VIEW_ID_AUTOCOMPLETE ||
           i == VIEW_ID_CONTENTS_SPLIT ||
           i == VIEW_ID_SIDE_BAR_SPLIT ||
-          i == VIEW_ID_FEEDBACK_BUTTON ||
-          i == VIEW_ID_COMPACT_NAV_BAR ||
-          i == VIEW_ID_COMPACT_OPT_BAR ||
-          i == VIEW_ID_COMPACT_NAV_BAR_SPACER) {
+          i == VIEW_ID_FEEDBACK_BUTTON) {
         continue;
       }
 

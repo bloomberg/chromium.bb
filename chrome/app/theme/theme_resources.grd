@@ -37,12 +37,6 @@
         <include name="IDR_BOOKMARK_BAR_FOLDER" file="bookmark_bar_folder_mac.png" type="BINDATA" />
       </if>
       <include name="IDR_CLOSE_BUTTON_MASK" file="close_button_mask.png" type="BINDATA" />
-      <include name="IDR_CNAV_DIALOG_LEFT" file="cnav_dialog_left.png" type="BINDATA" />
-      <include name="IDR_CNAV_DIALOG_MIDDLE" file="cnav_dialog_middle.png" type="BINDATA" />
-      <include name="IDR_CNAV_DIALOG_RIGHT" file="cnav_dialog_right.png" type="BINDATA" />
-      <include name="IDR_COMPACTNAV_BACK" file="compactnav_back.png" type="BINDATA" />
-      <include name="IDR_COMPACTNAV_FORWARD" file="compactnav_forward.png" type="BINDATA" />
-      <include name="IDR_COMPACTNAV_SEPARATOR" file="compactnav_separator.png" type="BINDATA" />
       <if expr="is_win">
         <include name="IDR_CONFLICT_BADGE" file="conflict_badge.png" type="BINDATA" />
         <include name="IDR_CONFLICT_MENU" file="conflict_menu.png" type="BINDATA" />
@@ -412,9 +406,6 @@
         <include name="IDR_BRIGHTNESS_BUBBLE_ICON" file="brightness_icon.png" type="BINDATA" />
         <include name="IDR_BUTTON_USER_IMAGE_CHOOSE_FILE" file="choose_file.png" type="BINDATA" />
         <include name="IDR_BUTTON_USER_IMAGE_TAKE_PHOTO" file="take_photo.png" type="BINDATA" />
-        <include name="IDR_COMPACTNAV_BACK" file="compactnav_back.png" type="BINDATA" />
-        <include name="IDR_COMPACTNAV_FORWARD" file="compactnav_forward.png" type="BINDATA" />
-        <include name="IDR_COMPACTNAV_SEPARATOR" file="compactnav_separator.png" type="BINDATA" />
         <include name="IDR_DIVIDER_VERT" file="divider_vert.png" type="BINDATA" />
         <include name="IDR_DROPDOWN_BOTTOM_H" file="textbutton_dropdown_b_h.png" type="BINDATA" />
         <include name="IDR_DROPDOWN_BOTTOM_LEFT_H" file="textbutton_dropdown_bl_h.png" type="BINDATA" />

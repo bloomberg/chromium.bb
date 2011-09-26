@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/keyboard_overlay_dialog_view.h"
 
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/frame/bubble_window.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/views/accelerator_table_gtk.h"

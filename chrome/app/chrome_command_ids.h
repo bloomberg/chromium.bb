@@ -57,7 +57,6 @@
 #define IDC_TOGGLE_VERTICAL_TABS        34034
 #define IDC_SEARCH                      34035
 #define IDC_TABPOSE                     34036
-#define IDC_COMPACT_NAVBAR              34037
 #define IDC_DEBUG_FRAME_TOGGLE          34038
 #define IDC_PRESENTATION_MODE           34039
 

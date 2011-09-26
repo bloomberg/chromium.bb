@@ -337,20 +337,11 @@ Browser::Browser(Type type, Profile* profile)
   encoding_auto_detect_.Init(prefs::kWebKitUsesUniversalDetector,
                              profile_->GetPrefs(), NULL);
   use_vertical_tabs_.Init(prefs::kUseVerticalTabs, profile_->GetPrefs(), this);
-  use_compact_navigation_bar_.Init(prefs::kUseCompactNavigationBar,
-                                   profile_->GetPrefs(),
-                                   this);
 
   if (!TabMenuModel::AreVerticalTabsEnabled()) {
     // If vertical tabs aren't enabled, explicitly turn them off. Otherwise we
     // might show vertical tabs but not show an option to turn them off.
     use_vertical_tabs_.SetValue(false);
-  }
-  if (!TabMenuModel::IsCompactNavigationModeEnabled()) {
-    // If the compact navigation bar isn't enabled, explicitly turn it off.
-    // Otherwise we might show the compact navigation bar but not show an option
-    // to turn it off.
-    use_compact_navigation_bar_.SetValue(false);
   }
 
   UpdateTabStripModelInsertionPolicy();
@@ -409,7 +400,6 @@ Browser::~Browser() {
 
   encoding_auto_detect_.Destroy();
   use_vertical_tabs_.Destroy();
-  use_compact_navigation_bar_.Destroy();
 
   if (profile_->IsOffTheRecord() &&
       !BrowserList::IsOffTheRecordSessionActiveForProfile(profile_)) {
@@ -512,11 +502,6 @@ void Browser::InitBrowserWindow() {
       chrome::NOTIFICATION_BROWSER_WINDOW_READY,
       Source<Browser>(this),
       NotificationService::NoDetails());
-
-  if (use_compact_navigation_bar_.GetValue()) {
-    // This enables the compact navigation bar host.
-    UseCompactNavigationBarChanged();
-  }
 
   PrefService* local_state = g_browser_process->local_state();
   if (local_state && local_state->FindPreference(
@@ -1355,10 +1340,6 @@ void Browser::UpdateTabStripModelInsertionPolicy() {
 void Browser::UseVerticalTabsChanged() {
   UpdateTabStripModelInsertionPolicy();
   window()->ToggleTabStripMode();
-}
-
-void Browser::UseCompactNavigationBarChanged() {
-  window_->ToggleUseCompactNavigationBar();
 }
 
 bool Browser::SupportsWindowFeatureImpl(WindowFeature feature,
@@ -2292,9 +2273,6 @@ void Browser::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(prefs::kUseVerticalTabs,
                              false,
                              PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterBooleanPref(prefs::kUseCompactNavigationBar,
-                             false,
-                             PrefService::UNSYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kEnableTranslate,
                              true,
                              PrefService::SYNCABLE_PREF);
@@ -2629,7 +2607,6 @@ void Browser::ExecuteCommandWithDisposition(
 #endif
     case IDC_EXIT:                  Exit();                           break;
     case IDC_TOGGLE_VERTICAL_TABS:  ToggleUseVerticalTabs();          break;
-    case IDC_COMPACT_NAVBAR:        ToggleUseCompactNavigationBar();  break;
 #if defined(OS_CHROMEOS)
     case IDC_SEARCH:                Search();                         break;
     case IDC_SHOW_KEYBOARD_OVERLAY: ShowKeyboardOverlay();            break;
@@ -3124,11 +3101,6 @@ void Browser::ToggleUseVerticalTabs() {
   UseVerticalTabsChanged();
 }
 
-void Browser::ToggleUseCompactNavigationBar() {
-  use_compact_navigation_bar_.SetValue(!UseCompactNavigationBar());
-  UseCompactNavigationBarChanged();
-}
-
 bool Browser::LargeIconsPermitted() const {
   // We don't show the big icons in tabs for TYPE_EXTENSION_APP windows because
   // for those windows, we already have a big icon in the top-left outside any
@@ -3529,10 +3501,6 @@ void Browser::UpdateDownloadShelfVisibility(bool visible) {
 
 bool Browser::UseVerticalTabs() const {
   return use_vertical_tabs_.GetValue();
-}
-
-bool Browser::UseCompactNavigationBar() const {
-  return use_compact_navigation_bar_.GetValue();
 }
 
 void Browser::ContentsZoomChange(bool zoom_in) {
@@ -4061,8 +4029,6 @@ void Browser::Observe(int type,
       const std::string& pref_name = *Details<std::string>(details).ptr();
       if (pref_name == prefs::kUseVerticalTabs) {
         UseVerticalTabsChanged();
-      } else if (pref_name == prefs::kUseCompactNavigationBar) {
-        UseCompactNavigationBarChanged();
       } else if (pref_name == prefs::kPrintingEnabled) {
         UpdatePrintingState(GetContentRestrictionsForSelectedTab());
       } else if (pref_name == prefs::kInstantEnabled ||
@@ -4426,7 +4392,6 @@ void Browser::UpdateCommandsForFullscreenMode(bool is_fullscreen) {
   command_updater_.UpdateCommandEnabled(IDC_ABOUT, show_main_ui);
   command_updater_.UpdateCommandEnabled(IDC_SHOW_APP_MENU, show_main_ui);
   command_updater_.UpdateCommandEnabled(IDC_TOGGLE_VERTICAL_TABS, show_main_ui);
-  command_updater_.UpdateCommandEnabled(IDC_COMPACT_NAVBAR, show_main_ui);
 #if defined (ENABLE_PROFILING) && !defined(NO_TCMALLOC)
   command_updater_.UpdateCommandEnabled(IDC_PROFILING_ENABLED, show_main_ui);
 #endif

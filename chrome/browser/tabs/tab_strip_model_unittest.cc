@@ -129,8 +129,6 @@ class TabStripDummyDelegate : public TabStripModelDelegate {
   virtual bool CanCloseTab() const { return true; }
   virtual bool UseVerticalTabs() const { return false; }
   virtual void ToggleUseVerticalTabs() {}
-  virtual bool UseCompactNavigationBar() const { return false; }
-  virtual void ToggleUseCompactNavigationBar() {}
   virtual bool LargeIconsPermitted() const { return true; }
 
  private:

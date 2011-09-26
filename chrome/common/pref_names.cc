@@ -774,9 +774,6 @@ const char kEditBookmarksEnabled[] = "bookmarks.editing_enabled";
 // side of the browser window.
 const char kUseVerticalTabs[] = "tabs.use_vertical_tabs";
 
-// Boolean that is true when the compact navigation bar is to be used.
-const char kUseCompactNavigationBar[] = "tabs.use_compact_navigation_bar";
-
 // Boolean that is true when the translate feature is enabled.
 const char kEnableTranslate[] = "translate.enabled";
 

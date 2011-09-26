@@ -36,16 +36,6 @@ namespace {
 const int kTabShadowSize = 2;
 // The vertical overlap between the TabStrip and the Toolbar.
 const int kToolbarTabStripVerticalOverlap = 3;
-// The vertical size of the space between the content area and the tabstrip that
-// is inserted in compact navigation mode. Note that we need to use a height
-// that includes the overlap to get the visible height we want, in order to
-// match how the toolbar overlaps the tabstrip.
-const int kCompactNavbarSpacerVisibleHeight = 4;
-const int kCompactNavbarSpacerHeight =
-    kCompactNavbarSpacerVisibleHeight + kToolbarTabStripVerticalOverlap;
-// The size of the padding between the compact navigation/options bars and the
-// tab strip.
-const int kCompactNavbarHorizontalPadding = 2;
 // The number of pixels the bookmark bar should overlap the spacer by if the
 // spacer is visible.
 const int kSpacerBookmarkBarOverlap = 1;
@@ -72,9 +62,6 @@ BrowserViewLayout::BrowserViewLayout()
       contents_split_(NULL),
       contents_container_(NULL),
       infobar_container_(NULL),
-      compact_navigation_bar_(NULL),
-      compact_options_bar_(NULL),
-      compact_spacer_(NULL),
       download_shelf_(NULL),
       active_bookmark_bar_(NULL),
       browser_view_(NULL),
@@ -176,17 +163,6 @@ int BrowserViewLayout::NonClientHitTest(
       return HTCLIENT;
     }
 
-    // If the tabstrip is visible and we are in compact navigation mode, test
-    // against the compact navigation and option bars.
-    if (browser_view_->UseCompactNavigationBar()) {
-      test_point = point;
-      if (ConvertedHitTest(parent, compact_navigation_bar_, &test_point))
-        return HTCLIENT;
-      test_point = point;
-      if (ConvertedHitTest(parent, compact_options_bar_, &test_point))
-        return HTCLIENT;
-    }
-
     // The top few pixels of the TabStrip are a drop-shadow - as we're pretty
     // starved of dragable area, let's give it to window dragging (this also
     // makes sense visually).
@@ -239,9 +215,6 @@ void BrowserViewLayout::Installed(views::View* host) {
   download_shelf_ = NULL;
   active_bookmark_bar_ = NULL;
   tabstrip_ = NULL;
-  compact_navigation_bar_ = NULL;
-  compact_options_bar_ = NULL;
-  compact_spacer_ = NULL;
   browser_view_ = static_cast<BrowserView*>(host);
 }
 
@@ -275,15 +248,6 @@ void BrowserViewLayout::ViewAdded(views::View* host, views::View* view) {
       break;
     case VIEW_ID_TAB_STRIP:
       tabstrip_ = static_cast<AbstractTabStripView*>(view);
-      break;
-    case VIEW_ID_COMPACT_NAV_BAR_SPACER:
-      compact_spacer_ = view;
-      break;
-    case VIEW_ID_COMPACT_NAV_BAR:
-      compact_navigation_bar_ = view;
-      break;
-    case VIEW_ID_COMPACT_OPT_BAR:
-      compact_options_bar_ = view;
       break;
   }
 }
@@ -319,11 +283,6 @@ void BrowserViewLayout::Layout(views::View* host) {
     browser()->GetFindBarController()->find_bar()->MoveWindowIfNecessary(
         gfx::Rect(), true);
   }
-  if (browser()->UseCompactNavigationBar()) {
-    DCHECK(browser_view_->compact_location_bar_view_host());
-    browser_view_->compact_location_bar_view_host()->MoveWindowIfNecessary(
-        gfx::Rect(), true);
-  }
 }
 
 // Return the preferred size which is the size required to give each
@@ -345,10 +304,6 @@ const Browser* BrowserViewLayout::browser() const {
 
 int BrowserViewLayout::LayoutTabStripRegion() {
   if (!browser_view_->IsTabStripVisible()) {
-    if (compact_navigation_bar_ && compact_options_bar_) {
-      compact_navigation_bar_->SetVisible(false);
-      compact_options_bar_->SetVisible(false);
-    }
     tabstrip_->SetVisible(false);
     tabstrip_->SetBounds(0, 0, 0, 0);
     return 0;
@@ -362,41 +317,6 @@ int BrowserViewLayout::LayoutTabStripRegion() {
   views::View::ConvertPointToView(browser_view_->parent(), browser_view_,
                                   &tabstrip_origin);
   tabstrip_bounds.set_origin(tabstrip_origin);
-
-  // If we are in compact nav mode, we want to reduce the tab strip bounds from
-  // both ends enough to lay out the compact navigation and options bars. We
-  // check the pointers to see if the mode is available, and then check the pref
-  // to see if the mode is enabled (and therefore if the additional bars should
-  // be made visible).
-  if (compact_navigation_bar_ && compact_options_bar_) {
-    compact_navigation_bar_->SetVisible(
-        browser_view_->UseCompactNavigationBar());
-    compact_options_bar_->SetVisible(browser_view_->UseCompactNavigationBar());
-
-    if (compact_navigation_bar_->IsVisible()) {
-      gfx::Rect cnav_bar_bounds;
-      gfx::Size cnav_bar_size = compact_navigation_bar_->GetPreferredSize();
-      cnav_bar_bounds.set_origin(tabstrip_bounds.origin());
-      cnav_bar_bounds.set_size(cnav_bar_size);
-      compact_navigation_bar_->SetBoundsRect(cnav_bar_bounds);
-
-      // The options bar is flush right of the tab strip region.
-      gfx::Rect copt_bar_bounds;
-      gfx::Size copt_bar_size = compact_options_bar_->GetPreferredSize();
-      copt_bar_bounds.set_x(std::max(0, tabstrip_bounds.right() -
-                            copt_bar_size.width()));
-      copt_bar_bounds.set_y(tabstrip_origin.y());
-      copt_bar_bounds.set_size(copt_bar_size);
-      compact_options_bar_->SetBoundsRect(copt_bar_bounds);
-
-      // Reduce the bounds of the tab strip accordingly.
-      tabstrip_bounds.set_x(tabstrip_bounds.x() + cnav_bar_size.width() +
-          kCompactNavbarHorizontalPadding);
-      tabstrip_bounds.set_width(std::max(0, tabstrip_bounds.width() -
-          cnav_bar_size.width() - copt_bar_size.width() -
-          kCompactNavbarHorizontalPadding * 2));
-    }
-  }
 
   if (browser_view_->UseVerticalTabs())
     vertical_layout_rect_.Inset(tabstrip_bounds.width(), 0, 0, 0);
@@ -413,21 +333,12 @@ int BrowserViewLayout::LayoutToolbar(int top) {
   toolbar_->location_bar()->set_focusable(toolbar_visible);
   int y = top;
   if (!browser_view_->UseVerticalTabs()) {
-    y -= ((toolbar_visible || browser_view_->UseCompactNavigationBar()) &&
-           browser_view_->IsTabStripVisible()) ?
-           kToolbarTabStripVerticalOverlap : 0;
+    y -= (toolbar_visible && browser_view_->IsTabStripVisible()) ?
+          kToolbarTabStripVerticalOverlap : 0;
   }
   int height = toolbar_visible ? toolbar_->GetPreferredSize().height() : 0;
   toolbar_->SetVisible(toolbar_visible);
   toolbar_->SetBounds(vertical_layout_rect_.x(), y, browser_view_width, height);
-
-  // The spacer essentially replaces the toolbar when in compact mode.
-  if (browser_view_->UseCompactNavigationBar()) {
-    compact_spacer_->SetVisible(!toolbar_visible);
-    compact_spacer_->SetBounds(vertical_layout_rect_.x(), y, browser_view_width,
-                       toolbar_visible ? 0 : kCompactNavbarSpacerHeight);
-    height = kCompactNavbarSpacerHeight;
-  }
 
   return y + height;
 }
@@ -458,12 +369,7 @@ int BrowserViewLayout::LayoutBookmarkBar(int top) {
 
   active_bookmark_bar_->set_infobar_visible(InfobarVisible());
   int bookmark_bar_height = active_bookmark_bar_->GetPreferredSize().height();
-  if (!browser_view_->UseCompactNavigationBar()) {
-    y -= views::NonClientFrameView::kClientEdgeThickness +
-        active_bookmark_bar_->GetToolbarOverlap(false);
-  } else {
-    y -= kSpacerBookmarkBarOverlap;
-  }
+  y -= kSpacerBookmarkBarOverlap;
   active_bookmark_bar_->SetVisible(true);
   active_bookmark_bar_->SetBounds(vertical_layout_rect_.x(), y,
                                   vertical_layout_rect_.width(),

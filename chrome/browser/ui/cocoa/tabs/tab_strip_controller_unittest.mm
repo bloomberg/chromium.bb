@@ -91,10 +91,6 @@ class TestTabStripDelegate : public TabStripModelDelegate {
 
   virtual void ToggleUseVerticalTabs() {}
 
-  virtual bool UseCompactNavigationBar() const { return false; }
-
-  virtual void ToggleUseCompactNavigationBar() {}
-
   virtual bool LargeIconsPermitted() const { return true; }
 };
 

@@ -1136,9 +1136,6 @@ void BrowserWindowGtk::Paste() {
 void BrowserWindowGtk::ToggleTabStripMode() {
 }
 
-void BrowserWindowGtk::ToggleUseCompactNavigationBar() {
-}
-
 void BrowserWindowGtk::PrepareForInstant() {
   TabContentsWrapper* contents = contents_container_->tab();
   if (contents)

@@ -26,12 +26,6 @@ bool TabMenuModel::AreVerticalTabsEnabled() {
 #endif
 }
 
-bool TabMenuModel::IsCompactNavigationModeEnabled() {
-  // TODO(stevet): Completely remove this once we clean up the rest of the cnav
-  // code.
-  return false;
-}
-
 void TabMenuModel::Build(TabStripModel* tab_strip, int index) {
   bool affects_multiple_tabs =
       (tab_strip->IsTabSelected(index) &&
@@ -67,16 +61,10 @@ void TabMenuModel::Build(TabStripModel* tab_strip, int index) {
   AddItemWithStringId(TabStripModel::CommandRestoreTab, IDS_RESTORE_TAB);
   AddItemWithStringId(TabStripModel::CommandBookmarkAllTabs,
                       IDS_TAB_CXMENU_BOOKMARK_ALL_TABS);
-  if (AreVerticalTabsEnabled() || IsCompactNavigationModeEnabled()) {
+  if (AreVerticalTabsEnabled()) {
     AddSeparator();
-    if (AreVerticalTabsEnabled()) {
-      AddCheckItemWithStringId(TabStripModel::CommandUseVerticalTabs,
-        IDS_TAB_CXMENU_USE_VERTICAL_TABS);
-    }
-    if (IsCompactNavigationModeEnabled()) {
-      AddCheckItemWithStringId(TabStripModel::CommandUseCompactNavigationBar,
-        IDS_TAB_CXMENU_USE_COMPACT_NAVIGATION_BAR);
-    }
+    AddCheckItemWithStringId(TabStripModel::CommandUseVerticalTabs,
+      IDS_TAB_CXMENU_USE_VERTICAL_TABS);
   }
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableTabGroupsContextMenu)) {

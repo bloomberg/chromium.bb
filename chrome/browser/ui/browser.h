@@ -621,7 +621,6 @@ class Browser : public TabHandlerDelegate,
 
   // Overridden from TabStripModelDelegate:
   virtual bool UseVerticalTabs() const;
-  virtual bool UseCompactNavigationBar() const;
 
   /////////////////////////////////////////////////////////////////////////////
 
@@ -793,7 +792,6 @@ class Browser : public TabHandlerDelegate,
   virtual void BookmarkAllTabs();
   virtual bool CanCloseTab() const;
   virtual void ToggleUseVerticalTabs();
-  virtual void ToggleUseCompactNavigationBar();
   virtual bool CanRestoreTab();
   virtual void RestoreTab();
   virtual bool LargeIconsPermitted() const;
@@ -1218,10 +1216,6 @@ class Browser : public TabHandlerDelegate,
   // policy of the tab strip model and notifies the window.
   void UseVerticalTabsChanged();
 
-  // Invoked when the use of the compact navigation bar preference changes.
-  // Notifies the window.
-  void UseCompactNavigationBarChanged();
-
   // Implementation of SupportsWindowFeature and CanSupportWindowFeature. If
   // |check_fullscreen| is true, the set of features reflect the actual state of
   // the browser, otherwise the set of features reflect the possible state of
@@ -1400,9 +1394,6 @@ class Browser : public TabHandlerDelegate,
 
   // Tracks the display mode of the tabstrip.
   mutable BooleanPrefMember use_vertical_tabs_;
-
-  // Tracks the display mode of the navigation bar.
-  mutable BooleanPrefMember use_compact_navigation_bar_;
 
   // The profile's tab restore service. The service is owned by the profile,
   // and we install ourselves as an observer.
