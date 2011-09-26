@@ -87,16 +87,7 @@ void ClientSession::InjectKeyEvent(const KeyEvent& event) {
 
 void ClientSession::InjectMouseEvent(const MouseEvent& event) {
   if (authenticated_ && !ShouldIgnoreRemoteMouseInput(event)) {
-    if (event.has_button() && event.has_button_down()) {
-      if (event.button() >= 1 && event.button() < 32) {
-        uint32 button_change = 1 << (event.button() - 1);
-        if (event.button_down()) {
-          remote_mouse_button_state_ |= button_change;
-        } else {
-          remote_mouse_button_state_ &= ~button_change;
-        }
-      }
-    }
+    RecordMouseButtonState(event);
     MouseEvent event_to_inject = event;
     if (event.has_x() && event.has_y()) {
       // In case the client sends events with off-screen coordinates, modify
@@ -110,6 +101,11 @@ void ClientSession::InjectMouseEvent(const MouseEvent& event) {
       event_to_inject.set_x(pos.x());
       event_to_inject.set_y(pos.y());
 
+      // Record the mouse position so we can use it if we need to inject
+      // fake mouse button events. Note that we need to do this after we
+      // clamp the values to the screen area.
+      remote_mouse_pos_ = pos;
+
       injected_mouse_positions_.push_back(pos);
       if (injected_mouse_positions_.size() > kNumRemoteMousePositions) {
         VLOG(1) << "Injected mouse positions queue full.";
@@ -121,7 +117,7 @@ void ClientSession::InjectMouseEvent(const MouseEvent& event) {
 }
 
 void ClientSession::OnDisconnected() {
-  UnpressKeys();
+  RestoreEventState();
   authenticated_ = false;
 }
 
@@ -187,7 +183,22 @@ void ClientSession::RecordKeyEvent(const KeyEvent& event) {
   }
 }
 
-void ClientSession::UnpressKeys() {
+void ClientSession::RecordMouseButtonState(const MouseEvent& event) {
+  if (event.has_button() && event.has_button_down()) {
+    // Button values are defined in remoting/proto/event.proto.
+    if (event.button() >= 1 && event.button() < MouseEvent::BUTTON_MAX) {
+      uint32 button_change = 1 << (event.button() - 1);
+      if (event.button_down()) {
+        remote_mouse_button_state_ |= button_change;
+      } else {
+        remote_mouse_button_state_ &= ~button_change;
+      }
+    }
+  }
+}
+
+void ClientSession::RestoreEventState() {
+  // Undo any currently pressed keys.
   std::set<int>::iterator i;
   for (i = pressed_keys_.begin(); i != pressed_keys_.end(); ++i) {
     KeyEvent key;
@@ -196,6 +207,19 @@ void ClientSession::UnpressKeys() {
     input_stub_->InjectKeyEvent(key);
   }
   pressed_keys_.clear();
+
+  // Undo any currently pressed mouse buttons.
+  for (int i = 1; i < MouseEvent::BUTTON_MAX; i++) {
+    if (remote_mouse_button_state_ & (1 << (i - 1))) {
+      MouseEvent mouse;
+      mouse.set_x(remote_mouse_pos_.x());
+      mouse.set_y(remote_mouse_pos_.y());
+      mouse.set_button((MouseEvent::MouseButton)i);
+      mouse.set_button_down(false);
+      input_stub_->InjectMouseEvent(mouse);
+    }
+  }
+  remote_mouse_button_state_ = 0;
 }
 
 }  // namespace remoting

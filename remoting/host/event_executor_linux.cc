@@ -345,7 +345,9 @@ void EventExecutorLinux::InjectMouseEvent(const MouseEvent& event) {
     }
 
     VLOG(3) << "Button " << event.button()
-            << " received, sending down " << button_number;
+            << " received, sending "
+            << (event.button_down() ? "down " : "up ")
+            << button_number;
     XTestFakeButtonEvent(display_, button_number, event.button_down(),
                          CurrentTime);
     XFlush(display_);

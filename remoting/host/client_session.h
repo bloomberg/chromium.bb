@@ -87,17 +87,17 @@ class ClientSession : public protocol::HostStub,
 
  private:
   friend class base::RefCountedThreadSafe<ClientSession>;
-  friend class ClientSessionTest_UnpressKeys_Test;
+  friend class ClientSessionTest_RestoreEventState_Test;
   virtual ~ClientSession();
 
-  // Keep track of keydowns and keyups so that we can clean up the keyboard
-  // state when the user disconnects.
+  // Keep track of input state so that we can clean up the event queue when
+  // the user disconnects.
   void RecordKeyEvent(const protocol::KeyEvent& event);
+  void RecordMouseButtonState(const protocol::MouseEvent& event);
 
-  // Synthesize KeyUp events for keys that have been pressed but not released.
-  // This should be used when the client has disconnected to clear out any
-  // pending key events.
-  void UnpressKeys();
+  // Synthesize KeyUp and MouseUp events so that we can undo these events
+  // when the user disconnects.
+  void RestoreEventState();
 
   EventHandler* event_handler_;
 
@@ -128,12 +128,19 @@ class ClientSession : public protocol::HostStub,
   // State to control remote input blocking while the local pointer is in use.
   uint32 remote_mouse_button_state_;
 
+  // Current location of the mouse pointer. This is used to provide appropriate
+  // coordinates when we release the mouse buttons after a user disconnects.
+  gfx::Point remote_mouse_pos_;
+
   // Queue of recently-injected mouse positions.  This is used to detect whether
   // mouse events from the local input monitor are echoes of injected positions,
   // or genuine mouse movements of a local input device.
   std::list<gfx::Point> injected_mouse_positions_;
 
   base::Time latest_local_input_time_;
+
+  // Set of keys that are currently pressed down by the user. This is used so
+  // we can release them if the user disconnects.
   std::set<int> pressed_keys_;
 
   DISALLOW_COPY_AND_ASSIGN(ClientSession);

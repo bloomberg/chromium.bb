@@ -81,6 +81,10 @@ MATCHER_P2(EqualsMouseEvent, x, y, "") {
   return arg.x() == x && arg.y() == y;
 }
 
+MATCHER_P(EqualsMouseUpEvent, button, "") {
+  return arg.button() == button && !arg.button_down();
+}
+
 TEST_F(ClientSessionTest, InputStubFilter) {
   protocol::KeyEvent key_event1;
   key_event1.set_pressed(true);
@@ -178,7 +182,7 @@ TEST_F(ClientSessionTest, LocalInputTest) {
   client_session_->OnDisconnected();
 }
 
-TEST_F(ClientSessionTest, UnpressKeys) {
+TEST_F(ClientSessionTest, RestoreEventState) {
   protocol::KeyEvent key1;
   key1.set_pressed(true);
   key1.set_keycode(1);
@@ -187,13 +191,20 @@ TEST_F(ClientSessionTest, UnpressKeys) {
   key2.set_pressed(true);
   key2.set_keycode(2);
 
+  protocol::MouseEvent mousedown;
+  mousedown.set_button(protocol::MouseEvent::BUTTON_LEFT);
+  mousedown.set_button_down(true);
+
   client_session_->RecordKeyEvent(key1);
   client_session_->RecordKeyEvent(key2);
+  client_session_->RecordMouseButtonState(mousedown);
 
   EXPECT_CALL(input_stub_, InjectKeyEvent(EqualsKeyEvent(1, false)));
   EXPECT_CALL(input_stub_, InjectKeyEvent(EqualsKeyEvent(2, false)));
+  EXPECT_CALL(input_stub_, InjectMouseEvent(EqualsMouseUpEvent(
+      protocol::MouseEvent::BUTTON_LEFT)));
 
-  client_session_->UnpressKeys();
+  client_session_->RestoreEventState();
 }
 
 TEST_F(ClientSessionTest, ClampMouseEvents) {
