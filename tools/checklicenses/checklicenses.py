@@ -253,6 +253,9 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
     'third_party/lcov/contrib/galaxy/genflat.pl': [
         'GPL (v2 or later)',
     ],
+    'third_party/lcov-1.9/contrib/galaxy/genflat.pl': [
+        'GPL (v2 or later)',
+    ],
     'third_party/leveldatabase/src/util/posix_logger.h': [
         'UNKNOWN',
     ],
@@ -520,11 +523,6 @@ def main(options, args):
 
 
 if '__main__' == __name__:
-  # Script takes 6 minutes when it succeeds, and often times out after 10
-  # minutes. Enable by default when it's fast.
-  print "\nNot running for now because it is slow and flakey\n"
-  print "\nSUCCESS\n"
-  sys.exit(0)
   default_root = os.path.abspath(
       os.path.join(os.path.dirname(__file__), '..', '..'))
   option_parser = optparse.OptionParser()
