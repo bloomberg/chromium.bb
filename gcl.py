@@ -532,7 +532,7 @@ class ChangeInfo(object):
       if fail_on_not_found:
         ErrorExit("Changelist " + changename + " not found.")
       return ChangeInfo(changename, 0, 0, '', None, local_root, None, False)
-    content = gclient_utils.FileRead(info_file, 'r')
+    content = gclient_utils.FileRead(info_file)
     save = False
     try:
       values = ChangeInfo._LoadNewFormat(content)
@@ -1137,7 +1137,7 @@ def CMDchange(args):
         subprocess2.check_call(cmd, shell=True)
       except subprocess2.CalledProcessError, e:
         ErrorExit('Editor returned %d' % e.returncode)
-    result = gclient_utils.FileRead(filename, 'r')
+    result = gclient_utils.FileRead(filename)
   finally:
     os.remove(filename)
 

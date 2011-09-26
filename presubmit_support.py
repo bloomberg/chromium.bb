@@ -897,9 +897,9 @@ class GetTrySlavesExecuter(object):
     if function_name in context:
       get_preferred_try_slaves = context[function_name]
       function_info = inspect.getargspec(get_preferred_try_slaves)
-      if len(function_info.args) == 1:
+      if len(function_info[0]) == 1:
         result = get_preferred_try_slaves(project)
-      elif len(function_info.args) == 2:
+      elif len(function_info[0]) == 2:
         result = get_preferred_try_slaves(project, change)
       else:
         result = get_preferred_try_slaves()

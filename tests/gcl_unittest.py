@@ -216,7 +216,7 @@ class ChangeInfoUnittest(GclTestsBase):
     description = ["This is some description.", "force an extra separator."]
     gcl.GetChangelistInfoFile('bleh').AndReturn('bleeeh')
     gcl.os.path.exists('bleeeh').AndReturn(True)
-    gcl.gclient_utils.FileRead('bleeeh', 'r').AndReturn(
+    gcl.gclient_utils.FileRead('bleeeh').AndReturn(
       gcl.ChangeInfo._SEPARATOR.join(["42, 53", "G      b.cc"] + description))
     gcl.GetCodeReviewSetting('CODE_REVIEW_SERVER').AndReturn('foo')
     # Does an upgrade.
@@ -236,7 +236,7 @@ class ChangeInfoUnittest(GclTestsBase):
     self.mox.StubOutWithMock(gcl, 'GetCodeReviewSetting')
     gcl.GetChangelistInfoFile('bleh').AndReturn('bleeeh')
     gcl.os.path.exists('bleeeh').AndReturn(True)
-    gcl.gclient_utils.FileRead('bleeeh', 'r').AndReturn(
+    gcl.gclient_utils.FileRead('bleeeh').AndReturn(
         gcl.ChangeInfo._SEPARATOR.join(["", "", ""]))
     gcl.GetCodeReviewSetting('CODE_REVIEW_SERVER').AndReturn('foo')
     # Does an upgrade.
