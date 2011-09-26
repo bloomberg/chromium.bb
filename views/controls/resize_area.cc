@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "views/controls/resize_area_delegate.h"
 
 #if defined(OS_LINUX)
 #include "ui/gfx/gtk_util.h"

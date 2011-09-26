@@ -24,7 +24,7 @@
         'sources/': [ ['exclude', '_win\\.(h|cc)$'],
                       ['exclude', '_gtk\\.(h|cc)$'],
                       ['exclude', '_x\\.(h|cc)$'] ],
-      }],      
+      }],
     ],
   },
   'targets': [
@@ -179,6 +179,7 @@
         'controls/progress_bar.cc',
         'controls/resize_area.cc',
         'controls/resize_area.h',
+        'controls/resize_area_delegate.h',
         'controls/scroll_view.cc',
         'controls/scroll_view.h',
         'controls/scrollbar/base_scroll_bar.cc',

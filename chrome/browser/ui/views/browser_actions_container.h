@@ -24,7 +24,7 @@
 #include "ui/base/animation/tween.h"
 #include "views/controls/button/menu_button.h"
 #include "views/controls/menu/view_menu_delegate.h"
-#include "views/controls/resize_area.h"
+#include "views/controls/resize_area_delegate.h"
 #include "views/drag_controller.h"
 #include "views/view.h"
 
@@ -47,6 +47,7 @@ class SlideAnimation;
 
 namespace views {
 class MenuItemView;
+class ResizeArea;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -260,7 +261,7 @@ class BrowserActionsContainer
     : public views::View,
       public views::ViewMenuDelegate,
       public views::DragController,
-      public views::ResizeArea::ResizeAreaDelegate,
+      public views::ResizeAreaDelegate,
       public ui::AnimationDelegate,
       public ExtensionToolbarModel::Observer,
       public BrowserActionOverflowMenuController::Observer,
@@ -345,7 +346,7 @@ class BrowserActionsContainer
                                    const gfx::Point& press_pt,
                                    const gfx::Point& p) OVERRIDE;
 
-  // Overridden from ResizeArea::ResizeAreaDelegate:
+  // Overridden from views::ResizeAreaDelegate:
   virtual void OnResize(int resize_amount, bool done_resizing) OVERRIDE;
 
   // Overridden from ui::AnimationDelegate:
