@@ -93,7 +93,10 @@ bool NativeWidgetViews::OnKeyEvent(const KeyEvent& key_event) {
 void NativeWidgetViews::DispatchKeyEventPostIME(const KeyEvent& key) {
   // TODO(oshima): GTK impl handles menu_key in special way. This may be
   // necessary when running under NativeWidgetX.
-  delegate_->OnKeyEvent(key);
+  if (delegate_->OnKeyEvent(key))
+    return;
+  if (key.type() == ui::ET_KEY_PRESSED && GetWidget()->GetFocusManager())
+    GetWidget()->GetFocusManager()->OnKeyEvent(key);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
