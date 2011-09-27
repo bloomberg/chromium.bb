@@ -748,6 +748,9 @@
             ['include', 'ext/platform_device_linux.cc'],
             ['include', 'ext/platform_canvas_linux.cc'],
           ],
+          'defines': [
+            'SK_BUILD_FOR_ANDROID_NDK',
+          ],
         }, { # OS != "android"
           'sources/': [ ['exclude', '_android\\.(cc|cpp)$'] ],
         }],
@@ -844,7 +847,7 @@
               'config/win',
             ],
           },
-        },],
+        }],
         ['component=="shared_library"', {
           'defines': [
             'GR_DLL=1',
@@ -861,7 +864,7 @@
               'SKIA_DLL',
             ],
           },
-        },],
+        }],
       ],
       'dependencies': [
         'skia_opts',
@@ -889,6 +892,13 @@
           'SK_BUILD_NO_IMAGE_ENCODE',
           'GR_GL_CUSTOM_SETUP_HEADER="GrGLConfig_chrome.h"',
           'GR_AGGRESSIVE_SHADER_OPTS=1',
+        ],
+        'conditions': [
+          ['OS=="android"', {
+            'defines': [
+              'SK_BUILD_FOR_ANDROID_NDK',
+            ],
+          }],
         ],
       },
     },
@@ -928,6 +938,11 @@
         [ 'os_posix == 1 and OS != "mac" and target_arch != "arm"', {
           'cflags': [
             '-msse2',
+          ],
+        }],
+        [ 'OS == "android"', {
+          'defines': [
+            'SK_BUILD_FOR_ANDROID_NDK',
           ],
         }],
         [ 'target_arch != "arm"', {
