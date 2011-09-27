@@ -409,6 +409,36 @@ gboolean BubbleGtk::OnGtkAccelerator(GtkAccelGroup* group,
     case GDK_w:
       // Close on C-w and forward the accelerator
       if (modifier & GDK_CONTROL_MASK) {
+        gdk_keymap_get_entries_for_keyval(NULL,
+                                          keyval,
+                                          &keys,
+                                          &n_keys);
+        if (n_keys) {
+          // Forward the accelerator to root window the bubble is anchored
+          // to for further processing
+          msg.type = GDK_KEY_PRESS;
+          msg.window = GTK_WIDGET(toplevel_window_)->window;
+          msg.send_event = TRUE;
+          msg.time = GDK_CURRENT_TIME;
+          msg.state = modifier | GDK_MOD2_MASK;
+          msg.keyval = keyval;
+          // length and string are deprecated and thus zeroed out
+          msg.length = 0;
+          msg.string = NULL;
+          msg.hardware_keycode = keys[0].keycode;
+          msg.group = keys[0].group;
+          msg.is_modifier = 0;
+
+          g_free(keys);
+
+          gtk_main_do_event(reinterpret_cast<GdkEvent*>(&msg));
+        } else {
+          // This means that there isn't a h/w code for the keyval in the
+          // current keymap, which is weird but possible if the keymap just
+          // changed. This isn't a critical error, but might be indicative
+          // of something off if it happens regularly.
+          DLOG(WARNING) << "Found no keys for value " << keyval;
+        }
         Close();
       }
       break;
@@ -416,36 +446,6 @@ gboolean BubbleGtk::OnGtkAccelerator(GtkAccelGroup* group,
       return FALSE;
   }
 
-  gdk_keymap_get_entries_for_keyval(NULL,
-                                    keyval,
-                                    &keys,
-                                    &n_keys);
-  if (n_keys) {
-    // Forward the accelerator to root window the bubble is anchored
-    // to for further processing
-    msg.type = GDK_KEY_PRESS;
-    msg.window = GTK_WIDGET(toplevel_window_)->window;
-    msg.send_event = TRUE;
-    msg.time = GDK_CURRENT_TIME;
-    msg.state = modifier | GDK_MOD2_MASK;
-    msg.keyval = keyval;
-    // length and string are deprecated and thus zeroed out
-    msg.length = 0;
-    msg.string = NULL;
-    msg.hardware_keycode = keys[0].keycode;
-    msg.group = keys[0].group;
-    msg.is_modifier = 0;
-
-    g_free(keys);
-
-    gtk_main_do_event(reinterpret_cast<GdkEvent*>(&msg));
-  } else {
-    // This means that there isn't a h/w code for the keyval in the
-    // current keymap, which is weird but possible if the keymap just
-    // changed. This isn't a critical error, but might be indicative
-    // of something off if it happens regularly.
-    DLOG(WARNING) << "Found no keys for value " << keyval;
-  }
   return TRUE;
 }
 
