@@ -16,6 +16,11 @@ from chromite.lib import cros_build_lib as cros_lib
 # The prefix of the temporary directory created to store local patches.
 _TRYBOT_TEMP_PREFIX = 'trybot_patch-'
 
+# URL where the Commit Queue documentation is stored.
+_PALADIN_DOCUMENTATION_URL = ('http://www.chromium.org/developers/'
+                              'tree-sheriffs/sheriff-details-chromium-os/'
+                              'commit-queue-overview')
+
 
 class PatchException(Exception):
   """Exception thrown by GetGerritPatchInfo."""
@@ -154,6 +159,11 @@ class GerritPatch(Patch):
     else:
       cros_lib.RunCommand(cmd, error_ok=True)
 
+  @staticmethod
+  def ConstructErrorMessage(msg):
+    return msg + (' Please see %s for more information.' %
+                  _PALADIN_DOCUMENTATION_URL)
+
   def HandleCouldNotSubmit(self, helper, dryrun=False):
     """Handler that is called when the Commit Queue can't submit a change.
 
@@ -170,6 +180,7 @@ class GerritPatch(Patch):
             'This is most likely due to an owner of your repo overriding the '
             'Commit Queue and committing a change that conflicts with yours. '
             'Please rebase and re-upload your change to re-submit."')
+    msg = self.ConstructErrorMessage(msg)
 
     cmd = helper.GetGerritReviewCommand(
         ['--verified=-1', '-m', msg, '%s,%s' % (self.gerrit_number,
@@ -189,9 +200,10 @@ class GerritPatch(Patch):
 
     """
     msg = ('"The Commit Queue failed to verify your change. '
-            'If you believe this happened in error, please re-upload a new '
-            'patch with TEST= updated describing why you believe this to be '
-            'true."')
+            'If you believe this happened in error, you can remove the '
+            'chrome-bot reviewer from your review by hitting the |X| next to '
+            'its name.  Your change will then get automatically retried."')
+    msg = self.ConstructErrorMessage(msg)
     cmd = helper.GetGerritReviewCommand(
         ['--verified=-1', '-m', msg, '%s,%s' % (self.gerrit_number,
                                                 self.patch_number)])
@@ -209,6 +221,7 @@ class GerritPatch(Patch):
     """
     msg = ('"The Commit Queue failed to apply your change cleanly. '
             'Please re-sync, rebase, and re-upload your change."')
+    msg = self.ConstructErrorMessage(msg)
     cmd = helper.GetGerritReviewCommand(
         ['--verified=-1', '-m', msg, '%s,%s' % (self.gerrit_number,
                                                 self.patch_number)])
