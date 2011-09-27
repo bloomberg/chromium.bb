@@ -213,15 +213,18 @@ NSTextField* LabelWithFrame(NSString* text, const NSRect& frame) {
   // Cell must be set immediately after construction.
   [button setCell:cell.get()];
 
-  // If the link text is too long, clamp it.
-  [button sizeToFit];
-  int maxWidth = NSWidth([[self bubble] frame]) - 2 * NSMinX(referenceFrame);
+  // Size to fit the button and add a little extra padding for the small-text
+  // hyperlink button, which sizeToFit gets wrong.
+  [GTMUILocalizerAndLayoutTweaker sizeToFitView:button];
   NSRect buttonFrame = [button frame];
-  if (NSWidth(buttonFrame) > maxWidth) {
-    buttonFrame.size.width = maxWidth;
-    [button setFrame:buttonFrame];
-  }
+  buttonFrame.size.width += 2;
 
+  // If the link text is too long, clamp it.
+  int maxWidth = NSWidth([[self bubble] frame]) - 2 * NSMinX(referenceFrame);
+  if (NSWidth(buttonFrame) > maxWidth)
+    buttonFrame.size.width = maxWidth;
+
+  [button setFrame:buttonFrame];
   [button setTarget:self];
   [button setAction:@selector(popupLinkClicked:)];
   return button;
