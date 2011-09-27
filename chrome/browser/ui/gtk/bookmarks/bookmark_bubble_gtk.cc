@@ -44,7 +44,10 @@ void BookmarkBubbleGtk::Show(GtkWidget* anchor,
                              Profile* profile,
                              const GURL& url,
                              bool newly_bookmarked) {
-  DCHECK(!g_bubble);
+  // Sometimes Ctrl+D may get pressed more than once on top level window
+  // before the bookmark bubble window is shown and takes the keyboad focus.
+  if (g_bubble)
+    return;
   g_bubble = new BookmarkBubbleGtk(anchor, profile, url, newly_bookmarked);
 }
 
