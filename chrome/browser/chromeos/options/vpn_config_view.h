@@ -117,7 +117,9 @@ class VPNConfigView : public ChildNetworkConfigView,
   views::Combobox* server_ca_cert_combobox_;
   views::Textfield* username_textfield_;
   views::Textfield* user_passphrase_textfield_;
+  views::Label* otp_label_;
   views::Textfield* otp_textfield_;
+  views::Label* group_name_label_;
   views::Textfield* group_name_textfield_;
   views::Label* error_label_;
 
