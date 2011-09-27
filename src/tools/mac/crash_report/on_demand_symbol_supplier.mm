@@ -293,7 +293,7 @@ bool OnDemandSymbolSupplier::GenerateSymbolFile(const CodeModule *module,
       if (dump.SetArchitecture(architecture)) {
         std::fstream file([symbol_path fileSystemRepresentation],
                           std::ios_base::out | std::ios_base::trunc);
-        dump.WriteSymbolFile(file);
+        dump.WriteSymbolFile(file, true);
       } else {
         printf("Architecture %s not available for %s\n",
                system_info->cpu.c_str(), name.c_str());
