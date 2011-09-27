@@ -65,6 +65,7 @@
     "chrome.experimental.devtools.network.onNavigated": "experimental.devtools.network.html#event-onNavigated",
     "chrome.experimental.devtools.network.onRequestFinished": "experimental.devtools.network.html#event-onRequestFinished",
     "chrome.experimental.devtools.panels.create": "experimental.devtools.panels.html#method-create",
+    "chrome.experimental.devtools.panels.setOpenResourceHandler": "experimental.devtools.panels.html#method-setOpenResourceHandler",
     "chrome.experimental.infobars.show": "experimental.infobars.html#method-show",
     "chrome.experimental.permissions.contains": "experimental.permissions.html#method-contains",
     "chrome.experimental.permissions.getAll": "experimental.permissions.html#method-getAll",

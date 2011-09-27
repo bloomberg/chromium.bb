@@ -343,6 +343,26 @@
             ]
           }
         ]
+      },
+      {
+        "name": "setOpenResourceHandler",
+        "type": "function",
+        "description": "Specifies the function to be called when the user clicks a resource link in the Developer Tools window. To unset the handler, either call the method with no parameters or pass null as the parameter.",
+        "parameters": [
+          {
+            "name": "callback",
+            "type": "function",
+            "optional": true,
+            "description": "A function that is called when the user clicks on a valid resource link in Developer Tools window. Note that if the user clicks an invalid URL or an XHR, this function is not called.",
+            "parameters": [
+              {
+                "name": "Resource",
+                "type": "object",
+                "description": "A <a href=\"experimental.devtools.inspectedWindow.html#type-Resource\">Resource</a> object for the resource that was clicked."
+              }
+            ]
+          }
+        ]
       }
     ]
   },

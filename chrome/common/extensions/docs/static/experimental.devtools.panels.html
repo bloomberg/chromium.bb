@@ -2,7 +2,7 @@
 <p id="classSummary">
 Use the <code>chrome.experimental.devtools.panels</code> module to integrate
 your extension into Developer Tools window UI: create your own panels, access
-existing panels and add sidebars.
+existing panels, and add sidebars.
 </p><p>
 See <a href="experimental.devtools.html">DevTools APIs summary</a> for
 general introduction to using Developer Tools APIs.
@@ -18,8 +18,16 @@ modules in <code>chrome.experimental.devtools</code> API, as well as to
 available to the pages within Developer Tools window, but you may invoke them
 by sending a request to the background page of your extension, similarly to how
 it's done in the <a href="overview.html#contentScripts">content scripts</a>.
+</p><p>
+You can use the <code><a href="#method-setOpenResourceHandler"
+>setOpenResourceHandler()</a></code> method to install a
+callback function that handles user requests to open a resource (typically,
+a click on a resource link in the Developer Tools window). At most one of the
+installed handlers gets called; users can specify (using the Developer Tools
+Settings dialog) either the default behavior or an extension to handle resource
+open requests. If an extension calls <code>setOpenResourceHandler()</code>
+multiple times, only the last handler is retained.
 </p>
-
 <h2 id="overview-examples">Examples</h2>
 <p>The following code adds a panel contained in <code>Panel.html</code>,
 represented by <code>FontPicker.png</code> on the Developer Tools toolbar
