@@ -14,6 +14,9 @@ class TabbedPaneListener {
  public:
   // Called when the tab at |index| is selected by the user.
   virtual void TabSelectedAt(int index) = 0;
+
+ protected:
+  virtual ~TabbedPaneListener() {}
 };
 
 }  // namespace views
