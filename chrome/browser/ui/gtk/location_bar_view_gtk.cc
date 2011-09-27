@@ -22,7 +22,7 @@
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/extensions/extension_browser_event_router.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_tabs_module.h"
+#include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/instant/instant_controller.h"
 #include "chrome/browser/profiles/profile.h"

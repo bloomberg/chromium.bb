@@ -9,7 +9,7 @@
 #include "base/logging.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_cookies_api_constants.h"
-#include "chrome/browser/extensions/extension_tabs_module.h"
+#include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/browser.h"

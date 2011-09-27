@@ -7,6 +7,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/extension_tabs_module.h"
 #include "chrome/browser/extensions/extension_tabs_module_constants.h"
 #include "chrome/browser/extensions/file_reader.h"
@@ -18,11 +19,11 @@
 #include "chrome/common/extensions/extension_error_utils.h"
 #include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/extensions/extension_l10n_util.h"
-#include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/extensions/extension_message_bundle.h"
+#include "chrome/common/extensions/extension_messages.h"
+#include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/browser/renderer_host/render_view_host.h"
 #include "content/common/notification_service.h"
 
 namespace keys = extension_tabs_module_constants;

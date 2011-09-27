@@ -13,9 +13,9 @@
 #include "base/file_util.h"
 #include "base/json/json_writer.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
-#include "base/string_number_conversions.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
@@ -29,7 +29,7 @@
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_tabs_module.h"
+#include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/extension_updater.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/history/top_sites.h"
@@ -2895,4 +2895,3 @@ void BrowserOpenedWithNewProfileNotificationObserver::Observe(
     NOTREACHED();
   }
 }
-

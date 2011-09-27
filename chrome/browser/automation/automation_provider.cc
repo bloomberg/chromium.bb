@@ -48,7 +48,7 @@
 #include "chrome/browser/extensions/extension_install_ui.h"
 #include "chrome/browser/extensions/extension_message_service.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_tabs_module.h"
+#include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/extension_toolbar_model.h"
 #include "chrome/browser/extensions/user_script_master.h"
 #include "chrome/browser/net/url_request_mock_util.h"

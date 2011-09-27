@@ -12,7 +12,7 @@
 #include "chrome/browser/extensions/extension_devtools_events.h"
 #include "chrome/browser/extensions/extension_devtools_manager.h"
 #include "chrome/browser/extensions/extension_event_router.h"
-#include "chrome/browser/extensions/extension_tabs_module.h"
+#include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "content/browser/debugger/devtools_manager.h"

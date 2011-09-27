@@ -4,16 +4,16 @@
 
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_browser_event_router.h"
-#include "chrome/browser/extensions/extension_tabs_module.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/restore_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
-#include "chrome/common/extensions/extension_action.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_action.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/tab_contents/tab_contents.h"
 

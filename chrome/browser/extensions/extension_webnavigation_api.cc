@@ -12,7 +12,7 @@
 #include "base/time.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_event_router.h"
-#include "chrome/browser/extensions/extension_tabs_module.h"
+#include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/extension_webnavigation_api_constants.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"

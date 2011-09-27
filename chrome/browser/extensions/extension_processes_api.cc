@@ -14,7 +14,7 @@
 
 #include "chrome/browser/extensions/extension_event_router.h"
 #include "chrome/browser/extensions/extension_processes_api_constants.h"
-#include "chrome/browser/extensions/extension_tabs_module.h"
+#include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/extension_tabs_module_constants.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/task_manager/task_manager.h"

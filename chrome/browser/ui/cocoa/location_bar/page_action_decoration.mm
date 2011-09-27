@@ -9,6 +9,7 @@
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/extensions/extension_browser_event_router.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/profiles/profile.h"
 #import "chrome/browser/ui/cocoa/extensions/extension_action_context_menu.h"
 #import "chrome/browser/ui/cocoa/extensions/extension_popup_controller.h"

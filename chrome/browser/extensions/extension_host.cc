@@ -13,7 +13,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_tabs_module.h"
+#include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/file_select_helper.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"

@@ -13,7 +13,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_event_router.h"
-#include "chrome/browser/extensions/extension_tabs_module.h"
+#include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"

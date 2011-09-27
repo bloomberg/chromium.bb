@@ -9,7 +9,7 @@
 #include "base/stl_util.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
-#include "chrome/browser/extensions/extension_tabs_module.h"
+#include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"

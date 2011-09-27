@@ -9,6 +9,7 @@
 #include "chrome/browser/extensions/extension_event_names.h"
 #include "chrome/browser/extensions/extension_event_router.h"
 #include "chrome/browser/extensions/extension_page_actions_module_constants.h"
+#include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/extension_tabs_module_constants.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tabs/tab_strip_model.h"

@@ -10,7 +10,7 @@
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_infobar_delegate.h"
 #include "chrome/browser/extensions/extension_infobar_module_constants.h"
-#include "chrome/browser/extensions/extension_tabs_module.h"
+#include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/extension_tabs_module_constants.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"

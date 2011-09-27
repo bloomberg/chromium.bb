@@ -6,7 +6,7 @@
 
 #include "base/file_util.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/extensions/extension_tabs_module.h"
+#include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "content/browser/child_process_security_policy.h"
 #include "content/browser/renderer_host/render_view_host.h"
