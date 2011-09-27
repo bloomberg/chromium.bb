@@ -146,7 +146,8 @@ void Layer::Draw() {
 
   UpdateLayerCanvas();
 
-  DCHECK(texture_.get());
+  if (!texture_.get())
+    return;
 
   ui::TextureDrawParams texture_draw_params;
   for (Layer* layer = this; layer; layer = layer->parent_) {
