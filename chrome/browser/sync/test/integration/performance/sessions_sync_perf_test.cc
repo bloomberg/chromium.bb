@@ -106,7 +106,8 @@ GURL SessionsSyncPerfTest::IntToURL(int n) {
   return GURL(StringPrintf("http://localhost/%d", n));
 }
 
-IN_PROC_BROWSER_TEST_F(SessionsSyncPerfTest, P0) {
+// TODO(lipalani): Re-enable after crbug.com/96921 is fixed.
+IN_PROC_BROWSER_TEST_F(SessionsSyncPerfTest, DISABLED_P0) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   AddTabs(0, kNumTabs);
