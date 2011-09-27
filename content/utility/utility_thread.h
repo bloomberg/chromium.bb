@@ -15,8 +15,13 @@
 #include "content/common/child_thread.h"
 #include "content/common/content_export.h"
 
+class FilePath;
 class IndexedDBKey;
 class SerializedScriptValue;
+
+namespace webkit {
+struct WebPluginInfo;
+}
 
 namespace webkit_glue {
 class WebKitPlatformSupportImpl;
@@ -50,6 +55,13 @@ class UtilityThread : public ChildThread {
                       const string16& key_path);
   void OnBatchModeStarted();
   void OnBatchModeFinished();
+
+#if defined(OS_POSIX)
+  void OnLoadPlugins(
+      const std::vector<FilePath>& extra_plugin_paths,
+      const std::vector<FilePath>& extra_plugin_dirs,
+      const std::vector<webkit::WebPluginInfo>& internal_plugins);
+#endif  // OS_POSIX
 
   // True when we're running in batch mode.
   bool batch_mode_;

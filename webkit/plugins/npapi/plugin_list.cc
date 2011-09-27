@@ -218,6 +218,9 @@ void PluginList::RegisterInternalPlugin(const webkit::WebPluginInfo& info) {
   // Newer registrations go earlier in the list so they can override the MIME
   // types of older registrations.
   internal_plugins_.insert(internal_plugins_.begin(), plugin);
+
+  if (info.path.value() == kDefaultPluginLibraryName)
+    default_plugin_enabled_ = true;
 }
 
 void PluginList::RegisterInternalPlugin(const FilePath& filename,
@@ -343,15 +346,20 @@ void PluginList::LoadPluginsInternal(ScopedVector<PluginGroup>* plugin_groups) {
   std::vector<FilePath> extra_plugin_paths;
   std::vector<FilePath> extra_plugin_dirs;
   std::vector<InternalPlugin> internal_plugins;
+  base::Closure will_load_callback;
   {
     base::AutoLock lock(lock_);
     // Clear the refresh bit now, because it might get set again before we
     // reach the end of the method.
     plugins_need_refresh_ = false;
+    will_load_callback = will_load_plugins_callback_;
     extra_plugin_paths = extra_plugin_paths_;
     extra_plugin_dirs = extra_plugin_dirs_;
     internal_plugins = internal_plugins_;
   }
+
+  if (!will_load_callback.is_null())
+    will_load_callback.Run();
 
   std::set<FilePath> visited_plugins;
 
@@ -442,6 +450,40 @@ void PluginList::LoadPlugin(const FilePath& path,
   AddToPluginGroups(plugin_info, plugin_groups);
 }
 
+void PluginList::GetPluginPathListsToLoad(
+    std::vector<FilePath>* extra_plugin_paths,
+    std::vector<FilePath>* extra_plugin_dirs,
+    std::vector<webkit::WebPluginInfo>* internal_plugins) {
+  base::AutoLock lock(lock_);
+  *extra_plugin_paths = extra_plugin_paths_;
+  *extra_plugin_dirs = extra_plugin_dirs_;
+
+  *internal_plugins = std::vector<webkit::WebPluginInfo>();
+  for (std::vector<InternalPlugin>::iterator it = internal_plugins_.begin();
+       it != internal_plugins_.end();
+       ++it) {
+    internal_plugins->push_back(it->info);
+  }
+}
+
+void PluginList::SetPlugins(const std::vector<webkit::WebPluginInfo>& plugins) {
+  base::AutoLock lock(lock_);
+
+  plugins_need_refresh_ = false;
+
+  plugin_groups_.reset();
+  for (std::vector<webkit::WebPluginInfo>::const_iterator it = plugins.begin();
+       it != plugins.end();
+       ++it) {
+    AddToPluginGroups(*it, &plugin_groups_);
+  }
+}
+
+void PluginList::set_will_load_plugins_callback(const base::Closure& callback) {
+  base::AutoLock lock(lock_);
+  will_load_plugins_callback_ = callback;
+}
+
 void PluginList::GetPlugins(std::vector<WebPluginInfo>* plugins) {
   LoadPlugins();
   base::AutoLock lock(lock_);
@@ -450,6 +492,20 @@ void PluginList::GetPlugins(std::vector<WebPluginInfo>* plugins) {
         plugin_groups_[i]->web_plugin_infos();
     plugins->insert(plugins->end(), gr_plugins.begin(), gr_plugins.end());
   }
+}
+
+bool PluginList::GetPluginsIfNoRefreshNeeded(
+    std::vector<webkit::WebPluginInfo>* plugins) {
+  base::AutoLock lock(lock_);
+  if (plugins_need_refresh_)
+    return false;
+
+  for (size_t i = 0; i < plugin_groups_.size(); ++i) {
+    const std::vector<webkit::WebPluginInfo>& gr_plugins =
+        plugin_groups_[i]->web_plugin_infos();
+    plugins->insert(plugins->end(), gr_plugins.begin(), gr_plugins.end());
+  }
+  return true;
 }
 
 void PluginList::GetPluginInfoArray(

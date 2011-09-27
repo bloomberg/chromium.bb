@@ -33,6 +33,12 @@ UtilityProcessHost::UtilityProcessHost(Client* client,
       client_(client),
       client_thread_id_(client_thread_id),
       is_batch_mode_(false),
+      no_sandbox_(false),
+#if defined(OS_LINUX)
+      child_flags_(CHILD_ALLOW_SELF),
+#else
+      child_flags_(CHILD_NORMAL),
+#endif
       started_(false) {
 }
 
@@ -61,12 +67,7 @@ void UtilityProcessHost::EndBatchMode()  {
 }
 
 FilePath UtilityProcessHost::GetUtilityProcessCmd() {
-#if defined(OS_LINUX)
-  int flags = CHILD_ALLOW_SELF;
-#else
-  int flags = CHILD_NORMAL;
-#endif
-  return GetChildPath(flags);
+  return GetChildPath(child_flags_);
 }
 
 bool UtilityProcessHost::StartProcess() {
@@ -100,7 +101,7 @@ bool UtilityProcessHost::StartProcess() {
   const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
   if (browser_command_line.HasSwitch(switches::kChromeFrame))
     cmd_line->AppendSwitch(switches::kChromeFrame);
-  if (browser_command_line.HasSwitch(switches::kNoSandbox))
+  if (no_sandbox_ || browser_command_line.HasSwitch(switches::kNoSandbox))
     cmd_line->AppendSwitch(switches::kNoSandbox);
 
 #if defined(OS_POSIX)

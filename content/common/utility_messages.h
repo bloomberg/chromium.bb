@@ -13,6 +13,7 @@
 #include "content/common/indexed_db_param_traits.h"
 #include "content/common/serialized_script_value.h"
 #include "ipc/ipc_message_macros.h"
+#include "webkit/plugins/webplugininfo.h"
 
 #define IPC_MESSAGE_START UtilityMsgStart
 
@@ -38,6 +39,14 @@ IPC_MESSAGE_CONTROL0(UtilityMsg_BatchMode_Started)
 // Tells the utility process that it can shutdown.
 IPC_MESSAGE_CONTROL0(UtilityMsg_BatchMode_Finished)
 
+#if defined(OS_POSIX)
+// Tells the utility process to load the plugins from disk and send a list of
+// WebPluginInfo objects back.
+IPC_MESSAGE_CONTROL3(UtilityMsg_LoadPlugins,
+                     std::vector<FilePath>, /* extra plugin paths */
+                     std::vector<FilePath>, /* extra plugin dirs */
+                     std::vector<webkit::WebPluginInfo> /* internal plugins */)
+#endif
 
 //------------------------------------------------------------------------------
 // Utility process host messages:
@@ -58,3 +67,10 @@ IPC_MESSAGE_CONTROL1(UtilityHostMsg_IDBKeysFromValuesAndKeyPath_Failed,
 // a SerializedScriptValue.
 IPC_MESSAGE_CONTROL1(UtilityHostMsg_InjectIDBKey_Finished,
                      SerializedScriptValue /* new value */)
+
+#if defined(OS_POSIX)
+// After loading plugins from disk and querying each for MIME information, this
+// sends the resulting WebPluginInfo back to the browser process.
+IPC_MESSAGE_CONTROL1(UtilityHostMsg_LoadedPlugins,
+                     std::vector<webkit::WebPluginInfo> /* plugin infos */)
+#endif  // OS_POSIX

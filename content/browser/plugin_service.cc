@@ -23,11 +23,13 @@
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/resource_context.h"
+#include "content/browser/utility_process_host.h"
 #include "content/common/content_notification_types.h"
 #include "content/common/content_switches.h"
 #include "content/common/notification_service.h"
 #include "content/common/pepper_plugin_registry.h"
 #include "content/common/plugin_messages.h"
+#include "content/common/utility_messages.h"
 #include "content/common/view_messages.h"
 #include "webkit/plugins/npapi/plugin_constants_win.h"
 #include "webkit/plugins/npapi/plugin_group.h"
@@ -59,6 +61,76 @@ static void GetPluginsForGroupsCallback(
   webkit::npapi::PluginList::Singleton()->GetPluginGroups(false, &groups);
   callback.Run(groups);
 }
+
+// Callback set on the PluginList to assert that plugin loading happens on the
+// correct thread.
+void WillLoadPluginsCallback() {
+  // TODO(rsesek): Change these to CHECKs.
+#if defined(OS_WIN)
+  LOG_IF(ERROR, !BrowserThread::CurrentlyOn(BrowserThread::FILE));
+#else
+  LOG(ERROR) << "Plugin loading should happen out-of-process.";
+#endif
+}
+
+#if defined(OS_POSIX)
+// Utility child process client that manages the IPC for loading plugins out of
+// process.
+class PluginLoaderClient : public UtilityProcessHost::Client {
+ public:
+  // Meant to be called on the IO thread. Will invoke the callback on the target
+  // loop when the plugins have been loaded.
+  static void LoadPluginsOutOfProcess(
+      base::MessageLoopProxy* target_loop,
+      const PluginService::GetPluginsCallback& callback) {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+    PluginLoaderClient* client = new PluginLoaderClient(target_loop, callback);
+    UtilityProcessHost* process_host =
+        new UtilityProcessHost(client, BrowserThread::IO);
+    process_host->set_no_sandbox(true);
+#if defined(OS_MACOSX)
+    process_host->set_child_flags(ChildProcessHost::CHILD_ALLOW_HEAP_EXECUTION);
+#endif
+
+    std::vector<FilePath> extra_plugin_paths;
+    std::vector<FilePath> extra_plugin_dirs;
+    std::vector<webkit::WebPluginInfo> internal_plugins;
+    webkit::npapi::PluginList::Singleton()->GetPluginPathListsToLoad(
+        &extra_plugin_paths, &extra_plugin_dirs, &internal_plugins);
+
+    process_host->Send(new UtilityMsg_LoadPlugins(
+        extra_plugin_paths, extra_plugin_dirs, internal_plugins));
+  }
+
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE {
+    bool handled = true;
+    IPC_BEGIN_MESSAGE_MAP(PluginLoaderClient, message)
+      IPC_MESSAGE_HANDLER(UtilityHostMsg_LoadedPlugins, OnGotPlugins)
+      IPC_MESSAGE_UNHANDLED(handled = false)
+    IPC_END_MESSAGE_MAP()
+    return handled;
+  }
+
+  virtual void OnGotPlugins(const std::vector<webkit::WebPluginInfo>& plugins) {
+    webkit::npapi::PluginList::Singleton()->SetPlugins(plugins);
+    target_loop_->PostTask(FROM_HERE,
+        base::Bind(&RunGetPluginsCallback, callback_, plugins));
+  }
+
+ private:
+  PluginLoaderClient(base::MessageLoopProxy* target_loop,
+                     const PluginService::GetPluginsCallback& callback)
+      : target_loop_(target_loop),
+        callback_(callback) {
+  }
+
+  scoped_refptr<base::MessageLoopProxy> target_loop_;
+  PluginService::GetPluginsCallback callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(PluginLoaderClient);
+};
+#endif  // OS_POSIX
 
 }  // namespace
 
@@ -97,6 +169,9 @@ PluginService::PluginService()
     : ui_locale_(
           content::GetContentClient()->browser()->GetApplicationLocale()),
       filter_(NULL) {
+  webkit::npapi::PluginList::Singleton()->set_will_load_plugins_callback(
+      base::Bind(&WillLoadPluginsCallback));
+
   RegisterPepperPlugins();
 
   // Load any specified on the command line as well.
@@ -448,10 +523,26 @@ void PluginService::RefreshPluginList() {
 }
 
 void PluginService::GetPlugins(const GetPluginsCallback& callback) {
+  scoped_refptr<base::MessageLoopProxy> target_loop(
+      MessageLoop::current()->message_loop_proxy());
+
+#if defined(OS_WIN)
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
       base::Bind(&PluginService::GetPluginsInternal, base::Unretained(this),
-          MessageLoop::current()->message_loop_proxy(),
-          callback));
+          target_loop, callback));
+#else
+  std::vector<webkit::WebPluginInfo> cached_plugins;
+  if (webkit::npapi::PluginList::Singleton()->GetPluginsIfNoRefreshNeeded(
+          &cached_plugins)) {
+    // Can't assume the caller is reentrant.
+    target_loop->PostTask(FROM_HERE,
+        base::Bind(&RunGetPluginsCallback, callback, cached_plugins));
+  } else {
+    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+        base::Bind(&PluginLoaderClient::LoadPluginsOutOfProcess,
+            target_loop, callback));
+  }
+#endif
 }
 
 void PluginService::GetPluginGroups(const GetPluginGroupsCallback& callback) {

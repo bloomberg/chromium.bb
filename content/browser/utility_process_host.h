@@ -63,6 +63,10 @@ class CONTENT_EXPORT UtilityProcessHost : public BrowserChildProcessHost {
 
   void set_exposed_dir(const FilePath& dir) { exposed_dir_ = dir; }
 
+  void set_no_sandbox(bool flag) { no_sandbox_ = flag; }
+
+  void set_child_flags(int flags) { child_flags_ = flags; }
+
  protected:
   // Allow these methods to be overridden for tests.
   virtual FilePath GetUtilityProcessCmd();
@@ -89,6 +93,12 @@ class CONTENT_EXPORT UtilityProcessHost : public BrowserChildProcessHost {
   // Allows a directory to be opened through the sandbox, in case it's needed by
   // the operation.
   FilePath exposed_dir_;
+
+  // Whether to pass switches::kNoSandbox to the child.
+  bool no_sandbox_;
+
+  // Flags defined in ChildProcessHost with which to start the process.
+  int child_flags_;
 
   bool started_;
 

@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/file_path.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_vector.h"
@@ -123,6 +124,10 @@ class PluginList {
   // Get all the plugins synchronously.
   void GetPlugins(std::vector<webkit::WebPluginInfo>* plugins);
 
+  // Returns true if the list of plugins is cached and is copied into the out
+  // pointer; returns false if the plugin list needs to be refreshed.
+  bool GetPluginsIfNoRefreshNeeded(std::vector<webkit::WebPluginInfo>* plugins);
+
   // Returns a list in |info| containing plugins that are found for
   // the given url and mime type (including disabled plugins, for
   // which |info->enabled| is false).  The mime type which corresponds
@@ -172,6 +177,21 @@ class PluginList {
   // Load a specific plugin with full path.
   void LoadPlugin(const FilePath& filename,
                   ScopedVector<PluginGroup>* plugin_groups);
+
+  // The following functions are used to support probing for WebPluginInfo
+  // using a different instance of this class.
+
+  // Returns the extra plugin paths, extra plugin directories, and internal
+  // plugin paths that should be loaded.
+  void GetPluginPathListsToLoad(
+      std::vector<FilePath>* extra_plugin_paths,
+      std::vector<FilePath>* extra_plugin_dirs,
+      std::vector<webkit::WebPluginInfo>* internal_plugins);
+
+  // Clears the internal list of PluginGroups and copies them from the vector.
+  void SetPlugins(const std::vector<webkit::WebPluginInfo>& plugins);
+
+  void set_will_load_plugins_callback(const base::Closure& callback);
 
   virtual ~PluginList();
 
@@ -281,6 +301,9 @@ class PluginList {
 
   // Holds the currently available plugin groups.
   ScopedVector<PluginGroup> plugin_groups_;
+
+  // Callback that is invoked whenever the PluginList will reload the plugins.
+  base::Closure will_load_plugins_callback_;
 
   // Need synchronization for the above members since this object can be
   // accessed on multiple threads.

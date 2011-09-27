@@ -34,6 +34,7 @@
 #include "content/common/content_client.h"
 #include "content/common/content_counters.h"
 #include "content/common/content_paths.h"
+#include "content/common/content_switches.h"
 #include "media/base/media.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_switches.h"
@@ -487,9 +488,11 @@ class ChromeMainDelegate : public content::ContentMainDelegate {
             executable.value().substr(executable.value().size() - 3);
 
         if (last_three == " EH") {
-          CHECK_EQ(switches::kPluginProcess, process_type)
+          CHECK(process_type == switches::kPluginProcess ||
+                process_type == switches::kUtilityProcess)
               << "Executable-heap process requires --type="
-              << switches::kPluginProcess << ", saw " << process_type;
+              << switches::kPluginProcess << " or "
+              << switches::kUtilityProcess << ", saw " << process_type;
         } else if (last_three == " NP") {
           CHECK_EQ(switches::kNaClLoaderProcess, process_type)
               << "Non-PIE process requires --type="
