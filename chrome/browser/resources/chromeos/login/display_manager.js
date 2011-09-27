@@ -65,7 +65,7 @@ cr.define('cr.ui.login', function() {
         if (this.currentScreen.cancel) {
           this.currentScreen.cancel();
         }
-      } else if (ACCELERATOR_ENROLLMENT) {
+      } else if (name == ACCELERATOR_ENROLLMENT) {
         var currentStepId = this.screens_[this.currentStep_];
         if (currentStepId == SCREEN_SIGNIN ||
             currentStepId == SCREEN_GAIA_SIGNIN) {
