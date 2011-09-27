@@ -51,6 +51,7 @@
       'history',
       'https',
       'imports',
+      'indexeddb',
       'infobars',
       'instant',
       'multiprofile',
