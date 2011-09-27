@@ -138,6 +138,8 @@ void SigninScreenHandler::GetLocalizedStrings(
       l10n_util::GetStringUTF16(IDS_LOGIN_OFFLINE_MESSAGE));
   localized_strings->SetString("captivePortalMessage",
         l10n_util::GetStringUTF16(IDS_LOGIN_MAYBE_CAPTIVE_PORTAL));
+  localized_strings->SetString("captivePortalStartGuestSession",
+      l10n_util::GetStringUTF16(IDS_LOGIN_FIX_CAPTIVE_PORTAL));
   localized_strings->SetString("createAccount",
       l10n_util::GetStringUTF16(IDS_CREATE_ACCOUNT_HTML));
   localized_strings->SetString("guestSignin",
@@ -188,6 +190,8 @@ void SigninScreenHandler::RegisterMessages() {
       NewCallback(this, &SigninScreenHandler::HandleGetUsers));
   web_ui_->RegisterMessageCallback("launchIncognito",
       NewCallback(this, &SigninScreenHandler::HandleLaunchIncognito));
+  web_ui_->RegisterMessageCallback("fixCaptivePortal",
+      NewCallback(this, &SigninScreenHandler::HandleFixCaptivePortal));
   web_ui_->RegisterMessageCallback("showAddUser",
       NewCallback(this, &SigninScreenHandler::HandleShowAddUser));
   web_ui_->RegisterMessageCallback("shutdownSystem",
@@ -323,6 +327,10 @@ void SigninScreenHandler::HandleAuthenticateUser(const base::ListValue* args) {
 
 void SigninScreenHandler::HandleLaunchIncognito(const base::ListValue* args) {
   delegate_->LoginAsGuest();
+}
+
+void SigninScreenHandler::HandleFixCaptivePortal(const base::ListValue* args) {
+  delegate_->FixCaptivePortal();
 }
 
 void SigninScreenHandler::HandleShutdownSystem(const base::ListValue* args) {

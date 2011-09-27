@@ -37,6 +37,9 @@ cr.define('login', function() {
                               this.handleNetworkStateChange_.bind(this));
       window.addEventListener('offline',
                               this.handleNetworkStateChange_.bind(this));
+      $('captive-portal-start-guest-session').onclick = function() {
+        chrome.send('fixCaptivePortal');
+      }
       cr.ui.DropDown.decorate($('offline-networks-list'));
     },
 

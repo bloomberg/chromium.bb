@@ -16,3 +16,7 @@
   -webkit-margin-end: 60px;
   display: block;
 }
+
+#captive-portal-start-guest-session-holder {
+  margin-top: 20px;
+}

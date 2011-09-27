@@ -57,6 +57,9 @@ class SigninScreenHandlerDelegate {
   // Sign in into Guest session.
   virtual void LoginAsGuest() = 0;
 
+  // Sign in into Guest session for fixing captive portal issues.
+  virtual void FixCaptivePortal() = 0;
+
   // Create a new Google account.
   virtual void CreateAccount() = 0;
 
@@ -126,6 +129,10 @@ class SigninScreenHandler : public BaseScreenHandler,
 
   // Handles entering bwsi mode request.
   void HandleLaunchIncognito(const base::ListValue* args);
+
+  // Handles fix captive portal request (starts guest session with specific
+  // start URL).
+  void HandleFixCaptivePortal(const base::ListValue* args);
 
   // Handles system shutdown request.
   void HandleShutdownSystem(const base::ListValue* args);

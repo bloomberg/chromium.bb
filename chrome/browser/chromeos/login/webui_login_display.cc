@@ -159,6 +159,11 @@ void WebUILoginDisplay::LoginAsGuest() {
   delegate_->LoginAsGuest();
 }
 
+void WebUILoginDisplay::FixCaptivePortal() {
+  DCHECK(delegate_);
+  delegate_->FixCaptivePortal();
+}
+
 void WebUILoginDisplay::CreateAccount() {
   DCHECK(delegate_);
   delegate_->CreateAccount();
