@@ -153,7 +153,7 @@ class PresubmitUnittest(PresubmitTestsBase):
       'OutputApi', 'ParseFiles', 'PresubmitFailure',
       'PresubmitExecuter', 'PresubmitOutput', 'ScanSubDirs',
       'SvnAffectedFile', 'SvnChange', 'cPickle', 'cStringIO',
-      'fix_encoding', 'fnmatch', 'gclient_utils', 'glob', 'inspect', 'json',
+      'fix_encoding', 'fnmatch', 'gclient_utils', 'glob', 'json',
       'load_files',
       'logging', 'marshal', 'normpath', 'optparse', 'os', 'owners', 'pickle',
       'presubmit_canned_checks', 'random', 're', 'rietveld', 'scm',
@@ -669,18 +669,11 @@ def CheckChangeOnCommit(input_api, output_api):
 
   def testGetTrySlavesExecuter(self):
     self.mox.ReplayAll()
-    change = presubmit.Change(
-        'foo',
-        'Blah Blah\n\nSTORY=http://tracker.com/42\nBUG=boo\n',
-        self.fake_root_dir,
-        None,
-        0,
-        0,
-        None)
+
     executer = presubmit.GetTrySlavesExecuter()
-    self.assertEqual([], executer.ExecPresubmitScript('', '', '', change))
-    self.assertEqual([],
-        executer.ExecPresubmitScript('def foo():\n  return\n', '', '', change))
+    self.assertEqual([], executer.ExecPresubmitScript('', '', ''))
+    self.assertEqual(
+        [], executer.ExecPresubmitScript('def foo():\n  return\n', '', ''))
 
     # bad results
     starts_with_space_result = ['  starts_with_space']
@@ -689,7 +682,7 @@ def CheckChangeOnCommit(input_api, output_api):
     for result in starts_with_space_result, not_list_result1, not_list_result2:
       self.assertRaises(presubmit.PresubmitFailure,
                         executer.ExecPresubmitScript,
-                        self.presubmit_tryslave % result, '', '', change)
+                        self.presubmit_tryslave % result, '', '')
 
     # good results
     expected_result = ['1', '2', '3']
@@ -699,19 +692,10 @@ def CheckChangeOnCommit(input_api, output_api):
       self.assertEqual(
           result,
           executer.ExecPresubmitScript(
-              self.presubmit_tryslave % result, '', '', change))
+              self.presubmit_tryslave % result, '', ''))
 
   def testGetTrySlavesExecuterWithProject(self):
     self.mox.ReplayAll()
-
-    change = presubmit.Change(
-        'foo',
-        'Blah Blah\n\nSTORY=http://tracker.com/42\nBUG=boo\n',
-        self.fake_root_dir,
-        None,
-        0,
-        0,
-        None)
 
     executer = presubmit.GetTrySlavesExecuter()
     expected_result1 = ['1', '2']
@@ -719,11 +703,9 @@ def CheckChangeOnCommit(input_api, output_api):
     script = self.presubmit_tryslave_project % (
         repr('foo'), repr(expected_result1), repr(expected_result2)) 
     self.assertEqual(
-        expected_result1, executer.ExecPresubmitScript(script, '', 'foo',
-                                                       change))
+        expected_result1, executer.ExecPresubmitScript(script, '', 'foo'))
     self.assertEqual(
-        expected_result2, executer.ExecPresubmitScript(script, '', 'bar',
-                                                       change))
+        expected_result2, executer.ExecPresubmitScript(script, '', 'bar'))
 
   def testDoGetTrySlaves(self):
     join = presubmit.os.path.join
@@ -748,18 +730,13 @@ def CheckChangeOnCommit(input_api, output_api):
         self.presubmit_tryslave % '["linux"]')
     self.mox.ReplayAll()
 
-    change = presubmit.Change(
-        'mychange', '', self.fake_root_dir, [], 0, 0, None)
-
     output = StringIO.StringIO()
     self.assertEqual(['win'],
-                     presubmit.DoGetTrySlaves(change, [filename],
-                                              self.fake_root_dir,
+                     presubmit.DoGetTrySlaves([filename], self.fake_root_dir,
                                               None, None, False, output))
     output = StringIO.StringIO()
     self.assertEqual(['win', 'linux'],
-                     presubmit.DoGetTrySlaves(change,
-                                              [filename, filename_linux],
+                     presubmit.DoGetTrySlaves([filename, filename_linux],
                                               self.fake_root_dir, None, None,
                                               False, output))
 

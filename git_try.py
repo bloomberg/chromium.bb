@@ -13,7 +13,6 @@ from scm import GIT
 import subprocess2
 import third_party.upload
 import trychange
-import git_cl
 
 
 def GetRietveldIssueNumber():
@@ -54,10 +53,8 @@ if __name__ == '__main__':
   # Hack around a limitation in logging.
   logging.getLogger().handlers = []
   try:
-    cl = git_cl.Changelist()
-    change = cl.GetChange(cl.GetUpstreamBranch(), None)
     sys.exit(trychange.TryChange(
-        args, change, file_list=[], swallow_exception=False,
+        args, file_list=[], swallow_exception=False,
         prog='git try',
         extra_epilog='\n'
                      'git try will diff against your tracked branch and will '

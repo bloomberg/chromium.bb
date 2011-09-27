@@ -961,20 +961,11 @@ def TryChange(change_info, args, swallow_exception):
     if change_info.patchset:
       trychange_args.extend(["--patchset", str(change_info.patchset)])
     file_list = change_info.GetFileNames()
-    change = presubmit_support.SvnChange(change_info.name,
-                                         change_info.description,
-                                         change_info.GetLocalRoot(),
-                                         change_info.GetFiles(),
-                                         change_info.issue,
-                                         change_info.patchset,
-                                         None)
   else:
     file_list = []
-
   trychange_args.extend(args)
   return trychange.TryChange(
       trychange_args,
-      change=change,
       file_list=file_list,
       swallow_exception=swallow_exception,
       prog='gcl try',

@@ -16,7 +16,6 @@ import cPickle  # Exposed through the API.
 import cStringIO  # Exposed through the API.
 import fnmatch
 import glob
-import inspect
 import logging
 import marshal  # Exposed through the API.
 import optparse
@@ -876,7 +875,7 @@ def ListRelevantPresubmitFiles(files, root):
 
 class GetTrySlavesExecuter(object):
   @staticmethod
-  def ExecPresubmitScript(script_text, presubmit_path, project, change):
+  def ExecPresubmitScript(script_text, presubmit_path, project):
     """Executes GetPreferredTrySlaves() from a single presubmit script.
 
     Args:
@@ -895,14 +894,10 @@ class GetTrySlavesExecuter(object):
 
     function_name = 'GetPreferredTrySlaves'
     if function_name in context:
-      get_preferred_try_slaves = context[function_name]
-      function_info = inspect.getargspec(get_preferred_try_slaves)
-      if len(function_info[0]) == 1:
-        result = get_preferred_try_slaves(project)
-      elif len(function_info[0]) == 2:
-        result = get_preferred_try_slaves(project, change)
-      else:
-        result = get_preferred_try_slaves()
+      try:
+        result = eval(function_name + '(' + repr(project) + ')', context)
+      except TypeError:
+        result = eval(function_name + '()', context)
       if not isinstance(result, types.ListType):
         raise PresubmitFailure(
             'Presubmit functions must return a list, got a %s instead: %s' %
@@ -918,8 +913,7 @@ class GetTrySlavesExecuter(object):
     return result
 
 
-def DoGetTrySlaves(change,
-                   changed_files,
+def DoGetTrySlaves(changed_files,
                    repository_root,
                    default_presubmit,
                    project,
@@ -948,7 +942,7 @@ def DoGetTrySlaves(change,
       output_stream.write("Running default presubmit script.\n")
     fake_path = os.path.join(repository_root, 'PRESUBMIT.py')
     results += executer.ExecPresubmitScript(
-        default_presubmit, fake_path, project, change)
+        default_presubmit, fake_path, project)
   for filename in presubmit_files:
     filename = os.path.abspath(filename)
     if verbose:
@@ -956,7 +950,7 @@ def DoGetTrySlaves(change,
     # Accept CRLF presubmit script.
     presubmit_script = gclient_utils.FileRead(filename, 'rU')
     results += executer.ExecPresubmitScript(
-        presubmit_script, filename, project, change)
+        presubmit_script, filename, project)
 
   slaves = list(set(results))
   if slaves and verbose:
