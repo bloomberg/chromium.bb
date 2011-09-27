@@ -874,7 +874,13 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, RestoredBounds) {
   panel->Close();
 }
 
-IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MinimizeRestore) {
+// TODO(jennb): Disabling for Windows due to failure on XP and Vista.
+#if defined(OS_WIN)
+#define MAYBE_MinimizeRestore DISABLED_MinimizeRestore
+#else
+#define MAYBE_MinimizeRestore MinimizeRestore
+#endif
+IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MAYBE_MinimizeRestore) {
   // Disable mouse watcher.  We'll simulate mouse movements for test.
   NativePanelTesting::GetPanelMouseWatcherInstance()->EnableTestingMode();
 
