@@ -300,5 +300,19 @@ TEST_F(LayerTest, HierarchyNoTexture) {
   EXPECT_TRUE(d3.painted());
 }
 
-}  // namespace ui
+// Verifies that a layer which is set never to have a texture does not
+// get a texture when SetFillsBoundsOpaquely is called.
+TEST_F(LayerTest, LayerHasNoTextureSetFillsOpaquely) {
+  Layer* parent = CreateLayer(Layer::LAYER_HAS_NO_TEXTURE);
+  parent->SetBounds(gfx::Rect(0, 0, 400, 400));
+
+  Layer* child = CreateLayer(Layer::LAYER_HAS_TEXTURE);
+  child->SetBounds(gfx::Rect(50, 50, 100, 100));
+  child->SetFillsBoundsOpaquely(true);
+
+  parent->Add(child);
+  EXPECT_TRUE(parent->texture() == NULL);
+}
+
+} // namespace ui
 

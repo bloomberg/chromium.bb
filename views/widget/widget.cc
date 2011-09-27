@@ -120,8 +120,7 @@ Widget::InitParams::InitParams()
       parent(NULL),
       parent_widget(NULL),
       native_widget(NULL),
-      top_level(false),
-      create_layer(true) {
+      top_level(false) {
 }
 
 Widget::InitParams::InitParams(Type type)
@@ -141,8 +140,7 @@ Widget::InitParams::InitParams(Type type)
       parent(NULL),
       parent_widget(NULL),
       native_widget(NULL),
-      top_level(false),
-      create_layer(true) {
+      top_level(false) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////

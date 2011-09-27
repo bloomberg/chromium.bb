@@ -72,6 +72,10 @@ class COMPOSITOR_EXPORT Layer {
   bool visible() const { return visible_; }
   void set_visible(bool visible) { visible_ = visible; }
 
+  // Returns true if this layer can have a texture (has_texture_ is true)
+  // and is not completely obscured by a child.
+  bool ShouldDraw();
+
   // Converts a point from the coordinates of |source| to the coordinates of
   // |target|. Necessarily, |source| and |target| must inhabit the same Layer
   // tree.
@@ -183,6 +187,9 @@ class COMPOSITOR_EXPORT Layer {
   gfx::Rect bounds_;
 
   bool visible_;
+
+  // If true, layer can have non-null texture.
+  const bool can_have_texture_;
 
   bool fills_bounds_opaquely_;
 

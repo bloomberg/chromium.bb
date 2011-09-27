@@ -15,9 +15,9 @@ namespace ui {
 
 Layer::Layer(Compositor* compositor)
     : compositor_(compositor),
-      texture_(compositor->CreateTexture()),
       parent_(NULL),
       visible_(true),
+      can_have_texture_(true),
       fills_bounds_opaquely_(false),
       layer_updated_externally_(false),
       opacity_(1.0f),
@@ -26,10 +26,9 @@ Layer::Layer(Compositor* compositor)
 
 Layer::Layer(Compositor* compositor, TextureParam texture_param)
     : compositor_(compositor),
-      texture_(texture_param == LAYER_HAS_TEXTURE ?
-          compositor->CreateTexture() : NULL),
       parent_(NULL),
       visible_(true),
+      can_have_texture_(texture_param == LAYER_HAS_TEXTURE),
       fills_bounds_opaquely_(false),
       layer_updated_externally_(false),
       opacity_(1.0f),
@@ -86,6 +85,11 @@ void Layer::SetBounds(const gfx::Rect& bounds) {
     parent()->RecomputeHole();
 }
 
+bool Layer::ShouldDraw() {
+  return can_have_texture_ && GetCombinedOpacity() > 0.0f &&
+      !hole_rect_.Contains(gfx::Rect(gfx::Point(0, 0), bounds_.size()));
+}
+
 // static
 void Layer::ConvertPointToLayer(const Layer* source,
                                 const Layer* target,
@@ -122,6 +126,11 @@ void Layer::SetExternalTexture(ui::Texture* texture) {
 }
 
 void Layer::SetCanvas(const SkCanvas& canvas, const gfx::Point& origin) {
+  DCHECK(can_have_texture_);
+
+  if (!texture_.get())
+    texture_ = compositor_->CreateTexture();
+
   texture_->SetCanvas(canvas, origin, bounds_.size());
   invalid_rect_ = gfx::Rect();
 }
@@ -132,11 +141,12 @@ void Layer::SchedulePaint(const gfx::Rect& invalid_rect) {
 }
 
 void Layer::Draw() {
-  const float combined_opacity = GetCombinedOpacity();
-  if (!texture_.get() || combined_opacity == 0.0f)
+  if (!ShouldDraw())
     return;
 
   UpdateLayerCanvas();
+
+  DCHECK(texture_.get());
 
   ui::TextureDrawParams texture_draw_params;
   for (Layer* layer = this; layer; layer = layer->parent_) {
@@ -145,6 +155,8 @@ void Layer::Draw() {
         static_cast<float>(layer->bounds_.x()),
         static_cast<float>(layer->bounds_.y()));
   }
+
+  const float combined_opacity = GetCombinedOpacity();
 
   // Only blend for transparent child layers (and when we're forcing
   // transparency). The root layer will clobber the cleared bg.
@@ -255,16 +267,24 @@ void Layer::UpdateLayerCanvas() {
 }
 
 void Layer::RecomputeHole() {
+  if (!can_have_texture_)
+    return;
+
+  // If there are no opaque child layers, hole_rect_ should remain empty.
+  hole_rect_ = gfx::Rect();
+
   for (size_t i = 0; i < children_.size(); ++i) {
     if (children_[i]->fills_bounds_opaquely() &&
         children_[i]->GetCombinedOpacity() == 1.0f &&
         !children_[i]->transform().HasChange()) {
       hole_rect_ = children_[i]->bounds();
-      return;
+      break;
     }
   }
-  // no opaque child layers, set hole_rect_ to empty
-  hole_rect_ = gfx::Rect();
+
+  // Free up texture memory if the hole fills bounds of layer
+  if (!ShouldDraw() && !layer_updated_externally_)
+    texture_ = NULL;
 }
 
 bool Layer::ConvertPointForAncestor(const Layer* ancestor,

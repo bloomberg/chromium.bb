@@ -159,8 +159,6 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
     // The Widget will not construct a default one. Default is NULL.
     NativeWidget* native_widget;
     bool top_level;
-    // When set NativeWidgetViews will create its own layer.
-    bool create_layer;
   };
 
   Widget();

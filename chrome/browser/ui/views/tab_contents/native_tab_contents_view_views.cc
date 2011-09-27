@@ -57,7 +57,6 @@ bool NativeTabContentsViewViews::OnMouseEvent(const views::MouseEvent& event) {
 void NativeTabContentsViewViews::InitNativeTabContentsView() {
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_CONTROL);
   params.native_widget = this;
-  params.create_layer = false;
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   GetWidget()->Init(params);
 }
