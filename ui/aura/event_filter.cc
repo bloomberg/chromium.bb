@@ -47,7 +47,8 @@ void EventFilter::ActivateIfNecessary(
     // |window| is not in a top level window.
     return;
   }
-  if (!toplevel_window->delegate()->ShouldActivate(event))
+  if (!toplevel_window->delegate() ||
+      !toplevel_window->delegate()->ShouldActivate(event))
     return;
 
   Desktop::GetInstance()->SetActiveWindow(toplevel_window, window);
