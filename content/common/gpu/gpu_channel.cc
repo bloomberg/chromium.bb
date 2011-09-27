@@ -70,8 +70,10 @@ bool GpuChannel::OnMessageReceived(const IPC::Message& message) {
   }
 
   // Control messages are not deferred and can be handled out of order with
-  // respect to routed ones.
-  if (message.routing_id() == MSG_ROUTING_CONTROL)
+  // respect to routed ones. Except for Echo, which must be deferred in order
+  // to respect the asynchronous Mac SwapBuffers.
+  if (message.routing_id() == MSG_ROUTING_CONTROL &&
+      message.type() != GpuChannelMsg_Echo::ID)
     return OnControlMessageReceived(message);
 
   // If the channel is unscheduled, defer sync and async messages until it is
@@ -82,6 +84,10 @@ bool GpuChannel::OnMessageReceived(const IPC::Message& message) {
     deferred_messages_.push(new IPC::Message(message));
     return true;
   }
+
+  // Handle deferred control messages.
+  if (message.routing_id() == MSG_ROUTING_CONTROL)
+    return OnControlMessageReceived(message);
 
   if (!router_.RouteMessage(message)) {
     // Respond to sync messages even if router failed to route.
