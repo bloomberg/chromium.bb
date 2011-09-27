@@ -234,8 +234,7 @@ class PrintWebViewHelper : public RenderViewObserver,
 #elif defined(OS_MACOSX)
   void RenderPage(const gfx::Size& page_size, const gfx::Rect& content_area,
                   const float& scale_factor, int page_number,
-                  WebKit::WebFrame* frame, bool is_preview,
-                  printing::Metafile* metafile);
+                  WebKit::WebFrame* frame, printing::Metafile* metafile);
 #elif defined(OS_POSIX)
   bool RenderPages(const PrintMsg_PrintPages_Params& params,
                    WebKit::WebFrame* frame, const WebKit::WebNode& node,

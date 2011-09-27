@@ -17,7 +17,6 @@
 
 #if defined(USE_SKIA)
 #include "printing/metafile_skia_wrapper.h"
-#include "skia/ext/platform_device.h"
 #include "skia/ext/vector_canvas.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCanvas.h"
 #endif
@@ -38,7 +37,7 @@ void PrintWebViewHelper::PrintPageInternal(
   // Render page for printing.
   gfx::Rect content_area(params.params.printable_size);
   RenderPage(params.params.printable_size, content_area, scale_factor,
-             page_number, frame, false, &metafile);
+             page_number, frame, &metafile);
   metafile.FinishDocument();
 
   PrintHostMsg_DidPrintPage_Params page_params;
@@ -97,7 +96,7 @@ bool PrintWebViewHelper::RenderPreviewPage(int page_number) {
 
   base::TimeTicks begin_time = base::TimeTicks::Now();
   RenderPage(printParams.page_size, content_area, scale_factor, page_number,
-             print_preview_context_.frame(), true, initial_render_metafile);
+             print_preview_context_.frame(), initial_render_metafile);
   print_preview_context_.RenderedPreviewPage(
       base::TimeTicks::Now() - begin_time);
 
@@ -145,7 +144,7 @@ bool PrintWebViewHelper::RenderPreviewPage(int page_number) {
 void PrintWebViewHelper::RenderPage(
     const gfx::Size& page_size, const gfx::Rect& content_area,
     const float& scale_factor, int page_number, WebFrame* frame,
-    bool is_preview, printing::Metafile* metafile) {
+    printing::Metafile* metafile) {
 
   {
 #if defined(USE_SKIA)
@@ -157,9 +156,9 @@ void PrintWebViewHelper::RenderPage(
     SkRefPtr<skia::VectorCanvas> canvas = new skia::VectorCanvas(device);
     canvas->unref();  // SkRefPtr and new both took a reference.
     WebKit::WebCanvas* canvas_ptr = canvas.get();
-    printing::MetafileSkiaWrapper::SetMetafileOnCanvas(*canvas, metafile);
-    skia::SetIsDraftMode(*canvas, is_print_ready_metafile_sent_);
-    skia::SetIsPreviewMetafile(*canvas, is_preview);
+    printing::MetafileSkiaWrapper::SetMetafileOnCanvas(canvas.get(), metafile);
+    printing::MetafileSkiaWrapper::SetDraftMode(canvas.get(),
+                                                is_print_ready_metafile_sent_);
 #else
     bool success = metafile->StartPage(page_size, content_area, scale_factor);
     DCHECK(success);

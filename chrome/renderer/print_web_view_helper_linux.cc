@@ -14,7 +14,6 @@
 #include "printing/metafile_impl.h"
 #include "printing/metafile_skia_wrapper.h"
 #include "printing/page_size_margins.h"
-#include "skia/ext/platform_device.h"
 #include "skia/ext/vector_canvas.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
@@ -209,8 +208,9 @@ void PrintWebViewHelper::PrintPageInternal(
   // can't be a stack object.
   SkRefPtr<skia::VectorCanvas> canvas = new skia::VectorCanvas(device);
   canvas->unref();  // SkRefPtr and new both took a reference.
-  printing::MetafileSkiaWrapper::SetMetafileOnCanvas(*canvas, metafile);
-  skia::SetIsDraftMode(*canvas, is_print_ready_metafile_sent_);
+  printing::MetafileSkiaWrapper::SetMetafileOnCanvas(canvas.get(), metafile);
+  printing::MetafileSkiaWrapper::SetDraftMode(canvas.get(),
+                                              is_print_ready_metafile_sent_);
   frame->printPage(params.page_number, canvas.get());
 
   if (params.params.display_header_footer) {
