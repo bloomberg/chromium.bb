@@ -49,6 +49,7 @@ JingleSession::JingleSession(
     : jingle_session_manager_(jingle_session_manager),
       local_cert_(local_cert),
       state_(INITIALIZING),
+      error_(OK),
       closing_(false),
       cricket_session_(NULL),
       config_set_(false),
@@ -130,6 +131,11 @@ void JingleSession::SetStateChangeCallback(StateChangeCallback* callback) {
   DCHECK(CalledOnValidThread());
   DCHECK(callback);
   state_change_callback_.reset(callback);
+}
+
+Session::Error JingleSession::error() {
+  DCHECK(CalledOnValidThread());
+  return error_;
 }
 
 void JingleSession::CreateStreamChannel(

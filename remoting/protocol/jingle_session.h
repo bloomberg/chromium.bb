@@ -28,6 +28,7 @@ class JingleSession : public protocol::Session,
  public:
   // Session interface.
   virtual void SetStateChangeCallback(StateChangeCallback* callback) OVERRIDE;
+  virtual Error error() OVERRIDE;
   virtual void CreateStreamChannel(
       const std::string& name,
       const StreamChannelCallback& callback) OVERRIDE;
@@ -149,6 +150,8 @@ class JingleSession : public protocol::Session,
 
   State state_;
   scoped_ptr<StateChangeCallback> state_change_callback_;
+
+  Error error_;
 
   bool closing_;
 

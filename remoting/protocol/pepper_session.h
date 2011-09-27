@@ -43,22 +43,11 @@ class SocketWrapper;
 // outgoing connections.
 class PepperSession : public Session {
  public:
-  // TODO(sergeyu): Move this type and error() method to the Session
-  // interface.
-  enum Error {
-    ERROR_NO_ERROR = 0,
-    ERROR_PEER_IS_OFFLINE,
-    ERROR_SESSION_REJECTED,
-    ERROR_INCOMPATIBLE_PROTOCOL,
-    ERROR_CHANNEL_CONNECTION_FAILURE,
-  };
-
   virtual ~PepperSession();
-
-  Error error();
 
   // Session interface.
   virtual void SetStateChangeCallback(StateChangeCallback* callback) OVERRIDE;
+  virtual Error error() OVERRIDE;
   virtual void CreateStreamChannel(
       const std::string& name,
       const StreamChannelCallback& callback) OVERRIDE;

@@ -109,6 +109,7 @@ class MockSession : public Session {
   virtual ~MockSession();
 
   MOCK_METHOD1(SetStateChangeCallback, void(StateChangeCallback* callback));
+  MOCK_METHOD0(error, Session::Error());
   MOCK_METHOD2(CreateStreamChannel, void(
       const std::string& name, const StreamChannelCallback& callback));
   MOCK_METHOD2(CreateDatagramChannel, void(

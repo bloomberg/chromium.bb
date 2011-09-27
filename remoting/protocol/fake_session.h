@@ -130,6 +130,8 @@ class FakeSession : public Session {
     message_loop_ = message_loop;
   }
 
+  void set_error(Session::Error error) { error_ = error; }
+
   bool is_closed() const { return closed_; }
 
   FakeSocket* GetStreamChannel(const std::string& name);
@@ -137,6 +139,8 @@ class FakeSession : public Session {
 
   // Session interface.
   virtual void SetStateChangeCallback(StateChangeCallback* callback);
+
+  virtual Session::Error error();
 
   virtual void CreateStreamChannel(
       const std::string& name, const StreamChannelCallback& callback);
@@ -179,6 +183,8 @@ class FakeSession : public Session {
   std::string shared_secret_;
 
   std::string jid_;
+
+  Session::Error error_;
   bool closed_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeSession);

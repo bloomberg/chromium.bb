@@ -216,7 +216,7 @@ bool JingleSessionManager::AcceptConnection(
   listener_->OnIncomingSession(jingle_session, &response);
 
   switch (response) {
-    case protocol::SessionManager::ACCEPT: {
+    case SessionManager::ACCEPT: {
       // Connection must be configured by the callback.
       CandidateSessionConfig* candidate_config =
           CandidateSessionConfig::CreateFrom(jingle_session->config());
@@ -226,13 +226,14 @@ bool JingleSessionManager::AcceptConnection(
       break;
     }
 
-    case protocol::SessionManager::INCOMPATIBLE: {
-      cricket_session->Reject(cricket::STR_TERMINATE_INCOMPATIBLE_PARAMETERS);
+    case SessionManager::INCOMPATIBLE: {
+      cricket_session->TerminateWithReason(
+          cricket::STR_TERMINATE_INCOMPATIBLE_PARAMETERS);
       return false;
     }
 
-    case protocol::SessionManager::DECLINE: {
-      cricket_session->Reject(cricket::STR_TERMINATE_DECLINE);
+    case SessionManager::DECLINE: {
+      cricket_session->TerminateWithReason(cricket::STR_TERMINATE_DECLINE);
       return false;
     }
 

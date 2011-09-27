@@ -205,7 +205,9 @@ FakeSession::FakeSession()
     : candidate_config_(CandidateSessionConfig::CreateDefault()),
       config_(SessionConfig::GetDefault()),
       message_loop_(NULL),
-      jid_(kTestJid) {
+      jid_(kTestJid),
+      error_(OK),
+      closed_(false) {
 }
 
 FakeSession::~FakeSession() { }
@@ -220,6 +222,10 @@ FakeUdpSocket* FakeSession::GetDatagramChannel(const std::string& name) {
 
 void FakeSession::SetStateChangeCallback(StateChangeCallback* callback) {
   callback_.reset(callback);
+}
+
+Session::Error FakeSession::error() {
+  return error_;
 }
 
 void FakeSession::CreateStreamChannel(

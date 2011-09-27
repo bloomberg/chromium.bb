@@ -34,7 +34,7 @@ const int kTransportInfoSendDelayMs = 2;
 PepperSession::PepperSession(PepperSessionManager* session_manager)
     : session_manager_(session_manager),
       state_(INITIALIZING),
-      error_(ERROR_NO_ERROR) {
+      error_(OK) {
 }
 
 PepperSession::~PepperSession() {
@@ -44,14 +44,14 @@ PepperSession::~PepperSession() {
   session_manager_->SessionDestroyed(this);
 }
 
-PepperSession::Error PepperSession::error() {
-  DCHECK(CalledOnValidThread());
-  return error_;
-}
-
 void PepperSession::SetStateChangeCallback(StateChangeCallback* callback) {
   DCHECK(CalledOnValidThread());
   state_change_callback_.reset(callback);
+}
+
+Session::Error PepperSession::error() {
+  DCHECK(CalledOnValidThread());
+  return error_;
 }
 
 void PepperSession::StartConnection(
@@ -98,7 +98,7 @@ void PepperSession::OnSessionInitiateResponse(
 
     // TODO(sergeyu): There may be different reasons for error
     // here. Parse the response stanza to find failure reason.
-    OnError(ERROR_PEER_IS_OFFLINE);
+    OnError(PEER_IS_OFFLINE);
   }
 }
 
@@ -239,7 +239,7 @@ void PepperSession::OnAccept(const JingleMessage& message,
   }
 
   if (!InitializeConfigFromDescription(message.description.get())) {
-    OnError(ERROR_INCOMPATIBLE_PROTOCOL);
+    OnError(INCOMPATIBLE_PROTOCOL);
     return;
   }
 
@@ -266,7 +266,20 @@ void PepperSession::ProcessTransportInfo(const JingleMessage& message) {
 void PepperSession::OnTerminate(const JingleMessage& message,
                                 JingleMessageReply* reply) {
   if (state_ == CONNECTING) {
-    OnError(ERROR_SESSION_REJECTED);
+    switch (message.reason) {
+      case JingleMessage::DECLINE:
+        OnError(SESSION_REJECTED);
+        break;
+
+      case JingleMessage::INCOMPATIBLE_PARAMETERS:
+        OnError(INCOMPATIBLE_PROTOCOL);
+        break;
+
+      default:
+        LOG(WARNING) << "Received session-terminate message "
+            "with an unexpected reason.";
+        OnError(SESSION_REJECTED);
+    }
     return;
   }
 
@@ -337,7 +350,7 @@ void PepperSession::OnChannelConnected(
   if (!socket) {
     LOG(ERROR) << "Failed to connect control or events channel. "
                << "Terminating connection";
-    OnError(ERROR_CHANNEL_CONNECTION_FAILURE);
+    OnError(CHANNEL_CONNECTION_ERROR);
     return;
   }
 

@@ -26,13 +26,47 @@ namespace {
 const char kEmptyNamespace[] = "";
 const char kXmlNamespace[] = "http://www.w3.org/XML/1998/namespace";
 
-const char kSessionInitiateAction[] = "session-initiate";
-const char kSessionAcceptAction[] = "session-accept";
-const char kSessionTerminateAction[] = "session-terminate";
-const char kTransportInfoAction[] = "transport-info";
-
 const int kPortMin = 1000;
 const int kPortMax = 65535;
+
+template <typename T>
+struct NameMapElement {
+  const T value;
+  const char* const name;
+};
+
+template <typename T>
+const char* ValueToName(const NameMapElement<T> map[], size_t map_size,
+                              T value) {
+  for (size_t i = 0; i < map_size; ++i) {
+    if (map[i].value == value)
+      return map[i].name;
+  }
+  return NULL;
+}
+
+template <typename T>
+T NameToValue(const NameMapElement<T> map[], size_t map_size,
+                    const std::string& name, T default_value) {
+  for (size_t i = 0; i < map_size; ++i) {
+    if (map[i].name == name)
+      return map[i].value;
+  }
+  return default_value;
+}
+
+static const NameMapElement<JingleMessage::ActionType> kActionTypes[] = {
+  { JingleMessage::SESSION_INITIATE, "session-initiate" },
+  { JingleMessage::SESSION_ACCEPT, "session-accept" },
+  { JingleMessage::SESSION_TERMINATE, "session-terminate" },
+  { JingleMessage::TRANSPORT_INFO, "transport-info" },
+};
+
+static const NameMapElement<JingleMessage::Reason> kReasons[] = {
+  { JingleMessage::SUCCESS, "success" },
+  { JingleMessage::DECLINE, "decline" },
+  { JingleMessage::INCOMPATIBLE_PARAMETERS, "incompatible-parameters" },
+};
 
 bool ParseCandidate(const buzz::XmlElement* element,
                     cricket::Candidate* candidate) {
@@ -104,7 +138,7 @@ bool JingleMessage::IsJingleMessage(const buzz::XmlElement* stanza) {
 
 JingleMessage::JingleMessage()
     : action(UNKNOWN_ACTION),
-      termination_reason(kJingleNamespace, "success") {
+      reason(UNKNOWN_REASON) {
 }
 
 JingleMessage::JingleMessage(
@@ -135,15 +169,10 @@ bool JingleMessage::ParseXml(const buzz::XmlElement* stanza,
   if (action_str.empty()) {
     *error = "action attribute is missing";
     return false;
-  } else if (action_str == kSessionInitiateAction) {
-    action = SESSION_INITIATE;
-  } else if (action_str == kSessionAcceptAction) {
-    action = SESSION_ACCEPT;
-  } else if (action_str == kSessionTerminateAction) {
-    action = SESSION_TERMINATE;
-  } else if (action_str == kTransportInfoAction) {
-    action = TRANSPORT_INFO;
-  } else {
+  }
+  action = NameToValue(
+      kActionTypes, arraysize(kActionTypes), action_str, UNKNOWN_ACTION);
+  if (action == UNKNOWN_ACTION) {
     *error = "Unknown action " + action_str;
     return false;
   }
@@ -154,13 +183,16 @@ bool JingleMessage::ParseXml(const buzz::XmlElement* stanza,
     return false;
   }
 
-  if (action == SESSION_TERMINATE) {
-    const XmlElement* reason_tag =
-        jingle_tag->FirstNamed(QName(kJingleNamespace, "reason"));
-    if (reason_tag && reason_tag->FirstElement())
-      termination_reason = reason_tag->FirstElement()->Name();
-    return true;
+  const XmlElement* reason_tag =
+      jingle_tag->FirstNamed(QName(kJingleNamespace, "reason"));
+  if (reason_tag && reason_tag->FirstElement()) {
+    reason = NameToValue(
+        kReasons, arraysize(kReasons),
+        reason_tag->FirstElement()->Name().LocalPart(), UNKNOWN_REASON);
   }
+
+  if (action == SESSION_TERMINATE)
+    return true;
 
   const XmlElement* content_tag =
       jingle_tag->FirstNamed(QName(kJingleNamespace, "content"));
@@ -227,35 +259,27 @@ buzz::XmlElement* JingleMessage::ToXml() {
   root->AddElement(jingle_tag);
   jingle_tag->AddAttr(QName(kEmptyNamespace, "sid"), sid);
 
-  std::string action_attr;
-  switch (action) {
-    case SESSION_INITIATE:
-      action_attr = kSessionInitiateAction;
-      break;
-    case SESSION_ACCEPT:
-      action_attr = kSessionAcceptAction;
-      break;
-    case SESSION_TERMINATE:
-      action_attr = kSessionTerminateAction;
-      break;
-    case TRANSPORT_INFO:
-      action_attr = kTransportInfoAction;
-      break;
-    default:
-      NOTREACHED();
-      break;
-  }
+  const char* action_attr = ValueToName(
+      kActionTypes, arraysize(kActionTypes), action);
+  if (!action_attr)
+    LOG(FATAL) << "Invalid action value " << action;
   jingle_tag->AddAttr(QName(kEmptyNamespace, "action"), action_attr);
 
   if (action == SESSION_INITIATE)
     jingle_tag->AddAttr(QName(kEmptyNamespace, "initiator"), from);
 
-  if (action == SESSION_TERMINATE) {
+  if (reason != UNKNOWN_REASON) {
     XmlElement* reason_tag = new XmlElement(QName(kJingleNamespace, "reason"));
     jingle_tag->AddElement(reason_tag);
+    const char* reason_string =
+        ValueToName(kReasons, arraysize(kReasons), reason);
+    if (reason_string == NULL)
+      LOG(FATAL) << "Invalid reason: " << reason;
+    reason_tag->AddElement(new XmlElement(
+        QName(kJingleNamespace, reason_string)));
+  }
 
-    reason_tag->AddElement(new XmlElement(termination_reason));
-  } else {
+  if (action != SESSION_TERMINATE) {
     XmlElement* content_tag =
         new XmlElement(QName(kJingleNamespace, "content"));
     jingle_tag->AddElement(content_tag);
