@@ -402,6 +402,7 @@
     'browser/renderer_host/render_widget_host_view.h',
     'browser/renderer_host/render_widget_host_view_gtk.cc',
     'browser/renderer_host/render_widget_host_view_gtk.h',
+    'browser/renderer_host/render_widget_host_view_mac_delegate.h',
     'browser/renderer_host/render_widget_host_view_win.cc',
     'browser/renderer_host/render_widget_host_view_win.h',
     'browser/renderer_host/resource_dispatcher_host.cc',

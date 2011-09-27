@@ -6,8 +6,6 @@
 
 #include <QuartzCore/QuartzCore.h>
 
-#include <cmath>
-
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/mac/mac_util.h"
@@ -20,25 +18,16 @@
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/mac/closure_blocks_leopard_compat.h"
 #import "chrome/browser/renderer_host/accelerated_plugin_view_mac.h"
-#include "chrome/browser/spellchecker/spellchecker_platform_engine.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_list.h"
-#import "chrome/browser/ui/cocoa/history_overlay_controller.h"
 #import "chrome/browser/ui/cocoa/rwhvm_editcommand_helper.h"
-#import "chrome/browser/ui/cocoa/view_id_util.h"
-#include "chrome/common/render_messages.h"
-#include "chrome/common/spellcheck_messages.h"
 #import "content/browser/accessibility/browser_accessibility_cocoa.h"
 #include "content/browser/browser_thread.h"
-#include "content/browser/debugger/devtools_client_host.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/gpu/gpu_process_host_ui_shim.h"
 #include "content/browser/plugin_process_host.h"
 #include "content/browser/renderer_host/backing_store_mac.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/renderer_host/render_view_host_observer.h"
-#include "content/browser/renderer_host/render_widget_host.h"
+#import "content/browser/renderer_host/render_widget_host_view_mac_delegate.h"
 #import "content/browser/renderer_host/text_input_client_mac.h"
 #include "content/common/edit_command.h"
 #include "content/common/gpu/gpu_messages.h"
@@ -88,39 +77,10 @@ typedef unsigned long long NSEventMask;
 // Declare things that are part of the 10.7 SDK.
 #if !defined(MAC_OS_X_VERSION_10_7) || \
     MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_7
-enum {
-  NSEventPhaseNone        = 0, // event not associated with a phase.
-  NSEventPhaseBegan       = 0x1 << 0,
-  NSEventPhaseStationary  = 0x1 << 1,
-  NSEventPhaseChanged     = 0x1 << 2,
-  NSEventPhaseEnded       = 0x1 << 3,
-  NSEventPhaseCancelled   = 0x1 << 4,
-};
-typedef NSUInteger NSEventPhase;
-
-enum {
-  NSEventSwipeTrackingLockDirection = 0x1 << 0,
-  NSEventSwipeTrackingClampGestureAmount = 0x1 << 1
-};
-typedef NSUInteger NSEventSwipeTrackingOptions;
-
 @interface NSEvent (LionAPI)
-+ (BOOL)isSwipeTrackingFromScrollEventsEnabled;
-
 + (id)addLocalMonitorForEventsMatchingMask:(NSEventMask)mask
                                    handler:(NSEvent* (^)(NSEvent*))block;
 + (void)removeMonitor:(id)eventMonitor;
-
-- (NSEventPhase)phase;
-- (CGFloat)scrollingDeltaX;
-- (CGFloat)scrollingDeltaY;
-- (void)trackSwipeEventWithOptions:(NSEventSwipeTrackingOptions)options
-          dampenAmountThresholdMin:(CGFloat)minDampenThreshold
-                               max:(CGFloat)maxDampenThreshold
-                      usingHandler:(void (^)(CGFloat gestureAmount,
-                                             NSEventPhase phase,
-                                             BOOL isComplete,
-                                             BOOL *stop))trackingHandler;
 @end
 #endif  // 10.7
 
@@ -140,6 +100,10 @@ static inline int ToWebKitModifiers(NSUInteger flags) {
 
 + (BOOL)shouldAutohideCursorForEvent:(NSEvent*)event;
 - (id)initWithRenderWidgetHostViewMac:(RenderWidgetHostViewMac*)r;
+- (void)setRWHVDelegate:(RenderWidgetHostViewMacDelegate*)delegate;
+- (void)gotUnhandledWheelEvent;
+- (void)scrollOffsetPinnedToLeft:(BOOL)left toRight:(BOOL)right;
+- (void)setHasHorizontalScrollbar:(BOOL)has_horizontal_scrollbar;
 - (void)keyEvent:(NSEvent*)theEvent wasKeyEquivalent:(BOOL)equiv;
 - (void)cancelChildPopups;
 - (void)checkForPluginImeCancellation;
@@ -241,35 +205,6 @@ NSWindow* ApparentWindowForView(NSView* view) {
   return enclosing_window;
 }
 
-// Filters the message sent to RenderViewHost to know if spellchecking is
-// enabled or not for the currently focused element.
-class SpellCheckRenderViewObserver : public RenderViewHostObserver {
- public:
-  SpellCheckRenderViewObserver(RenderViewHost* host,
-                               RenderWidgetHostViewMac* view)
-    : RenderViewHostObserver(host),
-      view_(view) {
-  }
-
- private:
-  // RenderViewHostObserver implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE {
-    bool handled = true;
-    IPC_BEGIN_MESSAGE_MAP(SpellCheckRenderViewObserver, message)
-      IPC_MESSAGE_HANDLER(SpellCheckHostMsg_ToggleSpellCheck,
-                          OnToggleSpellCheck)
-      IPC_MESSAGE_UNHANDLED(handled = false)
-    IPC_END_MESSAGE_MAP()
-    return handled;
-  }
-
-  void OnToggleSpellCheck(bool enabled, bool checked) {
-    view_->ToggleSpellCheck(enabled, checked);
-  }
-
-  RenderWidgetHostViewMac* view_;
-};
-
 }  // namespace
 
 // RenderWidgetHostView --------------------------------------------------------
@@ -288,8 +223,6 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget)
       about_to_validate_and_paint_(false),
       call_set_needs_display_in_rect_pending_(false),
       text_input_type_(ui::TEXT_INPUT_TYPE_NONE),
-      spellcheck_enabled_(false),
-      spellcheck_checked_(false),
       is_loading_(false),
       is_hidden_(false),
       is_showing_context_menu_(false),
@@ -302,14 +235,14 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget)
   cocoa_view_ = [[[RenderWidgetHostViewCocoa alloc]
                   initWithRenderWidgetHostViewMac:this] autorelease];
   render_widget_host_->SetView(this);
-
-  if (render_widget_host_->IsRenderView()) {
-    new SpellCheckRenderViewObserver(
-        static_cast<RenderViewHost*>(widget), this);
-  }
 }
 
 RenderWidgetHostViewMac::~RenderWidgetHostViewMac() {
+}
+
+void RenderWidgetHostViewMac::SetDelegate(
+    RenderWidgetHostViewMacDelegate* delegate) {
+  [cocoa_view_ setRWHVDelegate:delegate];
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1017,11 +950,6 @@ void RenderWidgetHostViewMac::AcknowledgeSwapBuffers(
   }
 }
 
-void RenderWidgetHostViewMac::ToggleSpellCheck(bool enabled, bool checked) {
-  spellcheck_enabled_ = enabled;
-  spellcheck_checked_ = checked;
-}
-
 void RenderWidgetHostViewMac::GpuRenderingStateDidChange() {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (GetRenderWidgetHost()->is_accelerated_compositing_active()) {
@@ -1086,7 +1014,7 @@ void RenderWidgetHostViewMac::SetVisuallyDeemphasized(const SkColor* color,
 
 void RenderWidgetHostViewMac::UnhandledWheelEvent(
     const WebKit::WebMouseWheelEvent& event) {
-  [cocoa_view_ setGotUnhandledWheelEvent:YES];
+  [cocoa_view_ gotUnhandledWheelEvent];
 }
 
 void RenderWidgetHostViewMac::SetHasHorizontalScrollbar(
@@ -1096,8 +1024,8 @@ void RenderWidgetHostViewMac::SetHasHorizontalScrollbar(
 
 void RenderWidgetHostViewMac::SetScrollOffsetPinning(
     bool is_pinned_to_left, bool is_pinned_to_right) {
-  [cocoa_view_ setPinnedLeft:is_pinned_to_left];
-  [cocoa_view_ setPinnedRight:is_pinned_to_right];
+  [cocoa_view_ scrollOffsetPinnedToLeft:is_pinned_to_left
+                                toRight:is_pinned_to_right];
 }
 
 bool RenderWidgetHostViewMac::LockMouse() {
@@ -1180,10 +1108,6 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
 
 @synthesize selectedRange = selectedRange_;
 @synthesize markedRange = markedRange_;
-@synthesize gotUnhandledWheelEvent = gotUnhandledWheelEvent_;
-@synthesize isPinnedLeft = isPinnedLeft_;
-@synthesize isPinnedRight = isPinnedRight_;
-@synthesize hasHorizontalScrollbar = hasHorizontalScrollbar_;
 
 - (id)initWithRenderWidgetHostViewMac:(RenderWidgetHostViewMac*)r {
   self = [super initWithFrame:NSZeroRect];
@@ -1196,6 +1120,74 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
     focusedPluginIdentifier_ = -1;
   }
   return self;
+}
+
+- (void)dealloc {
+  if (delegate_ && [delegate_ respondsToSelector:@selector(viewGone:)])
+    [delegate_ viewGone:self];
+
+  [super dealloc];
+}
+
+- (void)setRWHVDelegate:(RenderWidgetHostViewMacDelegate*)delegate {
+  delegate_ = delegate;
+}
+
+- (void)gotUnhandledWheelEvent {
+  if (delegate_ &&
+      [delegate_ respondsToSelector:@selector(gotUnhandledWheelEvent)]) {
+    [delegate_ gotUnhandledWheelEvent];
+  }
+}
+
+- (void)scrollOffsetPinnedToLeft:(BOOL)left toRight:(BOOL)right {
+  if (delegate_ && [delegate_ respondsToSelector:
+      @selector(scrollOffsetPinnedToLeft:toRight:)]) {
+    [delegate_ scrollOffsetPinnedToLeft:left toRight:right];
+  }
+}
+
+- (void)setHasHorizontalScrollbar:(BOOL)has_horizontal_scrollbar {
+  if (delegate_ &&
+      [delegate_ respondsToSelector:@selector(setHasHorizontalScrollbar:)]) {
+    [delegate_ setHasHorizontalScrollbar:has_horizontal_scrollbar];
+  }
+}
+
+- (BOOL)respondsToSelector:(SEL)selector {
+  // Trickiness: this doesn't mean "does this object's superclass respond to
+  // this selector" but rather "does the -respondsToSelector impl from the
+  // superclass say that this class responds to the selector".
+  if ([super respondsToSelector:selector])
+    return YES;
+
+  if (delegate_)
+    return [delegate_ respondsToSelector:selector];
+  else
+    return NO;
+}
+
+- (NSMethodSignature*)methodSignatureForSelector:(SEL)selector {
+  // Trickiness: this doesn't mean "does this object's superclass respond to
+  // this selector" but rather "does the -respondsToSelector impl from the
+  // superclass say that this class responds to the selector".
+  if ([super respondsToSelector:selector])
+    return [super methodSignatureForSelector:selector];
+
+  if (delegate_)
+    return [delegate_ methodSignatureForSelector:selector];
+  else
+    return nil;
+}
+
+- (void)forwardInvocation:(NSInvocation*)invocation {
+  // TODO(avi): Oh, man, use -forwardingTargetForSelector: when 10.6 is the
+  // minimum requirement.
+
+  if (delegate_ && [delegate_ respondsToSelector:[invocation selector]])
+    [invocation invokeWithTarget:delegate_];
+  else
+    [super forwardInvocation:invocation];
 }
 
 - (void)setCanBeKeyView:(BOOL)can {
@@ -1241,6 +1233,12 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
 }
 
 - (void)mouseEvent:(NSEvent*)theEvent {
+  if (delegate_ && [delegate_ respondsToSelector:@selector(handleEvent:)]) {
+    BOOL handled = [delegate_ handleEvent:theEvent];
+    if (handled)
+      return;
+  }
+
   if ([self shouldIgnoreMouseEvent:theEvent]) {
     // If this is the first such event, send a mouse exit to the host view.
     if (!mouseEventWasIgnored_ && renderWidgetHostView_->render_widget_host_) {
@@ -1388,6 +1386,12 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
 }
 
 - (void)keyEvent:(NSEvent*)theEvent {
+  if (delegate_ && [delegate_ respondsToSelector:@selector(handleEvent:)]) {
+    BOOL handled = [delegate_ handleEvent:theEvent];
+    if (handled)
+      return;
+  }
+
   [self keyEvent:theEvent wasKeyEquivalent:NO];
 }
 
@@ -1593,115 +1597,16 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
     [NSCursor setHiddenUntilMouseMoves:YES];
 }
 
-// Checks if |theEvent| should trigger history swiping, and if so, does
-// history swiping. Returns YES if the event was consumed or NO if it should
-// be passed on to the renderer.
-- (BOOL)maybeHandleHistorySwiping:(NSEvent*)theEvent {
-  BOOL canUseLionApis = [theEvent respondsToSelector:@selector(phase)];
-  if (!canUseLionApis)
-    return NO;
-
-  // Scroll events always go to the web first, and can only trigger history
-  // swiping if they come back unhandled.
-  if ([theEvent phase] == NSEventPhaseBegan) {
-    totalScrollDelta_ = NSZeroSize;
-    gotUnhandledWheelEvent_ = false;
-  }
-
-  RenderWidgetHost* rwh = renderWidgetHostView_->render_widget_host_;
-  if (!rwh || !rwh->IsRenderView())
-    return NO;
-  bool isDevtoolsRwhv = DevToolsClientHost::FindOwnerClientHost(
-      static_cast<RenderViewHost*>(rwh)) != NULL;
-  if (isDevtoolsRwhv)
-    return NO;
-
-  if (gotUnhandledWheelEvent_ &&
-      [NSEvent isSwipeTrackingFromScrollEventsEnabled] &&
-      [theEvent phase] == NSEventPhaseChanged) {
-    totalScrollDelta_.width += [theEvent scrollingDeltaX];
-    totalScrollDelta_.height += [theEvent scrollingDeltaY];
-
-    bool isHorizontalGesture =
-      std::abs(totalScrollDelta_.width) > std::abs(totalScrollDelta_.height);
-
-    bool isRightScroll = [theEvent scrollingDeltaX] < 0;
-    bool goForward = isRightScroll;
-    bool canGoBack = false, canGoForward = false;
-    if (Browser* browser = BrowserList::GetLastActive()) {
-      canGoBack = browser->CanGoBack();
-      canGoForward = browser->CanGoForward();
-    }
-
-    // If "forward" is inactive and the user rubber-bands to the right,
-    // "isPinnedLeft" will be false.  When the user then rubber-bands to the
-    // left in the same gesture, that should trigger history immediately if
-    // there's no scrollbar, hence the check for hasHorizontalScrollbar_.
-    bool shouldGoBack = isPinnedLeft_ || !hasHorizontalScrollbar_;
-    bool shouldGoForward = isPinnedRight_ || !hasHorizontalScrollbar_;
-    if (isHorizontalGesture &&
-        // For normal pages, canGoBack/canGoForward are checked in the renderer
-        // (ChromeClientImpl::shouldRubberBand()), when it decides if it should
-        // rubberband or send back an event unhandled. The check here is
-        // required for pages with an onmousewheel handler that doesn't call
-        // preventDefault().
-        ((shouldGoBack && canGoBack && !isRightScroll) ||
-         (shouldGoForward && canGoForward && isRightScroll))) {
-
-      // Released by the tracking handler once the gesture is complete.
-      HistoryOverlayController* historyOverlay =
-          [[HistoryOverlayController alloc]
-            initForMode:goForward ? kHistoryOverlayModeForward :
-                                    kHistoryOverlayModeBack];
-
-      // The way this api works: gestureAmount is between -1 and 1 (float).  If
-      // the user does the gesture for more than about 25% (i.e. < -0.25 or >
-      // 0.25) and then lets go, it is accepted, we get a NSEventPhaseEnded,
-      // and after that the block is called with amounts animating towards 1
-      // (or -1, depending on the direction).  If the user lets go below that
-      // threshold, we get NSEventPhaseCancelled, and the amount animates
-      // toward 0.  When gestureAmount has reaches its final value, i.e. the
-      // track animation is done, the handler is called with |isComplete| set
-      // to |YES|.
-      [theEvent trackSwipeEventWithOptions:0
-                  dampenAmountThresholdMin:-1
-                                       max:1
-                              usingHandler:^(CGFloat gestureAmount,
-                                             NSEventPhase phase,
-                                             BOOL isComplete,
-                                             BOOL *stop) {
-          if (phase == NSEventPhaseBegan) {
-            [historyOverlay showPanelForWindow:[self window]];
-            return;
-          }
-
-          // |gestureAmount| obeys -[NSEvent isDirectionInvertedFromDevice]
-          // automatically.
-          Browser* browser = BrowserList::GetLastActive();
-          if (phase == NSEventPhaseEnded && browser) {
-            if (goForward)
-              browser->GoForward(CURRENT_TAB);
-            else
-              browser->GoBack(CURRENT_TAB);
-          }
-
-          [historyOverlay setProgress:gestureAmount];
-          if (isComplete) {
-            [historyOverlay dismiss];
-            [historyOverlay release];
-          }
-        }];
-      return YES;
-    }
-  }
-  return NO;
-}
-
 - (void)scrollWheel:(NSEvent*)theEvent {
+  // Cancel popups before calling the delegate because even if the delegate eats
+  // the event, it's still an explicit user action outside the popup.
   [self cancelChildPopups];
 
-  if ([self maybeHandleHistorySwiping:theEvent])
-    return;
+  if (delegate_ && [delegate_ respondsToSelector:@selector(handleEvent:)]) {
+    BOOL handled = [delegate_ handleEvent:theEvent];
+    if (handled)
+      return;
+  }
 
   const WebMouseWheelEvent& event =
       WebInputEventFactory::mouseWheelEvent(theEvent, self);
@@ -1968,6 +1873,15 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
 }
 
 - (BOOL)validateUserInterfaceItem:(id<NSValidatedUserInterfaceItem>)item {
+  if (delegate_ && [delegate_ respondsToSelector:
+      @selector(validateUserInterfaceItem:isValidItem:)]) {
+    BOOL valid;
+    BOOL known = [delegate_ validateUserInterfaceItem:item
+                                          isValidItem:&valid];
+    if (known)
+      return valid;
+  }
+
   SEL action = [item action];
 
   // For now, these actions are always enabled for render view,
@@ -1979,19 +1893,8 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
       action == @selector(copy:) ||
       action == @selector(copyToFindPboard:) ||
       action == @selector(paste:) ||
-      action == @selector(pasteAsPlainText:) ||
-      action == @selector(checkSpelling:)) {
+      action == @selector(pasteAsPlainText:)) {
     return renderWidgetHostView_->render_widget_host_->IsRenderView();
-  }
-
-  if (action == @selector(toggleContinuousSpellChecking:)) {
-    if ([(id)item respondsToSelector:@selector(setState:)]) {
-      NSCellStateValue checked_state =
-          renderWidgetHostView_->spellcheck_checked_ ?
-              NSOnState : NSOffState;
-      [(id)item setState:checked_state];
-    }
-    return renderWidgetHostView_->spellcheck_enabled_;
   }
 
   return editCommand_helper_->IsMenuItemEnabled(action, self);
@@ -2146,62 +2049,6 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
 
   [self mouseEvent:fakeRightClick];
 }
-
-// Spellchecking methods
-// The next three methods are implemented here since this class is the first
-// responder for anything in the browser.
-
-// This message is sent whenever the user specifies that a word should be
-// changed from the spellChecker.
-- (void)changeSpelling:(id)sender {
-  // Grab the currently selected word from the spell panel, as this is the word
-  // that we want to replace the selected word in the text with.
-  NSString* newWord = [[sender selectedCell] stringValue];
-  if (newWord != nil) {
-    RenderWidgetHostViewMac* thisHostView = [self renderWidgetHostViewMac];
-    thisHostView->GetRenderWidgetHost()->Replace(
-        base::SysNSStringToUTF16(newWord));
-  }
-}
-
-// This message is sent by NSSpellChecker whenever the next word should be
-// advanced to, either after a correction or clicking the "Find Next" button.
-// This isn't documented anywhere useful, like in NSSpellProtocol.h with the
-// other spelling panel methods. This is probably because Apple assumes that the
-// the spelling panel will be used with an NSText, which will automatically
-// catch this and advance to the next word for you. Thanks Apple.
-// This is also called from the Edit -> Spelling -> Check Spelling menu item.
-- (void)checkSpelling:(id)sender {
-  RenderWidgetHostViewMac* thisHostView = [self renderWidgetHostViewMac];
-  RenderWidgetHost* widget = thisHostView->GetRenderWidgetHost();
-  widget->Send(new SpellCheckMsg_AdvanceToNextMisspelling(
-      widget->routing_id()));
-}
-
-// This message is sent by the spelling panel whenever a word is ignored.
-- (void)ignoreSpelling:(id)sender {
-  // Ideally, we would ask the current RenderView for its tag, but that would
-  // mean making a blocking IPC call from the browser. Instead,
-  // SpellCheckerPlatform::CheckSpelling remembers the last tag and
-  // SpellCheckerPlatform::IgnoreWord assumes that is the correct tag.
-  NSString* wordToIgnore = [sender stringValue];
-  if (wordToIgnore != nil)
-    SpellCheckerPlatform::IgnoreWord(base::SysNSStringToUTF16(wordToIgnore));
-}
-
-- (void)showGuessPanel:(id)sender {
-  RenderWidgetHostViewMac* thisHostView = [self renderWidgetHostViewMac];
-  RenderWidgetHost* widget = thisHostView->GetRenderWidgetHost();
-  widget->Send(new SpellCheckMsg_ToggleSpellPanel(
-      widget->routing_id(), SpellCheckerPlatform::SpellingPanelVisible()));
-}
-
-- (void)toggleContinuousSpellChecking:(id)sender {
-  RenderWidgetHost* widget = renderWidgetHostView_->render_widget_host_;
-  widget->Send(new SpellCheckMsg_ToggleSpellCheck(widget->routing_id()));
-}
-
-// END Spellchecking methods
 
 // Below is the nasty tooltip stuff -- copied from WebKit's WebHTMLView.mm
 // with minor modifications for code style and commenting.
@@ -2819,10 +2666,6 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
         string16(), focusedPluginIdentifier_);
     pluginImeActive_ = NO;
   }
-}
-
-- (ViewID)viewID {
-  return VIEW_ID_TAB_CONTAINER_FOCUS_VIEW;
 }
 
 // Overriding a NSResponder method to support application services.

@@ -8,17 +8,15 @@
 
 #include <string>
 
-#include "chrome/browser/global_keyboard_shortcuts_mac.h"
+#import "chrome/browser/renderer_host/chrome_render_widget_host_view_mac_delegate.h"
 #include "chrome/browser/renderer_host/render_widget_host_view_mac.h"
 #include "chrome/browser/tab_contents/popup_menu_helper_mac.h"
 #include "chrome/browser/tab_contents/render_view_context_menu_mac.h"
-#import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/focus_tracker.h"
 #import "chrome/browser/ui/cocoa/tab_contents/sad_tab_controller.h"
 #import "chrome/browser/ui/cocoa/tab_contents/web_drag_source.h"
 #import "chrome/browser/ui/cocoa/tab_contents/web_drop_target.h"
 #import "chrome/browser/ui/cocoa/view_id_util.h"
-#include "chrome/common/render_messages.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_view_host_factory.h"
 #include "content/browser/renderer_host/render_widget_host.h"
@@ -103,6 +101,12 @@ RenderWidgetHostView* TabContentsViewMac::CreateViewForWidget(
 
   RenderWidgetHostViewMac* view =
       new RenderWidgetHostViewMac(render_widget_host);
+
+  // TODO(avi): Find a better place to do this.
+  ChromeRenderWidgetHostViewMacDelegate* rw_delegate =
+      [[ChromeRenderWidgetHostViewMacDelegate alloc]
+          initWithRenderWidgetHost:render_widget_host];
+  view->SetDelegate((RenderWidgetHostViewMacDelegate*)rw_delegate);
 
   // Fancy layout comes later; for now just make it our size and resize it
   // with us. In case there are other siblings of the content area, we want

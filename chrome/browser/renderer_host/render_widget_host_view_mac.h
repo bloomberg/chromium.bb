@@ -23,6 +23,7 @@
 
 @class AcceleratedPluginView;
 class RenderWidgetHostViewMac;
+@class RenderWidgetHostViewMacDelegate;
 class RWHVMEditCommandHelper;
 @class ToolTip;
 
@@ -37,10 +38,10 @@ class RWHVMEditCommandHelper;
 @interface RenderWidgetHostViewCocoa
     : BaseView <RenderWidgetHostViewMacOwner,
                 NSTextInputClient,
-                NSChangeSpelling,
                 BrowserAccessibilityDelegateCocoa> {
  @private
   scoped_ptr<RenderWidgetHostViewMac> renderWidgetHostView_;
+  RenderWidgetHostViewMacDelegate* delegate_;  // weak
   BOOL canBeKeyView_;
   BOOL takesFocusOnlyOnMouseDown_;
   BOOL closeOnDeactivate_;
@@ -117,34 +118,11 @@ class RWHVMEditCommandHelper;
   // Whether the previous mouse event was ignored due to hitTest check.
   BOOL mouseEventWasIgnored_;
 
-  // If a scroll event came back unhandled from the renderer. Set to |NO| at
-  // the start of a scroll gesture, and then to |YES| if a scroll event comes
-  // back unhandled from the renderer.
-  // Used for history swiping.
-  BOOL gotUnhandledWheelEvent_;
-
-  // Cummulative scroll delta since scroll gesture start. Only valid during
-  // scroll gesture handling. Used for history swiping.
-  NSSize totalScrollDelta_;
-
-  // If the viewport is scrolled all the way to the left or right.
-  // Used for history swiping.
-  BOOL isPinnedLeft_;
-  BOOL isPinnedRight_;
-
-  // If the main frame has a horizontal scrollbar.
-  // Used for history swiping.
-  BOOL hasHorizontalScrollbar_;
-
   // Event monitor for gesture-end events.
   id endGestureMonitor_;
 }
 
 @property(nonatomic, readonly) NSRange selectedRange;
-@property(nonatomic) BOOL gotUnhandledWheelEvent;
-@property(nonatomic, setter=setPinnedLeft:) BOOL isPinnedLeft;
-@property(nonatomic, setter=setPinnedRight:) BOOL isPinnedRight;
-@property(nonatomic) BOOL hasHorizontalScrollbar;
 
 - (void)setCanBeKeyView:(BOOL)can;
 - (void)setTakesFocusOnlyOnMouseDown:(BOOL)b;
@@ -195,6 +173,8 @@ class RenderWidgetHostViewMac : public RenderWidgetHostView {
   virtual ~RenderWidgetHostViewMac();
 
   RenderWidgetHostViewCocoa* native_view() const { return cocoa_view_; }
+
+  void SetDelegate(RenderWidgetHostViewMacDelegate* delegate);
 
   // Implementation of RenderWidgetHostView:
   virtual void InitAsPopup(RenderWidgetHostView* parent_host_view,
@@ -340,8 +320,6 @@ class RenderWidgetHostViewMac : public RenderWidgetHostView {
                               int gpu_host_id,
                               uint64 swap_buffers_count);
 
-  void ToggleSpellCheck(bool enabled, bool checked);
-
   // These member variables should be private, but the associated ObjC class
   // needs access to them and can't be made a friend.
 
@@ -382,10 +360,6 @@ class RenderWidgetHostViewMac : public RenderWidgetHostView {
 
   // Helper class for managing instances of accelerated plug-ins.
   AcceleratedSurfaceContainerManagerMac plugin_container_manager_;
-
-  // Used for continuous spell checking.
-  bool spellcheck_enabled_;
-  bool spellcheck_checked_;
 
  private:
   // Returns whether this render view is a popup (autocomplete window).
