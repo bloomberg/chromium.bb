@@ -38,20 +38,16 @@ class FileWriterDelegate : public net::URLRequest::Delegate {
     return file_;
   }
 
-  virtual void OnReceivedRedirect(net::URLRequest* request,
-                                  const GURL& new_url,
-                                  bool* defer_redirect) OVERRIDE;
-  virtual void OnAuthRequired(net::URLRequest* request,
-                              net::AuthChallengeInfo* auth_info) OVERRIDE;
+  virtual void OnReceivedRedirect(
+      net::URLRequest* request, const GURL& new_url, bool* defer_redirect);
+  virtual void OnAuthRequired(
+      net::URLRequest* request, net::AuthChallengeInfo* auth_info);
   virtual void OnCertificateRequested(
-      net::URLRequest* request,
-      net::SSLCertRequestInfo* cert_request_info) OVERRIDE;
-  virtual void OnSSLCertificateError(net::URLRequest* request,
-                                     const net::SSLInfo& ssl_info,
-                                     bool is_hsts_host) OVERRIDE;
-  virtual void OnResponseStarted(net::URLRequest* request) OVERRIDE;
-  virtual void OnReadCompleted(net::URLRequest* request,
-                               int bytes_read) OVERRIDE;
+      net::URLRequest* request, net::SSLCertRequestInfo* cert_request_info);
+  virtual void OnSSLCertificateError(
+      net::URLRequest* request, int cert_error, net::X509Certificate* cert);
+  virtual void OnResponseStarted(net::URLRequest* request);
+  virtual void OnReadCompleted(net::URLRequest* request, int bytes_read);
 
  private:
   void OnGetFileInfoAndCallStartUpdate(

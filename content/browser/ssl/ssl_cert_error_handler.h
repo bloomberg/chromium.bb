@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,15 +24,14 @@ class SSLCertErrorHandler : public SSLErrorHandler {
   SSLCertErrorHandler(ResourceDispatcherHost* rdh,
                       net::URLRequest* request,
                       ResourceType::Type resource_type,
-                      const net::SSLInfo& ssl_info,
-                      bool is_hsts_host);
+                      int cert_error,
+                      net::X509Certificate* cert);
 
   virtual SSLCertErrorHandler* AsSSLCertErrorHandler();
 
   // These accessors are available on either thread
   const net::SSLInfo& ssl_info() const { return ssl_info_; }
   int cert_error() const { return cert_error_; }
-  bool is_hsts_host() const { return is_hsts_host_; }
 
  protected:
   // SSLErrorHandler methods
@@ -43,9 +42,8 @@ class SSLCertErrorHandler : public SSLErrorHandler {
   virtual ~SSLCertErrorHandler();
 
   // These read-only members may be accessed on any thread.
-  const net::SSLInfo ssl_info_;
+  net::SSLInfo ssl_info_;
   const int cert_error_;  // The error we represent.
-  const bool is_hsts_host_;  // true if the error is from an HSTS host.
 
   DISALLOW_COPY_AND_ASSIGN(SSLCertErrorHandler);
 };
