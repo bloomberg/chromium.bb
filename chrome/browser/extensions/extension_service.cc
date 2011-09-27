@@ -1428,6 +1428,16 @@ void ExtensionService::LoadInstalledExtension(const ExtensionInfo& info,
     error = errors::kManifestUnreadable;
   }
 
+  // Once installed, non-unpacked extensions cannot change their IDs (e.g., by
+  // updating the 'key' field in their manifest).
+  if (extension &&
+      extension->location() != Extension::LOAD &&
+      info.extension_id != extension->id()) {
+    error = errors::kCannotChangeExtensionID;
+    extension = NULL;
+    UserMetrics::RecordAction(UserMetricsAction("Extensions.IDChangedError"));
+  }
+
   if (!extension) {
     ReportExtensionLoadError(info.extension_path,
                              error,

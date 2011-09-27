@@ -144,6 +144,8 @@ const char* kBackgroundPermissionNeeded =
 const char* kCannotAccessPage =
     "Cannot access contents of url \"*\". "
     "Extension manifest must request permission to access this host.";
+const char* kCannotChangeExtensionID =
+    "Installed extensions cannot change their IDs.";
 const char* kCannotClaimAllHostsInExtent =
     "Cannot claim all hosts ('*') in an extent.";
 const char* kCannotClaimAllURLsInExtent =
