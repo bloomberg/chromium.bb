@@ -842,6 +842,13 @@ DeclareBit('target_arm_thumb2',
            'Tools being built will process ARM binaries (thumb2 ISA)',
            exclusive_groups='target_arch')
 
+DeclareBit('target_cros_arm_arm', 'CrOS chroot - tools will process ARM binaries',
+           exclusive_groups='target_arch')
+DeclareBit('target_cros_arm_thumb2',
+           'CrOS chroot - tools will process ARM binaries (thumb2 ISA)',
+           exclusive_groups='target_arch')
+
+
 # Shorthand for either the 32 or 64 bit version of x86.
 DeclareBit('build_x86', 'Building binaries for the x86 architecture')
 DeclareBit('target_x86', 'Tools being built will process x86 binaries')
@@ -849,7 +856,7 @@ DeclareBit('target_x86', 'Tools being built will process x86 binaries')
 # Shorthand for either arm or thumb2 versions of ARM
 DeclareBit('build_arm', 'Building binaries for the arm architecture')
 DeclareBit('target_arm', 'Tools being built will process arm binaries')
-
+DeclareBit('cros', 'We are in the CrOS chroot')
 
 def MakeArchSpecificEnv():
   env = pre_base_env.Clone()
@@ -2586,7 +2593,7 @@ def MakeLinuxEnv():
       # TODO(mseaborn): It would be clearer just to inline
       # setup_arm_trusted_toolchain.py here.
       sys.path.append('tools/llvm')
-      from setup_arm_trusted_toolchain import arm_env
+      from setup_arm_cros_toolchain import arm_env
       sys.path.pop()
     else:
       arm_env = {}
