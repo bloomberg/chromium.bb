@@ -851,10 +851,10 @@ int PluginInstance::PrintBegin(const gfx::Rect& printable_area,
   if (!num_pages)
     return 0;
   current_print_settings_ = print_settings;
-#if defined(OS_LINUX) || defined(OS_WIN)
+#if defined(USE_SKIA)
   canvas_ = NULL;
   ranges_.clear();
-#endif  // OS_LINUX || OS_WIN
+#endif  // USE_SKIA
   return num_pages;
 }
 
@@ -862,14 +862,19 @@ bool PluginInstance::PrintPage(int page_number, WebKit::WebCanvas* canvas) {
   DCHECK(plugin_print_interface_);
   PP_PrintPageNumberRange_Dev page_range;
   page_range.first_page_number = page_range.last_page_number = page_number;
-#if defined(OS_LINUX) || defined(OS_WIN)
+#if defined(USE_SKIA)
   // The canvas only has a metafile on it for print preview.
-  if (printing::MetafileSkiaWrapper::GetMetafileFromCanvas(canvas)) {
+  bool save_for_later =
+      (printing::MetafileSkiaWrapper::GetMetafileFromCanvas(*canvas) != NULL);
+#if defined(OS_MACOSX) || defined(OS_WIN)
+  save_for_later = save_for_later && skia::IsPreviewMetafile(*canvas);
+#endif
+  if (save_for_later) {
     ranges_.push_back(page_range);
     canvas_ = canvas;
     return true;
   } else
-#endif  // OS_LINUX || OS_WIN
+#endif  // USE_SKIA
   {
     return PrintPageHelper(&page_range, 1, canvas);
   }
@@ -901,12 +906,12 @@ bool PluginInstance::PrintPageHelper(PP_PrintPageNumberRange_Dev* page_ranges,
 void PluginInstance::PrintEnd() {
   // Keep a reference on the stack. See NOTE above.
   scoped_refptr<PluginInstance> ref(this);
-#if defined(OS_LINUX) || defined(OS_WIN)
+#if defined(USE_SKIA)
   if (!ranges_.empty())
     PrintPageHelper(&(ranges_.front()), ranges_.size(), canvas_.get());
   canvas_ = NULL;
   ranges_.clear();
-#endif  // OS_LINUX || OS_WIN
+#endif  // USE_SKIA
 
   DCHECK(plugin_print_interface_);
   if (plugin_print_interface_)
@@ -1061,7 +1066,7 @@ bool PluginInstance::PrintPDFOutput(PP_Resource print_output,
   // (NativeMetafile and PreviewMetafile must have compatible formats,
   // i.e. both PDF for this to work).
   printing::Metafile* metafile =
-      printing::MetafileSkiaWrapper::GetMetafileFromCanvas(canvas);
+      printing::MetafileSkiaWrapper::GetMetafileFromCanvas(*canvas);
   DCHECK(metafile != NULL);
   if (metafile)
     ret = metafile->InitFromData(mapper.data(), mapper.size());
@@ -1086,7 +1091,7 @@ bool PluginInstance::PrintPDFOutput(PP_Resource print_output,
   }
 #elif defined(OS_WIN)
   printing::Metafile* metafile =
-    printing::MetafileSkiaWrapper::GetMetafileFromCanvas(canvas);
+    printing::MetafileSkiaWrapper::GetMetafileFromCanvas(*canvas);
   if (metafile) {
     // We only have a metafile when doing print preview, so we just want to
     // pass the PDF off to preview.

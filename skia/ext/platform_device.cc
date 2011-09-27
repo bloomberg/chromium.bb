@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/logging.h"
 #include "skia/ext/platform_device.h"
 
 #include "third_party/skia/include/core/SkMetaData.h"
@@ -9,8 +10,28 @@
 namespace skia {
 
 namespace {
+
 const char* kDevicePlatformBehaviour = "CrDevicePlatformBehaviour";
+const char* kDraftModeKey = "CrDraftMode";
+
+#if defined(OS_MACOSX) || defined(OS_WIN)
+const char* kIsPreviewMetafileKey = "CrIsPreviewMetafile";
+#endif
+
+void SetBoolMetaData(const SkCanvas& canvas, const char* key,  bool value) {
+  SkMetaData& meta = skia::getMetaData(canvas);
+  meta.setBool(key, value);
 }
+
+bool GetBoolMetaData(const SkCanvas& canvas, const char* key) {
+  bool value;
+  SkMetaData& meta = skia::getMetaData(canvas);
+  if (!meta.findBool(key, &value))
+    value = false;
+  return value;
+}
+
+}  // namespace
 
 void SetPlatformDevice(SkDevice* device, PlatformDevice* platform_behaviour) {
   SkMetaData& meta_data = device->getMetaData();
@@ -26,6 +47,30 @@ PlatformDevice* GetPlatformDevice(SkDevice* device) {
 
   return NULL;
 }
+
+SkMetaData& getMetaData(const SkCanvas& canvas) {
+  SkDevice* device = canvas.getDevice();
+  DCHECK(device != NULL);
+  return device->getMetaData();
+}
+
+void SetIsDraftMode(const SkCanvas& canvas, bool draft_mode) {
+  SetBoolMetaData(canvas, kDraftModeKey, draft_mode);
+}
+
+bool IsDraftMode(const SkCanvas& canvas) {
+  return GetBoolMetaData(canvas, kDraftModeKey);
+}
+
+#if defined(OS_MACOSX) || defined(OS_WIN)
+void SetIsPreviewMetafile(const SkCanvas& canvas, bool is_preview) {
+  SetBoolMetaData(canvas, kIsPreviewMetafileKey, is_preview);
+}
+
+bool IsPreviewMetafile(const SkCanvas& canvas) {
+  return GetBoolMetaData(canvas, kIsPreviewMetafileKey);
+}
+#endif
 
 bool PlatformDevice::IsNativeFontRenderingAllowed() {
   return true;
