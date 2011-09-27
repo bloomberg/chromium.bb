@@ -73,6 +73,9 @@
 ; * *BSD family Unix using elf format
 ; * Unix System V, including Solaris x86, UnixWare and SCO Unix
 
+; PIC is the default on Linux
+%define PIC
+
 ; mark stack as non-executable
 section .note.GNU-stack noalloc noexec nowrite progbits
 
