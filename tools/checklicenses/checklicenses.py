@@ -144,9 +144,6 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
     'net/disk_cache/hash.cc': [
         'UNKNOWN',
     ],
-    'net/third_party/nss/patches/applypatches.sh': [
-        'UNKNOWN',
-    ],
     'net/tools/spdyshark': [
         'GPL (v2 or later)',
         'UNKNOWN',
