@@ -3,16 +3,13 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 #
-# ARM TOOLCHAIN SETTINGS FOR TRUSTED CODE
-#
-# This can either be imported as a python script
-# or used in a shell script, by doing:
-#   eval "$(tools/llvm/setup_arm_trusted_toolchain.py)"
-#
-#
-# If imported as a python script, it provides two variables:
-#  arm_env = dictionary of ARM environment
-#  shell_exports = keys which are normally exported to the shell environment
+
+#########################################################################
+# EXPERIMENTAL
+# this code is NOT active in the main NaCl yet!
+# this is only for testing within an artificial CrOS
+# CrOS hook for ARM/thumb2
+#########################################################################
 
 import os
 import sys
@@ -27,24 +24,27 @@ J = os.path.join
 NACL_ROOT = os.getcwd()
 BASE_DIR = J(NACL_ROOT, 'toolchain', 'linux_arm-trusted')
 ARM_CROSS_TARGET = 'armv7a-cros-linux-gnueabi'
+
+# FIXME(jasonwkim): do we need this stuff at all?
 CODE_SOURCERY_PREFIX = J(BASE_DIR, 'arm-2009q3', 'bin', ARM_CROSS_TARGET)
 CODE_SOURCERY_PREFIX=""
 CODE_SOURCERY_JAIL = J(BASE_DIR, 'arm-2009q3', ARM_CROSS_TARGET, 'libc')
 LD_SCRIPT_TRUSTED = J(BASE_DIR, 'ld_script_arm_trusted')
 
-BASE_CC = ("%s/%s-%%s -Werror -O2 %%s "
+# FIXME
+# so do we need to explicitly use the shell scripts in this directory?
+# "/usr/x86_64-pc-linux-gnu/armv7a-cros-linux-gnueabi/gcc-bin/4.4.3/"
+DEFAULT_CROS_DIR=""
+CROS_TOOLCHAIN="%s%s" % (DEFAULT_CROS_DIR, ARM_CROSS_TARGET)
+
+BASE_CC = ("%s-%%s -Werror -O2 %%s "
            "-fdiagnostics-show-option "
-           ## "-march=armv6 " ## -I%s/usr/include
-           ) % ("/usr/x86_64-pc-linux-gnu/armv7a-cros-linux-gnueabi/gcc-bin/4.4.3",
-                ARM_CROSS_TARGET, ### "-Wl,-T -Wl,%s"
-                               ## CODE_SOURCERY_JAIL,
-                               ##LD_SCRIPT_TRUSTED
-                )
+           ) % (CROS_TOOLCHAIN)
 
 # Shell exports
 ARM_CC  = BASE_CC % ('gcc', '-std=gnu99 -pedantic')
 ARM_CXX = BASE_CC % ('g++', '')
-ARM_LD = '%s-ld' % CODE_SOURCERY_PREFIX
+ARM_LD = '%s-ld' % CROS_TOOLCHAIN
 ARM_LINKFLAGS = '' # '-static'
 ARM_LIB_DIR = J(CODE_SOURCERY_JAIL, 'usr', 'lib')
 ARM_EMU = J(BASE_DIR, 'run_under_qemu_arm')
