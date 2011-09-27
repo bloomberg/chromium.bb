@@ -612,8 +612,22 @@ string16 GetLocalizedString(int message_id) {
     LOG(FATAL) << "failed to load webkit string with id " << message_id;
   }
 
-  return string16(reinterpret_cast<const char16*>(res.data()),
-                  res.length() / 2);
+  // Data packs hold strings as either UTF8 or UTF16.
+  string16 msg;
+  switch (g_resource_data_pack->GetTextEncodingType()) {
+  case ui::DataPack::UTF8:
+    msg = UTF8ToUTF16(res);
+    break;
+  case ui::DataPack::UTF16:
+    msg = string16(reinterpret_cast<const char16*>(res.data()),
+                   res.length() / 2);
+    break;
+  case ui::DataPack::BINARY:
+    NOTREACHED();
+    break;
+  }
+
+  return msg;
 }
 
 base::StringPiece GetDataResource(int resource_id) {

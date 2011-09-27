@@ -175,7 +175,7 @@ string16 GetLocalizedString(int message_id) {
                    res.length() / 2);
     break;
   case ui::DataPack::BINARY:
-  default:
+    NOTREACHED();
     break;
   }
 
