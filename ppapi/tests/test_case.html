@@ -143,6 +143,10 @@ onload = function() {
       obj = document.createElement("EMBED");
       obj.setAttribute("src", "http://a.b.c/test");
       obj.setAttribute("type", mimeType);
+      obj.setAttribute("width", 80);
+      obj.setAttribute("height", 80);
+      obj.setAttribute("style",
+                       "background-color:#AAAAAA;border:1px solid black;");
     } else {
       document.getElementById("console").innerHTML =
           '<span class="fail">FAIL</span>: ' +

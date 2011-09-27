@@ -43,7 +43,8 @@ InstanceToDispatcherMap* g_instance_to_dispatcher = NULL;
 
 }  // namespace
 
-InstanceData::InstanceData() : fullscreen(PP_FALSE) {
+InstanceData::InstanceData()
+    : fullscreen(PP_FALSE), flash_fullscreen(PP_FALSE) {
   memset(&position, 0, sizeof(position));
 }
 

@@ -35,7 +35,8 @@ namespace proxy {
 struct InstanceData {
   InstanceData();
   PP_Rect position;
-  PP_Bool fullscreen;
+  PP_Bool fullscreen;  // Used for PPB_Fullscreen_Dev.
+  PP_Bool flash_fullscreen;  // Used for PPB_FlashFullscreen.
 };
 
 class PPAPI_PROXY_EXPORT PluginDispatcher : public Dispatcher {

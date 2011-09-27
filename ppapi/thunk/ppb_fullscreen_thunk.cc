@@ -17,21 +17,21 @@ PP_Bool IsFullscreen(PP_Instance instance) {
   EnterFunction<PPB_Instance_FunctionAPI> enter(instance, true);
   if (enter.failed())
     return PP_FALSE;
-  return enter.functions()->FlashIsFullscreen(instance);
+  return enter.functions()->IsFullscreen(instance);
 }
 
 PP_Bool SetFullscreen(PP_Instance instance, PP_Bool fullscreen) {
   EnterFunction<PPB_Instance_FunctionAPI> enter(instance, true);
   if (enter.failed())
     return PP_FALSE;
-  return enter.functions()->FlashSetFullscreen(instance, fullscreen);
+  return enter.functions()->SetFullscreen(instance, fullscreen);
 }
 
 PP_Bool GetScreenSize(PP_Instance instance, PP_Size* size) {
   EnterFunction<PPB_Instance_FunctionAPI> enter(instance, true);
   if (enter.failed())
     return PP_FALSE;
-  return enter.functions()->FlashGetScreenSize(instance, size);
+  return enter.functions()->GetScreenSize(instance, size);
 }
 
 const PPB_Fullscreen_Dev g_ppb_fullscreen_thunk = {

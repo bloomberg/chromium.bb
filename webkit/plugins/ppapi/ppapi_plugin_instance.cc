@@ -239,6 +239,8 @@ PluginInstance::PluginInstance(
       plugin_graphics_3d_interface_(NULL),
       always_on_top_(false),
       fullscreen_container_(NULL),
+      flash_fullscreen_(false),
+      desired_fullscreen_state_(false),
       fullscreen_(false),
       message_channel_(NULL),
       sad_plugin_(NULL),
@@ -361,6 +363,7 @@ void PluginInstance::InstanceCrashed() {
 
   // Free any associated graphics.
   SetFullscreen(false, false);
+  FlashSetFullscreen(false, false);
   bound_graphics_ = NULL;
   InvalidateRect(gfx::Rect());
 
@@ -533,7 +536,8 @@ void PluginInstance::ViewChanged(const gfx::Rect& position,
   sent_did_change_view_ = true;
   position_ = position;
   clip_ = new_clip;
-  fullscreen_ = (fullscreen_container_ != NULL);
+  fullscreen_ = desired_fullscreen_state_;
+  flash_fullscreen_ = (fullscreen_container_ != NULL);
 
   PP_Rect pp_position, pp_clip;
   RectToPPRect(position_, &pp_position);
@@ -796,7 +800,7 @@ void PluginInstance::ReportGeometry() {
   // If this call was delayed, we may have transitioned back to fullscreen in
   // the mean time, so only report the geometry if we are actually in normal
   // mode.
-  if (container_ && !fullscreen_container_)
+  if (container_ && !fullscreen_container_ && !flash_fullscreen_)
     container_->reportGeometry();
 }
 
@@ -914,8 +918,12 @@ void PluginInstance::PrintEnd() {
 #endif  // defined(OS_MACOSX)
 }
 
-bool PluginInstance::IsFullscreenOrPending() {
+bool PluginInstance::FlashIsFullscreenOrPending() {
   return fullscreen_container_ != NULL;
+}
+
+bool PluginInstance::IsFullscreenOrPending() {
+  return desired_fullscreen_state_;
 }
 
 void PluginInstance::SetFullscreen(bool fullscreen, bool delay_report) {
@@ -928,6 +936,34 @@ void PluginInstance::SetFullscreen(bool fullscreen, bool delay_report) {
   if (fullscreen == IsFullscreenOrPending())
     return;
 
+  // Unbind current 2D or 3D graphics context.
+  BindGraphics(pp_instance(), 0);
+
+  VLOG(1) << "Setting fullscreen to " << (fullscreen ? "on" : "off");
+  desired_fullscreen_state_ = fullscreen;
+  if (fullscreen)
+    container_->element().requestFullScreen();
+  else
+    container_->element().document().cancelFullScreen();
+  if (!delay_report) {
+    ReportGeometry();
+  } else {
+    MessageLoop::current()->PostTask(
+        FROM_HERE, NewRunnableMethod(this, &PluginInstance::ReportGeometry));
+  }
+}
+
+void PluginInstance::FlashSetFullscreen(bool fullscreen, bool delay_report) {
+  // Keep a reference on the stack. See NOTE above.
+  scoped_refptr<PluginInstance> ref(this);
+
+  // We check whether we are trying to switch to the state we're already going
+  // to (i.e. if we're already switching to fullscreen but the fullscreen
+  // container isn't ready yet, don't do anything more).
+  if (fullscreen == FlashIsFullscreenOrPending())
+    return;
+
+  // Unbind current 2D or 3D graphics context.
   BindGraphics(pp_instance(), 0);
   VLOG(1) << "Setting fullscreen to " << (fullscreen ? "on" : "off");
   if (fullscreen) {
@@ -937,7 +973,7 @@ void PluginInstance::SetFullscreen(bool fullscreen, bool delay_report) {
     DCHECK(fullscreen_container_);
     fullscreen_container_->Destroy();
     fullscreen_container_ = NULL;
-    fullscreen_ = false;
+    flash_fullscreen_ = false;
     if (!delay_report) {
       ReportGeometry();
     } else {
@@ -1263,14 +1299,16 @@ PPB_Surface3D_Impl* PluginInstance::GetBoundSurface3D() const {
 }
 
 void PluginInstance::setBackingTextureId(unsigned int id) {
-  // If we have a full-screen container_ then the plugin is fullscreen,
-  // and the parent context is not the one for the browser page, but for the
-  // full-screen window, and so the parent texture ID doesn't correspond to
-  // anything in the page's context.
+  // If we have a fullscreen_container_ (under PPB_FlashFullscreen)
+  // or desired_fullscreen_state is true (under PPB_Fullscreen_Dev),
+  // then the plugin is fullscreen or transitioning to fullscreen
+  // and the parent context is not the one for the browser page,
+  // but for the fullscreen window, and so the parent texture ID
+  // doesn't correspond to anything in the page's context.
   //
   // TODO(alokp): It would be better at some point to have the equivalent
   // in the FullscreenContainer so that we don't need to poll
-  if (fullscreen_container_)
+  if (fullscreen_container_ || desired_fullscreen_state_)
     return;
 
   if (container_)
@@ -1332,8 +1370,10 @@ PP_Bool PluginInstance::BindGraphics(PP_Instance instance,
     return PP_TRUE;
   }
 
-  // Refuse to bind if we're transitioning to fullscreen.
-  if (fullscreen_container_ && !fullscreen_)
+  // Refuse to bind if in transition to fullscreen with PPB_FlashFullscreen or
+  // to/from fullscreen with PPB_Fullscreen_Dev.
+  if ((fullscreen_container_ && !flash_fullscreen_) ||
+      desired_fullscreen_state_ != fullscreen_)
     return PP_FALSE;
 
   EnterResourceNoLock<PPB_Graphics2D_API> enter_2d(device, false);
@@ -1505,21 +1545,35 @@ void PluginInstance::SelectedFindResultChanged(PP_Instance instance,
   delegate_->SelectedFindResultChanged(find_identifier_, index);
 }
 
-PP_Bool PluginInstance::FlashIsFullscreen(PP_Instance instance) {
+PP_Bool PluginInstance::IsFullscreen(PP_Instance instance) {
   return PP_FromBool(fullscreen_);
+}
+
+PP_Bool PluginInstance::FlashIsFullscreen(PP_Instance instance) {
+  return PP_FromBool(flash_fullscreen_);
+}
+
+PP_Bool PluginInstance::SetFullscreen(PP_Instance instance,
+                                      PP_Bool fullscreen) {
+  SetFullscreen(PP_ToBool(fullscreen), true);
+  return PP_TRUE;
 }
 
 PP_Bool PluginInstance::FlashSetFullscreen(PP_Instance instance,
                                            PP_Bool fullscreen) {
-  SetFullscreen(PP_ToBool(fullscreen), true);
+  FlashSetFullscreen(PP_ToBool(fullscreen), true);
+  return PP_TRUE;
+}
+
+PP_Bool PluginInstance::GetScreenSize(PP_Instance instance, PP_Size* size) {
+  gfx::Size screen_size = delegate()->GetScreenSize();
+  *size = PP_MakeSize(screen_size.width(), screen_size.height());
   return PP_TRUE;
 }
 
 PP_Bool PluginInstance::FlashGetScreenSize(PP_Instance instance,
                                            PP_Size* size) {
-  gfx::Size screen_size = delegate()->GetScreenSize();
-  *size = PP_MakeSize(screen_size.width(), screen_size.height());
-  return PP_TRUE;
+  return GetScreenSize(instance, size);
 }
 
 int32_t PluginInstance::RequestInputEvents(PP_Instance instance,

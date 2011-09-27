@@ -18,10 +18,17 @@
 #define PPB_FLASHFULLSCREEN_INTERFACE PPB_FLASHFULLSCREEN_INTERFACE_0_1
 
 /**
+ * PPB_Fullscreen is a copy of PPB_Fullscreen_Dev at rev 0.4.
+ * For backward compatibility keep the string for it until Flash is updated to
+ * use PPB_FlashFullscreen.
+ */
+#define PPB_FULLSCREEN_DEV_INTERFACE_0_4 "PPB_Fullscreen(Dev);0.4"
+
+
+/**
  * @file
  * This file defines the <code>PPB_FlashFullscreen</code> interface.
  */
-
 
 /**
  * @addtogroup Interfaces
@@ -37,8 +44,8 @@ struct PPB_FlashFullscreen {
    * success, PP_FALSE on failure.
    *
    * This unbinds the current Graphics2D or Surface3D. Pending flushes and
-   * swapbuffers will execute as if the resource was off-screen.  The transition
-   * is asynchronous. During the transition, IsFullscreen will return PP_False,
+   * swapbuffers will execute as if the resource was off-screen. The transition
+   * is asynchronous. During the transition, IsFullscreen will return PP_FALSE,
    * and no Graphics2D or Surface3D can be bound. The transition ends at the
    * next DidChangeView when going into fullscreen mode. The transition out of
    * fullscreen mode is synchronous.
@@ -59,4 +66,3 @@ struct PPB_FlashFullscreen {
  */
 
 #endif  /* PPAPI_C_PRIVATE_PPB_FLASH_FULLSCREEN_H_ */
-

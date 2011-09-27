@@ -368,11 +368,12 @@ IPC_SYNC_MESSAGE_ROUTED3_1(PpapiMsg_PPPInstance_DidCreate,
                            PP_Bool /* result */)
 IPC_SYNC_MESSAGE_ROUTED1_0(PpapiMsg_PPPInstance_DidDestroy,
                            PP_Instance /* instance */)
-IPC_MESSAGE_ROUTED4(PpapiMsg_PPPInstance_DidChangeView,
+IPC_MESSAGE_ROUTED5(PpapiMsg_PPPInstance_DidChangeView,
                     PP_Instance /* instance */,
                     PP_Rect /* position */,
                     PP_Rect /* clip */,
-                    PP_Bool /* fullscreen */)
+                    PP_Bool /* fullscreen */,
+                    PP_Bool /* flash_fullscreen */)
 IPC_MESSAGE_ROUTED2(PpapiMsg_PPPInstance_DidChangeFocus,
                     PP_Instance /* instance */,
                     PP_Bool /* has_focus */)
@@ -857,6 +858,14 @@ IPC_MESSAGE_ROUTED4(PpapiHostMsg_PPBInstance_LogWithSource,
                     int /* log_level */,
                     ppapi::proxy::SerializedVar /* source */,
                     ppapi::proxy::SerializedVar /* value */)
+IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBInstance_SetFullscreen,
+                           PP_Instance /* instance */,
+                           PP_Bool /* fullscreen */,
+                           PP_Bool /* result */)
+IPC_SYNC_MESSAGE_ROUTED1_2(PpapiHostMsg_PPBInstance_GetScreenSize,
+                           PP_Instance /* instance */,
+                           PP_Bool /* result */,
+                           PP_Size /* size */)
 IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBInstance_FlashSetFullscreen,
                            PP_Instance /* instance */,
                            PP_Bool /* fullscreen */,

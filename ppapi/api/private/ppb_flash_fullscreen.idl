@@ -24,10 +24,11 @@ interface PPB_FlashFullscreen {
    * success, PP_FALSE on failure.
    *
    * This unbinds the current Graphics2D or Surface3D. Pending flushes and
-   * swapbuffers will execute as if the resource was off-screen.  The transition
-   * is asynchronous. During the transition, IsFullscreen will return PP_False,
+   * swapbuffers will execute as if the resource was off-screen. The transition
+   * is asynchronous. During the transition, IsFullscreen will return PP_FALSE,
    * and no Graphics2D or Surface3D can be bound. The transition ends at the
-   * next DidChangeView.
+   * next DidChangeView when going into fullscreen mode. The transition out of
+   * fullscreen mode is synchronous.
    *
    * Note: when switching to and from fullscreen, Context3D and Surface3D
    * resources need to be re-created. This is a current limitation that will be
@@ -38,8 +39,8 @@ interface PPB_FlashFullscreen {
       [in] PP_Bool fullscreen);
 
   /**
-   * Gets the size of the screen. When going fullscreen, the instance will be
-   * resized to that size.
+   * Gets the size of the screen in pixels. When going fullscreen, the instance
+   * will be resized to that size.
    */
   PP_Bool GetScreenSize(
       [in] PP_Instance instance,

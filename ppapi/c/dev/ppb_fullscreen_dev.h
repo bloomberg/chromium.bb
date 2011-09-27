@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From dev/ppb_fullscreen_dev.idl modified Fri Aug 26 10:51:16 2011. */
+/* From dev/ppb_fullscreen_dev.idl modified Mon Sep 26 15:06:40 2011. */
 
 #ifndef PPAPI_C_DEV_PPB_FULLSCREEN_DEV_H_
 #define PPAPI_C_DEV_PPB_FULLSCREEN_DEV_H_
@@ -14,12 +14,12 @@
 #include "ppapi/c/pp_size.h"
 #include "ppapi/c/pp_stdint.h"
 
-#define PPB_FULLSCREEN_DEV_INTERFACE_0_4 "PPB_Fullscreen(Dev);0.4"
-#define PPB_FULLSCREEN_DEV_INTERFACE PPB_FULLSCREEN_DEV_INTERFACE_0_4
+#define PPB_FULLSCREEN_DEV_INTERFACE_0_5 "PPB_Fullscreen(Dev);0.5"
+#define PPB_FULLSCREEN_DEV_INTERFACE PPB_FULLSCREEN_DEV_INTERFACE_0_5
 
 /**
  * @file
- * This file defines the <code>PPB_Fullscreen</code> interface.
+ * This file defines the <code>PPB_Fullscreen_Dev</code> interface.
  */
 
 
@@ -36,20 +36,23 @@ struct PPB_Fullscreen_Dev {
    * Switches the plugin instance to/from fullscreen mode. Returns PP_TRUE on
    * success, PP_FALSE on failure.
    *
-   * This unbinds the current Graphics2D or Surface3D. Pending flushes and
-   * swapbuffers will execute as if the resource was off-screen.  The transition
-   * is asynchronous. During the transition, IsFullscreen will return PP_False,
-   * and no Graphics2D or Surface3D can be bound. The transition ends at the
-   * next DidChangeView.
+   * This unbinds the current 2D or 3D devices. Pending flushes and swapbuffers
+   * will execute as if the resource was off-screen. The transition to and from
+   * fullscreen is asynchronous. During the transition, IsFullscreen will
+   * return the original value, and no 2D or 3D device can be bound.
+   * The transition ends at the next DidChangeView.
    *
-   * Note: when switching to and from fullscreen, Context3D and Surface3D
-   * resources need to be re-created. This is a current limitation that will be
-   * lifted in a later revision.
+   * The transition to fullscreen can only occur while the browser is
+   * processing a user gesture, even if PP_TRUE is returned. Note that two
+   * DidChangeView calls will happen when switching to fullscreen:
+   * one for moving the plugin to the middle of the window and one for
+   * stretching the window placing the plugin in the middle of the screen.
+   * Plugin size will not be affected.
    */
   PP_Bool (*SetFullscreen)(PP_Instance instance, PP_Bool fullscreen);
   /**
-   * Gets the size of the screen. When going fullscreen, the instance will be
-   * resized to that size.
+   * Gets the size of the screen in pixels. When going fullscreen, the instance
+   * will be resized to that size.
    */
   PP_Bool (*GetScreenSize)(PP_Instance instance, struct PP_Size* size);
 };

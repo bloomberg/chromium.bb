@@ -46,6 +46,12 @@ class PPB_Instance_FunctionAPI {
                                          int32_t index) = 0;
 
   // FlashFullscreen.
+  virtual PP_Bool IsFullscreen(PP_Instance instance) = 0;
+  virtual PP_Bool SetFullscreen(PP_Instance instance,
+                                PP_Bool fullscreen) = 0;
+  virtual PP_Bool GetScreenSize(PP_Instance instance, PP_Size* size) = 0;
+
+  // FlashFullscreen.
   virtual PP_Bool FlashIsFullscreen(PP_Instance instance) = 0;
   virtual PP_Bool FlashSetFullscreen(PP_Instance instance,
                                      PP_Bool fullscreen) = 0;

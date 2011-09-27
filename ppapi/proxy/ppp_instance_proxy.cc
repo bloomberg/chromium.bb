@@ -52,11 +52,18 @@ void DidChangeView(PP_Instance instance,
       static_cast<const PPB_FlashFullscreen*>(
           dispatcher->local_get_interface()(PPB_FLASHFULLSCREEN_INTERFACE));
   DCHECK(fullscreen_interface);
+  const PPB_FlashFullscreen* flash_fullscreen_interface =
+      static_cast<const PPB_FlashFullscreen*>(
+          dispatcher->local_get_interface()(PPB_FLASHFULLSCREEN_INTERFACE));
+  DCHECK(flash_fullscreen_interface);
   PP_Bool fullscreen = fullscreen_interface->IsFullscreen(instance);
+  PP_Bool flash_fullscreen  =
+      flash_fullscreen_interface->IsFullscreen(instance);
   dispatcher->Send(
       new PpapiMsg_PPPInstance_DidChangeView(INTERFACE_ID_PPP_INSTANCE,
                                              instance, *position, *clip,
-                                             fullscreen));
+                                             fullscreen,
+                                             flash_fullscreen));
 }
 
 void DidChangeFocus(PP_Instance instance, PP_Bool has_focus) {
@@ -196,7 +203,8 @@ void PPP_Instance_Proxy::OnMsgDidDestroy(PP_Instance instance) {
 void PPP_Instance_Proxy::OnMsgDidChangeView(PP_Instance instance,
                                             const PP_Rect& position,
                                             const PP_Rect& clip,
-                                            PP_Bool fullscreen) {
+                                            PP_Bool fullscreen,
+                                            PP_Bool flash_fullscreen) {
   PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(instance);
   if (!dispatcher)
     return;
@@ -205,6 +213,7 @@ void PPP_Instance_Proxy::OnMsgDidChangeView(PP_Instance instance,
     return;
   data->position = position;
   data->fullscreen = fullscreen;
+  data->flash_fullscreen = flash_fullscreen;
   combined_interface_->DidChangeView(instance, &position, &clip);
 }
 

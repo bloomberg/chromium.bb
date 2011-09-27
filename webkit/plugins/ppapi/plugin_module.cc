@@ -273,6 +273,8 @@ const void* GetInterface(const char* name) {
     return ::ppapi::thunk::GetPPB_Flash_TCPSocket_Thunk();
   if (strcmp(name, PPB_FLASH_UDPSOCKET_INTERFACE) == 0)
     return ::ppapi::thunk::GetPPB_Flash_UDPSocket_Thunk();
+  if (strcmp(name, PPB_FULLSCREEN_DEV_INTERFACE_0_4) == 0)
+    return ::ppapi::thunk::GetPPB_FlashFullscreen_Thunk();
   if (strcmp(name, PPB_GPU_BLACKLIST_INTERFACE) == 0)
     return PPB_GpuBlacklist_Private_Impl::GetInterface();
   if (strcmp(name, PPB_GRAPHICS_3D_TRUSTED_INTERFACE) == 0)

@@ -48,7 +48,8 @@ class PPP_Instance_Proxy : public InterfaceProxy {
   void OnMsgDidChangeView(PP_Instance instance,
                           const PP_Rect& position,
                           const PP_Rect& clip,
-                          PP_Bool fullscreen);
+                          PP_Bool fullscreen,
+                          PP_Bool flash_fullscreen);
   void OnMsgDidChangeFocus(PP_Instance instance, PP_Bool has_focus);
   void OnMsgHandleDocumentLoad(PP_Instance instance,
                                const HostResource& url_loader,

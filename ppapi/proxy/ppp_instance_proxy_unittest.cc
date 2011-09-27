@@ -4,6 +4,7 @@
 
 #include "base/synchronization/waitable_event.h"
 #include "ipc/ipc_message_utils.h"
+#include "ppapi/c/dev/ppb_fullscreen_dev.h"
 #include "ppapi/c/pp_var.h"
 #include "ppapi/c/ppb_core.h"
 #include "ppapi/c/ppb_url_loader.h"
@@ -89,11 +90,12 @@ PPP_Instance_1_0 ppp_instance_1_0 = {
   &HandleDocumentLoad
 };
 
-// PPP_Instance_Proxy::DidChangeView relies on PPB_Fullscreen being
+// PPP_Instance_Proxy::DidChangeView relies on PPB_(Flash)Fullscreen being
 // available with a valid implementation of IsFullScreen, so we mock it.
 PP_Bool IsFullscreen(PP_Instance instance) {
   return PP_FALSE;
 }
+PPB_Fullscreen_Dev ppb_fullscreen = { &IsFullscreen };
 PPB_FlashFullscreen ppb_flash_fullscreen = { &IsFullscreen };
 
 }  // namespace
@@ -109,6 +111,8 @@ TEST_F(PPP_Instance_ProxyTest, PPPInstance1_0) {
   plugin().RegisterTestInterface(PPP_INSTANCE_INTERFACE_1_0, &ppp_instance_1_0);
   host().RegisterTestInterface(PPB_FLASHFULLSCREEN_INTERFACE,
                                &ppb_flash_fullscreen);
+  host().RegisterTestInterface(PPB_FULLSCREEN_DEV_INTERFACE,
+                               &ppb_fullscreen);
 
   // Grab the host-side proxy for the 1.0 interface.
   const PPP_Instance_1_0* ppp_instance = static_cast<const PPP_Instance_1_0*>(
@@ -176,4 +180,3 @@ TEST_F(PPP_Instance_ProxyTest, PPPInstance1_0) {
 
 }  // namespace proxy
 }  // namespace ppapi
-

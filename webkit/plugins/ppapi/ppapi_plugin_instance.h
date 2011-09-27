@@ -207,19 +207,50 @@ class PluginInstance : public base::RefCounted<PluginInstance>,
 
   void Graphics3DContextLost();
 
-  // Implementation of PPB_Fullscreen_Dev.
+  // There are 2 implementations of the fullscreen interface
+  // PPB_FlashFullscreen_Dev is used by Pepper Flash.
+  // PPB_Fullscreen_Dev is intended for other applications including NaCl.
+  // The two interface are mutually exclusive.
+
+  // Implementation of PPB_FlashFullscreen.
 
   // Because going to fullscreen is asynchronous (but going out is not), there
   // are 3 states:
-  // - normal (fullscreen_container_ == NULL)
-  // - fullscreen pending (fullscreen_container_ != NULL, fullscreen_ == false)
-  // - fullscreen (fullscreen_container_ != NULL, fullscreen_ = true)
+  // - normal            : fullscreen_container_ == NULL
+  //                       flash_fullscreen_ == false
+  // - fullscreen pending: fullscreen_container_ != NULL
+  //                       flash_fullscreen_ == false
+  // - fullscreen        : fullscreen_container_ != NULL
+  //                       flash_fullscreen_ == true
   //
   // In normal state, events come from webkit and painting goes back to it.
   // In fullscreen state, events come from the fullscreen container, and
-  // painting goes back to it
+  // painting goes back to it.
   // In pending state, events from webkit are ignored, and as soon as we receive
   // events from the fullscreen container, we go to the fullscreen state.
+  bool FlashIsFullscreenOrPending();
+
+  // Switches between fullscreen and normal mode. If |delay_report| is set to
+  // false, it may report the new state through DidChangeView immediately. If
+  // true, it will delay it. When called from the plugin, delay_report should be
+  // true to avoid re-entrancy.
+  void FlashSetFullscreen(bool fullscreen, bool delay_report);
+
+  FullscreenContainer* fullscreen_container() const {
+    return fullscreen_container_;
+  }
+
+  // Implementation of PPB_Fullscreen_Dev.
+
+  // Because going to/from fullscreen is asynchronous, there are 4 states:
+  // - normal            : desired_fullscreen_state_ == false
+  //                       fullscreen_ == false
+  // - fullscreen pending: desired_fullscreen_state_ == true
+  //                       fullscreen_ == false
+  // - fullscreen        : desired_fullscreen_state_ == true
+  //                       fullscreen_ == true
+  // - normal pending    : desired_fullscreen_state_ = false
+  //                       fullscreen_ = true
   bool IsFullscreenOrPending();
 
   // Switches between fullscreen and normal mode. If |delay_report| is set to
@@ -242,10 +273,6 @@ class PluginInstance : public base::RefCounted<PluginInstance>,
   // embedded in a page).
   bool IsFullPagePlugin() const;
 
-  FullscreenContainer* fullscreen_container() const {
-    return fullscreen_container_;
-  }
-
   void OnLockMouseACK(int32_t result);
   void OnMouseLockLost();
 
@@ -253,7 +280,7 @@ class PluginInstance : public base::RefCounted<PluginInstance>,
   virtual ::ppapi::thunk::PPB_Instance_FunctionAPI* AsPPB_Instance_FunctionAPI()
       OVERRIDE;
 
-  // PPB_Instance_API implementation.
+  // PPB_Instance_FunctionAPI implementation.
   virtual PP_Bool BindGraphics(PP_Instance instance,
                                PP_Resource device) OVERRIDE;
   virtual PP_Bool IsFullFrame(PP_Instance instance) OVERRIDE;
@@ -279,6 +306,11 @@ class PluginInstance : public base::RefCounted<PluginInstance>,
                                      PP_Bool fullscreen) OVERRIDE;
   virtual PP_Bool FlashGetScreenSize(PP_Instance instance,
                                      PP_Size* size) OVERRIDE;
+  virtual PP_Bool IsFullscreen(PP_Instance instance) OVERRIDE;
+  virtual PP_Bool SetFullscreen(PP_Instance instance,
+                                     PP_Bool fullscreen) OVERRIDE;
+  virtual PP_Bool GetScreenSize(PP_Instance instance, PP_Size* size)
+      OVERRIDE;
   virtual int32_t RequestInputEvents(PP_Instance instance,
                                      uint32_t event_classes) OVERRIDE;
   virtual int32_t RequestFilteringInputEvents(PP_Instance instance,
@@ -462,12 +494,27 @@ class PluginInstance : public base::RefCounted<PluginInstance>,
   // to use a more optimized painting path in some cases.
   bool always_on_top_;
 
+  // Implementation of PPB_FlashFullscreen.
+
   // Plugin container for fullscreen mode. NULL if not in fullscreen mode. Note:
   // there is a transition state where fullscreen_container_ is non-NULL but
-  // fullscreen_ is false (see above).
+  // flash_fullscreen_ is false (see above).
   FullscreenContainer* fullscreen_container_;
 
-  // True if we are in fullscreen mode. Note: it is false during the transition.
+  // True if we are in fullscreen mode. False if we are in normal mode or
+  // in transition to fullscreen.
+  bool flash_fullscreen_;
+
+  // Implementation of PPB_Fullscreen_Dev.
+
+  // Since entering fullscreen mode is an asynchronous operation, we set this
+  // variable to the desired state at the time we issue the fullscreen change
+  // request. The plugin will receive a DidChangeView event when it goes
+  // fullscreen.
+  bool desired_fullscreen_state_;
+
+  // True if we are in fullscreen mode. False if we are in normal mode.
+  // It reflects the previous state when in transition.
   bool fullscreen_;
 
   // The MessageChannel used to implement bidirectional postMessage for the

@@ -1410,7 +1410,8 @@ int32_t PepperPluginDelegateImpl::ShowContextMenu(
   params.custom_items = menu->menu_data();
 
   // Transform the position to be in render view's coordinates.
-  if (instance->FlashIsFullscreen(instance->pp_instance())) {
+  if (instance->IsFullscreen(instance->pp_instance()) ||
+      instance->FlashIsFullscreen(instance->pp_instance())) {
     WebKit::WebRect rect = render_view_->windowRect();
     params.x -= rect.x;
     params.y -= rect.y;
