@@ -128,6 +128,19 @@ const char kPowerManagerInterface[] = "org.chromium.PowerManager";
 const char kPowerManagerServicePath[] = "/org/chromium/PowerManager";
 const char kPowerManagerServiceName[] = "org.chromium.PowerManager";
 // Methods
+const char kDecreaseScreenBrightness[] = "DecreaseScreenBrightness";
+const char kIncreaseScreenBrightness[] = "IncreaseScreenBrightness";
+const char kDecreaseKeyboardBrightness[] = "DecreaseKeyboardBrightness";
+const char kIncreaseKeyboardBrightness[] = "IncreaseKeyboardBrightness";
+const char kGetIdleTime[] = "GetIdleTime";
+const char kRequestLockScreenMethod[] = "RequestLockScreen";
+const char kRequestRestartMethod[] = "RequestRestart";
+const char kRequestShutdownMethod[] = "RequestShutdown";
+const char kRequestUnlockScreenMethod[] = "RequestUnlockScreen";
+const char kScreenIsLockedMethod[] = "ScreenIsLocked";
+const char kScreenIsUnlockedMethod[] = "ScreenIsUnlocked";
+const char kGetAllPropertiesMethod[] = "GetAllProperties";
+// DEPRECATED
 const char kPowerManagerDecreaseScreenBrightness[] =
     "DecreaseScreenBrightness";
 const char kPowerManagerIncreaseScreenBrightness[] =
@@ -137,14 +150,7 @@ const char kPowerManagerDecreaseKeyboardBrightness[] =
 const char kPowerManagerIncreaseKeyboardBrightness[] =
     "IncreaseKeyboardBrightness";
 // Signals
-const char kRequestLockScreenMethod[] = "RequestLockScreen";
-const char kRequestRestartMethod[] = "RequestRestart";
 const char kRequestSuspendSignal[] = "RequestSuspend";
-const char kRequestShutdownMethod[] = "RequestShutdown";
-const char kRequestUnlockScreenMethod[] = "RequestUnlockScreen";
-const char kScreenIsLockedMethod[] = "ScreenIsLocked";
-const char kScreenIsUnlockedMethod[] = "ScreenIsUnlocked";
-const char kGetAllPropertiesMethod[] = "GetAllProperties";
 const char kCleanShutdown[] = "CleanShutdown";
 const char kRegisterSuspendDelay[] = "RegisterSuspendDelay";
 const char kUnregisterSuspendDelay[] = "UnregisterSuspendDelay";
