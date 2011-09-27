@@ -3575,11 +3575,13 @@ void TestingAutomationProvider::EnablePlugin(Browser* browser,
   AutomationJSONReply reply(this, reply_message);
   if (!args->GetString("path", &path)) {
     reply.SendError("path not specified.");
-    return;
+  } else if (!PluginPrefs::GetForProfile(browser->profile())->EnablePlugin(
+      true, FilePath(path))) {
+    reply.SendError(StringPrintf("Could not enable plugin for path %s.",
+                                 path.c_str()));
+  } else {
+    reply.SendSuccess(NULL);
   }
-  PluginPrefs::GetForProfile(browser->profile())->EnablePlugin(
-      true, FilePath(path));
-  reply.SendSuccess(NULL);
 }
 
 // Sample json input:
@@ -3592,11 +3594,13 @@ void TestingAutomationProvider::DisablePlugin(Browser* browser,
   AutomationJSONReply reply(this, reply_message);
   if (!args->GetString("path", &path)) {
     reply.SendError("path not specified.");
-    return;
+  } else if (!PluginPrefs::GetForProfile(browser->profile())->EnablePlugin(
+      false, FilePath(path))) {
+    reply.SendError(StringPrintf("Could not disable plugin for path %s.",
+                                 path.c_str()));
+  } else {
+    reply.SendSuccess(NULL);
   }
-  PluginPrefs::GetForProfile(browser->profile())->EnablePlugin(
-      false, FilePath(path));
-  reply.SendSuccess(NULL);
 }
 
 // Sample json input:

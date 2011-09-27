@@ -34,6 +34,7 @@ namespace webkit {
 struct WebPluginInfo;
 namespace npapi {
 class PluginGroup;
+class PluginList;
 }
 }
 
@@ -61,6 +62,9 @@ class PluginPrefs : public base::RefCountedThreadSafe<PluginPrefs>,
   // created PluginPrefs object.
   static PluginPrefs* GetForTestingProfile(Profile* profile);
 
+  // Sets the plug-in list for tests.
+  void SetPluginListForTesting(webkit::npapi::PluginList* plugin_list);
+
   // Creates a new instance. This method should only be used for testing.
   PluginPrefs();
 
@@ -77,12 +81,12 @@ class PluginPrefs : public base::RefCountedThreadSafe<PluginPrefs>,
   void EnablePluginGroup(bool enable, const string16& group_name);
 
   // Enable or disable a specific plugin file.
-  void EnablePlugin(bool enable, const FilePath& file_path);
+  bool EnablePlugin(bool enable, const FilePath& file_path);
 
   // Enable or disable a plug-in in all profiles. This sets a default for
   // profiles which are created later as well.
   // This method should only be called on the UI thread.
-  static void EnablePluginGlobally(bool enable, const FilePath& file_path);
+  static bool EnablePluginGlobally(bool enable, const FilePath& file_path);
 
   // Returns whether there is a policy enabling or disabling plug-ins of the
   // given name.
@@ -114,6 +118,9 @@ class PluginPrefs : public base::RefCountedThreadSafe<PluginPrefs>,
       const std::set<string16>& disabled_exception_patterns,
       const std::set<string16>& enabled_patterns);
 
+  // Returns the plugin list to use, either the singleton or the override.
+  webkit::npapi::PluginList* GetPluginList();
+
   // Called on the file thread to get the data necessary to update the saved
   // preferences.
   void GetPreferencesDataOnFileThread();
@@ -143,6 +150,10 @@ class PluginPrefs : public base::RefCountedThreadSafe<PluginPrefs>,
 
   // Weak pointer, owned by the profile (which owns us).
   PrefService* prefs_;
+
+  // PluginList to use for testing. If this is NULL, defaults to the global
+  // singleton.
+  webkit::npapi::PluginList* plugin_list_;
 
   PrefChangeRegistrar registrar_;
 

@@ -205,7 +205,8 @@ void PluginsDOMHandler::HandleEnablePluginMessage(const ListValue* args) {
     FilePath::StringType file_path;
     if (!args->GetString(0, &file_path))
       return;
-    plugin_prefs->EnablePlugin(enable, FilePath(file_path));
+    bool result = plugin_prefs->EnablePlugin(enable, FilePath(file_path));
+    DCHECK(result);
   }
 }
 

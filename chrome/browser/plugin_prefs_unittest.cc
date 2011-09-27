@@ -9,6 +9,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "webkit/plugins/npapi/mock_plugin_list.cc"
 #include "webkit/plugins/webplugininfo.h"
 
 class PluginPrefsTest : public ::testing::Test {
@@ -148,7 +149,10 @@ TEST_F(PluginPrefsTest, DisableGlobally) {
                                FilePath(FILE_PATH_LITERAL("/path/too/foo")),
                                ASCIIToUTF16("1.0.0"),
                                ASCIIToUTF16("Foo plug-in"));
-  PluginPrefs::EnablePluginGlobally(false, plugin.path);
+  webkit::npapi::MockPluginList plugin_list(NULL, 0);
+  plugin_list.AddPluginToLoad(plugin);
+  plugin_prefs->SetPluginListForTesting(&plugin_list);
+  EXPECT_TRUE(PluginPrefs::EnablePluginGlobally(false, plugin.path));
 
   EXPECT_FALSE(plugin_prefs->IsPluginEnabled(plugin));
 
@@ -156,5 +160,6 @@ TEST_F(PluginPrefsTest, DisableGlobally) {
       profile_manager.CreateTestingProfile("Profile 2");
   PluginPrefs* plugin_prefs_2 = PluginPrefs::GetForTestingProfile(profile_2);
   ASSERT_TRUE(plugin_prefs);
+  plugin_prefs_2->SetPluginListForTesting(&plugin_list);
   EXPECT_FALSE(plugin_prefs_2->IsPluginEnabled(plugin));
 }

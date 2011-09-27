@@ -111,6 +111,11 @@ PluginPrefs* PluginPrefs::GetForTestingProfile(Profile* profile) {
   return static_cast<PluginPrefsWrapper*>(wrapper)->plugin_prefs();
 }
 
+void PluginPrefs::SetPluginListForTesting(
+    webkit::npapi::PluginList* plugin_list) {
+  plugin_list_ = plugin_list;
+}
+
 void PluginPrefs::EnablePluginGroup(bool enabled, const string16& group_name) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::FILE)) {
     BrowserThread::PostTask(
@@ -120,8 +125,7 @@ void PluginPrefs::EnablePluginGroup(bool enabled, const string16& group_name) {
     return;
   }
 
-  webkit::npapi::PluginList* plugin_list =
-      webkit::npapi::PluginList::Singleton();
+  webkit::npapi::PluginList* plugin_list = GetPluginList();
   std::vector<webkit::npapi::PluginGroup> groups;
   plugin_list->GetPluginGroups(true, &groups);
 
@@ -147,12 +151,29 @@ void PluginPrefs::EnablePluginGroup(bool enabled, const string16& group_name) {
       NewRunnableMethod(this, &PluginPrefs::NotifyPluginStatusChanged));
 }
 
-void PluginPrefs::EnablePlugin(bool enabled, const FilePath& path) {
+bool PluginPrefs::EnablePlugin(bool enabled, const FilePath& path) {
+  // Do policy checks first. These don't need to run on the FILE thread.
+  webkit::npapi::PluginList* plugin_list = GetPluginList();
+  webkit::WebPluginInfo plugin;
+  if (plugin_list->GetPluginInfoByPath(path, &plugin)) {
+    scoped_ptr<webkit::npapi::PluginGroup> group(
+        plugin_list->GetPluginGroup(plugin));
+    PolicyStatus plugin_status = PolicyStatusForPlugin(plugin.name);
+    PolicyStatus group_status = PolicyStatusForPlugin(group->GetGroupName());
+    if (enabled) {
+      if (plugin_status == POLICY_DISABLED || group_status == POLICY_DISABLED)
+        return false;
+    } else {
+      if (plugin_status == POLICY_ENABLED || group_status == POLICY_ENABLED)
+        return false;
+    }
+  }
+
   if (!BrowserThread::CurrentlyOn(BrowserThread::FILE)) {
     BrowserThread::PostTask(
         BrowserThread::FILE, FROM_HERE,
         NewRunnableMethod(this, &PluginPrefs::EnablePlugin, enabled, path));
-    return;
+    return true;
   }
 
   {
@@ -161,8 +182,6 @@ void PluginPrefs::EnablePlugin(bool enabled, const FilePath& path) {
     plugin_state_[path] = enabled;
   }
 
-  webkit::npapi::PluginList* plugin_list =
-      webkit::npapi::PluginList::Singleton();
   std::vector<webkit::npapi::PluginGroup> groups;
   plugin_list->GetPluginGroups(true, &groups);
 
@@ -190,20 +209,25 @@ void PluginPrefs::EnablePlugin(bool enabled, const FilePath& path) {
       NewRunnableMethod(this, &PluginPrefs::OnUpdatePreferences, groups));
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(this, &PluginPrefs::NotifyPluginStatusChanged));
+
+  return true;
 }
 
 // static
-void PluginPrefs::EnablePluginGlobally(bool enable, const FilePath& file_path) {
+bool PluginPrefs::EnablePluginGlobally(bool enable, const FilePath& file_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   g_default_plugin_state.Get()[file_path] = enable;
   std::vector<Profile*> profiles =
       g_browser_process->profile_manager()->GetLoadedProfiles();
+  bool result = true;
   for (std::vector<Profile*>::iterator it = profiles.begin();
        it != profiles.end(); ++it) {
     PluginPrefs* plugin_prefs = PluginPrefs::GetForProfile(*it);
     DCHECK(plugin_prefs);
-    plugin_prefs->EnablePlugin(enable, file_path);
+    if (!plugin_prefs->EnablePlugin(enable, file_path))
+      result = false;
   }
+  return result;
 }
 
 PluginPrefs::PolicyStatus PluginPrefs::PolicyStatusForPlugin(
@@ -222,7 +246,7 @@ PluginPrefs::PolicyStatus PluginPrefs::PolicyStatusForPlugin(
 
 bool PluginPrefs::IsPluginEnabled(const webkit::WebPluginInfo& plugin) {
   scoped_ptr<webkit::npapi::PluginGroup> group(
-      webkit::npapi::PluginList::Singleton()->GetPluginGroup(plugin));
+      GetPluginList()->GetPluginGroup(plugin));
   string16 group_name = group->GetGroupName();
 
   // Check if the plug-in or its group is enabled by policy.
@@ -505,7 +529,8 @@ ProfileKeyedService* PluginPrefs::Factory::BuildServiceInstanceFor(
 }
 
 PluginPrefs::PluginPrefs() : plugin_state_(g_default_plugin_state.Get()),
-                             prefs_(NULL) {
+                             prefs_(NULL),
+                             plugin_list_(NULL) {
 }
 
 PluginPrefs::~PluginPrefs() {
@@ -520,11 +545,16 @@ void PluginPrefs::SetPolicyEnforcedPluginPatterns(
   policy_enabled_plugin_patterns_ = enabled_patterns;
 }
 
+webkit::npapi::PluginList* PluginPrefs::GetPluginList() {
+  if (plugin_list_)
+    return plugin_list_;
+  return webkit::npapi::PluginList::Singleton();
+}
+
 void PluginPrefs::GetPreferencesDataOnFileThread() {
   std::vector<webkit::npapi::PluginGroup> groups;
 
-  webkit::npapi::PluginList* plugin_list =
-      webkit::npapi::PluginList::Singleton();
+  webkit::npapi::PluginList* plugin_list = GetPluginList();
   plugin_list->GetPluginGroups(false, &groups);
 
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
