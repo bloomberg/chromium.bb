@@ -53,6 +53,7 @@
       'imports',
       'infobars',
       'instant',
+      'multiprofile'
       'navigation',
       'notifications',
       'ntp',
@@ -298,6 +299,8 @@
       '-codesign',
       # Import tests are invalid on ChromeOS since Chrome is the only browser.
       '-imports',
+      # Multi-profile doesn't apply to chromeos yet.
+      '-multiprofile',
 
       # ==================================================
       # Disabled tests that need to be investigated/fixed.
