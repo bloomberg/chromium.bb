@@ -91,6 +91,10 @@ cr.define('options', function() {
         chrome.send('coreOptionsUserMetricsAction',
             ['Options_ShowAutofillSettings']);
       };
+      if (cr.isChromeOS && cr.commandLine.options['--bwsi']) {
+        // Hide Autofill options for the guest user.
+        $('autofill-section').hidden = true;
+      }
 
       // Appearance.
       $('themes-reset').onclick = function(event) {

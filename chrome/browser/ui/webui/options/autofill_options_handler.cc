@@ -284,9 +284,11 @@ void AutofillOptionsHandler::GetLocalizedValues(
 void AutofillOptionsHandler::Initialize() {
   personal_data_ = PersonalDataManagerFactory::GetForProfile(
       Profile::FromWebUI(web_ui_));
-  personal_data_->SetObserver(this);
-
-  LoadAutofillData();
+  // personal_data_ is NULL in guest mode on Chrome OS.
+  if (personal_data_) {
+    personal_data_->SetObserver(this);
+    LoadAutofillData();
+  }
 }
 
 void AutofillOptionsHandler::RegisterMessages() {
