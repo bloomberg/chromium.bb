@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/string_number_conversions.h"
@@ -71,8 +72,8 @@ void TestProvider::Start(const AutocompleteInput& input,
 
   if (input.matches_requested() == AutocompleteInput::ALL_MATCHES) {
     done_ = false;
-    MessageLoop::current()->PostTask(FROM_HERE, NewRunnableMethod(
-        this, &TestProvider::Run));
+    MessageLoop::current()->PostTask(FROM_HERE, base::Bind(&TestProvider::Run,
+                                                           this));
   }
 }
 

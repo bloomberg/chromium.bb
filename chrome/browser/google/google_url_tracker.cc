@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/string_util.h"
@@ -113,7 +114,7 @@ GoogleURLTracker::GoogleURLTracker()
     : infobar_creator_(&CreateInfobar),
       google_url_(g_browser_process->local_state()->GetString(
           prefs::kLastKnownGoogleURL)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(runnable_method_factory_(this)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)),
       fetcher_id_(0),
       queue_wakeup_task_(true),
       in_startup_sleep_(true),
@@ -125,12 +126,11 @@ GoogleURLTracker::GoogleURLTracker()
   net::NetworkChangeNotifier::AddIPAddressObserver(this);
 
   MessageLoop::current()->PostTask(FROM_HERE,
-                                   runnable_method_factory_.NewRunnableMethod(
-                                   &GoogleURLTracker::QueueWakeupTask));
+      base::Bind(&GoogleURLTracker::QueueWakeupTask,
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 GoogleURLTracker::~GoogleURLTracker() {
-  runnable_method_factory_.RevokeAll();
   net::NetworkChangeNotifier::RemoveIPAddressObserver(this);
 }
 
@@ -181,8 +181,8 @@ void GoogleURLTracker::QueueWakeupTask() {
   // no function to do this.
   static const int kStartFetchDelayMS = 5000;
   MessageLoop::current()->PostDelayedTask(FROM_HERE,
-      runnable_method_factory_.NewRunnableMethod(
-          &GoogleURLTracker::FinishSleep),
+      base::Bind(&GoogleURLTracker::FinishSleep,
+                 weak_ptr_factory_.GetWeakPtr()),
       kStartFetchDelayMS);
 }
 

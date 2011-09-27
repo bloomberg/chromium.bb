@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/basictypes.h"
+#include "base/bind.h"
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/string_util.h"
@@ -355,8 +356,8 @@ void HistoryURLProvider::ExecuteWithDB(history::HistoryBackend* backend,
   }
 
   // Return the results (if any) to the main thread.
-  params->message_loop->PostTask(FROM_HERE, NewRunnableMethod(
-      this, &HistoryURLProvider::QueryComplete, params));
+  params->message_loop->PostTask(FROM_HERE, base::Bind(
+      &HistoryURLProvider::QueryComplete, this, params));
 }
 
 // Used by both autocomplete passes, and therefore called on multiple different

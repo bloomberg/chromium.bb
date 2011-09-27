@@ -10,6 +10,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
 #include "content/common/net/url_fetcher.h"
 #include "content/common/notification_observer.h"
@@ -135,7 +136,7 @@ class GoogleURLTracker : public URLFetcher::Delegate,
   // configure to use https in search engine templates.
   GURL google_url_;
   GURL fetched_google_url_;
-  ScopedRunnableMethodFactory<GoogleURLTracker> runnable_method_factory_;
+  base::WeakPtrFactory<GoogleURLTracker> weak_ptr_factory_;
   scoped_ptr<URLFetcher> fetcher_;
   int fetcher_id_;
   bool queue_wakeup_task_;
