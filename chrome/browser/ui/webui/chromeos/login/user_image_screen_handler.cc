@@ -106,6 +106,16 @@ bool UserImageScreenHandler::IsCapturing() const {
   return false;
 }
 
+void UserImageScreenHandler::AddProfileImage(const SkBitmap& image) {
+  if (page_is_ready()) {
+    profile_picture_ = image;
+    profile_picture_data_url_ = web_ui_util::GetImageDataUrl(image);
+    base::StringValue data_url(profile_picture_data_url_);
+    web_ui_->CallJavascriptFunction("oobe.UserImageScreen.setProfileImage",
+                                    data_url);
+  }
+}
+
 void UserImageScreenHandler::RegisterMessages() {
   web_ui_->RegisterMessageCallback(
       "takePhoto",
@@ -121,7 +131,7 @@ void UserImageScreenHandler::RegisterMessages() {
 void UserImageScreenHandler::OnPhotoAccepted(const SkBitmap& photo) {
   user_photo_ = photo;
   selected_image_ = UserManager::User::kExternalImageIndex;
-  StringValue data_url(web_ui_util::GetImageDataUrl(user_photo_));
+  base::StringValue data_url(web_ui_util::GetImageDataUrl(user_photo_));
   web_ui_->CallJavascriptFunction("oobe.UserImageScreen.setUserPhoto",
                                   data_url);
 }
@@ -148,6 +158,8 @@ void UserImageScreenHandler::HandleSelectImage(const base::ListValue* args) {
   int user_image_index = UserManager::User::kInvalidImageIndex;
   if (IsDefaultImageUrl(image_url, &user_image_index))
     selected_image_ = user_image_index;
+  else if (image_url == profile_picture_data_url_)
+    selected_image_ = UserManager::User::kProfileImageIndex;
   else
     selected_image_ = UserManager::User::kExternalImageIndex;
 }
@@ -158,6 +170,8 @@ void UserImageScreenHandler::HandleImageAccepted(const base::ListValue* args) {
     return;
   if (selected_image_ == UserManager::User::kExternalImageIndex) {
     screen_->OnPhotoTaken(user_photo_);
+  } else if (selected_image_ == UserManager::User::kProfileImageIndex) {
+    screen_->OnProfileImageSelected(profile_picture_);
   } else {
     DCHECK(selected_image_ >= 0);
     screen_->OnDefaultImageSelected(selected_image_);

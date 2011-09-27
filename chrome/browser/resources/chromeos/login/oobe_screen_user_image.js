@@ -27,6 +27,8 @@ cr.define('oobe', function() {
     Oobe.getInstance().registerScreen(screen);
   };
 
+  cr.addSingletonGetter(UserImageScreen);
+
   UserImageScreen.prototype = {
     __proto__: HTMLDivElement.prototype,
 
@@ -50,9 +52,11 @@ cr.define('oobe', function() {
       imageGrid.addItem(ButtonImages.TAKE_PHOTO,
                         undefined,
                         this.handleTakePhoto_.bind(this));
-
       // Photo image data (if present).
       this.photoImage_ = null;
+
+      // Profile image data (if present).
+      this.profileImage_ = imageGrid.addItem(ButtonImages.PROFILE_PICTURE);
     },
 
     /**
@@ -121,45 +125,69 @@ cr.define('oobe', function() {
     onBeforeShow: function(data) {
       Oobe.getInstance().headerHidden = true;
       $('user-image-grid').updateAndFocus();
-
-      // Announce the name of the screen, if accessibility is on.
-      $('user-image-aria-label').setAttribute(
-          'aria-label', localStrings.getString('userImageScreenTitle'));
     },
+
+    /**
+     * Adds or updates image with user photo and sets it as preview.
+     * @param {string} photoUrl Image encoded as data URL.
+     * @private
+     */
+    setUserPhoto_: function(photoUrl) {
+      var imageGrid = $('user-image-grid');
+      if (this.photoImage_) {
+        this.photoImage_ = imageGrid.updateImage(this.photoImage_, photoUrl);
+      } else {
+        this.photoImage_ = imageGrid.addImage(
+            photoUrl, undefined, undefined, 1);
+      }
+      imageGrid.selectedItem = this.photoImage_;
+      imageGrid.focus();
+    },
+
+    /**
+     * Adds or updates image with user profile image and sets it as preview.
+     * @param {string} imageUrl Image encoded as data URL.
+     * @private
+     */
+    setProfileImage_: function(imageUrl) {
+      this.profileImage_ =
+          $('user-image-grid').updateImage(this.profileImage_, imageUrl);
+    },
+
+    /**
+     * Appends received images to the list.
+     * @param {Array.<string>} images An array of URLs to user images.
+     * @private
+     */
+    setUserImages_: function(images) {
+      var imageGrid = $('user-image-grid');
+      for (var i = 0, url; url = images[i]; i++)
+        imageGrid.addItem(url);
+    },
+
+    /**
+     * Selects user image with the given URL.
+     * @param {string} url URL of the image to select.
+     * @private
+     */
+    setSelectedImage_: function(url) {
+      var imageGrid = $('user-image-grid');
+      imageGrid.selectedItemUrl = url;
+      imageGrid.focus();
+    }
   };
 
-  /**
-   * Adds or updates image with user photo and sets it as preview.
-   * @param {string} photoUrl Image encoded as data URL.
-   */
-  UserImageScreen.setUserPhoto = function(photoUrl) {
-    var imageGrid = $('user-image-grid');
-    if (this.photoImage_)
-      imageGrid.removeItem(this.photoImage_);
-    this.photoImage_ = imageGrid.addItem(photoUrl, undefined, undefined, 1);
-    imageGrid.selectedItem = this.photoImage_;
-    imageGrid.focus();
-  };
-
-  /**
-   * Appends received images to the list.
-   * @param {Array.<string>} images An array of URLs to user images.
-   */
-  UserImageScreen.setUserImages = function(images) {
-    var imageGrid = $('user-image-grid');
-    for (var i = 0, url; url = images[i]; i++)
-      imageGrid.addItem(url);
-  };
-
-  /**
-   * Selects user image with the given URL.
-   * @param {string} url URL of the image to select.
-   */
-  UserImageScreen.setSelectedImage = function(url) {
-    var imageGrid = $('user-image-grid');
-    imageGrid.selectedItemUrl = url;
-    imageGrid.focus();
-  };
+  // Forward public APIs to private implementations.
+  [
+    'setProfileImage',
+    'setSelectedImage',
+    'setUserImages',
+    'setUserPhoto',
+  ].forEach(function(name) {
+    UserImageScreen[name] = function(value) {
+      UserImageScreen.getInstance()[name + '_'](value);
+    };
+  });
 
   return {
     UserImageScreen: UserImageScreen

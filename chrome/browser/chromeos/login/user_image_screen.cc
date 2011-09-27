@@ -72,6 +72,9 @@ void UserImageScreen::Show() {
   WizardAccessibilityHelper::GetInstance()->MaybeSpeak(
       l10n_util::GetStringUTF8(IDS_OPTIONS_CHANGE_PICTURE_DIALOG_TEXT).c_str(),
       false, false);
+
+  profile_image_downloader_.reset(new ProfileImageDownloader(this));
+  profile_image_downloader_->Start();
 }
 
 void UserImageScreen::Hide() {
@@ -126,6 +129,12 @@ void UserImageScreen::OnPhotoTaken(const SkBitmap& image) {
                             kHistogramImagesCount);
 }
 
+void UserImageScreen::OnProfileImageSelected(const SkBitmap& image) {
+  // TODO(avayvod): Save profile image differently to allow for its update
+  // later on login.
+  OnPhotoTaken(image);
+}
+
 void UserImageScreen::OnDefaultImageSelected(int index) {
   camera_controller_.Stop();
 
@@ -156,14 +165,18 @@ void UserImageScreen::OnActorDestroyed(UserImageScreenActor* actor) {
 void UserImageScreen::Observe(int type,
                               const NotificationSource& source,
                               const NotificationDetails& details) {
-  if (type != chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED)
-    return;
-
+  DCHECK(type == chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED);
   bool is_screen_locked = *Details<bool>(details).ptr();
   if (is_screen_locked)
     StopCamera();
   else if (actor_ && actor_->IsCapturing())
     StartCamera();
+}
+
+void UserImageScreen::OnDownloadSuccess(const SkBitmap& image) {
+  // TODO(avayvod): Check for the default image.
+  if (actor_)
+    actor_->AddProfileImage(image);
 }
 
 }  // namespace chromeos

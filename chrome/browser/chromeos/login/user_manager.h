@@ -47,7 +47,8 @@ class UserManager : public UserImageLoader::Delegate,
     // Returned as default_image_index when user-selected file or photo
     // is used as user image.
     static const int kExternalImageIndex = -1;
-    static const int kInvalidImageIndex = -2;
+    static const int kProfileImageIndex = -2;
+    static const int kInvalidImageIndex = -3;
 
     User();
     ~User();

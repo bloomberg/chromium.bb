@@ -87,7 +87,7 @@ void GoogleAuthenticator::TryClientLogin() {
   gaia_authenticator_->StartClientLogin(
       username_,
       password_,
-      GaiaConstants::kContactsService,
+      GaiaConstants::kPicasaService,
       login_token_,
       login_captcha_,
       hosted_policy_);

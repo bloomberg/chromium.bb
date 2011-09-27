@@ -170,7 +170,7 @@ void OnlineAttempt::TryClientLogin() {
           GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
     } else {
       oauth_fetcher_->StartOAuthLogin(GaiaConstants::kChromeOSSource,
-                                      GaiaConstants::kContactsService,
+                                      GaiaConstants::kPicasaService,
                                       attempt_->oauth1_access_token(),
                                       attempt_->oauth1_access_secret());
     }
@@ -178,7 +178,7 @@ void OnlineAttempt::TryClientLogin() {
     client_fetcher_->StartClientLogin(
         attempt_->username,
         attempt_->password,
-        GaiaConstants::kContactsService,
+        GaiaConstants::kPicasaService,
         attempt_->login_token,
         attempt_->login_captcha,
         attempt_->hosted_policy());

@@ -43,6 +43,7 @@ class UserImageScreenHandler : public UserImageScreenActor,
   virtual void ShowCameraError() OVERRIDE;
   virtual void ShowCameraInitializing() OVERRIDE;
   virtual bool IsCapturing() const OVERRIDE;
+  virtual void AddProfileImage(const SkBitmap& image) OVERRIDE;
 
   // WebUIMessageHandler implementation:
   virtual void RegisterMessages() OVERRIDE;
@@ -70,6 +71,12 @@ class UserImageScreenHandler : public UserImageScreenActor,
 
   // Last user photo, if taken.
   SkBitmap user_photo_;
+
+  // Downloaded user profile picture if present.
+  SkBitmap profile_picture_;
+
+  // Its data URL.
+  std::string profile_picture_data_url_;
 
   DISALLOW_COPY_AND_ASSIGN(UserImageScreenHandler);
 };

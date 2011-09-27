@@ -17,10 +17,19 @@ class UserImageScreenActor {
   class Delegate {
    public:
     virtual ~Delegate() {}
+
+    // Called when UI needs to stop video capture.
     virtual void StopCamera() = 0;
+    // Called when UI needs to start video capture.
     virtual void StartCamera() = 0;
+    // Called when user accepts photo as login user image.
     virtual void OnPhotoTaken(const SkBitmap& image) = 0;
+    // Called when user accepts Profile image as login user image.
+    virtual void OnProfileImageSelected(const SkBitmap& image) = 0;
+    // Called when user accepts one of the default images as login user
+    // image.
     virtual void OnDefaultImageSelected(int index) = 0;
+    // Called when actor is destroyed so there's no dead reference to it.
     virtual void OnActorDestroyed(UserImageScreenActor* actor) = 0;
   };
 
@@ -52,6 +61,9 @@ class UserImageScreenActor {
 
   // Indicates if the capturing is in progress or not.
   virtual bool IsCapturing() const = 0;
+
+  // Inserts profile image in the list for user to select.
+  virtual void AddProfileImage(const SkBitmap& image) {}
 };
 
 }  // namespace chromeos

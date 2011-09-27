@@ -183,7 +183,7 @@ class OAuthLoginVerifier : public GaiaOAuthConsumer {
           GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
     } else {
       oauth_fetcher_.StartOAuthLogin(GaiaConstants::kChromeOSSource,
-                                     GaiaConstants::kContactsService,
+                                     GaiaConstants::kPicasaService,
                                      oauth1_token_,
                                      oauth1_secret_);
     }

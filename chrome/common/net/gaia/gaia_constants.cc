@@ -14,8 +14,8 @@ const char kChromeSource[] = "ChromiumBrowser";
 
 // Service name for Gaia.  Used to convert to cookie auth.
 const char kGaiaService[] = "gaia";
-// Service name for Gaia Contacts API. API is used to get user's image.
-const char kContactsService[] = "cp";
+// Service name for Picasa API. API is used to get user's image.
+const char kPicasaService[] = "lh2";
 
 // Service/scope names for sync.
 const char kSyncService[] = "chromiumsync";

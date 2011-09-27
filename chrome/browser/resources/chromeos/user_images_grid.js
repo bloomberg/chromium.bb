@@ -141,7 +141,6 @@ cr.define('options', function() {
      * @param {number=} opt_position If given, inserts new image into
      *     that position (0-based) in image list.
      * @return {!Object} Image data inserted into the data model.
-     * @private
      */
     addItem: function(url, opt_title, opt_clickHandler, opt_position) {
       var imageInfo = {
@@ -154,6 +153,22 @@ cr.define('options', function() {
       else
         this.dataModel.push(imageInfo);
       return imageInfo;
+    },
+
+    /**
+     * Replaces an image in the grid.
+     * @param {Object} imageInfo Image data returned from addItem() call.
+     * @param {string} imageUrl New image URL.
+     * @return {!Object} Image data of the added or updated image.
+     */
+    updateImage: function(imageInfo, imageUrl) {
+      var imageIndex = this.dataModel.indexOf(imageInfo);
+      this.removeItem(imageInfo);
+      return this.addItem(
+          imageUrl,
+          imageInfo.title,
+          imageInfo.clickHandler,
+          imageIndex);
     },
 
     /**
@@ -184,7 +199,8 @@ cr.define('options', function() {
    */
   UserImagesGrid.ButtonImages = {
     TAKE_PHOTO: 'chrome://theme/IDR_BUTTON_USER_IMAGE_TAKE_PHOTO',
-    CHOOSE_FILE: 'chrome://theme/IDR_BUTTON_USER_IMAGE_CHOOSE_FILE'
+    CHOOSE_FILE: 'chrome://theme/IDR_BUTTON_USER_IMAGE_CHOOSE_FILE',
+    PROFILE_PICTURE: 'chrome://theme/IDR_INCOGNITO_GUY'
   };
 
   return {
