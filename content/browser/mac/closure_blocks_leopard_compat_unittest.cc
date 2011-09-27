@@ -5,7 +5,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #include "base/mac/mac_util.h"
-#include "chrome/browser/mac/closure_blocks_leopard_compat.h"
+#include "content/browser/mac/closure_blocks_leopard_compat.h"
 
 // Used in ClosureBlocksLeopardCompatTest.Global. Putting a block at global
 // scope results in a block structure whose isa field is set to

@@ -1318,7 +1318,6 @@
         'browser/intents/web_intents_registry_unittest.cc',
         'browser/internal_auth_unittest.cc',
         'browser/language_usage_metrics_unittest.cc',
-        'browser/mac/closure_blocks_leopard_compat_unittest.cc',
         'browser/mac/keystone_glue_unittest.mm',
         'browser/media/media_internals_unittest.cc',
         'browser/metrics/display_utils_unittest.cc',
@@ -1479,7 +1478,7 @@
         'browser/sync/glue/autofill_model_associator_unittest.cc',
         'browser/sync/glue/autofill_profile_syncable_service_unittest.cc',
         'browser/sync/glue/bookmark_data_type_controller_unittest.cc',
-	'browser/sync/glue/browser_thread_model_worker_unittest.cc',
+        'browser/sync/glue/browser_thread_model_worker_unittest.cc',
         'browser/sync/glue/change_processor_mock.cc',
         'browser/sync/glue/change_processor_mock.h',
         'browser/sync/glue/data_type_controller_mock.cc',
@@ -1985,7 +1984,7 @@
            # exist on disk so it can pull from it.
           'dependencies': [
             'chrome',
-            'closure_blocks_leopard_compat',
+            '../content/content.gyp:closure_blocks_leopard_compat',
             '../third_party/ocmock/ocmock.gyp:ocmock',
           ],
           'include_dirs': [

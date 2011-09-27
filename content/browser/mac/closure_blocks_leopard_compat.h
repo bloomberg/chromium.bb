@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_MAC_CLOSURE_BLOCKS_LEOPARD_COMPAT_H_
-#define CHROME_BROWSER_MAC_CLOSURE_BLOCKS_LEOPARD_COMPAT_H_
+#ifndef CONTENT_BROWSER_MAC_CLOSURE_BLOCKS_LEOPARD_COMPAT_H_
+#define CONTENT_BROWSER_MAC_CLOSURE_BLOCKS_LEOPARD_COMPAT_H_
 #pragma once
 
-// libclosure (blocks) compatibilty for Mac OS X 10.5 (Leopard)
+// libclosure (blocks) compatibility for Mac OS X 10.5 (Leopard)
 //
 // Background material:
 // http://developer.apple.com/library/mac/#documentation/Cocoa/Conceptual/Blocks
@@ -101,4 +101,4 @@ MAYBE_WEAK_IMPORT extern void* _NSConcreteStackBlock[32];
 #define Block_release(...) _Block_release((const void *)(__VA_ARGS__))
 #endif
 
-#endif  // CHROME_BROWSER_MAC_CLOSURE_BLOCKS_LEOPARD_COMPAT_H_
+#endif  // CONTENT_BROWSER_MAC_CLOSURE_BLOCKS_LEOPARD_COMPAT_H_

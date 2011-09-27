@@ -7,7 +7,6 @@
 #include <cmath>
 
 #include "base/sys_string_conversions.h"
-#include "chrome/browser/mac/closure_blocks_leopard_compat.h"
 #include "chrome/browser/spellchecker/spellchecker_platform_engine.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -15,6 +14,7 @@
 #import "chrome/browser/ui/cocoa/view_id_util.h"
 #include "chrome/common/spellcheck_messages.h"
 #include "content/browser/debugger/devtools_client_host.h"
+#include "content/browser/mac/closure_blocks_leopard_compat.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_view_host_observer.h"
 #include "content/browser/renderer_host/render_widget_host.h"

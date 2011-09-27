@@ -117,6 +117,7 @@
         'browser/gpu/gpu_blacklist_unittest.cc',
         'browser/in_process_webkit/webkit_context_unittest.cc',
         'browser/in_process_webkit/webkit_thread_unittest.cc',
+        'browser/mac/closure_blocks_leopard_compat_unittest.cc',
         'browser/mach_broker_mac_unittest.cc',
         'browser/renderer_host/gtk_key_bindings_handler_unittest.cc',
         'browser/renderer_host/media/audio_input_device_manager_unittest.cc',
@@ -179,6 +180,11 @@
         ['chromeos==1', {
           'sources/': [
             ['exclude', '^browser/renderer_host/gtk_key_bindings_handler_unittest.cc'],
+          ],
+        }],
+        ['OS=="mac"', {
+          'dependencies': [
+            'closure_blocks_leopard_compat',
           ],
         }],
       ],
