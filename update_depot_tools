@@ -94,5 +94,3 @@ then
     echo "Depot Tools has been updated to revision $AFTER_REVISION." 1>&2
   fi
 fi
-
-find . -iname "*.pyc" -delete
