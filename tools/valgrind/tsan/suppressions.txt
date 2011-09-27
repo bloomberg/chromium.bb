@@ -310,14 +310,6 @@
 
 # TODO(timurrrr): bug item
 {
-  Data race on vfptr in base/thread_unittest
-  ThreadSanitizer:Race
-  ...
-  fun:*ThreadTest_SleepInsideInit*TestBody*
-}
-
-# TODO(timurrrr): bug item
-{
   Data race on bool in chrome/browser/net/url_fetcher_unittest (1)
   ThreadSanitizer:Race
   fun:*URLFetcherCancelTest*TestContextReleased*
