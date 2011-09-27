@@ -12,6 +12,7 @@
 #include "base/values.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_set.h"
+#include "chrome/renderer/extensions/bindings_utils.h"
 #include "chrome/renderer/extensions/extension_dispatcher.h"
 #include "chrome/renderer/extensions/extension_helper.h"
 #include "content/renderer/render_view.h"

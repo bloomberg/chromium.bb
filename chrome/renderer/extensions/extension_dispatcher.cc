@@ -14,7 +14,6 @@
 #include "chrome/renderer/extensions/chrome_app_bindings.h"
 #include "chrome/renderer/extensions/chrome_webstore_bindings.h"
 #include "chrome/renderer/extensions/event_bindings.h"
-#include "chrome/renderer/extensions/extension_bindings_context.h"
 #include "chrome/renderer/extensions/extension_groups.h"
 #include "chrome/renderer/extensions/extension_process_bindings.h"
 #include "chrome/renderer/extensions/js_only_v8_extensions.h"
@@ -133,7 +132,7 @@ void ExtensionDispatcher::OnMessageInvoke(const std::string& extension_id,
                                           const std::string& function_name,
                                           const ListValue& args,
                                           const GURL& event_url) {
-  ExtensionBindingsContext::DispatchChromeHiddenMethod(
+  EventBindings::CallFunction(
       extension_id, function_name, args, NULL, event_url);
 
   // Reset the idle handler each time there's any activity like event or message

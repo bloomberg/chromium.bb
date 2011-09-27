@@ -7,41 +7,37 @@
 #include "chrome/browser/extensions/extension_message_service.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/render_messages.h"
-#include "chrome/renderer/extensions/extension_bindings_context.h"
+#include "chrome/renderer/extensions/event_bindings.h"
 #include "chrome/renderer/extensions/renderer_extension_bindings.h"
 #include "chrome/test/base/render_view_test.h"
 #include "content/common/view_messages.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace {
-
-static const char kTestingExtensionId[] = "oooooooooooooooooooooooooooooooo";
-
-void DispatchOnConnect(int source_port_id, const std::string& name,
+static void DispatchOnConnect(int source_port_id, const std::string& name,
                               const std::string& tab_json) {
   ListValue args;
   args.Set(0, Value::CreateIntegerValue(source_port_id));
   args.Set(1, Value::CreateStringValue(name));
   args.Set(2, Value::CreateStringValue(tab_json));
-  args.Set(3, Value::CreateStringValue(kTestingExtensionId));
-  args.Set(4, Value::CreateStringValue(kTestingExtensionId));
-  ExtensionBindingsContext::DispatchChromeHiddenMethod(
+  // Testing extensionId. Set in EventBindings::HandleContextCreated.
+  // We use the same id for source & target to similute an extension "talking
+  // to itself".
+  args.Set(3, Value::CreateStringValue(EventBindings::kTestingExtensionId));
+  args.Set(4, Value::CreateStringValue(EventBindings::kTestingExtensionId));
+  EventBindings::CallFunction(
       "", ExtensionMessageService::kDispatchOnConnect, args, NULL, GURL());
 }
 
-void DispatchOnDisconnect(int source_port_id) {
+static void DispatchOnDisconnect(int source_port_id) {
   ListValue args;
   args.Set(0, Value::CreateIntegerValue(source_port_id));
-  ExtensionBindingsContext::DispatchChromeHiddenMethod(
+  EventBindings::CallFunction(
       "", ExtensionMessageService::kDispatchOnDisconnect, args, NULL, GURL());
-}
-
 }
 
 // Tests that the bindings for opening a channel to an extension and sending
 // and receiving messages through that channel all works.
 TEST_F(RenderViewTest, ExtensionMessagesOpenChannel) {
-  ExtensionBindingsContext::SetTestExtensionId(kTestingExtensionId);
   render_thread_.sink().ClearMessages();
   LoadHTML("<body></body>");
   ExecuteJavaScript(
@@ -89,7 +85,6 @@ TEST_F(RenderViewTest, ExtensionMessagesOpenChannel) {
 // Tests that the bindings for handling a new channel connection and channel
 // closing all works.
 TEST_F(RenderViewTest, ExtensionMessagesOnConnect) {
-  ExtensionBindingsContext::SetTestExtensionId(kTestingExtensionId);
   LoadHTML("<body></body>");
   ExecuteJavaScript(
     "chrome.extension.onConnect.addListener(function (port) {"

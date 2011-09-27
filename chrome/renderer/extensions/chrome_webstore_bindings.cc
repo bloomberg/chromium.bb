@@ -7,6 +7,7 @@
 #include "base/lazy_instance.h"
 #include "base/string_util.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/renderer/extensions/bindings_utils.h"
 #include "chrome/renderer/extensions/extension_helper.h"
 #include "content/renderer/render_view.h"
 #include "googleurl/src/gurl.h"
