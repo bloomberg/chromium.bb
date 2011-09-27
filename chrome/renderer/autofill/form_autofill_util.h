@@ -58,6 +58,7 @@ const string16 GetFormIdentifier(const WebKit::WebFormElement& form);
 // elements in |form_element|.
 void ExtractAutofillableElements(
     const WebKit::WebFormElement& form_element,
+    RequirementsMask requirements,
     std::vector<WebKit::WebFormControlElement>* autofillable_elements);
 
 // Fills out a FormField object from a given WebFormControlElement.

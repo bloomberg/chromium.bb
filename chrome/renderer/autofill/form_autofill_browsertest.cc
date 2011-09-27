@@ -785,13 +785,13 @@ TEST_F(FormAutofillTest, FillForm) {
   FormData form;
   FormField field;
   EXPECT_TRUE(FindFormAndFieldForInputElement(input_element, &form, &field,
-                                              autofill::REQUIRE_NONE));
+                                              autofill::REQUIRE_AUTOCOMPLETE));
   EXPECT_EQ(ASCIIToUTF16("TestForm"), form.name);
   EXPECT_EQ(GURL(web_frame->document().url()), form.origin);
   EXPECT_EQ(GURL("http://buh.com"), form.action);
 
   const std::vector<FormField>& fields = form.fields;
-  ASSERT_EQ(8U, fields.size());
+  ASSERT_EQ(7U, fields.size());
 
   FormField expected;
   expected.form_control_type = ASCIIToUTF16("text");
@@ -809,25 +809,21 @@ TEST_F(FormAutofillTest, FillForm) {
   expected.value = ASCIIToUTF16("Hi");
   EXPECT_FORM_FIELD_EQUALS(expected, fields[2]);
 
-  expected.name = ASCIIToUTF16("noautocomplete");
+  expected.name = ASCIIToUTF16("notenabled");
   expected.value = string16();
   EXPECT_FORM_FIELD_EQUALS(expected, fields[3]);
 
-  expected.name = ASCIIToUTF16("notenabled");
+  expected.name = ASCIIToUTF16("readonly");
   expected.value = string16();
   EXPECT_FORM_FIELD_EQUALS(expected, fields[4]);
 
-  expected.name = ASCIIToUTF16("readonly");
+  expected.name = ASCIIToUTF16("invisible");
   expected.value = string16();
   EXPECT_FORM_FIELD_EQUALS(expected, fields[5]);
 
-  expected.name = ASCIIToUTF16("invisible");
-  expected.value = string16();
-  EXPECT_FORM_FIELD_EQUALS(expected, fields[6]);
-
   expected.name = ASCIIToUTF16("displaynone");
   expected.value = string16();
-  EXPECT_FORM_FIELD_EQUALS(expected, fields[7]);
+  EXPECT_FORM_FIELD_EQUALS(expected, fields[6]);
 
   // Fill the form.
   form.fields[0].value = ASCIIToUTF16("Wyatt");
@@ -837,7 +833,6 @@ TEST_F(FormAutofillTest, FillForm) {
   form.fields[4].value = ASCIIToUTF16("Gamma");
   form.fields[5].value = ASCIIToUTF16("Delta");
   form.fields[6].value = ASCIIToUTF16("Epsilon");
-  form.fields[7].value = ASCIIToUTF16("Zeta");
   FillForm(form, input_element);
 
   // Verify the filled elements.
@@ -917,13 +912,13 @@ TEST_F(FormAutofillTest, PreviewForm) {
   FormData form;
   FormField field;
   EXPECT_TRUE(FindFormAndFieldForInputElement(input_element, &form, &field,
-                                              autofill::REQUIRE_NONE));
+                                              autofill::REQUIRE_AUTOCOMPLETE));
   EXPECT_EQ(ASCIIToUTF16("TestForm"), form.name);
   EXPECT_EQ(GURL(web_frame->document().url()), form.origin);
   EXPECT_EQ(GURL("http://buh.com"), form.action);
 
   const std::vector<FormField>& fields = form.fields;
-  ASSERT_EQ(5U, fields.size());
+  ASSERT_EQ(4U, fields.size());
 
   FormField expected;
   expected.form_control_type = ASCIIToUTF16("text");
@@ -941,20 +936,15 @@ TEST_F(FormAutofillTest, PreviewForm) {
   expected.value = ASCIIToUTF16("Hi");
   EXPECT_FORM_FIELD_EQUALS(expected, fields[2]);
 
-  expected.name = ASCIIToUTF16("noautocomplete");
-  expected.value = string16();
-  EXPECT_FORM_FIELD_EQUALS(expected, fields[3]);
-
   expected.name = ASCIIToUTF16("notenabled");
   expected.value = string16();
-  EXPECT_FORM_FIELD_EQUALS(expected, fields[4]);
+  EXPECT_FORM_FIELD_EQUALS(expected, fields[3]);
 
   // Preview the form.
   form.fields[0].value = ASCIIToUTF16("Wyatt");
   form.fields[1].value = ASCIIToUTF16("Earp");
   form.fields[2].value = ASCIIToUTF16("Alpha");
   form.fields[3].value = ASCIIToUTF16("Beta");
-  form.fields[4].value = ASCIIToUTF16("Gamma");
   PreviewForm(form, input_element);
 
   // Verify the previewed elements.

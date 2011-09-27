@@ -427,7 +427,8 @@ void ForEachMatchingFormField(const WebFormElement& form_element,
                               const FormData& data,
                               Callback callback) {
   std::vector<WebFormControlElement> control_elements;
-  ExtractAutofillableElements(form_element, &control_elements);
+  ExtractAutofillableElements(form_element, autofill::REQUIRE_AUTOCOMPLETE,
+                              &control_elements);
 
   if (control_elements.size() != data.fields.size()) {
     // This case should be reachable only for pathological websites, which add
@@ -461,11 +462,6 @@ void ForEachMatchingFormField(const WebFormElement& form_element,
 
     const WebInputElement* input_element = toWebInputElement(element);
     if (IsTextInput(input_element)) {
-      // TODO(jhawkins): WebKit currently doesn't handle the autocomplete
-      // attribute for select control elements, but it probably should.
-      if (!input_element->autoComplete())
-        continue;
-
       // Only autofill empty fields and the field that initiated the filling,
       // i.e. the field the user is currently editing and interacting with.
       if (!is_initiating_element && !input_element->value().isEmpty())
@@ -565,6 +561,7 @@ const string16 GetFormIdentifier(const WebFormElement& form) {
 // elements in |form_element|.
 void ExtractAutofillableElements(
     const WebFormElement& form_element,
+    RequirementsMask requirements,
     std::vector<WebFormControlElement>* autofillable_elements) {
   WebVector<WebFormControlElement> control_elements;
   form_element.getFormControlElements(control_elements);
@@ -574,6 +571,14 @@ void ExtractAutofillableElements(
     WebFormControlElement element = control_elements[i];
     if (!IsAutofillableElement(element))
       continue;
+
+    if (requirements & REQUIRE_AUTOCOMPLETE) {
+      // TODO(jhawkins): WebKit currently doesn't handle the autocomplete
+      // attribute for select control elements, but it probably should.
+      WebInputElement* input_element = toWebInputElement(&control_elements[i]);
+      if (IsTextInput(input_element) && !input_element->autoComplete())
+        continue;
+    }
 
     autofillable_elements->push_back(element);
   }
@@ -831,7 +836,8 @@ bool ClearPreviewedFormWithElement(const WebInputElement& element,
     return false;
 
   std::vector<WebFormControlElement> control_elements;
-  ExtractAutofillableElements(form_element, &control_elements);
+  ExtractAutofillableElements(form_element, REQUIRE_AUTOCOMPLETE,
+                              &control_elements);
   for (size_t i = 0; i < control_elements.size(); ++i) {
     // Only text input elements can be previewed.
     WebInputElement* input_element = toWebInputElement(&control_elements[i]);
@@ -877,7 +883,8 @@ bool FormWithElementIsAutofilled(const WebInputElement& element) {
     return false;
 
   std::vector<WebFormControlElement> control_elements;
-  ExtractAutofillableElements(form_element, &control_elements);
+  ExtractAutofillableElements(form_element, REQUIRE_AUTOCOMPLETE,
+                              &control_elements);
   for (size_t i = 0; i < control_elements.size(); ++i) {
     WebInputElement* input_element = toWebInputElement(&control_elements[i]);
     if (!IsTextInput(input_element))

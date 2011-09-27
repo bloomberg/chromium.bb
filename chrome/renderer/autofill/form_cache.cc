@@ -77,7 +77,8 @@ void FormCache::ExtractForms(const WebFrame& frame,
     WebFormElement form_element = web_forms[i];
 
     std::vector<WebFormControlElement> control_elements;
-    ExtractAutofillableElements(form_element, &control_elements);
+    ExtractAutofillableElements(form_element, autofill::REQUIRE_NONE,
+                                &control_elements);
     for (size_t j = 0; j < control_elements.size(); ++j) {
       WebFormControlElement element = control_elements[j];
 
@@ -152,7 +153,8 @@ bool FormCache::ClearFormWithElement(const WebInputElement& element) {
     return false;
 
   std::vector<WebFormControlElement> control_elements;
-  ExtractAutofillableElements(form_element, &control_elements);
+  ExtractAutofillableElements(form_element, autofill::REQUIRE_NONE,
+                              &control_elements);
   for (size_t i = 0; i < control_elements.size(); ++i) {
     WebFormControlElement control_element = control_elements[i];
     WebInputElement* input_element = toWebInputElement(&control_element);
@@ -222,7 +224,8 @@ bool FormCache::ShowPredictions(const FormDataPredictions& form) {
     return false;
 
   std::vector<WebFormControlElement> control_elements;
-  ExtractAutofillableElements(form_element, &control_elements);
+  ExtractAutofillableElements(form_element, autofill::REQUIRE_NONE,
+                              &control_elements);
   if (control_elements.size() != form.fields.size()) {
     // Keep things simple.  Don't show predictions for forms that were modified
     // between page load and the server's response to our query.
