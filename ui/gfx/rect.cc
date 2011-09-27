@@ -274,7 +274,7 @@ bool Rect::SharesEdgeWith(const gfx::Rect& rect) const {
 }
 
 std::ostream& operator<<(std::ostream& out, const gfx::Rect& r) {
-  return out << r.origin().ToString() << " " << r.size();
+  return out << r.origin().ToString() << " " << r.size().ToString();
 }
 
 }  // namespace gfx

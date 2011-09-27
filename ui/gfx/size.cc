@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,11 +10,12 @@
 #include <CoreGraphics/CGGeometry.h>
 #endif
 
-#include <ostream>
-
 #include "base/logging.h"
+#include "base/stringprintf.h"
 
 namespace gfx {
+
+Size::Size() : width_(0), height_(0) {}
 
 Size::Size(int width, int height) {
   set_width(width);
@@ -63,8 +64,8 @@ void Size::set_height(int height) {
   height_ = height;
 }
 
-std::ostream& operator<<(std::ostream& out, const gfx::Size& s) {
-  return out << s.width() << "x" << s.height();
+std::string Size::ToString() const {
+  return base::StringPrintf("%dx%d", width_, height_);
 }
 
 }  // namespace gfx
