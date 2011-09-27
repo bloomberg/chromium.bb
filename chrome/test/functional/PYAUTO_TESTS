@@ -53,7 +53,7 @@
       'imports',
       'infobars',
       'instant',
-      'multiprofile'
+      'multiprofile',
       'navigation',
       'notifications',
       'ntp',
