@@ -8,6 +8,7 @@
 #include <map>
 #include <string>
 
+#include "base/bind.h"
 #include "base/i18n/rtl.h"
 #include "base/message_loop.h"
 #include "base/time.h"
@@ -159,8 +160,8 @@ void NativeMenuGtk::RunMenuAt(const gfx::Point& point, int alignment) {
 
   if (activated_menu_) {
     MessageLoop::current()->PostTask(FROM_HERE,
-                                     activate_factory_.NewRunnableMethod(
-                                         &NativeMenuGtk::ProcessActivate));
+        base::Bind(&NativeMenuGtk::ProcessActivate,
+                   activate_factory_.GetWeakPtr()));
   }
 
   model_->MenuClosed();

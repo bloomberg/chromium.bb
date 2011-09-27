@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
 #include "base/observer_list.h"
 #include "ui/base/gtk/gtk_signal.h"
@@ -130,7 +131,7 @@ class NativeMenuGtk : public MenuWrapper,
 
   // Used when a menu item is selected. See description above class as to why
   // we do this.
-  ScopedRunnableMethodFactory<NativeMenuGtk> activate_factory_;
+  base::WeakPtrFactory<NativeMenuGtk> activate_factory_;
 
   // A eference to the hosting menu2 object and signal handler id
   // used to delete the menu2 when its native menu gtk is destroyed first.
