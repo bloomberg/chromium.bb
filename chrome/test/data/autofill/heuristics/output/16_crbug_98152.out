@@ -1,0 +1,13 @@
+UNKNOWN_TYPE | CCForm.cardType | Type of Card | 
+CREDIT_CARD_NUMBER | CCForm.cardNumber | Card number | 
+CREDIT_CARD_EXP_MONTH | CCForm.expirationMonth | Expiration date | 9
+CREDIT_CARD_EXP_4_DIGIT_YEAR | CCForm.expirationYear | Expiration date | 2011
+CREDIT_CARD_NAME | CCForm.name | Name as it appears on card | 
+UNKNOWN_TYPE | CCForm.cid |  | 
+COMPANY_NAME | CCForm.companyName | Company Name | 
+ADDRESS_HOME_LINE1 | addressForm.street1 | Address Line 1 | 
+ADDRESS_HOME_LINE2 | addressForm.street2 | Address Line 2 | 
+ADDRESS_HOME_CITY | addressForm.city | City | 
+ADDRESS_HOME_STATE | addressForm.state | State | 
+ADDRESS_HOME_ZIP | addressForm.zip | Zip Code | 
+PHONE_HOME_WHOLE_NUMBER | addressForm.phone | Phone Number | 

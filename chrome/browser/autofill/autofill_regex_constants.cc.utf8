@@ -122,7 +122,7 @@ const char kShippingDesignatorRe[] = "ship";
 // credit_card_field.cc
 /////////////////////////////////////////////////////////////////////////////
 const char kNameOnCardRe[] =
-    "card.?holder|name.?on.?card|cc.?name|cc.?full.?name|owner"
+    "card.?holder|name.*on.?card|cc.?name|cc.?full.?name|owner"
     "|karteninhaber"  // de-DE
     "|nombre.*tarjeta"  // es
     "|nom.*carte"  // fr-FR
