@@ -88,7 +88,7 @@ class CanvasPaintT : public T {
 
     // Need to translate so that the dirty region appears at the origin of the
     // surface.
-    T::translate(-SkIntToScalar(region_->x), -SkIntToScalar(region_->y));
+    T::translate(-SkDoubleToScalar(region_->x), -SkDoubleToScalar(region_->y));
 
     context_ = BeginPlatformPaint(this);
   }
