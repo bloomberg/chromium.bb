@@ -105,7 +105,7 @@
         'link_settings': {
           'libraries': [
             '-lssl',
-            '-lcrypto',
+            #'-lcrypto',
             '-lstdc++',
           ],
         },
