@@ -25,14 +25,12 @@ NACL_ROOT = os.getcwd()
 BASE_DIR = J(NACL_ROOT, 'toolchain', 'linux_arm-trusted')
 ARM_CROSS_TARGET = 'armv7a-cros-linux-gnueabi'
 
-# FIXME(jasonwkim):
 # do we need this stuff at all?
 CODE_SOURCERY_PREFIX = J(BASE_DIR, 'arm-2009q3', 'bin', ARM_CROSS_TARGET)
 CODE_SOURCERY_PREFIX=""
 CODE_SOURCERY_JAIL = J(BASE_DIR, 'arm-2009q3', ARM_CROSS_TARGET, 'libc')
 LD_SCRIPT_TRUSTED = J(BASE_DIR, 'ld_script_arm_trusted')
 
-# FIXME(jasonwkim):
 # so do we need to explicitly use the shell scripts in this directory?
 # "/usr/x86_64-pc-linux-gnu/armv7a-cros-linux-gnueabi/gcc-bin/4.4.3/"
 DEFAULT_CROS_DIR=""
