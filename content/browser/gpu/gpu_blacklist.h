@@ -72,25 +72,8 @@ class CONTENT_EXPORT GpuBlacklist {
                                 std::vector<uint32>& entry_ids,
                                 bool disabled) const;
 
-  // Returns status information on the blacklist. This is two parted:
-  // {
-  //    featureStatus: []
-  //    problems: []
-  // }
-  //
-  // Each entry in feature_status has:
-  // {
-  //    name:  "name of feature"
-  //    status: "enabled" | "unavailable_software" | "unavailable_off" |
-  //            "software" | "disabled_off" | "disabled_softare";
-  // }
-  //
-  // The features reported are not 1:1 with GpuFeatureType. Rather, they are:
-  //    '2d_canvas'
-  //    '3d_css'
-  //    'composting',
-  //    'webgl',
-  //    'multisampling'
+  // Returns the description and bugs from active entries from the last
+  // DetermineGpuFeatureFlags() call.
   //
   // Each problems has:
   // {
@@ -98,11 +81,7 @@ class CONTENT_EXPORT GpuBlacklist {
   //    "crBugs": [1234],
   //    "webkitBugs": []
   // }
-  base::Value* GetFeatureStatus(bool gpu_access_allowed,
-                                bool disable_accelerated_compositing,
-                                bool disable_accelerated_2D_canvas,
-                                bool disable_experimental_webgl,
-                                bool disable_multisampling) const;
+  void GetBlacklistReasons(ListValue* problem_list) const;
 
   // Return the largest entry id.  This is used for histogramming.
   uint32 max_entry_id() const;
@@ -330,8 +309,6 @@ class CONTENT_EXPORT GpuBlacklist {
   static OsType GetOsType();
 
   void Clear();
-
-  bool IsFeatureBlacklisted(GpuFeatureFlags::GpuFeatureType feature) const;
 
   // Check if the entry is supported by the current version of browser.
   // By default, if there is no browser version information in the entry,

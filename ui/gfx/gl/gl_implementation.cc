@@ -65,11 +65,18 @@ bool InitializeRequestedGLBindings(
     const GLImplementation* allowed_implementations_begin,
     const GLImplementation* allowed_implementations_end,
     GLImplementation default_implementation) {
+  bool fallback_to_osmesa = false;
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kUseGL)) {
     std::string requested_implementation_name =
         CommandLine::ForCurrentProcess()->GetSwitchValueASCII(switches::kUseGL);
-    GLImplementation requested_implementation =
+    GLImplementation requested_implementation;
+    if (requested_implementation_name == "any") {
+      requested_implementation = default_implementation;
+      fallback_to_osmesa = true;
+    } else {
+      requested_implementation =
         GetNamedGLImplementation(requested_implementation_name);
+    }
     if (std::find(allowed_implementations_begin,
                   allowed_implementations_end,
                   requested_implementation) == allowed_implementations_end) {
@@ -81,6 +88,9 @@ bool InitializeRequestedGLBindings(
   } else {
     InitializeGLBindings(default_implementation);
   }
+
+  if (GetGLImplementation() == kGLImplementationNone && fallback_to_osmesa)
+    InitializeGLBindings(kGLImplementationOSMesaGL);
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableGPUServiceLogging)) {

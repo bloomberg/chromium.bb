@@ -34,14 +34,6 @@ Version* GetDateFromString(const std::string& date_string) {
   return Version::GetVersionFromString(date_as_version_string);
 }
 
-Value* NewStatusValue(const char* name, const char* status)
-{
-  DictionaryValue* value = new DictionaryValue();
-  value->SetString("name", name);
-  value->SetString("status", status);
-  return value;
-}
-
 }  // namespace anonymous
 
 GpuBlacklist::VersionInfo::VersionInfo(const std::string& version_op,
@@ -787,181 +779,30 @@ void GpuBlacklist::GetGpuFeatureFlagEntries(
   }
 }
 
-bool GpuBlacklist::IsFeatureBlacklisted(
-    GpuFeatureFlags::GpuFeatureType feature) const
-{
+void GpuBlacklist::GetBlacklistReasons(ListValue* problem_list) const {
+  DCHECK(problem_list);
   for (size_t i = 0; i < active_entries_.size(); ++i) {
-    if (active_entries_[i]->GetGpuFeatureFlags().flags() & feature)
-      return true;
+    GpuBlacklistEntry* entry = active_entries_[i];
+    if (entry->disabled())
+      continue;
+    DictionaryValue* problem = new DictionaryValue();
+
+    problem->SetString("description", entry->description());
+
+    ListValue* cr_bugs = new ListValue();
+    for (size_t j = 0; j < entry->cr_bugs().size(); ++j)
+      cr_bugs->Append(Value::CreateIntegerValue(entry->cr_bugs()[j]));
+    problem->Set("crBugs", cr_bugs);
+
+    ListValue* webkit_bugs = new ListValue();
+    for (size_t j = 0; j < entry->webkit_bugs().size(); ++j) {
+      webkit_bugs->Append(Value::CreateIntegerValue(
+          entry->webkit_bugs()[j]));
+    }
+    problem->Set("webkitBugs", webkit_bugs);
+
+    problem_list->Append(problem);
   }
-  return false;
-}
-
-Value* GpuBlacklist::GetFeatureStatus(bool gpu_access_allowed,
-                                      bool disable_accelerated_compositing,
-                                      bool disable_accelerated_2D_canvas,
-                                      bool disable_experimental_webgl,
-                                      bool disable_multisampling) const {
-  DictionaryValue* status = new DictionaryValue();
-
-  // Build the feature_status field.
-  {
-    ListValue* feature_status_list = new ListValue();
-
-    // 2d_canvas.
-    if (!gpu_access_allowed) {
-      if (disable_accelerated_2D_canvas)
-        feature_status_list->Append(NewStatusValue("2d_canvas",
-                                                   "software"));
-      else
-        feature_status_list->Append(NewStatusValue("2d_canvas",
-                                                   "unavailable_software"));
-    } else if (!disable_accelerated_2D_canvas) {
-      if (IsFeatureBlacklisted(
-              GpuFeatureFlags::kGpuFeatureAccelerated2dCanvas))
-        feature_status_list->Append(NewStatusValue("2d_canvas",
-                                                   "unavailable_software"));
-      else if (disable_accelerated_compositing)
-        feature_status_list->Append(NewStatusValue("2d_canvas",
-                                                   "disabled_software"));
-      else
-        feature_status_list->Append(NewStatusValue("2d_canvas",
-                                                   "enabled"));
-    } else {
-      feature_status_list->Append(NewStatusValue("2d_canvas",
-                                                 "software"));
-    }
-
-    // 3d css and compositing.
-    if (!gpu_access_allowed) {
-      feature_status_list->Append(NewStatusValue("3d_css",
-                                                 "unavailable_off"));
-      feature_status_list->Append(NewStatusValue("compositing",
-                                                 "unavailable_software"));
-    } else if (disable_accelerated_compositing) {
-      feature_status_list->Append(NewStatusValue("3d_css",
-                                                 "unavailable_off"));
-      feature_status_list->Append(NewStatusValue("compositing",
-                                                 "disabled_software"));
-    } else if (IsFeatureBlacklisted(
-        GpuFeatureFlags::kGpuFeatureAcceleratedCompositing)) {
-      feature_status_list->Append(NewStatusValue("3d_css",
-                                                 "unavailable_off"));
-      feature_status_list->Append(NewStatusValue("compositing",
-                                                 "disabled_software"));
-    } else {
-      feature_status_list->Append(NewStatusValue("3d_css",
-                                                 "enabled"));
-      feature_status_list->Append(NewStatusValue("compositing",
-                                                 "enabled"));
-    }
-
-    // webgl
-    if (!gpu_access_allowed)
-      feature_status_list->Append(NewStatusValue("webgl",
-                                                 "unavailable_off"));
-    else if (disable_experimental_webgl)
-      feature_status_list->Append(NewStatusValue("webgl",
-                                                 "disabled_off"));
-    else if (IsFeatureBlacklisted(
-        GpuFeatureFlags::kGpuFeatureWebgl))
-      feature_status_list->Append(NewStatusValue("webgl",
-                                                 "unavailable_off"));
-    else if (disable_accelerated_compositing)
-      feature_status_list->Append(NewStatusValue("webgl",
-                                                 "enabled_readback"));
-    else
-      feature_status_list->Append(NewStatusValue("webgl",
-                                                 "enabled"));
-
-    // multisampling
-    if (!gpu_access_allowed)
-      feature_status_list->Append(NewStatusValue("multisampling",
-                                                 "unavailable_off"));
-    else if (disable_multisampling)
-      feature_status_list->Append(NewStatusValue("multisampling",
-                                                 "disabled_off"));
-    else if (IsFeatureBlacklisted(
-        GpuFeatureFlags::kGpuFeatureMultisampling))
-      feature_status_list->Append(NewStatusValue("multisampling",
-                                                 "disabled_off"));
-    else
-      feature_status_list->Append(NewStatusValue("multisampling",
-                                                 "enabled"));
-
-    status->Set("featureStatus", feature_status_list);
-  }
-
-  // Build the problems list.
-  {
-    ListValue* problem_list = new ListValue();
-    if (!gpu_access_allowed) {
-      DictionaryValue* problem = new DictionaryValue();
-      problem->SetString("description",
-          "GPU process was unable to boot. Access to GPU disallowed.");
-      problem->Set("crBugs", new ListValue());
-      problem->Set("webkitBugs", new ListValue());
-      problem_list->Append(problem);
-    }
-    if (disable_accelerated_2D_canvas) {
-      DictionaryValue* problem = new DictionaryValue();
-      problem->SetString("description",
-          "Accelerated 2D canvas has been disabled at the command line");
-      problem->Set("crBugs", new ListValue());
-      problem->Set("webkitBugs", new ListValue());
-      problem_list->Append(problem);
-    }
-    if (disable_accelerated_compositing) {
-      DictionaryValue* problem = new DictionaryValue();
-      problem->SetString("description",
-          "Accelerated compositing has been disabled, either via about:flags "
-          "or command line. This adversely affects performance of all hardware "
-          " accelerated features.");
-      problem->Set("crBugs", new ListValue());
-      problem->Set("webkitBugs", new ListValue());
-      problem_list->Append(problem);
-    }
-    if (disable_experimental_webgl) {
-      DictionaryValue* problem = new DictionaryValue();
-      problem->SetString("description",
-          "WebGL has been disabled, either via about:flags "
-          "or command line");
-      problem->Set("crBugs", new ListValue());
-      problem->Set("webkitBugs", new ListValue());
-      problem_list->Append(problem);
-    }
-    if (disable_multisampling) {
-      DictionaryValue* problem = new DictionaryValue();
-      problem->SetString("description",
-          "Multisampling has been disabled, either via about:flags "
-          "or command line");
-      problem->Set("crBugs", new ListValue());
-      problem->Set("webkitBugs", new ListValue());
-      problem_list->Append(problem);
-    }
-    for (size_t i = 0; i < active_entries_.size(); ++i) {
-      ScopedGpuBlacklistEntry entry = active_entries_[i];
-      DictionaryValue* problem = new DictionaryValue();
-
-      problem->SetString("description", entry->description());
-
-      ListValue* cr_bugs = new ListValue();
-      for (size_t j = 0; j < entry->cr_bugs().size(); ++j)
-        cr_bugs->Append(Value::CreateIntegerValue(
-            entry->cr_bugs()[j]));
-      problem->Set("crBugs", cr_bugs);
-
-      ListValue* webkit_bugs = new ListValue();
-      for (size_t j = 0; j < entry->webkit_bugs().size(); ++j)
-        webkit_bugs->Append(Value::CreateIntegerValue(
-            entry->webkit_bugs()[j]));
-      problem->Set("webkitBugs", webkit_bugs);
-
-      problem_list->Append(problem);
-    }
-    status->Set("problems", problem_list);
-  }
-  return status;
 }
 
 size_t GpuBlacklist::num_entries() const {

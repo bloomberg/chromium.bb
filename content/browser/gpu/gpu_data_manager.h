@@ -35,9 +35,34 @@ class CONTENT_EXPORT GpuDataManager {
 
   const GPUInfo& gpu_info() const;
 
-  // Returns status of various GPU features. Return type is
-  // GpuBlacklist::GetFeatureStatus, or NULL if blacklist is
-  // uninitialized. Caller is responsible for deleting the returned value.
+  // Returns status of various GPU features. This is two parted:
+  // {
+  //    featureStatus: []
+  //    problems: []
+  // }
+  //
+  // Each entry in feature_status has:
+  // {
+  //    name:  "name of feature"
+  //    status: "enabled" | "unavailable_software" | "unavailable_off" |
+  //            "software" | "disabled_off" | "disabled_softare";
+  // }
+  //
+  // The features reported are not 1:1 with GpuFeatureType. Rather, they are:
+  //    '2d_canvas'
+  //    '3d_css'
+  //    'composting',
+  //    'webgl',
+  //    'multisampling'
+  //
+  // Each problems has:
+  // {
+  //    "description": "Your GPU is too old",
+  //    "crBugs": [1234],
+  //    "webkitBugs": []
+  // }
+  //
+  // Caller is responsible for deleting the returned value.
   Value* GetFeatureStatus();
 
   std::string GetBlacklistVersion() const;
@@ -67,6 +92,10 @@ class CONTENT_EXPORT GpuDataManager {
   // Inserting disable-feature switches into renderer process command-line
   // in correspondance to preliminary gpu feature flags.
   void AppendRendererCommandLine(CommandLine* command_line);
+
+  // Inserting switches into gpu process command-line: kUseGL,
+  // kDisableGLMultisampling.
+  void AppendGpuCommandLine(CommandLine* command_line);
 
   // Gives ownership of the built-in blacklist.  This is always called on the
   // UI thread.

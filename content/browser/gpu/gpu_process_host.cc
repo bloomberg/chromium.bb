@@ -557,8 +557,7 @@ bool GpuProcessHost::LaunchGpuProcess() {
     switches::kGpuNoContextLost,
     switches::kGpuStartupDialog,
     switches::kLoggingLevel,
-    switches::kNoSandbox,
-    switches::kUseGL,
+    switches::kNoSandbox
   };
   cmd_line->CopySwitchesFrom(browser_command_line, kSwitchNames,
                              arraysize(kSwitchNames));
@@ -569,9 +568,7 @@ bool GpuProcessHost::LaunchGpuProcess() {
       !cmd_line->HasSwitch(switches::kDisableBreakpad))
     cmd_line->AppendSwitch(switches::kDisableBreakpad);
 
-  GpuFeatureFlags flags = GpuDataManager::GetInstance()->GetGpuFeatureFlags();
-  if (flags.flags() & GpuFeatureFlags::kGpuFeatureMultisampling)
-    cmd_line->AppendSwitch(switches::kDisableGLMultisampling);
+  GpuDataManager::GetInstance()->AppendGpuCommandLine(cmd_line);
 
   // If specified, prepend a launcher program to the command line.
   if (!gpu_launcher.empty())

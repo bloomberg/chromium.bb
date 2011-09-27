@@ -60,6 +60,19 @@ DictionaryValue* NewDescriptionValuePair(const std::string& desc,
   return dict;
 }
 
+Value* NewStatusValue(const char* name, const char* status) {
+  DictionaryValue* value = new DictionaryValue();
+  value->SetString("name", name);
+  value->SetString("status", status);
+  return value;
+}
+
+bool UseGLIsOSMesaOrAny() {
+  const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
+  std::string gl = browser_command_line.GetSwitchValueASCII(switches::kUseGL);
+  return (gl == "any" || gl == gfx::kGLImplementationOSMesaName);
+}
+
 #if defined(OS_WIN)
 enum WinSubVersion {
   kWinOthers = 0,
@@ -181,16 +194,159 @@ const GPUInfo& GpuDataManager::gpu_info() const {
 }
 
 Value* GpuDataManager::GetFeatureStatus() {
-  const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
-  if (gpu_blacklist_.get())
-    return gpu_blacklist_->GetFeatureStatus(GpuAccessAllowed(),
-        browser_command_line.HasSwitch(
-            switches::kDisableAcceleratedCompositing),
-        browser_command_line.HasSwitch(
-            switches::kDisableAccelerated2dCanvas),
-        browser_command_line.HasSwitch(switches::kDisableExperimentalWebGL),
-        browser_command_line.HasSwitch(switches::kDisableGLMultisampling));
-  return NULL;
+  const CommandLine& browser_command_line =
+      *CommandLine::ForCurrentProcess();
+  bool gpu_access_allowed = GpuAccessAllowed();
+  bool disable_accelerated_compositing = browser_command_line.HasSwitch(
+      switches::kDisableAcceleratedCompositing);
+  bool disable_accelerated_2D_canvas = browser_command_line.HasSwitch(
+      switches::kDisableAccelerated2dCanvas);
+  bool disable_experimental_webgl = browser_command_line.HasSwitch(
+      switches::kDisableExperimentalWebGL);
+  bool disable_multisampling = browser_command_line.HasSwitch(
+      switches::kDisableGLMultisampling);
+
+  uint32 flags = GetGpuFeatureFlags().flags();
+  DictionaryValue* status = new DictionaryValue();
+
+  // Build the feature_status field.
+  {
+    ListValue* feature_status_list = new ListValue();
+
+    // 2d_canvas.
+    if (!gpu_access_allowed) {
+      if (disable_accelerated_2D_canvas)
+        feature_status_list->Append(NewStatusValue("2d_canvas",
+                                                   "software"));
+      else
+        feature_status_list->Append(NewStatusValue("2d_canvas",
+                                                   "unavailable_software"));
+    } else if (!disable_accelerated_2D_canvas) {
+      if ((flags & GpuFeatureFlags::kGpuFeatureAccelerated2dCanvas) != 0)
+        feature_status_list->Append(NewStatusValue("2d_canvas",
+                                                   "unavailable_software"));
+      else if (disable_accelerated_compositing)
+        feature_status_list->Append(NewStatusValue("2d_canvas",
+                                                   "disabled_software"));
+      else
+        feature_status_list->Append(NewStatusValue("2d_canvas",
+                                                   "enabled"));
+    } else {
+      feature_status_list->Append(NewStatusValue("2d_canvas",
+                                                 "software"));
+    }
+
+    // 3d css and compositing.
+    if (!gpu_access_allowed) {
+      feature_status_list->Append(NewStatusValue("3d_css",
+                                                 "unavailable_off"));
+      feature_status_list->Append(NewStatusValue("compositing",
+                                                 "unavailable_software"));
+    } else if (disable_accelerated_compositing) {
+      feature_status_list->Append(NewStatusValue("3d_css",
+                                                 "unavailable_off"));
+      feature_status_list->Append(NewStatusValue("compositing",
+                                                 "disabled_software"));
+    } else if ((flags &
+        GpuFeatureFlags::kGpuFeatureAcceleratedCompositing) != 0) {
+      feature_status_list->Append(NewStatusValue("3d_css",
+                                                 "unavailable_off"));
+      feature_status_list->Append(NewStatusValue("compositing",
+                                                 "disabled_software"));
+    } else {
+      feature_status_list->Append(NewStatusValue("3d_css",
+                                                 "enabled"));
+      feature_status_list->Append(NewStatusValue("compositing",
+                                                 "enabled"));
+    }
+
+    // webgl
+    if (!gpu_access_allowed)
+      feature_status_list->Append(NewStatusValue("webgl",
+                                                 "unavailable_off"));
+    else if (disable_experimental_webgl)
+      feature_status_list->Append(NewStatusValue("webgl",
+                                                 "disabled_off"));
+    else if ((flags & GpuFeatureFlags::kGpuFeatureWebgl) != 0)
+      feature_status_list->Append(NewStatusValue("webgl",
+                                                 "unavailable_off"));
+    else if (disable_accelerated_compositing)
+      feature_status_list->Append(NewStatusValue("webgl",
+                                                 "enabled_readback"));
+    else
+      feature_status_list->Append(NewStatusValue("webgl",
+                                                 "enabled"));
+
+    // multisampling
+    if (!gpu_access_allowed)
+      feature_status_list->Append(NewStatusValue("multisampling",
+                                                 "unavailable_off"));
+    else if (disable_multisampling)
+      feature_status_list->Append(NewStatusValue("multisampling",
+                                                 "disabled_off"));
+    else if ((flags & GpuFeatureFlags::kGpuFeatureMultisampling) != 0)
+      feature_status_list->Append(NewStatusValue("multisampling",
+                                                 "disabled_off"));
+    else
+      feature_status_list->Append(NewStatusValue("multisampling",
+                                                 "enabled"));
+
+    status->Set("featureStatus", feature_status_list);
+  }
+
+  // Build the problems list.
+  {
+    ListValue* problem_list = new ListValue();
+    if (!gpu_access_allowed) {
+      DictionaryValue* problem = new DictionaryValue();
+      problem->SetString("description",
+          "GPU process was unable to boot. Access to GPU disallowed.");
+      problem->Set("crBugs", new ListValue());
+      problem->Set("webkitBugs", new ListValue());
+      problem_list->Append(problem);
+    }
+    if (disable_accelerated_2D_canvas) {
+      DictionaryValue* problem = new DictionaryValue();
+      problem->SetString("description",
+          "Accelerated 2D canvas has been disabled at the command line");
+      problem->Set("crBugs", new ListValue());
+      problem->Set("webkitBugs", new ListValue());
+      problem_list->Append(problem);
+    }
+    if (disable_accelerated_compositing) {
+      DictionaryValue* problem = new DictionaryValue();
+      problem->SetString("description",
+          "Accelerated compositing has been disabled, either via about:flags "
+          "or command line. This adversely affects performance of all hardware "
+          " accelerated features.");
+      problem->Set("crBugs", new ListValue());
+      problem->Set("webkitBugs", new ListValue());
+      problem_list->Append(problem);
+    }
+    if (disable_experimental_webgl) {
+      DictionaryValue* problem = new DictionaryValue();
+      problem->SetString("description",
+          "WebGL has been disabled, either via about:flags "
+          "or command line");
+      problem->Set("crBugs", new ListValue());
+      problem->Set("webkitBugs", new ListValue());
+      problem_list->Append(problem);
+    }
+    if (disable_multisampling) {
+      DictionaryValue* problem = new DictionaryValue();
+      problem->SetString("description",
+          "Multisampling has been disabled, either via about:flags "
+          "or command line");
+      problem->Set("crBugs", new ListValue());
+      problem->Set("webkitBugs", new ListValue());
+      problem_list->Append(problem);
+    }
+    GpuBlacklist* blacklist = GetGpuBlacklist();
+    if (blacklist && (!UseGLIsOSMesaOrAny()))
+      blacklist->GetBlacklistReasons(problem_list);
+    status->Set("problems", problem_list);
+  }
+  return status;
 }
 
 std::string GpuDataManager::GetBlacklistVersion() const {
@@ -219,10 +375,15 @@ const ListValue& GpuDataManager::log_messages() const {
 }
 
 GpuFeatureFlags GpuDataManager::GetGpuFeatureFlags() {
+  if (UseGLIsOSMesaOrAny())
+    return GpuFeatureFlags();
   return gpu_feature_flags_;
 }
 
 bool GpuDataManager::GpuAccessAllowed() {
+  if (UseGLIsOSMesaOrAny())
+    return true;
+
   // We only need to block GPU process if more features are disallowed other
   // than those in the preliminary gpu feature flags because the latter work
   // through renderer commandline switches.
@@ -267,6 +428,30 @@ void GpuDataManager::AppendRendererCommandLine(
   if ((flags & GpuFeatureFlags::kGpuFeatureAccelerated2dCanvas) &&
       !command_line->HasSwitch(switches::kDisableAccelerated2dCanvas))
     command_line->AppendSwitch(switches::kDisableAccelerated2dCanvas);
+}
+
+void GpuDataManager::AppendGpuCommandLine(
+    CommandLine* command_line) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(command_line);
+
+  uint32 flags = gpu_feature_flags_.flags();
+  if ((flags & GpuFeatureFlags::kGpuFeatureMultisampling) &&
+      !command_line->HasSwitch(switches::kDisableGLMultisampling))
+    command_line->AppendSwitch(switches::kDisableGLMultisampling);
+
+  const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
+  if ((flags & (GpuFeatureFlags::kGpuFeatureWebgl |
+                GpuFeatureFlags::kGpuFeatureAcceleratedCompositing |
+                GpuFeatureFlags::kGpuFeatureAccelerated2dCanvas)) &&
+      (browser_command_line.GetSwitchValueASCII(
+          switches::kUseGL) == "any")) {
+    command_line->AppendSwitchASCII(
+        switches::kUseGL, gfx::kGLImplementationOSMesaName);
+  } else if (browser_command_line.HasSwitch(switches::kUseGL)) {
+    command_line->AppendSwitchASCII(switches::kUseGL,
+        browser_command_line.GetSwitchValueASCII(switches::kUseGL));
+  }
 }
 
 void GpuDataManager::SetBuiltInGpuBlacklist(GpuBlacklist* built_in_list) {
@@ -475,9 +660,7 @@ void GpuDataManager::UpdateGpuFeatureFlags() {
 GpuBlacklist* GpuDataManager::GetGpuBlacklist() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
-  if (browser_command_line.HasSwitch(switches::kIgnoreGpuBlacklist) ||
-      browser_command_line.GetSwitchValueASCII(
-          switches::kUseGL) == gfx::kGLImplementationOSMesaName)
+  if (browser_command_line.HasSwitch(switches::kIgnoreGpuBlacklist))
     return NULL;
   // No need to return an empty blacklist.
   if (gpu_blacklist_.get() != NULL && gpu_blacklist_->max_entry_id() == 0)
