@@ -48,29 +48,27 @@ class AboutChromeView : public views::DialogDelegateView,
   void Init();
 
   // Overridden from views::View:
-  virtual gfx::Size GetPreferredSize();
-  virtual void Layout();
-  virtual void OnPaint(gfx::Canvas* canvas);
+  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual void Layout() OVERRIDE;
+  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
   virtual void ViewHierarchyChanged(bool is_add,
                                     views::View* parent,
-                                    views::View* child);
+                                    views::View* child) OVERRIDE;
 
   // Overridden from views::DialogDelegate:
   virtual std::wstring GetDialogButtonLabel(
-      MessageBoxFlags::DialogButton button) const;
+      MessageBoxFlags::DialogButton button) const OVERRIDE;
   virtual bool IsDialogButtonEnabled(
-      MessageBoxFlags::DialogButton button) const;
+      MessageBoxFlags::DialogButton button) const OVERRIDE;
   virtual bool IsDialogButtonVisible(
-      MessageBoxFlags::DialogButton button) const;
-  virtual int GetDefaultDialogButton() const;
-  virtual bool CanResize() const;
-  virtual bool CanMaximize() const;
-  virtual bool IsAlwaysOnTop() const;
-  virtual bool HasAlwaysOnTopMenu() const;
-  virtual bool IsModal() const;
-  virtual std::wstring GetWindowTitle() const;
-  virtual bool Accept();
-  virtual views::View* GetContentsView();
+      MessageBoxFlags::DialogButton button) const OVERRIDE;
+  virtual int GetDefaultDialogButton() const OVERRIDE;
+  virtual bool CanResize() const OVERRIDE;
+  virtual bool CanMaximize() const OVERRIDE;
+  virtual bool IsModal() const OVERRIDE;
+  virtual std::wstring GetWindowTitle() const OVERRIDE;
+  virtual bool Accept() OVERRIDE;
+  virtual views::View* GetContentsView() OVERRIDE;
 
   // Overridden from views::LinkListener:
   virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
@@ -79,7 +77,7 @@ class AboutChromeView : public views::DialogDelegateView,
   // Overridden from GoogleUpdateStatusListener:
   virtual void OnReportResults(GoogleUpdateUpgradeResult result,
                                GoogleUpdateErrorCode error_code,
-                               const std::wstring& version);
+                               const std::wstring& version) OVERRIDE;
 #endif
 
  private:

@@ -8,23 +8,22 @@
 
 #include <string>
 
+#include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
 #include "chrome/browser/web_applications/web_app.h"
-#include "views/controls/label.h"
-#include "views/view.h"
+#include "views/controls/button/button.h"
 #include "views/window/dialog_delegate.h"
-#include "third_party/skia/include/core/SkBitmap.h"
+
+class Extension;
+class Profile;
+class TabContentsWrapper;
+class SkBitmap;
 
 namespace views {
 class Checkbox;
 class Label;
-};  // namespace views
-
-class Extension;
-class MessageLoop;
-class Profile;
-class TabContents;
-class TabContentsWrapper;
+}
 
 // CreateShortcutViewCommon implements a dialog that asks user where to create
 // the shortcut for given web app.  There are two variants of this dialog:
@@ -50,8 +49,6 @@ class CreateApplicationShortcutView : public views::DialogDelegateView,
       MessageBoxFlags::DialogButton button) const;
   virtual bool CanResize() const;
   virtual bool CanMaximize() const;
-  virtual bool IsAlwaysOnTop() const;
-  virtual bool HasAlwaysOnTopMenu() const;
   virtual bool IsModal() const;
   virtual std::wstring GetWindowTitle() const;
   virtual bool Accept();
@@ -130,6 +127,5 @@ class CreateChromeApplicationShortcutView
 
   DISALLOW_COPY_AND_ASSIGN(CreateChromeApplicationShortcutView);
 };
-
 
 #endif  // CHROME_BROWSER_UI_VIEWS_CREATE_APPLICATION_SHORTCUT_VIEW_H_

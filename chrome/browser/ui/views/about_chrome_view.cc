@@ -553,14 +553,6 @@ bool AboutChromeView::CanMaximize() const {
   return false;
 }
 
-bool AboutChromeView::IsAlwaysOnTop() const {
-  return false;
-}
-
-bool AboutChromeView::HasAlwaysOnTopMenu() const {
-  return false;
-}
-
 bool AboutChromeView::IsModal() const {
   return true;
 }

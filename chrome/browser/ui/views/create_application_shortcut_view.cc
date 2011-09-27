@@ -25,8 +25,9 @@
 #include "grit/theme_resources.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_request.h"
-#include "third_party/skia/include/core/SkRect.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkPaint.h"
+#include "third_party/skia/include/core/SkRect.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas_skia.h"
@@ -346,14 +347,6 @@ bool CreateApplicationShortcutView::CanResize() const {
 }
 
 bool CreateApplicationShortcutView::CanMaximize() const {
-  return false;
-}
-
-bool CreateApplicationShortcutView::IsAlwaysOnTop() const {
-  return false;
-}
-
-bool CreateApplicationShortcutView::HasAlwaysOnTopMenu() const {
   return false;
 }
 

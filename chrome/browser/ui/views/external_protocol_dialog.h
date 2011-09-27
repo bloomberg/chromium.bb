@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_UI_VIEWS_EXTERNAL_PROTOCOL_DIALOG_H_
 #pragma once
 
+#include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/time.h"
 #include "googleurl/src/gurl.h"
 #include "views/window/dialog_delegate.h"
@@ -42,8 +44,7 @@ class ExternalProtocolDialog : public views::DialogDelegate {
   virtual const views::Widget* GetWidget() const OVERRIDE;
 
   // views::WidgetDelegate methods:
-  virtual bool IsAlwaysOnTop() const { return false; }
-  virtual bool IsModal() const { return false; }
+  virtual bool IsModal() const OVERRIDE { return false; }
 
  private:
   // The message box view whose commands we handle.
