@@ -8,6 +8,8 @@ include_rules = [
   "+../GLES2",
   "+../service",
 
+  # For ui::CheckFailOnReportedX11Error
+  "+ui/base",
   # For gfx::PluginWindowHandle
   "+ui/gfx",
 ]

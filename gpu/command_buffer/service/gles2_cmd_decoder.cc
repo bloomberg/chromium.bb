@@ -15,6 +15,7 @@
 #include "base/atomicops.h"
 #include "base/at_exit.h"
 #include "base/callback.h"
+#include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
@@ -39,6 +40,13 @@
 #include "ui/gfx/gl/gl_context.h"
 #include "ui/gfx/gl/gl_implementation.h"
 #include "ui/gfx/gl/gl_surface.h"
+
+#if defined(USE_X11)
+#include "ui/base/x/x11_util_internal.h"
+#define CHECK_X_ERROR() ui::CheckForReportedX11Error()
+#else   // USE_X11
+#define CHECK_X_ERROR() void(0)
+#endif  // USE_X11
 
 #if !defined(GL_DEPTH24_STENCIL8)
 #define GL_DEPTH24_STENCIL8 0x88F0
@@ -1732,6 +1740,8 @@ bool GLES2DecoderImpl::Initialize(
   // Take ownership of the GLContext.
   context_ = context;
 
+  CHECK_X_ERROR();
+
   if (!MakeCurrent()) {
     LOG(ERROR) << "GLES2DecoderImpl::Initialize failed because "
                << "MakeCurrent failed.";
@@ -1746,6 +1756,7 @@ bool GLES2DecoderImpl::Initialize(
     return false;
   }
 
+  CHECK_X_ERROR();
   CHECK_GL_ERROR();
   disallowed_features_ = disallowed_features;
 

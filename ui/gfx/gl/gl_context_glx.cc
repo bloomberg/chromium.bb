@@ -11,6 +11,7 @@ extern "C" {
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "third_party/mesa/MesaLib/include/GL/osmesa.h"
+#include "ui/base/x/x11_util_internal.h"
 #include "ui/gfx/gl/gl_bindings.h"
 #include "ui/gfx/gl/gl_implementation.h"
 #include "ui/gfx/gl/gl_surface_glx.h"
@@ -88,6 +89,8 @@ bool GLContextGLX::Initialize(GLSurface* compatible_surface) {
     }
   }
 
+  ui::CheckForReportedX11Error();
+
   if (!context_) {
     // The means by which the context is created depends on whether
     // the drawable type works reliably with GLX 1.3. If it does not
@@ -113,6 +116,8 @@ bool GLContextGLX::Initialize(GLSurface* compatible_surface) {
         return false;
       }
 
+      ui::CheckForReportedX11Error();
+
       XVisualInfo visual_info_template;
       visual_info_template.visualid = XVisualIDFromVisual(attributes.visual);
 
@@ -136,6 +141,7 @@ bool GLContextGLX::Initialize(GLSurface* compatible_surface) {
           True);
     }
   }
+  ui::CheckForReportedX11Error();
 
   if (!context_) {
     LOG(ERROR) << "Couldn't create GL context.";
