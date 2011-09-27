@@ -142,6 +142,7 @@ RLZTracker::RLZTracker()
     : first_run_(false),
       send_ping_immediately_(false),
       google_default_search_(false),
+      google_default_homepage_(false),
       already_ran_(false),
       omnibox_used_(false),
       homepage_used_(false) {

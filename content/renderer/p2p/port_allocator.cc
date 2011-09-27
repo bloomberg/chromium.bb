@@ -80,7 +80,11 @@ P2PPortAllocatorSession::P2PPortAllocatorSession(
     const std::string& name,
     const std::string& session_type)
     : cricket::BasicPortAllocatorSession(allocator, name, session_type),
-      allocator_(allocator) {
+      allocator_(allocator),
+      relay_session_attempts_(0),
+      relay_udp_port_(0),
+      relay_tcp_port_(0),
+      relay_ssltcp_port_(0) {
 }
 
 P2PPortAllocatorSession::~P2PPortAllocatorSession() {
@@ -165,9 +169,9 @@ void P2PPortAllocatorSession::AllocateRelaySession() {
     return;
   }
 
-  if (relay_session_attemtps_ > kRelaySessionRetries)
+  if (relay_session_attempts_ > kRelaySessionRetries)
     return;
-  relay_session_attemtps_++;
+  relay_session_attempts_++;
 
   relay_session_response_.clear();
 

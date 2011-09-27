@@ -38,6 +38,8 @@ class VIEWS_EXPORT MenuDelegate {
   // Used during drag and drop to indicate where the drop indicator should
   // be rendered.
   enum DropPosition {
+    DROP_UNKNOWN = -1,
+
     // Indicates a drop is not allowed here.
     DROP_NONE,
 

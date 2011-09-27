@@ -34,7 +34,9 @@ const char NativeBackendKWallet::kKLauncherInterface[] = "org.kde.KLauncher";
 
 NativeBackendKWallet::NativeBackendKWallet(LocalProfileId id,
                                            PrefService* prefs)
-    : profile_id_(id), prefs_(prefs),
+    : profile_id_(id),
+      prefs_(prefs),
+      kwallet_proxy_(NULL),
       app_name_(l10n_util::GetStringUTF8(IDS_PRODUCT_NAME)) {
   if (PasswordStoreX::PasswordsUseLocalProfileId(prefs)) {
     folder_name_ = GetProfileSpecificFolderName();

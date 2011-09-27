@@ -61,6 +61,7 @@ static const char kNextDownloadId[] = "next_download_id";
 
 DownloadDatabase::DownloadDatabase()
     : owning_thread_set_(false),
+      owning_thread_(0),
       next_id_(0) {
 }
 

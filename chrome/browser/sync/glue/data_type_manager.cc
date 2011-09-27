@@ -6,7 +6,8 @@
 
 namespace browser_sync {
 
-DataTypeManager::ConfigureResult::ConfigureResult() {}
+DataTypeManager::ConfigureResult::ConfigureResult()
+    : status(UNKNOWN) {}
 
 DataTypeManager::ConfigureResult::ConfigureResult(ConfigureStatus status,
                                                   TypeSet requested_types)

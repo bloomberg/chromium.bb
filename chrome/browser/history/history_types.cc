@@ -305,7 +305,7 @@ void QueryOptions::SetRecentDayRange(int days_ago) {
 
 // KeywordSearchTermVisit -----------------------------------------------------
 
-KeywordSearchTermVisit::KeywordSearchTermVisit() {}
+KeywordSearchTermVisit::KeywordSearchTermVisit() : visits(0) {}
 
 KeywordSearchTermVisit::~KeywordSearchTermVisit() {}
 

@@ -38,6 +38,7 @@ class DataTypeManager {
   // Update NotifyDone() in data_type_manager_impl.cc if you update
   // this.
   enum ConfigureStatus {
+    UNKNOWN = -1,
     OK,                  // Configuration finished without error.
     ASSOCIATION_FAILED,  // An error occurred during model association.
     ABORTED,             // Start was aborted by calling Stop() before

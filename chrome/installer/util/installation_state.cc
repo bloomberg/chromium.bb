@@ -15,6 +15,7 @@ namespace installer {
 
 ProductState::ProductState()
     : uninstall_command_(CommandLine::NO_PROGRAM),
+      eula_accepted_(0),
       usagestats_(0),
       msi_(false),
       multi_install_(false),

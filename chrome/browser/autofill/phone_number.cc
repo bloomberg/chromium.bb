@@ -43,7 +43,9 @@ PhoneNumber::PhoneNumber(AutofillProfile* profile)
     : profile_(profile) {
 }
 
-PhoneNumber::PhoneNumber(const PhoneNumber& number) : FormGroup() {
+PhoneNumber::PhoneNumber(const PhoneNumber& number)
+    : FormGroup(),
+      profile_(NULL) {
   *this = number;
 }
 

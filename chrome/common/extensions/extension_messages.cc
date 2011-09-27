@@ -8,7 +8,8 @@
 #include "content/common/common_param_traits.h"
 
 ExtensionMsg_Loaded_Params::ExtensionMsg_Loaded_Params()
-    : location(Extension::INVALID) {}
+    : location(Extension::INVALID),
+      creation_flags(Extension::NO_FLAGS){}
 
 ExtensionMsg_Loaded_Params::~ExtensionMsg_Loaded_Params() {}
 

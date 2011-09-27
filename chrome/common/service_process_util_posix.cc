@@ -75,6 +75,7 @@ void ServiceProcessState::StateData::SignalReady(base::WaitableEvent* signal,
 
   // Set up signal handler for SIGTERM.
   struct sigaction action;
+  memset(&action, 0, sizeof(action));
   action.sa_sigaction = SigTermHandler;
   sigemptyset(&action.sa_mask);
   action.sa_flags = SA_SIGINFO;

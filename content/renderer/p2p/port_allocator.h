@@ -85,7 +85,7 @@ class P2PPortAllocatorSession : public cricket::BasicPortAllocatorSession,
   talk_base::SocketAddress stun_server_address_;
 
   scoped_ptr<WebKit::WebURLLoader> relay_session_request_;
-  int relay_session_attemtps_;
+  int relay_session_attempts_;
   std::string relay_session_response_;
   std::string relay_username_;
   std::string relay_password_;

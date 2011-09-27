@@ -19,7 +19,8 @@ const int kCheckTaskbarPollingIntervalMs = 500;
 }  // namespace
 
 AutoHidingDesktopBarWin::AutoHidingDesktopBarWin(Observer* observer)
-    : observer_(observer) {
+    : observer_(observer),
+      monitor_(NULL) {
   DCHECK(observer);
   memset(taskbars_, 0, sizeof(taskbars_));
 }
