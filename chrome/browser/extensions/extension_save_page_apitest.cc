@@ -25,6 +25,13 @@ class ExtensionSavePageApiTest : public ExtensionApiTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(ExtensionSavePageApiTest, SavePageAsMHTML) {
+// Disabled on Linux http://crbug.com/98194
+#if defined(OS_LINUX)
+#define MAYBE_SavePageAsMHTML DISABLED_SavePageAsMHTML
+#else
+#define MAYBE_SavePageAsMHTML SavePageAsMHTML
+#endif  // defined(OS_LINUX)
+
+IN_PROC_BROWSER_TEST_F(ExtensionSavePageApiTest, MAYBE_SavePageAsMHTML) {
   ASSERT_TRUE(RunExtensionTest("save_page")) << message_;
 }
