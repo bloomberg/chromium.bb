@@ -34,11 +34,12 @@ class MockVideoCaptureClient : public media::VideoCapture::EventHandler {
   MockVideoCaptureClient() {}
   virtual ~MockVideoCaptureClient() {}
 
-  // Filter implementation.
+  // EventHandler implementation.
   MOCK_METHOD1(OnStarted, void(media::VideoCapture* capture));
   MOCK_METHOD1(OnStopped, void(media::VideoCapture* capture));
   MOCK_METHOD1(OnPaused, void(media::VideoCapture* capture));
   MOCK_METHOD2(OnError, void(media::VideoCapture* capture, int error_code));
+  MOCK_METHOD1(OnRemoved, void(media::VideoCapture* capture));
   MOCK_METHOD2(OnBufferReady,
                void(media::VideoCapture* capture,
                     scoped_refptr<media::VideoCapture::VideoFrameBuffer> buf));

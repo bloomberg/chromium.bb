@@ -40,6 +40,7 @@ class VideoCaptureModuleImpl
   virtual void OnStopped(media::VideoCapture* capture);
   virtual void OnPaused(media::VideoCapture* capture);
   virtual void OnError(media::VideoCapture* capture, int error_code);
+  virtual void OnRemoved(media::VideoCapture* capture);
   virtual void OnBufferReady(
       media::VideoCapture* capture,
       scoped_refptr<media::VideoCapture::VideoFrameBuffer> buf);

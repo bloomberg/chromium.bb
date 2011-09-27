@@ -48,6 +48,7 @@ class PPB_VideoCapture_Impl : public ::ppapi::Resource,
   virtual void OnStopped(media::VideoCapture* capture) OVERRIDE;
   virtual void OnPaused(media::VideoCapture* capture) OVERRIDE;
   virtual void OnError(media::VideoCapture* capture, int error_code) OVERRIDE;
+  virtual void OnRemoved(media::VideoCapture* capture) OVERRIDE;
   virtual void OnBufferReady(
       media::VideoCapture* capture,
       scoped_refptr<media::VideoCapture::VideoFrameBuffer> buffer) OVERRIDE;

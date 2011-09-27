@@ -105,6 +105,10 @@ void VideoCaptureModuleImpl::OnError(media::VideoCapture* capture,
   NOTIMPLEMENTED();
 }
 
+void VideoCaptureModuleImpl::OnRemoved(media::VideoCapture* capture) {
+  NOTIMPLEMENTED();
+}
+
 void VideoCaptureModuleImpl::OnBufferReady(
     media::VideoCapture* capture,
     scoped_refptr<media::VideoCapture::VideoFrameBuffer> buf) {

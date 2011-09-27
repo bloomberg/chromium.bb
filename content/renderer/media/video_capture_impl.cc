@@ -144,6 +144,7 @@ void VideoCaptureImpl::DoStartCapture(
 
   if (it != pending_clients_.end()) {
     handler->OnError(this, 1);
+    handler->OnRemoved(this);
     return;
   }
 
@@ -157,6 +158,7 @@ void VideoCaptureImpl::DoStartCapture(
        capability.height != current_params_.height)) {
     // Can't have 2 master clients with different resolutions.
     handler->OnError(this, 1);
+    handler->OnRemoved(this);
     return;
   }
 
@@ -219,6 +221,7 @@ void VideoCaptureImpl::DoStopCapture(
   ClientInfo::iterator it = pending_clients_.find(handler);
   if (it != pending_clients_.end()) {
     handler->OnStopped(this);
+    handler->OnRemoved(this);
     pending_clients_.erase(it);
     return;
   }
@@ -227,6 +230,7 @@ void VideoCaptureImpl::DoStopCapture(
     return;
 
   handler->OnStopped(this);
+  handler->OnRemoved(this);
   clients_.erase(handler);
   master_clients_.remove(handler);
 
@@ -368,7 +372,12 @@ void VideoCaptureImpl::DoStateChanged(const media::VideoCapture::State& state) {
            it != clients_.end(); it++) {
         // TODO(wjia): browser process would send error code.
         it->first->OnError(this, 1);
+        it->first->OnRemoved(this);
       }
+      clients_.clear();
+      master_clients_.clear();
+      state_ = kStopped;
+      current_params_.width = current_params_.height = 0;
       break;
     default:
       break;

@@ -167,6 +167,10 @@ void PPB_VideoCapture_Impl::OnError(media::VideoCapture* capture,
   ppp_videocapture_->OnError(pp_instance(), pp_resource(), PP_ERROR_FAILED);
 }
 
+void PPB_VideoCapture_Impl::OnRemoved(media::VideoCapture* capture) {
+  // TODO(vtl): add logic when this event handler is removed.
+}
+
 void PPB_VideoCapture_Impl::OnBufferReady(
     media::VideoCapture* capture,
     scoped_refptr<media::VideoCapture::VideoFrameBuffer> buffer) {
