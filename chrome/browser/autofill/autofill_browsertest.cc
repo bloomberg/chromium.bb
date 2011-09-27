@@ -655,6 +655,10 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, AutofillAfterTranslate) {
   // Pass fake google.translate lib as the translate script.
   SimulateURLFetch(true);
 
+  ui_test_utils::WindowedNotificationObserver translation_observer(
+      chrome::NOTIFICATION_PAGE_TRANSLATED,
+      NotificationService::AllSources());
+
   // Simulate translation to kick onTranslateElementLoad.
   // But right now, the call stucks here.
   // Once click the text field, it starts again.
@@ -663,7 +667,7 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, AutofillAfterTranslate) {
       L"cr.googleTranslate.onTranslateElementLoad();"));
 
   // Simulate the render notifying the translation has been done.
-  ui_test_utils::WaitForNotification(chrome::NOTIFICATION_PAGE_TRANSLATED);
+  translation_observer.Wait();
 
   TryBasicFormFill();
 }

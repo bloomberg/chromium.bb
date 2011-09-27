@@ -64,20 +64,23 @@ class OmniboxApiTest : public ExtensionApiTest {
   }
 
   void WaitForTemplateURLServiceToLoad() {
+    ui_test_utils::WindowedNotificationObserver loaded_observer(
+        chrome::NOTIFICATION_TEMPLATE_URL_SERVICE_LOADED,
+        NotificationService::AllSources());
     TemplateURLService* model =
         TemplateURLServiceFactory::GetForProfile(browser()->profile());
     model->Load();
-    if (!model->loaded()) {
-      ui_test_utils::WaitForNotification(
-          chrome::NOTIFICATION_TEMPLATE_URL_SERVICE_LOADED);
-    }
+    if (!model->loaded())
+      loaded_observer.Wait();
   }
 
+  // TODO(phajdan.jr): Get rid of this wait-in-a-loop pattern.
   void WaitForAutocompleteDone(AutocompleteController* controller) {
     while (!controller->done()) {
-      ui_test_utils::WaitForNotificationFrom(
+      ui_test_utils::WindowedNotificationObserver ready_observer(
           chrome::NOTIFICATION_AUTOCOMPLETE_CONTROLLER_RESULT_READY,
           Source<AutocompleteController>(controller));
+      ready_observer.Wait();
     }
   }
 };

@@ -36,9 +36,11 @@ class BrowserActionApiTest : public ExtensionApiTest {
 
   bool OpenPopup(int index) {
     ResultCatcher catcher;
+    ui_test_utils::WindowedNotificationObserver popup_observer(
+        chrome::NOTIFICATION_EXTENSION_POPUP_VIEW_READY,
+        NotificationService::AllSources());
     GetBrowserActionsBar().Press(index);
-    ui_test_utils::WaitForNotification(
-        chrome::NOTIFICATION_EXTENSION_POPUP_VIEW_READY);
+    popup_observer.Wait();
     EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
     return GetBrowserActionsBar().HasPopup();
   }
@@ -391,6 +393,10 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, CloseBackgroundPage) {
   ExtensionAction* action = extension->browser_action();
   ASSERT_EQ("", action->GetBadgeText(ExtensionAction::kDefaultTabId));
 
+  ui_test_utils::WindowedNotificationObserver host_destroyed_observer(
+      chrome::NOTIFICATION_EXTENSION_HOST_DESTROYED,
+      NotificationService::AllSources());
+
   // Click the browser action.
   browser()->profile()->GetExtensionService()->browser_event_router()->
       BrowserActionExecuted(
@@ -399,8 +405,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, CloseBackgroundPage) {
   // It can take a moment for the background page to actually get destroyed
   // so we wait for the notification before checking that it's really gone
   // and the badge text has been set.
-  ui_test_utils::WaitForNotification(
-      chrome::NOTIFICATION_EXTENSION_HOST_DESTROYED);
+  host_destroyed_observer.Wait();
   ASSERT_FALSE(manager->GetBackgroundHostForExtension(extension));
   ASSERT_EQ("X", action->GetBadgeText(ExtensionAction::kDefaultTabId));
 }

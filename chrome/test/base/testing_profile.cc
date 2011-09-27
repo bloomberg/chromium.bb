@@ -312,10 +312,14 @@ void TestingProfile::BlockUntilBookmarkModelLoaded() {
   DCHECK(bookmark_bar_model_->IsLoaded());
 }
 
+// TODO(phajdan.jr): Doesn't this hang if Top Sites are already loaded?
 void TestingProfile::BlockUntilTopSitesLoaded() {
+  ui_test_utils::WindowedNotificationObserver top_sites_loaded_observer(
+      chrome::NOTIFICATION_TOP_SITES_LOADED,
+      NotificationService::AllSources());
   if (!GetHistoryService(Profile::EXPLICIT_ACCESS))
     GetTopSites()->HistoryLoaded();
-  ui_test_utils::WaitForNotification(chrome::NOTIFICATION_TOP_SITES_LOADED);
+  top_sites_loaded_observer.Wait();
 }
 
 void TestingProfile::CreateTemplateURLFetcher() {

@@ -34,6 +34,10 @@ Browser* WizardInProcessBrowserTest::CreateBrowser(Profile* profile) {
 }
 
 void WizardInProcessBrowserTest::CleanUpOnMainThread() {
+  ui_test_utils::WindowedNotificationObserver wizard_destroyed_observer(
+      chrome::NOTIFICATION_WIZARD_CONTENT_VIEW_DESTROYED,
+      NotificationService::AllSources());
+
   // LoginDisplayHost owns controllers and all windows.
   MessageLoopForUI::current()->DeleteSoon(FROM_HERE, host_);
 
@@ -41,8 +45,7 @@ void WizardInProcessBrowserTest::CleanUpOnMainThread() {
   // happens after a delay (because they are contained in a NativeWidgetGtk
   // which delays deleting itself). Run the message loop until we know the
   // wizard has been deleted.
-  ui_test_utils::WaitForNotification(
-      chrome::NOTIFICATION_WIZARD_CONTENT_VIEW_DESTROYED);
+  wizard_destroyed_observer.Wait();
 }
 
 }  // namespace chromeos

@@ -346,11 +346,16 @@ static void NavigateToURLWithDispositionBlockUntilNavigationsComplete(
        ++iter) {
     initial_browsers.insert(*iter);
   }
+
+  WindowedNotificationObserver tab_added_observer(
+      content::NOTIFICATION_TAB_ADDED,
+      NotificationService::AllSources());
+
   browser->OpenURL(url, GURL(), disposition, PageTransition::TYPED);
   if (browser_test_flags & BROWSER_TEST_WAIT_FOR_BROWSER)
     browser = WaitForBrowserNotInSet(initial_browsers);
   if (browser_test_flags & BROWSER_TEST_WAIT_FOR_TAB)
-    WaitForNotification(content::NOTIFICATION_TAB_ADDED);
+    tab_added_observer.Wait();
   if (!(browser_test_flags & BROWSER_TEST_WAIT_FOR_NAVIGATION)) {
     // Some other flag caused the wait prior to this.
     return;
@@ -519,17 +524,6 @@ int FindInPage(TabContentsWrapper* tab_contents, const string16& search_string,
   return observer.number_of_matches();
 }
 
-void WaitForNotification(int type) {
-  TestNotificationObserver observer;
-  RegisterAndWait(&observer, type, NotificationService::AllSources());
-}
-
-void WaitForNotificationFrom(int type,
-                             const NotificationSource& source) {
-  TestNotificationObserver observer;
-  RegisterAndWait(&observer, type, source);
-}
-
 void RegisterAndWait(NotificationObserver* observer,
                      int type,
                      const NotificationSource& source) {
@@ -559,8 +553,11 @@ void WaitForTemplateURLServiceToLoad(TemplateURLService* service) {
 void WaitForHistoryToLoad(Browser* browser) {
   HistoryService* history_service =
       browser->profile()->GetHistoryService(Profile::EXPLICIT_ACCESS);
+  WindowedNotificationObserver history_loaded_observer(
+      chrome::NOTIFICATION_HISTORY_LOADED,
+      NotificationService::AllSources());
   if (!history_service->BackendLoaded())
-    WaitForNotification(chrome::NOTIFICATION_HISTORY_LOADED);
+    history_loaded_observer.Wait();
 }
 
 bool GetNativeWindow(const Browser* browser, gfx::NativeWindow* native_window) {

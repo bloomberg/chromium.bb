@@ -90,11 +90,12 @@ class ExtensionStartupTestBase : public InProcessBrowserTest {
               static_cast<uint32>(found_extensions));
     ASSERT_EQ(expect_extensions_enabled, service->extensions_enabled());
 
+    ui_test_utils::WindowedNotificationObserver user_scripts_observer(
+        chrome::NOTIFICATION_USER_SCRIPTS_UPDATED,
+        NotificationService::AllSources());
     UserScriptMaster* master = browser()->profile()->GetUserScriptMaster();
-    if (!master->ScriptsReady()) {
-      ui_test_utils::WaitForNotification(
-          chrome::NOTIFICATION_USER_SCRIPTS_UPDATED);
-    }
+    if (!master->ScriptsReady())
+      user_scripts_observer.Wait();
     ASSERT_TRUE(master->ScriptsReady());
   }
 
@@ -166,9 +167,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionsStartupTest, MAYBE_NoFileAccess) {
     if (service->extensions()->at(i)->location() == Extension::COMPONENT)
       continue;
     if (service->AllowFileAccess(service->extensions()->at(i))) {
+      ui_test_utils::WindowedNotificationObserver user_scripts_observer(
+          chrome::NOTIFICATION_USER_SCRIPTS_UPDATED,
+          NotificationService::AllSources());
       service->SetAllowFileAccess(service->extensions()->at(i), false);
-      ui_test_utils::WaitForNotification(
-           chrome::NOTIFICATION_USER_SCRIPTS_UPDATED);
+      user_scripts_observer.Wait();
     }
   }
 

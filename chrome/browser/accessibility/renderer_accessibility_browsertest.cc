@@ -33,14 +33,16 @@ class RendererAccessibilityBrowserTest : public InProcessBrowserTest {
   // Tell the renderer to send an accessibility tree, then wait for the
   // notification that it's been received.
   const WebAccessibility& GetWebAccessibilityTree() {
+    ui_test_utils::WindowedNotificationObserver tree_updated_observer(
+        content::NOTIFICATION_RENDER_VIEW_HOST_ACCESSIBILITY_TREE_UPDATED,
+        NotificationService::AllSources());
     RenderWidgetHostView* host_view =
         browser()->GetSelectedTabContents()->GetRenderWidgetHostView();
     RenderWidgetHost* host = host_view->GetRenderWidgetHost();
     RenderViewHost* view_host = static_cast<RenderViewHost*>(host);
     view_host->set_save_accessibility_tree_for_testing(true);
     view_host->EnableRendererAccessibility();
-    ui_test_utils::WaitForNotification(
-        content::NOTIFICATION_RENDER_VIEW_HOST_ACCESSIBILITY_TREE_UPDATED);
+    tree_updated_observer.Wait();
     return view_host->accessibility_tree();
   }
 

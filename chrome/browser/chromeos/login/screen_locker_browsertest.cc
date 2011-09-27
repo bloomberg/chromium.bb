@@ -115,9 +115,11 @@ class ScreenLockerTest : public CrosInProcessBrowserTest {
     ScreenLocker::Show();
     scoped_ptr<test::ScreenLockerTester> tester(ScreenLocker::GetTester());
     tester->EmulateWindowManagerReady();
+    ui_test_utils::WindowedNotificationObserver lock_state_observer(
+        chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED,
+        NotificationService::AllSources());
     if (!chromeos::ScreenLocker::GetTester()->IsLocked())
-      ui_test_utils::WaitForNotification(
-          chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED);
+      lock_state_observer.Wait();
     EXPECT_TRUE(tester->IsLocked());
     tester->InjectMockAuthenticator("", "");
 
@@ -137,10 +139,11 @@ class ScreenLockerTest : public CrosInProcessBrowserTest {
     UserManager::Get()->UserLoggedIn(user);
     ScreenLocker::Show();
     tester->EmulateWindowManagerReady();
-    if (!tester->IsLocked()) {
-      ui_test_utils::WaitForNotification(
-          chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED);
-    }
+    ui_test_utils::WindowedNotificationObserver lock_state_observer(
+        chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED,
+        NotificationService::AllSources());
+    if (!tester->IsLocked())
+      lock_state_observer.Wait();
     EXPECT_TRUE(tester->IsLocked());
   }
 
@@ -182,9 +185,11 @@ IN_PROC_BROWSER_TEST_F(ScreenLockerTest, DISABLED_TestBasic) {
   ScreenLocker::Show();
   scoped_ptr<test::ScreenLockerTester> tester(ScreenLocker::GetTester());
   tester->EmulateWindowManagerReady();
+  ui_test_utils::WindowedNotificationObserver lock_state_observer(
+      chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED,
+      NotificationService::AllSources());
   if (!chromeos::ScreenLocker::GetTester()->IsLocked())
-    ui_test_utils::WaitForNotification(
-        chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED);
+    lock_state_observer.Wait();
 
   // Test to make sure that the widget is actually appearing and is of
   // reasonable size, preventing a regression of

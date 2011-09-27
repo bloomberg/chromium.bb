@@ -356,13 +356,16 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestHTTPSExpiredCertAndGoBackViaButton) {
   CheckAuthenticationBrokenState(tab, net::CERT_STATUS_DATE_INVALID, false,
                                  true);  // Interstitial showing
 
+  ui_test_utils::WindowedNotificationObserver load_failed_observer(
+      content::NOTIFICATION_FAIL_PROVISIONAL_LOAD_WITH_ERROR,
+      NotificationService::AllSources());
+
   // Simulate user clicking on back button (crbug.com/39248).
   browser()->GoBack(CURRENT_TAB);
 
   // Wait until we hear the load failure, and make sure we haven't swapped out
   // the previous page.  Prevents regression of http://crbug.com/82667.
-  ui_test_utils::WaitForNotification(
-      content::NOTIFICATION_FAIL_PROVISIONAL_LOAD_WITH_ERROR);
+  load_failed_observer.Wait();
   EXPECT_FALSE(tab->render_view_host()->is_swapped_out());
 
   // We should be back at the original good page.

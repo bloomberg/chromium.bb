@@ -40,6 +40,7 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_source.h"
 #include "content/common/page_transition_types.h"
+#include "content/common/url_constants.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "net/base/mock_host_resolver.h"
@@ -294,6 +295,10 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, CancelBeforeUnloadResetsURL) {
   GURL url2(test_server()->GetURL("files/title1.html"));
   browser()->OpenURL(url2, GURL(), CURRENT_TAB, PageTransition::TYPED);
 
+  ui_test_utils::WindowedNotificationObserver host_destroyed_observer(
+      content::NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED,
+      NotificationService::AllSources());
+
   // Cancel the dialog.
   AppModalDialog* alert = ui_test_utils::WaitForAppModalDialog();
   alert->CloseModalDialog();
@@ -301,8 +306,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, CancelBeforeUnloadResetsURL) {
 
   // Wait for the ShouldClose_ACK to arrive.  We can detect it by waiting for
   // the pending RVH to be destroyed.
-  ui_test_utils::WaitForNotification(
-      content::NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED);
+  host_destroyed_observer.Wait();
   EXPECT_EQ(url.spec(), UTF16ToUTF8(browser()->toolbar_model()->GetText()));
 
   // Clear the beforeunload handler so the test can easily exit.
@@ -800,57 +804,93 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_PageLanguageDetection) {
 IN_PROC_BROWSER_TEST_F(BrowserTest, TestNewTabExitsFullscreen) {
   ASSERT_TRUE(test_server()->Start());
 
-  AddTabAtIndex(0, GURL("about:blank"), PageTransition::TYPED);
+  AddTabAtIndex(0, GURL(chrome::kAboutBlankURL), PageTransition::TYPED);
 
   TabContents* fullscreen_tab = browser()->GetSelectedTabContents();
 
-  browser()->ToggleFullscreenModeForTab(fullscreen_tab, true);
-  ui_test_utils::WaitForNotification(chrome::NOTIFICATION_FULLSCREEN_CHANGED);
-  ASSERT_TRUE(browser()->window()->IsFullscreen());
-  AddTabAtIndex(1, GURL("about:blank"), PageTransition::TYPED);
-  ui_test_utils::WaitForNotification(chrome::NOTIFICATION_FULLSCREEN_CHANGED);
-  ASSERT_FALSE(browser()->window()->IsFullscreen());
+  {
+    ui_test_utils::WindowedNotificationObserver fullscreen_observer(
+        chrome::NOTIFICATION_FULLSCREEN_CHANGED,
+        NotificationService::AllSources());
+    browser()->ToggleFullscreenModeForTab(fullscreen_tab, true);
+    fullscreen_observer.Wait();
+    ASSERT_TRUE(browser()->window()->IsFullscreen());
+  }
+
+  {
+    ui_test_utils::WindowedNotificationObserver fullscreen_observer(
+        chrome::NOTIFICATION_FULLSCREEN_CHANGED,
+        NotificationService::AllSources());
+    AddTabAtIndex(1, GURL(chrome::kAboutBlankURL), PageTransition::TYPED);
+    fullscreen_observer.Wait();
+    ASSERT_FALSE(browser()->window()->IsFullscreen());
+  }
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserTest, TestTabExitsItselfFromFullscreen) {
   ASSERT_TRUE(test_server()->Start());
 
-  AddTabAtIndex(0, GURL("about:blank"), PageTransition::TYPED);
+  AddTabAtIndex(0, GURL(chrome::kAboutBlankURL), PageTransition::TYPED);
 
   TabContents* fullscreen_tab = browser()->GetSelectedTabContents();
 
-  browser()->ToggleFullscreenModeForTab(fullscreen_tab, true);
-  ui_test_utils::WaitForNotification(chrome::NOTIFICATION_FULLSCREEN_CHANGED);
-  ASSERT_TRUE(browser()->window()->IsFullscreen());
-  browser()->ToggleFullscreenModeForTab(fullscreen_tab, false);
-  ui_test_utils::WaitForNotification(chrome::NOTIFICATION_FULLSCREEN_CHANGED);
-  ASSERT_FALSE(browser()->window()->IsFullscreen());
+  {
+    ui_test_utils::WindowedNotificationObserver fullscreen_observer(
+        chrome::NOTIFICATION_FULLSCREEN_CHANGED,
+        NotificationService::AllSources());
+    browser()->ToggleFullscreenModeForTab(fullscreen_tab, true);
+    fullscreen_observer.Wait();
+    ASSERT_TRUE(browser()->window()->IsFullscreen());
+  }
+
+  {
+    ui_test_utils::WindowedNotificationObserver fullscreen_observer(
+        chrome::NOTIFICATION_FULLSCREEN_CHANGED,
+        NotificationService::AllSources());
+    browser()->ToggleFullscreenModeForTab(fullscreen_tab, false);
+    fullscreen_observer.Wait();
+    ASSERT_FALSE(browser()->window()->IsFullscreen());
+  }
 }
 
 #if defined(OS_MACOSX)
 IN_PROC_BROWSER_TEST_F(BrowserTest, TabEntersPresentationModeFromWindowed) {
   ASSERT_TRUE(test_server()->Start());
 
-  AddTabAtIndex(0, GURL("about:blank"), PageTransition::TYPED);
+  AddTabAtIndex(0, GURL(chrome::kAboutBlankURL), PageTransition::TYPED);
 
   TabContents* fullscreen_tab = browser()->GetSelectedTabContents();
 
-  EXPECT_FALSE(browser()->window()->IsFullscreen());
-  EXPECT_FALSE(browser()->window()->InPresentationMode());
-  browser()->ToggleFullscreenModeForTab(fullscreen_tab, true);
-  ui_test_utils::WaitForNotification(chrome::NOTIFICATION_FULLSCREEN_CHANGED);
-  ASSERT_TRUE(browser()->window()->IsFullscreen());
-  ASSERT_TRUE(browser()->window()->InPresentationMode());
-  browser()->TogglePresentationMode();
-  ui_test_utils::WaitForNotification(chrome::NOTIFICATION_FULLSCREEN_CHANGED);
-  ASSERT_FALSE(browser()->window()->IsFullscreen());
-  ASSERT_FALSE(browser()->window()->InPresentationMode());
+  {
+    ui_test_utils::WindowedNotificationObserver fullscreen_observer(
+        chrome::NOTIFICATION_FULLSCREEN_CHANGED,
+        NotificationService::AllSources());
+    EXPECT_FALSE(browser()->window()->IsFullscreen());
+    EXPECT_FALSE(browser()->window()->InPresentationMode());
+    browser()->ToggleFullscreenModeForTab(fullscreen_tab, true);
+    fullscreen_observer.Wait();
+    ASSERT_TRUE(browser()->window()->IsFullscreen());
+    ASSERT_TRUE(browser()->window()->InPresentationMode());
+  }
+
+  {
+    ui_test_utils::WindowedNotificationObserver fullscreen_observer(
+        chrome::NOTIFICATION_FULLSCREEN_CHANGED,
+        NotificationService::AllSources());
+    browser()->TogglePresentationMode();
+    fullscreen_observer.Wait();
+    ASSERT_FALSE(browser()->window()->IsFullscreen());
+    ASSERT_FALSE(browser()->window()->InPresentationMode());
+  }
 
   if (base::mac::IsOSLionOrLater()) {
     // Test that tab fullscreen mode doesn't make presentation mode the default
     // on Lion.
+    ui_test_utils::WindowedNotificationObserver fullscreen_observer(
+        chrome::NOTIFICATION_FULLSCREEN_CHANGED,
+        NotificationService::AllSources());
     browser()->ToggleFullscreenMode();
-    ui_test_utils::WaitForNotification(chrome::NOTIFICATION_FULLSCREEN_CHANGED);
+    fullscreen_observer.Wait();
     ASSERT_TRUE(browser()->window()->IsFullscreen());
     ASSERT_FALSE(browser()->window()->InPresentationMode());
   }
@@ -888,7 +928,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, RestorePinnedTabs) {
 
   // Add a pinned non-app tab.
   browser()->NewTab();
-  ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
+  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kAboutBlankURL));
   model->SetTabPinned(2, true);
 
   // Write out the pinned tabs.

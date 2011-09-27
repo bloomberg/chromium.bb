@@ -78,9 +78,12 @@ IN_PROC_BROWSER_TEST_F(KeyboardManagerTest, TestVisibility) {
   EXPECT_TRUE(keyboard_visible());
 
   // Open a new tab that does not give focus to a textfield onload.
+  ui_test_utils::WindowedNotificationObserver load_stop_observer(
+      content::NOTIFICATION_LOAD_STOP,
+      NotificationService::AllSources());
   browser()->AddSelectedTabWithURL(base_url.Resolve("blank.html"),
                                    PageTransition::LINK);
-  ui_test_utils::WaitForNotification(content::NOTIFICATION_LOAD_STOP);
+  load_stop_observer.Wait();
 
   // Focus the first tab where the textfield has the focus.
   browser()->SelectNextTab();

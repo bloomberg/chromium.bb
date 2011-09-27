@@ -214,18 +214,6 @@ bool IsViewFocused(const Browser* browser, ViewID vid);
 // Simulates a mouse click on a View in the browser.
 void ClickOnView(const Browser* browser, ViewID vid);
 
-// Blocks until a notification for given |type| is received.
-// TODO(gbillock): remove this race hazard.
-// Use WindowedNotificationObserver instead.
-void WaitForNotification(int type);
-
-// Blocks until a notification for given |type| from the specified |source|
-// is received.
-// TODO(gbillock): remove this race hazard.
-// Use WindowedNotificationObserver instead.
-void WaitForNotificationFrom(int type,
-                             const NotificationSource& source);
-
 // Register |observer| for the given |type| and |source| and run
 // the message loop until the observer posts a quit task.
 void RegisterAndWait(NotificationObserver* observer,

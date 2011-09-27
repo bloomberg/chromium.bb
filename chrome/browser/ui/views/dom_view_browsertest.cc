@@ -30,8 +30,11 @@ IN_PROC_BROWSER_TEST_F(DOMViewTest, TestShowAndHide) {
   one->GetRootView()->AddChildView(dom_view);
 
   dom_view->Init(browser()->profile(), NULL);
+  ui_test_utils::WindowedNotificationObserver load_stop_observer(
+      content::NOTIFICATION_LOAD_STOP,
+      NotificationService::AllSources());
   dom_view->LoadURL(GURL("http://www.google.com"));
-  ui_test_utils::WaitForNotification(content::NOTIFICATION_LOAD_STOP);
+  load_stop_observer.Wait();
   one->Show();
 
   ui_test_utils::RunAllPendingInMessageLoop();
@@ -48,8 +51,11 @@ IN_PROC_BROWSER_TEST_F(DOMViewTest, TestRemoveAndDelete) {
   one->GetRootView()->AddChildView(dom_view);
 
   dom_view->Init(browser()->profile(), NULL);
+  ui_test_utils::WindowedNotificationObserver load_stop_observer(
+      content::NOTIFICATION_LOAD_STOP,
+      NotificationService::AllSources());
   dom_view->LoadURL(GURL("http://www.google.com"));
-  ui_test_utils::WaitForNotification(content::NOTIFICATION_LOAD_STOP);
+  load_stop_observer.Wait();
   one->Show();
 
   ui_test_utils::RunAllPendingInMessageLoop();
@@ -70,8 +76,11 @@ IN_PROC_BROWSER_TEST_F(DOMViewTest, TestReparent) {
   one->GetRootView()->AddChildView(dom_view);
 
   dom_view->Init(browser()->profile(), NULL);
+  ui_test_utils::WindowedNotificationObserver load_stop_observer(
+      content::NOTIFICATION_LOAD_STOP,
+      NotificationService::AllSources());
   dom_view->LoadURL(GURL("http://www.google.com"));
-  ui_test_utils::WaitForNotification(content::NOTIFICATION_LOAD_STOP);
+  load_stop_observer.Wait();
   one->Show();
 
   ui_test_utils::RunAllPendingInMessageLoop();

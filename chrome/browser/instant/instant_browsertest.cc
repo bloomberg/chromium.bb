@@ -49,12 +49,13 @@ class InstantTest : public InProcessBrowserTest {
         TemplateURLServiceFactory::GetForProfile(browser()->profile());
     ASSERT_TRUE(model);
 
+    ui_test_utils::WindowedNotificationObserver service_loaded_observer(
+        chrome::NOTIFICATION_TEMPLATE_URL_SERVICE_LOADED,
+        NotificationService::AllSources());
     if (!model->loaded()) {
       model->Load();
-      ui_test_utils::WaitForNotification(
-          chrome::NOTIFICATION_TEMPLATE_URL_SERVICE_LOADED);
+      service_loaded_observer.Wait();
     }
-
     ASSERT_TRUE(model->loaded());
 
     // TemplateURLService takes ownership of this.
@@ -122,9 +123,11 @@ class InstantTest : public InProcessBrowserTest {
 
   void SetLocationBarText(const std::string& text) {
     ASSERT_NO_FATAL_FAILURE(FindLocationBar());
+    ui_test_utils::WindowedNotificationObserver controller_shown_observer(
+        chrome::NOTIFICATION_INSTANT_CONTROLLER_SHOWN,
+        NotificationService::AllSources());
     location_bar_->location_entry()->SetUserText(UTF8ToUTF16(text));
-    ui_test_utils::WaitForNotification(
-        chrome::NOTIFICATION_INSTANT_CONTROLLER_SHOWN);
+    controller_shown_observer.Wait();
   }
 
   const string16& GetSuggestion() const {
@@ -584,6 +587,11 @@ IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_SearchServerDoesntSupportInstant) {
   EnableInstant();
   ASSERT_NO_FATAL_FAILURE(SetupInstantProvider("empty.html"));
   ASSERT_NO_FATAL_FAILURE(FindLocationBar());
+
+  ui_test_utils::WindowedNotificationObserver tab_closed_observer(
+      content::NOTIFICATION_TAB_CLOSED,
+      NotificationService::AllSources());
+
   location_bar_->location_entry()->SetUserText(ASCIIToUTF16("d"));
   ASSERT_TRUE(browser()->instant());
   // Because we typed in a search string we should think we're showing instant
@@ -597,7 +605,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_SearchServerDoesntSupportInstant) {
 
   // When the response comes back that the page doesn't support instant the tab
   // should be closed.
-  ui_test_utils::WaitForNotification(content::NOTIFICATION_TAB_CLOSED);
+  tab_closed_observer.Wait();
   EXPECT_FALSE(browser()->instant()->IsShowingInstant());
   EXPECT_FALSE(browser()->instant()->is_displayable());
   EXPECT_TRUE(browser()->instant()->is_active());
@@ -644,6 +652,10 @@ IN_PROC_BROWSER_TEST_F(InstantTest,
   ASSERT_TRUE(rwhv);
   ASSERT_TRUE(rwhv->IsShowing());
 
+  ui_test_utils::WindowedNotificationObserver tab_closed_observer(
+      content::NOTIFICATION_TAB_CLOSED,
+      NotificationService::AllSources());
+
   // Now type in some search text.
   location_bar_->location_entry()->SetUserText(ASCIIToUTF16("d"));
 
@@ -658,7 +670,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest,
 
   // When the response comes back that the page doesn't support instant the tab
   // should be closed.
-  ui_test_utils::WaitForNotification(content::NOTIFICATION_TAB_CLOSED);
+  tab_closed_observer.Wait();
   EXPECT_FALSE(browser()->instant()->IsShowingInstant());
   EXPECT_FALSE(browser()->instant()->is_displayable());
   // But because the omnibox is still open, instant should be active.
@@ -707,6 +719,11 @@ IN_PROC_BROWSER_TEST_F(InstantTest, HideOn403) {
   EnableInstant();
   GURL url(test_server()->GetURL("files/instant/403.html"));
   ASSERT_NO_FATAL_FAILURE(FindLocationBar());
+
+  ui_test_utils::WindowedNotificationObserver tab_closed_observer(
+      content::NOTIFICATION_TAB_CLOSED,
+      NotificationService::AllSources());
+
   location_bar_->location_entry()->SetUserText(UTF8ToUTF16(url.spec()));
   // The preview shouldn't be showing, but it should be loading.
   ASSERT_TRUE(browser()->instant()->GetPreviewContents());
@@ -714,7 +731,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, HideOn403) {
   ASSERT_FALSE(browser()->instant()->is_displayable());
 
   // When instant sees the 403, it should close the tab.
-  ui_test_utils::WaitForNotification(content::NOTIFICATION_TAB_CLOSED);
+  tab_closed_observer.Wait();
   ASSERT_FALSE(browser()->instant()->GetPreviewContents());
   ASSERT_TRUE(browser()->instant()->is_active());
   ASSERT_FALSE(browser()->instant()->is_displayable());
@@ -853,12 +870,16 @@ IN_PROC_BROWSER_TEST_F(InstantTest, DontCrashOnBlockedJS) {
   browser()->profile()->GetHostContentSettingsMap()->SetDefaultContentSetting(
       CONTENT_SETTINGS_TYPE_JAVASCRIPT, CONTENT_SETTING_BLOCK);
   ASSERT_TRUE(test_server()->Start());
+
+  ui_test_utils::WindowedNotificationObserver instant_support_observer(
+      chrome::NOTIFICATION_INSTANT_SUPPORT_DETERMINED,
+      NotificationService::AllSources());
+
   EnableInstant();
   ASSERT_NO_FATAL_FAILURE(SetupInstantProvider("search.html"));
   ASSERT_NO_FATAL_FAILURE(SetupLocationBar());
   // Wait for notification that the instant API has been determined.
-  ui_test_utils::WaitForNotification(
-      chrome::NOTIFICATION_INSTANT_SUPPORT_DETERMINED);
+  instant_support_observer.Wait();
   // As long as we get the notification we're good (the renderer didn't crash).
 }
 
@@ -879,11 +900,14 @@ IN_PROC_BROWSER_TEST_F(InstantTest, DownloadOnEnter) {
   printf("0\n");
   ASSERT_NO_FATAL_FAILURE(WaitForPreviewToNavigate(true));
   url = test_server()->GetURL("files/instant/download.zip");
+
+  ui_test_utils::WindowedNotificationObserver load_fail_observer(
+      content::NOTIFICATION_FAIL_PROVISIONAL_LOAD_WITH_ERROR,
+      NotificationService::AllSources());
   location_bar_->location_entry()->SetUserText(UTF8ToUTF16(url.spec()));
   // Wait for the load to fail (because instant disables downloads).
   printf("1\n");
-  ui_test_utils::WaitForNotification(
-      content::NOTIFICATION_FAIL_PROVISIONAL_LOAD_WITH_ERROR);
+  load_fail_observer.Wait();
 
   printf("2\n");
   ui_test_utils::WindowedNotificationObserver download_observer(
