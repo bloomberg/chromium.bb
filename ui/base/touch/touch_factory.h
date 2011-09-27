@@ -7,6 +7,7 @@
 #pragma once
 
 #include <bitset>
+#include <map>
 #include <vector>
 
 #include "base/memory/singleton.h"
@@ -76,6 +77,10 @@ class UI_EXPORT TouchFactory {
 
   // Is the device a touch-device?
   bool IsTouchDevice(unsigned int deviceid) const;
+
+  // Is the device a real touch-device? (see doc. for |touch_device_list_| below
+  // for more explanation.)
+  bool IsRealTouchDevice(unsigned int deviceid) const;
 
 #if !defined(USE_XI2_MT)
   // Is the slot ID currently used?
@@ -175,8 +180,11 @@ class UI_EXPORT TouchFactory {
   // A quick lookup table for determining if a device is a touch device.
   std::bitset<kMaxDeviceNum> touch_device_lookup_;
 
-  // The list of touch devices.
-  std::vector<int> touch_device_list_;
+  // The list of touch devices. For testing/debugging purposes, a mouse-device
+  // can sometimes be treated as a touch device. The key in the map represents
+  // the device id, and the value represents if the device is a real touch
+  // device (when true) or if the device is really a mouse device.
+  std::map<int, bool> touch_device_list_;
 
   // Index table to find the valuator for the TouchParam on the specific device
   // by valuator_lookup_[device_id][touch_params]. Use 2-D array to get fast

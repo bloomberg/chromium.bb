@@ -67,8 +67,9 @@ int GetButtonMaskForX2Event(XIDeviceEvent* xievent) {
 }
 
 ui::EventType GetTouchEventType(const ui::NativeEvent& native_event) {
+  XIDeviceEvent* event =
+      static_cast<XIDeviceEvent*>(native_event->xcookie.data);
 #if defined(USE_XI2_MT)
-  XIEvent* event = static_cast<XIEvent*>(native_event->xcookie.data);
   switch(event->evtype) {
     case XI_TouchBegin:
       return ui::ET_TOUCH_PRESSED;
@@ -80,14 +81,28 @@ ui::EventType GetTouchEventType(const ui::NativeEvent& native_event) {
 
   return ui::ET_UNKNOWN;
 #else
-  XGenericEventCookie* cookie = &native_event->xcookie;
-  DCHECK_EQ(cookie->evtype, XI_Motion);
+  ui::TouchFactory* factory = ui::TouchFactory::GetInstance();
+
+  // Check to see if we are treating a mouse-event as a touch-device.
+  if (!factory->IsRealTouchDevice(event->sourceid)) {
+    switch (event->evtype) {
+      case XI_ButtonPress:
+        return ui::ET_TOUCH_PRESSED;
+      case XI_ButtonRelease:
+        return ui::ET_TOUCH_RELEASED;
+      case XI_Motion:
+        return ui::ET_TOUCH_MOVED;
+      default:
+        NOTREACHED();
+    }
+  }
+
+  DCHECK_EQ(event->evtype, XI_Motion);
 
   // Note: We will not generate a _STATIONARY event here. It will be created,
   // when necessary, by a RWHVV.
   // TODO(sad): When should _CANCELLED be generated?
 
-  ui::TouchFactory* factory = ui::TouchFactory::GetInstance();
   float slot;
   if (!factory->ExtractTouchParam(*native_event, ui::TouchFactory::TP_SLOT_ID,
                                   &slot))

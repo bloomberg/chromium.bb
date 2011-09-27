@@ -28,7 +28,10 @@ int GetTouchIDFromXEvent(XEvent* xev) {
 #else
   ui::TouchFactory::TouchParam tp = ui::TouchFactory::TP_SLOT_ID;
 #endif
-  if (!ui::TouchFactory::GetInstance()->ExtractTouchParam(*xev, tp, &id))
+  ui::TouchFactory* factory = ui::TouchFactory::GetInstance();
+  XIDeviceEvent* xievent = static_cast<XIDeviceEvent*>(xev->xcookie.data);
+  if (factory->IsRealTouchDevice(xievent->sourceid) &&
+      !factory->ExtractTouchParam(*xev, tp, &id))
     LOG(ERROR) << "Could not get the touch ID for the event. Using 0.";
   return id;
 }

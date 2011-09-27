@@ -4,11 +4,6 @@
 
 #include "ui/base/touch/touch_factory.h"
 
-#if defined(TOOLKIT_USES_GTK)
-// TODO(sad) Remove all TOOLKIT_USES_GTK uses once we move to aura only.
-#include <gtk/gtk.h>
-#include <gdk/gdkx.h>
-#endif
 #include <X11/cursorfont.h>
 #include <X11/extensions/XInput.h>
 #include <X11/extensions/XInput2.h>
@@ -19,6 +14,12 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "ui/base/x/x11_util.h"
+
+#if defined(TOOLKIT_USES_GTK)
+// TODO(sad) Remove all TOOLKIT_USES_GTK uses once we move to aura only.
+#include <gtk/gtk.h>
+#include <gdk/gdkx.h>
+#endif
 
 namespace {
 
@@ -211,7 +212,7 @@ void TouchFactory::UpdateDeviceList(Display* display) {
       const char* devtype = XGetAtomName(display, devlist[i].type);
       if (devtype && !strcmp(devtype, XI_TOUCHSCREEN)) {
         touch_device_lookup_[devlist[i].id] = true;
-        touch_device_list_.push_back(devlist[i].id);
+        touch_device_list_[devlist[i].id] = true;
       }
     }
   }
@@ -244,7 +245,7 @@ void TouchFactory::UpdateDeviceList(Display* display) {
         // Only care direct touch device (such as touch screen) right now
         if (tci->mode == XIDirectTouch) {
           touch_device_lookup_[devinfo->deviceid] = true;
-          touch_device_list_.push_back(devinfo->deviceid);
+          touch_device_list_[devinfo->deviceid] = true;
         }
       }
     }
@@ -316,7 +317,7 @@ void TouchFactory::SetTouchDeviceList(
        iter != devices.end(); ++iter) {
     DCHECK(*iter < touch_device_lookup_.size());
     touch_device_lookup_[*iter] = true;
-    touch_device_list_.push_back(*iter);
+    touch_device_list_[*iter] = false;
   }
 
   SetupValuator();
@@ -325,6 +326,13 @@ void TouchFactory::SetTouchDeviceList(
 bool TouchFactory::IsTouchDevice(unsigned deviceid) const {
   return deviceid < touch_device_lookup_.size() ?
       touch_device_lookup_[deviceid] : false;
+}
+
+bool TouchFactory::IsRealTouchDevice(unsigned int deviceid) const {
+  return (deviceid < touch_device_lookup_.size() &&
+          touch_device_lookup_[deviceid]) ?
+          touch_device_list_.find(deviceid)->second :
+          false;
 }
 
 #if !defined(USE_XI2_MT)
@@ -362,12 +370,12 @@ bool TouchFactory::GrabTouchDevices(Display* display, ::Window window) {
   XIEventMask evmask;
   evmask.mask_len = sizeof(mask);
   evmask.mask = mask;
-  for (std::vector<int>::const_iterator iter =
+  for (std::map<int, bool>::const_iterator iter =
        touch_device_list_.begin();
        iter != touch_device_list_.end(); ++iter) {
-    evmask.deviceid = *iter;
-    Status status = XIGrabDevice(display, *iter, window, CurrentTime, None,
-                                 GrabModeAsync, GrabModeAsync, False, &evmask);
+    evmask.deviceid = iter->first;
+    Status status = XIGrabDevice(display, iter->first, window, CurrentTime,
+        None, GrabModeAsync, GrabModeAsync, False, &evmask);
     success = success && status == GrabSuccess;
   }
 
@@ -381,10 +389,10 @@ bool TouchFactory::UngrabTouchDevices(Display* display) {
 #endif
 
   bool success = true;
-  for (std::vector<int>::const_iterator iter =
+  for (std::map<int, bool>::const_iterator iter =
        touch_device_list_.begin();
        iter != touch_device_list_.end(); ++iter) {
-    Status status = XIUngrabDevice(display, *iter, CurrentTime);
+    Status status = XIUngrabDevice(display, iter->first, CurrentTime);
     success = success && status == GrabSuccess;
   }
   return success;

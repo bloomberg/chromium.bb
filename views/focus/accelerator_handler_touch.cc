@@ -79,16 +79,18 @@ bool DispatchX2Event(Widget* widget, XEvent* xev) {
         return widget->OnMouseEvent(wheelev);
       }
 
+      ui::TouchFactory* factory = ui::TouchFactory::GetInstance();
       // Is the event coming from a touch device?
-      if (ui::TouchFactory::GetInstance()->IsTouchDevice(xievent->sourceid)) {
+      if (factory->IsTouchDevice(xievent->sourceid)) {
         // Hide the cursor when a touch event comes in.
-        ui::TouchFactory::GetInstance()->SetCursorVisible(false, false);
+        factory->SetCursorVisible(false, false);
 
         // With XInput 2.0, XI_ButtonPress and XI_ButtonRelease events are
         // ignored, as XI_Motion events contain enough data to detect finger
         // press and release. See more notes in TouchFactory::TouchParam.
-        if (cookie->evtype == XI_ButtonPress ||
-            cookie->evtype == XI_ButtonRelease)
+        if ((cookie->evtype == XI_ButtonPress ||
+             cookie->evtype == XI_ButtonRelease) &&
+            factory->IsRealTouchDevice(xievent->sourceid))
           return false;
 
         // If the TouchEvent is processed by |widget|, then return. Otherwise
@@ -111,7 +113,7 @@ bool DispatchX2Event(Widget* widget, XEvent* xev) {
                        (mouseev.IsOnlyLeftMouseButton() ||
                         mouseev.IsOnlyMiddleMouseButton() ||
                         mouseev.IsOnlyRightMouseButton());
-        ui::TouchFactory::GetInstance()->SetCursorVisible(true, start_timer);
+        factory->SetCursorVisible(true, start_timer);
 
         return widget->OnMouseEvent(mouseev);
       }
@@ -174,10 +176,6 @@ bool DispatchXEvent(XEvent* xev) {
   }
 
   return false;
-}
-
-void SetTouchDeviceList(std::vector<unsigned int>& devices) {
-  ui::TouchFactory::GetInstance()->SetTouchDeviceList(devices);
 }
 
 AcceleratorHandler::AcceleratorHandler() {}

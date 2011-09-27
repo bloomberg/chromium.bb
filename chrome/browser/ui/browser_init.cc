@@ -103,7 +103,7 @@
 #endif
 
 #if defined(TOUCH_UI)
-#include "views/focus/accelerator_handler.h"
+#include "ui/base/touch/touch_factory.h"
 #endif
 
 namespace {
@@ -1464,7 +1464,7 @@ bool BrowserInit::ProcessCmdLineImpl(const CommandLine& command_line,
         DLOG(WARNING) << "Invalid touch-device id: " << *iter;
       }
     }
-    views::SetTouchDeviceList(device_ids);
+    ui::TouchFactory::GetInstance()->SetTouchDeviceList(device_ids);
   }
 #endif
 

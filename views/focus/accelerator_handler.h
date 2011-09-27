@@ -26,9 +26,6 @@ namespace views {
 // and handled, false otherwise.
 bool VIEWS_EXPORT DispatchXEvent(XEvent* xevent);
 
-// Keep a list of touch devices so that it is possible to determine if a pointer
-// event is a touch-event or a mouse-event.
-void VIEWS_EXPORT SetTouchDeviceList(std::vector<unsigned int>& devices);
 #endif  // TOUCH_UI
 
 // This class delegates the key messages to the associated FocusManager class
