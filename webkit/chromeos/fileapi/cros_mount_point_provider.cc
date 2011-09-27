@@ -1,4 +1,4 @@
-  // Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -84,14 +84,15 @@ void CrosMountPointProvider::ValidateFileSystemRootAndGetURL(
     const GURL& origin_url,
     fileapi::FileSystemType type,
     bool create,
-    fileapi::FileSystemPathManager::GetRootPathCallback* callback_ptr) {
+    fileapi::FileSystemPathManager::GetRootPathCallback* callback) {
   DCHECK(type == fileapi::kFileSystemTypeExternal);
   std::string name(GetOriginIdentifierFromURL(origin_url));
   name += ':';
   name += fileapi::kExternalName;
   FilePath root_path;
   root_path = FilePath(fileapi::kExternalDir);
-  callback_ptr->Run(true, root_path, name);
+  callback->Run(true, root_path, name);
+  delete callback;
 }
 
 FilePath CrosMountPointProvider::ValidateFileSystemRootAndGetPathOnFileThread(

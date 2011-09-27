@@ -1628,10 +1628,10 @@
    fun:void DispatchToMethod
 }
 {
-   bug_
+   bug_97814
    Heapcheck:Leak
-   ...
-   fun:base::ScopedCallbackFactory::NewCallback
-   fun:fileapi::FileSystemPathManagerTest::GetRootPath
-   fun:fileapi::FileSystemPathManagerTest_*
+   fun:base::Value::CreateIntegerValue
+   fun:base::FundamentalValue::DeepCopy
+   fun:ExtensionContentSettingsStore::GetEffectiveContentSetting
+   fun:ExtensionContentSettingsStoreTest_*
 }
