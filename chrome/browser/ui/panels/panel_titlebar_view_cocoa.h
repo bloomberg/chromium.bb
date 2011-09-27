@@ -42,6 +42,7 @@ enum PanelDragState {
                            // when view is destroyed, as a subview.
   ScopedCrTrackingArea closeButtonTrackingArea_;
   PanelDragState dragState_;
+  BOOL isDrawingAttention_;
 }
 
   // Callback from Close button.
@@ -77,6 +78,11 @@ enum PanelDragState {
   // Update the visibility of settings button.
 - (void)updateSettingsButtonVisibility:(BOOL)mouseOverWindow;
 - (void)checkMouseAndUpdateSettingsButtonVisibility;
+
+// Draw Attention methods - change appearance of titlebar to attract user.
+- (void)drawAttention;
+- (void)stopDrawingAttention;
+- (BOOL)isDrawingAttention;
 @end  // @interface PanelTitlebarView
 
 // Methods which are either only for testing, or only public for testing.

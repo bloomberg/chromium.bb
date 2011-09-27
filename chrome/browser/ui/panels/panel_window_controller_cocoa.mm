@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/mac/mac_util.h"
 #include "base/sys_string_conversions.h"
+#include "base/time.h"
 #include "chrome/app/chrome_command_ids.h"  // IDC_*
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
@@ -39,6 +40,11 @@
 
 const int kMinimumWindowSize = 1;
 const double kBoundsChangeAnimationDuration = 0.25;
+
+// Delay before click on a titlebar is allowed to minimize the panel
+// after the 'draw attention' mode has been cleared.
+const base::TimeDelta kSuspendMinimizeOnClickIntervalMs =
+    base::TimeDelta::FromMilliseconds(500);
 
 // Replicate specific 10.6 SDK declarations for building with prior SDKs.
 #if !defined(MAC_OS_X_VERSION_10_6) || \
@@ -449,11 +455,17 @@ static BOOL g_reportAnimationStatus = NO;
   boundsAnimation_ = nil;
 }
 
-- (void)flipExpansionState {
+- (void)tryFlipExpansionState {
     Panel* panel = windowShim_->panel();
+    Panel::ExpansionState oldExpansionState = panel->expansion_state();
+    if (oldExpansionState == Panel::EXPANDED &&
+        base::Time::Now() < disableMinimizeUntilTime_) {
+      return;
+    }
+
     Panel::ExpansionState newExpansionState =
-      (panel->expansion_state() != Panel::EXPANDED) ? Panel::EXPANDED
-                                                    : Panel::MINIMIZED;
+        (oldExpansionState != Panel::EXPANDED) ? Panel::EXPANDED
+                                               : Panel::MINIMIZED;
     panel->SetExpansionState(newExpansionState);
 }
 
@@ -474,6 +486,22 @@ static BOOL g_reportAnimationStatus = NO;
     if (RenderWidgetHostView* rwhv = contents->GetRenderWidgetHostView())
       rwhv->SetActive(true);
   }
+
+  // If the window becomes key, lets make sure it is expanded and stop
+  // drawing attention - since it is ready to accept input, it already has
+  // user's attention.
+  windowShim_->panel()->SetExpansionState(Panel::EXPANDED);
+  [[self titlebarView] stopDrawingAttention];
+
+  // Disable ExpansionState changes on mouse click for a short duration.
+  // This is needed in case the window became key as result of mouseDown while
+  // being already expanded and drawing attention - in this case, we don't want
+  // to minimize it on subsequent mouseUp.
+  // We use time interval because the window may become key in various ways
+  // (via keyboard for example) which are not distinguishable at this point.
+  // Apparently this disable interval is not affecting the user in other cases.
+  disableMinimizeUntilTime_ =
+    base::Time::Now() + kSuspendMinimizeOnClickIntervalMs;
 }
 
 - (void)windowDidResignKey:(NSNotification*)notification {

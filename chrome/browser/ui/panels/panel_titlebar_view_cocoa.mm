@@ -85,12 +85,18 @@ static NSEvent* MakeMouseEvent(NSEventType type,
       static_cast<ThemeService*>([[self window] themeProvider]);
 
   NSColor* backgroundColor = nil;
-  // When using the default theme, we fall back to the default system colors
-  // instead of trying to use the tab coloring, since using the tab coloring
-  // results in focused panel titlebars that are light and unfocused panel
-  // titlebars that are dark, which is the opposite of all other window
-  // titlebars on Mac.
-  if (theme && !theme->UsingDefaultTheme()) {
+  if (isDrawingAttention_) {
+    // The color 0xfffa983a is provided by designers. It's basically orange-ish.
+    backgroundColor = [NSColor colorWithCalibratedRed:0xfa/255.0
+                                                green:0x98/255.0
+                                                 blue:0x3a/255.0
+                                                alpha:1.0];
+  } else if (theme && !theme->UsingDefaultTheme()) {
+      // When using the default theme, we fall back to the default system colors
+      // instead of trying to use the tab coloring, since using the tab coloring
+      // results in focused panel titlebars that are light and unfocused panel
+      // titlebars that are dark, which is the opposite of all other window
+      // titlebars on Mac.
       if ([[self window] isMainWindow]) {
         backgroundColor = theme->GetNSImageColorNamed(IDR_THEME_TOOLBAR, true);
       } else {
@@ -138,12 +144,15 @@ static NSEvent* MakeMouseEvent(NSEventType type,
 
   // Update the panel title text color as appropriate.
   NSColor* titleColor = nil;
-  if (theme)
+  if (isDrawingAttention_) {
+    titleColor = [NSColor whiteColor];
+  } else if (theme) {
     titleColor = [[self window] isMainWindow]
         ? theme->GetNSColor(ThemeService::COLOR_TAB_TEXT, true)
         : theme->GetNSColor(ThemeService::COLOR_BACKGROUND_TAB_TEXT, true);
-  else
+  } else {
     titleColor = [NSColor textColor];
+  }
   [title_ setTextColor:titleColor];
 }
 
@@ -308,7 +317,7 @@ static NSEvent* MakeMouseEvent(NSEventType type,
   DCHECK(dragState_ != PANEL_DRAG_IN_PROGRESS);
 
   if ([event clickCount] == 1)
-    [controller_ flipExpansionState];
+    [controller_ tryFlipExpansionState];
 }
 
 - (void)mouseDragged:(NSEvent*)event {
@@ -377,6 +386,25 @@ static NSEvent* MakeMouseEvent(NSEventType type,
     return;
   [controller_ dragWithDeltaX:deltaX];
 }
+
+- (void)drawAttention {
+  if (isDrawingAttention_)
+    return;
+  isDrawingAttention_ = YES;
+  [self setNeedsDisplay:YES];
+}
+
+- (void)stopDrawingAttention {
+  if (!isDrawingAttention_)
+    return;
+  isDrawingAttention_ = NO;
+  [self setNeedsDisplay:YES];
+}
+
+- (BOOL)isDrawingAttention {
+  return isDrawingAttention_;
+}
+
 
 // (Private/TestingAPI)
 - (PanelWindowControllerCocoa*)controller {

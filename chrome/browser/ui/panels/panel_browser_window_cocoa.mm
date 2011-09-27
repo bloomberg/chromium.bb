@@ -212,13 +212,26 @@ void PanelBrowserWindowCocoa::PanelTabContentsFocused(
   // TODO(jianli): to be implemented.
 }
 
+// TODO(dimich) the code here looks very platform-independent. Move it to Panel.
 void PanelBrowserWindowCocoa::DrawAttention() {
-  NOTIMPLEMENTED();
+  // Don't draw attention for active panel.
+  if ([[controller_ window] isMainWindow])
+    return;
+
+  if (IsDrawingAttention())
+    return;
+
+  // Bring up the titlebar if minimized so the user can see it.
+  if (panel_->expansion_state() == Panel::MINIMIZED)
+    panel_->SetExpansionState(Panel::TITLE_ONLY);
+
+  PanelTitlebarViewCocoa* titlebar = [controller_ titlebarView];
+  [titlebar drawAttention];
 }
 
 bool PanelBrowserWindowCocoa::IsDrawingAttention() const {
-  NOTIMPLEMENTED();
-  return false;
+  PanelTitlebarViewCocoa* titlebar = [controller_ titlebarView];
+  return [titlebar isDrawingAttention];
 }
 
 bool PanelBrowserWindowCocoa::PreHandlePanelKeyboardEvent(

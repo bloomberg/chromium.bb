@@ -14,7 +14,7 @@
 #import "base/mac/cocoa_protocols.h"
 #include "base/memory/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
-#import "base/memory/scoped_nsobject.h"
+#include "base/time.h"
 #import "chrome/browser/ui/cocoa/browser_command_executor.h"
 #import "chrome/browser/ui/cocoa/themed_browser_window.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
@@ -47,6 +47,7 @@ class PanelBrowserWindowCocoa;
   BOOL animateOnBoundsChange_;
   ScopedCrTrackingArea windowTrackingArea_;
   BOOL throbberShouldSpin_;
+  base::Time disableMinimizeUntilTime_;
 }
 
 // Load the browser window nib and do any Cocoa-specific initialization.
@@ -99,8 +100,9 @@ class PanelBrowserWindowCocoa;
 // "Draw Attention" state.
 - (int)titlebarHeightInScreenCoordinates;
 
-// Invoked when user clicks on the titlebar. Flips Minimized/Restored states.
-- (void)flipExpansionState;
+// Invoked when user clicks on the titlebar. Attempts to flip the
+// Minimized/Restored states.
+- (void)tryFlipExpansionState;
 
 // Executes the command in the context of the current browser.
 // |command| is an integer value containing one of the constants defined in the
