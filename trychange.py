@@ -100,7 +100,12 @@ class SCM(object):
     items.append(None)
     self.diff_against = items[1]
     self.options = options
-    self.files = self.options.files
+    # Lazy-load file list from the SCM unless files were specified in options.
+    self._files = None
+    self._file_tuples = None
+    if self.options.files:
+      self._files = self.options.files
+      self._file_tuples = [('M', f) for f in self.files]
     self.options.files = None
     self.codereview_settings = None
     self.codereview_settings_file = 'codereview.settings'
@@ -187,6 +192,38 @@ class SCM(object):
     logging.warning('Didn\'t find %s' % filename)
     return None
 
+  def _SetFileTuples(self, file_tuples):
+    excluded = ['!', '?', 'X', ' ', '~']
+    def Excluded(f):
+      if f[0][0] in excluded:
+        return True
+      for r in self.options.exclude:
+        if re.search(r, f[1]):
+          logging.info('Ignoring "%s"' % f[1])
+          return True
+      return False
+
+    self._file_tuples = [f for f in file_tuples if not Excluded(f)]
+    self._files = [f[1] for f in self._file_tuples]
+
+  def CaptureStatus(self):
+    """Returns the 'svn status' emulated output as an array of (status, file)
+       tuples."""
+    raise NotImplementedError(
+        "abstract method -- subclass %s must override" % self.__class__)
+
+  @property
+  def files(self):
+    if self._files is None:
+      self._SetFileTuples(self.CaptureStatus())
+    return self._files
+
+  @property
+  def file_tuples(self):
+    if self._file_tuples is None:
+      self._SetFileTuples(self.CaptureStatus())
+    return self._file_tuples
+
 
 class SVN(SCM):
   """Gathers the options and diff for a subversion checkout."""
@@ -210,29 +247,19 @@ class SVN(SCM):
     logging.debug('%s:\n%s' % (filename, data))
     return data
 
+  def CaptureStatus(self):
+    previous_cwd = os.getcwd()
+    os.chdir(self.checkout_root)
+    result = scm.SVN.CaptureStatus(self.checkout_root)
+    os.chdir(previous_cwd)
+    return result
+
   def GenerateDiff(self):
     """Returns a string containing the diff for the given file list.
 
     The files in the list should either be absolute paths or relative to the
     given root.
     """
-    if not self.files:
-      previous_cwd = os.getcwd()
-      os.chdir(self.checkout_root)
-
-      excluded = ['!', '?', 'X', ' ', '~']
-      def Excluded(f):
-        if f[0][0] in excluded:
-          return True
-        for r in self.options.exclude:
-          if re.search(r, f[1]):
-            logging.info('Ignoring "%s"' % f[1])
-            return True
-        return False
-
-      self.files = [f[1] for f in scm.SVN.CaptureStatus(self.checkout_root)
-                    if not Excluded(f)]
-      os.chdir(previous_cwd)
     return scm.SVN.GenerateDiff(self.files, self.checkout_root, full_move=True,
                                 revision=self.diff_against)
 
@@ -255,19 +282,10 @@ class GIT(SCM):
             "(via the --track argument to \"git checkout -b ...\"")
     logging.info("GIT(%s)" % self.checkout_root)
 
+  def CaptureStatus(self):
+    return scm.GIT.CaptureStatus(self.checkout_root, self.diff_against)
+
   def GenerateDiff(self):
-    if not self.files:
-      self.files = scm.GIT.GetDifferentFiles(self.checkout_root,
-                                             branch=self.diff_against)
-
-    def NotExcluded(f):
-      for r in self.options.exclude:
-        if re.search(r, f):
-          logging.info('Ignoring "%s"' % f)
-          return False
-      return True
-
-    self.files = filter(NotExcluded, self.files)
     return scm.GIT.GenerateDiff(self.checkout_root, files=self.files,
                                 full_move=True,
                                 branch=self.diff_against)
@@ -456,14 +474,17 @@ def GuessVCS(options, path):
 
 def GetMungedDiff(path_diff, diff):
   # Munge paths to match svn.
+  changed_files = []
   for i in range(len(diff)):
     if diff[i].startswith('--- ') or diff[i].startswith('+++ '):
       new_file = posixpath.join(path_diff, diff[i][4:]).replace('\\', '/')
+      changed_files.append(('M', new_file.split('\t')[0]))
       diff[i] = diff[i][0:4] + new_file
-  return diff
+  return (diff, changed_files)
 
 
 def TryChange(argv,
+              change,
               file_list,
               swallow_exception,
               prog=None,
@@ -646,6 +667,7 @@ def TryChange(argv,
       options.rietveld_url = match.group(1)
 
   try:
+    changed_files = None
     # Always include os.getcwd() in the checkout settings.
     checkouts = []
     path = os.getcwd()
@@ -689,7 +711,8 @@ def TryChange(argv,
       diff_url = ('%s/download/issue%d_%d.diff' %
           (options.rietveld_url,  options.issue, options.patchset))
       diff = GetMungedDiff('', urllib.urlopen(diff_url).readlines())
-      options.diff = ''.join(diff)
+      options.diff = ''.join(diff[0])
+      changed_files = diff[1]
     else:
       # Use this as the base.
       root = checkouts[0].checkout_root
@@ -698,8 +721,20 @@ def TryChange(argv,
         diff = checkout.GenerateDiff().splitlines(True)
         path_diff = gclient_utils.PathDifference(root, checkout.checkout_root)
         # Munge it.
-        diffs.extend(GetMungedDiff(path_diff, diff))
+        diffs.extend(GetMungedDiff(path_diff, diff)[0])
       options.diff = ''.join(diffs)
+
+    if not options.name:
+      if options.issue:
+        options.name = 'Issue %s' % options.issue
+      else:
+        options.name = 'Unnamed'
+        print('Note: use --name NAME to change the try job name.')
+
+    if not options.email:
+      parser.error('Using an anonymous checkout. Please use --email or set '
+                   'the TRYBOT_RESULTS_EMAIL_ADDRESS environment variable.')
+    print('Results will be emailed to: ' + options.email)
 
     if not options.bot:
       # Get try slaves from PRESUBMIT.py files if not specified.
@@ -708,7 +743,18 @@ def TryChange(argv,
       try:
         import presubmit_support
         root_presubmit = checkouts[0].ReadRootFile('PRESUBMIT.py')
+        if not change:
+          if not changed_files:
+            changed_files = checkouts[0].file_tuples
+          change = presubmit_support.Change(options.name,
+                                            '',
+                                            checkouts[0].checkout_root,
+                                            changed_files,
+                                            options.issue,
+                                            options.patchset,
+                                            options.email)
         options.bot = presubmit_support.DoGetTrySlaves(
+            change,
             checkouts[0].GetFileNames(),
             checkouts[0].checkout_root,
             root_presubmit,
@@ -719,18 +765,6 @@ def TryChange(argv,
         pass
       # If no bot is specified, either the default pool will be selected or the
       # try server will refuse the job. Either case we don't need to interfere.
-
-    if options.name is None:
-      if options.issue:
-        options.name = 'Issue %s' % options.issue
-      else:
-        options.name = 'Unnamed'
-        print('Note: use --name NAME to change the try job name.')
-    if not options.email:
-      parser.error('Using an anonymous checkout. Please use --email or set '
-                   'the TRYBOT_RESULTS_EMAIL_ADDRESS environment variable.')
-    else:
-      print('Results will be emailed to: ' + options.email)
 
     # Prevent rietveld updates if we aren't running all the tests.
     if options.testfilter is not None:
@@ -767,4 +801,4 @@ def TryChange(argv,
 
 if __name__ == "__main__":
   fix_encoding.fix_encoding()
-  sys.exit(TryChange(None, [], False))
+  sys.exit(TryChange(None, None, [], False))

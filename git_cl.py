@@ -488,8 +488,7 @@ or verify this branch is set up to track another (via the --track argument to
       self.SetPatchset(0)
     self.has_issue = False
 
-  def RunHook(self, committing, upstream_branch, may_prompt, verbose, author):
-    """Calls sys.exit() if the hook fails; returns a HookResults otherwise."""
+  def GetChange(self, upstream_branch, author):
     root = RunCommand(['git', 'rev-parse', '--show-cdup']).strip() or '.'
     absroot = os.path.abspath(root)
 
@@ -511,7 +510,7 @@ or verify this branch is set up to track another (via the --track argument to
 
     if not author:
       author = RunGit(['config', 'user.email']).strip() or None
-    change = presubmit_support.GitChange(
+    return presubmit_support.GitChange(
         name,
         description,
         absroot,
@@ -519,6 +518,10 @@ or verify this branch is set up to track another (via the --track argument to
         issue,
         patchset,
         author)
+
+  def RunHook(self, committing, upstream_branch, may_prompt, verbose, author):
+    """Calls sys.exit() if the hook fails; returns a HookResults otherwise."""
+    change = self.GetChange(upstream_branch, author)
 
     # Apply watchlists on upload.
     if not committing:
