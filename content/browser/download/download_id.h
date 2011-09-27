@@ -9,6 +9,7 @@
 #include <iosfwd>
 
 #include "base/hash_tables.h"
+#include "content/common/content_export.h"
 
 class DownloadManager;
 
@@ -63,14 +64,15 @@ class DownloadId {
 
   int32 local_id_;
 
-  friend std::ostream& operator<<(std::ostream& out,
-                                  const DownloadId& global_id);
+  friend CONTENT_EXPORT std::ostream& operator<<(std::ostream& out,
+                                                 const DownloadId& global_id);
 
   // Allow copy and assign.
 };
 
 // Allow logging DownloadIds. Looks like "0x01234567:42".
-std::ostream& operator<<(std::ostream& out, const DownloadId& global_id);
+CONTENT_EXPORT std::ostream& operator<<(std::ostream& out,
+                                        const DownloadId& global_id);
 
 // Allow using DownloadIds as keys in hash_maps.
 namespace BASE_HASH_NAMESPACE {

@@ -345,7 +345,7 @@ class RenderWidgetHostView {
 
  protected:
   // Interface class only, do not construct.
-  RenderWidgetHostView();
+  CONTENT_EXPORT RenderWidgetHostView();
 
   // Whether this view is a popup and what kind of popup it is (select,
   // autofill...).

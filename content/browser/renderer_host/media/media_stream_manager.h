@@ -28,6 +28,7 @@
 #include "content/browser/renderer_host/media/media_stream_provider.h"
 #include "content/browser/renderer_host/media/media_stream_settings_requester.h"
 #include "content/common/media/media_stream_options.h"
+#include "content/common/content_export.h"
 
 namespace media_stream {
 
@@ -44,7 +45,7 @@ class MediaStreamManager
     : public MediaStreamProviderListener,
       public SettingsRequester {
  public:
-  MediaStreamManager();
+  CONTENT_EXPORT MediaStreamManager();
   virtual ~MediaStreamManager();
 
   // Used to access VideoCaptureManager.
