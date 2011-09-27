@@ -81,18 +81,22 @@ void Shell::LoadURL(const GURL& url) {
       GURL(),
       PageTransition::TYPED,
       std::string());
+  tab_contents_->Focus();
 }
 
 void Shell::GoBackOrForward(int offset) {
   tab_contents_->controller().GoToOffset(offset);
+  tab_contents_->Focus();
 }
 
 void Shell::Reload() {
   tab_contents_->controller().Reload(false);
+  tab_contents_->Focus();
 }
 
 void Shell::Stop() {
   tab_contents_->Stop();
+  tab_contents_->Focus();
 }
 
 void Shell::UpdateNavigationControls() {
