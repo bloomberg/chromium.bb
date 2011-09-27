@@ -524,6 +524,8 @@ cr.define('login', function() {
      * @public
      */
     handleKeyDown: function(e) {
+      if (!this.rowEnabled)
+        return;
       var editing = false;
       if (e.target.tagName == 'INPUT' && e.target.value)
         editing = true;
