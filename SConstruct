@@ -342,13 +342,16 @@ def SetUpArgumentBits(env):
   #########################################################################
   # EXPERIMENTAL
   # this code is NOT active in the main NaCl yet!
-  # this is only for testing within an artificial CrOS
-  # CrOS hook for ARM/thumb2
+  # this is only for testing within an artificial CrOS hook for ARM/thumb2
+  # BUG=http://code.google.com/p/chromium/issues/detail?id=61695
+  # BUG=http://code.google.com/p/chromium/issues/detail?id=38909
+  # BUG=http://code.google.com/p/nativeclient/issues/detail?id=135
+  #
   BitFromArgument(env, 'CrOS', default=False,
                   desc='EXPERIMENTAL: Set to 1 if compiling within ChromeOS chroot')
   if env.Bit('CrOS'):
-    env['ENV']['SYSROOT'] = \
-        os.environ.get('SYSROOT', '/build/arm-generic')
+    env['ENV']['SYSROOT'] = os.environ.get('SYSROOT',
+                                           '/build/arm-generic')
     print "pre_base_env['ENV']['SYSROOT']=", \
         env['ENV']['SYSROOT']
   #########################################################################
@@ -2599,12 +2602,15 @@ def MakeLinuxEnv():
       # TODO(mseaborn): It would be clearer just to inline
       # setup_arm_trusted_toolchain.py here.
       sys.path.append('tools/llvm')
-      ################################################
-      # EXPERIMENTAL (please ignore)
+      ###############################################################
+      # EXPERIMENTAL
       # this code is NOT active in the main NaCl yet!
+      # This is needed to switch to a different trusted cross
+      # toolchain when compiling within the CrOS chroot
+      #
       if linux_env.Bit('CrOS'):
         from setup_arm_cros_toolchain import arm_env
-      ###############################################
+      ##############################################################
       else:
         from setup_arm_trusted_toolchain import arm_env
       sys.path.pop()
