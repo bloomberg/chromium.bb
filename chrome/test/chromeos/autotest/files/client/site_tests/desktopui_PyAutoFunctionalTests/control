@@ -5,7 +5,7 @@
 AUTHOR = "Chrome OS Team"
 NAME = "desktopui_PyAutoFunctionalTests"
 PURPOSE = "PyAuto based chrome functional tests."
-CRITERIA = "This test will fail if running Chrome returns a command error."
+CRITERIA = "This test will fail if any of the pyauto functional tests fail."
 TIME = "LONG"
 TEST_CATEGORY = "Functional"
 TEST_CLASS = "desktopui"
@@ -14,10 +14,42 @@ TEST_TYPE = "client"
 DOC = """
 This is a wrapper test for Chrome pyauto-based functional tests.
 http://dev.chromium.org/developers/testing/pyauto
+
+Sample usage:
+
+  # Auto-login and run the FULL suite, as chronos.
+  ./run_remote_tests.sh desktopui_PyAutoFunctionalTests -a suite=FULL
+
+  # Auto-login and run tests in 'test_basic' module, as chronos.
+  ./run_remote_tests.sh desktopui_PyAutoFunctionalTests -a tests=test_basic
+
+  # Do not auto-login and run the CHROMEOS_LOGIN suite.
+  # (tests are expected to perform login themselves if needed)
+  ./run_remote_tests.sh desktopui_PyAutoFunctionalTests \
+      -a auto_login=False,as_chronos=False,suite=CHROMEOS_LOGIN
 """
 
-if args:
-    job.run_test('desktopui_PyAutoFunctionalTests', suite=args[0])
-else:
-    job.run_test('desktopui_PyAutoFunctionalTests')
+suite = None
+tests = None
+as_chronos = True
+auto_login = True
 
+# Parse comma-separated args.
+for arg in args:
+    for item in arg.split(','):
+        key, val = item.split('=')
+        if key == 'suite':
+            suite = val
+        elif key == 'tests':
+            tests = val
+        elif key == 'as_chronos':
+            if val in ('0', 'False', 'false'):
+                as_chronos = False
+        elif key == 'auto_login':
+            if val in ('0', 'False', 'false'):
+                auto_login = False
+
+
+job.run_test('desktopui_PyAutoFunctionalTests',
+             suite=suite, tests=tests,
+             as_chronos=as_chronos, auto_login=auto_login)
