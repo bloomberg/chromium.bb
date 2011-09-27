@@ -377,9 +377,37 @@ TEST_F(TextureInfoTest, POT2D) {
   EXPECT_TRUE(info_->CanGenerateMipmaps(&feature_info_));
   // Make mips.
   EXPECT_TRUE(manager_.MarkMipmapsGenerated(&feature_info_, info_));
-  EXPECT_FALSE(info_->CanRender(&feature_info_));
-  EXPECT_FALSE(info_->texture_complete());
-  EXPECT_TRUE(manager_.HaveUnrenderableTextures());
+  EXPECT_TRUE(info_->CanRender(&feature_info_));
+  EXPECT_TRUE(info_->texture_complete());
+  EXPECT_FALSE(manager_.HaveUnrenderableTextures());
+}
+
+TEST_F(TextureInfoTest, UnusedMips) {
+  manager_.SetInfoTarget(info_, GL_TEXTURE_2D);
+  EXPECT_EQ(static_cast<GLenum>(GL_TEXTURE_2D), info_->target());
+  // Set level zero to large size.
+  manager_.SetLevelInfo(&feature_info_, info_,
+      GL_TEXTURE_2D, 0, GL_RGBA, 4, 4, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE);
+  EXPECT_TRUE(manager_.MarkMipmapsGenerated(&feature_info_, info_));
+  EXPECT_FALSE(info_->npot());
+  EXPECT_TRUE(info_->texture_complete());
+  EXPECT_TRUE(info_->CanRender(&feature_info_));
+  EXPECT_FALSE(manager_.HaveUnrenderableTextures());
+  // Set level zero to large smaller (levels unused mips)
+  manager_.SetLevelInfo(&feature_info_, info_,
+      GL_TEXTURE_2D, 0, GL_RGBA, 2, 2, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE);
+  EXPECT_TRUE(manager_.MarkMipmapsGenerated(&feature_info_, info_));
+  EXPECT_FALSE(info_->npot());
+  EXPECT_TRUE(info_->texture_complete());
+  EXPECT_TRUE(info_->CanRender(&feature_info_));
+  EXPECT_FALSE(manager_.HaveUnrenderableTextures());
+  // Set an unused level to some size
+  manager_.SetLevelInfo(&feature_info_, info_,
+      GL_TEXTURE_2D, 4, GL_RGBA, 16, 16, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE);
+  EXPECT_FALSE(info_->npot());
+  EXPECT_TRUE(info_->texture_complete());
+  EXPECT_TRUE(info_->CanRender(&feature_info_));
+  EXPECT_FALSE(manager_.HaveUnrenderableTextures());
 }
 
 TEST_F(TextureInfoTest, NPOT2D) {
@@ -522,7 +550,7 @@ TEST_F(TextureInfoTest, POTCubeMap) {
   EXPECT_TRUE(info_->CanGenerateMipmaps(&feature_info_));
   // Make mips.
   EXPECT_TRUE(manager_.MarkMipmapsGenerated(&feature_info_, info_));
-  EXPECT_FALSE(info_->texture_complete());
+  EXPECT_TRUE(info_->texture_complete());
   EXPECT_TRUE(info_->cube_complete());
 }
 
