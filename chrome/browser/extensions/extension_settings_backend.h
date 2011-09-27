@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_SETTINGS_H_
-#define CHROME_BROWSER_EXTENSIONS_EXTENSION_SETTINGS_H_
+#ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_SETTINGS_BACKEND_H_
+#define CHROME_BROWSER_EXTENSIONS_EXTENSION_SETTINGS_BACKEND_H_
 #pragma once
 
 #include "base/compiler_specific.h"
@@ -17,13 +17,13 @@
 // Manages ExtensionSettingsStorage objects for extensions, including routing
 // changes from sync to them.
 // Lives entirely on the FILE thread.
-class ExtensionSettings : public SyncableService {
+class ExtensionSettingsBackend : public SyncableService {
  public:
   // File path is the base of the extension settings directory.
   // The databases will be at base_path/extension_id.
-  explicit ExtensionSettings(const FilePath& base_path);
+  explicit ExtensionSettingsBackend(const FilePath& base_path);
 
-  virtual ~ExtensionSettings();
+  virtual ~ExtensionSettingsBackend();
 
   // Gets a weak reference to the storage area for a given extension.
   // Must be run on the FILE thread.
@@ -96,7 +96,7 @@ class ExtensionSettings : public SyncableService {
   // Current sync processor, if any.
   SyncChangeProcessor* sync_processor_;
 
-  DISALLOW_COPY_AND_ASSIGN(ExtensionSettings);
+  DISALLOW_COPY_AND_ASSIGN(ExtensionSettingsBackend);
 };
 
-#endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_SETTINGS_H_
+#endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_SETTINGS_BACKEND_H_

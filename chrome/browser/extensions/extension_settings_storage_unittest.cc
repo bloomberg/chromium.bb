@@ -7,7 +7,7 @@
 #include "base/json/json_writer.h"
 #include "base/file_util.h"
 #include "base/values.h"
-#include "chrome/browser/extensions/extension_settings.h"
+#include "chrome/browser/extensions/extension_settings_backend.h"
 
 // Gets the pretty-printed JSON for a value.
 static std::string GetJSON(const Value& value) {
@@ -80,15 +80,17 @@ ExtensionSettingsStorageTest::~ExtensionSettingsStorageTest() {}
 
 void ExtensionSettingsStorageTest::SetUp() {
   ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-  settings_.reset(new ExtensionSettings(temp_dir_.path()));
-  storage_ = (GetParam())(*settings_, "fakeExtension");
+  // TODO(kalman): Use ExtensionSettingsFrontend here?  It would test more code
+  // paths.
+  backend_.reset(new ExtensionSettingsBackend(temp_dir_.path()));
+  storage_ = (GetParam())(*backend_, "fakeExtension");
   ASSERT_TRUE(storage_ != NULL);
 }
 
 void ExtensionSettingsStorageTest::TearDown() {
   // Must do this explicitly here so that it's destroyed before the
   // message loops are.
-  settings_.reset();
+  backend_.reset();
 }
 
 TEST_P(ExtensionSettingsStorageTest, GetWhenEmpty) {

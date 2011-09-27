@@ -15,8 +15,9 @@
 #include "chrome/browser/sync/glue/model_associator.h"
 #include "chrome/browser/sync/unrecoverable_error_handler.h"
 
-class ExtensionSettings;
+class ExtensionSettingsBackend;
 class PasswordStore;
+class PersonalDataManager;
 class ProfileSyncService;
 class WebDatabase;
 
@@ -97,7 +98,7 @@ class ProfileSyncFactory {
   // extension setting data type.  The pointers in the return struct are
   // owned by the caller.
   virtual SyncComponents CreateExtensionSettingSyncComponents(
-      ExtensionSettings* extension_settings,
+      ExtensionSettingsBackend* extension_settings_backend_,
       ProfileSyncService* profile_sync_service,
       browser_sync::UnrecoverableErrorHandler* error_handler) = 0;
 

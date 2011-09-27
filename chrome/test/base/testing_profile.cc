@@ -19,7 +19,6 @@
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/extensions/extension_pref_value_map.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_settings.h"
 #include "chrome/browser/extensions/extension_special_storage_policy.h"
 #include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/geolocation/chrome_geolocation_permission_context.h"

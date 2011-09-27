@@ -13,12 +13,12 @@
 #include "base/message_loop.h"
 #include "base/scoped_temp_dir.h"
 #include "base/task.h"
-#include "chrome/browser/extensions/extension_settings.h"
+#include "chrome/browser/extensions/extension_settings_backend.h"
 #include "content/browser/browser_thread.h"
 
 // Parameter type for the value-parameterized tests.
 typedef ExtensionSettingsStorage* (*ExtensionSettingsStorageTestParam)(
-    const ExtensionSettings& settings, const std::string& extension_id);
+    const ExtensionSettingsBackend& backend, const std::string& extension_id);
 
 // Test fixture for ExtensionSettingsStorage tests.  Tests are defined in
 // extension_settings_storage_unittest.cc with configurations for both cached
@@ -57,7 +57,7 @@ class ExtensionSettingsStorageTest
 
  private:
   ScopedTempDir temp_dir_;
-  scoped_ptr<ExtensionSettings> settings_;
+  scoped_ptr<ExtensionSettingsBackend> backend_;
 
   // Need these so that the DCHECKs for running on FILE or UI threads pass.
   MessageLoop message_loop_;

@@ -8,7 +8,7 @@
 
 #include "base/compiler_specific.h"
 #include "chrome/browser/extensions/extension_function.h"
-#include "chrome/browser/extensions/extension_settings.h"
+#include "chrome/browser/extensions/extension_settings_backend.h"
 #include "chrome/browser/extensions/extension_settings_storage.h"
 
 // Superclass of all settings functions.
@@ -30,7 +30,7 @@ class SettingsFunction : public AsyncExtensionFunction {
  private:
   // Called via PostTask from RunImpl.  Calls RunWithStorage and then
   // SendReponse with its success value.
-  void RunWithSettingsOnFileThread(ExtensionSettings* settings);
+  void RunWithBackendOnFileThread(ExtensionSettingsBackend* backend);
 };
 
 class GetSettingsFunction : public SettingsFunction {

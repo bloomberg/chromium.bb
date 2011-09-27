@@ -11,7 +11,7 @@
 #include "chrome/browser/sync/profile_sync_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
-class ExtensionSettings;
+class ExtensionSettingsBackend;
 
 namespace browser_sync {
 class AssociatorInterface;
@@ -53,7 +53,7 @@ class ProfileSyncFactoryMock : public ProfileSyncFactory {
       SyncComponents(ProfileSyncService* profile_sync_service,
                      browser_sync::UnrecoverableErrorHandler* error_handler));
   MOCK_METHOD3(CreateExtensionSettingSyncComponents,
-      SyncComponents(ExtensionSettings* extension_settings,
+      SyncComponents(ExtensionSettingsBackend* extension_settings_backend,
                      ProfileSyncService* profile_sync_service,
                      browser_sync::UnrecoverableErrorHandler* error_handler));
   MOCK_METHOD3(CreatePasswordSyncComponents,

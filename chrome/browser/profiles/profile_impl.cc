@@ -35,7 +35,7 @@
 #include "chrome/browser/extensions/extension_pref_store.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_settings.h"
+#include "chrome/browser/extensions/extension_settings_backend.h"
 #include "chrome/browser/extensions/extension_special_storage_policy.h"
 #include "chrome/browser/extensions/user_script_master.h"
 #include "chrome/browser/favicon/favicon_service.h"

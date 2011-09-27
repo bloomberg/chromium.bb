@@ -4,7 +4,7 @@
 
 #include "base/command_line.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_settings.h"
+#include "chrome/browser/extensions/extension_settings_backend.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
@@ -254,16 +254,19 @@ ProfileSyncFactoryImpl::CreateBookmarkSyncComponents(
 
 ProfileSyncFactory::SyncComponents
 ProfileSyncFactoryImpl::CreateExtensionSettingSyncComponents(
-    ExtensionSettings* extension_settings,
+    ExtensionSettingsBackend* extension_settings_backend,
     ProfileSyncService* profile_sync_service,
     UnrecoverableErrorHandler* error_handler) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   sync_api::UserShare* user_share = profile_sync_service->GetUserShare();
   GenericChangeProcessor* change_processor =
-      new GenericChangeProcessor(extension_settings, error_handler, user_share);
+      new GenericChangeProcessor(
+          extension_settings_backend,
+          error_handler,
+          user_share);
   browser_sync::SyncableServiceAdapter* sync_service_adapter =
       new browser_sync::SyncableServiceAdapter(syncable::EXTENSION_SETTINGS,
-                                               extension_settings,
+                                               extension_settings_backend,
                                                change_processor);
   return SyncComponents(sync_service_adapter, change_processor);
 }

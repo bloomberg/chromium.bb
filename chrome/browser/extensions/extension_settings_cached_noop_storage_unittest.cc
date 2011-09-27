@@ -7,8 +7,8 @@
 namespace {
 
 ExtensionSettingsStorage* Param(
-    const ExtensionSettings& settings, const std::string& extension_id) {
-  return settings.GetStorageForTesting(
+    const ExtensionSettingsBackend& backend, const std::string& extension_id) {
+  return backend.GetStorageForTesting(
       ExtensionSettingsStorage::NOOP, true, extension_id);
 }
 

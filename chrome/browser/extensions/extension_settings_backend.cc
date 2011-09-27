@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/extension_settings.h"
+#include "chrome/browser/extensions/extension_settings_backend.h"
 
 #include "base/compiler_specific.h"
 #include "base/file_util.h"
@@ -20,17 +20,17 @@
 #include "third_party/leveldatabase/src/include/leveldb/iterator.h"
 #include "third_party/leveldatabase/src/include/leveldb/write_batch.h"
 
-ExtensionSettings::ExtensionSettings(const FilePath& base_path)
+ExtensionSettingsBackend::ExtensionSettingsBackend(const FilePath& base_path)
     : base_path_(base_path),
       sync_processor_(NULL) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 }
 
-ExtensionSettings::~ExtensionSettings() {
+ExtensionSettingsBackend::~ExtensionSettingsBackend() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 }
 
-ExtensionSettingsStorage* ExtensionSettings::GetStorage(
+ExtensionSettingsStorage* ExtensionSettingsBackend::GetStorage(
     const std::string& extension_id) const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   DictionaryValue empty;
@@ -38,7 +38,7 @@ ExtensionSettingsStorage* ExtensionSettings::GetStorage(
 }
 
 SyncableExtensionSettingsStorage*
-ExtensionSettings::GetOrCreateStorageWithSyncData(
+ExtensionSettingsBackend::GetOrCreateStorageWithSyncData(
     const std::string& extension_id, const DictionaryValue& sync_data) const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   SyncableExtensionSettingsStorage* storage = GetOrCreateAndInitStorage(
@@ -61,7 +61,7 @@ ExtensionSettings::GetOrCreateStorageWithSyncData(
   return storage;
 }
 
-ExtensionSettingsStorage* ExtensionSettings::GetStorageForTesting(
+ExtensionSettingsStorage* ExtensionSettingsBackend::GetStorageForTesting(
     ExtensionSettingsStorage::Type type,
     bool cached,
     const std::string& extension_id) const {
@@ -73,7 +73,8 @@ ExtensionSettingsStorage* ExtensionSettings::GetStorageForTesting(
   return storage;
 }
 
-SyncableExtensionSettingsStorage* ExtensionSettings::GetOrCreateAndInitStorage(
+SyncableExtensionSettingsStorage*
+ExtensionSettingsBackend::GetOrCreateAndInitStorage(
     ExtensionSettingsStorage::Type type,
     bool cached,
     const std::string& extension_id,
@@ -86,7 +87,8 @@ SyncableExtensionSettingsStorage* ExtensionSettings::GetOrCreateAndInitStorage(
   return CreateAndInitStorage(type, cached, extension_id, initial_sync_data);
 }
 
-SyncableExtensionSettingsStorage* ExtensionSettings::CreateAndInitStorage(
+SyncableExtensionSettingsStorage*
+ExtensionSettingsBackend::CreateAndInitStorage(
     ExtensionSettingsStorage::Type type,
     bool cached,
     const std::string& extension_id,
@@ -124,7 +126,7 @@ SyncableExtensionSettingsStorage* ExtensionSettings::CreateAndInitStorage(
   return synced_storage;
 }
 
-std::set<std::string> ExtensionSettings::GetKnownExtensionIDs() const {
+std::set<std::string> ExtensionSettingsBackend::GetKnownExtensionIDs() const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   std::set<std::string> result;
 
@@ -157,7 +159,7 @@ std::set<std::string> ExtensionSettings::GetKnownExtensionIDs() const {
   return result;
 }
 
-SyncDataList ExtensionSettings::GetAllSyncData(
+SyncDataList ExtensionSettingsBackend::GetAllSyncData(
     syncable::ModelType type) const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   DCHECK_EQ(type, syncable::EXTENSION_SETTINGS);
@@ -190,7 +192,7 @@ SyncDataList ExtensionSettings::GetAllSyncData(
   return all_sync_data;
 }
 
-SyncError ExtensionSettings::MergeDataAndStartSyncing(
+SyncError ExtensionSettingsBackend::MergeDataAndStartSyncing(
     syncable::ModelType type,
     const SyncDataList& initial_sync_data,
     SyncChangeProcessor* sync_processor) {
@@ -244,7 +246,7 @@ SyncError ExtensionSettings::MergeDataAndStartSyncing(
   return SyncError();
 }
 
-SyncError ExtensionSettings::ProcessSyncChanges(
+SyncError ExtensionSettingsBackend::ProcessSyncChanges(
     const tracked_objects::Location& from_here,
     const SyncChangeList& sync_changes) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
@@ -270,7 +272,7 @@ SyncError ExtensionSettings::ProcessSyncChanges(
   return SyncError();
 }
 
-void ExtensionSettings::StopSyncing(syncable::ModelType type) {
+void ExtensionSettingsBackend::StopSyncing(syncable::ModelType type) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   DCHECK(sync_processor_);
   sync_processor_ = NULL;

@@ -8,7 +8,7 @@
 #include "base/values.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/extensions/extension_settings.h"
+#include "chrome/browser/extensions/extension_settings_backend.h"
 #include "chrome/browser/extensions/extension_settings_storage_cache.h"
 #include "chrome/browser/extensions/extension_settings_storage_quota_enforcer.h"
 #include "chrome/browser/extensions/extension_settings_noop_storage.h"

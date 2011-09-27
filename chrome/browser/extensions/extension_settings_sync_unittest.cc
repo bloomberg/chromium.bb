@@ -11,7 +11,7 @@
 #include "base/message_loop.h"
 #include "base/scoped_temp_dir.h"
 #include "base/task.h"
-#include "chrome/browser/extensions/extension_settings.h"
+#include "chrome/browser/extensions/extension_settings_backend.h"
 #include "chrome/browser/extensions/extension_settings_storage_cache.h"
 #include "chrome/browser/extensions/extension_settings_noop_storage.h"
 #include "chrome/browser/extensions/extension_settings_sync_util.h"
@@ -127,13 +127,15 @@ class ExtensionSettingsSyncTest : public testing::Test {
 
   virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    settings_.reset(new ExtensionSettings(temp_dir_.path()));
+    // TODO(kalman): Use ExtensionSettingsFrontend here?  It would test more
+    // code paths.
+    backend_.reset(new ExtensionSettingsBackend(temp_dir_.path()));
   }
 
   virtual void TearDown() OVERRIDE {
     // Must do this explicitly here so that it's destroyed before the
     // message loops are.
-    settings_.reset();
+    backend_.reset();
   }
 
  protected:
@@ -142,17 +144,17 @@ class ExtensionSettingsSyncTest : public testing::Test {
   SyncableExtensionSettingsStorage* GetStorage(
       const std::string& extension_id) {
     return static_cast<SyncableExtensionSettingsStorage*>(
-        settings_->GetStorage(extension_id));
+        backend_->GetStorage(extension_id));
   }
 
   MockSyncChangeProcessor sync_;
-  scoped_ptr<ExtensionSettings> settings_;
+  scoped_ptr<ExtensionSettingsBackend> backend_;
 
-  // Gets all the sync data from settings_ as a map from extension id to its
+  // Gets all the sync data from backend_ as a map from extension id to its
   // sync data.
   std::map<std::string, ExtensionSettingSyncDataList> GetAllSyncData() {
     SyncDataList as_list =
-        settings_->GetAllSyncData(syncable::EXTENSION_SETTINGS);
+        backend_->GetAllSyncData(syncable::EXTENSION_SETTINGS);
     std::map<std::string, ExtensionSettingSyncDataList> as_map;
     for (SyncDataList::iterator it = as_list.begin();
         it != as_list.end(); ++it) {
@@ -178,7 +180,7 @@ TEST_F(ExtensionSettingsSyncTest, NoDataDoesNotInvokeSync) {
   GetStorage("s1");
   ASSERT_EQ(0u, GetAllSyncData().size());
 
-  settings_->MergeDataAndStartSyncing(
+  backend_->MergeDataAndStartSyncing(
       syncable::EXTENSION_SETTINGS,
       SyncDataList(),
       &sync_);
@@ -186,7 +188,7 @@ TEST_F(ExtensionSettingsSyncTest, NoDataDoesNotInvokeSync) {
   GetStorage("s2");
   ASSERT_EQ(0u, GetAllSyncData().size());
 
-  settings_->StopSyncing(syncable::EXTENSION_SETTINGS);
+  backend_->StopSyncing(syncable::EXTENSION_SETTINGS);
 
   ASSERT_EQ(0u, sync_.changes().size());
   ASSERT_EQ(0u, GetAllSyncData().size());
@@ -217,9 +219,9 @@ TEST_F(ExtensionSettingsSyncTest, InSyncDataDoesNotInvokeSync) {
   sync_data.push_back(extension_settings_sync_util::CreateData(
       "s2", "bar", value2));
 
-  settings_->MergeDataAndStartSyncing(
+  backend_->MergeDataAndStartSyncing(
       syncable::EXTENSION_SETTINGS, sync_data, &sync_);
-  settings_->StopSyncing(syncable::EXTENSION_SETTINGS);
+  backend_->StopSyncing(syncable::EXTENSION_SETTINGS);
 
   // Already in sync, so no changes.
   ASSERT_EQ(0u, sync_.changes().size());
@@ -236,7 +238,7 @@ TEST_F(ExtensionSettingsSyncTest, LocalDataWithNoSyncDataIsPushedToSync) {
   storage1->Set("foo", value1);
   storage2->Set("bar", value2);
 
-  settings_->MergeDataAndStartSyncing(
+  backend_->MergeDataAndStartSyncing(
       syncable::EXTENSION_SETTINGS, SyncDataList(), &sync_);
 
   // All settings should have been pushed to sync.
@@ -248,7 +250,7 @@ TEST_F(ExtensionSettingsSyncTest, LocalDataWithNoSyncDataIsPushedToSync) {
   ASSERT_EQ(SyncChange::ACTION_ADD, change.change_type());
   ASSERT_TRUE(value2.Equals(&change.value()));
 
-  settings_->StopSyncing(syncable::EXTENSION_SETTINGS);
+  backend_->StopSyncing(syncable::EXTENSION_SETTINGS);
 }
 
 TEST_F(ExtensionSettingsSyncTest, AnySyncDataOverwritesLocalData) {
@@ -269,7 +271,7 @@ TEST_F(ExtensionSettingsSyncTest, AnySyncDataOverwritesLocalData) {
       "s1", "foo", value1));
   sync_data.push_back(extension_settings_sync_util::CreateData(
       "s2", "bar", value2));
-  settings_->MergeDataAndStartSyncing(
+  backend_->MergeDataAndStartSyncing(
       syncable::EXTENSION_SETTINGS, sync_data, &sync_);
   expected1.Set("foo", value1.DeepCopy());
   expected2.Set("bar", value2.DeepCopy());
@@ -283,7 +285,7 @@ TEST_F(ExtensionSettingsSyncTest, AnySyncDataOverwritesLocalData) {
   ASSERT_PRED_FORMAT2(SettingsEq, &expected1, storage1->Get());
   ASSERT_PRED_FORMAT2(SettingsEq, &expected2, storage2->Get());
 
-  settings_->StopSyncing(syncable::EXTENSION_SETTINGS);
+  backend_->StopSyncing(syncable::EXTENSION_SETTINGS);
 }
 
 TEST_F(ExtensionSettingsSyncTest, ProcessSyncChanges) {
@@ -306,7 +308,7 @@ TEST_F(ExtensionSettingsSyncTest, ProcessSyncChanges) {
   sync_data.push_back(extension_settings_sync_util::CreateData(
       "s2", "bar", value2));
 
-  settings_->MergeDataAndStartSyncing(
+  backend_->MergeDataAndStartSyncing(
       syncable::EXTENSION_SETTINGS, sync_data, &sync_);
   expected2.Set("bar", value2.DeepCopy());
 
@@ -316,7 +318,7 @@ TEST_F(ExtensionSettingsSyncTest, ProcessSyncChanges) {
       "s1", "bar", value2));
   change_list.push_back(extension_settings_sync_util::CreateAdd(
       "s2", "foo", value1));
-  settings_->ProcessSyncChanges(FROM_HERE, change_list);
+  backend_->ProcessSyncChanges(FROM_HERE, change_list);
   expected1.Set("bar", value2.DeepCopy());
   expected2.Set("foo", value1.DeepCopy());
 
@@ -330,7 +332,7 @@ TEST_F(ExtensionSettingsSyncTest, ProcessSyncChanges) {
       "s1", "bar", value2));
   change_list.push_back(extension_settings_sync_util::CreateUpdate(
       "s2", "bar", value1));
-  settings_->ProcessSyncChanges(FROM_HERE, change_list);
+  backend_->ProcessSyncChanges(FROM_HERE, change_list);
   expected1.Set("bar", value2.DeepCopy());
   expected2.Set("bar", value1.DeepCopy());
 
@@ -344,14 +346,14 @@ TEST_F(ExtensionSettingsSyncTest, ProcessSyncChanges) {
       "s1", "foo"));
   change_list.push_back(extension_settings_sync_util::CreateDelete(
       "s2", "foo"));
-  settings_->ProcessSyncChanges(FROM_HERE, change_list);
+  backend_->ProcessSyncChanges(FROM_HERE, change_list);
   expected1.Remove("foo", NULL);
   expected2.Remove("foo", NULL);
 
   ASSERT_PRED_FORMAT2(SettingsEq, &expected1, storage1->Get());
   ASSERT_PRED_FORMAT2(SettingsEq, &expected2, storage2->Get());
 
-  settings_->StopSyncing(syncable::EXTENSION_SETTINGS);
+  backend_->StopSyncing(syncable::EXTENSION_SETTINGS);
 }
 
 TEST_F(ExtensionSettingsSyncTest, PushToSync) {
@@ -375,7 +377,7 @@ TEST_F(ExtensionSettingsSyncTest, PushToSync) {
   sync_data.push_back(extension_settings_sync_util::CreateData(
       "s4", "bar", value2));
 
-  settings_->MergeDataAndStartSyncing(
+  backend_->MergeDataAndStartSyncing(
       syncable::EXTENSION_SETTINGS, sync_data, &sync_);
 
   // Add something locally.
@@ -488,5 +490,5 @@ TEST_F(ExtensionSettingsSyncTest, PushToSync) {
       SyncChange::ACTION_DELETE,
       sync_.GetOnlyChange("s4", "bar").change_type());
 
-  settings_->StopSyncing(syncable::EXTENSION_SETTINGS);
+  backend_->StopSyncing(syncable::EXTENSION_SETTINGS);
 }

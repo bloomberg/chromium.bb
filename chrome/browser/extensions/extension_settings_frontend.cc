@@ -2,67 +2,65 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/extension_settings_ui_wrapper.h"
+#include "chrome/browser/extensions/extension_settings_frontend.h"
 
 #include "base/bind.h"
 #include "base/file_path.h"
-#include "chrome/browser/extensions/extension_settings.h"
+#include "chrome/browser/extensions/extension_settings_backend.h"
 #include "content/browser/browser_thread.h"
 
-ExtensionSettingsUIWrapper::ExtensionSettingsUIWrapper(
+ExtensionSettingsFrontend::ExtensionSettingsFrontend(
     const FilePath& base_path)
-    : core_(new ExtensionSettingsUIWrapper::Core()) {
+    : core_(new ExtensionSettingsFrontend::Core()) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   BrowserThread::PostTask(
       BrowserThread::FILE,
       FROM_HERE,
       base::Bind(
-          &ExtensionSettingsUIWrapper::Core::InitOnFileThread,
+          &ExtensionSettingsFrontend::Core::InitOnFileThread,
           core_.get(),
           base_path));
 }
 
-void ExtensionSettingsUIWrapper::RunWithSettings(
-    const SettingsCallback& callback) {
+void ExtensionSettingsFrontend::RunWithBackend(
+    const BackendCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   BrowserThread::PostTask(
       BrowserThread::FILE,
       FROM_HERE,
       base::Bind(
-          &ExtensionSettingsUIWrapper::Core::RunWithSettingsOnFileThread,
+          &ExtensionSettingsFrontend::Core::RunWithBackendOnFileThread,
           core_.get(),
           callback));
 }
 
-ExtensionSettingsUIWrapper::~ExtensionSettingsUIWrapper() {
+ExtensionSettingsFrontend::~ExtensionSettingsFrontend() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
-ExtensionSettingsUIWrapper::Core::Core()
-    : extension_settings_(NULL) {
+ExtensionSettingsFrontend::Core::Core() : backend_(NULL) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
-void ExtensionSettingsUIWrapper::Core::InitOnFileThread(
+void ExtensionSettingsFrontend::Core::InitOnFileThread(
     const FilePath& base_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  DCHECK(!extension_settings_);
-  extension_settings_ = new ExtensionSettings(base_path);
+  DCHECK(!backend_);
+  backend_ = new ExtensionSettingsBackend(base_path);
 }
 
-void ExtensionSettingsUIWrapper::Core::RunWithSettingsOnFileThread(
-    const SettingsCallback& callback) {
+void ExtensionSettingsFrontend::Core::RunWithBackendOnFileThread(
+    const BackendCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  DCHECK(extension_settings_);
-  callback.Run(extension_settings_);
+  DCHECK(backend_);
+  callback.Run(backend_);
 }
 
-ExtensionSettingsUIWrapper::Core::~Core() {
+ExtensionSettingsFrontend::Core::~Core() {
   if (BrowserThread::CurrentlyOn(BrowserThread::FILE)) {
-    delete extension_settings_;
+    delete backend_;
   } else if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    BrowserThread::DeleteSoon(
-        BrowserThread::FILE, FROM_HERE, extension_settings_);
+    BrowserThread::DeleteSoon(BrowserThread::FILE, FROM_HERE, backend_);
   } else {
     NOTREACHED();
   }

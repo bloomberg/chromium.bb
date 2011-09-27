@@ -6,7 +6,7 @@
 
 #include "base/metrics/histogram.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_settings_ui_wrapper.h"
+#include "chrome/browser/extensions/extension_settings_frontend.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/api/syncable_service.h"
 #include "chrome/browser/sync/glue/generic_change_processor.h"
@@ -20,10 +20,10 @@ ExtensionSettingDataTypeController::ExtensionSettingDataTypeController(
     Profile* profile,
     ProfileSyncService* profile_sync_service)
     : NonFrontendDataTypeController(profile_sync_factory, profile),
-      extension_settings_ui_wrapper_(
-          profile->GetExtensionService()->extension_settings()),
+      extension_settings_frontend_(
+          profile->GetExtensionService()->extension_settings_frontend()),
       profile_sync_service_(profile_sync_service),
-      extension_settings_(NULL) {
+      extension_settings_backend_(NULL) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
@@ -45,30 +45,31 @@ bool ExtensionSettingDataTypeController::StartModels() {
 bool ExtensionSettingDataTypeController::StartAssociationAsync() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK_EQ(state(), ASSOCIATING);
-  extension_settings_ui_wrapper_->RunWithSettings(
+  extension_settings_frontend_->RunWithBackend(
       base::Bind(
           &ExtensionSettingDataTypeController::
-              StartAssociationWithExtensionSettings,
+              StartAssociationWithExtensionSettingsBackend,
           this));
   return true;
 }
 
-void ExtensionSettingDataTypeController::StartAssociationWithExtensionSettings(
-    ExtensionSettings* extension_settings) {
+void ExtensionSettingDataTypeController::
+    StartAssociationWithExtensionSettingsBackend(
+        ExtensionSettingsBackend* extension_settings_backend) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  extension_settings_ = extension_settings;
-  // Calls CreateSyncComponents, which expects extension_settings_ to be
-  // non-NULL.
+  extension_settings_backend_ = extension_settings_backend;
+  // Calls CreateSyncComponents, which expects extension_settings_backend_ to
+  // be non-NULL.
   StartAssociation();
 }
 
 void ExtensionSettingDataTypeController::CreateSyncComponents() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   DCHECK_EQ(state(), ASSOCIATING);
-  DCHECK(extension_settings_);
+  DCHECK(extension_settings_backend_);
   ProfileSyncFactory::SyncComponents sync_components =
       profile_sync_factory()->CreateExtensionSettingSyncComponents(
-          extension_settings_, profile_sync_service_, this);
+          extension_settings_backend_, profile_sync_service_, this);
   set_model_associator(sync_components.model_associator);
   set_change_processor(sync_components.change_processor);
 }

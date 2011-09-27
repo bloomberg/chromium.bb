@@ -587,7 +587,7 @@ ExtensionService::ExtensionService(Profile* profile,
       method_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       profile_(profile),
       extension_prefs_(extension_prefs),
-      extension_settings_(
+      extension_settings_frontend_(
           profile->GetPath().AppendASCII(kSettingsDirectoryName)),
       pending_extension_manager_(*ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       install_directory_(install_directory),
@@ -1673,8 +1673,8 @@ ExtensionPrefs* ExtensionService::extension_prefs() {
   return extension_prefs_;
 }
 
-ExtensionSettingsUIWrapper* ExtensionService::extension_settings() {
-  return &extension_settings_;
+ExtensionSettingsFrontend* ExtensionService::extension_settings_frontend() {
+  return &extension_settings_frontend_;
 }
 
 ExtensionContentSettingsStore*

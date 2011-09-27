@@ -11,8 +11,8 @@
 #include "base/compiler_specific.h"
 #include "chrome/browser/sync/glue/non_frontend_data_type_controller.h"
 
-class ExtensionSettings;
-class ExtensionSettingsUIWrapper;
+class ExtensionSettingsBackend;
+class ExtensionSettingsFrontend;
 class Profile;
 class ProfileSyncFactory;
 class ProfileSyncService;
@@ -46,15 +46,15 @@ class ExtensionSettingDataTypeController
 
   // Starts sync association with |extension_settings|.  Callback from
   // RunWithSettings of |extension_settings_ui_wrapper_| on FILE thread.
-  void StartAssociationWithExtensionSettings(
-      ExtensionSettings* extension_settings);
+  void StartAssociationWithExtensionSettingsBackend(
+      ExtensionSettingsBackend* extension_settings_backend);
 
   // These only used on the UI thread.
-  ExtensionSettingsUIWrapper* extension_settings_ui_wrapper_;
+  ExtensionSettingsFrontend* extension_settings_frontend_;
   ProfileSyncService* profile_sync_service_;
 
   // Only used on the FILE thread.
-  ExtensionSettings* extension_settings_;
+  ExtensionSettingsBackend* extension_settings_backend_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionSettingDataTypeController);
 };
