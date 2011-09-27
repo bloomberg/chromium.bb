@@ -104,6 +104,9 @@ ExtensionProcessManager::ExtensionProcessManager(Profile* profile)
   // |site_instance_id| in UnregisterExtensionSiteInstance.
   registrar_.Add(this, content::NOTIFICATION_SITE_INSTANCE_DELETED,
                  NotificationService::AllBrowserContextsAndSources());
+  // Same for NOTIFICATION_RENDERER_PROCESS_CLOSED.
+  registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
+                 NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this, content::NOTIFICATION_APP_TERMINATING,
                  NotificationService::AllSources());
 }
@@ -246,6 +249,18 @@ void ExtensionProcessManager::UnregisterExtensionSiteInstance(
     extension_ids_.erase(it++);
 }
 
+void ExtensionProcessManager::RegisterProcessHost(int host_id) {
+  process_ids_.insert(host_id);
+}
+
+void ExtensionProcessManager::UnregisterProcessHost(int host_id) {
+  process_ids_.erase(host_id);
+}
+
+bool ExtensionProcessManager::IsExtensionProcessHost(int host_id) const {
+  return process_ids_.find(host_id) != process_ids_.end();
+}
+
 RenderProcessHost* ExtensionProcessManager::GetExtensionProcess(
     const GURL& url) {
   if (!browsing_instance_->HasSiteInstance(url))
@@ -332,6 +347,13 @@ void ExtensionProcessManager::Observe(int type,
     case content::NOTIFICATION_SITE_INSTANCE_DELETED: {
       SiteInstance* site_instance = Source<SiteInstance>(source).ptr();
       UnregisterExtensionSiteInstance(site_instance->id());
+      break;
+    }
+
+    case content::NOTIFICATION_RENDERER_PROCESS_CLOSED: {
+      RenderProcessHost* process_host =
+          Source<RenderProcessHost>(source).ptr();
+      UnregisterProcessHost(process_host->id());
       break;
     }
 

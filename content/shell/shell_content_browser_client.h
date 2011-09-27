@@ -49,6 +49,8 @@ class ShellContentBrowserClient : public ContentBrowserClient
   virtual bool ShouldUseProcessPerSite(BrowserContext* browser_context,
                                        const GURL& effective_url) OVERRIDE;
   virtual bool IsURLSameAsAnySiteInstance(const GURL& url) OVERRIDE;
+  virtual bool IsSuitableHost(RenderProcessHost* process_host,
+                              const GURL& site_url) OVERRIDE;
   virtual std::string GetCanonicalEncodingNameByAliasName(
       const std::string& alias_name) OVERRIDE;
   virtual void AppendExtraCommandLineSwitches(CommandLine* command_line,

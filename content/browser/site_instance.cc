@@ -71,7 +71,7 @@ RenderProcessHost* SiteInstance::GetProcess() {
     // See if we should reuse an old process
     if (RenderProcessHost::ShouldTryToUseExistingProcessHost())
       process_ = RenderProcessHost::GetExistingProcessHost(
-          browsing_instance_->browser_context(), GetRendererType());
+          browsing_instance_->browser_context(), site_);
 
     // Otherwise (or if that fails), create a new one.
     if (!process_) {
@@ -125,12 +125,12 @@ bool SiteInstance::HasWrongProcessForURL(const GURL& url) const {
   if (!HasProcess())
     return false;
 
-  // If the effective URL is an extension (e.g., for hosted apps) but the
+  // If the site URL is an extension (e.g., for hosted apps) but the
   // process is not (or vice versa), make sure we notice and fix it.
-  GURL effective_url = GetEffectiveURL(browsing_instance_->browser_context(),
-                                       url);
-  return effective_url.SchemeIs(chrome::kExtensionScheme) !=
-      process_->is_extension_process();
+  GURL site_url = GetSiteForURL(browsing_instance_->browser_context(), url);
+  content::ContentBrowserClient* browser =
+      content::GetContentClient()->browser();
+  return !browser->IsSuitableHost(process_, site_url);
 }
 
 /*static*/
@@ -218,30 +218,6 @@ GURL SiteInstance::GetEffectiveURL(content::BrowserContext* browser_context,
                                    const GURL& url) {
   return content::GetContentClient()->browser()->
       GetEffectiveURL(browser_context, url);
-}
-
-/*static*/
-RenderProcessHost::Type SiteInstance::RendererTypeForURL(const GURL& url) {
-  if (!url.is_valid())
-    return RenderProcessHost::TYPE_NORMAL;
-
-  if (url.SchemeIs(chrome::kExtensionScheme))
-    return RenderProcessHost::TYPE_EXTENSION;
-
-  // TODO(erikkay) creis recommends using UseWebUIForURL instead.
-  if (content::WebUIFactory::Get()->HasWebUIScheme(url))
-    return RenderProcessHost::TYPE_WEBUI;
-
-  return RenderProcessHost::TYPE_NORMAL;
-}
-
-RenderProcessHost::Type SiteInstance::GetRendererType() {
-  // We may not have a site at this point, which generally means this is a
-  // normal navigation.
-  if (!has_site_)
-    return RenderProcessHost::TYPE_NORMAL;
-
-  return RendererTypeForURL(site_);
 }
 
 void SiteInstance::Observe(int type,

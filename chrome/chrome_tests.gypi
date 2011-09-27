@@ -1842,7 +1842,6 @@
         '../content/browser/in_process_webkit/indexed_db_quota_client_unittest.cc',
         '../content/browser/renderer_host/render_widget_host_unittest.cc',
         '../content/browser/renderer_host/text_input_client_mac_unittest.mm',
-        '../content/browser/site_instance_unittest.cc',
         '../content/browser/tab_contents/navigation_controller_unittest.cc',
         '../content/browser/tab_contents/render_view_host_manager_unittest.cc',
         '../content/common/sandbox_mac_diraccess_unittest.mm',

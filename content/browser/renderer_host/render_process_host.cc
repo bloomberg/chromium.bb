@@ -9,7 +9,10 @@
 #include "base/sys_info.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/child_process_security_policy.h"
+#include "content/browser/content_browser_client.h"
+#include "content/browser/webui/web_ui_factory.h"
 #include "content/common/child_process_info.h"
+#include "content/common/content_client.h"
 #include "content/common/content_constants.h"
 #include "content/common/content_switches.h"
 #include "content/common/notification_service.h"
@@ -64,19 +67,15 @@ size_t GetMaxRendererProcessCount() {
 // associated with the given browser context.
 static bool IsSuitableHost(RenderProcessHost* host,
                            content::BrowserContext* browser_context,
-                           RenderProcessHost::Type type) {
+                           const GURL& site_url) {
   if (host->browser_context() != browser_context)
     return false;
 
-  RenderProcessHost::Type host_type = RenderProcessHost::TYPE_NORMAL;
-  if (ChildProcessSecurityPolicy::GetInstance()->HasWebUIBindings(host->id()))
-    host_type = RenderProcessHost::TYPE_WEBUI;
-  if (ChildProcessSecurityPolicy::GetInstance()->
-        HasExtensionBindings(host->id()) ||
-      host->is_extension_process())
-    host_type = RenderProcessHost::TYPE_EXTENSION;
+  if (ChildProcessSecurityPolicy::GetInstance()->HasWebUIBindings(host->id()) !=
+      content::WebUIFactory::Get()->HasWebUIScheme(site_url))
+    return false;
 
-  return host_type == type;
+  return content::GetContentClient()->browser()->IsSuitableHost(host, site_url);
 }
 
 // the global list of all renderer processes
@@ -219,7 +218,8 @@ bool RenderProcessHost::ShouldTryToUseExistingProcessHost() {
 
 // static
 RenderProcessHost* RenderProcessHost::GetExistingProcessHost(
-    content::BrowserContext* browser_context, Type type) {
+    content::BrowserContext* browser_context,
+    const GURL& site_url) {
   // First figure out which existing renderers we can use.
   std::vector<RenderProcessHost*> suitable_renderers;
   suitable_renderers.reserve(all_hosts.size());
@@ -227,7 +227,7 @@ RenderProcessHost* RenderProcessHost::GetExistingProcessHost(
   iterator iter(AllHostsIterator());
   while (!iter.IsAtEnd()) {
     if (run_renderer_in_process() ||
-        IsSuitableHost(iter.GetCurrentValue(), browser_context, type))
+        IsSuitableHost(iter.GetCurrentValue(), browser_context, site_url))
       suitable_renderers.push_back(iter.GetCurrentValue());
 
     iter.Advance();

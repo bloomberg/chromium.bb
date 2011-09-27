@@ -129,6 +129,7 @@
         'browser/renderer_host/resource_dispatcher_host_unittest.cc',
         'browser/renderer_host/resource_queue_unittest.cc',
         'browser/resolve_proxy_msg_helper_unittest.cc',
+        'browser/site_instance_unittest.cc',
         'browser/speech/endpointer/endpointer_unittest.cc',
         'browser/speech/speech_recognition_request_unittest.cc',
         'browser/speech/speech_recognizer_unittest.cc',

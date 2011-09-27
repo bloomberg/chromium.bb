@@ -76,6 +76,12 @@ bool ShellContentBrowserClient::IsURLSameAsAnySiteInstance(const GURL& url) {
   return false;
 }
 
+bool ShellContentBrowserClient::IsSuitableHost(
+    RenderProcessHost* process_host,
+    const GURL& site_url) {
+  return true;
+}
+
 std::string ShellContentBrowserClient::GetCanonicalEncodingNameByAliasName(
     const std::string& alias_name) {
   return std::string();

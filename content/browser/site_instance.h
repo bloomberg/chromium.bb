@@ -148,9 +148,6 @@ class CONTENT_EXPORT SiteInstance : public base::RefCounted<SiteInstance>,
   static bool IsSameWebSite(content::BrowserContext* browser_context,
                             const GURL& url1, const GURL& url2);
 
-  // Returns the renderer type for this URL.
-  static RenderProcessHost::Type RendererTypeForURL(const GURL& url);
-
  protected:
   friend class base::RefCounted<SiteInstance>;
   friend class BrowsingInstance;
@@ -166,10 +163,6 @@ class CONTENT_EXPORT SiteInstance : public base::RefCounted<SiteInstance>,
   // Get the effective URL for the given actual URL.
   static GURL GetEffectiveURL(content::BrowserContext* browser_context,
                               const GURL& url);
-
-  // Returns the type of renderer process this instance belongs in, for grouping
-  // purposes.
-  RenderProcessHost::Type GetRendererType();
 
  private:
   // NotificationObserver implementation.

@@ -23,6 +23,7 @@ class GURL;
 class MHTMLGenerationManager;
 class PluginProcessHost;
 class QuotaPermissionContext;
+class RenderProcessHost;
 class RenderViewHost;
 class ResourceDispatcherHost;
 class SSLCertErrorHandler;
@@ -123,6 +124,11 @@ class ContentBrowserClient {
   // Returns whether a specified URL is to be considered the same as any
   // SiteInstance.
   virtual bool IsURLSameAsAnySiteInstance(const GURL& url) = 0;
+
+  // Returns whether a new view for a given |site_url| can be launched in a
+  // given |process_host|.
+  virtual bool IsSuitableHost(RenderProcessHost* process_host,
+                              const GURL& site_url) = 0;
 
   // See CharacterEncoding's comment.
   virtual std::string GetCanonicalEncodingNameByAliasName(

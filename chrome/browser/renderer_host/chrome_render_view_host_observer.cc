@@ -97,6 +97,7 @@ void ChromeRenderViewHostObserver::InitRenderViewHostForExtensions() {
     render_view_host()->AllowBindings(BindingsPolicy::EXTENSION);
     ChildProcessSecurityPolicy::GetInstance()->GrantExtensionBindings(
         render_view_host()->process()->id());
+    process_manager->RegisterProcessHost(render_view_host()->process()->id());
   }
 }
 

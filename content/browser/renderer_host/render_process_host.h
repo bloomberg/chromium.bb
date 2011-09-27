@@ -32,6 +32,8 @@ namespace net {
 class URLRequestContextGetter;
 }
 
+class GURL;
+
 // Virtual interface that represents the browser side of the browser <->
 // renderer communication channel. There will generally be one
 // RenderProcessHost per renderer process.
@@ -43,16 +45,6 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Channel::Sender,
                                          public IPC::Channel::Listener {
  public:
   typedef IDMap<RenderProcessHost>::iterator iterator;
-
-  // We classify renderers according to their highest privilege, and try
-  // to group pages into renderers with similar privileges.
-  // Note: it may be possible for a renderer to have multiple privileges,
-  // in which case we call it an "extension" renderer.
-  enum Type {
-    TYPE_NORMAL,     // Normal renderer, no extra privileges.
-    TYPE_WEBUI,      // Renderer with WebUI privileges, like New Tab.
-    TYPE_EXTENSION,  // Renderer with extension privileges.
-  };
 
   // Details for RENDERER_PROCESS_CLOSED notifications.
   struct RendererClosedDetails {
@@ -274,11 +266,12 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Channel::Sender,
 
   // Get an existing RenderProcessHost associated with the given browser
   // context, if possible.  The renderer process is chosen randomly from
-  // suitable renderers that share the same context and type.
+  // suitable renderers that share the same context and type (determined by the
+  // site url).
   // Returns NULL if no suitable renderer process is available, in which case
   // the caller is free to create a new renderer.
   static RenderProcessHost* GetExistingProcessHost(
-      content::BrowserContext* browser_context, Type type);
+      content::BrowserContext* browser_context, const GURL& site_url);
 
   // Overrides the default heuristic for limiting the max renderer process
   // count.  This is useful for unit testing process limit behaviors.

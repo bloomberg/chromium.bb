@@ -68,6 +68,12 @@ bool MockContentBrowserClient::IsURLSameAsAnySiteInstance(const GURL& url) {
   return false;
 }
 
+bool MockContentBrowserClient::IsSuitableHost(
+    RenderProcessHost* process_host,
+    const GURL& site_url) {
+  return true;
+}
+
 std::string MockContentBrowserClient::GetCanonicalEncodingNameByAliasName(
     const std::string& alias_name) {
   return std::string();

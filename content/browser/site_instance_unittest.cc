@@ -5,7 +5,6 @@
 #include "base/compiler_specific.h"
 #include "base/stl_util.h"
 #include "base/string16.h"
-#include "chrome/test/base/testing_profile.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/browsing_instance.h"
 #include "content/browser/child_process_security_policy.h"
@@ -20,11 +19,15 @@
 #include "content/common/content_client.h"
 #include "content/common/content_constants.h"
 #include "content/common/url_constants.h"
+#include "content/test/test_browser_context.h"
+#include "googleurl/src/url_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
 
 const char kSameAsAnyInstanceURL[] = "about:internets";
+
+const char kPrivilegedScheme[] = "privileged";
 
 class SiteInstanceTestWebUIFactory : public content::EmptyWebUIFactory {
  public:
@@ -39,7 +42,9 @@ class SiteInstanceTestWebUIFactory : public content::EmptyWebUIFactory {
 
 class SiteInstanceTestBrowserClient : public content::MockContentBrowserClient {
  public:
-  SiteInstanceTestBrowserClient() : old_browser_client_(NULL) {
+  SiteInstanceTestBrowserClient()
+      : old_browser_client_(NULL),
+        privileged_process_id_(-1) {
   }
 
   virtual TabContentsView* CreateTabContentsView(TabContents* tab_contents) {
@@ -60,6 +65,12 @@ class SiteInstanceTestBrowserClient : public content::MockContentBrowserClient {
            url == GURL(chrome::kAboutCrashURL);
   }
 
+  virtual bool IsSuitableHost(RenderProcessHost* process_host,
+                              const GURL& site_url) OVERRIDE {
+    return (privileged_process_id_ == process_host->id()) ==
+        site_url.SchemeIs(kPrivilegedScheme);
+  }
+
   virtual GURL GetEffectiveURL(content::BrowserContext* browser_context,
                                const GURL& url) OVERRIDE {
     return url;
@@ -69,9 +80,14 @@ class SiteInstanceTestBrowserClient : public content::MockContentBrowserClient {
     old_browser_client_ = old_browser_client;
   }
 
+  void SetPrivilegedProcessId(int process_id) {
+    privileged_process_id_ = process_id;
+  }
+
  private:
   SiteInstanceTestWebUIFactory factory_;
   content::ContentBrowserClient* old_browser_client_;
+  int privileged_process_id_;
 };
 
 class SiteInstanceTest : public testing::Test {
@@ -85,10 +101,16 @@ class SiteInstanceTest : public testing::Test {
     old_browser_client_ = content::GetContentClient()->browser();
     browser_client_.SetOriginalClient(old_browser_client_);
     content::GetContentClient()->set_browser(&browser_client_);
+    url_util::AddStandardScheme(kPrivilegedScheme);
+    url_util::AddStandardScheme(chrome::kChromeUIScheme);
   }
 
   virtual void TearDown() {
     content::GetContentClient()->set_browser(old_browser_client_);
+  }
+
+  void SetPrivilegedProcessId(int process_id) {
+    browser_client_.SetPrivilegedProcessId(process_id);
   }
 
  private:
@@ -101,8 +123,9 @@ class SiteInstanceTest : public testing::Test {
 
 class TestBrowsingInstance : public BrowsingInstance {
  public:
-  TestBrowsingInstance(Profile* profile, int* deleteCounter)
-      : BrowsingInstance(profile),
+  TestBrowsingInstance(content::BrowserContext* browser_context,
+                       int* deleteCounter)
+      : BrowsingInstance(browser_context),
         use_process_per_site(false),
         deleteCounter_(deleteCounter) {
   }
@@ -126,11 +149,12 @@ class TestBrowsingInstance : public BrowsingInstance {
 
 class TestSiteInstance : public SiteInstance {
  public:
-  static TestSiteInstance* CreateTestSiteInstance(Profile* profile,
-                                                  int* siteDeleteCounter,
-                                                  int* browsingDeleteCounter) {
+  static TestSiteInstance* CreateTestSiteInstance(
+      content::BrowserContext* browser_context,
+      int* siteDeleteCounter,
+      int* browsingDeleteCounter) {
     TestBrowsingInstance* browsing_instance =
-        new TestBrowsingInstance(profile, browsingDeleteCounter);
+        new TestBrowsingInstance(browser_context, browsingDeleteCounter);
     return new TestSiteInstance(browsing_instance, siteDeleteCounter);
   }
 
@@ -186,13 +210,17 @@ TEST_F(SiteInstanceTest, SiteInstanceDestructor) {
   // browsing_instance is now deleted
 
   // Ensure that instances are deleted when their RenderViewHosts are gone.
-  scoped_ptr<TestingProfile> profile(new TestingProfile());
+  scoped_ptr<TestBrowserContext> browser_context(new TestBrowserContext());
   instance =
-      TestSiteInstance::CreateTestSiteInstance(profile.get(),
+      TestSiteInstance::CreateTestSiteInstance(browser_context.get(),
                                                &siteDeleteCounter,
                                                &browsingDeleteCounter);
   {
-    TabContents contents(profile.get(), instance, MSG_ROUTING_NONE, NULL, NULL);
+    TabContents contents(browser_context.get(),
+                         instance,
+                         MSG_ROUTING_NONE,
+                         NULL,
+                         NULL);
     EXPECT_EQ(1, siteDeleteCounter);
     EXPECT_EQ(1, browsingDeleteCounter);
   }
@@ -260,16 +288,16 @@ TEST_F(SiteInstanceTest, UpdateMaxPageID) {
 // Test to ensure GetProcess returns and creates processes correctly.
 TEST_F(SiteInstanceTest, GetProcess) {
   // Ensure that GetProcess returns a process.
-  scoped_ptr<TestingProfile> profile(new TestingProfile());
+  scoped_ptr<TestBrowserContext> browser_context(new TestBrowserContext());
   scoped_ptr<RenderProcessHost> host1;
   scoped_refptr<SiteInstance> instance(
-      SiteInstance::CreateSiteInstance(profile.get()));
+      SiteInstance::CreateSiteInstance(browser_context.get()));
   host1.reset(instance->GetProcess());
   EXPECT_TRUE(host1.get() != NULL);
 
   // Ensure that GetProcess creates a new process.
   scoped_refptr<SiteInstance> instance2(
-      SiteInstance::CreateSiteInstance(profile.get()));
+      SiteInstance::CreateSiteInstance(browser_context.get()));
   scoped_ptr<RenderProcessHost> host2(instance2->GetProcess());
   EXPECT_TRUE(host2.get() != NULL);
   EXPECT_NE(host1.get(), host2.get());
@@ -382,7 +410,7 @@ TEST_F(SiteInstanceTest, OneSiteInstancePerSite) {
             site_instance_a1->GetRelatedSiteInstance(url_a2));
 
   // A visit to the original site in a new BrowsingInstance (same or different
-  // profile) should return a different SiteInstance.
+  // browser context) should return a different SiteInstance.
   TestBrowsingInstance* browsing_instance2 =
       new TestBrowsingInstance(NULL, &deleteCounter);
   browsing_instance2->use_process_per_site = false;
@@ -409,8 +437,8 @@ TEST_F(SiteInstanceTest, OneSiteInstancePerSite) {
 }
 
 // Test to ensure that there is only one SiteInstance per site for an entire
-// Profile, if process-per-site is in use.
-TEST_F(SiteInstanceTest, OneSiteInstancePerSiteInProfile) {
+// BrowserContext, if process-per-site is in use.
+TEST_F(SiteInstanceTest, OneSiteInstancePerSiteInBrowserContext) {
   int deleteCounter = 0;
   TestBrowsingInstance* browsing_instance =
       new TestBrowsingInstance(NULL, &deleteCounter);
@@ -439,8 +467,8 @@ TEST_F(SiteInstanceTest, OneSiteInstancePerSiteInProfile) {
   EXPECT_EQ(site_instance_a1.get(),
             site_instance_a1->GetRelatedSiteInstance(url_a2));
 
-  // A visit to the original site in a new BrowsingInstance (same profile)
-  // should also return the same SiteInstance.
+  // A visit to the original site in a new BrowsingInstance (same browser
+  // context) should also return the same SiteInstance.
   // This BrowsingInstance doesn't get its own SiteInstance within the test, so
   // it won't be deleted by its children.  Thus, we'll keep a ref count to it
   // to make sure it gets deleted.
@@ -450,11 +478,11 @@ TEST_F(SiteInstanceTest, OneSiteInstancePerSiteInProfile) {
   EXPECT_EQ(site_instance_a1.get(),
             browsing_instance2->GetSiteInstanceForURL(url_a2));
 
-  // A visit to the original site in a new BrowsingInstance (different profile)
-  // should return a different SiteInstance.
-  scoped_ptr<TestingProfile> profile(new TestingProfile());
+  // A visit to the original site in a new BrowsingInstance (different browser
+  // context) should return a different SiteInstance.
+  scoped_ptr<TestBrowserContext> browser_context(new TestBrowserContext());
   TestBrowsingInstance* browsing_instance3 =
-      new TestBrowsingInstance(profile.get(), &deleteCounter);
+      new TestBrowsingInstance(browser_context.get(), &deleteCounter);
   browsing_instance3->use_process_per_site = true;
   // Ensure the new SiteInstance is ref counted so that it gets deleted.
   scoped_refptr<SiteInstance> site_instance_a2_3(
@@ -469,13 +497,13 @@ TEST_F(SiteInstanceTest, OneSiteInstancePerSiteInProfile) {
   EXPECT_TRUE(browsing_instance->HasSiteInstance(
       GURL("http://mail.yahoo.com")));  // visited before
   EXPECT_TRUE(browsing_instance2->HasSiteInstance(
-      GURL("http://www.yahoo.com")));  // different BI, but same profile
+      GURL("http://www.yahoo.com")));  // different BI, but same browser context
 
   // Should be able to see that we don't have SiteInstances.
   EXPECT_FALSE(browsing_instance->HasSiteInstance(
       GURL("https://www.google.com")));  // not visited before
   EXPECT_FALSE(browsing_instance3->HasSiteInstance(
-      GURL("http://www.yahoo.com")));  // different BI, different profile
+      GURL("http://www.yahoo.com")));  // different BI, different context
 
   // browsing_instances will be deleted when their SiteInstances are deleted
 }
@@ -501,11 +529,13 @@ TEST_F(SiteInstanceTest, ProcessSharingByType) {
 
   // Create some extension instances and make sure they share a process.
   scoped_refptr<SiteInstance> extension1_instance(
-      CreateSiteInstance(&rph_factory, GURL("chrome-extension://foo/bar")));
-  policy->GrantExtensionBindings(extension1_instance->GetProcess()->id());
+      CreateSiteInstance(&rph_factory,
+      GURL(kPrivilegedScheme + std::string("://foo/bar"))));
+  SetPrivilegedProcessId(extension1_instance->GetProcess()->id());
 
   scoped_refptr<SiteInstance> extension2_instance(
-      CreateSiteInstance(&rph_factory, GURL("chrome-extension://baz/bar")));
+      CreateSiteInstance(&rph_factory,
+      GURL(kPrivilegedScheme + std::string("://baz/bar"))));
 
   scoped_ptr<RenderProcessHost> extension_host(
       extension1_instance->GetProcess());

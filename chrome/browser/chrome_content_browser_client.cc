@@ -247,6 +247,24 @@ bool ChromeContentBrowserClient::IsURLSameAsAnySiteInstance(const GURL& url) {
          url == GURL(chrome::kChromeUIShorthangURL);
 }
 
+bool ChromeContentBrowserClient::IsSuitableHost(
+    RenderProcessHost* process_host,
+    const GURL& site_url) {
+  Profile* profile =
+      Profile::FromBrowserContext(process_host->browser_context());
+  ExtensionProcessManager* extension_process_manager =
+      profile->GetExtensionProcessManager();
+
+  // Maybe NULL during tests.
+  if (!extension_process_manager)
+    return true;
+
+  bool is_extension_host =
+      process_host->is_extension_process() ||
+      extension_process_manager->IsExtensionProcessHost(process_host->id());
+  return site_url.SchemeIs(chrome::kExtensionScheme) == is_extension_host;
+}
+
 std::string ChromeContentBrowserClient::GetCanonicalEncodingNameByAliasName(
     const std::string& alias_name) {
   return CharacterEncoding::GetCanonicalEncodingNameByAliasName(alias_name);

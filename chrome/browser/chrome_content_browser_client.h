@@ -30,6 +30,8 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   virtual GURL GetEffectiveURL(content::BrowserContext* browser_context,
                                const GURL& url) OVERRIDE;
   virtual bool IsURLSameAsAnySiteInstance(const GURL& url) OVERRIDE;
+  virtual bool IsSuitableHost(RenderProcessHost* process_host,
+                              const GURL& url) OVERRIDE;
   virtual std::string GetCanonicalEncodingNameByAliasName(
       const std::string& alias_name) OVERRIDE;
   virtual void AppendExtraCommandLineSwitches(CommandLine* command_line,

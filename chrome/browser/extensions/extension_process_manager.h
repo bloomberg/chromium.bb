@@ -77,6 +77,15 @@ class ExtensionProcessManager : public NotificationObserver {
   // Unregisters the extension associated with |site_instance_id|.
   void UnregisterExtensionSiteInstance(int site_instance_id);
 
+  // Registers a RenderProcessHost with |host_id| as hosting an extension.
+  void RegisterProcessHost(int host_id);
+
+  // Unregisters the RenderProcessHost with |host_id|.
+  void UnregisterProcessHost(int host_id);
+
+  // True if this process host is hosting an extension.
+  bool IsExtensionProcessHost(int host_id) const;
+
   // Returns the extension process that |url| is associated with if it exists.
   // This is not valid for hosted apps without the background permission, since
   // such apps may have multiple processes.
@@ -125,6 +134,9 @@ class ExtensionProcessManager : public NotificationObserver {
   // A map of site instance ID to the ID of the extension it hosts.
   typedef std::map<int, std::string> SiteInstanceIDMap;
   SiteInstanceIDMap extension_ids_;
+
+  // A set of render process host IDs that have access to extension bindings.
+  std::set<int> process_ids_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionProcessManager);
 };
