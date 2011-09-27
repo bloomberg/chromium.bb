@@ -11,7 +11,6 @@ Import('env')
 if env.Bit('linux'):
     env.Append(
         CPPDEFINES=['XP_UNIX'],
-        CCFLAGS=['-fPIC' ],
     )
 
 if env.Bit('mac'):
@@ -27,8 +26,6 @@ if env.Bit('mac'):
             'USE_SYSTEM_CONSOLE',
         ],
     )
-else:
-    env['COMPONENT_STATIC'] = False
 
 if env.Bit('windows'):
     env.Append(
