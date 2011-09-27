@@ -7,9 +7,12 @@
 #include "base/file_path.h"
 #include "base/logging.h"
 #include "base/memory/linked_ptr.h"
+#include "base/metrics/field_trial.h"
 #include "base/path_service.h"
 #include "base/values.h"
 #include "base/version.h"
+#include "chrome/browser/extensions/default_apps_trial.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/external_extension_provider_interface.h"
 #include "chrome/browser/extensions/external_policy_extension_loader.h"
 #include "chrome/browser/extensions/external_pref_extension_loader.h"
@@ -29,6 +32,45 @@ const char ExternalExtensionProviderImpl::kExternalVersion[] =
     "external_version";
 const char ExternalExtensionProviderImpl::kExternalUpdateUrl[] =
     "external_update_url";
+
+class DefaultAppsProvider : public ExternalExtensionProviderImpl {
+ public:
+  DefaultAppsProvider(VisitorInterface* service, Profile* profile)
+      : ExternalExtensionProviderImpl(service,
+            new ExternalPrefExtensionLoader(chrome::DIR_DEFAULT_APPS,
+                ExternalPrefExtensionLoader::NONE),
+            Extension::EXTERNAL_PREF, Extension::INVALID),
+        profile_(profile) {
+    DCHECK(profile_);
+  }
+
+  // ExternalExtensionProviderImpl overrides:
+  virtual void ServiceShutdown() OVERRIDE;
+  virtual void VisitRegisteredExtension() const OVERRIDE;
+
+ private:
+  Profile* profile_;
+
+  DISALLOW_COPY_AND_ASSIGN(DefaultAppsProvider);
+};
+
+void DefaultAppsProvider::ServiceShutdown() {
+  profile_ = NULL;
+  ExternalExtensionProviderImpl::ServiceShutdown();
+}
+
+void DefaultAppsProvider::VisitRegisteredExtension() const {
+  // Don't install default apps if the profile already has apps installed.
+  if (profile_) {
+    ExtensionService* extension_service = profile_->GetExtensionService();
+    if (extension_service && extension_service->HasApps()) {
+      service()->OnExternalProviderReady();
+      return;
+    }
+  }
+
+  ExternalExtensionProviderImpl::VisitRegisteredExtension();
+}
 
 ExternalExtensionProviderImpl::ExternalExtensionProviderImpl(
     VisitorInterface* service,
@@ -283,4 +325,16 @@ void ExternalExtensionProviderImpl::CreateExternalProviders(
               new ExternalPolicyExtensionLoader(profile),
               Extension::INVALID,
               Extension::EXTERNAL_POLICY_DOWNLOAD)));
+
+  // Install default apps, except for the experimental group of users that are
+  // to be excluded.
+  static bool install_apps = !base::FieldTrialList::TrialExists(
+      kDefaultAppsTrial_Name) || (base::FieldTrialList::Find(
+          kDefaultAppsTrial_Name)->group_name() !=
+              kDefaultAppsTrial_NoAppsGroup);
+  if (install_apps) {
+    provider_list->push_back(
+        linked_ptr<ExternalExtensionProviderInterface>(
+            new DefaultAppsProvider(service, profile)));
+  }
 }

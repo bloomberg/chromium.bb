@@ -79,6 +79,10 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
   // latency of page loads.
   void PredictorFieldTrial();
 
+  // Field trial to see what effect installing defaults in the NTP apps pane
+  // has on retention and general apps/webstore usage.
+  void DefaultAppsFieldTrial();
+
   // Methods for |SetupMetricsAndFieldTrials()| --------------------------------
 
   static MetricsService* InitializeMetrics(

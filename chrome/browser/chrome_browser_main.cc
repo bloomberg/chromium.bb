@@ -34,6 +34,7 @@
 #include "chrome/browser/chrome_browser_main_gtk.h"
 #include "chrome/browser/chrome_browser_main_win.h"
 #include "chrome/browser/defaults.h"
+#include "chrome/browser/extensions/default_apps_trial.h"
 #include "chrome/browser/extensions/extension_protocols.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extensions_startup.h"
@@ -174,6 +175,7 @@
 #include <Security/Security.h>
 
 #include "chrome/browser/mac/install_from_dmg.h"
+#include "chrome/browser/mac/keystone_glue.h"
 #endif
 
 #if defined(TOOLKIT_VIEWS)
@@ -1078,6 +1080,26 @@ void ChromeBrowserMainParts::SuggestPrefixFieldTrial() {
   // The field trial is detected directly, so we don't need to call anything.
 }
 
+void ChromeBrowserMainParts::DefaultAppsFieldTrial() {
+#if defined(OS_WIN)
+  string16 brand;
+  GoogleUpdateSettings::GetBrand(&brand);
+#elif defined(OS_MACOSX)
+  std::string brand = keystone_glue::BrandCode();
+#else
+  std::string brand;
+#endif
+
+  // Create a 100% field trial based on the brand code.
+  if (LowerCaseEqualsASCII(brand, "ecdb")) {
+    base::FieldTrialList::CreateFieldTrial(kDefaultAppsTrial_Name,
+                                           kDefaultAppsTrial_NoAppsGroup);
+  } else if (LowerCaseEqualsASCII(brand, "ecda")) {
+    base::FieldTrialList::CreateFieldTrial(kDefaultAppsTrial_Name,
+                                           kDefaultAppsTrial_WithAppsGroup);
+  }
+}
+
 // ChromeBrowserMainParts: |SetupMetricsAndFieldTrials()| related --------------
 
 // Initializes the metrics service with the configuration for this process,
@@ -1136,6 +1158,7 @@ void ChromeBrowserMainParts::SetupFieldTrials(bool metrics_recording_enabled,
   SuggestPrefixFieldTrial();
   WarmConnectionFieldTrial();
   PredictorFieldTrial();
+  DefaultAppsFieldTrial();
 }
 
 // -----------------------------------------------------------------------------

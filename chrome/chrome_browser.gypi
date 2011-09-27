@@ -896,6 +896,8 @@
         'browser/extensions/app_notification_manager.h',
         'browser/extensions/apps_promo.cc',
         'browser/extensions/apps_promo.h',
+        'browser/extensions/default_apps_trial.cc',
+        'browser/extensions/default_apps_trial.h',
         'browser/extensions/convert_user_script.cc',
         'browser/extensions/convert_user_script.h',
         'browser/extensions/convert_web_app.cc',
