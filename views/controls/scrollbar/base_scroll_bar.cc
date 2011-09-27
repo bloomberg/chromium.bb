@@ -17,7 +17,8 @@
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/canvas.h"
-#include "views/controls/menu/menu.h"
+#include "views/controls/menu/menu_item_view.h"
+#include "views/controls/menu/menu_runner.h"
 #include "views/controls/scrollbar/base_scroll_bar_thumb.h"
 #include "views/controls/scroll_view.h"
 #include "views/widget/widget.h"
@@ -77,6 +78,9 @@ void BaseScrollBar::ScrollByAmount(ScrollAmount amount) {
   }
   contents_scroll_offset_ = offset;
   ScrollContentsToOffset();
+}
+
+BaseScrollBar::~BaseScrollBar() {
 }
 
 void BaseScrollBar::ScrollToThumbPosition(int thumb_position,
@@ -205,8 +209,9 @@ void BaseScrollBar::ShowContextMenuForView(View* source,
   View::ConvertPointFromWidget(this, &temp_pt);
   context_menu_mouse_position_ = IsHorizontal() ? temp_pt.x() : temp_pt.y();
 
-  scoped_ptr<Menu> menu(
-      Menu::Create(this, Menu::TOPLEFT, GetWidget()->GetNativeView()));
+  views::MenuItemView* menu = new views::MenuItemView(this);
+  // MenuRunner takes ownership of |menu|.
+  menu_runner_.reset(new MenuRunner(menu));
   menu->AppendDelegateMenuItem(ScrollBarContextMenuCommand_ScrollHere);
   menu->AppendSeparator();
   menu->AppendDelegateMenuItem(ScrollBarContextMenuCommand_ScrollStart);
@@ -217,7 +222,10 @@ void BaseScrollBar::ShowContextMenuForView(View* source,
   menu->AppendSeparator();
   menu->AppendDelegateMenuItem(ScrollBarContextMenuCommand_ScrollPrev);
   menu->AppendDelegateMenuItem(ScrollBarContextMenuCommand_ScrollNext);
-  menu->RunMenuAt(p.x(), p.y());
+  if (menu_runner_->RunMenuAt(GetWidget(), NULL, gfx::Rect(p, gfx::Size(0, 0)),
+      MenuItemView::TOPLEFT, MenuRunner::HAS_MNEMONICS) ==
+      MenuRunner::MENU_DELETED)
+    return;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

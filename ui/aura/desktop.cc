@@ -20,6 +20,9 @@ namespace aura {
 // static
 Desktop* Desktop::instance_ = NULL;
 
+// static
+ui::Compositor*(*Desktop::compositor_factory_)() = NULL;
+
 Desktop::Desktop()
     : toplevel_window_container_(new aura::internal::ToplevelWindowContainer),
       host_(aura::DesktopHost::Create(gfx::Rect(200, 200, 1280, 1024))),
@@ -28,8 +31,12 @@ Desktop::Desktop()
       in_destructor_(false) {
   DCHECK(MessageLoopForUI::current())
       << "The UI message loop must be initialized first.";
-  compositor_ = ui::Compositor::Create(this, host_->GetAcceleratedWidget(),
-                                       host_->GetSize());
+  if (compositor_factory_) {
+    compositor_ = (*Desktop::compositor_factory())();
+  } else {
+    compositor_ = ui::Compositor::Create(this, host_->GetAcceleratedWidget(),
+                                         host_->GetSize());
+  }
   host_->SetDesktop(this);
   DCHECK(compositor_.get());
   window_.reset(new internal::RootWindow);

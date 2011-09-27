@@ -37,6 +37,9 @@
 #if defined(OS_WIN)
 #include "views/test/test_views_delegate.h"
 #endif
+#if defined(USE_AURA)
+#include "ui/aura/desktop.h"
+#endif
 
 using ::testing::_;
 
@@ -2343,9 +2346,22 @@ void TestTexture::SetCanvas(const SkCanvas& canvas,
       origin.x(), origin.y(), bitmap.width(), bitmap.height());
 }
 
+class TestCompositorDelegate : public ui::CompositorDelegate {
+ public:
+  TestCompositorDelegate() {}
+  ~TestCompositorDelegate() {}
+  virtual void ScheduleCompositorPaint() OVERRIDE {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestCompositorDelegate);
+};
+
 class TestCompositor : public ui::Compositor {
  public:
-  TestCompositor() : Compositor(NULL, gfx::Size(100, 100)) {}
+  TestCompositor() : Compositor(new TestCompositorDelegate,
+                                gfx::Size(100, 100)) {
+    owned_delegate_.reset(static_cast<TestCompositorDelegate*>(delegate()));
+  }
 
   // ui::Compositor:
   virtual ui::Texture* CreateTexture() OVERRIDE {
@@ -2359,6 +2375,8 @@ class TestCompositor : public ui::Compositor {
   virtual void OnWidgetSizeChanged() OVERRIDE {}
 
  private:
+  scoped_ptr<TestCompositorDelegate> owned_delegate_;
+
   DISALLOW_COPY_AND_ASSIGN(TestCompositor);
 };
 
@@ -2416,6 +2434,18 @@ class ViewLayerTest : public ViewsTestBase {
   virtual ~ViewLayerTest() {
   }
 
+  // Returns the Layer used by the RootView.
+  ui::Layer* GetRootLayer() {
+#if defined(USE_AURA)
+    ui::Layer* root_layer = NULL;
+    gfx::Point origin;
+    widget()->CalculateOffsetToAncestorWithLayer(&origin, &root_layer);
+    return root_layer;
+#else
+    return widget()->GetRootView()->layer();
+#endif
+  }
+
   virtual void SetUp() OVERRIDE {
     ViewTest::SetUp();
     old_use_acceleration_ = View::get_use_acceleration_when_possible();
@@ -2423,7 +2453,11 @@ class ViewLayerTest : public ViewsTestBase {
 
     TestTexture::reset_live_count();
 
+#if defined(USE_AURA)
+    aura::Desktop::set_compositor_factory_for_testing(&TestCreateCompositor);
+#else
     Widget::set_compositor_factory_for_testing(&TestCreateCompositor);
+#endif
     widget_ = new Widget;
     Widget::InitParams params(Widget::InitParams::TYPE_POPUP);
     params.bounds = gfx::Rect(50, 50, 200, 200);
@@ -2433,8 +2467,13 @@ class ViewLayerTest : public ViewsTestBase {
   virtual void TearDown() OVERRIDE {
     View::set_use_acceleration_when_possible(old_use_acceleration_);
     widget_->CloseNow();
+#if defined(USE_AURA)
+    aura::Desktop::set_compositor_factory_for_testing(&TestCreateCompositor);
+#else
     Widget::set_compositor_factory_for_testing(NULL);
+#endif
     Widget::SetPureViews(false);
+    ViewsTestBase::TearDown();
   }
 
   Widget* widget() { return widget_; }
@@ -2444,6 +2483,8 @@ class ViewLayerTest : public ViewsTestBase {
   bool old_use_acceleration_;
 };
 
+#if !defined(USE_AURA)
+// This test assumes a particular layer hierarchy that isn't valid for aura.
 // Ensures the RootView has a layer and its set up correctly.
 TEST_F(ViewLayerTest, RootState) {
   ui::Layer* layer = widget()->GetRootView()->layer();
@@ -2455,7 +2496,30 @@ TEST_F(ViewLayerTest, RootState) {
   EXPECT_TRUE(layer->compositor() != NULL);
 }
 
+// Verifies that the complete bounds of a texture are updated if the texture
+// needs to be refreshed and paint with a clip is invoked.
+// This test invokes OnNativeWidgetPaintAccelerated, which is not used by aura.
+TEST_F(ViewLayerTest, PaintAll) {
+  View* view = widget()->GetRootView();
+  ui::Layer* layer = GetRootLayer();
+  view->SetBounds(0, 0, 200, 200);
+  widget()->OnNativeWidgetPaintAccelerated(gfx::Rect(0, 0, 1, 1));
+  ASSERT_TRUE(layer != NULL);
+  const TestTexture* texture =
+      static_cast<const TestTexture*>(layer->texture());
+  ASSERT_TRUE(texture != NULL);
+  EXPECT_EQ(view->GetLocalBounds(), texture->bounds_of_last_paint());
+}
+#endif
+
 TEST_F(ViewLayerTest, LayerToggling) {
+#if defined(USE_AURA)
+  ui::Layer* root_layer = NULL;
+  gfx::Point origin;
+  widget()->CalculateOffsetToAncestorWithLayer(&origin, &root_layer);
+#else
+  ui::Layer* root_layer = widget()->GetRootView()->layer();
+#endif
   View* content_view = new View;
   widget()->SetContentsView(content_view);
 
@@ -2467,7 +2531,7 @@ TEST_F(ViewLayerTest, LayerToggling) {
   content_view->AddChildView(v1);
   EXPECT_EQ(2, TestTexture::live_count());
   ASSERT_TRUE(v1->layer() != NULL);
-  EXPECT_EQ(widget()->GetRootView()->layer(), v1->layer()->parent());
+  EXPECT_EQ(root_layer, v1->layer()->parent());
   v1->SetBounds(20, 30, 140, 150);
   EXPECT_EQ(gfx::Rect(20, 30, 140, 150), v1->layer()->bounds());
 
@@ -2488,9 +2552,9 @@ TEST_F(ViewLayerTest, LayerToggling) {
   EXPECT_EQ(2, TestTexture::live_count());
   EXPECT_TRUE(v1->layer() == NULL);
   EXPECT_TRUE(v2->layer() != NULL);
-  EXPECT_EQ(widget()->GetRootView()->layer(), v2->layer()->parent());
-  ASSERT_EQ(1u, widget()->GetRootView()->layer()->children().size());
-  EXPECT_EQ(widget()->GetRootView()->layer()->children()[0], v2->layer());
+  EXPECT_EQ(root_layer, v2->layer()->parent());
+  ASSERT_EQ(1u, root_layer->children().size());
+  EXPECT_EQ(root_layer->children()[0], v2->layer());
   // The bounds of the layer should have changed to be relative to the root view
   // now.
   EXPECT_EQ(gfx::Rect(30, 50, 30, 40), v2->layer()->bounds());
@@ -2502,10 +2566,10 @@ TEST_F(ViewLayerTest, LayerToggling) {
   EXPECT_EQ(3, TestTexture::live_count());
   EXPECT_TRUE(v1->layer() != NULL);
   EXPECT_TRUE(v2->layer() != NULL);
-  EXPECT_EQ(widget()->GetRootView()->layer(), v1->layer()->parent());
+  EXPECT_EQ(root_layer, v1->layer()->parent());
   EXPECT_EQ(v1->layer(), v2->layer()->parent());
-  ASSERT_EQ(1u, widget()->GetRootView()->layer()->children().size());
-  EXPECT_EQ(widget()->GetRootView()->layer()->children()[0], v1->layer());
+  ASSERT_EQ(1u, root_layer->children().size());
+  EXPECT_EQ(root_layer->children()[0], v1->layer());
   ASSERT_EQ(1u, v1->layer()->children().size());
   EXPECT_EQ(v1->layer()->children()[0], v2->layer());
   EXPECT_EQ(gfx::Rect(10, 20, 30, 40), v2->layer()->bounds());
@@ -2741,19 +2805,6 @@ TEST_F(ViewLayerTest, ToggleVisibilityWithOpaqueLayer) {
       gfx::Rect(50, 50, 100, 100), parent_view->layer()->hole_rect());
 }
 
-// Verifies that the complete bounds of a texture are updated if the texture
-// needs to be refreshed and paint with a clip is invoked.
-TEST_F(ViewLayerTest, PaintAll) {
-  View* view = widget()->GetRootView();
-  view->SetBounds(0, 0, 200, 200);
-  widget()->OnNativeWidgetPaintAccelerated(gfx::Rect(0, 0, 1, 1));
-  ASSERT_TRUE(view->layer() != NULL);
-  const TestTexture* texture =
-      static_cast<const TestTexture*>(view->layer()->texture());
-  ASSERT_TRUE(texture != NULL);
-  EXPECT_EQ(view->GetLocalBounds(), texture->bounds_of_last_paint());
-}
-
 // TODO(sky): reenable once focus issues are straightened out so that this
 // doesn't crash.
 TEST_F(ViewLayerTest, DISABLED_NativeWidgetView) {
@@ -2800,6 +2851,45 @@ TEST_F(ViewLayerTest, DISABLED_NativeWidgetView) {
   EXPECT_EQ(gfx::Rect(5, 6, 10, 11), child_view->layer()->bounds());
 
   child_widget->CloseNow();
+}
+
+class PaintTrackingView : public View {
+ public:
+  PaintTrackingView() : painted_(false) {
+  }
+
+  bool painted() const { return painted_; }
+  void set_painted(bool value) { painted_ = value; }
+
+  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
+    painted_ = true;
+  }
+
+ private:
+  bool painted_;
+
+  DISALLOW_COPY_AND_ASSIGN(PaintTrackingView);
+};
+
+// Makes sure child views with layers aren't painted when paint starts at an
+// ancestor.
+TEST_F(ViewLayerTest, DontPaintChildrenWithLayers) {
+  PaintTrackingView* content_view = new PaintTrackingView;
+  widget()->SetContentsView(content_view);
+  content_view->SetPaintToLayer(true);
+  GetRootLayer()->DrawTree();
+  GetRootLayer()->SchedulePaint(gfx::Rect(0, 0, 10, 10));
+  content_view->set_painted(false);
+  // content_view no longer has a dirty rect. Paint from the root and make sure
+  // PaintTrackingView isn't painted.
+  GetRootLayer()->DrawTree();
+  EXPECT_FALSE(content_view->painted());
+
+  // Make content_view have a dirty rect, paint the layers and make sure
+  // PaintTrackingView is painted.
+  content_view->layer()->SchedulePaint(gfx::Rect(0, 0, 10, 10));
+  GetRootLayer()->DrawTree();
+  EXPECT_TRUE(content_view->painted());
 }
 
 #endif  // VIEWS_COMPOSITOR

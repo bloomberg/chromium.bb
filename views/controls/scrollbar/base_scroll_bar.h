@@ -8,13 +8,14 @@
 
 #include "views/context_menu_controller.h"
 #include "views/controls/button/image_button.h"
-#include "views/controls/menu/menu.h"
+#include "views/controls/menu/menu_delegate.h"
 #include "views/controls/scrollbar/scroll_bar.h"
 #include "views/repeat_controller.h"
 
 namespace views {
 
 class BaseScrollBarThumb;
+class MenuRunner;
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -23,10 +24,10 @@ class BaseScrollBarThumb;
 ///////////////////////////////////////////////////////////////////////////////
 class VIEWS_EXPORT BaseScrollBar : public ScrollBar,
                                    public ContextMenuController,
-                                   public Menu::Delegate {
+                                   public MenuDelegate {
  public:
   BaseScrollBar(bool horizontal, BaseScrollBarThumb* thumb);
-  virtual ~BaseScrollBar() { }
+  virtual ~BaseScrollBar();
 
   // Get the bounds of the "track" area that the thumb is free to slide within.
   virtual gfx::Rect GetTrackBounds() const = 0;
@@ -147,6 +148,8 @@ class VIEWS_EXPORT BaseScrollBar : public ScrollBar,
   // The position of the mouse within the scroll bar when the context menu
   // was invoked.
   int context_menu_mouse_position_;
+
+  scoped_ptr<MenuRunner> menu_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(BaseScrollBar);
 };

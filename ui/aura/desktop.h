@@ -67,6 +67,13 @@ class AURA_EXPORT Desktop : public ui::CompositorDelegate {
     toplevel_window_container_ = toplevel_window_container;
   }
 
+  static void set_compositor_factory_for_testing(ui::Compositor*(*factory)()) {
+    compositor_factory_ = factory;
+  }
+  static ui::Compositor* (*compositor_factory())() {
+    return compositor_factory_;
+  }
+
   // Sets the active window to |window| and the focused window to |to_focus|.
   // If |to_focus| is NULL, |window| is focused.
   void SetActiveWindow(Window* window, Window* to_focus);
@@ -99,6 +106,9 @@ class AURA_EXPORT Desktop : public ui::CompositorDelegate {
 
   // Used to schedule painting.
   ScopedRunnableMethodFactory<Desktop> schedule_paint_;
+
+  // Factory used to create Compositors. Settable by tests.
+  static ui::Compositor*(*compositor_factory_)();
 
   Window* active_window_;
 
