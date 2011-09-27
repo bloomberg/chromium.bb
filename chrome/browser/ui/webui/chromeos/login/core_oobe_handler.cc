@@ -36,6 +36,8 @@ CoreOobeHandler::~CoreOobeHandler() {
 void CoreOobeHandler::GetLocalizedStrings(
     base::DictionaryValue* localized_strings) {
   localized_strings->SetString(
+      "title", l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME));
+  localized_strings->SetString(
       "productName", l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME));
 }
 
