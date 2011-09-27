@@ -711,14 +711,19 @@ libc() {
 
 #@ everything            - Build and install untrusted SDK. no translator
 everything() {
+  everything-hg
 
+  everything-post-hg
+}
+
+#@ everything            - Checkout everything from the repositories
+everything-hg() {
   mkdir -p "${PNACL_ROOT}"
 
   checkout-all
 
   StepBanner "Updating upstreaming repository"
   update-all
-  everything-post-hg
 }
 
 #@ everything-post-hg does everything AFTER hg setup
@@ -744,6 +749,13 @@ everything-post-hg() {
   #      complete, so that sdk sanity checks don't fail
   misc-tools
   verify
+}
+
+#@ everything-clang builds and install Clang portable bitcode SDK
+everything-clang() {
+  everything-hg
+
+  StepBanner "Clang Portable Bitcode SDK (not implemented)"
 }
 
 
