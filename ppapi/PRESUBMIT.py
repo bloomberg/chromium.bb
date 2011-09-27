@@ -47,7 +47,7 @@ def CheckChange(input_api, output_api):
   #   --out to pick which files to examine (only the ones in the CL)
   ppapi_dir = input_api.PresubmitLocalPath()
   cmd = [ sys.executable, 'generator.py',
-          '--wnone', '--diff', '--test','--cgen', '--range=M13,M14']
+          '--wnone', '--diff', '--test','--cgen', '--range=M13,M16']
 
   # Only generate output for IDL files references (as *.h or *.idl) in this CL
   cmd.append('--out=' + ','.join([name + '.idl' for name in both]))
