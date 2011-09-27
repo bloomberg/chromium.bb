@@ -113,6 +113,13 @@ class TaskManagerGtk : public TaskManagerModelObserver {
         CompareImpl(model, a, b, IDS_TASK_MANAGER_PAGE_COLUMN);
   }
 
+  // Profile name sorting callback.
+  static gint CompareProfileName(GtkTreeModel* model, GtkTreeIter* a,
+                                 GtkTreeIter* b, gpointer task_manager) {
+    return reinterpret_cast<TaskManagerGtk*>(task_manager)->
+        CompareImpl(model, a, b, IDS_TASK_MANAGER_PROFILE_NAME_COLUMN);
+  }
+
   // Shared memory sorting callback.
   static gint CompareSharedMemory(GtkTreeModel* model, GtkTreeIter* a,
                                   GtkTreeIter* b, gpointer task_manager) {
