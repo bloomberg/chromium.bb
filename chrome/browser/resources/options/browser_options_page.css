@@ -16,6 +16,10 @@
   color: #666;
 }
 
+#startupPagesList > * {
+  max-width: 700px;
+}
+
 #startupPagesListDropmarker {
   background-clip: padding-box;
   background-color: hsl(214, 91%, 65%);
