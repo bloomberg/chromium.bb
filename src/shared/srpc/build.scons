@@ -6,11 +6,6 @@
 
 Import('env')
 
-if env.Bit('linux'):
-    env.Append(
-        CCFLAGS=['-fPIC' ],
-    )
-
 # NOTE: keep this sync'ed with nacl.scons
 trusted_untrusted_shared = [
     'invoke.c',
