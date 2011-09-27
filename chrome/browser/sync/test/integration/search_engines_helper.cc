@@ -170,4 +170,48 @@ TemplateURL* CreateTestTemplateURL(int seed) {
   return turl;
 }
 
+void AddSearchEngine(int profile, int seed) {
+  GetServiceForProfile(profile)->Add(CreateTestTemplateURL(seed));
+  if (test()->use_verifier())
+    GetVerifierService()->Add(CreateTestTemplateURL(seed));
+}
+
+void EditSearchEngine(int profile,
+                      const std::string& keyword,
+                      const std::string& short_name,
+                      const std::string& new_keyword,
+                      const std::string& url) {
+  const TemplateURL* turl = GetServiceForProfile(profile)->
+      GetTemplateURLForKeyword(ASCIIToUTF16(keyword));
+  EXPECT_TRUE(turl);
+  GetServiceForProfile(profile)->ResetTemplateURL(turl,
+                                                  ASCIIToUTF16(short_name),
+                                                  ASCIIToUTF16(new_keyword),
+                                                  url);
+  // Make sure we do the same on the verifier.
+  if (test()->use_verifier()) {
+    const TemplateURL* verifier_turl =
+        GetVerifierService()->GetTemplateURLForKeyword(ASCIIToUTF16(keyword));
+    EXPECT_TRUE(verifier_turl);
+    GetVerifierService()->ResetTemplateURL(verifier_turl,
+                                           ASCIIToUTF16(short_name),
+                                           ASCIIToUTF16(new_keyword),
+                                           url);
+  }
+}
+
+void DeleteSearchEngine(int profile, const std::string& keyword) {
+  const TemplateURL* turl = GetServiceForProfile(profile)->
+      GetTemplateURLForKeyword(ASCIIToUTF16(keyword));
+  EXPECT_TRUE(turl);
+  GetServiceForProfile(profile)->Remove(turl);
+  // Make sure we do the same on the verifier.
+  if (test()->use_verifier()) {
+    const TemplateURL* verifier_turl =
+        GetVerifierService()->GetTemplateURLForKeyword(ASCIIToUTF16(keyword));
+    EXPECT_TRUE(verifier_turl);
+    GetVerifierService()->Remove(verifier_turl);
+  }
+}
+
 }  // namespace search_engines_helper

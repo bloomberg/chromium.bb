@@ -44,6 +44,23 @@ bool AllServicesMatch();
 // the returned TemplateURL*.
 TemplateURL* CreateTestTemplateURL(int seed);
 
+// Add a search engine based on a seed to the service at index |profile| and the
+// verifier if it is used.
+void AddSearchEngine(int profile, int seed);
+
+// Retrieves a search engine from the service at index |profile| with original
+// keyword |keyword| and changes its user-visible fields. Does the same to the
+// verifier, if it is used.
+void EditSearchEngine(int profile,
+                      const std::string& keyword,
+                      const std::string& short_name,
+                      const std::string& new_keyword,
+                      const std::string& url);
+
+// Deletes a search engine from the service at index |profile| with original
+// keyword |keyword|. Does the same to the verifier, if it is used.
+void DeleteSearchEngine(int profile, const std::string& keyword);
+
 }  // namespace search_engines_helper
 
 #endif  // CHROME_BROWSER_SYNC_TEST_INTEGRATION_SEARCH_ENGINES_HELPER_H_

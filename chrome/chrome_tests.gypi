@@ -3158,6 +3158,7 @@
         'browser/sync/test/integration/two_client_extensions_sync_test.cc',
         'browser/sync/test/integration/two_client_passwords_sync_test.cc',
         'browser/sync/test/integration/two_client_preferences_sync_test.cc',
+        'browser/sync/test/integration/two_client_search_engines_sync_test.cc',
         'browser/sync/test/integration/two_client_sessions_sync_test.cc',
         'browser/sync/test/integration/two_client_themes_sync_test.cc',
         'browser/sync/test/integration/two_client_typed_urls_sync_test.cc',

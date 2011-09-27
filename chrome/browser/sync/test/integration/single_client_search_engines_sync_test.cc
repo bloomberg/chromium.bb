@@ -7,6 +7,7 @@
 #include "chrome/browser/sync/test/integration/search_engines_helper.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 
+using search_engines_helper::AddSearchEngine;
 using search_engines_helper::CreateTestTemplateURL;
 using search_engines_helper::GetServiceForProfile;
 using search_engines_helper::GetVerifierService;
@@ -25,10 +26,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientSearchEnginesSyncTest, Sanity) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(ServiceMatchesVerifier(0));
 
-  // TODO(stevet): Write a helper that adds a new search engine entry to both
-  // the verifier and a particular profile.
-  GetServiceForProfile(0)->Add(CreateTestTemplateURL(0));
-  GetVerifierService()->Add(CreateTestTemplateURL(0));
+  AddSearchEngine(0, 0);
 
   ASSERT_TRUE(GetClient(0)->AwaitSyncCycleCompletion(
       "Waiting for search engines to update."));
