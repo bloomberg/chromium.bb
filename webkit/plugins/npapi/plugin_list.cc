@@ -627,7 +627,18 @@ void PluginList::GetPluginGroups(
 PluginGroup* PluginList::GetPluginGroup(
     const webkit::WebPluginInfo& web_plugin_info) {
   base::AutoLock lock(lock_);
-  return new PluginGroup(*AddToPluginGroups(web_plugin_info, &plugin_groups_));
+  for (size_t i = 0; i < plugin_groups_->size(); ++i) {
+    const std::vector<webkit::WebPluginInfo>& plugins =
+        plugin_groups_[i]->web_plugin_infos();
+    for (size_t j = 0; j < plugins.size(); ++j) {
+      if (plugins[j].path == web_plugin_info.path) {
+        return new PluginGroup(*plugin_groups_[i]);
+      }
+    }
+  }
+  PluginGroup* group = PluginGroup::FromWebPluginInfo(web_plugin_info);
+  group->AddPlugin(web_plugin_info);
+  return group;
 }
 
 string16 PluginList::GetPluginGroupName(const std::string& identifier) {
@@ -636,13 +647,6 @@ string16 PluginList::GetPluginGroupName(const std::string& identifier) {
       return plugin_groups_[i]->GetGroupName();
   }
   return string16();
-}
-
-std::string PluginList::GetPluginGroupIdentifier(
-    const webkit::WebPluginInfo& web_plugin_info) {
-  base::AutoLock lock(lock_);
-  PluginGroup* group = AddToPluginGroups(web_plugin_info, &plugin_groups_);
-  return group->identifier();
 }
 
 void PluginList::AddHardcodedPluginGroups(ScopedVector<PluginGroup>* groups) {

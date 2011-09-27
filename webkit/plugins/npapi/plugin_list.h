@@ -160,19 +160,12 @@ class PluginList {
                        std::vector<PluginGroup>* plugin_groups);
 
   // Returns a copy of the PluginGroup corresponding to the given WebPluginInfo.
-  // If no such group exists, it is created and added to the cache.
   // The caller takes ownership of the returned PluginGroup.
   PluginGroup* GetPluginGroup(const webkit::WebPluginInfo& web_plugin_info);
 
   // Returns the name of the PluginGroup with the given identifier.
   // If no such group exists, an empty string is returned.
   string16 GetPluginGroupName(const std::string& identifier);
-
-  // Returns the identifier string of the PluginGroup corresponding to the given
-  // WebPluginInfo. If no such group exists, it is created and added to the
-  // cache.
-  std::string GetPluginGroupIdentifier(
-      const webkit::WebPluginInfo& web_plugin_info);
 
   // Load a specific plugin with full path.
   void LoadPlugin(const FilePath& filename,

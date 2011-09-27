@@ -61,6 +61,10 @@ class PluginListTest : public testing::Test {
     plugin_list_.AddPluginToLoad(bar_plugin_);
   }
 
+  PluginGroup* AddToPluginGroups(const WebPluginInfo& plugin) {
+    return plugin_list_.AddToPluginGroups(plugin, &plugin_list_.plugin_groups_);
+  }
+
  protected:
   MockPluginList plugin_list_;
   WebPluginInfo foo_plugin_;
@@ -76,8 +80,12 @@ TEST_F(PluginListTest, GetPlugins) {
 }
 
 TEST_F(PluginListTest, GetPluginGroup) {
-  scoped_ptr<PluginGroup> foo_group(plugin_list_.GetPluginGroup(foo_plugin_));
+  PluginGroup* foo_group = AddToPluginGroups(foo_plugin_);
   EXPECT_EQ(ASCIIToUTF16(kFooGroupName), foo_group->GetGroupName());
+
+  scoped_ptr<PluginGroup> foo_group_copy(
+      plugin_list_.GetPluginGroup(foo_plugin_));
+  EXPECT_EQ(ASCIIToUTF16(kFooGroupName), foo_group_copy->GetGroupName());
 }
 
 TEST_F(PluginListTest, EmptyGroup) {
