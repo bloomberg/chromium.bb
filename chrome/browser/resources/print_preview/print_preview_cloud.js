@@ -119,13 +119,11 @@ cr.define('cloudprint', function() {
       var searchResult = JSON.parse(xhr.responseText);
       if (searchResult['success']) {
         var printerList = searchResult['printers'];
-        callback.call(this, printerList);
-      } else {
-        callback.call(this, null);
+        addCloudPrinters(printerList, callback);
+        return;
       }
-    } else {
-      callback.call(this, null);
     }
+    addCloudPrinters(null, callback);
   }
 
   /**
@@ -306,7 +304,8 @@ cr.define('cloudprint', function() {
                              cloud_print_data,
                              add_callback,
                              update_caps_callback) {
-    var printer = add_callback([JSON.parse(cloud_print_data)]);
+    var printer = addCloudPrinters([JSON.parse(cloud_print_data)],
+                                   add_callback);
     if (printer)
       update_caps_callback(printer);
   }
@@ -350,7 +349,87 @@ cr.define('cloudprint', function() {
     printer.cloudPrintOptions.id = id;
   }
 
+  /**
+   * Test if a particular cloud printer has already been added to the
+   * printer dropdown.
+   * @param {string} id A unique value to track this printer.
+   * @return {boolean} True if |id| has previously been passed to
+   *     trackCloudPrinterAdded.
+   */
+  function cloudPrinterAlreadyAdded(id) {
+    return addedCloudPrinters[id];
+  }
+
+  /**
+   * Test if a particular printer has already been added to the printers
+   * dropdown.  Records it if not.
+   * @param {string} id A unique value to track this printer.
+   * @return {boolean} False if adding this printer would exceed
+   *     |maxCloudPrinters|.
+   */
+  function trackCloudPrinterAdded(id) {
+    if (Object.keys(addedCloudPrinters).length < maxCloudPrinters) {
+      addedCloudPrinters[id] = true;
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  /**
+   * Add cloud printers to the list drop down.
+   * Called from the cloudprint object on receipt of printer information from
+   * the cloud print server.
+   * @param {Array} printers Array of printer info objects.
+   * @return {Object} The currently selected printer.
+   */
+  function addCloudPrinters(printers, addDestinationListOptionAtPosition) {
+    var isFirstPass = false;
+    var printerList = $('printer-list');
+
+    if (firstCloudPrintOptionPos == lastCloudPrintOptionPos) {
+      isFirstPass = true;
+      // Remove empty entry added by setDefaultPrinter.
+      if (printerList[0] && printerList[0].textContent == '')
+        printerList.remove(0);
+    }
+    if (printers != null) {
+      for (var i = 0; i < printers.length; i++) {
+        if (!cloudPrinterAlreadyAdded(printers[i]['id'])) {
+          if (!trackCloudPrinterAdded(printers[i]['id'])) {
+            break;
+          }
+          var option = addDestinationListOptionAtPosition(
+              lastCloudPrintOptionPos++,
+              printers[i]['name'],
+              printers[i]['id'],
+              printers[i]['name'] == defaultOrLastUsedPrinterName,
+              false,
+              false);
+          cloudprint.setCloudPrint(option,
+                                   printers[i]['name'],
+                                   printers[i]['id']);
+        }
+      }
+    } else {
+      if (!cloudPrinterAlreadyAdded(SIGN_IN)) {
+        addDestinationListOptionAtPosition(lastCloudPrintOptionPos++,
+                                           localStrings.getString('signIn'),
+                                           SIGN_IN,
+                                           false,
+                                           false,
+                                           false);
+        trackCloudPrinterAdded(SIGN_IN);
+      }
+    }
+    var selectedPrinter = printerList.selectedIndex;
+    if (selectedPrinter < 0)
+      return null;
+    return printerList.options[selectedPrinter];
+  }
+
   return {
+    addCloudPrinters: addCloudPrinters,
     colorIsDefault: colorIsDefault,
     fetchPrinters: fetchPrinters,
     getBaseURL: getBaseURL,

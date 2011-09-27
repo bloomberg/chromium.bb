@@ -565,8 +565,6 @@ void PrintPreviewHandler::RegisterMessages() {
       NewCallback(this, &PrintPreviewHandler::HandleShowSystemDialog));
   web_ui_->RegisterMessageCallback("signIn",
       NewCallback(this, &PrintPreviewHandler::HandleSignin));
-  web_ui_->RegisterMessageCallback("printWithCloudPrint",
-      NewCallback(this, &PrintPreviewHandler::HandlePrintWithCloudPrint));
   web_ui_->RegisterMessageCallback("manageCloudPrinters",
       NewCallback(this, &PrintPreviewHandler::HandleManageCloudPrint));
   web_ui_->RegisterMessageCallback("manageLocalPrinters",
@@ -715,13 +713,16 @@ void PrintPreviewHandler::HandlePrint(const ListValue* args) {
 
   settings->SetBoolean(printing::kSettingHeaderFooterEnabled, false);
 
-  bool print_to_cloud = settings->HasKey(printing::kSettingCloudPrintId);
-  if (print_to_cloud) {
+  bool is_cloud_printer = settings->HasKey(printing::kSettingCloudPrintId);
+  bool is_cloud_dialog = settings->HasKey(printing::kSettingCloudPrintDialog);
+  if (is_cloud_printer) {
     std::string print_ticket;
     args->GetString(1, &print_ticket);
     SendCloudPrintJob(*settings, print_ticket);
   } else if (print_to_pdf) {
     HandlePrintToPdf(*settings);
+  } else if (is_cloud_dialog) {
+    HandlePrintWithCloudPrint();
   } else {
     ReportPrintSettingsStats(*settings);
     ReportUserActionHistogram(PRINT_TO_PRINTER);
@@ -830,7 +831,7 @@ void PrintPreviewHandler::HandleSignin(const ListValue* /*args*/) {
   cloud_print_signin_dialog::CreateCloudPrintSigninDialog(preview_tab());
 }
 
-void PrintPreviewHandler::HandlePrintWithCloudPrint(const ListValue* /*args*/) {
+void PrintPreviewHandler::HandlePrintWithCloudPrint() {
   // Record the number of times the user asks to print via cloud print
   // instead of the print preview dialog.
   ReportStats();

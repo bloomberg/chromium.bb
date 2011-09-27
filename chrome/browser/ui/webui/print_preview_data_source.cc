@@ -93,25 +93,26 @@ PrintPreviewDataSource::PrintPreviewDataSource()
   AddLocalizedString("printPreviewPageLabelPlural",
                      IDS_PRINT_PREVIEW_PAGE_LABEL_PLURAL);
   const string16 shortcut_text(UTF8ToUTF16(kAdvancedPrintShortcut));
+#if defined(OS_CHROMEOS)
+  AddString("cloudPrintDialogOption", l10n_util::GetStringFUTF16(
+      IDS_PRINT_PREVIEW_CLOUD_DIALOG_OPTION,
+      shortcut_text));
+  AddLocalizedString("printWithCloudPrint",
+                     IDS_PRINT_PREVIEW_MORE_PRINTERS);
+#else
   AddString("systemDialogOption", l10n_util::GetStringFUTF16(
       IDS_PRINT_PREVIEW_SYSTEM_DIALOG_OPTION,
       shortcut_text));
-
+  AddLocalizedString("printWithCloudPrint",
+                     IDS_PRINT_PREVIEW_PRINT_WITH_CLOUD_PRINT);
+#endif
   AddLocalizedString("pageRangeInstruction",
                      IDS_PRINT_PREVIEW_PAGE_RANGE_INSTRUCTION);
   AddLocalizedString("copiesInstruction", IDS_PRINT_PREVIEW_COPIES_INSTRUCTION);
   AddLocalizedString("signIn", IDS_PRINT_PREVIEW_SIGN_IN);
-  AddLocalizedString("cloudPrinters", IDS_PRINT_PREVIEW_CLOUD_PRINTERS);
-  AddLocalizedString("localPrinters", IDS_PRINT_PREVIEW_LOCAL_PRINTERS);
-  AddLocalizedString("manageCloudPrinters",
-                     IDS_PRINT_PREVIEW_MANAGE_CLOUD_PRINTERS);
-  AddLocalizedString("manageLocalPrinters",
-                     IDS_PRINT_PREVIEW_MANAGE_LOCAL_PRINTERS);
   AddLocalizedString("managePrinters", IDS_PRINT_PREVIEW_MANAGE_PRINTERS);
   AddLocalizedString("printWithCloudPrintWait",
                      IDS_PRINT_PREVIEW_PRINT_WITH_CLOUD_PRINT_WAIT);
-  AddLocalizedString("printWithCloudPrint",
-                     IDS_PRINT_PREVIEW_PRINT_WITH_CLOUD_PRINT);
   AddLocalizedString("incrementTitle", IDS_PRINT_PREVIEW_INCREMENT_TITLE);
   AddLocalizedString("decrementTitle", IDS_PRINT_PREVIEW_DECREMENT_TITLE);
   AddLocalizedString("printPagesLabel", IDS_PRINT_PREVIEW_PRINT_PAGES_LABEL);
