@@ -118,6 +118,62 @@ void SetValueList(const ListValue* list,
   profile->SetMultiInfo(type, values);
 }
 
+// Get the multi-valued element for |type| and return it in |ListValue| form.
+void GetNameList(const AutofillProfile& profile,
+                 scoped_ptr<ListValue>* names) {
+  std::vector<string16> first_names;
+  std::vector<string16> middle_names;
+  std::vector<string16> last_names;
+  profile.GetMultiInfo(NAME_FIRST, &first_names);
+  profile.GetMultiInfo(NAME_MIDDLE, &middle_names);
+  profile.GetMultiInfo(NAME_LAST, &last_names);
+  DCHECK_EQ(first_names.size(), middle_names.size());
+  DCHECK_EQ(first_names.size(), last_names.size());
+
+  names->reset(new ListValue);
+  for (size_t i = 0; i < first_names.size(); ++i) {
+    ListValue* name = new ListValue;  // owned by |list|
+    name->Set(0, Value::CreateStringValue(first_names[i]));
+    name->Set(1, Value::CreateStringValue(middle_names[i]));
+    name->Set(2, Value::CreateStringValue(last_names[i]));
+    (*names)->Set(i, name);
+  }
+}
+
+// Set the multi-valued element for |type| from input |list| values.
+void SetNameList(const ListValue* names,
+                 AutofillProfile* profile) {
+  const size_t size = names->GetSize();
+  std::vector<string16> first_names(size);
+  std::vector<string16> middle_names(size);
+  std::vector<string16> last_names(size);
+
+  for (size_t i = 0; i < size; ++i) {
+    ListValue* name;
+    bool success = names->GetList(i, &name);
+    DCHECK(success);
+
+    string16 first_name;
+    success = name->GetString(0, &first_name);
+    DCHECK(success);
+    first_names[i] = first_name;
+
+    string16 middle_name;
+    success = name->GetString(1, &middle_name);
+    DCHECK(success);
+    middle_names[i] = middle_name;
+
+    string16 last_name;
+    success = name->GetString(2, &last_name);
+    DCHECK(success);
+    last_names[i] = last_name;
+  }
+
+  profile->SetMultiInfo(NAME_FIRST, first_names);
+  profile->SetMultiInfo(NAME_MIDDLE, middle_names);
+  profile->SetMultiInfo(NAME_LAST, last_names);
+}
+
 // Pulls the phone number |index|, |phone_number_list|, and |country_code| from
 // the |args| input.
 void ExtractPhoneNumberInformation(const ListValue* args,
@@ -267,8 +323,12 @@ void AutofillOptionsHandler::SetAddressOverlayStrings(
     DictionaryValue* localized_strings) {
   localized_strings->SetString("autofillEditAddressTitle",
       l10n_util::GetStringUTF16(IDS_AUTOFILL_EDIT_ADDRESS_CAPTION));
-  localized_strings->SetString("autofillFullNameLabel",
-      l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_FULL_NAME));
+  localized_strings->SetString("autofillFirstNameLabel",
+      l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_FIRST_NAME));
+  localized_strings->SetString("autofillMiddleNameLabel",
+      l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_MIDDLE_NAME));
+  localized_strings->SetString("autofillLastNameLabel",
+      l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_LAST_NAME));
   localized_strings->SetString("autofillCompanyNameLabel",
       l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_COMPANY_NAME));
   localized_strings->SetString("autofillAddrLine1Label",
@@ -283,12 +343,16 @@ void AutofillOptionsHandler::SetAddressOverlayStrings(
       l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_PHONE));
   localized_strings->SetString("autofillEmailLabel",
       l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_EMAIL));
-  localized_strings->SetString("addNewNamePlaceholder",
-      l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_ADD_NEW_NAME));
-  localized_strings->SetString("addNewPhonePlaceholder",
-      l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_ADD_NEW_PHONE));
-  localized_strings->SetString("addNewEmailPlaceholder",
-      l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_ADD_NEW_EMAIL));
+  localized_strings->SetString("autofillAddFirstNamePlaceholder",
+      l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_ADD_FIRST_NAME));
+  localized_strings->SetString("autofillAddMiddleNamePlaceholder",
+      l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_ADD_MIDDLE_NAME));
+  localized_strings->SetString("autofillAddLastNamePlaceholder",
+      l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_ADD_LAST_NAME));
+  localized_strings->SetString("autofillAddPhonePlaceholder",
+      l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_ADD_PHONE));
+  localized_strings->SetString("autofillAddEmailPlaceholder",
+      l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_ADD_EMAIL));
 
   std::string app_locale = AutofillCountry::ApplicationLocale();
   std::string default_country_code =
@@ -389,7 +453,7 @@ void AutofillOptionsHandler::LoadAddressEditor(const ListValue* args) {
   DictionaryValue address;
   address.SetString("guid", profile->guid());
   scoped_ptr<ListValue> list;
-  GetValueList(*profile, NAME_FULL, &list);
+  GetNameList(*profile, &list);
   address.Set("fullName", list.release());
   address.SetString("companyName", profile->GetInfo(COMPANY_NAME));
   address.SetString("addrLine1", profile->GetInfo(ADDRESS_HOME_LINE1));
@@ -457,7 +521,7 @@ void AutofillOptionsHandler::SetAddress(const ListValue* args) {
   string16 value;
   ListValue* list_value;
   if (args->GetList(1, &list_value))
-    SetValueList(list_value, NAME_FULL, &profile);
+    SetNameList(list_value, &profile);
   if (args->GetString(2, &value))
     profile.SetInfo(COMPANY_NAME, value);
   if (args->GetString(3, &value))

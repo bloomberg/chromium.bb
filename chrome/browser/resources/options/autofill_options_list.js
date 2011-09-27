@@ -115,7 +115,7 @@ cr.define('options.autofillOptions', function() {
   function ValuesListItem(list, entry) {
     var el = cr.doc.createElement('div');
     el.list = list;
-    el.value = entry;
+    el.value = entry ? entry : '';
     el.__proto__ = ValuesListItem.prototype;
     el.decorate();
 
@@ -129,6 +129,7 @@ cr.define('options.autofillOptions', function() {
     decorate: function() {
       InlineEditableItem.prototype.decorate.call(this);
 
+      // Note: This must be set prior to calling |createEditableTextCell|.
       this.isPlaceholder = !this.value;
 
       // The stored value.
@@ -136,78 +137,170 @@ cr.define('options.autofillOptions', function() {
       this.contentElement.appendChild(cell);
       this.input = cell.querySelector('input');
 
+      if (this.isPlaceholder) {
+        this.input.placeholder = this.list.getAttribute('placeholder');
+        this.deletable = false;
+      }
+
       this.addEventListener('commitedit', this.onEditCommitted_);
     },
 
     /**
+     * @return This item's value.
+     * @protected
+     */
+    value_: function() {
+      return this.input.value;
+    },
+
+    /**
+     * @param {Object} value The value to test.
+     * @return true if the given value is non-empty.
+     * @protected
+     */
+    valueIsNonEmpty_: function(value) {
+      return !!value;
+    },
+
+    /**
+     * @return true if value1 is logically equal to value2.
+     */
+    valuesAreEqual_: function(value1, value2) {
+      return value1 === value2;
+    },
+
+    /**
+     * Clears the item's value.
+     * @protected
+     */
+    clearValue_: function() {
+      this.input.value = '';
+    },
+
+    /**
      * Called when committing an edit.
+     * If this is an "Add ..." item, committing a non-empty value adds that
+     * value to the end of the values list, but also leaves this "Add ..." item
+     * in place.
      * @param {Event} e The end event.
      * @private
      */
     onEditCommitted_: function(e) {
+      var value = this.value_();
       var i = this.list.items.indexOf(this);
-      if (this.input.value == this.list.dataModel.item(i))
+      if (i < this.list.dataModel.length &&
+          this.valuesAreEqual_(value, this.list.dataModel.item(i))) {
         return;
+      }
 
-      if (this.input.value &&
-          this.list.dataModel.indexOf(this.input.value) == -1) {
+      var entries = this.list.dataModel.slice();
+      if (this.valueIsNonEmpty_(value) &&
+          !entries.some(this.valuesAreEqual_.bind(this, value))) {
         // Update with new value.
-        this.list.validateAndSave(i, 1, this.input.value);
+        if (this.isPlaceholder) {
+          // It is important that updateIndex is done before validateAndSave.
+          // Otherwise we can not be sure about AddRow index.
+          this.list.dataModel.updateIndex(i);
+          this.list.validateAndSave(i, 0, value);
+        } else {
+          this.list.validateAndSave(i, 1, value);
+        }
       } else {
         // Reject empty values and duplicates.
-        this.list.dataModel.splice(i, 1);
+        if (!this.isPlaceholder)
+          this.list.dataModel.splice(i, 1);
+        else
+          this.clearValue_();
       }
     },
   };
 
   /**
-   * Creates a new list item for the Add New Item row, which doesn't represent
-   * an actual entry in the values list but allows the user to add new
-   * values.
-   * @param {AutofillValuesList} entry The parent list of this item.
+   * Creates a new name value list item.
+   * @param {AutofillNameValuesList} list The parent list of this item.
+   * @param {array} entry An array of [first, middle, last] names.
    * @constructor
-   * @extends {cr.ui.ValuesListItem}
+   * @extends {options.ValuesListItem}
    */
-  function ValuesAddRowListItem(list) {
+  function NameListItem(list, entry) {
     var el = cr.doc.createElement('div');
     el.list = list;
-    el.__proto__ = ValuesAddRowListItem.prototype;
+    el.first = entry ? entry[0] : '';
+    el.middle = entry ? entry[1] : '';
+    el.last = entry ? entry[2] : '';
+    el.__proto__ = NameListItem.prototype;
     el.decorate();
 
     return el;
   }
 
-  ValuesAddRowListItem.prototype = {
+  NameListItem.prototype = {
     __proto__: ValuesListItem.prototype,
 
+    /** @inheritDoc */
     decorate: function() {
-      ValuesListItem.prototype.decorate.call(this);
-      this.input.value = '';
-      this.input.placeholder = this.list.getAttribute('placeholder');
-      this.deletable = false;
+      InlineEditableItem.prototype.decorate.call(this);
+
+      // Note: This must be set prior to calling |createEditableTextCell|.
+      this.isPlaceholder = !this.first && !this.middle && !this.last;
+
+      // The stored value.
+      // For the simulated static "input element" to display correctly, the
+      // value must not be empty.  We use a space to force the UI to render
+      // correctly when the value is logically empty.
+      var cell = this.createEditableTextCell(this.first);
+      this.contentElement.appendChild(cell);
+      this.firstNameInput = cell.querySelector('input');
+
+      cell = this.createEditableTextCell(this.middle);
+      this.contentElement.appendChild(cell);
+      this.middleNameInput = cell.querySelector('input');
+
+      cell = this.createEditableTextCell(this.last);
+      this.contentElement.appendChild(cell);
+      this.lastNameInput = cell.querySelector('input');
+
+      if (this.isPlaceholder) {
+        this.firstNameInput.placeholder =
+            templateData.autofillAddFirstNamePlaceholder;
+        this.middleNameInput.placeholder =
+            templateData.autofillAddMiddleNamePlaceholder;
+        this.lastNameInput.placeholder =
+            templateData.autofillAddLastNamePlaceholder;
+        this.deletable = false;
+      }
+
+      this.addEventListener('commitedit', this.onEditCommitted_);
     },
 
-    /**
-     * Called when committing an edit.  Committing a non-empty value adds it
-     * to the end of the values list, leaving this "AddRow" in place.
-     * @param {Event} e The end event.
-     * @extends {options.ValuesListItem}
-     * @private
-     */
-    onEditCommitted_: function(e) {
-      var i = this.list.items.indexOf(this);
-      if (i < 0 || i >= this.list.dataModel.length || !this.input.value.length)
-        return;
+    /** @inheritDoc */
+    value_: function() {
+      return [ this.firstNameInput.value,
+               this.middleNameInput.value,
+               this.lastNameInput.value ];
+    },
 
-      if (this.input.value &&
-          this.list.dataModel.indexOf(this.input.value) == -1) {
-        // It is important that updateIndex is done before validateAndSave.
-        // Otherwise we can not be sure about AddRow index.
-        this.list.dataModel.updateIndex(i);
-        this.list.validateAndSave(i, 0, this.input.value);
-      } else {
-        this.input.value = '';
-      }
+    /** @inheritDoc */
+    valueIsNonEmpty_: function(value) {
+      return value[0] || value[1] || value[2];
+    },
+
+    /** @inheritDoc */
+    valuesAreEqual_: function(value1, value2) {
+      // First, check for null values.
+      if (!value1 || !value2)
+        return value1 == value2;
+
+      return value1[0] === value2[0] &&
+             value1[1] === value2[1] &&
+             value1[2] === value2[2];
+    },
+
+    /** @inheritDoc */
+    clearValue_: function() {
+      this.firstNameInput.value = '';
+      this.middleNameInput.value = '';
+      this.lastNameInput.value = '';
     },
   };
 
@@ -293,10 +386,7 @@ cr.define('options.autofillOptions', function() {
 
     /** @inheritDoc */
     createItem: function(entry) {
-      if (entry != null)
-        return new ValuesListItem(this, entry);
-      else
-        return new ValuesAddRowListItem(this);
+      return new ValuesListItem(this, entry);
     },
 
     /** @inheritDoc */
@@ -354,14 +444,26 @@ cr.define('options.autofillOptions', function() {
    * @constructor
    * @extends {options.AutofillValuesList}
    */
+  var AutofillNameValuesList = cr.ui.define('list');
+
+  AutofillNameValuesList.prototype = {
+    __proto__: AutofillValuesList.prototype,
+
+    /** @inheritDoc */
+    createItem: function(entry) {
+      return new NameListItem(this, entry);
+    },
+  };
+
+  /**
+   * Create a new value list for phone number validation.
+   * @constructor
+   * @extends {options.AutofillValuesList}
+   */
   var AutofillPhoneValuesList = cr.ui.define('list');
 
   AutofillPhoneValuesList.prototype = {
     __proto__: AutofillValuesList.prototype,
-
-    decorate: function() {
-      AutofillValuesList.prototype.decorate.call(this);
-    },
 
     /** @inheritDoc */
     validateAndSave: function(index, remove, value) {
@@ -379,10 +481,11 @@ cr.define('options.autofillOptions', function() {
     AddressListItem: AddressListItem,
     CreditCardListItem: CreditCardListItem,
     ValuesListItem: ValuesListItem,
-    ValuesAddRowListItem: ValuesAddRowListItem,
+    NameListItem: NameListItem,
     AutofillAddressList: AutofillAddressList,
     AutofillCreditCardList: AutofillCreditCardList,
     AutofillValuesList: AutofillValuesList,
+    AutofillNameValuesList: AutofillNameValuesList,
     AutofillPhoneValuesList: AutofillPhoneValuesList,
   };
 });

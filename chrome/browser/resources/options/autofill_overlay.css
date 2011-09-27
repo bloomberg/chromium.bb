@@ -22,18 +22,6 @@ div.input {
   padding: 2px;
 }
 
-#autofill-edit-address-overlay list#full-name-list {
-  width: 237px;
-}
-
-#autofill-edit-address-overlay list#full-name-list div.static-text {
-  width: 202px;
-}
-
-#autofill-edit-address-overlay list#full-name-list input {
-  width: 212px;
-}
-
 /* Size to match large name fields. */
 #company-name, #addr-line-1, #addr-line-2 {
   width: 206px;
@@ -55,9 +43,53 @@ div.input {
   -webkit-padding-start: 4px;
   -webkit-padding-end: 4px;
   border: 1px solid darkGray;
+  /* Set the line-height and min-height to match the height of an input element,
+   * so that even empty cells renderer with the correct height.
+   */
+  line-height: 1.75em;
+  min-height: 1.75em;
   width: 141px;
 }
 
 #autofill-edit-address-overlay list input {
   width: 151px;
+}
+
+#autofill-name-labels {
+  -webkit-box-orient: horizontal;
+  /* Set the margin to compensate for each list item's close button and
+   * padding.
+   */
+  -webkit-margin-end: 25px;
+  display: -webkit-box;
+}
+
+#autofill-name-labels label {
+  -webkit-box-flex: 1;
+  display: block;
+  /* Set the minimum width to the size of an input element, so that all boxes
+   * have an equal amount of flex space to work with.
+   */
+  min-width: 141px;
+}
+
+#autofill-edit-address-overlay list#full-name-list div.static-text {
+  width: 131px;
+}
+
+#autofill-edit-address-overlay list#full-name-list input {
+  width: 141px;
+}
+
+#autofill-edit-address-overlay list#full-name-list {
+  width: 100%;
+}
+
+#full-name-list div[role="listitem"] > div {
+  -webkit-box-orient: horizontal;
+  display: -webkit-box;
+}
+
+#full-name-list div[role="listitem"] > div > div {
+  -webkit-box-flex: 1;
 }

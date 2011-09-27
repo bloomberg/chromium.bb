@@ -7931,8 +7931,14 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <ph name="SAVED_BYTES">$1<ex>5</ex></ph> / <ph name="TOTAL_BYTES">$2<ex>13</ex></ph> bytes, Interrupted
       </message>
 
-      <message name="IDS_AUTOFILL_DIALOG_FULL_NAME" desc="The label of the Full name entry.">
-        Full name
+      <message name="IDS_AUTOFILL_DIALOG_FIRST_NAME" desc="The label of the first name entry.">
+        First name
+      </message>
+      <message name="IDS_AUTOFILL_DIALOG_MIDDLE_NAME" desc="The label of the middle name entry.">
+        Middle name(s)
+      </message>
+      <message name="IDS_AUTOFILL_DIALOG_LAST_NAME" desc="The label of the last name entry.">
+        Last name
       </message>
       <message name="IDS_AUTOFILL_DIALOG_EMAIL" desc="The label of the Email entry.">
         Email
@@ -7993,14 +7999,20 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_AUTOFILL_DIALOG_PHONE" desc="The label of the Phone entry.">
         Phone
       </message>
-      <message name="IDS_AUTOFILL_DIALOG_ADD_NEW_NAME" desc="The placeholder text of the name field.">
-        Add new name
+      <message name="IDS_AUTOFILL_DIALOG_ADD_FIRST_NAME" desc="The placeholder text of the first name field.">
+        Add first name
       </message>
-      <message name="IDS_AUTOFILL_DIALOG_ADD_NEW_PHONE" desc="The placeholder text of the phone field.">
-        Add new phone
+      <message name="IDS_AUTOFILL_DIALOG_ADD_MIDDLE_NAME" desc="The placeholder text of the middle name field.">
+        Add middle name(s)
       </message>
-      <message name="IDS_AUTOFILL_DIALOG_ADD_NEW_EMAIL" desc="The placeholder text of the email field.">
-        Add new email
+      <message name="IDS_AUTOFILL_DIALOG_ADD_LAST_NAME" desc="The placeholder text of the last name field.">
+        Add last name
+      </message>
+      <message name="IDS_AUTOFILL_DIALOG_ADD_PHONE" desc="The placeholder text of the phone field.">
+        Add phone number
+      </message>
+      <message name="IDS_AUTOFILL_DIALOG_ADD_EMAIL" desc="The placeholder text of the email field.">
+        Add email address
       </message>
       <message name="IDS_AUTOFILL_DIALOG_NAME_ON_CARD" desc="The label of the Name on card entry.">
         Name on card

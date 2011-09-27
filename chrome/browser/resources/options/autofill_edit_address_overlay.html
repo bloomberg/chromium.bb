@@ -1,13 +1,18 @@
 <div id="autofill-edit-address-overlay" class="page" hidden>
   <h1 id="autofill-address-title"></h1>
   <div class="content-area">
-    <div class="input">
-      <label>
-        <div><span i18n-content="autofillFullNameLabel"></span></div>
-        <list id="full-name-list"
-            i18n-values="placeholder:addNewNamePlaceholder"></list>
+    <div id="autofill-name-labels">
+      <label for="first-name">
+        <span i18n-content="autofillFirstNameLabel"></span>
+      </label>
+      <label for="middle-name">
+        <span i18n-content="autofillMiddleNameLabel"></span>
+      </label>
+      <label for="last-name">
+        <span i18n-content="autofillLastNameLabel"></span>
       </label>
     </div>
+    <list id="full-name-list"></list>
     <div class="input">
       <label>
         <div><span i18n-content="autofillCompanyNameLabel"></span></div>
@@ -76,11 +81,11 @@
       <div class="row">
         <div class="input cell">
           <list id="phone-list"
-              i18n-values="placeholder:addNewPhonePlaceholder"></list>
+              i18n-values="placeholder:autofillAddPhonePlaceholder"></list>
         </div>
         <div class="input cell">
           <list id="email-list"
-              i18n-values="placeholder:addNewEmailPlaceholder"></list>
+              i18n-values="placeholder:autofillAddEmailPlaceholder"></list>
         </div>
       </div>
     </div>
