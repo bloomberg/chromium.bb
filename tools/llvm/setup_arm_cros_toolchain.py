@@ -32,7 +32,7 @@ CODE_SOURCERY_PREFIX=""
 CODE_SOURCERY_JAIL = J(BASE_DIR, 'arm-2009q3', ARM_CROSS_TARGET, 'libc')
 LD_SCRIPT_TRUSTED = J(BASE_DIR, 'ld_script_arm_trusted')
 
-BASE_CC = ("%s%s-%%s -Werror -O2 %%s "
+BASE_CC = ("%s/%s-%%s -Werror -O2 %%s "
            "-fdiagnostics-show-option "
            ## "-march=armv6 " ## -I%s/usr/include
            ) % ("/usr/x86_64-pc-linux-gnu/armv7a-cros-linux-gnueabi/gcc-bin/4.4.3",
