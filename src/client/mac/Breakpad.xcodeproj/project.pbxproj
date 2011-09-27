@@ -666,7 +666,7 @@
 		F9C44DAF0EF07288003AEBAA /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = testapp/Info.plist; sourceTree = "<group>"; };
 		F9C44DB00EF07288003AEBAA /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = main.m; path = testapp/main.m; sourceTree = "<group>"; };
 		F9C44DB10EF07288003AEBAA /* TestClass.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = TestClass.mm; path = testapp/TestClass.mm; sourceTree = "<group>"; };
-		F9C44DB90EF072A0003AEBAA /* English */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = English; path = testapp/English.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		F9C44DB90EF072A0003AEBAA /* English */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = English; path = testapp/English.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		F9C44DBB0EF072A0003AEBAA /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = testapp/English.lproj/MainMenu.xib; sourceTree = "<group>"; };
 		F9C44DBF0EF0778F003AEBAA /* Controller.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Controller.h; path = testapp/Controller.h; sourceTree = "<group>"; };
 		F9C44DC00EF0778F003AEBAA /* TestClass.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TestClass.h; path = testapp/TestClass.h; sourceTree = "<group>"; };
