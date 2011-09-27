@@ -6,8 +6,13 @@
 #define VIEWS_EXAMPLES_SINGLE_SPLIT_VIEW_EXAMPLE_H_
 #pragma once
 
-#include "views/controls/single_split_view.h"
+#include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "views/examples/example_base.h"
+
+namespace views {
+class SingleSplitView;
+}
 
 namespace examples {
 
@@ -17,28 +22,10 @@ class SingleSplitViewExample : public ExampleBase {
   virtual ~SingleSplitViewExample();
 
   // Overridden from ExampleBase:
-  virtual std::wstring GetExampleTitle();
-  virtual void CreateExampleView(views::View* container);
+  virtual std::wstring GetExampleTitle() OVERRIDE;
+  virtual void CreateExampleView(views::View* container) OVERRIDE;
 
  private:
-  // SingleSplitView's content, which draws gradient color on background.
-  class SplittedView : public views::View {
-   public:
-    SplittedView();
-    virtual ~SplittedView();
-
-    void SetColor(SkColor from, SkColor to);
-
-    // Overridden from views::View:
-    virtual gfx::Size GetPreferredSize();
-    virtual gfx::Size GetMinimumSize();
-    virtual void Layout();
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(SplittedView);
-  };
-
-  // The SinleSplitView to test.
   views::SingleSplitView* single_split_view_;
 
   DISALLOW_COPY_AND_ASSIGN(SingleSplitViewExample);
