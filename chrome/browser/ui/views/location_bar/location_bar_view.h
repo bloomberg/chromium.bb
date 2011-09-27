@@ -26,7 +26,9 @@
 #include "views/controls/native/native_view_host.h"
 #include "views/drag_controller.h"
 
-#if defined(OS_WIN)
+#if defined(USE_AURA)
+#include "chrome/browser/ui/views/omnibox/omnibox_view_views.h"
+#elif defined(OS_WIN)
 #include "chrome/browser/ui/views/omnibox/omnibox_view_win.h"
 #elif defined(TOOLKIT_USES_GTK)
 #include "chrome/browser/ui/gtk/omnibox/omnibox_view_gtk.h"
