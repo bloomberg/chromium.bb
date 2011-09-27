@@ -368,7 +368,7 @@ def RunRemoteTest(buildroot, board, remote_ip, test_name, args=None):
          '--remote=%s' % remote_ip]
 
   if args and len(args) > 0:
-    cmd.append('--args="%s"' % ' '.join(args))
+    cmd.append('--args=%s' % ','.join(args))
 
   cmd.append(test_name)
 
