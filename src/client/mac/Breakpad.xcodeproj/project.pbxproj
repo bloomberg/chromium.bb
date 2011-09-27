@@ -2091,6 +2091,7 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				GCC_ENABLE_FIX_AND_CONTINUE = YES;
 				GCC_MODEL_TUNING = G5;
+				HEADER_SEARCH_PATHS = ../..;
 				INSTALL_PATH = /usr/local/bin;
 				PREBINDING = NO;
 				PRODUCT_NAME = minidump_generator_test_helper;
@@ -2105,6 +2106,7 @@
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				GCC_ENABLE_FIX_AND_CONTINUE = NO;
 				GCC_MODEL_TUNING = G5;
+				HEADER_SEARCH_PATHS = ../..;
 				INSTALL_PATH = /usr/local/bin;
 				PREBINDING = NO;
 				PRODUCT_NAME = minidump_generator_test_helper;
@@ -2120,7 +2122,7 @@
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				HEADER_SEARCH_PATHS = (
-					$inherited,
+					"$(inherited)",
 					../../testing,
 					../../testing/include,
 					../../testing/gtest,
@@ -2135,6 +2137,13 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					../../testing,
+					../../testing/include,
+					../../testing/gtest,
+					../../testing/gtest/include,
+				);
 				PREBINDING = NO;
 				PRODUCT_NAME = gtest;
 			};
@@ -2147,6 +2156,13 @@
 				COPY_PHASE_STRIP = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				GCC_ENABLE_FIX_AND_CONTINUE = NO;
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					../../testing,
+					../../testing/include,
+					../../testing/gtest,
+					../../testing/gtest/include,
+				);
 				PREBINDING = NO;
 				PRODUCT_NAME = gtest;
 				ZERO_LINK = NO;
@@ -2178,24 +2194,36 @@
 		D2F9A544121383A1002747C1 /* Debug With Code Coverage */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				HEADER_SEARCH_PATHS = ../..;
+				HEADER_SEARCH_PATHS = (
+					../..,
+					../../testing,
+					../../testing/include,
+					../../testing/gtest,
+					../../testing/gtest/include,
+				);
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"\\\"$(SRCROOT)/build/Debug\\\"",
 				);
-				PRODUCT_NAME = handler_test;
+				PRODUCT_NAME = crash_generation_server_test;
 			};
 			name = "Debug With Code Coverage";
 		};
 		D2F9A545121383A1002747C1 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				HEADER_SEARCH_PATHS = ../..;
+				HEADER_SEARCH_PATHS = (
+					../..,
+					../../testing,
+					../../testing/include,
+					../../testing/gtest,
+					../../testing/gtest/include,
+				);
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"\\\"$(SRCROOT)/build/Debug\\\"",
 				);
-				PRODUCT_NAME = handler_test;
+				PRODUCT_NAME = crash_generation_server_test;
 			};
 			name = Release;
 		};
@@ -2282,7 +2310,14 @@
 		F93803C10F808210004D428B /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				HEADER_SEARCH_PATHS = ../..;
+				HEADER_SEARCH_PATHS = (
+					../..,
+					../../..,
+					../../testing,
+					../../testing/include,
+					../../testing/gtest,
+					../../testing/gtest/include,
+				);
 				PRODUCT_NAME = generator_test;
 			};
 			name = Release;
@@ -2329,7 +2364,14 @@
 		F93DE32F0F82C55700608B94 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				HEADER_SEARCH_PATHS = ../..;
+				HEADER_SEARCH_PATHS = (
+					../../..,
+					../..,
+					../../testing,
+					../../testing/include,
+					../../testing/gtest,
+					../../testing/gtest/include,
+				);
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SRCROOT)/build/Debug\"",
@@ -2428,7 +2470,14 @@
 		F93DE3C10F830E7000608B94 /* Debug With Code Coverage */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				HEADER_SEARCH_PATHS = ../..;
+				HEADER_SEARCH_PATHS = (
+					../..,
+					../../..,
+					../../testing,
+					../../testing/include,
+					../../testing/gtest,
+					../../testing/gtest/include,
+				);
 				PRODUCT_NAME = generator_test;
 			};
 			name = "Debug With Code Coverage";
@@ -2444,7 +2493,14 @@
 		F93DE3C30F830E7000608B94 /* Debug With Code Coverage */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				HEADER_SEARCH_PATHS = ../..;
+				HEADER_SEARCH_PATHS = (
+					../../..,
+					../..,
+					../../testing,
+					../../testing/include,
+					../../testing/gtest,
+					../../testing/gtest/include,
+				);
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SRCROOT)/build/Debug\"",
