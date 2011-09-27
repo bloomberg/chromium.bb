@@ -27,7 +27,8 @@ NativeWidgetAura::NativeWidgetAura(internal::NativeWidgetDelegate* delegate)
     : delegate_(delegate),
       ALLOW_THIS_IN_INITIALIZER_LIST(window_(new aura::Window(this))),
       ownership_(Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET),
-      ALLOW_THIS_IN_INITIALIZER_LIST(close_widget_factory_(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(close_widget_factory_(this)),
+      can_activate_(true) {
 }
 
 NativeWidgetAura::~NativeWidgetAura() {
@@ -63,6 +64,7 @@ void NativeWidgetAura::InitNativeWidget(const Widget::InitParams& params) {
   // TODO(beng): do this some other way.
   delegate_->OnNativeWidgetSizeChanged(params.bounds.size());
   window_->SetVisibility(aura::Window::VISIBILITY_SHOWN);
+  can_activate_ = params.can_activate;
 }
 
 NonClientFrameView* NativeWidgetAura::CreateNonClientFrameView() {
@@ -408,6 +410,22 @@ int NativeWidgetAura::GetNonClientComponent(const gfx::Point& point) const {
 
 bool NativeWidgetAura::OnMouseEvent(aura::MouseEvent* event) {
   return delegate_->OnMouseEvent(MouseEvent(event));
+}
+
+bool NativeWidgetAura::ShouldActivate(aura::MouseEvent* event) {
+  return can_activate_;
+}
+
+void NativeWidgetAura::OnActivated() {
+  delegate_->OnNativeWidgetActivationChanged(true);
+  if (IsVisible())
+    GetWidget()->non_client_view()->SchedulePaint();
+}
+
+void NativeWidgetAura::OnLostActive() {
+  delegate_->OnNativeWidgetActivationChanged(false);
+  if (IsVisible())
+    GetWidget()->non_client_view()->SchedulePaint();
 }
 
 void NativeWidgetAura::OnCaptureLost() {

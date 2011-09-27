@@ -9,6 +9,9 @@
 #include "ui/aura/window.h"
 
 namespace aura {
+
+class MouseEvent;
+
 namespace internal {
 
 class FocusManager;

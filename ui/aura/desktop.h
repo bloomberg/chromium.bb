@@ -67,9 +67,24 @@ class AURA_EXPORT Desktop : public ui::CompositorDelegate {
     toplevel_window_container_ = toplevel_window_container;
   }
 
+  // Sets the active window to |window| and the focused window to |to_focus|.
+  // If |to_focus| is NULL, |window| is focused.
+  void SetActiveWindow(Window* window, Window* to_focus);
+  Window* active_window() { return active_window_; }
+
+  // Activates the topmost window. Does nothing if the topmost window is already
+  // active.
+  void ActivateTopmostWindow();
+
+  // Invoked from RootWindow when |window| is being destroyed.
+  void WindowDestroying(Window* window);
+
   static Desktop* GetInstance();
 
  private:
+  // Returns the topmost window to activate. This ignores |ignore|.
+  Window* GetTopmostWindowToActivate(Window* ignore);
+
   // Overridden from ui::CompositorDelegate
   virtual void ScheduleCompositorPaint();
 
@@ -84,6 +99,12 @@ class AURA_EXPORT Desktop : public ui::CompositorDelegate {
 
   // Used to schedule painting.
   ScopedRunnableMethodFactory<Desktop> schedule_paint_;
+
+  Window* active_window_;
+
+  // Are we in the process of being destroyed? Used to avoid processing during
+  // destruction.
+  bool in_destructor_;
 
   DISALLOW_COPY_AND_ASSIGN(Desktop);
 };

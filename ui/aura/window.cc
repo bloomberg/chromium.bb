@@ -72,6 +72,12 @@ void Window::SetVisibility(Visibility visibility) {
     SchedulePaint();
   if (visibility_ != VISIBILITY_SHOWN)
     ReleaseCapture();
+  if ((visibility_ == VISIBILITY_HIDDEN &&
+       Desktop::GetInstance()->active_window() == this) ||
+      (visibility_ == VISIBILITY_HIDDEN &&
+       !Desktop::GetInstance()->active_window())) {
+    Desktop::GetInstance()->ActivateTopmostWindow();
+  }
 }
 
 void Window::SetLayoutManager(LayoutManager* layout_manager) {

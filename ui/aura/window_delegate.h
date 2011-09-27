@@ -36,6 +36,17 @@ class WindowDelegate {
 
   virtual bool OnMouseEvent(MouseEvent* event) = 0;
 
+  // Returns true if the window should be activated |event| is either the mouse
+  // event supplied if the activation is the result of a mouse, or NULL if
+  // activation is attempted for another reason.
+  virtual bool ShouldActivate(MouseEvent* event) = 0;
+
+  // Sent when the window is activated.
+  virtual void OnActivated() = 0;
+
+  // Sent when the window loses active status.
+  virtual void OnLostActive() = 0;
+
   // Invoked when mouse capture is lost on the window.
   virtual void OnCaptureLost() = 0;
 

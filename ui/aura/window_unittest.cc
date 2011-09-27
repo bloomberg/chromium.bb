@@ -42,6 +42,9 @@ class WindowDelegateImpl : public WindowDelegate {
     return HTCLIENT;
   }
   virtual bool OnMouseEvent(MouseEvent* event) OVERRIDE { return false; }
+  virtual bool ShouldActivate(MouseEvent* event) OVERRIDE { return true; }
+  virtual void OnActivated() OVERRIDE {}
+  virtual void OnLostActive() OVERRIDE {}
   virtual void OnCaptureLost() OVERRIDE {}
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {}
   virtual void OnWindowDestroying() OVERRIDE {}
@@ -443,6 +446,110 @@ TEST_F(WindowTest, MouseEnterExit) {
   EXPECT_TRUE(d1.exited());
   EXPECT_TRUE(d2.entered());
   EXPECT_FALSE(d2.exited());
+}
+
+class ActivateWindowDelegate : public WindowDelegateImpl {
+ public:
+  ActivateWindowDelegate()
+      : activate_(true),
+        activated_count_(0),
+        lost_active_count_(0),
+        should_activate_count_(0) {
+  }
+
+  void set_activate(bool v) { activate_ = v; }
+  int activated_count() const { return activated_count_; }
+  int lost_active_count() const { return lost_active_count_; }
+  int should_activate_count() const { return should_activate_count_; }
+  void Clear() {
+    activated_count_ = lost_active_count_ = should_activate_count_ = 0;
+  }
+
+  virtual bool ShouldActivate(MouseEvent* event) OVERRIDE {
+    should_activate_count_++;
+    return activate_;
+  }
+  virtual void OnActivated() OVERRIDE {
+    activated_count_++;
+  }
+  virtual void OnLostActive() OVERRIDE {
+    lost_active_count_++;
+  }
+
+ private:
+  bool activate_;
+  int activated_count_;
+  int lost_active_count_;
+  int should_activate_count_;
+
+  DISALLOW_COPY_AND_ASSIGN(ActivateWindowDelegate);
+};
+
+// Various assertion testing for activating windows.
+TEST_F(WindowTest, ActivateOnMouse) {
+  Desktop* desktop = Desktop::GetInstance();
+
+  ActivateWindowDelegate d1;
+  scoped_ptr<Window> w1(
+      CreateTestWindowWithDelegate(&d1, 1, gfx::Rect(10, 10, 50, 50), NULL));
+  ActivateWindowDelegate d2;
+  scoped_ptr<Window> w2(
+      CreateTestWindowWithDelegate(&d2, 2, gfx::Rect(70, 70, 50, 50), NULL));
+  internal::FocusManager* focus_manager = w1->GetFocusManager();
+
+  d1.Clear();
+  d2.Clear();
+
+  // Activate window1.
+  desktop->SetActiveWindow(w1.get(), NULL);
+  EXPECT_EQ(w1.get(), desktop->active_window());
+  EXPECT_EQ(w1.get(), focus_manager->focused_window());
+  EXPECT_EQ(1, d1.activated_count());
+  EXPECT_EQ(0, d1.lost_active_count());
+  d1.Clear();
+
+  // Click on window2.
+  gfx::Point press_point = w2->bounds().CenterPoint();
+  Window::ConvertPointToWindow(w2->parent(), desktop->window(), &press_point);
+  desktop->OnMouseEvent(MouseEvent(ui::ET_MOUSE_PRESSED, press_point, 0));
+  desktop->OnMouseEvent(MouseEvent(ui::ET_MOUSE_RELEASED, press_point, 0));
+
+  // Window2 should have become active.
+  EXPECT_EQ(w2.get(), desktop->active_window());
+  EXPECT_EQ(w2.get(), focus_manager->focused_window());
+  EXPECT_EQ(0, d1.activated_count());
+  EXPECT_EQ(1, d1.lost_active_count());
+  EXPECT_EQ(1, d2.activated_count());
+  EXPECT_EQ(0, d2.lost_active_count());
+  d1.Clear();
+  d2.Clear();
+
+  // Click back on window1, but set it up so w1 doesn't activate on click.
+  press_point = w1->bounds().CenterPoint();
+  Window::ConvertPointToWindow(w1->parent(), desktop->window(), &press_point);
+  d1.set_activate(false);
+  desktop->OnMouseEvent(MouseEvent(ui::ET_MOUSE_PRESSED, press_point, 0));
+  desktop->OnMouseEvent(MouseEvent(ui::ET_MOUSE_RELEASED, press_point, 0));
+
+  // Window2 should still be active and focused.
+  EXPECT_EQ(w2.get(), desktop->active_window());
+  EXPECT_EQ(w2.get(), focus_manager->focused_window());
+  EXPECT_EQ(0, d1.activated_count());
+  EXPECT_EQ(0, d1.lost_active_count());
+  EXPECT_EQ(0, d2.activated_count());
+  EXPECT_EQ(0, d2.lost_active_count());
+  d1.Clear();
+  d2.Clear();
+
+  // Destroy window2, this should make window1 active.
+  d1.set_activate(true);
+  w2.reset();
+  EXPECT_EQ(0, d2.activated_count());
+  EXPECT_EQ(0, d2.lost_active_count());
+  EXPECT_EQ(w1.get(), desktop->active_window());
+  EXPECT_EQ(w1.get(), focus_manager->focused_window());
+  EXPECT_EQ(1, d1.activated_count());
+  EXPECT_EQ(0, d1.lost_active_count());
 }
 
 }  // namespace internal

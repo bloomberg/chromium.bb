@@ -30,6 +30,9 @@ class EventFilter {
   Window* owner() { return owner_; }
 
  private:
+  // If necessary, activates |window| and changes focus.
+  void ActivateIfNecessary(Window* window, MouseEvent* event);
+
   Window* owner_;
 
   DISALLOW_COPY_AND_ASSIGN(EventFilter);

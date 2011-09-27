@@ -26,6 +26,10 @@ ToplevelWindowEventFilter::~ToplevelWindowEventFilter() {
 
 bool ToplevelWindowEventFilter::OnMouseEvent(Window* target,
                                              MouseEvent* event) {
+  // Process EventFilters implementation first so that it processes
+  // activation/focus first.
+  EventFilter::OnMouseEvent(target, event);
+
   switch (event->type()) {
     case ui::ET_MOUSE_MOVED:
       window_component_ =
@@ -33,9 +37,7 @@ bool ToplevelWindowEventFilter::OnMouseEvent(Window* target,
       UpdateCursorForWindowComponent();
       break;
     case ui::ET_MOUSE_PRESSED:
-      MoveWindowToFront(target);
       mouse_down_offset_ = event->location();
-      window_location_ = target->bounds().origin();
       if (window_component_ == HTCAPTION)
         return true;
       break;
@@ -54,7 +56,7 @@ bool ToplevelWindowEventFilter::OnMouseEvent(Window* target,
     default:
       break;
   }
-  return EventFilter::OnMouseEvent(target, event);
+  return false;
 }
 
 void ToplevelWindowEventFilter::MoveWindowToFront(Window* target) {

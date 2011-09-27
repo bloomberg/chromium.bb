@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
+#include "ui/aura/desktop.h"
 #include "ui/aura/event.h"
 #include "ui/aura/focus_manager.h"
 #include "ui/aura/window_delegate.h"
@@ -90,6 +91,8 @@ void RootWindow::WindowDestroying(Window* window) {
   internal::FocusManager* focus_manager = GetFocusManager();
   if (focus_manager && focus_manager->focused_window() == window)
     focus_manager->SetFocusedWindow(NULL);
+
+  Desktop::GetInstance()->WindowDestroying(window);
 
   // When a window is being destroyed it's likely that the WindowDelegate won't
   // want events, so we reset the mouse_pressed_handler_ and capture_window_ and

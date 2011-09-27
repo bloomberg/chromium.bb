@@ -123,6 +123,9 @@ class VIEWS_EXPORT NativeWidgetAura : public internal::NativeWidgetPrivate,
   virtual bool OnKeyEvent(aura::KeyEvent* event) OVERRIDE;
   virtual int GetNonClientComponent(const gfx::Point& point) const OVERRIDE;
   virtual bool OnMouseEvent(aura::MouseEvent* event) OVERRIDE;
+  virtual bool ShouldActivate(aura::MouseEvent* event) OVERRIDE;
+  virtual void OnActivated() OVERRIDE;
+  virtual void OnLostActive() OVERRIDE;
   virtual void OnCaptureLost() OVERRIDE;
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
   virtual void OnWindowDestroying() OVERRIDE;
@@ -139,6 +142,8 @@ class VIEWS_EXPORT NativeWidgetAura : public internal::NativeWidgetPrivate,
   // The following factory is used for calls to close the NativeWidgetAura
   // instance.
   ScopedRunnableMethodFactory<NativeWidgetAura> close_widget_factory_;
+
+  bool can_activate_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeWidgetAura);
 };

@@ -26,12 +26,12 @@ class ToplevelWindowEventFilter : public EventFilter {
  private:
   // Moves the target window and all of its parents to the front of their
   // respective z-orders.
+  // NOTE: this does NOT activate the window.
   void MoveWindowToFront(Window* target);
 
   void UpdateCursorForWindowComponent();
 
   gfx::Point mouse_down_offset_;
-  gfx::Point window_location_;
   int window_component_;
 
   DISALLOW_COPY_AND_ASSIGN(ToplevelWindowEventFilter);
