@@ -341,8 +341,8 @@ def SetUpArgumentBits(env):
 
   #########################################################################
   # EXPERIMENTAL
-  # this code is NOT active in the main NaCl yet!
-  # this is only for testing within an artificial CrOS hook for ARM/thumb2
+  # This is only for testing within an artificial CrOS hook for ARM/thumb2
+  #
   # BUG=http://code.google.com/p/chromium/issues/detail?id=61695
   # BUG=http://code.google.com/p/chromium/issues/detail?id=38909
   # BUG=http://code.google.com/p/nativeclient/issues/detail?id=135
@@ -2604,14 +2604,16 @@ def MakeLinuxEnv():
       sys.path.append('tools/llvm')
       ###############################################################
       # EXPERIMENTAL
-      # this code is NOT active in the main NaCl yet!
       # This is needed to switch to a different trusted cross
       # toolchain when compiling within the CrOS chroot
+      # BUG=http://code.google.com/p/chromium/issues/detail?id=61695
+      # BUG=http://code.google.com/p/chromium/issues/detail?id=38909
+      # BUG=http://code.google.com/p/nativeclient/issues/detail?id=135
       #
       if linux_env.Bit('CrOS'):
         from setup_arm_cros_toolchain import arm_env
-      ##############################################################
       else:
+      ##############################################################
         from setup_arm_trusted_toolchain import arm_env
       sys.path.pop()
     else:
