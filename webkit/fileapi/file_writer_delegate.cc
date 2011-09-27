@@ -137,26 +137,29 @@ void FileWriterDelegate::Start(base::PlatformFile file,
   relay->Start(proxy_, FROM_HERE);
 }
 
-void FileWriterDelegate::OnReceivedRedirect(
-    net::URLRequest* request, const GURL& new_url, bool* defer_redirect) {
+void FileWriterDelegate::OnReceivedRedirect(net::URLRequest* request,
+                                            const GURL& new_url,
+                                            bool* defer_redirect) {
   NOTREACHED();
   OnError(base::PLATFORM_FILE_ERROR_SECURITY);
 }
 
-void FileWriterDelegate::OnAuthRequired(
-    net::URLRequest* request, net::AuthChallengeInfo* auth_info) {
+void FileWriterDelegate::OnAuthRequired(net::URLRequest* request,
+                                        net::AuthChallengeInfo* auth_info) {
   NOTREACHED();
   OnError(base::PLATFORM_FILE_ERROR_SECURITY);
 }
 
 void FileWriterDelegate::OnCertificateRequested(
-    net::URLRequest* request, net::SSLCertRequestInfo* cert_request_info) {
+    net::URLRequest* request,
+    net::SSLCertRequestInfo* cert_request_info) {
   NOTREACHED();
   OnError(base::PLATFORM_FILE_ERROR_SECURITY);
 }
 
-void FileWriterDelegate::OnSSLCertificateError(
-    net::URLRequest* request, int cert_error, net::X509Certificate* cert) {
+void FileWriterDelegate::OnSSLCertificateError(net::URLRequest* request,
+                                               const net::SSLInfo& ssl_info,
+                                               bool is_hsts_host) {
   NOTREACHED();
   OnError(base::PLATFORM_FILE_ERROR_SECURITY);
 }

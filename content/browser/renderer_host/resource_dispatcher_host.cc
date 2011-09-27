@@ -1306,10 +1306,10 @@ void ResourceDispatcherHost::OnCertificateRequested(
 
 void ResourceDispatcherHost::OnSSLCertificateError(
     net::URLRequest* request,
-    int cert_error,
-    net::X509Certificate* cert) {
+    const net::SSLInfo& ssl_info,
+    bool is_hsts_host) {
   DCHECK(request);
-  SSLManager::OnSSLCertificateError(this, request, cert_error, cert);
+  SSLManager::OnSSLCertificateError(this, request, ssl_info, is_hsts_host);
 }
 
 bool ResourceDispatcherHost::CanGetCookies(

@@ -190,8 +190,8 @@ class CONTENT_EXPORT ResourceDispatcherHost : public net::URLRequest::Delegate {
       net::URLRequest* request,
       net::SSLCertRequestInfo* cert_request_info) OVERRIDE;
   virtual void OnSSLCertificateError(net::URLRequest* request,
-                                     int cert_error,
-                                     net::X509Certificate* cert) OVERRIDE;
+                                     const net::SSLInfo& ssl_info,
+                                     bool is_hsts_host) OVERRIDE;
   virtual bool CanGetCookies(const net::URLRequest* request,
                              const net::CookieList& cookie_list) const OVERRIDE;
   virtual bool CanSetCookie(const net::URLRequest* request,
