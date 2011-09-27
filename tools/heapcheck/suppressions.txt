@@ -1323,12 +1323,6 @@
    fun:content_settings::PrefProviderTest_MigrateSinglePatternSettings_Test::TestBody
 }
 {
-   bug_88212
-   Heapcheck:Leak
-   fun:TestingProfile::CreateRequestContext
-   fun:ProfileSyncService*Test::SetUp
-}
-{
    bug_88640
    Heapcheck:Leak
    ...
