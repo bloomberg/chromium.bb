@@ -264,13 +264,106 @@ var netInternalsTest = (function() {
     expectEquals(tabCount, tabIds.length);
   }
 
+  /**
+   * This class allows multiple Tasks to be queued up to be run sequentially.
+   * A Task can wait for asynchronous callbacks from the browser before
+   * completing, at which point the next queued Task will be run.
+   * @param {bool}: endTestWhenDone True if testDone should be called when the
+   *     final task completes.
+   * @constructor
+   */
+  function TaskQueue(endTestWhenDone) {
+    this.tasks_ = [];
+    this.isRunning_ = false;
+    this.endTestWhenDone_ = endTestWhenDone;
+  }
+
+  TaskQueue.prototype = {
+    /**
+     * Adds a Task to the end of the queue.  Each Task may only be added once
+     * to a single queue.
+     * @param {Task}: task The Task to add.
+     */
+    addTask: function(task) {
+      this.tasks_.push(task);
+      task.setTaskQueue_(this);
+    },
+
+    /**
+     * Starts running the Tasks in the queue.  Once called, may not be called
+     * again.
+     */
+    run: function() {
+      assertFalse(this.isRunning_);
+      this.isRunning_ = true;
+      this.runNextTask_();
+    },
+
+    /**
+     * If there are any Tasks in |tasks_|, removes the first one and runs it.
+     * Otherwise, sets |isRunning_| to false.  If |endTestWhenDone_| is true,
+     * calls testDone.
+     */
+    runNextTask_: function() {
+      assertTrue(this.isRunning_);
+      if (this.tasks_.length > 0) {
+        this.tasks_.shift().start();
+      } else {
+        this.isRunning_ = false;
+        if (this.endTestWhenDone_)
+          testDone();
+      }
+    }
+  }
+
+  /**
+   * A Task that can be added to a TaskQueue.  A Task is started with a call to
+   * the start function, and must call its own onTaskDone when complete.
+   * @constructor
+   */
+  function Task() {
+    this.taskQueue_ = null;
+    this.isDone_ = false;
+  };
+
+  Task.prototype = {
+    /**
+     * Starts running the Task.  Only called once per Task, must be overridden.
+     */
+    start: function() {
+      assertNotReached('Start function not overridden.');
+    },
+
+    /**
+     * Sets the TaskQueue used by the task in the onTaskDone function.  May only
+     * be called by the TaskQueue.
+     * @param {TaskQueue}: taskQueue The TaskQueue |this| has been added to.
+     */
+    setTaskQueue_: function(taskQueue) {
+      assertEquals(null, this.taskQueue_);
+      this.taskQueue_ = taskQueue;
+    },
+
+    /**
+     * Must be called when a task is complete, and can only be called once for a
+     * task.  Runs the next task, if any.
+     */
+    onTaskDone: function() {
+      assertFalse(this.isDone_);
+      this.isDone_ = true;
+      this.taskQueue_.runNextTask_();
+    }
+  };
+
   // Exported functions.
   return {
     test: test,
     runTest: runTest,
     checkStyledTableRows: checkStyledTableRows,
     switchToView: switchToView,
-    checkTabHandleVisibility: checkTabHandleVisibility
+    checkTabHandleVisibility: checkTabHandleVisibility,
+    TaskQueue: TaskQueue,
+    Task: Task
   };
 })();
 

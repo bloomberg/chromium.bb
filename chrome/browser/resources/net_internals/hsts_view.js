@@ -12,18 +12,6 @@
 var HSTSView = (function() {
   'use strict';
 
-  // IDs for special HTML elements in hsts_view.html
-  var MAIN_BOX_ID = 'hsts-view-tab-content';
-  var QUERY_INPUT_ID = 'hsts-view-query-input';
-  var FORM_ID = 'hsts-view-query-form';
-  var QUERY_OUTPUT_DIV_ID = 'hsts-view-query-output';
-  var ADD_INPUT_ID = 'hsts-view-add-input';
-  var ADD_FORM_ID = 'hsts-view-add-form';
-  var ADD_CHECK_ID = 'hsts-view-check-input';
-  var ADD_PINS_ID = 'hsts-view-add-pins';
-  var DELETE_INPUT_ID = 'hsts-view-delete-input';
-  var DELETE_FORM_ID = 'hsts-view-delete-form';
-
   // We inherit from DivView.
   var superClass = DivView;
 
@@ -34,21 +22,21 @@ var HSTSView = (function() {
     assertFirstConstructorCall(HSTSView);
 
     // Call superclass's constructor.
-    superClass.call(this, MAIN_BOX_ID);
+    superClass.call(this, HSTSView.MAIN_BOX_ID);
 
-    this.queryInput_ = $(QUERY_INPUT_ID);
-    this.addCheck_ = $(ADD_CHECK_ID);
-    this.addInput_ = $(ADD_INPUT_ID);
-    this.addPins_ = $(ADD_PINS_ID);
-    this.deleteInput_ = $(DELETE_INPUT_ID);
-    this.queryOutputDiv_ = $(QUERY_OUTPUT_DIV_ID);
+    this.addInput_ = $(HSTSView.ADD_INPUT_ID);
+    this.addCheck_ = $(HSTSView.ADD_CHECK_ID);
+    this.addPins_ = $(HSTSView.ADD_PINS_ID);
+    this.deleteInput_ = $(HSTSView.DELETE_INPUT_ID);
+    this.queryInput_ = $(HSTSView.QUERY_INPUT_ID);
+    this.queryOutputDiv_ = $(HSTSView.QUERY_OUTPUT_DIV_ID);
 
-    var form = $(FORM_ID);
-    form.addEventListener('submit', this.onSubmitQuery_.bind(this), false);
-    form = $(ADD_FORM_ID);
+    form = $(HSTSView.ADD_FORM_ID);
     form.addEventListener('submit', this.onSubmitAdd_.bind(this), false);
-    form = $(DELETE_FORM_ID);
+    form = $(HSTSView.DELETE_FORM_ID);
     form.addEventListener('submit', this.onSubmitDelete_.bind(this), false);
+    var form = $(HSTSView.QUERY_FORM_ID);
+    form.addEventListener('submit', this.onSubmitQuery_.bind(this), false);
 
     g_browser.addHSTSObserver(this);
   }
@@ -56,16 +44,26 @@ var HSTSView = (function() {
   // ID for special HTML element in category_tabs.html
   HSTSView.TAB_HANDLE_ID = 'tab-handle-hsts';
 
+  // IDs for special HTML elements in hsts_view.html
+  HSTSView.MAIN_BOX_ID = 'hsts-view-tab-content';
+  HSTSView.ADD_INPUT_ID = 'hsts-view-add-input';
+  HSTSView.ADD_CHECK_ID = 'hsts-view-check-input';
+  HSTSView.ADD_PINS_ID = 'hsts-view-add-pins';
+  HSTSView.ADD_FORM_ID = 'hsts-view-add-form';
+  HSTSView.ADD_SUBMIT_ID = 'hsts-view-add-submit';
+  HSTSView.DELETE_INPUT_ID = 'hsts-view-delete-input';
+  HSTSView.DELETE_FORM_ID = 'hsts-view-delete-form';
+  HSTSView.DELETE_SUBMIT_ID = 'hsts-view-delete-submit';
+  HSTSView.QUERY_INPUT_ID = 'hsts-view-query-input';
+  HSTSView.QUERY_OUTPUT_DIV_ID = 'hsts-view-query-output';
+  HSTSView.QUERY_FORM_ID = 'hsts-view-query-form';
+  HSTSView.QUERY_SUBMIT_ID = 'hsts-view-query-submit';
+
   cr.addSingletonGetter(HSTSView);
 
   HSTSView.prototype = {
     // Inherit the superclass's methods.
     __proto__: superClass.prototype,
-
-    onSubmitQuery_: function(event) {
-      g_browser.sendHSTSQuery(this.queryInput_.value);
-      event.preventDefault();
-    },
 
     onSubmitAdd_: function(event) {
       g_browser.sendHSTSAdd(this.addInput_.value,
@@ -82,6 +80,11 @@ var HSTSView = (function() {
     onSubmitDelete_: function(event) {
       g_browser.sendHSTSDelete(this.deleteInput_.value);
       this.deleteInput_.value = '';
+      event.preventDefault();
+    },
+
+    onSubmitQuery_: function(event) {
+      g_browser.sendHSTSQuery(this.queryInput_.value);
       event.preventDefault();
     },
 

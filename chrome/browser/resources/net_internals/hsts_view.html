@@ -17,7 +17,7 @@
     Include subdomains: <input type="checkbox" id=hsts-view-check-input /><br/>
     Public key fingerprints: <input type=text id=hsts-view-add-pins style="width: 25em;"/><br/>
     <p style="font-size: small; color: gray; font-style: italic; margin-left: 2em; max-width: 40em;">(public key fingerprints are comma separated and consist of the hash function followed by a foreslash and the base64 encoded fingerprint, for example <tt>sha1/Guzek9lMwR3KeIS8wwS9gBvVtIg=</tt>)</p>
-    <input type=submit value="Add" />
+    <input type=submit value="Add" id=hsts-view-add-submit />
   </form>
 
   <h4>Delete domain</h4>
@@ -29,7 +29,7 @@
   <form id=hsts-view-delete-form>
     Domain: <input type=text id=hsts-view-delete-input type="url"
              placeholder="example.com"/>
-    <input type=submit value="Delete" />
+    <input type=submit value="Delete" id=hsts-view-delete-submit />
   </form>
 
   <h4>Query domain</h4>
@@ -38,7 +38,7 @@
   <form id=hsts-view-query-form>
     Domain: <input type=text id=hsts-view-query-input type="url"
              placeholder="example.com"/>
-    <input type=submit value="Query" />
+    <input type=submit value="Query" id=hsts-view-query-submit />
   </form>
   <div style="margin-top: 1em; margin-left: 2em;" id=hsts-view-query-output></div>
 </div>
