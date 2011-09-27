@@ -12,8 +12,8 @@
 #include "base/hash_tables.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "content/common/npobject_base.h"
 #include "content/common/message_router.h"
+#include "content/common/npobject_base.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_sync_channel.h"
 #include "ui/gfx/native_widget_types.h"
@@ -148,10 +148,10 @@ class NPChannelBase : public IPC::Channel::Listener,
                     base::WaitableEvent* shutdown_event);
 
   scoped_ptr<IPC::SyncChannel> channel_;
+  IPC::ChannelHandle channel_handle_;
 
  private:
   IPC::Channel::Mode mode_;
-  IPC::ChannelHandle channel_handle_;
   // This tracks the number of routes registered without an NPObject. It's used
   // to manage the lifetime of this object. See comment for AddRoute() and
   // RemoveRoute().

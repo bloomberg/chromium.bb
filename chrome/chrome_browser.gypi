@@ -1909,6 +1909,8 @@
         'browser/renderer_host/chrome_resource_dispatcher_host_delegate.h',
         'browser/renderer_host/chrome_url_request_user_data.cc',
         'browser/renderer_host/chrome_url_request_user_data.h',
+        'browser/renderer_host/java_bridge_channel_host.cc',
+        'browser/renderer_host/java_bridge_channel_host.h',
         'browser/renderer_host/offline_resource_handler.cc',
         'browser/renderer_host/offline_resource_handler.h',
         'browser/renderer_host/render_widget_host_view_mac.h',

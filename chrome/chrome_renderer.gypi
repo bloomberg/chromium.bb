@@ -89,6 +89,8 @@
         'renderer/extensions/user_script_slave.h',
         'renderer/frame_sniffer.cc',
         'renderer/frame_sniffer.h',
+        'renderer/java_bridge_channel.cc',
+        'renderer/java_bridge_channel.h',
         'renderer/loadtimes_extension_bindings.h',
         'renderer/loadtimes_extension_bindings.cc',
         'renderer/net/predictor_queue.cc',
