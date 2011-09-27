@@ -105,6 +105,32 @@ TEST(AccelFilterInterpreterTest, SimpleTest) {
   }
 }
 
+TEST(AccelFilterInterpreterTest, TinyMoveTest) {
+  AccelFilterInterpreterTestInterpreter* base_interpreter =
+      new AccelFilterInterpreterTestInterpreter;
+  AccelFilterInterpreter interpreter(base_interpreter);
+
+  base_interpreter->return_values_.push_back(Gesture(kGestureMove,
+                                                     1,  // start time
+                                                     2,  // end time
+                                                     4,  // dx
+                                                     0));  // dy
+  base_interpreter->return_values_.push_back(Gesture(kGestureScroll,
+                                                     2,  // start time
+                                                     3,  // end time
+                                                     4,  // dx
+                                                     0));  // dy
+
+  Gesture* out = interpreter.SyncInterpret(NULL, NULL);
+  ASSERT_NE(reinterpret_cast<Gesture*>(NULL), out);
+  EXPECT_EQ(kGestureTypeMove, out->type);
+  EXPECT_GT(fabsf(out->details.move.dx), 2);
+  out = interpreter.SyncInterpret(NULL, NULL);
+  ASSERT_NE(reinterpret_cast<Gesture*>(NULL), out);
+  EXPECT_EQ(kGestureTypeScroll, out->type);
+  EXPECT_GT(fabsf(out->details.scroll.dx), 2);
+}
+
 TEST(AccelFilterInterpreterTest, TimingTest) {
   AccelFilterInterpreterTestInterpreter* base_interpreter =
       new AccelFilterInterpreterTestInterpreter;

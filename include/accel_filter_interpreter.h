@@ -57,7 +57,7 @@ class AccelFilterInterpreter : public Interpreter {
 
   scoped_ptr<Interpreter> next_;
 
-  static const size_t kMaxCurveSegs = 2;
+  static const size_t kMaxCurveSegs = 3;
   static const size_t kMaxCustomCurveSegs = 20;
   static const size_t kMaxAccelCurves = 5;
 
