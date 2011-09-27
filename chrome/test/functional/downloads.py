@@ -42,6 +42,11 @@ class DownloadsTest(pyauto.PyUITest):
     for item in self._files_to_remove:
       pyauto_utils.RemovePath(item)
 
+  def ExtraChromeFlags(self):
+    return pyauto.PyUITest.ExtraChromeFlags(self) + [
+        '--vmodule=*/download/*=20'
+    ]
+
   def _DeleteAfterShutdown(self, path):
     """Delete |path| after browser has been shut down.
 
