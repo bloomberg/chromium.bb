@@ -659,6 +659,9 @@ ConnectionError NativeNetworkParser::ParseError(const std::string& error) {
     { flimflam::kErrorInternal, ERROR_INTERNAL },
     { flimflam::kErrorDNSLookupFailed, ERROR_DNS_LOOKUP_FAILED },
     { flimflam::kErrorHTTPGetFailed, ERROR_HTTP_GET_FAILED },
+    { flimflam::kErrorIpsecPskAuthFailed, ERROR_IPSEC_PSK_AUTH_FAILED },
+    { flimflam::kErrorIpsecCertAuthFailed, ERROR_IPSEC_CERT_AUTH_FAILED },
+    { flimflam::kErrorPppAuthFailed, ERROR_PPP_AUTH_FAILED },
   };
   static EnumMapper<ConnectionError> parser(
       table, arraysize(table), ERROR_NO_ERROR);

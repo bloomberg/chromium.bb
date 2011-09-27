@@ -10935,8 +10935,8 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_NETWORK_CONNECTION_ERROR_TITLE" desc="Title for network connection error notification">
         Network Connection Error
       </message>
-      <message name="IDS_NETWORK_CONNECTION_ERROR_MESSAGE" desc="Message for network connection error notification">
-        Failed to connect to network '<ph name="name">$1<ex>GoogleGuest</ex></ph>'.
+      <message name="IDS_NETWORK_CONNECTION_ERROR_MESSAGE_WITH_DETAILS" desc="Message for network connection error notification with details">
+        Failed to connect to network '<ph name="name">$1<ex>GoogleGuest</ex></ph>': <ph name="details">$2<ex>Unrecognized error</ex></ph>
       </message>
       <message name="IDS_LOW_BATTERY_TITLE" desc="Title for low battery notification">
         Battery Low
@@ -12761,6 +12761,15 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_CHROMEOS_NETWORK_ERROR_HTTP_GET_FAILED" desc="Network error in about:network: HTTP_GET_FAILED">
         HTTP get failed
+      </message>
+      <message name="IDS_CHROMEOS_NETWORK_ERROR_IPSEC_PSK_AUTH_FAILED" desc="Network error in about:network: IPSEC_PSK_AUTH_FAILED">
+        Failed to authenticate with provided pre-shared key
+      </message>
+      <message name="IDS_CHROMEOS_NETWORK_ERROR_IPSEC_CERT_AUTH_FAILED" desc="Network error in about:network: IPSEC_CERT_AUTH_FAILED">
+        Failed to authenticate with provided certificate
+      </message>
+      <message name="IDS_CHROMEOS_NETWORK_ERROR_PPP_AUTH_FAILED" desc="Network error in about:network: PPP_AUTH_FAILED">
+        Failed to authenticate with provided username or password
       </message>
       <message name="IDS_CHROMEOS_NETWORK_ERROR_UNRECOGNIZED" desc="Network error in about:network: Unrecognized">
         Unrecognized error

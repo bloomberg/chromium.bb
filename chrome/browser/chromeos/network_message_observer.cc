@@ -202,8 +202,9 @@ void NetworkMessageObserver::OnNetworkManagerChanged(NetworkLibrary* cros) {
     if (notification_connection_error_.visible())
       notification_connection_error_.Hide();
     notification_connection_error_.Show(l10n_util::GetStringFUTF16(
-        IDS_NETWORK_CONNECTION_ERROR_MESSAGE,
-        UTF8ToUTF16(new_failed_network->name())), false, false);
+        IDS_NETWORK_CONNECTION_ERROR_MESSAGE_WITH_DETAILS,
+        UTF8ToUTF16(new_failed_network->name()),
+        UTF8ToUTF16(new_failed_network->GetErrorString())), false, false);
   }
 }
 

@@ -565,6 +565,15 @@ std::string Network::GetErrorString() const {
     case ERROR_HTTP_GET_FAILED:
       return l10n_util::GetStringUTF8(
           IDS_CHROMEOS_NETWORK_ERROR_HTTP_GET_FAILED);
+    case ERROR_IPSEC_PSK_AUTH_FAILED:
+      return l10n_util::GetStringUTF8(
+          IDS_CHROMEOS_NETWORK_ERROR_IPSEC_PSK_AUTH_FAILED);
+    case ERROR_IPSEC_CERT_AUTH_FAILED:
+      return l10n_util::GetStringUTF8(
+          IDS_CHROMEOS_NETWORK_ERROR_IPSEC_CERT_AUTH_FAILED);
+    case ERROR_PPP_AUTH_FAILED:
+      return l10n_util::GetStringUTF8(
+          IDS_CHROMEOS_NETWORK_ERROR_PPP_AUTH_FAILED);
   }
   return l10n_util::GetStringUTF8(IDS_CHROMEOS_NETWORK_STATE_UNRECOGNIZED);
 }
