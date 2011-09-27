@@ -738,7 +738,7 @@ int main(int  argc,
     errno = 0;  /* To distinguish between success/failure after call */
     fd_long = strtol(sandbox_fd_string, &endptr, 10);
 
-    fprintf(stdout, "Chrooting the NaCl module\n");
+    NaClLog(1, "Chrooting the NaCl module\n");
     if ((ERANGE == errno && (LONG_MAX == fd_long || LONG_MIN == fd_long)) ||
         (0 != errno && 0 == fd_long)) {
       perror("strtol");
