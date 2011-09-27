@@ -1,0 +1,6 @@
+UNKNOWN_TYPE | drpdwnCardTypes | *Card type: | JCP1
+CREDIT_CARD_NAME | txtNameOnCreditCard | *Name on the card: | 
+CREDIT_CARD_NUMBER | txtCreditCardNumber | *Card number: | 
+CREDIT_CARD_EXP_MONTH | drpdwnExpirationMonth | *Expiration date: | 00
+CREDIT_CARD_EXP_4_DIGIT_YEAR | drpdwnExpirationYear | *Expiration date: | 2011
+UNKNOWN_TYPE | txtVisaVerificationNumber | VISA Card Verification # | 
