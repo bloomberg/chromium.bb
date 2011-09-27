@@ -351,7 +351,7 @@ unsigned PluginInstance::GetBackingTextureId() {
 void PluginInstance::CommitBackingTexture() {
   if (fullscreen_container_)
     fullscreen_container_->Invalidate();
-  else
+  else if (container_)
     container_->commitBackingTexture();
 }
 
