@@ -2720,7 +2720,7 @@ def TestsUsePublicLibs(env):
   """Change the environment so it uses public libraries for in-tree tests."""
   env.Replace(NONIRT_LIBS=[],
               PTHREAD_LIBS=['pthread'],
-              DYNCODE_LIBS=['nacl_dyncode'])
+              DYNCODE_LIBS=['nacl_dyncode','nacl'])
 
 # glibc is incompatible with the private libraries.
 # It's probably really only wholly incompatible with libpthread_private,

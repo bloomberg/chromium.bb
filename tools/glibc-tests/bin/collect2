@@ -56,7 +56,12 @@ done
 
 # Run the real collect2 binary with processed arguments.
 readonly collect2out="/tmp/$(basename "$0").$$.tmp"
-"${GLIBC_TST_COLLECT2}" "${args[@]}" 2>&1 | tee "$collect2out"
+( "${GLIBC_TST_COLLECT2}" "${args[@]}" 2>&1 ||
+  ( echo "Retrying with ld.so..." && \
+    "${GLIBC_TST_COLLECT2}" "${args[@]}" \
+    "${GLIBC_TST_NACL_LIBDIR}/ld-nacl-x86-64.so.1"
+  ) 2>&1
+) | tee "$collect2out"
 
 # Detect if there was an unsupported symbol in the collect2 output.
 unsup_msg=none
