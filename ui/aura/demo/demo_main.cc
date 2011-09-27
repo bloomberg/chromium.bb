@@ -43,6 +43,9 @@ class DemoWindowDelegate : public aura::WindowDelegate {
   virtual bool OnMouseEvent(aura::MouseEvent* event) OVERRIDE {
     return true;
   }
+  virtual bool ShouldActivate(aura::MouseEvent* event) OVERRIDE { return true; }
+  virtual void OnActivated() OVERRIDE {}
+  virtual void OnLostActive() OVERRIDE {}
   virtual void OnCaptureLost() OVERRIDE {}
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
     canvas->AsCanvasSkia()->drawColor(color_, SkXfermode::kSrc_Mode);

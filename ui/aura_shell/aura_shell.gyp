@@ -104,11 +104,17 @@
     # It's convenient for aura_shell developers to be able to build all
     # compositor and aura targets from within this solution.
     {
-      'target_name': 'convenience',
+      'target_name': 'buildbot_targets',
       'type': 'none',
       'dependencies': [
-        '../gfx/compositor/compositor.gyp:*',
+        'aura_shell_exe',
         '../aura/aura.gyp:*',
+        '../gfx/compositor/compositor.gyp:*',
+        '../../views/views.gyp:views',
+        '../../views/views.gyp:views_aura_desktop',
+        '../../views/views.gyp:views_desktop',
+        '../../views/views.gyp:views_desktop_lib',
+        '../../views/views.gyp:views_unittests',
       ],
     },     
   ],
