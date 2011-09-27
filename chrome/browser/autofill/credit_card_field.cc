@@ -102,8 +102,10 @@ FormField* CreditCardField::Parse(AutofillScanner* scanner) {
         // Look for a 2-digit year first.
         scanner->Rewind();
         pattern = UTF8ToUTF16(autofill::kExpirationDate2DigitYearRe);
+        // We allow <select> fields, because they're used e.g. on qvc.com.
         if (ParseFieldSpecifics(scanner, pattern,
-                                MATCH_LABEL | MATCH_VALUE | MATCH_TEXT,
+                                MATCH_LABEL | MATCH_VALUE | MATCH_TEXT |
+                                    MATCH_SELECT,
                                 &credit_card_field->expiration_date_)) {
           credit_card_field->is_two_digit_year_ = true;
           continue;
@@ -111,7 +113,8 @@ FormField* CreditCardField::Parse(AutofillScanner* scanner) {
 
         pattern = UTF8ToUTF16(autofill::kExpirationDateRe);
         if (ParseFieldSpecifics(scanner, pattern,
-                                MATCH_LABEL | MATCH_VALUE | MATCH_TEXT,
+                                MATCH_LABEL | MATCH_VALUE | MATCH_TEXT |
+                                    MATCH_SELECT,
                                 &credit_card_field->expiration_date_)) {
           continue;
         }

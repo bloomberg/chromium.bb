@@ -1,0 +1,14 @@
+PHONE_HOME_CITY_CODE | txtHomePhone1 | * Home Phone: | 
+PHONE_HOME_NUMBER | txtHomePhone2 | * Home Phone: | 
+PHONE_HOME_NUMBER | txtHomePhone3 | * Home Phone: | 
+EMAIL_ADDRESS | txtEmail | * Email Address: | 
+UNKNOWN_TYPE | txtSSN | XXX-XX- | 
+UNKNOWN_TYPE | selBirthMonth | * Date of Birth: | Month
+UNKNOWN_TYPE | selBirthDate | * Date of Birth: | Date
+UNKNOWN_TYPE | selBirthYear | * Date of Birth: | Year
+UNKNOWN_TYPE | cardType | Type: | VI
+CREDIT_CARD_NUMBER | CreditCardNumber | Number: | 
+CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR | CreditCardExpYYMM | Expiration: | 092011
+UNKNOWN_TYPE | CVV | Security Code: | 
+UNKNOWN_TYPE | GiftCardNum | Card Number: | 
+UNKNOWN_TYPE | GiftCardPIN | Security ID Number: | 
