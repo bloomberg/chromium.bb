@@ -292,3 +292,39 @@ body {
 .gallery .edit-modal > .range {
   margin: 4px 10px 4px 0;
 }
+
+.gallery .share-menu {
+  position: absolute;
+  right: 10px;
+  bottom: 80px;
+  background-color: rgba(240,240,240,1);;
+  opacity: 1.0;
+  -webkit-transition: opacity 0.5s ease-in-out;
+  padding: 10px;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-box-align: stretch;
+  -webkit-box-pack: start;
+}
+
+.gallery .share-menu[hidden] {
+  opacity: 0.0;
+  pointer-events: none;
+}
+
+.gallery .share-menu > div {
+  cursor: pointer;
+  background-color: rgba(0,0,0,0);
+  padding: 5px;
+  display: -webkit-box;
+  -webkit-box-align: center;
+  -webkit-box-pack: start;
+}
+
+.gallery .share-menu > div:hover {
+  background-color: rgba(200,200,200,1);
+}
+
+.gallery .share-menu > div > img {
+  margin-right: 5px;
+}

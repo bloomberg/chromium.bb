@@ -130,9 +130,6 @@ function FileManager(dialogDom, filesystem, rootEntries) {
       self.mountPoints_ = mountPoints;
   });
 
-  chrome.fileBrowserHandler.onExecute.addListener(
-    this.onFileTaskExecute_.bind(this));
-
   this.initCommands_();
   this.initDom_();
   this.initDialogType_();
@@ -1671,6 +1668,7 @@ FileManager.prototype = {
           task.iconUrl =
               chrome.extension.getURL('images/icon_preview_16x16.png');
           task.title = str('GALLERY');
+          task.allTasks = tasksList;
           if (!GALLERY_ENABLED) continue;  // Skip the button creation.
         }
       }
@@ -1788,16 +1786,18 @@ FileManager.prototype = {
   };
 
   FileManager.prototype.onTaskButtonClicked_ = function(event) {
-    var task = event.srcElement.task;
+    this.dispatchFileTask_(event.srcElement.task, this.selection.urls);
+  };
+
+  FileManager.prototype.dispatchFileTask_ = function(task, urls) {
     if (task.internal) {
       // For internal tasks call the handler directly to avoid being handled
       // multiple times.
       var taskId = task.taskId.split('|')[1];
-      this.onFileTaskExecute_(taskId, {entries: this.selection.entries});
+      this.onFileTaskExecute_(taskId, {urls: urls, task: task});
       return;
     }
-    chrome.fileBrowserPrivate.executeTask(task.taskId,
-                                          this.selection.urls);
+    chrome.fileBrowserPrivate.executeTask(task.taskId, urls);
   };
 
   /**
@@ -1852,9 +1852,7 @@ FileManager.prototype = {
    * Event handler called when some internal task should be executed.
    */
   FileManager.prototype.onFileTaskExecute_ = function(id, details) {
-    var urls = details.entries.map(function(entry) {
-        return entry.toURL();
-    });
+    var urls = details.urls;
     if (id == 'preview') {
       g_slideshow_data = urls;
       chrome.tabs.create({url: "slideshow.html"});
@@ -1874,7 +1872,17 @@ FileManager.prototype = {
         chrome.fileBrowserPrivate.formatDevice(urls[0]);
       });
     } else if (id == 'gallery') {
-      this.openGallery_(urls);
+      // Pass to gallery all possible tasks except the gallery itself.
+      var noGallery = [];
+      for (var index = 0; index < details.task.allTasks.length; index++) {
+        var task = details.task.allTasks[index];
+        if (task.taskId != this.getExtensionId_() + '|gallery') {
+          // Add callback, so gallery can execute the task.
+          task.execute = this.dispatchFileTask_.bind(this, task);
+          noGallery.push(task);
+        }
+      }
+      this.openGallery_(urls, noGallery);
     }
   };
 
@@ -1889,7 +1897,7 @@ FileManager.prototype = {
     return undefined;
   };
 
-  FileManager.prototype.openGallery_ = function(urls) {
+  FileManager.prototype.openGallery_ = function(urls, shareActions) {
     var self = this;
 
     var galleryFrame = this.document_.createElement('iframe');
@@ -1905,7 +1913,8 @@ FileManager.prototype = {
             self.rescanDirectoryNow_();  // Make sure new files show up.
             self.dialogDom_.removeChild(galleryFrame);
           },
-          self.metadataProvider_);
+          self.metadataProvider_,
+          shareActions);
     };
 
     galleryFrame.src = 'js/image_editor/gallery.html';

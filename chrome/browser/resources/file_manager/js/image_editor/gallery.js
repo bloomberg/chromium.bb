@@ -8,24 +8,27 @@
  * @param {HTMLDivElement} container
  * @param {function} closeCallback
  * @param {MetadataProvider} metadataProvider
+ * @param {Array.<Object>} shareActions
  */
-function Gallery(container, closeCallback, metadataProvider) {
+function Gallery(container, closeCallback, metadataProvider, shareActions) {
   this.container_ = container;
   this.document_ = container.ownerDocument;
   this.editing_ = false;
+  this.sharing_ = false;
   this.closeCallback_ = closeCallback;
   this.metadataProvider_ = metadataProvider;
   this.onFadeTimeoutBound_ = this.onFadeTimeout_.bind(this);
   this.fadeTimeoutId_ = null;
 
-  this.initDom_();
+  this.initDom_(shareActions);
 }
 
 Gallery.open = function(
-    parentDirEntry, urls, closeCallback, metadataProvider) {
+    parentDirEntry, urls, closeCallback, metadataProvider, shareActions) {
   var container = document.querySelector('.gallery');
   container.innerHTML = '';
-  var gallery = new Gallery(container, closeCallback, metadataProvider);
+  var gallery = new Gallery(container, closeCallback, metadataProvider,
+      shareActions);
   gallery.load(parentDirEntry, urls);
 };
 
@@ -53,7 +56,7 @@ Gallery.editorModes = [
 
 Gallery.FADE_TIMEOUT = 5000;
 
-Gallery.prototype.initDom_ = function() {
+Gallery.prototype.initDom_ = function(shareActions) {
   var doc = this.document_;
   this.container_.addEventListener('keydown', this.onKeyDown_.bind(this));
   this.container_.addEventListener('mousemove', this.onMouseMove_.bind(this));
@@ -89,7 +92,9 @@ Gallery.prototype.initDom_ = function() {
   this.shareButton_.className = 'button share';
   this.shareButton_.textContent = Gallery.displayStrings['share'];
   this.shareButton_.addEventListener('click', this.onShare_.bind(this));
-  this.toolbar_.appendChild(this.shareButton_);
+  if (shareActions.length > 0) {
+    this.toolbar_.appendChild(this.shareButton_);
+  }
 
   this.editBarMain_  = doc.createElement('div');
   this.editBarMain_.className = 'edit-main';
@@ -100,6 +105,23 @@ Gallery.prototype.initDom_ = function() {
   this.editBarMode_.className = 'edit-modal';
   this.editBarMode_.setAttribute('hidden', 'hidden');
   this.editBar_.appendChild(this.editBarMode_);
+
+  this.shareMenu_ = doc.createElement('div');
+  this.shareMenu_.className = 'share-menu';
+  this.shareMenu_.setAttribute('hidden', 'hidden');
+  for (var index = 0; index < shareActions.length; index++) {
+    var action = shareActions[index];
+    var row = doc.createElement('div');
+    var img = doc.createElement('img');
+    img.src = action.iconUrl;
+    row.appendChild(img);
+    row.appendChild(doc.createTextNode(action.title));
+    row.addEventListener('click', this.onActionExecute_.bind(this, action));
+    this.shareMenu_.appendChild(row);
+  }
+  if (shareActions.length > 0) {
+    this.container_.appendChild(this.shareMenu_);
+  }
 
   this.editor_ = new ImageEditor(
       this.imageContainer_,
@@ -115,7 +137,9 @@ Gallery.prototype.load = function(parentDirEntry, urls) {
   this.editButton_.removeAttribute('pressed');
   this.shareButton_.removeAttribute('pressed');
   this.toolbar_.removeAttribute('hidden');
+  this.shareMenu_.setAttribute('hidden', 'hidden');
   this.editing_ = false;
+  this.sharing_ = false;
 
   if (urls.length == 0)
     return;
@@ -186,6 +210,15 @@ Gallery.prototype.saveChanges_ = function(opt_callback) {
   }
 };
 
+Gallery.prototype.onActionExecute_ = function(action) {
+  var item = this.currentItem_;
+  if (item) {
+    this.onShare_();
+    this.saveChanges_(function() {
+      action.execute([item.getUrl()]);
+    });
+  }
+};
 
 Gallery.prototype.onClose_ = function() {
   // TODO: handle write errors gracefully (suggest retry or saving elsewhere).
@@ -204,6 +237,8 @@ Gallery.prototype.onSelect_ = function(item) {
 };
 
 Gallery.prototype.onEdit_ = function(event) {
+  this.toolbar_.removeAttribute('hidden');
+
   var self = this;
   if (this.editing_) {
     this.editor_.onModeLeave();
@@ -231,11 +266,18 @@ Gallery.prototype.onEdit_ = function(event) {
 };
 
 Gallery.prototype.onShare_ = function(event) {
-  // TODO(dgozman): implement.
+  this.toolbar_.removeAttribute('hidden');
+
+  if (this.sharing_) {
+    this.shareMenu_.setAttribute('hidden', 'hidden');
+  } else {
+    this.shareMenu_.removeAttribute('hidden');
+  }
+  this.sharing_ = !this.sharing_;
 };
 
 Gallery.prototype.onKeyDown_ = function(event) {
-  if (this.editing_)
+  if (this.editing_ || this.sharing_)
     return;
   switch (event.keyIdentifier) {
     case 'Home':
@@ -261,11 +303,12 @@ Gallery.prototype.onMouseMove_ = function(e) {
 
 Gallery.prototype.onFadeTimeout_ = function() {
   this.fadeTimeoutId_ = null;
+  if (this.editing_ || this.sharing_) return;
   this.toolbar_.setAttribute('hidden', 'hidden');
 };
 
 Gallery.prototype.initiateFading_ = function() {
-  if (this.editing_ || this.fadeTimeoutId_) {
+  if (this.editing_ || this.sharing_ || this.fadeTimeoutId_) {
     return;
   }
   this.fadeTimeoutId_ = window.setTimeout(
@@ -409,6 +452,8 @@ Ribbon.Item = function(document, url, selectClosure) {
 Ribbon.Item.prototype.getBox = function () { return this.box_ };
 
 Ribbon.Item.prototype.isOriginal = function () { return this.original_ };
+
+Ribbon.Item.prototype.getUrl = function () { return this.url_ };
 
 Ribbon.Item.prototype.select = function(on) {
   if (on)
