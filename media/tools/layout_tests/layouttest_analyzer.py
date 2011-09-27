@@ -144,8 +144,7 @@ def GetCurrentAndPreviousResults(debug, test_group_file_location,
       if not os.path.exists(test_group_file_location):
         print ('Warning: CSV file (%s) does not exist. So it is ignored and '
                '%s is used for obtaining test names') % (
-                   options.test_group_file_location, options.test_group_name)
-      test_group_name = options.test_group_name
+                   test_group_file_location, test_group_name)
       if not test_group_name.endswith('/'):
         test_group_name += '/'
       parent_location_list = [test_group_name]
@@ -191,7 +190,7 @@ def ReadEmailInformation(bug_annotation_file_location,
     file_object = open(bug_annotation_file_location)
   except IOError:
     print 'cannot open annotation file %s. Skipping.' % (
-        options.bug_annotation_file_location)
+        bug_annotation_file_location)
   else:
     data = csv.reader(file_object)
     for row in data:
