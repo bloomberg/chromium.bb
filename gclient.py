@@ -136,15 +136,18 @@ class GClientKeywords(object):
       raise gclient_utils.Error("Var is not defined: %s" % var_name)
 
 
-class DependencySettings(object):
+class DependencySettings(GClientKeywords):
   """Immutable configuration settings."""
   def __init__(
-      self, parent, safesync_url, managed, custom_deps, custom_vars,
+      self, parent, url, safesync_url, managed, custom_deps, custom_vars,
       deps_file, should_process):
+    GClientKeywords.__init__(self)
+
     # These are not mutable:
     self._parent = parent
     self._safesync_url = safesync_url
     self._deps_file = deps_file
+    self._url = url
     # 'managed' determines whether or not this dependency is synced/updated by
     # gclient after gclient checks it out initially.  The difference between
     # 'managed' and 'should_process' is that the user specifies 'managed' via
@@ -158,6 +161,18 @@ class DependencySettings(object):
     self._custom_vars = custom_vars or {}
     self._custom_deps = custom_deps or {}
 
+    # Post process the url to remove trailing slashes.
+    if isinstance(self._url, basestring):
+      # urls are sometime incorrectly written as proto://host/path/@rev. Replace
+      # it to proto://host/path@rev.
+      if self._url.count('@') > 1:
+        raise gclient_utils.Error('Invalid url "%s"' % self._url)
+      self._url = self._url.replace('/@', '@')
+    elif not isinstance(self._url,
+        (self.FromImpl, self.FileImpl, None.__class__)):
+      raise gclient_utils.Error(
+          ('dependency url must be either a string, None, '
+           'File() or From() instead of %s') % self._url.__class__.__name__)
     if '/' in self._deps_file or '\\' in self._deps_file:
       raise gclient_utils.Error('deps_file name must not be a path, just a '
                                 'filename. %s' % self._deps_file)
@@ -197,60 +212,41 @@ class DependencySettings(object):
     """Immutable so no need to lock."""
     return self._custom_deps.copy()
 
+  @property
+  def url(self):
+    return self._url
 
-class Dependency(GClientKeywords, gclient_utils.WorkItem, DependencySettings):
+
+class Dependency(gclient_utils.WorkItem, DependencySettings):
   """Object that represents a dependency checkout."""
 
   def __init__(self, parent, name, url, safesync_url, managed, custom_deps,
                custom_vars, deps_file, should_process):
-    GClientKeywords.__init__(self)
     gclient_utils.WorkItem.__init__(self, name)
     DependencySettings.__init__(
-        self, parent, safesync_url, managed, custom_deps, custom_vars,
+        self, parent, url, safesync_url, managed, custom_deps, custom_vars,
         deps_file, should_process)
 
     # This is in both .gclient and DEPS files:
-    self.url = url
-
-    self.deps_hooks = []
+    self._deps_hooks = []
 
     # Calculates properties:
-    self.parsed_url = None
+    self._parsed_url = None
     self._dependencies = []
     # A cache of the files affected by the current operation, necessary for
     # hooks.
     self._file_list = []
     # If it is not set to True, the dependency wasn't processed for its child
     # dependency, i.e. its DEPS wasn't read.
-    self.deps_parsed = False
+    self._deps_parsed = False
     # This dependency has been processed, i.e. checked out
-    self.processed = False
+    self._processed = False
     # This dependency had its hook run
-    self.hooks_ran = False
+    self._hooks_ran = False
 
-    # Post process the url to remove trailing slashes.
-    if isinstance(self.url, basestring):
-      # urls are sometime incorrectly written as proto://host/path/@rev. Replace
-      # it to proto://host/path@rev.
-      if self.url.count('@') > 1:
-        raise gclient_utils.Error('Invalid url "%s"' % self.url)
-      self.url = self.url.replace('/@', '@')
+    # Setup self.requirements and find any other dependency who would have self
+    # as a requirement.
 
-    self._FindDependencies()
-
-    # Sanity checks
-    if not self.name and self.parent:
-      raise gclient_utils.Error('Dependency without name')
-    if not isinstance(self.url,
-        (basestring, self.FromImpl, self.FileImpl, None.__class__)):
-      raise gclient_utils.Error('dependency url must be either a string, None, '
-                                'File() or From() instead of %s' %
-                                self.url.__class__.__name__)
-
-  def _FindDependencies(self):
-    """Setup self.requirements and find any other dependency who would have self
-    as a requirement.
-    """
     # self.parent is implicitly a requirement. This will be recursive by
     # definition.
     if self.parent and self.parent.name:
@@ -302,6 +298,9 @@ class Dependency(GClientKeywords, gclient_utils.WorkItem, DependencySettings):
             obj._requirements.add(self.name)
           finally:
             obj.lock.release()
+
+    if not self.name and self.parent:
+      raise gclient_utils.Error('Dependency without name')
 
   def LateOverride(self, url):
     """Resolves the parsed url from url.
@@ -375,7 +374,6 @@ class Dependency(GClientKeywords, gclient_utils.WorkItem, DependencySettings):
     if self.deps_parsed:
       logging.debug('%s was already parsed' % self.name)
       return
-    self.deps_parsed = True
     # One thing is unintuitive, vars= {} must happen before Var() use.
     local_scope = {}
     var = self.VarImpl(self.custom_vars, local_scope)
@@ -413,7 +411,7 @@ class Dependency(GClientKeywords, gclient_utils.WorkItem, DependencySettings):
         else:
           deps.update(os_deps)
 
-    self.deps_hooks.extend(local_scope.get('hooks', []))
+    self._deps_hooks.extend(local_scope.get('hooks', []))
 
     # If a line is in custom_deps, but not in the solution, we want to append
     # this line to the solution.
@@ -457,6 +455,7 @@ class Dependency(GClientKeywords, gclient_utils.WorkItem, DependencySettings):
           Dependency(
             self, name, url, None, None, None, None,
             self.deps_file, should_process))
+    self._deps_parsed = True
     logging.debug('Loaded: %s' % str(self))
 
   # Arguments number differs from overridden method
@@ -505,7 +504,7 @@ class Dependency(GClientKeywords, gclient_utils.WorkItem, DependencySettings):
     # All known hooks are expected to run unconditionally regardless of working
     # copy state, so skip the SCM status check.
     run_scm = command not in ('runhooks', None)
-    self.parsed_url = self.LateOverride(self.url)
+    self._parsed_url = self.LateOverride(self.url)
     if run_scm and self.parsed_url:
       if isinstance(self.parsed_url, self.FileImpl):
         # Special support for single-file checkout.
@@ -542,7 +541,7 @@ class Dependency(GClientKeywords, gclient_utils.WorkItem, DependencySettings):
         while (self._file_list[i].startswith('\\') or
                 self._file_list[i].startswith('/')):
           self._file_list[i] = self._file_list[i][1:]
-    self.processed = True
+    self._processed = True
     if self.recursion_limit:
       # Then we can parse the DEPS file.
       self.ParseDepsFile()
@@ -586,7 +585,7 @@ class Dependency(GClientKeywords, gclient_utils.WorkItem, DependencySettings):
     # A single DEPS file can specify multiple hooks so this function can be
     # called multiple times on a single Dependency.
     #assert self.hooks_ran == False
-    self.hooks_ran = True
+    self._hooks_ran = True
     logging.debug(hook_dict)
     logging.debug(matching_file_list)
     command = hook_dict['action'][:]
@@ -639,6 +638,26 @@ class Dependency(GClientKeywords, gclient_utils.WorkItem, DependencySettings):
   @property
   def dependencies(self):
     return tuple(self._dependencies)
+
+  @property
+  def deps_hooks(self):
+    return tuple(self._deps_hooks)
+
+  @property
+  def parsed_url(self):
+    return self._parsed_url
+
+  @property
+  def deps_parsed(self):
+    return self._deps_parsed
+
+  @property
+  def processed(self):
+    return self._processed
+
+  @property
+  def hooks_ran(self):
+    return self._hooks_ran
 
   @property
   def file_list(self):
@@ -775,8 +794,8 @@ solutions = [
         raise gclient_utils.Error('Invalid .gclient file. Solution is '
                                   'incomplete: %s' % s)
     # .gclient can have hooks.
-    self.deps_hooks = config_dict.get('hooks', [])
-    self.deps_parsed = True
+    self._deps_hooks = config_dict.get('hooks', [])
+    self._deps_parsed = True
 
   def SaveConfig(self):
     gclient_utils.FileWrite(os.path.join(self.root_dir,
