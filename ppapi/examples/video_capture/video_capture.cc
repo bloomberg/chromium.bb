@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "ppapi/c/pp_errors.h"
-#include "ppapi/c/ppb_opengles.h"
+#include "ppapi/c/ppb_opengles2.h"
 #include "ppapi/cpp/dev/buffer_dev.h"
 #include "ppapi/cpp/dev/video_capture_dev.h"
 #include "ppapi/cpp/dev/video_capture_client_dev.h"
