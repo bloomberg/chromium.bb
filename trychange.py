@@ -478,7 +478,11 @@ def GetMungedDiff(path_diff, diff):
   for i in range(len(diff)):
     if diff[i].startswith('--- ') or diff[i].startswith('+++ '):
       new_file = posixpath.join(path_diff, diff[i][4:]).replace('\\', '/')
-      changed_files.append(('M', new_file.split('\t')[0]))
+      if diff[i].startswith('--- '):
+        file_path = new_file.split('\t')[0].strip()
+        if file_path.startswith('a/'):
+          file_path = file_path[2:]
+        changed_files.append(('M', file_path))
       diff[i] = diff[i][0:4] + new_file
   return (diff, changed_files)
 
