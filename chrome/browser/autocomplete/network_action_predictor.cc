@@ -13,14 +13,58 @@
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/in_memory_database.h"
+#include "chrome/browser/prerender/prerender_field_trial.h"
 #include "chrome/browser/profiles/profile.h"
 
 namespace {
 
-  const float kConfidenceCutoff[NetworkActionPredictor::LAST_PREDICT_ACTION] = {
-    0.8f,
-    0.5f
-  };
+const float kConfidenceCutoff[] = {
+  0.8f,
+  0.5f
+};
+
+COMPILE_ASSERT(arraysize(kConfidenceCutoff) ==
+               NetworkActionPredictor::LAST_PREDICT_ACTION,
+               ConfidenceCutoff_count_mismatch);
+
+double OriginalAlgorithm(const history::URLRow& url_row) {
+  const double base_score = 1.0;
+
+  // This constant is ln(1/0.65) so we end up decaying to 65% of the base score
+  // for each week that passes.
+  const double kLnDecayPercent = 0.43078291609245;
+  base::TimeDelta time_passed = base::Time::Now() - url_row.last_visit();
+
+  // Clamp to 0.
+  const double decay_exponent = std::max(0.0,
+      kLnDecayPercent * static_cast<double>(time_passed.InMicroseconds()) /
+          base::Time::kMicrosecondsPerWeek);
+
+  const double kMaxDecaySpeedDivisor = 5.0;
+  const double kNumUsesPerDecaySpeedDivisorIncrement = 2.0;
+  const double decay_divisor = std::min(kMaxDecaySpeedDivisor,
+      (url_row.typed_count() + kNumUsesPerDecaySpeedDivisorIncrement - 1) /
+          kNumUsesPerDecaySpeedDivisorIncrement);
+
+  return base_score / exp(decay_exponent / decay_divisor);
+}
+
+double ConservativeAlgorithm(const history::URLRow& url_row) {
+  const double normalized_typed_count =
+      std::min(url_row.typed_count() / 5.0, 1.0);
+  const double base_score = atan(10 * normalized_typed_count) / atan(10.0);
+
+  // This constant is ln(1/0.65) so we end up decaying to 65% of the base score
+  // for each week that passes.
+  const double kLnDecayPercent = 0.43078291609245;
+  base::TimeDelta time_passed = base::Time::Now() - url_row.last_visit();
+
+  const double decay_exponent = std::max(0.0,
+      kLnDecayPercent * static_cast<double>(time_passed.InMicroseconds()) /
+          base::Time::kMicrosecondsPerWeek);
+
+  return base_score / exp(decay_exponent);
+}
 
 }
 
@@ -50,29 +94,25 @@ NetworkActionPredictor::Action
   if (url_id == 0)
     return ACTION_NONE;
 
-  const double base_score = 1.0;
+  double confidence = 0.0;
+  std::string histogram("NetworkActionPredictor.Confidence_");
+  switch (prerender::GetOmniboxHeuristicToUse()) {
+    case prerender::OMNIBOX_HEURISTIC_ORIGINAL:
+      confidence = OriginalAlgorithm(url_row);
+      histogram += "Original";
+      break;
+    case prerender::OMNIBOX_HEURISTIC_CONSERVATIVE:
+      confidence = ConservativeAlgorithm(url_row);
+      histogram += "Conservative";
+      break;
+    default:
+      NOTREACHED();
+      break;
+  };
 
-  // This constant is ln(1/0.65) so we end up decaying to 65% of the base score
-  // for each week that passes.
-  const double kLnDecayPercent = 0.43078291609245;
-  base::TimeDelta time_passed = base::Time::Now() - url_row.last_visit();
-
-  // Clamp to 0.
-  const double decay_exponent = std::max(0.0,
-      kLnDecayPercent * static_cast<double>(time_passed.InMicroseconds()) /
-          base::Time::kMicrosecondsPerWeek);
-
-  const double kMaxDecaySpeedDivisor = 5.0;
-  const double kNumUsesPerDecaySpeedDivisorIncrement = 2.0;
-  const double decay_divisor = std::min(kMaxDecaySpeedDivisor,
-      (url_row.typed_count() + kNumUsesPerDecaySpeedDivisorIncrement - 1) /
-          kNumUsesPerDecaySpeedDivisorIncrement);
-
-  const double confidence = base_score / exp(decay_exponent / decay_divisor);
   CHECK(confidence >= 0.0 && confidence <= 1.0);
 
-  UMA_HISTOGRAM_COUNTS_100("NetworkActionPredictor.Confidence",
-                           confidence * 100);
+  UMA_HISTOGRAM_COUNTS_100(histogram.c_str(), confidence * 100);
 
   for (int i = 0; i < LAST_PREDICT_ACTION; ++i)
     if (confidence >= kConfidenceCutoff[i])

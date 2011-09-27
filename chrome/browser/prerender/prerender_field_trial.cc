@@ -17,6 +17,9 @@
 
 namespace prerender {
 
+int omnibox_original_group_id = 0;
+int omnibox_conservative_group_id = 0;
+
 // If the command line contains the --prerender-from-omnibox switch, enable
 // prerendering from the Omnibox. If not, enter the user into a field trial.
 void ConfigurePrerenderFromOmnibox();
@@ -119,17 +122,25 @@ void ConfigurePrefetchAndPrerender(const CommandLine& command_line) {
 }
 
 void ConfigurePrerenderFromOmnibox() {
+  // Field trial to see if we're enabled.
+  const base::FieldTrial::Probability kDivisor = 100;
   if (!CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kPrerenderFromOmnibox)) {
-    const base::FieldTrial::Probability kDivisor = 100;
-    const base::FieldTrial::Probability kEnabledProbability = 10;
-
+    const base::FieldTrial::Probability kEnabledProbability = 40;
     scoped_refptr<base::FieldTrial> trial(
         new base::FieldTrial("PrerenderFromOmnibox", kDivisor,
                              "OmniboxPrerenderDisabled", 2012, 8, 30));
-
     trial->AppendGroup("OmniboxPrerenderEnabled", kEnabledProbability);
   }
+
+  // Field trial to see which heuristic to use.
+  const base::FieldTrial::Probability kConservativeProbability = 50;
+  scoped_refptr<base::FieldTrial> trial(
+      new base::FieldTrial("PrerenderFromOmniboxHeuristic", kDivisor,
+                           "OriginalAlgorithm", 2012, 8, 30));
+  omnibox_original_group_id = base::FieldTrial::kDefaultGroupNumber;
+  omnibox_conservative_group_id =
+      trial->AppendGroup("ConservativeAlgorithm", kConservativeProbability);
 }
 
 bool IsOmniboxEnabled(Profile* profile) {
@@ -139,21 +150,28 @@ bool IsOmniboxEnabled(Profile* profile) {
   if (!PrerenderManager::IsPrerenderingPossible())
     return false;
 
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kPrerenderFromOmnibox)) {
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kPrerenderFromOmnibox))
     return true;
-  }
 
   if (!MetricsServiceHelper::IsMetricsReportingEnabled())
     return false;
 
   const int group = base::FieldTrialList::FindValue("PrerenderFromOmnibox");
-  if (group == base::FieldTrial::kNotFinalized ||
-      group == base::FieldTrial::kDefaultGroupNumber) {
-    return false;
-  }
+  return group != base::FieldTrial::kNotFinalized &&
+         group != base::FieldTrial::kDefaultGroupNumber;
+}
 
-  return true;
+OmniboxHeuristic GetOmniboxHeuristicToUse() {
+  const int group =
+      base::FieldTrialList::FindValue("PrerenderFromOmniboxHeuristic");
+  if (group == omnibox_original_group_id)
+    return OMNIBOX_HEURISTIC_ORIGINAL;
+  if (group == omnibox_conservative_group_id)
+    return OMNIBOX_HEURISTIC_CONSERVATIVE;
+
+  // If we don't have a group just return the original heuristic.
+  return OMNIBOX_HEURISTIC_ORIGINAL;
 }
 
 }  // namespace prerender

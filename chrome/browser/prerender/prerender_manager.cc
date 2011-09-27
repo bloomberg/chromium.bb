@@ -273,7 +273,22 @@ bool PrerenderManager::AddPrerenderFromOmnibox(const GURL& url) {
   if (!IsOmniboxEnabled(profile_))
     return false;
 
-  return AddPrerender(ORIGIN_OMNIBOX, std::make_pair(-1, -1), url, GURL());
+  Origin origin = ORIGIN_MAX;
+  switch (GetOmniboxHeuristicToUse()) {
+    case OMNIBOX_HEURISTIC_ORIGINAL:
+      origin = ORIGIN_OMNIBOX_ORIGINAL;
+      break;
+
+    case OMNIBOX_HEURISTIC_CONSERVATIVE:
+      origin = ORIGIN_OMNIBOX_CONSERVATIVE;
+      break;
+
+    default:
+      NOTREACHED();
+      break;
+  };
+
+  return AddPrerender(origin, std::make_pair(-1, -1), url, GURL());
 }
 
 bool PrerenderManager::AddPrerender(
@@ -897,6 +912,11 @@ DictionaryValue* PrerenderManager::GetAsValue() const {
   dict_value->Set("active", GetActivePrerendersAsValue());
   dict_value->SetBoolean("enabled", enabled_);
   dict_value->SetBoolean("omnibox_enabled", IsOmniboxEnabled(profile_));
+  if (IsOmniboxEnabled(profile_)) {
+    dict_value->SetString("omnibox_heuristic",
+        GetOmniboxHeuristicToUse() == OMNIBOX_HEURISTIC_ORIGINAL ?
+            "(original)" : "(conservative)");
+  }
   // If prerender is disabled via a flag this method is not even called.
   if (IsControlGroup())
     dict_value->SetString("disabled_reason", "(Disabled for testing)");

@@ -28,10 +28,14 @@ std::string ComposeHistogramName(const std::string& prefix_type,
 std::string GetHistogramName(Origin origin, uint8 experiment_id,
                              const std::string& name) {
   switch (origin) {
-    case ORIGIN_OMNIBOX:
+    case ORIGIN_OMNIBOX_ORIGINAL:
       if (experiment_id != kNoExperiment)
         return ComposeHistogramName("wash", name);
-      return ComposeHistogramName("omnibox", name);
+      return ComposeHistogramName("omnibox_original", name);
+    case ORIGIN_OMNIBOX_CONSERVATIVE:
+      if (experiment_id != kNoExperiment)
+        return ComposeHistogramName("wash", name);
+      return ComposeHistogramName("omnibox_conservative", name);
     case ORIGIN_LINK_REL_PRERENDER:
       if (experiment_id != kNoExperiment)
         return ComposeHistogramName("wash", name);
@@ -72,7 +76,9 @@ std::string GetHistogramName(Origin origin, uint8 experiment_id,
               experiment != recording_experiment)) { \
   } else if (origin == ORIGIN_LINK_REL_PRERENDER) { \
     histogram; \
-  } else if (origin == ORIGIN_OMNIBOX) { \
+  } else if (origin == ORIGIN_OMNIBOX_ORIGINAL) { \
+    histogram; \
+  } else if (origin == ORIGIN_OMNIBOX_CONSERVATIVE) { \
     histogram; \
   } else if (experiment != kNoExperiment) { \
     histogram; \

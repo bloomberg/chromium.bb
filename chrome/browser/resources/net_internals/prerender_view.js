@@ -66,6 +66,10 @@ var PrerenderView = (function() {
       if (prerenderInfo && ('omnibox_enabled' in prerenderInfo)) {
         this.prerenderOmniboxEnabledSpan_.textContent =
             prerenderInfo.omnibox_enabled.toString();
+        if (prerenderInfo.omnibox_heuristic) {
+          this.prerenderOmniboxEnabledSpan_.textContent +=
+              ' ' + prerenderInfo.omnibox_heuristic;
+        }
       }
 
       if (!isValidPrerenderInfo(prerenderInfo))
