@@ -29,6 +29,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <math.h>
+#include <assert.h>
 #include <time.h>
 #include <cairo.h>
 #include <glib.h>
@@ -65,8 +66,10 @@ struct display {
 	EGLDisplay dpy;
 	EGLConfig rgb_config;
 	EGLConfig premultiplied_argb_config;
-	EGLContext ctx;
-	cairo_device_t *device;
+	EGLContext rgb_ctx;
+	EGLContext argb_ctx;
+	cairo_device_t *rgb_device;
+	cairo_device_t *argb_device;
 
 	int display_fd;
 	uint32_t mask;
@@ -228,6 +231,7 @@ display_create_egl_window_surface(struct display *display,
 	struct egl_window_surface_data *data;
 	EGLConfig config;
 	const EGLint *attribs;
+	cairo_device_t *device;
 
 	static const EGLint premul_attribs[] = {
 		EGL_ALPHA_FORMAT, EGL_ALPHA_FORMAT_PRE,
@@ -243,9 +247,11 @@ display_create_egl_window_surface(struct display *display,
 
 	if (flags & SURFACE_OPAQUE) {
 		config = display->rgb_config;
+		device = display->rgb_device;
 		attribs = NULL;
 	} else {
 		config = display->premultiplied_argb_config;
+		device = display->argb_device;
 		attribs = premul_attribs;
 	}
 
@@ -256,7 +262,7 @@ display_create_egl_window_surface(struct display *display,
 	data->surf = eglCreateWindowSurface(display->dpy, config,
 					    data->window, attribs);
 
-	cairo_surface = cairo_gl_surface_create_for_egl(display->device,
+	cairo_surface = cairo_gl_surface_create_for_egl(device,
 							data->surf,
 							rectangle->width,
 							rectangle->height);
@@ -269,6 +275,7 @@ display_create_egl_window_surface(struct display *display,
 
 struct egl_image_surface_data {
 	struct surface_data data;
+	cairo_device_t *device;
 	EGLImageKHR image;
 	GLuint texture;
 	struct display *display;
@@ -281,9 +288,9 @@ egl_image_surface_data_destroy(void *p)
 	struct egl_image_surface_data *data = p;
 	struct display *d = data->display;
 
-	cairo_device_acquire(d->device);
+	cairo_device_acquire(data->device);
 	glDeleteTextures(1, &data->texture);
-	cairo_device_release(d->device);
+	cairo_device_release(data->device);
 
 	d->destroy_image(d->dpy, data->image);
 	wl_buffer_destroy(data->data.buffer);
@@ -311,6 +318,7 @@ display_create_egl_image_surface(struct display *display,
 	EGLDisplay dpy = display->dpy;
 	cairo_surface_t *surface;
 	EGLConfig config;
+	cairo_content_t content;
 
 	data = malloc(sizeof *data);
 	if (data == NULL)
@@ -325,10 +333,15 @@ display_create_egl_image_surface(struct display *display,
 		return NULL;
 	}
 
-	if (flags & SURFACE_OPAQUE)
+	if (flags & SURFACE_OPAQUE) {
+		data->device = display->rgb_device;
 		config = display->rgb_config;
-	else
+		content = CAIRO_CONTENT_COLOR;
+	} else {
+		data->device = display->argb_device;
 		config = display->premultiplied_argb_config;
+		content = CAIRO_CONTENT_COLOR_ALPHA;
+	}
 
 	data->image = display->create_image(dpy, NULL,
 					    EGL_NATIVE_PIXMAP_KHR,
@@ -343,14 +356,14 @@ display_create_egl_image_surface(struct display *display,
 	data->data.buffer =
 		wl_egl_pixmap_create_buffer(data->pixmap);
 
-	cairo_device_acquire(display->device);
+	cairo_device_acquire(data->device);
 	glGenTextures(1, &data->texture);
 	glBindTexture(GL_TEXTURE_2D, data->texture);
 	display->image_target_texture_2d(GL_TEXTURE_2D, data->image);
-	cairo_device_release(display->device);
+	cairo_device_release(data->device);
 
-	surface = cairo_gl_surface_create_for_texture(display->device,
-						      CAIRO_CONTENT_COLOR_ALPHA,
+	surface = cairo_gl_surface_create_for_texture(data->device,
+						      content,
 						      data->texture,
 						      rectangle->width,
 						      rectangle->height);
@@ -411,11 +424,11 @@ display_create_egl_image_surface_from_file(struct display *display,
 
 	data = cairo_surface_get_user_data(surface, &surface_data_key);
 
-	cairo_device_acquire(display->device);
+	cairo_device_acquire(display->argb_device);
 	glBindTexture(GL_TEXTURE_2D, data->texture);
 	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, rect->width, rect->height,
 			GL_RGBA, GL_UNSIGNED_BYTE, pixels);
-	cairo_device_release(display->device);
+	cairo_device_release(display->argb_device);
 
 	g_object_unref(pixbuf);
 
@@ -1403,7 +1416,8 @@ input_get_modifiers(struct input *input)
 struct wl_drag *
 window_create_drag(struct window *window)
 {
-	cairo_device_flush (window->display->device);
+	cairo_device_flush (window->display->rgb_device);
+	cairo_device_flush (window->display->argb_device);
 
 	return wl_shell_create_drag(window->display->shell);
 }
@@ -2036,21 +2050,32 @@ init_egl(struct display *d)
 		return -1;
 	}
 
-	d->ctx = eglCreateContext(d->dpy, d->rgb_config, EGL_NO_CONTEXT, NULL);
-	if (d->ctx == NULL) {
+	d->rgb_ctx = eglCreateContext(d->dpy, d->rgb_config, EGL_NO_CONTEXT, NULL);
+	if (d->rgb_ctx == NULL) {
+		fprintf(stderr, "failed to create context\n");
+		return -1;
+	}
+	d->argb_ctx = eglCreateContext(d->dpy, d->premultiplied_argb_config,
+				       EGL_NO_CONTEXT, NULL);
+	if (d->argb_ctx == NULL) {
 		fprintf(stderr, "failed to create context\n");
 		return -1;
 	}
 
-	if (!eglMakeCurrent(d->dpy, NULL, NULL, d->ctx)) {
+	if (!eglMakeCurrent(d->dpy, NULL, NULL, d->rgb_ctx)) {
 		fprintf(stderr, "failed to make context current\n");
 		return -1;
 	}
 
 #ifdef HAVE_CAIRO_EGL
-	d->device = cairo_egl_device_create(d->dpy, d->ctx);
-	if (cairo_device_status(d->device) != CAIRO_STATUS_SUCCESS) {
+	d->rgb_device = cairo_egl_device_create(d->dpy, d->rgb_ctx);
+	if (cairo_device_status(d->rgb_device) != CAIRO_STATUS_SUCCESS) {
 		fprintf(stderr, "failed to get cairo egl device\n");
+		return -1;
+	}
+	d->argb_device = cairo_egl_device_create(d->dpy, d->argb_ctx);
+	if (cairo_device_status(d->argb_device) != CAIRO_STATUS_SUCCESS) {
+		fprintf(stderr, "failed to get cairo egl argb device\n");
 		return -1;
 	}
 #endif
@@ -2169,9 +2194,15 @@ display_get_egl_display(struct display *d)
 }
 
 EGLConfig
-display_get_egl_config(struct display *d)
+display_get_rgb_egl_config(struct display *d)
 {
 	return d->rgb_config;
+}
+
+EGLConfig
+display_get_argb_egl_config(struct display *d)
+{
+	return d->premultiplied_argb_config;
 }
 
 struct wl_shell *
@@ -2187,28 +2218,47 @@ display_acquire_window_surface(struct display *display,
 {
 #ifdef HAVE_CAIRO_EGL
 	struct egl_window_surface_data *data;
+	cairo_device_t *device;
 
 	if (!window->cairo_surface)
 		return;
+	device = cairo_surface_get_device(window->cairo_surface);
+	if (!device)
+		return;
 
-	if (!ctx)
-		ctx = display->ctx;
+	if (!ctx) {
+		if (device == display->rgb_device)
+			ctx = display->rgb_ctx;
+		else if (device == display->argb_device)
+			ctx = display->argb_ctx;
+		else
+			assert(0);
+	}
 
 	data = cairo_surface_get_user_data(window->cairo_surface,
 					   &surface_data_key);
 
-	cairo_device_acquire(display->device);
+	cairo_device_acquire(device);
 	if (!eglMakeCurrent(display->dpy, data->surf, data->surf, ctx))
 		fprintf(stderr, "failed to make surface current\n");
 #endif
 }
 
 void
-display_release(struct display *display)
+display_release_window_surface(struct display *display,
+			       struct window *window)
 {
-	if (!eglMakeCurrent(display->dpy, NULL, NULL, display->ctx))
+#ifdef HAVE_CAIRO_EGL
+	cairo_device_t *device;
+	
+	device = cairo_surface_get_device(window->cairo_surface);
+	if (!device)
+		return;
+
+	if (!eglMakeCurrent(display->dpy, NULL, NULL, display->rgb_ctx))
 		fprintf(stderr, "failed to make context current\n");
-	cairo_device_release(display->device);
+	cairo_device_release(device);
+#endif
 }
 
 void

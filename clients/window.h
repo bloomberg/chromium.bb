@@ -62,14 +62,18 @@ EGLDisplay
 display_get_egl_display(struct display *d);
 
 EGLConfig
-display_get_egl_config(struct display *d);
+display_get_rgb_egl_config(struct display *d);
+
+EGLConfig
+display_get_argb_egl_config(struct display *d);
 
 void
 display_acquire_window_surface(struct display *display,
 			       struct window *window,
 			       EGLContext ctx);
 void
-display_release(struct display *display);
+display_release_window_surface(struct display *display,
+			       struct window *window);
 
 #ifdef HAVE_CAIRO_EGL
 EGLImageKHR
