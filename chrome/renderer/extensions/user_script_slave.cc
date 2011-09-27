@@ -239,7 +239,10 @@ void UserScriptSlave::InjectScripts(WebFrame* frame,
   // changes to match the parent document after Gmail document.writes into
   // it to create the editor.
   // http://code.google.com/p/chromium/issues/detail?id=86742
-  GURL data_source_url = GURL(frame->dataSource()->request().url());
+  WebKit::WebDataSource* data_source = frame->dataSource() ?
+      frame->dataSource() : frame->provisionalDataSource();
+  CHECK(data_source);
+  GURL data_source_url = GURL(data_source->request().url());
   if (data_source_url.is_empty())
     return;
 

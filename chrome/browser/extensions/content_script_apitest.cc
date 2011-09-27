@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/browser/tab_contents/tab_contents.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/mock_host_resolver.h"
 
@@ -57,6 +58,19 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ContentScriptIgnoreHostPermissions) {
   ASSERT_TRUE(StartTestServer());
   ASSERT_TRUE(RunExtensionTest(
       "content_scripts/dont_match_host_permissions")) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(
+    ExtensionApiTest, ContentScriptInjectedIntoMultipartPage) {
+  ASSERT_TRUE(StartTestServer());
+
+  // Start with a renderer already open at a URL.
+  GURL url(test_server()->GetURL("multipart-slow"));
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  string16 title;
+  ui_test_utils::GetCurrentTabTitle(browser(), &title);
+  EXPECT_EQ(std::string("PASS"), UTF16ToUTF8(title));
 }
 
 // crbug.com/39249 -- content scripts js should not run on view source.
