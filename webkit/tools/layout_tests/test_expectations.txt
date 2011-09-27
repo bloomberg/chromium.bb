@@ -6,7 +6,3 @@
 // until the changes can be landed upstream.
 
 // PLEASE DO NOT LEAVE ENTRIES IN THIS FILE FOR MORE THAN 24 HRS.
-
-// TODO(mihaip): remove with next WebKit roll.
-BUGWK68819 DEBUG : svg/clip-path/clip-path-on-svg.svg = CRASH
-BUGWK68821 DEBUG : fast/animation/request-animation-frame-timestamps-advance.html = TIMEOUT
