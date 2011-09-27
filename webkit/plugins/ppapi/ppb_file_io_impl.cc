@@ -86,24 +86,25 @@ int32_t PPB_FileIO_Impl::Open(PP_Resource pp_file_ref,
     return false;
 
   file_system_type_ = file_ref->GetFileSystemType();
-  switch (file_system_type_) {
-    case PP_FILESYSTEMTYPE_EXTERNAL:
-      if (!plugin_delegate->AsyncOpenFile(
-              file_ref->GetSystemPath(), flags,
-              callback_factory_.NewCallback(
-                  &PPB_FileIO_Impl::AsyncOpenFileCallback)))
-        return PP_ERROR_FAILED;
-      break;
-    case PP_FILESYSTEMTYPE_LOCALPERSISTENT:
-    case PP_FILESYSTEMTYPE_LOCALTEMPORARY:
-      file_system_url_ = file_ref->GetFileSystemURL();
-      if (!plugin_delegate->AsyncOpenFileSystemURL(
-              file_system_url_, flags,
-              callback_factory_.NewCallback(
-                  &PPB_FileIO_Impl::AsyncOpenFileCallback)))
-        return PP_ERROR_FAILED;
-      break;
-    default:
+  if (file_system_type_ != PP_FILESYSTEMTYPE_LOCALPERSISTENT &&
+      file_system_type_ != PP_FILESYSTEMTYPE_LOCALTEMPORARY &&
+      file_system_type_ != PP_FILESYSTEMTYPE_EXTERNAL)
+    return PP_ERROR_FAILED;
+
+  if (file_ref->HasValidFileSystem()) {
+    file_system_url_ = file_ref->GetFileSystemURL();
+    if (!plugin_delegate->AsyncOpenFileSystemURL(
+            file_system_url_, flags,
+            callback_factory_.NewCallback(
+                &PPB_FileIO_Impl::AsyncOpenFileCallback)))
+      return PP_ERROR_FAILED;
+  } else {
+    if (file_system_type_ != PP_FILESYSTEMTYPE_EXTERNAL)
+      return PP_ERROR_FAILED;
+    if (!plugin_delegate->AsyncOpenFile(
+            file_ref->GetSystemPath(), flags,
+            callback_factory_.NewCallback(
+                &PPB_FileIO_Impl::AsyncOpenFileCallback)))
       return PP_ERROR_FAILED;
   }
 

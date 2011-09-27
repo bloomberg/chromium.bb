@@ -19,6 +19,13 @@ struct OpenCallbackData {
   PP_Resource file_system;
 };
 
+void OpenFailCallback(void* data, int32_t result) {
+  EXPECT(result == PP_ERROR_NOACCESS);
+  OpenCallbackData* callback_data = reinterpret_cast<OpenCallbackData*>(data);
+  PPBCore()->ReleaseResource(callback_data->file_system);
+  delete callback_data;
+}
+
 void OpenCallback(void* data, int32_t result) {
   EXPECT(result == PP_OK);
   OpenCallbackData* callback_data = reinterpret_cast<OpenCallbackData*>(data);
@@ -113,14 +120,14 @@ void TestOpen() {
   pp_error = ppb_file_system->Open(kInvalidResource, kSize, nop_callback);
   EXPECT(pp_error == PP_ERROR_BADRESOURCE);
 
-  // Test to make sure external file system is not supported.
-  // TODO(sanga): Once Chrome supports external file systems, change this test
-  // to reflect the change.
+  // Test that external storage fails with permission error.
   file_system = ppb_file_system->Create(pp_instance(),
                                         PP_FILESYSTEMTYPE_EXTERNAL);
-  pp_error = ppb_file_system->Open(file_system, kSize, nop_callback);
-  ppb_core->ReleaseResource(file_system);
-  EXPECT(pp_error == PP_ERROR_FAILED);
+  OpenCallbackData* callback_data_ext = new OpenCallbackData(file_system);
+  PP_CompletionCallback open_fail_callback = MakeTestableCompletionCallback(
+      "OpenCallback", OpenFailCallback, callback_data_ext);
+  pp_error = ppb_file_system->Open(file_system, kSize, open_fail_callback);
+  EXPECT(pp_error == PP_OK_COMPLETIONPENDING);
 
   // Test local temporary and local persistant file systems.
   for (size_t i = 1; i < kNumFileSystemTypes; ++i) {

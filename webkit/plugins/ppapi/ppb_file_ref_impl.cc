@@ -108,7 +108,8 @@ PPB_FileRef_Impl* PPB_FileRef_Impl::CreateInternal(PP_Resource pp_file_system,
     return 0;
 
   if (file_system->type() != PP_FILESYSTEMTYPE_LOCALPERSISTENT &&
-      file_system->type() != PP_FILESYSTEMTYPE_LOCALTEMPORARY)
+      file_system->type() != PP_FILESYSTEMTYPE_LOCALTEMPORARY &&
+      file_system->type() != PP_FILESYSTEMTYPE_EXTERNAL)
     return 0;
 
   PPB_FileRef_CreateInfo info;
@@ -253,7 +254,8 @@ FilePath PPB_FileRef_Impl::GetSystemPath() const {
 
 GURL PPB_FileRef_Impl::GetFileSystemURL() const {
   if (GetFileSystemType() != PP_FILESYSTEMTYPE_LOCALPERSISTENT &&
-      GetFileSystemType() != PP_FILESYSTEMTYPE_LOCALTEMPORARY) {
+      GetFileSystemType() != PP_FILESYSTEMTYPE_LOCALTEMPORARY &&
+      GetFileSystemType() != PP_FILESYSTEMTYPE_EXTERNAL) {
     NOTREACHED();
     return GURL();
   }
@@ -267,6 +269,10 @@ GURL PPB_FileRef_Impl::GetFileSystemURL() const {
   // TODO(ericu): Switch this to use Resolve after fixing GURL to understand
   // FileSystem URLs.
   return GURL(file_system_->root_url().spec() + virtual_path.substr(1));
+}
+
+bool PPB_FileRef_Impl::HasValidFileSystem() const {
+  return file_system_ && file_system_->opened();
 }
 
 bool PPB_FileRef_Impl::IsValidNonExternalFileSystem() const {

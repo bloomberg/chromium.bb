@@ -53,6 +53,8 @@ class PPB_FileRef_Impl : public ::ppapi::FileRefImpl {
   // Returns the FileSystem API URL corresponding to this file.
   GURL GetFileSystemURL() const;
 
+  // Checks if file ref has file system instance and if the instance is opened.
+  bool HasValidFileSystem() const;
  private:
   // Many mutation functions are allow only to non-external filesystems, This
   // function returns true if the filesystem is opened and isn't external as an
