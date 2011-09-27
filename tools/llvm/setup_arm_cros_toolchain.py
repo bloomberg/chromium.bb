@@ -32,19 +32,20 @@ CODE_SOURCERY_PREFIX=""
 CODE_SOURCERY_JAIL = J(BASE_DIR, 'arm-2009q3', ARM_CROSS_TARGET, 'libc')
 LD_SCRIPT_TRUSTED = J(BASE_DIR, 'ld_script_arm_trusted')
 
-BASE_CC = ("%s-%%s -Werror -O2 %%s "
+BASE_CC = ("%s%s-%%s -Werror -O2 %%s "
            "-fdiagnostics-show-option "
            ## "-march=armv6 " ## -I%s/usr/include
-           ) % (ARM_CROSS_TARGET, ### "-Wl,-T -Wl,%s"
+           ) % ("/usr/x86_64-pc-linux-gnu/armv7a-cros-linux-gnueabi/gcc-bin/4.4.3",
+                ARM_CROSS_TARGET, ### "-Wl,-T -Wl,%s"
                                ## CODE_SOURCERY_JAIL,
                                ##LD_SCRIPT_TRUSTED
-                               )
+                )
 
 # Shell exports
 ARM_CC  = BASE_CC % ('gcc', '-std=gnu99 -pedantic')
 ARM_CXX = BASE_CC % ('g++', '')
 ARM_LD = '%s-ld' % CODE_SOURCERY_PREFIX
-ARM_LINKFLAGS = '-static'
+ARM_LINKFLAGS = '' # '-static'
 ARM_LIB_DIR = J(CODE_SOURCERY_JAIL, 'usr', 'lib')
 ARM_EMU = J(BASE_DIR, 'run_under_qemu_arm')
 
