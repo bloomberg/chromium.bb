@@ -33,10 +33,9 @@ cr.define('login', function() {
 
     /** @inheritDoc */
     decorate: function() {
-      window.addEventListener('online',
-                              this.handleNetworkStateChange_.bind(this));
-      window.addEventListener('offline',
-                              this.handleNetworkStateChange_.bind(this));
+      chrome.send('loginAddNetworkStateObserver',
+                  ['login.OfflineMessageScreen.updateState']);
+
       $('captive-portal-start-guest-session').onclick = function() {
         chrome.send('fixCaptivePortal');
       }
@@ -51,20 +50,26 @@ cr.define('login', function() {
       cr.ui.DropDown.setActive('offline-networks-list', false);
     },
 
+    update: function() {
+      chrome.send('loginRequestNetworkState',
+                  ['login.OfflineMessageScreen.updateState']);
+    },
+
     /**
      * Shows or hides offline message based on network on/offline state.
      */
-    update: function() {
+    updateState: function(state) {
       var currentScreen = Oobe.getInstance().currentScreen;
       var offlineMessage = this;
-      var isOffline = !window.navigator.onLine;
+      var isOnline = state == 1;
+      var isUnderCaptivePortal = state == 2;
       var shouldOverlay = MANAGED_SCREENS.indexOf(currentScreen.id) != -1;
 
-      if (isOffline && shouldOverlay) {
+      if (!isOnline && shouldOverlay) {
         offlineMessage.onBeforeShow();
 
-        $('offline-message-text').hidden = false;
-        $('captive-portal-message-text').hidden = true;
+        $('offline-message-text').hidden = isUnderCaptivePortal;
+        $('captive-portal-message-text').hidden = !isUnderCaptivePortal;
 
         offlineMessage.classList.remove('hidden');
         offlineMessage.classList.remove('faded');
@@ -95,13 +100,15 @@ cr.define('login', function() {
         }
       }
     },
+  };
 
-    /**
-     * Handler of online/offline event.
-     */
-    handleNetworkStateChange_: function() {
-      this.update();
-    }
+  /**
+   * Network state changed callback.
+   * @param {Integer} state Current state of the network: 0 - offline;
+   * 1 - online; 2 - under the captive portal.
+   */
+  OfflineMessageScreen.updateState = function(state) {
+    $('offline-message').updateState(state);
   };
 
   /**
@@ -110,33 +117,11 @@ cr.define('login', function() {
    * @param {number} error Error code.
    */
   OfflineMessageScreen.onFrameError = function(error) {
-    var currentScreen = Oobe.getInstance().currentScreen;
-    var offlineMessage = $('offline-message');
-    var isOffline = !window.navigator.onLine;
-    var shouldOverlay = MANAGED_SCREENS.indexOf(currentScreen.id) != -1;
-
-    if (!shouldOverlay)
-      return;
-
-    if (!isOffline) {
-      $('offline-message-text').hidden = true;
-      $('captive-portal-message-text').hidden = false;
-    }
-
-    if (!currentScreen.classList.contains('faded')) {
-      offlineMessage.onBeforeShow();
-
-      offlineMessage.classList.remove('hidden');
-      offlineMessage.classList.remove('faded');
-
-      currentScreen.classList.add('faded');
-      currentScreen.addEventListener('webkitTransitionEnd',
-        function f(e) {
-          currentScreen.removeEventListener('webkitTransitionEnd', f);
-          if (currentScreen.classList.contains('faded'))
-            currentScreen.classList.add('hidden');
-        });
-    }
+    // Offline and simple captive portal cases are handled by the
+    // NetworkStateInformer, so only the case when browser is online is
+    // valuable.
+    if (window.navigator.onLine)
+      this.updateState(2);
   };
 
   return {

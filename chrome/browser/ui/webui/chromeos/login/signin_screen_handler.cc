@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 
 #include "base/command_line.h"
+#include "base/hash_tables.h"
 #include "base/stringprintf.h"
 #include "base/task.h"
 #include "base/values.h"
@@ -12,6 +13,7 @@
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/cros/power_library.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/webui_login_display.h"
@@ -66,6 +68,38 @@ std::string SanitizeEmail(const std::string& email) {
 
 namespace chromeos {
 
+// Class which observes network state changes and calls registerd callbacks.
+// State is considered changed if connection or the active network has been
+// changed. Also, it answers to the requests about current network state.
+class NetworkStateInformer
+    : public chromeos::NetworkLibrary::NetworkManagerObserver {
+ public:
+  explicit NetworkStateInformer(WebUI* web_ui);
+  virtual ~NetworkStateInformer();
+
+  // Adds observer's callback to be called when network state has been changed.
+  void AddObserver(const std::string& callback);
+
+  // Removes observer's callback.
+  void RemoveObserver(const std::string& callback);
+
+  // Sends current network state using the callback.
+  void SendState(const std::string& callback);
+
+  // NetworkLibrary::NetworkManagerObserver implementation:
+  virtual void OnNetworkManagerChanged(chromeos::NetworkLibrary* cros) OVERRIDE;
+
+ private:
+  enum State {OFFLINE, ONLINE, CAPTIVE_PORTAL};
+
+  bool UpdateState(chromeos::NetworkLibrary* cros);
+
+  base::hash_set<std::string> observers_;
+  std::string active_network_;
+  State state_;
+  WebUI* web_ui_;
+};
+
 // Clears DNS cache on IO thread.
 class ClearDnsCacheTaskOnIOThread : public Task {
  public:
@@ -90,6 +124,63 @@ class ClearDnsCacheTaskOnIOThread : public Task {
   DISALLOW_COPY_AND_ASSIGN(ClearDnsCacheTaskOnIOThread);
 };
 
+// NetworkStateInformer implementation -----------------------------------------
+
+NetworkStateInformer::NetworkStateInformer(WebUI* web_ui) : web_ui_(web_ui) {
+  NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();
+  UpdateState(cros);
+  cros->AddNetworkManagerObserver(this);
+}
+
+NetworkStateInformer::~NetworkStateInformer() {
+  CrosLibrary::Get()->GetNetworkLibrary()->
+      RemoveNetworkManagerObserver(this);
+}
+
+void NetworkStateInformer::AddObserver(const std::string& callback) {
+  observers_.insert(callback);
+}
+
+void NetworkStateInformer::RemoveObserver(const std::string& callback) {
+  observers_.erase(callback);
+}
+
+void NetworkStateInformer::SendState(const std::string& callback) {
+  base::FundamentalValue state_value(state_);
+  web_ui_->CallJavascriptFunction(callback, state_value);
+}
+
+void NetworkStateInformer::OnNetworkManagerChanged(NetworkLibrary* cros) {
+  if (UpdateState(cros)) {
+    for (base::hash_set<std::string>::iterator it = observers_.begin();
+         it != observers_.end(); ++it) {
+      SendState(*it);
+    }
+  }
+}
+
+bool NetworkStateInformer::UpdateState(NetworkLibrary* cros) {
+  State new_state;
+  std::string new_active_network;
+  if (!cros->Connected()) {
+    new_state = OFFLINE;
+  } else {
+    const Network* active_network = cros->active_network();
+    new_active_network = active_network->unique_id();
+    if (active_network && active_network->restricted_pool()) {
+      new_state = CAPTIVE_PORTAL;
+    } else {
+      new_state = ONLINE;
+    }
+  }
+  bool updated = (new_state != state_) ||
+      (active_network_ != new_active_network);
+  state_ = new_state;
+  active_network_ = new_active_network;
+  return updated;
+}
+
+// SigninScreenHandler implementation ------------------------------------------
 
 SigninScreenHandler::SigninScreenHandler()
     : delegate_(WebUILoginDisplay::GetInstance()),
@@ -182,6 +273,8 @@ void SigninScreenHandler::Initialize() {
 }
 
 void SigninScreenHandler::RegisterMessages() {
+  network_state_informer_.reset(new NetworkStateInformer(web_ui_));
+
   web_ui_->RegisterMessageCallback("authenticateUser",
       NewCallback(this, &SigninScreenHandler::HandleAuthenticateUser));
   web_ui_->RegisterMessageCallback("completeLogin",
@@ -206,6 +299,14 @@ void SigninScreenHandler::RegisterMessages() {
       NewCallback(this, &SigninScreenHandler::HandleCreateAccount));
   web_ui_->RegisterMessageCallback("loginWebuiReady",
       NewCallback(this, &SigninScreenHandler::HandleLoginWebuiReady));
+  web_ui_->RegisterMessageCallback("loginRequestNetworkState",
+      NewCallback(this, &SigninScreenHandler::HandleLoginRequestNetworkState));
+  web_ui_->RegisterMessageCallback("loginAddNetworkStateObserver",
+      NewCallback(this,
+                  &SigninScreenHandler::HandleLoginAddNetworkStateObserver));
+  web_ui_->RegisterMessageCallback("loginRemoveNetworkStateObserver",
+      NewCallback(this,
+                  &SigninScreenHandler::HandleLoginRemoveNetworkStateObserver));
 }
 
 void SigninScreenHandler::HandleGetUsers(const base::ListValue* args) {
@@ -455,6 +556,36 @@ void SigninScreenHandler::HandleLoginWebuiReady(const base::ListValue* args) {
       chrome::NOTIFICATION_LOGIN_WEBUI_READY,
       NotificationService::AllSources(),
       NotificationService::NoDetails());
+}
+
+void SigninScreenHandler::HandleLoginRequestNetworkState(
+    const base::ListValue* args) {
+  std::string callback;
+  if (!args->GetString(0, &callback)) {
+    NOTREACHED();
+    return;
+  }
+  network_state_informer_->SendState(callback);
+}
+
+void SigninScreenHandler::HandleLoginAddNetworkStateObserver(
+    const base::ListValue* args) {
+  std::string callback;
+  if (!args->GetString(0, &callback)) {
+    NOTREACHED();
+    return;
+  }
+  network_state_informer_->AddObserver(callback);
+}
+
+void SigninScreenHandler::HandleLoginRemoveNetworkStateObserver(
+    const base::ListValue* args) {
+  std::string callback;
+  if (!args->GetString(0, &callback)) {
+    NOTREACHED();
+    return;
+  }
+  network_state_informer_->RemoveObserver(callback);
 }
 
 void SigninScreenHandler::HandleCreateAccount(const base::ListValue* args) {

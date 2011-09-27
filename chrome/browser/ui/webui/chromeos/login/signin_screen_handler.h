@@ -24,6 +24,8 @@ class ListValue;
 
 namespace chromeos {
 
+class NetworkStateInformer;
+
 // An interface for WebUILoginDisplay to call SigninScreenHandler.
 class LoginDisplayWebUIHandler {
  public:
@@ -155,6 +157,15 @@ class SigninScreenHandler : public BaseScreenHandler,
   // Handle 'loginWebuiReady' request.
   void HandleLoginWebuiReady(const base::ListValue* args);
 
+  // Handle 'loginRequestNetworkState' request.
+  void HandleLoginRequestNetworkState(const base::ListValue* args);
+
+  // Handle 'loginAddNetworkStateObserver' request.
+  void HandleLoginAddNetworkStateObserver(const base::ListValue* args);
+
+  // Handle 'loginRemoveNetworkStateObserver' request.
+  void HandleLoginRemoveNetworkStateObserver(const base::ListValue* args);
+
   // Sends user list to account picker.
   void SendUserList(bool animated);
 
@@ -188,6 +199,9 @@ class SigninScreenHandler : public BaseScreenHandler,
 
   // Help application used for help dialogs.
   scoped_refptr<HelpAppLauncher> help_app_;
+
+  // Network state infromer used to keep offline message screen up.
+  scoped_ptr<NetworkStateInformer> network_state_informer_;
 
   // Email to pre-populate with.
   std::string email_;
