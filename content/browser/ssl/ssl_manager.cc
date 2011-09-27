@@ -24,10 +24,12 @@
 // static
 void SSLManager::OnSSLCertificateError(ResourceDispatcherHost* rdh,
                                        net::URLRequest* request,
-                                       int cert_error,
-                                       net::X509Certificate* cert) {
-  DVLOG(1) << "OnSSLCertificateError() cert_error: " << cert_error
-           << " url: " << request->url().spec();
+                                       const net::SSLInfo& ssl_info,
+                                       bool is_hsts_host) {
+  DVLOG(1) << "OnSSLCertificateError() cert_error: "
+           << net::MapCertStatusToNetError(ssl_info.cert_status)
+           << " url: " << request->url().spec()
+           << " cert_status: " << std::hex << ssl_info.cert_status;
 
   ResourceDispatcherHostRequestInfo* info =
       ResourceDispatcherHost::InfoForRequest(request);
@@ -39,8 +41,8 @@ void SSLManager::OnSSLCertificateError(ResourceDispatcherHost* rdh,
       NewRunnableMethod(new SSLCertErrorHandler(rdh,
                                                 request,
                                                 info->resource_type(),
-                                                cert_error,
-                                                cert),
+                                                ssl_info,
+                                                is_hsts_host),
                         &SSLCertErrorHandler::Dispatch));
 }
 
