@@ -52,6 +52,10 @@
         'shell/shell_content_utility_client.cc',
         'shell/shell_content_utility_client.h',
         'shell/shell_main.cc',
+        'shell/shell_resource_context.cc',
+        'shell/shell_resource_context.h',
+        'shell/shell_url_request_context_getter.cc',
+        'shell/shell_url_request_context_getter.h',
       ],
       'msvs_settings': {
         'VCLinkerTool': {
