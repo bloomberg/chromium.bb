@@ -20,6 +20,8 @@ class ExamplesMain;
 
 class ExampleBase {
  public:
+  virtual ~ExampleBase();
+
   // Returns the view containing this example controls.
   // This view is added as a tab to the example application.
   views::View* GetExampleView() { return container_; }
@@ -33,7 +35,6 @@ class ExampleBase {
 
  protected:
   explicit ExampleBase(ExamplesMain* main);
-  virtual ~ExampleBase();
 
   // Prints a message in the status area, at the bottom of the window.
   void PrintStatus(const char* format, ...);

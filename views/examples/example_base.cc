@@ -48,12 +48,12 @@ class ContainerView : public views::View {
 
 namespace examples {
 
+ExampleBase::~ExampleBase() {}
+
 ExampleBase::ExampleBase(ExamplesMain* main)
     : main_(main) {
   container_ = new ContainerView(this);
 }
-
-ExampleBase::~ExampleBase() {}
 
 // Prints a message in the status area, at the bottom of the window.
 void ExampleBase::PrintStatus(const char* format, ...) {

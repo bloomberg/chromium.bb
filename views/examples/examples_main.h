@@ -7,6 +7,7 @@
 #pragma once
 
 #include <string>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
@@ -49,6 +50,7 @@ class ExamplesMain : public views::WidgetDelegate {
   views::TabbedPane* tabbed_pane_;
   views::View* contents_;
   views::Label* status_label_;
+  std::vector<ExampleBase*> examples_;
 
   DISALLOW_COPY_AND_ASSIGN(ExamplesMain);
 };

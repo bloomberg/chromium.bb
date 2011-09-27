@@ -7,6 +7,7 @@
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/process_util.h"
+#include "base/stl_util.h"
 #include "base/utf_string_conversions.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
@@ -46,9 +47,12 @@ namespace examples {
 ExamplesMain::ExamplesMain()
     : tabbed_pane_(NULL),
       contents_(NULL),
-      status_label_(NULL) {}
+      status_label_(NULL)  {
+}
 
-ExamplesMain::~ExamplesMain() {}
+ExamplesMain::~ExamplesMain() {
+  STLDeleteElements(&examples_);
+}
 
 void ExamplesMain::Init() {
   // Creates a window with the tabbed pane for each example,
@@ -76,64 +80,31 @@ void ExamplesMain::Init() {
   views::Widget* window =
       views::Widget::CreateWindowWithBounds(this, gfx::Rect(0, 0, 850, 300));
 
-  NativeThemeCheckboxExample native_theme_checkbox_example(this);
-  AddExample(&native_theme_checkbox_example);
-
-  NativeThemeButtonExample native_theme_button_example(this);
-  AddExample(&native_theme_button_example);
-
-  NativeWidgetViewsExample native_widget_views_example(this);
-  AddExample(&native_widget_views_example);
-
-  TextfieldExample textfield_example(this);
-  AddExample(&textfield_example);
-
-  ButtonExample button_example(this);
-  AddExample(&button_example);
-
-  BubbleExample bubble_example(this);
-  AddExample(&bubble_example);
-
-  ThrobberExample throbber_example(this);
-  AddExample(&throbber_example);
-
-  ComboboxExample combobox_example(this);
-  AddExample(&combobox_example);
-
-  LinkExample link_example(this);
-  AddExample(&link_example);
-
-  TabbedPaneExample tabbed_pane_example(this);
-  AddExample(&tabbed_pane_example);
-
-  MessageBoxExample message_box_example(this);
-  AddExample(&message_box_example);
-
-  RadioButtonExample radio_button_example(this);
-  AddExample(&radio_button_example);
-
-  ScrollViewExample scroll_view_example(this);
-  AddExample(&scroll_view_example);
-
-  SingleSplitViewExample single_split_view_example(this);
-  AddExample(&single_split_view_example);
-
-  DoubleSplitViewExample double_split_view_example(this);
-  AddExample(&double_split_view_example);
-
+  examples_.push_back(new NativeThemeCheckboxExample(this));
+  examples_.push_back(new NativeThemeButtonExample(this));
+  examples_.push_back(new NativeWidgetViewsExample(this));
+  examples_.push_back(new TextfieldExample(this));
+  examples_.push_back(new ButtonExample(this));
+  examples_.push_back(new BubbleExample(this));
+  examples_.push_back(new ThrobberExample(this));
+  examples_.push_back(new ComboboxExample(this));
+  examples_.push_back(new LinkExample(this));
+  examples_.push_back(new TabbedPaneExample(this));
+  examples_.push_back(new MessageBoxExample(this));
+  examples_.push_back(new RadioButtonExample(this));
+  examples_.push_back(new ScrollViewExample(this));
+  examples_.push_back(new SingleSplitViewExample(this));
+  examples_.push_back(new DoubleSplitViewExample(this));
 #if defined(OS_WIN)
-  TableExample table_example(this);
-  AddExample(&table_example);
+  examples_.push_back(new TableExample(this));
 #endif
+  examples_.push_back(new Table2Example(this));
+  examples_.push_back(new WidgetExample(this));
+  examples_.push_back(new MenuExample(this));
 
-  Table2Example table2_example(this);
-  AddExample(&table2_example);
-
-  WidgetExample widget_example(this);
-  AddExample(&widget_example);
-
-  MenuExample menu_example(this);
-  AddExample(&menu_example);
+  for(std::vector<ExampleBase*>::const_iterator i(examples_.begin());
+      i != examples_.end(); ++i)
+    AddExample(*i);
 
   window->Show();
 }
