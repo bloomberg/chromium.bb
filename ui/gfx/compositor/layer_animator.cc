@@ -113,7 +113,7 @@ void LayerAnimator::AnimationProgressed(const ui::Animation* animation) {
     default:
       NOTREACHED();
   }
-  layer_->compositor()->SchedulePaint();
+  layer_->GetCompositor()->SchedulePaint();
 }
 
 void LayerAnimator::AnimationEnded(const ui::Animation* animation) {
@@ -147,7 +147,7 @@ void LayerAnimator::AnimationEnded(const ui::Animation* animation) {
   StopAnimating(e->first);
   // StopAnimating removes from the map, invalidating 'e'.
   e = elements_.end();
-  layer_->compositor()->SchedulePaint();
+  layer_->GetCompositor()->SchedulePaint();
 }
 
 void LayerAnimator::StopAnimating(AnimationProperty property) {

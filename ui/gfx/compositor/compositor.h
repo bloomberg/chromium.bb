@@ -113,9 +113,8 @@ class COMPOSITOR_EXPORT Compositor : public base::RefCounted<Compositor> {
 
   // Sets the root of the layer tree drawn by this Compositor.
   // The Compositor does not own the root layer.
-  void set_root_layer(Layer* root_layer) {
-    root_layer_ = root_layer;
-  }
+  const Layer* root_layer() const { return root_layer_; }
+  void SetRootLayer(Layer* root_layer);
 
   // Draws the scene created by the layer tree and any visual effects. If
   // |force_clear| is true, this will cause the compositor to clear before

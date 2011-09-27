@@ -18,6 +18,12 @@ Compositor::Compositor(CompositorDelegate* delegate, const gfx::Size& size)
 Compositor::~Compositor() {
 }
 
+void Compositor::SetRootLayer(Layer* root_layer) {
+  root_layer_ = root_layer;
+  if (!root_layer_->GetCompositor())
+    root_layer_->SetCompositor(this);
+}
+
 void Compositor::Draw(bool force_clear) {
   if (!root_layer_)
     return;

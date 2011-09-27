@@ -50,7 +50,7 @@ Desktop::~Desktop() {
 
 void Desktop::Init() {
   window_->Init();
-  compositor()->set_root_layer(window_->layer());
+  compositor()->SetRootLayer(window_->layer());
   toplevel_window_container_->Init();
   toplevel_window_container_->SetBounds(gfx::Rect(0, 0, 1280, 1024), 0);
   toplevel_window_container_->SetVisibility(aura::Window::VISIBILITY_SHOWN);

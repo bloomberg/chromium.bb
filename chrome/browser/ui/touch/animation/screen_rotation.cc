@@ -54,13 +54,13 @@ ScreenRotation::ScreenRotation(views::View* view,
     // causes a paint to be scheduled to occur. At this point, the paint has
     // been scheduled, but has not yet been started. We will listen for this
     // paint to be completed before we start animating.
-    view->layer()->compositor()->AddObserver(this);
+    view->layer()->GetCompositor()->AddObserver(this);
   }
 }
 
 ScreenRotation::~ScreenRotation() {
   if (view_->layer())
-    view_->layer()->compositor()->RemoveObserver(this);
+    view_->layer()->GetCompositor()->RemoveObserver(this);
 }
 
 void ScreenRotation::Stop() {
@@ -207,7 +207,7 @@ void ScreenRotation::DoPendingWork() {
   if (!animation_started_)
     Start();
   else if (animation_stopped_) {
-    view_->layer()->compositor()->RemoveObserver(this);
+    view_->layer()->GetCompositor()->RemoveObserver(this);
     Finalize();
   }
 }

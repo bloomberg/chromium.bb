@@ -14,21 +14,21 @@
 namespace ui {
 
 Layer::Layer(Compositor* compositor)
-    : compositor_(compositor),
+    : type_(LAYER_HAS_TEXTURE),
+      compositor_(compositor),
       parent_(NULL),
       visible_(true),
-      can_have_texture_(true),
       fills_bounds_opaquely_(false),
       layer_updated_externally_(false),
       opacity_(1.0f),
       delegate_(NULL) {
 }
 
-Layer::Layer(Compositor* compositor, TextureParam texture_param)
-    : compositor_(compositor),
+Layer::Layer(Compositor* compositor, LayerType type)
+    : type_(type),
+      compositor_(compositor),
       parent_(NULL),
       visible_(true),
-      can_have_texture_(texture_param == LAYER_HAS_TEXTURE),
       fills_bounds_opaquely_(false),
       layer_updated_externally_(false),
       opacity_(1.0f),
@@ -40,6 +40,19 @@ Layer::~Layer() {
     parent_->Remove(this);
   for (size_t i = 0; i < children_.size(); ++i)
     children_[i]->parent_ = NULL;
+}
+
+Compositor* Layer::GetCompositor() {
+  return compositor_ ? compositor_ : parent_ ? parent_->GetCompositor() : NULL;
+}
+
+void Layer::SetCompositor(Compositor* compositor) {
+  // This function must only be called once, with a valid compositor, and only
+  // for the compositor's root layer.
+  DCHECK(!compositor_);
+  DCHECK(compositor);
+  DCHECK_EQ(compositor->root_layer(), this);
+  compositor_ = compositor;
 }
 
 void Layer::Add(Layer* child) {
@@ -61,6 +74,8 @@ void Layer::Remove(Layer* child) {
 
   if (child->fills_bounds_opaquely())
     RecomputeHole();
+
+  child->DropTextures();
 }
 
 bool Layer::Contains(const Layer* other) const {
@@ -85,8 +100,14 @@ void Layer::SetBounds(const gfx::Rect& bounds) {
     parent()->RecomputeHole();
 }
 
+void Layer::SetVisible(bool visible) {
+  visible_ = visible;
+  if (!visible_)
+    DropTextures();
+}
+
 bool Layer::ShouldDraw() {
-  return can_have_texture_ && GetCombinedOpacity() > 0.0f &&
+  return type_ == LAYER_HAS_TEXTURE && GetCombinedOpacity() > 0.0f &&
       !hole_rect_.Contains(gfx::Rect(gfx::Point(0, 0), bounds_.size()));
 }
 
@@ -126,10 +147,10 @@ void Layer::SetExternalTexture(ui::Texture* texture) {
 }
 
 void Layer::SetCanvas(const SkCanvas& canvas, const gfx::Point& origin) {
-  DCHECK(can_have_texture_);
+  DCHECK_EQ(type_, LAYER_HAS_TEXTURE);
 
   if (!texture_.get())
-    texture_ = compositor_->CreateTexture();
+    texture_ = GetCompositor()->CreateTexture();
 
   texture_->SetCanvas(canvas, origin, bounds_.size());
   invalid_rect_ = gfx::Rect();
@@ -137,15 +158,18 @@ void Layer::SetCanvas(const SkCanvas& canvas, const gfx::Point& origin) {
 
 void Layer::SchedulePaint(const gfx::Rect& invalid_rect) {
   invalid_rect_ = invalid_rect_.Union(invalid_rect);
-  compositor_->SchedulePaint();
+  if (GetCompositor())
+    GetCompositor()->SchedulePaint();
 }
 
 void Layer::Draw() {
+  DCHECK(GetCompositor());
   if (!ShouldDraw())
     return;
 
   UpdateLayerCanvas();
 
+  // Layer drew nothing, no texture was created.
   if (!texture_.get())
     return;
 
@@ -166,7 +190,7 @@ void Layer::Draw() {
   const bool is_opaque = fills_bounds_opaquely_ || !has_valid_alpha_channel();
   texture_draw_params.blend = !is_root && (forcing_transparency || !is_opaque);
 
-  texture_draw_params.compositor_size = compositor_->size();
+  texture_draw_params.compositor_size = GetCompositor()->size();
   texture_draw_params.opacity = combined_opacity;
   texture_draw_params.has_valid_alpha_channel = has_valid_alpha_channel();
 
@@ -268,7 +292,7 @@ void Layer::UpdateLayerCanvas() {
 }
 
 void Layer::RecomputeHole() {
-  if (!can_have_texture_)
+  if (type_ == LAYER_HAS_NO_TEXTURE)
     return;
 
   // If there are no opaque child layers, hole_rect_ should remain empty.
@@ -286,6 +310,13 @@ void Layer::RecomputeHole() {
   // Free up texture memory if the hole fills bounds of layer
   if (!ShouldDraw() && !layer_updated_externally_)
     texture_ = NULL;
+}
+
+void Layer::DropTextures() {
+  if (!layer_updated_externally_)
+    texture_ = NULL;
+  for (size_t i = 0; i < children_.size(); ++i)
+    children_[i]->DropTextures();
 }
 
 bool Layer::ConvertPointForAncestor(const Layer* ancestor,

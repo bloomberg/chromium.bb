@@ -55,10 +55,10 @@ Window::~Window() {
 }
 
 void Window::Init() {
-  ui::Layer::TextureParam param = ui::Layer::LAYER_HAS_NO_TEXTURE;
+  ui::Layer::LayerType type = ui::Layer::LAYER_HAS_NO_TEXTURE;
   if (delegate_)
-    param = ui::Layer::LAYER_HAS_TEXTURE;
-  layer_.reset(new ui::Layer(Desktop::GetInstance()->compositor(), param));
+    type = ui::Layer::LAYER_HAS_TEXTURE;
+  layer_.reset(new ui::Layer(Desktop::GetInstance()->compositor(), type));
   layer_->set_delegate(this);
 }
 
@@ -67,7 +67,7 @@ void Window::SetVisibility(Visibility visibility) {
     return;
 
   visibility_ = visibility;
-  layer_->set_visible(visibility_ != VISIBILITY_HIDDEN);
+  layer_->SetVisible(visibility_ != VISIBILITY_HIDDEN);
   if (layer_->visible())
     SchedulePaint();
   if (visibility_ != VISIBILITY_SHOWN)

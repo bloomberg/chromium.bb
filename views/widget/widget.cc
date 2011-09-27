@@ -952,7 +952,7 @@ bool Widget::OnNativeWidgetPaintAccelerated(const gfx::Rect& dirty_region) {
     }
   }
 
-  compositor->set_root_layer(GetRootView()->layer());
+  compositor->SetRootLayer(GetRootView()->layer());
   compositor->Draw(force_clear);
   return true;
 }

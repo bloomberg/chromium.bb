@@ -32,14 +32,24 @@ class Texture;
 // NULL, but the children are not deleted.
 class COMPOSITOR_EXPORT Layer {
  public:
-  enum TextureParam {
+  enum LayerType {
     LAYER_HAS_NO_TEXTURE = 0,
     LAYER_HAS_TEXTURE = 1
   };
 
+  // |compositor| can be NULL, and will be set later when the Layer is added to
+  // a Compositor.
   explicit Layer(Compositor* compositor);
-  Layer(Compositor* compositor, TextureParam texture_param);
+  Layer(Compositor* compositor, LayerType type);
   ~Layer();
+
+  // Retrieves the Layer's compositor. The Layer will walk up its parent chain
+  // to locate it. Returns NULL if the Layer is not attached to a compositor.
+  Compositor* GetCompositor();
+
+  // Called by the compositor when the Layer is set as its root Layer. This can
+  // only ever be called on the root layer.
+  void SetCompositor(Compositor* compositor);
 
   LayerDelegate* delegate() { return delegate_; }
   void set_delegate(LayerDelegate* delegate) { delegate_ = delegate; }
@@ -70,7 +80,7 @@ class COMPOSITOR_EXPORT Layer {
 
   // Sets |visible_|. The Layer is drawn by Draw() only when visible_ is true.
   bool visible() const { return visible_; }
-  void set_visible(bool visible) { visible_ = visible; }
+  void SetVisible(bool visible);
 
   // Returns true if this layer can have a texture (has_texture_ is true)
   // and is not completely obscured by a child.
@@ -159,9 +169,14 @@ class COMPOSITOR_EXPORT Layer {
   // opaque.
   // This method computes the dimension of the hole (if there is one)
   // based on whether one of its child nodes is always opaque.
-  // Note: For simpicity's sake, currently a hole is only created if the child
-  // view has no transfrom with respect to its parent.
+  // Note: For simplicity's sake, currently a hole is only created if the child
+  // view has no transform with respect to its parent.
   void RecomputeHole();
+
+  // Drop all textures for layers below and including this one. Called when
+  // the layer is removed from a hierarchy. Textures will be re-generated if
+  // the layer is subsequently re-attached and needs to be drawn.
+  void DropTextures();
 
   bool ConvertPointForAncestor(const Layer* ancestor, gfx::Point* point) const;
   bool ConvertPointFromAncestor(const Layer* ancestor, gfx::Point* point) const;
@@ -173,6 +188,8 @@ class COMPOSITOR_EXPORT Layer {
   // WebKit and WebKit does not produce valid alpha values. All other layers
   // should have valid alpha.
   bool has_valid_alpha_channel() const { return !layer_updated_externally_; }
+
+  const LayerType type_;
 
   Compositor* compositor_;
 
@@ -187,9 +204,6 @@ class COMPOSITOR_EXPORT Layer {
   gfx::Rect bounds_;
 
   bool visible_;
-
-  // If true, layer can have non-null texture.
-  const bool can_have_texture_;
 
   bool fills_bounds_opaquely_;
 

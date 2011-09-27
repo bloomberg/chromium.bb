@@ -15,6 +15,78 @@ namespace ui {
 
 namespace {
 
+class LayerTest : public testing::Test {
+ public:
+  LayerTest() {}
+  virtual ~LayerTest() {}
+
+  // Overridden from testing::Test:
+  virtual void SetUp() OVERRIDE {
+    const gfx::Rect host_bounds(10, 10, 500, 500);
+    window_.reset(TestCompositorHost::Create(host_bounds));
+    window_->Show();
+  }
+
+  virtual void TearDown() OVERRIDE {
+  }
+
+  Compositor* GetCompositor() {
+    return window_->GetCompositor();
+  }
+
+  Layer* CreateLayer(Layer::LayerType type) {
+    return new Layer(GetCompositor(), type);
+  }
+
+  Layer* CreateColorLayer(SkColor color, const gfx::Rect& bounds) {
+    Layer* layer = CreateLayer(Layer::LAYER_HAS_TEXTURE);
+    layer->SetBounds(bounds);
+    PaintColorToLayer(layer, color);
+    return layer;
+  }
+
+  Layer* CreateNoTextureLayer(const gfx::Rect& bounds) {
+    Layer* layer = CreateLayer(Layer::LAYER_HAS_NO_TEXTURE);
+    layer->SetBounds(bounds);
+    return layer;
+  }
+
+  gfx::Canvas* CreateCanvasForLayer(const Layer* layer) {
+    return gfx::Canvas::CreateCanvas(layer->bounds().width(),
+                                     layer->bounds().height(),
+                                     false);
+  }
+
+  void PaintColorToLayer(Layer* layer, SkColor color) {
+    scoped_ptr<gfx::Canvas> canvas(CreateCanvasForLayer(layer));
+    canvas->FillRectInt(color, 0, 0, layer->bounds().width(),
+                        layer->bounds().height());
+    layer->SetCanvas(*canvas->AsCanvasSkia(), layer->bounds().origin());
+  }
+
+  void DrawTree(Layer* root) {
+    GetCompositor()->SetRootLayer(root);
+    GetCompositor()->Draw(false);
+  }
+
+  void RunPendingMessages() {
+    MessageLoopForUI::current()->RunAllPending();
+  }
+
+  // Invalidates the entire contents of the layer.
+  void SchedulePaintForLayer(Layer* layer) {
+    layer->SchedulePaint(
+        gfx::Rect(0, 0, layer->bounds().width(), layer->bounds().height()));
+  }
+
+ private:
+  MessageLoopForUI message_loop_;
+  scoped_ptr<TestCompositorHost> window_;
+
+  DISALLOW_COPY_AND_ASSIGN(LayerTest);
+};
+
+// LayerDelegate that paints colors to the layer.
 class TestLayerDelegate : public LayerDelegate {
  public:
   explicit TestLayerDelegate(Layer* owner) : owner_(owner), color_index_(0) {}
@@ -46,71 +118,7 @@ class TestLayerDelegate : public LayerDelegate {
   DISALLOW_COPY_AND_ASSIGN(TestLayerDelegate);
 };
 
-class LayerTest : public testing::Test {
- public:
-  LayerTest() {}
-  virtual ~LayerTest() {}
-
-  // Overridden from testing::Test:
-  virtual void SetUp() OVERRIDE {
-    const gfx::Rect host_bounds(10, 10, 500, 500);
-    window_.reset(TestCompositorHost::Create(host_bounds));
-    window_->Show();
-  }
-
-  virtual void TearDown() OVERRIDE {
-  }
-
-  Compositor* GetCompositor() {
-    return window_->GetCompositor();
-  }
-
-  Layer* CreateLayer(Layer::TextureParam texture_param) {
-    return new Layer(GetCompositor(), texture_param);
-  }
-
-  Layer* CreateColorLayer(SkColor color, const gfx::Rect& bounds) {
-    Layer* layer = CreateLayer(Layer::LAYER_HAS_TEXTURE);
-    layer->SetBounds(bounds);
-    PaintColorToLayer(layer, color);
-    return layer;
-  }
-
-  Layer* CreateNoTextureLayer(const gfx::Rect& bounds) {
-    Layer* layer = CreateLayer(Layer::LAYER_HAS_NO_TEXTURE);
-    layer->SetBounds(bounds);
-    return layer;
-  }
-
-  gfx::Canvas* CreateCanvasForLayer(const Layer* layer) {
-    return gfx::Canvas::CreateCanvas(layer->bounds().width(),
-                                     layer->bounds().height(),
-                                     false);
-  }
-
-  void PaintColorToLayer(Layer* layer, SkColor color) {
-    scoped_ptr<gfx::Canvas> canvas(CreateCanvasForLayer(layer));
-    canvas->FillRectInt(color, 0, 0, layer->bounds().width(),
-                        layer->bounds().height());
-    layer->SetCanvas(*canvas->AsCanvasSkia(), layer->bounds().origin());
-  }
-
-  void DrawTree(Layer* root) {
-    GetCompositor()->set_root_layer(root);
-    GetCompositor()->Draw(false);
-  }
-
-  void RunPendingMessages() {
-    MessageLoopForUI::current()->RunAllPending();
-  }
-
- private:
-  MessageLoopForUI message_loop_;
-  scoped_ptr<TestCompositorHost> window_;
-
-  DISALLOW_COPY_AND_ASSIGN(LayerTest);
-};
-
+// LayerDelegate that verifies that a layer was asked to update its canvas.
 class DrawTreeLayerDelegate : public LayerDelegate {
  public:
   DrawTreeLayerDelegate() : painted_(false) {}
@@ -122,15 +130,29 @@ class DrawTreeLayerDelegate : public LayerDelegate {
 
   bool painted() const { return painted_; }
 
+ private:
   // Overridden from LayerDelegate:
   virtual void OnPaintLayer(gfx::Canvas* canvas) OVERRIDE {
     painted_ = true;
   }
 
- private:
   bool painted_;
 
   DISALLOW_COPY_AND_ASSIGN(DrawTreeLayerDelegate);
+};
+
+// The simplest possible layer delegate. Does nothing.
+class NullLayerDelegate : public LayerDelegate {
+ public:
+  NullLayerDelegate() {}
+  virtual ~NullLayerDelegate() {}
+
+ private:
+  // Overridden from LayerDelegate:
+  virtual void OnPaintLayer(gfx::Canvas* canvas) OVERRIDE {
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(NullLayerDelegate);
 };
 
 }
@@ -219,7 +241,7 @@ TEST_F(LayerTest, Delegate) {
   delegate.AddColor(SK_ColorYELLOW);
   delegate.AddColor(SK_ColorGREEN);
 
-  GetCompositor()->set_root_layer(l1.get());
+  GetCompositor()->SetRootLayer(l1.get());
 
   l1->SchedulePaint(gfx::Rect(0, 0, 400, 400));
   RunPendingMessages();
@@ -254,7 +276,7 @@ TEST_F(LayerTest, DrawTree) {
   DrawTreeLayerDelegate d3;
   l3->set_delegate(&d3);
 
-  GetCompositor()->set_root_layer(l1.get());
+  GetCompositor()->SetRootLayer(l1.get());
 
   l2->SchedulePaint(gfx::Rect(5, 5, 5, 5));
   RunPendingMessages();
@@ -288,7 +310,7 @@ TEST_F(LayerTest, HierarchyNoTexture) {
   DrawTreeLayerDelegate d3;
   l3->set_delegate(&d3);
 
-  GetCompositor()->set_root_layer(l1.get());
+  GetCompositor()->SetRootLayer(l1.get());
 
   l2->SchedulePaint(gfx::Rect(5, 5, 5, 5));
   l3->SchedulePaint(gfx::Rect(5, 5, 5, 5));
@@ -312,6 +334,77 @@ TEST_F(LayerTest, LayerHasNoTextureSetFillsOpaquely) {
 
   parent->Add(child);
   EXPECT_TRUE(parent->texture() == NULL);
+}
+
+// Create this hierarchy:
+// L1 (no texture)
+//  +- L11 (texture)
+//  +- L12 (no texture) (added after L1 is already set as root-layer)
+//    +- L121 (texture)
+//    +- L122 (texture)
+TEST_F(LayerTest, NoCompositor) {
+  scoped_ptr<Layer> l1(new Layer(NULL, Layer::LAYER_HAS_NO_TEXTURE));
+  scoped_ptr<Layer> l11(new Layer(NULL, Layer::LAYER_HAS_TEXTURE));
+  scoped_ptr<Layer> l12(new Layer(NULL, Layer::LAYER_HAS_NO_TEXTURE));
+  scoped_ptr<Layer> l121(new Layer(NULL, Layer::LAYER_HAS_TEXTURE));
+  scoped_ptr<Layer> l122(new Layer(NULL, Layer::LAYER_HAS_TEXTURE));
+
+  NullLayerDelegate d1;
+  NullLayerDelegate d11;
+  NullLayerDelegate d12;
+  NullLayerDelegate d121;
+  NullLayerDelegate d122;
+  l1->set_delegate(&d1);
+  l11->set_delegate(&d11);
+  l12->set_delegate(&d12);
+  l121->set_delegate(&d121);
+  l122->set_delegate(&d122);
+
+  EXPECT_EQ(NULL, l1->texture());
+  EXPECT_EQ(NULL, l11->texture());
+  EXPECT_EQ(NULL, l12->texture());
+  EXPECT_EQ(NULL, l121->texture());
+  EXPECT_EQ(NULL, l122->texture());
+
+  l1->Add(l11.get());
+  l1->SetBounds(gfx::Rect(0, 0, 500, 500));
+  l11->SetBounds(gfx::Rect(5, 5, 490, 490));
+
+  EXPECT_EQ(NULL, l11->texture());
+
+  GetCompositor()->SetRootLayer(l1.get());
+
+  EXPECT_EQ(NULL, l1->texture());
+
+  // Despite having type LAYER_HAS_TEXTURE, l11 will not have one set yet
+  // because it has never been asked to draw.
+  EXPECT_EQ(NULL, l11->texture());
+
+  l12->Add(l121.get());
+  l12->Add(l122.get());
+  l12->SetBounds(gfx::Rect(5, 5, 480, 480));
+  l121->SetBounds(gfx::Rect(5, 5, 100, 100));
+  l122->SetBounds(gfx::Rect(110, 110, 100, 100));
+
+  EXPECT_EQ(NULL, l121->texture());
+  EXPECT_EQ(NULL, l122->texture());
+
+  l1->Add(l12.get());
+
+  // By asking l121 and l122 to paint, we cause them to generate a texture.
+  SchedulePaintForLayer(l121.get());
+  SchedulePaintForLayer(l122.get());
+  RunPendingMessages();
+
+  EXPECT_EQ(NULL, l12->texture());
+  EXPECT_TRUE(NULL != l121->texture());
+  EXPECT_TRUE(NULL != l122->texture());
+
+  // Toggling l2's visibility should drop all sub-layer textures.
+  l12->SetVisible(false);
+  EXPECT_EQ(NULL, l12->texture());
+  EXPECT_EQ(NULL, l121->texture());
+  EXPECT_EQ(NULL, l122->texture());
 }
 
 } // namespace ui
