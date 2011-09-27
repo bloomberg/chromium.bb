@@ -85,8 +85,10 @@ BufferedResourceLoader* BufferedDataSource::CreateResourceLoader(
 void BufferedDataSource::set_host(media::FilterHost* host) {
   DataSource::set_host(host);
 
-  if (loader_.get())
-    UpdateHostState();
+  if (loader_.get()) {
+    base::AutoLock auto_lock(lock_);
+    UpdateHostState_Locked();
+  }
 }
 
 void BufferedDataSource::Initialize(const std::string& url,
@@ -104,7 +106,10 @@ void BufferedDataSource::Initialize(const std::string& url,
   }
 
   DCHECK(!callback.is_null());
-  initialize_cb_ = callback;
+  {
+    base::AutoLock auto_lock(lock_);
+    initialize_cb_ = callback;
+  }
 
   // Post a task to complete the initialization task.
   render_loop_->PostTask(FROM_HERE,
@@ -210,8 +215,14 @@ void BufferedDataSource::Abort() {
 void BufferedDataSource::InitializeTask() {
   DCHECK(MessageLoop::current() == render_loop_);
   DCHECK(!loader_.get());
-  if (stopped_on_render_loop_ || initialize_cb_.is_null())
-    return;
+
+  {
+    base::AutoLock auto_lock(lock_);
+    if (stopped_on_render_loop_ || initialize_cb_.is_null() ||
+        stop_signal_received_) {
+      return;
+    }
+  }
 
   if (url_.SchemeIs(kHttpScheme) || url_.SchemeIs(kHttpsScheme)) {
     // Do an unbounded range request starting at the beginning.  If the server
@@ -262,6 +273,7 @@ void BufferedDataSource::CleanupTask() {
 
   {
     base::AutoLock auto_lock(lock_);
+    initialize_cb_.Reset();
     if (stopped_on_render_loop_)
       return;
 
@@ -334,6 +346,7 @@ void BufferedDataSource::SetBitrateTask(int bitrate) {
 
 BufferedResourceLoader::DeferStrategy
 BufferedDataSource::ChooseDeferStrategy() {
+  DCHECK(MessageLoop::current() == render_loop_);
   // If the user indicates preload=metadata, then just load exactly
   // what is needed for starting the pipeline and prerolling frames.
   if (preload_ == media::METADATA && !media_has_played_)
@@ -411,7 +424,13 @@ void BufferedDataSource::HttpInitialStartCallback(int error) {
   int64 instance_size = loader_->instance_size();
   bool success = error == net::OK;
 
-  if (initialize_cb_.is_null()) {
+
+  bool initialize_cb_is_null = false;
+  {
+    base::AutoLock auto_lock(lock_);
+    initialize_cb_is_null = initialize_cb_.is_null();
+  }
+  if (initialize_cb_is_null) {
     loader_->Stop();
     return;
   }
@@ -465,7 +484,7 @@ void BufferedDataSource::HttpInitialStartCallback(int error) {
       return;
     }
 
-    UpdateHostState();
+    UpdateHostState_Locked();
     DoneInitialization_Locked(media::PIPELINE_OK);
   }
 }
@@ -474,7 +493,12 @@ void BufferedDataSource::NonHttpInitialStartCallback(int error) {
   DCHECK(MessageLoop::current() == render_loop_);
   DCHECK(loader_.get());
 
-  if (initialize_cb_.is_null()) {
+  bool initialize_cb_is_null = false;
+  {
+    base::AutoLock auto_lock(lock_);
+    initialize_cb_is_null = initialize_cb_.is_null();
+  }
+  if (initialize_cb_is_null) {
     loader_->Stop();
     return;
   }
@@ -514,7 +538,7 @@ void BufferedDataSource::NonHttpInitialStartCallback(int error) {
       return;
     }
 
-    UpdateHostState();
+    UpdateHostState_Locked();
     DoneInitialization_Locked(media::PIPELINE_OK);
   }
 }
@@ -631,7 +655,10 @@ void BufferedDataSource::NetworkEventCallback() {
     host()->SetBufferedBytes(buffered_bytes_);
 }
 
-void BufferedDataSource::UpdateHostState() {
+void BufferedDataSource::UpdateHostState_Locked() {
+  // Called from various threads, under lock.
+  lock_.AssertAcquired();
+
   media::FilterHost* filter_host = host();
   if (!filter_host)
     return;

@@ -20,6 +20,8 @@ class MediaLog;
 
 namespace webkit_glue {
 
+// This class may be created on any thread, and is callable from the render
+// thread as well as media-specific threads.
 class BufferedDataSource : public WebDataSource {
  public:
   // Creates a DataSourceFactory for building BufferedDataSource objects.
@@ -129,7 +131,7 @@ class BufferedDataSource : public WebDataSource {
   // Callback method when a network event is received.
   void NetworkEventCallback();
 
-  void UpdateHostState();
+  void UpdateHostState_Locked();
 
   // URL of the resource requested.
   GURL url_;
@@ -182,7 +184,8 @@ class BufferedDataSource : public WebDataSource {
   // The message loop of the render thread.
   MessageLoop* render_loop_;
 
-  // Protects |stopped_|.
+  // Protects |stop_signal_received_|, |stopped_on_render_loop_| and
+  // |initialize_cb_|.
   base::Lock lock_;
 
   // Stop signal to suppressing activities. This variable is set on the pipeline
