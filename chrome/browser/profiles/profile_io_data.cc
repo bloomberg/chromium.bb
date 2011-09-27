@@ -433,8 +433,8 @@ void ProfileIOData::LazyInitialize() const {
           profile_params_->proxy_config_service.release(),
           command_line));
 
-  transport_security_state_ = new net::TransportSecurityState(
-      command_line.GetSwitchValueASCII(switches::kHstsHosts));
+  transport_security_state_.reset(new net::TransportSecurityState(
+      command_line.GetSwitchValueASCII(switches::kHstsHosts)));
   transport_security_persister_.reset(
       new TransportSecurityPersister(transport_security_state_.get(),
                                      profile_params_->path,

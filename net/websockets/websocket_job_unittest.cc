@@ -228,20 +228,20 @@ class MockSSLConfigService : public net::SSLConfigService {
 
 class MockURLRequestContext : public net::URLRequestContext {
  public:
-  explicit MockURLRequestContext(net::CookieStore* cookie_store) {
+  explicit MockURLRequestContext(net::CookieStore* cookie_store)
+      : transport_security_state_(std::string()) {
     set_cookie_store(cookie_store);
-    transport_security_state_ = new net::TransportSecurityState(std::string());
-    set_transport_security_state(transport_security_state_.get());
+    set_transport_security_state(&transport_security_state_);
     net::TransportSecurityState::DomainState state;
     state.expiry = base::Time::Now() + base::TimeDelta::FromSeconds(1000);
-    transport_security_state_->EnableHost("upgrademe.com", state);
+    transport_security_state_.EnableHost("upgrademe.com", state);
   }
 
  private:
   friend class base::RefCountedThreadSafe<MockURLRequestContext>;
   virtual ~MockURLRequestContext() {}
 
-  scoped_refptr<net::TransportSecurityState> transport_security_state_;
+  net::TransportSecurityState transport_security_state_;
 };
 
 class MockHttpTransactionFactory : public net::HttpTransactionFactory {

@@ -63,7 +63,7 @@ class TransportSecurityPersister
 
   void CompleteLoad(const std::string& state);
 
-  scoped_refptr<net::TransportSecurityState> transport_security_state_;
+  net::TransportSecurityState* transport_security_state_;
 
   // Helper for safely writing the data.
   ImportantFileWriter writer_;

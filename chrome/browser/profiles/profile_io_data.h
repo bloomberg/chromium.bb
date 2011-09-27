@@ -282,7 +282,7 @@ class ProfileIOData {
   mutable scoped_ptr<net::NetworkDelegate> network_delegate_;
   mutable scoped_ptr<net::DnsCertProvenanceChecker> dns_cert_checker_;
   mutable scoped_ptr<net::ProxyService> proxy_service_;
-  mutable scoped_refptr<net::TransportSecurityState> transport_security_state_;
+  mutable scoped_ptr<net::TransportSecurityState> transport_security_state_;
   mutable scoped_ptr<net::URLRequestJobFactory> job_factory_;
 
   // Pointed to by ResourceContext.
