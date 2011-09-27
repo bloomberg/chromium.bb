@@ -340,10 +340,12 @@ void FirstRunDialog::OnTemplateURLServiceChanged() {
       GdkPixbuf* pixbuf =
           ResourceBundle::GetSharedInstance().GetNativeImageNamed(logo_id);
       if (ballot_engines.size() > kNormalBallotSize) {
+        GdkPixbuf* old = pixbuf;
         pixbuf = gdk_pixbuf_scale_simple(pixbuf,
                                          kLogoLabelWidthSmall,
                                          kLogoLabelHeightSmall,
                                          GDK_INTERP_HYPER);
+        g_object_unref(old);
       } else {
         g_object_ref(pixbuf);
       }
