@@ -4,6 +4,8 @@
 
 #include "chrome/browser/task_manager/task_manager_resource_providers.h"
 
+#include <string>
+
 #include "base/basictypes.h"
 #include "base/file_version_info.h"
 #include "base/i18n/rtl.h"
@@ -1224,14 +1226,7 @@ TaskManagerBrowserProcessResource::TaskManagerBrowserProcessResource()
   if (!default_icon_) {
     HICON icon = GetAppIcon();
     if (icon) {
-      ICONINFO icon_info = {0};
-      BITMAP bitmap_info = {0};
-
-      GetIconInfo(icon, &icon_info);
-      GetObject(icon_info.hbmMask, sizeof(bitmap_info), &bitmap_info);
-
-      gfx::Size icon_size(bitmap_info.bmWidth, bitmap_info.bmHeight);
-      default_icon_ = IconUtil::CreateSkBitmapFromHICON(icon, icon_size);
+      default_icon_ = IconUtil::CreateSkBitmapFromHICON(icon);
     }
   }
 #elif defined(OS_POSIX) && !defined(OS_MACOSX)

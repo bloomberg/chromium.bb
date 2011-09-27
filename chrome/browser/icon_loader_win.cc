@@ -33,18 +33,9 @@ void IconLoader::ReadIcon() {
                      SHGFI_ICON | size | SHGFI_USEFILEATTRIBUTES))
     return;
 
-  ICONINFO icon_info = { 0 };
-  BITMAP bitmap_info = { 0 };
-
-  BOOL r = ::GetIconInfo(file_info.hIcon, &icon_info);
-  DCHECK(r);
-  r = ::GetObject(icon_info.hbmMask, sizeof(bitmap_info), &bitmap_info);
-  DCHECK(r);
-
-  gfx::Size icon_size(bitmap_info.bmWidth, bitmap_info.bmHeight);
   image_.reset(new gfx::Image(
-      IconUtil::CreateSkBitmapFromHICON(file_info.hIcon, icon_size)));
-
+      IconUtil::CreateSkBitmapFromHICON(file_info.hIcon)));
+  DestroyIcon(file_info.hIcon);
   target_message_loop_->PostTask(FROM_HERE,
       NewRunnableMethod(this, &IconLoader::NotifyDelegate));
 }

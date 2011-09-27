@@ -71,6 +71,15 @@ class UI_EXPORT IconUtil {
   // it when it is no longer needed.
   static SkBitmap* CreateSkBitmapFromHICON(HICON icon, const gfx::Size& s);
 
+  // Given a valid HICON handle representing an icon, this function converts
+  // the icon into an SkBitmap object containing an ARGB bitmap using the
+  // dimensions of HICON. If the function cannot convert the icon to a bitmap
+  // (most probably due to an invalid parameter), the return value is NULL.
+  //
+  // The client owns the returned bitmap object and is responsible for deleting
+  // it when it is no longer needed.
+  static SkBitmap* CreateSkBitmapFromHICON(HICON icon);
+
   // Given an initialized SkBitmap object and a file name, this function
   // creates a .ico file with the given name using the provided bitmap. The
   // icon file is created with multiple icon images of varying predefined
@@ -187,6 +196,11 @@ class UI_EXPORT IconUtil {
   static void ComputeBitmapSizeComponents(const SkBitmap& bitmap,
                                           size_t* xor_mask_size,
                                           size_t* bytes_in_resource);
+
+  // A helper function of CreateSkBitmapFromHICON.
+  static SkBitmap CreateSkBitmapFromHICONHelper(HICON icon,
+                                                const gfx::Size& s);
+
 
   // Prevent clients from instantiating objects of that class by declaring the
   // ctor/dtor as private.
