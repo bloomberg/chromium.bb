@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/touch/frame/touch_browser_frame_view.h"
 
 #include "chrome/browser/ui/touch/animation/screen_rotation_setter.h"
-#include "chrome/browser/ui/touch/keyboard/keyboard_manager.h"
+#include "chrome/browser/ui/virtual_keyboard/virtual_keyboard_manager.h"
 #include "views/controls/button/image_button.h"
 #include "views/desktop/desktop_window_view.h"
 #include "ui/gfx/transform.h"
@@ -56,8 +56,8 @@ TouchBrowserFrameView::TouchBrowserFrameView(BrowserFrame* frame,
                                              BrowserView* browser_view)
     : OpaqueBrowserFrameView(frame, browser_view),
       initialized_screen_rotation_(false) {
-  // Make sure the singleton KeyboardManager object is initialized.
-  KeyboardManager::GetInstance();
+  // Make sure the singleton VirtualKeyboardManager object is initialized.
+  VirtualKeyboardManager::GetInstance();
   sensors::Provider::GetInstance()->AddListener(this);
 }
 

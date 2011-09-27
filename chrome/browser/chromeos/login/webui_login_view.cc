@@ -31,7 +31,7 @@
 #include "views/widget/widget.h"
 
 #if defined(TOUCH_UI)
-#include "chrome/browser/ui/touch/keyboard/keyboard_manager.h"
+#include "chrome/browser/ui/virtual_keyboard/virtual_keyboard_manager.h"
 #endif
 
 namespace {
@@ -112,8 +112,8 @@ WebUILoginView::WebUILoginView()
       host_window_frozen_(false),
       status_area_visibility_on_init_(true) {
 #if defined(TOUCH_UI)
-  // Make sure the singleton KeyboardManager object is created.
-  KeyboardManager::GetInstance();
+  // Make sure the singleton VirtualKeyboardManager object is created.
+  VirtualKeyboardManager::GetInstance();
 #endif
   accel_map_[views::Accelerator(ui::VKEY_Z, false, true, true)] =
       kAccelNameAccessibility;

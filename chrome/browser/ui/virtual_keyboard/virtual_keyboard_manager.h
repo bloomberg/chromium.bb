@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_TOUCH_KEYBOARD_KEYBOARD_MANAGER_H_
-#define CHROME_BROWSER_UI_TOUCH_KEYBOARD_KEYBOARD_MANAGER_H_
+#ifndef CHROME_BROWSER_UI_VIRTUAL_KEYBOARD_VIRTUAL_KEYBOARD_MANAGER_H_
+#define CHROME_BROWSER_UI_VIRTUAL_KEYBOARD_VIRTUAL_KEYBOARD_MANAGER_H_
 #pragma once
 
 #include "base/memory/singleton.h"
@@ -13,11 +13,11 @@
 class KeyboardWidget;
 
 // A singleton object to manage the virtual keyboard.
-class KeyboardManager : public views::Widget::Observer,
+class VirtualKeyboardManager : public views::Widget::Observer,
                         public views::desktop::DesktopWindowView::Observer {
  public:
   // Returns the singleton object.
-  static KeyboardManager* GetInstance();
+  static VirtualKeyboardManager* GetInstance();
 
   // Shows the keyboard for the target widget. The events from the keyboard will
   // be sent to |widget|.
@@ -31,10 +31,10 @@ class KeyboardManager : public views::Widget::Observer,
   views::Widget* keyboard();
 
  private:
-  friend struct DefaultSingletonTraits<KeyboardManager>;
+  friend struct DefaultSingletonTraits<VirtualKeyboardManager>;
 
-  KeyboardManager();
-  virtual ~KeyboardManager();
+  VirtualKeyboardManager();
+  virtual ~VirtualKeyboardManager();
 
   // Overridden from views::Widget::Observer.
   virtual void OnWidgetClosing(views::Widget* widget) OVERRIDE;
@@ -44,7 +44,7 @@ class KeyboardManager : public views::Widget::Observer,
 
   KeyboardWidget* keyboard_;
 
-  DISALLOW_COPY_AND_ASSIGN(KeyboardManager);
+  DISALLOW_COPY_AND_ASSIGN(VirtualKeyboardManager);
 };
 
-#endif  // CHROME_BROWSER_UI_TOUCH_KEYBOARD_KEYBOARD_MANAGER_H_
+#endif  // CHROME_BROWSER_UI_VIRTUAL_KEYBOARD_VIRTUAL_KEYBOARD_MANAGER_H_

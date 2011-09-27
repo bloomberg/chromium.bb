@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/touch/keyboard/keyboard_manager.h"
+#include "chrome/browser/ui/virtual_keyboard/virtual_keyboard_manager.h"
 
 #include "base/json/json_writer.h"
 #include "base/values.h"
@@ -435,7 +435,7 @@ void KeyboardWidget::OnWidgetActivationChanged(Widget* widget, bool active) {
     SetTarget(NULL);
 }
 
-KeyboardManager::KeyboardManager()
+VirtualKeyboardManager::VirtualKeyboardManager()
     : keyboard_(new KeyboardWidget()) {
   keyboard_->AddObserver(this);
 
@@ -450,7 +450,7 @@ KeyboardManager::KeyboardManager()
     desktop->AddObserver(this);
 }
 
-KeyboardManager::~KeyboardManager() {
+VirtualKeyboardManager::~VirtualKeyboardManager() {
   DCHECK(!keyboard_);
 
   views::desktop::DesktopWindowView* desktop =
@@ -464,28 +464,29 @@ KeyboardManager::~KeyboardManager() {
     desktop->RemoveObserver(this);
 }
 
-void KeyboardManager::ShowKeyboardForWidget(views::Widget* widget) {
+void VirtualKeyboardManager::ShowKeyboardForWidget(views::Widget* widget) {
   keyboard_->ShowKeyboardForWidget(widget);
 }
 
-void KeyboardManager::Hide() {
+void VirtualKeyboardManager::Hide() {
   keyboard_->Hide();
 }
 
-views::Widget* KeyboardManager::keyboard() {
+views::Widget* VirtualKeyboardManager::keyboard() {
   return keyboard_;
 }
 
-void KeyboardManager::OnWidgetClosing(views::Widget* widget) {
+void VirtualKeyboardManager::OnWidgetClosing(views::Widget* widget) {
   DCHECK_EQ(keyboard_, widget);
   keyboard_ = NULL;
 }
 
-void KeyboardManager::OnDesktopBoundsChanged(const gfx::Rect& prev_bounds) {
+void VirtualKeyboardManager::OnDesktopBoundsChanged(
+    const gfx::Rect& prev_bounds) {
   keyboard_->ResetBounds();
 }
 
 // static
-KeyboardManager* KeyboardManager::GetInstance() {
-  return Singleton<KeyboardManager>::get();
+VirtualKeyboardManager* VirtualKeyboardManager::GetInstance() {
+  return Singleton<VirtualKeyboardManager>::get();
 }

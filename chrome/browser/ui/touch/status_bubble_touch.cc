@@ -4,22 +4,22 @@
 
 #include "chrome/browser/ui/touch/status_bubble_touch.h"
 
-#include "chrome/browser/ui/touch/keyboard/keyboard_manager.h"
+#include "chrome/browser/ui/virtual_keyboard/virtual_keyboard_manager.h"
 
 StatusBubbleTouch::StatusBubbleTouch(views::View* base_view)
     : StatusBubbleViews(base_view) {
-  KeyboardManager::GetInstance()->keyboard()->AddObserver(this);
+  VirtualKeyboardManager::GetInstance()->keyboard()->AddObserver(this);
 }
 
 StatusBubbleTouch::~StatusBubbleTouch() {
-  views::Widget* keyboard = KeyboardManager::GetInstance()->keyboard();
+  views::Widget* keyboard = VirtualKeyboardManager::GetInstance()->keyboard();
   if (keyboard)
     keyboard->RemoveObserver(this);
 }
 
 void StatusBubbleTouch::Reposition() {
   StatusBubbleViews::Reposition();
-  views::Widget* keyboard = KeyboardManager::GetInstance()->keyboard();
+  views::Widget* keyboard = VirtualKeyboardManager::GetInstance()->keyboard();
   if (popup() && keyboard && keyboard->IsVisible()) {
     gfx::Rect popup_screen = popup()->GetWindowScreenBounds();
     gfx::Rect keyboard_screen = keyboard->GetWindowScreenBounds();

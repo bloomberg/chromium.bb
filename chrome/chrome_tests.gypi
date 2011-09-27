@@ -2494,7 +2494,7 @@
         }],
         ['touchui==1', {
           'sources': [
-            'browser/ui/touch/keyboard/keyboard_manager_browsertest.cc',
+            'browser/ui/virtual_keyboard/virtual_keyboard_manager_browsertest.cc',
           ],
         }],
         ['file_manager_extension==0', {
