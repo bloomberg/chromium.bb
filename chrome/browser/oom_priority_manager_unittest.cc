@@ -16,20 +16,23 @@ namespace browser {
 
 typedef testing::Test OomPriorityManagerTest;
 
+namespace {
+enum TestIndicies {
+  kMostImportant,
+  kNotPinned,
+  kNotSelected,
+  kSimilarTime,
+  kSimilarTimeOverThreshold,
+  kReallyOld,
+  kOldButPinned
+};
+}  // namespace
+
 // Tests the sorting comparator so that we know it's producing the
 // desired order.
 TEST_F(OomPriorityManagerTest, Comparator) {
   browser::OomPriorityManager::TabStatsList test_list;
   const base::TimeTicks now = base::TimeTicks::Now();
-  enum TestIndicies {
-    kMostImportant,
-    kNotPinned,
-    kNotSelected,
-    kSimilarTime,
-    kSimilarTimeOverThreshold,
-    kReallyOld,
-    kOldButPinned
-  };
 
   {
     OomPriorityManager::TabStats stats;
