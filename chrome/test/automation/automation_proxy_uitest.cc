@@ -410,7 +410,13 @@ TEST_F(AutomationProxyTest2, GetActiveTabIndex) {
   ASSERT_EQ(1, active_tab_index);
 }
 
-TEST_F(AutomationProxyTest2, GetTabTitle) {
+// http://crbug.com/98071
+#if defined(OS_MACOSX)
+#define MAYBE_GetTabTitle FLAKY_GetTabTitle
+#else
+#define MAYBE_GetTabTitle GetTabTitle
+#endif
+TEST_F(AutomationProxyTest2, MAYBE_GetTabTitle) {
   scoped_refptr<BrowserProxy> window(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(window.get());
   scoped_refptr<TabProxy> tab(window->GetTab(0));
