@@ -9,11 +9,6 @@
 #define GPU_COMMAND_BUFFER_COMMON_GL_MOCK_H_
 #pragma once
 
-// Include gtest.h out of order because <X11/X.h> #define's Bool & None, which
-// gtest uses as struct names (inside a namespace).  This means that
-// #include'ing gtest after anything that pulls in X.h fails to compile.
-// This is http://code.google.com/p/googletest/issues/detail?id=371
-#include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/gfx/gl/gl_interface.h"
 
@@ -455,3 +450,4 @@ class MockGLInterface : public GLInterface {
 }  // namespace gfx
 
 #endif  // GPU_COMMAND_BUFFER_COMMON_GL_MOCK_H_
+

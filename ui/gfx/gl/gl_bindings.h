@@ -26,6 +26,12 @@
 #elif defined(USE_X11)
 #include <GL/glx.h>
 #include <GL/glxext.h>
+
+// Undefine some macros defined by X headers. This is why this file should only
+// be included in .cc files.
+#undef Bool
+#undef None
+#undef Status
 #endif
 
 #if defined(OS_WIN)

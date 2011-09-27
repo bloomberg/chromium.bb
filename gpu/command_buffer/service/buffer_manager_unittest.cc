@@ -2,13 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Include gtest.h out of order because <X11/X.h> #define's Bool & None, which
-// gtest uses as struct names (inside a namespace).  This means that
-// #include'ing gtest after anything that pulls in X.h fails to compile.
-// This is http://code.google.com/p/googletest/issues/detail?id=371
-#include "testing/gtest/include/gtest/gtest.h"
 #include "gpu/command_buffer/service/buffer_manager.h"
 #include "gpu/command_buffer/common/gl_mock.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace gpu {
 namespace gles2 {
@@ -227,3 +223,5 @@ TEST_F(BufferManagerTest, GetMaxValueForRangeUint32) {
 
 }  // namespace gles2
 }  // namespace gpu
+
+

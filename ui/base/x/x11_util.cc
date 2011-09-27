@@ -65,8 +65,6 @@ CachedPictFormats* get_cached_pict_formats() {
 const size_t kMaxCacheSize = 5;
 
 int DefaultX11ErrorHandler(Display* d, XErrorEvent* e) {
-  DCHECK(!MessageLoop::current() ||
-         MessageLoop::current()->type() == MessageLoop::TYPE_UI);
   MessageLoop::current()->PostTask(
        FROM_HERE, NewRunnableFunction(LogErrorEventDescription, d, *e));
   return 0;
@@ -76,14 +74,6 @@ int DefaultX11IOErrorHandler(Display* d) {
   // If there's an IO error it likely means the X server has gone away
   LOG(ERROR) << "X IO Error detected";
   _exit(1);
-}
-
-XErrorHandler current_error_handler = DefaultX11ErrorHandler;
-XErrorEvent last_error_event = {0, NULL, 0, 0, 0, 0, 0 };
-
-int BaseX11ErrorHandler(Display* d, XErrorEvent* e) {
-  last_error_event = *e;
-  return current_error_handler(d, e);
 }
 
 Atom GetAtom(const char* name) {
@@ -113,49 +103,6 @@ bool GetProperty(XID window, const std::string& property_name, long max_length,
                             num_items,
                             &remaining_bytes,
                             property);
-}
-
-std::string BuildX11ErrorString(const XErrorEvent& error_event) {
-  char error_str[256];
-  char request_str[256];
-
-  XGetErrorText(error_event.display, error_event.error_code, error_str,
-                sizeof(error_str));
-
-  strncpy(request_str, "Unknown", sizeof(request_str));
-  if (error_event.request_code < 128) {
-    std::string num = base::UintToString(error_event.request_code);
-    XGetErrorDatabaseText(error_event.display, "XRequest", num.c_str(),
-                          "Unknown", request_str, sizeof(request_str));
-  } else {
-    int num_ext;
-    char** ext_list = XListExtensions(error_event.display, &num_ext);
-
-    for (int i = 0; i < num_ext; i++) {
-      int ext_code, first_event, first_error;
-      XQueryExtension(error_event.display, ext_list[i], &ext_code, &first_event,
-                      &first_error);
-      if (error_event.request_code == ext_code) {
-        std::string msg = StringPrintf(
-            "%s.%d", ext_list[i], error_event.minor_code);
-        XGetErrorDatabaseText(error_event.display, "XRequest", msg.c_str(),
-                              "Unknown", request_str, sizeof(request_str));
-        break;
-      }
-    }
-    XFreeExtensionList(ext_list);
-  }
-
-  std::ostringstream error_ss;
-  error_ss << "X Error detected: "
-           << "serial " << error_event.serial << ", "
-           << "error_code " << static_cast<int>(error_event.error_code)
-           << " (" << error_str << "), "
-           << "request_code " << static_cast<int>(error_event.request_code)
-           << ", "
-           << "minor_code " << static_cast<int>(error_event.minor_code)
-           << " (" << request_str << ")";
-  return error_ss.str();
 }
 
 }  // namespace
@@ -748,7 +695,6 @@ bool ChangeWindowDesktop(XID window, XID destination) {
 }
 
 void SetDefaultX11ErrorHandlers() {
-  XSetErrorHandler(BaseX11ErrorHandler);
   SetX11ErrorHandlers(NULL, NULL);
 }
 
@@ -782,15 +728,6 @@ bool IsX11WindowFullScreen(XID window) {
   NOTIMPLEMENTED();
   return false;
 #endif
-}
-
-void CheckForReportedX11Error() {
-  DCHECK(!MessageLoop::current() ||
-         MessageLoop::current()->type() == MessageLoop::TYPE_UI);
-  if (!last_error_event.display)
-    return;
-  XSync(last_error_event.display, False);
-  LOG(FATAL) << BuildX11ErrorString(last_error_event);
 }
 
 // ----------------------------------------------------------------------------
@@ -871,21 +808,51 @@ XRenderPictFormat* GetRenderVisualFormat(Display* dpy, Visual* visual) {
 
 void SetX11ErrorHandlers(XErrorHandler error_handler,
                          XIOErrorHandler io_error_handler) {
-  DCHECK(!MessageLoop::current() ||
-         MessageLoop::current()->type() == MessageLoop::TYPE_UI);
-  current_error_handler = error_handler ?
-      error_handler : DefaultX11ErrorHandler;
-  XSetIOErrorHandler(io_error_handler ?
-                     io_error_handler : DefaultX11IOErrorHandler);
+  XSetErrorHandler(error_handler ? error_handler : DefaultX11ErrorHandler);
+  XSetIOErrorHandler(
+      io_error_handler ? io_error_handler : DefaultX11IOErrorHandler);
 }
 
 void LogErrorEventDescription(Display* dpy,
                               const XErrorEvent& error_event) {
-  DCHECK(!MessageLoop::current() ||
-         MessageLoop::current()->type() == MessageLoop::TYPE_UI);
-  DCHECK_EQ(dpy, error_event.display)
-      << "Attempt to log error for mismatching X11 display.";
-  LOG(ERROR) << BuildX11ErrorString(error_event);
+  char error_str[256];
+  char request_str[256];
+
+  XGetErrorText(dpy, error_event.error_code, error_str, sizeof(error_str));
+
+  strncpy(request_str, "Unknown", sizeof(request_str));
+  if (error_event.request_code < 128) {
+    std::string num = base::UintToString(error_event.request_code);
+    XGetErrorDatabaseText(
+        dpy, "XRequest", num.c_str(), "Unknown", request_str,
+        sizeof(request_str));
+  } else {
+    int num_ext;
+    char** ext_list = XListExtensions(dpy, &num_ext);
+
+    for (int i = 0; i < num_ext; i++) {
+      int ext_code, first_event, first_error;
+      XQueryExtension(dpy, ext_list[i], &ext_code, &first_event, &first_error);
+      if (error_event.request_code == ext_code) {
+        std::string msg = StringPrintf(
+            "%s.%d", ext_list[i], error_event.minor_code);
+        XGetErrorDatabaseText(
+            dpy, "XRequest", msg.c_str(), "Unknown", request_str,
+            sizeof(request_str));
+        break;
+      }
+    }
+    XFreeExtensionList(ext_list);
+  }
+
+  LOG(ERROR) 
+      << "X Error detected: "
+      << "serial " << error_event.serial << ", "
+      << "error_code " << static_cast<int>(error_event.error_code)
+      << " (" << error_str << "), "
+      << "request_code " << static_cast<int>(error_event.request_code) << ", "
+      << "minor_code " << static_cast<int>(error_event.minor_code)
+      << " (" << request_str << ")";
 }
 
 // ----------------------------------------------------------------------------

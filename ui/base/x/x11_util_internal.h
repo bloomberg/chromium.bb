@@ -50,11 +50,6 @@ UI_EXPORT void SetX11ErrorHandlers(XErrorHandler error_handler,
 UI_EXPORT void LogErrorEventDescription(Display* dpy,
                                         const XErrorEvent& error_event);
 
-// LOG(FATAL) if an X11 errors has been reported. Uses XSync to ensure that all
-// requests have been received and processed by the X server and uses the X
-// display contained in the reported XErrorEvent.
-UI_EXPORT void CheckForReportedX11Error();
-
 }  // namespace ui
 
 #endif  // UI_BASE_X_X11_UTIL_INTERNAL_H_
