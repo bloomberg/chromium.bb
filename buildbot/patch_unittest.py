@@ -167,7 +167,7 @@ class GerritPatchTest(mox.MoxTestBase):
     my_patch = cros_patch.GerritPatch(self.FAKE_PATCH_JSON, False)
     helper = gerrit_helper.GerritHelper(False)
     self.mox.ReplayAll()
-    my_patch.HandleCouldNotVerify(helper, True)
+    my_patch.HandleCouldNotVerify(helper, 'http://fake%20url/1234', True)
     self.mox.VerifyAll()
 
 

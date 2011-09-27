@@ -187,7 +187,7 @@ class GerritPatch(Patch):
                                                          self.patch_number)])
     GerritPatch._RunCommand(cmd, dryrun)
 
-  def HandleCouldNotVerify(self, helper, dryrun=False):
+  def HandleCouldNotVerify(self, helper, build_log, dryrun=False):
     """Handler for when the Commit Queue fails to validate a change.
 
     This handler notifies set Verified-1 to the review forcing the developer
@@ -196,13 +196,16 @@ class GerritPatch(Patch):
 
     Args:
       helper: Instance of gerrit_helper for the gerrit instance.
+      build_log:  URL to the build log where verification results could be
+        found.
       dryrun: If true, do not actually commit anything to Gerrit.
 
     """
-    msg = ('The Commit Queue failed to verify your change. '
+    msg = ('The Commit Queue failed to verify your change in %s. '
            'If you believe this happened in error, you can remove the '
            'chrome-bot reviewer from your review by hitting the |X| next to '
-           'its name.  Your change will then get automatically retried.')
+           'its name.  Your change will then get automatically retried.' %
+           build_log)
     msg = self.ConstructErrorMessage(msg)
     cmd = helper.GetGerritReviewCommand(
         ['--verified=-1', '-m', '"%s"' % msg, '%s,%s' % (self.gerrit_number,

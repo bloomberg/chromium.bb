@@ -19,6 +19,9 @@ from chromite.buildbot import lkgm_manager
 from chromite.buildbot import patch as cros_patch
 from chromite.lib import cros_build_lib
 
+_BUILD_DASHBOARD = 'http://build.chromium.org/p/chromiumos'
+_BUILD_INT_DASHBOARD = 'http://chromeos-botmaster.mtv.corp.google.com:8026'
+
 
 class TreeIsClosedException(Exception):
   """Raised when the tree is closed and we wanted to submit changes."""
@@ -40,15 +43,27 @@ class ValidationPool(object):
 
   GLOBAL_DRYRUN = False
 
-  def __init__(self, dryrun):
+  def __init__(self, internal, build_number, dryrun):
     """Initializes an instance by setting default valuables to instance vars.
 
     Generally use AcquirePool as an entry pool to a pool rather than this
     method.
 
     Args:
+      internal:  Set to True if this is an internal validation pool.
+      build_number:  Build number for this validation attempt.
       dryrun: If set to True, do not submit anything to Gerrit.
     """
+    # TODO(sosa): Make more generic.
+    if not internal:
+      self.build_log = (_BUILD_DASHBOARD +
+                        '/builders/x86%20generic%20commit%20queue/builds/' +
+                        str(build_number))
+    else:
+      self.build_log = (_BUILD_INT_DASHBOARD +
+                        '/builders/x86%20mario%20commit%20queue/builds/' +
+                        str(build_number))
+
     self.changes = []
     self.gerrit_helper = None
     self.dryrun = dryrun | self.GLOBAL_DRYRUN
@@ -92,7 +107,7 @@ class ValidationPool(object):
     return tree_open
 
   @classmethod
-  def AcquirePool(cls, branch, internal, buildroot, dryrun):
+  def AcquirePool(cls, branch, internal, buildroot, build_number, dryrun):
     """Acquires the current pool from Gerrit.
 
     Polls Gerrit and checks for which change's are ready to be committed.
@@ -101,6 +116,7 @@ class ValidationPool(object):
       branch: The branch for the validation pool.
       internal: If True, use gerrit-int.
       buildroot: The location of the buildroot used to filter projects.
+      build_number: Corresponding build number for the build.
       dryrun: Don't submit anything to gerrit.
     Returns:
       ValidationPool object.
@@ -108,7 +124,7 @@ class ValidationPool(object):
       TreeIsClosedException: if the tree is closed.
     """
     if cls._IsTreeOpen():
-      pool = ValidationPool(dryrun)
+      pool = ValidationPool(internal, build_number, dryrun)
       pool.gerrit_helper = gerrit_helper.GerritHelper(internal)
       raw_changes = pool.gerrit_helper.GrabChangesReadyForCommit(branch)
       pool.changes = pool.gerrit_helper.FilterProjectsNotInSourceTree(
@@ -118,16 +134,17 @@ class ValidationPool(object):
       raise TreeIsClosedException()
 
   @classmethod
-  def AcquirePoolFromManifest(cls, manifest, internal):
+  def AcquirePoolFromManifest(cls, manifest, internal, build_number):
     """Acquires the current pool from a given manifest.
 
     Args:
       manifest: path to the manifest where the pool resides.
       internal: if true, assume gerrit-int.
+      build_number: Corresponding build number for the build.
     Returns:
       ValidationPool object.
     """
-    pool = ValidationPool()
+    pool = ValidationPool(internal, build_number, False)
     pool.gerrit_helper = gerrit_helper.GerritHelper(internal)
     manifest_dom = minidom.parse(manifest)
     pending_commits = manifest_dom.getElementsByTagName(
@@ -192,5 +209,6 @@ class ValidationPool(object):
     logging.info('Validation failed for all changes.')
     for change in self.changes:
       logging.info('Validation failed for change %s.', change)
-      change.HandleCouldNotVerify(self.gerrit_helper, dryrun=self.dryrun)
+      change.HandleCouldNotVerify(self.gerrit_helper, self.build_log,
+                                  dryrun=self.dryrun)
 
