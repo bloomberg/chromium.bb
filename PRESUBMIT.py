@@ -245,5 +245,9 @@ def CheckChangeOnCommit(input_api, output_api):
   return results
 
 
-def GetPreferredTrySlaves():
+def GetPreferredTrySlaves(project, change):
+  only_objc_files = all(
+      f.LocalPath().endswith(('.mm', '.m')) for f in change.AffectedFiles())
+  if only_objc_files:
+    return ['mac']
   return ['win', 'linux', 'mac']
