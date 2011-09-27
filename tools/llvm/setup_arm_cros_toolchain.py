@@ -39,18 +39,19 @@ DEFAULT_CROS_DIR = ""
 CROS_TOOLCHAIN = "%s%s" % (DEFAULT_CROS_DIR, ARM_CROSS_TARGET)
 
 ##
-BASE_CC = ("%s-%%s %%s "
+BASE_CC = ("%s-%%s "
            "-Werror -O2 "
            "-fdiagnostics-show-option "
+           "%%s "
            ) % (CROS_TOOLCHAIN)
 
 # Shell exports
-ARM_CC =         BASE_CC % ('gcc', '-std=gnu99 -pedantic')
-ARM_CXX =        BASE_CC % ('g++', '')
-ARM_LD =         '%s-ld' % CROS_TOOLCHAIN
-ARM_LINKFLAGS =  '' # '-static'
-ARM_LIB_DIR =    J(CODE_SOURCERY_JAIL, 'usr', 'lib')
-ARM_EMU =        J(BASE_DIR, 'run_under_qemu_arm')
+ARM_CC = BASE_CC % ('gcc', '-std=gnu99 -pedantic')
+ARM_CXX = BASE_CC % ('g++', '')
+ARM_LD = '%s-ld' % CROS_TOOLCHAIN
+ARM_LINKFLAGS = '' # '-static'
+ARM_LIB_DIR = J(CODE_SOURCERY_JAIL, 'usr', 'lib')
+ARM_EMU = J(BASE_DIR, 'run_under_qemu_arm')
 
 # Don't actually emit BASE_CC
 del BASE_CC

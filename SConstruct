@@ -348,12 +348,12 @@ def SetUpArgumentBits(env):
   # BUG=http://code.google.com/p/nativeclient/issues/detail?id=135
   #
   BitFromArgument(env, 'CrOS', default=False,
-                  desc='EXPERIMENTAL: Set to 1 if compiling within ChromeOS chroot')
+                  desc='EXPERIMENTAL: Set to 1 if compiling '
+                  'within ChromeOS chroot')
   if env.Bit('CrOS'):
     env['ENV']['SYSROOT'] = os.environ.get('SYSROOT',
                                            '/build/arm-generic')
-    print "pre_base_env['ENV']['SYSROOT']=", \
-        env['ENV']['SYSROOT']
+    print "pre_base_env['ENV']['SYSROOT']=", env['ENV']['SYSROOT']
   #########################################################################
 
 
@@ -2748,7 +2748,7 @@ def TestsUsePublicLibs(env):
   """Change the environment so it uses public libraries for in-tree tests."""
   env.Replace(NONIRT_LIBS=[],
               PTHREAD_LIBS=['pthread'],
-              DYNCODE_LIBS=['nacl_dyncode','nacl'])
+              DYNCODE_LIBS=['nacl_dyncode'])
 
 # glibc is incompatible with the private libraries.
 # It's probably really only wholly incompatible with libpthread_private,
