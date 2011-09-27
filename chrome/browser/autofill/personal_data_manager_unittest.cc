@@ -1226,7 +1226,7 @@ TEST_F(PersonalDataManagerTest, AggregateTwoDifferentCreditCards) {
   // Add a second different valid credit card.
   FormData form2;
   autofill_test::CreateTestFormField(
-      "Name on card:", "name_on_card", "Jim Johansen", "text", &field);
+      "Name on card:", "name_on_card", "", "text", &field);
   form2.fields.push_back(field);
   autofill_test::CreateTestFormField(
       "Card Number:", "card_number", "5500 0000 0000 0004", "text", &field);
@@ -1253,7 +1253,7 @@ TEST_F(PersonalDataManagerTest, AggregateTwoDifferentCreditCards) {
 
   CreditCard expected2;
   autofill_test::SetCreditCardInfo(&expected2,
-      "Jim Johansen", "5500000000000004", "02", "2012");
+      "", "5500000000000004", "02", "2012");
   const std::vector<CreditCard*>& results2 = personal_data_->credit_cards();
   ASSERT_EQ(2U, results2.size());
   EXPECT_EQ(0, expected.Compare(*results2[0]));

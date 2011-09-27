@@ -494,11 +494,10 @@ bool CreditCard::IsEmpty() const {
 }
 
 bool CreditCard::IsComplete() const {
-  if (!IsValidCreditCardNumber(number_))
-    return false;
-
   return
-      !name_on_card_.empty() && expiration_month_ != 0 && expiration_year_ != 0;
+      IsValidCreditCardNumber(number_) &&
+      expiration_month_ != 0 &&
+      expiration_year_ != 0;
 }
 
 string16 CreditCard::ExpirationMonthAsString() const {
