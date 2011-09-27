@@ -11,6 +11,7 @@
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "content/common/notification_registrar.h"
+#include "ui/base/ui_base_types.h"
 
 class Browser;
 @class BrowserWindowController;
@@ -139,6 +140,7 @@ class BrowserWindowCocoa : public BrowserWindow,
   BrowserWindowController* controller_;  // weak, owns us
   ScopedRunnableMethodFactory<Browser> confirm_close_factory_;
   scoped_nsobject<NSString> pending_window_title_;
+  ui::WindowShowState initial_show_state_;
 };
 
 #endif  // CHROME_BROWSER_UI_COCOA_BROWSER_WINDOW_COCOA_H_

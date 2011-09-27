@@ -43,7 +43,6 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util_mac.h"
-#include "ui/base/ui_base_types.h"
 #include "ui/gfx/rect.h"
 
 // Replicate specific 10.7 SDK declarations for building with prior SDKs.
@@ -78,6 +77,8 @@ BrowserWindowCocoa::BrowserWindowCocoa(Browser* browser,
                  NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this, chrome::NOTIFICATION_SIDEBAR_CHANGED,
                  Source<SidebarManager>(SidebarManager::GetInstance()));
+
+  initial_show_state_ = browser_->GetSavedWindowShowState();
 }
 
 BrowserWindowCocoa::~BrowserWindowCocoa() {
@@ -110,10 +111,11 @@ void BrowserWindowCocoa::Show() {
   // When creating windows from nibs it is necessary to |makeKeyAndOrderFront:|
   // prior to |orderOut:| then |miniaturize:| when restoring windows in the
   // minimized state.
-  if (browser_->GetSavedWindowShowState() == ui::SHOW_STATE_MINIMIZED) {
+  if (initial_show_state_ == ui::SHOW_STATE_MINIMIZED) {
     [window() orderOut:controller_];
     [window() miniaturize:controller_];
   }
+  initial_show_state_ = ui::SHOW_STATE_DEFAULT;
 
   // Restore window animation behavior.
   if (did_save_animation_behavior)
