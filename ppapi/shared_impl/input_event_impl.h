@@ -6,6 +6,7 @@
 #define PPAPI_SHARED_IMPL_INPUT_EVENT_IMPL_H_
 
 #include <string>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
@@ -41,6 +42,11 @@ struct PPAPI_SHARED_EXPORT InputEventData {
   uint32_t key_code;
 
   std::string character_text;
+
+  std::vector<uint32_t> composition_segment_offsets;
+  int32_t composition_target_segment;
+  uint32_t composition_selection_start;
+  uint32_t composition_selection_end;
 };
 
 // This simple class implements the PPB_InputEvent_API in terms of the
@@ -78,6 +84,10 @@ class PPAPI_SHARED_EXPORT InputEventImpl
   virtual PP_Bool GetWheelScrollByPage() OVERRIDE;
   virtual uint32_t GetKeyCode() OVERRIDE;
   virtual PP_Var GetCharacterText() OVERRIDE;
+  virtual uint32_t GetIMESegmentNumber() OVERRIDE;
+  virtual uint32_t GetIMESegmentOffset(uint32_t index) OVERRIDE;
+  virtual int32_t GetIMETargetSegment() OVERRIDE;
+  virtual void GetIMESelection(uint32_t* start, uint32_t* end) OVERRIDE;
 
  private:
   InputEventData data_;
@@ -88,4 +98,3 @@ class PPAPI_SHARED_EXPORT InputEventImpl
 }  // namespace ppapi
 
 #endif  // PPAPI_SHARED_IMPL_INPUT_EVENT_IMPL_H_
-

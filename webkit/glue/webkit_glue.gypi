@@ -274,6 +274,8 @@
         '../plugins/ppapi/ppb_scrollbar_impl.h',
         '../plugins/ppapi/ppb_surface_3d_impl.cc',
         '../plugins/ppapi/ppb_surface_3d_impl.h',
+        '../plugins/ppapi/ppb_text_input_impl.cc',
+        '../plugins/ppapi/ppb_text_input_impl.h',
         '../plugins/ppapi/ppb_uma_private_impl.cc',
         '../plugins/ppapi/ppb_uma_private_impl.h',
         '../plugins/ppapi/ppb_url_loader_impl.cc',

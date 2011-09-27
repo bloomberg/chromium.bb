@@ -153,6 +153,8 @@
         'thunk/ppb_scrollbar_thunk.cc',
         'thunk/ppb_surface_3d_api.h',
         'thunk/ppb_surface_3d_thunk.cc',
+        'thunk/ppb_text_input_api.h',
+        'thunk/ppb_text_input_thunk.cc',
         'thunk/ppb_transport_api.h',
         'thunk/ppb_transport_thunk.cc',
         'thunk/ppb_url_loader_api.h',

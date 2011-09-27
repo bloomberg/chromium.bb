@@ -41,6 +41,7 @@ struct PPB_Graphics3DTrusted;
 struct PPB_ImageDataTrusted;
 struct PPB_Instance_Private;
 struct PPB_QueryPolicy_Dev;
+struct PPB_TextInput_Dev;
 struct PPB_URLLoaderTrusted;
 
 typedef PPB_Instance PPB_Instance_1_0;
@@ -67,6 +68,7 @@ PPAPI_THUNK_EXPORT const PPB_Graphics3DTrusted*
 PPAPI_THUNK_EXPORT const PPB_ImageDataTrusted* GetPPB_ImageDataTrusted_Thunk();
 PPAPI_THUNK_EXPORT const PPB_Instance_Private* GetPPB_Instance_Private_Thunk();
 PPAPI_THUNK_EXPORT const PPB_QueryPolicy_Dev* GetPPB_QueryPolicy_Thunk();
+PPAPI_THUNK_EXPORT const PPB_TextInput_Dev* GetPPB_TextInput_Thunk();
 PPAPI_THUNK_EXPORT const PPB_URLLoaderTrusted* GetPPB_URLLoaderTrusted_Thunk();
 
 }  // namespace thunk
