@@ -234,6 +234,7 @@ scoped_refptr<Extension> Extension::Create(const FilePath& path,
                                            const DictionaryValue& value,
                                            int flags,
                                            std::string* error) {
+  DCHECK(error);
   scoped_refptr<Extension> extension = new Extension(path, location);
 
   if (!extension->InitFromValue(value, flags, error))
@@ -1427,6 +1428,7 @@ GURL Extension::GetBaseURLFromExtensionId(const std::string& extension_id) {
 
 bool Extension::InitFromValue(const DictionaryValue& source, int flags,
                               std::string* error) {
+  DCHECK(error);
   base::AutoLock auto_lock(runtime_data_lock_);
   // When strict error checks are enabled, make URL pattern parsing strict.
   URLPattern::ParseOption parse_strictness =
