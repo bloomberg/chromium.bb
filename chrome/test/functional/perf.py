@@ -455,6 +455,54 @@ class FileUploadDownloadTest(BasePerfTest):
     self._PrintSummaryResults('Upload50MBFile', timings, 'milliseconds')
 
 
+class ScrollTest(BasePerfTest):
+  """Tests to measure scrolling performance."""
+
+  def RunTestScroll(self):
+    # Navigate to a webpage, inject the scroll test code, and initiate the test.
+    self.assertTrue(self.AppendTab(pyauto.GURL(self.GetFileURLForDataPath(
+                        'find_in_page', 'largepage.html'))),
+                    msg='Failed to append tab for webpage.')
+
+    scroll_file = os.path.join(self.DataDir(), 'scroll', 'scroll.js')
+    with open(scroll_file, 'r') as f:
+      scroll_text = f.read()
+    js = """
+        %s
+        __start_scroll_test();
+        window.domAutomationController.send('done');
+    """ % scroll_text
+    self.ExecuteJavascript(js, 0, 1)
+
+    # Poll the webpage until the test is complete.
+    def IsTestDone():
+      done_js = """
+        if (__tests_complete)
+          window.domAutomationController.send('true');
+        else
+          window.domAutomationController.send('false');
+      """
+      return self.ExecuteJavascript(done_js, 0, 1) == 'true'
+
+    self.assertTrue(
+        self.WaitUntil(IsTestDone, timeout=300, expect_retval=True,
+                       retry_sleep=0.10),
+        msg='Timed out when waiting for scrolling tests to complete.')
+
+    # Get the scroll tests results from the webpage.
+    results_js = """
+      window.domAutomationController.send(
+          "{'delta_max': " + __delta_max + ", 'delta_min': " + __delta_min +
+          ", 'delta_sum': " + __delta_sum + ", 'delta_square_sum': " +
+            __delta_square_sum + ", 'n_samples': " + __n_samples + "}"
+      );
+    """
+    results = eval(self.ExecuteJavascript(results_js, 0, 1))
+    print '===== SCROLL TEST RESULTS ====='
+    self.pprint(results)
+    print '==============================='
+
+
 class PerfTestServerRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
   """Request handler for the local performance test server."""
 
