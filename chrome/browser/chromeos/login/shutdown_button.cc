@@ -25,8 +25,8 @@ const int kBottomPadding = 12;
 const int kRightPadding = 12;
 
 // Normal/Hover colors.
-const SkColor kShutdownButtonColor = 0xFF303845;
-const SkColor kShutdownHoverColor = 0xFF353E4E;
+const SkColor kShutdownColor = 0xFEFEFE;
+const SkColor kShutdownTextColor = 0xFF606060;
 
 // Padding inside button.
 const int kVerticalPadding = 13;
@@ -69,24 +69,22 @@ ShutdownButton::ShutdownButton()
 
 void ShutdownButton::Init() {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  SetIcon(*rb.GetBitmapNamed(IDR_SHUTDOWN_ICON));
+  SetIcon(*rb.GetBitmapNamed(IDR_ICON_POWER20));
   set_icon_text_spacing(kIconTextPadding);
   set_focusable(true);
   set_id(VIEW_ID_SCREEN_LOCKER_SHUTDOWN);
   // Set label colors.
-  SetEnabledColor(SK_ColorWHITE);
-  SetDisabledColor(SK_ColorWHITE);
-  SetHighlightColor(SK_ColorWHITE);
-  SetHoverColor(SK_ColorWHITE);
+  SetEnabledColor(kShutdownTextColor);
+  SetDisabledColor(kShutdownTextColor);
+  SetHighlightColor(kShutdownTextColor);
+  SetHoverColor(kShutdownTextColor);
   static_cast<views::TextButtonBorder*>(border())->copy_normal_set_to_hot_set();
   set_animate_on_state_change(false);
   // Setup round shapes.
   set_background(
       new HoverBackground(
-          CreateRoundedBackground(
-              kCornerRadius, 0, kShutdownButtonColor, 0),
-          CreateRoundedBackground(
-              kCornerRadius, 0, kShutdownHoverColor, 0)));
+          CreateRoundedBackground(kCornerRadius, 0, kShutdownColor, 0),
+          CreateRoundedBackground(kCornerRadius, 0, kShutdownColor, 0)));
   set_border(
       views::Border::CreateEmptyBorder(kVerticalPadding,
                                        kHorizontalPadding,

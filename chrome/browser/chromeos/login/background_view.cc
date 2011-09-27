@@ -48,7 +48,7 @@ namespace {
 const SkColor kVersionColor = 0xff5c739f;
 
 // Tentative background color that matches WebUI login.
-const SkColor kBackgroundColor = 0xfff0f0f0;
+const SkColor kBackgroundColor = 0xfffefefe;
 
 // Returns the corresponding step id for step constant.
 int GetStepId(size_t step) {
@@ -299,7 +299,7 @@ StatusAreaHost::ScreenMode BackgroundView::GetScreenMode() const {
 }
 
 StatusAreaHost::TextStyle BackgroundView::GetTextStyle() const {
-  return kWhitePlain;
+  return kGrayPlain;
 }
 
 void BackgroundView::ButtonVisibilityChanged(views::View* button_view) {

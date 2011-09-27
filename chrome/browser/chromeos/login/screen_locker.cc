@@ -891,7 +891,6 @@ void ScreenLocker::OnLoginSuccess(
       service->SetPassphrase(password, false);
     }
   }
-
   if (CrosLibrary::Get()->EnsureLoaded())
     CrosLibrary::Get()->GetScreenLockLibrary()->NotifyScreenUnlockRequested();
 
