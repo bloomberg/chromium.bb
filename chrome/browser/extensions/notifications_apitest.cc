@@ -26,7 +26,14 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, NotificationsHasPermissionManifest) {
 #endif
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, NotificationsHasPermission) {
+// http://crbug.com/98061
+#if defined(OS_MACOSX) || defined(OS_LINUX)
+#define MAYBE_NotificationsHasPermission DISABLED_NotificationsHasPermission
+#else
+#define MAYBE_NotificationsHasPermission NotificationsHasPermission
+#endif
+
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_NotificationsHasPermission) {
 #if defined(OS_LINUX) && defined(TOOLKIT_VIEWS)
   // Notifications not supported on linux/views yet.
 #else
