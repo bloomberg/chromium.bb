@@ -4106,6 +4106,14 @@
             '../ui/aura/aura.gyp:aura',
           ],
         }],
+        ['OS=="linux" and use_aura==1', {
+          'dependencies': [
+            '../build/linux/system.gyp:dbus',
+            '../build/linux/system.gyp:fontconfig',
+            '../build/linux/system.gyp:x11',
+            '../dbus/dbus.gyp:dbus',
+          ],
+        }],        
         # Exclude WebUI certificate viewer if not POSIX or mac (these OS's have
         # native certificate viewers).
         ['os_posix == 0 or OS == "mac"', {
@@ -4797,7 +4805,7 @@
               ],
             }],
             # GTK build only
-            ['toolkit_uses_gtk == 1 and toolkit_views == 0 and use_aura == 0', {
+            ['toolkit_uses_gtk == 1 and toolkit_views == 0', {
               'sources/': [
                 ['include', '^browser/printing/print_dialog_gtk.cc'],
                 ['include', '^browser/printing/print_dialog_gtk.h'],

@@ -194,7 +194,8 @@ void PanelBrowserFrameView::MouseWatcher::DidProcessEvent(GdkEvent* event) {
   }
 }
 #elif defined(USE_AURA)
-EventStatus PanelBrowserFrameView::MouseWatcher::WillProcessXEvent(
+base::MessagePumpObserver::EventStatus
+PanelBrowserFrameView::MouseWatcher::WillProcessXEvent(
     XEvent* xevent) {
   // TODO(saintlou): This is dummy code, but a value must be returned.
   NOTIMPLEMENTED();

@@ -581,6 +581,14 @@
         }],
       ],
     }],
+    ['OS=="linux" and toolkit_uses_gtk==0', {
+      'dependencies': [
+        '../build/linux/system.gyp:dbus',
+        '../build/linux/system.gyp:fontconfig',
+        '../build/linux/system.gyp:x11',
+        '../dbus/dbus.gyp:dbus',
+      ],
+    }],
     ['OS=="linux" and toolkit_views==1',{
       'dependencies': [
         '../views/views.gyp:views',
