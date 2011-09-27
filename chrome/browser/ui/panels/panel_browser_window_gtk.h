@@ -72,7 +72,10 @@ class PanelBrowserWindowGtk : public BrowserWindowGtk,
       const NativeWebKeyboardEvent& event) OVERRIDE;
   virtual Browser* GetPanelBrowser() const OVERRIDE;
   virtual void DestroyPanelBrowser() OVERRIDE;
-  virtual gfx::Size GetNonClientAreaExtent() const OVERRIDE;
+  virtual gfx::Size WindowSizeFromContentSize(
+      const gfx::Size& content_size) const OVERRIDE;
+  virtual gfx::Size ContentSizeFromWindowSize(
+      const gfx::Size& window_size) const OVERRIDE;
   virtual int GetRestoredHeight() const OVERRIDE;
   virtual void SetRestoredHeight(int height) OVERRIDE;
 
@@ -159,9 +162,8 @@ class PanelBrowserWindowGtk : public BrowserWindowGtk,
   // been minimized.
   int restored_height_;
 
-  // False until the window has been allocated and the size of browser window
-  // frame around the content is known.
-  bool non_client_area_size_known_;
+  // False until the window has been allocated and sized.
+  bool window_size_known_;
 
   DISALLOW_COPY_AND_ASSIGN(PanelBrowserWindowGtk);
 };

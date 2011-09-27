@@ -176,9 +176,9 @@ class Panel : public BrowserWindow, public NotificationObserver {
   // Returns NULL if it cannot be found.
   static const Extension* GetExtensionFromBrowser(Browser* browser);
 
-  // Used on platforms where the panel cannot determine its non-client area
+  // Used on platforms where the panel cannot determine its window size
   // until the window has been created. (e.g. GTK)
-  void OnNonClientExtentAvailable();
+  void OnWindowSizeAvailable();
 
   NativePanel* native_panel() { return native_panel_; }
   Browser* browser() const;

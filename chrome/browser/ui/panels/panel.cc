@@ -484,10 +484,8 @@ void Panel::ShowKeyboardOverlay(gfx::NativeWindow owning_window) {
 
 void Panel::UpdatePreferredSize(TabContents* tab_contents,
                                 const gfx::Size& pref_size) {
-  gfx::Size non_client_size = native_panel_->GetNonClientAreaExtent();
   return manager()->OnPreferredWindowSizeChanged(this,
-      gfx::Size(pref_size.width() + non_client_size.width(),
-                pref_size.height() + non_client_size.height()));
+      native_panel_->WindowSizeFromContentSize(pref_size));
 }
 
 void Panel::Observe(int type,
@@ -529,14 +527,11 @@ RenderViewHost* Panel::GetRenderViewHost() const {
 void Panel::RequestRenderViewHostToDisableScrollbars(
     RenderViewHost* render_view_host) {
   DCHECK(render_view_host);
-
-  gfx::Size non_client_size = native_panel_->GetNonClientAreaExtent();
   render_view_host->DisableScrollbarsForThreshold(
-      gfx::Size(max_size_.width() - non_client_size.width(),
-                max_size_.height() - non_client_size.height()));
+      native_panel_->ContentSizeFromWindowSize(max_size_));
 }
 
-void Panel::OnNonClientExtentAvailable() {
+void Panel::OnWindowSizeAvailable() {
   RequestRenderViewHostToDisableScrollbars(GetRenderViewHost());
 }
 

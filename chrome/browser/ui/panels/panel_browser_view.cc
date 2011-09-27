@@ -339,8 +339,18 @@ void PanelBrowserView::HandlePanelKeyboardEvent(
   HandleKeyboardEvent(event);
 }
 
-gfx::Size PanelBrowserView::GetNonClientAreaExtent() const {
-  return GetFrameView()->NonClientAreaSize();
+gfx::Size PanelBrowserView::WindowSizeFromContentSize(
+    const gfx::Size& content_size) const {
+  gfx::Size frame = GetFrameView()->NonClientAreaSize();
+  return gfx::Size(content_size.width() + frame.width(),
+                   content_size.height() + frame.height());
+}
+
+gfx::Size PanelBrowserView::ContentSizeFromWindowSize(
+    const gfx::Size& window_size) const {
+  gfx::Size frame = GetFrameView()->NonClientAreaSize();
+  return gfx::Size(window_size.width() - frame.width(),
+                   window_size.height() - frame.height());
 }
 
 int PanelBrowserView::GetRestoredHeight() const {

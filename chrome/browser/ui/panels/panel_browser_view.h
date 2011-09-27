@@ -104,7 +104,10 @@ class PanelBrowserView : public BrowserView,
       bool* is_keyboard_shortcut) OVERRIDE;
   virtual void HandlePanelKeyboardEvent(
       const NativeWebKeyboardEvent& event) OVERRIDE;
-  virtual gfx::Size GetNonClientAreaExtent() const OVERRIDE;
+  virtual gfx::Size WindowSizeFromContentSize(
+      const gfx::Size& content_size) const OVERRIDE;
+  virtual gfx::Size ContentSizeFromWindowSize(
+      const gfx::Size& window_size) const OVERRIDE;
   virtual int GetRestoredHeight() const OVERRIDE;
   virtual void SetRestoredHeight(int height) OVERRIDE;
   virtual Browser* GetPanelBrowser() const OVERRIDE;

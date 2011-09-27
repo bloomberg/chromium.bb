@@ -29,7 +29,7 @@ PanelBrowserWindowGtk::PanelBrowserWindowGtk(Browser* browser,
       panel_(panel),
       bounds_(bounds),
       restored_height_(bounds.height()),
-      non_client_area_size_known_(false) {
+      window_size_known_(false) {
 }
 
 PanelBrowserWindowGtk::~PanelBrowserWindowGtk() {
@@ -111,9 +111,9 @@ void PanelBrowserWindowGtk::SetBounds(const gfx::Rect& bounds) {
 void PanelBrowserWindowGtk::OnSizeChanged(int width, int height) {
   BrowserWindowGtk::OnSizeChanged(width, height);
 
-  if (!non_client_area_size_known_) {
-    non_client_area_size_known_ = true;
-    panel_->OnNonClientExtentAvailable();
+  if (!window_size_known_) {
+    window_size_known_ = true;
+    panel_->OnWindowSizeAvailable();
   }
 }
 
@@ -259,8 +259,18 @@ void PanelBrowserWindowGtk::DestroyPanelBrowser() {
   DestroyBrowser();
 }
 
-gfx::Size PanelBrowserWindowGtk::GetNonClientAreaExtent() const {
-  return GetNonClientFrameSize();
+gfx::Size PanelBrowserWindowGtk::WindowSizeFromContentSize(
+    const gfx::Size& content_size) const {
+  gfx::Size frame = GetNonClientFrameSize();
+  return gfx::Size(content_size.width() + frame.width(),
+                   content_size.height() + frame.height());
+}
+
+gfx::Size PanelBrowserWindowGtk::ContentSizeFromWindowSize(
+    const gfx::Size& window_size) const {
+  gfx::Size frame = GetNonClientFrameSize();
+  return gfx::Size(window_size.width() - frame.width(),
+                   window_size.height() - frame.height());
 }
 
 int PanelBrowserWindowGtk::GetRestoredHeight() const {

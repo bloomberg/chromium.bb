@@ -788,8 +788,8 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, AutoResize) {
       ui_test_utils::GetTestUrl(FilePath(FilePath::kCurrentDirectory),
                                 FilePath(kUpdateSizeTestFile)));
   gfx::Rect initial_bounds = panel->GetBounds();
-  EXPECT_EQ(100, initial_bounds.width());
-  EXPECT_EQ(100, initial_bounds.height());
+  EXPECT_LE(100, initial_bounds.width());
+  EXPECT_LE(100, initial_bounds.height());
 
   // Expand the test page.
   EXPECT_TRUE(ui_test_utils::ExecuteJavaScript(
