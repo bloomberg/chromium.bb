@@ -61,6 +61,10 @@ interface PPB_TextInput_Dev {
   void UpdateCaretPosition([in] PP_Instance instance,
                            [in] PP_Rect caret,
                            [in] PP_Rect bounding_box);
+  /**
+   * Forces to commit the current composition text in IME.
+   */
+  void ConfirmCompositionText([in] PP_Instance instance);
 
   /**
    * Cancels the current composition in IME.

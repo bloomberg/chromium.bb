@@ -21,7 +21,6 @@
 #include "webkit/plugins/ppapi/ppb_char_set_impl.h"
 #include "webkit/plugins/ppapi/ppb_cursor_control_impl.h"
 #include "webkit/plugins/ppapi/ppb_font_impl.h"
-#include "webkit/plugins/ppapi/ppb_text_input_impl.h"
 #include "webkit/plugins/ppapi/resource_creation_impl.h"
 #include "webkit/plugins/ppapi/resource_helper.h"
 
@@ -144,9 +143,6 @@ void ResourceTracker::CleanupInstanceData(PP_Instance instance,
       break;
     case ::ppapi::proxy::INTERFACE_ID_PPB_FONT:
       proxy.reset(new PPB_Font_FunctionImpl(instance));
-      break;
-    case ::ppapi::proxy::INTERFACE_ID_PPB_TEXT_INPUT:
-      proxy.reset(new PPB_TextInput_Impl(instance));
       break;
     case ::ppapi::proxy::INTERFACE_ID_RESOURCE_CREATION:
       proxy.reset(new ResourceCreationImpl(instance));
@@ -327,3 +323,4 @@ void ResourceTracker::ClearSingletonOverride() {
 
 }  // namespace ppapi
 }  // namespace webkit
+

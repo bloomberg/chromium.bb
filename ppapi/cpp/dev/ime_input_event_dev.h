@@ -41,23 +41,17 @@ class IMEInputEvent_Dev : public InputEvent {
   /// returns 0.
   uint32_t GetSegmentNumber() const;
 
-  /// Returns the position of the index-th segmentation point in the composition
-  /// text. The position is given by a byte-offset (not a character-offset) of
-  /// the string returned by GetText(). It always satisfies
-  /// 0=GetSegmentOffset(0) < ... < GetSegmentOffset(i) < GetSegmentOffset(i+1)
-  /// < ... < GetSegmentOffset(GetSegmentNumber())=(byte-length of GetText()).
-  /// Note that [GetSegmentOffset(i), GetSegmentOffset(i+1)) represents the
-  /// range of the i-th segment, and hence GetSegmentNumber() can be a valid
-  /// argument to this function instead of an off-by-1 error.
-  ///
-  /// @param[in] ime_event A <code>PP_Resource</code> corresponding to an IME
-  /// event.
+  /// Returns the start and the end position of the index-th segment in the
+  /// composition text. The positions are given by byte-indices of the string
+  /// GetText(). They always satisfy 0 <= .first < .second <= (Length of
+  /// GetText()) and GetSegmentAt(index).first < GetSegmentAt(index+1).first.
+  /// When the event is not COMPOSITION_UPDATE or index >= GetSegmentNumber(),
+  /// returns (0, 0).
   ///
   /// @param[in] index An integer indicating a segment.
   ///
-  /// @return The byte-offset of the segmentation point. If the event is not
-  /// COMPOSITION_UPDATE or index is out of range, returns 0.
-  uint32_t GetSegmentOffset(uint32_t index) const;
+  /// @return A pair of integers representing the index-th segment.
+  std::pair<uint32_t, uint32_t> GetSegmentAt(uint32_t index) const;
 
   /// Returns the index of the current target segment of composition.
   ///

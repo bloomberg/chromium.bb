@@ -69,9 +69,9 @@ PP_Bool HandleInputEvent(PP_Instance instance, PP_Resource input_event) {
     case PP_INPUTEVENT_TYPE_UNDEFINED:
       return PP_FALSE;
     // TODO(nfullagar): Implement support for event types below.
-    case PP_INPUTEVENT_TYPE_IME_COMPOSITION_START:
-    case PP_INPUTEVENT_TYPE_IME_COMPOSITION_UPDATE:
-    case PP_INPUTEVENT_TYPE_IME_COMPOSITION_END:
+    case PP_INPUTEVENT_TYPE_COMPOSITION_START:
+    case PP_INPUTEVENT_TYPE_COMPOSITION_UPDATE:
+    case PP_INPUTEVENT_TYPE_COMPOSITION_END:
     case PP_INPUTEVENT_TYPE_IME_TEXT:
       DebugPrintf("   No implementation for event type %d\n",
           data.event_type);

@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From dev/ppb_text_input_dev.idl modified Tue Sep 27 14:34:33 2011. */
+/* From dev/ppb_text_input_dev.idl modified Wed Sep 14 12:51:46 2011. */
 
 #ifndef PPAPI_C_DEV_PPB_TEXT_INPUT_DEV_H_
 #define PPAPI_C_DEV_PPB_TEXT_INPUT_DEV_H_
@@ -83,6 +83,10 @@ struct PPB_TextInput_Dev {
   void (*UpdateCaretPosition)(PP_Instance instance,
                               const struct PP_Rect* caret,
                               const struct PP_Rect* bounding_box);
+  /**
+   * Forces to commit the current composition text in IME.
+   */
+  void (*ConfirmCompositionText)(PP_Instance instance);
   /**
    * Cancels the current composition in IME.
    */

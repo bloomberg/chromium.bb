@@ -110,8 +110,6 @@
         'proxy/ppb_surface_3d_proxy.h',
         'proxy/ppb_testing_proxy.cc',
         'proxy/ppb_testing_proxy.h',
-        'proxy/ppb_text_input_proxy.cc',
-        'proxy/ppb_text_input_proxy.h',
         'proxy/ppb_url_loader_proxy.cc',
         'proxy/ppb_url_loader_proxy.h',
         'proxy/ppb_url_response_info_proxy.cc',

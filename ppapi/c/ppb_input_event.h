@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_input_event.idl modified Wed Sep 21 12:32:06 2011. */
+/* From ppb_input_event.idl modified Wed Sep 14 12:46:14 2011. */
 
 #ifndef PPAPI_C_PPB_INPUT_EVENT_H_
 #define PPAPI_C_PPB_INPUT_EVENT_H_
@@ -123,19 +123,19 @@ typedef enum {
    *
    * Register for this event using the PP_INPUTEVENT_CLASS_IME class.
    */
-  PP_INPUTEVENT_TYPE_IME_COMPOSITION_START = 11,
+  PP_INPUTEVENT_TYPE_COMPOSITION_START = 11,
   /**
    * Notification that the input method composition string is updated.
    *
    * Register for this event using the PP_INPUTEVENT_CLASS_IME class.
    */
-  PP_INPUTEVENT_TYPE_IME_COMPOSITION_UPDATE = 12,
+  PP_INPUTEVENT_TYPE_COMPOSITION_UPDATE = 12,
   /**
    * Notification that an input method composition process has completed.
    *
    * Register for this event using the PP_INPUTEVENT_CLASS_IME class.
    */
-  PP_INPUTEVENT_TYPE_IME_COMPOSITION_END = 13,
+  PP_INPUTEVENT_TYPE_COMPOSITION_END = 13,
   /**
    * Notification that an input method committed a string.
    *
