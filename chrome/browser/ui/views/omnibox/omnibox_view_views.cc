@@ -84,12 +84,12 @@ class AutocompleteTextfield : public views::Textfield {
 
 // Stores omnibox state for each tab.
 struct ViewState {
-  explicit ViewState(const ui::Range& selection_range)
-      : selection_range(selection_range) {
+  explicit ViewState(const gfx::SelectionModel& selection_model)
+      : selection_model(selection_model) {
   }
 
-  // Range of selected text.
-  ui::Range selection_range;
+  // SelectionModel of selected text.
+  gfx::SelectionModel selection_model;
 };
 
 struct AutocompleteEditState {
@@ -237,7 +237,7 @@ bool OmniboxViewViews::HandleAfterKeyEvent(const views::KeyEvent& event,
       GetSelectionBounds(&start, &end);
       if (start != end || start < length) {
         OnBeforePossibleChange();
-        SelectRange(length, length);
+        textfield_->SelectSelectionModel(gfx::SelectionModel(length, length));
         OnAfterPossibleChange();
         handled = true;
       }
@@ -314,8 +314,8 @@ void OmniboxViewViews::SaveStateToTab(TabContents* tab) {
 
   // NOTE: GetStateForTabSwitch may affect GetSelection, so order is important.
   AutocompleteEditModel::State model_state = model_->GetStateForTabSwitch();
-  ui::Range selection;
-  textfield_->GetSelectedRange(&selection);
+  gfx::SelectionModel selection;
+  textfield_->GetSelectionModel(&selection);
   GetStateAccessor()->SetProperty(
       tab->property_bag(),
       AutocompleteEditState(model_state, ViewState(selection)));
@@ -342,7 +342,7 @@ void OmniboxViewViews::Update(const TabContents* contents) {
 
       // Move the marks for the cursor and the other end of the selection to
       // the previously-saved offsets (but preserve PRIMARY).
-      textfield_->SelectRange(state->view_state.selection_range);
+      textfield_->SelectSelectionModel(state->view_state.selection_model);
       // We do not carry over the current edit history to another tab.
       // TODO(oshima): consider saving/restoring edit history.
       textfield_->ClearEditHistory();
@@ -407,7 +407,8 @@ void OmniboxViewViews::SetForcedQuery() {
   if (start == string16::npos || (current_text[start] != '?')) {
     SetUserText(ASCIIToUTF16("?"));
   } else {
-    SelectRange(current_text.size(), start + 1);
+    textfield_->SelectSelectionModel(gfx::SelectionModel(current_text.size(),
+                                                         start + 1));
   }
 }
 
@@ -422,17 +423,17 @@ bool OmniboxViewViews::DeleteAtEndPressed() {
 
 void OmniboxViewViews::GetSelectionBounds(string16::size_type* start,
                                           string16::size_type* end) {
-  ui::Range range;
-  textfield_->GetSelectedRange(&range);
-  *start = static_cast<size_t>(range.end());
-  *end = static_cast<size_t>(range.start());
+  gfx::SelectionModel sel;
+  textfield_->GetSelectionModel(&sel);
+  *start = static_cast<size_t>(sel.selection_end());
+  *end = static_cast<size_t>(sel.selection_start());
 }
 
 void OmniboxViewViews::SelectAll(bool reversed) {
   if (reversed)
-    SelectRange(GetTextLength(), 0);
+    textfield_->SelectSelectionModel(gfx::SelectionModel(GetTextLength(), 0));
   else
-    SelectRange(0, GetTextLength());
+    textfield_->SelectSelectionModel(gfx::SelectionModel(0, GetTextLength()));
 }
 
 void OmniboxViewViews::RevertAll() {
@@ -448,12 +449,15 @@ void OmniboxViewViews::UpdatePopup() {
 
   // Don't inline autocomplete when the caret/selection isn't at the end of
   // the text, or in the middle of composition.
-  ui::Range sel;
-  textfield_->GetSelectedRange(&sel);
+  gfx::SelectionModel sel;
+  textfield_->GetSelectionModel(&sel);
+  size_t max_of_selection = std::max(sel.selection_start(),
+                                     sel.selection_end());
   bool no_inline_autocomplete =
-      sel.GetMax() < GetTextLength() || textfield_->IsIMEComposing();
+      max_of_selection < GetTextLength() || textfield_->IsIMEComposing();
 
-  model_->StartAutocomplete(!sel.is_empty(), no_inline_autocomplete);
+  bool is_sel_empty = (sel.selection_start() == sel.selection_end());
+  model_->StartAutocomplete(!is_sel_empty, no_inline_autocomplete);
 }
 
 void OmniboxViewViews::ClosePopup() {
@@ -468,8 +472,12 @@ void OmniboxViewViews::SetFocus() {
 void OmniboxViewViews::OnTemporaryTextMaybeChanged(
     const string16& display_text,
     bool save_original_selection) {
-  if (save_original_selection)
-    textfield_->GetSelectedRange(&saved_temporary_selection_);
+  if (save_original_selection) {
+    gfx::SelectionModel sel;
+    textfield_->GetSelectionModel(&sel);
+    saved_temporary_selection_.set_start(sel.selection_start());
+    saved_temporary_selection_.set_end(sel.selection_end());
+  }
 
   SetWindowTextAndCaretPos(display_text, display_text.length());
   TextChanged();
@@ -487,20 +495,28 @@ bool OmniboxViewViews::OnInlineAutocompleteTextMaybeChanged(
 }
 
 void OmniboxViewViews::OnRevertTemporaryText() {
-  textfield_->SelectRange(saved_temporary_selection_);
+  gfx::SelectionModel sel(saved_temporary_selection_.start(),
+                          saved_temporary_selection_.end());
+  textfield_->SelectSelectionModel(sel);
   TextChanged();
 }
 
 void OmniboxViewViews::OnBeforePossibleChange() {
   // Record our state.
   text_before_change_ = GetText();
-  textfield_->GetSelectedRange(&sel_before_change_);
+  gfx::SelectionModel sel;
+  textfield_->GetSelectionModel(&sel);
+  sel_before_change_.set_start(sel.selection_start());
+  sel_before_change_.set_end(sel.selection_end());
   ime_composing_before_change_ = textfield_->IsIMEComposing();
 }
 
 bool OmniboxViewViews::OnAfterPossibleChange() {
+  gfx::SelectionModel sel;
+  textfield_->GetSelectionModel(&sel);
   ui::Range new_sel;
-  textfield_->GetSelectedRange(&new_sel);
+  new_sel.set_start(sel.selection_start());
+  new_sel.set_end(sel.selection_end());
 
   // See if the text or selection have changed since OnBeforePossibleChange().
   const string16 new_text = GetText();
@@ -681,7 +697,8 @@ void OmniboxViewViews::SetTextAndSelectedRange(const string16& text,
                                                const ui::Range& range) {
   if (text != GetText())
     textfield_->SetText(text);
-  textfield_->SelectRange(range);
+  textfield_->SelectSelectionModel(gfx::SelectionModel(
+      range.start(), range.end()));
 }
 
 string16 OmniboxViewViews::GetSelectedText() const {
@@ -689,10 +706,6 @@ string16 OmniboxViewViews::GetSelectedText() const {
   return textfield_->GetSelectedText();
 }
 
-void OmniboxViewViews::SelectRange(size_t caret, size_t end) {
-  const ui::Range range(caret, end);
-  textfield_->SelectRange(range);
-}
 
 AutocompletePopupView* OmniboxViewViews::CreatePopupView(
     View* location_bar) {

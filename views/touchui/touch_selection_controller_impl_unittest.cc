@@ -83,10 +83,10 @@ class TouchSelectionControllerImplTest : public ViewsTestBase {
     if (textfield_->HasSelection()) {
       EXPECT_TRUE(GetSelectionController()->IsSelectionHandle1Visible());
       EXPECT_TRUE(GetSelectionController()->IsSelectionHandle2Visible());
-      ui::Range selected_range;
-      textfield_view_->GetSelectedRange(&selected_range);
-      gfx::Point selection_start = GetCursorPosition(selected_range.start());
-      gfx::Point selection_end = GetCursorPosition(selected_range.end());
+      gfx::SelectionModel sel;
+      textfield_view_->GetSelectionModel(&sel);
+      gfx::Point selection_start = GetCursorPosition(sel.selection_start());
+      gfx::Point selection_end = GetCursorPosition(sel.selection_end());
       gfx::Point sh1 = GetSelectionController()->GetSelectionHandle1Position();
       gfx::Point sh2 = GetSelectionController()->GetSelectionHandle2Position();
       sh1.Offset(10, 0); // offset by kSelectionHandleRadius.
@@ -121,7 +121,7 @@ TEST_F(TouchSelectionControllerImplTest, SelectionInTextfieldTest) {
   textfield_->SetText(ASCIIToUTF16("some text"));
 
   // Test selecting a range.
-  textfield_->SelectRange(ui::Range(3, 7));
+  textfield_->SelectSelectionModel(gfx::SelectionModel(3, 7));
   VerifySelectionHandlePositions(false);
 
   // Test selecting everything.
@@ -146,7 +146,7 @@ TEST_F(TouchSelectionControllerImplTest, SelectionInTextfieldTest) {
 TEST_F(TouchSelectionControllerImplTest, SelectRectCallbackTest) {
   CreateTextfield();
   textfield_->SetText(ASCIIToUTF16("textfield with selected text"));
-  textfield_->SelectRange(ui::Range(3, 7));
+  textfield_->SelectSelectionModel(gfx::SelectionModel(3, 7));
 
   EXPECT_EQ(UTF16ToUTF8(textfield_->GetSelectedText()), "tfie");
   VerifySelectionHandlePositions(false);

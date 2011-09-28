@@ -178,13 +178,13 @@ class VIEWS_EXPORT Textfield : public View {
   // Returns whether or not an IME is composing text.
   bool IsIMEComposing() const;
 
-  // Gets the selected range. This is views-implementation only and
+  // Gets the selection model. This is views-implementation only and
   // has to be called after the wrapper is created.
-  void GetSelectedRange(ui::Range* range) const;
+  void GetSelectionModel(gfx::SelectionModel* sel) const;
 
-  // Selects the text given by |range|. This is views-implementation only and
+  // Selects the text given by |sel|. This is views-implementation only and
   // has to be called after the wrapper is created.
-  void SelectRange(const ui::Range& range);
+  void SelectSelectionModel(const gfx::SelectionModel& sel);
 
   // Returns the current cursor position. This is views-implementation
   // only and has to be called after the wrapper is created.

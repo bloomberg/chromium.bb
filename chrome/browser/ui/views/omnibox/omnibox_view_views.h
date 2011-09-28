@@ -153,9 +153,6 @@ class OmniboxViewViews : public views::View,
   // Returns the selected text.
   string16 GetSelectedText() const;
 
-  // Selects the text given by |caret| and |end|.
-  void SelectRange(size_t caret, size_t end);
-
   AutocompletePopupView* CreatePopupView(View* location_bar);
 
   views::Textfield* textfield_;

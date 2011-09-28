@@ -408,14 +408,8 @@ string16 TextfieldViewsModel::GetSelectedText() const {
       (render_text_->MaxOfSelection() - render_text_->MinOfSelection()));
 }
 
-void TextfieldViewsModel::GetSelectedRange(ui::Range* range) const {
-  range->set_start(render_text_->GetSelectionStart());
-  range->set_end(render_text_->GetCursorPosition());
-}
-
-void TextfieldViewsModel::SelectRange(const ui::Range& range) {
-  gfx::SelectionModel selection(range.start(), range.end());
-  SelectSelectionModel(selection);
+void TextfieldViewsModel::GetSelectionModel(gfx::SelectionModel* sel) const {
+  *sel = render_text_->selection_model();
 }
 
 void TextfieldViewsModel::SelectSelectionModel(const gfx::SelectionModel& sel) {

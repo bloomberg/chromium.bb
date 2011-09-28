@@ -17,6 +17,7 @@
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/range/range.h"
 #include "ui/gfx/insets.h"
+#include "ui/gfx/selection_model.h"
 #include "views/controls/native/native_view_host.h"
 #include "views/controls/textfield/native_textfield_wrapper.h"
 #include "views/controls/textfield/textfield_controller.h"
@@ -157,10 +158,10 @@ void Textfield::ClearSelection() const {
 }
 
 bool Textfield::HasSelection() const {
-  ui::Range range;
+  gfx::SelectionModel sel;
   if (native_wrapper_)
-    native_wrapper_->GetSelectedRange(&range);
-  return !range.is_empty();
+    native_wrapper_->GetSelectionModel(&sel);
+  return sel.selection_start() != sel.selection_end();
 }
 
 void Textfield::SetTextColor(SkColor color) {
@@ -267,14 +268,14 @@ bool Textfield::IsIMEComposing() const {
   return native_wrapper_ && native_wrapper_->IsIMEComposing();
 }
 
-void Textfield::GetSelectedRange(ui::Range* range) const {
+void Textfield::GetSelectionModel(gfx::SelectionModel* sel) const {
   DCHECK(native_wrapper_);
-  native_wrapper_->GetSelectedRange(range);
+  native_wrapper_->GetSelectionModel(sel);
 }
 
-void Textfield::SelectRange(const ui::Range& range) {
+void Textfield::SelectSelectionModel(const gfx::SelectionModel& sel) {
   DCHECK(native_wrapper_);
-  native_wrapper_->SelectRange(range);
+  native_wrapper_->SelectSelectionModel(sel);
 }
 
 size_t Textfield::GetCursorPosition() const {
@@ -393,10 +394,10 @@ void Textfield::GetAccessibleState(ui::AccessibleViewState* state) {
   state->value = text_;
 
   DCHECK(native_wrapper_);
-  ui::Range range;
-  native_wrapper_->GetSelectedRange(&range);
-  state->selection_start = range.start();
-  state->selection_end = range.end();
+  gfx::SelectionModel sel;
+  native_wrapper_->GetSelectionModel(&sel);
+  state->selection_start = sel.selection_start();
+  state->selection_end = sel.selection_end();
 }
 
 TextInputClient* Textfield::GetTextInputClient() {
