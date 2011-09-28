@@ -119,6 +119,8 @@ void PageSetup::Init(const gfx::Size& physical_size,
                                     physical_size.height() -
                                         effective_margins_.bottom -
                                         content_area_.y()));
+  // TODO(vandebo) Remove once bug 96063 is resolved.
+  CHECK(content_area_.width() > 0 && content_area_.height() > 0);
 }
 
 void PageSetup::SetRequestedMargins(const PageMargins& requested_margins) {
