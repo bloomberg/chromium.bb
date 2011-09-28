@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_RENDERER_HOST_RENDER_WIDGET_HOST_VIEW_MAC_H_
-#define CONTENT_BROWSER_RENDERER_HOST_RENDER_WIDGET_HOST_VIEW_MAC_H_
+#ifndef CHROME_BROWSER_RENDERER_HOST_RENDER_WIDGET_HOST_VIEW_MAC_H_
+#define CHROME_BROWSER_RENDERER_HOST_RENDER_WIDGET_HOST_VIEW_MAC_H_
 #pragma once
 
 #import <Cocoa/Cocoa.h>
@@ -24,7 +24,7 @@
 @class AcceleratedPluginView;
 class RenderWidgetHostViewMac;
 @class RenderWidgetHostViewMacDelegate;
-class RenderWidgetHostViewMacEditCommandHelper;
+class RWHVMEditCommandHelper;
 @class ToolTip;
 
 @protocol RenderWidgetHostViewMacOwner
@@ -45,7 +45,7 @@ class RenderWidgetHostViewMacEditCommandHelper;
   BOOL canBeKeyView_;
   BOOL takesFocusOnlyOnMouseDown_;
   BOOL closeOnDeactivate_;
-  scoped_ptr<RenderWidgetHostViewMacEditCommandHelper> editCommand_helper_;
+  scoped_ptr<RWHVMEditCommandHelper> editCommand_helper_;
 
   // These are part of the magic tooltip code from WebKit's WebHTMLView:
   id trackingRectOwner_;              // (not retained)
@@ -407,4 +407,4 @@ class RenderWidgetHostViewMac : public RenderWidgetHostView {
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewMac);
 };
 
-#endif  // CONTENT_BROWSER_RENDERER_HOST_RENDER_WIDGET_HOST_VIEW_MAC_H_
+#endif  // CHROME_BROWSER_RENDERER_HOST_RENDER_WIDGET_HOST_VIEW_MAC_H_

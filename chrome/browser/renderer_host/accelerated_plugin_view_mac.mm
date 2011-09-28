@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "content/browser/renderer_host/accelerated_plugin_view_mac.h"
+#import "chrome/browser/renderer_host/accelerated_plugin_view_mac.h"
 
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"
+#include "chrome/browser/renderer_host/render_widget_host_view_mac.h"
+#include "chrome/common/chrome_switches.h"
 #include "content/browser/browser_thread.h"
-#include "content/browser/renderer_host/render_widget_host_view_mac.h"
 #include "ui/gfx/gl/gl_switches.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 

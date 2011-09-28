@@ -8,8 +8,8 @@
 
 #include "base/memory/scoped_nsobject.h"
 #include "base/message_loop.h"
+#include "chrome/browser/renderer_host/render_widget_host_view_mac.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/renderer_host/render_widget_host_view_mac.h"
 #import "content/common/chrome_application_mac.h"
 #include "content/common/notification_source.h"
 #import "ui/base/cocoa/base_view.h"

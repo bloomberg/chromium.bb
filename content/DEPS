@@ -34,9 +34,7 @@ include_rules = [
   "-v8",
   "-tools",
 
-  # Allow inclusion of third-party code:
   "+third_party/gpsd",
-  "+third_party/mozilla",
   "+third_party/npapi/bindings",
   "+third_party/sqlite",
   "+third_party/tcmalloc",

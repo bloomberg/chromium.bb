@@ -1,28 +1,28 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "content/browser/renderer_host/render_widget_host_view_mac_editcommand_helper.h"
+#import "chrome/browser/ui/cocoa/rwhvm_editcommand_helper.h"
 
 #import <Cocoa/Cocoa.h>
 
 #include "base/message_loop.h"
+#include "chrome/test/base/testing_profile.h"
 #include "content/browser/renderer_host/mock_render_process_host.h"
 #include "content/browser/renderer_host/render_widget_host.h"
 #include "content/common/view_messages.h"
-#include "content/test/test_browser_context.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
-class RenderWidgetHostViewMacEditCommandHelperTest : public PlatformTest {
+class RWHVMEditCommandHelperTest : public PlatformTest {
 };
 
 // Bare bones obj-c class for testing purposes.
-@interface RenderWidgetHostViewMacEditCommandHelperTestClass : NSObject
+@interface RWHVMEditCommandHelperTestClass : NSObject
 @end
 
-@implementation RenderWidgetHostViewMacEditCommandHelperTestClass
+@implementation RWHVMEditCommandHelperTestClass
 @end
 
 // Class that owns a RenderWidgetHostViewMac.
@@ -31,7 +31,7 @@ class RenderWidgetHostViewMacEditCommandHelperTest : public PlatformTest {
   RenderWidgetHostViewMac* rwhvm_;
 }
 
-- (id)initWithRenderWidgetHostViewMac:(RenderWidgetHostViewMac*)rwhvm;
+- (id) initWithRenderWidgetHostViewMac:(RenderWidgetHostViewMac*)rwhvm;
 @end
 
 @implementation RenderWidgetHostViewMacOwner
@@ -55,8 +55,7 @@ namespace {
   // in test_obj.
   // edit_commands is a list of NSStrings, selector names are formed by
   // appending a trailing ':' to the string.
-  bool CheckObjectRespondsToEditCommands(NSArray* edit_commands,
-                                         id test_obj) {
+  bool CheckObjectRespondsToEditCommands(NSArray* edit_commands, id test_obj) {
     for (NSString* edit_command_name in edit_commands) {
       NSString* sel_str = [edit_command_name stringByAppendingString:@":"];
       if (![test_obj respondsToSelector:NSSelectorFromString(sel_str)]) {
@@ -90,15 +89,14 @@ class RenderWidgetHostEditCommandCounter : public RenderWidgetHost {
 // Tests that editing commands make it through the pipeline all the way to
 // RenderWidgetHost.
 // Disabled, http://crbug.com/93286.
-TEST_F(RenderWidgetHostViewMacEditCommandHelperTest,
-       DISABLED_TestEditingCommandDelivery) {
-  RenderWidgetHostViewMacEditCommandHelper helper;
+TEST_F(RWHVMEditCommandHelperTest, DISABLED_TestEditingCommandDelivery) {
+  RWHVMEditCommandHelper helper;
   NSArray* edit_command_strings = helper.GetEditSelectorNames();
 
   // Set up a mock render widget and set expectations.
   MessageLoopForUI message_loop;
-  TestBrowserContext browser_context;
-  MockRenderProcessHost mock_process(&browser_context);
+  TestingProfile profile;
+  MockRenderProcessHost mock_process(&profile);
   RenderWidgetHostEditCommandCounter render_widget(&mock_process, 0);
 
   // RenderWidgetHostViewMac self destructs (RenderWidgetHostViewMacCocoa
@@ -120,17 +118,15 @@ TEST_F(RenderWidgetHostViewMacEditCommandHelperTest,
   EXPECT_EQ(render_widget.edit_command_message_count_, num_edit_commands);
 }
 
-// Test RenderWidgetHostViewMacEditCommandHelper::AddEditingSelectorsToClass
-TEST_F(RenderWidgetHostViewMacEditCommandHelperTest,
-       TestAddEditingSelectorsToClass) {
-  RenderWidgetHostViewMacEditCommandHelper helper;
+// Test RWHVMEditCommandHelper::AddEditingSelectorsToClass
+TEST_F(RWHVMEditCommandHelperTest, TestAddEditingSelectorsToClass) {
+  RWHVMEditCommandHelper helper;
   NSArray* edit_command_strings = helper.GetEditSelectorNames();
   ASSERT_GT([edit_command_strings count], 0U);
 
   // Create a class instance and add methods to the class.
-  RenderWidgetHostViewMacEditCommandHelperTestClass* test_obj =
-      [[[RenderWidgetHostViewMacEditCommandHelperTestClass alloc] init]
-          autorelease];
+  RWHVMEditCommandHelperTestClass* test_obj =
+      [[[RWHVMEditCommandHelperTestClass alloc] init] autorelease];
 
   // Check that edit commands aren't already attached to the object.
   ASSERT_FALSE(CheckObjectRespondsToEditCommands(edit_command_strings,
@@ -150,9 +146,9 @@ TEST_F(RenderWidgetHostViewMacEditCommandHelperTest,
       test_obj));
 }
 
-// Test RenderWidgetHostViewMacEditCommandHelper::IsMenuItemEnabled.
-TEST_F(RenderWidgetHostViewMacEditCommandHelperTest, TestMenuItemEnabling) {
-  RenderWidgetHostViewMacEditCommandHelper helper;
+// Test RWHVMEditCommandHelper::IsMenuItemEnabled.
+TEST_F(RWHVMEditCommandHelperTest, TestMenuItemEnabling) {
+  RWHVMEditCommandHelper helper;
   RenderWidgetHostViewMacOwner* rwhvm_owner =
       [[[RenderWidgetHostViewMacOwner alloc] init] autorelease];
 

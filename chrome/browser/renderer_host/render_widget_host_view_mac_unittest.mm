@@ -2,22 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/renderer_host/render_widget_host_view_mac.h"
+#include "chrome/browser/renderer_host/render_widget_host_view_mac.h"
 
 #include "base/mac/scoped_nsautorelease_pool.h"
+#import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
+#include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "content/browser/browser_thread.h"
-#include "content/browser/renderer_host/test_render_view_host.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/test/cocoa_test_event_utils.h"
-#import "ui/base/test/ui_cocoa_test_helper.h"
 #include "webkit/plugins/npapi/webplugin.h"
 
-class RenderWidgetHostViewMacTest : public RenderViewHostTestHarness {
+class RenderWidgetHostViewMacTest : public ChromeRenderViewHostTestHarness {
  public:
   RenderWidgetHostViewMacTest() : old_rwhv_(NULL), rwhv_mac_(NULL) {}
 
   virtual void SetUp() {
-    RenderViewHostTestHarness::SetUp();
+    ChromeRenderViewHostTestHarness::SetUp();
 
     // TestRenderViewHost's destruction assumes that its view is a
     // TestRenderWidgetHostView, so store its view and reset it back to the
@@ -38,7 +38,7 @@ class RenderWidgetHostViewMacTest : public RenderViewHostTestHarness {
     MessageLoop::current()->RunAllPending();
     pool_.Recycle();
 
-    RenderViewHostTestHarness::TearDown();
+    ChromeRenderViewHostTestHarness::TearDown();
   }
  protected:
   // Adds an accelerated plugin view to |rwhv_cocoa_|.  Returns a handle to the
