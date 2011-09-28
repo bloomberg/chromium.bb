@@ -4,6 +4,7 @@
 
 #include "chrome/browser/plugin_data_remover.h"
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/message_loop_proxy.h"
 #include "base/metrics/histogram.h"
@@ -62,7 +63,7 @@ base::WaitableEvent* PluginDataRemover::StartRemoving(base::Time begin_time) {
   BrowserThread::PostDelayedTask(
       BrowserThread::IO,
       FROM_HERE,
-      NewRunnableMethod(this, &PluginDataRemover::OnTimeout),
+      base::Bind(&PluginDataRemover::OnTimeout, this),
       kRemovalTimeoutMs);
 
   return event_.get();

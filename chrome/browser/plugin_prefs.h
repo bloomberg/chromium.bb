@@ -81,10 +81,12 @@ class PluginPrefs : public base::RefCountedThreadSafe<PluginPrefs>,
   void EnablePluginGroup(bool enable, const string16& group_name);
 
   // Enable or disable a specific plugin file.
+  // Returns false if the plug-in state cannot be changed because of a policy.
   bool EnablePlugin(bool enable, const FilePath& file_path);
 
   // Enable or disable a plug-in in all profiles. This sets a default for
   // profiles which are created later as well.
+  // Returns false if the plug-in state cannot be changed because of a policy.
   // This method should only be called on the UI thread.
   static bool EnablePluginGlobally(bool enable, const FilePath& file_path);
 
@@ -120,6 +122,9 @@ class PluginPrefs : public base::RefCountedThreadSafe<PluginPrefs>,
 
   // Returns the plugin list to use, either the singleton or the override.
   webkit::npapi::PluginList* GetPluginList();
+
+  // Called on the file thread to update the plug-in state.
+  void EnablePluginInternal(bool enabled, const FilePath& path);
 
   // Called on the file thread to get the data necessary to update the saved
   // preferences.

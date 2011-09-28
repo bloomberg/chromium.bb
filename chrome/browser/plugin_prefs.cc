@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
@@ -120,8 +121,7 @@ void PluginPrefs::EnablePluginGroup(bool enabled, const string16& group_name) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::FILE)) {
     BrowserThread::PostTask(
         BrowserThread::FILE, FROM_HERE,
-        NewRunnableMethod(this, &PluginPrefs::EnablePluginGroup,
-                          enabled, group_name));
+        base::Bind(&PluginPrefs::EnablePluginGroup, this, enabled, group_name));
     return;
   }
 
@@ -146,9 +146,9 @@ void PluginPrefs::EnablePluginGroup(bool enabled, const string16& group_name) {
   }
 
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(this, &PluginPrefs::OnUpdatePreferences, groups));
+      base::Bind(&PluginPrefs::OnUpdatePreferences, this, groups));
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(this, &PluginPrefs::NotifyPluginStatusChanged));
+      base::Bind(&PluginPrefs::NotifyPluginStatusChanged, this));
 }
 
 bool PluginPrefs::EnablePlugin(bool enabled, const FilePath& path) {
@@ -169,13 +169,18 @@ bool PluginPrefs::EnablePlugin(bool enabled, const FilePath& path) {
     }
   }
 
-  if (!BrowserThread::CurrentlyOn(BrowserThread::FILE)) {
+  if (BrowserThread::CurrentlyOn(BrowserThread::FILE)) {
+    EnablePluginInternal(enabled, path);
+  } else {
     BrowserThread::PostTask(
         BrowserThread::FILE, FROM_HERE,
-        NewRunnableMethod(this, &PluginPrefs::EnablePlugin, enabled, path));
-    return true;
+        base::Bind(&PluginPrefs::EnablePluginInternal, this, enabled, path));
   }
+  return true;
+}
 
+void PluginPrefs::EnablePluginInternal(bool enabled, const FilePath& path) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   {
     // Set the desired state for the plug-in.
     base::AutoLock auto_lock(lock_);
@@ -183,7 +188,7 @@ bool PluginPrefs::EnablePlugin(bool enabled, const FilePath& path) {
   }
 
   std::vector<webkit::npapi::PluginGroup> groups;
-  plugin_list->GetPluginGroups(true, &groups);
+  GetPluginList()->GetPluginGroups(true, &groups);
 
   bool found_group = false;
   for (size_t i = 0; i < groups.size(); ++i) {
@@ -206,11 +211,9 @@ bool PluginPrefs::EnablePlugin(bool enabled, const FilePath& path) {
   }
 
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(this, &PluginPrefs::OnUpdatePreferences, groups));
+      base::Bind(&PluginPrefs::OnUpdatePreferences, this, groups));
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(this, &PluginPrefs::NotifyPluginStatusChanged));
-
-  return true;
+      base::Bind(&PluginPrefs::NotifyPluginStatusChanged, this));
 }
 
 // static
@@ -489,7 +492,7 @@ void PluginPrefs::SetPrefs(PrefService* prefs) {
     BrowserThread::PostDelayedTask(
         BrowserThread::FILE,
         FROM_HERE,
-        NewRunnableMethod(this, &PluginPrefs::GetPreferencesDataOnFileThread),
+        base::Bind(&PluginPrefs::GetPreferencesDataOnFileThread, this),
         kPluginUpdateDelayMs);
   }
 
@@ -558,7 +561,7 @@ void PluginPrefs::GetPreferencesDataOnFileThread() {
   plugin_list->GetPluginGroups(false, &groups);
 
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(this, &PluginPrefs::OnUpdatePreferences, groups));
+      base::Bind(&PluginPrefs::OnUpdatePreferences, this, groups));
 }
 
 void PluginPrefs::OnUpdatePreferences(

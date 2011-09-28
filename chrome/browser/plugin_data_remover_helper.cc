@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/bind.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/plugin_data_remover.h"
 #include "chrome/browser/plugin_prefs.h"
@@ -26,10 +27,9 @@ class PluginDataRemoverHelper::Internal
     BrowserThread::PostTask(
         BrowserThread::FILE,
         FROM_HERE,
-        NewRunnableMethod(
-            this,
-            &PluginDataRemoverHelper::Internal::UpdateOnFileThread,
-            make_scoped_refptr(PluginPrefs::GetForProfile(profile_))));
+        base::Bind(&PluginDataRemoverHelper::Internal::UpdateOnFileThread,
+                   this,
+                   make_scoped_refptr(PluginPrefs::GetForProfile(profile_))));
   }
 
   void Invalidate() {
@@ -47,9 +47,9 @@ class PluginDataRemoverHelper::Internal
     BrowserThread::PostTask(
         BrowserThread::UI,
         FROM_HERE,
-        NewRunnableMethod(this,
-                          &PluginDataRemoverHelper::Internal::SetPrefOnUIThread,
-                          result));
+        base::Bind(&PluginDataRemoverHelper::Internal::SetPrefOnUIThread,
+                   this,
+                   result));
   }
 
   void SetPrefOnUIThread(bool value) {
@@ -78,7 +78,7 @@ void PluginDataRemoverHelper::Init(const char* pref_name,
                                    NotificationObserver* observer) {
   pref_.Init(pref_name, profile->GetPrefs(), observer);
   registrar_.Add(this, chrome::NOTIFICATION_PLUGIN_ENABLE_STATUS_CHANGED,
-                 NotificationService::AllSources());
+                 Source<PluginPrefs>(PluginPrefs::GetForProfile(profile)));
   internal_ = make_scoped_refptr(new Internal(pref_name, profile));
   internal_->StartUpdate();
 }
