@@ -7,6 +7,7 @@
 #pragma once
 
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/task.h"
 #include "chrome/browser/ui/gtk/custom_button.h"
 #include "chrome/browser/ui/gtk/menu_gtk.h"
@@ -64,7 +65,7 @@ class BackForwardButtonGtk : MenuGtk::Delegate {
   // The y position of the last mouse down event.
   int y_position_of_last_press_;
 
-  ScopedRunnableMethodFactory<BackForwardButtonGtk> show_menu_factory_;
+  base::WeakPtrFactory<BackForwardButtonGtk> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(BackForwardButtonGtk);
 };

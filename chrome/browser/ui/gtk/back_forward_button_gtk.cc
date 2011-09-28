@@ -7,6 +7,7 @@
 #include <gtk/gtk.h>
 
 #include "base/message_loop.h"
+#include "base/bind.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -25,7 +26,7 @@ static const int kMenuTimerDelay = 500;
 BackForwardButtonGtk::BackForwardButtonGtk(Browser* browser, bool is_forward)
     : browser_(browser),
       is_forward_(is_forward),
-      show_menu_factory_(this) {
+      weak_factory_(this) {
   int normal, pushed, hover, disabled, tooltip;
   const char* stock;
   if (is_forward) {
@@ -86,7 +87,7 @@ void BackForwardButtonGtk::ShowBackForwardMenu(int button, guint32 event_time) {
 }
 
 void BackForwardButtonGtk::OnClick(GtkWidget* widget) {
-  show_menu_factory_.RevokeAll();
+  weak_factory_.InvalidateWeakPtrs();
 
   browser_->ExecuteCommandWithDisposition(
       is_forward_ ? IDC_FORWARD : IDC_BACK,
@@ -102,10 +103,12 @@ gboolean BackForwardButtonGtk::OnButtonPress(GtkWidget* widget,
     return FALSE;
 
   y_position_of_last_press_ = static_cast<int>(event->y);
-  MessageLoop::current()->PostDelayedTask(FROM_HERE,
-      show_menu_factory_.NewRunnableMethod(
-          &BackForwardButtonGtk::ShowBackForwardMenu,
-          event->button, event->time),
+  MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&BackForwardButtonGtk::ShowBackForwardMenu,
+                 weak_factory_.GetWeakPtr(),
+                 event->button,
+                 event->time),
       kMenuTimerDelay);
   return FALSE;
 }
@@ -113,7 +116,7 @@ gboolean BackForwardButtonGtk::OnButtonPress(GtkWidget* widget,
 gboolean BackForwardButtonGtk::OnMouseMove(GtkWidget* widget,
                                            GdkEventMotion* event) {
   // If we aren't waiting to show the back forward menu, do nothing.
-  if (show_menu_factory_.empty())
+  if (!weak_factory_.HasWeakPtrs())
     return FALSE;
 
   // We only count moves about a certain threshold.
@@ -124,7 +127,7 @@ gboolean BackForwardButtonGtk::OnMouseMove(GtkWidget* widget,
     return FALSE;
 
   // We will show the menu now. Cancel the delayed event.
-  show_menu_factory_.RevokeAll();
+  weak_factory_.InvalidateWeakPtrs();
   ShowBackForwardMenu(/* button */ 1, event->time);
   return FALSE;
 }
