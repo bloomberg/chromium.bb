@@ -15,6 +15,7 @@
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 #include "ui/gfx/native_widget_types.h"
+#include "webkit/glue/web_intent_data.h"
 
 class FaviconService;
 class GURL;
@@ -35,6 +36,15 @@ class WebIntentPickerController : public NotificationObserver,
                             WebIntentPickerFactory* factory);
   virtual ~WebIntentPickerController();
 
+  // Sets the intent data for which this picker was created. The picker will
+  // copy and hold this data until the user has made a service selection.
+  // |routing_id| is the IPC routing ID of the source renderer.
+  // |intent| is the intent data as created by the client content.
+  // |intent_id| is the ID assigned by the source renderer.
+  void SetIntent(int routing_id,
+                 const webkit_glue::WebIntentData& intent,
+                 int intent_id);
+
   // Shows the web intent picker for the window |parent|, given the intent
   // |action| and MIME-type |type|.
   void ShowDialog(gfx::NativeWindow parent,
@@ -53,6 +63,7 @@ class WebIntentPickerController : public NotificationObserver,
 
  private:
   friend class WebIntentPickerControllerTest;
+  friend class WebIntentPickerControllerBrowserTest;
   class WebIntentDataFetcher;
   class FaviconFetcher;
 
@@ -95,6 +106,16 @@ class WebIntentPickerController : public NotificationObserver,
 
   // A count of the outstanding asynchronous calls.
   int pending_async_count_;
+
+  // The routing id of the renderer which launched the intent. Should be the
+  // renderer associated with the TabContents which owns this object.
+  int routing_id_;
+
+  // The intent data from the client.
+  webkit_glue::WebIntentData intent_;
+
+  // The intent ID assigned to this intent by the renderer.
+  int intent_id_;
 
   DISALLOW_COPY_AND_ASSIGN(WebIntentPickerController);
 };

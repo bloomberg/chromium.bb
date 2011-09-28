@@ -28,17 +28,11 @@ void IntentInjector::TabContentsDestroyed(TabContents* tab) {
 }
 
 void IntentInjector::SetIntent(int routing_id,
-                               int intent_id,
-                               const string16& action,
-                               const string16& type,
-                               const string16& data) {
-  webkit_glue::WebIntentData* intent_data = new webkit_glue::WebIntentData;
-  intent_data->action = action;
-  intent_data->type = type;
-  intent_data->data = data;
-  source_intent_.reset(intent_data);
-  intent_id_ = intent_id;
+                               const webkit_glue::WebIntentData& intent,
+                               int intent_id) {
   source_routing_id_ = routing_id;
+  source_intent_.reset(new webkit_glue::WebIntentData(intent));
+  intent_id_ = intent_id;
 
   SendIntent();
 }

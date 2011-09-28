@@ -10,10 +10,12 @@
 #include "chrome/browser/intents/web_intents_registry.h"
 #include "chrome/browser/intents/web_intents_registry_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/intents/web_intent_picker.h"
 #include "chrome/browser/ui/intents/web_intent_picker_factory.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/webdata/web_data_service.h"
+#include "content/browser/intents/intent_injector.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_source.h"
 #include "ui/gfx/codec/png_codec.h"
@@ -107,7 +109,9 @@ WebIntentPickerController::WebIntentPickerController(
           favicon_fetcher_(
               new FaviconFetcher(this, GetFaviconService(wrapper))),
           picker_(NULL),
-          pending_async_count_(0) {
+          pending_async_count_(0),
+          routing_id_(0),
+          intent_id_(0) {
   NavigationController* controller = &wrapper->controller();
   registrar_.Add(this, content::NOTIFICATION_LOAD_START,
                  Source<NavigationController>(controller));
@@ -116,6 +120,15 @@ WebIntentPickerController::WebIntentPickerController(
 }
 
 WebIntentPickerController::~WebIntentPickerController() {
+}
+
+void WebIntentPickerController::SetIntent(
+    int routing_id,
+    const webkit_glue::WebIntentData& intent,
+    int intent_id) {
+  routing_id_ = routing_id;
+  intent_ = intent;
+  intent_id_ = intent_id;
 }
 
 void WebIntentPickerController::ShowDialog(gfx::NativeWindow parent,
@@ -145,8 +158,20 @@ void WebIntentPickerController::Observe(int type,
 void WebIntentPickerController::OnServiceChosen(size_t index) {
   DCHECK(index < urls_.size());
 
-  // TODO(binji) Send the chosen service back to the renderer.
-  LOG(INFO) << "Chose index: " << index << " url: " << urls_[index];
+  // TODO(gbillock): This really only handles the 'window' disposition in a
+  // quite prototype way. We need to flesh out what happens to the picker during
+  // the lifetime of the service url context, and that may mean we need to pass
+  // more information into the injector to find the picker again and close it.
+  browser::NavigateParams params(NULL, urls_[index],
+                                 PageTransition::AUTO_BOOKMARK);
+  params.disposition = NEW_FOREGROUND_TAB;
+  params.profile = wrapper_->profile();
+  browser::Navigate(&params);
+
+  IntentInjector* injector = new IntentInjector(
+      params.target_contents->tab_contents());
+  injector->SetIntent(routing_id_, intent_, intent_id_);
+
   ClosePicker();
 }
 

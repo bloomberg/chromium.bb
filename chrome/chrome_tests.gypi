@@ -2396,6 +2396,7 @@
         'browser/ui/find_bar/find_bar_host_browsertest.cc',
         'browser/ui/global_error_service_browsertest.cc',
         'browser/ui/gtk/view_id_util_browsertest.cc',
+        'browser/ui/intents/web_intent_picker_controller_browsertest.cc',
         'browser/ui/login/login_prompt_browsertest.cc',
         'browser/ui/panels/base_panel_browser_test.cc',
         'browser/ui/panels/base_panel_browser_test.h',

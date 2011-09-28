@@ -73,7 +73,7 @@ MATCHER_P(VectorIsOfSize, n, "") {
   return arg.size() == static_cast<size_t>(n);
 }
 
-} // namespace
+}  // namespace
 
 class WebIntentPickerMock : public WebIntentPicker {
  public:
@@ -196,7 +196,10 @@ class WebIntentPickerControllerTest : public TabContentsWrapperTestHarness {
   BrowserThread ui_thread_;
   BrowserThread db_thread_;
   WebIntentPickerMock picker_;
-  WebIntentPickerFactoryMock* picker_factory_; // controller_ takes ownership.
+
+  // |controller_| takes ownership.
+  WebIntentPickerFactoryMock* picker_factory_;
+
   scoped_ptr<TestWebIntentPickerController> controller_;
   WebIntentPickerDelegate* delegate_;
   WebDataService* web_data_service_;
@@ -238,23 +241,6 @@ TEST_F(WebIntentPickerControllerTest, DISABLED_ShowFavicon) {
 
   controller_->ShowDialog(NULL, kAction1, kType);
   WaitForDialogToShow();
-}
-
-TEST_F(WebIntentPickerControllerTest, ChooseService) {
-  SetPickerExpectations(2, 2);
-  AddWebIntentService(kAction1, kServiceURL1);
-  AddWebIntentService(kAction1, kServiceURL2);
-
-  EXPECT_CALL(*controller_, OnServiceChosen(0))
-      .WillOnce(Invoke(controller_.get(),
-                       &TestWebIntentPickerController::BaseOnServiceChosen));
-  EXPECT_CALL(*controller_, OnCancelled())
-      .Times(0);
-  EXPECT_CALL(*picker_factory_, ClosePicker(_));
-
-  controller_->ShowDialog(NULL, kAction1, kType);
-  WaitForDialogToShow();
-  delegate_->OnServiceChosen(0);
 }
 
 TEST_F(WebIntentPickerControllerTest, Cancel) {

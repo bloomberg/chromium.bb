@@ -43,10 +43,8 @@ class IntentInjector : public TabContentsObserver {
   // Sets the intent data to be injected. Call after the user has selected a
   // service to pass the intent data to that service.
   void SetIntent(int routing_id,
-                 int intent_id,
-                 const string16& action,
-                 const string16& type,
-                 const string16& data);
+                 const webkit_glue::WebIntentData& intent,
+                 int intent_id);
 
  private:
   // Delivers the intent data to the renderer.
