@@ -585,6 +585,15 @@ void LoginUtilsImpl::OnProfileCreated(Profile* user_profile, Status status) {
         user_profile->GetTokenService());
   }
 
+  // We suck. This is a hack since we do not have the enterprise feature
+  // done yet to pull down policies from the domain admin. We'll take this
+  // out when we get that done properly.
+  // TODO(xiyuan): Remove this once enterprise feature is ready.
+  if (EndsWith(username_, "@google.com", true)) {
+    PrefService* pref_service = user_profile->GetPrefs();
+    pref_service->SetBoolean(prefs::kEnableScreenLock, true);
+  }
+
   BootTimesLoader* btl = BootTimesLoader::Get();
   btl->AddLoginTimeMarker("UserProfileGotten", false);
 
@@ -658,15 +667,6 @@ void LoginUtilsImpl::OnProfileCreated(Profile* user_profile, Status status) {
       }
     }
     btl->AddLoginTimeMarker("TPMOwn-End", false);
-  }
-
-  // We suck. This is a hack since we do not have the enterprise feature
-  // done yet to pull down policies from the domain admin. We'll take this
-  // out when we get that done properly.
-  // TODO(xiyuan): Remove this once enterprise feature is ready.
-  if (EndsWith(username_, "@google.com", true)) {
-    PrefService* pref_service = user_profile->GetPrefs();
-    pref_service->SetBoolean(prefs::kEnableScreenLock, true);
   }
 
   user_profile->OnLogin();
