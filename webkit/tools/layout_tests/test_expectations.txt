@@ -6,3 +6,15 @@
 // until the changes can be landed upstream.
 
 // PLEASE DO NOT LEAVE ENTRIES IN THIS FILE FOR MORE THAN 24 HRS.
+
+BUG_HAMAJI WIN : svg/W3C-SVG-1.1/pservers-grad-14-b.svg = TEXT
+BUG_HAMAJI WIN : svg/custom/oversized-pattern-scale.svg = IMAGE
+BUG_HAMAJI WIN : svg/custom/transformed-pattern-clamp-svg-root.svg = IMAGE
+
+BUG_HAMAJI MAC : svg/W3C-SVG-1.1/pservers-grad-14-b.svg = IMAGE+TEXT
+BUG_HAMAJI MAC : svg/custom/oversized-pattern-scale.svg = IMAGE
+
+BUG_HAMAJI LINUX : svg/W3C-SVG-1.1/pservers-grad-14-b.svg = TEXT
+BUG_HAMAJI LINUX : svg/custom/oversized-pattern-scale.svg = IMAGE
+BUG_HAMAJI LINUX : svg/custom/transformed-pattern-clamp-svg-root.svg = IMAGE
+BUG_HAMAJI LINUX GPU : fast/canvas/canvas-composite.html = IMAGE
