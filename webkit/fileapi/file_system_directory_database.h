@@ -13,6 +13,10 @@
 #include "base/time.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
 
+namespace tracked_objects {
+class Location;
+}
+
 namespace leveldb {
 class WriteBatch;
 }
@@ -90,7 +94,8 @@ class FileSystemDirectoryDatabase {
   bool AddFileInfoHelper(
       const FileInfo& info, FileId file_id, leveldb::WriteBatch* batch);
   bool RemoveFileInfoHelper(FileId file_id, leveldb::WriteBatch* batch);
-  void HandleError(leveldb::Status status);
+  void HandleError(const tracked_objects::Location& from_here,
+                   leveldb::Status status);
 
   std::string path_;
   scoped_ptr<leveldb::DB> db_;

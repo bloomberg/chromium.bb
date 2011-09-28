@@ -6,6 +6,7 @@
 
 #include <math.h>
 
+#include "base/location.h"
 #include "base/pickle.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
@@ -144,7 +145,7 @@ bool FileSystemDirectoryDatabase::GetChildWithName(
     }
     return true;
   }
-  HandleError(status);
+  HandleError(FROM_HERE, status);
   return false;
 }
 
@@ -213,7 +214,7 @@ bool FileSystemDirectoryDatabase::GetFileInfo(FileId file_id, FileInfo* info) {
     info->parent_id = 0;
     return true;
   }
-  HandleError(status);
+  HandleError(FROM_HERE, status);
   return false;
 }
 
@@ -231,7 +232,7 @@ bool FileSystemDirectoryDatabase::AddFileInfo(
     return false;
   }
   if (!status.IsNotFound()) {
-    HandleError(status);
+    HandleError(FROM_HERE, status);
     return false;
   }
 
@@ -253,7 +254,7 @@ bool FileSystemDirectoryDatabase::AddFileInfo(
   batch.Put(LastFileIdKey(), base::Int64ToString(temp_id));
   status = db_->Write(leveldb::WriteOptions(), &batch);
   if (!status.ok()) {
-    HandleError(status);
+    HandleError(FROM_HERE, status);
     return false;
   }
   *file_id = temp_id;
@@ -268,7 +269,7 @@ bool FileSystemDirectoryDatabase::RemoveFileInfo(FileId file_id) {
     return false;
   leveldb::Status status = db_->Write(leveldb::WriteOptions(), &batch);
   if (!status.ok()) {
-    HandleError(status);
+    HandleError(FROM_HERE, status);
     return false;
   }
   return true;
@@ -302,7 +303,7 @@ bool FileSystemDirectoryDatabase::UpdateFileInfo(
     return false;
   leveldb::Status status = db_->Write(leveldb::WriteOptions(), &batch);
   if (!status.ok()) {
-    HandleError(status);
+    HandleError(FROM_HERE, status);
     return false;
   }
   return true;
@@ -323,7 +324,7 @@ bool FileSystemDirectoryDatabase::UpdateModificationTime(
       leveldb::Slice(reinterpret_cast<const char *>(pickle.data()),
                      pickle.size()));
   if (!status.ok()) {
-    HandleError(status);
+    HandleError(FROM_HERE, status);
     return false;
   }
   return true;
@@ -355,7 +356,7 @@ bool FileSystemDirectoryDatabase::OverwritingMoveFile(
                      pickle.size()));
   leveldb::Status status = db_->Write(leveldb::WriteOptions(), &batch);
   if (!status.ok()) {
-    HandleError(status);
+    HandleError(FROM_HERE, status);
     return false;
   }
   return true;
@@ -378,14 +379,14 @@ bool FileSystemDirectoryDatabase::GetNextInteger(int64* next) {
     status = db_->Put(leveldb::WriteOptions(), LastIntegerKey(),
         base::Int64ToString(temp));
     if (!status.ok()) {
-      HandleError(status);
+      HandleError(FROM_HERE, status);
       return false;
     }
     *next = temp;
     return true;
   }
   if (!status.IsNotFound()) {
-    HandleError(status);
+    HandleError(FROM_HERE, status);
     return false;
   }
   // The database must not yet exist; initialize it.
@@ -423,7 +424,7 @@ bool FileSystemDirectoryDatabase::Init() {
    db_.reset(db);
    return true;
  }
- HandleError(status);
+ HandleError(FROM_HERE, status);
  return false;
 }
 
@@ -447,7 +448,7 @@ bool FileSystemDirectoryDatabase::StoreDefaultValues() {
   batch.Put(LastIntegerKey(), base::Int64ToString(-1));
   leveldb::Status status = db_->Write(leveldb::WriteOptions(), &batch);
   if (!status.ok()) {
-    HandleError(status);
+    HandleError(FROM_HERE, status);
     return false;
   }
   return true;
@@ -468,7 +469,7 @@ bool FileSystemDirectoryDatabase::GetLastFileId(FileId* file_id) {
     return true;
   }
   if (!status.IsNotFound()) {
-    HandleError(status);
+    HandleError(FROM_HERE, status);
     return false;
   }
   // The database must not yet exist; initialize it.
@@ -535,9 +536,11 @@ bool FileSystemDirectoryDatabase::RemoveFileInfoHelper(
   return true;
 }
 
-void FileSystemDirectoryDatabase::HandleError(leveldb::Status status) {
-  LOG(ERROR) << "FileSystemDirectoryDatabase failed with error: " <<
-      status.ToString();
+void FileSystemDirectoryDatabase::HandleError(
+    const tracked_objects::Location& from_here,
+    leveldb::Status status) {
+  LOG(ERROR) << "FileSystemDirectoryDatabase failed at: "
+             << from_here.ToString() << " with error: " << status.ToString();
   db_.reset();
 }
 

@@ -13,6 +13,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
 
+namespace tracked_objects {
+class Location;
+}
+
 namespace fileapi {
 
 // All methods of this class other than the constructor may be used only from
@@ -49,7 +53,8 @@ class FileSystemOriginDatabase {
 
  private:
   bool Init();
-  void HandleError(leveldb::Status status);
+  void HandleError(const tracked_objects::Location& from_here,
+                   leveldb::Status status);
   bool GetLastPathNumber(int* number);
 
   std::string path_;

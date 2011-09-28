@@ -5,6 +5,7 @@
 #include "webkit/fileapi/file_system_origin_database.h"
 
 #include "base/format_macros.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/string_number_conversions.h"
 #include "base/stringprintf.h"
@@ -65,14 +66,15 @@ bool FileSystemOriginDatabase::Init() {
     db_.reset(db);
     return true;
   }
-  HandleError(status);
+  HandleError(FROM_HERE, status);
   return false;
 }
 
-void FileSystemOriginDatabase::HandleError(leveldb::Status status) {
+void FileSystemOriginDatabase::HandleError(
+    const tracked_objects::Location& from_here, leveldb::Status status) {
   db_.reset();
-  LOG(ERROR) << "FileSystemOriginDatabase failed with error: " <<
-      status.ToString();
+  LOG(ERROR) << "FileSystemOriginDatabase failed at: "
+             << from_here.ToString() << " with error: " << status.ToString();
 }
 
 bool FileSystemOriginDatabase::HasOriginPath(const std::string& origin) {
@@ -87,7 +89,7 @@ bool FileSystemOriginDatabase::HasOriginPath(const std::string& origin) {
     return true;
   if (status.IsNotFound())
     return false;
-  HandleError(status);
+  HandleError(FROM_HERE, status);
   return false;
 }
 
@@ -113,7 +115,7 @@ bool FileSystemOriginDatabase::GetPathForOrigin(
     batch.Put(origin_key, path_string);
     status = db_->Write(leveldb::WriteOptions(), &batch);
     if (!status.ok()) {
-      HandleError(status);
+      HandleError(FROM_HERE, status);
       return false;
     }
   }
@@ -125,7 +127,7 @@ bool FileSystemOriginDatabase::GetPathForOrigin(
 #endif
     return true;
   }
-  HandleError(status);
+  HandleError(FROM_HERE, status);
   return false;
 }
 
@@ -136,7 +138,7 @@ bool FileSystemOriginDatabase::RemovePathForOrigin(const std::string& origin) {
       db_->Delete(leveldb::WriteOptions(), OriginToOriginKey(origin));
   if (status.ok() || status.IsNotFound())
     return true;
-  HandleError(status);
+  HandleError(FROM_HERE, status);
   return false;
 }
 
@@ -178,7 +180,7 @@ bool FileSystemOriginDatabase::GetLastPathNumber(int* number) {
   if (status.ok())
     return base::StringToInt(number_string, number);
   if (!status.IsNotFound()) {
-    HandleError(status);
+    HandleError(FROM_HERE, status);
     return false;
   }
   // Verify that this is a totally new database, and initialize it.
@@ -193,7 +195,7 @@ bool FileSystemOriginDatabase::GetLastPathNumber(int* number) {
   status =
       db_->Put(leveldb::WriteOptions(), LastPathKey(), std::string("-1"));
   if (!status.ok()) {
-    HandleError(status);
+    HandleError(FROM_HERE, status);
     return false;
   }
   *number = -1;
