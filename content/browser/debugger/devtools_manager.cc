@@ -165,6 +165,8 @@ void DevToolsManager::UnregisterDevToolsClientHostFor(
 void DevToolsManager::OnNavigatingToPendingEntry(RenderViewHost* rvh,
                                                  RenderViewHost* dest_rvh,
                                                  const GURL& gurl) {
+  if (rvh == dest_rvh)
+    return;
   int cookie = DetachClientHost(rvh);
   if (cookie != -1) {
     // Navigating to URL in the inspected window.

@@ -61,6 +61,8 @@ const char kPauseWhenScriptIsRunning[] =
     "files/devtools/pause_when_script_is_running.html";
 const char kPageWithContentScript[] =
     "files/devtools/page_with_content_script.html";
+const char kNavigateBackTestPage[] =
+    "files/devtools/navigate_back.html";
 const char kChunkedTestPage[] = "chunked";
 const char kSlowTestPage[] =
     "chunked?waitBeforeHeaders=100&waitBetweenChunks=100&chunksNumber=2";
@@ -414,6 +416,11 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestNetworkSyncSize) {
 // Tests raw headers text.
 IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestNetworkRawHeadersText) {
   RunTest("testNetworkRawHeadersText", kChunkedTestPage);
+}
+
+// Tests that console messages are not duplicated on navigation back.
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestConsoleOnNavigateBack) {
+  RunTest("testConsoleOnNavigateBack", kNavigateBackTestPage);
 }
 
 IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestPageWithNoJavaScript) {
