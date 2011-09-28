@@ -83,7 +83,7 @@ class NetworkStateInformer
   // Removes observer's callback.
   void RemoveObserver(const std::string& callback);
 
-  // Sends current network state using the callback.
+  // Sends current network state and network name using the callback.
   void SendState(const std::string& callback);
 
   // NetworkLibrary::NetworkManagerObserver implementation:
@@ -96,6 +96,7 @@ class NetworkStateInformer
 
   base::hash_set<std::string> observers_;
   std::string active_network_;
+  std::string network_name_;
   State state_;
   WebUI* web_ui_;
 };
@@ -147,7 +148,8 @@ void NetworkStateInformer::RemoveObserver(const std::string& callback) {
 
 void NetworkStateInformer::SendState(const std::string& callback) {
   base::FundamentalValue state_value(state_);
-  web_ui_->CallJavascriptFunction(callback, state_value);
+  base::StringValue network_value(network_name_);
+  web_ui_->CallJavascriptFunction(callback, state_value, network_value);
 }
 
 void NetworkStateInformer::OnNetworkManagerChanged(NetworkLibrary* cros) {
@@ -164,9 +166,11 @@ bool NetworkStateInformer::UpdateState(NetworkLibrary* cros) {
   std::string new_active_network;
   if (!cros->Connected()) {
     new_state = OFFLINE;
+    network_name_.clear();
   } else {
     const Network* active_network = cros->active_network();
     new_active_network = active_network->unique_id();
+    network_name_ = active_network->name();
     if (active_network && active_network->restricted_pool()) {
       new_state = CAPTIVE_PORTAL;
     } else {
@@ -227,10 +231,12 @@ void SigninScreenHandler::GetLocalizedStrings(
       l10n_util::GetStringUTF16(IDS_LOGIN_OFFLINE_TITLE));
   localized_strings->SetString("offlineMessageBody",
       l10n_util::GetStringUTF16(IDS_LOGIN_OFFLINE_MESSAGE));
+  localized_strings->SetString("captivePortalTitle",
+      l10n_util::GetStringUTF16(IDS_LOGIN_MAYBE_CAPTIVE_PORTAL_TITLE));
   localized_strings->SetString("captivePortalMessage",
-        l10n_util::GetStringUTF16(IDS_LOGIN_MAYBE_CAPTIVE_PORTAL));
-  localized_strings->SetString("captivePortalStartGuestSession",
-      l10n_util::GetStringUTF16(IDS_LOGIN_FIX_CAPTIVE_PORTAL));
+      l10n_util::GetStringUTF16(IDS_LOGIN_MAYBE_CAPTIVE_PORTAL));
+  localized_strings->SetString("captivePortalNetworkSelect",
+      l10n_util::GetStringUTF16(IDS_LOGIN_MAYBE_CAPTIVE_PORTAL_NETWORK_SELECT));
   localized_strings->SetString("createAccount",
       l10n_util::GetStringUTF16(IDS_CREATE_ACCOUNT_HTML));
   localized_strings->SetString("guestSignin",

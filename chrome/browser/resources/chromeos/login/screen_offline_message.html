@@ -1,14 +1,14 @@
-<div id="offline-message" class="step faded hidden">
-  <span id="offline-message-title" i18n-content="offlineMessageTitle"></span>
+<div id="offline-message" class="step faded hidden show-offline-message">
+  <div id="offline-message-screen-title">
+    <span id="offline-message-title" i18n-content="offlineMessageTitle"></span>
+    <span id="captive-portal-title" i18n-content="captivePortalTitle">
+    </span>
+  </div>
   <div id="offline-message-body">
     <span id="offline-message-text" i18n-content="offlineMessageBody"></span>
-    <div id="captive-portal-message-text" hidden>
-      <span i18n-content="captivePortalMessage"></span>
-      <div id="captive-portal-start-guest-session-holder">
-        <a id="captive-portal-start-guest-session"
-            i18n-content="captivePortalStartGuestSession"
-            class="signin-link" href="#"></a>
-      </div>
+    <div id="captive-portal-message-text"></div>
+    <div id="captive-portal-network-select-text">
+      <span i18n-content="captivePortalNetworkSelect"></span>
     </div>
   </div>
   <div id="offline-network-control" class="control-with-label">

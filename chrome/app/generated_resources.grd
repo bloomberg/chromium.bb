@@ -13396,8 +13396,14 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_LOGIN_FIX_CAPTIVE_PORTAL" desc="An link text to fix Internet connection (captive portal) in guest mode.">
         Start a Guest session
       </message>
+      <message name="IDS_LOGIN_MAYBE_CAPTIVE_PORTAL_TITLE" desc="An offline message title shown when we suggest that user may be behind the captive portal.">
+       Tips for accessing this network
+      </message>
       <message name="IDS_LOGIN_MAYBE_CAPTIVE_PORTAL" desc="An offline message shown when we suggest that user may be behind the captive portal.">
-        Connected to a network, but still can't sign in? You might be on a network that requires a web-based authentication. Start a guest browsing session (if available) and see if a network log-in page appears. Once you're logged in to the network and are able to visit different web pages, exit the guest session and try signing in again.
+        To use <ph name="NETWORK_ID">$1<ex>&gt;b&lt;Public Wifi&gt;/b&lt;</ex></ph> you may first need to visit the network's sign-in page. To do so, <ph name="LINK_START">$2<ex>&gt;a&lt;</ex></ph>start a Guest session<ph name="LINK_END">$3<ex>&gt;/a&lt;</ex></ph> and visit any webpage. Once you can access the network, you may exit the Guest session and try signing in again.
+      </message>
+      <message name="IDS_LOGIN_MAYBE_CAPTIVE_PORTAL_NETWORK_SELECT" desc="An offline message shown when we suggest that user may select other network.">
+        You may also select another network.
       </message>
       <message name="IDS_LOGIN_ERROR_CAPTIVE_PORTAL_NO_GUEST_MODE" desc="An error message shown when we suggest that user may be behind the captive portal but Guest mode is disabled.">
         Your password cannot be verified on this current network. Please select another network.

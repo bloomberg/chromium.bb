@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-#offline-message-title {
+#offline-message-screen-title {
   -webkit-margin-start: 60px;
   -webkit-margin-end: 60px;
   display: block;
@@ -17,6 +17,15 @@
   display: block;
 }
 
-#captive-portal-start-guest-session-holder {
+#captive-portal-network-select-text {
   margin-top: 20px;
 }
+
+.show-offline-message #captive-portal-title,
+.show-offline-message #captive-portal-message-text,
+.show-offline-message #captive-portal-network-select-text,
+.show-captive-portal #offline-message-title,
+.show-captive-portal #offline-message-text {
+  display: none;
+}
+

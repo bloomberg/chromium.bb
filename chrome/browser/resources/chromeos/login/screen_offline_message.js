@@ -17,6 +17,12 @@ cr.define('login', function() {
     PORTAL: 2
   };
 
+  // Link which starts guest session for captive portal fixing.
+  const FIX_CAPTIVE_PORTAL_ID = 'captive-portal-fix-link';
+
+  // Id of the element which holds current network name.
+  const CURRENT_NETWORK_NAME_ID = 'captive-portal-network-name';
+
   /**
    * Creates a new offline message screen div.
    * @constructor
@@ -43,10 +49,16 @@ cr.define('login', function() {
       chrome.send('loginAddNetworkStateObserver',
                   ['login.OfflineMessageScreen.updateState']);
 
-      $('captive-portal-start-guest-session').onclick = function() {
-        chrome.send('fixCaptivePortal');
-      }
       cr.ui.DropDown.decorate($('offline-networks-list'));
+
+      $('captive-portal-message-text').innerHTML = localStrings.getStringF(
+          'captivePortalMessage',
+          '<b id="' + CURRENT_NETWORK_NAME_ID + '"></b>',
+          '<a id="' + FIX_CAPTIVE_PORTAL_ID + '" class="signin-link" href="#">',
+          '</a>');
+      $(FIX_CAPTIVE_PORTAL_ID).onclick = function() {
+        chrome.send('fixCaptivePortal');
+      };
     },
 
     onBeforeShow: function() {
@@ -65,7 +77,7 @@ cr.define('login', function() {
     /**
      * Shows or hides offline message based on network on/offline state.
      */
-    updateState: function(state) {
+    updateState: function(state, network) {
       var currentScreen = Oobe.getInstance().currentScreen;
       var offlineMessage = this;
       var isOnline = (state == NET_STATE.ONLINE);
@@ -74,11 +86,18 @@ cr.define('login', function() {
 
       if (!isOnline && shouldOverlay) {
         console.log('Show offline message, state=' + state +
-                    ',isUnderCaptivePortal=' + isUnderCaptivePortal);
+                    ', network=' + network +
+                    ', isUnderCaptivePortal=' + isUnderCaptivePortal);
         offlineMessage.onBeforeShow();
 
-        $('offline-message-text').hidden = isUnderCaptivePortal;
-        $('captive-portal-message-text').hidden = !isUnderCaptivePortal;
+        if (isUnderCaptivePortal) {
+          $(CURRENT_NETWORK_NAME_ID).innerText = network;
+          offlineMessage.classList.remove('show-offline-message');
+          offlineMessage.classList.add('show-captive-portal');
+        } else {
+          offlineMessage.classList.remove('show-captive-portal');
+          offlineMessage.classList.add('show-offline-message');
+        }
 
         offlineMessage.classList.remove('hidden');
         offlineMessage.classList.remove('faded');
@@ -116,9 +135,10 @@ cr.define('login', function() {
    * Network state changed callback.
    * @param {Integer} state Current state of the network: 0 - offline;
    * 1 - online; 2 - under the captive portal.
+   * @param {string} network Name of the current network.
    */
-  OfflineMessageScreen.updateState = function(state) {
-    $('offline-message').updateState(state);
+  OfflineMessageScreen.updateState = function(state, network) {
+    $('offline-message').updateState(state, network);
   };
 
   /**
@@ -128,13 +148,10 @@ cr.define('login', function() {
    */
   OfflineMessageScreen.onFrameError = function(error) {
     console.log('Gaia frame error = ' + error);
-
     // Offline and simple captive portal cases are handled by the
     // NetworkStateInformer, so only the case when browser is online is
     // valuable.
     if (window.navigator.onLine) {
-      this.updateState(NET_STATE.PORTAL);
-
       // Check current network state if currentScreen is a managed one.
       var currentScreen = Oobe.getInstance().currentScreen;
       if (MANAGED_SCREENS.indexOf(currentScreen.id) != -1) {
@@ -147,8 +164,9 @@ cr.define('login', function() {
   /**
    * Network state callback where we decide whether to schdule a retry.
    */
-  OfflineMessageScreen.maybeRetry = function(state) {
-    console.log('OfflineMessageScreen.maybeRetry, state=' + state);
+  OfflineMessageScreen.maybeRetry = function(state, network) {
+    console.log('OfflineMessageScreen.maybeRetry, state=' + state +
+                ', network=' + network);
 
     // No retry if we are not online.
     if (state != NET_STATE.ONLINE)
@@ -156,6 +174,7 @@ cr.define('login', function() {
 
     var currentScreen = Oobe.getInstance().currentScreen;
     if (MANAGED_SCREENS.indexOf(currentScreen.id) != -1) {
+      this.updateState(NET_STATE.PORTAL, network);
       // Schedules a retry.
       currentScreen.schdeduleRetry();
     }
