@@ -21,7 +21,6 @@ class MenuExample : public ExampleBase {
   virtual ~MenuExample();
 
   // Overridden from ExampleBase:
-  virtual std::wstring GetExampleTitle() OVERRIDE;
   virtual void CreateExampleView(views::View* container) OVERRIDE;
 
  private:

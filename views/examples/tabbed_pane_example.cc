@@ -10,14 +10,10 @@
 namespace examples {
 
 TabbedPaneExample::TabbedPaneExample(ExamplesMain* main)
-    : ExampleBase(main) {
+    : ExampleBase(main, "Tabbed Pane") {
 }
 
 TabbedPaneExample::~TabbedPaneExample() {
-}
-
-std::wstring TabbedPaneExample::GetExampleTitle() {
-  return L"Tabbed Pane";
 }
 
 void TabbedPaneExample::CreateExampleView(views::View* container) {

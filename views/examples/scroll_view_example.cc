@@ -47,14 +47,10 @@ class ScrollViewExample::ScrollableView : public views::View {
 };
 
 ScrollViewExample::ScrollViewExample(ExamplesMain* main)
-    : ExampleBase(main) {
+    : ExampleBase(main, "Scroll View") {
 }
 
 ScrollViewExample::~ScrollViewExample() {
-}
-
-std::wstring ScrollViewExample::GetExampleTitle() {
-  return L"Scroll View";
 }
 
 void ScrollViewExample::CreateExampleView(views::View* container) {

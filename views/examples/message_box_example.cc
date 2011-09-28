@@ -12,14 +12,10 @@
 namespace examples {
 
 MessageBoxExample::MessageBoxExample(ExamplesMain* main)
-    : ExampleBase(main) {
+    : ExampleBase(main, "Message Box View") {
 }
 
 MessageBoxExample::~MessageBoxExample() {
-}
-
-std::wstring MessageBoxExample::GetExampleTitle() {
-  return L"Message Box View";
 }
 
 void MessageBoxExample::CreateExampleView(views::View* container) {

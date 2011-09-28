@@ -12,14 +12,10 @@
 namespace examples {
 
 RadioButtonExample::RadioButtonExample(ExamplesMain* main)
-    : ExampleBase(main), count_(0) {
+    : ExampleBase(main, "Radio Button"), count_(0) {
 }
 
 RadioButtonExample::~RadioButtonExample() {
-}
-
-std::wstring RadioButtonExample::GetExampleTitle() {
-  return L"Radio Button";
 }
 
 void RadioButtonExample::CreateExampleView(views::View* container) {

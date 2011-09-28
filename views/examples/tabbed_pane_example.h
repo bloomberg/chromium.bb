@@ -27,7 +27,6 @@ class TabbedPaneExample : public ExampleBase,
   virtual ~TabbedPaneExample();
 
   // ExampleBase:
-  virtual std::wstring GetExampleTitle() OVERRIDE;
   virtual void CreateExampleView(views::View* container) OVERRIDE;
 
  private:

@@ -12,15 +12,11 @@
 namespace examples {
 
 NativeThemeCheckboxExample::NativeThemeCheckboxExample(ExamplesMain* main)
-    : ExampleBase(main),
+    : ExampleBase(main, "Checkbox"),
       count_(0) {
 }
 
 NativeThemeCheckboxExample::~NativeThemeCheckboxExample() {
-}
-
-std::wstring NativeThemeCheckboxExample::GetExampleTitle() {
-  return L"Checkbox";
 }
 
 void NativeThemeCheckboxExample::CreateExampleView(views::View* container) {

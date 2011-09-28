@@ -20,7 +20,6 @@ class ComboboxExample : public ExampleBase,
   virtual ~ComboboxExample();
 
   // Overridden from ExampleBase:
-  virtual std::wstring GetExampleTitle() OVERRIDE;
   virtual void CreateExampleView(views::View* container) OVERRIDE;
 
  private:

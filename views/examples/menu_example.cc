@@ -197,14 +197,10 @@ void ExampleMenuButton::RunMenu(views::View* source, const gfx::Point& point) {
 namespace examples {
 
 MenuExample::MenuExample(ExamplesMain* main)
-    : ExampleBase(main) {
+    : ExampleBase(main, "Menu") {
 }
 
 MenuExample::~MenuExample() {
-}
-
-std::wstring MenuExample::GetExampleTitle() {
-  return L"Menu";
 }
 
 void MenuExample::CreateExampleView(views::View* container) {

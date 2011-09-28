@@ -23,7 +23,6 @@ class WidgetExample : public ExampleBase, public views::ButtonListener {
   virtual ~WidgetExample();
 
   // Overridden from ExampleBase:
-  virtual std::wstring GetExampleTitle() OVERRIDE;
   virtual void CreateExampleView(views::View* container) OVERRIDE;
 
  private:

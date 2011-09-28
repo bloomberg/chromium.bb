@@ -218,14 +218,10 @@ void ExampleNativeThemeButton::OnPaintBackground(gfx::Canvas* canvas) {
 ////////////////////////////////////////////////////////////////////////////////
 
 NativeThemeButtonExample::NativeThemeButtonExample(ExamplesMain* main)
-    : ExampleBase(main) {
+    : ExampleBase(main, "Native Theme Button") {
 }
 
 NativeThemeButtonExample::~NativeThemeButtonExample() {
-}
-
-std::wstring NativeThemeButtonExample::GetExampleTitle() {
-  return L"Native Theme Button";
 }
 
 void NativeThemeButtonExample::CreateExampleView(views::View* container) {

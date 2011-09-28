@@ -59,11 +59,12 @@ class ExampleBubbleDelegateView : public views::BubbleDelegateView {
   const BubbleConfig& config_;
 };
 
-BubbleExample::BubbleExample(ExamplesMain* main) : ExampleBase(main) {}
+BubbleExample::BubbleExample(ExamplesMain* main)
+    : ExampleBase(main, "Bubble") {
+}
 
-BubbleExample::~BubbleExample() {}
-
-std::wstring BubbleExample::GetExampleTitle() { return L"Bubble"; }
+BubbleExample::~BubbleExample() {
+}
 
 void BubbleExample::CreateExampleView(views::View* container) {
   layout_ = new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 1);

@@ -15,14 +15,10 @@
 namespace examples {
 
 TextfieldExample::TextfieldExample(ExamplesMain* main)
-    : ExampleBase(main) {
+    : ExampleBase(main, "Textfield") {
 }
 
 TextfieldExample::~TextfieldExample() {
-}
-
-std::wstring TextfieldExample::GetExampleTitle() {
-  return L"Textfield";
 }
 
 void TextfieldExample::CreateExampleView(views::View* container) {

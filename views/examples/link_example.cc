@@ -10,14 +10,11 @@
 
 namespace examples {
 
-LinkExample::LinkExample(ExamplesMain* main) : ExampleBase(main) {
+LinkExample::LinkExample(ExamplesMain* main)
+    : ExampleBase(main, "Link") {
 }
 
 LinkExample::~LinkExample() {
-}
-
-std::wstring LinkExample::GetExampleTitle() {
-  return L"Link";
 }
 
 void LinkExample::CreateExampleView(views::View* container) {

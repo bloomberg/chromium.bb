@@ -41,14 +41,10 @@ class CenterLayout : public views::LayoutManager {
 namespace examples {
 
 WidgetExample::WidgetExample(ExamplesMain* main)
-    : ExampleBase(main) {
+    : ExampleBase(main, "Widget") {
 }
 
 WidgetExample::~WidgetExample() {
-}
-
-std::wstring WidgetExample::GetExampleTitle() {
-  return L"Widget";
 }
 
 void WidgetExample::CreateExampleView(views::View* container) {

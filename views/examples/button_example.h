@@ -24,7 +24,6 @@ class ButtonExample : public ExampleBase, public views::ButtonListener {
   virtual ~ButtonExample();
 
   // Overridden from ExampleBase:
-  virtual std::wstring GetExampleTitle() OVERRIDE;
   virtual void CreateExampleView(views::View* container) OVERRIDE;
 
  private:

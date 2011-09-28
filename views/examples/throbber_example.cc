@@ -46,14 +46,10 @@ class ThrobberView : public views::View {
 namespace examples {
 
 ThrobberExample::ThrobberExample(ExamplesMain* main)
-    : ExampleBase(main) {
+    : ExampleBase(main, "Throbber") {
 }
 
 ThrobberExample::~ThrobberExample() {
-}
-
-std::wstring ThrobberExample::GetExampleTitle() {
-  return L"Throbber";
 }
 
 void ThrobberExample::CreateExampleView(views::View* container) {

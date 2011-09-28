@@ -32,14 +32,11 @@ class ComboboxModelExample : public ui::ComboboxModel {
 
 namespace examples {
 
-ComboboxExample::ComboboxExample(ExamplesMain* main) : ExampleBase(main) {
+ComboboxExample::ComboboxExample(ExamplesMain* main)
+    : ExampleBase(main, "Combo Box") {
 }
 
 ComboboxExample::~ComboboxExample() {
-}
-
-std::wstring ComboboxExample::GetExampleTitle() {
-  return L"Combo Box";
 }
 
 void ComboboxExample::CreateExampleView(views::View* container) {

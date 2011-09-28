@@ -34,7 +34,6 @@ class TableExample : public ExampleBase,
   virtual ~TableExample();
 
   // ExampleBase:
-  virtual std::wstring GetExampleTitle() OVERRIDE;
   virtual void CreateExampleView(views::View* container) OVERRIDE;
 
   // ui::TableModel:

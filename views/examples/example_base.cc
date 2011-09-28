@@ -50,8 +50,8 @@ namespace examples {
 
 ExampleBase::~ExampleBase() {}
 
-ExampleBase::ExampleBase(ExamplesMain* main)
-    : main_(main) {
+ExampleBase::ExampleBase(ExamplesMain* main, const char* title)
+    : main_(main), example_title_(title) {
   container_ = new ContainerView(this);
 }
 

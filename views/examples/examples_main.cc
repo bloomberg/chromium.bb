@@ -114,7 +114,8 @@ void ExamplesMain::SetStatus(const std::string& status) {
 }
 
 void ExamplesMain::AddExample(ExampleBase* example) {
-  tabbed_pane_->AddTab(example->GetExampleTitle(), example->GetExampleView());
+  tabbed_pane_->AddTab(UTF8ToWide(example->example_title()),
+                       example->GetExampleView());
 }
 
 bool ExamplesMain::CanResize() const {

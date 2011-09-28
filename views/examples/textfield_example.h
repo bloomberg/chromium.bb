@@ -26,7 +26,6 @@ class TextfieldExample : public ExampleBase,
   virtual ~TextfieldExample();
 
   // ExampleBase:
-  virtual std::wstring GetExampleTitle() OVERRIDE;
   virtual void CreateExampleView(views::View* container) OVERRIDE;
 
  private:

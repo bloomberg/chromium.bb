@@ -33,7 +33,6 @@ class Table2Example : public ExampleBase,
   virtual ~Table2Example();
 
   // Overridden from ExampleBase:
-  virtual std::wstring GetExampleTitle() OVERRIDE;
   virtual void CreateExampleView(views::View* container) OVERRIDE;
 
   // Overridden from TableModel:

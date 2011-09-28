@@ -35,7 +35,6 @@ class BubbleExample : public ExampleBase,
   virtual ~BubbleExample();
 
   // Overridden from ExampleBase.
-  virtual std::wstring GetExampleTitle() OVERRIDE;
   virtual void CreateExampleView(views::View* container) OVERRIDE;
 
  private:

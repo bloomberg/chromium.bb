@@ -45,14 +45,10 @@ gfx::Size SplittedView::GetMinimumSize() {
 namespace examples {
 
 DoubleSplitViewExample::DoubleSplitViewExample(ExamplesMain* main)
-    : ExampleBase(main) {
+    : ExampleBase(main, "Double Split View") {
 }
 
 DoubleSplitViewExample::~DoubleSplitViewExample() {
-}
-
-std::wstring DoubleSplitViewExample::GetExampleTitle() {
-  return L"Double Split View";
 }
 
 void DoubleSplitViewExample::CreateExampleView(views::View* container) {

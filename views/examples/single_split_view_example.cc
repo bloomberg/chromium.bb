@@ -54,14 +54,10 @@ void SplittedView::Layout() {
 namespace examples {
 
 SingleSplitViewExample::SingleSplitViewExample(ExamplesMain* main)
-    : ExampleBase(main) {
+    : ExampleBase(main, "Single Split View") {
 }
 
 SingleSplitViewExample::~SingleSplitViewExample() {
-}
-
-std::wstring SingleSplitViewExample::GetExampleTitle() {
-  return L"Single Split View";
 }
 
 void SingleSplitViewExample::CreateExampleView(views::View* container) {

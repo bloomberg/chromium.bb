@@ -13,7 +13,7 @@
 namespace examples {
 
 ButtonExample::ButtonExample(ExamplesMain* main)
-    : ExampleBase(main),
+    : ExampleBase(main, "Text Button"),
       alignment_(views::TextButton::ALIGN_LEFT),
       use_native_theme_border_(false),
       icon_(NULL),
@@ -23,10 +23,6 @@ ButtonExample::ButtonExample(ExamplesMain* main)
 }
 
 ButtonExample::~ButtonExample() {
-}
-
-std::wstring ButtonExample::GetExampleTitle() {
-  return L"Text Button";
 }
 
 void ButtonExample::CreateExampleView(views::View* container) {

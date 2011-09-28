@@ -13,14 +13,10 @@
 namespace examples {
 
 Table2Example::Table2Example(ExamplesMain* main)
-    : ExampleBase(main) {
+    : ExampleBase(main, "Table2") {
 }
 
 Table2Example::~Table2Example() {
-}
-
-std::wstring Table2Example::GetExampleTitle() {
-  return L"Table2";
 }
 
 void Table2Example::CreateExampleView(views::View* container) {

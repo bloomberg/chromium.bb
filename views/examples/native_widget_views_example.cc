@@ -55,14 +55,10 @@ class TestContentView : public views::View,
 };
 
 NativeWidgetViewsExample::NativeWidgetViewsExample(ExamplesMain* main)
-    : ExampleBase(main) {
+    : ExampleBase(main, "NativeWidgetViews") {
 }
 
 NativeWidgetViewsExample::~NativeWidgetViewsExample() {
-}
-
-std::wstring NativeWidgetViewsExample::GetExampleTitle() {
-  return L"NativeWidgetViews";
 }
 
 void NativeWidgetViewsExample::CreateExampleView(views::View* container) {
