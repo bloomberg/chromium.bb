@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/views/tab_contents/tab_contents_container.h"
 
-#if defined(HAVE_XINPUT2)
+#if defined(TOUCH_UI)
 #include <X11/extensions/XInput2.h>
 #endif
 
@@ -73,7 +73,7 @@ void TabContentsContainer::Layout() {
   }
 }
 
-#if defined(HAVE_XINPUT2)
+#if defined(TOUCH_UI)
 bool TabContentsContainer::OnMousePressed(const views::MouseEvent& event) {
   DCHECK(tab_contents_);
   if (event.flags() & (ui::EF_LEFT_BUTTON_DOWN |

@@ -1750,7 +1750,7 @@ gboolean NativeWidgetGtk::OnGrabBrokeEvent(GtkWidget* widget, GdkEvent* event) {
   }
   ReleaseMouseCapture();
 
-#if defined(HAVE_XINPUT2) && defined(TOUCH_UI)
+#if defined(TOUCH_UI)
   ui::TouchFactory::GetInstance()->UngrabTouchDevices(
       GDK_WINDOW_XDISPLAY(window_contents()->window));
 #endif

@@ -49,7 +49,7 @@ class TabContentsContainer : public views::View,
   // Overridden from views::View:
   virtual void Layout() OVERRIDE;
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
-#if defined(HAVE_XINPUT2)
+#if defined(TOUCH_UI)
   virtual bool OnMousePressed(const views::MouseEvent& event) OVERRIDE;
 #endif
 
