@@ -6,10 +6,6 @@
 
 #include <objidl.h>
 #include <winspool.h>
-#if defined(_WIN32_WINNT)
-#undef _WIN32_WINNT
-#endif  // defined(_WIN32_WINNT)
-#define _WIN32_WINNT _WIN32_WINNT_WIN7
 #include <xpsprint.h>
 
 #include "base/file_path.h"
