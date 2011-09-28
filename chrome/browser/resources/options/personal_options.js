@@ -221,6 +221,7 @@ cr.define('options', function() {
      */
     setProfileViewSingle_: function(numProfiles) {
       $('profiles-list').hidden = numProfiles <= 1;
+      $('profiles-single-message').hidden = numProfiles > 1;
       $('profiles-manage').hidden = numProfiles <= 1;
       $('profiles-delete').hidden = numProfiles <= 1;
     },

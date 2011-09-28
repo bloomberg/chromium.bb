@@ -13750,6 +13750,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
     <message name="IDS_PROFILES_LIST_ITEM_CURRENT" desc="Text to display in the multi-profiles list when this profile is the current profile">
       <ph name="PROFILE_NAME">$1<ex>New User</ex></ph> (current)
     </message>
+    <message name="IDS_PROFILES_SINGLE_USER_MESSAGE" desc="Text to display in the multi-profiles section when there is only one user">
+      You are currently the only <ph name="PRODUCT_NAME">$1<ex>Chrome</ex></ph> user.
+    </message>
 
     <!-- Tracing about page strings -->
     <message name="IDS_TRACING_TITLE" desc="Title for the about:tracing page.">
