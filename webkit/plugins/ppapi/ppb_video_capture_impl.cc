@@ -31,15 +31,15 @@ PPB_VideoCapture_Impl::PPB_VideoCapture_Impl(PP_Instance instance)
     : Resource(instance),
       buffer_count_hint_(0),
       ppp_videocapture_(NULL),
-      status_(PP_VIDEO_CAPTURE_STATUS_STOPPED) {
+      status_(PP_VIDEO_CAPTURE_STATUS_STOPPED),
+      is_dead_(false) {
 }
 
 PPB_VideoCapture_Impl::~PPB_VideoCapture_Impl() {
-  if (platform_video_capture_.get())
-    StopCapture();
 }
 
 bool PPB_VideoCapture_Impl::Init() {
+  DCHECK(!is_dead_);
   PluginInstance* instance = ResourceHelper::GetPluginInstance(this);
   if (!instance)
     return false;
@@ -57,9 +57,20 @@ PPB_VideoCapture_API* PPB_VideoCapture_Impl::AsPPB_VideoCapture_API() {
   return this;
 }
 
+void PPB_VideoCapture_Impl::LastPluginRefWasDeleted() {
+  if (platform_video_capture_.get())
+    StopCapture();
+  DCHECK(buffers_.empty());
+  ppp_videocapture_ = NULL;
+  is_dead_ = true;
+
+  ::ppapi::Resource::LastPluginRefWasDeleted();
+}
+
 int32_t PPB_VideoCapture_Impl::StartCapture(
     const PP_VideoCaptureDeviceInfo_Dev& requested_info,
     uint32_t buffer_count) {
+  DCHECK(!is_dead_);
   switch (status_) {
     case PP_VIDEO_CAPTURE_STATUS_STARTING:
     case PP_VIDEO_CAPTURE_STATUS_STARTED:
@@ -83,11 +94,13 @@ int32_t PPB_VideoCapture_Impl::StartCapture(
     false  // resolution_fixed
   };
   status_ = PP_VIDEO_CAPTURE_STATUS_STARTING;
+  AddRef();  // Balanced in |OnRemoved()|.
   platform_video_capture_->StartCapture(this, capability);
   return PP_OK;
 }
 
 int32_t PPB_VideoCapture_Impl::ReuseBuffer(uint32_t buffer) {
+  DCHECK(!is_dead_);
   if (buffer >= buffers_.size() || !buffers_[buffer].in_use)
     return PP_ERROR_BADARGUMENT;
   buffers_[buffer].in_use = false;
@@ -95,6 +108,7 @@ int32_t PPB_VideoCapture_Impl::ReuseBuffer(uint32_t buffer) {
 }
 
 int32_t PPB_VideoCapture_Impl::StopCapture() {
+  DCHECK(!is_dead_);
   switch (status_) {
     case PP_VIDEO_CAPTURE_STATUS_STOPPED:
     case PP_VIDEO_CAPTURE_STATUS_STOPPING:
@@ -112,6 +126,9 @@ int32_t PPB_VideoCapture_Impl::StopCapture() {
 }
 
 void PPB_VideoCapture_Impl::OnStarted(media::VideoCapture* capture) {
+  if (is_dead_)
+    return;
+
   switch (status_) {
     case PP_VIDEO_CAPTURE_STATUS_STARTING:
     case PP_VIDEO_CAPTURE_STATUS_PAUSED:
@@ -127,6 +144,9 @@ void PPB_VideoCapture_Impl::OnStarted(media::VideoCapture* capture) {
 }
 
 void PPB_VideoCapture_Impl::OnStopped(media::VideoCapture* capture) {
+  if (is_dead_)
+    return;
+
   switch (status_) {
     case PP_VIDEO_CAPTURE_STATUS_STOPPING:
       break;
@@ -142,6 +162,9 @@ void PPB_VideoCapture_Impl::OnStopped(media::VideoCapture* capture) {
 }
 
 void PPB_VideoCapture_Impl::OnPaused(media::VideoCapture* capture) {
+  if (is_dead_)
+    return;
+
   switch (status_) {
     case PP_VIDEO_CAPTURE_STATUS_STARTING:
     case PP_VIDEO_CAPTURE_STATUS_STARTED:
@@ -158,6 +181,9 @@ void PPB_VideoCapture_Impl::OnPaused(media::VideoCapture* capture) {
 
 void PPB_VideoCapture_Impl::OnError(media::VideoCapture* capture,
                                     int error_code) {
+  if (is_dead_)
+    return;
+
   // Today, the media layer only sends "1" as an error.
   DCHECK(error_code == 1);
   // It either comes because some error was detected while starting (e.g. 2
@@ -168,12 +194,15 @@ void PPB_VideoCapture_Impl::OnError(media::VideoCapture* capture,
 }
 
 void PPB_VideoCapture_Impl::OnRemoved(media::VideoCapture* capture) {
-  // TODO(vtl): add logic when this event handler is removed.
+  Release();
 }
 
 void PPB_VideoCapture_Impl::OnBufferReady(
     media::VideoCapture* capture,
     scoped_refptr<media::VideoCapture::VideoFrameBuffer> buffer) {
+  if (is_dead_)
+    return;
+
   DCHECK(buffer.get());
   for (uint32_t i = 0; i < buffers_.size(); ++i) {
     if (!buffers_[i].in_use) {
@@ -194,6 +223,11 @@ void PPB_VideoCapture_Impl::OnBufferReady(
 void PPB_VideoCapture_Impl::OnDeviceInfoReceived(
     media::VideoCapture* capture,
     const media::VideoCaptureParams& device_info) {
+  // No need to call |ReleaseBuffers()|: if we're dead, |StopCapture()| should
+  // already have been called.
+  if (is_dead_)
+    return;
+
   PP_VideoCaptureDeviceInfo_Dev info = {
     device_info.width,
     device_info.height,
@@ -242,6 +276,7 @@ void PPB_VideoCapture_Impl::OnDeviceInfoReceived(
 }
 
 void PPB_VideoCapture_Impl::ReleaseBuffers() {
+  DCHECK(!is_dead_);
   ResourceTracker *tracker = ResourceTracker::Get();
   for (size_t i = 0; i < buffers_.size(); ++i) {
     buffers_[i].buffer->Unmap();
@@ -251,6 +286,7 @@ void PPB_VideoCapture_Impl::ReleaseBuffers() {
 }
 
 void PPB_VideoCapture_Impl::SendStatus() {
+  DCHECK(!is_dead_);
   ppp_videocapture_->OnStatus(pp_instance(), pp_resource(), status_);
 }
 

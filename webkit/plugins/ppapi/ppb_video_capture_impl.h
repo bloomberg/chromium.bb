@@ -35,6 +35,7 @@ class PPB_VideoCapture_Impl : public ::ppapi::Resource,
 
   // Resource overrides.
   virtual PPB_VideoCapture_API* AsPPB_VideoCapture_API() OVERRIDE;
+  virtual void LastPluginRefWasDeleted() OVERRIDE;
 
   // PPB_VideoCapture implementation.
   virtual int32_t StartCapture(
@@ -75,6 +76,12 @@ class PPB_VideoCapture_Impl : public ::ppapi::Resource,
 
   const PPP_VideoCapture_Dev* ppp_videocapture_;
   PP_VideoCaptureStatus_Dev status_;
+
+  // Signifies that the plugin has given up all its refs, but the object is
+  // still alive, possibly because the backend hasn't released the object as
+  // |EventHandler| yet. It can be removed if/when |EventHandler| is made to be
+  // refcounted (and made into a "member" of this object instead).
+  bool is_dead_;
 
   DISALLOW_COPY_AND_ASSIGN(PPB_VideoCapture_Impl);
 };
