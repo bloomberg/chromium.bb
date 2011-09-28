@@ -47,10 +47,6 @@ class PolicyUIHandler : public WebUIMessageHandler,
   // DictionaryValue pointer.
   DictionaryValue* GetStatusData();
 
-  // Fetches policy if the appropriate device tokens are available. Returns
-  // true, if any policy was fetched (device or user). Returns false otherwise.
-  bool FetchPolicyIfTokensAvailable();
-
   // Returns the time at which policy was last fetched by the
   // CloudPolicySubsystem |subsystem| in string form.
   string16 GetLastFetchTime(policy::CloudPolicySubsystem* subsystem);

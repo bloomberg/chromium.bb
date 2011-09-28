@@ -108,8 +108,10 @@ void PolicyUIHandler::HandleRequestData(const ListValue* args) {
 }
 
 void PolicyUIHandler::HandleFetchPolicy(const ListValue* args) {
-  if (FetchPolicyIfTokensAvailable())
-    SendDataToUI(true);
+  policy::BrowserPolicyConnector* connector =
+      g_browser_process->browser_policy_connector();
+  connector->FetchDevicePolicy();
+  connector->FetchUserPolicy();
 }
 
 void PolicyUIHandler::SendDataToUI(bool is_policy_update) {
@@ -180,28 +182,6 @@ DictionaryValue* PolicyUIHandler::GetStatusData() {
       GetPolicyFetchInterval(prefs::kUserPolicyRefreshRate));
 
   return results;
-}
-
-bool PolicyUIHandler::FetchPolicyIfTokensAvailable() {
-  policy::BrowserPolicyConnector* connector =
-      g_browser_process->browser_policy_connector();
-  const policy::CloudPolicyDataStore* device_data_store =
-      connector->GetDeviceCloudPolicyDataStore();
-  const policy::CloudPolicyDataStore* user_data_store =
-      connector->GetUserCloudPolicyDataStore();
-
-  bool fetch_device_policy =
-    device_data_store && !device_data_store->device_token().empty();
-  bool fetch_user_policy =
-    user_data_store && !user_data_store->device_token().empty();
-
-  if (fetch_device_policy)
-    connector->FetchDevicePolicy();
-
-  if (fetch_user_policy)
-    connector->FetchUserPolicy();
-
-  return fetch_device_policy || fetch_user_policy;
 }
 
 string16 PolicyUIHandler::GetLastFetchTime(
