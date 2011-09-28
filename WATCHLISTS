@@ -343,7 +343,7 @@
                'prasadt@chromium.org', 'dcheng@chromium.org',
                'jianli@chromium.org'],
     'importer': ['tfarina@chromium.org'],
-    'views': ['dhollowa@chromium.org'],
+    'views': ['dhollowa@chromium.org', 'tfarina@chromium.org'],
     'accelerator_table_gtk': ['mazda@chromium.org', 'derat+watch@chromium.org'],
     'downloads_ui': ['asanka@chromium.org', 'rdsmith@chromium.org'],
     'x11': ['derat+watch@chromium.org'],
