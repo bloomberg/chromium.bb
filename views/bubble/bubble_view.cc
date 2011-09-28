@@ -11,11 +11,6 @@
 #include "views/layout/layout_constants.h"
 #include "views/views_delegate.h"
 #include "views/window/client_view.h"
-#if defined(USE_AURA)
-#include "views/widget/native_widget_aura.h"
-#elif defined(TOOLKIT_USES_GTK)
-#include "views/widget/native_widget_gtk.h"
-#endif
 #include "views/widget/widget.h"
 
 // How long the fade should last for.
@@ -112,20 +107,7 @@ void BubbleView::AnimationProgressed(const ui::Animation* animation) {
     if (animation_delegate_)
       animation_delegate_->AnimationProgressed(animation);
 
-    SkColor opacity = static_cast<SkColor>(
-        animation->GetCurrentValue() * 255);
-#if defined(USE_AURA)
-    NOTIMPLEMENTED();
-    // TODO: probably a good idea to make this a Widget API method rather than
-    //       directly manipulating the native widget here.
-    (void) opacity;
-#elif defined(OS_WIN)
-    SetLayeredWindowAttributes(GetWidget()->GetNativeView(), 0,
-                               static_cast<byte>(opacity), LWA_ALPHA);
-#else
-    static_cast<NativeWidgetGtk*>(GetWidget()->native_widget())->SetOpacity(
-        opacity);
-#endif
+    GetWidget()->SetOpacity(animation->GetCurrentValue() * 255);
     SchedulePaint();
   }
 }
