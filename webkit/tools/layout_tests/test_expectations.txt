@@ -7,6 +7,6 @@
 
 // PLEASE DO NOT LEAVE ENTRIES IN THIS FILE FOR MORE THAN 24 HRS.
 
-// TODO(mihaip): remove after next WebKit roll
-BUGWK68895 SNOWLEOPARD GPU : fast/canvas/canvas-composite-transformclip.html = IMAGE
-BUGWK68895 SNOWLEOPARD GPU : fast/canvas/canvas-composite.html = IMAGE
+// rebaseline after skia rev. 2351 lands
+BUG_BSALOMON WIN MAC LINUX GPU: fast/canvas/canvas-composite-transformclip.html = IMAGE
+BUG_BSALOMON WIN MAC LINUX GPU: fast/canvas/canvas-composite.html = IMAGE
