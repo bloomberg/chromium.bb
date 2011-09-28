@@ -119,10 +119,8 @@
         <include name="IDR_ABOUT_SYS_HTML" file="resources\about_sys.html" flattenhtml="true" type="BINDATA" />
         <include name="IDR_ACTIVE_DOWNLOADS_HTML" file="resources\active_downloads.html" flattenhtml="true" type="BINDATA" />
         <include name="IDR_CHOOSE_MOBILE_NETWORK_HTML" file="resources\chromeos\choose_mobile_network.html" flattenhtml="true" type="BINDATA" />
-        <include name="IDR_COLLECTED_COOKIES_HTML" file="resources\collected_cookies.html" flattenhtml="true" type="BINDATA" />
         <include name="IDR_GUEST_SESSION_TAB_HTML" file="resources\guest_session_tab.html" flattenhtml="true" type="BINDATA" />
         <include name="IDR_HOST_REGISTRATION_PAGE_HTML" file="resources\host_registration_page.html" flattenhtml="true" type="BINDATA" />
-        <include name="IDR_HTTP_AUTH_HTML" file="resources\http_auth.html" flattenhtml="true" type="BINDATA" />
         <include name="IDR_IMAGEBURNER_HTML" file="resources\image_burner.html" flattenhtml="true" type="BINDATA" />
         <include name="IDR_KEYBOARD_OVERLAY_CSS" file="resources\keyboard_overlay.css" flattenhtml="true" type="BINDATA" />
         <include name="IDR_KEYBOARD_OVERLAY_DATA_JS" file="resources\keyboard_overlay_data.js" flattenhtml="true" type="BINDATA" />
@@ -139,7 +137,6 @@
         <include name="IDR_OOBE_HTML" file="resources\chromeos\login\oobe.html" flattenhtml="true" type="BINDATA" />
         <include name="IDR_OS_CREDITS_HTML" file="resources\about_os_credits.html" flattenhtml="true" type="BINDATA" />
         <include name="IDR_PROXY_SETTINGS_HTML" file="resources\chromeos\proxy_settings.html" flattenhtml="true" type="BINDATA" />
-        <include name="IDR_REPOST_FORM_WARNING_HTML" file="resources\repost_form_warning.html" flattenhtml="true" type="BINDATA" />
         <include name="IDR_SIM_UNLOCK_HTML" file="resources\chromeos\sim_unlock.html" flattenhtml="true" type="BINDATA" />
         <include name="IDR_WRENCH_MENU_CSS" file="resources\wrench_menu.css" flattenhtml="true" type="BINDATA" />
         <include name="IDR_WRENCH_MENU_JS" file="resources\wrench_menu.js" flattenhtml="true" type="BINDATA" />
@@ -152,6 +149,11 @@
       </if>
       <if expr="pp_ifdef('file_manager_extension')">
         <include name="IDR_FILEMANAGER_MANIFEST" file="resources\file_manager\manifest.json" type="BINDATA" />
+      </if>
+      <if expr="pp_ifdef('chromeos') or pp_ifdef('touchui')">
+        <include name="IDR_COLLECTED_COOKIES_HTML" file="resources\collected_cookies.html" flattenhtml="true" type="BINDATA" />
+        <include name="IDR_HTTP_AUTH_HTML" file="resources\http_auth.html" flattenhtml="true" type="BINDATA" />
+        <include name="IDR_REPOST_FORM_WARNING_HTML" file="resources\repost_form_warning.html" flattenhtml="true" type="BINDATA" />
       </if>
       <if expr="pp_ifdef('chromeos') and pp_ifdef('_google_chrome')">
         <include name="IDR_HELP_MANIFEST" file="resources\help_app\manifest.json" type="BINDATA" />

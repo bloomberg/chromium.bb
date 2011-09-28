@@ -69,10 +69,8 @@ extern const char kChromeUIWorkersURL[];
 extern const char kChromeUIActivationMessage[];
 extern const char kChromeUIActiveDownloadsURL[];
 extern const char kChromeUIChooseMobileNetworkURL[];
-extern const char kChromeUICollectedCookiesURL[];
 extern const char kChromeUIDiscardsURL[];
 extern const char kChromeUIEnterpriseEnrollmentURL[];
-extern const char kChromeUIHttpAuthURL[];
 extern const char kChromeUIImageBurnerURL[];
 extern const char kChromeUIKeyboardOverlayURL[];
 extern const char kChromeUIMediaplayerURL[];
@@ -81,7 +79,6 @@ extern const char kChromeUIOSCreditsURL[];
 extern const char kChromeUIOobeURL[];
 extern const char kChromeUIProxySettingsURL[];
 extern const char kChromeUIRegisterPageURL[];
-extern const char kChromeUIRepostFormWarningURL[];
 extern const char kChromeUISimUnlockURL[];
 extern const char kChromeUISlideshowURL[];
 extern const char kChromeUISystemInfoURL[];
@@ -91,6 +88,12 @@ extern const char kChromeUIUserImageURL[];
 
 #if defined(FILE_MANAGER_EXTENSION)
 extern const char kChromeUIFileManagerURL[];
+#endif
+
+#if defined(OS_CHROMEOS) || defined(TOUCH_UI)
+extern const char kChromeUICollectedCookiesURL[];
+extern const char kChromeUIHttpAuthURL[];
+extern const char kChromeUIRepostFormWarningURL[];
 #endif
 
 // chrome components of URLs. Should be kept in sync with the full URLs above.
@@ -174,11 +177,9 @@ extern const char kChromeUISandboxHost[];
 extern const char kChromeUIActivationMessageHost[];
 extern const char kChromeUIActiveDownloadsHost[];
 extern const char kChromeUIChooseMobileNetworkHost[];
-extern const char kChromeUICollectedCookiesHost[];
 extern const char kChromeUICryptohomeHost[];
 extern const char kChromeUIDiscardsHost[];
 extern const char kChromeUIEnterpriseEnrollmentHost[];
-extern const char kChromeUIHttpAuthHost[];
 extern const char kChromeUIImageBurnerHost[];
 extern const char kChromeUIKeyboardOverlayHost[];
 extern const char kChromeUILoginContainerHost[];
@@ -190,7 +191,6 @@ extern const char kChromeUIOSCreditsHost[];
 extern const char kChromeUIOobeHost[];
 extern const char kChromeUIProxySettingsHost[];
 extern const char kChromeUIRegisterPageHost[];
-extern const char kChromeUIRepostFormWarningHost[];
 extern const char kChromeUIRotateHost[];
 extern const char kChromeUISimUnlockHost[];
 extern const char kChromeUISlideshowHost[];
@@ -207,6 +207,12 @@ extern const char kOemEulaURLPath[];
 
 #if defined(FILE_MANAGER_EXTENSION)
 extern const char kChromeUIFileManagerHost[];
+#endif
+
+#if defined(OS_CHROMEOS) || defined(TOUCH_UI)
+extern const char kChromeUICollectedCookiesHost[];
+extern const char kChromeUIHttpAuthHost[];
+extern const char kChromeUIRepostFormWarningHost[];
 #endif
 
 // Options sub-pages.

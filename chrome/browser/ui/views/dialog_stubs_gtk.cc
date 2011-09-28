@@ -17,7 +17,7 @@
 #include "chrome/browser/ui/gtk/task_manager_gtk.h"
 #endif
 
-#if !defined(OS_CHROMEOS)
+#if !defined(OS_CHROMEOS) && !defined(TOUCH_UI)
 #include "chrome/browser/ui/gtk/collected_cookies_gtk.h"
 #include "chrome/browser/ui/gtk/repost_form_warning_gtk.h"
 #endif
@@ -41,7 +41,7 @@ void EditSearchEngine(gfx::NativeWindow parent,
   new EditSearchEngineDialog(GTK_WINDOW(parent), template_url, NULL, profile);
 }
 
-#if !defined(OS_CHROMEOS)
+#if !defined(OS_CHROMEOS) && !defined(TOUCH_UI)
 void ShowRepostFormWarningDialog(gfx::NativeWindow parent_window,
                                  TabContents* tab_contents) {
   new RepostFormWarningGtk(GTK_WINDOW(parent_window), tab_contents);

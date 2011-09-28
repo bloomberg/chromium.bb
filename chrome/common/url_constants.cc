@@ -68,11 +68,9 @@ const char kChromeUIActivationMessage[] = "chrome://activationmessage/";
 const char kChromeUIActiveDownloadsURL[] = "chrome://active-downloads/";
 const char kChromeUIChooseMobileNetworkURL[] =
     "chrome://choose-mobile-network/";
-const char kChromeUICollectedCookiesURL[] = "chrome://collected-cookies/";
 const char kChromeUIDiscardsURL[] = "chrome://discards/";
 const char kChromeUIEnterpriseEnrollmentURL[] =
     "chrome://enterprise-enrollment/";
-const char kChromeUIHttpAuthURL[] = "chrome://http-auth/";
 const char kChromeUIImageBurnerURL[] = "chrome://imageburner/";
 const char kChromeUIKeyboardOverlayURL[] = "chrome://keyboardoverlay/";
 const char kChromeUIMediaplayerURL[] = "chrome://mediaplayer/";
@@ -81,7 +79,6 @@ const char kChromeUIOSCreditsURL[] = "chrome://os-credits/";
 const char kChromeUIOobeURL[] = "chrome://oobe/";
 const char kChromeUIProxySettingsURL[] = "chrome://proxy-settings/";
 const char kChromeUIRegisterPageURL[] = "chrome://register/";
-const char kChromeUIRepostFormWarningURL[] = "chrome://repost-form-warning/";
 const char kChromeUISimUnlockURL[] = "chrome://sim-unlock/";
 const char kChromeUISlideshowURL[] = "chrome://slideshow/";
 const char kChromeUISystemInfoURL[] = "chrome://system/";
@@ -91,6 +88,12 @@ const char kChromeUIUserImageURL[] = "chrome://userimage/";
 
 #if defined(FILE_MANAGER_EXTENSION)
 const char kChromeUIFileManagerURL[] = "chrome://files/";
+#endif
+
+#if defined(OS_CHROMEOS) || defined(TOUCH_UI)
+const char kChromeUICollectedCookiesURL[] = "chrome://collected-cookies/";
+const char kChromeUIHttpAuthURL[] = "chrome://http-auth/";
+const char kChromeUIRepostFormWarningURL[] = "chrome://repost-form-warning/";
 #endif
 
 // Add Chrome UI hosts here, in alphabetical order.
@@ -176,11 +179,9 @@ const char kChromeUISandboxHost[] = "sandbox";
 const char kChromeUIActivationMessageHost[] = "activationmessage";
 const char kChromeUIActiveDownloadsHost[] = "active-downloads";
 const char kChromeUIChooseMobileNetworkHost[] = "choose-mobile-network";
-const char kChromeUICollectedCookiesHost[] = "collected-cookies";
 const char kChromeUICryptohomeHost[] = "cryptohome";
 const char kChromeUIDiscardsHost[] = "discards";
 const char kChromeUIEnterpriseEnrollmentHost[] = "enterprise-enrollment";
-const char kChromeUIHttpAuthHost[] = "http-auth";
 const char kChromeUIImageBurnerHost[] = "imageburner";
 const char kChromeUIKeyboardOverlayHost[] = "keyboardoverlay";
 const char kChromeUILoginContainerHost[] = "login-container";
@@ -192,7 +193,6 @@ const char kChromeUIOSCreditsHost[] = "os-credits";
 const char kChromeUIOobeHost[] = "oobe";
 const char kChromeUIProxySettingsHost[] = "proxy-settings";
 const char kChromeUIRegisterPageHost[] = "register";
-const char kChromeUIRepostFormWarningHost[] = "repost-form-warning";
 const char kChromeUIRotateHost[] = "rotate";
 const char kChromeUISlideshowHost[] = "slideshow";
 const char kChromeUISimUnlockHost[] = "sim-unlock";
@@ -209,6 +209,12 @@ const char kOemEulaURLPath[] = "oem";
 
 #if defined(FILE_MANAGER_EXTENSION)
 const char kChromeUIFileManagerHost[] = "files";
+#endif
+
+#if defined(OS_CHROMEOS) || defined(TOUCH_UI)
+const char kChromeUICollectedCookiesHost[] = "collected-cookies";
+const char kChromeUIHttpAuthHost[] = "http-auth";
+const char kChromeUIRepostFormWarningHost[] = "repost-form-warning";
 #endif
 
 // Option sub pages.

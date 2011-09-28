@@ -207,11 +207,6 @@ static WebUIFactoryFunction GetWebUIFactoryFunction(Profile* profile,
 #if defined(OS_CHROMEOS)
   if (url.host() == chrome::kChromeUIChooseMobileNetworkHost)
     return &NewWebUI<chromeos::ChooseMobileNetworkUI>;
-  if (url.host() == chrome::kChromeUICollectedCookiesHost ||
-      url.host() == chrome::kChromeUIHttpAuthHost ||
-      url.host() == chrome::kChromeUIRepostFormWarningHost) {
-    return &NewWebUI<ConstrainedHtmlUI>;
-  }
   if (url.host() == chrome::kChromeUIActiveDownloadsHost)
     return &NewWebUI<ActiveDownloadsUI>;
   if (url.host() == chrome::kChromeUIImageBurnerHost)
@@ -233,6 +228,14 @@ static WebUIFactoryFunction GetWebUIFactoryFunction(Profile* profile,
   if (url.host() == chrome::kChromeUIEnterpriseEnrollmentHost)
     return &NewWebUI<chromeos::EnterpriseEnrollmentUI>;
 #endif  // defined(OS_CHROMEOS)
+
+#if defined(OS_CHROMEOS) || defined(TOUCH_UI)
+  if (url.host() == chrome::kChromeUICollectedCookiesHost ||
+      url.host() == chrome::kChromeUIHttpAuthHost ||
+      url.host() == chrome::kChromeUIRepostFormWarningHost) {
+    return &NewWebUI<ConstrainedHtmlUI>;
+  }
+#endif
 
   if (url.host() == chrome::kChromeUIPrintHost &&
       switches::IsPrintPreviewEnabled()) {

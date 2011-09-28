@@ -969,6 +969,14 @@ bool RenderWidgetHostViewViews::IsReadyToPaint() {
         GetWidget();
   } else {
     top = GetWidget() ? GetWidget()->GetTopLevelWidget() : NULL;
+    // The conversion of the Widget to NativeView and back again
+    // ensures that the result is backed by a NativeWidgetGtk (and not
+    // a NativeWidgetViews, for example) so the subsequent cast is
+    // valid.
+    top = GetWidget() ?
+        views::Widget::GetWidgetForNativeView(
+            GetWidget()->GetTopLevelWidget()->GetNativeView()) :
+        NULL;
   }
 
   return top ?

@@ -6,10 +6,12 @@
 
 #include <algorithm>
 
+#include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/tab_contents/tab_contents_view_views.h"
 #include "chrome/browser/ui/window_sizer.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -29,11 +31,16 @@
 #include "ui/gfx/rect.h"
 #include "views/controls/button/image_button.h"
 #include "views/focus/focus_manager.h"
+#include "views/views_delegate.h"
 #include "views/widget/widget.h"
 #include "views/window/client_view.h"
 #include "views/window/non_client_view.h"
 #include "views/window/window_resources.h"
 #include "views/window/window_shape.h"
+
+#if defined(OS_LINUX)
+#include "views/window/hit_test.h"
+#endif
 
 #if defined(OS_WIN) && !defined(USE_AURA)
 #include "views/widget/native_widget_win.h"
@@ -228,12 +235,12 @@ class ConstrainedWindowFrameView
   static void InitClass();
 
   // The font to be used to render the titlebar text.
-  static gfx::Font* title_font_;
+  static const gfx::Font* title_font_;
 
   DISALLOW_COPY_AND_ASSIGN(ConstrainedWindowFrameView);
 };
 
-gfx::Font* ConstrainedWindowFrameView::title_font_ = NULL;
+const gfx::Font* ConstrainedWindowFrameView::title_font_ = NULL;
 
 namespace {
 // The frame border is only visible in restored mode and is hardcoded to 4 px on
@@ -400,7 +407,7 @@ int ConstrainedWindowFrameView::IconSize() const {
   // size are increased.
   return GetSystemMetrics(SM_CYSMICON);
 #else
-  return std::max(title_font_->height(), kIconMinimumSize);
+  return std::max(title_font_->GetHeight(), kIconMinimumSize);
 #endif
 }
 
@@ -489,7 +496,7 @@ void ConstrainedWindowFrameView::PaintFrameBorder(gfx::Canvas* canvas) {
 
 void ConstrainedWindowFrameView::PaintTitleBar(gfx::Canvas* canvas) {
   canvas->DrawStringInt(
-      container_->widget_delegate()->GetWindowTitle(),
+      WideToUTF16Hack(container_->widget_delegate()->GetWindowTitle()),
       *title_font_, GetTitleColor(), GetMirroredXForRect(title_bounds_),
       title_bounds_.y(), title_bounds_.width(), title_bounds_.height());
 }
@@ -546,9 +553,16 @@ gfx::Rect ConstrainedWindowFrameView::CalculateClientAreaBounds(
 
 void ConstrainedWindowFrameView::InitWindowResources() {
 #if !defined(USE_AURA)
+
+#if defined(OS_WIN)
   resources_.reset(views::NativeWidgetWin::IsAeroGlassEnabled() ?
       static_cast<views::WindowResources*>(new VistaWindowResources) :
       new XPWindowResources);
+#else
+  // TODO(rhashimoto): Use non-Windows frame decoration.
+  resources_.reset(new XPWindowResources);
+#endif
+
 #endif
 }
 
@@ -562,6 +576,9 @@ void ConstrainedWindowFrameView::InitClass() {
     // TODO(beng):
     NOTIMPLEMENTED();
     title_font_ = NULL;
+#else
+    ResourceBundle& resources = ResourceBundle::GetSharedInstance();
+    title_font_ = &resources.GetFont(ResourceBundle::MediumFont);
 #endif
     initialized = true;
   }
@@ -578,9 +595,24 @@ ConstrainedWindowViews::ConstrainedWindowViews(
           NativeConstrainedWindow::CreateNativeConstrainedWindow(this))) {
   views::Widget::InitParams params;
   params.delegate = widget_delegate;
-  params.child = true;
-  params.parent = owner->GetNativeView();
   params.native_widget = native_constrained_window_->AsNativeWidget();
+
+  if (views::Widget::IsPureViews()) {
+    if (views::ViewsDelegate::views_delegate &&
+        views::ViewsDelegate::views_delegate->GetDefaultParentView()) {
+      // Don't set parent so that constrained window is attached to
+      // desktop. This is necessary for key events to work under views desktop
+      // because key events need to be sent to toplevel window
+      // which has an inputmethod object that knows where to forward
+      // event.
+    } else {
+      params.parent_widget = static_cast<TabContentsViewViews*>(owner->view());
+    }
+  } else {
+    params.child = true;
+    params.parent = owner->GetNativeView();
+  }
+
   Init(params);
   owner->AddConstrainedDialog(this);
 }
@@ -602,6 +634,7 @@ void ConstrainedWindowViews::ShowConstrainedWindow() {
 }
 
 void ConstrainedWindowViews::CloseConstrainedWindow() {
+  owner_->WillClose(this);
   Close();
 }
 
