@@ -1316,8 +1316,7 @@
     ['OS=="win"',
       { 'targets': [
         {
-          # TODO(sgk):  remove this when we change the buildbots to
-          # use the generated build\all.sln file to build the world.
+          # This target pulls in other binary targets into chrome.sln.
           'target_name': 'pull_in_all',
           'type': 'none',
           'dependencies': [
@@ -1325,31 +1324,29 @@
             'installer/installer_tools.gyp:*',
             'installer/upgrade_test.gyp:*',
             '../base/base.gyp:*',
+            '../breakpad/breakpad.gyp:*',
+            '../build/temp_gyp/googleurl.gyp:*',
             '../chrome_frame/chrome_frame.gyp:*',
             '../content/content.gyp:*',
+            '../courgette/courgette.gyp:*',
             '../ipc/ipc.gyp:*',
             '../media/media.gyp:*',
             '../net/net.gyp:*',
             '../ppapi/ppapi.gyp:*',
             '../ppapi/ppapi_internal.gyp:*',
             '../printing/printing.gyp:*',
+            '../rlz/rlz.gyp:*',
+            '../sandbox/sandbox.gyp:*',
             '../sdch/sdch.gyp:*',
             '../skia/skia.gyp:*',
             '../sql/sql.gyp:*',
             '../testing/gmock.gyp:*',
             '../testing/gtest.gyp:*',
+            '../tools/memory_watcher/memory_watcher.gyp:*',
             '../ui/ui.gyp:*',
+            '../v8/tools/gyp/v8.gyp:v8_shell',
             '../webkit/support/webkit_support.gyp:*',
             '../webkit/webkit.gyp:*',
-
-            '../build/temp_gyp/googleurl.gyp:*',
-
-            '../breakpad/breakpad.gyp:*',
-            '../courgette/courgette.gyp:*',
-            '../rlz/rlz.gyp:*',
-            '../sandbox/sandbox.gyp:*',
-            '../tools/memory_watcher/memory_watcher.gyp:*',
-            '../v8/tools/gyp/v8.gyp:v8_shell',
             '<(libjpeg_gyp_path):*',
           ],
           'conditions': [
