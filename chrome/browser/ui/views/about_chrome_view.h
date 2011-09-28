@@ -66,7 +66,7 @@ class AboutChromeView : public views::DialogDelegateView,
   virtual bool CanResize() const OVERRIDE;
   virtual bool CanMaximize() const OVERRIDE;
   virtual bool IsModal() const OVERRIDE;
-  virtual std::wstring GetWindowTitle() const OVERRIDE;
+  virtual string16 GetWindowTitle() const OVERRIDE;
   virtual bool Accept() OVERRIDE;
   virtual views::View* GetContentsView() OVERRIDE;
 

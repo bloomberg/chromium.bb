@@ -37,8 +37,8 @@ void ToplevelWindow::OnPaint(gfx::Canvas* canvas) {
   canvas->FillRectInt(SK_ColorDKGRAY, 0, 0, width(), height());
 }
 
-std::wstring ToplevelWindow::GetWindowTitle() const {
-  return L"Examples: Toplevel Window";
+string16 ToplevelWindow::GetWindowTitle() const {
+  return ASCIIToUTF16("Examples: Toplevel Window");
 }
 
 views::View* ToplevelWindow::GetContentsView() {

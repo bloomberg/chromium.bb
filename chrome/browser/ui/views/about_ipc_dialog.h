@@ -45,20 +45,21 @@ class AboutIPCDialog : public views::DialogDelegateView,
   void SetupControls();
 
   // views::View overrides.
-  virtual gfx::Size GetPreferredSize();
-  virtual views::View* GetContentsView();
-  virtual int GetDialogButtons() const;
-  virtual std::wstring GetWindowTitle() const;
-  virtual void Layout();
+  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual views::View* GetContentsView() OVERRIDE;
+  virtual int GetDialogButtons() const OVERRIDE;
+  virtual string16 GetWindowTitle() const OVERRIDE;
+  virtual void Layout() OVERRIDE;
 
   // IPC::Logging::Consumer implementation.
-  virtual void Log(const IPC::LogData& data);
+  virtual void Log(const IPC::LogData& data) OVERRIDE;
 
   // views::WidgetDelegate (via views::DialogDelegateView).
-  virtual bool CanResize() const;
+  virtual bool CanResize() const OVERRIDE;
 
   // views::ButtonListener.
-  virtual void ButtonPressed(views::Button* button, const views::Event& event);
+  virtual void ButtonPressed(views::Button* button,
+                             const views::Event& event) OVERRIDE;
 
   WTL::CListViewCtrl message_list_;
 

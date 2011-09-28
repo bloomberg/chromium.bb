@@ -98,10 +98,10 @@ bool HtmlDialogView::IsModal() const {
   return false;
 }
 
-std::wstring HtmlDialogView::GetWindowTitle() const {
+string16 HtmlDialogView::GetWindowTitle() const {
   if (delegate_)
-    return UTF16ToWideHack(delegate_->GetDialogTitle());
-  return std::wstring();
+    return delegate_->GetDialogTitle();
+  return string16();
 }
 
 void HtmlDialogView::WindowClosing() {
@@ -140,7 +140,7 @@ bool HtmlDialogView::IsDialogModal() const {
 }
 
 string16 HtmlDialogView::GetDialogTitle() const {
-  return WideToUTF16Hack(GetWindowTitle());
+  return GetWindowTitle();
 }
 
 GURL HtmlDialogView::GetDialogContentURL() const {

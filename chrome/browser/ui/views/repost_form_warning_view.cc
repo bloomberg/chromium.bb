@@ -47,8 +47,8 @@ RepostFormWarningView::~RepostFormWarningView() {
 //////////////////////////////////////////////////////////////////////////////
 // RepostFormWarningView, views::DialogDelegate implementation:
 
-std::wstring RepostFormWarningView::GetWindowTitle() const {
-  return UTF16ToWide(l10n_util::GetStringUTF16(IDS_HTTP_POST_WARNING_TITLE));
+string16 RepostFormWarningView::GetWindowTitle() const {
+  return l10n_util::GetStringUTF16(IDS_HTTP_POST_WARNING_TITLE);
 }
 
 std::wstring RepostFormWarningView::GetDialogButtonLabel(

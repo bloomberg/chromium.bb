@@ -4,6 +4,7 @@
 
 #include "views/widget/widget_delegate.h"
 
+#include "base/utf_string_conversions.h"
 #include "views/view.h"
 #include "views/views_delegate.h"
 #include "views/widget/widget.h"
@@ -63,12 +64,12 @@ ui::AccessibilityTypes::State WidgetDelegate::GetAccessibleWindowState() const {
   return 0;
 }
 
-std::wstring WidgetDelegate::GetAccessibleWindowTitle() const {
+string16 WidgetDelegate::GetAccessibleWindowTitle() const {
   return GetWindowTitle();
 }
 
-std::wstring WidgetDelegate::GetWindowTitle() const {
-  return L"";
+string16 WidgetDelegate::GetWindowTitle() const {
+  return string16();
 }
 
 bool WidgetDelegate::ShouldShowWindowTitle() const {

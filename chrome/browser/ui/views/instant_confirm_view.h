@@ -21,13 +21,13 @@ class InstantConfirmView : public views::DialogDelegateView,
   explicit InstantConfirmView(Profile* profile);
 
   // views::DialogDelegate overrides:
-  virtual bool Accept(bool window_closing);
-  virtual bool Accept();
-  virtual bool Cancel();
-  virtual views::View* GetContentsView();
-  virtual std::wstring GetWindowTitle() const;
-  virtual gfx::Size GetPreferredSize();
-  virtual bool IsModal() const;
+  virtual bool Accept(bool window_closing) OVERRIDE;
+  virtual bool Accept() OVERRIDE;
+  virtual bool Cancel() OVERRIDE;
+  virtual views::View* GetContentsView() OVERRIDE;
+  virtual string16 GetWindowTitle() const OVERRIDE;
+  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual bool IsModal() const OVERRIDE;
 
   // views::LinkListener overrides:
   virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;

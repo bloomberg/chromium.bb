@@ -235,7 +235,7 @@ class HungRendererDialogView : public views::DialogDelegateView,
   void EndForTabContents(TabContents* contents);
 
   // views::DialogDelegateView overrides:
-  virtual std::wstring GetWindowTitle() const OVERRIDE;
+  virtual string16 GetWindowTitle() const OVERRIDE;
   virtual void WindowClosing() OVERRIDE;
   virtual int GetDialogButtons() const OVERRIDE;
   virtual std::wstring GetDialogButtonLabel(
@@ -367,9 +367,8 @@ void HungRendererDialogView::EndForTabContents(TabContents* contents) {
 ///////////////////////////////////////////////////////////////////////////////
 // HungRendererDialogView, views::DialogDelegate implementation:
 
-std::wstring HungRendererDialogView::GetWindowTitle() const {
-  return UTF16ToWide(
-      l10n_util::GetStringUTF16(IDS_BROWSER_HANGMONITOR_RENDERER_TITLE));
+string16 HungRendererDialogView::GetWindowTitle() const {
+  return l10n_util::GetStringUTF16(IDS_BROWSER_HANGMONITOR_RENDERER_TITLE);
 }
 
 void HungRendererDialogView::WindowClosing() {

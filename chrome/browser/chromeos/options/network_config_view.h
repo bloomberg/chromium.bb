@@ -6,6 +6,9 @@
 #define CHROME_BROWSER_CHROMEOS_OPTIONS_NETWORK_CONFIG_VIEW_H_
 #pragma once
 
+#include <string>
+
+#include "base/string16.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "ui/gfx/native_widget_types.h"  // gfx::NativeWindow
 #include "views/controls/button/button.h"  // views::ButtonListener
@@ -57,7 +60,7 @@ class NetworkConfigView : public views::DialogDelegateView,
   // views::WidgetDelegate methods.
   virtual bool IsModal() const OVERRIDE;
   virtual views::View* GetContentsView() OVERRIDE;
-  virtual std::wstring GetWindowTitle() const OVERRIDE;
+  virtual string16 GetWindowTitle() const OVERRIDE;
 
   // views::View overrides.
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;

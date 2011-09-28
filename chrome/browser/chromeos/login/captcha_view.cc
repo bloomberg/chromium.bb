@@ -96,8 +96,8 @@ views::View* CaptchaView::GetContentsView() {
   return this;
 }
 
-std::wstring CaptchaView::GetWindowTitle() const {
-  return UTF16ToWide(l10n_util::GetStringUTF16(IDS_LOGIN_CAPTCHA_DIALOG_TITLE));
+string16 CaptchaView::GetWindowTitle() const {
+  return l10n_util::GetStringUTF16(IDS_LOGIN_CAPTCHA_DIALOG_TITLE);
 }
 
 void CaptchaView::SetCaptchaURL(const GURL& captcha_url) {

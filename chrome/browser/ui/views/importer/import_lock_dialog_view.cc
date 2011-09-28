@@ -78,8 +78,8 @@ bool ImportLockDialogView::IsModal() const {
   return false;
 }
 
-std::wstring ImportLockDialogView::GetWindowTitle() const {
-  return UTF16ToWide(l10n_util::GetStringUTF16(IDS_IMPORTER_LOCK_TITLE));
+string16 ImportLockDialogView::GetWindowTitle() const {
+  return l10n_util::GetStringUTF16(IDS_IMPORTER_LOCK_TITLE);
 }
 
 bool ImportLockDialogView::Accept() {

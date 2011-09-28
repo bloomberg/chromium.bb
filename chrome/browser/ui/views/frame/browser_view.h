@@ -362,8 +362,8 @@ class BrowserView : public BrowserBubbleHost,
   virtual bool CanMaximize() const OVERRIDE;
   virtual bool CanActivate() const OVERRIDE;
   virtual bool IsModal() const OVERRIDE;
-  virtual std::wstring GetWindowTitle() const OVERRIDE;
-  virtual std::wstring GetAccessibleWindowTitle() const OVERRIDE;
+  virtual string16 GetWindowTitle() const OVERRIDE;
+  virtual string16 GetAccessibleWindowTitle() const OVERRIDE;
   virtual views::View* GetInitiallyFocusedView() OVERRIDE;
   virtual bool ShouldShowWindowTitle() const OVERRIDE;
   virtual SkBitmap GetWindowAppIcon() OVERRIDE;

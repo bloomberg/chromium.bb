@@ -61,8 +61,8 @@ views::View* InstantConfirmView::GetContentsView() {
   return this;
 }
 
-std::wstring InstantConfirmView::GetWindowTitle() const {
-  return UTF16ToWide(l10n_util::GetStringUTF16(IDS_INSTANT_OPT_IN_TITLE));
+string16 InstantConfirmView::GetWindowTitle() const {
+  return l10n_util::GetStringUTF16(IDS_INSTANT_OPT_IN_TITLE);
 }
 
 gfx::Size InstantConfirmView::GetPreferredSize() {
