@@ -1,13 +1,13 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome/browser/ui/cocoa/rwhvm_editcommand_helper.h"
+#import "content/browser/renderer_host/render_widget_host_view_mac_editcommand_helper.h"
 
 #import <objc/runtime.h>
 
-#import "chrome/browser/renderer_host/render_widget_host_view_mac.h"
 #include "content/browser/renderer_host/render_widget_host.h"
+#import "content/browser/renderer_host/render_widget_host_view_mac.h"
 
 namespace {
 // The names of all the objc selectors w/o ':'s added to an object by
@@ -109,7 +109,7 @@ const char* kEditCommands[] = {
 // This function is installed via the objc runtime as the implementation of all
 // the various editing selectors.
 // The objc runtime hookup occurs in
-// RWHVMEditCommandHelper::AddEditingSelectorsToClass().
+// RenderWidgetHostViewMacEditCommandHelper::AddEditingSelectorsToClass().
 //
 // self - the object we're attached to; it must implement the
 // RenderWidgetHostViewMacOwner protocol.
@@ -129,7 +129,7 @@ void EditCommandImp(id self, SEL _cmd, id sender) {
 
   // SEL -> command name string.
   NSString* command_name_ns =
-      RWHVMEditCommandHelper::CommandNameForSelector(_cmd);
+      RenderWidgetHostViewMacEditCommandHelper::CommandNameForSelector(_cmd);
   std::string command([command_name_ns UTF8String]);
 
   // Forward the edit command string down the pipeline.
@@ -153,7 +153,8 @@ void EditCommandImp(id self, SEL _cmd, id sender) {
 // WebKit/mac/WebView/WebHTMLView.mm .
 // Capitalized names are returned from this function, but that's simply
 // matching WebHTMLView.mm.
-NSString* RWHVMEditCommandHelper::CommandNameForSelector(SEL selector) {
+NSString* RenderWidgetHostViewMacEditCommandHelper::CommandNameForSelector(
+    SEL selector) {
   if (selector == @selector(insertParagraphSeparator:) ||
       selector == @selector(insertNewlineIgnoringFieldEditor:))
     return @"InsertNewline";
@@ -174,16 +175,19 @@ NSString* RWHVMEditCommandHelper::CommandNameForSelector(SEL selector) {
   return [selector_str substringToIndex:selector_len - 1];
 }
 
-RWHVMEditCommandHelper::RWHVMEditCommandHelper() {
+RenderWidgetHostViewMacEditCommandHelper::
+    RenderWidgetHostViewMacEditCommandHelper() {
   for (size_t i = 0; i < arraysize(kEditCommands); ++i) {
     edit_command_set_.insert(kEditCommands[i]);
   }
 }
 
-RWHVMEditCommandHelper::~RWHVMEditCommandHelper() {}
+RenderWidgetHostViewMacEditCommandHelper::
+    ~RenderWidgetHostViewMacEditCommandHelper() {}
 
 // Dynamically adds Selectors to the aformentioned class.
-void RWHVMEditCommandHelper::AddEditingSelectorsToClass(Class klass) {
+void RenderWidgetHostViewMacEditCommandHelper::AddEditingSelectorsToClass(
+    Class klass) {
   for (size_t i = 0; i < arraysize(kEditCommands); ++i) {
     // Append trailing ':' to command name to get selector name.
     NSString* sel_str = [NSString stringWithFormat: @"%s:", kEditCommands[i]];
@@ -198,7 +202,8 @@ void RWHVMEditCommandHelper::AddEditingSelectorsToClass(Class klass) {
   }
 }
 
-bool RWHVMEditCommandHelper::IsMenuItemEnabled(SEL item_action,
+bool RenderWidgetHostViewMacEditCommandHelper::IsMenuItemEnabled(
+    SEL item_action,
     id<RenderWidgetHostViewMacOwner> owner) {
   const char* selector_name = sel_getName(item_action);
   // TODO(jeremy): The final form of this function will check state
@@ -218,7 +223,7 @@ bool RWHVMEditCommandHelper::IsMenuItemEnabled(SEL item_action,
   return ret;
 }
 
-NSArray* RWHVMEditCommandHelper::GetEditSelectorNames() {
+NSArray* RenderWidgetHostViewMacEditCommandHelper::GetEditSelectorNames() {
   size_t num_edit_commands = arraysize(kEditCommands);
   NSMutableArray* ret = [NSMutableArray arrayWithCapacity:num_edit_commands];
 

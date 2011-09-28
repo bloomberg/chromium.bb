@@ -293,6 +293,8 @@
     'browser/plugin_service.h',
     'browser/plugin_service_filter.h',
     'browser/quota_permission_context.h',
+    'browser/renderer_host/accelerated_plugin_view_mac.h',
+    'browser/renderer_host/accelerated_plugin_view_mac.mm',
     'browser/renderer_host/accelerated_surface_container_mac.cc',
     'browser/renderer_host/accelerated_surface_container_mac.h',
     'browser/renderer_host/accelerated_surface_container_manager_mac.cc',
@@ -402,7 +404,11 @@
     'browser/renderer_host/render_widget_host_view.h',
     'browser/renderer_host/render_widget_host_view_gtk.cc',
     'browser/renderer_host/render_widget_host_view_gtk.h',
+    'browser/renderer_host/render_widget_host_view_mac.h',
+    'browser/renderer_host/render_widget_host_view_mac.mm',
     'browser/renderer_host/render_widget_host_view_mac_delegate.h',
+    'browser/renderer_host/render_widget_host_view_mac_editcommand_helper.h',
+    'browser/renderer_host/render_widget_host_view_mac_editcommand_helper.mm',
     'browser/renderer_host/render_widget_host_view_win.cc',
     'browser/renderer_host/render_widget_host_view_win.h',
     'browser/renderer_host/resource_dispatcher_host.cc',
@@ -599,12 +605,20 @@
       'sources!': [
         'browser/power_save_blocker_stub.cc',
       ],
+      'sources': [
+        # Build necessary Mozilla sources
+        '../third_party/mozilla/ComplexTextInputPanel.h',
+        '../third_party/mozilla/ComplexTextInputPanel.mm',
+      ],
       'link_settings': {
         'mac_bundle_resources': [
           'browser/gpu.sb',
           'browser/worker.sb',
         ],
       },
+      'dependencies': [
+        'closure_blocks_leopard_compat',
+      ],
     }, { # OS!="mac"
       'dependencies': [
         '../sandbox/sandbox.gyp:sandbox',

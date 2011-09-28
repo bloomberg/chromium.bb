@@ -1,9 +1,9 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_COCOA_RWHVM_EDITCOMMAND_HELPER_H_
-#define CHROME_BROWSER_UI_COCOA_RWHVM_EDITCOMMAND_HELPER_H_
+#ifndef CONTENT_BROWSER_RENDERER_HOST_RENDER_WIDGET_HOST_VIEW_MAC_EDITCOMMAND_HELPER_H_
+#define CONTENT_BROWSER_RENDERER_HOST_RENDER_WIDGET_HOST_VIEW_MAC_EDITCOMMAND_HELPER_H_
 #pragma once
 
 #import <Cocoa/Cocoa.h>
@@ -11,11 +11,8 @@
 #include "base/basictypes.h"
 #include "base/hash_tables.h"
 #include "base/gtest_prod_util.h"
-#include "chrome/browser/renderer_host/render_widget_host_view_mac.h"
+#include "content/browser/renderer_host/render_widget_host_view_mac.h"
 
-// RenderWidgetHostViewMacEditCommandHelper is the real name of this class
-// but that's too long, so we use a shorter version.
-//
 // This class mimics the behavior of WebKit's WebView class in a way that makes
 // sense for Chrome.
 //
@@ -30,15 +27,15 @@
 // (note that this is not a misspelling of RenderWidgetHostViewMac, it's in
 //  fact a distinct object) When these selectors are called, the relevant
 // edit command is executed in WebCore.
-class RWHVMEditCommandHelper {
-   FRIEND_TEST_ALL_PREFIXES(RWHVMEditCommandHelperTest,
+class RenderWidgetHostViewMacEditCommandHelper {
+   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewMacEditCommandHelperTest,
                             TestAddEditingSelectorsToClass);
-   FRIEND_TEST_ALL_PREFIXES(RWHVMEditCommandHelperTest,
+   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewMacEditCommandHelperTest,
                             TestEditingCommandDelivery);
 
  public:
-  RWHVMEditCommandHelper();
-  ~RWHVMEditCommandHelper();
+  RenderWidgetHostViewMacEditCommandHelper();
+  ~RenderWidgetHostViewMacEditCommandHelper();
 
   // Adds editing selectors to the objc class using the objc runtime APIs.
   // Each selector is connected to a single c method which forwards the message
@@ -67,7 +64,7 @@ class RWHVMEditCommandHelper {
 
  private:
   base::hash_set<std::string> edit_command_set_;
-  DISALLOW_COPY_AND_ASSIGN(RWHVMEditCommandHelper);
+  DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewMacEditCommandHelper);
 };
 
-#endif  // CHROME_BROWSER_UI_COCOA_RWHVM_EDITCOMMAND_HELPER_H_
+#endif  // CONTENT_BROWSER_RENDERER_HOST_RENDER_WIDGET_HOST_VIEW_MAC_EDITCOMMAND_HELPER_H_
