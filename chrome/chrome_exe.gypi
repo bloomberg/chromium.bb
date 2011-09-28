@@ -89,7 +89,7 @@
             # -pie) once we have a fix for remote gdb and are able to
             # correctly get section header offsets for pie
             # executables. Currently -pie breaks remote debugging.
-            ['disable_pie==1', {
+            ['profiling==1 or disable_pie==1', {
               'ldflags': ['-nopie'],
             }, {
               # Building with -pie needs investigating on ARM.
