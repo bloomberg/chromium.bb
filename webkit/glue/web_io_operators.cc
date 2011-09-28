@@ -27,7 +27,7 @@ std::ostream& operator<<(std::ostream& out, const WebPoint& p) {
 }
 
 std::ostream& operator<<(std::ostream& out, const WebRect& p) {
-  return out << static_cast<gfx::Rect>(p);
+  return out << static_cast<gfx::Rect>(p).ToString();
 }
 
 }  // namespace WebKit

@@ -15,8 +15,7 @@
 #include <cairo.h>
 #endif
 
-#include <ostream>
-
+#include "base/stringprintf.h"
 #include "ui/gfx/insets.h"
 
 namespace {
@@ -53,6 +52,8 @@ Rect::Rect(const gfx::Size& size)
 Rect::Rect(const gfx::Point& origin, const gfx::Size& size)
     : origin_(origin), size_(size) {
 }
+
+Rect::~Rect() {}
 
 #if defined(OS_WIN)
 Rect::Rect(const RECT& r)
@@ -108,7 +109,6 @@ Rect& Rect::operator=(const cairo_rectangle_int_t& r) {
   return *this;
 }
 #endif
-
 
 void Rect::SetRect(int x, int y, int width, int height) {
   origin_.SetPoint(x, y);
@@ -273,8 +273,10 @@ bool Rect::SharesEdgeWith(const gfx::Rect& rect) const {
              (y() == rect.bottom() || bottom() == rect.y()));
 }
 
-std::ostream& operator<<(std::ostream& out, const gfx::Rect& r) {
-  return out << r.origin().ToString() << " " << r.size().ToString();
+std::string Rect::ToString() const {
+  return base::StringPrintf("%s %s",
+                            origin_.ToString().c_str(),
+                            size_.ToString().c_str());
 }
 
 }  // namespace gfx
