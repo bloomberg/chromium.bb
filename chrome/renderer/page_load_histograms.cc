@@ -19,6 +19,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPerformance.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebURLResponse.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 
 using base::Time;
@@ -100,6 +101,10 @@ void PageLoadHistograms::Dump(WebFrame* frame) {
   URLPattern::SchemeMasks scheme_type =
       GetSupportedSchemeType(frame->document().url());
   if (scheme_type == 0)
+    return;
+
+  // Ignore multipart requests.
+  if (frame->dataSource()->response().isMultipartPayload())
     return;
 
   NavigationState* navigation_state =
