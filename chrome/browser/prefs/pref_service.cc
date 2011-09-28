@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <string>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
@@ -100,7 +101,7 @@ class ReadErrorHandler : public PersistentPrefStore::ReadErrorDelegate {
 
       if (message_id) {
         BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-            NewRunnableFunction(&NotifyReadError, message_id));
+            base::Bind(&NotifyReadError, message_id));
       }
       UMA_HISTOGRAM_ENUMERATION("PrefService.ReadError", error,
                                 PersistentPrefStore::PREF_READ_ERROR_MAX_ENUM);
@@ -230,9 +231,9 @@ void PrefService::InitFromStorage(bool async) {
     // Guarantee that initialization happens after this function returned.
     MessageLoop::current()->PostTask(
         FROM_HERE,
-        NewRunnableMethod(user_pref_store_.get(),
-                          &PersistentPrefStore::ReadPrefsAsync,
-                          new ReadErrorHandler()));
+        base::Bind(&PersistentPrefStore::ReadPrefsAsync,
+                   user_pref_store_.get(),
+                   new ReadErrorHandler()));
   }
 }
 

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/prefs/pref_member.h"
 
+#include "base/bind.h"
 #include "base/message_loop.h"
 #include "chrome/browser/prefs/pref_value_store.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -41,8 +42,7 @@ class GetPrefValueCallback
   bool FetchValue() {
     if (!BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        NewRunnableMethod(this,
-                          &GetPrefValueCallback::GetPrefValueOnIOThread))) {
+        base::Bind(&GetPrefValueCallback::GetPrefValueOnIOThread, this))) {
       return false;
     }
     MessageLoop::current()->Run();

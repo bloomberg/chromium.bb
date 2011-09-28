@@ -4,6 +4,7 @@
 
 #include "chrome/browser/prefs/pref_member.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/value_conversions.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -101,9 +102,8 @@ void PrefMemberBase::Internal::UpdateValue(Value* v, bool is_managed) const {
   } else {
     bool rv = BrowserThread::PostTask(
         thread_id_, FROM_HERE,
-        NewRunnableMethod(this,
-                          &PrefMemberBase::Internal::UpdateValue,
-                          value.release(), is_managed));
+        base::Bind(&PrefMemberBase::Internal::UpdateValue, this,
+                   value.release(), is_managed));
     DCHECK(rv);
   }
 }
