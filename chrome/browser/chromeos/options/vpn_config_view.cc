@@ -704,6 +704,8 @@ bool VPNConfigView::IsUserCertValid() const {
 
 const std::string VPNConfigView::GetTextFromField(
     views::Textfield* textfield, bool trim_whitespace) const {
+  if (!textfield)
+    return std::string();
   std::string untrimmed = UTF16ToUTF8(textfield->text());
   if (!trim_whitespace)
     return untrimmed;
