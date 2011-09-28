@@ -283,6 +283,12 @@ class CONTENT_EXPORT URLFetcher {
   // Used by tests.
   const std::string& upload_data() const;
 
+  // Used by tests.
+  void set_was_fetched_via_proxy(bool flag);
+
+  // Used by tests.
+  void set_response_headers(scoped_refptr<net::HttpResponseHeaders> headers);
+
   virtual void SetResponseDestinationForTesting(ResponseDestinationType);
   virtual ResponseDestinationType GetResponseDestinationForTesting() const;
 

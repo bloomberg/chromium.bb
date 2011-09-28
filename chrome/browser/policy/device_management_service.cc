@@ -17,6 +17,7 @@
 #include "net/base/net_errors.h"
 #include "net/base/ssl_config_service_defaults.h"
 #include "net/http/http_network_layer.h"
+#include "net/http/http_response_headers.h"
 #include "net/proxy/proxy_service.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -26,6 +27,26 @@
 namespace policy {
 
 namespace {
+
+bool IsProxyError(const net::URLRequestStatus status) {
+  switch (status.error()) {
+    case net::ERR_PROXY_CONNECTION_FAILED:
+    case net::ERR_TUNNEL_CONNECTION_FAILED:
+    case net::ERR_PROXY_AUTH_UNSUPPORTED:
+    case net::ERR_HTTPS_PROXY_TUNNEL_RESPONSE:
+    case net::ERR_MANDATORY_PROXY_CONFIGURATION_FAILED:
+    case net::ERR_PROXY_CERTIFICATE_INVALID:
+    case net::ERR_SOCKS_CONNECTION_FAILED:
+    case net::ERR_SOCKS_CONNECTION_HOST_UNREACHABLE:
+      return true;
+  }
+  return false;
+}
+
+bool IsProtobufMimeType(const URLFetcher* source) {
+  return source->response_headers()->HasHeaderValue(
+      "content-type", "application/x-protobuffer");
+}
 
 // Custom request context implementation that allows to override the user agent,
 // amongst others. Wraps a baseline request context from which we reuse the
@@ -214,19 +235,25 @@ void DeviceManagementService::OnURLFetchComplete(
     // Retry the job if it failed due to a broken proxy, by bypassing the
     // proxy on the next try. Don't retry if this URLFetcher already bypassed
     // the proxy.
-    int error = status.error();
-    if (!status.is_success() &&
-        ((source->load_flags() & net::LOAD_BYPASS_PROXY) == 0) &&
-        (error == net::ERR_PROXY_CONNECTION_FAILED ||
-         error == net::ERR_TUNNEL_CONNECTION_FAILED ||
-         error == net::ERR_PROXY_AUTH_UNSUPPORTED ||
-         error == net::ERR_HTTPS_PROXY_TUNNEL_RESPONSE ||
-         error == net::ERR_MANDATORY_PROXY_CONFIGURATION_FAILED ||
-         error == net::ERR_PROXY_CERTIFICATE_INVALID ||
-         error == net::ERR_SOCKS_CONNECTION_FAILED ||
-         error == net::ERR_SOCKS_CONNECTION_HOST_UNREACHABLE)) {
-      LOG(WARNING) << "Proxy failed while contacting dmserver. Retrying "
-                   << "without using the proxy.";
+    bool retry = false;
+    if ((source->load_flags() & net::LOAD_BYPASS_PROXY) == 0) {
+      if (!status.is_success() && IsProxyError(status)) {
+        LOG(WARNING) << "Proxy failed while contacting dmserver.";
+        retry = true;
+      } else if (status.is_success() &&
+                 source->was_fetched_via_proxy() &&
+                 !IsProtobufMimeType(source)) {
+        // The proxy server can be misconfigured but pointing to an existing
+        // server that replies to requests. Try to recover if a successful
+        // request that went through a proxy returns an unexpected mime type.
+        LOG(WARNING) << "Got bad mime-type in response from dmserver that was "
+                     << "fetched via a proxy.";
+        retry = true;
+      }
+    }
+
+    if (retry) {
+      LOG(WARNING) << "Retrying dmserver request without using a proxy.";
       StartJob(job, true);
     } else {
       job->HandleResponse(status, response_code, cookies, data);

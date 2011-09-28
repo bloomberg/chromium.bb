@@ -1007,6 +1007,11 @@ net::HttpResponseHeaders* URLFetcher::response_headers() const {
   return core_->response_headers_;
 }
 
+void URLFetcher::set_response_headers(
+    scoped_refptr<net::HttpResponseHeaders> headers) {
+  core_->response_headers_ = headers;
+}
+
 // TODO(panayiotis): socket_address_ is written in the IO thread,
 // if this is accessed in the UI thread, this could result in a race.
 // Same for response_headers_ above and was_fetched_via_proxy_ below.
@@ -1016,6 +1021,10 @@ net::HostPortPair URLFetcher::socket_address() const {
 
 bool URLFetcher::was_fetched_via_proxy() const {
   return core_->was_fetched_via_proxy_;
+}
+
+void URLFetcher::set_was_fetched_via_proxy(bool flag) {
+  core_->was_fetched_via_proxy_ = flag;
 }
 
 void URLFetcher::Start() {

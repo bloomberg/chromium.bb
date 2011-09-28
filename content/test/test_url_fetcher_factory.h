@@ -96,6 +96,10 @@ class TestURLFetcher : public URLFetcher {
   }
   virtual int response_code() const OVERRIDE;
 
+  void set_was_fetched_via_proxy(bool flag);
+
+  void set_response_headers(scoped_refptr<net::HttpResponseHeaders> headers);
+
   // Set string data.
   void SetResponseString(const std::string& response);
 

@@ -37,7 +37,7 @@ class CloudPolicyController
   // Sets the refresh rate at which to re-fetch policy information.
   void SetRefreshRate(int64 refresh_rate_milliseconds);
 
-  // Triggers an immediate retry of of the current operation.
+  // Triggers an immediate retry of the current operation.
   void Retry();
 
   // Stops any pending activity and resets the controller to unenrolled state.

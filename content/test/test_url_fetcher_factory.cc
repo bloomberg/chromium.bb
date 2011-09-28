@@ -8,6 +8,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/message_loop.h"
+#include "net/http/http_response_headers.h"
 #include "net/url_request/url_request_status.h"
 
 ScopedURLFetcherFactory::ScopedURLFetcherFactory(URLFetcher::Factory* factory) {
@@ -46,6 +47,15 @@ const GURL& TestURLFetcher::original_url() const {
 
 void TestURLFetcher::set_status(const net::URLRequestStatus& status) {
   fake_status_ = status;
+}
+
+void TestURLFetcher::set_was_fetched_via_proxy(bool flag) {
+  URLFetcher::set_was_fetched_via_proxy(flag);
+}
+
+void TestURLFetcher::set_response_headers(
+    scoped_refptr<net::HttpResponseHeaders> headers) {
+  URLFetcher::set_response_headers(headers);
 }
 
 void TestURLFetcher::SetResponseString(const std::string& response) {
