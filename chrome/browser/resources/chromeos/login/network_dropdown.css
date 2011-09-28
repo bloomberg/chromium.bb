@@ -75,6 +75,10 @@
   background: #dce4fa;
 }
 
+.dropdown-image {
+  width: 24px;
+}
+
 .dropdown-item {
   -webkit-box-flex: 1;
   cursor: default;
