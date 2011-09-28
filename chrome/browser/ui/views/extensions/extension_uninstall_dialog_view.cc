@@ -79,7 +79,7 @@ class ExtensionUninstallDialogDelegateView : public views::DialogDelegateView {
   // views::WidgetDelegate:
   virtual bool IsModal() const OVERRIDE { return true; }
   virtual views::View* GetContentsView() OVERRIDE { return this; }
-  virtual string16 GetWindowTitle() const OVERRIDE;
+  virtual std::wstring GetWindowTitle() const OVERRIDE;
 
   // views::View:
   virtual gfx::Size GetPreferredSize() OVERRIDE;
@@ -185,8 +185,9 @@ bool ExtensionUninstallDialogDelegateView::Cancel() {
   return true;
 }
 
-string16 ExtensionUninstallDialogDelegateView::GetWindowTitle() const {
-  return l10n_util::GetStringUTF16(IDS_EXTENSION_UNINSTALL_PROMPT_TITLE);
+std::wstring ExtensionUninstallDialogDelegateView::GetWindowTitle() const {
+  return UTF16ToWide(
+      l10n_util::GetStringUTF16(IDS_EXTENSION_UNINSTALL_PROMPT_TITLE));
 }
 
 

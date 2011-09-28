@@ -125,8 +125,8 @@ bool ExamplesMain::CanMaximize() const {
   return true;
 }
 
-string16 ExamplesMain::GetWindowTitle() const {
-  return ASCIIToUTF16("Views Examples");
+std::wstring ExamplesMain::GetWindowTitle() const {
+  return L"Views Examples";
 }
 
 views::View* ExamplesMain::GetContentsView() {

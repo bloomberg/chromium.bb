@@ -166,8 +166,8 @@ FirstRunSearchEngineView::~FirstRunSearchEngineView() {
   search_engines_model_->RemoveObserver(this);
 }
 
-string16 FirstRunSearchEngineView::GetWindowTitle() const {
-  return l10n_util::GetStringUTF16(IDS_FIRSTRUN_DLG_TITLE);
+std::wstring FirstRunSearchEngineView::GetWindowTitle() const {
+  return UTF16ToWide(l10n_util::GetStringUTF16(IDS_FIRSTRUN_DLG_TITLE));
 }
 
 void FirstRunSearchEngineView::ButtonPressed(views::Button* sender,

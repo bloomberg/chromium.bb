@@ -32,7 +32,7 @@ class UpdateRecommendedMessageBox : public views::DialogDelegate {
 
   // Overridden from views::WidgetDelegate:
   virtual bool ShouldShowWindowTitle() const OVERRIDE;
-  virtual string16 GetWindowTitle() const OVERRIDE;
+  virtual std::wstring GetWindowTitle() const OVERRIDE;
   virtual void DeleteDelegate() OVERRIDE;
   virtual bool IsModal() const OVERRIDE;
   virtual views::View* GetContentsView() OVERRIDE;

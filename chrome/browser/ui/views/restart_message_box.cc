@@ -31,8 +31,8 @@ std::wstring RestartMessageBox::GetDialogButtonLabel(
   return UTF16ToWide(l10n_util::GetStringUTF16(IDS_OK));
 }
 
-string16 RestartMessageBox::GetWindowTitle() const {
-  return l10n_util::GetStringUTF16(IDS_PRODUCT_NAME);
+std::wstring RestartMessageBox::GetWindowTitle() const {
+  return UTF16ToWide(l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
 }
 
 void RestartMessageBox::DeleteDelegate() {

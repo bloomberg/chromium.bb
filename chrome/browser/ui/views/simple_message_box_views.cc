@@ -102,7 +102,7 @@ bool SimpleMessageBoxViews::ShouldShowWindowTitle() const {
   return true;
 }
 
-string16 SimpleMessageBoxViews::GetWindowTitle() const {
+std::wstring SimpleMessageBoxViews::GetWindowTitle() const {
   return message_box_title_;
 }
 
@@ -135,7 +135,7 @@ SimpleMessageBoxViews::SimpleMessageBoxViews(gfx::NativeWindow parent_window,
                                              const string16& message)
     : dialog_flags_(dialog_flags),
       disposition_(DISPOSITION_UNKNOWN) {
-  message_box_title_ = title;
+  message_box_title_ = UTF16ToWide(title);
   message_box_view_ = new views::MessageBoxView(
       dialog_flags,
       UTF16ToWide(message),

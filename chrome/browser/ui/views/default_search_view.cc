@@ -144,8 +144,8 @@ void DefaultSearchView::ButtonPressed(views::Button* sender,
     client->CancelWindow();
 }
 
-string16 DefaultSearchView::GetWindowTitle() const {
-  return l10n_util::GetStringUTF16(IDS_DEFAULT_SEARCH_TITLE);
+std::wstring DefaultSearchView::GetWindowTitle() const {
+  return UTF16ToWide(l10n_util::GetStringUTF16(IDS_DEFAULT_SEARCH_TITLE));
 }
 
 views::View* DefaultSearchView::GetInitiallyFocusedView() {

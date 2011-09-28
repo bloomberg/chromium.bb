@@ -41,7 +41,7 @@ class ExamplesMain : public views::WidgetDelegate {
   // views::WidgetDelegate implementation:
   virtual bool CanResize() const OVERRIDE;
   virtual bool CanMaximize() const OVERRIDE;
-  virtual string16 GetWindowTitle() const OVERRIDE;
+  virtual std::wstring GetWindowTitle() const OVERRIDE;
   virtual views::View* GetContentsView() OVERRIDE;
   virtual void WindowClosing() OVERRIDE;
   virtual views::Widget* GetWidget() OVERRIDE;

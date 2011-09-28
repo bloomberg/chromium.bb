@@ -4,8 +4,6 @@
 
 #include "chrome/browser/ui/panels/panel_browser_frame_view.h"
 
-#include <algorithm>
-
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_browser_view.h"
@@ -145,7 +143,7 @@ void EnsureResourcesInitialized() {
   LoadImageResources();
 }
 
-}  // namespace
+} // namespace
 
 // PanelBrowserFrameView::MouseWatcher -----------------------------------------
 
@@ -632,8 +630,7 @@ void PanelBrowserFrameView::PaintClientEdge(gfx::Canvas* canvas) {
 }
 
 void PanelBrowserFrameView::UpdateTitleBar() {
-  title_label_->SetText(
-      UTF16ToWideHack(frame_->widget_delegate()->GetWindowTitle()));
+  title_label_->SetText(frame_->widget_delegate()->GetWindowTitle());
 }
 
 void PanelBrowserFrameView::OnFocusChanged(bool focused) {

@@ -7,7 +7,6 @@
 #pragma once
 
 #include <string>
-#include <vector>
 
 #include "base/gtest_prod_util.h"
 #include "chrome/browser/ui/views/dom_view.h"
@@ -56,7 +55,7 @@ class HtmlDialogView
   // Overridden from views::WidgetDelegate:
   virtual bool CanResize() const OVERRIDE;
   virtual bool IsModal() const OVERRIDE;
-  virtual string16 GetWindowTitle() const OVERRIDE;
+  virtual std::wstring GetWindowTitle() const OVERRIDE;
   virtual void WindowClosing() OVERRIDE;
   virtual views::View* GetContentsView() OVERRIDE;
   virtual views::View* GetInitiallyFocusedView() OVERRIDE;

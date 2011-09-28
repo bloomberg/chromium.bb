@@ -36,7 +36,7 @@ class UserDataDirDialog : public views::DialogDelegate,
   // views::DialogDelegate methods:
   virtual std::wstring GetDialogButtonLabel(
       MessageBoxFlags::DialogButton button) const OVERRIDE;
-  virtual string16 GetWindowTitle() const OVERRIDE;
+  virtual std::wstring GetWindowTitle() const OVERRIDE;
   virtual void DeleteDelegate() OVERRIDE;
   virtual bool Accept() OVERRIDE;
   virtual bool Cancel() OVERRIDE;

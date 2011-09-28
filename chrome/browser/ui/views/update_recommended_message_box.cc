@@ -61,8 +61,8 @@ bool UpdateRecommendedMessageBox::ShouldShowWindowTitle() const {
 #endif
 }
 
-string16 UpdateRecommendedMessageBox::GetWindowTitle() const {
-  return l10n_util::GetStringUTF16(IDS_PRODUCT_NAME);
+std::wstring UpdateRecommendedMessageBox::GetWindowTitle() const {
+  return UTF16ToWide(l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
 }
 
 void UpdateRecommendedMessageBox::DeleteDelegate() {
@@ -101,8 +101,8 @@ UpdateRecommendedMessageBox::UpdateRecommendedMessageBox(
   message_box_view_ = new views::MessageBoxView(
       ui::MessageBoxFlags::kFlagHasMessage |
           ui::MessageBoxFlags::kFlagHasOKButton,
-      UTF16ToWideHack(l10n_util::GetStringFUTF16(IDS_UPDATE_RECOMMENDED,
-                                                 product_name)),
+      UTF16ToWide(l10n_util::GetStringFUTF16(IDS_UPDATE_RECOMMENDED,
+                                             product_name)),
       std::wstring(),
       kDialogWidth);
   browser::CreateViewsWindow(parent_window, this)->Show();

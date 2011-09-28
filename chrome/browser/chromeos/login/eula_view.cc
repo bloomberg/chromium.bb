@@ -94,16 +94,17 @@ class TpmInfoView : public views::DialogDelegateView {
 
  protected:
   // views::DialogDelegateView overrides:
-  virtual bool Accept() OVERRIDE { return true; }
-  virtual bool IsModal() const OVERRIDE { return true; }
-  virtual views::View* GetContentsView() OVERRIDE { return this; }
-  virtual int GetDialogButtons() const OVERRIDE {
+  virtual bool Accept() { return true; }
+  virtual bool IsModal() const { return true; }
+  virtual views::View* GetContentsView() { return this; }
+  virtual int GetDialogButtons() const {
     return MessageBoxFlags::DIALOGBUTTON_OK;
   }
 
   // views::View overrides:
-  virtual string16 GetWindowTitle() const OVERRIDE {
-    return l10n_util::GetStringUTF16(IDS_EULA_SYSTEM_SECURITY_SETTING);
+  virtual std::wstring GetWindowTitle() const {
+    return UTF16ToWide(
+        l10n_util::GetStringUTF16(IDS_EULA_SYSTEM_SECURITY_SETTING));
   }
 
   gfx::Size GetPreferredSize() {

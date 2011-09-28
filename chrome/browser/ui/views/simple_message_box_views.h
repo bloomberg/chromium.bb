@@ -55,7 +55,7 @@ class SimpleMessageBoxViews : public views::DialogDelegate,
 
   // Overridden from views::WidgetDelegate:
   virtual bool ShouldShowWindowTitle() const OVERRIDE;
-  virtual string16 GetWindowTitle() const OVERRIDE;
+  virtual std::wstring GetWindowTitle() const OVERRIDE;
   virtual void DeleteDelegate() OVERRIDE;
   virtual bool IsModal() const OVERRIDE;
   virtual views::View* GetContentsView() OVERRIDE;
@@ -82,7 +82,7 @@ class SimpleMessageBoxViews : public views::DialogDelegate,
 #endif
 
   int dialog_flags_;
-  string16 message_box_title_;
+  std::wstring message_box_title_;
   views::MessageBoxView* message_box_view_;
   DispositionType disposition_;
 

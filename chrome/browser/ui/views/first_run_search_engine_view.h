@@ -84,7 +84,7 @@ class FirstRunSearchEngineView : public views::WidgetDelegateView,
   virtual ~FirstRunSearchEngineView();
 
   // Overridden from views::WidgetDelegateView:
-  virtual string16 GetWindowTitle() const OVERRIDE;
+  virtual std::wstring GetWindowTitle() const OVERRIDE;
   virtual views::View* GetContentsView() OVERRIDE { return this; }
 
   // Overridden from views::ButtonListener:

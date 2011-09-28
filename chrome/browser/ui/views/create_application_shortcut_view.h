@@ -40,23 +40,22 @@ class CreateApplicationShortcutView : public views::DialogDelegateView,
   void InitControls();
 
   // Overridden from views::View:
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual gfx::Size GetPreferredSize();
 
   // Overridden from views::DialogDelegate:
   virtual std::wstring GetDialogButtonLabel(
-      MessageBoxFlags::DialogButton button) const OVERRIDE;
+      MessageBoxFlags::DialogButton button) const;
   virtual bool IsDialogButtonEnabled(
-      MessageBoxFlags::DialogButton button) const OVERRIDE;
-  virtual bool CanResize() const OVERRIDE;
-  virtual bool CanMaximize() const OVERRIDE;
-  virtual bool IsModal() const OVERRIDE;
-  virtual string16 GetWindowTitle() const OVERRIDE;
-  virtual bool Accept() OVERRIDE;
-  virtual views::View* GetContentsView() OVERRIDE;
+      MessageBoxFlags::DialogButton button) const;
+  virtual bool CanResize() const;
+  virtual bool CanMaximize() const;
+  virtual bool IsModal() const;
+  virtual std::wstring GetWindowTitle() const;
+  virtual bool Accept();
+  virtual views::View* GetContentsView();
 
   // Overridden from views::ButtonListener:
-  virtual void ButtonPressed(views::Button* sender,
-                             const views::Event& event) OVERRIDE;
+  virtual void ButtonPressed(views::Button* sender, const views::Event& event);
 
  protected:
   // Adds a new check-box as a child to the view.
@@ -109,7 +108,7 @@ class CreateUrlApplicationShortcutView : public CreateApplicationShortcutView {
 
 // Create an application shortcut pointing to a chrome application.
 class CreateChromeApplicationShortcutView
-    : public CreateApplicationShortcutView,
+   : public CreateApplicationShortcutView,
      public ImageLoadingTracker::Observer {
  public:
   CreateChromeApplicationShortcutView(Profile* profile, const Extension* app);

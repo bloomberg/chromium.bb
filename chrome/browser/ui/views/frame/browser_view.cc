@@ -8,8 +8,6 @@
 #include <gtk/gtk.h>
 #endif
 
-#include <algorithm>
-
 #include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "base/i18n/rtl.h"
@@ -1527,15 +1525,15 @@ bool BrowserView::IsModal() const {
   return false;
 }
 
-string16 BrowserView::GetWindowTitle() const {
-  return browser_->GetWindowTitleForCurrentTab();
+std::wstring BrowserView::GetWindowTitle() const {
+  return UTF16ToWideHack(browser_->GetWindowTitleForCurrentTab());
 }
 
-string16 BrowserView::GetAccessibleWindowTitle() const {
+std::wstring BrowserView::GetAccessibleWindowTitle() const {
   if (IsOffTheRecord()) {
-    return l10n_util::GetStringFUTF16(
+    return UTF16ToWide(l10n_util::GetStringFUTF16(
         IDS_ACCESSIBLE_INCOGNITO_WINDOW_TITLE_FORMAT,
-        GetWindowTitle());
+        WideToUTF16(GetWindowTitle())));
   }
   return GetWindowTitle();
 }

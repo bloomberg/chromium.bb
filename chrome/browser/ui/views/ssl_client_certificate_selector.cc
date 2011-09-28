@@ -165,8 +165,8 @@ bool SSLClientCertificateSelector::CanResize() const {
   return true;
 }
 
-string16 SSLClientCertificateSelector::GetWindowTitle() const {
-  return l10n_util::GetStringUTF16(IDS_CLIENT_CERT_DIALOG_TITLE);
+std::wstring SSLClientCertificateSelector::GetWindowTitle() const {
+  return UTF16ToWide(l10n_util::GetStringUTF16(IDS_CLIENT_CERT_DIALOG_TITLE));
 }
 
 void SSLClientCertificateSelector::DeleteDelegate() {

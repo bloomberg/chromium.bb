@@ -90,8 +90,8 @@ int JSModalDialogViews::GetDialogButtons() const {
   return dialog_buttons;
 }
 
-string16 JSModalDialogViews::GetWindowTitle() const {
-  return parent_->title();
+std::wstring JSModalDialogViews::GetWindowTitle() const {
+  return UTF16ToWideHack(parent_->title());
 }
 
 

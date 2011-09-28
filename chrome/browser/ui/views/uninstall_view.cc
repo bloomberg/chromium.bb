@@ -19,13 +19,13 @@
 #include "views/layout/grid_layout.h"
 #include "views/layout/layout_constants.h"
 
-UninstallView::UninstallView(int* user_selection)
+UninstallView::UninstallView(int& user_selection)
     : confirm_label_(NULL),
       delete_profile_(NULL),
       change_default_browser_(NULL),
       browsers_combo_(NULL),
       browsers_(NULL),
-      user_selection_(*user_selection) {
+      user_selection_(user_selection) {
   SetupControls();
 }
 
@@ -135,8 +135,8 @@ void UninstallView::ButtonPressed(
   }
 }
 
-string16 UninstallView::GetWindowTitle() const {
-  return l10n_util::GetStringUTF16(IDS_UNINSTALL_CHROME);
+std::wstring UninstallView::GetWindowTitle() const {
+  return UTF16ToWide(l10n_util::GetStringUTF16(IDS_UNINSTALL_CHROME));
 }
 
 views::View* UninstallView::GetContentsView() {
@@ -149,7 +149,7 @@ int UninstallView::GetItemCount() {
 }
 
 string16 UninstallView::GetItemAt(int index) {
-  DCHECK_LT(index, static_cast<int>(browsers_->size()));
+  DCHECK(index < (int) browsers_->size());
   BrowsersMap::const_iterator it = browsers_->begin();
   std::advance(it, index);
   return WideToUTF16Hack((*it).first);

@@ -57,8 +57,9 @@ std::wstring UserDataDirDialog::GetDialogButtonLabel(
   return std::wstring();
 }
 
-string16 UserDataDirDialog::GetWindowTitle() const {
-  return l10n_util::GetStringUTF16(IDS_CANT_WRITE_USER_DIRECTORY_TITLE);
+std::wstring UserDataDirDialog::GetWindowTitle() const {
+  return UTF16ToWide(
+      l10n_util::GetStringUTF16(IDS_CANT_WRITE_USER_DIRECTORY_TITLE));
 }
 
 void UserDataDirDialog::DeleteDelegate() {

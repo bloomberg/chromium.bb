@@ -330,7 +330,7 @@ void Widget::Init(const InitParams& params) {
 // Unconverted methods (see header) --------------------------------------------
 
 gfx::NativeView Widget::GetNativeView() const {
-  return native_widget_->GetNativeView();
+   return native_widget_->GetNativeView();
 }
 
 gfx::NativeWindow Widget::GetNativeWindow() const {
@@ -676,9 +676,9 @@ void Widget::UpdateWindowTitle() {
   // the native frame is being used, since this also updates the taskbar, etc.
   string16 window_title;
   if (native_widget_->IsScreenReaderActive()) {
-    window_title = widget_delegate_->GetAccessibleWindowTitle();
+    window_title = WideToUTF16(widget_delegate_->GetAccessibleWindowTitle());
   } else {
-    window_title = widget_delegate_->GetWindowTitle();
+    window_title = WideToUTF16(widget_delegate_->GetWindowTitle());
   }
   base::i18n::AdjustStringForLocaleDirection(&window_title);
   native_widget_->SetWindowTitle(window_title);

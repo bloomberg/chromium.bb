@@ -79,7 +79,7 @@ class ExtensionInstallDialogView : public views::DialogDelegateView,
 
   // views::WidgetDelegate:
   virtual bool IsModal() const OVERRIDE;
-  virtual string16 GetWindowTitle() const OVERRIDE;
+  virtual std::wstring GetWindowTitle() const OVERRIDE;
   virtual views::View* GetContentsView() OVERRIDE;
 
   // views::LinkListener:
@@ -148,16 +148,16 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
 
   column_set->AddColumn(GridLayout::LEADING,
                         GridLayout::FILL,
-                        0,  // no resizing
+                        0, // no resizing
                         GridLayout::USE_PREF,
-                        0,  // no fixed with
+                        0, // no fixed with
                         left_column_width);
   column_set->AddPaddingColumn(0, views::kPanelHorizMargin);
   column_set->AddColumn(GridLayout::LEADING,
                         GridLayout::LEADING,
-                        0,  // no resizing
+                        0, // no resizing
                         GridLayout::USE_PREF,
-                        0,  // no fixed width
+                        0, // no fixed width
                         kIconSize);
 
   layout->StartRow(0, column_set_id);
@@ -289,8 +289,8 @@ bool ExtensionInstallDialogView::IsModal() const {
   return true;
 }
 
-string16 ExtensionInstallDialogView::GetWindowTitle() const {
-  return prompt_.GetDialogTitle();
+std::wstring ExtensionInstallDialogView::GetWindowTitle() const {
+  return UTF16ToWide(prompt_.GetDialogTitle());
 }
 
 views::View* ExtensionInstallDialogView::GetContentsView() {

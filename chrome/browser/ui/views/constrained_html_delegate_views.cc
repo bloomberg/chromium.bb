@@ -45,8 +45,8 @@ class ConstrainedHtmlDelegateViews : public TabContentsContainer,
     return View::GetWidget();
   }
 
-  virtual string16 GetWindowTitle() const OVERRIDE {
-    return html_delegate_->GetDialogTitle();
+  virtual std::wstring GetWindowTitle() const OVERRIDE {
+    return UTF16ToWideHack(html_delegate_->GetDialogTitle());
   }
 
   // HtmlDialogTabContentsDelegate interface.

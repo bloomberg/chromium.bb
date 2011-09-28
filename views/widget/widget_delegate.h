@@ -71,10 +71,10 @@ class VIEWS_EXPORT WidgetDelegate {
   virtual ui::AccessibilityTypes::State GetAccessibleWindowState() const;
 
   // Returns the title to be read with screen readers.
-  virtual string16 GetAccessibleWindowTitle() const;
+  virtual std::wstring GetAccessibleWindowTitle() const;
 
   // Returns the text to be displayed in the window title.
-  virtual string16 GetWindowTitle() const;
+  virtual std::wstring GetWindowTitle() const;
 
   // Returns true if the window should show a title in the title bar.
   virtual bool ShouldShowWindowTitle() const;

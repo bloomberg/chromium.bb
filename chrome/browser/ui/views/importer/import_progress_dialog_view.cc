@@ -125,8 +125,8 @@ bool ImportProgressDialogView::IsModal() const {
   return parent_window_ != NULL;
 }
 
-string16 ImportProgressDialogView::GetWindowTitle() const {
-  return l10n_util::GetStringUTF16(IDS_IMPORT_PROGRESS_TITLE);
+std::wstring ImportProgressDialogView::GetWindowTitle() const {
+  return UTF16ToWide(l10n_util::GetStringUTF16(IDS_IMPORT_PROGRESS_TITLE));
 }
 
 bool ImportProgressDialogView::Cancel() {

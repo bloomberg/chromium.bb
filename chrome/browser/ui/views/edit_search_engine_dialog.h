@@ -43,13 +43,13 @@ class EditSearchEngineDialog : public views::TextfieldController,
                    Profile* profile);
 
   // views::DialogDelegate:
-  virtual bool IsModal() const OVERRIDE;
-  virtual string16 GetWindowTitle() const OVERRIDE;
+  virtual bool IsModal() const;
+  virtual std::wstring GetWindowTitle() const;
   virtual bool IsDialogButtonEnabled(
-      MessageBoxFlags::DialogButton button) const OVERRIDE;
-  virtual bool Cancel() OVERRIDE;
-  virtual bool Accept() OVERRIDE;
-  virtual views::View* GetContentsView() OVERRIDE;
+      MessageBoxFlags::DialogButton button) const;
+  virtual bool Cancel();
+  virtual bool Accept();
+  virtual views::View* GetContentsView();
 
   // views::TextfieldController:
   // Updates whether the user can accept the dialog as well as updating image

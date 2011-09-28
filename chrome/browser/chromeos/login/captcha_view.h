@@ -43,10 +43,10 @@ class CaptchaView : public views::DialogDelegateView,
   virtual ~CaptchaView() {}
 
   // views::DialogDelegate:
-  virtual bool Accept() OVERRIDE;
-  virtual bool IsModal() const OVERRIDE;
-  virtual views::View* GetContentsView() OVERRIDE;
-  virtual string16 GetWindowTitle() const OVERRIDE;
+  virtual bool Accept();
+  virtual bool IsModal() const;
+  virtual views::View* GetContentsView();
+  virtual std::wstring GetWindowTitle() const;
 
   // views::TextfieldController:
   virtual void ContentsChanged(views::Textfield* sender,

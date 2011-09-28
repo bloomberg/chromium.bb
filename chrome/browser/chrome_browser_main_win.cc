@@ -93,7 +93,7 @@ void RecordBrowserStartupTime() {
 
 int AskForUninstallConfirmation() {
   int ret = content::RESULT_CODE_NORMAL_EXIT;
-  views::Widget::CreateWindow(new UninstallView(&ret))->Show();
+  views::Widget::CreateWindow(new UninstallView(ret))->Show();
   views::AcceleratorHandler accelerator_handler;
   MessageLoopForUI::current()->Run(&accelerator_handler);
   return ret;

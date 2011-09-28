@@ -42,7 +42,7 @@ static const int kDefaultHeight = 270;
 
 // Yellow highlight used when highlighting background resources.
 static const SkColor kBackgroundResourceHighlight =
-    SkColorSetRGB(0xff, 0xf1, 0xcd);
+    SkColorSetRGB(0xff,0xf1,0xcd);
 
 namespace {
 
@@ -276,29 +276,28 @@ class TaskManagerView : public views::ButtonListener,
   static void Show(bool highlight_background_resources);
 
   // views::View
-  virtual void Layout() OVERRIDE;
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual void Layout();
+  virtual gfx::Size GetPreferredSize();
   virtual void ViewHierarchyChanged(bool is_add, views::View* parent,
-                                    views::View* child) OVERRIDE;
+                                    views::View* child);
 
   // ButtonListener implementation.
-  virtual void ButtonPressed(views::Button* sender,
-                             const views::Event& event) OVERRIDE;
+  virtual void ButtonPressed(views::Button* sender, const views::Event& event);
 
   // views::DialogDelegate
-  virtual bool CanResize() const OVERRIDE;
-  virtual bool CanMaximize() const OVERRIDE;
-  virtual bool ExecuteWindowsCommand(int command_id) OVERRIDE;
-  virtual string16 GetWindowTitle() const OVERRIDE;
-  virtual std::string GetWindowName() const OVERRIDE;
-  virtual int GetDialogButtons() const OVERRIDE;
-  virtual void WindowClosing() OVERRIDE;
-  virtual views::View* GetContentsView() OVERRIDE;
+  virtual bool CanResize() const;
+  virtual bool CanMaximize() const;
+  virtual bool ExecuteWindowsCommand(int command_id);
+  virtual std::wstring GetWindowTitle() const;
+  virtual std::string GetWindowName() const;
+  virtual int GetDialogButtons() const;
+  virtual void WindowClosing();
+  virtual views::View* GetContentsView();
 
   // views::TableViewObserver implementation.
-  virtual void OnSelectionChanged() OVERRIDE;
-  virtual void OnDoubleClick() OVERRIDE;
-  virtual void OnKeyDown(ui::KeyboardCode keycode) OVERRIDE;
+  virtual void OnSelectionChanged();
+  virtual void OnDoubleClick();
+  virtual void OnKeyDown(ui::KeyboardCode keycode);
 
   // views::LinkListener implementation.
   virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
@@ -652,8 +651,8 @@ bool TaskManagerView::ExecuteWindowsCommand(int command_id) {
   return false;
 }
 
-string16 TaskManagerView::GetWindowTitle() const {
-  return l10n_util::GetStringUTF16(IDS_TASK_MANAGER_TITLE);
+std::wstring TaskManagerView::GetWindowTitle() const {
+  return UTF16ToWide(l10n_util::GetStringUTF16(IDS_TASK_MANAGER_TITLE));
 }
 
 std::string TaskManagerView::GetWindowName() const {

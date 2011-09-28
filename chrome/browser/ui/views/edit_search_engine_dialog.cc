@@ -77,10 +77,10 @@ bool EditSearchEngineDialog::IsModal() const {
   return true;
 }
 
-string16 EditSearchEngineDialog::GetWindowTitle() const {
-  return l10n_util::GetStringUTF16(controller_->template_url() ?
+std::wstring EditSearchEngineDialog::GetWindowTitle() const {
+  return UTF16ToWide(l10n_util::GetStringUTF16(controller_->template_url() ?
       IDS_SEARCH_ENGINES_EDITOR_EDIT_WINDOW_TITLE :
-      IDS_SEARCH_ENGINES_EDITOR_NEW_WINDOW_TITLE);
+      IDS_SEARCH_ENGINES_EDITOR_NEW_WINDOW_TITLE));
 }
 
 bool EditSearchEngineDialog::IsDialogButtonEnabled(
@@ -260,7 +260,7 @@ void EditSearchEngineDialog::UpdateImageView(ImageView* image_view,
         ResourceBundle::GetSharedInstance().GetBitmapNamed(
             IDR_INPUT_GOOD));
   } else {
-    image_view->SetTooltipText(l10n_util::GetStringUTF16(invalid_message_id));
+    image_view->SetTooltipText(l10n_util::GetStringUTF16(invalid_message_id)) ;
     image_view->SetImage(
         ResourceBundle::GetSharedInstance().GetBitmapNamed(
             IDR_INPUT_ALERT));

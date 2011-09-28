@@ -4,9 +4,6 @@
 
 #include "chrome/browser/ui/views/frame/opaque_browser_frame_view.h"
 
-#include <algorithm>
-#include <string>
-
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/utf_string_conversions.h"
@@ -115,6 +112,7 @@ bool ConvertedContainsCheck(gfx::Rect bounds, const views::View* src,
   bounds.set_origin(origin);
   return bounds.Contains(pt);
 }
+
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -744,7 +742,7 @@ void OpaqueBrowserFrameView::PaintTitleBar(gfx::Canvas* canvas) {
     return;
   }
   if (delegate->ShouldShowWindowTitle()) {
-    canvas->DrawStringInt(delegate->GetWindowTitle(),
+    canvas->DrawStringInt(WideToUTF16Hack(delegate->GetWindowTitle()),
                           BrowserFrame::GetTitleFont(),
         SK_ColorWHITE, GetMirroredXForRect(title_bounds_),
         title_bounds_.y(), title_bounds_.width(), title_bounds_.height());

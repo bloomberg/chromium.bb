@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef VIEWS_DESKTOP_DESKTOP_WINDOW_VIEW_H_
-#define VIEWS_DESKTOP_DESKTOP_WINDOW_VIEW_H_
+#ifndef VIEWS_DESKTOP_DESKTOP_WINDOW_H_
+#define VIEWS_DESKTOP_DESKTOP_WINDOW_H_
 
 #include "base/observer_list.h"
 #include "views/view.h"
@@ -36,12 +36,12 @@ class DesktopWindowView : public WidgetDelegateView {
 
   static DesktopWindowView* desktop_window_view;
 
-  explicit DesktopWindowView(DesktopType type);
+  DesktopWindowView(DesktopType type);
   virtual ~DesktopWindowView();
 
   static void CreateDesktopWindow(DesktopType type);
 
-  void CreateTestWindow(const string16& title,
+  void CreateTestWindow(const std::wstring& title,
                         SkColor color,
                         gfx::Rect initial_bounds,
                         bool rotate);
@@ -65,7 +65,7 @@ class DesktopWindowView : public WidgetDelegateView {
   virtual const Widget* GetWidget() const OVERRIDE;
   virtual bool CanResize() const OVERRIDE;
   virtual bool CanMaximize() const OVERRIDE;
-  virtual string16 GetWindowTitle() const OVERRIDE;
+  virtual std::wstring GetWindowTitle() const OVERRIDE;
   virtual SkBitmap GetWindowAppIcon() OVERRIDE;
   virtual SkBitmap GetWindowIcon() OVERRIDE;
   virtual bool ShouldShowWindowIcon() const OVERRIDE;
@@ -83,4 +83,4 @@ class DesktopWindowView : public WidgetDelegateView {
 }  // namespace desktop
 }  // namespace views
 
-#endif  // VIEWS_DESKTOP_DESKTOP_WINDOW_VIEW_H_
+#endif  // VIEWS_DESKTOP_DESKTOP_WINDOW_H_

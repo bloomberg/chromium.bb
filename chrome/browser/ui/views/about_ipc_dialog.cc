@@ -265,8 +265,8 @@ int AboutIPCDialog::GetDialogButtons() const {
   return 0;
 }
 
-string16 AboutIPCDialog::GetWindowTitle() const {
-  return ASCIIToUTF16("about:ipc");
+std::wstring AboutIPCDialog::GetWindowTitle() const {
+  return L"about:ipc";
 }
 
 void AboutIPCDialog::Layout() {

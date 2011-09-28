@@ -59,13 +59,12 @@ class NativeDialogHost : public views::DialogDelegateView {
   ~NativeDialogHost();
 
   // views::DialogDelegate implementation:
-  virtual bool CanResize() const OVERRIDE
-      { return flags_ & DIALOG_FLAG_RESIZEABLE; }
-  virtual int GetDialogButtons() const OVERRIDE { return 0; }
-  virtual string16 GetWindowTitle() const OVERRIDE { return title_; }
-  virtual views::View* GetContentsView() OVERRIDE { return this; }
-  virtual bool IsModal() const OVERRIDE { return flags_ & DIALOG_FLAG_MODAL; }
-  virtual void WindowClosing() OVERRIDE;
+  virtual bool CanResize() const { return flags_ & DIALOG_FLAG_RESIZEABLE; }
+  virtual int GetDialogButtons() const { return 0; }
+  virtual std::wstring GetWindowTitle() const { return title_; }
+  virtual views::View* GetContentsView() { return this; }
+  virtual bool IsModal() const { return flags_ & DIALOG_FLAG_MODAL; }
+  virtual void WindowClosing();
 
  protected:
   CHROMEGTK_CALLBACK_0(NativeDialogHost, void, OnCheckResize);
@@ -73,12 +72,11 @@ class NativeDialogHost : public views::DialogDelegateView {
   CHROMEGTK_CALLBACK_1(NativeDialogHost, gboolean, OnGtkKeyPressed, GdkEvent*);
 
   // views::View implementation:
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
-  virtual void Layout() OVERRIDE;
+  virtual gfx::Size GetPreferredSize();
+  virtual void Layout();
   virtual void ViewHierarchyChanged(bool is_add,
                                     views::View* parent,
-                                    views::View* child) OVERRIDE;
-
+                                    views::View* child);
  private:
   // Init and attach to native dialog.
   void Init();
@@ -95,7 +93,7 @@ class NativeDialogHost : public views::DialogDelegateView {
   // NativeViewHost for the dialog's contents.
   views::NativeViewHost* contents_view_;
 
-  string16 title_;
+  std::wstring title_;
   int flags_;
   gfx::Size size_;
   gfx::Size preferred_size_;
@@ -122,7 +120,7 @@ NativeDialogHost::NativeDialogHost(gfx::NativeView native_dialog,
       destroy_signal_id_(0) {
   const char* title = gtk_window_get_title(GTK_WINDOW(dialog_));
   if (title)
-    UTF8ToUTF16(title, strlen(title), &title_);
+    UTF8ToWide(title, strlen(title), &title_);
 
   destroy_signal_id_ = g_signal_connect(dialog_, "destroy",
       G_CALLBACK(&OnDialogDestroyThunk), this);
