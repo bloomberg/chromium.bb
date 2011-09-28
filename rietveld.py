@@ -42,7 +42,7 @@ upload.logging.setLevel(logging.WARNING)  # pylint: disable=E1103
 class Rietveld(object):
   """Accesses rietveld."""
   def __init__(self, url, email, password, extra_headers=None):
-    self.url = url
+    self.url = url.rstrip('/')
     # TODO(maruel): It's not awesome but maybe necessary to retrieve the value.
     # It happens when the presubmit check is ran out of process, the cookie
     # needed to be recreated from the credentials. Instead, it should pass the
