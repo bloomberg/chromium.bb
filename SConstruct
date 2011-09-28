@@ -450,6 +450,11 @@ pre_base_env = Environment(
 DeclareBit('clang', 'Use clang to build trusted code')
 pre_base_env.SetBitFromOption('clang', False)
 
+DeclareBit('asan', 'Use AddressSanitizer to build trusted code (implies --clang)')
+pre_base_env.SetBitFromOption('asan', False)
+if pre_base_env.Bit('asan'):
+  pre_base_env.SetBits('clang')
+
 # ----------------------------------------------------------
 # CODE COVERAGE
 # ----------------------------------------------------------
@@ -1748,7 +1753,7 @@ def CommandSelLdrTestNacl(env, name, nexe,
     sel_ldr_flags += ['-cc']
 
   # Skip platform qualification checks on configurations with known issues.
-  if GetEmulator(env) or env.IsRunningUnderValgrind():
+  if GetEmulator(env) or env.IsRunningUnderValgrind() or env.Bit('asan'):
     sel_ldr_flags += ['-Q']
 
   # The glibc modifications only make sense for nacl_env tests.
@@ -1843,9 +1848,15 @@ def CommandTest(env, name, command, size='small', direct_emulation=True,
   if not name.endswith('.out') or name.startswith('$'):
     raise Exception('ERROR: bad test filename for test output %r' % name)
 
-  if (env.IsRunningUnderValgrind() and
+  if env.IsRunningUnderValgrind():
+    skip = 'Valgrind'
+  elif env.Bit('asan'):
+    skip = 'AddressSanitizer'
+  else:
+    skip = None
+  if (skip is not None and
       extra.get('exit_status') in UNSUPPORTED_VALGRIND_EXIT_STATUS):
-    print 'Skipping death test "%s" under Valgrind' % name
+    print 'Skipping death test "%s" under %s' % (name, skip)
     return []
 
   name = '${TARGET_ROOT}/test_results/' + name
@@ -2334,9 +2345,24 @@ Automagically generated help:
 # ---------------------------------------------------------
 
 def SetupClang(env):
-  env['CLANG_DIR'] = '${SOURCE_ROOT}/third_party/llvm-build/Release+Asserts/bin'
-  env['CC'] = '${CLANG_DIR}/clang'
-  env['CXX'] = '${CLANG_DIR}/clang++'
+  if env.Bit('asan'):
+    if env.Bit('host_linux'):
+      asan_dir = 'asan_clang_Linux'
+    elif env.Bit('host_mac'):
+      asan_dir = 'asan_clang_Darwin'
+    else:
+      print "ERROR: ASan is only available for Linux and Mac"
+      sys.exit(-1)
+    env['ASAN'] = '${SOURCE_ROOT}/third_party/asan'
+    env['ASAN_BLACKLIST'] = '-mllvm -asan-blacklist=${ASAN}/asan_blacklist.txt'
+    env['CLANG_DIR'] = os.path.join('${ASAN}', asan_dir, 'bin')
+    env['CLANG_OPTS'] = '-fasan -w ${ASAN_BLACKLIST}'
+  else:
+    env['CLANG_DIR'] = '${SOURCE_ROOT}/third_party/llvm-build/Release+Asserts/bin'
+    env['CLANG_OPTS'] = ''
+
+  env['CC'] = '${CLANG_DIR}/clang ${CLANG_OPTS}'
+  env['CXX'] = '${CLANG_DIR}/clang++ ${CLANG_OPTS}'
 
 def GenerateOptimizationLevels(env):
   if env.Bit('clang'):

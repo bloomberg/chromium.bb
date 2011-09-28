@@ -60,6 +60,8 @@ deps = {
     Var("chromium_trunk") + "/src/ppapi@" + Var("chrome_rev"),
   "testing/gtest":
     "http://googletest.googlecode.com/svn/trunk@" + Var("gtest_rev"),
+  "third_party/asan":
+    Var("chromium_trunk") + "/deps/third_party/asan@" + Var("chrome_rev"),
   "third_party/cloog":
     Var("native_client_trunk") + "/src/third_party/cloog@" + Var("tools_rev"),
   "third_party/gles2_book":
