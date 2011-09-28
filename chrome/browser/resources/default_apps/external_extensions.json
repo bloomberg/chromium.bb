@@ -1,0 +1,14 @@
+// Dictionary of default apps to install into new profiles.  Each entry maps
+// the extension's id to its crx's path (relative to this file) and the version
+// of the extension contained in the crx.
+{
+  "blpcfgokakmgnkcojhhkbfbldkacnbeo" : {
+    "external_crx": "youtube.crx",
+    "external_version": "4.2"
+  },
+  "pjkljhegncpnkpknbcohdijeoejaedia" : {
+    "external_crx": "gmail.crx",
+    "external_version": "6.1.3"
+  }
+}
+

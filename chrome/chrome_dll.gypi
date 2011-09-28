@@ -572,6 +572,19 @@
                 },
               ],
               'conditions': [
+                ['branding=="Chrome"', {
+                  'copies': [
+                    {
+                      # This location is for the Mac build. Note that the
+                      # copying of these files for Windows and Linux is handled
+                      # in chrome.gyp, as Mac needs to be dropped inside the
+                      # framework.
+                      'destination':
+                          '<(PRODUCT_DIR)/$(CONTENTS_FOLDER_PATH)/Default Apps',
+                      'files': ['<@(default_apps_list)'],
+                    },
+                  ],
+                }],
                 ['mac_breakpad==1', {
                   'variables': {
                     # A real .dSYM is needed for dump_syms to operate on.

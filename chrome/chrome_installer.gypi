@@ -416,6 +416,7 @@
           '<(PRODUCT_DIR)/locales/en-US.pak',
           '<(PRODUCT_DIR)/nacl_helper',
           '<(PRODUCT_DIR)/nacl_helper_bootstrap',
+          '<@(default_apps_list_linux_dest)',
         ],
         'flock_bash': ['flock', '--', '/tmp/linux_package_lock', 'bash'],
         'deb_build': '<(PRODUCT_DIR)/installer/debian/build.sh',
