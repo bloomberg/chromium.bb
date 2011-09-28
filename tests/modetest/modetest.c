@@ -608,8 +608,12 @@ set_mode(struct connector *c, int count, int page_flip)
 		if (c[i].mode == NULL)
 			continue;
 
-		drmModePageFlip(fd, c[i].crtc, other_fb_id,
-				DRM_MODE_PAGE_FLIP_EVENT, &c[i]);
+		ret = drmModePageFlip(fd, c[i].crtc, other_fb_id,
+				      DRM_MODE_PAGE_FLIP_EVENT, &c[i]);
+		if (ret) {
+			fprintf(stderr, "failed to page flip: %s\n", strerror(errno));
+			return;
+		}
 		gettimeofday(&c[i].start, NULL);
 		c[i].swap_count = 0;
 		c[i].fb_id[0] = fb_id;
