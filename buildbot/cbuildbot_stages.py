@@ -327,7 +327,7 @@ class LKGMCandidateSyncCompletionStage(ManifestVersionedSyncCompletionStage):
 
     builders = self._GetImportantBuildersForMaster(cbuildbot_config.config)
     statuses = ManifestVersionedSyncStage.manifest_manager.GetBuildersStatus(
-        builders)
+        builders, constants.VERSION_FILE)
     success = True
     for builder in builders:
       status = statuses[builder]
