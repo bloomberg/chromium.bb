@@ -102,7 +102,7 @@ extern const char kJavaScriptFlags[];
 extern const char kLoadPlugin[];
 CONTENT_EXPORT extern const char kLoggingLevel[];
 extern const char kLogPluginMessages[];
-extern const char kLowLatencyAudio[];
+extern const char kHighLatencyAudio[];
 // TODO(jam): this doesn't belong in content.
 CONTENT_EXPORT extern const char kNaClBrokerProcess[];
 CONTENT_EXPORT extern const char kNaClLoaderProcess[];
