@@ -11,7 +11,7 @@
 #include "chrome/browser/extensions/extension_settings_backend.h"
 #include "chrome/browser/extensions/extension_settings_storage_cache.h"
 #include "chrome/browser/extensions/extension_settings_storage_quota_enforcer.h"
-#include "chrome/browser/extensions/extension_settings_noop_storage.h"
+#include "chrome/browser/extensions/in_memory_extension_settings_storage.h"
 
 class ExtensionSettingsQuotaUnittest : public testing::Test {
  public:
@@ -21,7 +21,7 @@ class ExtensionSettingsQuotaUnittest : public testing::Test {
         byte_value_256_(new ListValue()),
         delegate_(
             new ExtensionSettingsStorageCache(
-                new ExtensionSettingsNoopStorage())) {
+                new InMemoryExtensionSettingsStorage())) {
     for (int i = 1; i < 89; ++i) {
       byte_value_256_->Append(Value::CreateIntegerValue(i));
     }

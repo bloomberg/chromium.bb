@@ -12,9 +12,9 @@
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/extension_settings_leveldb_storage.h"
-#include "chrome/browser/extensions/extension_settings_noop_storage.h"
 #include "chrome/browser/extensions/extension_settings_storage_cache.h"
 #include "chrome/browser/extensions/extension_settings_sync_util.h"
+#include "chrome/browser/extensions/in_memory_extension_settings_storage.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/browser/browser_thread.h"
 #include "third_party/leveldatabase/src/include/leveldb/iterator.h"
@@ -41,89 +41,35 @@ SyncableExtensionSettingsStorage*
 ExtensionSettingsBackend::GetOrCreateStorageWithSyncData(
     const std::string& extension_id, const DictionaryValue& sync_data) const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  SyncableExtensionSettingsStorage* storage = GetOrCreateAndInitStorage(
-      ExtensionSettingsStorage::LEVELDB,
-      true,
-      extension_id,
-      sync_data);
-  if (!storage) {
-    // Fall back to an in-memory storage area (cached NOOP).
+
+  linked_ptr<SyncableExtensionSettingsStorage> syncable_storage =
+      storage_objs_[extension_id];
+  if (syncable_storage.get()) {
+    return syncable_storage.get();
+  }
+
+  ExtensionSettingsStorage* storage =
+      ExtensionSettingsLeveldbStorage::Create(base_path_, extension_id);
+  if (storage) {
+    storage = new ExtensionSettingsStorageCache(storage);
+  } else {
+    // Failed to create a leveldb storage area, create an in-memory one.
     // It's ok for these to be synced, it just means that on next starting up
     // extensions will see the "old" settings, then overwritten (and notified)
     // when the sync changes come through.
-    storage = GetOrCreateAndInitStorage(
-        ExtensionSettingsStorage::NOOP,
-        true,
-        extension_id,
-        sync_data);
-    DCHECK(storage);
-  }
-  return storage;
-}
-
-ExtensionSettingsStorage* ExtensionSettingsBackend::GetStorageForTesting(
-    ExtensionSettingsStorage::Type type,
-    bool cached,
-    const std::string& extension_id) const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  DictionaryValue empty;
-  ExtensionSettingsStorage* storage =
-      GetOrCreateAndInitStorage(type, cached, extension_id, empty);
-  DCHECK(storage);
-  return storage;
-}
-
-SyncableExtensionSettingsStorage*
-ExtensionSettingsBackend::GetOrCreateAndInitStorage(
-    ExtensionSettingsStorage::Type type,
-    bool cached,
-    const std::string& extension_id,
-    const DictionaryValue& initial_sync_data) const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  StorageObjMap::iterator existing = storage_objs_.find(extension_id);
-  if (existing != storage_objs_.end()) {
-    return existing->second.get();
-  }
-  return CreateAndInitStorage(type, cached, extension_id, initial_sync_data);
-}
-
-SyncableExtensionSettingsStorage*
-ExtensionSettingsBackend::CreateAndInitStorage(
-    ExtensionSettingsStorage::Type type,
-    bool cached,
-    const std::string& extension_id,
-    const DictionaryValue& initial_sync_data) const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  DCHECK_EQ(0u, storage_objs_.count(extension_id));
-  ExtensionSettingsStorage* storage = NULL;
-  switch (type) {
-    case ExtensionSettingsStorage::NOOP:
-      storage = new ExtensionSettingsNoopStorage();
-      break;
-    case ExtensionSettingsStorage::LEVELDB:
-      storage = ExtensionSettingsLeveldbStorage::Create(
-          base_path_, extension_id);
-      break;
-    default:
-      NOTREACHED();
-  }
-  if (!storage) {
-    return NULL;
-  }
-  if (cached) {
-    storage = new ExtensionSettingsStorageCache(storage);
+    storage = new InMemoryExtensionSettingsStorage();
   }
 
-  SyncableExtensionSettingsStorage* synced_storage =
-      new SyncableExtensionSettingsStorage(extension_id, storage);
+  syncable_storage =
+      linked_ptr<SyncableExtensionSettingsStorage>(
+          new SyncableExtensionSettingsStorage(extension_id, storage));
   if (sync_processor_) {
     // TODO(kalman): do something if StartSyncing fails.
-    ignore_result(
-        synced_storage->StartSyncing(initial_sync_data, sync_processor_));
+    ignore_result(syncable_storage->StartSyncing(sync_data, sync_processor_));
   }
-  storage_objs_[extension_id] =
-      linked_ptr<SyncableExtensionSettingsStorage>(synced_storage);
-  return synced_storage;
+
+  storage_objs_[extension_id] = syncable_storage;
+  return syncable_storage.get();
 }
 
 std::set<std::string> ExtensionSettingsBackend::GetKnownExtensionIDs() const {

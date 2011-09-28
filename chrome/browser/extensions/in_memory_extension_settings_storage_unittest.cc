@@ -4,17 +4,18 @@
 
 #include "chrome/browser/extensions/extension_settings_storage_unittest.h"
 
+#include "chrome/browser/extensions/in_memory_extension_settings_storage.h"
+
 namespace {
 
 ExtensionSettingsStorage* Param(
-    const ExtensionSettingsBackend& backend, const std::string& extension_id) {
-  return backend.GetStorageForTesting(
-      ExtensionSettingsStorage::LEVELDB, true, extension_id);
+    const FilePath& file_path, const std::string& extension_id) {
+  return new InMemoryExtensionSettingsStorage();
 }
 
 }  // namespace
 
 INSTANTIATE_TEST_CASE_P(
-    ExtensionSettingsCachedLeveldbStorage,
+    InMemoryExtensionSettingsStorage,
     ExtensionSettingsStorageTest,
     testing::Values(&Param));

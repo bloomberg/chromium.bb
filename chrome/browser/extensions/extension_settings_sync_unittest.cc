@@ -13,7 +13,6 @@
 #include "base/task.h"
 #include "chrome/browser/extensions/extension_settings_backend.h"
 #include "chrome/browser/extensions/extension_settings_storage_cache.h"
-#include "chrome/browser/extensions/extension_settings_noop_storage.h"
 #include "chrome/browser/extensions/extension_settings_sync_util.h"
 #include "chrome/browser/extensions/syncable_extension_settings_storage.h"
 #include "chrome/browser/sync/api/sync_change_processor.h"

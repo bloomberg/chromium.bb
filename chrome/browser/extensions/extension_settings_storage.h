@@ -16,13 +16,6 @@
 // destructions.
 class ExtensionSettingsStorage {
  public:
-  // The different types of extension settings storage.
-  enum Type {
-    NONE,
-    NOOP,
-    LEVELDB
-  };
-
   // The result of an operation.
   //
   // Supports lightweight copying.

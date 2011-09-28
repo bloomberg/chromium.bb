@@ -18,7 +18,7 @@
 
 // Parameter type for the value-parameterized tests.
 typedef ExtensionSettingsStorage* (*ExtensionSettingsStorageTestParam)(
-    const ExtensionSettingsBackend& backend, const std::string& extension_id);
+    const FilePath& file_path, const std::string& extension_id);
 
 // Test fixture for ExtensionSettingsStorage tests.  Tests are defined in
 // extension_settings_storage_unittest.cc with configurations for both cached
@@ -30,7 +30,6 @@ class ExtensionSettingsStorageTest
   virtual ~ExtensionSettingsStorageTest();
 
   virtual void SetUp() OVERRIDE;
-  virtual void TearDown() OVERRIDE;
 
  protected:
   ExtensionSettingsStorage* storage_;
@@ -57,7 +56,6 @@ class ExtensionSettingsStorageTest
 
  private:
   ScopedTempDir temp_dir_;
-  scoped_ptr<ExtensionSettingsBackend> backend_;
 
   // Need these so that the DCHECKs for running on FILE or UI threads pass.
   MessageLoop message_loop_;

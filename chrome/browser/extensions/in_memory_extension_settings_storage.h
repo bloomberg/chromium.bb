@@ -2,19 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_SETTINGS_NOOP_STORAGE_H_
-#define CHROME_BROWSER_EXTENSIONS_EXTENSION_SETTINGS_NOOP_STORAGE_H_
+#ifndef CHROME_BROWSER_EXTENSIONS_IN_MEMORY_EXTENSION_SETTINGS_STORAGE_H_
+#define CHROME_BROWSER_EXTENSIONS_IN_MEMORY_EXTENSION_SETTINGS_STORAGE_H_
 #pragma once
 
 #include "base/compiler_specific.h"
 #include "chrome/browser/extensions/extension_settings_storage.h"
 
-// Implementation of ExtensionSettingsStorage which does nothing, but behaves
-// as though each Get/Set were successful.
-// Intended to be wrapped by a Cache for trivial in-memory storage.
-class ExtensionSettingsNoopStorage : public ExtensionSettingsStorage {
+// In-memory storage, as opposed to ExtensionSettingsLeveldbStorage.
+class InMemoryExtensionSettingsStorage : public ExtensionSettingsStorage {
  public:
-  ExtensionSettingsNoopStorage() {}
+  InMemoryExtensionSettingsStorage() {}
 
   // ExtensionSettingsStorage implementation.
   virtual Result Get(const std::string& key) OVERRIDE;
@@ -27,7 +25,9 @@ class ExtensionSettingsNoopStorage : public ExtensionSettingsStorage {
   virtual Result Clear() OVERRIDE;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(ExtensionSettingsNoopStorage);
+  DictionaryValue storage_;
+
+  DISALLOW_COPY_AND_ASSIGN(InMemoryExtensionSettingsStorage);
 };
 
-#endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_SETTINGS_NOOP_STORAGE_H_
+#endif  // CHROME_BROWSER_EXTENSIONS_IN_MEMORY_EXTENSION_SETTINGS_STORAGE_H_

@@ -28,19 +28,10 @@ class ExtensionSettingsBackend : public SyncableService {
   // Gets a weak reference to the storage area for a given extension.
   // Must be run on the FILE thread.
   //
-  // By default this will be of a cached LEVELDB storage, but on failure to
-  // create a leveldb instance will fall back to cached NOOP storage.
+  // By default this will be an ExtensionSettingsLeveldbStorage, but on
+  // failure to create a leveldb instance will fall back to
+  // InMemoryExtensionSettingsStorage.
   ExtensionSettingsStorage* GetStorage(
-      const std::string& extension_id) const;
-
-  // Gets a weak reference to the storage area for a given extension, with a
-  // specific type and whether it should be wrapped in a cache.
-  //
-  // Use this for testing; if the given type fails to be created (e.g. if
-  // leveldb creation fails) then a DCHECK will fail.
-  ExtensionSettingsStorage* GetStorageForTesting(
-      ExtensionSettingsStorage::Type type,
-      bool cached,
       const std::string& extension_id) const;
 
   // SyncableService implementation.
@@ -62,23 +53,6 @@ class ExtensionSettingsBackend : public SyncableService {
   // create a leveldb instance will fall back to cached NOOP storage.
   SyncableExtensionSettingsStorage* GetOrCreateStorageWithSyncData(
       const std::string& extension_id, const DictionaryValue& sync_data) const;
-
-  // If a storage area exists in the cache, returns the cached storage area.
-  // Otherwise tries to create one using CreateAndInitStorage.
-  SyncableExtensionSettingsStorage* GetOrCreateAndInitStorage(
-      ExtensionSettingsStorage::Type type,
-      bool cached,
-      const std::string& extension_id,
-      const DictionaryValue& initial_sync_data) const;
-
-  // Creates a storage area of a given type, optionally wrapped in a cache.
-  // Returns NULL if creation fails.  Otherwise, adds the new storage area to
-  // the cache and initializes sync if sync is enabled.
-  SyncableExtensionSettingsStorage* CreateAndInitStorage(
-      ExtensionSettingsStorage::Type type,
-      bool cached,
-      const std::string& extension_id,
-      const DictionaryValue& initial_sync_data) const;
 
   // Gets all extension IDs known to extension settings.  This may not be all
   // installed extensions.

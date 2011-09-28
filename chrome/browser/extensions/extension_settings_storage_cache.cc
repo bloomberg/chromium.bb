@@ -63,12 +63,6 @@ ExtensionSettingsStorage::Result ExtensionSettingsStorageCache::Get() {
   }
 
   cache_.MergeDictionary(result.GetSettings());
-  // Hack so that the cached settings are used when the delegate is a no-op
-  // storage, in which case Get() will always return empty settings.
-  if (result.GetSettings()->empty()) {
-    return Result(cache_.DeepCopy());
-  }
-
   return result;
 }
 
