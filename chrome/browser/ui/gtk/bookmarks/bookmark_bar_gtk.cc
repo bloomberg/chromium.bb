@@ -140,7 +140,8 @@ BookmarkBarGtk::BookmarkBarGtk(BrowserWindowGtk* window,
       last_allocation_width_(-1),
       throbbing_widget_(NULL),
       method_factory_(this),
-      bookmark_bar_state_(BookmarkBar::DETACHED) {
+      bookmark_bar_state_(BookmarkBar::DETACHED),
+      max_height_(0) {
   Profile* profile = browser->profile();
   if (profile->GetProfileSyncService()) {
     // Obtain a pointer to the profile sync service and add our instance as an
@@ -324,25 +325,26 @@ bool BookmarkBarGtk::IsAnimating() {
   return slide_animation_.is_animating();
 }
 
-void BookmarkBarGtk::AnimationProgressed(const ui::Animation* animation) {
-  DCHECK_EQ(animation, &slide_animation_);
-
-  int max_height = 0;
+void BookmarkBarGtk::CalculateMaxHeight() {
 
   if (theme_service_->UsingNativeTheme()) {
     // Get the requisition of our single child instead of the event box itself
     // because the event box probably already has a size request.
     GtkRequisition req;
     gtk_widget_size_request(ntp_padding_box_, &req);
-    max_height = req.height;
+    max_height_ = req.height;
   } else {
-    max_height = (bookmark_bar_state_ == BookmarkBar::DETACHED) ?
-                 kBookmarkBarNTPHeight : kBookmarkBarHeight;
+    max_height_ = (bookmark_bar_state_ == BookmarkBar::DETACHED) ?
+                  kBookmarkBarNTPHeight : kBookmarkBarHeight;
   }
+}
+
+void BookmarkBarGtk::AnimationProgressed(const ui::Animation* animation) {
+  DCHECK_EQ(animation, &slide_animation_);
 
   gint height =
       static_cast<gint>(animation->GetCurrentValue() *
-                        (max_height - kBookmarkBarMinimumHeight)) +
+                        (max_height_ - kBookmarkBarMinimumHeight)) +
       kBookmarkBarMinimumHeight;
   gtk_widget_set_size_request(event_box_.get(), -1, height);
 }
@@ -431,6 +433,7 @@ void BookmarkBarGtk::Show(BookmarkBar::State old_state,
                           BookmarkBar::AnimateChangeType animate_type) {
   gtk_widget_show_all(widget());
   UpdateDetachedState(old_state);
+  CalculateMaxHeight();
   if (animate_type == BookmarkBar::ANIMATE_STATE_CHANGE) {
     slide_animation_.Show();
   } else {
@@ -480,6 +483,7 @@ void BookmarkBarGtk::Hide(BookmarkBar::State old_state,
   // After coming out of fullscreen, the browser window sets the bookmark bar
   // to the "hidden" state, which means we need to show our minimum height.
   gtk_widget_show(widget());
+  CalculateMaxHeight();
   // Sometimes we get called without a matching call to open. If that happens
   // then force hide.
   if (slide_animation_.IsShowing() &&
@@ -954,6 +958,7 @@ void BookmarkBarGtk::Observe(int type,
     }
 
     // Resize the bookmark bar since the target height may have changed.
+    CalculateMaxHeight();
     AnimationProgressed(&slide_animation_);
 
     UpdateEventBoxPaintability();

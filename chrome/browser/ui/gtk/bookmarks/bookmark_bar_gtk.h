@@ -111,6 +111,9 @@ class BookmarkBarGtk : public ui::AnimationDelegate,
   void Hide(BookmarkBar::State old_state,
             BookmarkBar::AnimateChangeType animate_type);
 
+  // Calculate maximum height of bookmark bar.
+  void CalculateMaxHeight();
+
   // Helper function which generates GtkToolItems for |bookmark_toolbar_|.
   void CreateAllBookmarkButtons();
 
@@ -408,6 +411,9 @@ class BookmarkBarGtk : public ui::AnimationDelegate,
   ScopedRunnableMethodFactory<BookmarkBarGtk> method_factory_;
 
   BookmarkBar::State bookmark_bar_state_;
+
+  // Maximum height of the bookmark bar.
+  int max_height_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkBarGtk);
 };
