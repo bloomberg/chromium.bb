@@ -1359,6 +1359,16 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunInternal() {
     CommandLine::ForCurrentProcess()->AppendSwitch(switches::kViewsDesktop);
 #endif
 
+  // Always add the --block-reading-third-party-cookies flag, if not already
+  // set. We'll leave this on for a bit to determine if we Break The Web for
+  // Canary users.
+  //
+  // TODO(mkwst): Remove this once impact is clear (http://crbug.com/98241).
+  if (!parsed_command_line().HasSwitch(
+      switches::kBlockReadingThirdPartyCookies))
+    CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kBlockReadingThirdPartyCookies);
+
   // Convert active labs into switches. Modifies the current command line.
   about_flags::ConvertFlagsToSwitches(local_state,
                                       CommandLine::ForCurrentProcess());
