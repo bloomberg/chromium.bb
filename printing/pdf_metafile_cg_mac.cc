@@ -180,7 +180,7 @@ bool PdfMetafileCg::RenderPage(unsigned int page_number,
     return false;
   }
   CGPDFPageRef pdf_page = CGPDFDocumentGetPage(pdf_doc, page_number);
-  CGRect source_rect = CGPDFPageGetBoxRect(pdf_page, kCGPDFMediaBox);
+  CGRect source_rect = CGPDFPageGetBoxRect(pdf_page, kCGPDFCropBox);
   float scaling_factor = 1.0;
   // See if we need to scale the output.
   bool scaling_needed =
