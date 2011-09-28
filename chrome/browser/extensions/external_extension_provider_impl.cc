@@ -33,6 +33,7 @@ const char ExternalExtensionProviderImpl::kExternalVersion[] =
 const char ExternalExtensionProviderImpl::kExternalUpdateUrl[] =
     "external_update_url";
 
+#if !defined(OS_CHROMEOS)
 class DefaultAppsProvider : public ExternalExtensionProviderImpl {
  public:
   DefaultAppsProvider(VisitorInterface* service, Profile* profile)
@@ -71,6 +72,7 @@ void DefaultAppsProvider::VisitRegisteredExtension() const {
 
   ExternalExtensionProviderImpl::VisitRegisteredExtension();
 }
+#endif
 
 ExternalExtensionProviderImpl::ExternalExtensionProviderImpl(
     VisitorInterface* service,
@@ -326,6 +328,7 @@ void ExternalExtensionProviderImpl::CreateExternalProviders(
               Extension::INVALID,
               Extension::EXTERNAL_POLICY_DOWNLOAD)));
 
+#if !defined(OS_CHROMEOS)
   // Install default apps, except for the experimental group of users that are
   // to be excluded.
   static bool install_apps = !base::FieldTrialList::TrialExists(
@@ -337,4 +340,5 @@ void ExternalExtensionProviderImpl::CreateExternalProviders(
         linked_ptr<ExternalExtensionProviderInterface>(
             new DefaultAppsProvider(service, profile)));
   }
+#endif
 }
