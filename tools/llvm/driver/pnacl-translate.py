@@ -35,6 +35,7 @@ EXTRA_ENV = {
   'TRIPLE_X8664': 'x86_64-none-nacl-gnu',
 
   'LLC_FLAGS_COMMON': '-asm-verbose=false ' +
+                      '-tail-merge-threshold=50 ' +
                       '${PIC ? -relocation-model=pic} ' +
                       '${PIC && ARCH==X8664 && LIBMODE_NEWLIB ? ' +
                       '  -force-tls-non-pic }',
