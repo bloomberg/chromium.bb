@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
@@ -27,7 +28,6 @@ struct IE7PasswordInfo;
 class MessageLoop;
 class Profile;
 class SkBitmap;
-class Task;
 class TemplateURL;
 class WebDatabase;
 struct WebIntentServiceData;
@@ -563,7 +563,7 @@ class WebDataService
   void Commit();
 
   // Schedule a task on our worker thread.
-  void ScheduleTask(Task* t);
+  void ScheduleTask(const base::Closure& task);
 
   // Schedule a commit if one is not already pending.
   void ScheduleCommit();

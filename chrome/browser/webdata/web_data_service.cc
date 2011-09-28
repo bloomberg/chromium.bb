@@ -4,9 +4,9 @@
 
 #include "chrome/browser/webdata/web_data_service.h"
 
+#include "base/bind.h"
 #include "base/message_loop.h"
 #include "base/stl_util.h"
-#include "base/task.h"
 #include "base/threading/thread.h"
 #include "chrome/browser/autofill/autofill_profile.h"
 #include "chrome/browser/autofill/credit_card.h"
@@ -39,35 +39,22 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
+using base::Bind;
 using base::Time;
 using webkit_glue::FormField;
 using webkit_glue::PasswordForm;
 
 namespace {
+
 // A task used by WebDataService (for Sync mainly) to inform the
 // PersonalDataManager living on the UI thread that it needs to refresh.
-class NotifyOfMultipleAutofillChangesTask : public Task {
- public:
-  explicit NotifyOfMultipleAutofillChangesTask(
-      WebDataService* web_data_service);
-  virtual ~NotifyOfMultipleAutofillChangesTask();
-  virtual void Run();
- private:
-  WebDataService* web_data_service_;
-};
-
-NotifyOfMultipleAutofillChangesTask::NotifyOfMultipleAutofillChangesTask(
-    WebDataService* web_data_service) : web_data_service_(web_data_service) {
-}
-
-NotifyOfMultipleAutofillChangesTask::~NotifyOfMultipleAutofillChangesTask() {}
-
-void NotifyOfMultipleAutofillChangesTask::Run() {
+void NotifyOfMultipleAutofillChangesTask(
+    const scoped_refptr<WebDataService>& web_data_service) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_AUTOFILL_MULTIPLE_CHANGED,
-      Source<WebDataService>(web_data_service_),
+      Source<WebDataService>(web_data_service.get()),
       NotificationService::NoDetails());
 }
 
@@ -105,8 +92,10 @@ void WebDataService::NotifyOfMultipleAutofillChanges(Profile* profile) {
   if (!web_data_service)
     return;
 
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-      new NotifyOfMultipleAutofillChangesTask(web_data_service));
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      Bind(&NotifyOfMultipleAutofillChangesTask,
+           make_scoped_refptr(web_data_service)));
 }
 
 bool WebDataService::Init(const FilePath& profile_path) {
@@ -124,7 +113,7 @@ bool WebDataService::IsRunning() const {
 }
 
 void WebDataService::UnloadDatabase() {
-  ScheduleTask(NewRunnableMethod(this, &WebDataService::ShutdownDatabase));
+  ScheduleTask(Bind(&WebDataService::ShutdownDatabase, this));
 }
 
 void WebDataService::CancelRequest(Handle h) {
@@ -159,8 +148,7 @@ void WebDataService::AddKeyword(const TemplateURL& url) {
   GenericRequest<TemplateURL>* request =
     new GenericRequest<TemplateURL>(this, GetNextRequestHandle(), NULL, url);
   RegisterRequest(request);
-  ScheduleTask(NewRunnableMethod(this, &WebDataService::AddKeywordImpl,
-                                 request));
+  ScheduleTask(Bind(&WebDataService::AddKeywordImpl, this, request));
 }
 
 void WebDataService::RemoveKeyword(const TemplateURL& url) {
@@ -168,8 +156,7 @@ void WebDataService::RemoveKeyword(const TemplateURL& url) {
       new GenericRequest<TemplateURLID>(this, GetNextRequestHandle(),
                                         NULL, url.id());
   RegisterRequest(request);
-  ScheduleTask(
-      NewRunnableMethod(this, &WebDataService::RemoveKeywordImpl, request));
+  ScheduleTask(Bind(&WebDataService::RemoveKeywordImpl, this, request));
 }
 
 void WebDataService::UpdateKeyword(const TemplateURL& url) {
@@ -179,8 +166,7 @@ void WebDataService::UpdateKeyword(const TemplateURL& url) {
   GenericRequest<TemplateURL>* request =
       new GenericRequest<TemplateURL>(this, GetNextRequestHandle(), NULL, url);
   RegisterRequest(request);
-  ScheduleTask(
-      NewRunnableMethod(this, &WebDataService::UpdateKeywordImpl, request));
+  ScheduleTask(Bind(&WebDataService::UpdateKeywordImpl, this, request));
 }
 
 WebDataService::Handle WebDataService::GetKeywords(
@@ -188,10 +174,7 @@ WebDataService::Handle WebDataService::GetKeywords(
   WebDataRequest* request =
       new WebDataRequest(this, GetNextRequestHandle(), consumer);
   RegisterRequest(request);
-  ScheduleTask(
-      NewRunnableMethod(this,
-                        &WebDataService::GetKeywordsImpl,
-                        request));
+  ScheduleTask(Bind(&WebDataService::GetKeywordsImpl, this, request));
   return request->GetHandle();
 }
 
@@ -202,18 +185,16 @@ void WebDataService::SetDefaultSearchProvider(const TemplateURL* url) {
                                       NULL,
                                       url ? url->id() : 0);
   RegisterRequest(request);
-  ScheduleTask(
-      NewRunnableMethod(this, &WebDataService::SetDefaultSearchProviderImpl,
-                        request));
+  ScheduleTask(Bind(&WebDataService::SetDefaultSearchProviderImpl,
+                    this, request));
 }
 
 void WebDataService::SetBuiltinKeywordVersion(int version) {
   GenericRequest<int>* request =
     new GenericRequest<int>(this, GetNextRequestHandle(), NULL, version);
   RegisterRequest(request);
-  ScheduleTask(
-      NewRunnableMethod(this, &WebDataService::SetBuiltinKeywordVersionImpl,
-                        request));
+  ScheduleTask(Bind(&WebDataService::SetBuiltinKeywordVersionImpl,
+                    this, request));
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -228,8 +209,7 @@ void WebDataService::SetWebAppImage(const GURL& app_url,
       new GenericRequest2<GURL, SkBitmap>(this, GetNextRequestHandle(),
                                          NULL, app_url, image);
   RegisterRequest(request);
-  ScheduleTask(NewRunnableMethod(this, &WebDataService::SetWebAppImageImpl,
-                                 request));
+  ScheduleTask(Bind(&WebDataService::SetWebAppImageImpl, this, request));
 }
 
 void WebDataService::SetWebAppHasAllImages(const GURL& app_url,
@@ -238,17 +218,14 @@ void WebDataService::SetWebAppHasAllImages(const GURL& app_url,
       new GenericRequest2<GURL, bool>(this, GetNextRequestHandle(),
                                      NULL, app_url, has_all_images);
   RegisterRequest(request);
-  ScheduleTask(NewRunnableMethod(this,
-                                 &WebDataService::SetWebAppHasAllImagesImpl,
-                                 request));
+  ScheduleTask(Bind(&WebDataService::SetWebAppHasAllImagesImpl, this, request));
 }
 
 void WebDataService::RemoveWebApp(const GURL& app_url) {
   GenericRequest<GURL>* request =
       new GenericRequest<GURL>(this, GetNextRequestHandle(), NULL, app_url);
   RegisterRequest(request);
-  ScheduleTask(NewRunnableMethod(this, &WebDataService::RemoveWebAppImpl,
-                                 request));
+  ScheduleTask(Bind(&WebDataService::RemoveWebAppImpl, this, request));
 }
 
 WebDataService::Handle WebDataService::GetWebAppImages(
@@ -257,8 +234,7 @@ WebDataService::Handle WebDataService::GetWebAppImages(
   GenericRequest<GURL>* request =
       new GenericRequest<GURL>(this, GetNextRequestHandle(), consumer, app_url);
   RegisterRequest(request);
-  ScheduleTask(NewRunnableMethod(this, &WebDataService::GetWebAppImagesImpl,
-                                 request));
+  ScheduleTask(Bind(&WebDataService::GetWebAppImagesImpl, this, request));
   return request->GetHandle();
 }
 
@@ -273,8 +249,7 @@ void WebDataService::AddWebIntent(const WebIntentServiceData& service) {
       new GenericRequest<WebIntentServiceData>(
           this, GetNextRequestHandle(), NULL, service);
   RegisterRequest(request);
-  ScheduleTask(NewRunnableMethod(this, &WebDataService::AddWebIntentImpl,
-                                 request));
+  ScheduleTask(Bind(&WebDataService::AddWebIntentImpl, this, request));
 }
 
 void WebDataService::RemoveWebIntent(const WebIntentServiceData& service) {
@@ -282,8 +257,7 @@ void WebDataService::RemoveWebIntent(const WebIntentServiceData& service) {
       new GenericRequest<WebIntentServiceData>(
           this, GetNextRequestHandle(), NULL, service);
   RegisterRequest(request);
-  ScheduleTask(NewRunnableMethod(this, &WebDataService::RemoveWebIntentImpl,
-                                 request));
+  ScheduleTask(Bind(&WebDataService::RemoveWebIntentImpl, this, request));
 }
 
 WebDataService::Handle WebDataService::GetWebIntents(const string16& action,
@@ -292,10 +266,7 @@ WebDataService::Handle WebDataService::GetWebIntents(const string16& action,
   GenericRequest<string16>* request = new GenericRequest<string16>(
       this, GetNextRequestHandle(), consumer, action);
   RegisterRequest(request);
-  ScheduleTask(
-      NewRunnableMethod(this,
-                        &WebDataService::GetWebIntentsImpl,
-                        request));
+  ScheduleTask(Bind(&WebDataService::GetWebIntentsImpl, this, request));
   return request->GetHandle();
 }
 
@@ -305,10 +276,7 @@ WebDataService::Handle WebDataService::GetAllWebIntents(
   GenericRequest<std::string>* request = new GenericRequest<std::string>(
       this, GetNextRequestHandle(), consumer, std::string());
   RegisterRequest(request);
-  ScheduleTask(
-      NewRunnableMethod(this,
-                        &WebDataService::GetAllWebIntentsImpl,
-                        request));
+  ScheduleTask(Bind(&WebDataService::GetAllWebIntentsImpl, this, request));
   return request->GetHandle();
 }
 
@@ -324,8 +292,7 @@ void WebDataService::SetTokenForService(const std::string& service,
       new GenericRequest2<std::string, std::string>(
           this, GetNextRequestHandle(), NULL, service, token);
   RegisterRequest(request);
-  ScheduleTask(NewRunnableMethod(this, &WebDataService::SetTokenForServiceImpl,
-                                 request));
+  ScheduleTask(Bind(&WebDataService::SetTokenForServiceImpl, this, request));
 }
 
 void WebDataService::RemoveAllTokens() {
@@ -333,9 +300,7 @@ void WebDataService::RemoveAllTokens() {
       new GenericRequest<std::string>(
           this, GetNextRequestHandle(), NULL, std::string());
   RegisterRequest(request);
-  ScheduleTask(NewRunnableMethod(this,
-                                 &WebDataService::RemoveAllTokensImpl,
-                                 request));
+  ScheduleTask(Bind(&WebDataService::RemoveAllTokensImpl, this, request));
 }
 
 // Null on failure. Success is WDResult<std::string>
@@ -346,9 +311,7 @@ WebDataService::Handle WebDataService::GetAllTokens(
       new GenericRequest<std::string>(
           this, GetNextRequestHandle(), consumer, std::string());
   RegisterRequest(request);
-  ScheduleTask(NewRunnableMethod(this,
-                                 &WebDataService::GetAllTokensImpl,
-                                 request));
+  ScheduleTask(Bind(&WebDataService::GetAllTokensImpl, this, request));
   return request->GetHandle();
 }
 
@@ -363,8 +326,7 @@ void WebDataService::AddLogin(const PasswordForm& form) {
       new GenericRequest<PasswordForm>(this, GetNextRequestHandle(), NULL,
                                        form);
   RegisterRequest(request);
-  ScheduleTask(NewRunnableMethod(this, &WebDataService::AddLoginImpl,
-                                 request));
+  ScheduleTask(Bind(&WebDataService::AddLoginImpl, this, request));
 }
 
 void WebDataService::UpdateLogin(const PasswordForm& form) {
@@ -372,8 +334,7 @@ void WebDataService::UpdateLogin(const PasswordForm& form) {
       new GenericRequest<PasswordForm>(this, GetNextRequestHandle(),
                                        NULL, form);
   RegisterRequest(request);
-  ScheduleTask(NewRunnableMethod(this, &WebDataService::UpdateLoginImpl,
-                                 request));
+  ScheduleTask(Bind(&WebDataService::UpdateLoginImpl, this, request));
 }
 
 void WebDataService::RemoveLogin(const PasswordForm& form) {
@@ -381,8 +342,7 @@ void WebDataService::RemoveLogin(const PasswordForm& form) {
      new GenericRequest<PasswordForm>(this, GetNextRequestHandle(), NULL,
                                       form);
   RegisterRequest(request);
-  ScheduleTask(NewRunnableMethod(this, &WebDataService::RemoveLoginImpl,
-                                 request));
+  ScheduleTask(Bind(&WebDataService::RemoveLoginImpl, this, request));
 }
 
 void WebDataService::RemoveLoginsCreatedBetween(const Time& delete_begin,
@@ -394,8 +354,8 @@ void WebDataService::RemoveLoginsCreatedBetween(const Time& delete_begin,
                                     delete_begin,
                                     delete_end);
   RegisterRequest(request);
-  ScheduleTask(NewRunnableMethod(this,
-      &WebDataService::RemoveLoginsCreatedBetweenImpl, request));
+  ScheduleTask(Bind(&WebDataService::RemoveLoginsCreatedBetweenImpl,
+                    this, request));
 }
 
 void WebDataService::RemoveLoginsCreatedAfter(const Time& delete_begin) {
@@ -409,8 +369,7 @@ WebDataService::Handle WebDataService::GetLogins(
       new GenericRequest<PasswordForm>(this, GetNextRequestHandle(),
                                        consumer, form);
   RegisterRequest(request);
-  ScheduleTask(NewRunnableMethod(this, &WebDataService::GetLoginsImpl,
-                                 request));
+  ScheduleTask(Bind(&WebDataService::GetLoginsImpl, this, request));
   return request->GetHandle();
 }
 
@@ -419,9 +378,7 @@ WebDataService::Handle WebDataService::GetAutofillableLogins(
   WebDataRequest* request =
       new WebDataRequest(this, GetNextRequestHandle(), consumer);
   RegisterRequest(request);
-  ScheduleTask(NewRunnableMethod(this,
-                                 &WebDataService::GetAutofillableLoginsImpl,
-                                 request));
+  ScheduleTask(Bind(&WebDataService::GetAutofillableLoginsImpl, this, request));
   return request->GetHandle();
 }
 
@@ -430,9 +387,7 @@ WebDataService::Handle WebDataService::GetBlacklistLogins(
   WebDataRequest* request =
       new WebDataRequest(this, GetNextRequestHandle(), consumer);
   RegisterRequest(request);
-  ScheduleTask(NewRunnableMethod(this,
-                                 &WebDataService::GetBlacklistLoginsImpl,
-                                 request));
+  ScheduleTask(Bind(&WebDataService::GetBlacklistLoginsImpl, this, request));
   return request->GetHandle();
 }
 
@@ -448,9 +403,7 @@ void WebDataService::AddFormFields(
       new GenericRequest<std::vector<FormField> >(
           this, GetNextRequestHandle(), NULL, fields);
   RegisterRequest(request);
-  ScheduleTask(NewRunnableMethod(this,
-                                 &WebDataService::AddFormElementsImpl,
-                                 request));
+  ScheduleTask(Bind(&WebDataService::AddFormElementsImpl, this, request));
 }
 
 WebDataService::Handle WebDataService::GetFormValuesForElementName(
@@ -459,13 +412,8 @@ WebDataService::Handle WebDataService::GetFormValuesForElementName(
   WebDataRequest* request =
       new WebDataRequest(this, GetNextRequestHandle(), consumer);
   RegisterRequest(request);
-  ScheduleTask(
-      NewRunnableMethod(this,
-                        &WebDataService::GetFormValuesForElementNameImpl,
-                        request,
-                        name,
-                        prefix,
-                        limit));
+  ScheduleTask(Bind(&WebDataService::GetFormValuesForElementNameImpl,
+                    this, request, name, prefix, limit));
   return request->GetHandle();
 }
 
@@ -478,8 +426,8 @@ void WebDataService::RemoveFormElementsAddedBetween(const Time& delete_begin,
                                     delete_begin,
                                     delete_end);
   RegisterRequest(request);
-  ScheduleTask(NewRunnableMethod(this,
-      &WebDataService::RemoveFormElementsAddedBetweenImpl, request));
+  ScheduleTask(Bind(&WebDataService::RemoveFormElementsAddedBetweenImpl,
+                    this, request));
 }
 
 void WebDataService::RemoveFormValueForElementName(
@@ -490,10 +438,8 @@ void WebDataService::RemoveFormValueForElementName(
                                               NULL,
                                               name, value);
   RegisterRequest(request);
-  ScheduleTask(
-      NewRunnableMethod(this,
-                        &WebDataService::RemoveFormValueForElementNameImpl,
-                        request));
+  ScheduleTask(Bind(&WebDataService::RemoveFormValueForElementNameImpl,
+                    this, request));
 }
 
 void WebDataService::AddAutofillProfile(const AutofillProfile& profile) {
@@ -501,9 +447,7 @@ void WebDataService::AddAutofillProfile(const AutofillProfile& profile) {
       new GenericRequest<AutofillProfile>(
           this, GetNextRequestHandle(), NULL, profile);
   RegisterRequest(request);
-  ScheduleTask(NewRunnableMethod(this,
-                                 &WebDataService::AddAutofillProfileImpl,
-                                 request));
+  ScheduleTask(Bind(&WebDataService::AddAutofillProfileImpl, this, request));
 }
 
 void WebDataService::UpdateAutofillProfile(const AutofillProfile& profile) {
@@ -511,9 +455,7 @@ void WebDataService::UpdateAutofillProfile(const AutofillProfile& profile) {
       new GenericRequest<AutofillProfile>(
           this, GetNextRequestHandle(), NULL, profile);
   RegisterRequest(request);
-  ScheduleTask(NewRunnableMethod(this,
-                                 &WebDataService::UpdateAutofillProfileImpl,
-                                 request));
+  ScheduleTask(Bind(&WebDataService::UpdateAutofillProfileImpl, this, request));
 }
 
 void WebDataService::RemoveAutofillProfile(const std::string& guid) {
@@ -521,9 +463,7 @@ void WebDataService::RemoveAutofillProfile(const std::string& guid) {
       new GenericRequest<std::string>(
           this, GetNextRequestHandle(), NULL, guid);
   RegisterRequest(request);
-  ScheduleTask(NewRunnableMethod(this,
-                                 &WebDataService::RemoveAutofillProfileImpl,
-                                 request));
+  ScheduleTask(Bind(&WebDataService::RemoveAutofillProfileImpl, this, request));
 }
 
 WebDataService::Handle WebDataService::GetAutofillProfiles(
@@ -531,10 +471,7 @@ WebDataService::Handle WebDataService::GetAutofillProfiles(
   WebDataRequest* request =
       new WebDataRequest(this, GetNextRequestHandle(), consumer);
   RegisterRequest(request);
-  ScheduleTask(
-      NewRunnableMethod(this,
-                        &WebDataService::GetAutofillProfilesImpl,
-                        request));
+  ScheduleTask(Bind(&WebDataService::GetAutofillProfilesImpl, this, request));
   return request->GetHandle();
 }
 
@@ -543,9 +480,7 @@ void WebDataService::EmptyMigrationTrash(bool notify_sync) {
       new GenericRequest<bool>(
           this, GetNextRequestHandle(), NULL, notify_sync);
   RegisterRequest(request);
-  ScheduleTask(NewRunnableMethod(this,
-                                 &WebDataService::EmptyMigrationTrashImpl,
-                                 request));
+  ScheduleTask(Bind(&WebDataService::EmptyMigrationTrashImpl, this, request));
 }
 
 void WebDataService::AddCreditCard(const CreditCard& credit_card) {
@@ -553,9 +488,7 @@ void WebDataService::AddCreditCard(const CreditCard& credit_card) {
       new GenericRequest<CreditCard>(
           this, GetNextRequestHandle(), NULL, credit_card);
   RegisterRequest(request);
-  ScheduleTask(NewRunnableMethod(this,
-                                 &WebDataService::AddCreditCardImpl,
-                                 request));
+  ScheduleTask(Bind(&WebDataService::AddCreditCardImpl, this, request));
 }
 
 void WebDataService::UpdateCreditCard(const CreditCard& credit_card) {
@@ -563,9 +496,7 @@ void WebDataService::UpdateCreditCard(const CreditCard& credit_card) {
       new GenericRequest<CreditCard>(
           this, GetNextRequestHandle(), NULL, credit_card);
   RegisterRequest(request);
-  ScheduleTask(NewRunnableMethod(this,
-                                 &WebDataService::UpdateCreditCardImpl,
-                                 request));
+  ScheduleTask(Bind(&WebDataService::UpdateCreditCardImpl, this, request));
 }
 
 void WebDataService::RemoveCreditCard(const std::string& guid) {
@@ -573,9 +504,7 @@ void WebDataService::RemoveCreditCard(const std::string& guid) {
       new GenericRequest<std::string>(
           this, GetNextRequestHandle(), NULL, guid);
   RegisterRequest(request);
-  ScheduleTask(NewRunnableMethod(this,
-                                 &WebDataService::RemoveCreditCardImpl,
-                                 request));
+  ScheduleTask(Bind(&WebDataService::RemoveCreditCardImpl, this, request));
 }
 
 WebDataService::Handle WebDataService::GetCreditCards(
@@ -583,10 +512,7 @@ WebDataService::Handle WebDataService::GetCreditCards(
   WebDataRequest* request =
       new WebDataRequest(this, GetNextRequestHandle(), consumer);
   RegisterRequest(request);
-  ScheduleTask(
-      NewRunnableMethod(this,
-                        &WebDataService::GetCreditCardsImpl,
-                        request));
+  ScheduleTask(Bind(&WebDataService::GetCreditCardsImpl, this, request));
   return request->GetHandle();
 }
 
@@ -600,9 +526,9 @@ void WebDataService::RemoveAutofillProfilesAndCreditCardsModifiedBetween(
                                       delete_begin,
                                       delete_end);
   RegisterRequest(request);
-  ScheduleTask(NewRunnableMethod(
-      this,
+  ScheduleTask(Bind(
       &WebDataService::RemoveAutofillProfilesAndCreditCardsModifiedBetweenImpl,
+      this,
       request));
 }
 
@@ -615,8 +541,7 @@ WebDataService::~WebDataService() {
 bool WebDataService::InitWithPath(const FilePath& path) {
   path_ = path;
   is_running_ = true;
-  ScheduleTask(NewRunnableMethod(this,
-      &WebDataService::InitializeDatabaseIfNecessary));
+  ScheduleTask(Bind(&WebDataService::InitializeDatabaseIfNecessary, this));
   return true;
 }
 
@@ -735,9 +660,9 @@ void WebDataService::Commit() {
   }
 }
 
-void WebDataService::ScheduleTask(Task* t) {
+void WebDataService::ScheduleTask(const base::Closure& task) {
   if (is_running_)
-    BrowserThread::PostTask(BrowserThread::DB, FROM_HERE, t);
+    BrowserThread::PostTask(BrowserThread::DB, FROM_HERE, task);
   else
     NOTREACHED() << "Task scheduled after Shutdown()";
 }
@@ -745,7 +670,7 @@ void WebDataService::ScheduleTask(Task* t) {
 void WebDataService::ScheduleCommit() {
   if (should_commit_ == false) {
     should_commit_ = true;
-    ScheduleTask(NewRunnableMethod(this, &WebDataService::Commit));
+    ScheduleTask(Bind(&WebDataService::Commit, this));
   }
 }
 
@@ -1487,9 +1412,6 @@ const WDTypedResult* WebDataService::WebDataRequest::GetResult() const {
 }
 
 void WebDataService::WebDataRequest::RequestComplete() {
-  WebDataService* s = service_;
-  Task* t = NewRunnableMethod(s,
-                              &WebDataService::RequestCompleted,
-                              handle_);
-  message_loop_->PostTask(FROM_HERE, t);
+  message_loop_->PostTask(FROM_HERE, Bind(&WebDataService::RequestCompleted,
+                                          service_.get(), handle_));
 }
