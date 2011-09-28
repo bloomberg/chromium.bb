@@ -67,31 +67,12 @@ class Extension;
 // and receive messages.
 //
 // TODO(brettw): This has two different and opposing usage patterns which
-// make it confusing.
+// make it confusing. It can be accessed through RenderThread::current(), which
+// can be NULL during tests, or it can be passed as RenderThreadBase, which is
+// mocked during tests. It should be changed to RenderThread::current()
+// everywhere.
 //
-// In the first mode, callers call RenderThread::current() to get the one and
-// only global RenderThread (bug 10837: this should be renamed get()). Then
-// they access it. Since RenderThread is a concrete class, this can be NULL
-// during unit tests. Callers need to NULL check this every time. Some callers
-// don't happen to get called during unit tests and don't do the NULL checks,
-// which is also confusing since it's not clear if you need to or not.
-//
-// In the second mode, the abstract base class RenderThreadBase is passed to
-// RenderView and RenderWidget. Normally, this points to
-// RenderThread::current() so it's quite confusing which accessing mode should
-// be used. However, during unit testing, this class is replaced with a mock
-// to support testing functions, and is guaranteed non-NULL.
-//
-// It might be nice not to have the ::current() call and put all of the
-// functions on the abstract class so they can be mocked. However, there are
-// some standalone functions like in ChromiumBridge that are not associated
-// with a view that need to access the current thread to send messages to the
-// browser process. These need the ::current() paradigm. So instead, we should
-// probably remove the render_thread_ parameter to RenderView/Widget in
-// preference to just getting the global singleton. We can make it easier to
-// understand by moving everything to the abstract interface and saying that
-// there should never be a NULL RenderThread::current(). Tests would be
-// responsible for setting up the mock one.
+// See crbug.com/98375 for more details.
 class CONTENT_EXPORT RenderThreadBase {
  public:
   virtual ~RenderThreadBase() {}
@@ -133,8 +114,7 @@ class CONTENT_EXPORT RenderThread : public RenderThreadBase,
   // be accessed when running on the render thread itself
   //
   // TODO(brettw) this should be on the abstract base class instead of here,
-  // and return the base class' interface instead. Currently this causes
-  // problems with testing. See the comment above RenderThreadBase above.
+  // and return the base class' interface instead. See crbug.com/98375.
   static RenderThread* current();
 
   // Returns the routing ID of the RenderWidget containing the current script

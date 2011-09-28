@@ -12,10 +12,9 @@
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/extensions/extension_set.h"
 #include "chrome/common/url_constants.h"
-#include "chrome/renderer/chrome_render_process_observer.h"
-#include "chrome/renderer/extensions/bindings_utils.h"
 #include "chrome/renderer/extensions/event_bindings.h"
 #include "chrome/renderer/extensions/extension_base.h"
+#include "chrome/renderer/extensions/extension_bindings_context.h"
 #include "chrome/renderer/extensions/extension_dispatcher.h"
 #include "chrome/renderer/extensions/extension_process_bindings.h"
 #include "chrome/renderer/extensions/js_only_v8_extensions.h"
@@ -25,7 +24,6 @@
 #include "content/renderer/v8_value_converter.h"
 #include "googleurl/src/gurl.h"
 #include "grit/renderer_resources.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebDataSource.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
@@ -34,32 +32,14 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "v8/include/v8.h"
 
-using bindings_utils::CallFunctionInContext;
-using bindings_utils::ContextInfo;
-using bindings_utils::ContextList;
-using bindings_utils::GetContexts;
-using bindings_utils::GetInfoForCurrentContext;
-using bindings_utils::GetPendingRequestMap;
-using bindings_utils::PendingRequestMap;
-using WebKit::WebDataSource;
-using WebKit::WebDocument;
 using WebKit::WebFrame;
 using WebKit::WebSecurityOrigin;
 using WebKit::WebURL;
-
-static void ContextWeakReferenceCallback(v8::Persistent<v8::Value> context,
-                                         void*);
 
 namespace {
 
 // Keep a local cache of RenderThread so that we can mock it out for unit tests.
 static RenderThreadBase* render_thread = NULL;
-static bool in_unit_tests = false;
-
-// Set to true if these bindings are registered.  Will be false when extensions
-// are disabled.
-static bool bindings_registered = false;
-
 
 // A map of event names to the number of listeners for that event. We notify
 // the browser about event listeners when we transition between 0 and 1.
@@ -105,9 +85,11 @@ class ExtensionImpl : public ExtensionBase {
     DCHECK(args[0]->IsString() || args[0]->IsUndefined());
 
     if (args[0]->IsString()) {
-      ContextInfo* context_info = GetInfoForCurrentContext();
+      ExtensionBindingsContext* context =
+          ExtensionBindingsContext::GetCurrent();
+      CHECK(context);
       EventListenerCounts& listener_counts =
-          GetListenerCounts(context_info->extension_id);
+          GetListenerCounts(context->extension_id());
       std::string event_name(*v8::String::AsciiValue(args[0]));
 
       ExtensionImpl* v8_extension = GetFromArguments<ExtensionImpl>(args);
@@ -116,13 +98,9 @@ class ExtensionImpl : public ExtensionBase {
 
       if (++listener_counts[event_name] == 1) {
         EventBindings::GetRenderThread()->Send(
-            new ExtensionHostMsg_AddListener(context_info->extension_id,
+            new ExtensionHostMsg_AddListener(context->extension_id(),
                                              event_name));
       }
-
-      if (++context_info->num_connected_events == 1)
-        context_info->context.ClearWeak();
-
     }
 
     return v8::Undefined();
@@ -134,21 +112,18 @@ class ExtensionImpl : public ExtensionBase {
     DCHECK(args[0]->IsString() || args[0]->IsUndefined());
 
     if (args[0]->IsString()) {
-      ContextInfo* context_info = GetInfoForCurrentContext();
-      if (!context_info)
+      ExtensionBindingsContext* context =
+          ExtensionBindingsContext::GetCurrent();
+      if (!context)
         return v8::Undefined();
 
       EventListenerCounts& listener_counts =
-          GetListenerCounts(context_info->extension_id);
+          GetListenerCounts(context->extension_id());
       std::string event_name(*v8::String::AsciiValue(args[0]));
       if (--listener_counts[event_name] == 0) {
         EventBindings::GetRenderThread()->Send(
-            new ExtensionHostMsg_RemoveListener(context_info->extension_id,
+            new ExtensionHostMsg_RemoveListener(context->extension_id(),
                                                 event_name));
-      }
-
-      if (--context_info->num_connected_events == 0) {
-        context_info->context.MakeWeak(NULL, &ContextWeakReferenceCallback);
       }
     }
 
@@ -188,239 +163,21 @@ class ExtensionImpl : public ExtensionBase {
   }
 };
 
-// Returns true if the extension running in the given |context| has sufficient
-// permissions to access the data.
-static bool HasSufficientPermissions(RenderView* render_view,
-                                     const GURL& event_url) {
-  // During unit tests, we might be invoked without a v8 context. In these
-  // cases, we only allow empty event_urls and short-circuit before retrieving
-  // the render view from the current context.
-  if (!event_url.is_valid())
-    return true;
-
-  WebDocument document = render_view->webview()->mainFrame()->document();
-  return GURL(document.url()).SchemeIs(chrome::kExtensionScheme) &&
-       document.securityOrigin().canRequest(event_url);
-}
-
 }  // namespace
 
 const char* EventBindings::kName = "chrome/EventBindings";
-const char* EventBindings::kTestingExtensionId =
-    "oooooooooooooooooooooooooooooooo";
 
 v8::Extension* EventBindings::Get(ExtensionDispatcher* dispatcher) {
   static v8::Extension* extension = new ExtensionImpl(dispatcher);
-  bindings_registered = true;
   return extension;
 }
 
 // static
 void EventBindings::SetRenderThread(RenderThreadBase* thread) {
   render_thread = thread;
-  in_unit_tests = true;
 }
 
 // static
 RenderThreadBase* EventBindings::GetRenderThread() {
   return render_thread ? render_thread : RenderThread::current();
-}
-
-static void DeferredUnload(v8::Persistent<v8::Context> context) {
-  v8::HandleScope handle_scope;
-  CallFunctionInContext(context, "dispatchOnUnload", 0, NULL);
-  context.Dispose();
-  context.Clear();
-}
-
-static void UnregisterContext(ContextList::iterator context_iter, bool in_gc) {
-  // Notify the bindings that they're going away.
-  if (in_gc) {
-    // We shouldn't call back into javascript during a garbage collect.  Do it
-    // later.  We'll hang onto the context until this DeferredUnload is called.
-    MessageLoop::current()->PostTask(FROM_HERE, NewRunnableFunction(
-        DeferredUnload, (*context_iter)->context));
-  } else {
-    CallFunctionInContext((*context_iter)->context, "dispatchOnUnload",
-                          0, NULL);
-  }
-
-  // Remove all pending requests for this context.
-  PendingRequestMap& pending_requests = GetPendingRequestMap();
-  for (PendingRequestMap::iterator it = pending_requests.begin();
-       it != pending_requests.end(); ) {
-    PendingRequestMap::iterator current = it++;
-    if (current->second->context == (*context_iter)->context) {
-      current->second->context.Dispose();
-      current->second->context.Clear();
-      pending_requests.erase(current);
-    }
-  }
-
-  // Remove it from our registered contexts.
-  (*context_iter)->context.ClearWeak();
-  if (!in_gc) {
-    (*context_iter)->context.Dispose();
-    (*context_iter)->context.Clear();
-  }
-
-  GetContexts().erase(context_iter);
-}
-
-static void ContextWeakReferenceCallback(v8::Persistent<v8::Value> context,
-                                         void*) {
-  // This should only get called for content script contexts.
-  for (ContextList::iterator it = GetContexts().begin();
-       it != GetContexts().end(); ++it) {
-    if ((*it)->context == context) {
-      UnregisterContext(it, true);
-      return;
-    }
-  }
-
-  NOTREACHED();
-}
-
-void EventBindings::HandleContextCreated(
-    WebFrame* frame,
-    v8::Handle<v8::Context> context,
-    ExtensionDispatcher* extension_dispatcher,
-    int isolated_world_id) {
-  if (!bindings_registered)
-    return;
-
-  bool content_script = isolated_world_id != 0;
-  ContextList& contexts = GetContexts();
-
-  v8::Persistent<v8::Context> persistent_context;
-  std::string extension_id;
-
-  if (content_script) {
-    // Content script contexts can get GCed before their frame goes away, so
-    // set up a GC callback.
-    persistent_context = v8::Persistent<v8::Context>::New(context);
-    persistent_context.MakeWeak(NULL, &ContextWeakReferenceCallback);
-    extension_id =
-        extension_dispatcher->user_script_slave()->
-            GetExtensionIdForIsolatedWorld(isolated_world_id);
-  } else {
-    // Figure out the frame's URL.  If the frame is loading, use its provisional
-    // URL, since we get this notification before commit.
-    WebDataSource* ds = frame->provisionalDataSource();
-    if (!ds)
-      ds = frame->dataSource();
-    GURL url = ds->request().url();
-    const ExtensionSet* extensions = extension_dispatcher->extensions();
-    extension_id = extensions->GetIdByURL(url);
-
-    if (!extensions->ExtensionBindingsAllowed(url)) {
-      // This context is a regular non-extension web page or an unprivileged
-      // chrome app. Ignore it. We only care about content scripts and extension
-      // frames.
-      // (Unless we're in unit tests, in which case we don't care what the URL
-      // is).
-      if (!in_unit_tests)
-        return;
-
-      // For tests, we want the dispatchOnLoad to actually setup our bindings,
-      // so we give a fake extension id;
-      extension_id = kTestingExtensionId;
-    }
-
-    persistent_context = v8::Persistent<v8::Context>::New(context);
-  }
-
-  contexts.push_back(linked_ptr<ContextInfo>(
-      new ContextInfo(persistent_context, extension_id, frame)));
-
-  v8::HandleScope handle_scope;
-  v8::Handle<v8::Value> argv[3];
-  argv[0] = v8::String::New(extension_id.c_str());
-  argv[1] = v8::Boolean::New(extension_dispatcher->is_extension_process());
-  argv[2] = v8::Boolean::New(
-      ChromeRenderProcessObserver::is_incognito_process());
-  CallFunctionInContext(context, "dispatchOnLoad", arraysize(argv), argv);
-}
-
-// static
-void EventBindings::HandleContextDestroyed(WebFrame* frame) {
-  if (!bindings_registered)
-    return;
-
-  v8::HandleScope handle_scope;
-  v8::Local<v8::Context> context = frame->mainWorldScriptContext();
-  if (!context.IsEmpty()) {
-    ContextList::iterator context_iter = bindings_utils::FindContext(context);
-    if (context_iter != GetContexts().end())
-      UnregisterContext(context_iter, false);
-  }
-
-  // Unload any content script contexts for this frame.  Note that the frame
-  // itself might not be registered, but can still be a parent frame.
-  for (ContextList::iterator it = GetContexts().begin();
-       it != GetContexts().end(); ) {
-    if ((*it)->unsafe_frame == frame) {
-      UnregisterContext(it, false);
-      // UnregisterContext will remove |it| from the list, but may also
-      // modify the rest of the list as a result of calling into javascript.
-      it = GetContexts().begin();
-    } else {
-      ++it;
-    }
-  }
-}
-
-// static
-void EventBindings::CallFunction(const std::string& extension_id,
-                                 const std::string& function_name,
-                                 const ListValue& arguments,
-                                 RenderView* render_view,
-                                 const GURL& event_url) {
-  v8::HandleScope handle_scope;
-
-  // We copy the context list, because calling into javascript may modify it
-  // out from under us. We also guard against deleted contexts by checking if
-  // they have been cleared first.
-  ContextList contexts = GetContexts();
-
-  V8ValueConverter converter;
-  for (ContextList::iterator it = contexts.begin();
-       it != contexts.end(); ++it) {
-    if ((*it)->context.IsEmpty())
-      continue;
-
-    if (!extension_id.empty() && extension_id != (*it)->extension_id)
-      continue;
-
-    RenderView* context_render_view = (*it)->GetRenderView();
-    if (!context_render_view)
-      continue;
-
-    if (render_view && render_view != context_render_view)
-      continue;
-
-    if (!HasSufficientPermissions(context_render_view, event_url))
-      continue;
-
-    v8::Local<v8::Context> context(*((*it)->context));
-    std::vector<v8::Handle<v8::Value> > v8_arguments;
-    for (size_t i = 0; i < arguments.GetSize(); ++i) {
-      Value* item = NULL;
-      CHECK(arguments.Get(i, &item));
-      v8_arguments.push_back(converter.ToV8Value(item, context));
-    }
-
-    v8::Handle<v8::Value> retval = CallFunctionInContext(
-        context, function_name, v8_arguments.size(), &v8_arguments[0]);
-    // In debug, the js will validate the event parameters and return a
-    // string if a validation error has occured.
-    // TODO(rafaelw): Consider only doing this check if function_name ==
-    // "Event.dispatchJSON".
-#ifndef NDEBUG
-    if (!retval.IsEmpty() && !retval->IsUndefined()) {
-      std::string error = *v8::String::AsciiValue(retval);
-      DCHECK(false) << error;
-    }
-#endif
-  }
 }

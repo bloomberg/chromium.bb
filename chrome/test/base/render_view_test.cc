@@ -10,6 +10,7 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/autofill/password_autofill_manager.h"
 #include "chrome/renderer/extensions/event_bindings.h"
+#include "chrome/renderer/extensions/extension_bindings_context.h"
 #include "chrome/renderer/extensions/extension_dispatcher.h"
 #include "chrome/renderer/extensions/extension_process_bindings.h"
 #include "chrome/renderer/extensions/js_only_v8_extensions.h"
@@ -117,6 +118,7 @@ void RenderViewTest::SetUp() {
   WebScriptController::registerExtension(RendererExtensionBindings::Get(
       extension_dispatcher_));
   EventBindings::SetRenderThread(&render_thread_);
+  ExtensionBindingsContext::SetRenderThreadMessageLoop(&msg_loop_);
 
   mock_process_.reset(new MockRenderProcess);
 
