@@ -17,11 +17,27 @@
 #include "printing/print_job_constants.h"
 #include "printing/print_settings_initializer_win.h"
 #include "printing/printed_document.h"
+#include "printing/units.h"
 #include "skia/ext/platform_device.h"
 
 using base::Time;
 
 namespace {
+
+// Constants for setting default PDF settings.
+const int kPDFDpi = 300;  // 300 dpi
+// LETTER: 8.5 x 11 inches
+const int kPDFLetterWidth = 8.5 * kPDFDpi;
+const int kPDFLetterHeight = 11 * kPDFDpi;
+// LEGAL: 8.5 x 14 inches
+const int kPDFLegalWidth = 8.5 * kPDFDpi;
+const int kPDFLegalHeight = 14 * kPDFDpi;
+// A4: 8.27 x 11.69 inches
+const int kPDFA4Width = 8.27 * kPDFDpi;
+const int kPDFA4Height = 11.69 * kPDFDpi;
+// A3: 11.69 x 16.54 inches
+const int kPDFA3Width = 11.69 * kPDFDpi;
+const int kPDFA3Height = 16.54 * kPDFDpi;
 
 // Retrieves the printer's PRINTER_INFO_* structure.
 // Output |level| can be 9 (user-default), 8 (admin-default), or 2
@@ -331,7 +347,35 @@ PrintingContext::Result PrintingContextWin::UpdatePrinterSettings(
   bool print_to_cloud = job_settings.HasKey(printing::kSettingCloudPrintId);
 
   if (print_to_pdf || print_to_cloud) {
-    // Pseudo printer: handle orientation and ranges only.
+    // Default fallback to Letter size.
+    gfx::Size paper_size;
+    gfx::Rect paper_rect;
+    paper_size.SetSize(kPDFLetterWidth, kPDFLetterHeight);
+
+    // Get settings from locale. Paper type buffer length is at most 4.
+    const int paper_type_buffer_len = 4;
+    wchar_t paper_type_buffer[paper_type_buffer_len] = {0};
+    GetLocaleInfo(LOCALE_USER_DEFAULT, LOCALE_IPAPERSIZE, paper_type_buffer,
+                  paper_type_buffer_len);
+    if (wcslen(paper_type_buffer)) {  // The call succeeded.
+      int paper_code = _wtoi(paper_type_buffer);
+      switch (paper_code) {
+        case DMPAPER_LEGAL:
+          paper_size.SetSize(kPDFLegalWidth, kPDFLegalHeight);
+          break;
+        case DMPAPER_A4:
+          paper_size.SetSize(kPDFA4Width, kPDFA4Height);
+          break;
+        case DMPAPER_A3:
+          paper_size.SetSize(kPDFA3Width, kPDFA3Height);
+          break;
+        default:  // DMPAPER_LETTER is used for default fallback.
+          break;
+      }
+    }
+    paper_rect.SetRect(0, 0, paper_size.width(), paper_size.height());
+    settings_.SetPrinterPrintableArea(paper_size, paper_rect, kPDFDpi);
+    settings_.set_dpi(kPDFDpi);
     settings_.SetOrientation(landscape);
     settings_.ranges = ranges;
     return OK;
