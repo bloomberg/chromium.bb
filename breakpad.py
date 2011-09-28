@@ -1,4 +1,4 @@
-# Copyright (c) 2009 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -134,7 +134,7 @@ def Register():
 
 
 # Skip unit tests and we don't want anything from non-googler.
-if (not 'test' in sys.modules['__main__'].__file__ and
+if (not 'test' in getattr(sys.modules['__main__'], '__file__', '') and
     not 'NO_BREAKPAD' in os.environ and
     (_HOST_NAME.endswith('.google.com') or
      _HOST_NAME.endswith('.chromium.org'))):
