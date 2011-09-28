@@ -83,6 +83,7 @@ bool ShouldRenderPrerenderedPageCorrectly(FinalStatus status) {
   switch (status) {
     case FINAL_STATUS_USED:
     case FINAL_STATUS_WINDOW_OPENER:
+    case FINAL_STATUS_APP_TERMINATING:
     case FINAL_STATUS_FRAGMENT_MISMATCH:
     case FINAL_STATUS_CACHE_OR_HISTORY_CLEARED:
     // We'll crash the renderer after it's loaded.
@@ -115,6 +116,9 @@ class TestPrerenderContents : public PrerenderContents {
         was_hidden_(false),
         was_shown_(false),
         should_be_shown_(expected_final_status == FINAL_STATUS_USED),
+        quit_message_loop_on_destruction_(
+            expected_final_status != FINAL_STATUS_EVICTED &&
+            expected_final_status != FINAL_STATUS_APP_TERMINATING),
         expected_pending_prerenders_(0) {
     if (expected_number_of_loads == 0)
       MessageLoopForUI::current()->Quit();
@@ -143,7 +147,8 @@ class TestPrerenderContents : public PrerenderContents {
     // When the PrerenderContents is destroyed, quit the UI message loop.
     // This happens on navigation to used prerendered pages, and soon
     // after cancellation of unused prerendered pages.
-    MessageLoopForUI::current()->Quit();
+    if (quit_message_loop_on_destruction_)
+      MessageLoopForUI::current()->Quit();
   }
 
   virtual void RenderViewGone() OVERRIDE {
@@ -259,6 +264,9 @@ class TestPrerenderContents : public PrerenderContents {
   // Expected final value of was_shown_.  Defaults to true for
   // FINAL_STATUS_USED, and false otherwise.
   bool should_be_shown_;
+
+  // If true, quits message loop on destruction of |this|.
+  bool quit_message_loop_on_destruction_;
 
   // Total number of pending prerenders we're currently waiting for.  Zero
   // indicates we currently aren't waiting for any.
@@ -1081,6 +1089,13 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderExcessiveMemory) {
   PrerenderTestURL("files/prerender/prerender_excessive_memory.html",
                    FINAL_STATUS_MEMORY_LIMIT_EXCEEDED,
                    1);
+}
+
+// Checks shutdown code while a prerender is active.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderQuickQuit) {
+  PrerenderTestURL("files/prerender/prerender_page.html",
+                   FINAL_STATUS_APP_TERMINATING,
+                   0);
 }
 
 // Checks that we don't prerender in an infinite loop.
