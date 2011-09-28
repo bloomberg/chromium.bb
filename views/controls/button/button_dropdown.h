@@ -6,12 +6,12 @@
 #define VIEWS_CONTROLS_BUTTON_BUTTON_DROPDOWN_H_
 #pragma once
 
-#include "base/task.h"
+#include "base/memory/weak_ptr.h"
 #include "views/controls/button/image_button.h"
 
 namespace ui {
 class MenuModel;
-}  // namespace ui
+}
 
 namespace views {
 
@@ -63,7 +63,7 @@ class VIEWS_EXPORT ButtonDropDown : public ImageButton {
   int y_position_on_lbuttondown_;
 
   // A factory for tasks that show the dropdown context menu for the button.
-  ScopedRunnableMethodFactory<ButtonDropDown> show_menu_factory_;
+  base::WeakPtrFactory<ButtonDropDown> show_menu_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ButtonDropDown);
 };
