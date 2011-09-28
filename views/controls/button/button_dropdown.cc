@@ -17,6 +17,10 @@
 #include "views/controls/menu/menu_runner.h"
 #include "views/widget/widget.h"
 
+#if defined(USE_AURA)
+#include "ui/aura/window.h"
+#endif
+
 namespace views {
 
 // static
