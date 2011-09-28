@@ -202,8 +202,8 @@ class ProtocolHandlerRegistryTest : public testing::Test {
   ProtocolHandler CreateProtocolHandler(const std::string& protocol,
                                         const GURL& url,
                                         const std::string& title) {
-  return ProtocolHandler::CreateProtocolHandler(protocol, url,
-      UTF8ToUTF16(title));
+    return ProtocolHandler::CreateProtocolHandler(protocol, url,
+        UTF8ToUTF16(title));
   }
 
   ProtocolHandler CreateProtocolHandler(const std::string& protocol,
@@ -670,4 +670,64 @@ TEST_F(ProtocolHandlerRegistryTest, TestLoadEnabledGetsPropogatedToIO) {
                           NewRunnableFunction(QuitUILoop));
   MessageLoop::current()->Run();
   ASSERT_FALSE(enabled_io());
+}
+
+TEST_F(ProtocolHandlerRegistryTest, TestReplaceHandler) {
+  ProtocolHandler ph1 = CreateProtocolHandler("mailto",
+      GURL("http://test.com/%s"), "test1");
+  ProtocolHandler ph2 = CreateProtocolHandler("mailto",
+      GURL("http://test.com/updated-url/%s"), "test2");
+  registry()->OnAcceptRegisterProtocolHandler(ph1);
+  ASSERT_TRUE(registry()->AttemptReplace(ph2));
+  const ProtocolHandler& handler(registry()->GetHandlerFor("mailto"));
+  ASSERT_EQ(handler.url(), ph2.url());
+}
+
+TEST_F(ProtocolHandlerRegistryTest, TestReplaceNonDefaultHandler) {
+  ProtocolHandler ph1 = CreateProtocolHandler("mailto",
+      GURL("http://test.com/%s"), "test1");
+  ProtocolHandler ph2 = CreateProtocolHandler("mailto",
+      GURL("http://test.com/updated-url/%s"), "test2");
+  ProtocolHandler ph3 = CreateProtocolHandler("mailto",
+      GURL("http://else.com/%s"), "test3");
+  registry()->OnAcceptRegisterProtocolHandler(ph1);
+  registry()->OnAcceptRegisterProtocolHandler(ph3);
+  ASSERT_TRUE(registry()->AttemptReplace(ph2));
+  const ProtocolHandler& handler(registry()->GetHandlerFor("mailto"));
+  ASSERT_EQ(handler.url(), ph3.url());
+}
+
+TEST_F(ProtocolHandlerRegistryTest, TestReplaceRemovesStaleHandlers) {
+  ProtocolHandler ph1 = CreateProtocolHandler("mailto",
+      GURL("http://test.com/%s"), "test1");
+  ProtocolHandler ph2 = CreateProtocolHandler("mailto",
+      GURL("http://test.com/updated-url/%s"), "test2");
+  ProtocolHandler ph3 = CreateProtocolHandler("mailto",
+      GURL("http://test.com/third/%s"), "test");
+  registry()->OnAcceptRegisterProtocolHandler(ph1);
+  registry()->OnAcceptRegisterProtocolHandler(ph2);
+
+  // This should replace the previous two handlers.
+  ASSERT_TRUE(registry()->AttemptReplace(ph3));
+  const ProtocolHandler& handler(registry()->GetHandlerFor("mailto"));
+  ASSERT_EQ(handler.url(), ph3.url());
+  registry()->RemoveHandler(ph3);
+  ASSERT_TRUE(registry()->GetHandlerFor("mailto").IsEmpty());
+}
+
+TEST_F(ProtocolHandlerRegistryTest, TestIsSameOrigin) {
+  ProtocolHandler ph1 = CreateProtocolHandler("mailto",
+      GURL("http://test.com/%s"), "test1");
+  ProtocolHandler ph2 = CreateProtocolHandler("mailto",
+      GURL("http://test.com/updated-url/%s"), "test2");
+  ProtocolHandler ph3 = CreateProtocolHandler("mailto",
+      GURL("http://other.com/%s"), "test");
+  ASSERT_EQ(ph1.url().GetOrigin() == ph2.url().GetOrigin(),
+      ph1.IsSameOrigin(ph2));
+  ASSERT_EQ(ph1.url().GetOrigin() == ph2.url().GetOrigin(),
+      ph2.IsSameOrigin(ph1));
+  ASSERT_EQ(ph2.url().GetOrigin() == ph3.url().GetOrigin(),
+      ph2.IsSameOrigin(ph3));
+  ASSERT_EQ(ph3.url().GetOrigin() == ph2.url().GetOrigin(),
+      ph3.IsSameOrigin(ph2));
 }

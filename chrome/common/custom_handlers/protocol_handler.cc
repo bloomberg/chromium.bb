@@ -32,6 +32,11 @@ bool ProtocolHandler::IsValidDict(const DictionaryValue* value) {
     value->HasKey("title");
 }
 
+bool ProtocolHandler::IsSameOrigin(
+    const ProtocolHandler& handler) const {
+  return handler.url().GetOrigin() == url_.GetOrigin();
+}
+
 const ProtocolHandler& ProtocolHandler::EmptyProtocolHandler() {
   static const ProtocolHandler* const kEmpty = new ProtocolHandler();
   return *kEmpty;

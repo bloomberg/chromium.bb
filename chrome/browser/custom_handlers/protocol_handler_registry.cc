@@ -424,6 +424,43 @@ void ProtocolHandlerRegistry::OnIgnoreRegisterProtocolHandler(
   NotifyChanged();
 }
 
+bool ProtocolHandlerRegistry::AttemptReplace(const ProtocolHandler& handler) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  ProtocolHandler old_default = GetHandlerFor(handler.protocol());
+  bool make_new_handler_default = handler.IsSameOrigin(old_default);
+  ProtocolHandlerList to_replace(GetReplacedHandlers(handler));
+  if (to_replace.empty())
+    return false;
+  for (ProtocolHandlerList::iterator p = to_replace.begin();
+       p != to_replace.end(); ++p) {
+    RemoveHandler(*p);
+  }
+  if (make_new_handler_default) {
+    OnAcceptRegisterProtocolHandler(handler);
+  } else {
+    InsertHandler(handler);
+    NotifyChanged();
+  }
+  return true;
+}
+
+ProtocolHandlerRegistry::ProtocolHandlerList
+ProtocolHandlerRegistry::GetReplacedHandlers(
+    const ProtocolHandler& handler) const {
+  ProtocolHandlerList replaced_handlers;
+  const ProtocolHandlerList* handlers = GetHandlerList(handler.protocol());
+  if (!handlers)
+    return replaced_handlers;
+  for (ProtocolHandlerList::const_iterator p = handlers->begin();
+       p != handlers->end(); p++) {
+    if (handler.IsSameOrigin(*p)) {
+      replaced_handlers.push_back(*p);
+    }
+  }
+  return replaced_handlers;
+}
+
+
 // static
 void ProtocolHandlerRegistry::RegisterPrefs(PrefService* pref_service) {
   pref_service->RegisterListPref(prefs::kRegisteredProtocolHandlers,

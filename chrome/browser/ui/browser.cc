@@ -2442,6 +2442,9 @@ void Browser::RegisterProtocolHandlerHelper(TabContents* tab,
 
   if (!handler.IsEmpty() &&
       registry->CanSchemeBeOverridden(handler.protocol())) {
+    // We don't need to show an infobar if we can silently update the handler
+    if (registry->AttemptReplace(handler))
+      return;
     UserMetrics::RecordAction(
         UserMetricsAction("RegisterProtocolHandler.InfoBar_Shown"));
     tcw->infobar_tab_helper()->AddInfoBar(

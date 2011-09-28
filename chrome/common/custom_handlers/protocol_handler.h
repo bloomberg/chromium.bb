@@ -28,6 +28,9 @@ class ProtocolHandler {
   // define a ProtocolHandler.
   static bool IsValidDict(const DictionaryValue* value);
 
+  // Returns true if this handler's url has the same origin as the given one.
+  bool IsSameOrigin(const ProtocolHandler& handler) const;
+
   // Canonical empty ProtocolHandler.
   static const ProtocolHandler& EmptyProtocolHandler();
 
