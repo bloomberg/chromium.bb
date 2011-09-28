@@ -27,16 +27,10 @@ class MiniInstallTest : public testing::Test {
   static void CleanTheSystem() {
     const CommandLine* cmd = CommandLine::ForCurrentProcess();
     if (cmd->HasSwitch(installer::switches::kChromeFrame)) {
-      ChromeMiniInstaller systeminstall(kSystemInstall,
-          cmd->HasSwitch(installer::switches::kChromeFrame));
-      systeminstall.UnInstall();
+      ChromeMiniInstaller(true, true).UnInstall();
     } else {
-      ChromeMiniInstaller userinstall(kUserInstall,
-          cmd->HasSwitch(installer::switches::kChromeFrame));
-      userinstall.UnInstall();
-      ChromeMiniInstaller systeminstall(kSystemInstall,
-          cmd->HasSwitch(installer::switches::kChromeFrame));
-      systeminstall.UnInstall();
+      ChromeMiniInstaller(false, false).UnInstall();
+      ChromeMiniInstaller(true, false).UnInstall();
     }
   }
 
@@ -53,10 +47,8 @@ class MiniInstallTest : public testing::Test {
 
     // Create a few differently configured installers that are used in
     // the tests, for convenience.
-    user_inst_.reset(new ChromeMiniInstaller(kUserInstall,
-                                             chrome_frame_));
-    sys_inst_.reset(new ChromeMiniInstaller(kSystemInstall,
-                                            chrome_frame_));
+    user_inst_.reset(new ChromeMiniInstaller(false, chrome_frame_));
+    sys_inst_.reset(new ChromeMiniInstaller(true, chrome_frame_));
     sys_inst_->SetBuildUnderTest(build);
     user_inst_->SetBuildUnderTest(build);
   }
@@ -174,6 +166,16 @@ TEST_F(MiniInstallTest,
        DISABLED_InstallLatestDevFullInstallerOverChromeMetaInstallerTest) {
   if (!chrome_frame_)
     user_inst_->OverInstall();
+}
+
+TEST_F(MiniInstallTest,
+    InstallChromeUsingMultiInstallUser) {
+  user_inst_->InstallUsingMultiInstall();
+}
+
+TEST_F(MiniInstallTest,
+    InstallChromeUsingMultiInstallSys) {
+  sys_inst_->InstallUsingMultiInstall();
 }
 #endif
 

@@ -16,7 +16,7 @@
 // This class has methods to install and uninstall Chrome mini installer.
 class ChromeMiniInstaller {
  public:
-  ChromeMiniInstaller(const std::wstring& install_type, bool is_chrome_frame);
+  ChromeMiniInstaller(bool system_install, bool is_chrome_frame);
   ~ChromeMiniInstaller() {}
 
   enum RepairChrome {
@@ -26,10 +26,12 @@ class ChromeMiniInstaller {
 
   // This method returns path to either program files
   // or documents and setting based on the install type.
-  std::wstring GetChromeInstallDirectoryLocation();
+  bool GetChromeInstallDirectoryLocation(FilePath* path);
 
   // Installs the latest full installer.
   void InstallFullInstaller(bool over_install);
+
+  void InstallUsingMultiInstall();
 
   // Installs chrome.
   void Install();
@@ -102,24 +104,14 @@ class ChromeMiniInstaller {
   // This method gets the shortcut path from start menu based on install type.
   FilePath GetStartMenuShortcutPath();
 
-  // Get path for uninstall.
-  std::wstring GetUninstallPath();
-
   // Get user data directory path.
   FilePath GetUserDataDirPath();
 
-  // Gets the path to launch Chrome.
-  bool GetChromeLaunchPath(FilePath* launch_path);
-
-  // This method will get Chrome.exe path and launch it.
-  void VerifyChromeLaunch(bool expected_status);
+  // Launch Chrome. Kill process if |kill| is true.
+  void LaunchChrome(bool kill);
 
   // This method verifies if Chrome/Chrome Frame installed correctly.
   void VerifyInstall(bool over_install);
-
-  // This method verifies installation of Chrome/Chrome Frame via machine
-  // introspection.
-  void VerifyMachineState();
 
   // This method will verify if ChromeFrame got successfully installed on the
   // machine.
@@ -128,17 +120,8 @@ class ChromeMiniInstaller {
   // Launch IE with |navigate_url|.
   void LaunchIE(const std::wstring& navigate_url);
 
-  // Launches the chrome installer and waits for it to end.
-  void LaunchInstaller(const FilePath& path,
-                       const wchar_t* process_name);
-
-  // Verifies if Chrome launches after install.
-  void LaunchAndCloseChrome(bool over_install);
-
-  // Launches any requested browser.
-  void LaunchBrowser(const FilePath& path,
-                     const std::wstring& args,
-                     bool expected_status);
+  // Run installer using provided |command|.
+  void RunInstaller(const CommandLine& command);
 
   // Compares the registry key values after overinstall.
   bool VerifyOverInstall(const std::wstring& reg_key_value_before_overinstall,
@@ -153,9 +136,8 @@ class ChromeMiniInstaller {
   // This method will create a command line to run apply tag.
   CommandLine GetCommandForTagging();
 
-  // This variable holds the install type.
-  // Install type can be either system or user level.
-  std::wstring install_type_;
+  // If true install system level. Otherwise install user level.
+  bool system_install_;
 
   bool is_chrome_frame_;
 
@@ -163,6 +145,7 @@ class ChromeMiniInstaller {
   FilePath diff_installer_;
   FilePath previous_installer_;
   FilePath standalone_installer_;
+  FilePath mini_installer_;
 
   // Build numbers.
   std::wstring current_build_, previous_build_;
