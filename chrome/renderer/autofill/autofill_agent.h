@@ -11,7 +11,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
-#include "base/task.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/renderer/autofill/form_cache.h"
 #include "chrome/renderer/page_click_listener.h"
 #include "content/renderer/render_view_observer.h"
@@ -174,7 +174,7 @@ class AutofillAgent : public RenderViewObserver,
   // currently editing?  Used to keep track of state for metrics logging.
   bool has_shown_autofill_popup_for_current_edit_;
 
-  ScopedRunnableMethodFactory<AutofillAgent> method_factory_;
+  base::WeakPtrFactory<AutofillAgent> weak_ptr_factory_;
 
   friend class PasswordAutofillManagerTest;
   FRIEND_TEST_ALL_PREFIXES(RenderViewTest, SendForms);

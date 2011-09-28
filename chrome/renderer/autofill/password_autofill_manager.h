@@ -9,7 +9,7 @@
 #include <map>
 #include <vector>
 
-#include "base/task.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/renderer/page_click_listener.h"
 #include "content/renderer/render_view_observer.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputElement.h"
@@ -113,7 +113,7 @@ class PasswordAutofillManager : public RenderViewObserver,
   // The logins we have filled so far with their associated info.
   LoginToPasswordInfoMap login_to_password_info_;
 
-  ScopedRunnableMethodFactory<PasswordAutofillManager> method_factory_;
+  base::WeakPtrFactory<PasswordAutofillManager> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordAutofillManager);
 };

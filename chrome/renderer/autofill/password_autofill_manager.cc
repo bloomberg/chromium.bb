@@ -4,6 +4,7 @@
 
 #include "chrome/renderer/autofill/password_autofill_manager.h"
 
+#include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "chrome/common/autofill_messages.h"
@@ -203,7 +204,7 @@ namespace autofill {
 PasswordAutofillManager::PasswordAutofillManager(
     RenderView* render_view)
     : RenderViewObserver(render_view),
-      ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
 }
 
 PasswordAutofillManager::~PasswordAutofillManager() {
@@ -281,9 +282,11 @@ bool PasswordAutofillManager::TextDidChangeInTextField(
   // We post a task for doing the autocomplete as the caret position is not set
   // properly at this point (http://bugs.webkit.org/show_bug.cgi?id=16976) and
   // we need it to determine whether or not to trigger autocomplete.
-  MessageLoop::current()->PostTask(FROM_HERE, method_factory_.NewRunnableMethod(
-      &PasswordAutofillManager::PerformInlineAutocomplete,
-      element, password, iter->second.fill_data));
+  MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&PasswordAutofillManager::PerformInlineAutocomplete,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 element, password, iter->second.fill_data));
   return true;
 }
 

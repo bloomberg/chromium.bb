@@ -4,6 +4,7 @@
 
 #include "chrome/renderer/autofill/autofill_agent.h"
 
+#include "base/bind.h"
 #include "base/message_loop.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
@@ -58,7 +59,7 @@ AutofillAgent::AutofillAgent(
       suggestions_clear_index_(-1),
       suggestions_options_index_(-1),
       has_shown_autofill_popup_for_current_edit_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
   render_view->webview()->setAutofillClient(this);
 }
 
@@ -207,11 +208,11 @@ void AutofillAgent::textFieldDidChange(const WebInputElement& element) {
   // We post a task for doing the Autofill as the caret position is not set
   // properly at this point (http://bugs.webkit.org/show_bug.cgi?id=16976) and
   // it is needed to trigger autofill.
-  method_factory_.RevokeAll();
+  weak_ptr_factory_.InvalidateWeakPtrs();
   MessageLoop::current()->PostTask(
         FROM_HERE,
-        method_factory_.NewRunnableMethod(
-            &AutofillAgent::TextFieldDidChangeImpl, element));
+        base::Bind(&AutofillAgent::TextFieldDidChangeImpl,
+                   weak_ptr_factory_.GetWeakPtr(), element));
 }
 
 void AutofillAgent::TextFieldDidChangeImpl(const WebInputElement& element) {
