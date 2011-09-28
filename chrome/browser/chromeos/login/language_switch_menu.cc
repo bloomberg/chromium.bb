@@ -115,9 +115,17 @@ bool LanguageSwitchMenu::SwitchLanguage(const std::string& locale) {
     CHECK(!loaded_locale.empty()) << "Locale could not be found for " << locale;
 
     LoadFontsForCurrentLocale();
+
     // The following line does not seem to affect locale anyhow. Maybe in
     // future..
     g_browser_process->SetApplicationLocale(locale);
+
+    // Force preferences save, otherwise they won't be saved on
+    // shutdown from login screen. http://crosbug.com/20747
+    PrefService* prefs = g_browser_process->local_state();
+    prefs->SetString(prefs::kApplicationLocale, locale);
+    prefs->SavePersistentPrefs();
+
     return true;
   }
   return false;
@@ -190,9 +198,6 @@ void LanguageSwitchMenu::ExecuteCommand(int command_id) {
   // Here, we should enable keyboard layouts associated with the locale so
   // that users can use those keyboard layouts on the login screen.
   SwitchLanguageAndEnableKeyboardLayouts(locale);
-  g_browser_process->local_state()->SetString(
-      prefs::kApplicationLocale, locale);
-  g_browser_process->local_state()->ScheduleSavePersistentPrefs();
   InitLanguageMenu();
 
   // Update all view hierarchies that the locale has changed.
