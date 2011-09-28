@@ -14,6 +14,8 @@
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/compositor/compositor.h"
 #include "ui/gfx/compositor/layer.h"
+#include "ui/gfx/compositor/test_compositor.h"
+#include "ui/gfx/compositor/test_texture.h"
 #include "ui/gfx/path.h"
 #include "ui/gfx/transform.h"
 #include "views/background.h"
@@ -2300,88 +2302,8 @@ TEST_F(ViewTest, GetViewByID) {
 
 namespace {
 
-class TestTexture : public ui::Texture {
- public:
-  TestTexture() {
-    live_count_++;
-  }
-
-  ~TestTexture() {
-    live_count_--;
-  }
-
-  static void reset_live_count() { live_count_ = 0; }
-  static int live_count() { return live_count_; }
-
-  // Bounds of the last bitmap passed to SetCanvas.
-  const gfx::Rect& bounds_of_last_paint() const {
-    return bounds_of_last_paint_;
-  }
-
-  // ui::Texture
-  virtual void SetCanvas(const SkCanvas& canvas,
-                         const gfx::Point& origin,
-                         const gfx::Size& overall_size) OVERRIDE;
-
-  virtual void Draw(const ui::TextureDrawParams& params,
-                    const gfx::Rect& clip_bounds) OVERRIDE {}
-
- private:
-  // Number of live instances.
-  static int live_count_;
-
-  gfx::Rect bounds_of_last_paint_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestTexture);
-};
-
-// static
-int TestTexture::live_count_ = 0;
-
-void TestTexture::SetCanvas(const SkCanvas& canvas,
-                            const gfx::Point& origin,
-                            const gfx::Size& overall_size) {
-  const SkBitmap& bitmap = canvas.getDevice()->accessBitmap(false);
-  bounds_of_last_paint_.SetRect(
-      origin.x(), origin.y(), bitmap.width(), bitmap.height());
-}
-
-class TestCompositorDelegate : public ui::CompositorDelegate {
- public:
-  TestCompositorDelegate() {}
-  ~TestCompositorDelegate() {}
-  virtual void ScheduleCompositorPaint() OVERRIDE {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestCompositorDelegate);
-};
-
-class TestCompositor : public ui::Compositor {
- public:
-  TestCompositor() : Compositor(new TestCompositorDelegate,
-                                gfx::Size(100, 100)) {
-    owned_delegate_.reset(static_cast<TestCompositorDelegate*>(delegate()));
-  }
-
-  // ui::Compositor:
-  virtual ui::Texture* CreateTexture() OVERRIDE {
-    return new TestTexture();
-  }
-  virtual void OnNotifyStart(bool clear) OVERRIDE {}
-  virtual void OnNotifyEnd() OVERRIDE {}
-  virtual void Blur(const gfx::Rect& bounds) OVERRIDE {}
-
- protected:
-  virtual void OnWidgetSizeChanged() OVERRIDE {}
-
- private:
-  scoped_ptr<TestCompositorDelegate> owned_delegate_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestCompositor);
-};
-
 static ui::Compositor* TestCreateCompositor() {
-  return new TestCompositor();
+  return new ui::TestCompositor();
 }
 
 // Test implementation of LayerPropertySetter;
@@ -2451,7 +2373,7 @@ class ViewLayerTest : public ViewsTestBase {
     old_use_acceleration_ = View::get_use_acceleration_when_possible();
     View::set_use_acceleration_when_possible(true);
 
-    TestTexture::reset_live_count();
+    ui::TestTexture::reset_live_count();
 
 #if defined(USE_AURA)
     aura::Desktop::set_compositor_factory_for_testing(&TestCreateCompositor);
@@ -2462,6 +2384,7 @@ class ViewLayerTest : public ViewsTestBase {
     Widget::InitParams params(Widget::InitParams::TYPE_POPUP);
     params.bounds = gfx::Rect(50, 50, 200, 200);
     widget_->Init(params);
+    widget_->GetRootView()->SetBounds(0, 0, 200, 200);
   }
 
   virtual void TearDown() OVERRIDE {
@@ -2505,14 +2428,16 @@ TEST_F(ViewLayerTest, PaintAll) {
   view->SetBounds(0, 0, 200, 200);
   widget()->OnNativeWidgetPaintAccelerated(gfx::Rect(0, 0, 1, 1));
   ASSERT_TRUE(layer != NULL);
-  const TestTexture* texture =
-      static_cast<const TestTexture*>(layer->texture());
+  const ui::TestTexture* texture =
+      static_cast<const ui::TestTexture*>(layer->texture());
   ASSERT_TRUE(texture != NULL);
   EXPECT_EQ(view->GetLocalBounds(), texture->bounds_of_last_paint());
 }
 #endif
 
 TEST_F(ViewLayerTest, LayerToggling) {
+  // Because we lazily create textures the calls to DrawTree are necessary to
+  // ensure we trigger creation of textures.
 #if defined(USE_AURA)
   ui::Layer* root_layer = NULL;
   gfx::Point origin;
@@ -2526,13 +2451,15 @@ TEST_F(ViewLayerTest, LayerToggling) {
   // Create v1, give it a bounds and verify everything is set up correctly.
   View* v1 = new View;
   v1->SetPaintToLayer(true);
-  EXPECT_EQ(1, TestTexture::live_count());
+  root_layer->DrawTree();
+  EXPECT_EQ(1, ui::TestTexture::live_count());
   EXPECT_TRUE(v1->layer() == NULL);
+  v1->SetBounds(20, 30, 140, 150);
   content_view->AddChildView(v1);
-  EXPECT_EQ(2, TestTexture::live_count());
+  root_layer->DrawTree();
+  EXPECT_EQ(2, ui::TestTexture::live_count());
   ASSERT_TRUE(v1->layer() != NULL);
   EXPECT_EQ(root_layer, v1->layer()->parent());
-  v1->SetBounds(20, 30, 140, 150);
   EXPECT_EQ(gfx::Rect(20, 30, 140, 150), v1->layer()->bounds());
 
   // Create v2 as a child of v1 and do basic assertion testing.
@@ -2541,7 +2468,8 @@ TEST_F(ViewLayerTest, LayerToggling) {
   EXPECT_TRUE(v2->layer() == NULL);
   v2->SetBounds(10, 20, 30, 40);
   v2->SetPaintToLayer(true);
-  EXPECT_EQ(3, TestTexture::live_count());
+  root_layer->DrawTree();
+  EXPECT_EQ(3, ui::TestTexture::live_count());
   ASSERT_TRUE(v2->layer() != NULL);
   EXPECT_EQ(v1->layer(), v2->layer()->parent());
   EXPECT_EQ(gfx::Rect(10, 20, 30, 40), v2->layer()->bounds());
@@ -2549,7 +2477,8 @@ TEST_F(ViewLayerTest, LayerToggling) {
   // Turn off v1s layer. v2 should still have a layer but its parent should have
   // changed.
   v1->SetPaintToLayer(false);
-  EXPECT_EQ(2, TestTexture::live_count());
+  root_layer->DrawTree();
+  EXPECT_EQ(2, ui::TestTexture::live_count());
   EXPECT_TRUE(v1->layer() == NULL);
   EXPECT_TRUE(v2->layer() != NULL);
   EXPECT_EQ(root_layer, v2->layer()->parent());
@@ -2563,7 +2492,8 @@ TEST_F(ViewLayerTest, LayerToggling) {
   ui::Transform transform;
   transform.SetScale(2.0f, 2.0f);
   v1->SetTransform(transform);
-  EXPECT_EQ(3, TestTexture::live_count());
+  root_layer->DrawTree();
+  EXPECT_EQ(3, ui::TestTexture::live_count());
   EXPECT_TRUE(v1->layer() != NULL);
   EXPECT_TRUE(v2->layer() != NULL);
   EXPECT_EQ(root_layer, v1->layer()->parent());

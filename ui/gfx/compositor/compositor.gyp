@@ -96,13 +96,25 @@
       'sources': [
         'layer_unittest.cc',
         'run_all_unittests.cc',
+        'test_compositor.cc',
+        'test_compositor.h',
         'test_compositor_host.h',
         'test_compositor_host_linux.cc',
         'test_compositor_host_win.cc',
         'test_suite.cc',
         'test_suite.h',
+        'test_texture.cc',
+        'test_texture.h',
         '<(SHARED_INTERMEDIATE_DIR)/ui/gfx/gfx_resources.rc',
         '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources.rc',
+      ],
+      'conditions': [
+        ['OS=="linux"', {
+          'sources!': [
+            'test_compositor_host.h',
+            'test_compositor_host_linux.cc',
+          ],
+        }],
       ],
     },
   ],

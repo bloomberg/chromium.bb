@@ -601,6 +601,10 @@
         'widget/native_widget_unittest.cc',
         'widget/native_widget_win_unittest.cc',
         'widget/widget_unittest.cc',
+        '../ui/gfx/compositor/test_compositor.cc',
+        '../ui/gfx/compositor/test_compositor.h',
+        '../ui/gfx/compositor/test_texture.cc',
+        '../ui/gfx/compositor/test_texture.h',
 
         '<(SHARED_INTERMEDIATE_DIR)/ui/gfx/gfx_resources.rc',
         '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources.rc',

@@ -46,7 +46,7 @@ namespace {
 
 // Whether to use accelerated compositing when necessary (e.g. when a view has a
 // transformation).
-#if !defined(OS_CHROMEOS) || defined(TOUCH_UI) || defined(USE_AURA)
+#if defined(VIEWS_COMPOSITOR)
 bool use_acceleration_when_possible = true;
 #else
 bool use_acceleration_when_possible = false;

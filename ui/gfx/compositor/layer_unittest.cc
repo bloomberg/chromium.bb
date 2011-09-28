@@ -9,16 +9,22 @@
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/compositor/compositor_observer.h"
 #include "ui/gfx/compositor/layer.h"
+#include "ui/gfx/compositor/test_compositor.h"
+
+// TestCompositorHost needs to be ported to linux for these to work.
+#if !defined(OS_LINUX)
 #include "ui/gfx/compositor/test_compositor_host.h"
+#endif
 
 namespace ui {
 
 namespace {
 
-class LayerTest : public testing::Test {
+#if !defined(OS_LINUX)
+class LayerWithRealCompositorTest : public testing::Test {
  public:
-  LayerTest() {}
-  virtual ~LayerTest() {}
+  LayerWithRealCompositorTest() {}
+  virtual ~LayerWithRealCompositorTest() {}
 
   // Overridden from testing::Test:
   virtual void SetUp() OVERRIDE {
@@ -83,8 +89,9 @@ class LayerTest : public testing::Test {
   MessageLoopForUI message_loop_;
   scoped_ptr<TestCompositorHost> window_;
 
-  DISALLOW_COPY_AND_ASSIGN(LayerTest);
+  DISALLOW_COPY_AND_ASSIGN(LayerWithRealCompositorTest);
 };
+#endif
 
 // LayerDelegate that paints colors to the layer.
 class TestLayerDelegate : public LayerDelegate {
@@ -157,7 +164,9 @@ class NullLayerDelegate : public LayerDelegate {
 
 }
 
-TEST_F(LayerTest, Draw) {
+#if !defined(OS_LINUX)
+
+TEST_F(LayerWithRealCompositorTest, Draw) {
   scoped_ptr<Layer> layer(CreateColorLayer(SK_ColorRED,
                                            gfx::Rect(20, 20, 50, 50)));
   DrawTree(layer.get());
@@ -169,7 +178,7 @@ TEST_F(LayerTest, Draw) {
 // |   +-- L3 - yellow
 // +-- L4 - magenta
 //
-TEST_F(LayerTest, Hierarchy) {
+TEST_F(LayerWithRealCompositorTest, Hierarchy) {
   scoped_ptr<Layer> l1(CreateColorLayer(SK_ColorRED,
                                         gfx::Rect(20, 20, 400, 400)));
   scoped_ptr<Layer> l2(CreateColorLayer(SK_ColorBLUE,
@@ -185,6 +194,76 @@ TEST_F(LayerTest, Hierarchy) {
 
   DrawTree(l1.get());
 }
+
+#endif
+
+// LayerTest uses TestCompositor as the Compositor implementation.
+class LayerTest : public testing::Test {
+ public:
+  LayerTest() {}
+  virtual ~LayerTest() {}
+
+  // Overridden from testing::Test:
+  virtual void SetUp() OVERRIDE {
+    compositor_ = new TestCompositor();
+  }
+
+  virtual void TearDown() OVERRIDE {
+  }
+
+  Compositor* compositor() { return compositor_.get(); }
+
+  Layer* CreateLayer(Layer::LayerType type) {
+    return new Layer(compositor(), type);
+  }
+
+  Layer* CreateColorLayer(SkColor color, const gfx::Rect& bounds) {
+    Layer* layer = CreateLayer(Layer::LAYER_HAS_TEXTURE);
+    layer->SetBounds(bounds);
+    PaintColorToLayer(layer, color);
+    return layer;
+  }
+
+  Layer* CreateNoTextureLayer(const gfx::Rect& bounds) {
+    Layer* layer = CreateLayer(Layer::LAYER_HAS_NO_TEXTURE);
+    layer->SetBounds(bounds);
+    return layer;
+  }
+
+  gfx::Canvas* CreateCanvasForLayer(const Layer* layer) {
+    return gfx::Canvas::CreateCanvas(layer->bounds().width(),
+                                     layer->bounds().height(),
+                                     false);
+  }
+
+  void PaintColorToLayer(Layer* layer, SkColor color) {
+    scoped_ptr<gfx::Canvas> canvas(CreateCanvasForLayer(layer));
+    canvas->FillRectInt(color, 0, 0, layer->bounds().width(),
+                        layer->bounds().height());
+    layer->SetCanvas(*canvas->AsCanvasSkia(), layer->bounds().origin());
+  }
+
+  void DrawTree(Layer* root) {
+    compositor()->SetRootLayer(root);
+    compositor()->Draw(false);
+  }
+
+  // Invalidates the entire contents of the layer.
+  void SchedulePaintForLayer(Layer* layer) {
+    layer->SchedulePaint(
+        gfx::Rect(0, 0, layer->bounds().width(), layer->bounds().height()));
+  }
+
+  // Invokes DrawTree on the compositor.
+  void Draw() {
+    compositor_->root_layer()->DrawTree();
+  }
+
+ private:
+  scoped_refptr<TestCompositor> compositor_;
+
+  DISALLOW_COPY_AND_ASSIGN(LayerTest);
+};
 
 // L1
 //  +-- L2
@@ -241,20 +320,20 @@ TEST_F(LayerTest, Delegate) {
   delegate.AddColor(SK_ColorYELLOW);
   delegate.AddColor(SK_ColorGREEN);
 
-  GetCompositor()->SetRootLayer(l1.get());
+  compositor()->SetRootLayer(l1.get());
 
   l1->SchedulePaint(gfx::Rect(0, 0, 400, 400));
-  RunPendingMessages();
+  Draw();
   EXPECT_EQ(delegate.color_index(), 1);
   EXPECT_EQ(delegate.paint_size(), l1->bounds().size());
 
   l1->SchedulePaint(gfx::Rect(10, 10, 200, 200));
-  RunPendingMessages();
+  Draw();
   EXPECT_EQ(delegate.color_index(), 2);
   EXPECT_EQ(delegate.paint_size(), gfx::Size(200, 200));
 
   l1->SchedulePaint(gfx::Rect(5, 5, 50, 50));
-  RunPendingMessages();
+  Draw();
   EXPECT_EQ(delegate.color_index(), 0);
   EXPECT_EQ(delegate.paint_size(), gfx::Size(50, 50));
 }
@@ -276,10 +355,10 @@ TEST_F(LayerTest, DrawTree) {
   DrawTreeLayerDelegate d3;
   l3->set_delegate(&d3);
 
-  GetCompositor()->SetRootLayer(l1.get());
+  compositor()->SetRootLayer(l1.get());
 
   l2->SchedulePaint(gfx::Rect(5, 5, 5, 5));
-  RunPendingMessages();
+  Draw();
   EXPECT_FALSE(d1.painted());
   EXPECT_TRUE(d2.painted());
   EXPECT_FALSE(d3.painted());
@@ -310,11 +389,11 @@ TEST_F(LayerTest, HierarchyNoTexture) {
   DrawTreeLayerDelegate d3;
   l3->set_delegate(&d3);
 
-  GetCompositor()->SetRootLayer(l1.get());
+  compositor()->SetRootLayer(l1.get());
 
   l2->SchedulePaint(gfx::Rect(5, 5, 5, 5));
   l3->SchedulePaint(gfx::Rect(5, 5, 5, 5));
-  RunPendingMessages();
+  Draw();
 
   // |d2| should not have received a paint notification since it has no texture.
   EXPECT_FALSE(d2.painted());
@@ -372,7 +451,7 @@ TEST_F(LayerTest, NoCompositor) {
 
   EXPECT_EQ(NULL, l11->texture());
 
-  GetCompositor()->SetRootLayer(l1.get());
+  compositor()->SetRootLayer(l1.get());
 
   EXPECT_EQ(NULL, l1->texture());
 
@@ -394,7 +473,7 @@ TEST_F(LayerTest, NoCompositor) {
   // By asking l121 and l122 to paint, we cause them to generate a texture.
   SchedulePaintForLayer(l121.get());
   SchedulePaintForLayer(l122.get());
-  RunPendingMessages();
+  Draw();
 
   EXPECT_EQ(NULL, l12->texture());
   EXPECT_TRUE(NULL != l121->texture());

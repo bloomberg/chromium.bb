@@ -279,7 +279,8 @@ void Layer::UpdateLayerCanvas() {
   if (!delegate_ || layer_updated_externally_)
     return;
   gfx::Rect local_bounds = gfx::Rect(gfx::Point(), bounds_.size());
-  gfx::Rect draw_rect = invalid_rect_.Intersect(local_bounds);
+  gfx::Rect draw_rect = texture_.get() ? invalid_rect_.Intersect(local_bounds) :
+      local_bounds;
   if (draw_rect.IsEmpty()) {
     invalid_rect_ = gfx::Rect();
     return;
