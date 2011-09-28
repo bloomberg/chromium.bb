@@ -18,6 +18,7 @@
 #include "views/widget/widget.h"
 
 #if defined(USE_AURA)
+// TODO(tfarina): Remove this include when crbug.com/94995 is fixed!
 #include "ui/aura/window.h"
 #endif
 
