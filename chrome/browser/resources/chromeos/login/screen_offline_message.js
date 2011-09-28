@@ -8,7 +8,14 @@
 
 cr.define('login', function() {
   // Screens that should have offline message overlay.
-  const MANAGED_SCREENS = ['gaia-signin', 'signin'];
+  const MANAGED_SCREENS = ['gaia-signin'];
+
+  // Network state constants.
+  const NET_STATE = {
+    OFFLINE: 0,
+    ONLINE: 1,
+    PORTAL: 2
+  };
 
   /**
    * Creates a new offline message screen div.
@@ -61,11 +68,13 @@ cr.define('login', function() {
     updateState: function(state) {
       var currentScreen = Oobe.getInstance().currentScreen;
       var offlineMessage = this;
-      var isOnline = state == 1;
-      var isUnderCaptivePortal = state == 2;
+      var isOnline = (state == NET_STATE.ONLINE);
+      var isUnderCaptivePortal = (state == NET_STATE.PORTAL);
       var shouldOverlay = MANAGED_SCREENS.indexOf(currentScreen.id) != -1;
 
       if (!isOnline && shouldOverlay) {
+        console.log('Show offline message, state=' + state +
+                    ',isUnderCaptivePortal=' + isUnderCaptivePortal);
         offlineMessage.onBeforeShow();
 
         $('offline-message-text').hidden = isUnderCaptivePortal;
@@ -85,6 +94,7 @@ cr.define('login', function() {
         }
       } else {
         if (!offlineMessage.classList.contains('faded')) {
+          console.log('Hide offline message.');
           offlineMessage.onBeforeHide();
 
           offlineMessage.classList.add('faded');
@@ -117,11 +127,38 @@ cr.define('login', function() {
    * @param {number} error Error code.
    */
   OfflineMessageScreen.onFrameError = function(error) {
+    console.log('Gaia frame error = ' + error);
+
     // Offline and simple captive portal cases are handled by the
     // NetworkStateInformer, so only the case when browser is online is
     // valuable.
-    if (window.navigator.onLine)
-      this.updateState(2);
+    if (window.navigator.onLine) {
+      this.updateState(NET_STATE.PORTAL);
+
+      // Check current network state if currentScreen is a managed one.
+      var currentScreen = Oobe.getInstance().currentScreen;
+      if (MANAGED_SCREENS.indexOf(currentScreen.id) != -1) {
+        chrome.send('loginRequestNetworkState',
+                    ['login.OfflineMessageScreen.maybeRetry']);
+      }
+    }
+  };
+
+  /**
+   * Network state callback where we decide whether to schdule a retry.
+   */
+  OfflineMessageScreen.maybeRetry = function(state) {
+    console.log('OfflineMessageScreen.maybeRetry, state=' + state);
+
+    // No retry if we are not online.
+    if (state != NET_STATE.ONLINE)
+      return;
+
+    var currentScreen = Oobe.getInstance().currentScreen;
+    if (MANAGED_SCREENS.indexOf(currentScreen.id) != -1) {
+      // Schedules a retry.
+      currentScreen.schdeduleRetry();
+    }
   };
 
   return {

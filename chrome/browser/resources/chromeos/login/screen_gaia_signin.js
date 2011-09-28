@@ -32,6 +32,12 @@ cr.define('login', function() {
     // Authentication extension's start page URL.
     extension_url_: null,
 
+    // Number of times that we reload extension frame.
+    retryCount_: 0,
+
+    // Timer id of pending retry.
+    retryTimer_: undefined,
+
     /** @inheritDoc */
     decorate: function() {
       $('createAccount').innerHTML = localStrings.getStringF(
@@ -126,6 +132,7 @@ cr.define('login', function() {
       Oobe.getInstance().headerHidden = false;
 
       this.loading = true;
+      this.clearRetry_();
     },
 
     /**
@@ -153,6 +160,7 @@ cr.define('login', function() {
       } else if (msg.method == 'loginUILoaded' && this.isAuthExtMessage_(e)) {
         $('offline-message').update();
         this.loading = false;
+        this.clearRetry_();
         chrome.send('loginWebuiReady');
       }
     },
@@ -165,6 +173,46 @@ cr.define('login', function() {
       // Reload and show the sign-in UI if needed.
       if (takeFocus)
         Oobe.showSigninUI();
+    },
+
+    /**
+     * Clears retry data.
+     * @private
+     */
+    clearRetry_: function() {
+      this.retryCount_ = 0;
+      if (this.retryTimer_) {
+        window.clearTimeout(this.retryTimer_);
+        this.retryTimer_ = undefined;
+      }
+    },
+
+    /**
+     * Reloads extension frame.
+     * @private
+     */
+    doReload_: function() {
+      console.log('Reload auth extension frame.');
+      $('signin-frame').src = this.extension_url_;
+      this.retryTimer_ = undefined;
+    },
+
+    /**
+     * Schedules extension frame reload.
+     */
+    schdeduleRetry: function() {
+      if (this.retryCount_ >= 3 || this.retryTimer_)
+        return;
+
+      const MAX_DELAY = 7200;  // 7200 seconds (i.e. 2 hours)
+      const MIN_DELAY = 1;  // 1 second
+
+      var delay = Math.pow(2, this.retryCount_) * 5;
+      delay = Math.max(MIN_DELAY, Math.min(MAX_DELAY, delay)) * 1000;
+
+      ++this.retryCount_;
+      this.retryTimer_ = window.setTimeout(this.doReload_.bind(this), delay);
+      console.log('GaiaSigninScreen schdeduleRetry in ' + delay + 'ms.');
     }
   };
 
