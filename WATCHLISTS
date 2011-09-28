@@ -314,7 +314,7 @@
     'cookie_monster': ['erikwright@chromium.org', 'rdsmith@chromium.org',
                        'rkn@chromium.org', 'wtc@chromium.org'],
     'autofill': ['dhollowa@chromium.org', 'georgey@chromium.org',
-                 'isherman@chromium.org'],
+                 'isherman@chromium.org', 'dyu@chromium.org'],
     'webdata': ['dhollowa@chromium.org'],
     'i18n': ['jshin+watch@chromium.org'],
     'pyauto': ['anantha@chromium.org', 'jrg@chromium.org',
