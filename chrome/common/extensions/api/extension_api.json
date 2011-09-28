@@ -1569,7 +1569,8 @@
               {
                 "name": "tab",
                 "$ref": "Tab",
-                "description": "Details about the updated tab."
+                "optional": true,
+                "description": "Details about the updated tab, or <code>null</code> if the 'tabs' permission has not been requested."
               }
             ]
           }

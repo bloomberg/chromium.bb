@@ -66,5 +66,12 @@ chrome.test.runTests([
               }));
           }));
       }));
+  },
+
+  function testUpdatingWithPermissionReturnsTabInfo() {
+    chrome.tabs.update(
+      undefined, {"url": pageUrl("neutrinos")}, pass(function(tab) {
+        assertEq(pageUrl("neutrinos"), tab.url);
+    }));
   }
 ]);

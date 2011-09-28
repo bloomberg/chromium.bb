@@ -1,0 +1,13 @@
+<script>
+var pass = chrome.test.callbackPass;
+var assertEq = chrome.test.assertEq;
+
+chrome.test.runTests([
+  function testUpdatingWithoutPermissionReturnsNoTabInfo() {
+    chrome.tabs.update(
+      undefined, {"url": "neutrinos"}, pass(function(tab) {
+        assertEq(null, tab);
+    }));
+  }
+]);
+</script>
