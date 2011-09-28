@@ -33,6 +33,7 @@ extern const char kExpirationYearRe[];
 extern const char kExpirationDate2DigitYearRe[];
 extern const char kExpirationDateRe[];
 extern const char kCardIgnoredRe[];
+extern const char kGiftCardRe[];
 extern const char kEmailRe[];
 extern const char kNameIgnoredRe[];
 extern const char kNameRe[];

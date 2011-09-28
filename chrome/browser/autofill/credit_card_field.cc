@@ -29,6 +29,10 @@ FormField* CreditCardField::Parse(AutofillScanner* scanner) {
   // We loop until no more credit card related fields are found, see |break| at
   // bottom of the loop.
   for (int fields = 0; !scanner->IsEnd(); ++fields) {
+    // Ignore gift card fields.
+    if (ParseField(scanner, UTF8ToUTF16(autofill::kGiftCardRe), NULL))
+      break;
+
     // Sometimes the cardholder field is just labeled "name". Unfortunately this
     // is a dangerously generic word to search for, since it will often match a
     // name (not cardholder name) field before or after credit card fields. So
@@ -134,9 +138,8 @@ FormField* CreditCardField::Parse(AutofillScanner* scanner) {
     // We also ignore any other fields within a credit card block that
     // start with "card", under the assumption that they are related to
     // the credit card section being processed but are uninteresting to us.
-    if (ParseField(scanner, UTF8ToUTF16(autofill::kCardIgnoredRe), NULL)) {
+    if (ParseField(scanner, UTF8ToUTF16(autofill::kCardIgnoredRe), NULL))
       continue;
-    }
 
     break;
   }
