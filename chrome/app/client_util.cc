@@ -145,7 +145,7 @@ bool GetPreReadExperimentGroup(DWORD* pre_read) {
     return false;
 
   // We use the same technique as FieldTrial::HashClientId.
-  unsigned char sha1_hash[base::SHA1_LENGTH];
+  unsigned char sha1_hash[base::kSHA1Length];
   base::SHA1HashBytes(
       reinterpret_cast<const unsigned char*>(metrics_id.c_str()),
       metrics_id.size() * sizeof(metrics_id[0]),

@@ -437,7 +437,7 @@ bool DNSSECChainVerifier::DigestKey(base::StringPiece* out,
   if (digest_type == kDNSSEC_SHA1) {
     temp = base::SHA1HashString(input);
     digest = reinterpret_cast<const uint8*>(temp.data());
-    digest_len = base::SHA1_LENGTH;
+    digest_len = base::kSHA1Length;
   } else if (digest_type == kDNSSEC_SHA256) {
     crypto::SHA256HashString(input, temp2, sizeof(temp2));
     digest = temp2;
