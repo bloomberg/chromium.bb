@@ -4,8 +4,6 @@
 
 #include "ui/base/resource/resource_bundle.h"
 
-#include <atlbase.h>
-
 #include "base/debug/stack_trace.h"
 #include "base/logging.h"
 #include "base/path_service.h"
@@ -92,15 +90,6 @@ base::StringPiece ResourceBundle::GetRawDataResource(int resource_id) const {
   } else if (locale_resources_data_.get() &&
              locale_resources_data_->GetStringPiece(resource_id, &data)) {
     return data;
-  }
-
-  // TODO(tony): Remove this ATL code once we remove the strings in
-  // chrome.dll.
-  const ATLSTRINGRESOURCEIMAGE* image = AtlGetStringResourceImage(
-    resources_data_, resource_id);
-  if (image) {
-    return base::StringPiece(reinterpret_cast<const char*>(image->achString),
-                             image->nLength * 2);
   }
 
   for (size_t i = 0; i < data_packs_.size(); ++i) {
