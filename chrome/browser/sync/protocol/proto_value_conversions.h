@@ -13,6 +13,7 @@ class DictionaryValue;
 }
 
 namespace sync_pb {
+class AppNotificationSpecifics;
 class AppSpecifics;
 class AutofillProfileSpecifics;
 class AutofillSpecifics;
@@ -73,6 +74,9 @@ base::DictionaryValue* PasswordSpecificsDataToValue(
     const sync_pb::PasswordSpecificsData& password_specifics_data);
 
 // Main *SpecificsToValue functions.
+
+base::DictionaryValue* AppNotificationSpecificsToValue(
+    const sync_pb::AppNotificationSpecifics& app_notification_specifics);
 
 base::DictionaryValue* AppSpecificsToValue(
     const sync_pb::AppSpecifics& app_specifics);
