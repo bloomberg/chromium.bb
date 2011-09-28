@@ -51,13 +51,11 @@ bool DispatchX2Event(Widget* widget, XEvent* xev) {
     case XI_TouchBegin:
     case XI_TouchEnd:
     case XI_TouchUpdate: {
-      Event::FromNativeEvent2 from_native;
-
       // Hide the cursor when a touch event comes in.
       ui::TouchFactory::GetInstance()->SetCursorVisible(false, false);
 
       // If the TouchEvent is processed by |widget|, then return.
-      TouchEvent touch(xev, from_native);
+      TouchEvent touch(xev);
       if (widget->OnTouchEvent(touch) != ui::TOUCH_STATUS_UNKNOWN)
         return true;
 
