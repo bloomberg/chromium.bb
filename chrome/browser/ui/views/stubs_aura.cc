@@ -165,15 +165,6 @@ void ShowCertExportDialog(TabContents* tab_contents,
 }
 #endif
 
-// static
-void BookmarkEditor::Show(gfx::NativeWindow parent_window,
-                          Profile* profile,
-                          const EditDetails& details,
-                          Configuration configuration) {
-  // TODO(beng);
-  NOTIMPLEMENTED();
-}
-
 namespace importer {
 
 void ShowImportProgressDialog(gfx::NativeWindow parent_window,

@@ -71,9 +71,20 @@
 #include "net/base/cookie_options.h"
 #include "ui/base/resource/resource_bundle.h"
 
+#if defined(USE_AURA)
+#include "chrome/browser/chrome_browser_main_aura.h"
+#elif defined(OS_WIN)
+#include "chrome/browser/chrome_browser_main_win.h"
+#elif defined(OS_MACOSX)
+#include "chrome/browser/chrome_browser_main_mac.h"
+#elif defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/chrome_browser_main_chromeos.h"
+#elif defined(OS_LINUX)
+#include "chrome/browser/chrome_browser_main_gtk.h"
+#endif
+
 #if defined(OS_LINUX)
 #include "base/linux_util.h"
-#include "chrome/browser/chrome_browser_main_gtk.h"
 #include "chrome/browser/crash_handler_host_linux.h"
 #endif
 
@@ -83,13 +94,6 @@
 #include "chrome/browser/tab_contents/tab_contents_view_gtk.h"
 #elif defined(OS_MACOSX)
 #include "chrome/browser/tab_contents/tab_contents_view_mac.h"
-#include "chrome/browser/chrome_browser_main_mac.h"
-#endif
-
-#if defined(OS_WIN)
-#include "chrome/browser/chrome_browser_main_win.h"
-#elif defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/chrome_browser_main_chromeos.h"
 #endif
 
 #if defined(USE_NSS)
@@ -121,7 +125,9 @@ namespace chrome {
 
 content::BrowserMainParts* ChromeContentBrowserClient::CreateBrowserMainParts(
     const MainFunctionParams& parameters) {
-#if defined(OS_WIN)
+#if defined(USE_AURA)
+  return new ChromeBrowserMainPartsAura(parameters);
+#elif defined(OS_WIN)
   return new ChromeBrowserMainPartsWin(parameters);
 #elif defined(OS_MACOSX)
   return new ChromeBrowserMainPartsMac(parameters);
