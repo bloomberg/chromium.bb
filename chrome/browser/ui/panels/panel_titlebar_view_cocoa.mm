@@ -260,7 +260,7 @@ static NSEvent* MakeMouseEvent(NSEventType type,
   NSRect iconFrame = [icon_ frame];
   [title_ sizeToFit];
   NSRect titleFrame = [title_ frame];
-  NSRect settingsButtonFrame = [settingsButton_ frame];
+  NSRect settingsButtonFrame = [settingsButtonWrapper_ frame];
   NSRect bounds = [self bounds];
 
   // Place the icon and title at the center of the titlebar.
@@ -443,13 +443,15 @@ static NSEvent* MakeMouseEvent(NSEventType type,
 - (void)updateSettingsButtonVisibility:(BOOL)mouseOverWindow {
   // The settings button is visible if the panel is main window or the mouse is
   // over it.
-  BOOL isMainWindow = [[self window] isMainWindow];
-  [settingsButton_ setHidden:!(isMainWindow || mouseOverWindow)];
+  BOOL shouldShowSettingsButton =
+      mouseOverWindow || [[self window] isMainWindow];
+  [[settingsButtonWrapper_ animator]
+      setAlphaValue:shouldShowSettingsButton ? 1.0 : 0.0];
 }
 
 - (void)checkMouseAndUpdateSettingsButtonVisibility {
   BOOL mouseOverWindow = NSPointInRect([NSEvent mouseLocation],
-                                       [[controller_ window] frame]);
+                                       [[self window] frame]);
   [self updateSettingsButtonVisibility:mouseOverWindow];
 }
 

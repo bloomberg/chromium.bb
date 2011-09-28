@@ -37,6 +37,9 @@ enum PanelDragState {
   IBOutlet PanelWindowControllerCocoa* controller_;
   IBOutlet NSView* icon_;
   IBOutlet NSTextField* title_;
+  // Since HoverImageButton manages its own alpha value, we wrap it in a subview
+  // so we can animate it with a fade in/fade out effect.
+  IBOutlet NSView* settingsButtonWrapper_;
   IBOutlet HoverImageButton* settingsButton_;
   NSButton* closeButton_;  // Created explicitly, not from NIB. Weak, destroyed
                            // when view is destroyed, as a subview.
