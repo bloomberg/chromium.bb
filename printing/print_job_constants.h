@@ -13,6 +13,7 @@ PRINTING_EXPORT extern const char kIsFirstRequest[];
 PRINTING_EXPORT extern const char kPreviewRequestID[];
 PRINTING_EXPORT extern const char kPreviewUIAddr[];
 PRINTING_EXPORT extern const char kSettingCloudPrintId[];
+PRINTING_EXPORT extern const char kSettingCloudPrintDialog[];
 PRINTING_EXPORT extern const char kSettingCollate[];
 PRINTING_EXPORT extern const char kSettingColor[];
 PRINTING_EXPORT extern const char kSettingContentHeight[];

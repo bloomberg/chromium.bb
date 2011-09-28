@@ -235,48 +235,42 @@ TEST_F('PrintPreviewWebUITest', 'TestPrinterList', function() {
 
 // Test that the printer list is structured correctly after calling
 // addCloudPrinters with an empty list.
-TEST_F('PrintPreviewWebUITest', 'FLAKY_TestPrinterListCloudEmpty', function() {
-  addCloudPrinters([]);
+TEST_F('PrintPreviewWebUITest', 'TestPrinterListCloudEmpty', function() {
+  cloudprint.addCloudPrinters([], addDestinationListOptionAtPosition);
   var printerList = $('printer-list');
   assertNotEquals(null, printerList);
-  expectEquals(localStrings.getString('cloudPrinters'),
-               printerList.options[0].text);
-  expectEquals(localStrings.getString('addCloudPrinter'),
-               printerList.options[1].text);
 });
 
 // Test that the printer list is structured correctly after calling
 // addCloudPrinters with a null list.
-TEST_F('PrintPreviewWebUITest', 'FLAKY_TestPrinterListCloudNull', function() {
-  addCloudPrinters(null);
+TEST_F('PrintPreviewWebUITest', 'TestPrinterListCloudNull', function() {
+  cloudprint.addCloudPrinters(null, addDestinationListOptionAtPosition);
   var printerList = $('printer-list');
   assertNotEquals(null, printerList);
-  expectEquals(localStrings.getString('cloudPrinters'),
-               printerList.options[0].text);
   expectEquals(localStrings.getString('signIn'),
-               printerList.options[1].text);
+               printerList.options[0].text);
 });
 
 // Test that the printer list is structured correctly after attempting to add
 // individual cloud printers until no more can be added.
-TEST_F('PrintPreviewWebUITest', 'FLAKY_TestPrinterListCloud', function() {
+TEST_F('PrintPreviewWebUITest', 'TestPrinterListCloud', function() {
   var printerList = $('printer-list');
   assertNotEquals(null, printerList);
   var printer = new Object;
   printer['name'] = 'FooCloud';
   for (var i = 0; i < maxCloudPrinters; i++) {
     printer['id'] = String(i);
-    addCloudPrinters([printer]);
-    expectEquals(localStrings.getString('cloudPrinters'),
-                 printerList.options[0].text);
-    expectEquals('FooCloud', printerList.options[i + 1].text);
-    expectEquals(String(i), printerList.options[i + 1].value);
+    cloudprint.addCloudPrinters([printer], addDestinationListOptionAtPosition);
+    expectEquals('FooCloud', printerList.options[i].text);
+    expectEquals(String(i), printerList.options[i].value);
   }
-  printer['id'] = maxCloudPrinters + 1;
-  addCloudPrinters([printer]);
-  expectEquals('', printerList.options[maxCloudPrinters + 1].text);
-  expectEquals(localStrings.getString('morePrinters'),
-               printerList.options[maxCloudPrinters + 2].text);
+  cloudprint.addCloudPrinters([printer], addDestinationListOptionAtPosition);
+  expectNotEquals('FooCloud', printerList.options[i].text);
+  expectNotEquals(String(i), printerList.options[i].value);
+  for (var i = 0; i < maxCloudPrinters; i++) {
+    expectEquals('FooCloud', printerList.options[i].text);
+    expectEquals(String(i), printerList.options[i].value);
+  }
 });
 
 /**

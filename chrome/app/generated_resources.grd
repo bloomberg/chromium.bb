@@ -6077,33 +6077,21 @@ Keep your key file in a safe place. You will need it to create new versions of y
           desc="Option shown in printer drop-down list when the user isn't signed in to cloud print.  Choosing it will display a sign in dialog.">
         Sign in to access cloud printers...
       </message>
-      <message name="IDS_PRINT_PREVIEW_CLOUD_PRINTERS"
-          desc="Option shown in printer drop-down list that serves as a heading above all cloud based printers.">
-        Cloud printers
-      </message>
-      <message name="IDS_PRINT_PREVIEW_LOCAL_PRINTERS"
-          desc="Option shown in printer drop-down list that serves as a heading above all locally installed printers.">
-        Local printers
-      </message>
-      <message name="IDS_PRINT_PREVIEW_MANAGE_CLOUD_PRINTERS"
-          desc="Option shown in printer drop-down list for managing cloud based printers.">
-        Manage cloud printers...
+      <message name="IDS_PRINT_PREVIEW_MORE_PRINTERS"
+          desc="Option shown in printer drop-down list that displays an interface for finding/using additional cloud based printers.">
+         Search for additional printers
       </message>
       <message name="IDS_PRINT_PREVIEW_MANAGE_PRINTERS"
           desc="Option shown in printer drop-down list for managing printers.">
         Manage printers...
       </message>
-      <message name="IDS_PRINT_PREVIEW_MANAGE_LOCAL_PRINTERS"
-          desc="Option shown in printer drop-down list for managing local printers.">
-        Manage local printers...
-      </message>
       <message name="IDS_PRINT_PREVIEW_PRINT_WITH_CLOUD_PRINT"
-          desc="Option shown in printer drop-down list to allow the user to print using cloud print.">
-        Print with Google Cloud Print...
+          desc="Option shown in printer drop-down list to allow the user to print using cloud print. Cloud print dialog will open when this option is selected and the user clicks print.">
+        Print with <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph>
       </message>
       <message name="IDS_PRINT_PREVIEW_PRINT_WITH_CLOUD_PRINT_WAIT"
           desc="Message shown in the print preview page after choosing cloud print before the dialog displays">
-        Loading Google Cloud Print
+        Loading <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph>
       </message>
       <message name="IDS_PRINT_PREVIEW_SUMMARY_FORMAT_LONG" desc="Print summary, explaining to the user how many pages will be printed.">
         Total: <ph name="NUMBER_OF_SHEETS">$1<ex>10</ex></ph> <ph name="SHEETS_LABEL">$2<ex>sheets of paper</ex></ph> (<ph name="NUMBER_OF_PAGES">$3<ex>4</ex></ph> <ph name="PAGE_OR_PAGES_LABEL">$4<ex>Pages</ex></ph>)
@@ -6125,6 +6113,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_PRINT_PREVIEW_SYSTEM_DIALOG_OPTION" desc="Option allowing the user to access advanced printer settings using the native print system dialog instead of printing through the print preview mechanism. Shortcut key is not translated">
         Print using system dialog... <ph name="SHORTCUT_KEY">$1<ex>(Shift+Ctrl+P)</ex></ph>
+      </message>
+      <message name="IDS_PRINT_PREVIEW_CLOUD_DIALOG_OPTION" desc="Option allowing the user to access advanced printer settings using the cloud print dialog instead of printing through the print preview mechanism.">
+        Print using <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph> dialog... <ph name="SHORTCUT_KEY">$1<ex>(Shift+Ctrl+P)</ex></ph>
       </message>
       <message name="IDS_PRINT_PREVIEW_PAGE_RANGE_INSTRUCTION" desc="Instruction shown when the user enters an invalid page range.">
         Invalid page range, use <ph name="EXAMPLE_PAGE_RANGE">$1<ex>e.g. 1-5, 8, 11-13</ex></ph>
