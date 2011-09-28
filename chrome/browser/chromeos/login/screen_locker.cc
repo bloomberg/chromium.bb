@@ -249,7 +249,7 @@ class LockWindow : public views::NativeWidgetGtk {
 };
 
 // GrabWidget's root view to layout the ScreenLockView at the center
-// and the Shutdown button at the right bottom.
+// and the Shutdown button at the left top.
 class GrabWidgetRootView
     : public views::View,
       public chromeos::ScreenLocker::ScreenLockViewContainer {
@@ -265,7 +265,10 @@ class GrabWidgetRootView
   // views::View implementation.
   virtual void Layout() OVERRIDE {
     gfx::Size size = screen_lock_view_->GetPreferredSize();
-    screen_lock_view_->SetBounds(0, 0, size.width(), size.height());
+    gfx::Rect b = bounds();
+    screen_lock_view_->SetBounds(
+        b.width() - size.width(), b.height() - size.height(),
+        size.width(), size.height());
     shutdown_button_->LayoutIn(this);
   }
 
@@ -543,7 +546,7 @@ class ScreenLockerBackgroundView
                         (screen.height() - size.height()) / 2);
       gfx::Size widget_size(screen.size());
       widget_size.Enlarge(-origin.x(), -origin.y());
-      lock_widget_->SetBounds(gfx::Rect(origin, widget_size));
+      lock_widget_->SetBounds(gfx::Rect(widget_size));
     } else {
       // No password entry. Move the lock widget to off screen.
       lock_widget_->SetBounds(gfx::Rect(-100, -100, 1, 1));

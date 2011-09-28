@@ -20,9 +20,9 @@ namespace {
 
 // Style parameters for Shutdown button.
 
-// Bottom/Right padding to locale the shutdown button.
-const int kBottomPadding = 12;
-const int kRightPadding = 12;
+// Top/Left padding to locale the shutdown button.
+const int kTopPadding = 0;
+const int kLeftPadding = 0;
 
 // Normal/Hover colors.
 const SkColor kShutdownColor = 0xFEFEFE;
@@ -97,10 +97,7 @@ void ShutdownButton::LayoutIn(views::View* parent) {
   // No RTL for now. RTL will be handled in new WebUI based Login/Locker.
   gfx::Size button_size = GetPreferredSize();
   SetBounds(
-      parent->width() - button_size.width()- kRightPadding,
-      parent->height() - button_size.height() - kBottomPadding,
-      button_size.width(),
-      button_size.height());
+      kLeftPadding, kTopPadding, button_size.width(), button_size.height());
 }
 
 gfx::NativeCursor ShutdownButton::GetCursor(const views::MouseEvent& event) {
