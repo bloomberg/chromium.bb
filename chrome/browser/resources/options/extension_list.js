@@ -3,6 +3,20 @@
 // found in the LICENSE file.
 
 cr.define('options', function() {
+  'use strict';
+
+  /**
+   * A lookup helper function to find the first node that has an id (starting
+   * at |node| and going up the parent chain).
+   * @param {Element} node The node to start looking at.
+   */
+  function findIdNode(node) {
+    while (node && !node.id) {
+      node = node.parentNode;
+    }
+    return node;
+  }
+
   /**
    * Creates a new list of extensions.
    * @param {Object=} opt_propertyBag Optional properties.
@@ -47,8 +61,10 @@ cr.define('options', function() {
 
       // Install handler for key presses.
       if (!handleInstalled) {
-        document.addEventListener('keyup', this.upEventHandler_.bind(this));
-        document.addEventListener('mouseup', this.upEventHandler_.bind(this));
+        this.ownerDocument.addEventListener('keyup',
+                                            this.upEventHandler_.bind(this));
+        this.ownerDocument.addEventListener('mouseup',
+                                            this.upEventHandler_.bind(this));
         handleInstalled = true;
       }
     },
@@ -57,10 +73,11 @@ cr.define('options', function() {
      * Deletes the existing Extension nodes from the page to make room for new
      * ones. It also keeps track of who was showing details so when the
      * extension list gets recreated we can recreate that state.
-     * @param {Array} showingDetails An array that will contain the list of id's
-     *                of extension that had the details section expanded.
-     * @param {Array} showingWarning An array that will contain the list of id's
-     *                of extension that were showing a warning.
+     *     @param {Array} showingDetails An array that will contain the list of
+     *                    id's of extension that had the details section
+     *                    expanded.
+     *     @param {Array} showingWarning An array that will contain the list of
+     *                    id's of extension that were showing a warning.
      * @private
      */
      deleteExistingExtensionNodes_: function(showingDetails, showingWarning) {
@@ -76,7 +93,7 @@ cr.define('options', function() {
 
         // See if the butterbar is showing.
         var butterBar = document.getElementById(child.id + '_incognitoWarning');
-        if (!(butterBar === null) && !butterBar.hidden)
+        if (butterBar && !butterBar.hidden)
           showingWarning.push(child.id);
 
         // Now we can delete it.
@@ -94,12 +111,8 @@ cr.define('options', function() {
      * @private
      */
      showExtensionNodes_: function(showingDetails, showingWarning) {
-      // Keeps track of differences in checkbox width.
-      var minCheckboxWidth = 999999;
-      var maxCheckboxWidth = 0;
-
       // Iterate over the extension data and add each item to the list.
-      for (var i = 0; i < this.data_.extensions.length; ++i) {
+      for (var i = 0; i < this.data_.extensions.length; i++) {
         var extension = this.data_.extensions[i];
         var id = extension.id;
 
@@ -132,14 +145,14 @@ cr.define('options', function() {
         wrapper.id = id;
         this.appendChild(wrapper);
 
-        var vbox_outer = this.ownerDocument.createElement('div');
-        vbox_outer.classList.add('vbox');
-        vbox_outer.classList.add('extension-list-item');
-        wrapper.appendChild(vbox_outer);
+        var vboxOuter = this.ownerDocument.createElement('div');
+        vboxOuter.classList.add('vbox');
+        vboxOuter.classList.add('extension-list-item');
+        wrapper.appendChild(vboxOuter);
 
         var hbox = this.ownerDocument.createElement('div');
         hbox.classList.add('hbox');
-        vbox_outer.appendChild(hbox);
+        vboxOuter.appendChild(hbox);
 
         // Add a container div for the zippy, so we can extend the hit area.
         var container = this.ownerDocument.createElement('div');
@@ -149,7 +162,7 @@ cr.define('options', function() {
         hbox.appendChild(container);
 
         // On the far left we have the zippy icon.
-        div = this.ownerDocument.createElement('div');
+        var div = this.ownerDocument.createElement('div');
         div.id = id + '_zippy';
         div.classList.add('extension-zippy-default');
         div.classList.add(expanded ? 'extension-zippy-expanded' :
@@ -157,7 +170,7 @@ cr.define('options', function() {
         container.appendChild(div);
 
         // Next to it, we have the extension icon.
-        icon = this.ownerDocument.createElement('img');
+        var icon = this.ownerDocument.createElement('img');
         icon.classList.add('extension-icon');
         icon.src = extension.icon;
         hbox.appendChild(icon);
@@ -221,7 +234,7 @@ cr.define('options', function() {
           var link = this.ownerDocument.createElement('a');
           link.classList.add('extension-links-trailing');
           link.textContent =
-            localStrings.getString('extensionSettingsVisitWebsite');
+              localStrings.getString('extensionSettingsVisitWebsite');
           link.href = extension.homepageUrl;
           vbox.appendChild(link);
         }
@@ -247,8 +260,7 @@ cr.define('options', function() {
           input.addEventListener('click', this.handleEnable_.bind(this));
           input.type = 'checkbox';
           input.name = 'toggle-' + id;
-          if (!extension.mayDisable)
-            input.disabled = true;
+          input.disabled = !extension.mayDisable;
           if (extension.enabled)
             input.checked = true;
           input.id = 'toggle-' + id;
@@ -257,7 +269,7 @@ cr.define('options', function() {
           label.classList.add('extension-enabling-label');
           if (extension.enabled)
             label.classList.add('extension-enabling-label-bold');
-          label.setAttribute('for', 'toggle-' + id);
+          label.htmlFor = 'toggle-' + id;
           label.id = 'toggle-' + id + '-label';
           if (extension.enabled) {
             // Enabled (with a d).
@@ -269,11 +281,6 @@ cr.define('options', function() {
                 localStrings.getString('extensionSettingsEnable');
           }
           section.appendChild(label);
-
-          if (label.offsetWidth > maxCheckboxWidth)
-            maxCheckboxWidth = label.offsetWidth;
-          if (label.offsetWidth < minCheckboxWidth)
-            minCheckboxWidth = label.offsetWidth;
         } else {
           // Extension has been terminated, show a Reload link.
           var link = this.ownerDocument.createElement('a');
@@ -297,14 +304,23 @@ cr.define('options', function() {
         hbox.appendChild(button);
       }
 
+      // Do one pass to find what the size of the checkboxes should be.
+      var minCheckboxWidth = Infinity;
+      var maxCheckboxWidth = 0;
+      for (var i = 0; i < this.data_.extensions.length; ++i) {
+        var label = $('toggle-' + this.data_.extensions[i].id + '-label');
+        if (label.offsetWidth > maxCheckboxWidth)
+          maxCheckboxWidth = label.offsetWidth;
+        if (label.offsetWidth < minCheckboxWidth)
+          minCheckboxWidth = label.offsetWidth;
+      }
+
       // Do another pass, making sure checkboxes line up.
       var difference = maxCheckboxWidth - minCheckboxWidth;
       for (var i = 0; i < this.data_.extensions.length; ++i) {
-        var extension = this.data_.extensions[i];
-        var id = extension.id;
-        var label = $('toggle-' + id + '-label');
+        var label = $('toggle-' + this.data_.extensions[i].id + '-label');
         if (label.offsetWidth < maxCheckboxWidth)
-          label.style.marginRight = difference.toString() + 'px';
+          label.style.WebkitMarginEnd = difference.toString() + 'px';
       }
     },
 
@@ -321,15 +337,15 @@ cr.define('options', function() {
                                       expanded, showButterbar) {
       // This container div is needed because vbox display
       // overrides display:hidden.
-      var details_contents = this.ownerDocument.createElement('div');
-      details_contents.classList.add(expanded ? 'extension-details-visible' :
-                                                'extension-details-hidden');
-      details_contents.id = extension.id + '_details';
-      details.appendChild(details_contents);
+      var detailsContents = this.ownerDocument.createElement('div');
+      detailsContents.classList.add(expanded ? 'extension-details-visible' :
+                                               'extension-details-hidden');
+      detailsContents.id = extension.id + '_details';
+      details.appendChild(detailsContents);
 
       var div = this.ownerDocument.createElement('div');
       div.classList.add('informative-text');
-      details_contents.appendChild(div);
+      detailsContents.appendChild(div);
 
       // Keep track of how many items we'll show in the details section.
       var itemsShown = 0;
@@ -338,8 +354,8 @@ cr.define('options', function() {
         // First we have the id.
         var content = this.ownerDocument.createElement('div');
         content.textContent =
-          localStrings.getString('extensionSettingsExtensionId') +
-                                 ' ' + extension.id;
+            localStrings.getString('extensionSettingsExtensionId') +
+                                   ' ' + extension.id;
         div.appendChild(content);
         itemsShown++;
 
@@ -406,30 +422,23 @@ cr.define('options', function() {
       }
 
       var content = this.ownerDocument.createElement('div');
-      details_contents.appendChild(content);
+      detailsContents.appendChild(content);
 
       // Then Reload:
       if (extension.enabled && extension.allow_reload) {
-        var link = this.ownerDocument.createElement('a');
-        link.classList.add('extension-links-trailing');
-        link.textContent = localStrings.getString('extensionSettingsReload');
-        link.id = extension.id;
-        link.href = '#';
-        link.addEventListener('click', this.handleReload_.bind(this));
-        content.appendChild(link);
+        this.addLinkTo_(content,
+                        localStrings.getString('extensionSettingsReload'),
+                        extension.id,
+                        this.handleReload_.bind(this));
         itemsShown++;
       }
 
       // Then Show (Browser Action) Button:
       if (extension.enabled && extension.enable_show_button) {
-        link = this.ownerDocument.createElement('a');
-        link.classList.add('extension-links-trailing');
-        link.textContent =
-            localStrings.getString('extensionSettingsShowButton');
-        link.id = extension.id;
-        link.href = '#';
-        link.addEventListener('click', this.handleShowButton_.bind(this));
-        content.appendChild(link);
+        this.addLinkTo_(content,
+                        localStrings.getString('extensionSettingsShowButton'),
+                        extension.id,
+                        this.handleShowButton_.bind(this));
         itemsShown++;
       }
 
@@ -481,7 +490,7 @@ cr.define('options', function() {
         content.id = extension.id + '_incognitoWarning';
         content.classList.add('butter-bar');
         content.hidden = !showButterbar;
-        details_contents.appendChild(content);
+        detailsContents.appendChild(content);
 
         var span = this.ownerDocument.createElement('span');
         span.innerHTML =
@@ -491,7 +500,21 @@ cr.define('options', function() {
       }
 
       var zippy = extension.id + '_zippy';
-      $(zippy).style.display = (itemsShown > 0) ? 'block' : 'none';
+      $(zippy).hidden = !itemsShown;
+    },
+
+    /**
+     * A helper function to add contextual actions for extensions (action links)
+     * to the page.
+     */
+    addLinkTo_: function(parent, linkText, id, handler) {
+      var link = this.ownerDocument.createElement('a');
+      link.className = 'extension-links-trailing';
+      link.textContent = linkText;
+      link.id = id;
+      link.href = '#';
+      link.addEventListener('click', handler);
+      parent.appendChild(link);
     },
 
     /**
@@ -508,28 +531,13 @@ cr.define('options', function() {
     },
 
     /**
-     * A lookup helper function to find the first node that has an id (starting
-     * at |node| and going up the parent chain.
-     * @param {Element} node The node to start looking at.
-     * @private
-     */
-    findIdNode_: function(node) {
-      while (node.id.length == 0) {
-        node = node.parentNode;
-        if (!node)
-          return null;
-      }
-      return node;
-    },
-
-    /**
      * Handles the mouseclick on the zippy icon (that expands and collapses the
      * details section).
      * @param {Event} e Change event.
      * @private
      */
     handleZippyClick_: function(e) {
-      var node = this.findIdNode_(e.target.parentNode);
+      var node = findIdNode(e.target.parentNode);
       var iter = this.firstChild;
       while (iter) {
         var zippy = $(iter.id + '_zippy');
@@ -546,8 +554,8 @@ cr.define('options', function() {
             iter.classList.add('extension-list-item-collaped');
 
             // Hide yo incognito warning.
-            var butterBar = this.ownerDocument.getElementById(
-                iter.id + '_incognitoWarning');
+            var butterBar =
+                this.querySelector('#' + iter.id + '_incognitoWarning');
             if (!(butterBar === null))
               butterBar.hidden = true;
           } else {
@@ -604,7 +612,7 @@ cr.define('options', function() {
      * @private
      */
     handleReload_: function(e) {
-      var node = this.findIdNode_(e.target);
+      var node = findIdNode(e.target);
       chrome.send('extensionSettingsReload', [node.id]);
     },
 
@@ -614,7 +622,7 @@ cr.define('options', function() {
      * @private
      */
     handleShowButton_: function(e) {
-      var node = this.findIdNode_(e.target);
+      var node = findIdNode(e.target);
       chrome.send('extensionSettingsShowButton', [node.id]);
     },
 
@@ -624,7 +632,7 @@ cr.define('options', function() {
      * @private
      */
     handleEnable_: function(e) {
-      var node = this.findIdNode_(e.target.parentNode);
+      var node = findIdNode(e.target.parentNode);
       var extension = this.getExtensionWithId_(node.id);
       chrome.send('extensionSettingsEnable',
                   [node.id, extension.enabled ? 'false' : 'true']);
@@ -637,7 +645,7 @@ cr.define('options', function() {
      * @private
      */
     handleUninstall_: function(e) {
-      var node = this.findIdNode_(e.target.parentNode);
+      var node = findIdNode(e.target.parentNode);
       chrome.send('extensionSettingsUninstall', [node.id]);
       chrome.send('extensionSettingsRequestExtensionsData');
     },
@@ -648,7 +656,7 @@ cr.define('options', function() {
      * @private
      */
     handleOptions_: function(e) {
-      var node = this.findIdNode_(e.target.parentNode);
+      var node = findIdNode(e.target.parentNode);
       var extension = this.getExtensionWithId_(node.id);
       chrome.send('extensionSettingsOptions', [extension.id]);
       e.preventDefault();
@@ -660,7 +668,7 @@ cr.define('options', function() {
      * @private
      */
     handleToggleEnableIncognito_: function(e) {
-      var node = this.findIdNode_(e.target);
+      var node = findIdNode(e.target);
       var butterBar = document.getElementById(node.id + '_incognitoWarning');
       butterBar.hidden = !e.target.checked;
       chrome.send('extensionSettingsEnableIncognito',
@@ -673,7 +681,7 @@ cr.define('options', function() {
      * @private
      */
     handleToggleAllowFileUrls_: function(e) {
-      var node = this.findIdNode_(e.target);
+      var node = findIdNode(e.target);
       chrome.send('extensionSettingsAllowFileAccess',
                   [node.id, String(e.target.checked)]);
     },

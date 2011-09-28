@@ -8,7 +8,7 @@ cr.define('options', function() {
   /**
    * PackExtensionOverlay class
    * Encapsulated handling of the 'Pack Extension' overlay page.
-   * @class
+   * @constructor
    */
   function PackExtensionOverlay() {
     OptionsPage.call(this, 'packExtensionOverlay',
@@ -49,7 +49,7 @@ cr.define('options', function() {
     * |selectType| can be either 'file' or 'folder'. |operation| can be 'load',
     * 'packRoot', or 'pem' which are signals to the C++ to do some
     * operation-specific configuration.
-    @private
+    * @private
     */
     showFileDialog_: function(selectType, operation, callback) {
       handleFilePathSelected = function(filePath) {
