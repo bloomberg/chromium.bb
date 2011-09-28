@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_UI_VIEWS_UNINSTALL_VIEW_H_
 #pragma once
 
+#include <map>
+
 #include "base/string16.h"
 #include "ui/base/models/combobox_model.h"
 #include "views/controls/combobox/combobox.h"
@@ -23,25 +25,26 @@ class UninstallView : public views::ButtonListener,
                       public views::DialogDelegateView,
                       public ui::ComboboxModel {
  public:
-  explicit UninstallView(int& user_selection);
+  explicit UninstallView(int* user_selection);
   virtual ~UninstallView();
 
   // Overridden form views::ButtonListener.
-  virtual void ButtonPressed(views::Button* sender, const views::Event& event);
+  virtual void ButtonPressed(views::Button* sender,
+                             const views::Event& event) OVERRIDE;
 
   // Overridden from views::DialogDelegateView:
-  virtual bool Accept();
-  virtual bool Cancel();
+  virtual bool Accept() OVERRIDE;
+  virtual bool Cancel() OVERRIDE;
   virtual std::wstring GetDialogButtonLabel(
-      MessageBoxFlags::DialogButton button) const;
+      MessageBoxFlags::DialogButton button) const OVERRIDE;
 
   // Overridden from views::WidgetDelegate:
-  virtual std::wstring GetWindowTitle() const;
-  virtual views::View* GetContentsView();
+  virtual string16 GetWindowTitle() const OVERRIDE;
+  virtual views::View* GetContentsView() OVERRIDE;
 
   // Overridden from ui::ComboboxModel:
-  virtual int GetItemCount();
-  virtual string16 GetItemAt(int index);
+  virtual int GetItemCount() OVERRIDE;
+  virtual string16 GetItemAt(int index) OVERRIDE;
 
  private:
   // Initializes the controls on the dialog.

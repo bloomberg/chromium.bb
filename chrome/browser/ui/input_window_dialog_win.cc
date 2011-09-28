@@ -70,13 +70,13 @@ class ContentView : public views::DialogDelegateView,
   virtual bool Accept() OVERRIDE;
   virtual bool Cancel() OVERRIDE;
   virtual void DeleteDelegate() OVERRIDE;
-  virtual std::wstring GetWindowTitle() const OVERRIDE;
+  virtual string16 GetWindowTitle() const OVERRIDE;
   virtual bool IsModal() const OVERRIDE;
   virtual views::View* GetContentsView() OVERRIDE;
 
   // views::TextfieldController:
   virtual void ContentsChanged(views::Textfield* sender,
-                               const std::wstring& new_contents) OVERRIDE;
+                               const string16& new_contents) OVERRIDE;
   virtual bool HandleKeyEvent(views::Textfield*,
                               const views::KeyEvent&) OVERRIDE;
 
@@ -140,8 +140,8 @@ void ContentView::DeleteDelegate() {
   delete delegate_;
 }
 
-std::wstring ContentView::GetWindowTitle() const {
-  return UTF16ToWideHack(delegate_->window_title());
+string16 ContentView::GetWindowTitle() const {
+  return delegate_->window_title();
 }
 
 bool ContentView::IsModal() const {
@@ -156,7 +156,7 @@ views::View* ContentView::GetContentsView() {
 // ContentView, views::TextfieldController implementation:
 
 void ContentView::ContentsChanged(views::Textfield* sender,
-                                  const std::wstring& new_contents) {
+                                  const string16& new_contents) {
   GetDialogClientView()->UpdateDialogButtons();
 }
 

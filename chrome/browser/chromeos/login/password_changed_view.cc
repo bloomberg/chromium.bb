@@ -48,7 +48,7 @@ bool PasswordChangedView::Accept() {
 }
 
 int PasswordChangedView::GetDialogButtons() const {
- return MessageBoxFlags::DIALOGBUTTON_OK;
+  return MessageBoxFlags::DIALOGBUTTON_OK;
 }
 
 views::View* PasswordChangedView::GetInitiallyFocusedView() {
@@ -68,9 +68,9 @@ views::View* PasswordChangedView::GetContentsView() {
   return this;
 }
 
-std::wstring PasswordChangedView::GetWindowTitle() const {
-  return UTF16ToWide(
-      l10n_util::GetStringUTF16(IDS_LOGIN_PASSWORD_CHANGED_DIALOG_BOX_TITLE));
+string16 PasswordChangedView::GetWindowTitle() const {
+  return l10n_util::GetStringUTF16(
+      IDS_LOGIN_PASSWORD_CHANGED_DIALOG_BOX_TITLE);
 }
 
 gfx::Size PasswordChangedView::GetPreferredSize() {
@@ -171,7 +171,6 @@ void PasswordChangedView::Init() {
     delta_sync_radio_->SetChecked(true);
     old_password_field_->SetEnabled(true);
   }
-
 }
 
 bool PasswordChangedView::ExitDialog() {

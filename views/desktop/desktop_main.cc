@@ -6,6 +6,7 @@
 #include "base/command_line.h"
 #include "base/i18n/icu_util.h"
 #include "base/process_util.h"
+#include "base/utf_string_conversions.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
 #include "views/desktop/desktop_views_delegate.h"
@@ -67,9 +68,11 @@ int main(int argc, char** argv) {
   views::desktop::DesktopWindowView::CreateDesktopWindow(
       views::desktop::DesktopWindowView::DESKTOP_DEFAULT);
   views::desktop::DesktopWindowView::desktop_window_view->CreateTestWindow(
-      L"Sample Window 1", SK_ColorWHITE, gfx::Rect(500, 200, 400, 400), true);
+      ASCIIToUTF16("Sample Window 1"), SK_ColorWHITE,
+      gfx::Rect(500, 200, 400, 400), true);
   views::desktop::DesktopWindowView::desktop_window_view->CreateTestWindow(
-      L"Sample Window 2", SK_ColorRED, gfx::Rect(600, 450, 450, 300), false);
+      ASCIIToUTF16("Sample Window 2"), SK_ColorRED,
+      gfx::Rect(600, 450, 450, 300), false);
 
   views::AcceleratorHandler accelerator_handler;
   MessageLoopForUI::current()->Run(&accelerator_handler);

@@ -45,26 +45,26 @@ class PasswordChangedView : public views::DialogDelegateView,
   virtual ~PasswordChangedView() {}
 
   // views::DialogDelegate:
-  virtual bool Accept();
-  virtual int GetDialogButtons() const;
+  virtual bool Accept() OVERRIDE;
+  virtual int GetDialogButtons() const OVERRIDE;
 
   // views::WidgetDelegate:
-  virtual View* GetInitiallyFocusedView();
-  virtual bool IsModal() const;
-  virtual views::View* GetContentsView();
+  virtual View* GetInitiallyFocusedView() OVERRIDE;
+  virtual bool IsModal() const OVERRIDE;
+  virtual views::View* GetContentsView() OVERRIDE;
 
   // views::View:
-  virtual std::wstring GetWindowTitle() const;
+  virtual string16 GetWindowTitle() const OVERRIDE;
 
   // views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender,
-                             const views::Event& event);
+                             const views::Event& event)  OVERRIDE;
 
   // views::TextfieldController:
   virtual bool HandleKeyEvent(views::Textfield* sender,
-                              const views::KeyEvent& keystroke);
+                              const views::KeyEvent& keystroke)  OVERRIDE;
   virtual void ContentsChanged(views::Textfield* sender,
-                               const string16& new_contents) {}
+                               const string16& new_contents)  OVERRIDE {}
 
  protected:
   // views::View:

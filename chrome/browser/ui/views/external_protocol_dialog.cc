@@ -69,8 +69,8 @@ std::wstring ExternalProtocolDialog::GetDialogButtonLabel(
         l10n_util::GetStringUTF16(IDS_EXTERNAL_PROTOCOL_CANCEL_BUTTON_TEXT));
 }
 
-std::wstring ExternalProtocolDialog::GetWindowTitle() const {
-  return UTF16ToWide(l10n_util::GetStringUTF16(IDS_EXTERNAL_PROTOCOL_TITLE));
+string16 ExternalProtocolDialog::GetWindowTitle() const {
+  return l10n_util::GetStringUTF16(IDS_EXTERNAL_PROTOCOL_TITLE);
 }
 
 void ExternalProtocolDialog::DeleteDelegate() {

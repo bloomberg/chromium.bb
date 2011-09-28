@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_UI_VIEWS_BOOKMARKS_BOOKMARK_EDITOR_VIEW_H_
 #pragma once
 
+#include <vector>
+
 #include "base/compiler_specific.h"
 #include "base/string16.h"
 #include "chrome/browser/bookmarks/bookmark_editor.h"
@@ -80,42 +82,47 @@ class BookmarkEditorView : public BookmarkEditor,
 
   // DialogDelegate methods:
   virtual bool IsDialogButtonEnabled(
-      MessageBoxFlags::DialogButton button) const;
-  virtual bool IsModal() const;
-  virtual bool CanResize() const;
-  virtual std::wstring GetWindowTitle() const;
-  virtual bool Accept();
-  virtual bool AreAcceleratorsEnabled(MessageBoxFlags::DialogButton button);
-  virtual views::View* GetContentsView();
+      MessageBoxFlags::DialogButton button) const OVERRIDE;
+  virtual bool IsModal() const OVERRIDE;
+  virtual bool CanResize() const  OVERRIDE;
+  virtual string16 GetWindowTitle() const  OVERRIDE;
+  virtual bool Accept() OVERRIDE;
+  virtual bool AreAcceleratorsEnabled(
+      MessageBoxFlags::DialogButton button) OVERRIDE;
+  virtual views::View* GetContentsView()  OVERRIDE;
 
   // views::View.
-  virtual void Layout();
-  virtual gfx::Size GetPreferredSize();
+  virtual void Layout() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual void ViewHierarchyChanged(bool is_add,
                                     views::View* parent,
-                                    views::View* child);
+                                    views::View* child) OVERRIDE;
 
   // views::TreeViewObserver.
-  virtual void OnTreeViewSelectionChanged(views::TreeView* tree_view);
-  virtual bool CanEdit(views::TreeView* tree_view, ui::TreeModelNode* node);
+  virtual void OnTreeViewSelectionChanged(
+      views::TreeView* tree_view) OVERRIDE;
+  virtual bool CanEdit(views::TreeView* tree_view,
+                       ui::TreeModelNode* node) OVERRIDE;
 
   // views::TextfieldController:
   virtual void ContentsChanged(views::Textfield* sender,
-                               const std::wstring& new_contents);
+                               const string16& new_contents)  OVERRIDE;
   virtual bool HandleKeyEvent(views::Textfield* sender,
-                              const views::KeyEvent& key_event) {
+                              const views::KeyEvent& key_event)  OVERRIDE {
     return false;
   }
 
   // views::ButtonListener:
-  virtual void ButtonPressed(views::Button* sender, const views::Event& event);
+  virtual void ButtonPressed(views::Button* sender,
+                             const views::Event& event) OVERRIDE;
 
   // ui::SimpleMenuModel::Delegate:
-  virtual bool IsCommandIdChecked(int command_id) const;
-  virtual bool IsCommandIdEnabled(int command_id) const;
-  virtual bool GetAcceleratorForCommandId(int command_id,
-                                          ui::Accelerator* accelerator);
-  virtual void ExecuteCommand(int command_id);
+  virtual bool IsCommandIdChecked(int command_id) const OVERRIDE;
+  virtual bool IsCommandIdEnabled(int command_id) const OVERRIDE;
+  virtual bool GetAcceleratorForCommandId(
+      int command_id,
+      ui::Accelerator* accelerator) OVERRIDE;
+  virtual void ExecuteCommand(int command_id) OVERRIDE;
 
   // Creates a Window and adds the BookmarkEditorView to it. When the window is
   // closed the BookmarkEditorView is deleted.

@@ -4,6 +4,7 @@
 
 #include "views/desktop/desktop_window_view.h"
 
+#include "base/utf_string_conversions.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/transform.h"
 #include "views/desktop/desktop_background.h"
@@ -62,7 +63,7 @@ class DesktopWindow : public Widget {
 
 class TestWindowContentView : public WidgetDelegateView {
  public:
-  TestWindowContentView(const std::wstring& title, SkColor color)
+  TestWindowContentView(const string16& title, SkColor color)
       : title_(title),
         color_(color) {
   }
@@ -75,7 +76,7 @@ class TestWindowContentView : public WidgetDelegateView {
   }
 
   // Overridden from WindowDelegate:
-  virtual std::wstring GetWindowTitle() const OVERRIDE {
+  virtual string16 GetWindowTitle() const OVERRIDE {
     return title_;
   }
   virtual View* GetContentsView() {
@@ -93,7 +94,7 @@ class TestWindowContentView : public WidgetDelegateView {
     return true;
   }
 
-  std::wstring title_;
+  string16 title_;
   SkColor color_;
 
   DISALLOW_COPY_AND_ASSIGN(TestWindowContentView);
@@ -150,7 +151,7 @@ void DesktopWindowView::CreateDesktopWindow(DesktopType type) {
   window->Show();
 }
 
-void DesktopWindowView::CreateTestWindow(const std::wstring& title,
+void DesktopWindowView::CreateTestWindow(const string16& title,
                                          SkColor color,
                                          gfx::Rect initial_bounds,
                                          bool rotate) {
@@ -225,8 +226,8 @@ bool DesktopWindowView::CanMaximize() const {
   return CanResize();
 }
 
-std::wstring DesktopWindowView::GetWindowTitle() const {
-  return L"Aura Desktop";
+string16 DesktopWindowView::GetWindowTitle() const {
+  return ASCIIToUTF16("Aura Desktop");
 }
 
 SkBitmap DesktopWindowView::GetWindowAppIcon() {

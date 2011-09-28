@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/bookmarks/bookmark_editor_view.h"
 
+#include <string>
+
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/string_util.h"
@@ -105,8 +107,8 @@ bool BookmarkEditorView::CanResize() const {
   return true;
 }
 
-std::wstring BookmarkEditorView::GetWindowTitle() const {
-  return UTF16ToWide(l10n_util::GetStringUTF16(IDS_BOOKMARK_EDITOR_TITLE));
+string16 BookmarkEditorView::GetWindowTitle() const {
+  return l10n_util::GetStringUTF16(IDS_BOOKMARK_EDITOR_TITLE);
 }
 
 bool BookmarkEditorView::Accept() {
@@ -183,7 +185,7 @@ bool BookmarkEditorView::CanEdit(views::TreeView* tree_view,
 }
 
 void BookmarkEditorView::ContentsChanged(views::Textfield* sender,
-                                         const std::wstring& new_contents) {
+                                         const string16& new_contents) {
   UserInputChanged();
 }
 

@@ -7,6 +7,7 @@
 #include "base/i18n/icu_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
+#include "base/utf_string_conversions.h"
 #include "third_party/skia/include/core/SkXfermode.h"
 #include "ui/aura/desktop.h"
 #include "ui/aura/desktop_host.h"
@@ -109,8 +110,8 @@ class TestWindowContents : public views::WidgetDelegateView {
   }
 
   // Overridden from views::WidgetDelegateView:
-  virtual std::wstring GetWindowTitle() const OVERRIDE {
-    return L"Test Window!";
+  virtual string16 GetWindowTitle() const OVERRIDE {
+    return ASCIIToUTF16("Test Window!");
   }
   virtual View* GetContentsView() OVERRIDE {
     return this;

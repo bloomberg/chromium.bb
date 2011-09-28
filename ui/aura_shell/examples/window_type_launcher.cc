@@ -86,8 +86,8 @@ bool WindowTypeLauncher::CanResize() const {
   return true;
 }
 
-std::wstring WindowTypeLauncher::GetWindowTitle() const {
-  return L"Examples: Window Builder";
+string16 WindowTypeLauncher::GetWindowTitle() const {
+  return ASCIIToUTF16("Examples: Window Builder");
 }
 
 views::NonClientFrameView* WindowTypeLauncher::CreateNonClientFrameView() {

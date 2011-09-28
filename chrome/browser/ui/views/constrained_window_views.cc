@@ -496,7 +496,7 @@ void ConstrainedWindowFrameView::PaintFrameBorder(gfx::Canvas* canvas) {
 
 void ConstrainedWindowFrameView::PaintTitleBar(gfx::Canvas* canvas) {
   canvas->DrawStringInt(
-      WideToUTF16Hack(container_->widget_delegate()->GetWindowTitle()),
+      container_->widget_delegate()->GetWindowTitle(),
       *title_font_, GetTitleColor(), GetMirroredXForRect(title_bounds_),
       title_bounds_.y(), title_bounds_.width(), title_bounds_.height());
 }

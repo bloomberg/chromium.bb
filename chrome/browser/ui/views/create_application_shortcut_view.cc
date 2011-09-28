@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/create_application_shortcut_view.h"
 
+#include <algorithm>
+
 #include "base/callback.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/windows_version.h"
@@ -150,7 +152,7 @@ void AppInfoView::SetupLayout() {
 
 void AppInfoView::UpdateText(const string16& title,
                              const string16& description) {
-  title_->SetText(UTF16ToWide(title));
+  title_->SetText(UTF16ToWideHack(title));
   PrepareDescriptionLabel(description);
 
   SetupLayout();
@@ -354,8 +356,8 @@ bool CreateApplicationShortcutView::IsModal() const {
   return true;
 }
 
-std::wstring CreateApplicationShortcutView::GetWindowTitle() const {
-  return UTF16ToWide(l10n_util::GetStringUTF16(IDS_CREATE_SHORTCUTS_TITLE));
+string16 CreateApplicationShortcutView::GetWindowTitle() const {
+  return l10n_util::GetStringUTF16(IDS_CREATE_SHORTCUTS_TITLE);
 }
 
 bool CreateApplicationShortcutView::Accept() {
@@ -482,7 +484,6 @@ CreateChromeApplicationShortcutView::CreateChromeApplicationShortcutView(
       CreateApplicationShortcutView(profile),
       app_(app),
       ALLOW_THIS_IN_INITIALIZER_LIST(tracker_(this)) {
-
   shortcut_info_.extension_id = app_->id();
   shortcut_info_.url = GURL(app_->launch_web_url());
   shortcut_info_.title = UTF8ToUTF16(app_->name());
@@ -517,7 +518,6 @@ CreateChromeApplicationShortcutView::CreateChromeApplicationShortcutView(
                      icon_resource,
                      max_size,
                      ImageLoadingTracker::DONT_CACHE);
-
 }
 
 CreateChromeApplicationShortcutView::~CreateChromeApplicationShortcutView() {}

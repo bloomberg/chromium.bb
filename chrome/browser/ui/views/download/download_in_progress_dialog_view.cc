@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/download/download_in_progress_dialog_view.h"
 
+#include <algorithm>
+
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
@@ -122,8 +124,8 @@ bool DownloadInProgressDialogView::IsModal() const {
   return true;
 }
 
-std::wstring DownloadInProgressDialogView::GetWindowTitle() const {
-  return UTF16ToWideHack(product_name_);
+string16 DownloadInProgressDialogView::GetWindowTitle() const {
+  return product_name_;
 }
 
 views::View* DownloadInProgressDialogView::GetContentsView() {

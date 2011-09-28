@@ -517,8 +517,8 @@ std::wstring AboutChromeView::GetDialogButtonLabel(
   return L"";
 }
 
-std::wstring AboutChromeView::GetWindowTitle() const {
-  return UTF16ToWide(l10n_util::GetStringUTF16(IDS_ABOUT_CHROME_TITLE));
+string16 AboutChromeView::GetWindowTitle() const {
+  return l10n_util::GetStringUTF16(IDS_ABOUT_CHROME_TITLE);
 }
 
 bool AboutChromeView::IsDialogButtonEnabled(
@@ -591,7 +591,7 @@ void AboutChromeView::LinkClicked(views::Link* source, int event_flags) {
 
 void AboutChromeView::OnReportResults(GoogleUpdateUpgradeResult result,
                                       GoogleUpdateErrorCode error_code,
-                                      const std::wstring& version) {
+                                      const string16& version) {
   // Drop the last reference to the object so that it gets cleaned up here.
   google_updater_ = NULL;
 

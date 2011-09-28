@@ -45,7 +45,7 @@ class CollectedCookiesWin : public views::DialogDelegate,
                       TabContentsWrapper* wrapper);
 
   // views::DialogDelegate:
-  virtual std::wstring GetWindowTitle() const OVERRIDE;
+  virtual string16 GetWindowTitle() const OVERRIDE;
   virtual int GetDialogButtons() const OVERRIDE;
   virtual std::wstring GetDialogButtonLabel(
       MessageBoxFlags::DialogButton button) const OVERRIDE;

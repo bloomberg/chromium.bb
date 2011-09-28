@@ -40,7 +40,7 @@ class DownloadInProgressDialogView : public views::DialogDelegateView {
   virtual bool Cancel() OVERRIDE;
   virtual bool Accept() OVERRIDE;
   virtual bool IsModal() const OVERRIDE;
-  virtual std::wstring GetWindowTitle() const OVERRIDE;
+  virtual string16 GetWindowTitle() const OVERRIDE;
   virtual views::View* GetContentsView() OVERRIDE;
 
   Browser* browser_;
