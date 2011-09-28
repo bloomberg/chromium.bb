@@ -9,7 +9,6 @@
 #include <string>
 
 #import "chrome/browser/renderer_host/chrome_render_widget_host_view_mac_delegate.h"
-#include "chrome/browser/renderer_host/render_widget_host_view_mac.h"
 #include "chrome/browser/tab_contents/popup_menu_helper_mac.h"
 #include "chrome/browser/tab_contents/render_view_context_menu_mac.h"
 #import "chrome/browser/ui/cocoa/focus_tracker.h"
@@ -20,6 +19,7 @@
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_view_host_factory.h"
 #include "content/browser/renderer_host/render_widget_host.h"
+#include "content/browser/renderer_host/render_widget_host_view_mac.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_delegate.h"
 #import "content/common/chrome_application_mac.h"

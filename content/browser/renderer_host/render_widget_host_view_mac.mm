@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/renderer_host/render_widget_host_view_mac.h"
+#include "content/browser/renderer_host/render_widget_host_view_mac.h"
 
 #include <QuartzCore/QuartzCore.h>
 
@@ -16,18 +16,18 @@
 #include "base/string_util.h"
 #include "base/sys_info.h"
 #include "base/sys_string_conversions.h"
-#import "chrome/browser/renderer_host/accelerated_plugin_view_mac.h"
-#import "chrome/browser/ui/cocoa/rwhvm_editcommand_helper.h"
 #import "content/browser/accessibility/browser_accessibility_cocoa.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/gpu/gpu_process_host_ui_shim.h"
 #include "content/browser/mac/closure_blocks_leopard_compat.h"
 #include "content/browser/plugin_process_host.h"
+#import "content/browser/renderer_host/accelerated_plugin_view_mac.h"
 #include "content/browser/renderer_host/backing_store_mac.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #import "content/browser/renderer_host/render_widget_host_view_mac_delegate.h"
+#import "content/browser/renderer_host/render_widget_host_view_mac_editcommand_helper.h"
 #import "content/browser/renderer_host/text_input_client_mac.h"
 #include "content/common/edit_command.h"
 #include "content/common/gpu/gpu_messages.h"
@@ -1112,7 +1112,7 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
 - (id)initWithRenderWidgetHostViewMac:(RenderWidgetHostViewMac*)r {
   self = [super initWithFrame:NSZeroRect];
   if (self) {
-    editCommand_helper_.reset(new RWHVMEditCommandHelper);
+    editCommand_helper_.reset(new RenderWidgetHostViewMacEditCommandHelper);
     editCommand_helper_->AddEditingSelectorsToClass([self class]);
 
     renderWidgetHostView_.reset(r);
@@ -2459,7 +2459,8 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
     return;
 
   std::string command(
-      [RWHVMEditCommandHelper::CommandNameForSelector(selector) UTF8String]);
+      [RenderWidgetHostViewMacEditCommandHelper::
+          CommandNameForSelector(selector) UTF8String]);
 
   // If this method is called when handling a key down event, then we need to
   // handle the command in the key event handler. Otherwise we can just handle
