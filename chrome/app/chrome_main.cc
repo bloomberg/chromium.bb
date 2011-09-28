@@ -387,6 +387,8 @@ class ChromeMainDelegate : public content::ContentMainDelegate {
     DCHECK(ObjcEvilDoers::ZombieEnable(true, 1000));
     SetUpBundleOverrides();
     chrome::common::mac::EnableCFBundleBlocker();
+
+    SwitchToMachBootstrapSubsetPort();
 #endif
 
     Profiling::ProcessStarted();
@@ -679,11 +681,6 @@ class ChromeMainDelegate : public content::ContentMainDelegate {
       ResourceBundle::CleanupSharedInstance();
 
     logging::CleanupChromeLogging();
-
-#if defined(OS_MACOSX) && defined(GOOGLE_CHROME_BUILD)
-    // TODO(mark): See the TODO(mark) at InitCrashReporter.
-    DestructCrashReporter();
-#endif  // OS_MACOSX && GOOGLE_CHROME_BUILD
   }
 
 #if defined(OS_MACOSX)
