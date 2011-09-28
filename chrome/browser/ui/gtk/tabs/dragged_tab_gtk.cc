@@ -17,7 +17,7 @@
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/tabs/tab_renderer_gtk.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
-#include "content/browser/renderer_host/backing_store_x.h"
+#include "content/browser/renderer_host/backing_store_gtk.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "third_party/skia/include/core/SkShader.h"
@@ -289,7 +289,7 @@ gboolean DraggedTabGtk::OnExpose(GtkWidget* widget, GdkEventExpose* event) {
       data_source_->render_view_host()->GetBackingStore(false);
   if (backing_store && !attached_) {
     // This leaves room for the border.
-    static_cast<BackingStoreX*>(backing_store)->PaintToRect(
+    static_cast<BackingStoreGtk*>(backing_store)->PaintToRect(
         gfx::Rect(kDragFrameBorderSize, tab_height,
                   widget->allocation.width - kTwiceDragFrameBorderSize,
                   widget->allocation.height - tab_height -

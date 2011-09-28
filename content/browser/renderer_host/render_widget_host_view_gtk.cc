@@ -25,7 +25,7 @@
 #include "base/string_number_conversions.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
-#include "content/browser/renderer_host/backing_store_x.h"
+#include "content/browser/renderer_host/backing_store_gtk.h"
 #include "content/browser/renderer_host/gtk_im_context_wrapper.h"
 #include "content/browser/renderer_host/gtk_window_utils.h"
 #include "content/browser/renderer_host/render_view_host.h"
@@ -922,9 +922,9 @@ void RenderWidgetHostViewGtk::DoPopupOrFullscreenInit(GtkWindow* window,
 
 BackingStore* RenderWidgetHostViewGtk::AllocBackingStore(
     const gfx::Size& size) {
-  return new BackingStoreX(host_, size,
-                           ui::GetVisualFromGtkWidget(view_.get()),
-                           gtk_widget_get_visual(view_.get())->depth);
+  return new BackingStoreGtk(host_, size,
+                             ui::GetVisualFromGtkWidget(view_.get()),
+                             gtk_widget_get_visual(view_.get())->depth);
 }
 
 void RenderWidgetHostViewGtk::SetBackground(const SkBitmap& background) {
@@ -998,7 +998,7 @@ void RenderWidgetHostViewGtk::Paint(const gfx::Rect& damage_rect) {
 
   invalid_rect_ = damage_rect;
   about_to_validate_and_paint_ = true;
-  BackingStoreX* backing_store = static_cast<BackingStoreX*>(
+  BackingStoreGtk* backing_store = static_cast<BackingStoreGtk*>(
       host_->GetBackingStore(true));
   // Calling GetBackingStore maybe have changed |invalid_rect_|...
   about_to_validate_and_paint_ = false;

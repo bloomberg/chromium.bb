@@ -202,7 +202,7 @@ class WebPluginDelegateImpl : public WebPluginDelegate {
   void set_windowed_handle(gfx::PluginWindowHandle handle);
 #endif
 
-#if defined(USE_X11)
+#if defined(TOOLKIT_USES_GTK)
   void SetWindowlessShmPixmap(XID shm_pixmap) {
     windowless_shm_pixmap_ = shm_pixmap;
   }
@@ -320,7 +320,7 @@ class WebPluginDelegateImpl : public WebPluginDelegate {
   bool is_calling_wndproc;
 #endif  // defined(OS_WIN)
 
-#if defined(USE_X11)
+#if defined(TOOLKIT_USES_GTK)
   // The SHM pixmap for a windowless plugin.
   XID windowless_shm_pixmap_;
 

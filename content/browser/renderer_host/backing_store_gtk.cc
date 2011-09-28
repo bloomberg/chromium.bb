@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/renderer_host/backing_store_x.h"
+#include "content/browser/renderer_host/backing_store_gtk.h"
 
 #include <cairo-xlib.h>
 #include <gtk/gtk.h>
@@ -59,10 +59,10 @@ static void DestroySharedImage(Display* display,
   shmdt(shminfo->shmaddr);
 }
 
-BackingStoreX::BackingStoreX(RenderWidgetHost* widget,
-                            const gfx::Size& size,
-                            void* visual,
-                            int depth)
+BackingStoreGtk::BackingStoreGtk(RenderWidgetHost* widget,
+                                 const gfx::Size& size,
+                                 void* visual,
+                                 int depth)
     : BackingStore(widget, size),
       display_(ui::GetXDisplay()),
       shared_memory_support_(ui::QuerySharedMemorySupport(display_)),
@@ -94,7 +94,8 @@ BackingStoreX::BackingStoreX(RenderWidgetHost* widget,
   pixmap_gc_ = XCreateGC(display_, pixmap_, 0, NULL);
 }
 
-BackingStoreX::BackingStoreX(RenderWidgetHost* widget, const gfx::Size& size)
+BackingStoreGtk::BackingStoreGtk(RenderWidgetHost* widget,
+                                 const gfx::Size& size)
     : BackingStore(widget, size),
       display_(NULL),
       shared_memory_support_(ui::SHARED_MEMORY_NONE),
@@ -108,7 +109,7 @@ BackingStoreX::BackingStoreX(RenderWidgetHost* widget, const gfx::Size& size)
       pixmap_gc_(NULL) {
 }
 
-BackingStoreX::~BackingStoreX() {
+BackingStoreGtk::~BackingStoreGtk() {
   // In unit tests, display_ may be NULL.
   if (!display_)
     return;
@@ -118,14 +119,14 @@ BackingStoreX::~BackingStoreX() {
   XFreeGC(display_, static_cast<GC>(pixmap_gc_));
 }
 
-size_t BackingStoreX::MemorySize() {
+size_t BackingStoreGtk::MemorySize() {
   if (!use_render_)
     return size().GetArea() * (pixmap_bpp_ / 8);
   else
     return size().GetArea() * 4;
 }
 
-void BackingStoreX::PaintRectWithoutXrender(
+void BackingStoreGtk::PaintRectWithoutXrender(
     TransportDIB* bitmap,
     const gfx::Rect& bitmap_rect,
     const std::vector<gfx::Rect>& copy_rects) {
@@ -156,7 +157,7 @@ void BackingStoreX::PaintRectWithoutXrender(
   XFreePixmap(display_, pixmap);
 }
 
-void BackingStoreX::PaintToBackingStore(
+void BackingStoreGtk::PaintToBackingStore(
     RenderProcessHost* process,
     TransportDIB::Id bitmap,
     const gfx::Rect& bitmap_rect,
@@ -298,8 +299,8 @@ void BackingStoreX::PaintToBackingStore(
   XFreePixmap(display_, pixmap);
 }
 
-bool BackingStoreX::CopyFromBackingStore(const gfx::Rect& rect,
-                                         skia::PlatformCanvas* output) {
+bool BackingStoreGtk::CopyFromBackingStore(const gfx::Rect& rect,
+                                           skia::PlatformCanvas* output) {
   base::TimeTicks begin_time = base::TimeTicks::Now();
 
   if (visual_depth_ < 24) {
@@ -396,9 +397,9 @@ bool BackingStoreX::CopyFromBackingStore(const gfx::Rect& rect,
   return true;
 }
 
-void BackingStoreX::ScrollBackingStore(int dx, int dy,
-                                       const gfx::Rect& clip_rect,
-                                       const gfx::Size& view_size) {
+void BackingStoreGtk::ScrollBackingStore(int dx, int dy,
+                                         const gfx::Rect& clip_rect,
+                                         const gfx::Size& view_size) {
   if (!display_)
     return;
 
@@ -430,15 +431,15 @@ void BackingStoreX::ScrollBackingStore(int dx, int dy,
   }
 }
 
-void BackingStoreX::XShowRect(const gfx::Point &origin,
-                              const gfx::Rect& rect, XID target) {
+void BackingStoreGtk::XShowRect(const gfx::Point &origin,
+                                const gfx::Rect& rect, XID target) {
   XCopyArea(display_, pixmap_, target, static_cast<GC>(pixmap_gc_),
             rect.x(), rect.y(), rect.width(), rect.height(),
             rect.x() + origin.x(), rect.y() + origin.y());
 }
 
-void BackingStoreX::CairoShowRect(const gfx::Rect& rect,
-                                  GdkDrawable* drawable) {
+void BackingStoreGtk::CairoShowRect(const gfx::Rect& rect,
+                                    GdkDrawable* drawable) {
   cairo_surface_t* surface = cairo_xlib_surface_create(
       display_, pixmap_, static_cast<Visual*>(visual_),
       size().width(), size().height());
@@ -452,7 +453,7 @@ void BackingStoreX::CairoShowRect(const gfx::Rect& rect,
 }
 
 #if defined(TOOLKIT_GTK)
-void BackingStoreX::PaintToRect(const gfx::Rect& rect, GdkDrawable* target) {
+void BackingStoreGtk::PaintToRect(const gfx::Rect& rect, GdkDrawable* target) {
   cairo_surface_t* surface = cairo_xlib_surface_create(
       display_, pixmap_, static_cast<Visual*>(visual_),
       size().width(), size().height());

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_RENDERER_HOST_BACKING_STORE_X_H_
-#define CONTENT_BROWSER_RENDERER_HOST_BACKING_STORE_X_H_
+#ifndef CONTENT_BROWSER_RENDERER_HOST_BACKING_STORE_GTK_H_
+#define CONTENT_BROWSER_RENDERER_HOST_BACKING_STORE_GTK_H_
 #pragma once
 
 #include "base/basictypes.h"
@@ -19,21 +19,21 @@ class Rect;
 typedef struct _GdkDrawable GdkDrawable;
 class SkBitmap;
 
-class BackingStoreX : public BackingStore {
+class BackingStoreGtk : public BackingStore {
  public:
   // Create a backing store on the X server. The visual is an Xlib Visual
   // describing the format of the target window and the depth is the color
   // depth of the X window which will be drawn into.
-  BackingStoreX(RenderWidgetHost* widget,
-               const gfx::Size& size,
-               void* visual,
-               int depth);
+  BackingStoreGtk(RenderWidgetHost* widget,
+                  const gfx::Size& size,
+                  void* visual,
+                  int depth);
 
   // This is for unittesting only. An object constructed using this constructor
   // will silently ignore all paints
-  BackingStoreX(RenderWidgetHost* widget, const gfx::Size& size);
+  BackingStoreGtk(RenderWidgetHost* widget, const gfx::Size& size);
 
-  virtual ~BackingStoreX();
+  virtual ~BackingStoreGtk();
 
   Display* display() const { return display_; }
   XID root_window() const { return root_window_; }
@@ -95,7 +95,7 @@ class BackingStoreX : public BackingStore {
   // This is a default graphic context, used in XCopyArea
   void* pixmap_gc_;
 
-  DISALLOW_COPY_AND_ASSIGN(BackingStoreX);
+  DISALLOW_COPY_AND_ASSIGN(BackingStoreGtk);
 };
 
-#endif  // CONTENT_BROWSER_RENDERER_HOST_BACKING_STORE_X_H_
+#endif  // CONTENT_BROWSER_RENDERER_HOST_BACKING_STORE_GTK_H_
