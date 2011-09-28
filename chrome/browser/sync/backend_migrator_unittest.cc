@@ -85,8 +85,7 @@ class BackendMigratorTest : public testing::Test {
         DataTypeManager::ConfigureResult result(
             status,
             requested_types,
-            syncable::ModelTypeSet(),
-            FROM_HERE);
+            SyncError());
         NotificationService::current()->Notify(
             chrome::NOTIFICATION_SYNC_CONFIGURE_DONE,
             Source<DataTypeManager>(&manager_),

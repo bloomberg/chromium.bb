@@ -45,7 +45,7 @@ void FrontendDataTypeController::Start(StartCallback* start_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(start_callback);
   if (state_ != NOT_RUNNING) {
-    start_callback->Run(BUSY, FROM_HERE);
+    start_callback->Run(BUSY, SyncError());
     delete start_callback;
     return;
   }
@@ -80,15 +80,15 @@ bool FrontendDataTypeController::StartModels() {
 bool FrontendDataTypeController::Associate() {
   DCHECK_EQ(state_, ASSOCIATING);
   CreateSyncComponents();
-
   if (!model_associator()->CryptoReadyIfNecessary()) {
-    StartFailed(NEEDS_CRYPTO, FROM_HERE);
+    StartFailed(NEEDS_CRYPTO, SyncError());
     return false;
   }
 
   bool sync_has_nodes = false;
   if (!model_associator()->SyncModelHasUserCreatedNodes(&sync_has_nodes)) {
-    StartFailed(UNRECOVERABLE_ERROR, FROM_HERE);
+    SyncError error(FROM_HERE, "Failed to load sync nodes", type());
+    StartFailed(UNRECOVERABLE_ERROR, error);
     return false;
   }
 
@@ -97,7 +97,7 @@ bool FrontendDataTypeController::Associate() {
   bool merge_success = model_associator()->AssociateModels(&error);
   RecordAssociationTime(base::TimeTicks::Now() - start_time);
   if (!merge_success) {
-    StartFailed(ASSOCIATION_FAILED, error.location());
+    StartFailed(ASSOCIATION_FAILED, error);
     return false;
   }
 
@@ -107,7 +107,7 @@ bool FrontendDataTypeController::Associate() {
   // FinishStart() invokes the DataTypeManager callback, which can lead to a
   // call to Stop() if one of the other data types being started generates an
   // error.
-  FinishStart(!sync_has_nodes ? OK_FIRST_RUN : OK, FROM_HERE);
+  FinishStart(!sync_has_nodes ? OK_FIRST_RUN : OK);
   // Return false if we're not in the RUNNING state (due to Stop() being called
   // from FinishStart()).
   // TODO(zea/atwilson): Should we maybe move the call to FinishStart() out of
@@ -116,9 +116,8 @@ bool FrontendDataTypeController::Associate() {
   return state_ == RUNNING;
 }
 
-void FrontendDataTypeController::StartFailed(
-    StartResult result,
-    const tracked_objects::Location& location) {
+void FrontendDataTypeController::StartFailed(StartResult result,
+                                             const SyncError& error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   CleanUpState();
   set_model_associator(NULL);
@@ -131,19 +130,17 @@ void FrontendDataTypeController::StartFailed(
   // confused by the non-NULL start_callback_.
   scoped_ptr<StartCallback> callback(start_callback_.release());
   // TODO(zea): Send the full SyncError on failure and handle it higher up.
-  callback->Run(result, location);
+  callback->Run(result, error);
 }
 
-void FrontendDataTypeController::FinishStart(
-    StartResult result,
-    const tracked_objects::Location& location) {
+void FrontendDataTypeController::FinishStart(StartResult result) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // We have to release the callback before we call it, since it's possible
   // invoking the callback will trigger a call to STOP(), which will get
   // confused by the non-NULL start_callback_.
   scoped_ptr<StartCallback> callback(start_callback_.release());
-  callback->Run(result, location);
+  callback->Run(result, SyncError());
 }
 
 void FrontendDataTypeController::Stop() {
@@ -151,7 +148,7 @@ void FrontendDataTypeController::Stop() {
   // If Stop() is called while Start() is waiting for the datatype model to
   // load, abort the start.
   if (state_ == MODEL_STARTING) {
-    StartFailed(ABORTED, FROM_HERE);
+    StartFailed(ABORTED, SyncError());
     // We can just return here since we haven't performed association if we're
     // still in MODEL_STARTING.
     return;
@@ -163,7 +160,7 @@ void FrontendDataTypeController::Stop() {
   sync_service_->DeactivateDataType(type());
 
   if (model_associator()) {
-    SyncError error;
+    SyncError error;  // Not used.
     model_associator()->DisassociateModels(&error);
   }
 

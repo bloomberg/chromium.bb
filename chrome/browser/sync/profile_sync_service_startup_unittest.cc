@@ -31,11 +31,6 @@ using testing::InvokeArgument;
 using testing::Mock;
 using testing::Return;
 
-ACTION_P(InvokeCallback, callback_result) {
-  arg0->Run(callback_result);
-  delete arg0;
-}
-
 // TODO(chron): Test not using cros_user flag and use signin_
 class ProfileSyncServiceStartupTest : public testing::Test {
  public:
@@ -279,11 +274,11 @@ TEST_F(ProfileSyncServiceStartupTest, StartFailure) {
   DataTypeManagerMock* data_type_manager = SetUpDataTypeManager();
   DataTypeManager::ConfigureStatus status =
       DataTypeManager::ASSOCIATION_FAILED;
+  SyncError error(FROM_HERE, "Association failed.", syncable::BOOKMARKS);
   browser_sync::DataTypeManager::ConfigureResult result(
       status,
       syncable::ModelTypeSet(),
-      syncable::ModelTypeSet(),
-      FROM_HERE);
+      error);
   EXPECT_CALL(*data_type_manager, Configure(_, _)).
       WillRepeatedly(
           DoAll(

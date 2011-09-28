@@ -8,6 +8,7 @@
 #include "base/task.h"
 #include "chrome/browser/password_manager/password_store.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sync/api/sync_error.h"
 #include "chrome/browser/sync/profile_sync_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/webdata/web_data_service.h"
@@ -30,9 +31,11 @@ bool PasswordDataTypeController::StartModels() {
   DCHECK_EQ(state(), MODEL_STARTING);
   password_store_ = profile()->GetPasswordStore(Profile::EXPLICIT_ACCESS);
   if (!password_store_.get()) {
-    LOG(ERROR) << "PasswordStore not initialized, password datatype controller"
-               << " aborting.";
-    StartDoneImpl(ABORTED, NOT_RUNNING, FROM_HERE);
+    SyncError error(
+        FROM_HERE,
+        "PasswordStore not initialized, password datatype controller aborting.",
+        type());
+    StartDoneImpl(ABORTED, NOT_RUNNING, error);
     return false;
   }
   return true;

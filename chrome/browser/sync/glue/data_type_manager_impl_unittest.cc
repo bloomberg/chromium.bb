@@ -11,6 +11,7 @@
 #include "base/stl_util.h"
 #include "chrome/browser/sync/glue/data_type_controller.h"
 #include "chrome/browser/sync/glue/data_type_controller_mock.h"
+#include "chrome/browser/sync/glue/data_type_manager_mock.h"
 #include "chrome/browser/sync/glue/sync_backend_host_mock.h"
 #include "chrome/browser/sync/internal_api/configure_reason.h"
 #include "chrome/browser/sync/profile_sync_test_util.h"
@@ -43,16 +44,6 @@ using testing::Property;
 using testing::Pointee;
 using testing::Return;
 using testing::SaveArg;
-
-ACTION_P(InvokeCallback, callback_result) {
-  arg0->Run(callback_result, FROM_HERE);
-  delete arg0;
-}
-
-ACTION_P2(InvokeCallbackPointer, callback, argument) {
-  callback->Run(argument, FROM_HERE);
-  delete callback;
-}
 
 DataTypeManager::ConfigureStatus GetStatus(
     const NotificationDetails& details) {
@@ -126,7 +117,7 @@ class DataTypeManagerImplTest : public testing::Test {
     EXPECT_CALL(*mock_dtc, state()).
         WillRepeatedly(Return(DataTypeController::NOT_RUNNING));
     EXPECT_CALL(*mock_dtc, Start(_)).
-        WillOnce(InvokeCallback((DataTypeController::OK)));
+        WillOnce(InvokeCallback(syncable::BOOKMARKS, DataTypeController::OK));
     EXPECT_CALL(*mock_dtc, state()).
         WillRepeatedly(Return(DataTypeController::RUNNING));
     EXPECT_CALL(*mock_dtc, Stop()).Times(1);
@@ -140,7 +131,7 @@ class DataTypeManagerImplTest : public testing::Test {
     EXPECT_CALL(*mock_dtc, state()).
         WillRepeatedly(Return(DataTypeController::NOT_RUNNING));
     EXPECT_CALL(*mock_dtc, Start(_)).
-        WillOnce(InvokeCallback((DataTypeController::OK)));
+        WillOnce(InvokeCallback(syncable::BOOKMARKS, DataTypeController::OK));
     EXPECT_CALL(*mock_dtc, state()).
         WillRepeatedly(Return(busy_state));
     EXPECT_CALL(*mock_dtc, Stop()).Times(1);
@@ -238,7 +229,7 @@ class DataTypeManagerImplTest : public testing::Test {
     types_.insert(syncable::PREFERENCES);
     Configure(&dtm, types_, sync_api::CONFIGURE_REASON_RECONFIGURATION,
               enable_nigori);
-    callback->Run(DataTypeController::OK, FROM_HERE);
+    callback->Run(DataTypeController::OK, SyncError());
     delete callback;
 
     MessageLoop::current()->Run();
@@ -353,7 +344,8 @@ TEST_F(DataTypeManagerImplTest, OneWaitingForCrypto) {
   EXPECT_CALL(*password_dtc, state()).Times(AtLeast(2)).
       WillRepeatedly(Return(DataTypeController::NOT_RUNNING));
   EXPECT_CALL(*password_dtc, Start(_)).
-      WillOnce(InvokeCallback((DataTypeController::NEEDS_CRYPTO)));
+      WillOnce(InvokeCallback(syncable::PASSWORDS,
+                              DataTypeController::NEEDS_CRYPTO));
 
   controllers_[syncable::PASSWORDS] = password_dtc;
   EXPECT_CALL(backend_, ConfigureDataTypes(_, _, _, _, true)).Times(1);
@@ -375,7 +367,8 @@ TEST_F(DataTypeManagerImplTest, OneWaitingForCrypto) {
       WillOnce(Return(DataTypeController::NOT_RUNNING)).
       WillRepeatedly(Return(DataTypeController::RUNNING));
   EXPECT_CALL(*password_dtc, Start(_)).
-      WillOnce(InvokeCallback((DataTypeController::OK)));
+      WillOnce(InvokeCallback(syncable::PASSWORDS,
+                              DataTypeController::OK));
   EXPECT_CALL(backend_, ConfigureDataTypes(_, _, _, _, true)).Times(1);
   dtm.Configure(types_, sync_api::CONFIGURE_REASON_RECONFIGURATION);
 
@@ -451,7 +444,8 @@ TEST_F(DataTypeManagerImplTest, ConfigureWithoutNigoriWhileOneInFlight) {
 TEST_F(DataTypeManagerImplTest, OneFailingController) {
   DataTypeControllerMock* bookmark_dtc = MakeBookmarkDTC();
   EXPECT_CALL(*bookmark_dtc, Start(_)).
-      WillOnce(InvokeCallback((DataTypeController::ASSOCIATION_FAILED)));
+      WillOnce(InvokeCallback(syncable::BOOKMARKS,
+                              DataTypeController::ASSOCIATION_FAILED));
   EXPECT_CALL(*bookmark_dtc, Stop()).Times(0);
   EXPECT_CALL(*bookmark_dtc, state()).
       WillRepeatedly(Return(DataTypeController::NOT_RUNNING));
@@ -495,7 +489,8 @@ TEST_F(DataTypeManagerImplTest, StopWhileInFlight) {
 
   // Call stop before the preference callback is invoked.
   EXPECT_CALL(*preference_dtc, Stop()).
-      WillOnce(InvokeCallbackPointer(callback, DataTypeController::ABORTED));
+      WillOnce(InvokeCallbackPointer(callback, syncable::PREFERENCES,
+                                     DataTypeController::ABORTED));
   dtm.Stop();
   EXPECT_EQ(DataTypeManager::STOPPED, dtm.state());
 }
@@ -507,7 +502,8 @@ TEST_F(DataTypeManagerImplTest, SecondControllerFails) {
 
   DataTypeControllerMock* preference_dtc = MakePreferenceDTC();
   EXPECT_CALL(*preference_dtc, Start(_)).
-      WillOnce(InvokeCallback((DataTypeController::ASSOCIATION_FAILED)));
+      WillOnce(InvokeCallback(syncable::PREFERENCES,
+                              DataTypeController::ASSOCIATION_FAILED));
   EXPECT_CALL(*preference_dtc, Stop()).Times(0);
   EXPECT_CALL(*preference_dtc, state()).
       WillRepeatedly(Return(DataTypeController::NOT_RUNNING));

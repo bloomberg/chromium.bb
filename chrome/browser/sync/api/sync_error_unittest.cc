@@ -26,7 +26,7 @@ TEST_F(SyncErrorTest, Default) {
   std::string msg = "test";
   ModelType type = syncable::PREFERENCES;
   SyncError error(location, msg, type);
-  EXPECT_TRUE(error.IsSet());
+  ASSERT_TRUE(error.IsSet());
   EXPECT_EQ(location.line_number(), error.location().line_number());
   EXPECT_EQ(msg, error.message());
   EXPECT_EQ(type, error.type());
@@ -41,7 +41,7 @@ TEST_F(SyncErrorTest, Reset) {
   EXPECT_FALSE(error.IsSet());
 
   error.Reset(location, msg, type);
-  EXPECT_TRUE(error.IsSet());
+  ASSERT_TRUE(error.IsSet());
   EXPECT_EQ(location.line_number(), error.location().line_number());
   EXPECT_EQ(msg, error.message());
   EXPECT_EQ(type, error.type());
@@ -50,7 +50,7 @@ TEST_F(SyncErrorTest, Reset) {
   std::string msg2 = "test";
   ModelType type2 = syncable::PREFERENCES;
   error.Reset(location2, msg2, type2);
-  EXPECT_TRUE(error.IsSet());
+  ASSERT_TRUE(error.IsSet());
   EXPECT_EQ(location2.line_number(), error.location().line_number());
   EXPECT_EQ(msg2, error.message());
   EXPECT_EQ(type2, error.type());
@@ -67,13 +67,13 @@ TEST_F(SyncErrorTest, Copy) {
   EXPECT_FALSE(error2.IsSet());
 
   error1.Reset(location, msg, type);
-  EXPECT_TRUE(error1.IsSet());
+  ASSERT_TRUE(error1.IsSet());
   EXPECT_EQ(location.line_number(), error1.location().line_number());
   EXPECT_EQ(msg, error1.message());
   EXPECT_EQ(type, error1.type());
 
   SyncError error3(error1);
-  EXPECT_TRUE(error3.IsSet());
+  ASSERT_TRUE(error3.IsSet());
   EXPECT_EQ(error1.location().line_number(), error3.location().line_number());
   EXPECT_EQ(error1.message(), error3.message());
   EXPECT_EQ(error1.type(), error3.type());
@@ -96,19 +96,37 @@ TEST_F(SyncErrorTest, Assign) {
   EXPECT_FALSE(error2.IsSet());
 
   error1.Reset(location, msg, type);
-  EXPECT_TRUE(error1.IsSet());
+  ASSERT_TRUE(error1.IsSet());
   EXPECT_EQ(location.line_number(), error1.location().line_number());
   EXPECT_EQ(msg, error1.message());
   EXPECT_EQ(type, error1.type());
 
   error2 = error1;
-  EXPECT_TRUE(error2.IsSet());
+  ASSERT_TRUE(error2.IsSet());
   EXPECT_EQ(error1.location().line_number(), error2.location().line_number());
   EXPECT_EQ(error1.message(), error2.message());
   EXPECT_EQ(error1.type(), error2.type());
 
   error2 = SyncError();
   EXPECT_FALSE(error2.IsSet());
+}
+
+TEST_F(SyncErrorTest, ToString) {
+  tracked_objects::Location location = FROM_HERE;
+  std::string msg = "test";
+  ModelType type = syncable::PREFERENCES;
+  std::string expected = "Preferences, Sync Error: test";
+  SyncError error(location, msg, type);
+  EXPECT_TRUE(error.IsSet());
+  EXPECT_NE(string::npos, error.ToString().find(expected));
+
+  SyncError error2;
+  EXPECT_FALSE(error2.IsSet());
+  EXPECT_EQ(std::string(), error2.ToString());
+
+  error2 = error;
+  EXPECT_TRUE(error2.IsSet());
+  EXPECT_NE(string::npos, error.ToString().find(expected));
 }
 
 }  // namespace

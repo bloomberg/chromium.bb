@@ -83,13 +83,9 @@ class FrontendDataTypeController : public DataTypeController {
   // the datatype controller. The default implementation is a no-op.
   virtual void CleanUpState();
 
-  // Cleans up state and calls callback when start fails.
-  virtual void StartFailed(StartResult result,
-                           const tracked_objects::Location& location);
-
-  // Helper method to run the stashed start callback with a given result.
-  virtual void FinishStart(StartResult result,
-                           const tracked_objects::Location& location);
+  // Helper methods for cleaning up state an running the start callback.
+  virtual void StartFailed(StartResult result, const SyncError& error);
+  virtual void FinishStart(StartResult result);
 
   // DataType specific histogram methods. Because histograms use static's, the
   // specific datatype controllers must implement this themselves.

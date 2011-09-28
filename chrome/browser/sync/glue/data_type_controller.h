@@ -16,6 +16,8 @@
 #include "chrome/browser/sync/unrecoverable_error_handler.h"
 #include "content/browser/browser_thread.h"
 
+class SyncError;
+
 namespace browser_sync {
 
 // Data type controllers need to be refcounted threadsafe, as they may
@@ -53,8 +55,7 @@ class DataTypeController
     MAX_START_RESULT
   };
 
-  typedef Callback2<StartResult,
-      const tracked_objects::Location&>::Type StartCallback;
+  typedef Callback2<StartResult, const SyncError&>::Type StartCallback;
 
   typedef std::map<syncable::ModelType,
                    scoped_refptr<DataTypeController> > TypeMap;

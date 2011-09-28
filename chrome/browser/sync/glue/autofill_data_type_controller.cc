@@ -9,6 +9,7 @@
 #include "chrome/browser/autofill/personal_data_manager.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sync/api/sync_error.h"
 #include "chrome/browser/sync/profile_sync_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/webdata/web_data_service.h"
@@ -60,7 +61,10 @@ void AutofillDataTypeController::OnPersonalDataChanged() {
   if (web_data_service_.get() && web_data_service_->IsDatabaseLoaded()) {
     set_state(ASSOCIATING);
     if (!StartAssociationAsync()) {
-      StartDoneImpl(ASSOCIATION_FAILED, NOT_RUNNING, FROM_HERE);
+      SyncError error(FROM_HERE,
+                      "Failed to post association task.",
+                      type());
+      StartDoneImpl(ASSOCIATION_FAILED, NOT_RUNNING, error);
     }
   } else {
     notification_registrar_.Add(this, chrome::NOTIFICATION_WEB_DATABASE_LOADED,
@@ -68,7 +72,7 @@ void AutofillDataTypeController::OnPersonalDataChanged() {
   }
 }
 
-void AutofillDataTypeController::Observe(int type,
+void AutofillDataTypeController::Observe(int notification_type,
                                          const NotificationSource& source,
                                          const NotificationDetails& details) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -76,7 +80,10 @@ void AutofillDataTypeController::Observe(int type,
   notification_registrar_.RemoveAll();
   set_state(ASSOCIATING);
   if (!StartAssociationAsync()) {
-    StartDoneImpl(ASSOCIATION_FAILED, NOT_RUNNING, FROM_HERE);
+    SyncError error(FROM_HERE,
+                    "Failed to post association task.",
+                    type());
+    StartDoneImpl(ASSOCIATION_FAILED, NOT_RUNNING, error);
   }
 }
 

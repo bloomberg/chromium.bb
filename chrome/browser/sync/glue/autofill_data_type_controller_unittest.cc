@@ -13,6 +13,7 @@
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/sync/glue/autofill_data_type_controller.h"
 #include "chrome/browser/sync/glue/change_processor_mock.h"
+#include "chrome/browser/sync/glue/data_type_controller_mock.h"
 #include "chrome/browser/sync/glue/model_associator_mock.h"
 #include "chrome/browser/sync/profile_sync_factory_mock.h"
 #include "chrome/browser/sync/profile_sync_service_mock.h"
@@ -29,6 +30,7 @@ using browser_sync::AutofillDataTypeController;
 using browser_sync::ChangeProcessorMock;
 using browser_sync::DataTypeController;
 using browser_sync::ModelAssociatorMock;
+using browser_sync::StartCallback;
 using testing::_;
 using testing::DoAll;
 using testing::Invoke;
@@ -44,12 +46,6 @@ ACTION_P(WaitOnEvent, event) {
 ACTION_P(SignalEvent, event) {
   event->Signal();
 }
-
-class StartCallback {
- public:
-  MOCK_METHOD2(Run, void(DataTypeController::StartResult result,
-      const tracked_objects::Location& location));
-};
 
 // This class mocks PersonalDataManager and provides a factory method to
 // serve back the mocked object to callers of

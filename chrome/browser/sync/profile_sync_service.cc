@@ -26,6 +26,7 @@
 #include "chrome/browser/net/gaia/token_service.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sync/api/sync_error.h"
 #include "chrome/browser/sync/backend_migrator.h"
 #include "chrome/browser/sync/glue/change_processor.h"
 #include "chrome/browser/sync/glue/data_type_controller.h"
@@ -466,6 +467,9 @@ void ProfileSyncService::Shutdown(bool sync_disabled) {
   // Stop all data type controllers, if needed.
   if (data_type_manager_.get()) {
     if (data_type_manager_->state() != DataTypeManager::STOPPED) {
+      // When aborting as part of shutdown, we should expect an aborted sync
+      // configure result, else we'll dcheck when we try to read the sync error.
+      expect_sync_configuration_aborted_ = true;
       data_type_manager_->Stop();
     }
 
@@ -1495,13 +1499,16 @@ void ProfileSyncService::Observe(int type,
         return;
       }
       if (status != DataTypeManager::OK) {
-        VLOG(0) << "ProfileSyncService::Observe: Unrecoverable error detected";
+        DCHECK(result->error.IsSet());
         std::string message =
-          "Sync Configuration failed while configuring " +
-          syncable::ModelTypeSetToString(result->failed_types) +
-          ": " + DataTypeManager::ConfigureStatusToString(status);
-        OnUnrecoverableError(result->location, message);
-        cached_passphrases_ = CachedPassphrases();
+          "Sync configuration failed with status " +
+          DataTypeManager::ConfigureStatusToString(status) +
+          " during " + syncable::ModelTypeToString(result->error.type()) +
+          ": " + result->error.message();
+        LOG(ERROR) << "ProfileSyncService error: "
+                   << message;
+        // TODO: Don't
+        OnUnrecoverableError(result->error.location(), message);
         return;
       }
 

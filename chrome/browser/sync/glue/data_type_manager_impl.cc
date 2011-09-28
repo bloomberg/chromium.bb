@@ -269,7 +269,8 @@ void DataTypeManagerImpl::DownloadReady(bool success) {
   }
 
   if (!success) {
-    Abort(UNRECOVERABLE_ERROR, FROM_HERE, needs_start_[0]->type());
+    SyncError error(FROM_HERE, "Download failed", needs_start_[0]->type());
+    Abort(UNRECOVERABLE_ERROR, error);
     return;
   }
 
@@ -309,7 +310,7 @@ void DataTypeManagerImpl::StartNextType() {
 
 void DataTypeManagerImpl::TypeStartCallback(
     DataTypeController::StartResult result,
-    const tracked_objects::Location& location) {
+    const SyncError& error) {
   // When the data type controller invokes this callback, it must be
   // on the UI thread.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -319,7 +320,7 @@ void DataTypeManagerImpl::TypeStartCallback(
     // DataTypeManager::Stop() was called while the current data type
     // was starting.  Now that it has finished starting, we can finish
     // stopping the DataTypeManager.  This is considered an ABORT.
-    Abort(ABORTED, location, needs_start_[0]->type());
+    Abort(ABORTED, SyncError());
     return;
   } else if (state_ == STOPPED) {
     // If our state_ is STOPPED, we have already stopped all of the data
@@ -344,10 +345,10 @@ void DataTypeManagerImpl::TypeStartCallback(
     return;
   }
 
-  // Any other result is a fatal error.  Shut down any types we've
-  // managed to start up to this point and pass the result to the
-  // callback.
-  VLOG(0) << "Failed " << started_dtc->name();
+  // Any other result requires reconfiguration. Pass it on through the callback.
+  LOG(ERROR) << "Failed to configure " << started_dtc->name();
+  DCHECK(error.IsSet());
+  DCHECK_EQ(started_dtc->type(), error.type());
   ConfigureStatus configure_status = DataTypeManager::ABORTED;
   switch (result) {
     case DataTypeController::ABORTED:
@@ -364,13 +365,7 @@ void DataTypeManagerImpl::TypeStartCallback(
       break;
   }
 
-  // TODO(sync): We currently only specify the last attempted type as the failed
-  // type. At some point we should allow a datatype to fail without preventing
-  // other datatypes from continuing. In that case we'll have to support
-  // multiple types failing.
-  Abort(configure_status,
-        location,
-        started_dtc->type());
+  Abort(configure_status, error);
 }
 
 void DataTypeManagerImpl::Stop() {
@@ -404,7 +399,7 @@ void DataTypeManagerImpl::Stop() {
     syncable::ModelType type = syncable::UNSPECIFIED;
     if (needs_start_.size() > 0)
       type = needs_start_[0]->type();
-    Abort(ABORTED, FROM_HERE, type);
+    Abort(ABORTED, SyncError());
     return;
   }
 
@@ -427,19 +422,13 @@ void DataTypeManagerImpl::FinishStop() {
   state_ = STOPPED;
 }
 
-void DataTypeManagerImpl::Abort(
-    ConfigureStatus status,
-    const tracked_objects::Location& location,
-    syncable::ModelType last_attempted_type) {
+void DataTypeManagerImpl::Abort(ConfigureStatus status,
+                                const SyncError& error) {
   DCHECK_NE(OK, status);
   FinishStop();
-  TypeSet attempted_types;
-  if (syncable::IsRealDataType(last_attempted_type))
-    attempted_types.insert(last_attempted_type);
   ConfigureResult result(status,
                          last_requested_types_,
-                         attempted_types,
-                         location);
+                         error);
   NotifyDone(result);
 }
 

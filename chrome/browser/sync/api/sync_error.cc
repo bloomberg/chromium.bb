@@ -71,6 +71,7 @@ bool SyncError::IsSet() const {
   return location_.get() != NULL;
 }
 
+
 const tracked_objects::Location& SyncError::location() const {
   CHECK(IsSet());
   return *location_;
@@ -87,12 +88,11 @@ syncable::ModelType SyncError::type() const {
 }
 
 std::string SyncError::ToString() const {
-  if (IsSet()) {
-    return "{ location: " + location_->ToString() + ", type: " +
-        syncable::ModelTypeToString(type()) + ", message: " + message() + "}";
+  if (!IsSet()) {
+    return std::string();
   }
-
-  return "<Unset SyncError>";
+  return location_->ToString() + ", " + syncable::ModelTypeToString(type_) +
+      ", Sync Error: " + message_;
 }
 
 void SyncError::PrintLogError() const {
@@ -100,7 +100,7 @@ void SyncError::PrintLogError() const {
                                   location_->line_number(),
                                   logging::LOG_ERROR).stream(),
               LOG_IS_ON(ERROR))
-      << syncable::ModelTypeToString(type_) << " Sync Error: " << message_;
+      << syncable::ModelTypeToString(type_) << ", Sync Error: " << message_;
 }
 
 void PrintTo(const SyncError& sync_error, std::ostream* os) {

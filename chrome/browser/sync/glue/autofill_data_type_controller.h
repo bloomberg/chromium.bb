@@ -36,7 +36,7 @@ class AutofillDataTypeController : public NonFrontendDataTypeController,
   virtual browser_sync::ModelSafeGroup model_safe_group() const;
 
   // NotificationObserver implementation.
-  virtual void Observe(int type,
+  virtual void Observe(int notification_type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 

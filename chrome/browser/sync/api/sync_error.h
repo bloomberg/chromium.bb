@@ -54,8 +54,8 @@ class SyncError {
   const std::string& message() const;
   syncable::ModelType type() const;
 
+  // Returns empty string is IsSet() is false.
   std::string ToString() const;
-
  private:
   // Print error information to log.
   void PrintLogError() const;

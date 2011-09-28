@@ -11,6 +11,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/task.h"
+#include "chrome/browser/sync/api/sync_error.h"
 #include "chrome/browser/sync/glue/data_type_controller.h"
 #include "chrome/browser/sync/internal_api/configure_reason.h"
 #include "chrome/browser/sync/syncable/model_type.h"
@@ -56,13 +57,11 @@ class DataTypeManager {
                     TypeSet requested_types);
     ConfigureResult(ConfigureStatus status,
                     TypeSet requested_types,
-                    TypeSet failed_types,
-                    const tracked_objects::Location& location);
+                    const SyncError& error);
     ~ConfigureResult();
     ConfigureStatus status;
     TypeSet requested_types;
-    TypeSet failed_types;
-    tracked_objects::Location location;
+    SyncError error;
   };
 
   virtual ~DataTypeManager() {}

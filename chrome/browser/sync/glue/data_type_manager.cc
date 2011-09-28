@@ -19,12 +19,10 @@ DataTypeManager::ConfigureResult::ConfigureResult(ConfigureStatus status,
 DataTypeManager::ConfigureResult::ConfigureResult(
     ConfigureStatus status,
     TypeSet requested_types,
-    TypeSet failed_types,
-    const tracked_objects::Location& location)
+    const SyncError& error)
     : status(status),
       requested_types(requested_types),
-      failed_types(failed_types),
-      location(location) {
+      error(error) {
   DCHECK_NE(OK, status);
 }
 

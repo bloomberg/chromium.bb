@@ -46,13 +46,12 @@ class DataTypeManagerImpl : public DataTypeManager {
 
   // Callback passed to each data type controller on startup.
   void TypeStartCallback(DataTypeController::StartResult result,
-      const tracked_objects::Location& from_here);
+                         const SyncError& error);
 
   // Stops all data types.
   void FinishStop();
   void Abort(ConfigureStatus status,
-             const tracked_objects::Location& location,
-             syncable::ModelType last_attempted_type);
+             const SyncError& error);
 
   // Returns true if any last_requested_types_ currently needs to start model
   // association.  If non-null, fills |needs_start| with all such controllers.
