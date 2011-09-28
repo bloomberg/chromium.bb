@@ -81,7 +81,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TabUpdate) {
   ASSERT_TRUE(RunExtensionSubtest("tabs/basics", "update.html")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TabUpdateNoPermissions) {
+// This times out regularly on all platforms. http://crbug.com/98383
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_TabUpdateNoPermissions) {
   ASSERT_TRUE(StartTestServer());
   ASSERT_TRUE(RunExtensionSubtest(
       "tabs/no_permissions", "update.html")) << message_;
