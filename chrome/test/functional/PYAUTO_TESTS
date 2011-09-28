@@ -176,6 +176,8 @@
       '-passwords.PasswordTest.testNeverSavePasswords',
       # crbug.com/91887
       '-passwords.PasswordTest.testInfoBarDisappearByNavigatingPage',
+      '-passwords.PasswordTest.testSavedPasswordInTabsAndWindows',
+      '-passwords.PasswordTest.testClearFetchedCredForNewUserName',
       # crbug.com/88679
       '-sync',
       # crbug.com/86949
