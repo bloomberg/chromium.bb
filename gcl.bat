@@ -2,4 +2,5 @@
 setlocal
 :: This is required with cygwin only.
 PATH=%~dp0;%PATH%
+set PYTHONDONTWRITEBYTECODE=1
 call python "%~dp0gcl.py" %*

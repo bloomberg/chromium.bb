@@ -22,5 +22,4 @@ then
   svn -q up "${base_dir}"
 fi
 
-exec python "${base_dir}/drover.py" "$@"
-
+PYTHONDONTWRITEBYTECODE=1 exec python "${base_dir}/drover.py" "$@"

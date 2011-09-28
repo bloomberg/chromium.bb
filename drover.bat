@@ -5,5 +5,5 @@
 
 setlocal
 set PATH=%~dp0svn;%PATH%
-
+set PYTHONDONTWRITEBYTECODE=1
 call python "%~dp0drover.py" %*

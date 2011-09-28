@@ -11,7 +11,7 @@ OUTPUT="$(uname | grep 'MINGW')"
 MINGW=$?
 
 if [ -d "$base_dir/python_bin" -a $MINGW = 0 ]; then
-  exec "$base_dir/python_bin/python.exe" "$base_dir"/git_try.py "$@"
+  PYTHONDONTWRITEBYTECODE=1 exec "$base_dir/python_bin/python.exe" "$base_dir"/git_try.py "$@"
 else
-  exec "$base_dir/git_try.py" "$@"
+  PYTHONDONTWRITEBYTECODE=1 exec "$base_dir/git_try.py" "$@"
 fi

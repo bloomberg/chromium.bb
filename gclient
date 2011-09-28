@@ -7,4 +7,4 @@ base_dir=$(dirname "$0")
 
 "$base_dir"/update_depot_tools
 
-exec python "$base_dir/gclient.py" "$@"
+PYTHONDONTWRITEBYTECODE=1 exec python "$base_dir/gclient.py" "$@"
