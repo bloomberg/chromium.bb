@@ -46,14 +46,8 @@
       <include src="header_footer_settings.html"></include>
       <hr>
       <div id="system-dialog-div">
-        <if expr="pp_ifdef('chromeos')">
-          <button id="system-dialog-link" class="link-button"
-              i18n-content="cloudPrintDialogOption"></button>
-        </if>
-        <if expr="not pp_ifdef('chromeos')">
-          <button id="system-dialog-link" class="link-button"
-              i18n-content="systemDialogOption"></button>
-        </if>
+        <button id="system-dialog-link" class="link-button"
+            i18n-content="systemDialogOption"></button>
         <!-- TODO(dpapad): Investigate whey hidden attribute does not work. -->
         <div id="system-dialog-throbber" class="throbber hidden"></div>
       </div>

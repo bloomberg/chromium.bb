@@ -18,9 +18,6 @@ const char kPreviewUIAddr[] = "previewUIAddr";
 // Print using cloud print: true if selected, false if not.
 const char kSettingCloudPrintId[] = "cloudPrintID";
 
-// Print using cloud print dialog: true if selected, false if not.
-const char kSettingCloudPrintDialog[] = "printWithCloudPrint";
-
 // Print job setting 'collate'.
 const char kSettingCollate[] = "collate";
 
