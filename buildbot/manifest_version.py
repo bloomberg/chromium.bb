@@ -421,7 +421,7 @@ class BuildSpecsManager(object):
     matched_manifests = []
     if os.path.exists(directory):
       all_manifests = os.listdir(directory)
-      match_string = version_info.BuildPrefix() + '.*.xml'
+      match_string = version_info.BuildPrefix() + '*.xml'
       matched_manifests = fnmatch.filter(all_manifests, match_string)
       matched_manifests = [os.path.splitext(m)[0] for m in matched_manifests]
 
