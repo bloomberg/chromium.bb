@@ -1076,7 +1076,8 @@ void View::NativeViewHierarchyChanged(bool attached,
 
 void View::PaintChildren(gfx::Canvas* canvas) {
   for (int i = 0, count = child_count(); i < count; ++i)
-    child_at(i)->Paint(canvas);
+    if (!child_at(i)->layer())
+      child_at(i)->Paint(canvas);
 }
 
 void View::OnPaint(gfx::Canvas* canvas) {
