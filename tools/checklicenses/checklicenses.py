@@ -200,9 +200,6 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
     'third_party/bzip2': [
         'UNKNOWN',
     ],
-    'third_party/cacheinvalidation': [
-        'UNKNOWN',
-    ],
     'third_party/cld/encodings/compact_lang_det': [
         'UNKNOWN',
     ],

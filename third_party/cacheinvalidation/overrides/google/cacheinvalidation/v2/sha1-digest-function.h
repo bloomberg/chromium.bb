@@ -1,6 +1,7 @@
-// Copyright 2011 Google Inc. All Rights Reserved.
-// Author: ghc@google.com (Greg Cooper)
-//
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
 // Interface to SHA1 digest computation.
 
 #ifndef GOOGLE_CACHEINVALIDATION_V2_SHA1_DIGEST_FUNCTION_H_
