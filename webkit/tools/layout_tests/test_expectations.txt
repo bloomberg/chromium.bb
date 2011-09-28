@@ -6,3 +6,7 @@
 // until the changes can be landed upstream.
 
 // PLEASE DO NOT LEAVE ENTRIES IN THIS FILE FOR MORE THAN 24 HRS.
+
+// TODO(mihaip): remove after next WebKit roll
+BUGWK68895 SNOWLEOPARD GPU : fast/canvas/canvas-composite-transformclip.html = IMAGE
+BUGWK68895 SNOWLEOPARD GPU : fast/canvas/canvas-composite.html = IMAGE
