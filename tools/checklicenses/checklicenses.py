@@ -160,9 +160,6 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
     'ppapi/native_client/tests/earth/earth_image.inc': [
         'UNKNOWN',
     ],
-    'remoting/tools/gethosts.sh': [
-        'UNKNOWN',
-    ],
     'sdch/open-vcdiff': [
         'UNKNOWN',
     ],
