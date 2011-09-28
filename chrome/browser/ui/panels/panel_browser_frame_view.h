@@ -11,15 +11,18 @@
 #include "base/message_loop.h"
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
 #include "chrome/browser/ui/views/tab_icon_view.h"
+#include "ui/base/animation/animation_delegate.h"
 #include "views/controls/button/button.h"
 #include "views/controls/menu/view_menu_delegate.h"
 
 class Extension;
-class ExtensionUninstallDialog;
 class PanelBrowserView;
 class PanelSettingsMenuModel;
 namespace gfx {
 class Font;
+}
+namespace ui {
+class SlideAnimation;
 }
 namespace views {
 class ImageButton;
@@ -33,7 +36,8 @@ class MenuRunner;
 class PanelBrowserFrameView : public BrowserNonClientFrameView,
                               public views::ButtonListener,
                               public views::ViewMenuDelegate,
-                              public TabIconView::TabIconViewModel {
+                              public TabIconView::TabIconViewModel,
+                              public ui::AnimationDelegate {
  public:
   PanelBrowserFrameView(BrowserFrame* frame, PanelBrowserView* browser_view);
   virtual ~PanelBrowserFrameView();
@@ -87,6 +91,11 @@ class PanelBrowserFrameView : public BrowserNonClientFrameView,
   // Overridden from TabIconView::TabIconViewModel:
   virtual bool ShouldTabIconViewAnimate() const OVERRIDE;
   virtual SkBitmap GetFaviconForTabIconView() OVERRIDE;
+
+  // Overridden from AnimationDelegate:
+  virtual void AnimationEnded(const ui::Animation* animation) OVERRIDE;
+  virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
+  virtual void AnimationCanceled(const ui::Animation* animation) OVERRIDE;
 
  private:
   friend class PanelBrowserViewTest;
@@ -175,7 +184,6 @@ class PanelBrowserFrameView : public BrowserNonClientFrameView,
 
   PaintState paint_state_;
   views::MenuButton* settings_button_;
-  bool is_settings_button_visible_;
   views::ImageButton* close_button_;
   TabIconView* title_icon_;
   views::Label* title_label_;
@@ -185,7 +193,12 @@ class PanelBrowserFrameView : public BrowserNonClientFrameView,
   scoped_ptr<views::MenuModelAdapter> settings_menu_adapter_;
   views::MenuItemView* settings_menu_;  // Owned by |settings_menu_runner_|.
   scoped_ptr<views::MenuRunner> settings_menu_runner_;
-  scoped_ptr<ExtensionUninstallDialog> extension_uninstall_dialog_;
+
+  // Used to animate the visibility change of settings button.
+  scoped_ptr<ui::SlideAnimation> settings_button_animator_;
+  gfx::Rect settings_button_full_bounds_;
+  gfx::Rect settings_button_zero_bounds_;
+  bool is_settings_button_visible_;
 
   DISALLOW_COPY_AND_ASSIGN(PanelBrowserFrameView);
 };

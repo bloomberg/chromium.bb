@@ -68,8 +68,18 @@ class PanelBrowserViewTest : public BasePanelBrowserTest {
   void WaitTillBoundsAnimationFinished(PanelBrowserView* browser_view) {
     // The timer for the animation will only kick in as async task.
     while (browser_view->bounds_animator_->is_animating()) {
-      MessageLoop::current()->PostTask(FROM_HERE, new MessageLoop::QuitTask());
-      MessageLoop::current()->RunAllPending();
+      MessageLoopForUI::current()->PostTask(FROM_HERE,
+                                            new MessageLoop::QuitTask());
+      MessageLoopForUI::current()->RunAllPending();
+    }
+  }
+
+  void WaitTillSettingsAnimationFinished(PanelBrowserFrameView* frame_view) {
+    // The timer for the animation will only kick in as async task.
+    while (frame_view->settings_button_animator_->is_animating()) {
+      MessageLoopForUI::current()->PostTask(FROM_HERE,
+                                            new MessageLoop::QuitTask());
+      MessageLoopForUI::current()->RunAllPending();
     }
   }
 
@@ -171,7 +181,7 @@ class PanelBrowserViewTest : public BasePanelBrowserTest {
     mock_auto_hiding_desktop_bar()->SetVisibility(
         AutoHidingDesktopBar::ALIGN_BOTTOM, AutoHidingDesktopBar::VISIBLE);
     panel_manager->BringUpOrDownTitlebars(true);
-    MessageLoop::current()->RunAllPending();
+    MessageLoopForUI::current()->RunAllPending();
     EXPECT_EQ(Panel::TITLE_ONLY, panel1->expansion_state());
     EXPECT_EQ(Panel::EXPANDED, panel2->expansion_state());
     EXPECT_EQ(Panel::TITLE_ONLY, panel3->expansion_state());
@@ -179,7 +189,7 @@ class PanelBrowserViewTest : public BasePanelBrowserTest {
     mock_auto_hiding_desktop_bar()->SetVisibility(
         AutoHidingDesktopBar::ALIGN_BOTTOM, AutoHidingDesktopBar::HIDDEN);
     panel_manager->BringUpOrDownTitlebars(false);
-    MessageLoop::current()->RunAllPending();
+    MessageLoopForUI::current()->RunAllPending();
     EXPECT_EQ(Panel::MINIMIZED, panel1->expansion_state());
     EXPECT_EQ(Panel::EXPANDED, panel2->expansion_state());
     EXPECT_EQ(Panel::MINIMIZED, panel3->expansion_state());
@@ -224,20 +234,20 @@ class PanelBrowserViewTest : public BasePanelBrowserTest {
     // focus.
     browser_view->DrawAttention();
     EXPECT_FALSE(browser_view->IsDrawingAttention());
-    MessageLoop::current()->RunAllPending();
+    MessageLoopForUI::current()->RunAllPending();
     EXPECT_NE(attention_color, frame_view->title_label_->GetColor());
 
     // Test that the attention is drawn when the expanded panel is not in focus.
     panel->Deactivate();
     browser_view->DrawAttention();
     EXPECT_TRUE(browser_view->IsDrawingAttention());
-    MessageLoop::current()->RunAllPending();
+    MessageLoopForUI::current()->RunAllPending();
     EXPECT_EQ(attention_color, frame_view->title_label_->GetColor());
 
     // Test that the attention is cleared.
     browser_view->StopDrawingAttention();
     EXPECT_FALSE(browser_view->IsDrawingAttention());
-    MessageLoop::current()->RunAllPending();
+    MessageLoopForUI::current()->RunAllPending();
     EXPECT_NE(attention_color, frame_view->title_label_->GetColor());
 
     // Test that the attention is drawn and the title-bar is brought up when the
@@ -248,7 +258,7 @@ class PanelBrowserViewTest : public BasePanelBrowserTest {
     browser_view->DrawAttention();
     EXPECT_TRUE(browser_view->IsDrawingAttention());
     EXPECT_EQ(Panel::TITLE_ONLY, panel->expansion_state());
-    MessageLoop::current()->RunAllPending();
+    MessageLoopForUI::current()->RunAllPending();
     EXPECT_EQ(attention_color, frame_view->title_label_->GetColor());
 
     // Test that we cannot bring up other minimized panel if the mouse is over
@@ -264,7 +274,7 @@ class PanelBrowserViewTest : public BasePanelBrowserTest {
     browser_view->StopDrawingAttention();
     EXPECT_FALSE(browser_view->IsDrawingAttention());
     EXPECT_EQ(Panel::EXPANDED, panel->expansion_state());
-    MessageLoop::current()->RunAllPending();
+    MessageLoopForUI::current()->RunAllPending();
     EXPECT_NE(attention_color, frame_view->title_label_->GetColor());
 
     panel->Close();
@@ -290,7 +300,7 @@ class PanelBrowserViewTest : public BasePanelBrowserTest {
         AutoHidingDesktopBar::ALIGN_BOTTOM, bottom_bar_thickness);
     mock_auto_hiding_desktop_bar()->SetThickness(
         AutoHidingDesktopBar::ALIGN_RIGHT, right_bar_thickness);
-    MessageLoop::current()->RunAllPending();
+    MessageLoopForUI::current()->RunAllPending();
     EXPECT_EQ(testing_work_area().height() - bottom_bar_thickness,
               panel->GetBounds().bottom());
     EXPECT_EQ(testing_work_area().right() - right_bar_thickness,
@@ -302,7 +312,7 @@ class PanelBrowserViewTest : public BasePanelBrowserTest {
         AutoHidingDesktopBar::ALIGN_BOTTOM, bottom_bar_thickness);
     mock_auto_hiding_desktop_bar()->SetThickness(
         AutoHidingDesktopBar::ALIGN_RIGHT, right_bar_thickness);
-    MessageLoop::current()->RunAllPending();
+    MessageLoopForUI::current()->RunAllPending();
     EXPECT_EQ(testing_work_area().height() - bottom_bar_thickness,
               panel->GetBounds().bottom());
     EXPECT_EQ(testing_work_area().right() - right_bar_thickness,
@@ -397,10 +407,14 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserViewTest, ShowOrHideSettingsButton) {
   // the panel or not.
   panel->Deactivate();
   EXPECT_FALSE(panel->IsActive());
+  WaitTillSettingsAnimationFinished(frame_view);
+  EXPECT_FALSE(frame_view->settings_button_->IsVisible());
 
   mouse_watcher->MoveMouse(true);
+  WaitTillSettingsAnimationFinished(frame_view);
   EXPECT_TRUE(frame_view->settings_button_->IsVisible());
   mouse_watcher->MoveMouse(false);
+  WaitTillSettingsAnimationFinished(frame_view);
   EXPECT_FALSE(frame_view->settings_button_->IsVisible());
 }
 

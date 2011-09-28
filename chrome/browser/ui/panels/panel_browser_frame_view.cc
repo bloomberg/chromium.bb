@@ -19,6 +19,7 @@
 #include "grit/ui_resources.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
 #include "ui/base/accessibility/accessible_view_state.h"
+#include "ui/base/animation/slide_animation.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas_skia.h"
@@ -53,6 +54,9 @@ const int kIconSize = 16;
 
 // The spacing in pixels between buttons or the button and the adjacent control.
 const int kButtonSpacing = 6;
+
+// This value is experimental and subjective.
+const int kUpdateSettingsVisibilityAnimationMs = 120;
 
 // Colors used in painting the titlebar for drawing attention.
 const SkColor kBackgroundColorForAttention = 0xfffa983a;
@@ -222,10 +226,10 @@ PanelBrowserFrameView::PanelBrowserFrameView(BrowserFrame* frame,
       browser_view_(browser_view),
       paint_state_(NOT_PAINTED),
       settings_button_(NULL),
-      is_settings_button_visible_(false),
       close_button_(NULL),
       title_icon_(NULL),
-      title_label_(NULL) {
+      title_label_(NULL),
+      is_settings_button_visible_(false) {
   EnsureResourcesInitialized();
   frame_->set_frame_type(views::Widget::FRAME_TYPE_FORCE_CUSTOM);
 
@@ -368,6 +372,11 @@ gfx::Size PanelBrowserFrameView::GetMinimumSize() {
 }
 
 void PanelBrowserFrameView::Layout() {
+  // Cancel the settings button animation if the layout of titlebar is being
+  // updated.
+  if (settings_button_animator_.get() && settings_button_animator_->IsShowing())
+    settings_button_animator_->Reset();
+
   // Layout the close button.
   gfx::Size close_button_size = close_button_->GetPreferredSize();
   close_button_->SetBounds(
@@ -384,6 +393,16 @@ void PanelBrowserFrameView::Layout() {
       (NonClientTopBorderHeight() - settings_button_size.height()) / 2,
       settings_button_size.width(),
       settings_button_size.height());
+
+  // Trace the full bounds and zero-size bounds for animation purpose.
+  settings_button_full_bounds_ = settings_button_->bounds();
+  settings_button_zero_bounds_.SetRect(
+      settings_button_full_bounds_.x() +
+          settings_button_full_bounds_.width() / 2,
+      settings_button_full_bounds_.y() +
+          settings_button_full_bounds_.height() / 2,
+      0,
+      0);
 
   // Layout the icon.
   int icon_y = (NonClientTopBorderHeight() - kIconSize) / 2;
@@ -472,6 +491,32 @@ bool PanelBrowserFrameView::ShouldTabIconViewAnimate() const {
 
 SkBitmap PanelBrowserFrameView::GetFaviconForTabIconView() {
   return frame_->widget_delegate()->GetWindowIcon();
+}
+
+void PanelBrowserFrameView::AnimationEnded(const ui::Animation* animation) {
+  settings_button_->SetVisible(is_settings_button_visible_);
+}
+
+void PanelBrowserFrameView::AnimationProgressed(
+    const ui::Animation* animation) {
+  gfx::Rect animation_start_bounds, animation_end_bounds;
+  if (is_settings_button_visible_) {
+    animation_start_bounds = settings_button_zero_bounds_;
+    animation_end_bounds = settings_button_full_bounds_;
+  } else {
+    animation_start_bounds = settings_button_full_bounds_;
+    animation_end_bounds = settings_button_zero_bounds_;
+  }
+  gfx::Rect new_bounds = settings_button_animator_->CurrentValueBetween(
+      animation_start_bounds, animation_end_bounds);
+  if (new_bounds == animation_end_bounds)
+    AnimationEnded(animation);
+  else
+    settings_button_->SetBoundsRect(new_bounds);
+}
+
+void PanelBrowserFrameView::AnimationCanceled(const ui::Animation* animation) {
+  AnimationEnded(animation);
 }
 
 int PanelBrowserFrameView::NonClientBorderThickness() const {
@@ -652,8 +697,26 @@ void PanelBrowserFrameView::OnMouseEnterOrLeaveWindow(bool mouse_entered) {
 
 void PanelBrowserFrameView::UpdateSettingsButtonVisibility(
     bool focused, bool cursor_in_view) {
-  is_settings_button_visible_ = focused || cursor_in_view;
-  settings_button_->SetVisible(is_settings_button_visible_);
+  bool is_settings_button_visible = focused || cursor_in_view;
+  if (is_settings_button_visible_ == is_settings_button_visible)
+    return;
+  is_settings_button_visible_ = is_settings_button_visible;
+
+  // Even if we're hidng the settings button, we still make it visible for the
+  // time period that the animation is running.
+  settings_button_->SetVisible(true);
+
+  if (settings_button_animator_.get()) {
+    if (settings_button_animator_->IsShowing())
+      settings_button_animator_->Reset();
+  } else {
+    settings_button_animator_.reset(new ui::SlideAnimation(this));
+    settings_button_animator_->SetTweenType(ui::Tween::LINEAR);
+    settings_button_animator_->SetSlideDuration(
+        kUpdateSettingsVisibilityAnimationMs);
+  }
+
+  settings_button_animator_->Show();
 }
 
 bool PanelBrowserFrameView::EnsureSettingsMenuCreated() {
