@@ -176,16 +176,12 @@
       '-passwords.PasswordTest.testNeverSavePasswords',
       # crbug.com/91887
       '-passwords.PasswordTest.testInfoBarDisappearByNavigatingPage',
-      # crbug.com/67588
-      '-passwords.PasswordTest.testSavedPasswordInTabsAndWindows',
       # crbug.com/88679
       '-sync',
       # crbug.com/86949
       '-sync.SyncTest.testRestartBrowser',
       # crbug.com/87642
       '-sync.SyncTest.testDisableAndEnableDatatypes',
-      # crbug.com/88190
-      '-passwords.PasswordTest.testClearFetchedCredForNewUserName',
       # Crashes browser. crbug.com/89000
       '-prefs.PrefsTest.testGeolocationPref',
       #	crbug.com/95621

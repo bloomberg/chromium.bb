@@ -49,6 +49,36 @@ class PasswordTest(pyauto.PyUITest):
             'action_target': action_target,
             'blacklist': blacklist}
 
+  def _ClickOnLoginPage(self, window_index, tab_index):
+    # In some cases (such as on Windows) the current page displays an account
+    # name and e-mail, rather than an e-mail and password.  Clicking on a
+    # particular DOM element causes the e-mail and password to be displayed.
+    click_js = """
+      var elements = document.getElementsByClassName("accounts");
+      if (elements && elements.length > 0) {
+        elements = elements[0].getElementsByTagName("p");
+        if (elements && elements.length > 0)
+          elements[0].onclick();
+      }
+      window.domAutomationController.send("done");
+    """
+    self.ExecuteJavascript(click_js, window_index, tab_index)
+
+    # Wait until username/password is filled by the Password manager on the
+    # login page.
+    js_template = """
+      var value = "";
+      var element = document.getElementById("%s");
+      if (element)
+        value = element.value;
+      window.domAutomationController.send(value);
+    """
+    self.assertTrue(self.WaitUntil(
+        lambda: self.ExecuteJavascript(js_template % 'Email',
+                                      window_index, tab_index) != '' and
+                self.ExecuteJavascript(js_template % 'Passwd',
+                                      window_index, tab_index) != ''))
+
   def testSavePassword(self):
     """Test saving a password and getting saved passwords."""
     password1 = self._ConstructPasswordDictionary(
@@ -100,34 +130,7 @@ class PasswordTest(pyauto.PyUITest):
     self.PerformActionOnInfobar('accept', infobar_index=0)
     self.NavigateToURL(url_logout)
     self.NavigateToURL(url_https)
-
-    # In some cases (such as on Windows) the current page displays an account
-    # name and e-mail, rather than an e-mail and password.  Clicking on a
-    # particular DOM element causes the e-mail and password to be displayed.
-    click_js = """
-      var elements = document.getElementsByClassName("accounts");
-      if (elements && elements.length > 0) {
-        elements = elements[0].getElementsByTagName("p");
-        if (elements && elements.length > 0)
-          elements[0].onclick();
-      }
-      window.domAutomationController.send("done");
-    """
-    self.ExecuteJavascript(click_js, 0, 0)
-
-    # Wait until username/password is filled by the Password manager on the
-    # login page.
-    js_template = """
-      var value = "";
-      var element = document.getElementById("%s");
-      if (element)
-        value = element.value;
-      window.domAutomationController.send(value);
-    """
-    self.assertTrue(self.WaitUntil(
-        lambda: self.ExecuteJavascript(js_template % 'Email', 0, 0) != '' and
-                self.ExecuteJavascript(js_template % 'Passwd', 0, 0) != ''))
-
+    self._ClickOnLoginPage(0, 0)
     test_utils.VerifyGoogleAccountCredsFilled(self, username, password,
                                               tab_index=0, windex=0)
     test_utils.ClearPasswords(self)
@@ -155,29 +158,29 @@ class PasswordTest(pyauto.PyUITest):
 
   def testSavedPasswordInTabsAndWindows(self):
     """Verify saved username/password shows in regular/incognito Window, NTP"""
-    username = 'test'
-    password = 'test12345'
-    password_dict = {
-    u'action_target': u'https://www.google.com/accounts/ServiceLoginAuth',
-    u'blacklist': False,
-    u'origin_url': u'https://www.google.com/accounts/ServiceLogin',
-    u'password_element': u'Passwd',
-    u'password_value': u'test12345',
-    u'signon_realm': u'https://www.google.com/',
-    u'submit_element': u'',
-    u'time': 1280939865.0,
-    u'username_element': u'Email',
-    u'username_value': u'test'}
     url = 'https://www.google.com/accounts/ServiceLogin'
-    self.AddSavedPassword(password_dict)
+    url_logout = 'https://www.google.com/accounts/Logout'
+    creds = self.GetPrivateInfo()['test_google_account']
+    username = creds['username']
+    password = creds['password']
+    # Login to Google a/c
+    test_utils.GoogleAccountsLogin(self, username, password)
+    # Wait for the infobar to appear
+    self.assertTrue(self.WaitForInfobarCount(1))
+    self.assertTrue(self.GetBrowserInfo()['windows'][0]['tabs'][0]['infobars'])
+    self.PerformActionOnInfobar('accept', infobar_index=0)
+    self.NavigateToURL(url_logout)
     self.NavigateToURL(url)
+    self._ClickOnLoginPage(0, 0)
     test_utils.VerifyGoogleAccountCredsFilled(self, username, password,
         tab_index=0, windex=0)
     self.AppendTab(pyauto.GURL(url))
+    self._ClickOnLoginPage(0, 1)
     test_utils.VerifyGoogleAccountCredsFilled(self, username, password,
         tab_index=1, windex=0)
     self.RunCommand(pyauto.IDC_NEW_INCOGNITO_WINDOW)
     self.NavigateToURL(url, 1, 0)
+    self._ClickOnLoginPage(1, 0)
     test_utils.VerifyGoogleAccountCredsFilled(self, username, password,
         tab_index=0, windex=1)
     test_utils.ClearPasswords(self)
@@ -262,21 +265,21 @@ class PasswordTest(pyauto.PyUITest):
     This test requires sending key events rather than pasting a new username
     into the Email field.
     """
-    user_creds = self._ConstructPasswordDictionary(
-        'user1@example.com', 'test1.password',
-        'https://www.google.com/',
-        'https://www.google.com/accounts/ServiceLogin',
-        'username', 'password',
-        'https://www.google.com/accounts/ServiceLogin')
-
     url = 'https://www.google.com/accounts/ServiceLogin'
-    self.AddSavedPassword(user_creds)
+    url_logout = 'https://www.google.com/accounts/Logout'
+    creds = self.GetPrivateInfo()['test_google_account']
+    username = creds['username']
+    password = creds['password']
+    # Login to Google a/c
+    test_utils.GoogleAccountsLogin(self, username, password)
+    # Wait for the infobar to appear
+    self.assertTrue(self.WaitForInfobarCount(1))
+    self.assertTrue(self.GetBrowserInfo()['windows'][0]['tabs'][0]['infobars'])
+    self.PerformActionOnInfobar('accept', infobar_index=0)
+    self.NavigateToURL(url_logout)
     self.NavigateToURL(url)
-    self.WaitUntil(
-        lambda: self.GetDOMValue('document.readyState'),
-        expect_retval='complete')
-    test_utils.VerifyGoogleAccountCredsFilled(
-        self, user_creds['username_value'], user_creds['password_value'],
+    self._ClickOnLoginPage(0, 0)
+    test_utils.VerifyGoogleAccountCredsFilled(self, username, password,
         tab_index=0, windex=0)
     clear_username_field = (
         'document.getElementById("Email").value = ""; '
