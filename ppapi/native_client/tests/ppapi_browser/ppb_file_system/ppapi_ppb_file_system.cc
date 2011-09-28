@@ -108,7 +108,6 @@ void TestIsFileSystem() {
 }
 
 void TestOpen() {
-  const PPB_Core* ppb_core = PPBCore();
   const PPB_FileSystem* ppb_file_system = PPBFileSystem();
   static PP_Resource file_system = kInvalidResource;
   PP_CompletionCallback nop_callback =
