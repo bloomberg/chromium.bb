@@ -20,20 +20,28 @@ namespace views {
 namespace {
 
 int GetTouchIDFromXEvent(XEvent* xev) {
-  float id = 0;
-#if defined(USE_XI2_MT)
-  // TODO(ningxin.hu@gmail.com): Make the id always start from 0 for a new
-  // touch-sequence when TRACKING_ID is used to extract the touch id.
-  ui::TouchFactory::TouchParam tp = ui::TouchFactory::TP_TRACKING_ID;
-#else
-  ui::TouchFactory::TouchParam tp = ui::TouchFactory::TP_SLOT_ID;
-#endif
+  float slot = 0;
   ui::TouchFactory* factory = ui::TouchFactory::GetInstance();
   XIDeviceEvent* xievent = static_cast<XIDeviceEvent*>(xev->xcookie.data);
-  if (factory->IsRealTouchDevice(xievent->sourceid) &&
-      !factory->ExtractTouchParam(*xev, tp, &id))
-    LOG(ERROR) << "Could not get the touch ID for the event. Using 0.";
-  return id;
+  if (!factory->IsRealTouchDevice(xievent->sourceid)) {
+    // TODO(sad): Come up with a way to generate touch-ids for multi-touch
+    // events when touch-events are generated from a mouse.
+    return slot;
+  }
+
+#if defined(USE_XI2_MT)
+  float tracking_id;
+  if (!factory->ExtractTouchParam(
+         *xev, ui::TouchFactory::TP_TRACKING_ID, &tracking_id))
+    LOG(ERROR) << "Could not get the slot ID for the event. Using 0.";
+  else
+    slot = factory->GetSlotForTrackingID(tracking_id);
+#else
+  if (!factory->ExtractTouchParam(
+         *xev, ui::TouchFactory::TP_SLOT_ID, &slot))
+    LOG(ERROR) << "Could not get the slot ID for the event. Using 0.";
+#endif
+  return slot;
 }
 
 uint16 GetCharacterFromXKeyEvent(XKeyEvent* key) {
@@ -174,7 +182,20 @@ TouchEvent::TouchEvent(const ui::NativeEvent& native_event)
                                               ui::TouchFactory::TP_ORIENTATION,
                                               0.0)),
       force_(GetTouchForceFromXEvent(native_event)) {
-#if !defined(USE_XI2_MT)
+#if defined(USE_XI2_MT)
+  if (type() == ui::ET_TOUCH_RELEASED) {
+    // NOTE: The slot is allocated by TouchFactory for each XI_TouchBegin
+    //       event, which carries a new tracking ID to identify a new touch
+    //       sequence.
+    ui::TouchFactory* factory = ui::TouchFactory::GetInstance();
+    float tracking_id;
+    if (factory->ExtractTouchParam(*native_event,
+                                   ui::TouchFactory::TP_TRACKING_ID,
+                                   &tracking_id)) {
+      factory->ReleaseSlotForTrackingID(tracking_id);
+    }
+  }
+#else
   if (type() == ui::ET_TOUCH_PRESSED || type() == ui::ET_TOUCH_RELEASED) {
     ui::TouchFactory* factory = ui::TouchFactory::GetInstance();
     float slot;

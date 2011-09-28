@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/memory/singleton.h"
+#include "base/hash_tables.h"
 #include "base/timer.h"
 #include "ui/base/ui_export.h"
 
@@ -82,13 +83,20 @@ class UI_EXPORT TouchFactory {
   // for more explanation.)
   bool IsRealTouchDevice(unsigned int deviceid) const;
 
-#if !defined(USE_XI2_MT)
+#if defined(USE_XI2_MT)
+  // Tries to find an existing slot ID mapping to tracking ID. If there
+  // isn't one already, allocates a new slot ID and sets up the mapping.
+  int GetSlotForTrackingID(uint32 tracking_id);
+
+  // Releases the slot ID mapping to tracking ID.
+  void ReleaseSlotForTrackingID(uint32 tracking_id);
+#endif
+
   // Is the slot ID currently used?
   bool IsSlotUsed(int slot) const;
 
   // Marks a slot as being used/unused.
   void SetSlotUsed(int slot, bool used);
-#endif
 
   // Grabs the touch devices for the specified window on the specified display.
   // Returns if grab was successful for all touch devices.
@@ -198,13 +206,22 @@ class UI_EXPORT TouchFactory {
   int touch_param_min_[kMaxDeviceNum][TP_LAST_ENTRY];
   int touch_param_max_[kMaxDeviceNum][TP_LAST_ENTRY];
 
-#if !defined(USE_XI2_MT)
   // Maximum simultaneous touch points.
   static const int kMaxTouchPoints = 32;
 
+#if defined(USE_XI2_MT)
+  // Stores the minimum available slot ID which helps get slot ID from
+  // tracking ID. When it equals to kMaxTouchPoints, there is no available
+  // slot.
+  int min_available_slot_;
+
+  // A hash table to map tracking ID to slot.
+  typedef base::hash_map<uint32, int> TrackingIdMap;
+  TrackingIdMap tracking_id_map_;
+#endif
+
   // A lookup table for slots in use for a touch event.
   std::bitset<kMaxTouchPoints> slots_used_;
-#endif
 
   DISALLOW_COPY_AND_ASSIGN(TouchFactory);
 };

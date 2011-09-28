@@ -135,12 +135,11 @@ TouchFactory::TouchFactory()
       keep_mouse_cursor_(false),
       cursor_timer_(),
       pointer_device_lookup_(),
-#if defined(USE_XI2_MT)
-      touch_device_list_() {
-#else
       touch_device_list_(),
-      slots_used_() {
+#if defined(USE_XI2_MT)
+      min_available_slot_(0),
 #endif
+      slots_used_() {
 #if defined(TOUCH_UI)
   if (!base::MessagePumpForUI::HasXInput2())
     return;
@@ -335,7 +334,42 @@ bool TouchFactory::IsRealTouchDevice(unsigned int deviceid) const {
           false;
 }
 
-#if !defined(USE_XI2_MT)
+#if defined(USE_XI2_MT)
+int TouchFactory::GetSlotForTrackingID(uint32 tracking_id) {
+  TrackingIdMap::iterator itr = tracking_id_map_.find(tracking_id);
+  if (itr != tracking_id_map_.end())
+    return itr->second;
+
+  int slot = min_available_slot_;
+  if (slot == kMaxTouchPoints) {
+    LOG(ERROR) << "Could not find available slot for touch point";
+    return 0;
+  }
+  SetSlotUsed(slot, true);
+  tracking_id_map_.insert(std::make_pair(tracking_id, slot));
+
+  // Updates the minium available slot ID
+  while (++min_available_slot_ < kMaxTouchPoints &&
+         IsSlotUsed(min_available_slot_))
+    continue;
+
+  return slot;
+}
+
+void TouchFactory::ReleaseSlotForTrackingID(uint32 tracking_id) {
+  TrackingIdMap::iterator itr = tracking_id_map_.find(tracking_id);
+  if (itr != tracking_id_map_.end()) {
+    int slot = itr->second;
+    SetSlotUsed(slot, false);
+    tracking_id_map_.erase(itr);
+    if (slot < min_available_slot_)
+      min_available_slot_ = slot;
+  } else {
+    NOTREACHED() << "Cannot find slot mapping to tracking ID " << tracking_id;
+  }
+}
+#endif
+
 bool TouchFactory::IsSlotUsed(int slot) const {
   CHECK_LT(slot, kMaxTouchPoints);
   return slots_used_[slot];
@@ -345,7 +379,6 @@ void TouchFactory::SetSlotUsed(int slot, bool used) {
   CHECK_LT(slot, kMaxTouchPoints);
   slots_used_[slot] = used;
 }
-#endif
 
 bool TouchFactory::GrabTouchDevices(Display* display, ::Window window) {
 #if defined(TOUCH_UI)
