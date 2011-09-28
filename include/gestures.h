@@ -212,6 +212,27 @@ typedef GesturesProp* (*GesturesPropCreateString)(void* data, const char* name,
 typedef GesturesProp* (*GesturesPropCreateReal)(void* data, const char* name,
                                                 double* loc, const double init);
 
+// A function to call just before a property is to be read.
+// |handler_data| is a local context pointer that can be used by the handler.
+// Handler should return non-zero if it modifies the property's value.
+typedef GesturesPropBool (*GesturesPropGetHandler)(void* handler_data);
+
+// A function to call just after a property's value is updated.
+// |handler_data| is a local context pointer that can be used by the handler.
+typedef void (*GesturesPropSetHandler)(void* handler_data);
+
+// Register handlers to be called when a GesturesProp is accessed.
+// The get handler, if not NULL, is called immediately before the property's
+// value is to be read.  This gives the library a chance to update its value.
+// The set handler, if not NULL, is called immediately after the property's
+// value is updated.  This can be used to create a property that is used to
+// trigger an action, or to force an update to multiple properties atomically.
+// Note: the handlers are called from non-signal/interrupt context
+typedef void (*GesturesPropRegisterHandlers)(void* data, GesturesProp* prop,
+                                             void* handler_data,
+                                             GesturesPropGetHandler getter,
+                                             GesturesPropSetHandler setter);
+
 // Free a property.
 typedef void (*GesturesPropFree)(void* data, GesturesProp* prop);
 
@@ -221,6 +242,7 @@ typedef struct GesturesPropProvider {
   GesturesPropCreateBool create_bool_fn;
   GesturesPropCreateString create_string_fn;
   GesturesPropCreateReal create_real_fn;
+  GesturesPropRegisterHandlers register_handlers_fn;
   GesturesPropFree free_fn;
 } GesturesPropProvider;
 
