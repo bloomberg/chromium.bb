@@ -29,7 +29,7 @@ namespace chromeos {
 #if defined(TOUCH_UI)
 const int kSeparation = 25;
 #else
-const int kSeparation = 5;
+const int kSeparation = 0;
 #endif
 
 StatusAreaView::StatusAreaView(StatusAreaHost* host)

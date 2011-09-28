@@ -220,8 +220,8 @@ void NetworkMenuButton::RunMenu(views::View* source, const gfx::Point& pt) {
 ////////////////////////////////////////////////////////////////////////////////
 // NetworkMenuButton, NetworkMenuIcon::Delegate implementation:
 void NetworkMenuButton::NetworkMenuIconChanged() {
-  const SkBitmap* bitmap = network_icon_->GetIconAndText(NULL);
-  SetIcon(*bitmap);
+  const SkBitmap bitmap = network_icon_->GetIconAndText(NULL);
+  SetIcon(bitmap);
   SchedulePaint();
 }
 
@@ -311,8 +311,8 @@ const MobileConfig::CarrierDeal* NetworkMenuButton::GetCarrierDeal(
 
 void NetworkMenuButton::SetNetworkIcon() {
   string16 tooltip;
-  const SkBitmap* bitmap = network_icon_->GetIconAndText(&tooltip);
-  SetIcon(*bitmap);
+  const SkBitmap bitmap = network_icon_->GetIconAndText(&tooltip);
+  SetIcon(bitmap);
   SetTooltipAndAccessibleName(tooltip);
   SchedulePaint();
 }

@@ -487,23 +487,8 @@
         <include name="IDR_STATUSBAR_NETWORK_1X_WARN" file="statusbar_network_1x_warn.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_NETWORK_1X_ERROR" file="statusbar_network_1x_error.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_NETWORK_1X_UNKNOWN" file="statusbar_network_1x_unknown.png" type="BINDATA" />
-        <include name="IDR_STATUSBAR_NETWORK_ARCS0" file="statusbar_network_arcs0.png" type="BINDATA" />
-        <include name="IDR_STATUSBAR_NETWORK_ARCS1" file="statusbar_network_arcs1.png" type="BINDATA" />
-        <include name="IDR_STATUSBAR_NETWORK_ARCS2" file="statusbar_network_arcs2.png" type="BINDATA" />
-        <include name="IDR_STATUSBAR_NETWORK_ARCS3" file="statusbar_network_arcs3.png" type="BINDATA" />
-        <include name="IDR_STATUSBAR_NETWORK_ARCS4" file="statusbar_network_arcs4.png" type="BINDATA" />
-        <include name="IDR_STATUSBAR_NETWORK_ARCS5" file="statusbar_network_arcs5.png" type="BINDATA" />
-        <include name="IDR_STATUSBAR_NETWORK_ARCS6" file="statusbar_network_arcs6.png" type="BINDATA" />
-        <include name="IDR_STATUSBAR_NETWORK_ARCS7" file="statusbar_network_arcs7.png" type="BINDATA" />
-        <include name="IDR_STATUSBAR_NETWORK_BARS0" file="statusbar_network_bars0.png" type="BINDATA" />
-        <include name="IDR_STATUSBAR_NETWORK_BARS1" file="statusbar_network_bars1.png" type="BINDATA" />
-        <include name="IDR_STATUSBAR_NETWORK_BARS1_ORANGE" file="statusbar_network_bars1o.png" type="BINDATA" />
-        <include name="IDR_STATUSBAR_NETWORK_BARS2" file="statusbar_network_bars2.png" type="BINDATA" />
-        <include name="IDR_STATUSBAR_NETWORK_BARS2_ORANGE" file="statusbar_network_bars2o.png" type="BINDATA" />
-        <include name="IDR_STATUSBAR_NETWORK_BARS3" file="statusbar_network_bars3.png" type="BINDATA" />
-        <include name="IDR_STATUSBAR_NETWORK_BARS3_ORANGE" file="statusbar_network_bars3o.png" type="BINDATA" />
-        <include name="IDR_STATUSBAR_NETWORK_BARS4" file="statusbar_network_bars4.png" type="BINDATA" />
-        <include name="IDR_STATUSBAR_NETWORK_BARS4_ORANGE" file="statusbar_network_bars4o.png" type="BINDATA" />
+        <include name="IDR_STATUSBAR_NETWORK_ARCS" file="statusbar_network_arcs.png" type="BINDATA" />
+        <include name="IDR_STATUSBAR_NETWORK_BARS" file="statusbar_network_bars.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_NETWORK_DISCONNECTED" file="statusbar_network_disconnected.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_NETWORK_EDGE" file="statusbar_network_edge.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_NETWORK_GPRS" file="statusbar_network_gprs.png" type="BINDATA" />

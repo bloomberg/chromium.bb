@@ -28,6 +28,12 @@ class NetworkMenuIcon : public ui::AnimationDelegate {
     DROPDOWN_MODE,  // Prioritizes connected networks and sets display text.
   };
 
+  // Used for calls to GetBitmap() and GetNumBitmaps() below.
+  enum BitmapType {
+    ARCS = 0,
+    BARS
+  };
+
   class Delegate {
    public:
     // Called when the bitmap has changed due to animation. Callback should
@@ -40,7 +46,7 @@ class NetworkMenuIcon : public ui::AnimationDelegate {
 
   // Generates and returns the icon bitmap. This will never return NULL.
   // Also sets |text| if not NULL. Behavior varies depending on |mode_|.
-  const SkBitmap* GetIconAndText(string16* text);
+  const SkBitmap GetIconAndText(string16* text);
 
   // ui::AnimationDelegate implementation.
   virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
@@ -48,22 +54,27 @@ class NetworkMenuIcon : public ui::AnimationDelegate {
   // Static functions for generating network icon bitmaps:
 
   // Composites the bitmaps to generate a network icon.
-  static void GenerateBitmapFromComponents(
-      const SkBitmap* icon,
+  static const SkBitmap GenerateBitmapFromComponents(
+      const SkBitmap& icon,
       const SkBitmap* top_left_badge,
       const SkBitmap* top_right_badge,
       const SkBitmap* bottom_left_badge,
-      const SkBitmap* bottom_right_badge,
-      SkBitmap* result);
+      const SkBitmap* bottom_right_badge);
 
   // Sets a blended bitmap for connecting images.
-  static void GenerateConnectingBitmap(const SkBitmap* source, SkBitmap* image);
+  static const SkBitmap GenerateConnectingBitmap(const SkBitmap& source);
 
   // Returns a bitmap associated with |network|, reflecting its current state.
-  static const SkBitmap* GetBitmap(const Network* network);
+  static const SkBitmap GetBitmap(const Network* network);
 
   // Returns a bitmap representing an unconnected VPN.
-  static const SkBitmap* GetVpnBitmap();
+  static const SkBitmap GetVpnBitmap();
+
+  // Access a specific bitmap. If index is out of range an empty bitmap
+  // will be returned.
+  static const SkBitmap GetBitmap(BitmapType type, int index);
+  static const SkBitmap GetDisconnectedBitmap(BitmapType type);
+  static int NumBitmaps(BitmapType type);
 
  protected:
   // Virtual for testing.

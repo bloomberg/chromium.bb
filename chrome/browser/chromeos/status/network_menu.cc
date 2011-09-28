@@ -570,14 +570,14 @@ void MainMenuModel::InitMenuItems(bool is_browser_mode,
     int flag = FLAG_ETHERNET;
     if (ethernet_connecting || ethernet_connected)
       flag |= FLAG_ASSOCIATED;
-    const SkBitmap* icon;
+    SkBitmap icon;
     if (cros->ethernet_network()) {
       icon = NetworkMenuIcon::GetBitmap(cros->ethernet_network());
     } else {
-      icon = rb.GetBitmapNamed(IDR_STATUSBAR_WIRED);
+      icon = *rb.GetBitmapNamed(IDR_STATUSBAR_WIRED);
     }
     menu_items_.push_back(MenuItem(ui::MenuModel::TYPE_COMMAND,
-                                   label, *icon, std::string(), flag));
+                                   label, icon, std::string(), flag));
   }
 
   // Wifi Networks
@@ -618,17 +618,19 @@ void MainMenuModel::InitMenuItems(bool is_browser_mode,
       if (active_wifi
           && wifi_networks[i]->service_path() == active_wifi->service_path())
         flag |= FLAG_ASSOCIATED;
-      const SkBitmap* icon = NetworkMenuIcon::GetBitmap(wifi_networks[i]);
+      const SkBitmap icon = NetworkMenuIcon::GetBitmap(wifi_networks[i]);
       menu_items_.push_back(
           MenuItem(ui::MenuModel::TYPE_COMMAND,
-                   label, *icon, wifi_networks[i]->service_path(), flag));
+                   label, icon, wifi_networks[i]->service_path(), flag));
     }
     if (!separator_added && !menu_items_.empty())
       menu_items_.push_back(MenuItem());
     menu_items_.push_back(MenuItem(
         ui::MenuModel::TYPE_COMMAND,
         l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_OTHER_WIFI_NETWORKS),
-        *rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_ARCS4),
+        NetworkMenuIcon::GetBitmap(
+            NetworkMenuIcon::ARCS,
+            NetworkMenuIcon::NumBitmaps(NetworkMenuIcon::ARCS)),
         std::string(), FLAG_ADD_WIFI));
   }
 
@@ -687,10 +689,10 @@ void MainMenuModel::InitMenuItems(bool is_browser_mode,
           active_cellular && active_cellular->SupportsDataPlan();
       if (isActive)
         flag |= FLAG_ASSOCIATED;
-      const SkBitmap* icon = NetworkMenuIcon::GetBitmap(cell_networks[i]);
+      const SkBitmap icon = NetworkMenuIcon::GetBitmap(cell_networks[i]);
       menu_items_.push_back(
           MenuItem(ui::MenuModel::TYPE_COMMAND,
-                   label, *icon, cell_networks[i]->service_path(), flag));
+                   label, icon, cell_networks[i]->service_path(), flag));
       if (isActive && supports_data_plan) {
         label.clear();
         if (active_cellular->needs_new_plan()) {
@@ -742,7 +744,7 @@ void MainMenuModel::InitMenuItems(bool is_browser_mode,
             ui::MenuModel::TYPE_COMMAND,
             l10n_util::GetStringUTF16(
                 IDS_OPTIONS_SETTINGS_OTHER_CELLULAR_NETWORKS),
-            *rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_BARS0),
+            NetworkMenuIcon::GetDisconnectedBitmap(NetworkMenuIcon::BARS),
             std::string(), FLAG_ADD_CELLULAR));
       }
     }
@@ -761,11 +763,11 @@ void MainMenuModel::InitMenuItems(bool is_browser_mode,
   if (is_browser_mode) {
     if (cros->connected_network() || cros->virtual_network_connected()) {
       menu_items_.push_back(MenuItem());  // Separator
-      const SkBitmap* icon = NetworkMenuIcon::GetVpnBitmap();
+      const SkBitmap icon = NetworkMenuIcon::GetVpnBitmap();
       menu_items_.push_back(MenuItem(
           ui::MenuModel::TYPE_SUBMENU,
           l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_PRIVATE_NETWORKS),
-          *icon, vpn_menu_model_.get(), FLAG_NONE));
+          icon, vpn_menu_model_.get(), FLAG_NONE));
       vpn_menu_model_->InitMenuItems(
           is_browser_mode, should_open_button_options);
     }
@@ -892,10 +894,10 @@ void VPNMenuModel::InitMenuItems(bool is_browser_mode,
       flag |= FLAG_DISABLED;
     if (active_vpn && vpn->service_path() == active_vpn->service_path())
       flag |= FLAG_ASSOCIATED;
-    const SkBitmap* icon = NetworkMenuIcon::GetBitmap(vpn);
+    const SkBitmap icon = NetworkMenuIcon::GetBitmap(vpn);
     menu_items_.push_back(
         MenuItem(ui::MenuModel::TYPE_COMMAND,
-                 label, *icon, vpn->service_path(), flag));
+                 label, icon, vpn->service_path(), flag));
   }
 
   // Add option to add/disconnect from vpn.

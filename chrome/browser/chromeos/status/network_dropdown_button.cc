@@ -111,8 +111,8 @@ void NetworkDropdownButton::OnNetworkManagerChanged(NetworkLibrary* cros) {
 ////////////////////////////////////////////////////////////////////////////////
 // NetworkDropdownButton, NetworkMenuIcon::Delegate implementation:
 void NetworkDropdownButton::NetworkMenuIconChanged() {
-  const SkBitmap* bitmap = network_icon_->GetIconAndText(NULL);
-  SetIcon(*bitmap);
+  const SkBitmap bitmap = network_icon_->GetIconAndText(NULL);
+  SetIcon(bitmap);
   SchedulePaint();
 }
 
@@ -121,8 +121,8 @@ void NetworkDropdownButton::NetworkMenuIconChanged() {
 
 void NetworkDropdownButton::SetNetworkIconAndText() {
   string16 text;
-  const SkBitmap* bitmap = network_icon_->GetIconAndText(&text);
-  SetIcon(*bitmap);
+  const SkBitmap bitmap = network_icon_->GetIconAndText(&text);
+  SetIcon(bitmap);
   SetText(UTF16ToWide(text));
 }
 
