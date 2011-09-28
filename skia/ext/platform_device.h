@@ -18,6 +18,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 
 class SkMatrix;
+class SkMetaData;
 class SkPath;
 class SkRegion;
 
@@ -76,6 +77,17 @@ SK_API void InitializeDC(HDC context);
 // Returns the CGContext that backing the SkDevice.  Forwards to the bound
 // PlatformDevice.  Returns NULL if no PlatformDevice is bound.
 SK_API CGContextRef GetBitmapContext(SkDevice* device);
+#endif
+
+// Following routines are used in print preview workflow to mark the draft mode
+// metafile and preview metafile.
+SK_API SkMetaData& getMetaData(const SkCanvas& canvas);
+SK_API void SetIsDraftMode(const SkCanvas& canvas, bool draft_mode);
+SK_API bool IsDraftMode(const SkCanvas& canvas);
+
+#if defined(OS_MACOSX) || defined(OS_WIN)
+SK_API void SetIsPreviewMetafile(const SkCanvas& canvas, bool is_preview);
+SK_API bool IsPreviewMetafile(const SkCanvas& canvas);
 #endif
 
 // A SkDevice is basically a wrapper around SkBitmap that provides a surface for

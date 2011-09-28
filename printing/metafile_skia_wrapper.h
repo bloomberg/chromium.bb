@@ -20,13 +20,9 @@ class Metafile;
 // as long as the canvas.
 class PRINTING_EXPORT MetafileSkiaWrapper : public SkRefCnt {
  public:
-  static void SetMetafileOnCanvas(SkCanvas* canvas, Metafile* metafile);
+  static void SetMetafileOnCanvas(const SkCanvas& canvas, Metafile* metafile);
 
-  static Metafile* GetMetafileFromCanvas(SkCanvas* canvas);
-
-  static void SetDraftMode(SkCanvas* canvas, bool draft_mode);
-
-  static bool GetDraftMode(SkCanvas* canvas);
+  static Metafile* GetMetafileFromCanvas(const SkCanvas& canvas);
 
  private:
   explicit MetafileSkiaWrapper(Metafile* metafile);

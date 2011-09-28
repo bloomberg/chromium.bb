@@ -193,9 +193,9 @@ Metafile* PrintWebViewHelper::RenderPage(
   SkRefPtr<skia::VectorCanvas> canvas = new skia::VectorCanvas(device);
   canvas->unref();  // SkRefPtr and new both took a reference.
   if (is_preview) {
-    printing::MetafileSkiaWrapper::SetMetafileOnCanvas(canvas.get(), metafile);
-    printing::MetafileSkiaWrapper::SetDraftMode(canvas.get(),
-                                                is_print_ready_metafile_sent_);
+    printing::MetafileSkiaWrapper::SetMetafileOnCanvas(*canvas, metafile);
+    skia::SetIsDraftMode(*canvas, is_print_ready_metafile_sent_);
+    skia::SetIsPreviewMetafile(*canvas, is_preview);
   }
 
   float webkit_scale_factor = frame->printPage(page_number, canvas.get());
