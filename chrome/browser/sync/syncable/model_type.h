@@ -76,8 +76,6 @@ enum ModelType {
   APPS,
   // A setting from the extension settings API.
   EXTENSION_SETTINGS,
-  // App notifications.
-  APP_NOTIFICATIONS,
 
   MODEL_TYPE_COUNT,
 };

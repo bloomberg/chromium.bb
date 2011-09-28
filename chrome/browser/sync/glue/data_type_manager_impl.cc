@@ -39,7 +39,6 @@ static const syncable::ModelType kStartOrder[] = {
   syncable::PASSWORDS,
   syncable::SEARCH_ENGINES,
   syncable::SESSIONS,
-  syncable::APP_NOTIFICATIONS,
 };
 
 COMPILE_ASSERT(arraysize(kStartOrder) ==

@@ -301,8 +301,6 @@ void Cryptographer::UpdateEncryptedTypesFromNigori(
     encrypted_types_.insert(syncable::SESSIONS);
   if (nigori.encrypt_apps())
     encrypted_types_.insert(syncable::APPS);
-  if (nigori.encrypt_app_notifications())
-    encrypted_types_.insert(syncable::APP_NOTIFICATIONS);
 
   // Note: the initial version with encryption did not support the
   // encrypt_everything field. If anything more than the sensitive types were
@@ -336,8 +334,6 @@ void Cryptographer::UpdateNigoriFromEncryptedTypes(
       encrypted_types_.count(syncable::SEARCH_ENGINES) > 0);
   nigori->set_encrypt_sessions(encrypted_types_.count(syncable::SESSIONS) > 0);
   nigori->set_encrypt_apps(encrypted_types_.count(syncable::APPS) > 0);
-  nigori->set_encrypt_app_notifications(
-      encrypted_types_.count(syncable::APP_NOTIFICATIONS) > 0);
 }
 
 void Cryptographer::set_encrypt_everything() {

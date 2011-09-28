@@ -11,7 +11,6 @@
 #include "base/logging.h"
 #include "base/string_number_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/sync/protocol/app_notification_specifics.pb.h"
 #include "chrome/browser/sync/protocol/app_specifics.pb.h"
 #include "chrome/browser/sync/protocol/autofill_specifics.pb.h"
 #include "chrome/browser/sync/protocol/bookmark_specifics.pb.h"
@@ -162,19 +161,6 @@ DictionaryValue* PasswordSpecificsDataToValue(
   SET_BOOL(preferred);
   SET_INT64(date_created);
   SET_BOOL(blacklisted);
-  return value;
-}
-
-DictionaryValue* AppNotificationSpecificsToValue(
-    const sync_pb::AppNotificationSpecifics& proto) {
-  DictionaryValue* value = new DictionaryValue();
-  SET_STR(guid);
-  SET_STR(app_id);
-  SET_INT64(creation_timestamp_ms);
-  SET_STR(title);
-  SET_STR(body_text);
-  SET_STR(link_url);
-  SET_STR(link_text);
   return value;
 }
 
@@ -341,7 +327,6 @@ DictionaryValue* TypedUrlSpecificsToValue(
 DictionaryValue* EntitySpecificsToValue(
     const sync_pb::EntitySpecifics& specifics) {
   DictionaryValue* value = new DictionaryValue();
-  SET_EXTENSION(sync_pb, app_notification, AppNotificationSpecificsToValue);
   SET_EXTENSION(sync_pb, app, AppSpecificsToValue);
   SET_EXTENSION(sync_pb, autofill, AutofillSpecificsToValue);
   SET_EXTENSION(sync_pb, autofill_profile, AutofillProfileSpecificsToValue);
